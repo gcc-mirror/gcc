@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -127,8 +127,7 @@ package Freeze is
 
    function Build_Renamed_Body
      (Decl  : Node_Id;
-      New_S : Entity_Id)
-   return Node_Id;
+      New_S : Entity_Id) return Node_Id;
    --  Rewrite renaming declaration as a subprogram body, whose single
    --  statement is a call to the renamed entity. New_S is the entity that
    --  appears in the renaming declaration. If this is a Renaming_As_Body,
@@ -169,6 +168,13 @@ package Freeze is
    --  known because a size clause is specifically given. That is because we
    --  do not allow a size clause if the size would not otherwise be known at
    --  compile time in any case.
+
+   procedure Expand_Atomic_Aggregate (E : Entity_Id; Typ : Entity_Id);
+   --  If an atomic object is initialized with an aggregate or is assigned
+   --  an aggregate, we have to prevent a piecemeal access or assignment
+   --  to the object, even if the aggregate is to be expanded. we create
+   --  a temporary for the aggregate, and assign the temporary instead,
+   --  so that the back end can generate an atomic move for it.
 
    function Freeze_Entity (E : Entity_Id; Loc : Source_Ptr) return List_Id;
    --  Freeze an entity, and return Freeze nodes, to be inserted at the

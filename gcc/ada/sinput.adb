@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -376,7 +376,9 @@ package body Sinput is
          return Source_Cache_Index;
 
       else
-         for J in 1 .. Source_File.Last loop
+         for J in Source_File_Index_Table (Int (S) / Chunk_Size)
+                                                    .. Source_File.Last
+         loop
             if S in Source_File.Table (J).Source_First ..
                     Source_File.Table (J).Source_Last
             then
@@ -401,6 +403,12 @@ package body Sinput is
 
    procedure Initialize is
    begin
+      Source_Cache_First := 1;
+      Source_Cache_Last  := 0;
+      Source_Cache_Index := No_Source_File;
+      Source_gnat_adc    := No_Source_File;
+      First_Time_Around  := True;
+
       Source_File.Init;
    end Initialize;
 
@@ -573,13 +581,14 @@ package body Sinput is
 
    begin
       if File_Name /= No_Name then
-         SFR.Full_Ref_Name := File_Name;
+         SFR.Reference_Name := Stripped_File_Name;
+         SFR.Full_Ref_Name  := File_Name;
 
          if not Debug_Generated_Code then
-            SFR.Debug_Source_Name := File_Name;
+            SFR.Debug_Source_Name := Stripped_File_Name;
+            SFR.Full_Debug_Name   := File_Name;
          end if;
 
-         SFR.Reference_Name   := Stripped_File_Name;
          SFR.Num_SRef_Pragmas := SFR.Num_SRef_Pragmas + 1;
       end if;
 
@@ -603,6 +612,27 @@ package body Sinput is
          ML := ML + 1;
       end loop;
    end Register_Source_Ref_Pragma;
+
+   ---------------------------------
+   -- Set_Source_File_Index_Table --
+   ---------------------------------
+
+   procedure Set_Source_File_Index_Table (Xnew : Source_File_Index) is
+      Ind : Int;
+      SP  : Source_Ptr;
+      SL  : constant Source_Ptr := Source_File.Table (Xnew).Source_Last;
+
+   begin
+      SP  := (Source_File.Table (Xnew).Source_First + Chunk_Size - 1)
+                                                    / Chunk_Size * Chunk_Size;
+      Ind := Int (SP) / Chunk_Size;
+
+      while SP <= SL loop
+         Source_File_Index_Table (Ind) := Xnew;
+         SP := SP + Chunk_Size;
+         Ind := Ind + 1;
+      end loop;
+   end Set_Source_File_Index_Table;
 
    ---------------------------
    -- Skip_Line_Terminators --
@@ -864,6 +894,8 @@ package body Sinput is
                end;
             end if;
          end;
+
+         Set_Source_File_Index_Table (J);
       end loop;
    end Tree_Read;
 
@@ -1006,10 +1038,20 @@ package body Sinput is
       return Source_File.Table (S).File_Name;
    end File_Name;
 
+   function File_Type (S : SFI) return Type_Of_File is
+   begin
+      return Source_File.Table (S).File_Type;
+   end File_Type;
+
    function First_Mapped_Line (S : SFI) return Logical_Line_Number is
    begin
       return Source_File.Table (S).First_Mapped_Line;
    end First_Mapped_Line;
+
+   function Full_Debug_Name (S : SFI) return File_Name_Type is
+   begin
+      return Source_File.Table (S).Full_Debug_Name;
+   end Full_Debug_Name;
 
    function Full_File_Name (S : SFI) return File_Name_Type is
    begin
@@ -1025,6 +1067,11 @@ package body Sinput is
    begin
       return Source_File.Table (S).Identifier_Casing;
    end Identifier_Casing;
+
+   function Inlined_Body (S : SFI) return Boolean is
+   begin
+      return Source_File.Table (S).Inlined_Body;
+   end Inlined_Body;
 
    function Instantiation (S : SFI) return Source_Ptr is
    begin

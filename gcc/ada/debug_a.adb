@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,6 +60,8 @@ package body Debug_A is
 
    procedure Debug_A_Entry (S : String; N : Node_Id) is
    begin
+      --  Output debugging information if -gnatda flag set
+
       if Debug_Flag_A then
          Debug_Output_Astring;
          Write_Str (S);
@@ -72,11 +74,20 @@ package body Debug_A is
          Write_Eol;
       end if;
 
+      --  Now push the new element
+
       Debug_A_Depth := Debug_A_Depth + 1;
-      Current_Error_Node := N;
 
       if Debug_A_Depth <= Max_Node_Ids then
          Node_Ids (Debug_A_Depth) := N;
+      end if;
+
+      --  Set Current_Error_Node only if the new node has a decent Sloc
+      --  value, since it is for the Sloc value that we set this anyway.
+      --  If we don't have a decent Sloc value, we leave it unchanged.
+
+      if Sloc (N) > No_Location then
+         Current_Error_Node := N;
       end if;
    end Debug_A_Entry;
 
@@ -88,9 +99,17 @@ package body Debug_A is
    begin
       Debug_A_Depth := Debug_A_Depth - 1;
 
-      if Debug_A_Depth in 1 .. Max_Node_Ids then
-         Current_Error_Node := Node_Ids (Debug_A_Depth);
-      end if;
+      --  We look down the stack to find something with a decent Sloc. (If
+      --  we find nothing, just leave it unchanged which is not so terrible)
+
+      for J in reverse 1 .. Integer'Min (Max_Node_Ids, Debug_A_Depth) loop
+         if Sloc (Node_Ids (J)) > No_Location then
+            Current_Error_Node := Node_Ids (J);
+            exit;
+         end if;
+      end loop;
+
+      --  Output debugging information if -gnatda flag set
 
       if Debug_Flag_A then
          Debug_Output_Astring;
@@ -107,7 +126,7 @@ package body Debug_A is
    --------------------------
 
    procedure Debug_Output_Astring is
-      Vbars : String := "|||||||||||||||||||||||||";
+      Vbars : constant String := "|||||||||||||||||||||||||";
       --  Should be constant, removed because of GNAT 1.78 bug ???
 
    begin

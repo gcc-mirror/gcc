@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---           Copyright (C) 2000-2001 Free Software Foundation, Inc.         --
+--           Copyright (C) 2000-2003 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,25 +27,30 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 --   This package is for OpenVMS/Alpha
 
 with System.OS_Interface;
+with System.Parameters;
 with System.Tasking;
 with Unchecked_Conversion;
+with System.Soft_Links;
 
 package body System.Task_Primitives.Operations.DEC is
 
    use System.OS_Interface;
+   use System.Parameters;
    use System.Tasking;
    use System.Aux_DEC;
    use type Interfaces.C.int;
 
+   package SSL renames System.Soft_Links;
+
    --  The FAB_RAB_Type specifies where the context field (the calling
-   --  task) is stored.  Other fields defined for FAB_RAB aren't need and
+   --  task) is stored.  Other fields defined for FAB_RAB arent' need and
    --  so are ignored.
 
    type FAB_RAB_Type is record
@@ -106,7 +111,6 @@ package body System.Task_Primitives.Operations.DEC is
 
    function Self return Unsigned_Longword is
       Self_ID : Task_ID := Self;
-
    begin
       Self_ID.Common.LL.AST_Pending := True;
       return To_Unsigned_Longword (Self);
@@ -131,10 +135,15 @@ package body System.Task_Primitives.Operations.DEC is
    ----------------
 
    procedure Task_Synch is
-      Synch_Self_ID : Task_ID := Self;
-
+      Synch_Self_ID : constant Task_ID := Self;
    begin
-      Write_Lock (Synch_Self_ID);
+      if Single_Lock then
+         Lock_RTS;
+      else
+         Write_Lock (Synch_Self_ID);
+      end if;
+
+      SSL.Abort_Defer.all;
       Synch_Self_ID.Common.State := AST_Server_Sleep;
 
       while Synch_Self_ID.Common.LL.AST_Pending loop
@@ -142,7 +151,14 @@ package body System.Task_Primitives.Operations.DEC is
       end loop;
 
       Synch_Self_ID.Common.State := Runnable;
-      Unlock (Synch_Self_ID);
+
+      if Single_Lock then
+         Unlock_RTS;
+      else
+         Unlock (Synch_Self_ID);
+      end if;
+
+      SSL.Abort_Undefer.all;
    end Task_Synch;
 
 end System.Task_Primitives.Operations.DEC;

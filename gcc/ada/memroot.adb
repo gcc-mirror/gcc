@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1997-2002 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1997-2003 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -20,15 +20,19 @@
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 with GNAT.Table;
 with GNAT.HTable; use GNAT.HTable;
 with Ada.Text_IO; use Ada.Text_IO;
+with System.Storage_Elements; use System.Storage_Elements;
 
 package body Memroot is
+
+   Main_Name_Id : Name_Id;
+   --  The constant "main" where we should stop the backtraces
 
    -------------
    -- Name_Id --
@@ -79,13 +83,14 @@ package body Memroot is
    function Image
      (F       : Frame_Id;
       Max_Fil : Integer;
-      Max_Lin : Integer)
-      return String;
+      Max_Lin : Integer;
+      Short   : Boolean := False) return String;
    --  Returns an image for F containing the file name, the Line number,
-   --  and the subprogram name. When possible, spaces are inserted between
-   --  the line number and the subprogram name in order to align images of the
-   --  same frame. Alignement is cimputed with Max_Fil & Max_Lin representing
-   --  the max number of character in a filename or length in a given frame.
+   --  and if 'Short' is not true, the subprogram name. When possible, spaces
+   --  are inserted between the line number and the subprogram name in order
+   --  to align images of the same frame. Alignement is cimputed with Max_Fil
+   --  & Max_Lin representing the max number of character in a filename or
+   --  length in a given frame.
 
    package Frames is new GNAT.Table (
      Table_Component_Type => Frame,
@@ -94,14 +99,14 @@ package body Memroot is
      Table_Initial        => 400,
      Table_Increment      => 100);
 
-   type Frame_Range is range 1 .. 513;
-   function H (N : Frame) return Frame_Range;
+   type Frame_Range is range 1 .. 10000;
+   function H (N : Integer_Address) return Frame_Range;
 
    package Frame_HTable is new GNAT.HTable.Simple_HTable (
      Header_Num => Frame_Range,
      Element    => Frame_Id,
      No_Element => No_Frame_Id,
-     Key        => Frame,
+     Key        => Integer_Address,
      Hash       => H,
      Equal      => "=");
 
@@ -155,22 +160,19 @@ package body Memroot is
    -- Enter_Frame --
    -----------------
 
-   function Enter_Frame (Name, File, Line : Name_Id) return Frame_Id is
-      Res   : Frame_Id;
-
+   function Enter_Frame
+     (Addr : System.Address;
+      Name : Name_Id;
+      File : Name_Id;
+      Line : Name_Id)
+      return Frame_Id
+   is
    begin
       Frames.Increment_Last;
       Frames.Table (Frames.Last) := Frame'(Name, File, Line);
-      Res := Frame_HTable.Get (Frames.Table (Frames.Last));
 
-      if Res /= No_Frame_Id then
-         Frames.Decrement_Last;
-         return Res;
-
-      else
-         Frame_HTable.Set (Frames.Table (Frames.Last), Frames.Last);
-         return Frames.Last;
-      end if;
+      Frame_HTable.Set (To_Integer (Addr), Frames.Last);
+      return Frames.Last;
    end Enter_Frame;
 
    ----------------
@@ -285,10 +287,9 @@ package body Memroot is
       return H (String (Chars.Table (N.First .. N.Last)));
    end H;
 
-   function H (N : Frame) return Frame_Range is
+   function H (N : Integer_Address) return Frame_Range is
    begin
-      return Frame_Range (1 + (7 * N.Name + 13 * N.File + 17 * N.Line)
-                                mod Frame_Range'Range_Length);
+      return Frame_Range (1 + N mod Frame_Range'Range_Length);
    end H;
 
    ---------------------
@@ -314,9 +315,9 @@ package body Memroot is
    function Image
      (F       : Frame_Id;
       Max_Fil : Integer;
-      Max_Lin : Integer)
-      return String is
-
+      Max_Lin : Integer;
+      Short   : Boolean := False) return String
+   is
       Fram : Frame renames Frames.Table (F);
       Fil  : Name renames Names.Table (Fram.File);
       Lin  : Name renames Names.Table (Fram.Line);
@@ -329,12 +330,18 @@ package body Memroot is
 
       Spaces : constant String (1 .. 80) := (1 .. 80 => ' ');
 
-   begin
-      return String (Chars.Table (Fil.First .. Fil.Last))
+      Result : constant String :=
+        String (Chars.Table (Fil.First .. Fil.Last))
         & ':'
-        & String (Chars.Table (Lin.First .. Lin.Last))
-        & Spaces (1 .. 1 + Max_Fil - Fil_Len + Max_Lin - Lin_Len)
-        & String (Chars.Table (Nam.First .. Nam.Last));
+        & String (Chars.Table (Lin.First .. Lin.Last));
+   begin
+      if Short then
+         return Result;
+      else
+         return Result
+           & Spaces (1 .. 1 + Max_Fil - Fil_Len + Max_Lin - Lin_Len)
+           & String (Chars.Table (Nam.First .. Nam.Last));
+      end if;
    end Image;
 
    -------------
@@ -361,7 +368,7 @@ package body Memroot is
    -- Print_BT --
    --------------
 
-   procedure Print_BT (B  : Root_Id) is
+   procedure Print_BT (B  : Root_Id; Short : Boolean := False) is
       Max_Col_Width : constant := 35;
       --  Largest filename length for which backtraces will be
       --  properly aligned. Frames containing longer names won't be
@@ -392,7 +399,7 @@ package body Memroot is
 
       for J in F'Range loop
          Put ("   ");
-         Put_Line (Image (F (J), Max_Fil, Max_Lin));
+         Put_Line (Image (F (J), Max_Fil, Max_Lin, Short));
       end loop;
    end Print_BT;
 
@@ -400,7 +407,7 @@ package body Memroot is
    -- Read_BT --
    -------------
 
-   function Read_BT (BT_Depth : Integer; FT : File_Type) return Root_Id is
+   function Read_BT (BT_Depth : Integer) return Root_Id is
       Max_Line : constant Integer := 500;
       Curs1    : Integer;
       Curs2    : Integer;
@@ -411,9 +418,11 @@ package body Memroot is
       Nam      : Name_Id;
       Fil      : Name_Id;
       Lin      : Name_Id;
-
-      No_File    : Boolean := False;
+      Add      : System.Address;
+      Int_Add  : Integer_Address;
+      Fr       : Frame_Id;
       Main_Found : Boolean := False;
+      pragma Warnings (Off, Line);
 
       procedure Find_File;
       --  Position Curs1 and Curs2 so that Line (Curs1 .. Curs2) contains
@@ -430,79 +439,32 @@ package body Memroot is
       --  Position Curs1 and Curs2 so that Line (Curs1 .. Curs2) contains
       --  the subprogram name.
 
-      procedure Gmem_Read_BT_Frame (Buf : out String; Last : out Natural);
-      --  GMEM functionality binding
+      function Skip_To_Space (Pos : Integer) return Integer;
+      --  Scans Line starting with position Pos, returning the position
+      --  immediately before the first space, or the value of Last if no
+      --  spaces were found
+
+
+      pragma Inline (Find_File, Find_Line, Find_Name, Skip_To_Space);
 
       ---------------
       -- Find_File --
       ---------------
 
       procedure Find_File is
-         Match_Parent : Integer;
-
       begin
-         --  Skip parameters
-
-         Curs1 := Curs2 + 3;
-         Match_Parent := 1;
-         while Curs1 <= Last loop
-            if Line (Curs1) = '(' then
-               Match_Parent := Match_Parent + 1;
-            elsif Line (Curs1) = ')' then
-               Match_Parent := Match_Parent - 1;
-               exit when Match_Parent = 0;
-            end if;
-
-            Curs1 := Curs1 + 1;
-         end loop;
-
          --  Skip " at "
 
-         Curs1 := Curs1 + 5;
+         Curs1 := Curs2 + 5;
+         Curs2 := Last;
 
-         if Curs1 >= Last then
+         --  Scan backwards from end of line until ':' is encountered
 
-            --  Maybe the file reference is on one of the next lines
-
-            Read : loop
-               Get_Line (FT, Line, Last);
-
-               --  If we have another Frame or if the backtrace is finished
-               --  the file reference was just missing
-
-               if Last <= 1 or else Line (1) = '#' then
-                  No_File := True;
-                  Curs2 := Curs1 - 1;
-                  return;
-
-               else
-                  Curs1 := 1;
-                  while Curs1 <= Last - 2 loop
-                     if Line (Curs1) = '(' then
-                        Match_Parent := Match_Parent + 1;
-                     elsif Line (Curs1) = ')' then
-                        Match_Parent := Match_Parent - 1;
-                     end if;
-
-                     if Match_Parent = 0
-                       and then Line (Curs1 .. Curs1 + 1) = "at"
-                     then
-                        Curs1 := Curs1 + 3;
-                        exit Read;
-                     end if;
-
-                     Curs1 := Curs1 + 1;
-                  end loop;
-               end if;
-            end loop Read;
-         end if;
-
-         --  Let's assume that the filename length is greater than 1
-         --  it simplifies dealing with the potential drive ':' on
-         --  windows systems
-
-         Curs2 := Curs1 + 1;
-         while Line (Curs2 + 1) /= ':' loop Curs2 := Curs2 + 1; end loop;
+         for J in reverse Curs1 .. Last loop
+            if Line (J) = ':' then
+               Curs2 := J - 1;
+            end if;
+         end loop;
       end Find_File;
 
       ---------------
@@ -513,8 +475,12 @@ package body Memroot is
       begin
          Curs1 := Curs2 + 2;
          Curs2 := Last;
-         if Curs2 - Curs1 > 5 then
-            raise Constraint_Error;
+
+         --  Check for Curs1 too large. Should never happen with non-corrupt
+         --  output. If it does happen, just reset it to the highest value.
+
+         if Curs1 > Last then
+            Curs1 := Last;
          end if;
       end Find_Line;
 
@@ -524,93 +490,78 @@ package body Memroot is
 
       procedure Find_Name is
       begin
-         Curs1 := 3;
+         --  Skip the address value and " in "
 
-         --  Skip Frame #
-
-         while Line (Curs1) /= ' ' loop Curs1 := Curs1 + 1; end loop;
-
-         --  Skip spaces
-
-         while Line (Curs1)  = ' ' loop Curs1 := Curs1 + 1; end loop;
-
-         Curs2 := Curs1;
-         while Line (Curs2 + 1) /= ' ' loop Curs2 := Curs2 + 1; end loop;
+         Curs1 := Skip_To_Space (1) + 5;
+         Curs2 := Skip_To_Space (Curs1);
       end Find_Name;
 
-      ------------------------
-      -- Gmem_Read_BT_Frame --
-      ------------------------
+      -------------------
+      -- Skip_To_Space --
+      -------------------
 
-      procedure Gmem_Read_BT_Frame (Buf : out String; Last : out Natural) is
-         procedure Read_BT_Frame (buf : System.Address);
-         pragma Import (C, Read_BT_Frame, "__gnat_gmem_read_bt_frame");
-
-         function Strlen (chars : System.Address) return Natural;
-         pragma Import (C, Strlen, "strlen");
-
-         S :  String (1 .. 1000);
+      function Skip_To_Space (Pos : Integer) return Integer is
       begin
-         Read_BT_Frame (S'Address);
-         Last := Strlen (S'Address);
-         Buf (1 .. Last) := S (1 .. Last);
-      end Gmem_Read_BT_Frame;
+         for Cur in Pos .. Last loop
+            if Line (Cur) = ' ' then
+               return Cur - 1;
+            end if;
+         end loop;
+
+         return Last;
+      end Skip_To_Space;
+
+      procedure Gmem_Read_Next_Frame (Addr : out System.Address);
+      pragma Import (C, Gmem_Read_Next_Frame, "__gnat_gmem_read_next_frame");
+      --  Read the next frame in the current traceback. Addr is set to 0 if
+      --  there are no more addresses in this traceback. The pointer is moved
+      --  to the next frame.
+
+      procedure Gmem_Symbolic
+        (Addr : System.Address; Buf : String; Last : out Natural);
+      pragma Import (C, Gmem_Symbolic, "__gnat_gmem_symbolic");
+      --  Get the symbolic traceback for Addr. Note: we cannot use
+      --  GNAT.Tracebacks.Symbolic, since the latter will only work with the
+      --  current executable.
+      --
+      --  "__gnat_gmem_symbolic" will work with the executable whose name is
+      --  given in gnat_argv[0], as initialized by Gnatmem.Gmem_A21_Initialize.
 
    --  Start of processing for Read_BT
 
    begin
+      while F <= BT_Depth and then not Main_Found loop
+         Gmem_Read_Next_Frame (Add);
+         Int_Add := To_Integer (Add);
+         exit when Int_Add = 0;
 
-      if Gmem_Mode then
-         Gmem_Read_BT_Frame (Line, Last);
-      else
-         Line (1) := ' ';
-         while Line (1) /= '#' loop
-               Get_Line (FT, Line, Last);
-         end loop;
-      end if;
+         Fr := Frame_HTable.Get (Int_Add);
 
-      while Last >= 1 and then Line (1) = '#' and then not Main_Found loop
-         if F <= BT_Depth then
+         if Fr = No_Frame_Id then
+            Gmem_Symbolic (Add, Line, Last);
+            Last := Last - 1; -- get rid of the trailing line-feed
             Find_Name;
+
             --  Skip the __gnat_malloc frame itself
+
             if Line (Curs1 .. Curs2) /= "<__gnat_malloc>" then
                Nam := Enter_Name (Line (Curs1 .. Curs2));
-               Main_Found := Line (Curs1 .. Curs2) = "main";
+               Main_Found := (Nam = Main_Name_Id);
 
                Find_File;
+               Fil := Enter_Name (Line (Curs1 .. Curs2));
+               Find_Line;
+               Lin := Enter_Name (Line (Curs1 .. Curs2));
 
-               if No_File then
-                  Fil := No_Name_Id;
-                  Lin := No_Name_Id;
-               else
-                  Fil := Enter_Name (Line (Curs1 .. Curs2));
-
-                  Find_Line;
-                  Lin := Enter_Name (Line (Curs1 .. Curs2));
-               end if;
-
-               Frames (F) := Enter_Frame (Nam, Fil, Lin);
+               Frames (F) := Enter_Frame (Add, Nam, Fil, Lin);
                F := F + 1;
             end if;
-         end if;
-
-         if No_File then
-
-            --  If no file reference was found, the next line has already
-            --  been read because, it may sometimes be found on the next
-            --  line
-
-            No_File := False;
 
          else
-            if Gmem_Mode then
-               Gmem_Read_BT_Frame (Line, Last);
-            else
-               Get_Line (FT, Line, Last);
-               exit when End_Of_File (FT);
-            end if;
+            Frames (F) := Fr;
+            Main_Found := (Memroot.Frames.Table (Fr).Name = Main_Name_Id);
+            F := F + 1;
          end if;
-
       end loop;
 
       return Enter_Root (Frames (1 .. F - 1));
@@ -661,4 +612,5 @@ begin
 
    Names.Increment_Last;
    Names.Table (Names.Last) := Name'(1, 0);
+   Main_Name_Id := Enter_Name ("main");
 end Memroot;

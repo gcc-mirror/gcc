@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-1999, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -50,24 +50,24 @@ package System.Tasking.Stages is
    pragma Elaborate_Body;
 
    --   The compiler will expand in the GNAT tree the following construct:
-   --
+
    --   task type T (Discr : Integer);
-   --
+
    --   task body T is
    --      ...declarations, possibly some controlled...
    --   begin
    --      ...B...;
    --   end T;
-   --
+
    --   T1 : T (1);
-   --
+
    --  as follows:
-   --
+
    --   enter_master.all;
-   --
+
    --   _chain : aliased activation_chain;
-   --   _init_proc (_chain);
-   --
+   --   activation_chainIP (_chain);
+
    --   task type t (discr : integer);
    --   tE : aliased boolean := false;
    --   tZ : size_type := unspecified_size;
@@ -76,7 +76,7 @@ package System.Tasking.Stages is
    --   end record;
    --   procedure tB (_task : access tV);
    --   freeze tV [
-   --      procedure _init_proc (_init : in out tV; _master : master_id;
+   --      procedure tVIP (_init : in out tV; _master : master_id;
    --        _chain : in out activation_chain; _task_id : in task_image_type;
    --        discr : integer) is
    --      begin
@@ -88,12 +88,12 @@ package System.Tasking.Stages is
    --           _init'address, tE'unchecked_access, _chain, _task_id, _init.
    --           _task_id);
    --         return;
-   --      end _init_proc;
+   --      end tVIP;
    --   ]
-   --
+
    --   procedure tB (_task : access tV) is
    --      discr : integer renames _task.discr;
-   --
+
    --      procedure _clean is
    --      begin
    --         abort_defer.all;
@@ -111,13 +111,13 @@ package System.Tasking.Stages is
    --   at end
    --      _clean;
    --   end tB;
-   --
+
    --   tE := true;
    --   t1 : t (1);
-   --   master : constant master_id := current_master.all;
-   --   t1I : task_image_type := new string'"t1";
-   --   _init_proc (t1, _master, _chain, t1I, 1);
-   --
+   --   _master : constant master_id := current_master.all;
+   --   t1S : task_image_type := new string'"t1";
+   --   task_image_typeIP (t1, _master, _chain, t1S, 1);
+
    --   activate_tasks (_chain'unchecked_access);
 
    procedure Abort_Tasks (Tasks : Task_List);
@@ -176,7 +176,7 @@ package System.Tasking.Stages is
       Discriminants : System.Address;
       Elaborated    : Access_Boolean;
       Chain         : in out Activation_Chain;
-      Task_Image    : System.Task_Info.Task_Image_Type;
+      Task_Image    : String;
       Created_Task  : out Task_ID);
    --  Compiler interface only. Do not call from within the RTS.
    --  This must be called to create a new task.
@@ -191,12 +191,12 @@ package System.Tasking.Stages is
    --   are those of the task to create. This parameter should be passed as
    --   the single argument to State.
    --  Elaborated is a pointer to a Boolean that must be set to true on exit
-   --   if the task could be successfully elaborated.
+   --   if the task could be sucessfully elaborated.
    --  Chain is a linked list of task that needs to be created. On exit,
    --   Created_Task.Activation_Link will be Chain.T_ID, and Chain.T_ID
    --   will be Created_Task (e.g the created task will be linked at the front
    --   of Chain).
-   --  Task_Image is a pointer to a string created by the compiler that the
+   --  Task_Image is a string created by the compiler that the
    --   run time can store to ease the debugging and the
    --   Ada.Task_Identification facility.
    --  Created_Task is the resulting task.
@@ -214,7 +214,7 @@ package System.Tasking.Stages is
    --  declared.
 
    procedure Expunge_Unactivated_Tasks (Chain : in out Activation_Chain);
-   --  Compiler interface only.  Do not call from within the RTS.
+   --  Compiler interface only. Do not call from within the RTS.
    --  This must be called by the compiler-generated code for an allocator if
    --  the allocated object contains tasks, if the allocator exits without
    --  calling Activate_Tasks for a given activation chains, as can happen if
@@ -267,5 +267,10 @@ package System.Tasking.Stages is
    --
    --  code expansion:
    --     terminated (t1._task_id)
+
+   procedure Terminate_Task (Self_ID : Task_ID);
+   --  Terminate the calling task.
+   --  This should only be called by the Task_Wrapper procedure, and to
+   --  deallocate storage associate with foreign tasks.
 
 end System.Tasking.Stages;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1999-2001, Ada Core Technologies, Inc.           --
+--           Copyright (C) 1999-2003, Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -20,7 +20,7 @@
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -28,14 +28,22 @@
 --  and GNATMAKE to build libraries
 
 with GNAT.OS_Lib; use GNAT.OS_Lib;
+with Osint;       use Osint;
+with Types;       use Types;
 
 package MLib is
 
-   Tools_Error : exception;
-   --  ??? needs comment
-
    Max_Characters_In_Library_Name : constant := 20;
-   --  ??? needs comment
+   --  Maximum number of characters in a library name.
+   --  Used by Check_Library_Name below.
+
+   type Fail_Proc is access procedure
+     (S1 : String; S2 : String := ""; S3 : String := "");
+
+   Fail : Fail_Proc := Osint.Fail'Access;
+   --  This procedure is used in the MLib hierarchy, instead of
+   --  directly calling Osint.Fail.
+   --  It is redirected to Make.Make_Failed by gnatmake.
 
    procedure Check_Library_Name (Name : String);
    --  Verify that the name of a library has the following characteristics
@@ -49,5 +57,18 @@ package MLib is
       Output_File : String;
       Output_Dir  : String);
    --  Build a static library from a set of object files
+
+   procedure Copy_ALI_Files
+     (Files      : Argument_List;
+      To         : Name_Id;
+      Interfaces : String_List);
+   --  Copy all ALI files Files to directory To.
+   --  Mark Interfaces ALI files as interfaces, if any.
+
+private
+
+   Preserve : Attribute := Time_Stamps;
+   --  Used by Copy_ALI_Files. Changed to None for OpenVMS, because
+   --  Copy_Attributes always fails on VMS.
 
 end MLib;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,19 +45,46 @@ with Scn;      use Scn;
 with Sinfo;    use Sinfo;
 with Sinput;   use Sinput;
 with Stringt;  use Stringt;
+with Tbuild;   use Tbuild;
 with Uname;    use Uname;
 
 with System.WCh_Con; use System.WCh_Con;
 
 package body Lib.Writ is
 
+   ----------------------------------
+   -- Add_Preprocessing_Dependency --
+   ----------------------------------
+
+   procedure Add_Preprocessing_Dependency (S : Source_File_Index) is
+   begin
+      Units.Increment_Last;
+      Units.Table (Units.Last) :=
+        (Unit_File_Name  => File_Name (S),
+         Unit_Name       => No_Name,
+         Expected_Unit   => No_Name,
+         Source_Index    => S,
+         Cunit           => Empty,
+         Cunit_Entity    => Empty,
+         Dependency_Num  => 0,
+         Dependent_Unit  => True,
+         Dynamic_Elab    => False,
+         Fatal_Error     => False,
+         Generate_Code   => False,
+         Has_RACW        => False,
+         Ident_String    => Empty,
+         Loading         => False,
+         Main_Priority   => -1,
+         Serial_Number   => 0,
+         Version         => 0,
+         Error_Location  => No_Location);
+   end Add_Preprocessing_Dependency;
+
    ------------------------------
    -- Ensure_System_Dependency --
    ------------------------------
 
    procedure Ensure_System_Dependency is
-      Discard : List_Id;
-
       System_Uname : Unit_Name_Type;
       --  Unit name for system spec if needed for dummy entry
 
@@ -108,7 +135,7 @@ package body Lib.Writ is
       --  Parse system.ads so that the checksum is set right
 
       Initialize_Scanner (Units.Last, System_Source_File_Index);
-      Discard := Par (Configuration_Pragmas => False);
+      Discard_List (Par (Configuration_Pragmas => False));
    end Ensure_System_Dependency;
 
    ---------------
@@ -182,7 +209,11 @@ package body Lib.Writ is
          Item := First (Context_Items (Cunit));
          while Present (Item) loop
 
-            if Nkind (Item) = N_With_Clause then
+            --  limited_with_clauses do not create dependencies.
+
+            if Nkind (Item) = N_With_Clause
+               and then not (Limited_Present (Item))
+            then
                Unum := Get_Cunit_Unit_Number (Library_Unit (Item));
                With_Flags (Unum) := True;
 
@@ -292,6 +323,14 @@ package body Lib.Writ is
 
          Write_Info_Tab (49);
          Write_Info_Str (Version_Get (Unit_Num));
+
+         if (Is_Subprogram (Uent)
+              or else Ekind (Uent) = E_Package
+              or else Is_Generic_Unit (Uent))
+           and then Body_Needed_For_SAL (Uent)
+         then
+            Write_Info_Str (" BN");
+         end if;
 
          if Dynamic_Elab (Unit_Num) then
             Write_Info_Str (" DE");
@@ -450,9 +489,13 @@ package body Lib.Writ is
          if Nkind (Unit (Unode)) in N_Unit_Body then
             for S in Units.First .. Last_Unit loop
 
-               --  We are only interested in subunits
+               --  We are only interested in subunits.
+               --  For preproc. data and def. files, Cunit is Empty, so
+               --  we need to test that first.
 
-               if Nkind (Unit (Cunit (S))) = N_Subunit then
+               if Cunit (S) /= Empty
+                 and then Nkind (Unit (Cunit (S))) = N_Subunit
+               then
                   Pnode := Library_Unit (Cunit (S));
 
                   --  In gnatc mode, the errors in the subunits will not
@@ -509,7 +552,7 @@ package body Lib.Writ is
 
                      else
                         declare
-                           Hex : array (0 .. 15) of Character :=
+                           Hex : constant array (0 .. 15) of Character :=
                                    "0123456789ABCDEF";
 
                         begin
@@ -556,8 +599,11 @@ package body Lib.Writ is
             --  parent spec of the main unit (case of main unit is a child
             --  unit). The latter with is not needed for semantic purposes,
             --  but is required by the binder for elaboration purposes.
+            --  For preproc. data and def. files, there is no Unit_Name,
+            --  check for that first.
 
-            if (With_Flags (J) or else Unit_Name (J) = Pname)
+            if Unit_Name (J) /= No_Name
+              and then (With_Flags (J) or else Unit_Name (J) = Pname)
               and then Units.Table (J).Dependent_Unit
             then
                Num_Withs := Num_Withs + 1;
@@ -638,8 +684,12 @@ package body Lib.Writ is
       --  because it is referenced by Up_To_Date_ALI_File_Exists.
 
       for Unum in Units.First .. Last_Unit loop
-         Num_Sdep := Num_Sdep + 1;
-         Sdep_Table (Num_Sdep) := Unum;
+         if Cunit_Entity (Unum) = Empty
+           or else not From_With_Type (Cunit_Entity (Unum))
+         then
+            Num_Sdep := Num_Sdep + 1;
+            Sdep_Table (Num_Sdep) := Unum;
+         end if;
       end loop;
 
       --  Sort the table so that the D lines are in order
@@ -673,12 +723,16 @@ package body Lib.Writ is
 
       --  Output main program line if this is acceptable main program
 
-      declare
+      Output_Main_Program_Line : declare
          U : Node_Id := Unit (Units.Table (Main_Unit).Cunit);
          S : Node_Id;
 
          procedure M_Parameters;
          --  Output parameters for main program line
+
+         ------------------
+         -- M_Parameters --
+         ------------------
 
          procedure M_Parameters is
          begin
@@ -698,6 +752,8 @@ package body Lib.Writ is
 
             Write_Info_EOL;
          end M_Parameters;
+
+      --  Start of processing for Output_Main_Program_Line
 
       begin
          if Nkind (U) = N_Subprogram_Body
@@ -747,7 +803,7 @@ package body Lib.Writ is
                end if;
             end if;
          end if;
-      end;
+      end Output_Main_Program_Line;
 
       --  Write command argmument ('A') lines
 
@@ -804,7 +860,7 @@ package body Lib.Writ is
          Write_Info_Str (" NO");
       end if;
 
-      if No_Run_Time then
+      if No_Run_Time_Mode then
          Write_Info_Str (" NR");
       end if;
 
@@ -816,7 +872,7 @@ package body Lib.Writ is
          Write_Info_Str (" UA");
       end if;
 
-      if Exception_Mechanism /= Setjmp_Longjmp then
+      if Exception_Mechanism /= Front_End_Setjmp_Longjmp_Exceptions then
          if Unit_Exception_Table_Present then
             Write_Info_Str (" UX");
          end if;
@@ -825,6 +881,22 @@ package body Lib.Writ is
       end if;
 
       Write_Info_EOL;
+
+      --  Before outputting the restrictions line, update the setting of
+      --  the No_Elaboration_Code flag. Violations of this restriction
+      --  cannot be detected until after the backend has been called since
+      --  it is the backend that sets this flag. We have to check all units
+      --  for which we have generated code
+
+      for Unit in Units.First .. Last_Unit loop
+         if Units.Table (Unit).Generate_Code
+           or else Unit = Main_Unit
+         then
+            if not Has_No_Elaboration_Code (Cunit (Unit)) then
+               Violations (No_ELaboration_Code) := True;
+            end if;
+         end if;
+      end loop;
 
       --  Output restrictions line
 
@@ -842,6 +914,21 @@ package body Lib.Writ is
       end loop;
 
       Write_Info_EOL;
+
+      --  Output interrupt state lines
+
+      for J in Interrupt_States.First .. Interrupt_States.Last loop
+         Write_Info_Initiate ('I');
+         Write_Info_Char (' ');
+         Write_Info_Nat (Interrupt_States.Table (J).Interrupt_Number);
+         Write_Info_Char (' ');
+         Write_Info_Char (Interrupt_States.Table (J).Interrupt_State);
+         Write_Info_Char (' ');
+         Write_Info_Nat
+           (Nat (Get_Logical_Line_Number
+                   (Interrupt_States.Table (J).Pragma_Loc)));
+         Write_Info_EOL;
+      end loop;
 
       --  Loop through file table to output information for all units for which
       --  we have generated code, as marked by the Generate_Code flag.

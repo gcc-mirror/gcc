@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -104,9 +104,9 @@ package ALI.Util is
 
    procedure Read_ALI (Id : ALI_Id);
    --  Process an ALI file which has been read and scanned by looping
-   --  through all withed units in the ALI file; checking if they have
-   --  been processed; and for each that hasn't, reading, scanning, and
-   --  recursively processing.
+   --  through all withed units in the ALI file, checking if they have
+   --  been processed. Each unit that has not yet been processed will
+   --  be read, scanned, and processed recursively.
 
    procedure Set_Source_Table (A : ALI_Id);
    --  Build source table entry corresponding to the ALI file whose id is A.
@@ -114,7 +114,10 @@ package ALI.Util is
    procedure Set_Source_Table;
    --  Build the entire source table.
 
-   function Time_Stamp_Mismatch (A : ALI_Id) return File_Name_Type;
+   function Time_Stamp_Mismatch
+     (A         : ALI_Id;
+      Read_Only : Boolean := False)
+      return      File_Name_Type;
    --  Looks in the Source_Table and checks time stamp mismatches between
    --  the sources there and the sources in the Sdep section of ali file whose
    --  id is A. If no time stamp mismatches are found No_File is returned.
@@ -123,6 +126,7 @@ package ALI.Util is
    --  time stamp in the Source_Table should be the actual time stamp of the
    --  source files. In minimal recompilation mode (Minimal_Recompilation set
    --  to True, no mismatch is found if the file's timestamp has not changed.
+   --  If Read_Only is True, missing sources are not considered.
 
    --------------------------------------------
    -- Subprograms for manipulating checksums --

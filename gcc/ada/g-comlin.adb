@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -330,8 +331,12 @@ package body GNAT.Command_Line is
    -- Getopt --
    ------------
 
-   function Getopt (Switches : String) return Character is
+   function Getopt
+     (Switches    : String;
+      Concatenate : Boolean := True) return Character
+   is
       Dummy : Boolean;
+      pragma Unreferenced (Dummy);
 
    begin
       --  If we have finished parsing the current command line item (there
@@ -441,11 +446,20 @@ package body GNAT.Command_Line is
                return '*';
             end if;
 
+            --  Depending on the value of Concatenate, the full switch is
+            --  a single character (True) or the rest of the argument (False).
+
+            if Concatenate then
+               End_Index := Current_Index;
+            else
+               End_Index := Arg'Last;
+            end if;
+
             Set_Parameter (The_Switch,
                            Arg_Num => Current_Argument,
                            First   => Current_Index,
-                           Last    => Current_Index);
-            Current_Index := Current_Index + 1;
+                           Last    => End_Index);
+            Current_Index := End_Index + 1;
             raise Invalid_Switch;
          end if;
 
@@ -552,12 +566,35 @@ package body GNAT.Command_Line is
                   Dummy := Goto_Next_Argument_In_Section;
 
                when others =>
+                  if Concatenate or else End_Index = Arg'Last then
+                     Current_Index := End_Index + 1;
 
-                  Current_Index := End_Index + 1;
+                  else
+                     --  If Concatenate is False and the full argument is not
+                     --  recognized as a switch, this is an invalid switch.
 
+                     Set_Parameter (The_Switch,
+                                    Arg_Num => Current_Argument,
+                                    First   => Current_Index,
+                                    Last    => Arg'Last);
+                     Current_Index := Arg'Last + 1;
+                     raise Invalid_Switch;
+                  end if;
             end case;
-         else
+
+         elsif Concatenate or else End_Index = Arg'Last then
             Current_Index := End_Index + 1;
+
+         else
+            --  If Concatenate is False and the full argument is not
+            --  recognized as a switch, this is an invalid switch.
+
+            Set_Parameter (The_Switch,
+                           Arg_Num => Current_Argument,
+                           First   => Current_Index,
+                           Last    => Arg'Last);
+            Current_Index := Arg'Last + 1;
+            raise Invalid_Switch;
          end if;
 
          return Switches (Index_Switches);

@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Version for IRIX/MIPS)                          --
 --                                                                          --
---          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -183,6 +183,8 @@ package body System.Machine_State_Operations is
    -------------------
 
    procedure Enter_Handler (M : Machine_State; Handler : Handler_Loc) is
+      pragma Warnings (Off, M);
+      pragma Warnings (Off, Handler);
 
       LOADI : constant String (1 .. 2) := 'l' & LSC;
       --  This is "lw" in o32 mode, and "ld" in n32/n64 mode
@@ -282,6 +284,8 @@ package body System.Machine_State_Operations is
      (M    : Machine_State;
       Info : Subprogram_Info_Type)
    is
+      pragma Warnings (Off, Info);
+
       Scp : Sigcontext_Ptr := To_Sigcontext_Ptr (M);
 
       procedure Exc_Unwind (Scp : Sigcontext_Ptr; Fde : Long_Integer := 0);
@@ -406,7 +410,11 @@ package body System.Machine_State_Operations is
 
    procedure Set_Signal_Machine_State
      (M       : Machine_State;
-      Context : System.Address) is
+      Context : System.Address)
+   is
+      pragma Warnings (Off, M);
+      pragma Warnings (Off, Context);
+
    begin
       null;
    end Set_Signal_Machine_State;

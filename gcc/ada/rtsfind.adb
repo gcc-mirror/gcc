@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,32 +24,40 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;     use Atree;
-with Casing;    use Casing;
-with Csets;     use Csets;
-with Debug;     use Debug;
-with Einfo;     use Einfo;
-with Elists;    use Elists;
-with Fname;     use Fname;
-with Fname.UF;  use Fname.UF;
-with Lib;       use Lib;
-with Lib.Load;  use Lib.Load;
-with Namet;     use Namet;
-with Nlists;    use Nlists;
-with Nmake;     use Nmake;
-with Output;    use Output;
-with Opt;       use Opt;
-with Restrict;  use Restrict;
-with Sem;       use Sem;
-with Sem_Ch7;   use Sem_Ch7;
-with Sem_Util;  use Sem_Util;
-with Sinfo;     use Sinfo;
-with Stand;     use Stand;
-with Snames;    use Snames;
-with Tbuild;    use Tbuild;
-with Uname;     use Uname;
+with Atree;    use Atree;
+with Casing;   use Casing;
+with Csets;    use Csets;
+with Debug;    use Debug;
+with Einfo;    use Einfo;
+with Elists;   use Elists;
+with Errout;   use Errout;
+with Fname;    use Fname;
+with Fname.UF; use Fname.UF;
+with Lib;      use Lib;
+with Lib.Load; use Lib.Load;
+with Namet;    use Namet;
+with Nlists;   use Nlists;
+with Nmake;    use Nmake;
+with Output;   use Output;
+with Opt;      use Opt;
+with Sem;      use Sem;
+with Sem_Ch7;  use Sem_Ch7;
+with Sem_Util; use Sem_Util;
+with Sinfo;    use Sinfo;
+with Stand;    use Stand;
+with Snames;   use Snames;
+with Tbuild;   use Tbuild;
+with Uname;    use Uname;
 
 package body Rtsfind is
+
+   RTE_Available_Call : Boolean := False;
+   --  Set True during call to RTE from RTE_Available. Tells RTE to set
+   --  RTE_Is_Available to False rather than generating an error message.
+
+   RTE_Is_Available : Boolean;
+   --  Set True by RTE_Available on entry. When RTE_Available_Call is set
+   --  True, set False if RTE would otherwise generate an error message.
 
    ----------------
    -- Unit table --
@@ -89,38 +97,56 @@ package body Rtsfind is
    --------------------------
 
    --  When a unit is implicitly loaded as a result of a call to RTE, it
-   --  is necessary to create an implicit with to ensure that the object
-   --  is correctly loaded by the binder. Such with statements are only
+   --  is necessary to create an implicit WITH to ensure that the object
+   --  is correctly loaded by the binder. Such WITH statements are only
    --  required when the request is from the extended main unit (if a
-   --  client needs a with, that will be taken care of when the client
-   --  is compiled.
+   --  client needs a WITH, that will be taken care of when the client
+   --  is compiled).
 
-   --  We always attach the with to the main unit. This is not perfectly
+   --  We always attach the WITH to the main unit. This is not perfectly
    --  accurate in terms of elaboration requirements, but it is close
    --  enough, since the units that are accessed using rtsfind do not
    --  have delicate elaboration requirements.
 
    --  The flag Withed in the unit table record is initially set to False.
-   --  It is set True if a with has been generated for the main unit for
+   --  It is set True if a WITH has been generated for the main unit for
    --  the corresponding unit.
 
    -----------------------
    -- Local Subprograms --
    -----------------------
 
-   procedure Load_Fail (S : String; U_Id : RTU_Id; Ent_Name : String := "");
-   --  Internal procedure called if we can't find the entity or unit.
-   --  The parameter is a detailed error message that is to be given.
-   --  S is a reason for failing to compile the file. U_Id is the unit
-   --  id, and Ent_Name, if non-null, is the associated entity name.
+   procedure Entity_Not_Defined (Id : RE_Id);
+   --  Outputs error messages for an entity that is not defined in the
+   --  run-time library (the form of the error message is tailored for
+   --  no run time/configurable run time mode as required).
+
+   procedure Load_Fail (S : String; U_Id : RTU_Id; Id : RE_Id);
+   --  Internal procedure called if we can't sucessfully locate or
+   --  process a run-time unit. The parameters give information about
+   --  the error message to be given. S is a reason for failing to
+   --  compile the file and U_Id is the unit id. RE_Id is the RE_Id
+   --  originally passed to RTE. The message in S is one of the
+   --  following:
+   --
+   --     "not found"
+   --     "had parser errors"
+   --     "had semantic errors"
+   --
+   --  The "not found" case is treated specially in that it is considered
+   --  a normal situation in configurable run-time mode (and the message in
+   --  this case is suppressed unless we are operating in All_Errors_Mode).
 
    function Get_Unit_Name (U_Id : RTU_Id) return Unit_Name_Type;
    --  Retrieves the Unit Name given a unit id represented by its
    --  enumaration value in RTU_Id.
 
-   procedure Load_RTU (U_Id : RTU_Id; Use_Setting : Boolean := False);
+   procedure Load_RTU
+     (U_Id        : RTU_Id;
+      Id          : RE_Id   := RE_Null;
+      Use_Setting : Boolean := False);
    --  Load the unit whose Id is given if not already loaded. The unit is
-   --  loaded, analyzed, and added to the with list, and the entry in
+   --  loaded, analyzed, and added to the WITH list, and the entry in
    --  RT_Unit_Table is updated to reflect the load. The second parameter
    --  indicates the initial setting for the Is_Potentially_Use_Visible
    --  flag of the entity for the loaded unit (if it is indeed loaded).
@@ -128,9 +154,25 @@ package body Rtsfind is
    --  True indicates that this flag must be set to True. It is needed
    --  only in the Text_IO_Kludge procedure, which may materialize an
    --  entity of Text_IO (or Wide_Text_IO) that was previously unknown.
+   --  Id is the RE_Id value of the entity which was originally requested.
+   --  Id is used only for error message detail, and if it is RE_Null, then
+   --  the attempt to output the entity name is ignored.
+
+   procedure Output_Entity_Name (Id : RE_Id; Msg : String);
+   --  Output continuation error message giving qualified name of entity
+   --  corresponding to Id, appending the string given by Msg. This call
+   --  is only effective in All_Errors mode.
 
    function RE_Chars (E : RE_Id) return Name_Id;
    --  Given a RE_Id value returns the Chars of the corresponding entity.
+
+   procedure RTE_Error_Msg (Msg : String);
+   --  Generates a message by calling Error_Msg_N specifying Current_Error_Node
+   --  as the node location using the given Msg text. Special processing in the
+   --  case where RTE_Available_Call is set. In this case, no message is output
+   --  and instead RTE_Is_Available is set to False. Note that this can only be
+   --  used if you are sure that the message comes directly or indirectly from
+   --  a call to the RTE function.
 
    -------------------
    -- Get_Unit_Name --
@@ -152,6 +194,9 @@ package body Rtsfind is
 
          elsif U_Id in Ada_Finalization_Child then
             Name_Buffer (17) := '.';
+
+         elsif U_Id in Ada_Interrupts_Child then
+            Name_Buffer (15) := '.';
 
          elsif U_Id in Ada_Real_Time_Child then
             Name_Buffer (14) := '.';
@@ -310,6 +355,16 @@ package body Rtsfind is
       end if;
    end Is_RTE;
 
+   ------------
+   -- Is_RTU --
+   ------------
+
+   function Is_RTU (Ent : Entity_Id;  U : RTU_Id) return Boolean is
+      E : constant Entity_Id := RT_Unit_Table (U).Entity;
+   begin
+      return Present (E) and then E = Ent;
+   end Is_RTU;
+
    ----------------------------
    -- Is_Text_IO_Kludge_Unit --
    ----------------------------
@@ -344,62 +399,82 @@ package body Rtsfind is
         Nkind (Sel) = N_Identifier
           and then
         Chars (Sel) in Text_IO_Package_Name;
-
    end Is_Text_IO_Kludge_Unit;
+
+   ------------------------
+   -- Entity_Not_Defined --
+   ------------------------
+
+   procedure Entity_Not_Defined (Id : RE_Id) is
+   begin
+      if No_Run_Time_Mode then
+         RTE_Error_Msg ("|construct not allowed in no run time mode");
+      elsif Configurable_Run_Time_Mode then
+         RTE_Error_Msg ("|construct not allowed in this configuration>");
+      else
+         RTE_Error_Msg ("run-time configuration error");
+      end if;
+
+      Output_Entity_Name (Id, "not defined");
+   end Entity_Not_Defined;
 
    ---------------
    -- Load_Fail --
    ---------------
 
-   procedure Load_Fail (S : String; U_Id : RTU_Id; Ent_Name : String := "") is
+   procedure Load_Fail (S : String; U_Id : RTU_Id; Id : RE_Id) is
+      M : String (1 .. 100);
+      P : Natural := 0;
+
    begin
-      Set_Standard_Error;
+      --  Output header message
 
-      Write_Str ("fatal error: run-time library configuration error");
-      Write_Eol;
-
-      if Ent_Name /= "" then
-         Write_Str ("cannot locate """);
-
-         --  Copy name skipping initial RE_ or RO_XX characters
-
-         if Ent_Name (1 .. 2) = "RE" then
-            for J in 4 .. Ent_Name'Length loop
-               Name_Buffer (J - 3) := Ent_Name (J);
-            end loop;
-         else
-            for J in 7 .. Ent_Name'Length loop
-               Name_Buffer (J - 6) := Ent_Name (J);
-            end loop;
-         end if;
-
-         Name_Len := Ent_Name'Length - 3;
-         Set_Casing (Mixed_Case);
-         Write_Str (Name_Buffer (1 .. Name_Len));
-         Write_Str (""" in file """);
-
+      if Configurable_Run_Time_Mode then
+         RTE_Error_Msg ("construct not allowed in configurable run-time mode");
       else
-         Write_Str ("cannot load file """);
+         RTE_Error_Msg ("run-time library configuration error");
       end if;
 
-      Write_Name
-        (Get_File_Name (RT_Unit_Table (U_Id).Uname, Subunit => False));
-      Write_Str (""" (");
-      Write_Str (S);
-      Write_Char (')');
-      Write_Eol;
-      Set_Standard_Output;
-      raise Unrecoverable_Error;
+      --  Output file name and reason string
+
+      if S /= "not found"
+        or else not Configurable_Run_Time_Mode
+      then
+         M (1 .. 6) := "\file ";
+         P := 6;
+
+         Get_Name_String
+           (Get_File_Name (RT_Unit_Table (U_Id).Uname, Subunit => False));
+         M (P + 1 .. P + Name_Len) := Name_Buffer (1 .. Name_Len);
+         P := P + Name_Len;
+
+         M (P + 1) := ' ';
+         P := P + 1;
+
+         M (P + 1 .. P + S'Length) := S;
+         P := P + S'Length;
+
+         RTE_Error_Msg (M (1 .. P));
+
+         --  Output entity name
+
+         Output_Entity_Name (Id, "not available");
+      end if;
+
+      raise RE_Not_Available;
    end Load_Fail;
 
    --------------
    -- Load_RTU --
    --------------
 
-   procedure Load_RTU (U_Id : RTU_Id; Use_Setting : Boolean := False) is
-      Loaded   : Boolean;
+   procedure Load_RTU
+     (U_Id        : RTU_Id;
+      Id          : RE_Id   := RE_Null;
+      Use_Setting : Boolean := False)
+   is
       U        : RT_Unit_Table_Record renames RT_Unit_Table (U_Id);
-      Priv_Par : Elist_Id := New_Elmt_List;
+      Priv_Par : constant Elist_Id := New_Elmt_List;
       Lib_Unit : Node_Id;
 
       procedure Save_Private_Visibility;
@@ -469,7 +544,14 @@ package body Rtsfind is
 
       U.Uname  := Get_Unit_Name (U_Id);
       U.Withed := False;
-      Loaded   := Is_Loaded (U.Uname);
+
+      declare
+         Loaded : Boolean;
+         pragma Warnings (Off, Loaded);
+
+      begin
+         Loaded := Is_Loaded (U.Uname);
+      end;
 
       --  Now do the load call, note that setting Error_Node to Empty is
       --  a signal to Load_Unit that we will regard a failure to find the
@@ -484,22 +566,23 @@ package body Rtsfind is
            Error_Node => Empty);
 
       if U.Unum = No_Unit then
-         Load_Fail ("unit not found", U_Id);
+         Load_Fail ("not found", U_Id, Id);
 
       elsif Fatal_Error (U.Unum) then
-         Load_Fail ("parser errors", U_Id);
+         Load_Fail ("had parser errors", U_Id, Id);
       end if;
 
       --  Make sure that the unit is analyzed
 
       declare
-         Was_Analyzed : Boolean := Analyzed (Cunit (Current_Sem_Unit));
+         Was_Analyzed : constant Boolean :=
+                          Analyzed (Cunit (Current_Sem_Unit));
 
       begin
-         --  Pretend that the current unit is analysed, in case it is
-         --  System or some such. This allows us to put some declarations,
-         --  such as exceptions and packed arrays of Boolean, into System
-         --  even though expanding them requires System...
+         --  Pretend that the current unit is analyzed, in case it is System
+         --  or some such. This allows us to put some declarations, such as
+         --  exceptions and packed arrays of Boolean, into System even though
+         --  expanding them requires System...
 
          --  This is a bit odd but works fine. If the RTS unit does not depend
          --  in any way on the current unit, then it never gets back into the
@@ -509,7 +592,7 @@ package body Rtsfind is
 
          --  If the RTS Unit *does* depend on the current unit, for instance,
          --  when you are compiling System, then you had better have finished
-         --  Analyzing the part of System that is depended on before you try
+         --  analyzing the part of System that is depended on before you try
          --  to load the RTS Unit. This means having the System ordered in an
          --  appropriate manner.
 
@@ -522,7 +605,7 @@ package body Rtsfind is
             Restore_Private_Visibility;
 
             if Fatal_Error (U.Unum) then
-               Load_Fail ("semantic errors", U_Id);
+               Load_Fail ("had semantic errors", U_Id, Id);
             end if;
          end if;
 
@@ -538,6 +621,60 @@ package body Rtsfind is
          Set_Is_Potentially_Use_Visible (U.Entity, True);
       end if;
    end Load_RTU;
+
+   -----------------------
+   -- Output_Entity_Name --
+   ------------------------
+
+   procedure Output_Entity_Name (Id : RE_Id; Msg : String) is
+      M : String (1 .. 2048);
+      P : Natural := 0;
+      --  M (1 .. P) is current message to be output
+
+      RE_Image : constant String := RE_Id'Image (Id);
+
+   begin
+      if Id = RE_Null or else not All_Errors_Mode then
+         return;
+      end if;
+
+      M (1 .. 9) := "\entity """;
+      P := 9;
+
+      --  Add unit name to message, excluding %s or %b at end
+
+      Get_Name_String (Get_Unit_Name (RE_Unit_Table (Id)));
+      Name_Len := Name_Len - 2;
+      Set_Casing (Mixed_Case);
+      M (P + 1 .. P + Name_Len) := Name_Buffer (1 .. Name_Len);
+      P := P + Name_Len;
+
+      --  Add a qualifying period
+
+      M (P + 1) := '.';
+      P := P + 1;
+
+      --  Add entity name and closing quote to message
+
+      Name_Len := RE_Image'Length - 3;
+      Name_Buffer (1 .. Name_Len) := RE_Image (4 .. RE_Image'Length);
+      Set_Casing (Mixed_Case);
+      M (P + 1 .. P + Name_Len) := Name_Buffer (1 .. Name_Len);
+      P := P + Name_Len;
+      M (P + 1) := '"';
+      P := P + 1;
+
+      --  Add message
+
+      M (P + 1) := ' ';
+      P := P + 1;
+      M (P + 1 .. P + Msg'Length) := Msg;
+      P := P + Msg'Length;
+
+      --  Output message at current error node location
+
+      RTE_Error_Msg (M (1 .. P));
+   end Output_Entity_Name;
 
    --------------
    -- RE_Chars --
@@ -579,18 +716,21 @@ package body Rtsfind is
       Pkg_Ent  : Entity_Id;
       Ename    : Name_Id;
 
-      Ravenscar : constant Boolean := Restricted_Profile;
-
       --  The following flag is used to disable front-end inlining when RTE
       --  is invoked. This prevents the analysis of other runtime bodies when
       --  a particular spec is loaded through Rtsfind. This is both efficient,
       --  and it prevents spurious visibility conflicts between use-visible
       --  user entities, and entities in run-time packages.
 
-      --  In No_Run_Time mode, subprograms marked Inlined_Always must be
-      --  inlined, so in the case we retain the Front_End_Inlining mode.
+      --  In configurable run-time mode, subprograms marked Inlined_Always must
+      --  be inlined, so in the case we retain the Front_End_Inlining mode.
 
       Save_Front_End_Inlining : Boolean;
+
+      function Check_CRT (Eid : Entity_Id) return Entity_Id;
+      --  Check entity Eid to ensure that configurable run-time restrictions
+      --  are met. May generate an error message and raise RE_Not_Available
+      --  if the entity E does not exist (i.e. Eid is Empty)
 
       procedure Check_RPC;
       --  Reject programs that make use of distribution features not supported
@@ -604,7 +744,36 @@ package body Rtsfind is
 
       function Make_Unit_Name (N : Node_Id) return Node_Id;
       --  If the unit is a child unit, build fully qualified name for use
-      --  in with_clause.
+      --  in With_Clause.
+
+      ---------------
+      -- Check_CRT --
+      ---------------
+
+      function Check_CRT (Eid : Entity_Id) return Entity_Id is
+      begin
+         if No (Eid) then
+            Entity_Not_Defined (E);
+            raise RE_Not_Available;
+
+         --  Entity is available
+
+         else
+            --  If in No_Run_Time mode and entity is not in one of the
+            --  specially permitted units, raise the exception.
+
+            if No_Run_Time_Mode
+                 and then not OK_No_Run_Time_Unit (U_Id)
+            then
+               Entity_Not_Defined (E);
+               raise RE_Not_Available;
+            end if;
+
+            --  Otherwise entity is accessible
+
+            return Eid;
+         end if;
+      end Check_CRT;
 
       ---------------
       -- Check_RPC --
@@ -649,7 +818,8 @@ package body Rtsfind is
 
             if Unum /= No_Unit then
                declare
-                  Decls : List_Id := Declarations (Unit (Cunit (Unum)));
+                  Decls : constant List_Id :=
+                            Declarations (Unit (Cunit (Unum)));
 
                begin
                   if Present (Decls)
@@ -722,20 +892,6 @@ package body Rtsfind is
    --  Start of processing for RTE
 
    begin
-
-      --  Check violation of no run time and ravenscar mode
-
-      if No_Run_Time
-        and then not OK_To_Use_In_No_Run_Time_Mode (U_Id)
-      then
-         if not Ravenscar
-           or else not OK_To_Use_In_Ravenscar_Mode (U_Id)
-         then
-            Disallow_In_No_Run_Time_Mode (Current_Error_Node);
-            return Empty;
-         end if;
-      end if;
-
       --  Doing a rtsfind in system.ads is special, as we cannot do this
       --  when compiling System itself. So if we are compiling system then
       --  we should already have acquired and processed the declaration
@@ -751,16 +907,16 @@ package body Rtsfind is
         and then Analyzed (Main_Unit_Entity)
         and then not Is_Child_Unit (Main_Unit_Entity)
       then
-         return Find_Local_Entity (E);
+         return Check_CRT (Find_Local_Entity (E));
       end if;
 
       Save_Front_End_Inlining := Front_End_Inlining;
-      Front_End_Inlining := No_Run_Time;
+      Front_End_Inlining := Configurable_Run_Time_Mode;
 
       --  Load unit if unit not previously loaded
 
       if No (RE_Table (E)) then
-         Load_RTU (U_Id);
+         Load_RTU (U_Id, Id => E);
          Lib_Unit := Unit (Cunit (U.Unum));
 
          --  In the subprogram case, we are all done, the entity we want
@@ -772,55 +928,54 @@ package body Rtsfind is
          if Nkind (Lib_Unit) = N_Subprogram_Declaration then
             RE_Table (E) := U.Entity;
 
-         --  Otherwise we must have the package case, and here we have to
-         --  search the package entity chain for the entity we want. The
-         --  entity we want must be present in this chain, or we have a
-         --  misconfigured runtime.
+         --  Otherwise we must have the package case. First check package
+         --  entity itself (e.g. RTE_Name for System.Interrupts.Name)
 
          else
             pragma Assert (Nkind (Lib_Unit) = N_Package_Declaration);
             Ename := RE_Chars (E);
 
-            Pkg_Ent := First_Entity (U.Entity);
+            --  First we search the package entity chain
 
-            while Present (Pkg_Ent) loop
-               if Ename = Chars (Pkg_Ent) then
-                  RE_Table (E) := Pkg_Ent;
-                  Check_RPC;
-                  goto Found;
-               end if;
+               Pkg_Ent := First_Entity (U.Entity);
+               while Present (Pkg_Ent) loop
+                  if Ename = Chars (Pkg_Ent) then
+                     RE_Table (E) := Pkg_Ent;
+                     Check_RPC;
+                     goto Found;
+                  end if;
 
-               Next_Entity (Pkg_Ent);
-            end loop;
+                  Next_Entity (Pkg_Ent);
+               end loop;
 
-            --  If we didn't find the unit we want, something is wrong
-            --  although in no run time mode, we already gave a suitable
-            --  message, and so we simply return Empty, and the caller must
-            --  be prepared to handle this if the RTE call is otherwise
-            --  possible in high integrity mode.
+            --  If we did not find the entity in the package entity chain,
+            --  then check if the package entity itself matches. Note that
+            --  we do this check after searching the entity chain, since
+            --  the rule is that in case of ambiguity, we prefer the entity
+            --  defined within the package, rather than the package itself.
 
-            if No_Run_Time
-              and then not OK_To_Use_In_No_Run_Time_Mode (U_Id)
-            then
-               Front_End_Inlining := Save_Front_End_Inlining;
-               return Empty;
-
-            else
-               Load_Fail ("entity not in package", U_Id,  RE_Id'Image (E));
-               raise Program_Error;
+            if Ename = Chars (U.Entity) then
+               RE_Table (E) := U.Entity;
             end if;
+
+            --  If we didn't find the entity we want, something is wrong.
+            --  We just leave RE_Table (E) set to Empty and the appropriate
+            --  action will be taken by Check_CRT when we exit.
+
          end if;
       end if;
 
-      --  See if we have to generate a with for this entity. We generate
-      --  a with if the current unit is part of the extended main code
-      --  unit, and if we have not already added the with. The with is
-      --  added to the appropriate unit (the current one).
+      --  See if we have to generate a WITH for this entity. We generate
+      --  a WITH if the current unit is part of the extended main code
+      --  unit, and if we have not already added the with. The WITH is
+      --  added to the appropriate unit (the current one). We do not need
+      --  to generate a WITH for an
 
    <<Found>>
       if (not U.Withed)
         and then
           In_Extended_Main_Code_Unit (Cunit_Entity (Current_Sem_Unit))
+        and then not RTE_Available_Call
       then
          U.Withed := True;
 
@@ -846,8 +1001,61 @@ package body Rtsfind is
       end if;
 
       Front_End_Inlining := Save_Front_End_Inlining;
-      return RE_Table (E);
+      return Check_CRT (RE_Table (E));
    end RTE;
+
+   -------------------
+   -- RTE_Available --
+   -------------------
+
+   function RTE_Available (E : RE_Id) return Boolean is
+      Dummy : Entity_Id;
+      pragma Warnings (Off, Dummy);
+
+      Result : Boolean;
+
+      Save_RTE_Available_Call : constant Boolean := RTE_Available_Call;
+      Save_RTE_Is_Available   : constant Boolean := RTE_Is_Available;
+      --  These are saved recursively because the call to load a unit
+      --  caused by an upper level call may perform a recursive call
+      --  to this routine during analysis of the corresponding unit.
+
+   begin
+      RTE_Available_Call := True;
+      RTE_Is_Available := True;
+      Dummy := RTE (E);
+      Result := RTE_Is_Available;
+      RTE_Available_Call := Save_RTE_Available_Call;
+      RTE_Is_Available   := Save_RTE_Is_Available;
+      return Result;
+
+   exception
+      when RE_Not_Available =>
+         RTE_Available_Call := Save_RTE_Available_Call;
+         RTE_Is_Available   := Save_RTE_Is_Available;
+         return False;
+   end RTE_Available;
+
+   -------------------
+   -- RTE_Error_Msg --
+   -------------------
+
+   procedure RTE_Error_Msg (Msg : String) is
+   begin
+      if RTE_Available_Call then
+         RTE_Is_Available := False;
+      else
+         Error_Msg_N (Msg, Current_Error_Node);
+
+         --  Bump count of violations if we are in configurable run-time
+         --  mode and this is not a continuation message.
+
+         if Configurable_Run_Time_Mode and then Msg (1) /= '\' then
+            Configurable_Run_Time_Violations :=
+              Configurable_Run_Time_Violations + 1;
+         end if;
+      end if;
+   end RTE_Error_Msg;
 
    --------------------
    -- Text_IO_Kludge --
@@ -858,7 +1066,7 @@ package body Rtsfind is
 
       type Name_Map_Type is array (Text_IO_Package_Name) of RTU_Id;
 
-      Name_Map : Name_Map_Type := Name_Map_Type'(
+      Name_Map : constant Name_Map_Type := Name_Map_Type'(
         Name_Decimal_IO     => Ada_Text_IO_Decimal_IO,
         Name_Enumeration_IO => Ada_Text_IO_Enumeration_IO,
         Name_Fixed_IO       => Ada_Text_IO_Fixed_IO,
@@ -866,7 +1074,7 @@ package body Rtsfind is
         Name_Integer_IO     => Ada_Text_IO_Integer_IO,
         Name_Modular_IO     => Ada_Text_IO_Modular_IO);
 
-      Wide_Name_Map : Name_Map_Type := Name_Map_Type'(
+      Wide_Name_Map : constant Name_Map_Type := Name_Map_Type'(
         Name_Decimal_IO     => Ada_Wide_Text_IO_Decimal_IO,
         Name_Enumeration_IO => Ada_Wide_Text_IO_Enumeration_IO,
         Name_Fixed_IO       => Ada_Wide_Text_IO_Fixed_IO,
@@ -913,12 +1121,16 @@ package body Rtsfind is
                --  we must indicate that they are visible.
 
                if Name_Buffer (1 .. 12) = "a-textio.ads" then
-                  Load_RTU (Name_Map (Chrs), In_Use (Cunit_Entity (U)));
+                  Load_RTU
+                    (Name_Map (Chrs),
+                     Use_Setting => In_Use (Cunit_Entity (U)));
                   Set_Is_Visible_Child_Unit
                     (RT_Unit_Table (Name_Map (Chrs)).Entity);
 
                elsif Name_Buffer (1 .. 12) = "a-witeio.ads" then
-                  Load_RTU (Wide_Name_Map (Chrs), In_Use (Cunit_Entity (U)));
+                  Load_RTU
+                    (Wide_Name_Map (Chrs),
+                     Use_Setting => In_Use (Cunit_Entity (U)));
                   Set_Is_Visible_Child_Unit
                     (RT_Unit_Table (Wide_Name_Map (Chrs)).Entity);
                end if;

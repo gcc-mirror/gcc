@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,7 +66,8 @@ package Hostparm is
    --  2**15 - 1, a limit imposed by the assumption that column numbers
    --  can be stored in 16 bits (see Types.Column_Number). A value of
    --  200 is the minimum value required (RM 2.2(15)), but we use 255
-   --  for most GNAT targets since this is DEC Ada compatible.
+   --  for most GNAT targets since this is DEC Ada compatible. The value
+   --  set here can be overridden by the explicit use of -gnatyM.
 
    Max_Name_Length : constant := 1024;
    --  Maximum length of unit name (including all dots, and " (spec)") and

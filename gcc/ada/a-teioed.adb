@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,7 +112,6 @@ package body Ada.Text_IO.Editing is
    exception
       when others =>
          raise Picture_Error;
-
    end Expand;
 
    -------------------
@@ -137,6 +136,7 @@ package body Ada.Text_IO.Editing is
       Answer : String (1 .. Pic.Picture.Length) := Pic.Picture.Expanded;
       Last          : Integer;
       Currency_Pos  : Integer := Pic.Start_Currency;
+      In_Currency   : Boolean := False;
 
       Dollar : Boolean := False;
       --  Overridden immediately if necessary.
@@ -298,7 +298,7 @@ package body Ada.Text_IO.Editing is
       if Attrs.End_Of_Int - Attrs.Start_Of_Int + 1 >
                                                 Pic.Max_Leading_Digits
       then
-         raise Layout_Error;
+         raise Ada.Text_IO.Layout_Error;
       end if;
 
       if Pic.Radix_Position = Invalid_Position then
@@ -433,6 +433,7 @@ package body Ada.Text_IO.Editing is
       else
          if Pic.Floater = '#' then
             Currency_Pos := Currency_Symbol'Length;
+            In_Currency := True;
          end if;
 
          for J in reverse Pic.Start_Float .. Position loop
@@ -441,7 +442,15 @@ package body Ada.Text_IO.Editing is
                when '*' =>
                   Answer (J) := Fill_Character;
 
-               when 'Z' | 'b' | '/' | '0' =>
+               when 'b' | '/' =>
+                  if In_Currency and then Currency_Pos > 0 then
+                     Answer (J)   := Currency_Symbol (Currency_Pos);
+                     Currency_Pos := Currency_Pos - 1;
+                  else
+                     Answer (J) := ' ';
+                  end if;
+
+               when 'Z' | '0' =>
                   Answer (J) := ' ';
 
                when '9' =>
@@ -489,7 +498,7 @@ package body Ada.Text_IO.Editing is
          end loop;
 
          if Pic.Floater = '#' and then Currency_Pos /= 0 then
-            raise Layout_Error;
+            raise Ada.Text_IO.Layout_Error;
          end if;
       end if;
 
@@ -497,7 +506,7 @@ package body Ada.Text_IO.Editing is
 
       if Sign_Position = Invalid_Position then
          if Attrs.Negative then
-            raise Layout_Error;
+            raise Ada.Text_IO.Layout_Error;
          end if;
 
       else
@@ -604,7 +613,7 @@ package body Ada.Text_IO.Editing is
 
       else
          if Pic.Floater = '#' and then Currency_Pos /= 0 then
-            raise Layout_Error;
+            raise Ada.Text_IO.Layout_Error;
          end if;
 
          --  No trailing digits, but now J may need to stick in a currency
@@ -624,29 +633,37 @@ package body Ada.Text_IO.Editing is
             Currency_Pos := 1;
          end if;
 
-         --  Note: There are some weird cases J can imagine with 'b' or '#'
-         --  in currency strings where the following code will cause
-         --  glitches. The trick is to tell when the character in the
-         --  answer should be checked, and when to look at the original
-         --  string. Some other time. RIE 11/26/96 ???
-
          case Answer (J) is
             when '*' =>
                Answer (J) := Fill_Character;
 
             when 'b' =>
-               Answer (J) := ' ';
+               if In_Currency then
+                  Answer (J) := Currency_Symbol (Currency_Pos);
+                  Currency_Pos := Currency_Pos + 1;
+
+                  if Currency_Pos > Currency_Symbol'Length then
+                     In_Currency := False;
+                  end if;
+               end if;
 
             when '#' =>
                if Currency_Pos > Currency_Symbol'Length then
                   Answer (J) := ' ';
 
                else
+                  In_Currency := True;
                   Answer (J)   := Currency_Symbol (Currency_Pos);
                   Currency_Pos := Currency_Pos + 1;
+
+                  if Currency_Pos > Currency_Symbol'Length then
+                     In_Currency := False;
+                  end if;
                end if;
 
             when '_' =>
+               Answer (J) := Currency_Symbol (Currency_Pos);
+               Currency_Pos := Currency_Pos + 1;
 
                case Pic.Floater is
 
@@ -692,7 +709,7 @@ package body Ada.Text_IO.Editing is
             Last := Last - 1;
          end if;
 
-         return String' (1 .. Last => ' ');
+         return String'(1 .. Last => ' ');
 
       elsif Zero and Pic.Star_Fill then
          Last := Answer'Last;
@@ -708,9 +725,9 @@ package body Ada.Text_IO.Editing is
 
             elsif Dollar then
                if Pic.Radix_Position > Pic.Start_Currency then
-                  return String' (1 .. Pic.Radix_Position - 1 => '*') &
+                  return String'(1 .. Pic.Radix_Position - 1 => '*') &
                      Radix_Point &
-                     String' (Pic.Radix_Position + 1 .. Last => '*');
+                     String'(Pic.Radix_Position + 1 .. Last => '*');
 
                else
                   return
@@ -724,13 +741,13 @@ package body Ada.Text_IO.Editing is
                end if;
 
             else
-               return String' (1 .. Pic.Radix_Position - 1 => '*') &
+               return String'(1 .. Pic.Radix_Position - 1 => '*') &
                   Radix_Point &
-                  String' (Pic.Radix_Position + 1 .. Last => '*');
+                  String'(Pic.Radix_Position + 1 .. Last => '*');
             end if;
          end if;
 
-         return String' (1 .. Last => '*');
+         return String'(1 .. Last => '*');
       end if;
 
       --  This was once a simple return statement, now there are nine
@@ -739,7 +756,7 @@ package body Ada.Text_IO.Editing is
 
       --  Processing the radix and sign expansion separately
       --  would require lots of copying--the string and some of its
-      --  indices--without really simplifying the logic.  The cases are:
+      --  indicies--without really simplifying the logic.  The cases are:
 
       --  1) Expand $, replace '.' with Radix_Point
       --  2) No currency expansion, replace '.' with Radix_Point
@@ -823,7 +840,6 @@ package body Ada.Text_IO.Editing is
 
          return Answer;
       end if;
-
    end Format_Number;
 
    -------------------------
@@ -904,7 +920,6 @@ package body Ada.Text_IO.Editing is
       --  No significant (intger) digits needs a null range.
 
       return Answer;
-
    end Parse_Number_String;
 
    ----------------
@@ -930,11 +945,13 @@ package body Ada.Text_IO.Editing is
    ------------------
 
    procedure Precalculate  (Pic : in out Format_Record) is
+      Debug : constant Boolean := False;
+      --  Set True to generate debug output
 
       Computed_BWZ : Boolean := True;
-      Debug        : Boolean := False;
 
       type Legality is  (Okay, Reject);
+
       State : Legality := Reject;
       --  Start in reject, which will reject null strings.
 
@@ -984,6 +1001,7 @@ package body Ada.Text_IO.Editing is
       procedure Number;
       procedure Optional_RHS_Sign;
       procedure Picture_String;
+      procedure Set_Debug;
 
       ------------
       -- At_End --
@@ -991,8 +1009,24 @@ package body Ada.Text_IO.Editing is
 
       function At_End return Boolean is
       begin
+         Debug_Start ("At_End");
          return Index > Pic.Picture.Length;
       end At_End;
+
+      --------------
+      -- Set_Debug--
+      --------------
+
+      --  Needed to have a procedure to pass to pragma Debug
+
+      procedure Set_Debug is
+      begin
+         --  Uncomment this line and make Debug a variable to enable debug
+
+         --  Debug := True;
+
+         null;
+      end Set_Debug;
 
       -------------------
       -- Debug_Integer --
@@ -1032,7 +1066,16 @@ package body Ada.Text_IO.Editing is
       procedure Floating_Bracket is
       begin
          Debug_Start ("Floating_Bracket");
-         Pic.Floater := '<';
+
+         --  Two different floats not allowed.
+
+         if Pic.Floater /= '!' and then Pic.Floater /= '<' then
+            raise Picture_Error;
+
+         else
+            Pic.Floater := '<';
+         end if;
+
          Pic.End_Float := Index;
          Pic.Max_Leading_Digits := Pic.Max_Leading_Digits + 1;
 
@@ -1081,7 +1124,6 @@ package body Ada.Text_IO.Editing is
             end case;
          end loop;
       end Floating_Bracket;
-
 
       --------------------
       -- Floating_Minus --
@@ -1288,9 +1330,18 @@ package body Ada.Text_IO.Editing is
       begin
          Debug_Start ("Leading_Dollar");
 
-         --  Treat as a floating dollar, and unwind otherwise.
+         --  Treat as a floating dollar, and unwind otherwise
 
-         Pic.Floater := '$';
+         if Pic.Floater /= '!' and then Pic.Floater /= '$' then
+
+            --  Two floats not allowed
+
+            raise Picture_Error;
+
+         else
+            Pic.Floater := '$';
+         end if;
+
          Pic.Start_Currency := Index;
          Pic.End_Currency := Index;
          Pic.Start_Float := Index;
@@ -1330,8 +1381,10 @@ package body Ada.Text_IO.Editing is
                   if State = Okay then
                      raise Picture_Error;
                   else
-                     --  Will overwrite Floater and Start_Float
+                     --  Overwrite Floater and Start_Float
 
+                     Pic.Floater := 'Z';
+                     Pic.Start_Float := Index;
                      Zero_Suppression;
                   end if;
 
@@ -1339,8 +1392,9 @@ package body Ada.Text_IO.Editing is
                   if State = Okay then
                      raise Picture_Error;
                   else
-                     --  Will overwrite Floater and Start_Float
-
+                     --  Overwrite Floater and Start_Float
+                     Pic.Floater := '*';
+                     Pic.Start_Float := Index;
                      Star_Suppression;
                   end if;
 
@@ -1413,7 +1467,15 @@ package body Ada.Text_IO.Editing is
          --  Treat as a floating currency. If it isn't, this will be
          --  overwritten later.
 
-         Pic.Floater := '#';
+         if Pic.Floater /= '!' and then Pic.Floater /= '#' then
+
+            --  Two floats not allowed
+
+            raise Picture_Error;
+
+         else
+            Pic.Floater := '#';
+         end if;
 
          Pic.Start_Currency := Index;
          Pic.End_Currency := Index;
@@ -1453,8 +1515,10 @@ package body Ada.Text_IO.Editing is
                   else
                      Pic.Max_Leading_Digits := 0;
 
-                     --  Will overwrite Floater and Start_Float
+                     --  Overwrite Floater and Start_Float
 
+                     Pic.Floater := 'Z';
+                     Pic.Start_Float := Index;
                      Zero_Suppression;
                   end if;
 
@@ -1464,8 +1528,9 @@ package body Ada.Text_IO.Editing is
                   else
                      Pic.Max_Leading_Digits := 0;
 
-                     --  Will overwrite Floater and Start_Float
-
+                     --  Overwrite Floater and Start_Float
+                     Pic.Floater := '*';
+                     Pic.Start_Float := Index;
                      Star_Suppression;
                   end if;
 
@@ -2284,6 +2349,11 @@ package body Ada.Text_IO.Editing is
 
                   Set_State (Okay);
 
+                  --  Overwrite Floater and Start_Float
+
+                  Pic.Floater := 'Z';
+                  Pic.Start_Float := Index;
+
                   Zero_Suppression;
                   Trailing_Currency;
                   Optional_RHS_Sign;
@@ -2406,7 +2476,17 @@ package body Ada.Text_IO.Editing is
       procedure Star_Suppression is
       begin
          Debug_Start ("Star_Suppression");
-         Pic.Floater := '*';
+
+         if Pic.Floater /= '!' and then Pic.Floater /= '*' then
+
+            --  Two floats not allowed
+
+            raise Picture_Error;
+
+         else
+            Pic.Floater := '*';
+         end if;
+
          Pic.Start_Float := Index;
          Pic.End_Float := Index;
          Pic.Max_Leading_Digits := Pic.Max_Leading_Digits + 1;
@@ -2450,6 +2530,12 @@ package body Ada.Text_IO.Editing is
                   return;
 
                when '#' | '$' =>
+                  if Pic.Max_Currency_Digits > 0 then
+                     raise Picture_Error;
+                  end if;
+
+                  --  Cannot have leading and trailing currency
+
                   Trailing_Currency;
                   Set_State (Okay);
                   return;
@@ -2587,6 +2673,8 @@ package body Ada.Text_IO.Editing is
    --  Start of processing for Precalculate
 
    begin
+      pragma Debug (Set_Debug);
+
       Picture_String;
 
       if Debug then
@@ -2621,7 +2709,6 @@ package body Ada.Text_IO.Editing is
          --  To deal with special cases like null strings.
 
       raise Picture_Error;
-
    end Precalculate;
 
    ----------------
@@ -2650,7 +2737,6 @@ package body Ada.Text_IO.Editing is
    exception
       when others =>
          raise Picture_Error;
-
    end To_Picture;
 
    -----------
@@ -2675,7 +2761,7 @@ package body Ada.Text_IO.Editing is
          Format_Rec.Original_BWZ := Blank_When_Zero;
          Precalculate (Format_Rec);
 
-         --  False only if Blank_When_0 is True but the pic string has a '*'
+         --  False only if Blank_When_Zero is True but the pic string has a '*'
 
          return not Blank_When_Zero or
            Strings_Fixed.Index (Expanded_Pic, "*") = 0;
@@ -2683,7 +2769,6 @@ package body Ada.Text_IO.Editing is
 
    exception
       when others => return False;
-
    end Valid;
 
    --------------------
@@ -2790,7 +2875,7 @@ package body Ada.Text_IO.Editing is
 
       begin
          if Result'Length > To'Length then
-            raise Text_IO.Layout_Error;
+            raise Ada.Text_IO.Layout_Error;
          else
             Strings_Fixed.Move (Source => Result, Target => To,
                                 Justify => Strings.Right);
@@ -2816,10 +2901,9 @@ package body Ada.Text_IO.Editing is
          end;
 
       exception
-         when Layout_Error => return False;
+         when Ada.Text_IO.Layout_Error => return False;
 
       end Valid;
-
    end Decimal_Output;
 
 end Ada.Text_IO.Editing;

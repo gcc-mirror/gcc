@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---     Copyright (C) 1992,1993,1994,1995 Free Software Foundation, Inc.     --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,9 +46,10 @@ package Ada.Streams.Stream_IO.C_Streams is
 
    procedure Open
      (File     : in out File_Type;
-      Mode     : in File_Mode;
-      C_Stream : in ICS.FILEs;
-      Form     : in String := "");
+      Mode     : File_Mode;
+      C_Stream : ICS.FILEs;
+      Form     : String := "";
+      Name     : String := "");
    --  Create new file from existing stream
 
 end Ada.Streams.Stream_IO.C_Streams;

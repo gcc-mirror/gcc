@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--          Copyright (C) 2001-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -39,7 +40,7 @@ package body System.CRC32 is
    --  from various possible byte values. Doing a table lookup is quicker
    --  than processing the byte bit by bit.
 
-   Table : array (CRC32 range 0 .. 255) of CRC32 :=
+   Table : constant array (CRC32 range 0 .. 255) of CRC32 :=
      (16#0000_0000#, 16#7707_3096#, 16#EE0E_612C#, 16#9909_51BA#,
       16#076D_C419#, 16#706A_F48F#, 16#E963_A535#, 16#9E64_95A3#,
       16#0EDB_8832#, 16#79DC_B8A4#, 16#E0D5_E91E#, 16#97D2_D988#,

@@ -6,8 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                                                                          *
- *          Copyright (C) 1992-2002 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -116,11 +115,13 @@ typedef Nat Source_File_Index;
 typedef Int Logical_Line_Number;
 
 #define Debug_Source_Name sinput__debug_source_name
+#define Full_Debug_Name sinput__full_debug_name
 #define Reference_Name sinput__reference_name
 #define Get_Source_File_Index sinput__get_source_file_index
 #define Get_Logical_Line_Number sinput__get_logical_line_number
 
 extern File_Name_Type Debug_Source_Name	PARAMS ((Source_File_Index));
+extern File_Name_Type Full_Debug_Name	PARAMS ((Source_File_Index));
 extern File_Name_Type Reference_Name	PARAMS ((Source_File_Index));
 extern Source_File_Index Get_Source_File_Index PARAMS ((Source_Ptr));
 extern Logical_Line_Number Get_Logical_Line_Number PARAMS ((Source_Ptr));

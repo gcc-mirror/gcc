@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1993-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1993-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -34,8 +34,6 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
-with System.Storage_Elements;
 
 package Interfaces.C.Strings is
 pragma Preelaborate (Strings);
@@ -92,12 +90,7 @@ pragma Preelaborate (Strings);
    Update_Error : exception;
 
 private
-   type chars_ptr is new System.Storage_Elements.Integer_Address;
+   type chars_ptr is access all Character;
 
-   Null_Ptr : constant chars_ptr := 0;
-   --  A little cleaner might be To_Integer (System.Null_Address) but this is
-   --  non-preelaborable, and in fact we jolly well know this value is zero.
-   --  Indeed, given the C interface nature, it is probably more correct to
-   --  write zero here (even if Null_Address were non-zero).
-
+   Null_Ptr : constant chars_ptr := null;
 end Interfaces.C.Strings;

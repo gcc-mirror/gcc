@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001, Ada Core Technologies, Inc.             --
+--              Copyright (C) 2001-2003, Ada Core Technologies, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -21,35 +21,51 @@
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 --  This is the default version which does not support libraries.
 --  All subprograms are dummies, because they are never called,
---  except Libraries_Are_Supported which returns False.
+--  except Support_For_Libraries which returns None.
 
 package body MLib.Tgt is
 
-   pragma Warnings (Off); -- stop warnings on unreferenced formals
+   ---------------------
+   -- Archive_Builder --
+   ---------------------
+
+   function Archive_Builder return String is
+   begin
+      return "ar";
+   end Archive_Builder;
+
+   -----------------------------
+   -- Archive_Builder_Options --
+   -----------------------------
+
+   function Archive_Builder_Options return String_List_Access is
+   begin
+      return new String_List'(1 => new String'("cr"));
+   end Archive_Builder_Options;
 
    -----------------
    -- Archive_Ext --
    -----------------
 
-   function Archive_Ext return  String is
-   begin
-      return  "";
-   end Archive_Ext;
-
-   -----------------
-   -- Base_Option --
-   -----------------
-
-   function Base_Option return String is
+   function Archive_Ext return String is
    begin
       return "";
-   end Base_Option;
+   end Archive_Ext;
+
+   ---------------------
+   -- Archive_Indexer --
+   ---------------------
+
+   function Archive_Indexer return String is
+   begin
+      return "ranlib";
+   end Archive_Indexer;
 
    ---------------------------
    -- Build_Dynamic_Library --
@@ -60,27 +76,31 @@ package body MLib.Tgt is
       Foreign      : Argument_List;
       Afiles       : Argument_List;
       Options      : Argument_List;
+      Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
+      Driver_Name  : Name_Id := No_Name;
       Lib_Address  : String  := "";
       Lib_Version  : String  := "";
-      Relocatable  : Boolean := False)
+      Relocatable  : Boolean := False;
+      Auto_Init    : Boolean := False)
    is
+      pragma Unreferenced (Ofiles);
+      pragma Unreferenced (Foreign);
+      pragma Unreferenced (Afiles);
+      pragma Unreferenced (Options);
+      pragma Unreferenced (Interfaces);
+      pragma Unreferenced (Lib_Filename);
+      pragma Unreferenced (Lib_Dir);
+      pragma Unreferenced (Driver_Name);
+      pragma Unreferenced (Lib_Address);
+      pragma Unreferenced (Lib_Version);
+      pragma Unreferenced (Relocatable);
+      pragma Unreferenced (Auto_Init);
+
    begin
       null;
    end Build_Dynamic_Library;
-
-   --------------------
-   -- Copy_ALI_Files --
-   --------------------
-
-   procedure Copy_ALI_Files
-     (From : Name_Id;
-      To   : Name_Id)
-   is
-   begin
-      null;
-   end Copy_ALI_Files;
 
    -------------------------
    -- Default_DLL_Address --
@@ -97,7 +117,7 @@ package body MLib.Tgt is
 
    function DLL_Ext return String is
    begin
-      return  "";
+      return "";
    end DLL_Ext;
 
    --------------------
@@ -106,7 +126,7 @@ package body MLib.Tgt is
 
    function Dynamic_Option return String is
    begin
-      return  "";
+      return "";
    end Dynamic_Option;
 
    -------------------
@@ -114,6 +134,8 @@ package body MLib.Tgt is
    -------------------
 
    function Is_Object_Ext (Ext : String) return Boolean is
+      pragma Unreferenced (Ext);
+
    begin
       return False;
    end Is_Object_Ext;
@@ -123,6 +145,8 @@ package body MLib.Tgt is
    --------------
 
    function Is_C_Ext (Ext : String) return Boolean is
+      pragma Unreferenced (Ext);
+
    begin
       return False;
    end Is_C_Ext;
@@ -132,6 +156,8 @@ package body MLib.Tgt is
    --------------------
 
    function Is_Archive_Ext (Ext : String) return Boolean is
+      pragma Unreferenced (Ext);
+
    begin
       return False;
    end Is_Archive_Ext;
@@ -145,23 +171,33 @@ package body MLib.Tgt is
       return "libgnat.a";
    end Libgnat;
 
-   -----------------------------
-   -- Libraries_Are_Supported --
-   -----------------------------
+   ------------------------
+   -- Library_Exists_For --
+   ------------------------
 
-   function Libraries_Are_Supported return Boolean is
+   function Library_Exists_For (Project : Project_Id) return Boolean is
+      pragma Unreferenced (Project);
+
    begin
       return False;
-   end Libraries_Are_Supported;
+   end Library_Exists_For;
+
+   ---------------------------
+   -- Library_File_Name_For --
+   ---------------------------
+
+   function Library_File_Name_For (Project : Project_Id) return Name_Id is
+      pragma Unreferenced (Project);
+
+   begin
+      return No_Name;
+   end Library_File_Name_For;
 
    --------------------------------
    -- Linker_Library_Path_Option --
    --------------------------------
 
-   function Linker_Library_Path_Option
-     (Directory : String)
-      return      String_Access
-   is
+   function Linker_Library_Path_Option return String_Access is
    begin
       return null;
    end Linker_Library_Path_Option;
@@ -172,7 +208,7 @@ package body MLib.Tgt is
 
    function Object_Ext return String is
    begin
-      return  "";
+      return "";
    end Object_Ext;
 
    ----------------
@@ -181,7 +217,25 @@ package body MLib.Tgt is
 
    function PIC_Option return String is
    begin
-      return  "";
+      return "";
    end PIC_Option;
+
+   -----------------------------------------------
+   -- Standalone_Library_Auto_Init_Is_Supported --
+   -----------------------------------------------
+
+   function Standalone_Library_Auto_Init_Is_Supported return Boolean is
+   begin
+      return False;
+   end Standalone_Library_Auto_Init_Is_Supported;
+
+   ---------------------------
+   -- Support_For_Libraries --
+   ---------------------------
+
+   function Support_For_Libraries return Library_Support is
+   begin
+      return None;
+   end Support_For_Libraries;
 
 end MLib.Tgt;

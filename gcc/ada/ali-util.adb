@@ -24,16 +24,31 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Debug;   use Debug;
 with Binderr; use Binderr;
+with Lib;     use Lib;
 with Namet;   use Namet;
 with Opt;     use Opt;
+with Output;  use Output;
 with Osint;   use Osint;
 
 with System.CRC32;
 with System.Memory;
-with System.Address_To_Access_Conversions;
 
 package body ALI.Util is
+
+   type Header_Num is range 0 .. 1_000;
+
+   function Hash (F : File_Name_Type) return Header_Num;
+   --  Function used to compute hash of ALI file name
+
+   package Interfaces is new Simple_HTable (
+     Header_Num => Header_Num,
+     Element    => Boolean,
+     No_Element => False,
+     Key        => File_Name_Type,
+     Hash       => Hash,
+     Equal      => "=");
 
    -----------------------
    -- Local Subprograms --
@@ -87,20 +102,6 @@ package body ALI.Util is
       use ASCII;
       --  Make control characters visible
 
-      procedure Free_Source;
-      --  Free source file buffer
-
-      procedure Free_Source is
-
-         package SB is
-            new System.Address_To_Access_Conversions (Big_Source_Buffer);
-
-      begin
-         System.Memory.Free (SB.To_Address (SB.Object_Pointer (Src)));
-      end Free_Source;
-
-   --  Start of processing for Get_File_Checksum
-
    begin
       Read_Source_File (Fname, 0, Hi, Src);
 
@@ -127,7 +128,7 @@ package body ALI.Util is
 
             when EOF =>
                if Ptr = Hi then
-                  Free_Source;
+                  System.Memory.Free (Src.all'Address);
                   return Csum;
                else
                   Ptr := Ptr + 1;
@@ -259,10 +260,18 @@ package body ALI.Util is
 
    exception
       when Bad =>
-         Free_Source;
+         System.Memory.Free (Src.all'Address);
          return Checksum_Error;
-
    end Get_File_Checksum;
+
+   ----------
+   -- Hash --
+   ----------
+
+   function Hash (F : File_Name_Type) return Header_Num is
+   begin
+      return Header_Num (Int (F) rem Header_Num'Range_Length);
+   end Hash;
 
    ---------------------------
    -- Initialize_ALI_Source --
@@ -281,6 +290,7 @@ package body ALI.Util is
       end loop;
 
       Source.Init;
+      Interfaces.Reset;
    end Initialize_ALI_Source;
 
    -------------------------
@@ -302,25 +312,40 @@ package body ALI.Util is
       Idread : ALI_Id;
 
    begin
-      for I in ALIs.Table (Id).First_Unit .. ALIs.Table (Id).Last_Unit loop
-         for J in Units.Table (I).First_With .. Units.Table (I).Last_With loop
+      --  Process all dependent units
 
-            Afile := Withs.Table (J).Afile;
+      for U in ALIs.Table (Id).First_Unit .. ALIs.Table (Id).Last_Unit loop
+         for
+           W in Units.Table (U).First_With .. Units.Table (U).Last_With
+         loop
+            Afile := Withs.Table (W).Afile;
 
             --  Only process if not a generic (Afile /= No_File) and if
             --  file has not been processed already.
 
-            if Afile /= No_File and then Get_Name_Table_Info (Afile) = 0 then
-
+            if Afile /= No_File
+              and then Get_Name_Table_Info (Afile) = 0
+            then
                Text := Read_Library_Info (Afile);
 
+               --  Return with an error if source cannot be found and if this
+               --  is not a library generic (now we can, but does not have to
+               --  compile library generics)
+
                if Text = null then
-                  Error_Msg_Name_1 := Afile;
-                  Error_Msg_Name_2 := Withs.Table (J).Sfile;
-                  Error_Msg ("% not found, % must be compiled");
-                  Set_Name_Table_Info (Afile, Int (No_Unit_Id));
-                  return;
+                  if Generic_Separately_Compiled (Withs.Table (W).Sfile) then
+                     Error_Msg_Name_1 := Afile;
+                     Error_Msg_Name_2 := Withs.Table (W).Sfile;
+                     Error_Msg ("% not found, % must be compiled");
+                     Set_Name_Table_Info (Afile, Int (No_Unit_Id));
+                     return;
+
+                  else
+                     goto Skip_Library_Generics;
+                  end if;
                end if;
+
+               --  Enter in ALIs table
 
                Idread :=
                  Scan_ALI
@@ -332,23 +357,46 @@ package body ALI.Util is
                Free (Text);
 
                if ALIs.Table (Idread).Compile_Errors then
-                  Error_Msg_Name_1 := Withs.Table (J).Sfile;
+                  Error_Msg_Name_1 := Withs.Table (W).Sfile;
                   Error_Msg ("% had errors, must be fixed, and recompiled");
                   Set_Name_Table_Info (Afile, Int (No_Unit_Id));
 
                elsif ALIs.Table (Idread).No_Object then
-                  Error_Msg_Name_1 := Withs.Table (J).Sfile;
+                  Error_Msg_Name_1 := Withs.Table (W).Sfile;
                   Error_Msg ("% must be recompiled");
                   Set_Name_Table_Info (Afile, Int (No_Unit_Id));
                end if;
 
-               --  Recurse to get new dependents
+               --  If the Unit is an Interface to a Stand-Alone Library,
+               --  set the Interface flag in the Withs table, so that its
+               --  dependant are not considered for elaboration order.
 
-               Read_ALI (Idread);
+               if ALIs.Table (Idread).Interface then
+                  Withs.Table (W).Interface := True;
+                  Interface_Library_Unit := True;
+
+                  --  Set the entry in the Interfaces hash table, so that other
+                  --  units that import this unit will set the flag in their
+                  --  entry in the Withs table.
+
+                  Interfaces.Set (Afile, True);
+
+               else
+                  --  Otherwise, recurse to get new dependents
+
+                  Read_ALI (Idread);
+               end if;
+
+               <<Skip_Library_Generics>> null;
+
+            --  If the ALI file has already been processed and is an interface,
+            --  set the flag in the entry of the Withs table.
+
+            elsif Interface_Library_Unit and then Interfaces.Get (Afile) then
+               Withs.Table (W).Interface := True;
             end if;
          end loop;
       end loop;
-
    end Read_ALI;
 
    ----------------------
@@ -366,118 +414,120 @@ package body ALI.Util is
       loop
          F := Sdep.Table (D).Sfile;
 
-         --  If this is the first time we are seeing this source file,
-         --  then make a new entry in the source table.
+         if F /= No_Name then
 
-         if Get_Name_Table_Info (F) = 0 then
-            Source.Increment_Last;
-            S := Source.Last;
-            Set_Name_Table_Info (F, Int (S));
-            Source.Table (S).Sfile := F;
-            Source.Table (S).All_Timestamps_Match := True;
+            --  If this is the first time we are seeing this source file,
+            --  then make a new entry in the source table.
 
-            --  Initialize checksum fields
+            if Get_Name_Table_Info (F) = 0 then
+               Source.Increment_Last;
+               S := Source.Last;
+               Set_Name_Table_Info (F, Int (S));
+               Source.Table (S).Sfile := F;
+               Source.Table (S).All_Timestamps_Match := True;
 
-            Source.Table (S).Checksum := Sdep.Table (D).Checksum;
-            Source.Table (S).All_Checksums_Match := True;
+               --  Initialize checksum fields
 
-            --  In check source files mode, try to get time stamp from file
+               Source.Table (S).Checksum := Sdep.Table (D).Checksum;
+               Source.Table (S).All_Checksums_Match := True;
 
-            if Opt.Check_Source_Files then
-               Stamp := Source_File_Stamp (F);
+               --  In check source files mode, try to get time stamp from file
 
-               --  If we got the stamp, then set the stamp in the source
-               --  table entry and mark it as set from the source so that
-               --  it does not get subsequently changed.
-
-               if Stamp (Stamp'First) /= ' ' then
-                  Source.Table (S).Stamp := Stamp;
-                  Source.Table (S).Source_Found := True;
-
-               --  If we could not find the file, then the stamp is set
-               --  from the dependency table entry (to be possibly reset
-               --  if we find a later stamp in subsequent processing)
-
-               else
-                  Source.Table (S).Stamp := Sdep.Table (D).Stamp;
-                  Source.Table (S).Source_Found := False;
-
-                  --  In All_Sources mode, flag error of file not found
-
-                  if Opt.All_Sources then
-                     Error_Msg_Name_1 := F;
-                     Error_Msg ("cannot locate %");
-                  end if;
-               end if;
-
-            --  First time for this source file, but Check_Source_Files
-            --  is off, so simply initialize the stamp from the Sdep entry
-
-            else
-               Source.Table (S).Source_Found := False;
-               Source.Table (S).Stamp := Sdep.Table (D).Stamp;
-            end if;
-
-         --  Here if this is not the first time for this source file,
-         --  so that the source table entry is already constructed.
-
-         else
-            S := Source_Id (Get_Name_Table_Info (F));
-
-            --  Update checksum flag
-
-            if not Checksums_Match
-                     (Sdep.Table (D).Checksum, Source.Table (S).Checksum)
-            then
-               Source.Table (S).All_Checksums_Match := False;
-            end if;
-
-            --  Check for time stamp mismatch
-
-            if Sdep.Table (D).Stamp /= Source.Table (S).Stamp then
-               Source.Table (S).All_Timestamps_Match := False;
-
-               --  When we have a time stamp mismatch, we go look for the
-               --  source file even if Check_Source_Files is false, since
-               --  if we find it, then we can use it to resolve which of the
-               --  two timestamps in the ALI files is likely to be correct.
-
-               if not Check_Source_Files then
+               if Opt.Check_Source_Files then
                   Stamp := Source_File_Stamp (F);
+
+                  --  If we got the stamp, then set the stamp in the source
+                  --  table entry and mark it as set from the source so that
+                  --  it does not get subsequently changed.
 
                   if Stamp (Stamp'First) /= ' ' then
                      Source.Table (S).Stamp := Stamp;
                      Source.Table (S).Source_Found := True;
+
+                  --  If we could not find the file, then the stamp is set
+                  --  from the dependency table entry (to be possibly reset
+                  --  if we find a later stamp in subsequent processing)
+
+                  else
+                     Source.Table (S).Stamp := Sdep.Table (D).Stamp;
+                     Source.Table (S).Source_Found := False;
+
+                     --  In All_Sources mode, flag error of file not found
+
+                     if Opt.All_Sources then
+                        Error_Msg_Name_1 := F;
+                        Error_Msg ("cannot locate %");
+                     end if;
                   end if;
-               end if;
 
-               --  If the stamp in the source table entry was set from the
-               --  source file, then we do not change it (the stamp in the
-               --  source file is always taken as the "right" one).
-
-               if Source.Table (S).Source_Found then
-                  null;
-
-               --  Otherwise, we have no source file available, so we guess
-               --  that the later of the two timestamps is the right one.
-               --  Note that this guess only affects which error messages
-               --  are issued later on, not correct functionality.
+               --  First time for this source file, but Check_Source_Files
+               --  is off, so simply initialize the stamp from the Sdep entry
 
                else
-                  if Sdep.Table (D).Stamp > Source.Table (S).Stamp then
-                     Source.Table (S).Stamp := Sdep.Table (D).Stamp;
+                  Source.Table (S).Source_Found := False;
+                  Source.Table (S).Stamp := Sdep.Table (D).Stamp;
+               end if;
+
+            --  Here if this is not the first time for this source file,
+            --  so that the source table entry is already constructed.
+
+            else
+               S := Source_Id (Get_Name_Table_Info (F));
+
+               --  Update checksum flag
+
+               if not Checksums_Match
+                        (Sdep.Table (D).Checksum, Source.Table (S).Checksum)
+               then
+                  Source.Table (S).All_Checksums_Match := False;
+               end if;
+
+               --  Check for time stamp mismatch
+
+               if Sdep.Table (D).Stamp /= Source.Table (S).Stamp then
+                  Source.Table (S).All_Timestamps_Match := False;
+
+                  --  When we have a time stamp mismatch, we go look for the
+                  --  source file even if Check_Source_Files is false, since
+                  --  if we find it, then we can use it to resolve which of the
+                  --  two timestamps in the ALI files is likely to be correct.
+
+                  if not Check_Source_Files then
+                     Stamp := Source_File_Stamp (F);
+
+                     if Stamp (Stamp'First) /= ' ' then
+                        Source.Table (S).Stamp := Stamp;
+                        Source.Table (S).Source_Found := True;
+                     end if;
+                  end if;
+
+                  --  If the stamp in the source table entry was set from the
+                  --  source file, then we do not change it (the stamp in the
+                  --  source file is always taken as the "right" one).
+
+                  if Source.Table (S).Source_Found then
+                     null;
+
+                  --  Otherwise, we have no source file available, so we guess
+                  --  that the later of the two timestamps is the right one.
+                  --  Note that this guess only affects which error messages
+                  --  are issued later on, not correct functionality.
+
+                  else
+                     if Sdep.Table (D).Stamp > Source.Table (S).Stamp then
+                        Source.Table (S).Stamp := Sdep.Table (D).Stamp;
+                     end if;
                   end if;
                end if;
             end if;
+
+            --  Set the checksum value in the source table
+
+            S := Source_Id (Get_Name_Table_Info (F));
+            Source.Table (S).Checksum := Sdep.Table (D).Checksum;
          end if;
 
-         --  Set the checksum value in the source table
-
-         S := Source_Id (Get_Name_Table_Info (F));
-         Source.Table (S).Checksum := Sdep.Table (D).Checksum;
-
       end loop Sdep_Loop;
-
    end Set_Source_Table;
 
    ----------------------
@@ -489,14 +539,17 @@ package body ALI.Util is
       for A in ALIs.First .. ALIs.Last loop
          Set_Source_Table (A);
       end loop;
-
    end Set_Source_Table;
 
    -------------------------
    -- Time_Stamp_Mismatch --
    -------------------------
 
-   function Time_Stamp_Mismatch (A : ALI_Id) return File_Name_Type is
+   function Time_Stamp_Mismatch
+     (A         : ALI_Id;
+      Read_Only : Boolean := False)
+      return      File_Name_Type
+   is
       Src : Source_Id;
       --  Source file Id for the current Sdep entry
 
@@ -507,7 +560,6 @@ package body ALI.Util is
          if Opt.Minimal_Recompilation
            and then Sdep.Table (D).Stamp /= Source.Table (Src).Stamp
          then
-
             --  If minimal recompilation is in action, replace the stamp
             --  of the source file in the table if checksums match.
 
@@ -523,15 +575,33 @@ package body ALI.Util is
 
          end if;
 
-         if not Source.Table (Src).Source_Found
-           or else Sdep.Table (D).Stamp /= Source.Table (Src).Stamp
-         then
-            return Source.Table (Src).Sfile;
+         if (not Read_Only) or else Source.Table (Src).Source_Found then
+            if not Source.Table (Src).Source_Found
+              or else Sdep.Table (D).Stamp /= Source.Table (Src).Stamp
+            then
+               --  If -t debug flag set, output time stamp found/expected
+
+               if Source.Table (Src).Source_Found and Debug_Flag_T then
+                  Write_Str ("Source: """);
+                  Get_Name_String (Sdep.Table (D).Sfile);
+                  Write_Str (Name_Buffer (1 .. Name_Len));
+                  Write_Line ("""");
+
+                  Write_Str ("   time stamp expected: ");
+                  Write_Line (String (Sdep.Table (D).Stamp));
+
+                  Write_Str ("      time stamp found: ");
+                  Write_Line (String (Source.Table (Src).Stamp));
+               end if;
+
+               --  Return the source file
+
+               return Source.Table (Src).Sfile;
+            end if;
          end if;
       end loop;
 
       return No_File;
-
    end Time_Stamp_Mismatch;
 
 end ALI.Util;

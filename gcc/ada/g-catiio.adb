@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1999-2001 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1999-2003 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -31,7 +31,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -126,7 +126,8 @@ package body GNAT.Calendar.Time_IO is
       return   String
    is
       use Ada.Characters.Handling;
-      Local : String := To_Upper (Str (1)) & To_Lower (Str (2 .. Str'Last));
+      Local : constant String :=
+                To_Upper (Str (1)) & To_Lower (Str (2 .. Str'Last));
 
    begin
       if Length = 0 then
@@ -157,6 +158,10 @@ package body GNAT.Calendar.Time_IO is
       return    String
    is
       function Pad_Char return String;
+
+      --------------
+      -- Pad_Char --
+      --------------
 
       function Pad_Char return String is
       begin
@@ -309,6 +314,39 @@ package body GNAT.Calendar.Time_IO is
                when 'S' =>
                   Result := Result & Image (Second, Padding, Length => 2);
 
+               --  Milliseconds (3 digits)
+               --  Microseconds (6 digits)
+               --  Nanoseconds  (9 digits)
+
+               when 'i' | 'e' | 'o' =>
+                  declare
+                     Sub_Sec : constant Long_Integer :=
+                                 Long_Integer (Sub_Second * 1_000_000_000);
+
+                     Img1  : constant String := Sub_Sec'Img;
+                     Img2  : constant String :=
+                               "00000000" & Img1 (Img1'First + 1 .. Img1'Last);
+                     Nanos : constant String :=
+                               Img2 (Img2'Last - 8 .. Img2'Last);
+
+                  begin
+                     case Picture (P + 1) is
+                        when 'i' =>
+                           Result := Result &
+                             Nanos (Nanos'First .. Nanos'First + 2);
+
+                        when 'e' =>
+                           Result := Result &
+                             Nanos (Nanos'First .. Nanos'First + 5);
+
+                        when 'o' =>
+                           Result := Result & Nanos;
+
+                        when others =>
+                           null;
+                     end case;
+                  end;
+
                --  Time, 24-hour (hh:mm:ss)
 
                when 'T' =>
@@ -364,9 +402,9 @@ package body GNAT.Calendar.Time_IO is
 
                when 'D' | 'x' =>
                   Result := Result &
-                    Image (Month, Padding, 2) & '/' &
-                    Image (Day, Padding, 2) & '/' &
-                    Image (Year, Padding, 2);
+                              Image (Month, Padding, 2) & '/' &
+                              Image (Day, Padding, 2) & '/' &
+                              Image (Year, Padding, 2);
 
                --  Day of year (001..366)
 
@@ -420,7 +458,6 @@ package body GNAT.Calendar.Time_IO is
                when 'y' =>
                   declare
                      Y : constant Natural := Year - (Year / 100) * 100;
-
                   begin
                      Result := Result & Image (Y, Padding, 2);
                   end;

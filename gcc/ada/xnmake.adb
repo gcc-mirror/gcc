@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -90,9 +90,6 @@ procedure XNmake is
    OutS, OutB : File_Type;
 
    wsp   : Pattern := Span (' ' & ASCII.HT);
-
-   --  Note: in following patterns, we break up the word revision to
-   --  avoid RCS getting enthusiastic about updating the reference!
 
    Body_Only : Pattern := BreakX (' ') * X & Span (' ') & "--  body only";
    Spec_Only : Pattern := BreakX (' ') * X & Span (' ') & "--  spec only";
@@ -194,8 +191,6 @@ procedure XNmake is
 --  Start of processing for XNmake
 
 begin
-   --  Capture our revision (following line updated by RCS)
-
    Lineno := 0;
    NWidth := 28;
    Anchored_Mode := True;

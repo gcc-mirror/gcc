@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,7 +33,8 @@
 
 with System.Memory;
 with System.Storage_Elements;
-with System.Address_To_Access_Conversions;
+
+with Unchecked_Conversion;
 
 package body System.Pool_Local is
 
@@ -44,16 +45,18 @@ package body System.Pool_Local is
    Pointers_Size : constant SSE.Storage_Offset := 2 * Pointer_Size;
 
    type Acc_Address is access all Address;
-   package Addr is new Address_To_Access_Conversions (Address);
+   function To_Acc_Address is new Unchecked_Conversion (Address, Acc_Address);
 
    -----------------------
    -- Local Subprograms --
    -----------------------
 
    function Next (A : Address) return Acc_Address;
+   pragma Inline (Next);
    --  Given an address of a block, return an access to the next block
 
    function Prev (A : Address) return Acc_Address;
+   pragma Inline (Prev);
    --  Given an address of a block, return an access to the previous block
 
    --------------
@@ -144,7 +147,7 @@ package body System.Pool_Local is
 
    function Next (A : Address) return Acc_Address is
    begin
-      return Acc_Address (Addr.To_Pointer (A));
+      return To_Acc_Address (A);
    end Next;
 
    ----------
@@ -153,7 +156,7 @@ package body System.Pool_Local is
 
    function Prev (A : Address) return Acc_Address is
    begin
-      return Acc_Address (Addr.To_Pointer (A + Pointer_Size));
+      return To_Acc_Address (A + Pointer_Size);
    end Prev;
 
 end System.Pool_Local;

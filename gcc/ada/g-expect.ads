@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2000-2002 Ada Core Technologies, Inc.            --
+--           Copyright (C) 2000-2003 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,26 +26,27 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 --  Currently this package is implemented on all native GNAT ports except
 --  for VMS. It is not yet implemented for any of the cross-ports (e.g. it
 --  is not available for VxWorks or LynxOS).
---
+
 --  Usage
 --  =====
---
+
 --  This package provides a set of subprograms similar to what is available
 --  with the standard Tcl Expect tool.
 
 --  It allows you to easily spawn and communicate with an external process.
 --  You can send commands or inputs to the process, and compare the output
 --  with some expected regular expression.
---
+
 --  Usage example:
---
+
 --      Non_Blocking_Spawn
 --         (Fd, "ftp",
 --           (1 => new String' ("machine@domaine")));
@@ -59,13 +60,13 @@
 --         when others => null;
 --      end case;
 --      Close (Fd);
---
+
 --  You can also combine multiple regular expressions together, and get the
 --  specific string matching a parenthesis pair by doing something like. If you
 --  expect either "lang=optional ada" or "lang=ada" from the external process,
 --  you can group the two together, which is more efficient, and simply get the
 --  name of the language by doing:
---
+
 --      declare
 --         Matched : Regexp_Array (0 .. 2);
 --      begin
@@ -73,11 +74,11 @@
 --         Put_Line ("Seen: " &
 --                   Expect_Out (Fd) (Matched (2).First .. Matched (2).Last));
 --      end;
---
+
 --  Alternatively, you might choose to use a lower-level interface to the
 --  processes, where you can give your own input and output filters every
 --  time characters are read from or written to the process.
---
+
 --      procedure My_Filter
 --        (Descriptor : Process_Descriptor'Class;
 --         Str        : String;
@@ -86,36 +87,35 @@
 --      begin
 --         Put_Line (Str);
 --      end;
---
+
 --      Non_Blocking_Spawn
 --        (Fd, "tail",
 --         (new String' ("-f"), new String' ("a_file")));
 --      Add_Filter (Fd, My_Filter'Access, Output);
 --      Expect (Fd, Result, "", 0);  --  wait forever
---
+
 --  The above example should probably be run in a separate task, since it is
 --  blocking on the call to Expect.
---
+
 --  Both examples can be combined, for instance to systematically print the
 --  output seen by expect, even though you still want to let Expect do the
 --  filtering. You can use the Trace_Filter subprogram for such a filter.
---
+
 --  If you want to get the output of a simple command, and ignore any previous
 --  existing output, it is recommended to do something like:
---
+
 --      Expect (Fd, Result, ".*", Timeout => 0);
 --      -- Empty the buffer, by matching everything (after checking
 --      -- if there was any input).
---
+
 --      Send (Fd, "command");
 --      Expect (Fd, Result, ".."); -- match only on the output of command
---
+
 --  Task Safety
 --  ===========
---
---  This package is not task-safe. However, you can easily make is task safe
---  by encapsulating the type Process_Descriptor in a protected record.
---  There should not be concurrent calls to Expect.
+
+--  This package is not task-safe: there should be not concurrent calls to
+--  the functions defined in this package.
 
 with System;
 with GNAT.OS_Lib;
@@ -219,7 +219,7 @@ package GNAT.Expect is
    function Get_Pid
      (Descriptor : Process_Descriptor)
       return       Process_Id;
-   --  Return the process id associated with a given process descriptor.
+   --  Return the process id assocated with a given process descriptor.
 
    --------------------
    -- Adding filters --

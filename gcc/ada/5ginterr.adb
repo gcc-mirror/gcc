@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---              Copyright (C) 1998-2001 Free Software Fundation             --
+--              Copyright (C) 1998-2002 Free Software Fundation             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -244,7 +244,11 @@ package body System.Interrupts is
    -------------------------------------
 
    function Has_Interrupt_Or_Attach_Handler
-     (Object : access Dynamic_Interrupt_Protection) return Boolean is
+     (Object : access Dynamic_Interrupt_Protection)
+      return   Boolean
+   is
+      pragma Unreferenced (Object);
+
    begin
       return True;
    end Has_Interrupt_Or_Attach_Handler;
@@ -278,6 +282,8 @@ package body System.Interrupts is
      (Object : access Static_Interrupt_Protection)
       return   Boolean
    is
+      pragma Unreferenced (Object);
+
    begin
       return True;
    end Has_Interrupt_Or_Attach_Handler;
@@ -288,7 +294,7 @@ package body System.Interrupts is
 
    procedure Install_Handlers
      (Object       : access Static_Interrupt_Protection;
-      New_Handlers : in New_Handler_Array)
+      New_Handlers : New_Handler_Array)
    is
    begin
       for N in New_Handlers'Range loop

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -361,7 +361,7 @@ package Lib is
    --      This is a Boolean flag, which is set True to indicate that this
    --      entry is for a semantically dependent unit. This flag is nearly
    --      always set True, the only exception is for a unit that is loaded
-   --      by an Rtsfind request in No_Run_Time mode, where the entity that
+   --      by an Rtsfind request in High_Integrity_Mode, where the entity that
    --      is obtained by Rtsfind.RTE is for an inlined subprogram or other
    --      entity for which a dependency need not be created.
 
@@ -472,6 +472,12 @@ package Lib is
    --  If the main unit is itself a subunit, then the extended main unit
    --  includes its parent unit, and the parent unit spec if it is separate.
 
+   function In_Extended_Main_Code_Unit
+     (Loc :  Source_Ptr)
+      return Boolean;
+   --  Same function as above, but argument is a source pointer rather
+   --  than a node.
+
    function In_Extended_Main_Source_Unit
      (N    : Node_Or_Entity_Id)
       return Boolean;
@@ -483,6 +489,12 @@ package Lib is
    --  included for the purposes of this call. If the main unit is itself
    --  a subunit, then the extended main unit includes its parent unit,
    --  and the parent unit spec if it is separate.
+
+   function In_Extended_Main_Source_Unit
+     (Loc :  Source_Ptr)
+      return Boolean;
+   --  Same function as above, but argument is a source pointer rather
+   --  than a node.
 
    function Earlier_In_Extended_Unit (S1, S2 : Source_Ptr) return Boolean;
    --  Given two Sloc values  for which In_Same_Extended_Unit is true,
@@ -558,6 +570,8 @@ package Lib is
    --  restricts the list to exclude any predefined files.
 
    function Generic_Separately_Compiled (E : Entity_Id) return Boolean;
+   --  This is the old version of tbe documentation of this function:
+   --
    --  Most generic units must be separately compiled. Since we always use
    --  macro substitution for generics, the resulting object file is a dummy
    --  one with no code, but the ali file has the normal form, and we need
@@ -575,6 +589,23 @@ package Lib is
    --  compiler itself. The only such generics are predefined ones. This
    --  function returns True if the given generic unit entity E is for a
    --  generic unit that should be separately compiled, and false otherwise.
+   --
+   --  Now GNAT can compile any generic unit including predefifined ones, but
+   --  because of the backward compatibility (to keep the ability to use old
+   --  compiler versions to build GNAT) compiling library generics is an
+   --  option. That is, now GNAT compiles a library generic as an ordinary
+   --  unit, but it also can build an exeutable in case if its library
+   --  contains some (or all) predefined generics non compiled. See 9628-002
+   --  for the description of changes to be done to get rid of a special
+   --  processing of library generic.
+   --
+   --  So now this function returns TRUE if a generic MUST be separately
+   --  compiled with the current approach.
+
+   function Generic_Separately_Compiled
+     (Sfile : File_Name_Type)
+      return  Boolean;
+   --  Same as the previous function, but works directly on a unit file name.
 
 private
    pragma Inline (Cunit);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -117,8 +117,9 @@ package body Sem_Intr is
             null;
 
          elsif not Is_Static_Expression (Arg1) then
-            Error_Msg_NE
-              ("call to & requires static string argument", N, Nam);
+            Error_Msg_FE
+              ("call to & requires static string argument!", N, Nam);
+            Why_Not_Static (Arg1);
 
          elsif String_Length (Strval (Expr_Value_S (Arg1))) = 0 then
             Error_Msg_NE
@@ -264,7 +265,6 @@ package body Sem_Intr is
       if not Is_Numeric_Type (T1) then
          Errint ("intrinsic operator can only apply to numeric types", E, N);
       end if;
-
    end Check_Intrinsic_Operator;
 
    --------------------------------
@@ -290,6 +290,7 @@ package body Sem_Intr is
 
       if Name_Buffer (1) /= 'O'
         and then Nam /= Name_Asm
+        and then Nam /= Name_To_Address
         and then Nam not in First_Intrinsic_Name .. Last_Intrinsic_Name
       then
          Errint ("unrecognized intrinsic subprogram", E, N);

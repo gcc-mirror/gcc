@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,8 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -200,8 +200,8 @@ package body System.Task_Primitives.Operations is
    --  ??? Check the comment above
 
    procedure Stack_Guard (T : ST.Task_ID; On : Boolean) is
-      pragma Warnings (Off, T);
-      pragma Warnings (Off, On);
+      pragma Unreferenced (T);
+      pragma Unreferenced (On);
 
    begin
       null;
@@ -253,7 +253,7 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level) is
-      pragma Warnings (Off, Level);
+      pragma Unreferenced (Level);
 
    begin
       if DosCreateMutexSem
@@ -289,7 +289,7 @@ package body System.Task_Primitives.Operations is
    procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
       Self_ID      : constant Task_ID := Thread_Local_Data_Ptr.Self_ID;
       Old_Priority : constant Any_Priority :=
-        Self_ID.Common.LL.Current_Priority;
+                       Self_ID.Common.LL.Current_Priority;
 
    begin
       if L.Priority < Old_Priority then
@@ -316,7 +316,8 @@ package body System.Task_Primitives.Operations is
    end Write_Lock;
 
    procedure Write_Lock
-     (L : access RTS_Lock; Global_Lock : Boolean := False)
+     (L           : access RTS_Lock;
+      Global_Lock : Boolean := False)
    is
       Self_ID      : Task_ID;
       Old_Priority : Any_Priority;
@@ -347,6 +348,7 @@ package body System.Task_Primitives.Operations is
    procedure Write_Lock (T : Task_ID) is
    begin
       if not Single_Lock then
+
          --  Request the lock and then update the lock owner data
 
          Must_Not_Fail
@@ -417,6 +419,7 @@ package body System.Task_Primitives.Operations is
          Must_Not_Fail (DosReleaseMutexSem (L.Mutex));
 
          --  Reset priority after unlocking to avoid priority inversion
+
          Thread_Local_Data_Ptr.Lock_Prio_Level :=
            Thread_Local_Data_Ptr.Lock_Prio_Level - 1;
 
@@ -429,6 +432,7 @@ package body System.Task_Primitives.Operations is
    procedure Unlock (T : Task_ID) is
    begin
       if not Single_Lock then
+
          --  Check the owner data
 
          pragma Assert (Suppress_Owner_Check
@@ -449,7 +453,7 @@ package body System.Task_Primitives.Operations is
      (Self_ID : Task_ID;
       Reason  : System.Tasking.Task_States)
    is
-      pragma Warnings (Off, Reason);
+      pragma Unreferenced (Reason);
 
       Count : aliased ULONG; -- Used to store dummy result
 
@@ -502,7 +506,7 @@ package body System.Task_Primitives.Operations is
       Timedout : out Boolean;
       Yielded  : out Boolean)
    is
-      pragma Warnings (Off, Reason);
+      pragma Unreferenced (Reason);
 
       Check_Time : constant Duration := OSP.Monotonic_Clock;
       Rel_Time   : Duration;
@@ -676,7 +680,8 @@ package body System.Task_Primitives.Operations is
    ------------
 
    procedure Wakeup (T : Task_ID; Reason : System.Tasking.Task_States) is
-      pragma Warnings (Off, Reason);
+      pragma Unreferenced (Reason);
+
    begin
       Sem_Must_Not_Fail (DosPostEventSem (T.Common.LL.CV));
    end Wakeup;
@@ -742,7 +747,7 @@ package body System.Task_Primitives.Operations is
       Prio                : System.Any_Priority;
       Loss_Of_Inheritance : Boolean := False)
    is
-      pragma Warnings (Off, Loss_Of_Inheritance);
+      pragma Unreferenced (Loss_Of_Inheritance);
 
    begin
       T.Common.Current_Priority := Prio;
@@ -799,9 +804,27 @@ package body System.Task_Primitives.Operations is
       return new Ada_Task_Control_Block (Entry_Num);
    end New_ATCB;
 
-   ----------------------
-   --  Initialize_TCB  --
-   ----------------------
+   -------------------
+   -- Is_Valid_Task --
+   -------------------
+
+   function Is_Valid_Task return Boolean is
+   begin
+      return False;
+   end Is_Valid_Task;
+
+   -----------------------------
+   -- Register_Foreign_Thread --
+   -----------------------------
+
+   function Register_Foreign_Thread return Task_ID is
+   begin
+      return null;
+   end Register_Foreign_Thread;
+
+   --------------------
+   -- Initialize_TCB --
+   --------------------
 
    procedure Initialize_TCB (Self_ID : Task_ID; Succeeded : out Boolean) is
    begin
@@ -879,7 +902,7 @@ package body System.Task_Primitives.Operations is
       --  recommend a minimum size of 32 kB.  (The original was 4 kB)
       --  Systems that use many tasks (say > 30) and require much
       --  memory may run out of virtual address space, since OS/2
-      --  has a per-process limit of 512 MB, of which max. 300 MB is
+      --  has a per-proces limit of 512 MB, of which max. 300 MB is
       --  usable in practise.
 
       if Stack_Size = Unspecified_Size then
@@ -973,11 +996,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Exit_Task is
    begin
-      DosExit (EXIT_THREAD, 0);
-
-      --  Do not finalize TCB here.
-      --  GNARL layer is responsible for that.
-
+      Thread_Local_Data_Ptr := null;
    end Exit_Task;
 
    ----------------
@@ -985,7 +1004,7 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Abort_Task (T : Task_ID) is
-      pragma Warnings (Off, T);
+      pragma Unreferenced (T);
 
    begin
       null;
@@ -999,8 +1018,7 @@ package body System.Task_Primitives.Operations is
    -- Check_Exit --
    ----------------
 
-   --  Dummy versions.  The only currently working versions is for solaris
-   --  (native).
+   --  Dummy version
 
    function Check_Exit (Self_ID : ST.Task_ID) return Boolean is
    begin
@@ -1013,6 +1031,7 @@ package body System.Task_Primitives.Operations is
 
    function Check_No_Locks (Self_ID : ST.Task_ID) return Boolean is
       TLD : constant Access_Thread_Local_Data := Thread_Local_Data_Ptr;
+
    begin
       return Self_ID = TLD.Self_ID
         and then TLD.Lock_Prio_Level = 0;
@@ -1051,7 +1070,9 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
    begin
       if Thread_Id (T.Common.LL.Thread) /= Thread_Self then
          return DosSuspendThread (T.Common.LL.Thread) = NO_ERROR;
@@ -1066,7 +1087,9 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
    begin
       if Thread_Id (T.Common.LL.Thread) /= Thread_Self then
          return DosResumeThread (T.Common.LL.Thread) = NO_ERROR;

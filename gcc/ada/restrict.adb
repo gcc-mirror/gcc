@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,18 +27,26 @@
 with Atree;    use Atree;
 with Casing;   use Casing;
 with Errout;   use Errout;
-with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Lib;      use Lib;
 with Namet;    use Namet;
-with Opt;      use Opt;
-with Stand;    use Stand;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
+with Sinput;   use Sinput;
 with Uname;    use Uname;
 
 package body Restrict is
+
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
+
+   procedure Restriction_Msg (Msg : String; R : String; N : Node_Id);
+   --  Output error message at node N with given text, replacing the
+   --  '%' in the message with the name of the restriction given as R,
+   --  cased according to the current identifier casing. We do not use
+   --  the normal insertion mechanism, since this requires an entry
+   --  in the Names table, and this table will be locked if we are
+   --  generating a message from gigi.
 
    function Suppress_Restriction_Message (N : Node_Id) return Boolean;
    --  N is the node for a possible restriction violation message, but
@@ -51,10 +59,14 @@ package body Restrict is
 
    function Abort_Allowed return Boolean is
    begin
-      return
-        Restrictions (No_Abort_Statements) = False
-          or else
-        Restriction_Parameters (Max_Asynchronous_Select_Nesting) /= 0;
+      if Restrictions (No_Abort_Statements)
+        and then Restriction_Parameters (Max_Asynchronous_Select_Nesting) = 0
+      then
+         return False;
+
+      else
+         return True;
+      end if;
    end Abort_Allowed;
 
    ------------------------------------
@@ -71,10 +83,19 @@ package body Restrict is
         and then not Suppress_Restriction_Message (N)
       then
          Namet.Unlock;
-         Check_Restriction (No_Elaboration_Code, N);
+         Check_Restriction (Restriction_Id'(No_Elaboration_Code), N);
          Namet.Lock;
       end if;
    end Check_Elaboration_Code_Allowed;
+
+   ----------------------------------
+   -- Check_No_Implicit_Heap_Alloc --
+   ----------------------------------
+
+   procedure Check_No_Implicit_Heap_Alloc (N : Node_Id) is
+   begin
+      Check_Restriction (Restriction_Id'(No_Implicit_Heap_Allocations), N);
+   end Check_No_Implicit_Heap_Alloc;
 
    ---------------------------
    -- Check_Restricted_Unit --
@@ -150,55 +171,42 @@ package body Restrict is
    --  Case of simple identifier (no parameter)
 
    procedure Check_Restriction (R : Restriction_Id; N : Node_Id) is
+      Rimage : constant String := Restriction_Id'Image (R);
+
    begin
       Violations (R) := True;
 
-      if Restrictions (R)
+      if (Restrictions (R) or Restriction_Warnings (R))
         and then not Suppress_Restriction_Message (N)
       then
-         declare
-            S : constant String := Restriction_Id'Image (R);
+         --  Output proper message. If this is just a case of
+         --  a restriction warning, then we output a warning msg
 
-         begin
-            Name_Buffer (1 .. S'Last) := S;
-            Name_Len := S'Length;
-            Set_Casing (All_Lower_Case);
-            Error_Msg_Name_1 := Name_Enter;
+         if not Restrictions (R) then
+            Restriction_Msg
+              ("?violation of restriction %", Rimage, N);
+
+         --  If this is a real restriction violation, then generate
+         --  a non-serious message with appropriate location.
+
+         else
             Error_Msg_Sloc := Restrictions_Loc (R);
-            Error_Msg_N ("|violation of restriction %#", N);
-         end;
-      end if;
-   end Check_Restriction;
 
-   --  Case where a parameter is present (but no count)
+            --  If we have a location for the Restrictions pragma, output it
 
-   procedure Check_Restriction
-     (R : Restriction_Parameter_Id;
-      N : Node_Id)
-   is
-   begin
-      if Restriction_Parameters (R) = Uint_0
-        and then not Suppress_Restriction_Message (N)
-      then
-         declare
-            Loc : constant Source_Ptr := Sloc (N);
-            S   : constant String :=
-                    Restriction_Parameter_Id'Image (R);
+            if Error_Msg_Sloc > No_Location
+              or else Error_Msg_Sloc = System_Location
+            then
+               Restriction_Msg
+                 ("|violation of restriction %#", Rimage, N);
 
-         begin
-            Error_Msg_NE
-              ("& will be raised at run time?!", N, Standard_Storage_Error);
-            Name_Buffer (1 .. S'Last) := S;
-            Name_Len := S'Length;
-            Set_Casing (All_Lower_Case);
-            Error_Msg_Name_1 := Name_Enter;
-            Error_Msg_Sloc := Restriction_Parameters_Loc (R);
-            Error_Msg_N ("violation of restriction %?#!", N);
+            --  Otherwise restriction was implicit (e.g. set by another pragma)
 
-            Insert_Action (N,
-              Make_Raise_Storage_Error (Loc,
-                Reason => SE_Restriction_Violation));
-         end;
+            else
+               Restriction_Msg
+                 ("|violation of implicit restriction %", Rimage, N);
+            end if;
+         end if;
       end if;
    end Check_Restriction;
 
@@ -216,7 +224,29 @@ package body Restrict is
       then
          declare
             S : constant String := Restriction_Parameter_Id'Image (R);
+         begin
+            Name_Buffer (1 .. S'Last) := S;
+            Name_Len := S'Length;
+            Set_Casing (All_Lower_Case);
+            Error_Msg_Name_1 := Name_Enter;
+            Error_Msg_Sloc := Restriction_Parameters_Loc (R);
+            Error_Msg_N ("|maximum value exceeded for restriction %#", N);
+         end;
+      end if;
+   end Check_Restriction;
 
+   --  Case where a parameter is present, no count given
+
+   procedure Check_Restriction
+     (R : Restriction_Parameter_Id;
+      N : Node_Id)
+   is
+   begin
+      if Restriction_Parameters (R) = Uint_0
+        and then not Suppress_Restriction_Message (N)
+      then
+         declare
+            S : constant String := Restriction_Parameter_Id'Image (R);
          begin
             Name_Buffer (1 .. S'Last) := S;
             Name_Len := S'Length;
@@ -258,23 +288,6 @@ package body Restrict is
 
       return R;
    end Compilation_Unit_Restrictions_Save;
-
-   ----------------------------------
-   -- Disallow_In_No_Run_Time_Mode --
-   ----------------------------------
-
-   procedure Disallow_In_No_Run_Time_Mode (Enode : Node_Id) is
-   begin
-      if No_Run_Time then
-         if High_Integrity_Mode_On_Target then
-            Error_Msg_N
-              ("|this construct not allowed in high integrity mode", Enode);
-         else
-            Error_Msg_N
-              ("|this construct not allowed in No_Run_Time mode", Enode);
-         end if;
-      end if;
-   end Disallow_In_No_Run_Time_Mode;
 
    ------------------------
    -- Get_Restriction_Id --
@@ -369,33 +382,73 @@ package body Restrict is
         and then Restriction_Parameters (Max_Select_Alternatives)         =  0;
    end Restricted_Profile;
 
-   --------------------------
-   -- Set_No_Run_Time_Mode --
-   --------------------------
+   ---------------------
+   -- Restriction_Msg --
+   ---------------------
 
-   procedure Set_No_Run_Time_Mode is
+   procedure Restriction_Msg (Msg : String; R : String; N : Node_Id) is
+      B : String (1 .. Msg'Length + 2 * R'Length + 1);
+      P : Natural := 1;
+
    begin
-      No_Run_Time := True;
-      Restrictions (No_Exception_Handlers) := True;
-      Restrictions (No_Implicit_Dynamic_Code) := True;
-      Opt.Global_Discard_Names := True;
-   end Set_No_Run_Time_Mode;
+      Name_Buffer (1 .. R'Last) := R;
+      Name_Len := R'Length;
+      Set_Casing (Identifier_Casing (Get_Source_File_Index (Sloc (N))));
+
+      P := 0;
+      for J in Msg'Range loop
+         if Msg (J) = '%' then
+            P := P + 1;
+            B (P) := '`';
+
+            --  Put characters of image in message, quoting upper case letters
+
+            for J in 1 .. Name_Len loop
+               if Name_Buffer (J) in 'A' .. 'Z' then
+                  P := P + 1;
+                  B (P) := ''';
+               end if;
+
+               P := P + 1;
+               B (P) := Name_Buffer (J);
+            end loop;
+
+            P := P + 1;
+            B (P) := '`';
+
+         else
+            P := P + 1;
+            B (P) := Msg (J);
+         end if;
+      end loop;
+
+      Error_Msg_N (B (1 .. P), N);
+   end Restriction_Msg;
 
    -------------------
    -- Set_Ravenscar --
    -------------------
 
-   procedure Set_Ravenscar is
+   procedure Set_Ravenscar (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+
    begin
-      Set_Restricted_Profile;
+      Set_Restricted_Profile (N);
       Restrictions (Boolean_Entry_Barriers)       := True;
       Restrictions (No_Select_Statements)         := True;
       Restrictions (No_Calendar)                  := True;
-      Restrictions (Static_Storage_Size)          := True;
       Restrictions (No_Entry_Queue)               := True;
       Restrictions (No_Relative_Delay)            := True;
       Restrictions (No_Task_Termination)          := True;
       Restrictions (No_Implicit_Heap_Allocations) := True;
+
+      Restrictions_Loc (Boolean_Entry_Barriers)       := Loc;
+      Restrictions_Loc (No_Select_Statements)         := Loc;
+      Restrictions_Loc (No_Calendar)                  := Loc;
+      Restrictions_Loc (No_Entry_Queue)               := Loc;
+      Restrictions_Loc (No_Relative_Delay)            := Loc;
+      Restrictions_Loc (No_Task_Termination)          := Loc;
+      Restrictions_Loc (No_Implicit_Heap_Allocations) := Loc;
    end Set_Ravenscar;
 
    ----------------------------
@@ -404,7 +457,9 @@ package body Restrict is
 
    --  This must be coordinated with Restricted_Profile
 
-   procedure Set_Restricted_Profile is
+   procedure Set_Restricted_Profile (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+
    begin
       Restrictions (No_Abort_Statements)          := True;
       Restrictions (No_Asynchronous_Control)      := True;
@@ -419,9 +474,22 @@ package body Restrict is
       Restrictions (No_Requeue)                   := True;
       Restrictions (No_Task_Attributes)           := True;
 
-      Restriction_Parameters (Max_Asynchronous_Select_Nesting) :=  Uint_0;
-      Restriction_Parameters (Max_Task_Entries)                :=  Uint_0;
-      Restriction_Parameters (Max_Select_Alternatives)         :=  Uint_0;
+      Restrictions_Loc (No_Abort_Statements)          := Loc;
+      Restrictions_Loc (No_Asynchronous_Control)      := Loc;
+      Restrictions_Loc (No_Entry_Queue)               := Loc;
+      Restrictions_Loc (No_Task_Hierarchy)            := Loc;
+      Restrictions_Loc (No_Task_Allocators)           := Loc;
+      Restrictions_Loc (No_Dynamic_Priorities)        := Loc;
+      Restrictions_Loc (No_Terminate_Alternatives)    := Loc;
+      Restrictions_Loc (No_Dynamic_Interrupts)        := Loc;
+      Restrictions_Loc (No_Protected_Type_Allocators) := Loc;
+      Restrictions_Loc (No_Local_Protected_Objects)   := Loc;
+      Restrictions_Loc (No_Requeue)                   := Loc;
+      Restrictions_Loc (No_Task_Attributes)           := Loc;
+
+      Restriction_Parameters (Max_Asynchronous_Select_Nesting) := Uint_0;
+      Restriction_Parameters (Max_Task_Entries)                := Uint_0;
+      Restriction_Parameters (Max_Select_Alternatives)         := Uint_0;
 
       if Restriction_Parameters (Max_Protected_Entries) /= Uint_0 then
          Restriction_Parameters (Max_Protected_Entries) := Uint_1;
@@ -457,7 +525,8 @@ package body Restrict is
 
    function Tasking_Allowed return Boolean is
    begin
-      return Restriction_Parameters (Max_Tasks) /= 0;
+      return Restriction_Parameters (Max_Tasks) /= 0
+        and then not Restrictions (No_Tasking);
    end Tasking_Allowed;
 
 end Restrict;

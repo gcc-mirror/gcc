@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -41,6 +41,7 @@ pragma Polling (Off);
 
 with System;
 with System.Standard_Library;
+with System.Traceback_Entries;
 
 package Ada.Exceptions is
 
@@ -113,7 +114,7 @@ private
 
    subtype Code_Loc is System.Address;
    --  Code location used in building exception tables and for call
-   --  addresses when propagating an exception (also traceback table)
+   --  addresses when propagating an exception.
    --  Values of this type are created by using Label'Address or
    --  extracted from machine states using Get_Code_Loc.
 
@@ -162,11 +163,6 @@ private
    --  calls to Raise_Exception_Always if it can determine this is the case.
    --  The Export allows this routine to be accessed from Pure units.
 
-   procedure Raise_No_Msg (E : Exception_Id);
-   pragma No_Return (Raise_No_Msg);
-   --  Raises an exception with no message with given exception id value.
-   --  Abort is deferred before the raise call.
-
    procedure Raise_From_Signal_Handler
      (E : Exception_Id;
       M : SSL.Big_String_Ptr);
@@ -186,15 +182,6 @@ private
    --  some other way ask the operating system to return here rather than
    --  to the original location.
 
-   procedure Raise_With_C_Msg
-     (E : Exception_Id;
-      M : SSL.Big_String_Ptr);
-   pragma Export (Ada, Raise_With_C_Msg, "ada__exceptions__raise_with_c_msg");
-   pragma No_Return (Raise_With_C_Msg);
-   --  Raises an exception with with given exception id value and message.
-   --  M is a null terminated string with the message to be raised. Abort
-   --  is deferred before the raise call.
-
    procedure Reraise_Occurrence_Always (X : Exception_Occurrence);
    pragma No_Return (Reraise_Occurrence_Always);
    --  This differs from Raise_Occurrence only in that the caller guarantees
@@ -208,43 +195,6 @@ private
    --  before the call and the parameter X is known not to be the null
    --  occurrence. This is used in generated code when it is known
    --  that abort is already deferred.
-
-   procedure SDP_Table_Build
-     (SDP_Addresses   : System.Address;
-      SDP_Count       : Natural;
-      Elab_Addresses  : System.Address;
-      Elab_Addr_Count : Natural);
-   pragma Export (C, SDP_Table_Build, "__gnat_SDP_Table_Build");
-   --  This is the routine that is called to build and sort the list of
-   --  subprogram descriptor pointers. In the normal case it is called
-   --  once at the start of execution, but it can also be called as part
-   --  of the explicit initialization routine (adainit) when there is no
-   --  Ada main program. In particular, in the case where multiple Ada
-   --  libraries are present, this routine can be called more than once
-   --  for each library, in which case it augments the previously set
-   --  table with the new entries specified by the parameters.
-   --
-   --    SDP_Addresses    Address of the start of the list of addresses of
-   --                     __gnat_unit_name__SDP values constructed for each
-   --                     unit, (see System.Exceptions).
-   --
-   --    SDP_Count        Number of entries in SDP_Addresses
-   --
-   --    Elab_Addresses   Address of the start of a list of addresses of
-   --                     generated Ada elaboration routines, as well as
-   --                     one extra entry for the generated main program.
-   --                     These are used to generate the dummy SDP's that
-   --                     mark the outer scope.
-   --
-   --    Elab_Addr_Count  Number of entries in Elab_Addresses
-
-   procedure Break_Start;
-   pragma Export (C, Break_Start, "__gnat_break_start");
-   --  This is a dummy procedure that is called at the start of execution.
-   --  Its sole purpose is to provide a well defined point for the placement
-   --  of a main program breakpoint. We put the routine in Ada.Exceptions so
-   --  that the standard mechanism of always stepping up from breakpoints
-   --  within Ada.Exceptions leaves us sitting in the main program.
 
    -----------------------
    -- Polling Interface --
@@ -275,10 +225,12 @@ private
    -- Exception_Occurrence --
    --------------------------
 
+   package TBE renames System.Traceback_Entries;
+
    Max_Tracebacks : constant := 50;
    --  Maximum number of trace backs stored in exception occurrence
 
-   type Tracebacks_Array is array (1 .. Max_Tracebacks) of Code_Loc;
+   type Tracebacks_Array is array (1 .. Max_Tracebacks) of TBE.Traceback_Entry;
    --  Traceback array stored in exception occurrence
 
    type Exception_Occurrence is record
@@ -318,6 +270,11 @@ private
 
       Tracebacks : Tracebacks_Array;
       --  Stored tracebacks (in Tracebacks (1 .. Num_Tracebacks))
+
+      Private_Data : System.Address := System.Null_Address;
+      --  Field used by low level exception mechanism to store specific data.
+      --  Currently used by the GCC exception mechanism to store a pointer to
+      --  a GNAT_GCC_Exception.
    end record;
 
    function "=" (Left, Right : Exception_Occurrence) return Boolean
@@ -339,6 +296,7 @@ private
      Exception_Raised => False,
      Pid              => 0,
      Num_Tracebacks   => 0,
-     Tracebacks       => (others => Null_Loc));
+     Tracebacks       => (others => TBE.Null_TB_Entry),
+     Private_Data     => System.Null_Address);
 
 end Ada.Exceptions;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -168,8 +168,8 @@ pragma Preelaborate (Types);
 
    type Column_Number is range 0 .. 32767;
    for Column_Number'Size use 16;
-   --  Column number (assume that 2**15 is large enough, see declaration
-   --  of Hostparm.Max_Line_Length)
+   --  Column number (assume that 2**15 is large enough, see declaration of
+   --  Hostparm.Max_Line_Length, and also processing for -gnatyM in Stylesw)
 
    No_Column_Number : constant Column_Number := 0;
    --  Special value used to indicate no column number
@@ -200,7 +200,10 @@ pragma Preelaborate (Types);
    --  are allowed to accommodate the following special values.
 
    No_Location : constant Source_Ptr := -1;
-   --  Value used to indicate no source position set in a node
+   --  Value used to indicate no source position set in a node. A test for
+   --  a Source_Ptr value being >= No_Location is the apporoved way to test
+   --  for a standard value that does not include No_Location or any of the
+   --  following special definitions.
 
    Standard_Location : constant Source_Ptr := -2;
    --  Used for all nodes in the representation of package Standard other
@@ -210,6 +213,10 @@ pragma Preelaborate (Types);
 
    Standard_ASCII_Location : constant Source_Ptr := -3;
    --  Used for all nodes in the presentation of package Standard.ASCII
+
+   System_Location : constant Source_Ptr := -4;
+   --  Used to identify locations of pragmas scanned by Targparm, where we
+   --  know the location is in System, but we don't know exactly what line.
 
    First_Source_Ptr : constant Source_Ptr := 0;
    --  Starting source pointer index value for first source program
@@ -446,7 +453,7 @@ pragma Preelaborate (Types);
 
    No_List : constant List_Id := List_High_Bound;
    --  Used to indicate absence of a list. Note that the value is zero, which
-   --  is the same as Empty, which is helpful in initializing nodes where a
+   --  is the same as Empty, which is helpful in intializing nodes where a
    --  value of zero can represent either an empty node or an empty list.
 
    Error_List : constant List_Id := List_Low_Bound;
@@ -568,10 +575,6 @@ pragma Preelaborate (Types);
    No_Source_File : constant Source_File_Index := 0;
    --  Value used to indicate no source file present
 
-   System_Source_File_Index : constant Source_File_Index := 1;
-   --  Value used for source file table entry for system.ads, which is
-   --  always the first source file read (see unit Targparm for details).
-
    subtype File_Name_Type is Name_Id;
    --  File names are stored in the names table and this synonym is used to
    --  indicate that a Name_Id value is being used to hold a simple file
@@ -665,35 +668,35 @@ pragma Preelaborate (Types);
    -- Types used for Pragma Suppress Management --
    -----------------------------------------------
 
+   type Check_Id is (
+      Access_Check,
+      Accessibility_Check,
+      Discriminant_Check,
+      Division_Check,
+      Elaboration_Check,
+      Index_Check,
+      Length_Check,
+      Overflow_Check,
+      Range_Check,
+      Storage_Check,
+      Tag_Check,
+      All_Checks);
+
    --  The following record contains an entry for each recognized check name
    --  for pragma Suppress. It is used to represent current settings of scope
    --  based suppress actions from pragma Suppress or command line settings.
 
-   type Suppress_Record is record
-      Access_Checks        : Boolean;
-      Accessibility_Checks : Boolean;
-      Discriminant_Checks  : Boolean;
-      Division_Checks      : Boolean;
-      Elaboration_Checks   : Boolean;
-      Index_Checks         : Boolean;
-      Length_Checks        : Boolean;
-      Overflow_Checks      : Boolean;
-      Range_Checks         : Boolean;
-      Storage_Checks       : Boolean;
-      Tag_Checks           : Boolean;
-   end record;
+   type Suppress_Array is
+     array (Check_Id range Access_Check .. Tag_Check) of Boolean;
+   pragma Pack (Suppress_Array);
 
    --  To add a new check type to GNAT, the following steps are required:
 
-   --    1.  Add an appropriate entry to the above record type
-   --    2.  Add an entry to Snames spec and body for the new name
-   --    3.  Add an entry to the definition of Check_Id in the Snames spec
-   --    4.  Add a new entity flag definition in Einfo for the check
-   --    5.  Add a new function to Sem.Util to handle the new check test
-   --    6.  Add appropriate processing for pragma Suppress in Sem.Prag
-   --    7.  Add a branch to the case statement in Sem.Ch8.Pop_Scope
-   --    8.  Add a new Do_xxx_Check flag to Sinfo (if required)
-   --    9.  Add appropriate checks for the new test
+   --    1.  Add an entry to Snames spec and body for the new name
+   --    2.  Add an entry to the definition of Check_Id above
+   --    3.  Add a new function to Checks to handle the new check test
+   --    4.  Add a new Do_xxx_Check flag to Sinfo (if required)
+   --    5.  Add appropriate checks for the new test
 
    -----------------------------------
    -- Global Exception Declarations --
@@ -745,13 +748,11 @@ pragma Preelaborate (Types);
    --    1. Modify the type and subtype declarations below appropriately,
    --       keeping things in alphabetical order.
 
-   --    2. Modify the corresponding definitions in a-types.h, including
+   --    2. Modify the corresponding definitions in types.h, including
    --       the definition of last_reason_code.
 
    --    3. Add a new routine in Ada.Exceptions with the appropriate call
    --       and static string constant
-
-   --    4. Initialize the new entry in raise_decls
 
    type RT_Exception_Code is (
      CE_Access_Check_Failed,
@@ -773,9 +774,9 @@ pragma Preelaborate (Types);
      PE_Duplicated_Entry_Address,
      PE_Explicit_Raise,
      PE_Finalize_Raised_Exception,
-     PE_Invalid_Data,
      PE_Misaligned_Address_Value,
      PE_Missing_Return,
+     PE_Overlaid_Controlled_Object,
      PE_Potentially_Blocking_Operation,
      PE_Stubbed_Subprogram_Called,
      PE_Unchecked_Union_Restriction,

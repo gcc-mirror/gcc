@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1999-2002 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1999-2003 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -143,15 +144,17 @@ package GNAT.Command_Line is
    --  Returns the full name of the last switch found (Getopt only returns
    --  the first character)
 
-   function Getopt (Switches : String) return Character;
+   function Getopt
+     (Switches    : String;
+      Concatenate : Boolean := True) return Character;
    --  This function moves to the next switch on the command line (defined
    --  as a switch character followed by a character within Switches,
    --  casing being significant). The result returned is the first
    --  character of the particular switch located. If there are no more
-   --  switches in the current section, returns ASCII.NUL. The switches
-   --  need not be separated by spaces (they can be concatenated if they do
-   --  not require an argument, e.g. -ab is the same as two separate
-   --  arguments -a -b).
+   --  switches in the current section, returns ASCII.NUL. If Concatenate is
+   --  True (by default), the switches need not be separated by spaces (they
+   --  can be concatenated if they do not require an argument, e.g. -ab is the
+   --  same as two separate arguments -a -b).
    --
    --  Switches is a string of all the possible switches, separated by a
    --  space. A switch can be followed by one of the following characters :
@@ -162,7 +165,7 @@ package GNAT.Command_Line is
    --        space on the command line between the switch and its parameter
    --   '!'  The switch requires a parameter, but there can be no space on the
    --        command line between the switch and its parameter
-   --   '?'  The switch may have an optional parameter. There can no space
+   --   '?'  The switch may have an optional parameter. There can be no space
    --        between the switch and its argument
    --        ex/ if Switches has the following value : "a? b"
    --            The command line can be :
@@ -208,6 +211,14 @@ package GNAT.Command_Line is
    --  Arbitrary characters are allowed for switches, although it is
    --  strongly recommanded to use only letters and digits for portability
    --  reasons.
+   --
+   --  When Concatenate is False, individual switches need to be separated by
+   --  spaces.
+   --
+   --    Example
+   --       Getopt ("a b", Concatenate => False)
+   --       If the command line is '-ab', exception Invalid_Switch will be
+   --       raised and Full_Switch will return "ab".
 
    function Get_Argument (Do_Expansion : Boolean := False) return String;
    --  Returns the next element in the command line which is not a switch.

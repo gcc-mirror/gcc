@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2001-2002 Free Software Foundation, Inc.         --
+--           Copyright (C) 2001-2003 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,6 +68,15 @@ procedure Gnatname is
       Table_Name           => "Gnatname.Excluded_Patterns");
    --  Table to accumulate the negative patterns.
 
+   package Foreign_Patterns is new Table.Table
+     (Table_Component_Type => String_Access,
+      Table_Index_Type     => Natural,
+      Table_Low_Bound      => 0,
+      Table_Initial        => 10,
+      Table_Increment      => 10,
+      Table_Name           => "Gnatname.Foreign_Patterns");
+   --  Table to accumulate the foreign patterns.
+
    package Patterns is new Table.Table
      (Table_Component_Type => String_Access,
       Table_Index_Type     => Natural,
@@ -86,6 +95,16 @@ procedure Gnatname is
       Table_Name           => "Gnatname.Source_Directories");
    --  Table to accumulate the source directories specified directly with -d
    --  or indirectly with -D.
+
+   package Preprocessor_Switches is new Table.Table
+     (Table_Component_Type => String_Access,
+      Table_Index_Type     => Natural,
+      Table_Low_Bound      => 0,
+      Table_Initial        => 2,
+      Table_Increment      => 50,
+      Table_Name           => "Gnatname.Preprocessor_Switches");
+   --  Table to store the preprocessor switches to be used in the call
+   --  to the compiler.
 
    procedure Output_Version;
    --  Print name and version
@@ -151,7 +170,7 @@ procedure Gnatname is
          Output.Write_Str ("GNATNAME ");
          Output.Write_Str (Gnatvsn.Gnat_Version_String);
          Output.Write_Line
-           (" Copyright 2001-2002 Free Software Foundation, Inc.");
+           (" Copyright 2001-2003 Free Software Foundation, Inc.");
       end if;
    end Output_Version;
 
@@ -166,7 +185,7 @@ procedure Gnatname is
       --  Scan options first
 
       loop
-         case Getopt ("c: d: D: h P: v x:") is
+         case Getopt ("c: d: gnatep=! gnatep! gnateD! D: h P: v x: f:") is
             when ASCII.NUL =>
                exit;
 
@@ -184,6 +203,16 @@ procedure Gnatname is
 
             when 'D' =>
                Get_Directories (Parameter);
+
+            when 'f' =>
+               Foreign_Patterns.Increment_Last;
+               Foreign_Patterns.Table (Foreign_Patterns.Last) :=
+                 new String'(Parameter);
+
+            when 'g' =>
+               Preprocessor_Switches.Increment_Last;
+               Preprocessor_Switches.Table (Preprocessor_Switches.Last) :=
+                 new String'('-' & Full_Switch & Parameter);
 
             when 'h' =>
                Usage_Needed := True;
@@ -219,10 +248,11 @@ procedure Gnatname is
 
       loop
          declare
-            S : constant String := Get_Argument (Do_Expansion => False);
+            S : String := Get_Argument (Do_Expansion => False);
 
          begin
             exit when S = "";
+            Canonical_Case_File_Name (S);
             Patterns.Increment_Last;
             Patterns.Table (Patterns.Last) := new String'(S);
          end;
@@ -249,14 +279,18 @@ procedure Gnatname is
          Write_Eol;
          Write_Line ("switches:");
 
-         Write_Line ("  -cfile    create configuration pragmas file");
-         Write_Line ("  -ddir     use dir as one of the source directories");
-         Write_Line ("  -Dfile    get source directories from file");
-         Write_Line ("  -h        output this help message");
-         Write_Line ("  -Pproj    update or create project file proj");
-         Write_Line ("  -v        verbose output");
-         Write_Line ("  -v -v     very verbose output");
-         Write_Line ("  -xpat     exclude pattern pat");
+         Write_Line ("  -cfile       create configuration pragmas file");
+         Write_Line ("  -ddir        use dir as one of the source " &
+                     "directories");
+         Write_Line ("  -Dfile       get source directories from file");
+         Write_Line ("  -fpat        foreign pattern");
+         Write_Line ("  -gnateDsym=v preprocess with symbol definition");
+         Write_Line ("  -gnatep=data preprocess files with data file");
+         Write_Line ("  -h           output this help message");
+         Write_Line ("  -Pproj       update or create project file proj");
+         Write_Line ("  -v           verbose output");
+         Write_Line ("  -v -v        very verbose output");
+         Write_Line ("  -xpat        exclude pattern pat");
       end if;
    end Usage;
 
@@ -266,8 +300,10 @@ begin
    --  Initialize tables
 
    Excluded_Patterns.Set_Last (0);
+   Foreign_Patterns.Set_Last (0);
    Patterns.Set_Last (0);
    Source_Directories.Set_Last (0);
+   Preprocessor_Switches.Set_Last (0);
 
    --  Get the arguments
 
@@ -283,7 +319,7 @@ begin
 
    --  If no pattern was specified, print the usage and return
 
-   if Patterns.Last = 0 then
+   if Patterns.Last = 0 and Foreign_Patterns.Last = 0 then
       Usage;
       return;
    end if;
@@ -302,6 +338,9 @@ begin
       Directories   : Argument_List (1 .. Integer (Source_Directories.Last));
       Name_Patterns : Argument_List (1 .. Integer (Patterns.Last));
       Excl_Patterns : Argument_List (1 .. Integer (Excluded_Patterns.Last));
+      Frgn_Patterns : Argument_List (1 .. Integer (Foreign_Patterns.Last));
+      Prep_Switches : Argument_List
+                        (1 .. Integer (Preprocessor_Switches.Last));
 
    begin
       --  Build the Directories and Name_Patterns arguments
@@ -318,6 +357,14 @@ begin
          Excl_Patterns (Index) := Excluded_Patterns.Table (Index);
       end loop;
 
+      for Index in Frgn_Patterns'Range loop
+         Frgn_Patterns (Index) := Foreign_Patterns.Table (Index);
+      end loop;
+
+      for Index in Prep_Switches'Range loop
+         Prep_Switches (Index) := Preprocessor_Switches.Table (Index);
+      end loop;
+
       --  Call Prj.Makr.Make where the real work is done
 
       Prj.Makr.Make
@@ -326,6 +373,8 @@ begin
          Directories       => Directories,
          Name_Patterns     => Name_Patterns,
          Excluded_Patterns => Excl_Patterns,
+         Foreign_Patterns  => Frgn_Patterns,
+         Preproc_Switches  => Prep_Switches,
          Very_Verbose      => Very_Verbose);
    end;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,9 +68,6 @@ with System.Tasking;
 --           Task_ID
 --           ATCB components and types
 
-with System.Task_Info;
---  used for Task_Image
-
 with Interfaces.C;
 
 with Unchecked_Conversion;
@@ -80,7 +77,6 @@ package body System.Task_Primitives.Operations is
 
    use System.Tasking.Debug;
    use System.Tasking;
-   use System.Task_Info;
    use System.OS_Interface;
    use System.Parameters;
    use type Interfaces.C.int;
@@ -98,14 +94,19 @@ package body System.Task_Primitives.Operations is
    --  The followings are logically constants, but need to be initialized
    --  at run time.
 
-   Current_Task : aliased Task_ID;
-   pragma Export (Ada, Current_Task);
-   --  Task specific value used to store the Ada Task_ID.
-
    Single_RTS_Lock : aliased RTS_Lock;
    --  This is a lock to allow only one thread of control in the RTS at
    --  a time; it is used to execute in mutual exclusion from all other tasks.
    --  Used mainly in Single_Lock mode, but also to protect All_Tasks_List
+
+   ATCB_Key : aliased System.Address := System.Null_Address;
+   --  Key used to find the Ada Task_ID associated with a thread
+
+   ATCB_Key_Addr : System.Address := ATCB_Key'Address;
+   pragma Export (Ada, ATCB_Key_Addr, "__gnat_ATCB_key_addr");
+   --  Exported to support the temporary AE653 task registration
+   --  implementation. This mechanism is used to minimize impact on other
+   --  targets.
 
    Environment_Task_ID : Task_ID;
    --  A variable to hold Task_ID for the environment task.
@@ -129,11 +130,51 @@ package body System.Task_Primitives.Operations is
 
    Mutex_Protocol : Priority_Type;
 
+   Foreign_Task_Elaborated : aliased Boolean := True;
+   --  Used to identified fake tasks (i.e., non-Ada Threads).
+
+   --------------------
+   -- Local Packages --
+   --------------------
+
+   package Specific is
+
+      function Is_Valid_Task return Boolean;
+      pragma Inline (Is_Valid_Task);
+      --  Does executing thread have a TCB?
+
+      procedure Set (Self_Id : Task_ID);
+      pragma Inline (Set);
+      --  Set the self id for the current task.
+
+      function Self return Task_ID;
+      pragma Inline (Self);
+      --  Return a pointer to the Ada Task Control Block of the calling task.
+
+   end Specific;
+
+   package body Specific is separate;
+   --  The body of this package is target specific.
+
+   ---------------------------------
+   -- Support for foreign threads --
+   ---------------------------------
+
+   function Register_Foreign_Thread (Thread : Thread_Id) return Task_ID;
+   --  Allocate and Initialize a new ATCB for the current Thread.
+
+   function Register_Foreign_Thread
+     (Thread : Thread_Id) return Task_ID is separate;
+
    -----------------------
    -- Local Subprograms --
    -----------------------
 
    procedure Abort_Handler (signo : Signal);
+   --  Handler for the abort (SIGABRT) signal to handle asynchronous abortion.
+
+   procedure Install_Signal_Handlers;
+   --  Install the default signal handlers for the current task
 
    function To_Address is new Unchecked_Conversion (Task_ID, System.Address);
 
@@ -142,11 +183,20 @@ package body System.Task_Primitives.Operations is
    -------------------
 
    procedure Abort_Handler (signo : Signal) is
+      pragma Unreferenced (signo);
+
       Self_ID : constant Task_ID := Self;
       Result  : int;
       Old_Set : aliased sigset_t;
 
    begin
+      --  It is not safe to raise an exception when using ZCX and the GCC
+      --  exception handling mechanism.
+
+      if ZCX_By_Default and then GCC_ZCX_Support then
+         return;
+      end if;
+
       if Self_ID.Deferral_Level = 0
         and then Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level
         and then not Self_ID.Aborting
@@ -168,8 +218,12 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    procedure Stack_Guard (T : ST.Task_ID; On : Boolean) is
+      pragma Unreferenced (T);
+      pragma Unreferenced (On);
+
    begin
-      --  Nothing needed.
+      --  Nothing needed (why not???)
+
       null;
    end Stack_Guard;
 
@@ -186,24 +240,17 @@ package body System.Task_Primitives.Operations is
    -- Self --
    ----------
 
-   function Self return Task_ID is
-   begin
-      pragma Assert (Current_Task /= null);
-      return Current_Task;
-   end Self;
+   function Self return Task_ID renames Specific.Self;
 
    -----------------------------
    -- Install_Signal_Handlers --
    -----------------------------
 
-   procedure Install_Signal_Handlers;
-   --  Install the default signal handlers for the current task.
-
    procedure Install_Signal_Handlers is
-      act       : aliased struct_sigaction;
-      old_act   : aliased struct_sigaction;
-      Tmp_Set   : aliased sigset_t;
-      Result    : int;
+      act     : aliased struct_sigaction;
+      old_act : aliased struct_sigaction;
+      Tmp_Set : aliased sigset_t;
+      Result  : int;
 
    begin
       act.sa_flags := 0;
@@ -236,6 +283,8 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level) is
+      pragma Unreferenced (Level);
+
    begin
       L.Mutex := semMCreate (SEM_Q_PRIORITY + SEM_INVERSION_SAFE);
       L.Prio_Ceiling := int (System.Any_Priority'Last);
@@ -249,6 +298,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Lock (L : access Lock) is
       Result : int;
+
    begin
       Result := semDelete (L.Mutex);
       pragma Assert (Result = 0);
@@ -256,6 +306,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Lock (L : access RTS_Lock) is
       Result : int;
+
    begin
       Result := semDelete (L.Mutex);
       pragma Assert (Result = 0);
@@ -267,6 +318,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
       Result : int;
+
    begin
       if L.Protocol = Prio_Protect
         and then int (Self.Common.Current_Priority) > L.Prio_Ceiling
@@ -282,9 +334,11 @@ package body System.Task_Primitives.Operations is
    end Write_Lock;
 
    procedure Write_Lock
-     (L : access RTS_Lock; Global_Lock : Boolean := False)
+     (L           : access RTS_Lock;
+      Global_Lock : Boolean := False)
    is
       Result : int;
+
    begin
       if not Single_Lock or else Global_Lock then
          Result := semTake (L.Mutex, WAIT_FOREVER);
@@ -294,6 +348,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock (T : Task_ID) is
       Result : int;
+
    begin
       if not Single_Lock then
          Result := semTake (T.Common.LL.L.Mutex, WAIT_FOREVER);
@@ -316,6 +371,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access Lock) is
       Result  : int;
+
    begin
       Result := semGive (L.Mutex);
       pragma Assert (Result = 0);
@@ -323,6 +379,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
       Result : int;
+
    begin
       if not Single_Lock or else Global_Lock then
          Result := semGive (L.Mutex);
@@ -332,6 +389,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (T : Task_ID) is
       Result : int;
+
    begin
       if not Single_Lock then
          Result := semGive (T.Common.LL.L.Mutex);
@@ -344,16 +402,14 @@ package body System.Task_Primitives.Operations is
    -----------
 
    procedure Sleep (Self_ID : Task_ID; Reason : System.Tasking.Task_States) is
+      pragma Unreferenced (Reason);
+
       Result : int;
+
    begin
       pragma Assert (Self_ID = Self);
 
-      --  Disable task scheduling.
-
-      Result := taskLock;
-
       --  Release the mutex before sleeping.
-
       if Single_Lock then
          Result := semGive (Single_RTS_Lock.Mutex);
       else
@@ -362,24 +418,15 @@ package body System.Task_Primitives.Operations is
 
       pragma Assert (Result = 0);
 
-      --  Indicate that there is another thread waiting on the CV.
-
-      Self_ID.Common.LL.CV.Waiting := Self_ID.Common.LL.CV.Waiting + 1;
-
       --  Perform a blocking operation to take the CV semaphore.
       --  Note that a blocking operation in VxWorks will reenable
       --  task scheduling. When we are no longer blocked and control
       --  is returned, task scheduling will again be disabled.
 
-      Result := semTake (Self_ID.Common.LL.CV.Sem, WAIT_FOREVER);
-
-      if Result /= 0 then
-         Self_ID.Common.LL.CV.Waiting := Self_ID.Common.LL.CV.Waiting - 1;
-         pragma Assert (False);
-      end if;
+      Result := semTake (Self_ID.Common.LL.CV, WAIT_FOREVER);
+      pragma Assert (Result = 0);
 
       --  Take the mutex back.
-
       if Single_Lock then
          Result := semTake (Single_RTS_Lock.Mutex, WAIT_FOREVER);
       else
@@ -387,10 +434,6 @@ package body System.Task_Primitives.Operations is
       end if;
 
       pragma Assert (Result = 0);
-
-      --  Reenable task scheduling.
-
-      Result := taskUnlock;
    end Sleep;
 
    -----------------
@@ -409,78 +452,105 @@ package body System.Task_Primitives.Operations is
       Timedout : out Boolean;
       Yielded  : out Boolean)
    is
-      Ticks  : int;
-      Result : int;
+      pragma Unreferenced (Reason);
+
+      Orig     : constant Duration := Monotonic_Clock;
+      Absolute : Duration;
+      Ticks    : int;
+      Result   : int;
+      Wakeup   : Boolean := False;
 
    begin
-      Timedout := True;
-      Yielded := True;
+      Timedout := False;
+      Yielded  := True;
 
       if Mode = Relative then
+         Absolute := Orig + Time;
+
          --  Systematically add one since the first tick will delay
          --  *at most* 1 / Rate_Duration seconds, so we need to add one to
          --  be on the safe side.
 
-         Ticks := To_Clock_Ticks (Time) + 1;
+         Ticks := To_Clock_Ticks (Time);
+
+         if Ticks > 0 and then Ticks < int'Last then
+            Ticks := Ticks + 1;
+         end if;
+
       else
-         Ticks := To_Clock_Ticks (Time - Monotonic_Clock);
+         Absolute := Time;
+         Ticks    := To_Clock_Ticks (Time - Monotonic_Clock);
       end if;
 
       if Ticks > 0 then
-         --  Disable task scheduling.
-
-         Result := taskLock;
-
-         --  Release the mutex before sleeping.
-
-         if Single_Lock then
-            Result := semGive (Single_RTS_Lock.Mutex);
-         else
-            Result := semGive (Self_ID.Common.LL.L.Mutex);
-         end if;
-
-         pragma Assert (Result = 0);
-
-         --  Indicate that there is another thread waiting on the CV.
-
-         Self_ID.Common.LL.CV.Waiting := Self_ID.Common.LL.CV.Waiting + 1;
-
-         --  Perform a blocking operation to take the CV semaphore.
-         --  Note that a blocking operation in VxWorks will reenable
-         --  task scheduling. When we are no longer blocked and control
-         --  is returned, task scheduling will again be disabled.
-
-         Result := semTake (Self_ID.Common.LL.CV.Sem, Ticks);
-
-         if Result = 0 then
-            --  Somebody may have called Wakeup for us
-
-            Timedout := False;
-
-         else
-            Self_ID.Common.LL.CV.Waiting := Self_ID.Common.LL.CV.Waiting - 1;
-
-            if errno /= S_objLib_OBJ_TIMEOUT then
-               Timedout := False;
+         loop
+            --  Release the mutex before sleeping.
+            if Single_Lock then
+               Result := semGive (Single_RTS_Lock.Mutex);
+            else
+               Result := semGive (Self_ID.Common.LL.L.Mutex);
             end if;
-         end if;
 
-         --  Take the mutex back.
+            pragma Assert (Result = 0);
 
-         if Single_Lock then
-            Result := semTake (Single_RTS_Lock.Mutex, WAIT_FOREVER);
-         else
-            Result := semTake (Self_ID.Common.LL.L.Mutex, WAIT_FOREVER);
-         end if;
+            --  Perform a blocking operation to take the CV semaphore.
+            --  Note that a blocking operation in VxWorks will reenable
+            --  task scheduling. When we are no longer blocked and control
+            --  is returned, task scheduling will again be disabled.
 
-         pragma Assert (Result = 0);
+            Result := semTake (Self_ID.Common.LL.CV, Ticks);
 
-         --  Reenable task scheduling.
+            if Result = 0 then
+               --  Somebody may have called Wakeup for us
 
-         Result := taskUnlock;
+               Wakeup := True;
+
+            else
+               if errno /= S_objLib_OBJ_TIMEOUT then
+                  Wakeup := True;
+               else
+                  --  If Ticks = int'last, it was most probably truncated
+                  --  so let's make another round after recomputing Ticks
+                  --  from the the absolute time.
+
+                  if Ticks /= int'Last then
+                     Timedout := True;
+                  else
+                     Ticks := To_Clock_Ticks (Absolute - Monotonic_Clock);
+
+                     if Ticks < 0 then
+                        Timedout := True;
+                     end if;
+                  end if;
+               end if;
+            end if;
+
+            --  Take the mutex back.
+            if Single_Lock then
+               Result := semTake (Single_RTS_Lock.Mutex, WAIT_FOREVER);
+            else
+               Result := semTake (Self_ID.Common.LL.L.Mutex, WAIT_FOREVER);
+            end if;
+
+            pragma Assert (Result = 0);
+
+            exit when Timedout or Wakeup;
+         end loop;
 
       else
-         taskDelay (0);
+         Timedout := True;
+
+         --  Should never hold a lock while yielding.
+         if Single_Lock then
+            Result := semGive (Single_RTS_Lock.Mutex);
+            taskDelay (0);
+            Result := semTake (Single_RTS_Lock.Mutex, WAIT_FOREVER);
+
+         else
+            Result := semGive (Self_ID.Common.LL.L.Mutex);
+            taskDelay (0);
+            Result := semTake (Self_ID.Common.LL.L.Mutex, WAIT_FOREVER);
+         end if;
       end if;
    end Timed_Sleep;
 
@@ -501,74 +571,82 @@ package body System.Task_Primitives.Operations is
       Ticks    : int;
       Timedout : Boolean;
       Result   : int;
+      Aborted  : Boolean := False;
 
    begin
       SSL.Abort_Defer.all;
 
-      if Single_Lock then
-         Result := semTake (Single_RTS_Lock.Mutex, WAIT_FOREVER);
-      else
-         Result := semTake (Self_ID.Common.LL.L.Mutex, WAIT_FOREVER);
-      end if;
-
-      pragma Assert (Result = 0);
-
       if Mode = Relative then
          Absolute := Orig + Time;
+         Ticks    := To_Clock_Ticks (Time);
 
-         Ticks := To_Clock_Ticks (Time);
+         if Ticks > 0 and then Ticks < int'Last then
 
-         if Ticks > 0 then
             --  The first tick will delay anytime between 0 and
             --  1 / sysClkRateGet seconds, so we need to add one to
             --  be on the safe side.
 
             Ticks := Ticks + 1;
          end if;
+
       else
          Absolute := Time;
          Ticks    := To_Clock_Ticks (Time - Orig);
       end if;
 
       if Ticks > 0 then
+         --  Modifying State and Pending_Priority_Change, locking the TCB.
+         if Single_Lock then
+            Result := semTake (Single_RTS_Lock.Mutex, WAIT_FOREVER);
+         else
+            Result := semTake (Self_ID.Common.LL.L.Mutex, WAIT_FOREVER);
+         end if;
+
+         pragma Assert (Result = 0);
+
          Self_ID.Common.State := Delay_Sleep;
+         Timedout := False;
 
          loop
             if Self_ID.Pending_Priority_Change then
                Self_ID.Pending_Priority_Change := False;
-               Self_ID.Common.Base_Priority := Self_ID.New_Base_Priority;
+               Self_ID.Common.Base_Priority    := Self_ID.New_Base_Priority;
                Set_Priority (Self_ID, Self_ID.Common.Base_Priority);
             end if;
 
-            exit when Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level;
+            Aborted := Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level;
 
-            Timedout := False;
-            Result := taskLock;
+            --  Release the TCB before sleeping
 
             if Single_Lock then
                Result := semGive (Single_RTS_Lock.Mutex);
             else
                Result := semGive (Self_ID.Common.LL.L.Mutex);
             end if;
-
             pragma Assert (Result = 0);
 
-            --  Indicate that there is another thread waiting on the CV.
+            exit when Aborted;
 
-            Self_ID.Common.LL.CV.Waiting := Self_ID.Common.LL.CV.Waiting + 1;
-
-            Result := semTake (Self_ID.Common.LL.CV.Sem, Ticks);
+            Result := semTake (Self_ID.Common.LL.CV, Ticks);
 
             if Result /= 0 then
-               Self_ID.Common.LL.CV.Waiting :=
-                 Self_ID.Common.LL.CV.Waiting - 1;
+               --  If Ticks = int'last, it was most probably truncated
+               --  so let's make another round after recomputing Ticks
+               --  from the the absolute time.
 
-               if errno = S_objLib_OBJ_TIMEOUT then
+               if errno = S_objLib_OBJ_TIMEOUT and then Ticks /= int'Last then
                   Timedout := True;
                else
                   Ticks := To_Clock_Ticks (Absolute - Monotonic_Clock);
+
+                  if Ticks < 0 then
+                     Timedout := True;
+                  end if;
                end if;
             end if;
+
+            --  Take back the lock after having slept, to protect further
+            --  access to Self_ID
 
             if Single_Lock then
                Result := semTake (Single_RTS_Lock.Mutex, WAIT_FOREVER);
@@ -578,25 +656,21 @@ package body System.Task_Primitives.Operations is
 
             pragma Assert (Result = 0);
 
-            --  Reenable task scheduling.
-
-            Result := taskUnlock;
-
             exit when Timedout;
          end loop;
 
          Self_ID.Common.State := Runnable;
+
+         if Single_Lock then
+            Result := semGive (Single_RTS_Lock.Mutex);
+         else
+            Result := semGive (Self_ID.Common.LL.L.Mutex);
+         end if;
+
       else
          taskDelay (0);
       end if;
 
-      if Single_Lock then
-         Result := semGive (Single_RTS_Lock.Mutex);
-      else
-         Result := semGive (Self_ID.Common.LL.L.Mutex);
-      end if;
-
-      pragma Assert (Result = 0);
       SSL.Abort_Undefer.all;
    end Timed_Delay;
 
@@ -620,7 +694,7 @@ package body System.Task_Primitives.Operations is
 
    function RT_Resolution return Duration is
    begin
-      return 10#1.0#E-6;
+      return 1.0 / Duration (sysClkRateGet);
    end RT_Resolution;
 
    ------------
@@ -628,30 +702,13 @@ package body System.Task_Primitives.Operations is
    ------------
 
    procedure Wakeup (T : Task_ID; Reason : System.Tasking.Task_States) is
+      pragma Unreferenced (Reason);
+
       Result : int;
+
    begin
-      --  Disable task scheduling.
-
-      Result := taskLock;
-
-      --  Iff someone is currently waiting on the condition variable
-      --  then release the semaphore; we don't want to leave the
-      --  semaphore in the full state because the next guy to do
-      --  a condition wait operation would not block.
-
-      if T.Common.LL.CV.Waiting > 0 then
-         Result := semGive (T.Common.LL.CV.Sem);
-
-         --  One less thread waiting on the CV.
-
-         T.Common.LL.CV.Waiting := T.Common.LL.CV.Waiting - 1;
-
-         pragma Assert (Result = 0);
-      end if;
-
-      --  Reenable task scheduling.
-
-      Result := taskUnlock;
+      Result := semGive (T.Common.LL.CV);
+      pragma Assert (Result = 0);
    end Wakeup;
 
    -----------
@@ -659,7 +716,10 @@ package body System.Task_Primitives.Operations is
    -----------
 
    procedure Yield (Do_Yield : Boolean := True) is
+      pragma Unreferenced (Do_Yield);
+
       Result : int;
+
    begin
       Result := taskDelay (0);
    end Yield;
@@ -673,25 +733,25 @@ package body System.Task_Primitives.Operations is
 
    Prio_Array : Prio_Array_Type;
    --  Global array containing the id of the currently running task for
-   --  each priority.
-   --
-   --  Note: we assume that we are on a single processor with run-til-blocked
-   --  scheduling.
+   --  each priority. Note that we assume that we are on a single processor
+   --  with run-till-blocked scheduling.
 
    procedure Set_Priority
-     (T : Task_ID;
-      Prio : System.Any_Priority;
+     (T                   : Task_ID;
+      Prio                : System.Any_Priority;
       Loss_Of_Inheritance : Boolean := False)
    is
       Array_Item : Integer;
       Result     : int;
 
    begin
-      Result := taskPrioritySet
-        (T.Common.LL.Thread, To_VxWorks_Priority (int (Prio)));
+      Result :=
+        taskPrioritySet
+          (T.Common.LL.Thread, To_VxWorks_Priority (int (Prio)));
       pragma Assert (Result = 0);
 
       if FIFO_Within_Priorities then
+
          --  Annex D requirement [RM D.2.2 par. 9]:
          --    If the task drops its priority due to the loss of inherited
          --    priority, it is added at the head of the ready queue for its
@@ -704,9 +764,9 @@ package body System.Task_Primitives.Operations is
             Prio_Array (T.Common.Base_Priority) := Array_Item;
 
             loop
-               --  Let some processes a chance to arrive
+               --  Give some processes a chance to arrive
 
-               Yield;
+               taskDelay (0);
 
                --  Then wait for our turn to proceed
 
@@ -736,16 +796,14 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Enter_Task (Self_ID : Task_ID) is
-      Result : int;
-
       procedure Init_Float;
       pragma Import (C, Init_Float, "__gnat_init_float");
       --  Properly initializes the FPU for PPC/MIPS systems.
 
    begin
       Self_ID.Common.LL.Thread := taskIdSelf;
-      Result := taskVarAdd (0, Current_Task'Address);
-      Current_Task := Self_ID;
+      Specific.Set (Self_ID);
+
       Init_Float;
 
       --  Install the signal handlers.
@@ -776,17 +834,35 @@ package body System.Task_Primitives.Operations is
       return new Ada_Task_Control_Block (Entry_Num);
    end New_ATCB;
 
+   -------------------
+   -- Is_Valid_Task --
+   -------------------
+
+   function Is_Valid_Task return Boolean renames Specific.Is_Valid_Task;
+
+   -----------------------------
+   -- Register_Foreign_Thread --
+   -----------------------------
+
+   function Register_Foreign_Thread return Task_ID is
+   begin
+      if Is_Valid_Task then
+         return Self;
+      else
+         return Register_Foreign_Thread (taskIdSelf);
+      end if;
+   end Register_Foreign_Thread;
+
    --------------------
    -- Initialize_TCB --
    --------------------
 
    procedure Initialize_TCB (Self_ID : Task_ID; Succeeded : out Boolean) is
    begin
-      Self_ID.Common.LL.CV.Sem := semBCreate (SEM_Q_PRIORITY, SEM_EMPTY);
-      Self_ID.Common.LL.CV.Waiting := 0;
+      Self_ID.Common.LL.CV := semBCreate (SEM_Q_PRIORITY, SEM_EMPTY);
       Self_ID.Common.LL.Thread := 0;
 
-      if Self_ID.Common.LL.CV.Sem = 0 then
+      if Self_ID.Common.LL.CV = 0 then
          Succeeded := False;
       else
          Succeeded := True;
@@ -808,10 +884,7 @@ package body System.Task_Primitives.Operations is
       Priority   : System.Any_Priority;
       Succeeded  : out Boolean)
    is
-      use type System.Task_Info.Task_Image_Type;
-
       Adjusted_Stack_Size : size_t;
-
    begin
       if Stack_Size = Unspecified_Size then
          Adjusted_Stack_Size := size_t (Default_Stack_Size);
@@ -838,6 +911,7 @@ package body System.Task_Primitives.Operations is
       --
       --  XXX - we should come back and visit this so we can
       --        set the task name to something appropriate.
+
       Adjusted_Stack_Size := Adjusted_Stack_Size + 2048;
 
       --  Since the initial signal mask of a thread is inherited from the
@@ -845,7 +919,7 @@ package body System.Task_Primitives.Operations is
       --  do not need to manipulate caller's signal mask at this point.
       --  All tasks in RTS will have All_Tasks_Mask initially.
 
-      if T.Common.Task_Image = null then
+      if T.Common.Task_Image_Len = 0 then
          T.Common.LL.Thread := taskSpawn
            (System.Null_Address,
             To_VxWorks_Priority (int (Priority)),
@@ -855,9 +929,10 @@ package body System.Task_Primitives.Operations is
             To_Address (T));
       else
          declare
-            Name : aliased String (1 .. T.Common.Task_Image'Length + 1);
+            Name : aliased String (1 .. T.Common.Task_Image_Len + 1);
          begin
-            Name (1 .. Name'Last - 1) := T.Common.Task_Image.all;
+            Name (1 .. Name'Last - 1) :=
+              T.Common.Task_Image (1 .. T.Common.Task_Image_Len);
             Name (Name'Last) := ASCII.NUL;
 
             T.Common.LL.Thread := taskSpawn
@@ -885,21 +960,22 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    procedure Finalize_TCB (T : Task_ID) is
-      Result : int;
-      Tmp    : Task_ID := T;
+      Result  : int;
+      Tmp     : Task_ID          := T;
+      Is_Self : constant Boolean := (T = Self);
 
       procedure Free is new
         Unchecked_Deallocation (Ada_Task_Control_Block, Task_ID);
 
    begin
-      if Single_Lock then
+      if not Single_Lock then
          Result := semDelete (T.Common.LL.L.Mutex);
          pragma Assert (Result = 0);
       end if;
 
       T.Common.LL.Thread := 0;
 
-      Result := semDelete (T.Common.LL.CV.Sem);
+      Result := semDelete (T.Common.LL.CV);
       pragma Assert (Result = 0);
 
       if T.Known_Tasks_Index /= -1 then
@@ -907,6 +983,11 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Free (Tmp);
+
+      if Is_Self then
+         Result := taskVarDelete (taskIdSelf, ATCB_Key'Access);
+         pragma Assert (Result /= ERROR);
+      end if;
    end Finalize_TCB;
 
    ---------------
@@ -915,8 +996,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Exit_Task is
    begin
-      Task_Termination_Hook;
-      taskDelete (0);
+      Specific.Set (null);
    end Exit_Task;
 
    ----------------
@@ -925,6 +1005,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Abort_Task (T : Task_ID) is
       Result : int;
+
    begin
       Result := kill (T.Common.LL.Thread,
         Signal (Interrupt_Management.Abort_Task_Interrupt));
@@ -935,10 +1016,11 @@ package body System.Task_Primitives.Operations is
    -- Check_Exit --
    ----------------
 
-   --  Dummy versions. The only currently working version is for solaris
-   --  (native).
+   --  Dummy version
 
    function Check_Exit (Self_ID : ST.Task_ID) return Boolean is
+      pragma Unreferenced (Self_ID);
+
    begin
       return True;
    end Check_Exit;
@@ -948,6 +1030,8 @@ package body System.Task_Primitives.Operations is
    --------------------
 
    function Check_No_Locks (Self_ID : ST.Task_ID) return Boolean is
+      pragma Unreferenced (Self_ID);
+
    begin
       return True;
    end Check_No_Locks;
@@ -985,7 +1069,9 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
    begin
       if T.Common.LL.Thread /= 0
         and then T.Common.LL.Thread /= Thread_Self
@@ -1002,7 +1088,9 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
    begin
       if T.Common.LL.Thread /= 0
         and then T.Common.LL.Thread /= Thread_Self
@@ -1018,19 +1106,8 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Initialize (Environment_Task : Task_ID) is
-   begin
-      Environment_Task_ID := Environment_Task;
-
-      --  Initialize the lock used to synchronize chain of all ATCBs.
-
-      Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
-
-      Enter_Task (Environment_Task);
-   end Initialize;
-
-begin
-   declare
       Result : int;
+
    begin
       if Locking_Policy = 'C' then
          Mutex_Protocol := Prio_Protect;
@@ -1048,5 +1125,14 @@ begin
 
       Result := sigemptyset (Unblocked_Signal_Mask'Access);
       pragma Assert (Result = 0);
-   end;
+
+      Environment_Task_ID := Environment_Task;
+
+      --  Initialize the lock used to synchronize chain of all ATCBs.
+
+      Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
+
+      Enter_Task (Environment_Task);
+   end Initialize;
+
 end System.Task_Primitives.Operations;

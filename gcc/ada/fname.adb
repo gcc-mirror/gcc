@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -135,6 +135,15 @@ package body Fname is
       Renamings_Included : Boolean := True)
       return               Boolean
    is
+   begin
+      Get_Name_String (Fname);
+      return Is_Predefined_File_Name (Renamings_Included);
+   end Is_Predefined_File_Name;
+
+   function Is_Predefined_File_Name
+     (Renamings_Included : Boolean := True)
+      return               Boolean
+   is
       subtype Str8 is String (1 .. 8);
 
       Predef_Names : constant array (1 .. 11) of Str8 :=
@@ -157,9 +166,7 @@ package body Fname is
                          7 + 4 * Boolean'Pos (Renamings_Included);
 
    begin
-      --  Get file name, removing the extension (if any)
-
-      Get_Name_String (Fname);
+      --  Remove extension (if present)
 
       if Name_Len > 4 and then Name_Buffer (Name_Len - 3) = '.' then
          Name_Len := Name_Len - 4;

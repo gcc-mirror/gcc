@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,20 @@ package Tbuild is
    --  If an N_Type_Conversion node is required, Relocate_Node is used on
    --  Exp. This means that it is safe to replace a node by a Convert_To
    --  of itself to some other type.
+
+   procedure Discard_Node (N : Node_Or_Entity_Id);
+   pragma Inline (Discard_Node);
+   --  This is a dummy procedure that simply returns and does nothing.
+   --  It is used when a function returning a Node_Id value is called
+   --  for its side effect (e.g. a call to Make to construct a node)
+   --  but the Node_Id value is not required.
+
+   procedure Discard_List (L : List_Id);
+   pragma Inline (Discard_List);
+   --  This is a dummy procedure that simply returns and does nothing.
+   --  It is used when a function returning a Node_Id value is called
+   --  for its side effect (e.g. a call to the pareser to parse a list
+   --  of compilation units), but the List_Id value is not required.
 
    function Make_Byte_Aligned_Attribute_Reference
      (Sloc           : Source_Ptr;
@@ -96,7 +110,7 @@ package Tbuild is
       Defining_Identifier : Node_Id;
       Label_Construct     : Node_Id)
       return                Node_Id;
-   --  Used to construct an implicit label declaration node, including setting
+   --  Used to contruct an implicit label declaration node, including setting
    --  the proper Label_Construct field (since Label_Construct is a semantic
    --  field, the normal call to Make_Implicit_Label_Declaration does not
    --  set this field).

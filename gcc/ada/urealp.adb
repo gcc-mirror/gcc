@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,7 +55,6 @@ package body Urealp is
 
       Negative : Boolean;
       --  Flag set if value is negative
-
    end record;
 
    package Ureals is new Table.Table (
@@ -69,16 +68,20 @@ package body Urealp is
    --  The following universal reals are the values returned by the constant
    --  functions. They are initialized by the initialization procedure.
 
-   UR_M_0        : Ureal;
    UR_0          : Ureal;
+   UR_M_0        : Ureal;
    UR_Tenth      : Ureal;
    UR_Half       : Ureal;
    UR_1          : Ureal;
    UR_2          : Ureal;
    UR_10         : Ureal;
+   UR_10_36      : Ureal;
+   UR_M_10_36    : Ureal;
    UR_100        : Ureal;
    UR_2_128      : Ureal;
+   UR_2_80       : Ureal;
    UR_2_M_128    : Ureal;
+   UR_2_M_80     : Ureal;
 
    Num_Ureal_Constants : constant := 10;
    --  This is used for an assertion check in Tree_Read and Tree_Write to
@@ -169,7 +172,6 @@ package body Urealp is
          return UI_Decimal_Digits_Hi (Val.Num) -
                 Equivalent_Decimal_Exponent (Val) + 1;
       end if;
-
    end Decimal_Exponent_Hi;
 
    -------------------------
@@ -209,7 +211,6 @@ package body Urealp is
          return UI_Decimal_Digits_Lo (Val.Num) -
                 Equivalent_Decimal_Exponent (Val) - 1;
       end if;
-
    end Decimal_Exponent_Lo;
 
    -----------------
@@ -266,9 +267,13 @@ package body Urealp is
       UR_1       := UR_From_Components (Uint_1, Uint_1,         0, False);
       UR_2       := UR_From_Components (Uint_1, Uint_Minus_1,   2, False);
       UR_10      := UR_From_Components (Uint_1, Uint_Minus_1,  10, False);
+      UR_10_36   := UR_From_Components (Uint_1, Uint_Minus_36, 10, False);
+      UR_M_10_36 := UR_From_Components (Uint_1, Uint_Minus_36, 10, True);
       UR_100     := UR_From_Components (Uint_1, Uint_Minus_2,  10, False);
       UR_2_128   := UR_From_Components (Uint_1, Uint_Minus_128, 2, False);
       UR_2_M_128 := UR_From_Components (Uint_1, Uint_128,       2, False);
+      UR_2_80    := UR_From_Components (Uint_1, Uint_Minus_80,  2, False);
+      UR_2_M_80  := UR_From_Components (Uint_1, Uint_80,        2, False);
    end Initialize;
 
    ----------------
@@ -607,7 +612,7 @@ package body Urealp is
    ----------------
 
    function UR_Ceiling (Real : Ureal) return Uint is
-      Val : Ureal_Entry := Normalize (Ureals.Table (Real));
+      Val : constant Ureal_Entry := Normalize (Ureals.Table (Real));
 
    begin
       if Val.Negative then
@@ -770,9 +775,9 @@ package body Urealp is
    ---------------------
 
    function UR_Exponentiate (Real : Ureal; N : Uint) return Ureal is
+      X    : constant Uint := abs N;
       Bas  : Ureal;
       Val  : Ureal_Entry;
-      X    : Uint := abs N;
       Neg  : Boolean;
       IBas : Uint;
 
@@ -850,7 +855,7 @@ package body Urealp is
    --------------
 
    function UR_Floor (Real : Ureal) return Uint is
-      Val : Ureal_Entry := Normalize (Ureals.Table (Real));
+      Val : constant Ureal_Entry := Normalize (Ureals.Table (Real));
 
    begin
       if Val.Negative then
@@ -860,9 +865,9 @@ package body Urealp is
       end if;
    end UR_Floor;
 
-   -------------------------
-   --  UR_From_Components --
-   -------------------------
+   ------------------------
+   -- UR_From_Components --
+   ------------------------
 
    function UR_From_Components
      (Num      : Uint;
@@ -1164,7 +1169,6 @@ package body Urealp is
                      Rbase    => 0,
                      Negative => Rneg)));
       end if;
-
    end UR_Mul;
 
    -----------
@@ -1260,7 +1264,7 @@ package body Urealp is
    ----------------
 
    function UR_To_Uint (Real : Ureal) return Uint is
-      Val : Ureal_Entry := Normalize (Ureals.Table (Real));
+      Val : constant Ureal_Entry := Normalize (Ureals.Table (Real));
       Res : Uint;
 
    begin
@@ -1305,11 +1309,8 @@ package body Urealp is
       end if;
 
       --  Constants in base 10 can be written in normal Ada literal style
-      --  If the literal is negative enclose in parens to emphasize that
-      --  it is part of the constant, and not a separate negation operator
 
       if Val.Rbase = 10 then
-
          UI_Write (Val.Num / 10);
          Write_Char ('.');
          UI_Write (Val.Num mod 10);
@@ -1374,7 +1375,6 @@ package body Urealp is
       if Val.Negative then
          Write_Char (')');
       end if;
-
    end UR_Write;
 
    -------------
@@ -1423,6 +1423,24 @@ package body Urealp is
    end Ureal_100;
 
    -----------------
+   -- Ureal_10_36 --
+   -----------------
+
+   function Ureal_10_36 return Ureal is
+   begin
+      return UR_10_36;
+   end Ureal_10_36;
+
+   -------------------
+   -- Ureal_M_10_36 --
+   -------------------
+
+   function Ureal_M_10_36 return Ureal is
+   begin
+      return UR_M_10_36;
+   end Ureal_M_10_36;
+
+   -----------------
    -- Ureal_2_128 --
    -----------------
 
@@ -1430,6 +1448,15 @@ package body Urealp is
    begin
       return UR_2_128;
    end Ureal_2_128;
+
+   ----------------
+   -- Ureal_2_80 --
+   ----------------
+
+   function Ureal_2_80 return Ureal is
+   begin
+      return UR_2_80;
+   end Ureal_2_80;
 
    -------------------
    -- Ureal_2_M_128 --
@@ -1439,6 +1466,15 @@ package body Urealp is
    begin
       return UR_2_M_128;
    end Ureal_2_M_128;
+
+   -------------------
+   -- Ureal_2_M_80 --
+   -------------------
+
+   function Ureal_2_M_80 return Ureal is
+   begin
+      return UR_2_M_80;
+   end Ureal_2_M_80;
 
    ----------------
    -- Ureal_Half --

@@ -3,9 +3,10 @@
 --                          GNAT RUNTIME COMPONENTS                         --
 --                                                                          --
 --                  S Y S T E M . S C A L A R _ V A L U E S                 --
+--                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,37 +38,45 @@
 --  by the use of pragma Import.
 
 package System.Scalar_Values is
-pragma Pure (Scalar_Values);
+
+   --  Note: logically this package should be Pure since it can be accessed
+   --  from pure units, but the IS_xxx variables below get set at run time,
+   --  so they have to be library level variables. In fact we only ever
+   --  access this from generated code, and the compiler knows that it is
+   --  OK to access this unit from generated code.
 
    type Byte1 is mod 2 **  8;
    type Byte2 is mod 2 ** 16;
    type Byte4 is mod 2 ** 32;
    type Byte8 is mod 2 ** 64;
 
-   IS_Is1 : constant Byte1;           -- Initialize 1 byte signed value
-   IS_Is2 : constant Byte2;           -- Initialize 2 byte signed value
-   IS_Is4 : constant Byte4;           -- Initialize 4 byte signed value
-   IS_Is8 : constant Byte8;           -- Initialize 8 byte signed value
-   IS_Iu1 : constant Byte1;           -- Initialize 1 byte unsigned value
-   IS_Iu2 : constant Byte2;           -- Initialize 2 byte unsigned value
-   IS_Iu4 : constant Byte4;           -- Initialize 4 byte unsigned value
-   IS_Iu8 : constant Byte8;           -- Initialize 8 byte unsigned value
-   IS_Isf : constant Short_Float;     -- Initialize short float value
-   IS_Ifl : constant Float;           -- Initialize float value
-   IS_Ilf : constant Long_Float;      -- Initialize long float value
-   IS_Ill : constant Long_Long_Float; -- Initialize long long float value
+   --  The explicit initializations here are not really required, since these
+   --  variables are always set by System.Scalar_Values.Initialize.
 
-   pragma Import (Ada, IS_Is1, "__gnat_Is1");
-   pragma Import (Ada, IS_Is2, "__gnat_Is2");
-   pragma Import (Ada, IS_Is4, "__gnat_Is4");
-   pragma Import (Ada, IS_Is8, "__gnat_Is8");
-   pragma Import (Ada, IS_Iu1, "__gnat_Iu1");
-   pragma Import (Ada, IS_Iu2, "__gnat_Iu2");
-   pragma Import (Ada, IS_Iu4, "__gnat_Iu4");
-   pragma Import (Ada, IS_Iu8, "__gnat_Iu8");
-   pragma Import (Ada, IS_Isf, "__gnat_Isf");
-   pragma Import (Ada, IS_Ifl, "__gnat_Ifl");
-   pragma Import (Ada, IS_Ilf, "__gnat_Ilf");
-   pragma Import (Ada, IS_Ill, "__gnat_Ill");
+   IS_Is1 : Byte1 := 0;           -- Initialize 1 byte signed
+   IS_Is2 : Byte2 := 0;           -- Initialize 2 byte signed
+   IS_Is4 : Byte4 := 0;           -- Initialize 4 byte signed
+   IS_Is8 : Byte8 := 0;           -- Initialize 8 byte signed
+   IS_Iu1 : Byte1 := 0;           -- Initialize 1 byte unsigned
+   IS_Iu2 : Byte2 := 0;           -- Initialize 2 byte unsigned
+   IS_Iu4 : Byte4 := 0;           -- Initialize 4 byte unsigned
+   IS_Iu8 : Byte8 := 0;           -- Initialize 8 byte unsigned
+
+   --  The float definitions are aliased, because we use overlays to set them
+
+   IS_Isf : aliased Short_Float     := 0.0;  -- Initialize short float
+   IS_Ifl : aliased Float           := 0.0;  -- Initialize float
+   IS_Ilf : aliased Long_Float      := 0.0;  -- Initialize long float
+   IS_Ill : aliased Long_Long_Float := 0.0;  -- Initialize long long float
+
+   procedure Initialize (Mode1 : Character; Mode2 : Character);
+   --  This procedure is called from the binder when Initialize_Scalars mode
+   --  is active. The arguments are the two characters from the -S switch,
+   --  with letters forced upper case. So for example if -S5a is given, then
+   --  Mode1 will be '5' and Mode2 will be 'A'. If the parameters are EV,
+   --  then this routine reads the environment variable GNAT_INIT_SCALARS.
+   --  The possible settings are the same as those for the -S switch (except
+   --  for EV), i.e. IN/LO/HO/xx, xx = 2 hex digits. If no -S switch is given
+   --  then the default of IN (invalid values) is passed on the call.
 
 end System.Scalar_Values;

@@ -31,7 +31,6 @@ with Nmake;    use Nmake;
 with Rtsfind;  use Rtsfind;
 with Sem_Res;  use Sem_Res;
 with Sinfo;    use Sinfo;
-with Snames;   use Snames;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 with Ttypef;   use Ttypef;

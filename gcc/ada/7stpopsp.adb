@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---            Copyright (C) 1991-2001, Florida State University             --
+--            Copyright (C) 1992-2002, Free Software Fundation, Inc.        --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,39 +26,37 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a FSU-like version of this package.
+--  This is a POSIX-like version of this package.
 
 separate (System.Task_Primitives.Operations)
 package body Specific is
-
-   ------------------
-   --  Local Data  --
-   ------------------
-
-   --  The followings are logically constants, but need to be initialized
-   --  at run time.
-
-   ATCB_Key : aliased pthread_key_t;
-   --  Key used to find the Ada Task_ID associated with a thread
 
    ----------------
    -- Initialize --
    ----------------
 
    procedure Initialize (Environment_Task : Task_ID) is
+      pragma Warnings (Off, Environment_Task);
       Result : Interfaces.C.int;
+
    begin
       Result := pthread_key_create (ATCB_Key'Access, null);
       pragma Assert (Result = 0);
-      Result := pthread_setspecific (ATCB_Key, To_Address (Environment_Task));
-      pragma Assert (Result = 0);
    end Initialize;
+
+   -------------------
+   -- Is_Valid_Task --
+   -------------------
+
+   function Is_Valid_Task return Boolean is
+   begin
+      return  pthread_getspecific (ATCB_Key) /= System.Null_Address;
+   end Is_Valid_Task;
 
    ---------
    -- Set --
@@ -77,12 +75,9 @@ package body Specific is
    ----------
 
    function Self return Task_ID is
-      Result : System.Address;
 
    begin
-      Result := pthread_getspecific (ATCB_Key);
-      pragma Assert (Result /= System.Null_Address);
-      return To_Task_ID (Result);
+      return To_Task_Id (pthread_getspecific (ATCB_Key));
    end Self;
 
 end Specific;

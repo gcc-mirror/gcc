@@ -46,6 +46,7 @@ with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stringt;  use Stringt;
 with Stand;    use Stand;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -312,145 +313,168 @@ package body Exp_Prag is
    --  with the unexpanded name of the exception (if not already set).
 
    procedure Expand_Pragma_Import_Export_Exception (N : Node_Id) is
-      Id     : constant Entity_Id := Entity (Expression (Arg1 (N)));
-      Call   : constant Node_Id := Register_Exception_Call (Id);
-      Loc    : constant Source_Ptr := Sloc (N);
    begin
-      if Present (Call) then
-         declare
-            Excep_Internal : constant Node_Id :=
-                              Make_Defining_Identifier
-                               (Loc, New_Internal_Name ('V'));
-            Export_Pragma  : Node_Id;
-            Excep_Alias    : Node_Id;
-            Excep_Object   : Node_Id;
-            Excep_Image : String_Id;
-            Exdata      : List_Id;
-            Lang1       : Node_Id;
-            Lang2       : Node_Id;
-            Lang3       : Node_Id;
-            Code        : Node_Id;
-         begin
-            if Present (Interface_Name (Id)) then
-               Excep_Image := Strval (Interface_Name (Id));
-            else
-               Get_Name_String (Chars (Id));
-               Set_All_Upper_Case;
-               Excep_Image := String_From_Name_Buffer;
-            end if;
+      --  This pragma is only effective on OpenVMS systems, it was ignored
+      --  on non-VMS systems, and we need to ignore it here as well.
 
-            Exdata := Component_Associations (Expression (Parent (Id)));
+      if not OpenVMS_On_Target then
+         return;
+      end if;
 
-            if Is_VMS_Exception (Id) then
+      declare
+         Id     : constant Entity_Id := Entity (Expression (Arg1 (N)));
+         Call   : constant Node_Id := Register_Exception_Call (Id);
+         Loc    : constant Source_Ptr := Sloc (N);
 
-               Lang1 := Next (First (Exdata));
-               Lang2 := Next (Lang1);
-               Lang3 := Next (Lang2);
+      begin
+         if Present (Call) then
+            declare
+               Excep_Internal : constant Node_Id :=
+                                 Make_Defining_Identifier
+                                  (Loc, New_Internal_Name ('V'));
+               Export_Pragma  : Node_Id;
+               Excep_Alias    : Node_Id;
+               Excep_Object   : Node_Id;
+               Excep_Image : String_Id;
+               Exdata      : List_Id;
+               Lang1       : Node_Id;
+               Lang2       : Node_Id;
+               Lang3       : Node_Id;
+               Code        : Node_Id;
 
-               Rewrite (Expression (Lang1),
-                 Make_Character_Literal (Loc, Name_uV, Get_Char_Code ('V')));
-               Analyze (Expression (Lang1));
-
-               Rewrite (Expression (Lang2),
-                 Make_Character_Literal (Loc, Name_uM, Get_Char_Code ('M')));
-               Analyze (Expression (Lang2));
-
-               Rewrite (Expression (Lang3),
-                 Make_Character_Literal (Loc, Name_uS, Get_Char_Code ('S')));
-               Analyze (Expression (Lang3));
-
-               if Exception_Code (Id) /= No_Uint then
-                  Code := Make_Integer_Literal (Loc, Exception_Code (Id));
-
-                  Excep_Object :=
-                    Make_Object_Declaration (Loc,
-                      Defining_Identifier => Excep_Internal,
-                      Object_Definition   =>
-                        New_Reference_To (Standard_Integer, Loc));
-
-                  Insert_Action (N, Excep_Object);
-                  Analyze (Excep_Object);
-
-                  Start_String;
-                  Store_String_Int (UI_To_Int (Exception_Code (Id)) / 8 * 8);
-
-                  Excep_Alias :=
-                    Make_Pragma
-                      (Loc,
-                       Name_Linker_Alias,
-                       New_List
-                         (Make_Pragma_Argument_Association
-                            (Sloc => Loc,
-                             Expression =>
-                               New_Reference_To (Excep_Internal, Loc)),
-                          Make_Pragma_Argument_Association
-                            (Sloc => Loc,
-                             Expression =>
-                               Make_String_Literal
-                                 (Sloc => Loc,
-                                  Strval => End_String))));
-
-                  Insert_Action (N, Excep_Alias);
-                  Analyze (Excep_Alias);
-
-                  Export_Pragma :=
-                    Make_Pragma
-                      (Loc,
-                       Name_Export,
-                       New_List
-                         (Make_Pragma_Argument_Association
-                            (Sloc => Loc,
-                             Expression => Make_Identifier (Loc, Name_C)),
-                          Make_Pragma_Argument_Association
-                            (Sloc => Loc,
-                             Expression =>
-                               New_Reference_To (Excep_Internal, Loc)),
-                          Make_Pragma_Argument_Association
-                            (Sloc => Loc,
-                             Expression =>
-                               Make_String_Literal
-                                 (Sloc => Loc,
-                                  Strval => Excep_Image)),
-                          Make_Pragma_Argument_Association
-                            (Sloc => Loc,
-                             Expression =>
-                               Make_String_Literal
-                                 (Sloc => Loc,
-                                  Strval => Excep_Image))));
-
-                  Insert_Action (N, Export_Pragma);
-                  Analyze (Export_Pragma);
-
+            begin
+               if Present (Interface_Name (Id)) then
+                  Excep_Image := Strval (Interface_Name (Id));
                else
-                  Code :=
-                     Unchecked_Convert_To (Standard_Integer,
-                       Make_Function_Call (Loc,
-                         Name =>
-                           New_Reference_To (RTE (RE_Import_Value), Loc),
-                         Parameter_Associations => New_List
-                           (Make_String_Literal (Loc,
-                             Strval => Excep_Image))));
+                  Get_Name_String (Chars (Id));
+                  Set_All_Upper_Case;
+                  Excep_Image := String_From_Name_Buffer;
                end if;
 
-               Rewrite (Call,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name => New_Reference_To
-                             (RTE (RE_Register_VMS_Exception), Loc),
-                   Parameter_Associations => New_List (Code)));
+               Exdata := Component_Associations (Expression (Parent (Id)));
 
-               Analyze_And_Resolve (Code, Standard_Integer);
-               Analyze (Call);
+               if Is_VMS_Exception (Id) then
+                  Lang1 := Next (First (Exdata));
+                  Lang2 := Next (Lang1);
+                  Lang3 := Next (Lang2);
 
-            end if;
+                  Rewrite (Expression (Lang1),
+                    Make_Character_Literal (Loc,
+                      Chars => Name_uV,
+                      Char_Literal_Value => Get_Char_Code ('V')));
+                  Analyze (Expression (Lang1));
 
-            if not Present (Interface_Name (Id)) then
-               Set_Interface_Name (Id,
-                  Make_String_Literal
-                    (Sloc => Loc,
-                     Strval => Excep_Image));
-            end if;
-         end;
-      end if;
+                  Rewrite (Expression (Lang2),
+                    Make_Character_Literal (Loc,
+                      Chars => Name_uM,
+                      Char_Literal_Value => Get_Char_Code ('M')));
+                  Analyze (Expression (Lang2));
+
+                  Rewrite (Expression (Lang3),
+                    Make_Character_Literal (Loc,
+                      Chars => Name_uS,
+                      Char_Literal_Value => Get_Char_Code ('S')));
+                  Analyze (Expression (Lang3));
+
+                  if Exception_Code (Id) /= No_Uint then
+                     Code :=
+                       Make_Integer_Literal (Loc,
+                         Intval => Exception_Code (Id));
+
+                     Excep_Object :=
+                       Make_Object_Declaration (Loc,
+                         Defining_Identifier => Excep_Internal,
+                         Object_Definition   =>
+                           New_Reference_To (Standard_Integer, Loc));
+
+                     Insert_Action (N, Excep_Object);
+                     Analyze (Excep_Object);
+
+                     Start_String;
+                     Store_String_Int
+                       (UI_To_Int (Exception_Code (Id)) / 8 * 8);
+
+                     Excep_Alias :=
+                       Make_Pragma
+                         (Loc,
+                          Name_Linker_Alias,
+                          New_List
+                            (Make_Pragma_Argument_Association
+                               (Sloc => Loc,
+                                Expression =>
+                                  New_Reference_To (Excep_Internal, Loc)),
+
+                             Make_Pragma_Argument_Association
+                               (Sloc => Loc,
+                                Expression =>
+                                  Make_String_Literal
+                                    (Sloc => Loc,
+                                     Strval => End_String))));
+
+                     Insert_Action (N, Excep_Alias);
+                     Analyze (Excep_Alias);
+
+                     Export_Pragma :=
+                       Make_Pragma
+                         (Loc,
+                          Name_Export,
+                          New_List
+                            (Make_Pragma_Argument_Association
+                               (Sloc => Loc,
+                                Expression => Make_Identifier (Loc, Name_C)),
+
+                             Make_Pragma_Argument_Association
+                               (Sloc => Loc,
+                                Expression =>
+                                  New_Reference_To (Excep_Internal, Loc)),
+
+                             Make_Pragma_Argument_Association
+                               (Sloc => Loc,
+                                Expression =>
+                                  Make_String_Literal
+                                    (Sloc => Loc,
+                                     Strval => Excep_Image)),
+
+                             Make_Pragma_Argument_Association
+                               (Sloc => Loc,
+                                Expression =>
+                                  Make_String_Literal
+                                    (Sloc => Loc,
+                                     Strval => Excep_Image))));
+
+                     Insert_Action (N, Export_Pragma);
+                     Analyze (Export_Pragma);
+
+                  else
+                     Code :=
+                        Unchecked_Convert_To (Standard_Integer,
+                          Make_Function_Call (Loc,
+                            Name =>
+                              New_Reference_To (RTE (RE_Import_Value), Loc),
+                            Parameter_Associations => New_List
+                              (Make_String_Literal (Loc,
+                                Strval => Excep_Image))));
+                  end if;
+
+                  Rewrite (Call,
+                    Make_Procedure_Call_Statement (Loc,
+                      Name => New_Reference_To
+                                (RTE (RE_Register_VMS_Exception), Loc),
+                      Parameter_Associations => New_List (Code)));
+
+                  Analyze_And_Resolve (Code, Standard_Integer);
+                  Analyze (Call);
+               end if;
+
+               if not Present (Interface_Name (Id)) then
+                  Set_Interface_Name (Id,
+                     Make_String_Literal
+                       (Sloc => Loc,
+                        Strval => Excep_Image));
+               end if;
+            end;
+         end if;
+      end;
    end Expand_Pragma_Import_Export_Exception;
 
    ------------------------------------

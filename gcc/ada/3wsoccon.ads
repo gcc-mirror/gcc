@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2001 Ada Core Technologies, Inc.              --
+--          Copyright (C) 2000-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,109 +26,133 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+--  This package provides target dependent definitions of constant for use
+--  by the GNAT.Sockets package (g-socket.ads). This package should not be
+--  directly with'ed by an applications program.
 
 --  This is the version for MINGW32 NT
 
 package GNAT.Sockets.Constants is
 
-   --  Families
+   --------------
+   -- Families --
+   --------------
 
-   AF_INET              : constant :=                2;
-   AF_INET6             : constant :=                3;
+   AF_INET            : constant :=            2; --  IPv4 address family
+   AF_INET6           : constant :=            3; --  IPv6 address family
 
-   --  Modes
+   -----------
+   -- Modes --
+   -----------
 
-   SOCK_STREAM          : constant :=                1;
-   SOCK_DGRAM           : constant :=                2;
+   SOCK_STREAM        : constant :=            1; --  Stream socket
+   SOCK_DGRAM         : constant :=            2; --  Datagram socket
 
-   --  Socket Errors
+   -------------------
+   -- Socket errors --
+   -------------------
 
-   EINTR                : constant :=            10004;
-   EBADF                : constant :=            10009;
-   EACCES               : constant :=            10013;
-   EFAULT               : constant :=            10014;
-   EINVAL               : constant :=            10022;
-   EMFILE               : constant :=            10024;
-   EWOULDBLOCK          : constant :=            10035;
-   EINPROGRESS          : constant :=            10036;
-   EALREADY             : constant :=            10037;
-   ENOTSOCK             : constant :=            10038;
-   EDESTADDRREQ         : constant :=            10039;
-   EMSGSIZE             : constant :=            10040;
-   EPROTOTYPE           : constant :=            10041;
-   ENOPROTOOPT          : constant :=            10042;
-   EPROTONOSUPPORT      : constant :=            10043;
-   ESOCKTNOSUPPORT      : constant :=            10044;
-   EOPNOTSUPP           : constant :=            10045;
-   EPFNOSUPPORT         : constant :=            10046;
-   EAFNOSUPPORT         : constant :=            10047;
-   EADDRINUSE           : constant :=            10048;
-   EADDRNOTAVAIL        : constant :=            10049;
-   ENETDOWN             : constant :=            10050;
-   ENETUNREACH          : constant :=            10051;
-   ENETRESET            : constant :=            10052;
-   ECONNABORTED         : constant :=            10053;
-   ECONNRESET           : constant :=            10054;
-   ENOBUFS              : constant :=            10055;
-   EISCONN              : constant :=            10056;
-   ENOTCONN             : constant :=            10057;
-   ESHUTDOWN            : constant :=            10058;
-   ETOOMANYREFS         : constant :=            10059;
-   ETIMEDOUT            : constant :=            10060;
-   ECONNREFUSED         : constant :=            10061;
-   ELOOP                : constant :=            10062;
-   ENAMETOOLONG         : constant :=            10063;
-   EHOSTDOWN            : constant :=            10064;
-   EHOSTUNREACH         : constant :=            10065;
-   SYSNOTREADY          : constant :=            10091;
-   VERNOTSUPPORTED      : constant :=            10092;
-   NOTINITIALISED       : constant :=            10093;
-   EDISCON              : constant :=            10101;
+   EACCES             : constant :=        10013; --  Permission denied
+   EADDRINUSE         : constant :=        10048; --  Address already in use
+   EADDRNOTAVAIL      : constant :=        10049; --  Cannot assign address
+   EAFNOSUPPORT       : constant :=        10047; --  Addr family not supported
+   EALREADY           : constant :=        10037; --  Operation in progress
+   EBADF              : constant :=        10009; --  Bad file descriptor
+   ECONNABORTED       : constant :=        10053; --  Connection aborted
+   ECONNREFUSED       : constant :=        10061; --  Connection refused
+   ECONNRESET         : constant :=        10054; --  Connection reset by peer
+   EDESTADDRREQ       : constant :=        10039; --  Destination addr required
+   EFAULT             : constant :=        10014; --  Bad address
+   EHOSTDOWN          : constant :=        10064; --  Host is down
+   EHOSTUNREACH       : constant :=        10065; --  No route to host
+   EINPROGRESS        : constant :=        10036; --  Operation now in progress
+   EINTR              : constant :=        10004; --  Interrupted system call
+   EINVAL             : constant :=        10022; --  Invalid argument
+   EIO                : constant :=        10101; --  Input output error
+   EISCONN            : constant :=        10056; --  Socket already connected
+   ELOOP              : constant :=        10062; --  Too many symbolic lynks
+   EMFILE             : constant :=        10024; --  Too many open files
+   EMSGSIZE           : constant :=        10040; --  Message too long
+   ENAMETOOLONG       : constant :=        10063; --  Name too long
+   ENETDOWN           : constant :=        10050; --  Network is down
+   ENETRESET          : constant :=        10052; --  Disconn. on network reset
+   ENETUNREACH        : constant :=        10051; --  Network is unreachable
+   ENOBUFS            : constant :=        10055; --  No buffer space available
+   ENOPROTOOPT        : constant :=        10042; --  Protocol not available
+   ENOTCONN           : constant :=        10057; --  Socket not connected
+   ENOTSOCK           : constant :=        10038; --  Operation on non socket
+   EOPNOTSUPP         : constant :=        10045; --  Operation not supported
+   EPFNOSUPPORT       : constant :=        10046; --  Unknown protocol family
+   EPROTONOSUPPORT    : constant :=        10043; --  Unknown protocol
+   EPROTOTYPE         : constant :=        10041; --  Unknown protocol type
+   ESHUTDOWN          : constant :=        10058; --  Cannot send once shutdown
+   ESOCKTNOSUPPORT    : constant :=        10044; --  Socket type not supported
+   ETIMEDOUT          : constant :=        10060; --  Connection timed out
+   ETOOMANYREFS       : constant :=        10059; --  Too many references
+   EWOULDBLOCK        : constant :=        10035; --  Operation would block
 
-   --  Host Errors
+   -----------------
+   -- Host errors --
+   -----------------
 
-   HOST_NOT_FOUND       : constant :=            11001;
-   TRY_AGAIN            : constant :=            11002;
-   NO_RECOVERY          : constant :=            11003;
-   NO_ADDRESS           : constant :=            11004;
-   NO_DATA              : constant :=            11004;
+   HOST_NOT_FOUND     : constant :=        11001; --  Unknown host
+   TRY_AGAIN          : constant :=        11002; --  Host name lookup failure
+   NO_DATA            : constant :=        11004; --  No data record for name
+   NO_RECOVERY        : constant :=        11003; --  Non recoverable errors
 
-   EIO                  : constant :=            10101;
+   -------------------
+   -- Control flags --
+   -------------------
 
-   --  Control Flags
+   FIONBIO            : constant :=  -2147195266; --  Set/clear non-blocking io
+   FIONREAD           : constant :=   1074030207; --  How many bytes to read
 
-   FIONBIO              : constant :=      -2147195266;
-   FIONREAD             : constant :=       1074030207;
+   --------------------
+   -- Shutdown modes --
+   --------------------
 
-   --  Shutdown Modes
+   SHUT_RD            : constant :=            0; --  No more recv
+   SHUT_WR            : constant :=            1; --  No more send
+   SHUT_RDWR          : constant :=            2; --  No more recv/send
 
-   SHUT_RD              : constant :=                0;
-   SHUT_WR              : constant :=                1;
-   SHUT_RDWR            : constant :=                2;
+   ---------------------
+   -- Protocol levels --
+   ---------------------
 
-   --  Protocol Levels
+   SOL_SOCKET         : constant :=        65535; --  Options for socket level
+   IPPROTO_IP         : constant :=            0; --  Dummy protocol for IP
+   IPPROTO_UDP        : constant :=           17; --  UDP
+   IPPROTO_TCP        : constant :=            6; --  TCP
 
-   SOL_SOCKET           : constant :=            65535;
-   IPPROTO_IP           : constant :=                0;
-   IPPROTO_UDP          : constant :=               17;
-   IPPROTO_TCP          : constant :=                6;
+   -------------------
+   -- Request flags --
+   -------------------
 
-   --  Socket Options
+   MSG_OOB            : constant :=            1; --  Process out-of-band data
+   MSG_PEEK           : constant :=            2; --  Peek at incoming data
+   MSG_EOR            : constant :=           -1; --  Send end of record
+   MSG_WAITALL        : constant :=           -1; --  Wait for full reception
 
-   TCP_NODELAY          : constant :=                1;
-   SO_SNDBUF            : constant :=             4097;
-   SO_RCVBUF            : constant :=             4098;
-   SO_REUSEADDR         : constant :=                4;
-   SO_KEEPALIVE         : constant :=                8;
-   SO_LINGER            : constant :=              128;
-   SO_ERROR             : constant :=             4103;
-   SO_BROADCAST         : constant :=               32;
-   IP_ADD_MEMBERSHIP    : constant :=                5;
-   IP_DROP_MEMBERSHIP   : constant :=                6;
-   IP_MULTICAST_TTL     : constant :=                3;
-   IP_MULTICAST_LOOP    : constant :=                4;
+   --------------------
+   -- Socket options --
+   --------------------
+
+   TCP_NODELAY        : constant :=            1; --  Do not coalesce packets
+   SO_SNDBUF          : constant :=         4097; --  Set/get send buffer size
+   SO_RCVBUF          : constant :=         4098; --  Set/get recv buffer size
+   SO_REUSEADDR       : constant :=            4; --  Bind reuse local address
+   SO_KEEPALIVE       : constant :=            8; --  Enable keep-alive msgs
+   SO_LINGER          : constant :=          128; --  Defer close to flush data
+   SO_ERROR           : constant :=         4103; --  Get/clear error status
+   SO_BROADCAST       : constant :=           32; --  Can send broadcast msgs
+   IP_ADD_MEMBERSHIP  : constant :=            5; --  Join a multicast group
+   IP_DROP_MEMBERSHIP : constant :=            6; --  Leave a multicast group
+   IP_MULTICAST_TTL   : constant :=            3; --  Set/get multicast TTL
+   IP_MULTICAST_LOOP  : constant :=            4; --  Set/get mcast loopback
 
 end GNAT.Sockets.Constants;

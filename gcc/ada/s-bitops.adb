@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---         Copyright (C) 1996-2000 Free Software Foundation, Inc.           --
+--         Copyright (C) 1996-2002 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,9 +31,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with GNAT.Exceptions;       use GNAT.Exceptions;
-with System;                use System;
-with System.Unsigned_Types; use System.Unsigned_Types;
+with System;                 use System;
+with System.Pure_Exceptions; use System.Pure_Exceptions;
+with System.Unsigned_Types;  use System.Unsigned_Types;
+
 with Unchecked_Conversion;
 
 package body System.Bit_Ops is
@@ -65,7 +66,6 @@ package body System.Bit_Ops is
      (1 - LE) * 2#1111_1000# + LE * 2#0001_1111#,
      (1 - LE) * 2#1111_1100# + LE * 2#0011_1111#,
      (1 - LE) * 2#1111_1110# + LE * 2#0111_1111#);
-
 
    -----------------------
    -- Local Subprograms --

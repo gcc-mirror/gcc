@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -225,7 +225,7 @@ package body Uname is
       -------------------
 
       procedure Add_Node_Name (Node : Node_Id) is
-         Kind : Node_Kind := Nkind (Node);
+         Kind : constant Node_Kind := Nkind (Node);
 
       begin
          --  Just ignore an error node (someone else will give a message)
@@ -536,7 +536,7 @@ package body Uname is
       Get_Name_String (Old);
 
       declare
-         Child : String := Name_Buffer (1 .. Name_Len);
+         Child : constant String := Name_Buffer (1 .. Name_Len);
 
       begin
          Get_Name_String (Newp);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,17 +94,20 @@ package body System.Sequential_IO is
       Name : in String := "";
       Form : in String := "")
    is
-      File_Control_Block : Sequential_AFCB;
+      Dummy_File_Control_Block : Sequential_AFCB;
+      pragma Warnings (Off, Dummy_File_Control_Block);
+      --  Yes, we know this is never assigned a value, only the tag
+      --  is used for dispatching purposes, so that's expected.
 
    begin
       FIO.Open (File_Ptr  => AP (File),
-                Dummy_FCB => File_Control_Block,
-                Mode     => Mode,
-                Name     => Name,
-                Form     => Form,
-                Amethod  => 'Q',
-                Creat    => True,
-                Text     => False);
+                Dummy_FCB => Dummy_File_Control_Block,
+                Mode      => Mode,
+                Name      => Name,
+                Form      => Form,
+                Amethod   => 'Q',
+                Creat     => True,
+                Text      => False);
    end Create;
 
    ----------
@@ -117,11 +120,14 @@ package body System.Sequential_IO is
       Name : in String;
       Form : in String := "")
    is
-      File_Control_Block : Sequential_AFCB;
+      Dummy_File_Control_Block : Sequential_AFCB;
+      pragma Warnings (Off, Dummy_File_Control_Block);
+      --  Yes, we know this is never assigned a value, only the tag
+      --  is used for dispatching purposes, so that's expected.
 
    begin
       FIO.Open (File_Ptr  => AP (File),
-                Dummy_FCB => File_Control_Block,
+                Dummy_FCB => Dummy_File_Control_Block,
                 Mode      => Mode,
                 Name      => Name,
                 Form      => Form,

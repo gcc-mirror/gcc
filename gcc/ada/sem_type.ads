@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,8 +27,6 @@
 --  This unit contains the routines used to handle type determination,
 --  including the routine used to support overload resolution.
 
-with Alloc;
-with Table;
 with Types; use Types;
 
 package Sem_Type is
@@ -72,35 +70,7 @@ package Sem_Type is
 
    No_Interp : constant Interp := (Empty, Empty);
 
-   package All_Interp is new Table.Table (
-     Table_Component_Type => Interp,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
-     Table_Initial        => Alloc.All_Interp_Initial,
-     Table_Increment      => Alloc.All_Interp_Increment,
-     Table_Name           => "All_Interp");
-
-   --  The following data structures establish a mapping between nodes and
-   --  their interpretations. Eventually the Interp_Index corresponding to
-   --  the first interpretation of a node may be stored directly in the
-   --  corresponding node.
-
    subtype Interp_Index is Int;
-
-   type Interp_Ref is record
-      Node  : Node_Id;
-      Index : Interp_Index;
-   end record;
-
-   package Interp_Map is new Table.Table (
-     Table_Component_Type => Interp_Ref,
-     Table_Index_Type     => Int,
-     Table_Low_Bound      => 0,
-     Table_Initial        => Alloc.Interp_Map_Initial,
-     Table_Increment      => Alloc.Interp_Map_Increment,
-     Table_Name           => "Interp_Map");
-
-   --  For now Interp_Map is searched sequentially
 
    ----------------------
    --  Error Reporting --
@@ -130,11 +100,17 @@ package Sem_Type is
    --  already been stored in N. If the name is an expanded name, the homonyms
    --  are only those that belong to the same scope.
 
-   procedure New_Interps (N : Node_Id);
-   --  Initialize collection of interpretations for the given node, which is
-   --  either an overloaded entity, or an operation whose arguments have
-   --  multiple intepretations. Interpretations can be added to only one
-   --  node at a time.
+   function Is_Invisible_Operator
+     (N    : Node_Id;
+      T    : Entity_Id)
+      return Boolean;
+   --  Check whether a predefined operation with universal operands appears
+   --  in a context in which the operators of the expected type are not
+   --  visible.
+
+   procedure List_Interps (Nam : Node_Id; Err : Node_Id);
+   --  List candidate interpretations of an overloaded name. Used for
+   --  various error reports.
 
    procedure Add_One_Interp
      (N         : Node_Id;
@@ -186,7 +162,7 @@ package Sem_Type is
    --  New_N, its new copy. It has no effect in the non-overloaded case.
 
    function Covers (T1, T2 : Entity_Id) return Boolean;
-   --  This is the basic type compatibility routine. T1 is the expexted
+   --  This is the basic type compatibility routine. T1 is the expected
    --  type, imposed by context, and T2 is the actual type. The processing
    --  reflects both the definition of type coverage and the rules
    --  for operand matching.
@@ -252,6 +228,10 @@ package Sem_Type is
    function Valid_Boolean_Arg (T : Entity_Id) return Boolean;
    --  A valid argument of a boolean operator is either some boolean type,
    --  or a one-dimensional array of boolean type.
+
+   procedure Write_Interp_Ref (Map_Ptr : Int);
+   --  Debugging procedure to display entry in Interp_Map. Would not be
+   --  needed if it were possible to debug instantiations of Table.
 
    procedure Write_Overloads (N : Node_Id);
    --  Debugging procedure to output info on possibly overloaded entities

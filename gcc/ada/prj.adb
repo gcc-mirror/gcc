@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--             Copyright (C) 2001-2003 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,28 +25,27 @@
 ------------------------------------------------------------------------------
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
-with Errout;      use Errout;
-with GNAT.OS_Lib; use GNAT.OS_Lib;
-with Namet;       use Namet;
-with Osint;       use Osint;
+
+with Namet;    use Namet;
+with Osint;    use Osint;
 with Prj.Attr;
 with Prj.Com;
 with Prj.Env;
-with Scans;       use Scans;
-with Scn;
-with Stringt;     use Stringt;
-with Sinfo.CN;
-with Snames;      use Snames;
+with Prj.Err;  use Prj.Err;
+with Scans;    use Scans;
+with Snames;   use Snames;
+
+with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package body Prj is
 
-   The_Empty_String : String_Id;
+   The_Empty_String : Name_Id;
 
    Ada_Language     : constant Name_Id := Name_Ada;
 
    subtype Known_Casing is Casing_Type range All_Upper_Case .. Mixed_Case;
 
-   The_Casing_Images : array (Known_Casing) of String_Access :=
+   The_Casing_Images : constant array (Known_Casing) of String_Access :=
      (All_Lower_Case => new String'("lowercase"),
       All_Upper_Case => new String'("UPPERCASE"),
       Mixed_Case     => new String'("MixedCase"));
@@ -61,51 +60,92 @@ package body Prj is
       Dot_Replacement           => Standard_Dot_Replacement,
       Dot_Repl_Loc              => No_Location,
       Casing                    => All_Lower_Case,
-      Specification_Suffix      => No_Array_Element,
+      Spec_Suffix               => No_Array_Element,
       Current_Spec_Suffix       => No_Name,
       Spec_Suffix_Loc           => No_Location,
-      Implementation_Suffix     => No_Array_Element,
-      Current_Impl_Suffix       => No_Name,
-      Impl_Suffix_Loc           => No_Location,
+      Body_Suffix               => No_Array_Element,
+      Current_Body_Suffix       => No_Name,
+      Body_Suffix_Loc           => No_Location,
       Separate_Suffix           => No_Name,
       Sep_Suffix_Loc            => No_Location,
-      Specifications            => No_Array_Element,
+      Specs                     => No_Array_Element,
       Bodies                    => No_Array_Element,
       Specification_Exceptions  => No_Array_Element,
       Implementation_Exceptions => No_Array_Element);
 
    Project_Empty : constant Project_Data :=
-     (First_Referred_By            => No_Project,
-      Name                         => No_Name,
-      Path_Name                    => No_Name,
-      Location                     => No_Location,
-      Directory                    => No_Name,
-      Library                      => False,
-      Library_Dir                  => No_Name,
-      Library_Name                 => No_Name,
-      Library_Kind                 => Static,
-      Lib_Internal_Name            => No_Name,
-      Lib_Elaboration              => False,
-      Sources_Present              => True,
-      Sources                      => Nil_String,
-      Source_Dirs                  => Nil_String,
-      Object_Directory             => No_Name,
-      Exec_Directory               => No_Name,
-      Modifies                     => No_Project,
-      Modified_By                  => No_Project,
-      Naming                       => Std_Naming_Data,
-      Decl                         => No_Declarations,
-      Imported_Projects            => Empty_Project_List,
-      Include_Path                 => null,
-      Objects_Path                 => null,
-      Config_File_Name             => No_Name,
-      Config_File_Temp             => False,
-      Config_Checked               => False,
-      Language_Independent_Checked => False,
-      Checked                      => False,
-      Seen                         => False,
-      Flag1                        => False,
-      Flag2                        => False);
+     (First_Referred_By              => No_Project,
+      Name                           => No_Name,
+      Path_Name                      => No_Name,
+      Display_Path_Name              => No_Name,
+      Location                       => No_Location,
+      Mains                          => Nil_String,
+      Directory                      => No_Name,
+      Display_Directory              => No_Name,
+      Dir_Path                       => null,
+      Library                        => False,
+      Library_Dir                    => No_Name,
+      Display_Library_Dir            => No_Name,
+      Library_Src_Dir                => No_Name,
+      Display_Library_Src_Dir        => No_Name,
+      Library_Name                   => No_Name,
+      Library_Kind                   => Static,
+      Lib_Internal_Name              => No_Name,
+      Lib_Elaboration                => False,
+      Standalone_Library             => False,
+      Lib_Interface_ALIs             => Nil_String,
+      Lib_Auto_Init                  => False,
+      Sources_Present                => True,
+      Sources                        => Nil_String,
+      Source_Dirs                    => Nil_String,
+      Known_Order_Of_Source_Dirs     => True,
+      Object_Directory               => No_Name,
+      Display_Object_Dir             => No_Name,
+      Exec_Directory                 => No_Name,
+      Display_Exec_Dir               => No_Name,
+      Extends                        => No_Project,
+      Extended_By                    => No_Project,
+      Naming                         => Std_Naming_Data,
+      Decl                           => No_Declarations,
+      Imported_Projects              => Empty_Project_List,
+      Ada_Include_Path               => null,
+      Ada_Objects_Path               => null,
+      Include_Path_File              => No_Name,
+      Objects_Path_File_With_Libs    => No_Name,
+      Objects_Path_File_Without_Libs => No_Name,
+      Config_File_Name               => No_Name,
+      Config_File_Temp               => False,
+      Config_Checked                 => False,
+      Language_Independent_Checked   => False,
+      Checked                        => False,
+      Seen                           => False,
+      Flag1                          => False,
+      Flag2                          => False,
+      Depth                          => 0);
+
+   -------------------
+   -- Add_To_Buffer --
+   -------------------
+
+   procedure Add_To_Buffer (S : String) is
+   begin
+      --  If Buffer is too small, double its size
+
+      if Buffer_Last + S'Length > Buffer'Last then
+         declare
+            New_Buffer : constant  String_Access :=
+                           new String (1 .. 2 * Buffer'Last);
+
+         begin
+            New_Buffer (1 .. Buffer_Last) := Buffer (1 .. Buffer_Last);
+            Free (Buffer);
+            Buffer := New_Buffer;
+         end;
+      end if;
+
+      Buffer (Buffer_Last + 1 .. Buffer_Last + S'Length) := S;
+      Buffer_Last := Buffer_Last + S'Length;
+   end Add_To_Buffer;
 
    -------------------
    -- Empty_Project --
@@ -121,7 +161,7 @@ package body Prj is
    -- Empty_String --
    ------------------
 
-   function Empty_String return String_Id is
+   function Empty_String return Name_Id is
    begin
       return The_Empty_String;
    end Empty_String;
@@ -133,7 +173,7 @@ package body Prj is
    procedure Expect (The_Token : Token_Type; Token_Image : String) is
    begin
       if Token /= The_Token then
-         Error_Msg ("""" & Token_Image & """ expected", Token_Ptr);
+         Error_Msg (Token_Image & " expected", Token_Ptr);
       end if;
    end Expect;
 
@@ -192,22 +232,25 @@ package body Prj is
    begin
       if not Initialized then
          Initialized := True;
-         Stringt.Initialize;
-         Start_String;
-         The_Empty_String := End_String;
+         Name_Len := 0;
+         The_Empty_String := Name_Find;
+         Empty_Name := The_Empty_String;
          Name_Len := 4;
          Name_Buffer (1 .. 4) := ".ads";
          Default_Ada_Spec_Suffix := Name_Find;
          Name_Len := 4;
          Name_Buffer (1 .. 4) := ".adb";
-         Default_Ada_Impl_Suffix := Name_Find;
+         Default_Ada_Body_Suffix := Name_Find;
+         Name_Len := 1;
+         Name_Buffer (1) := '/';
+         Slash := Name_Find;
          Std_Naming_Data.Current_Spec_Suffix := Default_Ada_Spec_Suffix;
-         Std_Naming_Data.Current_Impl_Suffix := Default_Ada_Impl_Suffix;
-         Std_Naming_Data.Separate_Suffix     := Default_Ada_Impl_Suffix;
+         Std_Naming_Data.Current_Body_Suffix := Default_Ada_Body_Suffix;
+         Std_Naming_Data.Separate_Suffix     := Default_Ada_Body_Suffix;
          Register_Default_Naming_Scheme
            (Language            => Ada_Language,
             Default_Spec_Suffix => Default_Ada_Spec_Suffix,
-            Default_Impl_Suffix => Default_Ada_Impl_Suffix);
+            Default_Body_Suffix => Default_Ada_Body_Suffix);
          Prj.Env.Initialize;
          Prj.Attr.Initialize;
          Set_Name_Table_Byte (Name_Project,  Token_Type'Pos (Tok_Project));
@@ -223,42 +266,32 @@ package body Prj is
    procedure Register_Default_Naming_Scheme
      (Language            : Name_Id;
       Default_Spec_Suffix : Name_Id;
-      Default_Impl_Suffix : Name_Id)
+      Default_Body_Suffix : Name_Id)
    is
       Lang : Name_Id;
       Suffix : Array_Element_Id;
       Found : Boolean := False;
       Element : Array_Element;
 
-      Spec_Str : String_Id;
-      Impl_Str : String_Id;
-
    begin
-      --  The following code is completely uncommented ???
+      --  Get the language name in small letters
 
       Get_Name_String (Language);
       Name_Buffer (1 .. Name_Len) := To_Lower (Name_Buffer (1 .. Name_Len));
       Lang := Name_Find;
 
-      Get_Name_String (Default_Spec_Suffix);
-      Start_String;
-      Store_String_Chars (Name_Buffer (1 .. Name_Len));
-      Spec_Str := End_String;
-
-      Get_Name_String (Default_Impl_Suffix);
-      Start_String;
-      Store_String_Chars (Name_Buffer (1 .. Name_Len));
-      Impl_Str := End_String;
-
-      Suffix := Std_Naming_Data.Specification_Suffix;
+      Suffix := Std_Naming_Data.Spec_Suffix;
       Found := False;
+
+      --  Look for an element of the spec sufix array indexed by the language
+      --  name. If one is found, put the default value.
 
       while Suffix /= No_Array_Element and then not Found loop
          Element := Array_Elements.Table (Suffix);
 
          if Element.Index = Lang then
             Found := True;
-            Element.Value.Value := Spec_Str;
+            Element.Value.Value := Default_Spec_Suffix;
             Array_Elements.Table (Suffix) := Element;
 
          else
@@ -266,28 +299,34 @@ package body Prj is
          end if;
       end loop;
 
+      --  If none can be found, create a new one.
+
       if not Found then
          Element :=
            (Index => Lang,
+            Index_Case_Sensitive => False,
             Value => (Kind     => Single,
                       Location => No_Location,
                       Default  => False,
-                      Value    => Spec_Str),
-            Next  => Std_Naming_Data.Specification_Suffix);
+                      Value    => Default_Spec_Suffix),
+            Next  => Std_Naming_Data.Spec_Suffix);
          Array_Elements.Increment_Last;
          Array_Elements.Table (Array_Elements.Last) := Element;
-         Std_Naming_Data.Specification_Suffix := Array_Elements.Last;
+         Std_Naming_Data.Spec_Suffix := Array_Elements.Last;
       end if;
 
-      Suffix := Std_Naming_Data.Implementation_Suffix;
+      Suffix := Std_Naming_Data.Body_Suffix;
       Found := False;
+
+      --  Look for an element of the body sufix array indexed by the language
+      --  name. If one is found, put the default value.
 
       while Suffix /= No_Array_Element and then not Found loop
          Element := Array_Elements.Table (Suffix);
 
          if Element.Index = Lang then
             Found := True;
-            Element.Value.Value := Impl_Str;
+            Element.Value.Value := Default_Body_Suffix;
             Array_Elements.Table (Suffix) := Element;
 
          else
@@ -295,17 +334,20 @@ package body Prj is
          end if;
       end loop;
 
+      --  If none can be found, create a new one.
+
       if not Found then
          Element :=
            (Index => Lang,
+            Index_Case_Sensitive => False,
             Value => (Kind     => Single,
                       Location => No_Location,
                       Default  => False,
-                      Value    => Impl_Str),
-            Next  => Std_Naming_Data.Implementation_Suffix);
+                      Value    => Default_Body_Suffix),
+            Next  => Std_Naming_Data.Body_Suffix);
          Array_Elements.Increment_Last;
          Array_Elements.Table (Array_Elements.Last) := Element;
-         Std_Naming_Data.Implementation_Suffix := Array_Elements.Last;
+         Std_Naming_Data.Body_Suffix := Array_Elements.Last;
       end if;
    end Register_Default_Naming_Scheme;
 
@@ -337,7 +379,7 @@ package body Prj is
       return Left.Dot_Replacement = Right.Dot_Replacement
         and then Left.Casing = Right.Casing
         and then Left.Current_Spec_Suffix = Right.Current_Spec_Suffix
-        and then Left.Current_Impl_Suffix = Right.Current_Impl_Suffix
+        and then Left.Current_Body_Suffix = Right.Current_Body_Suffix
         and then Left.Separate_Suffix = Right.Separate_Suffix;
    end Same_Naming_Scheme;
 
@@ -347,15 +389,7 @@ package body Prj is
 
    procedure Scan is
    begin
-      Scn.Scan;
-
-      --  Change operator symbol to literal strings, since that's the way
-      --  we treat all strings in a project file.
-
-      if Token = Tok_Operator_Symbol then
-         Sinfo.CN.Change_Operator_Symbol_To_String_Literal (Token_Node);
-         Token := Tok_String_Literal;
-      end if;
+      Scanner.Scan;
    end Scan;
 
    --------------------------

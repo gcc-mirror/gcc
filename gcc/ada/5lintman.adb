@@ -6,7 +6,8 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---             Copyright (C) 1991-2002 Florida State University             --
+--             Copyright (C) 1991-1994, Florida State University            --
+--             Copyright (C) 1995-2003, Ada Core Technologies               --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,9 +27,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -133,6 +133,9 @@ package body System.Interrupt_Management is
    -- Notify_Exception --
    ----------------------
 
+   pragma Warnings (Off);
+   --  Because many unaccessed arguments
+
    Signal_Mask : aliased sigset_t;
    --  The set of signals handled by Notify_Exception
 
@@ -191,6 +194,7 @@ package body System.Interrupt_Management is
       oldmask       : unsigned_long;
       cr2           : unsigned_long)
    is
+      pragma Warnings (On);
 
       function To_Machine_State_Ptr is new
         Unchecked_Conversion (Address, Machine_State_Ptr);
@@ -207,7 +211,7 @@ package body System.Interrupt_Management is
 
       mstate  : Machine_State_Ptr;
       message : aliased constant String := "" & ASCII.Nul;
-      --  a null terminated String.
+      --  A null terminated String.
 
       Result  : int;
 
@@ -218,7 +222,7 @@ package body System.Interrupt_Management is
 
       --  ??? The original signal mask (the one we had before coming into this
       --  signal catching function) should be restored by
-      --  Raise_From_Signal_Handler. For now, restore it explicitly
+      --  Raise_From_Signal_Handler. For now, restore it explicitely
 
       Result := pthread_sigmask (SIG_UNBLOCK, Signal_Mask'Access, null);
       pragma Assert (Result = 0);
@@ -269,8 +273,22 @@ begin
       old_act : aliased struct_sigaction;
       Result  : int;
 
-   begin
+      function State (Int : Interrupt_ID) return Character;
+      pragma Import (C, State, "__gnat_get_interrupt_state");
+      --  Get interrupt state.  Defined in a-init.c
+      --  The input argument is the interrupt number,
+      --  and the result is one of the following:
 
+      User    : constant Character := 'u';
+      Runtime : constant Character := 'r';
+      Default : constant Character := 's';
+      --    'n'   this interrupt not set by any Interrupt_State pragma
+      --    'u'   Interrupt_State pragma set state to User
+      --    'r'   Interrupt_State pragma set state to Runtime
+      --    's'   Interrupt_State pragma set state to System (use "default"
+      --           system handler)
+
+   begin
       --  Need to call pthread_init very early because it is doing signal
       --  initializations.
 
@@ -281,64 +299,103 @@ begin
       act.sa_handler := Notify_Exception'Address;
 
       act.sa_flags := 0;
+
       --  On some targets, we set sa_flags to SA_NODEFER so that during the
       --  handler execution we do not change the Signal_Mask to be masked for
       --  the Signal.
+
       --  This is a temporary fix to the problem that the Signal_Mask is
       --  not restored after the exception (longjmp) from the handler.
       --  The right fix should be made in sigsetjmp so that we save
       --  the Signal_Set and restore it after a longjmp.
-      --  Since SA_NODEFER is obsolete, instead we reset explicitly
+
+      --  Since SA_NODEFER is obsolete, instead we reset explicitely
       --  the mask in the exception handler.
 
       Result := sigemptyset (Signal_Mask'Access);
       pragma Assert (Result = 0);
 
+      --  Add signals that map to Ada exceptions to the mask.
+
       for J in Exception_Interrupts'Range loop
-         Result :=
-           sigaddset (Signal_Mask'Access, Signal (Exception_Interrupts (J)));
-         pragma Assert (Result = 0);
+         if State (Exception_Interrupts (J)) /= Default  then
+            Result :=
+            sigaddset (Signal_Mask'Access, Signal (Exception_Interrupts (J)));
+            pragma Assert (Result = 0);
+         end if;
       end loop;
 
       act.sa_mask := Signal_Mask;
 
+      pragma Assert (Keep_Unmasked = (Interrupt_ID'Range => False));
+      pragma Assert (Reserve = (Interrupt_ID'Range => False));
+
+      --  Process state of exception signals
+
       for J in Exception_Interrupts'Range loop
-         Keep_Unmasked (Exception_Interrupts (J)) := True;
-         Result :=
-           sigaction
-           (Signal (Exception_Interrupts (J)),
-            act'Unchecked_Access,
-            old_act'Unchecked_Access);
-         pragma Assert (Result = 0);
+         if State (Exception_Interrupts (J)) /= User then
+            Keep_Unmasked (Exception_Interrupts (J)) := True;
+            Reserve (Exception_Interrupts (J)) := True;
+
+            if State (Exception_Interrupts (J)) /= Default then
+               Result :=
+                 sigaction
+                 (Signal (Exception_Interrupts (J)), act'Unchecked_Access,
+                  old_act'Unchecked_Access);
+               pragma Assert (Result = 0);
+            end if;
+         end if;
       end loop;
 
-      Keep_Unmasked (Abort_Task_Interrupt) := True;
-
-      --  By keeping SIGINT unmasked, allow the user to do a Ctrl-C, but in the
-      --  same time, disable the ability of handling this signal
-      --  via Ada.Interrupts.
-      --  The pragma Unreserve_All_Interrupts allows the user to
-      --  change this behavior.
-
-      if Unreserve_All_Interrupts = 0 then
-         Keep_Unmasked (SIGINT) := True;
+      if State (Abort_Task_Interrupt) /= User then
+         Keep_Unmasked (Abort_Task_Interrupt) := True;
+         Reserve (Abort_Task_Interrupt) := True;
       end if;
+
+      --  Set SIGINT to unmasked state as long as it's
+      --  not in "User" state.  Check for Unreserve_All_Interrupts last
+
+      if State (SIGINT) /= User then
+         Keep_Unmasked (SIGINT) := True;
+         Reserve (SIGINT) := True;
+      end if;
+
+      --  Check all signals for state that requires keeping them
+      --  unmasked and reserved
+
+      for J in Interrupt_ID'Range loop
+         if State (J) = Default or else State (J) = Runtime then
+            Keep_Unmasked (J) := True;
+            Reserve (J) := True;
+         end if;
+      end loop;
+
+      --  Add the set of signals that must always be unmasked for this target
 
       for J in Unmasked'Range loop
          Keep_Unmasked (Interrupt_ID (Unmasked (J))) := True;
+         Reserve (Interrupt_ID (Unmasked (J))) := True;
       end loop;
 
-      Reserve := Keep_Unmasked or Keep_Masked;
+      --  Add target-specific reserved signals
 
       for J in Reserved'Range loop
          Reserve (Interrupt_ID (Reserved (J))) := True;
       end loop;
 
-      Reserve (0) := True;
+      --  Process pragma Unreserve_All_Interrupts. This overrides any
+      --  settings due to pragma Interrupt_State:
+
+      if Unreserve_All_Interrupts /= 0 then
+         Keep_Unmasked (SIGINT) := False;
+         Reserve (SIGINT) := False;
+      end if;
+
       --  We do not have Signal 0 in reality. We just use this value
       --  to identify non-existent signals (see s-intnam.ads). Therefore,
       --  Signal 0 should not be used in all signal related operations hence
       --  mark it as reserved.
 
+      Reserve (0) := True;
    end;
 end System.Interrupt_Management;

@@ -48,6 +48,7 @@
 #undef getchar
 #undef fputc
 #undef stderr
+#undef stdout
 #endif
 
 int
@@ -73,7 +74,9 @@ void
 put_int (x)
      int x;
 {
-  printf ("%d", x);
+   /* Use fprintf rather than printf, since the latter is unbuffered
+      on vxworks */
+   fprintf (stdout, "%d", x);
 }
 
 void

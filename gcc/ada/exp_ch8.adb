@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,11 +28,13 @@ with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Exp_Dbug; use Exp_Dbug;
 with Exp_Util; use Exp_Util;
+with Freeze;   use Freeze;
 with Nlists;   use Nlists;
 with Sem;      use Sem;
 with Sem_Ch8;  use Sem_Ch8;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
+with Targparm; use Targparm;
 
 package body Exp_Ch8 is
 
@@ -82,7 +84,7 @@ package body Exp_Ch8 is
    --  More comments needed for this para ???
 
    procedure Expand_N_Object_Renaming_Declaration (N : Node_Id) is
-      Nam  : Node_Id := Name (N);
+      Nam  : constant Node_Id := Name (N);
       T    : Entity_Id;
       Decl : Node_Id;
 
@@ -211,7 +213,7 @@ package body Exp_Ch8 is
 
          elsif Nkind (Nam) = N_Selected_Component then
             declare
-               Rec_Type : Entity_Id := Etype (Prefix (Nam));
+               Rec_Type : constant Entity_Id := Etype (Prefix (Nam));
 
             begin
                if Present (Component_Clause (Entity (Selector_Name (Nam))))
@@ -253,6 +255,17 @@ package body Exp_Ch8 is
          Expand_Subtype_From_Expr (N, T, Subtype_Mark (N), Name (N));
          Find_Type (Subtype_Mark (N));
          Set_Etype (Defining_Identifier (N), Entity (Subtype_Mark (N)));
+
+         --  Freeze the class-wide subtype here to ensure that the subtype
+         --  and equivalent type are frozen before the renaming. This is
+         --  required for targets where Frontend_Layout_On_Target is true.
+         --  For targets where Gigi is used, class-wide subtype should not
+         --  be frozen (in that case the subtype is marked as already frozen
+         --  when it's created).
+
+         if Frontend_Layout_On_Target then
+            Freeze_Before (N, Entity (Subtype_Mark (N)));
+         end if;
       end if;
 
       --  Create renaming entry for debug information

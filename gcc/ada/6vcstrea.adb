@@ -63,7 +63,7 @@ package body Interfaces.C_Streams is
          for S in 1 .. size loop
             Ch := fgetc (stream);
             if Ch = EOF then
-               return 0;
+               return Get_Count;
             end if;
             BA.all (C, S) := Character'Val (Ch);
          end loop;
@@ -100,7 +100,7 @@ package body Interfaces.C_Streams is
          for S in 1 .. size loop
             Ch := fgetc (stream);
             if Ch = EOF then
-               return 0;
+               return Get_Count;
             end if;
             BA.all (C, S) := Character'Val (Ch);
          end loop;
@@ -135,7 +135,7 @@ package body Interfaces.C_Streams is
       for C in 1 .. count loop
          for S in 1 .. size loop
             if fputc (Character'Pos (BA.all (C, S)), stream) = EOF then
-               exit;
+               return Put_Count;
             end if;
          end loop;
          Put_Count := Put_Count + 1;
@@ -168,7 +168,7 @@ package body Interfaces.C_Streams is
       --  In order for the above fwrite hack to work, we must always buffer
       --  stdout and stderr. Is_regular_file on VMS cannot detect when
       --  these are redirected to a file, so checking for that condition
-      --  doesn't help.
+      --  doesnt help.
 
       if mode = IONBF
         and then (stream = stdout or else stream = stderr)

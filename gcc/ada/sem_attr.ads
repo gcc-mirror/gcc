@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -404,6 +404,15 @@ package Sem_Attr is
       --  provides the value System.Storage_Unit, and is intended primarily
       --  for constructing this definition in package System (see note above
       --  in Default_Bit_Order description). The is a static attribute.
+
+      -----------------
+      -- Target_Name --
+      -----------------
+
+      Attribute_Target_Name => True,
+      --
+      --  Standard'Target_Name yields the string identifying the target
+      --  for the compilation, taken from Sdefault.Target_Name.
 
       ----------------
       -- To_Address --

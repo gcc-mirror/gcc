@@ -4,13 +4,9 @@
 --                                                                          --
 --                         S Y S T E M . M E M O R Y                        --
 --                                                                          --
---                                 S p e c                                  --
+--                                 B o d y                                 --
 --                                                                          --
---          Copyright (C) 2001-2002 Free Software Foundation, Inc.          --
---                                                                          --
--- This specification is derived from the Ada Reference Manual for use with --
--- GNAT. The copyright notice above, and the license provisions that follow --
--- apply solely to the  contents of the part following the private keyword. --
+--          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --

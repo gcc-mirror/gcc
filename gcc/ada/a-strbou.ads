@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -36,6 +36,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Strings.Maps;
+with Ada.Strings.Superbounded;
 
 package Ada.Strings.Bounded is
 pragma Preelaborate (Bounded);
@@ -432,33 +433,408 @@ pragma Preelaborate (Bounded);
 
    private
 
-      type Bounded_String is record
-         Length : Length_Range := 0;
-         Data   : String (1 .. Max_Length) := (1 .. Max_Length => ASCII.NUL);
-      end record;
+      --  Most of the implementation is in the non generic package
+      --  Ada.Strings.Superbounded. Type Bounded_String is derived from type
+      --  Superbounded.Super_String with the maximum length constraint.
+      --  Except for five, all subprograms are renames of subprograms that
+      --  are inherited from Superbounded.Super_String.
+
+      type Bounded_String is new Superbounded.Super_String (Max_Length);
 
       Null_Bounded_String : constant Bounded_String :=
-               (Length => 0, Data => (1 .. Max_Length => ASCII.NUL));
+        (Max_Length     => Max_Length,
+         Current_Length => 0,
+         Data           => (1 .. Max_Length => ASCII.NUL));
 
-
-      --  Pragma Inline declarations (GNAT specific additions)
-
-      pragma Inline ("=");
-      pragma Inline ("<");
-      pragma Inline ("<=");
-      pragma Inline (">");
-      pragma Inline (">=");
-      pragma Inline ("&");
-      pragma Inline (Count);
-      pragma Inline (Element);
-      pragma Inline (Find_Token);
-      pragma Inline (Index);
-      pragma Inline (Index_Non_Blank);
-      pragma Inline (Length);
-      pragma Inline (Replace_Element);
-      pragma Inline (Slice);
       pragma Inline (To_Bounded_String);
-      pragma Inline (To_String);
+
+      function Length (Source : in Bounded_String) return Length_Range
+        renames Super_Length;
+
+      function To_String (Source : in Bounded_String) return String
+        renames Super_To_String;
+
+      function Append
+        (Left, Right : in Bounded_String;
+         Drop        : in Truncation  := Error)
+         return        Bounded_String
+        renames Super_Append;
+
+      function Append
+        (Left  : in Bounded_String;
+         Right : in String;
+         Drop  : in Truncation := Error)
+         return  Bounded_String
+        renames Super_Append;
+
+      function Append
+        (Left  : in String;
+         Right : in Bounded_String;
+         Drop  : in Truncation := Error)
+         return  Bounded_String
+        renames Super_Append;
+
+      function Append
+        (Left  : in Bounded_String;
+         Right : in Character;
+         Drop  : in Truncation := Error)
+         return  Bounded_String
+        renames Super_Append;
+
+      function Append
+        (Left  : in Character;
+         Right : in Bounded_String;
+         Drop  : in Truncation := Error)
+         return  Bounded_String
+        renames Super_Append;
+
+      procedure Append
+        (Source   : in out Bounded_String;
+         New_Item : in Bounded_String;
+         Drop     : in Truncation  := Error)
+        renames Super_Append;
+
+      procedure Append
+        (Source   : in out Bounded_String;
+         New_Item : in String;
+         Drop     : in Truncation  := Error)
+        renames Super_Append;
+
+      procedure Append
+        (Source   : in out Bounded_String;
+         New_Item : in Character;
+         Drop     : in Truncation  := Error)
+        renames Super_Append;
+
+      function "&"
+        (Left, Right : in Bounded_String)
+         return        Bounded_String
+        renames Concat;
+
+      function "&"
+        (Left  : in Bounded_String;
+         Right : in String)
+         return  Bounded_String
+        renames Concat;
+
+      function "&"
+        (Left  : in String;
+         Right : in Bounded_String)
+         return  Bounded_String
+        renames Concat;
+
+      function "&"
+        (Left  : in Bounded_String;
+         Right : in Character)
+         return  Bounded_String
+        renames Concat;
+
+      function "&"
+        (Left  : in Character;
+         Right : in Bounded_String)
+         return  Bounded_String
+        renames Concat;
+
+      function Element
+        (Source : in Bounded_String;
+         Index  : in Positive)
+         return   Character
+        renames Super_Element;
+
+      procedure Replace_Element
+        (Source : in out Bounded_String;
+         Index  : in Positive;
+         By     : in Character)
+        renames Super_Replace_Element;
+
+      function Slice
+        (Source : in Bounded_String;
+         Low    : in Positive;
+         High   : in Natural)
+         return   String
+        renames Super_Slice;
+
+      function "="  (Left, Right : in Bounded_String) return Boolean
+        renames Equal;
+
+      function "="
+        (Left  : in Bounded_String;
+         Right : in String)
+         return  Boolean
+        renames Equal;
+
+      function "="
+        (Left  : in String;
+         Right : in Bounded_String)
+         return  Boolean
+        renames Equal;
+
+      function "<"  (Left, Right : in Bounded_String) return Boolean
+        renames Less;
+
+      function "<"
+        (Left  : in Bounded_String;
+         Right : in String)
+         return  Boolean
+        renames Less;
+
+      function "<"
+        (Left  : in String;
+         Right : in Bounded_String)
+         return  Boolean
+        renames Less;
+
+      function "<=" (Left, Right : in Bounded_String) return Boolean
+        renames Less_Or_Equal;
+
+      function "<="
+        (Left  : in Bounded_String;
+         Right : in String)
+         return  Boolean
+        renames Less_Or_Equal;
+
+      function "<="
+        (Left  : in String;
+         Right : in Bounded_String)
+         return  Boolean
+        renames Less_Or_Equal;
+
+      function ">"  (Left, Right : in Bounded_String) return Boolean
+        renames Greater;
+
+      function ">"
+        (Left  : in Bounded_String;
+         Right : in String)
+         return  Boolean
+        renames Greater;
+
+      function ">"
+        (Left  : in String;
+         Right : in Bounded_String)
+         return  Boolean
+        renames Greater;
+
+      function ">=" (Left, Right : in Bounded_String) return Boolean
+        renames Greater_Or_Equal;
+
+      function ">="
+        (Left  : in Bounded_String;
+         Right : in String)
+         return  Boolean
+        renames Greater_Or_Equal;
+
+      function ">="
+        (Left  : in String;
+         Right : in Bounded_String)
+         return  Boolean
+        renames Greater_Or_Equal;
+
+      function Index
+        (Source  : in Bounded_String;
+         Pattern : in String;
+         Going   : in Direction := Forward;
+         Mapping : in Maps.Character_Mapping := Maps.Identity)
+         return    Natural
+        renames Super_Index;
+
+      function Index
+        (Source  : in Bounded_String;
+         Pattern : in String;
+         Going   : in Direction := Forward;
+         Mapping : in Maps.Character_Mapping_Function)
+         return    Natural
+        renames Super_Index;
+
+      function Index
+        (Source : in Bounded_String;
+         Set    : in Maps.Character_Set;
+         Test   : in Membership := Inside;
+         Going  : in Direction  := Forward)
+         return   Natural
+        renames Super_Index;
+
+      function Index_Non_Blank
+        (Source : in Bounded_String;
+         Going  : in Direction := Forward)
+         return   Natural
+        renames Super_Index_Non_Blank;
+
+      function Count
+        (Source  : in Bounded_String;
+         Pattern : in String;
+         Mapping : in Maps.Character_Mapping := Maps.Identity)
+         return    Natural
+        renames Super_Count;
+
+      function Count
+        (Source  : in Bounded_String;
+         Pattern : in String;
+         Mapping : in Maps.Character_Mapping_Function)
+         return    Natural
+        renames Super_Count;
+
+      function Count
+        (Source : in Bounded_String;
+         Set    : in Maps.Character_Set)
+         return   Natural
+        renames Super_Count;
+
+      procedure Find_Token
+        (Source : in Bounded_String;
+         Set    : in Maps.Character_Set;
+         Test   : in Membership;
+         First  : out Positive;
+         Last   : out Natural)
+        renames Super_Find_Token;
+
+      function Translate
+        (Source   : in Bounded_String;
+         Mapping  : in Maps.Character_Mapping)
+         return     Bounded_String
+        renames Super_Translate;
+
+      procedure Translate
+        (Source   : in out Bounded_String;
+         Mapping  : in Maps.Character_Mapping)
+        renames Super_Translate;
+
+      function Translate
+        (Source  : in Bounded_String;
+         Mapping : in Maps.Character_Mapping_Function)
+         return    Bounded_String
+        renames Super_Translate;
+
+      procedure Translate
+        (Source  : in out Bounded_String;
+         Mapping : in Maps.Character_Mapping_Function)
+        renames Super_Translate;
+
+      function Replace_Slice
+        (Source   : in Bounded_String;
+         Low      : in Positive;
+         High     : in Natural;
+         By       : in String;
+         Drop     : in Truncation := Error)
+         return     Bounded_String
+        renames Super_Replace_Slice;
+
+      procedure Replace_Slice
+        (Source   : in out Bounded_String;
+         Low      : in Positive;
+         High     : in Natural;
+         By       : in String;
+         Drop     : in Truncation := Error)
+        renames Super_Replace_Slice;
+
+      function Insert
+        (Source   : in Bounded_String;
+         Before   : in Positive;
+         New_Item : in String;
+         Drop     : in Truncation := Error)
+         return     Bounded_String
+        renames Super_Insert;
+
+      procedure Insert
+        (Source   : in out Bounded_String;
+         Before   : in Positive;
+         New_Item : in String;
+         Drop     : in Truncation := Error)
+        renames Super_Insert;
+
+      function Overwrite
+        (Source    : in Bounded_String;
+         Position  : in Positive;
+         New_Item  : in String;
+         Drop      : in Truncation := Error)
+         return      Bounded_String
+        renames Super_Overwrite;
+
+      procedure Overwrite
+        (Source    : in out Bounded_String;
+         Position  : in Positive;
+         New_Item  : in String;
+         Drop      : in Truncation := Error)
+        renames Super_Overwrite;
+
+      function Delete
+        (Source  : in Bounded_String;
+         From    : in Positive;
+         Through : in Natural)
+         return    Bounded_String
+        renames Super_Delete;
+
+      procedure Delete
+        (Source  : in out Bounded_String;
+         From    : in Positive;
+         Through : in Natural)
+        renames Super_Delete;
+
+      function Trim
+        (Source : in Bounded_String;
+         Side   : in Trim_End)
+         return   Bounded_String
+        renames Super_Trim;
+
+      procedure Trim
+        (Source : in out Bounded_String;
+         Side   : in Trim_End)
+        renames Super_Trim;
+
+      function Trim
+        (Source  : in Bounded_String;
+          Left   : in Maps.Character_Set;
+          Right  : in Maps.Character_Set)
+          return   Bounded_String
+        renames Super_Trim;
+
+      procedure Trim
+        (Source : in out Bounded_String;
+         Left   : in Maps.Character_Set;
+         Right  : in Maps.Character_Set)
+        renames Super_Trim;
+
+      function Head
+        (Source : in Bounded_String;
+         Count  : in Natural;
+         Pad    : in Character := Space;
+         Drop   : in Truncation := Error)
+         return   Bounded_String
+        renames Super_Head;
+
+      procedure Head
+        (Source : in out Bounded_String;
+         Count  : in Natural;
+         Pad    : in Character  := Space;
+         Drop   : in Truncation := Error)
+        renames Super_Head;
+
+      function Tail
+        (Source : in Bounded_String;
+         Count  : in Natural;
+         Pad    : in Character  := Space;
+         Drop   : in Truncation := Error)
+         return Bounded_String
+        renames Super_Tail;
+
+      procedure Tail
+        (Source : in out Bounded_String;
+         Count  : in Natural;
+         Pad    : in Character  := Space;
+         Drop   : in Truncation := Error)
+        renames Super_Tail;
+
+      function "*"
+        (Left  : in Natural;
+         Right : in Bounded_String)
+         return  Bounded_String
+        renames Times;
+
+      function Replicate
+        (Count : in Natural;
+         Item  : in Bounded_String;
+         Drop  : in Truncation := Error)
+         return  Bounded_String
+         renames Super_Replicate;
 
    end Generic_Bounded_Length;
 

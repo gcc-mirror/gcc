@@ -6,8 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                                                                          *
- *          Copyright (C) 1999-2001 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1999-2002 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -74,5 +73,5 @@ typedef char TCode;
    that this call can be used to create a discriminant reference by
    using (Expr => Discrim_Val, Op1 => discriminant_number).  */
 #define Create_Node repinfo__create_node
-extern Node_Ref Create_Node	PARAMS((TCode, Node_Ref_Or_Val,
-					Node_Ref_Or_Val, Node_Ref_Or_Val));
+extern Node_Ref Create_Node	(TCode, Node_Ref_Or_Val,
+				 Node_Ref_Or_Val, Node_Ref_Or_Val);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1992-2001 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2003 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,7 @@
 
 --  Expand routines for chapter 3 constructs
 
-with Types; use Types;
+with Types;  use Types;
 with Elists; use Elists;
 
 package Exp_Ch3 is
@@ -64,9 +64,9 @@ package Exp_Ch3 is
    --  component (for array elements). Loc is the source location for the
    --  constructed tree, and Typ is the type of the entity (the initialization
    --  procedure of the base type is the procedure that actually gets called).
-   --  In_Init_Proc has to be set to True when the call is itself in an Init
-   --  procedure in order to enable the use of discriminals. Enclos_type is
-   --  the type of the init_proc and it is used for various expansion cases
+   --  In_Init_Proc has to be set to True when the call is itself in an init
+   --  proc in order to enable the use of discriminals. Enclos_type is the
+   --  type of the init proc and it is used for various expansion cases
    --  including the case where Typ is a task type which is a array component,
    --  the indices of the enclosing type are used to build the string that
    --  identifies each task at runtime.

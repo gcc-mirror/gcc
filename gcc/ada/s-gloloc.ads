@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -43,20 +44,17 @@ package System.Global_Locks is
    --  uniquely defined between the partitions because of its name.
 
    Null_Lock : constant Lock_Type;
+   --  This needs comments ???
 
-   procedure Create_Lock
-     (Lock : out Lock_Type;
-      Name : in String);
+   procedure Create_Lock (Lock : out Lock_Type; Name : in String);
    --  Create or retrieve a global lock for the current partition using
    --  its Name.
 
-   procedure Acquire_Lock
-     (Lock : in out Lock_Type);
+   procedure Acquire_Lock (Lock : in out Lock_Type);
    --  If the lock cannot be acquired because someone already owns it, this
    --  procedure is supposed to wait and retry forever.
 
-   procedure Release_Lock
-     (Lock : in out Lock_Type);
+   procedure Release_Lock (Lock : in out Lock_Type);
 
 private
 

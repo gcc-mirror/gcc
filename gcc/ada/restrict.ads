@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,8 +36,8 @@ package Restrict is
    --  The type Restriction_Id defines the set of restriction identifiers,
    --  which take no parameter (i.e. they are either present or not present).
    --  The actual definition is in the separate package Rident, so that
-   --  it can easily be accessed by the binder without dragging in lots of
-   --  stuff.
+   --  it can easily be accessed by the binder without dragging in lots
+   --  of stuff.
 
    subtype All_Restrictions is
      Restriction_Id range
@@ -59,9 +59,8 @@ package Restrict is
 
    type Restriction_Parameter_Id is new Rident.Restriction_Parameter_Id;
    --  The type Restriction_Parameter_Id records cases where a parameter is
-   --  present in the corresponding pragma. These cases are not checked for
-   --  consistency by the binder. The actual definition is in the separate
-   --  package Rident for consistency.
+   --  present in the corresponding pragma. The actual definition is in the
+   --  separate package Rident for consistency.
 
    type Restrictions_Flags is array (Restriction_Id) of Boolean;
    --  Type used for arrays indexed by Restriction_Id.
@@ -78,9 +77,13 @@ package Restrict is
    --  legitimate direct use of this array is when the code is modified
    --  as a result of the restriction in some way.
 
-   Restrictions_Loc : array (Restriction_Id) of Source_Ptr;
+   Restrictions_Loc : array (Restriction_Id) of Source_Ptr :=
+                       (others => No_Location);
    --  Locations of Restrictions pragmas for error message purposes.
-   --  Valid only if corresponding entry in Restrictions is set.
+   --  Valid only if corresponding entry in Restrictions is set. A value
+   --  of No_Location is used for implicit restrictions set by another
+   --  pragma, and a value of System_Location is used for restrictions
+   --  set from package Standard by the processing in Targparm.
 
    Main_Restrictions : Restrictions_Flags := (others => False);
    --  This variable saves the cumulative restrictions in effect compiling
@@ -94,6 +97,11 @@ package Restrict is
    Violations : Restrictions_Flags := (others => False);
    --  Corresponding entry is False if the restriction has not been
    --  violated in the current main unit, and True if it has been violated.
+
+   Restriction_Warnings : Restrictions_Flags := (others => False);
+   --  If one of these flags is set, then it means that violation of the
+   --  corresponding restriction results only in a warning message, not
+   --  in an error message, and the restriction is not otherwise enforced.
 
    Restriction_Parameters :
      array (Restriction_Parameter_Id) of Uint := (others => No_Uint);
@@ -123,6 +131,7 @@ package Restrict is
      (No_Delay,                   "a-calend"),
      (No_Delay,                   "calendar"),
      (No_Dynamic_Priorities,      "a-dynpri"),
+     (No_Finalization,            "a-finali"),
      (No_IO,                      "a-direio"),
      (No_IO,                      "directio"),
      (No_IO,                      "a-sequio"),
@@ -157,6 +166,7 @@ package Restrict is
       No_Entry_Calls_In_Elaboration_Code => True,
       No_Entry_Queue                     => True,
       No_Exception_Handlers              => True,
+      No_Exception_Registration          => True,
       No_Implicit_Conditionals           => True,
       No_Implicit_Dynamic_Code           => True,
       No_Implicit_Loops                  => True,
@@ -170,7 +180,6 @@ package Restrict is
       No_Streams                         => True,
       No_Task_Attributes                 => True,
       No_Task_Termination                => True,
-      No_Tasking                         => True,
       No_Wide_Characters                 => True,
       Static_Priorities                  => True,
       Static_Storage_Size                => True,
@@ -182,6 +191,12 @@ package Restrict is
    -----------------
    -- Subprograms --
    -----------------
+
+   function Abort_Allowed return Boolean;
+   pragma Inline (Abort_Allowed);
+   --  Tests to see if abort is allowed by the current restrictions settings.
+   --  For abort to be allowed, either No_Abort_Statements must be False,
+   --  or Max_Asynchronous_Select_Nesting must be non-zero.
 
    procedure Check_Restricted_Unit (U : Unit_Name_Type; N : Node_Id);
    --  Checks if loading of unit U is prohibited by the setting of some
@@ -198,19 +213,23 @@ package Restrict is
 
    procedure Check_Restriction
      (R : Restriction_Parameter_Id;
-      N : Node_Id);
-   --  Checks that the given restriction parameter identifier is not set to
-   --  zero. If it is set to zero, then the node N is replaced by a node
-   --  that raises Storage_Error, and a warning is issued.
-
-   procedure Check_Restriction
-     (R : Restriction_Parameter_Id;
       V : Uint;
       N : Node_Id);
    --  Checks that the count in V does not exceed the maximum value of the
    --  restriction parameter value corresponding to the given restriction
    --  parameter identifier (if it has been set). If the count in V exceeds
-   --  the maximum, then post an error message on node N.
+   --  the maximum, then post an error message on node N. We use this call
+   --  when we can tell the maximum usage at compile time. In other words,
+   --  we guarantee that if a call is made to this routine, then the front
+   --  end will make all necessary calls for the restriction parameter R
+   --  to ensure that we really know the maximum value used anywhere.
+
+   procedure Check_Restriction (R : Restriction_Parameter_Id; N : Node_Id);
+   --  Check that the maximum value of the restriction parameter corresponding
+   --  to the given restriction parameter identifier is not set to zero. If
+   --  it has been set to zero, post an error message on node N. We use this
+   --  call in cases where we can tell at compile time that the count must be
+   --  at least one, but we can't tell anything more.
 
    procedure Check_Elaboration_Code_Allowed (N : Node_Id);
    --  Tests to see if elaboration code is allowed by the current restrictions
@@ -218,10 +237,9 @@ package Restrict is
    --  an elaboration routine. If elaboration code is not allowed, an error
    --  message is posted on the node given as argument.
 
-   function No_Exception_Handlers_Set return Boolean;
-   --  Test to see if current restrictions settings specify that no exception
-   --  handlers are present. This function is called by Gigi when it needs to
-   --  expand an AT END clean up identifier with no exception handler.
+   procedure Check_No_Implicit_Heap_Alloc (N : Node_Id);
+   --  Equivalent to Check_Restriction (No_Implicit_Heap_Allocations, N).
+   --  Provided for easy use by back end, which has to check this restriction.
 
    function Compilation_Unit_Restrictions_Save
      return Save_Compilation_Unit_Restrictions;
@@ -239,13 +257,6 @@ package Restrict is
    --  This is the corresponding restore procedure to restore restrictions
    --  previously saved by Compilation_Unit_Restrictions_Save.
 
-   procedure Disallow_In_No_Run_Time_Mode (Enode : Node_Id);
-   --  If in No_Run_Time mode, then the construct represented by Enode is
-   --  not permitted, and will be appropriately flagged.
-
-   procedure Set_No_Run_Time_Mode;
-   --  Set the no run time mode, and associated restriction pragmas.
-
    function Get_Restriction_Id
      (N    : Name_Id)
       return Restriction_Id;
@@ -261,21 +272,24 @@ package Restrict is
    --  Restriction_Parameter_Id value, otherwise returns
    --  Not_A_Restriction_Parameter_Id.
 
-   function Abort_Allowed return Boolean;
-   pragma Inline (Abort_Allowed);
-   --  Tests to see if abort is allowed by the current restrictions settings.
-   --  For abort to be allowed, either No_Abort_Statements must be False,
-   --  or Max_Asynchronous_Select_Nesting must be non-zero.
+   function No_Exception_Handlers_Set return Boolean;
+   --  Test to see if current restrictions settings specify that no exception
+   --  handlers are present. This function is called by Gigi when it needs to
+   --  expand an AT END clean up identifier with no exception handler.
 
    function Restricted_Profile return Boolean;
    --  Tests to see if tasking operations follow the GNAT restricted run time
    --  profile.
 
-   procedure Set_Ravenscar;
-   --  Sets the set of rerstrictions fro Ravenscar
+   procedure Set_Ravenscar (N : Node_Id);
+   --  Enables the set of restrictions for Ravenscar. N is the corresponding
+   --  pragma node, which is used for error messages on any constructs that
+   --  violate the profile.
 
-   procedure Set_Restricted_Profile;
-   --  Sets the set of restrictions for pragma Restricted_Run_Time
+   procedure Set_Restricted_Profile (N : Node_Id);
+   --  Enables the set of restrictions for pragma Restricted_Run_Time. N is
+   --  the corresponding pragma node, which is used for error messages on
+   --  constructs that violate the profile.
 
    function Tasking_Allowed return Boolean;
    pragma Inline (Tasking_Allowed);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -101,26 +101,6 @@ package body System.String_Ops is
          end;
       end if;
    end Str_Concat_SC;
-
-   ---------------
-   -- Str_Equal --
-   ---------------
-
-   function Str_Equal (A, B : String) return Boolean is
-   begin
-      if A'Length /= B'Length then
-         return False;
-
-      else
-         for J in A'Range loop
-            if A (J) /= B (J + (B'First - A'First)) then
-               return False;
-            end if;
-         end loop;
-
-         return True;
-      end if;
-   end Str_Equal;
 
    -------------------
    -- Str_Normalize --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,6 +25,7 @@
 ------------------------------------------------------------------------------
 
 with Atree;    use Atree;
+with Alloc;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Errout;   use Errout;
@@ -38,9 +39,69 @@ with Sem_Util; use Sem_Util;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
+with Table;
 with Uintp;    use Uintp;
 
 package body Sem_Type is
+
+   ---------------------
+   -- Data Structures --
+   ---------------------
+
+   --  The following data structures establish a mapping between nodes and
+   --  their interpretations. An overloaded node has an entry in Interp_Map,
+   --  which in turn contains a pointer into the All_Interp array. The
+   --  interpretations of a given node are contiguous in All_Interp. Each
+   --  set of interpretations is terminated with the marker No_Interp.
+   --  In order to speed up the retrieval of the interpretations of an
+   --  overloaded node, the Interp_Map table is accessed by means of a simple
+   --  hashing scheme, and the entries in Interp_Map are chained. The heads
+   --  of clash lists are stored in array Headers.
+
+   --              Headers        Interp_Map          All_Interp
+   --
+   --                 _            -------             ----------
+   --                |_|           |_____|         --->|interp1 |
+   --                |_|---------->|node |         |   |interp2 |
+   --                |_|           |index|---------|   |nointerp|
+   --                |_|           |next |             |        |
+   --                              |-----|             |        |
+   --                              -------             ----------
+
+   --  This scheme does not currently reclaim interpretations. In principle,
+   --  after a unit is compiled, all overloadings have been resolved, and the
+   --  candidate interpretations should be deleted. This should be easier
+   --  now than with the previous scheme???
+
+   package All_Interp is new Table.Table (
+     Table_Component_Type => Interp,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => Alloc.All_Interp_Initial,
+     Table_Increment      => Alloc.All_Interp_Increment,
+     Table_Name           => "All_Interp");
+
+   type Interp_Ref is record
+      Node  : Node_Id;
+      Index : Interp_Index;
+      Next  : Int;
+   end record;
+
+   Header_Size : constant Int := 2 ** 12;
+   No_Entry    : constant Int := -1;
+   Headers     : array (0 .. Header_Size) of Int := (others => No_Entry);
+
+   package Interp_Map is new Table.Table (
+     Table_Component_Type => Interp_Ref,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => Alloc.Interp_Map_Initial,
+     Table_Increment      => Alloc.Interp_Map_Increment,
+     Table_Name           => "Interp_Map");
+
+   function Hash (N : Node_Id) return Int;
+   --  A trivial hashing function for nodes, used to insert an overloaded
+   --  node into the Interp_Map table.
 
    -------------------------------------
    -- Handling of Overload Resolution --
@@ -95,8 +156,11 @@ package body Sem_Type is
    pragma Warnings (Off, All_Overloads);
    --  Debugging procedure: list full contents of Overloads table.
 
-   function Universal_Interpretation (Opnd : Node_Id) return Entity_Id;
-   --  Yields universal_Integer or Universal_Real if this is a candidate.
+   procedure New_Interps (N : Node_Id);
+   --  Initialize collection of interpretations for the given node, which is
+   --  either an overloaded entity, or an operation whose arguments have
+   --  multiple intepretations. Interpretations can be added to only one
+   --  node at a time.
 
    function Specific_Type (T1, T2 : Entity_Id) return Entity_Id;
    --  If T1 and T2 are compatible, return  the one that is not
@@ -211,7 +275,6 @@ package body Sem_Type is
          All_Interp.Table (All_Interp.Last) := (Name, Typ);
          All_Interp.Increment_Last;
          All_Interp.Table (All_Interp.Last) := No_Interp;
-
       end Add_Entry;
 
       ----------------------------
@@ -341,7 +404,9 @@ package body Sem_Type is
       --  node. In both cases add a new interpretation to the table.
 
       elsif Interp_Map.Last < 0
-        or else Interp_Map.Table (Interp_Map.Last).Node /= N
+        or else
+          (Interp_Map.Table (Interp_Map.Last).Node /= N
+             and then not Is_Overloaded (N))
       then
          New_Interps (N);
 
@@ -359,7 +424,7 @@ package body Sem_Type is
 
          else
             --  Overloaded prefix in indexed or selected component,
-            --  or call whose name is an expression or another call.
+            --  or call whose name is an expresion or another call.
 
             Add_Entry (Etype (N), Etype (N));
          end if;
@@ -522,6 +587,30 @@ package body Sem_Type is
    ------------
 
    function Covers (T1, T2 : Entity_Id) return Boolean is
+
+      function Full_View_Covers (Typ1, Typ2 : Entity_Id) return Boolean;
+      --  In an instance the proper view may not always be correct for
+      --  private types, but private and full view are compatible. This
+      --  removes spurious errors from nested instantiations that involve,
+      --  among other things, types derived from private types.
+
+      ----------------------
+      -- Full_View_Covers --
+      ----------------------
+
+      function Full_View_Covers (Typ1, Typ2 : Entity_Id) return Boolean is
+      begin
+         return
+           Is_Private_Type (Typ1)
+             and then
+              ((Present (Full_View (Typ1))
+                    and then Covers (Full_View (Typ1), Typ2))
+                 or else Base_Type (Typ1) = Typ2
+                 or else Base_Type (Typ2) = Typ1);
+      end Full_View_Covers;
+
+   --  Start of processing for Covers
+
    begin
       --  If either operand missing, then this is an error, but ignore
       --  it (and pretend we have a cover) if errors already detected,
@@ -642,12 +731,23 @@ package body Sem_Type is
       then
          return True;
 
+      --  The context can be a remote access type, and the expression the
+      --  corresponding source type declared in a categorized package, or
+      --  viceversa.
+
       elsif Is_Record_Type (T1)
         and then (Is_Remote_Call_Interface (T1)
                    or else Is_Remote_Types (T1))
         and then Present (Corresponding_Remote_Type (T1))
       then
          return Covers (Corresponding_Remote_Type (T1), T2);
+
+      elsif Is_Record_Type (T2)
+        and then (Is_Remote_Call_Interface (T2)
+                   or else Is_Remote_Types (T2))
+        and then Present (Corresponding_Remote_Type (T2))
+      then
+         return Covers (Corresponding_Remote_Type (T2), T1);
 
       elsif Ekind (T2) = E_Access_Attribute_Type
         and then (Ekind (Base_Type (T1)) = E_General_Access_Type
@@ -665,9 +765,11 @@ package body Sem_Type is
 
       elsif Ekind (T2) = E_Allocator_Type
         and then Is_Access_Type (T1)
-        and then Covers (Designated_Type (T1), Designated_Type (T2))
       then
-         return True;
+         return Covers (Designated_Type (T1), Designated_Type (T2))
+          or else
+            (From_With_Type (Designated_Type (T1))
+              and then Covers (Designated_Type (T2), Designated_Type (T1)));
 
       --  A boolean operation on integer literals is compatible with a
       --  modular context.
@@ -701,17 +803,10 @@ package body Sem_Type is
       then
          return True;
 
-      --  In an instance the proper view may not always be correct for
-      --  private types, but private and full view are compatible. This
-      --  removes spurious errors from nested instantiations that involve,
-      --  among other things, types derived from privated types.
-
       elsif In_Instance
-        and then Is_Private_Type (T1)
-        and then ((Present (Full_View (T1))
-                    and then Covers (Full_View (T1), T2))
-          or else Base_Type (T1) = T2
-          or else Base_Type (T2) = T1)
+        and then
+          (Full_View_Covers (T1, T2)
+            or else Full_View_Covers (T2, T1))
       then
          return True;
 
@@ -728,6 +823,37 @@ package body Sem_Type is
                               and then Is_Access_Type (Underlying_Type (T2))))
       then
          return True;
+
+      elsif From_With_Type (T1) then
+
+         --  If the expected type is the non-limited view of a type, the
+         --  expression may have the limited view.
+
+         if Ekind (T1) = E_Incomplete_Type then
+            return Covers (Non_Limited_View (T1), T2);
+
+         elsif Ekind (T1) = E_Class_Wide_Type then
+            return
+              Covers (Class_Wide_Type (Non_Limited_View (Etype (T1))), T2);
+         else
+            return False;
+         end if;
+
+      elsif From_With_Type (T2) then
+
+         --  If units in the context have Limited_With clauses on each other,
+         --  either type might have a limited view. Checks performed elsewhere
+         --  verify that the context type is the non-limited view.
+
+         if Ekind (T2) = E_Incomplete_Type then
+            return Covers (T1, Non_Limited_View (T2));
+
+         elsif Ekind (T2) = E_Class_Wide_Type then
+            return
+              Covers (T1, Class_Wide_Type (Non_Limited_View (Etype (T2))));
+         else
+            return False;
+         end if;
 
       --  Otherwise it doesn't cover!
 
@@ -753,6 +879,12 @@ package body Sem_Type is
       Predef_Subp : Entity_Id;
       User_Subp   : Entity_Id;
 
+      function Is_Actual_Subprogram (S : Entity_Id) return Boolean;
+      --  Determine whether a subprogram is an actual in an enclosing
+      --  instance. An overloading between such a subprogram and one
+      --  declared outside the instance is resolved in favor of the first,
+      --  because it resolved in the generic.
+
       function Matches (Actual, Formal : Node_Id) return Boolean;
       --  Look for exact type match in an instance, to remove spurious
       --  ambiguities when two formal types have the same actual.
@@ -775,6 +907,14 @@ package body Sem_Type is
       --  DEC tests c460vsa, c460vsb. It also handles ai00136a, which pushes
       --  pathology in the other direction with calls whose multiple overloaded
       --  actuals make them truly unresolvable.
+
+      function Is_Actual_Subprogram (S : Entity_Id) return Boolean is
+      begin
+         return In_Open_Scopes (Scope (S))
+           and then
+             (Is_Generic_Instance (Scope (S))
+                or else Is_Wrapper_Package (Scope (S)));
+      end Is_Actual_Subprogram;
 
       -------------
       -- Matches --
@@ -850,9 +990,23 @@ package body Sem_Type is
                  and then Has_Compatible_Type (Act1, Standard_Boolean)
                  and then Etype (F1) = Standard_Boolean
                then
+                  --  If the two candidates are the original ones, the
+                  --  ambiguity is real. Otherwise keep the original,
+                  --  further calls to Disambiguate will take care of
+                  --  others in the list of candidates.
 
                   if It1 /= No_Interp then
-                     return No_Interp;
+                     if It = Disambiguate.It1
+                       or else It = Disambiguate.It2
+                     then
+                        if It1 = Disambiguate.It1
+                          or else It1 = Disambiguate.It2
+                        then
+                           return No_Interp;
+                        else
+                           It1 := It;
+                        end if;
+                     end if;
 
                   elsif Present (Act2)
                     and then Nkind (Act2) in N_Op
@@ -1090,15 +1244,29 @@ package body Sem_Type is
          --  and the actuals in the call, to recover the unambiguous match
          --  in the original generic.
 
+         --  The ambiguity can also be due to an overloading between a formal
+         --  subprogram and a subprogram declared outside the generic. If the
+         --  node is overloaded, it did not resolve to the global entity in
+         --  the generic, and we choose the formal subprogram.
+
          elsif In_Instance then
-            if (Nkind (N) = N_Function_Call
-              or else Nkind (N) = N_Procedure_Call_Statement)
+            if Nkind (N) = N_Function_Call
+              or else Nkind (N) = N_Procedure_Call_Statement
             then
                declare
-                  Actual : Node_Id;
-                  Formal : Entity_Id;
+                  Actual  : Node_Id;
+                  Formal  : Entity_Id;
+                  Is_Act1 : constant Boolean := Is_Actual_Subprogram (Nam1);
+                  Is_Act2 : constant Boolean := Is_Actual_Subprogram (Nam2);
 
                begin
+                  if Is_Act1 and then not Is_Act2 then
+                     return It1;
+
+                  elsif Is_Act2 and then not Is_Act1 then
+                     return It2;
+                  end if;
+
                   Actual := First_Actual (N);
                   Formal := First_Formal (Nam1);
                   while Present (Actual) loop
@@ -1250,9 +1418,9 @@ package body Sem_Type is
    ----------------------
 
    function Find_Unique_Type (L : Node_Id; R : Node_Id) return Entity_Id is
+      T  : constant Entity_Id := Etype (L);
       I  : Interp_Index;
       It : Interp;
-      T  : Entity_Id := Etype (L);
       TR : Entity_Id := Any_Type;
 
    begin
@@ -1314,6 +1482,7 @@ package body Sem_Type is
       I  : out Interp_Index;
       It : out Interp)
    is
+      Map_Ptr : Int;
       Int_Ind : Interp_Index;
       O_N     : Node_Id;
 
@@ -1332,12 +1501,16 @@ package body Sem_Type is
          O_N := N;
       end if;
 
-      for Index in 0 .. Interp_Map.Last loop
-         if Interp_Map.Table (Index).Node = O_N then
-            Int_Ind := Interp_Map.Table (Index).Index;
+      Map_Ptr := Headers (Hash (O_N));
+
+      while Present (Interp_Map.Table (Map_Ptr).Node) loop
+         if Interp_Map.Table (Map_Ptr).Node = O_N then
+            Int_Ind := Interp_Map.Table (Map_Ptr).Index;
             It := All_Interp.Table (Int_Ind);
             I := Int_Ind;
             return;
+         else
+            Map_Ptr := Interp_Map.Table (Map_Ptr).Next;
          end if;
       end loop;
 
@@ -1376,16 +1549,22 @@ package body Sem_Type is
       if Nkind (N) = N_Subtype_Indication
         or else not Is_Overloaded (N)
       then
-         return Covers (Typ, Etype (N))
-           or else (not Is_Tagged_Type (Typ)
-                     and then Ekind (Typ) /= E_Anonymous_Access_Type
-                     and then Covers (Etype (N), Typ));
+         return
+           Covers (Typ, Etype (N))
+           or else
+             (not Is_Tagged_Type (Typ)
+                and then Ekind (Typ) /= E_Anonymous_Access_Type
+                and then Covers (Etype (N), Typ));
 
       else
          Get_First_Interp (N, I, It);
 
          while Present (It.Typ) loop
-            if Covers (Typ, It.Typ)
+            if (Covers (Typ, It.Typ)
+                and then
+                  (Scope (It.Nam) /= Standard_Standard
+                     or else not Is_Invisible_Operator (N, Base_Type (Typ))))
+
               or else (not Is_Tagged_Type (Typ)
                         and then Ekind (Typ) /= E_Anonymous_Access_Type
                         and then Covers (It.Typ, Typ))
@@ -1399,6 +1578,18 @@ package body Sem_Type is
          return False;
       end if;
    end Has_Compatible_Type;
+
+   ----------
+   -- Hash --
+   ----------
+
+   function Hash (N : Node_Id) return Int is
+   begin
+      --  Nodes have a size that is power of two, so to select significant
+      --  bits only we remove the low-order bits.
+
+      return ((Int (N) / 2 ** 5) mod Header_Size);
+   end Hash;
 
    --------------
    -- Hides_Op --
@@ -1424,6 +1615,7 @@ package body Sem_Type is
    begin
       All_Interp.Init;
       Interp_Map.Init;
+      Headers := (others => No_Entry);
    end Init_Interp_Tables;
 
    ---------------------
@@ -1530,10 +1722,15 @@ package body Sem_Type is
          Par := Etype (T2);
 
          loop
-            if Base_Type (T1) = Base_Type (Par)
+            --  If there was a error on the type declaration, do not recurse
+
+            if Error_Posted (Par) then
+               return False;
+
+            elsif Base_Type (T1) = Base_Type (Par)
               or else (Is_Private_Type (T1)
-                        and then Present (Full_View (T1))
-                        and then Base_Type (Par) = Base_Type (Full_View (T1)))
+                         and then Present (Full_View (T1))
+                         and then Base_Type (Par) = Base_Type (Full_View (T1)))
             then
                return True;
 
@@ -1551,6 +1748,47 @@ package body Sem_Type is
          end loop;
       end if;
    end Is_Ancestor;
+
+   ---------------------------
+   -- Is_Invisible_Operator --
+   ---------------------------
+
+   function Is_Invisible_Operator
+     (N    : Node_Id;
+      T    : Entity_Id)
+      return Boolean
+   is
+      Orig_Node : constant Node_Id := Original_Node (N);
+
+   begin
+      if Nkind (N) not in N_Op then
+         return False;
+
+      elsif not Comes_From_Source (N) then
+         return False;
+
+      elsif No (Universal_Interpretation (Right_Opnd (N))) then
+         return False;
+
+      elsif Nkind (N) in N_Binary_Op
+        and then No (Universal_Interpretation (Left_Opnd (N)))
+      then
+         return False;
+
+      else return
+        Is_Numeric_Type (T)
+          and then not In_Open_Scopes (Scope (T))
+          and then not Is_Potentially_Use_Visible (T)
+          and then not In_Use (T)
+          and then not In_Use (Scope (T))
+          and then
+            (Nkind (Orig_Node) /= N_Function_Call
+              or else Nkind (Name (Orig_Node)) /= N_Expanded_Name
+              or else Entity (Prefix (Name (Orig_Node))) /= Scope (T))
+
+          and then not In_Instance;
+      end if;
+   end Is_Invisible_Operator;
 
    -------------------
    -- Is_Subtype_Of --
@@ -1572,16 +1810,79 @@ package body Sem_Type is
       return False;
    end Is_Subtype_Of;
 
+   ------------------
+   -- List_Interps --
+   ------------------
+
+   procedure List_Interps (Nam : Node_Id; Err : Node_Id) is
+      Index : Interp_Index;
+      It    : Interp;
+
+   begin
+      Get_First_Interp (Nam, Index, It);
+      while Present (It.Nam) loop
+         if Scope (It.Nam) = Standard_Standard
+           and then Scope (It.Typ) /= Standard_Standard
+         then
+            Error_Msg_Sloc := Sloc (Parent (It.Typ));
+            Error_Msg_NE ("   & (inherited) declared#!", Err, It.Nam);
+
+         else
+            Error_Msg_Sloc := Sloc (It.Nam);
+            Error_Msg_NE ("   & declared#!", Err, It.Nam);
+         end if;
+
+         Get_Next_Interp (Index, It);
+      end loop;
+   end List_Interps;
+
    -----------------
    -- New_Interps --
    -----------------
 
    procedure New_Interps (N : Node_Id)  is
+      Map_Ptr : Int;
+
    begin
-      Interp_Map.Increment_Last;
       All_Interp.Increment_Last;
-      Interp_Map.Table (Interp_Map.Last) := (N, All_Interp.Last);
       All_Interp.Table (All_Interp.Last) := No_Interp;
+
+      Map_Ptr := Headers (Hash (N));
+
+      if Map_Ptr = No_Entry then
+
+         --  Place new node at end of table
+
+         Interp_Map.Increment_Last;
+         Headers (Hash (N)) := Interp_Map.Last;
+
+      else
+         --   Place node at end of chain, or locate its previous entry.
+
+         loop
+            if Interp_Map.Table (Map_Ptr).Node = N then
+
+               --  Node is already in the table, and is being rewritten.
+               --  Start a new interp section, retain hash link.
+
+               Interp_Map.Table (Map_Ptr).Node  := N;
+               Interp_Map.Table (Map_Ptr).Index := All_Interp.Last;
+               Set_Is_Overloaded (N, True);
+               return;
+
+            else
+               exit when Interp_Map.Table (Map_Ptr).Next = No_Entry;
+               Map_Ptr := Interp_Map.Table (Map_Ptr).Next;
+            end if;
+         end loop;
+
+         --  Chain the new node.
+
+         Interp_Map.Increment_Last;
+         Interp_Map.Table (Map_Ptr).Next := Interp_Map.Last;
+      end if;
+
+      Interp_Map.Table (Interp_Map.Last) := (N, All_Interp.Last, No_Entry);
       Set_Is_Overloaded (N, True);
    end New_Interps;
 
@@ -1774,14 +2075,27 @@ package body Sem_Type is
    ------------------
 
    procedure Save_Interps (Old_N : Node_Id; New_N : Node_Id) is
+      Map_Ptr : Int;
+      O_N     : Node_Id := Old_N;
+
    begin
       if Is_Overloaded (Old_N) then
-         for Index in 0 .. Interp_Map.Last loop
-            if Interp_Map.Table (Index).Node = Old_N then
-               Interp_Map.Table (Index).Node := New_N;
-               exit;
-            end if;
+         if Nkind (Old_N) = N_Selected_Component
+           and then Is_Overloaded (Selector_Name (Old_N))
+         then
+            O_N := Selector_Name (Old_N);
+         end if;
+
+         Map_Ptr := Headers (Hash (O_N));
+
+         while Interp_Map.Table (Map_Ptr).Node /= O_N loop
+            Map_Ptr := Interp_Map.Table (Map_Ptr).Next;
+            pragma Assert (Map_Ptr /= No_Entry);
          end loop;
+
+         New_Interps (New_N);
+         Interp_Map.Table (Interp_Map.Last).Index :=
+           Interp_Map.Table (Map_Ptr).Index;
       end if;
    end Save_Interps;
 
@@ -1813,7 +2127,7 @@ package body Sem_Type is
    --  Start of processing for Specific_Type
 
    begin
-      if (T1 = Any_Type or else T2 = Any_Type) then
+      if T1 = Any_Type or else T2 = Any_Type then
          return Any_Type;
       end if;
 
@@ -1832,42 +2146,42 @@ package body Sem_Type is
       then
          return B1;
 
-      elsif (T2 = Any_String and then Is_String_Type (T1)) then
+      elsif T2 = Any_String and then Is_String_Type (T1) then
          return B1;
 
-      elsif (T1 = Any_String and then Is_String_Type (T2)) then
+      elsif T1 = Any_String and then Is_String_Type (T2) then
          return B2;
 
-      elsif (T2 = Any_Character and then Is_Character_Type (T1)) then
+      elsif T2 = Any_Character and then Is_Character_Type (T1) then
          return B1;
 
-      elsif (T1 = Any_Character and then Is_Character_Type (T2)) then
+      elsif T1 = Any_Character and then Is_Character_Type (T2) then
          return B2;
 
-      elsif (T1 = Any_Access
-        and then (Is_Access_Type (T2) or else Is_Remote_Access (T2)))
+      elsif T1 = Any_Access
+        and then (Is_Access_Type (T2) or else Is_Remote_Access (T2))
       then
          return T2;
 
-      elsif (T2 = Any_Access
-        and then (Is_Access_Type (T1) or else Is_Remote_Access (T1)))
+      elsif T2 = Any_Access
+        and then (Is_Access_Type (T1) or else Is_Remote_Access (T1))
       then
          return T1;
 
-      elsif (T2 = Any_Composite
-         and then Ekind (T1) in E_Array_Type .. E_Record_Subtype)
+      elsif T2 = Any_Composite
+        and then Ekind (T1) in E_Array_Type .. E_Record_Subtype
       then
          return T1;
 
-      elsif (T1 = Any_Composite
-         and then Ekind (T2) in E_Array_Type .. E_Record_Subtype)
+      elsif T1 = Any_Composite
+        and then Ekind (T2) in E_Array_Type .. E_Record_Subtype
       then
          return T2;
 
-      elsif (T1 = Any_Modular and then Is_Modular_Integer_Type (T2)) then
+      elsif T1 = Any_Modular and then Is_Modular_Integer_Type (T2) then
          return T2;
 
-      elsif (T2 = Any_Modular and then Is_Modular_Integer_Type (T1)) then
+      elsif T2 = Any_Modular and then Is_Modular_Integer_Type (T1) then
          return T1;
 
       --  Special cases for equality operators (all other predefined
@@ -1920,47 +2234,6 @@ package body Sem_Type is
       end if;
    end Specific_Type;
 
-   ------------------------------
-   -- Universal_Interpretation --
-   ------------------------------
-
-   function Universal_Interpretation (Opnd : Node_Id) return Entity_Id is
-      Index : Interp_Index;
-      It    : Interp;
-
-   begin
-      --  The argument may be a formal parameter of an operator or subprogram
-      --  with multiple interpretations, or else an expression for an actual.
-
-      if Nkind (Opnd) = N_Defining_Identifier
-        or else not Is_Overloaded (Opnd)
-      then
-         if Etype (Opnd) = Universal_Integer
-           or else Etype (Opnd) = Universal_Real
-         then
-            return Etype (Opnd);
-         else
-            return Empty;
-         end if;
-
-      else
-         Get_First_Interp (Opnd, Index, It);
-
-         while Present (It.Typ) loop
-
-            if It.Typ = Universal_Integer
-              or else It.Typ = Universal_Real
-            then
-               return It.Typ;
-            end if;
-
-            Get_Next_Interp (Index, It);
-         end loop;
-
-         return Empty;
-      end if;
-   end Universal_Interpretation;
-
    -----------------------
    -- Valid_Boolean_Arg --
    -----------------------
@@ -1994,15 +2267,27 @@ package body Sem_Type is
 
    function Valid_Comparison_Arg (T : Entity_Id) return Boolean is
    begin
-      return Is_Discrete_Type (T)
+
+      if T = Any_Composite then
+         return False;
+      elsif Is_Discrete_Type (T)
         or else Is_Real_Type (T)
-        or else (Is_Array_Type (T) and then Number_Dimensions (T) = 1
-                  and then Is_Discrete_Type (Component_Type (T))
-                  and then (not Is_Private_Composite (T)
-                             or else In_Instance)
-                  and then (not Is_Limited_Composite (T)
-                             or else In_Instance))
-        or else Is_String_Type (T);
+      then
+         return True;
+      elsif Is_Array_Type (T)
+          and then Number_Dimensions (T) = 1
+          and then Is_Discrete_Type (Component_Type (T))
+          and then (not Is_Private_Composite (T)
+                     or else In_Instance)
+          and then (not Is_Limited_Composite (T)
+                     or else In_Instance)
+      then
+         return True;
+      elsif Is_String_Type (T) then
+         return True;
+      else
+         return False;
+      end if;
    end Valid_Comparison_Arg;
 
    ---------------------
@@ -2035,5 +2320,20 @@ package body Sem_Type is
          end loop;
       end if;
    end Write_Overloads;
+
+   -----------------------
+   --  Write_Interp_Ref --
+   -----------------------
+
+   procedure Write_Interp_Ref (Map_Ptr : Int) is
+   begin
+      Write_Str (" Node:  ");
+      Write_Int (Int (Interp_Map.Table (Map_Ptr).Node));
+      Write_Str (" Index: ");
+      Write_Int (Int (Interp_Map.Table (Map_Ptr).Index));
+      Write_Str (" Next:  ");
+      Write_Int (Int (Interp_Map.Table (Map_Ptr).Next));
+      Write_Eol;
+   end Write_Interp_Ref;
 
 end Sem_Type;

@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1999-2002 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2003 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -290,7 +290,8 @@ package body System.Traceback is
       Max_Len     : Natural;
       Len         : out Natural;
       Exclude_Min : System.Address := System.Null_Address;
-      Exclude_Max : System.Address := System.Null_Address)
+      Exclude_Max : System.Address := System.Null_Address;
+      Skip_Frames : Natural := 1)
    is
       type Tracebacks_Array is array (1 .. Max_Len) of System.Address;
       pragma Suppress_Initialization (Tracebacks_Array);
@@ -551,9 +552,8 @@ package body System.Traceback is
    --  Start of processing for Call_Chain
 
    begin
-      --  Fetch the state for this subprogram's frame and pop it so that the
-      --  backtrace starts at the right point for our caller, that is at its
-      --  own frame.
+      --  Fetch the state for this subprogram's frame and pop it so that we
+      --  start with an initial out_rlo "here".
 
       U_init_frame_record (Frame'Access);
       Frame.top_sr0 := 0;
@@ -562,6 +562,12 @@ package body System.Traceback is
       U_prep_frame_rec_for_unwind (Frame'Access);
 
       Pop_Success := Pop_Frame (Frame'Access);
+
+      --  Skip the requested number of frames.
+
+      for I in 1 .. Skip_Frames loop
+         Pop_Success := Pop_Frame (Frame'Access);
+      end loop;
 
       --  Loop popping frames and storing locations until either a problem
       --  occurs, or the top of the call chain is reached, or the provided

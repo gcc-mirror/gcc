@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -72,6 +72,12 @@ package System.Interrupts is
    --  Avoid inheritance by Ada.Interrupts.Interrupt_ID of unwanted operations
 
    type Interrupt_ID is range 0 .. System.OS_Interface.Max_Interrupt;
+
+   --  The following renaming is introduced so that the type is accessible
+   --  through rtsfind, otherwise the name clashes with its homonym in
+   --  ada.interrupts.
+
+   subtype System_Interrupt_Id is Interrupt_ID;
 
    type Parameterless_Handler is access protected procedure;
 

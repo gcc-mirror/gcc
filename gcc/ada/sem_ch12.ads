@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,9 +71,11 @@ package Sem_Ch12 is
    --  If A is uninstantiated or not a generic parameter, return A.
 
    procedure Instantiate_Package_Body
-     (Body_Info : Pending_Body_Info);
+     (Body_Info    : Pending_Body_Info;
+      Inlined_Body : Boolean := False);
    --  Called after semantic analysis, to complete the instantiation of
-   --  package instances.
+   --  package instances. The flag Inlined_Body is set if the body is
+   --  being instantiated on the fly for inlined purposes.
 
    procedure Instantiate_Subprogram_Body
      (Body_Info : Pending_Body_Info);
@@ -84,7 +86,7 @@ package Sem_Ch12 is
    --  Traverse the original generic unit, and capture all references to
    --  entities that are defined outside of the generic in the analyzed
    --  tree for the template. These references are copied into the original
-   --  tree, so that they appear automatically in  every instantiation.
+   --  tree, so that they appear automatically in every instantiation.
    --  A critical invariant in this approach is that if an id in the generic
    --  resolves to a local entity, the corresponding id in the instance
    --  will resolve to the homologous entity in the instance, even though
@@ -96,12 +98,27 @@ package Sem_Ch12 is
    --  restored in stack-like fashion. Front-end inlining also uses these
    --  structures for the management of private/full views.
 
-   procedure Set_Copied_Sloc (N : Node_Id; E : Entity_Id);
+   procedure Set_Copied_Sloc_For_Inlined_Body (N : Node_Id; E : Entity_Id);
+   --  This procedure is used when a subprogram body is inlined. This process
+   --  shares the same circuitry as the creation of an instantiated copy of
+   --  a generic template. The call to this procedure establishes a new source
+   --  file entry representing the inlined body as an instantiation, marked as
+   --  an inlined body (so that errout can distinguish cases for generating
+   --  error messages, otherwise the treatment is identical). In this call
+   --  N is the subprogram body and E is the defining identifier of the
+   --  subprogram in quiestion. The resulting Sloc adjustment factor is
+   --  saved as part of the internal state of the Sem_Ch12 package for use
+   --  in subsequent calls to copy nodes.
 
    procedure Save_Env
      (Gen_Unit : Entity_Id;
       Act_Unit : Entity_Id);
+   --   ??? comment needed
 
    procedure Restore_Env;
+   --   ??? comment needed
+
+   procedure Initialize;
+   --  Initializes internal data structures
 
 end Sem_Ch12;

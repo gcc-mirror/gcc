@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -335,8 +335,8 @@ package System.Task_Primitives.Operations is
    --  Pending priority changes are handled internally.
 
    procedure Sleep
-     (Self_ID  : ST.Task_ID;
-      Reason   : System.Tasking.Task_States);
+     (Self_ID : ST.Task_ID;
+      Reason  : System.Tasking.Task_States);
    pragma Inline (Sleep);
    --  Wait until the current task, T,  is signaled to wake up.
    --
@@ -367,10 +367,10 @@ package System.Task_Primitives.Operations is
    --  Combination of Sleep (above) and Timed_Delay
 
    procedure Timed_Delay
-     (Self_ID  : ST.Task_ID;
-      Time     : Duration;
-      Mode     : ST.Delay_Modes);
-   --  Implements the semantics of the delay statement. It is assumed that
+     (Self_ID : ST.Task_ID;
+      Time    : Duration;
+      Mode    : ST.Delay_Modes);
+   --  Implement the semantics of the delay statement. It is assumed that
    --  the caller is not abort-deferred and does not hold any locks.
 
    procedure Wakeup
@@ -383,12 +383,19 @@ package System.Task_Primitives.Operations is
 
    function Environment_Task return ST.Task_ID;
    pragma Inline (Environment_Task);
-   --  returns the task ID of the environment task
+   --  Return the task ID of the environment task
    --  Consider putting this into a variable visible directly
    --  by the rest of the runtime system. ???
 
    function Get_Thread_Id (T : ST.Task_ID) return OSI.Thread_Id;
-   --  returns the thread id of the specified task.
+   --  Return the thread id of the specified task
+
+   function Is_Valid_Task return Boolean;
+   pragma Inline (Is_Valid_Task);
+   --  Does the calling thread have an ATCB?
+
+   function Register_Foreign_Thread return ST.Task_ID;
+   --  Allocate and initialize a new ATCB for the current thread
 
    -----------------------
    -- RTS Entrance/Exit --

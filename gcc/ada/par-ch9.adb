@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -789,6 +789,7 @@ package body Ch9 is
    exception
       when Error_Resync =>
          Resync_Past_Semicolon;
+         Pop_Scope_Stack; -- discard unused entry
          return Error;
 
    end P_Accept_Statement;
@@ -1153,8 +1154,9 @@ package body Ch9 is
 
             if Nkind (Ecall_Node) = N_Indexed_Component then
                declare
-                  Prefix_Node : Node_Id := Prefix (Ecall_Node);
-                  Exprs_Node  : List_Id := Expressions (Ecall_Node);
+                  Prefix_Node : constant Node_Id := Prefix (Ecall_Node);
+                  Exprs_Node  : constant List_Id := Expressions (Ecall_Node);
+
                begin
                   Change_Node (Ecall_Node, N_Procedure_Call_Statement);
                   Set_Name (Ecall_Node, Prefix_Node);
@@ -1163,8 +1165,9 @@ package body Ch9 is
 
             elsif Nkind (Ecall_Node) = N_Function_Call then
                declare
-                  Fname_Node  : Node_Id := Name (Ecall_Node);
-                  Params_List : List_Id := Parameter_Associations (Ecall_Node);
+                  Fname_Node  : constant Node_Id := Name (Ecall_Node);
+                  Params_List : constant List_Id :=
+                                  Parameter_Associations (Ecall_Node);
 
                begin
                   Change_Node (Ecall_Node, N_Procedure_Call_Statement);

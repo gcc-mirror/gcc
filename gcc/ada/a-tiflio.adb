@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,6 +51,15 @@ package body Ada.Text_IO.Float_IO is
    begin
       Aux.Get (File, Long_Long_Float (Item), Width);
 
+      --  In the case where the type is unconstrained (e.g. Standard'Float),
+      --  the above conversion may result in an infinite value, which is
+      --  normally fine for a conversion, but in this case, we want to treat
+      --  that as a data error.
+
+      if not Item'Valid then
+         raise Data_Error;
+      end if;
+
    exception
       when Constraint_Error => raise Data_Error;
    end Get;
@@ -63,6 +72,15 @@ package body Ada.Text_IO.Float_IO is
 
    begin
       Aux.Get (Current_In, Long_Long_Float (Item), Width);
+
+      --  In the case where the type is unconstrained (e.g. Standard'Float),
+      --  the above conversion may result in an infinite value, which is
+      --  normally fine for a conversion, but in this case, we want to treat
+      --  that as a data error.
+
+      if not Item'Valid then
+         raise Data_Error;
+      end if;
 
    exception
       when Constraint_Error => raise Data_Error;
@@ -77,6 +95,15 @@ package body Ada.Text_IO.Float_IO is
 
    begin
       Aux.Gets (From, Long_Long_Float (Item), Last);
+
+      --  In the case where the type is unconstrained (e.g. Standard'Float),
+      --  the above conversion may result in an infinite value, which is
+      --  normally fine for a conversion, but in this case, we want to treat
+      --  that as a data error.
+
+      if not Item'Valid then
+         raise Data_Error;
+      end if;
 
    exception
       when Constraint_Error => raise Data_Error;

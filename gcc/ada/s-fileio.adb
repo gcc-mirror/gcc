@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -129,9 +129,11 @@ package body System.File_IO is
    procedure Chain_File (File : AFCB_Ptr) is
    begin
       --  Take a task lock, to protect the global data value Open_Files
-      --  No exception handler needed, since we cannot get an exception.
 
       SSL.Lock_Task.all;
+
+      --  Do the chaining operation locked
+
       File.Next := Open_Files;
       File.Prev := null;
       Open_Files := File;
@@ -141,6 +143,11 @@ package body System.File_IO is
       end if;
 
       SSL.Unlock_Task.all;
+
+   exception
+      when others =>
+         SSL.Unlock_Task.all;
+         raise;
    end Chain_File;
 
    ---------------------
@@ -192,6 +199,10 @@ package body System.File_IO is
       Check_File_Open (File);
       AFCB_Close (File);
 
+      --  Take a task lock, to protect the global data value Open_Files
+
+      SSL.Lock_Task.all;
+
       --  Sever the association between the given file and its associated
       --  external file. The given file is left closed. Do not perform system
       --  closes on the standard input, output and error files and also do
@@ -231,27 +242,16 @@ package body System.File_IO is
       end if;
 
       --  Dechain file from list of open files and then free the storage
-      --  Since this is a global data structure, we have to protect against
-      --  multiple tasks attempting to access this list.
 
-      --  Note that we do not use an exception handler to unlock here since
-      --  no exception can occur inside the lock/unlock pair.
+      if File.Prev = null then
+         Open_Files := File.Next;
+      else
+         File.Prev.Next := File.Next;
+      end if;
 
-      begin
-         SSL.Lock_Task.all;
-
-         if File.Prev = null then
-            Open_Files := File.Next;
-         else
-            File.Prev.Next := File.Next;
-         end if;
-
-         if File.Next /= null then
-            File.Next.Prev := File.Prev;
-         end if;
-
-         SSL.Unlock_Task.all;
-      end;
+      if File.Next /= null then
+         File.Next.Prev := File.Prev;
+      end if;
 
       --  Deallocate some parts of the file structure that were kept in heap
       --  storage with the exception of system files (standard input, output
@@ -268,6 +268,13 @@ package body System.File_IO is
       if Close_Status /= 0 then
          raise Device_Error;
       end if;
+
+      SSL.Unlock_Task.all;
+
+   exception
+      when others =>
+         SSL.Unlock_Task.all;
+         raise;
    end Close;
 
    ------------
@@ -332,11 +339,17 @@ package body System.File_IO is
    procedure Finalize (V : in out File_IO_Clean_Up_Type) is
       pragma Warnings (Off, V);
 
-      Discard : int;
       Fptr1   : AFCB_Ptr;
       Fptr2   : AFCB_Ptr;
 
+      Discard : int;
+      pragma Unreferenced (Discard);
+
    begin
+      --  Take a lock to protect global Open_Files data structure
+
+      SSL.Lock_Task.all;
+
       --  First close all open files (the slightly complex form of this loop
       --  is required because Close as a side effect nulls out its argument)
 
@@ -356,6 +369,12 @@ package body System.File_IO is
          Temp_Files := Temp_Files.Next;
       end loop;
 
+      SSL.Unlock_Task.all;
+
+   exception
+      when others =>
+         SSL.Unlock_Task.all;
+         raise;
    end Finalize;
 
    -----------
@@ -595,9 +614,11 @@ package body System.File_IO is
    -------------------
 
    procedure Make_Buffered
-     (File     : AFCB_Ptr;
-      Buf_Siz  : Interfaces.C_Streams.size_t) is
-      status   : Integer;
+     (File    : AFCB_Ptr;
+      Buf_Siz : Interfaces.C_Streams.size_t)
+   is
+      status : Integer;
+      pragma Unreferenced (status);
 
    begin
       status := setvbuf (File.Stream, Null_Address, IOFBF, Buf_Siz);
@@ -609,8 +630,10 @@ package body System.File_IO is
 
    procedure Make_Line_Buffered
      (File     : AFCB_Ptr;
-      Line_Siz : Interfaces.C_Streams.size_t) is
-      status   : Integer;
+      Line_Siz : Interfaces.C_Streams.size_t)
+   is
+      status : Integer;
+      pragma Unreferenced (status);
 
    begin
       status := setvbuf (File.Stream, Null_Address, IOLBF, Line_Siz);
@@ -622,6 +645,7 @@ package body System.File_IO is
 
    procedure Make_Unbuffered (File : AFCB_Ptr) is
       status : Integer;
+      pragma Unreferenced (status);
 
    begin
       status := setvbuf (File.Stream, Null_Address, IONBF, 0);
@@ -659,7 +683,7 @@ package body System.File_IO is
 
    procedure Open
      (File_Ptr  : in out AFCB_Ptr;
-      Dummy_FCB : in out AFCB'Class;
+      Dummy_FCB : in AFCB'Class;
       Mode      : File_Mode;
       Name      : String;
       Form      : String;
@@ -668,6 +692,10 @@ package body System.File_IO is
       Text      : Boolean;
       C_Stream  : FILEs := NULL_Stream)
    is
+      pragma Warnings (Off, Dummy_FCB);
+      --  Yes we know this is never assigned a value. That's intended, since
+      --  all we ever use of this value is the tag for dispatching purposes.
+
       procedure Tmp_Name (Buffer : Address);
       pragma Import (C, Tmp_Name, "__gnat_tmp_name");
       --  set buffer (a String address) with a temporary filename.
@@ -811,6 +839,12 @@ package body System.File_IO is
                P : AFCB_Ptr;
 
             begin
+               --  Take a task lock to protect Open_Files
+
+               SSL.Lock_Task.all;
+
+               --  Search list of open files
+
                P := Open_Files;
                while P /= null loop
                   if Fullname (1 .. Full_Name_Len) = P.Name.all then
@@ -849,6 +883,13 @@ package body System.File_IO is
 
                   P := P.Next;
                end loop;
+
+               SSL.Unlock_Task.all;
+
+            exception
+               when others =>
+                  SSL.Unlock_Task.all;
+                  raise;
             end;
          end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---           Copyright (C) 1999-2001 Free Software Foundation, Inc.         --
+--           Copyright (C) 1999-2003 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -90,7 +90,7 @@ private
      (Limit => System.Null_Address,
       Base  => System.Null_Address,
       Size  => 0);
-   --  Use explicit assignment to avoid elaboration code (call to _init_proc).
+   --  Use explicit assignment to avoid elaboration code (call to init proc).
 
    Null_Stack       : constant Stack_Access := Null_Stack_Info'Access;
    --  Stack_Access value that will return a Stack_Base and Stack_Limit
@@ -100,5 +100,6 @@ private
 
    pragma Export (C, Cache, "_gnat_stack_cache");
    pragma Export (C, Stack_Check, "_gnat_stack_check");
+   pragma Export (C, Set_Stack_Size, "__gnat_set_stack_size");
 
 end System.Stack_Checking;

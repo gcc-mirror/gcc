@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -342,7 +342,7 @@ private
 
       Self : aliased File_Type;
       --  Set to point to the containing Text_AFCB block. This is used to
-      --  implement the Current_{Error,Input,Output} functions which return
+      --  implement the Current_{Error,Input,Ouput} functions which return
       --  a File_Access, the file access value returned is a pointer to
       --  the Self field of the corresponding file.
 
@@ -410,6 +410,11 @@ private
    --  Interfaces.C_Streams.int, because we do not want to drag in the spec of
    --  this interfaces package with the spec of Ada.Text_IO, and we know that
    --  in fact these types are identical
+
+   function EOF_Char return Integer;
+   --  Returns the system-specific character indicating the end of a text file.
+   --  This is exported for use by child packages such as Enumeration_Aux to
+   --  eliminate their needing to depend directly on Interfaces.C_Streams.
 
    function Getc (File : File_Type) return Integer;
    --  Gets next character from file, which has already been checked for

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ package Lib.Writ is
    --  This section  describes the format of the library information that is
    --  associated with object files. The exact method of this association is
    --  potentially implementation dependent and is described and implemented
-   --  in package From the point of view of the description here, all we
+   --  in package ali. From the point of view of the description here, all we
    --  need to know is that the information is represented as a string of
    --  characters that is somehow associated with an object file, and can be
    --  retrieved. If no library information exists for a given object file,
@@ -130,8 +130,6 @@ package Lib.Writ is
    --      zero or more two letter codes that indicate configuration
    --      pragmas and other parameters that apply:
    --
-   --      Present if the unit uses tasking directly or indirectly and
-   --      has one or more valid xxx_Policy pragmas that apply to the unit.
    --      The arguments are as follows:
    --
    --         CE   Compilation errors. If this is present it means that the
@@ -163,7 +161,8 @@ package Lib.Writ is
    --              can be produced (e.g. when a package spec is compiled
    --              instead of the body, or a subunit on its own).
    --
-   --         NR   No_Run_Time pragma in effect for all units in this file
+   --         NR   No_Run_Time. Indicates that a pragma No_Run_Time applies
+   --              to all units in the file.
    --
    --         NS   Normalize_Scalars pragma in effect for all units in
    --              this file
@@ -171,6 +170,12 @@ package Lib.Writ is
    --         Qx   A valid Queueing_Policy pragma applies to all the units
    --              in this file, where x is the first character (upper case)
    --              of the policy name (e.g. 'P' for Priority_Queueing).
+   --
+   --         SL   Indicates that the unit is an Interface to a Standalone
+   --              Library. Note that this indication is never given by the
+   --              compiler, but is added by the Project Manager in gnatmake
+   --              when an Interface ALI file is copied to the library
+   --              directory.
    --
    --         Tx   A valid Task_Dispatching_Policy pragma applies to all
    --              the units in this file, where x is the first character
@@ -222,6 +227,25 @@ package Lib.Writ is
    --      i.e. to detect cases where one unit has "r" and another unit
    --      has "v", which is not permitted, since these restrictions
    --      are partition-wide.
+
+   --  ------------------------
+   --  -- I Interrupt States --
+   --  ------------------------
+
+   --    I interrupt-number interrupt-state line-number
+
+   --      This line records information from an Interrupt_State pragma.
+   --      There is one line for each separate pragma, and if no such
+   --      pragmas are used, then no I lines are present.
+
+   --      The interrupt-number is an unsigned positive integer giving
+   --      the value of the interrupt as defined in Ada.Interrupts.Names.
+
+   --      The interrupt-state is one of r/s/u for Runtime/System/User
+
+   --      The line number is an unsigned decimal integer giving the
+   --      line number of the corresponding Interrupt_State pragma.
+   --      This is used in consistency messages.
 
    ----------------------------
    -- Compilation Unit Lines --
@@ -437,6 +461,11 @@ package Lib.Writ is
    --      allows a reader of the ALI file to determine the exact mapping
    --      of physical line numbers back to the original source.
 
+   --      Files with a zero checksum and a non-zero time stamp are in general
+   --      files on which the compilation depends but which are not Ada files
+   --      with further dependencies. This includes preprocessor data files
+   --      and preprocessor definition files.
+
    --      Note: blank lines are ignored when the library information is
    --      read, and separate sections of the file are separated by blank
    --      lines to ease readability. Blanks between fields are also
@@ -455,6 +484,35 @@ package Lib.Writ is
 
    --  The cross-reference data follows the dependency lines. See
    --  the spec of Lib.Xref for details on the format of this data.
+
+   ----------------------
+   -- Global_Variables --
+   ----------------------
+
+   --  The table structure defined here stores one entry for each
+   --  Interrupt_State pragma encountered either in the main source or
+   --  in an ancillary with'ed source. Since interrupt state values
+   --  have to be consistent across all units in a partition, we may
+   --  as well detect inconsistencies at compile time when we can.
+
+   type Interrupt_State_Entry is record
+      Interrupt_Number : Pos;
+      --  Interrupt number value
+
+      Interrupt_State : Character;
+      --  Set to r/s/u for Runtime/System/User
+
+      Pragma_Loc : Source_Ptr;
+      --  Location of pragma setting this value in place
+   end record;
+
+   package Interrupt_States is new Table.Table (
+     Table_Component_Type => Interrupt_State_Entry,
+     Table_Index_Type     => Nat,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 30,
+     Table_Increment      => 200,
+     Table_Name           => "Name_Interrupt_States");
 
    -----------------
    -- Subprograms --
@@ -475,5 +533,9 @@ package Lib.Writ is
    --  date ALI file. If it *can* find an existing up to date ALI file, then
    --  it reads this file and sets the Lib.Compilation_Arguments table from
    --  the A lines in this file.
+
+   procedure Add_Preprocessing_Dependency (S : Source_File_Index);
+   --  Indicate that there is a dependency to be added on a preprocessing
+   --  data file or on a preprocessing definition file.
 
 end Lib.Writ;

@@ -2,12 +2,11 @@
 --                                                                          --
 --                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
 --                                                                          --
---    S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .     --
---                            O P E R A T I O N S                           --
+--                SYSTEM.TASKING.PROTECTED_OBJECTS.OPERATIONS               --
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2001, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2003, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,8 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -142,7 +141,7 @@ package body System.Tasking.Protected_Objects.Operations is
    --      declare
    --         X : protected_entry_index := 1;
    --         B80b : communication_block;
-   --         _init_proc (B80b);
+   --         communication_blockIP (B80b);
    --      begin
    --         begin
    --            A79b : label
@@ -616,7 +615,7 @@ package body System.Tasking.Protected_Objects.Operations is
    --  declare
    --     X : protected_entry_index := 1;
    --     B85b : communication_block;
-   --     _init_proc (B85b);
+   --     communication_blockIP (B85b);
    --  begin
    --     protected_entry_call (rTV!(r)._object'unchecked_access, X,
    --       null_address, conditional_call, B85b, objectF => 0);
@@ -1040,7 +1039,8 @@ package body System.Tasking.Protected_Objects.Operations is
      (Entry_Call : Entry_Call_Link;
       With_Abort : Boolean)
    is
-      Old : Entry_Call_State := Entry_Call.State;
+      Old : constant Entry_Call_State := Entry_Call.State;
+
    begin
       pragma Assert (Old < Done);
 

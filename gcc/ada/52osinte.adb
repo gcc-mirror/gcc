@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---           Copyright (C) 1999-2002 Free Software Foundation, Inc.         --
+--           Copyright (C) 1999-2003 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -424,6 +424,7 @@ package body System.OS_Interface is
       protocol : int)
       return     int
    is
+      pragma Unreferenced (attr, protocol);
    begin
       return 0;
    end pthread_mutexattr_setprotocol;
@@ -433,6 +434,7 @@ package body System.OS_Interface is
       prioceiling : int)
       return        int
    is
+      pragma Unreferenced (attr, prioceiling);
    begin
       return 0;
    end pthread_mutexattr_setprioceiling;
@@ -442,6 +444,7 @@ package body System.OS_Interface is
       contentionscope : int)
       return            int
    is
+      pragma Unreferenced (attr, contentionscope);
    begin
       return 0;
    end pthread_attr_setscope;
@@ -464,6 +467,7 @@ package body System.OS_Interface is
       detachstate : int)
       return        int
    is
+      pragma Unreferenced (attr, detachstate);
    begin
       return 0;
    end pthread_attr_setdetachstate;

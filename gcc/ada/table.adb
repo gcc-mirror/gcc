@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,13 +32,16 @@
 ------------------------------------------------------------------------------
 
 with Debug;   use Debug;
-with Opt;
-with Output;        use Output;
-pragma Elaborate_All (Output);
-with System;        use System;
-with Tree_IO;       use Tree_IO;
+with Opt;     use Opt;
+with Output;  use Output;
+with System;  use System;
+with Tree_IO; use Tree_IO;
+
 with System.Memory; use System.Memory;
-with System.Address_To_Access_Conversions;
+
+with Unchecked_Conversion;
+
+pragma Elaborate_All (Output);
 
 package body Table is
    package body Table is
@@ -63,17 +66,8 @@ package body Table is
       --  Return Null_Address if the table length is zero,
       --  Table (First)'Address if not.
 
-      package Table_Conversions is
-         new System.Address_To_Access_Conversions (Big_Table_Type);
-      --  Address and Access conversions for a Table object.
-
-      function To_Address (Table : Table_Ptr) return Address;
-      pragma Inline (To_Address);
-      --  Returns the Address for the Table object.
-
-      function To_Pointer (Table : Address) return Table_Ptr;
-      pragma Inline (To_Pointer);
-      --  Returns the Access pointer for the Table object.
+      function To_Address is new Unchecked_Conversion (Table_Ptr, Address);
+      function To_Pointer is new Unchecked_Conversion (Address, Table_Ptr);
 
       ------------
       -- Append --
@@ -123,11 +117,12 @@ package body Table is
       ----------
 
       procedure Init is
-         Old_Length : Int := Length;
+         Old_Length : constant Int := Length;
 
       begin
+         Locked   := False;
          Last_Val := Min - 1;
-         Max      := Min + (Table_Initial * Opt.Table_Factor) - 1;
+         Max      := Min + (Table_Initial * Table_Factor) - 1;
          Length   := Max - Min + 1;
 
          --  If table is same size as before (happens when table is never
@@ -285,25 +280,6 @@ package body Table is
             end if;
          end if;
       end Set_Last;
-
-      ----------------
-      -- To_Address --
-      ----------------
-
-      function To_Address (Table : Table_Ptr) return Address is
-      begin
-         return Table_Conversions.To_Address
-           (Table_Conversions.Object_Pointer (Table));
-      end To_Address;
-
-      ----------------
-      -- To_Pointer --
-      ----------------
-
-      function To_Pointer (Table : Address) return Table_Ptr is
-      begin
-         return Table_Ptr (Table_Conversions.To_Pointer (Table));
-      end To_Pointer;
 
       ----------------------------
       -- Tree_Get_Table_Address --

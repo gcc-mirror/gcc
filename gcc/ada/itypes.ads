@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -72,7 +72,7 @@ package Itypes is
    --  or not to copy a referenced Itype. If the associated node is part of
    --  the tree to be copied by New_Copy_Tree, then (since the idea of the
    --  call to New_Copy_Tree is to create a complete duplicate of a tree,
-   --  as though it had appeared separately int he source), the Itype in
+   --  as though it had appeared separately in the source), the Itype in
    --  question is duplicated as part of the New_Copy_Tree processing.
 
    -----------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -433,17 +433,41 @@ private
    --  them intrinsic, since the backend can handle them, but the front
    --  end is not prepared to deal with them, so at least inline them.
 
-   pragma Inline ("+");
-   pragma Inline ("-");
-   pragma Inline ("not");
-   pragma Inline ("and");
-   pragma Inline ("or");
-   pragma Inline ("xor");
+   pragma Inline_Always ("+");
+   pragma Inline_Always ("-");
+   pragma Inline_Always ("not");
+   pragma Inline_Always ("and");
+   pragma Inline_Always ("or");
+   pragma Inline_Always ("xor");
 
    --  Other inlined subprograms
 
-   pragma Inline (Fetch_From_Address);
-   pragma Inline (Assign_To_Address);
+   pragma Inline_Always (Fetch_From_Address);
+   pragma Inline_Always (Assign_To_Address);
+
+   --  Synchronization related subprograms. These are declared to have
+   --  convention C so that the critical parameters are passed by reference.
+   --  Without this, the parameters are passed by copy, creating load/store
+   --  race conditions. We also inline them, since this seems more in the
+   --  spirit of the original (hardware instrinsic) routines.
+
+   pragma Convention (C, Clear_Interlocked);
+   pragma Inline_Always (Clear_Interlocked);
+
+   pragma Convention (C, Set_Interlocked);
+   pragma Inline_Always (Set_Interlocked);
+
+   pragma Convention (C, Add_Interlocked);
+   pragma Inline_Always (Add_Interlocked);
+
+   pragma Convention (C, Add_Atomic);
+   pragma Inline_Always (Add_Atomic);
+
+   pragma Convention (C, And_Atomic);
+   pragma Inline_Always (And_Atomic);
+
+   pragma Convention (C, Or_Atomic);
+   pragma Inline_Always (Or_Atomic);
 
    --  Provide proper unchecked conversion definitions for transfer
    --  functions. Note that we need this level of indirection because

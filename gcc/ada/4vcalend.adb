@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 1992-2000 Free Software Foundation, Inc.        --
+--            Copyright (C) 1992-2003 Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -235,8 +235,11 @@ package body Ada.Calendar is
       Status   : Unsigned_Longword;
       Timbuf   : Unsigned_Word_Array (1 .. 7);
 
+      Subsecs   : constant Time := Date mod 10_000_000;
+      Date_Secs : constant Time := Date - Subsecs;
+
    begin
-      Numtim (Status, Timbuf, Date);
+      Numtim (Status, Timbuf, Date_Secs);
 
       if Status mod 2 /= 1
         or else Timbuf (1) not in Ada_Year_Min .. Ada_Year_Max
@@ -244,12 +247,13 @@ package body Ada.Calendar is
          raise Time_Error;
       end if;
 
-      Seconds
-        := Day_Duration (Timbuf (6) + 60 * (Timbuf (5) + 60 * Timbuf (4)))
-           + Day_Duration (Timbuf (7)) / 100.0;
-      Day       := Integer (Timbuf (3));
-      Month     := Integer (Timbuf (2));
-      Year      := Integer (Timbuf (1));
+      Seconds := Day_Duration (Timbuf (6)
+                   + 60 * (Timbuf (5) + 60 * Timbuf (4)))
+                   + Duration (Subsecs) / 10_000_000.0;
+
+      Day   := Integer (Timbuf (3));
+      Month := Integer (Timbuf (2));
+      Year  := Integer (Timbuf (1));
    end Split;
 
    -------------
@@ -280,6 +284,8 @@ package body Ada.Calendar is
       Date        : Time;
       Int_Secs    : Integer;
       Day_Hack    : Boolean := False;
+      Subsecs     : Day_Duration;
+
    begin
       --  The following checks are redundant with respect to the constraint
       --  error checks that should normally be made on parameters, but we
@@ -305,30 +311,17 @@ package body Ada.Calendar is
          Int_Secs := Integer (Seconds);
       end if;
 
+      Subsecs := Seconds - Day_Duration (Int_Secs);
+
       --  Cvt_Vectim barfs on the largest Day_Duration, so trick it by
       --  setting it to zero and then adding the difference after conversion.
 
       if Int_Secs = 86_400 then
          Int_Secs := 0;
          Day_Hack := True;
-         Timbuf (7) := 0;
-      else
-         Timbuf (7) := Unsigned_Word
-          (100.0 * Duration (Seconds - Day_Duration (Int_Secs)));
-         --  Cvt_Vectim accurate only to within .01 seconds
       end if;
 
-      --  Similar hack needed for 86399 and 100/100ths, since that gets
-      --  treated as 86400 (largest Day_Duration). This can happen because
-      --  Duration has more accuracy than VMS system time conversion calls
-      --  can handle.
-
-      if Int_Secs = 86_399 and then Timbuf (7) = 100 then
-         Int_Secs := 0;
-         Day_Hack := True;
-         Timbuf (7) := 0;
-      end if;
-
+      Timbuf (7) := 0;
       Timbuf (6) := Unsigned_Word (Int_Secs mod 60);
       Timbuf (5) := Unsigned_Word ((Int_Secs / 60) mod 60);
       Timbuf (4) := Unsigned_Word (Int_Secs / 3600);
@@ -346,8 +339,8 @@ package body Ada.Calendar is
          Date := Date + 10_000_000 * 86_400;
       end if;
 
+      Date := Date + Time (10_000_000.0 * Subsecs);
       return Date;
-
    end Time_Of;
 
    ----------

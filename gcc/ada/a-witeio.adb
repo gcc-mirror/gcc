@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,7 +86,7 @@ package body Ada.Wide_Text_IO is
      (Control_Block : Wide_Text_AFCB)
       return          FCB.AFCB_Ptr
    is
-      pragma Warnings (Off, Control_Block);
+      pragma Unreferenced (Control_Block);
 
    begin
       return new Wide_Text_AFCB;
@@ -166,11 +166,14 @@ package body Ada.Wide_Text_IO is
       Name : in String := "";
       Form : in String := "")
    is
-      File_Control_Block : Wide_Text_AFCB;
+      Dummy_File_Control_Block : Wide_Text_AFCB;
+      pragma Warnings (Off, Dummy_File_Control_Block);
+      --  Yes, we know this is never assigned a value, only the tag
+      --  is used for dispatching purposes, so that's expected.
 
    begin
       FIO.Open (File_Ptr  => AP (File),
-                Dummy_FCB => File_Control_Block,
+                Dummy_FCB => Dummy_File_Control_Block,
                 Mode      => To_FCB (Mode),
                 Name      => Name,
                 Form      => Form,
@@ -1007,11 +1010,14 @@ package body Ada.Wide_Text_IO is
       Name : in String;
       Form : in String := "")
    is
-      File_Control_Block : Wide_Text_AFCB;
+      Dummy_File_Control_Block : Wide_Text_AFCB;
+      pragma Warnings (Off, Dummy_File_Control_Block);
+      --  Yes, we know this is never assigned a value, only the tag
+      --  is used for dispatching purposes, so that's expected.
 
    begin
       FIO.Open (File_Ptr  => AP (File),
-                Dummy_FCB => File_Control_Block,
+                Dummy_FCB => Dummy_File_Control_Block,
                 Mode      => To_FCB (Mode),
                 Name      => Name,
                 Form      => Form,
@@ -1144,7 +1150,8 @@ package body Ada.Wide_Text_IO is
       Item : out Stream_Element_Array;
       Last : out Stream_Element_Offset)
    is
-      ch : int;
+      Discard_ch : int;
+      pragma Unreferenced (Discard_ch);
 
    begin
       --  Need to deal with Before_Wide_Character ???
@@ -1168,7 +1175,7 @@ package body Ada.Wide_Text_IO is
          --  be expected if stream and text input are mixed this way?
 
          if File.Before_LM_PM then
-            ch := ungetc (PM, File.Stream);
+            Discard_ch := ungetc (PM, File.Stream);
             File.Before_LM_PM := False;
          end if;
 

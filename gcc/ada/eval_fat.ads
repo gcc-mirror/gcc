@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,13 +46,9 @@ package Eval_Fat is
    subtype R is Entity_Id;
    --  The compile time representation of the floating-point root type
 
-   type Rounding_Mode is (Floor, Ceiling, Round, Round_Even);
-   for Rounding_Mode use (0, 1, 2, 3);
-   --  Used to indicate rounding mode for Machine attribute
-   --  Note that C code in gigi knows that Round_Even is 3
-
-   Rounding_Was_Biased : Boolean;
-   --  Set if last use of Machine rounded a halfway case away from zero
+   --  The following functions perform the operation implied by their name
+   --  which corresponds to the name of the attribute which they compute.
+   --  The arguments correspond to the attribute function arguments.
 
    function Adjacent          (RT : R; X, Towards : T)              return T;
 
@@ -70,8 +66,6 @@ package Eval_Fat is
 
    function Leading_Part      (RT : R; X : T; Radix_Digits : UI)    return T;
 
-   function Machine           (RT : R; X : T; Mode : Rounding_Mode) return T;
-
    function Model             (RT : R; X : T)                       return T;
 
    function Pred              (RT : R; X : T)                       return T;
@@ -87,5 +81,24 @@ package Eval_Fat is
    function Truncation        (RT : R; X : T)                       return T;
 
    function Unbiased_Rounding (RT : R; X : T)                       return T;
+
+   --  The following global declarations are used by the Machine attribute
+
+   type Rounding_Mode is (Floor, Ceiling, Round, Round_Even);
+   for Rounding_Mode use (0, 1, 2, 3);
+   --  Used to indicate rounding mode for Machine attribute
+   --  Note that C code in gigi knows that Round_Even is 3
+
+   --  The Machine attribute is special, in that it takes an extra argument
+   --  indicating the rounding mode, and also an argument Enode that is a
+   --  node used to post warnings (e.g. if asked to convert a negative zero
+   --  on a machine for which Signed_Zeros is False).
+
+   function Machine
+     (RT    : R;
+      X     : T;
+      Mode  : Rounding_Mode;
+      Enode : Node_Id)
+      return  T;
 
 end Eval_Fat;

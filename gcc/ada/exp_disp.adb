@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -166,9 +166,13 @@ package body Exp_Disp is
       Eq_Prim_Op    : Entity_Id := Empty;
 
       function New_Value (From : Node_Id) return Node_Id;
-      --  From is the original Expression. New_Value is equivalent to
-      --  Duplicate_Subexpr with an explicit dereference when From is an
+      --  From is the original Expression. New_Value is equivalent to a call
+      --  to Duplicate_Subexpr with an explicit dereference when From is an
       --  access parameter
+
+      ---------------
+      -- New_Value --
+      ---------------
 
       function New_Value (From : Node_Id) return Node_Id is
          Res : constant Node_Id := Duplicate_Subexpr (From);
@@ -278,7 +282,8 @@ package body Exp_Disp is
             --  No tag check with itself
 
             if Param = Ctrl_Arg then
-               Append_To (New_Params, Duplicate_Subexpr (Param));
+               Append_To (New_Params,
+                 Duplicate_Subexpr_Move_Checks (Param));
 
             --  No tag check for parameter whose type is neither tagged nor
             --  access to tagged (for access parameters)
@@ -294,11 +299,13 @@ package body Exp_Disp is
 
             --  "=" is the only dispatching operation allowed to get
             --  operands with incompatible tags (it just returns false).
-            --  We use Duplicate_subexpr instead of relocate_node because
-            --  the value will be duplicated to check the tags.
+            --  We use Duplicate_Subexpr_Move_Checks instead of calling
+            --  Relocate_Node because the value will be duplicated to
+            --  check the tags.
 
             elsif Subp = Eq_Prim_Op then
-               Append_To (New_Params, Duplicate_Subexpr (Param));
+               Append_To (New_Params,
+                 Duplicate_Subexpr_Move_Checks (Param));
 
             --  No check in presence of suppress flags
 
@@ -448,7 +455,7 @@ package body Exp_Disp is
             --  Vptr
 
               Make_Selected_Component (Loc,
-                Prefix => Duplicate_Subexpr (Ctrl_Arg),
+                Prefix => Duplicate_Subexpr_Move_Checks (Ctrl_Arg),
                 Selector_Name => New_Reference_To (DTC_Entity (Subp), Loc)),
 
             --  Position
@@ -572,6 +579,11 @@ package body Exp_Disp is
       Old_TSD         : Node_Id;
 
    begin
+      if not RTE_Available (RE_Tag) then
+         Error_Msg_CRT ("tagged types", Typ);
+         return New_List;
+      end if;
+
       if Is_CPP_Class (Root_Type (Typ)) then
          Generalized_Tag := RTE (RE_Vtable_Ptr);
       else
@@ -812,8 +824,13 @@ package body Exp_Disp is
       --  for simple types with controlled components
       --    Generate: Set_RC_Offset (DT_Ptr, type._record_controller'position);
       --  for complex types with controlled components where the position
-      --  of the record controller
+      --  of the record controller is not statically computable, if there are
+      --  controlled components at this level
       --    Generate: Set_RC_Offset (DT_Ptr, -1);
+      --  to indicate that the _controller field is right after the _parent or
+      --  if there are no controlled components at this level,
+      --    Generate: Set_RC_Offset (DT_Ptr, -2);
+      --  to indicate that we need to get the position from the parent.
 
       declare
          Position : Node_Id;
@@ -823,8 +840,11 @@ package body Exp_Disp is
             Position := Make_Integer_Literal (Loc, 0);
 
          elsif Etype (Typ) /= Typ and then Has_Discriminants (Etype (Typ)) then
-            Position := Make_Integer_Literal (Loc, -1);
-
+            if Has_New_Controlled_Component (Typ) then
+               Position := Make_Integer_Literal (Loc, -1);
+            else
+               Position := Make_Integer_Literal (Loc, -2);
+            end if;
          else
             Position :=
               Make_Attribute_Reference (Loc,
@@ -835,7 +855,7 @@ package body Exp_Disp is
                       New_Reference_To (Controller_Component (Typ), Loc)),
                 Attribute_Name => Name_Position);
 
-            --  This is not proper Ada code to use the attribute component
+            --  This is not proper Ada code to use the attribute 'Position
             --  on something else than an object but this is supported by
             --  the back end (see comment on the Bit_Component attribute in
             --  sem_attr). So we avoid semantic checking here.
@@ -846,7 +866,6 @@ package body Exp_Disp is
             Set_Etype (Selector_Name (Prefix (Position)),
               RTE (RE_Record_Controller));
             Set_Etype (Position, RTE (RE_Storage_Offset));
-
          end if;
 
          Append_To (Elab_Code,
@@ -899,13 +918,15 @@ package body Exp_Disp is
                    Attribute_Name => Name_Address))));
 
       --  Generate code to register the Tag in the External_Tag hash
-      --  table for the pure Ada type only. We skip this in No_Run_Time
-      --  mode where the External_Tag attribute is not allowed anyway.
+      --  table for the pure Ada type only.
 
       --        Register_Tag (Dt_Ptr);
 
-         if Is_RTE (Generalized_Tag, RE_Tag)
-           and then not No_Run_Time
+      --  Skip this if routine not available, or in No_Run_Time mode
+
+         if RTE_Available (RE_Register_Tag)
+           and then Is_RTE (Generalized_Tag, RE_Tag)
+           and then not No_Run_Time_Mode
          then
             Append_To (Elab_Code,
               Make_Procedure_Call_Statement (Loc,
@@ -1149,22 +1170,30 @@ package body Exp_Disp is
       --  each primitive operation. Perform some sanity checks to avoid
       --  to build completely inconsistant dispatch tables.
 
-      else
+      --  Note that the _Size primitive is always set at position 1 in order
+      --  to comply with the needs of Ada.Tags.Parent_Size (see documentation
+      --  in a-tags.ad?)
 
-         Nb_Prim := 0;
+      else
+         Nb_Prim := 1;
          Prim_Elmt := First_Prim;
          while Present (Prim_Elmt) loop
             Nb_Prim := Nb_Prim + 1;
             Prim := Node (Prim_Elmt);
             Set_DTC_Entity (Prim, The_Tag);
-            Set_DT_Position (Prim, UI_From_Int (Nb_Prim));
+
+            if Chars (Prim) = Name_uSize then
+               Set_DT_Position (Prim, Uint_1);
+               Nb_Prim := Nb_Prim - 1;
+            else
+               Set_DT_Position (Prim, UI_From_Int (Nb_Prim));
+            end if;
 
             if Chars (Prim) = Name_Finalize
-              and then (Is_Predefined_File_Name
-                          (Unit_File_Name (Current_Sem_Unit))
-                         or else
-                        not Is_Predefined_File_Name
-                          (Unit_File_Name (Get_Source_Unit (Prim))))
+              and then
+                (Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
+                   or else not Is_Predefined_File_Name
+                                  (Unit_File_Name (Get_Source_Unit (Prim))))
             then
                Finalized := True;
             end if;
@@ -1178,8 +1207,6 @@ package body Exp_Disp is
             --  ridden. For explicit declarations this is checked at the point
             --  of declaration, but for inherited operations it must be done
             --  when building the dispatch table. Input is excluded because
-            --  Limited_Controlled inherits a useless Input stream operation
-            --  from Root_Controlled, which cannot be overridden.
 
             if Is_Abstract (Typ)
               and then Is_Abstract (Prim)
@@ -1190,10 +1217,21 @@ package body Exp_Disp is
                =  Private_Declarations
                    (Specification (Unit_Declaration_Node (Current_Scope)))
               and then Original_View_In_Visible_Part (Typ)
-              and then Chars (Prim) /= Name_uInput
             then
-               Error_Msg_NE ("abstract inherited private operation&"
-                  & " must be overriden", Parent (Typ), Prim);
+               --  We exclude Input and Output stream operations because
+               --  Limited_Controlled inherits useless Input and Output
+               --  stream operations from Root_Controlled, which can
+               --  never be overridden.
+
+               if not Is_TSS (Prim, TSS_Stream_Input)
+                    and then
+                  not Is_TSS (Prim, TSS_Stream_Output)
+               then
+                  Error_Msg_NE
+                    ("abstract inherited private operation&" &
+                     " must be overridden ('R'M 3.9.3(10))",
+                     Parent (Typ), Prim);
+               end if;
             end if;
             Next_Elmt (Prim_Elmt);
          end loop;
@@ -1211,8 +1249,8 @@ package body Exp_Disp is
 
          Set_DT_Entry_Count (The_Tag, UI_From_Int (Nb_Prim));
 
-         --  The derived type must have at least as many components than
-         --  its parent (for root types, the etype points back to itself
+         --  The derived type must have at least as many components as its
+         --  parent (for root types, the Etype points back to itself
          --  and the test should not fail)
 
          pragma Assert (
@@ -1229,7 +1267,6 @@ package body Exp_Disp is
       Loc   : Source_Ptr;
       Init  : Entity_Id;
       Param : Entity_Id;
-      Decl  : Node_Id;
       E     : Entity_Id;
 
    begin
@@ -1247,25 +1284,26 @@ package body Exp_Disp is
 
       if Present (E) then
          Loc   := Sloc (E);
-         Init  := Make_Defining_Identifier (Loc, Name_uInit_Proc);
+         Init  := Make_Defining_Identifier (Loc, Make_Init_Proc_Name (Typ));
          Param := Make_Defining_Identifier (Loc, Name_X);
-         Decl  :=
+
+         Discard_Node (
            Make_Subprogram_Declaration (Loc,
              Make_Procedure_Specification (Loc,
                Defining_Unit_Name => Init,
                Parameter_Specifications => New_List (
                  Make_Parameter_Specification (Loc,
                    Defining_Identifier => Param,
-                   Parameter_Type      => New_Reference_To (Typ, Loc)))));
+                   Parameter_Type      => New_Reference_To (Typ, Loc))))));
 
          Set_Init_Proc (Typ, Init);
-         Set_Is_Imported (Init);
+         Set_Is_Imported    (Init);
          Set_Interface_Name (Init, Interface_Name (E));
-         Set_Convention (Init, Convention_C);
-         Set_Is_Public (Init);
+         Set_Convention     (Init, Convention_C);
+         Set_Is_Public      (Init);
          Set_Has_Completion (Init);
 
-      --  if there are no constructors, mark the type as abstract since we
+      --  If there are no constructors, mark the type as abstract since we
       --  won't be able to declare objects of that type.
 
       else

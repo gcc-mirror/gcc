@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -45,6 +45,7 @@ with Interfaces.C;
 package body System.OS_Primitives is
 
    use System.OS_Interface;
+   use type Interfaces.C.int;
 
    --------------------------
    --  Internal functions  --
@@ -59,7 +60,12 @@ package body System.OS_Primitives is
       Ticks          : Long_Long_Integer;
       Rate_Duration  : Duration;
       Ticks_Duration : Duration;
+
    begin
+      if D < 0.0 then
+         return -1;
+      end if;
+
       --  Ensure that the duration can be converted to ticks
       --  at the current clock tick rate without overflowing.
 
@@ -68,8 +74,6 @@ package body System.OS_Primitives is
       if D > (Duration'Last / Rate_Duration) then
          Ticks := Long_Long_Integer (int'Last);
       else
-         --  We always want to round up to the nearest clock tick.
-
          Ticks_Duration := D * Rate_Duration;
          Ticks := Long_Long_Integer (Ticks_Duration);
 
@@ -94,6 +98,7 @@ package body System.OS_Primitives is
       Result : int;
 
       use type Interfaces.C.int;
+
    begin
       Result := clock_gettime (CLOCK_REALTIME, TS'Unchecked_Access);
       pragma Assert (Result = 0);
@@ -114,10 +119,13 @@ package body System.OS_Primitives is
      (Time : Duration;
       Mode : Integer)
    is
-      Result     : int;
       Rel_Time   : Duration;
       Abs_Time   : Duration;
       Check_Time : Duration := Clock;
+      Ticks      : int;
+
+      Result     : int;
+      pragma Unreferenced (Result);
 
    begin
       if Mode = Relative then
@@ -130,7 +138,17 @@ package body System.OS_Primitives is
 
       if Rel_Time > 0.0 then
          loop
-            Result := taskDelay (To_Clock_Ticks (Rel_Time));
+            Ticks := To_Clock_Ticks (Rel_Time);
+
+            if Mode = Relative and then Ticks < int'Last then
+               --  The first tick will delay anytime between 0 and
+               --  1 / sysClkRateGet seconds, so we need to add one to
+               --  be on the safe side.
+
+               Ticks := Ticks + 1;
+            end if;
+
+            Result := taskDelay (Ticks);
             Check_Time := Clock;
 
             exit when Abs_Time <= Check_Time;

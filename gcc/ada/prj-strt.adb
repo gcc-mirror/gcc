@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,45 +24,31 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Errout;    use Errout;
+with Err_Vars;  use Err_Vars;
 with Namet;     use Namet;
 with Prj.Attr;  use Prj.Attr;
+with Prj.Err;   use Prj.Err;
 with Prj.Tree;  use Prj.Tree;
 with Scans;     use Scans;
-with Sinfo;     use Sinfo;
-with Stringt;   use Stringt;
+with Snames;
 with Table;
 with Types;     use Types;
 
 package body Prj.Strt is
 
-   type Name_Location is record
-      Name     : Name_Id := No_Name;
-      Location : Source_Ptr := No_Location;
-   end record;
-   --  Store the identifier and the location of a simple name
-
-   type Name_Range is range 0 .. 3;
-   subtype Name_Index is Name_Range range 1 .. Name_Range'Last;
-   --  A Name may contain up to 3 simple names
-
-   type Names is array (Name_Index) of Name_Location;
-   --  Used to store 1 to 3 simple_names. 2 simple names are for
-   --  <project>.<package>, <project>.<variable> or <package>.<variable>.
-   --  3 simple names are for <project>.<package>.<variable>.
-
    type Choice_String is record
-      The_String : String_Id;
+      The_String   : Name_Id;
       Already_Used : Boolean := False;
    end record;
    --  The string of a case label, and an indication that it has already
    --  been used (to avoid duplicate case labels).
 
    Choices_Initial   : constant := 10;
-   Choices_Increment : constant := 10;
+   Choices_Increment : constant := 50;
 
    Choice_Node_Low_Bound  : constant := 0;
-   Choice_Node_High_Bound : constant := 099_999_999; --  In practice, infinite
+   Choice_Node_High_Bound : constant := 099_999_999;
+   --  In practice, infinite
 
    type Choice_Node_Id is
      range Choice_Node_Low_Bound .. Choice_Node_High_Bound;
@@ -83,20 +69,37 @@ package body Prj.Strt is
       new Table.Table (Table_Component_Type => Choice_Node_Id,
                        Table_Index_Type     => Nat,
                        Table_Low_Bound      => 1,
-                       Table_Initial        => 3,
-                       Table_Increment      => 3,
+                       Table_Initial        => 10,
+                       Table_Increment      => 100,
                        Table_Name           => "Prj.Strt.Choice_Lasts");
    --  Used to store the indices of the choices in table Choices,
    --  to distinguish nested case constructions.
 
    Choice_First : Choice_Node_Id := 0;
    --  Index in table Choices of the first case label of the current
-   --  case construction.
-   --  0 means no current case construction.
+   --  case construction. Zero means no current case construction.
 
-   procedure Add (This_String : String_Id);
+   type Name_Location is record
+      Name     : Name_Id := No_Name;
+      Location : Source_Ptr := No_Location;
+   end record;
+   --  Store the identifier and the location of a simple name
+
+   package Names is
+      new Table.Table (Table_Component_Type => Name_Location,
+                       Table_Index_Type     => Nat,
+                       Table_Low_Bound      => 1,
+                       Table_Initial        => 10,
+                       Table_Increment      => 100,
+                       Table_Name           => "Prj.Strt.Names");
+   --  Used to accumulate the single names of a name
+
+   procedure Add (This_String : Name_Id);
    --  Add a string to the case label list, indicating that it has not
    --  yet been used.
+
+   procedure Add_To_Names (NL : Name_Location);
+   --  Add one single names to table Names
 
    procedure External_Reference (External_Value : out Project_Node_Id);
    --  Parse an external reference. Current token is "external".
@@ -120,13 +123,23 @@ package body Prj.Strt is
    -- Add --
    ---------
 
-   procedure Add (This_String : String_Id) is
+   procedure Add (This_String : Name_Id) is
    begin
       Choices.Increment_Last;
       Choices.Table (Choices.Last) :=
         (The_String   => This_String,
          Already_Used => False);
    end Add;
+
+   ------------------
+   -- Add_To_Names --
+   ------------------
+
+   procedure Add_To_Names (NL : Name_Location) is
+   begin
+      Names.Increment_Last;
+      Names.Table (Names.Last) := NL;
+   end Add_To_Names;
 
    -------------------------
    -- Attribute_Reference --
@@ -141,13 +154,26 @@ package body Prj.Strt is
       Current_Attribute : Attribute_Node_Id := First_Attribute;
 
    begin
+      --  Declare the node of the attribute reference
+
       Reference :=  Default_Project_Node (Of_Kind => N_Attribute_Reference);
       Set_Location_Of (Reference, To => Token_Ptr);
       Scan; --  past apostrophe
-      Expect (Tok_Identifier, "Identifier");
+
+      --  Body may be an attribute name
+
+      if Token = Tok_Body then
+         Token      := Tok_Identifier;
+         Token_Name := Snames.Name_Body;
+      end if;
+
+      Expect (Tok_Identifier, "identifier");
 
       if Token = Tok_Identifier then
          Set_Name_Of (Reference, To => Token_Name);
+
+         --  Check if the identifier is one of the attribute identifiers in the
+         --  context (package or project level attributes).
 
          while Current_Attribute /= Empty_Attribute
            and then
@@ -156,12 +182,20 @@ package body Prj.Strt is
             Current_Attribute := Attributes.Table (Current_Attribute).Next;
          end loop;
 
+         --  If the identifier is not allowed, report an error
+
          if Current_Attribute = Empty_Attribute then
             Error_Msg_Name_1 := Token_Name;
             Error_Msg ("unknown attribute %", Token_Ptr);
             Reference := Empty_Node;
 
+            --  Scan past the attribute name
+
+            Scan;
+
          else
+            --  Give its characteristics to this attribute reference
+
             Set_Project_Node_Of (Reference, To => Current_Project);
             Set_Package_Node_Of (Reference, To => Current_Package);
             Set_Expression_Kind_Of
@@ -169,10 +203,15 @@ package body Prj.Strt is
             Set_Case_Insensitive
               (Reference, To => Attributes.Table (Current_Attribute).Kind_2 =
                                           Case_Insensitive_Associative_Array);
+
+            --  Scan past the attribute name
+
             Scan;
 
+            --  If the attribute is an associative array, get the index
+
             if Attributes.Table (Current_Attribute).Kind_2 /= Single then
-               Expect (Tok_Left_Paren, "(");
+               Expect (Tok_Left_Paren, "`(`");
 
                if Token = Tok_Left_Paren then
                   Scan;
@@ -180,9 +219,9 @@ package body Prj.Strt is
 
                   if Token = Tok_String_Literal then
                      Set_Associative_Array_Index_Of
-                       (Reference, To => Strval (Token_Node));
+                       (Reference, To => Token_Name);
                      Scan;
-                     Expect (Tok_Right_Paren, ")");
+                     Expect (Tok_Right_Paren, "`)`");
 
                      if Token = Tok_Right_Paren then
                         Scan;
@@ -190,6 +229,27 @@ package body Prj.Strt is
                   end if;
                end if;
             end if;
+         end if;
+
+         --  Change name of obsolete attributes
+
+         if Reference /= Empty_Node then
+            case Name_Of (Reference) is
+               when Snames.Name_Specification =>
+                  Set_Name_Of (Reference, To => Snames.Name_Spec);
+
+               when Snames.Name_Specification_Suffix =>
+                  Set_Name_Of (Reference, To => Snames.Name_Spec_Suffix);
+
+               when Snames.Name_Implementation =>
+                  Set_Name_Of (Reference, To => Snames.Name_Body);
+
+               when Snames.Name_Implementation_Suffix =>
+                  Set_Name_Of (Reference, To => Snames.Name_Body_Suffix);
+
+               when others =>
+                  null;
+            end case;
          end if;
       end if;
    end Attribute_Reference;
@@ -200,17 +260,24 @@ package body Prj.Strt is
 
    procedure End_Case_Construction is
    begin
+      --  If this is the only case construction, empty the tables
+
       if Choice_Lasts.Last = 1 then
          Choice_Lasts.Set_Last (0);
          Choices.Set_Last (First_Choice_Node_Id);
          Choice_First := 0;
 
       elsif Choice_Lasts.Last = 2 then
+         --  This is the second case onstruction, set the tables to the first
+
          Choice_Lasts.Set_Last (1);
          Choices.Set_Last (Choice_Lasts.Table (1));
          Choice_First := 1;
 
       else
+         --  This is the 3rd or more case construction, set the tables to the
+         --  previous one.
+
          Choice_Lasts.Decrement_Last;
          Choices.Set_Last (Choice_Lasts.Table (Choice_Lasts.Last));
          Choice_First := Choice_Lasts.Table (Choice_Lasts.Last - 1) + 1;
@@ -235,7 +302,7 @@ package body Prj.Strt is
       --  Get the left parenthesis
 
       Scan;
-      Expect (Tok_Left_Paren, "(");
+      Expect (Tok_Left_Paren, "`(`");
 
       --  Scan past the left parenthesis
 
@@ -251,7 +318,7 @@ package body Prj.Strt is
          Field_Id :=
            Default_Project_Node (Of_Kind       => N_Literal_String,
                                  And_Expr_Kind => Single);
-         Set_String_Value_Of (Field_Id, To => Strval (Token_Node));
+         Set_String_Value_Of (Field_Id, To => Token_Name);
          Set_External_Reference_Of (External_Value, To => Field_Id);
 
          --  Scan past the first argument
@@ -279,10 +346,10 @@ package body Prj.Strt is
                   Field_Id :=
                     Default_Project_Node (Of_Kind       => N_Literal_String,
                                           And_Expr_Kind => Single);
-                  Set_String_Value_Of (Field_Id, To => Strval (Token_Node));
+                  Set_String_Value_Of (Field_Id, To => Token_Name);
                   Set_External_Default_Of (External_Value, To => Field_Id);
                   Scan;
-                  Expect (Tok_Right_Paren, ")");
+                  Expect (Tok_Right_Paren, "`)`");
                end if;
 
                --  Scan past the right parenthesis
@@ -291,7 +358,7 @@ package body Prj.Strt is
                end if;
 
             when others =>
-               Error_Msg ("',' or ')' expected", Token_Ptr);
+               Error_Msg ("`,` or `)` expected", Token_Ptr);
          end case;
       end if;
    end External_Reference;
@@ -303,32 +370,45 @@ package body Prj.Strt is
    procedure Parse_Choice_List (First_Choice : out Project_Node_Id) is
       Current_Choice : Project_Node_Id := Empty_Node;
       Next_Choice    : Project_Node_Id := Empty_Node;
-      Choice_String  : String_Id       := No_String;
+      Choice_String  : Name_Id         := No_Name;
       Found          : Boolean         := False;
 
    begin
+      --  Declare the node of the first choice
+
       First_Choice :=
         Default_Project_Node (Of_Kind       => N_Literal_String,
                               And_Expr_Kind => Single);
+
+      --  Initially Current_Choice is the same as First_Choice
+
       Current_Choice := First_Choice;
 
       loop
          Expect (Tok_String_Literal, "literal string");
          exit when Token /= Tok_String_Literal;
          Set_Location_Of (Current_Choice, To => Token_Ptr);
-         Choice_String := Strval (Token_Node);
+         Choice_String := Token_Name;
+
+         --  Give the string value to the current choice
+
          Set_String_Value_Of (Current_Choice, To => Choice_String);
+
+         --  Check if the label is part of the string type and if it has not
+         --  been already used.
 
          Found := False;
          for Choice in Choice_First .. Choices.Last loop
-            if String_Equal (Choices.Table (Choice).The_String,
-                             Choice_String)
-            then
+            if Choices.Table (Choice).The_String = Choice_String then
+               --  This label is part of the string type
+
                Found := True;
 
                if Choices.Table (Choice).Already_Used then
-                  String_To_Name_Buffer (Choice_String);
-                  Error_Msg_Name_1 := Name_Find;
+                  --  But it has already appeared in a choice list for this
+                  --  case construction; report an error.
+
+                  Error_Msg_Name_1 := Choice_String;
                   Error_Msg ("duplicate case label {", Token_Ptr);
                else
                   Choices.Table (Choice).Already_Used := True;
@@ -338,15 +418,23 @@ package body Prj.Strt is
             end if;
          end loop;
 
+         --  If the label is not part of the string list, report an error
+
          if not Found then
-            String_To_Name_Buffer (Choice_String);
-            Error_Msg_Name_1 := Name_Find;
+            Error_Msg_Name_1 := Choice_String;
             Error_Msg ("illegal case label {", Token_Ptr);
          end if;
 
+         --  Scan past the label
+
          Scan;
 
+         --  If there is no '|', we are done
+
          if Token = Tok_Vertical_Bar then
+            --  Otherwise, declare the node of the next choice, link it to
+            --  Current_Choice and set Current_Choice to this new node.
+
             Next_Choice :=
               Default_Project_Node (Of_Kind       => N_Literal_String,
                                     And_Expr_Kind => Single);
@@ -372,12 +460,20 @@ package body Prj.Strt is
       Expression_Kind : Variable_Kind := Undefined;
 
    begin
+      --  Declare the node of the expression
+
       Expression := Default_Project_Node (Of_Kind => N_Expression);
       Set_Location_Of (Expression, To => Token_Ptr);
+
+      --  Parse the term or terms of the expression
+
       Terms (Term            => First_Term,
              Expr_Kind       => Expression_Kind,
              Current_Project => Current_Project,
              Current_Package => Current_Package);
+
+      --  Set the first term and the expression kind
+
       Set_First_Term (Expression, To => First_Term);
       Set_Expression_Kind_Of (Expression, To => Expression_Kind);
    end Parse_Expression;
@@ -389,29 +485,40 @@ package body Prj.Strt is
    procedure Parse_String_Type_List (First_String : out Project_Node_Id) is
       Last_String  : Project_Node_Id := Empty_Node;
       Next_String  : Project_Node_Id := Empty_Node;
-      String_Value : String_Id := No_String;
+      String_Value : Name_Id         := No_Name;
 
    begin
+      --  Declare the node of the first string
+
       First_String :=
         Default_Project_Node (Of_Kind       => N_Literal_String,
                               And_Expr_Kind => Single);
+
+      --  Initially, Last_String is the same as First_String
+
       Last_String := First_String;
 
       loop
          Expect (Tok_String_Literal, "literal string");
          exit when Token /= Tok_String_Literal;
-         String_Value := Strval (Token_Node);
+         String_Value := Token_Name;
+
+         --  Give its string value to Last_String
+
          Set_String_Value_Of (Last_String, To => String_Value);
          Set_Location_Of (Last_String, To => Token_Ptr);
+
+         --  Now, check if the string is already part of the string type
 
          declare
             Current : Project_Node_Id := First_String;
 
          begin
             while Current /= Last_String loop
-               if String_Equal (String_Value_Of (Current), String_Value) then
-                  String_To_Name_Buffer (String_Value);
-                  Error_Msg_Name_1 := Name_Find;
+               if String_Value_Of (Current) = String_Value then
+                  --  This is a repetition, report an error
+
+                  Error_Msg_Name_1 := String_Value;
                   Error_Msg ("duplicate value { in type", Token_Ptr);
                   exit;
                end if;
@@ -420,12 +527,19 @@ package body Prj.Strt is
             end loop;
          end;
 
+         --  Scan past the literal string
+
          Scan;
+
+         --  If there is no comma following the literal string, we are done
 
          if Token /= Tok_Comma then
             exit;
 
          else
+            --  Declare the next string, link it to Last_String and set
+            --  Last_String to its node.
+
             Next_String :=
               Default_Project_Node (Of_Kind       => N_Literal_String,
                                     And_Expr_Kind => Single);
@@ -445,8 +559,6 @@ package body Prj.Strt is
       Current_Project : Project_Node_Id;
       Current_Package : Project_Node_Id)
    is
-      The_Names        : Names;
-      Last_Name        : Name_Range := 0;
       Current_Variable : Project_Node_Id := Empty_Node;
 
       The_Package : Project_Node_Id := Current_Package;
@@ -459,7 +571,9 @@ package body Prj.Strt is
       Variable_Name     : Name_Id;
 
    begin
-      for Index in The_Names'Range loop
+      Names.Init;
+
+      loop
          Expect (Tok_Identifier, "identifier");
 
          if Token /= Tok_Identifier then
@@ -467,21 +581,19 @@ package body Prj.Strt is
             exit;
          end if;
 
-         Last_Name := Last_Name + 1;
-         The_Names (Last_Name) :=
-           (Name     => Token_Name,
-            Location => Token_Ptr);
+         Add_To_Names (NL => (Name => Token_Name, Location => Token_Ptr));
          Scan;
          exit when Token /= Tok_Dot;
          Scan;
       end loop;
 
       if Look_For_Variable then
+
          if Token = Tok_Apostrophe then
 
             --  Attribute reference
 
-            case Last_Name is
+            case Names.Last is
                when 0 =>
 
                   --  Cannot happen
@@ -489,9 +601,14 @@ package body Prj.Strt is
                   null;
 
                when 1 =>
+                  --  This may be a project name or a package name.
+                  --  Project name have precedence.
+
+                  --  First, look if it can be a package name
+
                   for Index in Package_First .. Package_Attributes.Last loop
                      if Package_Attributes.Table (Index).Name =
-                                                      The_Names (1).Name
+                                                      Names.Table (1).Name
                      then
                         First_Attribute :=
                           Package_Attributes.Table (Index).First_Attribute;
@@ -499,96 +616,159 @@ package body Prj.Strt is
                      end if;
                   end loop;
 
-                  if First_Attribute /= Empty_Attribute then
-                     The_Package := First_Package_Of (Current_Project);
-                     while The_Package /= Empty_Node
-                       and then Name_Of (The_Package) /= The_Names (1).Name
-                     loop
-                        The_Package := Next_Package_In_Project (The_Package);
-                     end loop;
+                  --  Now, look if it can be a project name
 
-                     if The_Package = Empty_Node then
-                        Error_Msg_Name_1 := The_Names (1).Name;
-                        Error_Msg ("package % not yet defined",
-                                   The_Names (1).Location);
-                     end if;
+                  The_Project := Imported_Or_Extended_Project_Of
+                    (Current_Project, Names.Table (1).Name);
 
-                  else
-                     First_Attribute := Attribute_First;
-                     The_Package     := Empty_Node;
+                  if The_Project = Empty_Node then
+                     --  If it is neither a project name nor a package name,
+                     --  report an error
 
-                     declare
-                        The_Project_Name_And_Node :
-                          constant Tree_Private_Part.Project_Name_And_Node :=
-                            Tree_Private_Part.Projects_Htable.Get
-                                                          (The_Names (1).Name);
-
-                        use Tree_Private_Part;
-
-                     begin
-                        if The_Project_Name_And_Node =
-                                   Tree_Private_Part.No_Project_Name_And_Node
-                        then
-                           Error_Msg_Name_1 := The_Names (1).Name;
-                           Error_Msg ("unknown project %",
-                                      The_Names (1).Location);
-                        else
-                           The_Project := The_Project_Name_And_Node.Node;
-                        end if;
-                     end;
-                  end if;
-
-               when 2 =>
-                  declare
-                     With_Clause : Project_Node_Id :=
-                                     First_With_Clause_Of (Current_Project);
-
-                  begin
-                     while With_Clause /= Empty_Node loop
-                        The_Project := Project_Node_Of (With_Clause);
-                        exit when Name_Of (The_Project) = The_Names (1).Name;
-                        With_Clause := Next_With_Clause_Of (With_Clause);
-                     end loop;
-
-                     if With_Clause = Empty_Node then
-                        Error_Msg_Name_1 := The_Names (1).Name;
+                     if First_Attribute = Empty_Attribute then
+                        Error_Msg_Name_1 := Names.Table (1).Name;
                         Error_Msg ("unknown project %",
-                                   The_Names (1).Location);
-                        The_Project := Empty_Node;
-                        The_Package := Empty_Node;
+                                   Names.Table (1).Location);
                         First_Attribute := Attribute_First;
 
                      else
-                        The_Package := First_Package_Of (The_Project);
+                        --  If it is a package name, check if the package
+                        --  has already been declared in the current project.
+
+                        The_Package := First_Package_Of (Current_Project);
+
                         while The_Package /= Empty_Node
-                          and then Name_Of (The_Package) /= The_Names (2).Name
+                          and then Name_Of (The_Package) /=
+                          Names.Table (1).Name
                         loop
                            The_Package :=
                              Next_Package_In_Project (The_Package);
                         end loop;
 
+                        --  If it has not been already declared, report an
+                        --  error.
+
                         if The_Package = Empty_Node then
-                           Error_Msg_Name_1 := The_Names (2).Name;
-                           Error_Msg_Name_2 := The_Names (1).Name;
-                           Error_Msg ("package % not declared in project %",
-                                      The_Names (2).Location);
+                           Error_Msg_Name_1 := Names.Table (1).Name;
+                           Error_Msg ("package % not yet defined",
+                                      Names.Table (1).Location);
+                        end if;
+                     end if;
+
+                  else
+                     --  It is a project name
+
+                     First_Attribute := Attribute_First;
+                     The_Package     := Empty_Node;
+                  end if;
+
+               when others =>
+
+                  --  We have either a project name made of several simple
+                  --  names (long project), or a project name (short project)
+                  --  followed by a package name. The long project name has
+                  --  precedence.
+
+                  declare
+                     Short_Project : Name_Id;
+                     Long_Project  : Name_Id;
+
+                  begin
+                     --  Clear the Buffer
+
+                     Buffer_Last := 0;
+
+                     --  Get the name of the short project
+
+                     for Index in 1 .. Names.Last - 1 loop
+                        Add_To_Buffer
+                          (Get_Name_String (Names.Table (Index).Name));
+
+                        if Index /= Names.Last - 1 then
+                           Add_To_Buffer (".");
+                        end if;
+                     end loop;
+
+                     Name_Len := Buffer_Last;
+                     Name_Buffer (1 .. Buffer_Last) :=
+                       Buffer (1 .. Buffer_Last);
+                     Short_Project := Name_Find;
+
+                     --  Now, add the last simple name to get the name of the
+                     --  long project.
+
+                     Add_To_Buffer (".");
+                     Add_To_Buffer
+                       (Get_Name_String (Names.Table (Names.Last).Name));
+                     Name_Len := Buffer_Last;
+                     Name_Buffer (1 .. Buffer_Last) :=
+                       Buffer (1 .. Buffer_Last);
+                     Long_Project := Name_Find;
+
+                     --  Check if the long project is imported or extended
+
+                     The_Project := Imported_Or_Extended_Project_Of
+                                      (Current_Project, Long_Project);
+
+                     --  If the long project exists, then this is the prefix
+                     --  of the attribute.
+
+                     if The_Project /= Empty_Node then
+                        First_Attribute := Attribute_First;
+                        The_Package     := Empty_Node;
+
+                     else
+                        --  Otherwise, check if the short project is imported
+                        --  or extended.
+
+                        The_Project := Imported_Or_Extended_Project_Of
+                                         (Current_Project, Short_Project);
+
+                        --  If the short project does not exist, we report an
+                        --  error.
+
+                        if The_Project = Empty_Node then
+                           Error_Msg_Name_1 := Long_Project;
+                           Error_Msg_Name_2 := Short_Project;
+                           Error_Msg ("unknown projects % or %",
+                                      Names.Table (1).Location);
+                           The_Package := Empty_Node;
                            First_Attribute := Attribute_First;
 
                         else
-                           First_Attribute :=
-                             Package_Attributes.Table
-                             (Package_Id_Of (The_Package)).First_Attribute;
+                           --  Now, we check if the package has been declared
+                           --  in this project.
+
+                           The_Package := First_Package_Of (The_Project);
+                           while The_Package /= Empty_Node
+                             and then Name_Of (The_Package) /=
+                             Names.Table (Names.Last).Name
+                           loop
+                              The_Package :=
+                                Next_Package_In_Project (The_Package);
+                           end loop;
+
+                           --  If it has not, then we report an error
+
+                           if The_Package = Empty_Node then
+                              Error_Msg_Name_1 :=
+                                Names.Table (Names.Last).Name;
+                              Error_Msg_Name_2 := Short_Project;
+                              Error_Msg ("package % not declared in project %",
+                                         Names.Table (Names.Last).Location);
+                              First_Attribute := Attribute_First;
+
+                           else
+                              --  Otherwise, we have the correct project and
+                              --  package.
+
+                              First_Attribute :=
+                                Package_Attributes.Table
+                                (Package_Id_Of (The_Package)).First_Attribute;
+                           end if;
                         end if;
                      end if;
                   end;
-
-               when 3 =>
-                  Error_Msg
-                    ("too many single names for an attribute reference",
-                     The_Names (1).Location);
-                  Scan;
-                  Variable := Empty_Node;
-                  return;
             end case;
 
             Attribute_Reference
@@ -604,7 +784,7 @@ package body Prj.Strt is
         Default_Project_Node (Of_Kind => N_Variable_Reference);
 
       if Look_For_Variable then
-         case Last_Name is
+         case Names.Last is
             when 0 =>
 
                --  Cannot happen
@@ -612,117 +792,146 @@ package body Prj.Strt is
                null;
 
             when 1 =>
-               Set_Name_Of (Variable, To => The_Names (1).Name);
 
-            --  Header comment needed ???
+               --  Simple variable name
+
+               Set_Name_Of (Variable, To => Names.Table (1).Name);
 
             when 2 =>
-               Set_Name_Of (Variable, To => The_Names (2).Name);
+
+               --  Variable name with a simple name prefix that can be
+               --  a project name or a package name. Project names have
+               --  priority over package names.
+
+               Set_Name_Of (Variable, To => Names.Table (2).Name);
+
+               --  Check if it can be a package name
+
                The_Package := First_Package_Of (Current_Project);
 
                while The_Package /= Empty_Node
-                 and then Name_Of (The_Package) /= The_Names (1).Name
+                 and then Name_Of (The_Package) /= Names.Table (1).Name
                loop
                   The_Package := Next_Package_In_Project (The_Package);
                end loop;
 
-               if The_Package /= Empty_Node then
-                  Specified_Package := The_Package;
-                  The_Project := Empty_Node;
+               --  Now look for a possible project name
+
+               The_Project := Imported_Or_Extended_Project_Of
+                                (Current_Project, Names.Table (1).Name);
+
+               if The_Project /= Empty_Node then
+                  Specified_Project := The_Project;
+
+               elsif The_Package = Empty_Node then
+                  Error_Msg_Name_1 := Names.Table (1).Name;
+                  Error_Msg ("unknown package or project %",
+                             Names.Table (1).Location);
+                  Look_For_Variable := False;
 
                else
-                  declare
-                     With_Clause : Project_Node_Id :=
-                                     First_With_Clause_Of (Current_Project);
-
-                  begin
-                     while With_Clause /= Empty_Node loop
-                        The_Project := Project_Node_Of (With_Clause);
-                        exit when Name_Of (The_Project) = The_Names (1).Name;
-                        With_Clause := Next_With_Clause_Of (With_Clause);
-                     end loop;
-
-                     if With_Clause = Empty_Node then
-                        The_Project :=
-                          Modified_Project_Of
-                                 (Project_Declaration_Of (Current_Project));
-
-                        if The_Project /= Empty_Node
-                          and then
-                            Name_Of (The_Project) /= The_Names (1).Name
-                        then
-                           The_Project := Empty_Node;
-                        end if;
-                     end if;
-
-                     if The_Project = Empty_Node then
-                        Error_Msg_Name_1 := The_Names (1).Name;
-                        Error_Msg ("unknown package or project %",
-                                   The_Names (1).Location);
-                        Look_For_Variable := False;
-                     else
-                        Specified_Project := The_Project;
-                     end if;
-                  end;
+                  Specified_Package := The_Package;
                end if;
 
-            --  Header comment needed ???
+            when others =>
 
-            when 3 =>
-               Set_Name_Of (Variable, To => The_Names (3).Name);
+               --  Variable name with a prefix that is either a project name
+               --  made of several simple names, or a project name followed
+               --  by a package name.
+
+               Set_Name_Of (Variable, To => Names.Table (Names.Last).Name);
 
                declare
-                  With_Clause : Project_Node_Id :=
-                                  First_With_Clause_Of (Current_Project);
+                  Short_Project : Name_Id;
+                  Long_Project  : Name_Id;
 
                begin
-                  while With_Clause /= Empty_Node loop
-                     The_Project := Project_Node_Of (With_Clause);
-                     exit when Name_Of (The_Project) = The_Names (1).Name;
-                     With_Clause := Next_With_Clause_Of (With_Clause);
+                  --  First, we get the two possible project names
+
+                  --  Clear the buffer
+
+                  Buffer_Last := 0;
+
+                  --  Add all the simple names, except the last two
+
+                  for Index in 1 .. Names.Last - 2 loop
+                     Add_To_Buffer
+                       (Get_Name_String (Names.Table (Index).Name));
+
+                     if Index /= Names.Last - 2 then
+                        Add_To_Buffer (".");
+                     end if;
                   end loop;
 
-                  if With_Clause = Empty_Node then
-                     The_Project :=
-                       Modified_Project_Of
-                          (Project_Declaration_Of (Current_Project));
+                  Name_Len := Buffer_Last;
+                  Name_Buffer (1 .. Name_Len) := Buffer (1 .. Buffer_Last);
+                  Short_Project := Name_Find;
 
-                     if The_Project /= Empty_Node
-                       and then Name_Of (The_Project) /= The_Names (1).Name
-                     then
-                        The_Project := Empty_Node;
-                     end if;
-                  end if;
+                  --  Add the simple name before the name of the variable
 
-                  if The_Project = Empty_Node then
-                     Error_Msg_Name_1 := The_Names (1).Name;
-                     Error_Msg ("unknown package or project %",
-                                The_Names (1).Location);
-                     Look_For_Variable := False;
+                  Add_To_Buffer (".");
+                  Add_To_Buffer
+                    (Get_Name_String (Names.Table (Names.Last - 1).Name));
+                  Name_Len := Buffer_Last;
+                  Name_Buffer (1 .. Name_Len) := Buffer (1 .. Buffer_Last);
+                  Long_Project := Name_Find;
+
+                  --  Check if the prefix is the name of an imported or
+                  --  extended project.
+
+                  The_Project := Imported_Or_Extended_Project_Of
+                                   (Current_Project, Long_Project);
+
+                  if The_Project /= Empty_Node then
+                     Specified_Project := The_Project;
 
                   else
-                     Specified_Project := The_Project;
-                     The_Package := First_Package_Of (The_Project);
+                     --  Now check if the prefix may be a project name followed
+                     --  by a package name.
 
-                     while The_Package /= Empty_Node
-                       and then Name_Of (The_Package) /= The_Names (2).Name
-                     loop
-                        The_Package := Next_Package_In_Project (The_Package);
-                     end loop;
+                     --  First check for a possible project name
 
-                     if The_Package = Empty_Node then
-                        Error_Msg_Name_1 := The_Names (2).Name;
-                        Error_Msg ("unknown package %",
-                                   The_Names (2).Location);
+                     The_Project := Imported_Or_Extended_Project_Of
+                                   (Current_Project, Short_Project);
+
+                     if The_Project = Empty_Node then
+                        --  Unknown prefix, report an error
+
+                        Error_Msg_Name_1 := Long_Project;
+                        Error_Msg_Name_2 := Short_Project;
+                        Error_Msg ("unknown projects % or %",
+                                   Names.Table (1).Location);
                         Look_For_Variable := False;
 
                      else
-                        Specified_Package := The_Package;
-                        The_Project := Empty_Node;
+                        Specified_Project := The_Project;
+
+                        --  Now look for the package in this project
+
+                        The_Package := First_Package_Of (The_Project);
+
+                        while The_Package /= Empty_Node
+                          and then Name_Of (The_Package) /=
+                                              Names.Table (Names.Last - 1).Name
+                        loop
+                           The_Package :=
+                             Next_Package_In_Project (The_Package);
+                        end loop;
+
+                        if The_Package = Empty_Node then
+                           --  The package does not vexist, report an error
+
+                           Error_Msg_Name_1 := Names.Table (2).Name;
+                           Error_Msg ("unknown package %",
+                                   Names.Table (Names.Last - 1).Location);
+                           Look_For_Variable := False;
+
+                        else
+                           Specified_Package := The_Package;
+                        end if;
                      end if;
                   end if;
                end;
-
          end case;
       end if;
 
@@ -731,8 +940,22 @@ package body Prj.Strt is
          Set_Project_Node_Of (Variable, To => Specified_Project);
          Set_Package_Node_Of (Variable, To => Specified_Package);
 
-         if The_Package /= Empty_Node then
-            Current_Variable := First_Variable_Of (The_Package);
+         if Specified_Project /= Empty_Node then
+            The_Project := Specified_Project;
+
+         else
+            The_Project := Current_Project;
+         end if;
+
+         Current_Variable := Empty_Node;
+
+         --  Look for this variable
+
+         --  If a package was specified, check if the variable has been
+         --  declared in this package.
+
+         if Specified_Package /= Empty_Node then
+            Current_Variable := First_Variable_Of (Specified_Package);
 
             while Current_Variable /= Empty_Node
               and then
@@ -740,22 +963,44 @@ package body Prj.Strt is
             loop
                Current_Variable := Next_Variable (Current_Variable);
             end loop;
+
+         else
+            --  Otherwise, if no project has been specified and we are in
+            --  a package, first check if the variable has been declared in
+            --  the package.
+
+            if Specified_Project = Empty_Node
+              and then Current_Package /= Empty_Node
+            then
+               Current_Variable := First_Variable_Of (Current_Package);
+
+               while Current_Variable /= Empty_Node
+                 and then Name_Of (Current_Variable) /= Variable_Name
+               loop
+                  Current_Variable := Next_Variable (Current_Variable);
+               end loop;
+            end if;
+
+            --  If we have not found the variable in the package, check if the
+            --  variable has been declared in the project.
+
+            if Current_Variable = Empty_Node then
+               Current_Variable := First_Variable_Of (The_Project);
+
+               while Current_Variable /= Empty_Node
+                 and then Name_Of (Current_Variable) /= Variable_Name
+               loop
+                  Current_Variable := Next_Variable (Current_Variable);
+               end loop;
+            end if;
          end if;
 
-         if Current_Variable = Empty_Node
-           and then The_Project /= Empty_Node
-         then
-            Current_Variable := First_Variable_Of (The_Project);
-            while Current_Variable /= Empty_Node
-              and then Name_Of (Current_Variable) /= Variable_Name
-            loop
-               Current_Variable := Next_Variable (Current_Variable);
-            end loop;
-         end if;
+         --  If the variable was not found, report an error
 
          if Current_Variable = Empty_Node then
             Error_Msg_Name_1 := Variable_Name;
-            Error_Msg ("unknown variable %", The_Names (Last_Name).Location);
+            Error_Msg
+              ("unknown variable %", Names.Table (Names.Last).Location);
          end if;
       end if;
 
@@ -769,6 +1014,9 @@ package body Prj.Strt is
          end if;
       end if;
 
+      --  If the variable is followed by a left parenthesis, report an error
+      --  but attempt to scan the index.
+
       if Token = Tok_Left_Paren then
          Error_Msg ("\variables cannot be associative arrays", Token_Ptr);
          Scan;
@@ -776,7 +1024,7 @@ package body Prj.Strt is
 
          if Token = Tok_String_Literal then
             Scan;
-            Expect (Tok_Right_Paren, ")");
+            Expect (Tok_Right_Paren, "`)`");
 
             if Token = Tok_Right_Paren then
                Scan;
@@ -793,12 +1041,17 @@ package body Prj.Strt is
       Current_String : Project_Node_Id;
 
    begin
+      --  Set Choice_First, depending on whether is the first case
+      --  construction or not.
+
       if Choice_First = 0 then
          Choice_First := 1;
          Choices.Set_Last (First_Choice_Node_Id);
       else
          Choice_First := Choices.Last + 1;
       end if;
+
+      --  Add to table Choices the literal of the string type
 
       if String_Type /= Empty_Node then
          Current_String := First_Literal_String (String_Type);
@@ -809,6 +1062,8 @@ package body Prj.Strt is
          end loop;
       end if;
 
+      --  Set the value of the last choice in table Choice_Lasts
+
       Choice_Lasts.Increment_Last;
       Choice_Lasts.Table (Choice_Lasts.Last) := Choices.Last;
 
@@ -818,10 +1073,11 @@ package body Prj.Strt is
    -- Terms --
    -----------
 
-   procedure Terms (Term            : out Project_Node_Id;
-                    Expr_Kind       : in out Variable_Kind;
-                    Current_Project : Project_Node_Id;
-                    Current_Package : Project_Node_Id)
+   procedure Terms
+     (Term            : out Project_Node_Id;
+      Expr_Kind       : in out Variable_Kind;
+      Current_Project : Project_Node_Id;
+      Current_Package : Project_Node_Id)
    is
       Next_Term          : Project_Node_Id := Empty_Node;
       Term_Id            : Project_Node_Id := Empty_Node;
@@ -831,23 +1087,37 @@ package body Prj.Strt is
       Reference          : Project_Node_Id := Empty_Node;
 
    begin
+      --  Declare a new node for the term
+
       Term := Default_Project_Node (Of_Kind => N_Term);
       Set_Location_Of (Term, To => Token_Ptr);
 
       case Token is
-
          when Tok_Left_Paren =>
+
+            --  If we have a left parenthesis and we don't know the expression
+            --  kind, then this is a string list.
+
             case Expr_Kind is
                when Undefined =>
                   Expr_Kind := List;
+
                when List =>
                   null;
+
                when Single =>
+
+                  --  If we already know that this is a single string, report
+                  --  an error, but set the expression kind to string list to
+                  --  avoid several errors.
+
                   Expr_Kind := List;
                   Error_Msg
                     ("literal string list cannot appear in a string",
                      Token_Ptr);
             end case;
+
+            --  Declare a new node for this literal string list
 
             Term_Id := Default_Project_Node
               (Of_Kind => N_Literal_String_List,
@@ -855,21 +1125,35 @@ package body Prj.Strt is
             Set_Current_Term (Term, To => Term_Id);
             Set_Location_Of (Term, To => Token_Ptr);
 
+            --  Scan past the left parenthesis
+
             Scan;
+
+            --  If the left parenthesis is immediately followed by a right
+            --  parenthesis, the literal string list is empty.
+
             if Token = Tok_Right_Paren then
                Scan;
 
             else
+               --  Otherwise, we parse the expression(s) in the literal string
+               --  list.
+
                loop
                   Current_Location := Token_Ptr;
                   Parse_Expression (Expression      => Next_Expression,
                                     Current_Project => Current_Project,
                                     Current_Package => Current_Package);
 
+                  --  The expression kind is String list, report an error
+
                   if Expression_Kind_Of (Next_Expression) = List then
                      Error_Msg ("single expression expected",
                                 Current_Location);
                   end if;
+
+                  --  If Current_Expression is empty, it means that the
+                  --  expression is the first in the string list.
 
                   if Current_Expression = Empty_Node then
                      Set_First_Expression_In_List
@@ -880,11 +1164,16 @@ package body Prj.Strt is
                   end if;
 
                   Current_Expression := Next_Expression;
+
+                  --  If there is a comma, continue with the next expression
+
                   exit when Token /= Tok_Comma;
                   Scan; -- past the comma
                end loop;
 
-               Expect (Tok_Right_Paren, "(");
+               --  We expect a closing right parenthesis
+
+               Expect (Tok_Right_Paren, "`)`");
 
                if Token = Tok_Right_Paren then
                   Scan;
@@ -892,18 +1181,29 @@ package body Prj.Strt is
             end if;
 
          when Tok_String_Literal =>
+
+            --  If we don't know the expression kind (first term), then it is
+            --  a simple string.
+
             if Expr_Kind = Undefined then
                Expr_Kind := Single;
             end if;
 
+            --  Declare a new node for the string literal
+
             Term_Id := Default_Project_Node (Of_Kind => N_Literal_String);
             Set_Current_Term (Term, To => Term_Id);
-            Set_String_Value_Of (Term_Id, To => Strval (Token_Node));
+            Set_String_Value_Of (Term_Id, To => Token_Name);
+
+            --  Scan past the string literal
 
             Scan;
 
          when Tok_Identifier =>
             Current_Location := Token_Ptr;
+
+            --  Get the variable or attribute reference
+
             Parse_Variable_Reference
               (Variable        => Reference,
                Current_Project => Current_Project,
@@ -911,12 +1211,20 @@ package body Prj.Strt is
             Set_Current_Term (Term, To => Reference);
 
             if Reference /= Empty_Node then
+
+               --  If we don't know the expression kind (first term), then it
+               --  has the kind of the variable or attribute reference.
+
                if Expr_Kind = Undefined then
                   Expr_Kind := Expression_Kind_Of (Reference);
 
                elsif Expr_Kind = Single
                  and then Expression_Kind_Of (Reference) = List
                then
+                  --  If the expression is a single list, and the reference is
+                  --  a string list, report an error, and set the expression
+                  --  kind to string list to avoid multiple errors.
+
                   Expr_Kind := List;
                   Error_Msg
                     ("list variable cannot appear in single string expression",
@@ -925,9 +1233,13 @@ package body Prj.Strt is
             end if;
 
          when Tok_Project =>
+
+            --  project can appear in an expression as the prefix of an
+            --  attribute reference of the current project.
+
             Current_Location := Token_Ptr;
             Scan;
-            Expect (Tok_Apostrophe, "'");
+            Expect (Tok_Apostrophe, "`'`");
 
             if Token = Tok_Apostrophe then
                Attribute_Reference
@@ -937,6 +1249,8 @@ package body Prj.Strt is
                   Current_Package => Empty_Node);
                Set_Current_Term (Term, To => Reference);
             end if;
+
+            --  Same checks as above for the expression kind
 
             if Reference /= Empty_Node then
                if Expr_Kind = Undefined then
@@ -952,6 +1266,8 @@ package body Prj.Strt is
             end if;
 
          when Tok_External =>
+            --  An external reference is always a single string
+
             if Expr_Kind = Undefined then
                Expr_Kind := Single;
             end if;
@@ -965,17 +1281,23 @@ package body Prj.Strt is
             return;
       end case;
 
+      --  If there is an '&', call Terms recursively
+
       if Token = Tok_Ampersand then
+
+         --  Scan past the '&'
+
          Scan;
 
          Terms (Term            => Next_Term,
                 Expr_Kind       => Expr_Kind,
                 Current_Project => Current_Project,
                 Current_Package => Current_Package);
+
+         --  And link the next term to this term
+
          Set_Next_Term (Term, To => Next_Term);
-
       end if;
-
    end Terms;
 
 end Prj.Strt;

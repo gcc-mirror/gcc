@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -100,8 +100,8 @@ package body System.OS_Interface is
          F := F + 1.0;
       end if;
 
-      return timespec' (ts_sec => S,
-        ts_nsec => long (Long_Long_Integer (F * 10#1#E9)));
+      return timespec'(ts_sec  => S,
+                       ts_nsec => long (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
 
    -------------------------

@@ -105,6 +105,8 @@ package body Interfaces.CPP is
      Position     : Positive)
      return         System.Address
    is
+      pragma Warnings (Off, Vptr);
+      pragma Warnings (Off, Position);
    begin
       return Current_This;
 --        + Storage_Offset (Vptr.Prims_Ptr (Position).Delta1);
@@ -168,6 +170,7 @@ package body Interfaces.CPP is
    -------------------------------
 
    function CPP_Get_Remotely_Callable (T : Vtable_Ptr) return Boolean is
+      pragma Warnings (Off, T);
    begin
       return True;
    end CPP_Get_Remotely_Callable;
@@ -270,6 +273,8 @@ package body Interfaces.CPP is
    -------------------------------
 
    procedure CPP_Set_Remotely_Callable (T : Vtable_Ptr; Value : Boolean) is
+      pragma Warnings (Off, T);
+      pragma Warnings (Off, Value);
    begin
       null;
    end CPP_Set_Remotely_Callable;
@@ -321,11 +326,14 @@ package body Interfaces.CPP is
    end Length;
 
    procedure CPP_Set_RC_Offset (T : Vtable_Ptr; Value : SSE.Storage_Offset) is
+      pragma Warnings (Off, T);
+      pragma Warnings (Off, Value);
    begin
       null;
    end CPP_Set_RC_Offset;
 
    function CPP_Get_RC_Offset (T : Vtable_Ptr) return SSE.Storage_Offset is
+      pragma Warnings (Off, T);
    begin
       return 0;
    end CPP_Get_RC_Offset;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,9 @@
 --  This package defines the codes used to identify the encoding method for
 --  wide characters in string and character constants. This is needed both
 --  at compile time and at runtime (for the wide character runtime routines)
+
+--  This unit may be used directly from an application program by providing
+--  an appropriate WITH, and the interface can be expected to remain stable.
 
 package System.WCh_Con is
 pragma Pure (WCh_Con);

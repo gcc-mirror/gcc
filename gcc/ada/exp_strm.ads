@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 
 --  Routines to build stream subprograms for composite types
 
-with Types; use Types;
+with Exp_Tss; use Exp_Tss;
+with Types;   use Types;
 
 package Exp_Strm is
 
@@ -42,14 +43,12 @@ package Exp_Strm is
    --  reference node.
 
    function Build_Stream_Attr_Profile
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
-      Nam  : Name_Id)
-      return List_Id;
+     (Loc : Source_Ptr;
+      Typ : Entity_Id;
+      Nam : TSS_Name_Type) return List_Id;
    --  Builds the parameter profile for the stream attribute identified by
-   --  the given name (which is the underscore version, e.g. Name_uWrite to
-   --  identify the Write attribute). This is used for the tagged case to
-   --  build the spec for the primitive operation.
+   --  the given name. This is used for the tagged case to build the spec
+   --  for the primitive operation.
 
    --  The following routines build procedures and functions for stream
    --  attributes applied to composite types. For each of these routines,
@@ -139,5 +138,18 @@ package Exp_Strm is
       Decl : out Node_Id;
       Pnam : out Entity_Id);
    --  Build procedure for Write attribute for record type
+
+   procedure Build_Stream_Procedure
+     (Loc  : Source_Ptr;
+      Typ  : Entity_Id;
+      Decl : out Node_Id;
+      Pnam : Entity_Id;
+      Stms : List_Id;
+      Outp : Boolean);
+   --  Called to build an array or record stream procedure. The first three
+   --  arguments are the same as Build_Record_Or_Elementary_Output_Procedure.
+   --  Stms is the list of statements for the body (the declaration list is
+   --  always null), and Pnam is the name of the constructed procedure.
+   --  Used by Exp_Dist to generate stream-oriented attributes for RACWs.
 
 end Exp_Strm;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,9 +29,10 @@
 --  gives the individual routines for performing such tasks as well as
 --  the routine gnatmake below that puts it all together.
 
-with GNAT.OS_Lib; use GNAT.OS_Lib;  --  defines Argument_List
 with Table;
-with Types;       use Types;
+with Types; use Types;
+
+with GNAT.OS_Lib; use GNAT.OS_Lib;
 
 package Make is
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -135,13 +135,29 @@ package Sem_Eval is
    type Compare_Result is (LT, LE, EQ, GT, GE, NE, Unknown);
    subtype Compare_GE is Compare_Result range EQ .. GE;
    subtype Compare_LE is Compare_Result range LT .. EQ;
-   function Compile_Time_Compare (L, R : Node_Id) return Compare_Result;
+   function Compile_Time_Compare
+     (L, R : Node_Id;
+      Rec  : Boolean := False)
+      return Compare_Result;
    --  Given two expression nodes, finds out whether it can be determined
    --  at compile time how the runtime values will compare. An Unknown
    --  result means that the result of a comparison cannot be determined at
    --  compile time, otherwise the returned result indicates the known result
    --  of the comparison, given as tightly as possible (i.e. EQ or LT is a
-   --  preferred returned value to LE).
+   --  preferred returned value to LE). Rec is a parameter that is set True
+   --  for a recursive call from within Compile_Time_Compare to avoid some
+   --  infinite recursion cases. It should never be set by a client.
+
+   procedure Flag_Non_Static_Expr (Msg : String; Expr : Node_Id);
+   --  This procedure is called after it has been determined that Expr is
+   --  not static when it is required to be. Msg is the text of a message
+   --  that explains the error. This procedure checks if an error is already
+   --  posted on Expr, if so, it does nothing unless All_Errors_Mode is set
+   --  in which case this flag is ignored. Otherwise the given message is
+   --  posted using Error_Msg_F, and then Why_Not_Static is called on
+   --  Expr to generate additional messages. The string given as Msg
+   --  should end with ! to make it an unconditional message, to ensure
+   --  that if it is posted, the entire set of messages is all posted.
 
    function Is_OK_Static_Expression (N : Node_Id) return Boolean;
    --  An OK static expression is one that is static in the RM definition
@@ -275,24 +291,39 @@ package Sem_Eval is
    procedure Eval_Unary_Op               (N : Node_Id);
    procedure Eval_Unchecked_Conversion   (N : Node_Id);
 
-   procedure Fold_Str (N : Node_Id; Val : String_Id);
+   procedure Fold_Str (N : Node_Id; Val : String_Id; Static : Boolean);
    --  Rewrite N with a new N_String_Literal node as the result of the
    --  compile time evaluation of the node N. Val is the resulting string
    --  value from the folding operation. The Is_Static_Expression flag is
    --  set in the result node. The result is fully analyzed and resolved.
+   --  Static indicates whether the result should be considered static or
+   --  not (True = consider static). The point here is that normally all
+   --  string literals are static, but if this was the result of some
+   --  sequence of evaluation where values were known at compile time
+   --  but not static, then the result is not static.
 
-   procedure Fold_Uint (N : Node_Id; Val : Uint);
+   procedure Fold_Uint (N : Node_Id; Val : Uint; Static : Boolean);
    --  Rewrite N with a (N_Integer_Literal, N_Identifier, N_Character_Literal)
    --  node as the result of the compile time evaluation of the node N. Val
    --  is the result in the integer case and is the position of the literal
    --  in the literals list for the enumeration case. Is_Static_Expression
    --  is set True in the result node. The result is fully analyzed/resolved.
+   --  Static indicates whether the result should be considered static or
+   --  not (True = consider static). The point here is that normally all
+   --  string literals are static, but if this was the result of some
+   --  sequence of evaluation where values were known at compile time
+   --  but not static, then the result is not static.
 
-   procedure Fold_Ureal (N : Node_Id; Val : Ureal);
+   procedure Fold_Ureal (N : Node_Id; Val : Ureal; Static : Boolean);
    --  Rewrite N with a new N_Real_Literal node as the result of the compile
    --  time evaluation of the node N. Val is the resulting real value from
    --  the folding operation. The Is_Static_Expression flag is set in the
-   --  result node. The result is fully analyzed and result.
+   --  result node. The result is fully analyzed and result. Static
+   --  indicates whether the result should be considered static or not
+   --  (True = consider static). The point here is that normally all
+   --  string literals are static, but if this was the result of some
+   --  sequence of evaluation where values were known at compile time
+   --  but not static, then the result is not static.
 
    function Is_In_Range
      (N         : Node_Id;
@@ -330,7 +361,7 @@ package Sem_Eval is
    --  determined to be outside a compile_time known bound of Typ. A result
    --  of False does not mean that the expression is in range, merely that
    --  it cannot be determined at compile time that it is out of range. Flags
-   --  Int_Real and Fixed_Int are used like in routine Is_In_Range above.
+   --  Int_Real and Fixed_Int are used as in routine Is_In_Range above.
 
    function In_Subrange_Of
      (T1        : Entity_Id;
@@ -341,7 +372,7 @@ package Sem_Eval is
    --  of values for scalar type T1 are always in the range of scalar type
    --  T2.  A result of False does not mean that T1 is not in T2's subrange,
    --  only that it cannot be determined at compile time. Flag Fixed_Int is
-   --  used is like in routine Is_In_Range_Above.
+   --  used as in routine Is_In_Range above.
 
    function Is_Null_Range (Lo : Node_Id; Hi : Node_Id) return Boolean;
    --  Returns True if it can guarantee that Lo .. Hi is a null range.
@@ -352,6 +383,24 @@ package Sem_Eval is
    --  Returns True if it can guarantee that Lo .. Hi is not a null range.
    --  If it cannot (because the value of Lo or Hi is not known at compile
    --  time) then it returns False.
+
+   procedure Why_Not_Static (Expr : Node_Id);
+   --  This procedure may be called after generating an error message that
+   --  complains that something is non-static. If it finds good reasons,
+   --  it generates one or more error messages pointing the appropriate
+   --  offending component of the expression. If no good reasons can be
+   --  figured out, then no messages are generated. The expectation here
+   --  is that the caller has already issued a message complaining that
+   --  the expression is non-static. Note that this message should be
+   --  placed using Error_Msg_F or Error_Msg_FE, so that it will sort
+   --  before any messages placed by this call. Note that it is fine to
+   --  call Why_Not_Static with something that is not an expression, and
+   --  usually this has no effect, but in some cases (N_Parameter_Association
+   --  or N_Range), it makes sense for the internal recursive calls.
+
+   procedure Initialize;
+   --  Initializes the internal data structures. Must be called before
+   --  each separate main program unit (e.g. in a GNSA/ASIS context).
 
 private
    --  The Eval routines are all marked inline, since they are called once

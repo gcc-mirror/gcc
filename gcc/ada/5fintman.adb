@@ -6,7 +6,8 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---            Copyright (C) 1991-2001, Florida State University             --
+--             Copyright (C) 1991-1994, Florida State University            --
+--             Copyright (C) 1995-2003, Ada Core Technologies               --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,9 +27,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ package body System.Interrupt_Management is
    -- Initialize_Interrupts --
    ---------------------------
 
-   --  Nothing needs to be done on this platform.
+   --  Nothing needs to be done on this platform
 
    procedure Initialize_Interrupts is
    begin
@@ -77,26 +77,76 @@ package body System.Interrupt_Management is
    use type Interfaces.C.int;
 
 begin
-   Abort_Task_Interrupt := SIGABRT;
-   --  Change this if you want to use another signal for task abort.
-   --  SIGTERM might be a good one.
+   declare
+      function State (Int : Interrupt_ID) return Character;
+      pragma Import (C, State, "__gnat_get_interrupt_state");
 
-   for I in Exception_Interrupts'Range loop
-      Keep_Unmasked (Exception_Interrupts (I)) := True;
-   end loop;
+      --  Get interrupt state.  Defined in a-init.c
+      --  The input argument is the interrupt number,
+      --  and the result is one of the following:
 
-   --  By keeping SIGINT unmasked, allow the user to do a Ctrl-C, but in the
-   --  same time, disable the ability of handling this signal via
-   --  Ada.Interrupts.
-   --  The pragma Unreserve_All_Interrupts let the user the ability to
-   --  change this behavior.
+      User    : constant Character := 'u';
+      Runtime : constant Character := 'r';
+      Default : constant Character := 's';
+      --    'n'   this interrupt not set by any Interrupt_State pragma
+      --    'u'   Interrupt_State pragma set state to User
+      --    'r'   Interrupt_State pragma set state to Runtime
+      --    's'   Interrupt_State pragma set state to System (use "default"
+      --           system handler)
 
-   if Unreserve_All_Interrupts = 0 then
-      Keep_Unmasked (SIGINT) := True;
-   end if;
+   begin
+      Abort_Task_Interrupt := SIGABRT;
 
-   Keep_Unmasked (Abort_Task_Interrupt) := True;
+      --  Change this if you want to use another signal for task abort.
+      --  SIGTERM might be a good one.
 
-   Reserve := Keep_Unmasked or Keep_Masked;
-   Reserve (0) := True;
+      pragma Assert (Keep_Unmasked = (Interrupt_ID'Range => False));
+      pragma Assert (Reserve = (Interrupt_ID'Range => False));
+
+      --  Process state of exception signals
+
+      for J in Exception_Interrupts'Range loop
+         if State (Exception_Interrupts (J)) /= User then
+            Keep_Unmasked (Exception_Interrupts (J)) := True;
+            Reserve (Exception_Interrupts (J)) := True;
+         end if;
+      end loop;
+
+      if State (Abort_Task_Interrupt) /= User then
+         Keep_Unmasked (Abort_Task_Interrupt) := True;
+         Reserve (Abort_Task_Interrupt) := True;
+      end if;
+
+      --  Set SIGINT to unmasked state as long as it's
+      --  not in "User" state.  Check for Unreserve_All_Interrupts last
+
+      if State (SIGINT) /= User then
+         Keep_Unmasked (SIGINT) := True;
+      end if;
+
+      --  Check all signals for state that requires keeping them
+      --  unmasked and reserved
+
+      for J in Interrupt_ID'Range loop
+         if State (J) = Default or else State (J) = Runtime then
+            Keep_Unmasked (J) := True;
+            Reserve (J) := True;
+         end if;
+      end loop;
+
+      --  Process pragma Unreserve_All_Interrupts. This overrides any
+      --  settings due to pragma Interrupt_State:
+
+      if Unreserve_All_Interrupts /= 0 then
+         Keep_Unmasked (SIGINT) := False;
+         Reserve (SIGINT) := False;
+      end if;
+
+      --  We do not have Signal 0 in reality. We just use this value
+      --  to identify not existing signals (see s-intnam.ads). Therefore,
+      --  Signal 0 should not be used in all signal related operations hence
+      --  mark it as reserved.
+
+      Reserve (0) := True;
+   end;
 end System.Interrupt_Management;

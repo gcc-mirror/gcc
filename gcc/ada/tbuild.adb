@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -105,6 +105,28 @@ package body Tbuild is
          return Result;
       end if;
    end Convert_To;
+
+   ------------------
+   -- Discard_List --
+   ------------------
+
+   procedure Discard_List (L : List_Id) is
+      pragma Warnings (Off, L);
+
+   begin
+      null;
+   end Discard_List;
+
+   ------------------
+   -- Discard_Node --
+   ------------------
+
+   procedure Discard_Node (N : Node_Or_Entity_Id) is
+      pragma Warnings (Off, N);
+
+   begin
+      null;
+   end Discard_Node;
 
    -------------------------------------------
    -- Make_Byte_Aligned_Attribute_Reference --
@@ -582,6 +604,12 @@ package body Tbuild is
       elsif Nkind (Expr) = N_Unchecked_Type_Conversion
         and then Entity (Subtype_Mark (Expr)) = Typ
       then
+         Result := Relocate_Node (Expr);
+
+      elsif Nkind (Expr) = N_Null then
+
+         --  No need for a conversion
+
          Result := Relocate_Node (Expr);
 
       --  All other cases

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1992-2000 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2003 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,9 @@
 --  This is a GNAT specific addition which provides a useful debugging
 --  procedure that gives an (implementation dependent) string which
 --  identifies an address.
+
+--  This unit may be used directly from an application program by providing
+--  an appropriate WITH, and the interface can be expected to remain stable.
 
 function System.Address_Image (A : Address) return String;
 pragma Pure (System.Address_Image);

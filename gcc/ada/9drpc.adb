@@ -1009,7 +1009,7 @@ package body System.RPC is
                Partition_ID'Image (Partition));
             Garbage_Collector.Allocate (Anonymous);
 
-            --  We subtracted the size of the header from the size of the
+            --  We substracted the size of the header from the size of the
             --  global message in order to provide immediatly Params size
 
             Anonymous.Element.Start

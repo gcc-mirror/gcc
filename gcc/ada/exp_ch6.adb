@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,7 @@ with Exp_Intr; use Exp_Intr;
 with Exp_Pakd; use Exp_Pakd;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
+with Fname;    use Fname;
 with Freeze;   use Freeze;
 with Hostparm; use Hostparm;
 with Inline;   use Inline;
@@ -99,25 +100,25 @@ package body Exp_Ch6 is
    --  For each actual of an in-out parameter which is a numeric conversion
    --  of the form T(A), where A denotes a variable, we insert the declaration:
    --
-   --    Temp : T := T(A);
+   --    Temp : T := T (A);
    --
    --  prior to the call. Then we replace the actual with a reference to Temp,
    --  and append the assignment:
    --
-   --    A := T' (Temp);
+   --    A := TypeA (Temp);
    --
-   --  after the call. Here T' is the actual type of variable A.
+   --  after the call. Here TypeA is the actual type of variable A.
    --  For out parameters, the initial declaration has no expression.
-   --  If A is not an entity name,  we generate instead:
+   --  If A is not an entity name, we generate instead:
    --
-   --    Var  : T' renames A;
+   --    Var  : TypeA renames A;
    --    Temp : T := Var;       --  omitting expression for out parameter.
    --    ...
-   --    Var := T' (Temp);
+   --    Var := TypeA (Temp);
    --
    --  For other in-out parameters, we emit the required constraint checks
    --  before and/or after the call.
-
+   --
    --  For all parameter modes, actuals that denote components and slices
    --  of packed arrays are expanded into suitable temporaries.
 
@@ -197,13 +198,13 @@ package body Exp_Ch6 is
    procedure Detect_Infinite_Recursion (N : Node_Id; Spec : Entity_Id) is
       Loc : constant Source_Ptr := Sloc (N);
 
-      Var_List : Elist_Id := New_Elmt_List;
+      Var_List : constant Elist_Id := New_Elmt_List;
       --  List of globals referenced by body of procedure
 
-      Call_List : Elist_Id := New_Elmt_List;
+      Call_List : constant Elist_Id := New_Elmt_List;
       --  List of recursive calls in body of procedure
 
-      Shad_List : Elist_Id := New_Elmt_List;
+      Shad_List : constant Elist_Id := New_Elmt_List;
       --  List of entity id's for entities created to capture the
       --  value of referenced globals on entry to the procedure.
 
@@ -301,7 +302,7 @@ package body Exp_Ch6 is
 
             elsif Ekind (Ent) /= E_Variable
               or else not Is_Scalar_Type (Etype (Ent))
-              or else Is_Volatile (Ent)
+              or else Treat_As_Volatile (Ent)
             then
                return Abandon;
 
@@ -491,11 +492,12 @@ package body Exp_Ch6 is
       E_Formal  : Entity_Id;
 
       procedure Add_Call_By_Copy_Code;
-      --  For In and In-Out parameters, where the parameter must be passed
-      --  by copy, this routine generates a temporary variable into which
-      --  the actual is copied, and then passes this as the parameter. This
-      --  routine also takes care of any constraint checks required for the
-      --  type conversion case (on both the way in and the way out).
+      --  For cases where the parameter must be passed by copy, this routine
+      --  generates a temporary variable into which the actual is copied and
+      --  then passes this as the parameter. For an OUT or IN OUT parameter,
+      --  an assignment is also generated to copy the result back. The call
+      --  also takes care of any constraint checks required for the type
+      --  conversion case (on both the way in and the way out).
 
       procedure Add_Packed_Call_By_Copy_Code;
       --  This is used when the actual involves a reference to an element
@@ -622,27 +624,37 @@ package body Exp_Ch6 is
             Rewrite (N_Node, Make_Null_Statement (Loc));
          end if;
 
-         --  If type conversion, use reverse conversion on exit
+         --  For IN parameter, all we do is to replace the actual
 
-         if Nkind (Actual) = N_Type_Conversion then
-            if Conversion_OK (Actual) then
-               Expr := OK_Convert_To (V_Typ, New_Occurrence_Of (Temp, Loc));
-            else
-               Expr := Convert_To (V_Typ, New_Occurrence_Of (Temp, Loc));
-            end if;
+         if Ekind (Formal) = E_In_Parameter then
+            Rewrite (Actual, New_Reference_To (Temp, Loc));
+            Analyze (Actual);
+
+         --  Processing for OUT or IN OUT parameter
+
          else
-            Expr := New_Occurrence_Of (Temp, Loc);
+            --  If type conversion, use reverse conversion on exit
+
+            if Nkind (Actual) = N_Type_Conversion then
+               if Conversion_OK (Actual) then
+                  Expr := OK_Convert_To (V_Typ, New_Occurrence_Of (Temp, Loc));
+               else
+                  Expr := Convert_To (V_Typ, New_Occurrence_Of (Temp, Loc));
+               end if;
+            else
+               Expr := New_Occurrence_Of (Temp, Loc);
+            end if;
+
+            Rewrite (Actual, New_Reference_To (Temp, Loc));
+            Analyze (Actual);
+
+            Append_To (Post_Call,
+              Make_Assignment_Statement (Loc,
+                Name       => New_Occurrence_Of (Var, Loc),
+                Expression => Expr));
+
+            Set_Assignment_OK (Name (Last (Post_Call)));
          end if;
-
-         Rewrite (Actual, New_Reference_To (Temp, Loc));
-         Analyze (Actual);
-
-         Append_To (Post_Call,
-           Make_Assignment_Statement (Loc,
-             Name       => New_Occurrence_Of (Var, Loc),
-             Expression => Expr));
-
-         Set_Assignment_OK (Name (Last (Post_Call)));
       end Add_Call_By_Copy_Code;
 
       ----------------------------------
@@ -708,7 +720,7 @@ package body Exp_Ch6 is
       ---------------------------
 
       procedure Check_Fortran_Logical is
-         Logical : Entity_Id := Etype (Formal);
+         Logical : constant Entity_Id := Etype (Formal);
          Var     : Entity_Id;
 
       --  Note: this is very incomplete, e.g. it does not handle arrays
@@ -883,6 +895,11 @@ package body Exp_Ch6 is
             elsif Is_Ref_To_Bit_Packed_Slice (Actual) then
                Add_Call_By_Copy_Code;
 
+            --  References to possibly unaligned slices of arrays are expanded
+
+            elsif Is_Possibly_Unaligned_Slice (Actual) then
+               Add_Call_By_Copy_Code;
+
             --  Deal with access types where the actual subtpe and the
             --  formal subtype are not the same, requiring a check.
 
@@ -897,9 +914,9 @@ package body Exp_Ch6 is
                Add_Call_By_Copy_Code;
 
             elsif Is_Entity_Name (Actual)
-              and then Is_Volatile (Entity (Actual))
+              and then Treat_As_Volatile (Entity (Actual))
               and then not Is_Scalar_Type (Etype (Entity (Actual)))
-              and then not Is_Volatile (E_Formal)
+              and then not Treat_As_Volatile (E_Formal)
             then
                Add_Call_By_Copy_Code;
 
@@ -910,53 +927,43 @@ package body Exp_Ch6 is
                Add_Call_By_Copy_Code;
             end if;
 
-         --  The only processing required for IN parameters is in the packed
-         --  array case, where we expand the indexed component (the circuit
-         --  in Exp_Ch4 deliberately left indexed components appearing as
-         --  actuals untouched, so that the special processing above for
-         --  the OUT and IN OUT cases could be performed. We could make the
-         --  test in Exp_Ch4 more complex and have it detect the parameter
-         --  mode, but it is easier simply to handle all cases here.
-
-         --  Similarly, we have to expand slices of packed arrays here
+         --  Processing for IN parameters
 
          else
+            --  For IN parameters is in the packed array case, we expand an
+            --  indexed component (the circuit in Exp_Ch4 deliberately left
+            --  indexed components appearing as actuals untouched, so that
+            --  the special processing above for the OUT and IN OUT cases
+            --  could be performed. We could make the test in Exp_Ch4 more
+            --  complex and have it detect the parameter mode, but it is
+            --  easier simply to handle all cases here.
+
             if Nkind (Actual) = N_Indexed_Component
               and then Is_Packed (Etype (Prefix (Actual)))
             then
                Reset_Packed_Prefix;
                Expand_Packed_Element_Reference (Actual);
 
+            --  If we have a reference to a bit packed array, we copy it,
+            --  since the actual must be byte aligned.
+
+            --  Is this really necessary in all cases???
+
             elsif Is_Ref_To_Bit_Packed_Array (Actual) then
                Add_Packed_Call_By_Copy_Code;
 
+            --  Similarly, we have to expand slices of packed arrays here
+            --  because the result must be byte aligned.
+
             elsif Is_Ref_To_Bit_Packed_Slice (Actual) then
-               declare
-                  Typ : constant Entity_Id := Etype (Actual);
+               Add_Call_By_Copy_Code;
 
-                  Ent : constant Entity_Id :=
-                          Make_Defining_Identifier (Loc,
-                            Chars => New_Internal_Name ('T'));
+            --  Only processing remaining is to pass by copy if this is a
+            --  reference to a possibly unaligned slice, since the caller
+            --  expects an appropriately aligned argument.
 
-                  Decl : constant Node_Id :=
-                           Make_Object_Declaration (Loc,
-                             Defining_Identifier => Ent,
-                             Object_Definition   =>
-                               New_Occurrence_Of (Typ, Loc));
-
-               begin
-                  Set_No_Initialization (Decl);
-
-                  Insert_Actions (N, New_List (
-                    Decl,
-                    Make_Assignment_Statement (Loc,
-                      Name => New_Occurrence_Of (Ent, Loc),
-                      Expression => Relocate_Node (Actual))));
-
-                  Rewrite
-                    (Actual, New_Occurrence_Of (Ent, Loc));
-                  Analyze_And_Resolve (Actual, Typ);
-               end;
+            elsif Is_Possibly_Unaligned_Slice (Actual) then
+               Add_Call_By_Copy_Code;
             end if;
          end if;
 
@@ -1114,7 +1121,6 @@ package body Exp_Ch6 is
                Make_Identifier (Loc, Chars (EF))));
 
          Analyze_And_Resolve (Expr, Etype (EF));
-
       end Add_Extra_Actual;
 
       ---------------------------
@@ -1135,9 +1141,10 @@ package body Exp_Ch6 is
          --  original derived type declaration to find the proper parent.
 
          if Nkind (Parent (S)) /= N_Full_Type_Declaration
-            or else not Is_Derived_Type (Defining_Identifier (Parent (S)))
-            or else Nkind (Type_Definition (Original_Node (Parent (S))))
-              /= N_Derived_Type_Definition
+           or else not Is_Derived_Type (Defining_Identifier (Parent (S)))
+           or else Nkind (Type_Definition (Original_Node (Parent (S))))
+             /= N_Derived_Type_Definition
+           or else not In_Instance
          then
             return Empty;
 
@@ -1157,12 +1164,19 @@ package body Exp_Ch6 is
            or else Is_Tagged_Type (Par)
            or else Nkind (Parent (Par)) /= N_Subtype_Declaration
            or else not In_Open_Scopes (Scope (Par))
-           or else not In_Instance
          then
             return Empty;
 
          else
             Gen_Par := Generic_Parent_Type (Parent (Par));
+         end if;
+
+         --  If the generic parent type is still the generic type, this
+         --  is a private formal, not a derived formal, and there are no
+         --  operations inherited from the formal.
+
+         if Nkind (Parent (Gen_Par)) = N_Formal_Type_Declaration then
+            return Empty;
          end if;
 
          Gen_Prim := Collect_Primitive_Operations (Gen_Par);
@@ -1242,6 +1256,7 @@ package body Exp_Ch6 is
 
          --  Replace call to Raise_Exception by call to Raise_Exception_Always
          --  if we can tell that the first parameter cannot possibly be null.
+         --  This helps optimization and also generation of warnings.
 
          if not Restrictions (No_Exception_Handlers)
            and then Is_RTE (Subp, RE_Raise_Exception)
@@ -1267,16 +1282,29 @@ package body Exp_Ch6 is
          end if;
       end if;
 
-      --  First step, compute  extra actuals, corresponding to any
+      --  First step, compute extra actuals, corresponding to any
       --  Extra_Formals present. Note that we do not access Extra_Formals
-      --  directly, instead we simply  note the presence of the extra
+      --  directly, instead we simply note the presence of the extra
       --  formals as we process the regular formals and collect the
       --  corresponding actuals in Extra_Actuals.
 
+      --  We also generate any required range checks for actuals as we go
+      --  through the loop, since this is a convenient place to do this.
+
       Formal := First_Formal (Subp);
       Actual := First_Actual (N);
-
       while Present (Formal) loop
+
+         --  Generate range check if required (not activated yet ???)
+
+--         if Do_Range_Check (Actual) then
+--            Set_Do_Range_Check (Actual, False);
+--            Generate_Range_Check
+--              (Actual, Etype (Formal), CE_Range_Check_Failed);
+--         end if;
+
+         --  Prepare to examine current entry
+
          Prev := Actual;
          Prev_Orig := Original_Node (Prev);
 
@@ -1318,15 +1346,17 @@ package body Exp_Ch6 is
                   --  occur as out parameter actuals on calls to stream
                   --  procedures.
 
-                  if Nkind (Act_Prev) = N_Type_Conversion
+                  while Nkind (Act_Prev) = N_Type_Conversion
                     or else Nkind (Act_Prev) = N_Unchecked_Type_Conversion
-                  then
+                  loop
                      Act_Prev := Expression (Act_Prev);
-                  end if;
+                  end loop;
 
                   Add_Extra_Actual (
                     Make_Attribute_Reference (Sloc (Prev),
-                      Prefix => Duplicate_Subexpr (Act_Prev, Name_Req => True),
+                      Prefix =>
+                        Duplicate_Subexpr_No_Checks
+                          (Act_Prev, Name_Req => True),
                       Attribute_Name => Name_Constrained),
                     Extra_Constrained (Formal));
                end;
@@ -1447,7 +1477,7 @@ package body Exp_Ch6 is
          --  expander-generated actuals and when -gnatdj is set.
 
          if Ekind (Etype (Formal)) /= E_Anonymous_Access_Type
-           or else Suppress_Accessibility_Checks (Subp)
+           or else Access_Checks_Suppressed (Subp)
          then
             null;
 
@@ -1477,7 +1507,7 @@ package body Exp_Ch6 is
          else
             Cond :=
               Make_Op_Eq (Loc,
-                Left_Opnd => Duplicate_Subexpr (Prev),
+                Left_Opnd => Duplicate_Subexpr_No_Checks (Prev),
                 Right_Opnd => Make_Null (Loc));
             Insert_Action (Prev,
               Make_Raise_Constraint_Error (Loc,
@@ -1485,12 +1515,13 @@ package body Exp_Ch6 is
                 Reason    => CE_Access_Parameter_Is_Null));
          end if;
 
-         --  Perform appropriate validity checks on parameters
+         --  Perform appropriate validity checks on parameters that
+         --  are entities.
 
          if Validity_Checks_On then
-
             if Ekind (Formal) = E_In_Parameter
               and then Validity_Check_In_Params
+              and then Is_Entity_Name (Actual)
             then
                Ensure_Valid (Actual);
 
@@ -1519,6 +1550,30 @@ package body Exp_Ch6 is
             Check_Valid_Lvalue_Subscripts (Actual);
          end if;
 
+         --  Mark any scalar OUT parameter that is a simple variable
+         --  as no longer known to be valid (unless the type is always
+         --  valid). This reflects the fact that if an OUT parameter
+         --  is never set in a procedure, then it can become invalid
+         --  on return from the procedure.
+
+         if Ekind (Formal) = E_Out_Parameter
+           and then Is_Entity_Name (Actual)
+           and then Ekind (Entity (Actual)) = E_Variable
+           and then not Is_Known_Valid (Etype (Actual))
+         then
+            Set_Is_Known_Valid (Entity (Actual), False);
+         end if;
+
+         --  For an OUT or IN OUT parameter of an access type, if the
+         --  actual is an entity, then it is no longer known to be non-null.
+
+         if Ekind (Formal) /= E_In_Parameter
+           and then Is_Entity_Name (Actual)
+           and then Is_Access_Type (Etype (Actual))
+         then
+            Set_Is_Known_Non_Null (Entity (Actual), False);
+         end if;
+
          --  If the formal is class wide and the actual is an aggregate, force
          --  evaluation so that the back end who does not know about class-wide
          --  type, does not generate a temporary of the wrong size.
@@ -1543,7 +1598,8 @@ package body Exp_Ch6 is
               Make_Implicit_If_Statement (N,
                 Condition       =>
                   Make_Op_Not (Loc,
-                    Get_Remotely_Callable (Duplicate_Subexpr (Actual))),
+                    Get_Remotely_Callable
+                      (Duplicate_Subexpr_Move_Checks (Actual))),
                 Then_Statements => New_List (
                   Make_Procedure_Call_Statement (Loc,
                     New_Occurrence_Of (RTE
@@ -1556,7 +1612,7 @@ package body Exp_Ch6 is
 
       --  If we are expanding a rhs of an assignement we need to check if
       --  tag propagation is needed. This code belongs theorically in Analyze
-      --  Assignment  but has to be done earlier (bottom-up) because the
+      --  Assignment but has to be done earlier (bottom-up) because the
       --  assignment might be transformed into a declaration for an uncons-
       --  trained value, if the expression is classwide.
 
@@ -1580,7 +1636,17 @@ package body Exp_Ch6 is
             if Present (Ass)
               and then Is_Class_Wide_Type (Etype (Name (Ass)))
             then
-               Propagate_Tag (Name (Ass), N);
+               if Etype (N) /= Root_Type (Etype (Name (Ass))) then
+                  Error_Msg_NE
+                    ("tag-indeterminate expression must have type&"
+                      & "('R'M 5.2 (6))", N, Root_Type (Etype (Name (Ass))));
+               else
+                  Propagate_Tag (Name (Ass), N);
+               end if;
+
+               --  The call will be rewritten as a dispatching call, and
+               --  expanded as such.
+
                return;
             end if;
          end;
@@ -1600,6 +1666,10 @@ package body Exp_Ch6 is
         and then not Java_VM
       then
          Expand_Dispatch_Call (N);
+
+         --  The following return is worrisome. Is it really OK to
+         --  skip all remaining processing in this procedure ???
+
          return;
 
       --  Similarly, expand calls to RCI subprograms on which pragma
@@ -1710,14 +1780,13 @@ package body Exp_Ch6 is
 
                   elsif
                     Ekind (Etype (Parent_Formal)) = E_Anonymous_Access_Type
-                      and then
-                    Designated_Type (Etype (Parent_Formal))
-                      /= Designated_Type (Etype (Actual))
+                      and then Designated_Type (Etype (Parent_Formal))
+                                 /=
+                               Designated_Type (Etype (Actual))
                       and then not Is_Controlling_Formal (Formal)
                   then
-
                      --  This unchecked conversion is not necessary unless
-                     --  inlining is unabled, because in that case the type
+                     --  inlining is enabled, because in that case the type
                      --  mismatch may become visible in the body about to be
                      --  inlined.
 
@@ -1740,6 +1809,10 @@ package body Exp_Ch6 is
          Subp := Parent_Subp;
       end if;
 
+      if Is_RTE (Subp, RE_Abort_Task) then
+         Check_Restriction (No_Abort_Statements, N);
+      end if;
+
       --  Some more special cases for cases other than explicit dereference
 
       if Nkind (Name (N)) /= N_Explicit_Dereference then
@@ -1758,8 +1831,9 @@ package body Exp_Ch6 is
                  (N, Convert_To (Etype (N), New_Occurrence_Of (Subp, Loc)));
             else
                Rewrite (N, New_Occurrence_Of (Subp, Loc));
-               Resolve (N, Etype (N));
             end if;
+
+            Resolve (N);
          end if;
 
       --  Handle case of access to protected subprogram type
@@ -1778,9 +1852,13 @@ package body Exp_Ch6 is
                Parm : List_Id;
                Nam  : Node_Id;
                Obj  : Node_Id;
-               Ptr  : Node_Id := Prefix (Name (N));
-               T    : Entity_Id := Equivalent_Type (Base_Type (Etype (Ptr)));
-               D_T  : Entity_Id := Designated_Type (Base_Type (Etype (Ptr)));
+               Ptr  : constant Node_Id := Prefix (Name (N));
+
+               T : constant Entity_Id :=
+                     Equivalent_Type (Base_Type (Etype (Ptr)));
+
+               D_T : constant Entity_Id :=
+                       Designated_Type (Base_Type (Etype (Ptr)));
 
             begin
                Obj := Make_Selected_Component (Loc,
@@ -1813,7 +1891,6 @@ package body Exp_Ch6 is
                end if;
 
                Set_First_Named_Actual (Call, First_Named_Actual (N));
-
                Set_Etype (Call, Etype (D_T));
 
                --  We do not re-analyze the call to avoid infinite recursion.
@@ -1845,7 +1922,9 @@ package body Exp_Ch6 is
          if Is_Inlined (Subp) then
 
             declare
-               Spec : constant Node_Id := Unit_Declaration_Node (Subp);
+               Bod         : Node_Id;
+               Must_Inline : Boolean := False;
+               Spec        : constant Node_Id := Unit_Declaration_Node (Subp);
 
             begin
                --  Verify that the body to inline has already been seen,
@@ -1853,21 +1932,42 @@ package body Exp_Ch6 is
                --  does not occur earlier. This avoids order-of-elaboration
                --  problems in gigi.
 
-               if Present (Spec)
-                 and then Nkind (Spec) = N_Subprogram_Declaration
-                 and then Present (Body_To_Inline (Spec))
-                 and then (In_Extended_Main_Code_Unit (N)
-                            or else In_Extended_Main_Code_Unit (Parent (N)))
-                 and then (not In_Same_Extended_Unit
-                              (Sloc (Body_To_Inline (Spec)), Loc)
-                            or else
-                           Earlier_In_Extended_Unit
-                              (Sloc (Body_To_Inline (Spec)), Loc))
+               if No (Spec)
+                 or else Nkind (Spec) /= N_Subprogram_Declaration
+                 or else No (Body_To_Inline (Spec))
                then
+                  Must_Inline := False;
+
+               else
+                  Bod := Body_To_Inline (Spec);
+
+                  if (In_Extended_Main_Code_Unit (N)
+                        or else In_Extended_Main_Code_Unit (Parent (N))
+                        or else Is_Always_Inlined (Subp))
+                    and then (not In_Same_Extended_Unit (Sloc (Bod), Loc)
+                               or else
+                                 Earlier_In_Extended_Unit (Sloc (Bod), Loc))
+                  then
+                     Must_Inline := True;
+
+                  --  If we are compiling a package body that is not the main
+                  --  unit, it must be for inlining/instantiation purposes,
+                  --  in which case we inline the call to insure that the same
+                  --  temporaries are generated when compiling the body by
+                  --  itself. Otherwise link errors can occur.
+
+                  elsif not (In_Extended_Main_Code_Unit (N))
+                    and then In_Package_Body
+                  then
+                     Must_Inline := True;
+                  end if;
+               end if;
+
+               if Must_Inline then
                   Expand_Inlined_Call (N, Subp, Orig_Subp);
 
                else
-                  --  Let the back-end handle it.
+                  --  Let the back end handle it
 
                   Add_Inlined_Body (Subp);
 
@@ -1877,10 +1977,10 @@ package body Exp_Ch6 is
                     and then No (Body_To_Inline (Spec))
                     and then not Has_Completion (Subp)
                     and then In_Same_Extended_Unit (Sloc (Spec), Loc)
-                    and then Ineffective_Inline_Warnings
                   then
-                     Error_Msg_N
-                      ("call cannot be inlined before body is seen?", N);
+                     Cannot_Inline
+                      ("cannot inline& (body not seen yet)?",
+                       N, Subp);
                   end if;
                end if;
             end;
@@ -1938,12 +2038,11 @@ package body Exp_Ch6 is
                Next_Actual (Actual);
             end loop;
 
-            --  Now we have Formal and Actual pointing to the first
-            --  potentially droppable argument. We can drop all the
-            --  trailing arguments whose actual matches the default.
-            --  Note that we know that all remaining formals have
-            --  defaults, because we checked that this requirement
-            --  was met before setting First_Optional_Parameter.
+            --  We have Formal and Actual pointing to the first potentially
+            --  droppable argument. We can drop all the trailing arguments
+            --  whose actual matches the default. Note that we know that all
+            --  remaining formals have defaults, because we checked that this
+            --  requirement was met before setting First_Optional_Parameter.
 
             --  We use Fully_Conformant_Expressions to check for identity
             --  between formals and actuals, which may miss some cases, but
@@ -1994,7 +2093,9 @@ package body Exp_Ch6 is
                declare
                   Temp   : Node_Id;
                   Passoc : Node_Id;
-                  Junk   : Node_Id;
+
+                  Discard : Node_Id;
+                  pragma Warnings (Off, Discard);
 
                begin
                   --  First step, remove all the named parameters from the
@@ -2018,7 +2119,7 @@ package body Exp_Ch6 is
                      end loop;
 
                      while Present (Next (Temp)) loop
-                        Junk := Remove_Next (Temp);
+                        Discard := Remove_Next (Temp);
                      end loop;
                   end if;
 
@@ -2051,7 +2152,6 @@ package body Exp_Ch6 is
             end if;
          end;
       end if;
-
    end Expand_Call;
 
    --------------------------
@@ -2063,7 +2163,13 @@ package body Exp_Ch6 is
      Subp      : Entity_Id;
      Orig_Subp : Entity_Id)
    is
-      Loc      : constant Source_Ptr := Sloc (N);
+      Loc       : constant Source_Ptr := Sloc (N);
+      Is_Predef : constant Boolean :=
+                   Is_Predefined_File_Name
+                     (Unit_File_Name (Get_Source_Unit (Subp)));
+      Orig_Bod  : constant Node_Id :=
+                    Body_To_Inline (Unit_Declaration_Node (Subp));
+
       Blk      : Node_Id;
       Bod      : Node_Id;
       Decl     : Node_Id;
@@ -2074,8 +2180,6 @@ package body Exp_Ch6 is
       Lab_Id   : Node_Id;
       New_A    : Node_Id;
       Num_Ret  : Int := 0;
-      Orig_Bod : constant Node_Id :=
-                   Body_To_Inline (Unit_Declaration_Node (Subp));
       Ret_Type : Entity_Id;
       Targ     : Node_Id;
       Temp     : Entity_Id;
@@ -2087,6 +2191,14 @@ package body Exp_Ch6 is
       function Process_Formals (N : Node_Id) return Traverse_Result;
       --  Replace occurrence of a formal with the corresponding actual, or
       --  the thunk generated for it.
+
+      function Process_Sloc (Nod : Node_Id) return Traverse_Result;
+      --  If the call being expanded is that of an internal subprogram,
+      --  set the sloc of the generated block to that of the call itself,
+      --  so that the expansion is skipped by the -next- command in gdb.
+      --  Same processing for a subprogram in a predefined file, e.g.
+      --  Ada.Tags. If Debug_Generated_Code is true, suppress this change
+      --  to simplify our own development.
 
       procedure Rewrite_Function_Call (N : Node_Id; Blk : Node_Id);
       --  If the function body is a single expression, replace call with
@@ -2161,8 +2273,9 @@ package body Exp_Ch6 is
                if Nkind (Parent (N)) = N_Handled_Sequence_Of_Statements
                  and then Nkind (Parent (Parent (N))) = N_Subprogram_Body
                then
-                  --  function body is a single expression. No need for
+                  --  Function body is a single expression. No need for
                   --  exit label.
+
                   null;
 
                else
@@ -2214,6 +2327,16 @@ package body Exp_Ch6 is
 
             return OK;
 
+         --  Remove pragma Unreferenced since it may refer to formals that
+         --  are not visible in the inlined body, and in any case we will
+         --  not be posting warnings on the inlined body so it is unneeded.
+
+         elsif Nkind (N) = N_Pragma
+           and then Chars (N) = Name_Unreferenced
+         then
+            Rewrite (N, Make_Null_Statement (Sloc (N)));
+            return OK;
+
          else
             return OK;
          end if;
@@ -2221,16 +2344,31 @@ package body Exp_Ch6 is
 
       procedure Replace_Formals is new Traverse_Proc (Process_Formals);
 
+      ------------------
+      -- Process_Sloc --
+      ------------------
+
+      function Process_Sloc (Nod : Node_Id) return Traverse_Result is
+      begin
+         if not Debug_Generated_Code then
+            Set_Sloc (Nod, Sloc (N));
+            Set_Comes_From_Source (Nod, False);
+         end if;
+
+         return OK;
+      end Process_Sloc;
+
+      procedure Reset_Slocs is new Traverse_Proc (Process_Sloc);
+
       ---------------------------
       -- Rewrite_Function_Call --
       ---------------------------
 
       procedure Rewrite_Function_Call (N : Node_Id; Blk : Node_Id) is
-         HSS  : Node_Id := Handled_Statement_Sequence (Blk);
-         Fst  : Node_Id := First (Statements (HSS));
+         HSS : constant Node_Id := Handled_Statement_Sequence (Blk);
+         Fst : constant Node_Id := First (Statements (HSS));
 
       begin
-
          --  Optimize simple case: function body is a single return statement,
          --  which has been expanded into an assignment.
 
@@ -2263,7 +2401,7 @@ package body Exp_Ch6 is
            and then Is_Entity_Name (Name (Parent (N)))
          then
 
-            --  replace assignment with the block.
+            --  Replace assignment with the block
 
             Rewrite (Parent (N), Blk);
 
@@ -2278,7 +2416,7 @@ package body Exp_Ch6 is
       ----------------------------
 
       procedure Rewrite_Procedure_Call (N : Node_Id; Blk : Node_Id) is
-         HSS  : Node_Id := Handled_Statement_Sequence (Blk);
+         HSS  : constant Node_Id := Handled_Statement_Sequence (Blk);
 
       begin
          if Is_Empty_List (Declarations (Blk)) then
@@ -2292,6 +2430,20 @@ package body Exp_Ch6 is
    --  Start of processing for Expand_Inlined_Call
 
    begin
+      --  Check for special case of To_Address call, and if so, just
+      --  do an unchecked conversion instead of expanding the call.
+      --  Not only is this more efficient, but it also avoids a
+      --  problem with order of elaboration when address clauses
+      --  are inlined (address expr elaborated at wrong point).
+
+      if Subp = RTE (RE_To_Address) then
+         Rewrite (N,
+           Unchecked_Convert_To
+            (RTE (RE_Address),
+             Relocate_Node (First_Actual (N))));
+         return;
+      end if;
+
       if Nkind (Orig_Bod) = N_Defining_Identifier then
 
          --  Subprogram is a renaming_as_body. Calls appearing after the
@@ -2307,11 +2459,9 @@ package body Exp_Ch6 is
       --  that nested inlined calls appear in the main unit.
 
       Save_Env (Subp, Empty);
-      Set_Copied_Sloc (N, Defining_Entity (Orig_Bod));
+      Set_Copied_Sloc_For_Inlined_Body (N, Defining_Entity (Orig_Bod));
 
-      Bod :=
-       Copy_Generic_Node (Orig_Bod, Empty, Instantiating => True);
-
+      Bod := Copy_Generic_Node (Orig_Bod, Empty, Instantiating => True);
       Blk :=
         Make_Block_Statement (Loc,
           Declarations => Declarations (Bod),
@@ -2338,7 +2488,6 @@ package body Exp_Ch6 is
       --  are scalars and require copying to preserve semantics.
 
       while Present (F) loop
-
          if Present (Renamed_Object (F)) then
             Error_Msg_N (" cannot inline call to recursive subprogram", N);
             return;
@@ -2366,12 +2515,25 @@ package body Exp_Ch6 is
             Temp_Typ := Etype (A);
          end if;
 
-         if (not Is_Entity_Name (A)
-             and then Nkind (A) /= N_Integer_Literal
-             and then Nkind (A) /= N_Real_Literal)
+         --  Comments needed here ???
 
-           or else Is_Scalar_Type (Etype (A))
+         if (Is_Entity_Name (A)
+              and then
+               (not Is_Scalar_Type (Etype (A))
+                 or else Ekind (Entity (A)) = E_Enumeration_Literal))
+
+           or else Nkind (A) = N_Real_Literal
+           or else Nkind (A) = N_Integer_Literal
+           or else Nkind (A) = N_Character_Literal
          then
+            if Etype (F) /= Etype (A) then
+               Set_Renamed_Object
+                (F, Unchecked_Convert_To (Etype (F), Relocate_Node (A)));
+            else
+               Set_Renamed_Object (F, A);
+            end if;
+
+         else
             Temp :=
               Make_Defining_Identifier (Loc,
                 Chars => New_Internal_Name ('C'));
@@ -2379,13 +2541,12 @@ package body Exp_Ch6 is
             --  If the actual for an in/in-out parameter is a view conversion,
             --  make it into an unchecked conversion, given that an untagged
             --  type conversion is not a proper object for a renaming.
+
             --  In-out conversions that involve real conversions have already
             --  been transformed in Expand_Actuals.
 
             if Nkind (A) = N_Type_Conversion
-              and then
-                (Ekind (F) = E_In_Out_Parameter
-                  or else not Is_Tagged_Type (Etype (F)))
+              and then Ekind (F) /= E_In_Parameter
             then
                New_A := Make_Unchecked_Type_Conversion (Loc,
                  Subtype_Mark => New_Occurrence_Of (Etype (F), Loc),
@@ -2420,14 +2581,6 @@ package body Exp_Ch6 is
 
             Prepend (Decl, Declarations (Blk));
             Set_Renamed_Object (F, Temp);
-
-         else
-            if Etype (F) /= Etype (A) then
-               Set_Renamed_Object
-                (F, Unchecked_Convert_To (Etype (F), Relocate_Node (A)));
-            else
-               Set_Renamed_Object (F, A);
-            end if;
          end if;
 
          Next_Formal (F);
@@ -2471,6 +2624,12 @@ package body Exp_Ch6 is
       Replace_Formals (Blk);
       Set_Parent (Blk, N);
 
+      if not Comes_From_Source (Subp)
+        or else Is_Predef
+      then
+         Reset_Slocs (Blk);
+      end if;
+
       if Present (Exit_Lab) then
 
          --  If the body was a single expression, the single return statement
@@ -2489,14 +2648,29 @@ package body Exp_Ch6 is
       end if;
 
       --  Analyze Blk with In_Inlined_Body set, to avoid spurious errors on
-      --  conflicting private views that Gigi would ignore.
+      --  conflicting private views that Gigi would ignore. If this is a
+      --  predefined unit, analyze with checks off, as is done in the non-
+      --  inlined run-time units.
 
       declare
          I_Flag : constant Boolean := In_Inlined_Body;
 
       begin
          In_Inlined_Body := True;
-         Analyze (Blk);
+
+         if Is_Predef then
+            declare
+               Style : constant Boolean := Style_Check;
+            begin
+               Style_Check := False;
+               Analyze (Blk, Suppress => All_Checks);
+               Style_Check := Style;
+            end;
+
+         else
+            Analyze (Blk);
+         end if;
+
          In_Inlined_Body := I_Flag;
       end;
 
@@ -2526,9 +2700,8 @@ package body Exp_Ch6 is
       Typ : constant Entity_Id := Etype (N);
 
       function Returned_By_Reference return Boolean;
-      --  If the return type is returned through the secondary stack. i.e.
-      --  by reference, we don't want to create a temporary to force stack
-      --  checking.
+      --  If the return type is returned through the secondary stack. that is
+      --  by reference, we don't want to create a temp to force stack checking.
 
       function Returned_By_Reference return Boolean is
          S : Entity_Id := Current_Scope;
@@ -2567,6 +2740,9 @@ package body Exp_Ch6 is
       if May_Generate_Large_Temp (Typ)
         and then Nkind (Parent (N)) /= N_Assignment_Statement
         and then
+          (Nkind (Parent (N)) /= N_Qualified_Expression
+             or else Nkind (Parent (Parent (N))) /= N_Assignment_Statement)
+        and then
           (Nkind (Parent (N)) /= N_Object_Declaration
              or else Expression (Parent (N)) /= N)
         and then not Returned_By_Reference
@@ -2577,8 +2753,9 @@ package body Exp_Ch6 is
 
          declare
             Loc      : constant Source_Ptr := Sloc (N);
-            Temp_Obj : constant Entity_Id := Make_Defining_Identifier (Loc,
-                                          New_Internal_Name ('F'));
+            Temp_Obj : constant Entity_Id :=
+                         Make_Defining_Identifier (Loc,
+                           Chars => New_Internal_Name ('F'));
             Temp_Typ : Entity_Id := Typ;
             Decl     : Node_Id;
             A        : Node_Id;
@@ -2694,12 +2871,14 @@ package body Exp_Ch6 is
       ----------------
 
       procedure Add_Return (S : List_Id) is
-         Last_S : constant Node_Id := Last (S);
-         --  Get original node, in case raise has been rewritten
-
       begin
-         if not Is_Transfer (Last_S) then
-            Append_To (S, Make_Return_Statement (Sloc (Last_S)));
+         if not Is_Transfer (Last (S)) then
+
+            --  The source location for the return is the end label
+            --  of the procedure in all cases. This is a bit odd when
+            --  there are exception handlers, but not much else we can do.
+
+            Append_To (S, Make_Return_Statement (Sloc (End_Label (H))));
          end if;
       end Add_Return;
 
@@ -2998,18 +3177,11 @@ package body Exp_Ch6 is
          Expand_N_Subprogram_Body (
            Unit_Declaration_Node (Corresponding_Body (N)));
       end if;
-
    end Expand_N_Subprogram_Body_Stub;
 
    -------------------------------------
    -- Expand_N_Subprogram_Declaration --
    -------------------------------------
-
-   --  The first task to be performed is the construction of default
-   --  expression functions for in parameters with default values. These
-   --  are parameterless inlined functions that are used to evaluate
-   --  default expressions that are more complicated than simple literals
-   --  or identifiers referencing constants and variables.
 
    --  If the declaration appears within a protected body, it is a private
    --  operation of the protected type. We must create the corresponding
@@ -3017,11 +3189,12 @@ package body Exp_Ch6 is
    --  operation, this is done when expanding the protected type declaration.
 
    procedure Expand_N_Subprogram_Declaration (N : Node_Id) is
-      Loc      : constant Source_Ptr := Sloc (N);
-      Subp     : Entity_Id := Defining_Entity (N);
-      Scop     : Entity_Id := Scope (Subp);
-      Prot_Sub : Entity_Id;
-      Prot_Bod : Node_Id;
+      Loc       : constant Source_Ptr := Sloc (N);
+      Subp      : constant Entity_Id  := Defining_Entity (N);
+      Scop      : constant Entity_Id  := Scope (Subp);
+      Prot_Decl : Node_Id;
+      Prot_Bod  : Node_Id;
+      Prot_Id   : Entity_Id;
 
    begin
       --  Deal with case of protected subprogram
@@ -3032,7 +3205,7 @@ package body Exp_Ch6 is
         and then Is_Protected_Type (Scop)
       then
          if No (Protected_Body_Subprogram (Subp)) then
-            Prot_Sub :=
+            Prot_Decl :=
               Make_Subprogram_Declaration (Loc,
                 Specification =>
                   Build_Protected_Sub_Specification
@@ -3040,8 +3213,9 @@ package body Exp_Ch6 is
 
             --  The protected subprogram is declared outside of the protected
             --  body. Given that the body has frozen all entities so far, we
-            --  freeze the subprogram explicitly. If the body is a subunit,
-            --  the insertion point is before the stub in the parent.
+            --  analyze the subprogram and perform freezing actions explicitly.
+            --  If the body is a subunit, the insertion point is before the
+            --  stub in the parent.
 
             Prot_Bod := Parent (List_Containing (N));
 
@@ -3049,12 +3223,13 @@ package body Exp_Ch6 is
                Prot_Bod := Corresponding_Stub (Parent (Prot_Bod));
             end if;
 
-            Insert_Before (Prot_Bod, Prot_Sub);
+            Insert_Before (Prot_Bod, Prot_Decl);
+            Prot_Id := Defining_Unit_Name (Specification (Prot_Decl));
 
             New_Scope (Scope (Scop));
-            Analyze (Prot_Sub);
-            Set_Protected_Body_Subprogram (Subp,
-              Defining_Unit_Name (Specification (Prot_Sub)));
+            Analyze (Prot_Decl);
+            Create_Extra_Formals (Prot_Id);
+            Set_Protected_Body_Subprogram (Subp, Prot_Id);
             Pop_Scope;
          end if;
       end if;
@@ -3132,8 +3307,10 @@ package body Exp_Ch6 is
 
          declare
             Decls : List_Id;
-            Obj_Ptr : Entity_Id :=  Make_Defining_Identifier
-                                      (Loc, New_Internal_Name ('T'));
+            Obj_Ptr : constant Entity_Id :=  Make_Defining_Identifier (Loc,
+                                               Chars =>
+                                                 New_Internal_Name ('T'));
+
          begin
             Decls := New_List (
               Make_Full_Type_Declaration (Loc,
@@ -3265,7 +3442,6 @@ package body Exp_Ch6 is
             Set_Returns_By_Ref (E);
          end if;
       end;
-
    end Freeze_Subprogram;
 
 end Exp_Ch6;

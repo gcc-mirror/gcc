@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,18 +45,115 @@ package Exp_Tss is
    --  attributes use the second approach, since it is more likely that they
    --  will not be used at all, or will only be used in one client in any case.
 
-   --  A TSS is identified by its Chars name, i.e. for a given TSS type, the
-   --  same name is used for all types, e.g. the initialization routine has
-   --  the name _init for all types.
+   -------------------------
+   -- Current Limitations --
+   -------------------------
+
+   --  In the current version of this package, only the case of generating a
+   --  TSS at the point of declaration of the type is accomodated. A clear
+   --  improvement would be to follow through with the full implementation
+   --  as described above, and also accomodate the requirement of generating
+   --  only one copy in a given object file.
+
+   --  For now, we deal with the local case by generating duplicate versions
+   --  of the TSS routine, which is clearly rather inefficient in space usage.
+   --  This is done by using Make_TSS_Name_Local to generate unique names
+   --  for the different instances of TSS routines in a given scope.
+
+   ----------------
+   -- TSS Naming --
+   ----------------
+
+   --  A TSS is identified by its Chars name. The name has the form typXY,
+   --  where typ is the type name, and XY are two characters that identify
+   --  the particular TSS routine, using the following codes:
+
+   --  Note: When making additions to this list, update the list in snames.adb
+
+   type TSS_Name_Type is new String (1 .. 2);
+   subtype TNT is TSS_Name_Type;
+
+   TSS_Deep_Adjust        : constant TNT := "DA";  -- Deep Adjust
+   TSS_Deep_Finalize      : constant TNT := "DF";  -- Deep Finalize
+   TSS_Deep_Initialize    : constant TNT := "DI";  -- Deep Initialize
+   TSS_Composite_Equality : constant TNT := "EQ";  -- Composite Equality
+   TSS_Init_Proc          : constant TNT := "IP";  -- Initialization Procedure
+   TSS_RAS_Access         : constant TNT := "RA";  -- RAs type access
+   TSS_RAS_Dereference    : constant TNT := "RD";  -- RAs type deference
+   TSS_Rep_To_Pos         : constant TNT := "RP";  -- Rep to Pos conversion
+   TSS_Stream_Input       : constant TNT := "SI";  -- Stream Input attribute
+   TSS_Stream_Output      : constant TNT := "SO";  -- Stream Output attribute
+   TSS_Stream_Read        : constant TNT := "SR";  -- Stream Read attribute
+   TSS_Stream_Write       : constant TNT := "SW";  -- Stream Write attribute
+
+   OK_TSS_Names : constant array (Natural range <>) of TSS_Name_Type :=
+     (TSS_Deep_Adjust,
+      TSS_Deep_Finalize,
+      TSS_Deep_Initialize,
+      TSS_Composite_Equality,
+      TSS_Init_Proc,
+      TSS_RAS_Access,
+      TSS_RAS_Dereference,
+      TSS_Rep_To_Pos,
+      TSS_Stream_Input,
+      TSS_Stream_Output,
+      TSS_Stream_Read,
+      TSS_Stream_Write);
+
+   TSS_Null : constant TNT := "  ";
+   --  Dummy entry used to indicated that this is not really a TSS
+
+   function Get_TSS_Name (E : Entity_Id) return TSS_Name_Type;
+   --  Given an entity, if it is a TSS, then return the corresponding TSS
+   --  name type, otherwise return TSS_Null.
+
+   function Make_TSS_Name
+     (Typ : Entity_Id;
+      Nam : TSS_Name_Type) return Name_Id;
+   --  Construct the name as described above for the given TSS routine
+   --  identified by Nam for the type identified by Typ.
+
+   function Make_TSS_Name_Local
+     (Typ : Entity_Id;
+      Nam : TSS_Name_Type) return Name_Id;
+   --  Similar to the above call, but a string of the form _nnn is appended
+   --  to the name, where nnn is a unique serial number. This is used when
+   --  multiple instances of the same TSS routine may be generated in the
+   --  same scope (see also discussion above of current limitations).
+
+   function Make_Init_Proc_Name (Typ : Entity_Id) return Name_Id;
+   --  Version for init procs, same as Make_TSS_Name (Typ, TSS_Init_Proc)
+
+   function Is_TSS (E : Entity_Id; Nam : TSS_Name_Type) return Boolean;
+   --  Determines if given entity (E) is the name of a TSS identified by Nam
+
+   function Is_TSS (N : Name_Id; Nam : TSS_Name_Type) return Boolean;
+   --  Same test applied directly to a Name_Id value
+
+   function Is_Init_Proc (E : Entity_Id) return Boolean;
+   --  Version for init procs, same as Is_TSS (E, TSS_Init_Proc);
+
+   -----------------------------------------
+   -- TSS Data structures and Subprograms --
+   -----------------------------------------
 
    --  The TSS's for a given type are stored in an element list associated with
    --  the type, and referenced from the TSS_Elist field of the N_Freeze_Entity
    --  node associated with the type (all types that need TSS's always need to
    --  be explicitly frozen, so the N_Freeze_Entity node always exists).
 
+   function TSS (Typ : Entity_Id; Nam : TSS_Name_Type) return Entity_Id;
+   --  Finds the TSS with the given name associated with the given type
+   --  If no such TSS exists, then Empty is returned;
+
    function TSS (Typ : Entity_Id; Nam : Name_Id) return Entity_Id;
    --  Finds the TSS with the given name associated with the given type. If
    --  no such TSS exists, then Empty is returned.
+
+   function Same_TSS (E1, E2 : Entity_Id) return Boolean;
+   --  Returns True if E1 and E2 are the same kind of TSS, even if the names
+   --  are different (i.e. if the names of E1 and E2 end with two upper case
+   --  letters that are the same).
 
    procedure Set_TSS (Typ : Entity_Id; TSS : Entity_Id);
    --  This procedure is used to install a newly created TSS. The second
@@ -85,8 +182,8 @@ package Exp_Tss is
    --  objects are always initialized using the initialization procedure for
    --  the corresponding base type (see Base_Init_Proc function). A special
    --  case arises for concurrent types. Such types do not themselves have an
-   --  _init TSS, but initialization is required. The initialization procedure
-   --  used is the one fot the corresponding record type (see Base_Init_Proc).
+   --  init proc TSS, but initialization is required. The init proc used is
+   --  the one fot the corresponding record type (see Base_Init_Proc).
 
    function Base_Init_Proc (Typ : Entity_Id) return Entity_Id;
    --  Obtains the _Init TSS entry from the base type of the entity, and also
@@ -104,7 +201,7 @@ package Exp_Tss is
    --  Returns true if the given type has a defined Base_Init_Proc and
    --  this init proc is not a null init proc (null init procs occur as
    --  a result of the processing for Initialize_Scalars. This function
-   --  is used to test for the presence of an Init_Proc in cases where
-   --  a null init proc is considered equivalent to no Init_Proc.
+   --  is used to test for the presence of an init proc in cases where
+   --  a null init proc is considered equivalent to no init proc.
 
 end Exp_Tss;

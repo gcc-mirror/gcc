@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,7 +43,6 @@ with System;
 package body System.Fat_Gen is
 
    Float_Radix        : constant T := T (T'Machine_Radix);
-   Float_Radix_Inv    : constant T := 1.0 / Float_Radix;
    Radix_To_M_Minus_1 : constant T := Float_Radix ** (T'Machine_Mantissa - 1);
 
    pragma Assert (T'Machine_Radix = 2);
@@ -163,7 +162,7 @@ package body System.Fat_Gen is
    ---------------
 
    procedure Decompose (XX : T; Frac : out T; Expo : out UI) is
-      X : T := T'Machine (XX);
+      X : constant T := T'Machine (XX);
 
    begin
       if X = 0.0 then
@@ -738,7 +737,11 @@ package body System.Fat_Gen is
 
       --  The Float_Rep type is an array of Float_Word elements. This
       --  representation is chosen to make it possible to size the
-      --  type based on a generic parameter.
+      --  type based on a generic parameter. Since the array size is
+      --  known at compile-time, efficient code can still be generated.
+      --  The size of Float_Word elements should be large enough to allow
+      --  accessing the exponent in one read, but small enough so that all
+      --  floating point object sizes are a multiple of the Float_Word'Size.
 
       --  The following conditions must be met for all possible
       --  instantiations of the attributes package:
@@ -752,12 +755,19 @@ package body System.Fat_Gen is
       --      and the exponent is in the following bits.
       --      Unused bits (if any) are in the least significant part.
 
-      type Float_Word is mod 2**32;
+      type Float_Word is mod 2**Positive'Min (System.Word_Size, 32);
       type Rep_Index is range 0 .. 7;
 
       Rep_Last : constant Rep_Index := (T'Size - 1) / Float_Word'Size;
 
       type Float_Rep is array (Rep_Index range 0 .. Rep_Last) of Float_Word;
+
+      pragma Suppress_Initialization (Float_Rep);
+      --  This pragma supresses the generation of an initialization procedure
+      --  for type Float_Rep when operating in Initialize/Normalize_Scalars
+      --  mode. This is not just a matter of efficiency, but of functionality,
+      --  since Valid has a pragma Inline_Always, which is not permitted if
+      --  there are nested subprograms present.
 
       Most_Significant_Word : constant Rep_Index :=
                                 Rep_Last * Standard'Default_Bit_Order;
@@ -830,5 +840,22 @@ package body System.Fat_Gen is
       return (E in IEEE_Emin .. IEEE_Emax) or else
          ((E = IEEE_Emin - 1) and then abs To_Float (SR) = 1.0);
    end Valid;
+
+   ---------------------
+   -- Unaligned_Valid --
+   ---------------------
+
+   function Unaligned_Valid (A : System.Address) return Boolean is
+      subtype FS is String (1 .. T'Size / Character'Size);
+      type FSP is access FS;
+
+      function To_FSP is new Ada.Unchecked_Conversion (Address, FSP);
+
+      Local_T : aliased T;
+
+   begin
+      To_FSP (Local_T'Address).all := To_FSP (A).all;
+      return Valid (Local_T'Access);
+   end Unaligned_Valid;
 
 end System.Fat_Gen;

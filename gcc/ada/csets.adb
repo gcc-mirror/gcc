@@ -170,7 +170,7 @@ package body Csets is
    -- Definitions for Latin-1 (ISO 8859-1) --
    ------------------------------------------
 
-   Fold_Latin_1 : Translate_Table := Translate_Table'(
+   Fold_Latin_1 : constant Translate_Table := Translate_Table'(
 
       'a' => 'A',  X_E0 => X_C0,  X_F0 => X_D0,
       'b' => 'B',  X_E1 => X_C1,  X_F1 => X_D1,
@@ -245,7 +245,7 @@ package body Csets is
    -- Definitions for Latin-2 (ISO 8859-2) --
    ------------------------------------------
 
-   Fold_Latin_2 : Translate_Table := Translate_Table'(
+   Fold_Latin_2 : constant Translate_Table := Translate_Table'(
 
       'a' => 'A',  X_E0 => X_C0,  X_F0 => X_D0,
       'b' => 'B',  X_E1 => X_C1,  X_F1 => X_D1,  X_B1 => X_A1,
@@ -320,7 +320,7 @@ package body Csets is
    -- Definitions for Latin-3 (ISO 8859-3) --
    ------------------------------------------
 
-   Fold_Latin_3 : Translate_Table := Translate_Table'(
+   Fold_Latin_3 : constant Translate_Table := Translate_Table'(
 
       'a' => 'A',  X_E0 => X_C0,
       'b' => 'B',  X_E1 => X_C1,  X_F1 => X_D1,  X_B1 => X_A1,
@@ -395,7 +395,7 @@ package body Csets is
    -- Definitions for Latin-4 (ISO 8859-4) --
    ------------------------------------------
 
-   Fold_Latin_4 : Translate_Table := Translate_Table'(
+   Fold_Latin_4 : constant Translate_Table := Translate_Table'(
 
       'a' => 'A',  X_E0 => X_C0,  X_F0 => X_D0,
       'b' => 'B',  X_E1 => X_C1,  X_F1 => X_D1,  X_B1 => X_A1,
@@ -470,7 +470,7 @@ package body Csets is
    -- Definitions for Latin-5 (Cyrillic ISO-8859-5) --
    ---------------------------------------------------
 
-   Fold_Latin_5 : Translate_Table := Translate_Table'(
+   Fold_Latin_5 : constant Translate_Table := Translate_Table'(
 
       'a' => 'A',  X_D0 => X_B0,  X_E0 => X_C0,
       'b' => 'B',  X_D1 => X_B1,  X_E1 => X_C1,  X_F1 => X_A1,
@@ -545,7 +545,7 @@ package body Csets is
    -- Definitions for Latin-9 (ISO 8859-9) --
    ------------------------------------------
 
-   Fold_Latin_9 : Translate_Table := Translate_Table'(
+   Fold_Latin_9 : constant Translate_Table := Translate_Table'(
 
       'a' => 'A',  X_E0 => X_C0,  X_F0 => X_D0,
       'b' => 'B',  X_E1 => X_C1,  X_F1 => X_D1,
@@ -624,7 +624,7 @@ package body Csets is
    --  for PC's in the US, it corresponds to the original PC character set.
    --  See also the definitions for code page 850.
 
-   Fold_IBM_PC_437 : Translate_Table := Translate_Table'(
+   Fold_IBM_PC_437 : constant Translate_Table := Translate_Table'(
 
       'a' => 'A',
       'b' => 'B',
@@ -759,7 +759,7 @@ package body Csets is
    --  set to include the additional characters defined in ISO Latin-1.
    --  See also the definitions for code page 437.
 
-   Fold_IBM_PC_850 : Translate_Table := Translate_Table'(
+   Fold_IBM_PC_850 : constant Translate_Table := Translate_Table'(
 
       'a' => 'A',
       'b' => 'B',
@@ -907,7 +907,7 @@ package body Csets is
    --  The full upper half set allows all upper half characters as letters,
    --  and does not recognize any upper/lower case equivalences in this half.
 
-   Fold_Full_Upper_Half : Translate_Table := Translate_Table'(
+   Fold_Full_Upper_Half : constant Translate_Table := Translate_Table'(
 
       'a' => 'A',
       'b' => 'B',
@@ -1020,7 +1020,7 @@ package body Csets is
    --  thus there are no upper/lower case equivalences in this half. This set
    --  corresponds to the Ada 83 rules.
 
-   Fold_No_Upper_Half : Translate_Table := Translate_Table'(
+   Fold_No_Upper_Half : constant Translate_Table := Translate_Table'(
 
       'a' => 'A',
       'b' => 'B',

@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              X R E F _ L I B                             --
+--                             X R E F _ L I B                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -19,16 +19,19 @@
 -- to  the Free Software Foundation,  59 Temple Place - Suite 330,  Boston, --
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
--- Extensive contributions were provided by Ada Core Technologies Inc.   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 with Osint;
-with Output;                 use Output;
-with Types;                  use Types;
+with Output; use Output;
+with Types;  use Types;
+
 with Unchecked_Deallocation;
 
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
+with Ada.Text_IO;       use Ada.Text_IO;
 
 with GNAT.Command_Line; use GNAT.Command_Line;
 with GNAT.IO_Aux;       use GNAT.IO_Aux;
@@ -45,31 +48,38 @@ package body Xref_Lib is
    Pipe : constant Character := '|';
    --  First character on xref lines in the .ali file
 
-   EOF : constant Character := ASCII.SUB;
-   --  Special character to signal end of file. Not required in input file,
-   --  but should be properly treated if present. See also Read_File.
-
    No_Xref_Information : exception;
    --  Exception raised when there is no cross-referencing information in
    --  the .ali files
 
-   subtype File_Offset is Natural;
-
-   procedure Read_File
-     (FD       : File_Descriptor;
-      Contents : out String_Access;
-      Success  : out Boolean);
-   --  Reads file associated with FS into the newly allocated
-   --  string Contents. An EOF character will be added to the
-   --  returned Contents to simplify parsing.
-   --  [VMS] Success is true iff the number of bytes read is less than or
-   --   equal to the file size.
-   --  [Other] Success is true iff the number of bytes read is equal to
-   --   the file size.
-
-   procedure Parse_EOL (Source : access String; Ptr : in out Positive);
+   procedure Parse_EOL
+     (Source                 : access String;
+      Ptr                    : in out Positive;
+      Skip_Continuation_Line : Boolean := False);
    --  On return Source (Ptr) is the first character of the next line
    --  or EOF. Source.all must be terminated by EOF.
+   --
+   --  If Skip_Continuation_Line is True, this subprogram skips as many
+   --  lines as required when the second or more lines starts with '.'
+   --  (continuation lines in ALI files).
+
+   function Current_Xref_File (File : ALI_File) return File_Reference;
+   --  Return the file matching the last 'X' line we found while parsing
+   --  the ALI file.
+
+   function File_Name (File : ALI_File; Num : Positive) return File_Reference;
+   --  Returns the dependency file name number Num
+
+   function Get_Full_Type (Decl : Declaration_Reference) return String;
+   --  Returns the full type corresponding to a type letter as found in
+   --  the .ali files.
+
+   procedure Open
+     (Name         : in  String;
+      File         : out ALI_File;
+      Dependencies : in  Boolean := False);
+   --  Open a new ALI file. If Dependencies is True, the insert every library
+   --  file 'with'ed in the files database (used for gnatxref)
 
    procedure Parse_Identifier_Info
      (Pattern       : Search_Pattern;
@@ -77,20 +87,24 @@ package body Xref_Lib is
       Local_Symbols : Boolean;
       Der_Info      : Boolean := False;
       Type_Tree     : Boolean := False;
-      Wide_Search   : Boolean := True);
+      Wide_Search   : Boolean := True;
+      Labels_As_Ref : Boolean := True);
    --  Output the file and the line where the identifier was referenced,
    --  If Local_Symbols is False then only the publicly visible symbols
-   --  will be processed
+   --  will be processed.
+   --
+   --  If Labels_As_Ref is true, then the references to the entities after
+   --  the end statements ("end Foo") will be counted as actual references.
+   --  The entity will never be reported as unreferenced by gnatxref -u
 
    procedure Parse_Token
      (Source    : access String;
       Ptr       : in out Positive;
       Token_Ptr : out Positive);
    --  Skips any separators and stores the start of the token in Token_Ptr.
-   --  Then stores the position of the next separator in Ptr.
-   --  On return Source (Token_Ptr .. Ptr - 1) is the token.
-   --  Separators are space and ASCII.HT.
-   --  Parse_Token will never skip to the next line.
+   --  Then stores the position of the next separator in Ptr. On return
+   --  Source (Token_Ptr .. Ptr - 1) is the token. Separators are space
+   --  and ASCII.HT. Parse_Token will never skip to the next line.
 
    procedure Parse_Number
      (Source : access String;
@@ -103,6 +117,16 @@ package body Xref_Lib is
    --  Reads and processes "X..." lines in the ALI file
    --  and updates the File.X_File information.
 
+   procedure Skip_To_First_X_Line
+     (File    : in out ALI_File;
+      D_Lines : Boolean;
+      W_Lines : Boolean);
+   --  Skip the lines in the ALI file until the first cross-reference line
+   --  (^X...) is found. Search is started from the beginning of the file.
+   --  If not such line is found, No_Xref_Information is raised.
+   --  If W_Lines is false, then the lines "^W" are not parsed.
+   --  If D_Lines is false, then the lines "^D" are not parsed.
+
    ----------------
    -- Add_Entity --
    ----------------
@@ -112,24 +136,23 @@ package body Xref_Lib is
       Entity  : String;
       Glob    : Boolean := False)
    is
-      File_Start   : Natural;
-      Line_Start   : Natural;
-      Col_Start    : Natural;
-      Line_Num     : Natural := 0;
-      Col_Num      : Natural := 0;
-      File_Ref     : File_Reference := Empty_File;
-      File_Existed : Boolean;
-      Has_Pattern  : Boolean := False;
+      File_Start  : Natural;
+      Line_Start  : Natural;
+      Col_Start   : Natural;
+      Line_Num    : Natural := 0;
+      Col_Num     : Natural := 0;
+      File_Ref    : File_Reference := Empty_File;
+      Has_Pattern : Boolean := False;
 
    begin
       --  Find the end of the first item in Entity (pattern or file?)
       --  If there is no ':', we only have a pattern
 
       File_Start := Index (Entity, ":");
+
+      --  If the regular expression is invalid, just consider it as a string
+
       if File_Start = 0 then
-
-         --  If the regular expression is invalid, just consider it as a string
-
          begin
             Pattern.Entity := Compile (Entity, Glob, False);
             Pattern.Initialized := True;
@@ -162,19 +185,18 @@ package body Xref_Lib is
       --  If there is a dot in the pattern, then it is a file name
 
       if (Glob and then
-             Index (Entity (Entity'First .. File_Start - 1), ".") /= 0)
-               or else
-                (not Glob
-                   and then Index (Entity (Entity'First .. File_Start - 1),
+           Index (Entity (Entity'First .. File_Start - 1), ".") /= 0)
+             or else
+              (not Glob
+                 and then Index (Entity (Entity'First .. File_Start - 1),
                                    "\.") /= 0)
       then
-         Pattern.Entity := Compile (".*", False);
+         Pattern.Entity      := Compile (".*", False);
          Pattern.Initialized := True;
-         File_Start     := Entity'First;
+         File_Start          := Entity'First;
 
       else
-         --  If the regular expression is invalid,
-         --  just consider it as a string
+         --  If the regular expression is invalid, just consider it as a string
 
          begin
             Pattern.Entity :=
@@ -251,16 +273,16 @@ package body Xref_Lib is
          end if;
       end if;
 
-      Add_To_Xref_File (Entity (File_Start .. Line_Start - 1),
-                File_Existed,
-                File_Ref,
-                Visited => True);
-      Add_Line (File_Ref, Line_Num, Col_Num);
-      Add_To_Xref_File
-        (ALI_File_Name (Entity (File_Start .. Line_Start - 1)),
-         File_Existed, File_Ref,
-         Visited => False,
-         Emit_Warning => True);
+      File_Ref :=
+        Add_To_Xref_File
+          (Entity (File_Start .. Line_Start - 1), Visited => True);
+      Pattern.File_Ref := File_Ref;
+      Add_Line (Pattern.File_Ref, Line_Num, Col_Num);
+      File_Ref :=
+        Add_To_Xref_File
+          (ALI_File_Name (Entity (File_Start .. Line_Start - 1)),
+           Visited      => False,
+           Emit_Warning => True);
    end Add_Entity;
 
    -------------------
@@ -268,9 +290,8 @@ package body Xref_Lib is
    -------------------
 
    procedure Add_Xref_File (File : String) is
-      File_Ref     : File_Reference := Empty_File;
-      File_Existed : Boolean;
-      Iterator     : Expansion_Iterator;
+      File_Ref : File_Reference := Empty_File;
+      Iterator : Expansion_Iterator;
 
       procedure Add_Xref_File_Internal (File : String);
       --  Do the actual addition of the file
@@ -285,26 +306,16 @@ package body Xref_Lib is
          --  not official usage, since the intention is obvious
 
          if Tail (File, 4) = ".ali" then
-            Add_To_Xref_File
-              (File,
-               File_Existed,
-               File_Ref,
-               Visited => False,
-               Emit_Warning => True);
+            File_Ref := Add_To_Xref_File
+              (File, Visited => False, Emit_Warning => True);
 
          --  Normal non-ali file case
 
          else
-            Add_To_Xref_File
-              (File,
-               File_Existed,
-               File_Ref,
-               Visited => True);
+            File_Ref := Add_To_Xref_File (File, Visited => True);
 
-            Add_To_Xref_File
+            File_Ref := Add_To_Xref_File
               (ALI_File_Name (File),
-               File_Existed,
-               File_Ref,
                Visited => False,
                Emit_Warning => True);
          end if;
@@ -400,7 +411,6 @@ package body Xref_Lib is
       My_Dir       : Rec_DIR;
       Dir_Ent      : File_Name_String;
       Last         : Natural;
-      File_Existed : Boolean;
       File_Ref     : File_Reference;
 
       function Open_Next_Dir return Boolean;
@@ -420,7 +430,7 @@ package body Xref_Lib is
                Obj_Dir : constant String := Next_Obj_Dir;
 
             begin
-               --  If there was no more Obj_Dir line
+               --  Case of no more Obj_Dir lines
 
                if Obj_Dir'Length = 0 then
                   return False;
@@ -430,6 +440,7 @@ package body Xref_Lib is
                exit;
 
             exception
+
                --  Could not open the directory
 
                when Directory_Error => null;
@@ -442,6 +453,8 @@ package body Xref_Lib is
    --  Start of processing for Find_ALI_Files
 
    begin
+      Reset_Obj_Dir;
+
       if Open_Next_Dir then
          loop
             Read (My_Dir.Dir, Dir_Ent, Last);
@@ -454,12 +467,8 @@ package body Xref_Lib is
                end if;
 
             elsif Last > 4 and then Dir_Ent (Last - 3 .. Last) = ".ali" then
-               Add_To_Xref_File
-                 (Dir_Ent (1 .. Last),
-                  File_Existed,
-                  File_Ref,
-                  Visited => False);
-               Set_Directory (File_Ref, Current_Obj_Dir);
+               File_Ref :=
+                 Add_To_Xref_File (Dir_Ent (1 .. Last), Visited => False);
             end if;
          end loop;
       end if;
@@ -469,9 +478,29 @@ package body Xref_Lib is
    -- Get_Full_Type --
    -------------------
 
-   function Get_Full_Type (Abbrev : Character) return String is
+   function Get_Full_Type (Decl : Declaration_Reference) return String is
+
+      function Param_String return String;
+      --  Return the string to display depending on whether Decl is a
+      --  parameter or not
+
+      ------------------
+      -- Param_String --
+      ------------------
+
+      function Param_String return String is
+      begin
+         if Is_Parameter (Decl) then
+            return "parameter ";
+         else
+            return "";
+         end if;
+      end Param_String;
+
+   --  Start of processing for Get_Full_Type
+
    begin
-      case Abbrev is
+      case Get_Type (Decl) is
          when 'A' => return "array type";
          when 'B' => return "boolean type";
          when 'C' => return "class-wide type";
@@ -488,19 +517,21 @@ package body Xref_Lib is
          when 'W' => return "protected type";
 
          when 'a' => return "array type";
-         when 'b' => return "boolean object";
-         when 'c' => return "class-wide object";
-         when 'd' => return "decimal object";
-         when 'e' => return "enumeration object";
-         when 'f' => return "float object";
-         when 'i' => return "integer object";
-         when 'm' => return "modular object";
-         when 'o' => return "fixed object";
-         when 'p' => return "access object";
-         when 'r' => return "record object";
-         when 's' => return "string object";
-         when 't' => return "task object";
-         when 'w' => return "protected object";
+         when 'b' => return Param_String & "boolean object";
+         when 'c' => return Param_String & "class-wide object";
+         when 'd' => return Param_String & "decimal object";
+         when 'e' => return Param_String & "enumeration object";
+         when 'f' => return Param_String & "float object";
+         when 'i' => return Param_String & "integer object";
+         when 'm' => return Param_String & "modular object";
+         when 'o' => return Param_String & "fixed object";
+         when 'p' => return Param_String & "access object";
+         when 'r' => return Param_String & "record object";
+         when 's' => return Param_String & "string object";
+         when 't' => return Param_String & "task object";
+         when 'w' => return Param_String & "protected object";
+         when 'x' => return Param_String & "abstract procedure";
+         when 'y' => return Param_String & "abstract function";
 
          when 'K' => return "package";
          when 'k' => return "generic package";
@@ -516,71 +547,38 @@ package body Xref_Lib is
          when 'X' => return "exception";
          when 'Y' => return "entry";
 
-         --  The above should be the only possibilities, but for a
-         --  tool like this we don't want to bomb if we find something
-         --  else, so just return ??? when we have an unknown Abbrev value
+         when '+' => return "private type";
+
+         --  The above should be the only possibilities, but for this kind
+         --  of informational output, we don't want to bomb if we find
+         --  something else, so just return three question marks when we
+         --  have an unknown Abbrev value
 
          when others =>
-            return "???";
+            return "??? (" & Get_Type (Decl) & ")";
       end case;
    end Get_Full_Type;
 
-   -----------
-   -- Match --
-   -----------
+   --------------------------
+   -- Skip_To_First_X_Line --
+   --------------------------
 
-   function Match
-     (Pattern : Search_Pattern;
-      Symbol  : String)
-      return    Boolean
+   procedure Skip_To_First_X_Line
+     (File    : in out ALI_File;
+      D_Lines : Boolean;
+      W_Lines : Boolean)
    is
-   begin
-      --  Get the entity name
-
-      return Match (Symbol, Pattern.Entity);
-   end Match;
-
-   ----------
-   -- Open --
-   ----------
-
-   procedure Open
-     (Name         : String;
-      File         : out ALI_File;
-      Dependencies : Boolean := False)
-   is
-      Name_0           : constant String := Name & ASCII.NUL;
-      Num_Dependencies : Natural := 0;
-      File_Existed     : Boolean;
-      File_Ref         : File_Reference;
-      FD               : File_Descriptor;
-      Success          : Boolean := False;
       Ali              : String_Access renames File.Buffer;
       Token            : Positive;
-      Ptr              : Positive;
+      Ptr              : Positive := Ali'First;
+      Num_Dependencies : Natural  := 0;
+      File_Ref         : File_Reference;
       File_Start       : Positive;
       File_End         : Positive;
       Gnatchop_Offset  : Integer;
       Gnatchop_Name    : Positive;
 
    begin
-      if File.Buffer /= null then
-         Free (File.Buffer);
-      end if;
-
-      Init (File.Dep);
-
-      FD := Open_Read (Name_0'Address, Binary);
-
-      if FD = Invalid_FD then
-         raise No_Xref_Information;
-      end if;
-
-      Read_File (FD, Ali, Success);
-      Close (FD);
-
-      Ptr := Ali'First;
-
       --  Read all the lines possibly processing with-clauses and dependency
       --  information and exit on finding the first Xref line.
       --  A fall-through of the loop means that there is no xref information
@@ -588,12 +586,12 @@ package body Xref_Lib is
 
       while Ali (Ptr) /= EOF loop
 
-         if Ali (Ptr) = 'D' then
-            --  Found dependency information. Format looks like:
-            --  D source-name time-stamp checksum [subunit-name] \
-            --    [line:file-name]
+         if D_Lines and then Ali (Ptr) = 'D' then
 
-            --  Skip the D and parse the filename
+            --  Found dependency information. Format looks like:
+            --  D src-nam time-stmp checksum [subunit-name] [line:file-name]
+
+            --  Skip the D and parse the filenam
 
             Ptr := Ptr + 1;
             Parse_Token (Ali, Ptr, Token);
@@ -612,6 +610,7 @@ package body Xref_Lib is
             end if;
 
             --  Did we have a gnatchop-ed file with a pragma Source_Reference ?
+
             Gnatchop_Offset := 0;
 
             if Ali (Token) in '0' .. '9' then
@@ -619,19 +618,19 @@ package body Xref_Lib is
                while Ali (Gnatchop_Name) /= ':' loop
                   Gnatchop_Name := Gnatchop_Name + 1;
                end loop;
+
                Gnatchop_Offset :=
                  2 - Natural'Value (Ali (Token .. Gnatchop_Name - 1));
                Token := Gnatchop_Name + 1;
             end if;
 
-            Add_To_Xref_File
+            File.Dep.Table (Num_Dependencies) := Add_To_Xref_File
               (Ali (File_Start .. File_End),
-               File_Existed,
-               File.Dep.Table (Num_Dependencies),
                Gnatchop_File => Ali (Token .. Ptr - 1),
                Gnatchop_Offset => Gnatchop_Offset);
 
-         elsif Dependencies and then Ali (Ptr) = 'W' then
+         elsif W_Lines and then Ali (Ptr) = 'W' then
+
             --  Found with-clause information. Format looks like:
             --     "W debug%s               debug.adb               debug.ali"
 
@@ -641,13 +640,11 @@ package body Xref_Lib is
             Parse_Token (Ali, Ptr, Token);
             Parse_Token (Ali, Ptr, Token);
 
-            Add_To_Xref_File
-              (Ali (Token .. Ptr - 1),
-               File_Existed,
-               File_Ref,
-               Visited => False);
+            File_Ref := Add_To_Xref_File
+              (Ali (Token .. Ptr - 1), Visited => False);
 
          elsif Ali (Ptr) = 'X' then
+
             --  Found a cross-referencing line - stop processing
 
             File.Current_Line := Ptr;
@@ -659,33 +656,70 @@ package body Xref_Lib is
       end loop;
 
       raise No_Xref_Information;
+   end Skip_To_First_X_Line;
+
+   ----------
+   -- Open --
+   ----------
+
+   procedure Open
+     (Name         : String;
+      File         : out ALI_File;
+      Dependencies : Boolean := False)
+   is
+      Ali : String_Access renames File.Buffer;
+
+   begin
+      if File.Buffer /= null then
+         Free (File.Buffer);
+      end if;
+
+      Init (File.Dep);
+
+      begin
+         Read_File (Name, Ali);
+
+      exception
+         when Ada.Text_IO.Name_Error | Ada.Text_IO.End_Error =>
+            raise No_Xref_Information;
+      end;
+
+      Skip_To_First_X_Line (File, D_Lines => True, W_Lines => Dependencies);
    end Open;
 
    ---------------
    -- Parse_EOL --
    ---------------
 
-   procedure Parse_EOL (Source : access String; Ptr : in out Positive) is
+   procedure Parse_EOL
+     (Source                 : access String;
+      Ptr                    : in out Positive;
+      Skip_Continuation_Line : Boolean := False)
+   is
    begin
-      --  Skip to end of line
-
-      while Source (Ptr) /= ASCII.CR and then Source (Ptr) /= ASCII.LF
-        and then Source (Ptr) /= EOF
       loop
-         Ptr := Ptr + 1;
+         --  Skip to end of line
+
+         while Source (Ptr) /= ASCII.CR and then Source (Ptr) /= ASCII.LF
+           and then Source (Ptr) /= EOF
+         loop
+            Ptr := Ptr + 1;
+         end loop;
+
+         if Source (Ptr) /= EOF then
+            Ptr := Ptr + 1;      -- skip CR or LF
+         end if;
+
+         --  Skip past CR/LF or LF/CR combination
+
+         if (Source (Ptr) = ASCII.CR or else Source (Ptr) = ASCII.LF)
+           and then Source (Ptr) /= Source (Ptr - 1)
+         then
+            Ptr := Ptr + 1;
+         end if;
+
+         exit when not Skip_Continuation_Line or else Source (Ptr) /= '.';
       end loop;
-
-      if Source (Ptr) /= EOF then
-         Ptr := Ptr + 1;      -- skip CR or LF
-      end if;
-
-      --  Skip past CR/LF or LF/CR combination
-
-      if (Source (Ptr) = ASCII.CR or else Source (Ptr) = ASCII.LF)
-         and then Source (Ptr) /= Source (Ptr - 1)
-      then
-         Ptr := Ptr + 1;
-      end if;
    end Parse_EOL;
 
    ---------------------------
@@ -698,7 +732,8 @@ package body Xref_Lib is
       Local_Symbols : Boolean;
       Der_Info      : Boolean := False;
       Type_Tree     : Boolean := False;
-      Wide_Search   : Boolean := True)
+      Wide_Search   : Boolean := True;
+      Labels_As_Ref : Boolean := True)
    is
       Ptr      : Positive renames File.Current_Line;
       Ali      : String_Access renames File.Buffer;
@@ -734,19 +769,6 @@ package body Xref_Lib is
          E_Name : Positive;   --  Pointer to begin of entity name
          E_Type : Character;  --  Type of current entity
 
-         procedure Skip_Line;
-         --  skip current line and continuation line
-
-         procedure Skip_Line is
-         begin
-            loop
-               Parse_EOL (Ali, Ptr);
-               exit when Ali (Ptr) /= '.';
-            end loop;
-         end Skip_Line;
-
-      --  Start of processing for Get_Symbol_Name
-
       begin
          --  Look for the X lines corresponding to unit Eun
 
@@ -757,7 +779,7 @@ package body Xref_Lib is
                exit when E_Eun = Eun;
             end if;
 
-            Skip_Line;
+            Parse_EOL (Ali, Ptr, Skip_Continuation_Line => True);
          end loop;
 
          --  Here we are in the right Ali section, we now look for the entity
@@ -766,8 +788,10 @@ package body Xref_Lib is
          loop
             Parse_Number (Ali, Ptr, E_Line);
             E_Type := Ali (Ptr);
+            exit when Ali (Ptr) = EOF;
             Ptr := Ptr + 1;
             Parse_Number (Ali, Ptr, E_Col);
+            exit when Ali (Ptr) = EOF;
             Ptr := Ptr + 1;
 
             if Line = E_Line and then Col = E_Col then
@@ -775,7 +799,8 @@ package body Xref_Lib is
                return Ali (E_Name .. Ptr - 1);
             end if;
 
-            Skip_Line;
+            Parse_EOL (Ali, Ptr, Skip_Continuation_Line => True);
+            exit when Ali (Ptr) = EOF;
          end loop;
 
          --  We were not able to find the symbol, this should not happend but
@@ -800,6 +825,17 @@ package body Xref_Lib is
          Ptr := Ptr + 1;
       end if;
 
+      --  Ignore some of the entities (labels,...)
+
+      case E_Type is
+         when 'l' | 'L' | 'q' =>
+            Parse_EOL (Ali, Ptr, Skip_Continuation_Line => True);
+            return;
+
+         when others =>
+            null;
+      end case;
+
       Parse_Number (Ali, Ptr, E_Col);
 
       E_Global := False;
@@ -815,15 +851,13 @@ package body Xref_Lib is
 
       if (not Local_Symbols and not E_Global)
         or else (Pattern.Initialized
-                  and then not Match (Pattern, Ali (E_Name .. Ptr - 1)))
+                  and then not Match (Ali (E_Name .. Ptr - 1), Pattern.Entity))
         or else (E_Name >= Ptr)
       then
-         --  Skip rest of this line and all continuation lines
-
-         loop
-            Parse_EOL (Ali, Ptr);
-            exit when Ali (Ptr) /= '.';
-         end loop;
+         Decl_Ref := Add_Declaration
+           (File.X_File, Ali (E_Name .. Ptr - 1), E_Line, E_Col, E_Type,
+            Remove_Only => True);
+         Parse_EOL (Ali, Ptr, Skip_Continuation_Line => True);
          return;
       end if;
 
@@ -836,7 +870,6 @@ package body Xref_Lib is
         or else Ali (Ptr) = '('
         or else Ali (Ptr) = '{'
       then
-
          --  Here we have a type derivation information. The format is
          --  <3|12I45> which means that the current entity is derived from the
          --  type defined in unit number 3, line 12 column 45. The pipe and
@@ -893,15 +926,27 @@ package body Xref_Lib is
                --  on or if we want to output the type hierarchy
 
                if Der_Info or else Type_Tree then
-                  Add_Parent
-                    (Decl_Ref,
-                     Get_Symbol_Name (P_Eun, P_Line, P_Column),
-                     P_Line,
-                     P_Column,
-                     File.Dep.Table (P_Eun));
+                  declare
+                     Symbol : constant String :=
+                       Get_Symbol_Name (P_Eun, P_Line, P_Column);
+
+                  begin
+                     if Symbol /= "???" then
+                        Add_Parent
+                          (Decl_Ref,
+                           Symbol,
+                           P_Line,
+                           P_Column,
+                           File.Dep.Table (P_Eun));
+                     end if;
+                  end;
                end if;
 
-               if Type_Tree then
+               if Type_Tree
+                 and then (Pattern.File_Ref = Empty_File
+                             or else
+                           Pattern.File_Ref = Current_Xref_File (File))
+               then
                   Search_Parent_Tree : declare
                      Pattern         : Search_Pattern;  --  Parent type pattern
                      File_Pos_Backup : Positive;
@@ -913,7 +958,7 @@ package body Xref_Lib is
                         & ':' & Get_Gnatchop_File (File.Dep.Table (P_Eun))
                         & ':' & Get_Line (Get_Parent (Decl_Ref))
                         & ':' & Get_Column (Get_Parent (Decl_Ref)),
-                     False);
+                        False);
 
                      --  No default match is needed to look for the parent type
                      --  since we are using the fully qualified symbol name:
@@ -921,34 +966,25 @@ package body Xref_Lib is
 
                      Set_Default_Match (False);
 
-                     --  The parent type is defined in the same unit as the
-                     --  derived type. So we want to revisit the unit.
+                     --  The parent hierarchy is defined in the same unit as
+                     --  the derived type. So we want to revisit the unit.
 
                      File_Pos_Backup   := File.Current_Line;
 
-                     if File.Dep.Table (P_Eun) = File_Ref then
+                     Skip_To_First_X_Line
+                       (File, D_Lines => False, W_Lines => False);
 
-                        --  set file pointer at the start of the xref lines
-
-                        File.Current_Line := File.Xref_Line;
-
-                        Revisit_ALI_File : declare
-                           File_Existed : Boolean;
-                           File_Ref     : File_Reference;
-
-                        begin
-                           Add_To_Xref_File
-                             (ALI_File_Name
-                              (Get_File (File.Dep.Table (P_Eun))),
-                              File_Existed,
-                              File_Ref,
-                              Visited => False);
-                           Set_Unvisited (File_Ref);
-                        end Revisit_ALI_File;
-                     end if;
-
-                     Search (Pattern,
-                             Local_Symbols, False, False, Der_Info, Type_Tree);
+                     while File.Buffer (File.Current_Line) /= EOF loop
+                        Parse_X_Filename (File);
+                        Parse_Identifier_Info
+                          (Pattern       => Pattern,
+                           File          => File,
+                           Local_Symbols => False,
+                           Der_Info      => Der_Info,
+                           Type_Tree     => True,
+                           Wide_Search   => False,
+                           Labels_As_Ref => Labels_As_Ref);
+                     end loop;
 
                      File.Current_Line := File_Pos_Backup;
                   end Search_Parent_Tree;
@@ -968,6 +1004,7 @@ package body Xref_Lib is
       elsif Ali (Ptr) = '=' then
          declare
             P_Line, P_Column : Natural;
+
          begin
             Ptr := Ptr + 1;
             Parse_Number (Ali, Ptr, P_Line);
@@ -980,14 +1017,11 @@ package body Xref_Lib is
 
       if Wide_Search then
          declare
-            File_Existed : Boolean;
             File_Ref     : File_Reference;
             File_Name    : constant String :=
                              Get_Gnatchop_File (File.X_File);
-
          begin
-            Add_To_Xref_File
-              (ALI_File_Name (File_Name), File_Existed, File_Ref, False);
+            File_Ref := Add_To_Xref_File (ALI_File_Name (File_Name), False);
          end;
       end if;
 
@@ -1016,17 +1050,34 @@ package body Xref_Lib is
                Ptr := Ptr + 1;
             end if;
 
+            --  Imported entities might special indication as to their external
+            --  name:
+            --    5U14*Foo2 5>20 6b<c,myfoo2>22
+
+            if R_Type = 'b'
+              and then Ali (Ptr) = '<'
+            then
+               while Ptr <= Ali'Last
+                 and then Ali (Ptr) /= '>'
+               loop
+                  Ptr := Ptr + 1;
+               end loop;
+               Ptr := Ptr + 1;
+            end if;
+
             Parse_Number (Ali, Ptr, R_Col);
 
             --  Insert the reference or body in the table
 
-            Add_Reference (Decl_Ref, File_Ref, R_Line, R_Col, R_Type);
+            Add_Reference
+              (Decl_Ref, File_Ref, R_Line, R_Col, R_Type, Labels_As_Ref);
 
             --  Skip generic information, if any
 
             if Ali (Ptr) = '[' then
                declare
                   Num_Nested : Integer := 1;
+
                begin
                   Ptr := Ptr + 1;
                   while Num_Nested /= 0 loop
@@ -1035,6 +1086,7 @@ package body Xref_Lib is
                      elsif Ali (Ptr) = '[' then
                         Num_Nested := Num_Nested + 1;
                      end if;
+
                      Ptr := Ptr + 1;
                   end loop;
                end;
@@ -1056,9 +1108,9 @@ package body Xref_Lib is
    ------------------
 
    procedure Parse_Number
-     (Source    : access String;
-      Ptr       : in out Positive;
-      Number    : out Natural)
+     (Source : access String;
+      Ptr    : in out Positive;
+      Number : out Natural)
    is
    begin
       --  Skip separators
@@ -1069,8 +1121,8 @@ package body Xref_Lib is
 
       Number := 0;
       while Source (Ptr) in '0' .. '9' loop
-         Number := 10 * Number
-           + (Character'Pos (Source (Ptr)) - Character'Pos ('0'));
+         Number :=
+           10 * Number + (Character'Pos (Source (Ptr)) - Character'Pos ('0'));
          Ptr := Ptr + 1;
       end loop;
    end Parse_Number;
@@ -1084,7 +1136,7 @@ package body Xref_Lib is
       Ptr       : in out Positive;
       Token_Ptr : out Positive)
    is
-      In_Quotes : Boolean := False;
+      In_Quotes : Character := ASCII.NUL;
 
    begin
       --  Skip separators
@@ -1097,18 +1149,30 @@ package body Xref_Lib is
 
       --  Find end-of-token
 
-      while (In_Quotes or else
+      while (In_Quotes /= ASCII.NUL or else
                not (Source (Ptr) = ' '
-                    or else Source (Ptr) = ASCII.HT
-                    or else Source (Ptr) = '<'
-                    or else Source (Ptr) = '{'
-                    or else Source (Ptr) = '='
-                    or else Source (Ptr) = '('))
+                     or else Source (Ptr) = ASCII.HT
+                     or else Source (Ptr) = '<'
+                     or else Source (Ptr) = '{'
+                     or else Source (Ptr) = '='
+                     or else Source (Ptr) = '('))
         and then Source (Ptr) >= ' '
       loop
-         if Source (Ptr) = '"' then
-            In_Quotes := not In_Quotes;
-         end if;
+         --  Double-quotes are used for operators
+         --  Simple-quotes are used for character constants, for instance when
+         --  they are found in an enumeration type "type A is ('+', '-');"
+
+         case Source (Ptr) is
+            when '"' | ''' =>
+               if In_Quotes = Source (Ptr) then
+                  In_Quotes := ASCII.NUL;
+               elsif In_Quotes = ASCII.NUL then
+                  In_Quotes := Source (Ptr);
+               end if;
+
+            when others =>
+               null;
+         end case;
 
          Ptr := Ptr + 1;
       end loop;
@@ -1142,7 +1206,6 @@ package body Xref_Lib is
 
          Parse_EOL (Ali, Ptr);
       end loop;
-
    end Parse_X_Filename;
 
    --------------------
@@ -1153,9 +1216,9 @@ package body Xref_Lib is
      (References     : Boolean;
       Full_Path_Name : Boolean)
    is
-      Decl : Declaration_Reference := First_Declaration;
-      Ref1 : Reference;
-      Ref2 : Reference;
+      Decls : constant Declaration_Array_Access := Get_Declarations;
+      Decl  : Declaration_Reference;
+      Arr   : Reference_Array_Access;
 
       procedure Print_Ref
         (Ref : Reference;
@@ -1170,20 +1233,26 @@ package body Xref_Lib is
         (Ref : Reference;
          Msg : String := "      ")
       is
+         F : String_Access :=
+               Osint.To_Host_File_Spec
+                (Get_Gnatchop_File (Ref, Full_Path_Name));
+
          Buffer : constant String :=
-           Osint.To_Host_File_Spec
-             (Get_Gnatchop_File (Ref, Full_Path_Name)).all
-           & ":" & Get_Line (Ref)
-           & ":" & Get_Column (Ref)
-           & ": ";
+                    F.all &
+                    ":" & Get_Line (Ref)   &
+                    ":" & Get_Column (Ref) &
+                    ": ";
+
          Num_Blanks : Integer := Longest_File_Name + 10 - Buffer'Length;
 
       begin
+         Free (F);
          Num_Blanks := Integer'Max (0, Num_Blanks);
          Write_Line
            (Buffer
             & String'(1 .. Num_Blanks => ' ')
             & Msg & " " & Get_Symbol (Decl));
+
          if Get_Source_Line (Ref)'Length /= 0 then
             Write_Line ("   " & Get_Source_Line (Ref));
          end if;
@@ -1192,35 +1261,45 @@ package body Xref_Lib is
    --  Start of processing for Print_Gnatfind
 
    begin
-      while Decl /= Empty_Declaration loop
+      for D in Decls'Range loop
+         Decl := Decls (D);
+
          if Match (Decl) then
 
             --  Output the declaration
 
             declare
                Parent : constant Declaration_Reference := Get_Parent (Decl);
+
+               F : String_Access :=
+                     Osint.To_Host_File_Spec
+                      (Get_Gnatchop_File (Decl, Full_Path_Name));
+
                Buffer : constant String :=
-                 Osint.To_Host_File_Spec
-                   (Get_Gnatchop_File (Decl, Full_Path_Name)).all
-                 & ":" & Get_Line (Decl)
-                 & ":" & Get_Column (Decl)
-                 & ": ";
+                          F.all &
+                          ":" & Get_Line (Decl)   &
+                          ":" & Get_Column (Decl) &
+                          ": ";
+
                Num_Blanks : Integer := Longest_File_Name + 10 - Buffer'Length;
 
             begin
+               Free (F);
                Num_Blanks := Integer'Max (0, Num_Blanks);
                Write_Line
                  (Buffer & String'(1 .. Num_Blanks => ' ')
                   & "(spec) " & Get_Symbol (Decl));
 
                if Parent /= Empty_Declaration then
+                  F := Osint.To_Host_File_Spec (Get_Gnatchop_File (Parent));
                   Write_Line
                     (Buffer & String'(1 .. Num_Blanks => ' ')
                      & "   derived from " & Get_Symbol (Parent)
                      & " ("
-                     & Osint.To_Host_File_Spec (Get_Gnatchop_File (Parent)).all
+                     & F.all
                      & ':' & Get_Line (Parent)
                      & ':' & Get_Column (Parent) & ')');
+                  Free (F);
                end if;
             end;
 
@@ -1230,30 +1309,25 @@ package body Xref_Lib is
 
             --  Output the body (sorted)
 
-            Ref1 := First_Body (Decl);
-            while Ref1 /= Empty_Reference loop
-               Print_Ref (Ref1, "(body)");
-               Ref1 := Next (Ref1);
+            Arr := Get_References (Decl, Get_Bodies => True);
+
+            for R in Arr'Range loop
+               Print_Ref (Arr (R), "(body)");
             end loop;
 
+            Free (Arr);
+
             if References then
-               Ref1 := First_Modif (Decl);
-               Ref2 := First_Reference (Decl);
-               while Ref1 /= Empty_Reference
-                 or else Ref2 /= Empty_Reference
-               loop
-                  if Compare (Ref1, Ref2) = LessThan then
-                     Print_Ref (Ref1);
-                     Ref1 := Next (Ref1);
-                  else
-                     Print_Ref (Ref2);
-                     Ref2 := Next (Ref2);
-                  end if;
+               Arr := Get_References
+                 (Decl, Get_Writes => True, Get_Reads => True);
+
+               for R in Arr'Range loop
+                  Print_Ref (Arr (R));
                end loop;
+
+               Free (Arr);
             end if;
          end if;
-
-         Decl := Next (Decl);
       end loop;
    end Print_Gnatfind;
 
@@ -1262,41 +1336,48 @@ package body Xref_Lib is
    ------------------
 
    procedure Print_Unused (Full_Path_Name : in Boolean) is
-      Decl : Declaration_Reference := First_Declaration;
-      Ref  : Reference;
+      Decls : constant Declaration_Array_Access := Get_Declarations;
+      Decl  : Declaration_Reference;
+      Arr   : Reference_Array_Access;
+      F     : String_Access;
 
    begin
-      while Decl /= Empty_Declaration loop
-         if First_Modif (Decl) = Empty_Reference
-           and then First_Reference (Decl) = Empty_Reference
+      for D in Decls'Range loop
+         Decl := Decls (D);
+
+         if References_Count
+             (Decl, Get_Reads => True, Get_Writes => True) = 0
          then
+            F := Osint.To_Host_File_Spec
+              (Get_Gnatchop_File (Decl, Full_Path_Name));
             Write_Str (Get_Symbol (Decl)
-                      & " "
-                      & Get_Type (Decl)
-                      & " "
-                      & Osint.To_Host_File_Spec
-                         (Get_Gnatchop_File (Decl, Full_Path_Name)).all
-                      & ':'
-                      & Get_Line (Decl)
-                      & ':'
-                      & Get_Column (Decl));
+                        & " ("
+                        & Get_Full_Type (Decl)
+                        & ") "
+                        & F.all
+                        & ':'
+                        & Get_Line (Decl)
+                        & ':'
+                        & Get_Column (Decl));
+            Free (F);
 
             --  Print the body if any
 
-            Ref := First_Body (Decl);
+            Arr := Get_References (Decl, Get_Bodies => True);
 
-            if Ref /= Empty_Reference then
-               Write_Line (' '
-                          & Osint.To_Host_File_Spec
-                             (Get_Gnatchop_File (Ref, Full_Path_Name)).all
-                          & ':' & Get_Line (Ref)
-                          & ':' & Get_Column (Ref));
-            else
-               Write_Eol;
-            end if;
+            for R in Arr'Range loop
+               F := Osint.To_Host_File_Spec
+                      (Get_Gnatchop_File (Arr (R), Full_Path_Name));
+               Write_Str (' '
+                           & F.all
+                           & ':' & Get_Line (Arr (R))
+                           & ':' & Get_Column (Arr (R)));
+               Free (F);
+            end loop;
+
+            Write_Eol;
+            Free (Arr);
          end if;
-
-         Decl := Next (Decl);
       end loop;
    end Print_Unused;
 
@@ -1305,40 +1386,46 @@ package body Xref_Lib is
    --------------
 
    procedure Print_Vi (Full_Path_Name : in Boolean) is
-      Tab  : constant Character := ASCII.HT;
-      Decl : Declaration_Reference := First_Declaration;
-      Ref  : Reference;
+      Tab   : constant Character := ASCII.HT;
+      Decls : constant Declaration_Array_Access :=
+                Get_Declarations (Sorted => False);
+      Decl  : Declaration_Reference;
+      Arr   : Reference_Array_Access;
+      F     : String_Access;
 
    begin
-      while Decl /= Empty_Declaration loop
-         Write_Line (Get_Symbol (Decl) & Tab
-                            & Get_File (Decl, Full_Path_Name) & Tab
-                            & Get_Line (Decl));
+      for D in Decls'Range loop
+         Decl := Decls (D);
+
+         F := Osint.To_Host_File_Spec (Get_File (Decl, Full_Path_Name));
+         Write_Line (Get_Symbol (Decl) & Tab & F.all & Tab & Get_Line (Decl));
+         Free (F);
 
          --  Print the body if any
 
-         Ref := First_Body (Decl);
+         Arr := Get_References (Decl, Get_Bodies => True);
 
-         if Ref /= Empty_Reference then
-            Write_Line (Get_Symbol (Decl) & Tab
-                               & Get_File (Ref, Full_Path_Name)
-                               & Tab
-                               & Get_Line (Ref));
-         end if;
+         for R in Arr'Range loop
+            F := Osint.To_Host_File_Spec (Get_File (Arr (R), Full_Path_Name));
+            Write_Line
+              (Get_Symbol (Decl) & Tab & F.all & Tab  & Get_Line (Arr (R)));
+            Free (F);
+         end loop;
+
+         Free (Arr);
 
          --  Print the modifications
 
-         Ref := First_Modif (Decl);
+         Arr := Get_References (Decl, Get_Writes => True, Get_Reads => True);
 
-         while Ref /= Empty_Reference loop
-            Write_Line (Get_Symbol (Decl) & Tab
-                               & Get_File (Ref, Full_Path_Name)
-                               & Tab
-                               & Get_Line (Ref));
-            Ref := Next (Ref);
+         for R in Arr'Range loop
+            F := Osint.To_Host_File_Spec (Get_File (Arr (R), Full_Path_Name));
+            Write_Line
+              (Get_Symbol (Decl) & Tab & F.all & Tab & Get_Line (Arr (R)));
+            Free (F);
          end loop;
 
-         Decl := Next (Decl);
+         Free (Arr);
       end loop;
    end Print_Vi;
 
@@ -1347,9 +1434,8 @@ package body Xref_Lib is
    ----------------
 
    procedure Print_Xref (Full_Path_Name : in Boolean) is
-      Decl : Declaration_Reference := First_Declaration;
-      Ref  : Reference;
-      File : File_Reference;
+      Decls : constant Declaration_Array_Access := Get_Declarations;
+      Decl : Declaration_Reference;
 
       Margin : constant := 10;
       --  Column where file names start
@@ -1362,6 +1448,15 @@ package body Xref_Lib is
 
       procedure Print_Ref (Line, Column : String);
       --  The beginning of the output is aligned on a column multiple of 9
+
+      procedure Print_List
+        (Decl       : Declaration_Reference;
+         Msg        : String;
+         Get_Reads  : Boolean := False;
+         Get_Writes : Boolean := False;
+         Get_Bodies : Boolean := False);
+      --  Print a list of references. If the list is not empty, Msg will
+      --  be printed prior to the list.
 
       ----------------
       -- New_Line80 --
@@ -1379,6 +1474,7 @@ package body Xref_Lib is
 
       procedure Print80 (S : in String) is
          Align : Natural := Margin - (Integer (Column) mod Margin);
+
       begin
          if Align = Margin then
             Align := 0;
@@ -1412,25 +1508,76 @@ package body Xref_Lib is
          Write_Str (String'(1 .. Align => ' ') & S);
       end Print_Ref;
 
+      ----------------
+      -- Print_List --
+      ----------------
+
+      procedure Print_List
+        (Decl       : Declaration_Reference;
+         Msg        : String;
+         Get_Reads  : Boolean := False;
+         Get_Writes : Boolean := False;
+         Get_Bodies : Boolean := False)
+      is
+         Arr : Reference_Array_Access :=
+                 Get_References
+                   (Decl,
+                    Get_Writes => Get_Writes,
+                    Get_Reads  => Get_Reads,
+                    Get_Bodies => Get_Bodies);
+         File : File_Reference := Empty_File;
+         F    : String_Access;
+
+      begin
+         if Arr'Length /= 0 then
+            Write_Eol;
+            Write_Str (Msg);
+         end if;
+
+         for R in Arr'Range loop
+            if Get_File_Ref (Arr (R)) /= File then
+               if File /= Empty_File then
+                  New_Line80;
+               end if;
+
+               File := Get_File_Ref (Arr (R));
+               F := Osint.To_Host_File_Spec
+                 (Get_Gnatchop_File (Arr (R), Full_Path_Name));
+               Write_Str (F.all & ' ');
+               Free (F);
+            end if;
+
+            Print_Ref (Get_Line (Arr (R)), Get_Column (Arr (R)));
+         end loop;
+
+         Free (Arr);
+      end Print_List;
+
+      F : String_Access;
+
    --  Start of processing for Print_Xref
 
    begin
-      while Decl /= Empty_Declaration loop
+      for D in Decls'Range loop
+         Decl := Decls (D);
+
          Write_Str (Get_Symbol (Decl));
 
          while Column < Type_Position loop
             Write_Char (' ');
          end loop;
 
-         Write_Line (Get_Full_Type (Get_Type (Decl)));
+         Write_Line (Get_Full_Type (Decl));
 
          Write_Parent_Info : declare
             Parent : constant Declaration_Reference := Get_Parent (Decl);
+
          begin
             if Parent /= Empty_Declaration then
                Write_Str ("  Ptype: ");
-               Print80
-                 (Osint.To_Host_File_Spec (Get_Gnatchop_File (Parent)).all);
+               F := Osint.To_Host_File_Spec (Get_Gnatchop_File (Parent));
+               Print80 (F.all);
+               Free (F);
                Print_Ref (Get_Line (Parent), Get_Column (Parent));
                Print80 ("  " & Get_Symbol (Parent));
                Write_Eol;
@@ -1438,128 +1585,21 @@ package body Xref_Lib is
          end Write_Parent_Info;
 
          Write_Str ("  Decl:  ");
-         Print80
-           (Osint.To_Host_File_Spec
-             (Get_Gnatchop_File (Decl, Full_Path_Name)).all & ' ');
+         F := Osint.To_Host_File_Spec
+               (Get_Gnatchop_File (Decl, Full_Path_Name));
+         Print80 (F.all & ' ');
+         Free (F);
          Print_Ref (Get_Line (Decl), Get_Column (Decl));
 
-         --  Print the body if any
-
-         Ref := First_Body (Decl);
-
-         if Ref /= Empty_Reference then
-            Write_Eol;
-            Write_Str ("  Body:  ");
-            Print80
-              (Osint.To_Host_File_Spec
-                (Get_Gnatchop_File (Ref, Full_Path_Name)).all & ' ');
-            Print_Ref (Get_Line (Ref), Get_Column (Ref));
-         end if;
-
-         --  Print the modifications if any
-
-         Ref := First_Modif (Decl);
-
-         if Ref /= Empty_Reference then
-            Write_Eol;
-            Write_Str ("  Modi:  ");
-         end if;
-
-         File := Empty_File;
-
-         while Ref /= Empty_Reference loop
-            if Get_File_Ref (Ref) /= File then
-               if File /= Empty_File then
-                  New_Line80;
-               end if;
-
-               File := Get_File_Ref (Ref);
-               Write_Str
-                 (Get_Gnatchop_File (Ref, Full_Path_Name) & ' ');
-               Print_Ref (Get_Line (Ref), Get_Column (Ref));
-
-            else
-               Print_Ref (Get_Line (Ref), Get_Column (Ref));
-            end if;
-
-            Ref := Next (Ref);
-         end loop;
-
-         --  Print the references
-
-         Ref := First_Reference (Decl);
-
-         if Ref /= Empty_Reference then
-            Write_Eol;
-            Write_Str ("  Ref:   ");
-         end if;
-
-         File := Empty_File;
-
-         while Ref /= Empty_Reference loop
-            if Get_File_Ref (Ref) /= File then
-               if File /= Empty_File then
-                  New_Line80;
-               end if;
-
-               File := Get_File_Ref (Ref);
-               Write_Str
-                 (Osint.To_Host_File_Spec
-                   (Get_Gnatchop_File (Ref, Full_Path_Name)).all & ' ');
-               Print_Ref (Get_Line (Ref), Get_Column (Ref));
-
-            else
-               Print_Ref (Get_Line (Ref), Get_Column (Ref));
-            end if;
-
-            Ref := Next (Ref);
-         end loop;
-
+         Print_List
+           (Decl, "  Body:  ", Get_Bodies => True);
+         Print_List
+           (Decl, "  Modi:  ", Get_Writes => True);
+         Print_List
+           (Decl, "  Ref:   ", Get_Reads => True);
          Write_Eol;
-         Decl := Next (Decl);
       end loop;
    end Print_Xref;
-
-   ---------------
-   -- Read_File --
-   ---------------
-
-   procedure Read_File
-     (FD       : File_Descriptor;
-      Contents : out String_Access;
-      Success  : out Boolean)
-   is
-      Length : constant File_Offset := File_Offset (File_Length (FD));
-      --  Include room for EOF char
-
-      Buffer : String (1 .. Length + 1);
-
-      This_Read : Integer;
-      Read_Ptr  : File_Offset := 1;
-
-   begin
-
-      loop
-         This_Read := Read (FD,
-           A => Buffer (Read_Ptr)'Address,
-           N => Length + 1 - Read_Ptr);
-         Read_Ptr := Read_Ptr + Integer'Max (This_Read, 0);
-         exit when This_Read <= 0;
-      end loop;
-
-      Buffer (Read_Ptr) := EOF;
-      Contents := new String'(Buffer (1 .. Read_Ptr));
-
-      --  Things aren't simple on VMS due to the plethora of file types
-      --  and organizations. It seems clear that there shouldn't be more
-      --  bytes read than are contained in the file though.
-
-      if Hostparm.OpenVMS then
-         Success := Read_Ptr <= Length + 1;
-      else
-         Success := Read_Ptr = Length + 1;
-      end if;
-   end Read_File;
 
    ------------
    -- Search --
@@ -1576,10 +1616,10 @@ package body Xref_Lib is
       type String_Access is access String;
       procedure Free is new Unchecked_Deallocation (String, String_Access);
 
-      ALIfile    : ALI_File;
-      File_Ref   : File_Reference;
-      Strip_Num  : Natural := 0;
-      Ali_Name   : String_Access;
+      ALIfile   : ALI_File;
+      File_Ref  : File_Reference;
+      Strip_Num : Natural := 0;
+      Ali_Name  : String_Access;
 
    begin
       --  If we want all the .ali files, then find them
@@ -1606,7 +1646,8 @@ package body Xref_Lib is
             Ali_Name := new String'
               (Get_File (File_Ref, With_Dir => True, Strip => Strip_Num));
 
-            --  Striped too many things...
+            --  Stripped too many things...
+
             if Ali_Name.all = "" then
                if Get_Emit_Warning (File_Ref) then
                   Set_Standard_Error;
@@ -1618,29 +1659,45 @@ package body Xref_Lib is
                Free (Ali_Name);
                exit;
 
-               --  If not found, try the parent's ALI file (this is needed for
-               --  separate units and subprograms).
+            --  If not found, try the parent's ALI file (this is needed for
+            --  separate units and subprograms).
+
+            --  Reset the cached directory first, in case the separate's
+            --  ALI file is not in the same directory.
+
             elsif not File_Exists (Ali_Name.all) then
                Strip_Num := Strip_Num + 1;
+               Reset_Directory (File_Ref);
 
-               --  Else we finally found it
+            --  Else we finally found it
+
             else
                exit;
             end if;
          end loop;
 
+         --  If we had to get the parent's ALI, insert it in the list as usual.
+         --  This is to avoid parsing it twice in case it has already been
+         --  parsed.
+
+         if Ali_Name /= null and then Strip_Num /= 0 then
+            File_Ref := Add_To_Xref_File
+              (File_Name => Ali_Name.all,
+               Visited   => False);
+
          --  Now that we have a file name, parse it to find any reference to
          --  the entity.
 
-         if Ali_Name /= null
+         elsif Ali_Name /= null
            and then (Read_Only or else Is_Writable_File (Ali_Name.all))
          then
             begin
                Open (Ali_Name.all, ALIfile);
                while ALIfile.Buffer (ALIfile.Current_Line) /= EOF loop
                   Parse_X_Filename (ALIfile);
-                  Parse_Identifier_Info (Pattern, ALIfile, Local_Symbols,
-                     Der_Info, Type_Tree, Wide_Search);
+                  Parse_Identifier_Info
+                    (Pattern, ALIfile, Local_Symbols,
+                     Der_Info, Type_Tree, Wide_Search, Labels_As_Ref => True);
                end loop;
 
             exception
@@ -1668,10 +1725,13 @@ package body Xref_Lib is
       Read_Only     : Boolean;
       Der_Info      : Boolean)
    is
-      ALIfile    : ALI_File;
-      File_Ref   : File_Reference;
+      ALIfile      : ALI_File;
+      File_Ref     : File_Reference;
       Null_Pattern : Search_Pattern;
+
    begin
+      Null_Pattern.Initialized := False;
+
       loop
          --  Find the next unvisited file
 
@@ -1680,22 +1740,24 @@ package body Xref_Lib is
 
          --  Search the object directories for the .ali file
 
-         if Read_Only
-           or else Is_Writable_File (Get_File (File_Ref, With_Dir => True))
-         then
-            begin
-               Open (Get_File (File_Ref, With_Dir => True), ALIfile, True);
+         declare
+            F : constant String := Get_File (File_Ref, With_Dir => True);
+
+         begin
+            if Read_Only or else Is_Writable_File (F) then
+               Open (F, ALIfile, True);
 
                while ALIfile.Buffer (ALIfile.Current_Line) /= EOF loop
                   Parse_X_Filename (ALIfile);
                   Parse_Identifier_Info
-                    (Null_Pattern, ALIfile, Local_Symbols, Der_Info);
+                    (Null_Pattern, ALIfile, Local_Symbols, Der_Info,
+                     Labels_As_Ref => False);
                end loop;
+            end if;
 
-            exception
-               when No_Xref_Information =>  null;
-            end;
-         end if;
+         exception
+            when No_Xref_Information =>  null;
+         end;
       end loop;
    end Search_Xref;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,6 +30,7 @@ with Einfo;    use Einfo;
 with Exp_Ch3;  use Exp_Ch3;
 with Exp_Ch6;  use Exp_Ch6;
 with Exp_Imgv; use Exp_Imgv;
+with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -170,12 +171,11 @@ package body Exp_Ch13 is
    procedure Expand_External_Tag_Definition (N : Node_Id) is
       Loc     : constant Source_Ptr := Sloc (N);
       Ent     : constant Entity_Id  := Entity (Name (N));
-      E       : Entity_Id;
-      Old_Val : String_Id := Strval (Expr_Value_S (Expression (N)));
+      Old_Val : constant String_Id  := Strval (Expr_Value_S (Expression (N)));
       New_Val : String_Id;
+      E       : Entity_Id;
 
    begin
-
       --  For the rep clause "for x'external_tag use y" generate:
 
       --     xV : constant string := y;
@@ -262,6 +262,12 @@ package body Exp_Ch13 is
 
       E_Scope := Scope (E);
 
+      --  This is an error protection against previous errors
+
+      if No (E_Scope) then
+         return;
+      end if;
+
       --  If we are freezing entities defined in protected types, they
       --  belong in the enclosing scope, given that the original type
       --  has been expanded away. The same is true for entities in task types,
@@ -322,13 +328,14 @@ package body Exp_Ch13 is
          elsif Is_Tagged_Type (E)
            and then Is_First_Subtype (E)
          then
-
             --  Check for a definition of External_Tag, whose expansion must
             --  be delayed until the dispatch table is built.
 
             declare
-               Def : Node_Id :=
-                  Get_Attribute_Definition_Clause (E, Attribute_External_Tag);
+               Def : constant Node_Id :=
+                       Get_Attribute_Definition_Clause
+                         (E, Attribute_External_Tag);
+
             begin
                if Present (Def) then
                   Expand_External_Tag_Definition (Def);
@@ -354,8 +361,9 @@ package body Exp_Ch13 is
          while Present (Decl) loop
 
             if Nkind (Decl) = N_Subprogram_Body
-              and then (Chars (Defining_Entity (Decl)) = Name_uInit_Proc
-                 or else Chars (Defining_Entity (Decl)) = Name_uAssign)
+              and then (Is_Init_Proc (Defining_Entity (Decl))
+                          or else
+                            Chars (Defining_Entity (Decl)) = Name_uAssign)
             then
                Analyze (Decl);
 

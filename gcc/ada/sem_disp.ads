@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ package Sem_Disp is
    procedure Check_Dispatching_Operation (Subp, Old_Subp : Entity_Id);
    --  Add "Subp" to the list of primitive operations of the corresponding type
    --  if it has a parameter of this type and is defined at a proper place for
-   --  primitive operations. (new primitives are only defined in package spec,
+   --  primitive operations (new primitives are only defined in package spec,
    --  overridden operation can be defined in any scope). If Old_Subp is not
    --  Empty we are in the overriding case.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -41,17 +41,22 @@ generic
 package System.Address_To_Access_Conversions is
 pragma Preelaborate (Address_To_Access_Conversions);
 
+   pragma Compile_Time_Warning
+     (Object'Unconstrained_Array,
+      "Object is unconstrained array type" & ASCII.LF &
+      "To_Pointer results may not have bounds");
+
+   xyz : Boolean := Object'Constrained;
+
    type Object_Pointer is access all Object;
    for Object_Pointer'Size use Standard'Address_Size;
 
    function To_Pointer (Value : Address)        return Object_Pointer;
    function To_Address (Value : Object_Pointer) return Address;
 
-   pragma Convention (Intrinsic, To_Pointer);
-   pragma Convention (Intrinsic, To_Address);
+   pragma Import (Intrinsic, To_Pointer);
+   pragma Import (Intrinsic, To_Address);
 
 private
-   pragma Inline_Always (To_Pointer);
-   pragma Inline_Always (To_Address);
-
+   procedure Nothing;   --  For now, until body is removed ???
 end System.Address_To_Access_Conversions;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -180,10 +180,45 @@ package body Sync is
          end if;
       end loop;
 
-      --  Fall out of loop with resyncrhonization complete
+      --  Fall out of loop with resynchronization complete
 
       Resync_Resume;
    end Resync_Past_Semicolon;
+
+   -------------------------
+   -- Resync_To_Semicolon --
+   -------------------------
+
+   procedure Resync_To_Semicolon is
+   begin
+      Resync_Init;
+
+      loop
+         --  Done if we are at a semicolon
+
+         if Token = Tok_Semicolon then
+            exit;
+
+         --  Done if we are at a token which normally appears only after
+         --  a semicolon. One special glitch is that the keyword private is
+         --  in this category only if it does NOT appear after WITH.
+
+         elsif Token in Token_Class_After_SM
+            and then (Token /= Tok_Private or else Prev_Token /= Tok_With)
+         then
+            exit;
+
+         --  Otherwise keep going
+
+         else
+            Scan;
+         end if;
+      end loop;
+
+      --  Fall out of loop with resynchronization complete
+
+      Resync_Resume;
+   end Resync_To_Semicolon;
 
    ----------------------------------------------
    -- Resync_Past_Semicolon_Or_To_Loop_Or_Then --
@@ -204,9 +239,8 @@ package body Sync is
          --  a semicolon. One special glitch is that the keyword private is
          --  in this category only if it does NOT appear after WITH.
 
-         elsif (Token in Token_Class_After_SM
-                  and then (Token /= Tok_Private
-                              or else Prev_Token /= Tok_With))
+         elsif Token in Token_Class_After_SM
+           and then (Token /= Tok_Private or else Prev_Token /= Tok_With)
          then
             exit;
 

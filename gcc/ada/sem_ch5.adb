@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,6 +46,7 @@ with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -66,15 +67,26 @@ package body Sem_Ch5 is
 
    procedure Analyze_Iteration_Scheme (N : Node_Id);
 
+   procedure Check_Possible_Current_Value_Condition (Cnode : Node_Id);
+   --  Cnode is N_If_Statement, N_Elsif_Part, or N_Iteration_Scheme
+   --  (the latter when a WHILE condition is present). This call checks
+   --  if Condition (Cnode) is of the form ([NOT] var op val), where var
+   --  is a simple object, val is known at compile time, and op is one
+   --  of the six relational operators. If this is the case, and the
+   --  Current_Value field of "var" is not set, then it is set to Cnode.
+   --  See Exp_Util.Set_Current_Value_Condition for further details.
+
    ------------------------
    -- Analyze_Assignment --
    ------------------------
 
    procedure Analyze_Assignment (N : Node_Id) is
-      Lhs    : constant Node_Id := Name (N);
-      Rhs    : constant Node_Id := Expression (N);
-      T1, T2 : Entity_Id;
-      Decl   : Node_Id;
+      Lhs  : constant Node_Id := Name (N);
+      Rhs  : constant Node_Id := Expression (N);
+      T1   : Entity_Id;
+      T2   : Entity_Id;
+      Decl : Node_Id;
+      Ent  : Entity_Id;
 
       procedure Diagnose_Non_Variable_Lhs (N : Node_Id);
       --  N is the node for the left hand side of an assignment, and it
@@ -141,7 +153,6 @@ package body Sem_Ch5 is
          --  If we fall through, we have no special message to issue!
 
          Error_Msg_N ("left hand side of assignment must be a variable", N);
-
       end Diagnose_Non_Variable_Lhs;
 
       -------------------------
@@ -153,23 +164,36 @@ package body Sem_Ch5 is
          Opnd_Type : in out Entity_Id)
       is
       begin
+         Require_Entity (Opnd);
+
          --  If the assignment operand is an in-out or out parameter, then we
          --  get the actual subtype (needed for the unconstrained case).
+         --  If the operand is the actual in an entry declaration, then within
+         --  the accept statement it is replaced with a local renaming, which
+         --  may also have an actual subtype.
 
          if Is_Entity_Name (Opnd)
            and then (Ekind (Entity (Opnd)) = E_Out_Parameter
                       or else Ekind (Entity (Opnd)) =
                            E_In_Out_Parameter
                       or else Ekind (Entity (Opnd)) =
-                           E_Generic_In_Out_Parameter)
+                           E_Generic_In_Out_Parameter
+                      or else
+                        (Ekind (Entity (Opnd)) = E_Variable
+                          and then Nkind (Parent (Entity (Opnd))) =
+                             N_Object_Renaming_Declaration
+                          and then Nkind (Parent (Parent (Entity (Opnd)))) =
+                             N_Accept_Statement))
          then
             Opnd_Type := Get_Actual_Subtype (Opnd);
 
          --  If assignment operand is a component reference, then we get the
          --  actual subtype of the component for the unconstrained case.
 
-         elsif Nkind (Opnd) = N_Selected_Component
-           or else Nkind (Opnd) = N_Explicit_Dereference
+         elsif
+           (Nkind (Opnd) = N_Selected_Component
+             or else Nkind (Opnd) = N_Explicit_Dereference)
+           and then not Is_Unchecked_Union (Opnd_Type)
          then
             Decl := Build_Actual_Subtype_Of_Component (Opnd_Type, Opnd);
 
@@ -213,7 +237,6 @@ package body Sem_Ch5 is
 
             while Present (It.Typ) loop
                if Has_Compatible_Type (Rhs, It.Typ) then
-
                   if T1 /= Any_Type then
 
                      --  An explicit dereference is overloaded if the prefix
@@ -232,8 +255,9 @@ package body Sem_Ch5 is
                            Get_First_Interp (Prefix (Lhs), PI, PIt);
 
                            while Present (PIt.Typ) loop
-                              if Has_Compatible_Type (Rhs,
-                                Designated_Type (PIt.Typ))
+                              if Is_Access_Type (PIt.Typ)
+                                and then Has_Compatible_Type
+                                           (Rhs, Designated_Type (PIt.Typ))
                               then
                                  if Found then
                                     PIt :=
@@ -241,7 +265,10 @@ package body Sem_Ch5 is
                                         PI1, PI, Any_Type);
 
                                     if PIt = No_Interp then
-                                       return;
+                                       Error_Msg_N
+                                         ("ambiguous left-hand side"
+                                            & " in assignment", Lhs);
+                                       exit;
                                     else
                                        Resolve (Prefix (Lhs), PIt.Typ);
                                     end if;
@@ -290,6 +317,7 @@ package body Sem_Ch5 is
       then
          Error_Msg_N
            ("left hand of assignment must not be limited type", Lhs);
+         Explain_Limited_Type (T1, Lhs);
          return;
       end if;
 
@@ -302,7 +330,7 @@ package body Sem_Ch5 is
 
       Resolve (Rhs, T1);
 
-      --  Remaining steps are skipped if Rhs was synatactically in error
+      --  Remaining steps are skipped if Rhs was syntactically in error
 
       if Rhs = Error then
          return;
@@ -310,7 +338,6 @@ package body Sem_Ch5 is
 
       T2 := Etype (Rhs);
       Check_Unset_Reference (Rhs);
-      Note_Possible_Modification (Lhs);
 
       if Covers (T1, T2) then
          null;
@@ -320,6 +347,16 @@ package body Sem_Ch5 is
       end if;
 
       Set_Assignment_Type (Rhs, T2);
+
+      if Total_Errors_Detected /= 0 then
+         if No (T1) then
+            T1 := Any_Type;
+         end if;
+
+         if No (T2) then
+            T2 := Any_Type;
+         end if;
+      end if;
 
       if T1 = Any_Type or else T2 = Any_Type then
          return;
@@ -353,10 +390,19 @@ package body Sem_Ch5 is
       if Is_Scalar_Type (T1) then
          Apply_Scalar_Range_Check (Rhs, Etype (Lhs));
 
-      elsif Is_Array_Type (T1) then
+      elsif Is_Array_Type (T1)
+        and then
+          (Nkind (Rhs) /= N_Type_Conversion
+             or else Is_Constrained (Etype (Rhs)))
+      then
 
          --  Assignment verifies that the length of the Lsh and Rhs are equal,
-         --  but of course the indices do not have to match.
+         --  but of course the indices do not have to match. If the right-hand
+         --  side is a type conversion to an unconstrained type, a length check
+         --  is performed on the expression itself during expansion. In rare
+         --  cases, the redundant length check is computed on an index type
+         --  with a different representation, triggering incorrect code in
+         --  the back end.
 
          Apply_Length_Check (Rhs, Etype (Lhs));
 
@@ -378,8 +424,8 @@ package body Sem_Ch5 is
          --  Where the entity is the same on both sides
 
          and then Is_Entity_Name (Lhs)
-         and then Is_Entity_Name (Rhs)
-         and then Entity (Lhs) = Entity (Rhs)
+         and then Is_Entity_Name (Original_Node (Rhs))
+         and then Entity (Lhs) = Entity (Original_Node (Rhs))
 
          --  But exclude the case where the right side was an operation
          --  that got rewritten (e.g. JUNK + K, where K was known to be
@@ -392,6 +438,46 @@ package body Sem_Ch5 is
          Error_Msg_NE
            ("?useless assignment of & to itself", N, Entity (Lhs));
       end if;
+
+      Note_Possible_Modification (Lhs);
+
+      --  Check for non-allowed composite assignment
+
+      if not Support_Composite_Assign_On_Target
+        and then (Is_Array_Type (T1) or else Is_Record_Type (T1))
+        and then (not Has_Size_Clause (T1) or else Esize (T1) > 64)
+      then
+         Error_Msg_CRT ("composite assignment", N);
+      end if;
+
+      --  One more step. Let's see if we have a simple assignment of a
+      --  known at compile time value to a simple variable. If so, we
+      --  can record the value as the current value providing that:
+
+      --    We still have a simple assignment statement (no expansion
+      --    activity has modified it in some peculiar manner)
+
+      --    The type is a discrete type
+
+      --    The assignment is to a named entity
+
+      --    The value is known at compile time
+
+      if Nkind (N) /= N_Assignment_Statement
+        or else not Is_Discrete_Type (T1)
+        or else not Is_Entity_Name (Lhs)
+        or else not Compile_Time_Known_Value (Rhs)
+      then
+         return;
+      end if;
+
+      Ent := Entity (Lhs);
+
+      --  Capture value if save to do so
+
+      if Safe_To_Capture_Value (N, Ent) then
+         Set_Current_Value (Ent, Rhs);
+      end if;
    end Analyze_Assignment;
 
    -----------------------------
@@ -401,7 +487,7 @@ package body Sem_Ch5 is
    procedure Analyze_Block_Statement (N : Node_Id) is
       Decls : constant List_Id := Declarations (N);
       Id    : constant Node_Id := Identifier (N);
-      Ent   : Entity_Id;
+      Ent   : Entity_Id        := Empty;
 
    begin
       --  If a label is present analyze it and mark it as referenced
@@ -409,19 +495,35 @@ package body Sem_Ch5 is
       if Present (Id) then
          Analyze (Id);
          Ent := Entity (Id);
-         Set_Ekind (Ent, E_Block);
-         Generate_Reference (Ent, N, ' ');
-         Generate_Definition (Ent);
 
-         if Nkind (Parent (Ent)) = N_Implicit_Label_Declaration then
-            Set_Label_Construct (Parent (Ent), N);
+         --  An error defense. If we have an identifier, but no entity, then
+         --  something is wrong. If we have previous errors, then just remove
+         --  the identifier and continue, otherwise raise an exception.
+
+         if No (Ent) then
+            if Total_Errors_Detected /= 0 then
+               Set_Identifier (N, Empty);
+            else
+               raise Program_Error;
+            end if;
+
+         else
+            Set_Ekind (Ent, E_Block);
+            Generate_Reference (Ent, N, ' ');
+            Generate_Definition (Ent);
+
+            if Nkind (Parent (Ent)) = N_Implicit_Label_Declaration then
+               Set_Label_Construct (Parent (Ent), N);
+            end if;
          end if;
+      end if;
 
-      --  Otherwise create a label entity
+      --  If no entity set, create a label entity
 
-      else
+      if No (Ent) then
          Ent := New_Internal_Entity (E_Block, Current_Scope, Sloc (N), 'B');
          Set_Identifier (N, New_Occurrence_Of (Ent, Sloc (N)));
+         Set_Parent (Ent, N);
       end if;
 
       Set_Etype (Ent, Standard_Void_Type);
@@ -453,9 +555,7 @@ package body Sem_Ch5 is
                Set_Has_Nested_Block_With_Handler (S);
                exit when Is_Overloadable (S)
                  or else Ekind (S) = E_Package
-                 or else Ekind (S) = E_Generic_Function
-                 or else Ekind (S) = E_Generic_Package
-                 or else Ekind (S) = E_Generic_Procedure;
+                 or else Is_Generic_Unit (S);
                S := Scope (S);
             end loop;
          end;
@@ -482,7 +582,7 @@ package body Sem_Ch5 is
 
       procedure Non_Static_Choice_Error (Choice : Node_Id);
       --  Error routine invoked by the generic instantiation below when
-      --  the case statement has a non static choice.
+      --  the case statment has a non static choice.
 
       procedure Process_Statements (Alternative : Node_Id);
       --  Analyzes all the statements associated to a case alternative.
@@ -504,7 +604,8 @@ package body Sem_Ch5 is
 
       procedure Non_Static_Choice_Error (Choice : Node_Id) is
       begin
-         Error_Msg_N ("choice given in case statement is not static", Choice);
+         Flag_Non_Static_Expr
+           ("choice given in case statement is not static!", Choice);
       end Non_Static_Choice_Error;
 
       ------------------------
@@ -598,6 +699,27 @@ package body Sem_Ch5 is
          Check_Unreachable_Code (N);
       else
          Unblocked_Exit_Count := Save_Unblocked_Exit_Count;
+      end if;
+
+      if not Expander_Active
+        and then Compile_Time_Known_Value (Expression (N))
+        and then Serious_Errors_Detected = 0
+      then
+         declare
+            Chosen : Node_Id := Find_Static_Alternative (N);
+            Alt    : Node_Id;
+
+         begin
+            Alt := First (Alternatives (N));
+
+            while Present (Alt) loop
+               if Alt /= Chosen then
+                  Remove_Warning_Messages (Statements (Alt));
+               end if;
+
+               Next (Alt);
+            end loop;
+         end;
       end if;
    end Analyze_Case_Statement;
 
@@ -708,7 +830,6 @@ package body Sem_Ch5 is
       end loop;
 
       raise Program_Error;
-
    end Analyze_Goto_Statement;
 
    --------------------------
@@ -716,19 +837,24 @@ package body Sem_Ch5 is
    --------------------------
 
    --  A special complication arises in the analysis of if statements.
-   --  The expander has circuitry to completely deleted code that it
+
+   --  The expander has circuitry to completely delete code that it
    --  can tell will not be executed (as a result of compile time known
    --  conditions). In the analyzer, we ensure that code that will be
    --  deleted in this manner is analyzed but not expanded. This is
    --  obviously more efficient, but more significantly, difficulties
    --  arise if code is expanded and then eliminated (e.g. exception
-   --  table entries disappear).
+   --  table entries disappear). Similarly, itypes generated in deleted
+   --  code must be frozen from start, because the nodes on which they
+   --  depend will not be available at the freeze point.
 
    procedure Analyze_If_Statement (N : Node_Id) is
       E : Node_Id;
 
       Save_Unblocked_Exit_Count : constant Nat := Unblocked_Exit_Count;
       --  Recursively save value of this global, will be restored on exit
+
+      Save_In_Deleted_Code : Boolean;
 
       Del : Boolean := False;
       --  This flag gets set True if a True condition has been found,
@@ -739,6 +865,10 @@ package body Sem_Ch5 is
       --  to an N_Elsif_Part node. It deals with analyzing the condition
       --  and the THEN statements associated with it.
 
+      -----------------------
+      -- Analyze_Cond_Then --
+      -----------------------
+
       procedure Analyze_Cond_Then (Cnode : Node_Id) is
          Cond : constant Node_Id := Condition (Cnode);
          Tstm : constant List_Id := Then_Statements (Cnode);
@@ -747,6 +877,7 @@ package body Sem_Ch5 is
          Unblocked_Exit_Count := Unblocked_Exit_Count + 1;
          Analyze_And_Resolve (Cond, Any_Boolean);
          Check_Unset_Reference (Cond);
+         Check_Possible_Current_Value_Condition (Cnode);
 
          --  If already deleting, then just analyze then statements
 
@@ -756,6 +887,7 @@ package body Sem_Ch5 is
          --  Compile time known value, not deleting yet
 
          elsif Compile_Time_Known_Value (Cond) then
+            Save_In_Deleted_Code := In_Deleted_Code;
 
             --  If condition is True, then analyze the THEN statements
             --  and set no expansion for ELSE and ELSIF parts.
@@ -764,13 +896,16 @@ package body Sem_Ch5 is
                Analyze_Statements (Tstm);
                Del := True;
                Expander_Mode_Save_And_Set (False);
+               In_Deleted_Code := True;
 
             --  If condition is False, analyze THEN with expansion off
 
             else -- Is_False (Expr_Value (Cond))
                Expander_Mode_Save_And_Set (False);
+               In_Deleted_Code := True;
                Analyze_Statements (Tstm);
                Expander_Mode_Restore;
+               In_Deleted_Code := Save_In_Deleted_Code;
             end if;
 
          --  Not known at compile time, not deleting, normal analysis
@@ -817,8 +952,29 @@ package body Sem_Ch5 is
 
       if Del then
          Expander_Mode_Restore;
+         In_Deleted_Code := Save_In_Deleted_Code;
       end if;
 
+      if not Expander_Active
+        and then Compile_Time_Known_Value (Condition (N))
+        and then Serious_Errors_Detected = 0
+      then
+         if Is_True (Expr_Value (Condition (N))) then
+            Remove_Warning_Messages (Else_Statements (N));
+
+            if Present (Elsif_Parts (N)) then
+               E := First (Elsif_Parts (N));
+
+               while Present (E) loop
+                  Remove_Warning_Messages (Then_Statements (E));
+                  Next (E);
+               end loop;
+            end if;
+
+         else
+            Remove_Warning_Messages (Then_Statements (N));
+         end if;
+      end if;
    end Analyze_If_Statement;
 
    ----------------------------------------
@@ -833,10 +989,10 @@ package body Sem_Ch5 is
    --  Analyze_Label_Entity.
 
    procedure Analyze_Implicit_Label_Declaration (N : Node_Id) is
-      Id : Node_Id := Defining_Identifier (N);
+      Id : constant Node_Id := Defining_Identifier (N);
 
    begin
-      Enter_Name (Id);
+      Enter_Name          (Id);
       Set_Ekind           (Id, E_Label);
       Set_Etype           (Id, Standard_Void_Type);
       Set_Enclosing_Scope (Id, Current_Scope);
@@ -872,7 +1028,6 @@ package body Sem_Ch5 is
                   LP : constant Node_Id   := Loop_Parameter_Specification (N);
                   Id : constant Entity_Id := Defining_Identifier (LP);
                   DS : constant Node_Id   := Discrete_Subtype_Definition (LP);
-                  F  : List_Id;
 
                begin
                   Enter_Name (Id);
@@ -932,12 +1087,15 @@ package body Sem_Ch5 is
                   Set_Is_Known_Valid (Id, True);
 
                   --  The loop is not a declarative part, so the only entity
-                  --  declared "within" must be frozen explicitly. Since the
-                  --  type of this entity has already been frozen, this cannot
-                  --  generate any freezing actions.
+                  --  declared "within" must be frozen explicitly.
 
-                  F := Freeze_Entity (Id, Sloc (LP));
-                  pragma Assert (F = No_List);
+                  declare
+                     Flist : constant List_Id := Freeze_Entity (Id, Sloc (N));
+                  begin
+                     if Is_Non_Empty_List (Flist) then
+                        Insert_Actions (N, Flist);
+                     end if;
+                  end;
 
                   --  Check for null or possibly null range and issue warning.
                   --  We suppress such messages in generic templates and
@@ -946,8 +1104,6 @@ package body Sem_Ch5 is
 
                   if Nkind (DS) = N_Range
                     and then Comes_From_Source (N)
-                    and then not Inside_A_Generic
-                    and then not In_Instance
                   then
                      declare
                         L : constant Node_Id := Low_Bound  (DS);
@@ -967,13 +1123,41 @@ package body Sem_Ch5 is
                         --  If range of loop is null, issue warning
 
                         if (LOK and HOK) and then Llo > Hhi then
-                           Error_Msg_N
-                             ("?loop range is null, loop will not execute",
-                              DS);
+
+                           --  Suppress the warning if inside a generic
+                           --  template or instance, since in practice
+                           --  they tend to be dubious in these cases since
+                           --  they can result from intended parametrization.
+
+                           if not Inside_A_Generic
+                              and then not In_Instance
+                           then
+                              Error_Msg_N
+                                ("?loop range is null, loop will not execute",
+                                 DS);
+                           end if;
+
+                           --  Since we know the range of the loop is null,
+                           --  set the appropriate flag to suppress any
+                           --  warnings that would otherwise be issued in
+                           --  the body of the loop that will not execute.
+                           --  We do this even in the generic case, since
+                           --  if it is dubious to warn on the null loop
+                           --  itself, it is certainly dubious to warn for
+                           --  conditions that occur inside it!
+
+                           Set_Is_Null_Loop (Parent (N));
 
                         --  The other case for a warning is a reverse loop
                         --  where the upper bound is the integer literal
                         --  zero or one, and the lower bound can be positive.
+
+                        --  For example, we have
+
+                        --     for J in reverse N .. 1 loop
+
+                        --  In practice, this is very likely to be a case
+                        --  of reversing the bounds incorrectly in the range.
 
                         elsif Reverse_Present (LP)
                           and then Nkind (H) = N_Integer_Literal
@@ -982,9 +1166,7 @@ package body Sem_Ch5 is
                                     Intval (H) = Uint_1)
                           and then Lhi > Hhi
                         then
-                           Warn_On_Instance := True;
                            Error_Msg_N ("?loop range may be null", DS);
-                           Warn_On_Instance := False;
                         end if;
                      end;
                   end if;
@@ -998,41 +1180,18 @@ package body Sem_Ch5 is
    -- Analyze_Label --
    -------------------
 
-   --  Important note: normally this routine is called from Analyze_Statements
-   --  which does a prescan, to make sure that the Reachable flags are set on
-   --  all labels before encountering a possible goto to one of these labels.
-   --  If expanded code analyzes labels via the normal Sem path, then it must
-   --  ensure that Reachable is set early enough to avoid problems in the case
-   --  of a forward goto.
+   --  Note: the semantic work required for analyzing labels (setting them as
+   --  reachable) was done in a prepass through the statements in the block,
+   --  so that forward gotos would be properly handled. See Analyze_Statements
+   --  for further details. The only processing required here is to deal with
+   --  optimizations that depend on an assumption of sequential control flow,
+   --  since of course the occurrence of a label breaks this assumption.
 
    procedure Analyze_Label (N : Node_Id) is
-      Lab : Entity_Id;
+      pragma Warnings (Off, N);
 
    begin
-      Analyze (Identifier (N));
-      Lab := Entity (Identifier (N));
-
-      --  If we found a label mark it as reachable.
-
-      if Ekind (Lab) = E_Label then
-         Generate_Definition (Lab);
-         Set_Reachable (Lab);
-
-         if Nkind (Parent (Lab)) = N_Implicit_Label_Declaration then
-            Set_Label_Construct (Parent (Lab), N);
-         end if;
-
-      --  If we failed to find a label, it means the implicit declaration
-      --  of the label was hidden.  A for-loop parameter can do this to a
-      --  label with the same name inside the loop, since the implicit label
-      --  declaration is in the innermost enclosing body or block statement.
-
-      else
-         Error_Msg_Sloc := Sloc (Lab);
-         Error_Msg_N
-           ("implicit label declaration for & is hidden#",
-            Identifier (N));
-      end if;
+      Kill_Current_Values;
    end Analyze_Label;
 
    --------------------------
@@ -1088,11 +1247,18 @@ package body Sem_Ch5 is
          Set_Parent (Ent, N);
       end if;
 
+      --  Kill current values on entry to loop, since statements in body
+      --  of loop may have been executed before the loop is entered.
+      --  Similarly we kill values after the loop, since we do not know
+      --  that the body of the loop was executed.
+
+      Kill_Current_Values;
       New_Scope (Ent);
       Analyze_Iteration_Scheme (Iteration_Scheme (N));
       Analyze_Statements (Statements (N));
       Process_End_Label (N, 'e', Ent);
       End_Scope;
+      Kill_Current_Values;
    end Analyze_Loop_Statement;
 
    ----------------------------
@@ -1114,7 +1280,8 @@ package body Sem_Ch5 is
    ------------------------
 
    procedure Analyze_Statements (L : List_Id) is
-      S : Node_Id;
+      S   : Node_Id;
+      Lab : Entity_Id;
 
    begin
       --  The labels declared in the statement list are reachable from
@@ -1123,10 +1290,33 @@ package body Sem_Ch5 is
       --  reachable. This is not required, but is nice behavior!
 
       S := First (L);
-
       while Present (S) loop
          if Nkind (S) = N_Label then
-            Analyze_Label (S);
+            Analyze (Identifier (S));
+            Lab := Entity (Identifier (S));
+
+            --  If we found a label mark it as reachable.
+
+            if Ekind (Lab) = E_Label then
+               Generate_Definition (Lab);
+               Set_Reachable (Lab);
+
+               if Nkind (Parent (Lab)) = N_Implicit_Label_Declaration then
+                  Set_Label_Construct (Parent (Lab), S);
+               end if;
+
+            --  If we failed to find a label, it means the implicit declaration
+            --  of the label was hidden.  A for-loop parameter can do this to
+            --  a label with the same name inside the loop, since the implicit
+            --  label declaration is in the innermost enclosing body or block
+            --  statement.
+
+            else
+               Error_Msg_Sloc := Sloc (Lab);
+               Error_Msg_N
+                 ("implicit label declaration for & is hidden#",
+                  Identifier (S));
+            end if;
          end if;
 
          Next (S);
@@ -1134,16 +1324,15 @@ package body Sem_Ch5 is
 
       --  Perform semantic analysis on all statements
 
+      Conditional_Statements_Begin;
+
       S := First (L);
-
       while Present (S) loop
-
-         if Nkind (S) /= N_Label then
-            Analyze (S);
-         end if;
-
+         Analyze (S);
          Next (S);
       end loop;
+
+      Conditional_Statements_End;
 
       --  Make labels unreachable. Visibility is not sufficient, because
       --  labels in one if-branch for example are not reachable from the
@@ -1151,7 +1340,6 @@ package body Sem_Ch5 is
       --  declarative part.
 
       S := First (L);
-
       while Present (S) loop
          if Nkind (S) = N_Label then
             Set_Reachable (Entity (Identifier (S)), False);
@@ -1160,6 +1348,72 @@ package body Sem_Ch5 is
          Next (S);
       end loop;
    end Analyze_Statements;
+
+   --------------------------------------------
+   -- Check_Possible_Current_Value_Condition --
+   --------------------------------------------
+
+   procedure Check_Possible_Current_Value_Condition (Cnode : Node_Id) is
+      Cond : Node_Id;
+
+   begin
+      --  Loop to deal with (ignore for now) any NOT operators present
+
+      Cond := Condition (Cnode);
+      while Nkind (Cond) = N_Op_Not loop
+         Cond := Right_Opnd (Cond);
+      end loop;
+
+      --  Check possible relational operator
+
+      if Nkind (Cond) = N_Op_Eq
+           or else
+         Nkind (Cond) = N_Op_Ne
+           or else
+         Nkind (Cond) = N_Op_Ge
+           or else
+         Nkind (Cond) = N_Op_Le
+           or else
+         Nkind (Cond) = N_Op_Gt
+           or else
+         Nkind (Cond) = N_Op_Lt
+      then
+         if Compile_Time_Known_Value (Right_Opnd (Cond))
+           and then Nkind (Left_Opnd (Cond)) = N_Identifier
+         then
+            declare
+               Ent : constant Entity_Id := Entity (Left_Opnd (Cond));
+
+            begin
+               if Ekind (Ent) = E_Variable
+                    or else
+                  Ekind (Ent) = E_Constant
+                    or else
+                  Is_Formal (Ent)
+                    or else
+                  Ekind (Ent) = E_Loop_Parameter
+               then
+                  --  Here we have a case where the Current_Value field
+                  --  may need to be set. We set it if it is not already
+                  --  set to a compile time expression value.
+
+                  --  Note that this represents a decision that one
+                  --  condition blots out another previous one. That's
+                  --  certainly right if they occur at the same level.
+                  --  If the second one is nested, then the decision is
+                  --  neither right nor wrong (it would be equally OK
+                  --  to leave the outer one in place, or take the new
+                  --  inner one. Really we should record both, but our
+                  --  data structures are not that elaborate.
+
+                  if Nkind (Current_Value (Ent)) not in N_Subexpr then
+                     Set_Current_Value (Ent, Cnode);
+                  end if;
+               end if;
+            end;
+         end if;
+      end if;
+   end Check_Possible_Current_Value_Condition;
 
    ----------------------------
    -- Check_Unreachable_Code --
@@ -1213,7 +1467,15 @@ package body Sem_Ch5 is
                   if Operating_Mode = Generate_Code then
                      loop
                         Nxt := Next (N);
-                        exit when No (Nxt) or else not Is_Statement (Nxt);
+
+                        --  Quit deleting when we have nothing more to delete
+                        --  or if we hit a label (since someone could transfer
+                        --  control to a label, so we should not delete it).
+
+                        exit when No (Nxt) or else Nkind (Nxt) = N_Label;
+
+                        --  Statement/declaration is to be deleted
+
                         Analyze (Nxt);
                         Remove (Nxt);
                         Kill_Dead_Code (Nxt);

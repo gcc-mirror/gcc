@@ -6,7 +6,6 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                                                                          *
  *          Copyright (C) 1992-2003, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
@@ -31,6 +30,7 @@
 #include "tm.h"
 #include "tree.h"
 #include "flags.h"
+#include "output.h"
 #include "ada.h"
 #include "types.h"
 #include "atree.h"
@@ -137,15 +137,31 @@ get_ada_base_type (type)
 
 /* EXP is a GCC tree representing an address.  See if we can find how
    strictly the object at that address is aligned.   Return that alignment
-   in bits.  If we don't know anything about the alignment, return 0.
-   We do not go merely by type information here since the check on
-   N_Validate_Unchecked_Alignment does that.  */
+   in bits.  If we don't know anything about the alignment, return 0.  */
 
 unsigned int
 known_alignment (exp)
      tree exp;
 {
+  unsigned int this_alignment;
   unsigned int lhs, rhs;
+  unsigned int type_alignment;
+
+  /* For pointer expressions, we know that the designated object is always at
+     least as strictly aligned as the designated subtype, so we account for
+     both type and expression information in this case.
+
+     Beware that we can still get a dummy designated subtype here (e.g. Taft
+     Amendement types), in which the alignment information is meaningless and
+     should be ignored.
+
+     We always compute a type_alignment value and return the MAX of it
+     compared with what we get from the expression tree. Just set the
+     type_alignment value to 0 when the type information is to be ignored.  */
+  type_alignment 
+    = ((POINTER_TYPE_P (TREE_TYPE (exp)) 
+	&& ! TYPE_IS_DUMMY_P (TREE_TYPE (TREE_TYPE (exp))))
+       ? TYPE_ALIGN (TREE_TYPE (TREE_TYPE (exp))) : 0);
 
   switch (TREE_CODE (exp))
     {
@@ -154,7 +170,8 @@ known_alignment (exp)
     case NON_LVALUE_EXPR:
       /* Conversions between pointers and integers don't change the alignment
 	 of the underlying object.  */
-      return known_alignment (TREE_OPERAND (exp, 0));
+      this_alignment = known_alignment (TREE_OPERAND (exp, 0));	 
+      break;
 
     case PLUS_EXPR:
     case MINUS_EXPR:
@@ -162,31 +179,40 @@ known_alignment (exp)
 	 minimum of the two aligments.  */
       lhs = known_alignment (TREE_OPERAND (exp, 0));
       rhs = known_alignment (TREE_OPERAND (exp, 1));
-      return MIN (lhs, rhs);
+      this_alignment = MIN (lhs, rhs);
+      break;
 
     case INTEGER_CST:
       /* The first part of this represents the lowest bit in the constant,
 	 but is it in bytes, not bits.  */
-      return MIN (BITS_PER_UNIT
+      this_alignment
+	= MIN (BITS_PER_UNIT
 		  * (TREE_INT_CST_LOW (exp) & - TREE_INT_CST_LOW (exp)),
 		  BIGGEST_ALIGNMENT);
+      break;
 
     case MULT_EXPR:
       /* If we know the alignment of just one side, use it.  Otherwise,
 	 use the product of the alignments.  */
       lhs = known_alignment (TREE_OPERAND (exp, 0));
       rhs = known_alignment (TREE_OPERAND (exp, 1));
-      if (lhs == 0 || rhs == 0)
-	return MIN (BIGGEST_ALIGNMENT, MAX (lhs, rhs));
 
-      return MIN (BIGGEST_ALIGNMENT, lhs * rhs);
+      if (lhs == 0 || rhs == 0)
+	this_alignment = MIN (BIGGEST_ALIGNMENT, MAX (lhs, rhs));
+      else
+	this_alignment = MIN (BIGGEST_ALIGNMENT, lhs * rhs);
+      break;
 
     case ADDR_EXPR:
-      return expr_align (TREE_OPERAND (exp, 0));
+      this_alignment = expr_align (TREE_OPERAND (exp, 0));
+      break;
 
     default:
-      return 0;
+      this_alignment = 0;
+      break;
     }
+
+  return MAX (type_alignment, this_alignment);
 }
 
 /* We have a comparison or assignment operation on two types, T1 and T2,
@@ -366,10 +392,10 @@ compare_arrays (result_type, a1, a2)
 
 	  comparison = build_binary_op (LT_EXPR, result_type, ub, lb);
 
-	  if (contains_placeholder_p (comparison))
+	  if (CONTAINS_PLACEHOLDER_P (comparison))
 	    comparison = build (WITH_RECORD_EXPR, result_type,
 				comparison, a1);
-	  if (contains_placeholder_p (length1))
+	  if (CONTAINS_PLACEHOLDER_P (length1))
 	    length1 = build (WITH_RECORD_EXPR, bt, length1, a1);
 
 	  length_zero_p = 1;
@@ -397,9 +423,9 @@ compare_arrays (result_type, a1, a2)
 	  /* Note that we know that UB2 and LB2 are constant and hence
 	     cannot contain a PLACEHOLDER_EXPR.  */
 
-	  if (contains_placeholder_p (comparison))
+	  if (CONTAINS_PLACEHOLDER_P (comparison))
 	    comparison = build (WITH_RECORD_EXPR, result_type, comparison, a1);
-	  if (contains_placeholder_p (length1))
+	  if (CONTAINS_PLACEHOLDER_P (length1))
 	    length1 = build (WITH_RECORD_EXPR, bt, length1, a1);
 
 	  this_a1_is_null = build_binary_op (LT_EXPR, result_type, ub1, lb1);
@@ -409,9 +435,9 @@ compare_arrays (result_type, a1, a2)
       /* Otherwise compare the computed lengths.  */
       else
 	{
-	  if (contains_placeholder_p (length1))
+	  if (CONTAINS_PLACEHOLDER_P (length1))
 	    length1 = build (WITH_RECORD_EXPR, bt, length1, a1);
-	  if (contains_placeholder_p (length2))
+	  if (CONTAINS_PLACEHOLDER_P (length2))
 	    length2 = build (WITH_RECORD_EXPR, bt, length2, a2);
 
 	  comparison
@@ -445,7 +471,6 @@ compare_arrays (result_type, a1, a2)
 
       if (type != 0)
 	a1 = convert (type, a1), a2 = convert (type, a2);
-
 
       result = build_binary_op (TRUTH_ANDIF_EXPR, result_type, result,
 				fold (build (EQ_EXPR, result_type, a1, a2)));
@@ -770,8 +795,7 @@ build_binary_op (op_code, result_type, left_operand, right_operand)
 	 involves a placeholder, since the RHS may not have the same
 	 record type.  */
       if (operation_type != right_type
-	  && (! (TREE_CODE (TYPE_SIZE (operation_type)) != INTEGER_CST
-		 && contains_placeholder_p (TYPE_SIZE (operation_type)))))
+	  && (! CONTAINS_PLACEHOLDER_P (TYPE_SIZE (operation_type))))
 	{
 	  /* For a variable-size type, with both BLKmode, convert using
 	     CONVERT_EXPR instead of an unchecked conversion since we don't
@@ -818,8 +842,7 @@ build_binary_op (op_code, result_type, left_operand, right_operand)
       right_operand = convert (TYPE_DOMAIN (left_type), right_operand);
 
       if (! TREE_CONSTANT (right_operand)
-	  || ! TREE_CONSTANT (TYPE_MIN_VALUE (right_type))
-	  || op_code == ARRAY_RANGE_REF)
+	  || ! TREE_CONSTANT (TYPE_MIN_VALUE (right_type)))
 	gnat_mark_addressable (left_operand);
 
       modulus = 0;
@@ -911,9 +934,9 @@ build_binary_op (op_code, result_type, left_operand, right_operand)
 		best_type = left_base_type;
 	      else if (TREE_CONSTANT (TYPE_SIZE (right_base_type)))
 		best_type = right_base_type;
-	      else if (! contains_placeholder_p (TYPE_SIZE (left_base_type)))
+	      else if (! CONTAINS_PLACEHOLDER_P (TYPE_SIZE (left_base_type)))
 		best_type = left_base_type;
-	      else if (! contains_placeholder_p (TYPE_SIZE (right_base_type)))
+	      else if (! CONTAINS_PLACEHOLDER_P (TYPE_SIZE (right_base_type)))
 		best_type = right_base_type;
 	      else
 		gigi_abort (504);
@@ -1163,7 +1186,7 @@ build_unary_op (op_code, result_type, operand)
 		 and we need to have that type visible.  */
 	      if (TREE_CODE (TREE_TYPE (inner)) == RECORD_TYPE
 		  && TYPE_IS_PADDING_P (TREE_TYPE (inner))
-		  && (contains_placeholder_p
+		  && (CONTAINS_PLACEHOLDER_P
 		      (TYPE_SIZE (TREE_TYPE (TYPE_FIELDS
 					     (TREE_TYPE (inner)))))))
 		inner = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (inner))),
@@ -1238,6 +1261,17 @@ build_unary_op (op_code, result_type, operand)
 	default:
 	common:
 
+	  /* If we are taking the address of a padded record whose field is
+	     contains a template, take the address of the template.  */
+	  if (TREE_CODE (type) == RECORD_TYPE
+	      && TYPE_IS_PADDING_P (type)
+	      && TREE_CODE (TREE_TYPE (TYPE_FIELDS (type))) == RECORD_TYPE
+	      && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (TYPE_FIELDS (type))))
+	    {
+	      type = TREE_TYPE (TYPE_FIELDS (type));
+	      operand = convert (type, operand);
+	    }
+
 	  if (type != error_mark_node)
 	    operation_type = build_pointer_type (type);
 
@@ -1275,8 +1309,8 @@ build_unary_op (op_code, result_type, operand)
 	  TREE_READONLY (result) = TREE_READONLY (TREE_TYPE (type));
 	}
 
-      side_effects = (! TYPE_FAT_POINTER_P (type)
-		      && TYPE_VOLATILE (TREE_TYPE (type)));
+      side_effects
+	=  (! TYPE_FAT_POINTER_P (type) && TYPE_VOLATILE (TREE_TYPE (type)));
       break;
 
     case NEGATE_EXPR:
@@ -1399,8 +1433,7 @@ build_cond_expr (result_type, condition_operand, true_operand, false_operand)
      the operands and then dereference our result.  */
 
   if (TREE_CODE (result_type) == UNCONSTRAINED_ARRAY_TYPE
-      || (TREE_CODE (TYPE_SIZE (result_type)) != INTEGER_CST
-	  && contains_placeholder_p (TYPE_SIZE (result_type))))
+      || CONTAINS_PLACEHOLDER_P (TYPE_SIZE (result_type)))
     {
       addr_p = 1;
       result_type = build_pointer_type (result_type);
@@ -1413,20 +1446,17 @@ build_cond_expr (result_type, condition_operand, true_operand, false_operand)
 
   /* If either operand is a SAVE_EXPR (possibly surrounded by
      arithmetic, make sure it gets done.  */
-  while (TREE_CODE_CLASS (TREE_CODE (true_operand)) == '1'
-	 || (TREE_CODE_CLASS (TREE_CODE (true_operand)) == '2'
-	    && TREE_CONSTANT (TREE_OPERAND (true_operand, 1))))
-    true_operand = TREE_OPERAND (true_operand, 0);
-
-  while (TREE_CODE_CLASS (TREE_CODE (false_operand)) == '1'
-	 || (TREE_CODE_CLASS (TREE_CODE (false_operand)) == '2'
-	    && TREE_CONSTANT (TREE_OPERAND (false_operand, 1))))
-    false_operand = TREE_OPERAND (false_operand, 0);
+  true_operand  = skip_simple_arithmetic (true_operand);
+  false_operand = skip_simple_arithmetic (false_operand);
 
   if (TREE_CODE (true_operand) == SAVE_EXPR)
     result = build (COMPOUND_EXPR, result_type, true_operand, result);
+
   if (TREE_CODE (false_operand) == SAVE_EXPR)
     result = build (COMPOUND_EXPR, result_type, false_operand, result);
+
+  /* ??? Seems the code above is wrong, as it may move ahead of the COND
+     SAVE_EXPRs with side effects and not shared by both arms.  */
 
  if (addr_p)
     result = build_unary_op (INDIRECT_REF, NULL_TREE, result);
@@ -1528,7 +1558,9 @@ gnat_build_constructor (type, list)
       if (! TREE_CONSTANT (TREE_VALUE (elmt))
 	  || (TREE_CODE (type) == RECORD_TYPE
 	      && DECL_BIT_FIELD (TREE_PURPOSE (elmt))
-	      && TREE_CODE (TREE_VALUE (elmt)) != INTEGER_CST))
+	      && TREE_CODE (TREE_VALUE (elmt)) != INTEGER_CST)
+	  || ! initializer_constant_valid_p (TREE_VALUE (elmt),
+					     TREE_TYPE (TREE_VALUE (elmt))))
 	allconstant = 0;
 
       if (TREE_SIDE_EFFECTS (TREE_VALUE (elmt)))
@@ -1665,7 +1697,7 @@ build_simple_component_ref (record_variable, component, field)
       || TYPE_VOLATILE (record_type))
     TREE_THIS_VOLATILE (ref) = 1;
 
-  return ref;
+  return fold (ref);
 }
 
 /* Like build_simple_component_ref, except that we give an error if the
@@ -1704,16 +1736,18 @@ build_component_ref (record_variable, component, field)
    object dynamically on the stack frame.  */
 
 tree
-build_call_alloc_dealloc (gnu_obj, gnu_size, align, gnat_proc, gnat_pool)
+build_call_alloc_dealloc
+  (gnu_obj, gnu_size, align, gnat_proc, gnat_pool, gnat_node)
      tree gnu_obj;
      tree gnu_size;
      int align;
      Entity_Id gnat_proc;
      Entity_Id gnat_pool;
+     Node_Id gnat_node;
 {
   tree gnu_align = size_int (align / BITS_PER_UNIT);
 
-  if (TREE_CODE (gnu_size) != INTEGER_CST && contains_placeholder_p (gnu_size))
+  if (CONTAINS_PLACEHOLDER_P (gnu_size))
     gnu_size = build (WITH_RECORD_EXPR, sizetype, gnu_size,
 		      build_unary_op (INDIRECT_REF, NULL_TREE, gnu_obj));
 
@@ -1812,7 +1846,11 @@ build_call_alloc_dealloc (gnu_obj, gnu_size, align, gnat_proc, gnat_pool)
 	return build (ALLOCATE_EXPR, ptr_void_type_node, gnu_size, gnu_align);
     }
   else
-    return build_call_1_expr (malloc_decl, gnu_size);
+    {
+      if (Nkind (gnat_node) != N_Allocator || !Comes_From_Source (gnat_node))
+        Check_No_Implicit_Heap_Alloc (gnat_node);
+      return build_call_1_expr (malloc_decl, gnu_size);
+    }
 }
 
 /* Build a GCC tree to correspond to allocating an object of TYPE whose
@@ -1822,12 +1860,13 @@ build_call_alloc_dealloc (gnu_obj, gnu_size, align, gnat_proc, gnat_pool)
    the storage pool to use.  */
 
 tree
-build_allocator (type, init, result_type, gnat_proc, gnat_pool)
+build_allocator (type, init, result_type, gnat_proc, gnat_pool, gnat_node)
      tree type;
      tree init;
      tree result_type;
      Entity_Id gnat_proc;
      Entity_Id gnat_pool;
+     Node_Id gnat_node;
 {
   tree size = TYPE_SIZE_UNIT (type);
   tree result;
@@ -1854,8 +1893,7 @@ build_allocator (type, init, result_type, gnat_proc, gnat_pool)
 
       size = TYPE_SIZE_UNIT (storage_type);
 
-      if (TREE_CODE (size) != INTEGER_CST
-	  && contains_placeholder_p (size))
+      if (CONTAINS_PLACEHOLDER_P (size))
 	size = build (WITH_RECORD_EXPR, sizetype, size, init);
 
       /* If the size overflows, pass -1 so the allocator will raise
@@ -1865,7 +1903,7 @@ build_allocator (type, init, result_type, gnat_proc, gnat_pool)
 
       storage = build_call_alloc_dealloc (NULL_TREE, size,
 					  TYPE_ALIGN (storage_type),
-					  gnat_proc, gnat_pool);
+					  gnat_proc, gnat_pool, gnat_node);
       storage = convert (storage_ptr_type, protect_multiple_eval (storage));
 
       if (TREE_CODE (type) == RECORD_TYPE && TYPE_IS_PADDING_P (type))
@@ -1916,15 +1954,14 @@ build_allocator (type, init, result_type, gnat_proc, gnat_pool)
      than the size from the type.  */
   if (init != 0 && TYPE_SIZE_UNIT (TREE_TYPE (init)) != 0
       && (TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (init))) == INTEGER_CST
-	  || (TREE_CODE (size) != INTEGER_CST
-	      && contains_placeholder_p (size))))
+	  || CONTAINS_PLACEHOLDER_P (size)))
     size = TYPE_SIZE_UNIT (TREE_TYPE (init));
 
   /* If the size is still self-referential, reference the initializing
      expression, if it is present.  If not, this must have been a
      call to allocate a library-level object, in which case we use
      the maximum size.  */
-  if (TREE_CODE (size) != INTEGER_CST && contains_placeholder_p (size))
+  if (CONTAINS_PLACEHOLDER_P (size))
     {
       if (init == 0)
 	size = max_size (size, 1);
@@ -1946,8 +1983,9 @@ build_allocator (type, init, result_type, gnat_proc, gnat_pool)
     {
       tree new_type = make_aligning_type (type, TYPE_ALIGN (type), size);
 
-      result = build_call_alloc_dealloc (NULL_TREE, TYPE_SIZE (new_type),
-					 BIGGEST_ALIGNMENT, Empty, Empty);
+      result = build_call_alloc_dealloc (NULL_TREE, TYPE_SIZE_UNIT (new_type),
+					 BIGGEST_ALIGNMENT, Empty,
+					 Empty, gnat_node);
       result = save_expr (result);
       result = convert (build_pointer_type (new_type), result);
       result = build_unary_op (INDIRECT_REF, NULL_TREE, result);
@@ -1960,7 +1998,9 @@ build_allocator (type, init, result_type, gnat_proc, gnat_pool)
     result = convert (result_type,
 		      build_call_alloc_dealloc (NULL_TREE, size,
 						TYPE_ALIGN (type),
-						gnat_proc, gnat_pool));
+						gnat_proc,
+						gnat_pool,
+						gnat_node));
 
   /* If we have an initial value, put the new address into a SAVE_EXPR, assign
      the value, and return the address.  Do this with a COMPOUND_EXPR.  */
@@ -2000,8 +2040,7 @@ fill_vms_descriptor (expr, gnat_formal)
     {
       tree init = DECL_INITIAL (field);
 
-      if (TREE_CODE (init) != INTEGER_CST
-	  && contains_placeholder_p (init))
+      if (CONTAINS_PLACEHOLDER_P (init))
 	init = build (WITH_RECORD_EXPR, TREE_TYPE (init), init, expr);
 
       const_list = tree_cons (field, convert (TREE_TYPE (field), init),
@@ -2027,6 +2066,10 @@ gnat_mark_addressable (expr_node)
       case ARRAY_RANGE_REF:
       case REALPART_EXPR:
       case IMAGPART_EXPR:
+      case VIEW_CONVERT_EXPR:
+      case CONVERT_EXPR:
+      case NON_LVALUE_EXPR:
+      case GNAT_NOP_EXPR:
       case NOP_EXPR:
 	expr_node = TREE_OPERAND (expr_node, 0);
 	break;
@@ -2038,7 +2081,7 @@ gnat_mark_addressable (expr_node)
       case VAR_DECL:
       case PARM_DECL:
       case RESULT_DECL:
-	put_var_into_stack (expr_node, /*rescan=*/true);
+	put_var_into_stack (expr_node, true);
 	TREE_ADDRESSABLE (expr_node) = 1;
 	return true;
 

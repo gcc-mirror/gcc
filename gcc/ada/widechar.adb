@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -153,6 +153,7 @@ package body Widechar is
       function WC_Skip is new Char_Sequence_To_Wide_Char (Skip_Char);
 
       Discard : Wide_Character;
+      pragma Warnings (Off, Discard);
 
    begin
       Discard := WC_Skip (Skip_Char, Wide_Character_Encoding_Method);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,9 +57,13 @@ package Sem_Cat is
    --  (RM 10.2.1(16)).
 
    procedure Set_Categorization_From_Pragmas (N : Node_Id);
-   --  Since validation of categorization dependency is done during analyze
-   --  so categorization flags from following pragmas should be set before
+   --  Since validation of categorization dependency is done during Analyze,
+   --  categorization flags from following pragmas should be set before
    --  validation begin. N is the N_Compilation_Unit node.
+
+   procedure Set_Categorization_From_Scope (E : Entity_Id; Scop : Entity_Id);
+   --  Set categorization flags Pure, Remote_Call_Interface and Remote_Types
+   --  on entity E according to those of Scop.
 
    procedure Validate_Access_Type_Declaration (T : Entity_Id; N : Node_Id);
    --  Validate all constraints against declaration of access types in
@@ -105,12 +109,6 @@ package Sem_Cat is
    --  type for an allocator shall not be a remote access-to-class-wide
    --  type. And a remote access-to-class-wide type shall not be an actual
    --  parameter for a generic formal access type. RM E.2.3(22).
-
-   procedure Validate_Remote_Access_To_Subprogram_Type (N : Node_Id);
-   --  Checks that a remote access to subprogram type does not have a
-   --  parameter of an access type. This is not strictly forbidden at this
-   --  time, but this is useless, as such a RAS type will not be usable
-   --  per E.2.2(12) and E.2.3(14).
 
    procedure Validate_RT_RAT_Component (N : Node_Id);
    --  Given N, the package library unit declaration node, we should check

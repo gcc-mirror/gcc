@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -248,7 +248,6 @@ package body Sem_Dist is
    procedure Process_Partition_Id (N : Node_Id) is
       Loc            : constant Source_Ptr := Sloc (N);
       Ety            : Entity_Id;
-      Nd             : Node_Id;
       Get_Pt_Id      : Node_Id;
       Get_Pt_Id_Call : Node_Id;
       Prefix_String  : String_Id;
@@ -266,8 +265,6 @@ package body Sem_Dist is
       loop
          Ety := Scope (Ety);
       end loop;
-
-      Nd := Enclosing_Lib_Unit_Node (N);
 
       --  Retrieve the proper function to call.
 
@@ -319,7 +316,6 @@ package body Sem_Dist is
 
       Rewrite (N, Convert_To (Typ, Get_Pt_Id_Call));
       Analyze_And_Resolve (N, Typ);
-
    end Process_Partition_Id;
 
    ----------------------------------
@@ -334,12 +330,9 @@ package body Sem_Dist is
       Remote_Subp           : Entity_Id;
       Tick_Access_Conv_Call : Node_Id;
       Remote_Subp_Decl      : Node_Id;
-      RAS_Decl              : Node_Id;
       RS_Pkg_Specif         : Node_Id;
       RS_Pkg_E              : Entity_Id;
-      RAS_Pkg_E             : Entity_Id;
       RAS_Type              : Entity_Id;
-      RAS_Name              : Name_Id;
       Async_E               : Entity_Id;
       Subp_Id               : Int;
       Attribute_Subp        : Entity_Id;
@@ -360,7 +353,7 @@ package body Sem_Dist is
          --  If the remote type has not been constructed yet, create
          --  it and its attributes now.
 
-         Attribute_Subp := TSS (New_Type, Name_uRAS_Access);
+         Attribute_Subp := TSS (New_Type, TSS_RAS_Access);
 
          if No (Attribute_Subp) then
             Add_RAST_Features (Parent (New_Type));
@@ -369,11 +362,7 @@ package body Sem_Dist is
          RAS_Type := Equivalent_Type (New_Type);
       end if;
 
-      RAS_Name  := Chars (RAS_Type);
-      RAS_Decl := Parent (RAS_Type);
-      Attribute_Subp := TSS (RAS_Type, Name_uRAS_Access);
-
-      RAS_Pkg_E  := Defining_Entity (Parent (RAS_Decl));
+      Attribute_Subp := TSS (RAS_Type, TSS_RAS_Access);
       Remote_Subp_Decl := Unit_Declaration_Node (Remote_Subp);
 
       if Nkind (Remote_Subp_Decl) = N_Subprogram_Body then
@@ -394,11 +383,6 @@ package body Sem_Dist is
          Async_E := Standard_False;
       end if;
 
-      --  Right now, we do not call the Name_uAddress_Resolver subprogram,
-      --  which means that we end up with a Null_Address value in the ras
-      --  field: each dereference of an RAS will go through the PCS, which
-      --  is authorized but potentially not very efficient ???
-
       Parameter := New_Occurrence_Of (RTE (RE_Null_Address), Loc);
 
       Tick_Access_Conv_Call :=
@@ -413,7 +397,6 @@ package body Sem_Dist is
 
       Rewrite (N, Tick_Access_Conv_Call);
       Analyze_And_Resolve (N, RAS_Type);
-
    end Process_Remote_AST_Attribute;
 
    ------------------------------------
@@ -490,14 +473,13 @@ package body Sem_Dist is
       --  The reason we suppress the initialization procedure is that we know
       --  that no initialization is required (even if Initialize_Scalars mode
       --  is active), and there are order of elaboration problems if we do try
-      --  to generate an Init_Proc for this created record type.
+      --  to generate an init proc for this created record type.
 
       Set_Suppress_Init_Proc (Fat_Type);
 
       if Expander_Active then
          Add_RAST_Features (Parent (User_Type));
       end if;
-
    end Process_Remote_AST_Declaration;
 
    -----------------------
@@ -542,14 +524,14 @@ package body Sem_Dist is
          return;
       end if;
 
-      Deref_Proc := TSS (New_Type, Name_uRAS_Dereference);
+      Deref_Proc := TSS (New_Type, TSS_RAS_Dereference);
 
       if not Expander_Active then
          return;
 
       elsif No (Deref_Proc) then
          Add_RAST_Features (RAS_Decl);
-         Deref_Proc := TSS (New_Type, Name_uRAS_Dereference);
+         Deref_Proc := TSS (New_Type, TSS_RAS_Dereference);
       end if;
 
       if Ekind (Deref_Proc) = E_Function then

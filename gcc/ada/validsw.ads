@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -82,6 +82,15 @@ package Validsw is
    --  pragma, then operands of all predefined operators and attributes
    --  will be validity checked.
 
+   Validity_Check_Parameters : Boolean := False;
+   --  This controls validity treatment for parameters within a subprogram.
+   --  Normally if validity checking is enabled for parameters on a call
+   --  (Validity_Check_In[_Out]_Params) then an assumption is made that the
+   --  parameter values are valid on entry and not checked again within a
+   --  procedure. Setting Validity_Check_Parameters removes this assumption
+   --  and ensures that no assumptions are made about parameters, so that
+   --  they will always be checked.
+
    Validity_Check_Returns : Boolean := False;
    --  Controls validity checking of returned values. If this switch is set
    --  to True using -gnatVr, or an 'r' in the argument of a Validity_Checks
@@ -101,6 +110,11 @@ package Validsw is
    --  tests in IF, WHILE, and EXIT statements, and in entry guards). If this
    --  switch is set to True using -gnatVt, or a 't' in the argument of a
    --  Validity_Checks pragma, then all such conditions are validity checked.
+
+   Force_Validity_Checks : Boolean := False;
+   --  Normally, operands that do not come from source (i.e. cases of expander
+   --  generated code) are not checked, if this flag is set True, then checking
+   --  of such operands is forced (if Validity_Check_Operands is set).
 
    -----------------
    -- Subprograms --

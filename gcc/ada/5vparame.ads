@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -141,8 +141,8 @@ pragma Pure (Parameters);
    ---------------------
 
    --  In the following sections, constant parameters are defined to
-   --  allow some optimizations within the tasking run time based on
-   --  restrictions on the tasking features.
+   --  allow some optimizations and fine tuning within the tasking run time
+   --  based on restrictions on the tasking features.
 
    ----------------------
    -- Locking Strategy --
@@ -181,6 +181,14 @@ pragma Pure (Parameters);
    --  poll for pending base priority changes at every abort completion
    --  point. A value of False for Dynamic_Priority_Support corresponds
    --  to pragma Restrictions (No_Dynamic_Priorities);
+
+   ---------------------
+   -- Task Attributes --
+   ---------------------
+
+   Default_Attribute_Count : constant := 4;
+   --  Number of pre-allocated Address-sized task attributes stored in the
+   --  task control block.
 
    --------------------
    -- Runtime Traces --

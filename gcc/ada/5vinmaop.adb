@@ -7,7 +7,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---             Copyright (C) 1991-2001 Florida State University             --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,9 +27,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -37,6 +36,8 @@
 
 with System.OS_Interface;
 --  used for various type, constant, and operations
+
+with System.Parameters;
 
 with System.Tasking;
 
@@ -51,6 +52,7 @@ with Unchecked_Conversion;
 package body System.Interrupt_Management.Operations is
 
    use System.OS_Interface;
+   use System.Parameters;
    use System.Tasking;
    use type unsigned_short;
 
@@ -62,6 +64,7 @@ package body System.Interrupt_Management.Operations is
    ----------------------------
 
    procedure Thread_Block_Interrupt (Interrupt : Interrupt_ID) is
+      pragma Warnings (Off, Interrupt);
    begin
       null;
    end Thread_Block_Interrupt;
@@ -71,6 +74,7 @@ package body System.Interrupt_Management.Operations is
    ------------------------------
 
    procedure Thread_Unblock_Interrupt (Interrupt : Interrupt_ID) is
+      pragma Warnings (Off, Interrupt);
    begin
       null;
    end Thread_Unblock_Interrupt;
@@ -80,13 +84,17 @@ package body System.Interrupt_Management.Operations is
    ------------------------
 
    procedure Set_Interrupt_Mask (Mask : access Interrupt_Mask) is
+      pragma Warnings (Off, Mask);
    begin
       null;
    end Set_Interrupt_Mask;
 
    procedure Set_Interrupt_Mask
      (Mask  : access Interrupt_Mask;
-      OMask : access Interrupt_Mask) is
+      OMask : access Interrupt_Mask)
+   is
+      pragma Warnings (Off, Mask);
+      pragma Warnings (Off, OMask);
    begin
       null;
    end Set_Interrupt_Mask;
@@ -96,6 +104,7 @@ package body System.Interrupt_Management.Operations is
    ------------------------
 
    procedure Get_Interrupt_Mask (Mask : access Interrupt_Mask) is
+      pragma Warnings (Off, Mask);
    begin
       null;
    end Get_Interrupt_Mask;
@@ -153,8 +162,18 @@ package body System.Interrupt_Management.Operations is
             end if;
          else
             POP.Unlock (Self_ID);
+
+            if Single_Lock then
+               POP.Unlock_RTS;
+            end if;
+
             System.Tasking.Initialization.Undefer_Abort (Self_ID);
             System.Tasking.Initialization.Defer_Abort (Self_ID);
+
+            if Single_Lock then
+               POP.Lock_RTS;
+            end if;
+
             POP.Write_Lock (Self_ID);
          end if;
       end loop;
@@ -165,6 +184,7 @@ package body System.Interrupt_Management.Operations is
    ----------------------------
 
    procedure Install_Default_Action (Interrupt : Interrupt_ID) is
+      pragma Warnings (Off, Interrupt);
    begin
       null;
    end Install_Default_Action;
@@ -174,6 +194,7 @@ package body System.Interrupt_Management.Operations is
    ---------------------------
 
    procedure Install_Ignore_Action (Interrupt : Interrupt_ID) is
+      pragma Warnings (Off, Interrupt);
    begin
       null;
    end Install_Ignore_Action;
@@ -259,19 +280,16 @@ package body System.Interrupt_Management.Operations is
          P2     => Interrupt_ID'Size / 8);
 
       pragma Assert ((Status and 1) = 1);
-
    end Interrupt_Self_Process;
 
 begin
-
    Environment_Mask := (others => False);
    All_Tasks_Mask := (others => True);
 
-   for I in Interrupt_ID loop
-      if Keep_Unmasked (I) then
-         Environment_Mask (Signal (I)) := True;
-         All_Tasks_Mask (Signal (I)) := False;
+   for J in Interrupt_ID loop
+      if Keep_Unmasked (J) then
+         Environment_Mask (Signal (J)) := True;
+         All_Tasks_Mask (Signal (J)) := False;
       end if;
    end loop;
-
 end System.Interrupt_Management.Operations;

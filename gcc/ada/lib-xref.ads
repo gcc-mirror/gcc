@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1998-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,7 +71,8 @@ package Lib.Xref is
 
    --        level is a single character that separates the col and
    --        entity fields. It is an asterisk for a top level library
-   --        entity that is publicly visible, and space otherwise.
+   --        entity that is publicly visible, as well for an entity declared
+   --        in the visible part of a generic package, and space otherwise.
 
    --        entity is the name of the referenced entity, with casing in
    --        the canical casing for the source file where it is defined.
@@ -97,6 +98,7 @@ package Lib.Xref is
 
    --          derived types (points to the parent type)   LR=<>
    --          access types (points to designated type)    LR=()
+   --          array types (points to component type)      LR=()
    --          subtypes (points to ancestor type)          LR={}
    --          functions (points to result type)           LR={}
    --          enumeration literals (points to enum type)  LR={}
@@ -106,7 +108,7 @@ package Lib.Xref is
    --          which has one of the two following forms:
 
    --            L file | line type col R      user entity
-   --            L name-in-lower-case   R      standard entity
+   --            L name-in-lower-case R        standard entity
 
    --          For the form for a user entity, file is the dependency number
    --          of the file containing the declaration of the related type.
@@ -133,14 +135,24 @@ package Lib.Xref is
    --           type is one of
    --              b = body entity
    --              c = completion of private or incomplete type
+   --              d = discriminant of type
    --              e = end of spec
+   --              H = abstract type
    --              i = implicit reference
-   --              l = label on end line
+   --              k = implicit reference to parent unit in child unit
+   --              l = label on END line
    --              m = modification
    --              p = primitive operation
+   --              P = overriding primitive operation
    --              r = reference
    --              t = end of body
+   --              w = WITH line
    --              x = type extension
+   --              z = generic formal parameter
+   --              > = subprogram IN parameter
+   --              = = subprogram IN OUT parameter
+   --              < = subprogram OUT parameter
+   --              > = subprogram ACCESS parameter
 
    --           b is used for spec entities that are repeated in a body,
    --           including the unit (subprogram, package, task, protected
@@ -155,6 +167,13 @@ package Lib.Xref is
    --           private or incomplete type. As with b, the completion is not
    --           regarded as a separate definition, but rather a reference to
    --           the initial declaration, marked with this special type.
+
+   --           d is used to identify a discriminant of a type. If this is
+   --           an incomplete or private type with discriminants, the entry
+   --           denotes the occurrence of the discriminant in the partial view
+   --           which is also the point of definition of the discriminant.
+   --           The occurrence of the same discriminant in the full view is
+   --           a regular reference to it.
 
    --           e is used to identify the end of a construct in the following
    --           cases:
@@ -182,6 +201,9 @@ package Lib.Xref is
    --           source node that generates the implicit reference, and it is
    --           useful to record this one.
 
+   --           k is used to denote a reference to the parent unit, in the
+   --           cross-reference line for a child unit.
+
    --           l is used to identify the occurrence in the source of the
    --           name on an end line. This is just a syntactic reference
    --           which can be ignored for semantic purposes (such as call
@@ -199,6 +221,10 @@ package Lib.Xref is
    --           source unit (main unit itself, its separate spec (if any).
    --           and all subunits (considered recursively).
 
+   --           If the primitive operation overrides an inherited primitive
+   --           operation of the parent type, the letter 'P' is used in the
+   --           corresponding entry.
+
    --           t is similar to e. It identifies the end of a corresponding
    --           body (such a reference always links up with a b reference)
 
@@ -215,6 +241,16 @@ package Lib.Xref is
    --           x is used to identify the reference as the entity from which
    --           a tagged type is extended. This allows immediate access to
    --           the parent of a tagged type.
+
+   --           z is used on the cross-reference line for a generic unit, to
+   --           mark the definition of a generic formal of the unit.
+   --           This entry type is similar to 'k' and 'p' in that it is an
+   --           implicit reference for an entity with a different name.
+
+   --           The characters >, <. =, and ^ are used on the cross-reference
+   --           line for a subprogram, to denote formal parameters and their
+   --           modes. As with the 'z' and 'p' entries, each such entry is
+   --           an implicit reference to an entity with a different name.
 
    --           [..] is used for generic instantiation references. These
    --           references are present only if the entity in question is
@@ -315,6 +351,10 @@ package Lib.Xref is
    --  case the kind of the underlying type is used, if available, to
    --  determine the character to use in the xref listing. The listing
    --  will still include a '+' for a generic private type, for example.
+
+   --  For subprograms, the characters 'U' and 'V' appear in the table,
+   --  indicating procedures and functions. If the operation is abstract,
+   --  these letters are replaced in the xref by 'x' and 'y' respectively.
 
    Xref_Entity_Letters : array (Entity_Kind) of Character := (
       E_Void                             => ' ',
@@ -426,7 +466,7 @@ package Lib.Xref is
    --    e     non-Boolean enumeration object  non_Boolean enumeration type
    --    f     floating-point object           floating-point type
    --    g     (unused)                        (unused)
-   --    h     (unused)                        (unused)
+   --    h     (unused)                        Abstract type
    --    i     signed integer object           signed integer type
    --    j     (unused)                        (unused)
    --    k     generic package                 package
@@ -442,9 +482,26 @@ package Lib.Xref is
    --    u     generic procedure               procedure
    --    v     generic function or operator    function or operator
    --    w     protected object                protected type
-   --    x     (unused)                        exception
-   --    y     (unused)                        entry or entry family
-   --    z     (unused)                        (unused)
+   --    x     abstract procedure              exception
+   --    y     abstract function               entry or entry family
+   --    z     generic formal parameter        (unused)
+
+   --------------------------------------
+   -- Handling of Imported Subprograms --
+   --------------------------------------
+
+   --  If a pragma Import or Interface applies to a subprogram, the
+   --  pragma is the completion of the subprogram. This is noted in
+   --  the ALI file by making the occurrence of the subprogram in the
+   --  pragma into a body reference ('b') and by including the external
+   --  name of the subprogram and its language, bracketed by '<' and '>'
+   --  in that reference. For example:
+   --
+   --     3U13*elsewhere 4b<c,there>21
+   --
+   --  indicates that procedure elsewhere, declared at line 3, has a
+   --  pragma Import at line 4, that its body is in C, and that the link
+   --  name as given in the pragma is "there".
 
    -----------------
    -- Subprograms --
@@ -453,10 +510,16 @@ package Lib.Xref is
    procedure Generate_Definition (E : Entity_Id);
    --  Records the definition of an entity
 
-   procedure Generate_Operator_Reference (N : Node_Id);
+   procedure Generate_Operator_Reference
+     (N : Node_Id;
+      T : Entity_Id);
    --  Node N is an operator node, whose entity has been set. If this entity
    --  is a user defined operator (i.e. an operator not defined in package
    --  Standard), then a reference to the operator is recorded at node N.
+   --  T is the operand type of of the operator. A reference to the operator
+   --  is an implicit reference to the type, and that needs to be recorded
+   --  to avoid spurious warnings on unused entities, when the operator is
+   --  a renaming of a predefined operator.
 
    procedure Generate_Reference
      (E       : Entity_Id;
@@ -520,7 +583,18 @@ package Lib.Xref is
    --  generated even if Comes_From_Source is false. This is used for
    --  certain implicit references, and also for end label references.
 
+   procedure Generate_Reference_To_Formals (E : Entity_Id);
+   --  Add a reference to the definition of each formal on the line for
+   --  a subprogram.
+
+   procedure Generate_Reference_To_Generic_Formals (E : Entity_Id);
+   --  Add a reference to the definition of each generic formal on the line
+   --  for a generic unit.
+
    procedure Output_References;
    --  Output references to the current ali file
+
+   procedure Initialize;
+   --  Initialize internal tables.
 
 end Lib.Xref;

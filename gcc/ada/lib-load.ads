@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,17 +88,20 @@ package Lib.Load is
    -----------------
 
    procedure Initialize;
+   --  Initialize internal tables
+
+   procedure Initialize_Version (U : Unit_Number_Type);
+   --  This is called once the source file corresponding to unit U has been
+   --  fully scanned. At that point the checksum is computed, and can be used
+   --  to initialize the version number.
+
+   procedure Load_Main_Source;
    --  Called at the start of compiling a new main source unit to initialize
    --  the library processing for the new main source. Establishes and
    --  initializes the units table entry for the new main unit (leaving
    --  the Unit_File_Name entry of Main_Unit set to No_File if there are no
    --  more files. Otherwise the main source file has been opened and read
    --  and then closed on return.
-
-   procedure Initialize_Version (U : Unit_Number_Type);
-   --  This is called once the source file corresponding to unit U has been
-   --  fully scanned. At that point the checksum is computed, and can be used
-   --  to initialize the version number.
 
    function Load_Unit
      (Load_Name  : Unit_Name_Type;

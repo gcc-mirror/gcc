@@ -44,12 +44,14 @@
 with Ada.Command_Line;     use Ada.Command_Line;
 with Ada.Text_IO;          use Ada.Text_IO;
 with GNAT.OS_Lib;          use GNAT.OS_Lib;
+with Gnatvsn;              use Gnatvsn;
 with Interfaces.C_Streams; use Interfaces.C_Streams;
 with Osint;                use Osint;
 with Sdefault;             use Sdefault;
 with System;
 
 procedure GnatLbr is
+   pragma Ident (Gnat_Version_String);
 
    type Lib_Mode is (None, Create, Set, Delete);
    Next_Arg  : Integer;

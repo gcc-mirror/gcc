@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -51,6 +51,17 @@ package Sinput.L is
    function Load_Config_File (N : File_Name_Type) return Source_File_Index;
    --  Similar to Load_Source_File, except that the file name is always
    --  interpreted in the context of the current working directory.
+   --  The file is never preprocessed.
+
+   function Load_Definition_File
+     (N    : File_Name_Type)
+      return Source_File_Index;
+   --  Needs comments ???
+
+   function Load_Preprocessing_Data_File
+     (N    : File_Name_Type)
+      return Source_File_Index;
+   --  Similar to Load_Source_File, except that the file is never preprocessed.
 
    procedure Complete_Source_File_Entry;
    --  Called on completing the parsing of a source file. This call completes
@@ -73,14 +84,19 @@ package Sinput.L is
    --  calls to Adjust_Instantiation_Sloc.
 
    procedure Create_Instantiation_Source
-     (Inst_Node   : Entity_Id;
-      Template_Id : Entity_Id;
-      A           : out Sloc_Adjustment);
+     (Inst_Node    : Entity_Id;
+      Template_Id  : Entity_Id;
+      Inlined_Body : Boolean;
+      A            : out Sloc_Adjustment);
    --  This procedure creates the source table entry for an instantiation.
    --  Inst_Node is the instantiation node, and Template_Id is the defining
    --  identifier of the generic declaration or body unit as appropriate.
    --  A is set to an adjustment factor to be used in subsequent calls to
-   --  Adjust_Instantiation_Sloc.
+   --  Adjust_Instantiation_Sloc. The instantiation mechnaism is also used
+   --  for inlined function and procedure calls. The parameter Inlined_Body
+   --  is set to True in such cases, and False for a generic instantiation.
+   --  This is used for generating error messages that distinguish these
+   --  two cases, otherwise the two cases are handled identically.
 
    procedure Adjust_Instantiation_Sloc (N : Node_Id; A : Sloc_Adjustment);
    --  The instantiation tree is created by copying the tree of the generic

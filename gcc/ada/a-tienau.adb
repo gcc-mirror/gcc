@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,22 +33,10 @@
 
 with Ada.Text_IO.Generic_Aux; use Ada.Text_IO.Generic_Aux;
 with Ada.Characters.Handling; use Ada.Characters.Handling;
-with Interfaces.C_Streams;    use Interfaces.C_Streams;
 
 --  Note: this package does not yet deal properly with wide characters ???
 
 package body Ada.Text_IO.Enumeration_Aux is
-
-   -----------------------
-   -- Local Subprograms --
-   -----------------------
-
-   --  These definitions replace the ones in Ada.Characters.Handling, which
-   --  do not seem to work for some strange not understood reason ??? at
-   --  least in the OS/2 version.
-
-   function To_Lower (C : Character) return Character;
-   function To_Upper (C : Character) return Character;
 
    ------------------
    -- Get_Enum_Lit --
@@ -59,7 +47,7 @@ package body Ada.Text_IO.Enumeration_Aux is
       Buf    : out String;
       Buflen : out Natural)
    is
-      ch  : int;
+      ch  : Integer;
       C   : Character;
 
    begin
@@ -112,7 +100,7 @@ package body Ada.Text_IO.Enumeration_Aux is
             Store_Char (File, Character'Pos (To_Upper (C)), Buf, Buflen);
 
             ch := Getc (File);
-            exit when ch = EOF;
+            exit when ch = EOF_Char;
             C := Character'Val (ch);
 
             exit when not Is_Letter (C)
@@ -238,7 +226,6 @@ package body Ada.Text_IO.Enumeration_Aux is
             end if;
          end if;
 
-         Stop := Stop - 1;
          raise Data_Error;
 
       --  Similarly for identifiers, read as far as we can, in particular,
@@ -270,29 +257,6 @@ package body Ada.Text_IO.Enumeration_Aux is
             Stop := Stop + 1;
          end loop;
       end if;
-
    end Scan_Enum_Lit;
-
-   --------------
-   -- To_Lower --
-   --------------
-
-   function To_Lower (C : Character) return Character is
-   begin
-      if C in 'A' .. 'Z' then
-         return Character'Val (Character'Pos (C) + 32);
-      else
-         return C;
-      end if;
-   end To_Lower;
-
-   function To_Upper (C : Character) return Character is
-   begin
-      if C in 'a' .. 'z' then
-         return Character'Val (Character'Pos (C) - 32);
-      else
-         return C;
-      end if;
-   end To_Upper;
 
 end Ada.Text_IO.Enumeration_Aux;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,6 +31,7 @@ with Csets;    use Csets;
 with Debug;    use Debug;
 with Elists;
 with Errout;   use Errout;
+with Fmap;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Frontend;
@@ -39,15 +40,22 @@ with Hostparm;
 with Inline;
 with Lib;      use Lib;
 with Lib.Writ; use Lib.Writ;
+with Lib.Xref;
 with Namet;    use Namet;
 with Nlists;
 with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
+with Prepcomp;
 with Repinfo;  use Repinfo;
-with Restrict; use Restrict;
+with Restrict;
+with Rident;
 with Sem;
+with Sem_Ch8;
+with Sem_Ch12;
 with Sem_Ch13;
+with Sem_Eval;
+with Sem_Type;
 with Sinfo;    use Sinfo;
 with Sinput.L; use Sinput.L;
 with Snames;
@@ -58,7 +66,7 @@ with Tree_Gen;
 with Treepr;   use Treepr;
 with Ttypes;
 with Types;    use Types;
-with Uintp;
+with Uintp;    use Uintp;
 with Uname;    use Uname;
 with Urealp;
 with Usage;
@@ -75,9 +83,6 @@ procedure Gnat1drv is
    Main_Kind : Node_Kind;
    --  Kind of main compilation unit node.
 
-   Original_Operating_Mode : Operating_Mode_Type;
-   --  Save operating type specified by options
-
    Back_End_Mode : Back_End.Back_End_Mode_Type;
    --  Record back end mode
 
@@ -92,10 +97,14 @@ begin
       --  because it initialize a table that is filled by
       --  Scan_Compiler_Arguments.
 
+      Osint.Initialize;
+      Fmap.Reset_Tables;
       Lib.Initialize;
+      Lib.Xref.Initialize;
       Scan_Compiler_Arguments;
       Osint.Add_Default_Search_Dirs;
 
+      Nlists.Initialize;
       Sinput.Initialize;
       Sem.Initialize;
       Csets.Initialize;
@@ -106,14 +115,72 @@ begin
       Snames.Initialize;
       Stringt.Initialize;
       Inline.Initialize;
+      Sem_Ch8.Initialize;
+      Sem_Ch12.Initialize;
       Sem_Ch13.Initialize;
+      Sem_Eval.Initialize;
+      Sem_Type.Init_Interp_Tables;
 
-      --  Acquire target parameters and perform required setup
+      --  Acquire target parameters from system.ads (source of package System)
 
-      Targparm.Get_Target_Parameters;
+      declare
+         use Sinput;
 
-      if Targparm.High_Integrity_Mode_On_Target then
-         Set_No_Run_Time_Mode;
+         S : Source_File_Index;
+         N : Name_Id;
+         R : Restrict.Restriction_Id;
+         P : Restrict.Restriction_Parameter_Id;
+
+      begin
+         Name_Buffer (1 .. 10) := "system.ads";
+         Name_Len := 10;
+         N := Name_Find;
+         S := Load_Source_File (N);
+
+         if S = No_Source_File then
+            Write_Line
+              ("fatal error, run-time library not installed correctly");
+            Write_Line
+              ("cannot locate file system.ads");
+            raise Unrecoverable_Error;
+
+         --  Here if system.ads successfully read. Remember its source index.
+
+         else
+            System_Source_File_Index := S;
+         end if;
+
+         Targparm.Get_Target_Parameters
+           (System_Text  => Source_Text (S),
+            Source_First => Source_First (S),
+            Source_Last  => Source_Last (S));
+
+         --  Acquire configuration pragma information from Targparm
+
+         for J in Rident.Partition_Restrictions loop
+            R := Restrict.Partition_Restrictions (J);
+
+            if Targparm.Restrictions_On_Target (J) then
+               Restrict.Restrictions (R)     := True;
+               Restrict.Restrictions_Loc (R) := System_Location;
+            end if;
+         end loop;
+
+         for K in Rident.Restriction_Parameter_Id loop
+            P := Restrict.Restriction_Parameter_Id (K);
+
+            if Targparm.Restriction_Parameters_On_Target (K) /= No_Uint then
+               Restrict.Restriction_Parameters (P) :=
+                 Targparm.Restriction_Parameters_On_Target (K);
+               Restrict.Restriction_Parameters_Loc (P) := System_Location;
+            end if;
+         end loop;
+      end;
+
+      --  Set Configurable_Run_Time mode if system.ads flag set
+
+      if Targparm.Configurable_Run_Time_On_Target or Debug_Flag_YY then
+         Configurable_Run_Time_Mode := True;
       end if;
 
       --  Output copyright notice if full list mode
@@ -123,14 +190,8 @@ begin
       then
          Write_Eol;
          Write_Str ("GNAT ");
-
-         if Targparm.High_Integrity_Mode_On_Target then
-            Write_Str ("Pro High Integrity ");
-         end if;
-
          Write_Str (Gnat_Version_String);
-         Write_Eol;
-         Write_Str ("Copyright 1992-2002 Free Software Foundation, Inc.");
+         Write_Str (" Copyright 1992-2003 Free Software Foundation, Inc.");
          Write_Eol;
       end if;
 
@@ -154,9 +215,9 @@ begin
 
       if Targparm.ZCX_By_Default_On_Target then
          if Targparm.GCC_ZCX_Support_On_Target then
-            Exception_Mechanism := GCC_ZCX;
+            Exception_Mechanism := Back_End_ZCX_Exceptions;
          else
-            Exception_Mechanism := Front_End_ZCX;
+            Exception_Mechanism := Front_End_ZCX_Exceptions;
          end if;
       end if;
 
@@ -164,15 +225,16 @@ begin
 
       if Opt.Zero_Cost_Exceptions_Set then
          if Opt.Zero_Cost_Exceptions_Val = False then
-            Exception_Mechanism := Setjmp_Longjmp;
+            Exception_Mechanism := Front_End_Setjmp_Longjmp_Exceptions;
+
+         elsif Debug_Flag_XX then
+            Exception_Mechanism := Front_End_ZCX_Exceptions;
 
          elsif Targparm.GCC_ZCX_Support_On_Target then
-            Exception_Mechanism := GCC_ZCX;
+            Exception_Mechanism := Back_End_ZCX_Exceptions;
 
-         elsif Targparm.Front_End_ZCX_Support_On_Target
-           or else Debug_Flag_XX
-         then
-            Exception_Mechanism := Front_End_ZCX;
+         elsif Targparm.Front_End_ZCX_Support_On_Target then
+            Exception_Mechanism := Front_End_ZCX_Exceptions;
 
          else
             Osint.Fail
@@ -192,9 +254,9 @@ begin
                         and
                        Targparm.Backend_Overflow_Checks_On_Target))
       then
-         Suppress_Options.Overflow_Checks := False;
+         Suppress_Options (Overflow_Check) := False;
       else
-         Suppress_Options.Overflow_Checks := True;
+         Suppress_Options (Overflow_Check) := True;
       end if;
 
       --  Check we have exactly one source file, this happens only in
@@ -388,31 +450,21 @@ begin
       elsif Operating_Mode /= Generate_Code then
          Back_End_Mode := Skip;
 
-      --  We can generate code for a subprogram body unless its corresponding
-      --  subprogram spec is a generic delaration. Note that the check for
-      --  No (Library_Unit) here is a defensive check that should not be
-      --  necessary, since the Library_Unit field should be set properly.
+      --  We can generate code for a subprogram body unless there were
+      --  missing subunits. Note that we always generate code for all
+      --  generic units (a change from some previous versions of GNAT).
 
       elsif Main_Kind = N_Subprogram_Body
         and then not Subunits_Missing
-        and then (No (Library_Unit (Main_Unit_Node))
-                   or else Nkind (Unit (Library_Unit (Main_Unit_Node))) /=
-                                          N_Generic_Subprogram_Declaration
-                   or else Generic_Separately_Compiled (Main_Unit_Entity))
       then
          Back_End_Mode := Generate_Object;
 
-      --  We can generate code for a package body unless its corresponding
-      --  package spec is a generic declaration. As described above, the
-      --  check for No (LIbrary_Unit) is a defensive check.
+      --  We can generate code for a package body unless there are subunits
+      --  missing (note that we always generate code for generic units, which
+      --  is a change from some earlier versions of GNAT).
 
       elsif Main_Kind = N_Package_Body
         and then not Subunits_Missing
-        and then (No (Library_Unit (Main_Unit_Node))
-           or else Nkind (Unit (Library_Unit (Main_Unit_Node))) /=
-                      N_Generic_Package_Declaration
-           or else Generic_Separately_Compiled (Main_Unit_Entity))
-
       then
          Back_End_Mode := Generate_Object;
 
@@ -430,14 +482,12 @@ begin
          Back_End_Mode := Generate_Object;
 
       --  We can generate code for a generic package declaration of a generic
-      --  subprogram declaration only if does not require a body, and if it
-      --  is a generic that is separately compiled.
+      --  subprogram declaration only if does not require a body.
 
       elsif (Main_Kind = N_Generic_Package_Declaration
                or else
              Main_Kind = N_Generic_Subprogram_Declaration)
         and then not Body_Required (Main_Unit_Node)
-        and then Generic_Separately_Compiled (Main_Unit_Entity)
       then
          Back_End_Mode := Generate_Object;
 
@@ -450,11 +500,9 @@ begin
          Back_End_Mode := Generate_Object;
 
       --  Compilation units that are generic renamings do not require bodies
-      --  so we can generate code for them in the separately compiled case
+      --  so we can generate code for them.
 
-      elsif Main_Kind in N_Generic_Renaming_Declaration
-        and then Generic_Separately_Compiled (Main_Unit_Entity)
-      then
+      elsif Main_Kind in N_Generic_Renaming_Declaration then
          Back_End_Mode := Generate_Object;
 
       --  In all other cases (specs which have bodies, generics, and bodies
@@ -479,28 +527,46 @@ begin
       --  cannot generate code).
 
       if Back_End_Mode = Skip then
-         Write_Str ("No code generated for ");
+         Write_Str ("cannot generate code for ");
          Write_Str ("file ");
          Write_Name (Unit_File_Name (Main_Unit));
 
          if Subunits_Missing then
             Write_Str (" (missing subunits)");
+            Write_Eol;
+            Write_Str ("to check parent unit");
 
          elsif Main_Kind = N_Subunit then
             Write_Str (" (subunit)");
-
-         elsif Main_Kind = N_Package_Body
-           or else Main_Kind = N_Subprogram_Body
-         then
-            Write_Str (" (generic unit)");
+            Write_Eol;
+            Write_Str ("to check subunit");
 
          elsif Main_Kind = N_Subprogram_Declaration then
             Write_Str (" (subprogram spec)");
+            Write_Eol;
+            Write_Str ("to check subprogram spec");
+
+         --  Generic package body in GNAT implementation mode
+
+         elsif Main_Kind = N_Package_Body and then GNAT_Mode then
+            Write_Str (" (predefined generic)");
+            Write_Eol;
+            Write_Str ("to check predefined generic");
 
          --  Only other case is a package spec
 
          else
             Write_Str (" (package spec)");
+            Write_Eol;
+            Write_Str ("to check package spec");
+         end if;
+
+         Write_Str (" for errors, use ");
+
+         if Hostparm.OpenVMS then
+            Write_Str ("/NOLOAD");
+         else
+            Write_Str ("-gnatc");
          end if;
 
          Write_Eol;
@@ -546,6 +612,11 @@ begin
 
       Lib.Writ.Ensure_System_Dependency;
 
+      --  Add dependencies, if any, on preprocessing data file and on
+      --  preprocessing definition file(s).
+
+      Prepcomp.Add_Dependencies;
+
       --  Back end needs to explicitly unlock tables it needs to touch
 
       Atree.Lock;
@@ -559,16 +630,7 @@ begin
       Namet.Lock;
       Stringt.Lock;
 
-      --  There are cases where the back end emits warnings, e.g. on objects
-      --  that are too large and will cause Storage_Error. If such a warning
-      --  appears in a generic context, then it is always appropriately
-      --  placed on the instance rather than the template, since gigi only
-      --  deals with generated code in instances (in particular the warning
-      --  for oversize objects clearly belongs on the instance).
-
-      Warn_On_Instance := True;
-
-      --  Here we call the backend to generate the output code
+      --  Here we call the back end to generate the output code
 
       Back_End.Call_Back_End (Back_End_Mode);
 
@@ -590,10 +652,7 @@ begin
       --  annotate representation information for List_Rep_Info.
 
       Errout.Finalize;
-
-      if Opt.List_Representation_Info /= 0 or else Debug_Flag_AA then
-         List_Rep_Info;
-      end if;
+      List_Rep_Info;
 
       --  Only write the library if the backend did not generate any error
       --  messages. Otherwise signal errors to the driver program so that

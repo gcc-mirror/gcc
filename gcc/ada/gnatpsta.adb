@@ -38,7 +38,6 @@ with Ttypes;      use Ttypes;
 with Types;       use Types;
 
 procedure GnatPsta is
-
    procedure P (Item : String) renames Ada.Text_IO.Put_Line;
 
    procedure P_Int_Range   (Size : Pos; Put_First : Boolean := True);

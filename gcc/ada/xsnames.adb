@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -85,10 +85,6 @@ begin
    Oname := Nul;
    Val := 0;
 
-   Line := A & (Natural'Value (S (Oldrev)) + 1) & " $";
-   Line := Rpad (Line, 76) & "--";
-   Put_Line (OutB, Line);
-
    loop
       Line := Get_Line (InB);
       exit when Match (Line, "   Preset_Names");
@@ -150,7 +146,4 @@ begin
    while not End_Of_File (InB) loop
       Put_Line (OutB, Get_Line (InB));
    end loop;
-
-   Put_Line (OutB, "--  Updated to match snames.ads revision " & Specrev);
-
 end XSnames;

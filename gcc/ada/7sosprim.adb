@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -75,7 +75,9 @@ package body System.OS_Primitives is
 
    function Clock return Duration is
       TV     : aliased struct_timeval;
+
       Result : Integer;
+      pragma Unreferenced (Result);
 
    begin
       Result := gettimeofday (TV'Access, null);
@@ -110,8 +112,9 @@ package body System.OS_Primitives is
          F := F + 1.0;
       end if;
 
-      return timespec' (tv_sec => S,
-        tv_nsec => Long_Integer (Long_Long_Integer (F * 10#1#E9)));
+      return
+        timespec'(tv_sec  => S,
+                  tv_nsec => Long_Integer (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
 
    -----------------
@@ -124,10 +127,13 @@ package body System.OS_Primitives is
    is
       Request : aliased timespec;
       Remaind : aliased timespec;
-      Result  : Integer;
       Rel_Time : Duration;
       Abs_Time : Duration;
       Check_Time : Duration := Clock;
+
+      Result : Integer;
+      pragma Unreferenced (Result);
+
    begin
       if Mode = Relative then
          Rel_Time := Time;

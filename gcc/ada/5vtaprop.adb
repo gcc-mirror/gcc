@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,8 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -88,13 +88,13 @@ package body System.Task_Primitives.Operations is
    --  The followings are logically constants, but need to be initialized
    --  at run time.
 
-   ATCB_Key : aliased pthread_key_t;
-   --  Key used to find the Ada Task_ID associated with a thread
-
    Single_RTS_Lock : aliased RTS_Lock;
    --  This is a lock to allow only one thread of control in the RTS at
    --  a time; it is used to execute in mutual exclusion from all other tasks.
    --  Used mainly in Single_Lock mode, but also to protect All_Tasks_List
+
+   ATCB_Key : aliased pthread_key_t;
+   --  Key used to find the Ada Task_ID associated with a thread
 
    Environment_Task_ID : Task_ID;
    --  A variable to hold Task_ID for the environment task.
@@ -107,6 +107,46 @@ package body System.Task_Primitives.Operations is
 
    FIFO_Within_Priorities : constant Boolean := Dispatching_Policy = 'F';
    --  Indicates whether FIFO_Within_Priorities is set.
+
+   Foreign_Task_Elaborated : aliased Boolean := True;
+   --  Used to identified fake tasks (i.e., non-Ada Threads).
+
+   --------------------
+   -- Local Packages --
+   --------------------
+
+   package Specific is
+
+      procedure Initialize (Environment_Task : Task_ID);
+      pragma Inline (Initialize);
+      --  Initialize various data needed by this package.
+
+      function Is_Valid_Task return Boolean;
+      pragma Inline (Is_Valid_Task);
+      --  Does executing thread have a TCB?
+
+      procedure Set (Self_Id : Task_ID);
+      pragma Inline (Set);
+      --  Set the self id for the current task.
+
+      function Self return Task_ID;
+      pragma Inline (Self);
+      --  Return a pointer to the Ada Task Control Block of the calling task.
+
+   end Specific;
+
+   package body Specific is separate;
+   --  The body of this package is target specific.
+
+   ---------------------------------
+   -- Support for foreign threads --
+   ---------------------------------
+
+   function Register_Foreign_Thread (Thread : Thread_Id) return Task_ID;
+   --  Allocate and Initialize a new ATCB for the current Thread.
+
+   function Register_Foreign_Thread
+     (Thread : Thread_Id) return Task_ID is separate;
 
    -----------------------
    -- Local Subprograms --
@@ -137,6 +177,9 @@ package body System.Task_Primitives.Operations is
    --  ??? Check the comment above
 
    procedure Stack_Guard (T : ST.Task_ID; On : Boolean) is
+      pragma Unreferenced (T);
+      pragma Unreferenced (On);
+
    begin
       null;
    end Stack_Guard;
@@ -154,25 +197,18 @@ package body System.Task_Primitives.Operations is
    -- Self --
    ----------
 
-   function Self return Task_ID is
-      Result : System.Address;
-
-   begin
-      Result := pthread_getspecific (ATCB_Key);
-      pragma Assert (Result /= System.Null_Address);
-      return To_Task_ID (Result);
-   end Self;
+   function Self return Task_ID renames Specific.Self;
 
    ---------------------
    -- Initialize_Lock --
    ---------------------
 
    --  Note: mutexes and cond_variables needed per-task basis are
-   --        initialized in Initialize_TCB and the Storage_Error is
-   --        handled. Other mutexes (such as RTS_Lock, Memory_Lock...)
-   --        used in RTS is initialized before any status change of RTS.
-   --        Therefore rasing Storage_Error in the following routines
-   --        should be able to be handled safely.
+   --  initialized in Initialize_TCB and the Storage_Error is
+   --  handled. Other mutexes (such as RTS_Lock, Memory_Lock...)
+   --  used in RTS is initialized before any status change of RTS.
+   --  Therefore rasing Storage_Error in the following routines
+   --  should be able to be handled safely.
 
    procedure Initialize_Lock (Prio : System.Any_Priority; L : access Lock) is
       Attributes : aliased pthread_mutexattr_t;
@@ -201,6 +237,8 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level) is
+      pragma Unreferenced (Level);
+
       Attributes : aliased pthread_mutexattr_t;
       Result : Interfaces.C.int;
 
@@ -212,7 +250,7 @@ package body System.Task_Primitives.Operations is
          raise Storage_Error;
       end if;
 
---      Don't use, see comment in s-osinte.ads about ERRORCHECK mutexes.
+--      Don't use, see comment in s-osinte.ads about ERRORCHECK mutexes???
 --      Result := pthread_mutexattr_settype_np
 --        (Attributes'Access, PTHREAD_MUTEX_ERRORCHECK_NP);
 --      pragma Assert (Result = 0);
@@ -243,6 +281,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Lock (L : access Lock) is
       Result : Interfaces.C.int;
+
    begin
       Result := pthread_mutex_destroy (L.L'Access);
       pragma Assert (Result = 0);
@@ -250,6 +289,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Lock (L : access RTS_Lock) is
       Result : Interfaces.C.int;
+
    begin
       Result := pthread_mutex_destroy (L);
       pragma Assert (Result = 0);
@@ -287,9 +327,11 @@ package body System.Task_Primitives.Operations is
    end Write_Lock;
 
    procedure Write_Lock
-     (L : access RTS_Lock; Global_Lock : Boolean := False)
+     (L           : access RTS_Lock;
+      Global_Lock : Boolean := False)
    is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock or else Global_Lock then
          Result := pthread_mutex_lock (L);
@@ -299,6 +341,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Write_Lock (T : Task_ID) is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock then
          Result := pthread_mutex_lock (T.Common.LL.L'Access);
@@ -321,6 +364,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access Lock) is
       Result : Interfaces.C.int;
+
    begin
       Result := pthread_mutex_unlock (L.L'Access);
       pragma Assert (Result = 0);
@@ -328,6 +372,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock or else Global_Lock then
          Result := pthread_mutex_unlock (L);
@@ -337,6 +382,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Unlock (T : Task_ID) is
       Result : Interfaces.C.int;
+
    begin
       if not Single_Lock then
          Result := pthread_mutex_unlock (T.Common.LL.L'Access);
@@ -352,7 +398,9 @@ package body System.Task_Primitives.Operations is
      (Self_ID : Task_ID;
       Reason  : System.Tasking.Task_States)
    is
+      pragma Unreferenced (Reason);
       Result : Interfaces.C.int;
+
    begin
       if Single_Lock then
          Result := pthread_cond_wait
@@ -363,6 +411,7 @@ package body System.Task_Primitives.Operations is
       end if;
 
       --  EINTR is not considered a failure.
+
       pragma Assert (Result = 0 or else Result = EINTR);
 
       if Self_ID.Deferral_Level = 0
@@ -385,6 +434,8 @@ package body System.Task_Primitives.Operations is
       Timedout : out Boolean;
       Yielded  : out Boolean)
    is
+      pragma Unreferenced (Reason);
+
       Sleep_Time : OS_Time;
       Result     : Interfaces.C.int;
       Status     : Cond_Value_Type;
@@ -535,7 +586,10 @@ package body System.Task_Primitives.Operations is
    ------------
 
    procedure Wakeup (T : Task_ID; Reason : System.Tasking.Task_States) is
+      pragma Unreferenced (Reason);
+
       Result : Interfaces.C.int;
+
    begin
       Result := pthread_cond_signal (T.Common.LL.CV'Access);
       pragma Assert (Result = 0);
@@ -547,6 +601,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Yield (Do_Yield : Boolean := True) is
       Result : Interfaces.C.int;
+
    begin
       if Do_Yield then
          Result := sched_yield;
@@ -562,8 +617,11 @@ package body System.Task_Primitives.Operations is
       Prio                : System.Any_Priority;
       Loss_Of_Inheritance : Boolean := False)
    is
+      pragma Unreferenced (Loss_Of_Inheritance);
+
       Result : Interfaces.C.int;
       Param  : aliased struct_sched_param;
+
    begin
       T.Common.Current_Priority := Prio;
       Param.sched_priority := Interfaces.C.int (Underlying_Priorities (Prio));
@@ -577,6 +635,11 @@ package body System.Task_Primitives.Operations is
            (T.Common.LL.Thread, SCHED_FIFO, Param'Access);
 
       else
+         --  SCHED_OTHER priorities are restricted to the range 8 - 15.
+         --  Since the translation from Underlying priorities results
+         --  in a range of 16 - 31, dividing by 2 gives the correct result.
+
+         Param.sched_priority := Param.sched_priority / 2;
          Result := pthread_setschedparam
            (T.Common.LL.Thread, SCHED_OTHER, Param'Access);
       end if;
@@ -598,17 +661,10 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Enter_Task (Self_ID : Task_ID) is
-      Result  : Interfaces.C.int;
    begin
       Self_ID.Common.LL.Thread := pthread_self;
 
-      --  It is not safe for the new task accept signals until it
-      --  has bound its TCB pointer to the thread with pthread_setspecific (),
-      --  since the handler wrappers use the TCB pointer
-      --  to restore the stack limit.
-
-      Result := pthread_setspecific (ATCB_Key, To_Address (Self_ID));
-      pragma Assert (Result = 0);
+      Specific.Set (Self_ID);
 
       Lock_RTS;
 
@@ -631,6 +687,25 @@ package body System.Task_Primitives.Operations is
    begin
       return new Ada_Task_Control_Block (Entry_Num);
    end New_ATCB;
+
+   -------------------
+   -- Is_Valid_Task --
+   -------------------
+
+   function Is_Valid_Task return Boolean renames Specific.Is_Valid_Task;
+
+   -----------------------------
+   -- Register_Foreign_Thread --
+   -----------------------------
+
+   function Register_Foreign_Thread return Task_ID is
+   begin
+      if Is_Valid_Task then
+         return Self;
+      else
+         return Register_Foreign_Thread (pthread_self);
+      end if;
+   end Register_Foreign_Thread;
 
    ----------------------
    --  Initialize_TCB  --
@@ -742,8 +817,9 @@ package body System.Task_Primitives.Operations is
 
       --  This call may be unnecessary, not sure. ???
 
-      Result := pthread_attr_setinheritsched
-        (Attributes'Access, PTHREAD_EXPLICIT_SCHED);
+      Result :=
+        pthread_attr_setinheritsched
+          (Attributes'Access, PTHREAD_EXPLICIT_SCHED);
       pragma Assert (Result = 0);
 
       Result := pthread_create
@@ -772,8 +848,9 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    procedure Finalize_TCB (T : Task_ID) is
-      Result : Interfaces.C.int;
-      Tmp    : Task_ID := T;
+      Result  : Interfaces.C.int;
+      Tmp     : Task_ID := T;
+      Is_Self : constant Boolean := T = Self;
 
       procedure Free is new
         Unchecked_Deallocation (Ada_Task_Control_Block, Task_ID);
@@ -795,7 +872,13 @@ package body System.Task_Primitives.Operations is
       end if;
 
       Free (T.Common.LL.Exc_Stack_Ptr);
+
       Free (Tmp);
+
+      if Is_Self then
+         Result := pthread_setspecific (ATCB_Key, System.Null_Address);
+         pragma Assert (Result = 0);
+      end if;
    end Finalize_TCB;
 
    ---------------
@@ -804,7 +887,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Exit_Task is
    begin
-      pthread_exit (System.Null_Address);
+      Specific.Set (null);
    end Exit_Task;
 
    ----------------
@@ -812,33 +895,23 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Abort_Task (T : Task_ID) is
-
    begin
-
-      --  Why is this commented out ???
---      if T = Self and then T.Deferral_Level = 0
---           and then T.Pending_ATC_Level < T.ATC_Nesting_Level
---      then
---         raise Standard'Abort_Signal;
---      end if;
-
-      --
       --  Interrupt Server_Tasks may be waiting on an event flag
-      --
+
       if T.Common.State = Interrupt_Server_Blocked_On_Event_Flag then
          Wakeup (T, Interrupt_Server_Blocked_On_Event_Flag);
       end if;
-
    end Abort_Task;
 
    ----------------
    -- Check_Exit --
    ----------------
 
-   --  Dummy versions.  The only currently working versions is for solaris
-   --  (native).
+   --  Dummy version
 
    function Check_Exit (Self_ID : ST.Task_ID) return Boolean is
+      pragma Unreferenced (Self_ID);
+
    begin
       return True;
    end Check_Exit;
@@ -848,6 +921,8 @@ package body System.Task_Primitives.Operations is
    --------------------
 
    function Check_No_Locks (Self_ID : ST.Task_ID) return Boolean is
+      pragma Unreferenced (Self_ID);
+
    begin
       return True;
    end Check_No_Locks;
@@ -885,7 +960,12 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
+      pragma Unreferenced (T);
+      pragma Unreferenced (Thread_Self);
+
    begin
       return False;
    end Suspend_Task;
@@ -896,7 +976,12 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
+      pragma Unreferenced (T);
+      pragma Unreferenced (Thread_Self);
+
    begin
       return False;
    end Resume_Task;
@@ -909,17 +994,13 @@ package body System.Task_Primitives.Operations is
    begin
       Environment_Task_ID := Environment_Task;
 
-      Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
       --  Initialize the lock used to synchronize chain of all ATCBs.
+
+      Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
+
+      Specific.Initialize (Environment_Task);
 
       Enter_Task (Environment_Task);
    end Initialize;
 
-begin
-   declare
-      Result   : Interfaces.C.int;
-   begin
-      Result := pthread_key_create (ATCB_Key'Access, null);
-      pragma Assert (Result = 0);
-   end;
 end System.Task_Primitives.Operations;

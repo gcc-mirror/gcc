@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -52,6 +52,15 @@ generic
 
 package Ada.Numerics.Discrete_Random is
 
+   --  The algorithm used here is reliable from a required statistical point
+   --  of view only up to 48 bits. We try to behave reasonably in the case
+   --  of larger types, but we can't guarantee the required properties.
+   --  So generate a warning for these (slightly) dubious cases.
+
+   pragma Compile_Time_Warning
+     (Result_Subtype'Size > 48,
+      "statistical properties not guaranteed for size '> 48");
+
    --  Basic facilities.
 
    type Generator is limited private;
@@ -77,7 +86,9 @@ private
    subtype Int is Interfaces.Integer_32;
    subtype Rst is Result_Subtype;
 
-   type Flt is digits 14;
+   --  We prefer to use 14 digits for Flt, but some targets are more limited
+
+   type Flt is digits Positive'Min (14, Long_Long_Float'Digits);
 
    RstF : constant Flt := Flt (Rst'Pos (Rst'First));
    RstL : constant Flt := Flt (Rst'Pos (Rst'Last));

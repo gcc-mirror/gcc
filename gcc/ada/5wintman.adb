@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ package body System.Interrupt_Management is
    end Initialize_Interrupts;
 
 begin
-   --  "Reserve" all the interrupts, except those that are explicitly defined
+   --  "Reserve" all the interrupts, except those that are explicitely defined
 
    for J in Interrupt_ID'Range loop
       Reserve (J) := True;

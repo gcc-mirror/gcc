@@ -6,7 +6,7 @@
 --                                                                          --
 --                                B o d y                                   --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -140,7 +140,7 @@ begin
    --  Line for -gnatd switch
 
    Write_Switch_Char ("d?");
-   Write_Line ("Compiler debug option ? (a-z,A-Z,0-9), see debug.adb");
+   Write_Line ("Compiler debug option ? ([.]a-z,A-Z,0-9), see debug.adb");
 
    --  Line for -gnatD switch
 
@@ -149,13 +149,28 @@ begin
 
    --  Line for -gnatec switch
 
-   Write_Switch_Char ("ec?");
-   Write_Line ("Specify configuration pragmas file, e.g. -gnatec/x/f.adc");
+   Write_Switch_Char ("ec=?");
+   Write_Line ("Specify configuration pragmas file, e.g. -gnatec=/x/f.adc");
+
+   --  Line for -gnateD switch
+
+   Write_Switch_Char ("eD?");
+   Write_Line ("Define or redefine preprocessing symbol, e.g. -gnateDsym=val");
+
+   --  Line for -gnatef switch
+
+   Write_Switch_Char ("ef");
+   Write_Line ("Full source path in brief error messages");
 
    --  Line for -gnatem switch
 
-   Write_Switch_Char ("em?");
-   Write_Line ("Specify mapping file, e.g. -gnatemmapping");
+   Write_Switch_Char ("em=?");
+   Write_Line ("Specify mapping file, e.g. -gnatem=mapping");
+
+   --  Line for -gnatep switch
+
+   Write_Switch_Char ("ep=?");
+   Write_Line ("Specify preprocessing data file, e.g. -gnatep=prep.data");
 
    --  Line for -gnatE switch
 
@@ -210,7 +225,7 @@ begin
    --  Line for -gnatm switch
 
    Write_Switch_Char ("mnnn");
-   Write_Line ("Limit number of detected errors to nnn (1-999)");
+   Write_Line ("Limit number of detected errors to nnn (1-999999)");
 
    --  Line for -gnatn switch
 
@@ -305,6 +320,8 @@ begin
    Write_Line ("        M    turn off checking for in out params");
    Write_Line ("        o    turn on checking for operators/attributes");
    Write_Line ("        O    turn off checking for operators/attributes");
+   Write_Line ("        p    turn on checking for parameters");
+   Write_Line ("        P    turn off checking for parameters");
    Write_Line ("        r    turn on checking for returns");
    Write_Line ("        R    turn off checking for returns");
    Write_Line ("        s    turn on checking for subscripts");
@@ -317,32 +334,53 @@ begin
 
    Write_Switch_Char ("wxx");
    Write_Line ("Enable selected warning modes, xx = list of parameters:");
-   Write_Line ("        a    turn on all optional warnings (except b,d,h)");
+   Write_Line ("        a    turn on all optional warnings (except b,d,h,l)");
    Write_Line ("        A    turn off all optional warnings");
-   Write_Line ("        b    turn on biased rounding warnings");
-   Write_Line ("        B    turn off biased rounding warnings");
-   Write_Line ("        c    turn on constant conditional warnings");
-   Write_Line ("        C*   turn off constant conditional warnings");
-   Write_Line ("        d    turn on implicit dereference warnings");
-   Write_Line ("        D*   turn off implicit dereference warnings");
+   Write_Line ("        c    turn on warnings for constant conditional");
+   Write_Line ("        C*   turn off warnings for constant conditional");
+   Write_Line ("        d    turn on warnings for implicit dereference");
+   Write_Line ("        D*   turn off warnings for implicit dereference");
    Write_Line ("        e    treat all warnings as errors");
-   Write_Line ("        f    turn on unreferenced formal warnings");
-   Write_Line ("        F*   turn off unreferenced formal warnings");
-   Write_Line ("        h    turn on warnings for hiding variables");
-   Write_Line ("        H*   turn off warnings for hiding variables");
-   Write_Line ("        i*   turn on warnings for implementation units");
-   Write_Line ("        I    turn off warnings for implementation units");
-   Write_Line ("        l    turn on elaboration warnings");
-   Write_Line ("        L*   turn off elaboration warnings");
-   Write_Line ("        o*   turn on address clause overlay warnings");
-   Write_Line ("        O    turn off address clause overlay warnings");
+   Write_Line ("        f    turn on warnings for unreferenced formal");
+   Write_Line ("        F*   turn off warnings for unreferenced formal");
+   Write_Line ("        g*   turn on warnings for unrecognized pragma");
+   Write_Line ("        G    turn off warnings for unrecognized pragma");
+   Write_Line ("        h    turn on warnings for hiding variable ");
+   Write_Line ("        H*   turn off warnings for hiding variable");
+   Write_Line ("        i*   turn on warnings for implementation unit");
+   Write_Line ("        I    turn off warnings for implementation unit");
+   Write_Line ("        j    turn on warnings for obsolescent " &
+                                                  "(annex J) feature");
+   Write_Line ("        J*   turn off warnings for obsolescent " &
+                                                  "(annex J) feature");
+   Write_Line ("        k    turn on warnings on constant variable");
+   Write_Line ("        K*   turn off warnings on constant variable");
+   Write_Line ("        l    turn on warnings for missing " &
+                                                  "elaboration pragma");
+   Write_Line ("        L*   turn off warnings for missing " &
+                                                  "elaboration pragma");
+   Write_Line ("        m    turn on warnings for variable assigned " &
+                                                  "but not read");
+   Write_Line ("        M*   turn off warnings for variable assigned " &
+                                                  "but not read");
+   Write_Line ("        n*   normal warning mode (cancels -gnatws/-gnatwe)");
+   Write_Line ("        o*   turn on warnings for address clause overlay");
+   Write_Line ("        O    turn off warnings for address clause overlay");
    Write_Line ("        p    turn on warnings for ineffective pragma inline");
    Write_Line ("        P*   turn off warnings for ineffective pragma inline");
-   Write_Line ("        r    turn on redundant construct warnings");
-   Write_Line ("        R*   turn off redundant construct warnings");
+   Write_Line ("        r    turn on warnings for redundant construct");
+   Write_Line ("        R*   turn off warnings for redundant construct");
    Write_Line ("        s    suppress all warnings");
-   Write_Line ("        u    turn on warnings for unused entities");
-   Write_Line ("        U*   turn off warnings for unused entities");
+   Write_Line ("        u    turn on warnings for unused entity");
+   Write_Line ("        U*   turn off warnings for unused entity");
+   Write_Line ("        v*   turn on warnings for unassigned variable");
+   Write_Line ("        V    turn off warnings for unassigned variable");
+   Write_Line ("        x*   turn on warnings for export/import");
+   Write_Line ("        X*   turn off warnings for export/import");
+   Write_Line ("        z*   turn on size/align warnings for " &
+                                                  "unchecked conversion");
+   Write_Line ("        Z    turn off size/align warnings for " &
+                                                  "unchecked conversion");
    Write_Line ("        *    indicates default in above list");
 
    --  Line for -gnatW switch
@@ -387,21 +425,21 @@ begin
    Write_Line ("        f    check no form feeds/vertical tabs in source");
    Write_Line ("        h    check no horizontal tabs in source");
    Write_Line ("        i    check if-then layout");
-   Write_Line ("        k    check casing rules for keywords, identifiers");
+   Write_Line ("        k    check casing rules for keywords");
    Write_Line ("        l    check reference manual layout");
    Write_Line ("        m    check line length <= 79 characters");
    Write_Line ("        n    check casing of package Standard identifiers");
    Write_Line ("        Mnnn check line length <= nnn characters");
    Write_Line ("        o    check subprogram bodies in alphabetical order");
    Write_Line ("        p    check pragma casing");
-   Write_Line ("        r    check RM column layout");
+   Write_Line ("        r    check casing for identifier references");
    Write_Line ("        s    check separate subprogram specs present");
    Write_Line ("        t    check token separation rules");
 
    --  Lines for -gnatz switch
 
    Write_Switch_Char ("z");
-   Write_Line ("Distribution stub generation (r/s for receiver/sender stubs)");
+   Write_Line ("Distribution stub generation (r/c for receiver/caller stubs)");
 
    --  Line for -gnatZ switch
 

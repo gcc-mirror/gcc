@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                              P R J . A T T R                             --
+--                             P R J . A T T R                              --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2001-2002 Free Software Foundation, Inc.       --
+--             Copyright (C) 2001-2003 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,6 +26,7 @@
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Namet;     use Namet;
+with Osint;     use Osint;
 with Output;    use Output;
 
 package body Prj.Attr is
@@ -44,6 +45,8 @@ package body Prj.Attr is
    --    'V' for single variable
    --    'A' for associative array
    --    'a' for case insensitive associative array
+   --    'b' for associative array, case insensitive if file names are case
+   --        insensitive
 
    --  End is indicated by two consecutive '#'.
 
@@ -55,40 +58,52 @@ package body Prj.Attr is
      "SVexec_dir#" &
      "LVsource_dirs#" &
      "LVsource_files#" &
+     "LVlocally_removed_files#" &
      "SVsource_list_file#" &
      "SVlibrary_dir#" &
      "SVlibrary_name#" &
      "SVlibrary_kind#" &
-     "SVlibrary_elaboration#" &
      "SVlibrary_version#" &
+     "LVlibrary_interface#" &
+     "SVlibrary_auto_init#" &
+     "LVlibrary_options#" &
+     "SVlibrary_src_dir#" &
+     "SVlibrary_gcc#" &
      "LVmain#" &
      "LVlanguages#" &
+     "SVmain_language#" &
 
    --  package Naming
 
      "Pnaming#" &
      "Saspecification_suffix#" &
+     "Saspec_suffix#" &
      "Saimplementation_suffix#" &
+     "Sabody_suffix#" &
      "SVseparate_suffix#" &
      "SVcasing#" &
      "SVdot_replacement#" &
      "SAspecification#" &
+     "SAspec#" &
      "SAimplementation#" &
-     "LAspecification_exceptions#" &
-     "LAimplementation_exceptions#" &
+     "SAbody#" &
+     "Laspecification_exceptions#" &
+     "Laimplementation_exceptions#" &
 
    --  package Compiler
 
      "Pcompiler#" &
      "Ladefault_switches#" &
-     "LAswitches#" &
+     "Lbswitches#" &
      "SVlocal_configuration_pragmas#" &
 
    --  package Builder
 
      "Pbuilder#" &
      "Ladefault_switches#" &
-     "LAswitches#" &
+     "Lbswitches#" &
+     "SAexecutable#" &
+     "SVexecutable_suffix#" &
      "SVglobal_configuration_pragmas#" &
 
    --  package gnatls
@@ -100,35 +115,52 @@ package body Prj.Attr is
 
      "Pbinder#" &
      "Ladefault_switches#" &
-     "LAswitches#" &
+     "Lbswitches#" &
 
    --  package Linker
 
      "Plinker#" &
      "Ladefault_switches#" &
-     "LAswitches#" &
+     "Lbswitches#" &
+     "LVlinker_options#" &
 
    --  package Cross_Reference
 
      "Pcross_reference#" &
      "Ladefault_switches#" &
-     "LAswitches#" &
+     "Lbswitches#" &
 
    --  package Finder
 
      "Pfinder#" &
      "Ladefault_switches#" &
-     "LAswitches#" &
+     "Lbswitches#" &
 
-   --  package Gnatstub
+   --  package Pretty_Printer
+
+     "Ppretty_printer#" &
+     "Ladefault_switches#" &
+     "Lbswitches#" &
+
+   --  package gnatstub
 
      "Pgnatstub#" &
-     "LVswitches#" &
+     "Ladefault_switches#" &
+     "Lbswitches#" &
+
+   --  package Eliminate
+
+     "Peliminate#" &
+     "Ladefault_switches#" &
+     "Lbswitches#" &
 
    --  package Ide
 
      "Pide#" &
+     "Ladefault_switches#" &
      "SVremote_host#" &
+     "SVprogram_host#" &
+     "SVcommunication_protocol#" &
      "Sacompiler_command#" &
      "SVdebugger_command#" &
      "SVgnatlist#" &
@@ -157,8 +189,8 @@ package body Prj.Attr is
    begin
       --  Make sure the two tables are empty
 
-      Attributes.Set_Last (Attributes.First);
-      Package_Attributes.Set_Last (Package_Attributes.First);
+      Attributes.Init;
+      Package_Attributes.Init;
 
       while Initialization_Data (Start) /= '#' loop
          Is_An_Attribute := True;
@@ -214,10 +246,20 @@ package body Prj.Attr is
             case Initialization_Data (Start) is
                when 'V' =>
                   Kind_2 := Single;
+
                when 'A' =>
                   Kind_2 := Associative_Array;
+
                when 'a' =>
                   Kind_2 := Case_Insensitive_Associative_Array;
+
+               when 'b' =>
+                  if File_Names_Case_Sensitive then
+                     Kind_2 := Case_Insensitive_Associative_Array;
+                  else
+                     Kind_2 := Case_Insensitive_Associative_Array;
+                  end if;
+
                when others =>
                   raise Program_Error;
             end case;

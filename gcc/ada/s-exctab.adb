@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with GNAT.HTable;
+with System.HTable;
+with System.Soft_Links;   use System.Soft_Links;
 
 package body System.Exception_Table is
 
@@ -46,7 +47,7 @@ package body System.Exception_Table is
    function Equal (A, B : Big_String_Ptr) return Boolean;
    function Get_Key (T : Exception_Data_Ptr) return Big_String_Ptr;
 
-   package Exception_HTable is new GNAT.HTable.Static_HTable (
+   package Exception_HTable is new System.HTable.Static_HTable (
      Header_Num => HTable_Headers,
      Element    => Exception_Data,
      Elmt_Ptr   => Exception_Data_Ptr,
@@ -97,6 +98,29 @@ package body System.Exception_Table is
       return T.Full_Name;
    end Get_Key;
 
+   -------------------------------
+   -- Get_Registered_Exceptions --
+   -------------------------------
+
+   procedure Get_Registered_Exceptions
+     (List : out Exception_Data_Array;
+      Last : out Integer)
+   is
+      Data : Exception_Data_Ptr := Exception_HTable.Get_First;
+
+   begin
+      Lock_Task.all;
+      Last := List'First - 1;
+
+      while Last < List'Last and then Data /= null loop
+         Last := Last + 1;
+         List (Last) := Data;
+         Data := Exception_HTable.Get_Next;
+      end loop;
+
+      Unlock_Task.all;
+   end Get_Registered_Exceptions;
+
    ----------
    -- Hash --
    ----------
@@ -124,9 +148,12 @@ package body System.Exception_Table is
    -- Internal_Exception --
    ------------------------
 
-   type String_Ptr is access all String;
+   function Internal_Exception
+     (X                   : String;
+      Create_If_Not_Exist : Boolean := True) return Exception_Data_Ptr
+   is
+      type String_Ptr is access all String;
 
-   function Internal_Exception (X : String) return Exception_Data_Ptr is
       Copy     : aliased String (X'First .. X'Last + 1);
       Res      : Exception_Data_Ptr;
       Dyn_Copy : String_Ptr;
@@ -140,7 +167,7 @@ package body System.Exception_Table is
       --  situation in the distributed case when an exception is defined only
       --  in a partition
 
-      if Res = null  then
+      if Res = null and then Create_If_Not_Exist then
          Dyn_Copy := new String'(Copy);
 
          Res :=
@@ -150,7 +177,8 @@ package body System.Exception_Table is
               Name_Length           => Copy'Length,
               Full_Name             => To_Ptr (Dyn_Copy.all'Address),
               HTable_Ptr            => null,
-              Import_Code           => 0);
+              Import_Code           => 0,
+              Raise_Hook            => null);
 
          Register_Exception (Res);
       end if;
@@ -167,6 +195,29 @@ package body System.Exception_Table is
       Exception_HTable.Set (X);
    end Register_Exception;
 
+   ---------------------------------
+   -- Registered_Exceptions_Count --
+   ---------------------------------
+
+   function Registered_Exceptions_Count return Natural is
+      Count : Natural := 0;
+      Data  : Exception_Data_Ptr := Exception_HTable.Get_First;
+
+   begin
+      --  We need to lock the runtime in the meantime, to avoid concurrent
+      --  access since we have only one iterator.
+
+      Lock_Task.all;
+
+      while Data /= null loop
+         Count := Count + 1;
+         Data := Exception_HTable.Get_Next;
+      end loop;
+
+      Unlock_Task.all;
+      return Count;
+   end Registered_Exceptions_Count;
+
    -----------------
    -- Set_HT_Link --
    -----------------
@@ -178,6 +229,8 @@ package body System.Exception_Table is
    begin
       T.HTable_Ptr := Next;
    end Set_HT_Link;
+
+--  Register the standard exceptions at elaboration time
 
 begin
    Register_Exception (Abort_Signal_Def'Access);

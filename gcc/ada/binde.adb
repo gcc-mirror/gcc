@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@ with Binderr; use Binderr;
 with Butil;   use Butil;
 with Debug;   use Debug;
 with Fname;   use Fname;
+with Lib;     use Lib;
 with Namet;   use Namet;
 with Opt;     use Opt;
 with Output;  use Output;
@@ -765,11 +766,14 @@ package body Binde is
       for W in
         Units.Table (Before).First_With .. Units.Table (Before).Last_With
       loop
-         --  Skip if no ALI file for this with, happens with certain
+         --  Skip if this with is an interface to a stand-alone library.
+         --  Skip also if no ALI file for this with, happens with certain
          --  specialized generic files that do not get compiled.
 
-         if Withs.Table (W).Afile /= No_File then
-
+         if not Withs.Table (W).Interface
+           and then Withs.Table (W).Afile /= No_File
+           and then Generic_Separately_Compiled (Withs.Table (W).Sfile)
+         then
             Elab_All_Links
               (Unit_Id_Of (Withs.Table (W).Uname),
                After,
@@ -840,7 +844,7 @@ package body Binde is
 
          when Elab_Desirable =>
             Error_Msg_Output
-              ("     reason: Elaborate_All probably needed in unit &",
+              ("     reason: implicit Elaborate_All in unit &",
                Info => True);
 
             Error_Msg_Output
@@ -1003,100 +1007,113 @@ package body Binde is
       for U in Units.First .. Units.Last loop
          Cur_Unit := U;
 
-         --  If there is a body and a spec, then spec must be elaborated first
+         --  If this is not an interface to a stand-alone library and
+         --  there is a body and a spec, then spec must be elaborated first
          --  Note that the corresponding spec immediately follows the body
 
-         if Units.Table (U).Utype = Is_Body then
+         if not Units.Table (U).Interface
+           and then Units.Table (U).Utype = Is_Body
+         then
             Build_Link (Corresponding_Spec (U), U, Spec_First);
          end if;
 
-         --  Process WITH references for this unit ignoring generic units
+         --  If this unit is not an interface to a stand-alone library,
+         --  process WITH references for this unit ignoring generic units and
+         --  interfaces to stand-alone libraries.
 
-         for W in Units.Table (U).First_With .. Units.Table (U).Last_With loop
-            if Withs.Table (W).Sfile /= No_File then
-
-               --  Check for special case of withing a unit that does not
-               --  exist any more. If the unit was completely missing we would
-               --  already have detected this, but a nasty case arises when we
-               --  have a subprogram body with no spec, and some obsolete unit
-               --  with's a previous (now disappeared) spec.
-
-               if Get_Name_Table_Info (Withs.Table (W).Uname) = 0 then
-                  Error_Msg_Name_1 := Units.Table (U).Sfile;
-                  Error_Msg_Name_2 := Withs.Table (W).Uname;
-                  Error_Msg ("% depends on & which no longer exists");
-                  goto Next_With;
-               end if;
-
-               Withed_Unit :=
-                 Unit_Id (Unit_Id_Of (Withs.Table (W).Uname));
-
-               --  Pragma Elaborate_All case, for this we use the recursive
-               --  Elab_All_Links procedure to establish the links.
-
-               if Withs.Table (W).Elaborate_All then
-
-                  --  Reset flags used to stop multiple visits to a given node
-
-                  for Uref in UNR.First .. UNR.Last loop
-                     UNR.Table (Uref).Visited := False;
-                  end loop;
-
-                  --  Now establish all the links we need
-
-                  Elab_All_Links
-                    (Withed_Unit, U, Elab_All,
-                     Make_Elab_Entry
-                       (Withs.Table (W).Uname, No_Elab_All_Link));
-
-               --  Elaborate_All_Desirable case, for this we establish the
-               --  same links as above, but with a different reason.
-
-               elsif Withs.Table (W).Elab_All_Desirable then
-
-                  --  Reset flags used to stop multiple visits to a given node
-
-                  for Uref in UNR.First .. UNR.Last loop
-                     UNR.Table (Uref).Visited := False;
-                  end loop;
-
-                  --  Now establish all the links we need
-
-                  Elab_All_Links
-                    (Withed_Unit, U, Elab_Desirable,
-                     Make_Elab_Entry
-                       (Withs.Table (W).Uname, No_Elab_All_Link));
-
-               --  Pragma Elaborate case. We must build a link for the withed
-               --  unit itself, and also the corresponding body if there is one
-
-               --  However, skip this processing if there is no ALI file for
-               --  the WITH entry, because this means it is a generic (even
-               --  when we fix the generics so that an ALI file is present,
-               --  we probably still will have no ALI file for unchecked
-               --  and other special cases).
-
-               elsif Withs.Table (W).Elaborate
-                 and then Withs.Table (W).Afile /= No_File
+         if not Units.Table (U).Interface then
+            for
+              W in Units.Table (U).First_With .. Units.Table (U).Last_With
+            loop
+               if Withs.Table (W).Sfile /= No_File
+                 and then (not Withs.Table (W).Interface)
                then
-                  Build_Link (Withed_Unit, U, Withed);
+                  --  Check for special case of withing a unit that does not
+                  --  exist any more. If the unit was completely missing we
+                  --  would already have detected this, but a nasty case arises
+                  --  when we have a subprogram body with no spec, and some
+                  --  obsolete unit with's a previous (now disappeared) spec.
 
-                  if Units.Table (Withed_Unit).Utype = Is_Spec then
-                     Build_Link
-                      (Corresponding_Body (Withed_Unit), U, Elab);
+                  if Get_Name_Table_Info (Withs.Table (W).Uname) = 0 then
+                     Error_Msg_Name_1 := Units.Table (U).Sfile;
+                     Error_Msg_Name_2 := Withs.Table (W).Uname;
+                     Error_Msg ("% depends on & which no longer exists");
+                     goto Next_With;
                   end if;
 
-               --  Case of normal WITH with no elaboration pragmas, just
-               --  build the single link to the directly referenced unit
+                  Withed_Unit :=
+                    Unit_Id (Unit_Id_Of (Withs.Table (W).Uname));
 
-               else
-                  Build_Link (Withed_Unit, U, Withed);
+                  --  Pragma Elaborate_All case, for this we use the recursive
+                  --  Elab_All_Links procedure to establish the links.
+
+                  if Withs.Table (W).Elaborate_All then
+
+                     --  Reset flags used to stop multiple visits to a given
+                     --  node.
+
+                     for Uref in UNR.First .. UNR.Last loop
+                        UNR.Table (Uref).Visited := False;
+                     end loop;
+
+                     --  Now establish all the links we need
+
+                     Elab_All_Links
+                       (Withed_Unit, U, Elab_All,
+                        Make_Elab_Entry
+                          (Withs.Table (W).Uname, No_Elab_All_Link));
+
+                     --  Elaborate_All_Desirable case, for this we establish
+                     --  the same links as above, but with a different reason.
+
+                  elsif Withs.Table (W).Elab_All_Desirable then
+
+                     --  Reset flags used to stop multiple visits to a given
+                     --  node.
+
+                     for Uref in UNR.First .. UNR.Last loop
+                        UNR.Table (Uref).Visited := False;
+                     end loop;
+
+                     --  Now establish all the links we need
+
+                     Elab_All_Links
+                       (Withed_Unit, U, Elab_Desirable,
+                        Make_Elab_Entry
+                          (Withs.Table (W).Uname, No_Elab_All_Link));
+
+                     --  Pragma Elaborate case. We must build a link for the
+                     --  withed unit itself, and also the corresponding body
+                     --  if there is one.
+
+                     --  However, skip this processing if there is no ALI file
+                     --  for the WITH entry, because this means it is a
+                     --  generic (even when we fix the generics so that an ALI
+                     --  file is present, we probably still will have no ALI
+                     --  file for unchecked and other special cases).
+
+                  elsif Withs.Table (W).Elaborate
+                    and then Withs.Table (W).Afile /= No_File
+                  then
+                     Build_Link (Withed_Unit, U, Withed);
+
+                     if Units.Table (Withed_Unit).Utype = Is_Spec then
+                        Build_Link
+                          (Corresponding_Body (Withed_Unit), U, Elab);
+                     end if;
+
+                     --  Case of normal WITH with no elaboration pragmas, just
+                     --  build the single link to the directly referenced unit
+
+                  else
+                     Build_Link (Withed_Unit, U, Withed);
+                  end if;
                end if;
-            end if;
 
-            <<Next_With>>
+               <<Next_With>>
                null;
-         end loop;
+            end loop;
+         end if;
       end loop;
    end Gather_Dependencies;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--             Copyright (C) 2001-2003 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -95,6 +95,16 @@ package Prj.Tree is
    --  Returns a Project_Node_Record with the specified Kind and
    --  Expr_Kind; all the other components have default nil values.
 
+   function Hash (N : Project_Node_Id) return Header_Num;
+   --  Used for hash tables where the key is a Project_Node_Id
+
+   function Imported_Or_Extended_Project_Of
+     (Project   : Project_Node_Id;
+      With_Name : Name_Id)
+      return      Project_Node_Id;
+   --  Return the node of a project imported or extended by project Project and
+   --  whose name is With_Name. Return Empty_Node if there is no such project.
+
    ----------------------
    -- Access Functions --
    ----------------------
@@ -103,19 +113,24 @@ package Prj.Tree is
    --  of the Project File tree
 
    function Name_Of (Node : Project_Node_Id) return Name_Id;
+   pragma Inline (Name_Of);
    --  Valid for all non empty nodes. May return No_Name for nodes that have
    --  no names.
 
    function Kind_Of (Node : Project_Node_Id) return Project_Node_Kind;
+   pragma Inline (Kind_Of);
    --  Valid for all non empty nodes
 
    function Location_Of (Node : Project_Node_Id) return Source_Ptr;
+   pragma Inline (Location_Of);
    --  Valid for all non empty nodes
 
    function Directory_Of (Node : Project_Node_Id) return Name_Id;
+   pragma Inline (Directory_Of);
    --  Only valid for N_Project nodes.
 
    function Expression_Kind_Of (Node : Project_Node_Id) return Variable_Kind;
+   pragma Inline (Expression_Kind_Of);
    --  Only valid for N_Literal_String, N_Attribute_Declaration,
    --  N_Variable_Declaration, N_Typed_Variable_Declaration, N_Expression,
    --  N_Term, N_Variable_Reference or N_Attribute_Reference nodes.
@@ -123,189 +138,253 @@ package Prj.Tree is
    function First_Variable_Of
      (Node  : Project_Node_Id)
       return  Variable_Node_Id;
+   pragma Inline (First_Variable_Of);
    --  Only valid for N_Project or N_Package_Declaration nodes
 
    function First_Package_Of
      (Node  : Project_Node_Id)
       return  Package_Declaration_Id;
+   pragma Inline (First_Package_Of);
    --  Only valid for N_Project nodes
 
    function Package_Id_Of (Node  : Project_Node_Id) return Package_Node_Id;
+   pragma Inline (Package_Id_Of);
    --  Only valid for N_Package_Declaration nodes
 
    function Path_Name_Of (Node  : Project_Node_Id) return Name_Id;
+   pragma Inline (Path_Name_Of);
    --  Only valid for N_Project and N_With_Clause nodes.
 
-   function String_Value_Of (Node  : Project_Node_Id) return String_Id;
+   function String_Value_Of (Node  : Project_Node_Id) return Name_Id;
+   pragma Inline (String_Value_Of);
    --  Only valid for N_With_Clause or N_Literal_String nodes.
 
    function First_With_Clause_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (First_With_Clause_Of);
    --  Only valid for N_Project nodes
 
    function Project_Declaration_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Project_Declaration_Of);
    --  Only valid for N_Project nodes
+
+   function Extending_Project_Of
+     (Node  : Project_Node_Id)
+      return  Project_Node_Id;
+   pragma Inline (Extending_Project_Of);
+   --  Only valid for N_Project_Declaration nodes
 
    function First_String_Type_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (First_String_Type_Of);
    --  Only valid for N_Project nodes
 
-   function Modified_Project_Path_Of
+   function Extended_Project_Path_Of
      (Node  : Project_Node_Id)
-      return  String_Id;
+      return  Name_Id;
+   pragma Inline (Extended_Project_Path_Of);
    --  Only valid for N_With_Clause nodes
 
    function Project_Node_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
-   --  Only valid for N_Project nodes
+   pragma Inline (Project_Node_Of);
+   --  Only valid for N_With_Clause, N_Variable_Reference and
+   --  N_Attribute_Reference nodes.
+
+   function Non_Limited_Project_Node_Of
+     (Node  : Project_Node_Id)
+      return  Project_Node_Id;
+   pragma Inline (Non_Limited_Project_Node_Of);
+   --  Only valid for N_With_Clause nodes. Returns Empty_Node for limited
+   --  imported project files, otherwise returns the same result as
+   --  Project_Node_Of.
 
    function Next_With_Clause_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Next_With_Clause_Of);
    --  Only valid for N_With_Clause nodes
 
    function First_Declarative_Item_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (First_Declarative_Item_Of);
    --  Only valid for N_With_Clause nodes
 
-   function Modified_Project_Of
+   function Extended_Project_Of
      (Node  : Project_Node_Id)
       return Project_Node_Id;
+   pragma Inline (Extended_Project_Of);
    --  Only valid for N_With_Clause nodes
 
    function Current_Item_Node
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Current_Item_Node);
    --  Only valid for N_Declarative_Item nodes
 
    function Next_Declarative_Item
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Next_Declarative_Item);
    --  Only valid for N_Declarative_Item node
 
    function Project_Of_Renamed_Package_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Project_Of_Renamed_Package_Of);
    --  Only valid for N_Package_Declaration nodes.
    --  May return Empty_Node.
 
    function Next_Package_In_Project
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Next_Package_In_Project);
    --  Only valid for N_Package_Declaration nodes
 
    function First_Literal_String
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (First_Literal_String);
    --  Only valid for N_String_Type_Declaration nodes
 
    function Next_String_Type
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Next_String_Type);
    --  Only valid for N_String_Type_Declaration nodes
 
    function Next_Literal_String
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Next_Literal_String);
    --  Only valid for N_Literal_String nodes
 
    function Expression_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Expression_Of);
    --  Only valid for N_Attribute_Declaration, N_Typed_Variable_Declaration
    --  or N_Variable_Declaration nodes
 
+   function Associative_Project_Of
+     (Node  : Project_Node_Id)
+      return  Project_Node_Id;
+   pragma Inline (Associative_Project_Of);
+   --  Only valid for N_Attribute_Declaration nodes
+
+   function Associative_Package_Of
+     (Node  : Project_Node_Id)
+      return  Project_Node_Id;
+   pragma Inline (Associative_Package_Of);
+   --  Only valid for N_Attribute_Declaration nodes
+
    function Value_Is_Valid
      (For_Typed_Variable : Project_Node_Id;
-      Value              : String_Id)
+      Value              : Name_Id)
       return               Boolean;
+   pragma Inline (Value_Is_Valid);
    --  Only valid for N_Typed_Variable_Declaration. Returns True if Value is
    --  in the list of allowed strings for For_Typed_Variable. False otherwise.
 
    function Associative_Array_Index_Of
      (Node  : Project_Node_Id)
-      return  String_Id;
+      return  Name_Id;
+   pragma Inline (Associative_Array_Index_Of);
    --  Only valid for N_Attribute_Declaration and N_Attribute_Reference.
    --  Returns No_String for non associative array attributes.
 
    function Next_Variable
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Next_Variable);
    --  Only valid for N_Typed_Variable_Declaration or N_Variable_Declaration
    --  nodes.
 
    function First_Term
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (First_Term);
    --  Only valid for N_Expression nodes
 
    function Next_Expression_In_List
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Next_Expression_In_List);
    --  Only valid for N_Expression nodes
 
    function Current_Term
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Current_Term);
    --  Only valid for N_Term nodes
 
    function Next_Term
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Next_Term);
    --  Only valid for N_Term nodes
 
    function First_Expression_In_List
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (First_Expression_In_List);
    --  Only valid for N_Literal_String_List nodes
 
    function Package_Node_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Package_Node_Of);
    --  Only valid for N_Variable_Reference or N_Attribute_Reference nodes.
    --  May return Empty_Node.
 
    function String_Type_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (String_Type_Of);
    --  Only valid for N_Variable_Reference or N_Typed_Variable_Declaration
    --  nodes.
 
    function External_Reference_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (External_Reference_Of);
    --  Only valid for N_External_Value nodes
 
    function External_Default_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (External_Default_Of);
    --  Only valid for N_External_Value nodes
 
    function Case_Variable_Reference_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Case_Variable_Reference_Of);
    --  Only valid for N_Case_Construction nodes
 
    function First_Case_Item_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (First_Case_Item_Of);
    --  Only valid for N_Case_Construction nodes
 
    function First_Choice_Of
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (First_Choice_Of);
    --  Return the first choice in a N_Case_Item, or Empty_Node if
    --  this is when others.
 
    function Next_Case_Item
      (Node  : Project_Node_Id)
       return  Project_Node_Id;
+   pragma Inline (Next_Case_Item);
    --  Only valid for N_Case_Item nodes
 
    function Case_Insensitive (Node : Project_Node_Id) return Boolean;
@@ -324,166 +403,223 @@ package Prj.Tree is
    procedure Set_Name_Of
      (Node : Project_Node_Id;
       To   : Name_Id);
+   pragma Inline (Set_Name_Of);
 
    procedure Set_Kind_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Kind);
+   pragma Inline (Set_Kind_Of);
 
    procedure Set_Location_Of
      (Node : Project_Node_Id;
       To   : Source_Ptr);
+   pragma Inline (Set_Location_Of);
 
    procedure Set_Directory_Of
      (Node : Project_Node_Id;
       To   : Name_Id);
+   pragma Inline (Set_Directory_Of);
 
    procedure Set_Expression_Kind_Of
      (Node : Project_Node_Id;
       To   : Variable_Kind);
+   pragma Inline (Set_Expression_Kind_Of);
 
    procedure Set_First_Variable_Of
      (Node : Project_Node_Id;
       To   : Variable_Node_Id);
+   pragma Inline (Set_First_Variable_Of);
 
    procedure Set_First_Package_Of
      (Node : Project_Node_Id;
       To   : Package_Declaration_Id);
+   pragma Inline (Set_First_Package_Of);
 
    procedure Set_Package_Id_Of
      (Node : Project_Node_Id;
       To   : Package_Node_Id);
+   pragma Inline (Set_Package_Id_Of);
 
    procedure Set_Path_Name_Of
      (Node : Project_Node_Id;
       To   : Name_Id);
+   pragma Inline (Set_Path_Name_Of);
 
    procedure Set_String_Value_Of
      (Node : Project_Node_Id;
-      To   : String_Id);
+      To   : Name_Id);
+   pragma Inline (Set_String_Value_Of);
 
    procedure Set_First_With_Clause_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_First_With_Clause_Of);
 
    procedure Set_Project_Declaration_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Project_Declaration_Of);
+
+   procedure Set_Extending_Project_Of
+     (Node : Project_Node_Id;
+      To   : Project_Node_Id);
+   pragma Inline (Set_Extending_Project_Of);
 
    procedure Set_First_String_Type_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_First_String_Type_Of);
 
-   procedure Set_Modified_Project_Path_Of
+   procedure Set_Extended_Project_Path_Of
      (Node : Project_Node_Id;
-      To   : String_Id);
+      To   : Name_Id);
+   pragma Inline (Set_Extended_Project_Path_Of);
 
    procedure Set_Project_Node_Of
-     (Node : Project_Node_Id;
-      To   : Project_Node_Id);
+     (Node         : Project_Node_Id;
+      To           : Project_Node_Id;
+      Limited_With : Boolean := False);
+   pragma Inline (Set_Project_Node_Of);
 
    procedure Set_Next_With_Clause_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Next_With_Clause_Of);
 
    procedure Set_First_Declarative_Item_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_First_Declarative_Item_Of);
 
-   procedure Set_Modified_Project_Of
+   procedure Set_Extended_Project_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Extended_Project_Of);
 
    procedure Set_Current_Item_Node
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Current_Item_Node);
 
    procedure Set_Next_Declarative_Item
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Next_Declarative_Item);
 
    procedure Set_Project_Of_Renamed_Package_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Project_Of_Renamed_Package_Of);
 
    procedure Set_Next_Package_In_Project
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Next_Package_In_Project);
 
    procedure Set_First_Literal_String
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_First_Literal_String);
 
    procedure Set_Next_String_Type
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Next_String_Type);
 
    procedure Set_Next_Literal_String
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Next_Literal_String);
 
    procedure Set_Expression_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Expression_Of);
+
+   procedure Set_Associative_Project_Of
+     (Node : Project_Node_Id;
+      To   : Project_Node_Id);
+   pragma Inline (Set_Associative_Project_Of);
+
+   procedure Set_Associative_Package_Of
+     (Node : Project_Node_Id;
+      To   : Project_Node_Id);
+   pragma Inline (Set_Associative_Package_Of);
 
    procedure Set_Associative_Array_Index_Of
      (Node : Project_Node_Id;
-      To   : String_Id);
+      To   : Name_Id);
+   pragma Inline (Set_Associative_Array_Index_Of);
 
    procedure Set_Next_Variable
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Next_Variable);
 
    procedure Set_First_Term
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_First_Term);
 
    procedure Set_Next_Expression_In_List
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Next_Expression_In_List);
 
    procedure Set_Current_Term
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Current_Term);
 
    procedure Set_Next_Term
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Next_Term);
 
    procedure Set_First_Expression_In_List
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_First_Expression_In_List);
 
    procedure Set_Package_Node_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Package_Node_Of);
 
    procedure Set_String_Type_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_String_Type_Of);
 
    procedure Set_External_Reference_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_External_Reference_Of);
 
    procedure Set_External_Default_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_External_Default_Of);
 
    procedure Set_Case_Variable_Reference_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Case_Variable_Reference_Of);
 
    procedure Set_First_Case_Item_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_First_Case_Item_Of);
 
    procedure Set_First_Choice_Of
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_First_Choice_Of);
 
    procedure Set_Next_Case_Item
      (Node : Project_Node_Id;
       To   : Project_Node_Id);
+   pragma Inline (Set_Next_Case_Item);
 
    procedure Set_Case_Insensitive
      (Node : Project_Node_Id;
@@ -532,7 +668,7 @@ package Prj.Tree is
          Path_Name : Name_Id := No_Name;
          --  See below for what Project_Node_Kind it is used
 
-         Value : String_Id := No_String;
+         Value : Name_Id := No_Name;
          --  See below for what Project_Node_Kind it is used
 
          Field1 : Project_Node_Id := Empty_Node;
@@ -560,7 +696,7 @@ package Prj.Tree is
       --    --  Field1:    first with clause
       --    --  Field2:    project declaration
       --    --  Field3:    first string type
-      --    --  Value:     modified project path name (if any)
+      --    --  Value:     extended project path name (if any)
 
       --    N_With_Clause,
       --    --  Name:      imported project name
@@ -568,7 +704,7 @@ package Prj.Tree is
       --    --  Expr_Kind: Undefined
       --    --  Field1:    project node
       --    --  Field2:    next with clause
-      --    --  Field3:    not used
+      --    --  Field3:    project node or empty if "limited with"
       --    --  Value:     literal string withed
 
       --    N_Project_Declaration,
@@ -576,8 +712,8 @@ package Prj.Tree is
       --    --  Path_Name: not used
       --    --  Expr_Kind: Undefined
       --    --  Field1:    first declarative item
-      --    --  Field2:    modified project
-      --    --  Field3:    not used
+      --    --  Field2:    extended project
+      --    --  Field3:    extending project
       --    --  Value:     not used
 
       --    N_Declarative_Item,
@@ -621,8 +757,8 @@ package Prj.Tree is
       --    --  Path_Name: not used
       --    --  Expr_Kind: attribute kind
       --    --  Field1:    expression
-      --    --  Field2:    not used
-      --    --  Field3:    not used
+      --    --  Field2:    project of full associative array
+      --    --  Field3:    package of full associative array
       --    --  Value:     associative array index
       --    --             (if an associative array element)
 
@@ -742,12 +878,12 @@ package Prj.Tree is
          Node : Project_Node_Id;
          --  Node of the project in table Project_Nodes
 
-         Modified : Boolean;
-         --  True when the project is being modified by another project
+         Extended : Boolean;
+         --  True when the project is being extended by another project
       end record;
 
       No_Project_Name_And_Node : constant Project_Name_And_Node :=
-        (Name => No_Name, Node => Empty_Node, Modified => True);
+        (Name => No_Name, Node => Empty_Node, Extended => True);
 
       package Projects_Htable is new GNAT.HTable.Simple_HTable
         (Header_Num => Header_Num,

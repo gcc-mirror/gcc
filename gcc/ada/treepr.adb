@@ -601,7 +601,7 @@ package body Treepr is
          Write_Str ("Character code = ");
 
          declare
-            C : Char_Code := Char_Code (Val - Char_Code_Bias);
+            C : constant Char_Code := Char_Code (Val - Char_Code_Bias);
 
          begin
             Write_Int (Int (C));
@@ -1837,6 +1837,16 @@ package body Treepr is
          Visit_Descendent (Field21 (N));
          Visit_Descendent (Field22 (N));
          Visit_Descendent (Field23 (N));
+
+         --  Now an interesting kludge. Normally parents are always printed
+         --  since we traverse the tree in a downwards direction. There is
+         --  however an exception to this rule, which is the case where a
+         --  parent is constructed by the compiler and is not referenced
+         --  elsewhere in the tree. The following catches this case
+
+         if not Comes_From_Source (N) then
+            Visit_Descendent (Union_Id (Parent (N)));
+         end if;
 
          --  You may be wondering why we omitted Field2 above. The answer
          --  is that this is the Next_Entity field, and we want to treat

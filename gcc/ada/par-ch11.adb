@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -214,7 +214,6 @@ package body Ch11 is
    function Parse_Exception_Handlers return List_Id is
       Handler       : Node_Id;
       Handlers_List : List_Id;
-      Pragmas_List  : List_Id;
 
    begin
       Handlers_List := New_List;
@@ -226,7 +225,6 @@ package body Ch11 is
       else
          loop
             Handler := P_Exception_Handler;
-            Pragmas_List := No_List;
             Append (Handler, Handlers_List);
 
             --  Note: no need to check for pragmas here. Although the

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001 Free Software Foundation, Inc.               --
+--         Copyright (C) 2001-2003 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,8 +59,15 @@ package body Osint.C is
    ----------------------
 
    procedure Close_Debug_File is
+      Status : Boolean;
    begin
-      Close (Output_FD);
+      Close (Output_FD, Status);
+
+      if not Status then
+         Fail
+           ("error while closing expanded source file ",
+            Get_Name_String (Output_File_Name));
+      end if;
    end Close_Debug_File;
 
    -------------------------------
@@ -68,8 +75,15 @@ package body Osint.C is
    -------------------------------
 
    procedure Close_Output_Library_Info is
+      Status : Boolean;
    begin
-      Close (Output_FD);
+      Close (Output_FD, Status);
+
+      if not Status then
+         Fail
+           ("error while closing ALI file ",
+            Get_Name_String (Output_File_Name));
+      end if;
    end Close_Output_Library_Info;
 
    ------------------------
@@ -77,8 +91,15 @@ package body Osint.C is
    ------------------------
 
    procedure Close_Repinfo_File is
+      Status : Boolean;
    begin
-      Close (Output_FD);
+      Close (Output_FD, Status);
+
+      if not Status then
+         Fail
+           ("error while closing representation info file ",
+            Get_Name_String (Output_File_Name));
+      end if;
    end Close_Repinfo_File;
 
    ---------------------------
@@ -299,9 +320,16 @@ package body Osint.C is
    ----------------
 
    procedure Tree_Close is
+      Status : Boolean;
    begin
       Tree_Write_Terminate;
-      Close (Output_FD);
+      Close (Output_FD, Status);
+
+      if not Status then
+         Fail
+           ("error while closing tree file ",
+            Get_Name_String (Output_File_Name));
+      end if;
    end Tree_Close;
 
    -----------------
@@ -324,7 +352,8 @@ package body Osint.C is
          Name_Buffer (1 .. Name_Len) := Output_Object_File_Name.all;
       end if;
 
-      Dot_Index := 0;
+      Dot_Index := Name_Len + 1;
+
       for J in reverse 1 .. Name_Len loop
          if Name_Buffer (J) = '.' then
             Dot_Index := J;
@@ -338,6 +367,7 @@ package body Osint.C is
 
       --  Change exctension to adt
 
+      Name_Buffer (Dot_Index) := '.';
       Name_Buffer (Dot_Index + 1) := 'a';
       Name_Buffer (Dot_Index + 2) := 'd';
       Name_Buffer (Dot_Index + 3) := 't';

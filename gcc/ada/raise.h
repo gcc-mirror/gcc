@@ -6,8 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                                                                          *
- *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2002, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -32,7 +31,7 @@
  ****************************************************************************/
 
 struct Exception_Data
-{ 
+{
   char  Handled_By_Others;
   char Lang;
   int Name_Length;
@@ -59,9 +58,10 @@ extern void __gnat_free			PARAMS ((void *));
 extern void *__gnat_realloc		PARAMS ((void *, __SIZE_TYPE__));
 extern void __gnat_finalize		PARAMS ((void));
 extern void set_gnat_exit_status	PARAMS ((int));
-extern void __gnat_set_globals		PARAMS ((int, int, 
+extern void __gnat_set_globals		PARAMS ((int, int,
 						 char, char, char, char,
-						 char *, int, int, int));
+						 char *, char *,
+						 int, int, int, int));
 extern void __gnat_initialize		PARAMS ((void));
 extern void __gnat_init_float		PARAMS ((void));
 extern void __gnat_install_handler	PARAMS ((void));

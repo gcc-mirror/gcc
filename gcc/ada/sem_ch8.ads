@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -56,11 +56,6 @@ package Sem_Ch8 is
    procedure Analyze_Use_Package                        (N : Node_Id);
    procedure Analyze_Use_Type                           (N : Node_Id);
 
-   function Applicable_Use (Pack_Name : Node_Id) return Boolean;
-   --  Common code to Use_One_Package and Set_Use, to determine whether
-   --  use clause must be processed. Pack_Name is an entity name that
-   --  references the package in question.
-
    procedure End_Scope;
    --  Called at end of scope. On exit from blocks and bodies (subprogram,
    --  package, task, and protected bodies), the name of the current scope
@@ -91,10 +86,6 @@ package Sem_Ch8 is
    --  an appropriate list of entries has been made in the overload
    --  interpretation table (to be disambiguated in the resolve phase).
 
-   procedure Find_Expanded_Name (N : Node_Id);
-   --  Selected component is known to be expanded name. Verify legality
-   --  of selector given the scope denoted by prefix.
-
    procedure Find_Selected_Component (N : Node_Id);
    --  Resolve various cases of selected components, recognize expanded names
 
@@ -102,24 +93,16 @@ package Sem_Ch8 is
    --  Perform name resolution, and verify that the name found is that of a
    --  type. On return the Entity and Etype fields of the node N are set
    --  appropriately. If it is an incomplete type whose full declaration has
-   --  been seen, return the entity in the full declaration. Similarly, if
-   --  the type is private, it has receivd a full declaration, and we are
-   --  in the private part or body of the package, return the full
-   --  declaration as well. Special processing for Class types as well.
+   --  been seen, they are set to the entity in the full declaration.
+   --  Similarly, if the type is private, it has received a full declaration,
+   --  and we are in the private part or body of the package, then the two
+   --  fields are set to the entity of the full declaration as well. This
+   --  procedure also provides special processing for Class types as well.
 
    function Get_Full_View (T_Name : Entity_Id) return Entity_Id;
    --  If T_Name is an incomplete type and the full declaration has been
    --  seen, or is the name of a class_wide type whose root is incomplete.
    --  return the corresponding full declaration.
-
-   function Has_Implicit_Operator (N : Node_Id) return Boolean;
-   --  N is an expanded name whose selector is an operator name (eg P."+").
-   --  A declarative part contains an implicit declaration of an operator
-   --  if it has a declaration of a type to which one of the predefined
-   --  operators apply. The existence of this routine is an artifact of
-   --  our implementation: a more straightforward but more space-consuming
-   --  choice would be to make all inherited operators explicit in the
-   --  symbol table.
 
    procedure Initialize;
    --  Initializes data structures used for visibility analysis. Must be
@@ -134,14 +117,6 @@ package Sem_Ch8 is
    function In_Open_Scopes (S : Entity_Id) return Boolean;
    --  S is the entity of a scope. This function determines if this scope
    --  is currently open (i.e. it appears somewhere in the scope stack).
-
-   function Is_Appropriate_For_Record (T : Entity_Id) return Boolean;
-   --  Prefix is appropriate for record if it is of a record type, or
-   --  an access to such.
-
-   function Is_Appropriate_For_Entry_Prefix (T : Entity_Id) return Boolean;
-   --  True if it is of a task type, a protected type, or else an access
-   --  to one of these types.
 
    procedure New_Scope (S : Entity_Id);
    --  Make new scope stack entry, pushing S, the entity for a scope
@@ -168,16 +143,6 @@ package Sem_Ch8 is
    --  Rtsfind, must be compiled in its own context, and the current scope
    --  stack containing U2 and local scopes must be made unreachable. On
    --  return, the contents of the scope stack must be made accessible again.
-
-   procedure Use_One_Package (P : Entity_Id; N : Node_Id);
-   --  Make visible entities declarated in package P potentially use-visible
-   --  in the current context. Also used in the analysis of subunits, when
-   --  re-installing use clauses of parent units. N is the use_clause that
-   --  names P (and possibly other packages).
-
-   procedure Use_One_Type (Id : Node_Id);
-   --  Id is the subtype mark from a use type clause. This procedure makes
-   --  the primitive operators of the type potentially use-visible.
 
    procedure Set_Use (L : List_Id);
    --  Find use clauses that are declarative items in a package declaration

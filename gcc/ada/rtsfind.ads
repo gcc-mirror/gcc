@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,25 @@ package Rtsfind is
    --    of Ada.Calendar. This is part of a temporary implementation of
    --    delays; eventually, packages implementing delays will be found
    --    relative to the package that declares the time type.
+
+   --    Names of the form Ada_Finalization_xxx are second level children
+   --    of Ada.Finalization.
+
+   --    Names of the form Ada_Interrupts_xxx are second level children
+   --    of Ada.Interrupts. This is needed for Ada.Interrupts.Names which
+   --    is used by pragma Interrupt_State.
+
+   --    Names of the form Ada_Real_Time_xxx are second level children
+   --    of Ada.Real_Time.
+
+   --    Names of the form Ada_Streams_xxx are second level children
+   --    of Ada.Streams.
+
+   --    Names of the form Ada_Text_IO_xxx are second level children
+   --    of Ada.Text_IO.
+
+   --    Names of the form Ada_Wide_Text_IO_xxx are second level children
+   --    of Ada.Wide_Text_IO.
 
    --    Names of the form Interfaces_xxx are first level children of
    --    Interfaces_CPP refers to package Interfaces.CPP
@@ -107,6 +126,10 @@ package Rtsfind is
 
       Ada_Finalization_List_Controller,
 
+      --  Children of Ada.Interrupts
+
+      Ada_Interrupts_Names,
+
       --  Children of Ada.Real_Time
 
       Ada_Real_Time_Delays,
@@ -153,29 +176,26 @@ package Rtsfind is
       System_Assertions,
       System_Aux_DEC,
       System_Bit_Ops,
+      System_Boolean_Array_Operations,
       System_Checked_Pools,
+      System_Compare_Array_Signed_16,
+      System_Compare_Array_Signed_32,
+      System_Compare_Array_Signed_64,
+      System_Compare_Array_Signed_8,
+      System_Compare_Array_Unsigned_16,
+      System_Compare_Array_Unsigned_32,
+      System_Compare_Array_Unsigned_64,
+      System_Compare_Array_Unsigned_8,
       System_Exception_Table,
       System_Exceptions,
-      System_Exn_Flt,
       System_Exn_Int,
-      System_Exn_LFlt,
-      System_Exn_LInt,
       System_Exn_LLF,
       System_Exn_LLI,
-      System_Exn_SFlt,
-      System_Exn_SInt,
-      System_Exn_SSI,
-      System_Exp_Flt,
       System_Exp_Int,
-      System_Exp_LFlt,
       System_Exp_LInt,
-      System_Exp_LLF,
       System_Exp_LLI,
       System_Exp_LLU,
       System_Exp_Mod,
-      System_Exp_SFlt,
-      System_Exp_SInt,
-      System_Exp_SSI,
       System_Exp_Uns,
       System_Fat_Flt,
       System_Fat_LFlt,
@@ -199,6 +219,7 @@ package Rtsfind is
       System_Interrupts,
       System_Machine_Code,
       System_Mantissa,
+      System_Memcop,
       System_Pack_03,
       System_Pack_05,
       System_Pack_06,
@@ -331,6 +352,10 @@ package Rtsfind is
      Ada_Finalization_List_Controller .. Ada_Finalization_List_Controller;
    --  Range of values for children of Ada.Finalization
 
+   subtype Ada_Interrupts_Child is Ada_Child range
+     Ada_Interrupts_Names .. Ada_Interrupts_Names;
+   --  Range of values for children of Ada.Interrupts
+
    subtype Ada_Real_Time_Child is Ada_Child
      range Ada_Real_Time_Delays .. Ada_Real_Time_Delays;
    --  Range of values for children of Ada.Real_Time
@@ -373,40 +398,6 @@ package Rtsfind is
        System_Tasking_Async_Delays_Enqueue_RT;
    --  Range of values for children of System.Tasking.Async_Delays
 
-   OK_To_Use_In_No_Run_Time_Mode : array (RTU_Id) of Boolean :=
-     (Ada_Tags                => True,
-      Ada_Exceptions          => True,
-      Interfaces              => True,
-      System                  => True,
-      System_Fat_Flt          => True,
-      System_Fat_LFlt         => True,
-      System_Fat_LLF          => True,
-      System_Fat_SFlt         => True,
-      System_Machine_Code     => True,
-      System_Storage_Elements => True,
-      System_Unsigned_Types   => True,
-      System_Secondary_Stack  => True,
-      others                  => False);
-   --  This array defines the set of packages that can legitimately be
-   --  accessed by Rtsfind in No_Run_Time mode. Any attempt to load
-   --  any other package in this mode will result in a message noting
-   --  use of a feature not supported in high integrity mode.
-
-   OK_To_Use_In_Ravenscar_Mode : array (RTU_Id) of Boolean :=
-     (System_Interrupts                             => True,
-      System_Tasking                                => True,
-      System_Tasking_Protected_Objects              => True,
-      System_Tasking_Restricted_Stages              => True,
-      System_Tasking_Protected_Objects_Single_Entry => True,
-      System_Task_Info                              => True,
-      System_Parameters                             => True,
-      Ada_Real_Time                                 => True,
-      Ada_Real_Time_Delays                          => True,
-      others                                        => False);
-   --  This array defines the set of packages that can legitimately be
-   --  accessed by Rtsfind in Ravenscar mode, in addition to the
-   --  No_Run_Time units which are also allowed.
-
    --------------------------
    -- Runtime Entity Table --
    --------------------------
@@ -435,6 +426,7 @@ package Rtsfind is
 
      RE_Null,
 
+     RE_Exceptions_Available_In_HIE,     -- Ada.Exceptions
      RE_Code_Loc,                        -- Ada.Exceptions
      RE_Current_Target_Exception,        -- Ada.Exceptions (JGNAT use only)
      RE_Exception_Id,                    -- Ada.Exceptions
@@ -455,10 +447,13 @@ package Rtsfind is
      RE_Simple_List_Controller,          -- Ada.Finalization.List_Controller
      RE_List_Controller,                 -- Ada.Finalization.List_Controller
 
-     RE_Interrupt_Id,                    -- Ada.Interrupts
+     RE_Interrupt_ID,                    -- Ada.Interrupts
+
+     RE_Names,                           -- Ada.Interupts.Names
 
      RE_Root_Stream_Type,                -- Ada.Streams
      RE_Stream_Element,                  -- Ada.Streams
+     RE_Stream_Element_Count,            -- Ada.Streams
      RE_Stream_Element_Offset,           -- Ada.Streams
      RE_Stream_Element_Array,            -- Ada.Streams
 
@@ -490,6 +485,7 @@ package Rtsfind is
      RE_Tag,                             -- Ada.Tags
      RE_Address_Array,                   -- Ada.Tags
 
+     RE_Abort_Task,                      -- Ada.Task_Identification
      RE_Current_Task,                    -- Ada.Task_Identification
      RO_AT_Task_ID,                      -- Ada.Task_Identification
 
@@ -582,7 +578,34 @@ package Rtsfind is
      RE_Bit_Or,                          -- System.Bit_Ops
      RE_Bit_Xor,                         -- System.Bit_Ops
 
+     RE_Boolean_Array,                   -- System_Boolean_Array_Operations,
+     RE_Vector_Not,                      -- System_Boolean_Array_Operations,
+     RE_Vector_And,                      -- System_Boolean_Array_Operations,
+     RE_Vector_Or,                       -- System_Boolean_Array_Operations,
+     RE_Vector_Nand,                     -- System_Boolean_Array_Operations,
+     RE_Vector_Nor,                      -- System_Boolean_Array_Operations,
+     RE_Vector_Nxor,                     -- System_Boolean_Array_Operations,
+     RE_Vector_Xor,                      -- System_Boolean_Array_Operations,
+
      RE_Checked_Pool,                    -- System.Checked_Pools
+
+     RE_Compare_Array_S8,                -- System.Compare_Array_Signed_8
+     RE_Compare_Array_S8_Unaligned,      -- System.Compare_Array_Signed_8
+
+     RE_Compare_Array_S16,               -- System.Compare_Array_Signed_16
+
+     RE_Compare_Array_S32,               -- System.Compare_Array_Signed_16
+
+     RE_Compare_Array_S64,               -- System.Compare_Array_Signed_16
+
+     RE_Compare_Array_U8,                -- System.Compare_Array_Unsigned_8
+     RE_Compare_Array_U8_Unaligned,      -- System.Compare_Array_Unsigned_8
+
+     RE_Compare_Array_U16,               -- System.Compare_Array_Unsigned_16
+
+     RE_Compare_Array_U32,               -- System.Compare_Array_Unsigned_16
+
+     RE_Compare_Array_U64,               -- System.Compare_Array_Unsigned_16
 
      RE_Register_Exception,              -- System.Exception_Table
 
@@ -600,45 +623,19 @@ package Rtsfind is
      RE_Subprogram_Descriptors_Record,   -- System.Exceptions
      RE_Subprogram_Descriptors_Ptr,      -- System.Exceptions
 
-     RE_Exn_Float,                       -- System.Exn_Flt
-
      RE_Exn_Integer,                     -- System.Exn_Int
-
-     RE_Exn_Long_Float,                  -- System.Exn_LFlt
-
-     RE_Exn_Long_Integer,                -- System.Exn_LInt
 
      RE_Exn_Long_Long_Float,             -- System.Exn_LLF
 
      RE_Exn_Long_Long_Integer,           -- System.Exn_LLI
 
-     RE_Exn_Short_Float,                 -- System.Exn_SFlt
-
-     RE_Exn_Short_Integer,               -- System.Exn_SInt
-
-     RE_Exn_Short_Short_Integer,         -- System.Exn_SSI
-
-     RE_Exp_Float,                       -- System.Exp_Flt
-
      RE_Exp_Integer,                     -- System.Exp_Int
-
-     RE_Exp_Long_Float,                  -- System.Exp_LFlt
-
-     RE_Exp_Long_Integer,                -- System.Exp_LInt
-
-     RE_Exp_Long_Long_Float,             -- System.Exp_LLF
 
      RE_Exp_Long_Long_Integer,           -- System.Exp_LLI
 
      RE_Exp_Long_Long_Unsigned,          -- System.Exp_LLU
 
      RE_Exp_Modular,                     -- System.Exp_Mod
-
-     RE_Exp_Short_Float,                 -- System.Exp_SFlt
-
-     RE_Exp_Short_Integer,               -- System.Exp_SInt
-
-     RE_Exp_Short_Short_Integer,         -- System.Exp_SSI
 
      RE_Exp_Unsigned,                    -- System.Exp_Uns
 
@@ -701,12 +698,16 @@ package Rtsfind is
      RE_Install_Handlers,                -- System.Interrupts
      RE_Register_Interrupt_Handler,      -- System.Interrupts
      RE_Static_Interrupt_Protection,     -- System.Interrupts
+     RE_System_Interrupt_Id,             -- System.Interrupts
 
      RE_Asm_Insn,                        -- System.Machine_Code
      RE_Asm_Input_Operand,               -- System.Machine_Code
      RE_Asm_Output_Operand,              -- System.Machine_Code
 
      RE_Mantissa_Value,                  -- System_Mantissa
+
+     RE_memcpy,                          -- System_Memcop
+     RE_memmove,                         -- System_Memcop
 
      RE_Bits_03,                         -- System.Pack_03
      RE_Get_03,                          -- System.Pack_03
@@ -1054,6 +1055,8 @@ package Rtsfind is
      RE_To_Address,                      -- System.Storage_Elements
 
      RE_Root_Storage_Pool,               -- System.Storage_Pools
+     RE_Allocate_Any,                    -- System_Storage_Pools,
+     RE_Deallocate_Any,                  -- System_Storage_Pools,
 
      RE_Thin_Pointer,                    -- System.Stream_Attributes
      RE_Fat_Pointer,                     -- System.Stream_Attributes
@@ -1098,11 +1101,12 @@ package Rtsfind is
      RE_W_U,                             -- System.Stream_Attributes
      RE_W_WC,                            -- System.Stream_Attributes
 
+     RE_Block_Stream_Ops_OK,             -- System.Stream_Attributes
+
      RE_Str_Concat,                      -- System.String_Ops
      RE_Str_Concat_CC,                   -- System.String_Ops
      RE_Str_Concat_CS,                   -- System.String_Ops
      RE_Str_Concat_SC,                   -- System.String_Ops
-     RE_Str_Equal,                       -- System.String_Ops
      RE_Str_Normalize,                   -- System.String_Ops
      RE_Wide_Str_Normalize,              -- System.String_Ops
 
@@ -1112,9 +1116,7 @@ package Rtsfind is
 
      RE_Str_Concat_5,                    -- System.String_Ops_Concat_5
 
-     RE_Free_Task_Image,                 -- System.Task_Info
      RE_Task_Info_Type,                  -- System.Task_Info
-     RE_Task_Image_Type,                 -- System_Task_Info
      RE_Unspecified_Task_Info,           -- System.Task_Info
 
      RE_Library_Task_Level,              -- System.Tasking
@@ -1166,11 +1168,14 @@ package Rtsfind is
      RE_Bits_2,                          -- System.Unsigned_Types
      RE_Bits_4,                          -- System.Unsigned_Types
      RE_Float_Unsigned,                  -- System.Unsigned_Types
+     RE_Long_Unsigned,                   -- System.Unsigned_Types
      RE_Long_Long_Unsigned,              -- System.Unsigned_Types
      RE_Packed_Byte,                     -- System.Unsigned_Types
      RE_Packed_Bytes1,                   -- System.Unsigned_Types
      RE_Packed_Bytes2,                   -- System.Unsigned_Types
      RE_Packed_Bytes4,                   -- System.Unsigned_Types
+     RE_Short_Unsigned,                  -- System.Unsigned_Types
+     RE_Short_Short_Unsigned,            -- System.Unsigned_Types
      RE_Unsigned,                        -- System.Unsigned_Types
 
      RE_Value_Boolean,                   -- System.Val_Bool
@@ -1357,6 +1362,7 @@ package Rtsfind is
 
      RE_Null                             => RTU_Null,
 
+     RE_Exceptions_Available_In_HIE      => Ada_Exceptions,
      RE_Code_Loc                         => Ada_Exceptions,
      RE_Current_Target_Exception         => Ada_Exceptions, -- of JGNAT
      RE_Exception_Id                     => Ada_Exceptions,
@@ -1377,10 +1383,13 @@ package Rtsfind is
      RE_Simple_List_Controller           => Ada_Finalization_List_Controller,
      RE_List_Controller                  => Ada_Finalization_List_Controller,
 
-     RE_Interrupt_Id                     => Ada_Interrupts,
+     RE_Interrupt_ID                     => Ada_Interrupts,
+
+     RE_Names                            => Ada_Interrupts_Names,
 
      RE_Root_Stream_Type                 => Ada_Streams,
      RE_Stream_Element                   => Ada_Streams,
+     RE_Stream_Element_Count             => Ada_Streams,
      RE_Stream_Element_Offset            => Ada_Streams,
      RE_Stream_Element_Array             => Ada_Streams,
 
@@ -1412,6 +1421,7 @@ package Rtsfind is
      RE_Tag                              => Ada_Tags,
      RE_Address_Array                    => Ada_Tags,
 
+     RE_Abort_Task                       => Ada_Task_Identification,
      RE_Current_Task                     => Ada_Task_Identification,
      RO_AT_Task_ID                       => Ada_Task_Identification,
 
@@ -1504,6 +1514,33 @@ package Rtsfind is
 
      RE_Checked_Pool                     => System_Checked_Pools,
 
+     RE_Boolean_Array                    => System_Boolean_Array_Operations,
+     RE_Vector_Not                       => System_Boolean_Array_Operations,
+     RE_Vector_And                       => System_Boolean_Array_Operations,
+     RE_Vector_Or                        => System_Boolean_Array_Operations,
+     RE_Vector_Nand                      => System_Boolean_Array_Operations,
+     RE_Vector_Nor                       => System_Boolean_Array_Operations,
+     RE_Vector_Nxor                      => System_Boolean_Array_Operations,
+     RE_Vector_Xor                       => System_Boolean_Array_Operations,
+
+     RE_Compare_Array_S8                 => System_Compare_Array_Signed_8,
+     RE_Compare_Array_S8_Unaligned       => System_Compare_Array_Signed_8,
+
+     RE_Compare_Array_S16                => System_Compare_Array_Signed_16,
+
+     RE_Compare_Array_S32                => System_Compare_Array_Signed_32,
+
+     RE_Compare_Array_S64                => System_Compare_Array_Signed_64,
+
+     RE_Compare_Array_U8                 => System_Compare_Array_Unsigned_8,
+     RE_Compare_Array_U8_Unaligned       => System_Compare_Array_Unsigned_8,
+
+     RE_Compare_Array_U16                => System_Compare_Array_Unsigned_16,
+
+     RE_Compare_Array_U32                => System_Compare_Array_Unsigned_32,
+
+     RE_Compare_Array_U64                => System_Compare_Array_Unsigned_64,
+
      RE_Register_Exception               => System_Exception_Table,
 
      RE_All_Others_Id                    => System_Exceptions,
@@ -1520,45 +1557,19 @@ package Rtsfind is
      RE_Subprogram_Descriptors_Record    => System_Exceptions,
      RE_Subprogram_Descriptors_Ptr       => System_Exceptions,
 
-     RE_Exn_Float                        => System_Exn_Flt,
-
      RE_Exn_Integer                      => System_Exn_Int,
-
-     RE_Exn_Long_Float                   => System_Exn_LFlt,
-
-     RE_Exn_Long_Integer                 => System_Exn_LInt,
 
      RE_Exn_Long_Long_Float              => System_Exn_LLF,
 
      RE_Exn_Long_Long_Integer            => System_Exn_LLI,
 
-     RE_Exn_Short_Float                  => System_Exn_SFlt,
-
-     RE_Exn_Short_Integer                => System_Exn_SInt,
-
-     RE_Exn_Short_Short_Integer          => System_Exn_SSI,
-
-     RE_Exp_Float                        => System_Exp_Flt,
-
      RE_Exp_Integer                      => System_Exp_Int,
-
-     RE_Exp_Long_Float                   => System_Exp_LFlt,
-
-     RE_Exp_Long_Integer                 => System_Exp_LInt,
-
-     RE_Exp_Long_Long_Float              => System_Exp_LLF,
 
      RE_Exp_Long_Long_Integer            => System_Exp_LLI,
 
      RE_Exp_Long_Long_Unsigned           => System_Exp_LLU,
 
      RE_Exp_Modular                      => System_Exp_Mod,
-
-     RE_Exp_Short_Float                  => System_Exp_SFlt,
-
-     RE_Exp_Short_Integer                => System_Exp_SInt,
-
-     RE_Exp_Short_Short_Integer          => System_Exp_SSI,
 
      RE_Exp_Unsigned                     => System_Exp_Uns,
 
@@ -1621,12 +1632,16 @@ package Rtsfind is
      RE_Install_Handlers                 => System_Interrupts,
      RE_Register_Interrupt_Handler       => System_Interrupts,
      RE_Static_Interrupt_Protection      => System_Interrupts,
+     RE_System_Interrupt_Id              => System_Interrupts,
 
      RE_Asm_Insn                         => System_Machine_Code,
      RE_Asm_Input_Operand                => System_Machine_Code,
      RE_Asm_Output_Operand               => System_Machine_Code,
 
      RE_Mantissa_Value                   => System_Mantissa,
+
+     RE_memcpy                           => System_Memcop,
+     RE_memmove                          => System_Memcop,
 
      RE_Bits_03                          => System_Pack_03,
      RE_Get_03                           => System_Pack_03,
@@ -1974,6 +1989,8 @@ package Rtsfind is
      RE_To_Address                       => System_Storage_Elements,
 
      RE_Root_Storage_Pool                => System_Storage_Pools,
+     RE_Allocate_Any                     => System_Storage_Pools,
+     RE_Deallocate_Any                   => System_Storage_Pools,
 
      RE_Thin_Pointer                     => System_Stream_Attributes,
      RE_Fat_Pointer                      => System_Stream_Attributes,
@@ -2018,8 +2035,9 @@ package Rtsfind is
      RE_W_U                              => System_Stream_Attributes,
      RE_W_WC                             => System_Stream_Attributes,
 
+     RE_Block_Stream_Ops_OK              => System_Stream_Attributes,
+
      RE_Str_Concat                       => System_String_Ops,
-     RE_Str_Equal                        => System_String_Ops,
      RE_Str_Normalize                    => System_String_Ops,
      RE_Wide_Str_Normalize               => System_String_Ops,
      RE_Str_Concat_CC                    => System_String_Ops,
@@ -2032,9 +2050,7 @@ package Rtsfind is
 
      RE_Str_Concat_5                     => System_String_Ops_Concat_5,
 
-     RE_Free_Task_Image                  => System_Task_Info,
      RE_Task_Info_Type                   => System_Task_Info,
-     RE_Task_Image_Type                  => System_Task_Info,
      RE_Unspecified_Task_Info            => System_Task_Info,
 
      RE_Library_Task_Level               => System_Tasking,
@@ -2086,11 +2102,14 @@ package Rtsfind is
      RE_Bits_2                           => System_Unsigned_Types,
      RE_Bits_4                           => System_Unsigned_Types,
      RE_Float_Unsigned                   => System_Unsigned_Types,
+     RE_Long_Unsigned                    => System_Unsigned_Types,
      RE_Long_Long_Unsigned               => System_Unsigned_Types,
      RE_Packed_Byte                      => System_Unsigned_Types,
      RE_Packed_Bytes1                    => System_Unsigned_Types,
      RE_Packed_Bytes2                    => System_Unsigned_Types,
      RE_Packed_Bytes4                    => System_Unsigned_Types,
+     RE_Short_Unsigned                   => System_Unsigned_Types,
+     RE_Short_Short_Unsigned             => System_Unsigned_Types,
      RE_Unsigned                         => System_Unsigned_Types,
 
      RE_Value_Boolean                    => System_Val_Bool,
@@ -2303,6 +2322,63 @@ package Rtsfind is
      RE_Expunge_Unactivated_Tasks        => System_Tasking_Stages,
      RE_Terminated                       => System_Tasking_Stages);
 
+   --------------------------------
+   -- Configurable Run-Time Mode --
+   --------------------------------
+
+   --  Part of the job of Rtsfind is to enforce run-time restrictions in
+   --  configurable run-time mode. This is done by monitoring implicit access
+   --  to the run time library requested by calls to the RTE function. A call
+   --  may be invalid in configurable run-time mode for either of the
+   --  following two reasons:
+
+   --     1. File in which entity lives is not present in run-time library
+   --     2. File is present, but entity is not defined in the file
+
+   --  In normal mode, either or these two situations is a fatal error
+   --  that indicates that the run-time library is incorrectly configured,
+   --  and a fatal error message is issued to signal this error.
+
+   --  In configurable run-time mode, either of these two situations indicates
+   --  simply that the corresponding operation is not available in the current
+   --  run-time that is use. This is not a configuration error, but rather a
+   --  natural result of a limited run-time. This situation is signalled by
+   --  raising the exception RE_Not_Available. The caller must respond to
+   --  this exception by posting an appropriate error message.
+
+   ----------------------
+   -- No_Run_Time_Mode --
+   ----------------------
+
+   --  For backwards compatibility with previous versions of GNAT, the
+   --  compiler recognizes the pragma No_Run_Time. This provides a special
+   --  version of configurable run-time mode that operates with the standard
+   --  run-time library, but allows only a subset of entities to be
+   --  accessed. If any other entity is accessed, then it is treated
+   --  as a configurable run-time violation, and the exception
+   --  RE_Not_Availble is raised.
+
+   --  The following array defines the set of units that contain entities
+   --  that can be referenced in No_Run_Time mode. For each of these units,
+   --  all entities defined in the unit can be used in this mode.
+
+   OK_No_Run_Time_Unit : constant array (RTU_Id) of Boolean :=
+     (Ada_Exceptions          => True,
+      Ada_Tags                => True,
+      Interfaces              => True,
+      System                  => True,
+      System_Parameters       => True,
+      System_Fat_Flt          => True,
+      System_Fat_LFlt         => True,
+      System_Fat_LLF          => True,
+      System_Fat_SFlt         => True,
+      System_Machine_Code     => True,
+      System_Secondary_Stack  => True,
+      System_Storage_Elements => True,
+      System_Task_Info        => True,
+      System_Unsigned_Types   => True,
+      others                  => False);
+
    -----------------
    -- Subprograms --
    -----------------
@@ -2313,20 +2389,33 @@ package Rtsfind is
    --  Initialize_Snames (since names it enters into name table must come
    --  after names entered by Snames).
 
+   RE_Not_Available : exception;
+   --  Raised by RTE if the requested entity is not available. This can
+   --  occur either because the file in which the entity should be found
+   --  does not exist, or because the entity is not present in the file.
+
    function RTE (E : RE_Id) return Entity_Id;
    --  Given the entity defined in the above tables, as identified by the
    --  corresponding value in the RE_Id enumeration type, returns the Id
    --  of the corresponding entity, first loading in (parsing, analyzing and
-   --  expanding) its spec if the unit has not already been loaded. If the
-   --  unit cannot be found, or if it does not contain the specified entity,
-   --  then an appropriate error message is output ("run-time configuration
-   --  error") and an Unrecoverable_Error exception is raised. There is one
-   --  situation in which RTE can generate an error message, and that is if
-   --  an unuathorized entity is accessed in high integrity mode. If this
-   --  occurs, the result returned may be Empty, and the caller must deal
-   --  with this possibility if the call to RTE may occur in high integrity
-   --  mode (often this will have been ruled out by specific checks for
-   --  high integrity mode prior to the RTE call).
+   --  expanding) its spec if the unit has not already been loaded.
+   --
+   --  Note: In the case of a package, RTE can return either an entity that
+   --  is declared at the top level of the package, or the package entity
+   --  itself. If an entity within the package has the same simple name as
+   --  the package, then the entity within the package is returned rather
+   --
+   --  If RTE returns, the returned value is the required entity
+   --
+   --  If the entity is not available, then an error message is given The
+   --  form of the message depends on whether we are in configurable run time
+   --  mode or not. In configurable run time mode, a missing entity is not
+   --  that surprising and merely says that the particular construct is not
+   --  supported by the run-time in use. If we are not in configurable run
+   --  time mode, a missing entity is some kind of run-time configuration
+   --  error. In either case, the result of the call is to raise the exception
+   --  RE_Not_Available, which should terminate the expansion of the current
+   --  construct.
 
    function Is_RTE (Ent : Entity_Id; E : RE_Id) return Boolean;
    --  This function determines if the given entity corresponds to the entity
@@ -2335,6 +2424,19 @@ package Rtsfind is
    --  this call, if the unit is not loaded, then a result of False is returned
    --  immediately, since obviously Ent cannot be the entity in question if the
    --  corresponding unit has not been loaded.
+
+   function Is_RTU (Ent : Entity_Id;  U : RTU_Id) return Boolean;
+   pragma Inline (Is_RTU);
+   --  This function determines if the given entity corresponds to the entity
+   --  for the unit referenced by U. If this unit has not been loaded, the
+   --  answer will always be False. If the unit has been loaded, then the
+   --  entity id values are compared and True is returned if Ent is the
+   --  entity for this unit.
+
+   function RTE_Available (E : RE_Id) return Boolean;
+   --  Returns true if a call to RTE will succeed without raising an
+   --  exception and without generating an error message, i.e. if the
+   --  call will obtain the desired entity without any problems.
 
    procedure Text_IO_Kludge (Nam : Node_Id);
    --  In Ada 83, and hence for compatibility in Ada 9X, package Text_IO has

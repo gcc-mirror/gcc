@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 2000-2003 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,13 +26,16 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with GNAT.Heap_Sort_G;
 with System;        use System;
 with System.Memory; use System.Memory;
-with System.Address_To_Access_Conversions;
+
+with Unchecked_Conversion;
 
 package body GNAT.Dynamic_Tables is
 
@@ -48,17 +51,8 @@ package body GNAT.Dynamic_Tables is
    --  in Max. Works correctly to do an initial allocation if the table
    --  is currently null.
 
-   package Table_Conversions is
-      new System.Address_To_Access_Conversions (Big_Table_Type);
-   --  Address and Access conversions for a Table object.
-
-   function To_Address (Table : Table_Ptr) return Address;
-   pragma Inline (To_Address);
-   --  Returns the Address for the Table object.
-
-   function To_Pointer (Table : Address) return Table_Ptr;
-   pragma Inline (To_Pointer);
-   --  Returns the Access pointer for the Table object.
+   function To_Address is new Unchecked_Conversion (Table_Ptr, Address);
+   function To_Pointer is new Unchecked_Conversion (Address, Table_Ptr);
 
    --------------
    -- Allocate --
@@ -94,6 +88,19 @@ package body GNAT.Dynamic_Tables is
    begin
       T.P.Last_Val := T.P.Last_Val - 1;
    end Decrement_Last;
+
+   --------------
+   -- For_Each --
+   --------------
+
+   procedure For_Each (Table : Instance) is
+      Quit : Boolean := False;
+   begin
+      for Index in Table_Low_Bound .. Table_Index_Type (Table.P.Last_Val) loop
+         Action (Index, Table.Table (Index), Quit);
+         exit when Quit;
+      end loop;
+   end For_Each;
 
    ----------
    -- Free --
@@ -162,12 +169,20 @@ package body GNAT.Dynamic_Tables is
    ----------------
 
    procedure Reallocate (T : in out Instance) is
-      New_Size : size_t;
+      New_Length : Integer;
+      New_Size   : size_t;
 
    begin
       if T.P.Max < T.P.Last_Val then
          while T.P.Max < T.P.Last_Val loop
-            T.P.Length := T.P.Length * (100 + Table_Increment) / 100;
+            New_Length := T.P.Length * (100 + Table_Increment) / 100;
+
+            if New_Length > T.P.Length then
+               T.P.Length := New_Length;
+            else
+               T.P.Length := T.P.Length + 1;
+            end if;
+
             T.P.Max := Min + T.P.Length - 1;
          end loop;
       end if;
@@ -188,7 +203,6 @@ package body GNAT.Dynamic_Tables is
       if T.P.Length /= 0 and then T.Table = null then
          raise Storage_Error;
       end if;
-
    end Reallocate;
 
    -------------
@@ -212,7 +226,7 @@ package body GNAT.Dynamic_Tables is
       Item  : Table_Component_Type)
    is
    begin
-      if Integer (Index) > T.P.Max then
+      if Integer (Index) > T.P.Last_Val then
          Set_Last (T, Index);
       end if;
 
@@ -238,22 +252,79 @@ package body GNAT.Dynamic_Tables is
    end Set_Last;
 
    ----------------
-   -- To_Address --
+   -- Sort_Table --
    ----------------
 
-   function To_Address (Table : Table_Ptr) return Address is
+   procedure Sort_Table (Table : in out Instance) is
+
+      Temp : Table_Component_Type;
+      --  A temporary position to simulate index 0
+
+      --  Local subprograms
+
+      function Index_Of (Idx : Natural) return Table_Index_Type;
+      --  Apply Natural to indexs of the table
+
+      function Lower_Than (Op1, Op2 : Natural) return Boolean;
+      --  Compare two components
+
+      procedure Move (From : Natural; To : Natural);
+      --  Move one component
+
+      package Heap_Sort is new GNAT.Heap_Sort_G (Move, Lower_Than);
+
+      --------------
+      -- Index_Of --
+      --------------
+
+      function Index_Of (Idx : Natural) return Table_Index_Type is
+      begin
+         return First + Table_Index_Type (Idx) - 1;
+      end Index_Of;
+
+      ----------
+      -- Move --
+      ----------
+
+      procedure Move (From : Natural; To : Natural) is
+      begin
+         if From = 0 then
+            Table.Table (Index_Of (To)) := Temp;
+
+         elsif To = 0 then
+            Temp := Table.Table (Index_Of (From));
+
+         else
+            Table.Table (Index_Of (To)) :=
+              Table.Table (Index_Of (From));
+         end if;
+      end Move;
+
+      ----------------
+      -- Lower_Than --
+      ----------------
+
+      function Lower_Than (Op1, Op2 : Natural) return Boolean is
+      begin
+         if Op1 = 0 then
+            return Lt (Temp, Table.Table (Index_Of (Op2)));
+
+         elsif Op2 = 0 then
+            return Lt (Table.Table (Index_Of (Op1)), Temp);
+
+         else
+            return
+              Lt (Table.Table (Index_Of (Op1)),
+                   Table.Table (Index_Of (Op2)));
+         end if;
+      end Lower_Than;
+
+   --  Start of processing for Sort_Table
+
    begin
-      return Table_Conversions.To_Address
-        (Table_Conversions.Object_Pointer (Table));
-   end To_Address;
 
-   ----------------
-   -- To_Pointer --
-   ----------------
+      Heap_Sort.Sort (Natural (Last (Table) - First) + 1);
 
-   function To_Pointer (Table : Address) return Table_Ptr is
-   begin
-      return Table_Ptr (Table_Conversions.To_Pointer (Table));
-   end To_Pointer;
+   end Sort_Table;
 
 end GNAT.Dynamic_Tables;

@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT RUNTIME COMPONENTS                          --
+--                          GNAT RUNTIME COMPONENTS                         --
 --                                                                          --
 --            A D A . S T R I N G S . U N B O U N D E D . A U X             --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-1998, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,9 +37,29 @@ package body Ada.Strings.Unbounded.Aux is
    -- Get_String --
    ----------------
 
-   function Get_String (U  : Unbounded_String) return String_Access is
+   function Get_String (U : Unbounded_String) return String_Access is
    begin
-      return U.Reference;
+      if U.Last = U.Reference'Length then
+         return U.Reference;
+
+      else
+         declare
+            type Unbounded_String_Access is access all Unbounded_String;
+
+            U_Ptr : constant Unbounded_String_Access := U'Unrestricted_Access;
+            --  Unbounded_String is a controlled type which is always passed
+            --  by copy it is always safe to take the pointer to such object
+            --  here. This pointer is used to set the U.Reference value which
+            --  would not be possible otherwise as U is read-only.
+
+            Old : String_Access := U.Reference;
+
+         begin
+            U_Ptr.Reference := new String'(U.Reference (1 .. U.Last));
+            Free (Old);
+            return U.Reference;
+         end;
+      end if;
    end Get_String;
 
    ----------------
@@ -48,7 +68,7 @@ package body Ada.Strings.Unbounded.Aux is
 
    procedure Set_String (UP : in out Unbounded_String; S : String) is
    begin
-      if UP.Reference'Length = S'Length then
+      if UP.Last = S'Length then
          UP.Reference.all := S;
 
       else
@@ -60,6 +80,7 @@ package body Ada.Strings.Unbounded.Aux is
             Tmp := new String'(String_1 (S));
             Finalize (UP);
             UP.Reference := Tmp;
+            UP.Last := UP.Reference'Length;
          end;
       end if;
    end Set_String;
@@ -68,6 +89,7 @@ package body Ada.Strings.Unbounded.Aux is
    begin
       Finalize (UP);
       UP.Reference := S;
+      UP.Last := UP.Reference'Length;
    end Set_String;
 
 end Ada.Strings.Unbounded.Aux;

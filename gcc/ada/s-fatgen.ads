@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -93,10 +93,30 @@ pragma Pure (Fat_Gen);
    --  passed by reference (access) here, as the object of type T may
    --  be an abnormal value that cannot be passed in a floating-point
    --  register, and the whole point of 'Valid is to prevent exceptions.
+   --  Note that the object of type T must have the natural alignment
+   --  for type T. See Unaligned_Valid for further discussion.
+
+   function Unaligned_Valid (A : System.Address) return Boolean;
+   --  This version of Valid is used if the floating-point value to
+   --  be checked is not known to be aligned (for example it appears
+   --  in a packed record). In this case, we cannot call Valid since
+   --  Valid assumes proper full alignment. Instead Unaligned_Valid
+   --  performs the same processing for a possibly unaligned float,
+   --  by first doing a copy and then calling Valid. One might think
+   --  that the front end could simply do a copy to an aligned temp,
+   --  but remember that we may have an abnormal value that cannot
+   --  be copied into a floating-point register, so things are a bit
+   --  trickier than one might expect.
+   --
+   --  Note: Unaligned_Valid is never called for a target which does
+   --  not require strict alignment (e.g. the ia32/x86), since on a
+   --  target not requiring strict alignment, it is fine to pass a
+   --  non-aligned value to the standard Valid routine.
 
 private
    pragma Inline (Machine);
    pragma Inline (Model);
    pragma Inline_Always (Valid);
+   pragma Inline_Always (Unaligned_Valid);
 
 end System.Fat_Gen;

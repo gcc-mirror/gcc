@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -64,6 +64,25 @@ package System.Storage_Pools is
    is abstract;
 
 private
+   --  The following two procedures support the use of class-wide pool
+   --  objects in storage pools. When a local type is given a class-wide
+   --  storage pool, allocation and deallocation for the type must dispatch
+   --  to the operation of the specific pool, which is achieved by a call
+   --  to these procedures. (When the pool type is specific, the back-end
+   --  generates a call to the statically identified operation of the type).
+
+   procedure Allocate_Any
+    (Pool                     : in out Root_Storage_Pool'Class;
+     Storage_Address          : out Address;
+     Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
+     Alignment                : System.Storage_Elements.Storage_Count);
+
+   procedure Deallocate_Any
+    (Pool                     : in out Root_Storage_Pool'Class;
+     Storage_Address          : Address;
+     Size_In_Storage_Elements : System.Storage_Elements.Storage_Count;
+     Alignment                : System.Storage_Elements.Storage_Count);
+
    type Root_Storage_Pool is abstract
      new Ada.Finalization.Limited_Controlled with null record;
 end System.Storage_Pools;

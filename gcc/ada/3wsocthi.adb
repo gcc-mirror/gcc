@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001 Ada Core Technologies, Inc.              --
+--              Copyright (C) 2001-2003 Ada Core Technologies, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,11 +26,20 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package provides a target dependent thin interface to the sockets
+--  layer for use by the GNAT.Sockets package (g-socket.ads). This package
+--  should not be directly with'ed by an applications program.
+
 --  This version is for NT.
+
+with GNAT.Sockets.Constants; use GNAT.Sockets.Constants;
+
+with System; use System;
 
 package body GNAT.Sockets.Thin is
 
@@ -41,33 +50,237 @@ package body GNAT.Sockets.Thin is
    WS_Version  : constant := 16#0101#;
    Initialized : Boolean := False;
 
-   -----------
-   -- Clear --
-   -----------
+   SYSNOTREADY          : constant := 10091;
+   VERNOTSUPPORTED      : constant := 10092;
+   NOTINITIALISED       : constant := 10093;
+   EDISCON              : constant := 10101;
 
-   procedure Clear
-     (Item   : in out Fd_Set;
-      Socket : C.int)
+   function Standard_Connect
+     (S       : C.int;
+      Name    : System.Address;
+      Namelen : C.int)
+      return    C.int;
+   pragma Import (Stdcall, Standard_Connect, "connect");
+
+   function Standard_Select
+     (Nfds      : C.int;
+      Readfds   : Fd_Set_Access;
+      Writefds  : Fd_Set_Access;
+      Exceptfds : Fd_Set_Access;
+      Timeout   : Timeval_Access)
+      return      C.int;
+   pragma Import (Stdcall, Standard_Select, "select");
+
+   ---------------
+   -- C_Connect --
+   ---------------
+
+   function C_Connect
+     (S       : C.int;
+      Name    : System.Address;
+      Namelen : C.int)
+      return    C.int
    is
+      Res : C.int;
+
    begin
-      for J in 1 .. Item.fd_count loop
-         if Item.fd_array (J) = Socket then
-            Item.fd_array (J .. Item.fd_count - 1) :=
-              Item.fd_array (J + 1 .. Item.fd_count);
-            Item.fd_count := Item.fd_count - 1;
-            exit;
+      Res := Standard_Connect (S, Name, Namelen);
+
+      if Res = -1 then
+         if Socket_Errno = EWOULDBLOCK then
+            Set_Socket_Errno (EINPROGRESS);
+         end if;
+      end if;
+
+      return Res;
+   end C_Connect;
+
+   -------------
+   -- C_Readv --
+   -------------
+
+   function C_Readv
+     (Socket : C.int;
+      Iov    : System.Address;
+      Iovcnt : C.int)
+      return  C.int
+   is
+      Res : C.int;
+      Count : C.int := 0;
+
+      Iovec : array (0 .. Iovcnt - 1) of Vector_Element;
+      for Iovec'Address use Iov;
+      pragma Import (Ada, Iovec);
+
+   begin
+      for J in Iovec'Range loop
+         Res := C_Recv
+           (Socket,
+            Iovec (J).Base.all'Address,
+            C.int (Iovec (J).Length),
+            0);
+
+         if Res < 0 then
+            return Res;
+         else
+            Count := Count + Res;
          end if;
       end loop;
-   end Clear;
+      return Count;
+   end C_Readv;
 
-   -----------
-   -- Empty --
-   -----------
+   --------------
+   -- C_Select --
+   --------------
 
-   procedure Empty  (Item : in out Fd_Set) is
+   function C_Select
+     (Nfds      : C.int;
+      Readfds   : Fd_Set_Access;
+      Writefds  : Fd_Set_Access;
+      Exceptfds : Fd_Set_Access;
+      Timeout   : Timeval_Access)
+      return      C.int
+   is
+      pragma Warnings (Off, Exceptfds);
+
+      RFS  : Fd_Set_Access := Readfds;
+      WFS  : Fd_Set_Access := Writefds;
+      WFSC : Fd_Set_Access := No_Fd_Set;
+      EFS  : Fd_Set_Access := Exceptfds;
+      Res  : C.int;
+      S    : aliased C.int;
+      Last : aliased C.int;
+
    begin
-      Item := Null_Fd_Set;
-   end Empty;
+      --  Asynchronous connection failures are notified in the
+      --  exception fd set instead of the write fd set. To ensure
+      --  POSIX compatitibility, copy write fd set into exception fd
+      --  set. Once select() returns, check any socket present in the
+      --  exception fd set and peek at incoming out-of-band data. If
+      --  the test is not successfull and if the socket is present in
+      --  the initial write fd set, then move the socket from the
+      --  exception fd set to the write fd set.
+
+      if WFS /= No_Fd_Set then
+         --  Add any socket present in write fd set into exception fd set
+
+         if EFS = No_Fd_Set then
+            EFS := New_Socket_Set (WFS);
+
+         else
+            WFSC := New_Socket_Set (WFS);
+
+            Last := Nfds - 1;
+            loop
+               Get_Socket_From_Set
+                 (WFSC, S'Unchecked_Access, Last'Unchecked_Access);
+               exit when S = -1;
+               Insert_Socket_In_Set (EFS, S);
+            end loop;
+
+            Free_Socket_Set (WFSC);
+         end if;
+
+         --  Keep a copy of write fd set
+
+         WFSC := New_Socket_Set (WFS);
+      end if;
+
+      Res := Standard_Select (Nfds, RFS, WFS, EFS, Timeout);
+
+      if EFS /= No_Fd_Set then
+         declare
+            EFSC    : Fd_Set_Access := New_Socket_Set (EFS);
+            Buffer  : Character;
+            Length  : C.int;
+            Flag    : C.int := MSG_PEEK + MSG_OOB;
+            Fromlen : aliased C.int;
+
+         begin
+            Last := Nfds - 1;
+            loop
+               Get_Socket_From_Set
+                 (EFSC, S'Unchecked_Access, Last'Unchecked_Access);
+
+               --  No more sockets in EFSC
+
+               exit when S = -1;
+
+               --  Check out-of-band data
+
+               Length := C_Recvfrom
+                 (S, Buffer'Address, 1, Flag,
+                  null, Fromlen'Unchecked_Access);
+
+               --  If the signal is not an out-of-band data, then it
+               --  is a connection failure notification.
+
+               if Length = -1 then
+                  Remove_Socket_From_Set (EFS, S);
+
+                  --  If S is present in the initial write fd set,
+                  --  move it from exception fd set back to write fd
+                  --  set. Otherwise, ignore this event since the user
+                  --  is not watching for it.
+
+                  if WFSC /= No_Fd_Set
+                    and then Is_Socket_In_Set (WFSC, S)
+                  then
+                     Insert_Socket_In_Set (WFS, S);
+                  end if;
+               end if;
+            end loop;
+
+            Free_Socket_Set (EFSC);
+         end;
+
+         if Exceptfds = No_Fd_Set then
+            Free_Socket_Set (EFS);
+         end if;
+      end if;
+
+      --  Free any copy of write fd set
+
+      if WFSC /= No_Fd_Set then
+         Free_Socket_Set (WFSC);
+      end if;
+
+      return Res;
+   end C_Select;
+
+   --------------
+   -- C_Writev --
+   --------------
+
+   function C_Writev
+     (Socket : C.int;
+      Iov    : System.Address;
+      Iovcnt : C.int)
+      return   C.int
+   is
+      Res : C.int;
+      Count : C.int := 0;
+
+      Iovec : array (0 .. Iovcnt - 1) of Vector_Element;
+      for Iovec'Address use Iov;
+      pragma Import (Ada, Iovec);
+
+   begin
+      for J in Iovec'Range loop
+         Res := C_Send
+           (Socket,
+            Iovec (J).Base.all'Address,
+            C.int (Iovec (J).Length),
+            0);
+
+         if Res < 0 then
+            return Res;
+         else
+            Count := Count + Res;
+         end if;
+      end loop;
+      return Count;
+   end C_Writev;
 
    --------------
    -- Finalize --
@@ -81,35 +294,13 @@ package body GNAT.Sockets.Thin is
       end if;
    end Finalize;
 
-   --------------
-   -- Is_Empty --
-   --------------
-
-   function Is_Empty (Item : Fd_Set) return Boolean is
-   begin
-      return Item.fd_count = 0;
-   end Is_Empty;
-
-   ------------
-   -- Is_Set --
-   ------------
-
-   function Is_Set (Item : Fd_Set; Socket : C.int) return Boolean is
-   begin
-      for J in 1 .. Item.fd_count loop
-         if Item.fd_array (J) = Socket then
-            return True;
-         end if;
-      end loop;
-
-      return False;
-   end Is_Set;
-
    ----------------
    -- Initialize --
    ----------------
 
    procedure Initialize (Process_Blocking_IO : Boolean := False) is
+      pragma Unreferenced (Process_Blocking_IO);
+
       Return_Value : Interfaces.C.int;
 
    begin
@@ -120,32 +311,56 @@ package body GNAT.Sockets.Thin is
       end if;
    end Initialize;
 
-   ---------
-   -- Max --
-   ---------
+   -----------------
+   -- Set_Address --
+   -----------------
 
-   function Max (Item : Fd_Set) return C.int is
-      L : C.int := 0;
+   procedure Set_Address
+     (Sin     : Sockaddr_In_Access;
+      Address : In_Addr)
+   is
+   begin
+      Sin.Sin_Addr := Address;
+   end Set_Address;
+
+   ----------------
+   -- Set_Family --
+   ----------------
+
+   procedure Set_Family
+     (Sin    : Sockaddr_In_Access;
+      Family : C.int)
+   is
+   begin
+      Sin.Sin_Family := C.unsigned_short (Family);
+   end Set_Family;
+
+   ----------------
+   -- Set_Length --
+   ----------------
+
+   procedure Set_Length
+     (Sin : Sockaddr_In_Access;
+      Len : C.int)
+   is
+      pragma Unreferenced (Sin);
+      pragma Unreferenced (Len);
 
    begin
-      for J in 1 .. Item.fd_count loop
-         if Item.fd_array (J) > L then
-            L := Item.fd_array (J);
-         end if;
-      end loop;
+      null;
+   end Set_Length;
 
-      return L;
-   end Max;
+   --------------
+   -- Set_Port --
+   --------------
 
-   ---------
-   -- Set --
-   ---------
-
-   procedure Set (Item : in out Fd_Set; Socket : in C.int) is
+   procedure Set_Port
+     (Sin  : Sockaddr_In_Access;
+      Port : C.unsigned_short)
+   is
    begin
-      Item.fd_count := Item.fd_count + 1;
-      Item.fd_array (Item.fd_count) := Socket;
-   end Set;
+      Sin.Sin_Port := Port;
+   end Set_Port;
 
    --------------------------
    -- Socket_Error_Message --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,6 @@ with Einfo;    use Einfo;
 with Errout;   use Errout;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch9;  use Exp_Ch9;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Code; use Exp_Code;
 with Exp_Fixd; use Exp_Fixd;
@@ -83,6 +82,11 @@ package body Exp_Intr is
    procedure Expand_Unc_Deallocation (N : Node_Id);
    --  Expand a call to an instantiation of Unchecked_Deallocation into a node
    --  N_Free_Statement and appropriate context.
+
+   procedure Expand_To_Address (N : Node_Id);
+   procedure Expand_To_Pointer (N : Node_Id);
+   --  Expand a call to corresponding function, declared in an instance of
+   --  System.Addess_To_Access_Conversions.
 
    procedure Expand_Source_Info (N : Node_Id; Nam : Name_Id);
    --  Rewrite the node by the appropriate string or positive constant.
@@ -267,6 +271,12 @@ package body Exp_Intr is
       elsif Nam = Name_Unchecked_Deallocation then
          Expand_Unc_Deallocation (N);
 
+      elsif Nam = Name_To_Address then
+         Expand_To_Address (N);
+
+      elsif Nam = Name_To_Pointer then
+         Expand_To_Pointer (N);
+
       elsif Nam = Name_File
         or else Nam = Name_Line
         or else Nam = Name_Source_Location
@@ -281,7 +291,6 @@ package body Exp_Intr is
          pragma Assert (Present (Alias (E)));
          Expand_Intrinsic_Call (N,  Alias (E));
       end if;
-
    end Expand_Intrinsic_Call;
 
    ------------------------
@@ -318,16 +327,18 @@ package body Exp_Intr is
             Make_Conditional_Expression (Loc,
              Expressions => New_List (
                Make_Op_Gt (Loc,
-                 Left_Opnd  => Duplicate_Subexpr (Opnd),
+                 Left_Opnd  => Duplicate_Subexpr_No_Checks (Opnd),
                  Right_Opnd => Make_Real_Literal (Loc, Ureal_0)),
 
                New_Occurrence_Of (Standard_False, Loc),
 
                 Make_Op_Ne (Loc,
                   Left_Opnd =>
-                    Unchecked_Convert_To (RTE (RE_Float_Unsigned),
-                                          Convert_To (Standard_Float,
-                                            Duplicate_Subexpr (Opnd))),
+                    Unchecked_Convert_To
+                      (RTE (RE_Float_Unsigned),
+                       Convert_To
+                         (Standard_Float,
+                          Duplicate_Subexpr_No_Checks (Opnd))),
                   Right_Opnd =>
                     Make_Integer_Literal (Loc, 0)))))));
 
@@ -380,7 +391,6 @@ package body Exp_Intr is
 
       Rewrite (N, Snode);
       Set_Analyzed (N);
-
    end Expand_Shift;
 
    ------------------------
@@ -511,17 +521,19 @@ package body Exp_Intr is
 
    --  For a task, we also generate a call to Free_Task to ensure that the
    --  task itself is freed if it is terminated, ditto for a simple protected
-   --  object, with a call to Finalize_Protection
+   --  object, with a call to Finalize_Protection. For composite types that
+   --  have tasks or simple protected objects as components, we traverse the
+   --  structures to find and terminate those components.
 
    procedure Expand_Unc_Deallocation (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
       Arg   : constant Node_Id    := First_Actual (N);
       Typ   : constant Entity_Id  := Etype (Arg);
       Stmts : constant List_Id    := New_List;
-      Pool  : constant Entity_Id  :=
-                Associated_Storage_Pool (Underlying_Type (Root_Type (Typ)));
+      Rtyp  : constant Entity_Id  := Underlying_Type (Root_Type (Typ));
+      Pool  : constant Entity_Id  := Associated_Storage_Pool (Rtyp);
 
-      Desig_T   : Entity_Id  := Designated_Type (Typ);
+      Desig_T   : constant Entity_Id  := Designated_Type (Typ);
       Gen_Code  : Node_Id;
       Free_Node : Node_Id;
       Deref     : Node_Id;
@@ -530,9 +542,14 @@ package body Exp_Intr is
       Blk       : Node_Id;
 
    begin
-      if Controlled_Type (Desig_T) then
+      if No_Pool_Assigned (Rtyp) then
+         Error_Msg_N ("?deallocation from empty storage pool", N);
+      end if;
 
-         Deref := Make_Explicit_Dereference (Loc, Duplicate_Subexpr (Arg));
+      if Controlled_Type (Desig_T) then
+         Deref :=
+           Make_Explicit_Dereference (Loc,
+             Prefix => Duplicate_Subexpr_No_Checks (Arg));
 
          --  If the type is tagged, then we must force dispatching on the
          --  finalization call because the designated type may not be the
@@ -576,10 +593,9 @@ package body Exp_Intr is
          end if;
       end if;
 
-      --  For a task type, call Free_Task before freeing the ATCB.
+      --  For a task type, call Free_Task before freeing the ATCB
 
       if Is_Task_Type (Desig_T) then
-
          declare
             Stat : Node_Id := Prev (N);
             Nam1 : Node_Id;
@@ -587,8 +603,8 @@ package body Exp_Intr is
 
          begin
             --  An Abort followed by a Free will not do what the user
-            --  expects, because the abort is not immediate. This is worth
-            --  a friendly warning.
+            --  expects, because the abort is not immediate. This is
+            --  worth a friendly warning.
 
             while Present (Stat)
               and then not Comes_From_Source (Original_Node (Stat))
@@ -615,27 +631,39 @@ package body Exp_Intr is
             end if;
          end;
 
-         Append_To (Stmts,
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Reference_To (RTE (RE_Free_Task), Loc),
-             Parameter_Associations => New_List (
-               Concurrent_Ref (Duplicate_Subexpr (Arg)))));
+         Append_To
+           (Stmts, Cleanup_Task (N, Duplicate_Subexpr_No_Checks (Arg)));
+
+      --  For composite types that contain tasks, recurse over the structure
+      --  to build the selectors for the task subcomponents.
+
+      elsif Has_Task (Desig_T) then
+         if Is_Record_Type (Desig_T) then
+            Append_List_To (Stmts, Cleanup_Record (N, Arg, Desig_T));
+
+         elsif Is_Array_Type (Desig_T) then
+            Append_List_To (Stmts, Cleanup_Array (N, Arg, Desig_T));
+         end if;
       end if;
 
-      --  For a protected type with no entries, call Finalize_Protection
-      --  before freeing the PO.
+      --  Same for simple protected types. Eventually call Finalize_Protection
+      --  before freeing the PO for each protected component.
 
-      if Is_Protected_Type (Desig_T) and then not Has_Entries (Desig_T) then
+      if Is_Simple_Protected_Type (Desig_T) then
          Append_To (Stmts,
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Reference_To (RTE (RE_Finalize_Protection), Loc),
-             Parameter_Associations => New_List (
-               Concurrent_Ref (Duplicate_Subexpr (Arg)))));
+           Cleanup_Protected_Object (N, Duplicate_Subexpr_No_Checks (Arg)));
+
+      elsif Has_Simple_Protected_Object (Desig_T) then
+         if Is_Record_Type (Desig_T) then
+            Append_List_To (Stmts, Cleanup_Record (N, Arg, Desig_T));
+         elsif Is_Array_Type (Desig_T) then
+            Append_List_To (Stmts, Cleanup_Array (N, Arg, Desig_T));
+         end if;
       end if;
 
       --  Normal processing for non-controlled types
 
-      Free_Arg := Duplicate_Subexpr (Arg);
+      Free_Arg := Duplicate_Subexpr_No_Checks (Arg);
       Free_Node := Make_Free_Statement (Loc, Empty);
       Append_To (Stmts, Free_Node);
       Set_Storage_Pool (Free_Node, Pool);
@@ -701,6 +729,9 @@ package body Exp_Intr is
          if Is_RTE (Pool, RE_SS_Pool) then
             null;
 
+         elsif Is_Class_Wide_Type (Etype (Pool)) then
+            Set_Procedure_To_Call (Free_Node,
+              RTE (RE_Deallocate_Any));
          else
             Set_Procedure_To_Call (Free_Node,
               Find_Prim_Op (Etype (Pool), Name_Deallocate));
@@ -715,7 +746,7 @@ package body Exp_Intr is
                                Create_Itype (E_Access_Type, N);
                   Deref    : constant Node_Id :=
                                Make_Explicit_Dereference (Loc,
-                                 Duplicate_Subexpr (Arg));
+                                 Duplicate_Subexpr_No_Checks (Arg));
 
                begin
                   Set_Etype  (Deref, Typ);
@@ -736,7 +767,7 @@ package body Exp_Intr is
       Set_Expression (Free_Node, Free_Arg);
 
       declare
-         Lhs : Node_Id := Duplicate_Subexpr (Arg);
+         Lhs : constant Node_Id := Duplicate_Subexpr_No_Checks (Arg);
 
       begin
          Set_Assignment_OK (Lhs);
@@ -749,5 +780,45 @@ package body Exp_Intr is
       Rewrite (N, Gen_Code);
       Analyze (N);
    end Expand_Unc_Deallocation;
+
+   -----------------------
+   -- Expand_To_Address --
+   -----------------------
+
+   procedure Expand_To_Address (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+      Arg : constant Node_Id := First_Actual (N);
+      Obj : Node_Id;
+
+   begin
+      Remove_Side_Effects (Arg);
+
+      Obj := Make_Explicit_Dereference (Loc, Relocate_Node (Arg));
+
+      Rewrite (N,
+        Make_Conditional_Expression (Loc,
+          Expressions => New_List (
+            Make_Op_Eq (Loc,
+              Left_Opnd => New_Copy_Tree (Arg),
+              Right_Opnd => Make_Null (Loc)),
+            New_Occurrence_Of (RTE (RE_Null_Address), Loc),
+            Make_Attribute_Reference (Loc,
+              Attribute_Name => Name_Address,
+              Prefix => Obj))));
+
+      Analyze_And_Resolve (N, RTE (RE_Address));
+   end Expand_To_Address;
+
+   -----------------------
+   -- Expand_To_Pointer --
+   -----------------------
+
+   procedure Expand_To_Pointer (N : Node_Id) is
+      Arg : constant Node_Id := First_Actual (N);
+
+   begin
+      Rewrite (N, Unchecked_Convert_To (Etype (N), Arg));
+      Analyze (N);
+   end Expand_To_Pointer;
 
 end Exp_Intr;

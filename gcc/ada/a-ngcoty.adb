@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,12 +54,12 @@ package body Ada.Numerics.Generic_Complex_Types is
       --  If either component overflows, try to scale.
 
       if abs (X) > R'Last then
-         X := R' (4.0) * (R'(Left.Re / 2.0)  * R'(Right.Re / 2.0)
+         X := R'(4.0) * (R'(Left.Re / 2.0)  * R'(Right.Re / 2.0)
                 - R'(Left.Im / 2.0) * R'(Right.Im / 2.0));
       end if;
 
       if abs (Y) > R'Last then
-         Y := R' (4.0) * (R'(Left.Re / 2.0)  * R'(Right.Im / 2.0)
+         Y := R'(4.0) * (R'(Left.Re / 2.0)  * R'(Right.Im / 2.0)
                 - R'(Left.Im / 2.0) * R'(Right.Re / 2.0));
       end if;
 
@@ -152,7 +152,7 @@ package body Ada.Numerics.Generic_Complex_Types is
                Exp := Exp / 2;
             end loop;
 
-            return R ' (1.0) / Result;
+            return R'(1.0) / Result;
 
          exception
 
@@ -163,7 +163,7 @@ package body Ada.Numerics.Generic_Complex_Types is
    end "**";
 
    function "**" (Left : Imaginary; Right : Integer) return Complex is
-      M : R := R (Left) ** Right;
+      M : constant R := R (Left) ** Right;
    begin
       case Right mod 4 is
          when 0 => return (M,   0.0);
@@ -618,7 +618,6 @@ package body Ada.Numerics.Generic_Complex_Types is
          else
             return abs (X.Im);
          end if;
-
 
       elsif Im2 = 0.0 then
          return abs (X.Re);

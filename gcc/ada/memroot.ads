@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1997-2001 Ada Core Technologies, Inc.           --
+--            Copyright (C) 1997-2003 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -20,7 +20,7 @@
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -36,12 +36,8 @@
 --  through a Name_Id in order to avoid duplication.
 
 with System.Storage_Elements; use System.Storage_Elements;
-with Ada.Text_IO;             use Ada.Text_IO;
 
 package Memroot is
-
-   --  Work with instrumented allocation routines
-   Gmem_Mode  : Boolean := False;
 
    --  Simple abstract type for names. A name is a sequence of letters.
 
@@ -57,7 +53,12 @@ package Memroot is
    type Frame_Id is new Natural;
    No_Frame_Id : constant Frame_Id := 0;
 
-   function Enter_Frame (Name, File, Line : Name_Id) return Frame_Id;
+   function Enter_Frame
+     (Addr : System.Address;
+      Name : Name_Id;
+      File : Name_Id;
+      Line : Name_Id)
+      return Frame_Id;
 
    type Frame_Array is array (Natural range <>) of Frame_Id;
 
@@ -69,8 +70,8 @@ package Memroot is
    type Root_Id is new Natural;
    No_Root_Id : constant Root_Id := 0;
 
-   function Read_BT (BT_Depth : Integer; FT : File_Type) return Root_Id;
-   --  Read a backtrace from file FT whose maximum frame number is given by
+   function Read_BT (BT_Depth : Integer) return Root_Id;
+   --  Reads a backtrace whose maximum frame number is given by
    --  BT_Depth and returns the corresponding Allocation root.
 
    function Enter_Root  (Fr : Frame_Array) return Root_Id;
@@ -79,8 +80,10 @@ package Memroot is
    function Frames_Of   (B  : Root_Id) return Frame_Array;
    --  Retreives the Frames of the root's backtrace
 
-   procedure Print_BT (B  : Root_Id);
+   procedure Print_BT (B  : Root_Id; Short : Boolean := False);
    --  Prints on standard out the backtrace associated with the root B
+   --  When Short is set to True, only the filename & line info is printed.
+   --  When it is set to false, the subprogram name is also printed.
 
    function Get_First return Root_Id;
    function Get_Next  return Root_Id;

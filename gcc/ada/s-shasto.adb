@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,16 +36,14 @@ with Ada.IO_Exceptions;
 with Ada.Streams;
 with Ada.Streams.Stream_IO;
 
-with GNAT.HTable;
 with System.Global_Locks;
-with GNAT.OS_Lib;
-with GNAT.Task_Lock;
-
-use type GNAT.OS_Lib.String_Access;
+with System.Soft_Links;
 
 with System;
 with System.File_Control_Block;
 with System.File_IO;
+with System.HTable;
+
 with Unchecked_Deallocation;
 with Unchecked_Conversion;
 
@@ -53,17 +51,17 @@ package body System.Shared_Storage is
 
    package AS renames Ada.Streams;
 
-   package OS renames GNAT.OS_Lib;
-
    package IOX renames Ada.IO_Exceptions;
 
    package FCB renames System.File_Control_Block;
 
    package SFI renames System.File_IO;
 
-   package TSL renames GNAT.Task_Lock;
+   type String_Access is access String;
+   procedure Free is new Unchecked_Deallocation
+     (Object => String, Name => String_Access);
 
-   Dir : OS.String_Access;
+   Dir : String_Access;
    --  Holds the directory
 
    ------------------------------------------------
@@ -98,14 +96,14 @@ package body System.Shared_Storage is
    type Shared_Var_File_Entry_Ptr is access Shared_Var_File_Entry;
 
    type Shared_Var_File_Entry is record
-      Name   : OS.String_Access;
+      Name : String_Access;
       --  Name of variable, as passed to Read_File/Write_File routines
 
       Stream : File_Stream_Access;
       --  Stream_IO file for the shared variable file
 
-      Next   : Shared_Var_File_Entry_Ptr;
-      Prev   : Shared_Var_File_Entry_Ptr;
+      Next : Shared_Var_File_Entry_Ptr;
+      Prev : Shared_Var_File_Entry_Ptr;
       --  Links for LRU chain
    end record;
 
@@ -129,15 +127,15 @@ package body System.Shared_Storage is
    --  LRU_Tail points to the most recently used entry, whose next pointer
    --  is null. These pointers are null only if the list is empty.
 
-   function Hash  (F : OS.String_Access)      return Hash_Header;
-   function Equal (F1, F2 : OS.String_Access) return Boolean;
+   function Hash  (F : String_Access)      return Hash_Header;
+   function Equal (F1, F2 : String_Access) return Boolean;
    --  Hash and equality functions for hash table
 
-   package SFT is new GNAT.HTable.Simple_HTable
+   package SFT is new System.HTable.Simple_HTable
      (Header_Num => Hash_Header,
       Element    => Shared_Var_File_Entry_Ptr,
       No_Element => null,
-      Key        => OS.String_Access,
+      Key        => String_Access,
       Hash       => Hash,
       Equal      => Equal);
 
@@ -194,7 +192,7 @@ package body System.Shared_Storage is
          LRU_Head := Freed.Next;
          SFT.Remove (Freed.Name);
          SIO.Close (Freed.Stream.File);
-         OS.Free (Freed.Name);
+         Free (Freed.Name);
          Free (Freed.Stream);
          Free (Freed);
 
@@ -223,7 +221,7 @@ package body System.Shared_Storage is
    -- Equal --
    -----------
 
-   function Equal (F1, F2 : OS.String_Access) return Boolean is
+   function Equal (F1, F2 : String_Access) return Boolean is
    begin
       return F1.all = F2.all;
    end Equal;
@@ -232,7 +230,7 @@ package body System.Shared_Storage is
    -- Hash --
    ----------
 
-   function Hash (F : OS.String_Access) return Hash_Header is
+   function Hash (F : String_Access) return Hash_Header is
       N : Natural := 0;
 
    begin
@@ -250,9 +248,29 @@ package body System.Shared_Storage is
    ----------------
 
    procedure Initialize is
+      procedure Get_Env_Value_Ptr (Name, Length, Ptr : Address);
+      pragma Import (C, Get_Env_Value_Ptr, "__gnat_get_env_value_ptr");
+
+      procedure Strncpy (Astring_Addr, Cstring : Address; N : Integer);
+      pragma Import (C, Strncpy, "strncpy");
+
+      Dir_Name : aliased constant String :=
+                   "SHARED_MEMORY_DIRECTORY" & ASCII.NUL;
+
+      Env_Value_Ptr    : aliased Address;
+      Env_Value_Length : aliased Integer;
+
    begin
       if Dir = null then
-         Dir := OS.Getenv ("SHARED_MEMORY_DIRECTORY");
+         Get_Env_Value_Ptr
+           (Dir_Name'Address, Env_Value_Length'Address, Env_Value_Ptr'Address);
+
+         Dir := new String (1 .. Env_Value_Length);
+
+         if Env_Value_Length > 0 then
+            Strncpy (Dir.all'Address, Env_Value_Ptr, Env_Value_Length);
+         end if;
+
          System.Global_Locks.Create_Lock (Global_Lock, Dir.all & "__lock");
       end if;
    end Initialize;
@@ -264,9 +282,11 @@ package body System.Shared_Storage is
    procedure Read
      (Stream : in out File_Stream_Type;
       Item   : out AS.Stream_Element_Array;
-      Last   : out AS.Stream_Element_Offset) is
+      Last   : out AS.Stream_Element_Offset)
+   is
    begin
       SIO.Read (Stream.File, Item, Last);
+
    exception when others =>
       Last := Item'Last;
    end Read;
@@ -313,8 +333,9 @@ package body System.Shared_Storage is
 
    procedure Shared_Var_Close (Var : in SIO.Stream_Access) is
       pragma Warnings (Off, Var);
+
    begin
-      TSL.Unlock;
+      System.Soft_Links.Unlock_Task.all;
    end Shared_Var_Close;
 
    ---------------------
@@ -325,22 +346,22 @@ package body System.Shared_Storage is
       pragma Warnings (Off, Var);
 
    begin
-      TSL.Lock;
+      System.Soft_Links.Lock_Task.all;
       Initialize;
 
       if Lock_Count /= 0 then
          Lock_Count := Lock_Count + 1;
-         TSL.Unlock;
+         System.Soft_Links.Unlock_Task.all;
 
       else
          Lock_Count := 1;
-         TSL.Unlock;
+         System.Soft_Links.Unlock_Task.all;
          System.Global_Locks.Acquire_Lock (Global_Lock);
       end if;
 
    exception
       when others =>
-         TSL.Unlock;
+         System.Soft_Links.Unlock_Task.all;
          raise;
    end Shared_Var_Lock;
 
@@ -354,7 +375,7 @@ package body System.Shared_Storage is
       use type Ada.Streams.Stream_IO.File_Mode;
 
    begin
-      TSL.Lock;
+      System.Soft_Links.Lock_Task.all;
       SFE := Retrieve (Var);
 
       --  Here if file is not already open, try to open it
@@ -381,7 +402,7 @@ package body System.Shared_Storage is
 
                when IOX.Name_Error =>
                   Free (SFE);
-                  TSL.Unlock;
+                  System.Soft_Links.Unlock_Task.all;
                   return null;
          end;
 
@@ -400,7 +421,7 @@ package body System.Shared_Storage is
 
    exception
       when others =>
-         TSL.Unlock;
+         System.Soft_Links.Unlock_Task.all;
          raise;
    end Shared_Var_ROpen;
 
@@ -412,18 +433,18 @@ package body System.Shared_Storage is
       pragma Warnings (Off, Var);
 
    begin
-      TSL.Lock;
+      System.Soft_Links.Lock_Task.all;
       Initialize;
       Lock_Count := Lock_Count - 1;
 
       if Lock_Count = 0 then
          System.Global_Locks.Release_Lock (Global_Lock);
       end if;
-      TSL.Unlock;
+      System.Soft_Links.Unlock_Task.all;
 
    exception
       when others =>
-         TSL.Unlock;
+         System.Soft_Links.Unlock_Task.all;
          raise;
    end Shared_Var_Unlock;
 
@@ -437,7 +458,7 @@ package body System.Shared_Storage is
       use type Ada.Streams.Stream_IO.File_Mode;
 
    begin
-      TSL.Lock;
+      System.Soft_Links.Lock_Task.all;
       SFE := Retrieve (Var);
 
       if SFE = null then
@@ -491,7 +512,7 @@ package body System.Shared_Storage is
 
    exception
       when others =>
-         TSL.Unlock;
+         System.Soft_Links.Unlock_Task.all;
          raise;
    end Shared_Var_WOpen;
 
@@ -501,7 +522,8 @@ package body System.Shared_Storage is
 
    procedure Write
      (Stream : in out File_Stream_Type;
-      Item   : in AS.Stream_Element_Array) is
+      Item   : in AS.Stream_Element_Array)
+   is
    begin
       SIO.Write (Stream.File, Item);
    end Write;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,18 +27,26 @@
 with Types; use Types;
 package Sem_Ch6 is
 
-   procedure Analyze_Abstract_Subprogram_Declaration    (N : Node_Id);
-   procedure Analyze_Function_Call                      (N : Node_Id);
-   procedure Analyze_Operator_Symbol                    (N : Node_Id);
-   procedure Analyze_Parameter_Association              (N : Node_Id);
-   procedure Analyze_Procedure_Call                     (N : Node_Id);
-   procedure Analyze_Return_Statement                   (N : Node_Id);
-   procedure Analyze_Subprogram_Declaration             (N : Node_Id);
-   procedure Analyze_Subprogram_Body                    (N : Node_Id);
+   procedure Analyze_Abstract_Subprogram_Declaration (N : Node_Id);
+   procedure Analyze_Function_Call                   (N : Node_Id);
+   procedure Analyze_Operator_Symbol                 (N : Node_Id);
+   procedure Analyze_Parameter_Association           (N : Node_Id);
+   procedure Analyze_Procedure_Call                  (N : Node_Id);
+   procedure Analyze_Return_Statement                (N : Node_Id);
+   procedure Analyze_Subprogram_Declaration          (N : Node_Id);
+   procedure Analyze_Subprogram_Body                 (N : Node_Id);
 
-   function Analyze_Spec (N : Node_Id) return Entity_Id;
+   function Analyze_Subprogram_Specification (N : Node_Id) return Entity_Id;
    --  Analyze subprogram specification in both subprogram declarations
-   --  and body declarations.
+   --  and body declarations. Returns the defining entity for the spec.
+
+   procedure Cannot_Inline (Msg : String; N : Node_Id; Subp : Entity_Id);
+   --  This procedure is called if the node N, an instance of a call to
+   --  subprogram Subp, cannot be inlined. Msg is the message to be issued,
+   --  and has a ? as the last character. If Subp has a pragma Always_Inlined,
+   --  then an error message is issued (by removing the last character of Msg).
+   --  If Subp is not Always_Inlined, then a warning is issued if the flag
+   --  Ineffective_Inline_Warnings is set, and if not, the call has no effect.
 
    procedure Check_Delayed_Subprogram (Designator : Entity_Id);
    --  Designator can be a E_Subrpgram_Type, E_Procedure or E_Function. If a
@@ -117,9 +125,16 @@ package Sem_Ch6 is
    function Fully_Conformant_Expressions
      (Given_E1 : Node_Id;
       Given_E2 : Node_Id)
-      return  Boolean;
+      return     Boolean;
    --  Determines if two (non-empty) expressions are fully conformant
    --  as defined by (RM 6.3.1(18-21))
+
+   function Fully_Conformant_Discrete_Subtypes
+      (Given_S1 : Node_Id;
+       Given_S2 : Node_Id)
+       return Boolean;
+   --  Determines if two subtype definitions are fully conformant. Used
+   --  for entry family conformance checks (RM 6.3.1 (24)).
 
    function Mode_Conformant (New_Id, Old_Id : Entity_Id) return Boolean;
    --  Determine whether two callable entities (subprograms, entries,

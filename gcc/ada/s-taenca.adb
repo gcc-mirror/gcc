@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,8 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -40,7 +40,6 @@ with System.Task_Primitives.Operations;
 
 with System.Tasking.Initialization;
 --  used for Change_Base_Priority
---           Poll_Base_Priority_Change_At_Entry_Call
 --           Dynamic_Priority_Support
 --           Defer_Abort/Undefer_Abort
 
@@ -103,6 +102,9 @@ package body System.Tasking.Entry_Calls is
    --  and then checked again once it has been locked.
    --
    --  If Single_Lock and server is a PO, release RTS_Lock.
+   --
+   --  This should only be called by the Entry_Call.Self.
+   --  It should be holding no other ATCB locks at the time.
 
    procedure Unlock_Server (Entry_Call : Entry_Call_Link);
    --  STPO.Unlock the server targeted by Entry_Call. The server must
@@ -124,29 +126,24 @@ package body System.Tasking.Entry_Calls is
    --  This procedure performs priority change of a queued call and
    --  dequeuing of an entry call when the call is cancelled.
    --  If the call is dequeued the state should be set to Cancelled.
+   --  Call only with abort deferred and holding lock of Self_ID. This
+   --  is a bit of common code for all entry calls. The effect is to do
+   --  any deferred base priority change operation, in case some other
+   --  task called STPO.Set_Priority while the current task had abort deferred,
+   --  and to dequeue the call if the call has been aborted.
 
    procedure Poll_Base_Priority_Change_At_Entry_Call
      (Self_ID    : Task_ID;
       Entry_Call : Entry_Call_Link);
    pragma Inline (Poll_Base_Priority_Change_At_Entry_Call);
+   --  A specialized version of Poll_Base_Priority_Change,
+   --  that does the optional entry queue reordering.
    --  Has to be called with the Self_ID's ATCB write-locked.
    --  May temporariliy release the lock.
 
    ---------------------
    -- Check_Exception --
    ---------------------
-
-   --  Raise any pending exception from the Entry_Call.
-
-   --  This should be called at the end of every compiler interface
-   --  procedure that implements an entry call.
-
-   --  In principle, the caller should not be abort-deferred (unless
-   --  the application program violates the Ada language rules by doing
-   --  entry calls from within protected operations -- an erroneous practice
-   --  apparently followed with success by some adventurous GNAT users).
-   --  Absolutely, the caller should not be holding any locks, or there
-   --  will be deadlock.
 
    procedure Check_Exception
      (Self_ID    : Task_ID;
@@ -157,7 +154,7 @@ package body System.Tasking.Entry_Calls is
       use type Ada.Exceptions.Exception_Id;
 
       procedure Internal_Raise (X : Ada.Exceptions.Exception_Id);
-      pragma Import (C, Internal_Raise, "__gnat_raise_with_msg");
+      pragma Import (C, Internal_Raise, "__gnat_raise_after_setup");
 
       E : constant Ada.Exceptions.Exception_Id :=
             Entry_Call.Exception_To_Raise;
@@ -172,15 +169,9 @@ package body System.Tasking.Entry_Calls is
       end if;
    end Check_Exception;
 
-   -----------------------------------------
+   ------------------------------------------
    -- Check_Pending_Actions_For_Entry_Call --
-   -----------------------------------------
-
-   --  Call only with abort deferred and holding lock of Self_ID. This
-   --  is a bit of common code for all entry calls. The effect is to do
-   --  any deferred base priority change operation, in case some other
-   --  task called STPO.Set_Priority while the current task had abort deferred,
-   --  and to dequeue the call if the call has been aborted.
+   ------------------------------------------
 
    procedure Check_Pending_Actions_For_Entry_Call
      (Self_ID    : Task_ID;
@@ -220,9 +211,6 @@ package body System.Tasking.Entry_Calls is
    -----------------
    -- Lock_Server --
    -----------------
-
-   --  This should only be called by the Entry_Call.Self.
-   --  It should be holding no other ATCB locks at the time.
 
    procedure Lock_Server (Entry_Call : Entry_Call_Link) is
       Test_Task         : Task_ID;
@@ -325,9 +313,6 @@ package body System.Tasking.Entry_Calls is
    ---------------------------------------------
    -- Poll_Base_Priority_Change_At_Entry_Call --
    ---------------------------------------------
-
-   --  A specialized version of Poll_Base_Priority_Change,
-   --  that does the optional entry queue reordering.
 
    procedure Poll_Base_Priority_Change_At_Entry_Call
      (Self_ID    : Task_ID;
@@ -567,11 +552,33 @@ package body System.Tasking.Entry_Calls is
          Send_Trace_Info (W_Completion);
       end if;
 
+      --  Try to remove calls to Sleep in the loop below by letting the caller
+      --  a chance of getting ready immediately, using Unlock & Yield.
+      --  See similar action in Wait_For_Call & Selective_Wait.
+
+      if Single_Lock then
+         STPO.Unlock_RTS;
+      else
+         STPO.Unlock (Self_Id);
+      end if;
+
+      if Entry_Call.State < Done then
+         STPO.Yield;
+      end if;
+
+      if Single_Lock then
+         STPO.Lock_RTS;
+      else
+         STPO.Write_Lock (Self_Id);
+      end if;
+
       Self_Id.Common.State := Entry_Caller_Sleep;
 
       loop
          Check_Pending_Actions_For_Entry_Call (Self_Id, Entry_Call);
+
          exit when Entry_Call.State >= Done;
+
          STPO.Sleep (Self_Id, Entry_Caller_Sleep);
       end loop;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@
 ------------------------------------------------------------------------------
 
 --  This package contains functions for runtime operations on strings
+--  (other than runtime comparison, found in s-strcom.ads).
 
 package System.String_Ops is
 pragma Pure (String_Ops);
@@ -47,9 +48,6 @@ pragma Pure (String_Ops);
 
    function Str_Concat_CC (X, Y : Character) return String;
    --  Concatenate two characters
-
-   function Str_Equal (A, B : String) return Boolean;
-   --  Compare two strings for equality
 
    procedure Str_Normalize (A : in out String);
    --  Initialize String object if pragma Normalize_Scalars is in effect.

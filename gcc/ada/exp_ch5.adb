@@ -1,4 +1,4 @@
------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -268,7 +268,7 @@ package body Exp_Ch5 is
          end;
       end Possible_Unaligned_Slice;
 
-      --  Determine if Lhs, Rhs are formal arrays or non-local arrays
+      --  Determine if Lhs, Rhs are formal arrays or nonlocal arrays
 
       Lhs_Formal : constant Boolean := Is_Formal_Array (Act_Lhs);
       Rhs_Formal : constant Boolean := Is_Formal_Array (Act_Rhs);
@@ -304,10 +304,13 @@ package body Exp_Ch5 is
       --  case of one dimensional arrays, parameters can be slices that
       --  are passed by reference, so we can have aliasing for assignments
       --  from one parameter to another, or assignments between parameters
-      --  and non-local variables.
+      --  and nonlocal variables. However, if the array subtype is a
+      --  constrained first subtype in the parameter case, then we don't
+      --  have to worry about overlap, since slice assignments aren't
+      --  possible (other than for a slice denoting the whole array).
 
       --  Note: overlap is never possible if there is a change of
-      --  representation, so we can exclude this case
+      --  representation, so we can exclude this case.
 
       if Ndim = 1
         and then not Crep
@@ -317,6 +320,9 @@ package body Exp_Ch5 is
             (Lhs_Formal and Rhs_Non_Local_Var)
               or else
             (Rhs_Formal and Lhs_Non_Local_Var))
+        and then
+           (not Is_Constrained (Etype (Lhs))
+             or else not Is_First_Subtype (Etype (Lhs)))
 
          --  In the case of compiling for the Java Virtual Machine,
          --  slices are always passed by making a copy, so we don't
@@ -459,8 +465,21 @@ package body Exp_Ch5 is
 
       --  Gigi can always handle the assignment if the right side is a string
       --  literal (note that overlap is definitely impossible in this case).
+      --  If the type is packed, a string literal is always converted into a
+      --  aggregate, except in the case of a null slice, for which no aggregate
+      --  can be written. In that case, rewrite the assignment as a null
+      --  statement, a length check has already been emitted to verify that
+      --  the range of the left-hand side is empty.
 
       elsif Nkind (Rhs) = N_String_Literal then
+         if Ekind (R_Type) = E_String_Literal_Subtype
+           and then String_Literal_Length (R_Type) = 0
+           and then Is_Bit_Packed_Array (L_Type)
+         then
+            Rewrite (N, Make_Null_Statement (Loc));
+            Analyze (N);
+         end if;
+
          return;
 
       --  If either operand is bit packed, then we need a loop, since we
@@ -675,8 +694,8 @@ package body Exp_Ch5 is
 
          elsif Restrictions (No_Implicit_Conditionals) then
             declare
-               T : Entity_Id := Make_Defining_Identifier (Loc,
-                                  Chars => Name_T);
+               T : constant Entity_Id := Make_Defining_Identifier (Loc,
+                                           Chars => Name_T);
 
             begin
                Rewrite (N,
@@ -723,7 +742,7 @@ package body Exp_Ch5 is
                          Prefix =>
                            Make_Indexed_Component (Loc,
                              Prefix =>
-                               Duplicate_Subexpr (Larray, True),
+                               Duplicate_Subexpr_Move_Checks (Larray, True),
                              Expressions => New_List (
                                Make_Attribute_Reference (Loc,
                                  Prefix =>
@@ -738,7 +757,7 @@ package body Exp_Ch5 is
                          Prefix =>
                            Make_Indexed_Component (Loc,
                              Prefix =>
-                               Duplicate_Subexpr (Rarray, True),
+                               Duplicate_Subexpr_Move_Checks (Rarray, True),
                              Expressions => New_List (
                                Make_Attribute_Reference (Loc,
                                  Prefix =>
@@ -785,6 +804,10 @@ package body Exp_Ch5 is
 
          Analyze (N, Suppress => All_Checks);
       end;
+
+   exception
+      when RE_Not_Available =>
+         return;
    end Expand_Assign_Array;
 
    ------------------------------
@@ -878,8 +901,8 @@ package body Exp_Ch5 is
       --  Now construct the assignment statement
 
       declare
-         ExprL : List_Id := New_List;
-         ExprR : List_Id := New_List;
+         ExprL : constant List_Id := New_List;
+         ExprR : constant List_Id := New_List;
 
       begin
          for J in 1 .. Ndim loop
@@ -972,7 +995,7 @@ package body Exp_Ch5 is
          Rhs   : constant Node_Id    := Expression (Expression (N));
          R_Rec : constant Node_Id    := Expression (Expression (N));
          R_Typ : constant Entity_Id  := Base_Type (Etype (R_Rec));
-         L_Typ : constant Entity_Id  := Etype (Lhs);
+         L_Typ : constant Entity_Id  := Base_Type (Etype (Lhs));
          Decl  : constant Node_Id    := Declaration_Node (R_Typ);
          RDef  : Node_Id;
          F     : Entity_Id;
@@ -1129,7 +1152,7 @@ package body Exp_Ch5 is
       --  Start of processing for Expand_Assign_Record
 
       begin
-         --  Note that we use the base type for this processing. This results
+         --  Note that we use the base types for this processing. This results
          --  in some extra work in the constrained case, but the change of
          --  representation case is so unusual that it is not worth the effort.
 
@@ -1177,7 +1200,7 @@ package body Exp_Ch5 is
 
    --  For array types, deal with slice assignments and setting the flags
    --  to indicate if it can be statically determined which direction the
-   --  move should go in. Also deal with generating length checks.
+   --  move should go in. Also deal with generating range/length checks.
 
    procedure Expand_N_Assignment_Statement (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
@@ -1187,6 +1210,16 @@ package body Exp_Ch5 is
       Exp  : Node_Id;
 
    begin
+      --  First deal with generation of range check if required. For now
+      --  we do this only for discrete types.
+
+      if Do_Range_Check (Rhs)
+        and then Is_Discrete_Type (Typ)
+      then
+         Set_Do_Range_Check (Rhs, False);
+         Generate_Range_Check (Rhs, Typ, CE_Range_Check_Failed);
+      end if;
+
       --  Check for a special case where a high level transformation is
       --  required. If we have either of:
 
@@ -1300,6 +1333,13 @@ package body Exp_Ch5 is
 
             Rewrite (Prefix (Lhs),
               New_Occurrence_Of (Tnn, Loc));
+
+            --  We do not need to reanalyze that assignment, and we do not need
+            --  to worry about references to the temporary, but we do need to
+            --  make sure that the temporary is not marked as a true constant
+            --  since we now have a generate assignment to it!
+
+            Set_Is_True_Constant (Tnn, False);
          end;
       end if;
 
@@ -1332,9 +1372,14 @@ package body Exp_Ch5 is
       --  necessary if the Lhs is aliased. The private determinants must be
       --  visible to build the discriminant constraints.
 
+      --  Only an explicit dereference that comes from source indicates
+      --  aliasing. Access to formals of protected operations and entries
+      --  create dereferences but are not semantic aliasings.
+
       elsif Is_Private_Type (Etype (Lhs))
         and then  Has_Discriminants (Typ)
         and then Nkind (Lhs) = N_Explicit_Dereference
+        and then Comes_From_Source (Lhs)
       then
          declare
             Lt : constant Entity_Id := Etype (Lhs);
@@ -1411,6 +1456,18 @@ package body Exp_Ch5 is
            (Expression (Rhs), Designated_Type (Etype (Lhs)));
       end if;
 
+      --  If we are assigning an access type and the left side is an
+      --  entity, then make sure that Is_Known_Non_Null properly
+      --  reflects the state of the entity after the assignment
+
+      if Is_Access_Type (Typ)
+        and then Is_Entity_Name (Lhs)
+        and then Known_Non_Null (Rhs)
+        and then Safe_To_Capture_Value (N, Entity (Lhs))
+      then
+         Set_Is_Known_Non_Null (Entity (Lhs), Known_Non_Null (Rhs));
+      end if;
+
       --  Case of assignment to a bit packed array element
 
       if Nkind (Lhs) = N_Indexed_Component
@@ -1465,8 +1522,8 @@ package body Exp_Ch5 is
                --  operation profile.
 
                declare
-                  Op    : constant Entity_Id
-                           := Find_Prim_Op (Typ, Name_uAssign);
+                  Op    : constant Entity_Id :=
+                            Find_Prim_Op (Typ, Name_uAssign);
                   F_Typ : Entity_Id := Etype (First_Formal (Op));
 
                begin
@@ -1523,10 +1580,11 @@ package body Exp_Ch5 is
                --  implementation of adjust for record_controllers (see
                --  s-finimp.adb)
 
-               --  This is skipped in No_Run_Time mode, where we in any
-               --  case exclude the possibility of finalization going on!
+               --  This is skipped if we have no finalization
 
-               if Expand_Ctrl_Actions and then not No_Run_Time then
+               if Expand_Ctrl_Actions
+                 and then not Restrictions (No_Finalization)
+               then
                   L := New_List (
                     Make_Block_Statement (Loc,
                       Handled_Statement_Sequence =>
@@ -1661,7 +1719,7 @@ package body Exp_Ch5 is
             elsif Is_Local_Variable_Reference (Lhs) then
                Set_Is_Known_Valid (Entity (Lhs), False);
 
-            --  Check for case of a non-local variable on the left side
+            --  Check for case of a nonlocal variable on the left side
             --  which is currently known to be valid. In this case, we
             --  simply ensure that the right side is valid. We only play
             --  the game of copying validity status for local variables,
@@ -1698,6 +1756,10 @@ package body Exp_Ch5 is
       then
          Check_Valid_Lvalue_Subscripts (Lhs);
       end if;
+
+   exception
+      when RE_Not_Available =>
+         return;
    end Expand_N_Assignment_Statement;
 
    ------------------------------
@@ -1716,134 +1778,177 @@ package body Exp_Ch5 is
    -----------------------------
 
    procedure Expand_N_Case_Statement (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Expr : constant Node_Id    := Expression (N);
+      Loc    : constant Source_Ptr := Sloc (N);
+      Expr   : constant Node_Id    := Expression (N);
+      Alt    : Node_Id;
+      Len    : Nat;
+      Cond   : Node_Id;
+      Choice : Node_Id;
+      Chlist : List_Id;
 
    begin
       --  Check for the situation where we know at compile time which
       --  branch will be taken
 
       if Compile_Time_Known_Value (Expr) then
-         declare
-            Val    : constant Uint := Expr_Value (Expr);
-            Alt    : Node_Id;
-            Choice : Node_Id;
+         Alt := Find_Static_Alternative (N);
 
-         begin
-            Alt := First (Alternatives (N));
-            Search : loop
-               Choice := First (Discrete_Choices (Alt));
-               while Present (Choice) loop
+         --  Move the statements from this alternative after the case
+         --  statement. They are already analyzed, so will be skipped
+         --  by the analyzer.
 
-                  --  Others choice, always matches
+         Insert_List_After (N, Statements (Alt));
 
-                  if Nkind (Choice) = N_Others_Choice then
-                     exit Search;
+         --  That leaves the case statement as a shell. The alternative
+         --  that will be executed is reset to a null list. So now we can
+         --  kill the entire case statement.
 
-                  --  Range, check if value is in the range
-
-                  elsif Nkind (Choice) = N_Range then
-                     exit Search when
-                       Val >= Expr_Value (Low_Bound (Choice))
-                         and then
-                       Val <= Expr_Value (High_Bound (Choice));
-
-                  --  Choice is a subtype name. Note that we know it must
-                  --  be a static subtype, since otherwise it would have
-                  --  been diagnosed as illegal.
-
-                  elsif Is_Entity_Name (Choice)
-                    and then Is_Type (Entity (Choice))
-                  then
-                     exit when Is_In_Range (Expr, Etype (Choice));
-
-                  --  Choice is a subtype indication
-
-                  elsif Nkind (Choice) = N_Subtype_Indication then
-                     declare
-                        C : constant Node_Id := Constraint (Choice);
-                        R : constant Node_Id := Range_Expression (C);
-
-                     begin
-                        exit Search when
-                          Val >= Expr_Value (Low_Bound (R))
-                            and then
-                          Val <= Expr_Value (High_Bound (R));
-                     end;
-
-                  --  Choice is a simple expression
-
-                  else
-                     exit Search when Val = Expr_Value (Choice);
-                  end if;
-
-                  Next (Choice);
-               end loop;
-
-               Next (Alt);
-               pragma Assert (Present (Alt));
-            end loop Search;
-
-            --  The above loop *must* terminate by finding a match, since
-            --  we know the case statement is valid, and the value of the
-            --  expression is known at compile time. When we fall out of
-            --  the loop, Alt points to the alternative that we know will
-            --  be selected at run time.
-
-            --  Move the statements from this alternative after the case
-            --  statement. They are already analyzed, so will be skipped
-            --  by the analyzer.
-
-            Insert_List_After (N, Statements (Alt));
-
-            --  That leaves the case statement as a shell. The alternative
-            --  that wlil be executed is reset to a null list. So now we can
-            --  kill the entire case statement.
-
-            Kill_Dead_Code (Expression (N));
-            Kill_Dead_Code (Alternatives (N));
-            Rewrite (N, Make_Null_Statement (Loc));
-         end;
+         Kill_Dead_Code (Expression (N));
+         Kill_Dead_Code (Alternatives (N));
+         Rewrite (N, Make_Null_Statement (Loc));
+         return;
+      end if;
 
       --  Here if the choice is not determined at compile time
 
-      --  If the last alternative is not an Others choice, replace it with an
-      --  N_Others_Choice. Note that we do not bother to call Analyze on the
-      --  modified case statement, since it's only effect would be to compute
-      --  the contents of the Others_Discrete_Choices node laboriously, and of
-      --  course we already know the list of choices that corresponds to the
-      --  others choice (it's the list we are replacing!)
+      declare
+         Last_Alt : constant Node_Id := Last (Alternatives (N));
 
-      else
-         declare
-            Altnode     : constant Node_Id := Last (Alternatives (N));
-            Others_Node : Node_Id;
+         Others_Present : Boolean;
+         Others_Node    : Node_Id;
 
-         begin
-            if Nkind (First (Discrete_Choices (Altnode)))
-                        /= N_Others_Choice
-            then
-               Others_Node := Make_Others_Choice (Sloc (Altnode));
-               Set_Others_Discrete_Choices
-                 (Others_Node, Discrete_Choices (Altnode));
-               Set_Discrete_Choices (Altnode, New_List (Others_Node));
+         Then_Stms : List_Id;
+         Else_Stms : List_Id;
+
+      begin
+         if Nkind (First (Discrete_Choices (Last_Alt))) = N_Others_Choice then
+            Others_Present := True;
+            Others_Node    := Last_Alt;
+         else
+            Others_Present := False;
+         end if;
+
+         --  First step is to worry about possible invalid argument. The RM
+         --  requires (RM 5.4(13)) that if the result is invalid (e.g. it is
+         --  outside the base range), then Constraint_Error must be raised.
+
+         --  Case of validity check required (validity checks are on, the
+         --  expression is not known to be valid, and the case statement
+         --  comes from source -- no need to validity check internally
+         --  generated case statements).
+
+         if Validity_Check_Default then
+            Ensure_Valid (Expr);
+         end if;
+
+         --  If there is only a single alternative, just replace it with
+         --  the sequence of statements since obviously that is what is
+         --  going to be executed in all cases.
+
+         Len := List_Length (Alternatives (N));
+
+         if Len = 1 then
+            --  We still need to evaluate the expression if it has any
+            --  side effects.
+
+            Remove_Side_Effects (Expression (N));
+
+            Insert_List_After (N, Statements (First (Alternatives (N))));
+
+            --  That leaves the case statement as a shell. The alternative
+            --  that will be executed is reset to a null list. So now we can
+            --  kill the entire case statement.
+
+            Kill_Dead_Code (Expression (N));
+            Rewrite (N, Make_Null_Statement (Loc));
+            return;
+         end if;
+
+         --  An optimization. If there are only two alternatives, and only
+         --  a single choice, then rewrite the whole case statement as an
+         --  if statement, since this can result in susbequent optimizations.
+         --  This helps not only with case statements in the source of a
+         --  simple form, but also with generated code (discriminant check
+         --  functions in particular)
+
+         if Len = 2 then
+            Chlist := Discrete_Choices (First (Alternatives (N)));
+
+            if List_Length (Chlist) = 1 then
+               Choice := First (Chlist);
+
+               Then_Stms := Statements (First (Alternatives (N)));
+               Else_Stms := Statements (Last  (Alternatives (N)));
+
+               --  For TRUE, generate "expression", not expression = true
+
+               if Nkind (Choice) = N_Identifier
+                 and then Entity (Choice) = Standard_True
+               then
+                  Cond := Expression (N);
+
+               --  For FALSE, generate "expression" and switch then/else
+
+               elsif Nkind (Choice) = N_Identifier
+                 and then Entity (Choice) = Standard_False
+               then
+                  Cond := Expression (N);
+                  Else_Stms := Statements (First (Alternatives (N)));
+                  Then_Stms := Statements (Last  (Alternatives (N)));
+
+               --  For a range, generate "expression in range"
+
+               elsif Nkind (Choice) = N_Range
+                 or else (Nkind (Choice) = N_Attribute_Reference
+                           and then Attribute_Name (Choice) = Name_Range)
+                 or else (Is_Entity_Name (Choice)
+                           and then Is_Type (Entity (Choice)))
+                 or else Nkind (Choice) = N_Subtype_Indication
+               then
+                  Cond :=
+                    Make_In (Loc,
+                      Left_Opnd  => Expression (N),
+                      Right_Opnd => Relocate_Node (Choice));
+
+               --  For any other subexpression "expression = value"
+
+               else
+                  Cond :=
+                    Make_Op_Eq (Loc,
+                      Left_Opnd  => Expression (N),
+                      Right_Opnd => Relocate_Node (Choice));
+               end if;
+
+               --  Now rewrite the case as an IF
+
+               Rewrite (N,
+                 Make_If_Statement (Loc,
+                   Condition => Cond,
+                   Then_Statements => Then_Stms,
+                   Else_Statements => Else_Stms));
+               Analyze (N);
+               return;
             end if;
+         end if;
 
-            --  If checks are on, ensure argument is valid (RM 5.4(13)). This
-            --  is only done for case statements frpm in the source program.
-            --  We don't just call Ensure_Valid here, because the requirement
-            --  is more strenous than usual, in that it is required that
-            --  Constraint_Error be raised.
+         --  If the last alternative is not an Others choice, replace it
+         --  with an N_Others_Choice. Note that we do not bother to call
+         --  Analyze on the modified case statement, since it's only effect
+         --  would be to compute the contents of the Others_Discrete_Choices
+         --  which is not needed by the back end anyway.
 
-            if Comes_From_Source (N)
-              and then Validity_Checks_On
-              and then Validity_Check_Default
-              and then not Expr_Known_Valid (Expr)
-            then
-               Insert_Valid_Check (Expr);
-            end if;
-         end;
-      end if;
+         --  The reason we do this is that the back end always needs some
+         --  default for a switch, so if we have not supplied one in the
+         --  processing above for validity checking, then we need to
+         --  supply one here.
+
+         if not Others_Present then
+            Others_Node := Make_Others_Choice (Sloc (Last_Alt));
+            Set_Others_Discrete_Choices
+              (Others_Node, Discrete_Choices (Last_Alt));
+            Set_Discrete_Choices (Last_Alt, New_List (Others_Node));
+         end if;
+      end;
    end Expand_N_Case_Statement;
 
    -----------------------------
@@ -1905,6 +2010,7 @@ package body Exp_Ch5 is
    --  cases of constant elsif conditions).
 
    procedure Expand_N_If_Statement (N : Node_Id) is
+      Loc    : constant Source_Ptr := Sloc (N);
       Hed    : Node_Id;
       E      : Node_Id;
       New_If : Node_Id;
@@ -2044,6 +2150,86 @@ package body Exp_Ch5 is
             end if;
          end loop;
       end if;
+
+      --  Some more optimizations applicable if we still have an IF statement
+
+      if Nkind (N) /= N_If_Statement then
+         return;
+      end if;
+
+      --  Another optimization, special cases that can be simplified
+
+      --     if expression then
+      --        return true;
+      --     else
+      --        return false;
+      --     end if;
+
+      --  can be changed to:
+
+      --     return expression;
+
+      --  and
+
+      --     if expression then
+      --        return false;
+      --     else
+      --        return true;
+      --     end if;
+
+      --  can be changed to:
+
+      --     return not (expression);
+
+      if Nkind (N) = N_If_Statement
+         and then No (Elsif_Parts (N))
+         and then Present (Else_Statements (N))
+         and then List_Length (Then_Statements (N)) = 1
+         and then List_Length (Else_Statements (N)) = 1
+      then
+         declare
+            Then_Stm : Node_Id := First (Then_Statements (N));
+            Else_Stm : Node_Id := First (Else_Statements (N));
+
+         begin
+            if Nkind (Then_Stm) = N_Return_Statement
+                 and then
+               Nkind (Else_Stm) = N_Return_Statement
+            then
+               declare
+                  Then_Expr : constant Node_Id := Expression (Then_Stm);
+                  Else_Expr : constant Node_Id := Expression (Else_Stm);
+
+               begin
+                  if Nkind (Then_Expr) = N_Identifier
+                       and then
+                     Nkind (Else_Expr) = N_Identifier
+                  then
+                     if Entity (Then_Expr) = Standard_True
+                       and then Entity (Else_Expr) = Standard_False
+                     then
+                        Rewrite (N,
+                          Make_Return_Statement (Loc,
+                            Expression => Relocate_Node (Condition (N))));
+                        Analyze (N);
+                        return;
+
+                     elsif Entity (Then_Expr) = Standard_False
+                       and then Entity (Else_Expr) = Standard_True
+                     then
+                        Rewrite (N,
+                          Make_Return_Statement (Loc,
+                            Expression =>
+                              Make_Op_Not (Loc,
+                                Right_Opnd => Relocate_Node (Condition (N)))));
+                        Analyze (N);
+                        return;
+                     end if;
+                  end if;
+               end;
+            end if;
+         end;
+      end if;
    end Expand_N_If_Statement;
 
    -----------------------------
@@ -2097,8 +2283,8 @@ package body Exp_Ch5 is
             Loop_Id : constant Entity_Id := Defining_Identifier (LPS);
             Ltype   : constant Entity_Id := Etype (Loop_Id);
             Btype   : constant Entity_Id := Base_Type (Ltype);
+            Expr    : Node_Id;
             New_Id  : Entity_Id;
-            Lo, Hi  : Node_Id;
 
          begin
             if not Is_Enumeration_Type (Btype)
@@ -2111,8 +2297,25 @@ package body Exp_Ch5 is
               Make_Defining_Identifier (Loc,
                 Chars => New_External_Name (Chars (Loop_Id), 'P'));
 
-            Lo := Type_Low_Bound (Ltype);
-            Hi := Type_High_Bound (Ltype);
+            --  If the type has a contiguous representation, successive
+            --  values can be generated as offsets from the first literal.
+
+            if Has_Contiguous_Rep (Btype) then
+               Expr :=
+                  Unchecked_Convert_To (Btype,
+                    Make_Op_Add (Loc,
+                      Left_Opnd =>
+                         Make_Integer_Literal (Loc,
+                           Enumeration_Rep (First_Literal (Btype))),
+                      Right_Opnd => New_Reference_To (New_Id, Loc)));
+            else
+               --  Use the constructed array Enum_Pos_To_Rep.
+
+               Expr :=
+                 Make_Indexed_Component (Loc,
+                   Prefix => New_Reference_To (Enum_Pos_To_Rep (Btype), Loc),
+                   Expressions => New_List (New_Reference_To (New_Id, Loc)));
+            end if;
 
             Rewrite (N,
               Make_Loop_Statement (Loc,
@@ -2165,19 +2368,13 @@ package body Exp_Ch5 is
                         Defining_Identifier => Loop_Id,
                         Constant_Present    => True,
                         Object_Definition   => New_Reference_To (Ltype, Loc),
-                        Expression          =>
-                          Make_Indexed_Component (Loc,
-                            Prefix =>
-                              New_Reference_To (Enum_Pos_To_Rep (Btype), Loc),
-                            Expressions => New_List (
-                              New_Reference_To (New_Id, Loc))))),
+                        Expression          => Expr)),
 
                     Handled_Statement_Sequence =>
                       Make_Handled_Sequence_Of_Statements (Loc,
                         Statements => Statements (N)))),
 
                 End_Label => End_Label (N)));
-
             Analyze (N);
          end;
 
@@ -2532,17 +2729,20 @@ package body Exp_Ch5 is
          --  Start of processing for No_Secondary_Stack_Case
 
          begin
-            --  No copy needed if result is from a function call for the
-            --  same type with the same constrainedness (is the latter a
-            --  necessary check, or could gigi produce the bounds ???).
+            --  No copy needed if result is from a function call.
             --  In this case the result is already being returned by
             --  reference with the stack pointer depressed.
 
+            --  To make up for a gcc 2.8.1 deficiency (???), we perform
+            --  the copy for array types if the constrained status of the
+            --  target type is different from that of the expression.
+
             if Requires_Transient_Scope (T)
-                and then Is_Constrained (T) = Is_Constrained (Return_Type)
-                and then (Nkind (Exp) = N_Function_Call
-                           or else
-                             Nkind (Original_Node (Exp)) = N_Function_Call)
+              and then
+                (not Is_Array_Type (T)
+                   or else Is_Constrained (T) = Is_Constrained (Return_Type)
+                   or else Controlled_Type (T))
+              and then Nkind (Exp) = N_Function_Call
             then
                Set_By_Ref (N);
 
@@ -2624,20 +2824,23 @@ package body Exp_Ch5 is
             end loop;
          end;
 
-         --  Optimize the case where the result is from a function call for
-         --  the same type with the same constrainedness (is the latter a
-         --  necessary check, or could gigi produce the bounds ???). In this
+         --  Optimize the case where the result is a function call. In this
          --  case either the result is already on the secondary stack, or is
          --  already being returned with the stack pointer depressed and no
          --  further processing is required except to set the By_Ref flag to
          --  ensure that gigi does not attempt an extra unnecessary copy.
          --  (actually not just unnecessary but harmfully wrong in the case
          --  of a controlled type, where gigi does not know how to do a copy).
+         --  To make up for a gcc 2.8.1 deficiency (???), we perform
+         --  the copy for array types if the constrained status of the
+         --  target type is different from that of the expression.
 
          if Requires_Transient_Scope (T)
-             and then Is_Constrained (T) = Is_Constrained (Return_Type)
-             and then (Nkind (Exp) = N_Function_Call
-                        or else Nkind (Original_Node (Exp)) = N_Function_Call)
+           and then
+              (not Is_Array_Type (T)
+                or else Is_Constrained (T) = Is_Constrained (Return_Type)
+                or else Controlled_Type (T))
+           and then Nkind (Exp) = N_Function_Call
          then
             Set_By_Ref (N);
 
@@ -2705,6 +2908,10 @@ package body Exp_Ch5 is
             end if;
          end if;
       end if;
+
+   exception
+      when RE_Not_Available =>
+         return;
    end Expand_N_Return_Statement;
 
    ------------------------------
@@ -2725,11 +2932,14 @@ package body Exp_Ch5 is
       --  Tags are not saved and restored when Java_VM because JVM tags
       --  are represented implicitly in objects.
 
-      Res      : List_Id;
-      Tag_Tmp  : Entity_Id;
-      Prev_Tmp : Entity_Id;
-      Next_Tmp : Entity_Id;
-      Ctrl_Ref : Node_Id;
+      Res       : List_Id;
+      Tag_Tmp   : Entity_Id;
+      Prev_Tmp  : Entity_Id;
+      Next_Tmp  : Entity_Id;
+      Ctrl_Ref  : Node_Id;
+      Ctrl_Ref2 : Node_Id   := Empty;
+      Prev_Tmp2 : Entity_Id := Empty;  -- prevent warning
+      Next_Tmp2 : Entity_Id := Empty;  -- prevent warning
 
    begin
       Res := New_List;
@@ -2737,7 +2947,7 @@ package body Exp_Ch5 is
       --  Finalize the target of the assignment when controlled.
       --  We have two exceptions here:
 
-      --   1. If we are in an init_proc since it is an initialization
+      --   1. If we are in an init proc since it is an initialization
       --      more than an assignment
 
       --   2. If the left-hand side is a temporary that was not initialized
@@ -2747,7 +2957,7 @@ package body Exp_Ch5 is
       --      it may be a component of an entry formal, in which case it has
       --      been rewritten and does not appear to come from source either.
 
-      --  Init_Proc case
+      --  Case of init proc
 
       if not Ctrl_Act then
          null;
@@ -2762,7 +2972,7 @@ package body Exp_Ch5 is
       else
          Append_List_To (Res,
            Make_Final_Call (
-             Ref         => Duplicate_Subexpr (L),
+             Ref         => Duplicate_Subexpr_No_Checks (L),
              Typ         => Etype (L),
              With_Detach => New_Reference_To (Standard_False, Loc)));
       end if;
@@ -2781,7 +2991,7 @@ package body Exp_Ch5 is
              Object_Definition => New_Reference_To (RTE (RE_Tag), Loc),
              Expression =>
                Make_Selected_Component (Loc,
-                 Prefix        => Duplicate_Subexpr (L),
+                 Prefix        => Duplicate_Subexpr_No_Checks (L),
                  Selector_Name => New_Reference_To (Tag_Component (T), Loc))));
 
       --  Otherwise Tag_Tmp not used
@@ -2792,10 +3002,11 @@ package body Exp_Ch5 is
 
       --  Save the Finalization Pointers in local variables Prev_Tmp and
       --  Next_Tmp. For objects with Has_Controlled_Component set, these
-      --  pointers are in the Record_Controller
+      --  pointers are in the Record_Controller and if it is also
+      --  Is_Controlled, we need to save the object pointers as well.
 
       if Ctrl_Act then
-         Ctrl_Ref := Duplicate_Subexpr (L);
+         Ctrl_Ref := Duplicate_Subexpr_No_Checks (L);
 
          if Has_Controlled_Component (T) then
             Ctrl_Ref :=
@@ -2803,6 +3014,10 @@ package body Exp_Ch5 is
                 Prefix => Ctrl_Ref,
                 Selector_Name =>
                   New_Reference_To (Controller_Component (T), Loc));
+
+            if Is_Controlled (T) then
+               Ctrl_Ref2 := Duplicate_Subexpr_No_Checks (L);
+            end if;
          end if;
 
          Prev_Tmp := Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
@@ -2836,6 +3051,41 @@ package body Exp_Ch5 is
                      New_Copy_Tree (Ctrl_Ref)),
                  Selector_Name => Make_Identifier (Loc, Name_Next))));
 
+         if Present (Ctrl_Ref2) then
+            Prev_Tmp2 :=
+              Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
+
+            Append_To (Res,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Prev_Tmp2,
+
+                Object_Definition =>
+                  New_Reference_To (RTE (RE_Finalizable_Ptr), Loc),
+
+                Expression =>
+                  Make_Selected_Component (Loc,
+                    Prefix =>
+                      Unchecked_Convert_To (RTE (RE_Finalizable), Ctrl_Ref2),
+                    Selector_Name => Make_Identifier (Loc, Name_Prev))));
+
+            Next_Tmp2 :=
+              Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
+
+            Append_To (Res,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Next_Tmp2,
+
+                Object_Definition =>
+                  New_Reference_To (RTE (RE_Finalizable_Ptr), Loc),
+
+                Expression =>
+                  Make_Selected_Component (Loc,
+                    Prefix =>
+                      Unchecked_Convert_To (RTE (RE_Finalizable),
+                        New_Copy_Tree (Ctrl_Ref2)),
+                    Selector_Name => Make_Identifier (Loc, Name_Next))));
+         end if;
+
       --  If not controlled type, then Prev_Tmp and Ctrl_Ref unused
 
       else
@@ -2854,7 +3104,7 @@ package body Exp_Ch5 is
            Make_Assignment_Statement (Loc,
              Name =>
                Make_Selected_Component (Loc,
-                 Prefix        => Duplicate_Subexpr (L),
+                 Prefix        => Duplicate_Subexpr_No_Checks (L),
                  Selector_Name => New_Reference_To (Tag_Component (T), Loc)),
              Expression => New_Reference_To (Tag_Tmp, Loc)));
       end if;
@@ -2881,22 +3131,48 @@ package body Exp_Ch5 is
                      New_Copy_Tree (Ctrl_Ref)),
                  Selector_Name => Make_Identifier (Loc, Name_Next)),
              Expression => New_Reference_To (Next_Tmp, Loc)));
+
+         if Present (Ctrl_Ref2) then
+            Append_To (Res,
+              Make_Assignment_Statement (Loc,
+                Name =>
+                  Make_Selected_Component (Loc,
+                    Prefix =>
+                      Unchecked_Convert_To (RTE (RE_Finalizable),
+                        New_Copy_Tree (Ctrl_Ref2)),
+                    Selector_Name => Make_Identifier (Loc, Name_Prev)),
+                Expression => New_Reference_To (Prev_Tmp2, Loc)));
+
+            Append_To (Res,
+              Make_Assignment_Statement (Loc,
+                Name =>
+                  Make_Selected_Component (Loc,
+                    Prefix =>
+                      Unchecked_Convert_To (RTE (RE_Finalizable),
+                        New_Copy_Tree (Ctrl_Ref2)),
+                    Selector_Name => Make_Identifier (Loc, Name_Next)),
+                Expression => New_Reference_To (Next_Tmp2, Loc)));
+         end if;
       end if;
 
       --  Adjust the target after the assignment when controlled. (not in
-      --  the init_proc since it is an initialization more than an
+      --  the init proc since it is an initialization more than an
       --  assignment)
 
       if Ctrl_Act then
          Append_List_To (Res,
            Make_Adjust_Call (
-             Ref         => Duplicate_Subexpr (L),
+             Ref         => Duplicate_Subexpr_Move_Checks (L),
              Typ         => Etype (L),
              Flist_Ref   => New_Reference_To (RTE (RE_Global_Final_List), Loc),
              With_Attach => Make_Integer_Literal (Loc, 0)));
       end if;
 
       return Res;
+
+   exception
+      when RE_Not_Available =>
+         return Empty_List;
    end Make_Tag_Ctrl_Assignment;
 
 end Exp_Ch5;

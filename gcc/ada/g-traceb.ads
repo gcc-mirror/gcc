@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1999-2001 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -63,6 +64,7 @@
 --     VxWorks Alpha
 
 with System;
+with Ada.Exceptions.Traceback;
 
 package GNAT.Traceback is
    pragma Elaborate_Body;
@@ -70,7 +72,7 @@ package GNAT.Traceback is
    subtype Code_Loc is System.Address;
    --  Code location used in building tracebacks
 
-   type Tracebacks_Array is array (Positive range <>) of Code_Loc;
+   subtype Tracebacks_Array is Ada.Exceptions.Traceback.Tracebacks_Array;
    --  Traceback array used to hold a generated traceback list.
 
    ----------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -88,9 +88,22 @@ pragma Elaborate_Body (Table);
       --  freely (expensive reallocation occurs only at major granularity
       --  chunks controlled by the allocation parameters).
 
-      --  Note: we do not make the table components aliased, since this would
+      --  Note: We do not make the table components aliased, since this would
       --  restict the use of table for discriminated types. If it is necessary
       --  to take the access of a table element, use Unrestricted_Access.
+
+      --  WARNING: On HPPA, the virtual addressing approach used in this unit
+      --  is incompatible with the indexing instructions on the HPPA. So when
+      --  using this unit, compile your application with -mdisable-indexing.
+
+      --  WARNING: If the table is reallocated, then the address of all its
+      --  components will change. So do not capture the address of an element
+      --  and then use the address later after the table may be reallocated.
+      --  One tricky case of this is passing an element of the table to a
+      --  subprogram by reference where the table gets reallocated during
+      --  the execution of the subprogram. The best rule to follow is never
+      --  to pass a table element as a parameter except for the case of IN
+      --  mode parameters with scalar values.
 
       type Table_Type is
         array (Table_Index_Type range <>) of Table_Component_Type;

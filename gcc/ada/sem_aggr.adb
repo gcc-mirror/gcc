@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@ with Errout;   use Errout;
 with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Itypes;   use Itypes;
+with Lib.Xref; use Lib.Xref;
 with Namet;    use Namet;
 with Nmake;    use Nmake;
 with Nlists;   use Nlists;
@@ -44,10 +45,12 @@ with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Type; use Sem_Type;
+with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stringt;  use Stringt;
 with Stand;    use Stand;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -103,7 +106,7 @@ package body Sem_Aggr is
    --  yields the aggregate format expected by Gigi. Typically, this kind of
    --  tree manipulations are done in the expander. However, because the
    --  semantic checks that need to be performed on record aggregates really
-   --  go hand in hand with the record aggreagate normalization, the aggregate
+   --  go hand in hand with the record aggregate normalization, the aggregate
    --  subtree transformation is performed during resolution rather than
    --  expansion. Had we decided otherwise we would have had to duplicate
    --  most of the code in the expansion procedure Expand_Record_Aggregate.
@@ -315,7 +318,7 @@ package body Sem_Aggr is
    --  entails the following code modifications
    --
    --    P7b : constant Acc_Rec := new Rec;
-   --    Rec_init_proc (P7b.all);
+   --    RecIP (P7b.all);
    --    Arr : array (1..3) of Acc_Rec := (1 .. 3 => P7b);
    --
    --  This code transformation is clearly wrong, since we need to call
@@ -454,12 +457,13 @@ package body Sem_Aggr is
             else
                Rewrite (Exp, Convert_To (Check_Typ, Relocate_Node (Exp)));
                Analyze_And_Resolve (Exp, Check_Typ);
+               Check_Unset_Reference (Exp);
             end if;
          else
             Rewrite (Exp, Convert_To (Check_Typ, Relocate_Node (Exp)));
             Analyze_And_Resolve (Exp, Check_Typ);
+            Check_Unset_Reference (Exp);
          end if;
-
       end if;
    end Aggregate_Constraint_Checks;
 
@@ -578,7 +582,7 @@ package body Sem_Aggr is
       Itype : Entity_Id;
       --  the final itype of the overall aggregate
 
-      Index_Constraints : List_Id := New_List;
+      Index_Constraints : constant List_Id := New_List;
       --  The list of index constraints of the aggregate itype.
 
    --  Start of processing for Array_Aggr_Subtype
@@ -594,7 +598,8 @@ package body Sem_Aggr is
 
       for J in 1 .. Aggr_Dimension loop
          Create_Index : declare
-            Index_Base : Entity_Id := Base_Type (Etype (Aggr_Range (J)));
+            Index_Base : constant Entity_Id :=
+                           Base_Type (Etype (Aggr_Range (J)));
             Index_Typ  : Entity_Id;
 
          begin
@@ -633,9 +638,10 @@ package body Sem_Aggr is
       Set_Etype                  (Itype, Base_Type              (Typ));
       Set_Has_Alignment_Clause   (Itype, Has_Alignment_Clause   (Typ));
       Set_Is_Aliased             (Itype, Is_Aliased             (Typ));
-      Set_Suppress_Index_Checks  (Itype, Suppress_Index_Checks  (Typ));
-      Set_Suppress_Length_Checks (Itype, Suppress_Length_Checks (Typ));
       Set_Depends_On_Private     (Itype, Depends_On_Private     (Typ));
+
+      Copy_Suppress_Status (Index_Check,  Typ, Itype);
+      Copy_Suppress_Status (Length_Check, Typ, Itype);
 
       Set_First_Index    (Itype, First (Index_Constraints));
       Set_Is_Constrained (Itype, True);
@@ -802,16 +808,17 @@ package body Sem_Aggr is
    --------------------------------
 
    procedure Make_String_Into_Aggregate (N : Node_Id) is
-      C      : Char_Code;
-      C_Node : Node_Id;
-      Exprs  : List_Id := New_List;
+      Exprs  : constant List_Id    := New_List;
       Loc    : constant Source_Ptr := Sloc (N);
-      New_N  : Node_Id;
-      P      : Source_Ptr := Loc + 1;
       Str    : constant String_Id  := Strval (N);
       Strlen : constant Nat        := String_Length (Str);
+      C      : Char_Code;
+      C_Node : Node_Id;
+      New_N  : Node_Id;
+      P      : Source_Ptr;
 
    begin
+      P := Loc + 1;
       for J in  1 .. Strlen loop
          C := Get_String_Char (Str, J);
          Set_Character_Literal_Name (C);
@@ -821,7 +828,7 @@ package body Sem_Aggr is
          Append_To (Exprs, C_Node);
 
          P := P + 1;
-         --  something special for wide strings ?
+         --  something special for wide strings ???
       end loop;
 
       New_N := Make_Aggregate (Loc, Expressions => Exprs);
@@ -843,11 +850,25 @@ package body Sem_Aggr is
       --  which is the subtype of the context in which the aggregate was found.
 
    begin
-      if Is_Limited_Type (Typ) then
-         Error_Msg_N ("aggregate type cannot be limited", N);
+      --  Check for aggregates not allowed in configurable run-time mode.
+      --  We allow all cases of aggregates that do not come from source,
+      --  since these are all assumed to be small (e.g. bounds of a string
+      --  literal). We also allow aggregates of types we know to be small.
 
-      elsif Is_Limited_Composite (Typ) then
+      if not Support_Aggregates_On_Target
+        and then Comes_From_Source (N)
+        and then (not Known_Static_Esize (Typ) or else Esize (Typ) > 64)
+      then
+         Error_Msg_CRT ("aggregate", N);
+      end if;
+
+      if Is_Limited_Composite (Typ) then
          Error_Msg_N ("aggregate type cannot have limited component", N);
+         Explain_Limited_Type (Typ, N);
+
+      elsif Is_Limited_Type (Typ) then
+         Error_Msg_N ("aggregate type cannot be limited", N);
+         Explain_Limited_Type (Typ, N);
 
       elsif Is_Class_Wide_Type (Typ) then
          Error_Msg_N ("type of aggregate cannot be class-wide", N);
@@ -917,7 +938,8 @@ package body Sem_Aggr is
 
          Array_Aggregate : declare
             Aggr_Resolved : Boolean;
-            Aggr_Typ      : Entity_Id := Etype (Typ);
+
+            Aggr_Typ : constant Entity_Id := Etype (Typ);
             --  This is the unconstrained array type, which is the type
             --  against which the aggregate is to be resoved. Typ itself
             --  is the array type of the context which may not be the same
@@ -998,7 +1020,6 @@ package body Sem_Aggr is
          Set_Etype (N, Aggr_Subtyp);
          Set_Analyzed (N);
       end if;
-
    end Resolve_Aggregate;
 
    -----------------------------
@@ -1203,13 +1224,13 @@ package body Sem_Aggr is
          if OK_L and then Val_L > Val_AL then
             Set_Raises_Constraint_Error (N);
             Error_Msg_N ("lower bound of aggregate out of range?", N);
-            Error_Msg_N ("Constraint_Error will be raised at run-time?", N);
+            Error_Msg_N ("\Constraint_Error will be raised at run-time?", N);
          end if;
 
          if OK_H and then Val_H < Val_AH then
             Set_Raises_Constraint_Error (N);
             Error_Msg_N ("upper bound of aggregate out of range?", N);
-            Error_Msg_N ("Constraint_Error will be raised at run-time?", N);
+            Error_Msg_N ("\Constraint_Error will be raised at run-time?", N);
          end if;
       end Check_Bounds;
 
@@ -1309,9 +1330,9 @@ package body Sem_Aggr is
          Single_Elmt : Boolean)
          return        Boolean
       is
-         Nxt_Ind        : Node_Id := Next_Index (Index);
-         Nxt_Ind_Constr : Node_Id := Next_Index (Index_Constr);
-         --  Index is the current index corresponding to the expression.
+         Nxt_Ind        : constant Node_Id := Next_Index (Index);
+         Nxt_Ind_Constr : constant Node_Id := Next_Index (Index_Constr);
+         --  Index is the current index corresponding to the expresion.
 
          Resolution_OK : Boolean := True;
          --  Set to False if resolution of the expression failed.
@@ -1364,6 +1385,7 @@ package body Sem_Aggr is
             Analyze_And_Resolve (Expr, Component_Typ);
             Check_Non_Static_Context (Expr);
             Aggregate_Constraint_Checks (Expr, Component_Typ);
+            Check_Unset_Reference (Expr);
          end if;
 
          if Raises_Constraint_Error (Expr)
@@ -1557,6 +1579,7 @@ package body Sem_Aggr is
 
                   else  --  Choice is a range or an expression
                      Resolve (Choice, Index_Base);
+                     Check_Unset_Reference (Choice);
                      Check_Non_Static_Context (Choice);
 
                      --  Do not range check a choice. This check is redundant
@@ -1817,6 +1840,7 @@ package body Sem_Aggr is
 
       Set_Parent (Aggregate_Bounds (N), N);
       Analyze_And_Resolve (Aggregate_Bounds (N), Index_Typ);
+      Check_Unset_Reference (Aggregate_Bounds (N));
 
       if not Others_Present and then Nb_Discrete_Choices = 0 then
          Set_High_Bound (Aggregate_Bounds (N),
@@ -1848,15 +1872,18 @@ package body Sem_Aggr is
    --  of the expected type.
 
    procedure Resolve_Extension_Aggregate (N : Node_Id; Typ : Entity_Id) is
-      A        : constant Node_Id := Ancestor_Part (N);
-      A_Type   : Entity_Id;
-      I        : Interp_Index;
-      It       : Interp;
-      Imm_Type : Entity_Id;
+      A      : constant Node_Id := Ancestor_Part (N);
+      A_Type : Entity_Id;
+      I      : Interp_Index;
+      It     : Interp;
 
       function Valid_Ancestor_Type return Boolean;
       --  Verify that the type of the ancestor part is a non-private ancestor
       --  of the expected type.
+
+      -------------------------
+      -- Valid_Ancestor_Type --
+      -------------------------
 
       function Valid_Ancestor_Type return Boolean is
          Imm_Type : Entity_Id;
@@ -1888,6 +1915,7 @@ package body Sem_Aggr is
 
       elsif Is_Limited_Type (Typ) then
          Error_Msg_N ("aggregate type cannot be limited", N);
+         Explain_Limited_Type (Typ, N);
          return;
 
       elsif Is_Class_Wide_Type (Typ) then
@@ -1898,8 +1926,7 @@ package body Sem_Aggr is
       if Is_Entity_Name (A)
         and then Is_Type (Entity (A))
       then
-         A_Type   := Get_Full_View (Entity (A));
-         Imm_Type := Base_Type (Typ);
+         A_Type := Get_Full_View (Entity (A));
 
          if Valid_Ancestor_Type then
             Set_Entity (A, A_Type);
@@ -1942,14 +1969,28 @@ package body Sem_Aggr is
 
          if Valid_Ancestor_Type then
             Resolve (A, A_Type);
+            Check_Unset_Reference (A);
             Check_Non_Static_Context (A);
-            Resolve_Record_Aggregate (N, Typ);
+
+            if Is_Class_Wide_Type (Etype (A))
+              and then Nkind (Original_Node (A)) = N_Function_Call
+            then
+               --  If the ancestor part is a dispatching call, it appears
+               --  statically to be a legal ancestor, but it yields any
+               --  member of the class, and it is not possible to determine
+               --  whether it is an ancestor of the extension aggregate (much
+               --  less which ancestor). It is not possible to determine the
+               --  required components of the extension part.
+
+               Error_Msg_N ("ancestor part must be statically tagged", A);
+            else
+               Resolve_Record_Aggregate (N, Typ);
+            end if;
          end if;
 
       else
          Error_Msg_N (" No unique type for this aggregate",  A);
       end if;
-
    end Resolve_Extension_Aggregate;
 
    ------------------------------
@@ -1957,10 +1998,8 @@ package body Sem_Aggr is
    ------------------------------
 
    procedure Resolve_Record_Aggregate (N : Node_Id; Typ : Entity_Id) is
-      Regular_Aggr    : constant Boolean := Nkind (N) /= N_Extension_Aggregate;
-
-      New_Assoc_List  : List_Id := New_List;
-      New_Assoc       : Node_Id;
+      New_Assoc_List : constant List_Id := New_List;
+      New_Assoc      : Node_Id;
       --  New_Assoc_List is the newly built list of N_Component_Association
       --  nodes. New_Assoc is one such N_Component_Association node in it.
       --  Please note that while Assoc and New_Assoc contain the same
@@ -1985,7 +2024,7 @@ package body Sem_Aggr is
 
       function Discr_Present (Discr : Entity_Id) return Boolean;
       --  If aggregate N is a regular aggregate this routine will return True.
-      --  Otherwise, if N is an extension aggreagte, Discr is a discriminant
+      --  Otherwise, if N is an extension aggregate, Discr is a discriminant
       --  whose value may already have been specified by N's ancestor part,
       --  this routine checks whether this is indeed the case and if so
       --  returns False, signaling that no value for Discr should appear in the
@@ -2019,15 +2058,15 @@ package body Sem_Aggr is
       --  It finally saves a Expr in the newly created association list that
       --  will be attached to the final record aggregate. Note that if the
       --  Parent pointer of Expr is not set then Expr was produced with a
-      --  New_copy_Tree or some such.
+      --  New_Copy_Tree or some such.
 
       ---------------------
       -- Add_Association --
       ---------------------
 
       procedure Add_Association (Component : Entity_Id; Expr : Node_Id) is
+         Choice_List : constant List_Id := New_List;
          New_Assoc   : Node_Id;
-         Choice_List : List_Id := New_List;
 
       begin
          Append (New_Occurrence_Of (Component, Sloc (Expr)), Choice_List);
@@ -2043,6 +2082,8 @@ package body Sem_Aggr is
       -------------------
 
       function Discr_Present (Discr : Entity_Id) return Boolean is
+         Regular_Aggr : constant Boolean := Nkind (N) /= N_Extension_Aggregate;
+
          Loc : Source_Ptr;
 
          Ancestor     : Node_Id;
@@ -2156,27 +2197,13 @@ package body Sem_Aggr is
 
                      --  We need to duplicate the expression for each
                      --  successive component covered by the others choice.
-                     --  If the expression is itself an array aggregate with
-                     --  "others", its subtype must be obtained from the
-                     --  current component, and therefore it must be (at least
-                     --  partly) reanalyzed.
+                     --  This is redundant if the others_choice covers only
+                     --  one component (small optimization possible???), but
+                     --  indispensable otherwise, because each one must be
+                     --  expanded individually to preserve side-effects.
 
-                     if Analyzed (Expression (Assoc)) then
-                        Expr := New_Copy_Tree (Expression (Assoc));
-
-                        if Nkind (Expr) = N_Aggregate
-                          and then Is_Array_Type (Etype (Expr))
-                          and then No (Expressions (Expr))
-                          and then
-                            Nkind (First (Choices
-                              (First (Component_Associations (Expr)))))
-                                = N_Others_Choice
-                        then
-                           Set_Analyzed (Expr, False);
-                        end if;
-
-                        return Expr;
-
+                     if Expander_Active then
+                        return New_Copy_Tree (Expression (Assoc));
                      else
                         return Expression (Assoc);
                      end if;
@@ -2184,6 +2211,7 @@ package body Sem_Aggr is
 
                elsif Chars (Compon) = Chars (Selector_Name) then
                   if No (Expr) then
+
                      --  We need to duplicate the expression when several
                      --  components are grouped together with a "|" choice.
                      --  For instance "filed1 | filed2 => Expr"
@@ -2193,6 +2221,8 @@ package body Sem_Aggr is
                      else
                         Expr := Expression (Assoc);
                      end if;
+
+                     Generate_Reference (Compon, Selector_Name);
 
                   else
                      Error_Msg_NE
@@ -2285,8 +2315,8 @@ package body Sem_Aggr is
             --  For each range in an array type where a discriminant has been
             --  replaced with the constraint, check that this range is within
             --  the range of the base type. This checks is done in the
-            --  _init_proc for regular objects, but has to be done here for
-            --  aggregates since no _init_proc is called for them.
+            --  init proc for regular objects, but has to be done here for
+            --  aggregates since no init proc is called for them.
 
             if Is_Array_Type (Expr_Type) then
                declare
@@ -2334,6 +2364,7 @@ package body Sem_Aggr is
 
          Analyze_And_Resolve (Expr, Expr_Type);
          Check_Non_Static_Context (Expr);
+         Check_Unset_Reference (Expr);
 
          if not Has_Expansion_Delayed (Expr) then
             Aggregate_Constraint_Checks (Expr, Expr_Type);
@@ -2348,7 +2379,6 @@ package body Sem_Aggr is
          else
             Add_Association (New_C, Expr);
          end if;
-
       end Resolve_Aggr_Expr;
 
       --  Resolve_Record_Aggregate local variables
@@ -2358,10 +2388,10 @@ package body Sem_Aggr is
 
       Expr            : Node_Id;
       Positional_Expr : Node_Id;
+      Component       : Entity_Id;
+      Component_Elmt  : Elmt_Id;
 
-      Component      : Entity_Id;
-      Component_Elmt : Elmt_Id;
-      Components     : Elist_Id := New_Elmt_List;
+      Components : constant Elist_Id := New_Elmt_List;
       --  Components is the list of the record components whose value must
       --  be provided in the aggregate. This list does include discriminants.
 
@@ -2539,7 +2569,7 @@ package body Sem_Aggr is
             Subtyp_Decl : Node_Id;
             Def_Id      : Entity_Id;
 
-            C : List_Id := New_List;
+            C : constant List_Id := New_List;
 
          begin
             New_Assoc := First (New_Assoc_List);
@@ -2615,7 +2645,7 @@ package body Sem_Aggr is
                --  error which will get signalled later so skip this part.
                --  Otherwise, gather components of root that apply to the
                --  aggregate type. We use the base type in case there is an
-               --  applicable girder constraint that renames the discriminants
+               --  applicable stored constraint that renames the discriminants
                --  of the root.
 
                if Nkind (Dnode) = N_Full_Type_Declaration then
@@ -2634,10 +2664,10 @@ package body Sem_Aggr is
                Prepend_Elmt (Parent_Typ, To => Parent_Typ_List);
                Parent_Typ := Etype (Parent_Typ);
 
-               if (Nkind (Parent (Base_Type (Parent_Typ))) =
+               if Nkind (Parent (Base_Type (Parent_Typ))) =
                                         N_Private_Type_Declaration
-                    or else Nkind (Parent (Base_Type (Parent_Typ))) =
-                                        N_Private_Extension_Declaration)
+                 or else Nkind (Parent (Base_Type (Parent_Typ))) =
+                                        N_Private_Extension_Declaration
                then
                   if Nkind (N) /= N_Extension_Aggregate then
                      Error_Msg_NE
@@ -2811,7 +2841,7 @@ package body Sem_Aggr is
       --  STEP 8: replace the original aggregate
 
       Step_8 : declare
-         New_Aggregate : Node_Id := New_Copy (N);
+         New_Aggregate : constant Node_Id := New_Copy (N);
 
       begin
          Set_Expressions            (New_Aggregate, No_List);
@@ -2827,8 +2857,8 @@ package body Sem_Aggr is
    ---------------------
 
    procedure Sort_Case_Table (Case_Table : in out Case_Table_Type) is
-      L : Int := Case_Table'First;
-      U : Int := Case_Table'Last;
+      L : constant Int := Case_Table'First;
+      U : constant Int := Case_Table'Last;
       K : Int;
       J : Int;
       T : Case_Bounds;

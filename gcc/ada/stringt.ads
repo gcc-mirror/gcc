@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -99,6 +99,7 @@ package Stringt is
    --  Returns length of previously stored string
 
    function Get_String_Char (Id : String_Id; Index : Int) return Char_Code;
+   pragma Inline (Get_String_Char);
    --  Obtains the specified character from a stored string. The lower bound
    --  of stored strings is always 1, so the range is 1 .. String_Length (Id).
 

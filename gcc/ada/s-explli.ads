@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992,1993 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,12 +33,12 @@
 
 --  Long_Long_Integer exponentiation
 
-with System.Exp_Gen;
-
 package System.Exp_LLI is
 pragma Pure (Exp_LLI);
 
-   function Exp_Long_Long_Integer is
-     new System.Exp_Gen.Exp_Integer_Type (Long_Long_Integer);
+   function Exp_Long_Long_Integer
+     (Left  : Long_Long_Integer;
+      Right : Natural)
+      return  Long_Long_Integer;
 
 end System.Exp_LLI;

@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -612,7 +613,7 @@ package body GNAT.Spitbol.Patterns is
       --  occurs in constructing a pattern, and it means that the pattern
       --  matching circuitry does not have to keep track of the structure
       --  of a pattern with respect to concatenation, since the appropriate
-      --  successor is always at hand.
+      --  succesor is always at hand.
 
       --  Concatenation itself generates no additional possibilities for
       --  backtracking, but the constituent patterns of the concatenated
@@ -1307,7 +1308,7 @@ package body GNAT.Spitbol.Patterns is
       Start   : out Natural;
       Stop    : out Natural);
    --  Identical in all respects to XMatch, except that trace information is
-   --  output on Standard_Output during execution of the match. This is the
+   --  output on Standard_Ouput during execution of the match. This is the
    --  version that is called if the original Match call has Debug => True.
 
    ---------
@@ -2403,7 +2404,7 @@ package body GNAT.Spitbol.Patterns is
       ----------------------
 
       procedure Delete_Ampersand is
-         L : Natural := Length (Result);
+         L : constant Natural := Length (Result);
 
       begin
          if L > 2 then
@@ -2702,9 +2703,9 @@ package body GNAT.Spitbol.Patterns is
       ---------------
 
       procedure Image_Seq (E : PE_Ptr; Succ : PE_Ptr; Paren : Boolean) is
+         Indx : constant Natural := Length (Result);
          E1   : PE_Ptr  := E;
          Mult : Boolean := False;
-         Indx : Natural := Length (Result);
 
       begin
          --  The image of EOP is "" (the null string)
@@ -3967,7 +3968,8 @@ package body GNAT.Spitbol.Patterns is
          --  Arbno pattern.
 
          when PC_Arbno_Y => declare
-            Null_Match : Boolean := (Cursor = Stack (Stack_Base - 1).Cursor);
+            Null_Match : constant Boolean :=
+                           Cursor = Stack (Stack_Base - 1).Cursor;
 
          begin
             Pop_Region;
@@ -4095,7 +4097,7 @@ package body GNAT.Spitbol.Patterns is
          --  Break (string pointer case)
 
          when PC_Break_VP => declare
-            Str : String_Access := Get_String (Node.VP.all);
+            Str : constant String_Access := Get_String (Node.VP.all);
 
          begin
             while Cursor < Length loop
@@ -4156,7 +4158,7 @@ package body GNAT.Spitbol.Patterns is
          --  BreakX (string pointer case)
 
          when PC_BreakX_VP => declare
-            Str : String_Access := Get_String (Node.VP.all);
+            Str : constant String_Access := Get_String (Node.VP.all);
 
          begin
             while Cursor < Length loop
@@ -4316,7 +4318,7 @@ package body GNAT.Spitbol.Patterns is
          --  NotAny (string pointer case)
 
          when PC_NotAny_VP => declare
-            Str : String_Access := Get_String (Node.VP.all);
+            Str : constant String_Access := Get_String (Node.VP.all);
 
          begin
             if Cursor < Length
@@ -4371,7 +4373,7 @@ package body GNAT.Spitbol.Patterns is
          --  NSpan (string pointer case)
 
          when PC_NSpan_VP => declare
-            Str : String_Access := Get_String (Node.VP.all);
+            Str : constant String_Access := Get_String (Node.VP.all);
 
          begin
             while Cursor < Length
@@ -4613,7 +4615,7 @@ package body GNAT.Spitbol.Patterns is
          --  Span (string pointer case)
 
          when PC_Span_VP => declare
-            Str : String_Access := Get_String (Node.VP.all);
+            Str : constant String_Access := Get_String (Node.VP.all);
             P   : Natural := Cursor;
 
          begin
@@ -4728,8 +4730,8 @@ package body GNAT.Spitbol.Patterns is
          --  String (pointer case)
 
          when PC_String_VP => declare
-            S   : String_Access := Get_String (Node.VP.all);
-            Len : constant Natural := S'Length;
+            S   : constant String_Access := Get_String (Node.VP.all);
+            Len : constant Natural       := S'Length;
 
          begin
             if (Length - Cursor) >= Len
@@ -5269,7 +5271,7 @@ package body GNAT.Spitbol.Patterns is
          --  Any (string pointer case)
 
          when PC_Any_VP => declare
-            Str : String_Access := Get_String (Node.VP.all);
+            Str : constant String_Access := Get_String (Node.VP.all);
 
          begin
             Dout (Img (Node) & "matching Any", Str.all);
@@ -5330,7 +5332,8 @@ package body GNAT.Spitbol.Patterns is
          --  Arbno pattern.
 
          when PC_Arbno_Y => declare
-            Null_Match : Boolean := (Cursor = Stack (Stack_Base - 1).Cursor);
+            Null_Match : constant Boolean :=
+                           Cursor = Stack (Stack_Base - 1).Cursor;
 
          begin
             Dout (Img (Node) & "extending Arbno");
@@ -5472,7 +5475,7 @@ package body GNAT.Spitbol.Patterns is
          --  Break (string pointer case)
 
          when PC_Break_VP => declare
-            Str : String_Access := Get_String (Node.VP.all);
+            Str : constant String_Access := Get_String (Node.VP.all);
 
          begin
             Dout (Img (Node) & "matching Break", Str.all);
@@ -5541,7 +5544,7 @@ package body GNAT.Spitbol.Patterns is
          --  BreakX (string pointer case)
 
          when PC_BreakX_VP => declare
-            Str : String_Access := Get_String (Node.VP.all);
+            Str : constant String_Access := Get_String (Node.VP.all);
 
          begin
             Dout (Img (Node) & "matching BreakX", Str.all);
@@ -5726,7 +5729,7 @@ package body GNAT.Spitbol.Patterns is
          --  NotAny (string pointer case)
 
          when PC_NotAny_VP => declare
-            Str : String_Access := Get_String (Node.VP.all);
+            Str : constant String_Access := Get_String (Node.VP.all);
 
          begin
             Dout (Img (Node) & "matching NotAny", Str.all);
@@ -5789,7 +5792,7 @@ package body GNAT.Spitbol.Patterns is
          --  NSpan (string pointer case)
 
          when PC_NSpan_VP => declare
-            Str : String_Access := Get_String (Node.VP.all);
+            Str : constant String_Access := Get_String (Node.VP.all);
 
          begin
             Dout (Img (Node) & "matching NSpan", Str.all);
@@ -6066,7 +6069,7 @@ package body GNAT.Spitbol.Patterns is
          --  Span (string pointer case)
 
          when PC_Span_VP => declare
-            Str : String_Access := Get_String (Node.VP.all);
+            Str : constant String_Access := Get_String (Node.VP.all);
             P   : Natural := Cursor;
 
          begin
@@ -6197,7 +6200,7 @@ package body GNAT.Spitbol.Patterns is
          --  String (vstring pointer case)
 
          when PC_String_VP => declare
-            S   : String_Access := Get_String (Node.VP.all);
+            S   : constant String_Access := Get_String (Node.VP.all);
             Len : constant Natural :=
                     Ada.Strings.Unbounded.Length (Node.VP.all);
 

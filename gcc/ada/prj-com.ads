@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,7 @@
 --  These data types are used in the bodies of the Prj hierarchy.
 
 with GNAT.HTable;
+with Osint;
 with Table;
 with Types; use Types;
 
@@ -36,6 +37,15 @@ package Prj.Com is
    --  At one point, this package was private.
    --  It cannot be private, because it is used outside of
    --  the Prj hierarchy.
+
+   type Fail_Proc is access procedure
+     (S1 : String; S2 : String := ""; S3 : String := "");
+
+   Fail : Fail_Proc := Osint.Fail'Access;
+   --  This procedure is used in the project facility, instead of
+   --  directly calling Osint.Fail.
+   --  It may be specified by tools to do clean up before calling
+   --  Osint.Fail, or to simply report an error and return.
 
    Tool_Name : Name_Id := No_Name;
 
@@ -46,7 +56,9 @@ package Prj.Com is
 
    type File_Name_Data is record
       Name         : Name_Id := No_Name;
+      Display_Name : Name_Id := No_Name;
       Path         : Name_Id := No_Name;
+      Display_Path : Name_Id := No_Name;
       Project      : Project_Id := No_Project;
       Needs_Pragma : Boolean := False;
    end record;

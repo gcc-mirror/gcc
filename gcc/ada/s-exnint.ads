@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992,1993 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,12 +33,12 @@
 
 --  Integer exponentiation (checks off)
 
-with System.Exn_Gen;
-
 package System.Exn_Int is
 pragma Pure (Exn_Int);
 
-   function Exn_Integer is
-     new System.Exn_Gen.Exn_Integer_Type (Integer);
+   function Exn_Integer
+     (Left  : Integer;
+      Right : Natural)
+      return  Integer;
 
 end System.Exn_Int;

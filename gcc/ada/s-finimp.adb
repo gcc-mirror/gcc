@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,13 +84,16 @@ package body System.Finalization_Implementation is
    function RC_Offset (T : Ada.Tags.Tag) return SSE.Storage_Offset;
    pragma Import (Ada, RC_Offset, "ada__tags__get_rc_offset");
 
-   function Parent_Size (Obj : Address) return SSE.Storage_Count;
+   function Parent_Size (Obj : Address; T : Ada.Tags.Tag)
+     return SSE.Storage_Count;
    pragma Import (Ada, Parent_Size, "ada__tags__parent_size");
 
-   function Get_RC_Dynamically (Obj : Address) return Address;
-   --  Given an the address of an object (obj) of a tagged extension with
-   --  controlled component, computes the address of the record controller
-   --  located just after the _parent field
+   function Parent_Tag (T : Ada.Tags.Tag) return Ada.Tags.Tag;
+   pragma Import (Ada, Parent_Tag, "ada__tags__parent_tag");
+
+   function Get_Deep_Controller (Obj : System.Address) return RC_Ptr;
+   --  Given the address (obj) of a tagged object, return a
+   --  pointer to the record controller of this object.
 
    -------------
    --  Adjust --
@@ -103,12 +106,16 @@ package body System.Finalization_Implementation is
                     Object.My_Address - Object'Address;
 
       procedure Ptr_Adjust (Ptr : in out Finalizable_Ptr);
-      --  Subtract the offset to the pointer
+      --  Substract the offset to the pointer
 
       procedure Reverse_Adjust (P : Finalizable_Ptr);
-      --  Adjust the components in the reverse order in which they are stored
+      --  Ajust the components in the reverse order in which they are stored
       --  on the finalization list. (Adjust and Finalization are not done in
       --  the same order)
+
+      ----------------
+      -- Ptr_Adjust --
+      ----------------
 
       procedure Ptr_Adjust (Ptr : in out Finalizable_Ptr) is
       begin
@@ -116,6 +123,10 @@ package body System.Finalization_Implementation is
             Ptr := To_Finalizable_Ptr (To_Addr (Ptr) - My_Offset);
          end if;
       end Ptr_Adjust;
+
+      --------------------
+      -- Reverse_Adjust --
+      --------------------
 
       procedure Reverse_Adjust (P : Finalizable_Ptr) is
       begin
@@ -210,7 +221,6 @@ package body System.Finalization_Implementation is
             L := Obj'Unchecked_Access;
          end;
       end if;
-
    end Attach_To_Final_List;
 
    ---------------------
@@ -222,27 +232,18 @@ package body System.Finalization_Implementation is
       A : System.Address;
       B : Short_Short_Integer)
    is
-      V      : constant SFR.Finalizable_Ptr := To_Finalizable_Ptr (A);
-      Offset : constant SSE.Storage_Offset := RC_Offset (V'Tag);
-
-      Controller : RC_Ptr;
+      V          : constant SFR.Finalizable_Ptr := To_Finalizable_Ptr (A);
+      Controller : constant RC_Ptr := Get_Deep_Controller (A);
 
    begin
-      --  Has controlled components
-
-      if Offset /= 0 then
-         if Offset > 0 then
-            Controller := To_RC_Ptr (A + Offset);
-         else
-            Controller := To_RC_Ptr (Get_RC_Dynamically (A));
-         end if;
-
+      if Controller /= null then
          Adjust (Controller.all);
          Attach_To_Final_List (L, Controller.all, B);
+      end if;
 
       --  Is controlled
 
-      elsif V.all in Finalizable then
+      if V.all in Finalizable then
          Adjust (V.all);
          Attach_To_Final_List (L, Finalizable (V.all), 1);
       end if;
@@ -257,24 +258,17 @@ package body System.Finalization_Implementation is
       A : System.Address;
       B : Short_Short_Integer)
    is
-      V      : constant SFR.Finalizable_Ptr := To_Finalizable_Ptr (A);
-      Offset : constant SSE.Storage_Offset  := RC_Offset (V'Tag);
-
-      Controller : RC_Ptr;
+      V          : constant SFR.Finalizable_Ptr := To_Finalizable_Ptr (A);
+      Controller : constant RC_Ptr := Get_Deep_Controller (A);
 
    begin
-      if Offset /= 0 then
-         if Offset > 0 then
-            Controller := To_RC_Ptr (A + Offset);
-         else
-            Controller := To_RC_Ptr (Get_RC_Dynamically (A));
-         end if;
-
+      if Controller /= null then
          Attach_To_Final_List (L, Controller.all, B);
+      end if;
 
       --  Is controlled
 
-      elsif V.all in Finalizable then
+      if V.all in Finalizable then
          Attach_To_Final_List (L, V.all, B);
       end if;
    end Deep_Tag_Attach;
@@ -290,30 +284,21 @@ package body System.Finalization_Implementation is
    is
       pragma Warnings (Off, L);
 
-      V      : constant SFR.Finalizable_Ptr := To_Finalizable_Ptr (A);
-      Offset : constant SSE.Storage_Offset := RC_Offset (V'Tag);
-
-      Controller : RC_Ptr;
+      V          : constant SFR.Finalizable_Ptr := To_Finalizable_Ptr (A);
+      Controller : constant RC_Ptr := Get_Deep_Controller (A);
 
    begin
-      --  Has controlled components
-
-      if Offset /= 0 then
-         if Offset > 0 then
-            Controller := To_RC_Ptr (A + Offset);
-         else
-            Controller := To_RC_Ptr (Get_RC_Dynamically (A));
-         end if;
-
+      if Controller /= null then
          if B then
             Finalize_One (Controller.all);
          else
             Finalize (Controller.all);
          end if;
+      end if;
 
       --  Is controlled
 
-      elsif V.all in Finalizable then
+      if V.all in Finalizable then
          if B then
             Finalize_One (V.all);
          else
@@ -331,31 +316,22 @@ package body System.Finalization_Implementation is
       A :        System.Address;
       B :        Short_Short_Integer)
    is
-      V      : constant SFR.Finalizable_Ptr := To_Finalizable_Ptr (A);
-      Offset : constant SSE.Storage_Offset := RC_Offset (V'Tag);
-
-      Controller : RC_Ptr;
+      V          : constant SFR.Finalizable_Ptr := To_Finalizable_Ptr (A);
+      Controller : constant RC_Ptr := Get_Deep_Controller (A);
 
    begin
       --  This procedure should not be called if the object has no
       --  controlled components
 
-      if Offset = 0 then
-
+      if Controller = null then
          raise Program_Error;
 
       --  Has controlled components
 
       else
-         if Offset > 0 then
-            Controller := To_RC_Ptr (A + Offset);
-         else
-            Controller := To_RC_Ptr (Get_RC_Dynamically (A));
-         end if;
+         Initialize (Controller.all);
+         Attach_To_Final_List (L, Controller.all, B);
       end if;
-
-      Initialize (Controller.all);
-      Attach_To_Final_List (L, Controller.all, B);
 
       --  Is controlled
 
@@ -437,10 +413,10 @@ package body System.Finalization_Implementation is
       P : Finalizable_Ptr := L;
       Q : Finalizable_Ptr;
 
-      type Fake_Exception_Occurrence is record
+      type Fake_Exception_Occurence is record
          Id : Exception_Id;
       end record;
-      type Ptr is access all Fake_Exception_Occurrence;
+      type Ptr is access all Fake_Exception_Occurence;
 
       --  Let's get the current exception before starting to finalize in
       --  order to check if we are in the abort case if an exception is
@@ -448,8 +424,9 @@ package body System.Finalization_Implementation is
 
       function To_Ptr is new
          Ada.Unchecked_Conversion (Exception_Occurrence_Access, Ptr);
-      X : Exception_Id :=
-        To_Ptr (System.Soft_Links.Get_Current_Excep.all).Id;
+
+      X : constant Exception_Id :=
+            To_Ptr (System.Soft_Links.Get_Current_Excep.all).Id;
 
    begin
       while P /= null loop
@@ -479,36 +456,72 @@ package body System.Finalization_Implementation is
       when E_Occ : others => Raise_From_Finalize (null, False, E_Occ);
    end Finalize_One;
 
-   ------------------------
-   -- Get_RC_Dynamically --
-   ------------------------
+   -------------------------
+   -- Get_Deep_Controller --
+   -------------------------
 
-   function Get_RC_Dynamically (Obj : Address) return Address is
-
-      --  define a faked record controller to avoid generating
-      --  unnecessary expanded code for controlled types
-
-      type Faked_Record_Controller is record
-         Tag, Prec, Next : Address;
-      end record;
-
-      --  Reconstruction of a type with characteristics
-      --  comparable to the original type
-
-      D : constant := Storage_Unit - 1;
-
-      type Faked_Type_Of_Obj is record
-         Parent : SSE.Storage_Array
-           (1 .. (Parent_Size (Obj) + D) / Storage_Unit);
-         Controller : Faked_Record_Controller;
-      end record;
-
-      type Obj_Ptr is access all Faked_Type_Of_Obj;
-      function To_Obj_Ptr is new Ada.Unchecked_Conversion (Address, Obj_Ptr);
+   function Get_Deep_Controller (Obj : System.Address) return RC_Ptr is
+      The_Tag : Ada.Tags.Tag := To_Finalizable_Ptr (Obj)'Tag;
+      Offset  : SSE.Storage_Offset := RC_Offset (The_Tag);
 
    begin
-      return To_Obj_Ptr (Obj).Controller'Address;
-   end Get_RC_Dynamically;
+
+      --  Fetch the controller from the Parent or above if necessary
+      --  when there are no controller at this level
+
+      while Offset = -2 loop
+         The_Tag := Parent_Tag (The_Tag);
+         Offset  := RC_Offset (The_Tag);
+      end loop;
+
+      --  No Controlled component case
+
+      if Offset = 0 then
+         return null;
+
+      --  The _controller Offset is known statically
+
+      elsif Offset > 0 then
+         return To_RC_Ptr (Obj + Offset);
+
+      --  At this stage, we know that the controller is part of the
+      --  ancestor corresponding to the tag "The_Tag" and that its parent
+      --  is variable sized. We assume that the _controller is the first
+      --  compoment right after the parent.
+      --  ??? note that it may not be true if there are new discriminants.
+
+      else --  Offset = -1
+
+         declare
+            --  define a faked record controller to avoid generating
+            --  unnecessary expanded code for controlled types
+
+            type Faked_Record_Controller is record
+               Tag, Prec, Next : Address;
+            end record;
+
+            --  Reconstruction of a type with characteristics
+            --  comparable to the original type
+
+            D : constant := Storage_Unit - 1;
+
+            type Parent_Type is new SSE.Storage_Array
+              (1 .. (Parent_Size (Obj, The_Tag) + D) / Storage_Unit);
+            for Parent_Type'Alignment use Address'Alignment;
+
+            type Faked_Type_Of_Obj is record
+               Parent : Parent_Type;
+               Controller : Faked_Record_Controller;
+            end record;
+            type Obj_Ptr is access all Faked_Type_Of_Obj;
+            function To_Obj_Ptr is
+              new Ada.Unchecked_Conversion (Address, Obj_Ptr);
+
+         begin
+            return To_RC_Ptr (To_Obj_Ptr (Obj).Controller'Address);
+         end;
+      end if;
+   end Get_Deep_Controller;
 
    ----------------
    -- Initialize --

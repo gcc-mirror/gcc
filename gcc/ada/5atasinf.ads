@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                           (Compiler Interface)                           --
 --                                                                          --
---         Copyright (C) 1998-2000 Free Software Foundation, Inc.           --
+--         Copyright (C) 1998-2003 Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,18 +32,21 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a DEC Unix 4.0d version of this package.
-
 --  This package contains the definitions and routines associated with the
---  implementation of the Task_Info pragma.
+--  implementation and use of the Task_Info pragma. It is specialized
+--  appropriately for targets that make use of this pragma.
 
 --  Note: the compiler generates direct calls to this interface, via Rtsfind.
 --  Any changes to this interface may require corresponding compiler changes.
 
-with Unchecked_Deallocation;
+--  This unit may be used directly from an application program by providing
+--  an appropriate WITH, and the interface can be expected to remain stable.
+
+--  This is a DEC Unix 4.0d version of this package.
+
 package System.Task_Info is
-pragma Elaborate_Body;
---  To ensure that a body is allowed
+   pragma Elaborate_Body;
+   --  To ensure that a body is allowed
 
    -----------------------------------------
    -- Implementation of Task_Info Feature --
@@ -95,13 +98,6 @@ pragma Elaborate_Body;
    --  Task_Info pragma. This type may be specialized for individual
    --  implementations, but it must be a type that can be used as a
    --  discriminant (i.e. a scalar or access type).
-
-   type Task_Image_Type is access String;
-   --  Used to generate a meaningful identifier for tasks that are variables
-   --  and components of variables.
-
-   procedure Free_Task_Image is new
-     Unchecked_Deallocation (String, Task_Image_Type);
 
    Unspecified_Thread_Attribute : aliased Thread_Attributes :=
      Thread_Attributes'(-1, Default_Scope);

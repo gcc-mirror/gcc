@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1995-2000 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1995-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,18 +26,17 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 --  Bubblesort using access to procedure parameters
 
---  This package provides a bubblesort routine that works with access to
+--  This package provides a bubble sort routine that works with access to
 --  subprogram parameters, so that it can be used with different types with
---  shared sorting code. See also GNAT.Bubble_Sort_G, the generic version
---  which is a little more efficient, but does not allow code sharing.
---  The generic version is also Pure, while the access version can
---  only be Preelaborate.
+--  shared sorting code. It is considered obsoleted by GNAT.Bubble_Sort which
+--  offers a similar routine with a more convenient interface.
 
 package GNAT.Bubble_Sort_A is
 pragma Preelaborate (Bubble_Sort_A);

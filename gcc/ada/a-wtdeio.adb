@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -138,6 +138,8 @@ package body Ada.Wide_Text_IO.Decimal_IO is
       Aft  : in Field := Default_Aft;
       Exp  : in Field := Default_Exp)
    is
+      pragma Unreferenced (Fore);
+      --  ??? how come this is unreferenced, sounds wrong ???
    begin
       Put (Current_Output, Item, Aft, Exp);
    end Put;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,8 +26,9 @@
 
 --  Package containing utility procedures used throughout the expander
 
-with Snames;  use Snames;
+with Exp_Tss; use Exp_Tss;
 with Rtsfind; use Rtsfind;
+with Sinfo;   use Sinfo;
 with Types;   use Types;
 
 package Exp_Util is
@@ -302,8 +303,18 @@ package Exp_Util is
 
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
    --  Find the first primitive operation of type T whose name is 'Name'.
-   --  this function allows the use of a primitive operation which is not
-   --  directly visible
+   --  This function allows the use of a primitive operation which is not
+   --  directly visible. If T is a class wide type, then the reference is
+   --  to an operation of the corresponding root type.
+
+   function Find_Prim_Op
+     (T    : Entity_Id;
+      Name : TSS_Name_Type) return Entity_Id;
+   --  Find the first primitive operation of type T whose name has the form
+   --  indicated by the name parameter (i.e. is a type support subprogram
+   --  with the indicated suffix). This function allows use of a primitive
+   --  operation which is not directly visible. If T is a class wide type,
+   --  then the reference is to an operation of the corresponding root type.
 
    procedure Force_Evaluation
      (Exp      : Node_Id;
@@ -320,6 +331,43 @@ package Exp_Util is
    --  If polling is active, then a call to the Poll routine is built,
    --  and then inserted before the given node N and analyzed.
 
+   procedure Get_Current_Value_Condition
+     (Var : Node_Id;
+      Op  : out Node_Kind;
+      Val : out Node_Id);
+   --  This routine processes the Current_Value field of the variable Var.
+   --  If the Current_Value field is null or if it represents a known value,
+   --  then on return Cond is set to N_Empty, and Val is set to Empty.
+   --
+   --  The other case is when Current_Value points to an N_If_Statement
+   --  or an N_Elsif_Part (while statement). Such a setting only occurs
+   --  if the condition of an IF or ELSIF is of the form X op Y, where X
+   --  is the variable in question, Y is a compile-time known value, and
+   --  op is one of the six possible relational operators.
+   --
+   --  In this case, Get_Current_Condition digs out the condition, and
+   --  then checks if the condition is known false, known true, or not
+   --  known at all. In the first two cases, Get_Current_Condition will
+   --  return with Op set to the appropriate conditional operator (inverted
+   --  if the condition is known false), and Val set to the constant value.
+   --  If the condition is not known, then Cond and Val are set for the
+   --  empty case (N_Empty and Empty).
+   --
+   --  The check for whether the condition is true/false unknown depends
+   --  on the case:
+   --
+   --     For an IF, the condition is known true in the THEN part, known
+   --     false in any ELSIF or ELSE part, and not known outside the IF
+   --     statement in question.
+   --
+   --     For an ELSIF, the condition is known true in the ELSIF part,
+   --     known FALSE in any subsequent ELSIF, or ELSE part, and not
+   --     known before the ELSIF, or after the end of the IF statement.
+   --
+   --  The caller can use this result to determine the value (for the
+   --  case of N_Op_Eq), or to determine the result of some other test
+   --  in other cases (e.g. no access check required if N_Op_Ne Null).
+
    function Homonym_Number (Subp : Entity_Id) return Nat;
    --  Here subp is the entity for a subprogram. This routine returns the
    --  homonym number used to disambiguate overloaded subprograms in the
@@ -329,13 +377,18 @@ package Exp_Util is
    --  an entity is not overloaded, the returned number will be one.
 
    function Inside_Init_Proc return Boolean;
-   --  Returns True if current scope is within an Init_Proc
+   --  Returns True if current scope is within an init proc
 
    function In_Unconditional_Context (Node : Node_Id) return Boolean;
    --  Node is the node for a statement or a component of a statement.
    --  This function deteermines if the statement appears in a context
    --  that is unconditionally executed, i.e. it is not within a loop
    --  or a conditional or a case statement etc.
+
+   function Is_All_Null_Statements (L : List_Id) return Boolean;
+   --  Return True if all the items of the list are N_Null_Statement
+   --  nodes. False otherwise. True for an empty list. It is an error
+   --  to call this routine with No_List as the argument.
 
    function Is_Ref_To_Bit_Packed_Array (P : Node_Id) return Boolean;
    --  Determine whether the node P is a reference to a bit packed
@@ -349,6 +402,18 @@ package Exp_Util is
    --  Determine whether the node P is a reference to a bit packed
    --  slice, i.e. whether the designated object is bit packed slice
    --  or a component of a bit packed slice. Return True if so.
+
+   function Is_Possibly_Unaligned_Slice (P : Node_Id) return Boolean;
+   --  Determine whether the node P is a slice of an array where the slice
+   --  result may cause alignment problems because it has an alignment that
+   --  is not compatible with the type. Return True if so.
+
+   function Is_Possibly_Unaligned_Object (P : Node_Id) return Boolean;
+   --  Node P is an object reference. This function returns True if it
+   --  is possible that the object may not be aligned according to the
+   --  normal default alignment requirement for its type (e.g. if it
+   --  appears in a packed record, or as part of a component that has
+   --  a component clause.
 
    function Is_Renamed_Object (N : Node_Id) return Boolean;
    --  Returns True if the node N is a renamed object. An expression
@@ -378,6 +443,12 @@ package Exp_Util is
    --  Given a node for a subexpression, determines if it represents a value
    --  that cannot possibly be negative, and if so returns True. A value of
    --  False means that it is not known if the value is positive or negative.
+
+   function Known_Non_Null (N : Node_Id) return Boolean;
+   --  Given a node N for a subexpression of an access type, determines if
+   --  this subexpression yields a value that is known at compile time to
+   --  be non-null and returns True if so. Returns False otherwise. It is
+   --  an error to call this function if N is not of an access type.
 
    function Make_Subtype_From_Expr
      (E       : Node_Id;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---           Copyright (C) 1997-2001 Free Software Foundation, Inc.         --
+--           Copyright (C) 1997-2002 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -214,6 +214,15 @@ package System.OS_Interface is
    -- VxWorks specific API --
    --------------------------
 
+   subtype STATUS is int;
+   --  Equivalent of the C type STATUS
+
+   OK    : constant STATUS := 0;
+   ERROR : constant STATUS := Interfaces.C.int (-1);
+
+   function taskIdVerify (tid : t_id)  return STATUS;
+   pragma Import (C, taskIdVerify, "taskIdVerify");
+
    function taskIdSelf return t_id;
    pragma Import (C, taskIdSelf, "taskIdSelf");
 
@@ -227,7 +236,7 @@ package System.OS_Interface is
    pragma Import (C, taskIsSuspended, "taskIsSuspended");
 
    function taskVarAdd
-     (tid : t_id; pVar : System.Address) return int;
+     (tid : t_id; pVar : access System.Address) return int;
    pragma Import (C, taskVarAdd, "taskVarAdd");
 
    function taskVarDelete
@@ -286,12 +295,6 @@ package System.OS_Interface is
    function taskPrioritySet
      (tid : t_id; newPriority : int) return int;
    pragma Import (C, taskPrioritySet, "taskPrioritySet");
-
-   subtype STATUS is int;
-   --  Equivalent of the C type STATUS
-
-   OK    : constant STATUS := 0;
-   ERROR : constant STATUS := Interfaces.C.int (-1);
 
    --  Semaphore creation flags.
 

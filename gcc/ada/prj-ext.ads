@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2000 Free Software Foundation, Inc.            --
+--             Copyright (C) 2000-2003 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,8 +24,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Set, Get and cache External reference, to be used as External functions
---  in project files.
+--  Subprograms to set, get and cache external references, to be used as
+--  External functions in project files.
 
 with Types; use Types;
 
@@ -38,12 +38,16 @@ package Prj.Ext is
 
    function Value_Of
      (External_Name : Name_Id;
-      With_Default  : String_Id := No_String)
-      return          String_Id;
+      With_Default  : Name_Id := No_Name)
+      return          Name_Id;
    --  Get the value of an external reference, and cache it for future uses.
 
    function Check (Declaration : String) return Boolean;
    --  Check that an external declaration <external>=<value> is correct.
    --  If it is correct, the external reference is Added.
+
+   procedure Reset;
+   --  Clear the internal data structure that stores the external references
+   --  and free any allocated memory.
 
 end Prj.Ext;

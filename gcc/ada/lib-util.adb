@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -65,7 +65,7 @@ package body Lib.Util is
       --  Write single hex digit
 
       procedure Write_Info_Hex_Byte (J : Natural) is
-         Hexd : String := "0123456789abcdef";
+         Hexd : constant String := "0123456789abcdef";
 
       begin
          Write_Info_Char (Hexd (J / 16 + 1));

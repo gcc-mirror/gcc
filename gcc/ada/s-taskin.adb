@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---             Copyright (C) 1991-2001 Florida State University             --
+--          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,9 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies Inc. in cooperation with Florida --
--- State University (http://www.gnat.com).                                  --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -123,11 +122,14 @@ package body System.Tasking is
       All_Tasks_List := T;
    end Initialize_ATCB;
 
-   Main_Task_Image : aliased String := "main_task";
-   --  Declare a global variable to avoid allocating dynamic memory.
+   Main_Task_Image : String := "main_task";
+   --  Image of environment task.
 
-   Main_Priority : Priority;
+   Main_Priority : Integer;
    pragma Import (C, Main_Priority, "__gl_main_priority");
+   --  Priority for main task. Note that this is of type Integer, not
+   --  Priority, because we use the value -1 to indicate the default
+   --  main priority, and that is of course not in Priority'range.
 
    ----------------------------
    -- Tasking Initialization --
@@ -154,7 +156,7 @@ begin
       if Main_Priority = Unspecified_Priority then
          Base_Priority := Default_Priority;
       else
-         Base_Priority := Main_Priority;
+         Base_Priority := Priority (Main_Priority);
       end if;
 
       Success := True;
@@ -167,7 +169,8 @@ begin
       STPO.Initialize (T);
       STPO.Set_Priority (T, T.Common.Base_Priority);
       T.Common.State := Runnable;
-      T.Common.Task_Image := Main_Task_Image'Unrestricted_Access;
+      T.Common.Task_Image_Len := Main_Task_Image'Length;
+      T.Common.Task_Image (Main_Task_Image'Range) := Main_Task_Image;
 
       --  Only initialize the first element since others are not relevant
       --  in ravenscar mode. Rest of the initialization is done in Init_RTS.

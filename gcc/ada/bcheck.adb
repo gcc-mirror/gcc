@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,18 +39,21 @@ with Types;    use Types;
 
 package body Bcheck is
 
-   --  Local subprograms
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
 
-   --  The following checking subprograms make up the parts
-   --  of the configuration consistency check.
+   --  The following checking subprograms make up the parts of the
+   --  configuration consistency check.
 
    procedure Check_Consistent_Dynamic_Elaboration_Checking;
    procedure Check_Consistent_Floating_Point_Format;
+   procedure Check_Consistent_Interrupt_States;
    procedure Check_Consistent_Locking_Policy;
    procedure Check_Consistent_Normalize_Scalars;
+   procedure Check_Consistent_Partition_Restrictions;
    procedure Check_Consistent_Queuing_Policy;
    procedure Check_Consistent_Zero_Cost_Exception_Handling;
-   procedure Check_Partition_Restrictions;
 
    procedure Consistency_Error_Msg (Msg : String);
    --  Produce an error or a warning message, depending on whether
@@ -81,7 +84,8 @@ package body Bcheck is
       Check_Consistent_Normalize_Scalars;
       Check_Consistent_Dynamic_Elaboration_Checking;
 
-      Check_Partition_Restrictions;
+      Check_Consistent_Partition_Restrictions;
+      Check_Consistent_Interrupt_States;
    end Check_Configuration_Consistency;
 
    ---------------------------------------------------
@@ -198,6 +202,82 @@ package body Bcheck is
       end loop Find_Format;
    end Check_Consistent_Floating_Point_Format;
 
+   ---------------------------------------
+   -- Check_Consistent_Interrupt_States --
+   ---------------------------------------
+
+   --  The rule is that if the state of a given interrupt is specified
+   --  in more than one unit, it must be specified with a consistent state.
+
+   procedure Check_Consistent_Interrupt_States is
+      Max_Intrup : Nat;
+
+   begin
+      --  If no Interrupt_State entries, nothing to do
+
+      if Interrupt_States.Last < Interrupt_States.First then
+         return;
+      end if;
+
+      --  First find out the maximum interrupt value
+
+      Max_Intrup := 0;
+      for J in Interrupt_States.First .. Interrupt_States.Last loop
+         if Interrupt_States.Table (J).Interrupt_Id > Max_Intrup then
+            Max_Intrup := Interrupt_States.Table (J).Interrupt_Id;
+         end if;
+      end loop;
+
+      --  Now establish tables to be used for consistency checking
+
+      declare
+         Istate : array (0 .. Max_Intrup) of Character := (others => 'n');
+         --  Interrupt state entries, 'u'/'s'/'r' or 'n' to indicate an
+         --  entry that has not been set.
+
+         Afile : array (0 .. Max_Intrup) of ALI_Id;
+         --  ALI file that generated Istate entry for consistency message
+
+         Loc : array (0 .. Max_Intrup) of Nat;
+         --  Line numbers from IS pragma generating Istate entry
+
+         Inum : Nat;
+         --  Interrupt number from entry being tested
+
+         Stat : Character;
+         --  Interrupt state from entry being tested
+
+         Lnum : Nat;
+         --  Line number from entry being tested
+
+      begin
+         for F in ALIs.First .. ALIs.Last loop
+            for K in ALIs.Table (F).First_Interrupt_State ..
+                     ALIs.Table (F).Last_Interrupt_State
+            loop
+               Inum := Interrupt_States.Table (K).Interrupt_Id;
+               Stat := Interrupt_States.Table (K).Interrupt_State;
+               Lnum := Interrupt_States.Table (K).IS_Pragma_Line;
+
+               if Istate (Inum) = 'n' then
+                  Istate (Inum) := Stat;
+                  Afile  (Inum) := F;
+                  Loc    (Inum) := Lnum;
+
+               elsif Istate (Inum) /= Stat then
+                  Error_Msg_Name_1 := ALIs.Table (Afile (Inum)).Sfile;
+                  Error_Msg_Name_2 := ALIs.Table (F).Sfile;
+                  Error_Msg_Nat_1  := Loc (Inum);
+                  Error_Msg_Nat_2  := Lnum;
+
+                  Consistency_Error_Msg
+                    ("inconsistent interrupt states at %:# and %:#");
+               end if;
+            end loop;
+         end loop;
+      end;
+   end Check_Consistent_Interrupt_States;
+
    -------------------------------------
    -- Check_Consistent_Locking_Policy --
    -------------------------------------
@@ -282,69 +362,9 @@ package body Bcheck is
       end if;
    end Check_Consistent_Normalize_Scalars;
 
-   -------------------------------------
-   -- Check_Consistent_Queuing_Policy --
-   -------------------------------------
-
-   --  The rule is that all files for which the queuing policy is
-   --  significant must be compiled with the same setting.
-
-   procedure Check_Consistent_Queuing_Policy is
-   begin
-      --  First search for a unit specifying a policy and then
-      --  check all remaining units against it.
-
-      Find_Policy : for A1 in ALIs.First .. ALIs.Last loop
-         if ALIs.Table (A1).Queuing_Policy /= ' ' then
-            Check_Policy : declare
-               Policy : constant Character := ALIs.Table (A1).Queuing_Policy;
-            begin
-               for A2 in A1 + 1 .. ALIs.Last loop
-                  if ALIs.Table (A2).Queuing_Policy /= ' '
-                       and then
-                     ALIs.Table (A2).Queuing_Policy /= Policy
-                  then
-                     Error_Msg_Name_1 := ALIs.Table (A1).Sfile;
-                     Error_Msg_Name_2 := ALIs.Table (A2).Sfile;
-
-                     Consistency_Error_Msg
-                       ("% and % compiled with different queuing policies");
-                     exit Find_Policy;
-                  end if;
-               end loop;
-            end Check_Policy;
-
-            exit Find_Policy;
-         end if;
-      end loop Find_Policy;
-   end Check_Consistent_Queuing_Policy;
-
-   ---------------------------------------------------
-   -- Check_Consistent_Zero_Cost_Exception_Handling --
-   ---------------------------------------------------
-
-   --  Check consistent zero cost exception handling. The rule is that
-   --  all units must have the same exception handling mechanism.
-
-   procedure Check_Consistent_Zero_Cost_Exception_Handling is
-   begin
-      Check_Mechanism : for A1 in ALIs.First + 1 .. ALIs.Last loop
-         if ALIs.Table (A1).Zero_Cost_Exceptions /=
-            ALIs.Table (ALIs.First).Zero_Cost_Exceptions
-
-         then
-            Error_Msg_Name_1 := ALIs.Table (A1).Sfile;
-            Error_Msg_Name_2 := ALIs.Table (ALIs.First).Sfile;
-
-            Consistency_Error_Msg ("% and % compiled with different "
-                                            & "exception handling mechanisms");
-         end if;
-      end loop Check_Mechanism;
-   end Check_Consistent_Zero_Cost_Exception_Handling;
-
-   ----------------------------------
-   -- Check_Partition_Restrictions --
-   ----------------------------------
+   ---------------------------------------------
+   -- Check_Consistent_Partition_Restrictions --
+   ---------------------------------------------
 
    --  The rule is that if a restriction is specified in any unit,
    --  then all units must obey the restriction. The check applies
@@ -355,8 +375,8 @@ package body Bcheck is
    --  a unit specifying that restriction is found, if any.
    --  Second, all units are verified against the specified restrictions.
 
-   procedure Check_Partition_Restrictions is
-      No_Restriction_List : array (All_Restrictions) of Boolean :=
+   procedure Check_Consistent_Partition_Restrictions is
+      No_Restriction_List : constant array (All_Restrictions) of Boolean :=
         (No_Implicit_Conditionals => True,
          --  This could modify and pessimize generated code
 
@@ -470,7 +490,6 @@ package body Bcheck is
 
                declare
                   S : constant String := Restriction_Id'Image (J);
-
                begin
                   Name_Len := S'Length;
                   Name_Buffer (1 .. Name_Len) := S;
@@ -483,7 +502,67 @@ package body Bcheck is
             end if;
          end loop;
       end if;
-   end Check_Partition_Restrictions;
+   end Check_Consistent_Partition_Restrictions;
+
+   -------------------------------------
+   -- Check_Consistent_Queuing_Policy --
+   -------------------------------------
+
+   --  The rule is that all files for which the queuing policy is
+   --  significant must be compiled with the same setting.
+
+   procedure Check_Consistent_Queuing_Policy is
+   begin
+      --  First search for a unit specifying a policy and then
+      --  check all remaining units against it.
+
+      Find_Policy : for A1 in ALIs.First .. ALIs.Last loop
+         if ALIs.Table (A1).Queuing_Policy /= ' ' then
+            Check_Policy : declare
+               Policy : constant Character := ALIs.Table (A1).Queuing_Policy;
+            begin
+               for A2 in A1 + 1 .. ALIs.Last loop
+                  if ALIs.Table (A2).Queuing_Policy /= ' '
+                       and then
+                     ALIs.Table (A2).Queuing_Policy /= Policy
+                  then
+                     Error_Msg_Name_1 := ALIs.Table (A1).Sfile;
+                     Error_Msg_Name_2 := ALIs.Table (A2).Sfile;
+
+                     Consistency_Error_Msg
+                       ("% and % compiled with different queuing policies");
+                     exit Find_Policy;
+                  end if;
+               end loop;
+            end Check_Policy;
+
+            exit Find_Policy;
+         end if;
+      end loop Find_Policy;
+   end Check_Consistent_Queuing_Policy;
+
+   ---------------------------------------------------
+   -- Check_Consistent_Zero_Cost_Exception_Handling --
+   ---------------------------------------------------
+
+   --  Check consistent zero cost exception handling. The rule is that
+   --  all units must have the same exception handling mechanism.
+
+   procedure Check_Consistent_Zero_Cost_Exception_Handling is
+   begin
+      Check_Mechanism : for A1 in ALIs.First + 1 .. ALIs.Last loop
+         if ALIs.Table (A1).Zero_Cost_Exceptions /=
+            ALIs.Table (ALIs.First).Zero_Cost_Exceptions
+
+         then
+            Error_Msg_Name_1 := ALIs.Table (A1).Sfile;
+            Error_Msg_Name_2 := ALIs.Table (ALIs.First).Sfile;
+
+            Consistency_Error_Msg ("% and % compiled with different "
+                                            & "exception handling mechanisms");
+         end if;
+      end loop Check_Mechanism;
+   end Check_Consistent_Zero_Cost_Exception_Handling;
 
    -----------------------
    -- Check_Consistency --
@@ -576,7 +655,22 @@ package body Bcheck is
                   end if;
 
                else
-                  if Tolerate_Consistency_Errors then
+                  if Osint.Is_Readonly_Library (ALIs.Table (A).Afile) then
+                     Error_Msg_Name_2 :=
+                       Osint.Find_File ((ALIs.Table (A).Afile), Osint.Library);
+
+                     if Tolerate_Consistency_Errors then
+                        Error_Msg ("?% should be recompiled");
+                        Error_Msg_Name_1 := Error_Msg_Name_2;
+                        Error_Msg ("?(% is obsolete and read-only)");
+
+                     else
+                        Error_Msg ("% must be compiled");
+                        Error_Msg_Name_1 := Error_Msg_Name_2;
+                        Error_Msg ("(% is obsolete and read-only)");
+                     end if;
+
+                  elsif Tolerate_Consistency_Errors then
                      Error_Msg
                        ("?% should be recompiled (% has been modified)");
 
@@ -587,16 +681,23 @@ package body Bcheck is
 
                if (not Tolerate_Consistency_Errors) and Verbose_Mode then
                   declare
-                     Msg : constant String := "file % has time stamp ";
+                     Msg : constant String := "% time stamp ";
                      Buf : String (1 .. Msg'Length + Time_Stamp_Length);
 
                   begin
                      Buf (1 .. Msg'Length) := Msg;
                      Buf (Msg'Length + 1 .. Buf'Length) :=
                        String (Source.Table (Src).Stamp);
-                     Error_Msg_Name_1 := ALIs.Table (A).Sfile;
+                     Error_Msg_Name_1 := Sdep.Table (D).Sfile;
                      Error_Msg (Buf);
+                  end;
 
+                  declare
+                     Msg : constant String := " conflicts with % timestamp ";
+                     Buf : String (1 .. Msg'Length + Time_Stamp_Length);
+
+                  begin
+                     Buf (1 .. Msg'Length) := Msg;
                      Buf (Msg'Length + 1 .. Buf'Length) :=
                        String (Sdep.Table (D).Stamp);
                      Error_Msg_Name_1 := Sdep.Table (D).Sfile;

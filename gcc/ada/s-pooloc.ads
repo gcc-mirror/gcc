@@ -50,8 +50,6 @@ pragma Elaborate_Body;
    --    Space of allocated objects is reclaimed at pool finalization
    --    Manages a list of allocated objects
 
-   --  Default pool in the compiler for access types locally declared
-
    type Unbounded_Reclaim_Pool is new
      System.Pool_Global.Unbounded_No_Reclaim_Pool with
        record

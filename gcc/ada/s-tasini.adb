@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2001, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,8 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNARL was developed by the GNARL team at Florida State University. It is --
--- now maintained by Ada Core Technologies, Inc. (http://www.gnat.com).     --
+-- GNARL was developed by the GNARL team at Florida State University.       --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -124,10 +124,10 @@ package body System.Tasking.Initialization is
    --  Get/Set the address for storing the current task's machine state
 
    function Get_Current_Excep return SSL.EOA;
-   --  Comments needed???
+   --  Task-safe version of SSL.Get_Current_Excep
 
    procedure Timed_Delay_T (Time : Duration; Mode : Integer);
-   --  Comments needed???
+   --  Task-safe version of SSL.Timed_Delay
 
    function Get_Stack_Info return Stack_Checking.Stack_Access;
    --  Get access to the current task's Stack_Info
@@ -150,6 +150,13 @@ package body System.Tasking.Initialization is
    ----------------------------
    -- Tasking Initialization --
    ----------------------------
+
+   procedure Gnat_Install_Locks (Lock, Unlock : SSL.No_Param_Proc);
+   pragma Import (C, Gnat_Install_Locks, "__gnatlib_install_locks");
+   --  Used by Init_RTS to install procedure Lock and Unlock for the
+   --  thread locking. This has no effect on GCC 2. For GCC 3,
+   --  it has an effect only if gcc is configured with
+   --  --enable_threads=gnat.
 
    procedure Init_RTS;
    --  This procedure completes the initialization of the GNARL. The first
@@ -422,6 +429,10 @@ package body System.Tasking.Initialization is
       SSL.Set_Jmpbuf_Address     (SSL.Get_Jmpbuf_Address_NT);
       SSL.Set_Machine_State_Addr (SSL.Get_Machine_State_Addr_NT);
 
+      --  Install tasking locks in the GCC runtime.
+
+      Gnat_Install_Locks (Task_Lock'Access, Task_Unlock'Access);
+
       --  Abortion is deferred in a new ATCB, so we need to undefer abortion
       --  at this stage to make the environment task abortable.
 
@@ -481,8 +492,8 @@ package body System.Tasking.Initialization is
    procedure Locked_Abort_To_Level
      (Self_ID : Task_ID;
       T       : Task_ID;
-      L       : ATC_Level) is
-
+      L       : ATC_Level)
+   is
    begin
       if not T.Aborting and then T /= Self_ID then
          case T.Common.State is
@@ -582,6 +593,7 @@ package body System.Tasking.Initialization is
    procedure Poll_Base_Priority_Change (Self_ID : Task_ID) is
    begin
       if Dynamic_Priority_Support and then Self_ID.Pending_Priority_Change then
+
          --  Check for ceiling violations ???
 
          Self_ID.Pending_Priority_Change := False;
@@ -630,7 +642,7 @@ package body System.Tasking.Initialization is
 
    begin
       pragma Debug
-        (Debug.Trace ("Remove_From_All_Tasks_List", 'C'));
+        (Debug.Trace (Self, "Remove_From_All_Tasks_List", 'C'));
 
       Previous := Null_Task;
       C := All_Tasks_List;
@@ -678,14 +690,10 @@ package body System.Tasking.Initialization is
    ---------------
 
    function Task_Name return String is
-      use System.Task_Info;
+      Self_Id : constant Task_ID := STPO.Self;
 
    begin
-      if STPO.Self.Common.Task_Image /= null  then
-         return STPO.Self.Common.Task_Image.all;
-      else
-         return "";
-      end if;
+      return Self_Id.Common.Task_Image (1 .. Self_Id.Common.Task_Image_Len);
    end Task_Name;
 
    -----------------
@@ -786,6 +794,7 @@ package body System.Tasking.Initialization is
 
    procedure Undefer_Abortion is
       Self_ID : Task_ID;
+
    begin
       if No_Abort and then not Dynamic_Priority_Support then
          return;
@@ -881,9 +890,10 @@ package body System.Tasking.Initialization is
       New_State  : Entry_Call_State)
    is
       Caller : constant Task_ID := Entry_Call.Self;
+
    begin
       pragma Debug (Debug.Trace
-        (Self_ID, "Wakeup_Entry_Caller", Caller, 'E'));
+        (Self_ID, "Wakeup_Entry_Caller", 'E', Caller));
       pragma Assert (New_State = Done or else New_State = Cancelled);
 
       pragma Assert
@@ -911,43 +921,38 @@ package body System.Tasking.Initialization is
    ----------------------
 
    function Get_Current_Excep return SSL.EOA is
-      Me : constant Task_ID := STPO.Self;
    begin
-      return Me.Common.Compiler_Data.Current_Excep'Access;
+      return STPO.Self.Common.Compiler_Data.Current_Excep'Access;
    end Get_Current_Excep;
 
    function Get_Exc_Stack_Addr return Address is
-      Me : constant Task_ID := STPO.Self;
    begin
-      return Me.Common.Compiler_Data.Exc_Stack_Addr;
+      return STPO.Self.Common.Compiler_Data.Exc_Stack_Addr;
    end Get_Exc_Stack_Addr;
 
    function Get_Jmpbuf_Address return  Address is
-      Me : constant Task_ID := STPO.Self;
    begin
-      return Me.Common.Compiler_Data.Jmpbuf_Address;
+      return STPO.Self.Common.Compiler_Data.Jmpbuf_Address;
    end Get_Jmpbuf_Address;
 
    function Get_Machine_State_Addr return Address is
-      Me : constant Task_ID := STPO.Self;
    begin
-      return Me.Common.Compiler_Data.Machine_State_Addr;
+      return STPO.Self.Common.Compiler_Data.Machine_State_Addr;
    end Get_Machine_State_Addr;
 
    function Get_Sec_Stack_Addr return  Address is
-      Me : constant Task_ID := STPO.Self;
    begin
-      return Me.Common.Compiler_Data.Sec_Stack_Addr;
+      return STPO.Self.Common.Compiler_Data.Sec_Stack_Addr;
    end Get_Sec_Stack_Addr;
 
    function Get_Stack_Info return Stack_Checking.Stack_Access is
-      Me : constant Task_ID := STPO.Self;
    begin
-      return Me.Common.Compiler_Data.Pri_Stack_Info'Access;
+      return STPO.Self.Common.Compiler_Data.Pri_Stack_Info'Access;
    end Get_Stack_Info;
 
    procedure Set_Exc_Stack_Addr (Self_ID : Address; Addr : Address) is
       Me : Task_ID := To_Task_Id (Self_ID);
+
    begin
       if Me = Null_Task then
          Me := STPO.Self;
@@ -957,21 +962,18 @@ package body System.Tasking.Initialization is
    end Set_Exc_Stack_Addr;
 
    procedure Set_Jmpbuf_Address (Addr : Address) is
-      Me : Task_ID := STPO.Self;
    begin
-      Me.Common.Compiler_Data.Jmpbuf_Address := Addr;
+      STPO.Self.Common.Compiler_Data.Jmpbuf_Address := Addr;
    end Set_Jmpbuf_Address;
 
    procedure Set_Machine_State_Addr (Addr : Address) is
-      Me : Task_ID := STPO.Self;
    begin
-      Me.Common.Compiler_Data.Machine_State_Addr := Addr;
+      STPO.Self.Common.Compiler_Data.Machine_State_Addr := Addr;
    end Set_Machine_State_Addr;
 
    procedure Set_Sec_Stack_Addr (Addr : Address) is
-      Me : Task_ID := STPO.Self;
    begin
-      Me.Common.Compiler_Data.Sec_Stack_Addr := Addr;
+      STPO.Self.Common.Compiler_Data.Sec_Stack_Addr := Addr;
    end Set_Sec_Stack_Addr;
 
    procedure Timed_Delay_T (Time : Duration; Mode : Integer) is
@@ -990,12 +992,14 @@ package body System.Tasking.Initialization is
 
    procedure Finalize_Attributes (T : Task_ID) is
       pragma Warnings (Off, T);
+
    begin
       null;
    end Finalize_Attributes;
 
    procedure Initialize_Attributes (T : Task_ID) is
       pragma Warnings (Off, T);
+
    begin
       null;
    end Initialize_Attributes;

@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001, Ada Core Technologies, Inc.             --
+--              Copyright (C) 2001-2003, Free Software Foundation, Inc.     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -21,7 +21,7 @@
 -- MA 02111-1307, USA.                                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -30,14 +30,12 @@
 
 --  This is the GNU/Linux version of the body.
 
-with Ada.Characters.Handling;   use Ada.Characters.Handling;
-with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with MLib.Fil;
 with MLib.Utl;
-with Namet;       use Namet;
+with Namet;  use Namet;
 with Opt;
-with Osint;       use Osint;
-with Output;      use Output;
+with Output; use Output;
+with Prj.Com;
 with System;
 
 package body MLib.Tgt is
@@ -45,40 +43,38 @@ package body MLib.Tgt is
    use GNAT;
    use MLib;
 
-   --  ??? serious lack of comments below, all these declarations need to
-   --  be commented, none are:
+   No_Arguments        : aliased Argument_List         := (1 .. 0 => null);
+   Empty_Argument_List : constant Argument_List_Access := No_Arguments'Access;
 
-   package Files renames MLib.Fil;
-   package Tools renames MLib.Utl;
+   Wl_Init_String : aliased String         := "-Wl,-init";
+   Wl_Init        : constant String_Access := Wl_Init_String'Access;
+   Wl_Fini_String : aliased String         := "-Wl,-fini";
+   Wl_Fini        : constant String_Access := Wl_Fini_String'Access;
 
-   Args : Argument_List_Access := new Argument_List (1 .. 20);
-   Last_Arg : Natural := 0;
+   Init_Fini_List :  constant Argument_List_Access :=
+                       new Argument_List'(1 => Wl_Init,
+                                          2 => null,
+                                          3 => Wl_Fini,
+                                          4 => null);
+   --  Used to put switches for automatic elaboration/finalization
 
-   Cp      : constant String_Access := Locate_Exec_On_Path ("cp");
-   Force   : constant String_Access := new String'("-f");
+   ---------------------
+   -- Archive_Builder --
+   ---------------------
 
-   procedure Add_Arg (Arg : String);
-
-   -------------
-   -- Add_Arg --
-   -------------
-
-   procedure Add_Arg (Arg : String) is
+   function Archive_Builder return String is
    begin
-      if Last_Arg = Args'Last then
-         declare
-            New_Args : constant Argument_List_Access :=
-                         new Argument_List (1 .. Args'Last * 2);
+      return "ar";
+   end Archive_Builder;
 
-         begin
-            New_Args (Args'Range) := Args.all;
-            Args := New_Args;
-         end;
-      end if;
+   -----------------------------
+   -- Archive_Builder_Options --
+   -----------------------------
 
-      Last_Arg := Last_Arg + 1;
-      Args (Last_Arg) := new String'(Arg);
-   end Add_Arg;
+   function Archive_Builder_Options return String_List_Access is
+   begin
+      return new String_List'(1 => new String'("cr"));
+   end Archive_Builder_Options;
 
    -----------------
    -- Archive_Ext --
@@ -86,17 +82,17 @@ package body MLib.Tgt is
 
    function Archive_Ext return  String is
    begin
-      return  "a";
+      return "a";
    end Archive_Ext;
 
-   -----------------
-   -- Base_Option --
-   -----------------
+   ---------------------
+   -- Archive_Indexer --
+   ---------------------
 
-   function Base_Option return String is
+   function Archive_Indexer return String is
    begin
-      return "";
-   end Base_Option;
+      return "ranlib";
+   end Archive_Indexer;
 
    ---------------------------
    -- Build_Dynamic_Library --
@@ -107,22 +103,29 @@ package body MLib.Tgt is
       Foreign      : Argument_List;
       Afiles       : Argument_List;
       Options      : Argument_List;
+      Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
+      Driver_Name  : Name_Id := No_Name;
       Lib_Address  : String  := "";
       Lib_Version  : String  := "";
-      Relocatable  : Boolean := False)
+      Relocatable  : Boolean := False;
+      Auto_Init    : Boolean := False)
    is
+      pragma Unreferenced (Foreign);
+      pragma Unreferenced (Afiles);
+      pragma Unreferenced (Interfaces);
+      pragma Unreferenced (Lib_Address);
+      pragma Unreferenced (Relocatable);
+
       Lib_File : constant String :=
         Lib_Dir & Directory_Separator & "lib" &
-        Files.Ext_To (Lib_Filename, DLL_Ext);
+        Fil.Ext_To (Lib_Filename, DLL_Ext);
 
-      use type Argument_List;
-      use type String_Access;
-
-      Version_Arg  : String_Access;
-
+      Version_Arg          : String_Access;
       Symbolic_Link_Needed : Boolean := False;
+
+      Init_Fini : Argument_List_Access := Empty_Argument_List;
 
    begin
       if Opt.Verbose_Mode then
@@ -130,27 +133,37 @@ package body MLib.Tgt is
          Write_Line (Lib_File);
       end if;
 
+      --  If specified, add automatic elaboration/finalization
+      if Auto_Init then
+         Init_Fini := Init_Fini_List;
+         Init_Fini (2) := new String'("-Wl," & Lib_Filename & "init");
+         Init_Fini (4) := new String'("-Wl," & Lib_Filename & "final");
+      end if;
+
       if Lib_Version = "" then
-         Tools.Gcc
+         Utl.Gcc
            (Output_File => Lib_File,
             Objects     => Ofiles,
-            Options     => Options);
+            Options     => Options & Init_Fini.all,
+            Driver_Name => Driver_Name);
 
       else
          Version_Arg := new String'("-Wl,-soname," & Lib_Version);
 
          if Is_Absolute_Path (Lib_Version) then
-            Tools.Gcc
+            Utl.Gcc
               (Output_File => Lib_Version,
                Objects     => Ofiles,
-               Options     => Options & Version_Arg);
+               Options     => Options & Version_Arg & Init_Fini.all,
+               Driver_Name => Driver_Name);
             Symbolic_Link_Needed := Lib_Version /= Lib_File;
 
          else
-            Tools.Gcc
+            Utl.Gcc
               (Output_File => Lib_Dir & Directory_Separator & Lib_Version,
                Objects     => Ofiles,
-               Options     => Options & Version_Arg);
+               Options     => Options & Version_Arg & Init_Fini.all,
+               Driver_Name => Driver_Name);
             Symbolic_Link_Needed :=
               Lib_Dir & Directory_Separator & Lib_Version /= Lib_File;
          end if;
@@ -182,60 +195,6 @@ package body MLib.Tgt is
       end if;
    end Build_Dynamic_Library;
 
-   --------------------
-   -- Copy_ALI_Files --
-   --------------------
-
-   procedure Copy_ALI_Files
-     (From : Name_Id;
-      To   : Name_Id)
-   is
-      Dir      : Dir_Type;
-      Name     : String (1 .. 1_000);
-      Last     : Natural;
-      Success  : Boolean;
-      From_Dir : constant String := Get_Name_String (From);
-      To_Dir   : constant String_Access :=
-                   new String'(Get_Name_String (To));
-
-   begin
-      Last_Arg := 0;
-      Open (Dir, From_Dir);
-
-      loop
-         Read (Dir, Name, Last);
-         exit when Last = 0;
-         if Last > 4
-
-           and then
-           To_Lower (Name (Last - 3 .. Last)) = ".ali"
-         then
-            Add_Arg (From_Dir & Directory_Separator & Name (1 .. Last));
-         end if;
-      end loop;
-
-      if Last_Arg /= 0 then
-         if not Opt.Quiet_Output then
-            Write_Str ("cp -f ");
-
-            for J in 1 .. Last_Arg loop
-               Write_Str (Args (J).all);
-               Write_Char (' ');
-            end loop;
-
-            Write_Line (To_Dir.all);
-         end if;
-
-         Spawn (Cp.all,
-                Force & Args (1 .. Last_Arg) & To_Dir,
-                Success);
-
-         if not Success then
-            Fail ("could not copy ALI files to library dir");
-         end if;
-      end if;
-   end Copy_ALI_Files;
-
    -------------------------
    -- Default_DLL_Address --
    -------------------------
@@ -260,7 +219,7 @@ package body MLib.Tgt is
 
    function Dynamic_Option return String is
    begin
-      return  "-shared";
+      return "-shared";
    end Dynamic_Option;
 
    -------------------
@@ -299,25 +258,78 @@ package body MLib.Tgt is
       return "libgnat.a";
    end Libgnat;
 
-   -----------------------------
-   -- Libraries_Are_Supported --
-   -----------------------------
+   ------------------------
+   -- Library_Exists_For --
+   ------------------------
 
-   function Libraries_Are_Supported return Boolean is
+   function Library_Exists_For (Project : Project_Id) return Boolean is
    begin
-      return True;
-   end Libraries_Are_Supported;
+      if not Projects.Table (Project).Library then
+         Prj.Com.Fail ("INTERNAL ERROR: Library_Exists_For called " &
+                       "for non library project");
+         return False;
+
+      else
+         declare
+            Lib_Dir : constant String :=
+              Get_Name_String (Projects.Table (Project).Library_Dir);
+            Lib_Name : constant String :=
+              Get_Name_String (Projects.Table (Project).Library_Name);
+
+         begin
+            if Projects.Table (Project).Library_Kind = Static then
+               return Is_Regular_File
+                 (Lib_Dir & Directory_Separator & "lib" &
+                  Fil.Ext_To (Lib_Name, Archive_Ext));
+
+            else
+               return Is_Regular_File
+                 (Lib_Dir & Directory_Separator & "lib" &
+                  Fil.Ext_To (Lib_Name, DLL_Ext));
+            end if;
+         end;
+      end if;
+   end Library_Exists_For;
+
+   ---------------------------
+   -- Library_File_Name_For --
+   ---------------------------
+
+   function Library_File_Name_For (Project : Project_Id) return Name_Id is
+   begin
+      if not Projects.Table (Project).Library then
+         Prj.Com.Fail ("INTERNAL ERROR: Library_File_Name_For called " &
+                       "for non library project");
+         return No_Name;
+
+      else
+         declare
+            Lib_Name : constant String :=
+              Get_Name_String (Projects.Table (Project).Library_Name);
+
+         begin
+            Name_Len := 3;
+            Name_Buffer (1 .. Name_Len) := "lib";
+
+            if Projects.Table (Project).Library_Kind = Static then
+               Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, Archive_Ext));
+
+            else
+               Add_Str_To_Name_Buffer (Fil.Ext_To (Lib_Name, DLL_Ext));
+            end if;
+
+            return Name_Find;
+         end;
+      end if;
+   end Library_File_Name_For;
 
    --------------------------------
    -- Linker_Library_Path_Option --
    --------------------------------
 
-   function Linker_Library_Path_Option
-     (Directory : String)
-      return      String_Access
-   is
+   function Linker_Library_Path_Option return String_Access is
    begin
-      return new String'("-Wl,-rpath," & Directory);
+      return new String'("-Wl,-rpath,");
    end Linker_Library_Path_Option;
 
    ----------------
@@ -326,7 +338,7 @@ package body MLib.Tgt is
 
    function Object_Ext return String is
    begin
-      return  "o";
+      return "o";
    end Object_Ext;
 
    ----------------
@@ -335,7 +347,25 @@ package body MLib.Tgt is
 
    function PIC_Option return String is
    begin
-      return  "-fPIC";
+      return "-fPIC";
    end PIC_Option;
+
+   -----------------------------------------------
+   -- Standalone_Library_Auto_Init_Is_Supported --
+   -----------------------------------------------
+
+   function Standalone_Library_Auto_Init_Is_Supported return Boolean is
+   begin
+      return True;
+   end Standalone_Library_Auto_Init_Is_Supported;
+
+   ---------------------------
+   -- Support_For_Libraries --
+   ---------------------------
+
+   function Support_For_Libraries return Library_Support is
+   begin
+      return Full;
+   end Support_For_Libraries;
 
 end MLib.Tgt;

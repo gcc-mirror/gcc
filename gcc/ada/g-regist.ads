@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2001 Free Software Foundation, Inc.           --
+--          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,7 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- Extensive contributions were provided by Ada Core Technologies Inc.   --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -88,9 +88,15 @@ package GNAT.Registry is
    function Key_Exists (From_Key : HKEY; Sub_Key : String) return Boolean;
    --  Returns True if Sub_Key is defined under From_Key in the registry.
 
-   function Query_Value (From_Key : HKEY; Sub_Key : String) return String;
+   function Query_Value
+     (From_Key : HKEY;
+      Sub_Key  : String;
+      Expand   : Boolean := False)
+      return     String;
    --  Returns the registry key's value associated with Sub_Key in From_Key
-   --  registry key.
+   --  registry key. If Expand is set to True and the Sub_Key is a
+   --  REG_EXPAND_SZ the returned value will have the %name% variables
+   --  replaced by the corresponding environment variable value.
 
    procedure Set_Value (From_Key : HKEY; Sub_Key : String; Value : String);
    --  Add the pair (Sub_Key, Value) into From_Key registry key.
@@ -107,15 +113,18 @@ package GNAT.Registry is
          Sub_Key : String;
          Value   : String;
          Quit    : in out Boolean);
-   procedure For_Every_Key_Value (From_Key : HKEY);
+   procedure For_Every_Key_Value (From_Key : HKEY; Expand : Boolean := False);
    --  Iterates over all the pairs (Sub_Key, Value) registered under
    --  From_Key. Index will be set to 1 for the first key and will be
    --  incremented by one in each iteration. Quit can be set to True to
    --  stop iteration; its initial value is False.
    --
-   --  Key value that are not of type string are skipped. In this case, the
-   --  iterator behaves exactly as if the key was not present. Note that you
-   --  must use the Win32.Winreg API to deal with this case.
+   --  Key value that are not of type string (i.e. not REG_SZ / REG_EXPAND_SZ)
+   --  are skipped. In this case, the iterator behaves exactly as if the key
+   --  were not present. Note that you must use the Win32.Winreg API to deal
+   --  with this case. Furthermore, if Expand is set to True and the Sub_Key
+   --  is a REG_EXPAND_SZ the returned value will have the %name% variables
+   --  replaced by the corresponding environment variable value.
 
 private
 

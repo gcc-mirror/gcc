@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1995-2000 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1995-2002 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,18 +26,21 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
 --  Heapsort using access to procedure parameters
 
---  This package provides a heapsort routine that works with access to
+--  This package provides a heap sort routine that works with access to
 --  subprogram parameters, so that it can be used with different types with
---  shared sorting code. See also GNAT.Heap_Sort_G, the generic version,
---  which is a little more efficient but does not allow code sharing.
---  The generic version is also Pure, while the access version can
---  only be Preelaborate.
+--  shared sorting code. It is considered obsoleted by GNAT.Heap_Sort which
+--  offers a similar routine with a more convenient interface.
+
+--  This heapsort algorithm uses approximately N*log(N) compares in the
+--  worst case and is in place with no additional storage required. See
+--  the body for exact details of the algorithm used.
 
 package GNAT.Heap_Sort_A is
 pragma Preelaborate (Heap_Sort_A);

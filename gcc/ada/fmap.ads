@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2001, Free Software Foundation, Inc.            --
+--            Copyright (C) 2001-2003, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,6 +45,7 @@ package Fmap is
    function Mapped_File_Name (Unit : Unit_Name_Type) return File_Name_Type;
    --  Return the file name mapped to the unit name Unit.
    --  Return No_File if Unit is not mapped.
+   --  Return Error_Name if it is forbidden.
 
    procedure Add_To_File_Map
      (Unit_Name : Unit_Name_Type;
@@ -55,7 +56,22 @@ package Fmap is
    procedure Update_Mapping_File (File_Name : String);
    --  If Add_To_File_Map has been called (after Initialize or any time
    --  if Initialize has not been called), append the new entries to the
-   --  to the mapping file.
-   --  What is the significance of the parameter File_Name ???
+   --  mapping file whose file name is File_Name.
+
+   procedure Reset_Tables;
+   --  Initialize all the internal data structures. This procedure is used
+   --  when several compilations are performed by the same process (by GNSA
+   --  for ASIS, for example) to remove any existing mappings from a previous
+   --  compilation.
+
+   procedure Add_Forbidden_File_Name (Name : Name_Id);
+   --  Indicate that a source file name is forbidden.
+   --  This is used by gnatmake when there are Locally_Removed_Files in
+   --  extending projects.
+
+   procedure Remove_Forbidden_File_Name (Name : Name_Id);
+   --  Indicate that a source file name that was forbidden is no longer
+   --  forbidden. Used by gnatmake when a locally removed file is redefined
+   --  in another extending project.
 
 end Fmap;

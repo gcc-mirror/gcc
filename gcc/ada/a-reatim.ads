@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -47,9 +47,9 @@ package Ada.Real_Time is
 
    type Time_Span is private;
    Time_Span_First : constant Time_Span;
-   Time_Span_Last  :  constant Time_Span;
-   Time_Span_Zero  :  constant Time_Span;
-   Time_Span_Unit  :  constant Time_Span;
+   Time_Span_Last  : constant Time_Span;
+   Time_Span_Zero  : constant Time_Span;
+   Time_Span_Unit  : constant Time_Span;
 
    Tick : constant Time_Span;
    function Clock return Time;

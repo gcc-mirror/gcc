@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,11 +27,11 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a NT (native) version of this package.
+--  This is a NT (native) version of this package
 
 --  This package contains all the GNULL primitives that interface directly
 --  with the underlying OS.
@@ -95,9 +95,9 @@ package body System.Task_Primitives.Operations is
 
    package SSL renames System.Soft_Links;
 
-   ------------------
-   --  Local Data  --
-   ------------------
+   ----------------
+   -- Local Data --
+   ----------------
 
    Environment_Task_ID : Task_ID;
    --  A variable to hold Task_ID for the environment task.
@@ -116,43 +116,8 @@ package body System.Task_Primitives.Operations is
    FIFO_Within_Priorities : constant Boolean := Dispatching_Policy = 'F';
    --  Indicates whether FIFO_Within_Priorities is set.
 
-   ---------------------------------
-   --  Foreign Threads Detection  --
-   ---------------------------------
-
-   --  The following are used to allow the Self function to
-   --  automatically generate ATCB's for C threads that happen to call
-   --  Ada procedure, which in turn happen to call the Ada run-time system.
-
-   type Fake_ATCB;
-   type Fake_ATCB_Ptr is access Fake_ATCB;
-   type Fake_ATCB is record
-      Stack_Base : Interfaces.C.unsigned := 0;
-      --  A value of zero indicates the node is not in use.
-      Next       : Fake_ATCB_Ptr;
-      Real_ATCB  : aliased Ada_Task_Control_Block (0);
-   end record;
-
-   Fake_ATCB_List : Fake_ATCB_Ptr;
-   --  A linear linked list.
-   --  The list is protected by Single_RTS_Lock;
-   --  Nodes are added to this list from the front.
-   --  Once a node is added to this list, it is never removed.
-
-   Fake_Task_Elaborated : aliased Boolean := True;
+   Foreign_Task_Elaborated : aliased Boolean := True;
    --  Used to identified fake tasks (i.e., non-Ada Threads).
-
-   Next_Fake_ATCB : Fake_ATCB_Ptr;
-   --  Used to allocate one Fake_ATCB in advance. See comment in New_Fake_ATCB
-
-   ---------------------------------
-   --  Support for New_Fake_ATCB  --
-   ---------------------------------
-
-   function New_Fake_ATCB return Task_ID;
-   --  Allocate and Initialize a new ATCB. This code can safely be called from
-   --  a foreign thread, as it doesn't access implicitly or explicitly
-   --  "self" before having initialized the new ATCB.
 
    ------------------------------------
    -- The thread local storage index --
@@ -163,6 +128,48 @@ package body System.Task_Primitives.Operations is
    --  To ensure that this variable won't be local to this package, since
    --  in some cases, inlining forces this variable to be global anyway.
 
+   --------------------
+   -- Local Packages --
+   --------------------
+
+   package Specific is
+
+      function Is_Valid_Task return Boolean;
+      pragma Inline (Is_Valid_Task);
+      --  Does executing thread have a TCB?
+
+      procedure Set (Self_Id : Task_ID);
+      pragma Inline (Set);
+      --  Set the self id for the current task.
+
+   end Specific;
+
+   package body Specific is
+
+      function Is_Valid_Task return Boolean is
+      begin
+         return TlsGetValue (TlsIndex) /= System.Null_Address;
+      end Is_Valid_Task;
+
+      procedure Set (Self_Id : Task_ID) is
+         Succeeded : BOOL;
+      begin
+         Succeeded := TlsSetValue (TlsIndex, To_Address (Self_Id));
+         pragma Assert (Succeeded = True);
+      end Set;
+
+   end Specific;
+
+   ---------------------------------
+   -- Support for foreign threads --
+   ---------------------------------
+
+   function Register_Foreign_Thread (Thread : Thread_Id) return Task_ID;
+   --  Allocate and Initialize a new ATCB for the current Thread.
+
+   function Register_Foreign_Thread
+     (Thread : Thread_Id) return Task_ID is separate;
+
    ----------------------------------
    -- Utility Conversion Functions --
    ----------------------------------
@@ -170,104 +177,6 @@ package body System.Task_Primitives.Operations is
    function To_Task_Id is new Unchecked_Conversion (System.Address, Task_ID);
 
    function To_Address is new Unchecked_Conversion (Task_ID, System.Address);
-
-   -------------------
-   -- New_Fake_ATCB --
-   -------------------
-
-   function New_Fake_ATCB return Task_ID is
-      Self_ID   : Task_ID;
-      P, Q      : Fake_ATCB_Ptr;
-      Succeeded : Boolean;
-      Res       : BOOL;
-
-   begin
-      --  This section is ticklish.
-      --  We dare not call anything that might require an ATCB, until
-      --  we have the new ATCB in place.
-
-      Lock_RTS;
-      Q := null;
-      P := Fake_ATCB_List;
-
-      while P /= null loop
-         if P.Stack_Base = 0 then
-            Q := P;
-         end if;
-
-         P := P.Next;
-      end loop;
-
-      if Q = null then
-
-         --  Create a new ATCB with zero entries.
-
-         Self_ID := Next_Fake_ATCB.Real_ATCB'Access;
-         Next_Fake_ATCB.Stack_Base := 1;
-         Next_Fake_ATCB.Next := Fake_ATCB_List;
-         Fake_ATCB_List := Next_Fake_ATCB;
-         Next_Fake_ATCB := null;
-
-      else
-         --  Reuse an existing fake ATCB.
-
-         Self_ID := Q.Real_ATCB'Access;
-         Q.Stack_Base := 1;
-      end if;
-
-      --  Record this as the Task_ID for the current thread.
-
-      Self_ID.Common.LL.Thread := GetCurrentThread;
-
-      Res := TlsSetValue (TlsIndex, To_Address (Self_ID));
-      pragma Assert (Res = True);
-
-      --  Do the standard initializations
-
-      System.Tasking.Initialize_ATCB
-        (Self_ID, null, Null_Address, Null_Task, Fake_Task_Elaborated'Access,
-         System.Priority'First, Task_Info.Unspecified_Task_Info, 0, Self_ID,
-         Succeeded);
-      pragma Assert (Succeeded);
-
-      --  Finally, it is safe to use an allocator in this thread.
-
-      if Next_Fake_ATCB = null then
-         Next_Fake_ATCB := new Fake_ATCB;
-      end if;
-
-      Self_ID.Master_of_Task := 0;
-      Self_ID.Master_Within := Self_ID.Master_of_Task + 1;
-
-      for L in Self_ID.Entry_Calls'Range loop
-         Self_ID.Entry_Calls (L).Self := Self_ID;
-         Self_ID.Entry_Calls (L).Level := L;
-      end loop;
-
-      Self_ID.Common.State := Runnable;
-      Self_ID.Awake_Count := 1;
-
-      --  Since this is not an ordinary Ada task, we will start out undeferred
-
-      Self_ID.Deferral_Level := 0;
-
-      System.Soft_Links.Create_TSD (Self_ID.Common.Compiler_Data);
-
-      --  ????
-      --  The following call is commented out to avoid dependence on
-      --  the System.Tasking.Initialization package.
-      --  It seems that if we want Ada.Task_Attributes to work correctly
-      --  for C threads we will need to raise the visibility of this soft
-      --  link to System.Soft_Links.
-      --  We are putting that off until this new functionality is otherwise
-      --  stable.
-      --  System.Tasking.Initialization.Initialize_Attributes_Link.all (T);
-
-      --  Must not unlock until Next_ATCB is again allocated.
-
-      Unlock_RTS;
-      return Self_ID;
-   end New_Fake_ATCB;
 
    ----------------------------------
    -- Condition Variable Functions --
@@ -296,7 +205,8 @@ package body System.Task_Primitives.Operations is
    --  Do timed wait on condition variable Cond using lock L. The duration
    --  of the timed wait is given by Rel_Time. When the condition is
    --  signalled, Timed_Out shows whether or not a time out occurred.
-   --  Status shows whether Cond_Timed_Wait completed successfully.
+   --  Status is only valid if Timed_Out is False, in which case it
+   --  shows whether Cond_Timed_Wait completed successfully.
 
    ---------------------
    -- Initialize_Cond --
@@ -320,7 +230,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Finalize_Cond (Cond : access Condition_Variable) is
       Result : BOOL;
-
    begin
       Result := CloseHandle (HANDLE (Cond.all));
       pragma Assert (Result = True);
@@ -332,7 +241,6 @@ package body System.Task_Primitives.Operations is
 
    procedure Cond_Signal (Cond : access Condition_Variable) is
       Result : BOOL;
-
    begin
       Result := SetEvent (HANDLE (Cond.all));
       pragma Assert (Result = True);
@@ -388,11 +296,9 @@ package body System.Task_Primitives.Operations is
       Timed_Out : out Boolean;
       Status    : out Integer)
    is
-      Time_Out : DWORD;
-      Result   : BOOL;
-
-      Int_Rel_Time : DWORD;
-      Wait_Result  : DWORD;
+      Time_Out    : DWORD;
+      Result      : BOOL;
+      Wait_Result : DWORD;
 
    begin
       --  Must reset Cond BEFORE L is unlocked.
@@ -406,10 +312,15 @@ package body System.Task_Primitives.Operations is
 
       if Rel_Time <= 0.0 then
          Timed_Out := True;
+         Wait_Result := 0;
+
       else
-         Int_Rel_Time := DWORD (Rel_Time);
-         Time_Out := Int_Rel_Time * 1000 +
-                     DWORD ((Rel_Time - Duration (Int_Rel_Time)) * 1000.0);
+         if Rel_Time >= Duration (DWORD'Last - 1) / 1000 then
+            Time_Out := DWORD'Last - 1;
+         else
+            Time_Out := DWORD (Rel_Time * 1000);
+         end if;
+
          Wait_Result := WaitForSingleObject (HANDLE (Cond.all), Time_Out);
 
          if Wait_Result = WAIT_TIMEOUT then
@@ -441,6 +352,9 @@ package body System.Task_Primitives.Operations is
    --  ??? Check the comment above
 
    procedure Stack_Guard (T : ST.Task_ID; On : Boolean) is
+      pragma Warnings (Off, T);
+      pragma Warnings (Off, On);
+
    begin
       null;
    end Stack_Guard;
@@ -459,16 +373,14 @@ package body System.Task_Primitives.Operations is
    ----------
 
    function Self return Task_ID is
-      Self_Id : Task_ID;
+      Self_Id : constant Task_ID := To_Task_Id (TlsGetValue (TlsIndex));
 
    begin
-      Self_Id := To_Task_Id (TlsGetValue (TlsIndex));
-
       if Self_Id = null then
-         return New_Fake_ATCB;
+         return Register_Foreign_Thread (GetCurrentThread);
+      else
+         return Self_Id;
       end if;
-
-      return Self_Id;
    end Self;
 
    ---------------------
@@ -476,7 +388,7 @@ package body System.Task_Primitives.Operations is
    ---------------------
 
    --  Note: mutexes and cond_variables needed per-task basis are
-   --  initialized in Initialize_TCB and the Storage_Error is handled.
+   --  initialized in Intialize_TCB and the Storage_Error is handled.
    --  Other mutexes (such as RTS_Lock, Memory_Lock...) used in
    --  the RTS is initialized before any status change of RTS.
    --  Therefore raising Storage_Error in the following routines
@@ -484,7 +396,8 @@ package body System.Task_Primitives.Operations is
 
    procedure Initialize_Lock
      (Prio : System.Any_Priority;
-      L    : access Lock) is
+      L    : access Lock)
+   is
    begin
       InitializeCriticalSection (L.Mutex'Access);
       L.Owner_Priority := 0;
@@ -492,6 +405,8 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level) is
+      pragma Unreferenced (Level);
+
    begin
       InitializeCriticalSection (CRITICAL_SECTION (L.all)'Unrestricted_Access);
    end Initialize_Lock;
@@ -529,7 +444,9 @@ package body System.Task_Primitives.Operations is
    end Write_Lock;
 
    procedure Write_Lock
-     (L : access RTS_Lock; Global_Lock : Boolean := False) is
+     (L           : access RTS_Lock;
+      Global_Lock : Boolean := False)
+   is
    begin
       if not Single_Lock or else Global_Lock then
          EnterCriticalSection (CRITICAL_SECTION (L.all)'Unrestricted_Access);
@@ -583,7 +500,10 @@ package body System.Task_Primitives.Operations is
 
    procedure Sleep
      (Self_ID : Task_ID;
-      Reason  : System.Tasking.Task_States) is
+      Reason  : System.Tasking.Task_States)
+   is
+      pragma Unreferenced (Reason);
+
    begin
       pragma Assert (Self_ID = Self);
 
@@ -617,7 +537,8 @@ package body System.Task_Primitives.Operations is
       Timedout : out Boolean;
       Yielded  : out Boolean)
    is
-      Check_Time : constant Duration := Monotonic_Clock;
+      pragma Unreferenced (Reason);
+      Check_Time : Duration := Monotonic_Clock;
       Rel_Time   : Duration;
       Abs_Time   : Duration;
       Result     : Integer;
@@ -649,15 +570,18 @@ package body System.Task_Primitives.Operations is
                  Self_ID.Common.LL.L'Access, Rel_Time, Local_Timedout, Result);
             end if;
 
-            exit when Abs_Time <= Monotonic_Clock;
+            Check_Time := Monotonic_Clock;
+            exit when Abs_Time <= Check_Time;
 
             if not Local_Timedout then
-               --  somebody may have called Wakeup for us
+
+               --  Somebody may have called Wakeup for us
+
                Timedout := False;
                exit;
             end if;
 
-            Rel_Time := Abs_Time - Monotonic_Clock;
+            Rel_Time := Abs_Time - Check_Time;
          end loop;
       end if;
    end Timed_Sleep;
@@ -671,7 +595,7 @@ package body System.Task_Primitives.Operations is
       Time     : Duration;
       Mode     : ST.Delay_Modes)
    is
-      Check_Time : constant Duration := Monotonic_Clock;
+      Check_Time : Duration := Monotonic_Clock;
       Rel_Time   : Duration;
       Abs_Time   : Duration;
       Result     : Integer;
@@ -718,9 +642,10 @@ package body System.Task_Primitives.Operations is
                  Self_ID.Common.LL.L'Access, Rel_Time, Timedout, Result);
             end if;
 
-            exit when Abs_Time <= Monotonic_Clock;
+            Check_Time := Monotonic_Clock;
+            exit when Abs_Time <= Check_Time;
 
-            Rel_Time := Abs_Time - Monotonic_Clock;
+            Rel_Time := Abs_Time - Check_Time;
          end loop;
 
          Self_ID.Common.State := Runnable;
@@ -741,6 +666,8 @@ package body System.Task_Primitives.Operations is
    ------------
 
    procedure Wakeup (T : Task_ID; Reason : System.Tasking.Task_States) is
+      pragma Unreferenced (Reason);
+
    begin
       Cond_Signal (T.Common.LL.CV'Access);
    end Wakeup;
@@ -771,8 +698,8 @@ package body System.Task_Primitives.Operations is
    --  scheduling.
 
    procedure Set_Priority
-     (T : Task_ID;
-      Prio : System.Any_Priority;
+     (T                   : Task_ID;
+      Prio                : System.Any_Priority;
       Loss_Of_Inheritance : Boolean := False)
    is
       Res        : BOOL;
@@ -782,20 +709,6 @@ package body System.Task_Primitives.Operations is
       Res := SetThreadPriority
         (T.Common.LL.Thread, Interfaces.C.int (Underlying_Priorities (Prio)));
       pragma Assert (Res = True);
-
-      --  ??? Work around a bug in NT 4.0 SP3 scheduler
-      --  It looks like when a task with Thread_Priority_Idle (using RT class)
-      --  never reaches its time slice (e.g by doing multiple and simple RV,
-      --  see CXD8002), the scheduler never gives higher priority task a
-      --  chance to run.
-      --  Note that this works fine on NT 4.0 SP1
-
-      if Time_Slice_Val = 0
-        and then Underlying_Priorities (Prio) = Thread_Priority_Idle
-        and then Loss_Of_Inheritance
-      then
-         Sleep (20);
-      end if;
 
       if FIFO_Within_Priorities then
 
@@ -860,11 +773,8 @@ package body System.Task_Primitives.Operations is
       pragma Import (C, Init_Float, "__gnat_init_float");
       --  Properly initializes the FPU for x86 systems.
 
-      Succeeded : BOOL;
-
    begin
-      Succeeded := TlsSetValue (TlsIndex, To_Address (Self_ID));
-      pragma Assert (Succeeded = True);
+      Specific.Set (Self_ID);
       Init_Float;
 
       Self_ID.Common.LL.Thread_Id := GetCurrentThreadId;
@@ -891,12 +801,36 @@ package body System.Task_Primitives.Operations is
       return new Ada_Task_Control_Block (Entry_Num);
    end New_ATCB;
 
+   -------------------
+   -- Is_Valid_Task --
+   -------------------
+
+   function Is_Valid_Task return Boolean renames Specific.Is_Valid_Task;
+
+   -----------------------------
+   -- Register_Foreign_Thread --
+   -----------------------------
+
+   function Register_Foreign_Thread return Task_ID is
+   begin
+      if Is_Valid_Task then
+         return Self;
+      else
+         return Register_Foreign_Thread (GetCurrentThread);
+      end if;
+   end Register_Foreign_Thread;
+
    --------------------
    -- Initialize_TCB --
    --------------------
 
    procedure Initialize_TCB (Self_ID : Task_ID; Succeeded : out Boolean) is
    begin
+      --  Initialize thread ID to 0, this is needed to detect threads that
+      --  are not yet activated.
+
+      Self_ID.Common.LL.Thread := 0;
+
       Initialize_Cond (Self_ID.Common.LL.CV'Access);
 
       if not Single_Lock then
@@ -964,6 +898,14 @@ package body System.Task_Primitives.Operations is
 
       Set_Priority (T, Priority);
 
+      if Time_Slice_Val = 0 or else FIFO_Within_Priorities then
+         --  Here we need Annex E semantics so we disable the NT priority
+         --  boost. A priority boost is temporarily given by the system to a
+         --  thread when it is taken out of a wait state.
+
+         SetThreadPriorityBoost (hTask, DisablePriorityBoost => True);
+      end if;
+
       --  Step 4: Now, start it for good:
 
       Result := ResumeThread (hTask);
@@ -980,6 +922,7 @@ package body System.Task_Primitives.Operations is
       Self_ID   : Task_ID := T;
       Result    : DWORD;
       Succeeded : BOOL;
+      Is_Self : constant Boolean := T = Self;
 
       procedure Free is new
         Unchecked_Deallocation (Ada_Task_Control_Block, Task_ID);
@@ -995,15 +938,23 @@ package body System.Task_Primitives.Operations is
          Known_Tasks (T.Known_Tasks_Index) := null;
       end if;
 
-      --  Wait for the thread to terminate then close it. this is needed
-      --  to release system ressources.
+      if Self_ID.Common.LL.Thread /= 0 then
 
-      Result := WaitForSingleObject (T.Common.LL.Thread, Wait_Infinite);
-      pragma Assert (Result /= WAIT_FAILED);
-      Succeeded := CloseHandle (T.Common.LL.Thread);
-      pragma Assert (Succeeded = True);
+         --  This task has been activated. Wait for the thread to terminate
+         --  then close it. this is needed to release system ressources.
+
+         Result := WaitForSingleObject (T.Common.LL.Thread, Wait_Infinite);
+         pragma Assert (Result /= WAIT_FAILED);
+         Succeeded := CloseHandle (T.Common.LL.Thread);
+         pragma Assert (Succeeded = True);
+      end if;
 
       Free (Self_ID);
+
+      if Is_Self then
+         Succeeded := TlsSetValue (TlsIndex, System.Null_Address);
+         pragma Assert (Succeeded = True);
+      end if;
    end Finalize_TCB;
 
    ---------------
@@ -1012,7 +963,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Exit_Task is
    begin
-      ExitThread (0);
+      Specific.Set (null);
    end Exit_Task;
 
    ----------------
@@ -1020,6 +971,7 @@ package body System.Task_Primitives.Operations is
    ----------------
 
    procedure Abort_Task (T : Task_ID) is
+   pragma Unreferenced (T);
    begin
       null;
    end Abort_Task;
@@ -1057,12 +1009,24 @@ package body System.Task_Primitives.Operations is
 
    procedure Initialize (Environment_Task : Task_ID) is
       Res : BOOL;
+
    begin
       Environment_Task_ID := Environment_Task;
 
       if Time_Slice_Val = 0 or else FIFO_Within_Priorities then
-         Res := OS_Interface.SetPriorityClass
-           (GetCurrentProcess, Realtime_Priority_Class);
+
+         --  Here we need Annex E semantics, switch the current process to the
+         --  High_Priority_Class.
+
+         Res :=
+           OS_Interface.SetPriorityClass
+             (GetCurrentProcess, High_Priority_Class);
+
+         --  ??? In theory it should be possible to use the priority class
+         --  Realtime_Prioriry_Class but we suspect a bug in the NT scheduler
+         --  which prevents (in some obscure cases) a thread to get on top of
+         --  the running queue by another thread of lower priority. For
+         --  example cxd8002 ACATS test freeze.
       end if;
 
       TlsIndex := TlsAlloc;
@@ -1073,10 +1037,6 @@ package body System.Task_Primitives.Operations is
 
       Environment_Task.Common.LL.Thread := GetCurrentThread;
       Enter_Task (Environment_Task);
-
-      --  Create a free ATCB for use on the Fake_ATCB_List
-
-      Next_Fake_ATCB := new Fake_ATCB;
    end Initialize;
 
    ---------------------
@@ -1103,6 +1063,8 @@ package body System.Task_Primitives.Operations is
    --  (native).
 
    function Check_Exit (Self_ID : ST.Task_ID) return Boolean is
+      pragma Unreferenced (Self_ID);
+
    begin
       return True;
    end Check_Exit;
@@ -1112,6 +1074,8 @@ package body System.Task_Primitives.Operations is
    --------------------
 
    function Check_No_Locks (Self_ID : ST.Task_ID) return Boolean is
+      pragma Unreferenced (Self_ID);
+
    begin
       return True;
    end Check_No_Locks;
@@ -1122,7 +1086,9 @@ package body System.Task_Primitives.Operations is
 
    function Suspend_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
    begin
       if T.Common.LL.Thread /= Thread_Self then
          return SuspendThread (T.Common.LL.Thread) = NO_ERROR;
@@ -1137,7 +1103,9 @@ package body System.Task_Primitives.Operations is
 
    function Resume_Task
      (T           : ST.Task_ID;
-      Thread_Self : Thread_Id) return Boolean is
+      Thread_Self : Thread_Id)
+      return        Boolean
+   is
    begin
       if T.Common.LL.Thread /= Thread_Self then
          return ResumeThread (T.Common.LL.Thread) = NO_ERROR;

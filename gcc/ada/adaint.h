@@ -4,7 +4,6 @@
  *                                                                          *
  *                               A D A I N T                                *
  *                                                                          *
- *                                                                          *
  *                              C Header File                               *
  *                                                                          *
  *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
@@ -31,117 +30,130 @@
  *                                                                          *
  ****************************************************************************/
 
-#if defined(__rtems__)
 #include <stdio.h>
-#endif
-
 #include <dirent.h>
 
+typedef long OS_Time; /* Type corresponding to GNAT.OS_Lib.OS_Time */
+
 extern int    __gnat_max_path_len;
-extern void   __gnat_to_gm_time			   PARAMS ((int *, int *,
-							    int *, int *,
-							    int *, int *,
-							    int *));
-extern int    __gnat_get_maximum_file_name_length  PARAMS ((void));
-extern int    __gnat_get_switches_case_sensitive   PARAMS ((void));
-extern int    __gnat_get_file_names_case_sensitive PARAMS ((void));
-extern char   __gnat_get_default_identifier_character_set PARAMS ((void));
-extern void   __gnat_get_current_dir		   PARAMS ((char *, int *));
-extern void   __gnat_get_object_suffix_ptr         PARAMS ((int *,
-							    const char **));
-extern void   __gnat_get_executable_suffix_ptr     PARAMS ((int *,
-							    const char **));
-extern void   __gnat_get_debuggable_suffix_ptr     PARAMS ((int *,
-							    const char **));
-extern int    __gnat_readlink			   PARAMS ((char *, char *,
-							    size_t));
-extern int    __gnat_symlink                       PARAMS ((char *, char *));
-extern int    __gnat_try_lock                      PARAMS ((char *, char *));
-extern int    __gnat_open_new                      PARAMS ((char *, int));
-extern int    __gnat_open_new_temp		   PARAMS ((char *, int));
-extern int    __gnat_mkdir			   PARAMS ((char *));
-extern int    __gnat_stat			   PARAMS ((char *, 
-							    struct stat *));
-extern int    __gnat_open_read                     PARAMS ((char *, int));
-extern int    __gnat_open_rw                       PARAMS ((char *, int));
-extern int    __gnat_open_create                   PARAMS ((char *, int));
-extern int    __gnat_open_append                   PARAMS ((char *, int));
-extern long   __gnat_file_length                   PARAMS ((int));
-extern void   __gnat_tmp_name			   PARAMS ((char *));
-extern char  *__gnat_readdir                       PARAMS ((DIR *, char *));
-extern int    __gnat_readdir_is_thread_safe        PARAMS ((void));
-extern time_t __gnat_file_time_name                PARAMS ((char *));
-extern time_t __gnat_file_time_fd                  PARAMS ((int));
-extern void   __gnat_set_file_time_name		   PARAMS ((char *, time_t));
-extern void   __gnat_get_env_value_ptr             PARAMS ((char *, int *,
-							    char **));
-extern int    __gnat_file_exists		   PARAMS ((char *));
-extern int    __gnat_is_regular_file               PARAMS ((char *));
-extern int    __gnat_is_absolute_path              PARAMS ((char *));
-extern int    __gnat_is_directory		   PARAMS ((char *));
-extern int    __gnat_is_writable_file		   PARAMS ((char *));
-extern int    __gnat_portable_spawn                PARAMS ((char *[]));
-extern int    __gnat_portable_no_block_spawn       PARAMS ((char *[]));
-extern int    __gnat_portable_wait                 PARAMS ((int *));
-extern int    __gnat_waitpid			   PARAMS ((int));
-extern char  *__gnat_locate_exec                   PARAMS ((char *, char *));
-extern char  *__gnat_locate_exec_on_path		   PARAMS ((char *));
-extern char  *__gnat_locate_regular_file           PARAMS ((char *, char *));
-extern void   __gnat_maybe_glob_args               PARAMS ((int *, char ***));
-extern void   __gnat_os_exit			   PARAMS ((int));
-extern void   __gnat_set_env_value		   PARAMS ((char *, char *));
-extern char  *__gnat_get_libraries_from_registry   PARAMS ((void));
-extern int    __gnat_to_canonical_file_list_init   PARAMS ((char *, int));
-extern char  *__gnat_to_canonical_file_list_next   PARAMS ((void));
-extern void   __gnat_to_canonical_file_list_free   PARAMS ((void));
-extern char  *__gnat_to_canonical_dir_spec         PARAMS ((char *, int));
-extern char  *__gnat_to_canonical_file_spec        PARAMS ((char *));
-extern char  *__gnat_to_host_dir_spec              PARAMS ((char *, int));
-extern char  *__gnat_to_host_file_spec             PARAMS ((char *));
-extern char  *__gnat_to_canonical_path_spec	   PARAMS ((char *));
-extern void   __gnat_adjust_os_resource_limits	   PARAMS ((void));
+extern void   __gnat_to_gm_time			   (OS_Time *, int *,
+						    int *, int *,
+						    int *, int *,
+						    int *);
+extern int    __gnat_get_maximum_file_name_length  (void);
+extern int    __gnat_get_switches_case_sensitive   (void);
+extern int    __gnat_get_file_names_case_sensitive (void);
+extern char   __gnat_get_default_identifier_character_set (void);
+extern void   __gnat_get_current_dir		   (char *, int *);
+extern void   __gnat_get_object_suffix_ptr         (int *,
+						    const char **);
+extern void   __gnat_get_executable_suffix_ptr     (int *,
+						    const char **);
+extern void   __gnat_get_debuggable_suffix_ptr     (int *,
+						    const char **);
+extern int    __gnat_readlink			   (char *, char *,
+						    size_t);
+extern int    __gnat_symlink                       (char *, char *);
+extern int    __gnat_try_lock                      (char *, char *);
+extern int    __gnat_open_new                      (char *, int);
+extern int    __gnat_open_new_temp		   (char *, int);
+extern int    __gnat_mkdir			   (char *);
+extern int    __gnat_stat			   (char *,
+						    struct stat *);
+extern int    __gnat_open_read                     (char *, int);
+extern int    __gnat_open_rw                       (char *, int);
+extern int    __gnat_open_create                   (char *, int);
+extern int    __gnat_open_append                   (char *, int);
+extern long   __gnat_file_length                   (int);
+extern void   __gnat_tmp_name			   (char *);
+extern char  *__gnat_readdir                       (DIR *, char *);
+extern int    __gnat_readdir_is_thread_safe        (void);
+extern time_t __gnat_file_time_name                (char *);
+extern time_t __gnat_file_time_fd                  (int);
+extern void   __gnat_set_file_time_name		   (char *, time_t);
+extern void   __gnat_get_env_value_ptr             (char *, int *,
+						    char **);
+extern int    __gnat_file_exists		   (char *);
+extern int    __gnat_is_regular_file               (char *);
+extern int    __gnat_is_absolute_path              (char *);
+extern int    __gnat_is_directory		   (char *);
+extern int    __gnat_is_writable_file		   (char *);
+extern int    __gnat_is_readable_file		   (char *name);
+extern void   __gnat_set_readonly                  (char *name);
+extern void   __gnat_set_writable                  (char *name);
+extern int    __gnat_is_symbolic_link		   (char *name);
+extern int    __gnat_portable_spawn                (char *[]);
+extern int    __gnat_portable_no_block_spawn       (char *[]);
+extern int    __gnat_portable_wait                 (int *);
+extern int    __gnat_waitpid			   (int);
+extern char  *__gnat_locate_exec                   (char *, char *);
+extern char  *__gnat_locate_exec_on_path	   (char *);
+extern char  *__gnat_locate_regular_file           (char *, char *);
+extern void   __gnat_maybe_glob_args               (int *, char ***);
+extern void   __gnat_os_exit			   (int);
+extern void   __gnat_set_env_value		   (char *, char *);
+extern char  *__gnat_get_libraries_from_registry   (void);
+extern int    __gnat_to_canonical_file_list_init   (char *, int);
+extern char  *__gnat_to_canonical_file_list_next   (void);
+extern void   __gnat_to_canonical_file_list_free   (void);
+extern char  *__gnat_to_canonical_dir_spec         (char *, int);
+extern char  *__gnat_to_canonical_file_spec        (char *);
+extern char  *__gnat_to_host_dir_spec              (char *, int);
+extern char  *__gnat_to_host_file_spec             (char *);
+extern char  *__gnat_to_canonical_path_spec	   (char *);
+extern void   __gnat_adjust_os_resource_limits	   (void);
+extern void   convert_addresses			   (void *, int,
+						    void *, int *);
+extern int    __gnat_copy_attribs		   (char *, char *, int);
+extern int    __gnat_feof		  	   (FILE *);
+extern int    __gnat_ferror                        (FILE *);
+extern int    __gnat_fileno		  	   (FILE *);
+extern int    __gnat_is_regular_file_fd  	   (int);
+extern FILE  *__gnat_constant_stderr	  	   (void);
+extern FILE  *__gnat_constant_stdin	  	   (void);
+extern FILE  *__gnat_constant_stdout	  	   (void);
+extern char  *__gnat_full_name		  	   (char *, char *);
 
-extern int     __gnat_feof		  	   PARAMS ((FILE *));
-extern int     __gnat_ferror		  	   PARAMS ((FILE *));
-extern int     __gnat_fileno		  	   PARAMS ((FILE *));
-extern int     __gnat_is_regular_file_fd  	   PARAMS ((int));
-extern FILE *__gnat_constant_stderr	  	   PARAMS ((void));
-extern FILE *__gnat_constant_stdin	  	   PARAMS ((void));
-extern FILE *__gnat_constant_stdout	  	   PARAMS ((void));
-extern char *__gnat_full_name		  	   PARAMS ((char *, char *));
-
-extern int    __gnat_arg_count			   PARAMS ((void));
-extern int    __gnat_len_arg			   PARAMS ((int));
-extern void   __gnat_fill_arg			   PARAMS ((char *, int));
-extern int    __gnat_env_count			   PARAMS ((void));
-extern int    __gnat_len_env			   PARAMS ((int));
-extern void   __gnat_fill_env			   PARAMS ((char *, int));
+extern int    __gnat_arg_count			   (void);
+extern int    __gnat_len_arg			   (int);
+extern void   __gnat_fill_arg			   (char *, int);
+extern int    __gnat_env_count			   (void);
+extern int    __gnat_len_env			   (int);
+extern void   __gnat_fill_env			   (char *, int);
 
 /* Routines for interface to scanf and printf functions for integer values */
 
-extern int    get_int				   PARAMS ((void));
-extern void   put_int				   PARAMS ((int));
-extern void   put_int_stderr			   PARAMS ((int));
-extern int    get_char				   PARAMS ((void));
-extern void   put_char				   PARAMS ((int));
-extern void   put_char_stderr			   PARAMS ((int));
-extern char  *mktemp				   PARAMS ((char *));
+extern int    get_int				   (void);
+extern void   put_int				   (int);
+extern void   put_int_stderr			   (int);
+extern int    get_char				   (void);
+extern void   put_char				   (int);
+extern void   put_char_stderr			   (int);
+extern char  *mktemp				   (char *);
 
-extern void   __gnat_set_exit_status		   PARAMS ((int));
+extern void   __gnat_set_exit_status		   (int);
 
-extern int    __gnat_expect_fork		   PARAMS ((void));
-extern void   __gnat_expect_portable_execvp	   PARAMS ((char *, char *[]));
-extern int    __gnat_pipe			   PARAMS ((int *));
-extern int    __gnat_expect_poll		   PARAMS ((int *, int, int,
-							    int *));
-extern void    __gnat_set_binary_mode		   PARAMS ((int));
-extern void    __gnat_set_text_mode		   PARAMS ((int));
-extern char   *__gnat_ttyname			   PARAMS ((int));
+extern int    __gnat_expect_fork		   (void);
+extern void   __gnat_expect_portable_execvp	   (char *, char *[]);
+extern int    __gnat_pipe			   (int *);
+extern int    __gnat_expect_poll		   (int *, int, int, int *);
+extern void   __gnat_set_binary_mode		   (int);
+extern void   __gnat_set_text_mode		   (int);
+extern char  *__gnat_ttyname			   (int);
 
-extern void   convert_addresses			   PARAMS ((char *[], int,
-							    void *, int *));
+#ifdef __MINGW32__
+extern void   __gnat_plist_init                    (void);
+#endif
 
 #ifdef IN_RTS
 /* Portable definition of strdup, which is not available on all systems.  */
 #define xstrdup(S)  strcpy ((char *) malloc (strlen (S) + 1), S)
 #endif
+
+/* This function returns the version of GCC being used.  Here it's GCC 3.  */
+extern int get_gcc_version		     (void);
+
+/* This function offers a hook for libgnarl to set the
+   locking subprograms for libgcc_eh. */
+extern void __gnatlib_install_locks	     (void (*) (void),
+					      void (*) (void));

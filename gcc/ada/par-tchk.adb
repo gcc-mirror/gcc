@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -84,15 +84,15 @@ package body Tchk is
       --  A little recovery helper, accept then in place of =>
 
       elsif Token = Tok_Then then
-         Error_Msg_BC ("missing ""=>""");
+         Error_Msg_BC ("missing ""='>""");
          Scan; -- past THEN used in place of =>
 
       elsif Token = Tok_Colon_Equal then
-         Error_Msg_SC (""":="" should be ""=>""");
+         Error_Msg_SC (""":="" should be ""='>""");
          Scan; -- past := used in place of =>
 
       else
-         Error_Msg_AP ("missing ""=>""");
+         Error_Msg_AP ("missing ""='>""");
       end if;
    end T_Arrow;
 
@@ -123,7 +123,7 @@ package body Tchk is
       if Token = Tok_Box then
          Scan;
       else
-         Error_Msg_AP ("missing ""<>""");
+         Error_Msg_AP ("missing ""'<'>""");
       end if;
    end T_Box;
 
@@ -223,7 +223,7 @@ package body Tchk is
       if Token = Tok_Greater_Greater then
          Scan;
       else
-         Error_Msg_AP ("missing "">>""");
+         Error_Msg_AP ("missing ""'>'>""");
       end if;
    end T_Greater_Greater;
 
@@ -399,17 +399,22 @@ package body Tchk is
             Scan;
          end if;
 
+         return;
+
       elsif Token = Tok_Colon then
          Error_Msg_SC (""":"" should be "";""");
          Scan;
+         return;
 
       elsif Token = Tok_Comma then
          Error_Msg_SC (""","" should be "";""");
          Scan;
+         return;
 
       elsif Token = Tok_Dot then
          Error_Msg_SC ("""."" should be "";""");
          Scan;
+         return;
 
       --  An interesting little kludge here. If the previous token is a
       --  semicolon, then there is no way that we can legitimately need
@@ -427,14 +432,27 @@ package body Tchk is
       elsif Token = Tok_Vertical_Bar then
          Error_Msg_SC ("unexpected occurrence of ""'|"", did you mean OR'?");
          Resync_Past_Semicolon;
-
-      --  Otherwise we really do have a missing semicolon
-
-      else
-         Error_Msg_AP ("|missing "";""");
          return;
+
+      --  Deal with pragma. If pragma is not at start of line, it is
+      --  considered misplaced otherwise we treat it as a normal
+      --  missing semicolong case.
+
+      elsif Token = Tok_Pragma
+        and then not Token_Is_At_Start_Of_Line
+      then
+         P_Pragmas_Misplaced;
+
+         if Token = Tok_Semicolon then
+            Scan;
+            return;
+         end if;
       end if;
 
+      --  If none of those tests return, we really have a missing semicolon
+
+      Error_Msg_AP ("|missing "";""");
+      return;
    end T_Semicolon;
 
    ------------
@@ -660,7 +678,13 @@ package body Tchk is
          return;
 
       else
-         if Token = Tok_Pragma then
+         --  Deal with pragma. If pragma is not at start of line, it is
+         --  considered misplaced otherwise we treat it as a normal
+         --  missing semicolong case.
+
+         if Token = Tok_Pragma
+           and then not Token_Is_At_Start_Of_Line
+         then
             P_Pragmas_Misplaced;
 
             if Token = Tok_Semicolon then
@@ -669,7 +693,12 @@ package body Tchk is
             end if;
          end if;
 
-         T_Semicolon; -- give missing semicolon message
+         --  Here we definitely have a missing semicolon, so give message
+
+         T_Semicolon;
+
+         --  Scan out junk on rest of line
+
          Save_Scan_State (Scan_State); -- at start of junk tokens
 
          loop

@@ -5,9 +5,9 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                         (VXWORKS Version Alpha)                          --
+--                         (VxWorks Version Alpha)                          --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -58,7 +58,7 @@ pragma Pure (System);
    Max_Mantissa          : constant := 63;
    Fine_Delta            : constant := 2.0 ** (-Max_Mantissa);
 
-   Tick                  : constant := 1.0;
+   Tick                  : constant := 1.0 / 60.0;
 
    --  Storage-related Declarations
 
@@ -126,21 +126,33 @@ private
    Backend_Divide_Checks     : constant Boolean := False;
    Backend_Overflow_Checks   : constant Boolean := False;
    Command_Line_Args         : constant Boolean := False;
+   Configurable_Run_Time     : constant Boolean := False;
    Denorm                    : constant Boolean := False;
+   Duration_32_Bits          : constant Boolean := False;
+   Exit_Status_Supported     : constant Boolean := True;
    Fractional_Fixed_Ops      : constant Boolean := False;
    Frontend_Layout           : constant Boolean := False;
    Functions_Return_By_DSP   : constant Boolean := False;
-   Long_Shifts_Inlined       : constant Boolean := False;
-   High_Integrity_Mode       : constant Boolean := False;
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
    OpenVMS                   : constant Boolean := False;
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := False;
    Stack_Check_Probes        : constant Boolean := False;
+   Support_64_Bit_Divides    : constant Boolean := True;
+   Support_Aggregates        : constant Boolean := True;
+   Support_Composite_Assign  : constant Boolean := True;
+   Support_Composite_Compare : constant Boolean := True;
+   Support_Long_Shifts       : constant Boolean := True;
+   Suppress_Standard_Library : constant Boolean := False;
    Use_Ada_Main_Program_Name : constant Boolean := True;
    ZCX_By_Default            : constant Boolean := False;
    GCC_ZCX_Support           : constant Boolean := False;
    Front_End_ZCX_Support     : constant Boolean := False;
+
+   --  Obsolete entries, to be removed eventually (bootstrap issues!)
+
+   High_Integrity_Mode       : constant Boolean := False;
+   Long_Shifts_Inlined       : constant Boolean := False;
 
 end System;

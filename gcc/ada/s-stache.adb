@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2002 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -39,14 +39,7 @@ with System.Soft_Links;
 
 package body System.Stack_Checking is
 
-   Kilobyte               : constant Storage_Offset := 1024;
-   Default_Env_Stack_Size : constant Storage_Offset := 8000 * Kilobyte;
-   --  This size is assumed for the environment stack when no size has been
-   --  set by the runtime, and no GNAT_STACK_LIMIT environment variable was
-   --  present. The value is chosen to be just under 8 MB whic is the actual
-   --  default size on some systems including GNU/LinuxThreads, so we will get
-   --  correct storage errors on those systems without setting environment
-   --  variables.
+   Kilobyte : constant := 1024;
 
    function Set_Stack_Info (Stack : access Stack_Access) return Stack_Access;
 
@@ -94,7 +87,7 @@ package body System.Stack_Checking is
    is
       type Frame_Mark is null record;
       Frame_Location : Frame_Mark;
-      Frame_Address  : Address := Frame_Location'Address;
+      Frame_Address  : constant Address := Frame_Location'Address;
 
       My_Stack    : Stack_Access;
       Limit_Chars : System.Address;
@@ -121,7 +114,7 @@ package body System.Stack_Checking is
 
          if My_Stack.Size = 0 then
 
-            My_Stack.Size := Default_Env_Stack_Size;
+            My_Stack.Size := Storage_Offset (Default_Env_Stack_Size);
 
             --  When the environment variable GNAT_STACK_LIMIT is set,
             --  set Environment_Stack_Size to that number of kB.

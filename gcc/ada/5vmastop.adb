@@ -28,7 +28,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNAT was originally developed  by the GNAT team at  New York University. --
--- It is now maintained by Ada Core Technologies Inc (http://www.gnat.com). --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -77,45 +77,35 @@ package body System.Machine_State_Operations is
    for ICB_Hdr_Quad_Type'Size use 64;
 
    type Invo_Context_Blk_Type is record
-      --
+
+      Hdr_Quad : ICB_Hdr_Quad_Type;
       --  The first quadword contains:
-      --      o  The length of the structure in bytes (a longword field)
-      --      o  The frame flags (a 3 byte field of bits)
-      --      o  The version number (a 1 byte field)
-      --
-      Hdr_Quad             : ICB_Hdr_Quad_Type;
-      --
-      --  The address of the procedure descriptor for the procedure.
-      --
+      --    o  The length of the structure in bytes (a longword field)
+      --    o  The frame flags (a 3 byte field of bits)
+      --    o  The version number (a 1 byte field)
+
       Procedure_Descriptor : Unsigned_Quadword;
-      --
-      --  The current PC of a given procedure invocation.
-      --
-      Program_Counter      : Integer_64;
-      --
-      --  The current PS of a given procedure invocation.
-      --
-      Processor_Status     : Integer_64;
-      --
+      --  The address of the procedure descriptor for the procedure
+
+      Program_Counter : Integer_64;
+      --  The current PC of a given procedure invocation
+
+      Processor_Status : Integer_64;
+      --  The current PS of a given procedure invocation
+
+      Ireg : Unsigned_Quadword_Array (0 .. 30);
+      Freg : Unsigned_Quadword_Array (0 .. 30);
       --  The register contents areas. 31 for scalars, 31 for float.
-      --
-      Ireg                 : Unsigned_Quadword_Array (0 .. 30);
-      Freg                 : Unsigned_Quadword_Array (0 .. 30);
-      --
+
+      System_Defined : Unsigned_Quadword_Array (0 .. 1);
       --  The following is an "internal" area that's reserved for use by
       --  the operating system. It's size may vary over time.
-      --
-      System_Defined       : Unsigned_Quadword_Array (0 .. 1);
 
-      ----Component(s) below are defined as comments since they
-      ----overlap other fields
-      ----
-      ----Chfctx_Addr      : Unsigned_Quadword;
+      --  Chfctx_Addr : Unsigned_Quadword;
+      --  Defined as a comment since it overlaps other fields
 
-      --
-      --  Align to octaword.
-      --
       Filler_1             : String (1 .. 0);
+      --  Align to octaword
    end record;
 
    for Invo_Context_Blk_Type use record
@@ -127,10 +117,10 @@ package body System.Machine_State_Operations is
       Freg                 at 280 range 0 .. 1983;
       System_Defined       at 528 range 0 .. 127;
 
-      ----Component representation spec(s) below are defined as
-      ----comments since they overlap other fields
-      ----
-      ----Chfctx_Addr at 528 range 0 .. 63;
+      --  Component representation spec(s) below are defined as
+      --  comments since they overlap other fields
+
+      --  Chfctx_Addr at 528 range 0 .. 63;
 
       Filler_1 at 544 range 0 .. -1;
    end record;
@@ -165,7 +155,7 @@ package body System.Machine_State_Operations is
    procedure Enter_Handler (M : Machine_State; Handler : Handler_Loc) is
       procedure Get_Invo_Context (
          Result       : out Unsigned_Longword; -- return value
-         Invo_Handle  : in  Invo_Handle_Type;
+         Invo_Handle  : Invo_Handle_Type;
          Invo_Context : out Invo_Context_Blk_Type);
 
       pragma Interface (External, Get_Invo_Context);
@@ -178,12 +168,10 @@ package body System.Machine_State_Operations is
 
       procedure Goto_Unwind (
          Status      : out Cond_Value_Type; -- return value
-         Target_Invo : in  Address := Address_Zero;
-         Target_PC   : in  Address := Address_Zero;
-         New_R0      : in  Unsigned_Quadword
-          := Unsigned_Quadword'Null_Parameter;
-         New_R1      : in  Unsigned_Quadword
-          := Unsigned_Quadword'Null_Parameter);
+         Target_Invo : Address := Address_Zero;
+         Target_PC   : Address := Address_Zero;
+         New_R0      : Unsigned_Quadword := Unsigned_Quadword'Null_Parameter;
+         New_R1      : Unsigned_Quadword := Unsigned_Quadword'Null_Parameter);
 
       pragma Interface (External, Goto_Unwind);
 
@@ -194,7 +182,7 @@ package body System.Machine_State_Operations is
          (Value, Reference, Reference,
           Reference, Reference));
 
-      Status   : Cond_Value_Type;
+      Status : Cond_Value_Type;
 
    begin
       Get_Invo_Context (Status, To_Invo_Handle_Access (M).all, ICB);
@@ -209,6 +197,7 @@ package body System.Machine_State_Operations is
    function Fetch_Code (Loc : Code_Loc) return Code_Loc is
    begin
       --  The starting address is in the second longword pointed to by Loc.
+
       return Fetch (System.Aux_DEC."+" (Loc, 8));
    end Fetch_Code;
 
@@ -247,9 +236,11 @@ package body System.Machine_State_Operations is
 
    begin
       Get_Invo_Context (Status, To_Invo_Handle_Access (M).all, ICB);
+
       if (Status and 1) /= 1 then
          return Code_Loc (System.Null_Address);
       end if;
+
       return Code_Loc (ICB.Program_Counter - Asm_Call_Size);
    end Get_Code_Loc;
 
@@ -274,6 +265,7 @@ package body System.Machine_State_Operations is
      (M    : Machine_State;
       Info : Subprogram_Info_Type)
    is
+      pragma Warnings (Off, Info);
 
       procedure Get_Prev_Invo_Handle (
          Result : out Invo_Handle_Type; -- return value
@@ -335,7 +327,11 @@ package body System.Machine_State_Operations is
 
    procedure Set_Signal_Machine_State
      (M       : Machine_State;
-      Context : System.Address) is
+      Context : System.Address)
+   is
+      pragma Warnings (Off, M);
+      pragma Warnings (Off, Context);
+
    begin
       null;
    end Set_Signal_Machine_State;

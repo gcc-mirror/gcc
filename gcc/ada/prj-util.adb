@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2001 Free Software Foundation, Inc.            --
+--             Copyright (C) 2001-2003 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,10 +26,13 @@
 
 with Ada.Unchecked_Deallocation;
 
+with GNAT.Case_Util; use GNAT.Case_Util;
+
 with Namet;    use Namet;
-with Osint;
+with Osint;    use Osint;
 with Output;   use Output;
-with Stringt;  use Stringt;
+with Prj.Com;
+with Snames;   use Snames;
 
 package body Prj.Util is
 
@@ -43,8 +46,11 @@ package body Prj.Util is
    procedure Close (File : in out Text_File) is
    begin
       if File = null then
-         Osint.Fail ("Close attempted on an invalid Text_File");
+         Prj.Com.Fail ("Close attempted on an invalid Text_File");
       end if;
+
+      --  Close file, no need to test status, since this is a file that we
+      --  read, and the file was read successfully before we closed it.
 
       Close (File.FD);
       Free (File);
@@ -57,11 +63,196 @@ package body Prj.Util is
    function End_Of_File (File : Text_File) return Boolean is
    begin
       if File = null then
-         Osint.Fail ("End_Of_File attempted on an invalid Text_File");
+         Prj.Com.Fail ("End_Of_File attempted on an invalid Text_File");
       end if;
 
       return File.End_Of_File_Reached;
    end End_Of_File;
+
+   -------------------
+   -- Executable_Of --
+   -------------------
+
+   function Executable_Of
+     (Project : Project_Id; Main : Name_Id) return Name_Id
+   is
+      pragma Assert (Project /= No_Project);
+
+      The_Packages : constant Package_Id :=
+                       Projects.Table (Project).Decl.Packages;
+
+      Builder_Package : constant Prj.Package_Id :=
+                          Prj.Util.Value_Of
+                            (Name        => Name_Builder,
+                             In_Packages => The_Packages);
+
+      Executable : Variable_Value :=
+                     Prj.Util.Value_Of
+                       (Name                    => Main,
+                        Attribute_Or_Array_Name => Name_Executable,
+                        In_Package              => Builder_Package);
+
+      Executable_Suffix : Variable_Value :=
+                            Prj.Util.Value_Of
+                              (Name                    => Main,
+                               Attribute_Or_Array_Name =>
+                                 Name_Executable_Suffix,
+                               In_Package              => Builder_Package);
+
+      Body_Append : constant String := Get_Name_String
+                                          (Projects.Table
+                                            (Project).
+                                              Naming.Current_Body_Suffix);
+
+      Spec_Append : constant String := Get_Name_String
+                                          (Projects.Table
+                                            (Project).
+                                               Naming.Current_Spec_Suffix);
+
+   begin
+      if Builder_Package /= No_Package then
+         if Executable = Nil_Variable_Value then
+            Get_Name_String (Main);
+
+            --  Try as index the name minus the implementation suffix or minus
+            --  the specification suffix.
+
+            declare
+               Name : String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
+               Last : Positive := Name_Len;
+
+               Naming : constant Naming_Data :=
+                          Projects.Table (Project).Naming;
+
+               Spec_Suffix : constant String :=
+                               Get_Name_String (Naming.Current_Spec_Suffix);
+               Body_Suffix : constant String :=
+                               Get_Name_String (Naming.Current_Body_Suffix);
+
+               Truncated : Boolean := False;
+
+            begin
+               if Last > Body_Suffix'Length
+                  and then Name (Last - Body_Suffix'Length + 1 .. Last) =
+                                                                  Body_Suffix
+               then
+                  Truncated := True;
+                  Last := Last - Body_Suffix'Length;
+               end if;
+
+               if not Truncated
+                 and then Last > Spec_Suffix'Length
+                 and then Name (Last - Spec_Suffix'Length + 1 .. Last) =
+                                                                 Spec_Suffix
+               then
+                  Truncated := True;
+                  Last := Last - Spec_Suffix'Length;
+               end if;
+
+               if Truncated then
+                  Name_Len := Last;
+                  Name_Buffer (1 .. Name_Len) := Name (1 .. Last);
+                  Executable :=
+                    Prj.Util.Value_Of
+                      (Name                    => Name_Find,
+                       Attribute_Or_Array_Name => Name_Executable,
+                       In_Package              => Builder_Package);
+               end if;
+            end;
+         end if;
+
+         --  If we have found an Executable attribute, return its value,
+         --  possibly suffixed by the executable suffix.
+
+         if Executable /= Nil_Variable_Value
+           and then Executable.Value /= Empty_Name
+         then
+            declare
+               Exec_Suffix : String_Access := Get_Executable_Suffix;
+               Result      : Name_Id := Executable.Value;
+
+            begin
+               if Exec_Suffix'Length /= 0 then
+                  Get_Name_String (Executable.Value);
+                  Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+
+                  --  If the Executable does not end with the executable
+                  --  suffix, add it.
+
+                  if Name_Len <= Exec_Suffix'Length
+                    or else
+                      Name_Buffer
+                        (Name_Len - Exec_Suffix'Length + 1 .. Name_Len) /=
+                                                               Exec_Suffix.all
+                  then
+                     --  Get the original Executable to keep the correct
+                     --  case for systems where file names are case
+                     --  insensitive (Windows).
+
+                     Get_Name_String (Executable.Value);
+                     Name_Buffer
+                       (Name_Len + 1 .. Name_Len + Exec_Suffix'Length) :=
+                       Exec_Suffix.all;
+                     Name_Len := Name_Len + Exec_Suffix'Length;
+                     Result := Name_Find;
+                  end if;
+
+                  Free (Exec_Suffix);
+               end if;
+
+               return Result;
+            end;
+         end if;
+      end if;
+
+      Get_Name_String (Main);
+
+      --  If there is a body suffix or a spec suffix, remove this suffix,
+      --  otherwise remove any suffix ('.' followed by other characters), if
+      --  there is one.
+
+      if Name_Len > Body_Append'Length
+         and then Name_Buffer (Name_Len - Body_Append'Length + 1 .. Name_Len) =
+                    Body_Append
+      then
+         --  Found the body termination, remove it
+
+         Name_Len := Name_Len - Body_Append'Length;
+
+      elsif Name_Len > Spec_Append'Length
+         and then Name_Buffer (Name_Len - Spec_Append'Length + 1 .. Name_Len) =
+                    Spec_Append
+      then
+         --  Found the spec termination, remove it
+
+         Name_Len := Name_Len - Spec_Append'Length;
+
+      else
+         --  Remove any suffix, if there is one
+
+         Get_Name_String (Strip_Suffix (Main));
+      end if;
+
+      if Executable_Suffix /= Nil_Variable_Value
+        and then not Executable_Suffix.Default
+      then
+         --  If attribute Executable_Suffix is specified, add this suffix
+
+         declare
+            Suffix : constant String :=
+                       Get_Name_String (Executable_Suffix.Value);
+         begin
+            Name_Buffer (Name_Len + 1 .. Name_Len + Suffix'Length) := Suffix;
+            Name_Len := Name_Len + Suffix'Length;
+            return Name_Find;
+         end;
+
+      else
+         --  Otherwise, add the standard suffix for the platform, if any
+
+         return Executable_Name (Name_Find);
+      end if;
+   end Executable_Of;
 
    --------------
    -- Get_Line --
@@ -105,7 +296,7 @@ package body Prj.Util is
 
    begin
       if File = null then
-         Osint.Fail ("Get_Line attempted on an invalid Text_File");
+         Prj.Com.Fail ("Get_Line attempted on an invalid Text_File");
       end if;
 
       Last := Line'First - 1;
@@ -193,12 +384,11 @@ package body Prj.Util is
    begin
       if Variable.Kind /= Single
         or else Variable.Default
-        or else Variable.Value = No_String then
+        or else Variable.Value = No_Name
+      then
          return Default;
-
       else
-         String_To_Name_Buffer (Variable.Value);
-         return Name_Buffer (1 .. Name_Len);
+         return Get_Name_String (Variable.Value);
       end if;
    end Value_Of;
 
@@ -207,18 +397,30 @@ package body Prj.Util is
       In_Array : Array_Element_Id)
       return     Name_Id
    is
-      Current : Array_Element_Id := In_Array;
-      Element : Array_Element;
+      Current    : Array_Element_Id := In_Array;
+      Element    : Array_Element;
+      Real_Index : Name_Id := Index;
 
    begin
+      if Current = No_Array_Element then
+         return No_Name;
+      end if;
+
+      Element := Array_Elements.Table (Current);
+
+      if not Element.Index_Case_Sensitive then
+         Get_Name_String (Index);
+         To_Lower (Name_Buffer (1 .. Name_Len));
+         Real_Index := Name_Find;
+      end if;
+
       while Current /= No_Array_Element loop
          Element := Array_Elements.Table (Current);
 
-         if Index = Element.Index then
+         if Real_Index = Element.Index then
             exit when Element.Value.Kind /= Single;
-            exit when String_Length (Element.Value.Value) = 0;
-            String_To_Name_Buffer (Element.Value.Value);
-            return Name_Find;
+            exit when Element.Value.Value = Empty_String;
+            return Element.Value.Value;
          else
             Current := Element.Next;
          end if;
@@ -234,12 +436,25 @@ package body Prj.Util is
    is
       Current : Array_Element_Id := In_Array;
       Element : Array_Element;
+      Real_Index : Name_Id := Index;
 
    begin
+      if Current = No_Array_Element then
+         return Nil_Variable_Value;
+      end if;
+
+      Element := Array_Elements.Table (Current);
+
+      if not Element.Index_Case_Sensitive then
+         Get_Name_String (Index);
+         To_Lower (Name_Buffer (1 .. Name_Len));
+         Real_Index := Name_Find;
+      end if;
+
       while Current /= No_Array_Element loop
          Element := Array_Elements.Table (Current);
 
-         if Index = Element.Index then
+         if Real_Index = Element.Index then
             return Element.Value;
          else
             Current := Element.Next;
@@ -312,8 +527,8 @@ package body Prj.Util is
       In_Arrays : Array_Id)
       return      Array_Element_Id
    is
-      Current : Array_Id := In_Arrays;
-      The_Array          : Array_Data;
+      Current    : Array_Id := In_Arrays;
+      The_Array  : Array_Data;
 
    begin
       while Current /= No_Array loop
@@ -353,7 +568,7 @@ package body Prj.Util is
       In_Variables  : Variable_Id)
       return          Variable_Value
    is
-      Current : Variable_Id := In_Variables;
+      Current      : Variable_Id := In_Variables;
       The_Variable : Variable;
 
    begin
@@ -428,5 +643,4 @@ package body Prj.Util is
          Write_Str (S (First .. S'Last));
       end if;
    end Write_Str;
-
 end Prj.Util;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-1998, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -182,6 +182,13 @@ begin
          Set_Chars (Defining_Ident_Node, Chars (Identifier (Label_Node)));
          Set_Defining_Identifier (Label_Decl_Node, Defining_Ident_Node);
          Set_Label_Construct (Label_Decl_Node, Label_Node);
+
+         --  The following makes sure that Comes_From_Source is appropriately
+         --  set for the entity, depending on whether the label appeared in
+         --  the source explicitly or not.
+
+         Set_Comes_From_Source
+          (Defining_Ident_Node, Comes_From_Source (Identifier (Label_Node)));
 
          --  Now attach the implicit label declaration to the appropriate
          --  declarative region, creating a declaration list if none exists
