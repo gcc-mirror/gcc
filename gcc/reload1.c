@@ -7401,20 +7401,40 @@ delete_output_reload (insn, j, output_reload_insn)
 	return;
       if ((GET_CODE (i1) == INSN || GET_CODE (i1) == CALL_INSN)
 	  && reg_mentioned_p (reg, PATTERN (i1)))
-	return;
+	{
+	  /* If this is just a single USE with an REG_EQUAL note in front
+	     of INSN, this is no problem, because this mentions just the
+	     address that we are using here.
+	     But if there is more than one such USE, the insn might use
+	     the operand directly, or another reload might do that.
+	     This is analogous to the count_occurences check in the callers.  */
+	  int num_occurences = 0;
+
+	  while (GET_CODE (i1) == INSN && GET_CODE (PATTERN (i1)) == USE
+		 && find_reg_note (i1, REG_EQUAL, NULL_RTX))
+	    {
+	      num_occurences += rtx_equal_p (reg, XEXP (PATTERN (i1), 0)) != 0;
+	      i1 = NEXT_INSN (i1);
+	    }
+	  if (num_occurences == 1 && i1 == insn)
+	    break;
+	  return;
+	}
     }
 
-  /* If this insn will store in the pseudo again,
-     the previous store can be removed.  */
-  if (reload_out[j] == reload_in[j])
-    delete_insn (output_reload_insn);
-
-  /* See if the pseudo reg has been completely replaced
+  /* The caller has already checked that REG dies or is set in INSN.
+     It has also checked that we are optimizing, and thus some inaccurancies
+     in the debugging information are acceptable.
+     So we could just delete output_reload_insn.
+     But in some cases we can improve the debugging information without
+     sacrificing optimization - maybe even improving the code:
+     See if the pseudo reg has been completely replaced
      with reload regs.  If so, delete the store insn
      and forget we had a stack slot for the pseudo.  */
-  else if (REG_N_DEATHS (REGNO (reg)) == 1
-	   && REG_BASIC_BLOCK (REGNO (reg)) >= 0
-	   && find_regno_note (insn, REG_DEAD, REGNO (reg)))
+  if (reload_out[j] != reload_in[j]
+      && REG_N_DEATHS (REGNO (reg)) == 1
+      && REG_BASIC_BLOCK (REGNO (reg)) >= 0
+      && find_regno_note (insn, REG_DEAD, REGNO (reg)))
     {
       rtx i2;
 
@@ -7436,9 +7456,12 @@ delete_output_reload (insn, j, output_reload_insn)
 	    break;
 	  if ((GET_CODE (i2) == INSN || GET_CODE (i2) == CALL_INSN)
 	      && reg_mentioned_p (reg, PATTERN (i2)))
-	    /* Some other ref remains;
-	       we can't do anything.  */
-	    return;
+	    {
+	      /* Some other ref remains; just delete the output reload we
+		 know to be dead.  */
+	      delete_insn (output_reload_insn);
+	      return;
+	    }
 	}
 
       /* Delete the now-dead stores into this pseudo.  */
@@ -7464,6 +7487,8 @@ delete_output_reload (insn, j, output_reload_insn)
       reg_renumber[REGNO (reg)] = REGNO (reload_reg_rtx[j]);
       alter_reg (REGNO (reg), -1);
     }
+  delete_insn (output_reload_insn);
+
 }
 
 /* Output reload-insns to reload VALUE into RELOADREG.

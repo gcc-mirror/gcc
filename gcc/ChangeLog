@@ -1,3 +1,10 @@
+Fri May 15 05:35:37 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (delete_output_reload): Ignore single USE that
+	was emitted for the pseudo use of this INSN.
+	If the no reference to REG between OUTPUT_RELOAD_INSN and INSN
+	remains, we can always delete OUTPUT_RELOAD_INSN.
+
 Thu May 14 18:38:50 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* reload.c (find_reloads): Don't penalize SCRATCH output reload.
