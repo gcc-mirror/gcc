@@ -51,8 +51,21 @@ cplus_expand_constant (tree cst)
 	member = PTRMEM_CST_MEMBER (cst);
 
 	if (TREE_CODE (member) == FIELD_DECL) 
-	  /* Find the offset for the field.  */
-	  cst = fold (build_nop (type, byte_position (member)));
+	  {
+	    /* Find the offset for the field.  */
+	    cst = byte_position (member);
+	    while (!same_type_p (DECL_CONTEXT (member),
+				 TYPE_PTRMEM_CLASS_TYPE (type)))
+	      {
+		/* The MEMBER must have been nestled within an
+		   anonymous aggregate contained in TYPE.  Find the
+		   anonymous aggregate.  */
+		member = lookup_anon_field (TYPE_PTRMEM_CLASS_TYPE (type),
+					    DECL_CONTEXT (member));
+		cst = size_binop (PLUS_EXPR, cst, byte_position (member));
+	      }
+	    cst = fold (build_nop (type, cst));
+	  }
 	else
 	  {
 	    tree delta;
