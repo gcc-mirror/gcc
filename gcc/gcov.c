@@ -264,7 +264,8 @@ main (argc, argv)
   return 0;
 }
 
-#if defined __STDC__ && defined HAVE_VPRINTF
+#if defined (__STDC__) && defined (HAVE_VPRINTF)
+
 static void
 fnotice (FILE *file, char *msgid, ...)
 {
@@ -273,7 +274,9 @@ fnotice (FILE *file, char *msgid, ...)
   vfprintf (file, _(msgid), args);
   va_end (args);
 }
+
 #else
+
 static void
 fnotice (file, msgid, arg1, arg2, arg3, arg4)
      FILE *file;
