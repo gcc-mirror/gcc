@@ -3734,18 +3734,12 @@ These machine description macros help implement varargs:
 
 @table @code
 @findex EXPAND_BUILTIN_SAVEREGS
-@item EXPAND_BUILTIN_SAVEREGS (@var{args})
+@item EXPAND_BUILTIN_SAVEREGS ()
 If defined, is a C expression that produces the machine-specific code
 for a call to @code{__builtin_saveregs}.  This code will be moved to the
 very beginning of the function, before any parameter access are made.
 The return value of this function should be an RTX that contains the
 value to use as the return of @code{__builtin_saveregs}.
-
-The argument @var{args} is a @code{tree_list} containing the arguments
-that were passed to @code{__builtin_saveregs}.
-
-If this macro is not defined, the compiler will output an ordinary
-call to the library function @samp{__builtin_saveregs}.
 
 @findex SETUP_INCOMING_VARARGS
 @item SETUP_INCOMING_VARARGS (@var{args_so_far}, @var{mode}, @var{type}, @var{pretend_args_size}, @var{second_time})

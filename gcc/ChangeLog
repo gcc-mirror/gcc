@@ -1,3 +1,47 @@
+Sun Jul 25 18:15:39 1999  Richard Henderson  <rth@cygnus.com>
+
+	* builtins.c (expand_builtin_saveregs): Remove static, remove exp
+	and ignore arguments, bail if no EXPAND_BUILTIN_SAVEREGS.
+	(expand_builtin_next_arg): Accept ARGLIST not EXP.
+	(stabilize_va_list): New function.
+	(std_expand_builtin_va_start): New function.
+	(expand_builtin_va_start): New function.
+	(get_varargs_alias_set): New function.
+	(std_expand_builtin_va_arg): New function.
+	(expand_builtin_va_arg): New function.
+	(expand_builtin_va_end): New function.
+	(expand_builtin_va_copy): New function.
+	(expand_builtin): Call them.
+	* c-common.c (c_common_nodes_and_builtins): Build __builtin_va_list,
+	__builtin_{varargs_start,stdarg_start,end,copy}.
+	(build_va_arg): New function.
+	* c-common.h (CTI_PTR_TYPE, ptr_type_node): Delete.
+	(build_va_arg): Declare.
+	* c-decl.c (ptr_type_node, va_list_type_node): New.
+	* c-parse.gperf (__builtin_va_arg): New.
+	* c-parse.in (VA_ARG): New token.
+	(unary_expr): Recognize it.
+	* expr.c (expand_expr): Expand VA_ARG_EXPR.
+	* expr.h (std_expand_builtin_va_start): Declare.
+	(std_expand_builtin_va_arg): Declare.
+	(expand_builtin_va_arg): Declare.
+	(get_varargs_alias_set): Declare.
+	* tree.def (VA_ARG_EXPR): New.
+	* tree.h (BUILT_IN_VARARGS_START): New.
+	(BUILT_IN_STDARG_START, BUILT_IN_VA_END): New.
+	(ptr_type_node, va_list_type_node): Declare.
+	* tm.texi (EXPAND_BUILTIN_SAVEREGS): Kill unused ARGLIST argument.
+	* m32r.h (EXPAND_BUILTIN_SAVEREGS): Likewise.
+	* m88k.h, m88k.c: Likewise.
+	* mn10300.h, mn10300.c: Likewise.
+	* pa.h, pa.c: Likewise.
+	* rs6000.h, rs6000.c: Likewise.
+	* sh.h, sh.c: Likewise.
+	* sparc.h, sparc.c: Likewise.
+
+	* emit-rtl.c (operand_subword): Copy alias set.
+	(change_address): Likewise.
+
 Sun Jul 25 15:04:37 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (compute_frame_size): Scan all the used callee saved registers,

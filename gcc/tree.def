@@ -701,6 +701,9 @@ DEFTREECODE (PREINCREMENT_EXPR, "preincrement_expr", 'e', 2)
 DEFTREECODE (POSTDECREMENT_EXPR, "postdecrement_expr", 'e', 2)
 DEFTREECODE (POSTINCREMENT_EXPR, "postincrement_expr", 'e', 2)
 
+/* Used to implement `va_arg'.  */
+DEFTREECODE (VA_ARG_EXPR, "va_arg_expr", 'e', 1)
+
 /* Evaluate operand 1.  If and only if an exception is thrown during
    the evaluation of operand 1, evaluate operand 2.
 

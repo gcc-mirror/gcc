@@ -73,9 +73,11 @@ static void expand_builtin_return	PROTO((rtx));
 static rtx expand_builtin_classify_type	PROTO((tree));
 static rtx expand_builtin_mathfn	PROTO((tree, rtx, rtx));
 static rtx expand_builtin_constant_p	PROTO((tree));
-static rtx expand_builtin_saveregs	PROTO((tree, rtx, int));
 static rtx expand_builtin_args_info	PROTO((tree));
 static rtx expand_builtin_next_arg	PROTO((tree));
+static rtx expand_builtin_va_start	PROTO((int, tree));
+static rtx expand_builtin_va_end	PROTO((tree));
+static rtx expand_builtin_va_copy	PROTO((tree));
 static rtx expand_builtin_memcmp	PROTO((tree, tree, rtx));
 static rtx expand_builtin_strcmp	PROTO((tree, rtx));
 static rtx expand_builtin_memcpy	PROTO((tree));
@@ -1672,68 +1674,53 @@ expand_builtin_strcmp (exp, target)
 }
 #endif
 
-/* Expand expression EXP, which is a call to __builtin_saveregs,
-   generating the result in TARGET, if that's convenient.
-   IGNORE is nonzero if the value is to be ignored.  */
-static rtx
-expand_builtin_saveregs (exp, target, ignore)
-     tree exp;
-     rtx target;
-     int ignore;
+/* Expand a call to __builtin_saveregs, generating the result in TARGET,
+   if that's convenient.  */
+rtx
+expand_builtin_saveregs ()
 {
-  enum machine_mode value_mode = TYPE_MODE (TREE_TYPE (exp));
+  rtx val, seq;
 
   /* Don't do __builtin_saveregs more than once in a function.
      Save the result of the first call and reuse it.  */
   if (saveregs_value != 0)
     return saveregs_value;
-  {
-    /* When this function is called, it means that registers must be
-       saved on entry to this function.  So we migrate the
-       call to the first insn of this function.  */
-    rtx temp;
-    rtx seq;
 
-    /* Now really call the function.  `expand_call' does not call
-       expand_builtin, so there is no danger of infinite recursion here.  */
-    start_sequence ();
+  /* When this function is called, it means that registers must be
+     saved on entry to this function.  So we migrate the call to the
+     first insn of this function.  */
+
+  start_sequence ();
 
 #ifdef EXPAND_BUILTIN_SAVEREGS
-    /* Do whatever the machine needs done in this case.  */
-    temp = EXPAND_BUILTIN_SAVEREGS (arglist);
+  /* Do whatever the machine needs done in this case.  */
+  val = EXPAND_BUILTIN_SAVEREGS ();
 #else
-    /* The register where the function returns its value
-       is likely to have something else in it, such as an argument.
-       So preserve that register around the call.  */
+  /* ??? We used to try and build up a call to the out of line function,
+     guessing about what registers needed saving etc.  This became much
+     harder with __builtin_va_start, since we don't have a tree for a
+     call to __builtin_saveregs to fall back on.  There was exactly one
+     port (i860) that used this code, and I'm unconvinced it could actually
+     handle the general case.  So we no longer try to handle anything
+     weird and make the backend absorb the evil.  */
 
-    if (value_mode != VOIDmode)
-      {
-	rtx valreg = hard_libcall_value (value_mode);
-	rtx saved_valreg = gen_reg_rtx (value_mode);
-
-	emit_move_insn (saved_valreg, valreg);
-	temp = expand_call (exp, target, ignore);
-	emit_move_insn (valreg, saved_valreg);
-      }
-    else
-      /* Generate the call, putting the value in a pseudo.  */
-      temp = expand_call (exp, target, ignore);
+  error ("__builtin_saveregs not supported by this target");
+  val = const0_rtx;
 #endif
 
-    seq = get_insns ();
-    end_sequence ();
+  seq = get_insns ();
+  end_sequence ();
 
-    saveregs_value = temp;
+  saveregs_value = val;
 
-    /* Put the sequence after the NOTE that starts the function.
-       If this is inside a SEQUENCE, make the outer-level insn
-       chain current, so the code is placed at the start of the
-       function.  */
-    push_topmost_sequence ();
-    emit_insns_before (seq, NEXT_INSN (get_insns ()));
-    pop_topmost_sequence ();
-    return temp;
-  }
+  /* Put the sequence after the NOTE that starts the function.  If this
+     is inside a SEQUENCE, make the outer-level insn chain current, so
+     the code is placed at the start of the function.  */
+  push_topmost_sequence ();
+  emit_insns_after (seq, get_insns ());
+  pop_topmost_sequence ();
+
+  return val;
 }
 
 /* __builtin_args_info (N) returns word N of the arg space info
@@ -1785,18 +1772,17 @@ expand_builtin_args_info (exp)
   result = build (CONSTRUCTOR, type, NULL_TREE, nreverse (elts));
   TREE_CONSTANT (result) = 1;
   TREE_STATIC (result) = 1;
-  result = build (INDIRECT_REF, build_pointer_type (type), result);
+  result = build1 (INDIRECT_REF, build_pointer_type (type), result);
   TREE_CONSTANT (result) = 1;
   return expand_expr (result, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_BAD);
 #endif
 }
 
-/* Expand expression EXP, which is a call to __builtin_next_arg.  */
+/* Expand ARGLIST, from a call to __builtin_next_arg.  */
 static rtx
-expand_builtin_next_arg (exp)
-     tree exp;
+expand_builtin_next_arg (arglist)
+     tree arglist;
 {
-  tree arglist = TREE_OPERAND (exp, 1);
   tree fntype = TREE_TYPE (current_function_decl);
 
   if ((TYPE_ARG_TYPES (fntype) == 0
@@ -1834,6 +1820,230 @@ expand_builtin_next_arg (exp)
 		       current_function_internal_arg_pointer,
 		       current_function_arg_offset_rtx,
 		       NULL_RTX, 0, OPTAB_LIB_WIDEN);
+}
+
+/* Make it easier for the backends by protecting the valist argument
+   from multiple evaluations.  */
+
+static tree
+stabilize_va_list (valist, was_ptr)
+     tree valist;
+     int was_ptr;
+{
+  int is_array = TREE_CODE (va_list_type_node) == ARRAY_TYPE;
+
+  if (was_ptr)
+    {
+      /* If stdarg.h took the address of an array-type valist that was passed
+         as a parameter, we'll have taken the address of the parameter itself
+         rather than the array as we'd intended.  Undo this mistake.  */
+      if (is_array
+	  && TREE_CODE (valist) == ADDR_EXPR
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (valist, 0))) == POINTER_TYPE)
+	valist = TREE_OPERAND (valist, 0);
+
+      if (TREE_SIDE_EFFECTS (valist))
+	valist = save_expr (valist);
+
+      if (! is_array)
+        valist = fold (build1 (INDIRECT_REF, va_list_type_node, valist));
+    }
+  else if (TREE_SIDE_EFFECTS (valist))
+    {
+      if (is_array)
+	valist = save_expr (valist);
+      else
+	{
+          valist = build1 (ADDR_EXPR, build_pointer_type (va_list_type_node),
+			   valist);
+	  TREE_SIDE_EFFECTS (valist) = 1;
+	  valist = save_expr (valist);
+	  valist = fold (build1 (INDIRECT_REF, va_list_type_node, valist));
+	}
+    }
+
+  return valist;
+}
+
+/* The "standard" implementation of va_start: just assign `nextarg' to
+   the variable.  */
+void
+std_expand_builtin_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p ATTRIBUTE_UNUSED;
+     tree valist;
+     rtx nextarg;
+{
+  tree t;
+
+  t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
+	     make_tree (ptr_type_node, nextarg));
+  TREE_SIDE_EFFECTS (t) = 1;
+
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+}
+
+/* Expand ARGLIST, which from a call to __builtin_stdarg_va_start or
+   __builtin_varargs_va_start, depending on STDARG_P.  */
+static rtx
+expand_builtin_va_start (stdarg_p, arglist)
+     int stdarg_p;
+     tree arglist;
+{
+  rtx nextarg;
+  tree chain = arglist, valist;
+
+  if (stdarg_p)
+    nextarg = expand_builtin_next_arg (chain = TREE_CHAIN (arglist));
+  else
+    nextarg = expand_builtin_next_arg (NULL_TREE);
+
+  if (TREE_CHAIN (chain))
+    error ("too many arguments to function `va_start'");
+
+  valist = stabilize_va_list (TREE_VALUE (arglist), 1);
+
+#ifdef EXPAND_BUILTIN_VA_START
+  EXPAND_BUILTIN_VA_START (stdarg_p, valist, nextarg);
+#else
+  std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+#endif
+
+  return const0_rtx;
+}
+
+/* Allocate an alias set for use in storing and reading from the varargs
+   spill area.  */
+int
+get_varargs_alias_set ()
+{
+  static int set = -1;
+  if (set == -1)
+    set = new_alias_set ();
+  return set;
+}
+
+/* The "standard" implementation of va_arg: read the value from the
+   current (padded) address and increment by the (padded) size.  */
+rtx
+std_expand_builtin_va_arg (valist, type)
+     tree valist, type;
+{
+  tree addr_tree, t;
+  HOST_WIDE_INT align;
+  HOST_WIDE_INT rounded_size;
+  rtx addr;
+
+  /* Compute the rounded size of the type.  */
+  align = PARM_BOUNDARY / BITS_PER_UNIT;
+  rounded_size = (((TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_UNIT
+		    + align - 1) / align) * align);
+
+  /* Get AP.  */
+  addr_tree = valist;
+  if (BYTES_BIG_ENDIAN)
+    {
+      /* Small args are padded downward.  */
+
+      HOST_WIDE_INT adj;
+      adj = TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_UNIT;
+      if (rounded_size > align)
+	adj = rounded_size;
+
+      addr_tree = build (PLUS_EXPR, TREE_TYPE (addr_tree), addr_tree,
+			 build_int_2 (rounded_size - adj, 0));
+    }
+
+  addr = expand_expr (addr_tree, NULL_RTX, Pmode, EXPAND_NORMAL);
+  addr = copy_to_reg (addr);
+
+  /* Compute new value for AP.  */
+  t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
+	     build (PLUS_EXPR, TREE_TYPE (valist), valist,
+		    build_int_2 (rounded_size, 0)));
+  TREE_SIDE_EFFECTS (t) = 1;
+  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+
+  return addr;
+}
+
+/* Expand __builtin_va_arg, which is not really a builtin function, but
+   a very special sort of operator.  */
+rtx
+expand_builtin_va_arg (valist, type)
+     tree valist, type;
+{
+  rtx addr, result;
+
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (valist))
+      != TYPE_MAIN_VARIANT (va_list_type_node))
+    {
+      error ("first argument to `__builtin_va_arg' not of type `va_list'");
+      addr = const0_rtx;
+    }
+  else
+    {
+      /* Make it easier for the backends by protecting the valist argument
+         from multiple evaluations.  */
+      valist = stabilize_va_list (valist, 0);
+
+#ifdef EXPAND_BUILTIN_VA_ARG
+      addr = EXPAND_BUILTIN_VA_ARG (valist, type);
+#else
+      addr = std_expand_builtin_va_arg (valist, type);
+#endif
+    }
+
+  result = gen_rtx_MEM (TYPE_MODE (type), addr);
+  MEM_ALIAS_SET (result) = get_varargs_alias_set ();
+
+  return result;
+}
+
+/* Expand ARGLIST, from a call to __builtin_va_end.  */
+static rtx
+expand_builtin_va_end (arglist)
+     tree arglist ATTRIBUTE_UNUSED;
+{
+#ifdef EXPAND_BUILTIN_VA_END
+  tree valist = TREE_VALUE (arglist, 0);
+  valist = stabilize_va_list (valist, 0);
+  EXPAND_BUILTIN_VA_END(arglist);
+#endif
+
+  return const0_rtx;
+}
+
+/* Expand ARGLIST, from a call to __builtin_va_copy.  We do this as a 
+   builtin rather than just as an assignment in stdarg.h because of the
+   nastiness of array-type va_list types.  */
+static rtx
+expand_builtin_va_copy (arglist)
+     tree arglist;
+{
+  tree dst, src, t;
+
+  dst = TREE_VALUE (arglist);
+  src = TREE_VALUE (TREE_CHAIN (arglist));
+
+  dst = stabilize_va_list (dst, 1);
+  src = stabilize_va_list (src, 0);
+
+  if (TREE_CODE (va_list_type_node) != ARRAY_TYPE)
+    {
+      t = build (MODIFY_EXPR, va_list_type_node, dst, src);
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
+  else
+    {
+      emit_block_move (expand_expr (dst, NULL_RTX, Pmode, EXPAND_NORMAL),
+		       expand_expr (src, NULL_RTX, Pmode, EXPAND_NORMAL),
+		       expand_expr (TYPE_SIZE (va_list_type_node), NULL_RTX,
+				    VOIDmode, EXPAND_NORMAL),
+		       TYPE_ALIGN (va_list_type_node) / BITS_PER_UNIT);
+    }
+
+  return const0_rtx;
 }
 
 /* Expand a call to one of the builtin functions __builtin_frame_address or
@@ -2031,14 +2241,14 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       return const0_rtx;
 
     case BUILT_IN_SAVEREGS:
-      return expand_builtin_saveregs (exp, target, ignore);
+      return expand_builtin_saveregs ();
 
     case BUILT_IN_ARGS_INFO:
       return expand_builtin_args_info (exp);
 
       /* Return the address of the first anonymous stack arg.  */
     case BUILT_IN_NEXT_ARG:
-      return expand_builtin_next_arg (exp);
+      return expand_builtin_next_arg (arglist);
 
     case BUILT_IN_CLASSIFY_TYPE:
       return expand_builtin_classify_type (arglist);
@@ -2186,6 +2396,14 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 				TREE_VALUE (TREE_CHAIN (arglist)),
 				TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))));
       return const0_rtx;
+    case BUILT_IN_VARARGS_START:
+      return expand_builtin_va_start (0, arglist);
+    case BUILT_IN_STDARG_START:
+      return expand_builtin_va_start (1, arglist);
+    case BUILT_IN_VA_END:
+      return expand_builtin_va_end (arglist);
+    case BUILT_IN_VA_COPY:
+      return expand_builtin_va_copy (arglist);
 
     default:			/* just do library call, if unknown builtin */
       error ("built-in function `%s' not currently supported",

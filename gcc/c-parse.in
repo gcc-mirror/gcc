@@ -136,7 +136,7 @@ end ifc
 %token SIZEOF ENUM STRUCT UNION IF ELSE WHILE DO FOR SWITCH CASE DEFAULT
 %token BREAK CONTINUE RETURN GOTO ASM_KEYWORD TYPEOF ALIGNOF
 %token ATTRIBUTE EXTENSION LABEL
-%token REALPART IMAGPART
+%token REALPART IMAGPART VA_ARG
 
 /* Add precedence rules to solve dangling else s/r conflict */
 %nonassoc IF
@@ -500,6 +500,8 @@ unary_expr:
 		{ $$ = build_unary_op (REALPART_EXPR, $2, 0); }
 	| IMAGPART cast_expr %prec UNARY
 		{ $$ = build_unary_op (IMAGPART_EXPR, $2, 0); }
+	| VA_ARG '(' expr_no_commas ',' typename ')'
+		{ $$ = build_va_arg ($3, groktypename ($5)); }
 	;
 
 sizeof:

@@ -3434,6 +3434,16 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   tree long_ftype_long;
   /* Either char* or void*.  */
   tree traditional_ptr_type_node;
+  tree va_list_ptr_type_node;
+
+#ifdef BUILD_VA_LIST_TYPE
+  BUILD_VA_LIST_TYPE(va_list_type_node);
+#else
+  va_list_type_node = ptr_type_node;
+#endif
+  pushdecl (build_decl (TYPE_DECL, get_identifier ("__builtin_va_list"),
+			va_list_type_node));
+  va_list_ptr_type_node = build_pointer_type (va_list_type_node);
 
   endlink = void_list_node;
   int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
@@ -3608,6 +3618,37 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   builtin_function ("__builtin_return", void_ftype_ptr,
 		    BUILT_IN_RETURN, NULL_PTR);
 
+  /* Support for varargs.h and stdarg.h.  */
+  builtin_function ("__builtin_varargs_start",
+		    build_function_type (void_type_node,
+					 tree_cons (NULL_TREE,
+						    va_list_ptr_type_node,
+						    endlink)),
+		    BUILT_IN_VARARGS_START, NULL_PTR);
+
+  builtin_function ("__builtin_stdarg_start",
+		    build_function_type (void_type_node,
+					 tree_cons (NULL_TREE,
+						    va_list_ptr_type_node,
+						    NULL_TREE)),
+		    BUILT_IN_STDARG_START, NULL_PTR);
+
+  builtin_function ("__builtin_va_end",
+		    build_function_type (void_type_node,
+					 tree_cons (NULL_TREE,
+						    va_list_type_node,
+						    endlink)),
+		    BUILT_IN_VA_END, NULL_PTR);
+
+  builtin_function ("__builtin_va_copy",
+		    build_function_type (void_type_node,
+					 tree_cons (NULL_TREE,
+						    va_list_ptr_type_node,
+						    tree_cons (NULL_TREE,
+						      va_list_type_node,
+						      endlink))),
+		    BUILT_IN_VA_COPY, NULL_PTR);
+
   /* Currently under experimentation.  */
   builtin_function ("__builtin_memcpy", memcpy_ftype, BUILT_IN_MEMCPY,
 		    "memcpy");
@@ -3711,4 +3752,11 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN,
 		    NULL_PTR);
 #endif
+}
+
+tree
+build_va_arg (expr, type)
+     tree expr, type;
+{
+  return build1 (VA_ARG_EXPR, type, expr);
 }

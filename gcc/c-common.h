@@ -63,7 +63,6 @@ enum c_tree_index
     CTI_STRING_TYPE,
     CTI_CONST_STRING_TYPE,
 
-    CTI_PTR_TYPE,
     CTI_CONST_PTR_TYPE,
     CTI_PTRDIFF_TYPE,
 
@@ -126,7 +125,6 @@ extern tree c_global_trees[CTI_MAX];
 #define boolean_true_node		c_global_trees[CTI_BOOLEAN_TRUE]
 #define boolean_false_node		c_global_trees[CTI_BOOLEAN_FALSE]
 
-#define ptr_type_node			c_global_trees[CTI_PTR_TYPE]
 #define const_ptr_type_node		c_global_trees[CTI_CONST_PTR_TYPE]
 #define ptrdiff_type_node		c_global_trees[CTI_PTRDIFF_TYPE]
 
@@ -190,3 +188,5 @@ extern tree builtin_function			PROTO((const char *, tree, enum built_in_function
 /* Build tree nodes and builtin functions common to both C and C++ language
    frontends.  */
 extern void c_common_nodes_and_builtins		PROTO((int, int, int));
+
+extern tree build_va_arg			PROTO((tree, tree));
