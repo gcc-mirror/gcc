@@ -1,3 +1,9 @@
+2003-04-07  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*zero_extendqisi2_h8300hs): Always
+	split.
+	(a splitter): Do zero-extension via HImode.
+
 2003-04-07  James A. Morrison <ja2morri@uwaterloo.ca>
 
 	* doc/invoke.texi: Eliminate extra white-space caused by
