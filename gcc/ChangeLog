@@ -1,3 +1,7 @@
+Tue Sep 29 20:03:18 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* loop.c (get_condition): Fix typo in May 9 change.
+
 Tue Sep 29 11:11:38 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* invoke.texi (-fexceptions): Merge 2 different descriptions.

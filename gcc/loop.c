@@ -7831,7 +7831,7 @@ get_condition (jump, earliest)
 		     ))
 		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<'))
 	      && ((GET_MODE_CLASS (mode) == MODE_CC)
-		  != (GET_MODE_CLASS (inner_mode) == MODE_CC)))
+		  == (GET_MODE_CLASS (inner_mode) == MODE_CC)))
 	    x = SET_SRC (set);
 	  else if (((code == EQ
 		     || (code == GE
@@ -7849,7 +7849,7 @@ get_condition (jump, earliest)
 		     ))
 		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<'
 	           && ((GET_MODE_CLASS (mode) == MODE_CC)
-		       != (GET_MODE_CLASS (inner_mode) == MODE_CC)))
+		       == (GET_MODE_CLASS (inner_mode) == MODE_CC)))
 	    {
 	      /* We might have reversed a LT to get a GE here.  But this wasn't
 		 actually the comparison of data, so we don't flag that we
