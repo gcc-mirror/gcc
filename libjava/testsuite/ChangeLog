@@ -1,3 +1,10 @@
+2001-12-20  Andrew Haley  <aph@redhat.com>
+
+	* libjava.lang/FileHandleGcTest.out:  New file.
+	* libjava.lang/FileHandleGcTest.java: New file.
+	* libjava.lang/Array_3.out: New file.
+	* libjava.lang/Array_3.java: New file.
+
 2001-12-18  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/3417:
