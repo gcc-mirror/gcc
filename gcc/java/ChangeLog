@@ -1,3 +1,7 @@
+2005-03-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in (TEXI_JAVA_FILES): Add gcc-vers.texi.
+
 2005-03-11  Tom Tromey  <tromey@redhat.com>
 
 	* gcj.texi (Invoking gcj-dbtool): Document 'gcj-dbtool -p'.
@@ -13,7 +17,7 @@
 2005-03-09  Ranjit Mathew  <rmathew@hotmail.com>
 
 	PR java/20338
-	* decl.c (finish_method): Emit _Jv_InitClass for private static 
+	* decl.c (finish_method): Emit _Jv_InitClass for private static
 	methods inside inner classes as well.
 
 2005-03-08  Julian Brown  <julian@codesourcery.com>
@@ -26,7 +30,7 @@
 
 2005-03-07  Ranjit Mathew  <rmathew@hotmail.com>
 
-        * lang.c (flag_new_verifier): Enable by default, regardless of ABI.
+	* lang.c (flag_new_verifier): Enable by default, regardless of ABI.
 
 2005-03-07  Bryce McKinlay  <mckinlay@redhat.com>
 
@@ -86,11 +90,11 @@
 
 2005-03-04  Andrew Haley  <aph@redhat.com>
 
-        PR java/18362
-        * class.c (set_method_index): Don't set method_index if it is
-        NULL_TREE.
-        (layout_class_method): Don't complain about "non-static method foo
-        overrides static method" in the case of indirect dispatch.
+	PR java/18362
+	* class.c (set_method_index): Don't set method_index if it is
+	NULL_TREE.
+	(layout_class_method): Don't complain about "non-static method foo
+	overrides static method" in the case of indirect dispatch.
 
 2005-03-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -157,7 +161,7 @@
 	new verifier.
 	(find_local_variable): Promote all boolean types to int
 	when searching for local variable decls.
-	
+
 2005-02-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c, java-except.h, jcf-parse.c, jv-scan.c, lex.c,
@@ -322,7 +326,7 @@
 	* convert.h (convert_to_boolean, convert_to_char) : Remove.
 	* expr.c (expand_load_internal): Do type conversion if type is not
 	as required.
-	
+
 2004-12-13  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/18459
@@ -334,7 +338,7 @@
 	PR java/18811:
 	* jcf-parse.c (load_class): Remove sanity test for missing inner
 	class file.
-	
+
 2004-12-06  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (JAVA_MANFILES): Added gcj-dbtool.
@@ -376,8 +380,8 @@
 	range we're demoting.
 
 2004-12-03  Andrew Haley  <aph@redhat.com>
-	
-	PR java/18697 
+
+	PR java/18697
 	* class.c (layout_class_method): Don't fail to override a method
 	simply because it has DECL_ARTIFICIAL set.
 
@@ -479,7 +483,7 @@
 	(build_signature_for_libgcj): Move here from expr.c.
 	(add_assertion_table_entry): New function. Callback for assertion
 	hashtable traversal.
-	(emit_assertion_table): New. Take class argument, and generate 
+	(emit_assertion_table): New. Take class argument, and generate
 	assertion table DECL based on the TYPE_ASSERTIONS hashtable.
 	* decl.c (init_decl_processing): Define assertion_entry_type record.
 	Push 'assertion_table' class field instead of 'verify'.
@@ -488,7 +492,7 @@
 	(add_type_assertion): Rewritten. Take class and assertion_code
 	arguments. Add assertions to the TYPE_ASSERTIONS hashtable.
 	(can_widen_reference_to): Use new add_type_assertion() arguments.
-	* java-tree.h (java_tree_index): Add JTI_ASSERTION_ENTRY_TYPE, 
+	* java-tree.h (java_tree_index): Add JTI_ASSERTION_ENTRY_TYPE,
 	JTI_ASSERTION_TABLE_TYPE. Remove JTI_VERIFY_IDENTIFIER_NODE.
 	(verify_identifier_node): Removed.
 	(assertion_entry_type, assertion_table_type): New.
@@ -504,7 +508,7 @@
 	(vfy_note_local_type): Likewise.
 	* verify.h (vfy_is_assignable_from): Declare.
 	* verify-impl.c (is_assignable_from_slow): Remove unused function.
-	(ref_compatible): Rename arguments. Call vfy_is_assignable_from() 
+	(ref_compatible): Rename arguments. Call vfy_is_assignable_from()
 	instead of is_assignable_from_slow().
 	(types_compatible): Reinstate ref_compatible() call.
 
@@ -605,10 +609,10 @@
 
 2004-10-20  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* verify-impl.c (type_array_elementpop_raw, vfy_pop_type_t, 
+	* verify-impl.c (type_array_elementpop_raw, vfy_pop_type_t,
 	vfy_push_type_t, set_variable, add_new_state, merge_into,
 	handle_jsr_insn, branch_prepass, check_class_constant,
-	check_wide_constant, get_one_type, compute_static_types, 
+	check_wide_constant, get_one_type, compute_static_types,
 	verify_instructions_0): Clean up C99 declarations after statements.
 
 2004-10-20  Tom Tromey  <tromey@redhat.com>
@@ -653,7 +657,7 @@
 	if flag_new_verifier is set.
 	* java-tree.h (flag_new_verifier): Declare.
 	* lang.opt (fnew-verifier): New option.
-	* verify-impl.c: Work around namespace pollution by undef'ing 
+	* verify-impl.c: Work around namespace pollution by undef'ing
 	'current_class'.
 	(struct verifier_context): Make 'bytecode' const.
 	(verify_fail_pc): Pass -1 PC argument to vfy_fail.
@@ -701,7 +705,7 @@
 
 2004-10-13  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* verify-impl.c: Formatting fixes. Reformat C++-style comments to 
+	* verify-impl.c: Formatting fixes. Reformat C++-style comments to
 	C-style.
 
 2004-10-06  Bryce McKinlay  <mckinlay@redhat.com>
@@ -761,7 +765,7 @@
 	interfaces.
 	* expr.c (add_type_assertion): Don't generate assertions when
 	source type is array of Object.
-		
+
 2004-09-03  Andrew Haley  <aph@redhat.com>
 
 	* class.c (finish_class): Nullify TYPE_VERIFY_METHOD.
@@ -926,7 +930,7 @@
 	soft_lookupinterfacemethodbyname_node.
 
 	* gjavah.c (print_method_info): Final methods have vtable entries,
-	so gjavah needs to output them. 
+	so gjavah needs to output them.
 	* class.c (layout_class_method): Generate vtable entries for final
 	methods.
 	* parse.y (invocation_mode): Use INVOKE_VIRTUAL for indirect
@@ -937,17 +941,17 @@
 	* class.c (build_symbol_entry): Convert the names of constructors
 	to init_identifier_node when generating an entry for the indirect
 	dispatch table.
-	
+
 	* expr.c (build_known_method_ref): Generate indirect calls for
 	all methods marked DECL_EXTERNAL or TREE_PUBLIC.
 
 2004-05-24  Andrew Haley  <aph@redhat.com>
 
-        * expr.c (build_known_method_ref): Make sure ARRAY_REF access to
-        atable element is of the right type.
+	* expr.c (build_known_method_ref): Make sure ARRAY_REF access to
+	atable element is of the right type.
 
-        * class.c (build_static_field_ref): Cast pointer to correct type
-        for field.
+	* class.c (build_static_field_ref): Cast pointer to correct type
+	for field.
 
 2004-04-20  Bryce McKinlay  <mckinlay@redhat.com>
 
@@ -997,7 +1001,7 @@
 	(build_known_method_ref): Always use indirect dispatch via the
 	atable for static methods.
 
-	(expand_java_NEW): Break out object creation into new function,	
+	(expand_java_NEW): Break out object creation into new function,
 	java_create_object.
 
 	(can_widen_reference_to): Issue a warning to say that we need to
@@ -1067,7 +1071,7 @@
 
 	* gjavah.c (output_directory): Make static.
 	(temp_directory): Likewise.
-	
+
 2004-11-15  Tom Tromey  <tromey@redhat.com>
 
 	* decl.c (instn_ptr_type_node): Removed.
@@ -1099,7 +1103,7 @@
 	* decl.c (end_java_method): Remove duplicated code.
 
 2004-11-06  Zack Weinberg  <zack@codesourcery.com>
-            Gerald Pfeifer  <gerald@pfeifer.com>
+	    Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* lex.h (HAVE_ICONV): Undefine if we do not have HAVE_ICONV_H
 	as well.
@@ -1107,7 +1111,7 @@
 2004-11-02  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR java/17265
-	* class.c: Reinstate 2004-08-18 patch. 
+	* class.c: Reinstate 2004-08-18 patch.
 	(make_local_function_alias): Don't create an alias for extern (native)
 	functions.
 
@@ -1186,7 +1190,7 @@
 
 	* lang.c (java_tree_inlining_walk_subtrees): Last arg is struct
 	pointer_set_t* now.
-	
+
 2004-10-13  Tom Tromey  <tromey@redhat.com>
 
 	PR java/15578:

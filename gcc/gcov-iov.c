@@ -1,6 +1,6 @@
 /* Generate gcov version string from version.c. See gcov-io.h for
    description of how the version string is generated.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
 
 This file is part of GCC.
@@ -20,46 +20,50 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-#include "bconfig.h"
-#include "system.h"
-#include "coretypes.h"
-#include "tm.h"
-#include "version.c" /* We want the actual string.  */
+#include <stdio.h>
+#include <stdlib.h>
 
-int main (int, char **);
+/* Command line arguments are the base GCC version and the development
+   phase (the latter may be an empty string).  */
 
 int
-main (int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED)
+main (int argc, char **argv)
 {
-  unsigned version = 0;
+  unsigned int version = 0;
   unsigned char v[4];
-  unsigned ix;
-  char const *ptr = version_string;
-  unsigned major, minor = 0;
-  char s = 0;
+  unsigned int ix;
+  unsigned long major;
+  unsigned long minor = 0;
+  char phase = 0;
+  char *ptr;
 
-  major = atoi (ptr);
-  while (*ptr && *ptr != '.')
-    ptr++;
-  if (*ptr)
-    minor = atoi (ptr + 1);
-  while (*ptr)
-    if (*ptr++ == '(')
-      {
-	s = *ptr;
-	break;
-      }
+  if (argc != 3)
+    {
+      fprintf (stderr, "usage: %s 'version' 'phase'\n", argv[0]);
+      return 1;
+    }
+
+  ptr = argv[1];
+  major = strtoul (ptr, &ptr, 10);
+
+  if (*ptr == '.')
+    minor = strtoul (ptr + 1, 0, 10);
+
+  phase = argv[2][0];
+  if (phase == '\0')
+    phase = '*';
 
   v[0] = (major < 10 ? '0' : 'A' - 10) + major;
   v[1] = (minor / 10) + '0';
   v[2] = (minor % 10) + '0';
-  v[3] = s ? s : '*';
+  v[3] = phase;
 
   for (ix = 0; ix != 4; ix++)
     version = (version << 8) | v[ix];
 
   printf ("/* Generated automatically by the program `%s'\n", argv[0]);
-  printf ("   from `%s'.  */\n", version_string);
+  printf ("   from `%s (%lu %lu) and %s (%c)'.  */\n",
+	  argv[1], major, minor, argv[2], phase);
   printf ("\n");
   printf ("#define GCOV_VERSION ((gcov_unsigned_t)%#08x)  /* %.4s */\n",
 	  version, v);

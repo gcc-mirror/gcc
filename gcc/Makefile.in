@@ -427,10 +427,6 @@ GTHREAD_FLAGS=@gthread_flags@
 extra_modes_file=@extra_modes_file@
 extra_opt_files=@extra_opt_files@
 host_hook_obj=@out_host_hook_obj@
-# Be prepared for gcc2 merges.
-gcc_version=@gcc_version@
-gcc_version_trigger=@gcc_version_trigger@
-version=$(gcc_version)
 
 # ------------------------
 # Installation directories
@@ -688,6 +684,27 @@ TM_P_H    = tm_p.h    $(tm_p_file_list)
 GTM_H     = tm.h      $(tm_file_list)
 TM_H      = $(GTM_H) insn-constants.h insn-flags.h
 
+# Variables for version information.
+BASEVER   = $(srcdir)/BASE-VER  # 4.x.y
+DEVPHASE  = $(srcdir)/DEV-PHASE # experimental, prerelease, ""
+DATESTAMP = $(srcdir)/DATESTAMP # YYYYMMDD or empty
+
+BASEVER_c   = $(shell cat $(BASEVER))
+DEVPHASE_c  = $(shell cat $(DEVPHASE))
+DATESTAMP_c = $(shell cat $(DATESTAMP))
+
+version     = $(BASEVER_c)
+
+# For use in version.c - double quoted strings, with appropriate
+# surrounding punctuation and spaces, and with the datestamp and
+# development phase collapsed to the empty string in release mode
+# (i.e. if DEVPHASE_c is empty).  The space immediately after the
+# comma in the $(if ...) constructs is significant - do not remove it.
+BASEVER_s   = "\"$(BASEVER_c)\""
+DEVPHASE_s  = "\"$(if $(DEVPHASE_c), ($(DEVPHASE_c)))\""
+DATESTAMP_s = "\"$(if $(DEVPHASE_c), $(DATESTAMP_c))\""
+
+# Shorthand variables for dependency lists.
 TARGET_H = $(TM_H) target.h insn-modes.h
 MACHMODE_H = machmode.h mode-classes.def insn-modes.h
 HOOKS_H = hooks.h $(MACHMODE_H)
@@ -1042,7 +1059,7 @@ endif
 # Rebuilding this configuration
 # -----------------------------
 
-Makefile: config.status $(srcdir)/Makefile.in $(srcdir)/version.c $(LANG_MAKEFRAGS)
+Makefile: config.status $(srcdir)/Makefile.in $(LANG_MAKEFRAGS)
 	LANGUAGES="$(CONFIG_LANGUAGES)" \
 	CONFIG_HEADERS= \
 	CONFIG_SHELL="$(SHELL)" \
@@ -1119,7 +1136,7 @@ cstamp-h: config.in config.status
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
 # a target to build even if it is up-to-date.  So we must verify that
 # config.status does not exist before failing.
-config.status: $(srcdir)/configure $(srcdir)/config.gcc version.c
+config.status: $(srcdir)/configure $(srcdir)/config.gcc
 	@if [ ! -f config.status ] ; then \
 	  echo You must configure gcc.  Look at http://gcc.gnu.org/install/ for details.; \
 	  false; \
@@ -1553,7 +1570,10 @@ options.o: options.c options.h opts.h intl.h
 
 dumpvers: dumpvers.c
 
-version.o: version.c version.h
+version.o: version.c version.h $(DATESTAMP) $(BASEVER) $(DEVPHASE)
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	-DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
+	-DDEVPHASE=$(DEVPHASE_s) -c $(srcdir)/version.c $(OUTPUT_OPTION)
 
 gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	varray.h $(HASHTAB_H) $(SPLAY_TREE_H) bitmap.h $(TREE_H) $(RTL_H) \
@@ -1575,9 +1595,10 @@ ggc-none.o: ggc-none.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H)
 stringpool.o: stringpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(TREE_H) $(GGC_H) gt-stringpool.h
 
-prefix.o: prefix.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) Makefile prefix.h
+prefix.o: prefix.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) prefix.h \
+	Makefile $(BASEVER)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	-DPREFIX=\"$(prefix)\" \
+	-DPREFIX=\"$(prefix)\" -DBASEVER=$(BASEVER_s) \
 	  -c $(srcdir)/prefix.c $(OUTPUT_OPTION)
 
 convert.o: convert.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(FLAGS_H) \
@@ -2765,15 +2786,16 @@ test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 	-rm -f tmp-proto.[cs] tmp-proto$(objext)
 
 # gcov-iov.c is run on the build machine to generate gcov-iov.h from version.c
-build/gcov-iov.o: gcov-iov.c version.c $(BCONFIG_H) coretypes.h $(GTM_H) \
+build/gcov-iov.o: gcov-iov.c $(BCONFIG_H) coretypes.h $(GTM_H) \
   $(SYSTEM_H) coretypes.h $(TM_H)
  
 build/gcov-iov$(build_exeext): build/gcov-iov.o
 	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) build/gcov-iov.o -o $@
 
 gcov-iov.h: s-iov
-s-iov: build/gcov-iov$(build_exeext)
-	build/gcov-iov$(build_exeext) > tmp-gcov-iov.h
+s-iov: build/gcov-iov$(build_exeext) $(BASEVER) $(DEVPHASE)
+	build/gcov-iov$(build_exeext) '$(BASEVER_c)' '$(DEVPHASE_c)' \
+	    > tmp-gcov-iov.h
 	$(SHELL) $(srcdir)/../move-if-change tmp-gcov-iov.h gcov-iov.h
 	$(STAMP) s-iov
 
@@ -2970,24 +2992,37 @@ info: $(INFOFILES) lang.info @GENINSRC@ srcinfo lang.srcinfo
 srcinfo: $(INFOFILES)
 	-cp -p $^ $(srcdir)/doc
 
-TEXI_CPP_FILES = cpp.texi fdl.texi cppenv.texi cppopts.texi
+TEXI_CPP_FILES = cpp.texi fdl.texi cppenv.texi cppopts.texi		\
+	 gcc-common.texi gcc-vers.texi
 
-TEXI_GCC_FILES = gcc.texi gcc-common.texi frontends.texi standards.texi \
-	 invoke.texi extend.texi md.texi objc.texi gcov.texi trouble.texi \
-	 bugreport.texi service.texi contribute.texi compat.texi funding.texi \
-	 gnu.texi gpl.texi fdl.texi contrib.texi cppenv.texi cppopts.texi \
+TEXI_GCC_FILES = gcc.texi gcc-common.texi gcc-vers.texi frontends.texi	\
+	 standards.texi invoke.texi extend.texi md.texi objc.texi	\
+	 gcov.texi trouble.texi bugreport.texi service.texi		\
+	 contribute.texi compat.texi funding.texi gnu.texi gpl.texi	\
+	 fdl.texi contrib.texi cppenv.texi cppopts.texi			\
 	 implement-c.texi
 
-TEXI_GCCINT_FILES = gccint.texi gcc-common.texi contribute.texi makefile.texi \
-	 configterms.texi portability.texi interface.texi passes.texi \
-	 c-tree.texi rtl.texi md.texi tm.texi hostconfig.texi fragments.texi \
-	 configfiles.texi collect2.texi headerdirs.texi funding.texi gnu.texi \
-	 gpl.texi fdl.texi contrib.texi languages.texi sourcebuild.texi \
-	 gty.texi libgcc.texi cfg.texi tree-ssa.texi options.texi
+TEXI_GCCINT_FILES = gccint.texi gcc-common.texi gcc-vers.texi		\
+	 contribute.texi makefile.texi configterms.texi options.texi	\
+	 portability.texi interface.texi passes.texi c-tree.texi	\
+	 rtl.texi md.texi tm.texi hostconfig.texi fragments.texi	\
+	 configfiles.texi collect2.texi headerdirs.texi funding.texi	\
+	 gnu.texi gpl.texi fdl.texi contrib.texi languages.texi		\
+	 sourcebuild.texi gty.texi libgcc.texi cfg.texi tree-ssa.texi
 
 TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi
 
-TEXI_CPPINT_FILES = cppinternals.texi
+TEXI_CPPINT_FILES = cppinternals.texi gcc-common.texi gcc-vers.texi
+
+# gcc-vers.texi is generated from the version files.
+gcc-vers.texi: $(BASEVER) $(DEVPHASE)
+	(echo "@set version-GCC $(BASEVER_c)"; \
+	 if [ "$(DEVPHASE_c)" = "experimental" ]; \
+	 then echo "@set DEVELOPMENT"; \
+	 else echo "@clear DEVELOPMENT"; \
+	 fi) > $@T
+	mv -f $@T $@
+
 
 # The *.1, *.7, *.info, and *.dvi files are being generated from implicit
 # patterns.  To use them, put each of the specific targets with its
@@ -3000,7 +3035,7 @@ doc/cppinternals.info: $(TEXI_CPPINT_FILES)
 
 doc/%.info: %.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
-		$(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir) \
+		$(MAKEINFO) $(MAKEINFOFLAGS) -I . -I $(docdir) \
 			-I $(docdir)/include -o $@ $<; \
 	fi
 
@@ -3025,11 +3060,11 @@ dvi:: doc/gcc.dvi doc/gccint.dvi doc/gccinstall.dvi doc/cpp.dvi \
       doc/cppinternals.dvi
 
 doc/%.dvi: %.texi
-	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+	$(TEXI2DVI) -I . -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
 # Duplicate entry to handle renaming of gccinstall.dvi
 doc/gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
-	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+	$(TEXI2DVI) -I . -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
 
 html:: $(htmldir)/cpp/index.html $(htmldir)/gcc/index.html \
        $(htmldir)/gccinstall/index.html $(htmldir)/gccint/index.html \
@@ -4185,8 +4220,6 @@ risky-stage4: stage4
 XGETTEXT = @XGETTEXT@
 GMSGFMT = @GMSGFMT@
 MSGMERGE = msgmerge
-
-PACKAGE = @PACKAGE@
 CATALOGS = @CATALOGS@
 
 .PHONY: build- install- build-po install-po update-po
@@ -4210,13 +4243,13 @@ update-po: $(CATALOGS:.gmo=.pox)
 
 # The new .po has to be gone over by hand, so we deposit it into
 # build/po with a different extension.
-# If build/po/$(PACKAGE).pot exists, use it (it was just created),
+# If build/po/gcc.pot exists, use it (it was just created),
 # else use the one in srcdir.
 .po.pox:
 	-test -d po || mkdir po
-	$(MSGMERGE) $< `if test -f po/$(PACKAGE).pot; \
-			then echo po/$(PACKAGE).pot; \
-			else echo $(srcdir)/po/$(PACKAGE).pot; fi` -o $@
+	$(MSGMERGE) $< `if test -f po/gcc.pot; \
+			then echo po/gcc.pot; \
+			else echo $(srcdir)/po/gcc.pot; fi` -o $@
 
 # This rule has to look for .gmo modules in both srcdir and
 # the cwd, and has to check that we actually have a catalog
@@ -4233,8 +4266,8 @@ install-po:
 	  dir=$(localedir)/$$lang/LC_MESSAGES; \
 	  echo $(mkinstalldirs) $(DESTDIR)$$dir; \
 	  $(mkinstalldirs) $(DESTDIR)$$dir || exit 1; \
-	  echo $(INSTALL_DATA) $$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
-	  $(INSTALL_DATA) $$cat $(DESTDIR)$$dir/$(PACKAGE).mo; \
+	  echo $(INSTALL_DATA) $$cat $(DESTDIR)$$dir/gcc.mo; \
+	  $(INSTALL_DATA) $$cat $(DESTDIR)$$dir/gcc.mo; \
 	done
 
 # Rule for regenerating the message template (gcc.pot).
@@ -4244,9 +4277,9 @@ install-po:
 # Note that exgettext has an awk script embedded in it which requires a
 # fairly modern (POSIX-compliant) awk.
 # The .pot file is left in the build directory.
-$(PACKAGE).pot: po/$(PACKAGE).pot
-po/$(PACKAGE).pot: force options.c
+gcc.pot: po/gcc.pot
+po/gcc.pot: force options.c
 	-test -d po || mkdir po
 	$(MAKE) srcextra
 	AWK=$(AWK) $(SHELL) $(srcdir)/po/exgettext \
-		$(XGETTEXT) $(PACKAGE) $(srcdir)
+		$(XGETTEXT) gcc $(srcdir)

@@ -1,3 +1,42 @@
+2005-03-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* BASE-VER, DATESTAMP, DEV-PHASE: New files.
+	* Makefile.in (gcc_version, gcc_version_trigger, ): Delete.
+	(BASEVER, DEVPHASE, DATESTAMP, BASEVER_c, DEVPHASE_c, DATESTAMP_c)
+	(BASEVER_s, DEVPHASE_s, DATESTAMP_s): New variables.
+	(version): Define using $(BASEVER_c).
+	(Makefile, config.status, build/gcov-iov.o): No longer depends on
+	version.c.
+	(version.o): Depend on version files; add custom generation command.
+	(prefix.o): Define BASEVER on command line.
+	(s-iov): Depend on version files; adjust command.
+	(TEXI_CPP_FILES, TEX_IGCC_FILES, TEXI_GCCINT_FILES, TEXI_CPPINT_FILES):
+	Add gcc-vers.texi.
+	(gcc-vers.texi): New rule.
+	(doc/%.info, doc/%.dvi): Add -I . to command line.
+	(doc/gccinstall.dvi): Likewise.
+	(PACKAGE): Delete.  All uses replaced with "gcc".
+	* aclocal.m4: Do not include gcc-version.m4.
+	* configure.ac: Do not invoke TL_AC_GCC_VERSION.
+	Do not AC_SUBST nor AC_DEFINE PACKAGE or VERSION.
+	Set is_release based on contents of DEV-PHASE.
+	Set gcc_version based on contents of BASE-VER.
+	Define WIN32_REGISTRY_KEY only if the user overrode the default.
+	* config.in, configure: Regenerate.
+	* gccbug.in: Determine version of GCC in use at runtime.
+	* gcov-iov.c: Get version number and development phase from
+	command line, not by including version.c.
+	* intl.c: Replace all uses of PACKAGE with "gcc".
+	* libada-mk.in: Delete unused "gcc_version" variable.
+	* prefix.c: Default WIN32_REGISTRY_KEY to BASEVER.
+	* version.c: (VERSUFFIX): New hook for redistributors; adjust
+	commentary to match.
+	(version_string): Put together from pieces.
+	* config/alpha/x-vms: Do not use $(gcc_version).
+	* config/i386/t-nwld: Likewise.
+	* doc/include/gcc-common.texi: Include gcc-vers.texi for
+	version-GCC and DEVELOPMENT.
+
 2005-03-15  Roger Sayle  <roger@eyesopen.com>
 
 	PR tree-optimization/17454
@@ -132,7 +171,7 @@
 
 	* config/mips/mips.h (DWARF_CIE_DATA_ALIGNMENT): Change for
 	STACK_GROWS_DOWNWARD.
-	
+
 2005-03-14  Roger Sayle  <roger@eyesopen.com>
 
 	* real.h (struct real_format): Split the signbit field into two
@@ -162,7 +201,7 @@
 	subvars.
 	* tree-tailcall.c (suitable_for_tail_opt_p): Look at STRUCT_FIELD
 	tags too.
-	
+
 2005-03-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/cppopts.texi (-fexec-charset): Add concept index entry.
@@ -175,7 +214,7 @@
 2005-03-14  Devang Patel  <dpatel@apple.com>
 
 	* doc/invoke.texi: Add reference to Visibility document.
-	
+
 2005-03-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config.gcc (mips*-*-*): Rename MASK_SPLIT_ADDRS to
@@ -239,7 +278,7 @@
 	* opth-gen.awk: Declare target_flags.  Declare MASK_* and TARGET_*
 	macros for the "Mask" and "InverseMask" options.
 	* opts.h (cl_var_cond): New enum.
-	(cl_option): Replace the "has_set_value" and "set_value" fields with 
+	(cl_option): Replace the "has_set_value" and "set_value" fields with
 	"var_cond" and "var_value".
 	(CL_TARGET): New macro.
 	(option_enabled, print_filtered_help): Declare.
@@ -343,7 +382,7 @@
 	(TARGET_USE_HIMODE_FIOP): New.
 	(x86_use_simode_fiop): Rename from x86_use_fiop.
 	(TARGET_USE_SIMODE_FIOP): Rename from TARGET_USE_FIOP.
-	
+
 	* config/i386/i386.md (X87MODEI12): New mode macro define.
 	(*cmpfp_<mode>): Rename from *cmpfp_si.  Use X87MODEI12 mode macro
 	to implement x87 FP compare with HImode input operands.
@@ -515,7 +554,7 @@
 
 	* expmed.c (expand_mult): Use synthetic multiplication sequences for
 	more classes of DImode multiplication by constant.  Allow both
-	multiplication by small negative constants (by performing a 
+	multiplication by small negative constants (by performing a
 	multiplication by a positive constant and negating the result) and
 	multiplications by large powers of two, by using a left shift.
 
@@ -597,7 +636,7 @@
 	Don't mark variables non-addressable if they still have
 	addressable subvars.
 	Also mark subvars addressable when the real variable is marked
-	addressable. 
+	addressable.
 	(add_pointed_to_var): Try to prune the pointed-to set by only
 	pointing to subvars when possible.
 	Otherwise, make sure we set addresses_needed and pt_vars to
@@ -628,13 +667,13 @@
 	(STMT_VINFO_SUBVARS): New macro.
 
 	* common.opts: add flag_tree_salias.
-	
+
 	* opts.c (decode_options): flag_tree_salias defaults to on.
-	
+
 	* doc/invoke.texi: Document fdump-tree-svars and -ftree-salias.
 
 	* doc/tree-ssa.texi: Document structural alias analysis.
-	
+
 2005-03-12  Steven Bosscher  <stevenb@suse.de>
 
 	* tree-cfg.c (make_goto_expr_edges): Don't use error_mark_node.
@@ -690,7 +729,7 @@
 
 2005-03-12  Geoffrey Keating  <geoffk@apple.com>
 
-	* c-lex.c (c_lex_with_flags): Add parameter to call to 
+	* c-lex.c (c_lex_with_flags): Add parameter to call to
 	cpp_spell_token.
 
 2005-03-11  Per Bothner  <per@bothner.com>
@@ -773,7 +812,7 @@
 	ATTR_NOTHROW_NONNULL_1_4, ATTR_CONST_NOTHROW_NONNULL_1,
 	ATTR_PURE_NOTHROW_NONNULL_1, ATTR_PURE_NOTHROW_NONNULL_1_2,
 	ATTR_MALLOC_NOTHROW_NONNULL_1): Delete.
-	
+
 	* builtins.def: Use the non-specific "nonnull" attibute lists.
 
 2005-03-11  Zdenek Dvorak  <dvorakz@suse.cz>
@@ -1092,17 +1131,17 @@
 
 2005-03-08  Fariborz Jahanian <fjahanian@apple.com>
 
-	* config/rs6000/rs6000.c (invalid_arg_for_unprototyped_fn): 
+	* config/rs6000/rs6000.c (invalid_arg_for_unprototyped_fn):
 	Define the real function for ppc-darwin.
 	* c-typeck.c (convert_arguments): Check for target-specific
 	invalid argument call to unprototyped function.
-	* target-def.h (TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN): 
+	* target-def.h (TARGET_INVALID_ARG_FOR_UNPROTOTYPED_FN):
 	New Macro.
-	* target.h (invalid_arg_for_unprototyped_fn): New field 
+	* target.h (invalid_arg_for_unprototyped_fn): New field
 	in struct calls.
-	* targhooks.c (hook_invalid_arg_for_unprototyped_fn): New 
+	* targhooks.c (hook_invalid_arg_for_unprototyped_fn): New
 	default target hook.
-	* targhooks.h (hook_invalid_arg_for_unprototyped_fn): 
+	* targhooks.h (hook_invalid_arg_for_unprototyped_fn):
 	Declare.
 
 2005-03-08  Kazu Hirata  <kazu@cs.umass.edu>
@@ -1166,9 +1205,9 @@
 	(alpha_v8qi_u, alpha_v8qi_s, alpha_v4hi_u, alpha_v4hi_s): New.
 	(alpha_init_builtins): Init them.  Set nothrow and const attributes
 	on builtins.
-	(alpha_fold_builtin_cmpbge, alpha_fold_builtin_zapnot, 
-	alpha_fold_builtin_extxx, alpha_fold_builtin_insxx, 
-	alpha_fold_builtin_mskxx, alpha_fold_builtin_umulh, 
+	(alpha_fold_builtin_cmpbge, alpha_fold_builtin_zapnot,
+	alpha_fold_builtin_extxx, alpha_fold_builtin_insxx,
+	alpha_fold_builtin_mskxx, alpha_fold_builtin_umulh,
 	alpha_fold_vector_minmax, alpha_fold_builtin_perr,
 	alpha_fold_builtin_pklb, alpha_fold_builtin_pkwb,
 	alpha_fold_builtin_unpkbl, alpha_fold_builtin_unpkbw,
@@ -1226,7 +1265,7 @@
 	* tree.h (DECL_IS_BUILTIN): Reverted my patch from earlier today.
 
 2005-03-06  Andrew Pinski  <pinskia@physics.uc.edu>
-	
+
 	PR tree-opt/17671
 	* tree-ssa-phiopt.c (tree_ssa_phiopt): Rewrite so we base the
 	bbs on the COND_EXPR instead of the PHI_NODEs.
@@ -1281,7 +1320,7 @@
 	* tree-cfg.c (remove_bb): If USE_MAPPED_LOCATION, change type of
 	local variable loc. Change logic appropriately.
 	* tree-vect-transform.c (vect_finish_stmt_generation): Use
-	EXPR_LOCATION rather than EXPR_LOCUS if USE_MAPPED_LOCATION.	
+	EXPR_LOCATION rather than EXPR_LOCUS if USE_MAPPED_LOCATION.
 	* c-parser.c (c_parser_for_statement): Initialize loc variable.
 	* tree.h (DECL_IS_BUILTIN): Temporarily revert definition of
 	DECL_IS_BUILTIN in the USE_MAPPED_LOCATION because of jc1 issues.
@@ -1476,7 +1515,7 @@
 	(ASM_SPEC): Pass down -msym32 and -mno-sym32.
 
 2005-03-04  Devang Patel  <dpatel@apple.com>
-	
+
 	PR tree-optimization/18815
 	* tree-if-conv.c (combine_blocks): Adjust loop header edges for
 	loops with zero exit edges.
@@ -1484,7 +1523,7 @@
 2005-03-04  Devang Patel  <dpatel@apple.com>
 
 	* doc/invoke.texi: Remove reference to webpage that does not exist.
-	
+
 2005-03-04  John David Anglin  <dave.danglin@nrc-cnrc.gc.ca>
 	    Joseph S. Myers  <joseph@codesourcery.com>
 
@@ -1539,7 +1578,7 @@
 2005-03-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c (fold_ternary): Unroll the "for" loop to
-	extract operands.  
+	extract operands.
 
 2005-03-04  Andrew Haley  <aph@redhat.com>
 
@@ -1604,13 +1643,13 @@
 2005-03-03  Daniel Berlin <dberlin@dbrelin.org>
 
 	Fix PR debug/20253
-	
+
 	* c-opts.c (c_common_parse_file): Call start_source_file
 	and end_source_file at the approriate times.
 
 	* dwarf2out.c (dwarf2out_finish): Don't auto-end
 	the main file, it will be done for us now.
-	
+
 2005-03-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c (fold_ternary): New.
@@ -1726,15 +1765,15 @@
 	* config/darwin8.h (LIB_SPEC): Switch -lmx and -lSystem.
 
 2005-03-02  Devang Patel  <dpatel@apple.com>
-	
+
 	Undo PR tree-optimization/18815 fix.
-	
+
 2005-03-02  Devang Patel  <dpatel@apple.com>
 
 	PR tree-optimization/18815
 	* tree-if-conv.c (combine_blocks): Adjust loop header edges for
 	loops with zero exit edges.
-	
+
 2005-03-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfg.c (connect_src, connect_dest, disconnect_src,

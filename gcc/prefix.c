@@ -124,6 +124,10 @@ save_string (const char *s, int len)
 
 #if defined(_WIN32) && defined(ENABLE_WIN32_REGISTRY)
 
+#ifndef WIN32_REGISTRY_KEY
+# define WIN32_REGISTRY_KEY BASEVER
+#endif
+
 /* Look up "key" in the registry, as above.  */
 
 static char *

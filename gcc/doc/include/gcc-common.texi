@@ -2,14 +2,13 @@
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
-@c Common values used in the GCC manuals:
+@c Version number and development mode.
+@c version-GCC is @set to the base GCC version number.
+@c DEVELOPMENT is @set for an in-development version, @clear for a
+@c release version (corresponding to ``experimental''/anything else
+@c in gcc/DEV-PHASE).
 
-@set version-GCC 4.1.0
-
-@c DEVELOPMENT is set to indicate an in-development version,
-@c as compared to a release version.  When making a release
-@c branch, clear this.
-@set DEVELOPMENT
+@include gcc-vers.texi
 
 @c Common macros to support generating man pages:
 

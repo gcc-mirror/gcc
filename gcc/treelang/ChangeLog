@@ -1,3 +1,7 @@
+2005-03-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in (TEXI_TREELANG_FILES): Add gcc-vers.texi.
+
 2005-03-06  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR other/20326
@@ -61,7 +65,7 @@
 	rest_of_decl_compilation on static variables.
 	(pushdecl): Put DECL_EXPRs into the current BIND_EXPR for automatic
 	variables.
-	
+
 2005-02-24  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR other/19897

@@ -30,9 +30,6 @@ AC_INIT
 AC_CONFIG_SRCDIR(tree.c)
 AC_CONFIG_HEADER(auto-host.h:config.in)
 
-#Set to 1 on a release branch
-is_release=
-
 # Determine the host, build, and target systems
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
@@ -100,8 +97,6 @@ AC_MSG_ERROR([
 *** and run configure again.])
 fi
 
-TL_AC_GCC_VERSION([$srcdir/..])
-
 # -----------
 # Directories
 # -----------
@@ -139,7 +134,7 @@ if test x${gcc_gxx_include_dir} = x; then
   if test x${enable_version_specific_runtime_libs} = xyes; then
     gcc_gxx_include_dir='${libsubdir}/include/c++'
   else
-    libstdcxx_incdir=c++/${gcc_version}
+    libstdcxx_incdir='c++/$(version)'
 changequote(<<, >>)dnl
     gcc_gxx_include_dir="\$(libsubdir)/\$(unlibsubdir)/..\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/[^/]*|/..|g'\`/include/"${libstdcxx_incdir}
 changequote([, ])dnl
@@ -375,6 +370,10 @@ fi
 AC_SUBST(warn_cflags)
 
 # Enable -Werror in bootstrap stage2 and later.
+is_release=
+if test x"`cat $srcdir/DEV-PHASE`" != xexperimental; then
+  is_release=yes
+fi
 AC_ARG_ENABLE(werror, 
 [  --enable-werror         enable -Werror in bootstrap stage2 and later], [],
 [if test x$is_release = x ; then
@@ -1418,13 +1417,6 @@ EOF
 changequote([,])dnl
 
 # Internationalization
-PACKAGE=gcc
-VERSION="$gcc_version"
-AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE",
-  [The name of this program for internationalization purposes.])
-AC_SUBST(PACKAGE)
-AC_SUBST(VERSION)
-
 ZW_GNU_GETTEXT_SISTER_DIR
 
 # If LIBINTL contains LIBICONV, then clear LIBICONV so we don't get
@@ -1442,42 +1434,28 @@ AC_ARG_ENABLE(win32-registry,
   --enable-win32-registry=KEY
                           use KEY instead of GCC version as the last portion
                           of the registry key],,)
+
 case $host_os in
-	win32 | pe | cygwin* | mingw32* | uwin*)
-AC_MSG_CHECKING(whether windows registry support is requested)
-if test "x$enable_win32_registry" != xno; then
-  AC_DEFINE(ENABLE_WIN32_REGISTRY, 1,
-[Define to 1 if installation paths should be looked up in Windows32
-   Registry. Ignored on non windows32 hosts.])
-  AC_MSG_RESULT(yes)
-  AC_SEARCH_LIBS(RegOpenKeyExA, advapi32)
-else
-  AC_MSG_RESULT(no)
-fi
+  win32 | pe | cygwin* | mingw32* | uwin*)
+    if test "x$enable_win32_registry" != xno; then
+      AC_SEARCH_LIBS(RegOpenKeyExA, advapi32,, [enable_win32_registry=no])
+    fi
 
-# Check if user specified a different registry key.
-case "x${enable_win32_registry}" in
-x | xyes)
-  # default.
-  gcc_cv_win32_registry_key="$VERSION"
-  ;;
-xno)
-  # no registry lookup.
-  gcc_cv_win32_registry_key=''
-  ;;
-*)
-  # user-specified key.
-  gcc_cv_win32_registry_key="$enable_win32_registry"
-  ;;
-esac
+    if test "x$enable_win32_registry" != xno; then
+      AC_DEFINE(ENABLE_WIN32_REGISTRY, 1,
+  [Define to 1 if installation paths should be looked up in the Windows
+   Registry. Ignored on non-Windows hosts.])
 
-if test "x$enable_win32_registry" != xno; then
-  AC_MSG_CHECKING(registry key on windows hosts)
-  AC_DEFINE_UNQUOTED(WIN32_REGISTRY_KEY, "$gcc_cv_win32_registry_key",
-	[Define to be the last portion of registry key on windows hosts.])
-  AC_MSG_RESULT($gcc_cv_win32_registry_key)
-fi
-;;
+      if test "x$enable_win32_registry" != xyes \
+         && test "x$enable_win32_registry" != x; then
+	AC_DEFINE_UNQUOTED(WIN32_REGISTRY_KEY, "$enable_win32_registry",
+  [Define to be the last component of the Windows registry key under which
+   to look for installation paths.  The full key used will be 
+   HKEY_LOCAL_MACHINE/SOFTWARE/Free Software Foundation/{WIN32_REGISTRY_KEY}.
+   The default is the GCC version number.])
+      fi
+    fi
+  ;;
 esac
 
 # Get an absolute path to the GCC top-level source directory
@@ -1775,6 +1753,8 @@ elif test -x "$AS_FOR_TARGET"; then
 elif test -x "$AS" && test x$host = x$target; then
 	gcc_cv_as="$AS"
 fi
+
+gcc_version=`cat $srcdir/BASE-VER`
 
 if test "x$gcc_cv_as" = x; then
 	# Search the same directories that the installed compiler will

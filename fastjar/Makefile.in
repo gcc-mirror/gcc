@@ -49,7 +49,6 @@ DIST_COMMON = README $(am__configure_deps) $(fastjar_TEXINFOS) \
 	COPYING ChangeLog INSTALL NEWS
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/accross.m4 \
-	$(top_srcdir)/../config/gcc-version.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -175,9 +174,6 @@ build_alias = @build_alias@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
 fastjar_warn_cflags = @fastjar_warn_cflags@
-gcc_version = @gcc_version@
-gcc_version_full = @gcc_version_full@
-gcc_version_trigger = @gcc_version_trigger@
 host_alias = @host_alias@
 includedir = @includedir@
 infodir = @infodir@
@@ -253,12 +249,15 @@ TEXINFO_TEX = ../gcc/doc/include/texinfo.tex
 info_TEXINFOS = fastjar.texi
 fastjar_TEXINFOS = \
 	../gcc/doc/include/gcc-common.texi \
-	../gcc/doc/include/gpl.texi
+	../gcc/doc/include/gpl.texi \
+	gcc-vers.texi
 
 man_MANS = fastjar.1 grepjar.1
 EXTRA_DIST = $(man_MANS)
+BASEVER = $(srcdir)/../gcc/BASE-VER
+DEVPHASE = $(srcdir)/../gcc/DEV-PHASE
 TEXI2POD = perl $(srcdir)/../contrib/texi2pod.pl
-POD2MAN = pod2man --center="GNU" --release="gcc-@gcc_version@"
+POD2MAN = pod2man --center="GNU" --release="gcc-$(shell cat $(BASEVER))"
 @GENINSRC_FALSE@STAMP_GENINSRC = 
 
 # GCC LOCAL CHANGE
@@ -923,6 +922,17 @@ fastjar.pod: $(srcdir)/fastjar.texi
 
 grepjar.pod: $(srcdir)/fastjar.texi
 	-$(TEXI2POD) -D grepjar $< > $@
+
+fastjar.1 grepjar.1: $(BASEVER)
+
+# gcc-vers.texi is generated from the version files.
+gcc-vers.texi: $(BASEVER) $(DEVPHASE)
+	(echo "@set version-GCC $(shell cat $(BASEVER))"; \
+	 if [ "$(shell cat $(DEVPHASE))" = "experimental" ]; \
+	 then echo "@set DEVELOPMENT"; \
+	 else echo "@clear DEVELOPMENT"; \
+	 fi) > $@T
+	mv -f $@T $@
 
 all-local: $(STAMP_GENINSRC) 
 

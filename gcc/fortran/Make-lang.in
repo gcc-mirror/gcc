@@ -147,7 +147,8 @@ GFORTRAN_TEXI = \
   $(srcdir)/doc/include/fdl.texi \
   $(srcdir)/doc/include/gpl.texi \
   $(srcdir)/doc/include/funding.texi \
-  $(srcdir)/doc/include/gcc-common.texi
+  $(srcdir)/doc/include/gcc-common.texi \
+  gcc-vers.texi
 
 doc/gfortran.info: $(GFORTRAN_TEXI)
 	if [ x$(BUILD_INFO) = xinfo ]; then \

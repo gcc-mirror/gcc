@@ -89,6 +89,4 @@ AC_MSG_CHECKING([whether to place generated files in the source directory])
 AC_MSG_RESULT($generated_files_in_srcdir)
 AM_CONDITIONAL(GENINSRC, test x$generated_files_in_srcdir = xyes)
 
-TL_AC_GCC_VERSION([$srcdir/..])
-
 AC_OUTPUT(Makefile install-defs.sh)

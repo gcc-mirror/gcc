@@ -1,3 +1,11 @@
+2005-03-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* README: Update.
+	* gcc_release: Update gcc/DEV-PHASE if that file exists, instead
+	of gcc/version.c.
+	* update_version: Handle updating gcc/DATESTAMP.
+	* update_web_docs: Generate gcc-vers.texi first.
+
 2005-03-10  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* gcc_release (ADA_DIRS): Add "gnattools".
@@ -8,7 +16,7 @@
 
 2004-12-30  Sebastian Pop  <pop@cri.ensmp.fr>
 
-	* update_version (ADD_BRANCHES): Replace lno-branch with 
+	* update_version (ADD_BRANCHES): Replace lno-branch with
 	autovect-branch.
 
 2004-09-11  Gerald Pfeifer  <gerald@pfeifer.com>
@@ -24,7 +32,7 @@
 
 	* gcc_release (snapshot_print): Accept arguments.  Don't use echo -e.
 	(announce_snapshot):  Update for above.  Don't use echo -e.
-	
+
 2004-08-03 Kelley Cook  <kcook@gcc.gnu.org>
 
 	* maintainer-scripts (snapshot_print): New function.
@@ -84,11 +92,11 @@
 
 	* crontab: Move GCC 3.4 snapshots from Wednesday afternoon to
 	Friday night, where gcc.gnu.org has less load.
-	
+
 2004-05-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* crontab: Adjust temporary directory used for snapshot generation.
-	Move GCC 3.3 snapshots to Wednesday 22:32, where gcc.gnu.org has 
+	Move GCC 3.3 snapshots to Wednesday 22:32, where gcc.gnu.org has
 	less load.
 
 2004-04-19  Mark Mitchell  <mark@codesourcery.com>
@@ -120,7 +128,7 @@
 
 	* gcc_release (announce_snapshot): Use changedir instead of
 	plain cd.
-	
+
 2004-02-10  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* gcc_release: Add libada as part of ADA_DIRS.
@@ -146,7 +154,7 @@
 2004-01-02  Gerald Pfeifer  <gp@suse.de>
 
 	* update_version: Add some documentation.
-	
+
 2004-01-02  Pop Sébastian  <pop@gauvain.u-strasbg.fr>
 
 	* update_version (ADD_BRANCHES): Add lno-branch.
@@ -169,7 +177,7 @@
 
 	* gcc_release (build_sources): Create/update the LAST_UPDATED file
 	in the source directory with information how sources were obtained.
-	
+
 2003-08-16  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcc_release (build_sources): Use two new variables EXPORTTAG and
@@ -194,7 +202,7 @@
 	(BRANCH): Remove default initialization for snapshots.
 	(CVSBRANCH): Ditto.
 	Do not lay down a CVS tag if generating a snapshot from mainline.
-	
+
 2003-07-19  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release (announce_snapshot): Use ${RELEASE} instead
@@ -214,7 +222,7 @@
 	* snapshot-index.html: Ditto.
 
 2003-07-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-	
+
 	* gcc_release (announce_snapshot): Add substitution of @BRANCH@
 	for README and index.html.  Remove substitution of @LONG_DATE@.
 	Put index.html into the respective snapshot directory.
@@ -234,7 +242,7 @@
 	general link to the diff/ subdirectory.
 	Mention the concrete snapshot in <title> and <h1>.
 	Adjust links to the new location of index.html.
-	
+
 2003-07-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release: Move handling of complex modes directly after
@@ -266,7 +274,7 @@
 
 	* gcc_release (build_sources): Do not include gnats.html any longer.
 	Make an error message more descriptive.
-	
+
 2003-06-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release: Factor the updating of links and READMEs on the
@@ -302,7 +310,7 @@
 
 2003-06-14  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
-	* snapshot-README: Use GCC instead of gcc, C++ front end instead of 
+	* snapshot-README: Use GCC instead of gcc, C++ front end instead of
 	g++ language, and note that Java includes a run time.
 	* snapshot.index.html: Ditto.
 
@@ -313,11 +321,11 @@
 
 2003-05-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
-	* snapshot-index.html: Refer to .bz2 files instead of .gz files. 
+	* snapshot-index.html: Refer to .bz2 files instead of .gz files.
 	Simplify the note on not using unannounced snapshots.
-	
+
 2003-05-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-	
+
 	* snapshot-README: Refer to .bz2 files instead of .gz files.
 	Add a note on where to find the diff files.
 	Simplify the note on not using unannounced snapshots.

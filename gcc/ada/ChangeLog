@@ -1,9 +1,15 @@
+2005-03-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in (doc/gnat_ugn_unw.info, doc/gnat_rm.info)
+	(doc/gnat_ugn_unw.dvi, doc/gnat_rm.dvi): Add gcc-vers.texi
+	to dependencies.
+
 2005-03-15  Vincent Celier  <celier@adacore.com>
 
-	* mlib-tgt-darwin.adb (Library_Exist_For, Library_File_Name_For): 
-        Add new parameter In_Tree to specify the project tree: needed
-        by the project manager. Adapt to changes in project manager
-        using new parameter In_Tree.
+	* mlib-tgt-darwin.adb (Library_Exist_For, Library_File_Name_For):
+	Add new parameter In_Tree to specify the project tree: needed
+	by the project manager. Adapt to changes in project manager
+	using new parameter In_Tree.
 
 2005-03-15  Jakub Jelinek  <jakub@redhat.com>
 
@@ -267,7 +273,7 @@
 
 	PR ada/13470
 
-	* a-stunau.ads, a-stunau.adb: 
+	* a-stunau.ads, a-stunau.adb:
 	Change interface to allow efficient (and correct) implementation
 	The previous changes to allow extra space in unbounded strings had
 	left this interface a bit broken.
@@ -345,7 +351,7 @@
 	new syntax rule of Ada 2005 interfaces (for AI-251 and AI-345):
 	    INTERFACE_TYPE_DEFINITION ::=
 	      [limited | task | protected | synchronized] interface
-	        [AND interface_list]
+		[AND interface_list]
 
 	* par-ch3.adb (P_Type_Declaration): Modified to give support to
 	interfaces.
@@ -387,8 +393,8 @@
 	* exp_ch11.adb (Expand_N_Raise_Statement): Deal with case where
 	"with string" given.
 
-        * sem_ch11.adb (Analyze_Raise_Statement): Handle case where string
-        expression given.
+	* sem_ch11.adb (Analyze_Raise_Statement): Handle case where string
+	expression given.
 
 	* par-ch11.adb (P_Raise_Statement): Recognize with string expression
 	in 2005 mode
@@ -789,32 +795,32 @@
 	* system-linux-sparc.ads: Fix typo in previous commit.
 
 2005-03-07  James A. Morrison <phython@gcc.gnu.org>
-            Laurent Guerby <laurent@guerby.net>
+	    Laurent Guerby <laurent@guerby.net>
 
-        PR ada/20035
-        * system-linux-sparc.ads: New.
-        * Makefile.in: Add sparc linux entry.
+	PR ada/20035
+	* system-linux-sparc.ads: New.
+	* Makefile.in: Add sparc linux entry.
 
-2005-02-27  Danny Smith  <dannysmith@users.sourceforge.net>	
+2005-02-27  Danny Smith  <dannysmith@users.sourceforge.net>
 
-	* seh_init.c (__gnat_SEH_error_handler): Mark third and fourth 
+	* seh_init.c (__gnat_SEH_error_handler): Mark third and fourth
 	parameters as unused.
 
 2005-02-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 	Partial merge from libada-gnattools-branch:
 
 	2004-12-02  Nathanael Nerode  <neroden@gcc.gnu.org>
-        * Makefile.in: Move gnattools{1,1re,2,3,4} and corresponding flags
-        into code in gnattools/Makefile.in.  Remove direct dependencies on
-        stamp-tools by tools clauses.
+	* Makefile.in: Move gnattools{1,1re,2,3,4} and corresponding flags
+	into code in gnattools/Makefile.in.  Remove direct dependencies on
+	stamp-tools by tools clauses.
 	2004-12-02  Nathanael Nerode  <neroden@gcc.gnu.org>
-        * config-lang.in: Add gnattools to $lang_dirs.
+	* config-lang.in: Add gnattools to $lang_dirs.
 
 2005-02-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR ada/19942
 	* utils.c (gnat_type_for_mode): Return null instead of ICE because
-        we asked for an unknown mode.
+	we asked for an unknown mode.
 
 2005-02-12  Richard Henderson  <rth@redhat.com>
 
@@ -1004,7 +1010,7 @@
 	(Structured Exception handling).
 	(Gen_Main_C): Idem.
 
-	* bindgen.adb: 
+	* bindgen.adb:
 	(Gen_Main_Ada): Set the default exit code if specified.
 	(Gen_Main_C): Likewise.
 	Part of *DC20-006.
@@ -1258,8 +1264,8 @@
 
 2005-02-09  Robert Dewar  <dewar@adacore.com>
 
-        * a-strunb.ads, a-strunb.adb: Add missing pragma Ada_05 statements
-        Fix name of Set routine
+	* a-strunb.ads, a-strunb.adb: Add missing pragma Ada_05 statements
+	Fix name of Set routine
 
 	* a-strfix.ads, a-strfix.adb: Add new index functions from AI-301 to
 	fixed packages.
@@ -1301,7 +1307,7 @@
 
 	Fix for c330001 - PR ada/19386
 
-	* decl.c: 
+	* decl.c:
 	(gnat_to_gnu_field): Do not necessarily invoke make_packable_type
 	on the field if Pragma Component_Alignment (Storage_Unit).
 	(gnat_to_gnu_entity, case object): Do not treat a renaming that has
@@ -1512,7 +1518,7 @@
 
 2005-02-09  Pascal Obry  <obry@adacore.com>
 
-	* gnat_ugn.texi: 
+	* gnat_ugn.texi:
 	Document the procedure to debug the DllMain routine on Windows.
 	Add note about -funwind-tables and mixed Ada and C/C++ programming in
 	ZCX mode.
@@ -1525,7 +1531,7 @@
 
 2005-02-09  Robert Dewar  <dewar@adacore.com>
 
-	* gnat_rm.texi: 
+	* gnat_rm.texi:
 	Changes to document new wide wide character support
 	For AI-285
 	Update documentation on Normalize_Scalars and Initialize_Scalars
@@ -1606,7 +1612,7 @@
 2005-01-27  Laurent GUERBY <laurent@guerby.net>
 
 	* Makefile.in: Rename GNAT RTEMS specific files.
-	* 5rtpopsp.adb, 4rintnam.ads, 5rosinte.adb,  
+	* 5rtpopsp.adb, 4rintnam.ads, 5rosinte.adb,
  	5rosinte.ads, 5rparame.adb: Replaced by files below.
 	* s-tpopsp-rtems.adb, a-intman-rtems.ads, s-osinte-rtems.adb,
 	s-osinte-rtems.ads, s-parame-rtems.adb: Replace files above.
@@ -1616,14 +1622,14 @@
 
 	PR ada/19488
 	* 5rosinte.ads: Add No_Key constant.
-        * 5rtpopsp.adb: Initialize ATCB_Key with No_Key and fix style.
-        * gsocket.h: Do not include <sys/socket.h> with RTEMS either.
+	* 5rtpopsp.adb: Initialize ATCB_Key with No_Key and fix style.
+	* gsocket.h: Do not include <sys/socket.h> with RTEMS either.
 
 2005-01-26  Laurent GUERBY <laurent@guerby.net>
 
 	PR ada/19414
 	* i-cobol.adb (Valid_Numeric): Handle zero length case.
-	
+
 2005-01-20  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (alpha-linux, LIBGNAT_TARGET_PAIRS): Use
@@ -1703,7 +1709,7 @@
 	pragma restrictions.
 	New entry for Ada 2005 attribute Mod.
 
-	* par-prag.adb: 
+	* par-prag.adb:
 	Add recognition of new pragma Restrictions No_Dependence
 	Recognize restriction No_Obsolescent_Features at parse time
 
@@ -1819,7 +1825,7 @@
 	* eval_fat.adb: (Eps_Model,Eps_Denorm): Remove, no longer used.
 	(Succ): Re-implement using Scaling, Exponent and Ceiling attributes.
 	(Pred): Implement in terms of Succ.
-	
+
 	* trans.c (convert_with_check): Reimplement conversion of float to
 	integer.
 
@@ -1844,7 +1850,7 @@
 
 2005-01-03  Thomas Quinot  <quinot@adacore.com>
 
-	* exp_dist.adb: 
+	* exp_dist.adb:
 	Declare subprogram index in Build_RPC_Receiver_Body, to reduce the
 	amount of PCS-specific code in RACW stubs generation.
 	(Copy_Specification): Set Etype on copied formal parameter entities, as
@@ -2282,10 +2288,10 @@
 	(Insert_Partition_Check): Use runtime library function to perform
 	E.4(19) check.
 
-        * rtsfind.ads: New entity System.PolyORB_Interface.Make_Ref
-        (RE_Same_Partition): New entity, from s-parint.
+	* rtsfind.ads: New entity System.PolyORB_Interface.Make_Ref
+	(RE_Same_Partition): New entity, from s-parint.
 
-        * s-parint.ads, s-parint.adb (Same_Partition): New subprogram.
+	* s-parint.ads, s-parint.adb (Same_Partition): New subprogram.
 
 2004-12-07  Gary Dismukes  <dismukes@adacore.com>
 
@@ -3169,7 +3175,7 @@
 
 2004-10-05  Vincent Celier  <celier@gnat.com>
 
-        * mlib-tgt.ads: (Build_Dynamic_Library): New parameter Options_2
+	* mlib-tgt.ads: (Build_Dynamic_Library): New parameter Options_2
 
 2004-10-04  Laurent GUERBY <laurent@guerby.net>
 
