@@ -18,7 +18,7 @@ struct s {
   struct t
   {
     friend ostream&
-    operator<<<T>(ostream&, const typename s<T>::t &);
+    operator<<<T>(ostream&, const typename s<T>::t &); // { dg-bogus ".*" "" }
   };
   t x;
 };
