@@ -10,4 +10,4 @@ void h() {
   g<1000>();
 }
 
-// { dg-final { scan-assembler-not "_Z1g"  } }
+// { dg-final { scan-assembler-not "\n_?_Z1gILi\[0-9\]+EEvv\[: \t\n\]"  } }
