@@ -186,7 +186,7 @@ public final class Locale implements Serializable, Cloneable
    *
    * @serial should be -1 in serial streams
    */
-  private int hashcode;
+  private transient int hashcode;
 
   /**
    * The default locale. Except for during bootstrapping, this should never be
@@ -709,10 +709,8 @@ public final class Locale implements Serializable, Cloneable
    *
    * @return the hashcode
    */
-  public synchronized int hashCode()
+  public int hashCode()
   {
-    // This method is synchronized because writeObject() might reset
-    // the hashcode.
     return hashcode;
   }
 
@@ -731,10 +729,6 @@ public final class Locale implements Serializable, Cloneable
       return false;
     Locale l = (Locale) obj;
 
-    // ??? We might also want to add:
-    //        hashCode() == l.hashCode()
-    // But this is a synchronized method.  Is the overhead worth it?
-    // Measure this to make a decision.
     return (language == l.language
             && country == l.country
             && variant == l.variant);
@@ -745,17 +739,19 @@ public final class Locale implements Serializable, Cloneable
    *
    * @param output the stream to write to
    * @throws IOException if the write fails
-   * @serialData the hashcode should always be written as -1, and recomputed
-   *      when reading it back
+   * @serialData The first three fields are Strings representing language,
+   *             country, and variant. The fourth field is a placeholder for 
+   *             the cached hashcode, but this is always written as -1, and 
+   *             recomputed when reading it back.
    */
-  private synchronized void writeObject(ObjectOutputStream output)
+  private void writeObject(ObjectOutputStream s)
     throws IOException
   {
-    // Synchronized so that hashCode() doesn't get wrong value.
-    int tmpHashcode = hashcode;
-    hashcode = -1;
-    output.defaultWriteObject();
-    hashcode = tmpHashcode;
+    s.writeObject(language);
+    s.writeObject(country);
+    s.writeObject(variant);
+    // Hashcode field is always written as -1.
+    s.writeInt(-1);
   }
 
   /**
@@ -766,10 +762,13 @@ public final class Locale implements Serializable, Cloneable
    * @throws ClassNotFoundException if reading fails
    * @serialData the hashCode is always invalid and must be recomputed
    */
-  private void readObject(ObjectInputStream input)
+  private void readObject(ObjectInputStream s)
     throws IOException, ClassNotFoundException
   {
-    input.defaultReadObject();
+    language = (String) s.readObject();
+    country = (String) s.readObject();
+    variant = (String) s.readObject();    
+    // Recompute hashcode.
     hashcode = language.hashCode() ^ country.hashCode() ^ variant.hashCode();
   }
 } // class Locale
