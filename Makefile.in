@@ -29195,13 +29195,13 @@ all-build-m4: maybe-all-build-libiberty maybe-all-build-texinfo
 # GCC needs to identify certain tools.
 # GCC also needs the information exported by the intl configure script.
 configure-gcc: maybe-configure-intl maybe-configure-binutils maybe-configure-gas maybe-configure-ld maybe-configure-bison maybe-configure-flex
-all-gcc: maybe-all-libiberty maybe-all-intl maybe-all-bison maybe-all-byacc maybe-all-binutils maybe-all-gas maybe-all-ld maybe-all-zlib maybe-all-libbanshee maybe-all-libcpp
+all-gcc: maybe-all-libiberty maybe-all-intl maybe-all-texinfo maybe-all-bison maybe-all-byacc maybe-all-flex maybe-all-binutils maybe-all-gas maybe-all-ld maybe-all-zlib maybe-all-libbanshee maybe-all-libcpp
 configure-libcpp: maybe-configure-libiberty maybe-configure-intl
 all-libcpp: maybe-all-libiberty maybe-all-intl
 # This is a slightly kludgy method of getting dependencies on 
 # all-build-libiberty correct; it would be better to build it every time.
 all-gcc: maybe-all-build-libiberty
-all-bootstrap: maybe-all-binutils maybe-all-bison maybe-all-byacc maybe-all-gas maybe-all-intl maybe-all-ld maybe-all-libcpp maybe-all-libbanshee maybe-all-libiberty maybe-all-texinfo maybe-all-zlib 
+all-bootstrap: maybe-all-binutils maybe-all-bison maybe-all-byacc maybe-all-flex maybe-all-gas maybe-all-intl maybe-all-ld maybe-all-libcpp maybe-all-libbanshee maybe-all-libiberty maybe-all-texinfo maybe-all-zlib 
 
 # Host modules specific to gdb.
 # GDB needs to know that the simulator is being built.

@@ -1,3 +1,9 @@
+2004-07-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.def (host_modules): Set bootstrap=true for flex.
+	* Makefile.tpl (all-gcc): Depend on texinfo and flex.
+	* Makefile.in: Rebuilt.
+
 2004-07-07  Jan Hubicka  <jh@suse.cz>
 
 	* MAINTAINERS: Add self as a profile feedback maintainer.
