@@ -1,3 +1,9 @@
+1999-02-04  Andrew Haley  <aph@cygnus.com>
+
+	* class.c (build_utf8_ref): Output signatures using '.' as a
+	separator, rather than '/'.
+	(make_class_data): Likewise.
+
 Wed Feb  3 22:50:17 1999  Marc Espie <Marc.Espie@liafa.jussieu.fr>
 
         * Make-lang.in ($(GCJ)(exeext)): Remove choose-temp.o, pexecute.o and

@@ -557,10 +557,21 @@ build_utf8_ref (name)
   PUSH_FIELD (ctype, field, "data", str_type);
   FINISH_RECORD (ctype);
   START_RECORD_CONSTRUCTOR (cinit, ctype);
-  name_hash = hashUtf8String (name_ptr, name_len) & 0xFFFF;
-  PUSH_FIELD_VALUE (cinit, "hash", build_int_2 (name_hash, 0));
-  PUSH_FIELD_VALUE (cinit, "length", build_int_2 (name_len, 0));
-  string = build_string (name_len, name_ptr);
+  {
+    int i;
+    /* Rewrite .class file internal form to canonical Java form. */
+#ifdef __GNUC__
+    char buffer[name_len];
+#else
+    char *buffer = (char *)alloca (name_len);
+#endif
+    for (i = 0; i < name_len; i++)
+      buffer[i] = (name_ptr[i] == '/' ? '.' : name_ptr[i]);
+    name_hash = hashUtf8String (buffer, name_len) & 0xFFFF;
+    PUSH_FIELD_VALUE (cinit, "hash", build_int_2 (name_hash, 0));
+    PUSH_FIELD_VALUE (cinit, "length", build_int_2 (name_len, 0));
+    string = build_string (name_len, buffer);
+  }
   TREE_TYPE (string) = str_type;
   PUSH_FIELD_VALUE (cinit, "data", string);
   FINISH_RECORD_CONSTRUCTOR (cinit);
@@ -1120,13 +1131,7 @@ make_class_data (type)
   START_RECORD_CONSTRUCTOR (cons, class_type_node);
   PUSH_SUPER_VALUE (cons, temp);
   PUSH_FIELD_VALUE (cons, "next", null_pointer_node);
-#if 0
-  /* Need to fix _Jv_FindClassFromSignature. */
   PUSH_FIELD_VALUE (cons, "name", build_utf8_ref (DECL_NAME (type_decl)));
-#else
-  PUSH_FIELD_VALUE (cons, "name",
-		    build_utf8_ref (build_internal_class_name (type)));
-#endif
   PUSH_FIELD_VALUE (cons, "accflags",
 		    build_int_2 (get_access_flags_from_decl (type_decl), 0));
 
