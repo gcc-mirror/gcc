@@ -1,3 +1,9 @@
+2002-03-06  Phil Edwards  <pme@gcc.gnu.org>
+
+	* libF77/Version.c:  Fix misplaced leading blanks on first line.
+	* libI77/Version.c:  Likewise.
+	* libU77/Version.c:  Likewise.
+
 2002-01-28  Geoffrey Keating  <geoffk@redhat.com>
 
 	* aclocal.m4: Replace with version copied from libstdc++-v3.
