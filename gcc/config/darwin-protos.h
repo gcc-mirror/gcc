@@ -24,7 +24,6 @@ extern void machopic_validate_stub_or_non_lazy_ptr (const char *, int);
 
 extern const char *machopic_function_base_name (void);
 extern void machopic_output_function_base_name (FILE *);
-extern const char *machopic_non_lazy_ptr_name (const char*);
 extern const char *machopic_stub_name (const char*);
 
 extern void machopic_picsymbol_stub_section (void);
