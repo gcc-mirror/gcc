@@ -636,4 +636,7 @@ extern int flag_detailed_statistics;
 /* Nonzero means enable synchronous exceptions for non-call instructions.  */
 extern int flag_non_call_exceptions;
 
+/* Nonzero means put zero initialized data in the bss section.  */
+extern int flag_zero_initialized_in_bss;
+
 #endif /* ! GCC_FLAGS_H */

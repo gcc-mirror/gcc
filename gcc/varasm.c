@@ -1608,7 +1608,12 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   /* Handle uninitialized definitions.  */
 
-  if ((DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node)
+  if ((DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node
+#if defined ASM_EMIT_BSS
+       || (flag_zero_initialized_in_bss
+	   && initializer_zerop (DECL_INITIAL (decl)))
+#endif
+       )
       /* If the target can't output uninitialized but not common global data
 	 in .bss, then we have to use .data.  */
 #if ! defined ASM_EMIT_BSS

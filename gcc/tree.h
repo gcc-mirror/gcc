@@ -2495,6 +2495,11 @@ extern int list_length			PARAMS ((tree));
 
 extern int fields_length		PARAMS ((tree));
 
+/* Given an initializer INIT, return TRUE if INIT is zero or some
+   aggregate of zeros.  Otherwise return FALSE.  */
+
+extern bool initializer_zerop		PARAMS ((tree));
+
 /* integer_zerop (tree x) is nonzero if X is an integer constant of value 0 */
 
 extern int integer_zerop		PARAMS ((tree));
