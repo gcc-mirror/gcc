@@ -1,3 +1,15 @@
+2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (cmpsi, cmpdi): Redefine using :GPR.
+	(*branch_zero[sd]i): Renamed from branch_zero{,_di}.  Redefine
+	using :GPR.
+	(*branch_zero[sd]i_inverted): Likewise branch_zero{,_di}_inverted.
+	(*branch_equality[sd]i): Likewise branch_equality{,_di}.
+	(*branch_equality[sd]i_inverted): Likewise
+	branch_equality{,_di}_inverted.
+	(*branch_equality[sd]i_mips16): Name formerly unnamed patterns.
+	Redefine using :GPR.
+
 2004-08-24  Zack Weinberg  <zack@codesourcery.com>
 
 	* rtl.def: Reorganize, placing all codes used only in machine

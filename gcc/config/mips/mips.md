@@ -4789,22 +4789,11 @@ beq\t%2,%.,1b\;\
 ;;	If needed, an appropriate temporary is created to hold the
 ;;	of the integer compare.
 
-(define_expand "cmpsi"
+(define_expand "cmp<mode>"
   [(set (cc0)
-	(compare:CC (match_operand:SI 0 "register_operand")
-		    (match_operand:SI 1 "nonmemory_operand")))]
+	(compare:CC (match_operand:GPR 0 "register_operand")
+		    (match_operand:GPR 1 "nonmemory_operand")))]
   ""
-{
-  cmp_operands[0] = operands[0];
-  cmp_operands[1] = operands[1];
-  DONE;
-})
-
-(define_expand "cmpdi"
-  [(set (cc0)
-	(compare:CC (match_operand:DI 0 "register_operand")
-		    (match_operand:DI 1 "nonmemory_operand")))]
-  "TARGET_64BIT"
 {
   cmp_operands[0] = operands[0];
   cmp_operands[1] = operands[1];
@@ -4884,14 +4873,14 @@ beq\t%2,%.,1b\;\
 
 ;; Conditional branches on comparisons with zero.
 
-(define_insn "branch_zero"
+(define_insn "*branch_zero<mode>"
   [(set (pc)
 	(if_then_else
-         (match_operator:SI 0 "comparison_operator"
-			    [(match_operand:SI 2 "register_operand" "d")
-			     (const_int 0)])
-        (label_ref (match_operand 1 "" ""))
-        (pc)))]
+	 (match_operator:GPR 0 "comparison_operator"
+			     [(match_operand:GPR 2 "register_operand" "d")
+			      (const_int 0)])
+	 (label_ref (match_operand 1 "" ""))
+	 (pc)))]
   "!TARGET_MIPS16"
 {
   return mips_output_conditional_branch (insn,
@@ -4901,17 +4890,17 @@ beq\t%2,%.,1b\;\
 					 /*inverted_p=*/0,
 					 get_attr_length (insn));
 }
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")])
+  [(set_attr "type" "branch")
+   (set_attr "mode" "none")])
 
-(define_insn "branch_zero_inverted"
+(define_insn "*branch_zero<mode>_inverted"
   [(set (pc)
 	(if_then_else
-         (match_operator:SI 0 "comparison_operator"
-		            [(match_operand:SI 2 "register_operand" "d")
-			     (const_int 0)])
-        (pc)
-        (label_ref (match_operand 1 "" ""))))]
+	 (match_operator:GPR 0 "comparison_operator"
+			     [(match_operand:GPR 2 "register_operand" "d")
+			      (const_int 0)])
+	 (pc)
+	 (label_ref (match_operand 1 "" ""))))]
   "!TARGET_MIPS16"
 {
   return mips_output_conditional_branch (insn,
@@ -4921,59 +4910,19 @@ beq\t%2,%.,1b\;\
 					 /*inverted_p=*/1,
 					 get_attr_length (insn));
 }
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")])
-
-(define_insn "branch_zero_di"
-  [(set (pc)
-	(if_then_else
-         (match_operator:DI 0 "comparison_operator"
-		            [(match_operand:DI 2 "register_operand" "d")
-			     (const_int 0)])
-        (label_ref (match_operand 1 "" ""))
-        (pc)))]
-  "!TARGET_MIPS16"
-{
-  return mips_output_conditional_branch (insn,
-					 operands,
-					 /*two_operands_p=*/0,
-					 /*float_p=*/0,
-					 /*inverted_p=*/0,
-					 get_attr_length (insn));
-}
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")])
-
-(define_insn "branch_zero_di_inverted"
-  [(set (pc)
-	(if_then_else
-         (match_operator:DI 0 "comparison_operator"
-			    [(match_operand:DI 2 "register_operand" "d")
-			     (const_int 0)])
-        (pc)
-        (label_ref (match_operand 1 "" ""))))]
-  "!TARGET_MIPS16"
-{
-  return mips_output_conditional_branch (insn,
-					 operands,
-					 /*two_operands_p=*/0,
-					 /*float_p=*/0,
-					 /*inverted_p=*/1,
-					 get_attr_length (insn));
-}
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")])
+  [(set_attr "type" "branch")
+   (set_attr "mode" "none")])
 
 ;; Conditional branch on equality comparison.
 
-(define_insn "branch_equality"
+(define_insn "*branch_equality<mode>"
   [(set (pc)
 	(if_then_else
-         (match_operator:SI 0 "equality_operator"
-		   	    [(match_operand:SI 2 "register_operand" "d")
-			     (match_operand:SI 3 "register_operand" "d")])
-         (label_ref (match_operand 1 "" ""))
-         (pc)))]
+	 (match_operator:GPR 0 "equality_operator"
+			     [(match_operand:GPR 2 "register_operand" "d")
+			      (match_operand:GPR 3 "register_operand" "d")])
+	 (label_ref (match_operand 1 "" ""))
+	 (pc)))]
   "!TARGET_MIPS16"
 {
   return mips_output_conditional_branch (insn,
@@ -4983,37 +4932,17 @@ beq\t%2,%.,1b\;\
 					 /*inverted_p=*/0,
 					 get_attr_length (insn));
 }
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")])
+  [(set_attr "type" "branch")
+   (set_attr "mode" "none")])
 
-(define_insn "branch_equality_di"
+(define_insn "*branch_equality<mode>_inverted"
   [(set (pc)
 	(if_then_else
-         (match_operator:DI 0 "equality_operator"
-			    [(match_operand:DI 2 "register_operand" "d")
-			     (match_operand:DI 3 "register_operand" "d")])
-        (label_ref (match_operand 1 "" ""))
-        (pc)))]
-  "!TARGET_MIPS16"
-{
-  return mips_output_conditional_branch (insn,
-					 operands,
-					 /*two_operands_p=*/1,
-					 /*float_p=*/0,
-					 /*inverted_p=*/0,
-					 get_attr_length (insn));
-}
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")])
-
-(define_insn "branch_equality_inverted"
-  [(set (pc)
-	(if_then_else
-         (match_operator:SI 0 "equality_operator"
-		   	    [(match_operand:SI 2 "register_operand" "d")
-			     (match_operand:SI 3 "register_operand" "d")])
-         (pc)
-         (label_ref (match_operand 1 "" ""))))]
+	 (match_operator:GPR 0 "equality_operator"
+			     [(match_operand:GPR 2 "register_operand" "d")
+			      (match_operand:GPR 3 "register_operand" "d")])
+	 (pc)
+	 (label_ref (match_operand 1 "" ""))))]
   "!TARGET_MIPS16"
 {
   return mips_output_conditional_branch (insn,
@@ -5023,39 +4952,19 @@ beq\t%2,%.,1b\;\
 					 /*inverted_p=*/1,
 					 get_attr_length (insn));
 }
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")])
-
-(define_insn "branch_equality_di_inverted"
-  [(set (pc)
-	(if_then_else
-         (match_operator:DI 0 "equality_operator"
-			    [(match_operand:DI 2 "register_operand" "d")
-			     (match_operand:DI 3 "register_operand" "d")])
-        (pc)
-        (label_ref (match_operand 1 "" ""))))]
-  "!TARGET_MIPS16"
-{
-  return mips_output_conditional_branch (insn,
-					 operands,
-					 /*two_operands_p=*/1,
-					 /*float_p=*/0,
-					 /*inverted_p=*/1,
-					 get_attr_length (insn));
-}
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")])
+  [(set_attr "type" "branch")
+   (set_attr "mode" "none")])
 
 ;; MIPS16 branches
 
-(define_insn ""
+(define_insn "*branch_equality<mode>_mips16"
   [(set (pc)
 	(if_then_else
-	 (match_operator:SI 0 "equality_operator"
-			    [(match_operand:SI 1 "register_operand" "d,t")
-			     (const_int 0)])
-	(match_operand 2 "pc_or_label_operand" "")
-	(match_operand 3 "pc_or_label_operand" "")))]
+	 (match_operator:GPR 0 "equality_operator"
+			     [(match_operand:GPR 1 "register_operand" "d,t")
+			      (const_int 0)])
+	 (match_operand 2 "pc_or_label_operand" "")
+	 (match_operand 3 "pc_or_label_operand" "")))]
   "TARGET_MIPS16"
 {
   if (operands[2] != pc_rtx)
@@ -5073,38 +4982,9 @@ beq\t%2,%.,1b\;\
 	return "bt%N0z\t%3";
     }
 }
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"8")])
-
-(define_insn ""
-  [(set (pc)
-	(if_then_else
-	 (match_operator:DI 0 "equality_operator"
-			    [(match_operand:DI 1 "register_operand" "d,t")
-			     (const_int 0)])
-	(match_operand 2 "pc_or_label_operand" "")
-	(match_operand 3 "pc_or_label_operand" "")))]
-  "TARGET_MIPS16"
-{
-  if (operands[2] != pc_rtx)
-    {
-      if (which_alternative == 0)
-	return "b%C0z\t%1,%2";
-      else
-	return "bt%C0z\t%2";
-    }
-  else
-    {
-      if (which_alternative == 0)
-	return "b%N0z\t%1,%3";
-      else
-	return "bt%N0z\t%3";
-    }
-}
-  [(set_attr "type"	"branch")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"8")])
+  [(set_attr "type" "branch")
+   (set_attr "mode" "none")
+   (set_attr "length" "8")])
 
 (define_expand "b<code>"
   [(set (pc)
