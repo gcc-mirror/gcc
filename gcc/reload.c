@@ -1695,6 +1695,18 @@ immune_p (x, y, ydata)
 
   return (xdata.start >= ydata.end || ydata.start >= xdata.end);
 }
+
+/* Similiar, but calls decompose.  */
+
+int
+safe_from_earlyclobber (op, clobber)
+     rtx op, clobber;
+{
+  struct decomposition early_data;
+
+  early_data = decompose (clobber);
+  return immune_p (op, clobber, early_data);
+}
 
 /* Main entry point of this file: search the body of INSN
    for values that need reloading and record them with push_reload.
