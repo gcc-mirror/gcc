@@ -970,6 +970,7 @@ AC_TRY_COMPILE([#include <time.h>], [struct tm tim; tim.tm_gmtoff = 0;],
           [AC_MSG_RESULT(no)])])])
 
 AC_FUNC_ALLOCA
+AC_FUNC_MMAP
 
 AC_CHECK_PROGS(PERL, perl, false)
 
