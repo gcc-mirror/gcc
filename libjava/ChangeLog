@@ -1,3 +1,11 @@
+2005-02-21  Andrew Haley  <aph@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (nat_source_files): Added natLogger.cc.
+	* java/util/logging/natLogger.cc: New file.
+	* java/util/logging/Logger.java (getCallerStackFrame): Now
+	native.
+
 2005-02-21  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* Makefile.am (all_property_files): Remove left over.

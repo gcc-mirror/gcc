@@ -1,5 +1,5 @@
 /* Logger.java -- a class for logging messages
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -1169,17 +1169,5 @@ public class Logger
    * That should be the initial caller of a logging method.
    * @return caller of the initial looging method
    */
-  private StackTraceElement getCallerStackFrame()
-  {
-    Throwable t = new Throwable();
-    StackTraceElement[] stackTrace = t.getStackTrace();
-    int index = 0;
-    // skip to stackentries until this class
-    while(!stackTrace[index].getClassName().equals(getClass().getName())){index++;}
-    // skip the stackentries of this class
-    while(stackTrace[index].getClassName().equals(getClass().getName())){index++;}
-
-    return stackTrace[index];
-  }
-  
+  private native StackTraceElement getCallerStackFrame();
 }
