@@ -1,3 +1,9 @@
+2003-03-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	PR other/6955
+	* collect2.c (collect_wait): Use WCOREDUMP and fix output message.
+	* system.h (WCOREDUMP, WCOREFLG): Define if necessary.
+
 2003-03-29  Arpad Beszedes <beszedes@cc.u-szeged.hu>
 
 	PR middle-end/9967
