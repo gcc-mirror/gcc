@@ -1,5 +1,5 @@
 /* OSF/rose half-pic support definitions.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef NO_HALF_PIC
 
 /* Add prototype support.  */
+/* ??? It would be nice to use gansidecl.h here but there's an extra
+   complication with NO_STDIO_H that must be dealt with.  */
 #ifndef PROTO
 #if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
 #define PROTO(ARGS) ARGS
