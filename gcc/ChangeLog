@@ -1,3 +1,10 @@
+2003-02-20  David Edelsohn  <edelsohn@gnu.org>
+
+        * config/rs6000/sysv4.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Define.
+        * config/rs6000/power4.md (power4-store,power4-vecstore): New
+	insn reservations.
+	(power4-fpstore): Compact.
+
 2003-02-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*iorsi3_w): New.
