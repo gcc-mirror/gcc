@@ -93,6 +93,13 @@ find_base_value (src)
     case LABEL_REF:
       return src;
 
+    case PRE_INC:
+    case PRE_DEC:
+    case POST_INC:
+    case POST_DEC:
+      src = XEXP (src, 0);
+      /* fall through */
+
     case REG:
       /* At the start of a function argument registers have known base
 	 values which may be lost later.  Returning an ADDRESS
@@ -463,6 +470,12 @@ find_base_term (x)
     case HIGH:
       return find_base_term (XEXP (x, 0));
 
+    case PRE_INC:
+    case PRE_DEC:
+    case POST_INC:
+    case POST_DEC:
+      return find_base_term (XEXP (x, 0));
+
     case CONST:
       x = XEXP (x, 0);
       if (GET_CODE (x) != PLUS && GET_CODE (x) != MINUS)
@@ -824,7 +837,8 @@ true_dependence (mem, mem_mode, x, varies)
   if (mem_mode == VOIDmode)
     mem_mode = GET_MODE (mem);
 
-  if (! memrefs_conflict_p (mem_mode, mem_addr, SIZE_FOR_MODE (x), x_addr, 0))
+  if (! memrefs_conflict_p (SIZE_FOR_MODE (mem_mode), mem_addr,
+			    SIZE_FOR_MODE (x), x_addr, 0))
     return 0;
 
   /* If both references are struct references, or both are not, nothing
