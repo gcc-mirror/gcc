@@ -12,3 +12,5 @@
 /* Control how gcc finds libgcc.a and how it passes -L options.  */
 #define LINK_LIBGCC_SPECIAL
 #define RELATIVE_PREFIX_NOT_LINKDIR
+
+#define HAVE_ATEXIT
