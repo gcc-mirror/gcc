@@ -1,3 +1,8 @@
+2001-11-13  Jeff Sturm  <jsturm@one-point.com>
+
+	* doc/install.texi (sparc-*-linux*): Mention requirements for
+	binutils and glibc.
+
 2001-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Makefile.in (POD2MAN): Don't include --section=1.
