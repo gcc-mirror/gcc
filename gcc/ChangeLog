@@ -1,3 +1,8 @@
+Wed Dec 29 22:47:43 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Wed Oct 27 01:42:26 1999  Scott Christley  <scottc@net-community.com>
+	* sparc.md (call): Don't bound structure return size to 0xfff.
+
 Mon Dec 27 07:32:59 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Fri Sep  3 10:16:37 HST 1999  Glen Nakamura  <glen.nakamura@usa.net>

@@ -7355,7 +7355,7 @@
 		    gen_rtvec (3,
 			       gen_rtx_SET (VOIDmode, pc_rtx,
 					XEXP (operands[0], 0)),
-			       GEN_INT (INTVAL (operands[3]) & 0xfff),
+			       operands[3],
 			       gen_rtx_CLOBBER (VOIDmode,
 					gen_rtx_REG (Pmode, 15)))));
       else
@@ -7387,7 +7387,7 @@
     emit_call_insn
       (gen_rtx_PARALLEL (VOIDmode,
 		gen_rtvec (3, gen_rtx_CALL (VOIDmode, fn_rtx, nregs_rtx),
-			   GEN_INT (INTVAL (operands[3]) & 0xfff),
+			   operands[3],
 			   gen_rtx_CLOBBER (VOIDmode,
 				    gen_rtx_REG (Pmode, 15)))));
   else
