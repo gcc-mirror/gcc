@@ -1,3 +1,11 @@
+2001-01-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (check_nontype_parm): New function.
+	(process_template_parm): Use it.
+	(convert_template_argument): Use it.
+	(convert_nontype_argument, RECORD_TYPE): Assert it's a ptr to
+	member.
+
 2001-01-14  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* tree.c: Add defaults.h
