@@ -1,3 +1,8 @@
+2000-09-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* acinclude.m4: Include libtool macros from the top level.
+	* aclocal.m4, configure: Rebuilt.
+
 2000-09-04  Anthony Green  <green@redhat.com>
 
 	Fix for PR libgcj/230:
