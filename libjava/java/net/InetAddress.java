@@ -230,7 +230,6 @@ public class InetAddress implements Serializable
    * address is in getAddress()[0].
    *
    * @exception UnknownHostException If IP address has illegal length
-   * be found
    *
    * @since 1.4
    */
@@ -241,6 +240,23 @@ public class InetAddress implements Serializable
       throw new UnknownHostException ("IP address has illegal length");
 
     return new InetAddress (addr, "");
+  }
+  
+  /**
+   * Create an InetAddress based on the provided host name and IP address.
+   * No name service is checked for the validity of the address.
+   *
+   * @exception UnknownHostException If IP address is of illegal length
+   *
+   * @since 1.4
+   */
+  public static InetAddress getByAddress (String host, byte[] addr)
+    throws UnknownHostException
+  {
+    if (addr.length == 4 || addr.length == 16)
+      return new InetAddress (addr, host);
+    
+    throw new UnknownHostException ("IP address has illegal length");
   }
   
   /** If host is a valid numeric IP address, return the numeric address.
