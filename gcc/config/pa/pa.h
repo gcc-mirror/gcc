@@ -932,7 +932,8 @@ extern enum cmp_type hppa_branch_type;
 	       fprintf (FILE, ",RTNVAL=GR");				\
 	     fputs ("\n", FILE);					\
 	   }								\
-	 ASM_OUTPUT_LABEL (FILE, NAME);} while (0)
+	 ASM_OUTPUT_LABEL (FILE, NAME);					\
+	 fputs ("\t.PROC\n", FILE);} while (0)
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.

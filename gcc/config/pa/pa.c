@@ -1988,11 +1988,10 @@ output_function_prologue (file, size)
      FILE *file;
      int size;
 {
-
   /* hppa_expand_prologue does the dirty work now.  We just need
      to output the assembler directives which denote the start
      of a function.  */
-  fprintf (file, "\t.PROC\n\t.CALLINFO FRAME=%d", actual_fsize);
+  fprintf (file, "\t.CALLINFO FRAME=%d", actual_fsize);
   if (regs_ever_live[2] || profile_flag)
     fprintf (file, ",CALLS,SAVE_RP");
   else
