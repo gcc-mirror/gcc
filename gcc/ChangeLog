@@ -63,7 +63,6 @@
 	(note_eh_region_may_contain_throw): New function.
 	* except.h (note_eh_region_may_contain_throw): New function.
 
->>>>>>> 1.17566
 2003-04-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/i386/winnt.c (i386_pe_mark_dllimport): Revert previous
