@@ -1,3 +1,7 @@
+Mon Jul 23 15:47:19 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* analyze_brprob: Fix awk compatibility problems; update comment.
+
 2001-07-23  Andreas Jaeger  <aj@suse.de>
 
 	* analyze_brprob: Fix more typos.
