@@ -442,7 +442,7 @@
 3.10 MIPS atomic operations
 
    The atomic locking routines for MIPS targets requires MIPS II and
-   later. A patch went in just after the 3.3.0 release to make mips* use
+   later. A patch went in just after the 3.3 release to make mips* use
    the generic implementation instead. You can also configure for
    mipsel-elf as a workaround.
 
