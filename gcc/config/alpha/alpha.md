@@ -6207,6 +6207,61 @@
   "TARGET_MAX"
   "maxsw4 %r1,%r2,%0"
   [(set_attr "type" "mvi")])
+
+(define_insn "one_cmpl<mode>2"
+  [(set (match_operand:VEC 0 "register_operand" "=r")
+	(not:VEC (match_operand:VEC 1 "register_operand" "r")))]
+  ""
+  "ornot $31,%1,%0"
+  [(set_attr "type" "ilog")])
+
+(define_insn "and<mode>3"
+  [(set (match_operand:VEC 0 "register_operand" "=r")
+	(and:VEC (match_operand:VEC 1 "register_operand" "r")
+		 (match_operand:VEC 2 "register_operand" "r")))]
+  ""
+  "and %1,%2,%0"
+  [(set_attr "type" "ilog")])
+
+(define_insn "*andnot<mode>3"
+  [(set (match_operand:VEC 0 "register_operand" "=r")
+	(and:VEC (not:VEC (match_operand:VEC 1 "register_operand" "r"))
+		 (match_operand:VEC 2 "register_operand" "r")))]
+  ""
+  "bic %2,%1,%0"
+  [(set_attr "type" "ilog")])
+
+(define_insn "ior<mode>3"
+  [(set (match_operand:VEC 0 "register_operand" "=r")
+	(ior:VEC (match_operand:VEC 1 "register_operand" "r")
+		 (match_operand:VEC 2 "register_operand" "r")))]
+  ""
+  "bis %1,%2,%0"
+  [(set_attr "type" "ilog")])
+
+(define_insn "*iornot<mode>3"
+  [(set (match_operand:VEC 0 "register_operand" "=r")
+	(ior:VEC (not:DI (match_operand:VEC 1 "register_operand" "r"))
+		 (match_operand:VEC 2 "register_operand" "r")))]
+  ""
+  "ornot %2,%1,%0"
+  [(set_attr "type" "ilog")])
+
+(define_insn "xor<mode>3"
+  [(set (match_operand:VEC 0 "register_operand" "=r")
+	(xor:VEC (match_operand:VEC 1 "register_operand" "r")
+		 (match_operand:VEC 2 "register_operand" "r")))]
+  ""
+  "xor %1,%2,%0"
+  [(set_attr "type" "ilog")])
+
+(define_insn "*xornot<mode>3"
+  [(set (match_operand:VEC 0 "register_operand" "=r")
+	(not:VEC (xor:VEC (match_operand:VEC 1 "register_operand" "r")
+			  (match_operand:VEC 2 "register_operand" "r"))))]
+  ""
+  "eqv %1,%2,%0"
+  [(set_attr "type" "ilog")])
 
 ;; Bit field extract patterns which use ext[wlq][lh]
 
