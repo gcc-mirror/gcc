@@ -1,5 +1,8 @@
 2003-12-01  James E Wilson  <wilson@specifixinc.com>
 
+	* doc/c-tree.texi (CONSTRUCTOR): Clarify element order and handling
+	of missing fields.
+
 	PR target/8407
 	* config/ia64/ia64.c (ia64_function_arg): For single-reg HFA, call
 	gen_rtx_REG to create new reg with argument mode.
