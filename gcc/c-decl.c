@@ -2744,7 +2744,6 @@ init_decl_processing ()
 							    sizetype,
 							    endlink))));
 
-  /* ``integer_tpe_node'' misspelling corrected: North-Keys 30 Mar 91 */
   builtin_function ("__builtin_constant_p", int_ftype_int,
 		    BUILT_IN_CONSTANT_P, NULL_PTR);
 
@@ -2768,6 +2767,9 @@ init_decl_processing ()
 						    sizetype,
 						    endlink)),
 		    BUILT_IN_ALLOCA, "alloca");
+  builtin_function ("__builtin_ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);
+  /* Define alloca, ffs as builtins.
+     Declare _exit just to mark it as volatile.  */
   if (! flag_no_builtin && !flag_no_nonansi_builtin)
     {
       temp = builtin_function ("alloca",
@@ -2776,6 +2778,9 @@ init_decl_processing ()
 							       sizetype,
 							       endlink)),
 			       BUILT_IN_ALLOCA, NULL_PTR);
+      /* Suppress error if redefined as a non-function.  */
+      DECL_BUILT_IN_NONANSI (temp) = 1;
+      temp = builtin_function ("ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
       temp = builtin_function ("_exit", void_ftype_any, NOT_BUILT_IN,
@@ -2791,7 +2796,6 @@ init_decl_processing ()
 		    NULL_PTR);
   builtin_function ("__builtin_labs", long_ftype_long, BUILT_IN_LABS,
 		    NULL_PTR);
-  builtin_function ("__builtin_ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);
   builtin_function ("__builtin_saveregs",
 		    build_function_type (ptr_type_node, NULL_TREE),
 		    BUILT_IN_SAVEREGS, NULL_PTR);
