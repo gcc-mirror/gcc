@@ -63,7 +63,15 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   6,					/* cost of starting a multiply */
   1,					/* cost of multiply per each bit set */
   23,					/* cost of a divide/mod */
-  15					/* "large" insn */
+  15,					/* "large" insn */
+  {2, 4, 2},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2). */
+  {2, 4, 2},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {8, 8, 8},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {8, 8, 8}				/* cost of loading integer registers */
 };
 
 struct processor_costs i486_cost = {	/* 486 specific costs */
@@ -74,7 +82,15 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   12,					/* cost of starting a multiply */
   1,					/* cost of multiply per each bit set */
   40,					/* cost of a divide/mod */
-  15					/* "large" insn */
+  15,					/* "large" insn */
+  {2, 4, 2},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2). */
+  {2, 4, 2},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {8, 8, 8},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {8, 8, 8}				/* cost of loading integer registers */
 };
 
 struct processor_costs pentium_cost = {
@@ -85,7 +101,15 @@ struct processor_costs pentium_cost = {
   11,					/* cost of starting a multiply */
   0,					/* cost of multiply per each bit set */
   25,					/* cost of a divide/mod */
-  8					/* "large" insn */
+  8,					/* "large" insn */
+  {2, 4, 2},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2). */
+  {2, 4, 2},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {2, 2, 6},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {4, 4, 6}				/* cost of loading integer registers */
 };
 
 struct processor_costs pentiumpro_cost = {
@@ -96,7 +120,15 @@ struct processor_costs pentiumpro_cost = {
   1,					/* cost of starting a multiply */
   0,					/* cost of multiply per each bit set */
   17,					/* cost of a divide/mod */
-  8					/* "large" insn */
+  8,					/* "large" insn */
+  {4, 4, 4},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2). */
+  {2, 2, 2},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {2, 2, 6},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {4, 4, 6}				/* cost of loading integer registers */
 };
 
 struct processor_costs k6_cost = {
@@ -107,7 +139,15 @@ struct processor_costs k6_cost = {
   3,					/* cost of starting a multiply */
   0,					/* cost of multiply per each bit set */
   18,					/* cost of a divide/mod */
-  8					/* "large" insn */
+  8,					/* "large" insn */
+  {4, 5, 4},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2). */
+  {2, 3, 2},				/* cost of storing integer registers */
+  4,					/* cost of reg,reg fld/fst */
+  {6, 6, 6},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {4, 4, 4}				/* cost of loading integer registers */
 };
 
 struct processor_costs *ix86_cost = &pentium_cost;

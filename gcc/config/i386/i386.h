@@ -62,6 +62,16 @@ struct processor_costs {
   int mult_bit;			/* cost of multiply per each bit set */
   int divide;			/* cost of a divide/mod */
   int large_insn;		/* insns larger than this cost more */
+  int int_load[3];		/* cost of loading integer registers
+				   in QImode, HImode and SImode relative
+				   to reg-reg move (2).  */
+  int int_store[3];		/* cost of storing integer register
+				   in QImode, HImode and SImode */
+  int fp_move;			/* cost of reg,reg fld/fst */
+  int fp_load[3];		/* cost of loading FP register
+				   in SFmode, DFmode and XFmode */
+  int fp_store[3];		/* cost of storing FP register
+				   in SFmode, DFmode and XFmode */
 };
 
 extern struct processor_costs *ix86_cost;
@@ -1956,22 +1966,28 @@ while (0)
    : REG_P (RTX) ? 1						\
    : 2)
 
-/* A C expression for the cost of moving data of mode M between a
-   register and memory.  A value of 2 is the default; this cost is
-   relative to those in `REGISTER_MOVE_COST'.
+/* A C expression for the cost of moving data from a register in class FROM to
+   one in class TO.  The classes are expressed using the enumeration values
+   such as `GENERAL_REGS'.  A value of 2 is the default; other values are
+   interpreted relative to that.
 
-   If moving between registers and memory is more expensive than
-   between two registers, you should define this macro to express the
-   relative cost.
+   It is not required that the cost always equal 2 when FROM is the same as TO;
+   on some machines it is expensive to move between registers if they are not
+   general registers.
 
    On the i386, copying between floating-point and fixed-point
-   registers is expensive.  */
+   registers is done trough memory.  
+ 
+   Integer -> fp moves are noticeably slower than the opposite direction
+   because of the partial memory stall they cause.  Give it an
+   arbitary high cost.
+ */
 
 #define REGISTER_MOVE_COST(CLASS1, CLASS2)				\
-  (((FLOAT_CLASS_P (CLASS1) && ! FLOAT_CLASS_P (CLASS2))		\
-    || (! FLOAT_CLASS_P (CLASS1) && FLOAT_CLASS_P (CLASS2))) ? 10	\
-   : 2)
-
+  ((FLOAT_CLASS_P (CLASS1) && ! FLOAT_CLASS_P (CLASS2))			\
+   ? (MEMORY_MOVE_COST (DFmode, CLASS1, 0)				\
+     + MEMORY_MOVE_COST (DFmode, CLASS2, 1))				\
+   : (! FLOAT_CLASS_P (CLASS1) && FLOAT_CLASS_P (CLASS2)) ? 10 : 2)
 
 /* A C expression for the cost of moving data of mode M between a
    register and memory.  A value of 2 is the default; this cost is
@@ -1981,7 +1997,19 @@ while (0)
    between two registers, you should define this macro to express the
    relative cost.  */
 
-/* #define MEMORY_MOVE_COST(M,C,I) 2  */
+#define MEMORY_MOVE_COST(MODE,CLASS,IN)					\
+  (FLOAT_CLASS_P (CLASS)						\
+   ? (GET_MODE_SIZE (MODE)==4						\
+      ? (IN ? ix86_cost->fp_load[0] : ix86_cost->fp_store[0])		\
+      : (GET_MODE_SIZE (MODE)==8					\
+	 ? (IN ? ix86_cost->fp_load[1] : ix86_cost->fp_store[1])	\
+	 : (IN ? ix86_cost->fp_load[2] : ix86_cost->fp_store[2])))	\
+   : (GET_MODE_SIZE (MODE)==1						\
+      ? (IN ? ix86_cost->int_load[0] : ix86_cost->int_store[0])		\
+      : (GET_MODE_SIZE (MODE)==2					\
+	 ? (IN ? ix86_cost->int_load[1] : ix86_cost->int_store[1])	\
+	 : ((IN ? ix86_cost->int_load[2] : ix86_cost->int_store[2])	\
+	    * GET_MODE_SIZE (MODE) / 4))))
 
 /* A C expression for the cost of a branch instruction.  A value of 1
    is the default; other values are interpreted relative to that.  */
