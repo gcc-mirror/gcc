@@ -1,5 +1,5 @@
 /* gtktextareapeer.c -- Native implementation of GtkTextAreaPeer
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -64,7 +64,10 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_create
       || scroll == AWT_TEXTAREA_SCROLLBARS_VERTICAL_ONLY) ? 
        GTK_POLICY_ALWAYS : GTK_POLICY_NEVER);
 
-  gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW(text), GTK_WRAP_WORD);
+  gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (text),
+			       (scroll == AWT_TEXTAREA_SCROLLBARS_BOTH
+				|| scroll == AWT_TEXTAREA_SCROLLBARS_HORIZONTAL_ONLY)
+			       ? GTK_WRAP_NONE : GTK_WRAP_WORD);
 
   gdk_threads_leave ();
 
