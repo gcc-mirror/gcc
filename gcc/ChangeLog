@@ -1,3 +1,9 @@
+1999-12-18 10:42 -0800  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* objc/objc-parse.c: Regenerate.  This file must be rebuilt
+	after any change to c-parse.in, even if objc-parse.y didn't
+	change.  Oops.
+
 1999-12-18  David S. Miller  <davem@redhat.com>
 
 	* toplev.c (rest_of_compilation): Restore BLOCK tree
