@@ -536,7 +536,6 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
   int clear_zero_bit_copies = 0;
   int set_zero_bit_copies = 0;
   int insns = 0;
-  rtx new_src;
   unsigned HOST_WIDE_INT temp1, temp2;
   unsigned HOST_WIDE_INT remainder = val & 0xffffffff;
 
@@ -700,7 +699,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	    {
 	      if (generate)
 		{
-		  new_src = subtargets ? gen_reg_rtx (mode) : target;
+		  rtx new_src = subtargets ? gen_reg_rtx (mode) : target;
 		  emit_insn (gen_rtx (SET, VOIDmode, new_src, 
 				      GEN_INT (temp1)));
 		  emit_insn (gen_ashrsi3 (target, new_src, 
@@ -715,7 +714,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	    {
 	      if (generate)
 		{
-		  new_src = subtargets ? gen_reg_rtx (mode) : target;
+		  rtx new_src = subtargets ? gen_reg_rtx (mode) : target;
 		  emit_insn (gen_rtx (SET, VOIDmode, new_src,
 				      GEN_INT (temp1)));
 		  emit_insn (gen_ashrsi3 (target, new_src, 
@@ -741,10 +740,10 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	      if ((((temp2 | (temp2 << i)) & 0xffffffff) == remainder)
 		  && ! const_ok_for_arm (temp2))
 		{
-		  insns = arm_gen_constant (code, mode, temp2,
-					    new_src = (subtargets
-						       ? gen_reg_rtx (mode)
-						       : target),
+		  rtx new_src = (subtargets
+				 ? (generate ? gen_reg_rtx (mode) : NULL_RTX)
+				 : target);
+		  insns = arm_gen_constant (code, mode, temp2, new_src,
 					    source, subtargets, generate);
 		  source = new_src;
 		  if (generate)
@@ -763,10 +762,10 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	      if (((temp1 | (temp1 >> i)) == remainder)
 		  && ! const_ok_for_arm (temp1))
 		{
-		  insns = arm_gen_constant (code, mode, temp1,
-					    new_src = (subtargets
-						       ? gen_reg_rtx (mode)
-						       : target),
+		  rtx new_src = (subtargets
+				 ? (generate ? gen_reg_rtx (mode) : NULL_RTX)
+				 : target);
+		  insns = arm_gen_constant (code, mode, temp1, new_src,
 					    source, subtargets, generate);
 		  source = new_src;
 		  if (generate)
@@ -787,6 +786,7 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	 single instruction, and we can find a temporary to put it in,
 	 then this can be done in two instructions instead of 3-4.  */
       if (subtargets
+	  /* TARGET can't be NULL if SUBTARGETS is 0 */
 	  || (reload_completed && ! reg_mentioned_p (target, source)))
 	{
 	  if (const_ok_for_arm (ARM_SIGN_EXTEND (~ val)))
@@ -873,29 +873,31 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 	  HOST_WIDE_INT shift_mask = ((0xffffffff 
 				       << (32 - clear_sign_bit_copies))
 				      & 0xffffffff);
-	  rtx new_source;
-	  rtx shift;
 
 	  if ((remainder | shift_mask) != 0xffffffff)
 	    {
 	      if (generate)
 		{
-		  new_source = subtargets ? gen_reg_rtx (mode) : target;
+		  rtx new_src = subtargets ? gen_reg_rtx (mode) : target;
 		  insns = arm_gen_constant (AND, mode, remainder | shift_mask,
-					    new_source, source, subtargets, 1);
-		  source = new_source;
+					    new_src, source, subtargets, 1);
+		  source = new_src;
 		}
 	      else
-		insns = arm_gen_constant (AND, mode, remainder | shift_mask,
-					  new_source, source, subtargets, 0);
+		{
+		  rtx targ = subtargets ? NULL_RTX : target;
+		  insns = arm_gen_constant (AND, mode, remainder | shift_mask,
+					    targ, source, subtargets, 0);
+		}
 	    }
 
 	  if (generate)
 	    {
-	      shift = GEN_INT (clear_sign_bit_copies);
-	      new_source = subtargets ? gen_reg_rtx (mode) : target;
-	      emit_insn (gen_ashlsi3 (new_source, source, shift));
-	      emit_insn (gen_lshrsi3 (target, new_source, shift));
+	      rtx new_src = subtargets ? gen_reg_rtx (mode) : target;
+	      rtx shift = GEN_INT (clear_sign_bit_copies);
+
+	      emit_insn (gen_ashlsi3 (new_src, source, shift));
+	      emit_insn (gen_lshrsi3 (target, new_src, shift));
 	    }
 
 	  return insns + 2;
@@ -904,29 +906,33 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
       if (clear_zero_bit_copies >= 16 && clear_zero_bit_copies < 24)
 	{
 	  HOST_WIDE_INT shift_mask = (1 << clear_zero_bit_copies) - 1;
-	  rtx new_source;
-	  rtx shift;
 	  
 	  if ((remainder | shift_mask) != 0xffffffff)
 	    {
 	      if (generate)
 		{
-		  new_source = subtargets ? gen_reg_rtx (mode) : target;
+		  rtx new_src = subtargets ? gen_reg_rtx (mode) : target;
+
 		  insns = arm_gen_constant (AND, mode, remainder | shift_mask,
-					    new_source, source, subtargets, 1);
-		  source = new_source;
+					    new_src, source, subtargets, 1);
+		  source = new_src;
 		}
 	      else
-		insns = arm_gen_constant (AND, mode, remainder | shift_mask,
-					  new_source, source, subtargets, 0);
+		{
+		  rtx targ = subtargets ? NULL_RTX : target;
+
+		  insns = arm_gen_constant (AND, mode, remainder | shift_mask,
+					    targ, source, subtargets, 0);
+		}
 	    }
 
 	  if (generate)
 	    {
-	      shift = GEN_INT (clear_zero_bit_copies);
-	      new_source = subtargets ? gen_reg_rtx (mode) : target;
-	      emit_insn (gen_lshrsi3 (new_source, source, shift));
-	      emit_insn (gen_ashlsi3 (target, new_source, shift));
+	      rtx new_src = subtargets ? gen_reg_rtx (mode) : target;
+	      rtx shift = GEN_INT (clear_zero_bit_copies);
+
+	      emit_insn (gen_lshrsi3 (new_src, source, shift));
+	      emit_insn (gen_ashlsi3 (target, new_src, shift));
 	    }
 
 	  return insns + 2;
@@ -1001,31 +1007,24 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 				 | ((i < end) ? (0xff >> (32 - end)) : 0));
 	    remainder &= ~temp1;
 
-	    if (code == SET)
+	    if (generate)
 	      {
-		if (generate)
+		rtx new_src;
+
+		if (code == SET)
 		  emit_insn (gen_rtx (SET, VOIDmode,
 				      new_src = (subtargets
 						 ? gen_reg_rtx (mode)
 						 : target),
 				      GEN_INT (can_invert ? ~temp1 : temp1)));
-		can_invert = 0;
-		code = PLUS;
-	      }
-	    else if (code == MINUS)
-	      {
-		if (generate)
+		else if (code == MINUS)
 		  emit_insn (gen_rtx (SET, VOIDmode,
 				      new_src = (subtargets
 						 ? gen_reg_rtx (mode)
 						 : target),
 				      gen_rtx (code, mode, GEN_INT (temp1),
 					       source)));
-		code = PLUS;
-	      }
-	    else
-	      {
-		if (generate)
+		else
 		  emit_insn (gen_rtx (SET, VOIDmode,
 				      new_src = (remainder
 						 ? (subtargets
@@ -1037,10 +1036,18 @@ arm_gen_constant (code, mode, val, target, source, subtargets, generate)
 							: (can_negate
 							   ? -temp1
 							   : temp1)))));
+		source = new_src;
 	      }
 
+	    if (code == SET)
+	      {
+		can_invert = 0;
+		code = PLUS;
+	      }
+	    else if (code == MINUS)
+	      code = PLUS;
+
 	    insns++;
-	    source = new_src;
 	    i -= 6;
 	  }
 	i -= 2;
@@ -3578,10 +3585,7 @@ find_barrier (from, max_count)
 	  && GET_CODE (PATTERN (from)) == SET
 	  && CONSTANT_P (SET_SRC (PATTERN (from)))
 	  && CONSTANT_POOL_ADDRESS_P (SET_SRC (PATTERN (from))))
-	{
-	  rtx src = SET_SRC (PATTERN (from));
-	  count += 8;
-	}
+	count += 8;
       else
 	count += get_attr_length (from);
 
