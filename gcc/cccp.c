@@ -826,23 +826,25 @@ static char *predefs = "";
    it would be best to do something here to figure out automatically
    from other information what type to use.  */
 
-/* The string value for __size_type__.  */
+/* The string value for __SIZE_TYPE__.  */
 
 #ifndef SIZE_TYPE
 #define SIZE_TYPE "long unsigned int"
 #endif
 
-/* The string value for __ptrdiff_type__.  */
+/* The string value for __PTRDIFF_TYPE__.  */
 
 #ifndef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
 #endif
 
-/* The string value for __wchar_type__.  */
+/* The string value for __WCHAR_TYPE__.  */
 
 #ifndef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 #endif
+char * wchar_type = WCHAR_TYPE;
+#undef WCHAR_TYPE
 
 /* The string value for __USER_LABEL_PREFIX__ */
 
@@ -1603,6 +1605,11 @@ main (argc, argv)
     in_fname = "";
   fp->nominal_fname = fp->fname = in_fname;
   fp->lineno = 0;
+
+  /* In C++, wchar_t is a distinct basic type, and we can expect
+     __wchar_t to be defined by cc1plus.  */
+  if (cplusplus)
+    wchar_type = "__wchar_t";
 
   /* Install __LINE__, etc.  Must follow initialize_char_syntax
      and option processing.  */
@@ -3825,38 +3832,26 @@ special_symbol (hp, op)
 
 #ifndef NO_BUILTIN_SIZE_TYPE
   case T_SIZE_TYPE:
-    buf = (char *) alloca (3 + strlen (SIZE_TYPE));
-    sprintf (buf, "%s", SIZE_TYPE);
+    buf = SIZE_TYPE;
     break;
 #endif
 
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
   case T_PTRDIFF_TYPE:
-    buf = (char *) alloca (3 + strlen (PTRDIFF_TYPE));
-    sprintf (buf, "%s", PTRDIFF_TYPE);
+    buf = PTRDIFF_TYPE;
     break;
 #endif
 
   case T_WCHAR_TYPE:
-    /* In C++, wchar_t is a distinct basic type, and we can expect
-       __wchar_t to be defined by cc1plus.  */
-    if (cplusplus)
-      buf = "__wchar_t";
-    else
-      {
-	buf = (char *) alloca (3 + strlen (WCHAR_TYPE));
-	sprintf (buf, "%s", WCHAR_TYPE);
-      }
+    buf = wchar_type;
     break;
 
   case T_USER_LABEL_PREFIX_TYPE:
-    buf = (char *) alloca (3 + strlen (USER_LABEL_PREFIX));
-    sprintf (buf, "%s", USER_LABEL_PREFIX);
+    buf = USER_LABEL_PREFIX;
     break;
 
   case T_REGISTER_PREFIX_TYPE:
-    buf = (char *) alloca (3 + strlen (REGISTER_PREFIX));
-    sprintf (buf, "%s", REGISTER_PREFIX);
+    buf = REGISTER_PREFIX;
     break;
 
   case T_CONST:
@@ -8986,7 +8981,7 @@ initialize_builtins (inp, outp)
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 #endif
 
-      sprintf (directive, " __WCHAR_TYPE__ %s\n", WCHAR_TYPE);
+      sprintf (directive, " __WCHAR_TYPE__ %s\n", wchar_type);
       output_line_command (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
