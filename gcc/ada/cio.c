@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2005 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -49,6 +49,11 @@
 #undef fputc
 #undef stderr
 #undef stdout
+#endif
+
+#ifdef VTHREADS
+#undef putchar
+#undef getchar
 #endif
 
 int
