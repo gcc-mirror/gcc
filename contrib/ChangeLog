@@ -1,3 +1,8 @@
+2003-12-11  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* gcc_update (files_and_dependencies): Correct typo in the filename
+	gnat_ug_wnt.texi.
+
 2003-12-08  Arnaud Charlet  <charlet@act-europe.fr
 
 	* gcc_update: Remove handling of sinfo.h, einfo.h, nmake.ads,
