@@ -104,6 +104,11 @@ static int enum_overflow;
 
 static location_t current_function_prototype_locus;
 
+/* The argument information structure for the function currently being
+   defined.  */
+
+static GTY(()) tree current_function_arg_info;
+
 /* The current statement tree.  */
 
 static GTY(()) struct stmt_tree_s c_stmt_tree;
@@ -4704,10 +4709,9 @@ grokdeclarator (tree declarator, tree declspecs,
 	  = !(specbits & ((1 << (int) RID_STATIC) | (1 << (int) RID_AUTO)));
 
 	/* For a function definition, record the argument information
-	   block in DECL_ARGUMENTS where store_parm_decls will look
-	   for it.  */
+	   block where store_parm_decls will look for it.  */
 	if (funcdef_flag)
-	  DECL_ARGUMENTS (decl) = arg_info;
+	  current_function_arg_info = arg_info;
 
 	if (defaulted_int)
 	  C_FUNCTION_IMPLICIT_INT (decl) = 1;
@@ -6352,16 +6356,18 @@ void
 store_parm_decls (void)
 {
   tree fndecl = current_function_decl;
+  bool proto;
 
   /* The argument information block for FNDECL.  */
-  tree arg_info = DECL_ARGUMENTS (fndecl);
+  tree arg_info = current_function_arg_info;
+  current_function_arg_info = 0;
 
   /* True if this definition is written with a prototype.  Note:
      despite C99 6.7.5.3p14, we can *not* treat an empty argument
      list in a function definition as equivalent to (void) -- an
      empty argument list specifies the function has no parameters,
      but only (void) sets up a prototype for future calls.  */
-  bool proto = ARG_INFO_TYPES (arg_info) != 0;
+  proto = ARG_INFO_TYPES (arg_info) != 0;
 
   if (proto)
     store_parm_decls_newstyle (fndecl, arg_info);
@@ -6645,6 +6651,7 @@ c_push_function_context (struct function *f)
   p->x_break_label = c_break_label;
   p->x_cont_label = c_cont_label;
   p->x_switch_stack = c_switch_stack;
+  p->arg_info = current_function_arg_info;
   p->returns_value = current_function_returns_value;
   p->returns_null = current_function_returns_null;
   p->returns_abnormally = current_function_returns_abnormally;
@@ -6673,6 +6680,7 @@ c_pop_function_context (struct function *f)
   c_break_label = p->x_break_label;
   c_cont_label = p->x_cont_label;
   c_switch_stack = p->x_switch_stack;
+  current_function_arg_info = p->arg_info;
   current_function_returns_value = p->returns_value;
   current_function_returns_null = p->returns_null;
   current_function_returns_abnormally = p->returns_abnormally;

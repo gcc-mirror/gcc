@@ -135,6 +135,7 @@ struct language_function GTY(())
   tree x_break_label;
   tree x_cont_label;
   struct c_switch * GTY((skip)) x_switch_stack;
+  tree arg_info;
   int returns_value;
   int returns_null;
   int returns_abnormally;

@@ -1,3 +1,12 @@
+2004-08-30  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-tree.h (struct language_function): Add arg_info element.
+	* c-decl.c (current_function_arg_info): New.
+	(grokdeclarator, store_parm_decls): Use it instead of
+	DECL_ARGUMENTS.
+	(c_push_function_context, c_pop_function_context): Save and
+	restore it.
+
 2004-08-30  Richard Henderson  <rth@redhat.com>
 
 	* c-typeck.c (build_unary_op): Don't expand ADDR_EXPR of a 
