@@ -405,14 +405,6 @@ extern int vms_valid_decl_attribute_p ();
 #define UNALIGNED_INT_ASM_OP	".long"
 #define UNALIGNED_DOUBLE_INT_ASM_OP	".quad"
 
-#undef ASM_OUTPUT_ALIGNED_COMMON
-#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
-do {									\
-  fprintf ((FILE), "\t.comm\t");					\
-  assemble_name ((FILE), (NAME));					\
-  fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
-} while (0)
-
 #define ASM_OUTPUT_SECTION(FILE,SECTION)			\
    (strcmp (SECTION, ".text") == 0)				\
      ? text_section ()						\
@@ -476,3 +468,5 @@ do {									\
 #define UMODDI3_LIBCALL "OTS$REM_UL"
 
 #define DIR_SEPARATOR ']'
+
+#define PREFIX "GNU_ROOT:"
