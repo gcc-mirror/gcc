@@ -1,3 +1,8 @@
+Mon Oct  4 02:31:20 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* mips.md: Define conditional move patterns for floating point
+	operands and DI mode conditions.
+
 Mon Oct  4 02:12:41 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (make_node): Set TREE_SIDE_EFFECTS for expressions that
