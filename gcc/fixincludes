@@ -55,26 +55,25 @@ cd ${INPUT}
 # Note that $files may have duplicates in it;
 # later parts of this file are supposed to ignore them.
 dirs="."
-prevdirs="."
-while [ -n "$dirs" ]
+levels=2
+while [ -n "$dirs" ] && [ $levels -gt 0 ]
 do
+    levels=`expr $levels - 1`
     newdirs=
-    for d in $prevdirs
+    for d in $dirs
     do
 	if [ "$d" != . ]
 	then
 	    d=$d/.
 	fi
 
-	# Find all directories under $d, relative to $d, including $d itself.
-	# Get rid of ./ at the end!
-        files="$files `find $d -type d -print | sed '/^.$/d' | sed '/\/\.$/ s|/\.$||'`"
+	# Find all directories under $d, relative to $d, excluding $d itself.
+        files="$files `find $d -type d -print | sed '|/\.$|d'`"
 	$LINKS && \
 	  newdirs="$newdirs `find $d -type l -exec test -d '{}' \; -print`"
     done
 
     dirs="$newdirs"
-    prevdirs="$newdirs"
 done
 
 dirs=
