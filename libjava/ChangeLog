@@ -1,5 +1,49 @@
 2003-02-11  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/natCharBufferImpl.cc
+	(nio_cast): Removed.
+	(nio_put_*): Removed.
+	(nio_get_*): Removed.
+	* gnu/java/nio/natDoubleBufferImpl.cc
+	(nio_cast): Removed.
+	(nio_put_*): Removed.
+	(nio_get_*): Removed.
+	* gnu/java/nio/natFloatBufferImpl.cc
+	(nio_cast): Removed.
+	(nio_put_*): Removed.
+	(nio_get_*): Removed.
+	* gnu/java/nio/natIntBufferImpl.cc
+	(nio_cast): Removed.
+	(nio_put_*): Removed.
+	(nio_get_*): Removed.
+	* gnu/java/nio/natLongBufferImpl.cc
+	(nio_cast): Removed.
+	(nio_put_*): Removed.
+	(nio_get_*): Removed.
+	* gnu/java/nio/natShortBufferImpl.cc
+	(nio_cast): Removed.
+	(nio_put_*): Removed.
+	(nio_get_*): Removed.
+	* gnu/java/nio/SelectorProviderImpl.java
+	(openDatagramChannel): Throws IOException.
+	(openPipe): Throws IOException.
+	(openSelector): Throws IOException.
+	(openServerSocketChannel): Throws IOException.
+	(openSocketChannel): Throws IOException.
+	* gnu/java/nio/ServerSocketChannelImpl.java
+	(ServerSocketChannelImpl): Throws IOException.
+	(implCloseSelectableChannel): Throws IOException.
+	(implConfigureBlocking): Throws IOException.
+	* java/nio/ByteBuffer.java
+	(readOnly): Removed.
+	(hasArray): Use isReadOnly() instead of readOnly.
+	(array): Use isReadOnly() instead of readOnly.
+	(arrayOffset): Use isReadOnly() instead of readOnly.
+	* java/nio/CharBuffer.java
+	(CharBuffer): Implements Cloneable and CharSequence.
+
+2003-02-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/Buffer.java
 	(cap, lim, pos, mark): Made private
 	(Buffer): Added package private constructor.

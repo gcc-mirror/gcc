@@ -43,7 +43,6 @@ package java.nio;
 public abstract class ByteBuffer extends Buffer implements Comparable
 {
   int offset;
-  boolean readOnly;
   byte[] backing_buffer;
   
   /**
@@ -156,7 +155,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
   public final boolean hasArray ()
   {
     return (backing_buffer != null
-             && !readOnly);
+             && !isReadOnly ());
   }
 
   /**
@@ -172,7 +171,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
     if (backing_buffer == null)
       throw new UnsupportedOperationException ();
 
-    if (readOnly)
+    if (isReadOnly ())
       throw new ReadOnlyBufferException ();
 
     return backing_buffer;
@@ -192,7 +191,7 @@ public abstract class ByteBuffer extends Buffer implements Comparable
     if (backing_buffer == null)
       throw new UnsupportedOperationException ();
 
-    if (readOnly)
+    if (isReadOnly ())
       throw new ReadOnlyBufferException ();
 
     return offset;
