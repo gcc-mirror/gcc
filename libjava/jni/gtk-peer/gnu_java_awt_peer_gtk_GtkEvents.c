@@ -232,22 +232,18 @@ keysym_to_awt_keycode (guint keyval)
     }
 }
 
+/* Checks if keyval triggers a KEY_TYPED event on the source widget.
+   This function identifies special keyvals that don't trigger
+   GtkIMContext "commit" signals, but that do trigger Java KEY_TYPED
+   events. */
 static int
-generates_key_typed_event (guint keyval)
+generates_key_typed_event (guint keyval, GtkWidget *source)
 {
-  guint vk;
-
-  vk = gdk_keyval_to_upper (keyval);
-
-  if ((vk >= 0x20 && vk <= 0x7e)	/* Most printable keysyms on a
-                                           standard US keyboard. */
-      || (vk >= 0xFF9F && vk <= 0xFFB9) /* Numeric Keypad keysyms. */
-      || vk == GDK_BackSpace
-      || vk == GDK_Delete
-      || vk == GDK_Return)
-    return 1;
-  else
-    return 0;
+  return (keyval == GDK_BackSpace
+          || keyval == GDK_Delete
+          || keyval == GDK_Return
+          || (keyval == GDK_Tab
+              && GTK_IS_TEXT_VIEW(source))) ? 1 : 0;
 }
 
 void
@@ -465,6 +461,8 @@ awt_event_handler (GdkEvent *event)
 	  {
 	    GtkWidget *widget;
 	    GtkWindow *window;
+            /* The window to which the Java peer is attached. */
+            GdkWindow *obj_window;
 
 	    gdk_window_get_user_data (event->any.window, (void **) &widget);
 
@@ -477,7 +475,16 @@ awt_event_handler (GdkEvent *event)
 		&& window->focus_widget->window)
 	      {
 		gtk_widget_activate (window->focus_widget);
-		gdk_property_get (window->focus_widget->window,
+
+                /* TextArea peers are attached to the scrolled window
+                   that contains the GtkTextView, not to the text view
+                   itself. */
+                if (GTK_IS_TEXT_VIEW (window->focus_widget))
+                  obj_window = gtk_widget_get_parent (window->focus_widget)->window;
+                else
+                  obj_window = window->focus_widget->window;
+
+		gdk_property_get (obj_window,
 				  gdk_atom_intern ("_GNU_GTKAWT_ADDR", FALSE),
 				  gdk_atom_intern ("CARDINAL", FALSE),
 				  0,
@@ -500,15 +507,16 @@ awt_event_handler (GdkEvent *event)
 					    event->key.string[0] : 
 					    AWT_KEY_CHAR_UNDEFINED);
 
-		if (event->key.length
-                    && generates_key_typed_event(event->key.keyval))
+                if (generates_key_typed_event (event->key.keyval, window->focus_widget))
 		  (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr,
 					      postKeyEventID,
 					      (jint) AWT_KEY_TYPED,
 					      (jlong) event->key.time,
                                               state_to_awt_mods (event->key.state),
 					      VK_UNDEFINED,
-					      (jchar) event->key.string[0]);
+                                              (jchar) (event->key.length) ?
+                                              event->key.string[0] :
+                                              AWT_KEY_CHAR_UNDEFINED);
 	      }
 	  }
 	  break;
@@ -516,6 +524,7 @@ awt_event_handler (GdkEvent *event)
 	  {
 	    GtkWidget *widget;
 	    GtkWindow *window;
+            GdkWindow *obj_window;
 
 	    gdk_window_get_user_data (event->any.window, (void **) &widget);
 
@@ -528,7 +537,13 @@ awt_event_handler (GdkEvent *event)
 		&& window->focus_widget->window)
 	      {
 		gtk_widget_activate (window->focus_widget);
-		gdk_property_get (window->focus_widget->window,
+
+                if (GTK_IS_TEXT_VIEW (window->focus_widget))
+                  obj_window = gtk_widget_get_parent (window->focus_widget)->window;
+                else
+                  obj_window = window->focus_widget->window;
+
+		gdk_property_get (obj_window,
 				  gdk_atom_intern ("_GNU_GTKAWT_ADDR", FALSE),
 				  gdk_atom_intern ("CARDINAL", FALSE),
 				  0,

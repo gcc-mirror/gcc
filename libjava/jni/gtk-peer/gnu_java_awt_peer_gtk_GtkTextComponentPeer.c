@@ -39,6 +39,62 @@ exception statement from your version. */
 #include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GtkTextComponentPeer.h"
 
+static void textcomponent_commit_cb (GtkIMContext *context,
+                                 const gchar  *str,
+                                 jobject peer);
+
+static void textcomponent_changed_cb (GtkEditable *editable,
+                                  jobject peer);
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_connectHooks
+  (JNIEnv *env, jobject obj)
+{
+  void *ptr;
+  GtkTextView *text = NULL;
+  GtkTextBuffer *buf;
+
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  if (GTK_IS_ENTRY(ptr))
+    {
+      g_signal_connect (GTK_ENTRY (ptr)->im_context, "commit",
+                        G_CALLBACK (textcomponent_commit_cb), obj);
+
+      g_signal_connect (GTK_EDITABLE (ptr), "changed",
+                        G_CALLBACK (textcomponent_changed_cb), obj);
+    }
+  else
+    {
+      if (GTK_IS_SCROLLED_WINDOW (ptr))
+	{
+          text = GTK_TEXT_VIEW (GTK_SCROLLED_WINDOW (ptr)->container.child);
+	}
+      else if (GTK_IS_TEXT_VIEW (ptr))
+	{
+	  text = GTK_TEXT_VIEW (ptr);
+	}
+
+      if (text)
+	{
+          g_signal_connect (text->im_context, "commit",
+                            G_CALLBACK (textcomponent_commit_cb), obj);
+
+          buf = gtk_text_view_get_buffer (text);
+          if (buf)
+            g_signal_connect (buf, "changed",
+                              G_CALLBACK (textcomponent_changed_cb), obj);
+	}
+    }
+
+  gdk_threads_leave ();
+
+  /* Connect the superclass hooks.  */
+  Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks (env, obj);
+}
+
 JNIEXPORT jint JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getCaretPosition
   (JNIEnv *env, jobject obj)
@@ -371,18 +427,6 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_setText
   if (GTK_IS_EDITABLE (ptr))
     {
       gtk_entry_set_text (GTK_ENTRY (ptr), str);
-
-      if (gdk_property_get (GTK_WIDGET(ptr)->window,
-                            gdk_atom_intern ("_GNU_GTKAWT_ADDR", FALSE),
-                            gdk_atom_intern ("CARDINAL", FALSE),
-                            0,
-                            sizeof (jobject),
-                            FALSE,
-                            NULL,
-                            NULL,
-                            NULL,
-                            (guchar **)&obj_ptr))
-        (*gdk_env)->CallVoidMethod (gdk_env, *obj_ptr, postTextEventID);
     }
   else
     {
@@ -405,4 +449,37 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_setText
   gdk_threads_leave ();
 
   (*env)->ReleaseStringUTFChars (env, contents, str);
+}
+
+static void
+textcomponent_commit_cb (GtkIMContext *context,
+                         const gchar  *str,
+                         jobject peer)
+{
+  void *ptr;
+
+  /* str is a \0-terminated UTF-8 encoded character. */
+  gunichar2 *jc = g_utf8_to_utf16 (str, -1, NULL, NULL, NULL);
+
+  if (jc)
+    (*gdk_env)->CallVoidMethod (gdk_env, peer,
+                                postKeyEventID,
+                                (jint) AWT_KEY_TYPED,
+                                /* We don't have access to the event
+                                   that caused this commit signal to
+                                   be fired.  So approximate the event
+                                   time... */
+                                (jlong) gdk_event_get_time (NULL),
+                                /* ... and assume no modifiers. */
+                                0,
+                                VK_UNDEFINED,
+                                (jchar) jc[0]);
+  g_free (jc);
+}
+
+static void
+textcomponent_changed_cb (GtkEditable *editable,
+                      jobject peer)
+{
+  (*gdk_env)->CallVoidMethod (gdk_env, peer, postTextEventID);
 }

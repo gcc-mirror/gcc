@@ -53,22 +53,6 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_create
 }
 
 JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_connectHooks
-  (JNIEnv *env, jobject obj)
-{
-  void *ptr;
-
-  ptr = NSA_GET_PTR (env, obj);
-
-  gdk_threads_enter ();
-  gtk_widget_realize (GTK_WIDGET (ptr));
-  connect_awt_hook (env, obj, 2, 
-		    GTK_WIDGET (ptr)->window, 
-		    GTK_ENTRY (ptr)->text_area);
-  gdk_threads_leave ();
-}
-
-JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkEntryGetSize
   (JNIEnv *env, jobject obj, jint cols, jintArray jdims)
 {

@@ -56,6 +56,7 @@ public class GtkTextComponentPeer extends GtkComponentPeer
     setText (tc.getText ());
   }
   
+  public native void connectHooks ();
   public native int getCaretPosition ();
   public native void setCaretPosition (int pos);
   public native int getSelectionStart ();
@@ -83,17 +84,5 @@ public class GtkTextComponentPeer extends GtkComponentPeer
   protected void postTextEvent ()
   {
     q.postEvent (new TextEvent (awtComponent, TextEvent.TEXT_VALUE_CHANGED));
-  }
-
-  public void handleEvent (AWTEvent e)
-  {
-    if (e.getID () == KeyEvent.KEY_TYPED
-        && ((TextComponent)e.getSource()).isEditable())
-      {
-        KeyEvent ke = (KeyEvent)e;
-
-        if (!ke.isConsumed())
-          postTextEvent ();
-      }
   }
 }
