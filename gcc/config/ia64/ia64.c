@@ -8253,6 +8253,9 @@ ia64_expand_builtin (exp, target, subtarget, mode, ignore)
       if (! target || ! register_operand (target, DImode))
 	target = gen_reg_rtx (DImode);
       emit_insn (gen_bsp_value (target));
+#ifdef POINTERS_EXTEND_UNSIGNED
+      target = convert_memory_address (ptr_mode, target);
+#endif
       return target;
 
     case IA64_BUILTIN_FLUSHRS:
