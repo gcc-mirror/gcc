@@ -634,16 +634,13 @@ special_function_p (fndecl, returns_twice, is_longjmp, fork_or_exec,
       /* Do not add any more malloc-like functions to this list,
          instead mark them as malloc functions using the malloc attribute.
          Note, realloc is not suitable for attribute malloc since
-         it may return the same address across multiple calls. */
+         it may return the same address across multiple calls.
+         C++ operator new is not suitable because it is not required
+         to return a unique pointer; indeed, the standard placement new
+	 just returns its argument. */
       else if (! strcmp (tname, "malloc")
 	       || ! strcmp (tname, "calloc")
-	       || ! strcmp (tname, "strdup")
-	       /* Note use of NAME rather than TNAME here.  These functions
-		  are only reserved when preceded with __.  */
-	       || ! strcmp (name, "__vn")	/* mangled __builtin_vec_new */
-	       || ! strcmp (name, "__nw")	/* mangled __builtin_new */
-	       || ! strcmp (name, "__builtin_new")
-	       || ! strcmp (name, "__builtin_vec_new"))
+	       || ! strcmp (tname, "strdup"))
 	*is_malloc = 1;
     }
 }
