@@ -1,3 +1,11 @@
+2001-06-15  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, alpha*-*-*): Fixed Tru64 UNIX
+	etc. spelling.
+	(Specific, alpha-*-osf1): Renamed to alpha*-*-osf*.
+	Added Tru64 UNIX V5.1 bootstrap hints.
+	(Specific, alpha*-*-osf*): Removed old section, obsolete.
+
 2001-06-15  Zack Weinberg  <zackw@stanford.edu>
 
 	* doc/cpp.texi: Revised and brought up to date.
