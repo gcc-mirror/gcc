@@ -38,6 +38,12 @@ char *xmalloc ();
 static void fatal ();
 void fancy_abort ();
 
+struct namelist
+{
+  struct namelist *next;
+  char *name;
+};
+
 static void
 write_upcase (str)
     char *str;
@@ -100,7 +106,8 @@ gen_attr (attr)
 }
 
 static void
-write_units ()
+write_units (num_units, min_ready_cost, max_ready_cost,
+	     min_busy_delay, max_busy_delay)
 {
   printf ("#define INSN_SCHEDULING\n\n");
   printf ("extern int result_ready_cost ();\n");
@@ -112,9 +119,15 @@ write_units ()
   printf ("  int multiplicity;\n");
   printf ("  int simultaneity;\n");
   printf ("  int default_cost;\n");
+  printf ("  int max_busy_cost;\n");
   printf ("  int (*ready_cost_function) ();\n");
   printf ("  int (*conflict_cost_function) ();\n");
   printf ("} function_units[];\n\n");
+  printf ("#define FUNCTION_UNITS_SIZE %d\n", num_units);
+  printf ("#define MIN_READY_COST %d\n", min_ready_cost);
+  printf ("#define MAX_READY_COST %d\n", max_ready_cost);
+  printf ("#define MIN_BUSY_DELAY %d\n", min_busy_delay);
+  printf ("#define MAX_BUSY_DELAY %d\n\n", max_busy_delay);
 }
 
 char *
@@ -170,6 +183,10 @@ main (argc, argv)
   int have_annul_true = 0;
   int have_annul_false = 0;
   int have_units = 0;
+  int num_units = 0;
+  int min_ready_cost = 100000, max_ready_cost = -1;
+  int min_busy_delay = 100000, max_busy_delay = -1;
+  struct namelist *units = 0;
   int i;
 
   obstack_init (rtl_obstack);
@@ -236,16 +253,45 @@ from the machine description file `md'.  */\n\n");
 	    }
         }
 
-      else if (GET_CODE (desc) == DEFINE_FUNCTION_UNIT && ! have_units)
+      else if (GET_CODE (desc) == DEFINE_FUNCTION_UNIT)
 	{
+	  struct namelist *unit;
+	  char *name = XSTR (desc, 0);
+	  int ready_cost = XINT (desc, 4);
+	  int busy_delay = XINT (desc, 5);
+
 	  have_units = 1;
-	  write_units ();
+	  if (min_ready_cost > ready_cost) min_ready_cost = ready_cost;
+	  if (max_ready_cost < ready_cost) max_ready_cost = ready_cost;
+	  if (min_busy_delay > busy_delay) min_busy_delay = busy_delay;
+	  if (max_busy_delay < busy_delay) max_busy_delay = busy_delay;
+
+	  /* If the optional conflict vector was specified, the busy delay
+	     may be zero.  */
+	  if (XVEC (desc, 6) != 0) min_busy_delay = 0;
+
+	  for (unit = units; unit; unit = unit->next)
+	    if (strcmp (unit->name, name) == 0)
+	      break;
+	  if (unit == 0)
+	    {
+	      int len = strlen (name) + 1;
+	      unit = (struct namelist *) alloca (sizeof (struct namelist));
+	      unit->name = (char *) alloca (len);
+	      bcopy (name, unit->name, len);
+	      unit->next = units;
+	      units = unit;
+	      num_units++;
+	    }
 	}
     }
+
+  if (have_units)
+    write_units (num_units, min_ready_cost, max_ready_cost,
+		 min_busy_delay, max_busy_delay);
 
   fflush (stdout);
   exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
   /* NOTREACHED */
   return 0;
 }
-
