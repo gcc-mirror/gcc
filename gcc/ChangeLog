@@ -1,3 +1,7 @@
+2002-06-19  Eric Christopher  <echristo@redhat.com>
+
+	* config/fp-bit.h: Add unordered defines for gofast.
+
 2002-06-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c (DECL_UNIT, DECL_BYPASS, DECL_AUTOMATON,
@@ -47,7 +51,7 @@
 	(make_internal_dfa_insn_code_attr, make_default_insn_latency_attr,
 	make_bypass_attr, form_important_insn_automata_lists,
 	expand_automata): Use the macros.
-	
+
 2002-06-20  Tim Josling  <tej@melbpc.org.au>
 
 	* Makefile.in: Clean up code to check for misspecified languages
@@ -77,7 +81,7 @@
 	(call_value): Remove constraint on unused uperand.
 	(udivmodhi4, udivmodsi4, udivmoddihi4_internal): Remove.
 	(udivmoddiqi4_internal, udivmoddihi4, udivmoddiqi4): Remove.
- 
+
 	* longlong.h (count_trailing_zeros): Escape newline and beautify.
 
 2002-06-19  Mark Mitchell  <mark@codesourcery.com>
@@ -152,7 +156,7 @@ Tue Jun 18 20:53:32 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(gen_automata_option): Process the new options.
 	(transform_2, transform_3): Initialize some variables.
 	(initiate_automaton_gen): Use the new macros.
-	
+
 2002-06-18  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (mips_initial_elimination_offset): Declare.
@@ -407,7 +411,7 @@ Sun Jun 16 22:16:10 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	for every loop iteration.
 
 2002-06-14  Eric Botcazou  <ebotcazou@multimania.com>
- 
+
 	* loop.c (for_each_insn_in_loop): Fix formatting and comments.
 
 2002-06-14  Eric Botcazou  <ebotcazou@multimania.com>
@@ -490,7 +494,7 @@ Fri Jun 14 12:04:02 2002  Dhananjay R. Deshpande <dhananjayd@kpit.com>
 	* reload.c (get_secondary_mem,find_reloads_address,
 	find_reloads_address_1): Pass reference to MEM to find_reloads_address
 	so that LEGITIMIZE_RELOAD_ADDRESS will be called.
-	
+
 2002-06-13  Jessica Han  <jessica@cup.hp.com>
 
 	* defaults.h (TARGET_VTABLE_ENTRY_ALIGN): New.
