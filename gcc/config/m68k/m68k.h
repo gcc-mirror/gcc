@@ -1400,7 +1400,7 @@ __transfer_from_trampoline ()					\
 	      return COSTS_N_INSNS (2) + INTVAL (XEXP (X, 1)) / 2;	\
 	    else							\
 	      /* We're using clrw + swap for these cases.  */		\
-	      return COSTS_N_INSNS (4) + (INTVAL (XEXP (X, 1)) - 16) / 2; \	
+	      return COSTS_N_INSNS (4) + (INTVAL (XEXP (X, 1)) - 16) / 2; \
 	  }								\
 	return COSTS_N_INSNS (10); /* worst case */			\
       }									\
