@@ -262,7 +262,7 @@ static htab_t changed_variables;
 static bool emit_notes;
 
 /* Fake variable for stack pointer.  */
-tree frame_base_decl;
+GTY(()) tree frame_base_decl;
 
 /* Local function prototypes.  */
 static void stack_adjust_offset_pre_post (rtx, HOST_WIDE_INT *,
