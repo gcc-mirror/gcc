@@ -1,3 +1,10 @@
+2002-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/ia64-unknown-linux-gnu: Add.
+	* config/abi/ia64-unknown-linux-gnu/baseline_symbols.txt: New file.
+	* config/abi/alphaev67-unknown-linux-gnu: Add.
+	* config/abi/alphaev67-unknown-linux-gnu/baseline_symbols.txt: New file.
+
 2002-09-05  Jonathan Wakely  <jw@kayari.org>
 
 	* docs/html/Makefile:  Use more portable shell wildcard.
