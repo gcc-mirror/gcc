@@ -540,24 +540,6 @@ thumb_reload_out_si (operands)
   abort ();
 }
 
-#ifdef THUMB_PE /* CYGNUS LOCAL nickc/thumb-pe */
-/* Return non-zero if FUNC is a naked function.  */
-
-static int
-arm_naked_function_p (func)
-     tree func;
-{
-  tree a;
-
-  if (TREE_CODE (func) != FUNCTION_DECL)
-    abort ();
-
-  a = lookup_attribute ("naked", DECL_MACHINE_ATTRIBUTES (func));
-  return a != NULL_TREE;
-}
-#endif /* END CYGNUS LOCAL nickc/thumb-pe */
-
-/* CYGNUS LOCAL nickc/super-interworking */
 /* Return non-zero if FUNC must be entered in ARM mode.  */
 int
 is_called_in_ARM_mode (func)
@@ -570,13 +552,9 @@ is_called_in_ARM_mode (func)
   if (TARGET_CALLEE_INTERWORKING && TREE_PUBLIC (func))
     return TRUE;
 
-#ifdef THUMB_PE 
-  return lookup_attribute ("interfacearm", DECL_MACHINE_ATTRIBUTES (func)) != NULL_TREE;
-#else
   return FALSE;
-#endif
 }
-/* END CYGNUS LOCAL */
+
 
 /* Routines for emitting code */
 
@@ -675,10 +653,7 @@ thumb_exit (f, reg_containing_return_addr)
   
   else if (   ! TARGET_THUMB_INTERWORK
 	   && ! TARGET_BACKTRACE
-/* CYGNUS LOCAL nickc/super-interworking */
-	   && ! is_called_in_ARM_mode (current_function_decl)
-/* END CYGNUS LOCAL */
-	      )
+	   && ! is_called_in_ARM_mode (current_function_decl))
     {
       asm_fprintf (f, "\tpop\t{pc}\n" );
 
@@ -1039,10 +1014,7 @@ output_return ()
 	}
       else if (   TARGET_THUMB_INTERWORK
 	       || TARGET_BACKTRACE
-/* CYGNUS LOCAL nickc/super-interworking */
-	       || is_called_in_ARM_mode (current_function_decl)
-/* END CYGNUS LOCAL */		  
-		  )
+	       || is_called_in_ARM_mode (current_function_decl))
 	{
 	  thumb_exit (asm_out_file, -1);
 	}
@@ -1063,10 +1035,7 @@ output_return ()
 
       if (   TARGET_THUMB_INTERWORK
 	  || TARGET_BACKTRACE
-/* CYGNUS LOCAL nickc/super-interworking */
-	  || is_called_in_ARM_mode (current_function_decl)
-/* END CYGNUS LOCAL */
-	     )
+	  || is_called_in_ARM_mode (current_function_decl))
 	{
 	  asm_fprintf (asm_out_file, "}\n");
 	  thumb_exit (asm_out_file, -1);
@@ -1089,12 +1058,6 @@ thumb_function_prologue (f, frame_size)
   int store_arg_regs = 0;
   int regno;
 
-#ifdef THUMB_PE   /* CYGNUS LOCAL nickc/thumb-pe */
-  if (arm_naked_function_p (current_function_decl))
-    return;
-#endif /* CYGNUS LOCAL nickc/thumb-pe */
-
-/* CYGNUS LOCAL nickc/super-interworking */
   if (is_called_in_ARM_mode (current_function_decl))
     {
       char * name;
@@ -1124,7 +1087,6 @@ thumb_function_prologue (f, frame_size)
       asm_fprintf (f, "\t.thumb_func\n");
       asm_fprintf (f, "%s%U%s:\n", STUB_NAME, name);
     }
-/* END CYGNUS LOCAL nickc/super-interworking */
     
   if (current_function_anonymous_args && current_function_pretend_args_size)
     store_arg_regs = 1;
@@ -1517,10 +1479,7 @@ thumb_unexpanded_epilogue ()
   if (current_function_pretend_args_size == 0 || TARGET_BACKTRACE)
     {
       if (had_to_push_lr
-/* CYGNUS LOCAL nickc/super-interworking */
-	  && ! is_called_in_ARM_mode (current_function_decl)
-/* END CYGNUS LOCAL nickc/super-interworking */
-	  )
+	  && ! is_called_in_ARM_mode (current_function_decl))
 	live_regs_mask |= 1 << PROGRAM_COUNTER;
 
       /* Either no argument registers were pushed or a backtrace
@@ -1537,13 +1496,8 @@ thumb_unexpanded_epilogue ()
       
       if ((live_regs_mask & (1 << PROGRAM_COUNTER)) == 0)
 	thumb_exit (asm_out_file,
-		    (
-		     had_to_push_lr
-/* CYGNUS LOCAL nickc/super-interworking */
-		     && is_called_in_ARM_mode (current_function_decl)
-/* END CYGNUS LOCAL */
-		     ) ? -1 : LINK_REGISTER
-		    );
+		    (had_to_push_lr
+		     && is_called_in_ARM_mode (current_function_decl)) ? -1 : LINK_REGISTER);
     }
   else
     {
@@ -2057,36 +2011,3 @@ void thumb_override_options()
 	warning ("Structure size boundary can only be set to 8 or 32");
     }
 }
-
-#ifdef THUMB_PE /* CYGNUS LOCAL nickc/thumb-pe */
-/* Return nonzero if ATTR is a valid attribute for DECL.
-   ATTRIBUTES are any existing attributes and ARGS are the arguments
-   supplied with ATTR.
-
-   Supported attributes:
-
-   naked: don't output any prologue or epilogue code, the user is assumed
-   to do the right thing.
-
-   interfacearm: Always assume that this function will be entered in ARM
-   mode, not Thumb mode, and that the caller wishes to be returned to in
-   ARM mode.  */
-int
-arm_valid_machine_decl_attribute (decl, attributes, attr, args)
-     tree decl;
-     tree attributes;
-     tree attr;
-     tree args;
-{
-  if (args != NULL_TREE)
-    return 0;
-
-  if (is_attribute_p ("naked", attr))
-    return TREE_CODE (decl) == FUNCTION_DECL;
-  
-  if (is_attribute_p ("interfacearm", attr))
-    return TREE_CODE (decl) == FUNCTION_DECL;
-  
-  return 0;
-}
-#endif /* END CYGNUS LOCAL nickc/thumb-pe */

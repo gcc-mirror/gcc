@@ -59,8 +59,8 @@ Boston, MA 02111-1307, USA.  */
 #define THUMB_FLAG_BACKTRACE    		0x0002
 #define THUMB_FLAG_LEAF_BACKTRACE		0x0004
 #define ARM_FLAG_THUMB				0x1000	/* same as in arm.h */
-#define THUMB_FLAG_CALLEE_SUPER_INTERWORKING	0x40000 /* CYGNUS LOCAL nickc */
-#define THUMB_FLAG_CALLER_SUPER_INTERWORKING	0x80000 /* CYGNUS LOCAL nickc */
+#define THUMB_FLAG_CALLEE_SUPER_INTERWORKING	0x40000 
+#define THUMB_FLAG_CALLER_SUPER_INTERWORKING	0x80000 
 
 
 /* Run-time compilation parameters selecting different hardware/software subsets.  */
@@ -72,7 +72,6 @@ extern int target_flags;
 				 ? (target_flags & THUMB_FLAG_LEAF_BACKTRACE) \
 				 : (target_flags & THUMB_FLAG_BACKTRACE))
 
-/* CYGNUS LOCAL nickc/super-interworking */
 /* Set if externally visable functions should assume that they
    might be called in ARM mode, from a non-thumb aware code.  */
 #define TARGET_CALLEE_INTERWORKING	\
@@ -82,7 +81,6 @@ extern int target_flags;
    destination is non-Thumb aware.  */
 #define TARGET_CALLER_INTERWORKING	\
      (target_flags & THUMB_FLAG_CALLER_SUPER_INTERWORKING)
-/* END CYGNUS LOCAL */
 
 /* SUBTARGET_SWITCHES is used to add flags on a per-config basis. */
 #ifndef SUBTARGET_SWITCHES
@@ -99,12 +97,10 @@ extern int target_flags;
   {"no-tpcs-frame",                -THUMB_FLAG_BACKTRACE},	\
   {"tpcs-leaf-frame",	  	    THUMB_FLAG_LEAF_BACKTRACE},	\
   {"no-tpcs-leaf-frame",           -THUMB_FLAG_LEAF_BACKTRACE},	\
-  /* CYGNUS LOCAL nickc/super-interworking */ \
   {"callee-super-interworking",	    THUMB_FLAG_CALLEE_SUPER_INTERWORKING}, \
   {"no-callee-super-interworking", -THUMB_FLAG_CALLEE_SUPER_INTERWORKING}, \
   {"caller-super-interworking",	    THUMB_FLAG_CALLER_SUPER_INTERWORKING}, \
   {"no-caller-super-interworking", -THUMB_FLAG_CALLER_SUPER_INTERWORKING}, \
-  /* END CYGNUS LOCAL */ \
   SUBTARGET_SWITCHES						\
   {"",                          TARGET_DEFAULT}         	\
 }
@@ -1053,12 +1049,10 @@ int thumb_shiftable_const ();
 /* Emit a special directive when defining a function name.
    This is used by the assembler to assit with interworking.  */
 #define ASM_DECLARE_FUNCTION_NAME(file, name, decl)             \
-/* CYGNUS LOCAL nickc/supr-interworking */ \
   if (! is_called_in_ARM_mode (decl))			\
     fprintf (file, "\t.thumb_func\n") ;			\
   else							\
     fprintf (file, "\t.code\t32\n") ;			\
-/* END CYGNUS LOCAL */ \
   ASM_OUTPUT_LABEL (file, name)
 
 #define ASM_OUTPUT_REG_PUSH(STREAM,REGNO)			\
@@ -1132,5 +1126,5 @@ extern char * output_move_mem_multiple ();
 extern char * thumb_load_double_from_address ();
 extern char * output_return ();
 extern int    far_jump_used_p();
-extern int    is_called_in_ARM_mode (); /* CYGNUS LOCAL */
+extern int    is_called_in_ARM_mode ();
 
