@@ -34,7 +34,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <signal.h>
 #include <sys/file.h>
 #include <sys/stat.h>
+#ifdef NO_WAIT_H
 #include <sys/wait.h>
+#endif
 
 #ifndef errno
 extern int errno;

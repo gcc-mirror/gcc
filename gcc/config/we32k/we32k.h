@@ -96,7 +96,7 @@ extern int target_flags;
 
 /* Define this if move instructions will actually fail to work
    when given unaligned data.  */
-#define STRICT_ALIGNMENT
+#define STRICT_ALIGNMENT 1
 
 /* Define number of bits in most basic integer type.
    (If undefined, default is BITS_PER_WORD).  */
