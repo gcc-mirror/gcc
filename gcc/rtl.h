@@ -1939,7 +1939,6 @@ extern rtx emit_library_call_value	PARAMS ((rtx, rtx, enum libcall_type,
 extern int set_dominates_use		PARAMS ((int, int, int, rtx, rtx));
 
 /* In varasm.c */
-extern void bss_section			PARAMS ((void));
 extern int in_data_section		PARAMS ((void));
 extern void init_varasm_once		PARAMS ((void));
 

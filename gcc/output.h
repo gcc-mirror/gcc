@@ -131,10 +131,8 @@ extern const char *get_insn_template PARAMS ((int, rtx));
 extern void allocate_for_life_analysis	PARAMS ((void));
 extern int regno_uninitialized		PARAMS ((int));
 extern int regno_clobbered_at_setjmp	PARAMS ((int));
-extern void dump_flow_info		PARAMS ((FILE *));
 extern void find_basic_blocks		PARAMS ((rtx, int, FILE *));
 extern void cleanup_cfg			PARAMS ((void));
-extern void free_basic_block_vars     PARAMS ((int));
 extern void check_function_return_warnings PARAMS ((void));
 #endif
 
@@ -360,10 +358,6 @@ extern tree initializer_constant_valid_p	PARAMS ((tree, tree));
    with zeros if necessary.  SIZE must always be specified.  */
 extern void output_constant		PARAMS ((tree, int));
 #endif
-
-/* When outputting assembler code, indicates which alternative
-   of the constraints was actually satisfied.  */
-extern int which_alternative;
 
 #ifdef RTX_CODE
 /* When outputting delayed branch sequences, this rtx holds the
