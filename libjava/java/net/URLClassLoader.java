@@ -543,7 +543,7 @@ public class URLClassLoader extends SecureClassLoader
     {
       super(classloader, url, overrideURL);
       helper = SharedLibHelper.findHelper(classloader, url.getFile(),
-					  noCertCodeSource);
+					  noCertCodeSource, true);
     }
 
     Class getClass(String className)

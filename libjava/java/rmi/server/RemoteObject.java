@@ -45,6 +45,7 @@ import java.lang.reflect.Constructor;
 import java.rmi.NoSuchObjectException;
 import java.rmi.Remote;
 import java.rmi.UnmarshalException;
+import java.util.WeakHashMap;
 
 public abstract class RemoteObject
 	implements Remote, Serializable {
@@ -52,6 +53,8 @@ public abstract class RemoteObject
 public static final long serialVersionUID = -3215090123894869218l;
 
 protected transient RemoteRef ref;
+
+private static final WeakHashMap stubs = new WeakHashMap();
 
 protected RemoteObject() {
 	this(null);
@@ -65,21 +68,24 @@ public RemoteRef getRef() {
 	return (ref);
 }
 
+synchronized static void addStub(Remote obj, Remote stub)
+{
+  stubs.put(obj, stub);
+}
+
+synchronized static void deleteStub(Remote obj)
+{
+  stubs.remove(obj);
+}
+
   public static Remote toStub(Remote obj) throws NoSuchObjectException 
   {
-    Class cls = obj.getClass();
-    String classname = cls.getName();
-    ClassLoader cl = cls.getClassLoader();
-    try 
-      {
-	Class scls = cl.loadClass(classname + "_Stub");
-	// JDK 1.2 stubs
-	Class[] stubprototype = new Class[] { RemoteRef.class };
-	Constructor con = scls.getConstructor(stubprototype);
-	return (Remote)(con.newInstance(new Object[]{obj}));
-      }
-    catch (Exception e) {}
-    throw new NoSuchObjectException(obj.getClass().getName());
+    Remote stub = (Remote)stubs.get(obj);
+
+    if (stub == null)
+      throw new NoSuchObjectException(obj.getClass().getName());
+
+    return stub;
   }
 
 public int hashCode() {

@@ -39,7 +39,7 @@ public class SharedLibLoader extends ClassLoader
 	url = null;
       }
     helper = SharedLibHelper.findHelper(this, libname,
-					new CodeSource(url, null));
+					new CodeSource(url, null), true);
   }
 
   /** Load a shared library, and asociate a ClassLoader with it.
