@@ -2043,10 +2043,8 @@ output_call_frame_info (for_eh)
       ASM_OUTPUT_LABEL (asm_out_file, l2);
     }
 
-#ifndef EH_FRAME_SECTION_NAME
-  if (for_eh)
+  if (for_eh && targetm.terminate_dw2_eh_frame_info)
     dw2_asm_output_data (4, 0, "End of Table");
-#endif
 #ifdef MIPS_DEBUGGING_INFO
   /* Work around Irix 6 assembler bug whereby labels at the end of a section
      get a value of 0.  Putting .align 0 after the label fixes it.  */

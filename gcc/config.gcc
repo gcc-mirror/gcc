@@ -980,6 +980,7 @@ i[34567]86-*-darwin*)
 	target_gtfiles="\$(srcdir)/config/darwin.c"
 	c_target_objs="darwin-c.o"
 	cxx_target_objs="darwin-c.o"
+	extra_parts="crtbegin.o crtend.o"
 	# Darwin linker does collect2 functionality
 	use_collect2=no
 	;;
@@ -1946,6 +1947,7 @@ powerpc-*-darwin*)
 	target_gtfiles="\$(srcdir)/config/darwin.c"
 	c_target_objs="darwin-c.o"
 	cxx_target_objs="darwin-c.o"
+	extra_parts="crtbegin.o crtend.o"
 	# Darwin linker does collect2 functionality
 	use_collect2=no
 	extra_headers=altivec.h

@@ -545,64 +545,80 @@ __do_global_ctors (void)
 
 #else  /* OBJECT_FORMAT_MACHO */
 
-/* For Mach-O format executables, we assume that the system's runtime is
-   smart enough to handle constructors and destructors, but doesn't have
-   an init section (if it can't even handle constructors/destructors
-   you should be using INVOKE__main, not crtstuff). All we need to do
-   is install/deinstall the frame information for exceptions. We do this
-   by putting a constructor in crtbegin.o and a destructor in crtend.o.
+/* Crt stuff for Mach-O (NeXT and Darwin).
 
-   crtend.o also puts in the terminating zero in the frame information
-   segment.  */
-
-/* The crtstuff for other object formats use the symbol __EH_FRAME_BEGIN__
-   to figure out the start of the exception frame, but here we use
-   getsectbynamefromheader to find this value. Either method would work,
-   but this method avoids creating any global symbols, which seems
-   cleaner.  */
-
-#include <mach-o/ldsyms.h>
-extern const struct section *
-  getsectbynamefromheader (const struct mach_header *,
-			   const char *, const char *);
+   The theory of this is that each dynamically-loadable module,
+   including the main program itself, must have been positioned by
+   dyld before any frame info can be registered.  So we set up the
+   registration functions as dyld hooks, using a "preregistration"
+   function that is called directly from the system crt1.o.  */
 
 #ifdef CRT_BEGIN
 
-static void __reg_frame_ctor (void) __attribute__ ((constructor));
+/* Homemade decls substituting for getsect.h and dyld.h, so cross
+   compilation works.  */
+struct mach_header;
+extern char *getsectdatafromheader (struct mach_header *, const char *,
+				    const char *, unsigned long *);
+extern void _dyld_register_func_for_add_image
+  (void (*) (struct mach_header *, unsigned long));
+extern void _dyld_register_func_for_remove_image
+  (void (*) (struct mach_header *, unsigned long));
+
+extern void __darwin_gcc3_preregister_frame_info (void);
 
 static void
-__reg_frame_ctor (void)
+unwind_dyld_add_image_hook (struct mach_header *mh,
+			    unsigned long vm_slide)
 {
-  static struct object object;
-  const struct section *eh_frame;
+  unsigned long sz;
+  char *fde;
 
-  eh_frame = getsectbynamefromheader (&_mh_execute_header,
-				      "__TEXT", "__eh_frame");
-  __register_frame_info ((void *) eh_frame->addr, &object);
+  fde = getsectdatafromheader (mh, "__TEXT", "__eh_frame", &sz);
+  if (fde)
+    {
+      struct object *ob = (struct object *) malloc (sizeof (struct object));
+
+      __register_frame_info (fde + vm_slide, ob);
+    }
 }
-
-#elif defined(CRT_END)
-
-static void __dereg_frame_dtor (void) __attribute__ ((destructor));
 
 static void
-__dereg_frame_dtor (void)
+unwind_dyld_remove_image_hook (struct mach_header *mh,
+			       unsigned long vm_slide)
 {
-  const struct section *eh_frame;
+  unsigned long sz;
+  char *fde;
 
-  eh_frame = getsectbynamefromheader (&_mh_execute_header,
-				      "__TEXT", "__eh_frame");
-  __deregister_frame_info ((void *) eh_frame->addr);
+  fde = getsectdatafromheader (mh, "__TEXT", "__eh_frame", &sz);
+
+  if (fde)
+    __deregister_frame_info (fde + vm_slide);
 }
 
-/* Terminate the frame section with a final zero.  */
-STATIC int __FRAME_END__[]
-     __attribute__ ((unused, mode(SI), section(EH_FRAME_SECTION_NAME),
-		     aligned(4)))
-     = { 0 };
+/* Call this routine from the system crt1.o.  The call is standard in
+   Darwin 6.x (Mac OS X 10.2) and later; for earlier systems, you
+   would need to modify crt.c in the Csu project.  (This isn't great,
+   but other alternatives run afoul of linker semantics.  This
+   function is declared as common and tested before being called, so
+   that programs compiled by older GCCs still link and run.)  */
+
+void
+__darwin_gcc3_preregister_frame_info ()
+{
+  _dyld_register_func_for_add_image (unwind_dyld_add_image_hook);
+  _dyld_register_func_for_remove_image (unwind_dyld_remove_image_hook);
+}
+
+#elif defined(CRT_END) /* ! CRT_BEGIN */
+
+/* Install a single zero word at the end of the __eh_frame section.  */
+
+asm (".section __TEXT,__eh_frame");
+asm (".long 0");
 
 #else /* ! CRT_BEGIN && ! CRT_END */
 #error "One of CRT_BEGIN or CRT_END must be defined."
 #endif
 
-#endif /* OBJECT_FORMAT_MACHO */
+#endif  /* OBJECT_FORMAT_MACHO  */

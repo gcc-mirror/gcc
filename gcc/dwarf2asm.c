@@ -104,11 +104,14 @@ dw2_asm_output_delta VPARAMS ((int size, const char *lab1, const char *lab2,
   VA_FIXEDARG (ap, const char *, lab2);
   VA_FIXEDARG (ap, const char *, comment);
 
+#ifdef ASM_OUTPUT_DWARF_DELTA
+  ASM_OUTPUT_DWARF_DELTA (asm_out_file, size, lab1, lab2);
+#else
   dw2_assemble_integer (size,
 			gen_rtx_MINUS (Pmode,
 				       gen_rtx_SYMBOL_REF (Pmode, lab1),
 				       gen_rtx_SYMBOL_REF (Pmode, lab2)));
-
+#endif
   if (flag_debug_asm && comment)
     {
       fprintf (asm_out_file, "\t%s ", ASM_COMMENT_START);
