@@ -348,6 +348,7 @@ case "$THREADS" in
     ;;
 esac
 
+THREADLDFLAGS=
 THREADLIBS=
 THREADINCS=
 THREADDEPS=
@@ -366,7 +367,7 @@ changequote([,])
 	# Before FreeBSD 5, it didn't have -lpthread (or any library which
 	# merely adds pthread_* functions) but it does have a -pthread switch
 	# which is required at link-time to select -lc_r *instead* of -lc.
-	THREADLIBS=-pthread
+	THREADLDFLAGS=-pthread
 	# Don't set THREADSPEC here as might be expected since -pthread is
 	# not processed when found within a spec file, it must come from
 	# the command line.  For now, the user must provide the -pthread
@@ -378,7 +379,7 @@ changequote([,])
 	# FreeBSD 5 implements a model much closer to other modern UNIX
 	# which support threads.  However, it still does not support
 	# -lpthread.
-	THREADLIBS=-pthread
+	THREADLDFLAGS=-pthread
 	THREADSPEC=-lc_r
 	;;
      *)
@@ -417,6 +418,7 @@ AC_SUBST(THREADINCS)
 AC_SUBST(THREADDEPS)
 AC_SUBST(THREADOBJS)
 AC_SUBST(THREADSPEC)
+AC_SUBST(THREADLDFLAGS)
 
 AC_LINK_FILES(sysdep/$sysdeps_dir, sysdep)
 
