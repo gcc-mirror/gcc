@@ -261,6 +261,9 @@
 /* Define if you have the <sys/sysmp.h> header file.  */
 #undef HAVE_SYS_SYSMP_H
 
+/* Define if you have the <sys/systemcfg.h> header file.  */
+#undef HAVE_SYS_SYSTEMCFG_H
+
 /* Define if you have the <sys/table.h> header file.  */
 #undef HAVE_SYS_TABLE_H
 
@@ -287,6 +290,9 @@
 
 /* Define if you have the sys_siglist variable. */
 #undef HAVE_SYS_SIGLIST
+
+/* Define if you have the _system_configuration variable. */
+#undef HAVE__SYSTEM_CONFIGURATION
 
 /* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP
    systems. This function is required for alloca.c support on those
