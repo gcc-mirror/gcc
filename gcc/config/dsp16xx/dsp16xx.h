@@ -946,7 +946,7 @@ enum reg_class
    rtl to be used as spill registers but prevents the compiler from
    extending the lifetime of these registers. */
 
-#define SMALL_REGISTER_CLASSES
+#define SMALL_REGISTER_CLASSES 1
 
 /* Macros to check register numbers against specific register classes.  */
 

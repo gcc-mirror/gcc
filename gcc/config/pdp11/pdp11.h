@@ -378,7 +378,7 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 /* have to allow this till cmpsi/tstsi are fixed in a better way !! */
-#define SMALL_REGISTER_CLASSES 
+#define SMALL_REGISTER_CLASSES 1
 
 /* Since GENERAL_REGS is the same class as ALL_REGS,
    don't give it a different class number; just make it an alias.  */
