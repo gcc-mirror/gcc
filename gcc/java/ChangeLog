@@ -1,3 +1,8 @@
+2001-01-16  Jeff Sturm  <jeff.sturm@appnet.com>
+
+	* expr.c (java_lang_expand_expr): Use TREE_SYMBOL_REFERENCED after
+	having called make_decl_rtl.
+
 2001-01-14  Per Bothner  <per@bothner.com>
 
 	Various patches to emit better messages on verification errors.

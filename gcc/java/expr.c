@@ -2387,8 +2387,8 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    DECL_INITIAL (init_decl) = value;
 	    DECL_IGNORED_P (init_decl) = 1;
 	    TREE_READONLY (init_decl) = 1;
-	    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (init_decl)) = 1;
 	    make_decl_rtl (init_decl, NULL);
+	    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (init_decl)) = 1;
 	    init = build1 (ADDR_EXPR, TREE_TYPE (exp), init_decl);
 	    r = expand_expr (init, target, tmode, modifier);
 	    return r;
@@ -2410,8 +2410,8 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	    DECL_INITIAL (init_decl) = init;
 	    DECL_IGNORED_P (init_decl) = 1;
 	    TREE_READONLY (init_decl) = 1;
-	    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (init_decl)) = 1;
 	    make_decl_rtl (init_decl, NULL);
+	    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (init_decl)) = 1;
 	    init = init_decl;
 	  }
 	expand_assignment (build (COMPONENT_REF, TREE_TYPE (data_fld),
