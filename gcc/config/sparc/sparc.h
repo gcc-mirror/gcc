@@ -2645,33 +2645,6 @@ do {                                                                    \
    of the libgcc2 functions is used.  */
 #define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) ((MODE) == TFmode)
 
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch.  */
-
-#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
-  case CONST_INT:						\
-    if (INTVAL (RTX) < 0x1000 && INTVAL (RTX) >= -0x1000)	\
-      return 0;							\
-  case HIGH:							\
-    return 2;							\
-  case CONST:							\
-  case LABEL_REF:						\
-  case SYMBOL_REF:						\
-    return 4;							\
-  case CONST_DOUBLE:						\
-    if (GET_MODE (RTX) == DImode)				\
-      if ((XINT (RTX, 3) == 0					\
-	   && (unsigned) XINT (RTX, 2) < 0x1000)		\
-	  || (XINT (RTX, 3) == -1				\
-	      && XINT (RTX, 2) < 0				\
-	      && XINT (RTX, 2) >= -0x1000))			\
-	return 0;						\
-    return 8;
-
-#define ADDRESS_COST(RTX)  1
-
 /* Compute extra cost of moving data between one register class
    and another.  */
 #define GENERAL_OR_I64(C) ((C) == GENERAL_REGS || (C) == I64_REGS)
@@ -2699,37 +2672,22 @@ do {                                                                    \
          : (sparc_cpu == PROCESSOR_ULTRASPARC3 \
             ? 9 : 3))
 
-/* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE.  The purpose for the cost of MULT is to encourage
-   `synth_mult' to find a synthetic multiply when reasonable.
+/* The cases that RTX_COSTS handles.  */
 
-   If we need more than 12 insns to do a multiply, then go out-of-line,
-   since the call overhead will be < 10% of the cost of the multiply.  */
+#define RTX_COSTS_CASES	\
+case MULT: case DIV: case UDIV: case MOD: case UMOD: \
+case FLOAT: case FIX: \
+case CONST_INT: case HIGH: case CONST: \
+case LABEL_REF: case SYMBOL_REF: case CONST_DOUBLE:
+
+/* Provide the costs of a rtl expression.  This is in the body of a
+   switch on CODE.  */
 
 #define RTX_COSTS(X,CODE,OUTER_CODE)			\
-  case MULT:						\
-    if (sparc_cpu == PROCESSOR_ULTRASPARC)		\
-      return (GET_MODE (X) == DImode ?			\
-              COSTS_N_INSNS (34) : COSTS_N_INSNS (19));	\
-    if (sparc_cpu == PROCESSOR_ULTRASPARC3)		\
-      return COSTS_N_INSNS (6);				\
-    return TARGET_HARD_MUL ? COSTS_N_INSNS (5) : COSTS_N_INSNS (25); \
-  case DIV:						\
-  case UDIV:						\
-  case MOD:						\
-  case UMOD:						\
-    if (sparc_cpu == PROCESSOR_ULTRASPARC)		\
-      return (GET_MODE (X) == DImode ?			\
-              COSTS_N_INSNS (68) : COSTS_N_INSNS (37));	\
-    if (sparc_cpu == PROCESSOR_ULTRASPARC3)		\
-      return (GET_MODE (X) == DImode ?			\
-              COSTS_N_INSNS (71) : COSTS_N_INSNS (40));	\
-    return COSTS_N_INSNS (25);				\
-  /* Make FLOAT and FIX more expensive than CONST_DOUBLE,\
-     so that cse will favor the latter.  */		\
-  case FLOAT:						\
-  case FIX:						\
-    return 19;
+  RTX_COSTS_CASES					\
+    return sparc_rtx_costs(X,CODE,OUTER_CODE);
+
+#define ADDRESS_COST(RTX)  1
 
 #define PREFETCH_BLOCK \
 	((sparc_cpu == PROCESSOR_ULTRASPARC \

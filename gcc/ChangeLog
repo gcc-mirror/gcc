@@ -1,5 +1,13 @@
 2002-05-03  David S. Miller  <davem@redhat.com>
 
+	* config/sparc/sparc-protos.h (sparc_rtx_costs): New.
+	* config/sparc/sparc.c (sparc_rtx_costs): New function
+	implementing RTX_COSTS and CONST_COSTS.
+	* config/sparc/sparc.h (CONST_COSTS): Delete.
+	(RTX_COSTS_CASES): Define.
+	(RTX_COSTS): Expand RTX_COSTS_CASES and use sparc_rtx_costs to do
+	the work.
+
 	* config/sparc/sparc.md (DFA schedulers): Split out...
 	* config/sparc/cypress.md, config/sparc/hypersparc.md,
 	config/sparc/sparclet.md, config/sparc/supersparc.md,
