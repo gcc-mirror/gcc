@@ -1,3 +1,13 @@
+2003-06-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* java-tree.h (DECL_FUNCTION_LAST_LINE): New.
+	(struct lang_decl_func): Add last_line field.
+	* parse.h (DECL_SOURCE_LINE_MERGE, DECL_SOURCE_LINE_FIRST,
+	DECL_SOURCE_LINE_LAST): Remove.
+	* parse.y (missing_return_error, finish_method_declaration,
+	lookup_cl, start_artificial_method_body, source_end_java_method,
+	start_complete_expand_method): Adjust.
+
 2003-06-08  Tom Tromey  <tromey@redhat.com>
 
 	* jvspec.c (jvgenmain_spec): Added `*' after fassume-compiled and

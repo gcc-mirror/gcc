@@ -1,3 +1,8 @@
+2003-06-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree-inline.c (expand_call_inline): DECL_SOURCE_LINE_FIRST is
+	removed.
+
 2003-06-09  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (gen_block_redirect): Use locators.

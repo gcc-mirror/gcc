@@ -610,14 +610,6 @@ typedef struct jdeplist_s jdeplist;
 #define GET_CURRENT_BLOCK(F) ((F) ? DECL_FUNCTION_BODY ((F)) :	\
 			     current_static_block)
 
-/* Merge an other line to the source line number of a decl. Used to
-   remember function's end. */
-#define DECL_SOURCE_LINE_MERGE(DECL,NO) DECL_SOURCE_LINE(DECL) |= (NO << 16)
-
-/* Retrieve those two info separately. */
-#define DECL_SOURCE_LINE_FIRST(DECL)    (DECL_SOURCE_LINE(DECL) & 0x0000ffff)
-#define DECL_SOURCE_LINE_LAST(DECL)     (DECL_SOURCE_LINE(DECL) >> 16)
-
 /* Retrieve line/column from a WFL. */
 #define EXPR_WFL_GET_LINECOL(V,LINE,COL)	\
   {						\
