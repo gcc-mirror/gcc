@@ -1,5 +1,7 @@
 1999-11-01  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
+	* gcc.dg/struct-ret-2.c: New test.
+
 	* gcc.dg/array-1.c: New test.
 
 Sat Oct 30 22:23:46 1999  Stephen L Moshier <moshier@mediaone.net>
