@@ -148,8 +148,10 @@ char *util_firstobj;
 
 static void init_objc				PARAMS ((void));
 static void finish_objc				PARAMS ((void));
-static void objc_post_options			PARAMS ((void));
 static void objc_init				PARAMS ((void));
+static void objc_init_options			PARAMS ((void));
+static int objc_decode_option			PARAMS ((int, char **));
+static void objc_post_options			PARAMS ((void));
 
 /* Code generation.  */
 
@@ -631,6 +633,8 @@ static int print_struct_values = 0;
 /* Each front end provides its own.  */
 struct lang_hooks lang_hooks = {objc_init,
 				NULL, /* objc_finish */
+				objc_init_options,
+				objc_decode_option,
 				objc_post_options};
 
 /* Post-switch processing.  */
@@ -703,8 +707,8 @@ generate_struct_by_value_array ()
   exit (0);
 }
 
-void
-lang_init_options ()
+static void
+objc_init_options ()
 {
   parse_in = cpp_create_reader (CLK_OBJC);
   c_language = clk_objective_c;
@@ -774,8 +778,8 @@ lang_identify ()
   return "objc";
 }
 
-int
-lang_decode_option (argc, argv)
+static int
+objc_decode_option (argc, argv)
      int argc;
      char **argv;
 {

@@ -3913,7 +3913,7 @@ extern tmpl_spec_kind current_tmpl_spec_kind    PARAMS ((int));
 /* in decl2.c */
 extern void init_decl2				PARAMS ((void));
 extern int check_java_method			PARAMS ((tree));
-extern int lang_decode_option			PARAMS ((int, char **));
+extern int cxx_decode_option			PARAMS ((int, char **));
 extern int grok_method_quals			PARAMS ((tree, tree, tree));
 extern void warn_if_unknown_interface		PARAMS ((tree));
 extern void grok_x_components			PARAMS ((tree));

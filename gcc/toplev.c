@@ -4590,7 +4590,8 @@ main (argc, argv)
   initialize_diagnostics ();
 
   /* Perform language-specific options intialization.  */
-  lang_init_options ();
+  if (lang_hooks.init_options)
+    (*lang_hooks.init_options) ();
 
   /* Scan to see what optimization level has been specified.  That will
      determine the default value of many flags.  */
@@ -4700,7 +4701,7 @@ main (argc, argv)
       unsigned int indep_processed;
 
       /* Give the language a chance to decode the option for itself.  */
-      lang_processed = lang_decode_option (argc - i, argv + i);
+      lang_processed = (*lang_hooks.decode_option) (argc - i, argv + i);
 
       /* Now see if the option also has a language independent meaning.
 	 Some options are both language specific and language independent,
@@ -4770,7 +4771,7 @@ main (argc, argv)
       flag_no_inline = 1;
       warn_inline = 0;
 
-      /* The c_decode_option and lang_decode_option functions set
+      /* The c_decode_option function and decode_option hook set
 	 this to `2' if -Wall is used, so we can avoid giving out
 	 lots of errors for people who don't realize what -Wall does.  */
       if (warn_uninitialized == 1)
