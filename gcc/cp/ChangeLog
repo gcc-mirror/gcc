@@ -1,5 +1,9 @@
 2002-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	* parse.y (bad_parm): Add missing argument to error function call.
+
+2002-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/8442
 	* decl2.c (handle_class_head): Verify if the looked up name is a
 	type or template.
