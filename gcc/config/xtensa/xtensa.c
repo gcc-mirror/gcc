@@ -1805,7 +1805,10 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	    : int_size_in_bytes (type)) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   if (type && (TYPE_ALIGN (type) > BITS_PER_WORD))
-    *arg_words += (*arg_words & 1);
+    {
+      int align = TYPE_ALIGN (type) / BITS_PER_WORD;
+      *arg_words = (*arg_words + align - 1) & -align;
+    }
 
   if (*arg_words + words > max)
     return (rtx)0;
@@ -2335,17 +2338,20 @@ xtensa_return_addr (int count, rtx frame)
 
 
 /* Create the va_list data type.
-   This structure is set up by __builtin_saveregs.  The __va_reg
-   field points to a stack-allocated region holding the contents of the
-   incoming argument registers.  The __va_ndx field is an index initialized
-   to the position of the first unnamed (variable) argument.  This same index
-   is also used to address the arguments passed in memory.  Thus, the
-   __va_stk field is initialized to point to the position of the first
-   argument in memory offset to account for the arguments passed in
-   registers.  E.G., if there are 6 argument registers, and each register is
-   4 bytes, then __va_stk is set to $sp - (6 * 4); then __va_reg[N*4]
-   references argument word N for 0 <= N < 6, and __va_stk[N*4] references
-   argument word N for N >= 6.  */
+
+   This structure is set up by __builtin_saveregs.  The __va_reg field
+   points to a stack-allocated region holding the contents of the
+   incoming argument registers.  The __va_ndx field is an index
+   initialized to the position of the first unnamed (variable)
+   argument.  This same index is also used to address the arguments
+   passed in memory.  Thus, the __va_stk field is initialized to point
+   to the position of the first argument in memory offset to account
+   for the arguments passed in registers and to account for the size
+   of the argument registers not being 16-byte aligned.  E.G., there
+   are 6 argument registers of 4 bytes each, but we want the __va_ndx
+   for the first stack argument to have the maximal alignment of 16
+   bytes, so we offset the __va_stk address by 32 bytes so that
+   __va_stk[32] references the first argument on the stack.  */
 
 static tree
 xtensa_build_builtin_va_list (void)
@@ -2436,15 +2442,18 @@ xtensa_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  /* Set the __va_stk member to $arg_ptr - (size of __va_reg area) */
+  /* Set the __va_stk member to ($arg_ptr - 32).  */
   u = make_tree (ptr_type_node, virtual_incoming_args_rtx);
-  u = fold (build (PLUS_EXPR, ptr_type_node, u,
-		   build_int_2 (-MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD, -1)));
+  u = fold (build (PLUS_EXPR, ptr_type_node, u, build_int_2 (-32, -1)));
   t = build (MODIFY_EXPR, ptr_type_node, stk, u);
   TREE_SIDE_EFFECTS (t) = 1;
   expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-  /* Set the __va_ndx member.  */
+  /* Set the __va_ndx member.  If the first variable argument is on
+     the stack, adjust __va_ndx by 2 words to account for the extra
+     alignment offset for __va_stk.  */
+  if (arg_words >= MAX_ARGS_IN_REGISTERS)
+    arg_words += 2;
   u = build_int_2 (arg_words * UNITS_PER_WORD, 0);
   t = build (MODIFY_EXPR, integer_type_node, ndx, u);
   TREE_SIDE_EFFECTS (t) = 1;
@@ -2506,17 +2515,19 @@ xtensa_va_arg (tree valist, tree type)
     emit_move_insn (va_size, r);
 
 
-  /* First align __va_ndx to a double word boundary if necessary for this arg:
+  /* First align __va_ndx if necessary for this arg:
 
-     if (__alignof__ (TYPE) > 4)
-       (AP).__va_ndx = (((AP).__va_ndx + 7) & -8); */
+     if (__alignof__ (TYPE) > 4 )
+       (AP).__va_ndx = (((AP).__va_ndx + __alignof__ (TYPE) - 1)
+			& -__alignof__ (TYPE)); */
 
   if (TYPE_ALIGN (type) > BITS_PER_WORD)
     {
+      int align = TYPE_ALIGN (type) / BITS_PER_UNIT;
       tmp = build (PLUS_EXPR, integer_type_node, ndx,
-		   build_int_2 ((2 * UNITS_PER_WORD) - 1, 0));
+		   build_int_2 (align - 1, 0));
       tmp = build (BIT_AND_EXPR, integer_type_node, tmp,
-		   build_int_2 (-2 * UNITS_PER_WORD, -1));
+		   build_int_2 (-align, -1));
       tmp = build (MODIFY_EXPR, integer_type_node, ndx, tmp);
       TREE_SIDE_EFFECTS (tmp) = 1;
       expand_expr (tmp, const0_rtx, VOIDmode, EXPAND_NORMAL);
@@ -2574,18 +2585,18 @@ xtensa_va_arg (tree valist, tree type)
 
      else
        {
-	 if (orig_ndx < __MAX_ARGS_IN_REGISTERS * 4)
-	     (AP).__va_ndx = __MAX_ARGS_IN_REGISTERS * 4 + __va_size (TYPE);
+	 if (orig_ndx <= __MAX_ARGS_IN_REGISTERS * 4)
+	     (AP).__va_ndx = 32 + __va_size (TYPE);
 	 __array = (AP).__va_stk;
        } */
 
   lab_false2 = gen_label_rtx ();
   emit_cmp_and_jump_insns (orig_ndx,
 			   GEN_INT (MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD),
-			   GE, const1_rtx, SImode, 0, lab_false2);
+			   GT, const1_rtx, SImode, 0, lab_false2);
 
   tmp = build (PLUS_EXPR, sizetype, make_tree (intSI_type_node, va_size),
-	       build_int_2 (MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD, 0));
+	       build_int_2 (32, 0));
   tmp = build (MODIFY_EXPR, integer_type_node, ndx, tmp);
   TREE_SIDE_EFFECTS (tmp) = 1;
   expand_expr (tmp, const0_rtx, VOIDmode, EXPAND_NORMAL);
