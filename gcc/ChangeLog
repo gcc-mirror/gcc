@@ -1,3 +1,16 @@
+2001-01-27  Janis Johnson <janis@us.ibm.com>
+
+	* config.gcc (i[34567]86-sequent-{ptx4*,sysv4*}): Use usegas.h
+	if appropriate.
+	* config/ptx4.h: Several fixes to build on DYNIX/ptx v4.[456], and
+	to remove macro definitions that are duplicated from elfos.h.
+
+2001-01-27  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/sco5gas.h: Move ...
+	* config/usegas.h: ... here.
+	* config.gcc (i[34567]86-*-sco3.2v5) [tm_file]: Update.
+
 2001-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (struct constructor_stack): Add range_stack member.
@@ -84,7 +97,7 @@ Fri Jan 26 11:37:26 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-01-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * diagnostic.c (fatal): Request preprocessed source.
+	* diagnostic.c (fatal): Request preprocessed source.
 
 Thu Jan 25 02:01:16 2001  J"orn Rennecke <amylaar@redhat.com>
 
@@ -150,7 +163,7 @@ Wed Jan 24 23:51:55 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-01-24  Roger Collins <roger@ProProject.com>
 
-        * config/i386/xm-i386.h: Make __i386__ a boolean macro.
+	* config/i386/xm-i386.h: Make __i386__ a boolean macro.
 
 2001-01-24  Will Cohen  <wcohen@redhat.com>
 
@@ -221,7 +234,7 @@ Wed Jan 24 23:51:55 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-01-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * c-lex.c (lex_charconst): Fix typo: s/p/str.
+	* c-lex.c (lex_charconst): Fix typo: s/p/str.
 
 2001-01-23  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
@@ -242,9 +255,9 @@ Wed Jan 24 23:51:55 2001  J"orn Rennecke <amylaar@redhat.com>
 2001-01-23  Chris Demetriou  <cgd@sibyte.com>
 	    Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpperror.c: Merge handlers of PEDWARN and WARNING.
-        Have -Werror make pedantic warnings errors, like the
-        rest of GCC.
+	* cpperror.c: Merge handlers of PEDWARN and WARNING.
+	Have -Werror make pedantic warnings errors, like the
+	rest of GCC.
 
 2001-01-23  Phil Edwards  <pme@sources.redhat.com>
 
@@ -345,8 +358,8 @@ Mon Jan 22 16:53:06 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-01-22  Alan Modra <alan@linuxcare.com.au>
 
-        * cppexp.c (parse_charconst):  Change `mask' type to agree
-        with parse_escape.
+	* cppexp.c (parse_charconst):  Change `mask' type to agree
+	with parse_escape.
 
 2001-01-21  Richard Henderson  <rth@redhat.com>
 
@@ -423,8 +436,8 @@ Sat Jan 20 12:46:57 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppmacro.c (funlike_invocation_p): Don't move back up to the
-        context of the top of the stack.
+	* cppmacro.c (funlike_invocation_p): Don't move back up to the
+	context of the top of the stack.
 
 2001-01-20  Jakub Jelinek  <jakub@redhat.com>
 
