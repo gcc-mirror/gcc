@@ -1,6 +1,6 @@
 Fri Dec  2 10:44:36 1994  Mike Stump  (mrs@wombat.gnu.ai.mit.edu)
 
-	* Makefile.in (BISONFLAGS): Add -yacc so that output winds up in
+	* Makefile.in (BISONFLAGS): Add --yacc so that output winds up in
 	y.tab.c.
 
 Mon Nov 28 16:44:41 1994  Mike Stump  <mrs@cygnus.com>

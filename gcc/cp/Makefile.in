@@ -55,7 +55,7 @@ T_CPPFLAGS =
 
 CC = cc
 BISON = bison
-BISONFLAGS = -yacc
+BISONFLAGS = --yacc
 LEX = flex
 LEXFLAGS =
 AR = ar
