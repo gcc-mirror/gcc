@@ -16,8 +16,8 @@
 @end
 
 @implementation class3
-- (int) meth1 {}
-- (int) meth1 {}  /* { dg-error "duplicate definition of instance method" } */
+- (int) meth1 { return 0; }
+- (int) meth1 { return 0; }  /* { dg-error "duplicate definition of instance method" } */
 /* { dg-error "redefinition of" "" { target *-*-* } 20 } */
 /* { dg-error "previously defined here" "" { target *-*-* } 19 } */
 @end
