@@ -42,6 +42,8 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef __mc68010__
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
+#else
+#define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 96
 #endif
 
 #define EXTRA_SPECS \

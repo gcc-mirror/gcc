@@ -1,3 +1,8 @@
+2002-05-30  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/m68k/netbsd-elf.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Set to
+	96 if not __mc68010__.
+
 2002-05-30  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/sysv4.h (DO_SELECT_SECTION): Also handle
