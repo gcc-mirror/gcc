@@ -984,9 +984,14 @@ insert_regs (x, classp, modified)
     {
       register int regno = REGNO (x);
 
-      if (modified
-	  || ! (REGNO_QTY_VALID_P (regno)
-		&& qty_mode[reg_qty[regno]] == GET_MODE (x)))
+      /* If REGNO is in the equivalence table already but is of the
+	 wrong mode for that equivalence, don't do anything here.  */
+
+      if (REGNO_QTY_VALID_P (regno)
+	  && qty_mode[reg_qty[regno]] != GET_MODE (x))
+	return 0;
+
+      if (modified || ! REGNO_QTY_VALID_P (regno))
 	{
 	  if (classp)
 	    for (classp = classp->first_same_value;
