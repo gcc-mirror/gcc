@@ -2206,6 +2206,20 @@ cp_copy_res_decl_for_inlining (tree result,
   return var;
 }
 
+/* FN body has been duplicated.  Update language specific fields.  */
+
+void
+cp_update_decl_after_saving (tree fn, 
+                             void* decl_map_)
+{
+  splay_tree decl_map = (splay_tree)decl_map_;
+  tree nrv = DECL_SAVED_FUNCTION_DATA (fn)->x_return_value;
+  if (nrv)
+    {
+      DECL_SAVED_FUNCTION_DATA (fn)->x_return_value
+	= (tree) splay_tree_lookup (decl_map, (splay_tree_key) nrv)->value;
+    }
+}
 /* Initialize tree.c.  */
 
 void

@@ -181,6 +181,13 @@ struct function GTY(())
   struct emit_status *emit;
   struct varasm_status *varasm;
 
+  /* For tree-optimize.c.  */
+
+  /* Saved tree and arguments during tree optimization.  Used later for
+     inlining */
+  tree saved_tree;
+  tree saved_args;
+
   /* For function.c.  */
 
   /* Points to the FUNCTION_DECL of this function.  */

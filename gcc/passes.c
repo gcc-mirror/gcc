@@ -2109,12 +2109,6 @@ rest_of_compilation (tree decl)
 
   /* We're done with this function.  Free up memory if we can.  */
   free_after_parsing (cfun);
-  if (! DECL_DEFER_OUTPUT (decl))
-    {
-      free_after_compilation (cfun);
-      DECL_STRUCT_FUNCTION (decl) = 0;
-    }
-  cfun = 0;
 
   ggc_collect ();
 

@@ -136,6 +136,7 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 #include "target.h"
 #include "top.h"
 #include "type.h"
+#include "function.h"
 
 /* Externals defined here.  */
 
@@ -13591,6 +13592,12 @@ finish_function (int nested)
 
       /* Run the optimizers and output the assembler code for this function.  */
       rest_of_compilation (fndecl);
+      if (! DECL_DEFER_OUTPUT (fndecl))
+	{
+	  free_after_compilation (cfun);
+	  DECL_STRUCT_FUNCTION (fndecl) = 0;
+	}
+      cfun = 0;
 
       /* Undo the GC context switch.  */
       if (nested)

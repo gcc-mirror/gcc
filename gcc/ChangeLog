@@ -1,3 +1,79 @@
+2004-04-02  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c: Add overall comment.
+	(cgraph_inline_hash): New global variable.
+	(cgraph_create_node): Break out from ...
+	(cgraph_node): ... here.
+	(cgraph_edge): New function.
+	(cgraph_create_edge): New CALL_EXPR argument; some sanity checking.
+	(cgraph_remove_edge): Accept edge, intead of source and destination.
+	(cgraph_redirect_edge_callee): New.
+	(cgraph_remove_node): Update all new datastructures.
+	(cgraph_record_call, cgraph_remove_call): Kill.
+	(dump_cgraph_node): Break out from ... ; dump new datastructures.
+	(dump_cgraph): ... here.
+	(cgraph_function_possibly_inlined_p): Use new hashtable.
+	(cgraph_clone_edge, cgraph_clone_node): New.
+	* cgraph.h: Include hashtab.h
+	(struct cgraph_global_info): Kill cloned_times, inline_once, will_be_output
+	fields, add inlined_to pointer.
+	(cgraph_node): Add pointer to next_clone.
+	(cgraph_remove_edge, cgraph_create_edge): Update prototype.
+	(cgraph_remove_call, cgraph_record_call): Kill.
+	(cgraph_inline_hash): Declare.
+	(dump_cgraph_node, cgraph_edge, cg4raph_clone_edge, cgraph_clone_node,
+	cgraph_redirect_edge_callee): Declare.
+	(cgraph_create_edges, cgraph_inline_p): Update prorotype.
+	(cgraph_preserve_function_body_p, verify_cgraph, verify_cgraph_node,
+	cgraph_mark_inline_edge, cgraph_clone_inlined_nodes): Declare.
+	* cgraphunit.c: Add overall comment.
+	(cgraph_optimize_function): Kill.
+	(cgraph_assemble_pending_functions): Do not assemble inline clones.
+	(cgraph_finalize_function): Update call of cgraph_remove_node
+	(record_call_1): Record call sites.
+	(cgraph_create_edges): Accept node instead of decl argument.
+	(error_found): New static variable.
+	(verify_cgraph_node_1, verify_cgraph_node, verify_cgraph): New functions.
+	(cgraph_analyze_function): Update for new datastructures.
+	(cgraph_finalize_compilation_unit): Plug memory leak.
+	(cgraph_optimize_function): Kill.
+	(cgraph_expand_function): Do not use cgraph_optimize_function.
+	(INLINED_TIMES, SET_INLINED_TIMES, cgraph_inlined_into,
+	cgraph_inlined_callees): Kill.
+	(cgraph_remove_unreachable_nodes): Verify cgraph; update handling of
+	clones.
+	(estimate_growth): Simplify.
+	(cgraph_clone_inlined_nodes): New function.
+	(cgraph_mark_inline_edge): Re-implement.
+	(cgraph_mark_inline): Likewise.
+	(cgraph_check_inline_limits): Simplify.
+	(cgraph_recursive_inlining_p): New.
+	(update_callee_keys): Break out from ...
+	(cgraph_decide_inlining_of_small_functions): ... here; simplify.
+	(cgraph_decide_inlining, cgraph_decide_inlining_incrementally):
+	Likewise.
+	(cgraph_expand_all_functions):  Remove inline clones from the ordered
+	list.
+	(cgraph_preserve_function_body_p): New predicate.
+	(cgraph_optimize): Verify cgraph.
+	* function.h (struct function): Add fields saved_tree/saved_args.
+	* timevar.def (TV_CGRAPH_VERIFY): Use verifier.
+	* toplev.c (rest_of_compilation): Do not free cfun.
+	* tree-inline.c: Include function.h
+	(struct inline_data): Add saving_p field; replace decl/current_decl by
+	node/current_node.
+	(insert_decl_map): New function.
+	(copy_body_r): Handle saving; update cgraph datastructure.
+	(copy_body): Handle recursive inlining.
+	(initialize_inlined_parameters): Likewise.
+	(expand_call_inline): Propagate node attributes; update cgraph.
+	(optimize_inline_calls): Verify that datastructure still match.
+	(save_body): New function.
+	* tree-inline.h (save_body): New.
+	* tree-optimize.c (tree_rest_of_compilation): preserve function body; do inlining.
+	* langhooks-def.c (LANG_HOOKS_UPDATE_DECL_AFTER_SAVING): New.
+	* langhooks.c (lang_hooks): Add update_decl_after_saving.
+
 2004-04-01  Serge Belyshev  <1319@bot.ru>
 
         PR target/14702

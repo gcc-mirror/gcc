@@ -1,3 +1,9 @@
+2004-04-02  Jan Hubicka  <jh@suse.cz>
+
+	* Make-lang.in (com.o): Add dependnecy on function.h
+	* com.c: Include function.h
+	(finish_function): Clear DECL_STRUCT_FUNCTION.
+
 2004-04-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* com.c (ffe_truthvalue_conversion, case COMPONENT_REF):
