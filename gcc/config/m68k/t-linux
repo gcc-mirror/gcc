@@ -1,0 +1,5 @@
+# Don't make libgcc1.a
+LIBGCC1 =
+CROSS_LIBGCC1 =
+# On Linux we can print long double
+ENQUIRE_CFLAGS = -DNO_MEM -O0
