@@ -3250,7 +3250,6 @@ complete_array_type (tree type, tree initial_value, int do_default)
 		maxindex = fold (build (PLUS_EXPR, integer_type_node,
 					maxindex, integer_one_node));
 	    }
-	  maxindex = copy_node (maxindex);
 	}
       else
 	{
@@ -3274,7 +3273,7 @@ complete_array_type (tree type, tree initial_value, int do_default)
     {
       TYPE_DOMAIN (type) = build_index_type (maxindex);
       if (!TREE_TYPE (maxindex))
-	TREE_TYPE (maxindex) = TYPE_DOMAIN (type);
+	abort ();
     }
 
   /* Lay out the type now that we can get the real answer.  */
