@@ -1,3 +1,10 @@
+Thu Nov 26 06:15:46 1998  Paul Edwards  <avon@matra.com.au>
+ 
+	* genattr.c (fatal): Use vprintf if available.
+	* genattrtab.c, gencodes.c, genconfig.c, genemit.c: Likewise.
+	* genextract.c, genflags.c, genopinit.c, genoutput.c: Likewise.
+	* genpeep.c: Likewise.
+
 Wed Nov 25 08:02:23 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 	* Makefile.in (version.c): Truncate tmp-version.c when writing to
