@@ -2628,23 +2628,23 @@ constrain_operands (strict)
 
 		  if (EXTRA_MEMORY_CONSTRAINT (c))
 		    {
-		      /* Every memory operand can be reloaded to fit,
-			 so copy the condition from the 'm' case.  */
-		      if (GET_CODE (op) == MEM
-		          /* Before reload, accept what reload can turn into mem.  */
-		          || (strict < 0 && CONSTANT_P (op))
-		          /* During reload, accept a pseudo  */
-		          || (reload_in_progress && GET_CODE (op) == REG
-			      && REGNO (op) >= FIRST_PSEUDO_REGISTER))
+		      /* Every memory operand can be reloaded to fit.  */
+		      if (strict < 0 && GET_CODE (op) == MEM)
+			win = 1;
+	
+		      /* Before reload, accept what reload can turn into mem.  */
+		      if (strict < 0 && CONSTANT_P (op))
+			win = 1;
+
+		      /* During reload, accept a pseudo  */
+		      if (reload_in_progress && GET_CODE (op) == REG
+			  && REGNO (op) >= FIRST_PSEUDO_REGISTER)
 			win = 1;
 		    }
 		  if (EXTRA_ADDRESS_CONSTRAINT (c))
 		    {
-		      /* Every address operand can be reloaded to fit,
-			 so copy the condition from the 'p' case.  */
-		      if (strict <= 0
-		          || (strict_memory_address_p (recog_data.operand_mode[opno],
-						       op)))
+		      /* Every address operand can be reloaded to fit.  */
+		      if (strict < 0)
 		        win = 1;
 		    }
 #endif
