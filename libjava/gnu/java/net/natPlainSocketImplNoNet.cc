@@ -10,6 +10,8 @@ details.  */
 #include <platform.h>
 
 #include <gnu/java/net/PlainSocketImpl.h>
+#include <gnu/java/net/PlainSocketImpl$SocketInputStream.h>
+#include <gnu/java/net/PlainSocketImpl$SocketOutputStream.h>
 #include <java/io/IOException.h>
 #include <java/net/BindException.h>
 #include <java/net/ConnectException.h>
@@ -65,28 +67,30 @@ gnu::java::net::PlainSocketImpl::getOption (jint)
 }
 
 jint
-gnu::java::net::PlainSocketImpl::read(void)
+gnu::java::net::PlainSocketImpl$SocketInputStream::read(void)
 {
   throw new ::java::net::SocketException (
     JvNewStringLatin1 ("SocketImpl.read: unimplemented"));
 }
 
 jint
-gnu::java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count)
+gnu::java::net::PlainSocketImpl$SocketInputStream::read(jbyteArray buffer, 
+  jint offset, jint count)
 {
   throw new ::java::net::SocketException (
     JvNewStringLatin1 ("SocketImpl.read: unimplemented"));
 }
 
 void
-gnu::java::net::PlainSocketImpl::write(jint b)
+gnu::java::net::PlainSocketImpl$SocketOutputStream::write(jint b)
 {
   throw new ::java::net::SocketException (
     JvNewStringLatin1 ("SocketImpl.write: unimplemented"));
 }
 
 void
-gnu::java::net::PlainSocketImpl::write(jbyteArray b, jint offset, jint len)
+gnu::java::net::PlainSocketImpl$SocketOutputStream::write(jbyteArray b, 
+  jint offset, jint len)
 {
   throw new ::java::net::SocketException (
     JvNewStringLatin1 ("SocketImpl.write: unimplemented"));

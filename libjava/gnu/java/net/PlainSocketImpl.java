@@ -271,32 +271,6 @@ public final class PlainSocketImpl extends SocketImpl
   protected native void sendUrgentData(int data)
     throws IOException;
 
-  native int read() throws IOException;
-
-  /**
-   * Internal method used by SocketInputStream for reading data from
-   * the connection.  Reads up to len bytes of data into the buffer
-   * buf starting at offset bytes into the buffer.
-   *
-   * @return The actual number of bytes read or -1 if end of stream.
-   *
-   * @exception IOException If an error occurs
-   */
-  native int read(byte[] buffer, int offset, int count)
-    throws IOException;
-
-  native void write(int c) throws IOException;
-
-  /**
-   * Internal method used by SocketOuputStream for writing data to
-   * the connection.  Writes up to len bytes of data from the buffer
-   * buf starting at offset bytes into the buffer.
-   *
-   * @exception IOException If an error occurs
-   */
-  native void write(byte[] buffer, int offset, int count)
-    throws IOException;
-
   /**
    * Returns an InputStream object for reading from this socket.  This will
    * be an instance of SocketInputStream.
@@ -334,13 +308,14 @@ public final class PlainSocketImpl extends SocketImpl
    *
    * @author Nic Ferrier <nferrier@tapsellferrier.co.uk>
    */
-  class SocketInputStream
+  final class SocketInputStream
     extends InputStream
   {
-    SocketInputStream()
-    {
-    }
-    
+    public native int read() throws IOException;
+
+    public native int read(byte[] buffer, int offset, int length)
+      throws IOException;
+
     public final void close() throws IOException
     {
       PlainSocketImpl.this.close();
@@ -350,52 +325,23 @@ public final class PlainSocketImpl extends SocketImpl
     {
       return PlainSocketImpl.this.available();
     }
-
-    public final int read() throws IOException
-    {
-      return PlainSocketImpl.this.read();
-    }
-
-    public final int read(byte[] buffer, int offset, int length)
-      throws IOException
-    {
-      return PlainSocketImpl.this.read(buffer, offset, length);
-    }
-
-    public final int read(byte[] buffer)
-      throws IOException
-    {
-      return PlainSocketImpl.this.read(buffer, 0, buffer.length);
-    }
   }
 
   /** A stream which writes to the socket implementation.
    *
    * @author Nic Ferrier  <nferrier@tapsellferrier.co.uk>
    */
-  class SocketOutputStream
+  final class SocketOutputStream
     extends OutputStream
   {
-    public final void close() throws IOException
+    public native void write(int c) throws IOException;
+
+    public native void write(byte[] buffer, int offset, int length)
+      throws IOException;
+
+    public void close() throws IOException
     {
       PlainSocketImpl.this.close();
-    }
-
-    public final void write(int c) throws IOException
-    {
-      PlainSocketImpl.this.write(c);
-    }
-
-    public final void write(byte[] buffer, int offset, int length)
-      throws IOException
-    {
-      PlainSocketImpl.this.write(buffer, offset, length);
-    }
-
-    public final void write(byte[] buffer)
-      throws IOException
-    {
-      PlainSocketImpl.this.write(buffer, 0, buffer.length);
     }
   }
 }

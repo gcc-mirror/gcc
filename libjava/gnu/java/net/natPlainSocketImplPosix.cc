@@ -32,6 +32,8 @@ details.  */
 #include <gcj/cni.h>
 #include <gcj/javaprims.h>
 #include <gnu/java/net/PlainSocketImpl.h>
+#include <gnu/java/net/PlainSocketImpl$SocketInputStream.h>
+#include <gnu/java/net/PlainSocketImpl$SocketOutputStream.h>
 #include <java/io/IOException.h>
 #include <java/io/InterruptedIOException.h>
 #include <java/net/BindException.h>
@@ -310,14 +312,14 @@ gnu::java::net::PlainSocketImpl::close()
 
 // Write a byte to the socket.
 void
-gnu::java::net::PlainSocketImpl::write(jint b)
+gnu::java::net::PlainSocketImpl$SocketOutputStream::write(jint b)
 {
   jbyte d =(jbyte) b;
   int r = 0;
 
   while (r != 1)
     {
-      r = _Jv_write (fnum, &d, 1);
+      r = _Jv_write (this$0->fnum, &d, 1);
       if (r == -1)
         {
           if (::java::lang::Thread::interrupted())
@@ -338,7 +340,7 @@ gnu::java::net::PlainSocketImpl::write(jint b)
 
 // Write some bytes to the socket.
 void
-gnu::java::net::PlainSocketImpl::write(jbyteArray b, jint offset, jint len)
+gnu::java::net::PlainSocketImpl$SocketOutputStream::write(jbyteArray b, jint offset, jint len)
 {
   if (! b)
     throw new ::java::lang::NullPointerException;
@@ -350,7 +352,7 @@ gnu::java::net::PlainSocketImpl::write(jbyteArray b, jint offset, jint len)
 
   while (len > 0)
     {
-      int r = _Jv_write (fnum, bytes, len);
+      int r = _Jv_write (this$0->fnum, bytes, len);
 
       if (r == -1)
         {
@@ -383,9 +385,11 @@ gnu::java::net::PlainSocketImpl::sendUrgentData (jint)
 
 // Read a single byte from the socket.
 jint
-gnu::java::net::PlainSocketImpl::read(void)
+gnu::java::net::PlainSocketImpl$SocketInputStream::read(void)
 {
   jbyte b;
+  jint timeout = this$0->timeout;
+  jint fnum = this$0->fnum;
 
   // Do timeouts via select.
   if (timeout > 0 && fnum >= 0 && fnum < FD_SETSIZE)
@@ -438,8 +442,12 @@ gnu::java::net::PlainSocketImpl::read(void)
 
 // Read count bytes into the buffer, starting at offset.
 jint
-gnu::java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count)
+gnu::java::net::PlainSocketImpl$SocketInputStream::read(jbyteArray buffer, jint offset, 
+  jint count)
 {
+  jint fnum = this$0->fnum;
+  jint timeout = this$0->timeout;
+
   if (! buffer)
     throw new ::java::lang::NullPointerException;
 
