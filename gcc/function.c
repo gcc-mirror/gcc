@@ -317,6 +317,7 @@ void (*restore_machine_status) ();
    integrate.c  */
 
 extern int rtx_equal_function_value_matters;
+extern tree sequence_rtl_expr;
 extern tree bc_runtime_type_code ();
 extern rtx bc_build_calldesc ();
 extern char *bc_emit_trampoline ();
@@ -365,6 +366,8 @@ struct temp_slot
   rtx slot;
   /* The size, in units, of the slot.  */
   int size;
+  /* The value of `sequence_rtl_expr' when this temporary is allocated.  */
+  tree rtl_expr;
   /* Non-zero if this temporary is currently in use.  */
   char in_use;
   /* Nesting level at which this slot is being used.  */
@@ -809,6 +812,7 @@ assign_stack_temp (mode, size, keep)
     }
 
   p->in_use = 1;
+  p->rtl_expr = sequence_rtl_expr;
   p->level = temp_slot_level;
   p->keep = keep;
   return p->slot;
@@ -909,7 +913,11 @@ preserve_temp_slots (x)
 }
 
 /* Free all temporaries used so far.  This is normally called at the end
-   of generating code for a statement.  */
+   of generating code for a statement.  Don't free any temporaries
+   currently in use for an RTL_EXPR that hasn't yet been emitted.
+   We could eventually do better than this since it can be reused while
+   generating the same RTL_EXPR, but this is complex and probably not
+   worthwhile.  */
 
 void
 free_temp_slots ()
@@ -917,7 +925,23 @@ free_temp_slots ()
   struct temp_slot *p;
 
   for (p = temp_slots; p; p = p->next)
-    if (p->in_use && p->level == temp_slot_level && ! p->keep)
+    if (p->in_use && p->level == temp_slot_level && ! p->keep
+	&& p->rtl_expr == 0)
+      p->in_use = 0;
+
+  combine_temp_slots ();
+}
+
+/* Free all temporary slots used in T, an RTL_EXPR node.  */
+
+void
+free_temps_for_rtl_expr (t)
+     tree t;
+{
+  struct temp_slot *p;
+
+  for (p = temp_slots; p; p = p->next)
+    if (p->rtl_expr == t)
       p->in_use = 0;
 
   combine_temp_slots ();
@@ -940,7 +964,7 @@ pop_temp_slots ()
   struct temp_slot *p;
 
   for (p = temp_slots; p; p = p->next)
-    if (p->in_use && p->level == temp_slot_level)
+    if (p->in_use && p->level == temp_slot_level && p->rtl_expr == 0)
       p->in_use = 0;
 
   combine_temp_slots ();
