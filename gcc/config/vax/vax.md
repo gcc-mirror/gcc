@@ -207,7 +207,9 @@
       && ! INSN_DELETED_P (XEXP (link, 0))
       && GET_CODE (XEXP (link, 0)) != NOTE
       /* Make sure cross jumping didn't happen here.  */
-      && no_labels_between_p (XEXP (link, 0), insn))
+      && no_labels_between_p (XEXP (link, 0), insn)
+      /* Make sure the reg hasn't been clobbered.  */
+      && ! reg_set_between_p (operands[0], XEXP (link, 0), insn))
     return \"incl %0\";
   if (GET_CODE (operands[1]) == SYMBOL_REF || GET_CODE (operands[1]) == CONST)
     {
@@ -250,7 +252,9 @@
       && ! INSN_DELETED_P (XEXP (link, 0))
       && GET_CODE (XEXP (link, 0)) != NOTE
       /* Make sure cross jumping didn't happen here.  */
-      && no_labels_between_p (XEXP (link, 0), insn))
+      && no_labels_between_p (XEXP (link, 0), insn)
+      /* Make sure the reg hasn't been clobbered.  */
+      && ! reg_set_between_p (operands[0], XEXP (link, 0), insn))
     return \"incw %0\";
 
   if (GET_CODE (operands[1]) == CONST_INT)
@@ -302,7 +306,9 @@
       && ! INSN_DELETED_P (XEXP (link, 0))
       && GET_CODE (XEXP (link, 0)) != NOTE
       /* Make sure cross jumping didn't happen here.  */
-      && no_labels_between_p (XEXP (link, 0), insn))
+      && no_labels_between_p (XEXP (link, 0), insn)
+      /* Make sure the reg hasn't been clobbered.  */
+      && ! reg_set_between_p (operands[0], XEXP (link, 0), insn))
     return \"incb %0\";
 
   if (GET_CODE (operands[1]) == CONST_INT)
