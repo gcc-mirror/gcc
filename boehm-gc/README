@@ -15,7 +15,7 @@ Permission to modify the code and to distribute modified code is granted,
 provided the above notices are retained, and a notice that the code was
 modified is included with the above copyright notice.
 
-This is version 5.0 of a conservative garbage collector for C and C++.
+This is version 5.1 of a conservative garbage collector for C and C++.
 
 You might find a more recent version of this at
 
@@ -1610,6 +1610,18 @@ Since 5.0alpha7:
    can recover from root segments that are unmapped during the collection.
    This caused occasional failures under Windows 98, and may also be
    an issue under Windows NT/2000.
+
+Since 5.0
+ - Fixed a gc.h header bug which showed up under Irix.  (Thanks to
+   Dan Sullivan.)
+ - Fixed a typo in GC_double_descr in typd_mlc.c not getting traced correctly.
+   This probably could result in objects described by array descriptors not
+   getting traced correctly.  (Thanks to Ben Hutchings for pointing this out.)
+ - The block nearly full tests in reclaim.c were not correct for 64 bit
+   environments.  This could result in unnecessary heap growth under unlikely
+   conditions.
+ - Removed use of CLEAR_DOUBLE from generic reclaim code, since odd sizes
+   could occur.
 
 To do:
  - Integrate Linux/SPARC fixes.
