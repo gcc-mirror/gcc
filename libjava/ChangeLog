@@ -1,3 +1,9 @@
+2003-03-09  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/9934:
+	* java/io/natFileDescriptorPosix.cc (available): Fixed arguments
+	to lseek.  Return 0 if we can't compute the value.
+
 2003-03-03  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (handle_jsr_insn): Don't fail if `jsr' appears at end
