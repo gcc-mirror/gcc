@@ -2765,7 +2765,7 @@
 
 (define_insn "*movsf_const_intreg"
   [(set (match_operand:SF 0 "register_operand" "=f,r")
-        (match_operand:SF 1 "const_double_operand" "m,F"))]
+        (match_operand:SF 1 "const_double_operand" "m#F,F"))]
   "TARGET_FPU"
   "*
 {
@@ -2932,8 +2932,8 @@
    (set_attr "length" "1")])
 
 (define_insn "*movdf_const_intreg_sp32"
-  [(set (match_operand:DF 0 "register_operand" "=e,e,r")
-        (match_operand:DF 1 "const_double_operand" "T,o,F"))]
+  [(set (match_operand:DF 0 "register_operand" "=e,e,?r")
+        (match_operand:DF 1 "const_double_operand" "T#F,o#F,F"))]
   "TARGET_FPU && ! TARGET_ARCH64"
   "@
    ldd\\t%1, %0
@@ -2945,8 +2945,8 @@
 ;; Now that we redo life analysis with a clean slate after
 ;; instruction splitting for sched2 this can work.
 (define_insn "*movdf_const_intreg_sp64"
-  [(set (match_operand:DF 0 "register_operand" "=e,r")
-        (match_operand:DF 1 "const_double_operand" "m,F"))]
+  [(set (match_operand:DF 0 "register_operand" "=e,?r")
+        (match_operand:DF 1 "const_double_operand" "m#F,F"))]
   "TARGET_FPU && TARGET_ARCH64"
   "@
    ldd\\t%1, %0
@@ -2978,8 +2978,8 @@
 #if HOST_BITS_PER_WIDE_INT == 64
       HOST_WIDE_INT val;
 
-      val = ((HOST_WIDE_INT)l[1] |
-             ((HOST_WIDE_INT)l[0] << 32));
+      val = ((HOST_WIDE_INT)(unsigned long)l[1] |
+             ((HOST_WIDE_INT)(unsigned long)l[0] << 32));
       emit_insn (gen_movdi (operands[0], GEN_INT (val)));
 #else
       emit_insn (gen_movdi (operands[0],
