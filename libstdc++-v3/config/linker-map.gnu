@@ -62,7 +62,12 @@ GLIBCPP_3.4 {
       std::__basic_file*;
       std::__num_base*;
       std::__timepunct*;
-      std::__numeric_limits_base*
+      std::__numeric_limits_base*;
+      
+      # Needed only when generic cpu's atomicity.h is in use.
+      __gnu_cxx::_Atomic_add_mutex;
+      __gnu_cxx::_Atomic_add_mutex_once;
+      __gnu_cxx::__gthread_atomic_add_mutex_once
     };
 
     # Names not in an 'extern' block are mangled names.
