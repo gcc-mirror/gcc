@@ -291,8 +291,8 @@ extern void pedwarn_c90 (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern void pedwarn_c99 (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern tree c_start_case (tree);
 extern void c_finish_case (void);
-extern tree simple_asm_stmt (tree);
-extern tree build_asm_stmt (tree, tree, tree, tree, tree);
+extern tree build_asm_expr (tree, tree, tree, tree, bool);
+extern tree build_asm_stmt (tree, tree);
 extern tree c_convert_parm_for_inlining (tree, tree, tree, int);
 
 /* Set to 0 at beginning of a function definition, set to 1 if
