@@ -1,3 +1,11 @@
+2003-12-27  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	Backport from mainline:
+	2003-11-14  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/2294
+	* g++.dg/lookup/using9.C: New test.
+
 2003-12-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/noreturn-7.c: New test.
