@@ -1047,12 +1047,12 @@ libgcc.a: $(LIBGCC_DEPS)
 multilib.h: s-mlib; @true
 s-mlib: $(srcdir)/genmultilib Makefile
 	$(SHELL) $(srcdir)/genmultilib \
-	  "`test @enable_multilib@ = yes && echo $(MULTILIB_OPTIONS)`" \
-	  "`test @enable_multilib@ = yes && echo $(MULTILIB_DIRNAMES)`" \
-	  "`test @enable_multilib@ = yes && echo $(MULTILIB_MATCHES)`" \
-	  "`test @enable_multilib@ = yes && echo $(MULTILIB_EXCEPTIONS)`" \
-	  "`test @enable_multilib@ = yes && echo $(MULTILIB_EXTRA_OPTS)`" \
-	  "`test @enable_multilib@ = yes && echo $(MULTILIB_EXCLUSIONS)`" \
+	  "`test @enable_multilib@ != yes || echo $(MULTILIB_OPTIONS)`" \
+	  "`test @enable_multilib@ != yes || echo $(MULTILIB_DIRNAMES)`" \
+	  "`test @enable_multilib@ != yes || echo $(MULTILIB_MATCHES)`" \
+	  "`test @enable_multilib@ != yes || echo $(MULTILIB_EXCEPTIONS)`" \
+	  "`test @enable_multilib@ != yes || echo $(MULTILIB_EXTRA_OPTS)`" \
+	  "`test @enable_multilib@ != yes || echo $(MULTILIB_EXCLUSIONS)`" \
 		> tmp-mlib.h
 	$(SHELL) $(srcdir)/move-if-change tmp-mlib.h multilib.h
 	$(STAMP) s-mlib
@@ -1249,8 +1249,8 @@ DRIVER_DEFINES = \
   -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
   -DSTANDARD_BINDIR_PREFIX=\"$(bindir)/\" \
   -DTOOLDIR_BASE_PREFIX=\"$(unlibsubdir)/../\" \
-  `test "$${SHLIB_LINK}" -a "@enable_shared@" = "yes" && echo "-DENABLE_SHARED_LIBGCC"` \
-  `test "$${SHLIB_MULTILIB}" && echo "-DNO_SHARED_LIBGCC_MULTILIB"`
+  `test "X$${SHLIB_LINK}" = "X" || test "@enable_shared@" != "yes" || echo "-DENABLE_SHARED_LIBGCC"` \
+  `test "X$${SHLIB_MULTILIB}" = "X" || echo "-DNO_SHARED_LIBGCC_MULTILIB"`
 
 gcc.o: gcc.c $(CONFIG_H) $(SYSTEM_H) intl.h multilib.h \
     Makefile $(lang_specs_files) prefix.h $(GCC_H)
