@@ -161,11 +161,14 @@
 (define_attr "leaf_function" "false,true"
   (const (symbol_ref "current_function_uses_only_leaf_regs")))
 
+(define_attr "eligible_for_return_delay" "false,true"
+  (symbol_ref "eligible_for_return_delay(insn)"))
+
 (define_attr "in_return_delay" "false,true"
   (if_then_else (and (and (and (eq_attr "type" "move,load,sload,store,binary,ialu")
 			       (eq_attr "length" "1"))
 			  (eq_attr "leaf_function" "false"))
-		     (match_insn "eligible_for_return_delay"))
+		     (eq_attr "eligible_for_return_delay" "false"))
 		(const_string "true")
 		(const_string "false")))
 
