@@ -6,7 +6,7 @@
 @c                                                                            o
 @c                      G N A T   C O D I N G   S T Y L E                     o
 @c                                                                            o
-@c                               $Revision$
+@c                               $Revision: 1.3 $
 @c                                                                            o
 @c          Copyright (C) 1992-2001 Ada Core Technologies, Inc.               o
 @c                                                                            o
@@ -25,6 +25,14 @@
 
 @setfilename gnat-style.info
 @settitle GNAT Coding Style
+@dircategory Programming
+@direntry 
+* gnat-style: (gnat-style).      GNAT Coding Style
+@end direntry
+
+@macro syntax{element}
+@t{\element\}
+@end macro
 @c %**end of header
 
 @ifinfo
@@ -38,8 +46,7 @@
 @sp 10
 @title GNAT Coding Style
 @subtitle A guide for GNAT developers
-@subtitle Document revision level $Revision$
-@subtitle Date: @today{}
+@subtitle Document revision level $Revision: 1.3 $
 @author Ada Core Technologies, Inc.
 @end titlepage
 @raisesections
@@ -65,7 +72,7 @@
 
 @noindent
 Most of GNAT is written in Ada using a consistent style to ensure
-readability of the code. This document has been written to help
+readability of the code.  This document has been written to help
 maintain this consistent style, while having a large group of developers 
 work on the compiler.
 
@@ -88,12 +95,12 @@ lookup style rules for particular constructs.
 
 @itemize @bullet
 @item
-The character set used should be plain 7-bit ASCII.
+The character set used should be plain 7-bit ASCII@.
 The only separators allowed are space and the end-of-line sequence. 
 No other control character or format effector (such as HT, VT, FF) 
 should be used.
 The normal end-of-line sequence is used, which may be LF, CR/LF or CR,
-depending on the host system. An optional SUB (16#1A#) may be present as the 
+depending on the host system.  An optional SUB (16#1A#) may be present as the 
 last character in the file on hosts using that character as file terminator.
 
 @item
@@ -107,8 +114,8 @@ separator.
 Lines must not have trailing blanks.
 
 @item
-Indentation is 3 characters per level for if-statements, loops, case
-statements. For exact information on required spacing between lexical
+Indentation is 3 characters per level for if statements, loops, case
+statements.  For exact information on required spacing between lexical
 elements, see file @file{style.adb}.
 
 @end itemize
@@ -120,25 +127,27 @@ elements, see file @file{style.adb}.
 Identifiers will start with an upper case letter, and each letter following
 an underscore will be upper case.  Short acronyms may be all upper case. 
 All other letters are lower case.  
-An exception is for identifiers matching a foreign language. In particular,
-we use all lower case where appropriate for C.
+An exception is for identifiers matching a foreign language.  In particular,
+we use all lower case where appropriate for C@.
 
 @item
 Use underscores to separate words in an identifier.  
 
 @item Try to limit your use of abbreviations in identifiers. 
-It is ok to make a few abbreviations, explain what they mean, and then use them frequently, but don't use lots of obscure abbreviations. 
-An example is the @code{ALI} word which stands for Ada Library Information 
-and is by convention always written in upper-case when used in entity names.
+It is ok to make a few abbreviations, explain what they mean, and then
+use them frequently, but don't use lots of obscure abbreviations.  An
+example is the @code{ALI} word which stands for Ada Library
+Information and is by convention always written in upper-case when
+used in entity names.
 
 @smallexample
        procedure Find_ALI_Files;
 @end smallexample
 
 @item
-Don't use the variable I, use J instead, I is too easily mixed up with
-1 in some fonts. Similarly don't use the variable O, which is too easily
-mixed up with zero.
+Don't use the variable @samp{I}, use @samp{J} instead, @samp{I} is too
+easily mixed up with @samp{1} in some fonts.  Similarly don't use the
+variable @samp{O}, which is too easily mixed up with @samp{0}.
 @end itemize
 
 @subsection Numeric Literals
@@ -166,8 +175,8 @@ Reserved words use all lower case.
 @end smallexample
 
 @item
-The words "Access", "Delta" and "Digits" are capitalized when used
-as attribute_designator.
+The words @samp{Access}, @samp{Delta} and @samp{Digits} are
+capitalized when used as @syntax{attribute_designator}.
 @end itemize
 
 @subsection Comments
@@ -175,47 +184,48 @@ as attribute_designator.
 
 @itemize @bullet
 @item
-Comment start with @code{--  } (ie @code{--} followed by two spaces).
-The only exception to this rule (i.e. one space is tolerated) is when the
-comment ends with @code{--}.
-It also accepted to have only one space between @code{--} and the start 
+Comment start with @samp{--  } (i.e.@: @samp{--} followed by two spaces).
+The only exception to this rule (i.e.@: one space is tolerated) is when the
+comment ends with @samp{ --}.
+It also accepted to have only one space between @samp{--} and the start 
 of the comment when the comment is at the end of a line, 
-after an Ada statement.
+after some Ada code.
 
 @item
 Every sentence in a comment should start with an upper-case letter (including
 the first letter of the comment).
 
 @item
-When declarations are commented with "hanging" comments, i.e. comments
-after the declaration, there is no blank line before the comment, and
-if it is absolutely necessary to have blank lines within the comments
-these blank lines *do* have a -- (unlike the normal rule, which is to
-use entirely blank lines for separating comment paragraphs).
-The comment start at same level of indentation as code they are commenting.
+When declarations are commented with ``hanging'' comments, i.e.@:
+comments after the declaration, there is no blank line before the
+comment, and if it is absolutely necessary to have blank lines within
+the comments these blank lines @emph{do} have a @samp{--} (unlike the
+normal rule, which is to use entirely blank lines for separating
+comment paragraphs).  The comment start at same level of indentation
+as code they are commenting.
 
 @smallexample
-       z : integer;
-       --  Integer value for storing value of z
+       z : Integer;
+       --  @r{Integer value for storing value of} z
        --
-       --  The previous line was a blank line
+       --  @r{The previous line was a blank line.}
 @end smallexample
 
 @item
 Comments that are dubious or incomplete or comment on possibly
-wrong or incomplete code should be preceded or followed by ???
+wrong or incomplete code should be preceded or followed by @samp{???}@.
 
 @item
 Comments in a subprogram body must generally be surrounded by blank lines,
-except after a "begin":
+except after a @samp{begin}:
 
 @smallexample
        begin
-          --  Comment for the next statement
+          --  @r{Comment for the next statement}
 
           A := 5;
 
-          --  Comment for the B statement
+          --  @r{Comment for the B statement}
 
           B := 6;
 @end smallexample
@@ -225,13 +235,14 @@ In sequences of statements, comments at the end of the lines should be
 aligned.
 
 @smallexample
-        My_Identifier := 5;      --  First comment
-        Other_Id := 6;           --  Second comment
+        My_Identifier := 5;      --  @r{First comment}
+        Other_Id := 6;           --  @r{Second comment}
 @end smallexample
 
 @item
-Short comments that fit on a single line are NOT ended with a period.
-Comments taking more than a line are punctuated in the normal manner.
+Short comments that fit on a single line are @emph{not} ended with a
+period.  Comments taking more than a line are punctuated in the normal
+manner.
 
 @item
 Comments should focus on why instead of what.
@@ -239,8 +250,8 @@ Descriptions of what subprograms do go with the specification.
 
 @item
 Comments describing a subprogram spec should specifically mention the
-formal argument names. General rule: write a comment that does not
-depend on the names of things. The names are supplementary, not
+formal argument names.  General rule: write a comment that does not
+depend on the names of things.  The names are supplementary, not
 sufficient, as comments.
 
 @item
@@ -254,7 +265,7 @@ Do NOT put two spaces after periods in comments.
 
 @itemize @bullet
 @item
-In entity declarations, colons must be surrounded by spaces. Colons
+In entity declarations, colons must be surrounded by spaces.  Colons
 should be aligned.
 
 @smallexample
@@ -272,7 +283,7 @@ before the first local subprogram body.
 
 @item
 Do not declare discriminated record types where the discriminant is used
-for constraining an unconstrained array type. (Discriminated
+for constraining an unconstrained array type.  (Discriminated
 records for a variant part are allowed.)
 
 @item
@@ -280,12 +291,12 @@ Don't declare local entities that hide global entities.
 
 @item
 Don't declare multiple variables in one declaration that spans lines. 
-Start a new declaration on each line, instead
+Start a new declaration on each line, instead.
 
 @item
-The defining_identifiers of global declarations serve as comments of a sort. 
-So don't choose terse names, but look for names that give useful information 
-instead.
+The @syntax{defining_identifier}s of global declarations serve as
+comments of a sort.  So don't choose terse names, but look for names
+that give useful information instead.
 
 @item
 Local names can be shorter, because they are used only within 
@@ -330,21 +341,22 @@ Use parentheses where they make the intended order of evaluation clearer:
 @item
 Use only one statement or label per line.
 @item
-A longer sequence_of_statements may be divided in logical groups
-or separated from surrounding code using a blank line.
+A longer @syntax{sequence_of_statements} may be divided in logical
+groups or separated from surrounding code using a blank line.
 @end itemize
 
 @subsection If Statements
 @c  -------------------------------------------------------------------------
 @itemize @bullet
 @item
-When the "if", "elsif" or "else" keywords fit on the same line with the
-condition and the "then" keyword, then the statement is formatted as follows:
+When the @samp{if}, @samp{elsif} or @samp{else} keywords fit on the
+same line with the condition and the @samp{then} keyword, then the
+statement is formatted as follows:
 
 @smallexample
-        if <condition> then
+        if @var{condition} then
            ...
-        elsif <condition> then
+        elsif @var{condition} then
            ...
         else
            ...
@@ -352,25 +364,25 @@ condition and the "then" keyword, then the statement is formatted as follows:
 @end smallexample
 
 @noindent
-When the above layout is not possible, "then" should be aligned with "if",
-and conditions should preferably be split before an "and" or "or" keyword
-a follows:
+When the above layout is not possible, @samp{then} should be aligned
+with @samp{if}, and conditions should preferably be split before an
+@samp{and} or @samp{or} keyword a follows:
 
 @smallexample
-        if <long_condition_that_has_to_be_split>
-          and then <continued_on_the_next_line>
+        if @var{long_condition_that_has_to_be_split}
+          and then @var{continued_on_the_next_line}
         then
            ...
         end if;
 @end smallexample
 
 @noindent
-The "elsif", "else" and "end if" always line up with the "if" keyword. The
-preferred location for splitting the line is before "and" or "or". The
-continuation of a condition is indented with two spaces or as many as needed
-to make nesting clear.
-As exception, if conditions are closely related either of the following is
-allowed:
+The @samp{elsif}, @samp{else} and @samp{end if} always line up with
+the @samp{if} keyword.  The preferred location for splitting the line
+is before @samp{and} or @samp{or}.  The continuation of a condition is
+indented with two spaces or as many as needed to make nesting clear.
+As exception, if conditions are closely related either of the
+following is allowed:
 
 @smallexample
      if x = lakdsjfhlkashfdlkflkdsalkhfsalkdhflkjdsahf
@@ -387,22 +399,23 @@ allowed:
 @end smallexample
 
 @item
-Conditions should use short-circuit forms ("and then", "or else").
+Conditions should use short-circuit forms (@samp{and then}, 
+@samp{or else}).
 
 @item
-Complex conditions in if-statements are indented two characters:
+Complex conditions in if statements are indented two characters:
 
 @smallexample
-      if this_complex_condition
-        and then that_other_one
-        and then one_last_one
+      if @var{this_complex_condition}
+        and then @var{that_other_one}
+        and then @var{one_last_one}
       then
          ...
 @end smallexample
 
 @item
-Every "if" block is preceded and followed by a blank line, except
-where it begins or ends a sequence_of_statements.
+Every @samp{if} block is preceded and followed by a blank line, except
+where it begins or ends a @syntax{sequence_of_statements}.
 
 @smallexample
         A := 5;
@@ -415,53 +428,54 @@ where it begins or ends a sequence_of_statements.
 @end smallexample
 @end itemize
 
-@subsection Case statements
+@subsection Case Statements
 @itemize @bullet
 
 @item
-Layout is as below. For long case statements, the extra indentation
+Layout is as below.  For long case statements, the extra indentation
 can be saved by aligning the when clauses with the opening case.
 
 @smallexample
-       case <expression> is
-          when <condition> =>
+       case @var{expression} is
+          when @var{condition} =>
              ...
-          when <condition> =>
+          when @var{condition} =>
              ...
        end case;
 @end smallexample
 @end itemize
 
-@subsection Loop statements
+@subsection Loop Statements
 @itemize @bullet
 
 @noindent
-When possible, have "for" or "while" on one line with the condition
-and the "loop" keyword.
+When possible, have @samp{for} or @samp{while} on one line with the
+condition and the @samp{loop} keyword.
 
 @smallexample
-       for I in S'Range loop
+       for J in S'Range loop
           ...
        end loop;
 @end smallexample
 
 @noindent
-If the condition is too long, split the condition (see if_statement)
-and align "loop" with the "for" or "while" keyword.
+If the condition is too long, split the condition (see ``If
+statements'' above) and align @samp{loop} with the @samp{for} or
+@samp{while} keyword.
 
 @smallexample
-      while <long_condition_that_has_to_be_split>
-        and then <continued_on_the_next_line>
+      while @var{long_condition_that_has_to_be_split}
+        and then @var{continued_on_the_next_line}
       loop
          ...
       end loop;
 @end smallexample
 
 @noindent
-If the loop_statement has an identifier, it is layout as follows:
+If the @syntax{loop_statement} has an identifier, it is laid out as follows:
 
 @smallexample
-      Outer : while not <condition> loop
+      Outer : while not @var{condition} loop
          ...
       end Outer;
 @end smallexample
@@ -471,12 +485,14 @@ If the loop_statement has an identifier, it is layout as follows:
 @itemize @bullet
 
 @item
-The (optional) "declare", "begin" and "end" statements are aligned,
-except when the block_statement is named:
+The @samp{declare} (optional), @samp{begin} and @samp{end} statements
+are aligned, except when the @syntax{block_statement} is named.  There
+is a blank line before the @samp{begin} keyword:
 
 @smallexample
       Some_Block : declare
          ...
+
       begin
          ...
       end Some_Block;
@@ -495,7 +511,7 @@ except when the block_statement is named:
 @itemize @bullet
 
 @item
-Do not write the "in" for parameters, especially in functions:
+Do not write the @samp{in} for parameters, especially in functions:
 
 @smallexample
       function Length (S : String) return Integer;
@@ -503,6 +519,7 @@ Do not write the "in" for parameters, especially in functions:
 
 @item
 When the declaration line for a procedure or a function is too long, fold it.
+In this case, align the colons, and, for functions, the result type.
 
 @smallexample
       function Head
@@ -541,18 +558,24 @@ format:
       procedure My_Function is
       begin
 @end smallexample
+
 Note that the name in the header is preceded by a single space, 
 not two spaces as for other comments.
 
 @item
-Every subprogram body must have a preceding subprogram_declaration.
+Every subprogram body must have a preceding @syntax{subprogram_declaration}.
 
 @item
-If declarations of a subprogram contain at least one nested subprogram
-body, then just before the begin is a line:
+If there any declarations in a subprogram, the @samp{begin} keyword is
+preceded by a blank line.
+
+@item
+If the declarations in a subprogram contain at least one nested
+subprogram body, then just before the of the enclosing subprogram
+@samp{begin}, there is a line:
 
 @smallexample
-        --  Start of processing for bla bla
+        --  @r{Start of processing for @var{Enclosing_Subprogram}}
 
 	begin
 @end smallexample
@@ -576,8 +599,8 @@ All program units and subprograms have their name at the end:
 @end smallexample
 
 @item
-We will use the style of use-ing with-ed packages, with the context
-clauses looking like:
+We will use the style of @samp{use}-ing @samp{with}-ed packages, with
+the context clauses looking like:
 
 @smallexample
       with A; use A;
@@ -586,7 +609,7 @@ clauses looking like:
 
 @item
 Names declared in the visible part of packages should be
-unique, to prevent name clashes when the packages are "use"d.
+unique, to prevent name clashes when the packages are @samp{use}d.
 
 @smallexample
       package Entity is
@@ -597,7 +620,7 @@ unique, to prevent name clashes when the packages are "use"d.
 
 @item
 After the file header comment, the context clause and unit specification
-should be the first thing in a program_unit.
+should be the first thing in a @syntax{program_unit}.
 @end itemize
 
 @c  -------------------------------------------------------------------------
@@ -607,16 +630,17 @@ should be the first thing in a program_unit.
 
 @itemize @bullet
 @item
-Every GNAT source file must be compiled with the "-gnatg" switch to check
-the coding style (Note that you should look at @file{style.adb} to 
-see the lexical rules enforced by -gnatg).
+Every GNAT source file must be compiled with the @option{-gnatg}
+switch to check the coding style (Note that you should look at
+@file{style.adb} to see the lexical rules enforced by
+@option{-gnatg}).
 
 @item
 Each source file should contain only one compilation unit.
 
 @item
-Filenames should be 8 characters or less followed by the ".adb" extension
-for a body or ".ads" for a spec.
+Filenames should be 8 characters or less followed by the @samp{.adb}
+extension for a body or @samp{.ads} for a spec.
 
 @item
 Unit names should be distinct when krunched to 8 characters 
