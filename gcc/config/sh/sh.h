@@ -1533,7 +1533,7 @@ extern enum reg_class reg_class_from_letter[];
    : 0)
 
 #define CONST_OK_FOR_J16(VALUE) \
-  (HOST_BITS_PER_WIDE_INT >= 64 && (VALUE) == (HOST_WIDE_INT) 0xffffffff \
+  ((HOST_BITS_PER_WIDE_INT >= 64 && (VALUE) == (HOST_WIDE_INT) 0xffffffff) \
    || (HOST_BITS_PER_WIDE_INT >= 64 && (VALUE) == (HOST_WIDE_INT) -1 << 32))
 #define CONST_OK_FOR_J(VALUE, STR) \
   ((STR)[1] == '1' && (STR)[2] == '6' ? CONST_OK_FOR_J16 (VALUE) \
@@ -3365,7 +3365,7 @@ extern int rtx_equal_function_value_matters;
      (TARGET_HITACHI				\
       && recog_memoized (INSN) >= 0		\
       && get_attr_fp_set (INSN) != FP_SET_NONE  \
-      ? get_attr_fp_set (INSN)                  \
+      ? (int) get_attr_fp_set (INSN)            \
       : (MODE))
 
 #define MODE_PRIORITY_TO_MODE(ENTITY, N) \

@@ -4068,7 +4068,8 @@
 	    }
 	  /* Try movi / mshflo.l  */
 	  val2 = (HOST_WIDE_INT) val >> 32;
-	  if (val2 == trunc_int_for_mode (val, SImode))
+	  if (val2 == ((unsigned HOST_WIDE_INT)
+			trunc_int_for_mode (val, SImode)))
 	    {
 	      operands[1] = gen_mshflo_l_di (operands[0], operands[0],
 					     operands[0]);
@@ -7171,7 +7172,7 @@ mov.l\\t1f,r0\\n\\
   "*
 {
   rtx diff_vec = PATTERN (next_real_insn (operands[2]));
-  char *load;
+  const char *load;
 
   if (GET_CODE (diff_vec) != ADDR_DIFF_VEC)
     abort ();
@@ -7415,7 +7416,7 @@ mov.l\\t1f,r0\\n\\
   [(use (match_operand 0 "register_operand" ""))]
   ""
 {
-  rtx tmp, ra = operands[0];
+  rtx ra = operands[0];
 
   if (TARGET_SHMEDIA64)
     emit_insn (gen_eh_set_ra_di (ra));
@@ -9258,7 +9259,7 @@ mov.l\\t1f,r0\\n\\
   "
 {
   rtx addr_target, orig_address, shift_reg, qi_val;
-  HOST_WIDE_INT bitsize, size, v;
+  HOST_WIDE_INT bitsize, size, v = 0;
   rtx x = operands[3];
 
   /* ??? expmed doesn't care for non-register predicates.  */

@@ -1,3 +1,13 @@
+2004-07-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_va_arg): Initinalize lab_over.
+	* config/sh/sh.h (CONST_OK_FOR_J16): Use parentheses.
+	(MODE_AFTER): Add cast appropriately.
+	* config/sh/sh.md (movdi splitter): Likewise.
+	(casesi_worker_2): Add const qualifier appropriately.
+	(eh_return): Remove unused variable.
+	(insv): Initialize v;
+
 2004-07-08  Richard Henderson  <rth@redhat.com>
 
 	* config/mmix/mmix-protos.h (mmix_expand_builtin_va_arg): Remove.
