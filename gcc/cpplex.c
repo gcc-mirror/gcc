@@ -162,11 +162,11 @@ token_spellings [N_TTYPES + 1] = {TTYPE_TABLE {0, 0} };
 #undef N
 
 /* For debugging: the internal names of the tokens.  */
-#define T(e, s) U STRINGX(e) + 4,
-#define I(e, s) U STRINGX(e) + 4,
-#define S(e, s) U STRINGX(e) + 4,
-#define C(e, s) U STRINGX(e) + 4,
-#define N(e, s) U STRINGX(e) + 4,
+#define T(e, s) U STRINGX(e),
+#define I(e, s) U STRINGX(e),
+#define S(e, s) U STRINGX(e),
+#define C(e, s) U STRINGX(e),
+#define N(e, s) U STRINGX(e),
 
 const U_CHAR *const token_names[N_TTYPES] = { TTYPE_TABLE };
 
