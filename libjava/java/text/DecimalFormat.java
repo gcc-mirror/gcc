@@ -1,6 +1,6 @@
 // DecimalFormat.java - Localized number formatting.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -13,6 +13,8 @@ package java.text;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.io.ObjectInputStream;
+import java.io.IOException;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -20,7 +22,7 @@ import java.util.ResourceBundle;
  */
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 from http://www.javasoft.com.
- * Status:  Believed complete and correct to 1.2, except serialization.
+ * Status:  Believed complete and correct to 1.2.
  * Note however that the docs are very unclear about how format parsing
  * should work.  No doubt there are problems here.
  */
@@ -976,8 +978,21 @@ public class DecimalFormat extends NumberFormat
   private String negativeSuffix;
   private String positivePrefix;
   private String positiveSuffix;
+  private int serialVersionOnStream = 1;
   private DecimalFormatSymbols symbols;
   private boolean useExponentialNotation;
+  private static final long serialVersionUID = 864413376551465018L;
+
+  private void readObject(ObjectInputStream stream)
+    throws IOException, ClassNotFoundException
+  {
+    stream.defaultReadObject();
+    if (serialVersionOnStream < 1)
+      {
+        useExponentialNotation = false;
+	serialVersionOnStream = 1;
+      }
+  }
 
   // The locale-independent pattern symbols happen to be the same as
   // the US symbols.

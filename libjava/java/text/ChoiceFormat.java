@@ -307,4 +307,6 @@ public class ChoiceFormat extends NumberFormat
   private static final int mantissaBits = 52;
   // Number of exponent bits in a double.
   private static final int exponentBits = 11;
+
+  private static final long serialVersionUID = 1795184449645032964L;
 }

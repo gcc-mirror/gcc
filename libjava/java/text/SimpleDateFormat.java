@@ -9,6 +9,8 @@ details.  */
 package java.text;
 
 import java.util.*;
+import java.io.ObjectInputStream;
+import java.io.IOException;
 
 /**
  * @author Per Bothner <bothner@cygnus.com>
@@ -16,14 +18,29 @@ import java.util.*;
  */
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  parse is not implemented.
+ * Status:  Believed complete and correct to 1.2.
  */
 
 public class SimpleDateFormat extends DateFormat
 {
-  private Date defaultCenturyStart;
+  // Serialization fields.
+  private Date defaultCenturyStart = new Date();
   private DateFormatSymbols formatData;
   private String pattern;
+  private int serialVersionOnStream = 1;
+  private static final long serialVersionUID = 4774881970558875024L;
+
+  // Serialization method.
+  private void readObject(ObjectInputStream stream)
+    throws IOException, ClassNotFoundException
+  {
+    stream.defaultReadObject();
+    if (serialVersionOnStream < 1)
+      {
+        defaultCenturyStart = new Date();
+	serialVersionOnStream = 1;
+      }
+  }
 
   public SimpleDateFormat ()
   {

@@ -11,6 +11,9 @@ package java.text;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -18,8 +21,7 @@ import java.util.MissingResourceException;
  */
 /* Written using "Java Class Libraries", 2nd edition, plus online
  * API docs for JDK 1.2 from http://www.javasoft.com.
- * Status:  Believed complete and correct to 1.2, except serialization
- *          and getAvailableLocales.
+ * Status:  Believed complete and correct to 1.2, except getAvailableLocales.
  */
 
 public abstract class NumberFormat extends Format implements Cloneable
@@ -249,13 +251,44 @@ public abstract class NumberFormat extends Format implements Cloneable
     }
 
   // These field names are fixed by the serialization spec.
-  // FIXME: serialization spec also mentions `byte' versions of the
-  // min/max fields.  We have no use for those, so for now they are
-  // omitted.
   protected boolean groupingUsed;
   protected int maximumFractionDigits;
+  private byte maxFractionDigits;
   protected int maximumIntegerDigits;
+  private byte maxIntegerDigits;
   protected int minimumFractionDigits;
+  private byte minFractionDigits;
   protected int minimumIntegerDigits;
+  private byte minIntegerDigits;
   protected boolean parseIntegerOnly;
+  private int serialVersionOnStream;
+  private static final long serialVersionUID = -2308460125733713944L;
+
+  private void readObject(ObjectInputStream stream)
+    throws IOException, ClassNotFoundException
+  {
+    stream.defaultReadObject();
+    if (serialVersionOnStream < 1)
+      {
+        maximumFractionDigits = maxFractionDigits;
+	maximumIntegerDigits = maxIntegerDigits;
+	minimumFractionDigits = minFractionDigits;
+	minimumIntegerDigits = minIntegerDigits;
+	serialVersionOnStream = 1;
+      }
+  }
+
+  private void writeObject(ObjectOutputStream stream) throws IOException
+  {
+    maxFractionDigits = maximumFractionDigits < Byte.MAX_VALUE ?
+      (byte) maximumFractionDigits : Byte.MAX_VALUE;
+    maxIntegerDigits = maximumIntegerDigits < Byte.MAX_VALUE ?
+      (byte) maximumIntegerDigits : Byte.MAX_VALUE;
+    minFractionDigits = minimumFractionDigits < Byte.MAX_VALUE ?
+      (byte) minimumFractionDigits : Byte.MAX_VALUE;
+    minIntegerDigits = minimumIntegerDigits < Byte.MAX_VALUE ?
+      (byte) minimumIntegerDigits : Byte.MAX_VALUE;
+    serialVersionOnStream = 1;
+    stream.defaultWriteObject();
+  }
 }

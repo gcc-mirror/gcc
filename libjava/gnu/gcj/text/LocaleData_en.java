@@ -1,6 +1,6 @@
 // Generic English locale data for java.text.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -48,6 +48,7 @@ public final class LocaleData_en extends ListResourceBundle
     { "groupingSeparator", "," },
     { "infinity", "\u221e" },
     { "minusSign", "-" },
+    { "monetarySeparator", "." },
     { "NaN", "\ufffd" },
     { "patternSeparator", ";" },
     { "percent", "%" },

@@ -33,6 +33,8 @@ public class DateFormatSymbols extends Object
   private String[] weekdays;
   private String[][] zoneStrings;
 
+  private static final long serialVersionUID = -5987973545549424702L;
+
   private static final String[] ampmsDefault = {"AM", "PM" };
   private static final String[] erasDefault = {"BC", "AD" };
   // localPatternCharsDefault is used by SimpleDateFormat.
