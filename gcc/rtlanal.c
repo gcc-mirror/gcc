@@ -694,7 +694,7 @@ single_set (insn)
 /* Given an INSN, return nonzero if it has more than one SET, else return
    zero.  */
 
-rtx
+int
 multiple_sets (insn)
      rtx insn;
 {
