@@ -779,8 +779,8 @@ extern const char* open_class PARAMS ((const char *, struct JCF *,
 				       int, const char *));
 # endif /* JCF_USE_STDIO */
 #endif
-void java_debug_context PARAMS ((void));
-void safe_layout_class PARAMS ((tree));
+extern void java_debug_context PARAMS ((void));
+extern void safe_layout_class PARAMS ((tree));
 
 extern tree get_boehm_type_descriptor PARAMS ((tree));
 extern unsigned long java_hash_hash_tree_node PARAMS ((hash_table_key));
