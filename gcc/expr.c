@@ -5172,20 +5172,20 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 		 && REGNO (result) >= FIRST_PSEUDO_REGISTER))
 	    result = gen_reg_rtx (insn_mode);
 
-	  /* Make the operands are acceptable to the predicates.  */
+	  /* Make sure the operands are acceptable to the predicates.  */
 
-	  if (! (*insn_operand_predicate[icode][0]) (result, insn_mode))
+	  if (! (*insn_operand_predicate[(int)icode][0]) (result, insn_mode))
 	    result = gen_reg_rtx (insn_mode);
 
 	  src_rtx = memory_address (BLKmode,
 				    expand_expr (src, 0, Pmode,
 						 EXPAND_NORMAL));
-	  if (! (*insn_operand_predicate[icode][1]) (src_rtx, Pmode))
+	  if (! (*insn_operand_predicate[(int)icode][1]) (src_rtx, Pmode))
 	    src_rtx = copy_to_mode_reg (Pmode, src_rtx);
 
 	  char_rtx = const0_rtx;
-	  char_mode = insn_operand_mode[icode][2];
-	  if (! (*insn_operand_predicate[icode][2]) (char_rtx, char_mode))
+	  char_mode = insn_operand_mode[(int)icode][2];
+	  if (! (*insn_operand_predicate[(int)icode][2]) (char_rtx, char_mode))
 	    char_rtx = copy_to_mode_reg (char_mode, char_rtx);
 
 	  emit_insn (GEN_FCN (icode) (result,
