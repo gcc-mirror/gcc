@@ -43,6 +43,7 @@ static int uses_addressof		PARAMS ((rtx));
 static int sequence_uses_addressof	PARAMS ((rtx));
 static void purge_reg_equiv_notes	PARAMS ((void));
 static void purge_mem_unchanging_flag	PARAMS ((rtx));
+static rtx skip_unreturned_value 	PARAMS ((rtx));
 
 /* Examine a CALL_PLACEHOLDER pattern and determine where the call's
    return value is located.  P_HARD_RETURN receives the hard register
@@ -220,6 +221,35 @@ skip_use_of_return_value (orig_insn, code)
   return orig_insn;
 }
 
+/* In case function does not return value,  we get clobber of pseudo followed
+   by set to hard return value.  */
+static rtx
+skip_unreturned_value (orig_insn)
+     rtx orig_insn;
+{
+  rtx insn = next_nonnote_insn (orig_insn);
+
+  /* Skip possible clobber of pseudo return register.  */
+  if (insn
+      && GET_CODE (insn) == INSN
+      && GET_CODE (PATTERN (insn)) == CLOBBER
+      && REG_P (XEXP (PATTERN (insn), 0))
+      && (REGNO (XEXP (PATTERN (insn), 0)) >= FIRST_PSEUDO_REGISTER))
+    {
+      rtx set_insn = next_nonnote_insn (insn);
+      rtx set;
+      if (!set_insn)
+	return insn;
+      set = single_set (set_insn);
+      if (!set
+	  || SET_SRC (set) != XEXP (PATTERN (insn), 0)
+	  || SET_DEST (set) != current_function_return_rtx)
+	return insn;
+      return set_insn;
+    }
+  return orig_insn;
+}
+
 /* If the first real insn after ORIG_INSN adjusts the stack pointer
    by a constant, return the insn with the stack pointer adjustment.
    Otherwise return ORIG_INSN.  */
@@ -314,6 +344,11 @@ call_ends_block_p (insn, end)
 
   /* Skip over a CLOBBER of the return value as a hard reg.  */
   insn = skip_use_of_return_value (insn, CLOBBER);
+  if (insn == end)
+    return 1;
+
+  /* Skip over a CLOBBER of the return value as a hard reg.  */
+  insn = skip_unreturned_value (insn);
   if (insn == end)
     return 1;
 
