@@ -1,9 +1,23 @@
 1999-07-09  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl2.c (reparse_absdcl_as_casts): Don't warn about old-style
+	casts in system headers or extern "C" blocks.
+
 	* pt.c (do_decl_instantiation): Downgrade duplicate instantiation
 	errors to pedwarn.
 
 1999-07-09  Michael Tiemann  <tiemann@happy.cygnus.com>
+
+	* decl2.c (write_virtuals): Deleted declaration.
+	* cp-tree.h (write_virtuals): Deleted extern declaration.
+	* class.c (finish_struct_1): Removed #if 0'd code that mentions
+	write_virtuals.
+	* semantics.c (begin_class_definition): Rewrite code to not depend
+	on write_virtuals.
+
+	* lex.c (cp_pragma_interface): New function.
+	(cp_pragma_implementation): Likewise.
+	(handle_cp_pragma): Call them.
 
 	* typeck.c (comptypes): Simplify C code in look_hard.
 
@@ -24,6 +38,8 @@
 
 	* class.c (duplicate_tag_error): Set TYPE_NONCOPIED_PARTS to
 	NULL_TREE.
+
+	* ptree.c (print_lang_type): Added vtable-needs-writing.
 
 Wed Jul  7 01:26:47 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 

@@ -71,6 +71,8 @@ static int set_vardecl_interface_info PROTO((tree *, void *));
 static void store_pending_inline PROTO((tree, struct pending_inline *));
 static void reinit_parse_for_expr PROTO((struct obstack *));
 static int *init_cpp_parse PROTO((void));
+static void cp_pragma_interface PROTO((char *));
+static void cp_pragma_implementation PROTO ((char *));
 static int handle_cp_pragma PROTO((const char *));
 #ifdef HANDLE_GENERIC_PRAGMAS
 static int handle_generic_pragma PROTO((int));
@@ -1134,6 +1136,93 @@ interface_strcmp (s)
 
   /* No matches.  */
   return 1;
+}
+
+static void
+cp_pragma_interface (main_filename)
+     char *main_filename;
+{
+  tree fileinfo 
+    = TIME_IDENTIFIER_FILEINFO (get_time_identifier (input_filename));
+
+  if (impl_file_chain == 0)
+    {
+      /* If this is zero at this point, then we are
+	 auto-implementing.  */
+      if (main_input_filename == 0)
+	main_input_filename = input_filename;
+
+#ifdef AUTO_IMPLEMENT
+      filename = file_name_nondirectory (main_input_filename);
+      fi = get_time_identifier (filename);
+      fi = TIME_IDENTIFIER_FILEINFO (fi);
+      TREE_INT_CST_LOW (fi) = 0;
+      TREE_INT_CST_HIGH (fi) = 1;
+      /* Get default.  */
+      impl_file_chain = (struct impl_files *)permalloc (sizeof (struct impl_files));
+      impl_file_chain->filename = filename;
+      impl_file_chain->next = 0;
+#endif
+    }
+
+  interface_only = interface_strcmp (main_filename);
+#ifdef MULTIPLE_SYMBOL_SPACES
+  if (! interface_only)
+    interface_unknown = 0;
+#else /* MULTIPLE_SYMBOL_SPACES */
+  interface_unknown = 0;
+#endif /* MULTIPLE_SYMBOL_SPACES */
+  TREE_INT_CST_LOW (fileinfo) = interface_only;
+  TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
+}
+
+static void
+cp_pragma_implementation (main_filename)
+     char *main_filename;
+{
+  tree fileinfo 
+    = TIME_IDENTIFIER_FILEINFO (get_time_identifier (input_filename));
+
+  if (impl_file_chain)
+    {
+      struct impl_files *ifiles = impl_file_chain;
+      while (ifiles)
+	{
+	  if (! strcmp (ifiles->filename, main_filename))
+	    break;
+	  ifiles = ifiles->next;
+	}
+      if (ifiles == 0)
+	{
+	  ifiles = (struct impl_files*) permalloc (sizeof (struct impl_files));
+	  ifiles->filename = main_filename;
+	  ifiles->next = impl_file_chain;
+	  impl_file_chain = ifiles;
+	}
+    }
+  else if ((main_input_filename != 0
+	    && ! strcmp (main_input_filename, input_filename))
+	   || ! strcmp (main_filename, input_filename))
+    {
+      impl_file_chain = (struct impl_files*) permalloc (sizeof (struct impl_files));
+      impl_file_chain->filename = main_filename;
+      impl_file_chain->next = 0;
+    }
+  else
+    error ("`#pragma implementation' can only appear at top-level");
+  interface_only = 0;
+#if 1
+  /* We make this non-zero so that we infer decl linkage
+     in the impl file only for variables first declared
+     in the interface file.  */
+  interface_unknown = 1;
+#else
+  /* We make this zero so that templates in the impl
+     file will be emitted properly.  */
+  interface_unknown = 0;
+#endif
+  TREE_INT_CST_LOW (fileinfo) = interface_only;
+  TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
 }
 
 static int
@@ -2465,15 +2554,6 @@ linenum:
 	    }
 
 	  main_input_filename = input_filename;
-	  if (write_virtuals == 3)
-	    {
-	      walk_globals (vtable_decl_p,
-			    set_vardecl_interface_info,
-			    /*data=*/0);
-	      walk_globals (vtype_decl_p,
-			    set_typedecl_interface_info,
-			    /*data=*/0);
-	    }
 	}
 
       extract_interface_info ();
@@ -4804,11 +4884,6 @@ handle_cp_pragma (pname)
 	  return -1;
 	}
 
-      if (write_virtuals != 2)
-	{
-	  warning ("use `+e2' option to enable #pragma vtable");
-	  return -1;
-	}
       pending_vtables
 	= perm_tree_cons (NULL_TREE,
 			  get_identifier (TREE_STRING_POINTER (yylval.ttype)),
@@ -4834,8 +4909,6 @@ handle_cp_pragma (pname)
     }
   else if (! strcmp (pname, "interface"))
     {
-      tree fileinfo 
-	= TIME_IDENTIFIER_FILEINFO (get_time_identifier (input_filename));
       char *main_filename = input_filename;
 
       main_filename = file_name_nondirectory (main_filename);
@@ -4857,48 +4930,18 @@ handle_cp_pragma (pname)
       if (token != END_OF_LINE)
 	warning ("garbage after `#pragma interface' ignored");
 
-      write_virtuals = 3;
-
-      if (impl_file_chain == 0)
-	{
-	  /* If this is zero at this point, then we are
-	     auto-implementing.  */
-	  if (main_input_filename == 0)
-	    main_input_filename = input_filename;
-
-#ifdef AUTO_IMPLEMENT
-	  filename = file_name_nondirectory (main_input_filename);
-	  fi = get_time_identifier (filename);
-	  fi = TIME_IDENTIFIER_FILEINFO (fi);
-	  TREE_INT_CST_LOW (fi) = 0;
-	  TREE_INT_CST_HIGH (fi) = 1;
-	  /* Get default.  */
-	  impl_file_chain = (struct impl_files *)permalloc (sizeof (struct impl_files));
-	  impl_file_chain->filename = filename;
-	  impl_file_chain->next = 0;
-#endif
-	}
-
-      interface_only = interface_strcmp (main_filename);
-#ifdef MULTIPLE_SYMBOL_SPACES
-      if (! interface_only)
-	interface_unknown = 0;
-#else /* MULTIPLE_SYMBOL_SPACES */
-      interface_unknown = 0;
-#endif /* MULTIPLE_SYMBOL_SPACES */
-      TREE_INT_CST_LOW (fileinfo) = interface_only;
-      TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
+      cp_pragma_interface (main_filename);
 
       return 1;
     }
   else if (! strcmp (pname, "implementation"))
     {
-      tree fileinfo 
-	= TIME_IDENTIFIER_FILEINFO (get_time_identifier (input_filename));
       char *main_filename = main_input_filename ? main_input_filename : input_filename;
 
       main_filename = file_name_nondirectory (main_filename);
+
       token = real_yylex ();
+
       if (token != END_OF_LINE)
 	{
 	  if (token != STRING
@@ -4914,50 +4957,7 @@ handle_cp_pragma (pname)
       if (token != END_OF_LINE)
 	warning ("garbage after `#pragma implementation' ignored");
 
-      if (write_virtuals == 3)
-	{
-	  struct impl_files *ifiles = impl_file_chain;
-	  while (ifiles)
-	    {
-	      if (! strcmp (ifiles->filename, main_filename))
-		break;
-	      ifiles = ifiles->next;
-	    }
-	  if (ifiles == 0)
-	    {
-	      ifiles = (struct impl_files*) permalloc (sizeof (struct impl_files));
-	      ifiles->filename = main_filename;
-	      ifiles->next = impl_file_chain;
-	      impl_file_chain = ifiles;
-	    }
-	}
-      else if ((main_input_filename != 0
-		&& ! strcmp (main_input_filename, input_filename))
-	       || ! strcmp (input_filename, main_filename))
-	{
-	  write_virtuals = 3;
-	  if (impl_file_chain == 0)
-	    {
-	      impl_file_chain = (struct impl_files*) permalloc (sizeof (struct impl_files));
-	      impl_file_chain->filename = main_filename;
-	      impl_file_chain->next = 0;
-	    }
-	}
-      else
-	error ("`#pragma implementation' can only appear at top-level");
-      interface_only = 0;
-#if 1
-      /* We make this non-zero so that we infer decl linkage
-	 in the impl file only for variables first declared
-	 in the interface file.  */
-      interface_unknown = 1;
-#else
-      /* We make this zero so that templates in the impl
-	 file will be emitted properly.  */
-      interface_unknown = 0;
-#endif
-      TREE_INT_CST_LOW (fileinfo) = interface_only;
-      TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
+      cp_pragma_implementation (main_filename);
 
       return 1;
     }

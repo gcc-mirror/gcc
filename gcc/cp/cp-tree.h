@@ -490,18 +490,6 @@ extern int warn_old_style_cast;
 
 extern int flag_signed_bitfields;
 
-/* 3 means write out only virtuals function tables `defined'
-   in this implementation file.
-   2 means write out only specific virtual function tables
-   and give them (C) public access.
-   1 means write out virtual function tables and give them
-   (C) public access.
-   0 means write out virtual function tables and give them
-   (C) static access (default).
-   -1 means declare virtual function tables extern.  */
-
-extern int write_virtuals;
-
 /* True for more efficient but incompatible (not fully tested)
    vtable implementation (using thunks).
    0 is old behavior; 1 is new behavior.  */
