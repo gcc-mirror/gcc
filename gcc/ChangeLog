@@ -1,3 +1,7 @@
+Tue Sep 30 23:09:40 1997  Thomas Koenig <ig25@mvmap66.ciw.uni-karlsruhe.de>
+
+	* haifa-sched.c: (get_block_head_tail) Remove unneeded initialization.
+
 Tue Sep 30 23:06:43 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (beq): For registers and ints 0-255, use cmpeq+bne, since
