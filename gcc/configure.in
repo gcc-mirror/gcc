@@ -1565,7 +1565,8 @@ AC_ARG_WITH(gc,
     AC_MSG_ERROR([$withval is an invalid option to --with-gc])
     ;;
 esac],
-[if test $ac_cv_func_mmap_anywhere = yes \
+[if test $ac_cv_func_mmap_dev_zero = yes \
+    || test $ac_cv_func_mmap_anon = yes \
     || test $ac_cv_func_valloc = yes; then
   GGC=ggc-page
 else

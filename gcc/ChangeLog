@@ -1,3 +1,16 @@
+2001-01-11  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* aclocal.m4 (AC_FUNC_MMAP_ANYWHERE): Completely rewritten.
+	Now defines HAVE_MMAP_DEV_ZERO and/or HAVE_MMAP_ANON depending
+	which you have.
+	(AC_FUNC_MMAP_FILE): Don't AC_REQUIRE AC_FUNC_MMAP_ANYWHERE.
+	* configure.in: Set GGC to ggc-page if any of mmap_dev_zero,
+	mmap_anon, and valloc is available.
+	* ggc-page.c: Restructure ifdef logic to match new autoconf
+	spec.  Don't throw away the test page in init_ggc.
+
+	* configure, config.in: Regenerate.
+
 2001-01-12  Michael Hayes  <mhayes@redhat.com>
 
 	* loop.h (total_biv_increment): Constify iv_class pointer.
@@ -44,10 +57,10 @@ Fri Jan 12 00:04:00 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (std_expand_builtin_va_start): Handle varargs when
 	sizeof (int) is larger than sizeof(__word__).
-	
+
 2001-01-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppinit.c (do_includes): Fix typo.
+	* cppinit.c (do_includes): Fix typo.
 
 2001-01-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
@@ -63,27 +76,27 @@ Fri Jan 12 00:04:00 MET 2001  Jan Hubicka  <jh@suse.cz>
 	(lshrdi_const1, lshrsi3_const16): Likewise.
 	(*addhi3, lshrsi3_const1, lshrqi3_const1): Likewise.
 	(*movhi_68hc12, *movqi_68hc12): Likewise.
-	(movstrictqi): Make sure reloading in D_REGS as a destination 
+	(movstrictqi): Make sure reloading in D_REGS as a destination
 	does not happen.
 
 2001-01-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppspec.c (DEFAULT_WORD_SWITCH_TAKES_ARG): Add -MQ. 
+	* cppspec.c (DEFAULT_WORD_SWITCH_TAKES_ARG): Add -MQ.
 
 2001-01-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppinit.c (cpp_start_read): If -fpreprocessed, ignore
-        -D, -U and -A, and don't initialize the builtins.
+	* cppinit.c (cpp_start_read): If -fpreprocessed, ignore
+	-D, -U and -A, and don't initialize the builtins.
 	(do_includes): Error if -include or -imacros with -fpreprocessed.
-        * cppmain.c (cb_define, cb_undef): Unconditionally process
-        the callback.
-        * tradcpp.c (main): Fix typo.
+	* cppmain.c (cb_define, cb_undef): Unconditionally process
+	the callback.
+	* tradcpp.c (main): Fix typo.
 
 2000-01-11  Mark Elbrecht  <snowball3@bigfoot.com>
-	  
+
 	 * cppfiles.c (cpp_included, find_include_file, _cpp_execute_include)
 	   (read_name_map): Use IS_ABSOLUTE_PATH.
-	 * tradcpp.c (get_filename): Likewise.   
+	 * tradcpp.c (get_filename): Likewise.
 
 2001-01-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
@@ -104,7 +117,7 @@ Fri Jan 12 00:04:00 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-01-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * invoke.texi: Restore documentation of the drivers' switches -MD
+	* invoke.texi: Restore documentation of the drivers' switches -MD
 	and -MMD.
 
 2001-01-11  Alexandre Oliva  <aoliva@redhat.com>
@@ -155,22 +168,22 @@ Fri Jan 12 00:04:00 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-01-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * Makefile.in (tradcpp0): Depend on mkdeps.h.  Link mkdeps.o
-        * cppinit.c (cpp_start_read): Update comment, remove unneeded
-        if statement.
-        * tradcpp.c: Include mkdeps.h.
-        (deps, print_deps_phony_targets, deps_append, output_deps,
-        init_dependency_output, output_deps): New.
-        (deps_buffer, deps_allocated_size, deps_size, deps_column,
-        deps_output): Delete.
-        (print_deps_missing_files): Rename deps_missing_files.
-        (inhibit_output): Make global.
-        (main): Delete inhibit_output, deps_stream, deps_target.
-        Use mkdeps functionality in the same way as cpplib.  Remove
-        -g3 handling.  Handle -MF, -MP, -MQ, -MT.  Update handling of
-        -M and -MM.  Remove old handling of deps via deps_out, and
-        old reading of environment variables.
-        (get_filename): Update to use deps_add_dep.
+	* Makefile.in (tradcpp0): Depend on mkdeps.h.  Link mkdeps.o
+	* cppinit.c (cpp_start_read): Update comment, remove unneeded
+	if statement.
+	* tradcpp.c: Include mkdeps.h.
+	(deps, print_deps_phony_targets, deps_append, output_deps,
+	init_dependency_output, output_deps): New.
+	(deps_buffer, deps_allocated_size, deps_size, deps_column,
+	deps_output): Delete.
+	(print_deps_missing_files): Rename deps_missing_files.
+	(inhibit_output): Make global.
+	(main): Delete inhibit_output, deps_stream, deps_target.
+	Use mkdeps functionality in the same way as cpplib.  Remove
+	-g3 handling.  Handle -MF, -MP, -MQ, -MT.  Update handling of
+	-M and -MM.  Remove old handling of deps via deps_out, and
+	old reading of environment variables.
+	(get_filename): Update to use deps_add_dep.
 
 2001-01-10  Mark Mitchell  <mark@codesourcery.com>
 
@@ -215,7 +228,7 @@ Fri Jan 12 00:04:00 MET 2001  Jan Hubicka  <jh@suse.cz>
 	restore_machine_status.
 
 	* emit-rtl.c (init_emit_once): Amend comment describing
-	{init|mark|free}_machine_status. 
+	{init|mark|free}_machine_status.
 
 	* tm.texi (Per-Function Data): New node.  Describe the
 	INIT_EXPANDERS macro and the {init|mark|free}_machine_status
@@ -223,17 +236,17 @@ Fri Jan 12 00:04:00 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-01-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppinit.c (OPT_g): Remove.
-        (cpp_handle_option): Update for removed -g3. 
-        (print_help): Update.
-        * cpplib.h (struct cpp_options): Remove debug_output.
-        * cppmain.c (setup_callbacks, cb_define): Update.
-        * gcc.c (cpp_options): Translate -g3 to -dD.  
+	* cppinit.c (OPT_g): Remove.
+	(cpp_handle_option): Update for removed -g3.
+	(print_help): Update.
+	* cpplib.h (struct cpp_options): Remove debug_output.
+	* cppmain.c (setup_callbacks, cb_define): Update.
+	* gcc.c (cpp_options): Translate -g3 to -dD.
 
 2001-01-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/i960/i960.md: Change modifier to + on the zero_extract
-        pattern after the (rotate -2 reg) canonicalization pattern.
+	pattern after the (rotate -2 reg) canonicalization pattern.
 
 2001-01-10  Richard Henderson  <rth@redhat.com>
 
@@ -282,14 +295,14 @@ Wed Jan 10 16:38:31 MET 2001  Jan Hubicka  <jh@suse.cz>
 	@w.
 
 2001-01-10  Nathan Sidwell  <nathan@codesourcery.com>
-	
-        * gcc.c (cpp_options): Set MD file name from output
-        filename, if specified.
-        (suffix_subst): New static variable.
-        (do_spec): Clear it.
-        (do_spec_1, case '.'): Handle new `%.suffix' spec.
-        Clear it.
-        (give_switch): Handle suffix_subst.
+
+	* gcc.c (cpp_options): Set MD file name from output
+	filename, if specified.
+	(suffix_subst): New static variable.
+	(do_spec): Clear it.
+	(do_spec_1, case '.'): Handle new `%.suffix' spec.
+	Clear it.
+	(give_switch): Handle suffix_subst.
 
 2001-01-10  Phil Edwards  <pme@sources.redhat.com>
 
@@ -301,28 +314,28 @@ Wed Jan 10 16:38:31 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-01-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * c-lang.c (lang_hooks): Update.
-        (lang_decode_option): Remove.
-        (lang_init_options): Rename c_init_options.
-        * toplev.c (main): Use lang_hooks for lang_init_options
-        and lang_decode_option.
-        * toplev.h (lang_hooks): Add 2 new hooks.
-        * tree.h: Remove lang_init_options and lang_decode_option.
-        * cp/cp-tree.h (lang_decode_option): Rename cxx_decode_option.
-        * cp/decl2.c: Similarly.
-        * cp/lex.c (lang_init_options): Rename cxx_init_options.
-        (lang_hooks): Update.   
-        * f/com.c (f_init, f_finish): Rename ffe_init, ffe_finish
-        for consistency.
-        (lang_init_options): Rename ffe_init_options.
-        (lang_hooks): Update.
-        (lang_decode_option): Remove.
-        * java/lang.c (lang_init_options): Rename java_init_options.
-        (lang_decode_option): Rename java_decode_option.
-        (lang_hooks): Update.
-        * objc/objc-act.c (lang_init_options): Rename objc_init_options.
-        (lang_decode_option): Rename objc_decode_option.
-        (lang_hooks): Update.
+	* c-lang.c (lang_hooks): Update.
+	(lang_decode_option): Remove.
+	(lang_init_options): Rename c_init_options.
+	* toplev.c (main): Use lang_hooks for lang_init_options
+	and lang_decode_option.
+	* toplev.h (lang_hooks): Add 2 new hooks.
+	* tree.h: Remove lang_init_options and lang_decode_option.
+	* cp/cp-tree.h (lang_decode_option): Rename cxx_decode_option.
+	* cp/decl2.c: Similarly.
+	* cp/lex.c (lang_init_options): Rename cxx_init_options.
+	(lang_hooks): Update.
+	* f/com.c (f_init, f_finish): Rename ffe_init, ffe_finish
+	for consistency.
+	(lang_init_options): Rename ffe_init_options.
+	(lang_hooks): Update.
+	(lang_decode_option): Remove.
+	* java/lang.c (lang_init_options): Rename java_init_options.
+	(lang_decode_option): Rename java_decode_option.
+	(lang_hooks): Update.
+	* objc/objc-act.c (lang_init_options): Rename objc_init_options.
+	(lang_decode_option): Rename objc_decode_option.
+	(lang_hooks): Update.
 
 2001-01-09  Nick Clifton  <nickc@redhat.com>
 
@@ -367,7 +380,7 @@ Tue Jan  9 21:25:19 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* reload.c (find_reloads_address): Check for eliminable registers
 		  when substituting a constant expression for a pseudo.
-	
+
 2001-01-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (enum format_type): Add format_type_error.
@@ -469,16 +482,16 @@ Tue Jan  9 21:25:19 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-01-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppinit.c (OPT_MD, OPT_MMD): Restore.
-        (cpp_handle_option): Handle them.
-        (cpp_post_options): Ensure one of -M or -MM is specified with
-        any other -M? option.
-        (init_dependency_output): Suppress output with -MG.
+	* cppinit.c (OPT_MD, OPT_MMD): Restore.
+	(cpp_handle_option): Handle them.
+	(cpp_post_options): Ensure one of -M or -MM is specified with
+	any other -M? option.
+	(init_dependency_output): Suppress output with -MG.
 
 2001-01-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpp.texi: Update.
-        * invoke.texi: Update.
+	* cpp.texi: Update.
+	* invoke.texi: Update.
 
 2001-01-09  Bernd Schmidt  <bernds@redhat.com>
 
@@ -488,25 +501,25 @@ Tue Jan  9 21:25:19 2001  Jeffrey A Law  (law@cygnus.com)
 2001-01-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-lang.c (lang_hooks): Update.
-        (lang_init): Rename c_init.
-        (lang_finish): Remove.
-        * toplev.c (compile_file): Use lang_hooks for lang_init ()
-        and lang_finish ().
-        * toplev.h (lang_hooks): Add init () and finish ().
-        * tree.h (lang_init, lang_finish): Remove.
-        * cp/tree.h (lang_init, lang_finish): Remove.
-        * cp/decl2.c (cxx_post_options, lang_hooks): Move to cp/lex.c.
-        * cp/lex.c (cxx_init, cxx_finish, cxx_post_options,
-        lang_hooks): New.
-        (lang_init, lang_finish): Remove.
-        * f/com.c (lang_init, lang_finish): Rename f_init, f_finish.
-        (lang_hooks): Update.
-        * java/lang.c (lang_init): Rename java_init.
-        (lang_finish): Remove.
-        (lang_hooks): Update.
-        * objc/objc-act.c (lang_init): Rename objc_init.
-        (lang_finish): Remove.
-        (lang_hoooks): Update.
+	(lang_init): Rename c_init.
+	(lang_finish): Remove.
+	* toplev.c (compile_file): Use lang_hooks for lang_init ()
+	and lang_finish ().
+	* toplev.h (lang_hooks): Add init () and finish ().
+	* tree.h (lang_init, lang_finish): Remove.
+	* cp/tree.h (lang_init, lang_finish): Remove.
+	* cp/decl2.c (cxx_post_options, lang_hooks): Move to cp/lex.c.
+	* cp/lex.c (cxx_init, cxx_finish, cxx_post_options,
+	lang_hooks): New.
+	(lang_init, lang_finish): Remove.
+	* f/com.c (lang_init, lang_finish): Rename f_init, f_finish.
+	(lang_hooks): Update.
+	* java/lang.c (lang_init): Rename java_init.
+	(lang_finish): Remove.
+	(lang_hooks): Update.
+	* objc/objc-act.c (lang_init): Rename objc_init.
+	(lang_finish): Remove.
+	(lang_hoooks): Update.
 
 20001-01-09  Graham Stott  <grahams@redhat.com>
 
@@ -550,7 +563,7 @@ Tue Jan  9 21:25:19 2001  Jeffrey A Law  (law@cygnus.com)
 2001-01-08  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.c (ra_rtx): Delete.
-        (v850_save_machine_status): Delete.
+	(v850_save_machine_status): Delete.
 	(v850_restore_machine_status): Delete.
 	(v850_init_machine_status): New function.
 	(v850_mark_machine_status): New function.
@@ -563,7 +576,7 @@ Tue Jan  9 21:25:19 2001  Jeffrey A Law  (law@cygnus.com)
 	to take a const char *, to avoid compile time warning.
 	* config/v850/v850.h (ASM_OUTPUT_LABELREF): Undefine, not needed.
 	(USER_LABEL_PREFIX): Redefine.
-	
+
 2000-01-08  Jim Wilson  <wilson@redhat.com>
 
 	* sched-rgn.c (BITSET_ADD, BITSET_REMOVE, bitset_member): Cast
@@ -582,10 +595,10 @@ Tue Jan  9 21:25:19 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-01-08  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppinit.c (init): Rename init_library.
-        (cpp_create_reader): Update.
-        * gcc.c (cpp_options): If -o given, use it as the target of
-        any -M options.
+	* cppinit.c (init): Rename init_library.
+	(cpp_create_reader): Update.
+	* gcc.c (cpp_options): If -o given, use it as the target of
+	any -M options.
 
 2001-01-08  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -604,7 +617,7 @@ Tue Jan  9 21:25:19 2001  Jeffrey A Law  (law@cygnus.com)
 	(emit_multi_reg_push, emit_sfm, expand_prologue): Use constants.
 	* arm.h (SP_REGNUM, IP_REGNUM, PC_REGNUM): Delete defines.
 	(STACK_POINTER_REGNUM): Define in terms of SP_REGNUM.
-	
+
 Mon Jan  8 16:14:56 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (jump_optimize_1): Use reversed_comparison_code
@@ -622,7 +635,7 @@ Mon Jan  8 16:14:56 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* arm.h (HARD_REGNO_RENAME_OK): Delete.
 	(EPILOGUE_USES): Define.
-	(INITIAL_ELIMINATION_OFFSET): Current prologue code does not 
+	(INITIAL_ELIMINATION_OFFSET): Current prologue code does not
 	automatically stack the LR if it isn't live.
 
 Mon Jan  8 13:46:02 MET 2001  Jan Hubicka  <jh@suse.cz>
@@ -702,28 +715,28 @@ Sun Jan  7 19:37:48 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * fix-header.c (read_scan_file): s/pfile/scan_in/.
+	* fix-header.c (read_scan_file): s/pfile/scan_in/.
 
 2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * c-lang.c (c_post_options): Call cpp_post_options.
+	* c-lang.c (c_post_options): Call cpp_post_options.
 	* objc/objc-act.c (objc_post_options): Similarly.
 	* cppmain.c (main): Similarly.
-        * fix-header.c (read_scan_file): Similarly.
-        * cppinit.c (cpp_start_read): Move option consistency checks
-        to cpp_post_options.  Don't call init_dependency_output.
-        If needed, add default target and main file dependency.
-        (OPT_MD, OPT_MMD): Remove.
-        (OPT_MF): New.
-        (cpp_handle_option): Update for OPT_* changes.
-        (cpp_post_options): New.
-        (init_dependency_output): Command line -MF overrides environment
-        variables.  Don't set default target etc.  Suppress output
-        if dependencies are going to stdout.
-        (print_help): Update.
-        * cpplib.h (cpp_post_options): New.
-        * gcc.c (cpp_options): Update for -MD, -MMD, -MF.
-	
+	* fix-header.c (read_scan_file): Similarly.
+	* cppinit.c (cpp_start_read): Move option consistency checks
+	to cpp_post_options.  Don't call init_dependency_output.
+	If needed, add default target and main file dependency.
+	(OPT_MD, OPT_MMD): Remove.
+	(OPT_MF): New.
+	(cpp_handle_option): Update for OPT_* changes.
+	(cpp_post_options): New.
+	(init_dependency_output): Command line -MF overrides environment
+	variables.  Don't set default target etc.  Suppress output
+	if dependencies are going to stdout.
+	(print_help): Update.
+	* cpplib.h (cpp_post_options): New.
+	* gcc.c (cpp_options): Update for -MD, -MMD, -MF.
+
 Sun Jan  7 14:44:19 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (comparison_dominates_p): Support unordered compares.
@@ -766,17 +779,17 @@ Sun Jan  7 13:49:19 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * (initialize, initialize_builtins,
-        initialize_dependency_output, initialize_standard_includes):
-        Rename s/initialize/init. Update.
-        (init_dependency_output): Move to after
-        cpp_handle_options, the correct location temporally at least.
-        (opt_comp): Move next to init (), its caller.  Fix prototype.
-        (init): Make "initialized" local scope.
-        (cpp_create_reader): Always call init ().
-        (cpp_start_read): Update.
-        (output_deps): New function, broken out of cpp_finish.
-        (cpp_finish): Break out output_deps.
+	* (initialize, initialize_builtins,
+	initialize_dependency_output, initialize_standard_includes):
+	Rename s/initialize/init. Update.
+	(init_dependency_output): Move to after
+	cpp_handle_options, the correct location temporally at least.
+	(opt_comp): Move next to init (), its caller.  Fix prototype.
+	(init): Make "initialized" local scope.
+	(cpp_create_reader): Always call init ().
+	(cpp_start_read): Update.
+	(output_deps): New function, broken out of cpp_finish.
+	(cpp_finish): Break out output_deps.
 
 2001-01-07  Richard Henderson  <rth@redhat.com>
 
@@ -870,26 +883,26 @@ Sun Jan  7 13:49:19 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * toplev.c (main): Call the front-end specific post_options
-        hook if one is given.
-        * toplev.h (struct_lang_hooks, lang_hooks): New.
-        * c-lang.c (c_post_options, lang_hooks): Implement lang_hooks
-        for the C front end.
-        * cp/decl2.c (cxx_post_options, lang_hooks): Implement
-        lang_hooks for the C++ front end.
-        * objc/objc-act.c (objc_post_options, lang_hooks): Implement
-        lang_hooks for the ObjC front end.
-        * f/com.c (lang_hooks): Hooks for the Fortran front end.
-        * java/lang.c (lang_hooks): Hooks for the Java front end.
+	* toplev.c (main): Call the front-end specific post_options
+	hook if one is given.
+	* toplev.h (struct_lang_hooks, lang_hooks): New.
+	* c-lang.c (c_post_options, lang_hooks): Implement lang_hooks
+	for the C front end.
+	* cp/decl2.c (cxx_post_options, lang_hooks): Implement
+	lang_hooks for the C++ front end.
+	* objc/objc-act.c (objc_post_options, lang_hooks): Implement
+	lang_hooks for the ObjC front end.
+	* f/com.c (lang_hooks): Hooks for the Fortran front end.
+	* java/lang.c (lang_hooks): Hooks for the Java front end.
 
 2001-01-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * c-lex.c (init_c_lex): Request #define / #undef callbacks
-        for verbose DWARF[2] debugging.
-        (cb_define, cb_undef): The new callbacks.
-        * toplev.h (debug_define, debug_undef): Make const correct.
-        * toplev.c (debug_define, debug_undef): Similarly.  Do not   
-        perform the verbosity tests here anymore.
+	* c-lex.c (init_c_lex): Request #define / #undef callbacks
+	for verbose DWARF[2] debugging.
+	(cb_define, cb_undef): The new callbacks.
+	* toplev.h (debug_define, debug_undef): Make const correct.
+	* toplev.c (debug_define, debug_undef): Similarly.  Do not
+	perform the verbosity tests here anymore.
 
 2001-01-07  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -954,19 +967,19 @@ Fri Jan  5 16:34:18 2001  Nick Clifton  <nickc@redhat.com>
 
 2001-01-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpp.texi: Update for -MQ.
-        * cppinit.c (cpp_create_reader): Always create pfile->deps.
-        (cpp_cleanup): Always free pfile->deps.
-        (initialize_dependency_output): Don't create pfile->deps.
-        (cpp_handle_option): Similarly.
-        (OPT_MQ): New.
-        * gcc.c (cpp_options): Handle -MQ.
-        (DEFAULT_WORD_SWITCH_TAKES_ARG): Add -MQ.
-        * mkdeps.c (base_name): Remove.
-        (deps_init): Don't allocate vector space until it's needed.
-        (deps_free): Only free vectors if allocated.
-        (deps_add_target, deps_add_dep): Update for initial allocation.
-        (deps_add_default_target): Don't strip to the base_name.
+	* cpp.texi: Update for -MQ.
+	* cppinit.c (cpp_create_reader): Always create pfile->deps.
+	(cpp_cleanup): Always free pfile->deps.
+	(initialize_dependency_output): Don't create pfile->deps.
+	(cpp_handle_option): Similarly.
+	(OPT_MQ): New.
+	* gcc.c (cpp_options): Handle -MQ.
+	(DEFAULT_WORD_SWITCH_TAKES_ARG): Add -MQ.
+	* mkdeps.c (base_name): Remove.
+	(deps_init): Don't allocate vector space until it's needed.
+	(deps_free): Only free vectors if allocated.
+	(deps_add_target, deps_add_dep): Update for initial allocation.
+	(deps_add_default_target): Don't strip to the base_name.
 
 2001-01-05  DJ Delorie <dj@redhat.com>
 
@@ -981,7 +994,7 @@ Fri Jan  5 16:34:18 2001  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850-protos.h: Add prototypes for v850_return_addr
 	and v850_init_expanders.
-	
+
 2001-01-05  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* cpplib.h (struct cpp_reader): Add help_only field.
@@ -1009,7 +1022,7 @@ Fri Jan  5 16:34:18 2001  Nick Clifton  <nickc@redhat.com>
 	* print-rtl.c (print_simple_rtl): New.
 	(flag_simple): New.
 	(print_rtx): Disable printing of flags and modes, etc.,
-        if `flag_simple` nonzero.
+	if `flag_simple` nonzero.
 
 2001-01-05  Zack Weinberg  <zack@wolery.stanford.edu>
 
@@ -1086,7 +1099,7 @@ Fri Jan  5 20:34:06 2001  J"orn Rennecke <amylaar@redhat.com>
 2001-01-05  Daniel Berlin  <dberlin@redhat.com>
 
 	* c-common.c (lang_get_alias_set): Say we know nothing of
-	VECTOR_TYPE aliasing. 
+	VECTOR_TYPE aliasing.
 
 	* dwarf2out.c (is_base_type): Handle VECTOR_TYPE properly.
 
@@ -1127,18 +1140,18 @@ Fri Jan  5 16:29:49 MET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-01-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpp.texi: Update for -MP.  Clarify behaviour of -MT.
-        * cppinit.c (initialize_dependency_output):  Update.
-        (cpp_finish): Output dummy targets for -MP.
-        (OPT_MP): New.
-        (cpp_handle_option): Handle -MP.  Don't quote -MT options.  
-        * cpplib.h (struct cpp_options): Add deps_phony_targets.
-        * gcc.c (cpp_options): Update to handle -MP.
-        * mkdeps.c (deps_add_target, deps_add_default_target): Update
-        to quote only the default target.
-        (deps_phony_targets): Insert a preceding newline.  Rename from
-        deps_dummy_targets for consistency.
-        * mkdeps.h: Update
+	* cpp.texi: Update for -MP.  Clarify behaviour of -MT.
+	* cppinit.c (initialize_dependency_output):  Update.
+	(cpp_finish): Output dummy targets for -MP.
+	(OPT_MP): New.
+	(cpp_handle_option): Handle -MP.  Don't quote -MT options.
+	* cpplib.h (struct cpp_options): Add deps_phony_targets.
+	* gcc.c (cpp_options): Update to handle -MP.
+	* mkdeps.c (deps_add_target, deps_add_default_target): Update
+	to quote only the default target.
+	(deps_phony_targets): Insert a preceding newline.  Rename from
+	deps_dummy_targets for consistency.
+	* mkdeps.h: Update
 
 2001-01-05  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -1159,7 +1172,7 @@ Fri Jan  5 16:29:49 MET 2001  Jan Hubicka  <jh@suse.cz>
 	(process_init_element): Don't dereference null DECL_SIZE.
 	* varasm.c (array_size_for_constructor): Return a HOST_WIDE_INT.
 	Don't abort for empty constructors.  Use size_binop
-	(output_constructor): Add commentary regarding zero length 
+	(output_constructor): Add commentary regarding zero length
 	array futures.  Abort if we try to initialize an array of
 	unspecified length with a non-empty constructor in the middle
 	of a structure.
@@ -1188,7 +1201,7 @@ Fri Jan  5 16:29:49 MET 2001  Jan Hubicka  <jh@suse.cz>
 	for prset and prget.
 
 2001-01-05  Michael Hayes  <mhayes@redhat.com>
-	
+
 	* loop.h (struct loop_reg): New.
 	(struct loop_regs): Change to use array of `struct loop_reg'.
 	* loop.c: Replace assortment of varrays with single regs array.
@@ -1201,7 +1214,7 @@ Fri Jan  5 16:29:49 MET 2001  Jan Hubicka  <jh@suse.cz>
 	(loop_optimize): Delete `moved_once' array.
 
 2001-01-05  Michael Hayes  <mhayes@redhat.com>
-	
+
 	* loop.c (prescan_loop): Set loop_info->has_nonconst_call.
 	Use it instead of loop_info->has_call for scanning loop mems.
 	(check_dbra_loop): Replace loop_info->has_call test with
@@ -1320,18 +1333,18 @@ Thu Jan  4 15:54:05 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpp.texi: Update for -MT.
-        * cppinit.c (initialize_dependency_output): Add a default
-        target if none has been given already.
-        (no_tgt, OPT_MT): New.
-        (cpp_handle_option): Handle -MT.  Update -M etc.
-        * cpplib.h (struct cpp_options): Remove deps_target.
-        * gcc.c (cpp_options): Handle -MT.
-        * mkdeps.c (struct deps): Move from mkdeps.h.
-        (deps_calc_target): Rename deps_add_default_target.  Add a
-        default target if none has been specified already.
-        * mkdeps.h (struct deps): Move to mkdeps.c.
-        (deps_calc_target): Rename deps_add_default_target.
+	* cpp.texi: Update for -MT.
+	* cppinit.c (initialize_dependency_output): Add a default
+	target if none has been given already.
+	(no_tgt, OPT_MT): New.
+	(cpp_handle_option): Handle -MT.  Update -M etc.
+	* cpplib.h (struct cpp_options): Remove deps_target.
+	* gcc.c (cpp_options): Handle -MT.
+	* mkdeps.c (struct deps): Move from mkdeps.h.
+	(deps_calc_target): Rename deps_add_default_target.  Add a
+	default target if none has been specified already.
+	* mkdeps.h (struct deps): Move to mkdeps.c.
+	(deps_calc_target): Rename deps_add_default_target.
 
 2000-01-03  Richard Henderson  <rth@redhat.com>
 
@@ -1355,7 +1368,7 @@ Thu Jan  4 15:54:05 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/alpha/alpha.md (addvsi3, addvdi3): New.
 	(negvsi2, negvdi2, subvsi3, subvdi3, mulvsi3, mulvdi3): New.
-	
+
 2001-01-03  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* tradcpp.c (main): Make sure finclude() is called with a valid
@@ -1464,7 +1477,7 @@ Wed Jan  3 08:53:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-common.h (ASM_INPUT_P): New.
 	* c-parse.in (asm): Set it when needed.
-	* c-semantics.c (genrtl_asm_stmt): Test it instead of the 
+	* c-semantics.c (genrtl_asm_stmt): Test it instead of the
 	existance of an operand.
 
 Tue Jan  2 20:27:07 MET 2001  Jan Hubicka  <jh@suse.cz>
@@ -1527,7 +1540,7 @@ Tue Jan  2 10:47:38 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.
 
 2001-01-02  Philip Blundell  <pb@futuretv.com>
 
-	* config/arm/linux-gas.h (CLEAR_INSN_CACHE): Avoid illegal clobber 
+	* config/arm/linux-gas.h (CLEAR_INSN_CACHE): Avoid illegal clobber
 	of input operand.
 
 2001-01-02  Richard Henderson  <rth@redhat.com>
@@ -1585,9 +1598,9 @@ Mon Jan  1 21:28:29 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-01-01  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
-        * loop.c (add_label_notes): Increment the label usage count when
-        a note is added to an insn which refers to a CODE_LABEL.
-        * gcse.c (add_label_notes): Likewise.
+	* loop.c (add_label_notes): Increment the label usage count when
+	a note is added to an insn which refers to a CODE_LABEL.
+	* gcse.c (add_label_notes): Likewise.
 
 2001-01-01  Andreas Jaeger  <aj@suse.de>
 
