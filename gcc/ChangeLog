@@ -1,3 +1,8 @@
+2003-06-13  Roger Sayle  <roger@eyesopen.com>
+
+	* expr.c (expand_expr <COMPLEX_CST>): Handle the case of
+	expanding a complex constant into a CONCAT target.
+
 2003-06-13  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/svr3.h (ASM_FILE_START): Don't use ASM_FILE_START_1.
