@@ -266,6 +266,8 @@ struct tree_common
            FUNCTION_DECL
        TREE_PARMLIST in
            TREE_PARMLIST (C++)
+       SAVE_EXPR_NOPLACEHOLDER in
+	   SAVE_EXPR
 
    asm_written_flag:
 
@@ -617,6 +619,7 @@ struct tree_vec
 /* In a SAVE_EXPR node.  */
 #define SAVE_EXPR_CONTEXT(NODE) TREE_OPERAND(NODE, 1)
 #define SAVE_EXPR_RTL(NODE) (*(struct rtx_def **) &(NODE)->exp.operands[2])
+#define SAVE_EXPR_NOPLACEHOLDER(NODE) TREE_UNSIGNED (NODE)
 
 /* In a RTL_EXPR node.  */
 #define RTL_EXPR_SEQUENCE(NODE) (*(struct rtx_def **) &(NODE)->exp.operands[0])
