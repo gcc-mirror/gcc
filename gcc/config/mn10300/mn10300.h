@@ -47,8 +47,8 @@ extern int target_flags;
 /* Generate code to work around mul/mulq bugs on the mn10300.  */
 #define TARGET_MULT_BUG			(target_flags & 0x1)
 #define TARGET_SWITCHES  \
-  {{ "mult-bug",	0x1},	\
-   { "no-mult-bug", 	-0x1},	\
+  {{ "mult-bug",	0x1,  "Work around hardware multiply bug"},	\
+   { "no-mult-bug", 	-0x1, "Do not work around hardware multiply bug"},\
    { "", TARGET_DEFAULT}}
 
 #ifndef TARGET_DEFAULT
