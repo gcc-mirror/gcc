@@ -1,3 +1,9 @@
+2004-12-02  Tom Tromey  <tromey@redhat.com>
+
+	PR java/18741:
+	* java-gimplify.c (java_gimplify_expr): Don't call
+	SET_EXPR_LOCATION unless wrapped tree is an expression.
+
 2004-11-27  Per Bothner  <per@bothner.com>
 
 	* jcf-parse.c (set_source_filename):  Improvement to Andrew's fix:

@@ -78,7 +78,8 @@ java_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED,
       input_location.line = EXPR_WFL_LINENO (*expr_p);
 #endif
       *expr_p = EXPR_WFL_NODE (*expr_p);
-      SET_EXPR_LOCATION (*expr_p, input_location);
+      if (EXPR_P (*expr_p))
+	SET_EXPR_LOCATION (*expr_p, input_location);
       break;
 
     case LABELED_BLOCK_EXPR:
