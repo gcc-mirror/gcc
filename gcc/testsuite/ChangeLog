@@ -1,3 +1,8 @@
+2004-02-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* lib/g++.exp (g++_link_flags): Append LD_LIBRARY_PATH to
+	ld_library_path.
+
 2004-02-27  Ziemowit Laski  <zlaski@apple.com>
 
 	* g++.dg/ext/altivec-3.C: New.
