@@ -1,6 +1,6 @@
 // natMethod.cc - Native code for Method class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001 , 2002, 2003, 2004 Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001 , 2002, 2003, 2004, 2005 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -496,7 +496,7 @@ _Jv_CallAnyMethodA (jobject obj,
 		  || concrete_meth->ncode == NULL
 		  || Modifier::isAbstract(concrete_meth->accflags))
 		throw new java::lang::IncompatibleClassChangeError
-		  (_Jv_GetMethodString (vtable->clas, meth->name));
+		  (_Jv_GetMethodString (vtable->clas, meth));
 	      ncode = concrete_meth->ncode;
 	    }
 	  else

@@ -1,3 +1,14 @@
+2005-02-17  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.h (_Jv_GetMethodString): Updated declaration.
+	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Updated.
+	* java/lang/natClass.cc (_Jv_LookupInterfaceMethod): Updated.
+	* link.cc (_Jv_GetMethodString): Added 'derived' argument.
+	Changed type of second argument.  Rewrote.
+	(make_vtable): Use it.
+	(append_partial_itable): Updated.
+	(layout_vtable_methods): Updated.
+
 2005-02-17  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/PlainSocketImpl.java
