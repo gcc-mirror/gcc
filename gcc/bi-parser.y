@@ -21,6 +21,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{
 
 #include <stdio.h>
+#include "hconfig.h"
 #include "bi-defs.h"
 
 extern char yytext[];
