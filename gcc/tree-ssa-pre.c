@@ -462,7 +462,7 @@ value_insert_into_set_bitmap (value_set_t set, tree v)
   gcc_assert (set->indexed);
 
   if (set->values == NULL)
-    set->values = BITMAP_OBSTACK_ALLOC (&grand_bitmap_obstack);
+    set->values = BITMAP_ALLOC (&grand_bitmap_obstack);
 
   bitmap_set_bit (set->values, VALUE_HANDLE_ID (v));
 }
@@ -474,8 +474,8 @@ static bitmap_set_t
 bitmap_set_new (void)
 {
   bitmap_set_t ret = pool_alloc (bitmap_set_pool);
-  ret->expressions = BITMAP_OBSTACK_ALLOC (&grand_bitmap_obstack);
-  ret->values = BITMAP_OBSTACK_ALLOC (&grand_bitmap_obstack);
+  ret->expressions = BITMAP_ALLOC (&grand_bitmap_obstack);
+  ret->values = BITMAP_ALLOC (&grand_bitmap_obstack);
   return ret;
 }
 

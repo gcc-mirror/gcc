@@ -38,10 +38,10 @@ typedef bitmap_head regset_head;
 typedef bitmap regset;
 
 /* Allocate a register set with oballoc.  */
-#define ALLOC_REG_SET(OBSTACK) BITMAP_OBSTACK_ALLOC (OBSTACK)
+#define ALLOC_REG_SET(OBSTACK) BITMAP_ALLOC (OBSTACK)
 
 /* Do any cleanup needed on a regset when it is no longer used.  */
-#define FREE_REG_SET(REGSET) BITMAP_OBSTACK_FREE (REGSET)
+#define FREE_REG_SET(REGSET) BITMAP_FREE (REGSET)
 
 /* Initialize a new regset.  */
 #define INIT_REG_SET(HEAD) bitmap_initialize (HEAD, &reg_obstack)

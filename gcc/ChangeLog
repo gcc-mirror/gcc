@@ -1,5 +1,15 @@
 2004-11-25  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* basic-block.h (OBSTACK_ALLOC_REG_SET): Adjust.
+	(FREE_REG_SET): Adjust.
+	* bitmap.c (bitmap_obstack_free): Cope with NULL bitmap.
+	* bitmap.h (BITMAP_OBSTACK_ALLOC): Rename to ...
+	(BITMAP_ALLOC): ... here.
+	(BITMAP_OBSTACK_FREE): Rename to ...
+	(BITMAP_FREE): Don't check for NULL bitmap here.
+	* tree-ssa-pre.c (value_insert_into_set_bitmap,
+	bitmap_set_new): Use new names.
+
 	* bt-load.c (migrate_btr_defs): Remove unneeded NULL check.
 	* df.c (df_free): Likewise.
 	* ra-build.c (ra_build_free, ra_build_free_all): Likewise.
