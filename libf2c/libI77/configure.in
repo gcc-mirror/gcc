@@ -124,11 +124,6 @@ AC_CACHE_VAL(g77_cv_sys_mingw32,
 AC_MSG_RESULT($g77_cv_sys_mingw32)
 
 
-AC_CHECK_HEADER(fcntl.h,
-   test $g77_cv_header_posix = yes && AC_DEFINE(_POSIX_SOURCE),
-   AC_DEFINE(NO_FCNTL, 1, [Define if fcntl.h is missing.]) 
-   AC_DEFINE(OPEN_DECL, 1, [Define if fcntl.h is missing.]))
-
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_SIZE_T
@@ -154,6 +149,7 @@ AC_CHECK_FUNCS(ftello)
 AC_CHECK_FUNCS(ftruncate)
 AC_CHECK_FUNCS(mkstemp)
 AC_CHECK_FUNCS(tempnam)
+AC_CHECK_FUNCS(tmpnam)
 
 # posix will guarantee the right behaviour for sprintf, else we can't be
 # sure; HEADER_STDC wouldn't be the right check in sunos4, for instance.
