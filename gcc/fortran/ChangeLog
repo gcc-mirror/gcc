@@ -1,9 +1,9 @@
-2004-12-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-12-11  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17175
 	* iresolve.c (gfc_resolve_scale): Convert 'I' argument if not of
 	same kind as C's 'int'.
-	(gfc_resolve_set_eponent): Convert 'I' argument if not of kind 4.
+	(gfc_resolve_set_exponent): Convert 'I' argument if not of kind 4.
 
 2004-12-08  Richard Henderson  <rth@redhat.com>
 
