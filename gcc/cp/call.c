@@ -1716,7 +1716,7 @@ add_builtin_candidate (candidates, code, code2, fnname, type1, type2,
      candidate operator functions of the form112)
 	     ptrdiff_t operator-(T, T);
 
-   16For  every enumeral or pointer type T, there exist candidate operator
+   16For every pointer or enumeration type T, there exist candidate operator
      functions of the form
 	     bool    operator<(T, T);
 	     bool    operator>(T, T);
@@ -5211,14 +5211,21 @@ joust (cand1, cand2, warn)
   if (winner)
     return winner;
 
-  /* or, if not that, a non-template function is better than a
-     template function.  */
-
+  /* or, if not that,
+     F1 is a non-template function and F2 is a template function
+     specialization.  */
+         
   if (! cand1->template && cand2->template)
     return 1;
   else if (cand1->template && ! cand2->template)
     return -1;
-  else if (cand1->template && cand2->template)
+  
+  /* or, if not that,
+     F1 and F2 are template functions and the function template for F1 is
+     more specialized than the template for F2 according to the partial
+     ordering rules.  */
+  
+  if (cand1->template && cand2->template)
     {
       winner = more_specialized
         (TI_TEMPLATE (cand1->template), TI_TEMPLATE (cand2->template),
@@ -5230,8 +5237,15 @@ joust (cand1, cand2, warn)
         return winner;
     }
 
-  /* or, if not that, a non-template user function is better than a
-     builtin.  */
+  /* a non-template user function is better than a builtin.  (Pedantically
+     the builtin which matched the user function should not be added to
+     the overload set, but we spot it here.
+     
+     [over.match.oper]
+     ... the builtin candidates include ...
+     - do not have the same parameter type list as any non-template
+       non-member candidate.  */
+                            
   if (TREE_CODE (cand1->fn) != IDENTIFIER_NODE
       && TREE_CODE (cand2->fn) == IDENTIFIER_NODE)
     return 1;
