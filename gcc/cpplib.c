@@ -82,6 +82,8 @@ static void skip_rest_of_line	PARAMS ((cpp_reader *));
 static void check_eol		PARAMS ((cpp_reader *));
 static void start_directive	PARAMS ((cpp_reader *));
 static void end_directive	PARAMS ((cpp_reader *, int));
+static void directive_diagnostics
+	PARAMS ((cpp_reader *, const directive *, int));
 static void run_directive	PARAMS ((cpp_reader *, int,
 					 const char *, size_t));
 static int glue_header_name	PARAMS ((cpp_reader *, cpp_token *));
@@ -248,8 +250,57 @@ end_directive (pfile, skip_line)
   pfile->directive = 0;
 }
 
-/* Check if a token's name matches that of a known directive.  Put in
-   this file to save exporting dtable and other unneeded information.  */
+/* Output diagnostics for a directive DIR.  INDENTED is non-zero if
+   the '#' was indented.  */
+
+static void
+directive_diagnostics (pfile, dir, indented)
+     cpp_reader *pfile;
+     const directive *dir;
+     int indented;
+{
+  if (pfile->state.line_extension)
+    {
+      if (CPP_PEDANTIC (pfile)
+	  && ! pfile->state.skipping)
+	cpp_pedwarn (pfile, "style of line directive is a GCC extension");
+    }
+  else
+    {
+      /* Issue -pedantic warnings for extensions.   */
+      if (CPP_PEDANTIC (pfile)
+	  && ! pfile->state.skipping
+	  && dir->origin == EXTENSION)
+	cpp_pedwarn (pfile, "#%s is a GCC extension", dir->name);
+
+      /* Traditionally, a directive is ignored unless its # is in
+	 column 1.  Therefore in code intended to work with K+R
+	 compilers, directives added by C89 must have their #
+	 indented, and directives present in traditional C must not.
+	 This is true even of directives in skipped conditional
+	 blocks.  */
+      if (CPP_WTRADITIONAL (pfile))
+	{
+	  if (dir == &dtable[T_ELIF])
+	    cpp_warning (pfile, "suggest not using #elif in traditional C");
+	  else if (indented && dir->origin == KANDR)
+	    cpp_warning (pfile,
+			 "traditional C ignores #%s with the # indented",
+			 dir->name);
+	  else if (!indented && dir->origin != KANDR)
+	    cpp_warning (pfile,
+		 "suggest hiding #%s from traditional C with an indented #",
+			 dir->name);
+	}
+    }
+}
+
+/* Check if we have a known directive.  INDENTED is non-zero if the
+   '#' of the directive was indented.  This function is in this file
+   to save unnecessarily exporting dtable etc. to cpplex.c.  Returns
+   non-zero if the line of tokens has been handled, zero if we should
+   continue processing the line.  */
+
 int
 _cpp_handle_directive (pfile, indented)
      cpp_reader *pfile;
@@ -260,125 +311,80 @@ _cpp_handle_directive (pfile, indented)
   int skip = 1;
 
   start_directive (pfile);
-
-  /* Lex the directive name directly.  */
   _cpp_lex_token (pfile, &dname);
 
   if (dname.type == CPP_NAME)
     {
-      unsigned int index = dname.val.node->directive_index;
-      if (index)
-	dir = &dtable[index - 1];
+      if (dname.val.node->directive_index)
+	dir = &dtable[dname.val.node->directive_index - 1];
     }
-  else if (dname.type == CPP_NUMBER)
+  /* We do not recognise the # followed by a number extension in
+     assembler code.  */
+  else if (dname.type == CPP_NUMBER && CPP_OPTION (pfile, lang) != CLK_ASM)
     {
-      /* # followed by a number is equivalent to #line.  Do not
-	 recognize this form in assembly language source files or
-	 skipped conditional groups.  Complain about this form if
-	 we're being pedantic, but not if this is regurgitated input
-	 (preprocessed or fed back in by the C++ frontend).  */
-      if (! pfile->state.skipping && CPP_OPTION (pfile, lang) != CLK_ASM)
-	{
-	  dir = &dtable[T_LINE];
-	  pfile->state.line_extension = 1;
-	  _cpp_backup_tokens (pfile, 1);
-	  if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, preprocessed))
-	    cpp_pedwarn (pfile, "# followed by integer");
-	}
+      dir = &dtable[T_LINE];
+      pfile->state.line_extension = 1;
     }
 
-  pfile->directive = dir;
   if (dir)
     {
-      /* Make sure we lex headers correctly, whether skipping or not.  */
-      pfile->state.angled_headers = dir->flags & INCL;
+      /* If we have a directive that is not an opening conditional,
+	 invalidate any control macro.  */
+      if (! (dir->flags & IF_COND))
+	pfile->mi_valid = false;
 
-      /* If we are rescanning preprocessed input, only directives tagged
-	 with IN_I are honored, and the warnings below are suppressed.  */
-      if (CPP_OPTION (pfile, preprocessed))
+      /* Kluge alert.  In order to be sure that code like this
+
+	 #define HASH #
+	 HASH define foo bar
+
+	 does not cause '#define foo bar' to get executed when
+	 compiled with -save-temps, we recognize directives in
+	 -fpreprocessed mode only if the # is in column 1.  cppmacro.c
+	 puts a space in fron of any '#' at the start of a macro.  */
+      if (CPP_OPTION (pfile, preprocessed)
+	  && (indented || !(dir->flags & IN_I)))
 	{
-	  /* Kluge alert.  In order to be sure that code like this
-	     #define HASH #
-	     HASH define foo bar
-	     does not cause '#define foo bar' to get executed when
-	     compiled with -save-temps, we recognize directives in
-	     -fpreprocessed mode only if the # is in column 1 and the
-	     directive name starts in column 2.  This output can only
-	     be generated by the directive callbacks in cppmain.c (see
-	     also the special case in scan_buffer).  */
-	  if (dir->flags & IN_I && !indented && !(dname.flags & PREV_WHITE))
-	    (*dir->handler) (pfile);
-	  /* That check misses '# 123' linemarkers.  Let them through too.  */
-	  else if (dname.type == CPP_NUMBER)
-	    (*dir->handler) (pfile);
-	  else
-	    {
-	      /* We don't want to process this directive.  Put back the
-		 tokens so caller will see them (and issue an error,
-		 probably).  */
-	      _cpp_backup_tokens (pfile, 1);
-	      skip = 0;
-	    }
+	  skip = 0;
+	  dir = 0;
 	}
       else
 	{
-	  /* Traditionally, a directive is ignored unless its # is in
-	     column 1.  Therefore in code intended to work with K+R
-	     compilers, directives added by C89 must have their #
-	     indented, and directives present in traditional C must
-	     not.  This is true even of directives in skipped
-	     conditional blocks.  */
-	  if (CPP_WTRADITIONAL (pfile))
-	    {
-	      if (dir == &dtable[T_ELIF])
-		cpp_warning (pfile,
-			     "suggest not using #elif in traditional C");
-	      else if (indented && dir->origin == KANDR)
-		cpp_warning (pfile,
-			     "traditional C ignores #%s with the # indented",
-			     dir->name);
-	      else if (!indented && dir->origin != KANDR)
-		cpp_warning (pfile,
-	     "suggest hiding #%s from traditional C with an indented #",
-			     dir->name);
-	    }
-
-	  /* If we are skipping a failed conditional group, all
-	     non-conditional directives are ignored.  */
-	  if (! pfile->state.skipping || (dir->flags & COND))
-	    {
-	      /* Issue -pedantic warnings for extensions.   */
-	      if (CPP_PEDANTIC (pfile) && dir->origin == EXTENSION)
-		cpp_pedwarn (pfile, "#%s is a GCC extension", dir->name);
-
-	      /* If we have a directive that is not an opening
-		 conditional, invalidate any control macro.  */
-	      if (! (dir->flags & IF_COND))
-		pfile->mi_valid = false;
-
-	      (*dir->handler) (pfile);
-	    }
+	  /* In failed conditional groups, all non-conditional
+	     directives are ignored.  Before doing that, whether
+	     skipping or not, we should lex angle-bracketed headers
+	     correctly, and maybe output some diagnostics.  */
+	  pfile->state.angled_headers = dir->flags & INCL;
+	  if (! CPP_OPTION (pfile, preprocessed))
+	    directive_diagnostics (pfile, dir, indented);
+	  if (pfile->state.skipping && !(dir->flags & COND))
+	    dir = 0;
 	}
     }
-  else if (dname.type != CPP_EOF && ! pfile->state.skipping)
+  else if (dname.type == CPP_EOF)
+    ;	/* CPP_EOF is the "null directive".  */
+  else
     {
       /* An unknown directive.  Don't complain about it in assembly
 	 source: we don't know where the comments are, and # may
 	 introduce assembler pseudo-ops.  Don't complain about invalid
 	 directives in skipped conditional groups (6.10 p4).  */
       if (CPP_OPTION (pfile, lang) == CLK_ASM)
-	{
-	  /* Output the # and this token for the assembler.  */
-	  _cpp_backup_tokens (pfile, 1);
-	  skip = 0;
-	}
-      else
+	skip = 0;
+      else if (!pfile->state.skipping)
 	cpp_error (pfile, "invalid preprocessing directive #%s",
 		   cpp_token_as_text (pfile, &dname));
     }
 
-  if (pfile->state.in_directive)
-    end_directive (pfile, skip);
+  if (dir)
+    {
+      pfile->directive = dir;
+      (*pfile->directive->handler) (pfile);
+    }
+  else if (skip == 0)
+    _cpp_backup_tokens (pfile, 1);
+
+  end_directive (pfile, skip);
   return skip;
 }
 
@@ -394,11 +400,10 @@ run_directive (pfile, dir_no, buf, count)
   cpp_push_buffer (pfile, (const U_CHAR *) buf, count,
 		   /* from_stage3 */ true, 1);
   start_directive (pfile);
-  pfile->buffer->saved_flags = 0; /* We don't want to recognise directives.  */
-  pfile->state.prevent_expansion++;
+  /* We don't want a leading # to be interpreted as a directive.  */
+  pfile->buffer->saved_flags = 0;
   pfile->directive = &dtable[dir_no];
   (void) (*pfile->directive->handler) (pfile);
-  pfile->state.prevent_expansion--;
   end_directive (pfile, 1);
   _cpp_pop_buffer (pfile);
 }
@@ -707,6 +712,11 @@ do_line (pfile)
 
   /* C99 raised the minimum limit on #line numbers.  */
   cap = CPP_OPTION (pfile, c99) ? 2147483647 : 32767;
+
+  /* Putting this in _cpp_handle_directive risks two calls to
+     _cpp_backup_tokens in some circumstances, which can segfault.  */
+  if (pfile->state.line_extension)
+    _cpp_backup_tokens (pfile, 1);
 
   /* #line commands expand macros.  */
   cpp_get_token (pfile, &token);

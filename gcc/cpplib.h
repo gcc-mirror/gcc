@@ -41,7 +41,6 @@ typedef struct cpp_token cpp_token;
 typedef struct cpp_string cpp_string;
 typedef struct cpp_hashnode cpp_hashnode;
 typedef struct cpp_macro cpp_macro;
-typedef struct cpp_lexer_pos cpp_lexer_pos;
 typedef struct cpp_callbacks cpp_callbacks;
 
 struct answer;
@@ -184,13 +183,6 @@ struct cpp_token
     unsigned int arg_no;	/* Argument no. for a CPP_MACRO_ARG.  */
     unsigned char c;		/* Character represented by CPP_OTHER.  */
   } val;
-};
-
-/* The position of a token in the current file.  */
-struct cpp_lexer_pos
-{
-  unsigned int line;
-  unsigned short col;
 };
 
 /* A standalone character.  We may want to make it unsigned for the

@@ -1,3 +1,7 @@
+2001-09-16  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/line5.c: New testcase.
+
 2001-09-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/macro9.c: New test.

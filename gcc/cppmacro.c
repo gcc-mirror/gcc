@@ -1321,8 +1321,12 @@ _cpp_create_definition (pfile, node)
   /* Don't count the CPP_EOF.  */
   macro->count--;
 
-  /* Clear the whitespace flag from the leading token.  */
-  macro->expansion[0].flags &= ~PREV_WHITE;
+  /* Clear the whitespace flag from the leading token, but put a space
+     in front of a leading # which might be used to fake a directive.  */
+  if (macro->expansion[0].type == CPP_HASH)
+    macro->expansion[0].flags |= PREV_WHITE;
+  else
+    macro->expansion[0].flags &= ~PREV_WHITE;
 
   /* Implement the macro-defined-to-itself optimisation.  */
   macro->disabled = (macro->count == 1 && !macro->fun_like
