@@ -3622,9 +3622,11 @@ d_demangle (mangled, options, palc)
   else
     dc = d_type (&di);
 
-  /* If we didn't consume the entire mangled string, then we didn't
-     successfully demangle it.  */
-  if (d_peek_char (&di) != '\0')
+  /* If DMGL_PARAMS is set, then if we didn't consume the entire
+     mangled string, then we didn't successfully demangle it.  If
+     DMGL_PARAMS is not set, we didn't look at the trailing
+     parameters.  */
+  if (((options & DMGL_PARAMS) != 0) && d_peek_char (&di) != '\0')
     dc = NULL;
 
 #ifdef CP_DEMANGLE_DEBUG
@@ -3829,37 +3831,37 @@ is_ctor_or_dtor (mangled, ctor_kind, dtor_kind)
 
   dc = d_mangled_name (&di, 1);
 
+  /* Note that because we did not pass DMGL_PARAMS, we don't expect to
+     demangle the entire string.  */
+
   ret = 0;
-  if (d_peek_char (&di) == '\0')
+  while (dc != NULL)
     {
-      while (dc != NULL)
+      switch (dc->type)
 	{
-	  switch (dc->type)
-	    {
-	    default:
-	      dc = NULL;
-	      break;
-	    case D_COMP_TYPED_NAME:
-	    case D_COMP_TEMPLATE:
-	    case D_COMP_RESTRICT_THIS:
-	    case D_COMP_VOLATILE_THIS:
-	    case D_COMP_CONST_THIS:
-	      dc = d_left (dc);
-	      break;
-	    case D_COMP_QUAL_NAME:
-	      dc = d_right (dc);
-	      break;
-	    case D_COMP_CTOR:
-	      *ctor_kind = dc->u.s_ctor.kind;
-	      ret = 1;
-	      dc = NULL;
-	      break;
-	    case D_COMP_DTOR:
-	      *dtor_kind = dc->u.s_dtor.kind;
-	      ret = 1;
-	      dc = NULL;
-	      break;
-	    }
+	default:
+	  dc = NULL;
+	  break;
+	case D_COMP_TYPED_NAME:
+	case D_COMP_TEMPLATE:
+	case D_COMP_RESTRICT_THIS:
+	case D_COMP_VOLATILE_THIS:
+	case D_COMP_CONST_THIS:
+	  dc = d_left (dc);
+	  break;
+	case D_COMP_QUAL_NAME:
+	  dc = d_right (dc);
+	  break;
+	case D_COMP_CTOR:
+	  *ctor_kind = dc->u.s_ctor.kind;
+	  ret = 1;
+	  dc = NULL;
+	  break;
+	case D_COMP_DTOR:
+	  *dtor_kind = dc->u.s_dtor.kind;
+	  ret = 1;
+	  dc = NULL;
+	  break;
 	}
     }
 
