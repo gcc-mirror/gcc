@@ -34,6 +34,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define bzero(a,b) memset (a,0,b)
 #define index  strchr
 #define rindex strrchr
+#define strcasecmp stricmp
 #define kill(a,b) raise(b)
 #define mktemp tmpnam
 #else
