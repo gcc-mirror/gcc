@@ -1,3 +1,8 @@
+1999-08-03  Tom Tromey  <tromey@cygnus.com>
+
+	* gc_priv.h (GC_test_and_set): Implementation for Linux PPC from
+	Franz Sirl <Franz.Sirl-kernel@lauterbach.com>.
+
 1999-08-02  Tom Tromey  <tromey@cygnus.com>
 
 	* aclocal.m4, configure: Rebuilt for new libtool.
