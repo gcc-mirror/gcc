@@ -1,3 +1,9 @@
+2000-06-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* test_summary: In generated script, use cat <<'EOF' not cat <<\EOF.
+	Elide --with-gcc-version-trigger and --norecursion from
+	configure flags.  Remove code to report status of haifa scheduler.
+
 2000-05-18  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* gcc_update (self): Set to `$0'.
