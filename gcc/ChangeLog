@@ -1,3 +1,12 @@
+2004-11-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* mklibgcc.in: Correct calculation of libgcc_s_soname and
+	libunwind_soname.  Use $out, not $outS, in commands for
+	no-shared-library case.  Move EXTRA_MULTILIB_PARTS rules above
+	library build rules, make $libunwind_so and $libgcc_s_so
+	depend on them in the normal fashion, and filter those objects
+	out of @shlib_objs@.
+
 2004-11-30  Janis Johnson  <janis187@us.ibm.com>
 
 	* config/rs6000/altivec.h (vec_step_help): Support const vector types.
@@ -9,7 +18,7 @@
 	pass right after fold builtins.
 
 2004-11-30  Andreas Krebbel  <krebbel1@de.ibm.com>
-	
+
 	* config/s390/s390-modes.def: Added cc modes documentation.
 	* config/s390/s390.c: (s390_tm_ccmode, s390_select_ccmode,
 	s390_expand_addcc): Added cc mode comments.
@@ -25,12 +34,12 @@
 2004-11-29  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/18673
-	
+
 	* tree-ssa-pre.c: Remove splay-tree.h include.
 	(bitmap_value_replace_in_set): Fix to add if it does not exist.
 	(find_or_generate_expression): Remove now-wrong condition.
 	(create_expression_by_pieces): Fix condition and comment reason
-	for it. 
+	for it.
 	(insert_aux): Fix condition and comment reasons for it.
 	Factor insertion code from here.
 	(insert_into_preds_of_block): To here.  Fix conditions in factored
@@ -40,7 +49,7 @@
 
 	PR tree-opt/18607
 	* tree-vectorizer.c (vect_analyze_data_refs): Use temporary
-	variable for data_reference when looking for memtag. 
+	variable for data_reference when looking for memtag.
 
 2004-11-30  Jakub Jelinek  <jakub@redhat.com>
 
@@ -57,7 +66,7 @@
 	PR target/18173
 	* tree-vectorizer.c (vect_can_force_dr_alignment_p): Return false for
 	decls that are assembled before vectorization takes place.
-	(vect_compute_data_ref_alignment): Set DECL_USER_ALIGN to 1.	
+	(vect_compute_data_ref_alignment): Set DECL_USER_ALIGN to 1.
 
 2004-11-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
