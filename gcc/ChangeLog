@@ -1,3 +1,8 @@
+2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc: Set use_fixproto=no in each specific *-gnu*
+	configuration, rather than the generic one.
+
 2003-09-23  Richard Henderson  <rth@redhat.com>
 
 	* tree-inline.c (remap_save_expr): Map new save_expr to identity
@@ -43,6 +48,18 @@
 	superceded by TARGET_ASM_EXTERNAL_LIBCALL.
 
 2003-09-22  Nathnael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc: Do per-target disabling of fixproto here in clauses,
+	not in t- fragments.
+	* configure.in: Adjust to set STMP_FIXPROTO correctly.
+	* configure: Regenerate.
+	* config/arm/t-semi, config/cris/t-cris, config/i386/t-beos,
+	config/i386/t-cygming, config/i386/t-nto, config/ia64/t-hpux,
+	t-freebsd, t-linux, t-netbsd, t-openbsd, t-rtems, t-vxworks,
+	xtensa/t-xtensa: Remove setting of STMP_FIXPROTO.
+	* config/i370/t-oe, config/i386/t-netware, config/pa/t-bsd,
+	t-interix, t-linux-aout:  Delete files consisting only of
+	setting of STMP_FIXPROTO.	
 
 	* config.host: Allow unknown hosts (not targets).  Allow
 	ns32k-*-netbsdelf* as a host (not a target).  Remove redundant
