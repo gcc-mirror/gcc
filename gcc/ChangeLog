@@ -1,5 +1,10 @@
 2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/m32r/m32r.c (m32r_load_pic_register): Use GEN_INT
+	instead of gen_rtx_CONST_INT.
+
+2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/xtensa/xtensa.h (DYNAMIC_CHAIN_ADDRESS): Use GEN_INT
 	instead of gen_rtx_CONST_INT.
 
