@@ -1,3 +1,9 @@
+2004-03-04  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* ggc-common.c (gt_pch_restore): Don't unmap addr unless we are
+	going to call mmap again.  Read the file into the right place.
+	Give a fatal error if we have to relocate.
+
 2004-03-04  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_return_in_msb): New function.
