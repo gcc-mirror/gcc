@@ -32,6 +32,9 @@ static int rtx_equal_for_memref_p	PROTO((rtx, rtx));
 static rtx find_symbolic_term		PROTO((rtx));
 static int memrefs_conflict_p		PROTO((int, rtx, int, rtx,
 					       HOST_WIDE_INT));
+static void record_set			PROTO((rtx, rtx));
+static rtx find_base_term		PROTO((rtx));
+static int base_alias_check		PROTO((rtx, rtx));
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
