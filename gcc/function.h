@@ -158,6 +158,9 @@ struct function
 
   /* For md files.  */
   int uses_pic_offset_table;
+
+  /* For reorg.  */
+  rtx epilogue_delay_list;
 };
 
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
