@@ -261,7 +261,7 @@ copy-headers:
 	-rm -rf $(incinstalldir)/objc
 	-mkdir $(incinstalldir)/objc
 	for file in $(OBJC_H); do \
-	  realfile=$(srcdir)/$${file}; \
+	  realfile=$(srcdir)/objc/$${file}; \
 	  cp $${realfile} $(incinstalldir)/objc; \
 	  chmod a+r $(incinstalldir)/objc/$${file}; \
 	done

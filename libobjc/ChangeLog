@@ -1,3 +1,10 @@
+Wed Sep 30 09:14:52 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* All .h files pushed down into the objc/ subdirectory.
+	* Makefile.in (copy_headers): Corresponding changes.
+	* configure.in (AC_INIT): Corresponding changes.
+	* configure: Rebuilt.
+
 1998-09-30  Ben Elliston  <bje@cygnus.com>
 	    Jeff Law	  <law@cygnus.com>
 
