@@ -4929,14 +4929,14 @@ init_objc ()
   util_firstobj = (char *) obstack_finish (&util_obstack);
 
   tree_code_type
-    = (char **) realloc (tree_code_type,
-			 sizeof (char *) * LAST_OBJC_TREE_CODE);
+    = (char **) xrealloc (tree_code_type,
+			  sizeof (char *) * LAST_OBJC_TREE_CODE);
   tree_code_length
-    = (int *) realloc (tree_code_length,
-		       sizeof (int) * LAST_OBJC_TREE_CODE);
+    = (int *) xrealloc (tree_code_length,
+			sizeof (int) * LAST_OBJC_TREE_CODE);
   tree_code_name
-    = (char **) realloc (tree_code_name,
-			 sizeof (char *) * LAST_OBJC_TREE_CODE);
+    = (char **) xrealloc (tree_code_name,
+			  sizeof (char *) * LAST_OBJC_TREE_CODE);
   bcopy (objc_tree_code_type,
 	 tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
 	 (((int) LAST_OBJC_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
