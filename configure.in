@@ -277,7 +277,7 @@ case "${target}" in
     ;;
   *-*-netbsd*)
     # Skip some stuff on all NetBSD configurations.
-    skipdirs="$skipdirs target-newlib target-libiberty target-libgloss"
+    noconfigdirs="$noconfigdirs target-newlib target-libiberty target-libgloss"
 
     # Skip some stuff that's unsupported on some NetBSD configurations.
     case "${target}" in
@@ -333,7 +333,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs expect dejagnu"
     # the C++ libraries don't build on top of CE's C libraries
     noconfigdirs="$noconfigdirs ${libstdcxx_version}"
-    skipdirs="$skipdirs target-newlib"
+    noconfigdirs="$noconfigdirs target-newlib"
     case "${host}" in
       *-*-cygwin*) ;; # keep gdb and readline
       *) noconfigdirs="$noconfigdirs gdb readline ${libstdcxx_version}"
