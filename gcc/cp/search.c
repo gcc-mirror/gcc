@@ -903,6 +903,13 @@ accessible_p (tree type, tree decl)
   if (!TYPE_P (context_for_name_lookup (decl)))
     return 1;
 
+  /* In a template declaration, we cannot be sure whether the
+     particular specialization that is instantiated will be a friend
+     or not.  Therefore, all access checks are deferred until
+     instantiation.  */
+  if (processing_template_decl)
+    return 1;
+
   if (!TYPE_P (type))
     {
       binfo = type;
