@@ -1,4 +1,4 @@
-// 2004-12-03  Paolo Carlini  <pcarlini@suse.de>
+// 2004-12-07  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2004 Free Software Foundation, Inc.
 //
@@ -18,7 +18,7 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 4.5.1 Primary type categories
+// 4.5.3 Type properties
 
 #include <tr1/type_traits>
 #include <testsuite_hooks.h>
@@ -27,25 +27,20 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  using std::tr1::is_array;
+  using std::tr1::is_volatile;
   using namespace __gnu_test;
 
-  typedef int        int_array[5];
-  typedef int        empty_int_array[];
-  typedef float*     pointer_array[5];
-  typedef float*     empty_pointer_array[];
-  typedef ClassType  ClassType_array[5];
-  typedef ClassType  empty_ClassType_array[];
+  // Positive tests.
+  VERIFY( (test_property<is_volatile, int volatile, true>()) );
+  VERIFY( (test_property<is_volatile, int const volatile, true>()) );
+  VERIFY( (test_property<is_volatile, vClassType, true>()) );
+  VERIFY( (test_property<is_volatile, cvClassType, true>()) );
 
-  VERIFY( (test_category<is_array, int_array, true>()) );
-  VERIFY( (test_category<is_array, empty_int_array, true>()) );
-  VERIFY( (test_category<is_array, pointer_array, true>()) );
-  VERIFY( (test_category<is_array, empty_pointer_array, true>()) );
-  VERIFY( (test_category<is_array, ClassType_array, true>()) );
-  VERIFY( (test_category<is_array, empty_ClassType_array, true>()) );
-
-  // Sanity check.
-  VERIFY( (test_category<is_array, ClassType, false>()) );
+  // Negative tests.
+  VERIFY( (test_property<is_volatile, int, false>()) );
+  VERIFY( (test_property<is_volatile, int const, false>()) );
+  VERIFY( (test_property<is_volatile, ClassType, false>()) );
+  VERIFY( (test_property<is_volatile, cClassType, false>()) );
 }
 
 int main()

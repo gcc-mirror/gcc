@@ -50,6 +50,23 @@ namespace __gnu_test
       ret &= Category<Type const volatile>::type::value == Tv;
       return ret;
     }
+
+  template<template<typename> class Property,
+	   typename Type, bool Tv>
+    bool
+    test_property()
+    {
+      bool ret = true;
+      ret &= Property<Type>::value == Tv;
+      ret &= Property<Type>::type::value == Tv;
+      return ret;
+    }
+
+  // Test types.
+  class ClassType { };
+  typedef ClassType const           cClassType;
+  typedef ClassType volatile        vClassType;
+  typedef ClassType const volatile  cvClassType;
 }; // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_TR1_H

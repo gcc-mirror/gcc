@@ -171,11 +171,21 @@ namespace tr1
     : public integral_constant<bool, !is_fundamental<_Tp>::value> { };
    
   /// @brief  type properties [4.5.3].
+  template<typename>
+    struct is_const
+    : public false_type { };
+
   template<typename _Tp>
-    struct is_const;
+    struct is_const<_Tp const>
+    : public true_type { };
   
+  template<typename>
+    struct is_volatile
+    : public false_type { };
+
   template<typename _Tp>
-    struct is_volatile;
+    struct is_volatile<_Tp volatile>
+    : public true_type { };
 
   template<typename _Tp>
     struct is_pod;

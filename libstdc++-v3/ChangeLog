@@ -1,3 +1,31 @@
+2004-12-07  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits: Implement is_const and is_volatile.
+	* testsuite/testsuite_tr1.h (test_property): New.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	is_const/is_const.c: New.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	is_const/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	is_volatile/is_volatile.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/type_properties/
+	is_volatile/typedefs.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_arithmetic/is_arithmetic.cc: Slightly tweak to use ClassType
+	from testsuite_tr1.h.
+	* testsuite/tr1/4_metaprogramming/composite_type_traits/
+	is_fundamental/is_fundamental.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_array/is_array.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_floating_point/is_floating_point.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_integral/is_integral.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_reference/is_reference.cc: Likewise.
+	* testsuite/tr1/4_metaprogramming/primary_type_categories/
+	is_void/is_void.cc: Likewise.
+
 2004-12-06  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Implement is_reference.
