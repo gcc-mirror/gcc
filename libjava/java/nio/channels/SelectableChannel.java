@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package java.nio.channels;
 
+import java.io.IOException;
 import java.nio.channels.spi.AbstractInterruptibleChannel;
 import java.nio.channels.spi.SelectorProvider;
 
@@ -67,7 +68,8 @@ public abstract class SelectableChannel
    * is registered with one or more selectors.
    * @exception IOException If an error occurs.
    */
-  public abstract SelectableChannel configureBlocking (boolean block);
+  public abstract SelectableChannel configureBlocking (boolean block)
+    throws IOException;
   
   /**
    * Tells whether this channel is blocking or not.

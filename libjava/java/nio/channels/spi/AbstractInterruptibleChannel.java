@@ -38,6 +38,7 @@ exception statement from your version. */
 package java.nio.channels.spi;
 
 import java.io.IOException;
+import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.Channel;
 import java.nio.channels.InterruptibleChannel;
 
@@ -84,6 +85,7 @@ public abstract class AbstractInterruptibleChannel
    * I/O operation was interrupted.
    */
   protected final void end (boolean completed)
+    throws AsynchronousCloseException
   {
   }   
 

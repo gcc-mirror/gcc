@@ -1,5 +1,40 @@
 2003-02-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/channels/DatagramChannel.java
+	(write): Throws IOException.
+	(connect): Throws IOException.
+	(disconnect): Throws IOException.
+	(read): Throws IOException.
+	(receive): Throws IOException.
+	(send): Throws IOException.
+	* java/nio/channels/Pipe.java
+	(open): Throws IOException.
+	* java/nio/channels/SelectableChannel.java
+	(configureBlocking): Throws IOException.
+	* java/nio/channels/ServerSocketChannel.java
+	(accept): Throws IOException.
+	* java/nio/channels/SocketChannel.java
+	(SocketChannel): Implements ByteChannel, ScatteringByteChannel,
+	GatheringByteChannel.
+	(read): Throws IOException.
+	(write): Throws IOException.
+	(finishConnect): Throws IOException.
+	* java/nio/channels/spi/AbstractInterruptibleChannel.java
+	(end): Throws AsynchronousCloseException.
+	* java/nio/channels/spi/AbstractSelectableChannel.java
+	(configureBlocking): Throws IOException.
+	(implCloseChannel): Throws IOException.
+	(implCloseSelectableChannel): Throws IOException.
+	(implConfigureBlocking): Throws IOException.
+	* java/nio/channels/spi/SelectorProvider.java
+	(openDatagramChannel): Throws IOException.
+	(openPipe): Throws IOException.
+	(openSelector): Throws IOException.
+	(openServerSocketChannel): Throws IOException.
+	(openSocketChannel): Throws IOException.
+
+2003-02-11  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/FileLockImpl.java,
 	java/nio/channels/FileLock.java: New files.
 

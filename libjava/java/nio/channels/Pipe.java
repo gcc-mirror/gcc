@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package java.nio.channels;
 
+import java.io.IOException;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.SelectorProvider;
 
@@ -104,7 +105,7 @@ public abstract class Pipe
    * 
    * @exception IOException If an error occurs
    */
-  public static Pipe open()
+  public static Pipe open() throws IOException
   {
     return SelectorProvider.provider ().openPipe();
   }
