@@ -1,3 +1,11 @@
+2005-03-31  Alan Modra  <amodra@bigpond.net.au>
+
+	* config.gcc (cpu_is_64bit): Set for 64-bit powerpc cpus.
+	(powerpc64-*-linux*): Use it.  Rearrange tm_file assignment.
+	(powerpc-*-linux*): Build a biarch compiler when --enable-targets
+	is given with "powerpc64*" or "all", or when --with-cpu chooses
+	a 64-bit cpu.
+
 2005-03-30  Richard Henderson  <rth@redhat.com>
 
 	* cgraph.h (struct cgraph_node): Add alias.
@@ -55,7 +63,7 @@
 
 2005-03-30  Sebastian Pop  <pop@cri.ensmp.fr>
 
-	* tree-scalar-evolution.c (instantiate_parameters_1): Return 
+	* tree-scalar-evolution.c (instantiate_parameters_1): Return
 	as soon as a chrec_dont_know is detected.
 
 2005-03-30  Alan Modra  <amodra@bigpond.net.au>
@@ -595,7 +603,7 @@
 2005-03-04  Andrew Haley  <aph@redhat.com>
 
 	* unwind-dw2-fde-glibc.c (struct
-	unw_eh_callback_data.check_cache): 
+	unw_eh_callback_data.check_cache):
 	(frame_hdr_cache): New.
 	(_Unwind_IteratePhdrCallback): Add ext_dl_phdr_info.
 	Cache frame header info.
@@ -673,7 +681,7 @@
 	not including (reg). Do not check for reg being CRIS_PC_REGNUM.
 	(EXTRA_MEMORY_CONSTRAINT): Define as 'Q'.
 	* config/cris/cris.md: Tweak comments referring to Q.
- 	("cmpsi", "cmphi", "cmpqi", "*movsi_internal", "movhi")
+	("cmpsi", "cmphi", "cmpqi", "*movsi_internal", "movhi")
 	("movstricthi", "movqi", "movstrictqi", "movsf", "addsi3")
 	("addhi3", "addqi3", "subsi3", "subhi3", "subqi3")
 	("*expanded_andsi", "*expanded_andhi", "*andhi_lowpart", "andqi3")
