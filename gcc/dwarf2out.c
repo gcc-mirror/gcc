@@ -21,6 +21,19 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* TODO: Implement .debug_str handling.
+	 Share .debug_str entries via comdat.
+         Use compact DIE references; we don't always need a 4-byte reference.
+	   (maybe; would it be worth the larger abbrev section?)
+	 Eliminate duplicates by putting common info in a separate section
+	   to be collected by the linker and referring to it with
+	   DW_FORM_ref_addr.
+	 Emit .debug_line header even when there are no functions, since
+	   the file numbers are used by .debug_info.  Alternately, leave
+	   out locations for types and decls.
+	 Avoid talking about ctors and op= for PODs.
+	 Factor out common prologue sequences into multiple CIEs.  */
+
 /* The first part of this file deals with the DWARF 2 frame unwind
    information, which is also used by the GCC efficient exception handling
    mechanism.  The second part, controlled only by an #ifdef
@@ -7536,20 +7549,17 @@ push_decl_scope (scope)
   if (decl_scope_depth == 0
       || containing_scope == NULL_TREE
       /* Ignore namespaces for the moment.  */
-      || TREE_CODE (containing_scope) == NAMESPACE_DECL
-      || containing_scope == decl_scope_table[decl_scope_depth - 1].scope)
-    decl_scope_table[decl_scope_depth].previous = decl_scope_depth - 1;
+      || TREE_CODE (containing_scope) == NAMESPACE_DECL)
+    decl_scope_table[decl_scope_depth].previous = -1;
   else
     {
-      /* We need to search for the containing_scope.  */
-      for (i = 0; i < decl_scope_depth; i++)
+      /* We need to search for the containing_scope.  If we don't find it,
+         that's OK; we stick ourselves at global scope.  */
+      for (i = decl_scope_depth - 1; i >= 0; --i)
 	if (decl_scope_table[i].scope == containing_scope)
 	  break;
 
-      if (i == decl_scope_depth)
-	abort ();
-      else
-	decl_scope_table[decl_scope_depth].previous = i;
+      decl_scope_table[decl_scope_depth].previous = i;
     }
 
   decl_scope_depth++;
@@ -7593,8 +7603,46 @@ scope_die_for (t, context_die)
 
   if (containing_scope == NULL_TREE)
     scope_die = comp_unit_die;
+  else if (TYPE_P (containing_scope) || DECL_P (containing_scope))
+    {
+      /* For types and decls, we can just look up the appropriate DIE.  But
+	 first we check to see if we're in the middle of emitting it so we
+	 know where the new DIE should go.  */
+
+      for (i = decl_scope_depth - 1; i >= 0; --i)
+	if (decl_scope_table[i].scope == containing_scope)
+	  break;
+
+      if (i < 0)
+	{
+	  /* Function-local tags and functions get stuck in limbo
+	     until they are fixed up by decls_for_scope.  */
+	  if (TREE_CODE (containing_scope) == FUNCTION_DECL
+	      && (TREE_CODE (t) == FUNCTION_DECL || is_tagged_type (t)))
+	    return NULL;
+	    
+	  if (! TYPE_P (containing_scope))
+	    abort ();
+	  if (debug_info_level > DINFO_LEVEL_TERSE
+	      && !TREE_ASM_WRITTEN (containing_scope))
+	    abort ();
+
+	  /* If none of the current dies are suitable, we get file scope.  */
+	  scope_die = comp_unit_die;
+	}
+      else
+	{
+	  if (TYPE_P (containing_scope))
+	    scope_die = lookup_type_die (containing_scope);
+	  else
+	    scope_die = lookup_decl_die (containing_scope);
+	}
+    }
   else
     {
+      /* Something that we can't just look up the DIE for, such as a
+         BLOCK.  */
+
       for (i = decl_scope_depth - 1, scope_die = context_die;
 	   i >= 0 && decl_scope_table[i].scope != containing_scope;
 	   (scope_die = scope_die->die_parent,
@@ -7620,16 +7668,7 @@ scope_die_for (t, context_die)
 	}
 
       if (i < 0)
-	{
-	  if (TREE_CODE_CLASS (TREE_CODE (containing_scope)) != 't')
-	    abort ();
-	  if (debug_info_level > DINFO_LEVEL_TERSE
-	      && !TREE_ASM_WRITTEN (containing_scope))
-	    abort ();
-
-	  /* If none of the current dies are suitable, we get file scope.  */
-	  scope_die = comp_unit_die;
-	}
+	abort ();
     }
 
   return scope_die;
@@ -8217,7 +8256,7 @@ gen_subprogram_die (decl, context_die)
 	 debugger can find it.  For inlines, that is the concrete instance,
 	 so we can use the old DIE here.  For non-inline methods, we want a
 	 specification DIE at toplevel, so we need a new DIE.  For local
-	 class methods, this does not apply.  */
+	 class methods, we just use the old DIE.  */
       if ((DECL_ABSTRACT (decl) || old_die->die_parent == comp_unit_die
 	   || context_die == NULL)
 	  && get_AT_unsigned (old_die, DW_AT_decl_file) == file_index
@@ -8913,7 +8952,7 @@ gen_struct_or_union_type_die (type, context_die)
       add_AT_flag (type_die, DW_AT_declaration, 1);
 
       /* We can't do this for function-local types, and we don't need to.  */
-      if (TREE_PERMANENT (type))
+      if (! decl_function_context (TYPE_STUB_DECL (type)))
 	add_incomplete_type (type);
     }
 }
@@ -8979,6 +9018,8 @@ gen_type_die (type, context_die)
      register tree type;
      register dw_die_ref context_die;
 {
+  int need_pop;
+
   if (type == NULL_TREE || type == error_mark_node)
     return;
 
@@ -9067,29 +9108,35 @@ gen_type_die (type, context_die)
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
       /* If this is a nested type whose containing class hasn't been
-	 written out yet, writing it out will cover this one, too.  */
+	 written out yet, writing it out will cover this one, too.
+         This does not apply to instantiations of member class templates;
+	 they need to be added to the containing class as they are
+	 generated.  FIXME: This breaks the idea of combining type decls
+         from multiple TUs, since we can't predict what set of template
+         instantiations we'll get.  */
       if (TYPE_CONTEXT (type)
 	  && AGGREGATE_TYPE_P (TYPE_CONTEXT (type))
 	  && ! TREE_ASM_WRITTEN (TYPE_CONTEXT (type)))
 	{
 	  gen_type_die (TYPE_CONTEXT (type), context_die);
 
-	  if (TREE_ASM_WRITTEN (TYPE_CONTEXT (type)))
+	  if (TREE_ASM_WRITTEN (type))
 	    return;
 
 	  /* If that failed, attach ourselves to the stub.  */
 	  push_decl_scope (TYPE_CONTEXT (type));
 	  context_die = lookup_type_die (TYPE_CONTEXT (type));
+	  need_pop = 1;
 	}
+      else
+	need_pop = 0;
 
       if (TREE_CODE (type) == ENUMERAL_TYPE)
 	gen_enumeration_type_die (type, context_die);
       else
 	gen_struct_or_union_type_die (type, context_die);
 
-      if (TYPE_CONTEXT (type)
-	  && AGGREGATE_TYPE_P (TYPE_CONTEXT (type))
-	  && ! TREE_ASM_WRITTEN (TYPE_CONTEXT (type)))
+      if (need_pop)
 	pop_decl_scope ();
 
       /* Don't set TREE_ASM_WRITTEN on an incomplete struct; we want to fix
@@ -9442,6 +9489,10 @@ gen_decl_die (decl, context_die)
     case PARM_DECL:
       gen_type_die (TREE_TYPE (decl), context_die);
       gen_formal_parameter_die (decl, context_die);
+      break;
+
+    case NAMESPACE_DECL:
+      /* Ignore for now.  */
       break;
 
     default:
