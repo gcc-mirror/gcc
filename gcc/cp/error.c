@@ -321,7 +321,7 @@ dump_type_real (t, v, canonical_name)
       OB_PUTS ("typename ");
       dump_type_real (TYPE_CONTEXT (t), 0, canonical_name);
       OB_PUTS ("::");
-      OB_PUTID (TYPE_IDENTIFIER (t));
+      dump_decl (TYPENAME_TYPE_FULLNAME (t), v);
       break;
 
     case TYPEOF_TYPE:
@@ -1764,6 +1764,10 @@ dump_expr (t, nop)
     case WITH_CLEANUP_EXPR:
     case CLEANUP_POINT_EXPR:
       dump_expr (TREE_OPERAND (t, 0), nop);
+      break;
+
+    case TEMPLATE_ID_EXPR:
+      dump_decl (t, 0);
       break;
 
     case TREE_LIST:

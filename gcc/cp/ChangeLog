@@ -1,3 +1,11 @@
+1999-04-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* error.c (dump_type_real): If a typename is a template-id, put
+	out the template arguments.
+	(dump_expr): Handle TEMPLATE_ID_EXPR.
+	* pt.c (lookup_template_class): Now that full arguments are
+	available everywhere, remove code that tried to guess them.
+
 1999-04-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (make_typename_type): Complain if we don't find a type
