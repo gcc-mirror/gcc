@@ -3242,7 +3242,8 @@ reference_binding (rto, rfrom, expr, flags)
   else if (! expr || ! real_lvalue_p (expr))
     lvalue = 0;
 
-  related = (TYPE_MAIN_VARIANT (to) == TYPE_MAIN_VARIANT (from)
+  related = (comptypes (TYPE_MAIN_VARIANT (to),
+			TYPE_MAIN_VARIANT (from), 1)
 	     || (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
 		 && DERIVED_FROM_P (to, from)));
 
@@ -3252,7 +3253,8 @@ reference_binding (rto, rfrom, expr, flags)
     {
       conv = build1 (IDENTITY_CONV, from, expr);
 
-      if (TYPE_MAIN_VARIANT (to) == TYPE_MAIN_VARIANT (from))
+      if (comptypes (TYPE_MAIN_VARIANT (to),
+		     TYPE_MAIN_VARIANT (from), 1))
 	conv = build_conv (REF_BIND, rto, conv);
       else
 	{
