@@ -1,5 +1,8 @@
 1999-07-02  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* ns1.C: Typo.
+	* ns2.C: New test.
+
 	* template2.C: New test.
 
 	* ns1.C: New test.
