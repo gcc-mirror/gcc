@@ -9641,14 +9641,7 @@ check_cv_quals_for_unify (int strict, tree arg, tree parm)
        qualified at this point.
      UNIFY_ALLOW_OUTER_LESS_CV_QUAL:
        This is the outermost level of a deduction, and PARM can be less CV
-       qualified at this point.
-     UNIFY_ALLOW_MAX_CORRECTION:
-       This is an INTEGER_TYPE's maximum value.  Used if the range may
-       have been derived from a size specification, such as an array size.
-       If the size was given by a nontype template parameter N, the maximum
-       value will have the form N-1.  The flag says that we can (and indeed
-       must) unify N with (ARG + 1), an exception to the normal rules on
-       folding PARM.  */
+       qualified at this point.  */
 
 static int
 unify (tree tparms, tree targs, tree parm, tree arg, int strict)
@@ -9702,7 +9695,6 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
   strict &= ~UNIFY_ALLOW_DERIVED;
   strict &= ~UNIFY_ALLOW_OUTER_MORE_CV_QUAL;
   strict &= ~UNIFY_ALLOW_OUTER_LESS_CV_QUAL;
-  strict &= ~UNIFY_ALLOW_MAX_CORRECTION;
   
   switch (TREE_CODE (parm))
     {
@@ -9864,7 +9856,10 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
       else if ((strict & UNIFY_ALLOW_INTEGER)
 	       && (TREE_CODE (tparm) == INTEGER_TYPE
 		   || TREE_CODE (tparm) == BOOLEAN_TYPE))
-	/* OK */;
+	/* Convert the ARG to the type of PARM; the deduced non-type
+	   template argument must exactly match the types of the
+	   corresponding parameter.  */
+	arg = fold (build_nop (TREE_TYPE (parm), arg));
       else if (uses_template_parms (tparm))
 	/* We haven't deduced the type of this parameter yet.  Try again
 	   later.  */
@@ -9932,10 +9927,29 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
       if ((TYPE_DOMAIN (parm) == NULL_TREE)
 	  != (TYPE_DOMAIN (arg) == NULL_TREE))
 	return 1;
-      if (TYPE_DOMAIN (parm) != NULL_TREE
-	  && unify (tparms, targs, TYPE_DOMAIN (parm),
-		    TYPE_DOMAIN (arg), UNIFY_ALLOW_NONE) != 0)
-	return 1;
+      if (TYPE_DOMAIN (parm) != NULL_TREE)
+	{
+	  tree parm_max;
+	  tree arg_max;
+
+	  parm_max = TYPE_MAX_VALUE (TYPE_DOMAIN (parm));
+	  arg_max = TYPE_MAX_VALUE (TYPE_DOMAIN (arg));
+
+	  /* Our representation of array types uses "N - 1" as the
+	     TYPE_MAX_VALUE for an array with "N" elements, if "N" is
+	     not an integer constant.  */
+	  if (TREE_CODE (parm_max) == MINUS_EXPR)
+	    {
+	      arg_max = fold (build2 (PLUS_EXPR, 
+				      integer_type_node,
+				      arg_max,
+				      TREE_OPERAND (parm_max, 1)));
+	      parm_max = TREE_OPERAND (parm_max, 0);
+	    }
+
+	  if (unify (tparms, targs, parm_max, arg_max, UNIFY_ALLOW_INTEGER))
+	    return 1;
+	}
       return unify (tparms, targs, TREE_TYPE (parm), TREE_TYPE (arg),
 		    strict & UNIFY_ALLOW_MORE_CV_QUAL);
 
@@ -9947,23 +9961,10 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
     case VOID_TYPE:
       if (TREE_CODE (arg) != TREE_CODE (parm))
 	return 1;
-
-      if (TREE_CODE (parm) == INTEGER_TYPE
-	  && TREE_CODE (TYPE_MAX_VALUE (parm)) != INTEGER_CST)
-	{
-	  if (TYPE_MIN_VALUE (parm) && TYPE_MIN_VALUE (arg)
-	      && unify (tparms, targs, TYPE_MIN_VALUE (parm),
-			TYPE_MIN_VALUE (arg), UNIFY_ALLOW_INTEGER))
-	    return 1;
-	  if (TYPE_MAX_VALUE (parm) && TYPE_MAX_VALUE (arg)
-	      && unify (tparms, targs, TYPE_MAX_VALUE (parm),
-			TYPE_MAX_VALUE (arg),
-			UNIFY_ALLOW_INTEGER | UNIFY_ALLOW_MAX_CORRECTION))
-	    return 1;
-	}
+      
       /* We have already checked cv-qualification at the top of the
 	 function.  */
-      else if (!same_type_ignoring_top_level_qualifiers_p (arg, parm))
+      if (!same_type_ignoring_top_level_qualifiers_p (arg, parm))
 	return 1;
 
       /* As far as unification is concerned, this wins.	 Later checks
@@ -10088,27 +10089,6 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
     case TEMPLATE_DECL:
       /* Matched cases are handled by the ARG == PARM test above.  */
       return 1;
-
-    case MINUS_EXPR:
-      if (tree_int_cst_equal (TREE_OPERAND (parm, 1), integer_one_node)
-	  && (strict_in & UNIFY_ALLOW_MAX_CORRECTION))
-	{
-	  /* We handle this case specially, since it comes up with
-	     arrays.  In particular, something like:
-
-	     template <int N> void f(int (&x)[N]);
-
-	     Here, we are trying to unify the range type, which
-	     looks like [0 ... (N - 1)].  */
-	  tree t, t1, t2;
-	  t1 = TREE_OPERAND (parm, 0);
-	  t2 = TREE_OPERAND (parm, 1);
-
-	  t = fold (build2 (PLUS_EXPR, integer_type_node, arg, t2));
-
-	  return unify (tparms, targs, t1, t, strict);
-	}
-      /* Else fall through.  */
 
     default:
       if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (parm))))
