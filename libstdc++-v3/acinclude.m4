@@ -1726,13 +1726,20 @@ AC_DEFUN([GLIBCXX_ENABLE_THREADS], [
   target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
   AC_MSG_RESULT([$target_thread_file])
 
-  enable_thread=no
   if test $target_thread_file != single; then
     AC_DEFINE(HAVE_GTHR_DEFAULT)
-    enable_thread=yes
   fi
 
   glibcxx_thread_h=gthr-$target_thread_file.h
+
+  dnl Check for __GTHREADS define.
+  gthread_file=${toplevel_srcdir}/gcc/${glibcxx_thread_h}
+  if grep __GTHREADS $gthread_file >/dev/null 2>&1 ; then
+    enable_thread=yes
+  else
+   enable_thread=no
+  fi
+
   AC_SUBST(glibcxx_thread_h)
 ])
 

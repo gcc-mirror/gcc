@@ -7753,16 +7753,22 @@ echo $ECHO_N "checking for thread model used by GCC... $ECHO_C" >&6
   echo "$as_me:$LINENO: result: $target_thread_file" >&5
 echo "${ECHO_T}$target_thread_file" >&6
 
-  enable_thread=no
   if test $target_thread_file != single; then
     cat >>confdefs.h <<\_ACEOF
 #define HAVE_GTHR_DEFAULT 1
 _ACEOF
 
-    enable_thread=yes
   fi
 
   glibcxx_thread_h=gthr-$target_thread_file.h
+
+    gthread_file=${toplevel_srcdir}/gcc/${glibcxx_thread_h}
+  if grep __GTHREADS $gthread_file >/dev/null 2>&1 ; then
+    enable_thread=yes
+  else
+   enable_thread=no
+  fi
+
 
 
 
