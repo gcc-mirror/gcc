@@ -1,5 +1,9 @@
 2004-01-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/pragma-re-1.c: Use right pointer type.
+
+2004-01-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* g++.dg/eh/simd-1.c: Ajust line number for dg-error line.
 
 2004-01-09  Geoffrey Keating  <geoffk@apple.com>
