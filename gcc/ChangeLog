@@ -5,6 +5,10 @@
 	(try_combine, can_combine_p, combinable_i3pat): Delete old
 	SMALL_REGISTER_CLASSES tests.
 
+	* reload1.c (free_for_value_p): New function, frontend to
+	reload_reg_free_for_value_p.  All callers of the latter now call
+	this function with an additional mode argument.
+
 2000-12-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.c (shiftcosts): Don't get INTVAL before testing
