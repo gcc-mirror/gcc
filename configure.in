@@ -562,7 +562,7 @@ case "${host}" in
     noconfigdirs="tcl expect dejagnu make texinfo bison patch flex byacc send-pr gprof uudecode dejagnu diff guile perl apache inet itcl tix db snavigator gnuserv gettext"
     ;;
   i[3456]86-*-go32* | i[3456]86-*-msdosdjgpp*)
-    noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl apache inet itcl tix db snavigator gnuserv gettext libffi"
+    noconfigdirs="tcl tk expect dejagnu send-pr uudecode guile apache inet itcl tix db snavigator gnuserv libffi"
 	;;
   i[3456]86-*-mingw32*)
     # noconfigdirs="tcl tk expect dejagnu make texinfo bison patch flex byacc send-pr uudecode dejagnu diff guile perl apache inet itcl tix db snavigator gnuserv"
@@ -737,10 +737,6 @@ case "${target}" in
     if [ x${is_cross_compiler} != xno ] ; then
          target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
-    ;;
-  i[3456]86-*-go32* | i[3456]-*-msdosdjgpp*)
-    # but don't build gdb
-    noconfigdirs="$noconfigdirs gdb target-libg++ ${libstdcxx_version} target-librx ${libgcj}"
     ;;
   *-*-linux*)
     noconfigdirs="${libgcj}"
