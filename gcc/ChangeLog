@@ -194,6 +194,7 @@ Wed Aug  2 15:59:34 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(f_options): Added dce entry.
 	* invoke.texi: Document -fdce.  Emphasize experimental status of
 	-fssa. 
+	* dce: New file.
 	
 2000-08-01  Zack Weinberg  <zack@wolery.cumb.org>
 
