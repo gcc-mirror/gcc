@@ -1,3 +1,9 @@
+2003-07-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11431
+	* typeck.c (build_static_cast): Check for reference conversions
+	earlier.
+
 2003-07-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/6949

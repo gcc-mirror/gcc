@@ -1,3 +1,8 @@
+2003-07-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11431
+	* g++.dg/expr/static_cast3.C: New test.
+
 2003-07-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/i386-call-1.c: New test.

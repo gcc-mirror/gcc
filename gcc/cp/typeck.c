@@ -4712,28 +4712,23 @@ build_static_cast (type, expr)
 
   /* [expr.static.cast]
 
-     An expression e can be explicitly converted to a type T using a
-     static_cast of the form static_cast<T>(e) if the declaration T
-     t(e);" is well-formed, for some invented temporary variable
-     t.  */
-  result = perform_direct_initialization_if_possible (type, expr);
-  if (result)
-    return convert_from_reference (result);
-  
-  /* [expr.static.cast]
-
-     Any expression can be explicitly converted to type cv void.  */
-  if (TREE_CODE (type) == VOID_TYPE)
-    return convert_to_void (expr, /*implicit=*/NULL);
-
-  /* [expr.static.cast]
-
      An lvalue of type "cv1 B", where B is a class type, can be cast
      to type "reference to cv2 D", where D is a class derived (clause
      _class.derived_) from B, if a valid standard conversion from
      "pointer to D" to "pointer to B" exists (_conv.ptr_), cv2 is the
      same cv-qualification as, or greater cv-qualification than, cv1,
      and B is not a virtual base class of D.  */
+  /* We check this case before checking the validity of "TYPE t =
+     EXPR;" below because for this case:
+
+       struct B {};
+       struct D : public B { D(const B&); };
+       extern B& b;
+       void f() { static_cast<const D&>(b); }
+
+     we want to avoid constructing a new D.  The standard is not
+     completely clear about this issue, but our interpretation is
+     consistent with other compilers.  */
   if (TREE_CODE (type) == REFERENCE_TYPE
       && CLASS_TYPE_P (TREE_TYPE (type))
       && CLASS_TYPE_P (intype)
@@ -4756,6 +4751,22 @@ build_static_cast (type, expr)
 	 there are no expressions with reference type in C++.  */
       return convert_from_reference (build_nop (type, expr));
     }
+
+  /* [expr.static.cast]
+
+     An expression e can be explicitly converted to a type T using a
+     static_cast of the form static_cast<T>(e) if the declaration T
+     t(e);" is well-formed, for some invented temporary variable
+     t.  */
+  result = perform_direct_initialization_if_possible (type, expr);
+  if (result)
+    return convert_from_reference (result);
+  
+  /* [expr.static.cast]
+
+     Any expression can be explicitly converted to type cv void.  */
+  if (TREE_CODE (type) == VOID_TYPE)
+    return convert_to_void (expr, /*implicit=*/NULL);
 
   /* [expr.static.cast]
 
