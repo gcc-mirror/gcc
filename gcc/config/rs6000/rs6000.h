@@ -2103,7 +2103,8 @@ typedef struct rs6000_args
 
 #define LEGITIMATE_LO_SUM_ADDRESS_P(MODE, X, STRICT)	\
   (TARGET_ELF						\
-   && ! flag_pic && ! TARGET_TOC			\
+   && (DEFAULT_ABI == ABI_AIX || ! flag_pic)		\
+   && ! TARGET_TOC					\
    && GET_MODE_NUNITS (MODE) == 1			\
    && (GET_MODE_BITSIZE (MODE) <= 32 			\
        || (TARGET_HARD_FLOAT && TARGET_FPRS && (MODE) == DFmode))	\

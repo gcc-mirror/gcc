@@ -97,9 +97,6 @@ const char *rs6000_isel_string;
 /* Set to nonzero once AIX common-mode calls have been defined.  */
 static GTY(()) int common_mode_defined;
 
-/* Private copy of original value of flag_pic for ABI_AIX.  */
-static int rs6000_flag_pic;
-
 /* Save information from a "cmpxx" operation until the branch or scc is
    emitted.  */
 rtx rs6000_compare_op0, rs6000_compare_op1;
@@ -225,10 +222,12 @@ static void rs6000_xcoff_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						     unsigned HOST_WIDE_INT));
 static const char * rs6000_xcoff_strip_name_encoding PARAMS ((const char *));
 static unsigned int rs6000_xcoff_section_type_flags PARAMS ((tree, const char *, int));
-#endif
 static void rs6000_xcoff_encode_section_info PARAMS ((tree, int))
      ATTRIBUTE_UNUSED;
+#endif
+#if TARGET_MACHO
 static bool rs6000_binds_local_p PARAMS ((tree));
+#endif
 static int rs6000_use_dfa_pipeline_interface PARAMS ((void));
 static int rs6000_variable_issue PARAMS ((FILE *, int, rtx, int));
 static bool rs6000_rtx_costs PARAMS ((rtx, int, int, int *));
@@ -403,8 +402,10 @@ static const char alt_reg_names[][8] =
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN rs6000_expand_builtin
 
+#if TARGET_MACHO
 #undef TARGET_BINDS_LOCAL_P
 #define TARGET_BINDS_LOCAL_P rs6000_binds_local_p
+#endif
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK rs6000_output_mi_thunk
@@ -635,12 +636,6 @@ rs6000_override_options (default_cpu)
 	  if ((target_flags_explicit & MASK_STRING) != 0)
 	    warning ("-mstring is not supported on little endian systems");
 	}
-    }
-
-  if (flag_pic != 0 && DEFAULT_ABI == ABI_AIX)
-    {
-      rs6000_flag_pic = flag_pic;
-      flag_pic = 0;
     }
 
   /* Set debug flags */
@@ -2215,7 +2210,10 @@ rs6000_legitimize_address (x, oldx, mode)
 
       return force_reg (Pmode, x);
     }
-  else if (TARGET_ELF && TARGET_32BIT && TARGET_NO_TOC && ! flag_pic
+  else if (TARGET_ELF
+	   && TARGET_32BIT
+	   && TARGET_NO_TOC
+	   && ! flag_pic
 	   && GET_CODE (x) != CONST_INT
 	   && GET_CODE (x) != CONST_DOUBLE 
 	   && CONSTANT_P (x)
@@ -2770,7 +2768,8 @@ rs6000_emit_move (dest, source, mode)
 	}
 
       if ((TARGET_ELF || DEFAULT_ABI == ABI_DARWIN)
-	  && TARGET_NO_TOC && ! flag_pic
+	  && TARGET_NO_TOC
+	  && ! flag_pic
 	  && mode == Pmode
 	  && CONSTANT_P (operands[1])
 	  && GET_CODE (operands[1]) != HIGH
@@ -9650,7 +9649,7 @@ rs6000_return_addr (count, frame)
   /* Currently we don't optimize very well between prolog and body
      code and for PIC code the code can be actually quite bad, so
      don't try to be too clever here.  */
-  if (count != 0 || flag_pic != 0)
+  if (count != 0 || (DEFAULT_ABI != ABI_AIX && flag_pic))
     {
       cfun->machine->ra_needs_full_frame = 1;
 
@@ -10761,7 +10760,9 @@ rs6000_emit_prologue ()
        it.  We use R11 for this purpose because emit_load_toc_table
        can use register 0.  This allows us to use a plain 'blr' to return
        from the procedure more often.  */
-    int save_LR_around_toc_setup = (TARGET_ELF && flag_pic != 0
+    int save_LR_around_toc_setup = (TARGET_ELF
+				    && DEFAULT_ABI != ABI_AIX
+				    && flag_pic
 				    && ! info->lr_save_p
 				    && EXIT_BLOCK_PTR->pred != NULL);
     if (save_LR_around_toc_setup)
@@ -12715,6 +12716,10 @@ rs6000_elf_select_section (decl, reloc, align)
      int reloc;
      unsigned HOST_WIDE_INT align;
 {
+  /* Pretend that we're always building for a shared library when
+     ABI_AIX, because otherwise we end up with dynamic relocations
+     in read-only sections.  This happens for function pointers,
+     references to vtables in typeinfo, and probably other cases.  */
   default_elf_select_section_1 (decl, reloc, align,
 				flag_pic || DEFAULT_ABI == ABI_AIX);
 }
@@ -12732,10 +12737,11 @@ rs6000_elf_unique_section (decl, reloc)
      tree decl;
      int reloc;
 {
+  /* As above, pretend that we're always building for a shared library
+     when ABI_AIX, to avoid dynamic relocations in read-only sections.  */
   default_unique_section_1 (decl, reloc,
 			    flag_pic || DEFAULT_ABI == ABI_AIX);
 }
-
 
 /* If we are referencing a function that is static or is known to be
    in this file, make the SYMBOL_REF special.  We can use this to indicate
@@ -12759,7 +12765,7 @@ rs6000_elf_encode_section_info (decl, first)
       if ((*targetm.binds_local_p) (decl))
 	SYMBOL_REF_FLAG (sym_ref) = 1;
 
-      if (DEFAULT_ABI == ABI_AIX)
+      if (!TARGET_AIX && DEFAULT_ABI == ABI_AIX)
 	{
 	  size_t len1 = (DEFAULT_ABI == ABI_AIX) ? 1 : 2;
 	  size_t len2 = strlen (XSTR (sym_ref, 0));
@@ -13438,10 +13444,6 @@ rs6000_xcoff_section_type_flags (decl, name, reloc)
   return flags | (exact_log2 (align) & SECTION_ENTSIZE);
 }
 
-#endif /* TARGET_XCOFF */
-
-/* Note that this is also used for PPC64 Linux.  */
-
 static void
 rs6000_xcoff_encode_section_info (decl, first)
      tree decl;
@@ -13451,18 +13453,19 @@ rs6000_xcoff_encode_section_info (decl, first)
       && (*targetm.binds_local_p) (decl))
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 }
+#endif /* TARGET_XCOFF */
 
-/* Cross-module name binding.  For AIX and PPC64 Linux, which always are
-   PIC, use private copy of flag_pic.  Darwin does not support overriding
+#if TARGET_MACHO
+/* Cross-module name binding.  Darwin does not support overriding
    functions at dynamic-link time.  */
 
 static bool
 rs6000_binds_local_p (decl)
      tree decl;
 {
-  return default_binds_local_p_1 (decl, 
-	DEFAULT_ABI == ABI_DARWIN ? 0 : flag_pic || rs6000_flag_pic);
+  return default_binds_local_p_1 (decl, 0);
 }
+#endif
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be

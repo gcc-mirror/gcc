@@ -1,3 +1,23 @@
+2003-03-13  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_flag_pic): Delete.
+	(rs6000_xcoff_encode_section_info): #ifdef TARGET_XCOFF.
+	(rs6000_binds_local_p, TARGET_BINDS_LOCAL_P): #if TARGET_MACHO.
+	(rs6000_override_options): Don't clear flag_pic for ABI_AIX.
+	(rs6000_legitimize_address): Formatting.
+	(rs6000_emit_move): Likewise.
+	(rs6000_return_addr): Test ABI_AIX as well as flag_pic.
+	(rs6000_emit_prologue <save_LR_around_toc_setup>): Likewise.
+	(rs6000_elf_select_section): Comment reason for shlib being
+	set for ABI_AIX.
+	(rs6000_elf_unique_section): Likewise.
+	(rs6000_elf_encode_section_info): Test !TARGET_AIX as well as ABI_AIX.
+	* config/rs6000/rs6000.h (LEGITIMATE_LO_SUM_ADDRESS_P): Test ABI_AIX
+	as well as flag_pic.
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Likewise.
+	(MINIMAL_TOC_SECTION_ASM_OP): Likewise.
+	* config/rs6000/linux64.h (TARGET_ENCODE_SECTION_INFO): Don't define.
+
 2003-03-13  Richard Henderson  <rth@redhat.com>
 
 	* emit-rtl.c (try_split): Handle 1-1 splits of call insns properly.

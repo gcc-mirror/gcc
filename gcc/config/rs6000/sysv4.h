@@ -247,8 +247,9 @@ do {									\
 	     rs6000_sdata_name);					\
     }									\
 									\
-  else if (flag_pic &&							\
-	   (rs6000_sdata == SDATA_EABI || rs6000_sdata == SDATA_SYSV))	\
+  else if (flag_pic && DEFAULT_ABI != ABI_AIX				\
+	   && (rs6000_sdata == SDATA_EABI				\
+	       || rs6000_sdata == SDATA_SYSV))				\
     {									\
       rs6000_sdata = SDATA_DATA;					\
       error ("-f%s and -msdata=%s are incompatible",			\
@@ -292,7 +293,7 @@ do {									\
     }									\
 									\
   /* Treat -fPIC the same as -mrelocatable.  */				\
-  if (flag_pic > 1)							\
+  if (flag_pic > 1 && DEFAULT_ABI != ABI_AIX)				\
     target_flags |= MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC; \
 									\
   else if (TARGET_RELOCATABLE)						\
@@ -421,7 +422,8 @@ do {									\
 
 /* Put PC relative got entries in .got2.  */
 #define	MINIMAL_TOC_SECTION_ASM_OP \
-  ((TARGET_RELOCATABLE || flag_pic) ? "\t.section\t\".got2\",\"aw\"" : "\t.section\t\".got1\",\"aw\"")
+  (TARGET_RELOCATABLE || (flag_pic && DEFAULT_ABI != ABI_AIX)		\
+   ? "\t.section\t\".got2\",\"aw\"" : "\t.section\t\".got1\",\"aw\"")
 
 #define	SDATA_SECTION_ASM_OP "\t.section\t\".sdata\",\"aw\""
 #define	SDATA2_SECTION_ASM_OP "\t.section\t\".sdata2\",\"a\""
