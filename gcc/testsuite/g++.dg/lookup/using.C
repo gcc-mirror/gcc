@@ -17,7 +17,7 @@ struct Derived : Base {
 int main()
 {
   Derived d;
-  X x = d.f();                  // { dg-bogus "Y" "" { xfail *-*-* } }
+  X x = d.f();                  // { dg-bogus "Y" "" }
 }
 
 
