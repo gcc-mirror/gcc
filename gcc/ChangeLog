@@ -1,4 +1,9 @@
-2004-12-11  Roger Sayle  <roger@eyesopen.com>
+2004-12-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* lcm.c (optimize_mode_switching): Free ptr even when mode_set
+	is NULL_RTX.
+
+2004-12-12  Roger Sayle  <roger@eyesopen.com>
 
 	* reg-stack.c (change_stack): Avoid placing the new top-of-stack in
 	its correct location during popping if we need to permute the stack
