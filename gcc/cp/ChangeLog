@@ -1,5 +1,31 @@
 2000-04-08  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (cp_tree_index): Add CPTI_COMPLETE_CTOR_IDENTIFIER.
+	(complete_ctor_identifier): New macro.
+	(special_function_kind): Add sfk_copy_constructor and
+	sfk_assignment_operator.
+	(LOOKUP_HAS_IN_CHARGE): Remove.
+	(cons_up_default_function): Rename to ...
+	(implicitly_declare_fn): ... this.
+	* call.c (build_new_method_call): Add in-charge parameters for
+	constructors here.
+	* class.c (add_implicitly_declared_members): Change parameter name
+	from cant_have_assignment to cant_have_const_assignment.
+	Replace calls to cons_up_default_function to implicitly_declare_fn.
+	* cvt.c (ocp_convert): Use complete_ctor_identifier.
+	* decl.c (initialize_predefined_identifiers): Initialize it.
+	(start_function): Use DECL_CONSTRUCTOR_FOR_VBASE_P instead of
+	complex expression.
+	* init.c (expand_default_init): Don't calculate the in-charge
+	parameter here.
+	(build_new_1): Likewise.
+	* lex.c (cons_up_default_function): Move to method.c.
+	* method.c (synthesize_method): Use DECL_DESTRUCTOR_P.
+	(implicitly_declare_fn): New function.
+	* typeck.c (build_static_cast): Use complete_ctor_identifier.
+	(build_modify_expr): Likewise.
+	* typeck2.c (build_functional_cast): Likewise.
+	
 	Under the new ABI, constructors don't return `this'.
 	* cp-tree.h (warn_reorder): Declare.
 	(special_function_kind): New enum.

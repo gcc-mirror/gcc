@@ -1116,6 +1116,7 @@ expand_default_init (binfo, true_exp, exp, init, flags)
      int flags;
 {
   tree type = TREE_TYPE (exp);
+  tree ctor_name;
 
   /* It fails because there may not be a constructor which takes
      its own type as the first (or only parameter), but which does
@@ -1170,17 +1171,12 @@ expand_default_init (binfo, true_exp, exp, init, flags)
   else
     parms = build_tree_list (NULL_TREE, init);
 
-  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
-    {
-      if (true_exp == exp)
-	parms = tree_cons (NULL_TREE, integer_one_node, parms);
-      else
-	parms = tree_cons (NULL_TREE, integer_zero_node, parms);
-      flags |= LOOKUP_HAS_IN_CHARGE;
-    }
+  if (true_exp == exp)
+    ctor_name = complete_ctor_identifier;
+  else
+    ctor_name = base_ctor_identifier;
 
-  rval = build_method_call (exp, ctor_identifier,
-			    parms, binfo, flags);
+  rval = build_method_call (exp, ctor_name, parms, binfo, flags);
   if (TREE_SIDE_EFFECTS (rval))
     finish_expr_stmt (rval);
 }
@@ -2350,19 +2346,14 @@ build_new_1 (exp)
 	     that argument.  */
 	  int flags = LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_COMPLAIN;
 
-	  if (rval && TYPE_USES_VIRTUAL_BASECLASSES (true_type))
-	    {
-	      init = tree_cons (NULL_TREE, integer_one_node, init);
-	      flags |= LOOKUP_HAS_IN_CHARGE;
-	    }
-
 	  rval = save_expr (rval);
 	  newrval = rval;
 
 	  if (newrval && TREE_CODE (TREE_TYPE (newrval)) == POINTER_TYPE)
 	    newrval = build_indirect_ref (newrval, NULL_PTR);
 
-	  newrval = build_method_call (newrval, ctor_identifier,
+	  newrval = build_method_call (newrval, 
+				       complete_ctor_identifier,
 				       init, TYPE_BINFO (true_type), flags);
 
 	  if (newrval == NULL_TREE || newrval == error_mark_node)

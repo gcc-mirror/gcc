@@ -560,6 +560,7 @@ enum cp_tree_index
     CPTI_ACCESS_PRIVATE_VIRTUAL,
 
     CPTI_CTOR_IDENTIFIER,
+    CPTI_COMPLETE_CTOR_IDENTIFIER,
     CPTI_BASE_CTOR_IDENTIFIER,
     CPTI_DTOR_IDENTIFIER,
     CPTI_BASE_DTOR_IDENTIFIER,
@@ -655,8 +656,11 @@ extern tree cp_global_trees[CPTI_MAX];
 /* We cache these tree nodes so as to call get_identifier less
    frequently.  */
 
-/* The name of a constructor that constructors virtual base classes.  */
+/* The name of a constructor that takes an in-charge parameter to
+   decide whether or not to call virtual base classes.  */
 #define ctor_identifier                 cp_global_trees[CPTI_CTOR_IDENTIFIER]
+/* The name of a constructor that constructs virtual base classes.  */
+#define complete_ctor_identifier        cp_global_trees[CPTI_COMPLETE_CTOR_IDENTIFIER]
 /* The name of a constructor that does not construct virtual base classes.  */
 #define base_ctor_identifier            cp_global_trees[CPTI_BASE_CTOR_IDENTIFIER]
 /* The name of a destructor that destroys virtual base classes.  */
@@ -3105,6 +3109,8 @@ typedef enum access_kind {
 typedef enum special_function_kind {
   sfk_none,                /* Not a special function.  */
   sfk_constructor,         /* A constructor.  */
+  sfk_copy_constructor,    /* A copy constructor.  */
+  sfk_assignment_operator, /* An assignment operator.  */
   sfk_destructor,          /* A destructor.  */
   sfk_conversion           /* A conversion operator.  */
 } special_function_kind;
@@ -3479,8 +3485,6 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
    LOOKUP_NONVIRTUAL means make a direct call to the member function found
    LOOKUP_GLOBAL means search through the space of overloaded functions,
      as well as the space of member functions.
-   LOOKUP_HAS_IN_CHARGE means that the "in charge" variable is already
-     in the parameter list.
    LOOKUP_ONLYCONVERTING means that non-conversion constructors are not tried.
    DIRECT_BIND means that if a temporary is created, it should be created so
      that it lives as long as the current variable bindings; otherwise it
@@ -3505,10 +3509,8 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define LOOKUP_PROTECT (1)
 #define LOOKUP_COMPLAIN (2)
 #define LOOKUP_NORMAL (3)
-/* #define LOOKUP_UNUSED (4) */
 #define LOOKUP_NONVIRTUAL (8)
 #define LOOKUP_GLOBAL (16)
-#define LOOKUP_HAS_IN_CHARGE (32)
 #define LOOKUP_SPECULATIVELY (64)
 #define LOOKUP_ONLYCONVERTING (128)
 #define DIRECT_BIND (256)
@@ -4052,7 +4054,6 @@ extern void restore_pending_input		PARAMS ((struct pending_input *));
 extern void yyungetc				PARAMS ((int, int));
 extern void reinit_parse_for_method		PARAMS ((int, tree));
 extern void reinit_parse_for_block		PARAMS ((int, struct obstack *));
-extern tree cons_up_default_function		PARAMS ((tree, tree, int));
 extern void check_for_missing_semicolon		PARAMS ((tree));
 extern void note_got_semicolon			PARAMS ((tree));
 extern void note_list_got_semicolon		PARAMS ((tree));
@@ -4099,6 +4100,7 @@ extern tree make_thunk				PARAMS ((tree, int, int));
 extern void emit_thunk				PARAMS ((tree));
 extern void synthesize_method			PARAMS ((tree));
 extern tree get_id_2				PARAMS ((const char *, tree));
+extern tree implicitly_declare_fn               PARAMS ((special_function_kind, tree, int));
 
 /* In optimize.c */
 extern void optimize_function                   PARAMS ((tree));

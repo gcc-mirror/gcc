@@ -806,7 +806,8 @@ ocp_convert (type, expr, convtype, flags)
 	   the target with the temp (see [dcl.init]).  */
 	ctor = build_user_type_conversion (type, ctor, flags);
       if (ctor)
-	ctor = build_method_call (NULL_TREE, ctor_identifier,
+	ctor = build_method_call (NULL_TREE, 
+				  complete_ctor_identifier,
 				  build_tree_list (NULL_TREE, ctor),
 				  TYPE_BINFO (type), flags);
       if (ctor)

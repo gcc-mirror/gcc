@@ -2383,7 +2383,7 @@ synthesize_method (fndecl)
       do_build_assign_ref (fndecl);
       need_body = 0;
     }
-  else if (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (fndecl)))
+  else if (DECL_DESTRUCTOR_P (fndecl))
     setup_vtbl_ptr ();
   else
     {
@@ -2412,4 +2412,87 @@ synthesize_method (fndecl)
     pop_from_top_level ();
   else if (nested)
     pop_function_context_from (context);
+}
+
+/* Implicitly declare the special function indicated by KIND, as a
+   member of TYPE.  For copy constructors and assignment operators,
+   CONST_P indicates whether these functions should take a const
+   reference argument or a non-const reference.  */
+
+tree
+implicitly_declare_fn (kind, type, const_p)
+     special_function_kind kind;
+     tree type;
+     int const_p;
+{
+  tree declspecs = NULL_TREE;
+  tree fn, args = NULL_TREE;
+  tree argtype;
+  int retref = 0;
+  tree name = constructor_name (TYPE_IDENTIFIER (type));
+
+  switch (kind)
+    {
+      /* Destructors.  */
+    case sfk_destructor:
+      name = build_parse_node (BIT_NOT_EXPR, name);
+      args = void_list_node;
+      break;
+
+    case sfk_constructor:
+      /* Default constructor.  */
+      args = void_list_node;
+      break;
+
+    case sfk_copy_constructor:
+      if (const_p)
+	type = build_qualified_type (type, TYPE_QUAL_CONST);
+      argtype = build_reference_type (type);
+      args = tree_cons (NULL_TREE,
+			build_tree_list (hash_tree_chain (argtype, NULL_TREE),
+					 get_identifier ("_ctor_arg")),
+			void_list_node);
+      break;
+
+    case sfk_assignment_operator:
+      retref = 1;
+      declspecs = build_decl_list (NULL_TREE, type);
+
+      if (const_p)
+	type = build_qualified_type (type, TYPE_QUAL_CONST);
+
+      name = ansi_opname [(int) MODIFY_EXPR];
+
+      argtype = build_reference_type (type);
+      args = tree_cons (NULL_TREE,
+			build_tree_list (hash_tree_chain (argtype, NULL_TREE),
+					 get_identifier ("_ctor_arg")),
+			void_list_node);
+      break;
+
+    default:
+      my_friendly_abort (59);
+    }
+
+  TREE_PARMLIST (args) = 1;
+
+  {
+    tree declarator = make_call_declarator (name, args, NULL_TREE, NULL_TREE);
+    if (retref)
+      declarator = build_parse_node (ADDR_EXPR, declarator);
+
+    fn = grokfield (declarator, declspecs, NULL_TREE, NULL_TREE, NULL_TREE);
+  }
+
+  my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 20000408);
+
+  if (kind != sfk_constructor && kind != sfk_destructor)
+    SET_DECL_ARTIFICIAL (TREE_CHAIN (DECL_ARGUMENTS (fn)));
+  SET_DECL_ARTIFICIAL (fn);
+  DECL_NOT_REALLY_EXTERN (fn) = 1;
+  DECL_THIS_INLINE (fn) = 1;
+  DECL_INLINE (fn) = 1;
+  defer_fn (fn);
+  
+  return fn;
 }

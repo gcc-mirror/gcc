@@ -4196,11 +4196,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       template_only = 1;
     }
 
-  /* If there is an extra argument for controlling virtual bases,
-     remove it for error reporting.  */
-  if (flags & LOOKUP_HAS_IN_CHARGE)
-    user_args = TREE_CHAIN (args);
-
+  user_args = args;
   args = resolve_args (args);
 
   if (args == error_mark_node)
@@ -4248,8 +4244,33 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       TREE_TYPE (instance_ptr) = build_pointer_type (basetype);
     }
 
-  pretty_name
-    = (name == ctor_identifier ? constructor_name (basetype) : name);
+  /* Callers should explicitly indicate whether they want to construct
+     the complete object or just the part without virtual bases.  */
+  my_friendly_assert (name != ctor_identifier, 20000408);
+
+  if (name == complete_ctor_identifier 
+      || name == base_ctor_identifier)
+    {
+      pretty_name = constructor_name (basetype);
+      /* Add the in-charge parameter as an implicit first argument.  */
+      if (TYPE_USES_VIRTUAL_BASECLASSES (basetype))
+	{
+	  tree in_charge;
+
+	  if (name == complete_ctor_identifier)
+	    in_charge = integer_one_node;
+	  else
+	    in_charge = integer_zero_node;
+
+	  args = tree_cons (NULL_TREE, in_charge, args);
+	}
+
+      /* We want to call the normal constructor function under the old
+	 ABI.  */
+      name = ctor_identifier;
+    }
+  else
+    pretty_name = name;
 
   fns = lookup_fnfields (basetype_path, name, 1);
 
@@ -4259,12 +4280,6 @@ build_new_method_call (instance, name, args, basetype_path, flags)
     {
       tree base = BINFO_TYPE (TREE_PURPOSE (fns));
       tree fn = TREE_VALUE (fns);
-      if (name == ctor_identifier && TYPE_USES_VIRTUAL_BASECLASSES (basetype)
-	  && ! (flags & LOOKUP_HAS_IN_CHARGE))
-	{
-	  flags |= LOOKUP_HAS_IN_CHARGE;
-	  args = tree_cons (NULL_TREE, integer_one_node, args);
-	}
       mem_args = tree_cons (NULL_TREE, instance_ptr, args);
       for (; fn; fn = OVL_NEXT (fn))
 	{
@@ -4272,8 +4287,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 	  tree this_arglist;
 
 	  /* We can end up here for copy-init of same or base class.  */
-	  if (name == ctor_identifier
-	      && (flags & LOOKUP_ONLYCONVERTING)
+	  if ((flags & LOOKUP_ONLYCONVERTING)
 	      && DECL_NONCONVERTING_P (t))
 	    continue;
 	  if (TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE)
