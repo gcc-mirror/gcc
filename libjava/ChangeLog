@@ -1,3 +1,7 @@
+2003-07-07  Adam Megacz <adam@xwt.org>
+
+	* posix.cc: added #include<stdio.h>
+
 2003-06-30  Gary Benson  <gbenson@redhat.com>
 
 	For PR libgcj/11349:
