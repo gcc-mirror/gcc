@@ -53,10 +53,10 @@ int func1()
    int (*pf)() = f1;			/* { dg-warning "'f1' is deprecated" "" } */
 
    z = w + x + y + g1 + g2 + g3;	/* { dg-warning "'x' is deprecated" "" } */
-   					/* { dg-warning "'y' is deprecated" "" { target *-*-* } 55 } */
-   					/* { dg-warning "'g2' is deprecated" "" { target *-*-* } 55 } */
-   					/* { dg-warning "'g3' is deprecated" "" { target *-*-* } 55 } */
-   return f1(); 			/* { dg-warning "'f1' is deprecated" "" } */
+   					/* { dg-warning "'y' is deprecated" "y" { target *-*-* } 55 } */
+   					/* { dg-warning "'g2' is deprecated" "g2" { target *-*-* } 55 } */
+   					/* { dg-warning "'g3' is deprecated" "g3" { target *-*-* } 55 } */
+   return f1(); 			/* { dg-warning "'f1' is deprecated" "f1" } */
 }
 
 int func2(S1 *p)
@@ -71,7 +71,7 @@ int func2(S1 *p)
   p->u1.field5 = g1 + p->field7;
   p->u2.field9;				/* { dg-warning "'u2' is deprecated" "" } */
   return p->u1.field6 + p->field8;	/* { dg-warning "'field6' is deprecated" "" } */
-  					/* { dg-warning "'field8' is deprecated" "" { target *-*-* } 73 } */
+  					/* { dg-warning "'field8' is deprecated" "field8" { target *-*-* } 73 } */
 }
 
 struct SS1 {
