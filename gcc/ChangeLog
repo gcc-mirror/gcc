@@ -1,3 +1,9 @@
+Wed Mar 17 14:51:19 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (HARD_REGNO_MODE_OK): Allow only 4 and 8 byte unit modes
+	in FP regs.
+	(MODES_TIEABLE_P): Define asymmetricly wrt modes illegal in FP regs.
+
 Wed Mar 17 14:41:41 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/aout.h (ASM_GENERATE_INTERNAL_LABEL): Fix compile
