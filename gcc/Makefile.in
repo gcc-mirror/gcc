@@ -2404,7 +2404,7 @@ TAGS: force
 
 # Create the distribution tar.gz file.
 dist: tmp-gcc.xtar
-	gzip --best < gcc.xtar > tmp-gcc.xtar.gz
+	gzip --best < tmp-gcc.xtar > tmp-gcc.xtar.gz
 	mv tmp-gcc.xtar.gz gcc-$(version).tar.gz
 
 tmp-gcc.xtar: distdir
