@@ -350,7 +350,7 @@ cprop_into_successor_phis (basic_block bb,
 	  /* If the alternative is known to have a nonzero value, record
 	     that fact in the PHI node itself for future use.  */
 	  if (bitmap_bit_p (nonzero_vars, SSA_NAME_VERSION (*orig_p)))
-	    PHI_ARG_NONZERO (phi, i) = true;
+	    PHI_ARG_NONZERO (phi, hint) = true;
 
 	  /* If we have *ORIG_P in our constant/copy table, then replace
 	     ORIG_P with its value in our constant/copy table.  */
