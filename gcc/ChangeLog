@@ -86,6 +86,35 @@
 	TRUTH_XOR_EXPR is a commutative tree code, don't test whether arg0
 	is a constant.
 
+2004-06-26  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-common.c (c_safe_from_p, c_walk_subtrees): Deleted.
+	* c-common.def (DECL_STMT): Remove.
+	* c-common.h (DECL_STMT_DECL): Deleted.
+	(COMPOUNT_LITERAL_EXPR_DECL): Use DECL_EXPR_DECL.
+	(c_safe_from_p, c_walk_subtrees): Deleted.
+	* c-decl.c, c-parse.in, c-pretty-print.c: DECL_STMT now DECL_EXPR.
+	* c-dump.c (c_dump_tree, case DECL_STMT): Deleted.
+	* c-gimplify.c (gimplify_decl_stmt): Deleted.
+	(gimplify_compound_literal_expr): Use DECL_EXPR_DECL
+	and gimplify_and_add.
+	(c_gimplify_expr, case DECL_EXPR): New case.
+	(c_gimplify_expr, case DECL_STMT): Deleted.
+	* c-lang.c (LANG_HOOKS_SAFE_FROM_P): Likewise.
+	(LANG_HOOKS_TREE_INLINING_WALK_SUBTREES): Likewise.
+	* expr.c (safe_from_p, case 's'): New case.
+	* gimplify.c (gimplify_decl_expr): New function.
+	(gimplify_expr, case DECL_EXPR): New case.
+	* tree-inline.c (walk_tree): Walk into all fields of a type and
+	decl only if they are in a DECL_EXPR.
+	(mark_local_for_remap_r): Minor code cleanup.
+	* tree-outof-ssa.c (discover_nonconstant_array_refs_r): Add else.
+	* tree.c (has_cleanups, case DECL_EXPR): New case.
+	* tree.def (DECL_EXPR): New code.
+	* tree.h (DECL_EXPR_DECL): New macro.
+	
+	* objc/objc-lang.c (LANG_HOOKS_SAFE_FROM_P): Deleted.
+
 2004-06-26  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR 13334
