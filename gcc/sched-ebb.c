@@ -285,6 +285,10 @@ schedule_ebbs (dump_file)
   if (n_basic_blocks == 0)
     return;
 
+  /* Remove lexical block notes for empty regions.  These get shuffled
+     about during scheduling and confuse the debugging issue.  */
+  remove_unnecessary_notes ();
+
   sched_init (dump_file);
 
   current_sched_info = &ebb_sched_info;

@@ -540,7 +540,8 @@ remove_scope_notes ()
 	  if (PREV_INSN (x))
 	    {
 	      NEXT_INSN (PREV_INSN (x)) = next;
-	      PREV_INSN (next) = PREV_INSN (x);
+	      if (next)
+	        PREV_INSN (next) = PREV_INSN (x);
 
               NEXT_INSN (x) = NULL;
               PREV_INSN (x) = NULL;

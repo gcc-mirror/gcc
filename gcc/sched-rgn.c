@@ -2896,6 +2896,10 @@ schedule_insns (dump_file)
   if (n_basic_blocks == 0)
     return;
 
+  /* Remove lexical block notes for empty regions.  These get shuffled
+     about during scheduling and confuse the debugging issue.  */
+  remove_unnecessary_notes ();
+
   nr_inter = 0;
   nr_spec = 0;
 

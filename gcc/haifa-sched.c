@@ -319,6 +319,7 @@ static void adjust_priority PARAMS ((rtx));
 static rtx unlink_other_notes PARAMS ((rtx, rtx));
 static rtx unlink_line_notes PARAMS ((rtx, rtx));
 static rtx reemit_notes PARAMS ((rtx, rtx));
+static rtx reemit_other_notes PARAMS ((rtx, rtx));
 
 static rtx *ready_lastpos PARAMS ((struct ready_list *));
 static void ready_sort PARAMS ((struct ready_list *));
@@ -1575,6 +1576,60 @@ reemit_notes (insn, last)
   return retval;
 }
 
+
+/* NOTE_LIST is the end of a chain of notes previously found among the
+   insns.  Insert them at the beginning of the insns.  Actually, insert
+   NOTE_INSN_BLOCK_END notes at the end of the insns.  Doing otherwise
+   tends to collapse lexical blocks into empty regions, which is somewhat
+   less than useful.  */
+/* ??? Ideally we'd mark each insn with the block it originated from,
+   and preserve that information.  This requires some moderately
+   sophisticated block reconstruction code, since block nestings must
+   be preserved.  */
+
+static rtx
+reemit_other_notes (head, tail)
+     rtx head, tail;
+{
+  bool saw_block_beg = false;
+
+  while (note_list)
+    {
+      rtx note_tail = note_list;
+      note_list = PREV_INSN (note_tail);
+
+      if (NOTE_LINE_NUMBER (note_tail) == NOTE_INSN_BLOCK_END
+	  /* We can only extend the lexical block while we havn't
+	     seen a BLOCK_BEG note.  Otherwise we risk mis-nesting
+	     the notes.  */
+	  && ! saw_block_beg)
+	{
+	  rtx insert_after = tail;
+	  if (GET_CODE (NEXT_INSN (tail)) == BARRIER)
+	    insert_after = NEXT_INSN (tail);
+
+	  PREV_INSN (note_tail) = insert_after;
+	  NEXT_INSN (note_tail) = NEXT_INSN (insert_after);
+	  if (NEXT_INSN (insert_after))
+	    PREV_INSN (NEXT_INSN (insert_after)) = note_tail;
+	  NEXT_INSN (insert_after) = note_tail;
+	}
+      else
+	{
+	  if (NOTE_LINE_NUMBER (note_tail) == NOTE_INSN_BLOCK_BEG)
+	    saw_block_beg = true;
+
+	  PREV_INSN (note_tail) = PREV_INSN (head);
+	  NEXT_INSN (PREV_INSN (head)) = note_tail;
+	  NEXT_INSN (note_tail) = head;
+	  PREV_INSN (head) = note_tail;
+	  head = note_tail;
+	}
+    }
+
+  return head;
+}
+
 /* Move INSN, and all insns which should be issued before it,
    due to SCHED_GROUP_P flag.  Reemit notes if needed.
 
@@ -1800,24 +1855,7 @@ schedule_block (b, rgn_n_insns)
   head = NEXT_INSN (prev_head);
   tail = last;
 
-  /* Restore-other-notes: NOTE_LIST is the end of a chain of notes
-     previously found among the insns.  Insert them at the beginning
-     of the insns.  */
-  if (note_list != 0)
-    {
-      rtx note_head = note_list;
-
-      while (PREV_INSN (note_head))
-	{
-	  note_head = PREV_INSN (note_head);
-	}
-
-      PREV_INSN (note_head) = PREV_INSN (head);
-      NEXT_INSN (PREV_INSN (head)) = note_head;
-      PREV_INSN (head) = note_list;
-      NEXT_INSN (note_list) = head;
-      head = note_head;
-    }
+  head = reemit_other_notes (head, tail);
 
   /* Debugging.  */
   if (sched_verbose)
