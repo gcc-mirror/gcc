@@ -3999,7 +3999,7 @@ static const char *c_tree_code_name[] = {
    tree codes. */
 
 void
-add_c_tree_codes (void)
+add_c_tree_codes ()
 {
   memcpy (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
 	  c_tree_code_type,
