@@ -1,3 +1,8 @@
+2004-11-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree-ssa-pre.c (bitmap_print_value_set): Fix uninitialized
+	variable.
+
 2004-11-14  Richard Henderson  <rth@redhat.com>
 
 	PR 18480
