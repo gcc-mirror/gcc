@@ -102,6 +102,7 @@ static tree convert_class_to_reference PARAMS ((tree, tree, tree));
 static tree direct_reference_binding PARAMS ((tree, tree));
 static int promoted_arithmetic_type_p PARAMS ((tree));
 static tree conditional_conversion PARAMS ((tree, tree));
+static tree call_builtin_trap PARAMS ((void));
 
 tree
 build_vfield_ref (datum, type)
@@ -408,7 +409,7 @@ build_call (function, parms)
   nothrow = ((decl && TREE_NOTHROW (decl))
 	     || TYPE_NOTHROW_P (TREE_TYPE (TREE_TYPE (function))));
 
-  if (decl && TREE_THIS_VOLATILE (decl))
+  if (decl && TREE_THIS_VOLATILE (decl) && cfun)
     current_function_returns_abnormally = 1;
 
   if (decl && TREE_DEPRECATED (decl))
@@ -4001,6 +4002,22 @@ convert_like_real (convs, expr, fn, argnum, inner)
 		      LOOKUP_NORMAL|LOOKUP_NO_CONVERSION);
 }
 
+/* Build a call to __builtin_trap which can be used in an expression.  */
+
+static tree
+call_builtin_trap ()
+{
+  tree fn = get_identifier ("__builtin_trap");
+  if (IDENTIFIER_GLOBAL_VALUE (fn))
+    fn = IDENTIFIER_GLOBAL_VALUE (fn);
+  else
+    abort ();
+
+  fn = build_call (fn, NULL_TREE);
+  fn = build (COMPOUND_EXPR, integer_type_node, fn, integer_zero_node);
+  return fn;
+}
+
 /* ARG is being passed to a varargs function.  Perform any conversions
    required.  Array/function to pointer decay must have already happened.
    Return the converted value.  */
@@ -4025,9 +4042,10 @@ convert_arg_to_ellipsis (arg)
       /* Undefined behaviour [expr.call] 5.2.2/7.  We used to just warn
 	 here and do a bitwise copy, but now cp_expr_size will abort if we
 	 try to do that.  */
-      error ("cannot pass objects of non-POD type `%#T' through `...'",
-	     TREE_TYPE (arg));
-      arg = error_mark_node;
+      warning ("cannot pass objects of non-POD type `%#T' through `...'; \
+call will abort at runtime",
+	       TREE_TYPE (arg));
+      arg = call_builtin_trap ();
     }
 
   return arg;
@@ -4296,12 +4314,12 @@ build_over_call (cand, args, flags)
          temp or an INIT_EXPR otherwise.  */
       if (integer_zerop (TREE_VALUE (args)))
 	{
-	  if (! real_lvalue_p (arg))
+	  if (TREE_CODE (arg) == TARGET_EXPR)
 	    return arg;
 	  else if (TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
 	    return build_target_expr_with_type (arg, DECL_CONTEXT (fn));
 	}
-      else if ((!real_lvalue_p (arg)
+      else if ((TREE_CODE (arg) == TARGET_EXPR
 		|| TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
 	       /* Empty classes have padding which can be hidden
 	          inside an (empty) base of the class. This must not
