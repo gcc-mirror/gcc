@@ -117,13 +117,11 @@ extern enum processor_type mips_tune;   /* which cpu to schedule for */
 extern int mips_isa;			/* architectural level */
 extern int mips_abi;			/* which ABI to use */
 extern int mips16_hard_float;		/* mips16 without -msoft-float */
-extern int mips_entry;			/* generate entry/exit for mips16 */
 extern const char *mips_arch_string;    /* for -march=<xxx> */
 extern const char *mips_tune_string;    /* for -mtune=<xxx> */
 extern const char *mips_isa_string;	/* for -mips{1,2,3,4} */
 extern const char *mips_abi_string;	/* for -mabi={32,n32,64} */
 extern const char *mips_cache_flush_func;/* for -mflush-func= and -mno-flush-func */
-extern int mips_string_length;		/* length of strings for mips16 */
 extern const struct mips_cpu_info mips_cpu_info_table[];
 extern const struct mips_cpu_info *mips_arch_info;
 extern const struct mips_cpu_info *mips_tune_info;
@@ -2574,14 +2572,6 @@ typedef struct mips_args {
 		 XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));	\
   else									\
     asm_fprintf ((FILE), "%U%s", (NAME))
-
-/* The mips16 wants the constant pool to be after the function,
-   because the PC relative load instructions use unsigned offsets.  */
-
-#define CONSTANT_POOL_BEFORE_FUNCTION (! TARGET_MIPS16)
-
-#define ASM_OUTPUT_POOL_EPILOGUE(FILE, FNNAME, FNDECL, SIZE)	\
-  mips_string_length = 0;
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.

@@ -35,15 +35,9 @@
    (UNSPEC_CPRESTORE		 5)
    (UNSPEC_EH_RECEIVER		 6)
    (UNSPEC_EH_RETURN		 7)
-   (UNSPEC_CONSTTABLE_QI	 8)
-   (UNSPEC_CONSTTABLE_HI	 9)
-   (UNSPEC_CONSTTABLE_SI	10)
-   (UNSPEC_CONSTTABLE_DI	11)
-   (UNSPEC_CONSTTABLE_SF	12)
-   (UNSPEC_CONSTTABLE_DF	13)
-   (UNSPEC_ALIGN_2		14)
-   (UNSPEC_ALIGN_4		15)
-   (UNSPEC_ALIGN_8		16)
+   (UNSPEC_CONSTTABLE_INT	 8)
+   (UNSPEC_CONSTTABLE_FLOAT	 9)
+   (UNSPEC_ALIGN		14)
    (UNSPEC_HIGH			17)
    (UNSPEC_LWL			18)
    (UNSPEC_LWR			19)
@@ -9147,57 +9141,21 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
 ;;  ....................
 ;;
 
-(define_insn "consttable_qi"
-  [(unspec_volatile [(match_operand:QI 0 "consttable_operand" "=g")]
-		    UNSPEC_CONSTTABLE_QI)]
+(define_insn "consttable_int"
+  [(unspec_volatile [(match_operand 0 "consttable_operand" "")
+		     (match_operand 1 "const_int_operand" "")]
+		    UNSPEC_CONSTTABLE_INT)]
   "TARGET_MIPS16"
 {
-  assemble_integer (operands[0], 1, BITS_PER_UNIT, 1);
+  assemble_integer (operands[0], INTVAL (operands[1]),
+		    BITS_PER_UNIT * INTVAL (operands[1]), 1);
   return "";
 }
-  [(set_attr "type"	"unknown")
-   (set_attr "mode"	"QI")
-   (set_attr "length"	"8")])
+  [(set (attr "length") (symbol_ref "INTVAL (operands[1])"))])
 
-(define_insn "consttable_hi"
-  [(unspec_volatile [(match_operand:HI 0 "consttable_operand" "=g")]
-		    UNSPEC_CONSTTABLE_HI)]
-  "TARGET_MIPS16"
-{
-  assemble_integer (operands[0], 2, BITS_PER_UNIT * 2, 1);
-  return "";
-}
-  [(set_attr "type"	"unknown")
-   (set_attr "mode"	"HI")
-   (set_attr "length"	"8")])
-
-(define_insn "consttable_si"
-  [(unspec_volatile [(match_operand:SI 0 "consttable_operand" "=g")]
-		    UNSPEC_CONSTTABLE_SI)]
-  "TARGET_MIPS16"
-{
-  assemble_integer (operands[0], 4, BITS_PER_UNIT * 4, 1);
-  return "";
-}
-  [(set_attr "type"	"unknown")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"8")])
-
-(define_insn "consttable_di"
-  [(unspec_volatile [(match_operand:DI 0 "consttable_operand" "=g")]
-		    UNSPEC_CONSTTABLE_DI)]
-  "TARGET_MIPS16"
-{
-  assemble_integer (operands[0], 8, BITS_PER_UNIT * 8, 1);
-  return "";
-}
-  [(set_attr "type"	"unknown")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"16")])
-
-(define_insn "consttable_sf"
-  [(unspec_volatile [(match_operand:SF 0 "consttable_operand" "=g")]
-		    UNSPEC_CONSTTABLE_SF)]
+(define_insn "consttable_float"
+  [(unspec_volatile [(match_operand 0 "consttable_operand" "")]
+		    UNSPEC_CONSTTABLE_FLOAT)]
   "TARGET_MIPS16"
 {
   REAL_VALUE_TYPE d;
@@ -9205,53 +9163,18 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
   if (GET_CODE (operands[0]) != CONST_DOUBLE)
     abort ();
   REAL_VALUE_FROM_CONST_DOUBLE (d, operands[0]);
-  assemble_real (d, SFmode, GET_MODE_ALIGNMENT (SFmode));
+  assemble_real (d, GET_MODE (operands[0]),
+		 GET_MODE_BITSIZE (GET_MODE (operands[0])));
   return "";
 }
-  [(set_attr "type"	"unknown")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"8")])
+  [(set (attr "length")
+	(symbol_ref "GET_MODE_SIZE (GET_MODE (operands[0]))"))])
 
-(define_insn "consttable_df"
-  [(unspec_volatile [(match_operand:DF 0 "consttable_operand" "=g")]
-		    UNSPEC_CONSTTABLE_DF)]
-  "TARGET_MIPS16"
-{
-  REAL_VALUE_TYPE d;
-
-  if (GET_CODE (operands[0]) != CONST_DOUBLE)
-    abort ();
-  REAL_VALUE_FROM_CONST_DOUBLE (d, operands[0]);
-  assemble_real (d, DFmode, GET_MODE_ALIGNMENT (DFmode));
-  return "";
-}
-  [(set_attr "type"	"unknown")
-   (set_attr "mode"	"DF")
-   (set_attr "length"	"16")])
-
-(define_insn "align_2"
-  [(unspec_volatile [(const_int 0)] UNSPEC_ALIGN_2)]
-  "TARGET_MIPS16"
-  ".align 1"
-  [(set_attr "type"	"unknown")
-   (set_attr "mode"	"HI")
-   (set_attr "length"	"8")])
-
-(define_insn "align_4"
-  [(unspec_volatile [(const_int 0)] UNSPEC_ALIGN_4)]
-  "TARGET_MIPS16"
-  ".align 2"
-  [(set_attr "type"	"unknown")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"8")])
-
-(define_insn "align_8"
-  [(unspec_volatile [(const_int 0)] UNSPEC_ALIGN_8)]
-  "TARGET_MIPS16"
-  ".align 3"
-  [(set_attr "type"	"unknown")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"12")])
+(define_insn "align"
+  [(unspec_volatile [(match_operand 0 "const_int_operand" "")] UNSPEC_ALIGN)]
+  ""
+  ".align\t%0"
+  [(set (attr "length") (symbol_ref "(1 << INTVAL (operands[0])) - 1"))])
 
 ;;
 ;;  ....................
