@@ -1,3 +1,11 @@
+2003-01-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*negsf2_h8300): Use \\t instead of
+	\t.
+	(*negsf2_h8300hs): Likewise.
+	(*addsi3_lshiftrt_16_zexthi): Likewise.
+	(*iorhi3_lshiftrt_8): Likewise.
+
 2003-01-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* dwarf2out.c (fde_table_in_use): Mark GTY.
