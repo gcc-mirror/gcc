@@ -2,6 +2,11 @@
 
 	* expr.c (move_by_pieces_1): Extend size before negation.
 
+	* config/m68k/t-m68kbare (MULTILIB_OPTIONS): Add 68040 and 68060.
+	(MULTILIB_MATCHES): Remove 68040 and 68060 aliases.
+	(MULTILIB_EXCEPTIONS): Ignore 68881 and soft-float for 68040 and 68060.
+	* config/m68k/t-m68kelf: Likewise.
+
 2002-01-23  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/elf.h: New file.
