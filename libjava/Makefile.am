@@ -133,10 +133,10 @@ libgcj_la_SOURCES = prims.cc posix.cc jni.cc exception.cc \
 	$(nat_source_files)
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
-libgcj_la_DEPENDENCIES = libgcj.jar $(javao_files) $(nat_files) \
+libgcj_la_DEPENDENCIES = libgcj.jar $(javao_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS) $(LIBLTDL)
 
-libgcj_la_LIBADD = $(javao_files) $(c_files) $(nat_files) $(GCOBJS) \
+libgcj_la_LIBADD = $(javao_files) $(c_files) $(GCOBJS) \
 	$(THREADOBJS)
 # Include THREADLIBS here to ensure that the correct version of
 # certain linuxthread functions get linked:
@@ -147,8 +147,8 @@ libgcj_la_LINK = $(LIBLINK)
 
 libgcjx_la_SOURCES = $(x_nat_source_files)
 EXTRA_libgcjx_la_SOURCES = $(x_java_source_files)
-libgcjx_la_DEPENDENCIES = libgcj.jar $(x_javao_files) $(x_nat_files)
-libgcjx_la_LIBADD = $(x_javao_files) $(x_nat_files)
+libgcjx_la_DEPENDENCIES = libgcj.jar $(x_javao_files)
+libgcjx_la_LIBADD = $(x_javao_files)
 libgcjx_la_LDFLAGS = @X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
         -rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
