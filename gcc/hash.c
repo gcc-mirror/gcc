@@ -41,8 +41,8 @@ hash_table_init_n (table, newfunc, hash, comp, size)
      struct hash_entry *(*newfunc) PARAMS ((struct hash_entry *,
 					    struct hash_table *,
 					    hash_table_key));
-     unsigned long (*hash) (hash_table_key);
-     boolean (*comp) (hash_table_key, hash_table_key);
+     unsigned long (*hash) PARAMS ((hash_table_key));
+     boolean (*comp) PARAMS ((hash_table_key, hash_table_key));
      unsigned int size;
 {
   unsigned int alloc;

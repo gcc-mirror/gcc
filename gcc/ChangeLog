@@ -1,3 +1,7 @@
+Fri Nov 20 12:14:16 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* hash.c (hash_table_init_n): Wrap prototype arguments in PARAMS().
+
 Fri Nov 20 08:34:00 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* function.c (nonlocal_goto_handler_slots): Renamed from
