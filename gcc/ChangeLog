@@ -1,3 +1,8 @@
+2000-12-01  Phil Edwards  <pme@sources.redhat.com>
+
+	* diagnostic.c:  Fix typos in comments.
+	* diagnostic.h:  Likewise.
+
 2000-11-30  Phil Edwards  <pme@sources.redhat.com>
 
 	* rtl.texi (Machine Modes):  Document BImode and OImode.
