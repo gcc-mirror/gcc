@@ -2702,7 +2702,9 @@
   if (GET_CODE (operands[1]) == CONST_INT)
 	output_asm_insn (output_move_dconst (INTVAL (operands[1]), \"%$%1,0(sp)\"),
 			 operands);
-  else if (address_operand (operands[1], SImode))
+  else if (GET_CODE (operands[1]) != REG
+	   && GET_CODE (operands[1]) != MEM
+	   && address_operand (operands[1], SImode))
 	output_asm_insn (\"addr %a1,0(sp)\", operands);
   else
 	output_asm_insn (\"movd %1,0(sp)\", operands);
@@ -2724,15 +2726,19 @@
   if (GET_CODE (operands[1]) == CONST_INT)
 	output_asm_insn (output_move_dconst (INTVAL (operands[1]), \"%$%1,4(sp)\"),
 			 operands);
-  else if (address_operand (operands[1], SImode))
-	output_asm_insn (\"addr %a1,0(sp)\", operands);
+  else if (GET_CODE (operands[1]) != REG
+	   && GET_CODE (operands[1]) != MEM
+	   && address_operand (operands[1], SImode))
+	output_asm_insn (\"addr %a1,4(sp)\", operands);
   else
 	output_asm_insn (\"movd %1,4(sp)\", operands);
 
   if (GET_CODE (operands[3]) == CONST_INT)
 	output_asm_insn (output_move_dconst (INTVAL (operands[3]), \"%$%3,0(sp)\"),
 			 operands);
-  else if (address_operand (operands[3], SImode))
+  else if (GET_CODE (operands[3]) != REG
+	   && GET_CODE (operands[3]) != MEM
+	   && address_operand (operands[3], SImode))
 	output_asm_insn (\"addr %a3,0(sp)\", operands);
   else
 	output_asm_insn (\"movd %3,0(sp)\", operands);
