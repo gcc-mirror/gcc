@@ -418,6 +418,10 @@ extern int i386_pe_dllimport_name_p (const char *);
 #undef TARGET_USE_LOCAL_THUNK_ALIAS_P
 #define TARGET_USE_LOCAL_THUNK_ALIAS_P(DECL) (!DECL_ONE_ONLY (DECL))
 
+#define SUBTARGET_ATTRIBUTE_TABLE \
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */ \
+  { "selectany", 0, 0, true, false, false, ix86_handle_selectany_attribute }
+
 #undef TREE
 
 #ifndef BUFSIZ

@@ -3000,6 +3000,26 @@ struct S  __attribute__ ((vector_size (16))) foo;
 is invalid even if the size of the structure is the same as the size of
 the @code{int}.
 
+@item selectany
+The @code{selectany} attribute causes an initialized global variable to
+have link-once semantics.  When multiple definitions of the variable are
+encountered by the linker, the first is selected and the remainder are
+discarded.  Following usage by the Microsoft compiler, the linker is told
+@emph{not} to warn about size or content differences of the multiple
+definitions.
+
+Although the primary usage of this attribute is for POD types, the
+attribute can also be applied to global C++ objects that are initialized
+by a constructor.  In this case, the static initialization and destruction
+code for the object is emitted in each translation defining the object,
+but the calls to the constructor and destructor are protected by a
+link-once guard variable. 
+
+The @code{selectany} attribute is only available on Microsoft Windows
+targets.  You can use @code{__declspec (selectany)} as a synonym for
+@code{__attribute__ ((selectany))} for compatibility with other
+compilers.
+
 @item weak
 The @code{weak} attribute is described in @xref{Function Attributes}.
 
