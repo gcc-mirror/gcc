@@ -31,7 +31,9 @@ details.  */
 struct _Jv_VTable
 {
   jclass clas;
+  void *gc_descr;
   void *method[1];
+  void *get_finalizer() { return method[0]; }
 };
 
 // Number of virtual methods on object.  FIXME: it sucks that we have
@@ -42,8 +44,9 @@ struct _Jv_VTable
 struct _Jv_ArrayVTable
 {
   jclass clas;
-  // `+1' because there is an extra slot for C++ RTTI compatibility.
-  void *method[NUM_OBJECT_METHODS + 1];
+  void *gc_descr;
+  void *method[NUM_OBJECT_METHODS];
+  void *get_finalizer() { return method[0]; }
 };
 
 union _Jv_word
@@ -106,15 +109,19 @@ extern java::lang::Class StringClass;
 typedef void _Jv_FinalizerFunc (jobject);
 
 /* Allocate space for a new Java object.  */
-void *_Jv_AllocObj (jsize size) __attribute__((__malloc__));
+void *_Jv_AllocObj (jsize size, jclass cl) __attribute__((__malloc__));
 /* Allocate space for an array of Java objects.  */
-void *_Jv_AllocArray (jsize size) __attribute__((__malloc__));
+void *_Jv_AllocArray (jsize size, jclass cl) __attribute__((__malloc__));
 /* Allocate space that is known to be pointer-free.  */
 void *_Jv_AllocBytes (jsize size) __attribute__((__malloc__));
 /* Initialize the GC.  */
 void _Jv_InitGC (void);
 /* Register a finalizer.  */
 void _Jv_RegisterFinalizer (void *object, _Jv_FinalizerFunc *method);
+/* Compute the GC descriptor for a class */
+#ifdef INTERPRETER
+void * _Jv_BuildGCDescr(jclass);
+#endif
 
 /* Allocate some unscanned, unmoveable memory.  Return NULL if out of
    memory.  */

@@ -6,7 +6,7 @@
 %rename lib liborig
 *lib: -lgcj -lm @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(liborig)
 
-*jc1:  @DIVIDESPEC@ @EXCEPTIONSPEC@ -fasynchronous-exceptions
+*jc1:  @DIVIDESPEC@ @EXCEPTIONSPEC@ @JC1GCSPEC@ -fasynchronous-exceptions
 
 #
 # libgcc should really be a shared library.  This is a design flaw

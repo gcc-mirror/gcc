@@ -1,3 +1,56 @@
+2000-09-30  Hans Boehm  <boehm@acm.org>
+	    Bryce McKinlay  <bryce@albatross.co.nz>
+	    
+	Implement bitmap descriptor based marking for Boehm GC.
+
+	* configure.in: Define JC1GCSPEC. Set it if boehm-gc is used.
+	* configure: Rebuilt.
+	* libgcj.spec.in: Pass JC1GCSPEC to jc1.
+	* include/jvm.h (struct _Jv_VTable): New field `gc_descr'. New inline
+	method get_finalizer().
+	(struct _Jv_ArrayVTable): Ditto. Declare method array with 
+	NUM_OBJECT_METHODS elements instead of NUM_OBJECT_METHODS + 1.
+	(_Jv_AllocObj): Add new jclass parameter.
+	(_Jv_AllocArray): Ditto.
+	(_Jv_BuildGCDescr): New prototype.
+	* prims.cc (_Jv_AllocObject): Rename parameter `c' to `klass'. Pass
+	`klass' to _Jv_AllocObj. Don't set the new object's vtable. Use
+	get_finalizer() instead of direct finalizer vtable offset.
+	(_Jv_NewObjectArray): Rename parameter `clas' to `klass'. Pass
+	`klass' to _Jv_AllocArray. Don't set the new array's vtable.
+	(_Jv_NewPrimArray): Call _Jv_FindArrayClass before _Jv_AllocObj. Pass
+	`klass' to _Jv_AllocObj. Don't set the new array's vtable.
+	* resolve.cc (METHOD_NOT_THERE, METHOD_INACCESSIBLE): New #defines.
+	(_Jv_ResolvePoolEntry): Use METHOD_NOT_THERE and METHOD_INACCESSIBLE.
+	(_Jv_DetermineVTableIndex): Ditto.
+	(_Jv_PrepareClass): Ditto. Remove offset-by-one adjustments from vtable 
+	calculations to account for new gc_descr field.
+	* boehm.cc: #include gc_gcj.h.
+	(obj_kind_x, obj_free_list): `#if 0'-ed away.
+	(_Jv_MarkObj): Check that vtable doesn't point to a cleared object.
+	New commentary from HB. Mark the classes vtable.
+	(_Jv_MarkArray): Check that vtable doesn't point to a cleared object.
+	(GC_DEFAULT_DESCR): New #define.
+	(_Jv_BuildGCDescr): New function. Use GC_DEFAULT_DESCR, for now.	
+	(_Jv_AllocObj): New parameter `klass'. Use GC_GCJ_MALLOC ().
+	(_Jv_AllocArray): New parameter `klass'. Allocate with GC_MALLOC and
+	scan conservativly if size is less than min_heap_addr. Set vtable 
+	pointer of new object before returning.
+	(_Jv_AllocBytes): Use GC_MALLOC_ATOMIC, not GC_GENERIC_MALLOC.
+	(_Jv_InitGC): Call GC_init_gcj_malloc(). Don't set up marking and
+	allocation for obj_kind_x.
+	* nogc.cc (_Jv_BuildGCDescr): New function. Return 0.
+	(_Jv_AllocObj): Set vtable on returned object.
+	(_Jv_AllocArray): Ditto.
+	* java/lang/Class.h (_Jv_NewObjectArray): No longer a friend.
+	(_Jv_NewPrimArray): Ditto.
+	(_Jv_AllocObj): Declare as a friend.
+	(_Jv_AllocArray): Ditto.	
+	* java/lang/natClassLoader.cc (_Jv_FindArrayClass): Copy gc_descr
+	from &ObjectClass into new array class. Remove offset-by-one 
+	adjustments from `method' size calculations to account for gc_descr 
+	field.
+
 2000-09-26  Tom Tromey  <tromey@cygnus.com>
 
 	* java/awt/Scrollbar.java (removeAdjustmentListener): Use

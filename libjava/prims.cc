@@ -335,18 +335,17 @@ _Jv_AllocBytesChecked (jsize size)
   return r;
 }
 
-// Allocate a new object of class C.  SIZE is the size of the object
+// Allocate a new object of class KLASS.  SIZE is the size of the object
 // to allocate.  You might think this is redundant, but it isn't; some
 // classes, such as String, aren't of fixed size.
 jobject
-_Jv_AllocObject (jclass c, jint size)
+_Jv_AllocObject (jclass klass, jint size)
 {
-  _Jv_InitClass (c);
+  _Jv_InitClass (klass);
 
-  jobject obj = (jobject) _Jv_AllocObj (size);
+  jobject obj = (jobject) _Jv_AllocObj (size, klass);
   if (__builtin_expect (! obj, false))
     JvThrow (no_memory);
-  *((_Jv_VTable **) obj) = c->vtable;
 
   // If this class has inherited finalize from Object, then don't
   // bother registering a finalizer.  We know that finalize() is the
@@ -355,7 +354,7 @@ _Jv_AllocObject (jclass c, jint size)
   // implementation would look for Object.finalize in Object's method
   // table at startup, and then use that information to find the
   // appropriate index in the method vector.
-  if (c->vtable->method[1] != ObjectClass.vtable->method[1])
+  if (klass->vtable->get_finalizer() != ObjectClass.vtable->get_finalizer())
     _Jv_RegisterFinalizer (obj, _Jv_FinalizeObject);
 
 #ifdef ENABLE_JVMPI
@@ -368,7 +367,7 @@ _Jv_AllocObject (jclass c, jint size)
       event.event_type = JVMPI_EVENT_OBJECT_ALLOC;
       event.env_id = NULL;
       event.u.obj_alloc.arena_id = 0;
-      event.u.obj_alloc.class_id = (jobjectID) c;
+      event.u.obj_alloc.class_id = (jobjectID) klass;
       event.u.obj_alloc.is_array = 0;
       event.u.obj_alloc.size = size;
       event.u.obj_alloc.obj_id = (jobjectID) obj;
@@ -405,9 +404,9 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
   size += count * sizeof (jobject);
 
   // FIXME: second argument should be "current loader" //
-  jclass clas = _Jv_FindArrayClass (elementClass, 0);
+  jclass klass = _Jv_FindArrayClass (elementClass, 0);
 
-  obj = (jobjectArray) _Jv_AllocArray (size);
+  obj = (jobjectArray) _Jv_AllocArray (size, klass);
   if (__builtin_expect (! obj, false))
     JvThrow (no_memory);
   obj->length = count;
@@ -419,10 +418,6 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
       while (--count >= 0)
 	*ptr++ = init;
     }
-  // Set the vtbl last to avoid problems if the GC happens during the
-  // window in this function between the allocation and this
-  // assignment.
-  *((_Jv_VTable **) obj) = clas->vtable;
   return obj;
 }
 
@@ -444,17 +439,14 @@ _Jv_NewPrimArray (jclass eltype, jint count)
 			(SIZE_T_MAX - size) / elsize, false))
     JvThrow (no_memory);
 
-  __JArray *arr = (__JArray*) _Jv_AllocObj (size + elsize * count);
+  jclass klass = _Jv_FindArrayClass (eltype, 0);
+
+  __JArray *arr = (__JArray*) _Jv_AllocObj (size + elsize * count, klass);
   if (__builtin_expect (! arr, false))
     JvThrow (no_memory);
   arr->length = count;
   // Note that we assume we are given zeroed memory by the allocator.
 
-  jclass klass = _Jv_FindArrayClass (eltype, 0);
-  // Set the vtbl last to avoid problems if the GC happens during the
-  // window in this function between the allocation and this
-  // assignment.
-  *((_Jv_VTable **) arr) = klass->vtable;
   return arr;
 }
 

@@ -28,6 +28,7 @@ extern "C"
 {
 #include <gc_priv.h>
 #include <gc_mark.h>
+#include <include/gc_gcj.h>
 
   // These aren't declared in any Boehm GC header.
   void GC_finalize_all (void);
@@ -58,14 +59,16 @@ extern java::lang::Class ClassClass;
 // Nonzero if this module has been initialized.
 static int initialized = 0;
 
+#if 0
 // `kind' index used when allocating Java objects.
 static int obj_kind_x;
 
-// `kind' index used when allocating Java arrays.
-static int array_kind_x;
-
 // Freelist used for Java objects.
 static ptr_t *obj_free_list;
+#endif /* 0 */
+
+// `kind' index used when allocating Java arrays.
+static int array_kind_x;
 
 // Freelist used for Java arrays.
 static ptr_t *array_free_list;
@@ -79,16 +82,24 @@ static _Jv_Mutex_t disable_gc_mutex;
 // object.  We use `void *' arguments and return, and not what the
 // Boehm GC wants, to avoid pollution in our headers.
 void *
-_Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
+_Jv_MarkObj (void *addr, void *msp, void *msl, void * /* env */)
 {
   mse *mark_stack_ptr = (mse *) msp;
   mse *mark_stack_limit = (mse *) msl;
   jobject obj = (jobject) addr;
 
+  // FIXME: if env is 1, this object was allocated through the debug
+  // interface, and addr points to the beginning of the debug header.
+  // In that case, we should really add the size of the header to addr.
+
   _Jv_VTable *dt = *(_Jv_VTable **) addr;
-  // We check this in case a GC occurs before the vtbl is set.  FIXME:
-  // should use allocation lock while initializing object.
-  if (__builtin_expect (! dt, false))
+  // The object might not yet have its vtable set, or it might
+  // really be an object on the freelist.  In either case, the vtable slot
+  // will either be 0, or it will point to a cleared object.
+  // This assumes Java objects have size at least 3 words,
+  // including the header.   But this should remain true, since this
+  // should only be used with debugging allocation or with large objects.
+  if (__builtin_expect (! dt || !(dt -> get_finalizer()), false))
     return mark_stack_ptr;
   jclass klass = dt->clas;
 
@@ -101,6 +112,18 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
 
   if (__builtin_expect (klass == &ClassClass, false))
     {
+      // Currently we allocate some of the memory referenced from class objects
+      // as pointerfree memory, and then mark it more intelligently here.
+      // We ensure that the ClassClass mark descriptor forces invocation of
+      // this procedure.
+      // Correctness of this is subtle, but it looks OK to me for now.  For the incremental
+      // collector, we need to make sure that the class object is written whenever
+      // any of the subobjects are altered and may need rescanning.  This may be tricky
+      // during construction, and this may not be the right way to do this with
+      // incremental collection.
+      // If we overflow the mark stack, we will rescan the class object, so we should
+      // be OK.  The same applies if we redo the mark phase because win32 unmapped part
+      // of our root set.		- HB
       jclass c = (jclass) addr;
 
       p = (ptr_t) c->name;
@@ -121,6 +144,8 @@ _Jv_MarkObj (void *addr, void *msp, void *msl, void * /*env*/)
 	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c, c5alabel);
 	  p = (ptr_t) c->constants.data;
 	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c, c5blabel);
+	  p = (ptr_t) c->vtable;
+	  MAYBE_MARK (p, mark_stack_ptr, mark_stack_limit, c, c5clabel);
 	}
 #endif
 
@@ -272,9 +297,10 @@ _Jv_MarkArray (void *addr, void *msp, void *msl, void * /*env*/)
   jobjectArray array = (jobjectArray) addr;
 
   _Jv_VTable *dt = *(_Jv_VTable **) addr;
-  // We check this in case a GC occurs before the vtbl is set.  FIXME:
-  // should use allocation lock while initializing object.
-  if (__builtin_expect (! dt, false))
+  // Assumes size >= 3 words.  That's currently true since arrays have
+  // a vtable, sync pointer, and size.  If the sync pointer goes away,
+  // we may need to round up the size.
+  if (__builtin_expect (! dt || !(dt -> get_finalizer()), false))
     return mark_stack_ptr;
   jclass klass = dt->clas;
 
@@ -295,29 +321,61 @@ _Jv_MarkArray (void *addr, void *msp, void *msl, void * /*env*/)
   return mark_stack_ptr;
 }
 
-// Allocate space for a new Java object.  FIXME: this might be the
-// wrong interface; we might prefer to pass in the object type as
-// well.  It isn't important for this collector, but it might be for
-// other collectors.
+// Return GC descriptor for interpreted class
+#ifdef INTERPRETER
+
+// We assume that the gcj mark proc has index 0.  This is a dubious assumption,
+// since another one could be registered first.  But the compiler also
+// knows this, so in that case everything else will break, too.
+#define GCJ_DEFAULT_DESCR MAKE_PROC(GCJ_RESERVED_MARK_PROC_INDEX,0)
 void *
-_Jv_AllocObj (jsize size)
+_Jv_BuildGCDescr(jclass klass)
 {
-  return GC_GENERIC_MALLOC (size, obj_kind_x);
+  /* FIXME: We should really look at the class and build the descriptor. */
+  return (void *)(GCJ_DEFAULT_DESCR);
+}
+#endif
+
+// Allocate space for a new Java object.
+void *
+_Jv_AllocObj (jsize size, jclass klass)
+{
+  return GC_GCJ_MALLOC (size, klass->vtable);
 }
 
-// Allocate space for a new Java array.  FIXME: again, this might be
-// the wrong interface.
+// Allocate space for a new Java array.
+// Used only for arrays of objects.
 void *
-_Jv_AllocArray (jsize size)
+_Jv_AllocArray (jsize size, jclass klass)
 {
-  return GC_GENERIC_MALLOC (size, array_kind_x);
+  void *obj;
+  const jsize min_heap_addr = 16*1024;
+  // A heuristic.  If size is less than this value, the size
+  // stored in the array can't possibly be misinterpreted as
+  // a pointer.   Thus we lose nothing by scanning the object
+  // completely conservatively, since no misidentification can
+  // take place.
+  
+#ifdef GC_DEBUG
+  // There isn't much to lose by scanning this conservatively.
+  // If we didn't, the mark proc would have to understand that
+  // it needed to skip the header.
+  obj = GC_MALLOC(size);
+#else
+  if (size < min_heap_addr) 
+    obj = GC_MALLOC(size);
+  else 
+    obj = GC_GENERIC_MALLOC (size, array_kind_x);
+#endif
+  *((_Jv_VTable **) obj) = klass->vtable;
+  return obj;
 }
 
 // Allocate some space that is known to be pointer-free.
 void *
 _Jv_AllocBytes (jsize size)
 {
-  void *r = GC_GENERIC_MALLOC (size, PTRFREE);
+  void *r = GC_MALLOC_ATOMIC (size);
   // We have to explicitly zero memory here, as the GC doesn't
   // guarantee that PTRFREE allocations are zeroed.  Note that we
   // don't have to do this for other allocation types because we set
@@ -423,6 +481,56 @@ _Jv_InitGC (void)
       return;
     }
   initialized = 1;
+  UNLOCK ();
+
+  // Configure the collector to use the bitmap marking descriptors that we
+  // stash in the class vtable.
+  GC_init_gcj_malloc (0, (void *) _Jv_MarkObj);  
+
+  LOCK ();
+  GC_java_finalization = 1;
+
+  // We use a different mark procedure for object arrays. This code 
+  // configures a different object `kind' for object array allocation and
+  // marking. FIXME: see above.
+  array_free_list = (ptr_t *) GC_generic_malloc_inner ((MAXOBJSZ + 1)
+						       * sizeof (ptr_t),
+						       PTRFREE);
+  memset (array_free_list, 0, (MAXOBJSZ + 1) * sizeof (ptr_t));
+
+  proc = GC_n_mark_procs++;
+  GC_mark_procs[proc] = (mark_proc) _Jv_MarkArray;
+
+  array_kind_x = GC_n_kinds++;
+  GC_obj_kinds[array_kind_x].ok_freelist = array_free_list;
+  GC_obj_kinds[array_kind_x].ok_reclaim_list = 0;
+  GC_obj_kinds[array_kind_x].ok_descriptor = MAKE_PROC (proc, 0);
+  GC_obj_kinds[array_kind_x].ok_relocate_descr = FALSE;
+  GC_obj_kinds[array_kind_x].ok_init = TRUE;
+
+  _Jv_MutexInit (&disable_gc_mutex);
+
+  UNLOCK ();
+  ENABLE_SIGNALS ();
+}
+
+#if 0
+void
+_Jv_InitGC (void)
+{
+  int proc;
+  DCL_LOCK_STATE;
+
+  DISABLE_SIGNALS ();
+  LOCK ();
+
+  if (initialized)
+   {
+     UNLOCK ();
+     ENABLE_SIGNALS ();
+     return;
+   }
+  initialized = 1;
 
   GC_java_finalization = 1;
 
@@ -464,3 +572,4 @@ _Jv_InitGC (void)
   UNLOCK ();
   ENABLE_SIGNALS ();
 }
+#endif /* 0 */
