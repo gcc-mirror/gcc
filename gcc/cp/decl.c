@@ -6975,6 +6975,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   tree context;
   extern int have_extern_spec;
   extern int used_extern_spec;
+  tree attrlist;
 
 #if 0
   /* See code below that used this.  */
@@ -6989,8 +6990,14 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
       used_extern_spec = 1;
     }
 
+  if (attributes || prefix_attributes)
+    attrlist = build_scratch_list (attributes, prefix_attributes);
+  else
+    attrlist = NULL_TREE;
+
   decl = grokdeclarator (declarator, declspecs, NORMAL, initialized,
-			 NULL_TREE);
+			 attrlist);
+			 
   if (decl == NULL_TREE || TREE_CODE (decl) == VOID_TYPE)
     return NULL_TREE;
 
@@ -8900,64 +8907,6 @@ build_ptrmemfunc_type (type)
   return t;
 }
 
-/* Given declspecs and a declarator,
-   determine the name and type of the object declared
-   and construct a ..._DECL node for it.
-   (In one case we can return a ..._TYPE node instead.
-    For invalid input we sometimes return 0.)
-
-   DECLSPECS is a chain of tree_list nodes whose value fields
-    are the storage classes and type specifiers.
-
-   DECL_CONTEXT says which syntactic context this declaration is in:
-     NORMAL for most contexts.  Make a VAR_DECL or FUNCTION_DECL or TYPE_DECL.
-     FUNCDEF for a function definition.  Like NORMAL but a few different
-      error messages in each case.  Return value may be zero meaning
-      this definition is too screwy to try to parse.
-     MEMFUNCDEF for a function definition.  Like FUNCDEF but prepares to
-      handle member functions (which have FIELD context).
-      Return value may be zero meaning this definition is too screwy to
-      try to parse.
-     PARM for a parameter declaration (either within a function prototype
-      or before a function body).  Make a PARM_DECL, or return void_type_node.
-     CATCHPARM for a parameter declaration before a catch clause.
-     TYPENAME if for a typename (in a cast or sizeof).
-      Don't make a DECL node; just return the ..._TYPE node.
-     FIELD for a struct or union field; make a FIELD_DECL.
-     BITFIELD for a field with specified width.
-   INITIALIZED is 1 if the decl has an initializer.
-
-   In the TYPENAME case, DECLARATOR is really an absolute declarator.
-   It may also be so in the PARM case, for a prototype where the
-   argument type is specified but not the name.
-
-   This function is where the complicated C meanings of `static'
-   and `extern' are interpreted.
-
-   For C++, if there is any monkey business to do, the function which
-   calls this one must do it, i.e., prepending instance variables,
-   renaming overloaded function names, etc.
-
-   Note that for this C++, it is an error to define a method within a class
-   which does not belong to that class.
-
-   Except in the case where SCOPE_REFs are implicitly known (such as
-   methods within a class being redundantly qualified),
-   declarations which involve SCOPE_REFs are returned as SCOPE_REFs
-   (class_name::decl_name).  The caller must also deal with this.
-
-   If a constructor or destructor is seen, and the context is FIELD,
-   then the type gains the attribute TREE_HAS_x.  If such a declaration
-   is erroneous, NULL_TREE is returned.
-
-   QUALS is used only for FUNCDEF and MEMFUNCDEF cases.  For a member
-   function, these are the qualifiers to give to the `this' pointer.
-
-   May return void_type_node if the declarator turned out to be a friend.
-   See grokfield for details.  */
-
-enum return_types { return_normal, return_ctor, return_dtor, return_conversion };
-
 /* DECL is a VAR_DECL defined in-class, whose TYPE is also given.
    Check to see that the definition is valid.  Issue appropriate error
    messages.  Return 1 if the definition is particularly bad, or 0
@@ -8992,6 +8941,67 @@ check_static_variable_definition (decl, type)
 
   return 0;
 }
+
+/* Given declspecs and a declarator,
+   determine the name and type of the object declared
+   and construct a ..._DECL node for it.
+   (In one case we can return a ..._TYPE node instead.
+    For invalid input we sometimes return 0.)
+
+   DECLSPECS is a chain of tree_list nodes whose value fields
+    are the storage classes and type specifiers.
+
+   DECL_CONTEXT says which syntactic context this declaration is in:
+     NORMAL for most contexts.  Make a VAR_DECL or FUNCTION_DECL or TYPE_DECL.
+     FUNCDEF for a function definition.  Like NORMAL but a few different
+      error messages in each case.  Return value may be zero meaning
+      this definition is too screwy to try to parse.
+     MEMFUNCDEF for a function definition.  Like FUNCDEF but prepares to
+      handle member functions (which have FIELD context).
+      Return value may be zero meaning this definition is too screwy to
+      try to parse.
+     PARM for a parameter declaration (either within a function prototype
+      or before a function body).  Make a PARM_DECL, or return void_type_node.
+     CATCHPARM for a parameter declaration before a catch clause.
+     TYPENAME if for a typename (in a cast or sizeof).
+      Don't make a DECL node; just return the ..._TYPE node.
+     FIELD for a struct or union field; make a FIELD_DECL.
+     BITFIELD for a field with specified width.
+   INITIALIZED is 1 if the decl has an initializer.
+
+   ATTRLIST is a TREE_LIST node with prefix attributes in TREE_VALUE and
+   normal attributes in TREE_PURPOSE, or NULL_TREE.
+
+   In the TYPENAME case, DECLARATOR is really an absolute declarator.
+   It may also be so in the PARM case, for a prototype where the
+   argument type is specified but not the name.
+
+   This function is where the complicated C meanings of `static'
+   and `extern' are interpreted.
+
+   For C++, if there is any monkey business to do, the function which
+   calls this one must do it, i.e., prepending instance variables,
+   renaming overloaded function names, etc.
+
+   Note that for this C++, it is an error to define a method within a class
+   which does not belong to that class.
+
+   Except in the case where SCOPE_REFs are implicitly known (such as
+   methods within a class being redundantly qualified),
+   declarations which involve SCOPE_REFs are returned as SCOPE_REFs
+   (class_name::decl_name).  The caller must also deal with this.
+
+   If a constructor or destructor is seen, and the context is FIELD,
+   then the type gains the attribute TREE_HAS_x.  If such a declaration
+   is erroneous, NULL_TREE is returned.
+
+   QUALS is used only for FUNCDEF and MEMFUNCDEF cases.  For a member
+   function, these are the qualifiers to give to the `this' pointer.
+
+   May return void_type_node if the declarator turned out to be a friend.
+   See grokfield for details.  */
+
+enum return_types { return_normal, return_ctor, return_dtor, return_conversion };
 
 tree
 grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
@@ -9129,14 +9139,29 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  case CALL_EXPR:
 	    if (parmlist_is_exprlist (TREE_OPERAND (decl, 1)))
 	      {
-		/* This is actually a variable declaration using constructor
-		   syntax.  We need to call start_decl and cp_finish_decl so we
-		   can get the variable initialized...  */
+		/* This is actually a variable declaration using
+		   constructor syntax.  We need to call start_decl and
+		   cp_finish_decl so we can get the variable
+		   initialized...  */
+
+		tree attributes, prefix_attributes;
 
 		*next = TREE_OPERAND (decl, 0);
 		init = TREE_OPERAND (decl, 1);
 
-		decl = start_decl (declarator, declspecs, 1, NULL_TREE, NULL_TREE);
+		if (attrlist)
+		  {
+		    attributes = TREE_PURPOSE (attrlist);
+		    prefix_attributes = TREE_VALUE (attrlist);
+		  }
+		else
+		  {
+		    attributes = NULL_TREE;
+		    prefix_attributes = NULL_TREE;
+		  }
+
+		decl = start_decl (declarator, declspecs, 1,
+				   attributes, prefix_attributes);
 		if (decl)
 		  {
 		    /* Look for __unused__ attribute */

@@ -1,3 +1,9 @@
+1999-04-09  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (start_decl): Pass attributes to grokdeclarator.
+	(grokdeclarator): Handle attributes on constructor-syntax
+	initializers.
+
 1999-04-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* error.c (dump_expr): Don't crash on INDIRECT_REFs whose operands
