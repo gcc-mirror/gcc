@@ -1,3 +1,7 @@
+2001-05-01  Tom Browder  <tbrowder@home.com>
+
+	* docs/html/ext/howto.html:  Fix typo.
+
 2001-05-01  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/libstdc++.tests/tests.exp: Add comment.
