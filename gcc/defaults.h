@@ -248,7 +248,7 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #define TARGET_WEAK_NOT_IN_ARCHIVE_TOC 0
 #endif
 
-/* This determines whether or not we need linkonce unwind information */
+/* This determines whether or not we need linkonce unwind information.  */
 #ifndef TARGET_USES_WEAK_UNWIND_INFO
 #define TARGET_USES_WEAK_UNWIND_INFO 0
 #endif

@@ -3321,7 +3321,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
   if (TREE_CODE (newrhs) == ERROR_MARK)
     return error_mark_node;
 
-  /* Scan operands */
+  /* Scan operands.  */
 
   result = build2 (MODIFY_EXPR, lhstype, lhs, newrhs);
   TREE_SIDE_EFFECTS (result) = 1;

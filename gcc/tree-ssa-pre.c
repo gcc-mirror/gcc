@@ -856,7 +856,7 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
   if (is_gimple_min_invariant (expr))
     return expr;
 
-  /* Phi translations of a given expression don't change,  */
+  /* Phi translations of a given expression don't change.  */
   phitrans = phi_trans_lookup (expr, pred);
   if (phitrans)
     return phitrans;
@@ -1199,7 +1199,7 @@ compute_antic_aux (basic_block block)
       VEC_free (basic_block, worklist);
     }
 
-  /* Generate ANTIC_OUT - TMP_GEN */
+  /* Generate ANTIC_OUT - TMP_GEN.  */
   S = bitmap_set_subtract_from_value_set (ANTIC_OUT, TMP_GEN (block), false);
 
   /* Start ANTIC_IN with EXP_GEN - TMP_GEN */

@@ -12926,7 +12926,7 @@ lookup_filename (const char *file_name)
 	return file_table_last_lookup_index;
     }
 
-  /* Didn't match the previous lookup, search the table */
+  /* Didn't match the previous lookup, search the table.  */
   n = VARRAY_ACTIVE_SIZE (file_table);
   for (i = 1; i < n; i++)
     if (strcmp (file_name, VARRAY_CHAR_PTR (file_table, i)) == 0)
@@ -13219,7 +13219,7 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
   abbrev_die_table = ggc_alloc_cleared (ABBREV_DIE_TABLE_INCREMENT
 					* sizeof (dw_die_ref));
   abbrev_die_table_allocated = ABBREV_DIE_TABLE_INCREMENT;
-  /* Zero-th entry is allocated, but unused */
+  /* Zero-th entry is allocated, but unused.  */
   abbrev_die_table_in_use = 1;
 
   /* Allocate the initial hunk of the line_info_table.  */
@@ -13227,7 +13227,7 @@ dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 				       * sizeof (dw_line_info_entry));
   line_info_table_allocated = LINE_INFO_TABLE_INCREMENT;
 
-  /* Zero-th entry is allocated, but unused */
+  /* Zero-th entry is allocated, but unused.  */
   line_info_table_in_use = 1;
 
   /* Generate the initial DIE for the .debug section.  Note that the (string)

@@ -219,7 +219,7 @@ enum dwarf_fundamental_type {
   
     /* GNU extensions
        The low order byte must indicate the size (in bytes) for the type.
-       All of these types will probably break "classic" svr4 SDB */
+       All of these types will probably break "classic" svr4 SDB.  */
 
     FT_long_long	= 0x8008,
     FT_signed_long_long	= 0x8108,

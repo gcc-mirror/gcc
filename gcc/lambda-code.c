@@ -644,7 +644,7 @@ lambda_compute_auxillary_space (lambda_loopnest nest,
      Remember the constant are in our vector a, our coefficient matrix is A,
      and our invariant coefficient matrix is B  */
 
-  /* Swap B and B1, and a1 and a */
+  /* Swap B and B1, and a1 and a.  */
   temp0 = B1;
   B1 = B;
   B = temp0;
@@ -806,10 +806,10 @@ lambda_compute_target_space (lambda_loopnest auxillary_nest,
       /* Computes the gcd of the coefficients of the linear part.  */
       gcd1 = gcd_vector (target[i], i);
 
-      /* Include the denominator in the GCD  */
+      /* Include the denominator in the GCD.  */
       gcd1 = gcd (gcd1, determinant);
 
-      /* Now divide through by the gcd  */
+      /* Now divide through by the gcd.  */
       for (j = 0; j < i; j++)
 	target[i][j] = target[i][j] / gcd1;
 
@@ -822,7 +822,7 @@ lambda_compute_target_space (lambda_loopnest auxillary_nest,
       LL_LINEAR_OFFSET (target_loop) = expression;
     }
 
-  /* For each loop, compute the new bounds from H */
+  /* For each loop, compute the new bounds from H.  */
   for (i = 0; i < depth; i++)
     {
       auxillary_loop = LN_LOOPS (auxillary_nest)[i];

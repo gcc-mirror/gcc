@@ -701,7 +701,7 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
       /* Mark clobbered registers.  */
       if (i >= 0)
         {
-	  /* Clobbering the PIC register is an error */
+	  /* Clobbering the PIC register is an error.  */
 	  if (i == (int) PIC_OFFSET_TABLE_REGNUM)
 	    {
 	      error ("PIC register %qs clobbered in %<asm%>", regname);

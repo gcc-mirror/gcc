@@ -113,7 +113,7 @@ static void *thread_local_storage = NULL;
 static inline int
 __gthread_objc_init_thread_system (void)
 {
-  /* Initialize the thread storage key */
+  /* Initialize the thread storage key.  */
   if (__gthread_active_p ()
       && thr_keycreate (&_objc_thread_storage, NULL) == 0)
     return 0;

@@ -3251,11 +3251,11 @@ extern int mostly_zeros_p (tree);
 
 extern void add_var_to_bind_expr (tree, tree);
 
-/* integer_zerop (tree x) is nonzero if X is an integer constant of value 0 */
+/* integer_zerop (tree x) is nonzero if X is an integer constant of value 0.  */
 
 extern int integer_zerop (tree);
 
-/* integer_onep (tree x) is nonzero if X is an integer constant of value 1 */
+/* integer_onep (tree x) is nonzero if X is an integer constant of value 1.  */
 
 extern int integer_onep (tree);
 

@@ -1,5 +1,12 @@
 2004-09-25  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* c-typeck.c, defaults.h, dwarf.h, dwarf2out.c, fold-const.c,
+	gthr-dce.h, gthr-posix.h, gthr-solaris.h, gthr-win32.h,
+	lambda-code.c, lambda-mat.c, libgcc2.c, stmt.c,
+	tree-ssa-pre.c, tree-vn.c, tree.h: Fix comment formatting.
+
+2004-09-25  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-ssa-loop-unswitch.c: Fix a comment typo.
 
 2004-09-25  Kazu Hirata  <kazu@cs.umass.edu>

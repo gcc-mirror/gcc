@@ -602,9 +602,9 @@ lambda_matrix_project_to_null (lambda_matrix B, int rowsize,
   lambda_matrix M1, M2, M3, I;
   int determinant;
 
-  /* compute c(I-B^T inv(B B^T) B) e sub k   */
+  /* Compute c(I-B^T inv(B B^T) B) e sub k.  */
 
-  /* M1 is the transpose of B */
+  /* M1 is the transpose of B.  */
   M1 = lambda_matrix_new (colsize, colsize);
   lambda_matrix_transpose (B, M1, rowsize, colsize);
 

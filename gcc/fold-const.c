@@ -6686,7 +6686,7 @@ fold (tree expr)
 				   TREE_OPERAND (arg0, 0),
 				   build_real (type, c1)));
 	    }
-          /* Convert a + (b*c + d*e) into (a + b*c) + d*e */
+          /* Convert a + (b*c + d*e) into (a + b*c) + d*e.  */
           if (flag_unsafe_math_optimizations
               && TREE_CODE (arg1) == PLUS_EXPR
               && TREE_CODE (arg0) != MULT_EXPR)
@@ -6701,7 +6701,7 @@ fold (tree expr)
                   return fold (build2 (PLUS_EXPR, type, tree0, tree11));
                 }
             }
-          /* Convert (b*c + d*e) + a into b*c + (d*e +a) */
+          /* Convert (b*c + d*e) + a into b*c + (d*e +a).  */
           if (flag_unsafe_math_optimizations
               && TREE_CODE (arg0) == PLUS_EXPR
               && TREE_CODE (arg1) != MULT_EXPR)
@@ -9569,7 +9569,7 @@ tree_expr_nonnegative_p (tree t)
 
 /* Return true when T is an address and is known to be nonzero.
    For floating point we further ensure that T is not denormal.
-   Similar logic is present in nonzero_address in rtlanal.h  */
+   Similar logic is present in nonzero_address in rtlanal.h.  */
 
 static bool
 tree_expr_nonzero_p (tree t)
