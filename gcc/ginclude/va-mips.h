@@ -59,11 +59,24 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 
 /* We cast to void * and then to TYPE * because this avoids
    a warning about increasing the alignment requirement.  */
+/* The __mips==3 cases are reversed from the 32 bit cases, because the standard
+   32 bit calling convention left-aligns all parameters smaller than a word,
+   whereas the __mips==3 calling convention does not (and hence they are
+   right aligned).  */
 #if __mips==3
+#ifdef __MIPSEB__
 #define va_arg(__AP, __type)                                    \
-  ((__type *) (void *) (__AP = (char *) ((((int)__AP + 8 - 1) & -8)     \
-                     + __va_rounded_size (__type))))[-1]
+  ((__type *) (void *) (__AP = (char *) ((((int)__AP + 8 - 1) & -8) \
+					 + __va_rounded_size (__type))))[-1]
 #else
+#define va_arg(__AP, __type)                                    \
+  ((__AP = (char *) ((((int)__AP + 8 - 1) & -8)			\
+		     + __va_rounded_size (__type))),		\
+   *(__type *) (void *) (__AP - __va_rounded_size (__type)))
+#endif
+
+#else /* not __mips==3 */
+
 #ifdef __MIPSEB__
 /* For big-endian machines.  */
 #define va_arg(__AP, __type)					\
