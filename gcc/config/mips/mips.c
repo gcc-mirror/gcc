@@ -294,21 +294,21 @@ static unsigned int irix_section_type_flags (tree, const char *, int);
 
 struct mips_frame_info GTY(())
 {
-  long total_size;		/* # bytes that the entire frame takes up */
-  long var_size;		/* # bytes that variables take up */
-  long args_size;		/* # bytes that outgoing arguments take up */
-  long cprestore_size;		/* # bytes that the .cprestore slot takes up */
-  int  gp_reg_size;		/* # bytes needed to store gp regs */
-  int  fp_reg_size;		/* # bytes needed to store fp regs */
-  long mask;			/* mask of saved gp registers */
-  long fmask;			/* mask of saved fp registers */
-  long gp_save_offset;		/* offset from vfp to store gp registers */
-  long fp_save_offset;		/* offset from vfp to store fp registers */
-  long gp_sp_offset;		/* offset from new sp to store gp registers */
-  long fp_sp_offset;		/* offset from new sp to store fp registers */
-  int  initialized;		/* != 0 if frame size already calculated */
-  int  num_gp;			/* number of gp registers saved */
-  int  num_fp;			/* number of fp registers saved */
+  HOST_WIDE_INT total_size;	/* # bytes that the entire frame takes up */
+  HOST_WIDE_INT var_size;	/* # bytes that variables take up */
+  HOST_WIDE_INT args_size;	/* # bytes that outgoing arguments take up */
+  HOST_WIDE_INT cprestore_size;	/* # bytes that the .cprestore slot takes up */
+  HOST_WIDE_INT gp_reg_size;	/* # bytes needed to store gp regs */
+  HOST_WIDE_INT fp_reg_size;	/* # bytes needed to store fp regs */
+  unsigned int mask;		/* mask of saved gp registers */
+  unsigned int fmask;		/* mask of saved fp registers */
+  HOST_WIDE_INT gp_save_offset;	/* offset from vfp to store gp registers */
+  HOST_WIDE_INT fp_save_offset;	/* offset from vfp to store fp registers */
+  HOST_WIDE_INT gp_sp_offset;	/* offset from new sp to store gp registers */
+  HOST_WIDE_INT fp_sp_offset;	/* offset from new sp to store fp registers */
+  bool initialized;		/* true if frame size already calculated */
+  int num_gp;			/* number of gp registers saved */
+  int num_fp;			/* number of fp registers saved */
 };
 
 struct machine_function GTY(()) {
@@ -6190,8 +6190,8 @@ compute_frame_size (HOST_WIDE_INT size)
   HOST_WIDE_INT gp_reg_rounded;	/* # bytes needed to store gp after rounding */
   HOST_WIDE_INT gp_reg_size;	/* # bytes needed to store gp regs */
   HOST_WIDE_INT fp_reg_size;	/* # bytes needed to store fp regs */
-  long mask;			/* mask of saved gp registers */
-  long fmask;			/* mask of saved fp registers */
+  unsigned int mask;		/* mask of saved gp registers */
+  unsigned int fmask;		/* mask of saved fp registers */
 
   cfun->machine->global_pointer = mips_global_pointer ();
 
@@ -6224,7 +6224,7 @@ compute_frame_size (HOST_WIDE_INT size)
     if (mips_save_reg_p (regno))
       {
 	gp_reg_size += GET_MODE_SIZE (gpr_mode);
-	mask |= 1L << (regno - GP_REG_FIRST);
+	mask |= 1 << (regno - GP_REG_FIRST);
       }
 
   /* We need to restore these for the handler.  */
@@ -6237,7 +6237,7 @@ compute_frame_size (HOST_WIDE_INT size)
 	  if (regno == INVALID_REGNUM)
 	    break;
 	  gp_reg_size += GET_MODE_SIZE (gpr_mode);
-	  mask |= 1L << (regno - GP_REG_FIRST);
+	  mask |= 1 << (regno - GP_REG_FIRST);
 	}
     }
 
@@ -6277,7 +6277,7 @@ compute_frame_size (HOST_WIDE_INT size)
 
   if (mask)
     {
-      unsigned long offset;
+      HOST_WIDE_INT offset;
 
       offset = (args_size + cprestore_size + var_size
 		+ gp_reg_size - GET_MODE_SIZE (gpr_mode));
@@ -6292,9 +6292,11 @@ compute_frame_size (HOST_WIDE_INT size)
 
   if (fmask)
     {
-      unsigned long offset = (args_size + cprestore_size + var_size
-			      + gp_reg_rounded + fp_reg_size
-			      - FP_INC * UNITS_PER_FPREG);
+      HOST_WIDE_INT offset;
+
+      offset = (args_size + cprestore_size + var_size
+		+ gp_reg_rounded + fp_reg_size
+		- FP_INC * UNITS_PER_FPREG);
       cfun->machine->frame.fp_sp_offset = offset;
       cfun->machine->frame.fp_save_offset = offset - total_size;
     }
@@ -6312,10 +6314,10 @@ compute_frame_size (HOST_WIDE_INT size)
    pointer or argument pointer.  TO is either the stack pointer or
    hard frame pointer.  */
 
-int
+HOST_WIDE_INT
 mips_initial_elimination_offset (int from, int to)
 {
-  int offset;
+  HOST_WIDE_INT offset;
 
   compute_frame_size (get_frame_size ());
 
@@ -6460,12 +6462,15 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
     {
       /* .frame FRAMEREG, FRAMESIZE, RETREG */
       fprintf (file,
-	       "\t.frame\t%s,%ld,%s\t\t# vars= %ld, regs= %d/%d, args= %ld, gp= %ld\n",
+	       "\t.frame\t%s," HOST_WIDE_INT_PRINT_DEC ",%s\t\t"
+	       "# vars= " HOST_WIDE_INT_PRINT_DEC ", regs= %d/%d"
+	       ", args= " HOST_WIDE_INT_PRINT_DEC
+	       ", gp= " HOST_WIDE_INT_PRINT_DEC "\n",
 	       (reg_names[(frame_pointer_needed)
 			  ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM]),
 	       ((frame_pointer_needed && TARGET_MIPS16)
-		? ((long) tsize - cfun->machine->frame.args_size)
-		: (long) tsize),
+		? tsize - cfun->machine->frame.args_size
+		: tsize),
 	       reg_names[GP_REG_FIRST + 31],
 	       cfun->machine->frame.var_size,
 	       cfun->machine->frame.num_gp,
@@ -6474,9 +6479,10 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 	       cfun->machine->frame.cprestore_size);
 
       /* .mask MASK, GPOFFSET; .fmask FPOFFSET */
-      fprintf (file, "\t.mask\t0x%08lx,%ld\n\t.fmask\t0x%08lx,%ld\n",
+      fprintf (file, "\t.mask\t0x%08x," HOST_WIDE_INT_PRINT_DEC "\n",
 	       cfun->machine->frame.mask,
-	       cfun->machine->frame.gp_save_offset,
+	       cfun->machine->frame.gp_save_offset);
+      fprintf (file, "\t.fmask\t0x%08x," HOST_WIDE_INT_PRINT_DEC "\n",
 	       cfun->machine->frame.fmask,
 	       cfun->machine->frame.fp_save_offset);
 

@@ -1,5 +1,16 @@
 2003-11-06  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips-protos.h (mips_initial_elimination_offset): Change
+	return type to HOST_WIDE_INT.
+	* config/mips/mips.c (mips_frame_info): Give sizes type HOST_WIDE_INT.
+	Make initialized a bool.  Make register masks unsigned ints.
+	(compute_frame_size): Make same mask change here.  Use HOST_WIDE_INT
+	where appropriate.
+	(mips_initial_elimination_offset): Return a HOST_WIDE_INT.
+	(mips_output_function_prologue): Print sizes as HOST_WIDE_INTs.
+
+2003-11-06  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/frv/frv.c (frv_initial_elimination_offset): Remove bogus
 	negation.
 
