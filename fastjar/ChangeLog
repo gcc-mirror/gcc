@@ -1,3 +1,7 @@
+2001-05-15  Per Bothner  <per@bothner.com>
+
+        * Makefile.am (bin_PROGRAMS):  Renamed from "fastjar" to "jar".
+
 2001-05-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* jartool.c (jt_strdup): New function.

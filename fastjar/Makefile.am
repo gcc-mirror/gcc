@@ -40,11 +40,11 @@ AM_MAKEFLAGS = \
 
 INCLUDES = -I. -I$(top_srcdir) $(ZINCS)
 
-bin_PROGRAMS = fastjar
+bin_PROGRAMS = jar
 EXTRA_PROGRAMS = grepjar
-fastjar_SOURCES = jartool.c dostime.c compress.c pushback.c jartool.h zipfile.h dostime.h compress.h pushback.h
-fastjar_LDADD = $(ZLIBS)
-fastjar_DEPENDENCIES = $(ZDEPS)
+jar_SOURCES = jartool.c dostime.c compress.c pushback.c jartool.h zipfile.h dostime.h compress.h pushback.h
+jar_LDADD = $(ZLIBS)
+jar_DEPENDENCIES = $(ZDEPS)
 grepjar_SOURCES = jargrep.c dostime.c compress.c pushback.c jartool.h zipfile.h dostime.h compress.h pushback.h
 grepjar_LDADD = $(ZLIBS)
 grepjar_DEPENDENCIES = $(ZDEPS)
