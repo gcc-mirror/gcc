@@ -1,3 +1,7 @@
+2004-10-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* g++.dg/opt/pr17902.C: Fix typo in dg-do.
+
 2004-10-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17524
