@@ -344,7 +344,7 @@ my_friendly_abort (i)
 	  else
 	    ack ("Internal compiler error %d.", i);
 	  ack ("Please submit a full bug report.");
-	  ack ("See <URL:http://gcc.gnu.org/faq.html#bugreport> for instructions.");
+	  ack ("See <URL:http://www.gnu.org/software/gcc/faq.html#bugreport> for instructions.");
 	}
       else
 	error ("confused by earlier errors, bailing out");

@@ -1,8 +1,16 @@
+Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
+
+        * typeck2.c: Update URLs and mail addresses.
+
 1999-08-03  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* decl.c (start_decl): Set attributes before duplicate_decls call.
 
 Wed Jul 28 21:39:31 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* gcc-2.95 Released.
+
+Sun Jul 25 23:40:51 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95 Released.
 
