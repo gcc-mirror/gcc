@@ -216,7 +216,7 @@ deps_add_dep (d, t)
 
   if (d->ndeps == d->deps_size)
     {
-      d->deps_size *= 2 + 8;
+      d->deps_size = d->deps_size * 2 + 8;
       d->depv = (const char **)
 	xrealloc (d->depv, d->deps_size * sizeof (const char *));
     }
