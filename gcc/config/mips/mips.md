@@ -4481,7 +4481,7 @@ dsrl\t%3,%3,1\n\
 ;; the compiler, have memoized the insn number already.
 
 (define_expand "movdi"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "")
+  [(set (match_operand:DI 0 "" "")
 	(match_operand:DI 1 "" ""))]
   ""
 {
@@ -4518,22 +4518,20 @@ dsrl\t%3,%3,1\n\
   [(set_attr "type"	"store")
    (set_attr "mode"	"DI")])
 
-(define_insn "movdi_internal"
+(define_insn "*movdi_32bit"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,m,*x,*d,*x,*B*C*D,*B*C*D,*d,*m")
-	(match_operand:DI 1 "general_operand" "d,iF,m,d,J,*x,*d,*d,*m,*B*C*D,*B*C*D"))]
+	(match_operand:DI 1 "move_operand" "d,i,m,d,J,*x,*d,*d,*m,*B*C*D,*B*C*D"))]
   "!TARGET_64BIT && !TARGET_MIPS16
    && (register_operand (operands[0], DImode)
-       || register_operand (operands[1], DImode)
-       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
-       || operands[1] == CONST0_RTX (DImode))"
+       || reg_or_0_operand (operands[1], DImode))"
   { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,arith,load,store,hilo,hilo,hilo,xfer,load,xfer,store")
    (set_attr "mode"	"DI")
    (set_attr "length"   "8,16,*,*,8,8,8,8,*,8,*")])
 
-(define_insn ""
+(define_insn "*movdi_32bit_mips16"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,y,d,d,d,d,m,*d")
-	(match_operand:DI 1 "general_operand" "d,d,y,K,N,m,d,*x"))]
+	(match_operand:DI 1 "move_operand" "d,d,y,K,N,m,d,*x"))]
   "!TARGET_64BIT && TARGET_MIPS16
    && (register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
@@ -4542,20 +4540,18 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"	"DI")
    (set_attr "length"	"8,8,8,8,12,*,*,8")])
 
-(define_insn "movdi_internal2"
+(define_insn "*movdi_64bit"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,e,d,m,*f,*f,*f,*d,*m,*x,*d,*x,*B*C*D,*B*C*D,*d,*m")
 	(match_operand:DI 1 "move_operand" "d,U,T,m,dJ,*f,*d*J,*m,*f,*f,*J,*x,*d,*d,*m,*B*C*D,*B*C*D"))]
   "TARGET_64BIT && !TARGET_MIPS16
    && (register_operand (operands[0], DImode)
-       || register_operand (operands[1], DImode)
-       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0)
-       || operands[1] == CONST0_RTX (DImode))"
+       || reg_or_0_operand (operands[1], DImode))"
   { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,const,const,load,store,move,xfer,load,xfer,store,hilo,hilo,hilo,xfer,load,xfer,store")
    (set_attr "mode"	"DI")
    (set_attr "length"	"4,*,*,*,*,4,4,*,4,*,4,4,4,8,*,8,*")])
 
-(define_insn "*movdi_internal2_mips16"
+(define_insn "*movdi_64bit_mips16"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=d,y,d,d,d,d,d,m,*d")
 	(match_operand:DI 1 "move_operand" "d,d,y,K,N,U,m,d,*x"))]
   "TARGET_64BIT && TARGET_MIPS16
@@ -4630,7 +4626,7 @@ dsrl\t%3,%3,1\n\
 ;; the compiler, have memoized the insn number already.
 
 (define_expand "movsi"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "")
+  [(set (match_operand:SI 0 "" "")
 	(match_operand:SI 1 "" ""))]
   ""
 {
@@ -4668,19 +4664,18 @@ dsrl\t%3,%3,1\n\
 ;; The difference between these two is whether or not ints are allowed
 ;; in FP registers (off by default, use -mdebugh to enable).
 
-(define_insn "movsi_internal"
+(define_insn "*movsi_internal"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,e,d,m,*f,*f,*f,*d,*m,*d,*z,*x,*d,*x,*B*C*D,*B*C*D,*d,*m")
 	(match_operand:SI 1 "move_operand" "d,U,T,m,dJ,*f,*d*J,*m,*f,*f,*z,*d,J,*x,*d,*d,*m,*B*C*D,*B*C*D"))]
   "!TARGET_MIPS16
    && (register_operand (operands[0], SImode)
-       || register_operand (operands[1], SImode)
-       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
+       || reg_or_0_operand (operands[1], SImode))"
   { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,const,const,load,store,move,xfer,load,xfer,store,xfer,xfer,hilo,hilo,hilo,xfer,load,xfer,store")
    (set_attr "mode"	"SI")
    (set_attr "length"	"4,*,*,*,*,4,4,*,4,*,4,4,4,4,4,4,*,4,*")])
 
-(define_insn ""
+(define_insn "*movsi_mips16"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=d,y,d,d,d,d,d,m,*d")
 	(match_operand:SI 1 "move_operand" "d,d,y,K,N,U,m,d,*x"))]
   "TARGET_MIPS16
@@ -4933,30 +4928,20 @@ dsrl\t%3,%3,1\n\
 ;; Unsigned loads are used because LOAD_EXTEND_OP returns ZERO_EXTEND.
 
 (define_expand "movhi"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "")
-	(match_operand:HI 1 "general_operand" ""))]
+  [(set (match_operand:HI 0 "" "")
+	(match_operand:HI 1 "" ""))]
   ""
 {
-  if ((reload_in_progress | reload_completed) == 0
-      && !register_operand (operands[0], HImode)
-      && !register_operand (operands[1], HImode)
-      && (TARGET_MIPS16
-	  || (GET_CODE (operands[1]) != CONST_INT
-	  || INTVAL (operands[1]) != 0)))
-    {
-      rtx temp = force_reg (HImode, operands[1]);
-      emit_move_insn (operands[0], temp);
-      DONE;
-    }
+  if (mips_legitimize_move (HImode, operands[0], operands[1]))
+    DONE;
 })
 
-(define_insn "movhi_internal"
+(define_insn "*movhi_internal"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,m,*d,*f,*f,*x,*d")
-	(match_operand:HI 1 "general_operand"       "d,IK,m,dJ,*f,*d,*f,*d,*x"))]
+	(match_operand:HI 1 "move_operand"         "d,I,m,dJ,*f,*d,*f,*d,*x"))]
   "!TARGET_MIPS16
    && (register_operand (operands[0], HImode)
-       || register_operand (operands[1], HImode)
-       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
+       || reg_or_0_operand (operands[1], HImode))"
   "@
     move\t%0,%1
     li\t%0,%1
@@ -4971,9 +4956,9 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"	"HI")
    (set_attr "length"	"4,4,*,*,4,4,4,4,4")])
 
-(define_insn ""
+(define_insn "*movhi_mips16"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=d,y,d,d,d,d,m,*d")
-	(match_operand:HI 1 "general_operand"      "d,d,y,K,N,m,d,*x"))]
+	(match_operand:HI 1 "move_operand"         "d,d,y,K,N,m,d,*x"))]
   "TARGET_MIPS16
    && (register_operand (operands[0], HImode)
        || register_operand (operands[1], HImode))"
@@ -5053,30 +5038,20 @@ dsrl\t%3,%3,1\n\
 ;; Unsigned loads are used because LOAD_EXTEND_OP returns ZERO_EXTEND.
 
 (define_expand "movqi"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "")
-	(match_operand:QI 1 "general_operand" ""))]
+  [(set (match_operand:QI 0 "" "")
+	(match_operand:QI 1 "" ""))]
   ""
 {
-  if ((reload_in_progress | reload_completed) == 0
-      && !register_operand (operands[0], QImode)
-      && !register_operand (operands[1], QImode)
-      && (TARGET_MIPS16
-	  || (GET_CODE (operands[1]) != CONST_INT
-	  || INTVAL (operands[1]) != 0)))
-    {
-      rtx temp = force_reg (QImode, operands[1]);
-      emit_move_insn (operands[0], temp);
-      DONE;
-    }
+  if (mips_legitimize_move (QImode, operands[0], operands[1]))
+    DONE;
 })
 
-(define_insn "movqi_internal"
+(define_insn "*movqi_internal"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,m,*d,*f,*f,*x,*d")
-	(match_operand:QI 1 "general_operand"       "d,IK,m,dJ,*f,*d,*f,*d,*x"))]
+	(match_operand:QI 1 "move_operand"         "d,I,m,dJ,*f,*d,*f,*d,*x"))]
   "!TARGET_MIPS16
    && (register_operand (operands[0], QImode)
-       || register_operand (operands[1], QImode)
-       || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))"
+       || reg_or_0_operand (operands[1], QImode))"
   "@
     move\t%0,%1
     li\t%0,%1
@@ -5091,9 +5066,9 @@ dsrl\t%3,%3,1\n\
    (set_attr "mode"	"QI")
    (set_attr "length"	"4,4,*,*,4,4,4,4,4")])
 
-(define_insn ""
+(define_insn "*movqi_mips16"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=d,y,d,d,d,d,m,*d")
-	(match_operand:QI 1 "general_operand"      "d,d,y,K,N,m,d,*x"))]
+	(match_operand:QI 1 "move_operand"         "d,d,y,K,N,m,d,*x"))]
   "TARGET_MIPS16
    && (register_operand (operands[0], QImode)
        || register_operand (operands[1], QImode))"
@@ -5143,41 +5118,39 @@ dsrl\t%3,%3,1\n\
 ;; 32-bit floating point moves
 
 (define_expand "movsf"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "")
-	(match_operand:SF 1 "general_operand" ""))]
+  [(set (match_operand:SF 0 "" "")
+	(match_operand:SF 1 "" ""))]
   ""
 {
-  if ((reload_in_progress | reload_completed) == 0
-      && !register_operand (operands[0], SFmode)
-      && !nonmemory_operand (operands[1], SFmode))
-    operands[1] = force_reg (SFmode, operands[1]);
+  if (mips_legitimize_move (SFmode, operands[0], operands[1]))
+    DONE;
 })
 
-(define_insn "movsf_internal1"
+(define_insn "*movsf_hardfloat"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,f,m,*f,*d,*d,*d,*m")
-	(match_operand:SF 1 "general_operand" "f,G,m,fG,*d,*f,*G*d,*m,*d"))]
+	(match_operand:SF 1 "move_operand" "f,G,m,fG,*d,*f,*G*d,*m,*d"))]
   "TARGET_HARD_FLOAT
    && (register_operand (operands[0], SFmode)
-       || nonmemory_operand (operands[1], SFmode))"
+       || reg_or_0_operand (operands[1], SFmode))"
   { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,xfer,load,store,xfer,xfer,move,load,store")
    (set_attr "mode"	"SF")
    (set_attr "length"	"4,4,*,*,4,4,4,*,*")])
 
-(define_insn "movsf_internal2"
+(define_insn "*movsf_softfloat"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=d,d,m")
-	(match_operand:SF 1 "general_operand" "      Gd,m,d"))]
+	(match_operand:SF 1 "move_operand" "Gd,m,d"))]
   "TARGET_SOFT_FLOAT && !TARGET_MIPS16
    && (register_operand (operands[0], SFmode)
-       || nonmemory_operand (operands[1], SFmode))"
+       || reg_or_0_operand (operands[1], SFmode))"
   { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,load,store")
    (set_attr "mode"	"SF")
    (set_attr "length"	"4,*,*")])
 
-(define_insn ""
+(define_insn "*movsf_mips16"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=d,y,d,d,m")
-	(match_operand:SF 1 "nonimmediate_operand" "d,d,y,m,d"))]
+	(match_operand:SF 1 "move_operand" "d,d,y,m,d"))]
   "TARGET_MIPS16
    && (register_operand (operands[0], SFmode)
        || register_operand (operands[1], SFmode))"
@@ -5190,52 +5163,50 @@ dsrl\t%3,%3,1\n\
 ;; 64-bit floating point moves
 
 (define_expand "movdf"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "")
-	(match_operand:DF 1 "general_operand" ""))]
+  [(set (match_operand:DF 0 "" "")
+	(match_operand:DF 1 "" ""))]
   ""
 {
-  if ((reload_in_progress | reload_completed) == 0
-      && !register_operand (operands[0], DFmode)
-      && !nonmemory_operand (operands[1], DFmode))
-    operands[1] = force_reg (DFmode, operands[1]);
+  if (mips_legitimize_move (DFmode, operands[0], operands[1]))
+    DONE;
 })
 
-(define_insn "movdf_internal1a"
+(define_insn "*movdf_hardfloat_64bit"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,m,*f,*d,*d,*d,*m")
-	(match_operand:DF 1 "general_operand" "f,G,m,fG,*d,*f,*d*G,*m,*d"))]
+	(match_operand:DF 1 "move_operand" "f,G,m,fG,*d,*f,*d*G,*m,*d"))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && TARGET_64BIT
    && (register_operand (operands[0], DFmode)
-       || nonmemory_operand (operands[1], DFmode))"
+       || reg_or_0_operand (operands[1], DFmode))"
   { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,xfer,load,store,xfer,xfer,move,load,store")
    (set_attr "mode"	"DF")
    (set_attr "length"	"4,4,*,*,4,4,4,*,*")])
 
-(define_insn "movdf_internal1b"
+(define_insn "*movdf_hardfloat_32bit"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,m,*f,*d,*d,*d,*m")
-	(match_operand:DF 1 "general_operand" "f,G,m,fG,*d,*f,*d*G,*m,*d"))]
+	(match_operand:DF 1 "move_operand" "f,G,m,fG,*d,*f,*d*G,*m,*d"))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !TARGET_64BIT
    && (register_operand (operands[0], DFmode)
-       || nonmemory_operand (operands[1], DFmode))"
+       || reg_or_0_operand (operands[1], DFmode))"
   { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,xfer,load,store,xfer,xfer,move,load,store")
    (set_attr "mode"	"DF")
    (set_attr "length"	"4,8,*,*,8,8,8,*,*")])
 
-(define_insn "movdf_internal2"
+(define_insn "*movdf_softfloat"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=d,d,m,d,f,f")
-	(match_operand:DF 1 "general_operand" "dG,m,dG,f,d,f"))]
+	(match_operand:DF 1 "move_operand" "dG,m,dG,f,d,f"))]
   "(TARGET_SOFT_FLOAT || TARGET_SINGLE_FLOAT) && !TARGET_MIPS16
    && (register_operand (operands[0], DFmode)
-       || nonmemory_operand (operands[1], DFmode))"
+       || reg_or_0_operand (operands[1], DFmode))"
   { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "type"	"move,load,store,xfer,xfer,move")
    (set_attr "mode"	"DF")
    (set_attr "length"	"8,*,*,4,4,4")])
 
-(define_insn ""
+(define_insn "*movdf_mips16"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=d,y,d,d,m")
-	(match_operand:DF 1 "nonimmediate_operand" "d,d,y,m,d"))]
+	(match_operand:DF 1 "move_operand" "d,d,y,m,d"))]
   "TARGET_MIPS16
    && (register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
@@ -5246,7 +5217,7 @@ dsrl\t%3,%3,1\n\
 
 (define_split
   [(set (match_operand:DI 0 "nonimmediate_operand" "")
-	(match_operand:DI 1 "general_operand" ""))]
+	(match_operand:DI 1 "move_operand" ""))]
   "reload_completed && !TARGET_64BIT
    && mips_split_64bit_move_p (operands[0], operands[1])"
   [(const_int 0)]
@@ -5257,7 +5228,7 @@ dsrl\t%3,%3,1\n\
 
 (define_split
   [(set (match_operand:DF 0 "nonimmediate_operand" "")
-	(match_operand:DF 1 "general_operand" ""))]
+	(match_operand:DF 1 "move_operand" ""))]
   "reload_completed && !TARGET_64BIT
    && mips_split_64bit_move_p (operands[0], operands[1])"
   [(const_int 0)]

@@ -1556,6 +1556,11 @@ move_operand (rtx op, enum machine_mode mode)
       if (TARGET_MIPS16)
 	return true;
 
+      /* When generating 32-bit code, allow DImode move_operands to
+	 match arbitrary constants.  We split them after reload.  */
+      if (!TARGET_64BIT && mode == DImode)
+	return true;
+
       /* Otherwise check whether the constant can be loaded in a single
 	 instruction.  */
       return LUI_INT (op) || SMALL_INT (op) || SMALL_INT_UNSIGNED (op);
@@ -1981,13 +1986,9 @@ mips_legitimize_move (enum machine_mode mode, rtx dest, rtx src)
       return true;
     }
 
-  /* The source of an SImode move must be a move_operand.  Likewise
-     DImode moves on 64-bit targets.  We need to deal with constants
-     that would be legitimate immediate_operands but not legitimate
-     move_operands.  */
-  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
-      && CONSTANT_P (src)
-      && !move_operand (src, mode))
+  /* We need to deal with constants that would be legitimate
+     immediate_operands but not legitimate move_operands.  */
+  if (CONSTANT_P (src) && !move_operand (src, mode))
     {
       mips_legitimize_const_move (mode, dest, src);
       set_unique_reg_note (get_last_insn (), REG_EQUAL, copy_rtx (src));
