@@ -1,3 +1,15 @@
+2000-12-05  Benjamin Kosnik  <bkoz@fillmore.redhat.com>
+
+	* acinclude.m4: Change up to reflect new directory organization.
+	Add in bits for NetBSD.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config/os/bsd: New directory.
+	* config/os/netbsd: Move to...
+	* config/os/bsd/netbsd: ...here.
+	* config/os/freebsd: Move to...
+	* config/os/bsd/freebsd: ...here.
+
 2000-12-05  Benjamin Kosnik  <bkoz@haight.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_LONG_LONG): Check for
