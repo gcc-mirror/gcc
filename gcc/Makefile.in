@@ -2671,11 +2671,10 @@ TEXI_CPPINT_FILES = cppinternals.texi
 # patterns.   To use them, put each of the specific target with with their 
 # specific dependencies but no build commands.
 
-$(docobjdir)/cpp.info cpp.dvi: $(TEXI_CPP_FILES)
-$(docobjdir)/gcc.info gcc.dvi: $(TEXI_GCC_FILES)
-$(docobjdir)/gccint.info gccint.dvi: $(TEXI_GCCINT_FILES)
-$(docobjdir)/gccinstall.info gccinstall.dvi: $(TEXI_GCCINSTALL_FILES)
-$(docobjdir)/cppinternals.info cppinternals.dvi: $(TEXI_CPPINT_FILES)
+$(docobjdir)/cpp.info: $(TEXI_CPP_FILES)
+$(docobjdir)/gcc.info: $(TEXI_GCC_FILES)
+$(docobjdir)/gccint.info: $(TEXI_GCCINT_FILES)
+$(docobjdir)/cppinternals.info: $(TEXI_CPPINT_FILES)
 
 $(docobjdir)/%.info: %.texi stmp-docobjdir
 	if [ x$(BUILD_INFO) = xinfo ]; then \
@@ -2683,14 +2682,28 @@ $(docobjdir)/%.info: %.texi stmp-docobjdir
 			-I $(docdir)/include -o $@ $<; \
 	fi
 
-dvi:: gcc.dvi gccint.dvi gccinstall.dvi cpp.dvi cppinternals.dvi
+# Duplicate entry to handle renaming of gccinstall.info
+$(docobjdir)/gccinstall.info: $(TEXI_GCCINSTALL_FILES) stmp-docobjdir
+	if [ x$(BUILD_INFO) = xinfo ]; then \
+		$(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir) \
+			-I $(docdir)/include -o $@ $<; \
+	fi
 
-%.dvi: %.texi stmp-docobjdir
-	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $<
+$(docobjdir)/cpp.dvi: $(TEXI_CPP_FILES)
+$(docobjdir)/gcc.dvi: $(TEXI_GCC_FILES)
+$(docobjdir)/gccint.dvi: $(TEXI_GCCINT_FILES)
+$(docobjdir)/cppinternals.dvi: $(TEXI_CPPINT_FILES)
 
-gccinstall.dvi:
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(TEXI2DVI) -I $$s/doc -I $$s/doc/include -o $@ $$s/doc/install.texi
+dvi:: $(docobjdir)/gcc.dvi $(docobjdir)/gccint.dvi \
+      $(docobjdir)/gccinstall.dvi $(docobjdir)/cpp.dvi \
+      $(docobjdir)/cppinternals.dvi
+
+$(docobjdir)/%.dvi: %.texi stmp-docobjdir
+	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include -o $@ $<
+
+# Duplicate entry to handle renaming of gccinstall.dvi
+$(docobjdir)/gccinstall.dvi: $(TEXI_GCCINSTALL_FILES) stmp-docobjdir
+	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include -o $@ $<
 
 generated-manpages:: $(docobjdir)/gcov.1 $(docobjdir)/cpp.1 \
 	$(docobjdir)/gcc.1 $(docobjdir)/gfdl.7 $(docobjdir)/gpl.7 \

@@ -1,3 +1,13 @@
+2003-11-03  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (dvi): Move targets to $(docobjdir).
+	(gnat_ug_vms.dvi): Simplify rule and adjust target.
+	(gnat_ug_wnt.dvi): Likewise.
+	(gnat_ug_unx.dvi): Likewise.
+	(gnat_ug_vxw.dvi): Likewise.
+	(gnat_rm.dvi): Likewise.
+	(gnat-style.dvi): Likewise.
+
 2003-10-31  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* gigi.h: Missed commit from update for C90.

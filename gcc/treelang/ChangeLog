@@ -1,3 +1,11 @@
+2003-11-03  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (dvi): Move targets to $(docobjdir).
+	(treelang.dvi): Simplify rule and adjust target.
+	(treelang.info): Simplify rule.
+	(parse.o): Correct dependencies.
+	(TREE_EXE): Delete doubled suffix append.
+
 2003-10-21  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in (treelang.o): Depend on $(parsedir)/treelang/parse.h.

@@ -61,7 +61,7 @@ TREE_GENERATED = $(parsedir)/treelang/lex.c $(parsedir)/treelang/parse.c \
   $(parsedir)/treelang/parse.h $(parsedir)/treelang/parse.output \
   $(parsedir)/treelang/TAGS
 
-TREE_EXES = tree1$(exeext)
+TREE_EXES = tree1
 
 #no -Wtraditional warnings, allow long long
 treelang-warn = $(LOOSE_WARN) -pedantic -Wno-long-long -Wmissing-prototypes -Wmissing-declarations $(WERROR)
@@ -109,9 +109,9 @@ treelang/treetree.o: treelang/treetree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 treelang/tree-convert.o: treelang/tree-convert.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h diagnostic.h $(TREE_H) flags.h toplev.h langhooks.h $(TM_H)
 
-treelang/parse.o: $(parsedir)/treelang/parse.h $(parsedir)/treelang/parse.c \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) diagnostic.h treelang/treelang.h \
-  input.h 
+treelang/parse.o: $(parsedir)/treelang/parse.c $(CONFIG_H) $(SYSTEM_H) \
+   coretypes.h $(TM_H) diagnostic.h treelang/treelang.h input.h \
+   treelang/treetree.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(parsedir)/treelang/parse.c $(OUTPUT_OPTION)
 
@@ -149,25 +149,24 @@ treelang.rest.encap:
 treelang.tags: force
 	cd $(srcdir)/treelang; etags *.y *.l *.c *.h
 
-.phony:treelang.info
 info:: $(docobjdir)/treelang.info
+dvi:: $(docobjdir)/treelang.dvi
 
-$(docobjdir)/treelang.info: $(srcdir)/treelang/treelang.texi \
+$(docobjdir)/treelang.info: treelang/treelang.texi \
 	 $(docdir)/include/gcc-common.texi \
 	 $(docdir)/include/gpl.texi \
 	 $(docdir)/include/fdl.texi \
 	 $(docdir)/include/funding.texi \
 	 stmp-docobjdir
-	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -Idoc/include \
-	  -o $@ treelang/treelang.texi
+	$(MAKEINFO) $(MAKEINFOFLAGS) -I$(docdir)/include -o $@ $<
 
-dvi:: $(srcdir)/treelang/treelang.texi \
+$(docobjdir)/treelang.dvi: treelang/treelang.texi \
 	 $(docdir)/include/gcc-common.texi \
 	 $(docdir)/include/gpl.texi \
 	 $(docdir)/include/fdl.texi \
-	 $(docdir)/include/funding.texi
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	cd treelang && $(TEXI2DVI) -I $$s/doc/include $$s/treelang/treelang.texi
+	 $(docdir)/include/funding.texi \
+	 stmp-docobjdir
+	$(TEXI2DVI) -I $(docdir)/include -o $@ $<
 
 #
 # Install hooks:

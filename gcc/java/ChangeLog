@@ -1,3 +1,25 @@
+2003-11-03  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (dvi): Move targets to $(docobjdir).
+	(gcj.dvi): Simplify rule and adjust target.
+	(gcj.info): Simplify rule.
+	(gcj.pod): New intermediate rule.
+	(gcjh.pod): Likewise.
+	(jv-scan.pod): Likewise.
+	(jcf-dump.pod): Likewise.
+	(gij.pod): Likewise.
+	(jv-convert.pod): Likewise.
+	(rmic.pod): Likewise.
+	(rmiregistry.pod): Likewise.
+	(gcj.1): Delete.
+	(gcjh.1): Delete.
+	(jv-scan.1): Delete.
+	(jcf-dump.1): Delete.
+	(gij.1): Delete.
+	(jv-convert.1): Delete.
+	(rmic.1): Delete.
+	(rmiregistry.1): Delete.
+
 2003-11-02  Jeff Sturm  <jsturm@one-point.com>
 
 	Fixes PR java/12866.

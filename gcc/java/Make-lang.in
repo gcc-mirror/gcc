@@ -161,7 +161,7 @@ java.tags: force
 	cd $(srcdir)/java; etags *.y *.c *.h --language=none --regex='/DEFTREECODE [(]\([A-Z_]+\)/\1/' java-tree.def
 
 info:: $(docobjdir)/gcj.info
-dvi:: java/gcj.dvi
+dvi:: $(docobjdir)/gcj.dvi
 generated-manpages:: $(docobjdir)/gcj.1 $(docobjdir)/gcjh.1 \
 	$(docobjdir)/jv-scan.1 $(docobjdir)/jcf-dump.1 \
 	$(docobjdir)/gij.1 $(docobjdir)/jv-convert.1 \
@@ -354,74 +354,37 @@ java/java-tree-inline.o: tree-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(srcdir)/tree-inline.c -o $@
 
 # Documentation
-$(docobjdir)/gcj.info: $(srcdir)/java/gcj.texi $(docdir)/include/fdl.texi \
+$(docobjdir)/gcj.info: java/gcj.texi $(docdir)/include/fdl.texi \
   $(docdir)/include/gpl.texi $(docdir)/include/gcc-common.texi stmp-docobjdir
 	if test "x$(BUILD_INFO)" = xinfo; then \
-	  rm -f $(docobjdir)/gcj.info*; \
-	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir)/include \
-	  -o $(docobjdir)/gcj.info $(srcdir)/java/gcj.texi; \
+	  rm -f doc/gcj.info*; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir)/include -o $@ $<; \
 	else true; fi
 
-java/gcj.dvi: $(srcdir)/java/gcj.texi $(srcdir)/doc/include/fdl.texi \
-	 $(srcdir)/doc/include/gpl.texi $(srcdir)/doc/include/gcc-common.texi
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	cd java && $(TEXI2DVI) -I $$s/doc/include $$s/java/gcj.texi
+$(docobjdir)/gcj.dvi: java/gcj.texi $(docdir)/include/fdl.texi \
+	 $(docdir)/include/gpl.texi $(docdir)/include/gcc-common.texi \
+	 stmp-docobjdir
+	$(TEXI2DVI) -I $(docdir)/include -o $@ $<
 
-$(docobjdir)/gcj.1: $(srcdir)/java/gcj.texi stmp-docobjdir
-	-$(TEXI2POD) -D gcj < $(srcdir)/java/gcj.texi > java/gcj.pod
-	-($(POD2MAN) --section=1 java/gcj.pod > java/gcj.1.T$$$$ && \
-		mv -f java/gcj.1.T$$$$ $(docobjdir)/gcj.1) || \
-		(rm -f java/gcj.1.T$$$$ && exit 1)
-	-rm -f java/gcj.pod
+.INTERMEDIATE: gcj.pod gcjh.pod jv-scan.pod jcf-dump.pod gij.pod \
+  jv-convert.pod rmic.pod rmiregistry.pod
 
-$(docobjdir)/gcjh.1: $(srcdir)/java/gcj.texi stmp-docobjdir
-	-$(TEXI2POD) -D gcjh < $(srcdir)/java/gcj.texi > java/gcjh.pod
-	-($(POD2MAN) --section=1 java/gcjh.pod > java/gcjh.1.T$$$$ && \
-		mv -f java/gcjh.1.T$$$$ $(docobjdir)/gcjh.1) || \
-		(rm -f java/gcjh.1.T$$$$ && exit 1)
-	-rm -f java/gcjh.pod
-
-$(docobjdir)/jv-scan.1: $(srcdir)/java/gcj.texi stmp-docobjdir
-	-$(TEXI2POD) -D jv-scan < $(srcdir)/java/gcj.texi > java/jv-scan.pod
-	-($(POD2MAN) --section=1 java/jv-scan.pod > java/jv-scan.1.T$$$$ && \
-		mv -f java/jv-scan.1.T$$$$ $(docobjdir)/jv-scan.1) || \
-		(rm -f java/jv-scan.1.T$$$$ && exit 1)
-	-rm -f java/jv-scan.pod
-
-$(docobjdir)/jcf-dump.1: $(srcdir)/java/gcj.texi stmp-docobjdir
-	-$(TEXI2POD) -D jcf-dump < $(srcdir)/java/gcj.texi > java/jcf-dump.pod
-	-($(POD2MAN) --section=1 java/jcf-dump.pod > java/jcf-dump.1.T$$$$ && \
-		mv -f java/jcf-dump.1.T$$$$ $(docobjdir)/jcf-dump.1) || \
-		(rm -f java/jcf-dump.1.T$$$$ && exit 1)
-	-rm -f java/jcf-dump.pod
-
-$(docobjdir)/gij.1: $(srcdir)/java/gcj.texi stmp-docobjdir
-	-$(TEXI2POD) -D gij < $(srcdir)/java/gcj.texi > java/gij.pod
-	-($(POD2MAN) --section=1 java/gij.pod > java/gij.1.T$$$$ && \
-		mv -f java/gij.1.T$$$$ $(docobjdir)/gij.1) || \
-		(rm -f java/gij.1.T$$$$ && exit 1)
-	-rm -f java/gij.pod
-
-$(docobjdir)/jv-convert.1: $(srcdir)/java/gcj.texi stmp-docobjdir
-	-$(TEXI2POD) -D jv-convert < $(srcdir)/java/gcj.texi > java/jv-convert.pod
-	-($(POD2MAN) --section=1 java/jv-convert.pod > java/jv-convert.1.T$$$$ && \
-		mv -f java/jv-convert.1.T$$$$ $(docobjdir)/jv-convert.1) || \
-		(rm -f java/jv-convert.1.T$$$$ && exit 1)
-	-rm -f java/jv-convert.pod
-
-$(docobjdir)/rmic.1: $(srcdir)/java/gcj.texi stmp-docobjdir
-	-$(TEXI2POD) -D rmic < $(srcdir)/java/gcj.texi > java/rmic.pod
-	-($(POD2MAN) --section=1 java/rmic.pod > java/rmic.1.T$$$$ && \
-		mv -f java/rmic.1.T$$$$ $(docobjdir)/rmic.1) || \
-		(rm -f java/rmic.1.T$$$$ && exit 1)
-	-rm -f java/rmic.pod
-
-$(docobjdir)/rmiregistry.1: $(srcdir)/java/gcj.texi stmp-docobjdir
-	-$(TEXI2POD) -D rmiregistry < $(srcdir)/java/gcj.texi > java/rmiregistry.pod
-	-($(POD2MAN) --section=1 java/rmiregistry.pod > java/rmiregistry.1.T$$$$ && \
-		mv -f java/rmiregistry.1.T$$$$ $(docobjdir)/rmiregistry.1) || \
-		(rm -f java/rmiregistry.1.T$$$$ && exit 1)
-	-rm -f java/rmiregistry.pod
+gcj.pod: java/gcj.texi
+	-$(TEXI2POD) -D gcj < $< > $@
+gcjh.pod: java/gcj.texi
+	-$(TEXI2POD) -D gcjh < $< > $@
+jv-scan.pod: java/gcj.texi
+	-$(TEXI2POD) -D jv-scan < $< > $@
+jcf-dump.pod: java/gcj.texi
+	-$(TEXI2POD) -D jcf-dump < $< > $@
+gij.pod: java/gcj.texi
+	-$(TEXI2POD) -D gij < $< > $@
+jv-convert.pod: java/gcj.texi
+	-$(TEXI2POD) -D jv-convert < $< > $@
+rmic.pod: java/gcj.texi
+	-$(TEXI2POD) -D rmic < $< > $@
+rmiregistry.pod: java/gcj.texi
+	-$(TEXI2POD) -D rmiregistry < $< > $@
 
 # Install the man pages.
 java.install-man: installdirs $(GENERATED_JAVA_MANPAGES)

@@ -506,39 +506,38 @@ install-info:: $(DESTDIR)$(infodir)/gnat_ug_vms.info \
 	$(DESTDIR)$(infodir)/gnat_rm.info \
 	$(DESTDIR)$(infodir)/gnat-style.info
 
-ada/gnat_ug_unx.dvi : $(srcdir)/ada/gnat_ug_unx.texi \
-	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
-	s=`cd $(srcdir); ${PWD_COMMAND}`; \
-	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_ug_unx.dvi $$s/ada/gnat_ug_unx.texi
+dvi:: $(docobjdir)/gnat_ug_vms.dvi $(docobjdir)/gnat_ug_wnt.dvi \
+	$(docobjdir)/gnat_ug_unx.dvi $(docobjdir)/gnat_ug_vxw.dvi \
+	$(docobjdir)/gnat_rm.dvi $(docobjdir)/gnat-style.dvi
 
-ada/gnat_ug_vms.dvi : $(srcdir)/ada/gnat_ug_vms.texi \
-	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
-	s=`cd $(srcdir); ${PWD_COMMAND}`; \
-	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_ug_vms.dvi $$s/ada/gnat_ug_vms.texi
+$(docobjdir)/gnat_ug_unx.dvi: ada/gnat_ug_unx.texi \
+	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi \
+	stmp-docobjdir
+	$(TEXI2DVI) -c -I $(docdir)/include -o $@ $<
 
-ada/gnat_ug_vxw.dvi : $(srcdir)/ada/gnat_ug_vxw.texi \
-	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
-	s=`cd $(srcdir); ${PWD_COMMAND}`; \
-	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_ug_vxw.dvi $$s/ada/gnat_ug_vxw.texi
+$(docobjdir)/gnat_ug_vms.dvi: ada/gnat_ug_vms.texi \
+	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi \
+	stmp-docobjdir
+	$(TEXI2DVI) -c -I $(docdir)/include -o $@ $<
 
-ada/gnat_ug_wnt.dvi : $(srcdir)/ada/gnat_ug_wnt.texi \
-	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
-	s=`cd $(srcdir); ${PWD_COMMAND}`; \
-	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_ug_wnt.dvi $$s/ada/gnat_ug_wnt.texi
+$(docobjdir)/gnat_ug_vxw.dvi: ada/gnat_ug_vxw.texi \
+	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi \
+	stmp-docobjdir
+	$(TEXI2DVI) -c -I $(docdir)/include -o $@ $<
 
-ada/gnat_rm.dvi : $(srcdir)/ada/gnat_rm.texi \
-	$(srcdir)/doc/include/fdl.texi $(srcdir)/doc/include/gcc-common.texi
-	s=`cd $(srcdir); ${PWD_COMMAND}`; \
-	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat_rm.dvi $$s/ada/gnat_rm.texi
+$(docobjdir)/gnat_ug_wnt.dvi: ada/gnat_ug_wnt.texi \
+	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi \
+	stmp-docobjdir
+	$(TEXI2DVI) -c -I $(docdir)/include -o $@ $<
 
-ada/gnat-style.dvi : $(srcdir)/ada/gnat-style.texi \
-	$(srcdir)/doc/include/fdl.texi
-	s=`cd $(srcdir); ${PWD_COMMAND}`; \
-	cd ada && $(TEXI2DVI) -c -I $$s/doc/include -o gnat-style.dvi $$s/ada/gnat-style.texi
+$(docobjdir)/gnat_rm.dvi: ada/gnat_rm.texi \
+	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi \
+	stmp-docobjdir
+	$(TEXI2DVI) -c -I $(docdir)/include -o $@ $<
 
-dvi:: ada/gnat_ug_vms.dvi ada/gnat_ug_wnt.dvi \
-	ada/gnat_ug_unx.dvi ada/gnat_ug_vxw.dvi \
-	ada/gnat_rm.dvi ada/gnat-style.dvi
+$(docobjdir)/gnat-style.dvi: ada/gnat-style.texi $(docdir)/include/fdl.texi \
+	stmp-docobjdir
+	$(TEXI2DVI) -c -I $(docdir)/include -o $@ $<
 
 
 # Install hooks:
