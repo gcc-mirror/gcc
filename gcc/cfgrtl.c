@@ -338,8 +338,12 @@ rtl_create_basic_block (void *headp, void *endp, basic_block after)
   rtx head = headp, end = endp;
   basic_block bb;
 
-  /* Place the new block just after the end.  */
-  VARRAY_GROW (basic_block_info, last_basic_block + 1);
+  /* Grow the basic block array if needed.  */
+  if ((size_t) last_basic_block >= VARRAY_SIZE (basic_block_info))
+    {
+      size_t new_size = last_basic_block + (last_basic_block + 3) / 4;
+      VARRAY_GROW (basic_block_info, new_size);
+    }
 
   n_basic_blocks++;
 

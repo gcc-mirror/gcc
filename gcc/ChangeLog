@@ -1,3 +1,8 @@
+2004-03-17  Jan Hubicka  <jh@suse.cz>
+
+	* cfgrtl.c (rtl_create_basic_block): Pre-allocate basic_block_info
+	array.
+
 2004-03-17  James E Wilson  <wilson@specifixinc.com>
 
 	* config/mips/mips.md (zero_extendsidi2): Add length attribute.
