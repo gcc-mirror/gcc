@@ -3138,7 +3138,8 @@ duplicate_decls (tree newdecl, tree olddecl)
 	{
 	  /* Prototype decl follows defn w/o prototype.  */
 	  cp_warning_at ("prototype for `%#D'", newdecl);
-	  cp_warning_at ("follows non-prototype definition here", olddecl);
+	  warning ("%Hfollows non-prototype definition here",
+		   &DECL_SOURCE_LOCATION (olddecl));
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
 	       && DECL_LANGUAGE (newdecl) != DECL_LANGUAGE (olddecl))
@@ -3195,8 +3196,8 @@ duplicate_decls (tree newdecl, tree olddecl)
 	    {
 	      warning ("`%#D' was used before it was declared inline",
 			  newdecl);
-	      cp_warning_at ("previous non-inline declaration here",
-			     olddecl);
+	      warning ("%Hprevious non-inline declaration here",
+		       &DECL_SOURCE_LOCATION (olddecl));
 	    }
 	}
     }
@@ -3888,7 +3889,7 @@ pushdecl (tree x)
 	      && TREE_CODE (decl) == TREE_CODE (x)
 	      && !same_type_p (TREE_TYPE (x), TREE_TYPE (decl)))
 	    {
-	      pedwarn ("type mismatch with previous external decl", x);
+	      pedwarn ("type mismatch with previous external decl of `%#D'", x);
 	      cp_pedwarn_at ("previous external decl of `%#D'", decl);
 	    }
 	}
@@ -4925,7 +4926,7 @@ check_goto (tree decl)
 
       if (u > 1 && DECL_ARTIFICIAL (b))
 	/* Can't skip init of __exception_info.  */
-	cp_error_at ("  enters catch block", b);
+	error ("%H  enters catch block", &DECL_SOURCE_LOCATION (b));
       else if (u > 1)
 	cp_error_at ("  skips initialization of `%#D'", b);
       else
@@ -6692,7 +6693,8 @@ fixup_anonymous_aggr (tree t)
 
   /* ISO C++ 9.5.3.  Anonymous unions may not have function members.  */
   if (TYPE_METHODS (t))
-    cp_error_at ("an anonymous union cannot have function members", t);
+    error ("%Han anonymous union cannot have function members",
+	   &DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (t)));
 
   /* Anonymous aggregates cannot have fields with ctors, dtors or complex
      assignment operators (because they cannot have these methods themselves).
@@ -7393,7 +7395,8 @@ maybe_commonize_var (tree decl)
 	      TREE_PUBLIC (decl) = 0;
 	      DECL_COMMON (decl) = 0;
 	      cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
-	      cp_warning_at ("  you can work around this by removing the initializer", decl);
+	      warning ("%H  you can work around this by removing the initializer",
+		       &DECL_SOURCE_LOCATION (decl));
 	    }
 	}
     }
@@ -11140,8 +11143,8 @@ grokdeclarator (tree declarator,
 	{
 	  decl = build_decl (TYPE_DECL, declarator, type);
 	  if (in_namespace || ctype)
-	    cp_error_at ("typedef name may not be a nested-name-specifier",
-			 decl);
+	    error ("%Htypedef name may not be a nested-name-specifier",
+		   &DECL_SOURCE_LOCATION (decl));
 	  if (!current_function_decl)
 	    DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 	}
@@ -11187,7 +11190,8 @@ grokdeclarator (tree declarator,
 	  if (ctype == NULL_TREE)
 	    {
 	      if (TREE_CODE (type) != METHOD_TYPE)
-		cp_error_at ("invalid type qualifier for non-member function type", decl);
+		error ("%Hinvalid type qualifier for non-member function type",
+		       &DECL_SOURCE_LOCATION (decl));
 	      else
 		ctype = TYPE_METHOD_BASETYPE (type);
 	    }
@@ -13014,7 +13018,8 @@ start_enum (tree name)
   if (enumtype != NULL_TREE && TREE_CODE (enumtype) == ENUMERAL_TYPE)
     {
       error ("multiple definition of `%#T'", enumtype);
-      cp_error_at ("previous definition here", enumtype);
+      error ("%Hprevious definition here",
+	     &DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (enumtype)));
       /* Clear out TYPE_VALUES, and start again.  */
       TYPE_VALUES (enumtype) = NULL_TREE;
     }

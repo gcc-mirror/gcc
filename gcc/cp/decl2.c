@@ -3664,8 +3664,10 @@ ambiguous_decl (tree name, cxx_binding *old, cxx_binding *new, int flags)
       if (flags & LOOKUP_COMPLAIN)
         {
           error ("`%D' denotes an ambiguous type",name);
-          cp_error_at ("  first type here", BINDING_TYPE (old));
-          cp_error_at ("  other type here", type);
+          error ("%H  first type here",
+		 &DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (BINDING_TYPE (old))));
+          error ("%H  other type here",
+		 &DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)));
         }
     }
   return old;
