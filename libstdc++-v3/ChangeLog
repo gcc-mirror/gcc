@@ -1,3 +1,12 @@
+2005-03-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/tr1/memory: Forward to...
+	* include/tr1/boost_shared_ptr.h: ...here. Add Boost Software License.
+	* include/Makefile.am (tr1_headers): Add boost_shared_ptr.h.
+	* include/Makefile.in: Regenerate.
+	* testsuite/tr1/2_general_utilities/memory/shared_ptr/cons/
+	auto_ptr_neg.cc: Adjust line numbers.
+
 2005-03-22  Chris Jefferson  <chris@bubblescope.net>
 
 	PR libstdc++/20577
