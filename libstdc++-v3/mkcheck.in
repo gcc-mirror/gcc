@@ -198,7 +198,7 @@ test_file()
     # eventually have to calculate time_t anyhow.  Or 3) just grab two
     # time_t's (no more overhead than grabbing two date(1)'s).
     COMP_TIME_START=$($TEST_DIR/printnow)
-    $CXX $CXX_FLAG $S_FLAG $INC_PATH -L$LIB_PATH -Wl,--rpath -Wl,$LIB_PATH \
+    $CXX $CXX_FLAG $S_FLAG $INC_PATH -L$LIB_PATH -Wl,-rpath -Wl,$LIB_PATH \
          $SRC_NAME -o $EXENAME 2>> $LOG_FILE
     COMP_TIME_END=$($TEST_DIR/printnow)
 
