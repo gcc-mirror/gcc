@@ -1,3 +1,12 @@
+2001-11-14  Richard Sandiford  <rsandifo@redhat.com>
+
+        * decl.c (check_initializer): Try to complete the type of an
+        array element before checking whether it's complete.  Don't
+        complain about arrays with complete element types but an
+        unknown size.
+        (cp_finish_decl): Build the hierarchical constructor before
+        calling maybe_deduce_size_from_array_init.
+
 2001-11-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Make-lang.in: Change all uses of $(manext) to $(man1ext).
