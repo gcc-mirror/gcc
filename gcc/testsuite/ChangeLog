@@ -1,3 +1,7 @@
+Mon Dec 17 14:31:42 2001  Jeffrey A Law  (law@redhat.com)
+
+	* gcc.c-torture/execute/20011217-1.c: New test.
+
 Mon Dec 17 16:54:56 2001  Nicola Pero  <nicola@brainstorm.co.uk>
 
 	* objc.dg/special/: New directory.
