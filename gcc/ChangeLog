@@ -1,3 +1,8 @@
+2000-12-07  DJ Delorie  <dj@redhat.com>
+
+	* c-decl.c (grokdeclarator): preserve previous alignments when
+	rebuilding array types.
+
 2000-12-07  Neil Booth  <neilb@earthling.net>
 
         * cppfiles.c (struct include_file): Move from cpphash.h.
