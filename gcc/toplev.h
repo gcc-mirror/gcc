@@ -66,7 +66,7 @@ extern void inform (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 
 extern void rest_of_decl_compilation (tree, const char *, int, int);
 extern void rest_of_type_compilation (tree, int);
-extern void rest_of_compilation (tree);
+extern void rest_of_compilation (void);
 extern void tree_rest_of_compilation (tree, bool);
 extern void init_tree_optimization_passes (void);
 extern void init_optimization_passes (void);
