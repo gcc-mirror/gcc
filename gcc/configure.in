@@ -112,14 +112,17 @@ gas_flag=no)
 AC_ARG_WITH(as,
 [  --with-as               arrange to use the specified as (full pathname).],
 AS="$with_as")
-if test x"${AS+set}" = x"set"; then
+# Ignore any non-absolute value which comes from ${GCC_FLAGS_TO_PASS}.
+case $AS in
+/*)
   if test ! -x "$AS"; then
     AC_MSG_WARN([cannot execute: $AS: check --with-as or env. var. AS])
   elif test "GNU" = `$AS -v </dev/null 2>&1 | sed '1s/^GNU.*/GNU/;q'`; then
     gas_flag=yes
   fi
   AC_DEFINE_UNQUOTED(DEFAULT_ASSEMBLER,"$AS")
-fi
+  ;;
+esac
 
 # With stabs
 AC_ARG_WITH(stabs,
