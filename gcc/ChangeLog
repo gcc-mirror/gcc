@@ -1,3 +1,18 @@
+2004-06-11  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (legitimize_pic_address): Use UNSPEC_DLTIND14R to identify
+	unspec used for loading address from DLT.
+	* pa.md: Define constants for the uses of UNSPEC and UNSPEC_VOLATILE.
+	Change all users of UNSPEC and UNSPEC_VOLATILE to use new constants.
+	Don't use short code sequence when loading the address of a nonlocal
+	label.
+	(nonlocal_goto): New expander.
+	(indirect_goto): New jump pattern for nonlocal gotos.
+	(short_jump): Remove extra whitespace.
+	(builtin_longjmp): Clobber memory and hard frame pointer.  Restore
+	frame pointer via virtual_stack_vars_rtx when we have a nonlocal goto
+	pattern.
+
 2004-06-11  Roger Sayle  <roger@eyesopen.com>
 
 	* expmed.c (synth_mult): Add an additional MODE argument for the
