@@ -1,5 +1,122 @@
 2003-08-28  Mohan Embar  <gnustuff@thisiscool.com>
 
+	* win32.cc: fixed tab, indentation and whitespace
+	inconsistencies
+	removed jvm.h include
+	added includes java/lang/UnsupportedOperationException.h,
+	java/io/IOException.h, java/net/SocketException.h
+	(WSAEventWrapper): class implementation
+	(_Jv_WinStrError): implemented both overloads
+	(_Jv_ThrowIOException): implemented both overloads
+	(_Jv_ThrowSocketException): implemented both overloads
+	(_Jv_select): implemented
+	* include/win32.h: fixed tab, indentation and whitespace
+	inconsistencies
+	wrapped <windows.h> include with  #define WIN32_LEAN_AND_MEAN
+	added jvm.h include
+	(WSAEventWrapper): added class declaration
+	(_Jv_WinStrError): added both overload declarations
+	(_Jv_ThrowIOException): added both overload declarations
+	(_Jv_ThrowSocketException): added both overload declarations
+	removed ENOTCONN, ECONNRESET and ENOPROTOOPT defines
+	(_Jv_select): added declaration
+	(_Jv_socket): removed
+	(_Jv_connect): removed
+	(_Jv_close): removed
+	(_Jv_bind): removed
+	(_Jv_accept): removed
+	(_Jv_listen): removed
+	(_Jv_write): removed
+	(_Jv_read): removed
+	* java/io/natFileDescriptorWin32.cc: fixed tab, indentation and
+	whitespace inconsistencies
+	replaced <windows.h> #include with <platform.h>
+	removed jvm.h include
+	(testCanUseGetHandleInfo): new function which tests whether Win32
+	GetHandleInformation() call can be used with console buffer handles
+	(only supported on >=WinNT 5.0)
+	(winerr): removed (superseded by _Jv_WinStrError in include/win32.h)
+	(valid): rewrote implementation using GetHandleInformation()
+	(sync): 	changed exception throwing to use error string and exception
+	helper methods declared in include/win32.h
+	(open): likewise
+	(write): likewise
+	(setLength): likewise
+	(close): likewise
+	(seek): likewise
+	(getFilePointer): likewise
+	(read): likewise
+	* java/io/natFileWin32.cc: fixed tab, indentation and
+	whitespace inconsistencies
+	replaced <windows.h> #include with <platform.h>
+	removed jvm.h include
+	(_access): use JV_TEMP_UTF_STRING
+	(_stat): likewise
+	(performMkDir): use JV_TEMP_UTF_STRING
+	(performRenameTo): likewise
+	(performDelete): likewise
+	(performCreate): likewise
+	(performSetReadOnly): likewise
+	(performSetLastModified): likewise
+	* java/lang/natWin32Process.cc: fixed tab, indentation and
+	whitespace inconsistencies
+	replaced <windows.h> #include with <platform.h>
+	removed includes gcj/cni.h, jvm.h
+	(new_string): removed
+	(startProcess): use JV_TEMP_UTF_STRING,
+	changed exception throwing to use error string and exception
+	helper methods declared in include/win32.h
+	* java/net/natInetAddressWin32.cc: fixed tab, indentation and
+	whitespace inconsistencies
+	replaced <windows.h> #include with <platform.h>
+	removed jvm.h include
+	removed DISABLE_JAVA_NET conditional code
+	removed POSIX conditional code not relevant to Win32
+	(aton): use JV_TEMP_UTF_STRING
+	removed POSIX conditional code not relevant to Win32
+	(lookup): likewise
+	(getLocalHostName): likewise
+	* java/net/natNetworkInterfaceWin32.cc: fixed tab, indentation and
+	whitespace inconsistencies
+	removed unnecessary windows.h, winsock.h and gcj/cni.h includes
+	removed DISABLE_JAVA_NET conditional code
+	removed POSIX conditional code not relevant to Win32
+	(winsock2GetRealNetworkInterfaces): new function to compute network
+	interfaces via Winsock2 API
+	(determineGetRealNetworkInterfacesFN): new function for returning
+	a function pointer to the function used to compute network interfaces.
+	(getRealNetworkInterfaces): implemented
+	* java/net/natPlainDatagramSocketImplWin32.cc: fixed tab, indentation and
+	whitespace inconsistencies
+	removed gcj/cni.h include
+	removed DISABLE_JAVA_NET conditional code
+	removed POSIX conditional code not relevant to Win32
+	changed net POSIXisms to Win32isms
+	replaced _Jv socket-related calls with their real Win32 equivalents
+	changed exception throwing to use error string and exception
+	helper methods declared in include/win32.h
+	(peekData): implemented timeout support
+	(receive): likewise
+	* java/net/natPlainSocketImplWin32.cc: fixed tab, indentation and
+	whitespace inconsistencies
+	removed gcj/cni.h and gcj/javaprims.h includes
+	removed DISABLE_JAVA_NET conditional code
+	removed POSIX conditional code not relevant to Win32
+	changed net POSIXisms to Win32isms
+	replaced _Jv socket-related calls with their real Win32
+	equivalents
+	changed exception throwing to use error string and exception
+	helper methods declared in include/win32.h
+	(throwConnectException): helper function for connect()
+	(connect): implemented timeout support
+	(accept): likewise
+	(doRead): new helper function common to both read() method overloads,
+	includes timeout support
+	(read): implemented both overloads in terms of doRead()
+	(available): implemented using ioctlsocket()
+
+2003-08-28  Mohan Embar  <gnustuff@thisiscool.com>
+
 	* java/net/natInetAddressWin32.cc,
 	java/net/natNetworkInterfaceWin32.cc,
 	java/net/natPlainDatagramSocketImplWin32.cc,
