@@ -931,10 +931,9 @@ pic_symbolic_operand (op, mode)
   return 0;
 }
 
-/* Test for a valid operand for a call instruction.
-   Don't allow the arg pointer register or virtual regs
-   since they may change into reg + const, which the patterns
-   can't handle yet.  */
+/* Test for a valid operand for a call instruction.  Don't allow the
+   arg pointer register or virtual regs since they may decay into
+   reg + const, which the patterns can't handle.  */
 
 int
 call_insn_operand (op, mode)
@@ -953,36 +952,27 @@ call_insn_operand (op, mode)
 	      && REGNO (op) <= LAST_VIRTUAL_REGISTER)))
     return 0;
 
+  /* Disallow `call 1234'.  Due to varying assembler lameness this
+     gets either rejected or translated to `call .+1234'.  */
+  if (GET_CODE (op) == CONST_INT)
+    return 0;
+
   /* Otherwise we can allow any general_operand in the address.  */
   return general_operand (op, Pmode);
 }
 
-/* Like call_insn_operand but allow (mem (symbol_ref ...))
-   even if pic.  */
+/* Like call_insn_operand but allow (mem (symbol_ref ...)) even if pic.  */
 
 int
 expander_call_insn_operand (op, mode)
      rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
 {
-  if (GET_CODE (op) != MEM)
-    return 0;
-  op = XEXP (op, 0);
-
-  /* Direct symbol references.  */
-  if (CONSTANT_ADDRESS_P (op))
+  if (GET_CODE (op) == MEM
+      && GET_CODE (XEXP (op, 0)) == SYMBOL_REF)
     return 1;
 
-  /* Disallow indirect through a virtual register.  This leads to
-     compiler aborts when trying to eliminate them.  */
-  if (GET_CODE (op) == REG
-      && (op == arg_pointer_rtx
-	  || (REGNO (op) >= FIRST_PSEUDO_REGISTER
-	      && REGNO (op) <= LAST_VIRTUAL_REGISTER)))
-    return 0;
-
-  /* Otherwise we can allow any general_operand in the address.  */
-  return general_operand (op, mode);
+  return call_insn_operand (op, mode);
 }
 
 int
