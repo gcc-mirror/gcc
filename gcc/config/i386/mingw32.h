@@ -56,4 +56,31 @@ Boston, MA 02111-1307, USA. */
 #undef PATH_SEPARATOR
 #define PATH_SEPARATOR ';'
 
-
+/* Output STRING, a string representing a filename, to FILE.  We canonicalize
+   it to be in MS-DOS format.  */
+#define OUTPUT_QUOTED_STRING(FILE, STRING) \
+do {						\
+  char c;					\
+						\
+  putc ('\"', asm_file);			\
+  if (STRING[1] == ':'				\
+      && (STRING[2] == '/' || STRING[2] == '\\')) \
+    {						\
+      putc ('/', asm_file);			\
+      putc ('/', asm_file);			\
+      putc (*string, asm_file);			\
+      string += 2;				\
+    }						\
+						\
+  while ((c = *string++) != 0)			\
+    {						\
+      if (c == '\\')				\
+	c = '/';				\
+						\
+      if (c == '\"')				\
+	putc ('\\', asm_file);			\
+      putc (c, asm_file);			\
+    }						\
+						\
+  putc ('\"', asm_file);			\
+} while (0)
