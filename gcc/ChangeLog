@@ -1,3 +1,7 @@
+2004-06-22  Eric Christopher  <echristo@redhat.com>
+
+	* config/rs6000/rs6000.md (*insvsi_internal5/6): New patterns.
+
 2004-06-22  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* cfghooks.c (make_forwarder_block): Decrement count on fallthru edge
