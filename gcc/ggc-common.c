@@ -43,6 +43,7 @@ void (*lang_mark_false_label_stack) PARAMS ((struct label_node *));
 /* Trees that have been marked, but whose children still need marking.  */
 varray_type ggc_pending_trees;
 
+static void ggc_mark_rtx_children_1 PARAMS ((rtx));
 static void ggc_mark_rtx_ptr PARAMS ((void *));
 static void ggc_mark_tree_ptr PARAMS ((void *));
 static void ggc_mark_rtx_varray_ptr PARAMS ((void *));
@@ -275,6 +276,43 @@ ggc_mark_roots ()
 
 void
 ggc_mark_rtx_children (r)
+     rtx r;
+{
+  rtx i, last;
+
+  /* Special case the instruction chain.  This is a data structure whose
+     chain length is potentially unbounded, and which contain references
+     within the chain (e.g. label_ref and insn_list).  If do nothing here,
+     we risk blowing the stack recursing through a long chain of insns.
+
+     Combat this by marking all of the instructions in the chain before
+     marking the contents of those instructions.  */
+
+  switch (GET_CODE (r))
+    {
+    case INSN:
+    case JUMP_INSN:
+    case CALL_INSN:
+    case NOTE:
+    case CODE_LABEL:
+    case BARRIER:
+      for (i = NEXT_INSN (r); ; i = NEXT_INSN (i))
+	if (! ggc_test_and_set_mark (i))
+	  break;
+      last = i;
+
+      for (i = NEXT_INSN (r); i != last; i = NEXT_INSN (i))
+	ggc_mark_rtx_children_1 (i);
+
+    default:
+      break;
+    }
+
+  ggc_mark_rtx_children_1 (r);
+}
+
+static void
+ggc_mark_rtx_children_1 (r)
      rtx r;
 {
   const char *fmt;
