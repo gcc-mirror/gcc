@@ -1,3 +1,14 @@
+2005-03-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20142
+	* cp-tree.h (target_type): Remove.
+	* decl.c (layout_var_decl): Remove #if 0'd code.
+	(cp_finish_decl): Remove dead code.
+	* init.c (build_vec_init): When determining whether or not the
+	element type has an asignment operator, look through all array
+	dimensions. 
+	* typeck.c (target_type): Remove.
+
 2005-03-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (finish_struct_1): Do not warn about non-virtual

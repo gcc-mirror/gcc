@@ -4644,6 +4644,9 @@ pushtag (tree name, tree type, int globalize)
 	  else
 	    d = pushdecl_with_scope (d, b);
 
+	  if (d == error_mark_node)
+	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
+
 	  /* FIXME what if it gets a name from typedef?  */
 	  if (ANON_AGGRNAME_P (name))
 	    DECL_IGNORED_P (d) = 1;

@@ -3940,9 +3940,6 @@ static void
 layout_var_decl (tree decl)
 {
   tree type = TREE_TYPE (decl);
-#if 0
-  tree ttype = target_type (type);
-#endif
 
   /* If we haven't already layed out this declaration, do so now.
      Note that we must not call complete type for an external object
@@ -4710,7 +4707,6 @@ void
 cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 {
   tree type;
-  tree ttype = NULL_TREE;
   tree cleanup;
   const char *asmspec = NULL;
   int was_readonly = 0;
@@ -4794,10 +4790,6 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 				at_eof);
       goto finish_end;
     }
-
-  if (TREE_CODE (decl) != FUNCTION_DECL)
-    ttype = target_type (type);
-
 
   /* A reference will be modified here, as it is initialized.  */
   if (! DECL_EXTERNAL (decl) 
