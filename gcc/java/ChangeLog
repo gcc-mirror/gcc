@@ -1,5 +1,7 @@
 2002-05-07  Tom Tromey  <tromey@redhat.com>
 
+	* gjavah.c (throwable_p): Use xstrdup, not strdup.
+
 	Fix for PR java/1200:
 	* gjavah.c (throwable_p): New function.
 	(decode_signature_piece): Use it.  A `WeakReference' isn't the
