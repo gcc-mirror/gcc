@@ -879,15 +879,6 @@ fatal_io_error (name)
   exit (35);
 }
 
-void
-fatal (s, v)
-     char *s;
-     int v;
-{
-  error (s, v);
-  exit (34);
-}
-
 /* Called to give a better error message when we don't have an insn to match
    what we are looking for or if the insn's constraints aren't satisfied,
    rather than just calling abort().  */
@@ -1030,30 +1021,31 @@ report_error_function (file)
 }
 
 /* Report an error at the current line number.
-   S is a string and V and V2 are args for `printf'.  We use HOST_WIDE_INT
+   S is a string and ARGLIST are args for `printf'.  We use HOST_WIDE_INT
    as the type for these args assuming it is wide enough to hold a
    pointer.  This isn't terribly portable, but is the best we can do
    without vprintf universally available.  */
 
+#define arglist a1, a2, a3
+#define arglist_dcl HOST_WIDE_INT a1, a2, a3;
+
 void
-error (s, v, v2)
+error (s, arglist)
      char *s;
-     HOST_WIDE_INT v;		/* Also used as pointer */
-     HOST_WIDE_INT v2;		/* Also used as pointer */
+     arglist_dcl
 {
-  error_with_file_and_line (input_filename, lineno, s, v, v2);
+  error_with_file_and_line (input_filename, lineno, s, arglist);
 }
 
 /* Report an error at line LINE of file FILE.
-   S and V are a string and an arg for `printf'.  */
+   S and ARGLIST are a string and args for `printf'.  */
 
 void
-error_with_file_and_line (file, line, s, v, v2)
+error_with_file_and_line (file, line, s, arglist)
      char *file;
      int line;
      char *s;
-     HOST_WIDE_INT v;
-     HOST_WIDE_INT v2;
+     arglist_dcl
 {
   count_error (0);
 
@@ -1063,7 +1055,8 @@ error_with_file_and_line (file, line, s, v, v2)
     fprintf (stderr, "%s:%d: ", file, line);
   else
     fprintf (stderr, "%s: ", progname);
-  fprintf (stderr, s, v, v2);
+  fprintf (stderr, s, arglist);
+
   fprintf (stderr, "\n");
 }
 
@@ -1093,16 +1086,15 @@ error_with_decl (decl, s, v)
 }
 
 /* Report an error at the line number of the insn INSN.
-   S and V are a string and an arg for `printf'.
+   S and ARGLIST are a string and args for `printf'.
    This is used only when INSN is an `asm' with operands,
    and each ASM_OPERANDS records its own source file and line.  */
 
 void
-error_for_asm (insn, s, v, v2)
+error_for_asm (insn, s, arglist)
      rtx insn;
      char *s;
-     HOST_WIDE_INT v;		/* Also used as pointer */
-     HOST_WIDE_INT v2;		/* Also used as pointer */
+     arglist_dcl
 {
   char *filename;
   int line;
@@ -1124,18 +1116,27 @@ error_for_asm (insn, s, v, v2)
   filename = ASM_OPERANDS_SOURCE_FILE (asmop);
   line = ASM_OPERANDS_SOURCE_LINE (asmop);
 
-  error_with_file_and_line (filename, line, s, v, v2);
+  error_with_file_and_line (filename, line, s, arglist);
+}
+
+void
+fatal (s, arglist)
+     char *s;
+     arglist_dcl
+{
+  error (s, arglist);
+  exit (34);
 }
 
 /* Report a warning at line LINE.
-   S and V are a string and an arg for `printf'.  */
+   S and ARGLIST are a string and args for `printf'.  */
 
 void
-warning_with_file_and_line (file, line, s, v, v2, v3)
+warning_with_file_and_line (file, line, s, arglist)
      char *file;
      int line;
      char *s;
-     HOST_WIDE_INT v, v2, v3;
+     arglist_dcl
 {
   if (count_error (1) == 0)
     return;
@@ -1148,19 +1149,19 @@ warning_with_file_and_line (file, line, s, v, v2, v3)
     fprintf (stderr, "%s: ", progname);
 
   fprintf (stderr, "warning: ");
-  fprintf (stderr, s, v, v2, v3);
+  fprintf (stderr, s, arglist);
   fprintf (stderr, "\n");
 }
 
 /* Report a warning at the current line number.
-   S and V are a string and an arg for `printf'.  */
+   S and ARGLIST are a string and args for `printf'.  */
 
 void
-warning (s, v, v2, v3)
+warning (s, arglist)
      char *s;
-     HOST_WIDE_INT v, v2, v3;	/* Also used as pointer */
+     arglist_dcl
 {
-  warning_with_file_and_line (input_filename, lineno, s, v, v2, v3);
+  warning_with_file_and_line (input_filename, lineno, s, arglist);
 }
 
 /* Report a warning at the declaration DECL.
@@ -1192,16 +1193,15 @@ warning_with_decl (decl, s, v)
 }
 
 /* Report a warning at the line number of the insn INSN.
-   S and V are a string and an arg for `printf'.
+   S and ARGLIST are a string and args for `printf'.
    This is used only when INSN is an `asm' with operands,
    and each ASM_OPERANDS records its own source file and line.  */
 
 void
-warning_for_asm (insn, s, v, v2)
+warning_for_asm (insn, s, arglist)
      rtx insn;
      char *s;
-     HOST_WIDE_INT v;		/* Also used as pointer */
-     HOST_WIDE_INT v2;		/* Also used as pointer */
+     arglist_dcl
 {
   char *filename;
   int line;
@@ -1223,22 +1223,21 @@ warning_for_asm (insn, s, v, v2)
   filename = ASM_OPERANDS_SOURCE_FILE (asmop);
   line = ASM_OPERANDS_SOURCE_LINE (asmop);
 
-  warning_with_file_and_line (filename, line, s, v, v2);
+  warning_with_file_and_line (filename, line, s, arglist);
 }
 
 /* These functions issue either warnings or errors depending on
    -pedantic-errors.  */
 
 void
-pedwarn (s, v, v2)
+pedwarn (s, arglist)
      char *s;
-     HOST_WIDE_INT v;		/* Also used as pointer */
-     HOST_WIDE_INT v2;
+     arglist_dcl
 {
   if (flag_pedantic_errors)
-    error (s, v, v2);
+    error (s, arglist);
   else
-    warning (s, v, v2);
+    warning (s, arglist);
 }
 
 void
@@ -1254,26 +1253,25 @@ pedwarn_with_decl (decl, s, v)
 }
 
 void
-pedwarn_with_file_and_line (file, line, s, v, v2)
+pedwarn_with_file_and_line (file, line, s, arglist)
      char *file;
      int line;
      char *s;
-     HOST_WIDE_INT v;
-     HOST_WIDE_INT v2;
+     arglist_dcl
 {
   if (flag_pedantic_errors)
-    error_with_file_and_line (file, line, s, v, v2);
+    error_with_file_and_line (file, line, s, arglist);
   else
-    warning_with_file_and_line (file, line, s, v, v2);
+    warning_with_file_and_line (file, line, s, arglist);
 }
 
 /* Apologize for not implementing some feature.
-   S, V, and V2 are a string and args for `printf'.  */
+   S and ARGLIST are a string and args for `printf'.  */
 
 void
-sorry (s, v, v2)
+sorry (s, arglist)
      char *s;
-     HOST_WIDE_INT v, v2;
+     arglist_dcl
 {
   sorrycount++;
   if (input_filename)
@@ -1282,17 +1280,17 @@ sorry (s, v, v2)
     fprintf (stderr, "%s: ", progname);
 
   fprintf (stderr, "sorry, not implemented: ");
-  fprintf (stderr, s, v, v2);
+  fprintf (stderr, s, arglist);
   fprintf (stderr, "\n");
 }
 
 /* Apologize for not implementing some feature, then quit.
-   S, V, and V2 are a string and args for `printf'.  */
+   S and ARGLIST are a string and args for `printf'.  */
 
 void
-really_sorry (s, v, v2)
+really_sorry (s, arglist)
      char *s;
-     HOST_WIDE_INT v, v2;
+     arglist_dcl
 {
   if (input_filename)
     fprintf (stderr, "%s:%d: ", input_filename, lineno);
@@ -1300,7 +1298,7 @@ really_sorry (s, v, v2)
     fprintf (stderr, "%s: ", progname);
 
   fprintf (stderr, "sorry, not implemented: ");
-  fprintf (stderr, s, v, v2);
+  fprintf (stderr, s, arglist);
   fatal (" (fatal)\n");
 }
 
