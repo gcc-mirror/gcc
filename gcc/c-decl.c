@@ -2617,6 +2617,7 @@ builtin_function (name, type, function_code, library_name)
      char *name;
      tree type;
      enum built_in_function function_code;
+  TREE_NO_UNUSED_WARNING (decl) = 1;
      char *library_name;
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
@@ -2629,6 +2630,7 @@ builtin_function (name, type, function_code, library_name)
     DECL_BUILT_IN_NONANSI (decl) = 1;
   if (library_name)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
+  TREE_NO_UNUSED_WARNING (decl) = 1;
   make_decl_rtl (decl, 0, 1);
   pushdecl (decl);
   if (function_code != NOT_BUILT_IN)

@@ -4264,15 +4264,19 @@ refers_to_regno_for_reload_p (regno, endregno, x, loc)
     case REG:
       i = REGNO (x);
 
-      if (i >= FIRST_PSEUDO_REGISTER && reg_renumber[i] == -1
-	  && ((reg_equiv_address[i]
-	       && refers_to_regno_for_reload_p (regno, endregno,
-						reg_equiv_address[i], 0))
-	      || (reg_equiv_mem[i]
-		  && refers_to_regno_for_reload_p (regno, endregno,
-						   XEXP (reg_equiv_mem[i], 0),
-						   0))))
-	return 1;
+      /* If this is a pseudo, a hard register must not have been allocated.
+	 X must therefore either be a constant or be in memory.  */
+      if (i >= FIRST_PSEUDO_REGISTER)
+	{
+	  if (reg_equiv_memory_loc[i])
+	    return refers_to_regno_for_reload_p (regno, endregno,
+						 reg_equiv_memory_loc[i], 0);
+
+	  if (reg_equiv_constant[i])
+	    return 0;
+
+	  abort ();
+	}
 
       return (endregno > i
 	      && regno < i + (i < FIRST_PSEUDO_REGISTER 
@@ -4372,34 +4376,23 @@ reg_overlap_mentioned_for_reload_p (x, in)
   else if (GET_CODE (x) == REG)
     {
       regno = REGNO (x);
-      if (regno >= FIRST_PSEUDO_REGISTER && reg_renumber[regno] == -1
-	  && ((reg_equiv_address[regno]
-	       && reg_overlap_mentioned_for_reload_p (reg_equiv_address[regno],
-						      in))
-	      || (reg_equiv_mem[regno]
-		  && reg_overlap_mentioned_for_reload_p (reg_equiv_mem[regno],
-							 in))))
-	return 1;
+
+      /* If this is a pseudo, it must not have been assigned a hard register.
+	 Therefore, it must either be in memory or be a constant.  */
+
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	{
+	  if (reg_equiv_memory_loc[regno])
+	    return refers_to_mem_for_reload_p (in);
+	  else if (reg_equiv_constant[regno])
+	    return 0;
+	  abort ();
+	}
     }
   else if (CONSTANT_P (x))
     return 0;
   else if (GET_CODE (x) == MEM)
-    {
-      char *fmt;
-      int i;
-
-      if (GET_CODE (in) == MEM)
-	return 1;
-
-      fmt = GET_RTX_FORMAT (GET_CODE (in));
-
-      for (i = GET_RTX_LENGTH (GET_CODE (in)) - 1; i >= 0; i--)
-	if (fmt[i] == 'e' && reg_overlap_mentioned_for_reload_p (x,
-								 XEXP (in, i)))
-	  return 1;
-
-      return 0;
-    }
+    return refers_to_mem_for_reload_p (in);
   else if (GET_CODE (x) == SCRATCH || GET_CODE (x) == PC
 	   || GET_CODE (x) == CC0)
     return reg_mentioned_p (x, in);
@@ -4410,6 +4403,33 @@ reg_overlap_mentioned_for_reload_p (x, in)
 		      ? HARD_REGNO_NREGS (regno, GET_MODE (x)) : 1);
 
   return refers_to_regno_for_reload_p (regno, endregno, in, 0);
+}
+
+/* Return nonzero if anything in X contains a MEM.  Look also for pseudo
+   registers.  */
+
+int
+refers_to_mem_for_reload_p (x)
+     rtx x;
+{
+  char *fmt;
+  int i;
+
+  if (GET_CODE (x) == MEM)
+    return 1;
+
+  if (GET_CODE (x) == REG)
+    return (REGNO (x) >= FIRST_PSEUDO_REGISTER
+	    && reg_equiv_memory_loc[REGNO (x)]);
+			
+  fmt = GET_RTX_FORMAT (GET_CODE (x));
+  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
+    if (fmt[i] == 'e'
+	&& (GET_CODE (XEXP (x, i)) == MEM
+	    || refers_to_mem_for_reload_p (XEXP (x, i))))
+      return 1;
+  
+  return 0;
 }
 
 #if 0

@@ -6572,7 +6572,7 @@ simplify_comparison (code, pop0, pop1)
 	 not on in our mode.  */
       const_op = INTVAL (op1);
       if (mode_width <= HOST_BITS_PER_INT)
-	const_op &= GET_MODE_MASK (mode);
+	const_op &= mask;
 
       /* If we are comparing against a constant power of two and the value
 	 being compared has only that single significant bit (e.g., it was
@@ -6590,16 +6590,17 @@ simplify_comparison (code, pop0, pop1)
 	}
 
       /* Do some canonicalizations based on the comparison code.  We prefer
-	 comparisons against zero and then prefer equality comparisons.  */
+	 comparisons against zero and then prefer equality comparisons.  
+	 If we can reduce the size of a constant, we will do that too.  */
 
       switch (code)
 	{
 	case LT:
-	  /* < 1 is equivalent to <= 0 */
-	  if (const_op == 1)
+	  /* < C is equivalent to <= (C - 1) */
+	  if (const_op > 0)
 	    {
-	      op1 = const0_rtx;
-	      const_op = 0;
+	      const_op -= 1;
+	      op1 = gen_rtx (CONST_INT, VOIDmode, const_op);
 	      code = LE;
 	      /* ... fall through to LE case below.  */
 	    }
@@ -6607,9 +6608,13 @@ simplify_comparison (code, pop0, pop1)
 	    break;
 
 	case LE:
-	  /* <= -1 is equivalent to < 0 */
-	  if (op1 == constm1_rtx)
-	    op1 = const0_rtx, const_op = 0, code = LT;
+	  /* <= C is equivalent to < (C + 1); we do this for C < 0  */
+	  if (const_op < 0)
+	    {
+	      const_op += 1;
+	      op1 = gen_rtx (CONST_INT, VOIDmode, const_op);
+	      code = LT;
+	    }
 
 	  /* If we are doing a <= 0 comparison on a value known to have
 	     a zero sign bit, we can replace this with == 0.  */
@@ -6621,11 +6626,11 @@ simplify_comparison (code, pop0, pop1)
 	  break;
 
 	case GE:
-	  /* >= 1 is equivalent to > 0. */
-	  if (const_op == 1)
+	  /* >= C is equivalent to > (C - 1). */
+	  if (const_op > 0)
 	    {
-	      op1 = const0_rtx;
-	      const_op = 0;
+	      const_op -= 1;
+	      op1 = gen_rtx (CONST_INT, VOIDmode, const_op);
 	      code = GT;
 	      /* ... fall through to GT below.  */
 	    }
@@ -6633,9 +6638,13 @@ simplify_comparison (code, pop0, pop1)
 	    break;
 
 	case GT:
-	  /* > -1 is equivalent to >= 0.  */
-	  if (op1 == constm1_rtx)
-	    op1 = const0_rtx, const_op = 0, code = GE;
+	  /* > C is equivalent to >= (C + 1); we do this for C < 0*/
+	  if (const_op < 0)
+	    {
+	      const_op += 1;
+	      op1 = gen_rtx (CONST_INT, VOIDmode, const_op);
+	      code = GE;
+	    }
 
 	  /* If we are doing a > 0 comparison on a value known to have
 	     a zero sign bit, we can replace this with != 0.  */
@@ -6646,23 +6655,35 @@ simplify_comparison (code, pop0, pop1)
 	    code = NE;
 	  break;
 
-	case GEU:
-	  /* unsigned >= 1 is equivalent to != 0 */
-	  if (const_op == 1)
-	    op1 = const0_rtx, const_op = 0, code = NE;
-	  break;
-
 	case LTU:
-	  /* unsigned < 1 is equivalent to == 0 */
-	  if (const_op == 1)
-	    op1 = const0_rtx, const_op = 0, code = EQ;
-	  break;
+	  /* < C is equivalent to <= (C - 1).  */
+	  if (const_op > 0)
+	    {
+	      const_op -= 1;
+	      op1 = gen_rtx (CONST_INT, VOIDmode, const_op);
+	      code = LEU;
+	      /* ... fall through ... */
+	    }
+	  else
+	    break;
 
 	case LEU:
 	  /* unsigned <= 0 is equivalent to == 0 */
 	  if (const_op == 0)
 	    code = EQ;
 	  break;
+
+	case GEU:
+	  /* >= C is equivalent to < (C - 1).  */
+	  if (const_op > 1)
+	    {
+	      const_op -= 1;
+	      op1 = gen_rtx (CONST_INT, VOIDmode, const_op);
+	      code = GTU;
+	      /* ... fall through ... */
+	    }
+	  else
+	    break;
 
 	case GTU:
 	  /* unsigned > 0 is equivalent to != 0 */
