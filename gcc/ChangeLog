@@ -1,3 +1,9 @@
+2005-02-24  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/14619
+	* config/cris/cris.c (cris_target_asm_function_prologue): Create
+	dwarf2 label manually and put it after, not before the prologue.
+
 2005-02-24  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/19019
