@@ -94,6 +94,18 @@ switch [check_alias_available "$srcdir/$subdir/alias-1.c"] {
 dg-finish
 
 ###########
+# alias-2.c
+###########
+
+dg-init
+switch [check_alias_available "$srcdir/$subdir/alias-2.c"] {
+    yes     { dg-runtest "$srcdir/$subdir/alias-2.c" "" "" }
+    no      { unsupported "alias-2.c" }
+    default { fail "alias-2.c" }
+}
+dg-finish
+
+###########
 # wkali-1.c
 ###########
 
