@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm.h"
 #include "tree.h"
 #include "tree-gimple.h"
+#include "tree-flow.h"
 #include "output.h"
 #include "rtl.h"
 #include "expr.h"
@@ -172,10 +173,10 @@ static inline bool is_gimple_id (tree);
 
 /* Validation of GIMPLE expressions.  */
 
-/* Return true if T is a GIMPLE RHS.  */
+/* Return true if T is a GIMPLE RHS for an assignment to a temporary.  */
 
 bool
-is_gimple_rhs (tree t)
+is_gimple_tmp_rhs (tree t)
 {
   enum tree_code code = TREE_CODE (t);
 
@@ -215,6 +216,57 @@ is_gimple_rhs (tree t)
     }
 
   return is_gimple_lvalue (t) || is_gimple_val (t);
+}
+
+/* Returns true iff T is a valid RHS for an assignment to a renamed user
+   variable.  */
+
+bool
+is_gimple_reg_rhs (tree t)
+{
+  /* If the RHS of the MODIFY_EXPR may throw or make a nonlocal goto and
+     the LHS is a user variable, then we need to introduce a temporary.
+     ie temp = RHS; LHS = temp.
+
+     This way the optimizers can determine that the user variable is
+     only modified if evaluation of the RHS does not throw.  */
+  if (is_gimple_reg_type (TREE_TYPE (t))
+      && TREE_SIDE_EFFECTS (t)
+      && (TREE_CODE (t) == CALL_EXPR
+	  || (flag_non_call_exceptions && tree_could_trap_p (t))))
+    return is_gimple_val (t);
+  else
+    /* Don't force a temp of a non-renamable type; the copy could be
+       arbitrarily expensive.  Instead we will generate a V_MAY_DEF for
+       the assignment.  */
+    return is_gimple_tmp_rhs (t);
+}
+
+/* Returns true iff T is a valid RHS for an assignment to an un-renamed
+   LHS, or for a call argument.  */
+
+bool
+is_gimple_mem_rhs (tree t)
+{
+  /* If we're dealing with a renamable type, either source or dest
+     must be a renamed variable.  */
+  if (is_gimple_reg_type (TREE_TYPE (t)))
+    return is_gimple_val (t);
+  else
+    return is_gimple_tmp_rhs (t);
+}
+
+/* Returns the appropriate RHS predicate for this LHS.  */
+
+gimple_predicate
+rhs_predicate_for (tree lhs)
+{
+  if (is_gimple_tmp_var (lhs))
+    return is_gimple_tmp_rhs;
+  else if (is_gimple_reg (lhs))
+    return is_gimple_reg_rhs;
+  else
+    return is_gimple_mem_rhs;
 }
 
 /* Returns true if T is a valid CONSTRUCTOR component in GIMPLE, either
