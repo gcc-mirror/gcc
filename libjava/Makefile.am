@@ -2659,6 +2659,7 @@ gnu/java/net/natPlainDatagramSocketImpl.cc \
 gnu/java/net/natPlainSocketImpl.cc \
 gnu/java/net/protocol/core/natCoreInputStream.cc \
 gnu/java/nio/natFileLockImpl.cc \
+gnu/java/nio/natPipeImpl.cc \
 gnu/java/nio/natSelectorImpl.cc \
 gnu/java/nio/natNIOServerSocket.cc \
 java/io/natFile.cc \
