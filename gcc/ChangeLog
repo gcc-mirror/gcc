@@ -1,5 +1,11 @@
 2000-05-15  Richard Henderson  <rth@cygnus.com>
 
+	* ifcvt.c (cond_exec_process_insns): Drop USE and CLOBBER insns
+	that get in the way after reload.
+	(cond_exec_process_if_block): Skip a label heading THEN block.
+
+2000-05-15  Richard Henderson  <rth@cygnus.com>
+
 	* varasm.c (output_constant_pool): Abort instead of converting
 	(improperly) deleted labels to zero.
 
