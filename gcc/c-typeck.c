@@ -1940,9 +1940,17 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  if (!(code0 == INTEGER_TYPE && code1 == INTEGER_TYPE))
 	    resultcode = RDIV_EXPR;
 	  else
-	    /* When dividing two signed integers, you have to promote to int.
-	       E.g. (short) -32768 / (short) -1 doesn't fit in a short.  */
-	    shorten = TREE_UNSIGNED (orig_op0);
+	    {
+	      /* Although it would be tempting to shorten always here, that
+		 loses on some targets, since the modulo instruction is
+		 undefined if the quotient can't be represented in the
+		 computation mode.  We shorten only if unsigned or if
+		 dividing by something we know != -1.  */
+	      shorten = (TREE_UNSIGNED (orig_op0)
+			 || (TREE_CODE (op1) == INTEGER_CST
+			     && (TREE_INT_CST_LOW (op1) != -1
+				 || TREE_INT_CST_HIGH (op1) != -1)));
+	    }
 	  common = 1;
 	}
       break;
