@@ -238,7 +238,8 @@ static void df_insn_refs_record PARAMS((struct df *, basic_block, rtx));
 static void df_bb_refs_record PARAMS((struct df *, basic_block));
 static void df_refs_record PARAMS((struct df *, bitmap));
 
-static int df_visit_next PARAMS ((struct df *, sbitmap));
+static int df_visit_next_rc PARAMS ((struct df *, sbitmap));
+static int df_visit_next_rts PARAMS ((struct df *, sbitmap));
 static void df_bb_reg_def_chain_create PARAMS((struct df *, basic_block));
 static void df_reg_def_chain_create PARAMS((struct df *, bitmap));
 static void df_bb_reg_use_chain_create PARAMS((struct df *, basic_block));
@@ -1600,11 +1601,11 @@ df_ud_chain_create (df, blocks)
 }
 
 
-/* Use depth first order, and the worklist, to figure out what block
+/* Use reverse completion order, and the worklist, to figure out what block
    to look at next.  */
 
 static int
-df_visit_next (df, blocks)
+df_visit_next_rc (df, blocks)
      struct df *df ATTRIBUTE_UNUSED;
      sbitmap blocks;
 {
@@ -1614,6 +1615,22 @@ df_visit_next (df, blocks)
       return df->rc_order[i];
   return sbitmap_first_set_bit (blocks);
 }
+
+/* Use reverse topsort order, and the worklist, to figure out what block
+   to look at next.  */
+
+static int
+df_visit_next_rts (df, blocks)
+     struct df *df ATTRIBUTE_UNUSED;
+     sbitmap blocks;
+{
+  int i=0;
+  for (i = 0; i < n_basic_blocks; i++)
+    if (TEST_BIT (blocks, df->rts_order[i]))
+      return df->rts_order[i];
+  return sbitmap_first_set_bit (blocks);
+}
+
 
 /* Calculate reaching defs for each basic block in BLOCKS, i.e., the
    defs that are live at the start of a basic block.  */
@@ -1644,7 +1661,7 @@ df_rd_global_compute (df, blocks)
       bitmap_copy (bb_info->rd_out, bb_info->rd_gen);
     });
   
-  while ((i = df_visit_next (df, worklist)) >= 0)
+  while ((i = df_visit_next_rc (df, worklist)) >= 0)
     {
       struct bb_info *bb_info;
       edge e;
@@ -1722,7 +1739,7 @@ df_ru_global_compute (df, blocks)
     });
 
 
-  while ((i = df_visit_next (df, worklist)) >= 0)
+  while ((i = df_visit_next_rts (df, worklist)) >= 0)
     {
       struct bb_info *bb_info;
       edge e;
@@ -2221,9 +2238,10 @@ df_analyse_1 (df, blocks, flags, update)
 
   df->dfs_order = xmalloc (sizeof(int) * n_basic_blocks);
   df->rc_order = xmalloc (sizeof(int) * n_basic_blocks);
+  df->rts_order = xmalloc (sizeof(int) * n_basic_blocks);
   
   flow_depth_first_order_compute (df->dfs_order, df->rc_order);
-
+  flow_reverse_top_sort_order_compute (df->rts_order);
   if (aflags & DF_RD)
     {
       /* Compute the sets of gens and kills for the defs of each bb.  */
@@ -2280,6 +2298,7 @@ df_analyse_1 (df, blocks, flags, update)
     } 
   free (df->dfs_order);
   free (df->rc_order);
+  free (df->rts_order);
 }
 
 
