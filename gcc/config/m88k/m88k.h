@@ -1,9 +1,8 @@
 /* Definitions of target machine for GNU compiler for
    Motorola m88100 in an 88open OCS/BCS environment.
-   Copyright (C) 1988, 89, 90, 91, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
-   Enhanced by Michael Meissner (meissner@cygnus.com)
-   Version 2 port by Tom Wood (twood@pets.sps.mot.com)
+   Currently maintained by (gcc@dg-rtp.dg.com)
 
 This file is part of GNU CC.
 
@@ -197,15 +196,15 @@ extern char * reg_names[];
 
 /* Print subsidiary information on the compiler version in use.
    Redefined in sysv4.h, and luna.h.  */
-#define VERSION_INFO1	"88open OCS/BCS, "
+#define VERSION_INFO1	"m88k, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.67 $"
+#define VERSION_INFO2   "$Revision: 1.68 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.67 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.68 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */
@@ -295,6 +294,7 @@ extern char * reg_names[];
     { "no-serialize-volatile",		 MASK_NO_SERIALIZE_VOLATILE }, \
     { "serialize-volatile",		-MASK_NO_SERIALIZE_VOLATILE }, \
     { "omit-leaf-frame-pointer",	 MASK_OMIT_LEAF_FRAME_POINTER }, \
+    { "no-omit-leaf-frame-pointer",     -MASK_OMIT_LEAF_FRAME_POINTER }, \
     SUBTARGET_SWITCHES \
     /* Default switches */ \
     { "",				 TARGET_DEFAULT }, \
@@ -361,6 +361,8 @@ extern char * reg_names[];
 	if (flag_pic)							     \
 	  error ("-mshort-data-%s and PIC are incompatible", m88k_short_data); \
       }									     \
+    if (TARGET_OMIT_LEAF_FRAME_POINTER)       /* keep nonleaf frame pointers */    \
+      flag_omit_frame_pointer = 1;                                         \
   } while (0)
 
 /*** Storage Layout ***/
