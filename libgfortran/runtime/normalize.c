@@ -81,7 +81,7 @@ almostone_r8 ()
 }
 
 
-/* Convert an unsigned integer in the range [0..x) into a
+/* Convert an unsigned integer in the range [0..x] into a
    real the range [0..1).  */
 
 GFC_REAL_4
@@ -96,7 +96,7 @@ normalize_r4_i4 (GFC_UINTEGER_4 i, GFC_UINTEGER_4 x)
 }
 
 
-/* Convert an unsigned integer in the range [0..x) into a
+/* Convert an unsigned integer in the range [0..x] into a
    real the range [0..1).  */
 
 GFC_REAL_8
