@@ -1245,7 +1245,7 @@
 (define_insn "use_sfunc_addr"
   [(set (reg:SI PR_REG)
 	(unspec:SI [(match_operand:SI 0 "register_operand" "r")] UNSPEC_SFUNC))]
-  "TARGET_SH1"
+  "TARGET_SH1 && check_use_sfunc_addr (insn, operands[0])"
   ""
   [(set_attr "length" "0")])
 

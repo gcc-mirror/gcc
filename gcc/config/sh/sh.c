@@ -9167,4 +9167,51 @@ sh_expand_t_scc (enum rtx_code code, rtx target)
   return 1;
 }
 
+/* INSN is an sfunc; return the rtx that describes the address used.  */
+static rtx
+extract_sfunc_addr (rtx insn)
+{
+  rtx pattern, part = NULL_RTX;
+  int len, i;
+
+  pattern = PATTERN (insn);
+  len = XVECLEN (pattern, 0);
+  for (i = 0; i < len; i++)
+    {
+      part = XVECEXP (pattern, 0, i);
+      if (GET_CODE (part) == USE && GET_MODE (XEXP (part, 0)) == Pmode
+	  && GENERAL_REGISTER_P (true_regnum (XEXP (part, 0))))
+	return XEXP (part, 0);
+    }
+  if (GET_CODE (XVECEXP (pattern, 0, 0)) == UNSPEC_VOLATILE)
+    return XVECEXP (XVECEXP (pattern, 0, 0), 0, 1);
+  abort ();
+}
+
+/* Verify that the register in use_sfunc_addr still agrees with the address
+   used in the sfunc.  This prevents fill_slots_from_thread from changing
+   use_sfunc_addr.
+   INSN is the use_sfunc_addr instruction, and REG is the register it
+   guards.  */
+int
+check_use_sfunc_addr (rtx insn, rtx reg)
+{
+  /* Search for the sfunc.  It should really come right after INSN.  */
+  while ((insn = NEXT_INSN (insn)))
+    {
+      if (GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == JUMP_INSN)
+	break;
+      if (! INSN_P (insn))
+	continue;
+	
+      if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+	insn = XVECEXP (PATTERN (insn), 0, 0);
+      if (GET_CODE (PATTERN (insn)) != PARALLEL
+	  || get_attr_type (insn) != TYPE_SFUNC)
+	continue;
+      return rtx_equal_p (extract_sfunc_addr (insn), reg);
+    }
+  abort ();
+}
+
 #include "gt-sh.h"
