@@ -1,4 +1,4 @@
-# Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+# Copyright (C) 1992-1998, 1999 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -76,50 +76,7 @@ proc c-torture-compile { src option } {
     lappend options "additional_flags=-w $option"
 
     set comp_output [gcc_target_compile "$src" "$output" object $options];
-    
-    # Set a few common compiler messages.
-    set fatal_signal "*cc: Internal compiler error: program*got fatal signal"
- 
-    if [string match "$fatal_signal 6" $comp_output] then {
-	gcc_fail $testcase "Got Signal 6, $option"
-	remote_file build delete $output
-	return
-    }
-
-    if [string match "$fatal_signal 11" $comp_output] then {
-	gcc_fail $testcase "Got Signal 11, $option"
-	remote_file build delete $output
-	return
-    }
-
-    # We shouldn't get these because of -w, but just in case.
-    if [string match "*cc:*warning:*" $comp_output] then {
-	warning "$testcase: (with warnings) $option"
-	send_log "$comp_output\n"
-	unresolved "$testcase, $option"
-	remote_file build delete $output
-	return
-    }
-
-    set comp_output [prune_warnings $comp_output]
-
-    set unsupported_message [gcc_check_unsupported_p $comp_output]
-    if { $unsupported_message != "" } {
-	unsupported "$testcase: $unsupported_message"
-	remote_file build delete $output
-	return
-    }
-
-    # remove any leftover LF/CR to make sure any output is legit
-    regsub -all -- "\[\r\n\]*" $comp_output "" comp_output
-    # If any message remains, we fail.
-    if ![string match "" $comp_output] then {
-	gcc_fail $testcase $option
-	remote_file build delete $output
-	return
-    }
-
-    gcc_pass $testcase $option
+    gcc_check_compile $testcase $option $output $comp_output
     remote_file build delete $output
 }
 
@@ -201,57 +158,17 @@ proc c-torture-execute { src args } {
 	}
 	set comp_output [gcc_target_compile "$src" "${execname}" executable $options];
 
-	# Set a few common compiler messages.
-	set fatal_signal "*cc: Internal compiler error: program*got fatal signal"
-	
-	if [string match "$fatal_signal 6" $comp_output] then {
-	    gcc_fail $testcase "Got Signal 6, $option"
+	if ![gcc_check_compile "$testcase compilation" $option $execname $comp_output] {
+	    unresolved "$testcase execution, $option"
 	    remote_file build delete $execname
 	    continue
-	}
-	
-	if [string match "$fatal_signal 11" $comp_output] then {
-	    gcc_fail $testcase "Got Signal 11, $option"
-	    remote_file build delete $execname
-	    continue
-	}
-	
-	# We shouldn't get these because of -w, but just in case.
-	if [string match "*cc:*warning:*" $comp_output] then {
-	    warning "$testcase: (with warnings) $option"
-	    send_log "$comp_output\n"
-	    unresolved "$testcase, $option"
-	    remote_file build delete $execname
-	    continue
-	}
-	
-	set comp_output [prune_warnings $comp_output]
-	
-	set unsupported_message [gcc_check_unsupported_p $comp_output]
-
-	if { $unsupported_message != "" } {
-	    unsupported "$testcase: $unsupported_message"
-	    continue
-	} elseif ![file exists $execname] {
-	    if ![is3way] {
-		fail "$testcase compilation, $option"
-		untested "$testcase execution, $option"
-		continue
-	    } else {
-		# FIXME: since we can't test for the existance of a remote
-		# file without short of doing an remote file list, we assume
-		# that since we got no output, it must have compiled.
-		pass "$testcase compilation, $option"		
-	    }
-	} else {
-	    pass "$testcase compilation, $option"
 	}
 
 	# See if this source file uses "long long" types, if it does, and
 	# no_long_long is set, skip execution of the test.
 	if [target_info exists no_long_long] then {
 	    if [expr [search_for $src "long long"]] then {
-		untested "$testcase execution, $option"
+		unsupported "$testcase execution, $option"
 		continue
 	    }
 	}
