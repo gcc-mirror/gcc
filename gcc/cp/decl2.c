@@ -2793,7 +2793,8 @@ import_export_decl (decl)
   else if (DECL_FUNCTION_MEMBER_P (decl))
     {
       tree ctype = DECL_CLASS_CONTEXT (decl);
-      if (CLASSTYPE_INTERFACE_KNOWN (ctype) && ! DECL_ARTIFICIAL (decl))
+      if (CLASSTYPE_INTERFACE_KNOWN (ctype)
+	  && (! DECL_ARTIFICIAL (decl) || DECL_VINDEX (decl)))
 	{
 	  DECL_NOT_REALLY_EXTERN (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)

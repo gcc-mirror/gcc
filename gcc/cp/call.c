@@ -5182,8 +5182,8 @@ build_op_delete_call (code, addr, size, flags)
 
   if (fn != error_mark_node)
     {
-      if (TREE_PURPOSE (fns))
-	/* TREE_PURPOSE is only set for lists of member functions.  */
+      if (TREE_CODE (TREE_VALUE (fns)) == TREE_LIST)
+	/* Member functions.  */
 	enforce_access (TREE_PURPOSE (TREE_VALUE (fns)), fn);
       return build_function_call (fn, expr_tree_cons (NULL_TREE, addr, args));
     }
