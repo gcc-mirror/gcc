@@ -724,7 +724,9 @@ update_alignment_for_field (rli, field, known_align)
       else if (! DECL_PACKED (field))
 	{
 	  desired_align = TYPE_ALIGN (type);
+#ifdef ADJUST_FIELD_ALIGN
 	  desired_align = ADJUST_FIELD_ALIGN (field, desired_align);
+#endif
 	}
 
       /* A named bit field of declared type `int'
