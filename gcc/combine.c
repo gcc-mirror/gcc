@@ -2737,7 +2737,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
        BARRIER following it since it may have initially been a
        conditional jump.  It may also be the last nonnote insn.  */
     
-    if (GET_CODE (newpat) == RETURN || simplejump_p (i3))
+    if (GET_CODE (newpat) == RETURN || any_uncondjump_p (i3))
       {
 	*new_direct_jump_p = 1;
 

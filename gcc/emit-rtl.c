@@ -3457,7 +3457,7 @@ emit (x)
   else if (code == JUMP_INSN)
     {
       register rtx insn = emit_jump_insn (x);
-      if (simplejump_p (insn) || GET_CODE (x) == RETURN)
+      if (any_uncondjump_p (insn) || GET_CODE (x) == RETURN)
 	return emit_barrier ();
       return insn;
     }

@@ -2454,13 +2454,14 @@ tidy_fallthru_edge (e, b, c)
      note.  */
   q = b->end;
   if (GET_CODE (q) == JUMP_INSN
-      && (simplejump_p (q)
+      && onlyjump_p (q)
+      && (any_uncondjump_p (q)
 	  || (b->succ == e && e->succ_next == NULL)))
     {
 #ifdef HAVE_cc0
       /* If this was a conditional jump, we need to also delete
 	 the insn that set cc0.  */
-      if (! simplejump_p (q) && condjump_p (q) && sets_cc0_p (PREV_INSN (q)))
+      if (any_condjump_p (q) && sets_cc0_p (PREV_INSN (q)))
 	q = PREV_INSN (q);
 #endif
 
@@ -3589,8 +3590,7 @@ init_propagate_block_info (bb, live, local_set, flags)
      from one side of the branch and not the other, record the register
      as conditionally dead.  */
   if (GET_CODE (bb->end) == JUMP_INSN
-      && condjump_p (bb->end)
-      && ! simplejump_p (bb->end))
+      && any_condjump_p (bb->end))
     {
       regset_head diff_head;
       regset diff = INITIALIZE_REG_SET (diff_head);

@@ -247,10 +247,8 @@ cond_exec_get_condition (jump)
 {
   rtx test_if, cond;
 
-  if (condjump_p (jump))
-    test_if = SET_SRC (PATTERN (jump));
-  else if (condjump_in_parallel_p (jump))
-    test_if = SET_SRC (XVECEXP (PATTERN (jump), 0, 0));
+  if (any_condjump_p (jump))
+    test_if = pc_set (jump);
   else
     return NULL_RTX;
   cond = XEXP (test_if, 0);
@@ -1014,14 +1012,17 @@ noce_get_condition (jump, earliest)
      rtx *earliest;
 {
   rtx cond;
+  rtx set;
 
   /* If the condition variable is a register and is MODE_INT, accept it.
      Otherwise, fall back on get_condition.  */
 
-  if (! condjump_p (jump))
+  if (! any_condjump_p (jump))
     return NULL_RTX;
 
-  cond = XEXP (SET_SRC (PATTERN (jump)), 0);
+  set = pc_set (jump);
+
+  cond = XEXP (SET_SRC (set), 0);
   if (GET_CODE (XEXP (cond, 0)) == REG
       && GET_MODE_CLASS (GET_MODE (XEXP (cond, 0))) == MODE_INT)
     {
@@ -1029,8 +1030,8 @@ noce_get_condition (jump, earliest)
 
       /* If this branches to JUMP_LABEL when the condition is false,
 	 reverse the condition.  */
-      if (GET_CODE (XEXP (SET_SRC (PATTERN (jump)), 2)) == LABEL_REF
-	  && XEXP (XEXP (SET_SRC (PATTERN (jump)), 2), 0) == JUMP_LABEL (jump))
+      if (GET_CODE (XEXP (SET_SRC (set), 2)) == LABEL_REF
+	  && XEXP (XEXP (SET_SRC (set), 2), 0) == JUMP_LABEL (jump))
 	cond = gen_rtx_fmt_ee (reverse_condition (GET_CODE (cond)),
 			       GET_MODE (cond), XEXP (cond, 0),
 			       XEXP (cond, 1));
@@ -1840,7 +1841,7 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
 	    break;
 	}
 
-      if (! condjump_p (jump))
+      if (! any_condjump_p (jump))
 	return FALSE;
 
       /* Find the extent of the conditional.  */

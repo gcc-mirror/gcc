@@ -553,16 +553,16 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
 		   && GET_CODE (PATTERN (temp)) == TRAP_IF
 		   && (this_is_any_uncondjump
 		       || (this_is_any_condjump
-			   && temp2 = get_condition (insn, &temp4))))
+			   && (temp2 = get_condition (insn, &temp4)))))
 	    {
 	      rtx tc = TRAP_CONDITION (PATTERN (temp));
 
 	      if (tc == const_true_rtx
-		  || (! this_is_uncondjump && rtx_equal_p (temp2, tc)))
+		  || (! this_is_any_uncondjump && rtx_equal_p (temp2, tc)))
 		{
 		  rtx new;
 		  /* Replace an unconditional jump to a trap with a trap.  */
-		  if (this_is_uncondjump)
+		  if (this_is_any_uncondjump)
 		    {
 		      emit_barrier_after (emit_insn_before (gen_trap (), insn));
 		      delete_jump (insn);

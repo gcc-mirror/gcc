@@ -1400,7 +1400,7 @@ copy_insn_list (insns, map, static_chain_value)
 
 	  /* If this used to be a conditional jump insn but whose branch
 	     direction is now know, we must do something special.  */
-	  if (condjump_p (insn) && ! simplejump_p (insn) && map->last_pc_value)
+	  if (any_condjump_p (insn) && onlyjump_p (insn) && map->last_pc_value)
 	    {
 #ifdef HAVE_cc0
 	      /* If the previous insn set cc0 for us, delete it.  */

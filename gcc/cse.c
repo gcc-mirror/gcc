@@ -4201,26 +4201,28 @@ record_jump_equiv (insn, taken)
 {
   int cond_known_true;
   rtx op0, op1;
+  rtx set;
   enum machine_mode mode, mode0, mode1;
   int reversed_nonequality = 0;
   enum rtx_code code;
 
   /* Ensure this is the right kind of insn.  */
-  if (! condjump_p (insn) || simplejump_p (insn))
+  if (! any_condjump_p (insn))
     return;
+  set = pc_set (insn);
 
   /* See if this jump condition is known true or false.  */
   if (taken)
-    cond_known_true = (XEXP (SET_SRC (PATTERN (insn)), 2) == pc_rtx);
+    cond_known_true = (XEXP (SET_SRC (set), 2) == pc_rtx);
   else
-    cond_known_true = (XEXP (SET_SRC (PATTERN (insn)), 1) == pc_rtx);
+    cond_known_true = (XEXP (SET_SRC (set), 1) == pc_rtx);
 
   /* Get the type of comparison being done and the operands being compared.
      If we had to reverse a non-equality condition, record that fact so we
      know that it isn't valid for floating-point.  */
-  code = GET_CODE (XEXP (SET_SRC (PATTERN (insn)), 0));
-  op0 = fold_rtx (XEXP (XEXP (SET_SRC (PATTERN (insn)), 0), 0), insn);
-  op1 = fold_rtx (XEXP (XEXP (SET_SRC (PATTERN (insn)), 0), 1), insn);
+  code = GET_CODE (XEXP (SET_SRC (set), 0));
+  op0 = fold_rtx (XEXP (XEXP (SET_SRC (set), 0), 0), insn);
+  op1 = fold_rtx (XEXP (XEXP (SET_SRC (set), 0), 1), insn);
 
   code = find_comparison_args (code, &op0, &op1, &mode0, &mode1);
   if (! cond_known_true)
@@ -7033,7 +7035,7 @@ cse_basic_block (from, to, next_branch, around_loop)
 	 basic block.  If we are jumping to the end of our block, show
 	 that we can have one usage of TO.  */
 
-      if (simplejump_p (insn))
+      if (any_uncondjump_p (insn))
 	{
 	  if (to == 0)
 	    {
