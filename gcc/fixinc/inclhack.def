@@ -494,6 +494,20 @@ fix = {
 
 
 /*
+ *  sys/wait.h on AIX 5.2 defines macros that have both signed and
+ *  unsigned types in conditional expressions.
+ */
+fix = {
+    hackname  = aix_syswait_2;
+    files     = sys/wait.h;
+    select    = '\? (\(\(\(\(unsigned[^)]*\)[^)]*\) >> [^)]*\) \& 0xff\) : -1)';
+    c_fix     = format;
+    c_fix_arg = "? (int)%1";
+    test_text = "#define WSTOPSIG(__x)    (int)(WIFSTOPPED(__x) ? ((((unsigned int)__x) >> 8) & 0xff) : -1)";
+};
+
+
+/*
  *  sys/signal.h on some versions of AIX uses volatile in the typedef of
  *  sig_atomic_t, which causes gcc to generate a warning about duplicate
  *  volatile when a sig_atomic_t variable is declared volatile, as
