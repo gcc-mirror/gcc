@@ -176,6 +176,10 @@ rtx branch_cmp[2];
 /* what type of branch to use */
 enum cmp_type branch_type;
 
+/* Number of previously seen half-pic pointers and references.  */
+static int prev_half_pic_ptrs = 0;
+static int prev_half_pic_refs = 0;
+
 /* which cpu are we scheduling for */
 enum processor_type mips_cpu;
 
@@ -4428,11 +4432,17 @@ function_epilogue (file, size)
 	       dslots_jump_total, dslots_jump_filled,
 	       num_refs[0], num_refs[1], num_refs[2]);
 
-      if (HALF_PIC_NUMBER_PTRS)
-	fprintf (stderr, " half-pic=%3d", HALF_PIC_NUMBER_PTRS);
+      if (HALF_PIC_NUMBER_PTRS > prev_half_pic_ptrs)
+	{
+	  fprintf (stderr, " half-pic=%3d", HALF_PIC_NUMBER_PTRS - prev_half_pic_ptrs);
+	  prev_half_pic_ptrs = HALF_PIC_NUMBER_PTRS;
+	}
 
-      if (HALF_PIC_NUMBER_REFS)
-	fprintf (stderr, " pic-ref=%3d", HALF_PIC_NUMBER_REFS);
+      if (HALF_PIC_NUMBER_REFS > prev_half_pic_refs)
+	{
+	  fprintf (stderr, " pic-ref=%3d", HALF_PIC_NUMBER_REFS - prev_half_pic_refs);
+	  prev_half_pic_refs = HALF_PIC_NUMBER_REFS;
+	}
 
       fputc ('\n', stderr);
     }
