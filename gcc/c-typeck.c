@@ -655,7 +655,8 @@ type_lists_compatible_p (args1, args2)
 	  /* Allow  wait (union {union wait *u; int *i} *)
 	     and  wait (union wait *)  to be compatible.  */
 	  if (TREE_CODE (TREE_VALUE (args1)) == UNION_TYPE
-	      && TYPE_NAME (TREE_VALUE (args1)) == 0
+	      && (TYPE_NAME (TREE_VALUE (args1)) == 0
+		  || TYPE_TRANSPARENT_UNION (TREE_VALUE (args1)))
 	      && TREE_CODE (TYPE_SIZE (TREE_VALUE (args1))) == INTEGER_CST
 	      && tree_int_cst_equal (TYPE_SIZE (TREE_VALUE (args1)),
 				     TYPE_SIZE (TREE_VALUE (args2))))
@@ -669,7 +670,8 @@ type_lists_compatible_p (args1, args2)
 		return 0;
 	    }
 	  else if (TREE_CODE (TREE_VALUE (args2)) == UNION_TYPE
-		   && TYPE_NAME (TREE_VALUE (args2)) == 0
+		   && (TYPE_NAME (TREE_VALUE (args2)) == 0
+		       || TYPE_TRANSPARENT_UNION (TREE_VALUE (args2)))
 		   && TREE_CODE (TYPE_SIZE (TREE_VALUE (args2))) == INTEGER_CST
 		   && tree_int_cst_equal (TYPE_SIZE (TREE_VALUE (args2)),
 					  TYPE_SIZE (TREE_VALUE (args1))))
