@@ -1,3 +1,10 @@
+1998-12-17  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* error.c (interesting_scope_p): New fn.
+	(dump_simple_decl): Use it.
+	(dump_expr, case CONSTRUCTOR): Force a & for a PMF.
+	(dump_expr, case OFFSET_REF): Print ->* if appropriate.
+
 1998-12-16  Mark Mitchell  <mark@markmitchell.com>
 
 	* class.c (resolve_address_of_overloaded_function): Do conversion

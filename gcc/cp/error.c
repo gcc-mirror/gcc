@@ -114,6 +114,20 @@ init_error ()
   scratch_firstobj = (char *)obstack_alloc (&scratch_obstack, 0);
 }
 
+/* Returns nonzero if SCOPE is something we want to print for random decls.  */
+
+static int
+interesting_scope_p (scope)
+     tree scope;
+{
+  if (scope == NULL_TREE
+      || scope == global_namespace)
+    return 0;
+
+  return (TREE_CODE (scope) == NAMESPACE_DECL
+	  || AGGREGATE_TYPE_P (scope));
+}
+
 static void
 dump_qualifiers (t, p)
      tree t;
@@ -679,7 +693,7 @@ dump_simple_decl (t, type, v)
       dump_type_prefix (type, v, 0);
       OB_PUTC (' ');
     }
-  if (CP_DECL_CONTEXT (t) != global_namespace)
+  if (interesting_scope_p (DECL_CONTEXT (t)))
     {
       dump_decl (DECL_CONTEXT (t), 0);
       OB_PUTC2 (':',':');
@@ -1559,7 +1573,7 @@ dump_expr (t, nop)
 	  if (integer_all_onesp (idx))
 	    {
 	      tree pfn = PFN_FROM_PTRMEMFUNC (t);
-	      dump_expr (pfn, 0);
+	      dump_unary_op ("&", pfn, 0);
 	      break;
 	    }
 	  if (TREE_CODE (idx) == INTEGER_CST
@@ -1608,8 +1622,16 @@ dump_expr (t, nop)
 	  }
 	else
 	  {
-	    dump_expr (TREE_OPERAND (t, 0), 0);
-	    OB_PUTS (" .* ");
+	    if (TREE_CODE (ob) == INDIRECT_REF)
+	      {
+		dump_expr (TREE_OPERAND (ob, 0), 0);
+		OB_PUTS (" ->* ");
+	      }
+	    else
+	      {
+		dump_expr (ob, 0);
+		OB_PUTS (" .* ");
+	      }
 	    dump_expr (TREE_OPERAND (t, 1), 0);
 	  }
 	break;
