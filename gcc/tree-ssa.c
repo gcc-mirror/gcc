@@ -521,7 +521,7 @@ delete_tree_ssa (void)
   fini_ssa_operands ();
 
   global_var = NULL_TREE;
-  BITMAP_FREE (call_clobbered_vars);
+  BITMAP_XFREE (call_clobbered_vars);
   call_clobbered_vars = NULL;
   aliases_computed_p = false;
 }
