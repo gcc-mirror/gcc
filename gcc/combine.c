@@ -8795,7 +8795,8 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	      && GET_CODE (XEXP (varop, 0)) == LSHIFTRT
 	      && GET_CODE (XEXP (XEXP (varop, 0), 1)) == CONST_INT
 	      && (INTVAL (XEXP (XEXP (varop, 0), 1))
-		  >= (GET_MODE_BITSIZE (GET_MODE (XEXP (varop, 0))) - GET_MODE_BITSIZE (varop))))
+		  >= (GET_MODE_BITSIZE (GET_MODE (XEXP (varop, 0)))
+		      - GET_MODE_BITSIZE (GET_MODE (varop)))))
 	    {
 	      rtx varop_inner = XEXP (varop, 0);
 

@@ -1,3 +1,7 @@
+Sun Feb  1 03:32:07 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* combine.c (simplify_shift_const): Fix typo in last change.
+
 Sun Feb  1 02:50:46 1998  John Carr  <jfc@mit.edu>
 
 	* combine.c (simplify_shift_const):  (lshiftrt (truncate (lshiftrt)))
