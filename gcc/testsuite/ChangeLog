@@ -1,3 +1,7 @@
+2000-05-24  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c-torture/execute/20000523-1.c: New test.
+
 2000-05-23  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* c-torture/execute/bcp-1.c: Replace abort in arg of
