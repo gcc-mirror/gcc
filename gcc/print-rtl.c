@@ -163,16 +163,25 @@ print_rtx (in_rtx)
   for (; i < GET_RTX_LENGTH (GET_CODE (in_rtx)); i++)
     switch (*format_ptr++)
       {
+	const char *str;
+
+      case 'T':
+	str = XTMPL (in_rtx, i);
+	goto string;
+
       case 'S':
       case 's':
-	if (XSTR (in_rtx, i) == 0)
+	str = XSTR (in_rtx, i);
+      string:
+
+	if (str == 0)
 	  fputs (dump_for_graph ? " \\\"\\\"" : " \"\"", outfile);
 	else
 	  {
 	    if (dump_for_graph)
-	      fprintf (outfile, " (\\\"%s\\\")", XSTR (in_rtx, i));
+	      fprintf (outfile, " (\\\"%s\\\")", str);
 	    else
-	      fprintf (outfile, " (\"%s\")", XSTR (in_rtx, i));
+	      fprintf (outfile, " (\"%s\")", str);
 	  }
 	sawclose = 1;
 	break;
