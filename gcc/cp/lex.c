@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "tm_p.h"
 #include "timevar.h"
+#include "diagnostic.h"
 
 #ifdef MULTIBYTE_CHARS
 #include "mbchar.h"
@@ -441,6 +442,9 @@ lang_init_options ()
   flag_bounds_check = -1;
   /* By default wrap lines at 72 characters.  */
   set_message_length (72);
+  /* By default, emit location information once for every
+     diagnostic message.  */
+  set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_ONCE);
 }
 
 void

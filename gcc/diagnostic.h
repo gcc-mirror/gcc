@@ -27,6 +27,10 @@ Boston, MA 02111-1307, USA.  */
 /*  Forward declarations.  */
 typedef struct output_buffer output_buffer;
 
+#define DIAGNOSTICS_SHOW_PREFIX_ONCE       0x0
+#define DIAGNOSTICS_SHOW_PREFIX_NEVER      0x1
+#define DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE 0x2
+
 /* The type of front-end specific hook that formats trees into an
    output_buffer.  */
 typedef void (*printer_fn) PARAMS ((output_buffer *));
@@ -49,6 +53,14 @@ struct output_buffer
   /* The ideal upper bound of number of characters per line, as suggested
      by front-end. */  
   int ideal_maximum_length;
+  /* Nonzero if current PREFIX was emitted at least once.  */
+  int emitted_prefix_p;
+  /* Tells how often current PREFIX should be emitted:
+     o DIAGNOSTICS_SHOW_PREFIX_NEVER: never - not yet supported;
+     o DIAGNOSTICS_SHOW_PREFIX_ONCE: emit current PREFIX only once;
+     o DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE: emit current PREFIX each time
+       a physical line is started.  */
+  int prefixing_rule;
 
   /* Public fields.  These are used by front-ends to extract formats and
      arguments from the variable argument-list passed to output_format.  */
@@ -92,5 +104,6 @@ void output_printf		PARAMS ((output_buffer *, const char *,
                                          ...)) ATTRIBUTE_PRINTF_2;
 void output_format		PARAMS ((output_buffer *, const char *));
 int output_is_line_wrapping	PARAMS ((output_buffer *));
+void set_message_prefixing_rule PARAMS ((int));
 
 #endif /* __GCC_DIAGNOSTIC_H__ */

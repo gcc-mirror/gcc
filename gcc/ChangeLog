@@ -1,3 +1,18 @@
+2000-05-13  Gabriel Dos Reis <gdr@codesourcery.com>
+
+	* diagnostic.h (DIAGNOSTICS_SHOW_PREFIX_ONCE): New macro.
+	(DIAGNOSTICS_SHOW_PREFIX_NEVER): Likewise.
+	(DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE): Likewise.
+	(struct output_buffer: emitted_prefix_p, prefixing_rule): New
+	fields. 
+	(set_message_prefixing_rule): Declare.
+
+	* diagnostic.c: (current_prefixing_rule): New variable.
+	(set_message_prefixing_rule): Define.
+	(output_set_prefix): Adjust buffer->emitted_prefix_p.
+	(init_output_buffer): Adjust Initialization.
+	(output_emit_prefix): Rewrite.  Take prefixing rules into account.
+	
 Sat May 13 11:05:47 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* ifcvt.c (if_convert): Do not free NULL.

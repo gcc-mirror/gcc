@@ -75,6 +75,7 @@ DEFINE_LANG_NAME ("C++")
   { "-fno-labels-ok", "" },
   { "-fmemoize-lookups", "" },
   { "-fmessage-length=", "" },
+  { "-fdiagnostics-show-location=", "" },  
   { "-fno-memoize-lookups", "" },
   { "-fms-extensions", "Don't pedwarn about uses of Microsoft extensions" },
   { "-fno-ms-extensions", "" },
