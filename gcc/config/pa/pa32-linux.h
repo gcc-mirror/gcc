@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
    pointer into the frame.  This target does not need multiple
    subspace stubs, so we allow sibcalls to all functions.  */
 #undef FUNCTION_OK_FOR_SIBCALL
-#define FUNCTION_OK_FOR_SIBCALL(DECL) 1
+#define FUNCTION_OK_FOR_SIBCALL(DECL) (!TARGET_PORTABLE_RUNTIME)
 
 /* The libcall __canonicalize_funcptr_for_compare is referenced in
    crtend.o and the reference isn't resolved in objects that don't
