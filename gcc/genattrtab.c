@@ -456,7 +456,6 @@ static void write_complex_function PARAMS ((struct function_unit *, const char *
 static int write_expr_attr_cache PARAMS ((rtx, struct attr_desc *));
 static void write_toplevel_expr	PARAMS ((rtx));
 static void write_const_num_delay_slots PARAMS ((void));
-static int n_comma_elts		PARAMS ((const char *));
 static char *next_comma_elt	PARAMS ((const char **));
 static struct attr_desc *find_attr PARAMS ((const char *, int));
 static struct attr_value *find_most_used  PARAMS ((struct attr_desc *));
@@ -5793,25 +5792,6 @@ write_complex_function (unit, name, connection)
 
 /* This page contains miscellaneous utility routines.  */
 
-/* Given a string, return the number of comma-separated elements in it.
-   Return 0 for the null string.  */
-
-static int
-n_comma_elts (s)
-     const char *s;
-{
-  int n;
-
-  if (*s == '\0')
-    return 0;
-
-  for (n = 1; *s; s++)
-    if (*s == ',')
-      n++;
-
-  return n;
-}
-
 /* Given a pointer to a (char *), return a malloc'ed string containing the
    next comma-separated element.  Advance the pointer to after the string
    scanned, or the end-of-string.  Return NULL if at end of string.  */
@@ -5820,23 +5800,14 @@ static char *
 next_comma_elt (pstr)
      const char **pstr;
 {
-  char *out_str;
-  const char *p;
+  const char *start;
 
-  if (**pstr == '\0')
+  start = scan_comma_elt (pstr);
+
+  if (start == NULL)
     return NULL;
 
-  /* Find end of string to compute length.  */
-  for (p = *pstr; *p != ',' && *p != '\0'; p++)
-    ;
-
-  out_str = attr_string (*pstr, p - *pstr);
-  *pstr = p;
-
-  if (**pstr == ',')
-    (*pstr)++;
-
-  return out_str;
+  return attr_string (start, *pstr - start);
 }
 
 /* Return a `struct attr_desc' pointer for a given named attribute.  If CREATE
