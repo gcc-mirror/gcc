@@ -1827,7 +1827,7 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel, ht)
      struct hash_table *ht;
 {
   rtx call_dest = 0;
-  rtx insn_list;
+  rtx insn_list = NULL_RTX;
 
   /* If we already know which INSNs reference VAR there's no need
      to walk the entire instruction chain.  */
@@ -3649,7 +3649,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
   rtx x;
   RTX_CODE code;
   rtx new = 0;
-  HOST_WIDE_INT offset;
+  HOST_WIDE_INT offset = 0;
   rtx temp;
   rtx seq;
   int i, j;

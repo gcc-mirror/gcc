@@ -898,7 +898,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       rtx carry_tmp = gen_reg_rtx (word_mode);
       optab otheroptab = binoptab == add_optab ? sub_optab : add_optab;
       int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
-      rtx carry_in, carry_out;
+      rtx carry_in = NULL_RTX, carry_out = NULL_RTX;
       rtx xop0, xop1;
 
       /* We can handle either a 1 or -1 value for the carry.  If STORE_FLAG
@@ -1068,8 +1068,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       rtx op1_high = operand_subword_force (op1, high, mode);
       rtx op1_low = operand_subword_force (op1, low, mode);
       rtx product = 0;
-      rtx op0_xhigh;
-      rtx op1_xhigh;
+      rtx op0_xhigh = NULL_RTX;
+      rtx op1_xhigh = NULL_RTX;
 
       /* If the target is the same as one of the inputs, don't use it.  This
 	 prevents problems with the REG_EQUAL note.  */
