@@ -17,7 +17,7 @@ enum E { max = 5 };
  
 struct B
 {
-  A<E> a; // { dg-error "" }
+  A<E> a;
 };
  
 }

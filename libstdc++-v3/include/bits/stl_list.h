@@ -1,6 +1,6 @@
 // List implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -301,16 +301,16 @@ namespace std
     _List_base(const allocator_type& __a)
     : _Base(__a)
     {
-      _M_node = _M_get_node();
-      _M_node->_M_next = _M_node;
-      _M_node->_M_prev = _M_node;
+      this->_M_node = _M_get_node();
+      this->_M_node->_M_next = this->_M_node;
+      this->_M_node->_M_prev = this->_M_node;
     }
   
     // This is what actually destroys the list.
     ~_List_base()
     {
       __clear();
-      _M_put_node(_M_node);
+      _M_put_node(this->_M_node);
     }
   
     void
@@ -566,28 +566,28 @@ namespace std
      *  %list.  Iteration is done in ordinary element order.
     */
     iterator
-    begin() { return static_cast<_Node*>(_M_node->_M_next); }
+    begin() { return static_cast<_Node*>(this->_M_node->_M_next); }
   
     /**
      *  Returns a read-only (constant) iterator that points to the first element
      *  in the %list.  Iteration is done in ordinary element order.
     */
     const_iterator
-    begin() const { return static_cast<_Node*>(_M_node->_M_next); }
+    begin() const { return static_cast<_Node*>(this->_M_node->_M_next); }
   
     /**
      *  Returns a read/write iterator that points one past the last element in
      *  the %list.  Iteration is done in ordinary element order.
     */
     iterator
-    end() { return _M_node; }
+    end() { return this->_M_node; }
   
     /**
      *  Returns a read-only (constant) iterator that points one past the last
      *  element in the %list.  Iteration is done in ordinary element order.
     */
     const_iterator
-    end() const { return _M_node; }
+    end() const { return this->_M_node; }
   
     /**
      *  Returns a read/write reverse iterator that points to the last element in
@@ -625,7 +625,7 @@ namespace std
      *  Returns true if the %list is empty.  (Thus begin() would equal end().)
     */
     bool
-    empty() const { return _M_node->_M_next == _M_node; }
+    empty() const { return this->_M_node->_M_next == this->_M_node; }
   
     /**  Returns the number of elements in the %list.  */
     size_type
@@ -853,7 +853,7 @@ namespace std
      *  std::swap(l1,l2) will feed to this function.
     */
     void
-    swap(list& __x) { std::swap(_M_node, __x._M_node); }
+    swap(list& __x) { std::swap(this->_M_node, __x._M_node); }
   
     /**
      *  Erases all the elements.  Note that this function only erases the

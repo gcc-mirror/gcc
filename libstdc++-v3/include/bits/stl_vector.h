@@ -1,6 +1,6 @@
 // Vector implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -153,13 +153,14 @@ namespace std
       _Vector_base(size_t __n, const allocator_type& __a)
       : _Base(__a)
       {
-	_M_start = _M_allocate(__n);
-	_M_finish = _M_start;
-	_M_end_of_storage = _M_start + __n;
+	this->_M_start = _M_allocate(__n);
+	this->_M_finish = this->_M_start;
+	this->_M_end_of_storage = this->_M_start + __n;
       }
       
       ~_Vector_base() 
-      { _M_deallocate(_M_start, _M_end_of_storage - _M_start); }
+      { _M_deallocate(this->_M_start,
+		      this->_M_end_of_storage - this->_M_start); }
     };
   
   
@@ -238,7 +239,7 @@ namespace std
       vector(size_type __n, const value_type& __value,
 	     const allocator_type& __a = allocator_type())
       : _Base(__n, __a)
-      { _M_finish = uninitialized_fill_n(_M_start, __n, __value); }
+      { this->_M_finish = uninitialized_fill_n(this->_M_start, __n, __value); }
   
       /**
        *  @brief  Create a %vector with default elements.
@@ -250,7 +251,8 @@ namespace std
       explicit
       vector(size_type __n)
       : _Base(__n, allocator_type())
-      { _M_finish = uninitialized_fill_n(_M_start, __n, value_type()); }
+      { this->_M_finish = uninitialized_fill_n(this->_M_start,
+					       __n, value_type()); }
       
       /**
        *  @brief  %Vector copy constructor.
@@ -263,7 +265,9 @@ namespace std
        */
       vector(const vector& __x)
       : _Base(__x.size(), __x.get_allocator())
-      { _M_finish = uninitialized_copy(__x.begin(), __x.end(), _M_start); }
+      { this->_M_finish = uninitialized_copy(__x.begin(), __x.end(),
+					     this->_M_start);
+      }
   
       /**
        *  @brief  Builds a %vector from a range.
@@ -294,7 +298,7 @@ namespace std
        *  themselves are pointers, the pointed-to memory is not touched in any
        *  way.  Managing the pointer is the user's responsibilty.
        */
-      ~vector() { _Destroy(_M_start, _M_finish); }
+      ~vector() { _Destroy(this->_M_start, this->_M_finish); }
   
       /**
        *  @brief  %Vector assignment operator.
@@ -352,7 +356,7 @@ namespace std
        *  %vector.  Iteration is done in ordinary element order.
        */
       iterator
-      begin() { return iterator (_M_start); }
+      begin() { return iterator (this->_M_start); }
       
       /**
        *  Returns a read-only (constant) iterator that points to the
@@ -360,7 +364,7 @@ namespace std
        *  element order.
        */
       const_iterator
-      begin() const { return const_iterator (_M_start); }
+      begin() const { return const_iterator (this->_M_start); }
       
       /**
        *  Returns a read/write iterator that points one past the last
@@ -368,14 +372,14 @@ namespace std
        *  element order.
        */
       iterator
-      end() { return iterator (_M_finish); }
+      end() { return iterator (this->_M_finish); }
       
       /**
        *  Returns a read-only (constant) iterator that points one past the last
        *  element in the %vector.  Iteration is done in ordinary element order.
        */
       const_iterator
-      end() const { return const_iterator (_M_finish); }
+      end() const { return const_iterator (this->_M_finish); }
       
       /**
        *  Returns a read/write reverse iterator that points to the
@@ -457,7 +461,7 @@ namespace std
        */
       size_type
       capacity() const
-      { return size_type(const_iterator(_M_end_of_storage) - begin()); }
+      { return size_type(const_iterator(this->_M_end_of_storage) - begin()); }
       
       /**
        *  Returns true if the %vector is empty.  (Thus begin() would
@@ -594,10 +598,10 @@ namespace std
       void
       push_back(const value_type& __x)
       {
-	if (_M_finish != _M_end_of_storage)
+	if (this->_M_finish != this->_M_end_of_storage)
 	  {
-	    _Construct(_M_finish, __x);
-	    ++_M_finish;
+	    _Construct(this->_M_finish, __x);
+	    ++this->_M_finish;
 	  }
 	else
 	  _M_insert_aux(end(), __x);
@@ -614,8 +618,8 @@ namespace std
       void
       pop_back()
       {
-	--_M_finish;
-	_Destroy(_M_finish);
+	--this->_M_finish;
+	_Destroy(this->_M_finish);
       }
       
       /**
@@ -723,9 +727,9 @@ namespace std
       void
       swap(vector& __x)
       {
-	std::swap(_M_start, __x._M_start);
-	std::swap(_M_finish, __x._M_finish);
-	std::swap(_M_end_of_storage, __x._M_end_of_storage);
+	std::swap(this->_M_start, __x._M_start);
+	std::swap(this->_M_finish, __x._M_finish);
+	std::swap(this->_M_end_of_storage, __x._M_end_of_storage);
       }
       
       /**
@@ -770,9 +774,9 @@ namespace std
         void
         _M_initialize_dispatch(_Integer __n, _Integer __value, __true_type)
         {
-	  _M_start = _M_allocate(__n);
-	  _M_end_of_storage = _M_start + __n;
-	  _M_finish = uninitialized_fill_n(_M_start, __n, __value);
+	  this->_M_start = _M_allocate(__n);
+	  this->_M_end_of_storage = this->_M_start + __n;
+	  this->_M_finish = uninitialized_fill_n(this->_M_start, __n, __value);
 	}
       
       // Called by the range constructor to implement [23.1.1]/9
@@ -803,9 +807,10 @@ namespace std
 			    _ForwardIterator __last, forward_iterator_tag)
         {
 	  size_type __n = std::distance(__first, __last);
-	  _M_start = _M_allocate(__n);
-	  _M_end_of_storage = _M_start + __n;
-	  _M_finish = uninitialized_copy(__first, __last, _M_start);
+	  this->_M_start = _M_allocate(__n);
+	  this->_M_end_of_storage = this->_M_start + __n;
+	  this->_M_finish = uninitialized_copy(__first, __last,
+					       this->_M_start);
 	}
       
       

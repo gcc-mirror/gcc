@@ -1,6 +1,6 @@
 // List implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -69,16 +69,16 @@ namespace std
     __clear()
     {
       typedef _List_node<_Tp>  _Node;
-      _Node* __cur = static_cast<_Node*>(_M_node->_M_next);
-      while (__cur != _M_node)
+      _Node* __cur = static_cast<_Node*>(this->_M_node->_M_next);
+      while (__cur != this->_M_node)
       {
         _Node* __tmp = __cur;
         __cur = static_cast<_Node*>(__cur->_M_next);
         _Destroy(&__tmp->_M_data);
         _M_put_node(__tmp);
       }
-      _M_node->_M_next = _M_node;
-      _M_node->_M_prev = _M_node;
+      this->_M_node->_M_next = this->_M_node;
+      this->_M_node->_M_prev = this->_M_node;
     }
   
   template<typename _Tp, typename _Alloc>
@@ -250,7 +250,8 @@ namespace std
     sort()
     {
       // Do nothing if the list has length 0 or 1.
-      if (_M_node->_M_next != _M_node && _M_node->_M_next->_M_next != _M_node)
+      if (this->_M_node->_M_next != this->_M_node 
+	  && this->_M_node->_M_next->_M_next != this->_M_node)
       {
         list __carry;
         list __counter[64];
@@ -340,7 +341,8 @@ namespace std
     sort(_StrictWeakOrdering __comp)
     {
       // Do nothing if the list has length 0 or 1.
-      if (_M_node->_M_next != _M_node && _M_node->_M_next->_M_next != _M_node)
+      if (this->_M_node->_M_next != this->_M_node && 
+	  this->_M_node->_M_next->_M_next != this->_M_node)
       {
         list __carry;
         list __counter[64];

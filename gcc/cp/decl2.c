@@ -846,35 +846,6 @@ grokfield (tree declarator, tree declspecs, tree init, tree asmspec_tree,
   const char *asmspec = 0;
   int flags = LOOKUP_ONLYCONVERTING;
 
-  /* Convert () initializers to = initializers.  */
-  if (init == NULL_TREE && declarator != NULL_TREE
-      && TREE_CODE (declarator) == CALL_EXPR
-      && TREE_OPERAND (declarator, 0)
-      && (TREE_CODE (TREE_OPERAND (declarator, 0)) == IDENTIFIER_NODE
-	  || TREE_CODE (TREE_OPERAND (declarator, 0)) == SCOPE_REF)
-      && parmlist_is_exprlist (CALL_DECLARATOR_PARMS (declarator)))
-    {
-      /* It's invalid to try to initialize a data member using a
-	 functional notation, e.g.:
-	 
-            struct S {
-	      static int i (3);
-	    };
-	    
-	 Explain that to the user.  */
-      static int explained;
-
-      error ("invalid data member initialization");
-      if (!explained)
-	{
-	  error ("(use `=' to initialize static data members)");
-	  explained = 1;
-	}
-
-      declarator = TREE_OPERAND (declarator, 0);
-      flags = 0;
-    }
-
   if (declspecs == NULL_TREE
       && TREE_CODE (declarator) == SCOPE_REF
       && TREE_CODE (TREE_OPERAND (declarator, 1)) == IDENTIFIER_NODE)
@@ -1280,8 +1251,11 @@ build_anon_union_vars (tree object)
       else if (TREE_PROTECTED (field))
 	cp_pedwarn_at ("protected member `%#D' in anonymous union", field);
 
-      ref = build_class_member_access_expr (object, field, NULL_TREE,
-					    false);
+      if (processing_template_decl)
+	ref = build_min_nt (COMPONENT_REF, object, DECL_NAME (field));
+      else
+	ref = build_class_member_access_expr (object, field, NULL_TREE,
+					      false);
 
       if (DECL_NAME (field))
 	{
@@ -1327,16 +1301,15 @@ finish_anon_union (tree anon_union_decl)
       return;
     }
 
+  main_decl = build_anon_union_vars (anon_union_decl);
+  if (main_decl == NULL_TREE)
+    {
+      warning ("anonymous union with no members");
+      return;
+    }
+
   if (!processing_template_decl)
     {
-      main_decl = build_anon_union_vars (anon_union_decl);
-
-      if (main_decl == NULL_TREE)
-	{
-	  warning ("anonymous union with no members");
-	  return;
-	}
-
       /* Use main_decl to set the mangled name.  */
       DECL_NAME (anon_union_decl) = DECL_NAME (main_decl);
       mangle_decl (anon_union_decl);

@@ -14,7 +14,7 @@ template <int dim>
 class FinalClass :  public Derived<dim> {
 public:
   FinalClass () {
-    if (&local1 != &local2)
+    if (&this->local1 != &this->local2)
       i = 0;
   }
 };

@@ -114,8 +114,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __n);
+	      if (_M_check_facet(this->_M_fnumget))
+		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(exception& __fail)
@@ -142,8 +142,8 @@ namespace std
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
 	      long __l;
-	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __l);
+	      if (_M_check_facet(this->_M_fnumget))
+		this->_M_fnumget->get(*this, 0, *this, __err, __l);
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 	      // 118. basic_istream uses nonexistent num_get member functions.
 	      if (!(__err & ios_base::failbit)
@@ -178,8 +178,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __n);
+	      if (_M_check_facet(this->_M_fnumget))
+		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(exception& __fail)
@@ -206,8 +206,8 @@ namespace std
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
 	      long __l;
-	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __l);
+	      if (_M_check_facet(this->_M_fnumget))
+		this->_M_fnumget->get(*this, 0, *this, __err, __l);
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
 	      // 118. basic_istream uses nonexistent num_get member functions.
 	      if (!(__err & ios_base::failbit)
@@ -242,8 +242,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __n);
+	      if (_M_check_facet(this->_M_fnumget))
+		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(exception& __fail)
@@ -269,8 +269,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __n);
+	      if (_M_check_facet(this->_M_fnumget))
+		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(exception& __fail)
@@ -296,8 +296,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __n);
+	      if (_M_check_facet(this->_M_fnumget))
+		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(exception& __fail)
@@ -324,8 +324,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __n);
+	      if (_M_check_facet(this->_M_fnumget))
+		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(exception& __fail)
@@ -351,8 +351,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __n);
+	      if (_M_check_facet(this->_M_fnumget))
+		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(exception& __fail)
@@ -379,8 +379,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __n);
+	      if (_M_check_facet(this->_M_fnumget))
+		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(exception& __fail)
@@ -406,8 +406,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __n);
+	      if (_M_check_facet(this->_M_fnumget))
+		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(exception& __fail)
@@ -433,8 +433,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __n);
+	      if (_M_check_facet(this->_M_fnumget))
+		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(exception& __fail)
@@ -460,8 +460,8 @@ namespace std
 	  try 
 	    {
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
-	      if (_M_check_facet(_M_fnumget))
-		_M_fnumget->get(*this, 0, *this, __err, __n);
+	      if (_M_check_facet(this->_M_fnumget))
+		this->_M_fnumget->get(*this, 0, *this, __err, __n);
 	      this->setstate(__err);
 	    }
 	  catch(exception& __fail)

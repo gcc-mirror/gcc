@@ -115,7 +115,7 @@ protected:
 template <class T17, int i> struct Xtwenty {
   void f(){
     T17 my_type; //ok
-    for (int j = 0; j < 5; ++l)
+    for (int j = 0; j < 5; ++j)
       {
 	T17 my_type; //ok
 	++my_type;

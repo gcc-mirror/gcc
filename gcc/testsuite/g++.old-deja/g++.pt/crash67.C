@@ -1,7 +1,7 @@
 // Build don't link:
 // Special g++ Options: 
 // 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 6 May 2001 <nathan@codesourcery.com>
 
 // Bug 2526. We ICE'd after diagnosing dependent name confusion in
@@ -16,5 +16,5 @@ struct B
 template<typename T>
 struct D : B<T>
 {
-  friend class Mother; // WARNING - defines namespace class
+  friend class Mother;
 };

@@ -1,3 +1,43 @@
+2003-01-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_type_class): Remove is_partial_instantiation.
+	(PARTIAL_INSTANTIATION_P): Remove.
+	(IMPLICIT_TYPENAME_P): Likewise.
+	(IMPLICIT_TYPENAME_TYPE_DECL_P): Likewise.
+	(build_typename_type): Remove declaration.
+	(parmlist_is_exprlist): Likewise.
+	* decl.c (build_typename_type): Make it static, remove third
+	parameter.
+	(push_class_binding): Don't do implicit typename stuff.
+	(make_typename_type): Likewise.
+	(lookup_name_real): Likewise.
+	(grokdeclarator): Don't try to convert declarations into
+	initializations.  Don't do implicit typename stuff.
+	(parmlist_is_exprlist): Remove.
+	(xref_basetypes): Simplify.
+	* decl2.c (grokfield): Don't try to convert declarations into
+	initializations.
+	(build_anon_union_vars): Do this while processing templates, too.
+	(finish_anon_union): Likewise.
+	* error.c (dump_type): Remove implicit typename handling.
+	* parser.c (cp_parser_diagnose_invalid_type_name): New method.
+	(cp_parser_primary_expression): Correct handling of names not
+	found by unqualified name lookup in templates.
+	(cp_parser_nested_name_specifier_opt): Avoid checking dependency
+	of types when possible.
+	(cp_parser_simple_declaration): Complain intelligently about some
+	invalid declarations.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_constructor_declarator_p): Don't check when we're in a
+	function scope.
+	* pt.c (instantiate_class_template): Remove
+	PARTIAL_INSTANTIATION_P gunk.
+	* search.c (lookup_field_r): Don't build implicit typenames.
+	(marked_pushdecls_p): Don't enter dependent base types.
+	(unmarked_pushdecls_p): Likewise.
+	* semantics.c (begin_class_definition): Remove implicit typename
+	stuff.
+
 2003-01-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9212

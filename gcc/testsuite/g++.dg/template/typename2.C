@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "" }
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 21 Mar 2002 <nathan@codesourcery.com>
 
 // PR 5507. Overzealous implicit typename warning
@@ -21,5 +21,5 @@ class ctype : public __ctype_abstract_base<_CharT>
 template<typename _CharT>
 class ctype2 : public __ctype_abstract_base<_CharT>
 {
-  typedef mask mask; // { dg-warning "(implicitly a typename)|(implicit typename)" "" }
+  typedef mask mask; // { dg-error "" }
 };

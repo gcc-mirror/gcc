@@ -1133,6 +1133,7 @@ struct lang_type_class GTY(())
   unsigned has_arrow_overloaded : 1;
   unsigned interface_only : 1;
   unsigned interface_unknown : 1;
+  unsigned contains_empty_class_p : 1;
 
   unsigned marks: 6;
   unsigned vec_new_uses_cookie : 1;
@@ -1152,13 +1153,11 @@ struct lang_type_class GTY(())
   unsigned has_complex_assign_ref : 1;
   unsigned has_abstract_assign_ref : 1;
   unsigned non_aggregate : 1;
-  unsigned is_partial_instantiation : 1;
   unsigned java_interface : 1;
-
   unsigned anon_aggr : 1;
+
   unsigned non_zero_init : 1;
   unsigned empty_p : 1;
-  unsigned contains_empty_class_p : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1167,7 +1166,7 @@ struct lang_type_class GTY(())
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 5;
+  unsigned dummy : 6;
 
   tree primary_base;
   tree vfields;
@@ -2412,17 +2411,6 @@ struct lang_decl GTY(())
    TEMPLATE_ID_EXPR if we had something like `typename X::Y<T>'.  */
 #define TYPENAME_TYPE_FULLNAME(NODE) (TYPE_FIELDS (NODE))
 
-/* Nonzero if NODE is an implicit typename.  */
-#define IMPLICIT_TYPENAME_P(NODE) \
-  (TREE_CODE (NODE) == TYPENAME_TYPE && TREE_TYPE (NODE))
-
-/* Nonzero if NODE is a TYPE_DECL that should not be visible because
-   it is from a dependent base class.  */
-#define IMPLICIT_TYPENAME_TYPE_DECL_P(NODE)	\
-  (TREE_CODE (NODE) == TYPE_DECL		\
-   && DECL_ARTIFICIAL (NODE)			\
-   && IMPLICIT_TYPENAME_P (TREE_TYPE (NODE)))
-
 /* Nonzero in INTEGER_CST means that this int is negative by dint of
    using a twos-complement negated operand.  */
 #define TREE_NEGATED_INT(NODE) TREE_LANG_FLAG_0 (INTEGER_CST_CHECK (NODE))
@@ -2907,12 +2895,6 @@ struct lang_decl GTY(())
    a DECL_FRIEND_PSUEDO_TEMPLATE_INSTANTIATION.  */
 #define DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION(DECL) \
   (DECL_TEMPLATE_INFO (DECL) && !DECL_USE_TEMPLATE (DECL))
-
-/* Nonzero if TYPE is a partial instantiation of a template class,
-   i.e., an instantiation whose instantiation arguments involve
-   template types.  */
-#define PARTIAL_INSTANTIATION_P(TYPE) \
-  (LANG_TYPE_CLASS_CHECK (TYPE)->is_partial_instantiation)
 
 /* Nonzero iff we are currently processing a declaration for an
    entity with its own template parameter list, and which is not a
@@ -3765,7 +3747,6 @@ extern tree binding_for_name                    (tree, tree);
 extern tree namespace_binding                   (tree, tree);
 extern void set_namespace_binding               (tree, tree, tree);
 extern tree lookup_namespace_name		(tree, tree);
-extern tree build_typename_type                 (tree, tree, tree, tree);
 extern tree make_typename_type			(tree, tree, tsubst_flags_t);
 extern tree make_unbound_class_template		(tree, tree, tsubst_flags_t);
 extern tree lookup_name_nonclass		(tree);
@@ -3800,7 +3781,6 @@ extern int complete_array_type			(tree, tree, int);
 extern tree build_ptrmemfunc_type		(tree);
 extern tree build_ptrmem_type                   (tree, tree);
 /* the grokdeclarator prototype is in decl.h */
-extern int parmlist_is_exprlist			(tree);
 extern int copy_fn_p				(tree);
 extern tree get_scope_of_declarator             (tree);
 extern void grok_special_member_properties	(tree);

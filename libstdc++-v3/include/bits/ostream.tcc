@@ -149,8 +149,9 @@ namespace std
 	{
 	  try 
 	    {
-	      if (_M_check_facet(_M_fnumput))
-		if (_M_fnumput->put(*this, *this, this->fill(), __n).failed())
+	      if (_M_check_facet(this->_M_fnumput))
+		if (this->_M_fnumput->put(*this, *this, 
+					  this->fill(), __n).failed())
 		  this->setstate(ios_base::badbit);
 	    }
 	  catch(exception& __fail)
@@ -176,16 +177,18 @@ namespace std
 	    {
 	      char_type __c = this->fill();
 	      ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
-	      if (_M_check_facet(_M_fnumput))
+	      if (_M_check_facet(this->_M_fnumput))
 		{
 		  bool __b = false;
 		  if ((__fmt & ios_base::oct) || (__fmt & ios_base::hex))
 		    {
 		      unsigned long __l = static_cast<unsigned long>(__n);
-		      __b = _M_fnumput->put(*this, *this, __c, __l).failed();
+		      __b = this->_M_fnumput->put(*this, *this, 
+						  __c, __l).failed();
 		    }
 		  else
-		    __b = _M_fnumput->put(*this, *this, __c, __n).failed();
+		    __b = this->_M_fnumput->put(*this, *this,
+						__c, __n).failed();
 		  if (__b)  
 		    this->setstate(ios_base::badbit);
 		}
@@ -211,8 +214,9 @@ namespace std
 	{
 	  try 
 	    {
-	      if (_M_check_facet(_M_fnumput))
-		if (_M_fnumput->put(*this, *this, this->fill(), __n).failed())
+	      if (_M_check_facet(this->_M_fnumput))
+		if (this->_M_fnumput->put(*this, *this, 
+					  this->fill(), __n).failed())
 		  this->setstate(ios_base::badbit);
 	    }
 	  catch(exception& __fail)
@@ -239,17 +243,19 @@ namespace std
 	    {
 	      char_type __c = this->fill();
 	      ios_base::fmtflags __fmt = this->flags() & ios_base::basefield;
-	      if (_M_check_facet(_M_fnumput))
+	      if (_M_check_facet(this->_M_fnumput))
 		{
 		  bool __b = false;
 		  if ((__fmt & ios_base::oct) || (__fmt & ios_base::hex))
 		    {
 		      unsigned long long __l;
 		      __l = static_cast<unsigned long long>(__n);
-		      __b = _M_fnumput->put(*this, *this, __c, __l).failed();
+		      __b = this->_M_fnumput->put(*this, *this,
+						  __c, __l).failed();
 		    }
 		  else
-		    __b = _M_fnumput->put(*this, *this, __c, __n).failed();
+		    __b = this->_M_fnumput->put(*this, *this,
+						__c, __n).failed();
 		  if (__b)  
 		    this->setstate(ios_base::badbit);
 		}
@@ -275,8 +281,9 @@ namespace std
 	{
 	  try 
 	    {
-	      if (_M_check_facet(_M_fnumput))
-		if (_M_fnumput->put(*this, *this, this->fill(), __n).failed())
+	      if (_M_check_facet(this->_M_fnumput))
+		if (this->_M_fnumput->put(*this, *this, 
+					  this->fill(), __n).failed())
 		  this->setstate(ios_base::badbit);
 	    }
 	  catch(exception& __fail)
@@ -301,8 +308,9 @@ namespace std
 	{
 	  try 
 	    {
-	      if (_M_check_facet(_M_fnumput))
-		if (_M_fnumput->put(*this, *this, this->fill(), __n).failed())
+	      if (_M_check_facet(this->_M_fnumput))
+		if (this->_M_fnumput->put(*this, *this, 
+					  this->fill(), __n).failed())
 		  this->setstate(ios_base::badbit);
 	    }
 	  catch(exception& __fail)
@@ -326,8 +334,9 @@ namespace std
 	{
 	  try 
 	    {
-	      if (_M_check_facet(_M_fnumput))
-		if (_M_fnumput->put(*this, *this, this->fill(), __n).failed())
+	      if (_M_check_facet(this->_M_fnumput))
+		if (this->_M_fnumput->put(*this, *this, 
+					  this->fill(), __n).failed())
 		  this->setstate(ios_base::badbit);
 	    }
 	  catch(exception& __fail)
@@ -351,8 +360,9 @@ namespace std
 	{
 	  try 
 	    {
-	      if (_M_check_facet(_M_fnumput))
-		if (_M_fnumput->put(*this, *this, this->fill(), __n).failed())
+	      if (_M_check_facet(this->_M_fnumput))
+		if (this->_M_fnumput->put(*this, *this, 
+					  this->fill(), __n).failed())
 		  this->setstate(ios_base::badbit);
 	    }
 	  catch(exception& __fail)

@@ -19,5 +19,5 @@ class Y : public X<T>
 
     using X<T>::x;
 
-    void        f () { std::cout << x << std::endl; }
+    void        f () { std::cout << this->x << std::endl; }
 };

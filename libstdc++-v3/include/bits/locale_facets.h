@@ -921,8 +921,8 @@ namespace std
       collate_byname(const char* __s, size_t __refs = 0)
       : collate<_CharT>(__refs) 
       { 
-	_S_destroy_c_locale(_M_c_locale_collate);
-	_S_create_c_locale(_M_c_locale_collate, __s); 
+	_S_destroy_c_locale(this->_M_c_locale_collate);
+	_S_create_c_locale(this->_M_c_locale_collate, __s); 
       }
 
     protected:

@@ -1758,6 +1758,8 @@ static bool cp_parser_simulate_error
   PARAMS ((cp_parser *));
 static void cp_parser_check_type_definition
   PARAMS ((cp_parser *));
+static bool cp_parser_diagnose_invalid_type_name
+  (cp_parser *);
 static bool cp_parser_skip_to_closing_parenthesis
   PARAMS ((cp_parser *));
 static bool cp_parser_skip_to_closing_parenthesis_or_comma
@@ -2199,6 +2201,83 @@ cp_parser_check_type_definition (parser)
     /* Use `%s' to print the string in case there are any escape
        characters in the message.  */
     error ("%s", parser->type_definition_forbidden_message);
+}
+
+/* Check for a common situation where a type-name should be present,
+   but is not, and issue a sensible error message.  Returns true if an
+   invalid type-name was detected.  */
+
+static bool
+cp_parser_diagnose_invalid_type_name (cp_parser *parser)
+{
+  /* If the next two tokens are both identifiers, the code is
+     erroneous. The usual cause of this situation is code like:
+
+       T t;
+
+     where "T" should name a type -- but does not.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+      && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_NAME)
+    {
+      tree name;
+
+      /* If parsing tenatively, we should commit; we really are
+	 looking at a declaration.  */
+      /* Consume the first identifier.  */
+      name = cp_lexer_consume_token (parser->lexer)->value;
+      /* Issue an error message.  */
+      error ("`%s' does not name a type", IDENTIFIER_POINTER (name));
+      /* If we're in a template class, it's possible that the user was
+	 referring to a type from a base class.  For example:
+
+	   template <typename T> struct A { typedef T X; };
+	   template <typename T> struct B : public A<T> { X x; };
+
+	 The user should have said "typename A<T>::X".  */
+      if (processing_template_decl && current_class_type)
+	{
+	  tree b;
+
+	  for (b = TREE_CHAIN (TYPE_BINFO (current_class_type));
+	       b;
+	       b = TREE_CHAIN (b))
+	    {
+	      tree base_type = BINFO_TYPE (b);
+	      if (CLASS_TYPE_P (base_type) 
+		  && cp_parser_dependent_type_p (base_type))
+		{
+		  tree field;
+		  /* Go from a particular instantiation of the
+		     template (which will have an empty TYPE_FIELDs),
+		     to the main version.  */
+		  if (CLASSTYPE_USE_TEMPLATE (base_type))
+		    base_type = (TREE_TYPE
+				 (DECL_TEMPLATE_RESULT 
+				  (DECL_PRIMARY_TEMPLATE
+				   (CLASSTYPE_TI_TEMPLATE (base_type)))));
+		  for (field = TYPE_FIELDS (base_type);
+		       field;
+		       field = TREE_CHAIN (field))
+		    if (TREE_CODE (field) == TYPE_DECL
+			&& DECL_NAME (field) == name)
+		      {
+			error ("(perhaps `typename %T::%s' was intended)",
+			       BINFO_TYPE (b), IDENTIFIER_POINTER (name));
+			break;
+		      }
+		  if (field)
+		    break;
+		}
+	    }
+	}
+      /* Skip to the end of the declaration; there's no point in
+	 trying to process it.  */
+      cp_parser_skip_to_end_of_statement (parser);
+      
+      return true;
+    }
+
+  return false;
 }
 
 /* Consume tokens up to, and including, the next non-nested closing `)'. 
@@ -2744,15 +2823,21 @@ cp_parser_primary_expression (cp_parser *parser,
 		  }
 	      }
 
-	    /* If unqualified name lookup fails while processing a
-	       template, that just means that we need to do name
-	       lookup again when the template is instantiated.  */
 	    if (!parser->scope 
 		&& decl == error_mark_node
 		&& processing_template_decl)
 	      {
+		/* Unqualified name lookup failed while processing a
+		   template.  */
 		*idk = CP_PARSER_ID_KIND_UNQUALIFIED;
-		return build_min_nt (LOOKUP_EXPR, id_expression);
+		/* If the next token is a parenthesis, assume that
+		   Koenig lookup will succeed when instantiating the
+		   template.  */
+		if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+		  return build_min_nt (LOOKUP_EXPR, id_expression);
+		/* If we're not doing Koenig lookup, issue an error.  */
+		error ("`%D' has not been declared", id_expression);
+		return error_mark_node;
 	      }
 	    else if (decl == error_mark_node
 		     && !processing_template_decl)
@@ -3521,7 +3606,12 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		       : new_scope);
       /* If it is a class scope, try to complete it; we are about to
 	 be looking up names inside the class.  */
-      if (TYPE_P (parser->scope))
+      if (TYPE_P (parser->scope)
+	  /* Since checking types for dependency can be expensive,
+	     avoid doing it if the type is already complete.  */
+	  && !COMPLETE_TYPE_P (parser->scope)
+	  /* Do not try to complete dependent types.  */
+	  && !cp_parser_dependent_type_p (parser->scope))
 	complete_type (parser->scope);
     }
 
@@ -6655,6 +6745,21 @@ cp_parser_simple_declaration (parser, function_definition_allowed_p)
 				    &declares_class_or_enum);
   /* We no longer need to defer access checks.  */
   stop_deferring_access_checks ();
+
+  /* If the next two tokens are both identifiers, the code is
+     erroneous. The usual cause of this situation is code like:
+
+       T t;
+
+     where "T" should name a type -- but does not.  */
+  if (cp_parser_diagnose_invalid_type_name (parser))
+    {
+      /* If parsing tenatively, we should commit; we really are
+	 looking at a declaration.  */
+      cp_parser_commit_to_tentative_parse (parser);
+      /* Give up.  */
+      return;
+    }
 
   /* Keep going until we hit the `;' at the end of the simple
      declaration.  */
@@ -12061,6 +12166,9 @@ cp_parser_member_declaration (parser)
 				    CP_PARSER_FLAGS_OPTIONAL,
 				    &prefix_attributes,
 				    &declares_class_or_enum);
+  /* Check for an invalid type-name.  */
+  if (cp_parser_diagnose_invalid_type_name (parser))
+    return;
   /* If there is no declarator, then the decl-specifier-seq should
      specify a type.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
@@ -13818,7 +13926,11 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
   cp_token *next_token;
 
   /* The common case is that this is not a constructor declarator, so
-     try to avoid doing lots of work if at all possible.  */
+     try to avoid doing lots of work if at all possible.  It's not
+     valid declare a constructor at function scope.  */
+  if (at_function_scope_p ())
+    return false;
+  /* And only certain tokens can begin a constructor declarator.  */
   next_token = cp_lexer_peek_token (parser->lexer);
   if (next_token->type != CPP_NAME
       && next_token->type != CPP_SCOPE
@@ -13853,7 +13965,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
     {
       /* If we have:
 
-	   template <typename T> struct S { S(); }
+	   template <typename T> struct S { S(); };
 	   template <typename T> S<T>::S ();
 
 	 we must recognize that the nested `S' names a class.

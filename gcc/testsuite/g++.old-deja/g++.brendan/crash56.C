@@ -273,10 +273,10 @@ template<class T>
 void
 SetLD<T>::remove(const T& item)
 {
-    typename ListD<T>::Action a = NORMAL;
+    typename ListD<T>::Action a = this->NORMAL;
     Vix x;
-    for (first(x); 0 != x && REMOVE_CURRENT != a; next(x, a))
-	a = operator()(x) == item ? REMOVE_CURRENT: NORMAL;// ERROR - .*
+    for (first(x); 0 != x && this->REMOVE_CURRENT != a; next(x, a))
+	a = operator()(x) == item ? this->REMOVE_CURRENT: this->NORMAL; // ERROR - .*
 }
 template<class T>
 bool

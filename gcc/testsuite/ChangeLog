@@ -1,3 +1,33 @@
+2003-01-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc/testsuite/g++.dg/ext/typename1.C: Add typename keyword.
+	* gcc/testsuite/g++.dg/template/crash1.C: Update error messages.
+	* gcc/testsuite/g++.dg/template/crash2.C: Remove error message.
+	* gcc/testsuite/g++.dg/parse/typename2.C: New test.
+	* gcc/testsuite/g++.dg/template/typename2.C: Change implicit
+	typename warning into error.
+	* gcc/testsuite/g++.old-deja/g++.benjamin/tem03.C: Issue more
+	error messages.
+	* gcc/testsuite/g++.old-deja/g++.benjamin/tem04.C: Fix typos.
+	* gcc/testsuite/g++.old-deja/g++.brendan/crash56.C: Add this->.
+	* gcc/testsuite/g++.old-deja/g++.law/visibility13.C: Remove error
+	messages.
+	* gcc/testsuite/g++.old-deja/g++.ns/template17.C: Reorder code to
+	make declaration visible in template.
+	* gcc/testsuite/g++.old-deja/g++.pt/crash3.C: Fix typos.
+	* gcc/testsuite/g++.old-deja/g++.pt/crash36.C: Issue more error
+	messages.
+	* gcc/testsuite/g++.old-deja/g++.pt/crash5.C: Improve error
+	message.
+	* gcc/testsuite/g++.old-deja/g++.pt/crash67.C: Remove warning.
+	* gcc/testsuite/g++.old-deja/g++.pt/inherit1.C: Add this->.
+	* gcc/testsuite/g++.old-deja/g++.pt/niklas01a.C: Add error message.
+	* gcc/testsuite/g++.old-deja/g++.pt/typename16.C: Replace implicit
+	typename warning with error message.
+	* gcc/testsuite/g++.old-deja/g++.pt/typename19.C: Remove warning.
+	* gcc/testsuite/g++.old-deja/g++.robertl/eb112.C: Fix typo.
+	* gcc/testsuite/g++.old-deja/g++.robertl/eb24.C: Use this->.
+	
 2003-01-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/parse/ambig2.C: New test.
