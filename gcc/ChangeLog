@@ -1,3 +1,12 @@
+2002-06-21  Richard Henderson  <rth@redhat.com>
+
+	* bb-reorder.c (make_reorder_chain_1): Search harder for the
+	vax casesi fallthru edge. 
+	* cfglayout.c (cleanup_unconditional_jumps): Use 
+	redirect_edge_succ_nodup.  Do not delete ADDR_VEC insns as dead.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Place redirection
+	block after ADDR_VEC.
+
 2002-06-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/sparc/t-linux64 (EXTRA_MULTILIB_PARTS): Add crtfastmath.o.

@@ -608,10 +608,9 @@ verify_insn_chain ()
 }
 
 /* Remove any unconditional jumps and forwarder block creating fallthru
-   edges instead.  During BB reordering fallthru edges are not required
+   edges instead.  During BB reordering, fallthru edges are not required
    to target next basic block in the linear CFG layout, so the unconditional
-   jumps are not needed.  If LOOPS is not null, also update loop structure &
-   dominators.  */
+   jumps are not needed.  */
 
 static void
 cleanup_unconditional_jumps ()
@@ -636,7 +635,7 @@ cleanup_unconditional_jumps ()
 		fprintf (rtl_dump_file, "Removing forwarder BB %i\n",
 			 bb->index);
 
-	      redirect_edge_succ (bb->pred, bb->succ->dest);
+	      redirect_edge_succ_nodup (bb->pred, bb->succ->dest);
 	      flow_delete_block (bb);
 	      bb = prev;
 	    }
@@ -653,8 +652,6 @@ cleanup_unconditional_jumps ()
 	  else
 	    continue;
 
-	  /* Cleanup barriers and delete ADDR_VECs in a way as they are belonging
-             to removed tablejump anyway.  */
 	  insn = NEXT_INSN (bb->end);
 	  while (insn
 		 && (GET_CODE (insn) != NOTE
@@ -664,12 +661,6 @@ cleanup_unconditional_jumps ()
 
 	      if (GET_CODE (insn) == BARRIER)
 		delete_barrier (insn);
-	      else if (GET_CODE (insn) == JUMP_INSN)
-		delete_insn_chain (PREV_INSN (insn), insn);
-	      else if (GET_CODE (insn) == CODE_LABEL)
-		;
-	      else if (GET_CODE (insn) != NOTE)
-		abort ();
 
 	      insn = next;
 	    }
