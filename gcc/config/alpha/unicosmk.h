@@ -648,6 +648,14 @@ ssib_section ()			\
 #define UDIVDI3_LIBCALL	"$uldiv"
 #define DIVDI3_LIBCALL "$sldiv"
 
+/* This is necessary to prevent gcc from generating calls to __divsi3.  */
+
+#define INIT_TARGET_OPTABS					\
+  do {								\
+    sdiv_optab->handlers[(int) SImode].libfunc = NULL_RTX;	\
+    udiv_optab->handlers[(int) SImode].libfunc = NULL_RTX;	\
+  } while (0)
+
 #undef ASM_OUTPUT_SOURCE_LINE
 
 /* We don't need a start file.  */
