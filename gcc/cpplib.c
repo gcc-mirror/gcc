@@ -6077,8 +6077,12 @@ cpp_start_read (pfile, fname)
 	deps_output (pfile, "-", ':');
       else
 	{
-	  char *p, *q;
-	  int len;
+	  char *p, *q, *r;
+	  int len, x;
+	  char *known_suffixes[] = { ".c", ".C", ".s", ".S", ".m",
+				     ".cc", ".cxx", ".cpp", ".cp",
+				     ".c++", 0
+				   };
 
 	  /* Discard all directory prefixes from filename.  */
 	  if ((q = rindex (opts->in_fname, '/')) != NULL
@@ -6097,27 +6101,21 @@ cpp_start_read (pfile, fname)
 	  /* Output P, but remove known suffixes.  */
 	  len = strlen (p);
 	  q = p + len;
-	  if (len >= 2
-	      && p[len - 2] == '.'
-	      && index("cCsSm", p[len - 1]))
-	    q = p + (len - 2);
-	  else if (len >= 3
-		   && p[len - 3] == '.'
-		   && p[len - 2] == 'c'
-		   && p[len - 1] == 'c')
-	    q = p + (len - 3);
-	  else if (len >= 4
-		   && p[len - 4] == '.'
-		   && p[len - 3] == 'c'
-		   && p[len - 2] == 'x'
-		   && p[len - 1] == 'x')
-	    q = p + (len - 4);
-	  else if (len >= 4
-		   && p[len - 4] == '.'
-		   && p[len - 3] == 'c'
-		   && p[len - 2] == 'p'
-		   && p[len - 1] == 'p')
-	    q = p + (len - 4);
+	  /* Point to the filename suffix.  */
+	  r = rindex (p, '.');
+	  /* Compare against the known suffixes.  */
+	  x = 0;
+	  while (known_suffixes[x] != 0)
+	    {
+	      if (strncmp (known_suffixes[x], r, q - r) == 0)
+		{
+		  /* Make q point to the bit we're going to overwrite
+		     with an object suffix.  */
+		  q = r;
+		  break;
+		}
+	      x++;
+	    }
 
 	  /* Supply our own suffix.  */
 #ifndef VMS
