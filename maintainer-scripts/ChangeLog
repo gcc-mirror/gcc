@@ -1,3 +1,8 @@
+2004-03-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcc_release (FTP_PATH): Use /var/ftp instead of ~ftp, and
+	only set at a single place.
+
 2004-03-14  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gcc_release (SNAPSHOTS_DIR): New variable.  Use it.

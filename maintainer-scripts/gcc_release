@@ -440,9 +440,8 @@ CVS_USERNAME="${USER}"
 GCC_HOSTNAME="gcc.gnu.org"
 # The name of the account on the machine to which files are uploaded.
 GCC_USERNAME="gccadmin"
-# The directory in which the files will be placed (must not use quotes
-# or ~ftp syntax will break).
-FTP_PATH=~ftp/pub/gcc
+# The directory in which the files will be placed (do not use ~user syntax).
+FTP_PATH=/var/ftp/pub/gcc
 # The directory in which snapshots will be placed.
 SNAPSHOTS_DIR=${FTP_PATH}/snapshots
 
@@ -539,7 +538,6 @@ while getopts "d:fr:u:t:p:s:l" ARG; do
           ;;
     l)    LOCAL=1
 	  SCP=cp
-	  FTP_PATH=~ftp/pub/gcc
 	  PATH=~:/usr/local/bin:$PATH;;
     p)    OLD_TARS="${OLD_TARS} ${OPTARG}"
           if [ -d ${OPTARG} ]; then
