@@ -38,7 +38,7 @@ exception statement from your version. */
 package javax.swing.tree;
 
 /**
- * RowMapper interface
+ * RowMapper public interface
  * @author Andrew Selkirk
  */
 public interface RowMapper {
@@ -48,7 +48,7 @@ public interface RowMapper {
 	 * @param path TreePath
 	 * @return TODO
 	 */
-	public int[] getRowsForPaths(TreePath[] path);
+	int[] getRowsForPaths(TreePath[] path);
 
 
 } // RowMapper

@@ -38,7 +38,7 @@ exception statement from your version. */
 package javax.swing.tree;
 
 /**
- * MutableTreeNode interface
+ * MutableTreeNode public interface
  * @author Andrew Selkirk
  */
 public interface MutableTreeNode extends TreeNode {
@@ -48,36 +48,36 @@ public interface MutableTreeNode extends TreeNode {
 	 * @param child MutableTreeNode
 	 * @param index Index
 	 */
-	public void insert(MutableTreeNode child, int index);
+	void insert(MutableTreeNode child, int index);
 
 	/**
 	 * remove
 	 * @param index Index
 	 */
-	public void remove(int index);
+	void remove(int index);
 
 	/**
 	 * remove
 	 * @param node MutableTreeNode
 	 */
-	public void remove(MutableTreeNode node);
+	void remove(MutableTreeNode node);
 
 	/**
 	 * setUserObject
 	 * @param object Object
 	 */
-	public void setUserObject(Object object);
+	void setUserObject(Object object);
 
 	/**
 	 * removeFromParent
 	 */
-	public void removeFromParent();
+	void removeFromParent();
 
 	/**
 	 * setParent
 	 * @param parent MutableTreeNode
 	 */
-	public void setParent(MutableTreeNode parent);
+	void setParent(MutableTreeNode parent);
 
 
 } // MutableTreeNode

@@ -42,9 +42,9 @@ import javax.swing.event.*;
 
 public interface Document
 { 
-  public static final String StreamDescriptionProperty = "stream";
+  String StreamDescriptionProperty = "stream";
   
-  public static final String TitleProperty = "text";
+  String TitleProperty = "text";
 
   void addDocumentListener(DocumentListener listener);
   void addUndoableEditListener(UndoableEditListener listener);

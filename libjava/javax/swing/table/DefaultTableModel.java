@@ -110,7 +110,6 @@ public class DefaultTableModel extends AbstractTableModel
 		Vector		data;
 		Vector		rowData;
 		int		rowIndex;
-		int		columnIndex;
 		int		numColumns;
 
 		// Create Data
@@ -180,7 +179,6 @@ public class DefaultTableModel extends AbstractTableModel
 
 		// Variables
 		int	rowIndex;
-		int	columnIndex;
 		int	numRows;
 		int	numColumns;
 		Vector	columnVector;

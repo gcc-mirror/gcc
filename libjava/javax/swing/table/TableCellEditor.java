@@ -43,7 +43,7 @@ import javax.swing.JTable;
 import javax.swing.CellEditor;
 
 /**
- * TableCellEditor interface
+ * TableCellEditor public interface
  * @author Andrew Selkirk
  */
 public interface TableCellEditor extends CellEditor {
@@ -57,7 +57,7 @@ public interface TableCellEditor extends CellEditor {
 	 * @param column Column of cell
 	 * @returns Component
 	 */
-	public Component getTableCellEditorComponent(JTable table,
+	Component getTableCellEditorComponent(JTable table,
 			Object value, boolean isSelected, int row, int column);
 
 

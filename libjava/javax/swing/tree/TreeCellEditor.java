@@ -42,7 +42,7 @@ import java.awt.Component;
 import javax.swing.JTree;
 
 /**
- * TreeCellEditor interface
+ * TreeCellEditor public interface
  * @author Andrew Selkirk
  */
 public interface TreeCellEditor {
@@ -57,7 +57,7 @@ public interface TreeCellEditor {
 	 * @param row TODO
 	 * @returns TODO
 	 */
-	public Component getTreeCellEditorComponent(JTree tree,
+	Component getTreeCellEditorComponent(JTree tree,
 			Object value, boolean isSelected, boolean expanded,
 			boolean leaf, int row);
 

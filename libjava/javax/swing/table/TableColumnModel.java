@@ -43,7 +43,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.TableColumnModelListener;
 
 /**
- * TableColumnModel interface
+ * TableColumnModel public interface
  * @author Andrew Selkirk
  */
 public interface TableColumnModel {
@@ -52,116 +52,116 @@ public interface TableColumnModel {
 	 * addColumn
 	 * @param column TableColumn
 	 */
-	public void addColumn(TableColumn column);
+	void addColumn(TableColumn column);
 
 	/**
 	 * removeColumn
 	 * @param column TableColumn
 	 */
-	public void removeColumn(TableColumn column);
+	void removeColumn(TableColumn column);
 
 	/**
 	 * moveColumn
 	 * @param columnIndex Index of column to move
 	 * @param newIndex New index of column
 	 */
-	public void moveColumn(int columnIndex, int newIndex);
+	void moveColumn(int columnIndex, int newIndex);
 
 	/**
 	 * setColumnMargin
 	 * @param margin Margin of column
 	 */
-	public void setColumnMargin(int margin);
+	void setColumnMargin(int margin);
 
 	/**
 	 * getColumnCount
 	 * @returns Column count
 	 */
-	public int getColumnCount();
+	int getColumnCount();
 
 	/**
 	 * getColumns
 	 * @returns Enumeration of columns
 	 */
-	public Enumeration getColumns();
+	Enumeration getColumns();
 
 	/**
 	 * getColumnIndex
 	 * @param columnIdentifier Column id
 	 */
-	public int getColumnIndex(Object columnIdentifier);
+	int getColumnIndex(Object columnIdentifier);
 
 	/**
 	 * getColumn
 	 * @param columnIndex Index of column
 	 */
-	public TableColumn getColumn(int columnIndex);
+	TableColumn getColumn(int columnIndex);
 
 	/**
 	 * getColumnMargin
 	 * @returns Column margin
 	 */
-	public int getColumnMargin();
+	int getColumnMargin();
 
 	/**
 	 * getColumnIndexAtX
 	 * @returns Column index as position x
 	 */
-	public int getColumnIndexAtX(int xPosition);
+	int getColumnIndexAtX(int xPosition);
 
 	/**
 	 * getTotalColumnWidth
 	 * @returns Total column width
 	 */
-	public int getTotalColumnWidth();
+	int getTotalColumnWidth();
 
 	/**
 	 * setColumnSelectionAllowed
 	 * @param value Set column selection
 	 */
-	public void setColumnSelectionAllowed(boolean value);
+	void setColumnSelectionAllowed(boolean value);
 
 	/**
 	 * getColumnSelectionAllowed
 	 * @returns true if column selection allowed, false otherwise
 	 */
-	public boolean getColumnSelectionAllowed();
+	boolean getColumnSelectionAllowed();
 
 	/**
 	 * getSelectedColumns
 	 * @returns Selected columns
 	 */
-	public int[] getSelectedColumns();
+	int[] getSelectedColumns();
 
 	/**
 	 * getSelectedColumnCount
 	 * @returns Count of selected columns
 	 */
-	public int getSelectedColumnCount();
+	int getSelectedColumnCount();
 
 	/**
 	 * setSelectionModel
 	 * @param model ListSelectionModel
 	 */
-	public void setSelectionModel(ListSelectionModel model);
+	void setSelectionModel(ListSelectionModel model);
 
 	/**
 	 * getSelectionModel
 	 * @param column TableColumn
 	 */
-	public ListSelectionModel getSelectionModel();
+	ListSelectionModel getSelectionModel();
 
 	/**
 	 * addColumnModelListener
 	 * @param listener TableColumnModelListener
 	 */
-	public void addColumnModelListener(TableColumnModelListener listener);
+	void addColumnModelListener(TableColumnModelListener listener);
 
 	/**
 	 * removeColumnModelListener
 	 * @param listener TableColumnModelListener
 	 */
-	public void removeColumnModelListener(TableColumnModelListener listener);
+	void removeColumnModelListener(TableColumnModelListener listener);
 
 
 } // TableColumnModel
