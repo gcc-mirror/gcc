@@ -2882,7 +2882,7 @@ compute_frame_size (size, fregs_live)
      allocated for any function that makes calls or otherwise allocates
      stack space.  */
   if (!current_function_is_leaf || fsize)
-    fsize += 32;
+    fsize += TARGET_64BIT ? 16 : 32;
 
   return (fsize + STACK_BOUNDARY - 1) & ~(STACK_BOUNDARY - 1);
 }
