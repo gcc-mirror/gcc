@@ -5545,3 +5545,120 @@ output_ashlsi3 (operands)
   /* Otherwise use a shift instruction.  */
   return AS2 (sal%L0,%2,%0);
 }
+
+/* Calculate the length of the memory address in the instruction
+   encoding.  Does not include the one-byte modrm, opcode, or prefix.  */
+
+int
+memory_address_length (addr)
+     rtx addr;
+{
+  rtx base, index, disp, scale;
+  rtx op0, op1;
+  int len;
+
+  if (GET_CODE (addr) == PRE_DEC
+      || GET_CODE (addr) == POST_INC)
+    return 0;
+
+  /* Register Indirect.  */
+  if (register_operand (addr, Pmode))
+    {
+      /* Special cases: ebp and esp need the two-byte modrm form. 
+
+	 We change [ESI] to [ESI+0] on the K6 when not optimizing
+	 for size.  */
+      if (addr == stack_pointer_rtx
+	  || addr == arg_pointer_rtx
+	  || addr == frame_pointer_rtx
+	  || (REGNO_REG_CLASS (REGNO (addr)) == SIREG
+	      && ix86_cpu == PROCESSOR_K6 && !optimize_size)
+	return 1;
+      else
+	return 0;
+    }
+
+  /* Direct Addressing.  */
+  if (CONSTANT_P (addr))
+    return 4;
+
+  index = base = disp = scale = NULL_RTX;
+  op0 = XEXP (addr, 0);
+  op1 = XEXP (addr, 1);
+
+  if (GET_CODE (addr) == PLUS)
+    {
+      if (register_operand (op0, Pmode))
+	{
+	  if (register_operand (op1, Pmode))
+	    index = op0, base = op1;
+	  else
+	    base = op0, disp = op1;
+	}
+      else if (GET_CODE (op0) == MULT)
+	{
+	  index = XEXP (op0, 0);
+	  scale = XEXP (op0, 1);
+	  if (register_operand (op1, Pmode))
+	    base = op1;
+	  else
+	    disp = op1;
+	}
+      else if (GET_CODE (op0) == PLUS && GET_CODE (XEXP (op0, 0)) == MULT)
+	{
+	  index = XEXP (XEXP (op0, 0), 0);
+	  scale = XEXP (XEXP (op0, 0), 1);
+	  base = XEXP (op0, 1);
+	  disp = op1;
+	}
+      else if (GET_CODE (op0) == PLUS)
+	{
+	  index = XEXP (op0, 0);
+	  base = XEXP (op0, 1);
+	  disp = op1;
+	}
+      else
+	abort ();
+    }
+  else if (GET_CODE (addr) == MULT
+	   /* We're called for lea too, which implements ashift on occasion.  */
+	   || GET_CODE (addr) == ASHIFT)
+    {
+      index = XEXP (addr, 0);
+      scale = XEXP (addr, 1);
+    }
+  else
+    abort ();
+      
+  /* Allow arg pointer and stack pointer as index if there is not scaling */
+  if (base && index && !scale
+      && (index == stack_pointer_rtx
+	  || index == arg_pointer_rtx
+	  || index == frame_pointer_rtx))
+    {
+      rtx tmp = base;
+      base = index;
+      index = tmp;
+    }
+
+  /* Special case: ebp cannot be encoded as a base without a displacement.  */
+  if (base == frame_pointer_rtx && !disp)
+    disp = const0_rtx;
+
+  /* Find the length of the displacement constant.  */
+  len = 0;
+  if (disp)
+    {
+      if (GET_CODE (disp) == CONST_INT
+	  && CONST_OK_FOR_LETTER_P (INTVAL (disp), 'K'))
+	len = 1;
+      else
+	len = 4;
+    }
+
+  /* An index requires the two-byte modrm form.  */
+  if (index)
+    len += 1;
+
+  return len;
+}
