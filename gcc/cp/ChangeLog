@@ -1,3 +1,9 @@
+1999-11-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* except.c (expand_end_catch_block): Fix typo.
+	(expand_exception_blocks): Simplify.  Don't call
+	expand_leftover_cleanups.
+
 1999-11-15  Jason Merrill  <jason@casey.cygnus.com>
 
 	* cp-tree.h, decl.c (compute_array_index_type): Make nonstatic.

@@ -563,9 +563,9 @@ expand_end_catch_block (blocks)
     finish_expr_stmt (build_throw (NULL_TREE));
 
   /* Cleanup the EH parameter.  */
-  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt_1);
-    /* Cleanup the EH object.  */
   finish_compound_stmt (/*has_no_scope=*/0, compound_stmt_2);
+    /* Cleanup the EH object.  */
+  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt_1);
 }
 
 /* An exception spec is implemented more or less like:
@@ -656,11 +656,6 @@ void
 expand_exception_blocks ()
 {
   do_pending_stack_adjust ();
-  push_to_sequence (catch_clauses);
-  expand_leftover_cleanups ();
-  do_pending_stack_adjust ();
-  catch_clauses = get_insns ();
-  end_sequence ();
 
   if (catch_clauses)
     {
@@ -679,8 +674,8 @@ expand_exception_blocks ()
       if (exceptions_via_longjmp == 0)
 	expand_eh_region_end (build_terminate_handler ());
 
-      expand_leftover_cleanups ();
-
+      emit_insns (catch_clauses);
+      catch_clauses = NULL_RTX;
       emit_label (funcend);
     }
 }
