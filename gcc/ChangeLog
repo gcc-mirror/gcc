@@ -1,3 +1,18 @@
+Sun Feb  9 13:33:34 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (ahi?v*3): Set third operand type to TImode.
+	* i386.c (ix86_expand_binop_builtin): Extend operand when needed.
+
+	* simplify-rtx.c (simplify_subreg): Fix conversion from vector into
+	integer mode.
+
+	* rtl.def (VEC_MERGE, VEC_SELECT, VEC_CONCAT, VEC_DUPLICATE):
+	Change code so they are arithmetic expressions now.
+	* simplify-rtx.c (simplify_unary_operation, simplify_binary_operation,
+	simplify_ternary_operation): Deal with VEC_* expressions.
+
+	* i386.md (vmaskcmp, pinsrw, movd patterns):  Fix RTL representation.
+
 Sat Feb  8 00:21:22 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (verify_flow_info):  Use control_flow_insn_p.
