@@ -920,7 +920,7 @@ extern char *alpha_function_name;
     do {							\
 	fputs ("\tlda $27,_mcount\n", (FILE));			\
 	fputs ("\tjsr $27,($27),_mcount\n", (FILE));		\
-	fputs ("\tldgp $29,0($26)\n", (FILE));			\
+	fputs ("\tldgp $29,0($27)\n", (FILE));			\
     } while (0);
 
 
