@@ -72,10 +72,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* #define SDB_DEBUGGING_INFO UNOS casm has no debugging :-( */
 
-/* UNOS has vprintf() */ 
-
-#define HAVE_VPRINTF
-
 /* UNOS need stack probe :-( */
 
 #define HAVE_probe 1
