@@ -38,12 +38,17 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "keyword.h"
 #include "flags.h"
 #include "chartables.h"
+#ifndef JC1_LITE
+#include "timevar.h"
+#endif
 
 /* Function declarations.  */
 static char *java_sprint_unicode (struct java_line *, int);
 static void java_unicode_2_utf8 (unicode_t);
 static void java_lex_error (const char *, int);
 #ifndef JC1_LITE
+static int do_java_lex (YYSTYPE *);
+static int java_lex (YYSTYPE *);
 static int java_is_eol (FILE *, int);
 static tree build_wfl_node (tree);
 #endif
@@ -937,7 +942,7 @@ static int
 #ifdef JC1_LITE
 yylex (YYSTYPE *java_lval)
 #else
-java_lex (YYSTYPE *java_lval)
+do_java_lex (YYSTYPE *java_lval)
 #endif
 {
   int c;
@@ -1699,6 +1704,19 @@ java_lex (YYSTYPE *java_lval)
 }
 
 #ifndef JC1_LITE
+
+/* The exported interface to the lexer.  */
+static int
+java_lex (YYSTYPE *java_lval)
+{
+  int r;
+
+  timevar_push (TV_LEX);
+  r = do_java_lex (java_lval);
+  timevar_pop (TV_LEX);
+  return r;
+}
+
 /* This is called by the parser to see if an error should be generated
    due to numeric overflow.  This function only handles the particular
    case of the largest negative value, and is only called in the case
@@ -1716,6 +1734,7 @@ error_if_numeric_overflow (tree value)
 	java_lex_error ("Numeric overflow for `int' literal", 0);
     }
 }
+
 #endif /* JC1_LITE */
 
 static void

@@ -1,3 +1,9 @@
+2003-03-19  Tom Tromey  <tromey@redhat.com>
+
+	* lex.c (do_java_lex): Renamed from java_lex.
+	(java_lex): New function.
+	Include timevar.h.
+
 2003-03-13  Tom Tromey  <tromey@redhat.com>
 
 	* parse.y (resolve_inner_class): Error if qualifier is a primitive
