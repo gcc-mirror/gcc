@@ -1,3 +1,9 @@
+2005-03-05  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/19936
+	* primary.c (match_complex_constant): Mangled complex constant may
+	be an implied do-loop.  Give implied do-loop matcher a chance.
+
 2005-03-05  Steven G. Kargl  <kargls@comcast.net> 
 
 	PR fortran/19754
