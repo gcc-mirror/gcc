@@ -542,6 +542,10 @@ case $basic_machine in
 		basic_machine=m68k-wrs
 		os=-vxworks
 		;;
+	vxworks29k)
+		basic_machine=a29k-wrs
+		os=-vxworks
+		;;
 	xmp)
 		basic_machine=xmp-cray
 		os=-unicos
