@@ -213,7 +213,11 @@ libgij_la_LIBADD = -L$(here)/.libs libgcj.la
 libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
         -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LIBGCJ_LD_SYMBOLIC)
 
-libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
+# Work around libtool wanting to do piece-wise linking with -r.  Using a
+# convenience library suddenly invokes the --whole-archive path instead.
+# This allows the build to succeed for targets that allocate multiple got
+# subsections in the linker, such as Alpha and MIPS.
+libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc \
 	link.cc defineclass.cc interpret.cc verify.cc \
 	$(nat_source_files) $(math_c_source_files) $(java_source_files) \
 	$(gnu_xml_source_files) $(built_java_source_files) \
@@ -222,9 +226,9 @@ libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
 	$(POSIX_PLATFORM_SRC) $(WIN32_PLATFORM_SRC) $(ECOS_PLATFORM_SRC) \
 	$(DARWIN_CRT_SRC) \
 	$(POSIX_THREAD_SRC) $(WIN32_THREAD_SRC) $(NO_THREAD_SRC)
-libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar \
-	java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h \
-	$(LIBLTDL) $(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
+noinst_LTLIBRARIES = libgcj0_convenience.la
+
+libgcj_la_SOURCES =
 
 ## Objects from C++ sources in subdirs.
 nat_files = $(nat_source_files:.cc=.lo)
@@ -239,7 +243,11 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(THREADLIBS) \
 libgcj_la_LIBADD = \
 	external/sax/libsax_convenience.la \
 	external/w3c_dom/libw3c_convenience.la \
+	libgcj0_convenience.la \
 	$(LIBFFI) $(ZLIBS) $(GCLIBS) $(propertyo_files)
+libgcj_la_DEPENDENCIES = libgcj-@gcc_version@.jar \
+	java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h \
+	$(libgcj_la_LIBADD)
 libgcj_la_LINK = $(LIBLINK)
 
 # Gtk/Cairo JNI sources.
