@@ -158,19 +158,6 @@ extern enum processor_type arm_cpu;
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;	\
   arm_cpu = TARGET_6 ? PROCESSOR_ARM6: PROCESSOR_ARM2;		\
 }
-
-/* Omitting the frame pointer is a very good idea on the ARM, especially if
-   not TARGET_APCS, in which case all that pushing on function entry isn't
-   mandatory anymore.  Unfortunately this is not permitted since we mustn't
-   change the flags when -g is enabled and without a frame pointer debugging
-   using dbx is impossible.
-   Forcing loads to be explicit allows cse to work better */
-
-#define OPTIMIZATION_OPTIONS(OPTIMIZE)  \
-{					\
-  if (OPTIMIZE)				\
-    flag_force_mem = 1;			\
-}
 
 /* Target machine storage Layout.  */
 
