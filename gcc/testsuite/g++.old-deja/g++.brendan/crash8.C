@@ -7,6 +7,6 @@ class Elvis
 
 template<int a>
 class Elvis<0>// ERROR - .*
-{
+{ // ERROR - 
    int geta() { return a ; }
 } ;
