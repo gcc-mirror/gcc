@@ -1358,11 +1358,13 @@ sanitize_cpp_opts (void)
 
   /* Disable -dD, -dN and -dI if normal output is suppressed.  Allow
      -dM since at least glibc relies on -M -dM to work.  */
+  /* Also, flag_no_output implies flag_no_line_commands, always. */
   if (flag_no_output)
     {
       if (flag_dump_macros != 'M')
 	flag_dump_macros = 0;
       flag_dump_includes = 0;
+      flag_no_line_commands = 1;
     }
 
   cpp_opts->unsigned_char = !flag_signed_char;

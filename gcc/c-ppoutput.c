@@ -359,7 +359,7 @@ pp_file_change (const struct line_map *map)
 {
   const char *flags = "";
 
-  if (flag_no_line_commands || flag_no_output)
+  if (flag_no_line_commands)
     return;
 
   if (map != NULL)

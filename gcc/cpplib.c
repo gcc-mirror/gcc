@@ -680,6 +680,14 @@ do_include_common (cpp_reader *pfile, enum include_type type)
   if (!fname)
     return;
 
+  if (!*fname)
+  {
+    cpp_error (pfile, CPP_DL_ERROR, "empty filename in #%s",
+               pfile->directive->name);
+    free ((void *) fname);
+    return;
+  }
+
   /* Prevent #include recursion.  */
   if (pfile->line_maps.depth >= CPP_STACK_MAX)
     cpp_error (pfile, CPP_DL_ERROR, "#include nested too deeply");

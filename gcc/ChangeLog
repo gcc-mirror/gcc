@@ -1,3 +1,17 @@
+2004-12-01  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR preprocessor/17651
+	* c-opts.c (sanitize_cpp_opts): Make flag_no_output imply
+	flag_no_line_commands.
+	* c-ppoutput.c (pp_file_change): Remove now-redundant check of
+	flag_no_output.
+
+	PR preprocessor/17610 
+	* directives.c (do_include_common): Error out if an empty filename
+	is given for #include (or #include_next or #import).
+	PR preprocessor/17610
+	* testsuite/gcc.dg/cpp/empty-include.c: New testcase.
+
 2004-12-02  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/16952
