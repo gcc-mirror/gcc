@@ -56,7 +56,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output before writable (uninitialized) data.  */
 
-#define BSS_SECTION_ASM_OP "\.bss"
+#define BSS_SECTION_ASM_OP "\t.bss"
 
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
