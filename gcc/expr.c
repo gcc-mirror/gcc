@@ -2743,6 +2743,7 @@ store_expr (exp, target, want_value)
 	     The string constant may be shorter than the array.
 	     So copy just the string's actual length, and clear the rest.  */
 	  rtx size;
+	  rtx addr;
 
 	  /* Get the size of the data type of the string,
 	     which is actually the size of the target.  */
@@ -2771,17 +2772,16 @@ store_expr (exp, target, want_value)
 		 that we have to clear.  */
 	      if (GET_CODE (copy_size_rtx) == CONST_INT)
 		{
-		  temp = plus_constant (XEXP (target, 0),
+		  addr = plus_constant (XEXP (target, 0),
 					TREE_STRING_LENGTH (exp));
-		  size = plus_constant (size,
-					- TREE_STRING_LENGTH (exp));
+		  size = plus_constant (size, - TREE_STRING_LENGTH (exp));
 		}
 	      else
 		{
 		  enum machine_mode size_mode = Pmode;
 
-		  temp = force_reg (Pmode, XEXP (target, 0));
-		  temp = expand_binop (size_mode, add_optab, temp,
+		  addr = force_reg (Pmode, XEXP (target, 0));
+		  addr = expand_binop (size_mode, add_optab, addr,
 				       copy_size_rtx, NULL_RTX, 0,
 				       OPTAB_LIB_WIDEN);
 
@@ -2798,13 +2798,14 @@ store_expr (exp, target, want_value)
 	      if (size != const0_rtx)
 		{
 #ifdef TARGET_MEM_FUNCTIONS
-		  emit_library_call (memset_libfunc, 0, VOIDmode, 3,
-				     temp, Pmode, const0_rtx, Pmode, size, Pmode);
+		  emit_library_call (memset_libfunc, 0, VOIDmode, 3, addr,
+				     Pmode, const0_rtx, Pmode, size, Pmode);
 #else
 		  emit_library_call (bzero_libfunc, 0, VOIDmode, 2,
-				     temp, Pmode, size, Pmode);
+				     addr, Pmode, size, Pmode);
 #endif
 		}
+
 	      if (label)
 		emit_label (label);
 	    }
