@@ -1,3 +1,7 @@
+2005-01-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* gcc.dg/sh-relax.c: Add prototype for abort.
+
 2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/short-compare-1.c: New test.
