@@ -45,9 +45,11 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.security.AccessController;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedAction;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -192,29 +194,6 @@ public class ObjectStreamClass implements Serializable
     return (flags & ObjectStreamConstants.SC_WRITE_METHOD) != 0;
   }
 
-
-  // Returns true iff the class that this ObjectStreamClass represents
-  // has the following method:
-  //
-  // private void readObject (ObjectOutputStream)
-  //
-  // This method is used by the class to override default
-  // serialization behavior.
-  boolean hasReadMethod()
-  {
-    try
-      {
-	Class[] readObjectParams = { ObjectInputStream.class };
-	forClass().getDeclaredMethod("readObject", readObjectParams);
-	return true;
-      }
-    catch (NoSuchMethodException e)
-      {
-	return false;
-      }
-  }
-
-
   // Returns true iff the class that this ObjectStreamClass represents
   // implements Serializable but does *not* implement Externalizable.
   boolean isSerializable()
@@ -305,6 +284,8 @@ public class ObjectStreamClass implements Serializable
   void setClass(Class cl, ObjectStreamClass superClass) throws InvalidClassException
   {
     this.clazz = cl;
+
+    cacheMethods();
 
     long class_uid = getClassUID(cl);
     if (uid == 0)
@@ -452,6 +433,50 @@ public class ObjectStreamClass implements Serializable
       fields[i].setOffset(objectFieldCount++);
   }
 
+  private Method findMethod(Method[] methods, String name, Class[] params,
+			    Class returnType)
+  {
+outer:
+    for(int i = 0; i < methods.length; i++)
+    {
+	if(methods[i].getName().equals(name) &&
+	   methods[i].getReturnType() == returnType)
+	{
+	    Class[] mp = methods[i].getParameterTypes();
+	    if(mp.length == params.length)
+	    {
+		for(int j = 0; j < mp.length; j++)
+		{
+		    if(mp[j] != params[j])
+		    {
+			continue outer;
+		    }
+		}
+		final Method m = methods[i];
+		AccessController.doPrivileged(new PrivilegedAction()
+		{
+		    public Object run()
+		    {
+			m.setAccessible(true);
+			return null;
+		    }
+		});
+		return m;
+	    }
+	}
+    }
+    return null;
+  }
+
+  private void cacheMethods()
+  {
+    Method[] methods = forClass().getDeclaredMethods();
+    readObjectMethod = findMethod(methods, "readObject",
+				  new Class[] { ObjectInputStream.class },
+				  Void.TYPE);
+    readResolveMethod = findMethod(methods, "readResolve",
+				   new Class[0], Object.class);
+  }
 
   private ObjectStreamClass(Class cl)
   {
@@ -460,6 +485,7 @@ public class ObjectStreamClass implements Serializable
     isProxyClass = Proxy.isProxyClass(cl);
 
     clazz = cl;
+    cacheMethods();
     name = cl.getName();
     setFlags(cl);
     setFields(cl);
@@ -508,9 +534,16 @@ public class ObjectStreamClass implements Serializable
 
     try
       {
-	Field serialPersistentFields =
+	final Field serialPersistentFields =
 	  cl.getDeclaredField("serialPersistentFields");
-	serialPersistentFields.setAccessible(true);
+	AccessController.doPrivileged(new PrivilegedAction()
+	{
+	    public Object run()
+	    {
+		serialPersistentFields.setAccessible(true);
+		return null;
+	    }
+	});
 	int modifiers = serialPersistentFields.getModifiers();
 
 	if (Modifier.isStatic(modifiers)
@@ -553,12 +586,28 @@ public class ObjectStreamClass implements Serializable
     for (int from = 0, to = 0; from < all_fields.length; from++)
       if (all_fields[from] != null)
 	{
-	  Field f = all_fields[from];
-	  fields[to] = new ObjectStreamField(f.getName(), f.getType());
+	  final Field f = all_fields[from];
+	  AccessController.doPrivileged(new PrivilegedAction()
+	  {
+	      public Object run()
+	      {
+		  f.setAccessible(true);
+		  return null;
+	      }
+	  });
+	  fields[to] = new ObjectStreamField(all_fields[from]);
 	  to++;
 	}
 
     Arrays.sort(fields);
+    // Make sure we don't have any duplicate field names
+    // (Sun JDK 1.4.1. throws an Internal Error as well)
+    for (int i = 1; i < fields.length; i++)
+      {
+	if(fields[i - 1].getName().equals(fields[i].getName()))
+	    throw new InternalError("Duplicate field " + 
+			fields[i].getName() + " in class " + cl.getName());
+      }
     calculateOffsets();
   }
 
@@ -571,8 +620,15 @@ public class ObjectStreamClass implements Serializable
 	// Use getDeclaredField rather than getField, since serialVersionUID
 	// may not be public AND we only want the serialVersionUID of this
 	// class, not a superclass or interface.
-	Field suid = cl.getDeclaredField("serialVersionUID");
-	suid.setAccessible(true);
+	final Field suid = cl.getDeclaredField("serialVersionUID");
+	AccessController.doPrivileged(new PrivilegedAction()
+	{
+	    public Object run()
+	    {
+		suid.setAccessible(true);
+		return null;
+	    }
+	});
 	int modifiers = suid.getModifiers();
 
 	if (Modifier.isStatic(modifiers)
@@ -768,6 +824,13 @@ public class ObjectStreamClass implements Serializable
   // these are accessed by ObjectIn/OutputStream
   int primFieldSize = -1;  // -1 if not yet calculated
   int objectFieldCount;
+
+  Method readObjectMethod;
+  Method readResolveMethod;
+  boolean realClassIsSerializable;
+  boolean realClassIsExternalizable;
+  ObjectStreamField[] fieldMapping;
+  Class firstNonSerializableParent;
 
   boolean isProxyClass = false;
 
