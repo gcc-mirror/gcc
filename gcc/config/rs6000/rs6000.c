@@ -217,10 +217,7 @@ reg_or_short_operand (op, mode)
       register rtx op;
       enum machine_mode mode;
 {
-  if (GET_CODE (op) == CONST_INT)
-    return short_cint_operand (op, mode);
-
-  return gpc_reg_operand (op, mode);
+  return short_cint_operand (op, mode) || gpc_reg_operand (op, mode);
 }
 
 /* Similar, except check if the negation of the constant would be valid for
