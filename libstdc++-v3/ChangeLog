@@ -1,3 +1,14 @@
+2003-12-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/performance/container_benchmark.cc: Tweak outputs.
+
+	* testsuite/performance/list_create_fill_sort.cc: Shrink a
+	bit some outputs.
+
+	* testsuite/testsuite_performance.h: Widen a few output fields.
+
+	* testsuite/performance/ifstream_extract_int.cc: New.
+
 2003-12-16  Phil Edwards  <phil@codesourcery.com>
 
 	* configure.ac (AM_INIT_AUTOMAKE):  Don't warn about GNU Make.

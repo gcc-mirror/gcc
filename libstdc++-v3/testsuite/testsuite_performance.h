@@ -185,13 +185,13 @@ namespace __gnu_test
 
     out.setf(std::ios_base::left);
     out << std::setw(25) << testname << tab;
-    out << std::setw(10) << comment << tab;
+    out << std::setw(25) << comment << tab;
 
     out.setf(std::ios_base::right);
     out << std::setw(4) << t.real_time() << "r" << space;
     out << std::setw(4) << t.user_time() << "u" << space;
     out << std::setw(4) << t.system_time() << "s" << space;
-    out << std::setw(4) << r.allocated_memory() << "mem" << space;
+    out << std::setw(8) << r.allocated_memory() << "mem" << space;
     out << std::setw(4) << r.hard_page_fault() << "pf" << space;
     
     out << std::endl;
@@ -211,7 +211,7 @@ namespace __gnu_test
 
     out.setf(std::ios_base::left);
     out << std::setw(25) << testname << tab;
-    out << std::setw(25) << header << tab;
+    out << std::setw(40) << header << tab;
 
     out << std::endl;
     out.close();
