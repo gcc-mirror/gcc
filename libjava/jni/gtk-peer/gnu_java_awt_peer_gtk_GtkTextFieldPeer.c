@@ -39,47 +39,73 @@ exception statement from your version. */
 #include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GtkTextFieldPeer.h"
 
+static jint
+get_border_width (GtkWidget *entry);
+
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_create
-  (JNIEnv *env, jobject obj)
+  (JNIEnv *env, jobject obj, jint text_width)
 {
-  GtkWidget *widget;
+  GtkWidget *entry;
 
   /* Create global reference and save it for future use */
   NSA_SET_GLOBAL_REF (env, obj);
 
   gdk_threads_enter ();
-  
-  widget = gtk_entry_new ();
+
+  entry = gtk_entry_new ();
+  gtk_widget_set_size_request (entry,
+			       text_width + 2 * get_border_width (entry), -1);
 
   gdk_threads_leave ();
 
-  NSA_SET_PTR (env, obj, widget);
+  NSA_SET_PTR (env, obj, entry);
 }
 
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkEntryGetSize
-  (JNIEnv *env, jobject obj, jintArray jdims)
+JNIEXPORT jint JNICALL
+Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkEntryGetBorderWidth
+  (JNIEnv *env, jobject obj)
 {
   void *ptr;
-  jint *dims;
-  GtkRequisition myreq;
-  GtkWidget *entry;
-  
+  int border_width = 0;
+
   ptr = NSA_GET_PTR (env, obj);
-  dims = (*env)->GetIntArrayElements (env, jdims, 0);  
-  
+
   gdk_threads_enter ();
-  
-  entry = GTK_WIDGET (ptr);
-  gtk_widget_size_request(entry, &myreq);
-  dims[0]=myreq.width;
-  dims[1]=myreq.height;
-  
+
+  border_width = get_border_width (GTK_WIDGET (ptr));
+
   gdk_threads_leave ();
-  
-  (*env)->ReleaseIntArrayElements (env, jdims, dims, 0);
+
+  return border_width;
 }
+
+/* GTK hard-codes this value.  It is the space between a GtkEntry's
+   frame and its text. */
+#define INNER_BORDER 2
+
+static jint
+get_border_width (GtkWidget *entry)
+{
+  gint focus_width;
+  gboolean interior_focus;
+  int x_border_width = INNER_BORDER;
+
+  gtk_widget_style_get (entry,
+			"interior-focus", &interior_focus,
+			"focus-line-width", &focus_width,
+			NULL);
+
+  if (GTK_ENTRY (entry)->has_frame)
+    x_border_width += entry->style->xthickness;
+
+  if (!interior_focus)
+    x_border_width += focus_width;
+
+  return x_border_width;
+}
+
+#undef INNER_BORDER
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_setEchoChar
@@ -93,10 +119,12 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_setEchoChar
   gdk_threads_enter ();
 
   entry = GTK_ENTRY (ptr);
-    
-  if (c!=0)
+
+  if (c != 0)
     {
-/*        gtk_entry_set_echo_char (entry, c); */
+      /* FIXME: use gtk_entry_set_invisible_char (GtkEntry *entry,
+	 gunichar ch) here.  That means we must convert from jchar
+	 (utf16) to gunichar (ucs4). */
       gtk_entry_set_visibility (entry, FALSE);
     }
   else

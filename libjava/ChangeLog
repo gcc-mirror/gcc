@@ -1,5 +1,20 @@
 2004-01-20  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* gnu/java/awt/peer/gtk/GtkTextFieldPeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.c
+	(native create): Add width parameter.
+	(create): Calculate text entry width based on current font's
+	metrics and number of columns.  Set TextField's font if not
+	already set.  Call native create.
+	(gtkEntryGetBorderWidth): New native method.
+	(gtkEntryGetSize): Remove method.
+	(getMinimumSize): Call minimumSize.
+	(getPreferredSize): Call preferredSize.
+	(minimumSize): Calculate minimum size based on backing
+	GtkEntry's borders, font metrics and number of columns.
+	(preferredSize): Likewise for preferred size.
+	(get_border_width): New static function.
+
 	* gnu/java/awt/peer/gtk/GtkFramePeer.java (setResizable):
 	Override GtkWindowPeer's setResizable method to account for menu
 	bar height when setting the frame's size.
