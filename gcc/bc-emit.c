@@ -866,7 +866,7 @@ bc_emit_bytecode (bytecode)
      enum bytecode_opcode bytecode;
 {
   char byte;
-  int npushes = arityvec[bytecode].noutputs - arityvec[bytecode].ninputs;
+  int npushes = arityvec[(int) bytecode].noutputs - arityvec[(int) bytecode].ninputs;
   static int prev_lineno = -1;
 
   byte = bytecode;
@@ -889,9 +889,9 @@ bc_emit_bytecode (bytecode)
 
   bc_emit_bytecode_const (&byte, 1);
 
-  if ((stack_depth -= arityvec[bytecode].ninputs) >= 0)
+  if ((stack_depth -= arityvec[(int) bytecode].ninputs) >= 0)
     {
-      if ((stack_depth += arityvec[bytecode].noutputs) > max_stack_depth)
+      if ((stack_depth += arityvec[(int) bytecode].noutputs) > max_stack_depth)
 	max_stack_depth = stack_depth;
     }
 
