@@ -1157,8 +1157,10 @@ build_decl_overload_real (dname, parms, ret_type, tparms, targs,
 				  TREE_CHAIN (parms));
       }
     }
+  else if (tparms)
+    OB_PUTC ('H');
   else
-    OB_PUTC ((tparms != NULL_TREE) ? 'H' : 'F');
+    OB_PUTC ('F');
 
   if (tparms)
     {
