@@ -1,3 +1,12 @@
+2003-02-12  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/spe.h: Fix misc formatting.
+        (__ev_create_ufix32_fs): Cast ev argument.
+        (__ev_create_sfix32_fs): Same.
+        (__ev_get_sfix32_fs_internal): Cast arguments to builtins.
+        (__ev_get_ufix32_fs_internal): Same.
+
+
 2003-02-12  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* doc/tm.texi (MODIFY_JNI_METHOD_CALL): Document.

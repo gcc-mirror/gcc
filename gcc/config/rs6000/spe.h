@@ -1,5 +1,5 @@
 /* PowerPC E500 user include file.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
 
 This file is part of GNU CC.
@@ -45,7 +45,6 @@ typedef unsigned 		__vector __ev64_u32__;
 typedef long long 		__ev64_s64__;
 typedef unsigned long long 	__ev64_u64__;
 typedef float 			__vector __ev64_fs__;
-
 typedef int 			__vector __ev64_opaque__;
 
 #define __v2si __ev64_opaque__
@@ -290,8 +289,8 @@ typedef int 			__vector __ev64_opaque__;
 
 /* Floating Point SIMD Instructions  */
 
-/* These all return V2SF, but we need to cast them to V2SI because the SPE
-   expect all functions to be __ev64_opaque__.  */
+/* These all return V2SF, but we need to cast them to V2SI
+   because the SPE expect all functions to be __ev64_opaque__.  */
 
 #define __ev_fsabs(a) ((__v2si) __builtin_spe_evfsabs ((__v2sf) a))
 #define __ev_fsnabs(a) ((__v2si) __builtin_spe_evfsnabs ((__v2sf) a))
@@ -328,7 +327,6 @@ typedef int 			__vector __ev64_opaque__;
 #define __ev_mwhgsmfan(a, b) __internal_ev_mwhgsmfan ((__v2si) (a), (__v2si) (b))
 #define __ev_mwhgsmian(a, b) __internal_ev_mwhgsmian ((__v2si) (a), (__v2si) (b))
 #define __ev_mwhgumian(a, b) __internal_ev_mwhgumian ((__v2si) (a), (__v2si) (b))
-
 #define __ev_mwhssiaaw(a, b) __internal_ev_mwhssiaaw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwhssfaaw(a, b) __internal_ev_mwhssfaaw ((__v2si) (a), (__v2si) (b))
 #define __ev_mwhsmfaaw(a, b) __internal_ev_mwhsmfaaw ((__v2si) (a), (__v2si) (b))
@@ -348,7 +346,7 @@ __internal_ev_mwhssfaaw (__ev64_opaque__ a, __ev64_opaque__ b)
   __ev64_opaque__ t;
 
   t = __ev_mwhssf (a, b);
-  return __ev_addssiaaw(t);
+  return __ev_addssiaaw (t);
 }
 
 static inline __ev64_opaque__
@@ -356,7 +354,7 @@ __internal_ev_mwhssiaaw (__ev64_opaque__ a, __ev64_opaque__ b)
 {
   __ev64_opaque__ t;
   
-  t = __ev_mwhsmi (a,b);
+  t = __ev_mwhsmi (a, b);
   return __ev_addssiaaw (t);
 }
 
@@ -365,7 +363,7 @@ __internal_ev_mwhsmfaaw (__ev64_opaque__ a, __ev64_opaque__ b)
 {
   __ev64_opaque__ t;
 
-  t = __ev_mwhsmf (a,b);
+  t = __ev_mwhsmf (a, b);
   return __ev_addsmiaaw (t);
 }
  
@@ -374,7 +372,7 @@ __internal_ev_mwhsmiaaw (__ev64_opaque__ a, __ev64_opaque__ b)
 {
   __ev64_opaque__ t;
 
-  t = __ev_mwhsmi (a,b);
+  t = __ev_mwhsmi (a, b);
   return __ev_addsmiaaw (t);
 }
  
@@ -383,7 +381,7 @@ __internal_ev_mwhusiaaw (__ev64_opaque__ a, __ev64_opaque__ b)
 {
   __ev64_opaque__ t;
 
-  t = __ev_mwhumi (a,b);
+  t = __ev_mwhumi (a, b);
   return __ev_addusiaaw (t);
 }
  
@@ -392,7 +390,7 @@ __internal_ev_mwhumiaaw (__ev64_opaque__ a, __ev64_opaque__ b)
 {
   __ev64_opaque__ t;
 
-  t = __ev_mwhumi (a,b);
+  t = __ev_mwhumi (a, b);
   return __ev_addumiaaw (t);
 }
  
@@ -401,7 +399,7 @@ __internal_ev_mwhssfanw (__ev64_opaque__ a, __ev64_opaque__ b)
 {
   __ev64_opaque__ t;
 
-  t = __ev_mwhssf (a,b);
+  t = __ev_mwhssf (a, b);
   return __ev_subfssiaaw (t);
 }
 
@@ -410,7 +408,7 @@ __internal_ev_mwhssianw (__ev64_opaque__ a, __ev64_opaque__ b)
 {
   __ev64_opaque__ t;
 
-  t = __ev_mwhsmi (a,b);
+  t = __ev_mwhsmi (a, b);
   return __ev_subfssiaaw (t);
 }
  
@@ -419,7 +417,7 @@ __internal_ev_mwhsmfanw (__ev64_opaque__ a, __ev64_opaque__ b)
 {
   __ev64_opaque__ t;
 
-  t = __ev_mwhsmf (a,b);
+  t = __ev_mwhsmf (a, b);
   return __ev_subfsmiaaw (t);
 }
  
@@ -428,7 +426,7 @@ __internal_ev_mwhsmianw (__ev64_opaque__ a, __ev64_opaque__ b)
 {
   __ev64_opaque__ t;
 
-  t = __ev_mwhsmi (a,b);
+  t = __ev_mwhsmi (a, b);
   return __ev_subfsmiaaw (t);
 }
  
@@ -437,7 +435,7 @@ __internal_ev_mwhusianw (__ev64_opaque__ a, __ev64_opaque__ b)
 {
   __ev64_opaque__ t;
 
-  t = __ev_mwhumi (a,b);
+  t = __ev_mwhumi (a, b);
   return __ev_subfusiaaw (t);
 }
  
@@ -446,7 +444,7 @@ __internal_ev_mwhumianw (__ev64_opaque__ a, __ev64_opaque__ b)
 {
   __ev64_opaque__ t;
 
-  t = __ev_mwhumi (a,b);
+  t = __ev_mwhumi (a, b);
   return __ev_subfumiaaw (t);
 }
 
@@ -615,7 +613,7 @@ __ev_create_sfix32_fs (float a, float b)
   __ev64_opaque__ ev;
 
   ev = (__ev64_opaque__) __ev_create_fs (a, b);
-  return (__ev64_opaque__) __builtin_spe_evfsctsf (ev);
+  return (__ev64_opaque__) __builtin_spe_evfsctsf ((__v2sf) ev);
 }
 
 static inline __ev64_opaque__
@@ -624,7 +622,7 @@ __ev_create_ufix32_fs (float a, float b)
   __ev64_opaque__ ev;
 
   ev = (__ev64_opaque__) __ev_create_fs (a, b);
-  return (__ev64_opaque__) __builtin_spe_evfsctuf (ev);
+  return (__ev64_opaque__) __builtin_spe_evfsctuf ((__v2sf) ev);
 }
 
 static inline __ev64_opaque__
@@ -728,8 +726,8 @@ __ev_get_sfix32_fs_internal (__ev64_opaque__ a, uint32_t pos)
 {
   __ev64_fs__ v;
 
-  v = __builtin_spe_evfscfsf (a);
-  return __ev_get_fs_internal (v, pos);
+  v = __builtin_spe_evfscfsf ((__v2sf) a);
+  return __ev_get_fs_internal ((__ev64_opaque__) v, pos);
 }
 
 static inline float
@@ -737,8 +735,8 @@ __ev_get_ufix32_fs_internal (__ev64_opaque__ a, uint32_t pos)
 {
   __ev64_fs__ v;
 
-  v = __builtin_spe_evfscfuf (a);
-  return __ev_get_fs_internal (v, pos);
+  v = __builtin_spe_evfscfuf ((__v2sf) a);
+  return __ev_get_fs_internal ((__ev64_opaque__) v, pos);
 }
 
 static inline uint16_t
@@ -781,7 +779,7 @@ __ev_get_s16_internal (__ev64_opaque__ a, uint32_t pos)
 #define __ev_set_sfix32_fs(a, b, c)  __ev_set_sfix32_fs_internal ((__ev64_opaque__) (a), b, c)
 #define __ev_set_ufix32_fs(a, b, c)  __ev_set_ufix32_fs_internal ((__ev64_opaque__) (a), b, c)
 
-#define __ev_set_upper_u32(a, b) __ev_set_u32(a, b, 0)
+#define __ev_set_upper_u32(a, b) __ev_set_u32 (a, b, 0)
 #define __ev_set_lower_u32(a, b) __ev_set_u32 (a, b, 1)
 #define __ev_set_upper_s32(a, b) __ev_set_s32 (a, b, 0)
 #define __ev_set_lower_s32(a, b) __ev_set_s32 (a, b, 1)
@@ -817,7 +815,7 @@ __ev_set_acc_s64 (int64_t a)
 }
 
 static inline __ev64_opaque__
-__ev_set_u32_internal (__ev64_opaque__ a, uint32_t b, uint32_t pos )
+__ev_set_u32_internal (__ev64_opaque__ a, uint32_t b, uint32_t pos)
 {
   union
   {
@@ -831,7 +829,7 @@ __ev_set_u32_internal (__ev64_opaque__ a, uint32_t b, uint32_t pos )
 }
 
 static inline __ev64_opaque__
-__ev_set_s32_internal (__ev64_opaque__ a, int32_t b, uint32_t pos )
+__ev_set_s32_internal (__ev64_opaque__ a, int32_t b, uint32_t pos)
 {
   union
   {
@@ -845,7 +843,7 @@ __ev_set_s32_internal (__ev64_opaque__ a, int32_t b, uint32_t pos )
 }
 
 static inline __ev64_opaque__
-__ev_set_fs_internal (__ev64_opaque__ a, float b, uint32_t pos )
+__ev_set_fs_internal (__ev64_opaque__ a, float b, uint32_t pos)
 {
   union
   {
@@ -891,7 +889,7 @@ __ev_set_ufix32_fs_internal (__ev64_opaque__ a, float b, uint32_t pos)
 }
 
 static inline __ev64_opaque__
-__ev_set_u16_internal (__ev64_opaque__ a, uint16_t b, uint32_t pos )
+__ev_set_u16_internal (__ev64_opaque__ a, uint16_t b, uint32_t pos)
 {
   union
   {
@@ -905,7 +903,7 @@ __ev_set_u16_internal (__ev64_opaque__ a, uint16_t b, uint32_t pos )
 }
 
 static inline __ev64_opaque__
-__ev_set_s16_internal (__ev64_opaque__ a, int16_t b, uint32_t pos )
+__ev_set_s16_internal (__ev64_opaque__ a, int16_t b, uint32_t pos)
 {
   union
   {
@@ -925,136 +923,70 @@ __ev_set_s16_internal (__ev64_opaque__ a, int16_t b, uint32_t pos )
 #define __pred_upper	2
 #define __pred_lower	3
 
-#define __ev_any_gts(a, b) \
-	__builtin_spe_evcmpgts (__pred_any, (__v2si)(a), (__v2si)(b))
-#define __ev_all_gts(a, b) \
-	__builtin_spe_evcmpgts (__pred_all, (__v2si)(a), (__v2si)(b))
-#define __ev_upper_gts(a, b) \
-	__builtin_spe_evcmpgts (__pred_upper, (__v2si)(a), (__v2si)(b))
-#define __ev_lower_gts(a, b) \
-	__builtin_spe_evcmpgts (__pred_lower, (__v2si)(a), (__v2si)(b))
-#define __ev_select_gts(a, b, c, d) \
-	((__v2si) __builtin_spe_evsel_gts ((__v2si)(a), (__v2si)(b), \
-					   (__v2si)(c), (__v2si)(d)))
+#define __ev_any_gts(a, b)		__builtin_spe_evcmpgts (__pred_any, (__v2si) (a), (__v2si) (b))
+#define __ev_all_gts(a, b)		__builtin_spe_evcmpgts (__pred_all, (__v2si) (a), (__v2si) (b))
+#define __ev_upper_gts(a, b)		__builtin_spe_evcmpgts (__pred_upper, (__v2si) (a), (__v2si) (b))
+#define __ev_lower_gts(a, b)		__builtin_spe_evcmpgts (__pred_lower, (__v2si) (a), (__v2si) (b))
+#define __ev_select_gts(a, b, c, d) 	((__v2si) __builtin_spe_evsel_gts ((__v2si) (a), (__v2si) (b), (__v2si) (c), (__v2si) (d)))
 
-#define __ev_any_gtu(a, b) \
-	__builtin_spe_evcmpgtu (__pred_any, (__v2si)(a), (__v2si)(b))
-#define __ev_all_gtu(a, b) \
-	__builtin_spe_evcmpgtu (__pred_all, (__v2si)(a), (__v2si)(b))
-#define __ev_upper_gtu(a, b) \
-	__builtin_spe_evcmpgtu (__pred_upper, (__v2si)(a), (__v2si)(b))
-#define __ev_lower_gtu(a, b) \
-	__builtin_spe_evcmpgtu (__pred_lower, (__v2si)(a), (__v2si)(b))
-#define __ev_select_gtu(a, b, c, d) \
-	((__v2si) __builtin_spe_evsel_gtu ((__v2si)(a), (__v2si)(b), \
-					   (__v2si)(c), (__v2si)(d)))
+#define __ev_any_gtu(a, b)		__builtin_spe_evcmpgtu (__pred_any, (__v2si) (a), (__v2si) (b))
+#define __ev_all_gtu(a, b)		__builtin_spe_evcmpgtu (__pred_all, (__v2si) (a), (__v2si) (b))
+#define __ev_upper_gtu(a, b)		__builtin_spe_evcmpgtu (__pred_upper, (__v2si) (a), (__v2si) (b))
+#define __ev_lower_gtu(a, b)		__builtin_spe_evcmpgtu (__pred_lower, (__v2si) (a), (__v2si) (b))
+#define __ev_select_gtu(a, b, c, d) 	((__v2si) __builtin_spe_evsel_gtu ((__v2si) (a), (__v2si) (b), (__v2si) (c), (__v2si) (d)))
 
-#define __ev_any_lts(a, b) \
-	__builtin_spe_evcmplts (__pred_any, (__v2si)(a), (__v2si)(b))
-#define __ev_all_lts(a, b) \
-	__builtin_spe_evcmplts (__pred_all, (__v2si)(a), (__v2si)(b))
-#define __ev_upper_lts(a, b) \
-	__builtin_spe_evcmplts (__pred_upper, (__v2si)(a), (__v2si)(b))
-#define __ev_lower_lts(a, b) \
-	__builtin_spe_evcmplts (__pred_lower, (__v2si)(a), (__v2si)(b))
-#define __ev_select_lts(a, b, c, d) \
-	((__v2si) __builtin_spe_evsel_lts ((__v2si)(a), (__v2si)(b), \
-					   (__v2si)(c), (__v2si)(d)))
+#define __ev_any_lts(a, b)		__builtin_spe_evcmplts (__pred_any, (__v2si) (a), (__v2si) (b))
+#define __ev_all_lts(a, b)		__builtin_spe_evcmplts (__pred_all, (__v2si) (a), (__v2si) (b))
+#define __ev_upper_lts(a, b)		__builtin_spe_evcmplts (__pred_upper, (__v2si) (a), (__v2si) (b))
+#define __ev_lower_lts(a, b)		__builtin_spe_evcmplts (__pred_lower, (__v2si) (a), (__v2si) (b))
+#define __ev_select_lts(a, b, c, d) 	((__v2si) __builtin_spe_evsel_lts ((__v2si) (a), (__v2si) (b), (__v2si) (c), (__v2si) (d)))
 
-#define __ev_any_ltu(a, b) \
-	__builtin_spe_evcmpltu (__pred_any, (__v2si)(a), (__v2si)(b))
-#define __ev_all_ltu(a, b) \
-	__builtin_spe_evcmpltu (__pred_all, (__v2si)(a), (__v2si)(b))
-#define __ev_upper_ltu(a, b) \
-	__builtin_spe_evcmpltu (__pred_upper, (__v2si)(a), (__v2si)(b))
-#define __ev_lower_ltu(a, b) \
-	__builtin_spe_evcmpltu (__pred_lower, (__v2si)(a), (__v2si)(b))
-#define __ev_select_ltu(a, b, c, d) \
-	((__v2si) __builtin_spe_evsel_ltu ((__v2si)(a), (__v2si)(b), \
-					   (__v2si)(c), (__v2si)(d)))
-#define __ev_any_eq(a, b) \
-	__builtin_spe_evcmpeq (__pred_any, (__v2si)(a), (__v2si)(b))
-#define __ev_all_eq(a, b) \
-	__builtin_spe_evcmpeq (__pred_all, (__v2si)(a), (__v2si)(b))
-#define __ev_upper_eq(a, b) \
-	__builtin_spe_evcmpeq (__pred_upper, (__v2si)(a), (__v2si)(b))
-#define __ev_lower_eq(a, b) \
-	__builtin_spe_evcmpeq (__pred_lower, (__v2si)(a), (__v2si)(b))
-#define __ev_select_eq(a, b, c, d) \
-	((__v2si) __builtin_spe_evsel_eq ((__v2si)(a), (__v2si)(b), \
-					  (__v2si)(c), (__v2si)(d)))
+#define __ev_any_ltu(a, b)		__builtin_spe_evcmpltu (__pred_any, (__v2si) (a), (__v2si) (b))
+#define __ev_all_ltu(a, b)		__builtin_spe_evcmpltu (__pred_all, (__v2si) (a), (__v2si) (b))
+#define __ev_upper_ltu(a, b)		__builtin_spe_evcmpltu (__pred_upper, (__v2si) (a), (__v2si) (b))
+#define __ev_lower_ltu(a, b)		__builtin_spe_evcmpltu (__pred_lower, (__v2si) (a), (__v2si) (b))
+#define __ev_select_ltu(a, b, c, d) 	((__v2si) __builtin_spe_evsel_ltu ((__v2si) (a), (__v2si) (b), (__v2si) (c), (__v2si) (d)))
+#define __ev_any_eq(a, b)		__builtin_spe_evcmpeq (__pred_any, (__v2si) (a), (__v2si) (b))
+#define __ev_all_eq(a, b)		__builtin_spe_evcmpeq (__pred_all, (__v2si) (a), (__v2si) (b))
+#define __ev_upper_eq(a, b)		__builtin_spe_evcmpeq (__pred_upper, (__v2si) (a), (__v2si) (b))
+#define __ev_lower_eq(a, b)		__builtin_spe_evcmpeq (__pred_lower, (__v2si) (a), (__v2si) (b))
+#define __ev_select_eq(a, b, c, d) 	((__v2si) __builtin_spe_evsel_eq ((__v2si) (a), (__v2si) (b), (__v2si) (c), (__v2si) (d)))
 
-#define __ev_any_fs_gt(a, b) \
-	__builtin_spe_evfscmpgt (__pred_any, (__v2sf)(a), (__v2sf)(b))
-#define __ev_all_fs_gt(a, b) \
-	__builtin_spe_evfscmpgt (__pred_all, (__v2sf)(a), (__v2sf)(b))
-#define __ev_upper_fs_gt(a, b) \
-	__builtin_spe_evfscmpgt (__pred_upper, (__v2sf)(a), (__v2sf)(b))
-#define __ev_lower_fs_gt(a, b) \
-	__builtin_spe_evfscmpgt (__pred_lower, (__v2sf)(a), (__v2sf)(b))
-#define __ev_select_fs_gt(a, b, c, d) \
-	((__v2si) __builtin_spe_evsel_fsgt ((__v2sf)(a), (__v2sf)(b), \
-					    (__v2sf)(c), (__v2sf)(d)))
+#define __ev_any_fs_gt(a, b)		__builtin_spe_evfscmpgt (__pred_any, (__v2sf) (a), (__v2sf) (b))
+#define __ev_all_fs_gt(a, b)		__builtin_spe_evfscmpgt (__pred_all, (__v2sf) (a), (__v2sf) (b))
+#define __ev_upper_fs_gt(a, b)		__builtin_spe_evfscmpgt (__pred_upper, (__v2sf) (a), (__v2sf) (b))
+#define __ev_lower_fs_gt(a, b)		__builtin_spe_evfscmpgt (__pred_lower, (__v2sf) (a), (__v2sf) (b))
+#define __ev_select_fs_gt(a, b, c, d)	((__v2si) __builtin_spe_evsel_fsgt ((__v2sf) (a), (__v2sf) (b), (__v2sf) (c), (__v2sf) (d)))
 
-#define __ev_any_fs_lt(a, b) \
-	__builtin_spe_evfscmplt (__pred_any, (__v2sf)(a), (__v2sf)(b))
-#define __ev_all_fs_lt(a, b) \
-	__builtin_spe_evfscmplt (__pred_all, (__v2sf)(a), (__v2sf)(b))
-#define __ev_upper_fs_lt(a, b) \
-	__builtin_spe_evfscmplt (__pred_upper, (__v2sf)(a), (__v2sf)(b))
-#define __ev_lower_fs_lt(a, b) \
-	__builtin_spe_evfscmplt (__pred_lower, (__v2sf)(a), (__v2sf)(b))
-#define __ev_select_fs_lt(a, b, c, d) \
-	((__v2si) __builtin_spe_evsel_fslt ((__v2sf)(a), (__v2sf)(b), \
-					    (__v2sf)(c), (__v2sf)(d)))
+#define __ev_any_fs_lt(a, b)		__builtin_spe_evfscmplt (__pred_any, (__v2sf) (a), (__v2sf) (b))
+#define __ev_all_fs_lt(a, b)		__builtin_spe_evfscmplt (__pred_all, (__v2sf) (a), (__v2sf) (b))
+#define __ev_upper_fs_lt(a, b)		__builtin_spe_evfscmplt (__pred_upper, (__v2sf) (a), (__v2sf) (b))
+#define __ev_lower_fs_lt(a, b)		__builtin_spe_evfscmplt (__pred_lower, (__v2sf) (a), (__v2sf) (b))
+#define __ev_select_fs_lt(a, b, c, d)	((__v2si) __builtin_spe_evsel_fslt ((__v2sf) (a), (__v2sf) (b), (__v2sf) (c), (__v2sf) (d)))
 
-#define __ev_any_fs_eq(a, b) \
-	__builtin_spe_evfscmpeq (__pred_any, (__v2sf)(a), (__v2sf)(b))
-#define __ev_all_fs_eq(a, b) \
-	__builtin_spe_evfscmpeq (__pred_all, (__v2sf)(a), (__v2sf)(b))
-#define __ev_upper_fs_eq(a, b) \
-	__builtin_spe_evfscmpeq (__pred_upper, (__v2sf)(a), (__v2sf)(b))
-#define __ev_lower_fs_eq(a, b) \
-	__builtin_spe_evfscmpeq (__pred_lower, (__v2sf)(a), (__v2sf)(b))
-#define __ev_select_fs_eq(a, b, c, d) \
-	((__v2si) __builtin_spe_evsel_fseq ((__v2sf)(a), (__v2sf)(b), \
-					    (__v2sf)(c), (__v2sf)(d)))
+#define __ev_any_fs_eq(a, b)		__builtin_spe_evfscmpeq (__pred_any, (__v2sf) (a), (__v2sf) (b))
+#define __ev_all_fs_eq(a, b)		__builtin_spe_evfscmpeq (__pred_all, (__v2sf) (a), (__v2sf) (b))
+#define __ev_upper_fs_eq(a, b)		__builtin_spe_evfscmpeq (__pred_upper, (__v2sf) (a), (__v2sf) (b))
+#define __ev_lower_fs_eq(a, b)		__builtin_spe_evfscmpeq (__pred_lower, (__v2sf) (a), (__v2sf) (b))
+#define __ev_select_fs_eq(a, b, c, d)	((__v2si) __builtin_spe_evsel_fseq ((__v2sf) (a), (__v2sf) (b), (__v2sf) (c), (__v2sf) (d)))
 
-#define __ev_any_fs_tst_gt(a, b) \
-	__builtin_spe_evfststgt (__pred_any, (__v2sf)(a), (__v2sf)(b))
-#define __ev_all_fs_tst_gt(a, b) \
-	__builtin_spe_evfststgt (__pred_all, (__v2sf)(a), (__v2sf)(b))
-#define __ev_upper_fs_tst_gt(a, b) \
-	__builtin_spe_evfststgt (__pred_upper, (__v2sf)(a), (__v2sf)(b))
-#define __ev_lower_fs_tst_gt(a, b) \
-	__builtin_spe_evfststgt (__pred_lower, (__v2sf)(a), (__v2sf)(b))
-#define __ev_select_fs_tst_gt(a, b, c, d) \
-	((__v2si) __builtin_spe_evsel_fststgt ((__v2sf)(a), (__v2sf)(b), \
-					       (__v2sf)(c), (__v2sf)(d)))
+#define __ev_any_fs_tst_gt(a, b)	__builtin_spe_evfststgt (__pred_any, (__v2sf) (a), (__v2sf) (b))
+#define __ev_all_fs_tst_gt(a, b)	__builtin_spe_evfststgt (__pred_all, (__v2sf) (a), (__v2sf) (b))
+#define __ev_upper_fs_tst_gt(a, b)	__builtin_spe_evfststgt (__pred_upper, (__v2sf) (a), (__v2sf) (b))
+#define __ev_lower_fs_tst_gt(a, b)	__builtin_spe_evfststgt (__pred_lower, (__v2sf) (a), (__v2sf) (b))
+#define __ev_select_fs_tst_gt(a, b, c, d)	((__v2si) __builtin_spe_evsel_fststgt ((__v2sf) (a), (__v2sf) (b), (__v2sf) (c), (__v2sf) (d)))
 
-#define __ev_any_fs_tst_lt(a, b) \
-	__builtin_spe_evfststlt (__pred_any, (__v2sf)(a), (__v2sf)(b))
-#define __ev_all_fs_tst_lt(a, b) \
-	__builtin_spe_evfststlt (__pred_all, (__v2sf)(a), (__v2sf)(b))
-#define __ev_upper_fs_tst_lt(a, b) \
-	__builtin_spe_evfststlt (__pred_upper, (__v2sf)(a), (__v2sf)(b))
-#define __ev_lower_fs_tst_lt(a, b) \
-	__builtin_spe_evfststlt (__pred_lower, (__v2sf)(a), (__v2sf)(b))
-#define __ev_select_fs_tst_lt(a, b, c, d) \
-	((__v2si) __builtin_spe_evsel_fststlt ((__v2sf)(a), (__v2sf)(b), \
-					       (__v2sf)(c), (__v2sf)(d)))
+#define __ev_any_fs_tst_lt(a, b)	__builtin_spe_evfststlt (__pred_any, (__v2sf) (a), (__v2sf) (b))
+#define __ev_all_fs_tst_lt(a, b)	__builtin_spe_evfststlt (__pred_all, (__v2sf) (a), (__v2sf) (b))
+#define __ev_upper_fs_tst_lt(a, b)	__builtin_spe_evfststlt (__pred_upper, (__v2sf) (a), (__v2sf) (b))
+#define __ev_lower_fs_tst_lt(a, b)	__builtin_spe_evfststlt (__pred_lower, (__v2sf) (a), (__v2sf) (b))
+#define __ev_select_fs_tst_lt(a, b, c, d)	((__v2si) __builtin_spe_evsel_fststlt ((__v2sf) (a), (__v2sf) (b), (__v2sf) (c), (__v2sf) (d)))
 
-#define __ev_any_fs_tst_eq(a, b) \
-	__builtin_spe_evfststeq (__pred_any, (__v2sf)(a), (__v2sf)(b))
-#define __ev_all_fs_tst_eq(a, b) \
-	__builtin_spe_evfststeq (__pred_all, (__v2sf)(a), (__v2sf)(b))
-#define __ev_upper_fs_tst_eq(a, b) \
-	__builtin_spe_evfststeq (__pred_upper, (__v2sf)(a), (__v2sf)(b))
-#define __ev_lower_fs_tst_eq(a, b) \
-	__builtin_spe_evfststeq (__pred_lower, (__v2sf)(a), (__v2sf)(b))
-#define __ev_select_fs_tst_eq(a, b, c, d) \
-	((__v2si) __builtin_spe_evsel_fststeq ((__v2sf)(a), (__v2sf)(b), \
-					       (__v2sf)(c), (__v2sf)(d)))
+#define __ev_any_fs_tst_eq(a, b)	__builtin_spe_evfststeq (__pred_any, (__v2sf) (a), (__v2sf) (b))
+#define __ev_all_fs_tst_eq(a, b)	__builtin_spe_evfststeq (__pred_all, (__v2sf) (a), (__v2sf) (b))
+#define __ev_upper_fs_tst_eq(a, b)	__builtin_spe_evfststeq (__pred_upper, (__v2sf) (a), (__v2sf) (b))
+#define __ev_lower_fs_tst_eq(a, b)	__builtin_spe_evfststeq (__pred_lower, (__v2sf) (a), (__v2sf) (b))
+#define __ev_select_fs_tst_eq(a, b, c, d)	((__v2si) __builtin_spe_evsel_fststeq ((__v2sf) (a), (__v2sf) (b), (__v2sf) (c), (__v2sf) (d)))
 
 /* SPEFSCR accesor functions.  */
 
@@ -1066,7 +998,7 @@ __ev_set_s16_internal (__ev64_opaque__ a, int16_t b, uint32_t pos )
 #define __SPEFSCR_FDBZH		0x04000000
 #define __SPEFSCR_FUNFH		0x02000000
 #define __SPEFSCR_FOVFH		0x01000000
-/* 2 unused bits */
+/* 2 unused bits.  */
 #define __SPEFSCR_FINXS		0x00200000
 #define __SPEFSCR_FINVS		0x00100000
 #define __SPEFSCR_FDBZS		0x00080000
@@ -1081,7 +1013,7 @@ __ev_set_s16_internal (__ev64_opaque__ a, int16_t b, uint32_t pos )
 #define __SPEFSCR_FDBZ		0x00000400
 #define __SPEFSCR_FUNF		0x00000200
 #define __SPEFSCR_FOVF		0x00000100
-/* 1 unused bit */
+/* 1 unused bit.  */
 #define __SPEFSCR_FINXE		0x00000040
 #define __SPEFSCR_FINVE		0x00000020
 #define __SPEFSCR_FDBZE		0x00000010
@@ -1140,8 +1072,8 @@ __ev_clr_spefscr_field (int mask)
      rnd = 0 (nearest)
      rnd = 1 (zero)
      rnd = 2 (+inf)
-     rnd = 3 (-inf)
-*/
+     rnd = 3 (-inf).  */
+
 static inline void
 __ev_set_spefscr_frmc (int rnd)
 {
