@@ -1,6 +1,6 @@
 /* Configuration for GNU compiler
    for an Intel i386 or later processor running OS/2 2.x.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Samuel Figueroa (figueroa@cs.nyu.edu)
 
 This file is part of GNU CC.
@@ -41,8 +41,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 int spawnv (int modeflag, char *path, char *argv[]);
 int spawnvp (int modeflag, char *path, char *argv[]);
 #endif /* __IBMC__ */
+
 #ifndef PATH_SEPARATOR
 #define PATH_SEPARATOR ';'
+#endif
+#ifndef DIR_SEPARATOR
+#define DIR_SEPARATOR '\\'
 #endif
 
 #define EXECUTABLE_SUFFIX ".exe"
