@@ -539,6 +539,7 @@ f77.mostlyclean:
 	-cd f/runtime; $(MAKE) mostlyclean
 	-cd $(srcdir)/f/runtime; $(MAKE) -f Makefile.in mostlyclean
 f77.clean:
+	-rm -f g77.c
 	-cd f/runtime; $(MAKE) clean
 	-cd $(srcdir)/f/runtime; $(MAKE) -f Makefile.in clean
 f77.distclean:

@@ -1,3 +1,7 @@
+Tue Dec  2 09:57:16 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Make-lang.in (f77.clean): Remove g77.c.
+
 Tue Nov 25 15:33:28 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Make-lang.in (f77.all.build): Add $(exeext) to binary files.
