@@ -1,3 +1,9 @@
+2003-02-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9729
+	* mangle.c (mangle_conv_op_name_for_type): Issue an error message
+	when the G++ 3.2 ABI prevents correct compilation.
+
 2003-02-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Change base class access representation. Share virtual base
