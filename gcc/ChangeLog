@@ -1,5 +1,9 @@
 2004-12-13  Richard Henderson  <rth@redhat.com>
 
+	* cfg.c (dump_flow_info): Don't dump pseudo info after reload.
+
+2004-12-13  Richard Henderson  <rth@redhat.com>
+
 	* Makefile.in (insn-preds.o): Depend on REGS_H.
 	* genpreds.c (write_insn_preds_c): Include regs.h.
 	* config/i386/predicates.md (index_register_operand): Use
