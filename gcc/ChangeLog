@@ -1,3 +1,9 @@
+Sun Jul  5 23:58:19 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* i386/freebsd-elf.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Protect with
+	HAVE_GAS_MAX_SKIP_P2ALIGN.
+	* i386/linux.h: Likewise.
+	
 Fri Jul  3 02:33:35 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* sparc.c (sparc_operand, move_operand,	arith_operand,
