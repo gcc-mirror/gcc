@@ -3893,7 +3893,8 @@ initiate_states ()
 
   VLA_PTR_CREATE (units_container, description->units_num, "units_container");
   units_array
-    = (description->decls_num ? VLA_PTR_BEGIN (units_container) : NULL);
+    = (description->decls_num && description->units_num
+       ? VLA_PTR_BEGIN (units_container) : NULL);
   for (i = 0; i < description->decls_num; i++)
     {
       decl = description->decls [i];

@@ -1,5 +1,10 @@
 2002-05-05  Vladimir Makarov  <vmakarov@redhat.com>
 
+	* genautomata.c (initiate_states): Add additional guard to
+	initialize `units_array'.
+
+2002-05-05  Vladimir Makarov  <vmakarov@redhat.com>
+
 	* genautomata.c (form_the_same_automaton_unit_lists_from_regexp,
 	process_unit_to_form_the_same_automaton_unit_lists,
 	form_the_same_automaton_unit_lists
