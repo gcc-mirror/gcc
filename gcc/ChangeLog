@@ -1,3 +1,8 @@
+Tue Dec 22 13:02:22 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* toplev.c (main): Delete handling of -dM as a preprocessor
+	option.
+
 Mon Dec 21 17:39:38 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* toplev.c (main): Don't emit any warnings when using -dD, -dM, or
