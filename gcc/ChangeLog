@@ -1,3 +1,7 @@
+2001-04-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* loop.c (loop_delete_insns): Add prototype.
+
 2001-04-23  Phil Edwards  <pme@sources.redhat.com>
 
 	* configure.in:  Remove ENABLE_STD_NAMESPACE.

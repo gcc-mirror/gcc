@@ -258,6 +258,7 @@ static rtx loop_call_insn_hoist PARAMS((const struct loop *, rtx));
 static rtx loop_insn_sink_or_swim PARAMS((const struct loop *, rtx));
 
 static void loop_dump_aux PARAMS ((const struct loop *, FILE *, int));
+static void loop_delete_insns PARAMS ((rtx, rtx));
 void debug_ivs PARAMS ((const struct loop *));
 void debug_iv_class PARAMS ((const struct iv_class *));
 void debug_biv PARAMS ((const struct induction *));
