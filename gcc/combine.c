@@ -6038,6 +6038,23 @@ make_compound_operation (x, in_code)
 
 	  return newer;
 	}
+
+      /* If this is a paradoxical subreg, and the new code is a sign or
+	 zero extension, omit the subreg and widen the extension.  If it
+	 is a regular subreg, we can still get rid of the subreg by not
+	 widening so much, or in fact removing the extension entirely.  */
+      if ((GET_CODE (tem) == SIGN_EXTEND
+	   || GET_CODE (tem) == ZERO_EXTEND)
+	  && subreg_lowpart_p (x))
+	{
+	  if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (tem))
+	      || (GET_MODE_SIZE (mode) >
+		  GET_MODE_SIZE (GET_MODE (XEXP (tem, 0)))))
+	    tem = gen_rtx_combine (GET_CODE (tem), mode, XEXP (tem, 0));
+	  else
+	    tem = gen_lowpart_for_combine (mode, XEXP (tem, 0));
+	  return tem;
+	}
       break;
       
     default:
