@@ -1,3 +1,8 @@
+2000-12-28  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* varasm.c (initializer_constant_valid_p): Indicate subtraction of
+	pointers to the same string constant is absolute.
+
 2000-12-28  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (enum format_type): Add strfmon_format_type.
