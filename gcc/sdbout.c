@@ -104,7 +104,7 @@ static void sdbout_typedefs ();
 static void sdbout_syms ();
 static void sdbout_one_type ();
 static void sdbout_queue_anonymous_type ();
-static void sdbout_dequeue_anonymous_type ();
+static void sdbout_dequeue_anonymous_types ();
 static int plain_type_1 ();
 
 /* Define the default sizes for various types.  */
