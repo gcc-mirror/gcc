@@ -1,3 +1,23 @@
+2003-04-23  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in (c-lex.o, LIBCPP_OBJS, cpplex.o): Update.
+	* c-lex.c (MULTIBYTE_CHARS): Remove conditionals.
+	(lex_string): Take cpp_string with full spelling.
+	(cb_ident): Update.
+	(c_lex): Update diagnostics.
+	* cpplex.c (SPELL_NUMBER, SPELL_STRING): Combine into SPELL_LITERAL.
+	(create_literal): New.
+	(lex_string): Unterminated literals have type CPP_OTHER.
+	(_cpp_lex_direct): Update calls to lex_string.  Use create_literal
+	for CPP_OTHER.
+	(cpp_token_len, cpp_spell_token, cpp_output_token): Simplify.
+	(_cpp_equiv_tokens, cpp_interpret_charconst): Update.
+	* cpplib.c (parse_include, do_line, do_linemarker,
+	destringize_and_run): Update for token storing full spelling.
+	* cpplib.h: Update token spelling types.
+	* cppmacro.c (stringify_arg, check_trad_stringification):
+	Update for token storing full spelling.
+
 2003-04-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_expand_cmpstr): Disable CLC loop.

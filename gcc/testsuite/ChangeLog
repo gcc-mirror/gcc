@@ -1,3 +1,11 @@
+2003-04-23  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/include2.c: Update.
+	* gcc.dg/cpp/multiline-2.c: New.
+	* gcc.dg/cpp/multiline.c: Update.
+	* gcc.dg/cpp/strify2.c: Update.
+	* gcc.dg/cpp/trad/literals-2.c: Update.
+
 2003-04-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* g++.dg/other/packed1.C: XFAIL hppa*-*-*.

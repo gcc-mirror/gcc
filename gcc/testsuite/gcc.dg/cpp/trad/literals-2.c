@@ -3,6 +3,6 @@
 
 /* { dg-do preprocess } */
 
-/* { dg-error "missing terminating" "bad charconst" { target *-*-* } 7 } */
+/* { dg-error "not valid" "bad charconst" { target *-*-* } 7 } */
 #if 'x
 #endif

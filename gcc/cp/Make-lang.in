@@ -228,7 +228,7 @@ CXX_TREE_H = $(TREE_H) cp/name-lookup.h cp/cp-tree.h c-common.h \
 	$(srcdir)/../include/hashtab.h $(srcdir)/../include/splay-tree.h
 
 cp/lex.o: cp/lex.c $(CXX_TREE_H) $(TM_H) flags.h cp/lex.h \
-  c-pragma.h toplev.h output.h mbchar.h input.h diagnostic.h \
+  c-pragma.h toplev.h output.h input.h diagnostic.h \
   cp/operators.def $(TM_P_H)
 cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) $(TM_H) toplev.h langhooks.h \
   $(LANGHOOKS_DEF_H) c-common.h

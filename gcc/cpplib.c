@@ -627,9 +627,9 @@ parse_include (pfile, pangle_brackets)
   header = get_token_no_padding (pfile);
   if (header->type == CPP_STRING || header->type == CPP_HEADER_NAME)
     {
-      fname = xmalloc (header->val.str.len + 1);
-      memcpy (fname, header->val.str.text, header->val.str.len);
-      fname[header->val.str.len] = '\0';
+      fname = xmalloc (header->val.str.len - 1);
+      memcpy (fname, header->val.str.text + 1, header->val.str.len - 2);
+      fname[header->val.str.len - 2] = '\0';
       *pangle_brackets = header->type == CPP_HEADER_NAME;
     }
   else if (header->type == CPP_LESS)
@@ -832,8 +832,8 @@ do_line (pfile)
   token = cpp_get_token (pfile);
   if (token->type == CPP_STRING)
     {
-      new_file = (const char *) dequote_string (pfile, token->val.str.text,
-						token->val.str.len);
+      new_file = (const char *) dequote_string (pfile, token->val.str.text + 1,
+						token->val.str.len - 2);
       check_eol (pfile);
     }
   else if (token->type != CPP_EOF)
@@ -881,8 +881,8 @@ do_linemarker (pfile)
   token = cpp_get_token (pfile);
   if (token->type == CPP_STRING)
     {
-      new_file = (const char *) dequote_string (pfile, token->val.str.text,
-						token->val.str.len);
+      new_file = (const char *) dequote_string (pfile, token->val.str.text + 1,
+						token->val.str.len - 2);
       new_sysp = 0;
       flag = read_flag (pfile, 0);
       if (flag == 1)
@@ -1369,8 +1369,10 @@ destringize_and_run (pfile, in)
   const unsigned char *src, *limit;
   char *dest, *result;
 
-  dest = result = alloca (in->len + 1);
-  for (src = in->text, limit = src + in->len; src < limit;)
+  dest = result = alloca (in->len - 1);
+  src = in->text + 1 + (in->text[0] == 'L');
+  limit = in->text + in->len - 1;
+  while (src < limit)
     {
       /* We know there is a character following the backslash.  */
       if (*src == '\\' && (src[1] == '\\' || src[1] == '"'))

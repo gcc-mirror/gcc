@@ -1267,7 +1267,7 @@ c-lang.o : c-lang.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_TR
 c-lex.o : c-lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
     $(RTL_H) debug.h $(C_TREE_H) c-common.h real.h c-incpath.h cppdefault.h \
     c-pragma.h input.h intl.h flags.h toplev.h output.h \
-    mbchar.h $(CPPLIB_H) $(EXPR_H) $(TM_P_H)
+    $(CPPLIB_H) $(EXPR_H) $(TM_P_H)
 c-ppoutput.o : c-ppoutput.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
     c-common.h $(TREE_H) $(CPPLIB_H) cpphash.h $(TM_P_H) c-pragma.h
 c-objc-common.o : c-objc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
@@ -2326,7 +2326,7 @@ PREPROCESSOR_DEFINES = \
 
 LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o cpptrad.o \
 		cpphash.o cpperror.o cppinit.o cppcharset.o \
-		hashtable.o line-map.o mkdeps.o mbchar.o cpppch.o
+		hashtable.o line-map.o mkdeps.o cpppch.o
 
 LIBCPP_DEPS =	$(CPPLIB_H) cpphash.h line-map.h hashtable.h intl.h \
 		$(OBSTACK_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)
@@ -2341,7 +2341,7 @@ libcpp.a: $(LIBCPP_OBJS)
 cppcharset.o: cppcharset.c $(LIBCPP_DEPS)
 cpperror.o: cpperror.c $(LIBCPP_DEPS)
 cppexp.o:   cppexp.c   $(LIBCPP_DEPS)
-cpplex.o:   cpplex.c   $(LIBCPP_DEPS) mbchar.h
+cpplex.o:   cpplex.c   $(LIBCPP_DEPS)
 cppmacro.o: cppmacro.c $(LIBCPP_DEPS)
 cpplib.o:   cpplib.c   $(LIBCPP_DEPS)
 cpphash.o:  cpphash.c  $(LIBCPP_DEPS)
