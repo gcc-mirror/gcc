@@ -1,3 +1,14 @@
+Fri Feb 13 14:38:34 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* dwarf2out.c (decl_scope_node): New type.
+	(decl_scope_table): Change type to use it.
+	(decl_scope_table_allocated, decl_scope_depth): Change type to int.
+	(push_decl_scope): Use new type.  New locals containing_scope, i.
+	Add code to handle setting previous field.
+	(scope_die_for): Change type of local i to int.  Add code to use
+	previous field.
+	(dwarf2out_init): Use new type.
+
 1998-02-13  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (emit_throw): Lose throw_used.

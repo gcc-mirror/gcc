@@ -2235,18 +2235,29 @@ static unsigned decl_die_table_in_use;
    decl_die_table.  */
 #define DECL_DIE_TABLE_INCREMENT 256
 
+/* Structure used for the decl_scope table.  scope is the current declaration
+   scope, and previous is the entry that is the parent of this scope.  This
+   is usually but not always the immediately preceeding entry.  */
+
+typedef struct decl_scope_struct
+{
+  tree scope;
+  int previous;
+}
+decl_scope_node;
+
 /* A pointer to the base of a table of references to declaration
    scopes.  This table is a display which tracks the nesting
    of declaration scopes at the current scope and containing
    scopes.  This table is used to find the proper place to
    define type declaration DIE's.  */
-static tree *decl_scope_table;
+static decl_scope_node *decl_scope_table;
 
 /* Number of elements currently allocated for the decl_scope_table.  */
-static unsigned decl_scope_table_allocated;
+static int decl_scope_table_allocated;
 
 /* Current level of nesting of declaration scopes.  */
-static unsigned decl_scope_depth;
+static int decl_scope_depth;
 
 /* Size (in elements) of increments by which we may expand the
    decl_scope_table.  */
@@ -7481,16 +7492,50 @@ static void
 push_decl_scope (scope)
      tree scope;
 {
+  tree containing_scope;
+  int i;
+
   /* Make room in the decl_scope_table, if necessary.  */
   if (decl_scope_table_allocated == decl_scope_depth)
     {
       decl_scope_table_allocated += DECL_SCOPE_TABLE_INCREMENT;
       decl_scope_table
-	= (tree *) xrealloc (decl_scope_table,
-			     decl_scope_table_allocated * sizeof (tree));
+	= (decl_scope_node *) xrealloc (decl_scope_table,
+					(decl_scope_table_allocated
+					 * sizeof (decl_scope_node)));
     }
 
-  decl_scope_table[decl_scope_depth++] = scope;
+  decl_scope_table[decl_scope_depth].scope = scope;
+
+  /* Sometimes, while recursively emitting subtypes within a class type,
+     we end up recuring on a subtype at a higher level then the current
+     subtype.  In such a case, we need to search the decl_scope_table to
+     find the parent of this subtype.  */
+
+  if (TREE_CODE_CLASS (TREE_CODE (scope)) == 't')
+    containing_scope = TYPE_CONTEXT (scope);
+  else
+    containing_scope = NULL_TREE;
+
+  /* The normal case.  */
+  if (decl_scope_depth == 0
+      || containing_scope == NULL_TREE
+      || containing_scope == decl_scope_table[decl_scope_depth - 1].scope)
+    decl_scope_table[decl_scope_depth].previous = decl_scope_depth - 1;
+  else
+    {
+      /* We need to search for the containing_scope.  */
+      for (i = 0; i < decl_scope_depth; i++)
+	if (decl_scope_table[i].scope == containing_scope)
+	  break;
+
+      if (i == decl_scope_depth)
+	abort ();
+      else
+	decl_scope_table[decl_scope_depth].previous = i;
+    }
+
+  decl_scope_depth++;
 }
 
 /* Return the DIE for the scope the immediately contains this declaration.  */
@@ -7502,7 +7547,7 @@ scope_die_for (t, context_die)
 {
   register dw_die_ref scope_die = NULL;
   register tree containing_scope;
-  register unsigned long i;
+  register int i;
 
   /* Walk back up the declaration tree looking for a place to define
      this type.  */
@@ -7523,12 +7568,13 @@ scope_die_for (t, context_die)
     scope_die = comp_unit_die;
   else
     {
-      for (i = decl_scope_depth, scope_die = context_die;
-	   i > 0 && decl_scope_table[i - 1] != containing_scope;
-	   scope_die = scope_die->die_parent, --i)
+      for (i = decl_scope_depth - 1, scope_die = context_die;
+	   i >= 0 && decl_scope_table[i].scope != containing_scope;
+	   (scope_die = scope_die->die_parent,
+	    i = decl_scope_table[i].previous))
 	;
 
-      if (i == 0)
+      if (i < 0)
 	{
 	  if (scope_die != comp_unit_die
 	      || TREE_CODE_CLASS (TREE_CODE (containing_scope)) != 't')
@@ -9651,9 +9697,10 @@ dwarf2out_init (asm_out_file, main_input_filename)
 
   /* Allocate the initial hunk of the decl_scope_table.  */
   decl_scope_table
-    = (tree *) xmalloc (DECL_SCOPE_TABLE_INCREMENT * sizeof (tree));
+    = (decl_scope_node *) xmalloc (DECL_SCOPE_TABLE_INCREMENT
+				   * sizeof (decl_scope_node));
   bzero ((char *) decl_scope_table,
-	 DECL_SCOPE_TABLE_INCREMENT * sizeof (tree));
+	 DECL_SCOPE_TABLE_INCREMENT * sizeof (decl_scope_node));
   decl_scope_table_allocated = DECL_SCOPE_TABLE_INCREMENT;
   decl_scope_depth = 0;
 
