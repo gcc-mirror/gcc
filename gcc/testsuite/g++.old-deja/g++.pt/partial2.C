@@ -14,10 +14,10 @@ typedef unsigned int other1_t;
 template<class T> struct foo3 {};
 template<class T, other1_t n> struct foo3<T[n]>;
 foo3<char> bar3;
-foo3<char[10]> baz3; // ERROR - incomplete type - XFAIL *-*-*
+foo3<char[10]> baz3; // ERROR - incomplete type - 
 
 typedef int other2_t;
 template<class T> struct foo4 {};
 template<class T, other1_t n> struct foo4<T[n]>;
 foo4<char> bar4;
-foo4<char[10]> baz4; // ERROR - incomplete type - XFAIL *-*-*
+foo4<char[10]> baz4; // ERROR - incomplete type - 
