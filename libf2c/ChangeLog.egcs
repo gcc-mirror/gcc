@@ -1,3 +1,7 @@
+Tue Jul 14 02:16:34 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* libU77/Makefile.in (ALL_CFLAGS): Add -I$(F2C_H_DIR).
+
 1998-07-06  Mike Stump  <mrs@wrs.com>
 
 	* Makefile.in (clean): Don't remove Makefiles, that is done in

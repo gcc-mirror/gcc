@@ -47,7 +47,7 @@ SHELL = /bin/sh
 
 # fio.h is in libI77.  config.h is in `.'.
 ALL_CFLAGS = -I. -I$(srcdir) -I$(F2C_H_DIR)/libI77 -I$(G2C_H_DIR) \
-             $(CPPFLAGS) $(DEFS) $(CFLAGS)
+             -I$(F2C_H_DIR) $(CPPFLAGS) $(DEFS) $(CFLAGS)
 
 # This could probably be done more elegantly, but it's currently
 # just for running the u77-test test.
