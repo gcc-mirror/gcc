@@ -1896,16 +1896,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	  start_catch_handler (prepare_eh_table_type (type));
 	  expand_expr_stmt (TREE_OPERAND (current, 0));
 
-	  /* Need to expand a goto to the end of the function here,
-	     but not for the catch everything handler. */
-	  if (type)
-	    {
-	      if (return_label)
-		emit_jump (return_label);
-	      else
-		fatal ("No return_label for this function - "
-		       "java_lang_expand_expr");
-	    }
+	  expand_resume_after_catch ();
 	  end_catch_handler ();
 	}
 

@@ -293,3 +293,12 @@ emit_handlers ()
       emit_label (funcend);
     }
 }
+
+/* Resume executing at the statement immediately after the end of an
+   exception region. */
+
+void
+expand_resume_after_catch ()
+{
+  expand_goto (top_label_entry (&caught_return_label_stack));
+}
