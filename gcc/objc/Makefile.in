@@ -34,39 +34,39 @@ SHELL=/bin/sh
 
 OPTIMIZE= -O
 
-VPATH = $(srcdir)/objc
+srcdir = .
+VPATH = $(srcdir)
 
 AR = ar
 AR_FLAGS = rc
 
-# Always search these dirs when compiling.
-SUBDIR_INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/config
+# Define this as & to perform parallel make on a Sequent.
+# Note that this has some bugs, and it seems currently necessary 
+# to compile all the gen* files first by hand to avoid erroneous results.
+P =
 
-.c.o:
-	$(GCC_FOR_TARGET) $(OPTIMIZE) \
-		-c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
+# Definition of `all' is here so that new rules inserted by sed
+# do not specify the default target.
+all: all.indirect
 
-.m.o:
-	$(GCC_FOR_TARGET) $(OPTIMIZE) -fgnu-runtime \
-		-c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $<
+# sed inserts variable overrides after the following line.
+####target overrides
+####host overrides
+####cross overrides
+####build overrides
+
 
-# If we were not invoked from the parent dir,
-# invoke make in the parent dir and have reinvoke this makefile.
-# That's necessary to get the right values for srcdir, etc.
-all:
-	cd ..; $(MAKE) sublibobjc.a
+OBJC_H = hash.h objc-list.h sarray.h objc.h objc-api.h \
+  NXConstStr.h Object.h Protocol.h encoding.h typedstream.h thr.h
 
-OBJC_O = hash.o sarray.o class.o sendmsg.o init.o archive.o encoding.o \
-         selector.o objects.o misc.o NXConstStr.o Object.o Protocol.o \
-         nil_method.o thr.o linking.o $(OBJC_THREAD_FILE).o
+# Now figure out from those variables how to compile and link.
+all.indirect: Makefile compiler objc-runtime
 
-libobjc.a: $(OBJC_O)
-	$(AR) rc libobjc.a $?
-# ranlib is run in the parent directory's makefile.
+compiler:
+	cd ..; $(MAKE) cc1obj
 
-OBJC_H = hash.h objc-list.h sarray.h objc.h \
-         objc-api.h \
-	 NXConstStr.h Object.h Protocol.h encoding.h typedstream.h thr.h
+objc-runtime:
+	cd ..; $(MAKE) libobjc.a
 
 # copy objc headers to installation include directory
 copy-headers: 
@@ -78,6 +78,9 @@ copy-headers:
 	  chmod a+r $(incinstalldir)/objc/$${file}; \
 	done
 
+Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
+	cd ..; $(SHELL) config.status
+
 mostlyclean:
 	-rm -f *.o libobjc.a xforward fflags
 clean: mostlyclean
@@ -86,20 +89,3 @@ extraclean: mostlyclean
 
 # For Sun VPATH.
 
-hash.o: hash.c
-sarray.o: sarray.c
-class.o: class.c
-sendmsg.o: sendmsg.c
-init.o: init.c
-archive.o: archive.c
-encoding.o: encoding.c
-selector.o: selector.c
-objects.o: objects.c
-misc.o: misc.c
-NXConstStr.o: NXConstStr.m
-Object.o: Object.m
-Protocol.o: Protocol.m
-thr.o: thr.h thr.c
-$(OBJC_THREAD_FILE).o: $(OBJC_THREAD_FILE).c
-nil_method.o: nil_method.c
-linking.o: linking.m
