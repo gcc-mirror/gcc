@@ -1,4 +1,10 @@
-Sun Oct  4 07:11:34 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+Sun Oct  4 08:37:36 1998  Paul Edwards  <avon@matra.com.au>
+
+	* configure.in (AC_CHECK_HEADERS): Add sys/types.h and sys/stat.h.
+	* gcc.c (sys/types.h, sys/stat.h): Only include if exist.
+	* cccp.c, toplev.c: Likewise.
+
+Sun Oct  4 07:11:34 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.eu>
 
 	* loop.c (strength_reduce): Track maybe_multiple on giv scan.
 	(find_mem_givs, record_giv): New argument maybe_multiple.
