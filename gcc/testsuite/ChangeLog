@@ -4,6 +4,9 @@
 
 2003-12-03  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13179
+	* g++.dg/template/eh1.C: New test.
+
 	PR c++/10771
 	* g++.dg/template/error5.C: New test.
 

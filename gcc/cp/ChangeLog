@@ -1,5 +1,9 @@
 2003-12-03  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13179
+	* semantics.c (finish_handler_parms): Do not call eh_type_info for
+	types used in templates.
+
 	PR c++/10771
 	* parser.c (cp_parser_check_for_invalid_template_id): New
 	function.
