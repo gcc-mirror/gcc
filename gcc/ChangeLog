@@ -1,3 +1,19 @@
+2002-01-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* real.c (GET_REAL, PUT_REAL): Don't cast away const-ness.
+	(ezero, ehalf, eone, etwo, e32, elog2, esqrt2, epi): Const-ify.
+	Add array size in declaration.
+	(endian, emov, eisneg, eisinf, eisnan, eiisnan, eiisneg, emovi,
+	emovo, emovz, eiisinf, ecmpm, eaddm, esubm, m16m, edivm, emulm,
+	esub, eadd, eadd1, ediv, emul, e53toe, e64toe, e113toe, e24toe,
+	etoe113, etoe64, etoe53, etoe24, ecmp, eround, ltoe, ultoe,
+	eifrac, euifrac, e24toasc, e53toasc, e64toasc, e113toasc, etoasc,
+	efloor, efrexp, eldexp, eremain, dectoe, etodec, ibmtoe, etoibm,
+	c4xtoe, etoc4x, uditoe, ditoe, etoudi, etodi, esqrt, etens,
+	emtens, make_nan): Const-ify.
+	(TFbignan, TFlittlenan, XFbignan, XFlittlenan, DFbignan,
+	DFlittlenan, SFbignan, SFlittlenan): Make static and const-ify.
+
 2002-01-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* config.gcc (ia64-*-*): Set extra_headers.

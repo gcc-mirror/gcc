@@ -267,10 +267,10 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 # define NE 6
 # define MAXDECEXP 4932
 # define MINDECEXP -4956
-# define GET_REAL(r,e)  memcpy ((char *)(e), (char *)(r), 2*NE)
+# define GET_REAL(r,e)  memcpy ((e), (r), 2*NE)
 # define PUT_REAL(e,r)						\
 	do {							\
-	  memcpy ((char *)(r), (char *)(e), 2*NE);		\
+	  memcpy ((r), (e), 2*NE);				\
 	  if (2*NE < sizeof(*r))				\
 	    memset ((char *)(r) + 2*NE, 0, sizeof(*r) - 2*NE);	\
 	} while (0)
@@ -279,10 +279,10 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 #   define NE 10
 #   define MAXDECEXP 4932
 #   define MINDECEXP -4977
-#   define GET_REAL(r,e) memcpy ((char *)(e), (char *)(r), 2*NE)
+#   define GET_REAL(r,e) memcpy ((e), (r), 2*NE)
 #   define PUT_REAL(e,r)					\
 	do {							\
-	  memcpy ((char *)(r), (char *)(e), 2*NE);		\
+	  memcpy ((r), (e), 2*NE);				\
 	  if (2*NE < sizeof(*r))				\
 	    memset ((char *)(r) + 2*NE, 0, sizeof(*r) - 2*NE);	\
 	} while (0)
@@ -297,14 +297,14 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 #define GET_REAL(r,e)							\
 do {									\
      if (HOST_FLOAT_WORDS_BIG_ENDIAN == REAL_WORDS_BIG_ENDIAN)		\
-       e53toe ((UEMUSHORT *) (r), (e));				\
+       e53toe ((const UEMUSHORT *) (r), (e));				\
      else								\
        {								\
 	 UEMUSHORT w[4];					\
-         memcpy (&w[3], ((EMUSHORT *) r), sizeof (EMUSHORT));		\
-         memcpy (&w[2], ((EMUSHORT *) r) + 1, sizeof (EMUSHORT));	\
-         memcpy (&w[1], ((EMUSHORT *) r) + 2, sizeof (EMUSHORT));	\
-         memcpy (&w[0], ((EMUSHORT *) r) + 3, sizeof (EMUSHORT));	\
+         memcpy (&w[3], ((const EMUSHORT *) r), sizeof (EMUSHORT));	\
+         memcpy (&w[2], ((const EMUSHORT *) r) + 1, sizeof (EMUSHORT));	\
+         memcpy (&w[1], ((const EMUSHORT *) r) + 2, sizeof (EMUSHORT));	\
+         memcpy (&w[0], ((const EMUSHORT *) r) + 3, sizeof (EMUSHORT));	\
 	 e53toe (w, (e));						\
        }								\
    } while (0)
@@ -327,7 +327,7 @@ do {									\
 #else /* not REAL_ARITHMETIC */
 
 /* emulator uses host format */
-#define GET_REAL(r,e) e53toe ((UEMUSHORT *) (r), (e))
+#define GET_REAL(r,e) e53toe ((const UEMUSHORT *) (r), (e))
 #define PUT_REAL(e,r) etoe53 ((e), (UEMUSHORT *) (r))
 
 #endif /* not REAL_ARITHMETIC */
@@ -363,97 +363,97 @@ do {									\
 #endif
 
 extern int extra_warnings;
-extern UEMUSHORT ezero[], ehalf[], eone[], etwo[];
-extern UEMUSHORT elog2[], esqrt2[];
+extern const UEMUSHORT ezero[NE], ehalf[NE], eone[NE], etwo[NE];
+extern const UEMUSHORT elog2[NE], esqrt2[NE];
 
-static void endian	PARAMS ((UEMUSHORT *, long *,
+static void endian	PARAMS ((const UEMUSHORT *, long *,
 			       enum machine_mode));
 static void eclear	PARAMS ((UEMUSHORT *));
-static void emov	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void emov	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 #if 0
 static void eabs	PARAMS ((UEMUSHORT *));
 #endif
 static void eneg	PARAMS ((UEMUSHORT *));
-static int eisneg	PARAMS ((UEMUSHORT *));
-static int eisinf	PARAMS ((UEMUSHORT *));
-static int eisnan	PARAMS ((UEMUSHORT *));
+static int eisneg	PARAMS ((const UEMUSHORT *));
+static int eisinf	PARAMS ((const UEMUSHORT *));
+static int eisnan	PARAMS ((const UEMUSHORT *));
 static void einfin	PARAMS ((UEMUSHORT *));
 #ifdef NANS
 static void enan	PARAMS ((UEMUSHORT *, int));
 static void einan	PARAMS ((UEMUSHORT *));
-static int eiisnan	PARAMS ((UEMUSHORT *));
-static int eiisneg	PARAMS ((UEMUSHORT *));
+static int eiisnan	PARAMS ((const UEMUSHORT *));
+static int eiisneg	PARAMS ((const UEMUSHORT *));
 static void make_nan	PARAMS ((UEMUSHORT *, int, enum machine_mode));
 #endif
-static void emovi	PARAMS ((UEMUSHORT *, UEMUSHORT *));
-static void emovo	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void emovi	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
+static void emovo	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 static void ecleaz	PARAMS ((UEMUSHORT *));
 static void ecleazs	PARAMS ((UEMUSHORT *));
-static void emovz	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void emovz	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 #if 0
 static void eiinfin	PARAMS ((UEMUSHORT *));
 #endif
 #ifdef INFINITY
-static int eiisinf	PARAMS ((UEMUSHORT *));
+static int eiisinf	PARAMS ((const UEMUSHORT *));
 #endif
-static int ecmpm	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static int ecmpm	PARAMS ((const UEMUSHORT *, const UEMUSHORT *));
 static void eshdn1	PARAMS ((UEMUSHORT *));
 static void eshup1	PARAMS ((UEMUSHORT *));
 static void eshdn8	PARAMS ((UEMUSHORT *));
 static void eshup8	PARAMS ((UEMUSHORT *));
 static void eshup6	PARAMS ((UEMUSHORT *));
 static void eshdn6	PARAMS ((UEMUSHORT *));
-static void eaddm	PARAMS ((UEMUSHORT *, UEMUSHORT *));
-static void esubm	PARAMS ((UEMUSHORT *, UEMUSHORT *));
-static void m16m	PARAMS ((unsigned int, UEMUSHORT *, UEMUSHORT *));
-static int edivm	PARAMS ((UEMUSHORT *, UEMUSHORT *));
-static int emulm	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void eaddm	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
+static void esubm	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
+static void m16m	PARAMS ((unsigned int, const UEMUSHORT *, UEMUSHORT *));
+static int edivm	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
+static int emulm	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 static void emdnorm	PARAMS ((UEMUSHORT *, int, int, EMULONG, int));
-static void esub	PARAMS ((UEMUSHORT *, UEMUSHORT *,
-			       UEMUSHORT *));
-static void eadd	PARAMS ((UEMUSHORT *, UEMUSHORT *,
-			       UEMUSHORT *));
-static void eadd1	PARAMS ((UEMUSHORT *, UEMUSHORT *,
-			       UEMUSHORT *));
-static void ediv	PARAMS ((UEMUSHORT *, UEMUSHORT *,
-			       UEMUSHORT *));
-static void emul	PARAMS ((UEMUSHORT *, UEMUSHORT *,
-			       UEMUSHORT *));
-static void e53toe	PARAMS ((UEMUSHORT *, UEMUSHORT *));
-static void e64toe	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void esub	PARAMS ((const UEMUSHORT *, const UEMUSHORT *,
+				 UEMUSHORT *));
+static void eadd	PARAMS ((const UEMUSHORT *, const UEMUSHORT *,
+				 UEMUSHORT *));
+static void eadd1	PARAMS ((const UEMUSHORT *, const UEMUSHORT *,
+				 UEMUSHORT *));
+static void ediv	PARAMS ((const UEMUSHORT *, const UEMUSHORT *,
+				 UEMUSHORT *));
+static void emul	PARAMS ((const UEMUSHORT *, const UEMUSHORT *,
+				 UEMUSHORT *));
+static void e53toe	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
+static void e64toe	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 #if (INTEL_EXTENDED_IEEE_FORMAT == 0)
-static void e113toe	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void e113toe	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 #endif
-static void e24toe	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void e24toe	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 #if (INTEL_EXTENDED_IEEE_FORMAT == 0)
-static void etoe113	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void etoe113	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 static void toe113	PARAMS ((UEMUSHORT *, UEMUSHORT *));
 #endif
-static void etoe64	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void etoe64	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 static void toe64	PARAMS ((UEMUSHORT *, UEMUSHORT *));
-static void etoe53	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void etoe53	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 static void toe53	PARAMS ((UEMUSHORT *, UEMUSHORT *));
-static void etoe24	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void etoe24	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 static void toe24	PARAMS ((UEMUSHORT *, UEMUSHORT *));
-static int ecmp		PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static int ecmp		PARAMS ((const UEMUSHORT *, const UEMUSHORT *));
 #if 0
-static void eround	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void eround	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 #endif
-static void ltoe	PARAMS ((HOST_WIDE_INT *, UEMUSHORT *));
-static void ultoe	PARAMS ((unsigned HOST_WIDE_INT *, UEMUSHORT *));
-static void eifrac	PARAMS ((UEMUSHORT *, HOST_WIDE_INT *,
-			       UEMUSHORT *));
-static void euifrac	PARAMS ((UEMUSHORT *, unsigned HOST_WIDE_INT *,
-			       UEMUSHORT *));
+static void ltoe	PARAMS ((const HOST_WIDE_INT *, UEMUSHORT *));
+static void ultoe	PARAMS ((const unsigned HOST_WIDE_INT *, UEMUSHORT *));
+static void eifrac	PARAMS ((const UEMUSHORT *, HOST_WIDE_INT *,
+				 UEMUSHORT *));
+static void euifrac	PARAMS ((const UEMUSHORT *, unsigned HOST_WIDE_INT *,
+				 UEMUSHORT *));
 static int eshift	PARAMS ((UEMUSHORT *, int));
 static int enormlz	PARAMS ((UEMUSHORT *));
 #if 0
-static void e24toasc	PARAMS ((UEMUSHORT *, char *, int));
-static void e53toasc	PARAMS ((UEMUSHORT *, char *, int));
-static void e64toasc	PARAMS ((UEMUSHORT *, char *, int));
-static void e113toasc	PARAMS ((UEMUSHORT *, char *, int));
+static void e24toasc	PARAMS ((const UEMUSHORT *, char *, int));
+static void e53toasc	PARAMS ((const UEMUSHORT *, char *, int));
+static void e64toasc	PARAMS ((const UEMUSHORT *, char *, int));
+static void e113toasc	PARAMS ((const UEMUSHORT *, char *, int));
 #endif /* 0 */
-static void etoasc	PARAMS ((UEMUSHORT *, char *, int));
+static void etoasc	PARAMS ((const UEMUSHORT *, char *, int));
 static void asctoe24	PARAMS ((const char *, UEMUSHORT *));
 static void asctoe53	PARAMS ((const char *, UEMUSHORT *));
 static void asctoe64	PARAMS ((const char *, UEMUSHORT *));
@@ -462,45 +462,45 @@ static void asctoe113	PARAMS ((const char *, UEMUSHORT *));
 #endif
 static void asctoe	PARAMS ((const char *, UEMUSHORT *));
 static void asctoeg	PARAMS ((const char *, UEMUSHORT *, int));
-static void efloor	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void efloor	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 #if 0
-static void efrexp	PARAMS ((UEMUSHORT *, int *,
-			       UEMUSHORT *));
+static void efrexp	PARAMS ((const UEMUSHORT *, int *,
+				 UEMUSHORT *));
 #endif
-static void eldexp	PARAMS ((UEMUSHORT *, int, UEMUSHORT *));
+static void eldexp	PARAMS ((const UEMUSHORT *, int, UEMUSHORT *));
 #if 0
-static void eremain	PARAMS ((UEMUSHORT *, UEMUSHORT *,
-			       UEMUSHORT *));
+static void eremain	PARAMS ((const UEMUSHORT *, const UEMUSHORT *,
+				 UEMUSHORT *));
 #endif
 static void eiremain	PARAMS ((UEMUSHORT *, UEMUSHORT *));
 static void mtherr	PARAMS ((const char *, int));
 #ifdef DEC
-static void dectoe	PARAMS ((UEMUSHORT *, UEMUSHORT *));
-static void etodec	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void dectoe	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
+static void etodec	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 static void todec	PARAMS ((UEMUSHORT *, UEMUSHORT *));
 #endif
 #ifdef IBM
-static void ibmtoe	PARAMS ((UEMUSHORT *, UEMUSHORT *,
-			       enum machine_mode));
-static void etoibm	PARAMS ((UEMUSHORT *, UEMUSHORT *,
-			       enum machine_mode));
+static void ibmtoe	PARAMS ((const UEMUSHORT *, UEMUSHORT *,
+				 enum machine_mode));
+static void etoibm	PARAMS ((const UEMUSHORT *, UEMUSHORT *,
+				 enum machine_mode));
 static void toibm	PARAMS ((UEMUSHORT *, UEMUSHORT *,
-			       enum machine_mode));
+				 enum machine_mode));
 #endif
 #ifdef C4X
-static void c4xtoe	PARAMS ((UEMUSHORT *, UEMUSHORT *,
- 			       enum machine_mode));
-static void etoc4x	PARAMS ((UEMUSHORT *, UEMUSHORT *,
- 			       enum machine_mode));
+static void c4xtoe	PARAMS ((const UEMUSHORT *, UEMUSHORT *,
+				 enum machine_mode));
+static void etoc4x	PARAMS ((const UEMUSHORT *, UEMUSHORT *,
+				 enum machine_mode));
 static void toc4x	PARAMS ((UEMUSHORT *, UEMUSHORT *,
- 			       enum machine_mode));
+				 enum machine_mode));
 #endif
 #if 0
-static void uditoe	PARAMS ((UEMUSHORT *, UEMUSHORT *));
-static void ditoe	PARAMS ((UEMUSHORT *, UEMUSHORT *));
-static void etoudi	PARAMS ((UEMUSHORT *, UEMUSHORT *));
-static void etodi	PARAMS ((UEMUSHORT *, UEMUSHORT *));
-static void esqrt	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+static void uditoe	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
+static void ditoe	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
+static void etoudi	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
+static void etodi	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
+static void esqrt	PARAMS ((const UEMUSHORT *, UEMUSHORT *));
 #endif
 
 /* Copy 32-bit numbers obtained from array containing 16-bit numbers,
@@ -509,7 +509,7 @@ static void esqrt	PARAMS ((UEMUSHORT *, UEMUSHORT *));
 
 static void
 endian (e, x, mode)
-     UEMUSHORT e[];
+     const UEMUSHORT e[];
      long x[];
      enum machine_mode mode;
 {
@@ -1541,70 +1541,62 @@ ereal_isneg (x)
 
 #if MAX_LONG_DOUBLE_TYPE_SIZE == 128 && (INTEL_EXTENDED_IEEE_FORMAT == 0)
 /* 0.0 */
-UEMUSHORT ezero[NE] =
+const UEMUSHORT ezero[NE] =
  {0x0000, 0x0000, 0x0000, 0x0000,
   0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000,};
-extern UEMUSHORT ezero[];
 
 /* 5.0E-1 */
-UEMUSHORT ehalf[NE] =
+const UEMUSHORT ehalf[NE] =
  {0x0000, 0x0000, 0x0000, 0x0000,
   0x0000, 0x0000, 0x0000, 0x0000, 0x8000, 0x3ffe,};
-extern UEMUSHORT ehalf[];
 
 /* 1.0E0 */
-UEMUSHORT eone[NE] =
+const UEMUSHORT eone[NE] =
  {0x0000, 0x0000, 0x0000, 0x0000,
   0x0000, 0x0000, 0x0000, 0x0000, 0x8000, 0x3fff,};
-extern UEMUSHORT eone[];
 
 /* 2.0E0 */
-UEMUSHORT etwo[NE] =
+const UEMUSHORT etwo[NE] =
  {0x0000, 0x0000, 0x0000, 0x0000,
   0x0000, 0x0000, 0x0000, 0x0000, 0x8000, 0x4000,};
-extern UEMUSHORT etwo[];
 
 /* 3.2E1 */
-UEMUSHORT e32[NE] =
+const UEMUSHORT e32[NE] =
  {0x0000, 0x0000, 0x0000, 0x0000,
   0x0000, 0x0000, 0x0000, 0x0000, 0x8000, 0x4004,};
-extern UEMUSHORT e32[];
 
 /* 6.93147180559945309417232121458176568075500134360255E-1 */
-UEMUSHORT elog2[NE] =
+const UEMUSHORT elog2[NE] =
  {0x40f3, 0xf6af, 0x03f2, 0xb398,
   0xc9e3, 0x79ab, 0150717, 0013767, 0130562, 0x3ffe,};
-extern UEMUSHORT elog2[];
 
 /* 1.41421356237309504880168872420969807856967187537695E0 */
-UEMUSHORT esqrt2[NE] =
+const UEMUSHORT esqrt2[NE] =
  {0x1d6f, 0xbe9f, 0x754a, 0x89b3,
   0x597d, 0x6484, 0174736, 0171463, 0132404, 0x3fff,};
-extern UEMUSHORT esqrt2[];
 
 /* 3.14159265358979323846264338327950288419716939937511E0 */
-UEMUSHORT epi[NE] =
+const UEMUSHORT epi[NE] =
  {0x2902, 0x1cd1, 0x80dc, 0x628b,
   0xc4c6, 0xc234, 0020550, 0155242, 0144417, 0040000,};
-extern UEMUSHORT epi[];
 
 #else
 /* LONG_DOUBLE_TYPE_SIZE is other than 128 */
-UEMUSHORT ezero[NE] =
+const UEMUSHORT ezero[NE] =
  {0, 0000000, 0000000, 0000000, 0000000, 0000000,};
-UEMUSHORT ehalf[NE] =
+const UEMUSHORT ehalf[NE] =
  {0, 0000000, 0000000, 0000000, 0100000, 0x3ffe,};
-UEMUSHORT eone[NE] =
+const UEMUSHORT eone[NE] =
  {0, 0000000, 0000000, 0000000, 0100000, 0x3fff,};
-UEMUSHORT etwo[NE] =
+const UEMUSHORT etwo[NE] =
  {0, 0000000, 0000000, 0000000, 0100000, 0040000,};
-UEMUSHORT e32[NE] =
+const UEMUSHORT e32[NE] =
  {0, 0000000, 0000000, 0000000, 0100000, 0040004,};
-UEMUSHORT elog2[NE] =
+const UEMUSHORT elog2[NE] =
  {0xc9e4, 0x79ab, 0150717, 0013767, 0130562, 0x3ffe,};
-UEMUSHORT esqrt2[NE] =
+const UEMUSHORT esqrt2[NE] =
  {0x597e, 0x6484, 0174736, 0171463, 0132404, 0x3fff,};
-UEMUSHORT epi[NE] =
+const UEMUSHORT epi[NE] =
  {0xc4c6, 0xc234, 0020550, 0155242, 0144417, 0040000,};
 #endif
 
@@ -1630,7 +1622,8 @@ eclear (x)
 
 static void
 emov (a, b)
-     UEMUSHORT *a, *b;
+     const UEMUSHORT *a;
+     UEMUSHORT *b;
 {
   int i;
 
@@ -1665,7 +1658,7 @@ eneg (x)
 
 static int
 eisneg (x)
-     UEMUSHORT x[];
+     const UEMUSHORT x[];
 {
 
   if (x[NE - 1] & 0x8000)
@@ -1678,7 +1671,7 @@ eisneg (x)
 
 static int
 eisinf (x)
-     UEMUSHORT x[];
+     const UEMUSHORT x[];
 {
 
 #ifdef NANS
@@ -1696,7 +1689,7 @@ eisinf (x)
 
 static int
 eisnan (x)
-     UEMUSHORT x[] ATTRIBUTE_UNUSED;
+     const UEMUSHORT x[] ATTRIBUTE_UNUSED;
 {
 #ifdef NANS
   int i;
@@ -1780,9 +1773,11 @@ enan (x, sign)
 
 static void
 emovi (a, b)
-     UEMUSHORT *a, *b;
+     const UEMUSHORT *a;
+     UEMUSHORT *b;
 {
-  UEMUSHORT *p, *q;
+  const UEMUSHORT *p;
+  UEMUSHORT *q;
   int i;
 
   q = b;
@@ -1827,9 +1822,11 @@ emovi (a, b)
 
 static void
 emovo (a, b)
-     UEMUSHORT *a, *b;
+     const UEMUSHORT *a;
+     UEMUSHORT *b;
 {
-  UEMUSHORT *p, *q;
+  const UEMUSHORT *p;
+  UEMUSHORT *q;
   UEMUSHORT i;
   int j;
 
@@ -1891,7 +1888,8 @@ ecleazs (xi)
 
 static void
 emovz (a, b)
-     UEMUSHORT *a, *b;
+     const UEMUSHORT *a;
+     UEMUSHORT *b;
 {
   int i;
 
@@ -1922,7 +1920,7 @@ einan (x)
 #ifdef NANS
 static int
 eiisnan (x)
-     UEMUSHORT x[];
+     const UEMUSHORT x[];
 {
   int i;
 
@@ -1943,7 +1941,7 @@ eiisnan (x)
 #ifdef NANS
 static int
 eiisneg (x)
-     UEMUSHORT x[];
+     const UEMUSHORT x[];
 {
 
   return x[0] != 0;
@@ -1969,7 +1967,7 @@ eiinfin (x)
 #ifdef INFINITY
 static int
 eiisinf (x)
-     UEMUSHORT x[];
+     const UEMUSHORT x[];
 {
 
 #ifdef NANS
@@ -1991,7 +1989,7 @@ eiisinf (x)
 
 static int
 ecmpm (a, b)
-     UEMUSHORT *a, *b;
+     const UEMUSHORT *a, *b;
 {
   int i;
 
@@ -2143,7 +2141,8 @@ eshdn6 (x)
 
 static void
 eaddm (x, y)
-     UEMUSHORT *x, *y;
+     const UEMUSHORT *x;
+     UEMUSHORT *y;
 {
   unsigned EMULONG a;
   int i;
@@ -2169,7 +2168,8 @@ eaddm (x, y)
 
 static void
 esubm (x, y)
-     UEMUSHORT *x, *y;
+     const UEMUSHORT *x;
+     UEMUSHORT *y;
 {
   unsigned EMULONG a;
   int i;
@@ -2354,11 +2354,12 @@ emulm (a, b)
 static void
 m16m (a, b, c)
      unsigned int a;
-     UEMUSHORT b[], c[];
+     const UEMUSHORT b[];
+     UEMUSHORT c[];
 {
   UEMUSHORT *pp;
   unsigned EMULONG carry;
-  UEMUSHORT *ps;
+  const UEMUSHORT *ps;
   UEMUSHORT p[NI];
   unsigned EMULONG aa, m;
   int i;
@@ -2397,7 +2398,8 @@ m16m (a, b, c)
 
 static int
 edivm (den, num)
-     UEMUSHORT den[], num[];
+     const UEMUSHORT den[];
+     UEMUSHORT num[];
 {
   int i;
   UEMUSHORT *p;
@@ -2462,9 +2464,11 @@ edivm (den, num)
 
 static int
 emulm (a, b)
-     UEMUSHORT a[], b[];
+     const UEMUSHORT a[];
+     UEMUSHORT b[];
 {
-  UEMUSHORT *p, *q;
+  const UEMUSHORT *p;
+  UEMUSHORT *q;
   UEMUSHORT pprod[NI];
   UEMUSHORT j;
   int i;
@@ -2754,7 +2758,8 @@ static int subflg = 0;
 
 static void
 esub (a, b, c)
-     UEMUSHORT *a, *b, *c;
+     const UEMUSHORT *a, *b;
+     UEMUSHORT *c;
 {
 
 #ifdef NANS
@@ -2786,7 +2791,8 @@ esub (a, b, c)
 
 static void
 eadd (a, b, c)
-     UEMUSHORT *a, *b, *c;
+     const UEMUSHORT *a, *b;
+     UEMUSHORT *c;
 {
 
 #ifdef NANS
@@ -2819,7 +2825,8 @@ eadd (a, b, c)
 
 static void
 eadd1 (a, b, c)
-     UEMUSHORT *a, *b, *c;
+     const UEMUSHORT *a, *b;
+     UEMUSHORT *c;
 {
   UEMUSHORT ai[NI], bi[NI], ci[NI];
   int i, lost, j, k;
@@ -2930,7 +2937,8 @@ eadd1 (a, b, c)
 
 static void
 ediv (a, b, c)
-     UEMUSHORT *a, *b, *c;
+     const UEMUSHORT *a, *b;
+     UEMUSHORT *c;
 {
   UEMUSHORT ai[NI], bi[NI];
   int i, sign;
@@ -3034,7 +3042,8 @@ ediv (a, b, c)
 
 static void
 emul (a, b, c)
-     UEMUSHORT *a, *b, *c;
+     const UEMUSHORT *a, *b;
+     UEMUSHORT *c;
 {
   UEMUSHORT ai[NI], bi[NI];
   int i, j, sign;
@@ -3130,7 +3139,8 @@ emul (a, b, c)
 
 static void
 e53toe (pe, y)
-     UEMUSHORT *pe, *y;
+     const UEMUSHORT *pe;
+     UEMUSHORT *y;
 {
 #ifdef DEC
 
@@ -3148,7 +3158,8 @@ e53toe (pe, y)
 
 #else
   UEMUSHORT r;
-  UEMUSHORT *e, *p;
+  const UEMUSHORT *e;
+  UEMUSHORT *p;
   UEMUSHORT yy[NI];
   int denorm, k;
 
@@ -3239,10 +3250,12 @@ e53toe (pe, y)
 
 static void
 e64toe (pe, y)
-     UEMUSHORT *pe, *y;
+     const UEMUSHORT *pe;
+     UEMUSHORT *y;
 {
   UEMUSHORT yy[NI];
-  UEMUSHORT *e, *p, *q;
+  const UEMUSHORT *e;
+  UEMUSHORT *p, *q;
   int i;
 
   e = pe;
@@ -3362,10 +3375,12 @@ bigend_nan:
 
 static void
 e113toe (pe, y)
-     UEMUSHORT *pe, *y;
+     const UEMUSHORT *pe;
+     UEMUSHORT *y;
 {
   UEMUSHORT r;
-  UEMUSHORT *e, *p;
+  const UEMUSHORT *e;
+  UEMUSHORT *p;
   UEMUSHORT yy[NI];
   int denorm, i;
 
@@ -3448,7 +3463,8 @@ e113toe (pe, y)
 
 static void
 e24toe (pe, y)
-     UEMUSHORT *pe, *y;
+     const UEMUSHORT *pe;
+     UEMUSHORT *y;
 {
 #ifdef IBM
 
@@ -3463,7 +3479,8 @@ e24toe (pe, y)
 #else
 
   UEMUSHORT r;
-  UEMUSHORT *e, *p;
+  const UEMUSHORT *e;
+  UEMUSHORT *p;
   UEMUSHORT yy[NI];
   int denorm, k;
 
@@ -3552,7 +3569,8 @@ e24toe (pe, y)
 
 static void
 etoe113 (x, e)
-     UEMUSHORT *x, *e;
+     const UEMUSHORT *x;
+     UEMUSHORT *e;
 {
   UEMUSHORT xi[NI];
   EMULONG exp;
@@ -3646,7 +3664,8 @@ toe113 (a, b)
 
 static void
 etoe64 (x, e)
-     UEMUSHORT *x, *e;
+     const UEMUSHORT *x;
+     UEMUSHORT *e;
 {
   UEMUSHORT xi[NI];
   EMULONG exp;
@@ -3799,7 +3818,8 @@ toe64 (a, b)
 
 static void
 etoe53 (x, e)
-     UEMUSHORT *x, *e;
+     const UEMUSHORT *x;
+     UEMUSHORT *e;
 {
   etodec (x, e);		/* see etodec.c */
 }
@@ -3820,7 +3840,8 @@ toe53 (x, y)
 
 static void
 etoe53 (x, e)
-     UEMUSHORT *x, *e;
+     const UEMUSHORT *x;
+     UEMUSHORT *e;
 {
   etoibm (x, e, DFmode);
 }
@@ -3841,7 +3862,8 @@ toe53 (x, y)
 
 static void
 etoe53 (x, e)
-     UEMUSHORT *x, *e;
+     const UEMUSHORT *x;
+     UEMUSHORT *e;
 {
   etoc4x (x, e, HFmode);
 }
@@ -3862,7 +3884,8 @@ toe53 (x, y)
 
 static void
 etoe53 (x, e)
-     UEMUSHORT *x, *e;
+     const UEMUSHORT *x;
+     UEMUSHORT *e;
 {
   UEMUSHORT xi[NI];
   EMULONG exp;
@@ -3995,7 +4018,8 @@ toe53 (x, y)
 
 static void
 etoe24 (x, e)
-     UEMUSHORT *x, *e;
+     const UEMUSHORT *x;
+     UEMUSHORT *e;
 {
   etoibm (x, e, SFmode);
 }
@@ -4017,7 +4041,8 @@ toe24 (x, y)
 
 static void
 etoe24 (x, e)
-     UEMUSHORT *x, *e;
+     const UEMUSHORT *x;
+     UEMUSHORT *e;
 {
   etoc4x (x, e, QFmode);
 }
@@ -4038,7 +4063,8 @@ toe24 (x, y)
 
 static void
 etoe24 (x, e)
-     UEMUSHORT *x, *e;
+     const UEMUSHORT *x;
+     UEMUSHORT *e;
 {
   EMULONG exp;
   UEMUSHORT xi[NI];
@@ -4172,7 +4198,7 @@ toe24 (x, y)
 
 static int
 ecmp (a, b)
-     UEMUSHORT *a, *b;
+     const UEMUSHORT *a, *b;
 {
   UEMUSHORT ai[NI], bi[NI];
   UEMUSHORT *p, *q;
@@ -4235,7 +4261,8 @@ ecmp (a, b)
 
 static void
 eround (x, y)
-     UEMUSHORT *x, *y;
+     const UEMUSHORT *x;
+     UEMUSHORT *y;
 {
   eadd (ehalf, x, y);
   efloor (y, y);
@@ -4246,7 +4273,7 @@ eround (x, y)
 
 static void
 ltoe (lp, y)
-     HOST_WIDE_INT *lp;
+     const HOST_WIDE_INT *lp;
      UEMUSHORT *y;
 {
   UEMUSHORT yi[NI];
@@ -4288,7 +4315,7 @@ ltoe (lp, y)
 
 static void
 ultoe (lp, y)
-     unsigned HOST_WIDE_INT *lp;
+     const unsigned HOST_WIDE_INT *lp;
      UEMUSHORT *y;
 {
   UEMUSHORT yi[NI];
@@ -4328,7 +4355,7 @@ ultoe (lp, y)
 
 static void
 eifrac (x, i, frac)
-     UEMUSHORT *x;
+     const UEMUSHORT *x;
      HOST_WIDE_INT *i;
      UEMUSHORT *frac;
 {
@@ -4411,7 +4438,7 @@ eifrac (x, i, frac)
 
 static void
 euifrac (x, i, frac)
-     UEMUSHORT *x;
+     const UEMUSHORT *x;
      unsigned HOST_WIDE_INT *i;
      UEMUSHORT *frac;
 {
@@ -4616,7 +4643,7 @@ enormlz (x)
 #define MAXP 4096
 
 #if MAX_LONG_DOUBLE_TYPE_SIZE == 128 && (INTEL_EXTENDED_IEEE_FORMAT == 0)
-static UEMUSHORT etens[NTEN + 1][NE] =
+static const UEMUSHORT etens[NTEN + 1][NE] =
 {
   {0x6576, 0x4a92, 0x804a, 0x153f,
    0xc94c, 0x979a, 0x8a20, 0x5202, 0xc460, 0x7525,},	/* 10**4096 */
@@ -4646,7 +4673,7 @@ static UEMUSHORT etens[NTEN + 1][NE] =
    0x0000, 0x0000, 0x0000, 0x0000, 0xa000, 0x4002,},	/* 10**1 */
 };
 
-static UEMUSHORT emtens[NTEN + 1][NE] =
+static const UEMUSHORT emtens[NTEN + 1][NE] =
 {
   {0x2030, 0xcffc, 0xa1c3, 0x8123,
    0x2de3, 0x9fde, 0xd2ce, 0x04c8, 0xa6dd, 0x0ad8,},	/* 10**-4096 */
@@ -4677,7 +4704,7 @@ static UEMUSHORT emtens[NTEN + 1][NE] =
 };
 #else
 /* LONG_DOUBLE_TYPE_SIZE is other than 128 */
-static UEMUSHORT etens[NTEN + 1][NE] =
+static const UEMUSHORT etens[NTEN + 1][NE] =
 {
   {0xc94c, 0x979a, 0x8a20, 0x5202, 0xc460, 0x7525,},	/* 10**4096 */
   {0xa74d, 0x5de4, 0xc53d, 0x3b5d, 0x9e8b, 0x5a92,},	/* 10**2048 */
@@ -4694,7 +4721,7 @@ static UEMUSHORT etens[NTEN + 1][NE] =
   {0x0000, 0x0000, 0x0000, 0x0000, 0xa000, 0x4002,},	/* 10**1 */
 };
 
-static UEMUSHORT emtens[NTEN + 1][NE] =
+static const UEMUSHORT emtens[NTEN + 1][NE] =
 {
   {0x2de4, 0x9fde, 0xd2ce, 0x04c8, 0xa6dd, 0x0ad8,},	/* 10**-4096 */
   {0x4925, 0x2de4, 0x3436, 0x534f, 0xceae, 0x256b,},	/* 10**-2048 */
@@ -4718,7 +4745,7 @@ static UEMUSHORT emtens[NTEN + 1][NE] =
 
 static void
 e24toasc (x, string, ndigs)
-     UEMUSHORT x[];
+     const UEMUSHORT x[];
      char *string;
      int ndigs;
 {
@@ -4733,7 +4760,7 @@ e24toasc (x, string, ndigs)
 
 static void
 e53toasc (x, string, ndigs)
-     UEMUSHORT x[];
+     const UEMUSHORT x[];
      char *string;
      int ndigs;
 {
@@ -4748,7 +4775,7 @@ e53toasc (x, string, ndigs)
 
 static void
 e64toasc (x, string, ndigs)
-     UEMUSHORT x[];
+     const UEMUSHORT x[];
      char *string;
      int ndigs;
 {
@@ -4763,7 +4790,7 @@ e64toasc (x, string, ndigs)
 
 static void
 e113toasc (x, string, ndigs)
-     UEMUSHORT x[];
+     const UEMUSHORT x[];
      char *string;
      int ndigs;
 {
@@ -4781,13 +4808,13 @@ static char wstring[80];	/* working storage for ASCII output */
 
 static void
 etoasc (x, string, ndigs)
-     UEMUSHORT x[];
+     const UEMUSHORT x[];
      char *string;
      int ndigs;
 {
   EMUSHORT digit;
   UEMUSHORT y[NI], t[NI], u[NI], w[NI];
-  UEMUSHORT *p, *r, *ten;
+  const UEMUSHORT *p, *r, *ten;
   UEMUSHORT sign;
   int i, j, k, expon, rndsav;
   char *s, *ss;
@@ -5568,7 +5595,8 @@ static const UEMUSHORT bmask[] =
 
 static void
 efloor (x, y)
-     UEMUSHORT x[], y[];
+     const UEMUSHORT x[];
+     UEMUSHORT y[];
 {
   UEMUSHORT *p;
   int e, expon, i;
@@ -5619,7 +5647,7 @@ efloor (x, y)
 
 static void
 efrexp (x, exp, s)
-     UEMUSHORT x[];
+     const UEMUSHORT x[];
      int *exp;
      UEMUSHORT s[];
 {
@@ -5644,7 +5672,7 @@ efrexp (x, exp, s)
 
 static void
 eldexp (x, pwr2, y)
-     UEMUSHORT x[];
+     const UEMUSHORT x[];
      int pwr2;
      UEMUSHORT y[];
 {
@@ -5667,7 +5695,8 @@ eldexp (x, pwr2, y)
 
 static void
 eremain (a, b, c)
-     UEMUSHORT a[], b[], c[];
+     const UEMUSHORT a[], b[];
+     UEMUSHORT c[];
 {
   UEMUSHORT den[NI], num[NI];
 
@@ -5800,7 +5829,7 @@ mtherr (name, code)
 
 static void
 dectoe (d, e)
-     UEMUSHORT *d;
+     const UEMUSHORT *d;
      UEMUSHORT *e;
 {
   UEMUSHORT y[NI];
@@ -5840,7 +5869,8 @@ dectoe (d, e)
 
 static void
 etodec (x, d)
-     UEMUSHORT *x, *d;
+     const UEMUSHORT *x;
+     UEMUSHORT *d;
 {
   UEMUSHORT xi[NI];
   EMULONG exp;
@@ -5908,7 +5938,7 @@ todec (x, y)
 
 static void
 ibmtoe (d, e, mode)
-     UEMUSHORT *d;
+     const UEMUSHORT *d;
      UEMUSHORT *e;
      enum machine_mode mode;
 {
@@ -5951,7 +5981,8 @@ ibmtoe (d, e, mode)
 
 static void
 etoibm (x, d, mode)
-     UEMUSHORT *x, *d;
+     const UEMUSHORT *x;
+     UEMUSHORT *d;
      enum machine_mode mode;
 {
   UEMUSHORT xi[NI];
@@ -6028,7 +6059,7 @@ toibm (x, y, mode)
 
 static void
 c4xtoe (d, e, mode)
-     UEMUSHORT *d;
+     const UEMUSHORT *d;
      UEMUSHORT *e;
      enum machine_mode mode;
 {
@@ -6144,7 +6175,8 @@ c4xtoe (d, e, mode)
 
 static void
 etoc4x (x, d, mode)
-     UEMUSHORT *x, *d;
+     const UEMUSHORT *x;
+     UEMUSHORT *d;
      enum machine_mode mode;
 {
   UEMUSHORT xi[NI];
@@ -6277,9 +6309,9 @@ toc4x (x, y, mode)
 TFMODE_NAN;
 #else
 #ifdef IEEE
-UEMUSHORT TFbignan[8] =
+static const UEMUSHORT TFbignan[8] =
  {0x7fff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff};
-UEMUSHORT TFlittlenan[8] = {0, 0, 0, 0, 0, 0, 0x8000, 0xffff};
+static const UEMUSHORT TFlittlenan[8] = {0, 0, 0, 0, 0, 0, 0x8000, 0xffff};
 #endif
 #endif
 
@@ -6287,9 +6319,9 @@ UEMUSHORT TFlittlenan[8] = {0, 0, 0, 0, 0, 0, 0x8000, 0xffff};
 XFMODE_NAN;
 #else
 #ifdef IEEE
-UEMUSHORT XFbignan[6] =
+static const UEMUSHORT XFbignan[6] =
  {0x7fff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff};
-UEMUSHORT XFlittlenan[6] = {0, 0, 0, 0xc000, 0xffff, 0};
+static const UEMUSHORT XFlittlenan[6] = {0, 0, 0, 0xc000, 0xffff, 0};
 #endif
 #endif
 
@@ -6297,8 +6329,8 @@ UEMUSHORT XFlittlenan[6] = {0, 0, 0, 0xc000, 0xffff, 0};
 DFMODE_NAN;
 #else
 #ifdef IEEE
-UEMUSHORT DFbignan[4] = {0x7fff, 0xffff, 0xffff, 0xffff};
-UEMUSHORT DFlittlenan[4] = {0, 0, 0, 0xfff8};
+static const UEMUSHORT DFbignan[4] = {0x7fff, 0xffff, 0xffff, 0xffff};
+static const UEMUSHORT DFlittlenan[4] = {0, 0, 0, 0xfff8};
 #endif
 #endif
 
@@ -6306,8 +6338,8 @@ UEMUSHORT DFlittlenan[4] = {0, 0, 0, 0xfff8};
 SFMODE_NAN;
 #else
 #ifdef IEEE
-UEMUSHORT SFbignan[2] = {0x7fff, 0xffff};
-UEMUSHORT SFlittlenan[2] = {0, 0xffc0};
+static const UEMUSHORT SFbignan[2] = {0x7fff, 0xffff};
+static const UEMUSHORT SFlittlenan[2] = {0, 0xffc0};
 #endif
 #endif
 
@@ -6320,7 +6352,7 @@ make_nan (nan, sign, mode)
      enum machine_mode mode;
 {
   int n;
-  UEMUSHORT *p;
+  const UEMUSHORT *p;
 
   switch (mode)
     {
@@ -6537,7 +6569,7 @@ ereal_from_double (d)
 
 static void
 uditoe (di, e)
-     UEMUSHORT *di;  /* Address of the 64-bit int.  */
+     const UEMUSHORT *di;  /* Address of the 64-bit int.  */
      UEMUSHORT *e;
 {
   UEMUSHORT yi[NI];
@@ -6566,7 +6598,7 @@ uditoe (di, e)
 
 static void
 ditoe (di, e)
-     UEMUSHORT *di;  /* Address of the 64-bit int.  */
+     const UEMUSHORT *di;  /* Address of the 64-bit int.  */
      UEMUSHORT *e;
 {
   unsigned EMULONG acc;
@@ -6615,7 +6647,7 @@ ditoe (di, e)
 
 static void
 etoudi (x, i)
-     UEMUSHORT *x;
+     const UEMUSHORT *x;
      UEMUSHORT *i;
 {
   UEMUSHORT xi[NI];
@@ -6698,7 +6730,7 @@ noshift:
 
 static void
 etodi (x, i)
-     UEMUSHORT *x;
+     const UEMUSHORT *x;
      UEMUSHORT *i;
 {
   unsigned EMULONG acc;
@@ -6800,7 +6832,8 @@ static unsigned short sqrndbit[NI];
 
 static void
 esqrt (x, y)
-     UEMUSHORT *x, *y;
+     const UEMUSHORT *x;
+     UEMUSHORT *y;
 {
   UEMUSHORT temp[NI], num[NI], sq[NI], xx[NI];
   EMULONG m, exp;
