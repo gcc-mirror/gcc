@@ -3370,17 +3370,27 @@ subst (x, from, to, in_dest, unique_copy)
 	  /* If STORE_FLAG_VALUE is 1, we can convert (ne x 0) to simply X
 	     if only the low-order bit is significant in X (such as when
 	     X is a ZERO_EXTRACT of one bit.  Similarly, we can convert
-	     EQ to (xor X 1).  */
+	     EQ to (xor X 1).  Remove any ZERO_EXTRACT we made when thinking
+	     this was a comparison.  It may now be simpler to use, e.g., an
+	     AND.  If a ZERO_EXTRACT is indeed appropriate, it will
+	     be placed back by the call to make_compound_operation in the
+	     SET case.  */
 	  if (new_code == NE && GET_MODE_CLASS (mode) == MODE_INT
 	      && op1 == const0_rtx
 	      && significant_bits (op0, GET_MODE (op0)) == 1)
-	    return gen_lowpart_for_combine (mode, op0);
+	    return gen_lowpart_for_combine (mode,
+					    expand_compound_operation (op0));
 	  else if (new_code == EQ && GET_MODE_CLASS (mode) == MODE_INT
 		   && op1 == const0_rtx
 		   && significant_bits (op0, GET_MODE (op0)) == 1)
-	    return gen_rtx_combine (XOR, mode,
-				    gen_lowpart_for_combine (mode, op0),
-				    const1_rtx);
+	    {
+	      op0 = expand_compound_operation (op0);
+
+	      x = gen_rtx_combine (XOR, mode,
+				   gen_lowpart_for_combine (mode, op0),
+				   const1_rtx);
+	      goto restart;
+	    }
 #endif
 
 #if STORE_FLAG_VALUE == -1
@@ -3392,6 +3402,7 @@ subst (x, from, to, in_dest, unique_copy)
 	      && op1 == const0_rtx
 	      && significant_bits (op0, GET_MODE (op0)) == 1)
 	    {
+	      op0 = expand_compound_operation (op0);
 	      x = gen_rtx_combine (NEG, mode,
 				   gen_lowpart_for_combine (mode, op0));
 	      goto restart;
@@ -3411,7 +3422,8 @@ subst (x, from, to, in_dest, unique_copy)
 	      && mode == GET_MODE (op0)
 	      && (i = exact_log2 (significant_bits (op0, GET_MODE (op0)))) >= 0)
 	    {
-	      x = simplify_shift_const (NULL_RTX, ASHIFT, mode, op0,
+	      x = simplify_shift_const (NULL_RTX, ASHIFT, mode,
+					expand_compound_operation (op0),
 					GET_MODE_BITSIZE (mode) - 1 - i);
 	      if (GET_CODE (x) == AND && XEXP (x, 1) == const_true_rtx)
 		return XEXP (x, 0);
