@@ -2969,7 +2969,11 @@ print_operand_address (file, addr)
 	      {
 		output_addr_const (file, addr);
 	        if (flag_pic && (breg == pic_offset_table_rtx))
-	          fprintf (file, "@GOT");
+		  {
+		    fprintf (file, "@GOT");
+		    if (flag_pic == 1)
+		      fprintf (file, ".w");
+		  }
 	      }
 	    fprintf (file, "(%s", reg_names[REGNO (breg)]);
 	    if (ireg != 0)
