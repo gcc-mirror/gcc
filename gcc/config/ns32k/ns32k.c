@@ -298,12 +298,7 @@ output_move_double (operands)
   else if (optype1 == OFFSOP)
     latehalf[1] = adj_offsettable_operand (operands[1], 4);
   else if (optype1 == CNSTOP)
-    {
-      if (CONSTANT_P (operands[1]))
-	latehalf[1] = const0_rtx;
-      else if (GET_CODE (operands[1]) == CONST_DOUBLE)
-	split_double (operands[1], &operands[1], &latehalf[1]);
-    }
+    split_double (operands[1], &operands[1], &latehalf[1]);
   else
     latehalf[1] = operands[1];
 
