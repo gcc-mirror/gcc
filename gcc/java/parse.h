@@ -439,6 +439,9 @@ static jdeplist *reverse_jdep_list ();
 
 #define BLOCK_EXPR_DECLS(NODE)  BLOCK_VARS(NODE)
 #define BLOCK_EXPR_BODY(NODE)   BLOCK_SUBBLOCKS(NODE)
+
+/* For an artificial BLOCK (created to house a local variable declaration not
+   at the start of an existing block), the parent block;  otherwise NULL. */
 #define BLOCK_EXPR_ORIGIN(NODE) BLOCK_ABSTRACT_ORIGIN(NODE)
 
 /* Merge an other line to the source line number of a decl. Used to
@@ -601,7 +604,7 @@ struct parser_ctxt {
   tree import_list;		    /* List of import */
   tree import_demand_list;	    /* List of import on demand */
 
-  tree current_loop;		     /* List of the currently nested loops */
+  tree current_loop;		     /* List of the currently nested loops/switches */
   tree current_labeled_block;	     /* List of currently nested
 					labeled blocks. */
 
@@ -618,7 +621,6 @@ struct parser_ctxt {
 /* Functions declarations */
 #ifndef JC1_LITE
 static char *java_accstring_lookup PROTO ((int));
-static void  parse_error PROTO ((char *));
 static void  classitf_redefinition_error PROTO ((char *,tree, tree, tree));
 static void  variable_redefinition_error PROTO ((tree, tree, tree, int));
 static void  check_modifiers PROTO ((char *, int, int));
@@ -637,9 +639,8 @@ static tree lookup_java_method2 PROTO ((tree, tree, int));
 static tree method_header PROTO ((int, tree, tree, tree));
 static void fix_method_argument_names PROTO ((tree ,tree));
 static tree method_declarator PROTO ((tree, tree));
-static void parse_error_context VPROTO ((tree cl, char *msg, ...));
 static void parse_warning_context VPROTO ((tree cl, char *msg, ...));
-static void issue_warning_error_from_context PROTO ((tree, char *msg));
+static void issue_warning_error_from_context PROTO ((tree, char *msg, va_list));
 static tree parse_jdk1_1_error PROTO ((char *));
 static void complete_class_report_errors PROTO ((jdep *));
 static int process_imports PROTO ((void));
@@ -662,8 +663,8 @@ static tree resolve_expression_name PROTO ((tree, tree *));
 static tree maybe_create_class_interface_decl PROTO ((tree, tree, tree));
 static int check_class_interface_creation PROTO ((int, int, tree, 
 						  tree, tree, tree));
-static tree patch_method_invocation_stmt PROTO ((tree, tree, tree, 
-						 int *, tree *, int));
+static tree patch_method_invocation PROTO ((tree, tree, tree, 
+					    int *, tree *, int));
 static int breakdown_qualified PROTO ((tree *, tree *, tree));
 static tree resolve_and_layout PROTO ((tree, tree));
 static tree resolve_no_layout PROTO ((tree, tree));

@@ -1337,9 +1337,7 @@ build_known_method_ref (method, method_type, self_type, method_signature, arg_li
      tree method, method_type, self_type, method_signature, arg_list;
 {
   tree func;
-  if (flag_emit_class_files)
-    return method;
-  else if (is_compiled_class (self_type))
+  if (is_compiled_class (self_type))
     {
       make_decl_rtl (method, NULL, 1);
       func = build1 (ADDR_EXPR, method_ptr_type_node, method);
@@ -1696,6 +1694,18 @@ load_type_state (label)
     type_map [i] = TREE_VEC_ELT (vec, i);
 }
 
+/* Do the expansion of a Java switch. With Gcc, switches are front-end
+   dependant things, but they rely on gcc routines. This function is
+   placed here because it uses things defined locally in parse.y. */
+
+static tree
+case_identity (t, v)
+     tree t __attribute__ ((__unused__));
+     tree v;
+{
+  return v;
+}
+
 struct rtx_def *
 java_lang_expand_expr (exp, target, tmode, modifier)
      register tree exp;
@@ -1716,6 +1726,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
       if (BLOCK_EXPR_BODY (exp))
 	{
 	  tree local;
+	  tree body = BLOCK_EXPR_BODY (exp);
 	  struct rtx_def *to_return;
 	  pushlevel (2);	/* 2 and above */
 	  expand_start_bindings (0);
@@ -1727,16 +1738,41 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	      expand_decl (pushdecl (local));
 	      local = next;
 	    }
-	  to_return =
-	    expand_expr (BLOCK_EXPR_BODY (exp), target, tmode, modifier);
+	  /* Avoid deep recursion for long block.  */
+	  while (TREE_CODE (body) == COMPOUND_EXPR)
+	    {
+	      expand_expr (TREE_OPERAND (body, 0), const0_rtx, VOIDmode, 0);
+	      body = TREE_OPERAND (body, 1);
+	    }
+	  to_return = expand_expr (body, target, tmode, modifier);
 	  poplevel (1, 1, 0);
 	  expand_end_bindings (getdecls (), 1, 0);
 	  return to_return;
 	}
       break;
 
+    case CASE_EXPR:
+      {
+	tree duplicate;
+	if (pushcase (TREE_OPERAND (exp, 0), case_identity,
+		      build_decl (LABEL_DECL, NULL_TREE, NULL_TREE), &duplicate) == 2)
+	  {
+	    EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (exp);
+	    parse_error_context
+	      (wfl_operator, "Duplicate case label: `%s'",
+	       print_int_node (TREE_OPERAND (exp, 0)));
+	  }
+	return const0_rtx;
+      }
+
+    case DEFAULT_EXPR:
+      pushcase (NULL_TREE, 0, build_decl (LABEL_DECL, NULL_TREE, NULL_TREE), NULL);
+      return const0_rtx;
+
     case SWITCH_EXPR:
-      java_expand_switch (exp);
+      expand_start_case (0, TREE_OPERAND (exp, 0), int_type_node, "switch");
+      expand_expr_stmt (TREE_OPERAND (exp, 1));
+      expand_end_case (TREE_OPERAND (exp, 0));
       return const0_rtx;
 
     case TRY_EXPR:
