@@ -1,3 +1,12 @@
+2003-04-03  Mike Stump  <mrs@apple.com>
+
+	* gcc.dg/asm-fs-1.c: Expect failure on darwin.
+
+	* lib/scanasm.exp (scan-assembler): Add xfail processing for
+        target arg.
+	(scan-assembler-times, scan-assembler-not): Likewise.
+	(scan-assembler-dem, scan-assembler-dem-not): Likewise.
+
 2003-04-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/sparc-loop-1.c: New test.
