@@ -1,3 +1,8 @@
+Fri Dec 19 09:32:57 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* stmt.c (expand_asm_operands): If an ASM has no outputs, then treat
+	it as volatile.
+
 Wed Dec  3 01:13:45 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Update for egcs-1.0 release.
