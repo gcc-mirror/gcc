@@ -1,5 +1,7 @@
 1999-09-09  Mark Mitchell  <mark@codesourcery.com>
 
+	* parse.y (simple_stmt): Fix typo in last change.
+
 	* cp-tree.h (EXPR_STMT_ASSIGNS_THIS): New macro.
 	(STMT_IS_FULL_EXPR_P): Likewise.
 	(STMT_LINENO_FOR_FN_P): Likewise.

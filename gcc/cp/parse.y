@@ -3278,7 +3278,7 @@ simple_stmt:
 	    '(' condition ')'
                 { finish_switch_cond ($4, $<ttype>2); }
 	  implicitly_scoped_stmt
-                { finish_switch_stmt ($4, $<ttype>6); }
+                { finish_switch_stmt ($4, $<ttype>2); }
 	| CASE expr_no_commas ':'
                 { finish_case_label ($2, NULL_TREE); }
 	  stmt
