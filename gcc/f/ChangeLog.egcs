@@ -1,3 +1,8 @@
+Sun Aug 24 17:00:27 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* Make-lang.in (f77.install-info): Don't cd into srcdir.  Add srcdir
+	to filenames.  Use sed to extract base filename for install.
+
 Thu Aug 21 13:15:29 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* Make-lang.in (f77): Delete f77-runtime.
