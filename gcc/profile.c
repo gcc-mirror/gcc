@@ -1,5 +1,5 @@
 /* Calculate branch probabilities, and basic block execution counts. 
-   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 94, 96, 1997 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -1548,7 +1548,12 @@ output_arc_profiler (arcno, insert_after)
 	  else
 	    return_reg = SET_DEST (XVECEXP (PATTERN (insert_after), 0, 0));
 
-	  if (reg_referenced_p (return_reg, PATTERN (next_insert_after)))
+	  /* Now, NEXT_INSERT_AFTER may be an instruction that uses the
+	     return value.  However, it could also be something else,
+	     like a CODE_LABEL, so check that the code is INSN.  */
+	  if (next_insert_after != 0
+	      && GET_RTX_CLASS (GET_CODE (next_insert_after)) == 'i'
+	      && reg_referenced_p (return_reg, PATTERN (next_insert_after)))
 	    insert_after = next_insert_after;
 	}
     }
