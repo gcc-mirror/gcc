@@ -1,3 +1,9 @@
+2004-11-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* function.c (expand_function_end): Remove an "if" statement
+	that always trigger.
+	* stmt.c (expand_null_return_1): Likewise.
+
 2004-11-11  James E. Wilson  <wilson@specifixinc.com>
 
 	* config/ia64/ia64.h (HARD_REGNO_NREGS): Handle XCmode.

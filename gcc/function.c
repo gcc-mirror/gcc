@@ -4317,13 +4317,8 @@ expand_function_end (void)
      is computed.  */
   clobber_after = get_last_insn ();
 
-  /* Output the label for the actual return from the function,
-     if one is expected.  This happens either because a function epilogue
-     is used instead of a return instruction, or because a return was done
-     with a goto in order to run local cleanups, or because of pcc-style
-     structure returning.  */
-  if (return_label)
-    emit_label (return_label);
+  /* Output the label for the actual return from the function.  */
+  emit_label (return_label);
 
   /* Let except.c know where it should emit the call to unregister
      the function context for sjlj exceptions.  */
