@@ -1,3 +1,7 @@
+2002-06-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.dg/template/typename2.C: Update error message.
+
 2002-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20020605-1.c: New test.
