@@ -72,7 +72,6 @@ static enum attr_type s390_safe_attr_type (rtx);
 static int s390_adjust_cost (rtx, rtx, rtx, int);
 static int s390_adjust_priority (rtx, int);
 static int s390_issue_rate (void);
-static int s390_use_dfa_pipeline_interface (void);
 static int s390_first_cycle_multipass_dfa_lookahead (void);
 static bool s390_rtx_costs (rtx, int, int, int *);
 static int s390_address_cost (rtx);
@@ -132,7 +131,7 @@ static bool s390_call_saved_register_used (tree);
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE s390_issue_rate
 #undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE s390_use_dfa_pipeline_interface
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD s390_first_cycle_multipass_dfa_lookahead
 
@@ -3902,9 +3901,6 @@ s390_agen_dep_p (rtx dep_insn, rtx insn)
 static int
 s390_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 {
-  rtx dep_rtx;
-  int i;
-
   /* If the dependence is an anti-dependence, there is no cost.  For an
      output dependence, there is sometimes a cost, but it doesn't seem
      worth handling those few cases.  */
@@ -3916,35 +3912,16 @@ s390_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
   if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
     return cost;
 
-  /* DFA based scheduling checks address dependency in md file.  */
-  if (s390_use_dfa_pipeline_interface ())
-  {
-    /* Operand forward in case of lr, load and la.  */
-    if (s390_tune == PROCESSOR_2084_Z990
-        && cost == 1
-	&& (s390_safe_attr_type (dep_insn) == TYPE_LA
-	    || s390_safe_attr_type (dep_insn) == TYPE_LR
-	    || s390_safe_attr_type (dep_insn) == TYPE_LOAD))
-      return 0;
-    return cost;
-  }
-
-  dep_rtx = PATTERN (dep_insn);
-
-  if (GET_CODE (dep_rtx) == SET
-      && addr_generation_dependency_p (dep_rtx, insn))
-    cost += (s390_safe_attr_type (dep_insn) == TYPE_LA) ? 1 : 4;
-  else if (GET_CODE (dep_rtx) == PARALLEL)
-    {
-      for (i = 0; i < XVECLEN (dep_rtx, 0); i++)
-	{
-	  if (addr_generation_dependency_p (XVECEXP (dep_rtx, 0, i), insn))
-	    cost += (s390_safe_attr_type (dep_insn) == TYPE_LA) ? 1 : 4;
-	}
-    }
-
+  /* Operand forward in case of lr, load and la.  */
+  if (s390_tune == PROCESSOR_2084_Z990
+      && cost == 1
+      && (s390_safe_attr_type (dep_insn) == TYPE_LA
+	  || s390_safe_attr_type (dep_insn) == TYPE_LR
+	  || s390_safe_attr_type (dep_insn) == TYPE_LOAD))
+    return 0;
   return cost;
 }
+
 /* A C statement (sans semicolon) to update the integer scheduling priority
    INSN_PRIORITY (INSN).  Increase the priority to execute the INSN earlier,
    reduce the priority to execute INSN later.  Do not define this macro if
@@ -3987,23 +3964,10 @@ s390_issue_rate (void)
   return 1;
 }
 
-/* If the following function returns TRUE, we will use the the DFA
-   insn scheduler.  */
-
-static int
-s390_use_dfa_pipeline_interface (void)
-{
-  if (s390_tune == PROCESSOR_2064_Z900
-      || s390_tune == PROCESSOR_2084_Z990)
-    return 1;
-
-  return 0;
-}
-
 static int
 s390_first_cycle_multipass_dfa_lookahead (void)
 {
-  return s390_use_dfa_pipeline_interface () ? 4 : 0;
+  return 4;
 }
 
 

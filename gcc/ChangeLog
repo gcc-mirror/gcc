@@ -1,3 +1,15 @@
+2004-06-18  Steven Bosscher  <stevenb@suse.de>
+	    Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
+
+	* config/s390/s390.md: Remove the generic pipeline description.
+	* config/s390/2064.md: Make all insn reservations apply to
+	the z900, g5 and g6.
+	* config/s390/s390.c (s390_use_dfa_pipeline_interface): Remove.
+	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE):
+	Define to hook_int_void_1.
+	(s390_adjust_cost): Cleanup.  Don't check address dependency here.
+	(s390_first_cycle_multipass_dfa_lookahead): Always return 4.
+
 2004-06-18  Daniel Berlin  <dberlin@dberlin.org>
 			Diego Novillo  <dnovillo@redhat.com>
 
