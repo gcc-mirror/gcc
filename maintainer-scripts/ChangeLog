@@ -1,3 +1,9 @@
+2002-02-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* update_version: Automatically update version files on all
+	branches.
+	* crontab: Only invoke update_version once.
+
 2002-02-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc_release: Revert change to -p interface.  Allow for local and
