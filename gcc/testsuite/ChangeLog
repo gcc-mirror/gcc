@@ -1,3 +1,11 @@
+2004-09-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16002
+	* g++.dg/template/error18.C: New test.
+	
+	PR c++/16029
+	* g++.dg/warn/Wunused-8.C: New test.
+
 2004-09-17  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/17513
