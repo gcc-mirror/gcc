@@ -4220,19 +4220,25 @@ store_expr (tree exp, rtx target, int call_param_p)
   return NULL_RTX;
 }
 
-/* Examine CTOR.  Discover how many scalar fields are set to nonzero
-   values and place it in *P_NZ_ELTS.  Discover how many scalar fields
-   are set to non-constant values and place it in  *P_NC_ELTS.  */
+/* Examine CTOR to discover:
+   * how many scalar fields are set to nonzero values,
+     and place it in *P_NZ_ELTS;
+   * how many scalar fields are set to non-constant values,
+     and place it in  *P_NC_ELTS; and
+   * how many scalar fields in total are in CTOR,
+     and place it in *P_ELT_COUNT.  */
 
 static void
 categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
-			    HOST_WIDE_INT *p_nc_elts)
+			    HOST_WIDE_INT *p_nc_elts,
+			    HOST_WIDE_INT *p_elt_count)
 {
-  HOST_WIDE_INT nz_elts, nc_elts;
+  HOST_WIDE_INT nz_elts, nc_elts, elt_count;
   tree list;
 
   nz_elts = 0;
   nc_elts = 0;
+  elt_count = 0;
 
   for (list = CONSTRUCTOR_ELTS (ctor); list; list = TREE_CHAIN (list))
     {
@@ -4255,10 +4261,11 @@ categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
 	{
 	case CONSTRUCTOR:
 	  {
-	    HOST_WIDE_INT nz = 0, nc = 0;
-	    categorize_ctor_elements_1 (value, &nz, &nc);
+	    HOST_WIDE_INT nz = 0, nc = 0, count = 0;
+	    categorize_ctor_elements_1 (value, &nz, &nc, &count);
 	    nz_elts += mult * nz;
 	    nc_elts += mult * nc;
+	    elt_count += mult * count;
 	  }
 	  break;
 
@@ -4266,10 +4273,12 @@ categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
 	case REAL_CST:
 	  if (!initializer_zerop (value))
 	    nz_elts += mult;
+	  elt_count += mult;
 	  break;
 
 	case STRING_CST:
 	  nz_elts += mult * TREE_STRING_LENGTH (value);
+	  elt_count += mult * TREE_STRING_LENGTH (value);
 	  break;
 
 	case COMPLEX_CST:
@@ -4277,19 +4286,24 @@ categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
 	    nz_elts += mult;
 	  if (!initializer_zerop (TREE_IMAGPART (value)))
 	    nz_elts += mult;
+	  elt_count += mult;
 	  break;
 
 	case VECTOR_CST:
 	  {
 	    tree v;
 	    for (v = TREE_VECTOR_CST_ELTS (value); v; v = TREE_CHAIN (v))
-	      if (!initializer_zerop (TREE_VALUE (v)))
-	        nz_elts += mult;
+	      {
+		if (!initializer_zerop (TREE_VALUE (v)))
+		  nz_elts += mult;
+		elt_count += mult;
+	      }
 	  }
 	  break;
 
 	default:
 	  nz_elts += mult;
+	  elt_count += mult;
 	  if (!initializer_constant_valid_p (value, TREE_TYPE (value)))
 	    nc_elts += mult;
 	  break;
@@ -4298,15 +4312,18 @@ categorize_ctor_elements_1 (tree ctor, HOST_WIDE_INT *p_nz_elts,
 
   *p_nz_elts += nz_elts;
   *p_nc_elts += nc_elts;
+  *p_elt_count += elt_count;
 }
 
 void
 categorize_ctor_elements (tree ctor, HOST_WIDE_INT *p_nz_elts,
-			  HOST_WIDE_INT *p_nc_elts)
+			  HOST_WIDE_INT *p_nc_elts,
+			  HOST_WIDE_INT *p_elt_count)
 {
   *p_nz_elts = 0;
   *p_nc_elts = 0;
-  categorize_ctor_elements_1 (ctor, p_nz_elts, p_nc_elts);
+  *p_elt_count = 0;
+  categorize_ctor_elements_1 (ctor, p_nz_elts, p_nc_elts, p_elt_count);
 }
 
 /* Count the number of scalars in TYPE.  Return -1 on overflow or
@@ -4395,9 +4412,9 @@ mostly_zeros_p (tree exp)
   if (TREE_CODE (exp) == CONSTRUCTOR)
 
     {
-      HOST_WIDE_INT nz_elts, nc_elts, elts;
+      HOST_WIDE_INT nz_elts, nc_elts, count, elts;
 
-      categorize_ctor_elements (exp, &nz_elts, &nc_elts);
+      categorize_ctor_elements (exp, &nz_elts, &nc_elts, &count);
       elts = count_type_elements (TREE_TYPE (exp));
 
       return nz_elts < elts / 4;

@@ -1,3 +1,19 @@
+2004-12-20  Steven Bosscher  <stevenb@suse.de>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/18191
+	PR middle-end/18965
+	PR middle-end/18999
+	* expr.c (categorize_ctor_elements_1): Count the total number
+	of elements in the constructor.
+	(categorize_ctor_elements): Return it in a new argument.
+	* tree.h (categorize_ctor_elements): Adjust prototype.
+	* gimplify.c (gimplify_init_ctor_eval_range): New.
+	(gimplify_init_ctor_eval): Gimplify RANGE_EXPR.
+	(gimplify_init_constructor): Block clear the object if the
+	constructor has fewer elements than the object type.  Only try
+	to add assignments to individual elements when we have to.
+
 2004-12-20  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Use 

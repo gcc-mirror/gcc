@@ -2367,6 +2367,95 @@ gimplify_init_ctor_preeval (tree *expr_p, tree *pre_p, tree *post_p,
   *expr_p = get_formal_tmp_var (*expr_p, pre_p);
 }
 
+/* A subroutine of gimplify_init_ctor_eval.  Create a loop for
+   a RANGE_EXPR in a CONSTRUCTOR for an array.
+
+      var = lower;
+    loop_entry:
+      object[var] = value;
+      if (var == upper)
+	goto loop_exit;
+      var = var + 1;
+      goto loop_entry;
+    loop_exit:
+
+   We increment var _after_ the loop exit check because we might otherwise
+   fail if upper == TYPE_MAX_VALUE (type for upper).
+
+   Note that we never have to deal with SAVE_EXPRs here, because this has
+   already been taken care of for us, in gimplify_init_ctor_preeval().  */
+
+static void gimplify_init_ctor_eval (tree, tree, tree *, bool);
+
+static void
+gimplify_init_ctor_eval_range (tree object, tree lower, tree upper,
+			       tree value, tree array_elt_type,
+			       tree *pre_p, bool cleared)
+{
+  tree loop_entry_label, loop_exit_label;
+  tree var, var_type, cref;
+
+  loop_entry_label = create_artificial_label ();
+  loop_exit_label = create_artificial_label ();
+
+  /* Create and initialize the index variable.  */
+  var_type = TREE_TYPE (upper);
+  var = create_tmp_var (var_type, NULL);
+  append_to_statement_list (build2 (MODIFY_EXPR, var_type, var, lower), pre_p);
+
+  /* Add the loop entry label.  */
+  append_to_statement_list (build1 (LABEL_EXPR,
+				    void_type_node,
+				    loop_entry_label),
+			    pre_p);
+
+  /* Build the reference.  */
+  cref = build4 (ARRAY_REF, array_elt_type, unshare_expr (object),
+		 var, NULL_TREE, NULL_TREE);
+
+  /* If we are a constructor, just call gimplify_init_ctor_eval to do
+     the store.  Otherwise just assign value to the reference.  */
+
+  if (TREE_CODE (value) == CONSTRUCTOR)
+    /* NB we might have to call ourself recursively through
+       gimplify_init_ctor_eval if the value is a constructor.  */
+    gimplify_init_ctor_eval (cref, CONSTRUCTOR_ELTS (value),
+			     pre_p, cleared);
+  else
+    append_to_statement_list (build2 (MODIFY_EXPR, TREE_TYPE (cref),
+				      cref, value),
+			      pre_p);
+
+  /* We exit the loop when the index var is equal to the upper bound.  */
+  gimplify_and_add (build3 (COND_EXPR, void_type_node,
+			    build2 (EQ_EXPR, boolean_type_node,
+				    var, upper),
+			    build1 (GOTO_EXPR,
+				    void_type_node,
+				    loop_exit_label),
+			    NULL_TREE),
+		    pre_p);
+
+  /* Otherwise, increment the index var...  */
+  append_to_statement_list (build2 (MODIFY_EXPR, var_type, var,
+				    build2 (PLUS_EXPR, var_type, var,
+					    fold_convert (var_type,
+							  integer_one_node))),
+			    pre_p);
+
+  /* ...and jump back to the loop entry.  */
+  append_to_statement_list (build1 (GOTO_EXPR,
+				    void_type_node,
+				    loop_entry_label),
+			    pre_p);
+
+  /* Add the loop exit label.  */
+  append_to_statement_list (build1 (LABEL_EXPR,
+				    void_type_node,
+				    loop_exit_label),
+			    pre_p);
+}
+
 /* A subroutine of gimplify_init_constructor.  Generate individual
    MODIFY_EXPRs for a CONSTRUCTOR.  OBJECT is the LHS against which the
    assignments should happen.  LIST is the CONSTRUCTOR_ELTS of the
@@ -2395,14 +2484,31 @@ gimplify_init_ctor_eval (tree object, tree list, tree *pre_p, bool cleared)
       if (cleared && initializer_zerop (value))
 	continue;
 
+      /* ??? Here's to hoping the front end fills in all of the indices,
+	 so we don't have to figure out what's missing ourselves.  */
+      gcc_assert (purpose);
+
+      /* If we have a RANGE_EXPR, we have to build a loop to assign the
+	 whole range.  */
+      if (TREE_CODE (purpose) == RANGE_EXPR)
+	{
+	  tree lower = TREE_OPERAND (purpose, 0);
+	  tree upper = TREE_OPERAND (purpose, 1);
+
+	  /* If the lower bound is equal to upper, just treat it as if
+	     upper was the index.  */
+	  if (simple_cst_equal (lower, upper))
+	    purpose = upper;
+	  else
+	    {
+	      gimplify_init_ctor_eval_range (object, lower, upper, value,
+					     array_elt_type, pre_p, cleared);
+	      continue;
+	    }
+	}
+
       if (array_elt_type)
 	{
-	  /* ??? Here's to hoping the front end fills in all of the indicies,
-	     so we don't have to figure out what's missing ourselves.  */
-	  gcc_assert (purpose);
-	  /* ??? Need to handle this.  */
-	  gcc_assert (TREE_CODE (purpose) != RANGE_EXPR);
-
 	  cref = build (ARRAY_REF, array_elt_type, unshare_expr (object),
 			purpose, NULL_TREE, NULL_TREE);
 	}
@@ -2458,8 +2564,8 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
     case ARRAY_TYPE:
       {
 	struct gimplify_init_ctor_preeval_data preeval_data;
-	HOST_WIDE_INT num_elements, num_nonzero_elements;
-	HOST_WIDE_INT num_nonconstant_elements;
+	HOST_WIDE_INT num_type_elements, num_ctor_elements;
+	HOST_WIDE_INT num_nonzero_elements, num_nonconstant_elements;
 	bool cleared;
 
 	/* Aggregate types must lower constructors to initialization of
@@ -2469,7 +2575,8 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	  break;
 
 	categorize_ctor_elements (ctor, &num_nonzero_elements,
-				  &num_nonconstant_elements);
+				  &num_nonconstant_elements,
+				  &num_ctor_elements);
 
 	/* If a const aggregate variable is being initialized, then it
 	   should never be a lose to promote the variable to be static.  */
@@ -2552,12 +2659,12 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	   parts in, then generate code for the non-constant parts.  */
 	/* TODO.  There's code in cp/typeck.c to do this.  */
 
-	num_elements = count_type_elements (TREE_TYPE (ctor));
+	num_type_elements = count_type_elements (TREE_TYPE (ctor));
 
 	/* If there are "lots" of zeros, then block clear the object first.  */
 	cleared = false;
-	if (num_elements - num_nonzero_elements > CLEAR_RATIO
-	    && num_nonzero_elements < num_elements/4)
+	if (num_type_elements - num_nonzero_elements > CLEAR_RATIO
+	    && num_nonzero_elements < num_type_elements/4)
 	  cleared = true;
 
 	/* ??? This bit ought not be needed.  For any element not present
@@ -2565,19 +2672,8 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	   we'd need to *find* the elements that are not present, and that
 	   requires trickery to avoid quadratic compile-time behavior in
 	   large cases or excessive memory use in small cases.  */
-	else
-	  {
-	    HOST_WIDE_INT len = list_length (elt_list);
-	    if (TREE_CODE (type) == ARRAY_TYPE)
-	      {
-		tree nelts = array_type_nelts (type);
-		if (!host_integerp (nelts, 1)
-		    || tree_low_cst (nelts, 1) + 1 != len)
-		  cleared = true;
-	      }
-	    else if (len != fields_length (type))
-	      cleared = true;
-	  }
+	else if (num_ctor_elements < num_type_elements)
+	  cleared = true;
 
 	if (cleared)
 	  {
@@ -2590,14 +2686,20 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	    append_to_statement_list (*expr_p, pre_p);
 	  }
 
-	preeval_data.lhs_base_decl = get_base_address (object);
-	if (!DECL_P (preeval_data.lhs_base_decl))
-	  preeval_data.lhs_base_decl = NULL;
-	preeval_data.lhs_alias_set = get_alias_set (object);
+	/* If we have not block cleared the object, or if there are nonzero
+	   elements in the constructor, add assignments to the individual
+	   scalar fields of the object.  */
+	if (!cleared || num_nonzero_elements > 0)
+	  {
+	    preeval_data.lhs_base_decl = get_base_address (object);
+	    if (!DECL_P (preeval_data.lhs_base_decl))
+	      preeval_data.lhs_base_decl = NULL;
+	    preeval_data.lhs_alias_set = get_alias_set (object);
 
-	gimplify_init_ctor_preeval (&TREE_OPERAND (*expr_p, 1),
-				    pre_p, post_p, &preeval_data);
-	gimplify_init_ctor_eval (object, elt_list, pre_p, cleared);
+	    gimplify_init_ctor_preeval (&TREE_OPERAND (*expr_p, 1),
+					pre_p, post_p, &preeval_data);
+	    gimplify_init_ctor_eval (object, elt_list, pre_p, cleared);
+	  }
 
 	*expr_p = NULL_TREE;
       }
