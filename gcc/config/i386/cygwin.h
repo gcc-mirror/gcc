@@ -326,11 +326,7 @@ do {									\
 #define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)	\
 do {							\
   if (i386_pe_dllexport_name_p (NAME))			\
-    {							\
-      drectve_section ();				\
-      fprintf ((STREAM), "\t.ascii \" -export:%s\"\n",	\
-               I386_PE_STRIP_ENCODING (NAME));		\
-    }							\
+    i386_pe_record_exported_symbol (NAME);		\
   if (! i386_pe_dllimport_name_p (NAME))		\
     {							\
       fprintf ((STREAM), "\t.comm\t"); 			\
@@ -345,13 +341,7 @@ do {							\
 #define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL) 	\
 do {							\
   if (i386_pe_dllexport_name_p (NAME))			\
-    {							\
-      enum in_section save_section = in_section;	\
-      drectve_section ();				\
-      fprintf ((STREAM), "\t.ascii \" -export:%s\"\n",	\
-               I386_PE_STRIP_ENCODING (NAME));		\
-      switch_to_section (save_section, (DECL));		\
-    }							\
+    i386_pe_record_exported_symbol (NAME);		\
   ASM_OUTPUT_LABEL ((STREAM), (NAME));			\
 } while (0)
 
@@ -447,12 +437,7 @@ do {									\
   do									\
     {									\
       if (i386_pe_dllexport_name_p (NAME))				\
-	{								\
-	  drectve_section ();						\
-	  fprintf ((FILE), "\t.ascii \" -export:%s\"\n", 		\
-		   I386_PE_STRIP_ENCODING (NAME));			\
-	  function_section (DECL);					\
-	}								\
+	i386_pe_record_exported_symbol (NAME);				\
       if (write_symbols != SDB_DEBUG)					\
 	i386_pe_declare_function_type (FILE, NAME, TREE_PUBLIC (DECL));	\
       ASM_OUTPUT_LABEL (FILE, NAME);					\
@@ -518,6 +503,7 @@ do {									\
 
 extern void i386_pe_record_external_function PROTO((char *));
 extern void i386_pe_declare_function_type STDIO_PROTO((FILE *, char *, int));
+extern void i386_pe_record_exported_symbol PROTO((char *));
 extern void i386_pe_asm_file_end STDIO_PROTO((FILE *));
 
 /* For Win32 ABI compatibility */
