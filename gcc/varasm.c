@@ -49,6 +49,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_STABS_OP ".stabs"
 #endif
 
+/* This macro gets just the user-specified name
+   out of the string in a SYMBOL_REF.  On most machines,
+   we discard the * if any and that's all.  */
+#ifndef STRIP_NAME_ENCODING
+#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME) \
+  (VAR) = ((SYMBOL_NAME) + ((SYMBOL_NAME)[0] == '*'))
+#endif
+
 /* File in which assembler code is being written.  */
 
 extern FILE *asm_out_file;
@@ -549,7 +557,7 @@ assemble_start_function (decl, fnname)
   if (TREE_PUBLIC (decl))
     {
       if (!first_global_object_name)
-	first_global_object_name = fnname + (fnname[0] == '*');
+	STRIP_NAME_ENCODING (first_global_object_name, fnname);
       ASM_GLOBALIZE_LABEL (asm_out_file, fnname);
     }
 
@@ -839,7 +847,7 @@ assemble_variable (decl, top_level, at_end)
   if (TREE_PUBLIC (decl) && DECL_NAME (decl))
     {
       if (!first_global_object_name)
-	first_global_object_name = name + (name[0] == '*');
+	STRIP_NAME_ENCODING(first_global_object_name, name);
       ASM_GLOBALIZE_LABEL (asm_out_file, name);
     }
 #if 0
