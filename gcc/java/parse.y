@@ -7491,12 +7491,23 @@ java_complete_lhs (node)
 
     case SYNCHRONIZED_EXPR:
       wfl_op1 = TREE_OPERAND (node, 0);
-      COMPLETE_CHECK_OP_0 (node);
-      COMPLETE_CHECK_OP_1 (node);
       return patch_synchronized_statement (node, wfl_op1);
 
     case TRY_EXPR:
       return patch_try_statement (node);
+
+    case CLEANUP_POINT_EXPR:
+      COMPLETE_CHECK_OP_0 (node);
+      TREE_TYPE (node) = void_type_node;
+      CAN_COMPLETE_NORMALLY (node) = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0));
+      return node;
+
+    case WITH_CLEANUP_EXPR:
+      COMPLETE_CHECK_OP_0 (node);
+      COMPLETE_CHECK_OP_2 (node);
+      CAN_COMPLETE_NORMALLY (node) = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0));
+      TREE_TYPE (node) = void_type_node;
+      return node;
 
     case LABELED_BLOCK_EXPR:
       PUSH_LABELED_BLOCK (node);
@@ -10740,12 +10751,19 @@ static tree
 patch_synchronized_statement (node, wfl_op1)
     tree node, wfl_op1;
 {
-  tree expr = TREE_OPERAND (node, 0);
+  tree expr = java_complete_tree (TREE_OPERAND (node, 0));
   tree block = TREE_OPERAND (node, 1);
-  tree try_block, catch_all, stmt, compound, decl;
+
+  tree enter, exit, finally, expr_decl;
+
+  if (expr == error_mark_node)
+    {
+      block = java_complete_tree (block);
+      return expr;
+    }
 
   /* The TYPE of expr must be a reference type */
-  if (!JREFERENCE_TYPE_P (TREE_TYPE (TREE_OPERAND (node, 0))))
+  if (!JREFERENCE_TYPE_P (TREE_TYPE (expr)))
     {
       SET_WFL_OPERATOR (wfl_operator, node, wfl_op1);
       parse_error_context (wfl_operator, "Incompatible type for `synchronized'"
@@ -10771,34 +10789,23 @@ patch_synchronized_statement (node, wfl_op1)
 	 Throw (e);
        } */
 
-  /* TRY block */
-  BUILD_MONITOR_ENTER (stmt, expr);
-  compound = add_stmt_to_compound (NULL_TREE, int_type_node, stmt);
-  compound = add_stmt_to_compound (compound, void_type_node, block);
-  if (CAN_COMPLETE_NORMALLY (block))
-    {
-      BUILD_MONITOR_EXIT (stmt, expr);
-      compound = add_stmt_to_compound (compound, int_type_node, stmt);
-    }
-  try_block = build_expr_block (compound, NULL_TREE);
-  CAN_COMPLETE_NORMALLY (try_block) = CAN_COMPLETE_NORMALLY (block);
+  expr_decl = build_decl (VAR_DECL, generate_name (), TREE_TYPE (expr));
+  BUILD_MONITOR_ENTER (enter, expr_decl);
+  BUILD_MONITOR_EXIT (exit, expr_decl);
+  CAN_COMPLETE_NORMALLY (enter) = 1;
+  CAN_COMPLETE_NORMALLY (exit) = 1;
+  node = build1 (CLEANUP_POINT_EXPR, NULL_TREE,
+		 build (COMPOUND_EXPR, NULL_TREE,
+			build (WITH_CLEANUP_EXPR, NULL_TREE,
+			       build (COMPOUND_EXPR, NULL_TREE,
+				      build (MODIFY_EXPR, NULL_TREE,
+					     expr_decl, expr),
+				      enter),
+			       NULL_TREE, exit),
+			block));
+  node = build_expr_block (node, expr_decl);
 
-  /* CATCH_ALL block */
-  decl = build_decl (VAR_DECL, generate_name (), ptr_type_node);
-  BUILD_ASSIGN_EXCEPTION_INFO (stmt, decl);
-  compound = add_stmt_to_compound (NULL_TREE, void_type_node, stmt);
-  BUILD_MONITOR_EXIT (stmt, expr);
-  compound = add_stmt_to_compound (compound, int_type_node, stmt);
-  BUILD_THROW (stmt, decl);
-  compound = add_stmt_to_compound (compound, void_type_node, stmt);
-  catch_all = build_expr_block (compound, decl);
-  catch_all = build_expr_block (catch_all, NULL_TREE);
-  catch_all = build1 (CATCH_EXPR, void_type_node, catch_all);
-
-  /* TRY-CATCH statement */
-  compound = build (TRY_EXPR, void_type_node, try_block, catch_all, NULL_TREE);
-  CAN_COMPLETE_NORMALLY (compound) = CAN_COMPLETE_NORMALLY (try_block);
-  return compound;
+  return java_complete_tree (node);
 }
 
 /* 14.16 The throw Statement */
@@ -11126,7 +11133,7 @@ fold_constant_for_init (node, context)
       if (val == NULL_TREE || ! TREE_CONSTANT (val))
 	return NULL_TREE;
       TREE_OPERAND (node, 0) = val;
-      node = patch_unaryop (node, op0);
+      return patch_unaryop (node, op0);
       break;
 
     case COND_EXPR:

@@ -1035,10 +1035,10 @@ verify_jvm_instructions (jcf, byte_ops, length)
 		int nlocals = DECL_MAX_LOCALS (current_function_decl);
 		index = nlocals + DECL_MAX_STACK (current_function_decl);
 		return_type_map = make_tree_vec (index);
-		while (--index >= nlocals)
-		  TREE_VEC_ELT (return_type_map, index) = TYPE_UNKNOWN;
-		while (--index >= 0)
-		  TREE_VEC_ELT (return_type_map, index) = TYPE_UNUSED;
+		while (index > nlocals)
+		  TREE_VEC_ELT (return_type_map, --index) = TYPE_UNKNOWN;
+		while (index > 0)
+		  TREE_VEC_ELT (return_type_map, --index) = TYPE_UNUSED;
 		LABEL_RETURN_LABEL (target)
 		  = build_decl (LABEL_DECL, NULL_TREE, TREE_TYPE (target));
 		LABEL_PC (LABEL_RETURN_LABEL (target)) = -1;

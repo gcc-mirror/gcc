@@ -2191,6 +2191,7 @@ process_jvm_instruction (PC, byte_ops, length)
     tree where = lookup_label (oldpc+OPERAND_VALUE);	\
     tree ret   = lookup_label (PC);			\
     build_java_jsr (where, ret);			\
+    load_type_state (ret);				\
   }
 
 /* Push a constant onto the stack. */
