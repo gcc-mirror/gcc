@@ -95,27 +95,27 @@ public class BasicDefaults extends UIDefaults
     public BasicDefaults()
     {
 	//	System.out.println("BasicDefaults !!!!!!!!!!!!!!!!!!!!!!!!!");
-	put("JButton", new BasicButtonUI());
-	put("JLabel",  new BasicLabelUI());
+	put("JButton", "javax.swing.plaf.basic.BasicButtonUI");
+	put("JLabel",  "javax.swing.plaf.basic.BasicLabelUI");
 	
-	put("JPanel",  new BasicPanelUI());
-	put("JCheckBox",  new BasicCheckBoxUI());
-	put("JRadioButton",  new BasicRadioButtonUI());
-	put("JToggleButton",  new BasicToggleButtonUI());
-	put("JOptionPane",  new BasicOptionPaneUI());
-	put("JList",  new BasicListUI());
-	put("JTree",  new BasicTreeUI());
-	put("JTextComponent",  new BasicTextUI());
-	put("JTabbedPane",  new BasicTabbedPaneUI());
-	put("JScrollPane", new BasicScrollPaneUI());
-	put("JViewport",   new BasicViewportUI());
+	put("JPanel",  "javax.swing.plaf.basic.BasicPanelUI");
+	put("JCheckBox",  "javax.swing.plaf.basic.BasicCheckBoxUI");
+	put("JRadioButton",  "javax.swing.plaf.basic.BasicRadioButtonUI");
+	put("JToggleButton",  "javax.swing.plaf.basic.BasicToggleButtonUI");
+	put("JOptionPane",  "javax.swing.plaf.basic.BasicOptionPaneUI");
+	put("JList",  "javax.swing.plaf.basic.BasicListUI");
+	put("JTree",  "javax.swing.plaf.basic.BasicTreeUI");
+	put("JTextComponent",  "javax.swing.plaf.basic.BasicTextUI");
+	put("JTabbedPane",  "javax.swing.plaf.basic.BasicTabbedPaneUI");
+	put("JScrollPane", "javax.swing.plaf.basic.BasicScrollPaneUI");
+	put("JViewport",   "javax.swing.plaf.basic.BasicViewportUI");
 
-	put("JButton.border",      new BasicBorder());
-	put("JPanel.border",       new PanelBorder());
+	put("JButton.border",      "javax.swing.plaf.basic.BasicBorder");
+	put("JPanel.border",       "javax.swing.plaf.basic.PanelBorder");
 
-	put("JToggleButton.border", new PanelBorder());
-	put("JCheckBox.border", new PanelBorder());
-	put("JRadioButton.border", new PanelBorder());
+	put("JToggleButton.border", "javax.swing.plaf.basic.PanelBorder");
+	put("JCheckBox.border", "javax.swing.plaf.basic.PanelBorder");
+	put("JRadioButton.border", "javax.swing.plaf.basic.PanelBorder");
     }
     
 }
