@@ -1430,7 +1430,7 @@ finish_object_call_expr (fn, object, args)
 }
 
 /* Finish a qualified member function call using OBJECT and ARGS as
-   arguments to FN.  Returns an expressino for the call.  */
+   arguments to FN.  Returns an expression for the call.  */
 
 tree 
 finish_qualified_object_call_expr (fn, object, args)
@@ -2007,7 +2007,7 @@ finish_template_decl (parms)
     end_specialization ();
 }
 
-/* Finish processing a a template-id (which names a type) of the form
+/* Finish processing a template-id (which names a type) of the form
    NAME < ARGS >.  Return the TYPE_DECL for the type named by the
    template-id.  If ENTERING_SCOPE is non-zero we are about to enter
    the scope of template-id indicated.  */

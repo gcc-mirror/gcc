@@ -1,5 +1,12 @@
 2000-10-05  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (access_kind): Fix comment typo.
+	* decl2.c (grokfield): Fix diagnostic typo.
+	* semantics.c (finish_template_type): Fix comment typo.
+	(finish_qualified_object_call_expr): Likewise.
+
+2000-10-05  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* pt.c (tsubst_expr, DECL_STMT case): Don't process if
 	tsubsting fails.	
 

@@ -1652,7 +1652,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	 Explain that to the user.  */
       static int explained;
 
-      cp_error ("invalid data member initiailization");
+      cp_error ("invalid data member initialization");
       if (!explained)
 	{
 	  cp_error ("(use `=' to initialize static data members)");
