@@ -1,3 +1,16 @@
+2000-04-25  Nick Clifton  <nickc@cygnus.com>
+
+	* integrate.c (FUNCTION_ATTRIBUTE_INLINABLE_P): If not
+	defined, define to return zero.
+	(function_cannot_inline_p): If a function has any target
+	specific attributes, then use the macro
+	FUNCTION_ATTRIBUTE_INLINABLE_P to allow the target to decide
+	whether it can be inlined.  If it cannot, issue a suitable
+	explanation.
+
+	* tm.texi: Add a new node 'Inlining' to document the new macro
+	FUNCTION_ATTRIBUTE_INLINABLE_P. 
+
 2000-04-25  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.h (struct cpp_buffer): Add 'mapped' flag; fix

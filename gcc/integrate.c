@@ -62,6 +62,12 @@ extern struct obstack *function_maybepermanent_obstack;
    ? (1 + (3 * list_length (DECL_ARGUMENTS (DECL))) / 2) \
    : (8 * (8 + list_length (DECL_ARGUMENTS (DECL)))))
 #endif
+
+/* Decide whether a function with a target specific attribute 
+   attached can be inlined.  By default we disallow this.  */
+#ifndef FUNCTION_ATTRIBUTE_INLINABLE_P
+#define FUNCTION_ATTRIBUTE_INLINABLE_P(FNDECL) 0
+#endif
 
 static rtvec initialize_for_inline	PARAMS ((tree));
 static void note_modified_parmregs	PARAMS ((rtx, rtx, void *));
@@ -240,7 +246,14 @@ function_cannot_inline_p (fndecl)
   if (result && GET_CODE (result) == PARALLEL)
     return N_("inline functions not supported for this return value type");
 
-  return 0;
+  /* If the function has a target specific attribute attached to it,
+     then we assume that we should not inline it.  This can be overriden
+     by the target if it defines FUNCTION_ATTRIBUTE_INLINABLE_P.  */
+  if (DECL_MACHINE_ATTRIBUTES (fndecl)
+      && ! FUNCTION_ATTRIBUTE_INLINABLE_P (fndecl))
+    return N_("function with target specific attribute(s) cannot be inlined");
+
+  return NULL;
 }
 
 /* Map pseudo reg number into the PARM_DECL for the parm living in the reg.

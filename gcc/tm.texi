@@ -2169,6 +2169,7 @@ This describes the stack layout and calling conventions.
 * Caller Saves::
 * Function Entry::
 * Profiling::
+* Inlining::
 @end menu
 
 @node Frame Layout
@@ -3670,6 +3671,17 @@ Registers or condition codes clobbered by @code{FUNCTION_PROLOGUE} or
 A C function or functions which are needed in the library to
 support block profiling.
 @end table
+
+@node Inlining
+@subsection Permitting inlining of functions with attributes
+@cindex inlining
+
+By default if a function has a target specific attribute attached to it,
+it will not be inlined.  This behaviour can be overridden if the target
+defines the @samp{FUNCTION_ATTRIBUTE_INLINABLE_P} macro.  This macro
+takes one argument, a @samp{DECL} describing the function.  It should
+return non-zero if the function can be inlined, otherwise it should
+return 0.
 
 @node Varargs
 @section Implementing the Varargs Macros
