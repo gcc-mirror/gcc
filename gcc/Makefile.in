@@ -364,7 +364,7 @@ COMPILERS = cc1 cc1plus cc1obj
 C_OBJS = c-parse.o c-lang.o c-lex.o c-pragma.o \
    c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-iterate.o
 
-# Language-specific object files for Objectionable C.
+# Language-specific object files for Objective C.
 OBJC_OBJS = objc-parse.o objc-act.o c-lex.o c-pragma.o \
    c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-iterate.o
 
@@ -812,7 +812,7 @@ collect2.o : collect2.c $(CONFIG_H) gstab.h
 	-DTARGET_MACHINE=\"$(target)\" \
 	-c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
 
-# Objectionable C language specific files.
+# Objective C language specific files.
 
 objc-parse.o : $(srcdir)/objc-parse.c $(CONFIG_H) $(TREE_H) c-lex.h \
    c-tree.h input.h flags.h objc-act.h
