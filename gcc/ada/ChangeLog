@@ -1,3 +1,7 @@
+2001-10-08  Geert Bosch  <bosch@gnat.com>
+
+	* xsnames.adb: New utility for updating snames.ads and snames.adb
+
 2001-10-08  Zack Weinberg  <zack@codesourcery.com>
 
 	* Make-lang.in (ADAFLAGS): Add -W -Wall.
