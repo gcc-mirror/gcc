@@ -7621,7 +7621,7 @@ gen_subprogram_die (decl, context_die)
          the class to which it belongs.  We make sure of this by emitting
          the class first.  The next time is the definition, which is
          handled above.  The two may come from the same source text.  */
-      if (decl_class_context (decl))
+      if (DECL_CONTEXT (decl))
 	equate_decl_number_to_die (decl, subr_die);
     }
   else if (DECL_ABSTRACT (decl))
