@@ -1266,7 +1266,7 @@ dbxout_type (type, full, show_arg_types)
 	  dbxout_type_index (type);
 	  fputc (';', asmfile);
 	  fprintf (asmfile, HOST_WIDE_INT_PRINT_DEC,
-		   int_size_in_bytes (TREE_TYPE (type)));
+		   2 * int_size_in_bytes (TREE_TYPE (type)));
 	  fputs (";0;", asmfile);
 	  CHARS (12);		/* The number is probably incorrect here.  */
 	}
