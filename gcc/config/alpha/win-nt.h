@@ -129,3 +129,40 @@ Boston, MA 02111-1307, USA.  */
   emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,			\
                       gen_rtvec (1, const0_rtx), 0));			\
 }
+
+/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
+   Used for C++ multiple inheritance.  */
+
+#undef ASM_OUTPUT_MI_THUNK
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
+do {									\
+  char *fn_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION));	\
+									\
+  fprintf (FILE, "\t.ent ");						\
+  assemble_name (FILE, alpha_function_name);				\
+  fputc ('\n', FILE);							\
+  ASM_OUTPUT_LABEL (FILE, alpha_function_name);				\
+  fprintf (FILE, "\t.frame $30,0,$26,0\n");				\
+  fprintf (FILE, "\t.prologue 1\n");					\
+									\
+  /* Rely on the assembler to macro expand a large delta.  */		\
+  fprintf (FILE, "\tlda $16,%ld($16)\n", (long)(DELTA));		\
+									\
+  if (current_file_function_operand (XEXP (DECL_RTL (FUNCTION), 0)))	\
+    {									\
+      fprintf (FILE, "\tbr $31,");					\
+      assemble_name (FILE, fn_name);					\
+      fputc ('\n', FILE);						\
+    }									\
+  else									\
+    {									\
+      fprintf (FILE, "\tjmp $31,");					\
+      assemble_name (FILE, fn_name);					\
+      fputc ('\n', FILE);						\
+    }									\
+									\
+  fprintf (FILE, "\t.end ");						\
+  assemble_name (FILE, alpha_function_name);				\
+  fputc ('\n', FILE);							\
+} while (0)
+

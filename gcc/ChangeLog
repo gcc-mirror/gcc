@@ -1,3 +1,14 @@
+Tue Jan 27 05:05:26 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (output_epilog [!VMS]): Don't tag global functions if
+	compiling with -fpic -- we want to be able to override symbols
+	properly.
+	(alpha_expand_block_move): Fix thinko in last change.
+
+	* alpha.h (ASM_OUTPUT_MI_THUNK): New define.
+	* config/alpha/win-nt.h (ASM_OUTPUT_MI_THUNK): New define.
+	* config/alpha/vms.h (ASM_OUTPUT_MI_THUNK): New undef.
+	
 Tue Jan 27 03:21:23 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (abssf, absdf): Revert last change.

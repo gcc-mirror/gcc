@@ -455,6 +455,9 @@ do {									\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 12),	\
   sprintf ((OUTPUT), "%s___%d", (NAME), (LABELNO)))
 
+/* ??? VMS uses different linkage.  */
+#undef ASM_OUTPUT_MI_THUNK
+
 #undef ASM_SPEC
 #undef ASM_FINAL_SPEC
 #undef LINK_SPEC
