@@ -428,14 +428,13 @@ namespace std
     {
       if (!this->fail())
 	{
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-// 136.  seekp, seekg setting wrong streams?
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 136.  seekp, seekg setting wrong streams?
 	  pos_type __err = this->rdbuf()->pubseekpos(__pos, ios_base::out);
 
-// 129. Need error indication from seekp() and seekg()
+	  // 129. Need error indication from seekp() and seekg()
 	  if (__err == pos_type(off_type(-1)))
 	    this->setstate(ios_base::failbit);
-#endif
 	}
       return *this;
     }
@@ -447,15 +446,14 @@ namespace std
     {
       if (!this->fail())
 	{
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-// 136.  seekp, seekg setting wrong streams?
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 136.  seekp, seekg setting wrong streams?
 	  pos_type __err = this->rdbuf()->pubseekoff(__off, __d, 
 						     ios_base::out);
 
-// 129. Need error indication from seekp() and seekg()
+	  // 129. Need error indication from seekp() and seekg()
 	  if (__err == pos_type(off_type(-1)))
 	    this->setstate(ios_base::failbit);
-#endif
 	}
       return *this;
     }
@@ -576,11 +574,10 @@ namespace std
     operator<<(basic_ostream<_CharT, _Traits>& __out, const char* __s)
     {
       typedef basic_ostream<_CharT, _Traits> __ostream_type;
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-// 167.  Improper use of traits_type::length()
-// Note that this is only in 'Review' status.
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 167.  Improper use of traits_type::length()
+      // Note that this is only in 'Review' status.
       typedef char_traits<char>		     __traits_type;
-#endif
       typename __ostream_type::sentry __cerb(__out);
       if (__cerb && __s)
 	{
@@ -672,9 +669,8 @@ namespace std
 	  const streamsize __w = __out.width();
 	  streamsize __len = static_cast<streamsize>(__str.size());
 	  const _CharT* __s = __str.data();
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 25. String operator<< uses width() value wrong
-#endif
 	  if (__w > __len)
 	    {
 	      _CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)

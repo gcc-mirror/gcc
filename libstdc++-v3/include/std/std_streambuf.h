@@ -764,14 +764,13 @@ namespace std
       }
 #endif
 
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
     // Side effect of DR 50. 
     private:
       basic_streambuf(const __streambuf_type&) { }; 
 
       __streambuf_type& 
       operator=(const __streambuf_type&) { return *this; };
-#endif
     };
 } // namespace std
 

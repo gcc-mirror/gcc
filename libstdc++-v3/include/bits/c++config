@@ -55,7 +55,7 @@
 //#define _GLIBCXX_DEPRECATED 1
 
 // Use corrected code from the committee library group's issues list.
-#define _GLIBCXX_RESOLVE_LIB_DEFECTS 1
+//#define _GLIBCXX_RESOLVE_LIB_DEFECTS 1
 
 // The remainder of the prewritten config is automatic; all the
 // user hooks are listed above.

@@ -338,10 +338,9 @@ namespace std
   bool 
   ios_base::sync_with_stdio(bool __sync)
   { 
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
     // 49.  Underspecification of ios_base::sync_with_stdio
     bool __ret = ios_base::Init::_S_synced_with_stdio;
-#endif
 
     // Turn off sync with C FILE* for cin, cout, cerr, clog iff
     // currently synchronized.

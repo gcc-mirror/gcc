@@ -100,10 +100,9 @@ namespace std
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
     class ostreambuf_iterator;
 
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // Not included.   (??? Apparently no LWG number?)
   class ios_base; 
-#endif
 
   /** 
    *  @defgroup s27_2_iosfwd I/O Forward Declarations

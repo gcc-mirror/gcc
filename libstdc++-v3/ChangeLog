@@ -1,3 +1,28 @@
+2003-10-12  Paolo Carlini  <pcarlini@unitus.it>
+
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h:
+	Change #ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS to a comment.
+	* include/bits/basic_string.tcc: Likewise.
+	* include/bits/ios_base.h: Likewise.
+	* include/bits/istream.tcc: Likewise.
+	* include/bits/locale_facets.tcc: Likewise.
+	* include/bits/ostream.tcc: Likewise.
+	* include/bits/stl_function.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_pair.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/streambuf_iterator.h
+	* include/std/std_iosfwd.h: Likewise.
+	* include/std/std_istream.h: Likewise.
+	* include/std/std_sstream.h: Likewise.
+	* include/std/std_streambuf.h: Likewise.
+	* src/ios.cc: Likewise.
+	* include/bits/c++config:
+	Comment out #define _GLIBCXX_RESOLVE_LIB_DEFECTS 1.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Tweak a
+	dg-error directive due to removal of a blank line.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Likewise.
+
 2003-10-12  Andreas Tobler  <a.tobler@schweiz.ch>
 	    Paolo Carlini  <pcarlini@unitus.it>
 

@@ -72,14 +72,12 @@ struct pair {
 
   _T1 first;                 ///< @c first is a copy of the first object
   _T2 second;                ///< @c second is a copy of the second object
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-//265.  std::pair::pair() effects overly restrictive
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 265.  std::pair::pair() effects overly restrictive
   /** The default constructor creates @c first and @c second using their
    *  respective default constructors.  */
   pair() : first(), second() {}
-#else
-  pair() : first(_T1()), second(_T2()) {}
-#endif
+
   /** Two objects may be passed to a @c pair constructor to be copied.  */
   pair(const _T1& __a, const _T2& __b) : first(__a), second(__b) {}
 
@@ -138,12 +136,9 @@ inline bool operator>=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y) {
  *  the LWG by default.
 */
 template <class _T1, class _T2>
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-//181.  make_pair() unintended behavior
+// _GLIBCXX_RESOLVE_LIB_DEFECTS
+// 181.  make_pair() unintended behavior
 inline pair<_T1, _T2> make_pair(_T1 __x, _T2 __y)
-#else
-inline pair<_T1, _T2> make_pair(const _T1& __x, const _T2& __y)
-#endif
 {
   return pair<_T1, _T2>(__x, __y);
 }

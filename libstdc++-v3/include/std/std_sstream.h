@@ -65,10 +65,9 @@ namespace std
       // Types:
       typedef _CharT 					char_type;
       typedef _Traits 					traits_type;
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-// 251. basic_stringbuf missing allocator_type
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 251. basic_stringbuf missing allocator_type
       typedef _Alloc				       	allocator_type;
-#endif
       typedef typename traits_type::int_type 		int_type;
       typedef typename traits_type::pos_type 		pos_type;
       typedef typename traits_type::off_type 		off_type;
@@ -304,10 +303,9 @@ namespace std
       // Types:
       typedef _CharT 					char_type;
       typedef _Traits 					traits_type;
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-// 251. basic_stringbuf missing allocator_type
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 251. basic_stringbuf missing allocator_type
       typedef _Alloc				       	allocator_type;
-#endif
       typedef typename traits_type::int_type 		int_type;
       typedef typename traits_type::pos_type 		pos_type;
       typedef typename traits_type::off_type 		off_type;
@@ -423,10 +421,9 @@ namespace std
       // Types:
       typedef _CharT 					char_type;
       typedef _Traits 					traits_type;
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-// 251. basic_stringbuf missing allocator_type
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 251. basic_stringbuf missing allocator_type
       typedef _Alloc				       	allocator_type;
-#endif
       typedef typename traits_type::int_type 		int_type;
       typedef typename traits_type::pos_type 		pos_type;
       typedef typename traits_type::off_type 		off_type;
@@ -542,10 +539,9 @@ namespace std
       // Types:
       typedef _CharT 					char_type;
       typedef _Traits 					traits_type;
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-// 251. basic_stringbuf missing allocator_type
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 251. basic_stringbuf missing allocator_type
       typedef _Alloc				       	allocator_type;
-#endif
       typedef typename traits_type::int_type 		int_type;
       typedef typename traits_type::pos_type 		pos_type;
       typedef typename traits_type::off_type 		off_type;

@@ -182,8 +182,8 @@ public:
     return _M_t.find(__x) == _M_t.end() ? 0 : 1;
   }
 
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-//214.  set::find() missing const overload
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 214.  set::find() missing const overload
   iterator find(const key_type& __x) { return _M_t.find(__x); }
   const_iterator find(const key_type& __x) const { return _M_t.find(__x); }
   iterator lower_bound(const key_type& __x) {
@@ -204,18 +204,6 @@ public:
   pair<const_iterator,const_iterator> equal_range(const key_type& __x) const {
     return _M_t.equal_range(__x);
   }
-#else
-  iterator find(const key_type& __x) const { return _M_t.find(__x); }
-  iterator lower_bound(const key_type& __x) const {
-    return _M_t.lower_bound(__x);
-  }
-  iterator upper_bound(const key_type& __x) const {
-    return _M_t.upper_bound(__x); 
-  }
-  pair<iterator,iterator> equal_range(const key_type& __x) const {
-    return _M_t.equal_range(__x);
-  }
-#endif
 
   template <class _K1, class _C1, class _A1>
   friend bool operator== (const set<_K1,_C1,_A1>&, const set<_K1,_C1,_A1>&);
