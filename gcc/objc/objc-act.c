@@ -1568,7 +1568,6 @@ build_module_descriptor ()
     c_expand_expr_stmt (decelerator);
 
     TREE_PUBLIC (current_function_decl) = 1;
-    DECL_EXTERNAL (current_function_decl) = 1;
 
     finish_function (0);
 
