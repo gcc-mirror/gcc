@@ -1,3 +1,7 @@
+2003-07-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* MAINTAINERS: Alphabetize.
+
 2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
 
 	* Makefile.tpl: Fix typos in the last change.
