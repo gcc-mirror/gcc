@@ -2390,8 +2390,6 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	      tree primop0 = get_narrower (op0, &unsignedp0);
 	      tree primop1 = get_narrower (op1, &unsignedp1);
 
-	      /* Avoid spurious warnings for comparison with enumerators.  */
- 
 	      xop0 = orig_op0;
 	      xop1 = orig_op1;
 	      STRIP_TYPE_NOPS (xop0);
@@ -2407,28 +2405,41 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		 all the values of the unsigned type.  */
 	      if (! TREE_UNSIGNED (result_type))
 		/* OK */;
-              /* Do not warn if both operands are unsigned.  */
+              /* Do not warn if both operands are the same signedness.  */
               else if (op0_signed == op1_signed)
                 /* OK */;
-	      /* Do not warn if the signed quantity is an unsuffixed
-		 integer literal (or some static constant expression
-		 involving such literals) and it is non-negative.  */
-	      else if ((op0_signed && TREE_CODE (xop0) == INTEGER_CST
-			&& tree_int_cst_sgn (xop0) >= 0)
-		       || (op1_signed && TREE_CODE (xop1) == INTEGER_CST
-			   && tree_int_cst_sgn (xop1) >= 0))
-		/* OK */;
-	      /* Do not warn if the comparison is an equality operation,
-                 the unsigned quantity is an integral constant and it does
-                 not use the most significant bit of result_type.  */
-	      else if ((resultcode == EQ_EXPR || resultcode == NE_EXPR)
-		       && ((op0_signed && TREE_CODE (xop1) == INTEGER_CST
-			    && int_fits_type_p (xop1, signed_type (result_type)))
-			   || (op1_signed && TREE_CODE (xop0) == INTEGER_CST
-			       && int_fits_type_p (xop0, signed_type (result_type)))))
-		/* OK */;
 	      else
-		warning ("comparison between signed and unsigned");
+		{
+		  tree sop, uop;
+		  if (op0_signed)
+		    sop = xop0, uop = xop1;
+		  else
+		    sop = xop1, uop = xop0;
+
+		  /* Do not warn if the signed quantity is an unsuffixed
+		     integer literal (or some static constant expression
+		     involving such literals) and it is non-negative.  */
+		  if (TREE_CODE (sop) == INTEGER_CST
+		      && tree_int_cst_sgn (sop) >= 0)
+		    /* OK */;
+		  /* Do not warn if the comparison is an equality operation,
+		     the unsigned quantity is an integral constant, and it
+		     would fit in the result if the result were signed.  */
+		  else if (TREE_CODE (uop) == INTEGER_CST
+			   && (resultcode == EQ_EXPR || resultcode == NE_EXPR)
+			   && int_fits_type_p (uop, signed_type (result_type)))
+		    /* OK */;
+		  /* Do not warn if the unsigned quantity is an enumeration
+		     constant and its maximum value would fit in the result
+		     if the result were signed.  */
+		  else if (TREE_CODE (uop) == INTEGER_CST
+			   && TREE_CODE (TREE_TYPE (uop)) == ENUMERAL_TYPE
+			   && int_fits_type_p (TYPE_MAX_VALUE (TREE_TYPE(uop)),
+					       signed_type (result_type)))
+		    /* OK */;
+		  else
+		    warning ("comparison between signed and unsigned");
+		}
 
 	      /* Warn if two unsigned values are being compared in a size
 		 larger than their original size, and one (and only one) is the
@@ -3362,6 +3373,37 @@ build_conditional_expr (ifexp, op1, op2)
            && (code2 == INTEGER_TYPE || code2 == REAL_TYPE))
     {
       result_type = common_type (type1, type2);
+
+      /* If -Wsign-compare, warn here if type1 and type2 have
+	 different signedness.  We'll promote the signed to unsigned
+	 and later code won't know it used to be different.
+	 Do this check on the original types, so that explicit casts
+	 will be considered, but default promotions won't.  */
+      if ((warn_sign_compare < 0 ? extra_warnings : warn_sign_compare)
+	  && !skip_evaluation)
+	{
+	  int unsigned_op1 = TREE_UNSIGNED (TREE_TYPE (orig_op1));
+	  int unsigned_op2 = TREE_UNSIGNED (TREE_TYPE (orig_op2));
+
+	  if (unsigned_op1 ^ unsigned_op2)
+	    {
+	      /* Do not warn if the result type is signed, since the
+		 signed type will only be chosen if it can represent
+		 all the values of the unsigned type.  */
+	      if (! TREE_UNSIGNED (result_type))
+		/* OK */;
+	      /* Do not warn if the signed quantity is an unsuffixed
+		 integer literal (or some static constant expression
+		 involving such literals) and it is non-negative.  */
+	      else if ((unsigned_op2 && TREE_CODE (op1) == INTEGER_CST
+			&& tree_int_cst_sgn (op1) >= 0)
+		       || (unsigned_op1 && TREE_CODE (op2) == INTEGER_CST
+			   && tree_int_cst_sgn (op2) >= 0))
+		/* OK */;
+	      else
+		warning ("signed and unsigned type in conditional expression");
+	    }
+	}
     }
   else if (code1 == VOID_TYPE || code2 == VOID_TYPE)
     {

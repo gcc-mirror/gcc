@@ -1,3 +1,20 @@
+2000-01-05 11:25 -0800  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* c-decl.c (finish_enum): Simplify code to determine minimum and
+	maximum values of the enum, and calculate the type.  Remove check
+	for FUNCTION_DECLs in the values list, which cannot happen.  Replace
+	the DECL_INITIAL of each enumeration constant with a copy converted
+	to the enumeration type.  When updating variant types, don't bother
+	updating the type itself.
+
+	* c-typeck.c (build_binary_op): Simplify conditional expressions
+	when weeding out spurious signed-unsigned warnings.  Add new
+	spurious warning category: if the unsigned quantity is an enum
+	and its maximum value fits in signed_type(result_type).  Update
+	commentary.
+	(build_conditional_expr): Warn here if one alternative is signed
+	and the other is unsigned.
+
 2000-01-05  Nick Clifton  <nickc@cygnus.com>
 
 	* config/fr30/fr30.h: Remove extraneous comments.
