@@ -54,10 +54,8 @@ typedef pthread_mutex_t __gthread_recursive_mutex_t;
 #define __GTHREAD_RECURSIVE_MUTEX_INIT PTHREAD_RECURSIVE_MUTEX_INITIALIZER
 #elif defined(PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP)
 #define __GTHREAD_RECURSIVE_MUTEX_INIT PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
-#elif defined(PTHREAD_MUTEX_RECURSIVE)
-#define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_recursive_mutex_init_function
 #else
-#define __GTHREAD_RECURSIVE_MUTEX_INIT RECURSIVE_ERRORCHECKMUTEX
+#define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION __gthread_recursive_mutex_init_function
 #endif
 
 #if SUPPORTS_WEAK && GTHREAD_USE_WEAK
@@ -531,7 +529,7 @@ __gthread_mutex_unlock (__gthread_mutex_t *mutex)
     return 0;
 }
 
-#if !defined(PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP) && defined(PTHREAD_MUTEX_RECURSIVE)
+#ifndef PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP
 static inline int
 __gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
 {
