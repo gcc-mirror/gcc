@@ -569,6 +569,14 @@ cpp_cleanup (pfile)
       pfile->deps_allocated_size = 0;
     }
 
+  if (pfile->input_buffer)
+    {
+      free (pfile->input_buffer);
+      free (pfile->input_speccase);
+      pfile->input_buffer = pfile->input_speccase = NULL;
+      pfile->input_buffer_len = 0;
+    }
+
   while (pfile->if_stack)
     {
       IF_STACK_FRAME *temp = pfile->if_stack;

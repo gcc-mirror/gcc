@@ -46,6 +46,7 @@ main (argc, argv)
   char *p;
   int argi = 1;  /* Next argument to handle.  */
   struct cpp_options *opts = &options;
+  enum cpp_token kind;
 
   p = argv[0] + strlen (argv[0]);
   while (p != argv[0] && p[-1] != '/') --p;
@@ -80,21 +81,30 @@ main (argc, argv)
   else if (! freopen (opts->out_fname, "w", stdout))
     cpp_pfatal_with_name (&parse_in, opts->out_fname);
 
-  for (;;)
+  do
     {
-      enum cpp_token kind;
-      if (! opts->no_output)
-	{
-	  fwrite (parse_in.token_buffer, 1, CPP_WRITTEN (&parse_in), stdout);
-	}
-      CPP_SET_WRITTEN (&parse_in, 0);
       kind = cpp_get_token (&parse_in);
-      if (kind == CPP_EOF)
-	break;
+      if (CPP_WRITTEN (&parse_in) >= BUFSIZ || kind == CPP_EOF)
+	{
+	  if (! opts->no_output)
+	    {
+	      size_t rem, count = CPP_WRITTEN (&parse_in);
+
+	      rem = fwrite (parse_in.token_buffer, 1, count, stdout);
+	      if (rem < count)
+		/* Write error. */
+		cpp_pfatal_with_name (&parse_in, opts->out_fname);
+	    }
+
+	  CPP_SET_WRITTEN (&parse_in, 0);
+	}
     }
+  while (kind != CPP_EOF);
 
   cpp_finish (&parse_in);
-  fwrite (parse_in.token_buffer, 1, CPP_WRITTEN (&parse_in), stdout);
+  if (fwrite (parse_in.token_buffer, 1, CPP_WRITTEN (&parse_in), stdout)
+      < CPP_WRITTEN (&parse_in))
+    cpp_pfatal_with_name (&parse_in, opts->out_fname);
 
   if (parse_in.errors)
     exit (FATAL_EXIT_CODE);

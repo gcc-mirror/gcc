@@ -241,6 +241,13 @@ struct cpp_reader
 
   /* Number of bytes since the last newline.  */
   int deps_column;
+
+  /* A buffer and a table, used only by read_and_prescan (in cppfiles.c)
+     which are allocated once per cpp_reader object to keep them off the
+     stack and avoid setup costs.  */
+  U_CHAR *input_buffer;
+  U_CHAR *input_speccase;
+  size_t input_buffer_len;
 };
 
 #define CPP_FATAL_LIMIT 1000
@@ -269,7 +276,7 @@ struct cpp_reader
 /* Append string STR (of length N) to PFILE's output buffer.
    Assume there is enough space. */
 #define CPP_PUTS_Q(PFILE, STR, N) \
-  (bcopy (STR, (PFILE)->limit, (N)), (PFILE)->limit += (N))
+  (memcpy ((PFILE)->limit, STR, (N)), (PFILE)->limit += (N))
 /* Append string STR (of length N) to PFILE's output buffer.  Make space. */
 #define CPP_PUTS(PFILE, STR, N) CPP_RESERVE(PFILE, N), CPP_PUTS_Q(PFILE, STR,N)
 /* Append character CH to PFILE's output buffer.  Assume sufficient space. */
