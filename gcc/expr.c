@@ -7160,8 +7160,14 @@ do_store_flag (exp, target, mode, only_cheap)
   if (target == 0)
     target = gen_reg_rtx (mode);
 
-  result = emit_store_flag (target, code, op0, op1, operand_mode,
-			    unsignedp, 1);
+  /* Pass copies of OP0 and OP1 in case they contain a QUEUED.  This is safe
+     because, if the emit_store_flag does anything it will succeed and
+     OP0 and OP1 will not be used subsequently.  */
+
+  result = emit_store_flag (target, code,
+			    queued_subexp_p (op0) ? copy_rtx (op0) : op0,
+			    queued_subexp_p (op1) ? copy_rtx (op1) : op1,
+			    operand_mode, unsignedp, 1);
 
   if (result)
     {
