@@ -1,3 +1,9 @@
+2000-11-16  Alex Samuel  <samuel@codesourcery.com>
+
+	* mangle.c (write_name): Use <unscoped-name> for names directly in
+	function scope.
+	(write_unscoped_name): Accept names directly in function scope.
+	
 2000-11-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* lex.c (rid_to_yy, RID_EXPORT): Make unique keyword.
