@@ -1,3 +1,11 @@
+2002-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/t-linux64 (MULTILIB_OPTIONS): Remove
+	mno-app-regs|mcmodel=medany.
+	(MULTILIB_DIRNAMES, MULTILIB_OSDIRNAMES): Remove alt.
+	(MULTILIB_EXCEPTIONS, MULTILIB_EXCLUSIONS, MULTILIB_MATCHES): Remove.
+	(CRTSTUFF_T_CFLAGS): Define.
+
 2002-10-08  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/8087
