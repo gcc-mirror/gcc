@@ -3831,9 +3831,7 @@ asm_fprintf VPROTO((FILE *file, char *p, ...))
 	    break;
 
 	  case 'U':
-#ifdef USER_LABEL_PREFIX
-	    fprintf (file, "%s", USER_LABEL_PREFIX);
-#endif
+	    fputs (user_label_prefix, file);
 	    break;
 
 	  default:

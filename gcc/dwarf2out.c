@@ -2663,13 +2663,16 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
    macro has the same effect as ASM_OUTPUT_LABELREF, but copies to
    a string rather than writing to a file.  */
 #ifndef ASM_NAME_TO_STRING
-#define ASM_NAME_TO_STRING(STR, NAME) \
-  do {									      \
-      if ((NAME)[0] == '*')						      \
-	dyn_string_append (STR, NAME + 1);				      \
-      else								      \
-	dyn_string_append (STR, NAME);                                        \
-  }                                                                           \
+#define ASM_NAME_TO_STRING(STR, NAME)			\
+  do {							\
+      if ((NAME)[0] == '*')				\
+	dyn_string_append (STR, NAME + 1);		\
+      else						\
+	{						\
+	  dyn_string_append (STR, user_label_prefix);	\
+	  dyn_string_append (STR, NAME);		\
+	}						\
+  }							\
   while (0)
 #endif
 

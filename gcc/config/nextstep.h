@@ -291,7 +291,7 @@ extern int handle_pragma ();
        else if (!strncmp (NAME, "_OBJC_", 6)) fprintf (FILE, "L%s", NAME);   \
        else if (!strncmp (NAME, ".objc_class_name_", 17))		\
 	 fprintf (FILE, "%s", NAME);					\
-       else fprintf (FILE, "%s%s", USER_LABEL_PREFIX, NAME); } while (0)
+       else asm_fprintf (FILE, "%U%s", NAME); } while (0)
 
 #undef	ALIGN_ASM_OP
 #define ALIGN_ASM_OP		".align"

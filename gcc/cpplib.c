@@ -38,6 +38,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "gansidecl.h"
 #include "cpplib.h"
 #include "cpphash.h"
+#include "output.h"
 
 #ifndef GET_ENV_PATH_LIST
 #define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
@@ -2338,7 +2339,7 @@ special_symbol (hp, pfile)
     break;
 
     case T_USER_LABEL_PREFIX_TYPE:
-      buf = USER_LABEL_PREFIX;
+      buf = user_label_prefix;
       break;
 
     case T_REGISTER_PREFIX_TYPE:
@@ -6342,6 +6343,10 @@ cpp_handle_option (pfile, argc, argv)
 {
   struct cpp_options *opts = CPP_OPTIONS (pfile);
   int i = 0;
+
+  if (user_label_prefix == NULL)
+    user_label_prefix = USER_LABEL_PREFIX;
+
   if (argv[i][0] != '-') {
     if (opts->out_fname != NULL)
       {
@@ -6362,6 +6367,13 @@ cpp_handle_option (pfile, argc, argv)
       cpp_fatal (pfile, "Directory name missing after `%s' option", argv[i]);
       return argc;
       
+    case 'f':
+      if (!strcmp (argv[i], "-fleading-underscore"))
+ 	user_label_prefix = "_";
+      else if (!strcmp (argv[i], "-fno-leading-underscore"))
+ 	user_label_prefix = "";
+      break;
+
     case 'i':
       if (!strcmp (argv[i], "-include")
 	  || !strcmp (argv[i], "-imacros")) {

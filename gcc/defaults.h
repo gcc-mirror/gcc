@@ -121,8 +121,7 @@ do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
 /* This is how to output a reference to a user-level label named NAME.  */
 
 #ifndef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME)  \
-  do { fputs (USER_LABEL_PREFIX, FILE); fputs (NAME, FILE); } while (0)
+#define ASM_OUTPUT_LABELREF(FILE,NAME)  asm_fprintf ((FILE), "%U%s", (NAME))
 #endif
 
 /* This determines whether or not we support weak symbols.  */

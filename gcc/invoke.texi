@@ -408,6 +408,7 @@ in the following sections.
 -fverbose-asm -fpack-struct  -fstack-check
 -fargument-alias  -fargument-noalias
 -fargument-noalias-global
+-fleading-underscore
 @end smallexample
 @end table
 
@@ -5989,6 +5990,14 @@ alias each other and do not alias global storage.
 
 Each language will automatically use whatever option is required by
 the language standard.  You should not need to use these options yourself.
+
+@item -fleading-underscore
+This option and its counterpart, -fno-leading-underscore, forcibly
+change the way C symbols are represented in the object file.  One use
+is to help link with legacy assembly code.
+
+Be warned that you should know what you are doing when invoking this
+option, and that not all targets provide complete support for it.
 @end table
 
 @node Environment Variables

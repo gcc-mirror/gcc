@@ -482,3 +482,6 @@ extern FILE *rtl_dump_file;
    && (DECL_INITIAL (DECL) == error_mark_node		\
        || TREE_CONSTANT (DECL_INITIAL (DECL)))		\
    && ! (RELOC && (flag_pic || DECL_ONE_ONLY (DECL))))
+
+/* User label prefix in effect for this compilation.  */
+extern char *user_label_prefix;

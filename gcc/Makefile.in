@@ -861,8 +861,8 @@ specs: xgcc$(exeext)
 gcc-cross: xgcc$(exeext)
 	cp xgcc$(exeext) gcc-cross$(exeext)
 
-cc1$(exeext): $(P) $(C_OBJS) $(OBJS) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) $(OBJS) $(LIBS)
+cc1$(exeext): $(P) $(OBJS) $(C_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(C_OBJS) $(LIBS)
 
 # Copy float.h from its source.
 gfloat.h: $(FLOAT_H)
@@ -1881,11 +1881,15 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status system.h gansidecl.h \
 	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
-cppmain$(exeext): cppmain.o cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
-  prefix.o version.o mbchar.o @extra_cpp_objs@ $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cppmain.o cpplib.o cpphash.o \
-	  mbchar.o @extra_cpp_objs@ \
-	  cppalloc.o cpperror.o cppexp.o prefix.o version.o $(LIBS)
+LIBCPP_OBJS =	cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o \
+		cppulp.o prefix.o version.o mbchar.o @extra_cpp_objs@
+
+libcpp.a: $(LIBCPP_OBJS)
+	$(AR) $(ARFLAGS) libcpp.a $(LIBCPP_OBJS)
+
+cppmain$(exeext): cppmain.o libcpp.a $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cppmain$(exeext) cppmain.o \
+	libcpp.a $(LIBS)
 
 cppmain.o: cppmain.c $(CONFIG_H) cpplib.h system.h gansidecl.h
 
@@ -2117,10 +2121,9 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefil
 	rm -rf fixtmp.c
 
 fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) \
-   cpplib.o cpphash.o cppalloc.o cppexp.o prefix.o version.o
+	    libcpp.a
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ fix-header.o \
-	   scan-decls.o scan.o cpplib.o cpphash.o cppalloc.o prefix.o \
-	   version.o cppexp.o $(HOST_LIBS)
+	   scan-decls.o scan.o libcpp.a $(HOST_LIBS)
 
 fix-header.o: fix-header.c $(srcdir)/../include/obstack.h scan.h \
 	xsys-protos.h $(build_xm_file) system.h cpplib.h cpphash.h
