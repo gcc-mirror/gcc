@@ -1066,7 +1066,7 @@ struct sh_args {
 	+ ((MODE) != BLKmode					\
 	   ? ROUND_ADVANCE (GET_MODE_SIZE (MODE))		\
 	   : ROUND_ADVANCE (int_size_in_bytes (TYPE)))		\
-	- NPARM_REGS (MODE) > 0))				\
+	> NPARM_REGS (MODE)))					\
    ? NPARM_REGS (MODE) - ROUND_REG ((CUM), (MODE))		\
    : 0)
 

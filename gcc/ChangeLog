@@ -1,3 +1,8 @@
+Thu Apr  6 00:30:50 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (FUNCTION_ARG_PARTIAL_NREGS): Accomodate an unsigned
+	GET_MODE_SIZE.
+
 Wed Apr  5 23:17:10 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (sh_insn_length_adjustment): New function.
