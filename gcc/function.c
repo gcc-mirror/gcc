@@ -7058,7 +7058,8 @@ thread_prologue_and_epilogue_insns (f)
 
       /* If this function returns with the stack depressed, massage
 	 the epilogue to actually do that.  */
-      if (TYPE_RETURNS_STACK_DEPRESSED (TREE_TYPE (current_function_decl)))
+      if (TREE_CODE (TREE_TYPE (current_function_decl)) == FUNCTION_TYPE
+	  && TYPE_RETURNS_STACK_DEPRESSED (TREE_TYPE (current_function_decl)))
 	keep_stack_depressed (seq);
 
       emit_jump_insn (seq);
