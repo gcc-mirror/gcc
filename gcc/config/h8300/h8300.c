@@ -3031,7 +3031,12 @@ h8300_adjust_insn_length (insn, length)
      rtx insn;
      int length;
 {
-  rtx pat = PATTERN (insn);
+  rtx pat;
+
+  if (get_attr_adjust_length (insn) == ADJUST_LENGTH_NO)
+    return 0;
+
+  pat = PATTERN (insn);
 
   /* Adjust length for reg->mem and mem->reg copies.  */
   if (GET_CODE (pat) == SET
@@ -3109,34 +3114,37 @@ h8300_adjust_insn_length (insn, length)
     {
       rtx src = SET_SRC (XVECEXP (pat, 0, 0));
       enum machine_mode mode = GET_MODE (src);
+      int shift;
 
       if (GET_CODE (XEXP (src, 1)) != CONST_INT)
 	return 0;
 
+      shift = INTVAL (XEXP (src, 1));
+      /* According to ANSI, negative shift is undefined.  It is
+         considered to be zero in this case (see function
+         emit_a_shift above). */
+      if (shift < 0)
+	shift = 0;
+
       /* QImode shifts by small constants take one insn
 	 per shift.  So the adjustment is 20 (md length) -
 	 # shifts * 2.  */
-      if (mode == QImode && INTVAL (XEXP (src, 1)) <= 4)
-	return -(20 - INTVAL (XEXP (src, 1)) * 2);
+      if (mode == QImode && shift <= 4)
+	return -(20 - shift * 2);
 
       /* Similarly for HImode and SImode shifts by
 	 small constants on the H8/300H and H8/300S.  */
       if ((TARGET_H8300H || TARGET_H8300S)
-	  && (mode == HImode || mode == SImode)
-	  && INTVAL (XEXP (src, 1)) <= 4)
-	return -(20 - INTVAL (XEXP (src, 1)) * 2);
+	  && (mode == HImode || mode == SImode) && shift <= 4)
+	return -(20 - shift * 2);
 
       /* HImode shifts by small constants for the H8/300.  */
-      if (mode == HImode
-	  && INTVAL (XEXP (src, 1)) <= 4)
-	return -(20 - (INTVAL (XEXP (src, 1))
-		       * (GET_CODE (src) == ASHIFT ? 2 : 4)));
+      if (mode == HImode && shift <= 4)
+	return -(20 - (shift * (GET_CODE (src) == ASHIFT ? 2 : 4)));
 
       /* SImode shifts by small constants for the H8/300.  */
-      if (mode == SImode
-	  && INTVAL (XEXP (src, 1)) <= 2)
-	return -(20 - (INTVAL (XEXP (src, 1))
-		       * (GET_CODE (src) == ASHIFT ? 6 : 8)));
+      if (mode == SImode && shift <= 2)
+	return -(20 - (shift * (GET_CODE (src) == ASHIFT ? 6 : 8)));
 
       /* XXX ??? Could check for more shift/rotate cases here.  */
     }

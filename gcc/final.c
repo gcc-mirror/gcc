@@ -1318,6 +1318,8 @@ shorten_branches (first)
       /* If needed, do any adjustment.  */
 #ifdef ADJUST_INSN_LENGTH
       ADJUST_INSN_LENGTH (insn, insn_lengths[uid]);
+      if (insn_lengths[uid] < 0)
+	fatal_insn ("Negative insn length", insn);
 #endif
     }
 
