@@ -5808,6 +5808,7 @@ choose_reload_regs (chain)
       for (j = 0; j < n_reloads; j++)
 	{
 	  register int r = reload_order[j];
+	  rtx search_equiv = NULL_RTX;
 
 	  /* Ignore reloads that got marked inoperative.  */
 	  if (reload_out[r] == 0 && reload_in[r] == 0
@@ -6037,9 +6038,23 @@ choose_reload_regs (chain)
 		  || GET_CODE (reload_in[r]) == MEM)
 	      && (reload_nregs[r] == max_group_size
 		  || ! reg_classes_intersect_p (reload_reg_class[r], group_class)))
+	    search_equiv = reload_in[r];
+	  /* If this is an output reload from a simple move insn, look
+	     if an equivalence for the input is available.  */
+	  else if (inheritance && reload_in[r] == 0 && reload_out[r] != 0)
+	    {
+	      rtx set = single_set (insn);
+
+	      if (set
+		  && rtx_equal_p (reload_out[r], SET_DEST (set))
+		  && CONSTANT_P (SET_SRC (set)))
+		search_equiv = SET_SRC (set);
+	    }
+
+	  if (search_equiv)
 	    {
 	      register rtx equiv
-		= find_equiv_reg (reload_in[r], insn, reload_reg_class[r],
+		= find_equiv_reg (search_equiv, insn, reload_reg_class[r],
 				  -1, NULL_PTR, 0, reload_mode[r]);
 	      int regno;
 
@@ -6302,6 +6317,7 @@ choose_reload_regs (chain)
 	     pass just to remove such reloads, make another pass, since the
 	     removal of one reload might allow us to inherit another one.  */
 	  else if ((! reload_out[r] || reload_out_reg[r])
+		   && reload_in[r]
 		   && remove_address_replacements (reload_in[r]) && pass)
 	    pass = 2;
 	}
