@@ -1089,6 +1089,12 @@ __enable_execute_stack (addr)						\
     perror ("mprotect of trampoline code");				\
 }
 
+#define RETURN_ADDR_RTX(count, frame)					\
+((count == 0 && alpha_sa_size () == 0 && 0 /* not right. */)		\
+ ? gen_rtx (REG, Pmode, 26)						\
+ : gen_rtx (MEM, Pmode,							\
+	          memory_address (Pmode, frame)))
+  /* Addressing modes, and classification of registers for them.  */
 /* Addressing modes, and classification of registers for them.  */
 
 /* #define HAVE_POST_INCREMENT */
