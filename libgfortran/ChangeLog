@@ -1,3 +1,17 @@
+2004-05-18  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15235
+	* gfortran.h (offset_t): Rename to ...
+	(gfc_offset): ... this.
+	* io/backspace.c (formatted_backspace, unformatted_backspace),
+	io/io.h (stream, gfc_unit, global_t, file_length, file_position),
+	transfer.c (us_read, us_write, next_record_r, next_record_w),
+	io/unit.c (init_units), unix.c (unix_stream, fd_alloc,
+	fd_alloc_r_at, fd_alloc_w_at, fd_seek, mmap_alloc,
+	mmap_alloc_r_at, mmap_alloc_w_at, mmap_seek, mem_alloc_r_at,
+	mem_alloc_w_at, mem_seek, file_length, file_position): Replace all
+	occurences of offset_t by gfc_offset.
+
 2004-05-16  Paul Brook  <paul@codesourcery.com>
 
 	* io/format.c (write_real): Don't include padding in format.

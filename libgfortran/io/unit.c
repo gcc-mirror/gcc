@@ -289,7 +289,7 @@ is_internal_unit ()
 void
 init_units (void)
 {
-  offset_t m, n;
+  gfc_offset m, n;
   gfc_unit *u;
   int i;
 
@@ -336,13 +336,13 @@ init_units (void)
     }
 
   /* Calculate the maximum file offset in a portable manner.
-   * max will be the largest signed number for the type offset_t.
+   * max will be the largest signed number for the type gfc_offset.
    *
    * set a 1 in the LSB and keep a running sum, stopping at MSB-1 bit. */
 
   g.max_offset = 0;
   for (i=0; i < sizeof(g.max_offset) * 8 - 1; i++)
-    g.max_offset = g.max_offset + ((offset_t) 1 << i);
+    g.max_offset = g.max_offset + ((gfc_offset) 1 << i);
 
 }
 
