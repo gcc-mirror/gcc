@@ -1,3 +1,8 @@
+2002-12-30  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/StringBuffer.java (getChars): Remove wrong dstOffset check
+	against count.
+
 2002-12-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* boehm.cc: Remove stray semicolon.

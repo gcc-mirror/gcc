@@ -308,26 +308,27 @@ public final class StringBuffer implements Serializable, CharSequence
       }
   }
 
-  /** Get the specified array of characters.
-   *  The characters will be copied into the array you pass in.
-   *  @param srcOffset the index to start copying from in the
-   *         <code>StringBuffer</code>.
-   *  @param srcEnd the number of characters to copy.
-   *  @param dst the array to copy into.
-   *  @param dstOffset the index to start copying into <code>dst</code>.
-   *  @exception NullPointerException if dst is null.
-   *  @exception IndexOutOfBoundsException if any source or target
-   *             indices are out of range.
-   *  @see java.lang.System#arraycopy(java.lang.Object,int,java.lang.Object,int,int)
+  /**
+   * Get the specified array of characters. <code>srcOffset - srcEnd</code>
+   * characters will be copied into the array you pass in.
+   *
+   * @param srcOffset the index to start copying from (inclusive)
+   * @param srcEnd the index to stop copying from (exclusive)
+   * @param dst the array to copy into
+   * @param dstOffset the index to start copying into
+   * @throws NullPointerException if dst is null
+   * @throws IndexOutOfBoundsException if any source or target indices are
+   *         out of range (while unspecified, source problems cause a
+   *         StringIndexOutOfBoundsException, and dest problems cause an
+   *         ArrayIndexOutOfBoundsException)
+   * @see System#arraycopy(Object, int, Object, int, int)
    */
-  public synchronized void getChars (int srcOffset, int srcEnd,
-				     char[] dst, int dstOffset)
+  public synchronized void getChars(int srcOffset, int srcEnd,
+                                    char[] dst, int dstOffset)
   {
-    if (srcOffset < 0 || srcOffset > srcEnd)
-      throw new StringIndexOutOfBoundsException (srcOffset);
     int todo = srcEnd - srcOffset;
-    if (srcEnd > count || dstOffset + todo > count)
-      throw new StringIndexOutOfBoundsException (srcEnd);
+    if (srcOffset < 0 || srcEnd > count || todo < 0)
+      throw new StringIndexOutOfBoundsException();
     System.arraycopy(value, srcOffset, dst, dstOffset, todo);
   }
 
