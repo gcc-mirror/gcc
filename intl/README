@@ -18,6 +18,6 @@ gettext developers first.  However, note the following:
   "gettextize" from the files that gettext 0.12.1 installs in
   $(prefix)/share/aclocal.
 
-* configure.in, config.intl.in, and Makefile.in were written for this
+* configure.ac, config.intl.in, and Makefile.in were written for this
   directory layout, by Zack Weinberg <zack@codesourcery.com>.  Please
   direct patches for these files to gcc-patches@gcc.gnu.org.

@@ -1,10 +1,11 @@
-AC_PREREQ(2.13)
-AC_INIT(gettext.c)
+AC_PREREQ(2.57)
+AC_INIT
+AC_CONFIG_SRCDIR(gettext.c)
 AC_CONFIG_HEADER(config.h)
 AM_GNU_GETTEXT_VERSION(0.12.1)
 AM_GNU_GETTEXT
 
-dnl This replaces the extensive use of DEFS in the original Makefile.in.
+# This replaces the extensive use of DEFS in the original Makefile.in.
 AC_DEFINE(IN_LIBINTL, 1, [Define because this is libintl.])
 AC_DEFINE(IN_LIBRARY, 1, [Define because this is a library.])
 AC_DEFINE(DEPENDS_ON_LIBICONV, 1, [Define because we depend on libiconv.])
@@ -15,13 +16,18 @@ AC_DEFINE(set_relocation_prefix, libintl_set_relocation_prefix,
 AC_DEFINE(relocate, libintl_relocate,
 [Define this entry point correctly.])
 
-dnl Additional info for config.intl.
-LIBINTL_DEP=   AC_SUBST(LIBINTL_DEP)
-INCINTL=       AC_SUBST(INCINTL)
+# Additional info for config.intl.
+AC_SUBST(LIBINTL_DEP)
+AC_SUBST(INCINTL)
 
-if test $USE_INCLUDED_LIBINTL = yes; then
-  LIBINTL_DEP='${top_builddir}/intl/libintl.a'
-  INCINTL='-I${top_builddir}/intl'
-fi
+LIBINTL_DEP=
+INCINTL=
+case $USE_INCLUDED_LIBINTL in
+  yes)
+    LIBINTL_DEP='${top_builddir}/intl/libintl.a'
+    INCINTL='-I${top_builddir}/intl'
+    ;;
+esac
 
-AC_OUTPUT(Makefile config.intl)
+AC_CONFIG_FILES(Makefile config.intl)
+AC_OUTPUT
