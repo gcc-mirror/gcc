@@ -1,3 +1,7 @@
+Thu Aug  3 10:05:53 2000  Akiko Matsushita <matusita@sra.co.jp>
+
+	* gengenrtl.c, rtl.c: Avoid #elif.
+
 2000-08-03  Michael Poole  <poole@troilus.org>
 
         * tm.texi (Register Classes): Clarify order of sub-initializers
