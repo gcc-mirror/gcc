@@ -1,3 +1,7 @@
+Sat Dec  5 23:52:01 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (iteration_info): Delete extern.
+
 Fri Dec  4 20:15:57 1998  Bernd Schmidt  <crux@pool.informatik.rwth-aachen.de>
 
 	* tm.texi (SMALL_REGISTER_CLASSES): Make description match reality.
