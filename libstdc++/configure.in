@@ -2,7 +2,11 @@
 # necessary for a configure script to process the program in
 # this directory.  For more information, look at ../configure.
 
-configdirs="tests testsuite"
+if [ -d ${srcdir}/../gcc ] ; then
+  configdirs="tests testsuite"
+else
+  configdirs="tests"
+fi
 srctrigger=sinst.cc
 srcname="ANSI C++ library"
 package_makefile_frag=Make.pack
