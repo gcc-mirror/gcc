@@ -123,7 +123,7 @@ extern int target_flags;
    {"pa-risc-1-0", -1},		\
    {"pa-risc-1-1", 1},		\
    {"disable-fpregs", 2},	\
-   {"no-disable-fpregs", 2},	\
+   {"no-disable-fpregs", -2},	\
    {"fast-indirect-calls", 4},	\
    {"no-fast-indirect-calls", -4},\
    {"jump-in-delay", 8},	\
