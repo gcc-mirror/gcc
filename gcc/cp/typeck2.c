@@ -835,7 +835,7 @@ digest_init (type, init, tail)
       return error_mark_node;
     }
 
-  if (code == ARRAY_TYPE || code == RECORD_TYPE || code == UNION_TYPE)
+  if (code == ARRAY_TYPE || IS_AGGR_TYPE_CODE (code))
     {
       if (raw_constructor && TYPE_NON_AGGREGATE_CLASS (type))
 	{

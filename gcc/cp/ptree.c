@@ -79,11 +79,7 @@ print_lang_type (file, node, indent)
       return;
     }
 
-  if (! (TREE_CODE (node) == RECORD_TYPE
-	 || TREE_CODE (node) == UNION_TYPE))
-    return;
-
-  if (!TYPE_LANG_SPECIFIC (node))
+  if (! CLASS_TYPE_P (node))
     return;
 
   indent_to (file, indent + 3);

@@ -1,3 +1,12 @@
+1999-05-19  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (find_scoped_type, resolve_scope_to_name): Lose.
+	* class.c (finish_struct_1): Use CLASS_TYPE_P.
+	* ptree.c (print_lang_type): Likewise.
+	* typeck.c (build_modify_expr, c_expand_asm_operands): Use
+	IS_AGGR_TYPE_CODE.
+	* typeck2.c (digest_init): Likewise.
+
 1999-05-18  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (joust): Compare the types of the conv ops, not the
