@@ -759,6 +759,14 @@ while (0)
 
 /* Specs for the compiler proper */
 
+/* SUBTARGET_CC1_SPEC is passed to the compiler proper.  It may be
+   overridden by subtargets.  */
+#ifndef SUBTARGET_CC1_SPEC
+#define SUBTARGET_CC1_SPEC ""
+#endif
+
+/* CC1_SPEC is the set of arguments to pass to the compiler proper.  */
+
 #ifndef CC1_SPEC
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
@@ -773,7 +781,8 @@ while (0)
 %{pic-lib:    -mhalf-pic} \
 %{pic-extern: -mhalf-pic} \
 %{pic-calls:  -mhalf-pic} \
-%{save-temps: }"
+%{save-temps: } \
+%(subtarget_cc1_spec) "
 #endif
 
 /* Preprocessor specs.  */
@@ -828,6 +837,7 @@ while (0)
    Do not define this macro if it does not need to do anything.  */
 
 #define EXTRA_SPECS							\
+  { "subtarget_cc1_spec", SUBTARGET_CC1_SPEC },				\
   { "subtarget_cpp_spec", SUBTARGET_CPP_SPEC },				\
   { "subtarget_cpp_size_spec", SUBTARGET_CPP_SIZE_SPEC },		\
   { "mips_as_asm_spec", MIPS_AS_ASM_SPEC },				\
