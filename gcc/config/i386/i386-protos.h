@@ -21,7 +21,6 @@ Boston, MA 02111-1307, USA. */
 
 /* Functions in i386.c */
 extern void override_options PARAMS ((void));
-extern void order_regs_for_local_alloc PARAMS ((void));
 extern void optimization_options PARAMS ((int, int));
 
 extern int ix86_can_use_return_insn_p PARAMS ((void));

@@ -457,12 +457,11 @@ in the following sections.
 -mintel-syntax -mieee-fp  -mno-fancy-math-387 @gol
 -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
--mreg-alloc=@var{list}  -mregparm=@var{num} @gol
 -malign-jumps=@var{num}  -malign-loops=@var{num} @gol
 -malign-functions=@var{num} -mpreferred-stack-boundary=@var{num} @gol
 -mthreads -mno-align-stringops -minline-all-stringops @gol
 -mpush-args -maccumulate-outgoing-args -m128bit-long-double @gol
--m96bit-long-double}
+-m96bit-long-double} -mregparm=@var{num} @gol
 
 @emph{HPPA Options}
 @gccoptlist{
@@ -6645,13 +6644,6 @@ functions.
 In addition, seriously incorrect code will result if you call a
 function with too many arguments.  (Normally, extra arguments are
 harmlessly ignored.)
-
-@item -mreg-alloc=@var{regs}
-Control the default allocation order of integer registers.  The
-string @var{regs} is a series of letters specifying a register.  The
-supported letters are: @code{a} allocate EAX; @code{b} allocate EBX;
-@code{c} allocate ECX; @code{d} allocate EDX; @code{S} allocate ESI;
-@code{D} allocate EDI; @code{B} allocate EBP.
 
 @item -mregparm=@var{num}
 Control how many registers are used to pass integer arguments.  By
