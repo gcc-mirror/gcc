@@ -1,3 +1,7 @@
+Tue Feb  4 18:40:42 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (vector push splitters):  Fix typo in resolving conflict.
+
 2003-02-04  Rodney Brown  <rbrown64@csc.com.au>
 
 	* config/i386/i386.c (x86_function_profiler): Fix typo in format.
