@@ -17,11 +17,13 @@ public class Frame extends Window implements MenuContainer
   String title;
 
   public Frame ()
-  { /* FIXME */ }
+  {
+    super (null);
+  }
 
   public Frame (String title)
   {
-    this();
+    super (null);
     setTitle(title);
   }
 
@@ -43,13 +45,7 @@ public class Frame extends Window implements MenuContainer
   public synchronized void addNotify ()
   {
     if (peer == null)
-      {
-	FramePeer fpeer = Toolkit.getDefaultToolkit().createFrame(this);
-	// Compiler bug requires cast ??;  FIXME?
-	peer = (java.awt.peer.ComponentPeer) fpeer;
-	if (width + height > 0)
-	  peer.setBounds(x, y, width, height);
-      }
+      peer = getToolkit ().createFrame (this);
     super.addNotify();
   }
 

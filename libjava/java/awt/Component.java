@@ -137,23 +137,25 @@ public abstract class Component implements ImageObserver, MenuContainer,
     // FIXME
     return null;
   }
-  
+
   public final Object getTreeLock()
   {
     // FIXME
     return null;
   }
-  
+
   public Toolkit getToolkit()
   {
-    // FIXME
-    return null;
+    if (peer != null)
+      return peer.getToolkit ();
+    if (parent != null)
+      return parent.getToolkit ();
+    return Toolkit.getDefaultToolkit ();
   }
-  
+
   public boolean isValid()
   {
-    // FIXME
-    return false;
+    return valid;
   }
   
   /** @since 1.2 */
@@ -518,7 +520,9 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public void invalidate()
   {
-    // FIXME
+    valid = false;
+    if (parent != null)
+      parent.invalidate ();
   }
   
   public Graphics getGraphics()

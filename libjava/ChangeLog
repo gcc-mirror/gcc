@@ -1,5 +1,65 @@
 2000-07-30  Tom Tromey  <tromey@cygnus.com>
 
+	* java/awt/BorderLayout.java (BorderLayout()): New constructor.
+
+	* java/awt/Frame.java (Frame): Pass `null' to Window constructor.
+
+	* java/awt/Window.java (addNotify): Wrote.
+	(addWindowListener): Wrote.
+	(getLocale): Wrote.
+	(getWarningString): Wrote.
+	(processEvent): Wrote.
+	(processWindowEvent): Wrote.
+	(removeWindowListener): Wrote.
+	(show): Call validate(), setVisible().
+	(toBack): Wrote.
+	(toFront): Wrote.
+
+	* java/awt/Toolkit.java (createWindow): Declare.
+
+	* java/awt/Frame.java (addNotify): Use getToolkit to find
+	toolkit.
+
+	* java/awt/Component.java (invalidate): Wrote.
+	(isValid): Wrote.
+	(getToolkit): Wrote.
+
+	* java/awt/Container.java (addContainerListener): Removed
+	unnecessary cast.
+	(removeContainerListener): Likewise.
+	(addImpl): Wrote.
+	(add(Component)): Use it.
+	(add(String,Component)): Likewise.
+	(add(Component,int)): Likewise.
+	(add(Component,Object)): Likewise.
+	(add(Component,Object,int)): Likewise.
+	(doLayout): Wrote.
+	(getAlignmentX): Wrote.
+	(getAlignmentY): Wrote.
+	(getComponentAt): Wrote.
+	(getMaximumSize): Wrote.
+	(invalidate): Wrote.
+	(list(PrintStream,int)): Wrote.
+	(list(PrintWriter,int)): Wrote.
+	(getMinimumSize): Wrote.
+	(getPreferredSize): Wrote.
+	(printComponents): Wrote.
+	(processContainerEvent): Look at containerListener, not
+	componentListener.
+	(remove): Added event processing and peer destruction.
+	(removeAll): Use remove.
+	(removeNotify): Wrote.
+	(validate): Wrote.
+	(validateTree): Wrote.
+
+	* java/awt/Scrollbar.java (addNotify): Do nothing if peer exists.
+	* java/awt/Label.java (addNotify): Do nothing if peer exists.
+	* java/awt/Container.java (addNotify): Don't create Container
+	peer.
+	* java/awt/Button.java (addNotify): Do nothing if peer exists.
+
+2000-07-30  Tom Tromey  <tromey@cygnus.com>
+
 	* java/awt/Container.java (remove(int)): Wrote.
 	(remove(Component)): Wrote.
 	(add(Component)): Wrote.
