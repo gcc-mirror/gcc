@@ -1,3 +1,10 @@
+2002-03-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	preprocessor/3951
+	* gcc.c (cpp_options): Pass -MD through as -MD not -M -MF.	
+	* cppinit.c (cpp_handle_option): Set no_ouput if -MD or -MMD.
+	(init_dependency_output): Don't make no_output decision here.
+
 2002-03-12  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/t-xtensa (CRTSTUFF_T_CFLAGS_S): Define.
