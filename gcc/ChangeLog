@@ -1,3 +1,27 @@
+1999-12-18 Gabriel Dos Reis  <gdr@codesourcery.com>
+
+        * toplev.c (notice, vmessage, v_message_with_file_and_line,
+        v_message_with_decl, file_and_line_for_asm,
+        v_error_with_file_and_line, v_error_with_decl, v_error_for_asm,
+        verror, vfatal, v_warning_with_file_and_line, v_warning_with_decl,
+        v_warning_for_asm, vwarning, vpedwarn, v_pedwarn_with_decl,
+        v_pedwarn_with_file_and_line, vsorry, vnotice, count_error,
+        pfatal_with_name, fatal_io_error, need_error_newline,
+        last_error_function, last_error_tick, announce_function,
+        default_print_error_function, print_error_function,
+        report_error_function, fnotice, error_with_file_and_line,
+        error_with_decl, error_for_asm, error, set_fatal_function, fatal,
+        _fatal_insn, _fatal_insn_not_found, warning_with_file_and_line,
+        warning_with_decl, warning_for_asm, warning, pedwarn,
+        pedwarn_with_decl, pedwarn_with_file_and_line, sorry): Move to
+        diagnostic.c
+        (compile_file): Use fnotice instead of notice.  Adjust call.
+
+        * diagnostic.c: New file.
+
+        * Makefile.in (OBJS): Include diagnostic.o
+        (diagnostic.o): Define dependence.
+
 1999-12-18  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (ASM_OUTPUT_XXX): Wrap in do-while(0).
