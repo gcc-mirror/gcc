@@ -4510,6 +4510,7 @@ instantiate_decl (d)
   save_ti = DECL_TEMPLATE_INFO (decl_pattern);
   DECL_TEMPLATE_INFO (decl_pattern) = NULL_TREE;
   td = tsubst (decl_pattern, args, TREE_VEC_LENGTH (args), tmpl);
+  SET_DECL_IMPLICIT_INSTANTIATION (td);
   DECL_TEMPLATE_INFO (decl_pattern) = save_ti;
 
   /* And set up DECL_INITIAL, since tsubst doesn't.  */
