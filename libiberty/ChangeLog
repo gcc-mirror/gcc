@@ -1,3 +1,7 @@
+2003-11-20  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c: Complete rewrite.
+
 2003-11-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-demangle.c (demangle_type): Correct thinko in substitution
