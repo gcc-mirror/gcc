@@ -1,3 +1,12 @@
+Fri Aug 21 19:31:31 1998  Alexandre Petit-Bianco <apbianco@cygnus.com>
+
+	* tree.def (LABELED_BLOCK_EXPR, EXIT_BLOCK_EXPR): New tree nodes.
+  	* tree.h (LABELED_BLOCK_LABEL, LABELED_BLOCK_BODY,
+ 	EXIT_BLOCK_LABELED_BLOCK, EXIT_BLOCK_RETURN, LOOP_EXPR_BODY): New
+ 	macros.
+	* expr.c (expand_expr): Handle LABELED_BLOCK_EXPR and
+ 	EXIT_BLOCK_EXPR.
+
 Thu Aug 20 19:43:44 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* h8300.c (h8300_encode_label): Use '&' for tiny data items.
