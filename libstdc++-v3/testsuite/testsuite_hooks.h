@@ -49,7 +49,6 @@
 # define VERIFY(fn) assert(fn)
 #else
 # define VERIFY(fn) test &= (fn)
-# define VERIFY(fn) fn
 #endif
 
 #include <bits/c++config.h>

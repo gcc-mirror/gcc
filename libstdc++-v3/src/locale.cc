@@ -76,6 +76,10 @@ namespace std
 
   const char __num_base::_S_atoms[] = "0123456789eEabcdfABCDF";
 
+  const double __num_base::_S_scale_hex = log(10.0)/log(16.0);
+
+  const double __num_base::_S_scale_oct = log(10.0)/log(8.0);
+
   // Definitions for static const data members of locale::_Impl
   const locale::id* const
   locale::_Impl::_S_id_ctype[] =

@@ -579,7 +579,7 @@ void test13()
     digits += '1';
   istringstream iss2(digits);
   iss2 >> i;
-  VERIFY( iss2.good() );
+  VERIFY( !iss2.fail() );
 
   digits += '1';
   i = 0;
@@ -604,6 +604,7 @@ int main()
   
   test11();
   test12();
+  test13();
   return 0;
 }
 
