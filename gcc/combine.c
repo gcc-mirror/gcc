@@ -7377,7 +7377,7 @@ if_then_else_cond (x, ptrue, pfalse)
 	   && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	   && exact_log2 (nz = nonzero_bits (x, mode)) >= 0)
     {
-      *ptrue = GEN_INT (nz), *pfalse = const0_rtx;
+      *ptrue = GEN_INT (trunc_int_for_mode (nz, mode)), *pfalse = const0_rtx;
       return x;
     }
 
