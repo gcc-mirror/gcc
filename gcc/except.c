@@ -2179,8 +2179,6 @@ finish_eh_generation (void)
      connect many of the handlers, and then type information will not
      be effective.  Still, this is a win over previous implementations.  */
 
-  cleanup_cfg (CLEANUP_PRE_LOOP | CLEANUP_NO_INSN_DEL);
-
   /* These registers are used by the landing pads.  Make sure they
      have been generated.  */
   get_exception_pointer (cfun);
@@ -2219,7 +2217,6 @@ finish_eh_generation (void)
       if (eh)
 	rtl_make_eh_edge (NULL, bb, BB_END (bb));
     }
-  cleanup_cfg (CLEANUP_PRE_LOOP | CLEANUP_NO_INSN_DEL);
 }
 
 static hashval_t

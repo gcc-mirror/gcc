@@ -3836,7 +3836,6 @@ remove_unnecessary_notes (void)
       switch (NOTE_LINE_NUMBER (insn))
 	{
 	case NOTE_INSN_DELETED:
-	case NOTE_INSN_LOOP_END_TOP_COND:
 	  remove_insn (insn);
 	  break;
 

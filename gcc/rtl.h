@@ -985,12 +985,6 @@ enum insn_note
   /* Generated at the start of a duplicated exit test.  */
   NOTE_INSN_LOOP_VTOP,
 
-  /* Generated at the end of a conditional at the top of the loop.
-     This is used to perform a lame form of loop rotation in lieu
-     of actually understanding the loop structure.  The note is
-     discarded after rotation is complete.  */
-  NOTE_INSN_LOOP_END_TOP_COND,
-
   /* This kind of note is generated at the end of the function body,
      just before the return insn or return label.  In an optimizing
      compilation it is deleted by the first jump optimization, after
@@ -1546,13 +1540,6 @@ do {						\
 #define USE_STORE_PRE_DECREMENT(MODE)   HAVE_PRE_DECREMENT
 #endif
 
-/* Nonzero if we need to distinguish between the return value of this function
-   and the return value of a function called by this function.  This helps
-   integrate.c.
-   This is 1 until after the rtl generation pass.
-   ??? It appears that this is 1 only when expanding trees to RTL.  */
-extern int rtx_equal_function_value_matters;
-
 /* Nonzero when we are generating CONCATs.  */
 extern int generating_concat_p;
 
@@ -2250,7 +2237,6 @@ extern int prologue_epilogue_contains (rtx);
 extern int sibcall_epilogue_contains (rtx);
 extern void mark_temp_addr_taken (rtx);
 extern void update_temp_slot_address (rtx, rtx);
-extern void purge_hard_subreg_sets (rtx);
 
 /* In stmt.c */
 extern void set_file_and_line_for_stmt (location_t);

@@ -116,7 +116,7 @@ const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS] =
   "NOTE_INSN_BLOCK_BEG", "NOTE_INSN_BLOCK_END",
   "NOTE_INSN_LOOP_BEG", "NOTE_INSN_LOOP_END",
   "NOTE_INSN_LOOP_CONT", "NOTE_INSN_LOOP_VTOP",
-  "NOTE_INSN_LOOP_END_TOP_COND", "NOTE_INSN_FUNCTION_END",
+  "NOTE_INSN_FUNCTION_END",
   "NOTE_INSN_PROLOGUE_END", "NOTE_INSN_EPILOGUE_BEG",
   "NOTE_INSN_DELETED_LABEL", "NOTE_INSN_FUNCTION_BEG",
   "NOTE_INSN_EH_REGION_BEG", "NOTE_INSN_EH_REGION_END",
@@ -318,9 +318,6 @@ shallow_copy_rtx_stat (rtx orig MEM_STAT_DECL)
   return copy;
 }
 
-/* This is 1 until after the rtl generation pass.  */
-int rtx_equal_function_value_matters;
-
 /* Nonzero when we are generating CONCATs.  */
 int generating_concat_p;
 
@@ -355,14 +352,7 @@ rtx_equal_p (rtx x, rtx y)
   switch (code)
     {
     case REG:
-      /* Until rtl generation is complete, don't consider a reference
-	 to the return register of the current function the same as
-	 the return from a called function.  This eases the job of
-	 function integration.  Once the distinction is no longer
-	 needed, they can be considered equivalent.  */
-      return (REGNO (x) == REGNO (y)
-	      && (! rtx_equal_function_value_matters
-		  || REG_FUNCTION_VALUE_P (x) == REG_FUNCTION_VALUE_P (y)));
+      return (REGNO (x) == REGNO (y));
 
     case LABEL_REF:
       return XEXP (x, 0) == XEXP (y, 0);
