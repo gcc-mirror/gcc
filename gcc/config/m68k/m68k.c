@@ -197,7 +197,6 @@ m68k_output_function_prologue (stream, size)
 {
   register int regno;
   register int mask = 0;
-  extern char call_used_regs[];
   HOST_WIDE_INT fsize = ((size) + 3) & -4;
 
   /* unos stack probe */
@@ -257,7 +256,6 @@ m68k_output_function_prologue (stream, size)
   register int regno;
   register int mask = 0;
   int num_saved_regs = 0, first = 1;
-  extern char call_used_regs[];
   HOST_WIDE_INT fsize = ((size) + 3) & -4;
 
   if (frame_pointer_needed)
@@ -361,7 +359,6 @@ m68k_output_function_prologue (stream, size)
 {
   register int regno;
   register int mask = 0;
-  extern char call_used_regs[];
   HOST_WIDE_INT fsize = ((size) + 3) & -4;
 
   if (frame_pointer_needed)
@@ -414,7 +411,6 @@ m68k_output_function_prologue (stream, size)
   register int regno;
   register int mask = 0;
   int num_saved_regs = 0;
-  extern char call_used_regs[];
   HOST_WIDE_INT fsize = (size + 3) & -4;
   HOST_WIDE_INT cfa_offset = INCOMING_FRAME_SP_OFFSET;
   HOST_WIDE_INT cfa_store_offset = cfa_offset;
@@ -817,7 +813,6 @@ m68k_output_function_epilogue (stream, size)
   register int mask, fmask;
   register int nregs;
   HOST_WIDE_INT offset, foffset, fpoffset;
-  extern char call_used_regs[];
   HOST_WIDE_INT fsize = ((size) + 3) & -4;
   int big = 0;
 
@@ -930,7 +925,6 @@ m68k_output_function_epilogue (stream, size)
   register int mask, fmask;
   register int nregs;
   HOST_WIDE_INT offset, foffset, fpoffset, first = 1;
-  extern char call_used_regs[];
   HOST_WIDE_INT fsize = ((size) + 3) & -4;
   int big = 0;
   rtx insn = get_last_insn ();
@@ -1101,7 +1095,6 @@ m68k_output_function_epilogue (stream, size)
   register int mask, fmask;
   register int nregs;
   HOST_WIDE_INT offset, foffset;
-  extern char call_used_regs[];
   HOST_WIDE_INT fsize = ((size) + 3) & -4;
   int big = 0;
 
@@ -1197,7 +1190,6 @@ m68k_output_function_epilogue (stream, size)
   register int mask, fmask;
   register int nregs;
   HOST_WIDE_INT offset, foffset, fpoffset;
-  extern char call_used_regs[];
   HOST_WIDE_INT fsize = (size + 3) & -4;
   int big = 0;
   rtx insn = get_last_insn ();

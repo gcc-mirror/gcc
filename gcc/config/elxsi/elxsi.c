@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "regs.h"
 #include "flags.h"
+#include "hard-reg-set.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -103,7 +104,6 @@ elxsi_output_function_prologue (file, size)
 {
   register int regno;
   register int cnt = 0;
-  extern char call_used_regs[];
 
   /* the below two lines are a HACK, and should be deleted, but
      for now are very much needed (1.35) */
@@ -141,7 +141,6 @@ elxsi_output_function_epilogue (file, size)
 {
   register int regno;
   register int cnt = 0;
-  extern char call_used_regs[];
 
   /* this conditional is ONLY here because there is a BUG;
      EXIT_IGNORE_STACK is ignored itself when the first part of
