@@ -69,7 +69,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* ??? Improve control of which loops get unrolled.  Could use profiling
    info to only unroll the most commonly executed loops.  Perhaps have
-   a user specifyable option to control the amount of code expansion,
+   a user specifiable option to control the amount of code expansion,
    or the percent of loops to consider for unrolling.  Etc.  */
 
 /* ??? Look at the register copies inside the loop to see if they form a
@@ -3792,7 +3792,7 @@ loop_iterations (loop)
       if (inc_once == final_value)
 	{
 	  /* The iterator value once through the loop is equal to the
-	     comparision value.  Either we have an infinite loop, or
+	     comparison value.  Either we have an infinite loop, or
 	     we'll loop twice.  */
 	  if (increment == const0_rtx)
 	    return 0;

@@ -960,7 +960,7 @@ DEF_RTL_EXPR(GTU, "gtu", "ee", '<')
 DEF_RTL_EXPR(LEU, "leu", "ee", '<')
 DEF_RTL_EXPR(LTU, "ltu", "ee", '<')
 
-/* Additional floating point unordered comparision flavors.  */
+/* Additional floating point unordered comparison flavors.  */
 DEF_RTL_EXPR(UNORDERED, "unordered", "ee", '<')
 DEF_RTL_EXPR(ORDERED, "ordered", "ee", '<')
 

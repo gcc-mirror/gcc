@@ -750,7 +750,7 @@ int flag_schedule_insns_after_reload = 0;
 /* The following flags have effect only for scheduling before register
    allocation:
 
-   flag_schedule_interblock means schedule insns accross basic blocks.
+   flag_schedule_interblock means schedule insns across basic blocks.
    flag_schedule_speculative means allow speculative motion of non-load insns.
    flag_schedule_speculative_load means allow speculative motion of some
    load insns.
@@ -2973,11 +2973,11 @@ rest_of_compilation (decl)
 	       | (flag_thread_jumps ? CLEANUP_THREADING : 0));
 
   /* It may make more sense to mark constant functions after dead code is
-     eliminated by life_analyzis, but we need to do it early, as -fprofile-arcs
+     eliminated by life_analysis, but we need to do it early, as -fprofile-arcs
      may insert code making function non-constant, but we still must consider
      it as constant, otherwise -fbranch-probabilities will not read data back.
 
-     life_analyzis rarely eliminates modification of external memory.
+     life_analysis rarely eliminates modification of external memory.
    */
   if (optimize)
     mark_constant_function ();
@@ -3478,7 +3478,7 @@ rest_of_compilation (decl)
       open_dump_file (DFI_bbro, decl);
 
       /* Last attempt to optimize CFG, as scheduling, peepholing and insn
-	 splitting possibly introduced more crossjumping oppurtuntities.
+	 splitting possibly introduced more crossjumping opportunities.
 	 Except that we can't actually run crossjumping without running
 	 another DCE pass, which we can't do after reg-stack.  */
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK

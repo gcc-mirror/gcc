@@ -2434,7 +2434,7 @@ simplify_subreg (outermode, op, innermode, byte)
 	  if (GET_CODE (op) == CONST_INT)
 	    val = INTVAL (op);
 
-	  /* We don't handle synthetizing of non-integral constants yet.  */
+	  /* We don't handle synthesizing of non-integral constants yet.  */
 	  if (GET_MODE_CLASS (outermode) != MODE_INT)
 	    return NULL_RTX;
 
@@ -2571,7 +2571,7 @@ simplify_subreg (outermode, op, innermode, byte)
 	  rtx x = gen_rtx_REG (outermode, final_regno);
 
 	  /* Propagate original regno.  We don't have any way to specify
-	     the offset inside orignal regno, so do so only for lowpart.
+	     the offset inside original regno, so do so only for lowpart.
 	     The information is used only by alias analysis that can not
 	     grog partial register anyway.  */
 
@@ -2656,7 +2656,7 @@ simplify_gen_subreg (outermode, op, innermode, byte)
    This is the preferred entry point into the simplification routines;
    however, we still allow passes to call the more specific routines.
 
-   Right now GCC has three (yes, three) major bodies of RTL simplficiation
+   Right now GCC has three (yes, three) major bodies of RTL simplification
    code that need to be unified.
 
 	1. fold_rtx in cse.c.  This code uses various CSE specific

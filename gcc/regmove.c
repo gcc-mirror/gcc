@@ -686,7 +686,7 @@ optimize_reg_copy_3 (insn, dest, src)
       || SET_DEST (set) != src_reg)
     return;
 
-  /* Be conserative: although this optimization is also valid for
+  /* Be conservative: although this optimization is also valid for
      volatile memory references, that could cause trouble in later passes.  */
   if (MEM_VOLATILE_P (SET_SRC (set)))
     return;
@@ -925,7 +925,7 @@ reg_is_remote_constant_p (reg, insn, first)
      (set (reg100) (plus reg100 offset2-offset1))  */
 
 /* ??? What does this comment mean?  */
-/* cse disrupts preincrement / postdecrement squences when it finds a
+/* cse disrupts preincrement / postdecrement sequences when it finds a
    hard register as ultimate source, like the frame pointer.  */
 
 static int
@@ -1072,7 +1072,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
     return;
 
   /* Find out where a potential flags register is live, and so that we
-     can supress some optimizations in those zones.  */
+     can suppress some optimizations in those zones.  */
   mark_flags_life_zones (discover_flags_reg ());
 
   regno_src_regno = (int *) xmalloc (sizeof *regno_src_regno * nregs);
@@ -1339,7 +1339,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		     it produces worse code, as it eliminates no copy
 		     instructions and the copy emitted will be produced by
 		     reload anyway.  On patterns with multiple alternatives,
-		     there may be better sollution availble.
+		     there may be better solution available.
 
 		     In particular this change produced slower code for numeric
 		     i387 programs.  */
@@ -1499,7 +1499,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	    }
 
 	  /* If we weren't able to replace any of the alternatives, try an
-	     alternative appoach of copying the source to the destination.  */
+	     alternative approach of copying the source to the destination.  */
 	  if (!success && copy_src != NULL_RTX)
 	    copy_src_to_dest (insn, copy_src, copy_dst, old_max_uid);
 
@@ -2315,7 +2315,7 @@ record_stack_memrefs (xp, data)
 
 	 We can't just compare with STACK_POINTER_RTX because the
 	 reference to the stack pointer might be in some other mode.
-	 In particular, an explict clobber in an asm statement will
+	 In particular, an explicit clobber in an asm statement will
 	 result in a QImode clober.  */
       if (REGNO (x) == STACK_POINTER_REGNUM)
 	return 1;
@@ -2374,7 +2374,7 @@ combine_stack_adjustments_for_block (bb)
 		 adjustment is now too large for a constant addition,
 		 we cannot merge the two stack adjustments.
 
-		 Also we need to be carefull to not move stack pointer
+		 Also we need to be careful to not move stack pointer
 		 such that we create stack accesses outside the allocated
 		 area.  We can combine an allocation into the first insn,
 		 or a deallocation into the second insn.  We can not

@@ -1838,7 +1838,7 @@ extern rtx gen_lowpart_SUBREG PARAMS ((enum machine_mode, rtx));
 #define VIRTUAL_OUTGOING_ARGS_REGNUM	((FIRST_VIRTUAL_REGISTER) + 3)
 
 /* This points to the Canonical Frame Address of the function.  This
-   should corrospond to the CFA produced by INCOMING_FRAME_SP_OFFSET,
+   should correspond to the CFA produced by INCOMING_FRAME_SP_OFFSET,
    but is calculated relative to the arg pointer for simplicity; the
    frame pointer nor stack pointer are necessarily fixed relative to
    the CFA until after reload.  */

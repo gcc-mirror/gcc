@@ -2898,7 +2898,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		     by forcing the reload.
 
 		     ??? When is it right at this stage to have a subreg
-		     of a mem that is _not_ to be handled specialy?  IMO
+		     of a mem that is _not_ to be handled specially?  IMO
 		     those should have been reduced to just a mem.  */
 		  || ((GET_CODE (operand) == MEM
 		       || (GET_CODE (operand)== REG

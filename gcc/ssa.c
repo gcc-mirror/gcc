@@ -1828,7 +1828,7 @@ struct phi_coalesce_context
 
 /* Callback function for for_each_successor_phi.  If the set
    destination and the phi alternative regs do not conflict, place
-   them in the same paritition class.  DATA is a pointer to a
+   them in the same partition class.  DATA is a pointer to a
    phi_coalesce_context struct.  */
 
 static int

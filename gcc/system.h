@@ -470,7 +470,7 @@ extern void abort PARAMS ((void));
 
 /* Say how to test for an absolute pathname.  On Unix systems, this is if
    it starts with a leading slash or a '$', the latter meaning the value of
-   an environment variable is to be used.  On machien with DOS-based
+   an environment variable is to be used.  On machine with DOS-based
    file systems, it is also absolute if it starts with a drive identifier.  */
 #ifdef HAVE_DOS_BASED_FILE_SYSTEM
 #define IS_ABSOLUTE_PATHNAME(STR) \
