@@ -108,9 +108,6 @@ default_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED, int incoming)
 #ifdef STRUCT_VALUE_INCOMING
       rv = STRUCT_VALUE_INCOMING;
 #else
-#ifdef STRUCT_VALUE_INCOMING_REGNUM
-      rv = gen_rtx_REG (Pmode, STRUCT_VALUE_INCOMING_REGNUM);
-#else
 #ifdef STRUCT_VALUE
       rv = STRUCT_VALUE;
 #else
@@ -118,7 +115,6 @@ default_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED, int incoming)
       abort();
 #else
       rv = gen_rtx_REG (Pmode, STRUCT_VALUE_REGNUM);
-#endif
 #endif
 #endif
 #endif
