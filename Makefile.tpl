@@ -1539,8 +1539,8 @@ compare: all-stage3-gcc
 	files=`find . -name "*$(objext)" -print` ; \
 	cd .. ; \
 	for file in $${files} ; do \
-	  cmp --ignore-initial=16 $$r/stage2-gcc/$$file $$r/stage3-gcc/$$file \
-	      > /dev/null 2>&1; \
+	  f1=$$r/stage2-gcc/$$file; f2=$$r/stage3-gcc/$$file; \
+	  @do_compare@ > /dev/null 2>&1; \
 	  test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
 	done ; \
 	if [ -f .bad_compare ]; then \
