@@ -1,3 +1,9 @@
+2005-03-30  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/scantree.exp (scan-tree-dump, scan-tree-dump-times,
+	scan-tree-dump-not, scan-tree-dump-dem, scan-tree-dump-dem-not):
+	Strip options from test name.
+
 2005-03-31  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/varpool-1.c: New testcase.
