@@ -13110,6 +13110,12 @@ thumb_expand_prologue (void)
 				     REG_NOTES (insn));
 	    }
 	}
+      /* If the frame pointer is needed, emit a special barrier that
+	 will prevent the scheduler from moving stores to the frame
+	 before the stack adjustment.  */
+      if (frame_pointer_needed)
+	emit_insn (gen_stack_tie (stack_pointer_rtx,
+				  hard_frame_pointer_rtx));
     }
   
   if (current_function_profile || TARGET_NO_SCHED_PRO)
