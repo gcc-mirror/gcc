@@ -1,5 +1,5 @@
 /* GNU Objective-C Runtime API.
-   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -29,6 +29,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "objc/objc.h"
 #include "objc/hash.h"
+#include "objc/thread.h"
 #include <stdio.h>
 
 /* For functions which return Method_t */
