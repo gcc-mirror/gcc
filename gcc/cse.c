@@ -3928,7 +3928,7 @@ simplify_plus_minus (code, mode, op0, op1)
   rtx ops[8];
   int negs[8];
   rtx result, tem;
-  int n_ops = 2;
+  int n_ops = 2, input_ops = 2;
   int i, j, k;
   int first = 1, negate = 0, changed;
 
@@ -3956,6 +3956,7 @@ simplify_plus_minus (code, mode, op0, op1)
 	    ops[n_ops] = XEXP (ops[i], 1);
 	    negs[n_ops++] = GET_CODE (ops[i]) == MINUS ? !negs[i] : negs[i];
 	    ops[i] = XEXP (ops[i], 0);
+	    input_ops++;
 	    changed = 1;
 	    break;
 
@@ -4015,17 +4016,7 @@ simplify_plus_minus (code, mode, op0, op1)
 		ncode = MINUS;
 
 	      tem = simplify_binary_operation (ncode, mode, lhs, rhs);
-
-	      /* If we got a simple object, a SUBREG of a simple
-		 object, or a NEG, use it.  Otherwise, we either got nothing
-		 or we got something (like a NOT), which can cause an
-		 infinite loop.  */
-
-	      if (tem != 0
-		  && ((GET_CODE (tem) == SUBREG
-		       && GET_RTX_CLASS (GET_CODE (SUBREG_REG (tem))) == 'o')
-		      || GET_CODE (tem) == NEG
-		      || GET_RTX_CLASS (GET_CODE (tem)) == 'o'))
+	      if (tem)
 		{
 		  ops[i] = tem, ops[j] = 0;
 		  negs[i] = negs[i] && negs[j];
@@ -4053,7 +4044,7 @@ simplify_plus_minus (code, mode, op0, op1)
 	  k++;
       }
 
-  if (i + k >= n_ops)
+  if (i + k >= input_ops)
     return 0;
 
   n_ops = i;
