@@ -17,9 +17,8 @@ LIB1ASMFUNCS = \
 	_cmpdi2 \
 	_cmpdi2_dp \
 	_fp_pop_args_ret \
+	_pop2_args_ret \
 	_leaf_fp_pop_args_ret \
-	_fp_pop2_args_ret \
-	_leaf_fp_pop2_args_ret \
 	_movstrhi_countqi \
 	_movstrhi_counthi \
 	abort \

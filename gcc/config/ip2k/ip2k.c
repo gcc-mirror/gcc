@@ -304,6 +304,8 @@ function_epilogue (file, size)
   int leaf_func_p;
   int reg,savelimit;
   rtx operands[2];		/* Dummy used by OUT_ASn  */
+  int args_locals_size = current_function_args_size;
+  int saved_regs_p = 0;
   int need_ret = 1;
 
   /* Use this opportunity to reset the reorg flags!  */
@@ -325,41 +327,53 @@ function_epilogue (file, size)
   epilogue_size = 0;
   fprintf (file, "/* epilogue: frame size=%d */\n", size);
 
+  savelimit = (CHAIN_FRAMES) ? REG_FP : (REG_FP + 2);
+  for (reg = 0; reg < savelimit; reg++)
+    if (regs_ever_live[reg] && ! call_used_regs[reg])
+      {
+	saved_regs_p = 1;
+	break;
+      }
+
   if (size)
     {
-      operands[0] = GEN_INT (size);
-
-      switch (size & 0xff)
+      if (leaf_func_p && !CHAIN_FRAMES && !saved_regs_p
+	  && current_function_pops_args)
+	args_locals_size = current_function_args_size + size;
+      else
 	{
-	default:
-	  OUT_AS2 (mov, w, %L0);
-	  OUT_AS2 (add, spl, w);
-	  epilogue_size += 4;
-	  /* fall-thru  */
-	case 0:
-	  break;
-	case 1:
-	  OUT_AS1 (inc, spl);
-	  epilogue_size += 2;
-	}
+	  operands[0] = GEN_INT (size);
 
-      switch (size & 0xff00)
-	{
-	default:
-	  if ((size & 0xff) != ((size >> 8) & 0xff))
-	    OUT_AS2 (mov, w, %H0);
-	  OUT_AS2 (add, sph, w);
-	  epilogue_size += 4;
-	  /* fall-thru  */
-	case 0:
-	  break;
-	case 0x100:
-	  OUT_AS1 (inc, sph);
-	  epilogue_size += 2;
+	  switch (size & 0xff)
+	    {
+	    default:
+	      OUT_AS2 (mov, w, %L0);
+	      OUT_AS2 (add, spl, w);
+	      epilogue_size += 4;
+	      /* fall-thru  */
+	    case 0:
+	      break;
+	    case 1:
+	      OUT_AS1 (inc, spl);
+	      epilogue_size += 2;
+	    }
+
+	  switch (size & 0xff00)
+	    {
+	    default:
+	      if ((size & 0xff) != ((size >> 8) & 0xff))
+		OUT_AS2 (mov, w, %H0);
+	      OUT_AS2 (add, sph, w);
+	      epilogue_size += 4;
+	      /* fall-thru  */
+	    case 0:
+	      break;
+	    case 0x100:
+	      OUT_AS1 (inc, sph);
+	      epilogue_size += 2;
+	    }
 	}
     }
-
-  savelimit = (CHAIN_FRAMES) ? REG_FP : (REG_FP + 2);
 
   for (reg = 0; reg < savelimit; reg++)
     {
@@ -428,10 +442,10 @@ function_epilogue (file, size)
   else
     {
       if (current_function_pops_args
-          && current_function_args_size >= 2
-          && current_function_args_size < 0x100)
+          && args_locals_size >= 2
+          && args_locals_size < 0x100)
         {
-          if (current_function_args_size == 2)
+          if (args_locals_size == 2)
 	    {
 	      if (CHAIN_FRAMES)
 	        {
@@ -443,7 +457,7 @@ function_epilogue (file, size)
 	    }
           else
 	    {
-	      operands[0] = GEN_INT (current_function_args_size);
+	      operands[0] = GEN_INT (args_locals_size);
 	      if (CHAIN_FRAMES)
 	        {
                   OUT_AS2 (mov, w, %L0);
@@ -456,12 +470,11 @@ function_epilogue (file, size)
         }
     }
   
-  if (current_function_pops_args && current_function_args_size
-      && need_ret)
+  if (current_function_pops_args && args_locals_size && need_ret)
     {
-      operands[0] = GEN_INT (current_function_args_size);
+      operands[0] = GEN_INT (args_locals_size);
 
-      switch (current_function_args_size & 0xff)
+      switch (args_locals_size & 0xff)
         {
         default:
 	  OUT_AS2 (mov, w, %L0);
@@ -477,11 +490,10 @@ function_epilogue (file, size)
 	  epilogue_size += 2;
 	}
 
-      switch (current_function_args_size & 0xff00)
+      switch (args_locals_size & 0xff00)
 	{
 	default:
-	  if ((current_function_args_size & 0xff)
-	      != ((current_function_args_size >> 8) & 0xff))
+	  if ((args_locals_size & 0xff) != ((args_locals_size >> 8) & 0xff))
 	    OUT_AS2 (mov, w, %H0);
 	  OUT_AS2 (add, sph, w);
 	  epilogue_size += 4;
