@@ -1,3 +1,8 @@
+2003-07-17  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_rtx): Use simplify_gen_binary to swap
+	commutative operands instead of modifying the RTL in-place.
+
 2003-07-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR optimization/11557
