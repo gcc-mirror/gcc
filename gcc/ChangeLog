@@ -1,3 +1,8 @@
+Tue Aug 15 00:36:36 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* gthr-posix.h: Conditionally include <sched.h>; include
+	<config.h> from libobjc/.
+
 2000-08-14  Richard Henderson  <rth@cygnus.com>
 
 	* config/i386/i386.c (legitimize_pic_address): Use Pmode
