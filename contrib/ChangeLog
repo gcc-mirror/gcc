@@ -1,3 +1,7 @@
+2003-02-05  Release Manager
+
+	* GCC 3.2.2 Released.
+
 2003-01-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc_update (files_and_dependencies): Add gcc/cp/cfns.h depends

@@ -1,3 +1,7 @@
+2003-02-05  Release Manager
+
+	* GCC 3.2.2 Released.
+
 2003-01-31  Loren J. Rittle <ljrittle@acm.org>
 
 	* gcc.dg/struct-ret-libc.c: New test.

@@ -1,3 +1,7 @@
+2003-02-05  Release Manager
+
+	* GCC 3.2.2 Released.
+
 2003-01-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* src/powerpc/ppc_closure.S: Recode to fit shared libs.
