@@ -126,8 +126,7 @@ gen_attr (attr)
       printf ("extern int insn_default_length PARAMS ((rtx));\n");
       printf ("extern int insn_variable_length_p PARAMS ((rtx));\n");
       printf ("extern int insn_current_length PARAMS ((rtx));\n\n");
-      printf ("extern int *insn_addresses;\n");
-      printf ("extern int insn_current_address;\n\n");
+      printf ("#include \"insn-addr.h\"\n\n");
     }
 }
 

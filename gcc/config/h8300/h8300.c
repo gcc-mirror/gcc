@@ -1534,9 +1534,9 @@ final_prescan_insn (insn, operand, num_operands)
 
   if (TARGET_ADDRESSES)
     {
-      fprintf (asm_out_file, "; 0x%x %d\n", insn_addresses[uid],
-	       insn_addresses[uid] - last_insn_address);
-      last_insn_address = insn_addresses[uid];
+      fprintf (asm_out_file, "; 0x%x %d\n", INSN_ADDRESSES (uid),
+	       INSN_ADDRESSES (uid) - last_insn_address);
+      last_insn_address = INSN_ADDRESSES (uid);
     }
 }
 

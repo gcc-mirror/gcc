@@ -612,7 +612,10 @@ dbr_sequence_length ()
    `insn_current_length'.  */
 
 static short *insn_lengths;
-int *insn_addresses;
+
+#ifdef HAVE_ATTR_length
+varray_type insn_addresses_;
+#endif
 
 /* Max uid for which the above arrays are valid.  */
 static int insn_lengths_max_uid;
@@ -665,11 +668,9 @@ init_insn_lengths ()
       insn_lengths = 0;
       insn_lengths_max_uid = 0;
     }
-  if (insn_addresses)
-    {
-      free (insn_addresses);
-      insn_addresses = 0;
-    }
+#ifdef HAVE_ATTR_length
+  INSN_ADDRESSES_FREE ();
+#endif
   if (uid_align)
     {
       free (uid_align);
@@ -889,7 +890,7 @@ align_fuzz (start, end, known_align_log, growth)
       int align_addr, new_align;
 
       uid = INSN_UID (align_label);
-      align_addr = insn_addresses[uid] - insn_lengths[uid];
+      align_addr = INSN_ADDRESSES (uid) - insn_lengths[uid];
       if (uid_shuid[uid] > end_shuid)
 	break;
       known_align_log = LABEL_TO_ALIGNMENT (align_label);
@@ -1135,7 +1136,7 @@ shorten_branches (first)
   insn_lengths_max_uid = max_uid;
   /* Syntax errors can lead to labels being outside of the main insn stream.
      Initialize insn_addresses, so that we get reproducible results.  */
-  insn_addresses = (int *) xcalloc (max_uid, sizeof (int));
+  INSN_ADDRESSES_ALLOC (max_uid);
 
   varying_length = (char *) xcalloc (max_uid, sizeof (char));
 
@@ -1242,7 +1243,7 @@ shorten_branches (first)
 	    }
 	}
 
-      insn_addresses[uid] = insn_current_address;
+      INSN_ADDRESSES (uid) = insn_current_address;
       
       if (GET_CODE (insn) == NOTE || GET_CODE (insn) == BARRIER
 	  || GET_CODE (insn) == CODE_LABEL)
@@ -1298,8 +1299,8 @@ shorten_branches (first)
 		  if ((varying_length[inner_uid]
 		       = insn_variable_length_p (inner_insn)) != 0)
 		    varying_length[uid] = 1;
-		  insn_addresses[inner_uid] = (insn_current_address +
-					       insn_lengths[uid]);
+		  INSN_ADDRESSES (inner_uid) = (insn_current_address
+						+ insn_lengths[uid]);
 		}
 	      else
 		varying_length[inner_uid] = 0;
@@ -1353,7 +1354,7 @@ shorten_branches (first)
 		}
 	      else
 		insn_lengths[uid] = 0;
-	      insn_addresses[uid] = insn_current_address;
+	      INSN_ADDRESSES (uid) = insn_current_address;
 	      continue;
 	    }
 
@@ -1361,8 +1362,8 @@ shorten_branches (first)
 	  if (length_align < insn_current_align)
 	    insn_current_align = length_align;
 
-	  insn_last_address = insn_addresses[uid];
-	  insn_addresses[uid] = insn_current_address;
+	  insn_last_address = INSN_ADDRESSES (uid);
+	  INSN_ADDRESSES (uid) = insn_current_address;
 
 #ifdef CASE_VECTOR_SHORTEN_MODE
 	  if (optimize && GET_CODE (insn) == JUMP_INSN
@@ -1374,9 +1375,9 @@ shorten_branches (first)
 	      rtx min_lab = XEXP (XEXP (body, 2), 0);
 	      rtx max_lab = XEXP (XEXP (body, 3), 0);
 	      addr_diff_vec_flags flags = ADDR_DIFF_VEC_FLAGS (body);
-	      int rel_addr = insn_addresses[INSN_UID (rel_lab)];
-	      int min_addr = insn_addresses[INSN_UID (min_lab)];
-	      int max_addr = insn_addresses[INSN_UID (max_lab)];
+	      int rel_addr = INSN_ADDRESSES (INSN_UID (rel_lab));
+	      int min_addr = INSN_ADDRESSES (INSN_UID (min_lab));
+	      int max_addr = INSN_ADDRESSES (INSN_UID (max_lab));
 	      rtx prev;
 	      int rel_align = 0;
 
@@ -1491,7 +1492,7 @@ shorten_branches (first)
 		  int inner_uid = INSN_UID (inner_insn);
 		  int inner_length;
 
-		  insn_addresses[inner_uid] = insn_current_address;
+		  INSN_ADDRESSES (inner_uid) = insn_current_address;
 
 		  /* insn_current_length returns 0 for insns with a
 		     non-varying length.  */
@@ -2018,7 +2019,7 @@ final (first, file, optimize, prescan)
   for (insn = NEXT_INSN (first); insn;)
     {
 #ifdef HAVE_ATTR_length
-      if (INSN_UID (insn) >= insn_lengths_max_uid)
+      if (INSN_UID (insn) >= INSN_ADDRESSES_SIZE ())
 	{
 #ifdef STACK_REGS
 	  /* Irritatingly, the reg-stack pass is creating new instructions
@@ -2032,7 +2033,7 @@ final (first, file, optimize, prescan)
 #endif
 	}
       else
-	insn_current_address = insn_addresses[INSN_UID (insn)];
+	insn_current_address = INSN_ADDRESSES (INSN_UID (insn));
 #endif /* HAVE_ATTR_length */
 
       insn = final_scan_insn (insn, file, optimize, prescan, 0);

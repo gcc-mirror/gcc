@@ -2625,7 +2625,7 @@ int
 short_branch (uid1, uid2)
      int uid1, uid2;
 {
-  int delta = insn_addresses[uid1] - insn_addresses[uid2];
+  int delta = INSN_ADDRESSES (uid1) - INSN_ADDRESSES (uid2);
 
   /* Leave a few words of "slop".  */
   if (delta >= -1023 && delta <= 1022)

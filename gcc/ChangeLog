@@ -1,5 +1,25 @@
 2000-07-27  Alexandre Oliva  <aoliva@redhat.com>
 
+	* Makefile.in (INSN_ATTR_H): New macro.  Replace all dependencies
+	on insn-attr.h with it.
+	* genattr.c: Generate `#include "insn-addr.h"' if HAVE_ATTR_length.
+	* insn-addr.h: New header.
+	(insn_addresses_): Renamed from insn_addresses.
+	(INSN_ADDRESSES_DEFN, INSN_ADDRESSES, INSN_ADDRESSES_ALLOC,
+	INSN_ADDRESSES_FREE, INSN_ADDRESSES_SET_P, INSN_ADDRESSES_SIZE,
+	INSN_ADDRESSES_NEW): New macros.
+	* genattrtab.c (write_test_expr): Use new macros.
+	* final.c (insn_addresses, init_insn_lengths): Likewise.
+	(align_fuzz, shorten_branches): Likewise.
+	(final): Likewise.  Do not reject new insns if their addresses
+	have been added to INSN_ADDRESSES.
+	* config/arm/arm.c, config/avr/avr.c: Use new macros.
+	* config/h8300/h8300.c, config/i370/i370.c: Likewise.
+	* config/m88k/m88k.c, config/pa/pa.c, config/pa/pa.md: Likewise.
+	* config/sparc/sparc.c, config/sparc/sparc.md: Likewise.
+	* config/sh/sh.c: Likewise.
+	(output_branchy_insn): Use INSN_ADDRESSES_NEW.
+
 	* Makefile.in (bootstrap): Move -BstageN/ back to the beginning.
 
 2000-07-27  Andrew Cagney  <cagney@b1.cygnus.com>

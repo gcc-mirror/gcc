@@ -2205,9 +2205,9 @@
   /* If we're trying to load the address of a label that happens to be
      close, then we can use a shorter sequence.  */
   if (GET_CODE (operands[1]) == LABEL_REF
-      && insn_addresses
-      && abs (insn_addresses[INSN_UID (XEXP (operands[1], 0))]
-	        - insn_addresses[INSN_UID (insn)]) < 8100)
+      && INSN_ADDRESSES_SET_P ()
+      && abs (INSN_ADDRESSES (INSN_UID (XEXP (operands[1], 0)))
+	        - INSN_ADDRESSES (INSN_UID (insn))) < 8100)
     {
       /* Prefixing with R% here is wrong, it extracts just 11 bits and is
 	 always non-negative.  */
