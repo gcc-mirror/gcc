@@ -111,8 +111,8 @@
 ;; ??? For now do not allow loading constants into vfp regs.  This causes
 ;; problems because small constants get converted into adds.
 (define_insn "*arm_movsi_vfp"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r ,m,!w,r,!w,!w,  Uv")
-      (match_operand:SI 1 "general_operand"	   "rI,K,mi,r,r,!w,!w,Uvi,!w"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r ,m,*w,r,*w,*w, *Uv")
+      (match_operand:SI 1 "general_operand"	   "rI,K,mi,r,r,*w,*w,*Uvi,*w"))]
   "TARGET_ARM && TARGET_VFP && TARGET_HARD_FLOAT
    && (   s_register_operand (operands[0], SImode)
        || s_register_operand (operands[1], SImode))"
