@@ -1,3 +1,10 @@
+2001-01-02  Mark Elbrecht  <snowball3@bigfoot.com>
+
+	* config/i386/djgpp.h (DWARF2_DEBUGGING_INFO): Define.
+	(UNALIGNED_INT_ASM_OP, UNALIGNED_DOUBLE_ASM_OP): Define.
+	(UNALIGNED_SHORT_ASM_OP): Define.
+	(CPP_PREDEFINES): Remove defines for GO32 and DJGPP.
+
 2001-01-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* fold-const.c (fold_convert): Fix typo.
