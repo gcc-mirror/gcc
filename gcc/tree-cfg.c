@@ -2931,6 +2931,22 @@ tree_find_edge_insert_loc (edge e, block_stmt_iterator *bsi)
       tmp = bsi_stmt (*bsi);
       if (!stmt_ends_bb_p (tmp))
 	return true;
+
+      /* Insert code just before returning the value.  We may need to decompose
+         the return in the case it contains non-trivial operand.  */
+      if (TREE_CODE (tmp) == RETURN_EXPR)
+        {
+	  tree op = TREE_OPERAND (tmp, 0);
+	  if (!is_gimple_val (op))
+	    {
+	      if (TREE_CODE (op) != MODIFY_EXPR)
+		abort ();
+	      bsi_insert_before (bsi, op, BSI_NEW_STMT);
+	      TREE_OPERAND (tmp, 0) = TREE_OPERAND (op, 0);
+	    }
+	  bsi_prev (bsi);
+	  return true;
+        }
     }
 
   /* Otherwise, create a new basic block, and split this edge.  */
