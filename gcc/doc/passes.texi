@@ -110,8 +110,8 @@ definitions immediately or queue them for later processing.
 @cindex GIMPLE
 @dfn{Gimplification} is a whimsical term for the process of converting
 the intermediate representation of a function into the GIMPLE language
-(CROSSREF).  The term stuck, and so words like ``gimplification,''
-``gimplify,'' ``gimplifier'' and the like are sprinkled throughout this
+(CROSSREF).  The term stuck, and so words like ``gimplification'',
+``gimplify'', ``gimplifier'' and the like are sprinkled throughout this
 section of code.
 
 @cindex GENERIC

@@ -3896,8 +3896,8 @@ sequence.  For C source files, this is the compiler proper and assembler
 # as 0.00 0.01
 @end smallexample
 
-The first number on each line is the ``user time,'' that is time spent
-executing the program itself.  The second number is ``system time,''
+The first number on each line is the ``user time'', that is time spent
+executing the program itself.  The second number is ``system time'',
 time spent executing operating system routines on behalf of the program.
 Both numbers are in seconds.
 
@@ -10760,11 +10760,11 @@ to the GNU linker for 32-bit PowerPC systems as well.
 
 On Darwin/PPC systems, @code{#pragma longcall} will generate ``jbsr
 callee, L42'', plus a ``branch island'' (glue code).  The two target
-addresses represent the callee and the ``branch island.'' The
+addresses represent the callee and the ``branch island''.  The
 Darwin/PPC linker will prefer the first address and generate a ``bl
 callee'' if the PPC ``bl'' instruction will reach the callee directly;
 otherwise, the linker will generate ``bl L42'' to call the ``branch
-island.''  The ``branch island'' is appended to the body of the
+island''.  The ``branch island'' is appended to the body of the
 calling function; it computes the full 32-bit address of the callee
 and jumps to it.
 
