@@ -56,7 +56,7 @@ xrealloc (block, nbytes)
      char *block;
      int nbytes;
 {
-  char *tmp = realloc (block, nbytes);
+  char *tmp = block ? realloc (block, nbytes) : malloc (nbytes);
 
   if (!tmp)
     {
