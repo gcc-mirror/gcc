@@ -595,7 +595,7 @@ frv_override_options ()
    LEVEL is the optimization level specified; 2 if `-O2' is specified, 1 if
    `-O' is specified, and 0 if neither is specified.
 
-   SIZE is non-zero if `-Os' is specified, 0 otherwise.
+   SIZE is nonzero if `-Os' is specified, 0 otherwise.
 
    You should not use this macro to change options that are not
    machine-specific.  These should uniformly selected by the same optimization
@@ -3139,7 +3139,7 @@ frv_function_arg_boundary (mode, type)
    You may use the macro `MUST_PASS_IN_STACK (MODE, TYPE)' in the definition of
    this macro to determine if this argument is of a type that must be passed in
    the stack.  If `REG_PARM_STACK_SPACE' is not defined and `FUNCTION_ARG'
-   returns non-zero for such an argument, the compiler will abort.  If
+   returns nonzero for such an argument, the compiler will abort.  If
    `REG_PARM_STACK_SPACE' is defined, the argument will be computed in the
    stack and then loaded into a register.  */
 
@@ -6417,7 +6417,7 @@ frv_split_minmax (operands)
 					  cc_reg,
 					  const0_rtx)));
 
-  /* If are taking the min/max of a non-zero constant, load that first, and
+  /* If are taking the min/max of a nonzero constant, load that first, and
      then do a conditional move of the other value.  */
   if (GET_CODE (src2) == CONST_INT && INTVAL (src2) != 0)
     {
@@ -7705,7 +7705,7 @@ frv_secondary_reload_class (class, mode, x, in_p)
 	}
       break;
 
-      /* Non-zero constants should be loaded into an FPR through a GPR.  */
+      /* Nonzero constants should be loaded into an FPR through a GPR.  */
     case QUAD_FPR_REGS:
     case FEVEN_REGS:
     case FPR_REGS:

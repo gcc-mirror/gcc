@@ -775,7 +775,7 @@ L_skip2:
    space.  For the H8/300H and H8S, the C version is good enough.  */
 #ifdef __H8300__
 /* We still treat NANs different than libgcc2.c, but then, the
-   behaviour is undefined anyways.  */
+   behavior is undefined anyways.  */
 	.global	___fixunssfsi
 ___fixunssfsi:
 	cmp.b #0x47,r0h

@@ -1449,7 +1449,7 @@ __movstrhi_counthi:
 	mov	w, 8(SP)
 	mov	ipl, w
 
-	test	10(SP)			; If we have a non-zero LSB then adjust the
+	test	10(SP)			; If we have a nonzero LSB then adjust the
 	sz				; MSB of the loop count to allow us to use
 	inc	9(SP)			; skip tricks!
 

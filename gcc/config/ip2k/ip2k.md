@@ -165,7 +165,7 @@
   [(set_attr "skip" "yes")
    (set_attr "clobberw" "no")])
 
-;; IP isn't offsettable but we can fake this behaviour here and win if we would
+;; IP isn't offsettable but we can fake this behavior here and win if we would
 ;; otherwise use DP and require a reload from IP.  This instruction is only
 ;; matched by peephole2 operations.
 ;;
@@ -205,7 +205,7 @@
     return \"\";
   }")
 
-;; IP isn't offsettable but we can fake this behaviour here and win if we would
+;; IP isn't offsettable but we can fake this behavior here and win if we would
 ;; otherwise use DP and require a reload from IP.  This instruction is only
 ;; matched by peephole2 operations.
 ;;
@@ -6566,7 +6566,7 @@
 
 ;; Tidy up stack slot addressing where we've eliminated some registers.
 ;;   This looks like something strange going on though as gcc-2.97 didn't
-;; exhibit this behaviour, whereas gcc-3.0.4 does.
+;; exhibit this behavior, whereas gcc-3.0.4 does.
 ;;
 (define_peephole2
   [(set (match_operand:HI 0 "register_operand" "")

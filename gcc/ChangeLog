@@ -1,3 +1,27 @@
+2002-09-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/fp-bit.c: Follow spelling conventions.
+	* config/d30v/d30v.c: Likewise.
+	* config/d30v/d30v.h: Likewise.
+	* config/fr30/fr30.c: Likewise.
+	* config/fr30/fr30.h: Likewise.
+	* config/fr30/fr30.md: Likewise.
+	* config/frv/frv.c: Likewise.
+	* config/frv/frv.h: Likewise.
+	* config/h8300/h8300.c: Likewise.
+	* config/h8300/lib1funcs.asm: Likewise.
+	* config/i370/i370.c: Likewise.
+	* config/i386/i386.h: Likewise.
+	* config/i386/i386.md: Likewise.
+	* config/i386/pentium.md: Likewise.
+	* config/i386/winnt.c: Likewise.
+	* config/i960/i960.c: Likewise.
+	* config/ia64/ia64.h: Likewise.
+	* config/ip2k/ip2k.c: Likewise.
+	* config/ip2k/ip2k.h: Likewise.
+	* config/ip2k/ip2k.md: Likewise.
+	* config/ip2k/libgcc.S: Likewise.
+
 2002-09-19  Stephen Clarke <stephen.clarke@superh.com>
 
 	* config/sh/sh.h (UNSPEC_GOTOFF_P): Define.
@@ -70,7 +94,7 @@
 
 2002-09-18  Kazu Hirata  <kazu@cs.umass.edu>
 
-	* config/s390/s390.c: Follow spelling convention.
+	* config/s390/s390.c: Follow spelling conventions.
 	* config/sh/lib1funcs.asm: Likewise.
 	* config/sh/sh.c: Likewise.
 	* config/sh/sh.h: Likewise.

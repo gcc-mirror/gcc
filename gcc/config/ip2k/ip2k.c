@@ -158,7 +158,7 @@ ip2k_return_pops_args (fundecl, funtype, size)
   return 0;
 }
 
-/* Return non-zero if FUNC is a naked function.  */
+/* Return nonzero if FUNC is a naked function.  */
 
 static int
 ip2k_naked_function_p (func)
@@ -1728,7 +1728,7 @@ ip2k_gen_unsigned_comp_branch (insn, code, label)
           goto zero;
 
         case GTU:			
-          code = NE;			/* Anything non-zero is GTU.  */
+          code = NE;			/* Anything nonzero is GTU.  */
           /* fall-thru  */
 
         case EQ:
@@ -4118,7 +4118,7 @@ mdr_try_move_dp_reload (first_insn)
 #endif /* IP2K_MD_REORG_PASS */
 
 /* Look to see if the expression, x, can have any stack references offset by
-   a fixed constant, offset.  If it definitely can then returns non-zero.  */
+   a fixed constant, offset.  If it definitely can then returns nonzero.  */
 
 static int
 ip2k_check_can_adjust_stack_ref (x, offset)
@@ -4657,7 +4657,7 @@ mdr_try_propagate_clr (first_insn)
 
 /* Look to see if the expression, x, does not make any memory references
    via the specified register.  This is very conservative and only returns
-   non-zero if we definitely don't have such a memory ref.  */
+   nonzero if we definitely don't have such a memory ref.  */
 
 static int
 ip2k_xexp_not_uses_reg_for_mem (x, regno)

@@ -89,7 +89,7 @@ struct rtx_def * fr30_compare_op1;
                                    SP ->|                       |  /  
                                         +-----------------------+    
    
-   Note, AP is a fake hard register.  It will be eliminated in favour of
+   Note, AP is a fake hard register.  It will be eliminated in favor of
    SP or FP as appropriate.
 
    Note, Some or all of the stack sections above may be omitted if they 

@@ -786,7 +786,7 @@ extern int x86_prefetch_sse;
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE) \
   ix86_function_arg_boundary ((MODE), (TYPE))
 
-/* Set this non-zero if move instructions will actually fail to work
+/* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 0
 
@@ -2828,10 +2828,10 @@ do {							\
    cost many times greater than aligned accesses, for example if they
    are emulated in a trap handler.
 
-   When this macro is non-zero, the compiler will act as if
-   `STRICT_ALIGNMENT' were non-zero when generating code for block
+   When this macro is nonzero, the compiler will act as if
+   `STRICT_ALIGNMENT' were nonzero when generating code for block
    moves.  This can cause significantly more instructions to be
-   produced.  Therefore, do not set this macro non-zero if unaligned
+   produced.  Therefore, do not set this macro nonzero if unaligned
    accesses only add a cycle or two to the time for a memory access.
 
    If the value of this macro is always zero, it need not be defined.  */
@@ -2869,7 +2869,7 @@ do {							\
 
 #define SELECT_CC_MODE(OP, X, Y) ix86_cc_mode ((OP), (X), (Y))
 
-/* Return non-zero if MODE implies a floating point inequality can be
+/* Return nonzero if MODE implies a floating point inequality can be
    reversed.  */
 
 #define REVERSIBLE_CC_MODE(MODE) 1

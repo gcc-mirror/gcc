@@ -1444,7 +1444,7 @@ i370_globalize_label (stream, name)
    -- subtracts stackframe size from the stack pointer.
    -- stores backpointer to old caller stack.
   
-   XXX hack alert -- if the global var int leaf_function is non-zero, 
+   XXX hack alert -- if the global var int leaf_function is nonzero, 
    then this is a leaf, and it might be possible to optimize the prologue
    into doing even less, e.g. not grabbing a new stackframe or maybe just a
    partial stack frame.
