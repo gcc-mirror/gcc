@@ -4834,7 +4834,12 @@ basic_induction_var (x, mode, dest_reg, p, inc_val, mult_val)
       if (insn)
 	set = single_set (insn);
 
-      if (set != 0 && SET_DEST (set) == x)
+      if (set != 0
+	  && (SET_DEST (set) == x
+	      || (GET_CODE (SET_DEST (set)) == SUBREG
+		  && (GET_MODE_SIZE (GET_MODE (SET_DEST (set)))
+		      <= UNITS_PER_WORD)
+		  && SUBREG_REG (SET_DEST (set)) == x)))
 	return basic_induction_var (SET_SRC (set),
 				    (GET_MODE (SET_SRC (set)) == VOIDmode
 				     ? GET_MODE (x)
