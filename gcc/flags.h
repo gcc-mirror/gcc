@@ -407,6 +407,10 @@ extern int flag_really_no_inline;
 extern int flag_syntax_only;
 extern int rtl_dump_and_exit;
 
+/* Nonzero if we are exiting on the first error occurred.  */
+
+extern int flag_fatal_errors;
+
 /* Nonzero means we should save auxiliary info into a .X file.  */
 
 extern int flag_gen_aux_info;

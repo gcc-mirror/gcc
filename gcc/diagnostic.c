@@ -67,6 +67,7 @@ diagnostic_context *global_dc = &global_diagnostic_context;
 with preprocessed source if appropriate.\n\
 See %s for instructions.\n"
 
+int flag_fatal_errors = 0;
 
 /* Return a malloc'd string containing MSG formatted a la printf.  The
    caller is responsible for freeing the memory.  */
@@ -264,6 +265,11 @@ diagnostic_action_after_output (diagnostic_context *context,
     case DK_SORRY:
       if (context->abort_on_error)
 	real_abort ();
+      if (flag_fatal_errors)
+	{
+	  fnotice (stderr, "compilation terminated due to -Wfatal-errors.\n");
+	  exit (FATAL_EXIT_CODE);
+	}
       break;
 
     case DK_ICE:

@@ -214,7 +214,7 @@ in the following sections.
 -Wconversion  -Wno-deprecated-declarations @gol
 -Wdisabled-optimization  -Wno-div-by-zero  -Wendif-labels @gol
 -Werror  -Werror-implicit-function-declaration @gol
--Wfloat-equal  -Wformat  -Wformat=2 @gol
+-Wfatal-errors  -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wno-format-extra-args -Wformat-nonliteral @gol
 -Wformat-security  -Wformat-y2k @gol
 -Wimplicit  -Wimplicit-function-declaration  -Wimplicit-int @gol
@@ -2064,6 +2064,12 @@ machines.
 @opindex Wcomment
 Warn whenever a comment-start sequence @samp{/*} appears in a @samp{/*}
 comment, or whenever a Backslash-Newline appears in a @samp{//} comment.
+
+@item -Wfatal-errors
+@opindex Wfatal-errors
+This option causes the compiler to abort compilation on the first error
+occurred rather than trying to keep going and printing further error
+messages.
 
 @item -Wformat
 @opindex Wformat

@@ -742,6 +742,10 @@ common_handle_option (size_t scode, const char *arg,
       set_Wextra (value);
       break;
 
+    case OPT_Wfatal_errors:
+      flag_fatal_errors = value;
+      break;
+
     case OPT_Winline:
       warn_inline = value;
       break;
