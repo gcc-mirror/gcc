@@ -1,4 +1,12 @@
-2004-02-22  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+2004-02-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport from mainline
+	2003-02-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+	PR c++/14033
+	* decl.c (require_complete_types_for_parms): Do not insert
+	error_mark_node in the parameter list.
+
+2004-02-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport from mainline
 	2004-02-04  Mark Mitchell  <mark@codesourcery.com>
