@@ -4483,29 +4483,28 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
   abort ();
 #endif
 
-  /* Compute the rounded size of the type.  */
   align = PARM_BOUNDARY / BITS_PER_UNIT;
-  boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type);
+  boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type) / BITS_PER_UNIT;
 
   /* Hoist the valist value into a temporary for the moment.  */
   valist_tmp = get_initialized_tmp_var (valist, pre_p, NULL);
 
   /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
      requires greater alignment, we must perform dynamic alignment.  */
-  if (boundary > PARM_BOUNDARY)
+  if (boundary > align)
     {
-      unsigned byte_bound = boundary / BITS_PER_UNIT;
-
-      t = fold_convert (TREE_TYPE (valist), size_int (byte_bound - 1));
+      t = fold_convert (TREE_TYPE (valist), size_int (boundary - 1));
       t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
 		  build2 (PLUS_EXPR, TREE_TYPE (valist), valist_tmp, t));
       gimplify_and_add (t, pre_p);
 
+      t = fold_convert (TREE_TYPE (valist), size_int (-boundary));
       t = build2 (MODIFY_EXPR, TREE_TYPE (valist), valist_tmp,
 		  build2 (BIT_AND_EXPR, TREE_TYPE (valist), valist_tmp, t));
       gimplify_and_add (t, pre_p);
     }
 
+  /* Compute the rounded size of the type.  */
   type_size = size_in_bytes (type);
   rounded_size = round_up (type_size, align);
 
