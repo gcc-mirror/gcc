@@ -1,3 +1,10 @@
+2004-12-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/18984
+	* cp-gimplify.c (cp_genericize_r): Don't insert first but instead
+	check to see if contains the pointer.  Insert the statement before
+	returning.
+
 2004-12-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/14075
