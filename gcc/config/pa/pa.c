@@ -3038,7 +3038,28 @@ hppa_expand_epilogue ()
    the current frame, after the prologue.  FRAMEADDR is the
    frame pointer of the COUNT frame.
 
-   We want to ignore any export stub remnants here.  */
+   We want to ignore any export stub remnants here.
+
+   The value returned is used in two different ways:
+
+	1. To find a function's caller.
+
+	2. To change the return address for a function.
+
+   This function handles most instances of case 1; however, it will
+   fail if there are two levels of stubs to execute on the return
+   path.  The only way I believe that can happen is if the return value
+   needs a parameter relocation, which never happens for C code.
+
+   This function handles most instances of case 2; however, it will
+   fail if we did not originally have stub code on the return path
+   but will need code on the new return path.  This can happen if
+   the caller & callee are both in the main program, but the new
+   return location is in a shared library.
+
+   To handle this correctly we need to set the return pointer at
+   frame-20 to point to a return stub frame-24 to point to the
+   location we wish to return to.  */
 
 rtx
 return_addr_rtx (count, frameaddr)
