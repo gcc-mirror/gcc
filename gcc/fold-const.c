@@ -8252,6 +8252,59 @@ fold (tree expr)
       t1 = fold_relational_const (code, type, arg0, arg1);
       return (t1 == NULL_TREE ? t : t1);
 
+    case UNORDERED_EXPR:
+    case ORDERED_EXPR:
+    case UNLT_EXPR:
+    case UNLE_EXPR:
+    case UNGT_EXPR:
+    case UNGE_EXPR:
+    case UNEQ_EXPR:
+    case LTGT_EXPR:
+      if (TREE_CODE (arg0) == REAL_CST && TREE_CODE (arg1) == REAL_CST)
+	{
+	  t1 = fold_relational_const (code, type, arg0, arg1);
+	  if (t1 != NULL_TREE)
+	    return t1;
+	}
+
+      /* If the first operand is NaN, the result is constant.  */
+      if (TREE_CODE (arg0) == REAL_CST
+	  && REAL_VALUE_ISNAN (TREE_REAL_CST (arg0))
+	  && (code != LTGT_EXPR || ! flag_trapping_math))
+	{
+	  t1 = (code == ORDERED_EXPR || code == LTGT_EXPR)
+	       ? integer_zero_node
+	       : integer_one_node;
+	  return omit_one_operand (type, t1, arg1);
+	}
+
+      /* If the second operand is NaN, the result is constant.  */
+      if (TREE_CODE (arg1) == REAL_CST
+	  && REAL_VALUE_ISNAN (TREE_REAL_CST (arg1))
+	  && (code != LTGT_EXPR || ! flag_trapping_math))
+	{
+	  t1 = (code == ORDERED_EXPR || code == LTGT_EXPR)
+	       ? integer_zero_node
+	       : integer_one_node;
+	  return omit_one_operand (type, t1, arg0);
+	}
+
+      /* Fold (double)float1 CMP (double)float2 into float1 CMP float2.  */
+      {
+	tree targ0 = strip_float_extensions (arg0);
+	tree targ1 = strip_float_extensions (arg1);
+	tree newtype = TREE_TYPE (targ0);
+
+	if (TYPE_PRECISION (TREE_TYPE (targ1)) > TYPE_PRECISION (newtype))
+	  newtype = TREE_TYPE (targ1);
+
+	if (TYPE_PRECISION (newtype) < TYPE_PRECISION (TREE_TYPE (arg0)))
+	  return fold (build2 (code, type, fold_convert (newtype, targ0),
+			       fold_convert (newtype, targ1)));
+      }
+
+      return t;
+
     case COND_EXPR:
       /* Pedantic ANSI C says that a conditional expression is never an lvalue,
 	 so all simple results must be passed through pedantic_non_lvalue.  */
@@ -9770,6 +9823,16 @@ nondestructive_fold_binary_to_constant (enum tree_code code, tree type,
       if (tem)
 	return tem;
 
+      /* Fall through.  */
+
+    case ORDERED_EXPR:
+    case UNORDERED_EXPR:
+    case UNLT_EXPR:
+    case UNLE_EXPR:
+    case UNGT_EXPR:
+    case UNGE_EXPR:
+    case UNEQ_EXPR:
+    case LTGT_EXPR:
       if (!wins)
 	return NULL_TREE;
 
@@ -10075,7 +10138,82 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
   int result, invert;
 
   /* From here on, the only cases we handle are when the result is
-     known to be a constant.
+     known to be a constant.  */
+
+  if (TREE_CODE (op0) == REAL_CST && TREE_CODE (op1) == REAL_CST)
+    {
+      /* Handle the cases where either operand is a NaN.  */
+      if (REAL_VALUE_ISNAN (TREE_REAL_CST (op0))
+          || REAL_VALUE_ISNAN (TREE_REAL_CST (op1)))
+	{
+	  switch (code)
+	    {
+	    case EQ_EXPR:
+	    case ORDERED_EXPR:
+	      result = 0;
+	      break;
+
+	    case NE_EXPR:
+	    case UNORDERED_EXPR:
+	    case UNLT_EXPR:
+	    case UNLE_EXPR:
+	    case UNGT_EXPR:
+	    case UNGE_EXPR:
+	    case UNEQ_EXPR:
+              result = 1;
+	      break;
+
+	    case LT_EXPR:
+	    case LE_EXPR:
+	    case GT_EXPR:
+	    case GE_EXPR:
+	    case LTGT_EXPR:
+	      if (flag_trapping_math)
+		return NULL_TREE;
+	      result = 0;
+	      break;
+
+	    default:
+	      abort ();
+	    }
+
+	  return constant_boolean_node (result, type);
+	}
+
+      /* From here on we're sure there are no NaNs.  */
+      switch (code)
+	{
+	case ORDERED_EXPR:
+	  return constant_boolean_node (true, type);
+
+	case UNORDERED_EXPR:
+	  return constant_boolean_node (false, type);
+
+	case UNLT_EXPR:
+	  code = LT_EXPR;
+	  break;
+	case UNLE_EXPR:
+	  code = LE_EXPR;
+	  break;
+	case UNGT_EXPR:
+	  code = GT_EXPR;
+	  break;
+	case UNGE_EXPR:
+	  code = GE_EXPR;
+	  break;
+	case UNEQ_EXPR:
+	  code = EQ_EXPR;
+	  break;
+	case LTGT_EXPR:
+	  code = NE_EXPR;
+	  break;
+
+	default:
+	  break;
+	}
+    }
+
+  /* From here on we only handle LT, LE, GT, GE, EQ and NE.
 
      To compute GT, swap the arguments and do LT.
      To compute GE, do LT and invert the result.
@@ -10093,7 +10231,7 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
     }
 
   /* Note that it is safe to invert for real values here because we
-     will check below in the one case that it matters.  */
+     have already handled the one case that it matters.  */
 
   invert = 0;
   if (code == NE_EXPR || code == GE_EXPR)
@@ -10121,18 +10259,7 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
   /* Two real constants can be compared explicitly.  */
   else if (TREE_CODE (op0) == REAL_CST && TREE_CODE (op1) == REAL_CST)
     {
-      /* If either operand is a NaN, the result is false with two
-	 exceptions: First, an NE_EXPR is true on NaNs, but that case
-	 is already handled correctly since we will be inverting the
-	 result for NE_EXPR.  Second, if we had inverted a LE_EXPR
-	 or a GE_EXPR into a LT_EXPR, we must return true so that it
-	 will be inverted into false.  */
-
-      if (REAL_VALUE_ISNAN (TREE_REAL_CST (op0))
-          || REAL_VALUE_ISNAN (TREE_REAL_CST (op1)))
-	result = invert && code == LT_EXPR;
-
-      else if (code == EQ_EXPR)
+      if (code == EQ_EXPR)
 	result = REAL_VALUES_EQUAL (TREE_REAL_CST (op0),
 				    TREE_REAL_CST (op1));
       else

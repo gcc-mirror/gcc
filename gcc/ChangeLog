@@ -1,3 +1,19 @@
+2004-06-18  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold) <UNORDERED_EXPR, ORDERED_EXPR, UNLT_EXPR,
+	UNLE_EXPR, UNGT_EXPR, UNGE_EXPR, UNEQ_EXPR, LTGT_EXPR>: Add
+	constant folding for unordered comparison tree nodes.  If both
+	operands are real constants, call fold_relational_const.  If either
+	operand is a NaN, evaluate the other for side-effects and return a
+	constant.  Optimize (double)float1 CMP (double)float2 into the
+	equivalent float1 CMP float2.
+	(nondestructive_fold_binary_to_constant) <UNORDERED_EXPR,
+	ORDERED_EXPR, UNLT_EXPR, UNLE_EXPR, UNGT_EXPR, UNGE_EXPR, UNEQ_EXPR,
+	LTGT_EXPR>: Call fold_relational_const for constant operands.
+	(fold_relational_const): Add support for unordered comparison tree
+	nodes.  Don't constant fold "ordered" floating point comparisons
+	against NaN if when flag_trapping_math is set.
+
 2004-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* fold-const.c (build_range_check): If !in_p and recursive call
