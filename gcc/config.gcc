@@ -617,7 +617,8 @@ arm*-*-freebsd*|strongarm*-*-freebsd*)
 	tmake_file="${tmake_file} arm/t-strongarm-elf"
 	;;
 arm*-*-netbsdelf*)
-	echo "GCC does not yet support the ${machine} target"; exit 1
+	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h arm/arm.h arm/netbsd-elf.h"
+	tmake_file="${tmake_file} arm/t-netbsd"
 	;;
 arm*-*-netbsd*)
 	tm_file="arm/aout.h arm/arm.h netbsd.h netbsd-aout.h arm/netbsd.h"
