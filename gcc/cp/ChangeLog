@@ -1,3 +1,7 @@
+1999-10-04  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_vec_delete_1): Fold COND_EXPRs.
+
 1999-10-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (VEC_INIT_EXPR): Remove.

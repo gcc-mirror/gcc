@@ -2526,10 +2526,10 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
 			      build_x_delete (base_tbd,
 					      2 | use_global_delete,
 					      virtual_size));
-      body = build (COND_EXPR, void_type_node,
-		    build (BIT_AND_EXPR, integer_type_node,
-			   auto_delete, integer_one_node),
-		    body, integer_zero_node);
+      body = fold (build (COND_EXPR, void_type_node,
+			  fold (build (BIT_AND_EXPR, integer_type_node,
+				       auto_delete, integer_one_node)),
+			  body, integer_zero_node));
     }
   else
     body = NULL_TREE;
@@ -2581,11 +2581,12 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
       deallocate_expr = build_x_delete (base_tbd,
 					2 | use_global_delete,
 					virtual_size);
-      if (auto_delete_vec != integer_one_node)
-	deallocate_expr = build (COND_EXPR, void_type_node,
-				 build (BIT_AND_EXPR, integer_type_node,
-					auto_delete_vec, integer_one_node),
-				 deallocate_expr, integer_zero_node);
+      deallocate_expr = fold (build (COND_EXPR, void_type_node,
+				     fold (build (BIT_AND_EXPR,
+						  integer_type_node,
+						  auto_delete_vec,
+						  integer_one_node)),
+				     deallocate_expr, integer_zero_node));
     }
 
   if (loop && deallocate_expr != integer_zero_node)
@@ -2598,9 +2599,10 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
     body = loop;
 
   /* Outermost wrapper: If pointer is null, punt.  */
-  body = build (COND_EXPR, void_type_node,
-		build (NE_EXPR, boolean_type_node, base, integer_zero_node),
-		body, integer_zero_node);
+  body = fold (build (COND_EXPR, void_type_node,
+		      fold (build (NE_EXPR, boolean_type_node, base,
+				   integer_zero_node)),
+		      body, integer_zero_node));
   body = build1 (NOP_EXPR, void_type_node, body);
 
   if (controller)
