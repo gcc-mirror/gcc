@@ -9448,25 +9448,7 @@ xref_tag (enum tag_types tag_code, tree name,
       if (code == ENUMERAL_TYPE)
 	{
 	  error ("use of enum `%#D' without previous declaration", name);
-
-	  t = make_node (ENUMERAL_TYPE);
-
-	  /* Give the type a default layout like unsigned int
-	     to avoid crashing if it does not get defined.  */
-	  TYPE_MODE (t) = TYPE_MODE (unsigned_type_node);
-	  TYPE_ALIGN (t) = TYPE_ALIGN (unsigned_type_node);
-	  TYPE_USER_ALIGN (t) = 0;
-	  TREE_UNSIGNED (t) = 1;
-	  TYPE_PRECISION (t) = TYPE_PRECISION (unsigned_type_node);
-	  TYPE_MIN_VALUE (t) = TYPE_MIN_VALUE (unsigned_type_node);
-	  TYPE_MAX_VALUE (t) = TYPE_MAX_VALUE (unsigned_type_node);
-
-	  /* Enable us to recognize when a type is created in class context.
-	     To do nested classes correctly, this should probably be cleared
-	     out when we leave this classes scope.  Currently this in only
-	     done in `start_enum'.  */
-
-	  pushtag (name, t, globalize);
+	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
 	}
       else
 	{
