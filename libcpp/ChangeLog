@@ -1,3 +1,7 @@
+2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* aclocal.m4: Regenerate.
+
 2004-11-24  Roger Sayle  <roger@eyesopen.com>
 
 	PR preprocessor/15824
