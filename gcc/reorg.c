@@ -403,25 +403,27 @@ mark_referenced_resources (x, res, include_delayed_effects)
 	    if (global_regs[i])
 	      SET_HARD_REG_BIT (res->regs, i);
 
-	  /* Skip any labels between the CALL_INSN and possible USE insns.  */
-	  while (GET_CODE (insn) == CODE_LABEL)
-	    insn = PREV_INSN (insn);
+	 {
+	   rtx link;
 
-	  for ( ; (insn && GET_CODE (insn) == INSN
-		   && GET_CODE (PATTERN (insn)) == USE);
-	       insn = PREV_INSN (insn))
-	    {
-	      for (i = 1; i < seq_size; i++)
-		{
-		  rtx slot_pat = PATTERN (XVECEXP (sequence, 0, i));
-		  if (GET_CODE (slot_pat) == SET
-		      && rtx_equal_p (SET_DEST (slot_pat),
-				      XEXP (PATTERN (insn), 0)))
-		    break;
-		}
-	      if (i >= seq_size)
-		mark_referenced_resources (XEXP (PATTERN (insn), 0), res, 0);
-	    }
+           for (link = CALL_INSN_FUNCTION_USAGE (insn);
+		link;
+		link = XEXP (link, 1))
+	     if (GET_CODE (XEXP (link, 0)) == USE)
+	       {
+	         for (i = 1; i < seq_size; i++)
+		   {
+		     rtx slot_pat = PATTERN (XVECEXP (sequence, 0, i));
+		     if (GET_CODE (slot_pat) == SET
+		         && rtx_equal_p (SET_DEST (slot_pat),
+				         SET_DEST (XEXP (link, 0)))
+		       break;
+		   }
+	         if (i >= seq_size)
+		   mark_referenced_resources (SET_DEST (XEXP (link, 0)),
+					      res, 0);
+	       }
+	 }
 	}
 
       /* ... fall through to other INSN processing ... */
@@ -525,14 +527,13 @@ mark_set_resources (x, res, in_dest, include_delayed_effects)
 	  if (NEXT_INSN (prev) != x)
 	    next = NEXT_INSN (NEXT_INSN (prev));
 
-	  /* Skip any possible labels between the CALL_INSN and CLOBBERs.  */
-	  while (GET_CODE (next) == CODE_LABEL)
-	    next = NEXT_INSN (next);
-
-	  for (; (next && GET_CODE (next) == INSN
-		  && GET_CODE (PATTERN (next)) == CLOBBER);
-	       next = NEXT_INSN (next))
-	    mark_set_resources (XEXP (PATTERN (next), 0), res, 1, 0);
+	 { rtx link;
+           for (link = CALL_INSN_FUNCTION_USAGE (insn);
+		link;
+		link = XEXP (link, 1))
+	     if (GET_CODE (XEXP (link, 0)) == CLOBBER)
+	       mark_set_resources (SET_DEST (XEXP (link, 0)), res, 1, 0);
+         }
 
 	  /* Check for a NOTE_INSN_SETJMP.  If it exists, then we must
 	     assume that this call can clobber any register.  */
