@@ -346,7 +346,8 @@ print_operand (stream, x, code)
     {
     case '.':
       if (final_sequence
-	  && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0)))
+	  && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0))
+	  && get_attr_length (XVECEXP (final_sequence, 0, 1)))
 	fprintf (stream, ASSEMBLER_DIALECT ? "/s" : ".s");
       break;
     case ',':
@@ -3212,6 +3213,11 @@ gen_far_branch (bp)
   JUMP_LABEL (jump) = bp->far_label;
   if (! invert_jump (insn, label, 1))
     abort ();
+  (emit_insn_after
+   (gen_stuff_delay_slot
+    (GEN_INT (INSN_UID (XEXP (SET_SRC (PATTERN (jump)), 0))),
+     GEN_INT (recog_memoized (insn) == CODE_FOR_branch_false)),
+    insn));
   /* Prevent reorg from undoing our splits.  */
   gen_block_redirect (jump, bp->address += 2, 2);
 }
