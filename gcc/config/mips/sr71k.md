@@ -278,14 +278,14 @@
 (define_insn_reservation "ir_sr70_fdiv_sf"
                                 60
                           (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "fdiv")
+                               (and (eq_attr "type" "fdiv,frdiv")
                                     (eq_attr "mode" "SF")))
                          "rf_multi1+(fpu_iter*51)")
 
 (define_insn_reservation "ir_sr70_fdiv_df"
                                 120
                           (and (eq_attr "cpu" "sr71000")
-                               (and (eq_attr "type" "fdiv")
+                               (and (eq_attr "type" "fdiv,frdiv")
                                     (eq_attr "mode" "DF")))
                          "rf_multi1+(fpu_iter*109)")
 

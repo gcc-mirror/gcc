@@ -82,12 +82,12 @@
   "alu")
 
 (define_insn_reservation "generic_fdiv_single" 23
-  (and (eq_attr "type" "fdiv")
+  (and (eq_attr "type" "fdiv,frdiv")
        (eq_attr "mode" "SF"))
   "alu")
 
 (define_insn_reservation "generic_fdiv_double" 36
-  (and (eq_attr "type" "fdiv")
+  (and (eq_attr "type" "fdiv,frdiv")
        (eq_attr "mode" "DF"))
   "alu")
 

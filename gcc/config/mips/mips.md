@@ -113,6 +113,7 @@
 ;; fmul		floating point multiply
 ;; fmadd	floating point multiply-add
 ;; fdiv		floating point divide
+;; frdiv	floating point reciprocal divide
 ;; fabs		floating point absolute value
 ;; fneg		floating point negation
 ;; fcmp		floating point compare
@@ -122,7 +123,7 @@
 ;; multi	multiword sequence (or user asm statements)
 ;; nop		no operation
 (define_attr "type"
-  "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,prefetch,prefetchx,condmove,xfer,mthilo,mfhilo,const,arith,shift,slt,clz,trap,imul,imadd,idiv,fmove,fadd,fmul,fmadd,fdiv,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,multi,nop"
+  "unknown,branch,jump,call,load,fpload,fpidxload,store,fpstore,fpidxstore,prefetch,prefetchx,condmove,xfer,mthilo,mfhilo,const,arith,shift,slt,clz,trap,imul,imadd,idiv,fmove,fadd,fmul,fmadd,fdiv,frdiv,fabs,fneg,fcmp,fcvt,fsqrt,frsqrt,multi,nop"
   (cond [(eq_attr "jal" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")]
 	(const_string "unknown")))
@@ -2092,7 +2093,7 @@
   else
     return "recip.d\t%0,%2";
 }
-  [(set_attr "type"	"fdiv")
+  [(set_attr "type"	"frdiv")
    (set_attr "mode"	"DF")
    (set (attr "length")
         (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))
@@ -2112,7 +2113,7 @@
   else
     return "recip.s\t%0,%2";
 }
-  [(set_attr "type"	"fdiv")
+  [(set_attr "type"	"frdiv")
    (set_attr "mode"	"SF")
    (set (attr "length")
         (if_then_else (ne (symbol_ref "TARGET_FIX_SB1") (const_int 0))

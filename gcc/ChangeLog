@@ -1,3 +1,23 @@
+2004-08-18  James E Wilson  <wilson@specifixinc.com>
+
+	* config/mips/mips.md (type): Add frdiv.
+	(divsf3+1, divsf3+2): Change type to frdiv.
+	* config/mips/sb1.md (ir_sb1_recipsf_2pipes, ir_sb1_recipsf_1pipe,
+	ir_sb1_recipdf_2pipes, ir_sb1_recipdf_1pipe): New.
+	
+	* config/mips/3000.md (r3k_fdiv_single, r3k_fdiv_double): Add frdiv.
+	* config/mips/4300.md (r4300_fdiv_single, r4300_fdiv_double): Likewise.
+	* config/mips/4600.md (r4600_fdiv_single, f4600_fdiv_double): Likewise.
+	* config/mips/5000.md (r5k_fdiv_single): Likewise.
+	* config/mips/5400.md (ir_vr54_fdiv_sf, ir_vr54_fdiv_df): Likewise.
+	* config/mips/5500.md (ir_vr55_fdiv_sf, ir_vr55_fdiv_df): Likewise.
+	* config/mips/6000.md (r6k_fdiv_single, r6k_fdiv_double): Likewise.
+	* config/mips/7000.md (rm7_fp_divsqrt_df, rm7_fp_divsqrt_sf): Likewise.
+	* config/mips/9000.md (rm8k_fdivs, rm9k_fdivd): Likewise.
+	* config/mips/generic.md (generic_fdiv_single, generic_fdiv_double):
+	Likewise.
+	* config/mips/sr71k.md (ir_sr70_fdiv_sf, ir_sr70_fdiv_df): Likewise.
+
 2004-08-18  Robert Bowdidge <bowdidge@apple.com>
 
 	* config/rs6000/x-darwin: Remove XCFLAGS -mdynamic-no-pic to
