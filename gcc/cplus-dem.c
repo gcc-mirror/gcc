@@ -1055,7 +1055,8 @@ demangle_template (work, mangled, tname, trawname)
 	    }
 	  else if (is_pointer)
 	    {
-	      if (!get_count (mangled, &symbol_len))
+	      symbol_len = consume_count (mangled);
+	      if (symbol_len == 0)
 		{
 		  success = 0;
 		  break;
@@ -1595,6 +1596,29 @@ gnu_special (work, mangled, declp)
 	{
 	  success = 0;
 	}
+    }
+  else if (strncmp (*mangled, "__t", 3) == 0
+	   && ((*mangled)[3] == 'i' || (*mangled)[3] == 'f'))
+    {
+      p = (*mangled)[3] == 'i' ? " type_info node" : " type_info function";
+      (*mangled) += 4;
+      switch (**mangled)
+	{
+	  case 'Q':
+	    success = demangle_qualified (work, mangled, declp, 0, 1);
+	    break;
+	  case 't':
+	    success = demangle_template (work, mangled, declp, 0);
+	    break;
+	  default:
+	    n = consume_count (mangled);
+	    string_appendn (declp, *mangled, n);
+	    (*mangled) += n;
+	}
+      if (success && **mangled != '\0')
+	success = 0;
+      if (success)
+	string_append (declp, p);
     }
   else
     {
