@@ -26,7 +26,6 @@ details.  */
 #include <java/lang/Character.h>
 #include <java/lang/Thread.h>
 #include <java/lang/ClassLoader.h>
-#include <gnu/gcj/runtime/VMClassLoader.h>
 #include <java/lang/InternalError.h>
 #include <java/lang/IllegalAccessError.h>
 #include <java/lang/LinkageError.h>
@@ -226,8 +225,9 @@ _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
     {
       if (loader)
 	{
-	  // Load using a user-defined loader, jvmspec 5.3.2
-	  klass = loader->loadClass(sname, false);
+	  // Load using a user-defined loader, jvmspec 5.3.2.
+	  // Note that we explicitly must call the single-argument form.
+	  klass = loader->loadClass(sname);
 
 	  // If "loader" delegated the loadClass operation to another
 	  // loader, explicitly register that it is also an initiating

@@ -60,7 +60,7 @@ details.  */
 #include <java/io/PrintStream.h>
 #include <java/lang/UnsatisfiedLinkError.h>
 #include <java/lang/VirtualMachineError.h>
-#include <gnu/gcj/runtime/VMClassLoader.h>
+#include <gnu/gcj/runtime/ExtensionClassLoader.h>
 #include <gnu/gcj/runtime/FinalizerThread.h>
 #include <execution.h>
 #include <gnu/java/lang/MainThread.h>
@@ -1132,8 +1132,8 @@ _Jv_CreateJavaVM (JvVMInitArgs* vm_args)
   _Jv_InitClass (&java::lang::ClassLoader::class$);
 
   // Set up the system class loader and the bootstrap class loader.
-  gnu::gcj::runtime::VMClassLoader::initialize();
-  java::lang::VMClassLoader::initBootLoader(JvNewStringLatin1(TOOLEXECLIBDIR));
+  gnu::gcj::runtime::ExtensionClassLoader::initialize();
+  java::lang::VMClassLoader::initialize(JvNewStringLatin1(TOOLEXECLIBDIR));
 
   _Jv_RegisterBootstrapPackages();
 
