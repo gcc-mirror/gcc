@@ -1,3 +1,7 @@
+Mon Nov 17 15:35:38 1997  Tom Tromey  <tromey@cygnus.com>
+
+	* cccp.c (deps_output): Properly quote file names for make.
+
 Mon Nov 17 13:21:40 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* t-h8300 (MULTILIB_EXCEPTIONS): Define.

@@ -9950,6 +9950,8 @@ deps_output (string, spacer)
      int spacer;
 {
   int size = strlen (string);
+  int i;
+  char *p;
 
   if (size == 0)
     return;
@@ -9966,17 +9968,35 @@ deps_output (string, spacer)
       spacer = 0;
   }
 
-  if (deps_size + size + 8 > deps_allocated_size) {
-    deps_allocated_size = (deps_size + size + 50) * 2;
+  if (deps_size + 2 * size + 8 > deps_allocated_size) {
+    deps_allocated_size = (deps_size + 2 * size + 50) * 2;
     deps_buffer = xrealloc (deps_buffer, deps_allocated_size);
   }
   if (spacer == ' ') {
     deps_buffer[deps_size++] = ' ';
     deps_column++;
   }
-  bcopy (string, &deps_buffer[deps_size], size);
-  deps_size += size;
-  deps_column += size;
+
+  for (i = 0; i < size; ++i)
+    {
+      if (string[i] == '$')
+	{
+	  deps_buffer[deps_size++] = '$';
+	  deps_column++;
+	}
+      else
+	{
+	  p = strchr ("~[]*?()\\ ", string[i]);
+	  if (p != NULL)
+	    {
+	      deps_buffer[deps_size++] = '\\';
+	      deps_column++;
+	    }
+	}
+      deps_buffer[deps_size++] = string[i];
+      deps_column++;
+    }
+
   if (spacer == ':') {
     deps_buffer[deps_size++] = ':';
     deps_column++;
