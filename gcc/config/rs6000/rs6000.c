@@ -175,6 +175,8 @@ static rtx rs6000_generate_compare PARAMS ((enum rtx_code));
 static void rs6000_maybe_dead PARAMS ((rtx));
 static void rs6000_emit_stack_tie PARAMS ((void));
 static void rs6000_frame_related PARAMS ((rtx, rtx, HOST_WIDE_INT, rtx, rtx));
+static rtx spe_synthesize_frame_save PARAMS ((rtx));
+static bool spe_func_has_64bit_regs_p PARAMS ((void));
 static void emit_frame_save PARAMS ((rtx, rtx, enum machine_mode,
 				     unsigned int, int, int));
 static rtx gen_frame_mem_offset PARAMS ((enum machine_mode, rtx, int));
@@ -9134,9 +9136,18 @@ rs6000_stack_info ()
   enum rs6000_abi abi;
   int ehrd_size;
   int total_raw_size;
+  static int insn_chain_scanned = -1;
 
   /* Zero all fields portably.  */
   info = zero_info;
+
+  if (TARGET_SPE)
+    {
+      /* Cache value so we don't rescan instruction chain over and over.  */
+      if (insn_chain_scanned < 0)
+	insn_chain_scanned = (int) spe_func_has_64bit_regs_p ();
+      info_ptr->spe_64bit_regs_used = insn_chain_scanned;
+    }
 
   /* Select which calling sequence.  */
   info_ptr->abi = abi = DEFAULT_ABI;
@@ -9159,12 +9170,13 @@ rs6000_stack_info ()
      registers live (not the size they are used in), this proves
      difficult because we'd have to traverse the instruction chain at
      the right time, taking reload into account.  This is a real pain,
-     so we opt to save the GPRs in 64-bits always.  Anyone overly
-     concerned with frame size can fix this.  ;-).
+     so we opt to save the GPRs in 64-bits always if but one register
+     gets used in 64-bits.  Otherwise, all the registers in the frame
+     get saved in 32-bits.
 
-     So... since we save all GPRs (except the SP) in 64-bits, the
+     So... since when we save all GPRs (except the SP) in 64-bits, the
      traditional GP save area will be empty.  */
-  if (TARGET_SPE_ABI)
+  if (TARGET_SPE_ABI && info_ptr->spe_64bit_regs_used != 0)
     info_ptr->gp_size = 0;
 
   info_ptr->first_fp_reg_save = first_fp_reg_to_save ();
@@ -9217,7 +9229,9 @@ rs6000_stack_info ()
 	continue;
 
       /* SPE saves EH registers in 64-bits.  */
-      ehrd_size = i * (TARGET_SPE_ABI ? UNITS_PER_SPE_WORD : UNITS_PER_WORD);
+      ehrd_size = i * (TARGET_SPE_ABI
+		       && info_ptr->spe_64bit_regs_used != 0
+		       ? UNITS_PER_SPE_WORD : UNITS_PER_WORD);
     }
   else
     ehrd_size = 0;
@@ -9230,7 +9244,7 @@ rs6000_stack_info ()
   info_ptr->parm_size    = RS6000_ALIGN (current_function_outgoing_args_size,
 					 8);
 
-  if (TARGET_SPE_ABI)
+  if (TARGET_SPE_ABI && info_ptr->spe_64bit_regs_used != 0)
     info_ptr->spe_gp_size = 8 * (32 - info_ptr->first_gp_reg_save);
   else
     info_ptr->spe_gp_size = 0;
@@ -9290,7 +9304,7 @@ rs6000_stack_info ()
       info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
       info_ptr->cr_save_offset   = info_ptr->gp_save_offset - info_ptr->cr_size;
 
-      if (TARGET_SPE_ABI)
+      if (TARGET_SPE_ABI && info_ptr->spe_64bit_regs_used != 0)
       {
         /* Align stack so SPE GPR save area is aligned on a
            double-word boundary.  */
@@ -9398,7 +9412,9 @@ rs6000_stack_info ()
   if (! TARGET_ALTIVEC_ABI || info_ptr->vrsave_mask == 0)
     info_ptr->vrsave_save_offset = 0;
 
-  if (! TARGET_SPE_ABI || info_ptr->spe_gp_size == 0)
+  if (! TARGET_SPE_ABI
+      || info_ptr->spe_64bit_regs_used == 0
+      || info_ptr->spe_gp_size == 0)
     info_ptr->spe_gp_save_offset = 0;
 
   if (! info_ptr->lr_save_p)
@@ -9411,6 +9427,39 @@ rs6000_stack_info ()
     info_ptr->toc_save_offset = 0;
 
   return info_ptr;
+}
+
+/* Return true if the current function uses any GPRs in 64-bit SIMD
+   mode.  */
+
+static bool
+spe_func_has_64bit_regs_p ()
+{
+  rtx insns, insn;
+
+  /* Functions that save and restore all the call-saved registers will
+     need to save/restore the registers in 64-bits.  */
+  if (current_function_calls_eh_return
+      || current_function_calls_setjmp
+      || current_function_has_nonlocal_goto)
+    return true;
+
+  insns = get_insns ();
+
+  for (insn = NEXT_INSN (insns); insn != NULL_RTX; insn = NEXT_INSN (insn))
+    {
+      if (INSN_P (insn))
+	{
+	  rtx i;
+
+	  i = PATTERN (insn);
+	  if (GET_CODE (i) == SET
+	      && SPE_VECTOR_MODE (GET_MODE (SET_SRC (i))))
+	    return true;
+	}
+    }
+
+  return false;
 }
 
 void
@@ -10159,11 +10208,79 @@ rs6000_frame_related (insn, reg, val, reg2, rreg)
     }
   else
     abort ();
-  
+
+  if (TARGET_SPE)
+    real = spe_synthesize_frame_save (real);
+
   RTX_FRAME_RELATED_P (insn) = 1;
   REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
 					real,
 					REG_NOTES (insn));
+}
+
+/* Given an SPE frame note, return a PARALLEL of SETs with the
+   original note, plus a synthetic register save.  */
+
+static rtx
+spe_synthesize_frame_save (real)
+     rtx real;
+{
+  rtx synth, offset, reg, real2;
+
+  if (GET_CODE (real) != SET
+      || GET_MODE (SET_SRC (real)) != V2SImode)
+    return real;
+
+  /* For the SPE, registers saved in 64-bits, get a PARALLEL for their
+     frame related note.  The parallel contains a set of the register
+     being saved, and another set to a synthetic register (n+113).
+     This is so we can differentiate between 64-bit and 32-bit saves.
+     Words cannot describe this nastiness.  */
+
+  if (GET_CODE (SET_DEST (real)) != MEM
+      || GET_CODE (XEXP (SET_DEST (real), 0)) != PLUS
+      || GET_CODE (SET_SRC (real)) != REG)
+    abort ();
+
+  /* Transform:
+       (set (mem (plus (reg x) (const y)))
+            (reg z))
+     into:
+       (set (mem (plus (reg x) (const y+4)))
+            (reg z+113))
+  */
+
+  real2 = copy_rtx (real);
+  PUT_MODE (SET_DEST (real2), SImode);
+  reg = SET_SRC (real2);
+  real2 = replace_rtx (real2, reg, gen_rtx_REG (SImode, REGNO (reg)));
+  synth = copy_rtx (real2);
+
+  if (BYTES_BIG_ENDIAN)
+    {
+      offset = XEXP (XEXP (SET_DEST (real2), 0), 1);
+      real2 = replace_rtx (real2, offset, GEN_INT (INTVAL (offset) + 4));
+    }
+
+  reg = SET_SRC (synth);
+  /* FIXME: the ABI says REGNO+1200, but this creates a huge hole
+     in the unwinder tables.  I'm still unsure what to do.  */
+  synth = replace_rtx (synth, reg,
+		       gen_rtx_REG (SImode, REGNO (reg) + 113));
+
+  offset = XEXP (XEXP (SET_DEST (synth), 0), 1);
+  synth = replace_rtx (synth, offset,
+		       GEN_INT (INTVAL (offset)
+				+ (BYTES_BIG_ENDIAN ? 0 : 4)));
+
+  RTX_FRAME_RELATED_P (synth) = 1;
+  RTX_FRAME_RELATED_P (real2) = 1;
+  if (BYTES_BIG_ENDIAN)
+    real = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, synth, real2));
+  else
+    real = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, real2, synth));
+
+  return real;
 }
 
 /* Returns an insn that has a vrsave set operation with the
@@ -10317,14 +10434,15 @@ rs6000_emit_prologue ()
   int using_store_multiple;
   HOST_WIDE_INT sp_offset = 0;
   
-   if (TARGET_SPE_ABI)
+   if (TARGET_SPE_ABI && info->spe_64bit_regs_used != 0)
      {
        reg_mode = V2SImode;
        reg_size = 8;
      }
 
   using_store_multiple = (TARGET_MULTIPLE && ! TARGET_POWERPC64
-			  && !TARGET_SPE_ABI
+			  && (!TARGET_SPE_ABI
+			      || info->spe_64bit_regs_used == 0)
 			  && info->first_gp_reg_save < 31);
   saving_FPRs_inline = (info->first_fp_reg_save == 64
 			|| FP_SAVE_INLINE (info->first_fp_reg_save));
@@ -10510,7 +10628,7 @@ rs6000_emit_prologue ()
 	    rtx addr, reg, mem;
 	    reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
 
-	    if (TARGET_SPE_ABI)
+	    if (TARGET_SPE_ABI && info->spe_64bit_regs_used != 0)
 	      {
 		int offset = info->spe_gp_save_offset + sp_offset + 8 * i;
 		rtx b;
@@ -10752,15 +10870,17 @@ rs6000_emit_epilogue (sibcall)
   int reg_size = TARGET_POWERPC64 ? 8 : 4;
   int i;
 
-  if (TARGET_SPE_ABI)
+  info = rs6000_stack_info ();
+
+  if (TARGET_SPE_ABI && info->spe_64bit_regs_used != 0)
     {
       reg_mode = V2SImode;
       reg_size = 8;
     }
 
-  info = rs6000_stack_info ();
   using_load_multiple = (TARGET_MULTIPLE && ! TARGET_POWERPC64
-			 && !TARGET_SPE_ABI
+			 && (!TARGET_SPE_ABI
+			     || info->spe_64bit_regs_used == 0)
 			 && info->first_gp_reg_save < 31);
   restoring_FPRs_inline = (sibcall
 			   || current_function_calls_eh_return
@@ -10930,7 +11050,7 @@ rs6000_emit_epilogue (sibcall)
 	  rtx mem = gen_rtx_MEM (reg_mode, addr);
 
 	  /* Restore 64-bit quantities for SPE.  */
-	  if (TARGET_SPE_ABI)
+	  if (TARGET_SPE_ABI && info->spe_64bit_regs_used != 0)
 	    {
 	      int offset = info->spe_gp_save_offset + sp_offset + 8 * i;
 	      rtx b;
