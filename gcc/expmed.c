@@ -2628,7 +2628,7 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
     abort ();
   if (mhigh_hi > 1 || mlow_hi > 1)
     abort ();
-  /* assert that mlow < mhigh.  */
+  /* Assert that mlow < mhigh.  */
   if (! (mlow_hi < mhigh_hi || (mlow_hi == mhigh_hi && mlow_lo < mhigh_lo)))
     abort ();
 

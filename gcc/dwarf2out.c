@@ -9686,7 +9686,7 @@ add_subscript_info (dw_die_ref type_die, tree type)
 	  lower = TYPE_MIN_VALUE (domain);
 	  upper = TYPE_MAX_VALUE (domain);
 
-	  /* define the index type.  */
+	  /* Define the index type.  */
 	  if (TREE_TYPE (domain))
 	    {
 	      /* ??? This is probably an Ada unnamed subrange type.  Ignore the
@@ -10784,7 +10784,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
       fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
       if (fn_arg_types != NULL)
 	{
-	  /* this is the prototyped case, check for ...  */
+	  /* This is the prototyped case, check for....  */
 	  if (TREE_VALUE (tree_last (fn_arg_types)) != void_type_node)
 	    gen_unspecified_parameters_die (decl, subr_die);
 	}

@@ -558,7 +558,7 @@ div_and_round_double (enum tree_code code, int uns,
   if (hden == 0 && lden == 0)
     overflow = 1, lden = 1;
 
-  /* calculate quotient sign and convert operands to unsigned.  */
+  /* Calculate quotient sign and convert operands to unsigned.  */
   if (!uns)
     {
       if (hnum < 0)

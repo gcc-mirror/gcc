@@ -1,5 +1,22 @@
 2003-08-22  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* c-decl.c: Fix comment formatting.
+	* cfgrtl.c: Likewise.
+	* combine.c: Likewise.
+	* convert.c: Likewise.
+	* dominance.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* dwarfout.c: Likewise.
+	* expmed.c: Likewise.
+	* fold-const.c: Likewise.
+	* gcov.c: Likewise.
+	* genattrtab.c: Likewise.
+	* ggc-common.c: Likewise.
+	* mips-tfile.c: Likewise.
+	* regmove.c: Likewise.
+
+2003-08-22  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* builtin-attrs.def: Fix comment formatting.
 	* c-pretty-print.c: Likewise.
 	* diagnostic.h: Likewise.

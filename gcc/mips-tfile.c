@@ -3280,7 +3280,7 @@ parse_def (const char *name_start)
 					value,
 					indx);
 
-      /* deal with struct, union, and enum tags.  */
+      /* Deal with struct, union, and enum tags.  */
       if (symbol_type == st_Block)
         {
 	  /* Create or update the tag information.  */

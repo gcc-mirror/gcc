@@ -545,7 +545,7 @@ calculate_dominance_info (enum cdi_direction reverse)
   dominance_info info;
   basic_block b;
 
-  /* allocate structure for dominance information.  */
+  /* Allocate structure for dominance information.  */
   info = xmalloc (sizeof (struct dominance_info));
   info->forest = et_forest_create ();
   VARRAY_GENERIC_PTR_INIT (info->varray, last_basic_block + 3, "dominance info");

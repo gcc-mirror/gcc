@@ -2552,7 +2552,7 @@ cfg_layout_delete_block (basic_block bb)
     }
 }
 
-/* return true when blocks A and B can be safely merged.  */
+/* Return true when blocks A and B can be safely merged.  */
 static bool
 cfg_layout_can_merge_blocks_p (basic_block a, basic_block b)
 {

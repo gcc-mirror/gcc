@@ -4066,7 +4066,7 @@ output_string_type_die (void *arg)
   sibling_attribute ();
   equate_type_number_to_die_number (type);
   member_attribute (TYPE_CONTEXT (type));
-  /* this is a fixed length string */
+  /* This is a fixed length string.  */
   byte_size_attribute (type);
 }
 
@@ -5226,13 +5226,13 @@ output_decl (tree decl, tree containing_scope)
 
 	    if (fn_arg_types)
 	      {
-	      /* this is the prototyped case, check for ...  */
+	      /* This is the prototyped case, check for....  */
 	      if (TREE_VALUE (tree_last (fn_arg_types)) != void_type_node)
 	        output_die (output_unspecified_parameters_die, decl);
 	      }
 	    else
 	      {
-		/* this is unprototyped, check for undefined (just declaration) */
+		/* This is unprototyped, check for undefined (just declaration).  */
 		if (!DECL_INITIAL (decl))
 		  output_die (output_unspecified_parameters_die, decl);
 	      }
