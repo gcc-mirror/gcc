@@ -1,3 +1,9 @@
+2004-12-04  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_expand_unaligned_load): Don't forget to
+	use ofs in BWX two byte special case.
+	(alpha_expand_unaligned_store): Likewise.
+
 2004-12-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcse.c (gcse_main): Add a comment.
