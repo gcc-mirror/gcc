@@ -621,7 +621,7 @@ read_scan_file (in_fname, argc, argv)
 
   obstack_init (&scan_file_obstack); 
 
-  scan_in = cpp_create_reader (NULL, CLK_GNUC89);
+  scan_in = cpp_create_reader (CLK_GNUC89);
   cb = cpp_get_callbacks (scan_in);
   cb->file_change = cb_file_change;
 
@@ -638,8 +638,10 @@ read_scan_file (in_fname, argc, argv)
   if (CPP_FATAL_ERRORS (scan_in))
     exit (FATAL_EXIT_CODE);
 
-  if (! cpp_start_read (scan_in, in_fname))
+  if (! cpp_read_main_file (scan_in, in_fname, NULL))
     exit (FATAL_EXIT_CODE);
+
+  cpp_finish_options (scan_in);
 
   /* We are scanning a system header, so mark it as such.  */
   cpp_make_system_header (scan_in, 1, 0);
