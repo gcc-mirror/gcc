@@ -1220,9 +1220,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 
 	      DECL_ASSEMBLER_NAME (decl) 
 		= build_template_decl_overload 
-		(DECL_NAME (decl), 
-		 arg_types,
-		 TREE_TYPE (TREE_TYPE (tmpl)),
+		(decl, arg_types, TREE_TYPE (TREE_TYPE (tmpl)),
 		 DECL_INNERMOST_TEMPLATE_PARMS (tmpl),
 		 targs, ctype != NULL_TREE);
 	    }
@@ -4783,8 +4781,7 @@ tsubst (t, args, in_decl)
 
 		DECL_ASSEMBLER_NAME (r)
 		  = build_template_decl_overload 
-		  (DECL_NAME (r), arg_types, 
-		   TREE_TYPE (TREE_TYPE (tmpl)),
+		  (r, arg_types, TREE_TYPE (TREE_TYPE (tmpl)),
 		   tparms, targs, member);
 	      }
 	  }

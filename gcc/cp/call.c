@@ -4314,10 +4314,16 @@ joust (cand1, cand2, warn)
 	}
     }
 
-  /* warn about confusing overload resolution */
+  /* warn about confusing overload resolution for user-defined conversions,
+     either between a constructor and a conversion op, or between two
+     conversion ops.  */
   if (winner && cand1->second_conv
-      && (! DECL_CONSTRUCTOR_P (cand1->fn)
-	  || ! DECL_CONSTRUCTOR_P (cand2->fn)))
+      && ((DECL_CONSTRUCTOR_P (cand1->fn)
+	   != DECL_CONSTRUCTOR_P (cand2->fn))
+	  /* Don't warn if the two conv ops convert to the same type...  */
+	  || (! DECL_CONSTRUCTOR_P (cand1->fn)
+	      && ! comptypes (TREE_TYPE (cand1->second_conv),
+			      TREE_TYPE (cand2->second_conv), 1))))
     {
       int comp = compare_ics (cand1->second_conv, cand2->second_conv);
       if (comp != winner)

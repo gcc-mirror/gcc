@@ -2786,7 +2786,12 @@ complex_direct_notype_declarator:
 	| direct_notype_declarator '[' ']'
 		{ $$ = build_parse_node (ARRAY_REF, $$, NULL_TREE); }
 	| notype_qualified_id
-		{ if (OP0 ($1) != current_class_type)
+		{ if (TREE_CODE (OP0 ($1)) == NAMESPACE_DECL)
+		    {
+		      push_decl_namespace (OP0 ($1));
+		      TREE_COMPLEXITY ($1) = -1;
+		    }
+		  else if (OP0 ($1) != current_class_type)
 		    {
 		      push_nested_class (OP0 ($1), 3);
 		      TREE_COMPLEXITY ($1) = current_class_depth;

@@ -4858,9 +4858,7 @@ push_nested_class (type, modify)
 {
   tree context;
 
-  /* FIXME should handle namespaces like classes.  */
-  if (TREE_CODE (type) == NAMESPACE_DECL)
-    return;
+  my_friendly_assert (!type || TREE_CODE (type) != NAMESPACE_DECL, 980711);
 
   if (type == NULL_TREE || type == error_mark_node || ! IS_AGGR_TYPE (type)
       || TREE_CODE (type) == TEMPLATE_TYPE_PARM
