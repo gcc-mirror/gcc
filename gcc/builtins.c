@@ -787,10 +787,17 @@ expand_builtin_prefetch (arglist)
 #ifdef HAVE_prefetch
   if (HAVE_prefetch)
     {
-      if (! (*insn_data[(int)CODE_FOR_prefetch].operand[0].predicate)
-	    (op0,
-	     insn_data[(int)CODE_FOR_prefetch].operand[0].mode))
-        op0 = force_reg (Pmode, op0);
+      if ((! (*insn_data[(int)CODE_FOR_prefetch].operand[0].predicate)
+	     (op0,
+	      insn_data[(int)CODE_FOR_prefetch].operand[0].mode)) ||
+          (GET_MODE(op0) != Pmode))
+        {
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (GET_MODE(op0) != Pmode)
+	    op0 = convert_memory_address (Pmode, op0);
+#endif
+          op0 = force_reg (Pmode, op0);
+        }
       emit_insn (gen_prefetch (op0, op1, op2));
     }
   else

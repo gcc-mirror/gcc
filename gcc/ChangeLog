@@ -1,3 +1,8 @@
+2002-04-02  Steve Ellcey  <sje@cup.hp.com>
+
+	* builtins.c (expand_builtin_prefetch): Force op0 pointer to Pmode
+	if POINTERS_EXTEND_UNSIGNED is defined.
+
 2002-04-02  Richard Henderson  <rth@redhat.com>
 
 	PR opt/3967
