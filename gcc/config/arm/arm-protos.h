@@ -58,8 +58,8 @@ extern int    thumb_legitimate_address_p PARAMS ((enum machine_mode, rtx,
 extern int    thumb_legitimate_offset_p	PARAMS ((enum machine_mode,
 						 HOST_WIDE_INT));
 extern rtx    arm_legitimize_address	PARAMS ((rtx, rtx, enum machine_mode));
-extern int    const_double_rtx_ok_for_fpu	PARAMS ((rtx));
-extern int    neg_const_double_rtx_ok_for_fpu	PARAMS ((rtx));
+extern int    const_double_rtx_ok_for_fpa	PARAMS ((rtx));
+extern int    neg_const_double_rtx_ok_for_fpa	PARAMS ((rtx));
 
 /* Predicates.  */
 extern int    s_register_operand	PARAMS ((rtx, enum machine_mode));
@@ -74,8 +74,8 @@ extern int    arm_not_operand		PARAMS ((rtx, enum machine_mode));
 extern int    offsettable_memory_operand PARAMS ((rtx, enum machine_mode));
 extern int    alignable_memory_operand	PARAMS ((rtx, enum machine_mode));
 extern int    bad_signed_byte_operand	PARAMS ((rtx, enum machine_mode));
-extern int    fpu_rhs_operand		PARAMS ((rtx, enum machine_mode));
-extern int    fpu_add_operand		PARAMS ((rtx, enum machine_mode));
+extern int    fpa_rhs_operand		PARAMS ((rtx, enum machine_mode));
+extern int    fpa_add_operand		PARAMS ((rtx, enum machine_mode));
 extern int    power_of_two_operand	PARAMS ((rtx, enum machine_mode));
 extern int    nonimmediate_di_operand	PARAMS ((rtx, enum machine_mode));
 extern int    di_operand		PARAMS ((rtx, enum machine_mode));
@@ -125,11 +125,11 @@ extern void   arm_reorg			PARAMS ((rtx));
 extern const char * fp_immediate_constant PARAMS ((rtx));
 extern const char * output_call		PARAMS ((rtx *));
 extern const char * output_call_mem	PARAMS ((rtx *));
-extern const char * output_mov_long_double_fpu_from_arm PARAMS ((rtx *));
-extern const char * output_mov_long_double_arm_from_fpu PARAMS ((rtx *));
+extern const char * output_mov_long_double_fpa_from_arm PARAMS ((rtx *));
+extern const char * output_mov_long_double_arm_from_fpa PARAMS ((rtx *));
 extern const char * output_mov_long_double_arm_from_arm PARAMS ((rtx *));
-extern const char * output_mov_double_fpu_from_arm      PARAMS ((rtx *));
-extern const char * output_mov_double_arm_from_fpu      PARAMS ((rtx *));
+extern const char * output_mov_double_fpa_from_arm      PARAMS ((rtx *));
+extern const char * output_mov_double_arm_from_fpa      PARAMS ((rtx *));
 extern const char * output_move_double	PARAMS ((rtx *));
 extern const char * output_mov_immediate PARAMS ((rtx *));
 extern const char * output_add_immediate PARAMS ((rtx *));

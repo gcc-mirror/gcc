@@ -1,3 +1,16 @@
+2003-03-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (fpa_rhs_operand, fpa_add_operand, const_double_rtx_ok_for_fpa)
+	(neg_const_double_ok_for_fpa, output_mov_long_double_fpa_from_arm)
+	(output_mov_long_double_arm_from_fpa, output_mov_double_fpa_from_arm)
+	(output_mov_double_arm_from_fpa): Renamed to use fpa instead of fpu.
+	All callers changed.
+	* arm.md, arm.h, arm-protos.h: Updated.
+
+	* arm.h (enum reg_class FPA_REGS): Renamed from FPU_REGS.
+	(CLASS_MAX_NREGS, REGISTER_MOVE_COST, REG_CLASS_FROM_LETTER): Updated.
+	* arm.c (arm_regno_class, f_register_operand): Updated.
+
 2003-03-08  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/cris/cris.h: Remove EGCS references.
