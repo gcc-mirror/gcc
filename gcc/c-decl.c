@@ -1798,7 +1798,10 @@ pushdecl (x)
       char *file;
       int line;
 
-      t = lookup_name_current_level (name);
+      if (DECL_EXTERNAL (x) && TREE_PUBLIC (x))
+	t = lookup_name (name);
+      else
+	t = lookup_name_current_level (name);
       if (t != 0 && t == error_mark_node)
 	/* error_mark_node is 0 for a while during initialization!  */
 	{
@@ -1901,26 +1904,20 @@ pushdecl (x)
         }
 
       /* Multiple external decls of the same identifier ought to match.
-	 Check against both global declarations and out of scope (limbo) block
-	 level declarations.
+	 Check against out of scope (limbo) block level declarations.
+
+	 If this is a block level declaration, then DECL_EXTERNAL must also
+	 be set, so we have already checked against global declarations above
+	 via the lookup_name call.
 
 	 We get warnings about inline functions where they are defined.
 	 Avoid duplicate warnings where they are used.  */
-      if (TREE_PUBLIC (x) && ! DECL_INLINE (x))
+      if (TREE_PUBLIC (x) && ! DECL_INLINE (x)
+	  && IDENTIFIER_LIMBO_VALUE (name))
 	{
-	  tree decl;
+	  tree decl = IDENTIFIER_LIMBO_VALUE (name);
 
-	  if (IDENTIFIER_GLOBAL_VALUE (name) != 0
-	      && (DECL_EXTERNAL (IDENTIFIER_GLOBAL_VALUE (name))
-		  || TREE_PUBLIC (IDENTIFIER_GLOBAL_VALUE (name))))
-	    decl = IDENTIFIER_GLOBAL_VALUE (name);
-	  else if (IDENTIFIER_LIMBO_VALUE (name) != 0)
-	    /* Decls in limbo are always extern, so no need to check that.  */
-	    decl = IDENTIFIER_LIMBO_VALUE (name);
-	  else
-	    decl = 0;
-
-	  if (decl && ! comptypes (TREE_TYPE (x), TREE_TYPE (decl))
+	  if (! comptypes (TREE_TYPE (x), TREE_TYPE (decl))
 	      /* If old decl is built-in, we already warned if we should.  */
 	      && !DECL_BUILT_IN (decl))
 	    {
@@ -2308,10 +2305,12 @@ redeclaration_error_message (newdecl, olddecl)
     return 0;
   else
     {
-      /* Objects declared with block scope:  */
-      /* Reject two definitions, and reject a definition
-	 together with an external reference.  */
-      if (!(DECL_EXTERNAL (newdecl) && DECL_EXTERNAL (olddecl)))
+      /* Newdecl has block scope.  If olddecl has block scope also, then
+	 reject two definitions, and reject a definition together with an
+	 external reference.  Otherwise, it is OK, because newdecl must
+	 be an extern reference to olddecl.  */
+      if (!(DECL_EXTERNAL (newdecl) && DECL_EXTERNAL (olddecl))
+	  && DECL_CONTEXT (newdecl) == DECL_CONTEXT (olddecl))
 	return "redeclaration of `%s'";
       return 0;
     }
