@@ -1,3 +1,8 @@
+2001-06-28  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* gthr-posix.h [LIBOBJC]: Add weak definitions of
+	sched_get_priority_max, sched_get_priority_min.
+
 2001-06-28  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.c (default_print_error_function): Tweak.
