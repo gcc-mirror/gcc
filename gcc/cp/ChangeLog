@@ -1,3 +1,8 @@
+2000-08-11  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* decl2.c (add_function): Reorganize.
+	(arg_assoc): Do not consider function template decls.
+
 2000-08-11  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (lookup_name_real): Don't forget the TYPENAME_TYPE we're
