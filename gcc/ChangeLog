@@ -1,3 +1,7 @@
+1999-11-25  Andreas Jaeger  <aj@suse.de>
+
+	* config/mips/mips.md (casesi_internal): Add missing brace.
+
 1999-11-25  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c (pend_type, output_pending_types_for_scope): Lose.
