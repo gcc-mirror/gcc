@@ -999,6 +999,10 @@ gen_lowpart_common (mode, x)
   else if (GET_CODE (x) == SUBREG || GET_CODE (x) == REG
 	   || GET_CODE (x) == CONCAT || GET_CODE (x) == CONST_VECTOR)
     return simplify_gen_subreg (mode, x, GET_MODE (x), offset);
+  else if ((GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	    || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+	   && GET_MODE (x) == VOIDmode)
+    return simplify_gen_subreg (mode, x, int_mode_for_mode (mode), offset);
   /* If X is a CONST_INT or a CONST_DOUBLE, extract the appropriate bits
      from the low-order part of the constant.  */
   else if ((GET_MODE_CLASS (mode) == MODE_INT
