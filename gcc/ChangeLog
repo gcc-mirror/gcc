@@ -1,3 +1,11 @@
+2002-06-14  Eric Botcazou  <ebotcazou@multimania.com>
+
+	* convert.c (convert_to_integer) [LSHIFT_EXPR]: Don't pass
+	the truncation down when the target type is signed.
+	[trunc1]: Use unsigned arithmetic for LSHIFT_EXPR.
+	* fold-const.c (extract_muldiv) [NOP_EXPR]: Don't pass through
+	the conversion if the target type is a smaller type.
+
 2002-06-14  Richard Henderson  <rth@redhat.com>
 
 	* fold-const.c (fold) [compare ops]: Move X>=C / X<C transfomation
