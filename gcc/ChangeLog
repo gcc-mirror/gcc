@@ -1,3 +1,7 @@
+2004-06-09  David S. Miller  <davem@nuts.davemloft.net>
+
+	* config/sparc/sparc.h (MOVE_RATIO): New definition.
+
 2004-06-09  Richard Henderson  <rth@redhat.com>
 
 	* basic-block.h (struct edge_def): Add goto_locus.
