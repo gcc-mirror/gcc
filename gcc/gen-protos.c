@@ -19,8 +19,24 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <ctype.h>
 #include "hconfig.h"
 #include "scan.h"
+#include "cpplib.h"
+#include "cpphash.h"
 
 #define HASH_SIZE 2503 /* a prime */
+
+int
+hashf (name, len, hashsize)
+     register U_CHAR *name;
+     register int len;
+     int hashsize;
+{
+  register int r = 0;
+
+  while (len--)
+    r = HASHSTEP (r, *name++);
+
+  return MAKE_POS (r) % hashsize;
+}
 
 int hash_tab[HASH_SIZE];
 int verbose = 0;
@@ -119,7 +135,7 @@ main (argc, argv)
 
       /* NOTE:  If you edit this,
 	 also edit lookup_std_proto in fix-header.c !! */
-      i = hash (name_start) % HASH_SIZE;
+      i = hashf (name_start, name_end - name_start, HASH_SIZE);
       i0 = i;
       if (hash_tab[i] != 0)
 	{
@@ -152,4 +168,15 @@ main (argc, argv)
   fprintf (outf, "};\n");
 
   return 0;
+}
+
+void
+fatal (s)
+     char *s;
+{
+  fprintf (stderr, "%s: %s\n", "gen-protos", s);
+#ifndef FAILURE_EXIT_CODE
+#define FAILURE_EXIT_CODE 33	/* gnu cc command understands this */
+#endif
+  exit (FAILURE_EXIT_CODE);
 }

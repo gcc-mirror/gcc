@@ -58,35 +58,6 @@ sstring_append (dst, src)
   *d = 0;  
 }
 
-memory_full ()
-{
-  abort();
-}
-
-char *
-xmalloc (size)
-     unsigned size;
-{
-  register char *ptr = (char *) malloc (size);
-  if (ptr != 0) return (ptr);
-  memory_full ();
-  /*NOTREACHED*/
-  return 0;
-}
-
-
-char *
-xrealloc (old, size)
-     char *old;
-     unsigned size;
-{
-  register char *ptr = (char *) realloc (old, size);
-  if (ptr != 0) return (ptr);
-  memory_full ();
-  /*NOTREACHED*/
-  return 0;
-}
-
 int
 scan_ident (fp, s, c)
      register FILE *fp;
@@ -266,14 +237,4 @@ get_token (fp, s)
   MAKE_SSTRING_SPACE(s, 1);
   *s->ptr = 0;
   return c;
-}
-
-unsigned long
-hash (str)
-     char *str;
-{
-  int h = 0;
-  /* Replace this with something faster/better! FIXME! */
-  while (*str) h = (h << 3) + *str++;
-  return h & 0x7FFFFFFF;
 }

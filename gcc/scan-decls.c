@@ -20,11 +20,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdio.h>
 #include <ctype.h>
 #include "hconfig.h"
-#include "scan.h"
-
-sstring buf;
-sstring rtype;
-sstring arg_list;
+#include "cpplib.h"
 
 int brace_nesting = 0;
 
@@ -40,18 +36,18 @@ char extern_C_braces[20];
 int current_extern_C = 0;
 
 static void
-skip_to_closing_brace (fp)
-     FILE *fp;
+skip_to_closing_brace (pfile)
+     cpp_reader *pfile;
 {
   int nesting = 1;
   for (;;)
     {
-      int c = get_token (fp, &buf);
-      if (c == EOF)
+      enum cpp_token token = cpp_get_token (pfile);
+      if (token == CPP_EOF)
 	break;
-      if (c == '{')
+      if (token == CPP_LBRACE)
 	nesting++;
-      if (c == '}' && --nesting == 0)
+      if (token == CPP_RBRACE && --nesting == 0)
 	break;
     }
 }
@@ -61,19 +57,26 @@ skip_to_closing_brace (fp)
    other interesting sequences (external variables and macros).  */
 
 int
-scan_decls (fp)
-     FILE *fp;
+scan_decls (pfile, argc, argv)
+     cpp_reader *pfile;
+     int argc;
+     char**argv;
 {
-  int c;
   int saw_extern, saw_inline;
+  int old_written;
+  int prev_id_start, prev_id_end;
+  enum cpp_token token;
+
 
  new_statement:
-  c = get_token (fp, &buf);
+  CPP_SET_WRITTEN (pfile, 0);
+  token = cpp_get_token (pfile);
+
  handle_statement:
   current_extern_C = 0;
   saw_extern = 0;
   saw_inline = 0;
-  if (c == '}')
+  if (token == CPP_RBRACE)
     {
       /* Pop an 'extern "C"' nesting level, if appropriate.  */
       if (extern_C_braces_length
@@ -82,121 +85,117 @@ scan_decls (fp)
       brace_nesting--;
       goto new_statement;
     }
-  if (c == '{')
+  if (token == CPP_LBRACE)
     {
       brace_nesting++;
       goto new_statement;
     }
-  if (c == EOF)
+  if (token == CPP_EOF)
     return 0;
-  if (c == ';')
+  if (token == CPP_SEMICOLON)
     goto new_statement;
-  if (c != IDENTIFIER_TOKEN)
+  if (token != CPP_NAME)
     goto new_statement;
-  rtype.ptr = rtype.base;
-  if (SSTRING_LENGTH (&buf) > 16
-      && strncmp (buf.base, "__DEFINED_MACRO_", 16) == 0)
-    {
-      /* For certain interesting macro names, fixproto puts
-	 #ifdef FOO
-	 __DEFINED_MACRO_FOO
-	 #endif
-	 into the file to be pre-processed.  So if we see __DEFINED_MACRO_FOO,
-	 it means FOO was defined, which we may want to make a note of.  */
-      recognized_macro (buf.base+16);
-      goto new_statement;
-    }
-  if (strcmp (buf.base, "inline") == 0)
-    {
+  if (strcmp (pfile->token_buffer, "inline") == 0)
+     {
       saw_inline = 1;
-      c = get_token (fp, &buf);
+      CPP_SET_WRITTEN (pfile, 0);
+      token = cpp_get_non_space_token (pfile);
     }
-  if (strcmp (buf.base, "extern") == 0)
+  if (strcmp (pfile->token_buffer, "extern") == 0)
     {
       saw_extern = 1;
-      c = get_token (fp, &buf);
-      if (c == STRING_TOKEN && strcmp (buf.base, "C") == 0)
+      CPP_SET_WRITTEN (pfile, 0);
+      token = cpp_get_non_space_token (pfile);
+      if (token == CPP_STRING
+	  && strcmp (pfile->token_buffer, "\"C\"") == 0)
 	{
+	  CPP_SET_WRITTEN (pfile, 0);
 	  current_extern_C = 1;
-	  c = get_token (fp, &buf);
-	  if (c == '{')
+	  token = cpp_get_non_space_token (pfile);
+	  if (token == CPP_LPAREN)
 	    {
 	      brace_nesting++;
 	      extern_C_braces[extern_C_braces_length++] = brace_nesting;
 	      goto new_statement;
 	    }
-	  c = get_token (fp, &buf);
+	  token = cpp_get_non_space_token (pfile);
 	}
     }
+  prev_id_start = NULL;
   for (;;)
     {
-      int followingc = getc (fp); /* char following token in buf */
-
-      MAKE_SSTRING_SPACE (&rtype, 1);
-      *rtype.ptr = 0;
-
-      if (c == IDENTIFIER_TOKEN)
+      int start_written = CPP_WRITTEN (pfile);
+      token = cpp_get_token (pfile);
+      switch (token)
 	{
-	  int nextc = skip_spaces (fp, followingc);
-	  if (nextc == '(')
+	case CPP_LPAREN:
+	  if (prev_id_start)
 	    {
 	      int nesting = 1;
-	      int func_lineno = source_lineno;
-	      char *args;
-
-	      arg_list.ptr = arg_list.base;
+	      int have_arg_list = 0;
+	      cpp_buffer *fbuf = cpp_file_buffer (pfile);
+	      long func_lineno;
+	      cpp_buf_line_and_col (fbuf, &func_lineno, NULL);
 	      for (;;)
 		{
-		  c = getc (fp);
-		  if (c == '(')
+		  token = cpp_get_token (pfile);
+		  if (token == CPP_LPAREN)
 		    nesting++;
-		  else if (c == ')')
-		    if (--nesting == 0)
-		      break;
-		  if (c == EOF)
-		    break;
-		  if (c == '\n')
+		  else if (token == CPP_RPAREN)
 		    {
-		      c = ' ';
-		      source_lineno++;
-		      lineno++;
+		      nesting--;
+		      if (nesting == 0)
+			break;
 		    }
-		  SSTRING_PUT (&arg_list, c);
+		  else if (token == CPP_EOF)
+		    break;
+		  else if (token == CPP_NAME || token == CPP_3DOTS)
+		    have_arg_list = 1;
 		}
-	      SSTRING_PUT (&arg_list, '\0');
-	      args = arg_list.base;
-	      while (*args == ' ')
-		args++;
-	      recognized_function (buf.base,
+	      recognized_function (pfile->token_buffer + prev_id_start,
+				   prev_id_end - prev_id_start,
 				   (saw_inline ? 'I'
 				    : in_extern_C_brace || current_extern_C
 				    ? 'F' : 'f'),
-				   rtype.base, args,
-				   source_filename.base, func_lineno);
-	      c = get_token (fp, &buf);
-	      if (c == '{')
+				   pfile->token_buffer, prev_id_start,
+				   have_arg_list,
+				   fbuf->nominal_fname, func_lineno);
+	      token = cpp_get_non_space_token (pfile);
+	      if (token == CPP_LBRACE)
 		{
 		  /* skip body of (normally) inline function */
-		  skip_to_closing_brace (fp);
+		  skip_to_closing_brace (pfile);
 		  goto new_statement;
 		}
 	      goto handle_statement;
 	    }
-	  else if (nextc == ';' && saw_extern)
+	  break;
+	case CPP_SEMICOLON:
+	  if (prev_id_start && saw_extern)
 	    {
-	      recognized_extern (buf.base, rtype.base);
-	      goto new_statement;
+	      recognized_extern (pfile->token_buffer + prev_id_start,
+				 prev_id_end - prev_id_start,
+				 pfile->token_buffer,
+				 prev_id_start);
 	    }
-	  else
-	    ungetc (nextc, fp);
+	  goto new_statement;
+	case CPP_NAME:
+	  prev_id_start = start_written;
+	  prev_id_end = CPP_WRITTEN (pfile);
+	  break;
+
+	case CPP_EOF:
+	  return;  /* ??? FIXME */
+
+	case CPP_LBRACE:  case CPP_RBRACE:  case CPP_DIRECTIVE:
+	  goto new_statement;  /* handle_statement? */
+	  
+	case CPP_HSPACE:  case CPP_VSPACE:  case CPP_COMMENT:  case CPP_POP:
+	  break;
+
+	 default:
+	  prev_id_start = NULL;
 	}
-      else if (followingc != EOF)
-	ungetc (followingc, fp);
-      if (c == ';' || c == '{' || c == '}' || c == EOF)
-	goto handle_statement;
-      sstring_append (&rtype, &buf);
-      if (followingc == ' ' || followingc == '\t' || followingc == '\n')
-	SSTRING_PUT (&rtype, ' ');
-      c = get_token (fp, &buf);
     }
 }
