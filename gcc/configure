@@ -2716,6 +2716,7 @@ for machine in $build $host $target; do
 		tm_file=i386/linux-oldld.h
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
+		float_format=i386
 		;;
 	i[34567]86-*-linux-gnuaout*)	# Intel 80386's running GNU/Linux
 					# with a.out format
@@ -2724,6 +2725,7 @@ for machine in $build $host $target; do
 		tm_file=i386/linux-aout.h
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
+		float_format=i386
 		;;
 	i[34567]86-*-linux-gnulibc1)	# Intel 80386's running GNU/Linux
 					# with ELF format using the
@@ -2734,6 +2736,7 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
+		float_format=i386
  		if [ x$enable_threads = xyes ]; then
  			thread_file='single'
  		fi
@@ -2747,6 +2750,7 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
+		float_format=i386
  		if [ x$enable_threads = xyes ]; then
  			thread_file='posix'
  		fi
@@ -5133,7 +5137,7 @@ fi
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:5137: checking assembler alignment features" >&5
+echo "configure:5141: checking assembler alignment features" >&5
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 if [ -x as$host_exeext ]; then
