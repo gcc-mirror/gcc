@@ -1,3 +1,25 @@
+2000-03-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (emit-rtl.o): Depend on HASHTAB_H.
+	* alias.c (reg_known_value): Add comments.
+	(init_alias_analysis): Likewise.
+	* cse.c (exp_equiv_p): CONST_INTs are equal iff they have the same
+	address.
+	(cse_basic_block): Fix typo in comment.
+	* emit-rtl.c: Include hashtab.h.
+	(const_int_htab): New variable.
+	(const_int_htab_hash): New function.
+	(const_int_htab_eq): Likewise.
+	(rtx_htab_mark_1): Likewise.
+	(rtx_htab_mark): Likewise.
+	(gen_rtx_CONST_INT): Cache all CONST_INTs.
+	(unshare_all_rtx): Fix formatting.
+	(init_emit_once): Initialize const_int_htab.
+	* rtl.c (rtx_equal_p): CONST_INTs are equal iff they have the same
+	address.
+	* rtl.texi: Document the fact that all CONST_INTs with the same
+	value are shared.
+
 2000-03-30  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (FUNCTION_BOUNDARY): Reduce to 128 bits.

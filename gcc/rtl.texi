@@ -1,4 +1,4 @@
-@c Copyright (C) 1988, 89, 92, 94, 97, 1998, 1999 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 89, 92, 94, 97, 1998, 1999, 2000 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2917,9 +2917,7 @@ referring to it.
 
 @cindex @code{const_int}, RTL sharing
 @item
-There is only one @code{const_int} expression with value 0, only
-one with value 1, and only one with value @minus{}1.
-Some other integer values are also stored uniquely.
+All @code{const_int} expressions with equal values are shared.
 
 @cindex @code{pc}, RTL sharing
 @item
