@@ -2100,7 +2100,7 @@ emit_group_store (orig_dst, src, ssize)
       emit_group_load (dst, temp, ssize);
       return;
     }
-  else if (GET_CODE (dst) != MEM)
+  else if (GET_CODE (dst) != MEM && GET_CODE (dst) != CONCAT)
     {
       dst = gen_reg_rtx (GET_MODE (orig_dst));
       /* Make life a bit easier for combine.  */
