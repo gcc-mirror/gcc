@@ -3864,6 +3864,9 @@ finish_struct_1 (t, warn_anon)
      the virtual bases.  */
   if (empty && flag_new_abi)
     CLASSTYPE_SIZE (t) = integer_zero_node;
+  else if (flag_new_abi && TYPE_HAS_COMPLEX_INIT_REF (t)
+	   && TYPE_HAS_COMPLEX_ASSIGN_REF (t))
+    CLASSTYPE_SIZE (t) = TYPE_BINFO_SIZE (t);
   else
     CLASSTYPE_SIZE (t) = TYPE_SIZE (t);
   CLASSTYPE_ALIGN (t) = TYPE_ALIGN (t);
