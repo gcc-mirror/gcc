@@ -1,5 +1,8 @@
 2000-09-18  Jim Wilson  <wilson@cygnus.com>
 
+	* unroll.c (loop_iterations): Pass increment to extend_for_giv_value
+	before passing it to fold_rtx_mult_add.
+
 	* unroll.c (final_giv_value): Pass increment through
 	extend_value_for_giv before passing it to emit_iv_add_mult.
 
