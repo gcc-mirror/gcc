@@ -19,22 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* If compiling with DECC, need to fix problem with <stdio.h>
-   which defines a macro called FILE_TYPE that breaks "tree.h".
-   Fortunately it uses #ifndef to suppress multiple inclusions.
-   Three possible cases:
-        1) <stdio.h> has already been included -- ours will be no-op;
-        2) <stdio.h> will be included after us -- "theirs" will be no-op;
-        3) <stdio.h> isn't needed -- including it here shouldn't hurt.
-   In all three cases, the problem macro will be removed here.  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#ifdef __DECC
-#undef FILE_TYPE
-#endif
-
 #define HOST_WIDE_INT long long
 #define HOST_BITS_PER_WIDE_INT 64
 
@@ -59,6 +43,9 @@ Boston, MA 02111-1307, USA.  */
 /* Causes exit() to be redefined to __posix_exit() and
    Posix compatible failure and success codes to be used */
 #define _POSIX_EXIT 1
+
+/* Open files in stream mode if not otherwise explicitly specified */
+#define __UNIX_FOPEN 1
 
 #define STDC_HEADERS 1
 
