@@ -3678,6 +3678,16 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 #endif
 	    ;
 
+	  /* loop.c won't look at CALL_INSN_FUNCTION_USAGE of const/pure
+	     functions, so we have to pretend this isn't such a function.  */
+	  if (flags & ECF_LIBCALL_BLOCK)
+	    {
+	      rtx insns = get_insns ();
+	      end_sequence ();
+	      emit_insn (insns);
+	    }
+	  flags &= ~(ECF_CONST | ECF_PURE | ECF_LIBCALL_BLOCK);
+
 	  if (GET_MODE (val) == MEM && ! must_copy)
 	    slot = val;
 	  else if (must_copy)

@@ -1,3 +1,9 @@
+Tue Jul 23 12:16:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* calls.c (emit_library_call_value_1): If
+	FUNCTION_ARG_PASS_BY_REFERENCE is true, pretend this is neither
+	libcall, const call nor pure call.
+
 2002-07-23  Neil Booth  <neil@daikokuya.co.uk>
 
 	* config/m88k/m88k.h (SECTION_ASM_OP): Remove.
