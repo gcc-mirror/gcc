@@ -385,11 +385,14 @@ namespace std
   locale::_S_initialize()
   {
 #ifdef __GTHREADS
-    __gthread_once(&_S_once, _S_initialize_once);
-#else
-    if (!_S_classic)
-      _S_initialize_once();
+    if (__gthread_active_p())
+      __gthread_once(&_S_once, _S_initialize_once);
+    else
 #endif
+      {
+	if (!_S_classic)
+	  _S_initialize_once();
+      }
   }
 
   void
@@ -472,11 +475,14 @@ namespace std
   locale::facet::_S_get_c_locale()
   {
 #ifdef __GHTREADS
-    __gthread_once(&_S_once, _S_initialize_once);
-#else
-    if (!_S_c_locale)
-      _S_initialize_once();
+    if (__gthread_active_p())
+      __gthread_once(&_S_once, _S_initialize_once);
+    else
 #endif
+      {
+	if (!_S_c_locale)
+	  _S_initialize_once();
+      }
     return _S_c_locale;
   }
 
