@@ -169,6 +169,7 @@ static tree for_each_template_parm_r PARAMS ((tree *, int *, void *));
 static tree instantiate_clone PARAMS ((tree, tree));
 static tree copy_default_args_to_explicit_spec_1 PARAMS ((tree, tree));
 static void copy_default_args_to_explicit_spec PARAMS ((tree));
+static int check_nontype_parm PARAMS ((tree, int));
 
 /* Called once to initialize pt.c.  */
 
@@ -1933,21 +1934,8 @@ process_template_parm (list, next)
 
       /* A template parameter is not modifiable.  */
       TREE_READONLY (parm) = 1;
-      if (IS_AGGR_TYPE (TREE_TYPE (parm))
-	  && TREE_CODE (TREE_TYPE (parm)) != TEMPLATE_TYPE_PARM
-	  && TREE_CODE (TREE_TYPE (parm)) != TYPENAME_TYPE)
-	{
-	  cp_error ("`%#T' is not a valid type for a template constant parameter",
-		    TREE_TYPE (parm));
-	  if (DECL_NAME (parm) == NULL_TREE)
-	    error ("  a template type parameter must begin with `class' or `typename'");
-	  TREE_TYPE (parm) = void_type_node;
-	}
-      else if (pedantic
-	       && (TREE_CODE (TREE_TYPE (parm)) == REAL_TYPE
-		   || TREE_CODE (TREE_TYPE (parm)) == COMPLEX_TYPE))
-	cp_pedwarn ("`%T' is not a valid type for a template constant parameter",
-		    TREE_TYPE (parm));
+      if (check_nontype_parm (TREE_TYPE (parm), 1))
+        TREE_TYPE (parm) = void_type_node;
       decl = build_decl (CONST_DECL, DECL_NAME (parm), TREE_TYPE (parm));
       DECL_INITIAL (parm) = DECL_INITIAL (decl) 
 	= build_template_parm_index (idx, processing_template_decl,
@@ -3134,13 +3122,7 @@ convert_nontype_argument (type, expr)
 
     case RECORD_TYPE:
       {
-	if (!TYPE_PTRMEMFUNC_P (type))
-	  /* This handles templates like
-	       template<class T, T t> void f();
-	     when T is substituted with any class.  The second template
-	     parameter becomes invalid and the template candidate is
-	     rejected.  */
-	  return error_mark_node;
+	my_friendly_assert (TYPE_PTRMEMFUNC_P (type), 20010112);
 
 	/* For a non-type template-parameter of type pointer to member
 	   function, no conversions apply.  If the template-argument
@@ -3435,6 +3417,9 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
     {
       tree t = tsubst (TREE_TYPE (parm), args, complain, in_decl);
 
+      if (check_nontype_parm (t, complain))
+        return error_mark_node;
+      
       if (processing_template_decl)
 	arg = maybe_fold_nontype_arg (arg);
 
@@ -10315,4 +10300,36 @@ tree
 current_instantiation ()
 {
   return current_tinst_level;
+}
+
+/* [temp.param] Check that template non-type parm TYPE is of an allowable
+   type. Return zero for ok, non-zero for disallowed. If COMPLAIN is
+   non-zero, then complain. */
+
+static int
+check_nontype_parm (type, complain)
+     tree type;
+     int complain;
+{
+  if (INTEGRAL_TYPE_P (type))
+    return 0;
+  else if (POINTER_TYPE_P (type))
+    return 0;
+  else if (TYPE_PTRMEM_P (type))
+    return 0;
+  else if (TYPE_PTRMEMFUNC_P (type))
+    return 0;
+  else if (!pedantic && TREE_CODE (type) == REAL_TYPE)
+    return 0; /* GNU extension */
+  else if (!pedantic && TREE_CODE (type) == COMPLEX_TYPE)
+    return 0; /* GNU extension */
+  else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
+    return 0;
+  else if (TREE_CODE (type) == TYPENAME_TYPE)
+    return 0;
+           
+  if (complain)
+    cp_error ("`%#T' is not a valid type for a template constant parameter",
+              type);
+  return 1;
 }

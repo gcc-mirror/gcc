@@ -1,3 +1,7 @@
+2001-01-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/nontype5.C: New test.
+
 2001-01-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * gcc.dg/cpp/if-2.c: Comment out occasionally bogus test; we 
