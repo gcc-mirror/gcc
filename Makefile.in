@@ -899,7 +899,7 @@ install-info: do-install-info dir.info
 	else true ; fi
 
 local-clean:
-	-rm -f *.a TEMP errs core *.o *~ \#* TAGS *.E
+	-rm -f *.a TEMP errs core *.o *~ \#* TAGS *.E *.log
 
 local-distclean:
 	-rm -f Makefile config.status config.cache mh-frag mt-frag
@@ -953,6 +953,27 @@ check: $(CHECK_MODULES) \
 	$(CHECK_TARGET_MODULES) \
 	$(CHECK_X11_MODULES) \
 	check-gcc
+
+# Automated reporting of test results.
+
+warning.log: build.log
+	$(srcdir)/contrib/warn_summary build.log > $@
+
+mail-report.log:
+	if test x'$(BOOT_CFLAGS)' != x''; then \
+	    BOOT_CFLAGS='$(BOOT_CFLAGS)'; export BOOT_CFLAGS; \
+	fi; \
+	$(srcdir)/contrib/test_summary -t >$@
+	chmod +x $@
+	echo If you really want to send e-mail, run ./$@ now
+
+mail-report-with-warnings.log: warning.log
+	if test x'$(BOOT_CFLAGS)' != x''; then \
+	    BOOT_CFLAGS='$(BOOT_CFLAGS)'; export BOOT_CFLAGS; \
+	fi; \
+	$(srcdir)/contrib/test_summary -t -i warning.log >$@
+	chmod +x $@
+	echo If you really want to send e-mail, run ./$@ now
 
 # Installation targets.
 
