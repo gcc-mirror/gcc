@@ -33,6 +33,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "toplev.h"
 
+#ifndef INT_TYPE_SIZE
+#define INT_TYPE_SIZE BITS_PER_WORD
+#endif
+
 /* The DECL_MAP is a mapping from (index, type) to a decl node.
    If index < max_locals, it is the index of a local variable.
    if index >= max_locals, then index-max_locals is a stack slot.
@@ -340,6 +344,7 @@ tree soft_monitorenter_node;
 tree soft_monitorexit_node;
 tree soft_lookupinterfacemethod_node;
 tree soft_fmod_node;
+tree soft_exceptioninfo_call_node;
 
 /* Build (and pushdecl) a "promoted type" for all standard
    types shorter than int.  */
@@ -447,7 +452,7 @@ init_decl_processing ()
   pushdecl (build_decl (TYPE_DECL, get_identifier ("unsigned long"),
 			unsigned_long_type_node));
 
-  integer_type_node = int_type_node;
+  integer_type_node = type_for_size (INT_TYPE_SIZE, 0);
 
   integer_zero_node = build_int_2 (0, 0);
   integer_one_node = build_int_2 (1, 0);
@@ -593,6 +598,7 @@ init_decl_processing ()
   PUSH_FIELD (class_type_node, field, "interface_len", short_type_node);
   PUSH_FIELD (class_type_node, field, "state", byte_type_node);
   PUSH_FIELD (class_type_node, field, "final", byte_type_node);
+  PUSH_FIELD (class_type_node, field, "thread", ptr_type_node);
   for (t = TYPE_FIELDS (class_type_node);  t != NULL_TREE;  t = TREE_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
   push_super_field (class_type_node, object_type_node);
@@ -689,7 +695,8 @@ init_decl_processing ()
 
   t = tree_cons (NULL_TREE, int_type_node,
 		 tree_cons (NULL_TREE, class_ptr_type,
-			    build_tree_list (NULL_TREE, object_ptr_type_node)));
+			    build_tree_list (NULL_TREE, 
+					     object_ptr_type_node)));
   soft_anewarray_node
       = builtin_function ("_Jv_NewObjectArray",
 			  build_function_type (ptr_type_node, t),
@@ -702,9 +709,11 @@ init_decl_processing ()
 			  build_function_type (ptr_type_node, t),
 			  NOT_BUILT_IN, NULL_PTR );
 
-  t = build_function_type (void_type_node, NULL_TREE);
+  t = build_function_type (void_type_node, 
+			   build_tree_list (NULL_TREE, int_type_node));
   soft_badarrayindex_node
-      = builtin_function ("_Jv_ThrowBadArrayIndex", t, NOT_BUILT_IN, NULL_PTR );
+      = builtin_function ("_Jv_ThrowBadArrayIndex", t, 
+			  NOT_BUILT_IN, NULL_PTR);
   TREE_THIS_VOLATILE (soft_badarrayindex_node) = 1;
   TREE_SIDE_EFFECTS (soft_badarrayindex_node) = 1;
 
@@ -731,7 +740,7 @@ init_decl_processing ()
 			    build_tree_list (NULL_TREE, ptr_type_node)));
   soft_lookupinterfacemethod_node 
     = builtin_function ("_Jv_LookupInterfaceMethod",
-			build_function_type(ptr_type_node, t),
+			build_function_type (ptr_type_node, t),
 			NOT_BUILT_IN, NULL_PTR);
   t = tree_cons (NULL_TREE, double_type_node,
 		 build_tree_list (NULL_TREE, double_type_node));
@@ -739,6 +748,17 @@ init_decl_processing ()
     = builtin_function ("__builtin_fmod",
 			build_function_type (double_type_node, t),
 			BUILT_IN_FMOD, "fmod");
+
+  t = build_tree_list (NULL_TREE, void_type_node);
+  soft_exceptioninfo_call_node
+    = build (CALL_EXPR, 
+	     ptr_type_node,
+	     build_address_of 
+	       (builtin_function ("_Jv_exception_info", 
+				  build_function_type (ptr_type_node, t),
+				  NOT_BUILT_IN, NULL_PTR)),
+	     NULL_TREE, NULL_TREE);
+  TREE_SIDE_EFFECTS (soft_exceptioninfo_call_node) = 1;
 #if 0
   t = tree_cons (NULL_TREE, float_type_node,
 		 build_tree_list (NULL_TREE, float_type_node));
@@ -1364,7 +1384,7 @@ give_name_to_locals (jcf)
       int signature_index = JCF_readu2 (jcf);
       int slot = JCF_readu2 (jcf);
       tree name = get_name_constant (jcf, name_index);
-      tree type = promote_type (parse_signature (jcf, signature_index));
+      tree type = parse_signature (jcf, signature_index);
       if (slot < DECL_ARG_SLOT_COUNT (current_function_decl)
 	  && start_pc == 0
 	  && length == DECL_CODE_LENGTH (current_function_decl))
@@ -1433,9 +1453,12 @@ void
 complete_start_java_method (fndecl)
   tree fndecl;
 {
-
-  DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE,
-				     TREE_TYPE (TREE_TYPE (fndecl)));
+  tree restype = TREE_TYPE (TREE_TYPE (fndecl));
+  /* To be compatible with C_PROMOTING_INTEGER_TYPE_P in cc1/cc1plus. */
+  if (INTEGRAL_TYPE_P (restype)
+      && TYPE_PRECISION (restype) < TYPE_PRECISION (integer_type_node))
+    restype = integer_type_node;
+  DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE, restype);
 
   if (! flag_emit_class_files)
     {
@@ -1457,6 +1480,17 @@ complete_start_java_method (fndecl)
         TREE_ADDRESSABLE (current_function_decl) = 1;
 
 #endif
+
+  if (METHOD_STATIC (fndecl) && ! METHOD_PRIVATE (fndecl))
+    {
+      tree clas = DECL_CONTEXT (fndecl);
+      tree init = build (CALL_EXPR, void_type_node,
+			 build_address_of (soft_initclass_node),
+			 build_tree_list (NULL_TREE, build_class_ref (clas)),
+			 NULL_TREE);
+      TREE_SIDE_EFFECTS (init) = 1;
+      expand_expr_stmt (init);
+    }
 
   if (METHOD_SYNCHRONIZED (fndecl))
     {
@@ -1496,12 +1530,18 @@ start_java_method (fndecl)
        tem != NULL_TREE; tem = TREE_CHAIN (tem), i++)
     {
       tree parm_name = NULL_TREE, parm_decl;
+      tree parm_type = TREE_VALUE (tem);
       if (i >= DECL_MAX_LOCALS(fndecl))
 	fatal ("function has more parameters than local slots");
 
-      parm_decl = build_decl (PARM_DECL, parm_name, TREE_VALUE (tem));
+      parm_decl = build_decl (PARM_DECL, parm_name, parm_type);
       DECL_CONTEXT (parm_decl) = fndecl;
-      DECL_ARG_TYPE (parm_decl) = TREE_TYPE (parm_decl);
+#ifdef PROMOTE_PROTOTYPES
+      if (TYPE_PRECISION (parm_type) < TYPE_PRECISION (integer_type_node)
+	  && INTEGRAL_TYPE_P (parm_type))
+	parm_type = integer_type_node;
+#endif
+      DECL_ARG_TYPE (parm_decl) = parm_type;
 
       *ptr = parm_decl;
       ptr = &TREE_CHAIN (parm_decl);
