@@ -11689,6 +11689,9 @@ gen_field_die (tree decl, dw_die_ref context_die)
     add_AT_unsigned (decl_die, DW_AT_accessibility, DW_ACCESS_protected);
   else if (TREE_PRIVATE (decl))
     add_AT_unsigned (decl_die, DW_AT_accessibility, DW_ACCESS_private);
+
+  /* Equate decl number to die, so that we can look up this decl later on.  */
+  equate_decl_number_to_die (decl, decl_die);
 }
 
 #if 0
