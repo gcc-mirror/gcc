@@ -980,6 +980,46 @@ static int deps_column;
    so don't look for #include "foo" the source-file directory.  */
 static int ignore_srcdir;
 
+/* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
+   retrying if necessary.  Return the actual number of bytes read.  */
+
+static int
+safe_read (desc, ptr, len)
+     int desc;
+     char *ptr;
+     int len;
+{
+  int left = len;
+  while (left > 0) {
+    int nchars = read (desc, ptr, left);
+    if (nchars < 0)
+      return nchars;
+    if (nchars == 0)
+      break;
+    ptr += nchars;
+    left -= nchars;
+  }
+  return len - left;
+}
+
+/* Write LEN bytes at PTR to descriptor DESC,
+   retrying if necessary, and treating any real error as fatal.  */
+
+static void
+safe_write (desc, ptr, len)
+     int desc;
+     char *ptr;
+     int len;
+{
+  while (len > 0) {
+    int written = write (desc, ptr, len);
+    if (written < 0)
+      pfatal_with_name (out_fname);
+    ptr += written;
+    len -= written;
+  }
+}
+
 int
 main (argc, argv)
      int argc;
@@ -1880,7 +1920,7 @@ main (argc, argv)
     fp->buf = (U_CHAR *) xmalloc (bsize + 2);
     bufp = fp->buf;
     for (;;) {
-      cnt = read (f, bufp, bsize - size);
+      cnt = safe_read (f, bufp, bsize - size);
       if (cnt < 0) goto perror;	/* error! */
       if (cnt == 0) break;	/* End of file */
       size += cnt;
@@ -1900,7 +1940,7 @@ main (argc, argv)
     fp->buf = (U_CHAR *) xmalloc (st_size + 2);
 
     while (st_size > 0) {
-      i = read (f, fp->buf + fp->length, st_size);
+      i = safe_read (f, fp->buf + fp->length, st_size);
       if (i <= 0) {
         if (i == 0) break;
 	goto perror;
@@ -4279,7 +4319,7 @@ finclude (f, fname, op, system_header_p, dirptr)
     /* Read the file contents, knowing that st_size is an upper bound
        on the number of bytes we can read.  */
     while (st_size > 0) {
-      i = read (f, fp->buf + fp->length, st_size);
+      i = safe_read (f, fp->buf + fp->length, st_size);
       if (i <= 0) {
 	if (i == 0) break;
 	goto nope;
@@ -4307,7 +4347,7 @@ finclude (f, fname, op, system_header_p, dirptr)
     bufp = basep;
 
     for (;;) {
-      i = read (f, bufp, bsize - st_size);
+      i = safe_read (f, bufp, bsize - st_size);
       if (i < 0)
 	goto nope;      /* error! */
       if (i == 0)
@@ -4521,7 +4561,7 @@ check_precompiled (pcf, fname, limit)
       buf = xmalloc (st_size + 2);
       while (st_size > 0)
 	{
-	  i = read (pcf, buf + length, st_size);
+	  i = safe_read (pcf, buf + length, st_size);
 	  if (i < 0)
 	    goto nope;
 	  if (i == 0)
@@ -4744,24 +4784,6 @@ pcstring_used (hp)
   for (kp = hp->value.keydef; kp; kp = kp->chain)
     kp->str->writeflag = 1;
   delete_macro (hp);
-}
-
-/* Write LEN bytes at PTR to descriptor DESC,
-   retrying if necessary, and treating any real error as fatal.  */
-
-static void
-safe_write (desc, ptr, len)
-     int desc;
-     char *ptr;
-     int len;
-{
-  while (len > 0) {
-    int written = write (fileno (stdout), ptr, len);
-    if (written < 0)
-      pfatal_with_name (out_fname);
-    ptr += written;
-    len -= written;
-  }
 }
 
 /* Write the output, interspersing precompiled strings in their */
