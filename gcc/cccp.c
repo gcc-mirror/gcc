@@ -93,7 +93,6 @@ typedef unsigned char U_CHAR;
 /* VMS-specific definitions */
 #ifdef VMS
 #include <time.h>
-#include <perror.h>		/* This defines sys_errlist/sys_nerr properly */
 #include <descrip.h>
 #define O_RDONLY	0	/* Open arg for Read/Only  */
 #define O_WRONLY	1	/* Open arg for Write/Only */
@@ -186,11 +185,19 @@ extern char *getenv ();
 extern FILE *fdopen ();
 extern char *version_string;
 extern struct tm *localtime ();
+#ifndef VMS
+#ifndef HAVE_STRERROR
 extern int sys_nerr;
 #if defined(bsd4_4) || defined(__NetBSD__)
 extern const char *const sys_errlist[];
 #else
 extern char *sys_errlist[];
+#endif
+#else	/* HAVE_STERRROR */
+char *strerror ();
+#endif
+#else	/* VMS */
+char *strerror (int,...);
 #endif
 extern int parse_escape ();
 
@@ -8387,6 +8394,39 @@ change_newlines (start, length)
 }
 
 /*
+ * my_strerror - return the descriptive text associated with an `errno' code.
+ */
+
+char *
+my_strerror (errnum)
+     int errnum;
+{
+  char *result;
+
+#ifndef VMS
+#ifndef HAVE_STRERROR
+  result = (char *) ((errnum < sys_nerr) ? sys_errlist[errnum] : 0);
+#else
+  result = strerror (errnum);
+#endif
+#else	/* VMS */
+  /* VAXCRTL's strerror() takes an optional second argument, which only
+     matters when the first argument is EVMSERR.  However, it's simplest
+     just to pass it unconditionally.  `vaxc$errno' is declared in
+     <errno.h>, and maintained by the library in parallel with `errno'.
+     We assume that caller's `errnum' either matches the last setting of
+     `errno' by the library or else does not have the value `EVMSERR'.  */
+
+  result = strerror (errnum, vaxc$errno);
+#endif
+
+  if (!result)
+    result = "undocumented I/O error";
+
+  return result;
+}
+
+/*
  * error - print error message and increment count of errors.
  */
 
@@ -8433,10 +8473,7 @@ error_from_errno (name)
   if (ip != NULL)
     fprintf (stderr, "%s:%d: ", ip->nominal_fname, ip->lineno);
 
-  if (errno < sys_nerr)
-    fprintf (stderr, "%s: %s\n", name, sys_errlist[errno]);
-  else
-    fprintf (stderr, "%s: undocumented I/O error\n", name);
+  fprintf (stderr, "%s: %s\n", name, my_strerror (errno));
 
   errors++;
 }
@@ -9395,10 +9432,7 @@ perror_with_name (name)
      char *name;
 {
   fprintf (stderr, "%s: ", progname);
-  if (errno < sys_nerr)
-    fprintf (stderr, "%s: %s\n", name, sys_errlist[errno]);
-  else
-    fprintf (stderr, "%s: undocumented I/O error\n", name);
+  fprintf (stderr, "%s: %s\n", name, my_strerror (errno));
   errors++;
 }
 
