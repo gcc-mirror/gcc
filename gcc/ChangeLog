@@ -1,3 +1,7 @@
+2001-05-25  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-parse.in (notype_initdcl): Remove redundant line.
+
 2001-05-25  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* aclocal.m4: Fixed typo.
