@@ -1,1 +1,1 @@
-char *version_string = "2.96 19990908 (experimental)";
+char *version_string = "2.96 19990909 (experimental)";
