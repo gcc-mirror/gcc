@@ -1,3 +1,10 @@
+2004-07-11  Bryce McKinlay  <mckinlay@redhat.com>
+
+	PR 16472
+	* configure.ac: Check for ftruncate() and _chsize().
+	* jartool.c (main): Use _chsize if ftruncate not available.
+	* configure, config.h.in: Rebuilt.
+
 2004-07-09  Richard Sandiford  <rsandifo@redhat.com>
 
 	* jartool.c (find_entry, looks_like_dir): Remove inline spec.
