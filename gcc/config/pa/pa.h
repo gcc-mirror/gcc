@@ -182,7 +182,7 @@ extern int target_flags;
 #undef	DBX_OUTPUT_MAIN_SOURCE_FILE_END
 #define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
   fprintf (FILE,							\
-	   "%s\t.text\n\t.stabs \"%s\",%d,0,0,L$text_end\nL$text_end:\n",\
+	   "%s\n\t.stabs \"%s\",%d,0,0,L$text_end\nL$text_end:\n",\
 	   TEXT_SECTION_ASM_OP, "" , N_SO)
 
 #if (TARGET_DEFAULT & 1) == 0
