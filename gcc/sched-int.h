@@ -258,6 +258,76 @@ extern struct haifa_insn_data *h_i_d;
 extern FILE *sched_dump;
 extern int sched_verbose;
 
+/* Exception Free Loads:
+
+   We define five classes of speculative loads: IFREE, IRISKY,
+   PFREE, PRISKY, and MFREE.
+
+   IFREE loads are loads that are proved to be exception-free, just
+   by examining the load insn.  Examples for such loads are loads
+   from TOC and loads of global data.
+
+   IRISKY loads are loads that are proved to be exception-risky,
+   just by examining the load insn.  Examples for such loads are
+   volatile loads and loads from shared memory.
+
+   PFREE loads are loads for which we can prove, by examining other
+   insns, that they are exception-free.  Currently, this class consists
+   of loads for which we are able to find a "similar load", either in
+   the target block, or, if only one split-block exists, in that split
+   block.  Load2 is similar to load1 if both have same single base
+   register.  We identify only part of the similar loads, by finding
+   an insn upon which both load1 and load2 have a DEF-USE dependence.
+
+   PRISKY loads are loads for which we can prove, by examining other
+   insns, that they are exception-risky.  Currently we have two proofs for
+   such loads.  The first proof detects loads that are probably guarded by a
+   test on the memory address.  This proof is based on the
+   backward and forward data dependence information for the region.
+   Let load-insn be the examined load.
+   Load-insn is PRISKY iff ALL the following hold:
+
+   - insn1 is not in the same block as load-insn
+   - there is a DEF-USE dependence chain (insn1, ..., load-insn)
+   - test-insn is either a compare or a branch, not in the same block
+     as load-insn
+   - load-insn is reachable from test-insn
+   - there is a DEF-USE dependence chain (insn1, ..., test-insn)
+
+   This proof might fail when the compare and the load are fed
+   by an insn not in the region.  To solve this, we will add to this
+   group all loads that have no input DEF-USE dependence.
+
+   The second proof detects loads that are directly or indirectly
+   fed by a speculative load.  This proof is affected by the
+   scheduling process.  We will use the flag  fed_by_spec_load.
+   Initially, all insns have this flag reset.  After a speculative
+   motion of an insn, if insn is either a load, or marked as
+   fed_by_spec_load, we will also mark as fed_by_spec_load every
+   insn1 for which a DEF-USE dependence (insn, insn1) exists.  A
+   load which is fed_by_spec_load is also PRISKY.
+
+   MFREE (maybe-free) loads are all the remaining loads. They may be
+   exception-free, but we cannot prove it.
+
+   Now, all loads in IFREE and PFREE classes are considered
+   exception-free, while all loads in IRISKY and PRISKY classes are
+   considered exception-risky.  As for loads in the MFREE class,
+   these are considered either exception-free or exception-risky,
+   depending on whether we are pessimistic or optimistic.  We have
+   to take the pessimistic approach to assure the safety of
+   speculative scheduling, but we can take the optimistic approach
+   by invoking the -fsched_spec_load_dangerous option.  */
+
+enum INSN_TRAP_CLASS
+{
+  TRAP_FREE = 0, IFREE = 1, PFREE_CANDIDATE = 2,
+  PRISKY_CANDIDATE = 3, IRISKY = 4, TRAP_RISKY = 5
+};
+
+#define WORST_CLASS(class1, class2) \
+((class1 > class2) ? class1 : class2)
+
 #ifndef __GNUC__
 #define __inline
 #endif
@@ -278,7 +348,7 @@ extern void visualize_alloc PARAMS ((void));
 extern void visualize_free PARAMS ((void));
 
 /* Functions in sched-deps.c.  */
-extern void add_dependence PARAMS ((rtx, rtx, enum reg_note));
+extern int add_dependence PARAMS ((rtx, rtx, enum reg_note));
 extern void add_insn_mem_dependence PARAMS ((struct deps *, rtx *, rtx *, rtx,
 					     rtx));
 extern void sched_analyze PARAMS ((struct deps *, rtx, rtx));
@@ -286,12 +356,14 @@ extern void init_deps PARAMS ((struct deps *));
 extern void free_deps PARAMS ((struct deps *));
 extern void init_deps_global PARAMS ((void));
 extern void finish_deps_global PARAMS ((void));
+extern void add_forward_dependence PARAMS ((rtx, rtx, enum reg_note));
 extern void compute_forward_dependences PARAMS ((rtx, rtx));
 extern rtx find_insn_list PARAMS ((rtx, rtx));
 extern void init_dependency_caches PARAMS ((int));
 extern void free_dependency_caches PARAMS ((void));
 
 /* Functions in haifa-sched.c.  */
+extern int haifa_classify_insn PARAMS ((rtx));
 extern void get_block_head_tail PARAMS ((int, rtx *, rtx *));
 extern int no_real_insns_p PARAMS ((rtx, rtx));
 

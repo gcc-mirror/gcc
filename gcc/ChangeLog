@@ -1,4 +1,28 @@
-003-02-20  Aldy Hernandez  <aldyh@redhat.com>
+2003-02-25  Vladimir Makarov  <vmakarov@redhat.com>
+            Richard Henderson  <rth@redhat.com>
+
+	* sched-int.h (INSN_TRAP_CLASS, WORST_CLASS): Move them from
+	sched-rgn.c.
+	(add_forward_dependence): New function prototype.
+
+	* sched-rgn.c (INSN_TRAP_CLASS, WORST_CLASS): Move them to
+	sched-init.h.
+	(CONST_BASED_ADDRESS_P, may_trap_exp, haifa_classify_insn): Move
+	them to haifa-sched.c.
+
+	* haifa-sched.c (CONST_BASED_ADDRESS_P, may_trap_exp,
+	haifa_classify_insn): Move them from sched-rgn.c.
+
+	* sched-deps.c (add_dependence): Return flag of creating a new
+	entry.
+	(add_forward_dependence): New function.
+	(compute_forward_dependences): Use the function.
+	
+	* sched-ebb.c (earliest_block_with_similiar_load): New function.
+	(add_deps_for_risky_insns): New function.
+	(schedule_ebb): Call the function.
+
+2003-02-20  Aldy Hernandez  <aldyh@redhat.com>
 
         * doc/tm.texi: Document Rename TARGET_VECTOR_TYPES_COMPATIBLE to
         TARGET_VECTOR_OPAQUE_P.  Document accordingly.
