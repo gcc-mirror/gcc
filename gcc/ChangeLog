@@ -1,3 +1,8 @@
+2004-05-13  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* gcc.c (default_compilers): Fill out initializers for new Fortran
+	entries.
+
 2004-05-13  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.h (PCC_BITFIELD_TYPE_MATTERS): Define.
