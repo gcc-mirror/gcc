@@ -108,6 +108,8 @@ struct cpp_buffer {
   char *fname;
   /* Filename specified with #line command.  */
   char *nominal_fname;
+  /* Last filename specified with #line command.  */
+  char *last_nominal_fname;
   /* Actual directory of this file, used only for "" includes */
   struct file_name_list *actual_dir;
 
@@ -422,6 +424,9 @@ struct cpp_options {
   /* Nonzero for the 1989 C Standard, including corrigenda and amendments.  */
   char c89;
 
+  /* Nonzero for the 199x C Standard, including corrigenda and amendments.  */
+  char c9x;
+  
   /* Nonzero means give all the error messages the ANSI standard requires.  */
   char pedantic;
 
@@ -639,10 +644,11 @@ struct definition {
   } args;
 };
 
-extern unsigned char is_idchar[256];
-extern unsigned char is_hor_space[256];
-extern unsigned char is_space[256];
-extern unsigned char trigraph_table[256];
+extern const unsigned char is_idstart[256];
+extern const unsigned char is_idchar[256];
+extern const unsigned char is_hor_space[256];
+extern const unsigned char is_space[256];
+extern const unsigned char trigraph_table[256];
 
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
@@ -669,6 +675,7 @@ typedef struct if_stack IF_STACK_FRAME;
 extern void cpp_buf_line_and_col PARAMS((cpp_buffer *, long *, long *));
 extern cpp_buffer* cpp_file_buffer PARAMS((cpp_reader *));
 extern void cpp_define PARAMS ((cpp_reader*, unsigned char *));
+extern void cpp_assert PARAMS ((cpp_reader *, unsigned char *));
 
 extern void cpp_error PVPROTO ((cpp_reader *, const char *, ...))
   ATTRIBUTE_PRINTF_2;
@@ -728,6 +735,9 @@ extern int finclude			PROTO ((cpp_reader *, int,
 					        struct include_hash *));
 extern void deps_output			PROTO ((cpp_reader *, char *, int));
 extern struct include_hash *include_hash PROTO ((cpp_reader *, char *, int));
+
+/* cppinit.c */
+extern void initialize_char_syntax	PROTO ((int));
 
 #ifndef INCLUDE_LEN_FUDGE
 #define INCLUDE_LEN_FUDGE 0

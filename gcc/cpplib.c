@@ -127,10 +127,8 @@ struct cpp_pending {
 extern void cpp_hash_cleanup PARAMS ((cpp_reader *));
 
 static char *my_strerror		PROTO ((int));
-static void make_assertion		PROTO ((cpp_reader *, char *, U_CHAR *));
 static void path_include		PROTO ((cpp_reader *, char *));
 static void initialize_builtins		PROTO ((cpp_reader *));
-static void initialize_char_syntax	PROTO ((void));
 static void validate_else		PROTO ((cpp_reader *, char *));
 static int comp_def_part		PROTO ((int, U_CHAR *, int, U_CHAR *,
 						int, int));
@@ -279,75 +277,6 @@ static struct directive directive_table[] = {
   {  8, do_unassert, "unassert",     T_UNASSERT },
   {  -1, 0, "", T_UNUSED }
 };
-
-/* table to tell if char can be part of a C identifier.  */
-U_CHAR is_idchar[256] = { 0 };
-/* table to tell if char can be first char of a c identifier.  */
-U_CHAR is_idstart[256] = { 0 };
-/* table to tell if c is horizontal space.  */
-U_CHAR is_hor_space[256] = { 0 };
-/* table to tell if c is horizontal or vertical space.  */
-U_CHAR is_space[256] = { 0 };
-/* Table to handle trigraph conversion, which occurs before all other
-   processing, everywhere in the file.  (This is necessary since one
-   of the trigraphs encodes backslash.)  Note it's off by default.
-
-	from	to	from	to	from	to
-	?? =	#	?? )	]	?? !	|
-	?? (	[	?? '	^	?? >	}
-	?? /	\	?? <	{	?? -	~
-
-   There is not a space between the ?? and the third char.  I put spaces
-   there to avoid warnings when compiling this file. */
-U_CHAR trigraph_table[256] = { 0 };
-
-/* Initialize syntactic classifications of characters. */
-static void
-initialize_char_syntax ()
-{
-  register int i;
-
-  /*
-   * Set up is_idchar and is_idstart tables.  These should be
-   * faster than saying (is_alpha (c) || c == '_'), etc.
-   * Set up these things before calling any routines tthat
-   * refer to them.
-   * XXX We should setlocale(LC_CTYPE, "C") here for safety.
-   */
-  for (i = 0; i < 256; i++)
-    {
-      is_idchar[i]  = ISALNUM (i);
-      is_idstart[i] = ISALPHA (i);
-    }
-
-  is_idchar['_']  = 1;
-  is_idstart['_'] = 1;
-
-  /* These will be reset later if -$ is in effect. */
-  is_idchar['$']  = 1;
-  is_idstart['$'] = 1;
-
-  /* horizontal space table */
-  is_hor_space[' '] = 1;
-  is_hor_space['\t'] = 1;
-  is_hor_space['\v'] = 1;
-  is_hor_space['\f'] = 1;
-  is_hor_space['\r'] = 1;
-
-  is_space[' '] = 1;
-  is_space['\t'] = 1;
-  is_space['\v'] = 1;
-  is_space['\f'] = 1;
-  is_space['\n'] = 1;
-  is_space['\r'] = 1;
-
-  /* trigraph conversion */
-  trigraph_table['='] = '#';  trigraph_table[')'] = ']';
-  trigraph_table['!'] = '|';  trigraph_table['('] = '[';
-  trigraph_table['\''] = '^'; trigraph_table['>'] = '}';
-  trigraph_table['/'] = '\\'; trigraph_table['<'] = '{';
-  trigraph_table['-'] = '~';
-}
 
 /* Place into PFILE a quoted string representing the string SRC.
    Caller must reserve enough space in pfile->token_buffer.  */
@@ -400,13 +329,10 @@ cpp_grow_buffer (pfile, n)
   CPP_SET_WRITTEN (pfile, old_written);
 }
 
-
-/*
- * process a given definition string, for initialization
- * If STR is just an identifier, define it with value 1.
- * If STR has anything after the identifier, then it should
- * be identifier=definition.
- */
+/* Process the string STR as if it appeared as the body of a #define
+   If STR is just an identifier, define it with value 1.
+   If STR has anything after the identifier, then it should
+   be identifier=definition. */
 
 void
 cpp_define (pfile, str)
@@ -414,101 +340,37 @@ cpp_define (pfile, str)
      U_CHAR *str;
 {
   U_CHAR *buf, *p;
+  size_t count;
 
-  buf = str;
-  p = str;
-  if (!is_idstart[*p])
+  /* Copy the entire option so we can modify it.  */
+  count = strlen (str) + 3;
+  buf = (U_CHAR *) alloca (count);
+  memcpy (buf, str, count - 2);
+  /* Change the first "=" in the string to a space.  If there is none,
+     tack " 1" on the end. */
+  p = strchr (buf, '=');
+  if (p)
     {
-      cpp_error (pfile, "malformed option `-D %s'", str);
-      return;
-    }
-  while (is_idchar[*++p])
-    ;
-  if (*p == '(') {
-    while (is_idchar[*++p] || *p == ',' || is_hor_space[*p])
-      ;
-    if (*p++ != ')')
-      p = (U_CHAR *) str;			/* Error */
-  }
-  if (*p == 0)
-    {
-      buf = (U_CHAR *) alloca (p - buf + 4);
-      strcpy ((char *)buf, str);
-      strcat ((char *)buf, " 1");
-    }
-  else if (*p != '=')
-    {
-      cpp_error (pfile, "malformed option `-D %s'", str);
-      return;
+      *p = ' ';
+      count -= 2;
     }
   else
-    {
-      U_CHAR *q;
-      /* Copy the entire option so we can modify it.  */
-      buf = (U_CHAR *) alloca (2 * strlen (str) + 1);
-      strncpy (buf, str, p - str);
-      /* Change the = to a space.  */
-      buf[p - str] = ' ';
-      /* Scan for any backslash-newline and remove it.  */
-      p++;
-      q = &buf[p - str];
-      while (*p)
-	{
-      if (*p == '\\' && p[1] == '\n')
-	p += 2;
-      else
-	*q++ = *p++;
-    }
-    *q = 0;
-  }
+      strcpy (&buf[count-3], " 1");
   
-  if (cpp_push_buffer (pfile, buf, strlen (buf)) != NULL)
+  if (cpp_push_buffer (pfile, buf, count - 1) != NULL)
     {
       do_define (pfile, NULL);
       cpp_pop_buffer (pfile);
     }
 }
-
-/* Process the string STR as if it appeared as the body of a #assert.
-   OPTION is the option name for which STR was the argument.  */
 
-static void
-make_assertion (pfile, option, str)
+/* Process the string STR as if it appeared as the body of a #assert. */
+void
+cpp_assert (pfile, str)
      cpp_reader *pfile;
-     char *option;
      U_CHAR *str;
 {
-  U_CHAR *buf, *p, *q;
-
-  /* Copy the entire option so we can modify it.  */
-  buf = (U_CHAR *) alloca (strlen (str) + 1);
-  strcpy ((char *) buf, str);
-  /* Scan for any backslash-newline and remove it.  */
-  p = q = buf;
-  while (*p) {
-#if 0
-    if (*p == '\\' && p[1] == '\n')
-      p += 2;
-    else
-#endif
-      *q++ = *p++;
-  }
-  *q = 0;
-
-  p = buf;
-  if (!is_idstart[*p]) {
-    cpp_error (pfile, "malformed option `%s %s'", option, str);
-    return;
-  }
-  while (is_idchar[*++p])
-    ;
-  while (*p == ' ' || *p == '\t') p++;
-  if (! (*p == 0 || *p == '(')) {
-    cpp_error (pfile, "malformed option `%s %s'", option, str);
-    return;
-  }
-
-  if (cpp_push_buffer (pfile, buf, strlen (buf)) != NULL)
+  if (cpp_push_buffer (pfile, str, strlen (str)) != NULL)
     {
       do_assert (pfile, NULL);
       cpp_pop_buffer (pfile);
@@ -563,32 +425,10 @@ cpp_options_init (opts)
      cpp_options *opts;
 {
   bzero ((char *) opts, sizeof *opts);
-  opts->in_fname = NULL;
-  opts->out_fname = NULL;
 
   opts->dollars_in_ident = 1;
-  initialize_char_syntax ();
-
-  opts->no_line_commands = 0;
-  opts->trigraphs = 0;
-  opts->put_out_comments = 0;
-  opts->print_include_names = 0;
-  opts->dump_macros = dump_none;
-  opts->no_output = 0;
-  opts->remap = 0;
-  opts->cplusplus = 0;
   opts->cplusplus_comments = 1;
-
-  opts->verbose = 0;
-  opts->objc = 0;
-  opts->lang_asm = 0;
-  opts->for_lint = 0;
-  opts->chill = 0;
-  opts->pedantic_errors = 0;
-  opts->inhibit_warnings = 0;
-  opts->warn_comments = 0;
   opts->warn_import = 1;
-  opts->warnings_are_errors = 0;
 }
 
 enum cpp_token
@@ -1707,7 +1547,6 @@ cpp_expand_to_buffer (pfile, buf, length)
 #if 0
   cpp_buffer obuf;
 #endif
-  U_CHAR *limit = buf + length;
   U_CHAR *buf1;
 #if 0
   int odepth = indepth;
@@ -1719,13 +1558,7 @@ cpp_expand_to_buffer (pfile, buf, length)
   /* Set up the input on the input stack.  */
 
   buf1 = (U_CHAR *) alloca (length + 1);
-  {
-    register U_CHAR *p1 = buf;
-    register U_CHAR *p2 = buf1;
-
-    while (p1 != limit)
-      *p2++ = *p1++;
-  }
+  memcpy (buf1, buf, length);
   buf1[length] = 0;
 
   ip = cpp_push_buffer (pfile, buf1, length);
@@ -1738,11 +1571,6 @@ cpp_expand_to_buffer (pfile, buf, length)
 
   /* Scan the input, create the output.  */
   cpp_scan_buffer (pfile);
-
-#if 0
-  if (indepth != odepth)
-    abort ();
-#endif
 
   CPP_NUL_TERMINATE (pfile);
 }
@@ -2932,19 +2760,7 @@ do_include (pfile, keyword)
       && !CPP_BUFFER (pfile)->system_header_p && !pfile->import_warning)
     {
       pfile->import_warning = 1;
-      cpp_warning (pfile, "using `#import' is not recommended");
-      cpp_notice ("The fact that a certain header file need not be processed more than once\n\
-should be indicated in the header file, not where it is used.\n\
-The best way to do this is with a conditional of this form:\n\
-\n\
-  #ifndef _FOO_H_INCLUDED\n\
-  #define _FOO_H_INCLUDED\n\
-  ... <real contents of file> ...\n\
-  #endif /* Not _FOO_H_INCLUDED */\n\
-\n\
-Then users can use `#include' any number of times.\n\
-GNU C automatically avoids processing the file more than once\n\
-when it is equipped with such a conditional.\n");
+      cpp_warning (pfile, "`#import' is obsolete, use an #ifndef wrapper in the header file");
     }
 
   pfile->parsing_include_directive++;
@@ -3139,57 +2955,9 @@ when it is equipped with such a conditional.\n");
   return 0;
 }
 
-
-/* Convert a character string literal into a nul-terminated string.
-   The input string is [IN ... LIMIT).
-   The result is placed in RESULT.  RESULT can be the same as IN.
-   The value returned in the end of the string written to RESULT,
-   or NULL on error.  */
-
-static U_CHAR *
-convert_string (pfile, result, in, limit, handle_escapes)
-     cpp_reader *pfile;
-     register U_CHAR *result, *in, *limit;
-     int handle_escapes;
-{
-  U_CHAR c;
-  c = *in++;
-  if (c != '\"')
-    return NULL;
-  while (in < limit)
-    {
-      U_CHAR c = *in++;
-      switch (c)
-	{
-	case '\0':
-	  return NULL;
-	case '\"':
-	  limit = in;
-	  break;
-	case '\\':
-	  if (handle_escapes)
-	    {
-	      char *bpc = (char *) in;
-	      int i = (U_CHAR) cpp_parse_escape (pfile, &bpc, 0x00ff);
-	      in = (U_CHAR *) bpc;
-	      if (i >= 0)
-		*result++ = (U_CHAR)c;
-	      break;
-	    }
-	  /* else fall through */
-	default:
-	  *result++ = c;
-	}
-    }
-  *result = 0;
-  return result;
-}
-
-/*
- * interpret #line command.  Remembers previously seen fnames
- * in its very own hash table.
- */
-#define FNAME_HASHSIZE 37
+/* Interpret #line command.
+   Note that the filename string (if any) is treated as if it were an
+   include filename.  That means no escape handling.  */
 
 static int
 do_line (pfile, keyword)
@@ -3201,126 +2969,121 @@ do_line (pfile, keyword)
   long old_written = CPP_WRITTEN (pfile);
   enum file_change_code file_change = same_file;
   enum cpp_token token;
+  char *x;
 
   token = get_directive_token (pfile);
 
-  if (token != CPP_NUMBER
-      || !ISDIGIT(pfile->token_buffer[old_written]))
+  if (token != CPP_NUMBER)
     {
-      cpp_error (pfile, "invalid format `#line' command");
+      cpp_error (pfile, "token after `#line' is not an integer");
+      goto bad_line_directive;
+    }
+
+  new_lineno = strtol (pfile->token_buffer + old_written, &x, 10);
+  if (x[0] != '\0')
+    {
+      cpp_error (pfile, "token after `#line' is not an integer");
+      goto bad_line_directive;
+    }      
+  CPP_SET_WRITTEN (pfile, old_written);
+
+  if (CPP_PEDANTIC (pfile) && new_lineno <= 0)
+    cpp_pedwarn (pfile, "line number out of range in `#line' command");
+
+  token = get_directive_token (pfile);
+
+  if (token == CPP_STRING)
+    {
+      U_CHAR *fname = pfile->token_buffer + old_written + 1;
+      U_CHAR *end_name = CPP_PWRITTEN (pfile) - 1;
+      long num_start = CPP_WRITTEN (pfile);
+
+      token = get_directive_token (pfile);
+      if (token != CPP_VSPACE && token != CPP_EOF && token != CPP_POP)
+	{
+	  U_CHAR *p = pfile->token_buffer + num_start;
+	  if (CPP_PEDANTIC (pfile))
+	    cpp_pedwarn (pfile, "garbage at end of `#line' command");
+
+	  if (token != CPP_NUMBER || *p < '0' || *p > '4' || p[1] != '\0')
+	    {
+	      cpp_error (pfile, "invalid format `#line' command");
+	      goto bad_line_directive;
+	    }
+	  if (*p == '1')
+	    file_change = enter_file;
+	  else if (*p == '2')
+	    file_change = leave_file;
+	  else if (*p == '3')
+	    ip->system_header_p = 1;
+	  else /* if (*p == '4') */
+	    ip->system_header_p = 2;
+
+	  CPP_SET_WRITTEN (pfile, num_start);
+	  token = get_directive_token (pfile);
+	  p = pfile->token_buffer + num_start;
+	  if (token == CPP_NUMBER && p[1] == '\0' && (*p == '3' || *p== '4'))
+	    {
+	      ip->system_header_p = *p == '3' ? 1 : 2;
+	      token = get_directive_token (pfile);
+	    }
+	  if (token != CPP_VSPACE)
+	    {
+	      cpp_error (pfile, "invalid format `#line' command");
+	      goto bad_line_directive;
+	    }
+	}
+      
+      *end_name = '\0';
+      
+      if (strcmp (fname, ip->nominal_fname))
+	{
+	  char *newname, *oldname;
+	  if (!strcmp (fname, ip->fname))
+	    newname = ip->fname;
+	  else if (ip->last_nominal_fname
+		   && !strcmp (fname, ip->last_nominal_fname))
+	    newname = ip->last_nominal_fname;
+	  else
+	    newname = xstrdup (fname);
+
+	  oldname = ip->nominal_fname;
+	  ip->nominal_fname = newname;
+
+	  if (ip->last_nominal_fname
+	      && ip->last_nominal_fname != oldname
+	      && ip->last_nominal_fname != newname)
+	    free (ip->last_nominal_fname);
+
+	  if (newname == ip->fname)
+	    ip->last_nominal_fname = NULL;
+	  else
+	    ip->last_nominal_fname = oldname;
+	} 
+    }
+  else if (token != CPP_VSPACE && token != CPP_EOF)
+    {
+      cpp_error (pfile, "token after `#line %d' is not a string", new_lineno);
       goto bad_line_directive;
     }
 
   /* The Newline at the end of this line remains to be processed.
      To put the next line at the specified line number,
      we must store a line number now that is one less.  */
-  new_lineno = atoi ((char *)(pfile->token_buffer + old_written)) - 1;
-  CPP_SET_WRITTEN (pfile, old_written);
-
-  /* NEW_LINENO is one less than the actual line number here.  */
-  if (CPP_PEDANTIC (pfile) && new_lineno < 0)
-    cpp_pedwarn (pfile, "line number out of range in `#line' command");
-
-#if 0 /* #line 10"foo.c" is supposed to be allowed.  */
-  if (PEEKC() && !is_space[PEEKC()]) {
-    cpp_error (pfile, "invalid format `#line' command");
-    goto bad_line_directive;
-  }
-#endif
-
-  token = get_directive_token (pfile);
-
-  if (token == CPP_STRING) {
-    U_CHAR *fname = pfile->token_buffer + old_written;
-    U_CHAR *end_name;
-    static HASHNODE *fname_table[FNAME_HASHSIZE];
-    HASHNODE *hp, **hash_bucket;
-    U_CHAR *p;
-    long num_start;
-    int fname_length;
-
-    /* Turn the file name, which is a character string literal,
-       into a null-terminated string.  Do this in place.  */
-    end_name = convert_string (pfile, fname, fname, CPP_PWRITTEN (pfile), 1);
-    if (end_name == NULL)
-    {
-	cpp_error (pfile, "invalid format `#line' command");
-	goto bad_line_directive;
-    }
-
-    fname_length = end_name - fname;
-
-    num_start = CPP_WRITTEN (pfile);
-    token = get_directive_token (pfile);
-    if (token != CPP_VSPACE && token != CPP_EOF && token != CPP_POP) {
-      p = pfile->token_buffer + num_start;
-      if (CPP_PEDANTIC (pfile))
-	cpp_pedwarn (pfile, "garbage at end of `#line' command");
-
-      if (token != CPP_NUMBER || *p < '0' || *p > '4' || p[1] != '\0')
-      {
-	cpp_error (pfile, "invalid format `#line' command");
-	goto bad_line_directive;
-      }
-      if (*p == '1')
-	file_change = enter_file;
-      else if (*p == '2')
-	file_change = leave_file;
-      else if (*p == '3')
-	ip->system_header_p = 1;
-      else /* if (*p == '4') */
-	ip->system_header_p = 2;
-
-      CPP_SET_WRITTEN (pfile, num_start);
-      token = get_directive_token (pfile);
-      p = pfile->token_buffer + num_start;
-      if (token == CPP_NUMBER && p[1] == '\0' && (*p == '3' || *p== '4')) {
-	ip->system_header_p = *p == '3' ? 1 : 2;
-	token = get_directive_token (pfile);
-      }
-      if (token != CPP_VSPACE) {
-	cpp_error (pfile, "invalid format `#line' command");
-	goto bad_line_directive;
-      }
-    }
-
-    hash_bucket = &fname_table[hashf (fname, fname_length, FNAME_HASHSIZE)];
-    for (hp = *hash_bucket; hp != NULL; hp = hp->next)
-      if (hp->length == fname_length
-	  && strncmp (hp->value.cpval, fname, fname_length) == 0) {
-	ip->nominal_fname = hp->value.cpval;
-	break;
-      }
-    if (hp == 0) {
-      /* Didn't find it; cons up a new one.  */
-      hp = (HASHNODE *) xcalloc (1, sizeof (HASHNODE) + fname_length + 1);
-      hp->next = *hash_bucket;
-      *hash_bucket = hp;
-
-      hp->length = fname_length;
-      ip->nominal_fname = hp->value.cpval = ((char *) hp) + sizeof (HASHNODE);
-      bcopy (fname, hp->value.cpval, fname_length);
-    }
-  }
-  else if (token != CPP_VSPACE && token != CPP_EOF) {
-    cpp_error (pfile, "invalid format `#line' command");
-    goto bad_line_directive;
-  }
-
-  ip->lineno = new_lineno;
- bad_line_directive:
-  skip_rest_of_line (pfile);
+  ip->lineno = new_lineno - 1;
   CPP_SET_WRITTEN (pfile, old_written);
   output_line_command (pfile, 0, file_change);
   return 0;
+
+ bad_line_directive:
+  skip_rest_of_line (pfile);
+  CPP_SET_WRITTEN (pfile, old_written);
+  return 0;
 }
 
-/*
- * remove the definition of a symbol from the symbol table.
- * according to un*x /lib/cpp, it is not an error to undef
- * something that has no definitions, so it isn't one here either.
- */
-
+/* Remove the definition of a symbol from the symbol table.
+   According to the C standard, it is not an error to undef
+   something that has no definitions. */
 static int
 do_undef (pfile, keyword)
      cpp_reader *pfile;
@@ -4711,22 +4474,21 @@ cpp_start_read (pfile, fname)
   cpp_buffer *fp;
   struct include_hash *ih_fake;
 
-  /* The code looks at the defaults through this pointer, rather than through
-     the constant structure above.  This pointer gets changed if an environment
-     variable specifies other defaults.  */
+  /* The code looks at the defaults through this pointer, rather than
+     through the constant structure above.  This pointer gets changed
+     if an environment variable specifies other defaults.  */
   struct default_include *include_defaults = include_defaults_array;
 
-  /* Now that we know dollars_in_ident for real,
-     reset is_idchar/is_idstart. */
-  is_idchar['$'] = opts->dollars_in_ident;
-  is_idstart['$'] = opts->dollars_in_ident;
+  /* Now that we know dollars_in_ident, we can initialize the syntax
+     tables. */
+  initialize_char_syntax (opts->dollars_in_ident);
   
   /* Add dirs from CPATH after dirs from -I.  */
   /* There seems to be confusion about what CPATH should do,
      so for the moment it is not documented.  */
-  /* Some people say that CPATH should replace the standard include dirs,
-     but that seems pointless: it comes before them, so it overrides them
-     anyway.  */
+  /* Some people say that CPATH should replace the standard include
+     dirs, but that seems pointless: it comes before them, so it
+     overrides them anyway.  */
   GET_ENV_PATH_LIST (p, "CPATH");
   if (p != 0 && ! opts->no_standard_includes)
     path_include (pfile, p);
@@ -4810,7 +4572,7 @@ cpp_start_read (pfile, fname)
 	save_char = *termination;
 	*termination = '\0';
 	/* Install the assertion.  */
-	make_assertion (pfile, "-A", assertion);
+	cpp_assert (pfile, assertion);
 	*termination = (char) save_char;
 	p = termination;
 	while (*p == ' ' || *p == '\t')
@@ -4844,7 +4606,7 @@ cpp_start_read (pfile, fname)
 	      cpp_define (pfile, pend->arg);
 	      break;
 	    case 'A':
-	      make_assertion (pfile, "-A", pend->arg);
+	      cpp_assert (pfile, pend->arg);
 	      break;
 	    }
 	}
@@ -5273,6 +5035,10 @@ print_help ()
   printf ("  -lang-objc++              Assume that the input sources are in ObjectiveC++\n");
   printf ("  -lang-asm                 Assume that the input sources are in assembler\n");
   printf ("  -lang-chill               Assume that the input sources are in Chill\n");
+  printf ("  -std=<std name>           Specify the conformance standard; one of:\n");
+  printf ("                            gnu89, gnu9x, c89, c9x, iso9899:1990,\n");
+  printf ("                            iso9899:199409, iso9899:199x\n");
+
   printf ("  -+                        Allow parsing of C++ style features\n");
   printf ("  -w                        Inhibit warning messages\n");
   printf ("  -Wtrigraphs               Warn if trigraphs are encountered\n");
@@ -5520,19 +5286,19 @@ cpp_handle_option (pfile, argc, argv)
     case 'l':
       if (! strcmp (argv[i], "-lang-c"))
 	opts->cplusplus = 0, opts->cplusplus_comments = 1, opts->c89 = 0,
-	  opts->objc = 0;
+	  opts->c9x = 1, opts->objc = 0;
       if (! strcmp (argv[i], "-lang-c89"))
 	opts->cplusplus = 0, opts->cplusplus_comments = 0, opts->c89 = 1,
-	  opts->objc = 0;
+	  opts->c9x = 0, opts->objc = 0;
       if (! strcmp (argv[i], "-lang-c++"))
 	opts->cplusplus = 1, opts->cplusplus_comments = 1, opts->c89 = 0,
-	  opts->objc = 0;
+	  opts->c9x = 0, opts->objc = 0;
       if (! strcmp (argv[i], "-lang-objc"))
 	opts->cplusplus = 0, opts->cplusplus_comments = 1, opts->c89 = 0,
-	  opts->objc = 1;
+	  opts->c9x = 0, opts->objc = 1;
       if (! strcmp (argv[i], "-lang-objc++"))
 	opts->cplusplus = 1, opts->cplusplus_comments = 1, opts->c89 = 0,
-	  opts->objc = 1;
+	  opts->c9x = 0, opts->objc = 1;
       if (! strcmp (argv[i], "-lang-asm"))
 	opts->lang_asm = 1;
       if (! strcmp (argv[i], "-lint"))
@@ -5545,7 +5311,21 @@ cpp_handle_option (pfile, argc, argv)
     case '+':
       opts->cplusplus = 1, opts->cplusplus_comments = 1;
       break;
-      
+
+    case 's':
+      if (!strcmp (argv[i], "-std=iso9899:1990")
+	  || !strcmp (argv[i], "-std=iso9899:199409")
+	  || !strcmp (argv[i], "-std=c89")
+	  || !strcmp (argv[i], "-std=gnu89"))
+	  opts->cplusplus = 0, opts->cplusplus_comments = 0,
+	    opts->c89 = 1, opts->c9x = 0, opts->objc = 0;
+      else if (!strcmp (argv[i], "-std=iso9899:199x")
+	       || !strcmp (argv[i], "-std=c9x")
+	       || !strcmp (argv[i], "-std=gnu9x"))
+	opts->cplusplus = 0, opts->cplusplus_comments = 1, opts->c89 = 0,
+	  opts->c9x = 1, opts->objc = 0;
+      break;
+
     case 'w':
       opts->inhibit_warnings = 1;
       break;
