@@ -917,7 +917,7 @@ _Name(const _Expr<_Dom,typename _Dom::value_type>& __e)                 \
 {                                                                       \
     typedef typename _Dom::value_type _Tp;                              \
     typedef _UnFunClos<_Expr,_Dom> _Closure;                            \
-    return _Expr<_Closure,_Tp> (_Closure (__e, (_Tp(*)(_Tp))(&_Name))); \
+    return _Expr<_Closure,_Tp>(_Closure(__e(), (_Tp(*)(_Tp))(&_Name))); \
 }                                                                       \
                                                                         \
 template<typename _Tp>                                                  \
