@@ -87,7 +87,19 @@ int flag_assume_compiled = 1;
 
 int flag_emit_class_files = 0;
 
-/* From gcc/flags.h, and idicates if exceptions are turned on or not. */
+/* When non zero, -Wall was turned on.  */
+int flag_wall = 0;
+
+/* When non zero,  check for redundant modifier uses.  */
+int flag_redundant = 0;
+
+/* When non zero, warns about overridings that don't occur.  */
+int flag_not_overriding = 0;
+
+/* When non zero, warns that final local are treated as non final.  */
+int flag_static_local_jdk1_1 = 0;
+
+/* From gcc/flags.h, and indicates if exceptions are turned on or not.  */
 
 extern int flag_new_exceptions;
 extern int flag_exceptions;
@@ -185,6 +197,14 @@ lang_decode_option (argc, argv)
 	}
 
       return found;
+    }
+
+  if (strcmp (p, "-Wall") == 0)
+    {
+      flag_wall = 1;
+      flag_redundant = 1;
+      flag_not_overriding = 1;
+      flag_static_local_jdk1_1 = 1;
     }
 
   if (strcmp (p, "-MD") == 0)

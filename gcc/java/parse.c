@@ -525,24 +525,24 @@ static const short yyrline[] = { 0,
   1324,  1326,  1332,  1338,  1342,  1344,  1348,  1351,  1353,  1357,
   1360,  1362,  1364,  1368,  1371,  1373,  1375,  1379,  1382,  1384,
   1386,  1390,  1396,  1398,  1402,  1409,  1411,  1413,  1415,  1419,
-  1427,  1430,  1432,  1434,  1438,  1440,  1447,  1455,  1473,  1475,
-  1477,  1481,  1487,  1492,  1494,  1497,  1499,  1501,  1503,  1504,
-  1505,  1506,  1510,  1512,  1514,  1519,  1521,  1523,  1525,  1527,
-  1531,  1534,  1539,  1541,  1546,  1547,  1548,  1549,  1550,  1552,
-  1554,  1556,  1558,  1560,  1564,  1566,  1569,  1575,  1580,  1584,
-  1587,  1589,  1591,  1595,  1597,  1599,  1601,  1605,  1608,  1612,
-  1618,  1620,  1628,  1631,  1633,  1637,  1640,  1648,  1652,  1655,
-  1657,  1668,  1679,  1684,  1693,  1695,  1699,  1702,  1704,  1709,
-  1714,  1719,  1726,  1728,  1729,  1730,  1733,  1738,  1743,  1745,
-  1746,  1748,  1750,  1751,  1753,  1757,  1760,  1764,  1767,  1771,
-  1773,  1775,  1777,  1778,  1780,  1784,  1792,  1794,  1796,  1808,
-  1810,  1816,  1818,  1820,  1824,  1826,  1831,  1836,  1841,  1843,
-  1845,  1849,  1851,  1856,  1861,  1863,  1867,  1869,  1874,  1879,
-  1884,  1886,  1888,  1892,  1894,  1899,  1904,  1909,  1914,  1916,
-  1918,  1920,  1922,  1924,  1928,  1930,  1935,  1940,  1942,  1946,
-  1948,  1953,  1957,  1959,  1964,  1968,  1970,  1975,  1979,  1981,
-  1986,  1990,  1992,  1997,  2001,  2003,  2008,  2014,  2016,  2020,
-  2022,  2025,  2028,  2036,  2038,  2039,  2042,  2044,  2047,  2051
+  1427,  1430,  1432,  1434,  1438,  1440,  1447,  1455,  1472,  1474,
+  1476,  1480,  1486,  1491,  1493,  1496,  1498,  1500,  1502,  1503,
+  1504,  1505,  1509,  1511,  1513,  1518,  1520,  1522,  1524,  1526,
+  1530,  1533,  1538,  1540,  1545,  1546,  1547,  1548,  1549,  1551,
+  1553,  1555,  1557,  1559,  1563,  1565,  1568,  1574,  1579,  1583,
+  1586,  1588,  1590,  1594,  1596,  1598,  1600,  1604,  1607,  1611,
+  1617,  1619,  1627,  1630,  1632,  1636,  1641,  1649,  1653,  1656,
+  1658,  1669,  1680,  1685,  1694,  1696,  1700,  1703,  1705,  1710,
+  1715,  1720,  1727,  1729,  1730,  1731,  1734,  1739,  1744,  1746,
+  1747,  1749,  1751,  1752,  1754,  1758,  1761,  1765,  1768,  1772,
+  1774,  1776,  1778,  1779,  1781,  1785,  1793,  1795,  1797,  1809,
+  1811,  1817,  1819,  1821,  1825,  1827,  1832,  1837,  1842,  1844,
+  1846,  1850,  1852,  1857,  1862,  1864,  1868,  1870,  1875,  1880,
+  1885,  1887,  1889,  1893,  1895,  1900,  1905,  1910,  1915,  1917,
+  1919,  1921,  1923,  1925,  1929,  1931,  1936,  1941,  1943,  1947,
+  1949,  1954,  1958,  1960,  1965,  1969,  1971,  1976,  1980,  1982,
+  1987,  1991,  1993,  1998,  2002,  2004,  2009,  2015,  2017,  2021,
+  2023,  2026,  2029,  2037,  2039,  2040,  2043,  2045,  2048,  2052
 };
 #endif
 
@@ -2985,7 +2985,7 @@ case 123:
     break;}
 case 124:
 #line 705 "./parse.y"
-{ yyval.node = parse_jdk1_1_error ("final local"); ;
+{ yyval.node = parse_jdk1_1_error ("final parameters"); ;
     break;}
 case 125:
 #line 707 "./parse.y"
@@ -3012,11 +3012,11 @@ case 129:
     break;}
 case 130:
 #line 725 "./parse.y"
-{ yyval.node = build_tree_list (NULL_TREE, yyvsp[0].node); ;
+{ yyval.node = build_tree_list (yyvsp[0].node, yyvsp[0].node); ;
     break;}
 case 131:
 #line 727 "./parse.y"
-{ yyval.node = tree_cons (NULL_TREE, yyvsp[0].node, yyvsp[-2].node); ;
+{ yyval.node = tree_cons (yyvsp[0].node, yyvsp[0].node, yyvsp[-2].node); ;
     break;}
 case 132:
 #line 729 "./parse.y"
@@ -3074,7 +3074,7 @@ case 144:
 case 145:
 #line 788 "./parse.y"
 { 
-		  BLOCK_EXPR_BODY (yyvsp[0].node) = size_zero_node;
+		  BLOCK_EXPR_BODY (yyvsp[0].node) = empty_stmt_node;
 		  yyval.node = yyvsp[0].node;
 		;
     break;}
@@ -3259,7 +3259,7 @@ case 186:
     break;}
 case 187:
 #line 954 "./parse.y"
-{ yyval.node = size_zero_node; ;
+{ yyval.node = empty_stmt_node; ;
     break;}
 case 188:
 #line 956 "./parse.y"
@@ -3304,7 +3304,7 @@ case 204:
     break;}
 case 221:
 #line 1036 "./parse.y"
-{ yyval.node = size_zero_node; ;
+{ yyval.node = empty_stmt_node; ;
     break;}
 case 222:
 #line 1041 "./parse.y"
@@ -3550,7 +3550,7 @@ case 281:
 		  yyval.node = complete_for_loop (0, NULL_TREE, yyvsp[-2].node, yyvsp[0].node);
 		  /* We have not condition, so we get rid of the EXIT_EXPR */
 		  LOOP_EXPR_BODY_CONDITION_EXPR (LOOP_EXPR_BODY (yyval.node), 0) = 
-		    size_zero_node;
+		    empty_stmt_node;
 		;
     break;}
 case 282:
@@ -3575,7 +3575,7 @@ case 286:
 		  yyval.node = complete_for_loop (0, NULL_TREE, yyvsp[-2].node, yyvsp[0].node);
 		  /* We have not condition, so we get rid of the EXIT_EXPR */
 		  LOOP_EXPR_BODY_CONDITION_EXPR (LOOP_EXPR_BODY (yyval.node), 0) = 
-		    size_zero_node;
+		    empty_stmt_node;
 		;
     break;}
 case 287:
@@ -3609,7 +3609,7 @@ case 290:
     break;}
 case 291:
 #line 1325 "./parse.y"
-{ yyval.node = size_zero_node; ;
+{ yyval.node = empty_stmt_node; ;
     break;}
 case 292:
 #line 1327 "./parse.y"
@@ -3633,7 +3633,7 @@ case 294:
     break;}
 case 295:
 #line 1343 "./parse.y"
-{yyval.node = size_zero_node;;
+{yyval.node = empty_stmt_node;;
     break;}
 case 296:
 #line 1345 "./parse.y"
@@ -3784,10 +3784,9 @@ case 328:
 		     declared initialized by the appropriate function
 		     call */
 		  tree ccpb = enter_block ();
-		  tree init = /* flag_emit_class_files ? NULL_TREE
-				 : */ build_assignment (ASSIGN_TK, yyvsp[-2].operator.location,
-					TREE_PURPOSE (yyvsp[-1].node), 
-					soft_exceptioninfo_call_node);
+		  tree init = build_assignment (ASSIGN_TK, yyvsp[-2].operator.location, 
+						TREE_PURPOSE (yyvsp[-1].node), 
+						soft_exceptioninfo_call_node);
 		  declare_local_variables (0, TREE_VALUE (yyvsp[-1].node),
 					   build_tree_list (TREE_PURPOSE (yyvsp[-1].node),
 							    init));
@@ -3796,179 +3795,179 @@ case 328:
 		;
     break;}
 case 329:
-#line 1474 "./parse.y"
+#line 1473 "./parse.y"
 {yyerror ("'(' expected"); RECOVER;;
     break;}
 case 330:
-#line 1476 "./parse.y"
+#line 1475 "./parse.y"
 {yyerror ("Missing term or ')' expected"); DRECOVER (2);;
     break;}
 case 331:
-#line 1478 "./parse.y"
+#line 1477 "./parse.y"
 {yyerror ("')' expected"); DRECOVER (1);;
     break;}
 case 332:
-#line 1483 "./parse.y"
+#line 1482 "./parse.y"
 { 
 		  yyval.node = build (FINALLY_EXPR, NULL_TREE,
 			      create_label_decl (generate_name ()), yyvsp[0].node);
 		;
     break;}
 case 333:
-#line 1488 "./parse.y"
+#line 1487 "./parse.y"
 {yyerror ("'{' expected"); RECOVER; ;
     break;}
 case 337:
-#line 1500 "./parse.y"
+#line 1499 "./parse.y"
 { yyval.node = build_this (yyvsp[0].operator.location); ;
     break;}
 case 338:
-#line 1502 "./parse.y"
+#line 1501 "./parse.y"
 {yyval.node = yyvsp[-1].node;;
     break;}
 case 343:
-#line 1511 "./parse.y"
-{ yyval.node = parse_jdk1_1_error ("class literals"); ;
+#line 1510 "./parse.y"
+{ yyval.node = parse_jdk1_1_error ("named class literals"); ;
     break;}
 case 344:
-#line 1513 "./parse.y"
-{ yyval.node = parse_jdk1_1_error ("class literals"); ;
+#line 1512 "./parse.y"
+{ yyval.node = build_class_ref (yyvsp[-2].node); ;
     break;}
 case 345:
-#line 1515 "./parse.y"
-{ yyval.node = parse_jdk1_1_error ("class literals"); ;
+#line 1514 "./parse.y"
+{ yyval.node = build_class_ref (void_type_node); ;
     break;}
 case 346:
-#line 1520 "./parse.y"
+#line 1519 "./parse.y"
 { yyval.node = parse_jdk1_1_error ("class literals"); ;
     break;}
 case 347:
-#line 1522 "./parse.y"
+#line 1521 "./parse.y"
 {yyerror ("')' expected"); RECOVER;;
     break;}
 case 348:
-#line 1524 "./parse.y"
+#line 1523 "./parse.y"
 {yyerror ("'class' or 'this' expected" ); RECOVER;;
     break;}
 case 349:
-#line 1526 "./parse.y"
+#line 1525 "./parse.y"
 {yyerror ("'class' expected" ); RECOVER;;
     break;}
 case 350:
-#line 1528 "./parse.y"
+#line 1527 "./parse.y"
 {yyerror ("'class' expected" ); RECOVER;;
     break;}
 case 351:
-#line 1533 "./parse.y"
+#line 1532 "./parse.y"
 { yyval.node = build_new_invocation (yyvsp[-3].node, yyvsp[-1].node); ;
     break;}
 case 352:
-#line 1535 "./parse.y"
+#line 1534 "./parse.y"
 { yyval.node = build_new_invocation (yyvsp[-2].node, NULL_TREE); ;
     break;}
 case 353:
-#line 1540 "./parse.y"
+#line 1539 "./parse.y"
 { yyval.node = parse_jdk1_1_error ("inner class instance creation"); ;
     break;}
 case 354:
-#line 1542 "./parse.y"
+#line 1541 "./parse.y"
 { yyval.node = parse_jdk1_1_error ("inner class instance creation"); ;
     break;}
 case 359:
-#line 1551 "./parse.y"
+#line 1550 "./parse.y"
 {yyerror ("'(' expected"); DRECOVER(new_1);;
     break;}
 case 360:
-#line 1553 "./parse.y"
+#line 1552 "./parse.y"
 {yyerror ("'(' expected"); RECOVER;;
     break;}
 case 361:
-#line 1555 "./parse.y"
+#line 1554 "./parse.y"
 {yyerror ("')' or term expected"); RECOVER;;
     break;}
 case 362:
-#line 1557 "./parse.y"
+#line 1556 "./parse.y"
 {yyerror ("')' expected"); RECOVER;;
     break;}
 case 363:
-#line 1559 "./parse.y"
+#line 1558 "./parse.y"
 {YYERROR_NOW; yyerror ("Identifier expected"); RECOVER;;
     break;}
 case 364:
-#line 1561 "./parse.y"
+#line 1560 "./parse.y"
 {yyerror ("'(' expected"); RECOVER;;
     break;}
 case 367:
-#line 1571 "./parse.y"
+#line 1570 "./parse.y"
 { 
 		  yyval.node = tree_cons (NULL_TREE, yyvsp[0].node, NULL_TREE);
 		  ctxp->formal_parameter_number = 1; 
 		;
     break;}
 case 368:
-#line 1576 "./parse.y"
+#line 1575 "./parse.y"
 {
 		  ctxp->formal_parameter_number += 1;
 		  yyval.node = tree_cons (NULL_TREE, yyvsp[0].node, yyvsp[-2].node);
 		;
     break;}
 case 369:
-#line 1581 "./parse.y"
+#line 1580 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 370:
-#line 1586 "./parse.y"
+#line 1585 "./parse.y"
 { yyval.node = build_newarray_node (yyvsp[-1].node, yyvsp[0].node, 0); ;
     break;}
 case 371:
-#line 1588 "./parse.y"
+#line 1587 "./parse.y"
 { yyval.node = build_newarray_node (yyvsp[-1].node, yyvsp[0].node, 0); ;
     break;}
 case 372:
-#line 1590 "./parse.y"
+#line 1589 "./parse.y"
 { yyval.node = build_newarray_node (yyvsp[-2].node, yyvsp[-1].node, ctxp->osb_number); ;
     break;}
 case 373:
-#line 1592 "./parse.y"
+#line 1591 "./parse.y"
 { yyval.node = build_newarray_node (yyvsp[-2].node, yyvsp[-1].node, ctxp->osb_number); ;
     break;}
 case 374:
-#line 1596 "./parse.y"
+#line 1595 "./parse.y"
 { yyval.node = parse_jdk1_1_error ("anonymous array"); ;
     break;}
 case 375:
-#line 1598 "./parse.y"
+#line 1597 "./parse.y"
 { yyval.node = parse_jdk1_1_error ("anonymous array"); ;
     break;}
 case 376:
-#line 1600 "./parse.y"
+#line 1599 "./parse.y"
 {yyerror ("'[' expected"); DRECOVER ("]");;
     break;}
 case 377:
-#line 1602 "./parse.y"
+#line 1601 "./parse.y"
 {yyerror ("']' expected"); RECOVER;;
     break;}
 case 378:
-#line 1607 "./parse.y"
+#line 1606 "./parse.y"
 { yyval.node = build_tree_list (NULL_TREE, yyvsp[0].node); ;
     break;}
 case 379:
-#line 1609 "./parse.y"
+#line 1608 "./parse.y"
 { yyval.node = tree_cons (NULL_TREE, yyvsp[0].node, yyval.node); ;
     break;}
 case 380:
-#line 1614 "./parse.y"
+#line 1613 "./parse.y"
 { 
 		  EXPR_WFL_LINECOL (yyvsp[-1].node) = yyvsp[-2].operator.location;
 		  yyval.node = yyvsp[-1].node;
 		;
     break;}
 case 381:
-#line 1619 "./parse.y"
+#line 1618 "./parse.y"
 {yyerror ("']' expected"); RECOVER;;
     break;}
 case 382:
-#line 1621 "./parse.y"
+#line 1620 "./parse.y"
 {
 		  yyerror ("Missing term");
 		  yyerror ("']' expected");
@@ -3976,23 +3975,23 @@ case 382:
 		;
     break;}
 case 383:
-#line 1630 "./parse.y"
+#line 1629 "./parse.y"
 { ctxp->osb_number = 1; ;
     break;}
 case 384:
-#line 1632 "./parse.y"
+#line 1631 "./parse.y"
 { ctxp->osb_number++; ;
     break;}
 case 385:
-#line 1634 "./parse.y"
+#line 1633 "./parse.y"
 { yyerror ("']' expected"); RECOVER;;
     break;}
 case 386:
-#line 1639 "./parse.y"
+#line 1638 "./parse.y"
 { yyval.node = make_qualified_primary (yyvsp[-2].node, yyvsp[0].node, yyvsp[-1].operator.location); ;
     break;}
 case 387:
-#line 1641 "./parse.y"
+#line 1642 "./parse.y"
 {
 		  tree super_wfl = 
 		    build_wfl_node (super_identifier_node, 
@@ -4002,19 +4001,19 @@ case 387:
 		;
     break;}
 case 388:
-#line 1649 "./parse.y"
+#line 1650 "./parse.y"
 {yyerror ("Field expected"); DRECOVER (super_field_acces);;
     break;}
 case 389:
-#line 1654 "./parse.y"
+#line 1655 "./parse.y"
 { yyval.node = build_method_invocation (yyvsp[-2].node, NULL_TREE); ;
     break;}
 case 390:
-#line 1656 "./parse.y"
+#line 1657 "./parse.y"
 { yyval.node = build_method_invocation (yyvsp[-3].node, yyvsp[-1].node); ;
     break;}
 case 391:
-#line 1658 "./parse.y"
+#line 1659 "./parse.y"
 { 
 		  if (TREE_CODE (yyvsp[-4].node) == THIS_EXPR)
 		    yyval.node = build_this_super_qualified_invocation 
@@ -4027,7 +4026,7 @@ case 391:
 		;
     break;}
 case 392:
-#line 1669 "./parse.y"
+#line 1670 "./parse.y"
 { 
 		  if (TREE_CODE (yyvsp[-5].node) == THIS_EXPR)
 		    yyval.node = build_this_super_qualified_invocation 
@@ -4040,121 +4039,121 @@ case 392:
 		;
     break;}
 case 393:
-#line 1680 "./parse.y"
+#line 1681 "./parse.y"
 { 
 		  yyval.node = build_this_super_qualified_invocation 
 		    (0, yyvsp[-2].node, NULL_TREE, yyvsp[-4].operator.location, yyvsp[-3].operator.location);
 		;
     break;}
 case 394:
-#line 1685 "./parse.y"
+#line 1686 "./parse.y"
 {
 		  yyval.node = build_this_super_qualified_invocation 
 		    (0, yyvsp[-3].node, yyvsp[-1].node, yyvsp[-5].operator.location, yyvsp[-4].operator.location);
 		;
     break;}
 case 395:
-#line 1694 "./parse.y"
+#line 1695 "./parse.y"
 { yyerror ("'(' expected"); DRECOVER (method_invocation); ;
     break;}
 case 396:
-#line 1696 "./parse.y"
+#line 1697 "./parse.y"
 { yyerror ("'(' expected"); DRECOVER (method_invocation); ;
     break;}
 case 397:
-#line 1701 "./parse.y"
+#line 1702 "./parse.y"
 { yyval.node = build_array_ref (yyvsp[-2].operator.location, yyvsp[-3].node, yyvsp[-1].node); ;
     break;}
 case 398:
-#line 1703 "./parse.y"
+#line 1704 "./parse.y"
 { yyval.node = build_array_ref (yyvsp[-2].operator.location, yyvsp[-3].node, yyvsp[-1].node); ;
     break;}
 case 399:
-#line 1705 "./parse.y"
+#line 1706 "./parse.y"
 {
 		  yyerror ("Missing term and ']' expected");
 		  DRECOVER(array_access);
 		;
     break;}
 case 400:
-#line 1710 "./parse.y"
+#line 1711 "./parse.y"
 {
 		  yyerror ("']' expected");
 		  DRECOVER(array_access);
 		;
     break;}
 case 401:
-#line 1715 "./parse.y"
+#line 1716 "./parse.y"
 {
 		  yyerror ("Missing term and ']' expected");
 		  DRECOVER(array_access);
 		;
     break;}
 case 402:
-#line 1720 "./parse.y"
+#line 1721 "./parse.y"
 {
 		  yyerror ("']' expected");
 		  DRECOVER(array_access);
 		;
     break;}
 case 407:
-#line 1735 "./parse.y"
+#line 1736 "./parse.y"
 { yyval.node = build_incdec (yyvsp[0].operator.token, yyvsp[0].operator.location, yyvsp[-1].node, 1); ;
     break;}
 case 408:
-#line 1740 "./parse.y"
+#line 1741 "./parse.y"
 { yyval.node = build_incdec (yyvsp[0].operator.token, yyvsp[0].operator.location, yyvsp[-1].node, 1); ;
     break;}
 case 411:
-#line 1747 "./parse.y"
+#line 1748 "./parse.y"
 {yyval.node = build_unaryop (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[0].node); ;
     break;}
 case 412:
-#line 1749 "./parse.y"
+#line 1750 "./parse.y"
 {yyval.node = build_unaryop (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[0].node); ;
     break;}
 case 414:
-#line 1752 "./parse.y"
+#line 1753 "./parse.y"
 {yyerror ("Missing term"); RECOVER;
     break;}
 case 415:
-#line 1754 "./parse.y"
+#line 1755 "./parse.y"
 {yyerror ("Missing term"); RECOVER;
     break;}
 case 416:
-#line 1759 "./parse.y"
+#line 1760 "./parse.y"
 {yyval.node = build_incdec (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[0].node, 0); ;
     break;}
 case 417:
-#line 1761 "./parse.y"
+#line 1762 "./parse.y"
 {yyerror ("Missing term"); RECOVER;
     break;}
 case 418:
-#line 1766 "./parse.y"
+#line 1767 "./parse.y"
 {yyval.node = build_incdec (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[0].node, 0); ;
     break;}
 case 419:
-#line 1768 "./parse.y"
+#line 1769 "./parse.y"
 {yyerror ("Missing term"); RECOVER;
     break;}
 case 421:
-#line 1774 "./parse.y"
+#line 1775 "./parse.y"
 {yyval.node = build_unaryop (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[0].node); ;
     break;}
 case 422:
-#line 1776 "./parse.y"
+#line 1777 "./parse.y"
 {yyval.node = build_unaryop (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[0].node); ;
     break;}
 case 424:
-#line 1779 "./parse.y"
+#line 1780 "./parse.y"
 {yyerror ("Missing term"); RECOVER;
     break;}
 case 425:
-#line 1781 "./parse.y"
+#line 1782 "./parse.y"
 {yyerror ("Missing term"); RECOVER;
     break;}
 case 426:
-#line 1786 "./parse.y"
+#line 1787 "./parse.y"
 { 
 		  tree type = yyvsp[-3].node;
 		  while (ctxp->osb_number--)
@@ -4163,15 +4162,15 @@ case 426:
 		;
     break;}
 case 427:
-#line 1793 "./parse.y"
+#line 1794 "./parse.y"
 { yyval.node = build_cast (yyvsp[-3].operator.location, yyvsp[-2].node, yyvsp[0].node); ;
     break;}
 case 428:
-#line 1795 "./parse.y"
+#line 1796 "./parse.y"
 { yyval.node = build_cast (yyvsp[-3].operator.location, yyvsp[-2].node, yyvsp[0].node); ;
     break;}
 case 429:
-#line 1797 "./parse.y"
+#line 1798 "./parse.y"
 { 
 		  char *ptr;
 		  while (ctxp->osb_number--)
@@ -4185,11 +4184,11 @@ case 429:
 		;
     break;}
 case 430:
-#line 1809 "./parse.y"
+#line 1810 "./parse.y"
 {yyerror ("']' expected, invalid type expression");;
     break;}
 case 431:
-#line 1811 "./parse.y"
+#line 1812 "./parse.y"
 {
 	          if (ctxp->prevent_ese != lineno)
 		    yyerror ("Invalid type expression"); RECOVER;
@@ -4197,243 +4196,243 @@ case 431:
 		;
     break;}
 case 432:
-#line 1817 "./parse.y"
+#line 1818 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 433:
-#line 1819 "./parse.y"
+#line 1820 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 434:
-#line 1821 "./parse.y"
+#line 1822 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 436:
-#line 1827 "./parse.y"
+#line 1828 "./parse.y"
 { 
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), 
 				    yyvsp[-1].operator.location, yyvsp[-2].node, yyvsp[0].node);
 		;
     break;}
 case 437:
-#line 1832 "./parse.y"
+#line 1833 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 438:
-#line 1837 "./parse.y"
+#line 1838 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 439:
-#line 1842 "./parse.y"
+#line 1843 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 440:
-#line 1844 "./parse.y"
+#line 1845 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 441:
-#line 1846 "./parse.y"
+#line 1847 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 443:
-#line 1852 "./parse.y"
+#line 1853 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 444:
-#line 1857 "./parse.y"
+#line 1858 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 445:
-#line 1862 "./parse.y"
+#line 1863 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 446:
-#line 1864 "./parse.y"
+#line 1865 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 448:
-#line 1870 "./parse.y"
+#line 1871 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 449:
-#line 1875 "./parse.y"
+#line 1876 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 450:
-#line 1880 "./parse.y"
+#line 1881 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 451:
-#line 1885 "./parse.y"
+#line 1886 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 452:
-#line 1887 "./parse.y"
+#line 1888 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 453:
-#line 1889 "./parse.y"
+#line 1890 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 455:
-#line 1895 "./parse.y"
+#line 1896 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 456:
-#line 1900 "./parse.y"
+#line 1901 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 457:
-#line 1905 "./parse.y"
+#line 1906 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 458:
-#line 1910 "./parse.y"
+#line 1911 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 459:
-#line 1915 "./parse.y"
+#line 1916 "./parse.y"
 { yyval.node = build_binop (INSTANCEOF_EXPR, yyvsp[-1].operator.location, yyvsp[-2].node, yyvsp[0].node); ;
     break;}
 case 460:
-#line 1917 "./parse.y"
+#line 1918 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 461:
-#line 1919 "./parse.y"
+#line 1920 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 462:
-#line 1921 "./parse.y"
+#line 1922 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 463:
-#line 1923 "./parse.y"
+#line 1924 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 464:
-#line 1925 "./parse.y"
+#line 1926 "./parse.y"
 {yyerror ("Invalid reference type"); RECOVER;;
     break;}
 case 466:
-#line 1931 "./parse.y"
+#line 1932 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 467:
-#line 1936 "./parse.y"
+#line 1937 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 468:
-#line 1941 "./parse.y"
+#line 1942 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 469:
-#line 1943 "./parse.y"
+#line 1944 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 471:
-#line 1949 "./parse.y"
+#line 1950 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 472:
-#line 1954 "./parse.y"
+#line 1955 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 474:
-#line 1960 "./parse.y"
+#line 1961 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 475:
-#line 1965 "./parse.y"
+#line 1966 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 477:
-#line 1971 "./parse.y"
+#line 1972 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 478:
-#line 1976 "./parse.y"
+#line 1977 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 480:
-#line 1982 "./parse.y"
+#line 1983 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 481:
-#line 1987 "./parse.y"
+#line 1988 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 483:
-#line 1993 "./parse.y"
+#line 1994 "./parse.y"
 {
 		  yyval.node = build_binop (BINOP_LOOKUP (yyvsp[-1].operator.token), yyvsp[-1].operator.location,
 				    yyvsp[-2].node, yyvsp[0].node); 
 		;
     break;}
 case 484:
-#line 1998 "./parse.y"
+#line 1999 "./parse.y"
 {yyerror ("Missing term"); RECOVER;;
     break;}
 case 486:
-#line 2004 "./parse.y"
+#line 2005 "./parse.y"
 {
 		  yyval.node = build (CONDITIONAL_EXPR, NULL_TREE, yyvsp[-4].node, yyvsp[-2].node, yyvsp[0].node);
 		  EXPR_WFL_LINECOL (yyval.node) = yyvsp[-3].operator.location;
 		;
     break;}
 case 487:
-#line 2009 "./parse.y"
+#line 2010 "./parse.y"
 {
 		  YYERROR_NOW;
 		  yyerror ("Missing term");
@@ -4441,19 +4440,19 @@ case 487:
 		;
     break;}
 case 488:
-#line 2015 "./parse.y"
+#line 2016 "./parse.y"
 {yyerror ("Missing term"); DRECOVER (2);;
     break;}
 case 489:
-#line 2017 "./parse.y"
+#line 2018 "./parse.y"
 {yyerror ("Missing term"); DRECOVER (3);;
     break;}
 case 492:
-#line 2027 "./parse.y"
+#line 2028 "./parse.y"
 { yyval.node = build_assignment (yyvsp[-1].operator.token, yyvsp[-1].operator.location, yyvsp[-2].node, yyvsp[0].node); ;
     break;}
 case 493:
-#line 2029 "./parse.y"
+#line 2030 "./parse.y"
 {
 		  if (ctxp->prevent_ese != lineno)
 		    yyerror ("Missing term");
@@ -4658,7 +4657,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 2055 "./parse.y"
+#line 2056 "./parse.y"
 
 
 
@@ -4772,7 +4771,7 @@ parse_jdk1_1_error (msg)
 {
   sorry (": `%s' JDK1.1(TM) feature", msg);
   java_error_count++;
-  return size_zero_node;
+  return empty_stmt_node;
 }
 
 static int do_warning = 0;
@@ -4904,13 +4903,13 @@ parse_warning_context VPROTO ((tree cl, char *msg, ...))
   msg = va_arg (ap, char *);
 #endif
 
-  do_warning = 1;
+  force_error = do_warning = 1;
   issue_warning_error_from_context (cl, msg, ap);
-  force_error = 0;
+  do_warning = force_error = 0;
   va_end (ap);
 }
 
-void
+int
 java_report_errors ()
 {
   if (java_error_count)
@@ -4921,6 +4920,7 @@ java_report_errors ()
 	     java_warning_count, (java_warning_count == 1 ? "" : "s"));
   if (java_error_count || java_warning_count)
     putc ('\n', stderr);
+  return java_error_count;
 }
 
 static char *
@@ -4971,8 +4971,8 @@ variable_redefinition_error (context, name, type, line)
   char *type_name;
 
   /* Figure a proper name for type. We might haven't resolved it */
-  if (TREE_CODE (type) == TREE_LIST)
-    type_name = IDENTIFIER_POINTER (TYPE_NAME (TREE_PURPOSE (type)));
+  if (TREE_CODE (type) == POINTER_TYPE && !TREE_TYPE (type))
+    type_name = IDENTIFIER_POINTER (TYPE_NAME (type));
   else
     type_name = lang_printable_name (type, 0);
 
@@ -5235,10 +5235,10 @@ create_interface (flags, id, super)
        - public/abstract allowed (already done at that point)
        - abstract is obsolete (comes first, it's a warning, or should be)
        - Can't use twice the same (checked in the modifier rule) */
-  if (flags & ACC_ABSTRACT)
+  if ((flags & ACC_ABSTRACT) && flag_redundant)
     parse_warning_context 
       (MODIFIER_WFL (ABSTRACT_TK),
-       "Obsolete use of `abstract' modifier. Interface `%s' is implicitely "
+       "Redundant use of `abstract' modifier. Interface `%s' is implicitely "
        "abstract", IDENTIFIER_POINTER (raw_name));
   if (flags & ACC_PUBLIC && flags & ACC_ABSTRACT)
     parse_error_context 
@@ -5357,7 +5357,9 @@ lookup_field_wrapper (class, name)
      tree class, name;
 {
   tree type = class;
+  java_parser_context_save_global ();
   return lookup_field (&type, name);
+  java_parser_context_restore_global ();
 }
 
 /* Find duplicate field within the same class declarations and report
@@ -5374,11 +5376,12 @@ duplicate_declaration_error_p (new_field_name, new_type, cl)
   if (decl)
     {
       char *t1 = strdup (lang_printable_name (new_type, 1));
-      char *t2 = 
-	strdup ((TREE_CODE (TREE_TYPE (decl)) == TREE_LIST ?
-		 IDENTIFIER_POINTER (TYPE_NAME 
-				     (TREE_PURPOSE (TREE_TYPE (decl)))) :
-		 lang_printable_name (TREE_TYPE (decl), 1)));
+      /* The type may not have been completed by the time we report
+	 the error */
+      char *t2 = strdup (((TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE 
+			   && TREE_TYPE (TREE_TYPE (decl)) == NULL_TREE) ?
+			  IDENTIFIER_POINTER (TYPE_NAME (TREE_TYPE (decl))) :
+			  lang_printable_name (TREE_TYPE (decl), 1)));
       parse_error_context 
 	(cl , "Duplicate variable declaration: `%s %s' was `%s %s' (%s:%d)", 
 	 t1, IDENTIFIER_POINTER (new_field_name),
@@ -5433,6 +5436,7 @@ register_fields (flags, type, variable_list)
   for (current = variable_list, saved_type = type; current; 
        current = TREE_CHAIN (current), type = saved_type)
     {
+      tree real_type;
       tree field_decl;
       tree cl = TREE_PURPOSE (current);
       tree init = TREE_VALUE (current);
@@ -5440,10 +5444,6 @@ register_fields (flags, type, variable_list)
 
       /* Process NAME, as it may specify extra dimension(s) for it */
       type = build_array_from_name (type, wfl, current_name, &current_name);
-
-      /* Check for redeclarations */
-      if (duplicate_declaration_error_p (current_name, type, cl))
-	continue;
 
       /* Type adjustment. We may have just readjusted TYPE because
 	 the variable specified more dimensions. Make sure we have
@@ -5457,10 +5457,15 @@ register_fields (flags, type, variable_list)
 	    EXPR_WFL_NODE (TREE_OPERAND (init, 0)) = current_name;
 	}
 
+      real_type = GET_REAL_TYPE (type);
+      /* Check for redeclarations */
+      if (duplicate_declaration_error_p (current_name, real_type, cl))
+	continue;
+
       /* Set lineno to the line the field was found and create a
          declaration for it. Eventually sets the @deprecated tag flag. */
       lineno = EXPR_WFL_LINENO (cl);
-      field_decl = add_field (class_type, current_name, type, flags);
+      field_decl = add_field (class_type, current_name, real_type, flags);
       CHECK_DEPRECATED (field_decl);
       
       /* Check if we must chain. */
@@ -5485,6 +5490,8 @@ register_fields (flags, type, variable_list)
 		      permalloc (sizeof (struct lang_decl_var));
 		  DECL_LOCAL_STATIC_VALUE (field_decl) = 
 		    TREE_OPERAND (init, 1);
+		  if (TREE_CONSTANT (TREE_OPERAND (init, 1)))
+		    DECL_INITIAL (field_decl) = TREE_OPERAND (init, 1);
 		}
 	      /* Otherwise, the field should be initialized in <clinit>. 
 		 This field is remembered so we can generate <clinit> later */
@@ -5679,9 +5686,11 @@ method_header (flags, type, mdecl, throws)
 	TREE_TYPE (meth) = returned_type;
       else 
 	{
+	  tree itype;
 	  patch_stage = JDEP_METHOD_RETURN;
-	  TREE_TYPE (meth) = 
-	    register_incomplete_type (patch_stage, type, id, NULL_TREE);
+	  itype = register_incomplete_type (patch_stage, type, id, NULL_TREE);
+	  TREE_TYPE (meth) = (TREE_CODE (itype) == TREE_LIST ? 
+			      TREE_PURPOSE (itype) : itype);
 	}
     }
   else
@@ -5883,8 +5892,7 @@ check_abstract_method_header (meth)
 {
   int flags = get_access_flags_from_decl (meth);
   /* DECL_NAME might still be a WFL node */
-  tree name = (TREE_CODE (DECL_NAME (meth)) == EXPR_WITH_FILE_LOCATION ?
-	       EXPR_WFL_NODE (DECL_NAME (meth)) : DECL_NAME (meth));
+  tree name = GET_METHOD_NAME (meth);
 
   OBSOLETE_MODIFIER_WARNING (MODIFIER_WFL (ABSTRACT_TK), flags,
 			     ACC_ABSTRACT, "abstract method `%s'",
@@ -6115,6 +6123,7 @@ obtain_incomplete_type (wfl)
       tree core;
       push_obstacks (&permanent_obstack, &permanent_obstack);
       BUILD_PTR_FROM_NAME (core, name);
+      layout_type (core);
       ptr = build_tree_list (core, NULL_TREE);
       pop_obstacks ();
       TREE_CHAIN (ptr) = ctxp->incomplete_class;
@@ -6196,10 +6205,6 @@ safe_layout_class (class)
 
   push_obstacks (&permanent_obstack, &permanent_obstack);
 
-  if (!CLASS_METHOD_CHECKED_P (class))
-    CHECK_METHODS (TYPE_NAME (class));
-  CLASS_METHOD_CHECKED_P (class) = 1;
-
   layout_class (class);
   pop_obstacks ();
 
@@ -6252,7 +6257,7 @@ java_complete_class ()
   /* Rever things so we have the right order */
   ctxp->class_list = nreverse (ctxp->class_list);
   ctxp->classd_list = reverse_jdep_list (ctxp);
-    
+
   for (cclassd = ctxp->classd_list, cclass = ctxp->class_list; 
        cclass && cclassd; 
        cclass = TREE_CHAIN (cclass), cclassd = CLASSD_CHAIN (cclassd))
@@ -6261,7 +6266,6 @@ java_complete_class ()
       for (dep = CLASSD_FIRST (cclassd); dep; dep = JDEP_CHAIN (dep))
 	{
 	  tree decl;
-
 	  if (!(decl = jdep_resolve_class (dep)))
 	    continue;
 
@@ -6357,21 +6361,10 @@ java_complete_class ()
 	      break;
 
 	    case JDEP_EXCEPTION:
-	      /* Check for righteous inheritance here */
-	      if (!inherits_from_p (TREE_TYPE (decl), throwable_type_node))
-		 {
-		   parse_error_context 
-		     (JDEP_WFL (dep), "Class `%s' in `throws' clause must be "
-		      "a subclass of class `java.lang.Throwable'",
-		      IDENTIFIER_POINTER (EXPR_WFL_NODE (JDEP_WFL (dep))));
-		 }
-	      else 
-		{
-		  JDEP_APPLY_PATCH (dep, TREE_TYPE (decl));
-		  SOURCE_FRONTEND_DEBUG 
-		    (("Completing `%s' `throws' argument node",
-		      IDENTIFIER_POINTER (EXPR_WFL_NODE (JDEP_WFL (dep)))));
-		}
+	      JDEP_APPLY_PATCH (dep, TREE_TYPE (decl));
+	      SOURCE_FRONTEND_DEBUG 
+		(("Completing `%s' `throws' argument node",
+		  IDENTIFIER_POINTER (EXPR_WFL_NODE (JDEP_WFL (dep)))));
 	      break;
 
 	    default:
@@ -6496,11 +6489,23 @@ do_resolve_class (class_type, decl, cl)
    parsed class). Return a decl node.  */
 
 static tree
-resolve_and_layout (name, cl)
-     tree name;
+resolve_and_layout (something, cl)
+     tree something;
      tree cl;
 {
-  tree decl = resolve_no_layout (name, cl);
+  tree decl;
+
+  if (TREE_CODE (something) == POINTER_TYPE)
+    something = TREE_TYPE (something);
+
+  if (JPRIMITIVE_TYPE_P (something) || something == void_type_node)
+    return NULL_TREE;
+
+  if (TREE_CODE (something) != IDENTIFIER_NODE)
+    something = (TREE_CODE (TYPE_NAME (something)) == TYPE_DECL ?
+	    DECL_NAME (TYPE_NAME (something)) : TYPE_NAME (something));
+
+  decl = resolve_no_layout (something, cl);
   if (decl && TREE_TYPE (decl) != current_class 
       && !CLASS_LOADED_P (TREE_TYPE (decl)))
     safe_layout_class (TREE_TYPE (decl));
@@ -6640,14 +6645,28 @@ reset_method_name (method)
     {
       /* NAME is just the plain name when Object is being defined */
       if (DECL_CONTEXT (method) != object_type_node)
-	DECL_NAME (method) = 
-	  (DECL_CONSTRUCTOR_P (method) ? init_identifier_node :
-	   (TREE_CODE (DECL_NAME (method)) == EXPR_WITH_FILE_LOCATION ? 
-	    EXPR_WFL_NODE (DECL_NAME (method)) : DECL_NAME (method)));
+	DECL_NAME (method) = (DECL_CONSTRUCTOR_P (method) ? 
+			      init_identifier_node : GET_METHOD_NAME (method));
       return 0;
     }
   else 
     return 1;
+}
+
+/* Return the name of METHOD_DECL, when DECL_NAME is a WFL */
+
+tree
+java_get_real_method_name (method_decl)
+     tree method_decl;
+{
+  tree method_name = DECL_NAME (method_decl);
+  if (DECL_CONSTRUCTOR_P (method_decl))
+    return init_identifier_node;
+  else if (ctxp 
+	   && ctxp->current_parsed_class_un == EXPR_WFL_NODE (method_name))
+    return init_identifier_node;
+  else
+    return EXPR_WFL_NODE (method_name);
 }
 
 /* Track method being redefined inside the same class. As a side
@@ -6703,6 +6722,11 @@ java_check_regular_methods (class_decl)
   tree class = CLASS_TO_HANDLE_TYPE (TREE_TYPE (class_decl));
   tree super_class = CLASSTYPE_SUPER (class);
   tree saved_found_wfl = NULL_TREE, found = NULL_TREE;
+  tree mthrows;
+
+  /* It is not necessary to check methods defined in java.lang.Object */
+  if (class == object_type_node)
+    return;
 
   TYPE_METHODS (class) = nreverse (TYPE_METHODS (class));
 
@@ -6730,6 +6754,19 @@ java_check_regular_methods (class_decl)
 	 saw_constructor = 1;
 	 continue;
        }
+
+      /* We verify things thrown by the method. They must inherits from
+	 java.lang.Throwable */
+      for (mthrows = DECL_FUNCTION_THROWS (method);
+	   mthrows; mthrows = TREE_CHAIN (mthrows))
+	{
+	  if (!inherits_from_p (TREE_VALUE (mthrows), throwable_type_node))
+	    parse_error_context 
+	      (TREE_PURPOSE (mthrows), "Class `%s' in `throws' clause must be "
+	       "a subclass of class `java.lang.Throwable'",
+	       IDENTIFIER_POINTER 
+	         (DECL_NAME (TYPE_NAME (TREE_VALUE (mthrows)))));
+	}
 
       sig = build_java_argument_signature (TREE_TYPE (method));
       found = lookup_argument_method (super_class, DECL_NAME (method), sig);
@@ -6820,7 +6857,8 @@ java_check_regular_methods (class_decl)
 	 the match was found in java.lang.Object.  */
       if (DECL_CONTEXT (found) != object_type_node 
 	  && (!aflags || (aflags > ACC_PROTECTED))
-	  && !class_in_current_package (DECL_CONTEXT (found)))
+	  && !class_in_current_package (DECL_CONTEXT (found))
+	  && flag_not_overriding)
 	parse_warning_context 
 	  (method_wfl, "Method `%s' in class `%s' does not "
 	   "override the corresponding method in class `%s', which is "
@@ -6867,11 +6905,15 @@ check_throws_clauses (method, method_wfl, found)
 {
   tree mthrows, fthrows;
 
+  /* Can't check these things with class loaded from bytecode. FIXME */
+  if (!CLASS_FROM_SOURCE_P (DECL_CONTEXT (found)))
+    return;
+
   for (mthrows = DECL_FUNCTION_THROWS (method);
        mthrows; mthrows = TREE_CHAIN (mthrows))
     {
       /* We don't verify unchecked expressions */
-      if (IS_UNCHECKED_EXPRESSION_P (TREE_VALUE (mthrows)))
+      if (IS_UNCHECKED_EXCEPTION_P (TREE_VALUE (mthrows)))
 	continue;
       /* Checked expression must be compatible */
       for (fthrows = DECL_FUNCTION_THROWS (found); 
@@ -6980,10 +7022,7 @@ java_check_methods ()
   tree current;
   for (current = ctxp->gclass_list; current; current = TREE_CHAIN (current))
     if (CLASS_FROM_SOURCE_P (TREE_TYPE (TREE_VALUE (current))))
-      {
-	CHECK_METHODS (TREE_VALUE (current));
-	CLASS_METHOD_CHECKED_P (TREE_TYPE (TREE_VALUE (current))) = 1;
-      }
+      CHECK_METHODS (TREE_VALUE (current));
 }
 
 /* Lookup methods in interfaces using their name and partial
@@ -7454,12 +7493,20 @@ declare_local_variables (modifier, type, vlist)
     {
       int i;
       for (i = 0; i <= 10; i++) if (1 << i & modifier) break;
-      parse_error_context 
-	(ctxp->modifier_ctx [i],
-	 (modifier == ACC_FINAL ?
-	  "Unsupported JDK1.1 `final' locals" :
-	  "Only `final' is allowed as a local variables modifier"));
-      return;
+      if (modifier == ACC_FINAL)
+	{
+	  if (flag_static_local_jdk1_1)
+	    parse_warning_context (ctxp->modifier_ctx [i], 
+				   "Unsupported JDK1.1 `final' local variable "
+				   "(treated as non final)");
+	}
+      else 
+	{
+	  parse_error_context 
+	    (ctxp->modifier_ctx [i], 
+	     "Only `final' is allowed as a local variables modifier");
+	  return;
+	}
     }
 
   /* Obtain an incomplete type if TYPE is not complete. TYPE_WFL will
@@ -7475,7 +7522,7 @@ declare_local_variables (modifier, type, vlist)
   for (current = vlist, saved_type = type; current;
        current = TREE_CHAIN (current), type = saved_type)
     {
-      tree other;
+      tree other, real_type;
       tree wfl  = TREE_PURPOSE (current);
       tree name = EXPR_WFL_NODE (wfl);
       tree init = TREE_VALUE (current);
@@ -7497,10 +7544,11 @@ declare_local_variables (modifier, type, vlist)
       if (type != saved_type && !must_chain 
 	  && (TREE_CODE (type) == RECORD_TYPE))
 	type = promote_type (type);
-      
+
+      real_type = GET_REAL_TYPE (type);
       /* Never layout this decl. This will be done when its scope
 	 will be entered */
-      decl = build_decl_no_layout (VAR_DECL, name, type);
+      decl = build_decl (VAR_DECL, name, real_type);
       BLOCK_CHAIN_DECL (decl);
       
       /* Don't try to use an INIT statement when an error was found */
@@ -7556,8 +7604,8 @@ source_start_java_method (fndecl)
       if (INCOMPLETE_TYPE_P (type))
 	{
 	  jdep *jdep;
-	  parm_decl = build_decl_no_layout (PARM_DECL, name, type);
-	  
+	  tree real_type = GET_REAL_TYPE (type);
+	  parm_decl = build_decl (PARM_DECL, name, real_type);
 	  register_incomplete_type (JDEP_PARM, NULL_TREE, NULL_TREE, type);
 	  jdep = CLASSD_LAST (ctxp->classd_list);
 	  JDEP_MISC (jdep) = name;
@@ -7752,16 +7800,38 @@ java_layout_classes ()
     {
       current_class = TREE_TYPE (TREE_VALUE (current));
 
-      /* Reverse the fields if it's necessary (they've already
-         reversed if the dummy field has been inserted at the
-         beginning of the list */
-      if (TYPE_FIELDS (current_class)
-	  && !DECL_IGNORED_P (TYPE_FIELDS (current_class)))
-	TYPE_FIELDS (current_class) = nreverse (TYPE_FIELDS (current_class));
+      /* Reverse the fields, but leave the dummy field in front.
+	 Fields are already ordered for Object and Class */
+      if (TYPE_FIELDS (current_class) && current_class != object_type_node
+	  && current_class != class_type_node)
+      {
+	/* Always leave the dummy field in front if its already there,
+	   and layout the class for proper field offets. */
+	if (!DECL_NAME (TYPE_FIELDS (current_class)))
+	  {
+	    tree fields = TYPE_FIELDS (current_class);
+	    TREE_CHAIN (fields) = nreverse (TREE_CHAIN (fields));
+	    TYPE_SIZE (current_class) = NULL_TREE;
+	    layout_type (current_class);
+	  }
+	/* It's time to layout the class */
+	else
+	  {
+	    TYPE_FIELDS (current_class) = 
+	      nreverse (TYPE_FIELDS (current_class));
+	    TYPE_SIZE (current_class) = NULL_TREE;
+	    layout_class (current_class);
+	  }
+      }
       
       /* Do a layout if necessary */
-      if (!TYPE_SIZE (current_class) || (current_class == object_type_node))
+      if (!TYPE_SIZE (current_class) 
+	  || (current_class == object_type_node)
+	  || current_class == class_type_node)
 	safe_layout_class (current_class);
+
+      /* From now on, the class is considered completely loaded */
+      CLASS_LOADED_P (current_class) = 1;
 
       /* Error reported by the caller */
       if (java_error_count)
@@ -7847,6 +7917,8 @@ java_complete_expand_method (mdecl)
   /* Expand functions that have a body */
   if (DECL_FUNCTION_BODY (mdecl))
     {
+      tree fbody = DECL_FUNCTION_BODY (mdecl);
+      tree block_body = BLOCK_EXPR_BODY (fbody);
       expand_start_java_method (mdecl);
 
       current_this 
@@ -7859,9 +7931,16 @@ java_complete_expand_method (mdecl)
       /* Install exceptions thrown with `throws' */
       PUSH_EXCEPTIONS (DECL_FUNCTION_THROWS (mdecl));
 
-      if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)))
-	java_complete_tree (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl)));
+      if (block_body != NULL_TREE)
+	block_body = java_complete_tree (block_body);
+      BLOCK_EXPR_BODY (fbody) = block_body;
 
+      if ((block_body == NULL_TREE || CAN_COMPLETE_NORMALLY (block_body))
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (mdecl))) != VOID_TYPE)
+	{
+	  parse_error_context (fbody, "Missing return statement");
+	}
+      
       /* Don't go any further if we've found error(s) during the
          expansion */
       if (!java_error_count)
@@ -8289,15 +8368,15 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 				     type_found, DECL_NAME (decl));
       if (field_ref == error_mark_node)
 	return error_mark_node;
-      if (is_static && !static_final_found
-	  && ! flag_emit_class_files)
+      if (is_static && !static_final_found && !flag_emit_class_files)
 	{
 	  field_ref = build_class_init (type_found, field_ref);
 	  /* If the static field was identified by an expression that
 	     needs to be generated, make the field access a compound
 	     expression whose first part of the evaluation of the
 	     field selector part. */
-	  if (where_found && TREE_CODE (where_found) != TYPE_DECL)
+	  if (where_found && TREE_CODE (where_found) != TYPE_DECL 
+	      && TREE_CODE (where_found) != RECORD_TYPE)
 	    {
 	      tree type = QUAL_DECL_TYPE (field_ref);
 	      field_ref = build (COMPOUND_EXPR, type, where_found, field_ref);
@@ -8310,7 +8389,8 @@ resolve_field_access (qual_wfl, field_decl, field_type)
   if (field_decl)
     *field_decl = decl;
   if (field_type)
-    *field_type = QUAL_DECL_TYPE (decl);
+    *field_type = (QUAL_DECL_TYPE (decl) ? 
+		   QUAL_DECL_TYPE (decl) : TREE_TYPE (decl));
   return field_ref;
 }
 
@@ -8326,7 +8406,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
   int previous_call_static = 0;
   int is_static;
   tree decl = NULL_TREE, type = NULL_TREE, q;
-  *where_found = NULL_TREE;
+  *type_found = *where_found = NULL_TREE;
 
   for (q = EXPR_WFL_QUALIFICATION (wfl); q; q = TREE_CHAIN (q))
     {
@@ -8517,10 +8597,16 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	  if (!from_super && QUAL_RESOLUTION (q))
 	    {
 	      decl = QUAL_RESOLUTION (q);
-	      if (!type && !FIELD_STATIC (decl))
+	      if (!type)
 		{
-		  *where_found = current_this;
-		  *type_found = type;
+		  if (!FIELD_STATIC (decl))
+		    *where_found = current_this;
+		  else
+		    {
+		      *where_found = TREE_TYPE (decl);
+		      if (TREE_CODE (*where_found) == POINTER_TYPE)
+			*where_found = TREE_TYPE (*where_found);
+		    }
 		}
 	    }
 
@@ -8556,15 +8642,19 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 		}
 
 	      /* Layout the type of field_decl, since we may need
-                 it. Don't do primitive types or loaded classes */
+                 it. Don't do primitive types or loaded classes. The
+                 situation of non primitive arrays may not handled
+                 properly here. FIXME */
 	      if (TREE_CODE (TREE_TYPE (field_decl)) == POINTER_TYPE)
 		field_decl_type = TREE_TYPE (TREE_TYPE (field_decl));
 	      else
 		field_decl_type = TREE_TYPE (field_decl);
 	      if (!JPRIMITIVE_TYPE_P (field_decl_type) 
-		  && !CLASS_LOADED_P (field_decl_type))
-		resolve_and_layout (DECL_NAME (TYPE_NAME (field_decl_type)),
-				    NULL_TREE);
+		  && !CLASS_LOADED_P (field_decl_type)
+		  && !TYPE_ARRAY_P (field_decl_type))
+		resolve_and_layout (field_decl_type, NULL_TREE);
+	      if (TYPE_ARRAY_P (field_decl_type))
+		CLASS_LOADED_P (field_decl_type) = 1;
 	      
 	      /* Check on accessibility here */
 	      if (not_accessible_p (type, field_decl, from_super))
@@ -8648,32 +8738,19 @@ int not_accessible_p (reference, member, from_super)
       if (class_in_current_package (DECL_CONTEXT (member)))
 	return 0;
 
-      if (TREE_CODE (member) == FUNCTION_DECL && DECL_CONSTRUCTOR_P (member))
-	{
-	  /* Access from SUPER is granted */
-	  if (from_super)
-	    return 0;
-	  /* Otherwise, access isn't granted */
-	  return 1;
-	}
-      else
-	{
-	  /* If accessed with the form `super.member', then access is
-             granted */
-	  if (from_super)
-	    return 0;
+      /* If accessed with the form `super.member', then access is granted */
+      if (from_super)
+	return 0;
 
-	  /* Otherwise, access is granted if occuring from the class where
-	     member is declared or a subclass of it */
-	  if (inherits_from_p (reference, current_class))
-	    return 0;
-	}
+      /* Otherwise, access is granted if occuring from the class where
+	 member is declared or a subclass of it */
+      if (inherits_from_p (reference, current_class))
+	return 0;
       return 1;
     }
 
   /* Check access on private members. Access is granted only if it
-     occurs from within the class in witch it is declared*/
-
+     occurs from within the class in witch it is declared */
   if (access_flag & ACC_PRIVATE)
     return (current_class == DECL_CONTEXT (member) ? 0 : 1);
 
@@ -8872,9 +8949,9 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl, super)
 	  
 	  /* 2- Do the layout of the class where the last field
 	     was found, so we can search it. */
-	  class_decl = 
-	    resolve_and_layout (DECL_NAME (TYPE_NAME (type)), NULL_TREE);
-	  
+	  class_decl = resolve_and_layout (type, NULL_TREE);
+	  type = TREE_TYPE (class_decl);
+
 	  /* 3- Retrieve a filtered list of method matches, Refine
 	     if necessary. In any cases, point out errors.  */
 	  list = lookup_method_invoke (0, identifier_wfl, type, 
@@ -8956,6 +9033,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl, super)
       /* NAME is a simple identifier or comes from a primary. Search
 	 in the class whose declaration contain the method being
 	 invoked. */
+      resolve_and_layout (class_to_search, NULL_TREE);
       list = lookup_method_invoke (lc, wfl, class_to_search, name, args);
 
       /* Don't continue if no method were found, as the next statement
@@ -8984,7 +9062,7 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl, super)
 
   /* Check accessibility, position the is_static flag, build and
      return the call */
-  if (not_accessible_p (DECL_CONTEXT (list), list, 0))
+  if (not_accessible_p (DECL_CONTEXT (current_function_decl), list, 0))
     {
       char *fct_name = strdup (lang_printable_name (list, 0));
       parse_error_context 
@@ -9170,20 +9248,26 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
      tree cl;
      tree class, name, arg_list;
 {
-  tree method = make_node (FUNCTION_TYPE);
   tree atl = NULL_TREE;		/* Arg Type List */
-  tree signature, list, node;
+  tree method, signature, list, node;
   char *candidates;		/* Used for error report */
 
   /* Fix the arguments */
   for (node = arg_list; node; node = TREE_CHAIN (node))
     {
-      tree current_arg = TREE_TYPE (TREE_VALUE (node));
+      tree current_arg = TREE_VALUE (node);
+      /* Integer constant 0 passed as itself, not as a type */
+      if (current_arg != integer_zero_node)
+	current_arg = TREE_TYPE (TREE_VALUE (node));
+      /* Non primitive type may have to be resolved */
+      if (current_arg != integer_zero_node 
+	  && !JPRIMITIVE_TYPE_P (current_arg))
+	resolve_and_layout (current_arg, NULL_TREE);
+      /* And promoted */
       if (TREE_CODE (current_arg) == RECORD_TYPE)
-	current_arg = promote_type (current_arg);
+        current_arg = promote_type (current_arg);
       atl = tree_cons (NULL_TREE, current_arg, atl);
     }
-  TYPE_ARG_TYPES (method) = atl;
 
   /* Find all candidates and then refine the list, searching for the
      most specific method. */
@@ -9217,6 +9301,11 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
       candidates = obstack_finish (&temporary_obstack);
     }
   /* Issue the error message */
+  for (node = atl; node; node = TREE_CHAIN (node))
+    if (TREE_VALUE (node) == integer_zero_node)
+      TREE_VALUE (node) = long_type_node;
+  method = make_node (FUNCTION_TYPE);
+  TYPE_ARG_TYPES (method) = atl;
   signature = build_java_argument_signature (method);
   parse_error_context (cl, "Can't find %s `%s(%s)' in class `%s'%s",
 		       (lc ? "constructor" : "method"),
@@ -9248,13 +9337,14 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
 	  if (lc && !DECL_CONSTRUCTOR_P (method))
 	    continue;
 	  else if (!lc && (DECL_CONSTRUCTOR_P (method)
-			   || DECL_NAME (method) != name))
+			   || (GET_METHOD_NAME (method) != name)))
 	    continue;
 	  
 	  if (argument_types_convertible (method, arglist))
 	    {
 	      /* Retain accessible methods only */
-	      if (!not_accessible_p (class, method, 0))
+	      if (!not_accessible_p (DECL_CONTEXT (current_function_decl), 
+				     method, 0))
 		list = tree_cons (NULL_TREE, method, list);
 	      else
 	      /* Also retain all selected method here */
@@ -9361,6 +9451,7 @@ argument_types_convertible (m1, m2_or_arglist)
 
   while (m1_arg && m2_arg)
     {
+      resolve_and_layout (TREE_VALUE (m1_arg), NULL_TREE);
       if (!valid_method_invocation_conversion_p (TREE_VALUE (m1_arg),
 						 TREE_VALUE (m2_arg)))
 	break;
@@ -9492,7 +9583,8 @@ qualify_ambiguous_name (id)
     }
 
   /* Method call are expression name */
-  else if (TREE_CODE (QUAL_WFL (qual)) == CALL_EXPR)
+  else if (TREE_CODE (QUAL_WFL (qual)) == CALL_EXPR
+	   || TREE_CODE (QUAL_WFL (qual)) == ARRAY_REF)
     RESOLVE_EXPRESSION_NAME_P (qual_wfl) = 1;
 
   /* Check here that NAME isn't declared by more than one
@@ -9553,22 +9645,6 @@ breakdown_qualified (left, right, source)
   return 0;
 }
 
-static int
-not_initialized_as_it_should_p (decl)
-     tree decl;
-{
-  if (DECL_P (decl))
-    {
-      if (FIELD_FINAL (decl))
-	return 0;
-      if (TREE_CODE (decl) == FIELD_DECL 
-	  && (METHOD_STATIC (current_function_decl)))
-	return 0;
-      return DECL_P (decl) && !INITIALIZED_P (decl);
-    }
-  return 0;
-}
-
 /* Patch tree nodes in a function body. When a BLOCK is found, push
    local variable decls if present.  */
 
@@ -9610,7 +9686,8 @@ java_complete_tree (node)
 	  int error_seen = 0;
 	  if (TREE_CODE (stmt) == COMPOUND_EXPR)
 	    {
-	      /* Re-order from (((A; B); C); ...; Z) to (A; (B; (C ; (...; Z)))).
+	      /* Re-order from (((A; B); C); ...; Z) to 
+		 (A; (B; (C ; (...; Z)))).
 		 This makes it easier to scan the statements left-to-right
 		 without using recursion (which might overflow the stack
 		 if the block has many statements. */
@@ -9626,7 +9703,8 @@ java_complete_tree (node)
 	      BLOCK_EXPR_BODY (node) = stmt;
 	    }
 
-	  /* Now do the actual complete, without deep recursion for long blocks. */
+	  /* Now do the actual complete, without deep recursion for
+             long blocks. */
 	  ptr = &BLOCK_EXPR_BODY (node);
 	  while (TREE_CODE (*ptr) == COMPOUND_EXPR)
 	    {
@@ -9651,7 +9729,8 @@ java_complete_tree (node)
 		      && TREE_CODE (wfl_op2) != DEFAULT_EXPR)
 		    {
 		      SET_WFL_OPERATOR (wfl_operator, *ptr, wfl_op2);
-		      parse_error_context (wfl_operator, "Unreachable statement");
+		      parse_error_context (wfl_operator, 
+					   "Unreachable statement");
 		    }
 		}
 	      ptr = next;
@@ -9719,7 +9798,8 @@ java_complete_tree (node)
       nn = ctxp->current_loop;
 
       /* It must be assignable to the type of the switch expression. */
-      if (!try_builtin_assignconv (NULL_TREE, TREE_TYPE (TREE_OPERAND (nn, 0)), cn))
+      if (!try_builtin_assignconv (NULL_TREE, 
+				   TREE_TYPE (TREE_OPERAND (nn, 0)), cn))
 	{
 	  EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
 	  parse_error_context 
@@ -9735,6 +9815,7 @@ java_complete_tree (node)
 	 value is checked during code generation. The case
 	 expression is allright so far. */
       TREE_OPERAND (node, 0) = cn;
+      TREE_TYPE (node) = void_type_node;
       CAN_COMPLETE_NORMALLY (node) = 1;
       break;
 
@@ -9750,6 +9831,7 @@ java_complete_tree (node)
 	}
       else
 	SWITCH_HAS_DEFAULT (nn) = 1;
+      TREE_TYPE (node) = void_type_node;
       CAN_COMPLETE_NORMALLY (node) = 1;
       break;
 
@@ -9896,18 +9978,17 @@ java_complete_tree (node)
 	  tree decl, wfl = TREE_OPERAND (node, 0);
 	  int in_this = CALL_THIS_CONSTRUCTOR_P (node);
 
-	  node = patch_method_invocation (node, NULL_TREE,
+	  node = patch_method_invocation (node, NULL_TREE, 
 					  NULL_TREE, 0, &decl, 0);
-	  if (node != error_mark_node)
-	    {
-	      check_thrown_exceptions (EXPR_WFL_LINECOL (node), decl);
-	      /* If we call this(...), register signature and positions */
-	      if (in_this)
-		DECL_CONSTRUCTOR_CALLS (current_function_decl) = 
-		  tree_cons (wfl, decl,
-			     DECL_CONSTRUCTOR_CALLS (current_function_decl));
-		
-	    }
+	  if (node == error_mark_node)
+	    return error_mark_node;
+
+	  check_thrown_exceptions (EXPR_WFL_LINECOL (node), decl);
+	  /* If we call this(...), register signature and positions */
+	  if (in_this)
+	    DECL_CONSTRUCTOR_CALLS (current_function_decl) = 
+	      tree_cons (wfl, decl, 
+			 DECL_CONSTRUCTOR_CALLS (current_function_decl));
 	  return node;
 	}
 
@@ -9937,6 +10018,13 @@ java_complete_tree (node)
       nn = java_complete_tree (TREE_OPERAND (node, 1));
       if (nn == error_mark_node)
 	{
+	  /* It's hopeless, but we can further things on to discover
+	     an error during the assignment. In any cases, the
+	     assignment operation fails. */
+	  if (TREE_CODE (TREE_OPERAND (node, 1)) != EXPR_WITH_FILE_LOCATION
+	      && TREE_TYPE (TREE_OPERAND (node, 1)) != error_mark_node)
+	    patch_assignment (node, wfl_op1, wfl_op2);
+
 	  /* Now, we still mark the lhs as initialized */
 	  if (DECL_P (TREE_OPERAND (node, 0)))
 	    INITIALIZED_P (TREE_OPERAND (node, 0)) = 1;
@@ -10033,7 +10121,14 @@ java_complete_tree (node)
 	return error_mark_node;
       if (!flag_emit_class_files)
 	TREE_OPERAND (node, 1) = save_expr (TREE_OPERAND (node, 1));
-      return patch_array_ref (node, wfl_op1, wfl_op2);
+      return patch_array_ref (node);
+
+#if 0 
+    COMPONENT_REF:
+      /* Planned re-write FIXME */
+      TREE_OPERAND (node, 0) = java_complete_tree (TREE_OPERAND (node, 0));
+      break;
+#endif
 
     case THIS_EXPR:
       /* Can't use THIS in a static environment */
@@ -10098,11 +10193,6 @@ complete_function_arguments (node)
       parm = maybe_build_primttype_type_ref (parm, wfl);
 
       TREE_VALUE (cn) = parm;
-      if (not_initialized_as_it_should_p (parm))
-	{
-	  ERROR_VARIABLE_NOT_INITIALIZED (wfl, EXPR_WFL_NODE (wfl));
-	  INITIALIZED_P (parm) = 1;
-	}
     }
   ctxp->explicit_constructor_p -= (CALL_THIS_CONSTRUCTOR_P (node) ? 1 : 0);
   return flag;
@@ -10230,14 +10320,14 @@ maybe_absorb_scoping_blocks ()
    are building incomplete tree nodes and the patch_* functions that
    are completing them.  */
 
-/* Build a super() constructor invocation. Returns size_zero_node if
+/* Build a super() constructor invocation. Returns empty_stmt_node if
    we're currently dealing with the class java.lang.Object. */
 
 static tree
 build_super_invocation ()
 {
   if (current_class == object_type_node)
-    return size_zero_node;
+    return empty_stmt_node;
   else
     {
       tree super_wfl = build_wfl_node (super_identifier_node, 
@@ -10488,29 +10578,12 @@ patch_assignment (node, wfl_op1, wfl_op2)
       error_found = 1;
     }
 
-  /* Before reporting type incompatibility errors, check that the rhs
-     is initialized, if a variable */
-  if (not_initialized_as_it_should_p (rhs))
-    {
-      ERROR_VARIABLE_NOT_INITIALIZED (wfl_op2, DECL_NAME (rhs));
-      INITIALIZED_P (rhs) = 1;
-    }
-
   /* Inline read access to java.lang.PRIMTYPE.TYPE */
   rhs = maybe_build_primttype_type_ref (rhs, wfl_op2);
 
-  if (TREE_CODE (rhs) == COMPOUND_EXPR)
-    {
-      tree n = TREE_OPERAND (rhs, 1);
-      if (TREE_CODE (n) == VAR_DECL 
-	  && DECL_NAME (n) == TYPE_identifier_node
-	  && rhs_type == class_ptr_type)
-	{
-	  char *self_name = IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl_op2));
-	  if (!strncmp (self_name, "java.lang.", 10))
-	    rhs = build_primtype_type_ref (self_name);
-	}
-    }
+  /* Inline read access to java.lang.PRIMTYPE.TYPE */
+  if (new_rhs)
+    new_rhs = maybe_build_primttype_type_ref (new_rhs, wfl_op2);
 
   if (error_found)
     return error_mark_node;
@@ -10611,6 +10684,11 @@ valid_builtin_assignconv_identity_widening_p (lhs_type, rhs_type)
   int all_primitive;
 
   if (lhs_type == rhs_type)
+    return 1;
+
+  /* Sometimes, instead of passing a type, we pass integer_zero_node
+     so we know that an integral type can accomodate it */
+  if (JINTEGRAL_TYPE_P (lhs_type) && (rhs_type == integer_zero_node))
     return 1;
 
   all_primitive = 
@@ -10793,7 +10871,7 @@ static int
 valid_method_invocation_conversion_p (dest, source)
      tree dest, source;
 {
-  return ((JPRIMITIVE_TYPE_P (source) 
+  return (((JPRIMITIVE_TYPE_P (source) || (source == integer_zero_node))
 	    && JPRIMITIVE_TYPE_P (dest)
 	    && valid_builtin_assignconv_identity_widening_p (dest, source))
 	   || ((JREFERENCE_TYPE_P (source) || JNULLP_TYPE_P (source))
@@ -10894,23 +10972,7 @@ patch_binop (node, wfl_op1, wfl_op2)
      after checking for the initialization of the RHS */
   int error_found = 0;
 
-  /* Figure what is going to be checked first for initialization prior
-     its use. If NODE is part of a compound assignment, we check the
-     second operand first, otherwise the first one first. We also
-     initialize the matching WFL for the error report. `cfi' stands
-     for Check For Initialization */
-  tree cfi = (COMPOUND_ASSIGN_P (node) ? op2 : op1);
-  tree cfi_wfl = (COMPOUND_ASSIGN_P (node) ? wfl_op2 : wfl_op1);
-
   EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
-
-  /* Check initialization of LHS first. We then silence further error
-     message if the variable wasn't initialized */
-  if (not_initialized_as_it_should_p (cfi))
-    {
-      ERROR_VARIABLE_NOT_INITIALIZED (cfi_wfl, DECL_NAME (cfi));
-      INITIALIZED_P (op1) = 1;
-    }
 
   switch (code)
     {
@@ -11189,16 +11251,6 @@ patch_binop (node, wfl_op1, wfl_op2)
       break;
     }
 
-  /* Then check the initialization of the RHS. We don't do that if
-     we're dealing with a node that is part of a compound
-     assignment. We then silence further error message if the variable
-     wasn't initialized */
-  if (not_initialized_as_it_should_p (op2) && !COMPOUND_ASSIGN_P (node))
-    {
-      ERROR_VARIABLE_NOT_INITIALIZED (wfl_op2, DECL_NAME (op2));
-      INITIALIZED_P (op2) = 1;
-    }
-
   if (error_found)
     return error_mark_node;
 
@@ -11374,8 +11426,15 @@ patch_string (node)
     return patch_string_cst (node);
   else if (IS_CRAFTED_STRING_BUFFER_P (node))
     {
+      int saved = ctxp->explicit_constructor_p;
       tree invoke = build_method_invocation (wfl_to_string, NULL_TREE);
-      return java_complete_tree (make_qualified_primary (node, invoke, 0));
+      tree ret;
+      /* Temporary disable forbid the use of `this'. */
+      ctxp->explicit_constructor_p = 0;
+      ret = java_complete_tree (make_qualified_primary (node, invoke, 0));
+      /* Restore it at its previous value */
+      ctxp->explicit_constructor_p = saved;
+      return ret;
     }
   return NULL_TREE;
 }
@@ -11573,6 +11632,8 @@ patch_unaryop (node, wfl_op)
       if (TREE_CODE (op_type) != BOOLEAN_TYPE)
 	{
 	  ERROR_CANT_CONVERT_TO_BOOLEAN (wfl_operator, node, op_type);
+	  /* But the type is known. We will report an error if further
+	     attempt of a assignment is made with this rhs */
 	  TREE_TYPE (node) = boolean_type_node;
 	  error_found = 1;
 	}
@@ -11584,8 +11645,15 @@ patch_unaryop (node, wfl_op)
     case CONVERT_EXPR:
       value = patch_cast (node, wfl_operator);
       if (value == error_mark_node)
-	return value;
-      node = value;
+	{
+	  /* If this cast is part of an assignment, we tell the code
+	     that deals with it not to complain about a mismatch,
+	     because things have been cast, anyways */
+	  TREE_TYPE (node) = error_mark_node;
+	  error_found = 1;
+	}
+      else
+	node = value;
       break;
     }
   
@@ -11725,8 +11793,8 @@ build_array_ref (location, array, index)
 /* 15.12 Array Access Expression */
 
 static tree
-patch_array_ref (node, wfl_array, wfl_index)
-     tree node, wfl_array, wfl_index;
+patch_array_ref (node)
+     tree node;
 {
   tree array = TREE_OPERAND (node, 0);
   tree array_type  = TREE_TYPE (array);
@@ -12032,10 +12100,8 @@ build_if_else_statement (location, expression, if_body, else_body)
      tree expression, if_body, else_body;
 {
   tree node;
-  /* FIXME: make else body be a void node, where this function is
-     called */
   if (!else_body)
-    else_body = build (COMPOUND_EXPR, void_type_node, NULL_TREE, NULL_TREE);
+    else_body = empty_stmt_node;
   node = build (COND_EXPR, NULL_TREE, expression, if_body, else_body);
   EXPR_WFL_LINECOL (node) = location;
   node = build_debugable_stmt (location, node);
@@ -12065,8 +12131,8 @@ patch_if_else_statement (node)
   TREE_TYPE (node) = void_type_node;
   TREE_SIDE_EFFECTS (node) = 1;
   CAN_COMPLETE_NORMALLY (node)
-    = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0))
-    | CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1));
+    = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1))
+    | CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 2));
   return node;
 }
 
@@ -12192,7 +12258,7 @@ build_loop_body (location, condition, reversed)
   second = (reversed ? condition : body);
   return 
     build (COMPOUND_EXPR, NULL_TREE, 
-	   build (COMPOUND_EXPR, NULL_TREE, first, second), size_zero_node);
+	   build (COMPOUND_EXPR, NULL_TREE, first, second), empty_stmt_node);
 }
 
 /* Install CONDITION (if any) and loop BODY (using REVERSED to tell
@@ -12439,7 +12505,7 @@ static tree
 patch_switch_statement (node)
      tree node;
 {
-  tree se = TREE_OPERAND (node, 0), se_type, sb;
+  tree se = TREE_OPERAND (node, 0), se_type;
 
   /* Complete the switch expression */
   se = TREE_OPERAND (node, 0) = java_complete_tree (se);
@@ -12468,7 +12534,8 @@ patch_switch_statement (node)
   TREE_TYPE (node) = void_type_node;
   TREE_SIDE_EFFECTS (node) = 1;
   CAN_COMPLETE_NORMALLY (node)
-    = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1)) ||	! SWITCH_HAS_DEFAULT (node);
+    = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1)) 
+      || ! SWITCH_HAS_DEFAULT (node);
   return node;
 }
 
@@ -12516,8 +12583,7 @@ build_try_statement (location, try_block, catches, finally)
 	 sequence. It hold a local variable used to return from the
 	 finally using a computed goto. We call it
 	 return_from_finally (RFF). */
-      rff = build_decl_no_layout (VAR_DECL, generate_name (),
-				   return_address_type_node);
+      rff = build_decl (VAR_DECL, generate_name (), return_address_type_node);
 
       /* Modification of the try block. */
       try_block = build_jump_to_finally (try_block, rff, 
@@ -12552,8 +12618,7 @@ build_try_statement (location, try_block, catches, finally)
 		 CALL_EXPR
 		   Jv_ReThrow
 		   exception_parameter */
-	  catch_decl = build_decl_no_layout (VAR_DECL, generate_name (),
-					     ptr_type_node);
+	  catch_decl = build_decl (VAR_DECL, generate_name (), ptr_type_node);
 	  BUILD_ASSIGN_EXCEPTION_INFO (stmt, catch_decl);
 	  catch_block = build_expr_block (stmt, NULL_TREE);
 	  catch_block = build_jump_to_finally (catch_block, rff, 
@@ -12685,7 +12750,6 @@ patch_try_statement (node)
 	      break;
 	    }
 	}
-
       /* Complete the catch clause block */
       catch_block = java_complete_tree (TREE_OPERAND (current, 0));
       if (catch_block == error_mark_node)
@@ -12704,7 +12768,6 @@ patch_try_statement (node)
 
       /* Link this type to the caught type list */
       caught_type_list = tree_cons (NULL_TREE, carg_type, caught_type_list);
-
     }
 
   PUSH_EXCEPTIONS (caught_type_list);
@@ -12782,7 +12845,7 @@ patch_synchronized_statement (node, wfl_op1)
   try_block = build_expr_block (compound, NULL_TREE);
 
   /* CATCH_ALL block */
-  decl = build_decl_no_layout (VAR_DECL, generate_name (), ptr_type_node);
+  decl = build_decl (VAR_DECL, generate_name (), ptr_type_node);
   BUILD_ASSIGN_EXCEPTION_INFO (stmt, decl);
   compound = add_stmt_to_compound (NULL_TREE, void_type_node, stmt);
   BUILD_MONITOR_EXIT (stmt, expr);
@@ -12824,7 +12887,7 @@ patch_throw_statement (node, wfl_op1)
 
   /* The type of the throw expression is a not checked exception,
      i.e. is a unchecked expression. */
-  unchecked_ok = IS_UNCHECKED_EXPRESSION_P (TREE_TYPE (type));
+  unchecked_ok = IS_UNCHECKED_EXCEPTION_P (TREE_TYPE (type));
 
   /* Throw is contained in a try statement and at least one catch
      clause can receive the thrown expression or the current method is
@@ -12897,7 +12960,7 @@ check_thrown_exceptions (location, decl)
       }
 }
 
-/* Return 1 if EXCEPTION is caught at the current nesting level of
+/* Return 1 if checked EXCEPTION is caught at the current nesting level of
    try-catch blocks, OR is listed in the `throws' clause of the
    current method.  */
 
@@ -12906,8 +12969,11 @@ check_thrown_exceptions_do (exception)
      tree exception;
 {
   tree list = currently_caught_type_list;
+  resolve_and_layout (exception, NULL_TREE);
   /* First, all the nested try-catch-finally at that stage. The
      last element contains `throws' clause exceptions, if any. */
+  if (IS_UNCHECKED_EXCEPTION_P (exception))
+    return 1;
   while (list)
     {
       tree caught;
@@ -12929,7 +12995,7 @@ purge_unchecked_exceptions (mdecl)
   while (throws)
     {
       tree next = TREE_CHAIN (throws);
-      if (!IS_UNCHECKED_EXPRESSION_P (TREE_VALUE (throws)))
+      if (!IS_UNCHECKED_EXCEPTION_P (TREE_VALUE (throws)))
 	{
 	  TREE_CHAIN (throws) = new;
 	  new = throws;

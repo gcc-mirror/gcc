@@ -271,12 +271,10 @@ get_constant (jcf, index)
 #ifdef REAL_ARITHMETIC
 	d = REAL_VALUE_FROM_TARGET_DOUBLE (num);
 #else
-	{
-	  union { double d;  jint i[2]; } u;
-	  u.i[0] = (jint) num[0];
-	  u.i[1] = (jint) num[1];
-	  d = u.d;
-	}
+	union { double d;  jint i[2]; } u;
+	u.i[0] = (jint) num[0];
+	u.i[1] = (jint) num[1];
+	d = u.d;
 #endif
 	value = build_real (double_type_node, d);
 	break;
@@ -529,6 +527,9 @@ jcf_parse_source (jcf)
     fatal ("input file `%s' just disappeared - jcf_parse_source",
 	   input_filename);
   parse_source_file (file);
+  if (fclose (finput))
+    fatal ("can't close input file `%s' stream - jcf_parse_source",
+	   input_filename);
   java_pop_parser_context (IS_A_COMMAND_LINE_FILENAME_P (file));
   java_parser_context_restore_global ();
 }
@@ -782,8 +783,13 @@ yyparse ()
 	  break;
 	}
     }
+
+  if (main_jcf->read_state && fclose (main_jcf->read_state))
+    fatal ("failed to close input file `%s' - yyparse",
+	   (main_jcf->filename ? main_jcf->filename : "<unknown>"));
+
   java_expand_classes ();
-  if (! flag_emit_class_files)
+  if (!java_report_errors () && !flag_emit_class_files)
     emit_register_classes ();
   return 0;
 }

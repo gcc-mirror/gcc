@@ -1,3 +1,120 @@
+Wed Nov 18 23:54:53 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (unmangle_classname): Set QUALIFIED_P when appropriate.
+	(layout_class): Cope with methods featuring WFL in decl names.
+	* decl.c (unqualified_object_id_node): New global variable,
+ 	initialized.
+	(build_decl_no_layout): Removed.
+	* expr.c (build_primtype_type_ref): Handle Double.
+	(java_lang_expand_expr): Fixed indentations.
+	* java-tree.h (CLASS_METHOD_CHECKED_P): Flag deleted.
+	(flag_wall, flag_redundant, flag_not_overriding,
+ 	flag_static_local_jdk1_1, unqualified_object_id_node): Global
+ 	variable declarations.
+	(build_decl_no_layout): Removed prototype.
+	(java_get_real_method_name): Added prototype.
+	(IS_UNCHECKED_EXPRESSION_P): Renamed IS_UNCHECKED_EXCEPTION_P.
+	(java_parse_abort_on_error): Macro now just returns.
+	* jcf-parse.c (jcf_parse_source): Check fclose returned
+ 	value. Call emit_register_classes if java_report_errors returns
+ 	zero.
+	* lanc.c (flag_wall, flag_redundant, flag_not_overriding,
+ 	flag_static_local_jdk1_1): New integer flags.
+	(lang_decode_option): New flags set here.
+	* parse.h (GET_REAL_TYPE, GET_METHOD_NAME): New macros.
+	(OBSOLETE_MODIFIER_WARNING): Issue error message conditionally to
+ 	the flag_redundant variable.
+	(SET_TYPE_FOR_RESOLUTION): Consider Object being java.lang.Object
+ 	when parsing java.lang.Object class.
+	(BUILD_MONITOR_ENTER, BUILD_MONITOR_EXIT): Added terminal
+ 	NULL_TREE to build.
+	(resolve_qualified_expression_name): Fixed indentation.
+	(patch_array_ref): Changed prototype.
+	(not_initialized_as_it_should_p): Prototype removed.
+	(java_report_errors): Added function prototype.
+	* parse.y (formal_parameter:): Changed error message for not yet
+ 	supported final parameters.
+	(class_type_list:): Set both PURPOSE and VALUE of created
+ 	TREE_LIST to be class_type.
+	(primary_no_new_array:): Handle class literals on primitive types.
+	(parse_warning_context): Reinstalled correct force_error and
+ 	do_warning flags setups.
+	(java_report_errors): Changed prototype. Return java_error_count
+ 	value.
+	(variable_redefinition_error): Consider treating variable type as
+ 	a fake pointer.
+	(create_interface): Warn about redundant abstract modifier if
+ 	flag_redundant is set. Changed error message.
+	(lookup_field_wrapper): Save/restore globals before/after looking
+ 	up field.
+	(duplicate_declaration_error_p): Consider treating declaration
+ 	type as a fake pointer.
+	(register_fields): Extract real type from dependency node. Check
+ 	for duplicate field declaration after type adjustment. Use
+ 	DECL_INITIAL to store static final initialized values.
+	(method_header): Extract real function type from dependency node.
+	(check_abstract_method_header): Use GET_METHOD_NAME.
+	(obtain_incomplete_type): Layout fake pointer type.
+	(safe_layout_class): Don't try to check for methods before layout.
+	(java_complete_class): Don't check for correct throws clause
+ 	elements inheritance here.
+	(resolve_and_layout): Broadened name parameter meaning.
+	(reset_method_name): Use GET_METHOD_NAME.
+	(java_get_real_method_name): New function.
+	(java_check_regular_methods): Don't check methods in
+ 	java.lang.Object.  Verify lineage of throws clause elements. Use
+ 	flag_no_overriding in warning report.
+	(check_throws_clauses): Don't check if class was from
+ 	bytecode. Use IS_UNCHECKED_EXCEPTION_P macro.
+	(java_check_methods): Don't set CLASS_METHOD_CHECKED_P flag.
+	(declare_local_variables): Use flag_static_local_jdk1_1 to report
+ 	warning on unsupported final local variables. Use build_decl
+ 	instead of build_decl_no_layout. Get real local variable type from
+ 	dependency node.
+	(source_start_java_method): Get real parameter type from
+ 	dependency node. Call build_decl instead of build_decl_no_layout.
+	(java_layout_classes): Reverse tree and layout type and class as
+ 	required. Mark class as loaded when done.
+	(resolve_field_access): Fixed indentation. Restricted condition
+ 	leading to static field access code generation. Set field_type
+ 	decl's TREE_TYPE if QUAL_DECL_TYPE not available.
+	(resolve_qualified_expression_name): Initialize type_found to
+ 	null. Handle static field resolved during qualification. Fixed
+ 	layout on non primitive field decl types.
+	(not_accessible_p): Fixed typo in comment.
+	(patch_method_invocation): Resolve and layout class to search from
+ 	type.
+	(lookup_method_invoke): Keep integer constant 0 as is. Resolve and
+ 	layout non primitive type, if necessary. Make method node only to
+ 	report errors.
+	(find_applicable_accessible_methods_list): Consider WFL'ed method
+ 	decl names. Fixed indentation.
+	(argument_types_convertible): Resolve and layout target type if
+ 	necessary.
+	(java_complete_tree): Fixed indentation problems. Rewrote
+ 	CALL_EXPR thrown exceptions check. Re-installed further processing
+ 	of the assignment in certain cases.
+	(patch_assignment): Call maybe_build_primttype_type_ref to perform
+ 	inlining on class literals.
+	(valid_builtin_assignconv_identity_widening_p): Cope with constant
+ 	0 literal.
+	(valid_method_invocation_conversion_p): Likewise.
+	(patch_string): Temporary disable forbidden use of `this' in
+ 	explicit constructor invocations when doing string concatenation
+ 	within their scope.
+	(patch_unaryop): Added comment. Reinstalled code to disable
+ 	further check on assignment operation with cast expression RHS.
+	(patch_switch_statement): Fixed indentation.
+	(build_try_statement): Call build_decl instead of
+ 	build_decl_no_layout.
+	(patch_synchronized_statement): Likewise.
+	(patch_throw_statement): Use IS_UNCHECKED_EXCEPTION_P instead of
+ 	IS_UNCHECKED_EXPRESSION_P.
+	(check_thrown_exceptions_do): Changed leading comment. Resolve and
+ 	layout argument exception type.
+	(purge_unchecked_exceptions): Use IS_UNCHECKED_EXCEPTION_P instead
+ 	of IS_UNCHECKED_EXPRESSION_P.
+	
 Sun Nov 15 17:14:17 1998  Per Bothner  <bothner@cygnus.com>
 
 	* jvgenmain.c:  Need to #include "gansidecl.h" (to get PROTO).

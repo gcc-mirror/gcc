@@ -138,7 +138,10 @@ tree
 unmangle_classname (name, name_length)
      const char *name;  int name_length;
 {
-  return ident_subst (name, name_length, "", '/', '.', "");
+  tree to_return = ident_subst (name, name_length, "", '/', '.', "");
+  if (to_return != get_identifier ((char *)name))
+    QUALIFIED_P (to_return) = 1;
+  return to_return;
 }
 
 tree
@@ -1375,6 +1378,10 @@ layout_class (this_class)
       char buf[8];
       char *asm_name;
       tree method_name = DECL_NAME (method_decl);
+      int method_name_is_wfl = 
+	(TREE_CODE (method_name) == EXPR_WITH_FILE_LOCATION);
+      if (method_name_is_wfl)
+	method_name = java_get_real_method_name (method_decl);
 #if 1
       /* Remove this once we no longer need old (Kaffe / JDK 1.0)  mangling. */
       if (! flag_assume_compiled && METHOD_NATIVE (method_decl))
@@ -1492,7 +1499,10 @@ layout_class (this_class)
 	      if (*ptr++ == '.')
 		p = ptr;
 	    }
-	  DECL_NAME (method_decl) = get_identifier (p);
+	  if (method_name_is_wfl)
+	    EXPR_WFL_NODE (DECL_NAME (method_decl)) = get_identifier (p);
+	  else
+	    DECL_NAME (method_decl) = get_identifier (p);
 	  DECL_CONSTRUCTOR_P (method_decl) = 1;
 	}
       else if (! METHOD_STATIC (method_decl) && !DECL_ARTIFICIAL (method_decl))

@@ -122,11 +122,18 @@ extern tree stabilize_reference PROTO ((tree));
 		 (s1 [0]=='S' ? "Supertype" : "supertype") :	\
 		 (s1 [0] > 'A' ? "Type" : "type")))
 
+#define GET_REAL_TYPE(TYPE) 					\
+  (TREE_CODE (TYPE) == TREE_LIST ? TREE_PURPOSE (TYPE) : TYPE)
+
+#define GET_METHOD_NAME(METHOD)					\
+  (TREE_CODE (DECL_NAME (METHOD)) == EXPR_WITH_FILE_LOCATION ?	\
+   EXPR_WFL_NODE (DECL_NAME (METHOD)) : DECL_NAME (METHOD))
+
 /* Pedantic warning on obsolete modifiers. Note: when cl is NULL,
    flags was set artificially, such as for a interface method */
 #define OBSOLETE_MODIFIER_WARNING(cl, flags, modifier, format, arg)          \
   {                                                                          \
-    if ((cl) && ((flags) & (modifier)))					     \
+    if (flag_redundant && (cl) && ((flags) & (modifier)))		     \
       parse_warning_context (cl,                                             \
 			     "Discouraged redundant use of `%s' modifier "   \
 			     "in declaration of " format,                    \
@@ -411,22 +418,31 @@ static jdeplist *reverse_jdep_list ();
 /* if TYPE can't be resolved, obtain something suitable for its
    resolution (TYPE is saved in SAVE before being changed). and set
    CHAIN to 1. Otherwise, type is set to something usable. CHAIN is
-   usually used to determine that a new DEP must be installed on TYPE.  */
-#define SET_TYPE_FOR_RESOLUTION(TYPE, SAVE, CHAIN)	\
-  {							\
-    tree returned_type;					\
-    (CHAIN) = 0;					\
-    if (unresolved_type_p (type, &returned_type))	\
-      {							\
-	if (returned_type)				\
-	  (TYPE) = returned_type;			\
-	else						\
-	  {						\
-	    (SAVE) = (TYPE);				\
-	    (TYPE) = obtain_incomplete_type (TYPE);	\
-	    CHAIN = 1;					\
-	  }						\
-      }							\
+   usually used to determine that a new DEP must be installed on TYPE.
+   Note that when compiling java.lang.Object, references to Object are
+   java.lang.Object.  */
+#define SET_TYPE_FOR_RESOLUTION(TYPE, SAVE, CHAIN)			\
+  {									\
+    tree returned_type;							\
+    (CHAIN) = 0;							\
+    if (TREE_TYPE (ctxp->current_parsed_class) == object_type_node	\
+	&& TREE_CODE (TYPE) == EXPR_WITH_FILE_LOCATION 			\
+	&& EXPR_WFL_NODE (TYPE) == unqualified_object_id_node)		\
+      (TYPE) = object_type_node;					\
+    else								\
+      {									\
+	if (unresolved_type_p (type, &returned_type))			\
+	  {								\
+	    if (returned_type)						\
+	      (TYPE) = returned_type;					\
+	    else							\
+	      {								\
+		(SAVE) = (TYPE);					\
+		(TYPE) = obtain_incomplete_type (TYPE);			\
+		CHAIN = 1;						\
+	      }								\
+	  }								\
+      }									\
   }
 
 /* Insert a DECL in the current block */
@@ -489,7 +505,8 @@ static jdeplist *reverse_jdep_list ();
   {								\
     (WHERE) = build (CALL_EXPR, int_type_node,			\
 		     build_address_of (soft_monitorenter_node),	\
-		     build_tree_list (NULL_TREE, (ARG)));	\
+		     build_tree_list (NULL_TREE, (ARG)), 	\
+		     NULL_TREE);				\
     TREE_SIDE_EFFECTS (WHERE) = 1;				\
   }
 
@@ -497,7 +514,8 @@ static jdeplist *reverse_jdep_list ();
   {								\
     (WHERE) = build (CALL_EXPR, int_type_node,			\
 		     build_address_of (soft_monitorexit_node),	\
-		     build_tree_list (NULL_TREE, (ARG)));	\
+		     build_tree_list (NULL_TREE, (ARG)),	\
+		     NULL_TREE);				\
     TREE_SIDE_EFFECTS (WHERE) = 1;				\
   }
 
@@ -709,18 +727,18 @@ static tree try_reference_assignconv PROTO ((tree, tree));
 static tree build_unresolved_array_type PROTO ((tree));
 static tree build_array_from_name PROTO ((tree, tree, tree, tree *));
 static tree build_array_ref PROTO ((int, tree, tree));
-static tree patch_array_ref PROTO ((tree, tree, tree));
+static tree patch_array_ref PROTO ((tree));
 static tree make_qualified_name PROTO ((tree, tree, int));
 static tree merge_qualified_name PROTO ((tree, tree));
 static tree make_qualified_primary PROTO ((tree, tree, int));
-static int resolve_qualified_expression_name PROTO ((tree, tree *, tree *, tree *));
+static int resolve_qualified_expression_name PROTO ((tree, tree *, 
+						     tree *, tree *));
 static void qualify_ambiguous_name PROTO ((tree));
 static void maybe_generate_clinit PROTO ((void));
 static tree resolve_field_access PROTO ((tree, tree *, tree *));
 static tree build_newarray_node PROTO ((tree, tree, int));
 static tree patch_newarray PROTO ((tree));
 static tree resolve_type_during_patch PROTO ((tree));
-static int not_initialized_as_it_should_p PROTO ((tree));
 static tree build_this PROTO ((int));
 static tree build_return PROTO ((int, tree));
 static tree patch_return PROTO ((tree));
@@ -791,6 +809,7 @@ tree java_method_add_stmt PROTO ((tree, tree));
 char *java_get_line_col PROTO ((char *, int, int));
 void java_expand_switch PROTO ((tree));
 tree java_get_catch_block PROTO ((tree, int));
+int java_report_errors PROTO (());
 #endif /* JC1_LITE */
 
 /* Always in use, no matter what you compile */
