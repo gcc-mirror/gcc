@@ -2133,6 +2133,7 @@ make_thunk (function, delta, vcall_index)
       DECL_CONSTRUCTOR_P (thunk) = 0;
       DECL_EXTERNAL (thunk) = 1;
       DECL_ARTIFICIAL (thunk) = 1;
+      DECL_VTT_PARM (thunk) = NULL_TREE;
       /* Even if this thunk is a member of a local class, we don't
 	 need a static chain.  */
       DECL_NO_STATIC_CHAIN (thunk) = 1;
