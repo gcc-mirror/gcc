@@ -1,3 +1,7 @@
+2003-01-16  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.h (MASK_M6812): Define.
+
 Thu Jan 16 21:50:25 2003  J"orn Rennecke <amylaar@onetel.net.uk>
 
 	* sh.md (mshflo_w_x): Fix description of operation.
