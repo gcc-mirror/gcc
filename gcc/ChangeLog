@@ -1,3 +1,25 @@
+Fri Jul 13 14:46:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* emit-rtl.c (try_split): Update mark_jump_label call.
+	* flow.c (find_sub_basic_blocks): Likewise.
+	* jump.c (cross_jump_death_matters, find_cross_jump, do_cross_jump,
+	jump_back_p): Kill.
+	(mark_all_labels): Kill second parameter.
+	(jump_optimize, jump_optimize_1): Kill cross_jump parameter.
+	(rebuild_jump_labels, jump_optimize_minimal): Update call
+	of jump_optimize_1.
+	(jump_optimize_1): Kill crossjumping code.
+	(mark_jump_label): Kill cross_jump parameter.
+	* rtl.h (mark_jump_label, jump_optimize): Update prototypes.
+	(JUMP_CROSS_JUMP, JUMP_CROSS_JUMP_DEATH_MATTERS): Kill.
+	* reg-stack.c (reg_to_stack): Do not rebuild if not needed; do
+	 splitting.
+	* toplev.c (enum dump_file_index): Kill DFI_jump2; put DFI_stack before
+	DFI_bpro.
+	(rest_of_compilation): Update calls to jump_optimize; kill jump2 pass;
+	reorganize passes to do reg-stack first, bb-reorder second.
+	* invoke.texi (-d letters doc): Remove the jump2 pass.
+
 2001-07-12  Steve Ellcey <sje@cup.hp.com>
 
 	* toplev.c (compile_file): Put call of ASM_FILE_START inside ifdef.
