@@ -757,7 +757,7 @@ struct cum_args { int ca_nregparms; int ca_nstackparms; };
 
 /* Define how to round to the next parameter boundary.
    This macro is used only in macro definitions below and/or i960.c.  */
-#define ROUND(X, MULTIPLE_OF)	\
+#define ROUND_PARM(X, MULTIPLE_OF)	\
   ((((X) + (MULTIPLE_OF) - 1) / (MULTIPLE_OF)) * MULTIPLE_OF)
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
