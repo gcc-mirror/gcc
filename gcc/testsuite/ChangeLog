@@ -1,3 +1,8 @@
+2003-12-15  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR optimization/10312
+	* gcc.c-torture/execute/20031214-1.c: New.
+
 2003-12-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10779
