@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for Alpha Linux-based GNU systems.
-   Copyright (C) 1996, 1997, 1998, 2002, 2003, 2004
+   Copyright (C) 1996, 1997, 1998, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
    Contributed by Richard Henderson.
 
