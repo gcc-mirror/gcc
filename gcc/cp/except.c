@@ -610,18 +610,18 @@ build_throw (tree exp)
       tree temp_expr, allocate_expr;
       bool elided;
 
+      /* The CLEANUP_TYPE is the internal type of a destructor.  */
+      if (!cleanup_type)
+	{
+	  tmp = void_list_node;
+	  tmp = tree_cons (NULL_TREE, ptr_type_node, tmp);
+	  tmp = build_function_type (void_type_node, tmp);
+	  cleanup_type = build_pointer_type (tmp);
+	}
+      
       fn = get_identifier ("__cxa_throw");
       if (!get_global_value_if_present (fn, &fn))
 	{
-	  /* The CLEANUP_TYPE is the internal type of a destructor.  */
-	  if (cleanup_type == NULL_TREE)
-	    {
-	      tmp = void_list_node;
-	      tmp = tree_cons (NULL_TREE, ptr_type_node, tmp);
-	      tmp = build_function_type (void_type_node, tmp);
-	      cleanup_type = build_pointer_type (tmp);
-	    }
-
 	  /* Declare void __cxa_throw (void*, void*, void (*)(void*)).  */
 	  /* ??? Second argument is supposed to be "std::type_info*".  */
 	  tmp = void_list_node;
@@ -631,7 +631,7 @@ build_throw (tree exp)
 	  tmp = build_function_type (void_type_node, tmp);
 	  fn = push_throw_library_fn (fn, tmp);
 	}
-
+      
       /* throw expression */
       /* First, decay it.  */
       exp = decay_conversion (exp);

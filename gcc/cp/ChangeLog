@@ -1,5 +1,11 @@
 2004-08-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/16698
+	* except.c (build_throw): Allocate cleanup_type and the function
+	for __cxa_throw separately.
+
+2004-08-11  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/16717
 	* semantics.c (expand_body): Do not update static_ctors and
 	static_dtors here.
