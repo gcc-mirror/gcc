@@ -5399,7 +5399,8 @@ used to set a chunk of memory to a constant value, or whether some other
 mechanism will be used.  Used by @code{__builtin_memset} when storing
 values other than constant zero and by @code{__builtin_strcpy} when
 when called with a constant source string.
-Defaults to @code{MOVE_BY_PIECES_P}.
+Defaults to to 1 if @code{move_by_pieces_ninsns} returns less
+than @code{MOVE_RATIO}.
 @end defmac
 
 @defmac USE_LOAD_POST_INCREMENT (@var{mode})
