@@ -4470,7 +4470,7 @@ byte_accesses_mergeable_p (rtx addr1, rtx addr2)
 }
 
 /* Return nonzero if we have the same comparison insn as I3 two insns
-   before I3.  I3 is assumed to be a comparision insn.  */
+   before I3.  I3 is assumed to be a comparison insn.  */
 
 int
 same_cmp_preceding_p (rtx i3)
