@@ -10,10 +10,6 @@
 #define VOID void
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 extern void f_exit(void);
 #ifndef NO_ONEXIT
 #define ONEXIT atexit
@@ -22,10 +18,6 @@ extern int atexit(void (*)(void));
 
 extern void f_init(void);
 extern int MAIN__(void);
-
-#ifdef __cplusplus
-	}
-#endif
 
 main(int argc, char **argv)
 {

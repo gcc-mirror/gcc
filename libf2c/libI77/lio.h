@@ -54,9 +54,6 @@ typedef union
 	doublereal	fldouble;
 } flex;
 extern int f__scale;
-#ifdef __cplusplus
-extern "C" {
-#endif
 extern int (*f__lioproc)(ftnint*, char*, ftnlen, ftnint);
 extern int l_write(ftnint*, char*, ftnlen, ftnint);
 extern void x_wsne(cilist*);
@@ -64,7 +61,4 @@ extern int c_le(cilist*), (*l_getc)(void), (*l_ungetc)(int,FILE*);
 extern int l_read(ftnint*,char*,ftnlen,ftnint);
 extern integer e_rsle(void), e_wsle(void), s_wsne(cilist*);
 extern int z_rnew(void);
-#ifdef __cplusplus
-	}
-#endif
 extern ftnint L_len;

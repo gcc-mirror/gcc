@@ -9,9 +9,6 @@
 #undef min
 #undef max
 #include <stdlib.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
 extern int getpid(void), isatty(int), pause(void);
 
 extern VOID f_exit(Void);
@@ -69,7 +66,4 @@ s_paus(char *s, ftnlen n)
 	fprintf(stderr, "Execution resumes after PAUSE.\n");
 	fflush(stderr);
 	return 0; /* NOT REACHED */
-#ifdef __cplusplus
-	}
-#endif
 }

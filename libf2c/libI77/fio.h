@@ -60,9 +60,6 @@ extern cilist *f__elist;	/*active external io list*/
 extern flag f__reading,f__external,f__sequential,f__formatted;
 #undef Void
 #define Void void
-#ifdef __cplusplus
-extern "C" {
-#endif
 extern int (*f__getn)(void);	/* for formatted input */
 extern void (*f__putn)(int);	/* for formatted output */
 extern void x_putc(int);
@@ -81,9 +78,6 @@ extern int isatty(int);
 extern int err__fl(int,int,char*);
 extern int xrd_SL(void);
 extern int f__putbuf(int);
-#ifdef __cplusplus
-	}
-#endif
 extern int (*f__doend)(Void);
 extern FILE *f__cf;	/*current file*/
 extern unit *f__curunit;	/*current unit*/
