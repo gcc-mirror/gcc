@@ -2047,6 +2047,9 @@ expand_call (exp, target, ignore)
       int n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
       int i;
       enum machine_mode tmpmode;
+      rtx src, dst;
+      int bitsize = MIN (TYPE_ALIGN (TREE_TYPE (exp)), BITS_PER_WORD);
+      int bitpos, xbitpos, big_endian_correction = 0;
       
       if (target == 0)
 	{
@@ -2055,38 +2058,48 @@ expand_call (exp, target, ignore)
 	  preserve_temp_slots (target);
 	}
 
-      /* We could probably emit more efficient code for machines
+      /* Structures whose size is not a multiple of a word are aligned
+	 to the least significant byte (to the right).  On a BYTES_BIG_ENDIAN
+	 machine, this means we must skip the empty high order bytes when
+	 calculating the bit offset.  */
+      if (BYTES_BIG_ENDIAN && bytes % UNITS_PER_WORD)
+	big_endian_correction = (BITS_PER_WORD - ((bytes % UNITS_PER_WORD)
+						  * BITS_PER_UNIT));
+
+      /* Copy the structure BITSIZE bites at a time.
+
+	 We could probably emit more efficient code for machines
 	 which do not use strict alignment, but it doesn't seem
 	 worth the effort at the current time.  */
-      for (i = 0; i < n_regs; i++)
+      for (bitpos = 0, xbitpos = big_endian_correction;
+	   bitpos < bytes * BITS_PER_UNIT;
+	   bitpos += bitsize, xbitpos += bitsize)
 	{
-	  rtx src = operand_subword_force (valreg, i, BLKmode);
-	  rtx dst = operand_subword (target, i, 1, BLKmode);
-	  int bitsize = MIN (TYPE_ALIGN (TREE_TYPE (exp)), BITS_PER_WORD);
-	  int bitpos, big_endian_correction = 0;
-	  
-	  /* Should never happen.  */
-	  if (src == NULL || dst == NULL)
-	    abort ();
-	  
-	  if (BYTES_BIG_ENDIAN && bytes < UNITS_PER_WORD)
-	    big_endian_correction
-	      = (BITS_PER_WORD - (bytes * BITS_PER_UNIT));
-	  
-	  for (bitpos = 0;
-	       bitpos < BITS_PER_WORD && bytes > 0;
-	       bitpos += bitsize, bytes -= bitsize / BITS_PER_UNIT)
-	    {
-	      int xbitpos = bitpos + big_endian_correction;
+
+	  /* We need a new source operand each time xbitpos is on a 
+	     word boundary and when xbitpos == big_endian_correction
+	     (the first time through).  */
+	  if (xbitpos % BITS_PER_WORD == 0
+	      || xbitpos == big_endian_correction)
+	    src = operand_subword_force (valreg,
+					 xbitpos / BITS_PER_WORD, 
+					 BLKmode);
+
+	  /* We need a new destination operand each time bitpos is on
+	     a word boundary.  */
+	  if (bitpos % BITS_PER_WORD == 0)
+	    dst = operand_subword (target, bitpos / BITS_PER_WORD, 1, BLKmode);
 	      
-	      store_bit_field (dst, bitsize, xbitpos, word_mode,
-			       extract_bit_field (src, bitsize, bitpos, 1,
-						  NULL_RTX, word_mode,
-						  word_mode,
-						  bitsize / BITS_PER_UNIT,
-						  BITS_PER_WORD),
-			       bitsize / BITS_PER_UNIT, BITS_PER_WORD);
-	    }
+	  /* Use xbitpos for the source extraction (right justified) and
+	     xbitpos for the destination store (left justified).  */
+	  store_bit_field (dst, bitsize, bitpos % BITS_PER_WORD, word_mode,
+			   extract_bit_field (src, bitsize,
+					      xbitpos % BITS_PER_WORD, 1,
+					      NULL_RTX, word_mode,
+					      word_mode,
+					      bitsize / BITS_PER_UNIT,
+					      BITS_PER_WORD),
+			   bitsize / BITS_PER_UNIT, BITS_PER_WORD);
 	}
     }
   else
