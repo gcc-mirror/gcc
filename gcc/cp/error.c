@@ -1479,7 +1479,8 @@ dump_expr (t, flags)
 	    if (host_integerp (t, TREE_UNSIGNED (type)))
 	      dump_char (tree_low_cst (t, TREE_UNSIGNED (type)));
 	    else
-	      output_printf (scratch_buffer, "\\x%x", TREE_INT_CST_LOW (t));
+	      output_printf (scratch_buffer, "\\x%x",
+			     (unsigned int) TREE_INT_CST_LOW (t));
 	    output_add_character (scratch_buffer, '\'');
 	  }
 	else
