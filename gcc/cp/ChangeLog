@@ -1,3 +1,7 @@
+1998-10-24  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* gxxint.texi: Correct documentation for n, N, Q, and B.
+
 1998-10-23  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* parse.y (condition): Convert VAR_DECL from reference to indirect

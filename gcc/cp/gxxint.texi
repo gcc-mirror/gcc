@@ -1595,18 +1595,18 @@ as @samp{P} followed by the mangling of the class name.
 
 @subsection Squangled type compression
 
-Squangling (enabled with the @samp{-fsquangle} option), utilizes 
-the @samp{B} code to indicate reuse of a previously
-seen type within an indentifier. Types are recognized in a left to
-right manner and given increasing values, which are
-appended to the code in the standard manner. Ie, multiple digit numbers
-are delimited by @samp{_} characters. A type is considered to be any 
-non primitive type, regardless of whether its a parameter, template
-parameter, or entire template. Certain codes are considered modifiers
-of a type, and are not included as part of the type. These are the
-@samp{C}, @samp{V}, @samp{P}, @samp{A}, @samp{R}, and @samp{U} codes, 
-denoting constant, volatile, pointer, array, reference, and unsigned. 
-These codes may precede a @samp{B} type in order to make the required 
+Squangling (enabled with the @samp{-fsquangle} option), utilizes the
+@samp{B} code to indicate reuse of a previously seen type within an
+indentifier. Types are recognized in a left to right manner and given
+increasing values, which are appended to the code in the standard
+manner. Ie, multiple digit numbers are delimited by @samp{_}
+characters. A type is considered to be any non primitive type,
+regardless of whether its a parameter, template parameter, or entire
+template. Certain codes are considered modifiers of a type, and are not
+included as part of the type. These are the @samp{C}, @samp{V},
+@samp{P}, @samp{A}, @samp{R}, @samp{U} and @samp{u} codes, denoting
+constant, volatile, pointer, array, reference, unsigned, and restrict.
+These codes may precede a @samp{B} type in order to make the required
 modifications to the type.
 
 For example:
@@ -1784,17 +1784,20 @@ Used by squangling to compress qualified names.
 Encodes the C++ @code{long} type.
 
 @item n
-Used with squangling.
+Immediate repeated type. Followed by the repeat count.
 
 @item N 
-Namespaces.
+Repeated type. Followed by the repeat count of the repeated type,
+followed by the type index of the repeated type. Due to a bug in
+g++ 2.7.2, this is only generated if index is 0. Superceded by
+@samp{n} when squangling.
 
 @item P
 Indicates a pointer type.  Followed by the type pointed to.
 
 @item Q
 Used to mangle qualified names, which arise from nested classes.
-Should also be used for namespaces (?).
+Also used for namespaces.
 In Java used to mangle package-qualified names, and inner classes.
 
 @item r
