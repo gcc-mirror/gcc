@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 1996, 1997, 1998, 1999, 2001 Free Software Foundation, Inc.
+  Copyright (c) 1996, 1997, 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -74,7 +74,7 @@ public static void main(String args[]) {
 			exception.printStackTrace();
 		}
 		else {
-			usage();
+			System.exit(1);
 		}
 	}
 }
@@ -82,7 +82,7 @@ public static void main(String args[]) {
 public boolean run() {
 	parseOptions();
 	if (next >= args.length) {
-		return (false);
+		error("no class names found");
 	}
 	for (int i = next; i < args.length; i++) {
 		try {
@@ -887,6 +887,11 @@ private void parseOptions() {
 		String arg = args[next];
 		next++;
 
+		// Accept `--' options if they look long enough.
+		if (arg.length() > 3 && arg.charAt(0) == '-'
+		    && arg.charAt(1) == '-')
+		  arg = arg.substring(1);
+
 		if (arg.equals("-keep")) {
 			keep = true;
 		}
@@ -920,6 +925,20 @@ private void parseOptions() {
 		else if (arg.equals("-classpath")) {
 			next++;
 		}
+		else if (arg.equals("-help")) {
+			usage();
+		}
+		else if (arg.equals("-version")) {
+			System.out.println("rmic (GNU "
+					   + System.getProperty("java.vm.name")
+					   + ") "
+					   + System.getProperty("java.vm.version"));
+			System.out.println();
+			System.out.println("Copyright 1996, 1997, 1998, 1999, 2001, 2002 Free Software Foundation");
+			System.out.println("This is free software; see the source for copying conditions.  There is NO");
+			System.out.println("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
+			System.exit(0);
+		}
 		else if (arg.equals("-d")) {
 			destination = args[next];
 			next++;
@@ -927,15 +946,21 @@ private void parseOptions() {
 		else if (arg.charAt(1) == 'J') {
 		}
 		else {
-			System.err.println("Unknown option: " + arg);
+			error("unrecognized option `" + arg + "'");
 		}
 	}
 }
 
+private static void error(String message) {
+	System.err.println("rmic: " + message);
+	System.err.println("Try `rmic --help' for more information.");
+	System.exit(1);
+}
+
 private static void usage() {
 	System.out.println(
-"usage: rmic [-options] classes\n" +
-"Options are:\n" +
+"Usage: rmic [OPTION]... CLASS...\n" +
+"\n" +
 "	-keep 			Don't delete any intermediate files\n" +
 "	-keepgenerated 		Same as -keep\n" +
 "	-v1.1			Java 1.1 style stubs only\n" +
@@ -949,8 +974,13 @@ private static void usage() {
 "	-classpath <path> *	Use given path as classpath\n" +
 "	-d <directory> 		Specify where to place generated classes\n" +
 "	-J<flag> *		Pass flag to Java\n" +
-"  * Option currently ignored"
+"	-help			Print this help, then exit\n" +
+"	-version		Print version number, then exit\n" +
+"\n" +
+"  * Option currently ignored\n" +
+"Long options can be used with `--option' form as well."
 	);
+	System.exit(0);
 }
 
 static class MethodRef
