@@ -1,4 +1,4 @@
-Noteworthy changes in GCC version 2.8.0:
+Noteworthy changes in GCC for EGCS.
 
 The -specs=file switch allows you to override default specs used in invoking
 programs like cc1, as, etc.
