@@ -40,9 +40,10 @@
   using _C_legacy::__ctype_b;
 #endif
 
-  // Data for classic_table().
-  const ctype_base::mask* ctype<char>::_S_ctable = __ctype_b;
-
+  const ctype_base::mask*
+  ctype<char>::classic_table() throw()
+  { return __ctype_b; }  
+  
 #if _GLIBCPP_C_LOCALE_GNU
   ctype<char>::ctype(__c_locale __cloc, const mask* __table, bool __del, 
 		     size_t __refs) 
@@ -58,14 +59,14 @@
 		     size_t __refs) 
   : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
   _M_toupper(__ctype_toupper), _M_tolower(__ctype_tolower),
-  _M_table(__table ? __table : _S_ctable)
+  _M_table(__table ? __table : classic_table())
   { _M_c_locale_ctype = NULL; }
 #endif
 
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) : 
   __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
   _M_toupper(__ctype_toupper), _M_tolower(__ctype_tolower),
-  _M_table(__table ? __table : _S_ctable)
+  _M_table(__table ? __table : classic_table())
   { _M_c_locale_ctype = NULL; }
 
   char

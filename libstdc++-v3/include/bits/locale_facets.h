@@ -238,7 +238,6 @@ namespace std
     public:
       static locale::id        id;
       static const size_t      table_size = 1 + static_cast<unsigned char>(-1);
-      static const mask*       _S_ctable;
 
       explicit 
       ctype(const mask* __table = 0, bool __del = false, size_t __refs = 0);
@@ -265,8 +264,7 @@ namespace std
       { return _M_table; }
 
       static const mask* 
-      classic_table() throw()
-      { return _S_ctable; }
+      classic_table() throw();
 
       virtual 
       ~ctype();
