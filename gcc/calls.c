@@ -2430,9 +2430,6 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
      decide where in memory it should come back.  */
   if (aggregate_value_p (type_for_mode (outmode, 0)))
     {
-      /* This call returns a big structure.  */
-      is_const = 0;
-
 #ifdef PCC_STATIC_STRUCT_RETURN
       rtx pointer_reg
 	= hard_function_value (build_pointer_type (type_for_mode (outmode, 0)),
@@ -2448,6 +2445,9 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
       else
 	mem_value = assign_stack_temp (outmode, GET_MODE_SIZE (outmode), 0);
 #endif
+
+      /* This call returns a big structure.  */
+      is_const = 0;
     }
 
   /* ??? Unfinished: must pass the memory address as an argument.  */
