@@ -492,7 +492,7 @@ extern int target_flags;
 
 enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   HI_SNAKE_FP_REGS, SNAKE_FP_REGS, GENERAL_OR_SNAKE_FP_REGS,
-  FP_OR_SNAKE_FP_REGS, SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES}; 
+  FP_OR_SNAKE_FP_REGS, NON_SHIFT_REGS, SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES}; 
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
@@ -501,7 +501,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 #define REG_CLASS_NAMES \
   { "NO_REGS", "R1_REGS", "GENERAL_REGS", "FP_REGS", "GENERAL_OR_FP_REGS",\
     "HI_SNAKE_FP_REGS", "SNAKE_FP_REGS", "GENERAL_OR_SNAKE_FP_REGS",\
-    "FP_OR_SNAKE_FP_REGS", "SHIFT_REGS", "ALL_REGS"}
+    "FP_OR_SNAKE_FP_REGS", "NON_SHIFT_REGS", "SHIFT_REGS", "ALL_REGS"}
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -518,6 +518,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   {0, 0xfffff000, ~0, 0xf},	/* SNAKE_FP_REGS */	\
   {-2, 0xfffff000, ~0, 0xf},	/* GENERAL_OR_SNAKE_FP_REGS */\
   {0, ~0, ~0, 0xf},		/* FP_OR_SNAKE_FP_REGS */\
+  {-2, ~0, ~0, ~0x10},		/* NON_SHIFT_REGS */	\
   {0, 0, 0, 0x10},		/* SHIFT_REGS */	\
   {-2, ~0, ~0, 0x1f}}		/* ALL_REGS */
 
