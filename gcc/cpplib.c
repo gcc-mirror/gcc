@@ -206,7 +206,6 @@ static int compare_defs			PROTO ((cpp_reader *,
 						DEFINITION *, DEFINITION *));
 static int compare_token_lists		PROTO ((struct arglist *,
 						struct arglist *));
-static int is_system_include		PROTO ((cpp_reader *, char *));
 static HOST_WIDE_INT eval_if_expression	PROTO ((cpp_reader *, U_CHAR *, int));
 static int change_newlines		PROTO ((U_CHAR *, int));
 static struct arglist *read_token_list	PROTO ((cpp_reader *, int *));
@@ -585,7 +584,6 @@ path_include (pfile, path)
     while (1) {
       char *q = p;
       char *name;
-      struct file_name_list *dirtmp;
 
       /* Find the end of this name.  */
       while (*q != 0 && *q != PATH_SEPARATOR) q++;
@@ -601,14 +599,8 @@ path_include (pfile, path)
 	name[q - p] = 0;
       }
 
-      dirtmp = (struct file_name_list *)
-	xmalloc (sizeof (struct file_name_list));
-      dirtmp->next = 0;		/* New one goes on the end */
-      dirtmp->control_macro = 0;
-      dirtmp->c_system_include_path = 0;
-      dirtmp->fname = name;
-      dirtmp->got_name_map = 0;
-      append_include_chain (pfile, dirtmp, dirtmp);
+      append_include_chain (pfile,
+			    &(CPP_OPTIONS (pfile)->bracket_include), name, 0);
 
       /* Advance past this name.  */
       p = q;
@@ -2940,16 +2932,16 @@ do_include (pfile, keyword, unused1, unused2)
   int importing = (keyword->type == T_IMPORT);
   int skip_dirs = (keyword->type == T_INCLUDE_NEXT);
   int angle_brackets = 0;	/* 0 for "...", 1 for <...> */
-  char *fname;		/* Dynamically allocated fname buffer */
-  char *fbeg, *fend;		/* Beginning and end of fname */
+  int before;  /* included before? */
   long flen;
+  char *fbeg, *fend;
+  struct file_name_list *srcdir = 0;  /* for "" includes */
 
   enum cpp_token token;
 
   /* Chain of dirs to search */
-  struct file_name_list *search_start = CPP_OPTIONS (pfile)->include;
-  struct file_name_list dsp;	/* First in chain, if #include "..." */
-  struct file_name_list *foundhere, *ptr;
+  struct include_hash *ihash;
+  struct file_name_list *search_start;
   
   long old_written = CPP_WRITTEN (pfile);
 
@@ -2968,17 +2960,7 @@ do_include (pfile, keyword, unused1, unused2)
       && !CPP_BUFFER (pfile)->system_header_p && !pfile->import_warning)
     {
       pfile->import_warning = 1;
-      cpp_warning (pfile, "using `#import' is not recommended");
-      fprintf (stderr, "The fact that a certain header file need not be processed more than once\n");
-      fprintf (stderr, "should be indicated in the header file, not where it is used.\n");
-      fprintf (stderr, "The best way to do this is with a conditional of this form:\n\n");
-      fprintf (stderr, "  #ifndef _FOO_H_INCLUDED\n");
-      fprintf (stderr, "  #define _FOO_H_INCLUDED\n");
-      fprintf (stderr, "  ... <real contents of file> ...\n");
-      fprintf (stderr, "  #endif /* Not _FOO_H_INCLUDED */\n\n");
-      fprintf (stderr, "Then users can use `#include' any number of times.\n");
-      fprintf (stderr, "GNU C automatically avoids processing the file more than once\n");
-      fprintf (stderr, "when it is equipped with such a conditional.\n");
+      cpp_warning (pfile, "`#import' is obsolete, use an #ifdef wrapper in the header file");
     }
 
   pfile->parsing_include_directive++;
@@ -2991,71 +2973,17 @@ do_include (pfile, keyword, unused1, unused2)
       fend = CPP_PWRITTEN (pfile) - 1;
       *fend = '\0';
       if (fbeg[-1] == '<')
-	{
 	  angle_brackets = 1;
-	  /* If -I-, start with the first -I dir after the -I-.  */
-	  if (CPP_OPTIONS (pfile)->first_bracket_include)
-	    search_start = CPP_OPTIONS (pfile)->first_bracket_include;
-	}
-      /* If -I- was specified, don't search current dir, only spec'd ones.  */
-      else if (! CPP_OPTIONS (pfile)->ignore_srcdir)
-	{
-	  cpp_buffer *fp = CPP_BUFFER (pfile);
-	  /* We have "filename".  Figure out directory this source
-	     file is coming from and put it on the front of the list.  */
-
-	  for ( ; fp != CPP_NULL_BUFFER (pfile); fp = CPP_PREV_BUFFER (fp))
-	    {
-	      int n;
-	      char *ep,*nam;
-
-	      if ((nam = fp->nominal_fname) != NULL)
-		{
-		  /* Found a named file.  Figure out dir of the file,
-		     and put it in front of the search list.  */
-		  dsp.next = search_start;
-		  search_start = &dsp;
-#ifndef VMS
-		  ep = rindex (nam, '/');
-#else				/* VMS */
-		  ep = rindex (nam, ']');
-		  if (ep == NULL) ep = rindex (nam, '>');
-		  if (ep == NULL) ep = rindex (nam, ':');
-		  if (ep != NULL) ep++;
-#endif				/* VMS */
-		  if (ep != NULL)
-		    {
-		      n = ep - nam;
-		      dsp.fname = (char *) alloca (n + 1);
-		      strncpy (dsp.fname, nam, n);
-		      dsp.fname[n] = '\0';
-		      if (n + INCLUDE_LEN_FUDGE > pfile->max_include_len)
-			pfile->max_include_len = n + INCLUDE_LEN_FUDGE;
-		    }
-		  else
-		    {
-		      dsp.fname = 0; /* Current directory */
-		    }
-		  dsp.got_name_map = 0;
-		  break;
-		}
-	    }
-	}
     }
 #ifdef VMS
   else if (token == CPP_NAME)
     {
-      /*
-       * Support '#include xyz' like VAX-C to allow for easy use of all the
-       * decwindow include files. It defaults to '#include <xyz.h>' (so the
-       * code from case '<' is repeated here) and generates a warning.
-       */
+      /* Support '#include xyz' like VAX-C to allow for easy use of
+       * all the decwindow include files. It defaults to '#include
+       * <xyz.h>' and generates a warning.  */
       cpp_warning (pfile,
 		   "VAX-C-style include specification found, use '#include <filename.h>' !");
       angle_brackets = 1;
-      /* If -I-, start with the first -I dir after the -I-.  */
-      if (CPP_OPTIONS (pfile)->first_bracket_include)
-	search_start = CPP_OPTIONS (pfile)->first_bracket_include;
 
       /* Append the missing `.h' to the name. */
       CPP_PUTS (pfile, ".h", 3)
@@ -3081,24 +3009,6 @@ do_include (pfile, keyword, unused1, unused2)
       skip_rest_of_line (pfile);
     }
 
-  /* For #include_next, skip in the search path
-     past the dir in which the containing file was found.  */
-  if (skip_dirs)
-    {
-      cpp_buffer *fp = CPP_BUFFER (pfile);
-      for (; fp != CPP_NULL_BUFFER (pfile); fp = CPP_PREV_BUFFER (fp))
-	if (fp->fname != NULL)
-	  {
-	    /* fp->dir is null if the containing file was specified with
-	       an absolute file name.  In that case, don't skip anything.  */
-	    if (fp->dir == SELF_DIR_DUMMY)
-	      search_start = CPP_OPTIONS (pfile)->include;
-	    else if (fp->dir)
-	      search_start = fp->dir->next;
-	    break;
-	  }
-    }
-
   CPP_SET_WRITTEN (pfile, old_written);
 
   flen = fend - fbeg;
@@ -3108,20 +3018,64 @@ do_include (pfile, keyword, unused1, unused2)
       cpp_error (pfile, "empty file name in `#%s'", keyword->name);
       return 0;
     }
-
-  /* Allocate this permanently, because it gets stored in the definitions
-     of macros.  */
-  /* + 2 above for slash and terminating null.  */
-  fname = (char *) xmalloc (pfile->max_include_len + flen + 2);
-
-  fd = find_include_file (pfile, fbeg, flen, fname,
-			  importing, search_start, &foundhere);
-
-  if (fd == -2)
+  
+  /* For #include_next, skip in the search path
+     past the dir in which the containing file was found.  */
+  if (skip_dirs)
     {
-      free (fname);
+      cpp_buffer *fp = CPP_BUFFER (pfile);
+      for (; fp != CPP_NULL_BUFFER (pfile); fp = CPP_PREV_BUFFER (fp))
+	if (fp->fname != NULL)
+	  {
+	    /* Don't skip anything if the containing file was found
+	       by an absolute path. */
+	    if (fp->ihash->foundhere == ABSOLUTE_PATH)
+	      search_start = angle_brackets
+		  ? CPP_OPTIONS (pfile)->bracket_include
+		  : CPP_OPTIONS (pfile)->quote_include;
+	    else
+	      search_start = fp->ihash->foundhere->next;
+	    break;
+	  }
+    }
+  else
+    search_start = angle_brackets
+	? CPP_OPTIONS (pfile)->bracket_include
+	: CPP_OPTIONS (pfile)->quote_include;
+
+  /* For "" includes when ignore_srcdir is off, tack the actual directory
+     of the current file onto the beginning of the search path.
+     The block must be permanently allocated since it may wind up
+     in the include hash. */
+  if (!angle_brackets 
+      && search_start == CPP_OPTIONS (pfile)->quote_include
+      && !CPP_OPTIONS (pfile)->ignore_srcdir)
+    {
+      srcdir = (struct file_name_list *)
+	  xmalloc (sizeof (struct file_name_list));
+      srcdir->next = CPP_OPTIONS (pfile)->quote_include;
+      srcdir->name = CPP_BUFFER (pfile)->dir;
+      srcdir->nlen = CPP_BUFFER (pfile)->dlen;
+      srcdir->sysp = 0;
+      srcdir->name_map = NULL;
+
+      search_start = srcdir;
+    }
+
+  if (!search_start)
+    {
+      cpp_error (pfile, "No include path in which to find %s", fbeg);
       return 0;
     }
+
+  fd = find_include_file (pfile, fbeg, search_start, &ihash, &before);
+
+  if (srcdir
+      && (ihash == (struct include_hash *)-1 || srcdir != ihash->foundhere))
+    free (srcdir);
+  
+  if (fd == -2)
+    return 0;
   
   if (fd == -1)
     {
@@ -3133,27 +3087,24 @@ do_include (pfile, keyword, unused1, unused2)
 	    deps_output (pfile, fbeg, ' ');
 	  else
 	    {
+	      char *p;
+	      struct file_name_list *ptr;
 	      /* If requested as a system header, assume it belongs in
 		 the first system header directory. */
-	      if (CPP_OPTIONS (pfile)->first_bracket_include)
-	        ptr = CPP_OPTIONS (pfile)->first_bracket_include;
+	      if (CPP_OPTIONS (pfile)->bracket_include)
+	        ptr = CPP_OPTIONS (pfile)->bracket_include;
 	      else
-		ptr = CPP_OPTIONS (pfile)->include;
-	      for (; ptr; ptr = ptr->next)
-		  if (ptr->fname)
-		    {
-		      char *p;
+	        ptr = CPP_OPTIONS (pfile)->quote_include;
 
-		      if (ptr->fname[0] == 0)
-			continue;
-		      p = (char *) alloca (strlen (ptr->fname)
-					   + strlen (fname) + 2);
-		      strcpy (p, ptr->fname);
-		      strcat (p, "/");
-		      strcat (p, fname);
-		      deps_output (pfile, p, ' ');
-		      break;
-		    }
+	      p = (char *) alloca (strlen (ptr->name)
+				   + strlen (fbeg) + 2);
+	      if (*ptr->name != '\0')
+	        {
+		  strcpy (p, ptr->name);
+		  strcat (p, "/");
+	        }
+	      strcat (p, fbeg);
+	      deps_output (pfile, p, ' ');
 	    }
 	}
       /* If -M was specified, and this header file won't be added to
@@ -3165,40 +3116,17 @@ do_include (pfile, keyword, unused1, unused2)
       else if (CPP_PRINT_DEPS (pfile)
 	       && (CPP_PRINT_DEPS (pfile)
 		   <= (angle_brackets || (pfile->system_include_depth > 0))))
-	cpp_warning (pfile, "No include path in which to find %s", fname);
-      else if (search_start)
-	cpp_error_from_errno (pfile, fname);
+	cpp_warning (pfile, "No include path in which to find %s", fbeg);
       else
-	cpp_error (pfile, "No include path in which to find %s", fname);
+	cpp_error_from_errno (pfile, fbeg);
 
-      free (fname);
       return 0;
     }
 
-  /* If we get here, we have a file to process. */
-
-  for (ptr = pfile->all_include_files; ptr; ptr = ptr->next)
-    if (!strcmp (ptr->fname, fname))
-      break;				/* This file was included before.  */
-
-  if (ptr == 0)
-    {
-      /* This is the first time for this file.  */
-      /* Add it to list of files included.  */
-
-      ptr = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
-      ptr->control_macro = 0;
-      ptr->c_system_include_path = 0;
-      ptr->next = pfile->all_include_files;
-      pfile->all_include_files = ptr;
-      ptr->fname = savestring (fname);
-      ptr->got_name_map = 0;
-
-      /* For -M, add this file to the dependencies.  */
-      if (CPP_PRINT_DEPS (pfile)
-	  > (angle_brackets || (pfile->system_include_depth > 0)))
-	deps_output (pfile, fname, ' ');
-    }
+  /* For -M, add the file to the dependencies on its first inclusion. */
+  if (!before && (CPP_PRINT_DEPS (pfile)
+		  > (angle_brackets || (pfile->system_include_depth > 0))))
+    deps_output (pfile, ihash->name, ' ');
 
   /* Handle -H option.  */
   if (CPP_OPTIONS(pfile)->print_include_names)
@@ -3206,65 +3134,29 @@ do_include (pfile, keyword, unused1, unused2)
       cpp_buffer *buf = CPP_BUFFER (pfile);
       while ((buf = CPP_PREV_BUFFER (buf)) != CPP_NULL_BUFFER (pfile))
 	putc ('.', stderr);
-      fprintf (stderr, "%s\n", fname);
+      fprintf (stderr, " %s\n", ihash->name);
     }
 
   /* Actually process the file */
+
+  if (importing)
+    ihash->control_macro = "";
+  
   if (cpp_push_buffer (pfile, NULL, 0) == NULL)
     {
       close (fd);
-      free (fname);
       return 0;
     }
-
+  
   if (angle_brackets)
-    pfile->system_include_depth++;
+    pfile->system_include_depth++;   /* Decremented in file_cleanup. */
 
-  if (finclude (pfile, fd, fname, is_system_include (pfile, fname),
-		foundhere != &dsp ? foundhere : SELF_DIR_DUMMY))
+  if (finclude (pfile, fd, ihash))
     {
       output_line_command (pfile, 0, enter_file);
       pfile->only_seen_white = 2;
     }
-  
-  if (angle_brackets)
-    pfile->system_include_depth--;
 
-  return 0;
-}
-
-/* Return nonzero if the given FILENAME is an absolute pathname which
-   designates a file within one of the known "system" include file
-   directories.  We assume here that if the given FILENAME looks like
-   it is the name of a file which resides either directly in a "system"
-   include file directory, or within any subdirectory thereof, then the
-   given file must be a "system" include file.  This function tells us
-   if we should suppress pedantic errors/warnings for the given FILENAME.
-
-   The value is 2 if the file is a C-language system header file
-   for which C++ should (on most systems) assume `extern "C"'.  */
-
-static int
-is_system_include (pfile, filename)
-     cpp_reader *pfile;
-     register char *filename;
-{
-  struct file_name_list *searchptr;
-
-  for (searchptr = CPP_OPTIONS (pfile)->first_system_include; searchptr;
-       searchptr = searchptr->next)
-    if (searchptr->fname) {
-      register char *sys_dir = searchptr->fname;
-      register unsigned length = strlen (sys_dir);
-
-      if (! strncmp (sys_dir, filename, length) && filename[length] == '/')
-	{
-	  if (searchptr->c_system_include_path)
-	    return 2;
-	  else
-	    return 1;
-	}
-    }
   return 0;
 }
 
@@ -3665,7 +3557,6 @@ do_pragma (pfile, keyword, buf, limit)
   if (!strncmp (buf, "once", 4))
     {
       cpp_buffer *ip = NULL;
-      struct file_name_list *new;
 
       /* Allow #pragma once in system headers, since that's not the user's
 	 fault.  */
@@ -3679,39 +3570,36 @@ do_pragma (pfile, keyword, buf, limit)
 	  if (ip->fname != NULL)
 	    break;
 	}
-      
-      new = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
-      new->next = pfile->dont_repeat_files;
-      new->fname = savestring (ip->fname);
-      new->control_macro = 0;
-      new->got_name_map = 0;
-      new->c_system_include_path = 0;
-      pfile->dont_repeat_files = new;
+
+      if (CPP_PREV_BUFFER (ip) == CPP_NULL_BUFFER (pfile))
+	cpp_warning (pfile, "`#pragma once' outside include file");
+      else
+	ip->ihash->control_macro = "";  /* never repeat */
     }
 
-  if (!strncmp (buf, "implementation", 14)) {
-    /* Be quiet about `#pragma implementation' for a file only if it hasn't
-       been included yet.  */
-    struct file_name_list *ptr;
-    U_CHAR *p = buf + 14, *fname, *inc_fname;
-    int fname_len;
-    SKIP_WHITE_SPACE (p);
-    if (*p == '\n' || *p != '\"')
-      return 0;
+  if (!strncmp (buf, "implementation", 14))
+    {
+      /* Be quiet about `#pragma implementation' for a file only if it hasn't
+	 been included yet.  */
+      struct include_hash *ptr;
+      U_CHAR *p = buf + 14, *fname, *fcopy;
+      SKIP_WHITE_SPACE (p);
+      if (*p == '\n' || *p != '\"')
+        return 0;
 
-    fname = p + 1;
-    p = (U_CHAR *) index (fname, '\"');
-    fname_len = p != NULL ? p - fname : strlen (fname);
-    
-    for (ptr = pfile->all_include_files; ptr; ptr = ptr->next) {
-      inc_fname = (U_CHAR *) rindex (ptr->fname, '/');
-      inc_fname = inc_fname ? inc_fname + 1 : (U_CHAR *) ptr->fname;
-      if (inc_fname && !strncmp (inc_fname, fname, fname_len))
-	cpp_warning (pfile,
-	   "`#pragma implementation' for `%s' appears after file is included",
-		     fname);
+      fname = p + 1;
+      p = (U_CHAR *) index (fname, '\"');
+
+      fcopy = alloca (p - fname + 1);
+      bcopy (fname, fcopy, p - fname);
+      fcopy[p-fname] = '\0';
+
+      ptr = include_hash (pfile, fcopy, 0);
+      if (ptr)
+        cpp_warning (pfile,
+	  "`#pragma implementation' for `%s' appears after file is included",
+		     fcopy);
     }
-  }
 
   return 0;
 }
@@ -4219,31 +4107,15 @@ do_endif (pfile, keyword, buf, limit)
 
 	  if (c == EOF)
 	    {
-	      /* If we get here, this #endif ends a #ifndef
+	      /* This #endif ends a #ifndef
 		 that contains all of the file (aside from whitespace).
 		 Arrange not to include the file again
-		 if the macro that was tested is defined.
-
-		 Do not do this for the top-level file in a -include or any
-		 file in a -imacros.  */
-#if 0
-FIXME!
-	      if (indepth != 0
-		  && ! (indepth == 1 && pfile->no_record_file)
-		  && ! (pfile->no_record_file && no_output))
-#endif
-		{
-		  struct file_name_list *ifile = pfile->all_include_files;
-		  
-		  for ( ; ifile != NULL; ifile = ifile->next)
-		    {
-		      if (!strcmp (ifile->fname, CPP_BUFFER (pfile)->fname))
-			{
-			  ifile->control_macro = temp->control_macro;
-			  break;
-			}
-		    }
-		}
+		 if the macro that was tested is defined. */
+	      struct cpp_buffer *ip;
+	      for (ip = CPP_BUFFER (pfile); ; ip = CPP_PREV_BUFFER (ip))
+		if (ip->fname != NULL)
+		  break;
+	      ip->ihash->control_macro = temp->control_macro;
 	    }
         }
       free (temp);
@@ -4995,6 +4867,7 @@ cpp_start_read (pfile, fname)
   char *p;
   int f;
   cpp_buffer *fp;
+  struct include_hash *ih_fake;
 
   /* The code looks at the defaults through this pointer, rather than through
      the constant structure above.  This pointer gets changed if an environment
@@ -5193,9 +5066,6 @@ cpp_start_read (pfile, fname)
     }
   }
 
-  append_include_chain (pfile, opts->before_system, opts->last_before_system);
-  opts->first_system_include = opts->before_system;
-
   /* Unless -fnostdinc,
      tack on the standard include file dirs to the specified list */
   if (!opts->no_standard_includes) {
@@ -5218,19 +5088,14 @@ cpp_start_read (pfile, fname)
 	  /* Does this dir start with the prefix?  */
 	  if (!strncmp (p->fname, default_prefix, default_len)) {
 	    /* Yes; change prefix and add to search list.  */
-	    struct file_name_list *new
-	      = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
-	    int this_len = strlen (specd_prefix) + strlen (p->fname) - default_len;
+	    int this_len = strlen (specd_prefix)
+			   + strlen (p->fname) - default_len;
 	    char *str = (char *) xmalloc (this_len + 1);
 	    strcpy (str, specd_prefix);
 	    strcat (str, p->fname + default_len);
-	    new->fname = str;
-	    new->control_macro = 0;
-	    new->c_system_include_path = !p->cxx_aware;
-	    new->got_name_map = 0;
-	    append_include_chain (pfile, new, new);
-	    if (opts->first_system_include == 0)
-	      opts->first_system_include = new;
+
+	    append_include_chain (pfile, &opts->system_include,
+				  str, !p->cxx_aware);
 	  }
 	}
       }
@@ -5239,32 +5104,23 @@ cpp_start_read (pfile, fname)
       /* Some standard dirs are only for C++.  */
       if (!p->cplusplus
 	  || (opts->cplusplus && !opts->no_standard_cplusplus_includes)) {
-	struct file_name_list *new
-	  = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
-	new->control_macro = 0;
-	new->c_system_include_path = !p->cxx_aware;
-	new->fname = update_path (p->fname, p->component);
-	new->got_name_map = 0;
-	append_include_chain (pfile, new, new);
-	if (opts->first_system_include == 0)
-	  opts->first_system_include = new;
+	char *str = update_path (p->fname, p->component);
+	append_include_chain (pfile, &opts->system_include,
+			      str, !p->cxx_aware);
       }
     }
   }
 
-  /* Tack the after_include chain at the end of the include chain.  */
-  append_include_chain (pfile, opts->after_include, opts->last_after_include);
-  if (opts->first_system_include == 0)
-    opts->first_system_include = opts->after_include;
+  merge_include_chains (opts);
 
   /* With -v, print the list of dirs to search.  */
   if (opts->verbose) {
     struct file_name_list *p;
     fprintf (stderr, "#include \"...\" search starts here:\n");
-    for (p = opts->include; p; p = p->next) {
-      if (p == opts->first_bracket_include)
+    for (p = opts->quote_include; p; p = p->next) {
+      if (p == opts->bracket_include)
 	fprintf (stderr, "#include <...> search starts here:\n");
-      fprintf (stderr, " %s\n", p->fname);
+      fprintf (stderr, " %s\n", p->name);
     }
     fprintf (stderr, "End of search list.\n");
   }
@@ -5416,7 +5272,15 @@ cpp_start_read (pfile, fname)
   /* Must call finclude() on the main input before processing
      -include switches; otherwise the -included text winds up
      after the main input. */
-  if (!finclude (pfile, f, fname, 0, NULL_PTR))
+  ih_fake = (struct include_hash *) xmalloc (sizeof (struct include_hash));
+  ih_fake->next = 0;
+  ih_fake->next_this_file = 0;
+  ih_fake->foundhere = ABSOLUTE_PATH;  /* well sort of ... */
+  ih_fake->name = fname;
+  ih_fake->control_macro = 0;
+  ih_fake->buf = (char *)-1;
+  ih_fake->limit = 0;
+  if (!finclude (pfile, f, ih_fake))
     return 0;
   output_line_command (pfile, 0, same_file);
   pfile->only_seen_white = 2;
@@ -5429,6 +5293,7 @@ cpp_start_read (pfile, fname)
      means the -imacros files have to be done separately and first. */
   
   pfile->no_record_file++;
+  opts->no_output++;
   for (pend = opts->pending; pend; pend = pend->next)
     {
       if (pend->cmd != NULL)
@@ -5443,13 +5308,23 @@ cpp_start_read (pfile, fname)
 	        }
 	      if (!cpp_push_buffer (pfile, NULL, 0))
 	        return 0;
-	      opts->no_output++;
-	      if (finclude (pfile, fd, pend->arg, 0, NULL_PTR))
+
+	      ih_fake = (struct include_hash *)
+		  xmalloc (sizeof (struct include_hash));
+	      ih_fake->next = 0;
+	      ih_fake->next_this_file = 0;
+	      ih_fake->foundhere = ABSOLUTE_PATH;  /* well sort of ... */
+	      ih_fake->name = pend->arg;
+	      ih_fake->control_macro = 0;
+	      ih_fake->buf = (char *)-1;
+	      ih_fake->limit = 0;
+	      if (!finclude (pfile, fd, ih_fake))
 		cpp_scan_buffer (pfile);
-	      opts->no_output--;
+	      free (ih_fake);
 	    }
 	}
     }
+  opts->no_output--;
   opts->pending = nreverse_pending (opts->pending);
   for (pend = opts->pending; pend; pend = pend->next)
     {
@@ -5465,7 +5340,17 @@ cpp_start_read (pfile, fname)
 	        }
 	      if (!cpp_push_buffer (pfile, NULL, 0))
 	        return 0;
-	      if (finclude (pfile, fd, pend->arg, 0, NULL_PTR))
+
+	      ih_fake = (struct include_hash *)
+		  xmalloc (sizeof (struct include_hash));
+	      ih_fake->next = 0;
+	      ih_fake->next_this_file = 0;
+	      ih_fake->foundhere = ABSOLUTE_PATH;  /* well sort of ... */
+	      ih_fake->name = pend->arg;
+	      ih_fake->control_macro = 0;
+	      ih_fake->buf = (char *)-1;
+	      ih_fake->limit = 0;
+	      if (finclude (pfile, fd, ih_fake))
 	        output_line_command (pfile, 0, enter_file);
 	    }
 	}
@@ -5495,10 +5380,6 @@ cpp_reader_init (pfile)
   pfile->token_buffer = (U_CHAR *) xmalloc (pfile->token_buffer_size);
   CPP_SET_WRITTEN (pfile, 0);
 
-  pfile->system_include_depth = 0;
-  pfile->dont_repeat_files = 0;
-  pfile->all_include_files = 0;
-  pfile->max_include_len = 0;
   pfile->timebuf = NULL;
   pfile->only_seen_white = 1;
   pfile->buffer = CPP_NULL_BUFFER(pfile);
@@ -5644,131 +5525,121 @@ cpp_handle_option (pfile, argc, argv)
  	user_label_prefix = "";
       break;
 
+    case 'I':			/* Add directory to path for includes.  */
+      if (!strcmp (argv[i] + 2, "-"))
+        {
+	  if (! opts->ignore_srcdir)
+	    {
+	      opts->ignore_srcdir = 1;
+	      /* Don't use any preceding -I directories for #include <...>. */
+	      opts->quote_include = opts->bracket_include;
+	      opts->bracket_include = 0;
+	    }
+	}
+      else
+	{
+	  char *fname;
+	  if (argv[i][2] != 0)
+	    fname = argv[i] + 2;
+	  else if (i + 1 == argc)
+	    goto missing_dirname;
+	  else
+	    fname = argv[++i];
+	  append_include_chain (pfile, &opts->bracket_include, fname, 0);
+	}
+      break;
+
     case 'i':
-      if (!strcmp (argv[i], "-include")
-	  || !strcmp (argv[i], "-imacros")) {
-	if (i + 1 == argc)
-	  goto missing_filename;
-	else
-	  push_pending (pfile, argv[i], argv[i+1]), i++;
-      }
-      if (!strcmp (argv[i], "-iprefix")) {
-	if (i + 1 == argc)
-	  goto missing_filename;
-	else
-	  opts->include_prefix = argv[++i];
-      }
-      if (!strcmp (argv[i], "-ifoutput")) {
-	opts->output_conditionals = 1;
-      }
-      if (!strcmp (argv[i], "-isystem")) {
-	struct file_name_list *dirtmp;
-	
-	if (i + 1 == argc)
-	  goto missing_filename;
-	
-	dirtmp = (struct file_name_list *)
-	  xmalloc (sizeof (struct file_name_list));
-	dirtmp->next = 0;
-	dirtmp->control_macro = 0;
-	dirtmp->c_system_include_path = 1;
-	dirtmp->fname = (char *) xmalloc (strlen (argv[i+1]) + 1);
-	strcpy (dirtmp->fname, argv[++i]);
-	dirtmp->got_name_map = 0;
-	
-	if (opts->before_system == 0)
-	  opts->before_system = dirtmp;
-	else
-	  opts->last_before_system->next = dirtmp;
-	opts->last_before_system = dirtmp; /* Tail follows the last one */
-      }
+      /* Add directory to beginning of system include path, as a system
+	 include directory. */
+      if (!strcmp (argv[i], "-isystem"))
+        {
+	  if (i + 1 == argc)
+	    goto missing_filename;
+	  append_include_chain (pfile, &opts->system_include, argv[++i], 1);
+	}
       /* Add directory to end of path for includes,
 	 with the default prefix at the front of its name.  */
-      if (!strcmp (argv[i], "-iwithprefix")) {
-	struct file_name_list *dirtmp;
-	char *prefix;
-	
-	if (opts->include_prefix != 0)
-	  prefix = opts->include_prefix;
-	else {
-	  prefix = savestring (GCC_INCLUDE_DIR);
-	  /* Remove the `include' from /usr/local/lib/gcc.../include.  */
-	  if (!strcmp (prefix + strlen (prefix) - 8, "/include"))
-	    prefix[strlen (prefix) - 7] = 0;
-	}
-	
-	dirtmp = (struct file_name_list *)
-	  xmalloc (sizeof (struct file_name_list));
-	dirtmp->next = 0;	/* New one goes on the end */
-	dirtmp->control_macro = 0;
-	dirtmp->c_system_include_path = 0;
-	if (i + 1 == argc)
-	  goto missing_dirname;
-	
-	dirtmp->fname = (char *) xmalloc (strlen (argv[i+1])
-					  + strlen (prefix) + 1);
-	strcpy (dirtmp->fname, prefix);
-	strcat (dirtmp->fname, argv[++i]);
-	dirtmp->got_name_map = 0;
-	
-	if (opts->after_include == 0)
-	  opts->after_include = dirtmp;
-	else
-	  opts->last_after_include->next = dirtmp;
-	opts->last_after_include = dirtmp; /* Tail follows the last one */
+      else if (!strcmp (argv[i], "-iwithprefix"))
+        {
+	  char *fname;
+	  if (i + 1 == argc)
+	    goto missing_dirname;
+	  ++i;
+
+	  if (opts->include_prefix != 0)
+	    {
+	      fname = xmalloc (strlen (opts->include_prefix)
+			       + strlen (argv[i]) + 1);
+	      strcpy (fname, opts->include_prefix);
+	      strcat (fname, argv[i]);
+	    }
+	  else
+	    {
+	      fname = xmalloc (strlen (GCC_INCLUDE_DIR)
+			       + strlen (argv[i]) + 1);
+	      strcpy (fname, GCC_INCLUDE_DIR);
+	      /* Remove the `include' from /usr/local/lib/gcc.../include.  */
+	      if (!strcmp (fname + strlen (fname) - 8, "/include"))
+		fname[strlen (fname) - 7] = 0;
+	      strcat (fname, argv[i]);
+	    }
+	  
+	  append_include_chain (pfile, &opts->system_include, fname, 0);
       }
       /* Add directory to main path for includes,
 	 with the default prefix at the front of its name.  */
-      if (!strcmp (argv[i], "-iwithprefixbefore")) {
-	struct file_name_list *dirtmp;
-	char *prefix;
-	
-	if (opts->include_prefix != 0)
-	  prefix = opts->include_prefix;
-	else {
-	  prefix = savestring (GCC_INCLUDE_DIR);
-	  /* Remove the `include' from /usr/local/lib/gcc.../include.  */
-	  if (!strcmp (prefix + strlen (prefix) - 8, "/include"))
-	    prefix[strlen (prefix) - 7] = 0;
-	}
-	
-	dirtmp = (struct file_name_list *)
-	  xmalloc (sizeof (struct file_name_list));
-	dirtmp->next = 0;	/* New one goes on the end */
-	dirtmp->control_macro = 0;
-	dirtmp->c_system_include_path = 0;
-	if (i + 1 == argc)
-	  goto missing_dirname;
-	
-	dirtmp->fname = (char *) xmalloc (strlen (argv[i+1])
-					  + strlen (prefix) + 1);
-	strcpy (dirtmp->fname, prefix);
-	strcat (dirtmp->fname, argv[++i]);
-	dirtmp->got_name_map = 0;
-	
-	append_include_chain (pfile, dirtmp, dirtmp);
-      }
+      else if (!strcmp (argv[i], "-iwithprefix"))
+        {
+	  char *fname;
+	  if (i + 1 == argc)
+	    goto missing_dirname;
+	  ++i;
+
+	  if (opts->include_prefix != 0)
+	    {
+	      fname = xmalloc (strlen (opts->include_prefix)
+			       + strlen (argv[i]) + 1);
+	      strcpy (fname, opts->include_prefix);
+	      strcat (fname, argv[i]);
+	    }
+	  else
+	    {
+	      fname = xmalloc (strlen (GCC_INCLUDE_DIR)
+			       + strlen (argv[i]) + 1);
+	      strcpy (fname, GCC_INCLUDE_DIR);
+	      /* Remove the `include' from /usr/local/lib/gcc.../include.  */
+	      if (!strcmp (fname + strlen (fname) - 8, "/include"))
+		fname[strlen (fname) - 7] = 0;
+	      strcat (fname, argv[i]);
+	    }
+	  
+	  append_include_chain (pfile, &opts->bracket_include, fname, 0);
+        }
       /* Add directory to end of path for includes.  */
-      if (!strcmp (argv[i], "-idirafter")) {
-	struct file_name_list *dirtmp;
-	
-	dirtmp = (struct file_name_list *)
-	  xmalloc (sizeof (struct file_name_list));
-	dirtmp->next = 0;	/* New one goes on the end */
-	dirtmp->control_macro = 0;
-	dirtmp->c_system_include_path = 0;
-	if (i + 1 == argc)
-	  goto missing_dirname;
-	else
-	  dirtmp->fname = argv[++i];
-	dirtmp->got_name_map = 0;
-	
-	if (opts->after_include == 0)
-	  opts->after_include = dirtmp;
-	else
-	  opts->last_after_include->next = dirtmp;
-	opts->last_after_include = dirtmp; /* Tail follows the last one */
-      }
+      else if (!strcmp (argv[i], "-idirafter"))
+        {
+	  if (i + 1 == argc)
+	    goto missing_dirname;
+	  append_include_chain (pfile, &opts->after_include, argv[++i], 0);
+	}
+      else if (!strcmp (argv[i], "-include") || !strcmp (argv[i], "-imacros"))
+        {
+	  if (i + 1 == argc)
+	    goto missing_filename;
+	  else
+	    push_pending (pfile, argv[i], argv[i+1]), i++;
+        }
+      else if (!strcmp (argv[i], "-iprefix"))
+        {
+	  if (i + 1 == argc)
+	    goto missing_filename;
+	  else
+	      opts->include_prefix = argv[++i];
+	}
+      else if (!strcmp (argv[i], "-ifoutput"))
+	opts->output_conditionals = 1;
+
       break;
       
     case 'o':
@@ -6051,34 +5922,6 @@ cpp_handle_option (pfile, argc, argv)
       opts->dollars_in_ident = 0;
       break;
       
-    case 'I':			/* Add directory to path for includes.  */
-      {
-	struct file_name_list *dirtmp;
-	
-	if (! CPP_OPTIONS(pfile)->ignore_srcdir
-	    && !strcmp (argv[i] + 2, "-")) {
-	  CPP_OPTIONS (pfile)->ignore_srcdir = 1;
-	  /* Don't use any preceding -I directories for #include <...>.  */
-	  CPP_OPTIONS (pfile)->first_bracket_include = 0;
-	}
-	else {
-	  dirtmp = (struct file_name_list *)
-	    xmalloc (sizeof (struct file_name_list));
-	  dirtmp->next = 0;		/* New one goes on the end */
-	  dirtmp->control_macro = 0;
-	  dirtmp->c_system_include_path = 0;
-	  if (argv[i][2] != 0)
-	    dirtmp->fname = argv[i] + 2;
-	  else if (i + 1 == argc)
-	    goto missing_dirname;
-	  else
-	    dirtmp->fname = argv[++i];
-	  dirtmp->got_name_map = 0;
-	  append_include_chain (pfile, dirtmp, dirtmp);
-	}
-      }
-    break;
-    
     case 'n':
       if (!strcmp (argv[i], "-nostdinc"))
 	/* -nostdinc causes no default include directories.
@@ -6171,6 +6014,28 @@ cpp_finish (pfile)
 	    }
 	}
     }
+
+#if 0
+  /* Debugging: dump statistics on the include hash table. */
+  {
+      struct include_hash *x;
+      int i, j;
+
+      for(i = 0; i < ALL_INCLUDE_HASHSIZE; i++)
+      {
+	  x = pfile->all_include_files[i];
+	  j = 0;
+	  while(x)
+	  {
+	      j++;
+	      x = x->next;
+	  }
+	  fprintf(stderr, "%d/%d ", i, j);
+      }
+      fputc('\n', stderr);
+  }
+#endif
+  
 }
 
 /* Free resources used by PFILE.
@@ -6204,33 +6069,20 @@ cpp_cleanup (pfile)
       free (temp);
     }
 
-  while (pfile->dont_repeat_files)
+  for (i = ALL_INCLUDE_HASHSIZE; --i >= 0; )
     {
-      struct file_name_list *temp = pfile->dont_repeat_files;
-      pfile->dont_repeat_files = temp->next;
-      free (temp->fname);
-      free (temp);
-    }
-
-  while (pfile->all_include_files)
-    {
-      struct file_name_list *temp = pfile->all_include_files;
-      pfile->all_include_files = temp->next;
-      free (temp->fname);
-      free (temp);
-    }
-
-  for (i = IMPORT_HASH_SIZE; --i >= 0; )
-    {
-      register struct import_file *imp = pfile->import_hash_table[i];
+      struct include_hash *imp = pfile->all_include_files[i];
       while (imp)
 	{
-	  struct import_file *next = imp->next;
+	  struct include_hash *next = imp->next;
+#if 0
+	  /* This gets freed elsewhere - I think. */
 	  free (imp->name);
+#endif
 	  free (imp);
 	  imp = next;
 	}
-      pfile->import_hash_table[i] = 0;
+      pfile->all_include_files[i] = 0;
     }
 
   for (i = ASSERTION_HASHSIZE; --i >= 0; )

@@ -96,17 +96,6 @@ extern enum cpp_token cpp_get_non_space_token PARAMS ((cpp_reader *));
 /* This frees resources used by PFILE. */
 extern void cpp_cleanup PARAMS ((cpp_reader *PFILE));
 
-/* Maintain and search list of included files, for #import.  */
-
-#define IMPORT_HASH_SIZE 31
-
-struct import_file {
-  char *name;
-  ino_t inode;
-  dev_t dev;
-  struct import_file *next;
-};
-
 /* If we have a huge buffer, may need to cache more recent counts */
 #define CPP_LINE_BASE(BUF) ((BUF)->buf + (BUF)->line_base)
 
@@ -120,10 +109,14 @@ struct cpp_buffer {
   char *fname;
   /* Filename specified with #line command.  */
   char *nominal_fname;
+  /* Actual directory of this file, used only for "" includes */
+  char *dir;
+  size_t dlen;
 
-  /* Record where in the search path this file was found.
-     For #include_next.  */
-  struct file_name_list *dir;
+  /* Pointer into the include hash table.  Used for include_next and
+     to record control macros.
+     ->fname is an alias to ->ihash->fname. */
+  struct include_hash *ihash;
 
   long line_base;
   long lineno; /* Line number at CPP_LINE_BASE. */
@@ -185,20 +178,13 @@ struct cpp_reader {
   /* Current depth in #include directives that use <...>.  */
   int system_include_depth;
 
-  /* List of included files that contained #pragma once.  */
-  struct file_name_list *dont_repeat_files;
-
-  /* List of other included files.
-     If ->control_macro if nonzero, the file had a #ifndef
-     around the entire contents, and ->control_macro gives the macro name.  */
-  struct file_name_list *all_include_files;
+  /* Hash table of other included files.  See cppfiles.c */
+#define ALL_INCLUDE_HASHSIZE 71
+  struct include_hash *all_include_files[ALL_INCLUDE_HASHSIZE];
 
   /* Current maximum length of directory names in the search path
      for include files.  (Altered as we get more of them.)  */
-  int max_include_len;
-
-  /* Hash table of files already included with #include or #import.  */
-  struct import_file *import_hash_table[IMPORT_HASH_SIZE];
+  unsigned int max_include_len;
 
   struct if_stack *if_stack;
 
@@ -441,23 +427,12 @@ struct cpp_options {
 
   char done_initializing;
 
-  struct file_name_list *include;	/* First dir to search */
-  /* First dir to search for <file> */
-  /* This is the first element to use for #include <...>.
-     If it is 0, use the entire chain for such includes.  */
-  struct file_name_list *first_bracket_include;
-  /* This is the first element in the chain that corresponds to
-     a directory of system header files.  */
-  struct file_name_list *first_system_include;
-  struct file_name_list *last_include;	/* Last in chain */
-
-  /* Chain of include directories to put at the end of the other chain.  */
-  struct file_name_list *after_include;
-  struct file_name_list *last_after_include;	/* Last in chain */
-
-  /* Chain to put at the start of the system include files.  */
-  struct file_name_list *before_system;
-  struct file_name_list *last_before_system;	/* Last in chain */
+  /* Search paths for include files.  system_include, after_include are
+     only used during option parsing. */
+  struct file_name_list *quote_include;	 /* First dir to search for "file" */
+  struct file_name_list *bracket_include;/* First dir to search for <file> */
+  struct file_name_list *system_include; /* First dir with system headers  */
+  struct file_name_list *after_include;  /* Headers to search after system */
 
   /* Directory prefix that should replace `/usr' in the standard
      include file directories.  */
@@ -506,22 +481,45 @@ struct cpp_options {
 #define CPP_PEDANTIC(PFILE) (CPP_OPTIONS (PFILE)->pedantic)
 #define CPP_PRINT_DEPS(PFILE) (CPP_OPTIONS (PFILE)->print_deps)
 
+/* List of directories to look for include files in. */
 struct file_name_list
-  {
-    struct file_name_list *next;
-    char *fname;
-    /* If the following is nonzero, it is a macro name.
-       Don't include the file again if that macro is defined.  */
-    U_CHAR *control_macro;
-    /* If the following is nonzero, it is a C-language system include
-       directory.  */
-    int c_system_include_path;
-    /* Mapping of file names for this directory.  */
-    struct file_name_map *name_map;
-    /* Non-zero if name_map is valid.  */
-    int got_name_map;
-  };
+{
+  struct file_name_list *next;
+  char *name;
+  unsigned int nlen;
+  /* We use these to tell if the directory mentioned here is a duplicate
+     of an earlier directory on the search path. */
+  ino_t ino;
+  dev_t dev;
+  /* If the following is nonzero, it is a C-language system include
+     directory.  */
+  int sysp;
+  /* Mapping of file names for this directory.
+     Only used on MS-DOS and related platforms. */
+  struct file_name_map *name_map;
+};
+#define ABSOLUTE_PATH ((struct file_name_list *)-1)
 
+/* This structure is used for the table of all includes.  It is
+   indexed by the `short name' (the name as it appeared in the
+   #include statement) which is stored in *nshort.  */
+struct include_hash
+{
+  struct include_hash *next;
+  /* Next file with the same short name but a
+     different (partial) pathname). */
+  struct include_hash *next_this_file;
+
+  /* Location of the file in the include search path.
+     Used for include_next */
+  struct file_name_list *foundhere;
+  char *name;		/* (partial) pathname of file */
+  char *nshort;		/* name of file as referenced in #include */
+  char *control_macro;	/* macro, if any, preventing reinclusion - see
+			   redundant_include_p */
+  char *buf, *limit;	/* for file content cache, not yet implemented */
+};
+    
 /* If a buffer's dir field is SELF_DIR_DUMMY, it means the file was found
    via the same directory as the file that #included it.  */
 #define SELF_DIR_DUMMY ((struct file_name_list *) (~0))
@@ -706,15 +704,17 @@ extern void cpp_print_containing_files PROTO ((cpp_reader *));
 
 /* In cppfiles.c */
 extern void append_include_chain	PROTO ((cpp_reader *,
-						struct file_name_list *,
-						struct file_name_list *));
-extern int finclude			PROTO ((cpp_reader *, int, char *,
-						int, struct file_name_list *));
+						struct file_name_list **,
+						char *, int));
+extern void merge_include_chains	PROTO ((struct cpp_options *));
 extern int find_include_file		PROTO ((cpp_reader *, char *,
-						unsigned long, char *, int,
 						struct file_name_list *,
-						struct file_name_list **));
+						struct include_hash **,
+						int *));
+extern int finclude			PROTO ((cpp_reader *, int,
+					        struct include_hash *));
 extern void deps_output			PROTO ((cpp_reader *, char *, int));
+extern struct include_hash *include_hash PROTO ((cpp_reader *, char *, int));
 
 /* Bleargh. */
 extern char *savestring			PROTO ((char *));
