@@ -1,5 +1,7 @@
 1998-10-29  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.other/dcast2.C: cannot dynamic downcast &x
+
 	* g++.old-deja/g++.other/init9.C: test cross initialization of
 	non-POD types
 
