@@ -1605,6 +1605,34 @@ variable should be placed into the tiny data section.
 The compiler will generate more efficient code for loads and stores
 on data in the tiny data section.  Note the tiny data area is limited to
 slightly under 32kbytes of data.
+
+@item interrupt
+@cindex interrupt handlers on the M32R/D
+Use this option on the M32R/D to indicate that the specified
+function is an interrupt handler.  The compiler will generate function
+entry and exit sequences suitable for use in an interrupt handler when this
+attribute is present.
+
+@item model (@var{model-name})
+@cindex function addressability on the M32R/D
+Use this attribute on the M32R/D to set the addressability of an object,
+and the code generated for a function.
+The identifier @var{model-name} is one of @code{small}, @code{medium},
+or @code{large}, representing each of the code models.
+
+Small model objects live in the lower 16MB of memory (so that their
+addresses can be loaded with the @code{ld24} instruction), and are
+callable with the @code{bl} instruction.
+
+Medium model objects may live anywhere in the 32 bit address space (the
+compiler will generate @code{seth/add3} instructions to load their addresses),
+and are callable with the @code{bl} instruction.
+
+Large model objects may live anywhere in the 32 bit address space (the
+compiler will generate @code{seth/add3} instructions to load their addresses),
+and may not be reachable with the @code{bl} instruction (the compiler will
+generate the much slower @code{seth/add3/jl} instruction sequence).
+
 @end table
 
 You can specify multiple attributes in a declaration by separating them
@@ -1941,6 +1969,20 @@ variable.
 
 @item weak
 The @code{weak} attribute is described in @xref{Function Attributes}.
+
+@item model (@var{model-name})
+@cindex variable addressability on the M32R/D
+Use this attribute on the M32R/D to set the addressability of an object.
+The identifier @var{model-name} is one of @code{small}, @code{medium},
+or @code{large}, representing each of the code models.
+
+Small model objects live in the lower 16MB of memory (so that their
+addresses can be loaded with the @code{ld24} instruction).
+
+Medium and large model objects may live anywhere in the 32 bit address space
+(the compiler will generate @code{seth/add3} instructions to load their
+addresses).
+
 @end table
 
 To specify multiple attributes, separate them by commas within the
