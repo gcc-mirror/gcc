@@ -1,3 +1,7 @@
+Fri May 23 22:17:32 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_reorg): Calls are also jumps.
+
 2003-05-23  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* cse.c (count_reg_usage): When processing an INSNs REG_EQUAL

@@ -15565,8 +15565,9 @@ ix86_reorg ()
     if (!insert)
       {
 	prev = prev_active_insn (ret);
-	if (prev && GET_CODE (prev) == JUMP_INSN
-	    && any_condjump_p (prev))
+	if (prev
+	    && ((GET_CODE (prev) == JUMP_INSN && any_condjump_p (prev))
+		|| GET_CODE (prev) == CALL_INSN))
 	  insert = 1;
 	/* Empty functions get branch misspredict even when the jump destination
 	   is not visible to us.  */
