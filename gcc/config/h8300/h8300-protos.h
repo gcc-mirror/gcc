@@ -70,6 +70,7 @@ extern int incdec_operand PARAMS ((rtx, enum machine_mode));
 extern int bit_operator PARAMS ((rtx, enum machine_mode));
 extern int nshift_operator PARAMS ((rtx, enum machine_mode));
 extern int eqne_operator PARAMS ((rtx, enum machine_mode));
+extern int gtuleu_operator PARAMS ((rtx, enum machine_mode));
 
 extern int h8300_eightbit_constant_address_p PARAMS ((rtx));
 extern int h8300_tiny_constant_address_p PARAMS ((rtx));

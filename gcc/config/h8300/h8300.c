@@ -1925,6 +1925,18 @@ eqne_operator (x, mode)
   return (code == EQ || code == NE);
 }
 
+/* Return nonzero if X is either GTU or LEU.  */
+
+int
+gtuleu_operator (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  enum rtx_code code = GET_CODE (x);
+
+  return (code == GTU || code == LEU);
+}
+
 /* Recognize valid operators for bit instructions.  */
 
 int
