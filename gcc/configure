@@ -5445,7 +5445,7 @@ else
 	cd ..
 	rm -rf $tempdir
 	build_auto=auto-build.h
-	FORBUILD=../$build_alias
+	FORBUILD=../build-$build_alias
 fi
 
 
