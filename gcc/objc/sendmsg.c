@@ -77,6 +77,12 @@ get_imp (Class_t class, SEL sel)
 #endif
 }
 
+__inline__ BOOL
+__objc_responds_to (id object, SEL sel)
+{
+  return get_imp (object->class_pointer, sel) != __objc_missing_method;
+}
+
 /* This is the lookup function.  All entries in the table are either a 
    valid method *or* one of `__objc_missing_method' which calls
    forward:: etc, or `__objc_init_install_dtable' which installs the
@@ -138,11 +144,6 @@ static void __objc_init_install_dtable(id receiver, SEL op)
   IMP imp;
   void* args;
   void* result;
-
-  /* If the class has not yet had it's class links resolved, we must 
-     re-compute all class links */
-  if(!CLS_ISRESOLV(receiver->class_pointer))
-    __objc_resolve_class_links();
 
   /* This may happen, if the programmer has taken the address of a 
      method before the dtable was initialized... too bad for him! */
@@ -232,9 +233,16 @@ static void
 __objc_install_dispatch_table_for_class (Class_t class)
 {
 #ifdef OBJC_SPARSE_LOOKUP
-  Class_t super = class->super_class;
+  Class_t super;
   MethodList_t mlist;
   int counter;
+
+  /* If the class has not yet had it's class links resolved, we must 
+     re-compute all class links */
+  if(!CLS_ISRESOLV(class))
+    __objc_resolve_class_links();
+
+  super = class->super_class;
 
   if (super != 0 && (super->dtable == __objc_uninstalled_dtable))
     __objc_install_dispatch_table_for_class (super);
