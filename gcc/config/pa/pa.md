@@ -992,11 +992,11 @@
   [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand"
 				"=r,r,r,r,r,Q,*q,!fx,fx,*T")
 	(match_operand:SI 1 "move_operand"
-				"rM,J,N,K,Q,rM,rM,!fxM,*T,fx"))]
+				"r,J,N,K,Q,rM,rM,!fxM,*T,fx"))]
   "register_operand (operands[0], SImode)
    || reg_or_0_operand (operands[1], SImode)"
   "@
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    zdepi %Z1,%0
@@ -1043,9 +1043,9 @@
   "*
 {
   if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh2add %1,%2,%0\;ldw %3(0,%0),%0\";
+    return \"sh2addl %1,%2,%0\;ldw %3(0,%0),%0\";
   else
-    return \"sh2add %1,%2,%0\;ldwx %3(0,%0),%0\";
+    return \"sh2addl %1,%2,%0\;ldwx %3(0,%0),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "8")])
@@ -1166,7 +1166,7 @@
   "reload_completed"
   "@
    addil L'%G2,%1
-   ldil L'%G2,%0\;add %0,%1,%0"
+   ldil L'%G2,%0\;addl %0,%1,%0"
   [(set_attr "type" "binary,binary")
    (set_attr "length" "4,8")])
 
@@ -1236,7 +1236,7 @@
 ;; was not a common subexpression.)
 (define_split
   [(set (match_operand:SI 0 "register_operand" "")
-	(match_operand 1 "symbolic_operand" ""))
+	(match_operand:SI 1 "symbolic_operand" ""))
    (clobber (match_operand:SI 2 "register_operand" ""))]
   ""
   [(set (match_dup 2) (high:SI (match_dup 1)))
@@ -1255,11 +1255,11 @@
 
 (define_insn ""
   [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!fx")
-	(match_operand:HI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fxM"))]
+	(match_operand:HI 1 "move_operand" "r,J,N,K,Q,rM,rM,!fxM"))]
   "register_operand (operands[0], HImode)
    || reg_or_0_operand (operands[1], HImode)"
   "@
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    zdepi %Z1,%0
@@ -1299,9 +1299,9 @@
   "*
 {
   if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh1add %2,%1,%0\;ldh %3(0,%0),%0\";
+    return \"sh1addl %2,%1,%0\;ldh %3(0,%0),%0\";
   else
-    return \"sh1add %2,%1,%0\;ldhx %3(0,%0),%0\";
+    return \"sh1addl %2,%1,%0\;ldhx %3(0,%0),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "8")])
@@ -1356,11 +1356,11 @@
 
 (define_insn ""
   [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!fx")
-	(match_operand:QI 1 "move_operand" "rM,J,N,K,Q,rM,rM,!fxM"))]
+	(match_operand:QI 1 "move_operand" "r,J,N,K,Q,rM,rM,!fxM"))]
   "register_operand (operands[0], QImode)
    || reg_or_0_operand (operands[1], QImode)"
   "@
-   copy %r1,%0
+   copy %1,%0
    ldi %1,%0
    ldil L'%1,%0
    zdepi %Z1,%0
@@ -1522,9 +1522,9 @@
   "*
 {
   if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh3add %1,%2,%1\;fldds %3(0,%1),%0\";
+    return \"sh3addl %1,%2,%1\;fldds %3(0,%1),%0\";
   else
-    return \"sh3add %1,%2,%1\;flddx %3(0,%1),%0\";
+    return \"sh3addl %1,%2,%1\;flddx %3(0,%1),%0\";
 }"
   [(set_attr "type" "fpload")
    (set_attr "length" "8")])
@@ -1561,9 +1561,9 @@
   "*
 {
   if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh3add %1,%2,%1\;fstds %0,%3(0,%1)\";
+    return \"sh3addl %1,%2,%1\;fstds %0,%3(0,%1)\";
   else
-    return \"sh3add %1,%2,%1\;fstdx %0,%3(0,%1)\";
+    return \"sh3addl %1,%2,%1\;fstdx %0,%3(0,%1)\";
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "8")])
@@ -1762,9 +1762,9 @@
   "*
 {
   if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh2add %1,%2,%1\;fldws %3(0,%1),%0\";
+    return \"sh2addl %1,%2,%1\;fldws %3(0,%1),%0\";
   else
-    return \"sh2add %1,%2,%1\;fldwx %3(0,%1),%0\";
+    return \"sh2addl %1,%2,%1\;fldwx %3(0,%1),%0\";
 }"
   [(set_attr "type" "fpload")
    (set_attr "length" "8")])
@@ -1801,9 +1801,9 @@
   "*
 {
   if (GET_CODE (operands[3]) == CONST_INT)
-    return \"sh2add %1,%2,%1\;fstws %0,%3(0,%1)\";
+    return \"sh2addl %1,%2,%1\;fstws %0,%3(0,%1)\";
   else
-    return \"sh2add %1,%2,%1\;fstwx %0,%3(0,%1)\";
+    return \"sh2addl %1,%2,%1\;fstwx %0,%3(0,%1)\";
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "8")])
@@ -2050,24 +2050,24 @@
 			       (match_dup 1)))]
   "
 {
-  int intval = INTVAL (operands[2]);
+  unsigned HOST_WIDE_INT intval = INTVAL (operands[2]);
 
-  /* Try diving the constant by 2, then 4, and finally 8 to see
+  /* Try dividing the constant by 2, then 4, and finally 8 to see
      if we can get a constant which can be loaded into a register
      in a single instruction (cint_ok_for_move).  */
   if (intval % 2 == 0 && cint_ok_for_move (intval / 2))
     {
-      operands[2] = GEN_INT (INTVAL (operands[2]) / 2);
+      operands[2] = GEN_INT (intval / 2);
       operands[3] = GEN_INT (2);
     }
   else if (intval % 4 == 0 && cint_ok_for_move (intval / 4))
     {
-      operands[2] = GEN_INT (INTVAL (operands[2]) / 4);
+      operands[2] = GEN_INT (intval / 4);
       operands[3] = GEN_INT (4);
     }
   else if (intval % 8 == 0 && cint_ok_for_move (intval / 8))
     {
-      operands[2] = GEN_INT (INTVAL (operands[2]) / 8);
+      operands[2] = GEN_INT (intval / 8);
       operands[3] = GEN_INT (8);
     }
   else
@@ -2080,7 +2080,7 @@
 		 (match_operand:SI 2 "arith_operand" "r,J")))]
   ""
   "@
-   add %1,%2,%0
+   addl %1,%2,%0
    ldo %2(%1),%0")
 
 (define_insn "subdi3"
@@ -2162,7 +2162,7 @@
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "move_operand" ""))
    (parallel [(set (reg:SI 29) (div:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_operand:SI 3 "register_operand" ""))
+	      (clobber (match_dup 3))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (reg:SI 31))])
@@ -2207,7 +2207,7 @@
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "move_operand" ""))
    (parallel [(set (reg:SI 29) (udiv:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_operand:SI 3 "register_operand" ""))
+	      (clobber (match_dup 3))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (reg:SI 31))])
@@ -2252,7 +2252,7 @@
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "move_operand" ""))
    (parallel [(set (reg:SI 29) (mod:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_operand:SI 3 "register_operand" ""))
+	      (clobber (match_dup 3))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (reg:SI 31))])
@@ -2293,7 +2293,7 @@
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
    (set (reg:SI 25) (match_operand:SI 2 "move_operand" ""))
    (parallel [(set (reg:SI 29) (umod:SI (reg:SI 26) (reg:SI 25)))
-	      (clobber (match_operand:SI 3 "register_operand" ""))
+	      (clobber (match_dup 3))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 25))
 	      (clobber (reg:SI 31))])
@@ -2634,7 +2634,7 @@
 			  (match_operand:SI 3 "shadd_operand" ""))
 		 (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "sh%O3add %2,%1,%0")
+  "sh%O3addl %2,%1,%0")
 
 ;; This variant of the above insn can occur if the first operand
 ;; is the frame pointer.  This is a kludge, but there doesn't
@@ -2646,13 +2646,15 @@
 ;; (this was stolen from alpha.md, I'm not going to try and change it.
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=&r")
-	(plus:SI (plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
+  [(set (match_operand:SI 0 "register_operand" "=&r,r")
+	(plus:SI (plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r,r")
 				   (match_operand:SI 4 "shadd_operand" ""))
-			  (match_operand:SI 1 "register_operand" "r"))
-		 (match_operand:SI 3 "const_int_operand" "rI")))]
+			  (match_operand:SI 1 "register_operand" "r,r"))
+		 (match_operand:SI 3 "const_int_operand" "r,J")))]
   "reload_in_progress"
-  "sh%O4add %2,%1,%0\;add%I3 %3,%0,%0"
+  "@
+   sh%O4addl %2,%1,%0\;addl %3,%0,%0
+   sh%O4addl %2,%1,%0\;ldo %3(%0),%0"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
 
