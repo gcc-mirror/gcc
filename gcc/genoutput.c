@@ -1,5 +1,5 @@
 /* Generate code from to output assembler insns as recognized from rtl.
-   Copyright (C) 1987, 1988, 1992, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 94, 95, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -581,7 +581,10 @@ process_template (d, template)
 
 	  printf ("    \"");
 	  while (*cp != '\n' && *cp != '\0')
-	    putchar (*cp++);
+	    {
+	      putchar (*cp);
+	      cp++;
+	    }
 
 	  printf ("\",\n");
 	  i++;
@@ -601,7 +604,11 @@ process_template (d, template)
 	  VAX-11 "C" on VMS.  It is the equivalent of:
 		printf ("%s\n", &template[1])); */
       cp = &template[1];
-      while (*cp) putchar (*cp++);
+      while (*cp)
+	{
+	  putchar (*cp);
+	  cp++;
+	}
       putchar ('\n');
     }
 
