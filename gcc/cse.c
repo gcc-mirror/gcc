@@ -438,13 +438,11 @@ struct table_elt
    but not if it is an overlapping register.  */
 #ifdef OVERLAPPING_REGNO_P
 #define FIXED_REGNO_P(N)  \
-  (((N) == FRAME_POINTER_REGNUM				\
-    || ((N) < FIRST_PSEUDO_REGISTER && fixed_regs[N]))	\
+  (((N) == FRAME_POINTER_REGNUM || fixed_regs[N])	\
    && ! OVERLAPPING_REGNO_P ((N)))
 #else
 #define FIXED_REGNO_P(N)  \
-  ((N) == FRAME_POINTER_REGNUM				\
-   || ((N) < FIRST_PSEUDO_REGISTER && fixed_regs[N]))
+  ((N) == FRAME_POINTER_REGNUM || fixed_regs[N])
 #endif
 
 /* Compute cost of X, as stored in the `cost' field of a table_elt.  Fixed
@@ -456,7 +454,8 @@ struct table_elt
   ((N) == FRAME_POINTER_REGNUM || (N) == STACK_POINTER_REGNUM \
    || (N) == ARG_POINTER_REGNUM				\
    || (N) >= FIRST_VIRTUAL_REGISTER && (N) <= LAST_VIRTUAL_REGISTER  \
-   || (FIXED_REGNO_P (N) && REGNO_REG_CLASS (N) != NO_REGS))
+   || ((N) < FIRST_PSEUDO_REGISTER			\
+       && FIXED_REGNO_P (N) && REGNO_REG_CLASS (N) != NO_REGS))
 
 #define COST(X)						\
   (GET_CODE (X) == REG					\
@@ -4474,11 +4473,9 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
    Otherwise, return X, possibly with one or more operands
    modified by recursive calls to this function.
 
-   If X is a register whose contents are known, we may or may not
-   return those contents.  An instruction that uses a register is usually
-   faster than one that uses a constant.  But on machines with few hard
-   regs, using a register instead of a constant increases register life,
-   hurting register allocation.
+   If X is a register whose contents are known, we do NOT
+   return those contents here.  equiv_constant is called to
+   perform that task.
 
    INSN is the insn that we may be modifying.  If it is 0, make a copy
    of X before modifying it.  */
