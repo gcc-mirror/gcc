@@ -6885,9 +6885,12 @@ note_mem_written (written, writes_ptr)
 	{
 	  /* A varying address that is a sum indicates an array element,
 	     and that's just as good as a structure element
-	     in implying that we need not invalidate scalar variables.  */
-	  if (!(MEM_IN_STRUCT_P (written)
-		|| GET_CODE (XEXP (written, 0)) == PLUS))
+	     in implying that we need not invalidate scalar variables.
+	     However, we must allow QImode aliasing of scalars, because the
+	     ANSI C standard allows character pointers to alias anything.  */
+	  if (! ((MEM_IN_STRUCT_P (written)
+		  || GET_CODE (XEXP (written, 0)) == PLUS)
+		 && GET_MODE (written) != QImode))
 	    writes_ptr->all = 1;
 	  writes_ptr->nonscalar = 1;
 	}
