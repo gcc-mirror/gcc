@@ -1,3 +1,18 @@
+2002-04-02  Paolo Carlini  <pcarlini@unitus.it>
+            Nathan Myers  <ncm@cantrip.org>
+            Philip Martin  <philip@codematters.co.uk>
+
+	* include/bits/basic_string.h
+	(replace(i1, i2, _CharT* k1, _CharT* k2),
+	replace(i2, i2, const _CharT* k1, const _CharT* k2),
+	replace(i1, i2, iterator k1, iterator k2,
+	replace(i1, i2, const_iterator k1, const_iterator k2):
+	New specializations to optimize for the common cases of
+	pointers and iterators.
+	(replace(pos, n1, s, n2)): Tweak.
+	* include/bits/basic_string.tcc: Tweak comments.
+	* testsuite/21_strings/replace.cc (test04): New tests.
+
 2002-04-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/5542
