@@ -98,6 +98,14 @@ extern int traditional;
 #ifndef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE INT_TYPE_SIZE
 #endif
+
+/* Yield nonzero if adding two numbers with A's and B's signs can yield a
+   number with SUM's sign, where A, B, and SUM are all C integers.  */
+#define possible_sum_sign(a, b, sum) ((((a) ^ (b)) | ~ ((a) ^ (sum))) < 0)
+
+static void integer_overflow ();
+static long left_shift ();
+static long right_shift ();
 %}
 
 %union {
@@ -147,6 +155,8 @@ exp1	:	exp
 /* Expressions, not including the comma operator.  */
 exp	:	'-' exp    %prec UNARY
 			{ $$.value = - $2.value;
+			  if (($$.value & $2.value) < 0 && ! $2.unsignedp)
+			    integer_overflow ();
 			  $$.unsignedp = $2.unsignedp; }
 	|	'!' exp    %prec UNARY
 			{ $$.value = ! $2.value;
@@ -175,9 +185,15 @@ exp	:	'-' exp    %prec UNARY
 exp	:	exp '*' exp
 			{ $$.unsignedp = $1.unsignedp || $3.unsignedp;
 			  if ($$.unsignedp)
-			    $$.value = (unsigned) $1.value * $3.value;
+			    $$.value = (unsigned long) $1.value * $3.value;
 			  else
-			    $$.value = $1.value * $3.value; }
+			    {
+			      $$.value = $1.value * $3.value;
+			      if ($1.value
+				  && ($$.value / $1.value != $3.value
+				      || ($$.value & $1.value & $3.value) < 0))
+				integer_overflow ();
+			    } }
 	|	exp '/' exp
 			{ if ($3.value == 0)
 			    {
@@ -186,9 +202,13 @@ exp	:	exp '*' exp
 			    }
 			  $$.unsignedp = $1.unsignedp || $3.unsignedp;
 			  if ($$.unsignedp)
-			    $$.value = (unsigned) $1.value / $3.value;
+			    $$.value = (unsigned long) $1.value / $3.value;
 			  else
-			    $$.value = $1.value / $3.value; }
+			    {
+			      $$.value = $1.value / $3.value;
+			      if (($$.value & $1.value & $3.value) < 0)
+				integer_overflow ();
+			    } }
 	|	exp '%' exp
 			{ if ($3.value == 0)
 			    {
@@ -197,27 +217,35 @@ exp	:	exp '*' exp
 			    }
 			  $$.unsignedp = $1.unsignedp || $3.unsignedp;
 			  if ($$.unsignedp)
-			    $$.value = (unsigned) $1.value % $3.value;
+			    $$.value = (unsigned long) $1.value % $3.value;
 			  else
 			    $$.value = $1.value % $3.value; }
 	|	exp '+' exp
 			{ $$.value = $1.value + $3.value;
-			  $$.unsignedp = $1.unsignedp || $3.unsignedp; }
+			  $$.unsignedp = $1.unsignedp || $3.unsignedp;
+			  if (! $$.unsignedp
+			      && ! possible_sum_sign ($1.value, $3.value,
+						      $$.value))
+			    integer_overflow (); }
 	|	exp '-' exp
 			{ $$.value = $1.value - $3.value;
-			  $$.unsignedp = $1.unsignedp || $3.unsignedp; }
+			  $$.unsignedp = $1.unsignedp || $3.unsignedp;
+			  if (! $$.unsignedp
+			      && ! possible_sum_sign ($$.value, $3.value,
+						      $1.value))
+			    integer_overflow (); }
 	|	exp LSH exp
 			{ $$.unsignedp = $1.unsignedp;
-			  if ($$.unsignedp)
-			    $$.value = (unsigned) $1.value << $3.value;
+			  if ($3.value < 0 && ! $3.unsignedp)
+			    $$.value = right_shift (&$1, -$3.value);
 			  else
-			    $$.value = $1.value << $3.value; }
+			    $$.value = left_shift (&$1, $3.value); }
 	|	exp RSH exp
 			{ $$.unsignedp = $1.unsignedp;
-			  if ($$.unsignedp)
-			    $$.value = (unsigned) $1.value >> $3.value;
+			  if ($3.value < 0 && ! $3.unsignedp)
+			    $$.value = left_shift (&$1, -$3.value);
 			  else
-			    $$.value = $1.value >> $3.value; }
+			    $$.value = right_shift (&$1, $3.value); }
 	|	exp EQUAL exp
 			{ $$.value = ($1.value == $3.value);
 			  $$.unsignedp = 0; }
@@ -227,25 +255,25 @@ exp	:	exp '*' exp
 	|	exp LEQ exp
 			{ $$.unsignedp = 0;
 			  if ($1.unsignedp || $3.unsignedp)
-			    $$.value = (unsigned) $1.value <= $3.value;
+			    $$.value = (unsigned long) $1.value <= $3.value;
 			  else
 			    $$.value = $1.value <= $3.value; }
 	|	exp GEQ exp
 			{ $$.unsignedp = 0;
 			  if ($1.unsignedp || $3.unsignedp)
-			    $$.value = (unsigned) $1.value >= $3.value;
+			    $$.value = (unsigned long) $1.value >= $3.value;
 			  else
 			    $$.value = $1.value >= $3.value; }
 	|	exp '<' exp
 			{ $$.unsignedp = 0;
 			  if ($1.unsignedp || $3.unsignedp)
-			    $$.value = (unsigned) $1.value < $3.value;
+			    $$.value = (unsigned long) $1.value < $3.value;
 			  else
 			    $$.value = $1.value < $3.value; }
 	|	exp '>' exp
 			{ $$.unsignedp = 0;
 			  if ($1.unsignedp || $3.unsignedp)
-			    $$.value = (unsigned) $1.value > $3.value;
+			    $$.value = (unsigned long) $1.value > $3.value;
 			  else
 			    $$.value = $1.value > $3.value; }
 	|	exp '&' exp
@@ -548,10 +576,10 @@ yylex ()
 	  if (lookup ("__CHAR_UNSIGNED__", sizeof ("__CHAR_UNSIGNED__")-1, -1)
 	      || ((result >> (num_bits - 1)) & 1) == 0)
 	    yylval.integer.value
-	      = result & ((unsigned) ~0 >> (HOST_BITS_PER_INT - num_bits));
+	      = result & ((unsigned long) ~0 >> (HOST_BITS_PER_LONG - num_bits));
 	  else
 	    yylval.integer.value
-	      = result | ~((unsigned) ~0 >> (HOST_BITS_PER_INT - num_bits));
+	      = result | ~((unsigned long) ~0 >> (HOST_BITS_PER_LONG - num_bits));
 	}
       else
 	{
@@ -784,6 +812,47 @@ yyerror (s)
 {
   error (s);
   longjmp (parse_return_error, 1);
+}
+
+static void
+integer_overflow ()
+{
+  pedwarn ("integer overflow in preprocessor expression");
+}
+
+static long
+left_shift (a, b)
+     struct constant *a;
+     unsigned long b;
+{
+  if (b >= HOST_BITS_PER_LONG)
+    {
+      if (! a->unsignedp && a->value != 0)
+	integer_overflow ();
+      return 0;
+    }
+  else if (a->unsignedp)
+    return (unsigned long) a->value << b;
+  else
+    {
+      long l = a->value << b;
+      if (l >> b != a->value)
+	integer_overflow ();
+      return l;
+    }
+}
+
+static long
+right_shift (a, b)
+     struct constant *a;
+     unsigned long b;
+{
+  if (b >= HOST_BITS_PER_LONG)
+    return a->unsignedp ? 0 : a->value >> (HOST_BITS_PER_LONG - 1);
+  else if (a->unsignedp)
+    return (unsigned long) a->value >> b;
+  else
+    return a->value >> b;
 }
 
 /* This page contains the entry point to this file.  */
