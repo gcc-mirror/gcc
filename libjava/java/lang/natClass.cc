@@ -1698,9 +1698,11 @@ _Jv_LinkSymbolTable(jclass klass)
 	    {
 	      if (meth->ncode) // Maybe abstract?
 		klass->atable->addresses[index] = meth->ncode;
+#ifdef INTERPRETER
 	      else if (_Jv_IsInterpretedClass (target_class))
 		_Jv_Defer_Resolution (target_class, meth, 
 				      &klass->atable->addresses[index]);
+#endif
 	    }
 	  else
 	    klass->atable->addresses[index] = (void *)_Jv_ThrowNoSuchMethodError;

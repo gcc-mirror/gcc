@@ -1,3 +1,8 @@
+2003-10-24  Anthony Green  <green@redhat.com>
+
+	* java/lang/natClass.cc (_Jv_LinkSymbolTable): Fix case where
+	we have no interpreter.
+
 2003-10-22  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/natClass.cc (initializeClass): Call
