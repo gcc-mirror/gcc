@@ -808,7 +808,7 @@ init_standard_includes (pfile)
 		  && !CPP_OPTION (pfile, no_standard_cplusplus_includes)))
 	    {
 	      /* Does this dir start with the prefix?  */
-	      if (!memcmp (p->fname, default_prefix, default_len))
+	      if (!strncmp (p->fname, default_prefix, default_len))
 		{
 		  /* Yes; change prefix and add to search list.  */
 		  int flen = strlen (p->fname);
@@ -1229,7 +1229,7 @@ parse_option (input)
       md = (mn + mx) / 2;
 
       opt_len = cl_options[md].opt_len;
-      comp = memcmp (input, cl_options[md].opt_text, opt_len);
+      comp = strncmp (input, cl_options[md].opt_text, opt_len);
 
       if (comp > 0)
 	mn = md + 1;
@@ -1254,7 +1254,7 @@ parse_option (input)
 	      for (; mn < (unsigned int) N_OPTS; mn++)
 		{
 		  opt_len = cl_options[mn].opt_len;
-		  if (memcmp (input, cl_options[mn].opt_text, opt_len))
+		  if (strncmp (input, cl_options[mn].opt_text, opt_len))
 		    break;
 		  if (input[opt_len] == '\0')
 		    return mn;
