@@ -503,6 +503,7 @@ extern int target_flags;
 /* Register into which we save the PIC_OFFSET_TABLE_REGNUM so that it
    can be restored across function calls.  */
 #define PIC_OFFSET_TABLE_SAVE_RTX (cfun->machine->pic_offset_table_save_rtx)
+extern void hppa_init_pic_save PARAMS ((void));
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
