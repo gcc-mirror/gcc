@@ -102,11 +102,8 @@ _Jv_InitThreads (void)
 {
 }
 
-inline _Jv_Thread_t *
-_Jv_ThreadInitData (java::lang::Thread *)
-{
-  return NULL;
-}
+_Jv_Thread_t *
+_Jv_ThreadInitData (java::lang::Thread *);
 
 inline void
 _Jv_ThreadDestroyData (_Jv_Thread_t *data)
@@ -127,6 +124,16 @@ _Jv_ThreadYield (void)
 
 inline void
 _Jv_ThreadSetPriority (_Jv_Thread_t *, jint)
+{
+}
+
+inline void
+_Jv_ThreadRegister (_Jv_Thread_t *data)
+{
+}
+
+inline void
+_Jv_ThreadUnRegister (void)
 {
 }
 

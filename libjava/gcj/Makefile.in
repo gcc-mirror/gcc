@@ -73,6 +73,7 @@ CXXCPP = @CXXCPP@
 DIRLTDL = @DIRLTDL@
 DIVIDESPEC = @DIVIDESPEC@
 DLLTOOL = @DLLTOOL@
+EXCEPTIONSPEC = @EXCEPTIONSPEC@
 EXEEXT = @EXEEXT@
 GCC_UNWIND_INCLUDE = @GCC_UNWIND_INCLUDE@
 GCDEPS = @GCDEPS@
@@ -202,7 +203,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+	    cp -pr $$/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

@@ -326,6 +326,25 @@ _Jv_ThreadSetPriority (_Jv_Thread_t *data, jint prio)
     }
 }
 
+void
+_Jv_ThreadRegister (_Jv_Thread_t *data)
+{
+  pthread_setspecific (_Jv_ThreadKey, data->thread_obj);
+  pthread_setspecific (_Jv_ThreadDataKey, data);
+
+  // glibc 2.1.3 doesn't set the value of `thread' until after start_routine
+  // is called. Since it may need to be accessed from the new thread, work 
+  // around the potential race here by explicitly setting it again.
+  data->thread = pthread_self ();
+}
+
+void
+_Jv_ThreadUnRegister ()
+{
+  pthread_setspecific (_Jv_ThreadKey, NULL);
+  pthread_setspecific (_Jv_ThreadDataKey, NULL);
+}
+
 // This function is called when a thread is started.  We don't arrange
 // to call the `run' method directly, because this function must
 // return a value.
@@ -334,13 +353,7 @@ really_start (void *x)
 {
   struct starter *info = (struct starter *) x;
 
-  pthread_setspecific (_Jv_ThreadKey, info->data->thread_obj);
-  pthread_setspecific (_Jv_ThreadDataKey, info->data);
-
-  // glibc 2.1.3 doesn't set the value of `thread' until after start_routine
-  // is called. Since it may need to be accessed from the new thread, work 
-  // around the potential race here by explicitly setting it again.
-  info->data->thread = pthread_self ();
+  _Jv_ThreadRegister (info->data);
 
   info->method (info->data->thread_obj);
   

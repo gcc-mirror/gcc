@@ -1,6 +1,6 @@
 // Thread.java - Thread class.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -209,18 +209,20 @@ public class Thread implements Runnable
 
   private final native void initialize_native ();
 
-  private final synchronized static String gen_name ()
-  {
-    String n;
-    n = "Thread-" + nextThreadNumber;
-    ++nextThreadNumber;
-    return n;
-  }
+  private final native static String gen_name ();
 
   public Thread (ThreadGroup g, Runnable r, String n)
   {
-    Thread current = currentThread ();
-          
+    this (currentThread (), g, r, n);
+
+    // The Class Libraries book says ``threadName cannot be null''.  I
+    // take this to mean NullPointerException.
+    if (n == null)
+      throw new NullPointerException ();
+  }
+
+  private Thread (Thread current, ThreadGroup g, Runnable r, String n)
+  {
     if (g == null)
       {
 	// If CURRENT is null, then we are bootstrapping the first thread. 
@@ -233,17 +235,6 @@ public class Thread implements Runnable
     else
       group = g;
       
-    group.checkAccess();
-
-    // The Class Libraries book says ``threadName cannot be null''.  I
-    // take this to mean NullPointerException.
-    if (n == null)
-      throw new NullPointerException ();
-
-    name = n;
-    group.addThread(this);
-    runnable = r;
-
     data = null;
     interrupt_flag = false;
     alive_flag = false;
@@ -251,6 +242,8 @@ public class Thread implements Runnable
 
     if (current != null)
       {
+	group.checkAccess();
+
 	daemon_flag = current.isDaemon();
         int gmax = group.getMaxPriority();
 	int pri = current.getPriority();
@@ -262,6 +255,10 @@ public class Thread implements Runnable
 	daemon_flag = false;
 	priority = NORM_PRIORITY;
       }
+
+    name = n;
+    group.addThread(this);
+    runnable = r;
 
     initialize_native ();
   }
@@ -315,9 +312,6 @@ public class Thread implements Runnable
   private boolean startable_flag;
   private ClassLoader context_class_loader;
 
-  // Our native data.
+  // Our native data - points to an instance of struct natThread.
   private Object data;
-
-  // Next thread number to assign.
-  private static int nextThreadNumber = 0;
 }

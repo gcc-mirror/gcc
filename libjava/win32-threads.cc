@@ -35,7 +35,6 @@ extern "C"
 struct starter
 {
   _Jv_ThreadStartFunc *method;
-  java::lang::Thread *object;
   _Jv_Thread_t *data;
 };
 
@@ -124,10 +123,11 @@ _Jv_InitThreads (void)
 }
 
 _Jv_Thread_t *
-_Jv_ThreadInitData (java::lang::Thread *)
+_Jv_ThreadInitData (java::lang::Thread* obj)
 {
   _Jv_Thread_t *data = new _Jv_Thread_t;
   data->flags = 0;
+  data->thread_obj = obj;
 
   return data;
 }
@@ -176,6 +176,20 @@ _Jv_ThreadSetPriority (_Jv_Thread_t *data, jint prio)
     }
 }
 
+void
+_Jv_ThreadRegister (_Jv_Thread_t *data)
+{
+  TlsSetValue (_Jv_ThreadKey, data->thread_obj);
+  TlsSetValue (_Jv_ThreadDataKey, data);
+}
+
+void
+_Jv_ThreadUnRegister ()
+{
+  TlsSetValue (_Jv_ThreadKey, NULL);
+  TlsSetValue (_Jv_ThreadDataKey, NULL);
+}
+
 // This function is called when a thread is started.  We don't arrange
 // to call the `run' method directly, because this function must
 // return a value.
@@ -184,9 +198,9 @@ really_start (void* x)
 {
   struct starter *info = (struct starter *) x;
 
-  TlsSetValue (_Jv_ThreadKey, info->object);
-  TlsSetValue (_Jv_ThreadDataKey, info->data);
-  info->method (info->object);
+  _Jv_ThreadRegister (info->data);
+
+  info->method (info->data->thread_obj);
 
   if (! (info->data->flags & FLAG_DAEMON))
     {
@@ -214,7 +228,6 @@ _Jv_ThreadStart (java::lang::Thread *thread, _Jv_Thread_t *data, _Jv_ThreadStart
   // FIXME: handle marking the info object for GC.
   info = (struct starter *) _Jv_AllocBytes (sizeof (struct starter));
   info->method = meth;
-  info->object = thread;
   info->data = data;
 
   if (! thread->isDaemon ())

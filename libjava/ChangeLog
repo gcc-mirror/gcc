@@ -1,5 +1,48 @@
 2001-05-21  Per Bothner  <per@bothner.com>
 
+	Implement invocation interface; don't create new thread for main.
+	* java/lang/Thread.java (gen_name):  Make native.
+	(<init>(Thread,THreadGroup,Runnable,String)):  New private
+	constructor, used by other constructors, and _Jv_AttachCurrentThread.
+	* java/lang/natThread.cc (gen_name):  New implementation.
+	(_Jv_AttachCurrentThread, _Jv_DetachCurrentThread):  New.
+	* prims.cc (main_init):  Removed, replaced by _Jv_CreateJavaVM.
+	(_Jv_CreateJavaVM):  New runtime initialization procedure.
+	(runFirst):  New proecdure - mostly code from old FirstThread::run.
+	(JvRunMain, _Jv_RunMain):  Re-write to use new invocation code.
+	* gcj/cni.h (JvCreateJavaVM, JvAttachCurrentThread,
+	JvDetachCurrentThread):  New inline wrappers.
+	* gcj/javaprims.h (_Jv_CreateJavaVM, _Jv_AttachCurrentThread,
+	_Jv_DetachCurrentThread):  New declarations.
+	* gnu/gcj/runtime/FirstThread.java:  Gutted.  Now contains only ...
+	(getMain): new static method.
+	* gnu/gcj/runtime/natFirstThread.cc:  Removed;  run method replaced
+	by runFirst in prims.cc.
+	(java/lang/Thread.h):  Update for new invocation interface.
+	* include/posix-threads.h (_Jv_ThreadRegister,
+	_Jv_ThreadUnRegister):  New declarations.
+	* posix-threads.cc (_Jv_ThreadRegister, _Jv_ThreadUnRegister):  New.
+	(really_start):  Use new _Jv_ThreadRegister.
+	* include/no-threads.h (_Jv_ThreadInitData):  No longer inline.
+	(_Jv_ThreadRegister, _Jv_ThreadUnRegister):  New empty inlines.
+	* no-threads.cc (_Jv_ThreadInitData):  Set _Jv_OnlyThread here.
+	Complain of called when _Jv_OnlyThread already set.
+	(_Jv_ThreadStart):  Always JvFail.
+	* include/win32-threads.h  (_Jv_Thread_t):  New thread_obj field.
+	(_Jv_ThreadRegister, _Jv_ThreadUnRegister):  New declarations.
+	* win32-threads.cc (struct starter):  Remove objet field -
+	we use _Jv_Thread_t's new thread_obj field instead.
+	(_Jv_ThreadInitData):  Set _Jv_Thread_t's thread_obj field.
+	(_Jv_ThreadRegister, _Jv_ThreadUnRegister):  New.
+	(really_start):  Use new _Jv_ThreadRegister.
+	* jni.cc (_Jv_JNI_AttachCurrentThread):  Use _Jv_AttachCurrentThread.
+	(_Jv_JNI_DetachCurrentThread):  Use _Jv_DetachCurrentThread.
+	* gnu/gcj/jni/NativeThread.java, gnu/gcj/jni/natNativeThread.cc:
+	Removed - no longer needed with new invocation interface.
+	* Makefile.am:  Update for removed/added files.
+
+2001-05-21  Per Bothner  <per@bothner.com>
+
 	* Makefile.am (libgcj_la_DEPENDENCIES):  Add $(nat_files).
 	(libgcj_la_LIBADD):  Likewise.
 	(libgcjx_la_DEPENDENCIES, libgcjx_la_LIBADD):  Add $(x_nat_files).
