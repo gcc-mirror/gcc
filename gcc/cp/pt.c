@@ -4599,13 +4599,17 @@ overload_template_name (type)
   pushdecl_class_level (decl);
 }
 
+
 /* Like type_unification but designed specially to handle conversion
-   operators.  */
+   operators.  The EXTRA_FN_ARG, if any, is the type of an additional
+   parameter to be added to the beginning of FN's parameter list.  */
 
 int
-fn_type_unification (fn, explicit_targs, targs, args, return_type, strict)
+fn_type_unification (fn, explicit_targs, targs, args, return_type,
+		     strict, extra_fn_arg)
      tree fn, explicit_targs, targs, args, return_type;
      int strict;
+     tree extra_fn_arg;
 {
   int i, dummy = 0;
   tree fn_arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
@@ -4618,12 +4622,16 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type, strict)
       /* This is a template conversion operator.  Use the return types
          as well as the argument types.  */
       fn_arg_types = scratch_tree_cons (NULL_TREE, 
-				TREE_TYPE (TREE_TYPE (fn)),
-				fn_arg_types);
+					TREE_TYPE (TREE_TYPE (fn)),
+					fn_arg_types);
       decl_arg_types = scratch_tree_cons (NULL_TREE,
-				  return_type,
-				  decl_arg_types);
+					  return_type,
+					  decl_arg_types);
     }
+
+  if (extra_fn_arg != NULL_TREE)
+    fn_arg_types = scratch_tree_cons (NULL_TREE, extra_fn_arg,
+				      fn_arg_types); 
 
   i = type_unification (DECL_INNERMOST_TEMPLATE_PARMS (fn), 
 			&TREE_VEC_ELT (targs, 0), 
@@ -5261,12 +5269,35 @@ get_bindings (fn, decl, explicit_args)
 {
   int ntparms = DECL_NTPARMS (fn);
   tree targs = make_scratch_vec (ntparms);
+  tree decl_arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
+  tree extra_fn_arg = NULL_TREE;
   int i;
 
+  if (DECL_STATIC_FUNCTION_P (fn) 
+      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+    {
+      /* Sometimes we are trying to figure out what's being
+	 specialized by a declaration that looks like a method, and it
+	 turns out to be a static member function.  */
+      if (CLASSTYPE_TEMPLATE_INFO (DECL_REAL_CONTEXT (fn))
+	  && !is_member_template (fn))
+	/* The natural thing to do here seems to be to remove the
+	   spurious `this' parameter from the DECL, but that prevents
+	   unification from making use of the class type.  So,
+	   instead, we have fn_type_unification add to the parameters
+	   for FN.  */
+	extra_fn_arg = build_pointer_type (DECL_REAL_CONTEXT (fn));
+      else
+	/* In this case, though, adding the extra_fn_arg can confuse
+	   things, so we remove from decl_arg_types instead.  */
+	decl_arg_types = TREE_CHAIN (decl_arg_types);
+    }
+
   i = fn_type_unification (fn, explicit_args, targs, 
-			   TYPE_ARG_TYPES (TREE_TYPE (decl)), 
+			   decl_arg_types,
 			   TREE_TYPE (TREE_TYPE (decl)),
-			   1);
+			   1,
+			   extra_fn_arg);
 
   if (i == 0)
     {

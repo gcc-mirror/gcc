@@ -4176,7 +4176,7 @@ add_template_candidate_real (candidates, tmpl, explicit_targs,
   tree fn;
 
   i = fn_type_unification (tmpl, explicit_targs, targs, arglist,
-			   return_type, 0); 
+			   return_type, 0, NULL_TREE); 
 
   if (i != 0)
     return candidates;
