@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,21 +77,27 @@ package Exp_Tss is
    TSS_Deep_Finalize      : constant TNT := "DF";  -- Deep Finalize
    TSS_Deep_Initialize    : constant TNT := "DI";  -- Deep Initialize
    TSS_Composite_Equality : constant TNT := "EQ";  -- Composite Equality
+   TSS_From_Any           : constant TNT := "FA";  -- PolyORB/DSA From_Any
    TSS_Init_Proc          : constant TNT := "IP";  -- Initialization Procedure
-   TSS_RAS_Access         : constant TNT := "RA";  -- RAs type access
-   TSS_RAS_Dereference    : constant TNT := "RD";  -- RAs type deference
+   TSS_RAS_Access         : constant TNT := "RA";  -- RAS type access
+   TSS_RAS_Dereference    : constant TNT := "RD";  -- RAS type deference
    TSS_Rep_To_Pos         : constant TNT := "RP";  -- Rep to Pos conversion
    TSS_Slice_Assign       : constant TNT := "SA";  -- Slice assignment
    TSS_Stream_Input       : constant TNT := "SI";  -- Stream Input attribute
    TSS_Stream_Output      : constant TNT := "SO";  -- Stream Output attribute
    TSS_Stream_Read        : constant TNT := "SR";  -- Stream Read attribute
    TSS_Stream_Write       : constant TNT := "SW";  -- Stream Write attribute
+   TSS_To_Any             : constant TNT := "TA";  -- PolyORB/DSA To_Any
+   TSS_TypeCode           : constant TNT := "TC";  -- PolyORB/DSA TypeCode
 
-   OK_TSS_Names : constant array (Natural range <>) of TSS_Name_Type :=
+   --  The array below contains all valid TSS names
+
+   TSS_Names : constant array (Natural range <>) of TSS_Name_Type :=
      (TSS_Deep_Adjust,
       TSS_Deep_Finalize,
       TSS_Deep_Initialize,
       TSS_Composite_Equality,
+      TSS_From_Any,
       TSS_Init_Proc,
       TSS_RAS_Access,
       TSS_RAS_Dereference,
@@ -100,7 +106,9 @@ package Exp_Tss is
       TSS_Stream_Input,
       TSS_Stream_Output,
       TSS_Stream_Read,
-      TSS_Stream_Write);
+      TSS_Stream_Write,
+      TSS_To_Any,
+      TSS_TypeCode);
 
    TSS_Null : constant TNT := "  ";
    --  Dummy entry used to indicated that this is not really a TSS
@@ -205,5 +213,12 @@ package Exp_Tss is
    --  a result of the processing for Initialize_Scalars. This function
    --  is used to test for the presence of an init proc in cases where
    --  a null init proc is considered equivalent to no init proc.
+
+   function Find_Inherited_TSS
+     (Typ : Entity_Id;
+      Nam : TSS_Name_Type) return Entity_Id;
+   --  Returns the TSS of name Nam of Typ, or of its closest ancestor defining
+   --  such a TSS. Empty is returned is neither Typ nor any of its ancestors
+   --  have such a TSS.
 
 end Exp_Tss;

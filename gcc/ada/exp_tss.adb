@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,6 +97,41 @@ package body Exp_Tss is
       Prepend_Elmt (TSS, TSS_Elist (FN));
    end Copy_TSS;
 
+   ------------------------
+   -- Find_Inherited_TSS --
+   ------------------------
+
+   function Find_Inherited_TSS
+     (Typ : Entity_Id;
+      Nam : TSS_Name_Type) return Entity_Id
+   is
+      Btyp : Entity_Id := Typ;
+      Proc : Entity_Id;
+
+   begin
+      loop
+         Btyp := Base_Type (Btyp);
+         Proc :=  TSS (Btyp, Nam);
+
+         exit when Present (Proc)
+           or else not Is_Derived_Type (Btyp);
+
+         --  If Typ is a derived type, it may inherit attributes from some
+         --  ancestor.
+
+         Btyp := Etype (Btyp);
+      end loop;
+
+      if No (Proc) then
+
+         --  If nothing else, use the TSS of the root type
+
+         Proc := TSS (Base_Type (Underlying_Type (Typ)), Nam);
+      end if;
+
+      return Proc;
+   end Find_Inherited_TSS;
+
    -----------------------
    -- Get_TSS_Name_Type --
    -----------------------
@@ -112,8 +147,8 @@ package body Exp_Tss is
       if C1 in 'A' .. 'Z' and then C2 in 'A' .. 'Z' then
          Nm := (C1, C2);
 
-         for J in OK_TSS_Names'Range loop
-            if Nm = OK_TSS_Names (J) then
+         for J in TSS_Names'Range loop
+            if Nm = TSS_Names (J) then
                return Nm;
             end if;
          end loop;
