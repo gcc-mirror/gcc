@@ -1,3 +1,11 @@
+2002-06-10  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* gjavah.c (throwable_p): Accept argument as either a classname or 
+	signature fragment. Create null-terminated classname string for super
+	when calling itself recursively.
+	(decode_signature_piece): Skip first character from class name 
+	signature when calling throwable_p.
+
 2002-06-08  H.J. Lu  (hjl@gnu.org)
 
 	* jcf-path.c (jcf_path_init): Allocate 1 more byte for string.

@@ -1104,11 +1104,12 @@ gcjh_streq (p1, p2)
   return ! strcmp ((char *) p1, (char *) p2);
 }
 
-/* Return 1 if the initial (L<classname>;) part of SIGNATURE names a
-   subclass of throwable, or 0 if not.  */
+/* Return 1 if the initial part of CLNAME names a subclass of throwable, 
+   or 0 if not.  CLNAME may be extracted from a signature, and can be 
+   terminated with either `;' or NULL.  */
 static int
-throwable_p (signature)
-     const unsigned char *signature;
+throwable_p (clname)
+     const unsigned char *clname;
 {
   int length;
   unsigned char *current;
@@ -1148,12 +1149,12 @@ throwable_p (signature)
       init_done = 1;
     }
 
-  for (length = 0; signature[length] != ';'; ++length)
+  for (length = 0; clname[length] != ';' && clname[length] != '\0'; ++length)
     ;
   current = (unsigned char *) ALLOC (length);
-  for (i = 1; signature[i] != ';'; ++i)
-    current[i - 1] = signature[i] == '/' ? '.' : signature[i];
-  current[i - 1] = '\0';
+  for (i = 0; i < length; ++i)
+    current[i] = clname[i] == '/' ? '.' : clname[i];
+  current[length] = '\0';
 
   /* We don't compute the hash slot here because the table might be
      modified by the recursion.  In that case the slot could be
@@ -1166,6 +1167,8 @@ throwable_p (signature)
     {
       JCF jcf;
       PTR *slot;
+      unsigned char *super, *tmp;
+      int super_length = -1;
       const char *classfile_name = find_class (current, strlen (current),
 					       &jcf, 0);
 
@@ -1185,7 +1188,12 @@ throwable_p (signature)
 	}
       jcf_parse_class (&jcf);
 
-      result = throwable_p (super_class_name (&jcf, NULL));
+      tmp = (unsigned char *) super_class_name (&jcf, &super_length);
+      super = (unsigned char *) ALLOC (super_length + 1);
+      memcpy (super, tmp, super_length);      
+      super[super_length] = '\0';
+
+      result = throwable_p (super);
       slot = htab_find_slot (result ? throw_hash : non_throw_hash,
 			     current, INSERT);
       *slot = current;
@@ -1317,7 +1325,8 @@ decode_signature_piece (stream, signature, limit, need_space)
 	  else if (! strncmp (signature, "Ljava/lang/Class;",
 			      sizeof ("Ljava/lang/Class;") - 1))
 	    ctype = "jclass";
-	  else if (throwable_p (signature))
+	  /* Skip leading 'L' for throwable_p call.  */
+	  else if (throwable_p (signature + 1))
 	    ctype = "jthrowable";
 	  else
 	    ctype = "jobject";
