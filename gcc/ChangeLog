@@ -1,3 +1,15 @@
+Thu Nov 26 17:15:38 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md: Fix minor formatting problems.  Update docs.
+	(*b, *b_rev, *b_noov, *b_noov_rev, *db, 
+	decrement_and_branch_until_zero, rptb_end): Use c4x_output_cbranch
+	to output the instruction sequences.
+	(rpts): Delete.
+	(rptb_top): Provide alternatives to use any register or memory
+	for loop counter.
+	(rptb_end):  Emit use of operands rather than assigning them
+	explicitly to the RS and RE registers.
+
 Thu Nov 26 16:37:59 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_modified_between_p, c4x_mem_set_p,
