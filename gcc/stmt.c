@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2388,11 +2388,13 @@ expand_return (retval)
      because expand_null_return takes care of them, too.
      Any reason why not?  */
   if (HAVE_return && cleanup_label == 0
-      && ! current_function_returns_pcc_struct)
+      && ! current_function_returns_pcc_struct
+      && BRANCH_COST <= 1)
     {
       /* If this is  return x == y;  then generate
 	 if (x == y) return 1; else return 0;
-	 if we can do it with explicit return insns.  */
+	 if we can do it with explicit return insns and
+	 branches are cheap.  */
       if (retval_rhs)
 	switch (TREE_CODE (retval_rhs))
 	  {
