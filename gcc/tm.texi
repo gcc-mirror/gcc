@@ -3089,9 +3089,9 @@ must live across calls.
 @item DEFAULT_CALLER_SAVES
 Define this macro if function calls on the target machine do not preserve
 any registers; in other words, if @code{CALL_USED_REGISTERS} has 1
-for all registers.  This macro enables @samp{-fcaller-saves} by default.
-Eventually that option will be enabled by default on all machines and both
-the option and this macro will be eliminated.
+for all registers.  When defined, this macro enables @samp{-fcaller-saves} 
+by default for all optimization levels.  It has no effect for optimization
+levels 2 and higher, where @samp{-fcaller-saves} is the default.
 
 @findex CALLER_SAVE_PROFITABLE
 @item CALLER_SAVE_PROFITABLE (@var{refs}, @var{calls})
