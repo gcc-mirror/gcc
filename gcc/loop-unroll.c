@@ -1269,7 +1269,9 @@ unroll_loop_stupid (struct loops *loops, struct loop *loop)
 /* Expand a bct instruction in a branch and an increment.
    If flag_inc is set, the induction variable does not need to be
    incremented.  */
-void expand_bct (edge e, int flag_inc)
+
+static void
+expand_bct (edge e, int flag_inc)
 {
   rtx bct_insn = BB_END (e->src);
   rtx cmp;
@@ -1278,12 +1280,11 @@ void expand_bct (edge e, int flag_inc)
 
   rtx tgt;
   rtx condition;
-  rtx label;
+  rtx labelref;
   rtx reg;
-  rtx jump;
-  rtx pattern = PATTERN(bct_insn);
+  rtx pattern = PATTERN (bct_insn);
   
-  if (!(is_bct_cond(bct_insn)))
+  if (!is_bct_cond (bct_insn))
     return;
 
   inc = get_var_set_from_bct (bct_insn);
@@ -1299,14 +1300,12 @@ void expand_bct (edge e, int flag_inc)
     }
 
   condition = XEXP (SET_SRC (cmp), 0);
-  label = XEXP (SET_SRC (cmp), 1);
+  labelref = XEXP (SET_SRC (cmp), 1);
 
   do_compare_rtx_and_jump (copy_rtx (reg), XEXP (condition, 1), 
 			   GET_CODE (condition), 0,
 			   GET_MODE (reg), NULL_RTX, NULL_RTX,
-			   label);
-  jump = get_last_insn ();
-  JUMP_LABEL (jump) = label;
+			   XEXP (labelref, 0));
   seq = get_insns ();
   end_sequence ();
   emit_insn_after (seq, bct_insn);

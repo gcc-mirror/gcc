@@ -1,3 +1,9 @@
+2004-12-30  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/19175
+	* loop-unroll.c (expand_bct): Pass the code_label to the function
+	do_compare_rtx_and_jump, not the label ref.  Clean-up style issues.
+
 2004-12-27 John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* vax.c (vax_address_cost, vax_rtx_cost): Correct casts.
