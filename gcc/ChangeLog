@@ -1,3 +1,8 @@
+2004-02-14  Josef Zlomek  <zlomekj@suse.cz>
+
+	* emit-rtl.c (set_decl_incoming_rtl): Check whether the 0th element of
+	PARALLEL is NULL.
+
 2004-02-14  Per Bothner  <per@bothner.com>
 
 	* fix-header.c (line_table):  Move local variable in main to global.

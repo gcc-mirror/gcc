@@ -852,8 +852,16 @@ set_decl_incoming_rtl (tree t, rtx x)
     }
   if (GET_CODE (x) == PARALLEL)
     {
-      int i;
-      for (i = 0; i < XVECLEN (x, 0); i++)
+      int i, start;
+
+      /* Check for a NULL entry, used to indicate that the parameter goes
+	 both on the stack and in registers.  */
+      if (XEXP (XVECEXP (x, 0, 0), 0))
+	start = 0;
+      else
+	start = 1;
+
+      for (i = start; i < XVECLEN (x, 0); i++)
 	{
 	  rtx y = XVECEXP (x, 0, i);
 	  if (REG_P (XEXP (y, 0)))
