@@ -525,11 +525,7 @@ schedule_ebb (rtx head, rtx tail)
 
       for (note = REG_NOTES (head); note; note = XEXP (note, 1))
 	if (REG_NOTE_KIND (note) == REG_SAVE_NOTE)
-	  {
-	    remove_note (head, note);
-	    note = XEXP (note, 1);
-	    remove_note (head, note);
-	  }
+	  remove_note (head, note);
     }
 
   /* Remove remaining note insns from the block, save them in
