@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--            Copyright (C) 1992-2003 Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,14 +36,16 @@
 
 with System.Secondary_Stack;
 with System.Storage_Elements;
+with System.Soft_Links;
 with Interfaces.C;
-with Unchecked_Conversion;
 
 package body System.Threads.Initialization is
 
    use Interfaces.C;
 
    package SSS renames System.Secondary_Stack;
+
+   package SSL renames System.Soft_Links;
 
    procedure Initialize_Task_Hooks;
    --  Register the appropriate hooks (Register and Reset_TSD) to the
@@ -61,6 +63,19 @@ package body System.Threads.Initialization is
    --  Separate, as these hooks are different for AE653 and VxWorks 5.5.
 
    --------------
+   -- Init_RTS --
+   --------------
+
+   procedure Init_RTS is
+   begin
+      SSL.Get_Jmpbuf_Address := Get_Jmpbuf_Address'Access;
+      SSL.Get_Sec_Stack_Addr := Get_Sec_Stack_Addr'Access;
+      SSL.Get_Current_Excep  := Get_Current_Excep'Access;
+      SSL.Set_Jmpbuf_Address := Set_Jmpbuf_Address'Access;
+      SSL.Set_Sec_Stack_Addr := Set_Sec_Stack_Addr'Access;
+   end Init_RTS;
+
+   --------------
    -- Register --
    --------------
 
@@ -76,9 +91,7 @@ package body System.Threads.Initialization is
       --  (depending on configRecord.c, allocation could be disabled).
       --  Otherwise, everything could have been done in Thread_Body_Enter.
 
-      if OSI.taskIdVerify (T) = OSI.ERROR
-        or else OSI.taskVarGet (T, Current_ATSD'Access) /= OSI.ERROR
-      then
+      if OSI.taskIdVerify (T) = OSI.ERROR then
          return OSI.ERROR;
       end if;
 
@@ -102,6 +115,7 @@ package body System.Threads.Initialization is
 
 begin
    Initialize_Task_Hooks;
+   Init_RTS;
 
    --  Register the environment task
    declare

@@ -866,7 +866,9 @@ package body Sem_Aggr is
          Error_Msg_N ("aggregate type cannot have limited component", N);
          Explain_Limited_Type (Typ, N);
 
-      elsif Is_Limited_Type (Typ) then
+      elsif Is_Limited_Type (Typ)
+        and not Extensions_Allowed
+      then
          Error_Msg_N ("aggregate type cannot be limited", N);
          Explain_Limited_Type (Typ, N);
 
@@ -1913,7 +1915,9 @@ package body Sem_Aggr is
          Error_Msg_N ("type of extension aggregate must be tagged", N);
          return;
 
-      elsif Is_Limited_Type (Typ) then
+      elsif Is_Limited_Type (Typ)
+        and not Extensions_Allowed
+      then
          Error_Msg_N ("aggregate type cannot be limited", N);
          Explain_Limited_Type (Typ, N);
          return;
@@ -2017,7 +2021,19 @@ package body Sem_Aggr is
       --
       --  This variable is updated as a side effect of function Get_Value
 
-      procedure Add_Association (Component : Entity_Id; Expr : Node_Id);
+      Mbox_Present : Boolean := False;
+      Others_Mbox  : Boolean := False;
+      --  Variables used in case of default initialization to provide a
+      --  functionality similar to Others_Etype. Mbox_Present indicates
+      --  that the component takes its default initialization; Others_Mbox
+      --  indicates that at least one component takes its default initiali-
+      --  zation. Similar to Others_Etype, they are also updated as a side
+      --  effect of function Get_Value.
+
+      procedure Add_Association
+        (Component   : Entity_Id;
+         Expr        : Node_Id;
+         Box_Present : Boolean := False);
       --  Builds a new N_Component_Association node which associates
       --  Component to expression Expr and adds it to the new association
       --  list New_Assoc_List being built.
@@ -2064,7 +2080,11 @@ package body Sem_Aggr is
       -- Add_Association --
       ---------------------
 
-      procedure Add_Association (Component : Entity_Id; Expr : Node_Id) is
+      procedure Add_Association
+        (Component   : Entity_Id;
+         Expr        : Node_Id;
+         Box_Present : Boolean := False)
+      is
          Choice_List : constant List_Id := New_List;
          New_Assoc   : Node_Id;
 
@@ -2072,8 +2092,9 @@ package body Sem_Aggr is
          Append (New_Occurrence_Of (Component, Sloc (Expr)), Choice_List);
          New_Assoc :=
            Make_Component_Association (Sloc (Expr),
-             Choices    => Choice_List,
-             Expression => Expr);
+             Choices     => Choice_List,
+             Expression  => Expr,
+             Box_Present => Box_Present);
          Append (New_Assoc, New_Assoc_List);
       end Add_Association;
 
@@ -2174,7 +2195,37 @@ package body Sem_Aggr is
          Expr          : Node_Id := Empty;
          Selector_Name : Node_Id;
 
+         procedure Check_Non_Limited_Type;
+         --  Relax check to allow the default initialization of limited types.
+         --  For example:
+         --      record
+         --         C : Lim := (..., others => <>);
+         --      end record;
+
+         procedure Check_Non_Limited_Type is
+         begin
+            if Is_Limited_Type (Etype (Compon))
+               and then Comes_From_Source (Compon)
+               and then not In_Instance_Body
+            then
+
+               if Extensions_Allowed
+                 and then Present (Expression (Assoc))
+                 and then Nkind (Expression (Assoc)) = N_Aggregate
+               then
+                  null;
+               else
+                  Error_Msg_N
+                    ("initialization not allowed for limited types", N);
+                  Explain_Limited_Type (Etype (Compon), Compon);
+               end if;
+
+            end if;
+         end Check_Non_Limited_Type;
+
       begin
+         Mbox_Present := False;
+
          if Present (From) then
             Assoc := First (From);
          else
@@ -2186,14 +2237,6 @@ package body Sem_Aggr is
             while Present (Selector_Name) loop
                if Nkind (Selector_Name) = N_Others_Choice then
                   if Consider_Others_Choice and then No (Expr) then
-                     if Present (Others_Etype) and then
-                        Base_Type (Others_Etype) /= Base_Type (Etype (Compon))
-                     then
-                        Error_Msg_N ("components in OTHERS choice must " &
-                                     "have same type", Selector_Name);
-                     end if;
-
-                     Others_Etype := Etype (Compon);
 
                      --  We need to duplicate the expression for each
                      --  successive component covered by the others choice.
@@ -2202,10 +2245,34 @@ package body Sem_Aggr is
                      --  indispensable otherwise, because each one must be
                      --  expanded individually to preserve side-effects.
 
-                     if Expander_Active then
-                        return New_Copy_Tree (Expression (Assoc));
+                     if Box_Present (Assoc) then
+                        Others_Mbox  := True;
+                        Mbox_Present := True;
+
+                        if Expander_Active then
+                           return New_Copy_Tree (Expression (Parent (Compon)));
+                        else
+                           return Expression (Parent (Compon));
+                        end if;
                      else
-                        return Expression (Assoc);
+
+                        Check_Non_Limited_Type;
+
+                        if Present (Others_Etype) and then
+                           Base_Type (Others_Etype) /= Base_Type (Etype
+                                                                   (Compon))
+                        then
+                           Error_Msg_N ("components in OTHERS choice must " &
+                                        "have same type", Selector_Name);
+                        end if;
+
+                        Others_Etype := Etype (Compon);
+
+                        if Expander_Active then
+                           return New_Copy_Tree (Expression (Assoc));
+                        else
+                           return Expression (Assoc);
+                        end if;
                      end if;
                   end if;
 
@@ -2216,10 +2283,27 @@ package body Sem_Aggr is
                      --  components are grouped together with a "|" choice.
                      --  For instance "filed1 | filed2 => Expr"
 
-                     if Present (Next (Selector_Name)) then
-                        Expr := New_Copy_Tree (Expression (Assoc));
+                     if Box_Present (Assoc) then
+                        Mbox_Present := True;
+
+                        --  Duplicate the default expression of the component
+                        --  from the record type declaration
+
+                        if Present (Next (Selector_Name)) then
+                           Expr := New_Copy_Tree
+                                     (Expression (Parent (Compon)));
+                        else
+                           Expr := Expression (Parent (Compon));
+                        end if;
                      else
-                        Expr := Expression (Assoc);
+
+                        Check_Non_Limited_Type;
+
+                        if Present (Next (Selector_Name)) then
+                           Expr := New_Copy_Tree (Expression (Assoc));
+                        else
+                           Expr := Expression (Assoc);
+                        end if;
                      end if;
 
                      Generate_Reference (Compon, Selector_Name);
@@ -2753,7 +2837,18 @@ package body Sem_Aggr is
          Component := Node (Component_Elmt);
          Expr := Get_Value (Component, Component_Associations (N), True);
 
-         if No (Expr) then
+         if Mbox_Present and then Is_Limited_Type (Etype (Component)) then
+
+            --  In case of default initialization of a limited component we
+            --  pass the limited component to the expander. The expander will
+            --  generate calls to the corresponding initialization subprograms.
+
+            Add_Association
+              (Component   => Component,
+               Expr        => Empty,
+               Box_Present => True);
+
+         elsif No (Expr) then
             Error_Msg_NE ("no value supplied for component &!", N, Component);
          else
             Resolve_Aggr_Expr (Expr, Component);
@@ -2783,7 +2878,9 @@ package body Sem_Aggr is
             Typech := Empty;
 
             if Nkind (Selectr) = N_Others_Choice then
-               if No (Others_Etype) then
+               if No (Others_Etype)
+                  and then not Others_Mbox
+               then
                   Error_Msg_N
                     ("OTHERS must represent at least one component", Selectr);
                end if;
@@ -2804,8 +2901,10 @@ package body Sem_Aggr is
                --  component supplied by a previous expansion.
 
                if No (New_Assoc) then
+                  if Box_Present (Parent (Selectr)) then
+                     null;
 
-                  if Chars (Selectr) /= Name_uTag
+                  elsif Chars (Selectr) /= Name_uTag
                     and then Chars (Selectr) /= Name_uParent
                     and then Chars (Selectr) /= Name_uController
                   then
@@ -2827,8 +2926,13 @@ package body Sem_Aggr is
                   Typech := Base_Type (Etype (Component));
 
                elsif Typech /= Base_Type (Etype (Component)) then
-                  Error_Msg_N
-                    ("components in choice list must have same type", Selectr);
+
+                  if not Box_Present (Parent (Selectr)) then
+                     Error_Msg_N
+                       ("components in choice list must have same type",
+                        Selectr);
+                  end if;
+
                end if;
 
                Next (Selectr);

@@ -297,6 +297,7 @@ package body Sinfo is
       (N : Node_Id) return Boolean is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Component_Association
         or else NT (N).Nkind = N_Formal_Package_Declaration
         or else NT (N).Nkind = N_Formal_Subprogram_Declaration);
       return Flag15 (N);
@@ -2729,6 +2730,7 @@ package body Sinfo is
       (N : Node_Id; Val : Boolean := True) is
    begin
       pragma Assert (False
+        or else NT (N).Nkind = N_Component_Association
         or else NT (N).Nkind = N_Formal_Package_Declaration
         or else NT (N).Nkind = N_Formal_Subprogram_Declaration);
       Set_Flag15 (N, Val);

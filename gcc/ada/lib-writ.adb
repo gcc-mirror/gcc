@@ -91,6 +91,8 @@ package body Lib.Writ is
       System_Fname : File_Name_Type;
       --  File name for system spec if needed for dummy entry
 
+      Save_Style : constant Boolean := Style_Check;
+
    begin
       --  Nothing to do if we already compiled System
 
@@ -133,9 +135,12 @@ package body Lib.Writ is
         Error_Location  => No_Location);
 
       --  Parse system.ads so that the checksum is set right
+      --  Style checks are not applied.
 
+      Style_Check := False;
       Initialize_Scanner (Units.Last, System_Source_File_Index);
       Discard_List (Par (Configuration_Pragmas => False));
+      Style_Check := Save_Style;
    end Ensure_System_Dependency;
 
    ---------------

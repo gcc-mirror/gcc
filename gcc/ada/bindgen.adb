@@ -1895,6 +1895,7 @@ package body Bindgen is
 
    procedure Gen_Output_File (Filename : String) is
       Is_Public_Version : constant Boolean := Get_Gnat_Build_Type = Public;
+
    begin
       --  Acquire settings for Interrupt_State pragmas
 

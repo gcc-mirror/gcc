@@ -30,7 +30,7 @@ with Ada.Text_IO;
 with Ada.Exceptions;
 
 with GNAT.Directory_Operations;
-with Sdefault;
+with Osint;
 
 package body MDLL.Utl is
 
@@ -155,7 +155,7 @@ package body MDLL.Utl is
       Base_File   : String := "";
       Build_Lib   : Boolean := False)
    is
-      use Sdefault;
+      use Osint;
 
       Arguments : OS_Lib.Argument_List
         (1 .. 5 + Files'Length + Options'Length);
@@ -167,7 +167,7 @@ package body MDLL.Utl is
       Out_V     : aliased String := Output_File;
       Bas_Opt   : aliased String := "-Wl,--base-file," & Base_File;
       Lib_Opt   : aliased String := "-mdll";
-      Lib_Dir   : aliased String := "-L" & Object_Dir_Default_Name.all;
+      Lib_Dir   : aliased String := "-L" & Object_Dir_Default_Prefix;
 
    begin
       A := A + 1;

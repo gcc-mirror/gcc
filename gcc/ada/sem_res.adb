@@ -1940,9 +1940,25 @@ package body Sem_Res is
                if Is_Overloaded (N)
                  and then Nkind (N) = N_Function_Call
                then
-                  Error_Msg_Node_2 := Typ;
-                  Error_Msg_NE ("no visible interpretation of&" &
-                    " matches expected type&", N, Name (N));
+                  declare
+                     Subp_Name : Node_Id;
+                  begin
+                     if Is_Entity_Name (Name (N)) then
+                        Subp_Name := Name (N);
+
+                     elsif Nkind (Name (N)) = N_Selected_Component then
+
+                        --  Protected operation: retrieve operation name.
+
+                        Subp_Name := Selector_Name (Name (N));
+                     else
+                        raise Program_Error;
+                     end if;
+
+                     Error_Msg_Node_2 := Typ;
+                     Error_Msg_NE ("no visible interpretation of&" &
+                       " matches expected type&", N, Subp_Name);
+                  end;
 
                   if All_Errors_Mode then
                      declare

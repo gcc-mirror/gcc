@@ -6234,9 +6234,19 @@ package body Sem_Ch3 is
            or else Is_Limited_Composite (T))
         and then not In_Instance
       then
-         Error_Msg_N
-           ("cannot initialize entities of limited type", Exp);
-         Explain_Limited_Type (T, Exp);
+         --  Relax the strictness of the front-end in case of limited
+         --  aggregates and extension aggregates.
+
+         if Extensions_Allowed
+           and then (Nkind (Exp) = N_Aggregate
+                     or else Nkind (Exp) = N_Extension_Aggregate)
+         then
+            null;
+         else
+            Error_Msg_N
+              ("cannot initialize entities of limited type", Exp);
+            Explain_Limited_Type (T, Exp);
+         end if;
       end if;
    end Check_Initialization;
 

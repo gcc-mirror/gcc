@@ -338,7 +338,8 @@ package body Sem_Ch4 is
             Check_Restriction (No_Protected_Type_Allocators, N);
          end if;
 
-         if Is_Limited_Type (Type_Id)
+         if Nkind (Expression (E)) /= N_Aggregate
+           and then Is_Limited_Type (Type_Id)
            and then Comes_From_Source (N)
            and then not In_Instance_Body
          then

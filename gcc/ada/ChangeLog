@@ -1,3 +1,141 @@
+2003-11-13  Vincent Celier  <celier@gnat.com>
+
+	* 5bml-tgt.adb (Build_Dynamic_Library): Use
+	Osint.Include_Dir_Default_Prefix instead of
+	Sdefault.Include_Dir_Default_Name.
+
+	* gnatlbr.adb: Update Copyright notice
+	(Gnatlbr): : Use Osint.Include_Dir_Default_Prefix instead of
+	Sdefault.Include_Dir_Default_Name and Osint.Object_Dir_Default_Prefix
+	instead of Sdefault.Object_Dir_Default_Name
+
+	* gnatlink.adb: 
+	(Process_Binder_File): Never suppress the option following -Xlinker
+
+	* mdll-utl.adb: 
+	(Gcc): Use Osint.Object_Dir_Default_Prefix instead of
+	Sdefault.Object_Dir_Default_Name.
+
+	* osint.ads, osint.adb: 
+	(Include_Dir_Default_Prefix, Object_Dir_Default_Prefix): New functions
+	Minor reformatting.
+
+	* vms_conv.ads: Minor reformating
+	Remove GNAT STANDARD and GNAT PSTA
+
+	* vms_conv.adb: 
+	Allow GNAT MAKE to have several files on the command line.
+	(Init_Object_Dirs): Use Osint.Object_Dir_Default_Prefix instead of
+	Sdefault.Object_Dir_Default_Name.
+	Minor Reformating
+	Remove data for GNAT STANDARD
+
+	* vms_data.ads: 
+	Add new compiler qualifier /PRINT_STANDARD (-gnatS)
+	Remove data for GNAT STANDARD
+	Remove options and documentation for -gnatwb/-gnatwB: these warning
+	options no longer exist.
+
+2003-11-13  Ed Falis  <falis@gnat.com>
+
+	* 5zthrini.adb: (Init_RTS): Made visible
+
+	* 5zthrini.adb: 
+	(Register): Removed unnecessary call to taskVarGet that checked whether
+	 an ATSD was already set as a task var for the argument thread.
+
+	* s-thread.adb: 
+	Updated comment to reflect that this is a VxWorks version
+	Added context clause for System.Threads.Initialization
+	Added call to System.Threads.Initialization.Init_RTS
+
+2003-11-13  Jerome Guitton  <guitton@act-europe.fr>
+
+	* 5zthrini.adb: 
+	(Init_RTS): New procedure, for the initialization of the run-time lib.
+
+	* s-thread.adb: 
+	Remove dependancy on System.Init, so that this file can be used in the
+	AE653 sequential run-time lib.
+
+2003-11-13  Robert Dewar  <dewar@gnat.com>
+
+	* bindgen.adb: Minor reformatting
+
+2003-11-13  Ed Schonberg  <schonberg@gnat.com>
+
+	* checks.adb: 
+	(Apply_Discriminant_Check): Do no apply check if target type is derived
+	from source type with no applicable constraint.
+
+	* lib-writ.adb: 
+	(Ensure_System_Dependency): Do not apply the style checks that may have
+	been specified for the main unit.
+
+	* sem_ch8.adb: 
+	(Find_Selected_Component): Further improvement in error message, with
+	RM reference.
+
+	* sem_res.adb: 
+	(Resolve): Handle properly the case of an illegal overloaded protected
+	procedure.
+
+2003-11-13  Javier Miranda  <miranda@gnat.com>
+
+	* exp_aggr.adb: 
+	(Has_Default_Init_Comps): New function to check the presence of
+	default initialization in an aggregate.
+	(Build_Record_Aggr_Code): Recursively expand the ancestor in case of
+	extension aggregate of a limited record. In addition, a new formal
+	was added to do not initialize the record controller (if any) during
+	this recursive expansion of ancestors.
+	(Init_Controller): Add support for limited record components.
+	(Expand_Record_Aggregate): In case of default initialized components
+	convert the aggregate into a set of assignments.
+
+	* par-ch4.adb (P_Aggregate_Or_Paren_Expr): Update the comment
+	describing the new syntax.
+	Nothing else needed to be done because this subprogram delegates part of
+	its work to P_Precord_Or_Array_Component_Association.
+	(P_Record_Or_Array_Component_Association): Give support to the new
+	syntax for default initialization of components.
+
+	* sem_aggr.adb: 
+	(Resolve_Aggregate): Relax the strictness of the frontend in case of
+	limited aggregates.
+	(Resolve_Record_Aggregate): Give support to default initialized
+	components.
+	(Get_Value): In case of default initialized components, duplicate
+	the corresponding default expression (from the record type
+	declaration). In case of default initialization in the *others*
+	choice, do not check that all components have the same type.
+	(Resolve_Extension_Aggregate): Give support to limited extension
+	aggregates.
+
+	* sem_ch3.adb: 
+	(Check_Initialization): Relax the strictness of the front-end in case
+	of aggregate and extension aggregates. This test is now done in
+	Get_Value in a per-component manner.
+
+	* sem_ch4.adb (Analyze_Allocator): Don't post an error if the
+	expression corresponds to a limited aggregate. This test is now done
+	in Get_Value.
+
+	* sinfo.ads, sinfo.adb (N_Component_Association): Addition of
+	Box_Present flag.
+
+	* sprint.adb (Sprint_Node_Actual): Modified to print an mbox if
+	present in an N_Component_Association node
+
+2003-11-13  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem_ch9.adb (Analyze_Accept_Statement): A procedure hides a
+	type-conformant entry only if they are homographs.
+
+2003-11-13  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2003-11-12  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* adadecode.c: Use <> form of include for ctype.h.

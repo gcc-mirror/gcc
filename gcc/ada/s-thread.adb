@@ -31,12 +31,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the VxWorks/Cert version of this package
+--  This is the VxWorks version of this package
 
-with System.Init;
 with System.Secondary_Stack;
 
 with Unchecked_Conversion;
+
+with System.Threads.Initialization;
 
 package body System.Threads is
 
@@ -47,6 +48,12 @@ package body System.Threads is
 
    function From_Address is
       new Unchecked_Conversion (Address, ATSD_Access);
+
+   procedure Init_Float;
+   pragma Import (C, Init_Float, "__gnat_init_float");
+
+   procedure Install_Handler;
+   pragma Import (C, Install_Handler, "__gnat_install_handler");
 
    -----------------------
    -- Get_Current_Excep --
@@ -122,8 +129,8 @@ package body System.Threads is
       SSS.SS_Init (TSD.Sec_Stack_Addr, Sec_Stack_Size);
       Current_ATSD := Process_ATSD_Address;
 
-      System.Init.Install_Handler;
-      System.Init.Init_Float;
+      Install_Handler;
+      Init_Float;
    end Thread_Body_Enter;
 
    ----------------------------------
@@ -136,6 +143,7 @@ package body System.Threads is
       pragma Unreferenced (EO);
    begin
       --  No action for this target
+
       null;
    end Thread_Body_Exceptional_Exit;
 
@@ -146,7 +154,10 @@ package body System.Threads is
    procedure Thread_Body_Leave is
    begin
       --  No action for this target
+
       null;
    end Thread_Body_Leave;
 
+begin
+   System.Threads.Initialization.Init_RTS;
 end System.Threads;

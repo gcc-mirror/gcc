@@ -1183,6 +1183,26 @@ package body Checks is
                if No (DconS) then
                   return;
                end if;
+
+               --  A further optimization: if T_Typ is derived from S_Typ
+               --  without imposing a constraint, no check is needed.
+
+               if Nkind (Original_Node (Parent (T_Typ))) =
+                 N_Full_Type_Declaration
+               then
+                  declare
+                     Type_Def : Node_Id :=
+                                 Type_Definition
+                                   (Original_Node (Parent (T_Typ)));
+                  begin
+                     if Nkind (Type_Def) = N_Derived_Type_Definition
+                       and then Is_Entity_Name (Subtype_Indication (Type_Def))
+                       and then Entity (Subtype_Indication (Type_Def)) = S_Typ
+                     then
+                        return;
+                     end if;
+                  end;
+               end if;
             end if;
 
             DconT  := First_Elmt (Discriminant_Constraint (T_Typ));
