@@ -200,7 +200,9 @@ proc check_profiling_available { test_what } {
 	# Some targets don't have any implementation of __bb_init_func or are
 	# missing other needed machinery.
 	if { [istarget mmix-*-*]
+	     || [istarget arm*-*-eabi*]
 	     || [istarget arm*-*-elf]
+	     || [istarget arm*-*-symbianelf*]
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget strongarm*-*-elf]
 	     || [istarget xscale*-*-elf]

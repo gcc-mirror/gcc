@@ -1,5 +1,8 @@
 2004-08-19  Mark Mitchell  <mark@codesourcery.com>
 
+	* lib/target-supports.exp (check_profiling_available): Return
+	false for arm*-*-symbianelf* and arm*-*-eabi*.
+
 	PR c++/15890
 	* g++.dg/template/delete1.C: New test.
 
