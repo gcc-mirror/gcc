@@ -50,6 +50,7 @@
 
 2002-12-18  Aldy Hernandez  <aldyh@redhat.com>
 
+	PR 8551
 	* config/rs6000/altivec.h (vec_cmplt macro): Reverse arguments in
 	macro.
 	(vec_cmplt C++ functions): Reverse arguments.
