@@ -183,6 +183,16 @@ public abstract class AbstractPreferences extends Preferences {
     }
 
     /**
+     * Returns all known unremoved children of this node.
+     *
+     * @return All known unremoved children of this node
+     */
+    protected final AbstractPreferences[] cachedChildren()
+    {
+      return (AbstractPreferences[]) childCache.values().toArray();
+    }
+
+    /**
      * Returns all the direct sub nodes of this preferences node.
      * Needs access to the backing store to give a meaningfull answer.
      * <p>

@@ -1,5 +1,10 @@
 2003-12-18  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/prefs/AbstractPreferences.java
+	(cachedChildren): New method.
+
+2003-12-18  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/TimeZone.java (getOffset): New method.
 
 2003-12-17  Fernando Nasser  <fnasser@redhat.com>
