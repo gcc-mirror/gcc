@@ -571,7 +571,7 @@ distclean-am: distclean-multi
 maintainer-clean-am: maintainer-clean-multi
 
 all-multi:
-	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do
+	: $(MAKE) ; exec $(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do
 install-multi:
 	$(MULTIDO) $(AM_MAKEFLAGS) DO=install multi-do
 mostlyclean-multi:

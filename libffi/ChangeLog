@@ -1,3 +1,7 @@
+2002-09-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.am (all-multi): Fix multilib parallel build.
+
 2002-07-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* configure.in (sh[34]*-*-linux*): Add brackets.

@@ -1,3 +1,7 @@
+2002-09-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.am (all-multi): Fix multilib parallel build.
+
 2002-09-22  Richard Henderson  <rth@redhat.com>
 
 	* include/std/std_limits.h (__glibcpp_f32_round_error,

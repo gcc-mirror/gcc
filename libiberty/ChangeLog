@@ -1,3 +1,7 @@
+2002-09-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (all): Fix multilib parallel build.
+
 2002-09-19  John David Anglin  <dave@hiuly1.hia.nrc.ca>
 
 	* cp-demangle.c (demangling_new): Cast 0 to enum.

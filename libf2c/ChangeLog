@@ -1,3 +1,7 @@
+Sun Sep 22 23:43:37 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (all): Fix multilib parallel build.
+
 2002-09-14  Tim Prince  <tprince@computer.org>
 
 	PR libf2c/7384
