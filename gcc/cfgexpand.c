@@ -1237,7 +1237,7 @@ construct_exit_block (void)
   ix = 0;
   while (ix < EDGE_COUNT (EXIT_BLOCK_PTR->preds))
     {
-      e = EDGE_I (EXIT_BLOCK_PTR->preds, ix);
+      e = EDGE_PRED (EXIT_BLOCK_PTR, ix);
       if (!(e->flags & EDGE_ABNORMAL))
 	redirect_edge_succ (e, exit_block);
       else
