@@ -299,11 +299,9 @@ yylex ()
 	    case SELFNAME:
 	      lastiddecl = identifier_typedecl_value (tmp_token.yylval.ttype);
 	      if (lastiddecl != trrr)
-		{
-		  lastiddecl = trrr;
-		  if (got_scope)
-		    tmp_token.yylval.ttype = trrr;
-		}
+		lastiddecl = trrr;
+	      if (got_scope)
+		tmp_token.yylval.ttype = trrr;
 	      break;
 	    case IDENTIFIER:
 	      lastiddecl = trrr;

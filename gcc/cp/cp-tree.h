@@ -1195,10 +1195,12 @@ extern int flag_new_for_scope;
 #define EMPTY_CONSTRUCTOR_P(NODE) (TREE_CODE (NODE) == CONSTRUCTOR \
 				   && CONSTRUCTOR_ELTS (NODE) == NULL_TREE)
 
+#if 0
 /* Indicates that a NON_LVALUE_EXPR came from a C++ reference.
    Used to generate more helpful error message in case somebody
    tries to take its address.  */
 #define TREE_REFERENCE_EXPR(NODE) (TREE_LANG_FLAG_3(NODE))
+#endif
 
 /* Nonzero for _TYPE means that the _TYPE defines a destructor.  */
 #define TYPE_HAS_DESTRUCTOR(NODE) (TYPE_LANG_FLAG_2(NODE))

@@ -144,7 +144,7 @@ tinfo2.o: cc1plus $(srcdir)/cp/tinfo2.cc
 	  -c $(srcdir)/cp/tinfo2.cc
 exception.o: cc1plus $(srcdir)/cp/exception.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
-	  -c -O0 -fexceptions $(srcdir)/cp/exception.cc
+	  -c -fexceptions $(srcdir)/cp/exception.cc
 new.o: cc1plus $(srcdir)/cp/new.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new.cc

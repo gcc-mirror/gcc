@@ -108,6 +108,8 @@ real_lvalue_p (ref)
   return 0;
 }
 
+/* This differs from real_lvalue_p in that class rvalues are considered
+   lvalues.  */
 int
 lvalue_p (ref)
      tree ref;
@@ -2101,4 +2103,17 @@ error_type (arg)
     type = lvalue_type (arg);
 
   return type;
+}
+
+/* Does FUNCTION use a variable-length argument list?  */
+
+int
+varargs_function_p (function)
+     tree function;
+{
+  tree parm = TYPE_ARG_TYPES (TREE_TYPE (function));
+  for (; parm; parm = TREE_CHAIN (parm))
+    if (TREE_VALUE (parm) == void_type_node)
+      return 0;
+  return 1;
 }

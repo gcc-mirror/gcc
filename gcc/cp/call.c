@@ -3187,13 +3187,18 @@ reference_binding (rto, rfrom, expr, flags)
   int lvalue = 1;
   tree to = TREE_TYPE (rto);
   tree from = rfrom;
+  int related;
 
   if (TREE_CODE (from) == REFERENCE_TYPE)
     from = TREE_TYPE (from);
   else if (! expr || ! real_lvalue_p (expr))
     lvalue = 0;
 
-  if (lvalue
+  related = (TYPE_MAIN_VARIANT (to) == TYPE_MAIN_VARIANT (from)
+	     || (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
+		 && DERIVED_FROM_P (to, from)));
+
+  if (lvalue && related
       && TYPE_READONLY (to) >= TYPE_READONLY (from)
       && TYPE_VOLATILE (to) >= TYPE_VOLATILE (from))
     {
@@ -3201,14 +3206,11 @@ reference_binding (rto, rfrom, expr, flags)
 
       if (TYPE_MAIN_VARIANT (to) == TYPE_MAIN_VARIANT (from))
 	conv = build_conv (REF_BIND, rto, conv);
-      else if (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
-	       && DERIVED_FROM_P (to, from))
+      else
 	{
 	  conv = build_conv (REF_BIND, rto, conv);
 	  ICS_STD_RANK (conv) = STD_RANK;
 	}
-      else
-	conv = NULL_TREE;
     }
   else
     conv = NULL_TREE;
@@ -3225,8 +3227,15 @@ reference_binding (rto, rfrom, expr, flags)
 	  if (TREE_CODE (TREE_OPERAND (conv, 0)) == BASE_CONV)
 	    TREE_OPERAND (conv, 0) = TREE_OPERAND (TREE_OPERAND (conv, 0), 0);
 	}
-      if (conv && ! (TYPE_READONLY (to) && ! TYPE_VOLATILE (to)
-		     && (flags & LOOKUP_NO_TEMP_BIND) == 0))
+      if (conv
+	  && ((! (TYPE_READONLY (to) && ! TYPE_VOLATILE (to)
+		  && (flags & LOOKUP_NO_TEMP_BIND) == 0))
+	      /* If T1 is reference-related to T2, cv1 must be the same
+		 cv-qualification as, or greater cv-qualification than,
+		 cv2; otherwise, the program is ill-formed.  */
+	      || (related
+		  && (TYPE_READONLY (to) < TYPE_READONLY (from)
+		      || TYPE_VOLATILE (to) < TYPE_VOLATILE (from)))))
 	ICS_BAD_FLAG (conv) = 1;
     }
 
@@ -3265,7 +3274,12 @@ implicit_conversion (to, from, expr, flags)
 	    || IS_AGGR_TYPE (non_reference (to)))
 	   && (flags & LOOKUP_NO_CONVERSION) == 0)
     {
-      if (TREE_CODE (to) == REFERENCE_TYPE
+      cand = build_user_type_conversion_1
+	(to, expr, LOOKUP_ONLYCONVERTING);
+      if (cand)
+	conv = cand->second_conv;
+      if ((! conv || ICS_BAD_FLAG (conv))
+	  && TREE_CODE (to) == REFERENCE_TYPE
 	  && TYPE_READONLY (TREE_TYPE (to))
 	  && ! TYPE_VOLATILE (TREE_TYPE (to))
 	  && (flags & LOOKUP_NO_TEMP_BIND) == 0)
@@ -3274,13 +3288,6 @@ implicit_conversion (to, from, expr, flags)
 	    (TYPE_MAIN_VARIANT (TREE_TYPE (to)), expr, LOOKUP_ONLYCONVERTING);
 	  if (cand)
 	    conv = build_conv (REF_BIND, to, cand->second_conv);
-	}
-      else
-	{
-	  cand = build_user_type_conversion_1
-	    (to, expr, LOOKUP_ONLYCONVERTING);
-	  if (cand)
-	    conv = cand->second_conv;
 	}
     }
 
@@ -4181,7 +4188,10 @@ print_z_candidates (candidates)
 }
 
 /* Returns the best overload candidate to perform the requested
-   conversion.  */
+   conversion.  This function is used for three the overloading situations
+   described in [over.match.copy], [over.match.conv], and [over.match.ref].
+   If TOTYPE is a REFERENCE_TYPE, we're trying to find an lvalue binding as
+   per [dcl.init.ref], so we ignore temporary bindings.  */
 
 static struct z_candidate *
 build_user_type_conversion_1 (totype, expr, flags)
@@ -4229,9 +4239,22 @@ build_user_type_conversion_1 (totype, expr, flags)
   for (; convs; convs = TREE_CHAIN (convs))
     {
       tree fn = TREE_VALUE (convs);
-      tree ics = implicit_conversion
-	(totype, TREE_TYPE (TREE_TYPE (fn)), 0, LOOKUP_NO_CONVERSION);
-      if (ics)
+      int convflags = LOOKUP_NO_CONVERSION;
+      tree ics;
+
+      /* If we are called to convert to a reference type, we are trying to
+	 find an lvalue binding, so don't even consider temporaries.  If
+	 we don't find an lvalue binding, the caller will try again to
+	 look for a temporary binding.  */
+      if (TREE_CODE (totype) == REFERENCE_TYPE)
+	convflags |= LOOKUP_NO_TEMP_BIND;
+
+      ics = implicit_conversion
+	(totype, TREE_TYPE (TREE_TYPE (fn)), 0, convflags);
+
+      if (TREE_CODE (totype) == REFERENCE_TYPE && ics && ICS_BAD_FLAG (ics))
+	/* ignore the near match.  */;
+      else if (ics)
 	for (; fn; fn = DECL_CHAIN (fn))
 	  {
 	    candidates = add_function_candidate (candidates, fn, args, flags);
@@ -4348,9 +4371,10 @@ build_new_function_call (fn, args, obj)
 	{
 	  if (candidates && ! candidates->next)
 	    return build_function_call (candidates->fn, args);
-	  else
-	    cp_error ("no matching function for call to `%D (%A)'",
-		      TREE_PURPOSE (fn), args);
+	  cp_error ("no matching function for call to `%D (%A)'",
+		    TREE_PURPOSE (fn), args);
+	  if (candidates)
+	    print_z_candidates (candidates);
 	  return error_mark_node;
 	}
       candidates = splice_viable (candidates);
@@ -5037,11 +5061,12 @@ build_over_call (fn, convs, args, flags)
       is_method = 1;
     }
 
-  for (; conv = TREE_VEC_ELT (convs, i), arg && parm;
+  for (; arg && parm;
        parm = TREE_CHAIN (parm), arg = TREE_CHAIN (arg), ++i)
     {
       tree type = TREE_VALUE (parm);
 
+      conv = TREE_VEC_ELT (convs, i);
       if (ICS_BAD_FLAG (conv))
 	{
 	  tree t = conv;
@@ -5118,17 +5143,24 @@ build_over_call (fn, convs, args, flags)
       && TREE_VEC_LENGTH (convs) == 1
       && copy_args_p (fn))
     {
-      tree targ = NULL_TREE;
+      tree targ;
       arg = TREE_VALUE (TREE_CHAIN (converted_args));
 
       /* Pull out the real argument, disregarding const-correctness.  */
-      if (TREE_CODE (arg) == ADDR_EXPR)
+      targ = arg;
+      while (TREE_CODE (targ) == NOP_EXPR
+	     || TREE_CODE (targ) == NON_LVALUE_EXPR
+	     || TREE_CODE (targ) == CONVERT_EXPR)
+	targ = TREE_OPERAND (targ, 0);
+      if (TREE_CODE (targ) == ADDR_EXPR)
 	{
-	  targ = TREE_OPERAND (arg, 0);
+	  targ = TREE_OPERAND (targ, 0);
 	  if (! comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (arg))),
 			   TYPE_MAIN_VARIANT (TREE_TYPE (targ)), 1))
 	    targ = NULL_TREE;
 	}
+      else
+	targ = NULL_TREE;
 
       if (targ)
 	arg = targ;

@@ -49,8 +49,6 @@ extern struct obstack permanent_obstack;
 
 extern int current_class_depth;
 
-extern tree cleanups_this_call;
-
 extern tree static_ctors, static_dtors;
 
 /* Stack of places to restore the search obstack back to.  */
@@ -5012,6 +5010,18 @@ init_decl_processing ()
 		    BUILT_IN_NEXT_ARG, NULL_PTR);
   builtin_function ("__builtin_args_info", int_ftype_int,
 		    BUILT_IN_ARGS_INFO, NULL_PTR);
+  builtin_function ("__builtin_setjmp",
+		    build_function_type (integer_type_node,
+					 tree_cons (NULL_TREE, ptr_type_node,
+						    endlink)),
+		    BUILT_IN_SETJMP, NULL_PTR);
+  builtin_function ("__builtin_longjmp",
+		    build_function_type (integer_type_node,
+					 tree_cons (NULL_TREE, ptr_type_node,
+						    tree_cons (NULL_TREE,
+							       integer_type_node,
+							       endlink))),
+		    BUILT_IN_LONGJMP, NULL_PTR);
 
   /* Untyped call and return.  */
   builtin_function ("__builtin_apply_args", ptr_ftype,
@@ -6569,11 +6579,6 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	}
       else if (! toplev)
 	{
-	  extern int temp_slot_level;
-	  extern int target_temp_slot_level;
-	  tree old_cleanups = cleanups_this_call;
-	  int old_temp_level = target_temp_slot_level;
-
 	  /* This is a declared decl which must live until the
 	     end of the binding contour.  It may need a cleanup.  */
 
@@ -6654,9 +6659,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		}
 	    }
 
-	  push_temp_slots ();
-	  push_temp_slots ();
-	  target_temp_slot_level = temp_slot_level;
+	  expand_start_target_temps ();
 
 	  if (DECL_SIZE (decl) && type != error_mark_node)
 	    {
@@ -6679,11 +6682,9 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 		  && DECL_NAME (decl))
 		TREE_USED (decl) = 0;
 	    }
+
 	  /* Cleanup any temporaries needed for the initial value.  */
-	  expand_cleanups_to (old_cleanups);
-	  pop_temp_slots ();
-	  pop_temp_slots ();
-	  target_temp_slot_level = old_temp_level;
+	  expand_end_target_temps ();
 
 	  if (DECL_SIZE (decl) && type != error_mark_node)
 	    {
@@ -6777,11 +6778,6 @@ expand_static_init (decl, init)
       /* Emit code to perform this initialization but once.  */
       tree temp;
 
-      extern int temp_slot_level;
-      extern int target_temp_slot_level;
-      tree old_cleanups;
-      int old_temp_level;
-
       /* Remember this information until end of file.  */
       push_obstacks (&permanent_obstack, &permanent_obstack);
 
@@ -6790,11 +6786,7 @@ expand_static_init (decl, init)
       rest_of_decl_compilation (temp, NULL_PTR, 0, 0);
       expand_start_cond (build_binary_op (EQ_EXPR, temp,
 					  integer_zero_node, 1), 0);
-      old_cleanups = cleanups_this_call;
-      old_temp_level = target_temp_slot_level;
-      push_temp_slots ();
-      push_temp_slots ();
-      target_temp_slot_level = temp_slot_level;
+      expand_start_target_temps ();
 
       expand_assignment (temp, integer_one_node, 0, 0);
       if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl))
@@ -6807,10 +6799,7 @@ expand_static_init (decl, init)
 	expand_assignment (decl, init, 0, 0);
 
       /* Cleanup any temporaries needed for the initial value.  */
-      expand_cleanups_to (old_cleanups);
-      pop_temp_slots ();
-      pop_temp_slots ();
-      target_temp_slot_level = old_temp_level;
+      expand_end_target_temps ();
 
       if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (decl)))
 	{
@@ -9195,9 +9184,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      }
 
 	    /* Tell grokfndecl if it needs to set TREE_PUBLIC on the node.  */
-	    publicp = (! friendp
-		       || RIDBIT_SETP (RID_EXTERN, specbits)
-		       || ! (funcdef_flag < 0 || inlinep));
+	    publicp = (! friendp || ! staticp);
 	    decl = grokfndecl (ctype, type, declarator,
 			       virtualp, flags, quals, raises, attrlist,
 			       friendp ? -1 : 0, publicp, inlinep,
@@ -9395,11 +9382,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  type = build_cplus_method_type (build_type_variant (ctype, constp, volatilep),
 					  TREE_TYPE (type), TYPE_ARG_TYPES (type));
 
-	/* Record presence of `static'.  In C++, `inline' implies `static'.  */
+	/* Record presence of `static'.  */
 	publicp = (ctype != NULL_TREE
 		   || RIDBIT_SETP (RID_EXTERN, specbits)
-		   || (!RIDBIT_SETP (RID_STATIC, specbits)
-		       && !RIDBIT_SETP (RID_INLINE, specbits)));
+		   || !RIDBIT_SETP (RID_STATIC, specbits));
 
 	decl = grokfndecl (ctype, type, original_name,
 			   virtualp, flags, quals, raises, attrlist,
@@ -11281,6 +11267,7 @@ store_parm_decls ()
   register tree fndecl = current_function_decl;
   register tree parm;
   int parms_have_cleanups = 0;
+  tree cleanups = NULL_TREE;
 
   /* This is either a chain of PARM_DECLs (when a prototype is used).  */
   tree specparms = current_function_parms;
@@ -11355,10 +11342,10 @@ store_parm_decls ()
 		  && (cleanup = maybe_build_cleanup (parm), cleanup))
 		{
 		  expand_decl (parm);
-		  if (! expand_decl_cleanup (parm, cleanup))
-		    cp_error ("parser lost in parsing declaration of `%D'",
-			      parm);
 		  parms_have_cleanups = 1;
+
+		  /* Keep track of the cleanups.  */
+		  cleanups = tree_cons (parm, cleanup, cleanups);
 		}
 	    }
 	  else
@@ -11391,6 +11378,20 @@ store_parm_decls ()
   DECL_SAVED_INSNS (fndecl) = NULL_RTX;
   if (! processing_template_decl)
     expand_function_start (fndecl, parms_have_cleanups);
+
+  /* Now that we have initialized the parms, we can start their
+     cleanups.  We cannot do this before, since expand_decl_cleanup
+     should not be called before the parm can be used.  */
+  if (parms_have_cleanups
+      && ! processing_template_decl)      
+    {
+      for (cleanups = nreverse (cleanups); cleanups; cleanups = TREE_CHAIN (cleanups))
+	{
+	  if (! expand_decl_cleanup (TREE_PURPOSE (cleanups), TREE_VALUE (cleanups)))
+	    cp_error ("parser lost in parsing declaration of `%D'",
+		      TREE_PURPOSE (cleanups));
+	}
+    }
 
   /* Create a binding contour which can be used to catch
      cleanup-generated temporaries.  Also, if the return value needs or
@@ -12329,9 +12330,6 @@ maybe_build_cleanup_1 (decl, auto_delete)
 	rval = build_compound_expr (tree_cons (NULL_TREE, rval,
 					       build_tree_list (NULL_TREE, build_vbase_delete (type, decl))));
 
-      /* Since this is a cleanup, UNSAVE it now.  */
-      rval = unsave_expr (rval);
-
       if (TREE_CODE (decl) != PARM_DECL)
 	resume_momentary (temp);
 
@@ -12372,19 +12370,14 @@ void
 cplus_expand_expr_stmt (exp)
      tree exp;
 {
-  extern int temp_slot_level;
-  extern int target_temp_slot_level; 
-  tree old_cleanups = cleanups_this_call;
-  int old_temp_level = target_temp_slot_level;
-  push_temp_slots ();
-  push_temp_slots ();
-  target_temp_slot_level = temp_slot_level;
-
   if (processing_template_decl)
     {
       add_tree (build_min_nt (EXPR_STMT, exp));
       return;
     }
+
+  /* Arrange for all temps to disappear.  */
+  expand_start_target_temps ();
 
   if (TREE_TYPE (exp) == unknown_type_node)
     {
@@ -12415,16 +12408,7 @@ cplus_expand_expr_stmt (exp)
 
   /* Clean up any pending cleanups.  This happens when a function call
      returns a cleanup-needing value that nobody uses.  */
-  expand_cleanups_to (old_cleanups);
-  pop_temp_slots ();
-  pop_temp_slots ();
-  target_temp_slot_level = old_temp_level;
-  /* There might something left from building the trees.  */
-  if (cleanups_this_call)
-    {
-      expand_cleanups_to (NULL_TREE);
-    }
-  free_temp_slots ();
+  expand_end_target_temps ();
 }
 
 /* When a stmt has been parsed, this function is called.

@@ -43,7 +43,7 @@ fast_compare (const char *n1, const char *n2) {
 };
 
 bool
-type_info::before (const type_info &arg)
+type_info::before (const type_info &arg) const
 {
   return fast_compare (name (), arg.name ()) < 0;
 }

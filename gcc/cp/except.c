@@ -35,12 +35,12 @@ Boston, MA 02111-1307, USA.  */
 
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
 
-/* holds the fndecl for __builtin_return_address () */
+/* Holds the fndecl for __builtin_return_address.  */
 tree builtin_return_address_fndecl;
 
 /* A couple of backend routines from m88k.c */
 
-/* used to cache a call to __builtin_return_address () */
+/* Used to cache a call to __builtin_return_address.  */
 static tree BuiltinReturnAddress;
      
 
@@ -163,18 +163,17 @@ extern rtx gen_nop		PROTO(());
 /* local globals for function calls
    ====================================================================== */
 
-/* used to cache "terminate ()", "unexpected ()", "set_terminate ()", and
-   "set_unexpected ()" after default_conversion. (lib-except.c)  */
+/* Used to cache "terminate", "unexpected", "set_terminate", and
+   "set_unexpected" after default_conversion. (lib-except.c)  */
 static tree Terminate, Unexpected, SetTerminate, SetUnexpected, CatchMatch;
 
-/* used to cache __find_first_exception_table_match ()
-   for throw (lib-except.c)  */
+/* Used to cache __find_first_exception_table_match for throw.  */
 static tree FirstExceptionMatch;
 
-/* used to cache a call to __unwind_function () (lib-except.c)  */
+/* Used to cache a call to __unwind_function.  */
 static tree Unwind;
 
-/* holds a ready to emit call to "terminate ()".  */
+/* Holds a ready to emit call to "terminate".  */
 static tree TerminateFunctionCall;
 
 static tree empty_fndecl;
@@ -245,8 +244,8 @@ init_exception_processing ()
   tree PFV = build_pointer_type (build_function_type
 				 (void_type_node, void_list_node));
 
-  /* arg list for the build_function_type call for set_terminate () and
-     set_unexpected () */
+  /* Arg list for the build_function_type call for set_terminate and
+     set_unexpected.  */
   tree pfvlist = tree_cons (NULL_TREE, PFV, void_list_node);
 
   /* void (*pfvtype (void (*) ()))() */
@@ -343,6 +342,10 @@ init_exception_processing ()
   DECL_COMMON (d) = 1;
   cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
   saved_in_catch = lookup_name (get_identifier ("__eh_in_catch"), 0);
+
+  /* If we use setjmp/longjmp EH, arrange for all cleanup actions to
+     be protected with __terminate.  */
+  protect_cleanup_actions_with_terminate = 1;
 }
 
 /* Build a type value for use at runtime for a type that is matched
@@ -448,6 +451,8 @@ expand_start_catch_block (declspecs, declarator)
   false_label_rtx = gen_label_rtx ();
   push_label_entry (&false_label_stack, false_label_rtx, NULL_TREE);
 
+  emit_line_note (input_filename, lineno);
+
   if (declspecs)
     {
       tree exp;
@@ -460,8 +465,11 @@ expand_start_catch_block (declspecs, declarator)
 	{
 	  error ("invalid catch parameter");
 
-	  /* This is cheap, but we want to maintain the data structures.  */
+	  /* This is cheap, but we want to maintain the data
+             structures.  */
+
 	  expand_eh_region_start ();
+
 	  return;
 	}
 
@@ -513,11 +521,17 @@ expand_start_catch_block (declspecs, declarator)
 
   emit_move_insn (DECL_RTL (saved_in_catch), const1_rtx);
 
-  /* Because we are reordered out of line, we arrange
-     to rethrow in the outer context, should we encounter
-     an exception in the catch handler.
+  /* If we are not doing setjmp/longjmp EH, because we are reordered
+     out of line, we arrange to rethrow in the outer context so as to
+     skip through the terminate region we are nested in, should we
+     encounter an exception in the catch handler.
 
-     Matches the end in expand_end_catch_block ().  */
+     If we are doing setjmp/longjmp EH, we need to skip through the EH
+     object cleanup region.  This isn't quite right, as we really need
+     to clean the object up, but we cannot do that until we track
+     multiple EH objects.
+
+     Matches the end in expand_end_catch_block.  */
   expand_eh_region_start ();
 
   emit_line_note (input_filename, lineno);
@@ -539,22 +553,41 @@ expand_end_catch_block ()
   if (! doing_eh (1))
     return;
 
-  /* Fall to outside the try statement when done executing handler and
-     we fall off end of handler.  This is jump Lresume in the
-     documentation.  */
-  expand_goto (top_label_entry (&caught_return_label_stack));
-
   t = make_node (RTL_EXPR);
   TREE_TYPE (t) = void_type_node;
   RTL_EXPR_RTL (t) = const0_rtx;
   TREE_SIDE_EFFECTS (t) = 1;
   start_sequence_for_rtl_expr (t);
-  expand_internal_throw (DECL_RTL (top_label_entry (&caught_return_label_stack)));
+
+  if (exceptions_via_longjmp)
+    {
+      /* If we are doing setjmp/longjmp EH, we need to skip through
+	 the EH object cleanup region.  This isn't quite right, as we
+	 really need to clean the object up, but we cannot do that
+	 until we track multiple EH objects.  */
+
+      emit_library_call (sjpopnthrow_libfunc, 0, VOIDmode, 0);
+      emit_barrier ();
+    }
+  else
+    {
+      /* If we are not doing setjmp/longjmp EH, we need an extra
+	 region around the whole catch block to skip through the
+	 terminate region we are nested in.  */
+
+      expand_internal_throw (DECL_RTL (top_label_entry (&caught_return_label_stack)));
+    }
+
   RTL_EXPR_SEQUENCE (t) = get_insns ();
   end_sequence ();
 
-  /* Matches the start in expand_start_catch_block ().  */
+  /* Matches the start in expand_start_catch_block.  */
   expand_eh_region_end (t);
+
+  /* Fall to outside the try statement when done executing handler and
+     we fall off end of handler.  This is jump Lresume in the
+     documentation.  */
+  expand_goto (top_label_entry (&caught_return_label_stack));
 
   expand_leftover_cleanups ();
 
@@ -580,7 +613,7 @@ do_unwind (inner_throw_label)
   rtx return_val_rtx;
   rtx temp;
 
-  /* call to  __builtin_return_address () */
+  /* Call to  __builtin_return_address. */
   params = tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
   fcall = build_function_call (BuiltinReturnAddress, params);
   return_val_rtx = expand_expr (fcall, NULL_RTX, Pmode, 0);
@@ -633,7 +666,7 @@ do_unwind (inner_throw_label)
 
 #if 0
   /* I would like to do this here, but the move below doesn't seem to work.  */
-  /* call to  __builtin_return_address () */
+  /* Call to  __builtin_return_address.  */
   params = tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
   fcall = build_function_call (BuiltinReturnAddress, params);
   return_val_rtx = expand_expr (fcall, NULL_RTX, Pmode, 0);
@@ -651,7 +684,7 @@ do_unwind (inner_throw_label)
 }
 
 
-/* is called from expand_exception_blocks () to generate the code in a function
+/* Is called from expand_exception_blocks to generate the code in a function
    to "throw" if anything in the function needs to perform a throw.
 
    expands "throw" as the following pseudo code:
@@ -731,7 +764,7 @@ expand_builtin_throw ()
   /* code to deal with unwinding and looking for it again */
   emit_label (gotta_rethrow_it);
 
-  /* call to  __builtin_return_address () */
+  /* Call to  __builtin_return_address.  */
 #if defined (ARM_FRAME_RTX)  /* was __arm */
   /* This should be moved into arm.h:RETURN_ADDR_RTX */
   /* This replaces a 'call' to __builtin_return_address */
@@ -743,7 +776,7 @@ expand_builtin_throw ()
   return_val_rtx = expand_expr (fcall, NULL_RTX, Pmode, 0);
 #endif
 
-  /* did __builtin_return_address () return a valid address? */
+  /* Did __builtin_return_address return a valid address?  */
   emit_cmp_insn (return_val_rtx, const0_rtx, EQ, NULL_RTX,
 		 GET_MODE (return_val_rtx), 0, 0);
 
@@ -837,6 +870,7 @@ expand_end_eh_spec (raises)
   do_function_call (Unexpected, NULL_TREE, NULL_TREE);
   assemble_external (TREE_OPERAND (Unexpected, 0));
   emit_barrier ();
+
   expand_eh_region_end (second_try);
   
   emit_label (check);
@@ -890,7 +924,6 @@ expand_exception_blocks ()
 
   funcend = gen_label_rtx ();
   emit_jump (funcend);
-  /* expand_null_return (); */
 
   start_sequence ();
 
@@ -931,12 +964,22 @@ expand_exception_blocks ()
 
   if (insns)
     {
-      /* Is this necessary?  */
-      assemble_external (TREE_OPERAND (Terminate, 0));
+      /* We cannot protect n regions this way if we must flow into the
+	 EH region through the top of the region, as we have to with
+	 the setjmp/longjmp approach.  */
+      if (exceptions_via_longjmp == 0)
+	{
+	  /* Is this necessary?  */
+	  assemble_external (TREE_OPERAND (Terminate, 0));
 
-      expand_eh_region_start ();
+	  expand_eh_region_start ();
+	}
+
       emit_insns (insns);
-      expand_eh_region_end (TerminateFunctionCall);
+
+      if (exceptions_via_longjmp == 0)
+	expand_eh_region_end (TerminateFunctionCall);
+
       expand_leftover_cleanups ();
     }
 
@@ -1125,13 +1168,18 @@ expand_throw (exp)
       /* This part is easy, as we don't have to do anything else.  */
     }
 
-  /* This is the label that represents where in the code we were, when
-     we got an exception.  This needs to be updated when we rethrow an
-     exception, so that the matching routine knows to search out.  */
-  label = gen_label_rtx ();
-  emit_label (label);
+  if (exceptions_via_longjmp)
+    emit_throw ();
+  else
+    {
+      /* This is the label that represents where in the code we were, when
+	 we got an exception.  This needs to be updated when we rethrow an
+	 exception, so that the matching routine knows to search out.  */
+      label = gen_label_rtx ();
+      emit_label (label);
 
-  expand_internal_throw (label);
+      expand_internal_throw (label);
+    }
 }
 
 /* Build a throw expression.  */
