@@ -1,3 +1,8 @@
+Tue Oct 13 08:00:52 1998  Catherine Moore  <clm@cygnus.com>
+
+        * config/v850/v850.c (print_operand):  Extend meaning
+        of 'c' operands to support .vtinherit.
+
 Tue Oct 13 21:38:35 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c:  Convert to gen_rtx_FOO.
