@@ -1733,21 +1733,6 @@ strip_off_ending (name, len)
     }
 }
 
-/* Given a file name X, return the nondirectory portion.  */
-
-char *
-file_name_nondirectory (x)
-     const char *x;
-{
-  char *tmp = (char *) strrchr (x, '/');
-  if (DIR_SEPARATOR != '/' && ! tmp)
-    tmp = (char *) strrchr (x, DIR_SEPARATOR);
-  if (tmp)
-    return (char *) (tmp + 1);
-  else
-    return (char *) x;
-}
-
 /* Output a quoted string.  */
 
 void

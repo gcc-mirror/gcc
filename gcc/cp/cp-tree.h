@@ -4051,7 +4051,6 @@ extern tree build_java_class_ref                PARAMS ((tree));
 /* in input.c */
 
 /* in lex.c */
-extern char *file_name_nondirectory		PARAMS ((const char *));
 extern tree make_pointer_declarator		PARAMS ((tree, tree));
 extern tree make_reference_declarator		PARAMS ((tree, tree));
 extern tree make_call_declarator		PARAMS ((tree, tree, tree, tree));

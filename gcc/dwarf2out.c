@@ -4972,7 +4972,7 @@ compute_section_prefix (unit_die)
   die_checksum (unit_die, &ctx);
   md5_finish_ctx (&ctx, checksum);
 
-  p = file_name_nondirectory (get_AT_string (unit_die, DW_AT_name));
+  p = lbasename (get_AT_string (unit_die, DW_AT_name));
   name = (char *) alloca (strlen (p) + 64);
   sprintf (name, "%s.", p);
 

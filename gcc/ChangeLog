@@ -1,3 +1,10 @@
+2001-03-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* toplev.c (file_name_nondirectory): Remove.
+	* toplev.h: Similarly.
+	* dwarf2out.c (compute_section_prefix): Use lbasename instead
+	of file_name_nondirectory.
+
 Sat Mar 10 10:36:45 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* mips-tdump.c (read_seek): Call xmalloc, not malloc.

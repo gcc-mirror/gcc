@@ -268,7 +268,7 @@ get_base_filename (filename)
       return NULL;
     }
 
-  return file_name_nondirectory (filename);
+  return lbasename (filename);
 }        
 
 static void
@@ -281,7 +281,7 @@ open_repo_file (filename)
   if (s == NULL)
     return;
 
-  p = file_name_nondirectory (s);
+  p = lbasename (s);
   p = strrchr (p, '.');
   if (! p)
     p = s + strlen (s);

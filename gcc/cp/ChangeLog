@@ -1,3 +1,14 @@
+2001-03-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp/lex.c: Delete duplicate pending_lang_change.
+
+2001-03-10  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp/lex.c (handle_pragma_interface, handle_pragma_implementation):
+	Similarly.
+	* cp/repo.c (get_base_filename, open_repo_file): Similarly.
+	* cp/cp-tree.h: Remove file_name_nondirectory prototype.
+
 2001-03-09  Zack Weinberg  <zackw@stanford.edu>
 
 	* Make-lang.in: Add dependencies on $(TM_P_H) as appropriate.
