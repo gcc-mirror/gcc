@@ -171,7 +171,7 @@ fi
 
 AC_SUBST(gcc_version)
 AC_SUBST(gcc_version_trigger)
-AC_CANONICAL_SYSTEM
+dnl AC_CANONICAL_SYSTEM
 AC_SUBST(target_alias)
 AC_CONFIG_SUBDIRS(libU77 libI77 libF77)
 # Do Makefile first since g2c.h depends on it and shouldn't get an
