@@ -1,3 +1,7 @@
+1999-04-26  Marc Espie  <espie@cvs.openbsd.org>
+
+	* Make-lang.in (cplib2.ready): Don't depend on phony targets.
+
 1999-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (finish_file): Tweak handling of extern inlines so that
