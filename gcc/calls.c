@@ -972,7 +972,7 @@ expand_call (exp, target, ignore)
     n_named_args
       = (list_length (TYPE_ARG_TYPES (funtype))
 	 /* Don't include the last named arg.  */
-	 - STRICT_ARGUMENT_NAMING ? -1 : 0
+	 - (STRICT_ARGUMENT_NAMING ? 0 : -1)
 	 /* Count the struct value address, if it is passed as a parm.  */
 	 + structure_value_addr_parm);
   else
