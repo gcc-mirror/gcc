@@ -46,6 +46,11 @@ java::lang::ConcreteProcess::cleanup (void)
       errorStream->close ();
       errorStream = NULL;
     }
+  if (procHandle)
+    {
+      CloseHandle((HANDLE) procHandle);
+      procHandle = (jint) INVALID_HANDLE_VALUE;
+    }
 }
 
 void
@@ -92,8 +97,28 @@ java::lang::ConcreteProcess::waitFor (void)
     {
       DWORD exitStatus = 0UL;
 
-      // FIXME: The wait should be interruptible.
-      WaitForSingleObject ((HANDLE) procHandle, INFINITE);
+      // Set up our waitable objects array
+      // - 0: the handle to the process we just launched
+      // - 1: our thread's interrupt event
+      HANDLE arh[2];
+      arh[0] = (HANDLE) procHandle;
+      arh[1] = _Jv_Win32GetInterruptEvent ();
+      DWORD rval = WaitForMultipleObjects (2, arh, 0, INFINITE);
+
+      // Use the returned value from WaitForMultipleObjects
+      // instead of our thread's interrupt_flag to test for
+      // thread interruption. See the comment for
+      // _Jv_Win32GetInterruptEvent().
+      bool bInterrupted = rval == (WAIT_OBJECT_0 + 1);
+      
+      if (bInterrupted)
+        {
+          // Querying this forces a reset our thread's interrupt flag.
+          Thread::interrupted();
+          
+          cleanup ();
+          throw new InterruptedException ();
+        }
 
       GetExitCodeProcess ((HANDLE) procHandle, &exitStatus);
       exitCode = exitStatus;
