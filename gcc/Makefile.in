@@ -2128,8 +2128,8 @@ compare: force
 	      tail +16c ./$$file > tmp-foo1; \
 	      tail +16c stage2/$$file > tmp-foo2 2>/dev/null \
 	        && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
-	    done \
-	  fi \
+	    done; \
+	  fi; \
 	done
 	-rm -f tmp-foo*
 
@@ -2146,8 +2146,8 @@ compare3: force
 	      tail +16c ./$$file > tmp-foo1; \
 	      tail +16c stage3/$$file > tmp-foo2 2>/dev/null \
 	        && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
-	    done \
-	  fi \
+	    done; \
+	  fi; \
 	done
 	-rm -f tmp-foo*
 
@@ -2163,8 +2163,8 @@ gnucompare: force
 	  if [ "`echo $$dir/*.o`" != "$$dir/*.o" ] ; then \
 	    for file in $$dir/*.o; do \
 	      cmp --ignore-initial=16 $$file stage2/$$file || true ; \
-	    done \
-	  fi \
+	    done; \
+	  fi; \
 	done
 
 # Similar, but compare with stage3 directory
@@ -2176,8 +2176,8 @@ gnucompare3: force
 	  if [ "`echo $$dir/*.o`" != "$$dir/*.o" ] ; then \
 	    for file in $$dir/*.o; do \
 	      cmp --ignore-initial=16 $$file stage3/$$file || true ; \
-	    done \
-	  fi \
+	    done; \
+	  fi; \
 	done
 
 # Copy the object files from a particular stage into a subdirectory.
