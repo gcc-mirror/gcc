@@ -1,3 +1,8 @@
+2004-08-20  Richard Earnshaw  <rearnsha@arm.com>
+
+	* postreload.c (reload_cse_move2add): Allow any condjump, but check
+	that the implicit set isn't clobbered in the jump insn.
+
 2004-08-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* defaults.h (TARGET_LIBGCC_LIBFUNCS): Remove.
