@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -649,14 +649,18 @@ public abstract class Component implements ImageObserver, MenuContainer,
   
   public FontMetrics getFontMetrics(Font font)
   {
-    return getToolkit().getFontMetrics(font);
+    if (peer == null)
+      return getToolkit().getFontMetrics(font);
+    return peer.getFontMetrics (font);
   }
-  
+
   public void setCursor(Cursor cursor)
   {
     this.cursor = cursor;
+    if (peer != null)
+      peer.setCursor (cursor);
   }
-  
+
   public Cursor getCursor()
   {
     return this.cursor;
@@ -705,7 +709,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
 	  parent.repaint(tm, x+getX(), y+getY(), width, height);
 	return;
       }
-    
+
     if (peer != null)
       peer.repaint(tm, x, y, width, height);
   }

@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libjava.
 
@@ -7,11 +7,14 @@ Libjava License.  Please consult the file "LIBJAVA_LICENSE" for
 details.  */
 
 package java.awt;
+
 import java.awt.geom.*;
+import java.io.Serializable;
 
 /* Status:  Mostly complete. Some of the Java2D stuff is commented out. */
 
-public class Rectangle extends Rectangle2D implements Cloneable, Shape
+public class Rectangle extends Rectangle2D
+  implements Cloneable, Shape, Serializable
 {
   public int x;
   public int y;
@@ -149,12 +152,6 @@ public class Rectangle extends Rectangle2D implements Cloneable, Shape
   public Point getLocation()
   {
     return new Point(x,y);
-  }
-
-  public PathIterator getPathIterator (AffineTransform t)
-  {
-    // FIXME
-    return null;
   }
 
   public Dimension getSize()

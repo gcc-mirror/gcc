@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libjava.
 
@@ -35,9 +35,9 @@ public class ContainerEvent extends ComponentEvent
     return child;
   }
 
-  public Component getContainer ()
+  public Container getContainer ()
   {
-    return (Component) source;
+    return (Container) source;
   }
 
   public String paramString ()

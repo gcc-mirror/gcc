@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -17,6 +17,12 @@ import java.awt.geom.AffineTransform;
 
 public abstract class GraphicsConfiguration
 {
+  // Can't instantiate directly.  Having a protected constructor seems
+  // redundant, but that is what the docs specify.
+  protected GraphicsConfiguration ()
+  {
+  }
+
   /*
   public abstract GraphicsDevice getDevice();
   */

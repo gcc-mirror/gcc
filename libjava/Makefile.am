@@ -694,6 +694,7 @@ java/awt/geom/AffineTransform.java \
 java/awt/geom/Dimension2D.java \
 java/awt/geom/Ellipse2D.java \
 java/awt/geom/IllegalPathStateException.java \
+java/awt/geom/Line2D.java \
 java/awt/geom/NoninvertibleTransformException.java \
 java/awt/geom/PathIterator.java	\
 java/awt/geom/Point2D.java \

@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -16,7 +16,7 @@ public class RenderingHints implements
     Cloneable
 {
 
-  static abstract class Key
+  public abstract static class Key
   {
     private int intKey;
 

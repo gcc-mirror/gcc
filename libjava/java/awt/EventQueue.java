@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -166,7 +166,7 @@ public class EventQueue
   }
   
   /** @since JDK1.2 */
-  static void invokeLater(Runnable runnable)
+  public static void invokeLater(Runnable runnable)
   {
     EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
 
@@ -176,7 +176,7 @@ public class EventQueue
     eq.postEvent(ie);
   }
   
-  static boolean isDispatchThread()
+  public static boolean isDispatchThread()
   {
     EventQueue eq = Toolkit.getDefaultToolkit().getSystemEventQueue(); 
     return (Thread.currentThread() == eq.dispatchThread);

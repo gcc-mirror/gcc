@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -66,6 +66,7 @@ public class Choice extends Component implements ItemSelectable
   {
     if (peer == null)
       peer = getToolkit ().createChoice (this);
+    super.addNotify ();
   }
 
   /** Returns number of items.

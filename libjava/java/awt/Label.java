@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libjava.
 
@@ -43,6 +43,7 @@ public class Label extends Component
   {
     if (peer == null)
       peer = getToolkit ().createLabel (this);
+    super.addNotify ();
   }
 
   public int getAlignment ()

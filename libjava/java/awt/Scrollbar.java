@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libjava.
 
@@ -55,6 +55,7 @@ public class Scrollbar extends Component implements Adjustable
   {
     if (peer == null)
       peer = getToolkit ().createScrollbar (this);
+    super.addNotify ();
   }
 
   public int getOrientation ()

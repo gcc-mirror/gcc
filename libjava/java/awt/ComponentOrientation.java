@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation
+/* Copyright (C) 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -13,7 +13,7 @@ package java.awt;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-public class ComponentOrientation implements java.io.Serializable
+public final class ComponentOrientation implements java.io.Serializable
 {
   // Here is a wild guess.
   private static int HORIZONTAL_ID    = 1 << 0,
@@ -29,7 +29,7 @@ public class ComponentOrientation implements java.io.Serializable
   // FIXME: This field is from the serialization spec, but what are the 
   // correct values?
   int orientation;
-  
+
   ComponentOrientation(int orientation)
   {
     this.orientation = orientation;
@@ -54,7 +54,7 @@ public class ComponentOrientation implements java.io.Serializable
   public static ComponentOrientation getOrientation(ResourceBundle bdl)
   {
     ComponentOrientation r;
-    
+
     try
     {
       Object obj = bdl.getObject("Orientation");
