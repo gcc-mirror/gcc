@@ -1,3 +1,9 @@
+Tue Jun 30 11:51:42 1998  Klaus-Georg Adams  <Klaus-Georg.Adams@chemie.uni-ka
+rlsruhe.de>
+
+	* g++.old-deja/g++.robertl/eb132.C: New test.
+	* g++.old-deja/g++.robertl/eb133.C: Likewise.
+
 1998-06-29  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/execute/980628-7.f,
