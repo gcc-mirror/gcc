@@ -1312,6 +1312,11 @@ ANSI C does not permit such a construct.  It would make sense to support
 it when @samp{-traditional} is used, but it is too much work to
 implement.
 
+@item
+K&R compilers allow comments to cross over an inclusion boundary (i.e.
+started in an include file and ended in the including file).  I think
+this would be quite ugly and can't imagine it could be needed.
+
 @cindex external declaration scope
 @cindex scope of external declarations
 @cindex declaration scope
@@ -1344,6 +1349,23 @@ flag cannot alter it.
 @item
 PCC allows typedef names to be used as function parameters.  The
 difficulty described immediately above applies here too.
+
+@item
+When in @samp{-traditional} mode, GCC allows the following erroneous
+pair of declarations to appear together in a given scope:
+
+@example
+typedef int foo;
+typedef foo foo;
+@end example
+
+@item
+GCC treats all characters of identifiers as significant, even when in
+@samp{-traditional} mode.  According to K&R-1 (2.2), ``No more than the
+first eight characters are significant, although more may be used.''.
+Also according to K&R-1 (2.2), ``An identifier is a sequence of letters
+and digits; the first character must be a letter.  The underscore _
+counts as a letter.'', but GCC also allows dollar signs in identifiers.
 
 @cindex whitespace
 @item
@@ -1379,8 +1401,10 @@ return.  But in systems with ANSI C headers, @code{time} is declared to
 return @code{time_t}, and if that is not the same as @code{long}, then
 @samp{long time ();} is erroneous.
 
-The solution is to change your program to use @code{time_t} as the return
-type of @code{time}.
+The solution is to change your program to use appropriate system headers
+(@code{<time.h>} on systems with ISO C headers) and not to declare
+@code{time} if the system header files declare it, or failing that to
+use @code{time_t} as the return type of @code{time}.
 
 @cindex @code{float} as function value type
 @item
@@ -2079,6 +2103,20 @@ Strictly speaking, there is no prohibition in the ANSI C standard
 against allowing structures with volatile fields in registers, but
 it does not seem to make any sense and is probably not what you wanted
 to do.  So the compiler will give an error message in this case.
+
+@item
+Making certain warnings into errors by default.
+
+Some ISO C testsuites report failure when the compiler does not produce
+an error message for a certain program.
+
+ISO C requires a ``diagnostic'' message for certain kinds of invalid
+programs, but a warning is defined by GCC to count as a diagnostic.  If
+GCC produces a warning but not an error, that is correct ISO C support.
+If test suites call this ``failure'', they should be run with the GCC
+option @samp{-pedantic-errors}, which will turn these warnings into
+errors.
+
 @end itemize
 
 @node Warnings and Errors
