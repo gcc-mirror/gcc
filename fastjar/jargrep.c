@@ -21,9 +21,14 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/* $Id: jargrep.c,v 1.8 2000/09/13 14:02:02 cory Exp $
+/* $Id: jargrep.c,v 1.1 2000/12/09 03:08:23 apbianco Exp $
 
 $Log: jargrep.c,v $
+Revision 1.1  2000/12/09 03:08:23  apbianco
+2000-12-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * fastjar: Imported.
+
 Revision 1.8  2000/09/13 14:02:02  cory
 Reformatted some of the code to more closly match the layout of the orriginal
 fastjar utility.
@@ -561,6 +566,7 @@ void jargrep(regex_t *exp, regex_t *nl_exp, char *jarfile, int options) {
 					break;
 				case 2:
 					/* fall through continue */
+					;
 				}
 			}
 		} while(floop);
