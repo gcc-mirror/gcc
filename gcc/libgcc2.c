@@ -3042,8 +3042,6 @@ struct exception_table_node {
   struct exception_table_node *next;
 };
 
-static int except_table_pos;
-static void *except_pc;
 static struct exception_table_node *exception_table_list;
 
 static exception_table *
@@ -3084,8 +3082,8 @@ find_exception_table (pc)
    an inner block.  */
 
 void *
-__find_first_exception_table_match(pc)
-void *pc;
+__find_first_exception_table_match (pc)
+     void *pc;
 {
   exception_table *table = find_exception_table (pc);
   int pos = 0;
@@ -3093,33 +3091,30 @@ void *pc;
   if (table == 0)
     return (void *) 0;
 #if 0
-  printf ("find_first_exception_table_match(): pc = %x!\n", pc);
+  printf ("find_first_exception_table_match (): pc = %x!\n", pc);
 #endif
-
-  except_pc = pc;
 
 #if 0
   /* We can't do this yet, as we don't know that the table is sorted.  */
   do {
     ++pos;
-    if (table[pos].start > except_pc)
-      /* found the first table[pos].start > except_pc, so the previous
+    if (table[pos].start > pc)
+      /* found the first table[pos].start > pc, so the previous
 	 entry better be the one we want! */
       break;
   } while (table[pos].exception_handler != (void *) -1);
 
   --pos;
-  if (table[pos].start <= except_pc && table[pos].end > except_pc)
+  if (table[pos].start <= pc && table[pos].end > pc)
     {
-      except_table_pos = pos;
 #if 0
-      printf ("find_first_eh_table_match(): found match: %x\n", table[pos].exception_handler);
+      printf ("find_first_eh_table_match (): found match: %x\n", table[pos].exception_handler);
 #endif
       return table[pos].exception_handler;
     }
 #else
   while (table[++pos].exception_handler != (void *) -1) {
-    if (table[pos].start <= except_pc && table[pos].end > except_pc)
+    if (table[pos].start <= pc && table[pos].end > pc)
       {
 	/* This can apply.  Make sure it is better or as good as the previous
 	   best.  */
@@ -3135,7 +3130,7 @@ void *pc;
 #endif
 
 #if 0
-  printf ("find_first_eh_table_match(): else: returning NULL!\n");
+  printf ("find_first_eh_table_match (): else: returning NULL!\n");
 #endif
   return (void *) 0;
 }
