@@ -48,8 +48,7 @@ char * realloc ();
 #undef CURRENT_DEMANGLING_STYLE
 #define CURRENT_DEMANGLING_STYLE work->options
 
-extern char *xmalloc PARAMS((unsigned));
-extern char *xrealloc PARAMS((char *, unsigned));
+#include "libiberty.h"
 
 static const char *mystrstr PARAMS ((const char *, const char *));
 
@@ -3987,22 +3986,22 @@ fatal (str)
   exit (1);
 }
 
-char *
+PTR
 xmalloc (size)
-     unsigned size;
+  size_t size;
 {
-  register char *value = (char *) malloc (size);
+  register PTR value = (PTR) malloc (size);
   if (value == 0)
     fatal ("virtual memory exhausted");
   return value;
 }
 
-char *
+PTR
 xrealloc (ptr, size)
-     char *ptr;
-     unsigned size;
+  PTR ptr;
+  size_t size;
 {
-  register char *value = (char *) realloc (ptr, size);
+  register PTR value = (PTR) realloc (ptr, size);
   if (value == 0)
     fatal ("virtual memory exhausted");
   return value;

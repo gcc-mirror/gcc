@@ -50,12 +50,10 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>	/* May get P_tmpdir.  */
 #endif /* IN_GCC */
 
+#include "libiberty.h"
 #ifdef IN_GCC
-extern char *xmalloc ();
 extern int mkstemps ();
 #else
-#include "ansidecl.h"
-#include "libiberty.h"
 #if defined (__MSDOS__) || defined (_WIN32)
 #define DIR_SEPARATOR '\\'
 #endif
