@@ -726,10 +726,9 @@ flags_from_decl_or_type (tree exp)
 	flags |= ECF_NOTHROW;
 
       if (TREE_READONLY (exp) && ! TREE_THIS_VOLATILE (exp))
-	flags |= ECF_LIBCALL_BLOCK;
+	flags |= ECF_LIBCALL_BLOCK | ECF_CONST;
     }
-
-  if (TREE_READONLY (exp) && ! TREE_THIS_VOLATILE (exp))
+  else if (TYPE_P (exp) && TYPE_READONLY (exp) && ! TREE_THIS_VOLATILE (exp))
     flags |= ECF_CONST;
 
   if (TREE_THIS_VOLATILE (exp))

@@ -1443,7 +1443,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  = create_concat_name (gnat_entity, "XUB");
 	TYPE_NAME (gnu_fat_type) = create_concat_name (gnat_entity, "XUP");
 	TYPE_IS_FAT_POINTER_P (gnu_fat_type) = 1;
-	TREE_READONLY (gnu_template_type) = 1;
+	TYPE_READONLY (gnu_template_type) = 1;
 
 	/* Make a node for the array.  If we are not defining the array
 	   suppress expanding incomplete types and save the node as the type
@@ -1553,7 +1553,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	/* Install all the fields into the template.  */
 	finish_record_type (gnu_template_type, gnu_template_fields, 0, 0);
-	TREE_READONLY (gnu_template_type) = 1;
+	TYPE_READONLY (gnu_template_type) = 1;
 
 	/* Now make the array of arrays and update the pointer to the array
 	   in the fat pointer.  Note that it is the first field.  */

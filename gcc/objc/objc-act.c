@@ -8099,9 +8099,9 @@ adorn_decl (tree decl, char *str)
   else if (code == POINTER_TYPE)
     {
       strcpy (tmpbuf, "*");
-      if (TREE_READONLY (decl) || TYPE_VOLATILE (decl))
+      if (TYPE_READONLY (decl) || TYPE_VOLATILE (decl))
 	{
-	  if (TREE_READONLY (decl))
+	  if (TYPE_READONLY (decl))
 	    strcat (tmpbuf, " const");
 	  if (TYPE_VOLATILE (decl))
 	    strcat (tmpbuf, " volatile");
@@ -8305,7 +8305,7 @@ gen_declspecs (tree declspecs, char *buf, int raw)
   else
     {
       /* Type qualifiers.  */
-      if (TREE_READONLY (declspecs))
+      if (TYPE_READONLY (declspecs))
 	strcat (buf, "const ");
       if (TYPE_VOLATILE (declspecs))
 	strcat (buf, "volatile ");

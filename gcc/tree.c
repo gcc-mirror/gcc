@@ -2402,7 +2402,7 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
   TREE_TYPE (t) = type;
   TREE_COMPLEXITY (t) = 0;
   TREE_OPERAND (t, 0) = node;
-  if (node && first_rtl_op (code) != 0)
+  if (node && !TYPE_P (node) && first_rtl_op (code) != 0)
     {
       TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (node);
       TREE_READONLY (t) = TREE_READONLY (node);
@@ -2456,7 +2456,8 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
       break;
 
     default:
-      if (TREE_CODE_CLASS (code) == '1' && node && TREE_CONSTANT (node))
+      if (TREE_CODE_CLASS (code) == '1' && node && !TYPE_P (node)
+	  && TREE_CONSTANT (node))
 	TREE_CONSTANT (t) = 1;
       break;
     }
@@ -2467,7 +2468,7 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
 #define PROCESS_ARG(N)			\
   do {					\
     TREE_OPERAND (t, N) = arg##N;	\
-    if (arg##N && fro > N)		\
+    if (arg##N &&!TYPE_P (arg##N) && fro > N) \
       {					\
         if (TREE_SIDE_EFFECTS (arg##N))	\
 	  side_effects = 1;		\
@@ -2742,7 +2743,8 @@ build_expr_wfl (tree node, const char *file, int line, int col)
     }
 
   EXPR_WFL_FILENAME_NODE (wfl) = last_filenode;
-  if (node)
+
+  if (node && !TYPE_P (node))
     {
       TREE_SIDE_EFFECTS (wfl) = TREE_SIDE_EFFECTS (node);
       TREE_TYPE (wfl) = TREE_TYPE (node);
