@@ -1,3 +1,8 @@
+2004-09-19  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (insert_into_set): Don't put
+	is_gimple_min_invariant values into the set.
+
 2004-09-19  Andreas Jaeger  <aj@suse.de>
 
 	* tree-ssa-dom.c (restore_nonzero_vars_to_original_value): Fix
