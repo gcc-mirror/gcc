@@ -285,61 +285,40 @@ read(byte[] buf, int offset, int len) throws IOException
   int bytes_read = 0;
   for (;;)
     {
-      // If there are bytes, take them
+      // If there are bytes, take them.
       if (in != -1)
         {
           int desired_bytes = len - bytes_read;
 
-          // We are in a "wrap" condition
-          if (out > in)
+          // We are in a "wrap" condition.
+          if (out >= in)
             {
-              if (desired_bytes > (pipe_size - out))
-                {
-                  if (in == 0)
-                    desired_bytes = (pipe_size - out) - 1;
-                  else
-                    desired_bytes = pipe_size - out;
+	      desired_bytes = Math.min (desired_bytes, pipe_size - out);
 
-                  System.arraycopy(buffer, out, buf, offset + bytes_read,
-                                   desired_bytes);
+	      System.arraycopy (buffer, out, buf, offset + bytes_read,
+				desired_bytes);
 
-                  bytes_read += desired_bytes;
-                  out += desired_bytes;
-                  desired_bytes = len - bytes_read;
+	      bytes_read += desired_bytes;
+	      out += desired_bytes;
+	      desired_bytes = len - bytes_read;
 
-                  if (out == pipe_size)
-                    out = 0;
+	      if (out == pipe_size)
+		{
+		  out = 0;
+		  // OUT has wrapped.  Make sure that we don't falsely
+		  // indicate that the buffer is full.
+		  if (in == 0)
+		    in = -1;
+		}
 
-                  notifyAll();
-                }
-              else
-                {
-                  if ((out + desired_bytes) == in)
-                    --desired_bytes;
-
-                  if (((out + desired_bytes) == pipe_size) && (in == 0)) 
-                    desired_bytes = (pipe_size - out) - 1;
-
-                  System.arraycopy(buffer, out, buf, offset + bytes_read,
-                                   desired_bytes); 
-
-                  bytes_read += desired_bytes;
-                  out += desired_bytes;
-                  desired_bytes = len - bytes_read;
-
-                  if (out == pipe_size)
-                    out = 0;
-
-                  notifyAll();
-                }
+	      notifyAll();
             }
- 
-          // We are in a "no wrap" or condition (can also be fall through
-          // from above
+
+          // We are in a "no wrap".  This can be triggered by
+          // fall-through from the above.
           if (in > out)
             {
-              if (desired_bytes >= ((in - out) - 1))
-                desired_bytes = (in - out) - 1;
+	      desired_bytes = Math.min (desired_bytes, in - out);
 
               System.arraycopy(buffer, out, buf, offset + bytes_read, 
                                desired_bytes);
@@ -348,41 +327,42 @@ read(byte[] buf, int offset, int len) throws IOException
               out += desired_bytes;
               desired_bytes = len - bytes_read;
 
-              if (out == pipe_size)
+	      if (out == in)
+		{
+		  // Don't falsely indicate that the buffer is full.
+		  out = 0;
+		  in = -1;
+		}
+              else if (out == pipe_size)
                 out = 0;
 
               notifyAll();
             }
         }
 
-      // If we are done, return
-      if (bytes_read == len)
-        return(bytes_read);
-
-      // Return a short count if necessary
-      if (bytes_read > 0 && bytes_read < len)
+      // Return when we've read something.  A short return is ok.
+      // Also return in the case where LEN==0.
+      if (bytes_read > 0 || bytes_read == len)
 	return(bytes_read);
 
       // Handle the case where the end of stream was encountered.
       if (closed)
         {
-          // We never let in == out so there might be one last byte
-          // available that we have not copied yet.
-          if (in != -1)
-            {
-              buf[offset + bytes_read] = buffer[out];
-              in = -1;
-              ++out;
-              ++bytes_read;
-            }
+	  if (in == -1)
+	    {
+	      // The stream is closed and empty.  We've already
+	      // returned if bytes were read.  So we know EOF is the
+	      // only answer.
+	      return -1;
+	    }
 
-          if (bytes_read != 0)
-            return(bytes_read);
-          else
-            return(-1);
+	  // I think this shouldn't happen.  I don't think there is a
+	  // way to get here when nothing has been read but there are
+	  // bytes in the buffer.  Still...
+	  continue;
         }
 
-      // Wait for a byte to be read
+      // Wait for a byte to be received.
       try
         {
           wait();
@@ -434,33 +414,39 @@ receive(byte[] buf, int offset, int len) throws IOException
     return;
 
   int total_written = 0;
+ outer:
   while (total_written < len)
     {
-      // If we are not at the end of the buffer with out = 0
-      if (!((in == (buffer.length - 1)) && (out == 0)))
+      // If the buffer is full, then wait.
+      // Also, if we are at the end of the buffer and OUT is 0, wait.
+      if (! (in == out
+	     || (in == pipe_size - 1 && out == 0)))
         {
           // This is the "no wrap" situation
-          if ((in - 1) >= out)
+	  if (in > out)
             {
               int bytes_written = 0;
-              if ((buffer.length - in) > (len - total_written))
+              if ((pipe_size - in) > (len - total_written))
                 bytes_written = (len - total_written);
               else if (out == 0)
-                bytes_written = (buffer.length - in) - 1;
+                bytes_written = (pipe_size - in) - 1;
               else 
-                bytes_written = (buffer.length - in);
+                bytes_written = (pipe_size - in);
 
               if (bytes_written > 0) 
-                System.arraycopy(buf, offset + total_written, buffer, in, 
-                                 bytes_written);
-              total_written += bytes_written;
-              in += bytes_written;
+		{
+		  System.arraycopy(buf, offset + total_written, buffer, in, 
+				   bytes_written);
+		  total_written += bytes_written;
+		  in += bytes_written;
 
-              if (in == buffer.length)
-                in = 0;
+		  if (in == pipe_size)
+		    in = 0;
 
-              notifyAll();
+		  notifyAll();
+		}
             }
+
           // This is the "wrap" situtation
           if ((out > in) && (total_written != len))
             {
@@ -470,40 +456,20 @@ receive(byte[] buf, int offset, int len) throws IOException
               if (in == -1)
                 {
                   in = 0;
-
-                  if (buffer.length > len)
-                    bytes_written = len;
-                  else
-                    bytes_written = buffer.length - 1;
-                }
-              else if (((out - in) - 1) < (len - total_written))
-                {
-                  bytes_written = (out - in) - 1;
+		  bytes_written = Math.min (len - total_written, pipe_size);
                 }
               else
-                {
-                  bytes_written = len - total_written;
-                }
-
-              // If the buffer is full, wait for it to empty out
-              if ((out - 1) == in)
-                {
-                  try
-                    {         
-                      wait(); 
-                    }
-                  catch (InterruptedException e) 
-                    { 
-                      continue; 
-                    }
-                }
+		{
+		  bytes_written = Math.min (len - total_written,
+					    out - in);
+		}
 
               System.arraycopy(buf, offset + total_written, buffer, in,
                                bytes_written);
               total_written += bytes_written;
               in += bytes_written;
 
-              if (in == buffer.length)
+              if (in == pipe_size)
                 in = 0;
 
               notifyAll();
@@ -522,4 +488,3 @@ receive(byte[] buf, int offset, int len) throws IOException
 }
 
 } // class PipedInputStream
-
