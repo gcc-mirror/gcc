@@ -1,3 +1,8 @@
+2001-01-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* parse.y (nomods_initdcl0): Properly set things up for
+	initdcl0_innards.
+
 2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (UNIFY_ALLOW_OUTER_LEVEL): New unify flag.
