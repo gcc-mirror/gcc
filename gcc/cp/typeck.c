@@ -2426,7 +2426,7 @@ build_x_function_call (function, params, decl)
 	      /* Put back explicit template arguments, if any.  */
 	      if (template_id)
 		function = template_id;
-	      return build_new_function_call (function, params, NULL_TREE);
+	      return build_new_function_call (function, params);
 	    }
 
 	  if (TREE_CODE (val) == TEMPLATE_DECL)

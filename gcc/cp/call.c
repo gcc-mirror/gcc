@@ -4479,8 +4479,8 @@ resolve_args (args)
 }
       
 tree
-build_new_function_call (fn, args, obj)
-     tree fn, args, obj;
+build_new_function_call (fn, args)
+     tree fn, args;
 {
   struct z_candidate *candidates = 0, *cand;
   tree explicit_targs = NULL_TREE;
@@ -4493,7 +4493,7 @@ build_new_function_call (fn, args, obj)
       template_only = 1;
     }
 
-  if (obj == NULL_TREE && really_overloaded_fn (fn))
+  if (really_overloaded_fn (fn))
     {
       tree t;
       tree templates = NULL_TREE;
@@ -4721,7 +4721,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	arglist = scratch_tree_cons (NULL_TREE, arg2, arg3);
 	if (flags & LOOKUP_GLOBAL)
 	  return build_new_function_call
-	    (lookup_name_nonclass (fnname), arglist, NULL_TREE);
+	    (lookup_name_nonclass (fnname), arglist);
 
 	/* FIXME */
 	rval = build_method_call
@@ -4746,7 +4746,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	if (flags & LOOKUP_GLOBAL)
 	  return build_new_function_call
 	    (lookup_name_nonclass (fnname),
-	     build_scratch_list (NULL_TREE, arg1), NULL_TREE);
+	     build_scratch_list (NULL_TREE, arg1));
 
 	arglist = scratch_tree_cons (NULL_TREE, arg1, build_scratch_list (NULL_TREE, arg2));
 
