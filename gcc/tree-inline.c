@@ -122,9 +122,9 @@ static void copy_scope_stmt PARAMS ((tree *, int *, inline_data *));
 static tree initialize_inlined_parameters PARAMS ((inline_data *, tree, tree, tree));
 static void remap_block PARAMS ((tree *, tree, inline_data *));
 static tree add_stmt_to_compound PARAMS ((tree, tree, tree));
+#endif /* INLINER_FOR_JAVA */
 static tree find_alloca_call_1 PARAMS ((tree *, int *, void *));
 static tree find_alloca_call PARAMS ((tree));
-#endif /* INLINER_FOR_JAVA */
 
 /* The approximate number of instructions per statement.  This number
    need not be particularly accurate; it is used only to make
@@ -474,7 +474,7 @@ copy_body_r (tp, walk_subtrees, data)
 	{
 	  copy_body_r (&assignment, walk_subtrees, data);
 	  *tp = build (COMPOUND_EXPR, void_type_node, assignment, goto_stmt);
-	  TREE_SIDE_EFFECTS (*tp) = 1;	    
+	  TREE_SIDE_EFFECTS (*tp) = 1;
 	}
 #endif /* INLINER_FOR_JAVA */
       /* If we're not returning anything just do the jump.  */
@@ -527,8 +527,8 @@ copy_body_r (tp, walk_subtrees, data)
     }
   else if (TREE_CODE (*tp) == EXIT_BLOCK_EXPR)
     {
-      splay_tree_node n 
-	= splay_tree_lookup (id->decl_map, 
+      splay_tree_node n
+	= splay_tree_lookup (id->decl_map,
 			     (splay_tree_key) TREE_OPERAND (*tp, 0));
       /* We _must_ have seen the enclosing LABELED_BLOCK_EXPR.  */
       if (! n)
@@ -733,7 +733,7 @@ initialize_inlined_parameters (id, args, fn, block)
 #else /* INLINER_FOR_JAVA */
 	{
 	  tree assignment = build (MODIFY_EXPR, TREE_TYPE (p), var, value);
-	  init_stmts = add_stmt_to_compound (init_stmts, TREE_TYPE (p), 
+	  init_stmts = add_stmt_to_compound (init_stmts, TREE_TYPE (p),
 					     assignment);
 	}
       else
@@ -1150,10 +1150,10 @@ expand_call_inline (tp, walk_subtrees, data)
 	 inline calls to FN that appear in the initializers for the
 	 parameters.  */
       expand_calls_inline (&arg_inits, id);
-      
+
       /* And add them to the tree.  */
-      BLOCK_EXPR_BODY (expr) = add_stmt_to_compound (BLOCK_EXPR_BODY (expr), 
-						     TREE_TYPE (arg_inits), 
+      BLOCK_EXPR_BODY (expr) = add_stmt_to_compound (BLOCK_EXPR_BODY (expr),
+						     TREE_TYPE (arg_inits),
 						     arg_inits);
     }
 #endif /* INLINER_FOR_JAVA */
@@ -1212,7 +1212,7 @@ expand_call_inline (tp, walk_subtrees, data)
       {
 	tree *next = &BLOCK_VARS (expr);
 	while (*next)
-	  next = &TREE_CHAIN (*next);	
+	  next = &TREE_CHAIN (*next);
 	*next = decl;
       }
   }
@@ -1232,7 +1232,7 @@ expand_call_inline (tp, walk_subtrees, data)
     new_body = copy_body (id);
     TREE_TYPE (new_body) = TREE_TYPE (TREE_TYPE (fn));
     BLOCK_EXPR_BODY (expr)
-      = add_stmt_to_compound (BLOCK_EXPR_BODY (expr), 
+      = add_stmt_to_compound (BLOCK_EXPR_BODY (expr),
 			      TREE_TYPE (new_body), new_body);
     inlined_body = &BLOCK_EXPR_BODY (expr);
   }
@@ -1258,7 +1258,7 @@ expand_call_inline (tp, walk_subtrees, data)
      statement-expression is the returned value of the function.  */
 #ifndef INLINER_FOR_JAVA
   COMPOUND_BODY (stmt) = chainon (COMPOUND_BODY (stmt), use_stmt);
-  
+
   /* Close the block for the parameters.  */
   scope_stmt = build_stmt (SCOPE_STMT, DECL_INITIAL (fn));
   SCOPE_NO_CLEANUPS_P (scope_stmt) = 1;
@@ -1272,11 +1272,11 @@ expand_call_inline (tp, walk_subtrees, data)
 	 promoted, convert it back to the expected type.  */
       if (TREE_TYPE (TREE_TYPE (fn)) != TREE_TYPE (retvar))
 	retvar = build1 (NOP_EXPR, TREE_TYPE (TREE_TYPE (fn)), retvar);
-      BLOCK_EXPR_BODY (expr) 
-	= add_stmt_to_compound (BLOCK_EXPR_BODY (expr), 
+      BLOCK_EXPR_BODY (expr)
+	= add_stmt_to_compound (BLOCK_EXPR_BODY (expr),
 				TREE_TYPE (retvar), retvar);
     }
-  
+
   java_inlining_merge_static_initializers (fn, id->decl_map);
 #endif /* INLINER_FOR_JAVA */
 
@@ -1295,7 +1295,7 @@ expand_call_inline (tp, walk_subtrees, data)
   *tp = build_expr_wfl (expr, DECL_SOURCE_FILE (fn), DECL_SOURCE_LINE (fn),
 			/*col=*/0);
 #else /* INLINER_FOR_JAVA */
-  *tp = build_expr_wfl (expr, DECL_SOURCE_FILE (fn), 
+  *tp = build_expr_wfl (expr, DECL_SOURCE_FILE (fn),
 			DECL_SOURCE_LINE_FIRST(fn),
 			/*col=*/0);
 #endif /* INLINER_FOR_JAVA */
