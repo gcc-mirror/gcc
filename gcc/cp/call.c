@@ -3268,7 +3268,7 @@ build_conditional_expr (tree arg1, tree arg2, tree arg3)
 	 conversion to "volatile X", what is the type of the second
 	 operand after this step?  Making it be "const X" (matching
 	 the first operand) seems wrong, as that discards the
-	 qualification without actuall performing a copy.  Leaving it
+	 qualification without actually performing a copy.  Leaving it
 	 as "volatile X" seems wrong as that will result in the
 	 conditional expression failing altogether, even though,
 	 according to this step, the one operand could be converted to

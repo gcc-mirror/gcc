@@ -5447,7 +5447,7 @@ frv_emit_movsi (rtx dest, rtx src)
 	     
 	     With -fpie/-fpic, we'd be trading a single load for a
 	     sequence of 4 instructions, because the offset of the
-	     label can't be assumed to be addressible with 12 bits, so
+	     label can't be assumed to be addressable with 12 bits, so
 	     we don't do this.  */
 	  if (TARGET_GPREL_RO)
 	    unspec = R_FRV_GPREL12;

@@ -1,5 +1,11 @@
 2004-02-29  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* passes.c, config/frv/frv.c, config/sh/sh.c: Fix comment
+	typos.
+	* doc/cppopts.texi: Fix a typo.
+
+2004-02-29  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/i386/i386.md: Fix formatting.
 
 2004-02-29  Nathanael Nerode  <neroden@gcc.gnu.org>
