@@ -1,5 +1,10 @@
 2005-01-24  Janis Johnson  <janis187@us.ibm.com>
 
+	* lib/target-supports.exp (current_target_name): New.
+	(check_effective_target_ilp32, check_effective_target_lp64):
+	Cache the result to use as long as the current target, with
+	multilib flags, remains the same.
+
 	* lib/gcc-dg.exp (skip_test_and_clear_xfail): Remove.
 	(dg-require-weak, dg-require-visibility, dg-require-alias,
 	dg-require-dg-sections, dg-require-profiling, dg-require-iconv,
