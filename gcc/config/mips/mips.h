@@ -1851,6 +1851,7 @@ do {							\
 #define MD_REG_FIRST 64
 #define MD_REG_LAST  66
 #define MD_REG_NUM   (MD_REG_LAST - MD_REG_FIRST + 1)
+#define MD_DBX_FIRST (FP_DBX_FIRST + FP_REG_NUM)
 
 #define ST_REG_FIRST 67
 #define ST_REG_LAST  74
