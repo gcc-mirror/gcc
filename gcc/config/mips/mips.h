@@ -1982,45 +1982,28 @@ typedef struct mips_args {
    RTX for the static chain value that should be passed to the
    function when it is called.  */
 
-#ifndef INITIALIZE_TRAMPOLINE
 #define INITIALIZE_TRAMPOLINE(ADDR, FUNC, CHAIN)			    \
 {									    \
   rtx addr = ADDR;							    \
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 28)), FUNC);   \
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant (addr, 32)), CHAIN);  \
 									    \
-  /* Attempt to make stack executable */				    \
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"), \
+  /* Flush the instruction cache.  */					    \
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__gcc_flush_cache"), \
 		     0, VOIDmode, 1, addr, Pmode);			    \
 }
-#endif /* INITIALIZE_TRAMPOLINE */
 
+/* Flush the instruction cache.  */
 
-/* Attempt to turn on access permissions for the stack.  */
-
-#ifndef TRANSFER_FROM_TRAMPOLINE
 #define TRANSFER_FROM_TRAMPOLINE					\
 									\
 void									\
-__enable_execute_stack (addr)						\
+__gcc_flush_cache (addr)						\
      char *addr;							\
 {									\
-  int size = getpagesize ();						\
-  int mask = ~(size-1);							\
-  char *page = (char *) (((int) addr) & mask);				\
-  char *end  = (char *) ((((int) (addr + TRAMPOLINE_SIZE)) & mask) + size); \
-									\
-  /* 7 is PROT_READ | PROT_WRITE | PROT_EXEC */				\
-  if (mprotect (page, end - page, 7) < 0)				\
-    perror ("mprotect of trampoline code");				\
-									\
-/*									\
   if (cacheflush (addr, TRAMPOLINE_SIZE, 1) < 0)			\
     perror ("cacheflush of trampoline code");				\
- */									\
 }
-#endif	/* TRANSFER_FROM_TRAMPOLINE */
-
 
 /* Addressing modes, and classification of registers for them.  */
 
