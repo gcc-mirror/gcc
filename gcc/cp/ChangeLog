@@ -1,3 +1,36 @@
+2000-01-28  Nathan Sidwell  <sidwell@codesourcery.com>
+
+	Compiler side new abi rtti (not enabled).
+	* cp-tree.h (new_abi_rtti_p): New macro.
+	(emit_support_tinfos): Prototype new function.
+	(tinfo_decl_p): Likewise.
+	(emit_tinfo_decl): Likwise.
+	* rtti.c (TINFO_PSEUDO_TYPE, TINFO_VTABLE_DECL): New accessor
+	macros.
+	(doing_runtime): New local static.
+	(init_rtti_processing): Add new-abi initializer.
+	(get_tinfo_decl): Add new-abi logic.
+	(tinfo_from_decl): Likewise.
+	(build_dynamic_cast_1): Likewise.
+	(qualifier_flags): New static function.
+	(tinfo_base_init): Likewise.
+	(generic_initializer): Likewise.
+	(ptr_ref_initializer): Likewise.
+	(ptmd_initializer): Likewise.
+	(class_hint_flags): Likewise.
+	(class_initializer): Likewise.
+	(synthesize_tinfo_var): Likewise.
+	(create_real_tinfo_var): Likewise.
+	(create_pseudo_type_info): Likewise.
+	(get_vmi_pseudo_type_info): Likewise.
+	(create_tinfo_types): Likewise.
+	(emit_support_tinfos): New global function.
+	(tinfo_decl_p): New global predicate.
+	(emit_tinfo_decl): New global function.
+	* class.c (set_rtti_entry): Generalize for old and new rtti.
+	(build_vtbl_initializer): Likewise.
+	* decl2.c (finish_file): Likewise.
+
 Thu Jan 27 20:53:36 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* cp/optimize.c (remap_decl): Add walk_tree calls for DECL_SIZE (t)

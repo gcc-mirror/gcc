@@ -3434,6 +3434,9 @@ finish_file ()
   varconst_time += this_time - start_time;
   start_time = get_run_time ();
 
+  if (new_abi_rtti_p ())
+    emit_support_tinfos ();
+  
   do 
     {
       reconsider = 0;
@@ -3450,6 +3453,12 @@ finish_file ()
 			/*data=*/0))
 	reconsider = 1;
       
+      /* Write out needed type info variables. Writing out one variable
+         might cause others to be needed.  */
+      if (new_abi_rtti_p ()
+          && walk_globals (tinfo_decl_p, emit_tinfo_decl, /*data=*/0))
+	reconsider = 1;
+
       /* The list of objects with static storage duration is built up
 	 in reverse order.  We clear STATIC_AGGREGATES so that any new
 	 aggregates added during the initialization of these will be
