@@ -10,7 +10,9 @@ details.  */
 #include <platform.h>
 
 #ifndef DISABLE_JAVA_NET
+
 #ifdef WIN32
+
 #include <windows.h>
 #include <winsock.h>
 #include <errno.h>
@@ -19,8 +21,6 @@ details.  */
 #undef MAX_PRIORITY
 #undef MIN_PRIORITY
 #undef FIONREAD
-
-#define NATIVE_CLOSE(s) closesocket (s)
 
 // These functions make the Win32 socket API look more POSIXy
 static inline int
@@ -36,11 +36,6 @@ read(int s, void *buf, int len)
 }
 
 // these errors cannot occur on Win32
-#define ENOTCONN 0
-#define ECONNRESET 0
-#ifndef ENOPROTOOPT
-#define ENOPROTOOPT 109
-#endif
 #else /* WIN32 */
 
 #ifdef HAVE_SYS_IOCTL_H
@@ -53,13 +48,10 @@ read(int s, void *buf, int len)
 #include <sys/filio.h>
 #endif
 
-#include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <errno.h>
 #include <string.h>
-
-#define NATIVE_CLOSE(s) ::close (s)
 
 #endif /* WIN32 */
 #endif /* DISABLE_JAVA_NET */
@@ -72,43 +64,6 @@ read(int s, void *buf, int len)
 #ifndef HAVE_SOCKLEN_T
 typedef int socklen_t;
 #endif
-
-#ifndef DISABLE_JAVA_NET
-
-// Avoid macro definitions of bind, connect from system headers, e.g. on
-// Solaris 7 with _XOPEN_SOURCE.  FIXME
-static inline int
-_Jv_bind (int fd, struct sockaddr *addr, int addrlen)
-{
-  return ::bind (fd, addr, addrlen);
-}
-
-#ifdef bind
-#undef bind
-#endif
-
-static inline int
-_Jv_connect (int fd, struct sockaddr *addr, int addrlen)
-{
-  return ::connect (fd, addr, addrlen);
-}
-
-#ifdef connect
-#undef connect
-#endif
-
-// Same problem with accept on Tru64 UNIX with _POSIX_PII_SOCKET
-static inline int
-_Jv_accept (int fd, struct sockaddr *addr, socklen_t *addrlen)
-{
-  return ::accept (fd, addr, addrlen);
-}
-
-#ifdef accept
-#undef accept
-#endif
-
-#endif /* DISABLE_JAVA_NET */
 
 #include <gcj/cni.h>
 #include <gcj/javaprims.h>
@@ -258,7 +213,7 @@ union SockAddr
 void
 java::net::PlainSocketImpl::create (jboolean stream)
 {
-  int sock = ::socket (AF_INET, stream ? SOCK_STREAM : SOCK_DGRAM, 0);
+  int sock = _Jv_socket (AF_INET, stream ? SOCK_STREAM : SOCK_DGRAM, 0);
 
   if (sock < 0)
     {
@@ -495,7 +450,7 @@ java::net::PlainSocketImpl::close()
   JvSynchronize sync (this);
 
   // should we use shutdown here? how would that effect so_linger?
-  int res = NATIVE_CLOSE (fnum);
+  int res = _Jv_close (fnum);
 
   if (res == -1)
     {
@@ -518,7 +473,7 @@ java::net::PlainSocketImpl::write(jint b)
 
   while (r != 1)
     {
-      r = ::write (fnum, &d, 1);
+      r = _Jv_write (fnum, &d, 1);
       if (r == -1)
         {
           if (java::lang::Thread::interrupted())
@@ -551,7 +506,7 @@ java::net::PlainSocketImpl::write(jbyteArray b, jint offset, jint len)
 
   while (len > 0)
     {
-      int r = ::write (fnum, bytes, len);
+      int r = _Jv_write (fnum, bytes, len);
 
       if (r == -1)
         {
@@ -614,7 +569,7 @@ java::net::PlainSocketImpl::read(void)
     }
 #endif /* WIN32 */
 
-  int r = ::read (fnum, &b, 1);
+  int r = _Jv_read (fnum, &b, 1);
 
   if (r == 0)
     return -1;
