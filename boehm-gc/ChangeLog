@@ -1,3 +1,9 @@
+2004-09-27  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.ac: Update all AC_DEFINEs to newer style.
+	* configure: Regenerate.
+	* include/gc_config.h.in: Regenerate.
+
 2004-08-27  Hans Boehm  <Hans.Boehm@hp.com>
 
 	* backgraph.c, gc_priv.h (GC_traverse_back_graph,
