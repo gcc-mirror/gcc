@@ -1514,7 +1514,7 @@ move\\t%0,%z4\\n\\
 {
   dslots_load_total++;
   if (GET_CODE (operands[1]) == MEM)
-    return \"ld.s\\t%0,%1%#\;cvt.d.w\\t%0,%0\";
+    return \"l.s\\t%0,%1%#\;cvt.d.w\\t%0,%0\";
 
   return \"mtc1\\t%1,%0%#\;cvt.d.w\\t%0,%0\";
 }"
@@ -1530,7 +1530,7 @@ move\\t%0,%z4\\n\\
 {
   dslots_load_total++;
   if (GET_CODE (operands[1]) == MEM)
-    return \"ld.s\\t%0,%1%#\;cvt.s.w\\t%0,%0\";
+    return \"l.s\\t%0,%1%#\;cvt.s.w\\t%0,%0\";
 
   return \"mtc1\\t%1,%0%#\;cvt.s.w\\t%0,%0\";
 }"
