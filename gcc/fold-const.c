@@ -1795,8 +1795,8 @@ operand_equal_p (arg0, arg1, only_const)
       case REAL_CST:
 	return (! TREE_CONSTANT_OVERFLOW (arg0)
 		&& ! TREE_CONSTANT_OVERFLOW (arg1)
-		&& REAL_VALUES_EQUAL (TREE_REAL_CST (arg0),
-				      TREE_REAL_CST (arg1)));
+		&& REAL_VALUES_IDENTICAL (TREE_REAL_CST (arg0),
+					  TREE_REAL_CST (arg1)));
 
       case COMPLEX_CST:
 	return (operand_equal_p (TREE_REALPART (arg0), TREE_REALPART (arg1),
