@@ -1,3 +1,17 @@
+Fri Apr  7 12:23:04 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (x86_sub_esp_4, x86_sub_esp_8, x86_add_esp_4, x86_add_esp_8):
+	New global variables.
+	(ix86_emit_epilogue_adjustment): Do not attempt to use pop for the
+	adjustment.
+	* i386.h (x86_sub_esp_4, x86_sub_esp_8, x86_add_esp_4, x86_add_esp_8):
+	Declare,
+	(TARGET_SUB_ESP_4, TARGET_SUB_ESP_8, TARGET_ADD_ESP_4,
+	 TARGET_ADD_ESP_8): New macros.
+	* i386.md: Add peep2s to convert esp adjustments to push and pop
+	instructions.
+	(pushsi_prologue, popsi_epilogue): New patterns.
+
 2000-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* real.c (toe64): Remove stale #endif from the last change.
