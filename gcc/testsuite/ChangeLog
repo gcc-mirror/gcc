@@ -1,3 +1,7 @@
+2005-01-05  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/asm-wide-1.c: New test.
+
 2005-01-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/19030
