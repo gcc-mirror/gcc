@@ -1,3 +1,9 @@
+2005-02-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20101
+	* io/write.c (output_float): Added special check for value 0.0 in
+	PE format.
+
 2005-02-27  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* io/write.c (output_float): Fix typo in condition.

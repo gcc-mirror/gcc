@@ -1,3 +1,8 @@
+2005-02-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/20101
+	* gfortran.dg/write_0_pe_format.f90: New test.
+
 2005-02-27  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/e_d_fmt.f90: New test.
