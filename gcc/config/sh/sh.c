@@ -7934,7 +7934,8 @@ sh_function_ok_for_sibcall (decl, exp)
 {
   return (decl 
 	  && (! TARGET_SHCOMPACT
-	      || current_function_args_info.stack_regs == 0));
+	      || current_function_args_info.stack_regs == 0)
+	  && ! sh_cfun_interrupt_handler_p ());
 }
 
 /* Machine specific built-in functions.  */
