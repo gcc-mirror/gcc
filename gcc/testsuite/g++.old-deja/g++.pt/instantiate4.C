@@ -5,8 +5,6 @@
 // Submitted by Melissa O'Neill <oneill@cs.sfu.ca>
 // the vtable of Foo<int> wouldn't be generated
 
-// excess errors test - XFAIL *-*-*
-
 template <typename A>
 struct Foo {
    virtual void foo() {}
