@@ -1,3 +1,8 @@
+Fri Jul 17 03:24:40 1998  Hans-Peter Nilsson  <hp@axis.se>
+
+	* extend.texi (Explicit Reg Vars): Typo: change "may deleted" into "may
+	be deleted" 
+
 Thu Jul 16 14:48:47 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10300.c (count_tst_insns): New arg oreg_countp.  Callers changed.
