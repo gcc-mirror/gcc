@@ -1,3 +1,9 @@
+2004-06-14  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Handle -mpowerpc64 and -mcpu
+	for power5 and rs64a.  Correct condition for default.  Correct power3,
+	620, 630, 7400, 7450, G4, 970 and G5 -mcpu entries.  Add -many.
+
 2004-06-13  Steven Bosscher <stevenb@suse.de>
 
 	* gcse.c (hash_scan_set, hash_scan_insn, mark_set, mark_oprs_set):
