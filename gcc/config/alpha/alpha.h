@@ -622,17 +622,20 @@ extern void override_options ();
    registers can hold 32-bit and 64-bit integers as well, but not 16-bit
    or 8-bit values.  */
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 			\
-  ((REGNO) < 32 || ((MODE) != QImode && (MODE) != HImode))
+#define HARD_REGNO_MODE_OK(REGNO, MODE) 				\
+  ((REGNO) >= 32 && (REGNO) <= 62 					\
+   ? GET_MODE_UNIT_SIZE (MODE) == 8 || GET_MODE_UNIT_SIZE (MODE) == 4	\
+   : 1)
 
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
+/* A C expression that is nonzero if a value of mode
+   MODE1 is accessible in mode MODE2 without copying.
+
+   This asymmetric test is true when MODE1 could be put
+   in an FP register but MODE2 could not.  */
 
 #define MODES_TIEABLE_P(MODE1, MODE2) 				\
-  ((MODE1) == QImode || (MODE1) == HImode			\
-   ? (MODE2) == QImode || (MODE2) == HImode			\
+  (HARD_REGNO_MODE_OK (32, (MODE1))				\
+   ? HARD_REGNO_MODE_OK (32, (MODE2))				\
    : 1)
 
 /* Specify the registers used for certain standard purposes.
