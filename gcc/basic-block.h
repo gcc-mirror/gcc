@@ -560,6 +560,7 @@ enum update_life_extent
 #define PROP_ALLOW_CFG_CHANGES	32	/* Allow the CFG to be changed
 					   by dead code removal.  */
 #define PROP_AUTOINC		64	/* Create autoinc mem references.  */
+#define PROP_EQUAL_NOTES	128	/* Take into account REG_EQUAL notes.  */
 #define PROP_FINAL		127	/* All of the above.  */
 
 #define CLEANUP_EXPENSIVE	1	/* Do relativly expensive optimizations

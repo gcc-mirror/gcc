@@ -226,13 +226,13 @@ static void df_refs_unlink PARAMS ((struct df *, bitmap));
 #endif
 
 static struct ref *df_ref_create PARAMS((struct df *,
-					 rtx, rtx *, basic_block, rtx,
+					 rtx, rtx *, rtx,
 					 enum df_ref_type, enum df_ref_flags));
 static void df_ref_record_1 PARAMS((struct df *, rtx, rtx *,
-				    basic_block, rtx, enum df_ref_type,
+				    rtx, enum df_ref_type,
 				    enum df_ref_flags));
 static void df_ref_record PARAMS((struct df *, rtx, rtx *,
-				  basic_block bb, rtx, enum df_ref_type,
+				  rtx, enum df_ref_type,
 				  enum df_ref_flags));
 static void df_def_record_1 PARAMS((struct df *, rtx, basic_block, rtx));
 static void df_defs_record PARAMS((struct df *, rtx, basic_block, rtx));
@@ -794,11 +794,10 @@ df_use_unlink (df, use)
 /* Create a new ref of type DF_REF_TYPE for register REG at address
    LOC within INSN of BB.  */
 static struct ref *
-df_ref_create (df, reg, loc, bb, insn, ref_type, ref_flags)
+df_ref_create (df, reg, loc, insn, ref_type, ref_flags)
      struct df *df;
      rtx reg;
      rtx *loc;
-     basic_block bb;
      rtx insn;
      enum df_ref_type ref_type;
      enum df_ref_flags ref_flags;
@@ -810,7 +809,6 @@ df_ref_create (df, reg, loc, bb, insn, ref_type, ref_flags)
 					   sizeof (*this_ref));
   DF_REF_REG (this_ref) = reg;
   DF_REF_LOC (this_ref) = loc;
-  DF_REF_BB (this_ref) = bb;
   DF_REF_INSN (this_ref) = insn;
   DF_REF_CHAIN (this_ref) = 0;
   DF_REF_TYPE (this_ref) = ref_type;
@@ -848,27 +846,25 @@ df_ref_create (df, reg, loc, bb, insn, ref_type, ref_flags)
 /* Create a new reference of type DF_REF_TYPE for a single register REG,
    used inside the LOC rtx of INSN.  */
 static void
-df_ref_record_1 (df, reg, loc, bb, insn, ref_type, ref_flags)
+df_ref_record_1 (df, reg, loc, insn, ref_type, ref_flags)
      struct df *df;
      rtx reg;
      rtx *loc;
-     basic_block bb;
      rtx insn;
      enum df_ref_type ref_type;
      enum df_ref_flags ref_flags;
 {
-  df_ref_create (df, reg, loc, bb, insn, ref_type, ref_flags);
+  df_ref_create (df, reg, loc, insn, ref_type, ref_flags);
 }
 
 
 /* Create new references of type DF_REF_TYPE for each part of register REG
    at address LOC within INSN of BB.  */
 static void
-df_ref_record (df, reg, loc, bb, insn, ref_type, ref_flags)
+df_ref_record (df, reg, loc, insn, ref_type, ref_flags)
      struct df *df;
      rtx reg;
      rtx *loc;
-     basic_block bb;
      rtx insn;
      enum df_ref_type ref_type;
      enum df_ref_flags ref_flags;
@@ -910,11 +906,11 @@ df_ref_record (df, reg, loc, bb, insn, ref_type, ref_flags)
 
       for (i = regno; i < endregno; i++)
 	df_ref_record_1 (df, gen_rtx_REG (reg_raw_mode[i], i),
-			 loc, bb, insn, ref_type, ref_flags);
+			 loc, insn, ref_type, ref_flags);
     }
   else
     {
-      df_ref_record_1 (df, reg, loc, bb, insn, ref_type, ref_flags);
+      df_ref_record_1 (df, reg, loc, insn, ref_type, ref_flags);
     }
 }
 
@@ -978,7 +974,7 @@ df_def_record_1 (df, x, bb, insn)
   
     if (GET_CODE (dst) == REG
         || (GET_CODE (dst) == SUBREG && GET_CODE (SUBREG_REG (dst)) == REG))
-      df_ref_record (df, dst, loc, bb, insn, DF_REF_REG_DEF, flags);
+      df_ref_record (df, dst, loc, insn, DF_REF_REG_DEF, flags);
 }
 
 
@@ -1070,7 +1066,7 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
 
     case REG:
       /* See a register (or subreg) other than being set.  */
-      df_ref_record (df, x, loc, bb, insn, ref_type, flags);
+      df_ref_record (df, x, loc, insn, ref_type, flags);
       return;
 
     case SET:
@@ -1161,7 +1157,7 @@ df_uses_record (df, loc, ref_type, bb, insn, flags)
     case PRE_MODIFY:
     case POST_MODIFY:
       /* Catch the def of the register being modified.  */
-      df_ref_record (df, XEXP (x, 0), &XEXP (x, 0), bb, insn, DF_REF_REG_DEF, DF_REF_READ_WRITE);
+      df_ref_record (df, XEXP (x, 0), &XEXP (x, 0), insn, DF_REF_REG_DEF, DF_REF_READ_WRITE);
 
       /* ... Fall through to handle uses ...  */
 

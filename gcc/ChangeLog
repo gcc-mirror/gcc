@@ -1,3 +1,13 @@
+Fri Jan 25 20:43:56 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* df.c (df_ref_create, df_ref_record_1, df_ref_record): Kill BB argument.
+	* df.h (struct ref): Kill B.
+	(DF_REF_BB, DF_REF_BBNO): Use BLOCK_FOR_INSN.
+
+	* basic-block.h (PROP_EQUAL_NOTES): New flag.
+	* flow.c (propagate_one_insn): Use it.
+	(mark_used_regs): Handle NIL.
+
 2001-01-25  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/stormy16/stormy16.md (tablejump_pcrel): Use a MEM

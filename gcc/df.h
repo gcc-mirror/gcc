@@ -57,7 +57,6 @@ enum df_ref_flags
 struct ref
 {
   rtx reg;			/* The register referenced.  */
-  basic_block bb;		/* BB containing ref.  */
   rtx insn;			/* Insn containing ref.  */
   rtx *loc;			/* Loc is the location of the reg.  */
   struct df_link *chain;	/* Head of def-use or use-def chain.  */
@@ -175,8 +174,8 @@ struct df_map
 #define DF_REF_REG(REF) ((REF)->reg)
 #define DF_REF_LOC(REF) ((REF)->loc)
 #endif
-#define DF_REF_BB(REF) ((REF)->bb)
-#define DF_REF_BBNO(REF) ((REF)->bb->index)
+#define DF_REF_BB(REF) (BLOCK_FOR_INSN ((REF)->insn))
+#define DF_REF_BBNO(REF) (BLOCK_FOR_INSN ((REF)->insn)->index)
 #define DF_REF_INSN(REF) ((REF)->insn)
 #define DF_REF_INSN_UID(REF) (INSN_UID ((REF)->insn))
 #define DF_REF_TYPE(REF) ((REF)->type)
