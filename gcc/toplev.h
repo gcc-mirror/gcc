@@ -14,6 +14,7 @@ extern void debug_undef			PROTO ((unsigned, char *));
 extern void fatal			PVPROTO ((char *, ...))
 						ATTRIBUTE_PRINTF_1;
 extern void fatal_io_error		PROTO ((char *));
+extern void pfatal_with_name		PROTO ((char *));
 extern void warning			PVPROTO ((char *, ...))
 						ATTRIBUTE_PRINTF_1;
 extern void error			PVPROTO ((char *, ...))
