@@ -1,3 +1,9 @@
+2003-02-28 Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9892
+	* pt.c (instantiate_decl): Clear DECL_RTL for a VAR_DECL when
+	instantiating it.
+
 2003-02-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9879

@@ -10287,7 +10287,7 @@ instantiate_decl (d, defer_ok)
   /* Regenerate the declaration in case the template has been modified
      by a subsequent redeclaration.  */
   regenerate_decl_from_template (d, td);
-
+  
   /* We already set the file and line above.  Reset them now in case
      they changed as a result of calling regenerate_decl_from_template.  */
   lineno = DECL_SOURCE_LINE (d);
@@ -10295,6 +10295,10 @@ instantiate_decl (d, defer_ok)
 
   if (TREE_CODE (d) == VAR_DECL)
     {
+      /* Clear out DECL_RTL; whatever was there before may not be right
+	 since we've reset the type of the declaration.  */
+      SET_DECL_RTL (d, NULL_RTX);
+
       DECL_IN_AGGR_P (d) = 0;
       if (DECL_INTERFACE_KNOWN (d))
 	DECL_EXTERNAL (d) = ! DECL_NOT_REALLY_EXTERN (d);
