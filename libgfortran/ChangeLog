@@ -1,3 +1,9 @@
+2004-08-24  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/17164
+	* runtime/string_intrinsics.c (string_index):check for
+	substring longer than string.
+
 2004-08-24  David Edelsohn  <edelsohn@gnu.org>
 
 	* Makefile.am (libgfortran_la_LDFLAGS): Add -lm.
