@@ -743,7 +743,7 @@ static const char *trad_capable_cpp =
    file that happens to exist is up-to-date.  */
 static const char *cpp_unique_options =
 "%{C|CC:%{!E:%eGCC does not support -C or -CC without -E}}\
- %{!Q:-quiet} %{nostdinc*} %{C} %{CC} %{v} %{I*} %{P} %I\
+ %{!Q:-quiet} %{nostdinc*} %{C} %{CC} %{v} %{I*&F*} %{P} %I\
  %{MD:-MD %{!o:%b.d}%{o*:%.d%*}}\
  %{MMD:-MMD %{!o:%b.d}%{o*:%.d%*}}\
  %{M} %{MM} %{MF*} %{MG} %{MP} %{MQ*} %{MT*}\

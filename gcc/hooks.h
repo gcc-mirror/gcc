@@ -36,6 +36,8 @@ extern bool hook_bool_rtx_int_int_intp_false (rtx, int, int, int *);
 extern bool hook_bool_constcharptr_size_t_false (const char *, size_t);
 
 extern void hook_void_void (void);
+extern void hook_void_int (int);
+extern void hook_void_charptr (char *);
 extern void hook_void_FILEptr_constcharptr (FILE *, const char *);
 extern void hook_void_tree (tree);
 extern void hook_void_tree_treeptr (tree, tree *);

@@ -361,6 +361,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
    TARGET_PRETEND_OUTGOING_VARARGS_NAMED,			\
    }
 
+#ifndef TARGET_OPTF
+#define TARGET_OPTF hook_void_charptr
+#endif
+
 /* The whole shebang.  */
 #define TARGET_INITIALIZER			\
 {						\

@@ -21,6 +21,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "machmode.h"
+#include "target.h"
 #include "tm.h"
 #include "cpplib.h"
 #include "prefix.h"
@@ -298,20 +300,33 @@ split_quote_chain (void)
   quote_ignores_source_dir = true;
 }
 
+/* Add P to the chain specified by CHAIN.  */
+
+void
+add_cpp_dir_path (cpp_dir *p, int chain)
+{
+  if (tails[chain])
+    tails[chain]->next = p;
+  else
+    heads[chain] = p;
+  tails[chain] = p;
+}
+
 /* Add PATH to the include chain CHAIN. PATH must be malloc-ed and
    NUL-terminated.  */
 void
 add_path (char *path, int chain, int cxx_aware)
 {
-  struct cpp_dir *p;
+  cpp_dir *p;
 
-  p = xmalloc (sizeof (struct cpp_dir));
+  p = xmalloc (sizeof (cpp_dir));
   p->next = NULL;
   p->name = path;
   if (chain == SYSTEM || chain == AFTER)
     p->sysp = 1 + !cxx_aware;
   else
     p->sysp = 0;
+  p->construct = 0;
 
   if (tails[chain])
     tails[chain]->next = p;
@@ -347,8 +362,16 @@ register_include_chains (cpp_reader *pfile, const char *sysroot,
   if (stdinc)
     add_standard_paths (sysroot, iprefix, cxx_stdinc);
 
+  target_c_incpath.extra_includes (stdinc);
+
   merge_include_chains (pfile, verbose);
 
   cpp_set_include_chains (pfile, heads[QUOTE], heads[BRACKET],
 			  quote_ignores_source_dir);
 }
+
+#ifndef TARGET_EXTRA_INCLUDES
+static void hook_void_int(int u ATTRIBUTE_UNUSED) { }
+
+struct target_c_incpath_s target_c_incpath = { hook_void_int };
+#endif

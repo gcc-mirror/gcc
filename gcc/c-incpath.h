@@ -19,5 +19,15 @@ extern void split_quote_chain (void);
 extern void add_path (char *, int, int);
 extern void register_include_chains (cpp_reader *, const char *,
 				     const char *, int, int, int);
+extern void add_cpp_dir_path (struct cpp_dir *, int);
+
+struct target_c_incpath_s {
+  /* Do extra includes processing.  STDINC is false iff -nostdinc was given.  */
+  void (*extra_includes) (int);
+};
+
+extern struct target_c_incpath_s target_c_incpath;
+
+#define C_INCPATH_INIT { TARGET_EXTRA_INCLUDES }
 
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };

@@ -153,6 +153,7 @@ c_common_missing_argument (const char *opt, size_t code)
       error ("macro name missing after \"%s\"", opt);
       break;
 
+    case OPT_F:
     case OPT_I:
     case OPT_idirafter:
     case OPT_isysroot:
@@ -283,6 +284,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 
     case OPT_H:
       cpp_opts->print_include_names = 1;
+      break;
+
+    case OPT_F:
+      TARGET_OPTF (xstrdup (arg));
       break;
 
     case OPT_I:

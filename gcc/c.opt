@@ -93,6 +93,10 @@ C ObjC C++ ObjC++ Joined Separate
 E
 C ObjC C++ ObjC++ Undocumented
 
+F
+C ObjC C++ ObjC++ Joined Separate
+-F <dir>	Add <dir> to the end of the main framework include path  
+
 H
 C ObjC C++ ObjC++
 Print the name of header files as they are used

@@ -125,7 +125,17 @@ hook_uint_uint_constcharptrptr_0 (unsigned int a ATTRIBUTE_UNUSED,
 }
 
 void
+hook_void_int (int b ATTRIBUTE_UNUSED)
+{
+}
+
+void
 hook_void_tree (tree a ATTRIBUTE_UNUSED)
+{
+}
+
+void
+hook_void_charptr (char *a ATTRIBUTE_UNUSED)
 {
 }
 

@@ -1,3 +1,56 @@
+2004-03-03  Mike Stump  <mrs@apple.com>
+
+	Add framework support for darwin.
+
+	* c-incpath.c: Include target.h and machmode.h.
+	(add_path): Use a consistent style for cpp_dir.  Initialize
+	p->construct to 0.
+	(add_cpp_dir_path): New.
+	(register_include_chains): Add use of extra_includes callback.
+	(hook_void_int): Add.
+	(target_c_incpath): Add.
+	* c-incpath.h (add_cpp_dir_path): New.
+	(target_c_incpath_s): Add.
+	(target_c_incpath): Add.
+	(C_INCPATH_INIT): Add.
+	* c-opts.c (c_common_missing_argument,
+	c_common_handle_option): Add -F argument processing.
+	* c.opt: Add -F argument processing.
+	* gcc.c (trad_capable_cpp): Add -F argument processing.
+	* cppfiles.c (find_file_in_dir): Update to use construct
+	callback.
+	(search_path_exhausted, cpp_get_path, cpp_get_buffer,
+	cpp_get_prev): New.
+	(_cpp_find_file): Use search_path_exhausted.
+	(make_cpp_dir): Initialize construct to 0.
+	* cpplib.h (missing_header_cb
+	cpp_get_path, cpp_get_buffer, cpp_get_file, cpp_get_prev): New.
+	(cpp_callbacks): Add missing_header
+	(cpp_dir): Add construct.
+	* target-def.h: (TARGET_OPTF): New.
+	* hooks.c (hook_void_int, hook_void_charptr): Add.
+	* hooks.h (hook_void_int, hook_void_charptr): Add.
+	* Makefile.in (c-incpath.o) : Add $(TARGET_H) and
+	$(MACHMODE_H) dependencies.
+	* doc/invoke.texi (Darwin Options): Document -F.
+	* doc/tm.texi (TARGET_EXTRA_INCLUDES): Add.
+	(TARGET_OPTF): Add.
+	* fix-header.c (target_c_incpath): Add.
+
+	* config/darwin-c.c: Add c-incpath.h include.
+	(using_frameworks, find_subframework_file,
+	find_subframework_header, add_system_framework_path,
+	frameworks_in_use, num_frameworks, max_frameworks,
+	add_framework, find_framework, struct framework_header,
+	framework_header_dirs, framework_construct_pathname,
+	find_subframework_file, add_system_framework_path,
+	add_framework_path, framework_defaults,
+	darwin_register_frameworks, find_subframework_header): Add.
+	* config/darwin.h (TARGET_EXTRA_INCLUDES, TARGET_OPTF): New.
+	(TARGET_OPTION_TRANSLATE_TABLE): Add -framework support.
+	(CPP_SPEC): Add __APPLE_CC__ support.
+	* t-darwin (darwin-c.o): Add c-incpath.h dependency.
+
 2004-03-04  Jan Hubicka  <jh@suse.cz>
 
 	* cselib.c (cselib_finish): Fix miss-application of my previous
