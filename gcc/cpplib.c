@@ -804,7 +804,8 @@ do_line (cpp_reader *pfile)
   if (token->type == CPP_STRING)
     {
       cpp_string s = { 0, 0 };
-      if (_cpp_interpret_string_notranslate (pfile, &token->val.str, &s))
+      if (cpp_interpret_string_notranslate (pfile, &token->val.str, 1,
+					    &s, false))
 	new_file = (const char *)s.text;
       check_eol (pfile);
     }
@@ -855,7 +856,8 @@ do_linemarker (cpp_reader *pfile)
   if (token->type == CPP_STRING)
     {
       cpp_string s = { 0, 0 };
-      if (_cpp_interpret_string_notranslate (pfile, &token->val.str, &s))
+      if (cpp_interpret_string_notranslate (pfile, &token->val.str,
+					    1, &s, false))
 	new_file = (const char *)s.text;
 
       new_sysp = 0;

@@ -581,6 +581,9 @@ extern cppchar_t cpp_interpret_charconst (cpp_reader *, const cpp_token *,
 extern bool cpp_interpret_string (cpp_reader *,
 				  const cpp_string *, size_t,
 				  cpp_string *, bool);
+extern bool cpp_interpret_string_notranslate (cpp_reader *,
+					      const cpp_string *, size_t,
+					      cpp_string *, bool);
 
 /* Used to register macros and assertions, perhaps from the command line.
    The text is the same as the command line argument.  */

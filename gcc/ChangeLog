@@ -1,3 +1,11 @@
+2004-02-11  Eric Christopher  <echristo@redhat.com>
+
+	* cppcharset.c (_cpp_interpret_string_notranslate): Rename and
+	duplicate argument structure of cpp_interpret_string.
+	* cpphash.h: Move prototype...
+	* cpplib.h: Here.
+	* cpplib.c: Fix calls to match new function signature.
+
 2004-02-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/456
@@ -117,7 +125,7 @@
 	source_location.
 
 2004-02-11  Hartmut Penner  <hpenner@de.ibm.com>
-	
+
 	* config/rs6000/altivec.md (*movv4si_internal): At least one
 	operand must be register_operand.
 	(*movv8hi_internal1): Likewise.
@@ -150,7 +158,7 @@
 	Set AltiVec ABI and vrsave as default for ppc64 linux.
 	(init_cumulative_args): Post error, if try to return
 	value in AltiVec register without enable AltiVec.
-	(function_arg_advance): Ditto for passing arguments. 
+	(function_arg_advance): Ditto for passing arguments.
 
 2004-02-11  Richard Sandiford  <rsandifo@redhat.com>
 
