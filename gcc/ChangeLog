@@ -1,3 +1,28 @@
+2000-11-11  Neil Booth  <neilb@earthling.net>
+
+	Remove CPP_PLACEMARKERs.
+
+	* cppexp.c (lex): Don't handle CPP_PLACEMARKER.
+	* cpplex.c (_cpp_lex_token): Rename skip_newlines to next_bol
+	* cpplib.c (skip_rest_of_line, check_eol, cpp_push_buffer):
+	           Similarly.
+	* cpplib.h: Remove CPP_PLACEMARKER.
+	(struct lexer_state): Rename skip_newlines to next_bol.
+	* cppmacro.c (stringify_arg): Don't handle CPP_PLACEMARKER.
+	Simplify prev_white handling as a result.
+	(paste_all_tokens): Don't worry about CPP_PLACEMARKERs.
+	(parse_arg): Empty arguments are now empty, not CPP_PLACEMARKERs.
+	(parse_args): Similarly.  Update argument count tests.
+	(enter_macro_context): Return 2 to indicate an empty macro.
+	(replace_args): Don't bother pre-expanding an empty argument.
+	Handle placemarkers and ## extension during pre-expansion.
+	(cpp_get_token): Handle empty macro expansions.  Don't worry
+	about CPP_PLACEMARKERs.
+	(_cpp_create_definition): Empty macros are now empty.
+	(cpp_macro_defintion): Don't special case empty macros.
+	* scan-decls.c: Don't bother with CPP_PLACEMARKERs.
+	* c-lex.c: Similarly.
+
 2000-11-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.texi, invoke.texi: Add new section discussing language

@@ -194,7 +194,7 @@ skip_rest_of_line (pfile)
      because they may be saving tokens prior to this directive for an
      external client.  So we use _cpp_get_token, with macros disabled.  */
   pfile->state.prevent_expansion++;
-  while (!pfile->state.skip_newlines)
+  while (!pfile->state.next_bol)
     _cpp_get_token (pfile, &token);
   pfile->state.prevent_expansion--;
 }
@@ -204,7 +204,7 @@ static void
 check_eol (pfile)
      cpp_reader *pfile;
 {
-  if (!pfile->state.skip_newlines)
+  if (!pfile->state.next_bol)
     {
       cpp_token token;
 
@@ -1728,7 +1728,7 @@ cpp_push_buffer (pfile, buffer, length)
   /* No read ahead or extra char initially.  */
   new->read_ahead = EOF;
   new->extra_char = EOF;
-  pfile->state.skip_newlines = 1;
+  pfile->state.next_bol = 1;
 
   CPP_BUFFER (pfile) = new;
   return new;

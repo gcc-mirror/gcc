@@ -378,14 +378,10 @@ lex (pfile, skip_evaluation, token)
 {
   struct op op;
 
- retry:
   _cpp_get_token (pfile, token);
 
   switch (token->type)
     {
-    case CPP_PLACEMARKER:
-      goto retry;
-
     case CPP_INT:
     case CPP_NUMBER:
       return parse_number (pfile, token);

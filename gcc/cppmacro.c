@@ -337,7 +337,6 @@ stringify_arg (pfile, arg)
   cpp_pool *pool = pfile->string_pool;
   unsigned char *start = POOL_FRONT (pool);
   unsigned int i, escape_it, total_len = 0, backslash_count = 0;
-  unsigned int prev_white = 0;
 
   /* Loop, reading in the argument's tokens.  */
   for (i = 0; i < arg->count; i++)
@@ -362,17 +361,9 @@ stringify_arg (pfile, arg)
 	  dest = &start[total_len];
 	}
 
-      prev_white |= token->flags & PREV_WHITE;
-      if (token->type == CPP_PLACEMARKER)
-	continue;
-
       /* No leading white space.  */
-      if (prev_white)
-	{
-	  prev_white = 0;
-	  if (total_len > 0)
-	    *dest++ = ' ';
-	}
+      if (token->flags & PREV_WHITE && total_len > 0)
+	*dest++ = ' ';
 
       if (escape_it)
 	{
@@ -424,6 +415,9 @@ paste_all_tokens (pfile, lhs)
 
   do
     {
+      int digraph = 0;
+      enum cpp_ttype type;
+
       /* Take the token directly from the current context.  We can do
 	 this, because we are in the replacement list of either an
 	 object-like macro, or a function-like macro with arguments
@@ -432,63 +426,37 @@ paste_all_tokens (pfile, lhs)
 	 become placemarkers).  */
       rhs = pfile->context->list.first++;
 
-      if (rhs->type == CPP_PLACEMARKER)
+      type = cpp_can_paste (pfile, lhs, rhs, &digraph);
+      if (type == CPP_EOF)
 	{
-	  /* GCC has special extended semantics for , ## b where b is
-	     a varargs parameter: the comma disappears if b was given
-	     no actual arguments (not merely if b is an empty
-	     argument).  */
-	  if (lhs->type == CPP_COMMA && (rhs->flags & VARARGS_FIRST))
-	    lhs->type = CPP_PLACEMARKER;
+	  if (CPP_OPTION (pfile, warn_paste))
+	    cpp_warning (pfile,
+	 "pasting \"%s\" and \"%s\" does not give a valid preprocessing token",
+			 cpp_token_as_text (pfile, lhs),
+			 cpp_token_as_text (pfile, rhs));
+
+	  /* The standard states that behaviour is undefined.  By the
+	     principle of least surpise, we step back before the RHS,
+	     and mark it to prevent macro expansion.  Tests in the
+	     testsuite rely on clearing PREV_WHITE here, though you
+	     could argue we should actually set it.  */
+	  rhs->flags &= ~PREV_WHITE;
+	  rhs->flags |= NO_EXPAND;
+
+	  /* Step back so we read the RHS in next.  */
+	  pfile->context->list.first--;
+	  break;
 	}
-      else if (lhs->type == CPP_PLACEMARKER)
-	*lhs = *rhs;
-      else
-	{
-	  int digraph = 0;
-	  enum cpp_ttype type = cpp_can_paste (pfile, lhs, rhs, &digraph);
 
-	  if (type == CPP_EOF)
-	    {
-	      /* Do nothing special about , ## <whatever> if
-		 <whatever> came from a variable argument, because the
-		 author probably intended the ## to trigger the
-		 special extended semantics (see above).  */
-	      if (lhs->type == CPP_COMMA && (rhs->flags & VARARGS_FIRST))
-		/* nothing */;
-	      else
-		{
-		  if (CPP_OPTION (pfile, warn_paste))
-		    cpp_warning (pfile,
-		 "pasting \"%s\" and \"%s\" does not give a valid preprocessing token",
-				 cpp_token_as_text (pfile, lhs),
-				 cpp_token_as_text (pfile, rhs));
+      lhs->type = type;
+      lhs->flags &= ~DIGRAPH;
+      if (digraph)
+	lhs->flags |= DIGRAPH;
 
-		  /* The standard states that behaviour is undefined.
-		     By the principle of least surpise, we step back
-		     before the RHS, and mark it to prevent macro
-		     expansion.  Tests in the testsuite rely on
-		     clearing PREV_WHITE here, though you could argue
-		     we should actually set it.  */
-		  rhs->flags &= ~PREV_WHITE;
-		  rhs->flags |= NO_EXPAND;
-		}
-
-	      /* Step back so we read the RHS in next.  */
-	      pfile->context->list.first--;
-	      break;
-	    }
-
-	  lhs->type = type;
-	  lhs->flags &= ~DIGRAPH;
-	  if (digraph)
-	    lhs->flags |= DIGRAPH;
-
-	  if (type == CPP_NAME || type == CPP_NUMBER)
-	    paste_payloads (pfile, lhs, rhs);
-	  else if (type == CPP_WCHAR || type == CPP_WSTRING)
-	    lhs->val.str = rhs->val.str;
-	}
+      if (type == CPP_NAME || type == CPP_NUMBER)
+	paste_payloads (pfile, lhs, rhs);
+      else if (type == CPP_WCHAR || type == CPP_WSTRING)
+	lhs->val.str = rhs->val.str;
     }
   while (rhs->flags & PASTE_LEFT);
 
@@ -498,10 +466,9 @@ paste_all_tokens (pfile, lhs)
   lhs->flags |= orig_flags & PREV_WHITE;
 }
 
-/* Reads the unexpanded tokens of a macro argument into ARG.  Empty
-   arguments are saved as a single CPP_PLACEMARKER token.  VAR_ARGS is
-   non-zero if this is a variable argument.  Returns the type of the
-   token that caused reading to finish.  */
+/* Reads the unexpanded tokens of a macro argument into ARG.  VAR_ARGS
+   is non-zero if this is a variable argument.  Returns the type of
+   the token that caused reading to finish.  */
 static enum cpp_ttype
 parse_arg (pfile, arg, var_args)
      cpp_reader *pfile;
@@ -534,13 +501,6 @@ parse_arg (pfile, arg, var_args)
 	break;
       else if (result == CPP_EOF)
 	break;		/* Error reported by caller.  */
-    }
-
-  /* Empty arguments become a single placemarker token.  */
-  if (arg->count == 0)
-    {
-      arg->first->type = CPP_PLACEMARKER;
-      arg->count = 1;
     }
 
   /* Commit the memory used to store the arguments.  */
@@ -595,13 +555,6 @@ parse_args (pfile, node)
 
       if (argc + 1 == macro->paramc && macro->var_args)
 	{
-	  /* parse_arg ensured there was space for the closing
-	     parenthesis.  Use this space to store a placemarker.  */
-	  args[argc].first = (cpp_token *) POOL_FRONT (&pfile->argument_pool);
-	  args[argc].first->type = CPP_PLACEMARKER;
-	  args[argc].count = 1;
-	  POOL_COMMIT (&pfile->argument_pool, sizeof (cpp_token));
-
 	  if (CPP_OPTION (pfile, c99) && CPP_PEDANTIC (pfile))
 	    cpp_pedwarn (pfile, "ISO C99 requires rest arguments to be used");
 	}
@@ -615,8 +568,8 @@ parse_args (pfile, node)
     }
   else if (argc > macro->paramc)
     {
-      /* An empty argument to an empty function-like macro is fine.  */
-      if (argc != 1 || args[0].first->type != CPP_PLACEMARKER)
+      /* Empty argument to a macro taking no arguments is OK.  */
+      if (argc != 1 || cur->count)
 	{
 	  cpp_error (pfile,
 		     "macro \"%s\" passed %u arguments, but takes just %u",
@@ -709,15 +662,19 @@ enter_macro_context (pfile, token)
       return 0;
     }
 
-  /* Now push its context.  */
-  context = next_context (pfile);
   if (macro->paramc == 0)
     {
-      context->list.first = macro->expansion;
-      context->list.limit = macro->expansion + macro->count;
+      list.first = macro->expansion;
+      list.limit = macro->expansion + macro->count;
     }
-  else
-    context->list = list;
+
+  /* Temporary kludge.  */
+  if (list.first == list.limit)
+    return 2;
+
+  /* Now push its context.  */
+  context = next_context (pfile);
+  context->list = list;
   context->macro = macro;
 
   /* The first expansion token inherits the PREV_WHITE of TOKEN.  */
@@ -776,6 +733,7 @@ replace_args (pfile, macro, args, list)
 	/* We have an argument.  If it is not being stringified or
 	   pasted it is macro-replaced before insertion.  */
 	arg = &args[src->val.arg_no - 1];
+
 	if (src->flags & STRINGIFY_ARG)
 	  {
 	    if (!arg->stringified)
@@ -787,7 +745,11 @@ replace_args (pfile, macro, args, list)
 	else
 	  {
 	    if (!arg->expanded)
-	      expand_arg (pfile, arg);
+	      {
+		arg->expanded_count = 0;
+		if (arg->count)
+		  expand_arg (pfile, arg);
+	      }
 	    total += arg->expanded_count - 1;
 	  }
       }
@@ -795,7 +757,6 @@ replace_args (pfile, macro, args, list)
   dest = (cpp_token *) _cpp_pool_alloc (&pfile->argument_pool,
 					total * sizeof (cpp_token));
   list->first = dest;
-  list->limit = list->first + total;
 
   for (src = macro->expansion; src < limit; src++)
     if (src->type == CPP_MACRO_ARG)
@@ -806,27 +767,53 @@ replace_args (pfile, macro, args, list)
 	arg = &args[src->val.arg_no - 1];
 	if (src->flags & STRINGIFY_ARG)
 	  from = arg->stringified, count = 1;
-	else if ((src->flags & PASTE_LEFT)
-		 || (src > macro->expansion && (src[-1].flags & PASTE_LEFT)))
+	else if (src->flags & PASTE_LEFT)
 	  count = arg->count, from = arg->first;
+	else if (src > macro->expansion && (src[-1].flags & PASTE_LEFT))
+	  {
+	    count = arg->count, from = arg->first;
+	    if (dest != list->first)
+	      {
+		/* GCC has special semantics for , ## b where b is a
+		   varargs parameter: the comma disappears if b was
+		   given no actual arguments (not merely if b is an
+		   empty argument); otherwise pasting is turned off.  */
+		if (dest[-1].type == CPP_COMMA
+		    && macro->var_args
+		    && src->val.arg_no == macro->paramc)
+		  {
+		    if (count == 0)
+		      dest--;
+		    else
+		      dest[-1].flags &= ~PASTE_LEFT;
+		  }
+		/* Count == 0 is the RHS a placemarker case.  */
+		else if (count == 0)
+		  dest[-1].flags &= ~PASTE_LEFT;
+	      }
+	  }
 	else
 	  count = arg->expanded_count, from = arg->expanded;
-	memcpy (dest, from, count * sizeof (cpp_token));
 
-	/* The first token gets PREV_WHITE of the CPP_MACRO_ARG.  If
-           it is a variable argument, it is also flagged.  */
-	dest->flags &= ~PREV_WHITE;
-	dest->flags |= src->flags & PREV_WHITE;
-	if (macro->var_args && src->val.arg_no == macro->paramc)
-	  dest->flags |= VARARGS_FIRST;
+	/* Count == 0 is the LHS a placemarker case.  */
+	if (count)
+	  {
+	    memcpy (dest, from, count * sizeof (cpp_token));
 
-	/* The last token gets the PASTE_LEFT of the CPP_MACRO_ARG.  */
-	dest[count - 1].flags |= src->flags & PASTE_LEFT;
+	    /* The first token gets PREV_WHITE of the CPP_MACRO_ARG.  */
+	    dest->flags &= ~PREV_WHITE;
+	    dest->flags |= src->flags & PREV_WHITE;
 
-	dest += count;
+	    /* The last token gets the PASTE_LEFT of the CPP_MACRO_ARG.  */
+	    dest[count - 1].flags |= src->flags & PASTE_LEFT;
+
+	    dest += count;
+	  }
       }
     else
       *dest++ = *src;
+
+  list->limit = dest;
 
   /* Free the expanded arguments.  */
   for (i = 0; i < macro->paramc; i++)
@@ -863,7 +850,6 @@ expand_arg (pfile, arg)
 
   /* Loop, reading in the arguments.  */
   arg->expanded = (cpp_token *) xmalloc (capacity * sizeof (cpp_token));
-  arg->expanded_count = 0;
 
   push_arg_context (pfile, arg);
   do
@@ -904,8 +890,7 @@ _cpp_pop_context (pfile)
 /* Internal routine to return a token, either from an in-progress
    macro expansion, or from the source file as appropriate.
    Transparently enters included files.  Handles macros, so tokens
-   returned are post-expansion.  Does not filter CPP_PLACEMARKER
-   tokens.  Returns CPP_EOF at EOL and EOF.  */
+   returned are post-expansion.  Returns CPP_EOF at EOL and EOF.  */
 void
 _cpp_get_token (pfile, token)
      cpp_reader *pfile;
@@ -958,6 +943,8 @@ _cpp_get_token (pfile, token)
 	  && !pfile->state.prevent_expansion
 	  && !(token->flags & NO_EXPAND))
 	{
+	  int m;
+
 	  /* Macros invalidate controlling macros.  */
 	  pfile->mi_state = MI_FAILED;
 
@@ -967,8 +954,11 @@ _cpp_get_token (pfile, token)
 	      break;
 	    }
 
-	  if (enter_macro_context (pfile, token))
+	  m = enter_macro_context (pfile, token);
+	  if (m == 1)
 	    continue;
+	  if (m == 2)
+	    goto next_token;
 	}
 
       if (token->val.node != pfile->spec_nodes.n__Pragma)
@@ -1001,9 +991,7 @@ cpp_get_token (pfile, token)
 
       if (token->type == CPP_EOF)
 	break;
-      /* We are not merging the PREV_WHITE of CPP_PLACEMARKERS.  I
-         don't think it really matters.  */
-      else if (pfile->skipping || token->type == CPP_PLACEMARKER)
+      else if (pfile->skipping)
 	continue;
 
       /* Non-comment tokens invalidate any controlling macros.  */
@@ -1463,11 +1451,8 @@ _cpp_create_definition (pfile, node)
       token = lex_expansion_token (pfile, macro);
     }
 
-  /* Don't count the CPP_EOF.  Empty macros become a place marker.  */
-  if (macro->count > 1)
-    macro->count--;
-  else
-    macro->expansion[0].type = CPP_PLACEMARKER;
+  /* Don't count the CPP_EOF.  */
+  macro->count--;
 
   /* Clear the whitespace flag from the leading token.  */
   macro->expansion[0].flags &= ~PREV_WHITE;
@@ -1589,21 +1574,18 @@ cpp_macro_definition (pfile, node)
 	len += macro->params[i]->length + 2; /* ", " */
     }
 
-  if (macro->count > 1 || macro->expansion[0].type != CPP_PLACEMARKER)
+  for (i = 0; i < macro->count; i++)
     {
-      for (i = 0; i < macro->count; i++)
-	{
-	  cpp_token *token = &macro->expansion[i];
+      cpp_token *token = &macro->expansion[i];
 
-	  if (token->type == CPP_MACRO_ARG)
-	    len += macro->params[token->val.arg_no - 1]->length;
-	  else
-	    len += cpp_token_len (token); /* Includes room for ' '.  */
-	  if (token->flags & STRINGIFY_ARG)
-	    len++;			/* "#" */
-	  if (token->flags & PASTE_LEFT)
-	    len += 3;		/* " ##" */
-	}
+      if (token->type == CPP_MACRO_ARG)
+	len += macro->params[token->val.arg_no - 1]->length;
+      else
+	len += cpp_token_len (token); /* Includes room for ' '.  */
+      if (token->flags & STRINGIFY_ARG)
+	len++;			/* "#" */
+      if (token->flags & PASTE_LEFT)
+	len += 3;		/* " ##" */
     }
 
   if (len > pfile->macro_buffer_len)
@@ -1633,7 +1615,7 @@ cpp_macro_definition (pfile, node)
     }
 
   /* Expansion tokens.  */
-  if (macro->count > 1 || macro->expansion[0].type != CPP_PLACEMARKER)
+  if (macro->count)
     {
       *buffer++ = ' ';
       for (i = 0; i < macro->count; i++)

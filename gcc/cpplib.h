@@ -140,7 +140,6 @@ struct htab;
 \
   TK(CPP_COMMENT,	SPELL_STRING)	/* Only if output comments.  */ \
   TK(CPP_MACRO_ARG,	SPELL_NONE)	/* Macro argument.  */		\
-  TK(CPP_PLACEMARKER,	SPELL_NONE)	/* Placemarker token.  */	\
   OP(CPP_EOF,		"EOL")		/* End of line or file.  */
 
 #define OP(e, s) e,
@@ -488,8 +487,8 @@ struct lexer_state
      all directives apart from #define.  */
   unsigned char save_comments;
 
-  /* If nonzero the lexer skips newlines.  Internal to the lexer.  */
-  unsigned char skip_newlines;
+  /* If nonzero the next token is at the beginning of the line.  */
+  unsigned char next_bol;
 
   /* Nonzero if we're mid-comment.  */
   unsigned char lexing_comment;

@@ -133,7 +133,6 @@ scan_decls (pfile, argc, argv)
 	  goto handle_statement;
 	case CPP_MULT:
 	case CPP_AND:
-	case CPP_PLACEMARKER:
 	  /* skip */
 	  break;
 
