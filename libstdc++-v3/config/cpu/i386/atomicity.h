@@ -52,8 +52,9 @@ __exchange_and_add(volatile _Atomic_word* __mem, int __val)
   /* obtain the atomic exchange/add spin lock */
   do {
     __asm__ __volatile__ ("xchg{l} {%0,%1|%1,%0}"
-			  : "+m" (__Atomicity_lock<0>::_S_atomicity_lock),
-			    "+r" (__tmp));
+			  : "m" (__Atomicity_lock<0>::_S_atomicity_lock),
+			    "+r" (__tmp)
+                          : "m" (__Atomicity_lock<0>::_S_atomicity_lock));
   } while (__tmp);
 
   __result = *__mem;
