@@ -7075,15 +7075,17 @@ get_condition (jump, earliest)
 	    code = LT,	op1 = GEN_INT (const_val + 1);
 	  break;
 
+	/* When cross-compiling, const_val might be sign-extended from
+	   BITS_PER_WORD to HOST_BITS_PER_WIDE_INT */
 	case GE:
-	  if (const_val
+	  if ((const_val & max_val)
 	      != (((HOST_WIDE_INT) 1
 		   << (GET_MODE_BITSIZE (GET_MODE (op0)) - 1))))
 	    code = GT, op1 = GEN_INT (const_val - 1);
 	  break;
 
 	case LEU:
-	  if (uconst_val != max_val)
+	  if (uconst_val < max_val)
 	    code = LTU, op1 = GEN_INT (uconst_val + 1);
 	  break;
 
