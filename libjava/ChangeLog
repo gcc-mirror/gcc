@@ -1,5 +1,10 @@
 2004-07-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Eliminate CANADIAN and NULL_TARGET variables
+	by logic refactoring.  Move default definition of NATIVE closer
+	to first alternate definition.
+	* configure: Regenerate.
+
 	* Makefile.am: Set ZIP and GCJH directly using autoconf.
 	* Makefile.in, include/Makefile.in, testsuite/Makefile.in,
 	gcj/Makefile.in: Regenerate.
