@@ -1,5 +1,9 @@
 2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
+	* gcj/javaprims.h: Rebuild CNI namespace.
+
+2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
 	* java/lang/Class.h (_Jv_Self): New union type.
 	(Class): Manipulate vtable pointer via _Jv_Self union. Thanks to
 	Jeff Sturm and Fergus Henderson.
@@ -26,18 +30,18 @@
 	* java/lang/natClass.cc (forName): Correct declaration of the three-arg
 	variant. Honour "initialize" flag.
 	* java/lang/Class.java: Fix forName() declaration.
-        * java/lang/ClassLoader.java (getParent): Now final.
-        (findSystemClass): Now final.
-        (getSystemResourceAsStream): Remove redundant "final" modifier.
-        (getSystemResource): Remove redundant "final" modifier.
-        (getResources): Now final.
-        (getSystemClassLoader): Now non-native.
-        * java/util/ResourceBundle.java (tryGetSomeBundle): Use the correct
-        arguments for Class.forName().
-         * gnu/gcj/runtime/VMClassLoader.java (getVMClassLoader): Removed.
-        (instance): Static initialize singleton.
-        (findClass): Override this, not findSystemClass.
-        * java/lang/natClassLoader.cc (findClass): Renamed from 
+	* java/lang/ClassLoader.java (getParent): Now final.
+	(findSystemClass): Now final.
+	(getSystemResourceAsStream): Remove redundant "final" modifier.
+	(getSystemResource): Remove redundant "final" modifier.
+	(getResources): Now final.
+	(getSystemClassLoader): Now non-native.
+	* java/util/ResourceBundle.java (tryGetSomeBundle): Use the correct
+	arguments for Class.forName().
+	* gnu/gcj/runtime/VMClassLoader.java (getVMClassLoader): Removed.
+	(instance): Static initialize singleton.
+	(findClass): Override this, not findSystemClass.
+	* java/lang/natClassLoader.cc (findClass): Renamed from 
 	findSystemClass. Call the interpreter via URLClassLoader.findClass if 
 	loading class via dlopen fails.
 
