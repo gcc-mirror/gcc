@@ -1,5 +1,15 @@
 2004-02-10  David Jee  <djee@redhat.com>
 
+	* java/awt/BorderLayout.java
+	(calcCompSize): Invisible components get zero dimensions.
+	* java/awt/Button.java
+	(setLabel): Set actionCommand.
+	* java/awt/Component.java
+	(show): Invalidate component and parent container.
+	(hide): Likewise.
+
+2004-02-10  David Jee  <djee@redhat.com>
+
 	* java/awt/GridBagLayout.java
 	(GridBagLayout): New private field, internalcomptable.
 	(lookupInternalConstraints): New method.
