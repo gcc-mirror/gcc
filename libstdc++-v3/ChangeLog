@@ -1,3 +1,9 @@
+2001-04-13  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* testsuite/23_containers/set_operators.cc: Just try to compile.
+	Mark as XFAIL.   
+	* testsuite/23_containers/map_operators.cc: Same.
+
 2001-04-12  Jason Merrill  <jason_merrill@redhat.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++-dg-test): Prepend "./" to

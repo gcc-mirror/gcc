@@ -27,6 +27,10 @@
 // map and set
 // libstdc++/86: map & set iterator comparisons are not type-safe
 // XXX this is XFAIL for the time being, ie this should not compile
+
+// Just try to compile
+// { dg-do compile }
+
 void test01()
 {
   bool test = true;
@@ -39,8 +43,8 @@ void test01()
   std::map<unsigned, int>::iterator itr(mapByIndex.begin());
 
   // NB: notice, it's not mapByIndex!!
-  test &= itr != mapByName.end();  // ERROR - *  XFAIL *-*-*
-  test &= itr == mapByName.end();  // ERROR - *  XFAIL *-*-*
+  test &= itr != mapByName.end();  // { dg-error ".*" "" { xfail *-*-* } }
+  test &= itr == mapByName.end();  // { dg-error ".*" "" { xfail *-*-* } }
 }
 
 // http://gcc.gnu.org/ml/libstdc++/2000-11/msg00093.html
