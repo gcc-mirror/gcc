@@ -1,3 +1,8 @@
+2001-05-28  Simon Patarin <simon.patarin@inria.fr>
+
+	* ltcf-cxx.sh (osf3/osf4/osf5): Support creation of C++  shared
+	libraries when using g++ with native linker.
+
 2001-05-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* ltconfig, ltmain.sh: Upgrade to libtool 1.4a 1.641.2.256.

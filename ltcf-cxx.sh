@@ -386,19 +386,6 @@ case $host_os in
     # NetBSD uses g++ - do we need to do anything?
     ;;
   osf3*)
-    if test "$with_gcc" = yes && test "$with_gnu_ld" = no; then
-      allow_undefined_flag=' ${wl}-expect_unresolved ${wl}\*'
-      archive_cmds='$CC -shared -nostdlib ${allow_undefined_flag} $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname `test -n "$verstring" && echo ${wl}-set_version ${wl}$verstring` ${wl}-update_registry ${wl}${objdir}/so_locations -o $lib'
-
-      hardcode_libdir_flag_spec='${wl}-rpath ${wl}$libdir'
-      hardcode_libdir_separator=:
-
-      # Commands to make compiler produce verbose output that lists
-      # what "hidden" libraries, object files and flags are used when
-      # linking a shared library.
-      output_verbose_link_cmd='$CC -shared $CFLAGS -v conftest.$objext 2>&1 | egrep "\-L"'
-    fi
-
     case $cc_basename in
       KCC)
         # Kuck and Associates, Inc. (KAI) C++ Compiler
@@ -439,25 +426,25 @@ case $host_os in
         output_verbose_link_cmd='templist=`$CC -shared $CFLAGS -v conftest.$objext 2>&1 | grep "ld" | grep -v "ld:"`; templist=`echo $templist | sed "s/\(^.*ld.*\)\( .*ld.*$\)/\1/"`; list=""; for z in $templist; do case $z in conftest.$objext) list="$list $z";; *.$objext);; *) list="$list $z";;esac; done; echo $list'
         ;;
       *)
-        # FIXME: insert proper C++ library support
-        ld_shlibs=no
+	if test "$with_gcc" = yes && test "$with_gnu_ld" = no; then
+	  allow_undefined_flag=' ${wl}-expect_unresolved ${wl}\*'
+	  archive_cmds='$CC -shared -nostdlib ${allow_undefined_flag} $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-soname ${wl}$soname `test -n "$verstring" && echo ${wl}-set_version ${wl}$verstring` ${wl}-update_registry ${wl}${objdir}/so_locations -o $lib'
+
+	  hardcode_libdir_flag_spec='${wl}-rpath ${wl}$libdir'
+	  hardcode_libdir_separator=:
+
+	  # Commands to make compiler produce verbose output that lists
+	  # what "hidden" libraries, object files and flags are used when
+	  # linking a shared library.
+	  output_verbose_link_cmd='$CC -shared $CFLAGS -v conftest.$objext 2>&1 | egrep "\-L"'
+    else
+          # FIXME: insert proper C++ library support
+          ld_shlibs=no
+    fi
         ;;
     esac
     ;;
   osf4* | osf5*)
-    if test "$with_gcc" = yes && test "$with_gnu_ld" = no; then
-      allow_undefined_flag=' ${wl}-expect_unresolved ${wl}\*'
-      archive_cmds='$CC -shared -nostdlib ${allow_undefined_flag} $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-msym ${wl}-soname ${wl}$soname `test -n "$verstring" && echo ${wl}-set_version ${wl}$verstring` ${wl}-update_registry ${wl}${objdir}/so_locations -o $lib'
-
-      hardcode_libdir_flag_spec='${wl}-rpath ${wl}$libdir'
-      hardcode_libdir_separator=:
-
-      # Commands to make compiler produce verbose output that lists
-      # what "hidden" libraries, object files and flags are used when
-      # linking a shared library.
-      output_verbose_link_cmd='$CC -shared $CFLAGS -v conftest.$objext 2>&1 | egrep "\-L"'
-    fi
-
     case $cc_basename in
       KCC)
         # Kuck and Associates, Inc. (KAI) C++ Compiler
@@ -501,8 +488,21 @@ case $host_os in
         output_verbose_link_cmd='templist=`$CC -shared $CFLAGS -v conftest.$objext 2>&1 | grep "ld" | grep -v "ld:"`; templist=`echo $templist | sed "s/\(^.*ld.*\)\( .*ld.*$\)/\1/"`; list=""; for z in $templist; do case $z in conftest.$objext) list="$list $z";; *.$objext);; *) list="$list $z";;esac; done; echo $list'
         ;;
       *)
-        # FIXME: insert proper C++ library support
-        ld_shlibs=no
+	if test "$with_gcc" = yes && test "$with_gnu_ld" = no; then
+	  allow_undefined_flag=' ${wl}-expect_unresolved ${wl}\*'
+	  archive_cmds='$CC -shared -nostdlib ${allow_undefined_flag} $predep_objects $libobjs $deplibs $postdep_objects $compiler_flags ${wl}-msym ${wl}-soname ${wl}$soname `test -n "$verstring" && echo ${wl}-set_version ${wl}$verstring` ${wl}-update_registry ${wl}${objdir}/so_locations -o $lib'
+	  
+	  hardcode_libdir_flag_spec='${wl}-rpath ${wl}$libdir'
+	  hardcode_libdir_separator=:
+	  
+	  # Commands to make compiler produce verbose output that lists
+	  # what "hidden" libraries, object files and flags are used when
+	  # linking a shared library.
+	  output_verbose_link_cmd='$CC -shared $CFLAGS -v conftest.$objext 2>&1 | egrep "\-L"'
+    else
+	  # FIXME: insert proper C++ library support
+	  ld_shlibs=no
+    fi
         ;;
     esac
     ;;
