@@ -490,7 +490,6 @@ ggc_collect ()
   struct ggc_rtvec *v, **vp;
   struct ggc_tree *t, **tp;
   struct ggc_string *s, **sp;
-  struct ggc_root *x;
   struct ggc_status *gs;
   struct ggc_any *a, **ap;
   int time, n_rtxs, n_trees, n_vecs, n_strings, n_anys;
@@ -521,17 +520,7 @@ ggc_collect ()
 	a->magic_mark = GGC_ANY_MAGIC;
     }
 
-  /* Mark through all the roots.  */
-  for (x = roots; x != NULL; x = x->next)
-    {
-      char *elt = x->base;
-      int s = x->size, n = x->nelt;
-      void (*cb) PROTO ((void *)) = x->cb;
-      int i;
-
-      for (i = 0; i < n; ++i, elt += s)
-	(*cb)(elt);
-    }
+  ggc_mark_roots ();
 
   /* Sweep the resulting dead nodes.  */
 
