@@ -1,3 +1,9 @@
+2001-05-19  Bruce Korb <bkorb@gnu.org>
+
+	* fixinc/fixincl.tpl: rewritten as an AutoGen version 5 template
+	* fixinc/genfixes: emit a warning if AutoGen is out of date
+	* fixinc/fixincl.x: regen
+
 2001-05-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* jump.c (jump_optimize_1): Tidy.

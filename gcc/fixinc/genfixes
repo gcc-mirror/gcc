@@ -66,6 +66,14 @@ fi
 AG="autogen $AG"
 set -e
 
+if [ -z "`${AG} -v | fgrep 'Ver. 5.'`" ]
+then
+  echo "Your AutoGen is either out of date or not available" >&2
+  echo "Please get AutoGen5 from ftp.gnu.org/gnu/autogen" >&2
+  touch $@
+  exit 0
+fi
+
 case "$1" in
 fixincl.x | */fixincl.x )
   if (${AG} --help > /dev/null 2>&1)
