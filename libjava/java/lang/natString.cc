@@ -28,6 +28,7 @@ details.  */
 #include <java/util/Locale.h>
 #include <gnu/gcj/convert/UnicodeToBytes.h>
 #include <gnu/gcj/convert/BytesToUnicode.h>
+#include <gnu/gcj/runtime/StringBuffer.h>
 #include <jvm.h>
 
 static void unintern (jobject);
@@ -523,6 +524,12 @@ java::lang::String::init (jbyteArray bytes, jint offset, jint count,
   this->data = array;
   this->boffset = (char *) elements (array) - (char *) array;
   this->count = outpos;
+}
+
+void
+java::lang::String::init (gnu::gcj::runtime::StringBuffer *buffer)
+{
+  init (buffer->value, 0, buffer->count, true);
 }
 
 jboolean

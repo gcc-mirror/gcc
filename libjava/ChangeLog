@@ -1,3 +1,12 @@
+2003-07-28  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natString.cc (init(gnu.gcj.runtime.StringBuffer)):
+	New method.
+	Include gnu/gcj/runtime/StringBuffer.h.
+	* java/lang/String.java (init(gnu.gcj.runtime.StringBuffer)): New
+	native method.
+	(String(gnu.gcj.runtime.StringBuffer)): Use it.
+
 2003-07-27  Anthony Green  <green@redhat.com>
 
 	* configure.in: Fix newlib check.
