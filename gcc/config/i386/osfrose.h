@@ -36,7 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MASK_NO_IDENT		0x08000000	/* suppress .ident */
 #define MASK_NO_UNDERSCORES	0x04000000	/* suppress leading _ */
 #define MASK_LARGE_ALIGN	0x02000000	/* align to >word boundaries */
-#define MASK_MCOUNT		0x01000000	/* profiling uses mcount */
+#define MASK_NO_MCOUNT		0x01000000	/* profiling uses mcount_ptr */
 
 #define TARGET_HALF_PIC		(target_flags & MASK_HALF_PIC)
 #define TARGET_DEBUG		(target_flags & MASK_HALF_PIC_DEBUG)
@@ -46,7 +46,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_IDENT		((target_flags & MASK_NO_IDENT) == 0)
 #define TARGET_UNDERSCORES	((target_flags & MASK_NO_UNDERSCORES) == 0)
 #define TARGET_LARGE_ALIGN	(target_flags & MASK_LARGE_ALIGN)
-#define TARGET_MCOUNT		(target_flags & MASK_MCOUNT)
+#define TARGET_MCOUNT		((target_flags & MASK_NO_MCOUNT) == 0)
 
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
@@ -62,8 +62,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
      { "no-underscores", MASK_NO_UNDERSCORES},				\
      { "large-align",	 MASK_LARGE_ALIGN},				\
      { "no-large-align",-MASK_LARGE_ALIGN},				\
-     { "mcount",	 MASK_MCOUNT},					\
-     { "no-mcount",	-MASK_MCOUNT},
+     { "mcount",	-MASK_NO_MCOUNT},				\
+     { "no-mcount",	 MASK_NO_MCOUNT},
 
 /* OSF/rose uses stabs, not dwarf.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
@@ -152,67 +152,128 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Temporarily turn off long double being 96 bits.  */
 #undef LONG_DOUBLE_TYPE_SIZE
 
+/* This macro generates the assembly code for function entry.
+   FILE is a stdio stream to output the code to.
+   SIZE is an int: how many units of temporary storage to allocate.
+   Refer to the array `regs_ever_live' to determine which registers
+   to save; `regs_ever_live[I]' is nonzero if register number I
+   is ever used in the function.  This macro is responsible for
+   knowing which registers should not be saved even if used.
+
+   We override it here to allow for the new profiling code to go before
+   the prologue and the old mcount code to go after the prologue (and
+   after %ebx has been set up for ELF shared library support).  */
+
+#define OSF_PROFILE_BEFORE_PROLOGUE					\
+  (!TARGET_MCOUNT							\
+   && !current_function_needs_context					\
+   && (!flag_pic							\
+       || !frame_pointer_needed						\
+       || (!current_function_uses_pic_offset_table			\
+	   && !current_function_uses_const_pool)))
+
+#undef	FUNCTION_PROLOGUE
+#define FUNCTION_PROLOGUE(FILE, SIZE)					\
+do									\
+  {									\
+    char *prefix = (TARGET_UNDERSCORES) ? "_" : "";			\
+    char *lprefix = LPREFIX;						\
+    int labelno = profile_label_no;					\
+									\
+    if (profile_flag && OSF_PROFILE_BEFORE_PROLOGUE)			\
+      {									\
+	if (!flag_pic)							\
+	  {								\
+	    fprintf (FILE, "\tleal %sP%d,%%edx\n", lprefix, labelno);	\
+	    fprintf (FILE, "\tcall *%s_mcount_ptr\n", prefix);		\
+	  }								\
+	else								\
+	  {								\
+	    static int call_no = 0;					\
+									\
+	    fprintf (FILE, "\tcall %sPc%d\n", lprefix, call_no);	\
+	    fprintf (FILE, "%sPc%d:\tpopl %%eax\n", lprefix, call_no);	\
+	    fprintf (FILE, "\taddl $_GLOBAL_OFFSET_TABLE_+[.-%sPc%d],%%eax\n", \
+		     lprefix, call_no++);				\
+	    fprintf (FILE, "\tleal $%sP%d@GOTOFF(%%eax),%%edx\n",	\
+		     lprefix, labelno);					\
+	    fprintf (FILE, "\tmovl %s_mcount_ptr@GOT(%%eax),%%eax\n",	\
+		     prefix);						\
+	    fprintf (FILE, "\tcall *%%eax\n");				\
+	  }								\
+      }									\
+									\
+    function_prologue (FILE, SIZE);					\
+  }									\
+while (0)
+
+/* A C statement or compound statement to output to FILE some assembler code to
+   call the profiling subroutine `mcount'.  Before calling, the assembler code
+   must load the address of a counter variable into a register where `mcount'
+   expects to find the address.  The name of this variable is `LP' followed by
+   the number LABELNO, so you would generate the name using `LP%d' in a
+   `fprintf'.
+ 
+   The details of how the address should be passed to `mcount' are determined
+   by your operating system environment, not by GNU CC.  To figure them out,
+   compile a small program for profiling using the system's installed C
+   compiler and look at the assembler code that results. */
+
 #undef  FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\
 do									\
   {									\
-    if (TARGET_MCOUNT && flag_pic)					\
+    if (!OSF_PROFILE_BEFORE_PROLOGUE)					\
       {									\
-	fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%edx\n",		\
-		 LPREFIX, LABELNO);					\
-	fprintf (FILE, "\tcall *_mcount@GOT(%%ebx)\n");			\
-      }									\
+	char *prefix = (TARGET_UNDERSCORES) ? "_" : "";			\
+	char *lprefix = LPREFIX;					\
+	int labelno = LABELNO;						\
 									\
-    /* Note that OSF/rose blew it in terms of calling mcount, since	\
-       OSF/rose prepends a leading underscore, but mcount's doesn't.	\
-       OSF/elf fixes this by not prepending leading underscores.  */	\
-    else if (TARGET_MCOUNT)						\
-      {									\
-	fprintf (FILE, "\tmovl $%sP%d,%%edx\n", LPREFIX, LABELNO);	\
-	fprintf (FILE, "\tcall _mcount\n");				\
-      }									\
+	/* Note that OSF/rose blew it in terms of calling mcount,	\
+	   since OSF/rose prepends a leading underscore, but mcount's	\
+	   doesn't.  At present, we keep this kludge for ELF as well	\
+	   to allow old kernels to build profiling.  */			\
 									\
-    else								\
-      {									\
-	char *underscore = (TARGET_UNDERSCORES) ? "_" : "";		\
-	char *func = IDENTIFIER_POINTER (DECL_NAME (current_function_decl)); \
-									\
-	if (flag_pic)							\
-	  {								\
-	    fprintf (FILE, "\tmovl %s_real_mcount@GOT(%%ebx),%%eax)\n",	\
-		     underscore);					\
-	    fprintf (FILE, "\tmovl (%%eax),%%eax\n");			\
-	  }								\
-	else								\
-	  fprintf (FILE, "\tmovl %s_real_mcount,%%eax\n", underscore);	\
-									\
-	fprintf (FILE, "\tcmpl $0,%%eax\n");				\
-	fprintf (FILE, "\tje 1f\n");					\
-									\
-	if (flag_omit_frame_pointer)					\
+	if (flag_pic							\
+	    && !current_function_uses_pic_offset_table			\
+	    && !current_function_uses_const_pool)			\
 	  abort ();							\
-	else								\
-	  fprintf (FILE, "\tmovl 4(%%ebp),%%ecx\n");			\
 									\
-	if (flag_pic)							\
+	if (TARGET_MCOUNT && flag_pic)					\
 	  {								\
 	    fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%edx\n",	\
-		     LPREFIX, LABELNO);					\
-	    fprintf (FILE, "\tpushl %%edx\n");				\
-	    fprintf (FILE, "\tpushl %%ecx\n");				\
-	    fprintf (FILE, "\tleal $%s%s@GOTOFF(%%ebx),%%ecx\n",	\
-		     underscore, func);					\
-	    fprintf (FILE, "\tpushl %%ecx\n");				\
-	  }								\
-	else								\
-	  {								\
-	    fprintf (FILE, "\tpushl $%sP%d\n", LPREFIX, LABELNO);	\
-	    fprintf (FILE, "\tpushl %%ecx\n");				\
-	    fprintf (FILE, "\tpushl $%s%s\n", underscore, func);	\
+		     lprefix, labelno);					\
+	    fprintf (FILE, "\tcall *%smcount@GOT(%%ebx)\n", prefix);	\
 	  }								\
 									\
-	fprintf (FILE, "\tcall *%%eax\n");				\
-	fprintf (FILE, "\taddl $12,%%esp\n1:\n");			\
+	else if (TARGET_MCOUNT)						\
+	  {								\
+	    fprintf (FILE, "\tmovl $%sP%d,%%edx\n", lprefix, labelno);	\
+	    fprintf (FILE, "\tcall %smcount\n", prefix);		\
+	  }								\
+									\
+	else if (flag_pic && frame_pointer_needed)			\
+	  {								\
+	    fprintf (FILE, "\tmovl 4(%%ebp),%%ecx\n");			\
+	    fprintf (FILE, "\tpushl %%ecx\n");				\
+	    fprintf (FILE, "\tleal $%sP%d@GOTOFF(%%ebx),%%edx\n",	\
+		     lprefix, labelno);					\
+	    fprintf (FILE, "\tmovl _mcount_ptr@GOT(%%eax),%%eax\n");	\
+	    fprintf (FILE, "\tcall *%%eax\n");				\
+	    fprintf (FILE, "\tpopl %%eax\n");				\
+	  }								\
+									\
+	else if (frame_pointer_needed)					\
+	  {								\
+	    fprintf (FILE, "\tmovl 4(%%ebp),%%ecx\n");			\
+	    fprintf (FILE, "\tpushl %%ecx\n");				\
+	    fprintf (FILE, "\tleal $%sP%d,%%edx\n", lprefix, labelno);	\
+	    fprintf (FILE, "\tcall *_mcount_ptr\n");			\
+	    fprintf (FILE, "\tpopl %%eax\n");				\
+	  }								\
+									\
+	else								\
+	  abort ();							\
       }									\
   }									\
 while (0)
