@@ -1,3 +1,9 @@
+2004-02-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.dg/20020312-2.c, gcc.dg/builtin-inf-1.c,
+	gcc.dg/sibcall-3.c, gcc.dg/sibcall-4.c, gcc.dg/cpp/assert4.c:
+	Remove mentions of obsolete ports.
+
 2004-02-04  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc.dg/noncompile/20001228-1.c: Fix for new

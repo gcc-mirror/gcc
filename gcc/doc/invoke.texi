@@ -510,16 +510,6 @@ in the following sections.
 -mschedule=@var{cpu-type}  -mspace-regs  -msio  -mwsio @gol
 -nolibdld  -static  -threads}
 
-@emph{Intel 960 Options}
-@gccoptlist{-m@var{cpu-type}  -masm-compat  -mclean-linkage @gol
--mcode-align  -mcomplex-addr  -mleaf-procedures @gol
--mic-compat  -mic2.0-compat  -mic3.0-compat @gol
--mintel-asm  -mno-clean-linkage  -mno-code-align @gol
--mno-complex-addr  -mno-leaf-procedures @gol
--mno-old-align  -mno-strict-align  -mno-tail-call @gol
--mnumerics  -mold-align  -msoft-float  -mstrict-align @gol
--mtail-call}
-
 @emph{DEC Alpha Options}
 @gccoptlist{-mno-fp-regs  -msoft-float  -malpha-as  -mgas @gol
 -mieee  -mieee-with-inexact  -mieee-conformant @gol
@@ -604,10 +594,6 @@ in the following sections.
 -minline-int-divide-min-latency @gol
 -minline-int-divide-max-throughput  -mno-dwarf2-asm @gol
 -mfixed-range=@var{register-range}}
-
-@emph{D30V Options}
-@gccoptlist{-mextmem  -mextmemory  -monchip  -mno-asm-optimize @gol
--masm-optimize  -mbranch-cost=@var{n}  -mcond-exec=@var{n}}
 
 @emph{S/390 and zSeries Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
@@ -5847,7 +5833,6 @@ that macro, which enables you to change the defaults.
 * MIPS Options::
 * i386 and x86-64 Options::
 * HPPA Options::
-* Intel 960 Options::
 * DEC Alpha Options::
 * DEC Alpha/VMS Options::
 * H8/300 Options::
@@ -5860,7 +5845,6 @@ that macro, which enables you to change the defaults.
 * AVR Options::
 * MCore Options::
 * IA-64 Options::
-* D30V Options::
 * S/390 and zSeries Options::
 * CRIS Options::
 * MMIX Options::
@@ -8717,118 +8701,6 @@ under HP-UX.  This option sets flags for both the preprocessor and
 linker.
 @end table
 
-@node Intel 960 Options
-@subsection Intel 960 Options
-
-These @samp{-m} options are defined for the Intel 960 implementations:
-
-@table @gcctabopt
-@item -m@var{cpu-type}
-@opindex mka
-@opindex mkb
-@opindex mmc
-@opindex mca
-@opindex mcf
-@opindex msa
-@opindex msb
-Assume the defaults for the machine type @var{cpu-type} for some of
-the other options, including instruction scheduling, floating point
-support, and addressing modes.  The choices for @var{cpu-type} are
-@samp{ka}, @samp{kb}, @samp{mc}, @samp{ca}, @samp{cf},
-@samp{sa}, and @samp{sb}.
-The default is
-@samp{kb}.
-
-@item -mnumerics
-@itemx -msoft-float
-@opindex mnumerics
-@opindex msoft-float
-The @option{-mnumerics} option indicates that the processor does support
-floating-point instructions.  The @option{-msoft-float} option indicates
-that floating-point support should not be assumed.
-
-@item -mleaf-procedures
-@itemx -mno-leaf-procedures
-@opindex mleaf-procedures
-@opindex mno-leaf-procedures
-Do (or do not) attempt to alter leaf procedures to be callable with the
-@code{bal} instruction as well as @code{call}.  This will result in more
-efficient code for explicit calls when the @code{bal} instruction can be
-substituted by the assembler or linker, but less efficient code in other
-cases, such as calls via function pointers, or using a linker that doesn't
-support this optimization.
-
-@item -mtail-call
-@itemx -mno-tail-call
-@opindex mtail-call
-@opindex mno-tail-call
-Do (or do not) make additional attempts (beyond those of the
-machine-independent portions of the compiler) to optimize tail-recursive
-calls into branches.  You may not want to do this because the detection of
-cases where this is not valid is not totally complete.  The default is
-@option{-mno-tail-call}.
-
-@item -mcomplex-addr
-@itemx -mno-complex-addr
-@opindex mcomplex-addr
-@opindex mno-complex-addr
-Assume (or do not assume) that the use of a complex addressing mode is a
-win on this implementation of the i960.  Complex addressing modes may not
-be worthwhile on the K-series, but they definitely are on the C-series.
-The default is currently @option{-mcomplex-addr} for all processors except
-the CB and CC@.
-
-@item -mcode-align
-@itemx -mno-code-align
-@opindex mcode-align
-@opindex mno-code-align
-Align code to 8-byte boundaries for faster fetching (or don't bother).
-Currently turned on by default for C-series implementations only.
-
-@ignore
-@item -mclean-linkage
-@itemx -mno-clean-linkage
-@opindex mclean-linkage
-@opindex mno-clean-linkage
-These options are not fully implemented.
-@end ignore
-
-@item -mic-compat
-@itemx -mic2.0-compat
-@itemx -mic3.0-compat
-@opindex mic-compat
-@opindex mic2.0-compat
-@opindex mic3.0-compat
-Enable compatibility with iC960 v2.0 or v3.0.
-
-@item -masm-compat
-@itemx -mintel-asm
-@opindex masm-compat
-@opindex mintel-asm
-Enable compatibility with the iC960 assembler.
-
-@item -mstrict-align
-@itemx -mno-strict-align
-@opindex mstrict-align
-@opindex mno-strict-align
-Do not permit (do permit) unaligned accesses.
-
-@item -mold-align
-@opindex mold-align
-Enable structure-alignment compatibility with Intel's gcc release version
-1.3 (based on gcc 1.37).  This option implies @option{-mstrict-align}.
-
-@item -mlong-double-64
-@opindex mlong-double-64
-Implement type @samp{long double} as 64-bit floating point numbers.
-Without the option @samp{long double} is implemented by 80-bit
-floating point numbers.  The only reason we have it because there is
-no 128-bit @samp{long double} support in @samp{fp-bit.c} yet.  So it
-is only useful for people using soft-float targets.  Otherwise, we
-should recommend against use of it.
-
-@end table
-
 @node DEC Alpha Options
 @subsection DEC Alpha Options
 
@@ -10018,50 +9890,6 @@ specified separated by a comma.
 Allow stop bits to be placed earlier than immediately preceding the
 instruction that triggered the stop bit.  This can improve instruction
 scheduling, but does not always do so.
-@end table
-
-@node D30V Options
-@subsection D30V Options
-@cindex D30V Options
-
-These @samp{-m} options are defined for D30V implementations:
-
-@table @gcctabopt
-@item -mextmem
-@opindex mextmem
-Link the @samp{.text}, @samp{.data}, @samp{.bss}, @samp{.strings},
-@samp{.rodata}, @samp{.rodata1}, @samp{.data1} sections into external
-memory, which starts at location @code{0x80000000}.
-
-@item -mextmemory
-@opindex mextmemory
-Same as the @option{-mextmem} switch.
-
-@item -monchip
-@opindex monchip
-Link the @samp{.text} section into onchip text memory, which starts at
-location @code{0x0}.  Also link @samp{.data}, @samp{.bss},
-@samp{.strings}, @samp{.rodata}, @samp{.rodata1}, @samp{.data1} sections
-into onchip data memory, which starts at location @code{0x20000000}.
-
-@item -mno-asm-optimize
-@itemx -masm-optimize
-@opindex mno-asm-optimize
-@opindex masm-optimize
-Disable (enable) passing @option{-O} to the assembler when optimizing.
-The assembler uses the @option{-O} option to automatically parallelize
-adjacent short instructions where possible.
-
-@item -mbranch-cost=@var{n}
-@opindex mbranch-cost
-Increase the internal costs of branches to @var{n}.  Higher costs means
-that the compiler will issue more instructions to avoid doing a branch.
-The default is 2.
-
-@item -mcond-exec=@var{n}
-@opindex mcond-exec
-Specify the maximum number of conditionally executed instructions that
-replace a branch.  The default is 4.
 @end table
 
 @node S/390 and zSeries Options

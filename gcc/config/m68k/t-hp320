@@ -1,2 +1,0 @@
-# So putenv and other functions get seen by fixproto.
-FIXPROTO_DEFINES = -D_HPUX_SOURCE

@@ -1,3 +1,34 @@
+2004-02-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config.gcc: Remove obsolete ports and configurations.
+	* config/linux-aout.h, config/netware.h,
+	config/t-linux-gnulibc1, config/d30v/abi,
+	config/d30v/d30v-protos.h, config/d30v/d30v.c,
+	config/d30v/d30v.h, config/d30v/d30v.md,
+	config/d30v/libgcc1.asm, config/d30v/t-d30v,
+	config/dsp16xx/dsp16xx-modes.def,
+	config/dsp16xx/dsp16xx-protos.h, config/dsp16xx/dsp16xx.c,
+	config/dsp16xx/dsp16xx.h, config/dsp16xx/dsp16xx.md,
+	config/i370/README, config/i370/i370-c.c,
+	config/i370/i370-protos.h, config/i370/i370.c,
+	config/i370/i370.h, config/i370/i370.md, config/i370/linux.h,
+	config/i370/mvs.h, config/i370/oe.h, config/i370/t-i370,
+	config/i386/freebsd-aout.h, config/i386/linux-aout.h,
+	config/i386/moss.h, config/i386/netware.h,
+	config/i386/svr3.ifile, config/i386/svr3dbx.h,
+	config/i386/svr3gas.h, config/i386/svr3z.ifile,
+	config/i386/t-udk, config/i386/udk.h, config/i386/vsta.h,
+	config/i960/i960-c.c, config/i960/i960-coff.h,
+	config/i960/i960-modes.def, config/i960/i960-protos.h,
+	config/i960/i960.c, config/i960/i960.h, config/i960/i960.md,
+	config/i960/rtems.h, config/i960/t-960bare,
+	config/m68k/hp310.h, config/m68k/hp320.h,
+	config/m68k/hp320base.h, config/m68k/m68kv4.h,
+	config/m68k/netbsd.h, config/m68k/sgs.h, config/m68k/t-hp320:
+	Remove.
+	* doc/extend.texi, doc/install.texi, doc/invoke.texi,
+	doc/md.texi: Remove mentions of obsolete ports.
+
 2004-02-04  Jan Hubicka  <jh@suse.cz>
 
 	* alias.c (find_base_term, get_addr):  Do not dereference NULL

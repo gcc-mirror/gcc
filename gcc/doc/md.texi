@@ -1612,36 +1612,6 @@ Constant in range @minus{}2147483648 to 2147483647 or symbolic reference known t
 Standard 80387 floating point constant
 @end table
 
-@item Intel 960---@file{i960.h}
-@table @code
-@item f
-Floating point register (@code{fp0} to @code{fp3})
-
-@item l
-Local register (@code{r0} to @code{r15})
-
-@item b
-Global register (@code{g0} to @code{g15})
-
-@item d
-Any local or global register
-
-@item I
-Integers from 0 to 31
-
-@item J
-0
-
-@item K
-Integers from @minus{}31 to 0
-
-@item G
-Floating point 0
-
-@item H
-Floating point 1
-@end table
-
 @item Intel IA-64---@file{ia64.h}
 @table @code
 @item a
