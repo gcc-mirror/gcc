@@ -2292,7 +2292,7 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
      HOST_WIDE_INT size, ofs;
      int sign;
 {
-  rtx meml, memh, addr, extl, exth;
+  rtx meml, memh, addr, extl, exth, tmp;
   enum machine_mode mode;
 
   meml = gen_reg_rtx (DImode);
@@ -2301,19 +2301,24 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
   extl = gen_reg_rtx (DImode);
   exth = gen_reg_rtx (DImode);
 
-  emit_move_insn (meml,
-		  change_address (mem, DImode,
-				  gen_rtx_AND (DImode, 
-					       plus_constant (XEXP (mem, 0),
-							      ofs),
-					       GEN_INT (-8))));
+  /* AND addresses cannot be in any alias set, since they may implicitly
+     alias surrounding code.  Ideally we'd have some alias set that 
+     covered all types except those with alignment 8 or higher.  */
 
-  emit_move_insn (memh,
-		  change_address (mem, DImode,
-				  gen_rtx_AND (DImode, 
-					       plus_constant (XEXP (mem, 0),
-							      ofs + size - 1),
-					       GEN_INT (-8))));
+  tmp = change_address (mem, DImode,
+			gen_rtx_AND (DImode, 
+				     plus_constant (XEXP (mem, 0), ofs),
+				     GEN_INT (-8)));
+  MEM_ALIAS_SET (tmp) = 0;
+  emit_move_insn (meml, tmp);
+
+  tmp = change_address (mem, DImode,
+			gen_rtx_AND (DImode, 
+				     plus_constant (XEXP (mem, 0),
+						    ofs + size - 1),
+				     GEN_INT (-8)));
+  MEM_ALIAS_SET (tmp) = 0;
+  emit_move_insn (memh, tmp);
 
   if (sign && size == 2)
     {
@@ -2377,15 +2382,22 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
   insl = gen_reg_rtx (DImode);
   insh = gen_reg_rtx (DImode);
 
+  /* AND addresses cannot be in any alias set, since they may implicitly
+     alias surrounding code.  Ideally we'd have some alias set that 
+     covered all types except those with alignment 8 or higher.  */
+
   meml = change_address (dst, DImode,
 			 gen_rtx_AND (DImode, 
 				      plus_constant (XEXP (dst, 0), ofs),
 				      GEN_INT (-8)));
+  MEM_ALIAS_SET (meml) = 0;
+
   memh = change_address (dst, DImode,
 			 gen_rtx_AND (DImode, 
 				      plus_constant (XEXP (dst, 0),
 						     ofs+size-1),
 				      GEN_INT (-8)));
+  MEM_ALIAS_SET (memh) = 0;
 
   emit_move_insn (dsth, memh);
   emit_move_insn (dstl, meml);
@@ -2462,7 +2474,7 @@ alpha_expand_unaligned_load_words (out_regs, smem, words, ofs)
   rtx const im8 = GEN_INT (-8);
   rtx const i64 = GEN_INT (64);
   rtx ext_tmps[MAX_MOVE_WORDS], data_regs[MAX_MOVE_WORDS+1];
-  rtx sreg, areg;
+  rtx sreg, areg, tmp;
   HOST_WIDE_INT i;
 
   /* Generate all the tmp registers we need.  */
@@ -2480,19 +2492,20 @@ alpha_expand_unaligned_load_words (out_regs, smem, words, ofs)
   /* Load up all of the source data.  */
   for (i = 0; i < words; ++i)
     {
-      emit_move_insn (data_regs[i],
-		      change_address (smem, DImode,
-				      gen_rtx_AND (DImode,
-						   plus_constant (XEXP(smem,0),
-								  8*i),
-						   im8)));
+      tmp = change_address (smem, DImode,
+			    gen_rtx_AND (DImode,
+					 plus_constant (XEXP(smem,0), 8*i),
+					 im8));
+      MEM_ALIAS_SET (tmp) = 0;
+      emit_move_insn (data_regs[i], tmp);
     }
-  emit_move_insn (data_regs[words],
-		  change_address (smem, DImode,
-				  gen_rtx_AND (DImode,
-					       plus_constant (XEXP(smem,0),
-							      8*words - 1),
-					       im8)));
+
+  tmp = change_address (smem, DImode,
+			gen_rtx_AND (DImode,
+				     plus_constant (XEXP(smem,0), 8*words - 1),
+				     im8));
+  MEM_ALIAS_SET (tmp) = 0;
+  emit_move_insn (data_regs[words], tmp);
 
   /* Extract the half-word fragments.  Unfortunately DEC decided to make
      extxh with offset zero a noop instead of zeroing the register, so 
@@ -2559,10 +2572,13 @@ alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
 					   plus_constant (XEXP(dmem,0),
 							  words*8 - 1),
 				       im8));
+  MEM_ALIAS_SET (st_addr_2) = 0;
+
   st_addr_1 = change_address (dmem, DImode,
 			      gen_rtx_AND (DImode, 
 					   XEXP (dmem, 0),
 					   im8));
+  MEM_ALIAS_SET (st_addr_1) = 0;
 
   /* Load up the destination end bits.  */
   emit_move_insn (st_tmp_2, st_addr_2);
@@ -2601,12 +2617,12 @@ alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
   emit_move_insn (st_addr_2, st_tmp_2);
   for (i = words-1; i > 0; --i)
     {
-      emit_move_insn (change_address (dmem, DImode,
-				      gen_rtx_AND (DImode,
-						   plus_constant(XEXP (dmem,0),
-								 i*8),
-					       im8)),
-		      data_regs ? ins_tmps[i-1] : const0_rtx);
+      rtx tmp = change_address (dmem, DImode,
+				gen_rtx_AND (DImode,
+					     plus_constant(XEXP (dmem,0), i*8),
+					     im8));
+      MEM_ALIAS_SET (tmp) = 0;
+      emit_move_insn (tmp, data_regs ? ins_tmps[i-1] : const0_rtx);
     }
   emit_move_insn (st_addr_1, st_tmp_1);
 }
