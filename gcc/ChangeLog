@@ -1,3 +1,16 @@
+2002-03-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.h (ELIMINABLE_REGS): Can't eliminate
+	RETURN_ADDRESS_POINTER_REGNUM to $ra.
+	(CAN_ELIMINATE): Only eliminate it to $sp if a frame pointer is
+	not needed.  Disregard leaf_function_p().
+	(INITIAL_ELIMINATION_OFFSET): Adjust for elimination of rap to
+	mips16 frame pointer.
+	* config/mips/mips.md (store ra): Only to small SP offsets.
+	2001-08-22  Graham Stott  <grahams@redhat.com>
+	* config/mips/mips.h (RETURN_ADDR_RTX): For a leaf function
+	return a REG rtx for the return address register.
+
 2002-03-18  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (GO_IF_MODE_DEPENDENT_ADDRESS): Treat
