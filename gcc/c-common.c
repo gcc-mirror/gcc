@@ -1408,6 +1408,8 @@ type_for_mode (mode, unsignedp)
 	  return unsignedp ? unsigned_V4HI_type_node : V4HI_type_node;
 	case V8QImode:
 	  return unsignedp ? unsigned_V8QI_type_node : V8QI_type_node;
+	case V16SFmode:
+	  return V16SF_type_node;
 	case V4SFmode:
 	  return V4SF_type_node;
 	case V2SFmode:

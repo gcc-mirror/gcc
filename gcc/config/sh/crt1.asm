@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 Free Software Foundation, Inc.
+/* Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    This file was pretty much copied from newlib.
 
 This file is part of GNU CC.
@@ -27,6 +27,80 @@ along with this program; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+
+#ifdef __SH5__
+	.section .data,"aw"
+	.global ___data
+___data:
+
+	.section .rodata,"a"
+	.global ___rodata
+___rodata:
+
+#if __SH5__ == 64
+	.section .text,"ax"
+#define LOAD_ADDR(sym, reg) \
+	movi	(sym >> 48) & 65535, reg; \
+	shori	(sym >> 32) & 65535, reg; \
+	shori	(sym >> 16) & 65535, reg; \
+	shori	sym & 65535, reg
+#else
+	.mode	SHmedia
+	.section .text..SHmedia32,"ax"
+#define LOAD_ADDR(sym, reg) \
+	movi	(sym >> 16) & 65535, reg; \
+	shori	sym & 65535, reg
+#endif
+	.global start
+start:
+	LOAD_ADDR (_stack, r15)
+
+	pt/l	.Lzero_bss_loop, tr0
+	pt/l	_atexit, tr1
+	pt/l	_init, tr5
+	pt/l	___setup_argv_and_call_main, tr6
+	pt/l	_exit, tr7
+
+	! zero out bss
+	LOAD_ADDR (_edata, r0)
+	LOAD_ADDR (_end, r1)
+.Lzero_bss_loop:
+	stx.q	r0, r63, r63
+	addi	r0, 8, r0
+	bgt/l	r1, r0, tr0
+
+	LOAD_ADDR (___data, r26)
+	LOAD_ADDR (___rodata, r27)
+
+#if ! __SH4_NOFPU__
+#if __SH5__ == 32
+	pt/l ___set_fpscr, tr0
+	movi	0, r4
+	blink	tr0, r18
+#endif
+	getcon	sr, r0
+	! enable the FP unit, by resetting SR.FD
+	! also zero out SR.FR, SR.SZ and SR.PR, as mandated by the ABI
+	movi	0, r1
+	shori	0xf000, r1
+	andc	r0, r1, r0
+	putcon	r0, sr
+#endif
+
+	! arrange for exit to call fini
+	LOAD_ADDR (_fini, r2)
+	blink	tr1, r18
+
+	! call init
+	blink	tr5, r18
+
+	! call the mainline
+	blink	tr6, r18
+
+	! call exit
+	blink	tr7, r18
+	
+#else
 	.section .text
 	.global	start
 start:
@@ -99,6 +173,7 @@ fini_k:
 ___main:
 	rts
 	nop
+#endif
 
 #ifdef __ELF__
 	.section .stack,"aw"

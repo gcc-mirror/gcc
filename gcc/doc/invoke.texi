@@ -540,6 +540,9 @@ in the following sections.
 @gccoptlist{
 -m1  -m2  -m3  -m3e @gol
 -m4-nofpu  -m4-single-only  -m4-single  -m4 @gol
+-m5-64media -m5-64media-nofpu @gol
+-m5-32media -m5-32media-nofpu @gol
+-m5-compact -m5-compact-nofpu @gol
 -mb  -ml  -mdalign  -mrelax @gol
 -mbigtable  -mfmovd  -mhitachi  -mnomacsave @gol
 -mieee  -misize  -mpadstruct  -mspace @gol

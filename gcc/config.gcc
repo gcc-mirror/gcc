@@ -263,6 +263,9 @@ powerpc*-*-*)
 sparc*-*-*)
 	cpu_type=sparc
 	;;
+sh64-*-*)
+	cpu_type=sh
+	;;
 esac
 
 tm_file=${cpu_type}/${cpu_type}.h
@@ -2884,6 +2887,16 @@ sh-*-elf*)
 	tmake_file="sh/t-sh sh/t-elf"
 	tm_file="${tm_file} sh/elf.h"
 	float_format=sh
+	;;
+sh64-*-elf*)
+	tmake_file="sh/t-sh sh/t-elf sh/t-sh64"
+	tm_file="${tm_file} sh/sh.h sh/elf.h sh/sh64.h"
+	float_format=sh
+	extra_headers="../../config/sh/shmedia.h ../../config/sh/ushmedia.h ../../config/sh/sshmedia.h"
+	# Not strictly necessary to check this, but a good idea anyway.
+	if test $machine = $target; then
+		target_requires_64bit_host_wide_int=yes
+	fi
 	;;
 sh-*-rtemself*)
 	tmake_file="sh/t-sh sh/t-elf t-rtems"

@@ -4907,6 +4907,7 @@ build_common_tree_nodes_2 (short_double)
   unsigned_V16QI_type_node
     = make_vector (V16QImode, unsigned_intQI_type_node, 1);
 
+  V16SF_type_node = make_vector (V16SFmode, float_type_node, 0);
   V4SF_type_node = make_vector (V4SFmode, float_type_node, 0);
   V4SI_type_node = make_vector (V4SImode, intSI_type_node, 0);
   V2SI_type_node = make_vector (V2SImode, intSI_type_node, 0);

@@ -1,5 +1,888 @@
 2002-02-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	Contribute sh64-elf.
+	2002-02-09  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (TARGET_CANNOT_MODIFY_JUMPS_P): Define to...
+	(sh_cannot_modify_jumps_p): New function.
+	2002-02-05  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (TARGET_MS_BITFIELD_LAYOUT_P): Define to...
+	(sh_ms_bitfield_layout_p): New function.
+	2002-02-04  Alexandre Oliva  <aoliva@redhat.com>
+		    Zack Weinberg  <zack@codesourcery.com>
+	* config/sh/sh.h (TRAMPOLINE_ADJUST_ADDRESS): Use
+	expand_simple_binop instead of expand_binop.
+	2002-02-03  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (OVERRIDE_OPTIONS) [! TARGET_SH5]: Disable
+	use of .quad and .uaquad.
+	* config/sh/sh.c (TARGET_ASM_UNALIGNED_DI_OP,
+	TARGET_ASM_ALIGNED_DI_OP): Add comment pointing to the above.
+	2002-01-24  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (movdi_const, movdi_const_32bit,
+	movdi_const_16bit): Make sure all CONSTs have modes.
+	(sym2PIC): Ditto, but by adjusting all callers.
+	* config/sh/sh.c (calc_live_regs) [TARGET_SHCOMPACT]: Set pr_live
+	if the prologue calls the SHmedia argument decoder or register
+	saver.
+	2002-01-24  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (TARGET_ASM_UNALIGNED_DI_OP): Define.
+	(TARGET_ASM_ALIGNED_DI_OP): Likewise.
+	(sh_expand_epilogue): Don't emit USE of return target register.
+	(prepare_move_operands): Legitimize DImode PIC addresses.
+	(sh_media_register_for_return): Skip tr0, used to initialize the
+	PIC register.
+	(sh_expand_prologue): Remove explicit USE of return register.
+	(nonpic_symbol_mentioned_p): PC is non-PIC.  Don't recurse in
+	CONST_DOUBLEs.  UNSPEC_GOTPLT is PIC.
+	* config/sh/sh.h (ASM_OUTPUT_DOUBLE_INT): Removed, obsolete.
+	(OVERRIDE_OPTIONS): Don't disable PIC on SH5.
+	(EXTRA_CONSTRAINT_S): Use MOVI_SHORI_BASE_OPERAND_P instead of
+	EXTRA_CONSTRAINT_T.
+	(GOT_ENTRY_P, GOTPLT_ENTRY_P, GOTOFF_P, PIC_ADDR_P): New.
+	(MOVI_SHORI_BASE_OPERAND_P): New.
+	(NON_PIC_REFERENCE_P, PIC_REFERENCE_P): New.
+	(EXTRA_CONSTRAINT_T): Define in terms of them.
+	(OUTPUT_ADDR_CONST_EXTRA): Handle UNSPEC_GOTPLT.
+	* config/sh/sh.md (movsi_media, movsi_media_nofpu,
+	movdi_media, movdi_media_nofpu): Add SIBCALL_REGS class to
+	alternatives supporting TARGET_REGS.
+	(UNSPEC_GOTPLT): New constant.
+	(movdi split): Move incrementing of LABEL_NUSES...
+	(movdi_const, movdi_const_32bit): Here.  Use
+	MOVI_SHORI_BASE_OPERAND_P instead of EXTRA_CONSTRAINT_T.
+	(movdi_const_16bit): New.
+	(call, call_value) [flag_pic]: Use GOTPLT.
+	(call_pop, call_value_pop): New expands.
+	(call_pop_compact, call_pop_rettramp): New insns.
+	(call_value_pop_compact, call_value_pop_rettramp): New insns.
+	(sibcall) [flag_pic]: Use GOT.
+	(builtint_setjmp_receiver): Remove bogus, unused expand.
+	(GOTaddr2picreg): Implement for SHcompact and SHmedia.
+	(*pt, *ptb, ptrel): New insns.
+	(sym2GOT): Handle DImode GOT.
+	(sym2GOTPLT, symGOTPLT2reg): New expands.
+	(sym2PIC): New expand.
+	(shcompact_return_tramp): Use GOTPLT to return trampoline.
+	(shcompact_return_tramp_i): Use return register explicitly.
+	* config/sh/sh.h (OVERRIDE_OPTIONS) [TARGET_SHMEDIA]: Don't
+	disable flag_reorder_blocks.
+	2002-01-19  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (sibcall_compact): Reorder return, uses and
+	clobbers, for clarity.
+	(sibcall_epilogue) [TARGET_SHCOMPACT]: Mark saving and
+	restoring of r0 in macl as MAYBE_DEAD.
+	2002-01-18  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (LONG_DOUBLE_TYPE_SIZE): Define.
+	* config/sh/sh.md (movv4sf_i, movv16sf_i): Fix uses of
+	alter_subreg all over.
+	(jump) [TARGET_SHMEDIA]: FAIL to create new jumps after
+	reload, instead of emitting instructions that would require
+	reloading.
+	(casesi_load_media): Add missing modes.
+	2001-11-09  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (sh_expand_prologue): Mark the PIC register
+	as used if the argument decoder is called.
+	2001-08-28  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (udivsi3, divsi3): Load libcall symbol name in
+	Pmode, then extend it to DImode if necessary.
+	2001-08-28  Stephen Clarke  <Stephen.Clarke@st.com>
+	* config/sh/sh.h (LEGITIMATE_CONSTANT_P): Don't accept DFmode
+	constants in FPU-enabled SHmedia, let them be loaded from memory.
+	2001-08-28  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (cmpeqdi_media, cmpgtdi_media, cmpgtudi_media):
+	Adjust whitespace in assembly output templates.
+	2001-08-28  Stephen Clarke  <Stephen.Clarke@st.com>
+	* config/sh/sh.md (movdicc_false, movdicc_true, movdicc): Adjust
+	mode of if_then_else.
+	2001-08-04  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh64.h (CPP_DEFAULT_CPU_SPEC): Override definition in
+	sh.h.
+	2001-07-26  Andrew Haley  <aph@cambridge.redhat.com>
+		    Joern Rennecke <amylaar@redhat.com>
+	* config/sh/sh64.h (CPP_DEFAULT_CPU_SPEC): New.
+	(SUBTARGET_CPP_PTR_SPEC): New.
+	(SUBTARGET_CPP_SPEC): Remove.
+	2001-07-06  Chandrakala Chavva  <cchavva@redhat.com>
+	* config/sh/sh.md (movsf_media_nofpu+1, movdf_media_nofpu+1):
+	Fix typo in previous checkin.
+	2001-07-11  Chandrakala Chavva  <cchavva@redhat.com>
+	* config/sh/sh.h (MODES_TIEABLE_P): Fix redact indentations.
+	2001-07-10  Chandrakala Chavva  <cchavva@cygnus.com>
+		    Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (MODES_TIEABLE_P): Don't tie modes wider than
+	what single FP register can hold for SHmedia target.
+	2001-07-06  Chandrakala Chavva  <cchavva@redhat.com>
+		    Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (movsf_media_nofpu+1, movdf_media_nofpu+1):
+	Do not split into SUBREG.
+	2001-06-14  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/ushmedia.h, config/sh/sshmedia.h: Updated signatures
+	and added new functions as specified in SH5 ABI r9.
+	2001-06-04  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/lib1funcs.asm (GCC_nested_trampoline): Align to an
+	8-byte boundary.
+	2001-06-03  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (dump_table): Add const0_rtx in calls of
+	gen_consttable_4 and gen_consttable_8.  Emit multiple labels
+	and consttable_window_ends.
+	2001-06-03  Graham Stott  <grahams@redhat,com>
+	* config/sh/sh.md (movdi split): Remove unused variable last_insn.
+	2001-05-16  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (print_operand): Handle floating-point pair,
+	vector and matrix registers.
+	* config/sh/sh.h (REGISTER_MOVE_COST): Take floating-pointer
+	vector modes into account.
+	* config/sh/sh.md (movv2sf): Split move between registers into
+	movdf.
+	(movv4sf, movv16sf): Introduce insns that get split only after
+	reload.
+	* config/sh/shmedia.h: Fix Copyright dates.
+	* config/sh/ushmedia.h: Likewise.  Move loop counter
+	declarations into conditionals that uses them.
+	(sh_media_FVADD_S, sh_media_FVSUB_S): Fix off-by-one error in
+	loop boundary.
+	* config/sh/sshmedia.h: Fix Copyright dates.
+	(sh_media_PUTCFG): Fix constraints.
+	2001-05-12  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (TARGET_PTRMEMFUNC_VBIT_LOCATION): Define to
+	ptrmemfunc_vbit_in_delta for SH5.
+	2001-05-08  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (TARGET_SWITCHES): Document -m5-*.
+	* invoke.texi: Likewise.
+	2001-04-14  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/lib1funcs.asm (GCC_push_shmedia_regs,
+	GCC_push_shmedia_regs_nofpu, GCC_pop_shmedia_regs,
+	GCC_pop_shmedia_regs_nofpu): New global symbols.
+	* config/sh/t-sh64 (LIB1ASMFUNCS): Add them.
+	* config/sh/sh.h (SHMEDIA_REGS_STACK_ADJUST): New macro.
+	* config/sh/sh.c (calc_live_regs): Account for PR's saving in
+	compact function with nonlocal labels.
+	(sh_expand_prologue) [SHcompact]: Push SHmedia regs if needed.
+	(sh_expand_epilogue) [SHcompact]: Pop them when appropriate.
+	(initial_elimination_offset): Account for their stack space.
+	* config/sh/sh.md (shmedia_save_restore_regs_compact): New insn.
+	* config/sh/sh.md (movsi_media, movsi_media_nofpu, movqi_media,
+	movhi_media, movdi_media, movdi_media_nofpu, movdf_media,
+	movdf_media_nofpu, movsf_media, movsf_media_nofpu): Require at
+	least one of the operands to be a register.
+	(movv2sf): Likewise.  Renamed to movv2sf_i.
+	(movdi, movdf, movv2sf, movv4sf, movv16sf, movsf):
+	prepare_move_operands() before emitting SHmedia insns.
+	2001-04-03  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/crti.asm (init, fini) [__SH5__ && ! __SHMEDIA__]:
+	Don't save nor initialize r12.  Don't mis-align the stack.
+	Pad the code with a nop.
+	* config/sh/crti.asm: Don't restore r12.  Don't mis-align the
+	stack.
+	2001-03-13  Alexandre Oliva  <aoliva@redhat.com>
+	* gcc/longlong.h (__umulsidi3, count_leading_zeros)
+	[__SHMEDIA__]: Implement.
+	2001-03-11  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md: Set latency of `pt' closer to reality.
+	(movsi_media, movsi_media_nofpu, movdi_media, movdi_media_nofpu,
+	movdf_media, movdf_media_nofpu, movsf_media, movsf_media_nofpu):
+	Set move, load and store type attributes.
+	* config/sh/sh.c (sh_loop_align) [TARGET_SH5]: Set to 3.
+	* config/sh/sh.h (OVERRIDE_OPTIONS) [TARGET_SH5]: Disable
+	profiling.
+	* config/sh/sh.h (PROMOTE_MODE): Sign-extend SImode to DImode.
+	* config/sh/sh-protos.h (sh_media_register_for_return): Declare.
+	* config/sh/sh.c (sh_media_register_for_return): New function.
+	(sh_expand_prologue) [TARGET_SHMEDIA]: Copy r18 to an available
+	branch-target register.
+	(sh_expand_epilogue) [TARGET_SHMEDIA]: Explicitly USE it.
+	* config/sh/sh.md (return_media_i): Use any call-clobbered
+	branch-target register.
+	(return_media): If r18 wasn't copied in the prologue, copy it
+	here.
+	* config/sh/sh.h (CONDITIONAL_REGISTER_USAGE) [TARGET_SHMEDIA]:
+	Clear class FP0_REGS.
+	* config/sh/sh64.h (LINK_SPEC): Removed incorrect default copied
+	from elf.h.
+	2001-03-08  DJ Delorie  <dj@redhat.com>
+	* config/sh/sh.h (OVERRIDE_OPTIONS): Disable relaxing for SHMEDIA.
+	2001-02-09  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (sibcall_compact): Set fp_mode to single.
+	2001-02-07  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (INT_ASM_OP) [SHMEDIA64]: Use `.quad'.
+	2001-02-03  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (INIT_CUMULATIVE_ARGS): Compute size of BLKmode
+	return value correctly for call_cookie.
+	2001-02-01  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/crt1.asm (start): Modified so as to call
+	___setup_argv_and_call_main.
+	2001-01-26  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (FUNCTION_ARG_ADVANCE): Don't count stack_regs in
+	SHmedia mode.
+	2001-01-20  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (STRIP_DATALABEL_ENCODING): New macro.
+	(STRIP_NAME_ENCODING): Use it.
+	(ASM_OUTPUT_LABELREF): Likewise.  Don't call assemble_name().
+	2001-01-19  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (sgeu) [! SHMEDIA]: Fix invocation of
+	prepare_scc_operands().
+	* config/sh/sh.h (SH_DATALABEL_ENCODING): Change to "#"...
+	(DATALABEL_SYMNAME_P): ... so that we don't need memcmp here.
+	2001-01-17  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (STRIP_NAME_ENCODING): Strip leading `*'.
+	2001-01-13  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (shcompact_incoming_args): Use R0_REG.
+	* config/sh/sh.md (R7_REG, R8_REG, R9_REG): Define as constants,
+	used in shcompact_incoming_args.
+	* config/sh/sh.c (sh_expand_epilogue): Fix thinko in previous
+	change.
+	* config/sh/crt1.asm (start) [SH5]: Switch to single-precision
+	mode.
+	* config/sh/lib1funcs.asm (sdivsi3_i4, udivsi3_i4, set_fpscr):
+	Adjust accordingly.
+	* config/sh/sh.c (sh_expand_prologue, sh_expand_epilogue):
+	Simplify.  Adjust.  Add sanity check.
+	* config/sh/sh.h (TARGET_SWITCHES) [5-compact]: Set
+	FPU_SINGLE_BIT.
+	* config/sh/sh.md (udivsi3_i4_single, divsi3_i4_single): Match
+	TARGET_SHCOMPACT.
+	(udivsi3, divsi3): Use them.
+	(force_mode_for_call): New insn.
+	(call, call_value, sibcall_value): Emit it before SHcompact
+	calls.
+	2001-01-11  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (call, call_value, sibcall): Make sure the
+	call cookie is non-NULL before taking its value.
+	2001-01-10  Alexandre Oliva  <aoliva@redhat.com>
+	* config.gcc (sh64): Set target_requires_64bit_host_wide_int.
+	2001-01-09  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (shcompact_incoming_args): Set argument memory
+	block.
+	* config/sh/sh.h (STATIC_CHAIN_REGNUM) [SH5]: Use r1.
+	* config/sh/sh.c (sh_expand_prologue) [SH5]: Use r0 as
+	temporary for stack adjusts.  Use MACL and MACH to pass
+	arguments to shcompact_incoming_args.
+	* config/sh/sh.md (shcompact_incoming_args): Adjust.  Don't
+	clobber r1.
+	* config/sh/lib1funcs.asm (shcompact_incoming_args): Likewise.
+	(nested_trampoline): Load static chain address into r1.
+	* config/sh/sh.md (movdi_media splits): Fix sign-extension.
+	2001-01-07  Alexandre Oliva  <aoliva@redhat.com
+	* config/sh/sh.c (fpul_operand) [SHMEDIA]: Just call
+	fp_arith_reg_operand().
+	2001-01-06  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (casesi): Sign-extend the first two operands,
+	and use signed compares for them.
+	* config/sh/sh.c (dump_table): Don't emit 8-byte constants after
+	4-byte ones.  Instead, inter-leave them, maintaining the 8-byte
+	ones properly aligned.
+	(find_barrier): Account for extra alignment needed for 8-byte wide
+	constants.
+	(machine_dependent_reorg): Require a label for the second 4-byte
+	constant after an 8-byte one.
+	* config/sh/lib1funcs.asm (sdivsi3): Fix typo in yesterday's
+	change.
+	2001-01-05  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (machine_dependent_reorg) [SHCOMPACT]: Reset
+	last_float when switching float modes.
+	* config/sh/sh.md (movdf) [SH5]: Don't use stack-pointer
+	auto-increment for general-purpose registers.
+	* config/sh/lib1funcs.asm (sdivsi3) [SHMEDIA]: Sign-extend the
+	result.
+	* config/sh/sh.c (sh_expand_prologue) [SH5]: Use r1 as temporary
+	for stack adjust.
+	* config/sh/sh.c (sh_builtin_saveregs): Support using all
+	registers for varargs.
+	2001-01-01  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (FUNCTION_ARG_ADVANCE): Simplify.
+	* config/sh/sh.h (CALL_COOKIE_STACKSEQ,
+	CALL_COOKIE_STACKSEQ_SHIFT, CALL_COOKIE_STACKSEQ_GET): New macros.
+	(CALL_COOKIE_INT_REG_SHIFT): Adjust.
+	(FUNCTION_ARG_ADVANCE): Use SHCOMPACT_FORCE_ON_STACK.  Adjust
+	call_cookie accordingly.
+	(FUNCTION_ARG): Test SHCOMPACT_FORCE_ON_STACK.
+	(SHCOMPACT_BYREF): Likewise.
+	(SHCOMPACT_FORCE_ON_STACK): New macro.
+	* config/sh/sh.c (sh_expand_prologue): Use new call_cookie format.
+	(sh_builtin_saveregs): Likewise.
+	* config/sh/lib1funcs.asm (shcompact_call_trampoline,
+	shcompact_incoming_args): Use new shift values.  Support
+	sequences of consecutive and non-consecutive pushes/pops.
+	* config/sh/sh.md (return): Don't explicitly use PR_REG.
+	2001-01-05  Hans-Peter Nilsson  <hpn@cygnus.com>
+	* config/sh/sh.h (TEXT_SECTION): Define.
+	* config/sh/elf.h (ASM_FILE_START): Output TEXT_SECTION_ASM_OP.
+	2001-01-05  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (INIT_CUMULATIVE_LIBCALL_ARGS): New macro.
+	* config/sh/sh.h (BASE_RETURN_VALUE_REG): Use FP regs for
+	return values on FPU-enabled SHmedia.
+	(FUNCTION_VALUE_REGNO_P): Mark FIRST_FP_RET_REG as used on
+	FPU-enabled SHmedia.
+	(INIT_CUMULATIVE_ARGS): Set up return trampoline only if
+	value is returned in a non-FP reg and is not returned by
+	reference.
+	* config/sh/sh.md (shcompact_return_tramp_i): Change type to
+	jump_ind.
+	2000-01-04  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (SH_MIN_ALIGN_FOR_CALLEE_COPY): New.
+	(FUNCTION_ARG_CALLEE_COPIES): Require argument to be
+	quad-aligned to be passed by callee-copy reference.
+	2001-01-03  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/elf.h (MAX_WCHAR_TYPE_SIZE): Define.
+	* config/sh/sh64.h (MAX_WCHAR_TYPE_SIZE): Undefine.
+	2001-01-02  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/lib1funcs.asm (shcompact_call_trampoline): Fix error in
+	copying low-numbered FP regs to r7 and r8.
+	* config/sh/sh.h (FUNCTION_ARG_ADVANCE): Don't request copying of
+	FP regs to general-purpose regs only if the copy was passed on the
+	stack.
+	* config/sh/lib1funcs.asm (shcompact_call_trampoline): Fix typo in
+	copying FP reg to r9.
+	* config/sh/sh.h (FUNCTION_ARG_ADVANCE): Use trampoline to
+	copy FP regs to general-purpose regs only in outgoing calls.
+	* config/sh/sh.md (movdf_media, movsf_media): Revert incorrect
+	change from 	2000-10-30.  Adjust for 64-bit (or 32-bit)
+	HOST_WIDE_INT.
+	* config/sh/sh.h (struct sh_args): Document all fields.
+	(FUNCTION_OK_FOR_SIBCALL): Functions that receive arguments
+	passed partially on the stack should not consider making
+	sibcalls.
+	* config/sh/sh.h (FUNCTION_ARG_ADVANCE): Add byref regs to
+	stack_regs only for incoming calls.  When passing FP args,
+	make sure there are FP regs available before modifying
+	call_cookie.
+	(SHCOMPACT_BYREF): Pass double args in general-purpose
+	registers by reference.
+	2000-12-30  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (FUNCTION_OK_FOR_SIBCALL) [SHCOMPACT]: Don't
+	attempt to generate sibcalls if the caller got any arguments
+	by reference.
+	* config/sh/lib1funcs.asm (set_fpscr) [SH5]: Default to double.
+	* config/sh/sh.c (dump_table) [SHCOMPACT]: Align DImode and DFmode
+	to 8-byte boundaries.
+	* config/sh/sh.md (shcompact_preserve_incoming_args): New insn.
+	* config/sh/sh.h (CALL_COOKIE_INT_REG_GET): New macro.
+	* config/sh/sh.c (sh_expand_prologue): Preserve args that will be
+	stored in the stack.
+	* config/sh/lib1funcs.asm (ct_main_table, ia_main_table): Arrange
+	for the offsets to have the ISA bit set.
+	(shcompact_call_trampoline): Document.  Swap r0 and r1, to match
+	invocation.  Use beq instead of bgt to mark end of sequence of
+	loads.
+	(shcompact_incoming_args): Fix store of r2.  Use beq instead of
+	bgt to mark end of sequence of stores.
+	* config/sh/sh.c (arith_operand): Don't check whether
+	CONST_OK_FOR_J for now.
+	* config/sh/sh.md (movdf_media, movsf_media): Use HOST_WIDE_INT
+	instead of long for conversion.
+	2000-12-29  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (print_operand_address): Convert INTVAL to int
+	before passing it to fprintf.
+	2000-12-28  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/crt1.asm (start): Reset SR.FD, to enable the FP unit.
+	Call set_fpscr before reading/writing SR.
+	* config/sh/crt1.asm (start): Set SR.SZ and SR.PR, but not SR.FR.
+	Call set_fpscr.
+	* config/sh/lib1funcs.asm: Add `.align 2' directives before
+	SHmedia code.
+	(FMOVD_WORKS): Define on SH5 with FPU.
+	(set_fpscr): Define on SH5.  Remove separate _fpscr_values
+	setting.
+	* config/sh/t-sh64 (LIB1ASMFUNCS): Add _set_fpscr instead of
+	_fpscr_values.
+	2000-12-28  Hans-Peter Nilsson  <hpn@cygnus.com>
+	* config/sh/lib1funcs.asm (ct_main_table): Align contents to even
+	address.
+	(ia_main_table): Ditto.
+	2000-12-27  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (MAX_WCHAR_TYPE_SIZE): Don't define.
+	* config/sh/sh64.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Reinstate
+	the definitions from sh.h.
+	* config/sh/sh.h (PTRDIFF_TYPE): Define as conditional on
+	TARGET_SH5.
+	(SUBTARGET_CPP_SPEC): Arrange for __PTRDIFF_TYPE__ to be defined.
+	* config/sh/elf.h (PTRDIFF_TYPE): Likewise.
+	* config/sh/sh64.h (SUBTARGET_CPP_SPEC): Likewise.
+	2000-12-26  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (movdi_media split): Don't add REG_LABEL notes.
+	Increment LABEL_NUSES.
+	
+	* config/sh/sh.h (SIZE_TYPE): Define as conditional on
+	TARGET_SH5.
+	(SUBTARGET_CPP_SPEC): Arrange for __SIZE_TYPE__ to be always
+	defined.
+	* config/sh/elf.h (SIZE_TYPE): Likewise.
+	* config/sh/sh64.h (SUBTARGET_CPP_SPEC): Likewise.
+	* config/sh/lib1funcs.asm (shcompact_call_trampoline,
+	shcompact_incoming_args): Load switch table addresses using
+	datalabel.
+	* config/sh/sh.h (SUBTARGET_CPP_SPEC): Define __SIZE_TYPE__.
+	(NO_BUILTIN_SIZE_TYPE): Define.
+	(SIZE_TYPE): Don't define.
+	* config/sh/sh64.h (SUBTARGET_CPP_SPEC): Define __SIZE_TYPE__.
+	* config/sh/sh.h (CPP_SPEC): Fixed typo that prevented the
+	definition of __SH5__=32 for -m5-compact-nofpu.
+	* config/sh/sh.c (barrier_align): Ensure 32-bit alignment after
+	ADDR_DIFF_VEC.
+	2000-12-24  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (FUNCTION_ARG_PADDING): Removed.
+	2000-12-23  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (TARGET_CACHE32): Enable on SH5.
+	(FUNCTION_BOUNDARY): Ensure 32-bit alignment for SHmedia.
+	(INSN_LENGTH_ALIGNMENT): Likewise.
+	2000-12-22  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (call, call_value, sibcall): Simplify
+	copying of non-branch-target register.
+	2000-12-22  Alexandre Oliva  <aoliva@redhat.com>
+	* glimits.h (__LONG_MAX__): Revert 	2000-12-13's patch.
+	* config/sh/sh.h (CPP_SPEC): Define it here for 64-bit SHmedia.
+	2000-12-22  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (GET_SH_ARG_CLASS): Handle complex
+	floating-point values as structs.
+	(FUNCTION_ARG): Use SH5_PROTOTYPED_FLOAT_ARG.
+	(SH5_PROTOTYPELESS_FLOAT_ARG): List FP registers before
+	general-purpose register.
+	(SH5_PROTOTYPED_FLOAT_ARG): New macro.
+	2000-12-20  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (addsi3): Force operand1 to reg for SHmedia.
+	* config/sh/sh.md (movsi_media): Split CONST_DOUBLE loads too.
+	* config/sh/sh.h (DATALABEL_REF_P): Don't require the CONST.
+	(ENCODE_SECTION_INFO): Enclose variables and constants in
+	DATALABEL unspecs.
+	(SH_DATALABEL_ENCODING, DATALABEL_SYMNAME_P): Define.
+	(STRIP_NAME_ENCODING): Strip SH_DATALABEL_ENCODING off.
+	(ASM_OUTPUT_LABELREF, AMS_OUTPUT_SYMBOL_REF): Define.
+	* config/sh/sh.c (gen_datalabel_ref): Use UNSPEC_DATALABEL
+	only for LABEL_REFs.  For SYMBOL_REFs, prepend
+	SH_DATALABEL_ENCODING to the symbol name.
+	* config/sh/sh.md (indirect_jump): Use SUBREG instead of
+	convert_mode().
+	2000-12-20  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (casesi): Enclose ADDR_DIFF_VEC address in
+	UNSPEC_DATALABEL.
+	* config/sh/sh.c (gen_datalabel_ref): Accept LABEL_REFs.
+	* config/sh/sh.h (DATALABEL_REF_NO_CONST_P): Likewise.
+	(DATALABEL_REF_P): Don't require CONST.
+	(ASM_OUTPUT_ADDR_DIFF_ELT): On SH5, output datalabel before
+	REL label.
+	2000-12-19  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (extendhidi2, extendqidi2): Use arithmetic shift
+	right.
+	2000-12-18  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (movsi_media, call, call_value, sibcall):
+	Use shallow_copy_rtx and PUT_MODE to change the mode of
+	SYMBOL_REFs, LABEL_REFs, CONSTs, etc.
+	* config/sh/sh.h (PREFERRED_RELOAD_CLASS): Reload SYMBOL_REFs
+	on SHmedia using GENERAL_REGs.
+	* config/sh/sh.md (ble_media_i, blt_media_i, bleu_media_i,
+	bltu_media_i): Fix reversion of conditions.
+	2000-12-18  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.md (zero_extendhidi2): Use logical shift right.
+	* config/sh/sh.c (output_far_jump): Save r13 in macl.
+	2000-12-17  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (gen_datalabel_ref): Fix mode of the UNSPEC.
+	2000-12-16  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/lib1funcs.asm (ic_invalidate): Define for SH5.
+	(GCC_nested_trampoline): Likewise.
+	* config/sh/sh-protos.h (gen_datalabel_ref): Declare.
+	* config/sh/sh.c (gen_datalabel_ref): Define.
+	* config/sh/sh.h (TRAMPOLINE_SIZE): Adjust for SH5.
+	(INITIALIZE_TRAMPOLINE): Likewise.
+	(TRAMPOLINE_ADJUST_ADDRESS): Define.
+	(DATALABEL_REF_NO_CONST_P, DATALABEL_REF_P): Define.
+	(EXTRA_CONSTRAINT_T): Match DATALABEL unspecs.
+	(OUTPUT_ADDR_CONST_EXTRA): Handle DATALABEL unspecs.
+	* config/sh/sh.md (UNSPEC_DATALABEL): New constant.
+	(ic_invalidate): Adjust for SH5.
+	(ic_invalidate_line_media, ic_invalidate_line_compact): New insns.
+	* config/sh/t-sh64 (LIB1ASMFUNCS): Added _ic_invalidate and
+	_nested_trampoline.
+	2000-12-15  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (MOVE_MAX): Set to 8 for SHmedia, 4 elsewhere.
+	(MOVE_MAX_PIECES): Set to 8 on SHmedia too.
+	2000-12-14  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (DBX_REGISTER_NUMBER): Adjust for sh64-elf-gdb.
+	* config/sh/elf.h (DBX_REGISTER_NUMBER): Likewise.
+	2000-12-14  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (target_reg_operand): Match only target-branch
+	registers and pseudos that aren't virtual registers.
+	* config/sh/sh.md (call, call_value, sibcall) [TARGET_SHMEDIA]:
+	Copy operands that don't match target_reg_operand to pseudos.
+	(call_media, call_value_media, sibcall_media): Use
+	target_reg_operand instead of target_operand.
+	2000-12-13  Alexandre Oliva  <aoliva@redhat.com>
+	* glimits.h (__LONG_MAX__) [SH5 == 64]: Adjust for 64 bits. 
+	* config/sh/sh.c (target_reg_operand): Match hardware registers
+	other than branch-target registers.
+	* config/sh/sh.md (zero_extendqidi2): Input operand is %1.
+	* config/sh/lib1funcs.asm (sdivsi3) [SH5]: Make it global.
+	(fpscr_values) [SH5 == 32]: Define.
+	* config/sh/t-sh64 (LIB1ASMFUNCS): Add fpscr_values.
+	* config/sh/sh.md (call, call_value, sibcall) [TARGET_SHMEDIA]:
+	Handle function addresses coming in SUBREGs.
+	2000-12-12  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/lib1funcs.asm (shcompact_call_trampoline,
+	shcompact_return_trampoline): Use datalabel where appropriate.
+	2000-12-09  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (SECONDARY_OUTPUT_RELOAD_CLASS): Use a
+	general-purpose register to copy one branch-target register to
+	another.
+	2000-12-06  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (target_operand): Accept LABEL_REFs and
+	SYMBOL_REFs with VOIDmode.
+	* config/sh/sh.md (ble_media_i, blt_media_i, bleu_media_i,
+	bltu_media_i): New insns.
+	2000-12-06  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (RETURN_IN_MEMORY): Adjust for SH5 ABI.
+	(INIT_CUMULATIVE_ARGS): Likewise.
+	2000-12-01  Alexandre Oliva  <aoliva@redhat.com>
+	* machmode.def (V16SFmode): New mode.
+	* c-common.c (type_for_mode): Support V2SF and V16SF.
+	* tree.c (build_common_tree_nodes_2): Likewise.
+	* tree.h (tree_index): Likewise.
+	* calls.c (emit_call_1): Take args_so_far.  Adjust all
+	callers.  Introduce CALL_POPS_ARGS.
+	* tm.texi (CALL_POPS_ARGS): Document.
+	* config/sh/crt1.asm: Implement in SHmedia mode.
+	* config/sh/crti.asm, config/sh/crtn.asm: Likewise
+	* config/sh/elf.h (ASM_SPEC, LINK_SPEC): Support SH5 flags.
+	(DBX_REGISTER_NUMBER): Renumber registers for SH5.
+	* config/sh/lib1funcs.asm: Disable functions unused in SH5.
+	Implement divsi and udivsi in SHmedia mode.  Introduce
+	SHcompact trampolines.
+	* config/sh/sh.c (GEN_MOV, GEN_ADD3, GEN_SUB3): Use DImode
+	only in SHmedia64.
+	(regno_reg_class): Rewrite.
+	(fp_reg_names): Remove.
+	(sh_register_names, sh_additional_register_names): New.
+	(print_operand): Added `u'.  Support SUBREGs in addresses.
+	Add parentheses around shifted CONSTs.
+	(output_file_start): Output .mode and .abi directives.
+	(shiftcosts, addsubcosts, multcosts): Adjust.
+	(output_stack_adjust): Compute alignment.  Sanity-check SIZE.
+	(push_regs): Take array of HOST_WIDE_INTs.  Adjust callers.
+	(calc_live_regs): Output to array of HOST_WIDE_INTs.  Count
+	bytes, not registers.  Take into account the need for the
+	SHcompact incoming args trampoline.  Adjust all callers.
+	(sh_expand_prologue): Take stack_regs into account.  Call
+	incoming args trampoline.  Keep stack aligned as per SH5 ABI.
+	(sh_expand_epilogue): Take stack_regs into accoutn.  Keep
+	stack aligned as per SH5 ABI.
+	(sh_builtin_saveregs): Support SH5 ABI.
+	(sh_build_va_list, sh_va_start): Likewise.
+	(initial_elimination_offset): Take alignment into account.
+	Compute location of PR according to the SH5 stack frame.
+	(arith_reg_operand): Reject branch-target registers.
+	(shmedia_6bit_operand): New.
+	(logical_operand): Use CONST_OK_FOR_P on SHmedia.
+	(target_reg_operand): Match DImode only.  Accept SUBREGs.
+	(target_operand): New.
+	* config/sh/sh.h (CPP_SPEC, SUBTARGET_CPP_SPEC): Support SH5 flags.
+	(CONDITIONAL_REGISTER_USAGE): Implement SH5 ABI.  Initialize
+	SIBCALL_REGS for SHmedia.
+	(TARGET_SH3E, TARGET_SH4): Only if SH1_BIT is set too.
+	(TARGET_FPU_DOUBLE, TARGET_FPU_ANY): New.
+	(TARGET_SHMEDIA32, TARGET_SHMEDIA64): New.
+	(TARGET_SWITCHES): New SH5 flags.
+	(OVERRIDE_OPTIONS): Set SH5-specific options.  Use
+	VALID_REGISTER_P to disable unsupported registers.
+	(LONG_TYPE_SIZE, LONG_LONG_TYPE_SIZE): Set.
+	(POINTER_SIZE, PARM_BOUNDARY): Adjust.
+	(FUNCTION_ARG_PADDING): Define.
+	(FASTEST_ALIGNMENT): Adjust.
+	(SH_REGISTER_NAMES_INITIALIZER): New.
+	(sh_register_names): Declare.
+	(DEBUG_REGISTER_NAMES): Define.
+	(REGISTER_NAMES): Define based on sh_register_names.
+	(SH_ADDITIONAL_REGISTER_NAMES_INITIALIZER): New.
+	(sh_additional_register_names): Declare.
+	(LAST_GENERAL_REG, LAST_FP_REG, LAST_XD_REG): Adjust for SHmedia.
+	(FIRST_TARGET_REG, LAST_TARGET_REG): Define.
+	(TARGET_REGISTER_P, SHMEDIA_REGISTER_P, VALID_REGISTER_P): Define.
+	(REGISTER_NATURAL_MODE): Define.
+	(FIRST_PSEUDO_REGISTER): Adjust.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS): Adjust.
+	(HARD_REGNO_CALL_PART_CLOBBERED): Define.
+	(HARD_REGNO_NREGS, HARD_REGNO_MODE_OK): Adjust.
+	(VECTOR_MODE_SUPPORTED_P): Define.
+	(REG_CLASS_CONTENTS): Adjust.
+	(SMALL_REGISTER_CLASSES): Adjust.
+	(REG_ALLOC_ORDER): Adjust.
+	(INDEX_REG_CLASS): Adjust.
+	(CONST_OK_FOR_O, CONST_OK_FOR_P): New.
+	(CONST_OK_FOR_LETTER_P): Adjust.
+	(PREFERRED_RELOAD_CLASS): Adjust.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Adjust.
+	(SECONDARY_INPUT_RELOAD_CLASS): Adjust.
+	(NPARM_REGS, FIRST_PARM_REG, FIRST_RET_REG): Adjust.
+	(FIRST_FP_PARM_REG): Adjust.
+	(CALL_POPS_ARGS): Define.
+	(FUNCTION_ARG_REGNO_P): Adjust.
+	(struct sh_args): New fields.
+	(GET_SH_ARG_CLASS): Adjust.
+	(INIT_CUMULATIVE_ARGS): Adjust.
+	(INIT_CUMULATIVE_INCOMING_ARGS): Define.
+	(FUNCTION_ARG_ADVANCE): Adjust.
+	(FUNCTION_ARG): Adjust.
+	(FUNCTION_ARG_PASS_BY_REFERENCE, SHCOMPACT_BYREF): Define.
+	(FUNCTION_ARG_CALLEE_COPIES): Define.
+	(SH5_PROTOTYPELESS_FLOAT_ARG): Define.
+	(STRICT_ARGUMENT_NAMING): Define.
+	(PRETEND_OUTGOING_VARARGS_NAMED): Adjust.
+	(FUNCTION_ARG_PARTIAL_NREGS): Adjust.
+	(SH5_WOULD_BE_PARTIAL_NREGS): Define.
+	(SETUP_INCOMING_VARARGS): Adjust.
+	(HAVE_POST_INCREMENT, HAVE_PRE_DECREMENT): Adjust.
+	(USE_LOAD_POST_INCREMENT, USE_STORE_PRE_DECREMENT): Adjust.
+	(REGNO_OK_FOR_INDEX_P, REG_OK_FOR_INDEX_P): Adjust.
+	(SUBREG_OK_FOR_INDEX_P): Adjust.
+	(EXTRA_CONSTRAINT_S): Update.
+	(EXTRA_CONSTRAINT_T): New.
+	(EXTRA_CONSTRAINT): Adjust.
+	(GO_IF_LEGITIMATE_INDEX): Adjust.
+	(GO_IF_LEGITIMATE_ADDRESS): Adjust.
+	(LEGITIMIZE_ADDRESS, LEGITIMIZE_RELOAD_ADDRESS): Adjust.
+	(MOVE_MAX): Adjust.
+	(MAX_MOVE_MAX): Define.
+	(Pmode): Adjust.
+	(CONST_COSTS): Adjust.
+	(REGISTER_MOVE_COST): Adjust.
+	(BRANCH_COST): Adjust.
+	(TEXT_SECTION_ASM_OP): Adjust.
+	(DBX_REGISTER_NUMBER): Adjust.
+	(ASM_OUTPUT_DOUBLE_INT): New.
+	(UNALIGNED_DOUBLE_INT_ASM_OP): New.
+	(PREDICATE_CODES): Adjust.
+	(PROMOTE_MODE): Adjust.
+	(CRT_CALL_STATIC_FUNCTION): Do not define for SHmedia.
+	* config/sh/sh.md (AP_REG, PR_REG, T_REG, GBR_REG): Renumber.
+	(MACH_REG, MACL_REG, FPUL_REG, RAP_REG, FPSCR_REG): Renumber.
+	(PR_MEDIA_REG, T_MEDIA_REG, R10_REG): New.
+	(DR0_REG, DR2_REG, DR4_REG): Renumber.
+	(TR0_REG, TR1_REG, TR2_REG): New.
+	(XD0_REG): Renumber.
+	(UNSPEC_COMPACT_ARGS): New.
+	(type): Added pt and ptabs.
+	(length): Default to 4 on SHmedia.  Default pt length to 12
+	and 	20 on SHmedia32 and SHmedia64, respectively.
+	(pt): New function unit.
+	(movdi, movsi): Add types pt and ptabs.  Don't increment LABEL_NUSES.
+	Add whitespace between operands of SHmedia instructions.
+	(movdicc): Fix.
+	(adddi3_media, addsi3_media): Adjust constraints.
+	(subsi3) [SHmedia]: Force operand 1 into a register.
+	(udivsi3_i1_media, udivsi3_i4_media): New.
+	(udivsi3): Support SHmedia.
+	(divsi3_i1_media, divsi3_i4_media): New.
+	(divsi3): Support SHmedia.
+	(anddi3, iordi3, xordi3): Adjust constraints.
+	(zero_extendhidi2, zero_extendqidi2): New.
+	(extendsidi2, extendhidi2, extendqidi2): New.
+	(push, pop, push_e, push_fpul, push_4): Disable on SH5.
+	(pop_e, pop_fpul, pop_4): Likewise.
+	(movsi_media): Support FP and BT registers.
+	(movsi_media_nofpu): New.  Adjust splits to DImode.
+	(lduw, ldub): Renamed to zero_extend* above.
+	(movqi_media): Fix typo.
+	(movdi_media): Support FP and BT registers.
+	(movdi_media_nofpu): New.  Adjust splits for SHmedia32.
+	(movdi_const_32bit): New.
+	(shori_media): Require immediate operand.  Use `u' for output.
+	(movdf_media, movsf_media): Simplified.
+	(movdf_media_nofpu, movsf_media_nofpu): New.
+	(movdf, movsf): Adjust
+	(movv2sf, movv2sf, movv16sf): New.
+	(beq_media, beq_media_i): Adjust constraints.  Don't use
+	scratch BT register.
+	(bne_media, bne_media_i): Likewise.
+	(bgt_media, bgt_media_i): Likewise.
+	(bge_media, bge_media_i): Likewise.
+	(bgtu_media, bgtu_media_i): Likewise.
+	(bgeu_media, bgeu_media_i): Likewise.
+	(beq, bne, bgt, blt, ble, bge, bgtu, bltu, bgeu, bleu,
+	bunordered): Emit jump insn.  Force operands to registers when
+	needed.
+	(jump_media, jump): Simplify.
+	(call_compact, call_compact_rettramp): New.
+	(call_value_compact, call_value_compact_rettramp): New.
+	(call_media, call_value_media): Simplify.
+	(sibcall_compact, sibcall_media): New.
+	(call, call_value): Adjust for SHmedia and SHcompact.
+	(sibcall, sibcall_value, untyped_call): Likewise.
+	(sibcall_epilogue): Preserve r0 across epilogue for SHcompact.
+	(indirect_jump): Adjust for SHmedia.
+	(casesi_jump_media): New.
+	(nop): Re-enable for SHmedia.
+	(call_site): Restrict to SH1.
+	(casesi): Adjust for SHmedia.
+	(casesi_shift_media, casesi_load_media): New.
+	(return): Explicitly use PR register.  Call return trampoline
+	on SHcompact.
+	(return_i): Explicitly use PR register.
+	(shcompact_return_tramp, shcompact_return_tramp_i): New.
+	(return_media): Adjust.
+	(shcompact_incoming_args): New.
+	(epilogue): Adjust.
+	(seq, slt, sle, sgt, sge, sgtu, sltu, sleu, sgeu, sne): Adjust.
+	(movstrsi): Disable on SH5.
+	(fpu_switch0, fpu_switch1, movpsi): Enable on SH4.
+	(addsf3, addsf3_media): Test TARGET_SHMEDIA_FPU.
+	(subsf3, subsf3_media): Likewise.
+	(mulsf3, mulsf3_media, mac_media): Likewise.
+	(divsf3, divsf3_media): Likewise.
+	(floatdisf2, floatsisf2_media): Likewise.  Adjust constraints.
+	(floatsisf2, fux_truncsfsi2): Likewise.
+	(fix_truncsfdi2, fix_truncsfsi2_media): Likewise.  Adjust
+	constraints.
+	(cmpeqsf_media, cmpgtsf_media, cmpgesf_media): Likewise.
+	(cmpunsf_media, cmpsf): Likewise.
+	(negsf2, negsf2_media, sqrtsf2, sqrtsf2_media): Likewise.
+	(abssf2, abssf2_media): Likewise.
+	(adddf3, adddf3_media, subdf3, subdf3_media): Likewise.
+	(muldf3, muldf3_media, divdf3, divdf3_media): Likewise.
+	(floatdidf2, floatsidf2_media): Likewise.  Adjust constraints.
+	(floatsidf2, fix_truncdfsi2): Likewise.
+	(fix_truncdfdi2, fix_truncdfsi2_media): Likewise.  Adjust
+	constraints.
+	(cmpeqdf_media, cmpgtdf_media): Likewise.
+	(cmpgedf_media, cmpundf_media, cmpdf): Likewise.
+	(negdf2, negdf2_media, sqrtdf2, sqrtdf2_media): Likewise.
+	(absdf2, absdf2_media): Likewise.
+	(extendsfdf2, extendsfdf2_media): Likewise.
+	(truncsfdf2, truncsfdf2_media): Likewise.
+	* config/sh/sh64.h: New file.
+	* config/sh/t-sh64: New file.
+	* config/sh/shmedia.h: New file.
+	* config/sh/ushmedia.h: New file.
+	* config/sh/sshmedia.h: New file.
+	* configure.in: Added sh64-*-elf.
+	* configure: Rebuilt.
+	2000-10-10  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (GEN_MOV, GEN_ADD3, GEN_SUB3): New macros.
+	(reg_class_from_letter): Use `b' for TARGET_REGS.
+	(print_operand): Support `%M', `%m', `AND' and
+	`ASHIFTRT'.  Do not precede constants with `#' on SHmedia.
+	(andcosts): Adjust for SHmedia.
+	(output_stack_adjust, sh_expand_prologue, sh_expand_epilogue):
+	Likewise.
+	(target_reg_operand): New function.
+	* config/sh/sh-protos.h (target_reg_operand): Declare.
+	* config/sh/sh.h (CONDITIONAL_REGISTER_USAGE): Don't disable
+	FP registers on SH5.
+	(HARD_REGNO_MODE_OK): Accept them whenever they're acceptable
+	on SH4.
+	(TARGET_REGISTER_P): New macro.
+	(reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS): Added TARGET_REGS.
+	(FUNCTION_VALUE): Use DImode for promoted types on SHmedia.
+	(EXTRA_CONSTRAINT_S): New macro.
+	(EXTRA_CONSTRAINT): Adjust.
+	(FLOAT_TYPE_SIZE): Define to 32.
+	(Pmode): DImode on SHmedia.
+	(CONST_COSTS): Adjust for SHmedia literals.
+	(PREDICATE_CODES): Added target_reg_operand.
+	(PROMOTE_MODE): Promote signed types to DImode on SHmedia.
+	* config/sh/sh.md: Remove all attrs from SHmedia insns.
+	(cmpeqdi_media, cmpgtdi_media, cmpgtudi_media): New insns.
+	(cmpdi): Accept SHmedia.
+	(movdicc_false, movdicc_true): New insns.
+	(movdicc): New expand.
+	(adddi3): Accept arith_operand for op2, but FAIL on SH1 if
+	no_new_pseudos.
+	(addsi3_media): Match `S' constraint.
+	(anddi3, andcdi3, iordi3, xordi3, negdi_media): New insns.
+	(negdi2): Expand for SHmedia.
+	(one_cmpldi2): New expand.
+	(zero_extendsidi2): Change from expand to insn.
+	(extendsidi2): Add constraints.
+	(movdi_media, movsi_media): Change `%x' to `%M'.  Use `%m' for
+	LD/ST address.  Fix SI immediate loading split.
+	(movhi_media, movqi_media, lduw, ldub): New insns.
+	(movhi, movqi): Accept SHmedia.
+	(shori_media, movdi_media): Relax input constraints.  Split
+	symbolic constants.
+	(movdf_media, movsf_media): New insn.  New split to movdi.
+	(movdf, movsf): Match on SHmedia.
+	(beq_media, bne_media, bgt_media, bge_media, bgtu_media,
+	bgeu_media): New insns and splits.  New insns with `_i' suffix.
+	(beq, bne, bgt, blt, ble, bge, bgtu, bltu, bgeu, bleu): Adjust.
+	(bunordered): New expand.
+	(jump_compact): Renamed from `jump'.
+	(jump_media): New insn.
+	(jump): New expand.
+	(call_media, call_value_media): New insns.
+	(call, call_value): Adjust.
+	(indirect_jump_compact): Renamed from `indirect_jump'.
+	(indirect_jump_media): New insn.
+	(indirect_jump): New expand.
+	(untyped_call, return): Accept SHmedia.
+	(return_media): New insn.
+	(prologue, epilogue, blockage): Accept SHmedia.
+	(seq, slt, sle, sgt, sge, sgtu, sltu, sleu, sgeu, sne): Adjust.
+	(sunordered): New expand.
+	(addsf3, subsf3, mulsf3, divsf3, floatsisf2, fix_truncsfsi2,
+	cmpsf, negsf2, sqrtsf2, abssf2): Adjust for SHmedia.
+	(addsf3_media, subsf3_media, mulsf3_media, mac_media,
+	divsf3_media, floatdisf2, floatsisf2_media, fix_truncsfdi2,
+	fix_truncsfsi2_media, cmpeqsf_media, cmpgtsf_media,
+	cmpgesf_media, cmpunsf_media, negsf2_media, sqrtsf2_media,
+	abssf2_media): New insns.
+	(adddf3, subdf3, muldf3, divdf3, floatsidf2, fix_truncdfsi2,
+	cmpdf, negdf2, sqrtdf2, absdf2): Adjust for SHmedia.
+	(adddf3_media, subdf3_media, muldf3_media, divdf3_media,
+	floatdidf2, floatsidf2_media, fix_truncdfdi2,
+	fix_truncdfsi2_media, cmpeqdf_media, cmpgtdf_media,
+	cmpgedf_media, cmpundf_media, negdf2_media, sqrtdf2_media,
+	absdf2_media): New insns.
+	(extendsfdf2, truncdfsf2): Adjust for SHmedia.
+	(extendsfdf2_media, truncdfsf2_media): New insns.
+	2000-09-14  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.c (machine_dependent_reorg): On shmedia, skip for now.
+	* config/sh/sh.h (CONST_OK_FOR_J): Document.
+	(LEGITIMATE_CONSTANT_P): Accept CONST_DOUBLEs on shmedia.
+	* config/sh/sh.md (adddi3): New expand.
+	(adddi3_media, adddi3z_media): New insns.
+	(adddi3_compact): Renamed from adddi3.
+	(addsi3_media): Use add.l r63 to add constant zero.
+	(subdi3): New expand.
+	(subdi3_media): New insn.
+	(subdi3_compact): Renamed from subdi3.
+	(mulsidi3): New expand.
+	(mulsidi3_media): New insn.
+	(mulsidi3_compact): Renamed from mulsidi3.
+	(umulsidi3): New expand.
+	(umulsidi3_media): New insn.
+	(umulsidi3_compact): Renamed from umulsidi3.
+	(ashlsi3_media, ashrsi3_media, lshrsi3_media): New insns.
+	(ashlsi3, ashrsi3, lshrsi3): Use them.
+	(ashldi3_media, ashrdi3_media, lshrdi3_media): New insns.
+	(ashldi3, ashrdi3, lshrdi3): Use them.
+	(zero_extendsidi2): New expand.
+	(extendsidi2): New insn.
+	(movsi_media): New insn.  Split to movdi to load constants.
+	(movsi): Enable for shmedia.
+	(movdi_media): New insn.  Use shori_media to load wide constants.
+	(short_media): New insn.
+	(movdi): Enable for shmedia.
+	2000-09-08  Alexandre Oliva  <aoliva@redhat.com>
+	* config/sh/sh.h (CPP_SPEC): Added `m5'.
+	(SUBTARGET_CPP_SPEC): Added `!m5'.
+	(SH5_BIT, TARGET_SH5, TARGET_SHMEDIA, TARGET_SHCOMPACT): New macros.
+	(TARGET_SWITCHES): Added `5' and `5-compact'.  Added SH1_BIT
+	to all other SH variants.
+	(TARGET_DEFAULT): Set to SH1_BIT.
+	(OVERRIDE_OPTIONS): Recognize sh5 CPU.
+	(BITS_PER_WORD): Raise to 64 on shmedia.
+	(MAX_BITS_PER_WORD): Change to 64.
+	(MAX_LONG_TYPE_SIZE, MAX_WCHAR_TYPE_SIZE): Set to MAX_BITS_PER_WORD.
+	(INT_TYPE_SIZE): Keep as 32.
+	(UNITS_PER_WORD): Raise to 8 on shmedia.
+	(MIN_UNITS_PER_WORD): Keep as 4.
+	(POINTER_SIZE): Raise to 64 on shmedia.
+	(CONST_OK_FOR_J): New macro.
+	(CONST_OK_FOR_LETTER_P): Use it.
+	(processor_type): Add PROCESSOR_SH5.
+	* config/sh/sh.md: Conditionalize all expands, insns and
+	splits to TARGET_SH1.
+	(cpu): Added sh5.
+	(addsi3_compact): Renamed from...
+	(addsi3): Now an expand.
+	(addsi3_media, subsi3_media): New insns.
+	(subsi3): Don't negate constants with SHmedia.
+
 	* hooks.c: New file.
 	* hooks.h: New file.
 	* Makefile.in (HOOKS_H): New.

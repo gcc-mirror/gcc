@@ -139,6 +139,7 @@ DEF_MACHMODE (V4DFmode, "V4DF", MODE_VECTOR_FLOAT, BITS_PER_UNIT*32, 32, 8, V8DF
 
 DEF_MACHMODE (V8SFmode, "V8SF", MODE_VECTOR_FLOAT, BITS_PER_UNIT*32, 32, 4,V4DFmode)
 DEF_MACHMODE (V8DFmode, "V8DF", MODE_VECTOR_FLOAT, BITS_PER_UNIT*64, 64, 8, VOIDmode)
+DEF_MACHMODE (V16SFmode, "V16SF", MODE_VECTOR_FLOAT, 512, 64, 4, VOIDmode)
 
 /* BLKmode is used for structures, arrays, etc.
    that fit no more specific mode.  */

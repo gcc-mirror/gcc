@@ -3266,6 +3266,22 @@ arguments pop them but other functions (such as @code{printf}) pop
 nothing (the caller pops all).  When this convention is in use,
 @var{funtype} is examined to determine whether a function takes a fixed
 number of arguments.
+
+@findex CALL_POPS_ARGS
+@item   CALL_POPS_ARGS (@var{cum})
+A C expression that should indicate the number of bytes a call sequence
+pops off the stack.  It is added to the value of @code{RETURN_POPS_ARGS}
+when compiling a function call.
+
+@var{cum} is the variable in which all arguments to the called function
+have been accumulated.
+
+On certain architectures, such as the SH5, a call trampoline is used
+that pops certain registers off the stack, depending on the arguments
+that have been passed to the function.  Since this is a property of the
+call site, not of the called function, @code{RETURN_POPS_ARGS} is not
+appropriate.
+
 @end table
 
 @node Register Arguments

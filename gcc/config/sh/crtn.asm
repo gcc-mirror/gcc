@@ -30,6 +30,20 @@ Boston, MA 02111-1307, USA.  */
 /* See an explanation about .init and .fini in crti.asm.  */
 
 	.section .init
+#if __SHMEDIA__
+	add	r14, r63, r15
+	ld.q	r15, 0, r18
+	ptabs	r18, tr0
+	ld.q	r15, 8, r14
+	addi	r15, 16, r15
+	blink	tr0, r63
+#elif __SH5__ && ! __SHMEDIA__
+	mov	r14,r15
+	lds.l	@r14+,pr
+	mov.l	@r14,r14
+	rts
+	add	#8,r15
+#else
 	mov	r14,r15
 	lds.l	@r15+,pr
 	mov.l	@r15+,r14
@@ -39,8 +53,23 @@ Boston, MA 02111-1307, USA.  */
 #else
 	nop
 #endif
+#endif /* __SHMEDIA__ */
 
 	.section .fini
+#if __SHMEDIA__
+	add	r14, r63, r15
+	ld.q	r15, 0, r18
+	ptabs	r18, tr0
+	ld.q	r15, 8, r14
+	addi	r15, 16, r15
+	blink	tr0, r63
+#elif __SH5__ && ! __SHMEDIA__
+	mov	r14,r15
+	lds.l	@r14+,pr
+	mov.l	@r14,r14
+	rts
+	add	#8,r15
+#else
 	mov	r14,r15
 	lds.l	@r15+,pr
 	mov.l	@r15+,r14
@@ -50,3 +79,4 @@ Boston, MA 02111-1307, USA.  */
 #else
 	nop
 #endif
+#endif /* __SHMEDIA__ */
