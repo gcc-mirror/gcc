@@ -2913,6 +2913,175 @@ hppa_builtin_saveregs (arglist)
 				    offset, 0, 0, OPTAB_LIB_WIDEN));
 }
 
+/* This routine handles all the normal conditional branch sequences we 
+   might need to generate.  It handles compare immediate vs compare 
+   register, nullification of delay slots, varying length branches, 
+   negated branches, and all combinations of the above.  It returns the
+   output appropriate to emit the branch corresponding to all given 
+   parameters.  */
+
+char *
+output_cbranch (operands, nullify, length, negated, insn)
+  rtx *operands;
+  int nullify, length, negated;
+  rtx insn;
+{ 
+  static char buf[100];
+  int useskip = 0;
+
+  /* A forward branch over a single nullified insn can be done with a 
+     comclr instruction.  This avoids a single cycle penalty due to
+     mis-predicted branch if we fall through (branch not taken).  */
+
+  if (length == 1
+      && JUMP_LABEL (insn) == next_nonnote_insn (NEXT_INSN (insn))
+      && nullify)
+    useskip = 1;
+
+  switch (length)
+    {
+
+      /* Short conditional branch.  May nullify either direction.  */
+      case 1:
+	if (useskip)
+	  strcpy (buf, "com%I2clr,");
+	else
+	  strcpy (buf, "com%I2b,");
+	if (negated)
+	  strcat (buf, "%B3");
+	else
+	  strcat (buf, "%S3");
+	if (useskip)
+	  strcat (buf, " %2,%1,0");
+	else if (nullify)
+	  strcat (buf, ",n %2,%1,%0");
+	else 
+	  strcat (buf, " %2,%1,%0%#");
+	break;
+
+     /* Long conditional branch, possible forward nullification.  Also
+	note all conditional branches have a length of 4 when not
+	optimizing!  */ 
+      case 2:
+      case 4:
+	strcpy (buf, "com%I2clr,");
+	if (negated)
+	  strcat (buf, "%S3");
+	else
+	  strcat (buf, "%B3");
+	if (nullify)
+	  strcat (buf, " %2,%1,0\n\tbl,n %0,0");
+	else
+	  strcat (buf, " %2,%1,0\n\tbl %0,0%#");
+	break;
+
+      /* Long backward conditional branch with nullification.  */
+      case 3:
+	strcpy (buf, "com%I2b,");
+	if (negated)
+	  strcat (buf, "%S3");
+	else
+	  strcat (buf, "%B3");
+	strcat (buf, " %2,%1,.+16\n\tnop\n\t bl %0,0");
+	break;
+
+      default:
+	abort();
+        }
+  return buf;
+}
+
+/* This routine handles all the branch-on-bit conditional branch sequences we 
+   might need to generate.  It handles nullification of delay slots,
+   varying length branches, negated branches and all combinations of the
+   above.  it returns the appropriate output template to emit the branch.  */
+
+char *
+output_bb (operands, nullify, length, negated, insn, which)
+  rtx *operands;
+  int nullify, length, negated;
+  rtx insn;
+  int which;
+{ 
+  static char buf[100];
+  int useskip = 0;
+
+  /* A forward branch over a single nullified insn can be done with a 
+     extrs instruction.  This avoids a single cycle penalty due to
+     mis-predicted branch if we fall through (branch not taken).  */
+
+  if (length == 1
+      && JUMP_LABEL (insn) == next_nonnote_insn (NEXT_INSN (insn))
+      && nullify)
+    useskip = 1;
+
+  switch (length)
+    {
+
+      /* Short conditional branch.  May nullify either direction.  */
+      case 1:
+	if (useskip)
+	  strcpy (buf, "extrs,");
+	else 
+	  strcpy (buf, "bb,");
+	if ((which == 0 && negated)
+	     || (which == 1 && ! negated))
+	  strcat (buf, ">=");
+	else
+	  strcat (buf, "<");
+	if (useskip)
+	  strcat (buf, " %0,%1,1,0");
+	else if (nullify && negated)
+	  strcat (buf, ",n %0,%1,%3");
+	else if (nullify && ! negated)
+	  strcat (buf, ",n %0,%1,%2");
+	else if (! nullify && negated)
+	  strcat (buf, "%0,%1,%3%#");
+	else if (! nullify && ! negated)
+	  strcat (buf, " %0,%1,%2%#");
+	break;
+
+     /* Long conditional branch, possible forward nullification.  Also
+	note all conditional branches have a length of 4 when not
+	optimizing!  */ 
+      case 2:
+      case 4:
+	strcpy (buf, "extrs,");
+	if ((which == 0 && negated)
+	     || (which == 1 && ! negated))
+	  strcat (buf, "<");
+	else
+	  strcat (buf, ">=");
+	if (nullify && negated)
+	  strcat (buf, " %0,%1,1,0\n\tbl,n %3,0");
+	else if (nullify && ! negated)
+	  strcat (buf, " %0,%1,1,0\n\tbl,n %2,0");
+	else if (! nullify && negated)
+	  strcat (buf, " %0,%1,1,0\n\tbl %3,0%#");
+	else if (! nullify && ! negated)
+	  strcat (buf, " %0,%1,1,0\n\tbl %2,0%#");
+	break;
+
+      /* Long backward conditional branch with nullification.  */
+      case 3:
+	strcpy (buf, "bb,");
+	if ((which == 0 && negated)
+	     || (which == 1 && ! negated))
+	  strcat (buf, "<");
+	else
+	  strcat (buf, ">=");
+	if (negated)
+	  strcat (buf, " %0,%1,.+16\n\tnop\n\t bl %3,0");
+	else
+	  strcat (buf, " %0,%1,.+16\n\tnop\n\t bl %2,0");
+	break;
+
+      default:
+	abort();
+        }
+  return buf;
+}
+
 extern struct obstack *saveable_obstack;
 
 /* In HPUX 8.0's shared library scheme, special relocations are needed
