@@ -1,3 +1,11 @@
+2002-07-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* bb-reorder.c (make_reorder_chain_1): Search harder for the vax
+	casesi fallthru edge.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Place redirection
+	block after ADDR_VEC.
+	* vax.md (casesi): Use emit_jump_insn.  Remove unused constraints.
+
 2002-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/7245

@@ -211,16 +211,20 @@ make_reorder_chain_1 (bb, prev)
   /* In the absence of a prediction, disturb things as little as possible
      by selecting the old "next" block from the list of successors.  If
      there had been a fallthru edge, that will be the one.  */
+  /* Note that the fallthru block may not be next any time we eliminate
+     forwarder blocks.  */
   if (! next)
     {
       for (e = bb->succ; e ; e = e->succ_next)
-	if (e->dest->index == bb->index + 1)
+	if (e->flags & EDGE_FALLTHRU)
 	  {
-	    if ((e->flags & EDGE_FALLTHRU)
-	        || (e->dest->succ
-	            && ! (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))))
-	      next = e->dest;
+	    next = e->dest;
 	    break;
+	  }
+	else if (e->dest->index == bb->index + 1)
+	  {
+	    if (! (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH)))
+	      next = e->dest;
 	  }
     }
 

@@ -953,9 +953,21 @@ force_nonfallthru_and_redirect (e, target)
   if (e->src->succ->succ_next)
     {
       /* Create the new structures.  */
+
+      /* Position the new block correctly relative to loop notes.  */
       note = last_loop_beg_note (e->src->end);
-      jump_block
-	= create_basic_block (e->src->index + 1, NEXT_INSN (note), NULL);
+      note = NEXT_INSN (note);
+
+      /* ... and ADDR_VECs.  */
+      if (note != NULL
+	  && GET_CODE (note) == CODE_LABEL
+	  && NEXT_INSN (note)
+	  && GET_CODE (NEXT_INSN (note)) == JUMP_INSN
+	  && (GET_CODE (PATTERN (NEXT_INSN (note))) == ADDR_DIFF_VEC
+	      || GET_CODE (PATTERN (NEXT_INSN (note))) == ADDR_VEC))
+	note = NEXT_INSN (NEXT_INSN (note));
+
+      jump_block = create_basic_block (e->src->index + 1, note, NULL);
       jump_block->count = e->count;
       jump_block->frequency = EDGE_FREQUENCY (e);
       jump_block->loop_depth = target->loop_depth;

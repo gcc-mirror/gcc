@@ -1933,9 +1933,9 @@
 (define_expand "casesi"
   [(set (pc)
 	(if_then_else
-	 (leu (minus:SI (match_operand:SI 0 "general_operand" "g")
-			(match_operand:SI 1 "general_operand" "g"))
-	      (match_operand:SI 2 "general_operand" "g"))
+	 (leu (minus:SI (match_operand:SI 0 "general_operand" "")
+			(match_operand:SI 1 "general_operand" ""))
+	      (match_operand:SI 2 "general_operand" ""))
 	 (plus:SI (sign_extend:SI
 		   (mem:HI (plus:SI (mult:SI (minus:SI (match_dup 0)
 						       (match_dup 1))
@@ -1946,7 +1946,7 @@
    (match_operand 4 "" "")]
   ""
   "
-  emit_insn (gen_casesi1 (operands[0], operands[1], operands[2], operands[3]));
+  emit_jump_insn (gen_casesi1 (operands[0], operands[1], operands[2], operands[3]));
   DONE;
 ")
 
