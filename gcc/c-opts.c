@@ -205,7 +205,7 @@ static void finish_options PARAMS ((void));
   OPT("Wmissing-braces",	CL_ALL,   OPT_Wmissing_braces)		     \
   OPT("Wmissing-declarations",	CL_C,     OPT_Wmissing_declarations)	     \
   OPT("Wmissing-format-attribute",CL_ALL, OPT_Wmissing_format_attribute)     \
-  OPT("Wmissing-prototypes",	CL_ALL,   OPT_Wmissing_prototypes)	     \
+  OPT("Wmissing-prototypes",	CL_C,     OPT_Wmissing_prototypes)	     \
   OPT("Wmultichar",		CL_ALL,   OPT_Wmultichar)		     \
   OPT("Wnested-externs",	CL_C,     OPT_Wnested_externs)		     \
   OPT("Wnon-template-friend",	CL_CXX,   OPT_Wnon_template_friend)	     \
@@ -224,7 +224,7 @@ static void finish_options PARAMS ((void));
   OPT("Wsequence-point",	CL_C,     OPT_Wsequence_point)		     \
   OPT("Wsign-compare",		CL_ALL,   OPT_Wsign_compare)		     \
   OPT("Wsign-promo",		CL_CXX,   OPT_Wsign_promo)		     \
-  OPT("Wstrict-prototypes",	CL_ALL,   OPT_Wstrict_prototypes)	     \
+  OPT("Wstrict-prototypes",	CL_C,     OPT_Wstrict_prototypes)	     \
   OPT("Wsynth",			CL_CXX,   OPT_Wsynth)			     \
   OPT("Wsystem-headers",	CL_ALL,   OPT_Wsystem_headers)		     \
   OPT("Wtraditional",		CL_C,     OPT_Wtraditional)		     \

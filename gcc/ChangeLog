@@ -1,3 +1,8 @@
+2003-05-06    <neil@cat.daikokuya.co.uk>
+
+	* c-opts.c (COMMAND_LINE_OPTIONS): Reject -Wmissing-prototypes
+	and -Wstrict-prototypes if C++.
+
 2003-05-06  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/linuxspe.h: New file.
