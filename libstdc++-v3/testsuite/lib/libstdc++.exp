@@ -27,8 +27,9 @@
 ## as follows:
 ##    lib_env(CXX)       	The compiler used to run testcases.
 ##    lib_env(CXXFLAGS)  	Special flags passed to the compiler.
+##    lib_env(LIBGLOSSFLAGS)  	Flags for finding libgloss-using xcompilers.
 ##    lib_env(INCLUDES)  	Includes options to pass to the compiler.
-##    lib_env(LDFLAGS)   	Additional library flags.
+##    lib_env(LIBS)   		Libraries to link, and dditional library flags.
 ##    lib_env(LIBTOOL)   	Path to the `libtool' script.
 ##    lib_env(SRC_DIR)   	Where V3 master source lives.
 ##    lib_env(BUILD_DIR) 	Where V3 is built.
@@ -41,6 +42,7 @@
 
 
 load_lib dg.exp
+load_lib libgloss.exp
 
 ## Initialization routine.
 proc libstdc++-dg-init { args } {
@@ -59,7 +61,7 @@ proc libstdc++-dg-init { args } {
     # Set proper environment variables for the framework.
     libstdc++-setup-flags ${src-dir} ${build-dir}
     
-    # mkcheck.in used to output these information.
+    # mkcheck.in used to output this information.
     set output [remote_exec host $lib_env(CXX) -v]
 # XXX don't try clever formatting hacks at the moment
 #    if { [lindex $output 0] == 0 } {
@@ -77,10 +79,10 @@ proc libstdc++-dg-init { args } {
 ##
 ## This is the heart of the framework.  For the time being, it is
 ## pretty much baroque, but it will improve as time goes.
-proc libstdc++_load { prog } {
+proc libstdc++-load { prog } {
     global lib_env
     set opts $lib_env(testcase_options)
-    set results [remote_load target $lib_env(LIBTOOL) "--mode=execute $prog"]
+    set results [remote_load target $prog]
 
     if { [lindex $results 0] == "pass" && [info exists opts(diff)] } {
 	# FIXME: We should first test for any mentioned @output@ file here
@@ -102,11 +104,11 @@ proc libstdc++_load { prog } {
 }
 
 ## Nothing particular to do.
-proc libstdc++_exit { } {
+proc libstdc++-exit { } {
 }
 
 ## Output the version of the libs tested.
-proc libstdc++_version { } {
+proc libstdc++-version { } {
     global lib_env
     set version "undeterminated" 
 
@@ -124,7 +126,7 @@ proc libstdc++_version { } {
 
 ## Main loop.  Loop over TEST-DIRECTORIES and run each testcase
 ## found therein.
-proc libstdc++_runtest { testdirs } {
+proc libstdc++-runtest { testdirs } {
     global runtests
     global srcdir
     global outdir
@@ -150,8 +152,8 @@ proc libstdc++_runtest { testdirs } {
 	    }
 	    
 #	    verbose "Testing [dg-trim-dirname $srcdir $testfile]"
-	    libstdc++_do_test $testfile static
-	    libstdc++_do_test $testfile shared
+	    libstdc++-do-test $testfile static
+	    libstdc++-do-test $testfile shared
 	}
 	cd ${top-tests-dir}
     }
@@ -195,15 +197,15 @@ proc libstdc++-dg-test { testfile compile_type additional-options } {
 	"link" {
 	    # If we're asked to run a testcase, then just do a `link'.
 	    # Later, the framework will load the program image through
-	    # libstdc++_load callback.
+	    # libstdc++-load callback.
 	    if { $which_library == "static" } {
 		append output_file ".st-exe"
 	    } else {
 		append output_file ".sh-exe"
 	    }
 	    append lt_args " --mode=link $lib_env(FLAGS) \
-		    $lib_env($which_library) $testfile \
-		    -o $output_file $lib_env(LDFLAGS)"
+		    $lib_env(LIBGLOSSFLAGS) $lib_env($which_library) \
+		    $testfile -o $output_file $lib_env(LIBS)"
 	}
 	default {
 	    perror "$compile_type: option not recognized"
@@ -235,8 +237,9 @@ proc libstdc++-setup-flags {src-dir build-dir} {
 	set lib_env(CXX) [lindex $flags 3]
 	set lib_env(CXXFLAGS) [lindex $flags 4]
 	set lib_env(INCLUDES) [lindex $flags 5]
-	set lib_env(LDFLAGS) [lindex $flags 6]
-	
+	set lib_env(LIBS) [lindex $flags 6]
+	set lib_env(LIBGLOSSFLAGS) [libgloss_link_flags]
+
 	# This is really really fragile.  We should find a better away to
 	# tell the framework which flags to use for static/shared libraries.
 	set lib_env(static) "-static"
@@ -256,7 +259,7 @@ proc maybe-make-directory {dir} {
     }
 }
 
-proc libstdc++_do_test { testfile lib } {
+proc libstdc++-do-test { testfile lib } {
     global which_library; set which_library $lib
     ## Is it planed to handle -keep-output throught @xxx@-option
     dg-test -keep-output $testfile "" ""
@@ -402,7 +405,7 @@ proc dg-test { args } {
 		perror "$name: $errmsg for \"$op\"\n"
 	    }
 	    # ??? The call to unresolved here is necessary to clear `errcnt'.
-	    # What we really need is a proc like perror that doesn't set errcnt.
+	    # What is needed is a proc like perror that doesn't set errcnt.
 	    # It should also set exit_status to 1.
 	    unresolved "$name: $errmsg for \"$op\""
 	    return
@@ -546,7 +549,7 @@ proc dg-test { args } {
 	    warning "$name compilation failed to produce executable"
 	} else {
 	    set status -1
-	    set result [${tool}_load $output_file]
+	    set result [libstdc++-load $output_file]
 	    set status [lindex $result 0];
 	    set output [lindex $result 1];
 	    #send_user "After exec, status: $status\n"
@@ -589,7 +592,6 @@ proc dg-test { args } {
     # Note that if the program has special run-time requirements, running
     # of the program can be delayed until here.  Ditto for other situations.
     # It would be a bit cumbersome though.
-
     if ![string match ${dg-final-code} ""] {
 	regsub -all "\\\\(\[{}\])" ${dg-final-code} "\\1" dg-final-code
 	# Note that the use of `args' here makes this a varargs proc.
@@ -599,7 +601,7 @@ proc dg-test { args } {
 	if [catch "dg-final-proc $prog" errmsg] {
 	    perror "$name: error executing dg-final: $errmsg"
 	    # ??? The call to unresolved here is necessary to clear `errcnt'.
-	    # What we really need is a proc like perror that doesn't set errcnt.
+	    # What is needed is a proc like perror that doesn't set errcnt.
 	    # It should also set exit_status to 1.
 	    unresolved "$name: error executing dg-final: $errmsg"
 	}

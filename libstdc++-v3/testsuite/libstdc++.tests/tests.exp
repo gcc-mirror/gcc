@@ -34,7 +34,7 @@ remote_exec host ${shell-ulimit-command} "-d ${maximum-memory-usage}"
 remote_exec host ${shell-ulimit-command} "-v ${maximum-memory-usage}"
 
 ## Now, do the work directory by directory
-libstdc++_runtest [glob -nocomplain $srcdir/*]
+libstdc++-runtest [glob -nocomplain $srcdir/*]
 dg-finish
 
 

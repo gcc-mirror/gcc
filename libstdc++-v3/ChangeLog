@@ -1,3 +1,13 @@
+2001-05-09  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/lib/libstdc++.exp: Use libgloss.exp. Call
+	libgloss_link_flags to find crt0.o for targets that use libgloss
+	instead of newlib.
+	Change LDFLAGS to LIBS.
+	Consistently name procedures libstdc++-XXX.
+	* testsuite/libstdc++.tests/tests.exp: Use new procedure names.
+	* testsuite/config/default.exp: Kill spaces.
+	
 2001-05-08  Benjamin Kosnik  <bkoz@fillmore.constant.com>
 
 	* include/c_std/bits/std_cstring.h (memchr): Correct definitions.
