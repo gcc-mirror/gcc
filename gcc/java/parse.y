@@ -367,7 +367,7 @@ static const enum tree_code binop_lookup[19] =
   binop_lookup [((VALUE) - PLUS_TK) % ARRAY_SIZE (binop_lookup)]
 
 /* This is the end index for binary operators that can also be used
-   in compound assignements. */
+   in compound assignments. */
 #define BINOP_COMPOUND_CANDIDATES 11
 
 /* The "$L" identifier we use to create labels.  */
@@ -2021,7 +2021,7 @@ class_instance_creation_expression:
 
 /* Created after JDK1.1 rules originally added to
    class_instance_creation_expression, but modified to use
-   'class_type' instead of 'TypeName' (type_name) which is mentionned
+   'class_type' instead of 'TypeName' (type_name) which is mentioned
    in the documentation but doesn't exist. */
 
 anonymous_class_creation:
@@ -2808,7 +2808,7 @@ java_parser_context_resume (void)
   current_class = saver->class_type;
   current_function_decl = saver->function_decl;
 
-  /* Retrive the restored context */
+  /* Retrieve the restored context */
   ctxp = restored;
 
   /* Re-installed the data for the parsing to carry on */
@@ -3730,7 +3730,7 @@ maybe_create_class_interface_decl (tree decl, tree raw_name,
 
   /* Take care of the file and line business */
   DECL_SOURCE_FILE (decl) = EXPR_WFL_FILENAME (cl);
-  /* If we're emiting xrefs, store the line/col number information */
+  /* If we're emitting xrefs, store the line/col number information */
   if (flag_emit_xref)
     DECL_SOURCE_LINE (decl) = EXPR_WFL_LINECOL (cl);
   else
@@ -3898,7 +3898,7 @@ create_anonymous_class (int location, tree type_name)
   if ((type_decl = IDENTIFIER_CLASS_VALUE (EXPR_WFL_NODE (type_name))))
     {
       /* Create a class which either implements on extends the designated
-	 class. The class bears an innacessible name. */
+	 class. The class bears an inaccessible name. */
       if (CLASS_INTERFACE (type_decl))
 	{
 	  /* It's OK to modify it here. It's been already used and
@@ -4099,7 +4099,7 @@ add_inner_class_fields (tree class_decl, tree fct_decl)
 	     methods first, then finit$ to get a picture of what's
 	     used.  It works with the exception that we would have to
 	     go back on all constructor invoked in regular methods to
-	     have their invokation reworked (to include the right amount
+	     have their invocation reworked (to include the right amount
 	     of alias initializer parameters.)
 
 	     The only real way around, I think, is a first pass to
@@ -4109,10 +4109,10 @@ add_inner_class_fields (tree class_decl, tree fct_decl)
 
 	     On the other hand, it only affect local inner classes,
 	     whose constructors (and finit$ call) will be featuring
-	     unecessary arguments. It's easy for a developper to keep
+	     unnecessary arguments. It's easy for a developer to keep
 	     this number of parameter down by using the `final'
 	     keyword only when necessary. For the time being, we can
-	     issue a warning on unecessary finals. FIXME */
+	     issue a warning on unnecessary finals. FIXME */
 	  init = build_assignment (ASSIGN_TK, EXPR_WFL_LINECOL (wfl),
 				   wfl, init);
 
@@ -4130,7 +4130,7 @@ add_inner_class_fields (tree class_decl, tree fct_decl)
     return;
 
   /* If we ever registered an alias field, insert and marker to
-     remeber where the list ends. The second part of the list (the one
+     remember where the list ends. The second part of the list (the one
      featuring initialized fields) so it can be later reversed to
      enforce 8.5. The marker will be removed during that operation. */
   marker = build_tree_list (NULL_TREE, NULL_TREE);
@@ -4469,7 +4469,7 @@ build_instinit_invocation (tree class_type)
   return to_return;
 }
 
-/* Shared accros method_declarator and method_header to remember the
+/* Shared across method_declarator and method_header to remember the
    patch stage that was reached during the declaration of the method.
    A method DECL is built differently is there is no patch
    (JDEP_NO_PATCH) or a patch (JDEP_METHOD or JDEP_METHOD_RETURN)
@@ -4969,7 +4969,7 @@ method_declarator (tree id, tree list)
 
       /* The argument node: a name and a (possibly) incomplete type.  */
       arg_node = build_tree_list (name, real_type);
-      /* Remeber arguments declared final. */
+      /* Remember arguments declared final. */
       ARG_FINAL_P (arg_node) = ARG_FINAL_P (current);
 
       if (jdep)
@@ -5057,7 +5057,7 @@ parser_check_super_interface (tree super_decl, tree this_decl, tree this_wfl)
 }
 
 /* Makes sure that SUPER_DECL is suitable to extend THIS_DECL. Returns
-   0 if everthing is OK.  */
+   0 if everything is OK.  */
 
 static int
 parser_check_super (tree super_decl, tree this_decl, tree wfl)
@@ -5331,7 +5331,7 @@ build_alias_initializer_parameter_list (int mode, tree class_type, tree parm,
 	    break;
 
 	  case AIPL_FUNCTION_CTOR_INVOCATION:
-	    /* There are two case: the constructor invokation happends
+	    /* There are two case: the constructor invocation happens
 	       outside the local inner, in which case, locales from the outer
 	       context are directly used.
 
@@ -7631,7 +7631,7 @@ java_layout_classes (void)
   java_parse_abort_on_error ();
 }
 
-/* Expand methods in the current set of classes rememebered for
+/* Expand methods in the current set of classes remembered for
    generation.  */
 
 static void
@@ -8260,7 +8260,7 @@ outer_field_access_p (tree type, tree decl)
     return 0;
 
   /* If the inner class extends the declaration context of the field
-     we're try to acces, then this isn't an outer field access */
+     we're trying to access, then this isn't an outer field access */
   if (inherits_from_p (type, DECL_CONTEXT (decl)))
     return 0;
 
@@ -8684,7 +8684,7 @@ build_current_thisn (tree type)
   return saved_thisn;
 }
 
-/* Return the assignement to the hidden enclosing context `this$<n>'
+/* Return the assignment to the hidden enclosing context `this$<n>'
    by the second incoming parameter to the innerclass constructor. The
    form used is `this.this$<n> = this$<n>;'.  */
 
@@ -8901,7 +8901,7 @@ fix_constructors (tree mdecl)
       if (!found)
 	compound = add_stmt_to_compound (compound, NULL_TREE,
                                          build_super_invocation (mdecl));
-      /* Explicit super() invokation should take place before the
+      /* Explicit super() invocation should take place before the
          instance initializer blocks. */
       else
 	{
@@ -9007,7 +9007,7 @@ java_expand_classes (void)
 
 
   /* Find anonymous classes and expand their constructor. This extra pass is
-     neccessary because the constructor itself is only generated when the
+     necessary because the constructor itself is only generated when the
      method in which it is defined is expanded. */
   for (cur_ctxp = ctxp_for_generation; cur_ctxp; cur_ctxp = cur_ctxp->next)
     {
@@ -9878,7 +9878,7 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
 		}
 	    }
 
-	  /* Report and error if we're using a numerical litteral as a
+	  /* Report and error if we're using a numerical literal as a
              qualifier. It can only be an INTEGER_CST. */
 	  else if (TREE_CODE (qual_wfl) == INTEGER_CST)
 	    {
@@ -10451,7 +10451,7 @@ patch_method_invocation (tree patch, tree primary, tree where, int from_super,
 	  this_arg = primary ? primary : current_this;
 
 	  /* If we're using an access method, things are different.
-	     There are two familly of cases:
+	     There are two family of cases:
 
 	     1) We're not generating bytecodes:
 
@@ -10467,7 +10467,7 @@ patch_method_invocation (tree patch, tree primary, tree where, int from_super,
 	     - LIST is static. It's invocation is transformed from
 	       x(a1,....,an) into TYPE_OF(this$<n>).x(a1,....an).
 
-	     Of course, this$<n> can be abitrary complex, ranging from
+	     Of course, this$<n> can be arbitrarily complex, ranging from
 	     this$0 (the immediate outer context) to
 	     access$0(access$0(...(this$0))).
 
@@ -10709,8 +10709,8 @@ maybe_use_access_method (int is_super_init, tree *mdecl, tree *this_arg)
   *mdecl = md;
   *this_arg = ta;
 
-  /* Returnin a nonzero value indicates we were doing a non static
-     method invokation that is now a static invocation. It will have
+  /* Returning a nonzero value indicates we were doing a non static
+     method invocation that is now a static invocation. It will have
      callee displace `this' to insert it in the regular argument
      list. */
   return (non_static_context && to_return);
@@ -10739,7 +10739,7 @@ patch_invoke (tree patch, tree method, tree args)
 	TREE_TYPE (TREE_VALUE (ta)) != TREE_VALUE (t))
       TREE_VALUE (ta) = convert (TREE_VALUE (t), TREE_VALUE (ta));
 
-  /* Resolve unresolved returned type isses */
+  /* Resolve unresolved returned type issues */
   t = TREE_TYPE (TREE_TYPE (method));
   if (TREE_CODE (t) == POINTER_TYPE && !CLASS_LOADED_P (TREE_TYPE (t)))
     resolve_and_layout (TREE_TYPE (t), NULL);
@@ -11420,7 +11420,7 @@ qualify_ambiguous_name (tree id)
 	    return;
 	  }
 	qual = TREE_CHAIN (qual);
-	/* Do one more interation to set things up */
+	/* Do one more iteration to set things up */
 	super_found = again = 1;
       }
   } while (again);
@@ -11482,7 +11482,7 @@ qualify_ambiguous_name (tree id)
   else
     RESOLVE_PACKAGE_NAME_P (qual_wfl) = 1;
 
-  /* Propagate the qualification accross other components of the
+  /* Propagate the qualification across other components of the
      qualified name */
   for (qual = TREE_CHAIN (qual); qual;
        qual_wfl = QUAL_WFL (qual), qual = TREE_CHAIN (qual))
@@ -12533,7 +12533,7 @@ build_wfl_wrap (tree node, int location)
 {
   tree wfl, node_to_insert = node;
 
-  /* We want to process THIS . xxx symbolicaly, to keep it consistent
+  /* We want to process THIS . xxx symbolically, to keep it consistent
      with the way we're processing SUPER. A THIS from a primary as a
      different form than a SUPER. Turn THIS into something symbolic */
   if (TREE_CODE (node) == THIS_EXPR)
@@ -13014,7 +13014,7 @@ try_builtin_assignconv (tree wfl_op1, tree lhs_type, tree rhs)
 /* Return 1 if RHS_TYPE can be converted to LHS_TYPE by identity
    conversion (5.1.1) or widening primitive conversion (5.1.2).  Return
    0 is the conversion test fails.  This implements parts the method
-   invocation convertion (5.3).  */
+   invocation conversion (5.3).  */
 
 static int
 valid_builtin_assignconv_identity_widening_p (tree lhs_type, tree rhs_type)
@@ -13104,7 +13104,7 @@ valid_ref_assignconv_cast_p (tree source, tree dest, int cast)
 	  /* Otherwise, SOURCE must implement DEST */
 	  return interface_of_p (dest, source);
 	}
-      /* DEST is an array, cast permited if SOURCE is of Object type */
+      /* DEST is an array, cast permitted if SOURCE is of Object type */
       return (cast && source == object_type_node ? 1 : 0);
     }
   if (TYPE_INTERFACE_P (source))
@@ -13448,7 +13448,7 @@ patch_binop (tree node, tree wfl_op1, tree wfl_op2)
       if (code == RDIV_EXPR && TREE_CODE (prom_type) == INTEGER_TYPE)
 	TREE_SET_CODE (node, TRUNC_DIV_EXPR);
 
-      /* Before divisions as is disapear, try to simplify and bail if
+      /* Before divisions as is disappear, try to simplify and bail if
          applicable, otherwise we won't perform even simple
          simplifications like (1-1)/3. We can't do that with floating
          point number, folds can't handle them at this stage. */
@@ -14378,7 +14378,7 @@ patch_cast (tree node, tree wfl_op)
 	if (cast_type != long_type_node)
 	  op = convert (integer_type_node, op);
 
-      /* Try widening/narrowing convertion.  Potentially, things need
+      /* Try widening/narrowing conversion.  Potentially, things need
 	 to be worked out in gcc so we implement the extreme cases
 	 correctly.  fold_convert() needs to be fixed.  */
       return convert (cast_type, op);
@@ -14925,7 +14925,7 @@ patch_if_else_statement (tree node)
 
 /* 14.6 Labeled Statements */
 
-/* Action taken when a lableled statement is parsed. a new
+/* Action taken when a labeled statement is parsed. a new
    LABELED_BLOCK_EXPR is created. No statement is attached to the
    label, yet.  LABEL can be NULL_TREE for artificially-generated blocks. */
 
@@ -15167,7 +15167,7 @@ build_bc_statement (int location, int is_break, tree name)
 	    (merge_qualified_name (label_id, EXPR_WFL_NODE (name)))))
 	/* Null means that we don't have a target for this named
 	   break/continue. In this case, we make the target to be the
-	   label name, so that the error can be reported accuratly in
+	   label name, so that the error can be reported accurately in
 	   patch_bc_statement. */
 	label_block_expr = EXPR_WFL_NODE (name);
     }

@@ -565,7 +565,7 @@ constructor_declaration:
 /* extra SC_TK, FIXME */
 |	modifiers constructor_declarator throws constructor_body SC_TK
 		{ modifier_value = 0; }
-/* I'm not happy with the SC_TK addition. It isn't in the grammer and should
+/* I'm not happy with the SC_TK addition. It isn't in the grammar and should
    probably be matched by and empty statement. But it doesn't work. FIXME */
 ;
 

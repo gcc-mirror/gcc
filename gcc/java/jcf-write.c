@@ -276,7 +276,7 @@ struct jcf_partial
   /* Information about the current switch statement. */
   struct jcf_switch_state *sw_state;
 
-  /* The count of jsr instructions that have been emmitted.  */
+  /* The count of jsr instructions that have been emitted.  */
   long num_jsrs;
 };
 
@@ -2868,7 +2868,7 @@ generate_classfile (tree clas, struct jcf_partial *state)
   append_chunk (NULL, 0, state);
   cpool_chunk = state->chunk;
 
-  /* Next allocate the chunk containing acces_flags through fields_count. */
+  /* Next allocate the chunk containing access_flags through fields_count. */
   if (clas == object_type_node)
     i = 10;
   else
@@ -2877,7 +2877,7 @@ generate_classfile (tree clas, struct jcf_partial *state)
   i = get_access_flags (TYPE_NAME (clas));
   if (! (i & ACC_INTERFACE))
     i |= ACC_SUPER;
-  PUT2 (i); /* acces_flags */
+  PUT2 (i); /* access_flags */
   i = find_class_constant (&state->cpool, clas);  PUT2 (i);  /* this_class */
   if (clas == object_type_node)
     {

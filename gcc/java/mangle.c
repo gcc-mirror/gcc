@@ -471,7 +471,7 @@ mangle_array_type (tree p_type)
 }
 
 /* Write a substitution string for entry I. Substitution string starts a
-   -1 (encoded S_.) The base is 36, and the code shamlessly taken from
+   -1 (encoded S_.) The base is 36, and the code shamelessly taken from
    cp/mangle.c.  */
 
 static void
