@@ -4214,7 +4214,7 @@ expand_end_case (orig_index)
   register int i;
   rtx before_case;
   register struct nesting *thiscase = case_stack;
-  tree index_expr;
+  tree index_expr, index_type;
   int unsignedp;
 
   if (output_bytecode)
@@ -4225,12 +4225,13 @@ expand_end_case (orig_index)
 
   table_label = gen_label_rtx ();
   index_expr = thiscase->data.case_stmt.index_expr;
-  unsignedp = TREE_UNSIGNED (TREE_TYPE (index_expr));
+  index_type = TREE_TYPE (index_expr);
+  unsignedp = TREE_UNSIGNED (index_type);
 
   do_pending_stack_adjust ();
 
   /* An ERROR_MARK occurs for various reasons including invalid data type.  */
-  if (TREE_TYPE (index_expr) != error_mark_node)
+  if (index_type != error_mark_node)
     {
       /* If switch expression was an enumerated type, check that all
 	 enumeration literals are covered by the cases.
@@ -4284,8 +4285,8 @@ expand_end_case (orig_index)
 	  if (TREE_CODE (n->high) != INTEGER_CST)
 	    abort ();
 
-	  n->low = convert (TREE_TYPE (index_expr), n->low);
-	  n->high = convert (TREE_TYPE (index_expr), n->high);
+	  n->low = convert (index_type, n->low);
+	  n->high = convert (index_type, n->high);
 
 	  /* Count the elements and track the largest and smallest
 	     of them (treating them as signed even if they are not).  */
@@ -4310,10 +4311,9 @@ expand_end_case (orig_index)
 
       /* Compute span of values.  */
       if (count != 0)
-	range = fold (build (MINUS_EXPR, TREE_TYPE (index_expr),
-			     maxval, minval));
+	range = fold (build (MINUS_EXPR, index_type, maxval, minval));
 
-      if (count == 0 || TREE_CODE (TREE_TYPE (index_expr)) == ERROR_MARK)
+      if (count == 0)
 	{
 	  expand_expr (index_expr, const0_rtx, VOIDmode, 0);
 	  emit_queue ();
@@ -4387,7 +4387,7 @@ expand_end_case (orig_index)
 		  index_expr
 		    = build_int_2 (INTVAL (index),
 				   unsignedp || INTVAL (index) >= 0 ? 0 : -1);
-		  index_expr = convert (TREE_TYPE (index_expr), index_expr);
+		  index_expr = convert (index_type, index_expr);
 		}
 
 	      /* For constant index expressions we need only
@@ -4395,14 +4395,11 @@ expand_end_case (orig_index)
 		 target code.  The job of removing any unreachable
 		 code is left to the optimisation phase if the
 		 "-O" option is specified.  */
-	      for (n = thiscase->data.case_stmt.case_list;
-		   n;
-		   n = n->right)
-		{
-		  if (! tree_int_cst_lt (index_expr, n->low)
-		      && ! tree_int_cst_lt (n->high, index_expr))
-		    break;
-		}
+	      for (n = thiscase->data.case_stmt.case_list; n; n = n->right)
+		if (! tree_int_cst_lt (index_expr, n->low)
+		    && ! tree_int_cst_lt (n->high, index_expr))
+		  break;
+
 	      if (n)
 		emit_jump (label_rtx (n->code_label));
 	      else
@@ -4430,7 +4427,7 @@ expand_end_case (orig_index)
 	      balance_case_nodes (&thiscase->data.case_stmt.case_list, 
 				  NULL_PTR);
 	      emit_case_nodes (index, thiscase->data.case_stmt.case_list,
-			       default_label, TREE_TYPE (index_expr));
+			       default_label, index_type);
 	      emit_jump_if_reachable (default_label);
 	    }
 	}
@@ -4446,14 +4443,14 @@ expand_end_case (orig_index)
 	      enum machine_mode op_mode;
 
 	      /* Convert the index to SImode.  */
-	      if (GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (index_expr)))
+	      if (GET_MODE_BITSIZE (TYPE_MODE (index_type))
 		  > GET_MODE_BITSIZE (index_mode))
 		{
-		  enum machine_mode omode = TYPE_MODE (TREE_TYPE (index_expr));
+		  enum machine_mode omode = TYPE_MODE (index_type);
 		  rtx rangertx = expand_expr (range, NULL_RTX, VOIDmode, 0);
 
 		  /* We must handle the endpoints in the original mode.  */
-		  index_expr = build (MINUS_EXPR, TREE_TYPE (index_expr),
+		  index_expr = build (MINUS_EXPR, index_type,
 				      index_expr, minval);
 		  minval = integer_zero_node;
 		  index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
@@ -4464,7 +4461,7 @@ expand_end_case (orig_index)
 		}
 	      else
 		{
-		  if (TYPE_MODE (TREE_TYPE (index_expr)) != index_mode)
+		  if (TYPE_MODE (index_type) != index_mode)
 		    index_expr = convert (type_for_size (index_bits, 0),
 					  index_expr);
 		  index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
@@ -4501,15 +4498,14 @@ expand_end_case (orig_index)
 	  if (! win && HAVE_tablejump)
 	    {
 	      index_expr = convert (thiscase->data.case_stmt.nominal_type,
-				    fold (build (MINUS_EXPR,
-						 TREE_TYPE (index_expr),
+				    fold (build (MINUS_EXPR, index_type,
 						 index_expr, minval)));
 	      index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
 	      emit_queue ();
 	      index = protect_from_queue (index, 0);
 	      do_pending_stack_adjust ();
 
-	      do_tablejump (index, TYPE_MODE (TREE_TYPE (index_expr)),
+	      do_tablejump (index, TYPE_MODE (index_type),
 			    expand_expr (range, NULL_RTX, VOIDmode, 0),
 			    table_label, default_label);
 	      win = 1;
@@ -4576,6 +4572,7 @@ expand_end_case (orig_index)
       reorder_insns (before_case, get_last_insn (),
 		     thiscase->data.case_stmt.start);
     }
+
   if (thiscase->exit_label)
     emit_label (thiscase->exit_label);
 
