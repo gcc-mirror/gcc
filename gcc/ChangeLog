@@ -1,3 +1,16 @@
+2005-01-31  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux-unwind.h (struct gcc_vregs): New.
+	(struct gcc_regs): Rename from gcc_pt_regs.  Add more regs.
+	(struct gcc_sigcontext): Delete.  Merge contents to..
+	(struct gcc_ucontext): ..here.
+	(get_sigcontext): Delete.
+	(get_regs): New function, like get_sigcontext but return regs ptr.
+	64-bit version finds regs from r1 to support vdso.
+	(ppc_linux_aux_vector): New function.
+	(ppc_fallback_frame_state): Modify for get_regs.  Restore fprs
+	and vector regs.
+
 2005-01-31  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.c (vect_analyze_offset_expr): Use ssizetype instead
