@@ -462,7 +462,7 @@ in the following sections.
 -single_module  -static  -sub_library  -sub_umbrella @gol
 -twolevel_namespace  -umbrella  -undefined @gol
 -unexported_symbols_list  -weak_reference_mismatches @gol
--whatsloaded}
+-whatsloaded -F}
 
 @emph{MIPS Options}
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
@@ -7663,6 +7663,34 @@ These options are defined for all architectures running the Darwin operating
 system.  They are useful for compatibility with other Mac OS compilers.
 
 @table @gcctabopt
+@item -F@var{dir}
+@opindex F
+Add the framework directory @var{dir} to the head of the list of
+directories to be searched for header files.  These directories are
+interleaved with those specified by @option{-I} options and are
+scanned in a left-to-right order.
+
+A framework directory is a directory with frameworks in it.  A
+framework is a directory with a @samp{"Headers"} and/or
+@samp{"PrivateHeaders"} directory contained directly in it that ends
+in @samp{".framework"}.  The name of a framework is the name of this
+directory excluding the @samp{".framework"}.  Headers associated with
+the framework are found in one of those two directories, with
+@samp{"Headers"} being searched first.  A subframework is a framework
+directory that is in a framework's @samp{"Frameworks"} directory.
+Includes of subframework headers can only appear in a header of a
+framework that contains the subframework, or in a sibling subframework
+header.  Two subframeworks are siblings if they occur in the same
+framework.  A subframework should not have the same name as a
+framework, a warning will be issued if this is violated.  Currently a
+subframework cannot have subframeworks, in the future, the mechanism
+may be extended to support this.  The standard frameworks can be found
+in @samp{"/System/Library/Frameworks"}, @samp{"/Library/Frameworks"}
+and @samp{"/Local/Library/Frameworks"}.  An example include looks like
+@code{#include <Framework/header.h>}, where @samp{Framework} denotes
+the name of the framework and header.h is found in the
+@samp{"PrivateHeaders"} or @samp{"Headers"} directory.
+
 @item -all_load
 @opindex all_load
 Loads all members of static archive libraries.
