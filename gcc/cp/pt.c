@@ -135,19 +135,6 @@ static int template_class_depth_real PROTO((tree, int));
    only one level of arguments, but which is a TREE_VEC containing as
    its only entry the TREE_VEC for that level.  */
 
-/* The depth of a template argument vector.  When called directly by
-   the parser, we use a TREE_LIST rather than a TREE_VEC to represent
-   template arguments.  In fact, we may even see NULL_TREE if there
-   are no template arguments.  In both of those cases, there is only
-   one level of template arguments.  */
-#define TMPL_ARGS_DEPTH(NODE)					\
-  ((NODE != NULL_TREE						\
-    && TREE_CODE (NODE) == TREE_VEC				\
-    && TREE_VEC_LENGTH (NODE) > 0				\
-    && TREE_VEC_ELT (NODE, 0) != NULL_TREE			\
-    && TREE_CODE (TREE_VEC_ELT (NODE, 0)) == TREE_VEC) ?	\
-   TREE_VEC_LENGTH (NODE) : 1)
-
 /* Non-zero if the template arguments is actually a vector of vectors,
    rather than just a vector.  */
 #define TMPL_ARGS_HAVE_MULTIPLE_LEVELS(NODE) \
@@ -156,6 +143,14 @@ static int template_class_depth_real PROTO((tree, int));
    && TREE_VEC_LENGTH (NODE) > 0				\
    && TREE_VEC_ELT (NODE, 0) != NULL_TREE			\
    && TREE_CODE (TREE_VEC_ELT (NODE, 0)) == TREE_VEC)
+
+/* The depth of a template argument vector.  When called directly by
+   the parser, we use a TREE_LIST rather than a TREE_VEC to represent
+   template arguments.  In fact, we may even see NULL_TREE if there
+   are no template arguments.  In both of those cases, there is only
+   one level of template arguments.  */
+#define TMPL_ARGS_DEPTH(NODE)					\
+  (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (NODE) ? TREE_VEC_LENGTH (NODE) : 1)
 
 /* The LEVELth level of the template ARGS.  Note that template
    parameter levels are indexed from 1, not from 0.  */
@@ -176,6 +171,13 @@ static int template_class_depth_real PROTO((tree, int));
    macro does not work with single-level argument vectors.  */
 #define SET_TMPL_ARG(ARGS, LEVEL, IDX, VAL)			\
   (TREE_VEC_ELT (TREE_VEC_ELT ((ARGS), (LEVEL) - 1), (IDX)) = (VAL))
+
+/* Given a single level of template arguments in NODE, return the
+   number of arguments.  */
+#define NUM_TMPL_ARGS(NODE) 				\
+  ((NODE) == NULL_TREE ? 0 				\
+   : (TREE_CODE (NODE) == TREE_VEC 			\
+      ? TREE_VEC_LENGTH (NODE) : list_length (NODE)))
 
 /* The number of levels of template parameters given by NODE.  */
 #define TMPL_PARMS_DEPTH(NODE) \
@@ -505,6 +507,16 @@ add_outermost_template_args (args, extra_args)
      tree extra_args;
 {
   tree new_args;
+
+  /* If there are more levels of EXTRA_ARGS than there are ARGS,
+     something very fishy is going on.  */
+  my_friendly_assert (TMPL_ARGS_DEPTH (args) >= TMPL_ARGS_DEPTH (extra_args),
+		      0);
+
+  /* If *all* the new arguments will be the EXTRA_ARGS, just return
+     them.  */
+  if (TMPL_ARGS_DEPTH (args) == TMPL_ARGS_DEPTH (extra_args))
+    return extra_args;
 
   /* For the moment, we make ARGS look like it contains fewer levels.  */
   TREE_VEC_LENGTH (args) -= TMPL_ARGS_DEPTH (extra_args);
@@ -2545,15 +2557,11 @@ coerce_template_parms (parms, arglist, in_decl,
      int require_all_arguments;
 {
   int nparms, nargs, i, lost = 0;
-  tree vec = NULL_TREE;
+  tree inner_args;
+  tree vec;
 
-  if (arglist == NULL_TREE)
-    nargs = 0;
-  else if (TREE_CODE (arglist) == TREE_VEC)
-    nargs = TREE_VEC_LENGTH (arglist);
-  else
-    nargs = list_length (arglist);
-
+  inner_args = innermost_args (arglist);
+  nargs = NUM_TMPL_ARGS (inner_args);
   nparms = TREE_VEC_LENGTH (parms);
 
   if (nargs > nparms
@@ -2563,22 +2571,42 @@ coerce_template_parms (parms, arglist, in_decl,
     {
       if (complain) 
 	{
-	  error ("incorrect number of parameters (%d, should be %d)",
-		 nargs, nparms);
+	  cp_error ("wrong number of template arguments (%d, should be %d)",
+		    nargs, nparms);
 	  
 	  if (in_decl)
-	    cp_error_at ("in template expansion for decl `%D'",
-			 in_decl);
+	    cp_error_at ("provided for `%D'", in_decl);
 	}
 
       return error_mark_node;
     }
 
-  if (arglist && TREE_CODE (arglist) == TREE_VEC && nargs == nparms)
-    vec = copy_node (arglist);
+  /* Create in VEC the appropriate innermost arguments, and reset
+     ARGLIST to contain the complete set of arguments.  */
+  if (inner_args && TREE_CODE (inner_args) == TREE_VEC && nargs == nparms)
+    {
+      /* If we already have all the arguments, we can just use them.
+	 This is an optimization over the code in the `else' branch
+	 below, and should be functionally identicial.  */
+      vec = copy_node (inner_args);
+      arglist = add_outermost_template_args (arglist, vec);
+    }
   else
     {
+      /* If we don't already have all the arguments we must get what
+	 we can from default template arguments.  The tricky bit is
+	 that previous arguments can influence the default values,
+	 e.g.:  
+
+	   template <class T, class U = T> void foo();
+
+	 If we see `foo<int>' we have to come up with an {int, int}
+	 vector.  */
+
+      tree new_arglist;
+
       vec = make_tree_vec (nparms);
+      new_arglist = add_outermost_template_args (arglist, vec);
 
       for (i = 0; i < nparms; i++)
 	{
@@ -2597,23 +2625,33 @@ coerce_template_parms (parms, arglist, in_decl,
 	    }
 	  else if (i < nargs)
 	    {
-	      arg = TREE_VEC_ELT (arglist, i);
+	      arg = TREE_VEC_ELT (inner_args, i);
 	      if (arg == error_mark_node)
 		lost++;
 	    }
+	  /* If no template argument was supplied, look for a default
+	     value.  */
 	  else if (TREE_PURPOSE (parm) == NULL_TREE)
 	    {
+	      /* There was no default value.  */
 	      my_friendly_assert (!require_all_arguments, 0);
 	      break;
 	    }
 	  else if (TREE_CODE (TREE_VALUE (parm)) == TYPE_DECL)
-	    arg = tsubst (TREE_PURPOSE (parm), vec, in_decl);
+	    arg = tsubst (TREE_PURPOSE (parm), new_arglist, in_decl);
 	  else
-	    arg = tsubst_expr (TREE_PURPOSE (parm), vec, in_decl);
+	    arg = tsubst_expr (TREE_PURPOSE (parm), new_arglist, in_decl);
 
 	  TREE_VEC_ELT (vec, i) = arg;
 	}
+
+      /* We've left ARGLIST intact up to this point, in order to allow
+	 iteration through it in the case that it was a TREE_LIST, but
+	 from here on it should contain the full set of template
+	 arguments.  */
+      arglist = new_arglist;
     }
+
   for (i = 0; i < nparms; i++)
     {
       tree arg = TREE_VEC_ELT (vec, i);
@@ -2772,7 +2810,7 @@ coerce_template_parms (parms, arglist, in_decl,
 	}
       else
 	{
-	  tree t = tsubst (TREE_TYPE (parm), vec, in_decl);
+	  tree t = tsubst (TREE_TYPE (parm), arglist, in_decl);
 
 	  if (processing_template_decl)
 	    arg = maybe_fold_nontype_arg (arg);
@@ -3205,17 +3243,29 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	{
 	  /* We have multiple levels of arguments to coerce, at once.  */
 	  int i;
+	  int saved_depth = TMPL_ARGS_DEPTH (arglist);
 
 	  tree bound_args = make_tree_vec (parm_depth);
 	  
-	  for (i = TREE_VEC_LENGTH (arglist) - 1, 
+	  for (i = saved_depth,
 		 t = DECL_TEMPLATE_PARMS (template); 
-	       i >= 0 && t != NULL_TREE;
+	       i > 0 && t != NULL_TREE;
 	       --i, t = TREE_CHAIN (t))
-	    TREE_VEC_ELT (bound_args, i) =
-	      coerce_template_parms (TREE_VALUE (t),
-				     TREE_VEC_ELT (arglist, i),
-				     template, 1, 1);
+	    {
+	      tree a = coerce_template_parms (TREE_VALUE (t),
+					      arglist, template, 1, 1);
+	      SET_TMPL_ARGS_LEVEL (bound_args, i, a);
+
+	      /* We temporarily reduce the length of the ARGLIST so
+		 that coerce_template_parms will see only the arguments
+		 corresponding to the template parameters it is
+		 examining.  */
+	      TREE_VEC_LENGTH (arglist)--;
+	    }
+
+	  /* Restore the ARGLIST to its full size.  */
+	  TREE_VEC_LENGTH (arglist) = saved_depth;
+
 	  arglist = bound_args;
 	}
       else
@@ -4647,9 +4697,13 @@ tsubst (t, args, in_decl)
 	    if (arg != NULL_TREE)
 	      {
 		if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
-		  return cp_build_type_variant
-		    (arg, TYPE_READONLY (arg) || TYPE_READONLY (t),
-		     TYPE_VOLATILE (arg) || TYPE_VOLATILE (t));
+		  {
+		    my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (arg))
+					== 't', 0);
+		    return cp_build_type_variant
+		      (arg, TYPE_READONLY (arg) || TYPE_READONLY (t),
+		       TYPE_VOLATILE (arg) || TYPE_VOLATILE (t));
+		  }
 		else if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM)
 		  {
 		    if (CLASSTYPE_TEMPLATE_INFO (t))
@@ -7392,8 +7446,22 @@ do_type_instantiation (t, storage)
 	    instantiate_decl (tmp);
 	}
 
+    /* In contrast to implicit instantiation, where only the
+       declarations, and not the definitions, of members are
+       instantiated, we have here:
+
+         [temp.explicit]
+
+	 The explicit instantiation of a class template specialization
+	 implies the instantiation of all of its members not
+	 previously explicitly specialized in the translation unit
+	 containing the explicit instantiation.  
+
+       Of course, we can't instantiate member template classes, since
+       we don't have any arguments for them.  */
     for (tmp = CLASSTYPE_TAGS (t); tmp; tmp = TREE_CHAIN (tmp))
-      if (IS_AGGR_TYPE (TREE_VALUE (tmp)))
+      if (IS_AGGR_TYPE (TREE_VALUE (tmp))
+	  && !uses_template_parms (CLASSTYPE_TI_ARGS (TREE_VALUE (tmp))))
 	do_type_instantiation (TYPE_MAIN_DECL (TREE_VALUE (tmp)), storage);
   }
 }

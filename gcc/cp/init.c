@@ -1547,6 +1547,11 @@ build_offset_ref (type, name)
 	 part, we treat this just like a.f.  We do remember, however,
 	 the template-id that was used.  */
       name = TREE_OPERAND (orig_name, 0);
+
+      if (TREE_CODE (name) == LOOKUP_EXPR)
+	/* This can happen during tsubst'ing.  */
+	name = TREE_OPERAND (name, 0);
+
       my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 0);
     }
 

@@ -862,13 +862,14 @@ build_template_parm_names (parmlist, arglist)
      tree arglist;
 {
   int i, nparms;
-  
+  tree inner_args = innermost_args (arglist);
+
   nparms = TREE_VEC_LENGTH (parmlist);
   icat (nparms);
   for (i = 0; i < nparms; i++)
     {
       tree parm = TREE_VALUE (TREE_VEC_ELT (parmlist, i));
-      tree arg = TREE_VEC_ELT (arglist, i);
+      tree arg = TREE_VEC_ELT (inner_args, i);
       if (TREE_CODE (parm) == TYPE_DECL)
 	{
 	  /* This parameter is a type.  */
@@ -919,9 +920,8 @@ build_overload_identifier (name)
     {
       /* NAME is the TYPE_DECL for a template specialization.  */
       tree template, parmlist, arglist, tname;
-      template = CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (name));
-      arglist = innermost_args (TREE_VALUE (template));
-      template = TREE_PURPOSE (template);
+      template = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (name));
+      arglist = CLASSTYPE_TI_ARGS (TREE_TYPE (name));
       tname = DECL_NAME (template);
       parmlist = DECL_INNERMOST_TEMPLATE_PARMS (template);
       OB_PUTC ('t');
