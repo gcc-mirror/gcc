@@ -31,7 +31,7 @@ proc gcj_jar_interpret {jarfile} {
   set opts(_) {}
   set out [file rootname $jarfile].out
   libjava_invoke $jarfile "gij test" opts $gij {} $out \
-    -jar $jarfile
+      "" -jar $jarfile
 }
 
 proc gcj_jar_run {} {

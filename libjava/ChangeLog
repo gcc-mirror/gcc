@@ -1,3 +1,16 @@
+2004-05-10  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* testsuite/lib/libjava.exp (libjava_invoke): Add new argument
+	ld_library_additions. Adjust all calls to libjava_invoke to match
+	the new argument.
+
+	* testsuite/libjava.jni/jni.exp (gcj_jni_test_one): Pass stdc++
+	path to cxxflagslist.
+	Pass path of libstdc++ to libjava_invoke.
+
+	* testsuite/libjava.jar/jar.exp (gcj_jar_inerpret): Adjust
+	libjava_invoke arguments.
+
 2004-05-10  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* testsuite/libjava.jacks/jacks.xfail: Update to reflect the current
