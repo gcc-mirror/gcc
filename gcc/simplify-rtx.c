@@ -3404,8 +3404,9 @@ simplify_subreg (enum machine_mode outermode, rtx op,
 	  if (outermode == origmode)
 	    return XEXP (op, 0);
 	  if (GET_MODE_BITSIZE (outermode) <= GET_MODE_BITSIZE (origmode))
-	    return simplify_gen_subreg (outermode, XEXP (op, 0),
-					origmode, byte);
+	    return simplify_gen_subreg (outermode, XEXP (op, 0), origmode,
+					subreg_lowpart_offset (outermode,
+							       origmode));
 	  if (SCALAR_INT_MODE_P (outermode))
 	    return simplify_gen_unary (GET_CODE (op), outermode,
 				       XEXP (op, 0), origmode);
