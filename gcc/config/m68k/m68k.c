@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Motorola 68000 family.
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1246,43 +1246,89 @@ output_move_const_single (operands)
    The value, anded with 0xff, gives the code to use in fmovecr
    to get the desired constant.  */
 
-/* ??? This code should be fixed for cross-compilation. */
+/* This code has been fixed for cross-compilation. */
+  
+static int inited_68881_table = 0;
+
+char *strings_68881[7] = {
+  "0.0",
+  "1.0",
+  "10.0",
+  "100.0",
+  "10000.0",
+  "1e8",
+  "1e16"
+  };
+
+int codes_68881[7] = {
+  0x0f,
+  0x32,
+  0x33,
+  0x34,
+  0x35,
+  0x36,
+  0x37
+  };
+
+REAL_VALUE_TYPE values_68881[7];
+
+/* Set up values_68881 array by converting the decimal values
+   strings_68881 to binary.   */
+
+void
+init_68881_table ()
+{
+  int i;
+  REAL_VALUE_TYPE r;
+  enum machine_mode mode;
+
+  mode = DFmode;
+  for (i = 0; i < 7; i++)
+    {
+      if (i == 6)
+        mode = SFmode;
+      r = REAL_VALUE_ATOF (strings_68881[i], mode);
+      values_68881[i] = r;
+    }
+  inited_68881_table = 1;
+}
 
 int
 standard_68881_constant_p (x)
      rtx x;
 {
-  register double d;
+  REAL_VALUE_TYPE r;
+  int i;
+  enum machine_mode mode;
 
   /* fmovecr must be emulated on the 68040, so it shouldn't be used at all. */
   if (TARGET_68040)
     return 0;
 
+#ifndef REAL_ARITHMETIC
 #if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
   if (! flag_pretend_float)
     return 0;
 #endif
+#endif
 
-  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
+  if (! inited_68881_table)
+    init_68881_table ();
 
-  if (d == 0)
-    return 0x0f;
-  /* Note: there are various other constants available
-     but it is a nuisance to put in their values here.  */
-  if (d == 1)
-    return 0x32;
-  if (d == 10)
-    return 0x33;
-  if (d == 100)
-    return 0x34;
-  if (d == 10000)
-    return 0x35;
-  if (d == 1e8)
-    return 0x36;
+  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+
+  for (i = 0; i < 6; i++)
+    {
+      if (REAL_VALUES_EQUAL (r, values_68881[i]))
+        return (codes_68881[i]);
+    }
+  
   if (GET_MODE (x) == SFmode)
     return 0;
-  if (d == 1e16)
-    return 0x37;
+
+  if (REAL_VALUES_EQUAL (r, values_68881[6]))
+    return (codes_68881[6]);
+
   /* larger powers of ten in the constants ram are not used
      because they are not equal to a `double' C constant.  */
   return 0;
@@ -1295,25 +1341,29 @@ int
 floating_exact_log2 (x)
      rtx x;
 {
-  register double d, d1;
+  REAL_VALUE_TYPE r, r1;
   int i;
 
+#ifndef REAL_ARITHMETIC
 #if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
   if (! flag_pretend_float)
     return 0;
 #endif
+#endif
 
-  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
+  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
 
-  if (! (d > 0))
+  if (REAL_VALUES_LESS (r, dconst0))
     return 0;
 
-  for (d1 = 1.0, i = 0; d1 < d; d1 *= 2.0, i++)
-    ;
-
-  if (d == d1)
-    return i;
-
+  i = 0;
+  while (REAL_VALUES_LESS (r1, r))
+    {
+      r1 = REAL_VALUE_LDEXP (dconst1, i);
+      if (REAL_VALUES_EQUAL (r1, r))
+        return i;
+      i = i + 1;
+    }
   return 0;
 }
 
@@ -1322,131 +1372,161 @@ floating_exact_log2 (x)
    from the Sun FPA's constant RAM.
    The value returned, anded with 0x1ff, gives the code to use in fpmove
    to get the desired constant. */
-#define S_E (2.718281745910644531)
-#define D_E (2.718281828459045091)
-#define S_PI (3.141592741012573242)
-#define D_PI (3.141592653589793116)
-#define S_SQRT2 (1.414213538169860840)
-#define D_SQRT2 (1.414213562373095145)
-#define S_LOG2ofE (1.442695021629333496)
-#define D_LOG2ofE (1.442695040888963387)
-#define S_LOG2of10 (3.321928024291992188)
-#define D_LOG2of10 (3.321928024887362182)
-#define S_LOGEof2 (0.6931471824645996094)
-#define D_LOGEof2 (0.6931471805599452862)
-#define S_LOGEof10 (2.302585124969482442)
-#define D_LOGEof10 (2.302585092994045901)
-#define S_LOG10of2 (0.3010300099849700928)
-#define D_LOG10of2 (0.3010299956639811980)
-#define S_LOG10ofE (0.4342944920063018799)
-#define D_LOG10ofE (0.4342944819032518167)
 
-/* This code should be fixed for cross-compilation. */
+static int inited_FPA_table = 0;
+
+char *strings_FPA[38] = {
+/* small rationals */
+  "0.0",
+  "1.0",
+  "0.5",
+  "-1.0",
+  "2.0",
+  "3.0",
+  "4.0",
+  "8.0",
+  "0.25",
+  "0.125",
+  "10.0",
+  "-0.5",
+/* Decimal equivalents of double precision values */
+  "2.718281828459045091", /* D_E */
+  "6.283185307179586477", /* 2 pi */
+  "3.141592653589793116", /* D_PI */
+  "1.570796326794896619", /* pi/2 */
+  "1.414213562373095145", /* D_SQRT2 */
+  "0.7071067811865475244", /* 1/sqrt(2) */
+  "-1.570796326794896619", /* -pi/2 */
+  "1.442695040888963387", /* D_LOG2ofE */
+  "3.321928024887362182", /* D_LOG2of10 */
+  "0.6931471805599452862", /* D_LOGEof2 */
+  "2.302585092994045901", /* D_LOGEof10 */
+  "0.3010299956639811980", /* D_LOG10of2 */
+  "0.4342944819032518167", /* D_LOG10ofE */
+/* Decimal equivalents of single precision values */
+  "2.718281745910644531", /* S_E */
+  "6.283185307179586477", /* 2 pi */
+  "3.141592741012573242", /* S_PI */
+  "1.570796326794896619", /* pi/2 */
+  "1.414213538169860840", /* S_SQRT2 */
+  "0.7071067811865475244", /* 1/sqrt(2) */
+  "-1.570796326794896619", /* -pi/2 */
+  "1.442695021629333496", /* S_LOG2ofE */
+  "3.321928024291992188", /* S_LOG2of10 */
+  "0.6931471824645996094", /* S_LOGEof2 */
+  "2.302585124969482442", /* S_LOGEof10 */
+  "0.3010300099849700928", /* S_LOG10of2 */
+  "0.4342944920063018799", /* S_LOG10ofE */
+};
+
+
+int codes_FPA[38] = {
+/* small rationals */
+  0x200,
+  0xe,
+  0xf,
+  0x10,
+  0x11,
+  0xb1,
+  0x12,
+  0x13,
+  0x15,
+  0x16,
+  0x17,
+  0x2e,
+/* double precision */
+  0x8,
+  0x9,
+  0xa,
+  0xb,
+  0xc,
+  0xd,
+  0x27,
+  0x28,
+  0x29,
+  0x2a,
+  0x2b,
+  0x2c,
+  0x2d,
+/* single precision */
+  0x8,
+  0x9,
+  0xa,
+  0xb,
+  0xc,
+  0xd,
+  0x27,
+  0x28,
+  0x29,
+  0x2a,
+  0x2b,
+  0x2c,
+  0x2d
+  };
+
+REAL_VALUE_TYPE values_FPA[38];
+
+/* This code has been fixed for cross-compilation. */
+
+void
+init_FPA_table ()
+{
+  enum machine_mode mode;
+  int i;
+  REAL_VALUE_TYPE r;
+
+  mode = DFmode;
+  for (i = 0; i < 38; i++)
+    {
+      if (i == 25)
+        mode = SFmode;
+      r = REAL_VALUE_ATOF (strings_FPA[i], mode);
+      values_FPA[i] = r;
+    }
+  inited_FPA_table = 1;
+}
+
 
 int
 standard_sun_fpa_constant_p (x)
      rtx x;
 {
-  register double d;
+  REAL_VALUE_TYPE r;
+  int i;
 
+#ifndef REAL_ARITHMETIC
 #if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
   if (! flag_pretend_float)
     return 0;
 #endif
+#endif
 
-  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
+  if (! inited_FPA_table)
+    init_FPA_table ();
 
-  if (d == 0.0)
-    return 0x200;		/* 0 once 0x1ff is anded with it */
-  if (d == 1.0)
-    return 0xe;
-  if (d == 0.5)
-    return 0xf;
-  if (d == -1.0)
-    return 0x10;
-  if (d == 2.0)
-    return 0x11;
-  if (d == 3.0)
-    return 0xB1;
-  if (d == 4.0)
-    return 0x12;
-  if (d == 8.0)
-    return 0x13;
-  if (d == 0.25)
-    return 0x15;
-  if (d == 0.125)
-    return 0x16;
-  if (d == 10.0)
-    return 0x17;
-  if (d == -(1.0/2.0))
-    return 0x2E;
+  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
 
-/*
- * Stuff that looks different if it's single or double
- */
+  for (i=0; i<12; i++)
+    {
+      if (REAL_VALUES_EQUAL (r, values_FPA[i]))
+        return (codes_FPA[i]);
+    }
+
   if (GET_MODE (x) == SFmode)
     {
-      if (d == S_E)
-	return 0x8;
-      if (d == (2*S_PI))
-	return 0x9;
-      if (d == S_PI)
-	return 0xA;
-      if (d == (S_PI / 2.0))
-	return 0xB;
-      if (d == S_SQRT2)
-	return 0xC;
-      if (d == (1.0 / S_SQRT2))
-	return 0xD;
-      /* Large powers of 10 in the constant 
-	 ram are not used because they are
-	 not equal to a C double constant  */
-      if (d == -(S_PI / 2.0))
-	return 0x27;
-      if (d == S_LOG2ofE)
-	return 0x28;
-      if (d == S_LOG2of10)
-	return 0x29;
-      if (d == S_LOGEof2)
-	return 0x2A;
-      if (d == S_LOGEof10)
-	return 0x2B;
-      if (d == S_LOG10of2)
-	return 0x2C;
-      if (d == S_LOG10ofE)
-	return 0x2D;
+      for (i=25; i<38; i++)
+        {
+          if (REAL_VALUES_EQUAL (r, values_FPA[i]))
+            return (codes_FPA[i]);
+        }
     }
   else
     {
-      if (d == D_E)
-	return 0x8;
-      if (d == (2*D_PI))
-	return 0x9;
-      if (d == D_PI)
-	return 0xA;
-      if (d == (D_PI / 2.0))
-	return 0xB;
-      if (d == D_SQRT2)
-	return 0xC;
-      if (d == (1.0 / D_SQRT2))
-	return 0xD;
-      /* Large powers of 10 in the constant 
-	 ram are not used because they are
-	 not equal to a C double constant  */
-      if (d == -(D_PI / 2.0))
-	return 0x27;
-      if (d == D_LOG2ofE)
-	return 0x28;
-      if (d == D_LOG2of10)
-	return 0x29;
-      if (d == D_LOGEof2)
-	return 0x2A;
-      if (d == D_LOGEof10)
-	return 0x2B;
-      if (d == D_LOG10of2)
-	return 0x2C;
-      if (d == D_LOG10ofE)
-	return 0x2D;
+      for (i=12; i<25; i++)
+        {
+          if (REAL_VALUES_EQUAL (r, values_FPA[i]))
+            return (codes_FPA[i]);
+        }
     }
   return 0x0;
 }
@@ -1601,17 +1681,21 @@ print_operand (file, op, letter)
 #endif
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == SFmode)
     {
-      double d;
-      union { float f; int i; } u1;
-      REAL_VALUE_FROM_CONST_DOUBLE (d, op);
-      u1.f = d;
-      PRINT_OPERAND_PRINT_FLOAT (letter, file);
+      REAL_VALUE_TYPE r;
+      REAL_VALUE_FROM_CONST_DOUBLE (r, op);
+      ASM_OUTPUT_FLOAT_OPERAND (letter, file, r);
+    }
+  else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == XFmode)
+    {
+      REAL_VALUE_TYPE r;
+      REAL_VALUE_FROM_CONST_DOUBLE (r, op);
+      ASM_OUTPUT_LONG_DOUBLE_OPERAND (file, r);
     }
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) != DImode)
     {
-      double d;
-      REAL_VALUE_FROM_CONST_DOUBLE (d, op);
-      ASM_OUTPUT_DOUBLE_OPERAND (file, d);
+      REAL_VALUE_TYPE r;
+      REAL_VALUE_FROM_CONST_DOUBLE (r, op);
+      ASM_OUTPUT_DOUBLE_OPERAND (file, r);
     }
   else
     {
