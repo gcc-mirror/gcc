@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Gmicro (TRON) version.
-   Copyright (C) 1987, 1988, 1989, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Masanobu Yuhara, Fujitsu Laboratories LTD.
    (yuhara@flab.fujitsu.co.jp)
 
@@ -1278,18 +1278,6 @@ extern enum reg_class regno_reg_class[];
 /* Output before uninitialized data. */
 
 #define BSS_SECTION_ASM_OP ".section bss,data,align=4"
-
-#define EXTRA_SECTIONS in_bss
-
-#define EXTRA_SECTION_FUNCTIONS	\
-void								\
-bss_section ()							\
-{								\
-    if (in_section != in_bss) {					\
-	fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);	\
-	in_section = in_bss;					\
-    }								\
-}
 
 /* Output at beginning of assembler file.
    It is not appropriate for this to print a list of the options used,
