@@ -607,6 +607,8 @@ dequeue_and_dump (di)
 	  dump_child ("mngl", DECL_ASSEMBLER_NAME (t));
 	  dump_child ("args", DECL_ARGUMENTS (t));
 	}
+      if (DECL_EXTERNAL (t))
+	dump_string (di, "undefined");
       if (TREE_PUBLIC (t))
 	dump_string(di, "extern");
       else

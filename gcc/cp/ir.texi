@@ -739,6 +739,7 @@ FIXME: Talk about @code{TYPE_NONCOPIED_PARTS}.
 @findex DECL_INITIAL
 @findex DECL_SIZE
 @findex DECL_ALIGN
+@findex DECL_EXTERNAL
 
 This chapter covers the various kinds of declarations that appear in the
 internal representation, except for declarations of functions
@@ -864,7 +865,7 @@ then jumps to another function.  When the jumped-to function returns,
 control is transferred directly to the caller, without returning to the
 thunk.  The first parameter to the thunk is always the @code{this}
 pointer; the thunk should add @code{THUNK_DELTA} to this value.  (The
-@code{THUNK_DECL} is an @code{int}, not an @code{INTEGER_CST}.)  Then,
+@code{THUNK_DELTA} is an @code{int}, not an @code{INTEGER_CST}.)  Then,
 the thunk should jump to the location given by @code{DECL_INITIAL}; this
 will always be an expression for the address of a function.  
 
@@ -970,6 +971,9 @@ platform, it is the responsibility of the back-end to perform those
 modifications.  (Of course, the back-end should not modify
 @code{DECL_ASSEMBLER_NAME} itself.)
 
+@item DECL_EXTERNAL
+This predicate holds if the function is undefined.
+
 @item TREE_PUBLIC
 This predicate holds if the function has external linkage.
 
@@ -1022,8 +1026,6 @@ This macro returns the @code{FUNCTION_TYPE} or @code{METHOD_TYPE} for
 the function.
 
 @end ftable
-
-FIXME: Explain about constructor try-catch blocks.
 
 @c ---------------------------------------------------------------------
 @c Function Bodies
