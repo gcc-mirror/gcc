@@ -39,7 +39,6 @@ GLIBCPP_ENABLE_C_MBCHAR([yes])
 GLIBCPP_ENABLE_LONG_LONG([no])
 GLIBCPP_ENABLE_CHEADERS([c_std])
 GLIBCPP_ENABLE_THREADS
-GLIBCPP_ENABLE_ATOMICITY
 GLIBCPP_ENABLE_CXX_FLAGS([none])
 
 if test -n "$with_cross_host"; then
@@ -144,8 +143,7 @@ if test -n "$with_cross_host"; then
 	GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
 	GLIBCPP_CHECK_COMPLEX_MATH_COMPILER_SUPPORT
 	GLIBCPP_CHECK_WCHAR_T_SUPPORT
-	# GLIBCPP_CHECK_CTYPE_SUPPORT
-	ctype_include_dir="config/os/gnu-linux"
+	os_include_dir="config/os/gnu-linux"
 	# GLIBCPP_CHECK_STDLIB_SUPPORT
 	AC_DEFINE(HAVE_STRTOF)        
 	AC_DEFINE(HAVE_STRTOLD)        
@@ -161,7 +159,6 @@ if test -n "$with_cross_host"; then
 	AC_DEFINE(HAVE_ISINF)
 	AC_DEFINE(HAVE_ISINFF)
 
-	ctype_include_dir="config/os/newlib"
 	os_include_dir="config/os/newlib"
 
 	AC_DEFINE(_GLIBCPP_BUGGY_FLOAT_COMPLEX)
@@ -190,19 +187,19 @@ else
   GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT
   GLIBCPP_CHECK_COMPLEX_MATH_COMPILER_SUPPORT
   GLIBCPP_CHECK_WCHAR_T_SUPPORT
-  GLIBCPP_CHECK_CTYPE_SUPPORT
   GLIBCPP_CHECK_STDLIB_SUPPORT
 
   AC_FUNC_MMAP
 fi
 
 # Now that ctype is determined for all possible targets, we can do this...
-AC_LINK_FILES($ctype_include_dir/bits/ctype_base.h, \
+AC_LINK_FILES($os_include_dir/bits/ctype_base.h, \
 include/bits/ctype_base.h)
-AC_LINK_FILES($ctype_include_dir/bits/ctype_inline.h, \
+AC_LINK_FILES($os_include_dir/bits/ctype_inline.h, \
 include/bits/ctype_inline.h)
-AC_LINK_FILES($ctype_include_dir/bits/ctype_noninline.h, \
+AC_LINK_FILES($os_include_dir/bits/ctype_noninline.h, \
 include/bits/ctype_noninline.h)
+AC_LINK_FILES($ATOMICITYH/bits/atomicity.h, include/bits/atomicity.h)
 
 AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes || test "$NULL_TARGET" = yes)
