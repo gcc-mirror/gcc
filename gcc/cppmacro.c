@@ -146,7 +146,6 @@ builtin_macro (pfile, token)
      cpp_reader *pfile;
      cpp_token *token;
 {
-  unsigned char flags = token->flags & PREV_WHITE;
   cpp_hashnode *node = token->val.node;
 
   switch (node->value.builtin)
@@ -220,8 +219,6 @@ builtin_macro (pfile, token)
       cpp_ice (pfile, "invalid builtin macro \"%s\"", node->name);
       break;
     }
-
-  token->flags = flags;
 }
 
 /* Used by cpperror.c to obtain the correct line and column to report
@@ -671,13 +668,13 @@ enter_macro_context (pfile, node)
       list.limit = macro->expansion + macro->count;
     }
 
+  /* Only push a macro context for non-empty replacement lists.  */
   if (list.first != list.limit)
     {
-      /* Push its context.  */
       context = next_context (pfile);
       context->list = list;
       context->macro = macro;
-
+      
       /* Disable the macro within its expansion.  */
       macro->disabled = 1;
     }
@@ -712,6 +709,7 @@ replace_args (pfile, macro, args, list)
      macro_arg *args;
      struct toklist *list;
 {
+  unsigned char flags = 0;
   unsigned int i, total;
   const cpp_token *src, *limit;
   cpp_token *dest;
@@ -804,11 +802,20 @@ replace_args (pfile, macro, args, list)
 	    /* The last token gets the PASTE_LEFT of the CPP_MACRO_ARG.  */
 	    dest[count - 1].flags |= src->flags & PASTE_LEFT;
 
+	    dest[0].flags |= AVOID_LPASTE;
 	    dest += count;
 	  }
+
+	/* The token after the argument must avoid an accidental paste.  */
+	flags = AVOID_LPASTE;
       }
     else
-      *dest++ = *src;
+      {
+	*dest = *src;
+	dest->flags |= flags;
+	dest++;
+	flags = 0;
+      }
 
   list->limit = dest;
 
@@ -913,8 +920,6 @@ cpp_get_token (pfile, token)
       else if (context->list.first != context->list.limit)
 	{
 	  *token = *context->list.first++;
-	  token->flags |= flags;
-	  flags = 0;
 	  /* PASTE_LEFT tokens can only appear in macro expansions.  */
 	  if (token->flags & PASTE_LEFT)
 	    paste_all_tokens (pfile, token);
@@ -923,6 +928,8 @@ cpp_get_token (pfile, token)
 	{
 	  if (context->macro)
 	    {
+	      /* Avoid accidental paste at the end of a macro.  */
+	      flags |= AVOID_LPASTE;
 	      _cpp_pop_context (pfile);
 	      continue;
 	    }
@@ -932,6 +939,8 @@ cpp_get_token (pfile, token)
 	  return;
 	}
 
+      token->flags |= flags;
+      flags = 0;
       if (token->type != CPP_NAME)
 	break;
 
@@ -945,14 +954,15 @@ cpp_get_token (pfile, token)
 	  /* Macros invalidate controlling macros.  */
 	  pfile->mi_state = MI_FAILED;
 
+	  /* Remember PREV_WHITE and avoid an accidental paste.  */
+	  flags = (token->flags & PREV_WHITE) | AVOID_LPASTE;
+
 	  if (node->flags & NODE_BUILTIN)
 	    {
 	      builtin_macro (pfile, token);
+	      token->flags = flags;
 	      break;
 	    }
-
-	  /* Merge PREV_WHITE of tokens.  */
-	  flags = token->flags & PREV_WHITE;
 
 	  if (node->value.macro->disabled)
 	    token->flags |= NO_EXPAND;

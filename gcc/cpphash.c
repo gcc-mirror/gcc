@@ -73,10 +73,7 @@ _cpp_cleanup_hashtable (pfile)
   do
     {
       if (*p)
-	{
-	  _cpp_free_definition (*p);
-	  (*p)->fe_value = 0;  /* expose the node to GC */
-	}
+	_cpp_free_definition (*p);
     }
   while (++p < limit);
 
@@ -169,7 +166,6 @@ _cpp_lookup_with_hash (pfile, len, hash)
   entry = entries[index];
   entry->type = NT_VOID;
   entry->flags = 0;
-  entry->fe_value = 0;
   entry->directive_index = 0;
   entry->arg_index = 0;
   entry->length = len;

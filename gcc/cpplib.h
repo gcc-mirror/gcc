@@ -166,6 +166,7 @@ struct cpp_string
 #define PASTE_LEFT	(1 << 3) /* If on LHS of a ## operator.  */
 #define NAMED_OP	(1 << 4) /* C++ named operators.  */
 #define NO_EXPAND	(1 << 5) /* Do not macro-expand this token.  */
+#define AVOID_LPASTE	(1 << 6) /* Check left for accidental pastes.  */
 
 /* A preprocessing token.  This has been carefully packed and should
    occupy 12 bytes on 32-bit hosts and 16 bytes on 64-bit hosts.  */
@@ -487,8 +488,6 @@ struct cpp_hashnode
     enum cpp_ttype operator;		/* Code for a named operator.  */
     enum builtin_type builtin;		/* Code for a builtin macro.  */
   } value;
-
-  union tree_node *fe_value;		/* Front end value.  */
 };
 
 /* Call this first to get a handle to pass to other functions.  */
