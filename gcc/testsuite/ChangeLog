@@ -1,3 +1,8 @@
+2004-02-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14083
+	* g++.dg/eh/cond2.C: New test.
+
 2004-02-12  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.dg/debug/20020327-1.c: Disable for powerpc64.
