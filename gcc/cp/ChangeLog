@@ -1,3 +1,18 @@
+2001-02-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Fix ctor vtable vcall offsets.
+	* class.c (struct vtbl_init_data_s): Add rtti_binfo member.
+	(build_rtt_vtbl_entries): Lose RTTI_BINFO parameter.
+	(get_matching_base): Remove.
+	(get_original_base): New function.
+	(build_vtbl_initializer): Initialize vid.rtti_binfo. 
+	Use a virtual thunk for a ctor vtable with an index
+	(add_vcall_offset_vtbl_entries_1): Check if binfo has lost a
+	primary base within a constructor vtable. Only set
+	BV_VCALL_INDEX when not a constructor vtable. Adjust vcall offset
+	when primary base has been lost.
+	* cp-tree.h (BINFO_VIRTUALS): Remove ambiguity from comment.
+
 2001-02-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* spew.c (yylex): Correct handling of friends.

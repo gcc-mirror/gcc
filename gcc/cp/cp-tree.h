@@ -136,7 +136,7 @@ Boston, MA 02111-1307, USA.  */
      does not have a BV_FN; it is just an offset.
 
      The BV_OVERRIDING_BASE is the binfo for the final overrider for
-     this function.  (This binfo's BINFO_TYPE will always be the same
+     this function.  (That binfo's BINFO_TYPE will always be the same
      as the DECL_CLASS_CONTEXT for the function.)
 
    BINFO_VTABLE

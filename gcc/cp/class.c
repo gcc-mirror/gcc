@@ -66,8 +66,11 @@ typedef struct vtbl_init_data_s
 {
   /* The base for which we're building initializers.  */
   tree binfo;
-  /* The binfo for the most-derived type.  */
+  /* The type of the most-derived type.  */
   tree derived;
+  /* The binfo for the dynamic type. This will be TYPE_BINFO (derived),
+     unless ctor_vtbl_p is true.  */
+  tree rtti_binfo;
   /* The negative-index vtable initializers built up so far.  These
      are in order from least negative index to most negative index.  */
   tree inits;
@@ -182,7 +185,7 @@ static void accumulate_vtbl_inits PARAMS ((tree, tree, tree, tree, tree));
 static tree dfs_accumulate_vtbl_inits PARAMS ((tree, tree, tree, tree,
 					       tree));
 static void set_vindex PARAMS ((tree, int *));
-static void build_rtti_vtbl_entries PARAMS ((tree, tree, vtbl_init_data *));
+static void build_rtti_vtbl_entries PARAMS ((tree, vtbl_init_data *));
 static void build_vcall_and_vbase_vtbl_entries PARAMS ((tree, 
 							vtbl_init_data *));
 static void force_canonical_binfo_r PARAMS ((tree, tree, tree, tree));
@@ -199,7 +202,7 @@ static tree *build_vtt_inits PARAMS ((tree, tree, tree *, tree *));
 static tree dfs_build_secondary_vptr_vtt_inits PARAMS ((tree, void *));
 static tree dfs_ctor_vtable_bases_queue_p PARAMS ((tree, void *data));
 static tree dfs_fixup_binfo_vtbls PARAMS ((tree, void *));
-static tree get_matching_base PARAMS ((tree, tree));
+static tree get_original_base PARAMS ((tree, tree));
 static tree dfs_get_primary_binfo PARAMS ((tree, void*));
 static int record_subobject_offset PARAMS ((tree, tree, splay_tree));
 static int check_subobject_offset PARAMS ((tree, tree, splay_tree));
@@ -6830,32 +6833,31 @@ build_vtt (t)
   initialize_array (vtt, inits);
 }
 
-/* The type corresponding to BINFO is a base class of T, but BINFO is
-   in the base class hierarchy of a class derived from T.  Return the
-   base, in T's hierarchy, that corresponds to BINFO.  */
+/* The type corresponding to BASE_BINFO is a base of the type of BINFO, but
+   from within some heirarchy which is inherited from the type of BINFO.
+   Return BASE_BINFO's equivalent binfo from the hierarchy dominated by
+   BINFO.  */
 
 static tree
-get_matching_base (binfo, t)
+get_original_base (base_binfo, binfo)
+     tree base_binfo;
      tree binfo;
-     tree t;
 {
   tree derived;
-  int i;
-
-  if (same_type_p (BINFO_TYPE (binfo), t))
+  int ix;
+  
+  if (same_type_p (BINFO_TYPE (base_binfo), BINFO_TYPE (binfo)))
     return binfo;
-
-  if (TREE_VIA_VIRTUAL (binfo))
-    return binfo_for_vbase (BINFO_TYPE (binfo), t);
-
-  derived = get_matching_base (BINFO_INHERITANCE_CHAIN (binfo), t);
-  for (i = 0; i < BINFO_N_BASETYPES (derived); ++i)
-    if (same_type_p (BINFO_TYPE (BINFO_BASETYPE (derived, i)),
-		     BINFO_TYPE (binfo)))
-      return BINFO_BASETYPE (derived, i);
-
-  my_friendly_abort (20000628);
-  return NULL_TREE;
+  if (TREE_VIA_VIRTUAL (base_binfo))
+    return binfo_for_vbase (BINFO_TYPE (base_binfo), BINFO_TYPE (binfo));
+  derived = get_original_base (BINFO_INHERITANCE_CHAIN (base_binfo), binfo);
+  
+  for (ix = 0; ix != BINFO_N_BASETYPES (derived); ix++)
+    if (same_type_p (BINFO_TYPE (base_binfo),
+                     BINFO_TYPE (BINFO_BASETYPE (derived, ix))))
+      return BINFO_BASETYPE (derived, ix);
+  my_friendly_abort (20010223);
+  return NULL;
 }
 
 /* Recursively build the VTT-initializer for BINFO (which is in the
@@ -7347,6 +7349,7 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
   memset (&vid, 0, sizeof (vid));
   vid.binfo = binfo;
   vid.derived = t;
+  vid.rtti_binfo = rtti_binfo;
   vid.last_init = &vid.inits;
   vid.primary_vtbl_p = (binfo == TYPE_BINFO (t));
   vid.ctor_vtbl_p = !same_type_p (BINFO_TYPE (rtti_binfo), t);
@@ -7354,7 +7357,7 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
   vid.index = ssize_int (-3);
 
   /* Add entries to the vtable for RTTI.  */
-  build_rtti_vtbl_entries (binfo, rtti_binfo, &vid);
+  build_rtti_vtbl_entries (binfo, &vid);
 
   /* Create an array for keeping track of the functions we've
      processed.  When we see multiple functions with the same
@@ -7384,7 +7387,8 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
       tree fn;
       tree pfn;
       tree init;
-
+      int generate_with_vtable_p = BV_GENERATE_THUNK_WITH_VTABLE_P (v);
+      
       /* Pull the offset for `this', and the function to call, out of
 	 the list.  */
       delta = BV_DELTA (v);
@@ -7394,8 +7398,17 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
 	  vcall_index = BV_VCALL_INDEX (v);
 	  my_friendly_assert (vcall_index != NULL_TREE, 20000621);
 	}
+      else if (vid.ctor_vtbl_p && BV_VCALL_INDEX (v))
+        {
+          /* In the original, we did not need to use the vcall index, even
+             though there was one, but in a ctor vtable things might be
+             different (a primary virtual base might have moved). Be
+             conservative and use a vcall adjusting thunk.  */
+	  vcall_index = BV_VCALL_INDEX (v);
+          generate_with_vtable_p = 1;
+        }
       else
-	vcall_index = NULL_TREE;
+        vcall_index = NULL_TREE;
 
       fn = BV_FN (v);
       my_friendly_assert (TREE_CODE (delta) == INTEGER_CST, 19990727);
@@ -7413,7 +7426,7 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
       TREE_CONSTANT (pfn) = 1;
       /* Enter it in the vtable.  */
       init = build_vtable_entry (delta, vcall_index, pfn,
-				 BV_GENERATE_THUNK_WITH_VTABLE_P (v));
+				 generate_with_vtable_p);
       /* And add it to the chain of initializers.  */
       vfun_inits = tree_cons (NULL_TREE, init, vfun_inits);
     }
@@ -7624,6 +7637,7 @@ add_vcall_offset_vtbl_entries_1 (binfo, vid)
   tree base_virtuals;
   tree orig_virtuals;
   tree binfo_inits;
+  int lost_primary = 0;
   /* If BINFO is a primary base, this is the least derived class of
      BINFO that is not a primary base.  */
   tree non_primary_binfo;
@@ -7645,6 +7659,21 @@ add_vcall_offset_vtbl_entries_1 (binfo, vid)
 	 care about its vtable offsets.  */
       if (TREE_VIA_VIRTUAL (non_primary_binfo))
 	{
+	  if (vid->ctor_vtbl_p)
+	    {
+    	      tree probe;
+	  
+	      for (probe = vid->binfo;
+	           probe != non_primary_binfo;
+	           probe = get_primary_binfo (probe))
+	        {
+                  if (BINFO_LOST_PRIMARY_P (probe))
+                    {
+                      lost_primary = 1;
+                      break;
+                    }
+	        }
+            }
 	  non_primary_binfo = vid->binfo;
 	  break;
 	}
@@ -7654,6 +7683,12 @@ add_vcall_offset_vtbl_entries_1 (binfo, vid)
 	break;
       non_primary_binfo = b;
     }
+
+  if (vid->ctor_vtbl_p)
+    /* For a ctor vtable we need the equivalent binfo within the hierarchy
+       where rtti_binfo is the most derived type.  */
+    non_primary_binfo = get_original_base
+          (non_primary_binfo, TYPE_BINFO (BINFO_TYPE (vid->rtti_binfo)));
 
   /* Make entries for the rest of the virtuals.  */
   for (base_virtuals = BINFO_VIRTUALS (binfo),
@@ -7669,6 +7704,7 @@ add_vcall_offset_vtbl_entries_1 (binfo, vid)
       tree base;
       tree base_binfo;
       size_t i;
+      tree vcall_offset;
 
       /* Find the declaration that originally caused this function to
 	 be present.  */
@@ -7699,8 +7735,9 @@ add_vcall_offset_vtbl_entries_1 (binfo, vid)
 	      || (DECL_DESTRUCTOR_P (BV_FN (derived_entry))
 		  && DECL_DESTRUCTOR_P (fn)))
 	    {
-	      BV_VCALL_INDEX (derived_virtuals) 
-		= BV_VCALL_INDEX (derived_entry);
+	      if (!vid->ctor_vtbl_p)
+  	        BV_VCALL_INDEX (derived_virtuals) 
+		  = BV_VCALL_INDEX (derived_entry);
 	      break;
 	    }
 	}
@@ -7713,12 +7750,16 @@ add_vcall_offset_vtbl_entries_1 (binfo, vid)
       base_binfo = get_binfo (base, vid->derived, /*protect=*/0);
 
       /* Compute the vcall offset.  */
-      *vid->last_init 
-	= (build_tree_list 
-	   (NULL_TREE,
-	    fold (build1 (NOP_EXPR, vtable_entry_type,
-			  size_diffop (BINFO_OFFSET (base_binfo),
-				       BINFO_OFFSET (vid->vbase))))));
+      vcall_offset = BINFO_OFFSET (vid->vbase);
+      if (lost_primary)
+        vcall_offset = size_binop (PLUS_EXPR, vcall_offset,
+                                   BINFO_OFFSET (vid->binfo));
+      vcall_offset = size_diffop (BINFO_OFFSET (base_binfo),
+		                  vcall_offset);
+      vcall_offset = fold (build1 (NOP_EXPR, vtable_entry_type,
+    			           vcall_offset));
+      
+      *vid->last_init = build_tree_list (NULL_TREE, vcall_offset);
       vid->last_init = &TREE_CHAIN (*vid->last_init);
 
       /* Keep track of the vtable index where this vcall offset can be
@@ -7738,12 +7779,11 @@ add_vcall_offset_vtbl_entries_1 (binfo, vid)
 
 /* Return vtbl initializers for the RTTI entries coresponding to the
    BINFO's vtable.  The RTTI entries should indicate the object given
-   by RTTI_BINFO.  */
+   by VID->rtti_binfo.  */
 
 static void
-build_rtti_vtbl_entries (binfo, rtti_binfo, vid)
+build_rtti_vtbl_entries (binfo, vid)
      tree binfo;
-     tree rtti_binfo;
      vtbl_init_data *vid;
 {
   tree b;
@@ -7754,7 +7794,7 @@ build_rtti_vtbl_entries (binfo, rtti_binfo, vid)
   tree init;
 
   basetype = BINFO_TYPE (binfo);
-  t = BINFO_TYPE (rtti_binfo);
+  t = BINFO_TYPE (vid->rtti_binfo);
 
   /* For a COM object there is no RTTI entry.  */
   if (CLASSTYPE_COM_INTERFACE (basetype))
@@ -7772,7 +7812,7 @@ build_rtti_vtbl_entries (binfo, rtti_binfo, vid)
       my_friendly_assert (BINFO_PRIMARY_BASE_OF (primary_base) == b, 20010127);
       b = primary_base;
     }
-  offset = size_diffop (BINFO_OFFSET (rtti_binfo), BINFO_OFFSET (b));
+  offset = size_diffop (BINFO_OFFSET (vid->rtti_binfo), BINFO_OFFSET (b));
 
   /* The second entry is the address of the typeinfo object.  */
   if (flag_rtti)
@@ -7802,7 +7842,7 @@ build_rtti_vtbl_entries (binfo, rtti_binfo, vid)
 
 /* Build an entry in the virtual function table.  DELTA is the offset
    for the `this' pointer.  VCALL_INDEX is the vtable index containing
-   the vcall offset; zero if none.  ENTRY is the virtual function
+   the vcall offset; NULL_TREE if none.  ENTRY is the virtual function
    table entry itself.  It's TREE_TYPE must be VFUNC_PTR_TYPE_NODE,
    but it may not actually be a virtual function table pointer.  (For
    example, it might be the address of the RTTI object, under the new
