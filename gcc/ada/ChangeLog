@@ -1,5 +1,25 @@
 2004-10-04  Robert Dewar  <dewar@gnat.com>
 
+	* exp_ch3.adb (Needs_Simple_Initialization): Modular packed arrays no
+	longer need to be initialized to zero.
+	(Get_Simple_Init_Val): Modular packed arrays no longer need to be
+	initialized to zero.
+
+	* checks.adb (Expr_Known_Valid): Packed arrays are now always
+	considered valid, even if the representation is modular. That's correct
+	now that we no longer initialize packed modular arrays to zero.
+
+	* exp_dbug.ads: Clarify documentation on handling of PAD and JM
+	suffixes. These are now documented as the only cases in which the
+	debugger ignores outer records.
+	Previously, the spec allowed arbitrary suffixes for this purpose.
+	Change name of LJM to JM for packed array pad records
+	Create separate section on packed array handling, and add a whole new
+	set of comments to this section describing the situation with packed
+	modular types and justification requirements depending on endianness.
+
+2004-10-04  Robert Dewar  <dewar@gnat.com>
+
 	* a-except.adb: Add a comment for last change
 
 	* einfo.ads: Minor spelling correction in comment
