@@ -479,8 +479,9 @@ enum reg_class {
    && CONST_OK_FOR_I ((VALUE & 0xffff)))
 /* 16 bits */
 #define CONST_OK_FOR_M(VALUE) ((unsigned)(VALUE) < 0x10000
+/* 5 bit unsigned immediate in shift instructions */
+#define CONST_OK_FOR_N(VALUE) ((unsigned) (VALUE) <= 31)
 
-#define CONST_OK_FOR_N(VALUE) ((unsigned) VALUE >= 0 && (unsigned) VALUE <= 31) /* 5 bit signed immediate in shift instructions */
 #define CONST_OK_FOR_O(VALUE) 0
 #define CONST_OK_FOR_P(VALUE) 0
 
