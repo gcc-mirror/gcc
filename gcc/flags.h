@@ -502,3 +502,14 @@ extern int current_function_is_thunk;
 /* Value of the -G xx switch, and whether it was passed or not.  */
 extern int g_switch_value;
 extern int g_switch_set;
+
+/* Nonzero if we dump in VCG format, not plain text.  */
+extern int dump_for_graph;
+
+/* Selection of the graph form.  */
+enum graph_dump_types
+{
+  no_graph = 0,
+  vcg
+};
+extern enum graph_dump_types graph_dump_format;

@@ -1,3 +1,19 @@
+Mon Nov 23 16:40:00 1998  Ulrich Drepper  <drepper@cygnus.com>
+
+        * Makefile.in (OBJS): Add graph.o
+        (graph.o): New dependency list.
+        * flags.h: Declare dump_for_graph and define graph_dump_types type.
+        * print-rtl.c (dump_for_graph): Define new variable.
+        (print_rtx): Rewrite to allow use in graph dumping functions.
+        * toplev.c: Declare print_rtl_graph_with_bb, clean_graph_dump_file,
+        finish_graph_dump_file.
+        Define graph_dump_format.
+        (compile_file): If graph dumping is enabled also clear these files.
+        Finish graph dump files.
+        (rest_of_compilation): Also dump graph information if enabled.
+        (main): Recognize -dv to enabled VCG based graph dumping.
+        * graph.c: New file.  Graph dumping functions.
+
 Mon Nov 23 16:39:04 1998  Richard Henderson  <rth@cygnus.com>
 
         * configure.in: Look for <sys/stat.h>.
