@@ -49,8 +49,7 @@ and the Info entries for @file{gcc}, @file{cpp}, @file{as},
 @c man end
 @c man begin BUGS
 For instructions on reporting bugs, see
-@w{@uref{http://gcc.gnu.org/bugs.html}}.  Use of the @command{gccbug}
-script to report bugs is recommended.
+@w{@uref{http://gcc.gnu.org/bugs.html}}.
 @c man end
 @c man begin AUTHOR
 See the Info entry for @command{gcc}, or
