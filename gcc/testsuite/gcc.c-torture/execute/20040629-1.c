@@ -4,9 +4,16 @@
 extern void abort (void);
 extern void exit (int);
 
-struct { unsigned int i : 6, j : 11, k : 15; } b;
-struct { unsigned int i : 5, j : 1, k : 26; } c;
-struct { unsigned int i : 16, j : 8, k : 8; } d;
+#ifndef FIELDS1
+#define FIELDS1
+#endif
+#ifndef FIELDS2
+#define FIELDS2
+#endif
+
+struct { FIELDS1 unsigned int i : 6, j : 11, k : 15; FIELDS2 } b;
+struct { FIELDS1 unsigned int i : 5, j : 1, k : 26; FIELDS2 } c;
+struct { FIELDS1 unsigned int i : 16, j : 8, k : 8; FIELDS2 } d;
 
 unsigned int ret1 (void) { return b.i; }
 unsigned int ret2 (void) { return b.j; }

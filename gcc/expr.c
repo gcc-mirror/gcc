@@ -3802,7 +3802,9 @@ expand_assignment (tree to, tree from, int want_value)
 	  MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
 	}
 
-      while (mode1 == VOIDmode && !want_value
+      /* Disabled temporarily.  GET_MODE (to_rtx) is often not the right
+	 mode.  */
+      while (0 && mode1 == VOIDmode && !want_value
 	     && bitpos + bitsize <= BITS_PER_WORD
 	     && bitsize < BITS_PER_WORD
 	     && GET_MODE_BITSIZE (GET_MODE (to_rtx)) <= BITS_PER_WORD

@@ -1,3 +1,7 @@
+2004-07-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (expand_assignment): Disable the bitfield += optimizations.
+
 2004-07-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/sourcebuild.texi: Revert previous patch.
