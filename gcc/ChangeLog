@@ -1,3 +1,8 @@
+2004-04-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	* c-decl.c (get_parm_info): Use the correct tag keywords when
+	warning about type declarations in prototypes.
+
 2004-04-29  Paul Brook  <paul@codesourcery.com>
 
 	* config.gcc: Pull list of cores from arm-cores.def.
