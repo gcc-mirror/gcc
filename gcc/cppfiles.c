@@ -273,8 +273,8 @@ stack_include_file (pfile, inc)
 
   /* We'll try removing deps_sysp after the release of 3.0.  */
   deps_sysp = pfile->system_include_depth != 0;
-  sysp = ((pfile->buffer && pfile->buffer->sysp)
-	  || (inc->foundhere && inc->foundhere->sysp));
+  sysp = MAX ((pfile->buffer ? pfile->buffer->sysp : 0),
+	      (inc->foundhere ? inc->foundhere->sysp : 0));
 
   /* For -M, add the file to the dependencies on its first inclusion.  */
   if (CPP_OPTION (pfile, print_deps) > deps_sysp && !inc->include_count)
