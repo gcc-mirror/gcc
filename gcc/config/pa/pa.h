@@ -600,6 +600,16 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
   secondary_reload_class (CLASS, MODE, IN)
 
+/* On the PA it is not possible to directly move data between 
+   GENERAL_REGS and FP_REGS.  */
+#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)  \
+  ((FP_REG_CLASS_P (CLASS1) && ! FP_REG_CLASS_P (CLASS2))	\
+   || (! FP_REG_CLASS_P (CLASS1) && FP_REG_CLASS_P (CLASS2)))
+
+/* Return the stack location to use for secondary memory needed reloads.  */
+#define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
+  gen_rtx (MEM, MODE, gen_rtx (PLUS, Pmode, stack_pointer_rtx, GEN_INT (-16)))
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
