@@ -2022,7 +2022,7 @@ nonoverlapping_memrefs_p (x, y)
 
   /* If we don't know the size of the lower-offset value, we can't tell
      if they conflict.  Otherwise, we do the test.  */
-  return sizex >= 0 && offsety > offsetx + sizex;
+  return sizex >= 0 && offsety >= offsetx + sizex;
 }
 
 /* True dependence: X is read after store in MEM takes place.  */
