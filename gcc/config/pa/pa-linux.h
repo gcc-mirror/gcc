@@ -167,11 +167,6 @@ Boston, MA 02111-1307, USA.  */
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP ".globl "
 
-/* This definition is used inside pa.c to disable all
-   sibcall optimization, because sibcalls, stubs and
-   elf sections don't play well.  */
-#define TARGET_HAS_STUBS_AND_ELF_SECTIONS 1
-
 /* FIXME: Hacked from the <elfos.h> one so that we avoid multiple
    labels in a function declaration (since pa.c seems determined to do
    it differently)  */
