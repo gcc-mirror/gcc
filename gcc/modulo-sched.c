@@ -1112,7 +1112,7 @@ sms_schedule (FILE *dump_file)
           /* Mark this loop as software pipelined so the later
 	     scheduling passes doesn't touch it.  */
 	  if (! flag_resched_modulo_sched)
-	    emit_note_before (NOTE_DISABLE_SCHED_OF_BLOCK,
+	    emit_note_before (NOTE_INSN_DISABLE_SCHED_OF_BLOCK,
 	     		      g->closing_branch->insn);
 
 	  generate_reg_moves (ps);

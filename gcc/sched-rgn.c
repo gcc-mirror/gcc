@@ -2352,7 +2352,7 @@ sched_is_disabled_for_current_region_p (void)
            insn = PREV_INSN (insn))
       	if (GET_CODE (insn) == NOTE
 	    && (NOTE_LINE_NUMBER (insn)
-	        == NOTE_DISABLE_SCHED_OF_BLOCK))
+	        == NOTE_INSN_DISABLE_SCHED_OF_BLOCK))
           {
               disable_sched = true;
 	      break;
