@@ -1,3 +1,12 @@
+Fri Dec  7 07:06:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_field): Remove warning.
+	(expand_expr, case COMPONENT_REF, case VIEW_CONVERT_EXPR): Likewise.
+	(highest_pow2_factor, case MIN_EXPR, case MAX_EXPR): Add cases.
+	(highest_pow2_factor, case *_DIV_EXPR): Only can do something if
+	divisor constant power of 2.
+	(highest_pow2_factor, case COMPOUND_EXPR): Look at operand 1.
+
 2001-12-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alpha.c (function_arg): Cast value to HOST_WIDE_INT before
