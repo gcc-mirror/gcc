@@ -1567,7 +1567,7 @@ push_block (size, extra, below)
   return memory_address (GET_CLASS_NARROWEST_MODE (MODE_INT), temp);
 }
 
-static rtx
+rtx
 gen_push_operand ()
 {
   return gen_rtx (STACK_PUSH_CODE, Pmode, stack_pointer_rtx);
