@@ -1925,9 +1925,13 @@ integrate_decl_tree (let, level, map)
   
   for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
     {
-      tree d = build_decl (TREE_CODE (t), DECL_NAME (t), TREE_TYPE (t));
-      DECL_SOURCE_LINE (d) = DECL_SOURCE_LINE (t);
-      DECL_SOURCE_FILE (d) = DECL_SOURCE_FILE (t);
+      tree d;
+
+      push_obstacks_nochange ();
+      saveable_allocation ();
+      d = copy_node (t);
+      pop_obstacks ();
+
       if (DECL_RTL (t) != 0)
 	{
 	  DECL_RTL (d) = copy_rtx_and_substitute (DECL_RTL (t), map);
@@ -1938,19 +1942,14 @@ integrate_decl_tree (let, level, map)
 	  subst_constants (&DECL_RTL (d), NULL_RTX, map);
 	  apply_change_group ();
 	}
-      else if (DECL_RTL (t))
-	DECL_RTL (d) = copy_rtx (DECL_RTL (t));
-      DECL_EXTERNAL (d) = DECL_EXTERNAL (t);
-      TREE_STATIC (d) = TREE_STATIC (t);
-      TREE_PUBLIC (d) = TREE_PUBLIC (t);
-      TREE_CONSTANT (d) = TREE_CONSTANT (t);
-      TREE_ADDRESSABLE (d) = TREE_ADDRESSABLE (t);
-      TREE_READONLY (d) = TREE_READONLY (t);
-      TREE_SIDE_EFFECTS (d) = TREE_SIDE_EFFECTS (t);
       /* These args would always appear unused, if not for this.  */
       TREE_USED (d) = 1;
       /* Prevent warning for shadowing with these.  */
       DECL_ABSTRACT_ORIGIN (d) = t;
+
+      if (DECL_LANG_SPECIFIC (d))
+	copy_lang_decl (d);
+
       pushdecl (d);
     }
 
