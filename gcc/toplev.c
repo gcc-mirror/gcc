@@ -412,7 +412,7 @@ int warn_return_type;
 FILE *asm_out_file;
 FILE *aux_info_file;
 FILE *dump_file = NULL;
-char *dump_file_name;
+const char *dump_file_name;
 
 /* The current working directory of a translation.  It's generally the
    directory from which compilation was initiated, but a preprocessed

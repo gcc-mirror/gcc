@@ -1,3 +1,7 @@
+2004-10-15  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* toplev.c (dump_file_name): Change type to be const.
+
 2004-10-15  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-typeck.c (build_compound_expr, build_c_cast): Don't try to use
