@@ -1153,10 +1153,9 @@ extern int current_function_anonymous_args;
    ? gen_rtx (MEM, Pmode, gen_rtx (REG, Pmode, RETURN_ADDRESS_POINTER_REGNUM)) \
    : (rtx) 0)
 
-/* Generate necessary RTL for __builtin_saveregs().
-   ARGLIST is the argument list; see expr.c.  */
+/* Generate necessary RTL for __builtin_saveregs().  */
 extern struct rtx_def *sh_builtin_saveregs ();
-#define EXPAND_BUILTIN_SAVEREGS(ARGLIST) sh_builtin_saveregs (ARGLIST)
+#define EXPAND_BUILTIN_SAVEREGS() sh_builtin_saveregs ()
 
 /* Addressing modes, and classification of registers for them.  */
 #define HAVE_POST_INCREMENT  1

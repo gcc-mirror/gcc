@@ -981,7 +981,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
    If this macro is not defined, the compiler will output an ordinary
    call to the library function `__builtin_saveregs'.  */
 extern struct rtx *m32r_expand_builtin_savergs ();
-#define EXPAND_BUILTIN_SAVEREGS(ARGS) m32r_expand_builtin_saveregs (ARGS)
+#define EXPAND_BUILTIN_SAVEREGS() m32r_expand_builtin_saveregs ()
 #endif
 
 /* This macro offers an alternative

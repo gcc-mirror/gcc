@@ -4256,14 +4256,12 @@ function_value (type, mode, incoming_p)
   return gen_rtx_REG (mode, regno);
 }
 
-/* Do what is necessary for `va_start'.  The argument is ignored.
-
-   We look at the current function to determine if stdarg or varargs
-   is used and return the address of the first unnamed parameter.  */
+/* Do what is necessary for `va_start'.  We look at the current function
+   to determine if stdarg or varargs is used and return the address of
+   the first unnamed parameter.  */
 
 rtx
-sparc_builtin_saveregs (arglist)
-     tree arglist ATTRIBUTE_UNUSED;
+sparc_builtin_saveregs ()
 {
   int first_reg = current_function_args_info.words;
   rtx address;

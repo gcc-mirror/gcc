@@ -1217,7 +1217,7 @@ extern union tree_node *current_function_decl;
    _builtin_saveregs, so we must make this explicit.  */
 
 extern struct rtx_def *hppa_builtin_saveregs ();
-#define EXPAND_BUILTIN_SAVEREGS(ARGLIST) hppa_builtin_saveregs (ARGLIST)
+#define EXPAND_BUILTIN_SAVEREGS() hppa_builtin_saveregs ()
 
 
 /* Addressing modes, and classification of registers for them. 

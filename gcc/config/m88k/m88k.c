@@ -2573,14 +2573,12 @@ m88k_function_arg (args_so_far, mode, type, named)
 		  2 + args_so_far);
 }
 
-/* Do what is necessary for `va_start'.  The argument is ignored;
-   We look at the current function to determine if stdargs or varargs
-   is used and fill in an initial va_list.  A pointer to this constructor
-   is returned.  */
+/* Do what is necessary for `va_start'.  We look at the current function
+   to determine if stdargs or varargs is used and fill in an initial
+   va_list.  A pointer to this constructor is returned.  */
 
 struct rtx_def *
-m88k_builtin_saveregs (arglist)
-     tree arglist;
+m88k_builtin_saveregs ()
 {
   rtx block, addr, argsize, dest;
   tree fntype = TREE_TYPE (current_function_decl);

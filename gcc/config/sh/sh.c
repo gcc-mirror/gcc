@@ -3872,8 +3872,7 @@ function_epilogue (stream, size)
 }
 
 rtx
-sh_builtin_saveregs (arglist)
-     tree arglist;
+sh_builtin_saveregs ()
 {
   tree fntype = TREE_TYPE (current_function_decl);
   /* First unnamed integer register.  */

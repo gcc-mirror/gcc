@@ -1758,12 +1758,6 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
    are made.  The return value of this function should be an RTX that
    contains the value to use as the return of `__builtin_saveregs'.
 
-   The argument ARGS is a `tree_list' containing the arguments that
-   were passed to `__builtin_saveregs'.
-
-   If this macro is not defined, the compiler will output an ordinary
-   call to the library function `__builtin_saveregs'.
-   
    On the Power/PowerPC return the address of the area on the stack
    used to hold arguments.  Under AIX, this includes the 8 word register
    save area. 
@@ -1774,8 +1768,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
    to a block copy.  This is similar to the way we do things on Alpha.  */
 
 struct rtx_def *
-expand_builtin_saveregs (args)
-     tree args ATTRIBUTE_UNUSED;
+expand_builtin_saveregs ()
 {
   rtx block, mem_gpr_fpr, mem_reg_save_area, mem_overflow, tmp;
   tree fntype;
