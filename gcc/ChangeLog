@@ -3,7 +3,7 @@ Wed Sep 15 15:51:52 1999  Mark Mitchell  <mark@codesourcery.com>
 	* rtl.h (NOTE_BLOCK_NUMBER): Replace with ...
 	(NOTE_BLOCK): New macro.
 	(NOTE_BLOCK_LIVE_RANGE_BLOCK): Remove.
-	* function.h (identify_blocks): CHange prototype.
+	* function.h (identify_blocks): Change prototype.
 	* function.c (identify_blocks): Simplify.
 	(reorder_blocks): Likewise.
 	* ggc-common.c (ggc_mark_rtx): Mark the BLOCK associated with a 
@@ -20,6 +20,7 @@ Wed Sep 15 15:51:52 1999  Mark Mitchell  <mark@codesourcery.com>
 	* stmt.c (block_vector): Remove.
 	(find_loop_tree_blocks): Simplify.
 	(unroll_block_trees): Likewise.
+	* tree.h (reorder_block): Change prototype.
 	
 Wed Sep 15 14:39:35 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
