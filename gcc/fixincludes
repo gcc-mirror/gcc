@@ -2970,6 +2970,42 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# In inttypes.h on HPUX 11, the use of __CONCAT__ in the definition 
+# of UINT32_C has undefined behavior according to ISO/ANSI:
+# the arguments to __CONCAT__ are not macro expanded before the
+# concatination happens so the trailing ')' in the first argument
+# is concatinated with the 'l' in the second argument creating an
+# invalid pp token.  The behavior of invalid pp tokens is undefined.
+# GCC does not handle these invalid tokens the way the HP compiler does.
+# This problem will potentially occur anytime macros are used in the
+# arguments to __CONCAT__.  A general solution to this problem would be to 
+# insert another layer of macro between __CONCAT__ and its use
+# in UINT32_C.  An example of this solution can be found in the C standard.
+# A more specific solution, the one used here, is to change the UINT32_C
+# macro to not used macros in the arguments to __CONCAT__.
+file=inttypes.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo "Fixing use of __CONCAT__ in $file"
+  sed -e 's/^#define UINT32_C(__c)\([ 	]*\)__CONCAT__(__CONCAT_U__(__c),l)/#define UINT32_C(__c)\1__CONCAT__(__c,ul)/'  \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+
 # Some math.h files define struct exception, which conflicts with
 # the class exception defined in the C++ file std/stdexcept.h.  We
 # redefine it to __math_exception.  This is not a great fix, but I

@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 106 fixup descriptions.
+ * This file contains 107 fixup descriptions.
  *
  * See README-fixinc for more information.
  *
@@ -1201,9 +1201,44 @@ const char* apzHpux_SystimePatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Hpux11_Uint32_C fix
+ */
+#define HPUX11_UINT32_C_FIXIDX           32
+tSCC zHpux11_Uint32_CName[] =
+     "Hpux11_Uint32_C";
+/*
+ *  File name selection pattern
+ */
+tSCC zHpux11_Uint32_CList[] =
+  "|inttypes.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzHpux11_Uint32_CMachs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zHpux11_Uint32_CSelect0[] =
+       "^#define UINT32_C\\(__c\\)[ \t]*__CONCAT__\\(__CONCAT_U__\\(__c\\),l\\)";
+
+#define    HPUX11_UINT32_C_TEST_CT  1
+#define    HPUX11_UINT32_C_RE_CT    1
+tTestDesc aHpux11_Uint32_CTests[] = {
+  { TT_EGREP,    zHpux11_Uint32_CSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Hpux11_Uint32_C
+ */
+const char* apzHpux11_Uint32_CPatch[] = { "sed",
+    "-e", "s/^#define UINT32_C(__c)\\([ \t]*\\)__CONCAT__(__CONCAT_U__(__c),l)/#define UINT32_C(__c)\\1__CONCAT__(__c,ul)/",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Interactv_Add1 fix
  */
-#define INTERACTV_ADD1_FIXIDX            32
+#define INTERACTV_ADD1_FIXIDX            33
 tSCC zInteractv_Add1Name[] =
      "Interactv_Add1";
 /*
@@ -1241,7 +1276,7 @@ const char* apzInteractv_Add1Patch[] = { "sed",
  *
  *  Description of Interactv_Add2 fix
  */
-#define INTERACTV_ADD2_FIXIDX            33
+#define INTERACTV_ADD2_FIXIDX            34
 tSCC zInteractv_Add2Name[] =
      "Interactv_Add2";
 /*
@@ -1279,7 +1314,7 @@ const char* apzInteractv_Add2Patch[] = { "sed",
  *
  *  Description of Interactv_Add3 fix
  */
-#define INTERACTV_ADD3_FIXIDX            34
+#define INTERACTV_ADD3_FIXIDX            35
 tSCC zInteractv_Add3Name[] =
      "Interactv_Add3";
 /*
@@ -1318,7 +1353,7 @@ const char* apzInteractv_Add3Patch[] = { "sed",
  *
  *  Description of Io_Def_Quotes fix
  */
-#define IO_DEF_QUOTES_FIXIDX             35
+#define IO_DEF_QUOTES_FIXIDX             36
 tSCC zIo_Def_QuotesName[] =
      "Io_Def_Quotes";
 /*
@@ -1355,7 +1390,7 @@ const char* apzIo_Def_QuotesPatch[] = { "sed",
  *
  *  Description of Ioctl_Fix_Ctrl fix
  */
-#define IOCTL_FIX_CTRL_FIXIDX            36
+#define IOCTL_FIX_CTRL_FIXIDX            37
 tSCC zIoctl_Fix_CtrlName[] =
      "Ioctl_Fix_Ctrl";
 /*
@@ -1394,7 +1429,7 @@ const char* apzIoctl_Fix_CtrlPatch[] = { "sed",
  *
  *  Description of Ip_Missing_Semi fix
  */
-#define IP_MISSING_SEMI_FIXIDX           37
+#define IP_MISSING_SEMI_FIXIDX           38
 tSCC zIp_Missing_SemiName[] =
      "Ip_Missing_Semi";
 /*
@@ -1421,7 +1456,7 @@ const char* apzIp_Missing_SemiPatch[] = { "sed",
  *
  *  Description of Irix_Multiline_Cmnt fix
  */
-#define IRIX_MULTILINE_CMNT_FIXIDX       38
+#define IRIX_MULTILINE_CMNT_FIXIDX       39
 tSCC zIrix_Multiline_CmntName[] =
      "Irix_Multiline_Cmnt";
 /*
@@ -1449,7 +1484,7 @@ const char* apzIrix_Multiline_CmntPatch[] = { "sed",
  *
  *  Description of Irix_Sockaddr fix
  */
-#define IRIX_SOCKADDR_FIXIDX             39
+#define IRIX_SOCKADDR_FIXIDX             40
 tSCC zIrix_SockaddrName[] =
      "Irix_Sockaddr";
 /*
@@ -1485,7 +1520,7 @@ struct sockaddr;\n",
  *
  *  Description of Irix_Struct__File fix
  */
-#define IRIX_STRUCT__FILE_FIXIDX         40
+#define IRIX_STRUCT__FILE_FIXIDX         41
 tSCC zIrix_Struct__FileName[] =
      "Irix_Struct__File";
 /*
@@ -1513,7 +1548,7 @@ struct __file_s;\n",
  *
  *  Description of Irix_Asm_Apostrophe fix
  */
-#define IRIX_ASM_APOSTROPHE_FIXIDX       41
+#define IRIX_ASM_APOSTROPHE_FIXIDX       42
 tSCC zIrix_Asm_ApostropheName[] =
      "Irix_Asm_Apostrophe";
 /*
@@ -1548,7 +1583,7 @@ const char* apzIrix_Asm_ApostrophePatch[] = { "sed",
  *
  *  Description of Isc_Fmod fix
  */
-#define ISC_FMOD_FIXIDX                  42
+#define ISC_FMOD_FIXIDX                  43
 tSCC zIsc_FmodName[] =
      "Isc_Fmod";
 /*
@@ -1583,7 +1618,7 @@ const char* apzIsc_FmodPatch[] = { "sed",
  *
  *  Description of Motorola_Nested fix
  */
-#define MOTOROLA_NESTED_FIXIDX           43
+#define MOTOROLA_NESTED_FIXIDX           44
 tSCC zMotorola_NestedName[] =
      "Motorola_Nested";
 /*
@@ -1613,7 +1648,7 @@ const char* apzMotorola_NestedPatch[] = { "sed",
  *
  *  Description of Isc_Sys_Limits fix
  */
-#define ISC_SYS_LIMITS_FIXIDX            44
+#define ISC_SYS_LIMITS_FIXIDX            45
 tSCC zIsc_Sys_LimitsName[] =
      "Isc_Sys_Limits";
 /*
@@ -1649,7 +1684,7 @@ const char* apzIsc_Sys_LimitsPatch[] = { "sed",
  *
  *  Description of Kandr_Concat fix
  */
-#define KANDR_CONCAT_FIXIDX              45
+#define KANDR_CONCAT_FIXIDX              46
 tSCC zKandr_ConcatName[] =
      "Kandr_Concat";
 /*
@@ -1684,7 +1719,7 @@ const char* apzKandr_ConcatPatch[] = { "sed",
  *
  *  Description of Limits_Ifndefs fix
  */
-#define LIMITS_IFNDEFS_FIXIDX            46
+#define LIMITS_IFNDEFS_FIXIDX            47
 tSCC zLimits_IfndefsName[] =
      "Limits_Ifndefs";
 /*
@@ -1743,7 +1778,7 @@ const char* apzLimits_IfndefsPatch[] = { "sed",
  *
  *  Description of Lynx_Void_Int fix
  */
-#define LYNX_VOID_INT_FIXIDX             47
+#define LYNX_VOID_INT_FIXIDX             48
 tSCC zLynx_Void_IntName[] =
      "Lynx_Void_Int";
 /*
@@ -1778,7 +1813,7 @@ const char* apzLynx_Void_IntPatch[] = { "sed",
  *
  *  Description of Lynxos_Fcntl_Proto fix
  */
-#define LYNXOS_FCNTL_PROTO_FIXIDX        48
+#define LYNXOS_FCNTL_PROTO_FIXIDX        49
 tSCC zLynxos_Fcntl_ProtoName[] =
      "Lynxos_Fcntl_Proto";
 /*
@@ -1813,7 +1848,7 @@ const char* apzLynxos_Fcntl_ProtoPatch[] = { "sed",
  *
  *  Description of M88k_Bad_Hypot_Opt fix
  */
-#define M88K_BAD_HYPOT_OPT_FIXIDX        49
+#define M88K_BAD_HYPOT_OPT_FIXIDX        50
 tSCC zM88k_Bad_Hypot_OptName[] =
      "M88k_Bad_Hypot_Opt";
 /*
@@ -1855,7 +1890,7 @@ static __inline__ double fake_hypot (x, y)\\\n\
  *
  *  Description of M88k_Bad_S_If fix
  */
-#define M88K_BAD_S_IF_FIXIDX             50
+#define M88K_BAD_S_IF_FIXIDX             51
 tSCC zM88k_Bad_S_IfName[] =
      "M88k_Bad_S_If";
 /*
@@ -1893,7 +1928,7 @@ const char* apzM88k_Bad_S_IfPatch[] = { "sed",
  *
  *  Description of M88k_Multi_Incl fix
  */
-#define M88K_MULTI_INCL_FIXIDX           51
+#define M88K_MULTI_INCL_FIXIDX           52
 tSCC zM88k_Multi_InclName[] =
      "M88k_Multi_Incl";
 /*
@@ -1935,7 +1970,7 @@ const char* apzM88k_Multi_InclPatch[] = { "sh", "-c",
  *
  *  Description of Machine_Name fix
  */
-#define MACHINE_NAME_FIXIDX              52
+#define MACHINE_NAME_FIXIDX              53
 tSCC zMachine_NameName[] =
      "Machine_Name";
 /*
@@ -2005,7 +2040,7 @@ s/\\\\+++fixinc_eol+++/\\\\/g\n\
  *
  *  Description of Math_Exception fix
  */
-#define MATH_EXCEPTION_FIXIDX            53
+#define MATH_EXCEPTION_FIXIDX            54
 tSCC zMath_ExceptionName[] =
      "Math_Exception";
 /*
@@ -2055,7 +2090,7 @@ const char* apzMath_ExceptionPatch[] = { "sed",
  *
  *  Description of Math_Gcc_Ifndefs fix
  */
-#define MATH_GCC_IFNDEFS_FIXIDX          54
+#define MATH_GCC_IFNDEFS_FIXIDX          55
 tSCC zMath_Gcc_IfndefsName[] =
      "Math_Gcc_Ifndefs";
 /*
@@ -2094,7 +2129,7 @@ const char* apzMath_Gcc_IfndefsPatch[] = { "sh", "-c",
  *
  *  Description of Nested_Comment fix
  */
-#define NESTED_COMMENT_FIXIDX            55
+#define NESTED_COMMENT_FIXIDX            56
 tSCC zNested_CommentName[] =
      "Nested_Comment";
 /*
@@ -2121,7 +2156,7 @@ const char* apzNested_CommentPatch[] = { "sed",
  *
  *  Description of News_Os_Recursion fix
  */
-#define NEWS_OS_RECURSION_FIXIDX         56
+#define NEWS_OS_RECURSION_FIXIDX         57
 tSCC zNews_Os_RecursionName[] =
      "News_Os_Recursion";
 /*
@@ -2159,7 +2194,7 @@ const char* apzNews_Os_RecursionPatch[] = { "sed",
  *
  *  Description of Next_Math_Prefix fix
  */
-#define NEXT_MATH_PREFIX_FIXIDX          57
+#define NEXT_MATH_PREFIX_FIXIDX          58
 tSCC zNext_Math_PrefixName[] =
      "Next_Math_Prefix";
 /*
@@ -2198,7 +2233,7 @@ const char* apzNext_Math_PrefixPatch[] = { "sed",
  *
  *  Description of Next_Template fix
  */
-#define NEXT_TEMPLATE_FIXIDX             58
+#define NEXT_TEMPLATE_FIXIDX             59
 tSCC zNext_TemplateName[] =
      "Next_Template";
 /*
@@ -2234,7 +2269,7 @@ const char* apzNext_TemplatePatch[] = { "sed",
  *
  *  Description of Next_Volitile fix
  */
-#define NEXT_VOLITILE_FIXIDX             59
+#define NEXT_VOLITILE_FIXIDX             60
 tSCC zNext_VolitileName[] =
      "Next_Volitile";
 /*
@@ -2270,7 +2305,7 @@ const char* apzNext_VolitilePatch[] = { "sed",
  *
  *  Description of Next_Wait_Union fix
  */
-#define NEXT_WAIT_UNION_FIXIDX           60
+#define NEXT_WAIT_UNION_FIXIDX           61
 tSCC zNext_Wait_UnionName[] =
      "Next_Wait_Union";
 /*
@@ -2305,7 +2340,7 @@ const char* apzNext_Wait_UnionPatch[] = { "sed",
  *
  *  Description of Nodeent_Syntax fix
  */
-#define NODEENT_SYNTAX_FIXIDX            61
+#define NODEENT_SYNTAX_FIXIDX            62
 tSCC zNodeent_SyntaxName[] =
      "Nodeent_Syntax";
 /*
@@ -2332,7 +2367,7 @@ const char* apzNodeent_SyntaxPatch[] = { "sed",
  *
  *  Description of Osf_Namespace_A fix
  */
-#define OSF_NAMESPACE_A_FIXIDX           62
+#define OSF_NAMESPACE_A_FIXIDX           63
 tSCC zOsf_Namespace_AName[] =
      "Osf_Namespace_A";
 /*
@@ -2378,7 +2413,7 @@ const char* apzOsf_Namespace_APatch[] = { "sed",
  *
  *  Description of Osf_Namespace_B fix
  */
-#define OSF_NAMESPACE_B_FIXIDX           63
+#define OSF_NAMESPACE_B_FIXIDX           64
 tSCC zOsf_Namespace_BName[] =
      "Osf_Namespace_B";
 /*
@@ -2425,7 +2460,7 @@ typedef __regmatch_t\tregmatch_t;\n",
  *
  *  Description of Pthread_Page_Size fix
  */
-#define PTHREAD_PAGE_SIZE_FIXIDX         64
+#define PTHREAD_PAGE_SIZE_FIXIDX         65
 tSCC zPthread_Page_SizeName[] =
      "Pthread_Page_Size";
 /*
@@ -2460,7 +2495,7 @@ const char* apzPthread_Page_SizePatch[] = { "sed",
  *
  *  Description of Read_Ret_Type fix
  */
-#define READ_RET_TYPE_FIXIDX             65
+#define READ_RET_TYPE_FIXIDX             66
 tSCC zRead_Ret_TypeName[] =
      "Read_Ret_Type";
 /*
@@ -2496,7 +2531,7 @@ const char* apzRead_Ret_TypePatch[] = { "sed",
  *
  *  Description of Rs6000_Double fix
  */
-#define RS6000_DOUBLE_FIXIDX             66
+#define RS6000_DOUBLE_FIXIDX             67
 tSCC zRs6000_DoubleName[] =
      "Rs6000_Double";
 /*
@@ -2534,7 +2569,7 @@ const char* apzRs6000_DoublePatch[] = { "sed",
  *
  *  Description of Rs6000_Fchmod fix
  */
-#define RS6000_FCHMOD_FIXIDX             67
+#define RS6000_FCHMOD_FIXIDX             68
 tSCC zRs6000_FchmodName[] =
      "Rs6000_Fchmod";
 /*
@@ -2569,7 +2604,7 @@ const char* apzRs6000_FchmodPatch[] = { "sed",
  *
  *  Description of Rs6000_Param fix
  */
-#define RS6000_PARAM_FIXIDX              68
+#define RS6000_PARAM_FIXIDX              69
 tSCC zRs6000_ParamName[] =
      "Rs6000_Param";
 /*
@@ -2596,7 +2631,7 @@ const char* apzRs6000_ParamPatch[] = { "sed",
  *
  *  Description of Sony_Include fix
  */
-#define SONY_INCLUDE_FIXIDX              69
+#define SONY_INCLUDE_FIXIDX              70
 tSCC zSony_IncludeName[] =
      "Sony_Include";
 /*
@@ -2631,7 +2666,7 @@ const char* apzSony_IncludePatch[] = { "sed",
  *
  *  Description of Statsswtch fix
  */
-#define STATSSWTCH_FIXIDX                70
+#define STATSSWTCH_FIXIDX                71
 tSCC zStatsswtchName[] =
      "Statsswtch";
 /*
@@ -2666,7 +2701,7 @@ const char* apzStatsswtchPatch[] = { "sed",
  *
  *  Description of Stdio_Va_List fix
  */
-#define STDIO_VA_LIST_FIXIDX             71
+#define STDIO_VA_LIST_FIXIDX             72
 tSCC zStdio_Va_ListName[] =
      "Stdio_Va_List";
 /*
@@ -2710,7 +2745,7 @@ const char* apzStdio_Va_ListPatch[] = { "sh", "-c",
  *
  *  Description of Sun_Bogus_Ifdef fix
  */
-#define SUN_BOGUS_IFDEF_FIXIDX           72
+#define SUN_BOGUS_IFDEF_FIXIDX           73
 tSCC zSun_Bogus_IfdefName[] =
      "Sun_Bogus_Ifdef";
 /*
@@ -2745,7 +2780,7 @@ const char* apzSun_Bogus_IfdefPatch[] = { "sed",
  *
  *  Description of Sun_Bogus_Ifdef_Sun4c fix
  */
-#define SUN_BOGUS_IFDEF_SUN4C_FIXIDX     73
+#define SUN_BOGUS_IFDEF_SUN4C_FIXIDX     74
 tSCC zSun_Bogus_Ifdef_Sun4cName[] =
      "Sun_Bogus_Ifdef_Sun4c";
 /*
@@ -2780,7 +2815,7 @@ const char* apzSun_Bogus_Ifdef_Sun4cPatch[] = { "sed",
  *
  *  Description of Sun_Catmacro fix
  */
-#define SUN_CATMACRO_FIXIDX              74
+#define SUN_CATMACRO_FIXIDX              75
 tSCC zSun_CatmacroName[] =
      "Sun_Catmacro";
 /*
@@ -2820,7 +2855,7 @@ const char* apzSun_CatmacroPatch[] = { "sed",
  *
  *  Description of Sun_Malloc fix
  */
-#define SUN_MALLOC_FIXIDX                75
+#define SUN_MALLOC_FIXIDX                76
 tSCC zSun_MallocName[] =
      "Sun_Malloc";
 /*
@@ -2850,7 +2885,7 @@ const char* apzSun_MallocPatch[] = { "sed",
  *
  *  Description of Sun_Memcpy fix
  */
-#define SUN_MEMCPY_FIXIDX                76
+#define SUN_MEMCPY_FIXIDX                77
 tSCC zSun_MemcpyName[] =
      "Sun_Memcpy";
 /*
@@ -2905,7 +2940,7 @@ extern int memcmp();\\\n\
  *
  *  Description of Sun_Rusers_Semi fix
  */
-#define SUN_RUSERS_SEMI_FIXIDX           77
+#define SUN_RUSERS_SEMI_FIXIDX           78
 tSCC zSun_Rusers_SemiName[] =
      "Sun_Rusers_Semi";
 /*
@@ -2940,7 +2975,7 @@ const char* apzSun_Rusers_SemiPatch[] = { "sed",
  *
  *  Description of Sun_Signal fix
  */
-#define SUN_SIGNAL_FIXIDX                78
+#define SUN_SIGNAL_FIXIDX                79
 tSCC zSun_SignalName[] =
      "Sun_Signal";
 /*
@@ -2980,7 +3015,7 @@ void\t(*signal(...))(...);\\\n\
  *
  *  Description of Sun_Auth_Proto fix
  */
-#define SUN_AUTH_PROTO_FIXIDX            79
+#define SUN_AUTH_PROTO_FIXIDX            80
 tSCC zSun_Auth_ProtoName[] =
      "Sun_Auth_Proto";
 /*
@@ -3020,7 +3055,7 @@ const char* apzSun_Auth_ProtoPatch[] = { "sed",
  *
  *  Description of Sunos_Matherr_Decl fix
  */
-#define SUNOS_MATHERR_DECL_FIXIDX        80
+#define SUNOS_MATHERR_DECL_FIXIDX        81
 tSCC zSunos_Matherr_DeclName[] =
      "Sunos_Matherr_Decl";
 /*
@@ -3049,7 +3084,7 @@ struct exception;\n",
  *
  *  Description of Sunos_Strlen fix
  */
-#define SUNOS_STRLEN_FIXIDX              81
+#define SUNOS_STRLEN_FIXIDX              82
 tSCC zSunos_StrlenName[] =
      "Sunos_Strlen";
 /*
@@ -3076,7 +3111,7 @@ const char* apzSunos_StrlenPatch[] = { "sed",
  *
  *  Description of Systypes fix
  */
-#define SYSTYPES_FIXIDX                  82
+#define SYSTYPES_FIXIDX                  83
 tSCC zSystypesName[] =
      "Systypes";
 /*
@@ -3135,7 +3170,7 @@ typedef __SIZE_TYPE__ size_t;\\\n\
  *
  *  Description of Systypes_For_Aix fix
  */
-#define SYSTYPES_FOR_AIX_FIXIDX          83
+#define SYSTYPES_FOR_AIX_FIXIDX          84
 tSCC zSystypes_For_AixName[] =
      "Systypes_For_Aix";
 /*
@@ -3181,7 +3216,7 @@ const char* apzSystypes_For_AixPatch[] = { "sed",
  *
  *  Description of Sysv68_String fix
  */
-#define SYSV68_STRING_FIXIDX             84
+#define SYSV68_STRING_FIXIDX             85
 tSCC zSysv68_StringName[] =
      "Sysv68_String";
 /*
@@ -3218,7 +3253,7 @@ extern unsigned int\\\n\
  *
  *  Description of Sysz_Stdlib_For_Sun fix
  */
-#define SYSZ_STDLIB_FOR_SUN_FIXIDX       85
+#define SYSZ_STDLIB_FOR_SUN_FIXIDX       86
 tSCC zSysz_Stdlib_For_SunName[] =
      "Sysz_Stdlib_For_Sun";
 /*
@@ -3256,7 +3291,7 @@ const char* apzSysz_Stdlib_For_SunPatch[] = { "sed",
  *
  *  Description of Sysz_Stdtypes_For_Sun fix
  */
-#define SYSZ_STDTYPES_FOR_SUN_FIXIDX     86
+#define SYSZ_STDTYPES_FOR_SUN_FIXIDX     87
 tSCC zSysz_Stdtypes_For_SunName[] =
      "Sysz_Stdtypes_For_Sun";
 /*
@@ -3297,7 +3332,7 @@ const char* apzSysz_Stdtypes_For_SunPatch[] = { "sed",
  *
  *  Description of Tinfo_Cplusplus fix
  */
-#define TINFO_CPLUSPLUS_FIXIDX           87
+#define TINFO_CPLUSPLUS_FIXIDX           88
 tSCC zTinfo_CplusplusName[] =
      "Tinfo_Cplusplus";
 /*
@@ -3324,7 +3359,7 @@ const char* apzTinfo_CplusplusPatch[] = { "sed",
  *
  *  Description of Ultrix_Ansi_Compat fix
  */
-#define ULTRIX_ANSI_COMPAT_FIXIDX        88
+#define ULTRIX_ANSI_COMPAT_FIXIDX        89
 tSCC zUltrix_Ansi_CompatName[] =
      "Ultrix_Ansi_Compat";
 /*
@@ -3361,7 +3396,7 @@ const char* apzUltrix_Ansi_CompatPatch[] = { "sed",
  *
  *  Description of Ultrix_Fix_Fixproto fix
  */
-#define ULTRIX_FIX_FIXPROTO_FIXIDX       89
+#define ULTRIX_FIX_FIXPROTO_FIXIDX       90
 tSCC zUltrix_Fix_FixprotoName[] =
      "Ultrix_Fix_Fixproto";
 /*
@@ -3397,7 +3432,7 @@ struct utsname;\n",
  *
  *  Description of Ultrix_Atof_Param fix
  */
-#define ULTRIX_ATOF_PARAM_FIXIDX         90
+#define ULTRIX_ATOF_PARAM_FIXIDX         91
 tSCC zUltrix_Atof_ParamName[] =
      "Ultrix_Atof_Param";
 /*
@@ -3428,7 +3463,7 @@ const char* apzUltrix_Atof_ParamPatch[] = { "sed",
  *
  *  Description of Ultrix_Const fix
  */
-#define ULTRIX_CONST_FIXIDX              91
+#define ULTRIX_CONST_FIXIDX              92
 tSCC zUltrix_ConstName[] =
      "Ultrix_Const";
 /*
@@ -3463,7 +3498,7 @@ const char* apzUltrix_ConstPatch[] = { "sed",
  *
  *  Description of Ultrix_Ifdef fix
  */
-#define ULTRIX_IFDEF_FIXIDX              92
+#define ULTRIX_IFDEF_FIXIDX              93
 tSCC zUltrix_IfdefName[] =
      "Ultrix_Ifdef";
 /*
@@ -3498,7 +3533,7 @@ const char* apzUltrix_IfdefPatch[] = { "sed",
  *
  *  Description of Ultrix_Nested_Cmnt fix
  */
-#define ULTRIX_NESTED_CMNT_FIXIDX        93
+#define ULTRIX_NESTED_CMNT_FIXIDX        94
 tSCC zUltrix_Nested_CmntName[] =
      "Ultrix_Nested_Cmnt";
 /*
@@ -3525,7 +3560,7 @@ const char* apzUltrix_Nested_CmntPatch[] = { "sed",
  *
  *  Description of Ultrix_Static fix
  */
-#define ULTRIX_STATIC_FIXIDX             94
+#define ULTRIX_STATIC_FIXIDX             95
 tSCC zUltrix_StaticName[] =
      "Ultrix_Static";
 /*
@@ -3562,7 +3597,7 @@ const char* apzUltrix_StaticPatch[] = { "sed",
  *
  *  Description of Undefine_Null fix
  */
-#define UNDEFINE_NULL_FIXIDX             95
+#define UNDEFINE_NULL_FIXIDX             96
 tSCC zUndefine_NullName[] =
      "Undefine_Null";
 /*
@@ -3604,7 +3639,7 @@ const char* apzUndefine_NullPatch[] = { "sed",
  *
  *  Description of Va_I960_Macro fix
  */
-#define VA_I960_MACRO_FIXIDX             96
+#define VA_I960_MACRO_FIXIDX             97
 tSCC zVa_I960_MacroName[] =
      "Va_I960_Macro";
 /*
@@ -3642,7 +3677,7 @@ const char* apzVa_I960_MacroPatch[] = { "sed",
  *
  *  Description of Void_Null fix
  */
-#define VOID_NULL_FIXIDX                 97
+#define VOID_NULL_FIXIDX                 98
 tSCC zVoid_NullName[] =
      "Void_Null";
 /*
@@ -3677,7 +3712,7 @@ const char* apzVoid_NullPatch[] = { "sed",
  *
  *  Description of Vxworks_Gcc_Problem fix
  */
-#define VXWORKS_GCC_PROBLEM_FIXIDX       98
+#define VXWORKS_GCC_PROBLEM_FIXIDX       99
 tSCC zVxworks_Gcc_ProblemName[] =
      "Vxworks_Gcc_Problem";
 /*
@@ -3727,7 +3762,7 @@ const char* apzVxworks_Gcc_ProblemPatch[] = { "sed",
  *
  *  Description of Vxworks_Needs_Vxtypes fix
  */
-#define VXWORKS_NEEDS_VXTYPES_FIXIDX     99
+#define VXWORKS_NEEDS_VXTYPES_FIXIDX     100
 tSCC zVxworks_Needs_VxtypesName[] =
      "Vxworks_Needs_Vxtypes";
 /*
@@ -3762,7 +3797,7 @@ const char* apzVxworks_Needs_VxtypesPatch[] = { "sed",
  *
  *  Description of Vxworks_Needs_Vxworks fix
  */
-#define VXWORKS_NEEDS_VXWORKS_FIXIDX     100
+#define VXWORKS_NEEDS_VXWORKS_FIXIDX     101
 tSCC zVxworks_Needs_VxworksName[] =
      "Vxworks_Needs_Vxworks";
 /*
@@ -3811,7 +3846,7 @@ const char* apzVxworks_Needs_VxworksPatch[] = { "sed",
  *
  *  Description of Vxworks_Time fix
  */
-#define VXWORKS_TIME_FIXIDX              101
+#define VXWORKS_TIME_FIXIDX              102
 tSCC zVxworks_TimeName[] =
      "Vxworks_Time";
 /*
@@ -3862,7 +3897,7 @@ typedef void (*__gcc_VOIDFUNCPTR) ();\\\n\
  *
  *  Description of X11_Class fix
  */
-#define X11_CLASS_FIXIDX                 102
+#define X11_CLASS_FIXIDX                 103
 tSCC zX11_ClassName[] =
      "X11_Class";
 /*
@@ -3902,7 +3937,7 @@ const char* apzX11_ClassPatch[] = { "sed",
  *
  *  Description of X11_Class_Usage fix
  */
-#define X11_CLASS_USAGE_FIXIDX           103
+#define X11_CLASS_USAGE_FIXIDX           104
 tSCC zX11_Class_UsageName[] =
      "X11_Class_Usage";
 /*
@@ -3937,7 +3972,7 @@ const char* apzX11_Class_UsagePatch[] = { "sed",
  *
  *  Description of X11_New fix
  */
-#define X11_NEW_FIXIDX                   104
+#define X11_NEW_FIXIDX                   105
 tSCC zX11_NewName[] =
      "X11_New";
 /*
@@ -3978,7 +4013,7 @@ const char* apzX11_NewPatch[] = { "sed",
  *
  *  Description of X11_Sprintf fix
  */
-#define X11_SPRINTF_FIXIDX               105
+#define X11_SPRINTF_FIXIDX               106
 tSCC zX11_SprintfName[] =
      "X11_Sprintf";
 /*
@@ -4007,9 +4042,9 @@ extern char *\tsprintf();\\\n\
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          74
+#define REGEX_COUNT          75
 #define MACH_LIST_SIZE_LIMIT 154
-#define FIX_COUNT            106
+#define FIX_COUNT            107
 
 tFixDesc fixDescList[ FIX_COUNT ] = {
   {  zAaa_Ki_IfaceName,    zAaa_Ki_IfaceList,
@@ -4171,6 +4206,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzHpux_SystimeMachs, (regex_t*)NULL,
      HPUX_SYSTIME_TEST_CT, FD_MACH_ONLY,
      aHpux_SystimeTests,   apzHpux_SystimePatch },
+
+  {  zHpux11_Uint32_CName,    zHpux11_Uint32_CList,
+     apzHpux11_Uint32_CMachs, (regex_t*)NULL,
+     HPUX11_UINT32_C_TEST_CT, FD_MACH_ONLY,
+     aHpux11_Uint32_CTests,   apzHpux11_Uint32_CPatch },
 
   {  zInteractv_Add1Name,    zInteractv_Add1List,
      apzInteractv_Add1Machs, (regex_t*)NULL,
