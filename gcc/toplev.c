@@ -3015,9 +3015,8 @@ rest_of_handle_loop_optimize (tree decl, rtx insns)
    sooner, but we want the profile feedback to work more
    efficiently.  */
 static void
-rest_of_handle_loop2 (tree decl ATTRIBUTE_UNUSED, rtx insns ATTRIBUTE_UNUSED)
+rest_of_handle_loop2 (tree decl, rtx insns)
 {
-#if 0
   struct loops *loops;
   timevar_push (TV_LOOP);
   open_dump_file (DFI_loop2, decl);
@@ -3049,7 +3048,6 @@ rest_of_handle_loop2 (tree decl ATTRIBUTE_UNUSED, rtx insns ATTRIBUTE_UNUSED)
   close_dump_file (DFI_loop2, print_rtl_with_bb, get_insns ());
   timevar_pop (TV_LOOP);
   ggc_collect ();
-#endif
 }
 
 /* This is called from finish_function (within langhooks.parse_file)
@@ -3281,9 +3279,6 @@ rest_of_compilation (tree decl)
 
       if (flag_loop_optimize)
 	rest_of_handle_loop_optimize (decl, insns);
-
-      if (flag_gcse)
-	rest_of_handle_jump_bypass (decl, insns);
     }
 
   timevar_push (TV_FLOW);
@@ -3311,11 +3306,16 @@ rest_of_compilation (tree decl)
   if (flag_tracer)
     rest_of_handle_tracer (decl, insns);
 
-  if (optimize > 0
-      && (flag_unswitch_loops
+  if (optimize > 0)
+    {
+      if (flag_unswitch_loops
 	  || flag_peel_loops
-	  || flag_unroll_loops))
-    rest_of_handle_loop2 (decl, insns);
+	  || flag_unroll_loops)
+	rest_of_handle_loop2 (decl, insns);
+
+      if (flag_gcse)
+	rest_of_handle_jump_bypass (decl, insns);
+    }
 
   if (flag_web)
     rest_of_handle_web (decl, insns);
