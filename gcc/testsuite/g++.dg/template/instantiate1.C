@@ -8,12 +8,12 @@ template <class T> struct X {
   T t;				// { dg-error "incomplete" }
 };
 
-template <class T> struct Y {	// { dg-error "instantiated" }
-  X<T> x;
+template <class T> struct Y {
+  X<T> x;			// { dg-error "instantiated" }
 };
 
-template <class T> struct Z {	// { dg-error "instantiated|declaration" }
-  Y<Z<T> > y;
+template <class T> struct Z {	// { dg-error "declaration" }
+  Y<Z<T> > y;			// { dg-error "instantiated" }
 };
 
 struct ZZ : Z<int>

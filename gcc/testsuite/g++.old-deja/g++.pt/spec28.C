@@ -2,8 +2,8 @@
 
 template <class T> 
 struct S1 {
-  friend bool f<>(const S1&);
   typedef T X;
+  friend bool f<>(const S1&);
 };
 
 template <class T>

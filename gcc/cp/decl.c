@@ -2617,7 +2617,11 @@ maybe_process_template_type_declaration (type, globalize, b)
 	      b->level_chain->tags =
 		tree_cons (name, type, b->level_chain->tags);
 	      if (!COMPLETE_TYPE_P (current_class_type))
-		CLASSTYPE_TAGS (current_class_type) = b->level_chain->tags;
+		{
+		  maybe_add_class_template_decl_list (current_class_type,
+						      type, /*friend_p=*/0);
+		  CLASSTYPE_TAGS (current_class_type) = b->level_chain->tags;
+		}
 	    }
 	}
     }
@@ -2781,7 +2785,11 @@ pushtag (name, type, globalize)
       if (b->parm_flag == 2)
 	{
 	  if (!COMPLETE_TYPE_P (current_class_type))
-	    CLASSTYPE_TAGS (current_class_type) = b->tags;
+	    {
+	      maybe_add_class_template_decl_list (current_class_type,
+						  type, /*friend_p=*/0);
+	      CLASSTYPE_TAGS (current_class_type) = b->tags;
+	    }
 	}
     }
 

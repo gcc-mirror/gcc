@@ -1159,6 +1159,7 @@ struct lang_type_class GTY(())
   tree friend_classes;
   tree rtti;
   tree methods;
+  tree decl_list;
   tree template_info;
   tree befriending_classes;
 };
@@ -1294,6 +1295,12 @@ struct lang_type GTY(())
    The conversion operators are unsorted. The ordinary member
    functions are sorted, once the class is complete.  */
 #define CLASSTYPE_METHOD_VEC(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->methods)
+
+/* For class templates, this is a TREE_LIST of all member data,
+   functions, types, and friends in the order of declaration.
+   The TREE_PURPOSE of each TREE_LIST is NULL_TREE for a friend,
+   and the RECORD_TYPE for the class template otherwise.  */
+#define CLASSTYPE_DECL_LIST(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->decl_list)
 
 /* The slot in the CLASSTYPE_METHOD_VEC where constructors go.  */
 #define CLASSTYPE_CONSTRUCTOR_SLOT 0
@@ -3572,6 +3579,7 @@ extern void cxx_print_error_function	PARAMS ((struct diagnostic_context *,
 extern void build_self_reference		PARAMS ((void));
 extern int same_signature_p			PARAMS ((tree, tree));
 extern void warn_hidden				PARAMS ((tree));
+extern void maybe_add_class_template_decl_list	PARAMS ((tree, tree, int));
 extern tree get_enclosing_class			PARAMS ((tree));
 int is_base_of_enclosing_class			PARAMS ((tree, tree));
 extern void unreverse_member_declarations       PARAMS ((tree));

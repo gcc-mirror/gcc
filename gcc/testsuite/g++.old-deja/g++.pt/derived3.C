@@ -6,10 +6,10 @@
 
 template<class T>
 class X {
-	class Y : public T {}; // ERROR - invalid base type
-	Y y;
+	class Y : public T {};
+	Y y;			// ERROR - invalid base type
 };
 int main() {
-	X<int> x;
+	X<int> x;		// ERROR - instantiated
 }
 
