@@ -1,3 +1,8 @@
+2004-08-17  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/13082
+	* gfortran.dg/entry_1.f90: New test.
+
 2004-08-17  Andrew Pinski  <apinski@apple.com>
 
 	* gcc.dg/darwin-20040812-1.c: Compile only on darwin.

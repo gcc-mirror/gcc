@@ -179,6 +179,14 @@ gfc_trans_goto (gfc_code * code)
 }
 
 
+/* Translate an ENTRY statement.  Just adds a label for this entry point.  */
+tree
+gfc_trans_entry (gfc_code * code)
+{
+  return build1_v (LABEL_EXPR, code->ext.entry->label);
+}
+
+
 /* Translate the CALL statement.  Builds a call to an F95 subroutine.  */
 
 tree

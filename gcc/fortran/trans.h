@@ -394,7 +394,7 @@ void gfc_allocate_lang_decl (tree);
 tree gfc_advance_chain (tree, int);
 
 /* Create a decl for a function.  */
-void gfc_build_function_decl (gfc_symbol *);
+void gfc_create_function_decl (gfc_namespace *);
 /* Generate the code for a function.  */
 void gfc_generate_function_code (gfc_namespace *);
 /* Output a decl for a module variable.  */

@@ -3074,6 +3074,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
   int n;
   int checkparm;
   int no_repack;
+  bool optional_arg;
 
   /* Do nothing for pointer and allocatable arrays.  */
   if (sym->attr.pointer || sym->attr.allocatable)
@@ -3281,7 +3282,8 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
 
   /* Only do the entry/initialization code if the arg is present.  */
   dumdesc = GFC_DECL_SAVED_DESCRIPTOR (tmpdesc);
-  if (sym->attr.optional)
+  optional_arg = sym->attr.optional || sym->ns->proc_name->attr.entry_master;
+  if (optional_arg)
     {
       tmp = gfc_conv_expr_present (sym);
       stmt = build_v (COND_EXPR, tmp, stmt, build_empty_stmt ());
@@ -3318,7 +3320,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
       tmp = build (NE_EXPR, boolean_type_node, tmp, tmpdesc);
       stmt = build_v (COND_EXPR, tmp, stmt, build_empty_stmt ());
 
-      if (sym->attr.optional)
+      if (optional_arg)
         {
           tmp = gfc_conv_expr_present (sym);
           stmt = build_v (COND_EXPR, tmp, stmt, build_empty_stmt ());

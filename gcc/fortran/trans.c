@@ -516,6 +516,10 @@ gfc_trans_code (gfc_code * code)
 	  res = gfc_trans_goto (code);
 	  break;
 
+	case EXEC_ENTRY:
+	  res = gfc_trans_entry (code);
+	  break;
+
 	case EXEC_PAUSE:
 	  res = gfc_trans_pause (code);
 	  break;
@@ -679,7 +683,7 @@ gfc_generate_module_code (gfc_namespace * ns)
       if (!n->proc_name)
         continue;
 
-      gfc_build_function_decl (n->proc_name);
+      gfc_create_function_decl (n);
     }
 
   for (n = ns->contained; n; n = n->sibling)

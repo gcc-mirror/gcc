@@ -35,6 +35,7 @@ tree gfc_trans_exit (gfc_code *);
 tree gfc_trans_label_assign (gfc_code *);
 tree gfc_trans_label_here (gfc_code *);
 tree gfc_trans_goto (gfc_code *);
+tree gfc_trans_entry (gfc_code *);
 tree gfc_trans_pause (gfc_code *);
 tree gfc_trans_stop (gfc_code *);
 tree gfc_trans_call (gfc_code *);

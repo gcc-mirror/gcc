@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include "gfortran.h"
 #include "parse.h"
@@ -1614,6 +1615,8 @@ gfc_get_namespace (gfc_namespace * parent)
 	}
     }
 
+  ns->refs = 1;
+
   return ns;
 }
 
@@ -2227,6 +2230,11 @@ gfc_free_namespace (gfc_namespace * ns)
 
   if (ns == NULL)
     return;
+
+  ns->refs--;
+  if (ns->refs > 0)
+    return;
+  assert (ns->refs == 0);
 
   gfc_free_statements (ns->code);
 

@@ -1155,6 +1155,13 @@ gfc_get_function_type (gfc_symbol * sym)
   nstr = 0;
   alternate_return = 0;
   typelist = NULL_TREE;
+
+  if (sym->attr.entry_master)
+    {
+      /* Additional parameter for selecting an entry point.  */
+      typelist = gfc_chainon_list (typelist, gfc_array_index_type);
+    }
+
   /* Some functions we use an extra parameter for the return value.  */
   if (gfc_return_by_reference (sym))
     {
