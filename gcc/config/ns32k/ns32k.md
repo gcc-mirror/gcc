@@ -2183,6 +2183,9 @@
       rtx temp = XEXP (operands[0], 0);
       if (CONSTANT_ADDRESS_P (temp))
 	{
+#ifdef ENCORE_ASM
+	  return \"bsr %?%0\";
+#else
 #ifdef CALL_MEMREF_IMPLICIT
 	  operands[0] = temp;
 	  return \"bsr %0\";
@@ -2191,6 +2194,7 @@
 	  return \"bsr %0\";
 #else
 	  return \"bsr %?%a0\";
+#endif
 #endif
 #endif
 	}
@@ -2218,6 +2222,9 @@
       rtx temp = XEXP (operands[1], 0);
       if (CONSTANT_ADDRESS_P (temp))
 	{
+#ifdef ENCORE_ASM
+	  return \"bsr %?%1\";
+#else
 #ifdef CALL_MEMREF_IMPLICIT
 	  operands[1] = temp;
 	  return \"bsr %1\";
@@ -2226,6 +2233,7 @@
 	  return \"bsr %1\";
 #else
 	  return \"bsr %?%a1\";
+#endif
 #endif
 #endif
 	}
