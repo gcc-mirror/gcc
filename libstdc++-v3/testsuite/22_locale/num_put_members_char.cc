@@ -1,6 +1,6 @@
 // 2001-11-19 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -363,6 +363,35 @@ void test05()
   VERIFY( result == "0" );
 }
 
+// libstdc++/9548 and DR 231
+void test06()
+{
+  using namespace std;
+  bool test = true;
+
+  const locale loc_c = locale::classic();
+
+  ostringstream oss1, oss2;
+  oss1.imbue(loc_c);
+  oss2.imbue(loc_c);
+  const num_put<char>& np1 = use_facet<num_put<char> >(oss1.getloc());
+  const num_put<char>& np2 = use_facet<num_put<char> >(oss2.getloc());
+
+  string result1, result2;
+
+  oss1.precision(-1);
+  oss1.setf(ios_base::fixed, ios_base::floatfield);
+  np1.put(oss1.rdbuf(), oss1, '+', 30.5);
+  result1 = oss1.str();
+  VERIFY( result1 == "30.500000" );
+
+  oss2.precision(0);
+  oss2.setf(ios_base::scientific, ios_base::floatfield);
+  np2.put(oss2.rdbuf(), oss2, '+', 1.0);
+  result2 = oss2.str();
+  VERIFY( result2 == "1e+00" );
+}
+
 int main()
 {
   test01();
@@ -370,6 +399,7 @@ int main()
   test03();
   test04();
   test05();
+  test06();
   return 0;
 }
 

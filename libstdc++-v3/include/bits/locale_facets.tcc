@@ -634,6 +634,9 @@ namespace std
 
 	if (__prec > static_cast<streamsize>(__max_digits))
 	  __prec = static_cast<streamsize>(__max_digits);
+	else if (__prec < static_cast<streamsize>(0))
+	  // Default precision.
+	  __prec = static_cast<streamsize>(6);
 
 	// Long enough for the max format spec.
 	char __fbuf[16];
@@ -646,24 +649,17 @@ namespace std
 	int __cs_size = __max_digits * 3;
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 
-	const bool __fp = _S_format_float(__io, __fbuf, __mod, __prec);
-	if (__fp)
-	  __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, 
-				   _S_c_locale, __prec);
-	else
-	  __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, _S_c_locale);
+	_S_format_float(__io, __fbuf, __mod, __prec);
+	__len = __convert_from_v(__cs, __cs_size, __fbuf, __v,
+				 _S_c_locale, __prec);
 
 	// If the buffer was not large enough, try again with the correct size.
 	if (__len >= __cs_size)
 	  {
 	    __cs_size = __len + 1; 
 	    __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-	    if (__fp)
-	      __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, 
-				       _S_c_locale, __prec);
-	    else
-	      __len = __convert_from_v(__cs, __cs_size, __fbuf, __v, 
-				       _S_c_locale);
+	    __len = __convert_from_v(__cs, __cs_size, __fbuf, __v,
+				     _S_c_locale, __prec);
 	  }
 #else
 	// Consider the possibility of long ios_base::fixed outputs
@@ -678,10 +674,8 @@ namespace std
 	                              : __max_digits * 3;
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 
-	if (_S_format_float(__io, __fbuf, __mod, __prec))
-	  __len = __convert_from_v(__cs, 0, __fbuf, __v, _S_c_locale, __prec);
-	else
-	  __len = __convert_from_v(__cs, 0, __fbuf, __v, _S_c_locale);
+	_S_format_float(__io, __fbuf, __mod, __prec);
+	__len = __convert_from_v(__cs, 0, __fbuf, __v, _S_c_locale, __prec);
 #endif
 	return _M_widen_float(__s, __io, __fill, __cs, __len);
       }

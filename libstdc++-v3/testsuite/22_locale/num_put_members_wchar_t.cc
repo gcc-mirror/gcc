@@ -1,6 +1,6 @@
 // 2001-11-19 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001, 2002 Free Software Foundation
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -362,6 +362,35 @@ void test05()
   result = oss.str();
   VERIFY( result == L"0" );
 }
+
+// libstdc++/9548 and DR 231
+void test06()
+{
+  using namespace std;
+  bool test = true;
+
+  const locale loc_c = locale::classic();
+
+  wostringstream woss1, woss2;
+  woss1.imbue(loc_c);
+  woss2.imbue(loc_c);
+  const num_put<wchar_t>& np1 = use_facet<num_put<wchar_t> >(woss1.getloc());
+  const num_put<wchar_t>& np2 = use_facet<num_put<wchar_t> >(woss2.getloc());
+
+  wstring result1, result2;
+
+  woss1.precision(-1);
+  woss1.setf(ios_base::fixed, ios_base::floatfield);
+  np1.put(woss1.rdbuf(), woss1, '+', 30.5);
+  result1 = woss1.str();
+  VERIFY( result1 == L"30.500000" );
+
+  woss2.precision(0);
+  woss2.setf(ios_base::scientific, ios_base::floatfield);
+  np2.put(woss2.rdbuf(), woss2, '+', 1.0);
+  result2 = woss2.str();
+  VERIFY( result2 == L"1e+00" );
+}
 #endif
 
 int main()
@@ -372,6 +401,7 @@ int main()
   test03();
   test04();
   test05();
+  test06();
 #endif
   return 0;
 }

@@ -1,5 +1,18 @@
 2003-02-07  Paolo Carlini  <pcarlini@unitus.it>
 
+	PR libstdc++/9548
+	Implement resolution of DR 231 (Ready)
+	* include/bits/locale_facets.h (__num_base::_S_format_float):
+	Return void.
+	* src/locale.cc (__num_base::_S_format_float): Implement
+	resolution of DR 231.
+	* include/bits/locale_facets.tcc (num_put::_M_convert_float):
+	Tweak uses. Check for negative precision.
+	* testsuite/22_locale/num_put_members_char.cc (test06): Add
+	* testsuite/22_locale/num_put_members_wchar_t.cc (test06): Ditto.
+
+2003-02-07  Paolo Carlini  <pcarlini@unitus.it>
+
 	* testsuite/27_io/filebuf_virtuals.cc (test08): Fix for
 	unsigned char platforms.
 
