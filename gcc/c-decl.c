@@ -2046,6 +2046,7 @@ pushdecl (tree x)
 		 just need to fall through to make the declaration in
 		 this scope.  */
 	      nested = true;
+	      x = visdecl;
 	    }
 	  else
 	    {
