@@ -1,3 +1,8 @@
+2004-07-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/16445
+	* config/ia64/ia64.c (bundling): Don't count ignored insns.
+
 2004-07-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (output_indirect_call): Only use %r2 as the link register in
