@@ -1,3 +1,7 @@
+2001-11-27  Andreas Jaeger  <aj@suse.de>
+
+	* Makefile.in (stamp-tool_src_dir): Use symbolic link.
+
 2001-11-27  Laurent Guerby  <guerby@acm.org>
 
 	* Makefile.in: Regenerate Ada dependencies.
@@ -76,7 +80,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-30  Geert Bosch <bosch@gnat.com>
 
-	* (Associated_Node, Set_Associated_Node): Do not check for 
+	* (Associated_Node, Set_Associated_Node): Do not check for
 	Freeze_Entity.
 
 2001-10-30  Robert Dewar <dewar@gnat.com>
@@ -85,15 +89,15 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-30  Robert Dewar <dewar@gnat.com>
 
-	* gnatdll.adb: Minor reformatting throughout. Many ??? added for 
+	* gnatdll.adb: Minor reformatting throughout. Many ??? added for
 	undocumented declarations.
 
 2001-10-30  Pascal Obry <obry@gnat.com>
 
-	* gnatdll.adb (Parse_Command_Line): handle -g option to be passed 
+	* gnatdll.adb (Parse_Command_Line): handle -g option to be passed
 	to the binder and linker.
 	Minor style fix.
-	
+
 	* mdll.ads: Fix layout.  Update copyright notice.
 
 	* mdll.adb: Fix layout.  Update copyright notice.
@@ -104,16 +108,16 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-30  Ed Schonberg <schonber@gnat.com>
 
-	* a-reatim.ads: Makes Seconds_Count into a 64-bit integer, 
-	to accommodate all its possible values. 
+	* a-reatim.ads: Makes Seconds_Count into a 64-bit integer,
+	to accommodate all its possible values.
 
-	* a-reatim.adb (Split): Special-case handling of Time_Span_First 
+	* a-reatim.adb (Split): Special-case handling of Time_Span_First
 	and of small absolute values of T.
 
 2001-10-30  Richard Kenner <kenner@gnat.com>
 
-	* misc.c (gnat_expand_expr, case NULL_EXPR): Remove call to 
-	set_mem_attributes since not needed and wrong if RESULT if a REG; 
+	* misc.c (gnat_expand_expr, case NULL_EXPR): Remove call to
+	set_mem_attributes since not needed and wrong if RESULT if a REG;
 	fixes ACATS failures.
 
 2001-10-30  Geert Bosch <bosch@gnat.com>
@@ -122,23 +126,23 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	s-tasdeb.ads, sem_maps.ads: Add 2001 to copyright notice.
 
 2001-10-30  Robert Dewar <dewar@gnat.com>
-	
+
 	* bindusg.adb: Undocument -f switch.
-	
+
 	* gnatcmd.adb: Remove /FULL_ELABORATION.
-	
-	* opt.ads (Force_RM_Elaboration_Order): Document that this is 
+
+	* opt.ads (Force_RM_Elaboration_Order): Document that this is
 	obsolescent.
-	
+
 	* gnatbind.adb: Output new warning for use of obsolescent -f switch.
-	
+
 	* gnatbind.adb: Minor update of warning msg.
 
 2001-10-30  Vincent Celier <celier@gnat.com>
 
-	* gnatcmd.adb (MAKE, BIND, LINK, LIST, FIND, XREF): Add translations 
+	* gnatcmd.adb (MAKE, BIND, LINK, LIST, FIND, XREF): Add translations
 	for project file switches (-P (/PROJECT_FILE=),
-	 -X (/EXTERNAL_REFERENCE=) and -vPx (/PROJECT_FILE_VERBOSITY=DEFAULT 
+	 -X (/EXTERNAL_REFERENCE=) and -vPx (/PROJECT_FILE_VERBOSITY=DEFAULT
 	or MEDIUM or HIGH)
 
 2001-10-30  Geert Bosch <bosch@gnat.com>
@@ -151,9 +155,9 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-30  Geert Bosch <bosch@gnat.com>
 
-	* ali-util.adb (Initialize_Checksum): Use out-mode instead of in out. 
+	* ali-util.adb (Initialize_Checksum): Use out-mode instead of in out.
 	Found due to GCC 3.0 warning of using uninitialized value.
-	
+
 	* layout.adb:
 	(Get_Max_Size): Use variant record for tracking value/expression.
 	 Makes logic clearer and prevents warnings for uninitialized variables.
@@ -167,7 +171,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* s-taprop.ads: Minor reformatting
 
 2001-10-29  Laurent Guerby  <guerby@acm.org>
-	
+
 	* init.c:
 	(Raise_From_Signal_Handler, Propagate_Signal_Exception): Make arg
 	const.
@@ -177,10 +181,10 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* sysdep.c: Fix localtime_r problem on LynxOS.
 	Also remove #elif to avoid warnings.
-	
-	* misc.c (yyparse): Don't set up and register jmpbuf; remove decls 
+
+	* misc.c (yyparse): Don't set up and register jmpbuf; remove decls
 	used by this.
-	
+
 	* decl.c (annotate_value): Make SIZE unsigned to avoid warning.
 
 2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
@@ -215,7 +219,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-26  Richard Kenner <kenner@gnat.com>
 
-	* decl.c (validate_size): Modify message for bad size to avoid 
+	* decl.c (validate_size): Modify message for bad size to avoid
 	implication that compiler is modifying the size.
 
 2001-10-26  Robert Dewar <dewar@gnat.com>
@@ -225,41 +229,41 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-10-26  Robert Dewar <dewar@gnat.com>
 
 	* sinfo.ads: Define Associated_Node to overlap Entity field. Cleanup.
-	
+
 	* sinfo.ads: Clarify use of Associated_Node (documentation only).
-	
-	* sem_ch12.adb: Change Node4 to Associated_Node. Change 
-	Associated_Node to Get_Associated_Node. Put use of Unchecked_Access 
+
+	* sem_ch12.adb: Change Node4 to Associated_Node. Change
+	Associated_Node to Get_Associated_Node. Put use of Unchecked_Access
 	much more narrowly in places where needed. These are cleanups.
 
 2001-10-26  Joel Brobecker <brobecke@gnat.com>
 
 	* 5zosinte.ads (null_pthread): new constant.
-	
+
 	* 5ztaprop.adb:
 	(Initialize_TCB): Initialize thread ID to null, to be able to verify
 	 later that this field has been set.
 	(Finalize_TCB): ditto.
 	(Suspend_Task): Verify that the thread ID is not null before using it.
 	(Resume_Task): ditto.
-	
+
 	* s-tasdeb.adb:
 	(Resume_All_Tasks): Lock the tasks list before using it.
 	(Suspend_All_Tasks): ditto.
 
 2001-10-26  Richard Kenner <kenner@gnat.com>
 
-	* decl.c (gnat_to_gnu_entity, case E_General_Access_Type): 
+	* decl.c (gnat_to_gnu_entity, case E_General_Access_Type):
 	Make constant variant of designated type for Is_Access_Constant.
 	Call update_pointer_to with main variant.
-	
-	* trans.c (process_freeze_entity, process_type): 
+
+	* trans.c (process_freeze_entity, process_type):
 	Call update_pointer_to on main variant.
-	
+
 	* utils.c (update_pointer_to): Make corresponding variant for NEW_TYPE.
 	If main variant, update all other variants.
-	
-	* utils2.c (build_unary_op, case INDIRECT_REF): No longer set 
+
+	* utils2.c (build_unary_op, case INDIRECT_REF): No longer set
 	TREE_STATIC.
 
 2001-10-26  Robert Dewar <dewar@gnat.com>
@@ -281,7 +285,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-26  Vincent Celier <celier@gnat.com>
 
-	* g-os_lib.adb (Normalize_Pathname): Preserve the double slash 
+	* g-os_lib.adb (Normalize_Pathname): Preserve the double slash
         ("//") that precede the drive letter on Interix.
 
 2001-10-26  Geert Bosch <bosch@gnat.com>
@@ -290,7 +294,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
-	* sem_ch8.adb (Analyze_Package_Renaming): Skip analysis if Name 
+	* sem_ch8.adb (Analyze_Package_Renaming): Skip analysis if Name
         is Error. Similar change for other renaming cases.
 
 2001-10-25  Robert Dewar <dewar@gnat.com>
@@ -300,33 +304,33 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
-	* par-ch3.adb (P_Subtype_Mark_Resync): for an anonymous array 
+	* par-ch3.adb (P_Subtype_Mark_Resync): for an anonymous array
         return Error rather than Empty so that analysis can proceed.
 
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
-	* sem_util.adb (Enter_Name): better handling of cascaded error 
+	* sem_util.adb (Enter_Name): better handling of cascaded error
         messages when a unit appears in its own context.
 
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
-	* sem_util.adb (Defining_Entity): in case of error, attach created 
+	* sem_util.adb (Defining_Entity): in case of error, attach created
         entity to specification, so that semantic analysis can proceed.
 
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
-	* sem_util.adb 
+	* sem_util.adb
         (Defining_Entity): Deal with Error.
 	(Process_End_Label): Deal with bad end label for.
 
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
-	* sem_elab.adb (Check_A_Call): refine message when call is in an 
+	* sem_elab.adb (Check_A_Call): refine message when call is in an
 	instance but callee is not declared in the generic unit.
 
 2001-10-25  Ed Schonberg <schonber@gnat.com>
-	
-	* sem_elab.adb (Check_A_Call): check for renaming before finding the 
+
+	* sem_elab.adb (Check_A_Call): check for renaming before finding the
 	enclosing unit, which may already be different from the calling unit.
 
 2001-10-25  Geert Bosch <bosch@gnat.com>
@@ -335,20 +339,20 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
-	* sem_res.adb (Resolve_Call): if the call is actually an indexing 
-        operation on the result of a parameterless call, perform elaboration 
+	* sem_res.adb (Resolve_Call): if the call is actually an indexing
+        operation on the result of a parameterless call, perform elaboration
         check after the node has been properly rewritten.
-	
-	* sem_ch12.adb (Copy_Generic_Node): after the proper body has been 
-        inlined within the generic tree, the defining identifier is not a 
+
+	* sem_ch12.adb (Copy_Generic_Node): after the proper body has been
+        inlined within the generic tree, the defining identifier is not a
         compilation_unit.
 
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
-	* sem_res.adb (Resolve): special-case resolution of Null in an 
+	* sem_res.adb (Resolve): special-case resolution of Null in an
          instance or an inlined body to avoid view conflicts.
-	
-	* sem_ch12.adb (Copy_Generic_Node): for allocators, check for view 
+
+	* sem_ch12.adb (Copy_Generic_Node): for allocators, check for view
          compatibility by retrieving the access type of the generic copy.
 
 2001-10-25  Robert Dewar <dewar@gnat.com>
@@ -357,20 +361,20 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(Analyze_Number_Declaration): Handle error expression.
 	(Signed_Integer_Type_Declaration): Handle error bound.
 	(Analyze_Subtype_Indication): Handle error range.
-	
+
 	* sem_util.adb (Get_Index_Bounds): Check for Error.
 
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
-	* restrict.adb (Set_No_Run_Time_Mode): Set Discard_Names as default 
+	* restrict.adb (Set_No_Run_Time_Mode): Set Discard_Names as default
 	in no run time mode.
 
 2001-10-25  Pascal Obry <obry@gnat.com>
 
-	* gnatmem.adb (Read_Next): fix Curs2 value to properly handle quiet 
+	* gnatmem.adb (Read_Next): fix Curs2 value to properly handle quiet
         mode case for ALLOC case.
-	
-	* gnatmem.adb (Read_Next): correctly fix parsing in Quiet mode on 
+
+	* gnatmem.adb (Read_Next): correctly fix parsing in Quiet mode on
         all platforms. Improvement of last change.
 
 2001-10-25  Robert Dewar <dewar@gnat.com>
@@ -383,29 +387,29 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-25  Pascal Obry <obry@gnat.com>
 
-	* osint.adb (Read_Default_Search_Dirs): correctly detect relative 
+	* osint.adb (Read_Default_Search_Dirs): correctly detect relative
         pathnames in UNIX and DOS style with drive letter.
 	(Is_Relative): new routine.
-	
+
 	* osint.adb: Minor reformatting
-	
-	* osint.adb (Is_Relative): implementation using 
+
+	* osint.adb (Is_Relative): implementation using
         GNAT.OS_Lib.Is_Absolute_Path. Better fix.
 
 2001-10-25  Pascal Obry <obry@gnat.com>
 
-	* g-dirope.adb (Basename): correctly compute offset between the 
+	* g-dirope.adb (Basename): correctly compute offset between the
         original Path and the translated one.
-	
+
 	* g-dirope.adb: (Base_Name): add some comments.
 
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
-	* exp_imgv.adb (Expand_Image_Attribute): Defend against bad use 
+	* exp_imgv.adb (Expand_Image_Attribute): Defend against bad use
         in HIE mode, avoids compilation abandoned message
-	
+
 	* exp_imgv.adb: Correct typo in previous change
-	
+
 	* exp_imgv.adb: Correct typo in previous change (not my day!)
 
 2001-10-25  Robert Dewar <dewar@gnat.com>
@@ -414,7 +418,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-25  Pascal Obry <obry@gnat.com>
 
-	* g-awk.ads: Move all pragma inlines next to the routine 
+	* g-awk.ads: Move all pragma inlines next to the routine
 	 declarations. This is more uniform with other GNAT spec.
 
 2001-10-22  Geert Bosch  <bosch@gnat.com>
@@ -440,7 +444,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-11  Ed Schonberg  <schonber@gnat.com>
 
-	* exp_ch8.adb (Expand_N_Object_Renaming_Declaration): Bugfix in 
+	* exp_ch8.adb (Expand_N_Object_Renaming_Declaration): Bugfix in
 	renaming of discriminant for mutable record type.
 
 2001-10-11  Robert Dewar  <dewar@gnat.com>
@@ -448,71 +452,71 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* validsw.adb: Properly save -gnatVn status.
 
 2001-10-11  Robert Dewar <dewar@gnat.com>
-	
+
 	* usage.adb: Add lines for V switch.
 
-	* gnatcmd.adb (COMPILE): Revise translations for -gnatV 
+	* gnatcmd.adb (COMPILE): Revise translations for -gnatV
 	(/VALIDITY_CHECKING).
 
 2001-10-11  Ed Schonberg <schonber@gnat.com>
 
-	* sem_type.adb (Add_One_Interp): an operator for a type declared in 
+	* sem_type.adb (Add_One_Interp): an operator for a type declared in
 	an extension of System is known to be visible.
 
 2001-10-11  Ed Schonberg <schonber@gnat.com>
 
-	* sem_eval.adb (Compare_Fixup): get the bounds of a String_Literal 
+	* sem_eval.adb (Compare_Fixup): get the bounds of a String_Literal
 	properly. Fixes regression on ACATS C34005G.
 
 2001-10-11  Robert Dewar <dewar@gnat.com>
 
-	* sem_ch5.adb (Analyze_Iteration_Scheme): Suppress warning on null 
+	* sem_ch5.adb (Analyze_Iteration_Scheme): Suppress warning on null
 	loop in generic instance, since this is likely not very useful.
 
 2001-10-11  Robert Dewar <dewar@gnat.com>
 
-	* restrict.adb (Disallow in No_Run_Time_Mode): Properly specialize 
+	* restrict.adb (Disallow in No_Run_Time_Mode): Properly specialize
 	the error message for high integrity mode.
-	
-	* rtsfind.adb (RTE): Give message if we try to find an entity that 
+
+	* rtsfind.adb (RTE): Give message if we try to find an entity that
 	is not available in high integrity mode.
-	
+
 	* rtsfind.ads:
 	(OK_To_Use_In_HIE_Mode): New array.
 	(RTE): May return Empty in high integrity mode.
-	
-	* rtsfind.ads (OK_To_Use_In_No_Run_Time_Mode): New name for 
-	OK_To_Use_In_HIE_Mode, now includes System_FAT_xxx. 
-	
-	* sem_ch6.adb (Analyze_Subprogram_Body): Kill body in predefined 
-	unit if not inlined always and in no runtime mode. Fixes problem 
+
+	* rtsfind.ads (OK_To_Use_In_No_Run_Time_Mode): New name for
+	OK_To_Use_In_HIE_Mode, now includes System_FAT_xxx.
+
+	* sem_ch6.adb (Analyze_Subprogram_Body): Kill body in predefined
+	unit if not inlined always and in no runtime mode. Fixes problem
 	caused by new Rtsfind changes.
-	
-	* sem_ch6.adb (Analyze_Subrogram_Body): Do not Check_References if 
+
+	* sem_ch6.adb (Analyze_Subrogram_Body): Do not Check_References if
 	body is deleted.
-	
-	* rtsfind.adb (RTE): Make sure we do not try to load unit after 
+
+	* rtsfind.adb (RTE): Make sure we do not try to load unit after
 	giving message for entity not available in high integrity mode.
 
 2001-10-11  Pascal Obry <obry@gnat.com>
-	
+
 	* impunit.adb: Add GNAT.CRC32.
 
 2001-10-11  Ed Schonberg <schonber@gnat.com>
 
-	* exp_fixd.adb (Expand_Multiply_Fixed_By_Fixed_Giving_Fixed): handle 
-	properly the case where one universal operand in a non-static 
+	* exp_fixd.adb (Expand_Multiply_Fixed_By_Fixed_Giving_Fixed): handle
+	properly the case where one universal operand in a non-static
 	exponentiation of a real literal.
 
 2001-10-11  Ed Schonberg <schonber@gnat.com>
 
-	* exp_ch7.adb (Find_Final_List): for a type appearing in a with_type 
-	clause, return the gobal finalization list, for lack of anthing else. 
+	* exp_ch7.adb (Find_Final_List): for a type appearing in a with_type
+	clause, return the gobal finalization list, for lack of anthing else.
 
 2001-10-11  Ed Schonberg <schonber@gnat.com>
 
-	* exp_ch7.adb (Make_Transient_Block): if statement is within 
-	exception handler, always use new transient scope to place Clean 
+	* exp_ch7.adb (Make_Transient_Block): if statement is within
+	exception handler, always use new transient scope to place Clean
 	procedure.
 
 2001-10-11  Pascal Obry <obry@gnat.com>
@@ -522,146 +526,146 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(GNATBIND_OBJS): add g-crc32.o, a-tags.o, a-stream.o
 	(GNATLS_RTL_OBJS): add g-crc32.o
 	(GNATMAKE_RTL_OBJS): add g-crc32.o
-	
+
 	* ali-util.adb:
 	(CRC_Match): new function.
-	(Get_File_Checksum): renamed Get_File_CRC. Use the GNAT.CRC32 unit 
+	(Get_File_Checksum): renamed Get_File_CRC. Use the GNAT.CRC32 unit
 	instead of the previous simple checksum algorithm.
 	(Time_Stamp_Mismatch): use CRC_Match for comparison.
 	(Set_Source_Table): idem.
-	
+
 	* ali-util.ads:
-	(Get_File_Checksum): renamed Get_File_CRC as now we compute CRC 
+	(Get_File_Checksum): renamed Get_File_CRC as now we compute CRC
 	instead of simple checksum.
 	(CRC_Match): new function.
 	(CRC_Error): new constant.
-	
-	* ali.adb (Scan_ALI): rename variable Chk to CRC as we are handling 
-	a CRC now and not a simple checksum. A CRC uses lower-case hex 
+
+	* ali.adb (Scan_ALI): rename variable Chk to CRC as we are handling
+	a CRC now and not a simple checksum. A CRC uses lower-case hex
 	letters, fixes ambiguity in parsing.
-	
-	* ali.ads (Sdep_Record.Checksum): renamed Sdep_Record.CRC as this 
+
+	* ali.ads (Sdep_Record.Checksum): renamed Sdep_Record.CRC as this
 	is what this variable will store.
-	
+
 	* bcheck.adb: Change reference to chechsum in comments by CRC.
-	(Check_Consistency): Rename Get_File_Checksum to Get_File_CRC. 
-	rename All_Checksum_Match to All_CRC_Match. Change due to API 
-	renaming since now GNAT does not use a simple checksum but a 
+	(Check_Consistency): Rename Get_File_Checksum to Get_File_CRC.
+	rename All_Checksum_Match to All_CRC_Match. Change due to API
+	renaming since now GNAT does not use a simple checksum but a
 	CRC using GNAT.CRC32.
-	
-	* gnatls.adb: Rename Checksum to CRC in many places, we use a CRC 
+
+	* gnatls.adb: Rename Checksum to CRC in many places, we use a CRC
 	now and not anymore a simple checksum.
-	
-	* lib-load.adb: Use Source_CRC instead of Source_Checksum in many 
+
+	* lib-load.adb: Use Source_CRC instead of Source_Checksum in many
 	places.
-	
+
 	* lib-writ.adb (Write_ALI): Use Source_CRC instead of Source_Checksum.
-	
+
 	* scans.adb:
 	(Restore_Scan_State): rename Checksum to CRC.
 	(Save_Scan_State): idem.
-	
+
 	* scans.ads:
 	With GNAT.CRC32.
 	(Checksum): rename to CRC.
 	(Saved_Scan_State): Save_Checksum field renamed to Save_CRC
-	
-	* scn-nlit.adb: Rename many Accumulate_Checksum to Update (from 
+
+	* scn-nlit.adb: Rename many Accumulate_Checksum to Update (from
 	GNAT.CRC32).  Update copyright notice.
-	
-	* scn-slit.adb: Rename many Accumulate_Checksum to Update (from 
+
+	* scn-slit.adb: Rename many Accumulate_Checksum to Update (from
 	GNAT.CRC32).  Update copyright notice.
-	
+
 	* scn.adb:
 	(Accumulate_Checksum): removed.
 	(Update): new procedure. Add a wide-character into the CRC.
-	
+
 	* sinput-l.adb:
 	(Complete_Source_File_Entry): use CRC32 instead of simple checksum.
-	(Load_File): fix initialization of S (change Source_Checksum to 
+	(Load_File): fix initialization of S (change Source_Checksum to
 	Source_CRC)
-	
-	* sinput-p.adb (Load_Project_File): rename Source_Checksum to 
+
+	* sinput-p.adb (Load_Project_File): rename Source_Checksum to
 	Source_CRC in S initialization.
-	
+
 	* sinput.adb (Source_Checksum): renamed to Source_CRC.
-	
+
 	* sinput.ads (Source_Checksum): renamed to Source_CRC.
 	Update comments for the CRC.
-	
+
 	* types.adb (Hex): Use lowercase for the letter part.
-	
-	* types.ads (Get_Hex_String): Returns the hexadecimal representation 
-	for a word. This is currently used only for CRC. In previous version, 
-	the checksum was using a representation with all letter being 
-	upper-case. With the new implementation (using CRC) we do not remove 
-	the 32th bit of the CRC, so we can have an upper-case starting letter 
-	in the CRC. This is not possible to parse in Scan_ALI (ali.adb). 
-	It is ambigous since the CRC was optional and could be followed by 
-	options like EB, EE. So now this routines uses lower-case letter for 
-	the hexadecimal representation. Strange enough only lower case letters 
+
+	* types.ads (Get_Hex_String): Returns the hexadecimal representation
+	for a word. This is currently used only for CRC. In previous version,
+	the checksum was using a representation with all letter being
+	upper-case. With the new implementation (using CRC) we do not remove
+	the 32th bit of the CRC, so we can have an upper-case starting letter
+	in the CRC. This is not possible to parse in Scan_ALI (ali.adb).
+	It is ambigous since the CRC was optional and could be followed by
+	options like EB, EE. So now this routines uses lower-case letter for
+	the hexadecimal representation. Strange enough only lower case letters
 	where checked in Scan_ALI (even if this was not a possible case).
-	
+
 	* gnatvsn.ads (Library_Version): changed to 3.15a.
-	
-	* s-crc32.ads: Initial version from GNAT.CRC32. This is the version 
+
+	* s-crc32.ads: Initial version from GNAT.CRC32. This is the version
 	for the compiler.
-	
-	* s-crc32.adb: Initial version from GNAT.CRC32. This is the version 
+
+	* s-crc32.adb: Initial version from GNAT.CRC32. This is the version
 	for the compiler.
-	
+
 	* ali-util.adb: Redo previous change to avoid using word CRC everywhere
 	Add 2001 to copyright notice
 	(Accumulate_Checksum): Modify to use System.CRC32.
-	
-	* ali-util.ads: Redo changes of previous revision to continue to use 
+
+	* ali-util.ads: Redo changes of previous revision to continue to use
 	the word Checksum. Add 2001 to copyright notice.
-	
+
 	* ali.adb: Undo some of previous changes, not needed.
 	Keep the change for lower case letters in the checksum.
-	
+
 	* ali.ads: Undo previous change not needed.
 
 	* bcheck.adb: Undo most of previous change, not needed.
 	But do use Checksums_Match for checksum comparison.
-	
+
 	* gnatls.adb: Undo most of previous change, not needed.
 	But do use Checksums_Match for comparing checksums.
-	
+
 	* lib-load.adb: Undo previous change, not needed.
-	
+
 	* lib-writ.adb: Undo previous change, not needed.
-	
-	* lib-writ.ads: Document that checksums use lower case, 
+
+	* lib-writ.ads: Document that checksums use lower case,
 	not upper case letters.
-	
+
 	* scans.adb: Undo previous change, not needed
-	
+
 	* scans.ads: Undo previous change, not needed.
-	
+
 	* scn-nlit.adb: Undo previous changes, not needed.
-	
+
 	* scn-slit.adb: Undo previous change, not needed.  Fix header format.
-	
+
 	* scn.adb:
 	(Accumulate_Checksum): Use System.CRC32.
 	(Initialize_Checksum): New procedure.
 	Remove other changes of previous revision.
-	
+
 	* sinput-p.adb: Undo previous change, not needed.
-	
+
 	* sinput.adb: Undo previous change, not needed.
 
 	* sinput-l.adb: Undo previous change, not needed.
-	
-	* sinput.ads: Undo previous change, not needed.  Keep only comment 
+
+	* sinput.ads: Undo previous change, not needed.  Keep only comment
 	on new checksum algorithm
-	
+
 	* Makefile.in: Add s-crc32 as needed, remove g-crc32.
 	Also remove a-tags and a-stream from GNAT sources.
-	
+
 	* ali.adb (Scan_ALI): fix typo introduce in latest check-in.
-	
+
 	* Makefile.in (GNATRTL_NONTASKING_OBJS): Add g-crc32.o.
 
 2001-10-11  Geert Bosch  <bosch@gnat.com>
@@ -679,10 +683,10 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-10-10  Geert Bosch  <bosch@gnat.com>
 
 	* gnat-style.texi: New file describing coding guidelines for Ada.
-	
+
 2001-10-10  Ed Schonberg <schonber@gnat.com>
 
-	* einfo.adb (Write_Entity_Flags): Elaboration_Entity_Required 
+	* einfo.adb (Write_Entity_Flags): Elaboration_Entity_Required
 	is Flag174.
 
 2001-10-10  Geert Bosch  <bosch@gnat.com>
@@ -701,59 +705,59 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Switches indexed by the file name.
 	(Collect_Arguments_And_Compile): Idem.
 	Reflect the attribute name changes.
-	
+
 	* prj-attr.adb:
 	(Initialisation_Data): Change the names of some packages and
 	attributes.
 	(Initialize): process case insensitive associative arrays.
-	
+
 	* prj-attr.ads:
 	(Attribute_Kind): Remove Both, add Case_Insensitive_Associative_Array.
-	
+
 	* prj-dect.adb:
 	(Parse_Attribute_Declaration): For case insensitive associative
 	 arrays, set the index string to lower case.
-	
+
 	* prj-env.adb:
 	Reflect the changes of the project attributes.
-	
+
 	* prj-nmsc.adb:
 	Replace Check_Naming_Scheme by Ada_Check and
 	Language_Independent_Check.
-	
+
 	* prj-nmsc.ads:
 	Replaced Check_Naming_Scheme by 2 procedures:
 	Ada_Check and Language_Independent_Check.
-	
+
 	* prj-proc.adb:
 	(Process_Declarative_Items): For case-insensitive associative
 	arrays, set the index string to lower case.
 	(Recursive_Check): Call Prj.Nmsc.Ada_Check, instead of
 	Prj.Nmsc.Check_Naming_Scheme.
-	
+
 	* prj-tree.adb:
 	(Case_Insensitive): New function
 	(Set_Case_Insensitive): New procedure
-	
+
 	* prj-tree.ads:
 	(Case_Insensitive): New function
 	(Set_Case_Insensitive): New procedure
 	(Project_Node_Record): New flag Case_Insensitive.
-	
+
 	* prj-util.adb:
 	(Value_Of): new function to get the string value of a single
 	string variable or attribute.
-	
+
 	* prj-util.ads:
 	(Value_Of): new function to get the string value of a single
 	string variable or attribute.
-	
+
 	* prj.adb:
 	(Ada_Default_Spec_Suffix): New function
 	(Ada_Default_Impl_Suffix): New function
 	Change definitions of several constants to reflect
 	new components of record types.
-	
+
 	* prj.ads:
 	(Naming_Data): Change several components to reflect new
 	elements of naming schemes.
@@ -761,7 +765,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Language_Independent_Checked.
 	(Ada_Default_Spec_Suffix): New function.
 	(Ada_Default_Impl_Suffix): New function.
-	
+
 	* snames.ads:
 	Modification of predefined names for project manager: added
 	Implementation, Specification_Exceptions, Implementation_Exceptions,
@@ -770,29 +774,29 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	Finder. Removed Body_Part, Specification_Append, Body_Append,
 	Separate_Append, Gnatmake, Gnatxref, Gnatfind, Gnatbind,
 	Gnatlink.
-	
+
 	* prj.ads: (Ada_Default_Spec_Suffix, Ada_Default_Impl_Suffix):
 	Add comments.
-	
+
 	* prj-nmsc.adb (Ada_Check): Test that Separate_Suffix is defaulted,
 	not that it is Nil_Variable_Value.
-	
+
 	* prj.ads: Add ??? for uncommented declarations
 
 2001-10-10  Ed Schonberg <schonber@gnat.com>
 
-	* sem_prag.adb: (Analyze_Pragma, case External): If entity is a 
-	constant, do not indicate possible modification, so that gigi can 
+	* sem_prag.adb: (Analyze_Pragma, case External): If entity is a
+	constant, do not indicate possible modification, so that gigi can
 	treat it as a bona fide constant.
 
 2001-10-10  Robert Dewar <dewar@gnat.com>
 
 	* sem_prag.adb: Add processing for pragma External.
-	
+
 	* snames.ads: Add entry for pragma External.
-	
+
 	* par-prag.adb: Add pragma External.
-	
+
 	* snames.adb: Updated to match snames.ads.
 
 2001-10-10  Ed Schonberg <schonber@gnat.com>
@@ -800,48 +804,48 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* exp_ch4.adb (Expand_N_Allocator): Generate meaningful names for
 	a dynamic task if the allocator appears in an indexed assignment
 	or selected component assignment.
-	
-	* exp_util.adb (Build_Task_Array_Image, Build_Task_Record_Image): 
-	For a dynamic task in an assignment statement, use target of 
+
+	* exp_util.adb (Build_Task_Array_Image, Build_Task_Record_Image):
+	For a dynamic task in an assignment statement, use target of
 	assignment to generate meaningful name.
 
 2001-10-10  Ed Schonberg <schonber@gnat.com>
 
-	* einfo.adb (Write_Field19_Name): Body_Entity is also defined for 
+	* einfo.adb (Write_Field19_Name): Body_Entity is also defined for
 	a generic package.
 
 	* einfo.ads: Body_Entity is also defined for generic package.
 	Documentation change only
-	
-	* exp_aggr.adb (Build_Array_Aggr_Code): When expanding an 
-	others_choice for a discriminated component initialization, 
-	convert discriminant references into the corresponding discriminals. 
-	
-	* exp_ch3.adb (Get_Simple_Init_Val): Add qualification to aggregate 
-	only if original type is private and expression has to be wrapped 
+
+	* exp_aggr.adb (Build_Array_Aggr_Code): When expanding an
+	others_choice for a discriminated component initialization,
+	convert discriminant references into the corresponding discriminals.
+
+	* exp_ch3.adb (Get_Simple_Init_Val): Add qualification to aggregate
+	only if original type is private and expression has to be wrapped
 	in a conversion.
-	
-	* checks.adb: 
-	(Apply_Constraint_Check): Do not perform length check 
+
+	* checks.adb:
+	(Apply_Constraint_Check): Do not perform length check
 	if expression is an aggregate with only an others_choice.
-	(Length_N_Cond): two references to the same in_parameter 
+	(Length_N_Cond): two references to the same in_parameter
 	(typically the discriminal in an init_proc) denote the same value.
 	Two useful optimization uncovered by bugfixes above.
 
 2001-10-10  Robert Dewar <dewar@gnat.com>
 
-	* xeinfo.adb: Change int to char in translation of enumeration types. 
+	* xeinfo.adb: Change int to char in translation of enumeration types.
 	This fixes a problem in the C representation of component alignment.
 	Add 2001 to copyright notice
 
 2001-10-10  Richard Kenner <kenner@gnat.com>
 
-	* decl.c: (validate_size): Do check size of object of integral type 
+	* decl.c: (validate_size): Do check size of object of integral type
 	if it is a packed array type.
 
 2001-10-10  Richard Kenner <kenner@gnat.com>
 
-	* decl.c: (gnat_to_gnu_entity, case object): Also materialize 
+	* decl.c: (gnat_to_gnu_entity, case object): Also materialize
 	VAR_DECL for constant if not Is_Public but -O0.
 
 2001-10-10  Richard Kenner  <kenner@gnat.com>
@@ -850,7 +854,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-10  Geert Bosch  <bosch@gnat.com>
 
-	* xnmake.adb (XNmake): Fix handling of -s/-b options.  No longer 
+	* xnmake.adb (XNmake): Fix handling of -s/-b options.  No longer
 	use '/' as switch character, allowing for absolute file names.
 
 2001-10-09  Joseph S. Myers  <jsm28@cam.ac.uk>
