@@ -1,3 +1,8 @@
+2005-01-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/nested-func-2.c: New test.
+	* ada/acats/norun.lst: Remove c953002.
+
 2005-01-12  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/ftrapv-2.c (labsv): Call labs instead of abs.

@@ -3501,6 +3501,12 @@ initializer_constant_valid_p (tree value, tree endtype)
 	  && TREE_CODE (value) == INDIRECT_REF
 	  && TREE_CONSTANT (TREE_OPERAND (value, 0)))
 	return null_pointer_node;
+      /* Taking the address of a nested function involves a trampoline.  */
+      if (value
+	  && TREE_CODE (value) == FUNCTION_DECL
+	  && ((decl_function_context (value) && !DECL_NO_STATIC_CHAIN (value))
+	      || DECL_NON_ADDR_CONST_P (value)))
+	return NULL_TREE;
       return value;
 
     case VIEW_CONVERT_EXPR:
