@@ -149,11 +149,6 @@ extern char *regno_pointer_flag;
 #define REGNO_POINTER_FLAG(REGNO) regno_pointer_flag[REGNO]
 extern int regno_pointer_flag_length;
 
-/* Similarly, contains the alignment in bytes for a register that contains
-   a pointer, if known.  */
-extern char *regno_pointer_align;
-#define REGNO_POINTER_ALIGN(REGNO) regno_pointer_align[REGNO]
-
 /* List made of EXPR_LIST rtx's which gives pairs of pseudo registers
    that have to go in the same hard reg.  */
 extern rtx regs_may_share;

@@ -969,6 +969,11 @@ extern int cse_not_expected;
    Allocated in parallel with regno_pointer_flag.  */
 extern rtx *regno_reg_rtx;
 
+/* Vector indexed by regno; contains the alignment in bytes for a
+   register that contains a pointer, if known.  */
+extern char *regno_pointer_align;
+#define REGNO_POINTER_ALIGN(REGNO) regno_pointer_align[REGNO]
+
 /* Translates rtx code to tree code, for those codes needed by
    REAL_ARITHMETIC.  The function returns an int because the caller may not
    know what `enum tree_code' means.  */
