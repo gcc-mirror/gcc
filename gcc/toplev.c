@@ -2389,7 +2389,7 @@ output_file_directive (asm_file, input_name)
   /* NA gets INPUT_NAME sans directory names.  */
   while (na > input_name)
     {
-      if (na[-1] == '/')
+      if (na[-1] == DIR_SEPARATOR)
 	break;
       na--;
     }
