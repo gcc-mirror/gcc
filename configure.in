@@ -1446,7 +1446,7 @@ if test x${gxx_include_dir} = x; then
   if test x${enable_version_specific_runtime_libs} = xyes; then
     gxx_include_dir='${libsubdir}/include/g++'
   else
-    . ${topsrcdir}/config.if
+    . ${srcdir}/config.if
     gxx_include_dir='${prefix}/include/${libstdcxx_incdir}'
   fi
 else
@@ -1467,7 +1467,7 @@ case " $skipdirs " in
    esac
 
    # If we're not building GCC, don't discard standard headers.
-   if test -d ${topsrcdir}/gcc; then
+   if test -d ${srcdir}/gcc; then
      FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -nostdinc'
 
      if test "${build}" != "${host}"; then
@@ -1513,7 +1513,7 @@ esac
 # the previously-installed cross compiler, so don't bother to add
 # flags for directories within the install tree of the compiler
 # being built; programs in there won't even run.
-if test "${build}" = "${host}" && test -d ${topsrcdir}/gcc; then
+if test "${build}" = "${host}" && test -d ${srcdir}/gcc; then
   # Search for pre-installed headers if nothing else fits.
   FLAGS_FOR_TARGET=$FLAGS_FOR_TARGET' -B$(build_tooldir)/bin/ -B$(build_tooldir)/lib/ -isystem $(build_tooldir)/include'
 fi
@@ -1527,7 +1527,7 @@ fi
 
 if test "x${CC_FOR_TARGET+set}" = xset; then
   :
-elif test -d ${topsrcdir}/gcc; then
+elif test -d ${srcdir}/gcc; then
   CC_FOR_TARGET='$$r/gcc/xgcc -B$$r/gcc/'
 elif test "$host" = "$target"; then
   CC_FOR_TARGET='$(CC)'
@@ -1543,7 +1543,7 @@ esac
 
 if test "x${GCJ_FOR_TARGET+set}" = xset; then
   :
-elif test -d ${topsrcdir}/gcc; then
+elif test -d ${srcdir}/gcc; then
   GCJ_FOR_TARGET='$$r/gcc/gcj -B$$r/gcc/'
 elif test "$host" = "$target"; then
   GCJ_FOR_TARGET='gcj'
@@ -1560,7 +1560,7 @@ libstdcxx_flags='`case $$dir in libstdc++-v3 | libjava) ;; *) test ! -f $$r/$(TA
 
 if test "x${CXX_FOR_TARGET+set}" = xset; then
   :
-elif test -d ${topsrcdir}/gcc; then
+elif test -d ${srcdir}/gcc; then
   # We add -shared-libgcc to CXX_FOR_TARGET whenever we use xgcc instead
   # of g++ for linking C++ or Java, because g++ has -shared-libgcc by
   # default whereas gcc does not.
