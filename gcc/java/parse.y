@@ -164,7 +164,7 @@ static tree build_new_invocation PARAMS ((tree, tree));
 static tree build_assignment PARAMS ((int, int, tree, tree));
 static tree build_binop PARAMS ((enum tree_code, int, tree, tree));
 static int check_final_assignment PARAMS ((tree ,tree));
-static tree patch_assignment PARAMS ((tree, tree, tree ));
+static tree patch_assignment PARAMS ((tree, tree));
 static tree patch_binop PARAMS ((tree, tree, tree));
 static tree build_unaryop PARAMS ((int, int, tree));
 static tree build_incdec PARAMS ((int, int, tree, int));
@@ -11941,7 +11941,7 @@ java_complete_lhs (node)
 	      /* Prepare node for patch_assignment */
 	      TREE_OPERAND (node, 1) = value;
 	      /* Call patch assignment to verify the assignment */
-	      if (patch_assignment (node, wfl_op1, value) == error_mark_node)
+	      if (patch_assignment (node, wfl_op1) == error_mark_node)
 		return error_mark_node;
 	      /* Set DECL_INITIAL properly (a conversion might have
                  been decided by patch_assignment) and return the
@@ -12040,7 +12040,7 @@ java_complete_lhs (node)
 	  /* Can't assign to a (blank) final. */
 	  if (check_final_assignment (TREE_OPERAND (node, 0), wfl_op1))
 	    return error_mark_node;
-	  node = patch_assignment (node, wfl_op1, wfl_op2);
+	  node = patch_assignment (node, wfl_op1);
 	  /* Reorganize the tree if necessary. */
 	  if (flag && (!JREFERENCE_TYPE_P (TREE_TYPE (node)) 
 		       || JSTRING_P (TREE_TYPE (node))))
@@ -12790,10 +12790,9 @@ check_final_assignment (lvalue, wfl)
 /* 15.25 Assignment operators. */
 
 static tree
-patch_assignment (node, wfl_op1, wfl_op2)
+patch_assignment (node, wfl_op1)
      tree node;
      tree wfl_op1;
-     tree wfl_op2;
 {
   tree rhs = TREE_OPERAND (node, 1);
   tree lvalue = TREE_OPERAND (node, 0), llvalue;
