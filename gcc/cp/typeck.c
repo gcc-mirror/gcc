@@ -2911,6 +2911,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
       /* Finally, extract the function pointer from the vtable.  */
       e2 = fold (build (PLUS_EXPR, TREE_TYPE (vtbl), vtbl, idx));
       e2 = build_indirect_ref (e2, NULL);
+      TREE_CONSTANT (e2) = 1;
 
       /* When using function descriptors, the address of the
 	 vtable entry is treated as a function pointer.  */
