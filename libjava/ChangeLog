@@ -1,5 +1,10 @@
 2000-04-20  Tom Tromey  <tromey@cygnus.com>
 
+	Fix for PR java.io/204:
+	* java/io/PipedInputStream.java, java/io/PipedReader.java,
+	java/io/PipedOutputStream.java, java/io/PipedWriter.java: Imported
+	from Classpath.
+
 	Fix for PR libgcj/212:
 	* gcj/javaprims.h (_Jv_word, _Jv_word2): Removed definitions.
 	* include/jvm.h (_Jv_word, _Jv_word2): Define.
