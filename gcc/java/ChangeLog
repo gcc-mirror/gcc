@@ -1,3 +1,8 @@
+2002-11-06  Tom Tromey  <tromey@redhat.com>
+
+	* gjavah.c (print_stub_or_jni): Include JNIEXPORT and JNICALL in
+	a JNI header.
+
 2002-11-05  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR java/6388.
