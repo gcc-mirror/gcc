@@ -1,5 +1,30 @@
 2000-02-07  Tom Tromey  <tromey@cygnus.com>
 
+	* jni.cc (ThrowableClass): New define.
+	(_Jv_JNI_Throw): Check argument.
+	(_Jv_JNI_ThrowNew): Likewise.
+	(wrap_value): Don't wrap object if it is NULL.
+	(_Jv_JNI_DefineClass): Use wrap_value.
+	(_Jv_JNI_FindClass): Likewise.
+	(_Jv_JNI_GetSuperclass): Likewise.
+	(_Jv_JNI_ExceptionOccurred): Likewise.
+	(_Jv_JNI_AllocObject): Likewise.
+	(_Jv_JNI_GetObjectClass): Likewise.
+	(_Jv_JNI_NewString): Likewise.
+	(_Jv_JNI_NewStringUTF): Likewise.
+	(_Jv_JNI_NewObjectArray): Likewise.
+	(_Jv_JNI_GetObjectArrayElement): Likewise.
+	(_Jv_JNI_NewPrimitiveArray): Likewise.
+	(_Jv_JNI_ToReflectedField): Likewise.
+	(_Jv_JNI_ToReflectedMethod): Likewise.
+	(_Jv_JNI_AllocObject): Check argument.
+	(_Jv_JNI_NewObjectV): Likewise.
+	(_Jv_JNI_NewObject): Likewise.
+	(_Jv_JNI_NewObjectA): Likewise.
+	(_Jv_JNI_GetObjectClass): Likewise.
+	(_Jv_JNI_GetField): Likewise.
+	(_Jv_JNI_SetField): Likewise.
+
 	* interpret.cc (PUSHL): Don't use expression statement.
 	(PUSHD): Likewise.
 	(LOADL): Likewise.
