@@ -6899,8 +6899,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		         (match_operand 2 "" "")))
 	      (use (reg:DI 29))
 	      (clobber (reg:DI 26))])]
-  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF  && reload_completed
-   && ! current_file_function_operand (operands[0], Pmode)
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF && reload_completed
+   && ! current_file_function_operand (operands[1], Pmode)
    && peep2_regno_dead_p (1, 29)"
   [(parallel [(set (match_dup 0)
 		   (call (mem:DI (match_dup 3))
@@ -6931,8 +6931,8 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 		         (match_operand 2 "" "")))
 	      (use (reg:DI 29))
 	      (clobber (reg:DI 26))])]
-  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF  && reload_completed
-   && ! current_file_function_operand (operands[0], Pmode)
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF && reload_completed
+   && ! current_file_function_operand (operands[1], Pmode)
    && ! peep2_regno_dead_p (1, 29)"
   [(parallel [(set (match_dup 0)
 		   (call (mem:DI (match_dup 3))

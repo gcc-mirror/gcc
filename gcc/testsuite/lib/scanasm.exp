@@ -1,4 +1,4 @@
-#   Copyright (C) 2000 Free Software Foundation, Inc.
+#   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,7 +19,24 @@
 
 # Utility for scanning compiler result, invoked via dg-final.
 # Call pass if pattern is present, otherwise fail.
-proc scan-assembler { pattern args } {
+proc scan-assembler { args } {
+    if { [llength $args] < 1 } {
+	error "scan-assembler: too few arguments"
+        return
+    }
+    if { [llength $args] > 2 } {
+	error "scan-assembler: too many arguments"
+	return
+    }
+    if { [llength $args] >= 2 } {
+	switch [dg-process-target [lindex $args 1]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { error "scan-assembler: `xfail' not allowed here" }
+	    "P" { error "scan-assembler: `xfail' not allowed here" }
+	}
+    }
+
     # This assumes that we are two frames down from dg-test, and that
     # it still stores the filename of the testcase in a local variable "name".
     # A cleaner solution would require a new dejagnu release.
@@ -32,20 +49,32 @@ proc scan-assembler { pattern args } {
     set text [read $fd]
     close $fd
 
-    set vmessage [concat $args]
-    if { $vmessage == ""} {
-	set vmessage $pattern
-    }
-
-    if [regexp -- $pattern $text] {
-	pass "$testcase scan-assembler $vmessage"
+    if [regexp -- [lindex $args 0] $text] {
+	pass "$testcase scan-assembler [lindex $args 0]"
     } else {
-	fail "$testcase scan-assembler $vmessage"
+	fail "$testcase scan-assembler [lindex $args 0]"
     }
 }
 
 # Call pass if pattern is not present, otherwise fail.
-proc scan-assembler-not { pattern args } {
+proc scan-assembler-not { args } {
+    if { [llength $args] < 1 } {
+	error "scan-assembler-not: too few arguments"
+        return
+    }
+    if { [llength $args] > 2 } {
+	error "scan-assembler-not: too many arguments"
+	return
+    }
+    if { [llength $args] >= 2 } {
+	switch [dg-process-target [lindex $args 1]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { error "scan-assembler-not: `xfail' not allowed here" }
+	    "P" { error "scan-assembler-not: `xfail' not allowed here" }
+	}
+    }
+
     set testcase [uplevel 2 { expr { $name } }]
     set output_file "[file rootname [file tail $testcase]].s"
 
@@ -53,15 +82,10 @@ proc scan-assembler-not { pattern args } {
     set text [read $fd]
     close $fd
 
-    set vmessage [concat $args]
-    if { $vmessage == ""} {
-	set vmessage $pattern
-    }
-
-    if ![regexp -- $pattern $text] {
-	pass "$testcase scan-assembler-not $vmessage"
+    if ![regexp -- [lindex $args 0] $text] {
+	pass "$testcase scan-assembler-not [lindex $args 0]"
     } else {
-	fail "$testcase scan-assembler-not $vmessage"
+	fail "$testcase scan-assembler-not [lindex $args 0]"
     }
 }
 
@@ -71,6 +95,23 @@ proc scan-assembler-dem { pattern args } {
     global cxxfilt
     global base_dir
 
+    if { [llength $args] < 1 } {
+	error "scan-assembler-dem: too few arguments"
+        return
+    }
+    if { [llength $args] > 2 } {
+	error "scan-assembler-dem: too many arguments"
+	return
+    }
+    if { [llength $args] >= 2 } {
+	switch [dg-process-target [lindex $args 1]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { error "[lindex $args 0]: `xfail' not allowed here" }
+	    "P" { error "[lindex $args 0]: `xfail' not allowed here" }
+	}
+    }
+
     # Find c++filt like we find g++ in g++.exp.
     if ![info exists cxxfilt]  {
 	set cxxfilt [findfile $base_dir/../c++filt $base_dir/../c++filt \
@@ -86,15 +127,10 @@ proc scan-assembler-dem { pattern args } {
     set text [read $fd]
     close $fd
 
-    set vmessage [concat $args]
-    if { $vmessage == ""} {
-	set vmessage $pattern
-    }
-
-    if [regexp -- $pattern $text] {
-	pass "$testcase scan-assembler $vmessage"
+    if [regexp -- [lindex $args 0] $text] {
+	pass "$testcase scan-assembler-dem [lindex $args 0]"
     } else {
-	fail "$testcase scan-assembler $vmessage"
+	fail "$testcase scan-assembler-dem [lindex $args 0]"
     }
 }
 
@@ -103,6 +139,31 @@ proc scan-assembler-dem-not { pattern args } {
     global cxxfilt
     global base_dir
 
+    if { [llength $args] < 1 } {
+	error "scan-assembler-dem-not: too few arguments"
+        return
+    }
+    if { [llength $args] > 2 } {
+	error "scan-assembler-dem-not: too many arguments"
+	return
+    }
+    if { [llength $args] >= 2 } {
+	switch [dg-process-target [lindex $args 1]] {
+	    "S" { }
+	    "N" { return }
+	    "F" { error "scan-assembler-dem-not: `xfail' not allowed here" }
+	    "P" { error "scan-assembler-dem-not: `xfail' not allowed here" }
+	}
+    }
+
+    # Find c++filt like we find g++ in g++.exp.
+    if ![info exists cxxfilt]  {
+	set cxxfilt [findfile $base_dir/../c++filt $base_dir/../c++filt \
+		     [findfile $base_dir/c++filt $base_dir/c++filt \
+		      [transform c++filt]]]
+	verbose -log "c++filt is $cxxfilt"
+    }
+
     # Find c++filt like we find g++ in g++.exp.
     if ![info exists cxxfilt]  {
 	set cxxfilt [findfile $base_dir/../c++filt $base_dir/../c++filt \
@@ -118,14 +179,9 @@ proc scan-assembler-dem-not { pattern args } {
     set text [read $fd]
     close $fd
 
-    set vmessage [concat $args]
-    if { $vmessage == ""} {
-	set vmessage $pattern
-    }
-
-    if ![regexp -- $pattern $text] {
-	pass "$testcase scan-assembler-not $vmessage"
+    if ![regexp -- [lindex $args 0] $text] {
+	pass "$testcase scan-assembler-dem-not [lindex $args 0]"
     } else {
-	fail "$testcase scan-assembler-not $vmessage"
+	fail "$testcase scan-assembler-dem-not [lindex $args 0]"
     }
 }
