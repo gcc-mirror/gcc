@@ -1,5 +1,8 @@
 Tue Jun 30 23:16:39 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* flow.c (recompute_reg_usage): Does not return a value.
+	* rtl.h (recompute_reg_usage): Update prototype.
+
 	* jump.c (jump_optimize): Show that the jump chain is not
 	valid when not optimizing.
 
