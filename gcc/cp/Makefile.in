@@ -100,7 +100,7 @@ VPATH = @srcdir@
 
 # Additional system libraries to link with.
 CLIB=
- 
+
 # Top build directory, relative to here.
 top_builddir = ..
 
