@@ -1,5 +1,8 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* c4x.c (c4x_print_operand, c4x_print_operand_address): Fix format
+	specifier warnings.
+
 	* alpha.c (print_operand_address, alpha_start_function,
 	unicosmk_output_ssib): Use string concatentation on
 	HOST_WIDE_INT_PRINT_* format specifier to collapse multiple

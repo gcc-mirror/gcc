@@ -1884,7 +1884,7 @@ c4x_print_operand (file, op, letter)
     case 'N':			/* Ones complement of small constant.  */
       if (code != CONST_INT)
 	fatal_insn ("c4x_print_operand: %%N inconsistency", op);
-      fprintf (file, "%d", ~INTVAL (op));
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, ~INTVAL (op));
       return;
 
     case 'K':			/* Generate ldp(k) if direct address.  */
@@ -1964,7 +1964,7 @@ c4x_print_operand (file, op, letter)
       break;
       
     case CONST_INT:
-      fprintf (file, "%d", INTVAL (op));
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (op));
       break;
       
     case NE:
@@ -2053,11 +2053,11 @@ c4x_print_operand_address (file, addr)
 	  fprintf (file, "*%s++(%s)", reg_names[REGNO (op0)],
 		   reg_names[REGNO (op1)]);
 	else if (GET_CODE (XEXP (addr, 1)) == PLUS && INTVAL (op1) > 0)
-	  fprintf (file, "*%s++(%d)", reg_names[REGNO (op0)],
-		   INTVAL (op1));
+	  fprintf (file, "*%s++(" HOST_WIDE_INT_PRINT_DEC ")",
+		   reg_names[REGNO (op0)], INTVAL (op1));
 	else if (GET_CODE (XEXP (addr, 1)) == PLUS && INTVAL (op1) < 0)
-	  fprintf (file, "*%s--(%d)", reg_names[REGNO (op0)],
-		   -INTVAL (op1));
+	  fprintf (file, "*%s--(" HOST_WIDE_INT_PRINT_DEC ")",
+		   reg_names[REGNO (op0)], -INTVAL (op1));
 	else if (GET_CODE (XEXP (addr, 1)) == MINUS && REG_P (op1))
 	  fprintf (file, "*%s--(%s)", reg_names[REGNO (op0)],
 		   reg_names[REGNO (op1)]);
@@ -2075,11 +2075,11 @@ c4x_print_operand_address (file, addr)
 	  fprintf (file, "*++%s(%s)", reg_names[REGNO (op0)],
 		   reg_names[REGNO (op1)]);
 	else if (GET_CODE (XEXP (addr, 1)) == PLUS && INTVAL (op1) > 0)
-	  fprintf (file, "*++%s(%d)", reg_names[REGNO (op0)],
-		   INTVAL (op1));
+	  fprintf (file, "*++%s(" HOST_WIDE_INT_PRINT_DEC ")",
+		   reg_names[REGNO (op0)], INTVAL (op1));
 	else if (GET_CODE (XEXP (addr, 1)) == PLUS && INTVAL (op1) < 0)
-	  fprintf (file, "*--%s(%d)", reg_names[REGNO (op0)],
-		   -INTVAL (op1));
+	  fprintf (file, "*--%s(" HOST_WIDE_INT_PRINT_DEC ")",
+		   reg_names[REGNO (op0)], -INTVAL (op1));
 	else if (GET_CODE (XEXP (addr, 1)) == MINUS && REG_P (op1))
 	  fprintf (file, "*--%s(%s)", reg_names[REGNO (op0)],
 		   reg_names[REGNO (op1)]);
@@ -2120,13 +2120,13 @@ c4x_print_operand_address (file, addr)
 	      }
 	    else if (INTVAL (op1) < 0)
 	      {
-		fprintf (file, "*-%s(%d)",
+		fprintf (file, "*-%s(" HOST_WIDE_INT_PRINT_DEC ")",
 			 reg_names[REGNO (op0)],
 			 -INTVAL (op1));	/* Base - displacement.  */
 	      }
 	    else
 	      {
-		fprintf (file, "*+%s(%d)",
+		fprintf (file, "*+%s(" HOST_WIDE_INT_PRINT_DEC ")",
 			 reg_names[REGNO (op0)],
 			 INTVAL (op1));	/* Base + displacement.  */
 	      }
