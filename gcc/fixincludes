@@ -112,12 +112,15 @@ do
 	    # add that dir to $newdirs
 	    if [ -d $d1 ]
 	    then
-		newdirs="$newdirs $d1"
+		files="$files $d1"
+		if [ "`ls -ld $d1 | sed -n 's/.*-> //p'`" != "." ]
+		then
+		    newdirs="$newdirs $d1"
+		fi
 	    fi
 	done
     done
 
-    files="$files $newdirs"
     dirs="$newdirs"
 done
 
