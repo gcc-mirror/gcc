@@ -1,3 +1,7 @@
+2003-12-01  James Lemke <jim@wasabisystems.com>
+ 
+	* config/arm/arm.c (arm_rtx_costs): Improve for xscale multiply.
+
 2003-12-01  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/11634
