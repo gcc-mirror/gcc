@@ -655,6 +655,8 @@ extern void	xfree		__proto((PTR_T));
 extern void	fatal();	/* can't use prototypes here */
 extern void	error();
 
+extern char *index ();
+extern char *rindex ();
 
 #ifndef MIPS_DEBUGGING_INFO
 
@@ -3548,8 +3550,8 @@ parse_file (start)
 
   (void) strtol (start, &p, 0);
   if (start == p
-      || (start_name = strchr (p, '"')) == (char *)0
-      || (end_name_p1 = strrchr (++start_name, '"')) == (char *)0)
+      || (start_name = index (p, '"')) == (char *)0
+      || (end_name_p1 = rindex (++start_name, '"')) == (char *)0)
     {
       error ("Illegal .file directive");
       return;
@@ -3760,7 +3762,7 @@ STATIC void
 parse_stabs (start)
      const char *start;			/* start of directive */
 {
-  const char *end = strchr (start+1, '"');
+  const char *end = index (start+1, '"');
 
   if (*start != '"' || end == (const char *)0 || end[1] != ',')
     {
@@ -4458,7 +4460,7 @@ copy_object __proto((void))
       && orig_files->caux == 0)
     {
       char *filename = orig_local_strs + (orig_files->issBase + orig_files->rss);
-      char *suffix = strrchr (filename, '.');
+      char *suffix = rindex (filename, '.');
 
       if (suffix != (char *)0 && strcmp (suffix, ".s") == 0)
 	delete_ifd = 1;
@@ -4692,7 +4694,7 @@ main (argc, argv)
      char *argv[];
 {
   int iflag = 0;
-  char *p = strrchr (argv[0], '/');
+  char *p = rindex (argv[0], '/');
   char *num_end;
   int option;
   int i;
