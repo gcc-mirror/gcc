@@ -329,30 +329,6 @@ for code in ALL STD ; do
       done
       rm -f fixtmp.c fixtmp.i
     done
-    # check for broken assert.h that needs stdio.h
-    if test -f $abs_source_dir/assert.h -a \! -f $abs_target_dir/assert.h; then
-      if grep 'stderr' $abs_source_dir/assert.h >/dev/null ; then
-	if grep 'include.*stdio.h' $abs_source_dir/assert.h >/dev/null ; then
-	  true
-	else
-	  echo 'Fixing broken assert.h (needs stdio.h)'
-	  cat $abs_source_dir/assert.h >$abs_target_dir/assert.h
-	  echo '#include <stdio.h>' >>$abs_target_dir/assert.h
-	fi
-      fi
-      if grep 'exit *(' $abs_source_dir/assert.h >/dev/null || 
-	 grep 'abort *(' $abs_source_dir/assert.h >/dev/null ; then
-	if grep 'include.*stdlib.h' $abs_source_dir/assert.h >/dev/null ; then
-	  true
-	else
-	  echo 'Fixing broken assert.h (needs stdlib.h)'
-	  if test ! -f $abs_target_dir/assert.h ; then
-	    cat $abs_source_dir/assert.h >$abs_target_dir/assert.h
-	  fi
-	  echo '#include <stdlib.h>' >>$abs_target_dir/assert.h
-	fi
-      fi
-    fi
     done_dirs="$done_dir $rel_source_dir"
 done
 
