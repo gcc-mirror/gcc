@@ -29,8 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #define WIN32_NO_ABSOLUTE_INST_DIRS 1
 #endif
 
-#include "i386/cygwin.h"
-
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
 
 /* See i386/crtdll.h for an alternative definition.  */
