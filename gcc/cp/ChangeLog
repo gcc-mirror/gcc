@@ -1,3 +1,7 @@
+2001-02-13  Jason Merrill  <jason@redhat.com>
+
+	* lang-specs.h: Add more __EXCEPTIONS.
+
 2001-02-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* typeck2.c (process_init_constructor): Check
