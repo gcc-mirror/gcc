@@ -5,7 +5,7 @@
 @ignore
 @c man begin COPYRIGHT
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-1998, 1999, 2000 Free Software Foundation, Inc.
+1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of this
 manual provided the copyright notice and this permission notice are
@@ -2170,7 +2170,8 @@ Warn about functions which might be candidates for attribute @code{noreturn}.
 Note these are only possible candidates, not absolute ones.  Care should
 be taken to manually verify functions actually do not ever return before
 adding the @code{noreturn} attribute, otherwise subtle code generation
-bugs could be introduced.
+bugs could be introduced.  You will not get a warning for @code{main} in
+hosted C environments.
 
 @item -Wmissing-format-attribute
 If @samp{-Wformat} is enabled, also warn about functions which might be
