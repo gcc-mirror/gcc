@@ -4140,7 +4140,8 @@ struct arg_lookup
 static int arg_assoc         PROTO((struct arg_lookup*, tree));
 static int arg_assoc_args    PROTO((struct arg_lookup*, tree));
 
-/* Add a function to the lookup structure. */
+/* Add a function to the lookup structure.
+   Returns 1 on error.  */
 
 static int
 add_function (k, fn)
@@ -4172,7 +4173,8 @@ add_function (k, fn)
   return 0;
 }
 
-/* Add functions of a namespace to the lookup structure. */
+/* Add functions of a namespace to the lookup structure.
+   Returns 1 on error.  */
 
 static int
 arg_assoc_namespace (k, scope)
@@ -4196,7 +4198,8 @@ arg_assoc_namespace (k, scope)
   return 0;
 }
 
-/* Adds everything associated with class to the lookup structure. */
+/* Adds everything associated with class to the lookup structure.
+   Returns 1 on error.  */
 
 static int
 arg_assoc_class (k, type)
@@ -4234,7 +4237,8 @@ arg_assoc_class (k, type)
   return 0;
 }
 
-/* Adds everything associated with a given type. */
+/* Adds everything associated with a given type.
+   Returns 1 on error.  */
 
 static int
 arg_assoc_type (k, type)
@@ -4267,16 +4271,16 @@ arg_assoc_type (k, type)
 	return 1;
       return arg_assoc_type (k, TREE_TYPE (type));
     case METHOD_TYPE:
-      /* Associate the class of the method. */
-      if (arg_assoc_type (k, TYPE_METHOD_BASETYPE (type)))
-	return 1;
-      /* Fall through. */
+      /* The basetype is referenced in the first arg type, so just
+	 fall through.  */
     case FUNCTION_TYPE:
       /* Associate the parameter types. */
       if (arg_assoc_args (k, TYPE_ARG_TYPES (type)))
 	return 1;
       /* Associate the return type. */
       return arg_assoc_type (k, TREE_TYPE (type));
+    case TEMPLATE_TYPE_PARM:
+      return 0;
     case LANG_TYPE:
       if (type == unknown_type_node)
 	return 0;
@@ -4287,7 +4291,7 @@ arg_assoc_type (k, type)
   return 0;
 }
 
-/* Adds everything associated with arguments. */
+/* Adds everything associated with arguments.  Returns 1 on error.  */
 
 static int
 arg_assoc_args (k, args)
@@ -4300,74 +4304,30 @@ arg_assoc_args (k, args)
   return 0;
 }
 
-/* Adds everything associated with a given tree_node. */
+/* Adds everything associated with a given tree_node.  Returns 1 on error.  */
 
 static int
 arg_assoc (k, n)
      struct arg_lookup* k;
      tree n;
 {
-  switch (TREE_CODE_CLASS (TREE_CODE (n)))
-    {
-    case 't':
-      return arg_assoc_type (k, n);
-    case 'c':
-    case '1':
-    case '2':
-    case '<':
-    case 'r':
-      return arg_assoc_type (k, TREE_TYPE (n));
-    case 'e':
-      switch (TREE_CODE (n))
-	{
-	case ADDR_EXPR:
-	  /* special processing */
-	  break;
-	default:
-	  return arg_assoc_type (k, TREE_TYPE (n));
-	}
-    default:
-      break;
-    }
+  if (TREE_CODE_CLASS (TREE_CODE (n)) == 't')
+    return arg_assoc_type (k, n);
 
-  while (n)
-    switch (TREE_CODE (n))
-      {
-      case CONST_DECL: /* 'd' */
-      case VAR_DECL:
-      case PARM_DECL:
-      case RESULT_DECL:
-	return arg_assoc_type (k, TREE_TYPE (n));
-      case ADDR_EXPR: /* 'e' */
-	/* We can't use the TREE_TYPE, as the type of an overloaded function
-	   will be useless here. */
-	n = TREE_OPERAND (n, 0);
-	continue;
-      case OVERLOAD:  /* 'x' */
-	if (arg_assoc (k, OVL_CURRENT (n)))
-	  return 1;
-	n = OVL_NEXT (n);
-	continue;
-      case TREE_LIST: /* 'x' */
-	/* XXX Overloaded member, should get an OVERLOAD directly, here. */
-	n = TREE_VALUE (n);
-	continue;
-      case FUNCTION_DECL: /* 'd' */
-	if (arg_assoc_args (k, TYPE_ARG_TYPES (TREE_TYPE (n))))
-	  return 1;	
-	return 0;
-      case TEMPLATE_DECL:
-        /* XXX Type of a function template in the context of Koenig lookup?
-           Assume that template parameters are non-deduced for the moment. */
-        n = DECL_RESULT (n);
-        continue;
-      case ERROR_MARK:
-        return 0;
-      default:
-	cp_error ("sorry, Koenig lookup for `%s' of type `%T' failed",
-		  tree_code_name [(int)TREE_CODE (n)], TREE_TYPE (n));
-	my_friendly_abort (391);
-      }
+  if (! type_unknown_p (n))
+    return arg_assoc_type (k, TREE_TYPE (n));
+
+  if (TREE_CODE (n) == ADDR_EXPR)
+    n = TREE_OPERAND (n, 0);
+  if (TREE_CODE (n) == TREE_LIST)
+    n = TREE_VALUE (n);
+
+  my_friendly_assert (TREE_CODE (n) == OVERLOAD, 980715);
+
+  for (; n; n = TREE_CHAIN (n))
+    if (arg_assoc (k, OVL_FUNCTION (n)))
+      return 1;
+
   return 0;
 }
 
