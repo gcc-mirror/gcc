@@ -1,3 +1,8 @@
+2003-02-20  Phil Edwards  <pme@gcc.gnu.org>
+
+	* config/linker-map.gnu:  Also export locking symbols needed for the
+	generic atomicity.h case.
+
 2003-02-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in: Propagate ORIGINAL_LD_FOR_MULTILIBS to
