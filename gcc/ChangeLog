@@ -1,3 +1,8 @@
+2001-11-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/i386/sol2.h (WINT_TYPE): Redefine.
+	(WINT_TYPE_SIZE): Likewise.
+
 2001-11-26  Ian Lance Taylor  <ian@zembu.com>
 
 	* config/i386/i386.md (movstrsi): Use strmovqi rather than

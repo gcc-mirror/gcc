@@ -69,6 +69,13 @@ Boston, MA 02111-1307, USA.  */
   (flag_pic ? (GLOBAL ? DW_EH_PE_indirect : 0) | DW_EH_PE_datarel	\
    : DW_EH_PE_absptr)
 
+/* Solaris 2/Intel uses a wint_t different from the default, as on SPARC.  */
+#undef	WINT_TYPE
+#define	WINT_TYPE "long int"
+
+#undef	WINT_TYPE_SIZE
+#define	WINT_TYPE_SIZE BITS_PER_WORD
+
 /* Add "sun" to the list of symbols defined for SVR4.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
