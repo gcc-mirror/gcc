@@ -1,3 +1,17 @@
+Sun Oct 24 13:14:20 1999  Graham  <grahams@rcp.co.uk>
+			  Richard Henderson  <rth@cygnus.com>
+
+	* alias.c: Include ggc.h.
+	(reg_base_value, new_reg_base_value, reg_base_value_size): Make static.
+	(record_set): Verify enough room in reg_base_value.
+	(init_alias_analysis): Allocate reg_base_value with xcalloc.
+	Register it as a GC root.
+	(end_alias_analysis): Free reg_base_value.  Remove it as a GC root.
+	* Makefile.in (alias.o): Depend on ggc.h.
+
+	* unroll.c (unroll_loop): Verify the insn before a barrier
+	is a JUMP_INSN before checking JUMP_LABEL.
+
 Sun Oct 24 15:46:44 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips/bsd-5.h (ASM_OUTPUT_ASCII): Constify a char*.

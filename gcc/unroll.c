@@ -649,6 +649,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
   if (unroll_type == UNROLL_NAIVE
       && GET_CODE (last_loop_insn) == BARRIER
+      && GET_CODE (PREV_INSN (last_loop_insn)) == JUMP_INSN
       && start_label != JUMP_LABEL (PREV_INSN (last_loop_insn)))
     {
       /* In this case, we must copy the jump and barrier, because they will
@@ -1961,7 +1962,8 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	  /* Make split induction variable constants `permanent' since we
 	     know there are no backward branches across iteration variable
 	     settings which would invalidate this.  */
-	  if (dest_reg_was_split)
+	  if (dest_reg_was_split
+              && (GET_CODE (pattern) == SET || GET_CODE (pattern) == USE))
 	    {
 	      int regno = REGNO (SET_DEST (pattern));
 
