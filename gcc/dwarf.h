@@ -167,8 +167,8 @@ enum dwarf_attribute {
     AT_body_end			= (0x8050|FORM_ADDR)
 };
 
-#define AT_lo_user	0x8000  /* implementation-defined range start */
-#define AT_hi_user	0xffff  /* implementation-defined range end */
+#define AT_lo_user	0x2000	/* implementation-defined range start */
+#define AT_hi_user	0x3ff0	/* implementation-defined range end */
 
 /* Location atom names and codes.  */
 
