@@ -389,31 +389,6 @@ extern int x86_prefetch_sse;
 #define TARGET_DEFAULT TARGET_SUBTARGET_DEFAULT
 #endif
 
-/* Which processor to schedule for. The cpu attribute defines a list that
-   mirrors this list, so changes to i386.md must be made at the same time.  */
-
-enum processor_type
-{
-  PROCESSOR_I386,			/* 80386 */
-  PROCESSOR_I486,			/* 80486DX, 80486SX, 80486DX[24] */
-  PROCESSOR_PENTIUM,
-  PROCESSOR_PENTIUMPRO,
-  PROCESSOR_K6,
-  PROCESSOR_ATHLON,
-  PROCESSOR_PENTIUM4,
-  PROCESSOR_max
-};
-enum fpmath_unit
-{
-  FPMATH_387 = 1,
-  FPMATH_SSE = 2
-};
-
-extern enum processor_type ix86_cpu;
-extern enum fpmath_unit ix86_fpmath;
-
-extern int ix86_arch;
-
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
    command options that have values.  Its definition is an
    initializer with a subgrouping for each command option.
@@ -3228,57 +3203,81 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 #define SPECIAL_MODE_PREDICATES \
   "ext_register_operand",
 
-/* CM_32 is used by 32bit ABI
-   CM_SMALL is small model assuming that all code and data fits in the first
-   31bits of address space.
-   CM_KERNEL is model assuming that all code and data fits in the negative
-   31bits of address space.
-   CM_MEDIUM is model assuming that code fits in the first 31bits of address
-   space.  Size of data is unlimited.
-   CM_LARGE is model making no assumptions about size of particular sections.
-  
-   CM_SMALL_PIC is model for PIC libraries assuming that code+data+got/plt
-   tables first in 31bits of address space.
- */
-enum cmodel {
-  CM_32,
-  CM_SMALL,
-  CM_KERNEL,
-  CM_MEDIUM,
-  CM_LARGE,
-  CM_SMALL_PIC
+/* Which processor to schedule for. The cpu attribute defines a list that
+   mirrors this list, so changes to i386.md must be made at the same time.  */
+
+enum processor_type
+{
+  PROCESSOR_I386,			/* 80386 */
+  PROCESSOR_I486,			/* 80486DX, 80486SX, 80486DX[24] */
+  PROCESSOR_PENTIUM,
+  PROCESSOR_PENTIUMPRO,
+  PROCESSOR_K6,
+  PROCESSOR_ATHLON,
+  PROCESSOR_PENTIUM4,
+  PROCESSOR_max
 };
+
+extern enum processor_type ix86_cpu;
+extern const char *ix86_cpu_string;
+
+extern enum processor_type ix86_arch;
+extern const char *ix86_arch_string;
+
+enum fpmath_unit
+{
+  FPMATH_387 = 1,
+  FPMATH_SSE = 2
+};
+
+extern enum fpmath_unit ix86_fpmath;
+extern const char *ix86_fpmath_string;
+
+enum cmodel {
+  CM_32,	/* The traditional 32-bit ABI.  */
+  CM_SMALL,	/* Assumes all code and data fits in the low 31 bits.  */
+  CM_KERNEL,	/* Assumes all code and data fits in the high 31 bits.  */
+  CM_MEDIUM,	/* Assumes code fits in the low 31 bits; data unlimited.  */
+  CM_LARGE,	/* No assumptions.  */
+  CM_SMALL_PIC	/* Assumes code+data+got/plt fits in a 31 bit region.  */
+};
+
+extern enum cmodel ix86_cmodel;
+extern const char *ix86_cmodel_string;
 
 /* Size of the RED_ZONE area.  */
 #define RED_ZONE_SIZE 128
 /* Reserved area of the red zone for temporaries.  */
 #define RED_ZONE_RESERVE 8
-extern const char *ix86_debug_arg_string, *ix86_debug_addr_string;
 
 enum asm_dialect {
   ASM_ATT,
   ASM_INTEL
 };
+
 extern const char *ix86_asm_string;
 extern enum asm_dialect ix86_asm_dialect;
-/* Value of -mcmodel specified by user.  */
-extern const char *ix86_cmodel_string;
-extern enum cmodel ix86_cmodel;
-
-/* Variables in i386.c */
-extern const char *ix86_cpu_string;		/* for -mcpu=<xxx> */
-extern const char *ix86_arch_string;		/* for -march=<xxx> */
-extern const char *ix86_fpmath_string;		/* for -mfpmath=<xxx> */
-extern const char *ix86_regparm_string;		/* # registers to use to pass args */
-extern const char *ix86_align_loops_string;	/* power of two alignment for loops */
-extern const char *ix86_align_jumps_string;	/* power of two alignment for non-loop jumps */
-extern const char *ix86_align_funcs_string;	/* power of two alignment for functions */
-extern const char *ix86_preferred_stack_boundary_string;/* power of two alignment for stack boundary */
-extern const char *ix86_branch_cost_string;	/* values 1-5: see jump.c */
-extern int ix86_regparm;			/* ix86_regparm_string as a number */
-extern int ix86_preferred_stack_boundary;	/* preferred stack boundary alignment in bits */
-extern int ix86_branch_cost;			/* values 1-5: see jump.c */
-extern enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER]; /* smalled class containing REGNO */
+
+extern int ix86_regparm;
+extern const char *ix86_regparm_string;	
+
+extern int ix86_preferred_stack_boundary;
+extern const char *ix86_preferred_stack_boundary_string;
+
+extern int ix86_branch_cost;
+extern const char *ix86_branch_cost_string;
+
+extern const char *ix86_debug_arg_string;
+extern const char *ix86_debug_addr_string;
+
+/* Obsoleted by -f options.  Remove before 3.2 ships.  */
+extern const char *ix86_align_loops_string;
+extern const char *ix86_align_jumps_string;
+extern const char *ix86_align_funcs_string;
+
+/* Smallest class containing REGNO.  */
+extern enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER];
+
 extern rtx ix86_compare_op0;	/* operand 0 for comparisons */
 extern rtx ix86_compare_op1;	/* operand 1 for comparisons */
 
