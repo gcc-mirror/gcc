@@ -1158,8 +1158,10 @@ print_file_desc (fdp, number)
   aux_base = aux_symbols + fdp->iauxBase;
   used_base = aux_used + (aux_base - aux_symbols);
 
-  printf ("\nFile #%d, \"%s\"\n\n", number, str_base + fdp->rss);
-
+  printf ("\nFile #%d, \"%s\"\n\n",
+	  number,
+	  fdp->rss != issNil ? str_base + fdp->rss : "<unknown>");
+    
   printf ("    Name index  = %-10ld Readin      = %s\n",
 	  (long) fdp->rss, (fdp->fReadin) ? "Yes" : "No");
 
@@ -1293,9 +1295,10 @@ print_file_desc (fdp, number)
       PDR *proc_ptr = &proc_desc[pdi];
       printf ("\n\tProcedure descriptor %d:\n", (pdi - fdp->ipdFirst));
 
-      printf ("\t    Name index   = %-11ld Name          = \"%s\"\n",
-	      (long) l_symbols[proc_ptr->isym + fdp->isymBase].iss,
-	      l_symbols[proc_ptr->isym + fdp->isymBase].iss + str_base);
+      if (l_symbols != 0)
+	printf ("\t    Name index   = %-11ld Name          = \"%s\"\n",
+		(long) l_symbols[proc_ptr->isym + fdp->isymBase].iss,
+		l_symbols[proc_ptr->isym + fdp->isymBase].iss + str_base);
 
       printf ("\t    .mask 0x%08lx,%-9ld .fmask 0x%08lx,%ld\n",
 	      (long) proc_ptr->regmask,

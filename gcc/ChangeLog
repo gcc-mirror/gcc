@@ -1,3 +1,8 @@
+Mon Jan 18 00:36:13 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* mips-tdump.c (print_file_desc): Handle unknown filenames and
+	missing local symbols.
+
 Sun Jan 17 21:04:31 1999  Richard Henderson  <rth@cygnus.com>
 
 	* jump.c (rtx_renumbered_equal_p): Special case CODE_LABEL.
