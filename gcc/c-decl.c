@@ -1778,7 +1778,9 @@ pushdecl (x)
     DECL_CONTEXT (x) = 0;
 
   if (warn_nested_externs && DECL_EXTERNAL (x) && b != global_binding_level
-      && x != IDENTIFIER_IMPLICIT_DECL (name))
+      && x != IDENTIFIER_IMPLICIT_DECL (name)
+      /* Don't print error messages for __FUNCTION__ and __PRETTY_FUNCTION__ */
+      && !DECL_IN_SYSTEM_HEADER (x))
     warning ("nested extern declaration of `%s'", IDENTIFIER_POINTER (name));
 
   if (name)
