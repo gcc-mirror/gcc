@@ -1,3 +1,8 @@
+Wed Dec 17 00:51:36 1997  Stan Cox (scox@cygnus.com)
+
+	* jump.c: (optimize_jump): Don't use the return register as a 
+	source1 of a conditional move.
+
 Tue Dec 16 23:45:40 1997  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.c (DF_MODES): Or the mask not the bit number.
