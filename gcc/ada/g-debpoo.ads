@@ -260,8 +260,8 @@ private
       Alignment                : Storage_Count);
    --  Mark a block of memory as invalid. It might not be physically removed
    --  immediately, depending on the setup of the debug pool, so that checks
-   --  are still possible.
-   --  The parameters have the same semantics as defined in the ARM95.
+   --  are still possible. The parameters have the same semantics as defined
+   --  in the RM.
 
    function Storage_Size (Pool : Debug_Pool) return SSC;
    --  Return the maximal size of data that can be allocated through Pool.

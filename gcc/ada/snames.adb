@@ -191,6 +191,7 @@ package body Snames is
      "persistent_data#" &
      "persistent_object#" &
      "profile#" &
+     "profile_warnings#" &
      "propagate_exceptions#" &
      "queuing_policy#" &
      "ravenscar#" &

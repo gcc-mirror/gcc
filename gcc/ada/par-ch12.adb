@@ -203,8 +203,8 @@ package body Ch12 is
 
          Set_Specification (Gen_Decl, P_Subprogram_Specification);
 
-         if Nkind (Defining_Unit_Name (Specification (Gen_Decl)))
-           = N_Defining_Program_Unit_Name
+         if Nkind (Defining_Unit_Name (Specification (Gen_Decl))) =
+                                             N_Defining_Program_Unit_Name
            and then Scope.Last > 0
          then
             Error_Msg_SP ("child unit allowed only at library level");

@@ -454,10 +454,19 @@ package Lib is
    --  code unit, the criterion being that Get_Code_Unit yields the same
    --  value for each argument.
 
+   function In_Same_Extended_Unit (N1, N2 : Node_Or_Entity_Id) return Boolean;
+   pragma Inline (In_Same_Extended_Unit);
+   --  Determines if two nodes or entities N1 and N2 are in the same
+   --  extended unit, where an extended unit is defined as a unit and all
+   --  its subunits (considered recursively, i.e. subunits of subunits are
+   --  included). Returns true if S1 and S2 are in the same extended unit
+   --  and False otherwise.
+
    function In_Same_Extended_Unit (S1, S2 : Source_Ptr) return Boolean;
+   pragma Inline (In_Same_Extended_Unit);
    --  Determines if the two source locations S1 and S2 are in the same
    --  extended unit, where an extended unit is defined as a unit and all
-   --  its subunits (considered recursively, i.e. subunits or subunits are
+   --  its subunits (considered recursively, i.e. subunits of subunits are
    --  included). Returns true if S1 and S2 are in the same extended unit
    --  and False otherwise.
 

@@ -146,7 +146,10 @@ package body GNAT.Debug_Pools is
    --  Traceback_Htable_Elem_Ptr.
 
    type Allocation_Header is record
-      Block_Size : Storage_Offset;
+      Allocation_Address : System.Address;
+      --  Address of the block returned by malloc, possibly unaligned.
+
+      Block_Size    : Storage_Offset;
       --  Needed only for advanced freeing algorithms (traverse all allocated
       --  blocks for potential references). This value is negated when the
       --  chunk of memory has been logically freed by the application. This
@@ -154,7 +157,7 @@ package body GNAT.Debug_Pools is
 
       Alloc_Traceback   : Traceback_Htable_Elem_Ptr;
       Dealloc_Traceback : Traceback_Ptr_Or_Address;
-      --  Pointer to the traceback for the allocation (if the memory chunck is
+      --  Pointer to the traceback for the allocation (if the memory chunk is
       --  still valid), or to the first deallocation otherwise. Make sure this
       --  is a thin pointer to save space.
       --
@@ -183,21 +186,23 @@ package body GNAT.Debug_Pools is
    function To_Traceback is new Ada.Unchecked_Conversion
      (Traceback_Htable_Elem_Ptr, Traceback_Ptr_Or_Address);
 
+   Header_Offset : constant Storage_Count
+     := Default_Alignment *
+     ((Allocation_Header'Size / System.Storage_Unit + Default_Alignment - 1)
+      / Default_Alignment);
+   --  Offset of user data after allocation header.
+
    Minimum_Allocation : constant Storage_Count :=
-                          Default_Alignment *
-                            (Allocation_Header'Size /
-                               System.Storage_Unit /
-                                 Default_Alignment) +
-                                   Default_Alignment;
-   --  Extra bytes to allocate to store the header. The header needs to be
-   --  correctly aligned as well, so we have to allocate multiples of the
-   --  alignment.
+     Default_Alignment - 1
+     + Header_Offset;
+   --  Minimal allocation: size of allocation_header rounded up to next
+   --  multiple of default alignment + worst-case padding.
 
    -----------------------
    -- Allocations table --
    -----------------------
 
-   --  This table is indexed on addresses modulo Minimum_Allocation, and
+   --  This table is indexed on addresses modulo Default_Alignment, and
    --  for each index it indicates whether that memory block is valid.
    --  Its behavior is similar to GNAT.Table, except that we need to pack
    --  the table to save space, so we cannot reuse GNAT.Table as is.
@@ -249,7 +254,7 @@ package body GNAT.Debug_Pools is
    Edata  : System.Address := System.Null_Address;
    --  Address in memory that matches the index 0 in Valid_Blocks. It is named
    --  after the symbol _edata, which, on most systems, indicate the lowest
-   --  possible address returned by malloc (). Unfortunately, this symbol
+   --  possible address returned by malloc. Unfortunately, this symbol
    --  doesn't exist on windows, so we cannot use it instead of this variable.
 
    -----------------------
@@ -341,7 +346,7 @@ package body GNAT.Debug_Pools is
       function Convert is new Ada.Unchecked_Conversion
         (System.Address, Allocation_Header_Access);
    begin
-      return Convert (Address - Minimum_Allocation);
+      return Convert (Address - Header_Offset);
    end Header_Of;
 
    --------------
@@ -670,8 +675,6 @@ package body GNAT.Debug_Pools is
 
       type Local_Storage_Array is new Storage_Array
         (1 .. Size_In_Storage_Elements + Minimum_Allocation);
-      for Local_Storage_Array'Alignment use Standard'Maximum_Alignment;
-      --  For performance reasons, make sure the alignment is maximized.
 
       type Ptr is access Local_Storage_Array;
       --  On some systems, we might want to physically protect pages
@@ -716,7 +719,14 @@ package body GNAT.Debug_Pools is
             P := new Local_Storage_Array;
       end;
 
-      Storage_Address := P.all'Address + Minimum_Allocation;
+      Storage_Address := System.Null_Address + Default_Alignment
+        * (((P.all'Address + Default_Alignment - 1) - System.Null_Address)
+           / Default_Alignment)
+        + Header_Offset;
+      pragma Assert ((Storage_Address - System.Null_Address)
+                     mod Default_Alignment = 0);
+      pragma Assert (Storage_Address + Size_In_Storage_Elements
+                     <= P.all'Address + P'Length);
 
       Trace := Find_Or_Create_Traceback
         (Pool, Alloc, Size_In_Storage_Elements,
@@ -728,10 +738,11 @@ package body GNAT.Debug_Pools is
       --  Default_Alignment.
 
       Header_Of (Storage_Address).all :=
-        (Alloc_Traceback   => Trace,
-         Dealloc_Traceback => To_Traceback (null),
-         Next              => Pool.First_Used_Block,
-         Block_Size        => Size_In_Storage_Elements);
+        (Allocation_Address => P.all'Address,
+         Alloc_Traceback    => Trace,
+         Dealloc_Traceback  => To_Traceback (null),
+         Next               => Pool.First_Used_Block,
+         Block_Size         => Size_In_Storage_Elements);
 
       pragma Warnings (On);
 
@@ -928,7 +939,7 @@ package body GNAT.Debug_Pools is
                end;
 
                Next := Header.Next;
-               System.Memory.Free (Header.all'Address);
+               System.Memory.Free (Header.Allocation_Address);
                Set_Valid (Tmp, False);
 
                --  Remove this block from the list.
@@ -1141,15 +1152,16 @@ package body GNAT.Debug_Pools is
          --  Update the header
 
          Header.all :=
-           (Alloc_Traceback   => Header.Alloc_Traceback,
-            Dealloc_Traceback => To_Traceback
-                                   (Find_Or_Create_Traceback
-                                      (Pool, Dealloc,
-                                       Size_In_Storage_Elements,
-                                       Deallocate_Label'Address,
-                                       Code_Address_For_Deallocate_End)),
-            Next              => System.Null_Address,
-            Block_Size        => -Size_In_Storage_Elements);
+           (Allocation_Address => Header.Allocation_Address,
+            Alloc_Traceback    => Header.Alloc_Traceback,
+            Dealloc_Traceback  => To_Traceback
+                                    (Find_Or_Create_Traceback
+                                       (Pool, Dealloc,
+                                        Size_In_Storage_Elements,
+                                        Deallocate_Label'Address,
+                                        Code_Address_For_Deallocate_End)),
+            Next               => System.Null_Address,
+            Block_Size         => -Size_In_Storage_Elements);
 
          if Pool.Reset_Content_On_Free then
             Set_Dead_Beef (Storage_Address, Size_In_Storage_Elements);

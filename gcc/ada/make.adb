@@ -5587,14 +5587,19 @@ package body Make is
       if not OpenVMS then
          declare
             Command : constant String := Command_Name;
+
          begin
             for Index in reverse Command'Range loop
                if Command (Index) = Directory_Separator then
                   declare
                      Absolute_Dir : constant String :=
-                       Normalize_Pathname (Command (Command'First .. Index));
+                                      Normalize_Pathname
+                                        (Command (Command'First .. Index));
+
                      PATH : constant String :=
-                       Absolute_Dir & Path_Separator & Getenv ("PATH").all;
+                                      Absolute_Dir &
+                                      Path_Separator &
+                                      Getenv ("PATH").all;
 
                   begin
                      Setenv ("PATH", PATH);

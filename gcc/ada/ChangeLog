@@ -1,3 +1,91 @@
+2004-06-14  Pascal Obry  <obry@gnat.com>
+
+	* gnat_ugn.texi: Document relocatable vs. dynamic Library_Kind on
+	Windows.  Fix minor typo.
+
+	* mlib-tgt-mingw.adb: New implementation using the GCC -shared option
+	which is now supported on Windows. With this implementation using the
+	Library Project feature is no different on Windows than on UNIX.
+
+2004-06-14  Vincent Celier  <celier@gnat.com>
+
+	* makegpr.adb (Compile_Sources): Nothing to do when there are no
+	non-Ada sources.
+
+	* mlib-tgt-vxworks.adb (Library_Exists_For): Remove incorrect comment
+
+	* prj-part.adb (Parse_Single_Project): When a duplicate project name is
+	found, show the project name and the path of the previously parsed
+	project file.
+
+2004-06-14  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch6.adb (Add_Call_By_Copy_Code): For an out-parameter that is an
+	array, avoid copying the actual before the call.
+
+2004-06-14  Thomas Quinot  <quinot@act-europe.fr>
+
+	* g-debpoo.adb: Remove alignment assumptions from GNAT.Debug_Pools.
+	Instead, allocate memory on worst-case alignment assumptions, and then
+	return an aligned address within the allocated zone.
+
+2004-06-14  Robert Dewar  <dewar@gnat.com>
+
+	* bindgen.adb (Gen_Adainit_Ada): Do not generate external references to
+	elab entities in predefined units in No_Run_Time_Mode.
+	(Gen_Adainit_C): Same fix
+	(Gen_Elab_Calls_Ada): Do not generate calls to elaborate predefined
+	units in No_Run_Time_Mode
+	(Gen_Elab_Calls_C): Same fix
+
+	* symbols-vms-alpha.adb: Minor reformatting
+
+	* g-debpoo.ads: Minor reformatting
+
+	* lib.adb (In_Same_Extended_Unit): Version working on node id's
+
+	* lib.ads (In_Same_Extended_Unit): Version working on node id's
+
+	* lib-xref.adb: Minor cleanup, use new version of In_Same_Extended_Unit
+	working on nodes.
+
+	* make.adb: Minor reformatting
+
+	* par-ch12.adb: Minor reformatting
+
+	* par-prag.adb: Add dummy entry for pragma Profile_Warnings
+
+	* prj-strt.adb: Minor reformatting
+
+	* restrict.ads, restrict.adb: Redo handling of profile restrictions to
+	be more general.
+
+	* sem_attr.adb: Minor reformatting
+
+	* sem_ch7.adb: Minor reformatting
+
+	* sem_elab.adb (Check_A_Call): Deal with problem of calling init proc
+	for type in the same unit as the object declaration.
+
+	* sem_prag.adb (Check_Arg_Is_External_Name): New procedure, allows
+	static string expressions and not just string literals.
+	Minor reformatting
+	(Set_Warning): Reset restriction warning flag for restriction pragma
+	Implement pragma Profile_Warnings
+	Implement pragma Profile (Restricted)
+	Give obolescent messages for old restrictions and pragmas
+
+	* snames.h, snames.ads, snames.adb: Add new entry for pragma
+	Profile_Warnings.
+
+	* s-rident.ads: Add declarations for restrictions required by profile
+	Restricted and profile Ravenscar.
+
+	* targparm.ads, targparm.adb: Allow pragma Profile in system.ads
+
+	* gnat_ugn.texi: Correct some missing entries in the list of GNAT
+	configuration pragmas.
+
 2004-06-11  Vincent Celier  <celier@gnat.com>
 
 	* mlib-tgt-vms-alpha.adb (Build_Dynamic_Library): Issue switch -R to

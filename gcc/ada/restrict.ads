@@ -200,11 +200,11 @@ package Restrict is
    --  handlers are present. This function is called by Gigi when it needs to
    --  expand an AT END clean up identifier with no exception handler.
 
-   function Process_Restriction_Synonyms (Id : Name_Id) return Name_Id;
-   --  Id is the name of a restriction. If it is one of synonyms that we
-   --  allow for historical purposes (for list see System.Rident), then
-   --  the proper official name is returned. Otherwise the argument is
-   --  returned unchanged.
+   function Process_Restriction_Synonyms (N : Node_Id) return Name_Id;
+   --  Id is a node whose Chars field contains the name of a restriction.
+   --  If it is one of synonyms that we allow for historical purposes (for
+   --  list see System.Rident), then the proper official name is returned.
+   --  Otherwise the Chars field of the argument is returned unchanged.
 
    function Restriction_Active (R : All_Restrictions) return Boolean;
    pragma Inline (Restriction_Active);
@@ -213,13 +213,20 @@ package Restrict is
    --  active. Always use Check_Restriction to record a violation.
 
    function Restricted_Profile return Boolean;
-   --  Tests to see if tasking operations follow the GNAT restricted run time
-   --  profile.
+   --  Tests if set of restrictions corresponding to Profile (Restricted) is
+   --  currently in effect (set by pragma Profile, or by an appropriate set
+   --  of individual Restrictions pragms). Returns True only if all the
+   --  required restrictions are set.
 
-   procedure Set_Ravenscar (N : Node_Id);
-   --  Enables the set of restrictions for Ravenscar. N is the corresponding
-   --  pragma node, which is used for error messages on any constructs that
-   --  violate the profile.
+   procedure Set_Profile_Restrictions
+     (P    : Profile_Name;
+      N    : Node_Id;
+      Warn : Boolean);
+   --  Sets the set of restrictions associated with the given profile
+   --  name. N is the node of the construct to which error messages
+   --  are to be attached as required. Warn is set True for the case
+   --  of Profile_Warnings where the restrictions are set as warnings
+   --  rather than legality requirements.
 
    procedure Set_Restriction
      (R : All_Boolean_Restrictions;
@@ -234,11 +241,6 @@ package Restrict is
       V : Integer);
    --  Similar to the above, except that this is used for the case of a
    --  parameter restriction, and the corresponding value V is given.
-
-   procedure Set_Restricted_Profile (N : Node_Id);
-   --  Enables the set of restrictions for pragma Restricted_Run_Time. N is
-   --  the corresponding pragma node, which is used for error messages on
-   --  constructs that violate the profile.
 
    function Tasking_Allowed return Boolean;
    pragma Inline (Tasking_Allowed);

@@ -222,7 +222,7 @@ package body MLib.Tgt is
       if not Projects.Table (Project).Library then
          Prj.Com.Fail ("INTERNAL ERROR: Library_Exists_For called " &
                        "for non library project");
-         return False; --  To avoid warning;
+         return False;
 
       else
          declare

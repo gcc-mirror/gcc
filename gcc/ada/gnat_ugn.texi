@@ -9996,10 +9996,13 @@ recognized by @code{GNAT}:
    Normalize_Scalars
    Polling
    Profile
+   Profile_Warnings
    Propagate_Exceptions
    Queuing_Policy
+   Ravenscar
    Restricted_Run_Time
    Restrictions
+   Restrictions_Warnings
    Reviewable
    Source_File_Name
    Style_Checks
@@ -12452,6 +12455,12 @@ Depending on the operating system, there may or may not be a distinction
 between dynamic and relocatable libraries. For Unix and VMS Unix there is no
 such distinction.
 
+@ifset unw
+On Windows @code{"relocatable"} will build a relocatable @code{DLL}
+and @code{"dynamic"} will build a non-relocatable @code{DLL}.
+@pxref{Introduction to Dynamic Link Libraries (DLLs)}.
+@end ifset
+
 If you need to build both a static and a dynamic library, you should use two
 different object directories, since in some cases some extra code needs to
 be generated for the latter. For such cases, it is recommended to either use
@@ -13155,7 +13164,7 @@ When a library project file is specified, switches ^-b^/ACTION=BIND^ and
 ^-l^/ACTION=LINK^ have special meanings.
 
 @itemize @bullet
-@item ^-b^/ACTION=BIND^ is only allwed for stand-alone libraries. It indicates
+@item ^-b^/ACTION=BIND^ is only allowed for stand-alone libraries. It indicates
 to @command{gnatmake} that @command{gnatbind} should be invoked for the
 library.
 

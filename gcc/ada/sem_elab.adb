@@ -359,7 +359,7 @@ package body Sem_Elab is
             return;
          end if;
 
-         --  Nothing to do for imported entities,
+         --  Nothing to do for imported entities
 
          if Is_Imported (Ent) then
             return;
@@ -426,8 +426,8 @@ package body Sem_Elab is
 
       --  If the generic entity is within a deeper instance than we are, then
       --  either the instantiation to which we refer itself caused an ABE, in
-      --  which case that will be handled separately. Otherwise, we know that
-      --  the body we need appears as needed at the point of the instantiation.
+      --  which case that will be handled separately, or else we know that the
+      --  body we need appears as needed at the point of the instantiation.
       --  However, this assumption is only valid if we are in static mode.
 
       if not Dynamic_Elaboration_Checks
@@ -638,11 +638,13 @@ package body Sem_Elab is
          --  Find top level scope for called entity (not following renamings
          --  or derivations). This is where the Elaborate_All will go if it
          --  is needed. We start with the called entity, except in the case
-         --  of initialization procedures, where the init proc is in the root
-         --  package, where we start fromn the entity of the name in the call.
+         --  of an initialization procedure outside the current package, where
+         --  the init proc is in the root package, and we start from the entity
+         --  of the name in the call.
 
          if Is_Entity_Name (Name (N))
            and then Is_Init_Proc (Entity (Name (N)))
+           and then not In_Same_Extended_Unit (N, Entity (Name (N)))
          then
             W_Scope := Scope (Entity (Name (N)));
          else
@@ -810,7 +812,7 @@ package body Sem_Elab is
       --  current declarative part
 
       if not Same_Elaboration_Scope (Current_Scope, Scope (Ent))
-        or else not In_Same_Extended_Unit (Sloc (N), Sloc (Ent))
+        or else not In_Same_Extended_Unit (N, Ent)
       then
          return;
       end if;

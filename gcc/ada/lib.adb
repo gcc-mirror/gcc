@@ -640,7 +640,7 @@ package body Lib is
 
       else
          return
-           In_Same_Extended_Unit (Sloc (N), Sloc (Cunit (Main_Unit)));
+           In_Same_Extended_Unit (N, Cunit (Main_Unit));
       end if;
    end In_Extended_Main_Code_Unit;
 
@@ -764,6 +764,13 @@ package body Lib is
    ---------------------------
    -- In_Same_Extended_Unit --
    ---------------------------
+
+   function In_Same_Extended_Unit
+     (N1, N2 : Node_Or_Entity_Id) return Boolean
+   is
+   begin
+      return Check_Same_Extended_Unit (Sloc (N1), Sloc (N2)) /= No;
+   end In_Same_Extended_Unit;
 
    function In_Same_Extended_Unit (S1, S2 : Source_Ptr) return Boolean is
    begin

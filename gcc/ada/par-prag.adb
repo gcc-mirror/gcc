@@ -994,6 +994,7 @@ begin
            Pragma_Preelaborate                 |
            Pragma_Priority                     |
            Pragma_Profile                      |
+           Pragma_Profile_Warnings             |
            Pragma_Propagate_Exceptions         |
            Pragma_Psect_Object                 |
            Pragma_Pure                         |
