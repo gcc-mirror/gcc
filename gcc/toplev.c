@@ -868,6 +868,9 @@ int flag_no_ident = 0;
 /* This will perform a peephole pass before sched2.  */
 int flag_peephole2 = 0;
 
+/* This will try to guess branch probabilities.  */
+int flag_guess_branch_prob = 0;
+
 /* -fbounded-pointers causes gcc to compile pointers as composite
    objects occupying three words: the pointer value, the base address
    of the referent object, and the address immediately beyond the end
@@ -1136,6 +1139,8 @@ lang_independent_options f_options[] =
    "Process #ident directives"},
   { "peephole2", &flag_peephole2, 1,
     "Enables an rtl peephole pass run before sched2" },
+  { "guess-branch-probability", &flag_guess_branch_prob, 1,
+    "Enables guessing of branch probabilities" },
   {"math-errno", &flag_errno_math, 1,
    "Set errno after built-in math functions"},
   {"bounded-pointers", &flag_bounded_pointers, 1,
@@ -3253,7 +3258,8 @@ rest_of_compilation (decl)
       flow_loops_find (&loops, LOOP_TREE);
 
       /* Estimate using heuristics if no profiling info is available.  */
-      estimate_probability (&loops);
+      if (flag_guess_branch_prob)
+	estimate_probability (&loops);
 
       if (rtl_dump_file)
 	flow_loops_dump (&loops, rtl_dump_file, NULL, 0);
@@ -4636,6 +4642,7 @@ main (argc, argv)
 #ifdef CAN_DEBUG_WITHOUT_FP
       flag_omit_frame_pointer = 1;
 #endif
+      flag_guess_branch_prob = 1;
     }
 
   if (optimize >= 2)

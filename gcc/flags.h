@@ -531,6 +531,9 @@ extern int flag_instrument_function_entry_exit;
 /* Perform a peephole pass before sched2. */
 extern int flag_peephole2;
 
+/* Try to guess branch probablities.  */
+extern int flag_guess_branch_prob;
+
 /* -fbounded-pointers causes gcc to compile pointers as composite
    objects occupying three words: the pointer value, the base address
    of the referent object, and the address immediately beyond the end
