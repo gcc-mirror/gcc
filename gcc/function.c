@@ -6210,9 +6210,6 @@ prepare_function_start ()
   /* Initialize the RTL mechanism.  */
   init_emit ();
 
-  /* Do per-function initialization of the alias analyzer.  */
-  init_alias_once_per_function ();
-
   /* Initialize the queue of pending postincrement and postdecrements,
      and some other info in expr.c.  */
   init_expr ();

@@ -2160,7 +2160,6 @@ extern int anti_dependence		PARAMS ((rtx, rtx));
 extern int output_dependence		PARAMS ((rtx, rtx));
 extern void mark_constant_function	PARAMS ((void));
 extern void init_alias_once		PARAMS ((void));
-extern void init_alias_once_per_function PARAMS ((void));
 extern void init_alias_analysis		PARAMS ((void));
 extern void end_alias_analysis		PARAMS ((void));
 extern rtx addr_side_effect_eval	PARAMS ((rtx, int, int));
