@@ -4271,8 +4271,10 @@ c_common_init_options (lang)
      enum c_language_kind lang;
 {
   c_language = lang;
-  parse_in = cpp_create_reader (lang == clk_c ? CLK_GNUC89:
-				lang == clk_cplusplus ? CLK_GNUCXX: CLK_OBJC);
+  parse_in = cpp_create_reader (lang == clk_c || lang == clk_objective_c
+				? CLK_GNUC89 : CLK_GNUCXX);
+  if (lang == clk_objective_c)
+    cpp_get_options (parse_in)->objc = 1;
 
   /* Mark as "unspecified" (see c_common_post_options).  */
   flag_bounds_check = -1;

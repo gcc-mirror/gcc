@@ -391,7 +391,6 @@ merge_include_chains (pfile)
 struct lang_flags
 {
   char c99;
-  char objc;
   char cplusplus;
   char extended_numbers;
   char trigraphs;
@@ -402,17 +401,15 @@ struct lang_flags
 
 /* ??? Enable $ in identifiers in assembly? */
 static const struct lang_flags lang_defaults[] =
-{ /*              c99 objc c++ xnum trig dollar c++comm digr  */
-  /* GNUC89 */  { 0,  0,   0,  1,   0,   1,     1,      1     },
-  /* GNUC99 */  { 1,  0,   0,  1,   0,   1,     1,      1     },
-  /* STDC89 */  { 0,  0,   0,  0,   1,   0,     0,      0     },
-  /* STDC94 */  { 0,  0,   0,  0,   1,   0,     0,      1     },
-  /* STDC99 */  { 1,  0,   0,  1,   1,   0,     1,      1     },
-  /* GNUCXX */  { 0,  0,   1,  1,   0,   1,     1,      1     },
-  /* CXX98  */  { 0,  0,   1,  1,   1,   0,     1,      1     },
-  /* OBJC   */  { 0,  1,   0,  1,   0,   1,     1,      1     },
-  /* OBJCXX */  { 0,  1,   1,  1,   0,   1,     1,      1     },
-  /* ASM    */  { 0,  0,   0,  1,   0,   0,     1,      0     }
+{ /*              c99 c++ xnum trig dollar c++comm digr  */
+  /* GNUC89 */  { 0,  0,  1,   0,   1,     1,      1     },
+  /* GNUC99 */  { 1,  0,  1,   0,   1,     1,      1     },
+  /* STDC89 */  { 0,  0,  0,   1,   0,     0,      0     },
+  /* STDC94 */  { 0,  0,  0,   1,   0,     0,      1     },
+  /* STDC99 */  { 1,  0,  1,   1,   0,     1,      1     },
+  /* GNUCXX */  { 0,  1,  1,   0,   1,     1,      1     },
+  /* CXX98  */  { 0,  1,  1,   1,   0,     1,      1     },
+  /* ASM    */  { 0,  0,  1,   0,   0,     1,      0     }
 };
 
 /* Sets internal flags correctly for a given language.  */
@@ -426,7 +423,6 @@ set_lang (pfile, lang)
   CPP_OPTION (pfile, lang) = lang;
 
   CPP_OPTION (pfile, c99)		 = l->c99;
-  CPP_OPTION (pfile, objc)		 = l->objc;
   CPP_OPTION (pfile, cplusplus)		 = l->cplusplus;
   CPP_OPTION (pfile, extended_numbers)	 = l->extended_numbers;
   CPP_OPTION (pfile, trigraphs)		 = l->trigraphs;
@@ -1139,7 +1135,6 @@ new_pending_directive (pend, text, handler)
    "-" removed.  It must be sorted in ASCII collating order.  */
 #define COMMAND_LINE_OPTIONS                                                  \
   DEF_OPT("$",                        0,      OPT_dollar)                     \
-  DEF_OPT("+",                        0,      OPT_plus)                       \
   DEF_OPT("-help",                    0,      OPT__help)                      \
   DEF_OPT("-target-help",             0,      OPT_target__help)               \
   DEF_OPT("-version",                 0,      OPT__version)                   \
@@ -1183,7 +1178,6 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("lang-c++",                 0,      OPT_lang_cplusplus)             \
   DEF_OPT("lang-c89",                 0,      OPT_lang_c89)                   \
   DEF_OPT("lang-objc",                0,      OPT_lang_objc)                  \
-  DEF_OPT("lang-objc++",              0,      OPT_lang_objcplusplus)          \
   DEF_OPT("nostdinc",                 0,      OPT_nostdinc)                   \
   DEF_OPT("nostdinc++",               0,      OPT_nostdincplusplus)           \
   DEF_OPT("o",                        no_fil, OPT_o)                          \
@@ -1447,10 +1441,6 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	case OPT_trigraphs:
  	  CPP_OPTION (pfile, trigraphs) = 1;
 	  break;
-	case OPT_plus:
-	  CPP_OPTION (pfile, cplusplus) = 1;
-	  CPP_OPTION (pfile, cplusplus_comments) = 1;
-	  break;
 	case OPT_remap:
 	  CPP_OPTION (pfile, remap) = 1;
 	  break;
@@ -1465,10 +1455,7 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	  set_lang (pfile, CLK_GNUCXX);
 	  break;
 	case OPT_lang_objc:
-	  set_lang (pfile, CLK_OBJC);
-	  break;
-	case OPT_lang_objcplusplus:
-	  set_lang (pfile, CLK_OBJCXX);
+	  CPP_OPTION (pfile, objc) = 1;
 	  break;
 	case OPT_lang_asm:
 	  set_lang (pfile, CLK_ASM);
@@ -1909,14 +1896,12 @@ Switches:\n\
   fputs (_("\
   -lang-c++                 Assume that the input sources are in C++\n\
   -lang-objc                Assume that the input sources are in ObjectiveC\n\
-  -lang-objc++              Assume that the input sources are in ObjectiveC++\n\
   -lang-asm                 Assume that the input sources are in assembler\n\
 "), stdout);
   fputs (_("\
   -std=<std name>           Specify the conformance standard; one of:\n\
                             gnu89, gnu99, c89, c99, iso9899:1990,\n\
                             iso9899:199409, iso9899:1999\n\
-  -+                        Allow parsing of C++ style features\n\
   -w                        Inhibit warning messages\n\
   -Wtrigraphs               Warn if trigraphs are encountered\n\
   -Wno-trigraphs            Do not warn about trigraphs\n\
