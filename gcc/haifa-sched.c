@@ -1595,6 +1595,21 @@ find_rgns (s_preds, s_succs, num_preds, num_succs, dom)
       stack[++sp] = current_edge;
       SET_BIT (passed, current_edge);
       current_edge = OUT_EDGES (child);
+
+      /* This is temporary until haifa is converted to use rth's new
+	 cfg routines which have true entry/exit blocks and the
+	 appropriate edges from/to those blocks.
+
+	 Generally we update dfs_nr for a node when we process its
+	 out edge.  However, if the node has no out edge then we will
+	 not set dfs_nr for that node.  This can confuse the scheduler
+	 into thinking that we have unreachable blocks, which in turn
+	 disables cross block scheduling. 
+
+	 So, if we have a node with no out edges, go ahead and mark it
+	 as reachable now.  */
+      if (current_edge == 0)
+	dfs_nr[child] = ++count;
     }
 
   /* Another check for unreachable blocks.  The earlier test in
