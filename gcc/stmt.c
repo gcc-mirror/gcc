@@ -2225,7 +2225,6 @@ warn_if_unused_value (tree exp)
     case INIT_EXPR:
     case TARGET_EXPR:
     case CALL_EXPR:
-    case METHOD_CALL_EXPR:
     case RTL_EXPR:
     case TRY_CATCH_EXPR:
     case WITH_CLEANUP_EXPR:

@@ -6263,10 +6263,6 @@ safe_from_p (rtx x, tree exp, int top_p)
 	     part of the expression.  */
 	  return safe_from_p (x, TREE_OPERAND (exp, 1), 0);
 
-	case METHOD_CALL_EXPR:
-	  /* This takes an rtx argument, but shouldn't appear here.  */
-	  abort ();
-
 	default:
 	  break;
 	}

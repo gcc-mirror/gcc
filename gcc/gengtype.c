@@ -643,7 +643,6 @@ adjust_field_tree_exp (type_p t, options_p opt ATTRIBUTE_UNUSED)
     { "GOTO_SUBROUTINE_EXPR", 0, 2 },
     { "RTL_EXPR", 0, 2 },
     { "WITH_CLEANUP_EXPR", 2, 1 },
-    { "METHOD_CALL_EXPR", 3, 1 }
   };
 
   if (t->kind != TYPE_ARRAY)

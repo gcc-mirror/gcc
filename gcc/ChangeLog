@@ -1,3 +1,15 @@
+2003-07-17  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-common.c (c_estimate_num_insns_1): Don't handle
+	METHOD_CALL_EXPR.
+	* expr.c (safe_from_p): Likewise.
+	* gengtype.c (adjust_field_tree_exp): Likewise.
+	* stmt.c (warn_if_unused_value): Likewise
+	* tree.c (first_rtl_op): Likewise.
+	* tree.def: Don't define METHOD_CALL_EXPR.
+	* java/lang.c (java_estimate_num_insns_1): Don't handle
+	METHOD_CALL_EXPR.
+
 2003-07-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR other/11466
