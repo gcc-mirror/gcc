@@ -495,7 +495,7 @@ for-bootstrap: start.encap $(LIBGCC)
 rest.encap: $(LIBGCC) stmp-headers $(STMP_FIXPROTO) $(EXTRA_PARTS)
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
-native: bytecode config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
+native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
 C c: cc1
@@ -556,13 +556,13 @@ g++-cross: $(srcdir)/g++.c
 	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o g++-cross \
 	   -DGCC_NAME=\"$(target)-gcc\" $(srcdir)/g++.c version.o $(LIBS)
 
-cc1:$(P) $(C_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
+cc1:bytecode $(P) $(C_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1 $(C_OBJS) $(OBJS) $(BC_OBJS) $(LIBS)
 
-cc1plus:$(P) $(CPLUS_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
+cc1plus:bytecode $(P) $(CPLUS_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1plus $(CPLUS_OBJS) $(BC_OBJS) $(OBJS) $(LIBS)
 
-cc1obj:$(P) $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
+cc1obj:bytecode $(P) $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1obj $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBS)
 
 # Copy float.h from its source.
