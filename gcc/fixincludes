@@ -1425,6 +1425,7 @@ if [ -r ${LIB}/$file ]; then
 fi
 
 # Correct the return type for strlen in string.h on Lynx.
+# Correct the argument type for ffs in string.h on Alpha OSF/1 V2.0.
 file=string.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
@@ -1435,6 +1436,7 @@ fi
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
   sed -e 's/extern[ 	]*int[ 	]*strlen();/extern unsigned int strlen();/' \
+      -e 's/extern[ 	]*int[ 	]*ffs[ 	]*(long);/extern int ffs(int);/' \
     ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
