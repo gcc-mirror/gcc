@@ -1,3 +1,8 @@
+1999-09-14  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* lex.c (cp_pragma_interface, cp_pragma_implementation): Copy
+	filenames with ggc_alloc_string.
+
 1999-09-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (build_target_expr): Set TREE_SIDE_EFFECTS on the 

@@ -1219,7 +1219,7 @@ cp_pragma_interface (main_filename)
       /* Get default.  */
       impl_file_chain 
 	= (struct impl_files *) xmalloc (sizeof (struct impl_files));
-      impl_file_chain->filename = filename;
+      impl_file_chain->filename = ggc_alloc_string (filename, -1);
       impl_file_chain->next = 0;
 #endif
     }
@@ -1254,7 +1254,7 @@ cp_pragma_implementation (main_filename)
       if (ifiles == 0)
 	{
 	  ifiles = (struct impl_files*) xmalloc (sizeof (struct impl_files));
-	  ifiles->filename = main_filename;
+	  ifiles->filename = ggc_alloc_string (main_filename, -1);
 	  ifiles->next = impl_file_chain;
 	  impl_file_chain = ifiles;
 	}
@@ -1264,7 +1264,7 @@ cp_pragma_implementation (main_filename)
 	   || ! strcmp (main_filename, input_filename))
     {
       impl_file_chain = (struct impl_files*) xmalloc (sizeof (struct impl_files));
-      impl_file_chain->filename = main_filename;
+      impl_file_chain->filename = ggc_alloc_string (main_filename, -1);
       impl_file_chain->next = 0;
     }
   else
