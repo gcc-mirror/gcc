@@ -1,3 +1,8 @@
+2004-09-13  Loren J. Rittle  <ljrittle@acm.org>
+
+	* inclhack.def (freebsd_gcc4_breakage): Add.
+	* fixincl.x: Regenerate.
+
 2004-09-10  Adam Nemet  <anemet@lnxw.com>
 
 	* inclhack.def (lynx_void_int): Remove.
