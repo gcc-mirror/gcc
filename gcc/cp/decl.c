@@ -2396,8 +2396,9 @@ pushtag (name, type, globalize)
 
 	      TYPE_CONTEXT (type) = DECL_CONTEXT (d);
 	      DECL_ASSEMBLER_NAME (d) = DECL_NAME (d);
-	      DECL_ASSEMBLER_NAME (d)
-		= get_identifier (build_overload_name (type, 1, 1));
+	      if (!uses_template_parms (type))
+		DECL_ASSEMBLER_NAME (d)
+		  = get_identifier (build_overload_name (type, 1, 1));
 	    }
         }
       if (b->parm_flag == 2)

@@ -1,3 +1,29 @@
+1998-08-04  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (pushtag): Don't mangle the name of a TYPE_DECL if it
+	uses template parameters.
+	* method.c (build_template_parm_names): Use the full set of
+	template arguments for tsubst'ing.
+	(build_overload_identifier): Pass the full set of template
+	arguments to build_template_parm_names, not just the
+	innermost_args. 
+	* pt.c (TMPL_ARGS_DEPTH): Define using
+	TMPL_ARGS_HAVE_MULTIPLE_LEVELS, for clarity.
+	(NUM_TMPL_ARGS): New macro.
+	(add_outermost_template_args): Deal with the case where the outer
+	args will be completely discarded.
+	(coerce_template_parms): Use the full set of template arguments
+	for tsubst'ing.  Simplify.  Add some asserts.  Improve
+	error messages.
+	(lookup_template_class): Pass the full set of template arguments
+	to coerce_template_parms.
+	(tsubst): Add assertion.
+	(do_type_instantiation): Don't instantiate member template
+	classes. 
+	
+	* init.c (build_offset_ref): Deal with a TEMPLATE_ID_EXPR whose
+	name is a LOOKUP_EXPR, rather than an IDENTIFIER_NODE.
+
 1998-08-03  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* method.c (set_mangled_name_for_decl): Change return type to void.
