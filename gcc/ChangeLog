@@ -1,3 +1,7 @@
+2001-12-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* unroll.c: Move include files above first use of `const'.
+
 2001-12-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfgrtl.c (try_redirect_by_replacing_jump): Allow redirect_jump

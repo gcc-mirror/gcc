@@ -131,6 +131,23 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    moving the insn back into the loop, or perhaps replicate the insn before
    the loop, one copy for each time the loop is unrolled.  */
 
+#include "config.h"
+#include "system.h"
+#include "rtl.h"
+#include "tm_p.h"
+#include "insn-config.h"
+#include "integrate.h"
+#include "regs.h"
+#include "recog.h"
+#include "flags.h"
+#include "function.h"
+#include "expr.h"
+#include "loop.h"
+#include "toplev.h"
+#include "hard-reg-set.h"
+#include "basic-block.h"
+#include "predict.h"
+
 /* The prime factors looked for when trying to unroll a loop by some
    number which is modulo the total number of iterations.  Just checking
    for these 4 prime factors will find at least one factor for 75% of
@@ -151,23 +168,6 @@ enum unroll_types
   UNROLL_MODULO,
   UNROLL_NAIVE
 };
-
-#include "config.h"
-#include "system.h"
-#include "rtl.h"
-#include "tm_p.h"
-#include "insn-config.h"
-#include "integrate.h"
-#include "regs.h"
-#include "recog.h"
-#include "flags.h"
-#include "function.h"
-#include "expr.h"
-#include "loop.h"
-#include "toplev.h"
-#include "hard-reg-set.h"
-#include "basic-block.h"
-#include "predict.h"
 
 /* This controls which loops are unrolled, and by how much we unroll
    them.  */
