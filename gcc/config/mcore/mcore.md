@@ -150,7 +150,7 @@
 ;; ;    This is done to allow bit field masks to fold together in combine.
 ;; ;    The reload phase will force the immediate into a register at the
 ;; ;    very end.  This helps in some cases, but hurts in others: we'd
-;; ;    really like to cse these immediates.  However, there is an phase
+;; ;    really like to cse these immediates.  However, there is a phase
 ;; ;    ordering problem here.  cse picks up individual masks and cse's
 ;; ;    those, but not folded masks (cse happens before combine).  It's
 ;; ;    not clear what the best solution is because we really want cse

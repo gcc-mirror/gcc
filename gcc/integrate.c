@@ -264,7 +264,7 @@ function_cannot_inline_p (fndecl)
     }
 
   /* If the function has a target specific attribute attached to it,
-     then we assume that we should not inline it.  This can be overriden
+     then we assume that we should not inline it.  This can be overridden
      by the target if it defines TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P.  */
   if (!function_attribute_inlinable_p (fndecl))
     return N_("function with target specific attribute(s) cannot be inlined");

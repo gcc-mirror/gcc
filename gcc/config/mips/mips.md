@@ -1282,7 +1282,7 @@
 			       (const_int 8))
 		 (const_int 4)])])
 
-;; On the mips16, we can sometimes split an subtract of a constant
+;; On the mips16, we can sometimes split a subtract of a constant
 ;; which is a 4 byte instruction into two adds which are both 2 byte
 ;; instructions.  There are two cases: one where we are setting a
 ;; register to a register minus a constant, and one where we are

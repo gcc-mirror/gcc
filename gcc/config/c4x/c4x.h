@@ -1334,7 +1334,7 @@ CUMULATIVE_ARGS;
 
 #ifndef REG_OK_STRICT
 
-/* Nonzero if X is a hard or pseudo reg that can be used as an base.  */
+/* Nonzero if X is a hard or pseudo reg that can be used as a base.  */
 
 #define REG_OK_FOR_BASE_P(X) IS_ADDR_OR_PSEUDO_REG(X)
 

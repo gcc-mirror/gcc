@@ -5418,7 +5418,7 @@ default_binds_local_p_1 (exp, shlib)
 }
 
 /* Determine whether or not a pointer mode is valid. Assume defaults
-   of ptr_mode or Pmode - can be overriden.  */
+   of ptr_mode or Pmode - can be overridden.  */
 bool
 default_valid_pointer_mode (mode)
      enum machine_mode mode;

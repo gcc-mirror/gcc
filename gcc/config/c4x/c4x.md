@@ -231,7 +231,7 @@
 ;  a new spill register.
 
 ;  Note that the floating point representation of 0.0 on the C4x
-;  is 0x80000000 (-2147483648).  This value produces an warning
+;  is 0x80000000 (-2147483648).  This value produces a warning
 ;  message on 32-bit machines about the decimal constant being so large
 ;  that it is unsigned.
 

@@ -5089,7 +5089,7 @@
 
 ;; Nop instruction.
 ;;
-;; We don't really want nops to appear in our code so just insert an comment.
+;; We don't really want nops to appear in our code so just insert a comment.
 ;;
 (define_insn "nop"
   [(const_int 0)]

@@ -41,7 +41,7 @@ struct c_pretty_print_info
      Not used yet.  */
   int *offset_list;
 
-  /* These must be overriden by each of the C and C++ front-end to
+  /* These must be overridden by each of the C and C++ front-end to
      reflect their understanding of syntatic productions when they differ.  */
   c_pretty_print_fn declaration;
   c_pretty_print_fn declaration_specifiers;
@@ -141,7 +141,7 @@ struct c_pretty_print_info
 
 
 /* Returns the c_pretty_printer base object of PRETTY-PRINTER.  This
-   macro must be overriden by any subclass of c_pretty_print_info.  */
+   macro must be overridden by any subclass of c_pretty_print_info.  */
 #define pp_c_base(PP)  (PP)
 
 extern void pp_c_pretty_printer_init   PARAMS ((c_pretty_printer));

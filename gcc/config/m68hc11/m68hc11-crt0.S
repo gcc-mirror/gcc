@@ -74,7 +74,7 @@ _start:
 	.sect	.install2,"ax",@progbits
 ;;
 ;; Call a specific initialization operation.  The default is empty.
-;; It can be overriden by applications.  It is intended to initialize
+;; It can be overridden by applications.  It is intended to initialize
 ;; the 68hc11 registers.  Function prototype is:
 ;; 
 ;;	int __premain(void);

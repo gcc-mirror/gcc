@@ -47,7 +47,7 @@ Note:
 #endif
 
 /* We need to tell the linker the target elf format.  Just pass an
-   emulation option.  This can be overriden by -Wl option of gcc.  */
+   emulation option.  This can be overridden by -Wl option of gcc.  */
 #ifndef LINK_SPEC
 #define LINK_SPEC      "%{m68hc12:-m m68hc12elf}%{!m68hc12:-m m68hc11elf} %{mrelax:-relax}"
 #endif

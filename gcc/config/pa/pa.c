@@ -1458,7 +1458,7 @@ emit_move_sequence (operands, mode, scratch_reg)
      use scratch_reg to hold the address of the memory location.
 
      The proper fix is to change PREFERRED_RELOAD_CLASS to return
-     NO_REGS when presented with a const_int and an register class
+     NO_REGS when presented with a const_int and a register class
      containing only FP registers.  Doing so unfortunately creates
      more problems than it solves.   Fix this for 2.5.  */
   else if (fp_reg_operand (operand0, mode)
@@ -4300,7 +4300,7 @@ print_operand (file, x, code)
 	fputs ("\n\tnop", file);
       return;
     case '*':
-      /* Output an nullification completer if there's nothing for the */
+      /* Output a nullification completer if there's nothing for the */
       /* delay slot or nullification is requested.  */
       if (dbr_sequence_length () == 0 ||
 	  (final_sequence &&
@@ -5428,7 +5428,7 @@ output_cbranch (operands, nullify, length, negated, insn)
 	  strcat (buf, " %2,%r1,%0");
 	break;
 
-     /* All long conditionals.  Note an short backward branch with an
+     /* All long conditionals.  Note a short backward branch with an
 	unfilled delay slot is treated just like a long backward branch
 	with an unfilled delay slot.  */
       case 8:
@@ -5650,7 +5650,7 @@ output_bb (operands, nullify, length, negated, insn, which)
 	  strcat (buf, " %0,%1,%2");
 	break;
 
-     /* All long conditionals.  Note an short backward branch with an
+     /* All long conditionals.  Note a short backward branch with an
 	unfilled delay slot is treated just like a long backward branch
 	with an unfilled delay slot.  */
       case 8:
@@ -5798,7 +5798,7 @@ output_bvb (operands, nullify, length, negated, insn, which)
 	  strcat (buf, "{ %0,%2| %0,%%sar,%2}");
 	break;
 
-     /* All long conditionals.  Note an short backward branch with an
+     /* All long conditionals.  Note a short backward branch with an
 	unfilled delay slot is treated just like a long backward branch
 	with an unfilled delay slot.  */
       case 8:

@@ -2414,7 +2414,7 @@ function_arg (cum, mode, type, named)
     (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
-  /* Handle an hidden AL argument containing number of registers for varargs
+  /* Handle a hidden AL argument containing number of registers for varargs
      x86-64 functions.  For i386 ABI just return constm1_rtx to avoid
      any AL settings.  */
   if (mode == VOIDmode)
@@ -8619,7 +8619,7 @@ ix86_fp_comparison_codes (code, bypass_code, first_code, second_code)
 }
 
 /* Return cost of comparison done fcom + arithmetics operations on AX.
-   All following functions do use number of instructions as an cost metrics.
+   All following functions do use number of instructions as a cost metrics.
    In future this should be tweaked to compute bytes for optimize_size and
    take into account performance of various instructions on various CPUs.  */
 static int
