@@ -483,10 +483,11 @@ rs6000_override_options (default_cpu)
 	}
     }
 
-  if (flag_pic && DEFAULT_ABI == ABI_AIX && extra_warnings)
+  if (flag_pic && DEFAULT_ABI == ABI_AIX)
     {
-      warning ("-f%s ignored (all code is position independent)",
-	       (flag_pic > 1) ? "PIC" : "pic");
+      if (extra_warnings)
+	warning ("-f%s ignored (all code is position independent)",
+		 (flag_pic > 1) ? "PIC" : "pic");
       flag_pic = 0;
     }
 

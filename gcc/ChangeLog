@@ -1,3 +1,8 @@
+2002-04-22  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Always clear
+	flag_pic for ABI_AIX.
+
 2002-04-21  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppmacro.c (funlike_invocation_p): Don't step back
