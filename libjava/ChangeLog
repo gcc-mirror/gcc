@@ -1,3 +1,22 @@
+2001-05-20  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* include/jvm.h: Move "#pragma GCC java_exceptions" to ...
+	* gcj/javaprims.h: ... here.
+	* gnu/gcj/io/shs.cc: Add "#pragma GCC java_exceptions".
+
+2001-05-20  Zack Weinberg  <zackw@stanford.edu>
+
+	* Makefile.am (libgcj_la_OBJECTS): Remove libsupc++convenience.la.
+	* Makefile.in: Regenerate (by hand).
+	* include/jvm.h: Add #pragma GCC java_exceptions at top of file.
+	* doc/cni.sgml: Document #pragma GCC java_exceptions.
+
+	* prims.cc (_Jv_ThisExecutable): Use _Jv_Malloc.
+	* posix-threads.cc (_Jv_ThreadInitData): Use _Jv_Malloc.
+	(_Jv_ThreadDestroyData): Use _Jv_Free.
+	* java/lang/natClassLoader.cc (_Jv_RegisterInitiatingLoader):
+	Use _Jv_Malloc.
+
 2001-05-18  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* include/posix-threads.h (_Jv_CondInit): `0' used in place of `NULL.'
@@ -5,7 +24,7 @@
 
 2001-05-17  Martin Kahlert  <martin.kahlert@infineon.com>
 
-	* java/lang/natClass.cc (_Jv_FindIIndex): Fix an off by one error 
+	* java/lang/natClass.cc (_Jv_FindIIndex): Fix an off by one error
 	with length of ioffset table.
 	(_Jv_IsAssignableFrom): Likewise.
 
@@ -15,10 +34,10 @@
 
 2001-05-14  Andrew Haley  <aph@cambridge.redhat.com>
 
-        * libgcj.spec.in (jc1): Add EXCEPTIONSPEC.
-        * configure.host (EXCEPTIONSPEC): New.
-        * configure.in (EXCEPTIONSPEC): New.
-        * configure: Rebuilt.
+	* libgcj.spec.in (jc1): Add EXCEPTIONSPEC.
+	* configure.host (EXCEPTIONSPEC): New.
+	* configure.in (EXCEPTIONSPEC): New.
+	* configure: Rebuilt.
 
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
@@ -76,21 +95,21 @@
 2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	Fix PR libgcj/2237:
-	* java/io/ObjectStreamClass.java (setClass): Calculate 
+	* java/io/ObjectStreamClass.java (setClass): Calculate
 	serialVersionUID for local class and compare it against the UID
 	from the Object Stream. Throw InvalidClassException upon mismatch.
 	(setUID): Renamed to...
-	(getClassUID): this. Return the calculated class UID rather than 
+	(getClassUID): this. Return the calculated class UID rather than
 	setting uid field directly.
 	(getDefinedSUID): Removed.
-	* java/io/ObjectInputStream.java (resolveClass): Use the 
-	three-argument Class.forName(). 
-	* java/io/InvalidClassException.java (toString): Don't include 
+	* java/io/ObjectInputStream.java (resolveClass): Use the
+	three-argument Class.forName().
+	* java/io/InvalidClassException.java (toString): Don't include
 	classname in result if it is null.
 
 2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
-	* java/lang/Class.h (forName): Add initialize parameter. Fixes 
+	* java/lang/Class.h (forName): Add initialize parameter. Fixes
 	declaration to comply with JDK spec.
 	* java/lang/natClass.cc (forName): Correct declaration of the three-arg
 	variant. Honour "initialize" flag.
@@ -106,8 +125,8 @@
 	* gnu/gcj/runtime/VMClassLoader.java (getVMClassLoader): Removed.
 	(instance): Static initialize singleton.
 	(findClass): Override this, not findSystemClass.
-	* java/lang/natClassLoader.cc (findClass): Renamed from 
-	findSystemClass. Call the interpreter via URLClassLoader.findClass if 
+	* java/lang/natClassLoader.cc (findClass): Renamed from
+	findSystemClass. Call the interpreter via URLClassLoader.findClass if
 	loading class via dlopen fails.
 
 2001-05-03  Martin Kahlert  <martin.kahlert@infineon.com>
@@ -174,12 +193,12 @@
 
 2001-04-12  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* java/io/File.java (normalizePath): New private method. 
+	* java/io/File.java (normalizePath): New private method.
 	(File (String)): Use normalizePath().
 	(File (String, String)): Likewise.
 
 	* Makefile.am (libffi_files): Removed.
-	(libgcj.la): Link libffi as a convenience library instead of 
+	(libgcj.la): Link libffi as a convenience library instead of
 	refering to its object files directly.
 	* Makefile.in: Rebuilt.
 
@@ -290,10 +309,10 @@
 	1.3-Compliant Implementation of java.io.File.
 	* java/lang/natSystem.cc (init_properties): Get "file.separator",
 	"path.separator", and "java.io.tmpdir" from the File class, instead
-	of setting them explicitly. 
+	of setting them explicitly.
 	* java/io/File.java: Do not canonicalize paths for security manager
-	checks. Call init_native() from static initializer. Do not pass path 
-	argument to native methods. New native method declarations. Some 
+	checks. Call init_native() from static initializer. Do not pass path
+	argument to native methods. New native method declarations. Some
 	security manager checks moved to checkWrite().
 	(equals): Check file system case sensitivity and act appropriatly.
 	(hashCode): Likewise.
@@ -314,24 +333,24 @@
 	(stat): Handle ISHIDDEN query.
 	(isAbsolute): Remove WIN32 cruft.
 	(performList): New arguments. Handle returning either File[] or String[]
-	arrays. Check with FileFilter or FilenameFilter arguments as 
+	arrays. Check with FileFilter or FilenameFilter arguments as
 	appropriate. Use an ArrayList, not a Vector, for the temporary list.
 	(performSetReadOnly): New method implemented.
 	(performListRoots): Likewise.
 	(performSetLastModified): Likewise.
 	(performCreate): Likewise.
 	(init_native): New initialization function.
-	* java/io/natFileWin32.cc: Various functions no longer take canonical 
+	* java/io/natFileWin32.cc: Various functions no longer take canonical
 	path argument.
 	(stat): Add FIXME about ISHIDDEN query.
 	(performList): New arguments. Handle returning either File[] or String[]
-	arrays. Check with FileFilter or FilenameFilter arguments as 
+	arrays. Check with FileFilter or FilenameFilter arguments as
 	appropriate. Use an ArrayList, not a Vector, for the temporary list.
 	(performSetReadOnly): New. Stubbed.
 	(performListRoots): Likewise.
 	(performSetLastModified): Likewise.
 	(performCreate): Likewise.
-	(init_native) New initialization function.	
+	(init_native) New initialization function.
 	* configure.in: Check for utime() and chmod().
 	* configure: Rebuilt.
 	* include/config.h.in: Rebuilt.
@@ -343,7 +362,7 @@
 	(addToEnvironment): Remove unnecessary semicolon.
 	(addToEnvironment): Use put() instead of add().
 
-	* javax/naming/InitialContext.java (InitialContext): 
+	* javax/naming/InitialContext.java (InitialContext):
 	Make public.
 	(destroySubcontext): Method doesn't return a result.
 	* javax/naming/Context.java: Import java.util.Hashtable.
@@ -353,7 +372,7 @@
 
 	* Makefile.am (libffi_files): Use $(shell) wrapper instead of back
 	quotes.
-	(libgcj.la): Echo the list of object files one at a time, using a 
+	(libgcj.la): Echo the list of object files one at a time, using a
 	for loop.
 	(libgcjx.la): Likewise.
 	* Makefile.in: Rebuilt.
@@ -366,7 +385,7 @@
 
 2001-03-24  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* java/util/HashMap.java (HashMap): If 0 is given for initialCapacity 
+	* java/util/HashMap.java (HashMap): If 0 is given for initialCapacity
 	paramater, bump it to 1.
 	* java/util/Hashtable.java (Hashtable): Likewise.
 
@@ -406,7 +425,7 @@
 	Fix for PR libgcj/1736. Thanks to Robert Boehne and Alexandre Oliva
 	for libtool hacking.
 	* Makefile.am (libgcj.la): New explicit rule. Echo the list of objects
-	to a temporary file, then invoke libtool with the -objectlist 
+	to a temporary file, then invoke libtool with the -objectlist
 	paramater.
 	(libgcjx.la): Likewise.
 	* Makefile.in: Rebuilt.
@@ -424,7 +443,7 @@
 	* java/lang/reflect/Method.java (getExceptionTypes): Call getType() to
 	initialize if exception_types is null.
 	* java/lang/reflect/Constructor.java: Likewise.
-	* java/lang/reflect/natConstructor.cc (getType): Initialize 
+	* java/lang/reflect/natConstructor.cc (getType): Initialize
 	exception_types to an empty Object array.
 
 2001-03-21  Tom Tromey  <tromey@redhat.com>
@@ -452,7 +471,7 @@
 	(UNMASK_PTR): New macro.
 	(intern): Unmask pointer before returning it.  Register finalizer
 	for the string.
-	(unintern): Handle case where 
+	(unintern): Handle case where
 	(MASK_PTR): New macro.
 	(PTR_MAKSED): Likewise.
 	(_Jv_NewStringUtf8Const): Use UNMASK_PTR.
@@ -461,7 +480,7 @@
 
 	* java/lang/natThrowable.cc (printRawStackTrace): Copy the
 	stackTrace buffer to a correctly aligned pointer array.
- 
+
 2001-03-12  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/Runtime.java (_exit): Declare new package-private native.
@@ -469,7 +488,7 @@
 	without a security manager check.
 	(exit): Call _exit.
 	* java/lang/System.java (setSecurityManager): If a security manager
-	is already in place, call checkPermission. 
+	is already in place, call checkPermission.
 	* java/lang/ThreadGroup.java (uncaughtException): If printStackTrace()
 	throws an exception, try to deal with it gracefully.
 	* prims.cc (JvRunMain): Call Runtime._exit to shutdown
@@ -492,7 +511,7 @@
 2001-03-05  Jochen Hoenicke  <jochen@gnu.org>
 
 	* java/util/TreeMap.java (writeObject): Use defaultWriteObject()
-	instead of the new JDK1.2 API.  This is simpler and makes 
+	instead of the new JDK1.2 API.  This is simpler and makes
 	back-porting the classes to JDK1.1 trivial.
 	(readObject): likewise.
 
@@ -533,14 +552,14 @@
 2001-02-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Fix for PR java/2040:
-	* java/util/HashMap.java (HashMap): Don't throw exception for 
+	* java/util/HashMap.java (HashMap): Don't throw exception for
 	loadFactor > 1. Add exception messages.
 	* java/util/Hashtable.java (Hashtable): Likewise.
 
 2001-02-21  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Disable libgcjx by default.
-	* configure.in: Add support for --enable-java-awt configure option. 
+	* configure.in: Add support for --enable-java-awt configure option.
 	Use --enable-java-awt=xlib to build the xlib peers (libgcjx).
 	* Makefile.am: Make libgcjx conditional on XLIB_AWT, instead of NO_X.
 	* Makefile.in: Rebuilt.
@@ -576,21 +595,21 @@
 	property is not set. Don't call decode with null argument.
 	* java/lang/Long.java (getLong): Likewise.
 
-	* java/io/CharArrayReader.java (CharArrayReader): Throw 
+	* java/io/CharArrayReader.java (CharArrayReader): Throw
 	IllegalArgumentException if constructor arguments are illegal.
 	(ready): Return false if no more characters can be read.
 	* java/io/ByteArrayInputStream.java (ByteArrayInputStream): Likewise.
 
 2001-02-16  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* java/util/TreeSet.java (clone): Made subclass safe, use 
+	* java/util/TreeSet.java (clone): Made subclass safe, use
 	super.clone(), not new.
 	* java/util/TreeMap.java (clone): Likewise.
-	
+
 	* java/util/TreeMap.java (nil): Made non-final.
 	(clone): Create new nil node for copy.
-	
-	* java/util/HashSet.java (clone): Made subclass safe, use 
+
+	* java/util/HashSet.java (clone): Made subclass safe, use
 	super.clone(), not new.
 
 2001-02-15  Anthony Green  <green@redhat.com>
@@ -603,13 +622,13 @@
 
 2001-02-15  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* java/util/TreeSet.java (clone): Call TreeMap.clone(), not 
+	* java/util/TreeSet.java (clone): Call TreeMap.clone(), not
 	Object.clone().
 	* java/util/Collections.java (ReverseComparator): New static class.
 	(reverseOrder): Return static instance of ReverseComparator.
-	
+
 	* java/util/HashSet.java (clone): Remove try/catch.
-	
+
 	* java/util/AbstractSequentialList.java: Synchronize with Classpath.
 	* java/util/Collection.java: Likewise.
 	* java/util/Comparator.java: Likewise.
@@ -630,12 +649,12 @@
 	* java/util/SortedSet.java: Sync with classpath.
 	* java/util/HashMap.java (hash): Use if statement instead of ternary,
 	for clarity.
-	
-	* java/lang/natClass.cc (getSignature): Don't try to dereference 
+
+	* java/lang/natClass.cc (getSignature): Don't try to dereference
 	param_types if it is null. Instead, take this to mean "no parameters".
-	* java/lang/TreeMap.java (TreeIterator.next): Throw 
+	* java/lang/TreeMap.java (TreeIterator.next): Throw
 	NoSuchElementException in preference to ConcurrentModificationException.
-	(TreeIterator.remove): Throw IllegalStateException in preference to 
+	(TreeIterator.remove): Throw IllegalStateException in preference to
 	ConcurrentModificationException.
 	(SubMap.firstKey): Do a better check for empty SubMap, and if it is,
 	throw a NoSuchElementException.
@@ -662,7 +681,7 @@
 2001-02-13  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/io/BlockDataException.java: Removed.
-	* java/io/ObjectInputStream.java (readObject): Throw 
+	* java/io/ObjectInputStream.java (readObject): Throw
 	StreamCorruptedException, not BlockDataException.
 	* Makefile.am: Remove BlockDataException.
 	* Makefile.in: Rebuild.
@@ -685,7 +704,7 @@
 2001-02-15  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* gnu/awt/j2d/DirectRasterGraphics.java (clone): Hoist to public.
-	* gnu/awt/j2d/IntegerGraphicsState.java (setClip): Call 
+	* gnu/awt/j2d/IntegerGraphicsState.java (setClip): Call
 	Rectangle.clone(), not Object.clone().
 
 2001-02-13  Tom Tromey  <tromey@redhat.com>
@@ -721,7 +740,7 @@
 	* java/lang/Float.java: As above.
 	(floatToRawIntBits): New method.
 
-	* java/io/OutputStreamWriter.java: (flush, writeChars): Throw 
+	* java/io/OutputStreamWriter.java: (flush, writeChars): Throw
 	IOException if stream closed.
 
 2001-02-08  Tom Tromey  <tromey@redhat.com>
@@ -778,7 +797,7 @@
 2001-01-26  Andrew Haley  <aph@redhat.com>
 
 	(INIT_FPE): Use a direct system call to set the handler.
-	
+
 2001-01-27  Richard Henderson  <rth@redhat.com>
 
 	* configure.host (alpha*-*) [libgcj_flags]: Add -mieee.
@@ -792,10 +811,10 @@
 
 	* java/io/ObjectInputStream.java (read): AND byte with 0xff to make
 	result unsigned.
-	(read (byte[], int, int)): Only call readNextBlock() if the block 
+	(read (byte[], int, int)): Only call readNextBlock() if the block
 	buffer would actually be overrun. Increment blockDataPosition.
 	(callReadMethod): Propagate exceptions from invocation target.
-	* java/io/ObjectOutputStream.java (callWriteMethod): Propagate 
+	* java/io/ObjectOutputStream.java (callWriteMethod): Propagate
 	exceptions from invocation target.
 
 2001-01-26  Tom Tromey  <tromey@redhat.com>
@@ -832,7 +851,7 @@
 
 2001-01-17  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* java/lang/Class.h (isInterface): Move implementation from 
+	* java/lang/Class.h (isInterface): Move implementation from
 	natClass.cc. Declare inline.
 	(Class): Add default constructor.
 	* java/lang/Object.h: Update comments.
@@ -941,13 +960,13 @@
 	(_Jv_GetArrayClass): New inline function.
 	(arrayclass): New field.
 	* prims.cc (_Jv_NewObjectArray): Use _Jv_GetArrayClass. Don't use
-	_Jv_GetArrayElementFromElementType. 
+	_Jv_GetArrayElementFromElementType.
 	(_Jv_NewPrimArray): Ditto.
 	(_Jv_PrimClass constructor): Initialize "depth", "ancestors", and
 	"idt" for completeness. Initialze "arrayclass" using _Jv_NewArrayClass.
 	Set Modifier::ABSTRACT.
 	* java/lang/natClassLoader.cc (_Jv_NewClass): Initialize "arrayclass".
-	(_Jv_NewArrayClass): Renamed from _Jv_FindArrayClass. Now void. 
+	(_Jv_NewArrayClass): Renamed from _Jv_FindArrayClass. Now void.
 	Now synchronized. Array classes are now referenced from
 	elementClass->arrayclass. Don't use _Jv_FindClassInCache.
 	Set array classes' accessibility flags correctly. Optimize so that
@@ -994,7 +1013,7 @@
 	* java/lang/Object.h (struct _JvObjectPrefix): New virtuals
 	nacd_1 and nacd_2 (for compatibility with the new C++ ABI.)
 	(class java::lang::Object): `finalize' moved up front.
-	* java/lang/natClass.cc 
+	* java/lang/natClass.cc
 	(isAssignableFrom): Turned outline.
 	(isInstance): Likewise.
 	(isInterface): Likewise, fixed indentation.
@@ -1047,7 +1066,7 @@
 
 	* java/io/PipedInputStream: Rewrote to be simpler and more correct.
 	* java/io/PipedOutputStream: Updated to match new PipedInputStream.
-	* java/io/PipedReader: New implementation based on new 
+	* java/io/PipedReader: New implementation based on new
 	PipedInputStream.
 	* java/io/PipedWriter: Updated to match new PipedReader.
 
@@ -1099,15 +1118,15 @@
 	* include/win32-threads.h: Ditto.
 	* include/no-threads.h: Ditto.
 	* posix-threads.cc (_Jv_ThreadInitData): Implement new prototype.
-	(_Jv_ThreadDestroyData): New function. Free native thread "data" and 
+	(_Jv_ThreadDestroyData): New function. Free native thread "data" and
 	move mutex and condition variable destroy code from:
 	(really_start): ...here.
 	(_Jv_ThreadStart): Set PTHREAD_CREATE_DETACHED.
 	* win32-threads.cc (_Jv_ThreadInitData): Implement new prototype.
 	(_Jv_ThreadDestroyData): Implemented.
 	* nogc.cc (_Jv_AllocObject): Use "void *" not "ptr_t".
-	(_Jv_AllocArray): Ditto.	
-	
+	(_Jv_AllocArray): Ditto.
+
 2000-12-27  Jeff Sturm  <jeff.sturm@commerceone.com>
 
 	* java/sql/DriverManager.java (getConnection): Don't set user/password
@@ -1136,8 +1155,8 @@
 	Fix for PR libgcj/1516:
 	* java/lang/reflect/natMethod.cc (primitives): Remove void entry.
 	Add boolean entry.
-	(can_widen): Declared inline. Remove redundant checks for void 
-	arguments and char->short conversion. Add special case for boolean 
+	(can_widen): Declared inline. Remove redundant checks for void
+	arguments and char->short conversion. Add special case for boolean
 	conversions.
 	(ffi_type): Declared inline.
 	(_Jv_CallAnyMethodA): Move unwrapping logic inside isPrimitive() block.
@@ -1251,7 +1270,7 @@
 
 2000-12-18  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* java/awt/Window.java (addNotify): Remove peer casting hack now that 
+	* java/awt/Window.java (addNotify): Remove peer casting hack now that
 	gcj/312 is fixed.
 	* java/awt/Button.java (addNotify): Likewise.
 	* java/awt/Label.java (addNotify): Likewise.
@@ -1268,7 +1287,7 @@
 
 2000-12-18  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* java/util/zip/natInflater.cc (inflate): Treat Z_BUF_ERROR as 
+	* java/util/zip/natInflater.cc (inflate): Treat Z_BUF_ERROR as
 	end-of-stream if avail_in is 0.
 
 2000-12-17  Bryce McKinlay  <bryce@albatross.co.nz>
@@ -1333,11 +1352,11 @@
 
 	* configure.in: Remove check for -fuse-divide-subroutine.
 	* configure: Rebuilt.
-	
+
 	* java/util/Hashtable.java (Enumerator.nextElement): Initialize `e'.
 
 	* gcj/javaprims.h: Rebuilt CNI namespace declarations.
-	
+
 2000-12-11  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.am: Add HashSet.java and java/lang/ref classes.
@@ -1351,14 +1370,14 @@
 	* java/util/BasicMapEntry.java: Deleted.
 	* java/util/Collections.java (search): Use a for-loop, not iterator
 	hasNext().
-	(copy): Use a for-loop. Throw an IndexOutOfBoundsException if run out 
+	(copy): Use a for-loop. Throw an IndexOutOfBoundsException if run out
 	of elements in source.
 	(max): Use a for-loop.
 	(min): Ditto.
-	(reverse): Keep track of positions instead of using Iterator's 
+	(reverse): Keep track of positions instead of using Iterator's
 	nextIndex() and previousIndex().
-	(shuffle(List)): Initialize defaultRandom if required using 
-	double-check thread safety idiom. Call two-argument shuffle method 
+	(shuffle(List)): Initialize defaultRandom if required using
+	double-check thread safety idiom. Call two-argument shuffle method
 	using defaultRandom.
 	(defaultRandom): New field.
 	(shuffle(List, Random)): Use a for-loop. Keep track of pos instead of
@@ -1373,7 +1392,7 @@
 	* java/lang/ref/ReferenceQueue.java: Ditto.
 
 2000-12-10  Richard Henderson <rth@redhat.com>
-	
+
 	* configure.host: Recognize alpha*-*, not alphaev6-*.
 
 2000-12-09  Anthony Green  <green@redhat.com>
@@ -1398,10 +1417,10 @@
 	java/lang/String.h:, java/lang/reflect/Constructor.h:,
 	java/lang/reflect/Field.h:, java/lang/reflect/Method.h:,
 	gnu/gcj/runtime/VMClassLoader.h:,
-	java/io/ObjectInputStream$$GetField.h:, 
+	java/io/ObjectInputStream$$GetField.h:,
 	java/io/ObjectOutputStream$$PutField.h:, header-check:): Likewise.
 	(Makefile.in): Rebuilt.
-	
+
 2000-12-08  Tom Tromey  <tromey@redhat.com>
 
 	From Phil Edwards:
@@ -1453,7 +1472,7 @@
 
 2000-12-04  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* java/lang/natDouble.cc: Include fdlibm.h, not mprec.h. From 
+	* java/lang/natDouble.cc: Include fdlibm.h, not mprec.h. From
 	Edgar Villanueva <edgarvil@home.com>.
 
 2000-12-03  Tom Tromey  <tromey@redhat.com>
@@ -1504,7 +1523,7 @@
 	* java/lang/dtoa.c: Include string.h.
 	* java/lang/natString.cc (toLowerCase): Initialize `ch' to prevent
 	compiler warning.
-	
+
 	From Adam Welc <welc@cs.purdue.edu>:
 	* java/util/LinkedList.java (removeFirst): Update `first' field.
 	Handle the last == first case.
@@ -1551,7 +1570,7 @@
 	* configure.in: Check for setlocale.
 	* configure: Rebuilt.
 	* include/config.h.in: Rebuilt.
-	
+
 	* java/util/zip/InflaterInputStream (read): Don't return -1 unless
 	the infate() call didn't deliver any output. Throw a ZipException if
 	the needsDictionary() call returns true.
@@ -1569,11 +1588,11 @@
 2000-11-28  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/io/DataInputStream.java: Merge classpath docs. Call in.read()
-	directly rather than read() in all cases. Make primitive read 
+	directly rather than read() in all cases. Make primitive read
 	implementations	more efficient, as defined in JDK online docs.
 	(skipBytes): Behave like the JDK's implementation.
-	* java/io/BufferedReader.java: Merge classpath docs. Check for a 
-	closed stream with checkStatus() whenever an IOException can be 
+	* java/io/BufferedReader.java: Merge classpath docs. Check for a
+	closed stream with checkStatus() whenever an IOException can be
 	thrown.
 	(checkStatus): New private method.
 
@@ -1608,7 +1627,7 @@
 	(addAll): Ditto.
 	* java/util/Collections.java (UnmodifiableCollection): Implement
 	toString().
-	(UnmodifiableList): Throw UnsupportedOperationException from 
+	(UnmodifiableList): Throw UnsupportedOperationException from
 	modification methods. Set `l' from the one-parameter constructor.
 	(UnmodifiableMap): Implement toString().
 	(SynchronizedCollection): Ditto.
@@ -1628,7 +1647,7 @@ Sun Nov 26 23:59:55 2000  Anthony Green  <green@redhat.com>
 	javax/naming/directory/InvalidSearchFilterException.java,
 	javax/naming/directory/NoSuchAttributeException.java,
 	javax/naming/directory/SchemaViolationException.java: New files.
-	
+
 Sun Nov 26 22:35:53 2000  Anthony Green  <green@redhat.com>
 
 	* javax/naming/InitialContext.java (rebind): Implement.
@@ -1750,7 +1769,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
  	javax/naming/NamingEnumeration.java, javax/naming/Name.java,
  	javax/naming/InitialContext.java,
  	javax/naming/NoInitialContextException.java: New files.
-	
+
 2000-11-25  Anthony Green  <green@redhat.com>
 
 	* prims.cc (_Jv_NewObjectArray): Undo placement change.
@@ -1773,7 +1792,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	(URLClassLoader): Call jarFileize.  Use addElement instead of
 	insertElementAt.
 	(findResources): New method.
-	
+
 	* java/lang/ClassLoader.java: Import java.util.Enumeration.
 	(getResource): Implement correct logic.
 	(findResource): New method.
@@ -1781,7 +1800,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	(findClass): Create a ClassNotFoundException with the name of the
 	class rather than nothing at all.
 	(defineClass) Only throw ClassFormatError.
-	
+
 	* java/lang/Class.java (forName): New method.
 	* java/lang/Class.h (forName): New method.
 	* java/lang/natClass.cc (forName): New method.
@@ -1789,13 +1808,13 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 2000-11-24  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/System.java (setProperties): Only call init_properties()
-	if properties is null.	
+	if properties is null.
 	(getProperties): Ditto.
 	(getProperty): Ditto.
 	(setProperty): Call init_properties if properties are null.
 	(prop_init): Remove field.
 	* java/lang/natSystem.cc (init_properties): Synchronize the entire
-	method. Check for null properties after synchronizing instead of 
+	method. Check for null properties after synchronizing instead of
 	prop_init flag. Set the properties field last for thread safety.
 
 	* java/io/ObjectInputStream.java (ObjectInputStream): If DEBUG is set,
@@ -1813,8 +1832,8 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	* configure: Rebuilt.
 	* Makefile.in: Rebuilt.
 	* Makefile.am (built_java_source_files): Add Configuration.java.
-	* configure.in: Add Configuration.java to CONFIG_FILES. Set 
-	LIBGCJDEBUG substitution if --enable-libgcj-debug is specified. 
+	* configure.in: Add Configuration.java to CONFIG_FILES. Set
+	LIBGCJDEBUG substitution if --enable-libgcj-debug is specified.
 	Create `gnu' directory in the build tree.
 	* gnu/classpath/Configuration.java.in: New file.
 
@@ -1847,16 +1866,16 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	* Makefile.in: Rebuilt.
 	* Makefile.am (core_java_source_files): Added Collections.java.
 	* java/util/List.java: Merged from classpath.
-	* java/util/Vector.java: Ditto.	
+	* java/util/Vector.java: Ditto.
 	* java/util/Collections.java: From classpath.
-	* java/util/ArrayList.java (addAll(Collection)): Call 
+	* java/util/ArrayList.java (addAll(Collection)): Call
 	addAll(int,Collection) instead of duplicating code.
 	(indexOf): Clean up int initialization.
-	(clear): Set cleared array entries to null, to allow garbage 
+	(clear): Set cleared array entries to null, to allow garbage
 	collection.
-	* java/util/List.java: Minor formatting fixes.	
+	* java/util/List.java: Minor formatting fixes.
 	* java/util/SimpleTimeZone.java: ditto.
-	
+
 2000-11-18  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
@@ -2019,24 +2038,24 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 
 2000-11-02  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* java/util/AbstractList.java: Throw messages with 
+	* java/util/AbstractList.java: Throw messages with
 	IndexOutOfBoundsExceptions.
 	 (listIterator()): Call listIterator(0).
 	(size): New field. Initialize to size().
 	(hasNext): Test position against size, not size().
-	(remove): Increment knownMod by one instead of resetting it from 
+	(remove): Increment knownMod by one instead of resetting it from
 	modCount.
 	(add): Ditto.
 	(SubList.upMod): Removed.
 	(SubList.set): Don't call upMod() or update knownMod.
 	(SubList.add(int,Object)): Increment modCount instead of caling upMod().
 	(SubList.remove): Ditto.
-	(SubList.addAll): Don't call backingList.size(). Increment size from 
+	(SubList.addAll): Don't call backingList.size(). Increment size from
 	c.size().
 	(SubList.iterator): New method. Call listIterator(0).
 	(SubList.listIterator): New method. Restore code to return an anonymous
 	listIterator implementation (with some changes).
-	* java/util/AbstractSequentialList.java: Throw messages with 
+	* java/util/AbstractSequentialList.java: Throw messages with
 	IndexOutOfBoundsExceptions.
 	(addAll): Add a specnote.
 	* java/util/ArrayList.java (removeRange): Get the math right.
@@ -2082,7 +2101,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 
 	* java/io/Reader.java: Merge docs from classpath.
 	(skip): Synchronize on `lock'.
-	* java/io/FileReader.java: Import correct implementation from 
+	* java/io/FileReader.java: Import correct implementation from
 	classpath.
 	* java/io/StringReader.java: Merge docs from classpath.
 	(ready): Throw IOException if stream is closed.
@@ -2106,16 +2125,16 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	(hashCode): Ditto.
 	(indexOf): Ditto. Don't take null check outside of the loop.
 	(iterator): Return an AbstractListItr instead of anonymous class.
-	(lastIndexOf): Use a for loop bounded by size() instead of 
+	(lastIndexOf): Use a for loop bounded by size() instead of
 	hasPrevious() in iterator loop.
 	(listIterator): Return an AbstractListItr.
 	(removeRange): Remove bounds checking code and docs.
-	(AbstractListItr): New inner class. Code moved here from 
+	(AbstractListItr): New inner class. Code moved here from
 	listIterator().
-	(SubList.iterator): Removed. Use default implementation from 
+	(SubList.iterator): Removed. Use default implementation from
 	AbstractList instead.
 	(SubList.listIterator): As above.
-	* java/util/AbstractMap.java (clear): Use a for loop bounded by size() 
+	* java/util/AbstractMap.java (clear): Use a for loop bounded by size()
 	instead of hasNext() in iterator loop.
 	(containsValue): Ditto.
 	(equals): Ditto.
@@ -2125,7 +2144,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	(remove): Ditto.
 	(toString): Ditto. Use string concatenation operators, not
 	StringBuffer.
-	* java/util/AbstractSequentialList.java (addAll): Use a for loop 
+	* java/util/AbstractSequentialList.java (addAll): Use a for loop
 	bounded by size() instead of hasNext() in iterator loop.
 	* java/util/AbstractSet.java (hashCode): Don't catch exception as
 	part of normal execution flow. Do an explicit null check instead.
@@ -2137,7 +2156,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	(removeRange): Make protected. Don't check bounds.
 	(add): Check lower bounds also. Simplify IndexOutOfBoundsException
 	message.
-	(addAll (Collection)): Use a size-bounded for loop instead of hasNext() 
+	(addAll (Collection)): Use a size-bounded for loop instead of hasNext()
 	check.
 	(addAll (int, Collection)): Check lower bounds. Simplify exception
 	string.
@@ -2149,11 +2168,11 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	(toArray): Correct comment.
 	(trimToSize): Don't update modCount, this is not a structural change.
 	Add comment.
-	
+
 	* java/util/BitSet.java: Merged with classpath, new JDK 1.2 methods
 	implemented.
 	(toString): Declare `bit' as long, not int.
-	(data): Made package-private, not private.	
+	(data): Made package-private, not private.
 
 2000-10-27  Warren Levy  <warrenl@cygnus.com>
 
@@ -2197,9 +2216,9 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 
 	* Makefile.am (GCJCOMPILE): Pass --tag=GCJ to libtool.
 	(core_java_source_files): Put java.lang, java.io, and java.util here.
-	(ordinary_java_source_files): Order so that core_java_source_files are 
+	(ordinary_java_source_files): Order so that core_java_source_files are
 	built first.
-	(java_source_files): Reorder so that special_java_source_files are 
+	(java_source_files): Reorder so that special_java_source_files are
 	built first.
 	* configure.in: Don't pass -I flag to gcj.
 	* Makefile.in: Rebuilt.
@@ -2213,7 +2232,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 2000-10-24  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/EventObject.java: Merged from classpath.
-	
+
 	* java/lang/ThreadGroup.java (uncaughtException): Print thread name
 	with stack dump.
 
@@ -2389,7 +2408,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 
 	* include/jvm.h: Enable __builtin_expect().
 
-	* name-finder.cc (lookup): Don't trust dladdr() if the address is from 
+	* name-finder.cc (lookup): Don't trust dladdr() if the address is from
 	the main program. Fix for PR libgcj/341.
 
 2000-10-07  Tom Tromey  <tromey@cygnus.com>
@@ -2512,7 +2531,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 
 2000-09-30  Hans Boehm  <boehm@acm.org>
 	    Bryce McKinlay  <bryce@albatross.co.nz>
-	    
+
 	Implement bitmap descriptor based marking for Boehm GC.
 
 	* configure.in: Define JC1GCSPEC. Set it if boehm-gc is used.
@@ -2520,7 +2539,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	* libgcj.spec.in: Pass JC1GCSPEC to jc1.
 	* include/jvm.h (struct _Jv_VTable): New field `gc_descr'. New inline
 	method get_finalizer().
-	(struct _Jv_ArrayVTable): Ditto. Declare method array with 
+	(struct _Jv_ArrayVTable): Ditto. Declare method array with
 	NUM_OBJECT_METHODS elements instead of NUM_OBJECT_METHODS + 1.
 	(_Jv_AllocObj): Add new jclass parameter.
 	(_Jv_AllocArray): Ditto.
@@ -2535,7 +2554,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	* resolve.cc (METHOD_NOT_THERE, METHOD_INACCESSIBLE): New #defines.
 	(_Jv_ResolvePoolEntry): Use METHOD_NOT_THERE and METHOD_INACCESSIBLE.
 	(_Jv_DetermineVTableIndex): Ditto.
-	(_Jv_PrepareClass): Ditto. Remove offset-by-one adjustments from vtable 
+	(_Jv_PrepareClass): Ditto. Remove offset-by-one adjustments from vtable
 	calculations to account for new gc_descr field.
 	* boehm.cc: #include gc_gcj.h.
 	(obj_kind_x, obj_free_list): `#if 0'-ed away.
@@ -2543,10 +2562,10 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	New commentary from HB. Mark the classes vtable.
 	(_Jv_MarkArray): Check that vtable doesn't point to a cleared object.
 	(GC_DEFAULT_DESCR): New #define.
-	(_Jv_BuildGCDescr): New function. Use GC_DEFAULT_DESCR, for now.	
+	(_Jv_BuildGCDescr): New function. Use GC_DEFAULT_DESCR, for now.
 	(_Jv_AllocObj): New parameter `klass'. Use GC_GCJ_MALLOC ().
 	(_Jv_AllocArray): New parameter `klass'. Allocate with GC_MALLOC and
-	scan conservativly if size is less than min_heap_addr. Set vtable 
+	scan conservativly if size is less than min_heap_addr. Set vtable
 	pointer of new object before returning.
 	(_Jv_AllocBytes): Use GC_MALLOC_ATOMIC, not GC_GENERIC_MALLOC.
 	(_Jv_InitGC): Call GC_init_gcj_malloc(). Don't set up marking and
@@ -2557,10 +2576,10 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	* java/lang/Class.h (_Jv_NewObjectArray): No longer a friend.
 	(_Jv_NewPrimArray): Ditto.
 	(_Jv_AllocObj): Declare as a friend.
-	(_Jv_AllocArray): Ditto.	
+	(_Jv_AllocArray): Ditto.
 	* java/lang/natClassLoader.cc (_Jv_FindArrayClass): Copy gc_descr
-	from &ObjectClass into new array class. Remove offset-by-one 
-	adjustments from `method' size calculations to account for gc_descr 
+	from &ObjectClass into new array class. Remove offset-by-one
+	adjustments from `method' size calculations to account for gc_descr
 	field.
 
 2000-09-26  Tom Tromey  <tromey@cygnus.com>
@@ -2607,7 +2626,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	* java/lang/String.java (CASE_INSENSITIVE_ORDER): New static field.
 	Initialize with anonymous class.
 	(compareToIgnoreCase): New method.
-	
+
 	* java/lang/ThreadGroup.java (had_uncaught_exception): New field.
 	(uncaughtException): Set had_uncaught_exception.
 	* prims.cc (JvRunMain): Check value of had_uncaught_exception and
@@ -2693,7 +2712,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 
 2000-09-07  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* Makefile.am (Thread.h): Don't be friends with native threads 
+	* Makefile.am (Thread.h): Don't be friends with native threads
 	functions.
 	* Makefile.in: Rebuilt.
 	* java/lang/Thread.java (interrupt_flag): Make package-private.
@@ -2725,7 +2744,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	calls to `throw'.
 	(send): Undo last patch. Remove the label only.
 	(mcastGrp): Ditto.
-	* java/net/natPlainSocketImpl.cc: Change various `JvThrow' calls to 
+	* java/net/natPlainSocketImpl.cc: Change various `JvThrow' calls to
 	`throw'.
 	* java/net/natInetAdress.cc: Ditto.
 
@@ -2743,7 +2762,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	stack. Synchronize.
 	* java/lang/fdlibm.h: #undef __P if previously defined.
 	* java/lang/natSystem.cc (currentTimeMillis): Remove unused local.
-	* java/net/natPlainDatagramSocketImpl.cc (send): Remove unreachable 
+	* java/net/natPlainDatagramSocketImpl.cc (send): Remove unreachable
 	block.
 	(mcastGrp): Ditto.
 
@@ -2780,7 +2799,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	* java/io/StreamTokenizer.java: Don't throw a
 	NumberFormatException if a field is numeric as far as the
 	StreamTokenizer is concerned but not as far as Double.valueOf() is
-	concerned: return a zero instead.	
+	concerned: return a zero instead.
 
 2000-08-30  Tom Tromey  <tromey@cygnus.com>
 
@@ -2827,7 +2846,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	java/util/SortedSet.java: Imported from GNU Classpath.
 	* Makefile.in: Rebuilt.
 	* Makefile.am: Added new files.
-	
+
 2000-08-26  Anthony Green  <green@redhat.com>
 
 	* Makefile.in: Rebuilt.
@@ -2924,7 +2943,7 @@ Sun Aug 20 12:33:43 2000  Anthony Green  <green@redhat.com>
 	* java/util/jar/JarFile.java: Don't call
 	java.util.zip.ZipFile.getEntry twice.  From Mark Wielaard
 	<mark@klomp.org>.
-	
+
 Sun Aug 20 09:51:48 2000  Anthony Green  <green@redhat.com>
 
 	* java/net/URLClassLoader.java: Find the JarEntry via the JarFile.
@@ -2978,7 +2997,7 @@ Sat Aug 19 11:00:53 2000  Anthony Green  <green@redhat.com>
 
 	* Makefile.in, gcj/Makefile.in: Rebuilt.
 	* Makefile.am (ordinary_java_source_files): Add these new classes.
-	
+
 2000-08-16  Rolf W. Rasmussen  <rolfwr@ii.uib.no>
 
 	* gnu/gcj/awt/ComponentDataBlitOp.java: New file.
@@ -3164,18 +3183,18 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	    John Stracke <francis@ecal.com>
 
 	* gnu/gcj/protocol/http/Connection.java (gotHeaders): Removed.
-	(connect): Don't falsely claim HTTP/1.1 compliance. Call 
+	(connect): Don't falsely claim HTTP/1.1 compliance. Call
 	getHttpHeaders().
 	(disconnect): Don't unset connected flag.
 	(getHeaderField (String)): Call connect() if not connected.
 	(getHeaderField (int)): Ditto.
 	(getHeaderFieldKey): Ditto.
-	(getHttpHeaders): Don't call connect(). 
+	(getHttpHeaders): Don't call connect().
 	* java/net/HttpURLConnection.java (instanceFollowRedirects,
 	gotResponseVals): New fields.
 	(getResponseCode): Call getResponseVals() conditionally.
 	(getResponseMessage): Ditto.
-	(getResponseVals): Call connect(). Don't throw FileNotFoundException.	
+	(getResponseVals): Call connect(). Don't throw FileNotFoundException.
 
 2000-08-09  Bryce McKinlay  <bryce@albatross.co.nz>
 
@@ -3196,8 +3215,8 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	* java/awt/geom/Point2D.java (clone): Ditto.
 	* java/awt/geom/RectangularShape.java (clone): Ditto.
 	* java/awt/image/ColorModel.java (bits, cspace, transparency, hasAlpha,
-	isAlphaPremultiplied): Make package-private, not private.	
-	
+	isAlphaPremultiplied): Make package-private, not private.
+
 2000-08-08  Tom Tromey  <tromey@cygnus.com>
 
 	* gnu/gcj/convert/Input_UTF8.java (read): Fixed handling of
@@ -3276,7 +3295,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	* java/awt/datatransfer/Clipboard.java: Ditto.
 	* java/awt/Component.java (treeLock): Now a static String. Add comment.
 	* java/awt/MenuItem.java (MenuItem): Add default constructor.
-	* java/awt/Toolkit.java: Added all methods from J2SE 1.3 API docs. 
+	* java/awt/Toolkit.java: Added all methods from J2SE 1.3 API docs.
 	Some commented out. Partially implemented.
 	* java/awt/natToolkit.cc: Removed file.
 
@@ -3335,7 +3354,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 2000-07-31  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/awt/Component.java (toString): Implemented.
-	* java/awt/Container.java (addImpl): Remove FIXME. Only call 
+	* java/awt/Container.java (addImpl): Remove FIXME. Only call
 	dispatchEvent() to dispatch the event.
 	(removeImpl): Ditto.
 
@@ -3531,7 +3550,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	* java/awt/geom/RectangularShape.java: New file.
 	* java/awt/geom/Point2D.java (Double, Float): New inner classes.
 	* java/awt/geom/IllegalPathStateException.java: New file.
-	
+
 	* scripts/showval.java: New file.
 
 	* scripts/classes.pl (scan): Print inner classes properly.
@@ -3582,26 +3601,26 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	* java/util/ResourceBundle.java (getLocale): stub.
 	* Makefile.am: Added new AWT classes.
 	* Makefile.in: Rebuilt.
-	* java/awt/AWTEvent.java: Add EVENT_MASK constants, isConsumed, 
+	* java/awt/AWTEvent.java: Add EVENT_MASK constants, isConsumed,
 	constructors. Fix toString() and paramString().
 	* java/awt/AWTEventMulticaster.java: New class. Implemented.
 	* java/awt/CheckboxGroup.java: New class.
 	* java/awt/ColorModel.java: New class.
-	* java/awt/Component.java: Added stubs for most methods. Implemented 
+	* java/awt/Component.java: Added stubs for most methods. Implemented
 	event dispatch.
 	* java/awt/Container.java: ditto.
 	* java/awt/ComponentOrientation.java: New class. Partly implemented.
 	* java/awt/Cursor.java: ditto.
 	* java/awt/Event.java: Fix paramString().
 	* java/awt/EventQueue.java: New class. Implemented.
-	* java/awt/Font.java: Added additional stub methods. Implemented 
+	* java/awt/Font.java: Added additional stub methods. Implemented
 	toString().
 	* java/awt/FontMetrics.java: New class. Stubbed.
-	* java/awt/GraphicsConfiguration.java: New class. Complete, except for 
+	* java/awt/GraphicsConfiguration.java: New class. Complete, except for
 	Java2D parts.
 	* java/awt/Insets.java: New class. Implemented.
 	* java/awt/Menu.java: Add new methods. Partially implemented.
-	* java/awt/MenuItem.java: Add new methods and fields. Partially 
+	* java/awt/MenuItem.java: Add new methods and fields. Partially
 	implemented.
 	* java/awt/MenuShortcut.java: New class. Implemented.
 	* java/awt/Panel.java: New class. Placeholder.
@@ -3618,7 +3637,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	* java/awt/event/HierarchyEvent.java: New class.
 	* java/awt/event/HierarchyListener.java: New class.
 	* java/awt/event/InputMethodEvent.java: Implement paramString().
-	* java/awt/event/InvocationEvent.java: Implement paramString(). Throw 
+	* java/awt/event/InvocationEvent.java: Implement paramString(). Throw
 	exception if !catchExceptions.
 	* java/awt/event/ItemEvent.java: Implement paramString().
 	* java/awt/event/KeyEvent.java: Implement paramString().
@@ -3626,7 +3645,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	* java/awt/event/PaintEvent.java: Implement paramString().
 	* java/awt/event/TextEvent.java: Implement paramString().
 	* java/awt/event/WindowEvent.java: Implement paramString().
-	
+
 	AWT Peer interfaces:
 	* java/awt/peer/ButtonPeer.java: New file.
 	* java/awt/peer/ListPeer.java: New file.
@@ -3691,7 +3710,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 
 	* java/lang/ThreadGroup.java: Added synchronized flag to many methods.
 	(destroyed_flag): Removed.
-	(isDestroyed, removeGroup, removeThread): Test for parent == null.	
+	(isDestroyed, removeGroup, removeThread): Test for parent == null.
 	(activeCount): Added spec note.
 
 2000-06-27  Warren Levy  <warrenl@cygnus.com>
@@ -3766,8 +3785,8 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	* prims.cc (_Jv_RunMain): Don't use `main_group'.
 	* gnu/gcj/runtime/FirstThread.java: Remove ThreadGroup constructor
 	argument.
-	* java/lang/Thread.java (Thread): Bootstrap initial thread from 
-	ThreadGroup.root if Thread.currentThread is null. Honour the 
+	* java/lang/Thread.java (Thread): Bootstrap initial thread from
+	ThreadGroup.root if Thread.currentThread is null. Honour the
 	ThreadGroup's max priority setting.
 
 2000-06-18  Tom Tromey  <tromey@cygnus.com>
@@ -3793,11 +3812,11 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 2000-06-15  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Fix for PR java.lang/258:
-	* prims.cc (_Jv_PrimClass): Set state of primitive class to 
+	* prims.cc (_Jv_PrimClass): Set state of primitive class to
 	JV_STATE_DONE, to prevent accidental initialization.
-	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Call 
+	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Call
 	_Jv_InterfaceAssignableFrom if target is an interface and source is an
-	interface or an abstract class.	Remove redundant initializeClass calls. 
+	interface or an abstract class.	Remove redundant initializeClass calls.
 	Remove duplicate if_idt test.
 	(_Jv_InterfaceAssignableFrom): New function.
 	* java/lang/Class.h (_Jv_InterfaceAssignableFrom): Prototype.
@@ -3839,13 +3858,13 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	Fix for PR libgcj/226:
 	* java/lang/Class.h (_Jv_InitClass): Don't call __builtin_expect,
 	since this is an installed header.
-	
+
 	Fix for PR libgcj/228:
-	* java/util/zip/ZipFile (getInputStream): Create inflater with 
+	* java/util/zip/ZipFile (getInputStream): Create inflater with
 	nowrapper option.
-	
+
 	* java/util/zip/natInflater.cc (inflate): Throw zlib's error message
-	with DataFormatException.	
+	with DataFormatException.
 
 2000-05-20  Tom Tromey  <tromey@cygnus.com>
 
@@ -3990,7 +4009,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 
 2000-04-17  Andrew Haley  <aph@cygnus.com>
 
-	* Makefile.am: Add new files: 
+	* Makefile.am: Add new files:
 	gnu/gcj/io/SimpleSHSStream.java, gnu/gcj/io/natSimpleSHSStream.cc,
 	gnu/gcj/io/shs.cc.
 	* Makefile.in: Rebuilt.
@@ -4014,12 +4033,12 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	punctuation from the classname of an array element.
 
 	* gcj/javaprims.h: Add SimpleDigestStream.
-	
+
 2000-04-17  Andrew Haley  <aph@cygnus.com>
 
 	* java/lang/natClass.cc (getPrivateField): Make recursive calls
 	to getPrivateField for superclasses.
- 
+
 2000-04-14  Andrew Haley  <aph@cygnus.com>
 
 	* Makefile.am: Add new files:
@@ -4036,7 +4055,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	* java/lang/natClass.cc (getPrivateField): New method.
 	(getPrivateMethod): Ditto.
 	(_Jv_IsAssignableFrom): Return false for Interface with no IDT.
-	* gcj/javaprims.h: Add serialization classes.	
+	* gcj/javaprims.h: Add serialization classes.
 	* java/io/ObjectInputStream.java (setBooleanField): Rewrite in Java.
 	(setByteField): Ditto.
 	(setCharField): Ditto.
@@ -4062,7 +4081,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	(getDefinedSUID): Ditto.
 	* java/io/natObjectOutputStream.cc: New file.
 	* java/io/natObjectInputStream.cc: New file.
-	
+
 2000-04-13  Warren Levy  <warrenl@cygnus.com>
 
 	* java/io/ObjectInputStream.java: Temporary workarounds for compiler
@@ -4279,7 +4298,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	* sysdep/ia64.c (rse_address_add): Delete.
 	(IS_NaT_COLLECTION_ADDR): Delete.
 	(ia64_backtrace_helper): check for null unwind_info.
-	
+
 	* sysdep/ia64-frame.h: add calc_caller_bsp.
 
 	* java/lang/natThrowable.cc (printRawStackTrace): Flush
@@ -4289,7 +4308,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	(_Jv_remI): Likewise.
 	(_Jv_divJ): Likewise.
 	(_Jv_remJ): Likewise.
-	
+
 	* interpret.cc (continue1): Use divide subroutines to guarantee
 	correct Java standard behaviour.
 	Floating-point division should not abort; make it so.
@@ -4310,7 +4329,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	lookups on ia64.
 	* java/lang/natThrowable.cc(printRawStackTrace): Don't print out a
 	blank line.
-	
+
 2000-03-22  Andrew Haley  <aph@cygnus.com>
 
 	* configure.host: Add -funwind-tables for IA64.
@@ -4321,7 +4340,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	* sysdep/ia64-frame.h: New file.
 	* configure.in: Add sysdep/ia64.c for ia64.
 	* configure: Rebuilt.
-	
+
 2000-03-17  Andrew Haley  <aph@cygnus.com>
 
 	* java/lang/natString.cc: Remove `register' keyword.
@@ -4383,7 +4402,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	(StringBuffer (String)): Use DEFAULT_CAPACITY.
 
 	(replace): Calculate length for arraycopy() correctly.
-	
+
 2000-05-09  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/StringBuffer.java (toString): Don't mark buffer as
@@ -4437,7 +4456,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 	(_Jv_IsInstanceOf): Ditto.
 	(_Jv_CheckCast): Ditto.
 	(_Jv_CheckArrayStore): Ditto.
-	* java/lang/Class.h (_Jv_InitClass): Ditto.	
+	* java/lang/Class.h (_Jv_InitClass): Ditto.
 	* java/lang/natObject.cc (_Jv_MonitorEnter): __builtin_expect `false',
 	not `0'.
 	(notify): Ditto.
@@ -4661,7 +4680,7 @@ Sun Aug 13 19:53:01 2000  Anthony Green  <green@redhat.com>
 
 	* include/posix-threads.h (_Jv_MutexUnlock): Replace
 	_JV_NOT_OWNER.
-	
+
 2000-04-08  Anthony Green  <green@cygnus.com>
 
 	* posix-threads.cc (_Jv_MutexLock): Moved back to posix-threads.h.
@@ -4767,7 +4786,7 @@ Sun Apr  2 08:27:18 2000  Anthony Green  <green@redhat.com>
 	* configure.in: Add --disable-jvmpi.
 	* include/config.h.in: Rebuilt.
 	* acconfig.h: Add ENABLE_JVMPI.
-	 
+
 	* include/jvm.h: Declare _Jv_DisableGC and _Jv_EnableGC.
 	(_Jv_JVMPI_Notify_OBJECT_ALLOC): New define.
 	(_Jv_JVMPI_Notify_THREAD_END): New define.
@@ -4793,12 +4812,12 @@ Sun Apr  2 08:27:18 2000  Anthony Green  <green@redhat.com>
 	(disable_gc_mutex): Declare.
 	* nogc.cc (_Jv_DisableGC): New function.
 	(_Jv_EnableGC): New function.
-	  
+
 	* jni.cc (_Jv_JNI_GetEnv): Handle JVMPI interface requests.
 	(_Jv_JVMPI_Interface): Define.
 	(jvmpiEnableEvent): New function.
 	(_Jv_JNI_Init): Initialize _Jv_JVMPI_Interface.
-	  
+
 	* include/jvmpi.h: New file.
 
 2000-03-27  Bryce McKinlay  <bryce@albatross.co.nz>
@@ -4815,10 +4834,10 @@ Sun Apr  2 08:27:18 2000  Anthony Green  <green@redhat.com>
 	the target thread by signaling its wait condition.
 	(_Jv_ThreadInitData): Set `thread_obj' in the thread data struct,
 	not the starter struct. Initialize wait_mutex and wait_cond.
-	(_Jv_MutexLock): New recursive mutex implementation. Moved from 
+	(_Jv_MutexLock): New recursive mutex implementation. Moved from
 	posix-threads.h.
 	(_Jv_MutexUnlock): Ditto.
-	(really_start): Set info->data->thread from pthread_self() to work 
+	(really_start): Set info->data->thread from pthread_self() to work
 	around a race condition. Destroy wait_mutex and wait_cond when run()
 	returns.
 	* java/lang/Thread.java: (isInterrupted_): Renamed to overloaded
@@ -4827,7 +4846,7 @@ Sun Apr  2 08:27:18 2000  Anthony Green  <green@redhat.com>
 	startable_flag: New private field.
 	(Thread): Initialize `startable_flag'.
 	(toString): Check for null thread group.
-	* java/lang/natThread.cc: (struct natThread): New fields 
+	* java/lang/natThread.cc: (struct natThread): New fields
 	`join_mutex', `join_cond'. Removed fields `joiner', `next'.
 	(class locker): Removed.
 	(initialize_native): Initialize `join_cond' and `join_mutex'.
@@ -4842,7 +4861,7 @@ Sun Apr  2 08:27:18 2000  Anthony Green  <green@redhat.com>
 	#defines and #ifdefs.
 	(struct _Jv_Thread_t): New fields `thread_obj', `wait_cond',
 	`wait_mutex', `next'.
-	(struct _Jv_ConditionVariable_t): Define as a struct instead of 
+	(struct _Jv_ConditionVariable_t): Define as a struct instead of
 	directly mapping to pthread_cond_t.
 	(struct _Jv_Mutex_t): New recursive implementation.
 	(_Jv_PthreadCheckMonitor): Reimplemented. Simple `owner' check.
@@ -4855,10 +4874,10 @@ Sun Apr  2 08:27:18 2000  Anthony Green  <green@redhat.com>
 	(_Jv_MutexDestroy): Ditto.
 	(_Jv_CondDestroy): Removed.
 	(_Jv_PthreadGetMutex): Removed.
-	* include/win32-threads.h: (_Jv_CondNotify): Guess _JV_NOT_OWNER on an 
+	* include/win32-threads.h: (_Jv_CondNotify): Guess _JV_NOT_OWNER on an
 	error. Add a FIXME about this.
 	(_Jv_CondNotifyAll): Ditto.
-	* win32-threads.cc: (_Jv_CondWait): Return 0 on a timeout. Guess 
+	* win32-threads.cc: (_Jv_CondWait): Return 0 on a timeout. Guess
 	_JV_NOT_OWNER on other errors. Add FIXME.
 
 2000-03-26  Tom Tromey  <tromey@cygnus.com>
@@ -4895,7 +4914,7 @@ Sun Apr  2 08:27:18 2000  Anthony Green  <green@redhat.com>
 	* interpret.cc (PUSHL, PUSHD, POPL, POPD, LOADL, LOADD, STOREL,
 	STORED): Define differently on a 64 bit machine.
 	(continue1): Use ffi_java_raw_call when appropriate.
- 
+
 2000-03-24  Warren Levy  <warrenl@cygnus.com>
 
 	* java/math/BigInteger.java(divide): Handle the special case when
@@ -4926,9 +4945,9 @@ Sun Apr  2 08:27:18 2000  Anthony Green  <green@redhat.com>
 
 	* java/lang/natClass.cc (isInstance): Initialize `this'.
 	(isAssignableFrom): Initialize `this' and `klass'.
-	(_Jv_IsAssignableFrom): If an interface has no idt, it is not 
+	(_Jv_IsAssignableFrom): If an interface has no idt, it is not
 	implemented by any loaded class, so return false.
-	* java/lang/natClass.cc (isInstance): Use _Jv_IsAssignableFrom(), 
+	* java/lang/natClass.cc (isInstance): Use _Jv_IsAssignableFrom(),
 	not Class.isAssignableFrom(). Use JV_CLASS, not getClass().
 
 2000-03-19  Warren Levy  <warrenl@cygnus.com>
@@ -5123,17 +5142,17 @@ Sun Apr  2 08:27:18 2000  Anthony Green  <green@redhat.com>
 	* java/lang/natClass.cc (isAssignableFrom): Move functionality to
 	inline function `_Jv_IsAssignableFrom'. Use that function.
 	(isInstance): Declare `inline'.
-	(initializeClass): Get lock on class before checking `state'. Unlock 
-	before calling resolveClass0. Call _Jv_PrepareConstantTimeTables with 
+	(initializeClass): Get lock on class before checking `state'. Unlock
+	before calling resolveClass0. Call _Jv_PrepareConstantTimeTables with
 	the lock held.
 	(_Jv_LookupInterfaceMethod): Use _Jv_GetMessageString.
-	(_Jv_IsAssignableFrom): New inline function. Test assignability using 
+	(_Jv_IsAssignableFrom): New inline function. Test assignability using
 	class->depth and ancestor table.
 	(_Jv_IsInstanceOf): Use _Jv_IsAssignableFrom.
 	(_Jv_CheckCast): Move from prims.cc. Use JV_CLASS and
 	_Jv_IsAssignableFrom.
 	(_Jv_CheckArrayStore): Ditto.
-	(_Jv_LookupInterfaceMethodIdx): New function. 
+	(_Jv_LookupInterfaceMethodIdx): New function.
 	INITIAL_IOFFSETS_LEN, INITIAL_IFACES_LEN: New #defines.
 	(_Jv_PrepareConstantTimeTables): New function.
 	(_Jv_IndexOf): Ditto.
@@ -5425,7 +5444,7 @@ Sun Apr  2 08:27:18 2000  Anthony Green  <green@redhat.com>
 	* java/lang/natRuntime.cc (_load): Include library path with
 	exception message.
 
-	* java/lang/natSystem.cc (init_properties): set java.lang.classpath 
+	* java/lang/natSystem.cc (init_properties): set java.lang.classpath
 	property.
 
 	* java/lang/natThread.cc (dumpStack): Removed.
@@ -5565,7 +5584,7 @@ Fri Feb 11 19:48:08 2000  Anthony Green  <green@cygnus.com>
 	* java/lang/natThread.cc (stop): Don't abort, throw an exception
 	instead.
 	(suspend): Ditto.
-	
+
 2000-02-09  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natRuntime.cc (_load): Call add_library.
@@ -5962,9 +5981,9 @@ Tue Jan 25 08:51:16 2000  Tom Tromey  <tromey@ferrule.cygnus.com>
 	(printStackTrace): Call native method to do this.
 	(Throwable): Call fillInStackTrace.
 	(stackTrace): New variable.
-	
+
 	* include/jvm.h: Add _Jv_ThisExecutable functions.
-	
+
 	* prims.cc: (_Jv_execName): New variable.
 	(catch_segv): Call fillInStackTrace.
 	(catch_fpe): Ditto.

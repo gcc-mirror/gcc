@@ -61,6 +61,7 @@ static void handle_pragma_vtable PARAMS ((cpp_reader *));
 static void handle_pragma_unit PARAMS ((cpp_reader *));
 static void handle_pragma_interface PARAMS ((cpp_reader *));
 static void handle_pragma_implementation PARAMS ((cpp_reader *));
+static void handle_pragma_java_exceptions PARAMS ((cpp_reader *));
 static void cxx_init PARAMS ((void));
 static void cxx_finish PARAMS ((void));
 static void cxx_init_options PARAMS ((void));
@@ -680,6 +681,8 @@ init_cp_pragma ()
   cpp_register_pragma (parse_in, "GCC", "interface", handle_pragma_interface);
   cpp_register_pragma (parse_in, "GCC", "implementation",
 		       handle_pragma_implementation);
+  cpp_register_pragma (parse_in, "GCC", "java_exceptions",
+		       handle_pragma_java_exceptions);
 }
 
 const char *
@@ -1176,6 +1179,18 @@ handle_pragma_implementation (dfile)
       ifiles->next = impl_file_chain;
       impl_file_chain = ifiles;
     }
+}
+
+/* Indicate that this file uses Java-personality exception handling.  */
+static void
+handle_pragma_java_exceptions (dfile)
+     cpp_reader *dfile ATTRIBUTE_UNUSED;
+{
+  tree x;
+  if (c_lex (&x) != CPP_EOF)
+    warning ("junk at end of #pragma GCC java_exceptions");
+
+  choose_personality_routine (lang_java);
 }
 
 void

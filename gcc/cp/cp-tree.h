@@ -4061,6 +4061,7 @@ extern tree build_throw				PARAMS ((tree));
 extern void mark_all_runtime_matches            PARAMS ((void));
 extern int nothrow_libfn_p			PARAMS ((tree));
 extern void check_handlers			PARAMS ((tree));
+extern void choose_personality_routine		PARAMS ((enum languages));
 
 /* in expr.c */
 extern void init_cplus_expand			PARAMS ((void));

@@ -779,6 +779,31 @@ if (i >= count)
    throw new java::lang::IndexOutOfBoundsException();
 </programlisting>
 </para>
+<para>
+Normally, GNU C++ will automatically detect when you are writing C++
+code that uses Java exceptions, and handle them appropriately.
+However, if C++ code only needs to execute destructors when Java
+exceptions are thrown through it, GCC will guess incorrectly.  Sample
+problematic code:
+<programlisting>
+  struct S { ~S(); };
+  extern void bar();    // is implemented in Java and may throw exceptions
+  void foo()
+  {
+    S s;
+    bar();
+  }
+</programlisting>
+The usual effect of an incorrect guess is a link failure, complaining of
+a missing routine called <literal>__gxx_personality_v0</literal>.
+</para>
+<para>
+You can inform the compiler that Java exceptions are to be used in a
+translation unit, irrespective of what it might think, by writing
+<literal>#pragma GCC java_exceptions</literal> at the head of the
+file.  This <literal>#pragma</literal> must appear before any
+functions that throw or catch exceptions, or run destructors when
+exceptions are thrown through them.</para>
 </sect1>
 
 <sect1><title>Synchronization</title>

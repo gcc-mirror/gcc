@@ -2344,7 +2344,6 @@ libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	@echo $(libgcj_la_OBJECTS) > libgcj.objectlist;
 	@echo $(libgcj_la_LIBADD) >> libgcj.objectlist;
 	$(libgcj_la_LINK) -objectlist libgcj.objectlist \
-	../libstdc++-v3/libsupc++/libsupc++convenience.la \
 	../libffi/libfficonvenience.la \
 	-rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(LIBS)
 

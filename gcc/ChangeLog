@@ -1,3 +1,7 @@
+2001-05-19  Zack Weinberg  <zackw@stanford.edu>
+
+	* extend.texi: Document #pragma GCC java_exceptions.
+
 2001-05-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* invoke.texi: Document meaning of -pedantic when -std=gnu* is

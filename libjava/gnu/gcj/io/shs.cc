@@ -10,6 +10,10 @@
  * Comments to pgut1@cs.aukuni.ac.nz
  */
 
+// Force C++ compiler to use Java-style EH, so we don't have to link with
+// libstdc++.
+#pragma GCC java_exceptions
+
 #include <string.h>
 #include "shs.h"
 
