@@ -344,14 +344,6 @@ LIBICONV = @LIBICONV@
 # List of internationalization subdirectories.
 INTL_SUBDIRS = intl
 
-# Change this to a null string if obstacks are installed in the
-# system library.
-OBSTACK=obstack.o
-
-# The following object files is used by genautomata.
-GETRUNTIME = getruntime.o
-HASHTAB = hashtab.o
-
 # The GC method to be used on this system.
 GGC=@GGC@.o
 
@@ -483,12 +475,6 @@ HOST_CFLAGS= @HOST_CFLAGS@ -DGENERATOR_FILE
 # Native linker and preprocessor flags.  For x-fragment overrides.
 HOST_LDFLAGS=$(LDFLAGS)
 HOST_CPPFLAGS=$(ALL_CPPFLAGS)
-HOST_OBSTACK=$(OBSTACK)
-HOST_VFPRINTF=$(VFPRINTF)
-HOST_DOPRINT=$(DOPRINT)
-HOST_GETRUNTIME=$(GETRUNTIME)
-HOST_HASHTAB=$(HASHTAB)
-HOST_STRSTR=$(STRSTR)
 
 # Actual name to use when installing a native compiler.
 GCC_INSTALL_NAME = `echo gcc|sed '$(program_transform_name)'`
@@ -612,17 +598,8 @@ ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 LIBIBERTY = ../libiberty/libiberty.a
 BUILD_LIBIBERTY = @FORBUILD@/libiberty/libiberty.a
 
-USE_HOST_OBSTACK= ` case "${HOST_OBSTACK}" in ?*) echo ${HOST_PREFIX}${HOST_OBSTACK} ;; esac `
-USE_HOST_VFPRINTF= ` case "${HOST_VFPRINTF}" in ?*) echo ${HOST_PREFIX}${HOST_VFPRINTF} ;; esac `
-USE_HOST_DOPRINT= ` case "${HOST_DOPRINT}" in ?*) echo ${HOST_PREFIX}${HOST_DOPRINT} ;; esac `
-USE_HOST_GETRUNTIME= ` case "${HOST_GETRUNTIME}" in ?*) echo ${HOST_PREFIX}${HOST_GETRUNTIME} ;; esac `
-USE_HOST_HASHTAB= ` case "${HOST_HASHTAB}" in ?*) echo ${HOST_PREFIX}${HOST_HASHTAB} ;; esac `
-USE_HOST_STRSTR= ` case "${HOST_STRSTR}" in ?*) echo ${HOST_PREFIX}${HOST_STRSTR} ;; esac `
-
-# Dependency on the intl, portability libraries, obstack or whatever
-# library facilities are not installed in the system libraries.
-# We don't use USE_* because backquote expansion doesn't work in deps.
-LIBDEPS= $(INTLLIBS) $(LIBIBERTY) $(OBSTACK) $(VFPRINTF) $(DOPRINT) $(STRSTR)
+# Dependencies on the intl and portability libraries.
+LIBDEPS= $(INTLDEPS) $(LIBIBERTY)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
@@ -1343,17 +1320,6 @@ line-map.o: line-map.c line-map.h intl.h $(CONFIG_H) $(SYSTEM_H)
 ggc-none.o: ggc-none.c $(GCONFIG_H) $(SYSTEM_H) $(GGC_H)
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-obstack.o: $(srcdir)/../libiberty/obstack.c $(GCONFIG_H)
-	rm -f obstack.c
-	$(LN_S) $(srcdir)/../libiberty/obstack.c obstack.c
-	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) \
-		obstack.c $(OUTPUT_OPTION)
-
-getruntime.o: $(srcdir)/../libiberty/getruntime.c $(CONFIG_H)
-	rm -f getruntime.c
-	$(LN_S) $(srcdir)/../libiberty/getruntime.c getruntime.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) getruntime.c
-
 prefix.o: prefix.c $(CONFIG_H) $(SYSTEM_H) Makefile prefix.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	-DPREFIX=\"$(prefix)\" \
@@ -1904,9 +1870,12 @@ genattr$(build_exeext) : genattr.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HO
 genattr.o : genattr.c $(RTL_H) $(HCONFIG_H) $(SYSTEM_H) errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattr.c $(OUTPUT_OPTION)
 
-genattrtab$(build_exeext) : genattrtab.o genautomata.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_VARRAY) $(HOST_PREFIX)$(HOST_GETRUNTIME) $(HOST_LIBDEPS)
+genattrtab$(build_exeext) : genattrtab.o genautomata.o \
+  $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_VARRAY) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genattrtab.o genautomata.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_VARRAY) $(USE_HOST_GETRUNTIME) $(HOST_LIBS) -lm
+	 genattrtab.o genautomata.o \
+	 $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_VARRAY) \
+	 $(HOST_LIBS) -lm
 
 genattrtab.o : genattrtab.c $(RTL_H) $(OBSTACK_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h $(GGC_H) gensupport.h genattrtab.h
@@ -1961,46 +1930,18 @@ $(HOST_PREFIX_1)bitmap.o: $(srcdir)/bitmap.c $(HCONFIG_H) $(SYSTEM_H) $(RTL_H) \
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/bitmap.c > $(HOST_PREFIX)bitmap.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)bitmap.c $(OUTPUT_OPTION)
 
-$(HOST_PREFIX_1)obstack.o: $(srcdir)/../libiberty/obstack.c $(HCONFIG_H)
-	rm -f $(HOST_PREFIX)obstack.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/obstack.c > $(HOST_PREFIX)obstack.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)obstack.c $(OUTPUT_OPTION)
-
-$(HOST_PREFIX_1)getruntime.o: $(srcdir)/../libiberty/getruntime.c
-	rm -f $(HOST_PREFIX)getruntime.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/getruntime.c > $(HOST_PREFIX)getruntime.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)getruntime.c $(OUTPUT_OPTION)
-
-$(HOST_PREFIX_1)hashtab.o: $(srcdir)/../libiberty/hashtab.c
-	rm -f $(HOST_PREFIX)hashtab.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/hashtab.c > $(HOST_PREFIX)hashtab.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)hashtab.c $(OUTPUT_OPTION)
-
-$(HOST_PREFIX_1)vfprintf.o: $(srcdir)/../libiberty/vfprintf.c $(HCONFIG_H)
-	rm -f $(HOST_PREFIX)vfprintf.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/vfprintf.c > $(HOST_PREFIX)vfprintf.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)vfprintf.c $(OUTPUT_OPTION)
-
-$(HOST_PREFIX_1)doprint.o: doprint.c $(HCONFIG_H)
-	rm -f $(HOST_PREFIX)doprint.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/doprint.c > $(HOST_PREFIX)doprint.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)doprint.c $(OUTPUT_OPTION)
-
-$(HOST_PREFIX_1)strstr.o: $(srcdir)/../libiberty/strstr.c $(HCONFIG_H)
-	rm -f $(HOST_PREFIX)strstr.c
-	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/../libiberty/strstr.c > $(HOST_PREFIX)strstr.c
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)strstr.c $(OUTPUT_OPTION)
-
 $(HOST_PREFIX_1)errors.o: errors.c $(HCONFIG_H) $(SYSTEM_H) errors.h
 	rm -f $(HOST_PREFIX)errors.c
 	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/errors.c > $(HOST_PREFIX)errors.c
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(HOST_PREFIX)errors.c $(OUTPUT_OPTION)
 
-
-# This satisfies the dependency that we get if you cross-compile a compiler
-# that does not need to compile doprint or whatever.
-$(HOST_PREFIX_1):
-	$(STAMP) $(HOST_PREFIX_1)
+$(HOST_PREFIX_1)varray.o: varray.c $(HCONFIG_H) $(SYSTEM_H) varray.h $(RTL_H) \
+  $(TREE_H) bitmap.h errors.h
+	rm -f $(HOST_PREFIX)varray.c
+	sed -e 's/config[.]h/hconfig.h/' $(srcdir)/varray.c > \
+		$(HOST_PREFIX)varray.c
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
+		$(HOST_PREFIX)varray.c $(OUTPUT_OPTION)
 
 $(HOST_PREFIX_1)ggc-none.o: ggc-none.c $(HCONFIG_H) $(SYSTEM_H) $(GCC_H)
 	rm -f $(HOST_PREFIX)ggc-none.c

@@ -1,3 +1,11 @@
+2002-05-03  Zack Weinberg  <zack@codesourcery.com>
+
+	* Re-apply patch accidentally reverted with
+	DFA scheduler merge: remove all rules and variables to slurp
+	source files out of libiberty and rebuild them with HOST_CC.
+	($(HOST_PREFIX_1)varray.o): New rule.
+	(genattrtab rule): Word wrap.
+
 2002-05-03  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/i386/netbsd64.h (CPP_LP64_SPEC): Define.
@@ -15,7 +23,7 @@
 	(rtx_needs_barrier): Delete reference to cycle_display unspec.
 	(ia64_sched_reorder2): Mention need for cycle display handling
 	once such notes exist.
-	
+
 2002-05-03  Richard Henderson  <rth@redhat.com>
 
 	* real.c (etoasc): Strip most trailing zeros for clarity.
@@ -30,13 +38,13 @@
 
 2002-05-03  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (altivec_expand_binop_builtin): Error out
-        when we get an out of range literal.
-        (altivec_expand_ternop_builtin): Same.
-        (altivec_expand_unop_builtin): Same.
-        (altivec_expand_builtin): Same, for dss.
-        (altivec_expand_builtin): Use trees instead of rtl when
-        determining literal argument validity.
+	* config/rs6000/rs6000.c (altivec_expand_binop_builtin): Error out
+	when we get an out of range literal.
+	(altivec_expand_ternop_builtin): Same.
+	(altivec_expand_unop_builtin): Same.
+	(altivec_expand_builtin): Same, for dss.
+	(altivec_expand_builtin): Use trees instead of rtl when
+	determining literal argument validity.
 
 2002-05-03  David S. Miller  <davem@redhat.com>
 
@@ -53,7 +61,7 @@
 	TARGET_SCHED_CYCLE_DISPLAY): Delete.
 	* doc/md.texi (cycle_display): Don't mention.
 	* doc/tm.texi (TARGET_SCHED_CYCLE_DISPLAY): Likewise.
-	
+
 2002-05-03  Richard Henderson  <rth@redhat.com>
 
 	* recog.c (store_data_bypass_p, if_test_bypass_p): New.
@@ -62,7 +70,7 @@
 	* config/sparc/sparc.c (ultrasparc_store_bypass_p): Remove.
 	* config/sparc/sparc.md: Use store_data_bypass_p instead.
 	* config/sparc/sparc-protos.h: Update.
-	
+
 2002-05-03  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/sparc/netbsd-elf.c (CPP_SUBTARGET_SPEC64): Remove
@@ -81,7 +89,7 @@
 	(min_issue_delay): Set up min_insn_issue_delay for the state.
 	(output_min_issue_delay_table): Interchange the nested loops and
 	and initiate min_insn_issue_delay for states.
-	
+
 Fri May  3 22:59:15 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_optimize_cfg):  Call merge_block only when
