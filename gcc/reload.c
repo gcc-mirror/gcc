@@ -5554,7 +5554,7 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 
   /* If we propose to get the value from the stack pointer or if GOAL is
      a MEM based on the stack pointer, we need a stable SP.  */
-  if (valueno == STACK_POINTER_REGNUM
+  if (valueno == STACK_POINTER_REGNUM || regno == STACK_POINTER_REGNUM
       || (goal_mem && reg_overlap_mentioned_for_reload_p (stack_pointer_rtx,
 							  goal)))
     need_stable_sp = 1;
