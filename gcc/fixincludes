@@ -888,16 +888,56 @@ if [ -r ${LIB}/$file ]; then
 fi
 
 # parameters conflict with C++ new on rs/6000 
-file=stdio.h
+for file in stdio.h unistd.h ; do
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+  fi
+
+  if [ -r ${LIB}/$file ]; then
+    echo Fixing $file, parameter name conflicts
+    sed -e 's@rename(const char \*old, const char \*new)@rename(const char *_old, const char *_new)@' \
+      ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm -f ${LIB}/$file
+    fi
+  fi
+done
+
+# function class(double x) conflicts with C++ keyword on rs/6000 
+file=math.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  if grep 'class[(]' ${LIB}/$file >/dev/null; then
+    echo Fixing $file
+    sed -e '/class[(]/i\
+#ifndef __cplusplus' \
+        -e '/class[(]/a\
+#endif' ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm ${LIB}/$file
+    fi
+  fi
+fi
+
+# NeXT defines 'int wait(union wait*)', which conflicts with Posix.1.
+file=sys/wait.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
   chmod +w ${LIB}/$file 2>/dev/null
 fi
 
-if [ -r ${LIB}/$file ]; then
-  echo Fixing $file, parameter name conflicts
-  sed -e 's@rename(const char \*old, const char \*new)@rename(const char *_old, const char *_new)@' \
-    ${LIB}/$file > ${LIB}/${file}.sed
+if [ -r ${LIB}/$file ] \
+  && grep 'wait[(]union wait' ${LIB}/$file >/dev/null; then
+  echo Fixing $file, bad wait formal
+  sed -e 's@wait(union wait@wait(void@' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm -f ${LIB}/$file
