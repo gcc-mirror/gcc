@@ -259,10 +259,13 @@ open_file (pfile, filename)
     {
       if (!S_ISDIR (file->st.st_mode))
 	return file;
+
       /* If it's a directory, we return null and continue the search
 	 as the file we're looking for may appear elsewhere in the
 	 search path.  */
       errno = ENOENT;
+      close (file->fd);
+      file->fd = -1;
     }
 
   file->err_no = errno;
@@ -556,9 +559,14 @@ find_include_file (pfile, header, type)
   name = (char *) alloca (strlen (fname) + pfile->max_include_len + 2);
   for (; path; path = path->next)
     {
-      memcpy (name, path->name, path->len);
-      name[path->len] = '/';
-      strcpy (&name[path->len + 1], fname);
+      int len = path->len;
+      memcpy (name, path->name, len);
+      /* Don't turn / into // or // into ///; // may be a namespace
+	 escape.  */
+      if (name[len-1] == '/')
+	len--;
+      name[len] = '/';
+      strcpy (&name[len + 1], fname);
       if (CPP_OPTION (pfile, remap))
 	n = remap_filename (pfile, name, path);
       else
