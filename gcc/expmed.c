@@ -2401,6 +2401,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 	  /* We found something cheaper than a multiply insn.  */
 	  int opno;
 	  rtx accum, tem;
+	  enum machine_mode nmode;
 
 	  op0 = protect_from_queue (op0, 0);
 
@@ -2505,12 +2506,21 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		}
 
 	      /* Write a REG_EQUAL note on the last insn so that we can cse
-		 multiplication sequences.  */
+		 multiplication sequences.  Note that if ACCUM is a SUBREG,
+		 we've set the inner register and must properly indicate
+		 that.  */
+
+	      tem = op0, nmode = mode;
+	      if (GET_CODE (accum) == SUBREG)
+		{
+		  nmode = GET_MODE (SUBREG_REG (accum));
+		  tem = gen_lowpart (nmode, op0);
+		}
 
 	      insn = get_last_insn ();
 	      set_unique_reg_note (insn, 
 	      			   REG_EQUAL,
-				   gen_rtx_MULT (mode, op0, 
+				   gen_rtx_MULT (nmode, tem,
 				   	         GEN_INT (val_so_far)));
 	    }
 
