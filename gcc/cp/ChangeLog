@@ -1,3 +1,15 @@
+2000-10-27  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* Make-lang.in: Move all build rules here from Makefile.in,
+	adapt to new context.  Wrap all rules that change the current
+	directory in parentheses.  Expunge all references to $(P).
+	When one command depends on another and they're run all at
+	once, use && to separate them, not ;.  Add OUTPUT_OPTION to
+	all object-file generation rules.  Delete obsolete variables.
+
+	* Makefile.in: Delete.
+	* config-lang.in: Delete outputs= line.
+
 2000-10-26  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* error.c (dump_function_decl): Print no space between

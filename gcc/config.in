@@ -320,8 +320,7 @@
    every opportunity.  This is extremely expensive. */
 #undef ENABLE_GC_ALWAYS_COLLECT
 
-/* Define if you want the preprocessor merged into the C and C++ compilers.
-   This mode is not ready for production use. */
+/* Define if you want the preprocessor merged into the C and C++ compilers. */
 #undef USE_CPPLIB
 
 /* Define if you want the C and C++ compilers to support multibyte

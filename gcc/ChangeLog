@@ -1,3 +1,43 @@
+2000-10-27  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* configure.in: If not NO_MINUS_C_MINUS_O, substitute
+	OUTPUT_OPTION with '-o $@'.  Make zlibdir, zlibinc relative to
+	top level.  Kill oldstyle_subdirs.  Do not include
+	$srcdir/$s/Makefile.in in all_lang_makefiles, but do include
+	$outputs.  Do not run configure.lang from config.status.
+	Rearrange warning-flag logic to correspond to what the
+	makefile wants.  Put special vax stage1 options in
+	@stage1_flags@ not @stage1_warn_cflags@.  Don't do anything
+	with extra_c_objs, extra_cxx_objs, or extra_cpp_objs.
+	(--enable-c-cpplib): AC_SUBST(maybe_cpplib) with "libcpp.a" if
+	switch is given, nothing otherwise.
+	* configure.lang: Delete.
+
+        * Makefile.in: Expunge all traces of extra_c_objs,
+        extra_cxx_objs, and extra_cpp_objs.  Set MAYBE_CPPLIB from
+        @maybe_cpplib@. Add $(MAYBE_CPPLIB) to C_AND_OBJC_OBJS.  Set
+        warning options via a three level scheme so that -pedantic and
+        -Wtraditional are not used for non-C front ends: LOOSE_WARN,
+        STRICT1_WARN, STRICT2_WARN -> $(@D)-warn, GCC_WARN_CFLAGS ->
+        WARN_CFLAGS.  Distinguish STAGE1_CFLAGS from BOOT_CFLAGS.
+	Add -I$(@D) and -I$(srcdir)/$(@D) to INCLUDES.
+	Set OUTPUT_OPTION, ZLIB, ZLIBINC.  Do not set P,
+        LANG_FLAGS_TO_PASS.  Add OUTPUT_OPTION to all object-file
+        generation rules.  Wrap all rules that change the current
+        directory in parentheses; pmake doesn't spawn a new shell for
+        each command.  Expunge all references to $(P).  When one
+        command depends on another and they're run all at once, use &&
+        to separate them, not ;.  Add libgcc_s$(SHLIB_EXT) to files
+        deleted on make clean.  Force OUTPUT_OPTION='-o $@' in stage2
+        and beyond.
+
+	* objc/Make-lang.in: Wrap all rules that change the current
+	directory in parentheses.  Expunge all references to $(P).
+	When one command depends on another and they're run all at
+	once, use && to separate them, not ;.  Add OUTPUT_OPTION to
+	all object-file generation rules.  Delete obsolete variables.
+	* objc/Makefile.in: Delete.
+
 2000-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* calls.c (expand_call): If sibcall_failure is set during pass 1,
@@ -10,7 +50,7 @@
 
 2000-10-26  Richard Henderson  <rth@redhat.com>
 
-	* calls.c (expand_call): Supress sibcall if we have a 
+	* calls.c (expand_call): Supress sibcall if we have a
 	BLKmode return in registers.
 
 2000-10-26  Bernd Schmidt  <bernds@redhat.co.uk>
@@ -63,8 +103,8 @@
 
 2000-10-25  Neil Booth  <neilb@earthling.net>
 
-        * cpp.texi: Update with implementation-defined behavior and
-        internal limits.
+	* cpp.texi: Update with implementation-defined behavior and
+	internal limits.
 
 2000-10-25  Jakub Jelinek  <jakub@redhat.com>
 
@@ -82,14 +122,14 @@ Wed Oct 25 01:02:44 EDT 2000  John Wehle  (john@feith.com)
 
 	* config/mn10300/mn10300.c (secondary_reload_class): Treat pseudos
 	like memory.
-	
+
 2000-10-24  Jim Wilson  <wilson@cygnus.com>
 
 	* expmed.c (store_bit_field): Move integer pun code down after
 	code that calls emit_move_insn for entire register move.
 	* stor-layout.c (compute_record_mode): Revert Mar 25, Aug 18, and
 	Oct 20 changes.  Only store mode in TYPE_MODE if RECORD_TYPE.
-	
+
 2000-10-24  Richard Henderson  <rth@cygnus.com>
 
 	* rtlanal.c (rtx_unstable_p, rtx_varies_p): Don't consider pic
@@ -97,13 +137,13 @@ Wed Oct 25 01:02:44 EDT 2000  John Wehle  (john@feith.com)
 
 2000-10-24  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcse.c (cprop_insn): do not propagate constants into jump_insn
-        for machines with CC0 more than once.
+	* gcse.c (cprop_insn): do not propagate constants into jump_insn
+	for machines with CC0 more than once.
 
 2000-10-24  Richard Henderson <rth@cygnus.com>, Aldy <aldyh@cygnus.com>
 
-        * config/mn10300/mn10300.h (PREFERRED_RELOAD_CLASS): Treat
-        pseudos just like memory.
+	* config/mn10300/mn10300.h (PREFERRED_RELOAD_CLASS): Treat
+	pseudos just like memory.
 
 2000-10-24  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -142,7 +182,7 @@ Wed Oct 25 01:02:44 EDT 2000  John Wehle  (john@feith.com)
 
 2000-10-23  Richard Henderson  <rth@cygnus.com>
 
-	* config/ia64/ia64.c (ia64_expand_prologue): Mark extra 
+	* config/ia64/ia64.c (ia64_expand_prologue): Mark extra
 	output registers as fixed.
 	(ia64_function_epilogue): Undo output fixation.
 
@@ -206,8 +246,8 @@ Wed Oct 18 11:16:40 2000  Donald Lindsay  <dlindsay@cygnus.com>
 2000-10-21  Chandrakala Chavva   <cchavva@redhat.com>
 
 	* libgcc-std.ver (__addvsi3, __addvdi3,  __subvsi3, __subvdi3,
-        __mulvsi3, __negvsi2, __negvdi2, __absvsi2, __absvdi2, __mulvdi3):
-        New functions.
+	__mulvsi3, __negvsi2, __negvdi2, __absvsi2, __absvdi2, __mulvdi3):
+	New functions.
 
 2000-10-22  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -375,7 +415,7 @@ Fri Oct 20 13:33:16 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	if one is still available after register allocation.
 
 2000-10-20  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
- 
+
 	* t-vax: New file.  Don't build modules from libgcc1.c.
 
 Fri Oct 20 00:57:00 EDT 2000  John Wehle  (john@feith.com)
@@ -418,7 +458,7 @@ Fri Oct 20 00:57:00 EDT 2000  John Wehle  (john@feith.com)
 	factor of 2.
 	* config/ia64/ia64.md (movdi_symbolic): Document loss of REG_LABEL
 	notes.
-	
+
 2000-10-19  Chandrakala Chavva   <cchavva@redhat.com>
 
 	* libgcc2.c (_mulvsi3): Change variables u and v to a and b.
@@ -438,47 +478,47 @@ Thu Oct 19 14:25:11 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-10-18  Chandrakala Chavva  <cchavva@redhat.com>
 
-        * expmed.c (expand_mult): Don't do synth_mult optimization for -ftrapv.
-        Use smulv_optab for -ftrapv.
-        (expand_mult_highpart): Use unsigned multiply.
-        (expand_divmod): Special-case division by -1.
-        For EXACT_DIV_EXPR, do right shift first, then the multiply.
-        For complex divide, use abs with unsigned result.
-        * expr.c (force_operand): Use unsigned multiply.
-        (expand_expr): Use overflow-trapping optabs for signed types if
-        flag_trapv.
-        If flag_trapv, don't generate a recursive call with EXPAND_SUM
-        if the type is signed and the original call wasn't EXPAND_SUM or
-        EXPAND_INITIALIZER.
-        * expr.h (addv_optab, subv_optab, smulv_optab, sdivv_optab): Declare.
-        (negv_optab, absv_optab): Declare.
-        * flags.h (flag_trapv): Declare.
-        * genopinit.c (optabs): Add entries for addv_optab, subv_optab,
-        smulv_optab, sdivv_optab, negv_optab and absv_optab.
+	* expmed.c (expand_mult): Don't do synth_mult optimization for -ftrapv.
+	Use smulv_optab for -ftrapv.
+	(expand_mult_highpart): Use unsigned multiply.
+	(expand_divmod): Special-case division by -1.
+	For EXACT_DIV_EXPR, do right shift first, then the multiply.
+	For complex divide, use abs with unsigned result.
+	* expr.c (force_operand): Use unsigned multiply.
+	(expand_expr): Use overflow-trapping optabs for signed types if
+	flag_trapv.
+	If flag_trapv, don't generate a recursive call with EXPAND_SUM
+	if the type is signed and the original call wasn't EXPAND_SUM or
+	EXPAND_INITIALIZER.
+	* expr.h (addv_optab, subv_optab, smulv_optab, sdivv_optab): Declare.
+	(negv_optab, absv_optab): Declare.
+	* flags.h (flag_trapv): Declare.
+	* genopinit.c (optabs): Add entries for addv_optab, subv_optab,
+	smulv_optab, sdivv_optab, negv_optab and absv_optab.
 	(gen_insn): Interpret '$P' as requiring an integer mode,
-        including partial integer modes.
-        * loop.c (emit_iv_add_mult): Use unsigned expand_mult_add.
-        (product_cheap_p): Use unsigned expand_mult.
-        * optabs.c (addv_optab, subv_optab, smulv_optab, sdivv_optab): Define.
-        (negv_optab, absv_optab): Define.
-        (expand_binop): Use overflow-trapping optabs for signed types if
-        flag_trapv.
-        Handle negv_optab libe neg_optab.
-        (expand_abs): Take result_unsignedp argument instead of unsignedp one.
-        Use overflow-trapping optabs for signed result if flag_trapv.
-        (expand_complex_abs): Use overflow-trapping optabs for signed types if
-        flag_trapv.
-        Don't open-code complex absolute-value operation for flag_trapv.
-        (init_optabs): Initialize addv_optab, subv_optab, smulv_optab,
-        sdivv_optab, negv_optab and absv_optab.
-        * toplev.c (flag_trapv): Define.
-        (lang_independent_options f_options): Include flag_trapv.
-        * tree.h (TYPE_TRAP_SIGNED): Define.
-        * libgcc2.c (__addvsi3, __addvdi3, __subvsi3,__subvsi3, __subvdi3,
-        __mulvsi3, __negvsi2, __negvdi2, __absvsi2, __absvdi2, __mulvdi3):
-        New functions.
-        * Makefile.in: add _absvsi2 _absvdi2 _addvsi3 _addvdi3 _subvsi3
-        _subvdi3 _mulvsi3 _mulvdi3 _negvsi2 _negvdi2.
+	including partial integer modes.
+	* loop.c (emit_iv_add_mult): Use unsigned expand_mult_add.
+	(product_cheap_p): Use unsigned expand_mult.
+	* optabs.c (addv_optab, subv_optab, smulv_optab, sdivv_optab): Define.
+	(negv_optab, absv_optab): Define.
+	(expand_binop): Use overflow-trapping optabs for signed types if
+	flag_trapv.
+	Handle negv_optab libe neg_optab.
+	(expand_abs): Take result_unsignedp argument instead of unsignedp one.
+	Use overflow-trapping optabs for signed result if flag_trapv.
+	(expand_complex_abs): Use overflow-trapping optabs for signed types if
+	flag_trapv.
+	Don't open-code complex absolute-value operation for flag_trapv.
+	(init_optabs): Initialize addv_optab, subv_optab, smulv_optab,
+	sdivv_optab, negv_optab and absv_optab.
+	* toplev.c (flag_trapv): Define.
+	(lang_independent_options f_options): Include flag_trapv.
+	* tree.h (TYPE_TRAP_SIGNED): Define.
+	* libgcc2.c (__addvsi3, __addvdi3, __subvsi3,__subvsi3, __subvdi3,
+	__mulvsi3, __negvsi2, __negvdi2, __absvsi2, __absvdi2, __mulvdi3):
+	New functions.
+	* Makefile.in: add _absvsi2 _absvdi2 _addvsi3 _addvdi3 _subvsi3
+	_subvdi3 _mulvsi3 _mulvdi3 _negvsi2 _negvdi2.
 
 2000-10-18  Geoffrey Keating  <geoffk@cygnus.com>
 	    David V. Henkel-Wallace  <gumby@cygnus.com>
@@ -503,7 +543,7 @@ Thu Oct 19 14:25:11 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(flag_no_nonansi_builtin): Likewise.
 	(init_decl_processing): Adjust call to
 	c_common_nodes_and_builtins.
-	
+
 2000-10-18  Marc Espie <espie@openbsd.org>
 
 	* tm.texi (LIBGCC_SPEC): Synch with reality.
@@ -557,18 +597,18 @@ Thu Oct 19 14:25:11 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (init_emit_once): Initialize the const_int_htab
 	earlier.
-	
+
 2000-10-18  Jan Hubicka  <jh@suse.cz>
 
-        * i386.c (ix86_comparison_operator, put_condition_code,
-        ix86_match_ccmode, ix86_cc_mode): Handle CCRCmode.
-        (ix86_expand_strlensi_unroll_1): Use CCRCmode.
-        * i386.h (EXTRA_CC_MODES): Add CCRCmode.
-        * i386.md (adddi and negdi splitter): Use CCRCmode.
-        (add?i_3, add?i_4, add?i_5): Use CCRCmode; swap operands
-        (subsi3_carry): add '*'
-        (addsi3_carry_rc, subsi3_carry_rc, x86_movsicc_0_m1_rc): New.
-        (cmp to add peep2): Use CCRCmode; swap operands.
+	* i386.c (ix86_comparison_operator, put_condition_code,
+	ix86_match_ccmode, ix86_cc_mode): Handle CCRCmode.
+	(ix86_expand_strlensi_unroll_1): Use CCRCmode.
+	* i386.h (EXTRA_CC_MODES): Add CCRCmode.
+	* i386.md (adddi and negdi splitter): Use CCRCmode.
+	(add?i_3, add?i_4, add?i_5): Use CCRCmode; swap operands
+	(subsi3_carry): add '*'
+	(addsi3_carry_rc, subsi3_carry_rc, x86_movsicc_0_m1_rc): New.
+	(cmp to add peep2): Use CCRCmode; swap operands.
 
 2000-10-18  Kazu Hirata  <kazu@hxi.com>
 
@@ -643,13 +683,13 @@ Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
 	* cppinit.c (new_pending_directive) : New option OPT_target__help.
 	(cpp_handle_option): Support this new option.
 	* invoke.texi: Added notes about --target-help option.
-	
+
 2000-10-17  Graham Stott  <grahams@redhat.com>
- 
+
 	* config/i386/i386.md (testqi_1): Add missing operand prefix
 	for operand 0.
 	* config/i386/i386-protos.h: Add missing prototype.
- 
+
 2000-10-17  Diego Novillo  <dnovillo@cygnus.com>
 
 	* config/i386/unix.h (ASM_OUTPUT_MI_THUNK): Symbol
@@ -779,7 +819,7 @@ Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
 2000-10-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (c-parse.c, tradcif.c): Create atomically.
-	
+
 	* objc/Make-lang.in (objc-parse.c): Likewise.
 
 2000-10-13  Richard Earnshaw <rearnsha@arm.com>
@@ -811,29 +851,29 @@ Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
 
 2000-10-12  Mark Mitchell  <mark@codesourcery.com>
 
-	Remove obstacks.  
+	Remove obstacks.
 	* Makefile.in (ggc-callbacks.o): Remove target.
-	(flow.o): Depend on GGC_H.  
+	(flow.o): Depend on GGC_H.
 	* alias.c (init_alias_analysis):
 	Remove ggc_p conditionals.
-	(end_alias_analysis): Likewise.  
+	(end_alias_analysis): Likewise.
 	* basic-block.h (init_flow): New function.
-	(allocate_reg_life_data): Declare.  
+	(allocate_reg_life_data): Declare.
 	* bb-reorder.c	(function_obstack): Replace with ...
 	(flow_obstack): ... new variable.
-	(fixup_reorder_chain): Use it.  
+	(fixup_reorder_chain): Use it.
 	* c-decl.c (ggc_p): Remove.
-	(caller-save.c): Don't call oballoc/obfree.  
+	(caller-save.c): Don't call oballoc/obfree.
 	* combine.c (struct
 	undobuf): Remove storage.
 	(try_combine): Don't call oballoc.
-	(undo_all): Don't call obfree.  
+	(undo_all): Don't call obfree.
 	* cse.c (insert): Use xmalloc, not
 	oballoc.
-	(cse_main): Adjust accordingly.  
+	(cse_main): Adjust accordingly.
 	* dwarf2out.c (save_rtx): Remove
 	obstack code.
-	(dwarf2out_init): Remove ggc_p conditionals.  
+	(dwarf2out_init): Remove ggc_p conditionals.
 	* emit-rtl.c (rtl_obstack): Remove.
 	(gen_rtx_CONST_INT): Remove ggc_p conditionals.
 	(make_insn_raw): Likewise.
@@ -842,19 +882,19 @@ Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
 	(emit_insn): Likewise.
 	(gen_sequence): Likewise.
 	(copy_insn_1): Remove handling of `b' RTL components.
-	(init_emit_once): Remove ggc_p conditionals.  
+	(init_emit_once): Remove ggc_p conditionals.
 	* except.c (create_rethrow_ref): Don't fool with obstacks.
 	(add_partial_entry): Likewise.
 	(call_get_eh_context): Likewise.
 	(begin_protect_partials): Likewise.
-	(protect_with_terminate): Likewise.  
+	(protect_with_terminate): Likewise.
 	* explow.c
-	(plus_constant_wide): Likewise.  
+	(plus_constant_wide): Likewise.
 	* expr.c (init_expr_once):
 	Likewise.
 	(emit_block_move): Likewise.
 	(clear_storage): Likewise.
-	(expand_expr): Likewise.  
+	(expand_expr): Likewise.
 	* flow.c (function_obstack): Remove.
 	(flow_obstack): New variable.
 	(flow_firstobj): Likewise.
@@ -864,7 +904,7 @@ Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
 	(calculate_global_regs_live): Likewise.
 	(allocate_bb_life_data): Make it static.  Likewiwse.
 	(init_flow): New function.
-	(size_int_type_wide): Remove ggc_p conditionals.  
+	(size_int_type_wide): Remove ggc_p conditionals.
 	* function.c
 	(push_function_context_to): Don't call save_tree_status.
 	(pop_function_context_from): Or restore_tree_status.
@@ -874,28 +914,28 @@ Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
 	(insns_for_mem_walk): Don't mess with obstacks.
 	(instantiate_decls): Likewise.
 	(trampoline_address): Likewise.
-	(expand_function_end): Likewise.  
+	(expand_function_end): Likewise.
 	* function.h (sturct function):
 	Remove obstack-related variables.
 	(save_tree_status): Don't declare.
-	(restore_tree_status): Likewise.  
+	(restore_tree_status): Likewise.
 	* gcse.c (compute_can_copy):
-	Don't call oballoc/obfree.  
+	Don't call oballoc/obfree.
 	* genattrtab.c (operate_exp): Remove
 	ggc_p conditionals.
 	(simplify_cond): Likewise.
 	(simplify_test_exp): Don't mess with obstacks.
-	(optimize_attrs): Likewise.  
+	(optimize_attrs): Likewise.
 	* gengenrtl.c (gendef): Don't include
-	ggc_p conditionals.  
-	* ggc-callbacks.c (ggc_p): Remove.  
-	* ggc-none.c (ggc_p): Remove.  
-	* ggc.h (ggc_p): Don't declare.  
+	ggc_p conditionals.
+	* ggc-callbacks.c (ggc_p): Remove.
+	* ggc-none.c (ggc_p): Remove.
+	* ggc.h (ggc_p): Don't declare.
 	* integrate.c (save_for_inline): Don't mess with obstacks.
 	(integrate_decl_tree): Likewise.
-	(output_inline_function): Likewise.  
+	(output_inline_function): Likewise.
 	* lists.c
-	(init_EXPR_INSN_LIST_cache): Likewise.  
+	(init_EXPR_INSN_LIST_cache): Likewise.
 	* loop.c (temp_obstack):
 	Remove.
 	(rtl_obstack): Likewise.
@@ -905,37 +945,37 @@ Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
 	(find_mem_givs): Likewise.
 	(record_biv): Likewise.
 	(general_induction_var): Likewise.
-	(product_cheap_p): Likewse.  
+	(product_cheap_p): Likewse.
 	* optabs.c (init_one_libfunc): Remove
-	ggc_p conditional.  
+	ggc_p conditional.
 	* print-tree.c (debug_tree): Don't use
 	oballoc/obfree.
-	(print_node): Likewise.  
+	(print_node): Likewise.
 	* profile.c (output_func_start_profiler):
-	Remove call to temporary_allocation.  
+	Remove call to temporary_allocation.
 	* reload1.c
-	(eliminate_regs_in_insn): Don't mess with obstacks.  
+	(eliminate_regs_in_insn): Don't mess with obstacks.
 	* resource.c
 	(mark_target_live_regs): Use xmalloc.
-	(free_resource_info): Free the memory.  
+	(free_resource_info): Free the memory.
 	* rtl.c (rtl_obstack):
 	Remove.
 	(rtvec_alloc): Don't mess with obstacks.
 	(rtx_alloc): Likewise.
 	(rtx_free): Remove.
 	(copy_rtx): Don't handle `b' cases.
-	(read_rtx): Use a local rtl_obstack.  
+	(read_rtx): Use a local rtl_obstack.
 	* rtl.h (oballoc): Remove.
 	(obfree): Likewise.
 	(pop_obstacks): Likewise.
 	(push_obstacks): Likewise.
 	(allocate_bb_life_data): Likewise.
 	(allocate_reg_life_data): Likewise.
-	(rtx_free): Likewise.  
+	(rtx_free): Likewise.
 	* sdbout.c (sdbout_queue_anonymous_type):
-	Use tree_cons, not saveable_tree_cons.  
+	Use tree_cons, not saveable_tree_cons.
 	* simplify-rtx.c
-	(cselib_init): Don't mess with obstacks.  
+	(cselib_init): Don't mess with obstacks.
 	* stmt.c
 	(mark_block_nesting): Mark the label_chain.
 	(epxand_label): Use ggc_alloc, not oballoc.
@@ -946,15 +986,15 @@ Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
 	(expand_anon_union_decl): Likewise.
 	(add_case_node): Use xmalloc, not oballoc.
 	(free_case_nodes): New function.
-	(expand_end_case): Call it.  
+	(expand_end_case): Call it.
 	* stor-layout.c (layout_type): Don't
 	mess with obstacks.
-	(layout_type): Likewise.  
+	(layout_type): Likewise.
 	* toplev.c (wrapup_global_declarations):
 	Likewise.
 	(compile_file): Remove ggc_p conditionals.
 	(rest_of_compilation): Call init_flow.  Remove ggc_p conditionals.
-	(decode_f_option): Remove ggc_p conditionals.  
+	(decode_f_option): Remove ggc_p conditionals.
 	* tree.c
 	(function_maybepermanent_obstack): Remove.
 	(maybepermanent_obstack): Likewise.
@@ -1030,7 +1070,7 @@ Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
 	(build_reference_type): Likewise.
 	(build_index_type): Likewise.
 	(build_range_type): Likewise.
-	(dump_tree_statistics): Don't print obstack information.  
+	(dump_tree_statistics): Don't print obstack information.
 	* tree.h
 	(struct tree_common): Remove permanent_flag.
 	(TREE_PERMANENT): Remove.
@@ -1066,7 +1106,7 @@ Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
 	(debug_obstack): Likewise.
 	(rtl_in_current_obstack): Likewise.
 	(rtl_in_saveable_obstack): Likewise.
-	(obfree): Likewise.  
+	(obfree): Likewise.
 	* varasm.c (current_obstack): Remove.
 	(saveable_obstack): Remove.
 	(rtl_obstack): Remove.
@@ -1094,7 +1134,7 @@ Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
 	* config/rs6000/rs6000.c (output_toc): Remove ggc_p conditional.
 	(rs6000_encode_section_info): Likewise.
 	* config/sh/sh.c (get_fpscr_rtx): Likewise.
-	
+
 Thu Oct 12 16:02:31 MET DST 2000 Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (adddi3, subdi3 splitters): Update for new pattern.
@@ -1138,7 +1178,7 @@ Thu Oct 12 16:02:31 MET DST 2000 Jan Hubicka  <jh@suse.cz>
 	the wanted type is not a pointer target.
 
 2000-10-11  Michael Meeks  <mmeeks@gnu.org>
-            Joseph S. Myers  <jsm28@cam.ac.uk>
+	    Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-typeck.c (check_modify_expr): New function.
 	(build_modify_expr): Call it if warn_sequence_point.
@@ -1201,7 +1241,7 @@ Tue Oct 10 23:14:33 2000  Denis Chertykov  <denisc@overta.ru>
 
 2000-10-09  Richard Earnshaw  <rearnsha@arm.com>
 
-	* arm.c: Miscellaneous white space and comment clean-ups.  No 
+	* arm.c: Miscellaneous white space and comment clean-ups.  No
 	functional change.
 	* arm.md: Likewise.
 
@@ -1224,7 +1264,7 @@ Tue Oct 10 23:14:33 2000  Denis Chertykov  <denisc@overta.ru>
 	(conditional execution splits): Split using predication format.
 	(define_cond_exec): Define.
 	* arm.c (arm_print_operand): handle insn predicate.
-	
+
 2000-10-09  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* README.NS32K: Remove file.
@@ -1252,7 +1292,7 @@ Tue Oct 10 23:14:33 2000  Denis Chertykov  <denisc@overta.ru>
 	uses different cache variables.
 	(AM_WITH_NLS): Use GCC_PATH_PROG and GCC_PATH_PROG_WITH_TEST.
 	* configure: Regenerated.
-	
+
 2000-10-08  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (libgcc.mk): Pass SHLIB_EXT, not SHLIB_LIBS.
@@ -1360,7 +1400,7 @@ Tue Oct 10 23:14:33 2000  Denis Chertykov  <denisc@overta.ru>
 	(compute_block_forward_dependences): Use forward_dependency_cache.
 	(schedule_insns): Allocate and free memory for anti/output/forward
 	dependencies caches.
-	
+
 2000-10-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.md (call, call_value): Use `TARGET_SH2' instead of
@@ -1538,7 +1578,7 @@ Mon Oct  2 14:50:14 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* config/float-c4x.h: New.
 	* configure.in (c4x-*): Set float_format to c4x.
-	* configure: Regenerate.	
+	* configure: Regenerate.
 
 2000-10-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -1566,10 +1606,10 @@ Mon Oct  2 14:50:14 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	* config/spur: Likewise.
 	* configure.in: Remove configury bits for above targets.
 	* configure: Regenerated.
-	
+
 	* configure.in: Don't configure chill by default.
 	* configure: Regenerated.
-	
+
 	* c-decl.c (c_expand_body): Don't generate RTL if flag_syntax_only.
 	(lang_mark_false_label_stack): Remove.
 	* c-lex.c (init_c_lex): Add file_info_tree as GC root.  Allocate
@@ -1582,7 +1622,7 @@ Mon Oct  2 14:50:14 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	* ggc-common.c (lang_mark_false_label_stack): Change type.
 	* ggc.h (ggc_alloc_string): Add comment.
 	(ggc_strdup): New function.
-	
+
 Sat Sep 23 19:10:20 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.h (BRANCH_COST): Define as 0.
@@ -1728,16 +1768,16 @@ Fri Sep 29 13:20:42 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(output_message_text): New macro.
 
 	* diagnostic.c (clear_text_info): Rename to
-	output_clear_message_text. 
+	output_clear_message_text.
 	(output_clear): Adjust.
 	(output_finish): Rename to output_finalize_message.  Tweek.
-	(output_to_stream): Adjust. 
+	(output_to_stream): Adjust.
 
 2000-09-28  Neil Booth  <neilb@earthling.net>
 
 	* cpperror.c (_cpp_begin_message):  Do the test for suppression
-        of warnings and pedantic warnings before the "is a warning an
-        error" tests.
+	of warnings and pedantic warnings before the "is a warning an
+	error" tests.
 	* cppinit.c (cpp_handle_option): Remove surplus \n.
 	* cpplex.c (ON_REST_ARG): Delete.
 	(skip_block_comment): Initialise prevc.
@@ -1798,22 +1838,22 @@ Tue 26-Sep-2000 18:25:38 BST  Neil Booth  <neilb@earthling.net>
 
 Tue 26-Sep-2000 00:16:22 BST  Neil Booth  <neilb@earthling.net>
 
-        * cpplex.c (parse_args): Don't set VOID_REST flag.
+	* cpplex.c (parse_args): Don't set VOID_REST flag.
 	(CONTEXT_VARARGS): New flag.
 	(maybe_paste_with_next): Set context earlier in loop.  Use
 	it.  Do varargs test with CONTEXT_VARARGS flag.
 	(push_arg_context): Set CONTEXT_VARARGS flag if we're
 	pushing an argument context for a varargs argument.
 	* cpplib.h (VOID_REST): Delete.
-	* gcc.dg/cpp/vararg1.c: Add test case.   
+	* gcc.dg/cpp/vararg1.c: Add test case.
 
 2000-09-25  Branko Cibej  <branko.cibej@hermes.si>
 
-        * flags.h:  Declare warning flag warn_system_headers.
-        * toplev.c:  Define it.
-        (W_options): Add option -Wsystem-headers.
-        * diagnostic.c (count_error): Test warn_system_headers.
-        * invoke.texi:  Add description for -Wsystem-headers.
+	* flags.h:  Declare warning flag warn_system_headers.
+	* toplev.c:  Define it.
+	(W_options): Add option -Wsystem-headers.
+	* diagnostic.c (count_error): Test warn_system_headers.
+	* invoke.texi:  Add description for -Wsystem-headers.
 	* cpplib.h (cpp_options): New member warn_system_headers.
 	* cpphash.h (CPP_PEDANTIC, CPP_WTRADITIONAL): Don't test
 	CPP_IN_SYSTEM_HEADER.
@@ -1831,7 +1871,7 @@ Mon 25-Sep-2000 23:38:27 BST  Neil Booth  <neilb@earthling.net>
 	* cpplex.c (save_comment): Only store the initial '/'
 	now.
 	(lex_token): Combine handling of the two comment types.
-	Pass everything but the initial '/' to save_comment.	
+	Pass everything but the initial '/' to save_comment.
 
 Mon 25-Sep-2000 23:31:45 BST  Neil Booth  <neilb@earthling.net>
 
@@ -2203,7 +2243,7 @@ Mon 25-Sep-2000 23:31:45 BST  Neil Booth  <neilb@earthling.net>
 	functions.  Generalize to handle both C and C++.
 	* Makefile.in (c-tree.info): New target.
 	(info): Add c-tree.info.
-	
+
 Sun Sep 24 09:15:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (store_field): If BITSIZE is negative, use size of type.
@@ -2286,10 +2326,10 @@ Sat 23-Sep-2000 22:39:18 BST  Neil Booth  <NeilB@earthling.net>
 2000-09-22  Brad Lucier <lucier@math.purdue.edu>
 	    Mark Mitchell  <mark@codesourcery.com>
 
-        * toplev.c (warn_disabled_optimization): Declare new warning flag.
-        * flags.h (warn_disabled_optimization): Add it here.
-        * gcse.c (gcse_main): Add warning when disabled.
-        * invoke.texi: Document -Wdisabled-optimization.
+	* toplev.c (warn_disabled_optimization): Declare new warning flag.
+	* flags.h (warn_disabled_optimization): Add it here.
+	* gcse.c (gcse_main): Add warning when disabled.
+	* invoke.texi: Document -Wdisabled-optimization.
 
 2000-09-21  Jason Merrill  <jason@redhat.com>
 
@@ -2324,7 +2364,7 @@ Thu 21-Sep-2000 18:19:05 BST  Neil Booth  <NeilB@earthling.net>
 	ARM and THUMB modes.
 
 	* config/mcore/mcore.c: Fix compile time warnings.
-	* config/mcore/mcore-protos.h: Fix compile time warnings. 
+	* config/mcore/mcore-protos.h: Fix compile time warnings.
 
 2000-09-20  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
@@ -2408,7 +2448,7 @@ Tue 19-Sep-2000 22:38:57 BST  Neil Booth  <NeilB@earthling.net>
 
 Tue 19-Sep-2000 18:26:57 BST  Neil Booth  <NeilB@earthling.net>
 
-        * cppfiles.c (read_include_file): Take no special action for
+	* cppfiles.c (read_include_file): Take no special action for
 	zero-length files.
 
 2000-09-19  Bernd Schmidt  <bernds@redhat.co.uk>

@@ -63,25 +63,40 @@ ALLOCA_FINISH = true
 # CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
 # BOOT_CFLAGS is the value of CFLAGS to pass to the stage2 and stage3
 # compilations.
-# WARN1_CFLAGS are the warning flags to use for most compilations in stage1.
-# WARN2_CFLAGS are the warning flags to pass to stage2, stage3, etc.
+# XCFLAGS is used for most compilations but not when using the GCC just built.
+# TCFLAGS is used for compilations with the GCC just built.
+# STAGE1_CFLAGS is set by configure on some targets.
+XCFLAGS =
+TCFLAGS =
+BOOT_CFLAGS = -g -O2
+STAGE1_CFLAGS = -g @stage1_cflags@
+CFLAGS = $(STAGE1_CFLAGS)
+
 # The warning flags are separate from BOOT_CFLAGS because people tend to
 # override optimization flags and we'd like them to still have warnings
 # turned on.  These flags are also used to pass other stage dependent
 # flags from configure.  The user is free to explicitly turn these flags
 # off if they wish.
-# LOOSE_CFLAGS are the CFLAGS to use when compiling something which is only
-# compiled with gcc, such as libgcc and the frontends other than C.
-# XCFLAGS is used for most compilations but not when using the GCC just built.
-# TCFLAGS is used for compilations with the GCC just built.
-XCFLAGS =
-TCFLAGS =
-CFLAGS = -g
-BOOT_CFLAGS = -O2 $(CFLAGS)
-WARN1_CFLAGS = @stage1_warn_cflags@
-WARN2_CFLAGS = @stage2_warn_cflags@
-WARN_CFLAGS = $(WARN1_CFLAGS)
-LOOSE_CFLAGS = `echo $(CFLAGS) $(WARN2_CFLAGS)|sed -e 's/-pedantic//g' -e 's/-Wtraditional//g'`
+# LOOSE_WARN are the warning flags to use when compiling something
+# which is only compiled with gcc, such as libgcc and the frontends
+# other than C.
+# STRICT_WARN and STRICT2_WARN are the additional warning flags to
+# apply to the back end and the C front end, which may be compiled
+# with other compilers.  This is partially controlled by configure in
+# stage1, as not all versions of gcc understand -Wno-long-long.
+LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
+STRICT_WARN = -Wtraditional @strict1_warn@
+STRICT2_WARN = -Wtraditional -pedantic -Wno-long-long
+
+# This is how we control whether or not the additional warnings are applied.
+.-warn = $(STRICT_WARN)
+GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn)
+
+# All warnings have to be shut off in stage1 if the compiler used then
+# isn't gcc; configure determines that.  WARN_CFLAGS will be either
+# $(GCC_WARN_CFLAGS), or nothing.
+WARN_CFLAGS = @warn_cflags@
+
 # These exists to be overridden by the x-* and t-* files, respectively.
 X_CFLAGS =
 T_CFLAGS =
@@ -120,11 +135,15 @@ TEXI2DVI = texi2dvi
 # For GNUmake: let us decide what gets passed to recursive makes.
 MAKEOVERRIDES =
 @SET_MAKE@
+# Some compilers can't handle cc -c blah.c -o foo/blah.o.
+# In stage2 and beyond, we force this to "-o $@" since we know we're using gcc.
+OUTPUT_OPTION = @OUTPUT_OPTION@
 
-# Define this as & to perform parallel make on a Sequent.
-# Note that this has some bugs, and it seems currently necessary
-# to compile all the gen* files first by hand to avoid erroneous results.
-P =
+# This is where we get zlib from.  zlibdir is -L../zlib and zlibinc is
+# -I../zlib, unless we were configured with --with-system-zlib, in which
+# case both are empty.
+ZLIB = @zlibdir@ -lz
+ZLIBINC = @zlibinc@
 
 # How to invoke ranlib.
 RANLIB = ranlib
@@ -173,7 +192,7 @@ GCC_FOR_TARGET = ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/i
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
 # It also specifies -isystem ./include to find, e.g., stddef.h.
-GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(LOOSE_CFLAGS) -isystem ./include $(TCFLAGS)
+GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(LOOSE_WARN) -isystem ./include $(TCFLAGS)
 
 # Specify the abi to use when building the c++ runtime
 GXX_ABI_FLAG=@GXX_ABI_FLAG@
@@ -424,6 +443,10 @@ MAYBE_USE_COLLECT2 = @maybe_use_collect2@
 # so don't override it here.
 USE_COLLECT2 = collect2$(exeext)
 
+# configure sets this to 'libcpp.a' if cpplib is being merged into
+# C-family front ends.
+MAYBE_CPPLIB = @maybe_cpplib@
+
 # List of extra C and assembler files to add to libgcc1.a.
 # Assembler files should have names ending in `.asm'.
 LIB1FUNCS_EXTRA =
@@ -574,7 +597,8 @@ INTERNAL_CFLAGS = $(CROSS) -DIN_GCC @extra_c_flags@
 # This is the variable actually used when we compile.
 # If you change this line, you probably also need to change the definition
 # of HOST_CFLAGS in build-make to match.
-ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(WARN_CFLAGS) $(XCFLAGS) @DEFS@
+ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) \
+  $(CFLAGS) $(WARN_CFLAGS) $(XCFLAGS) @DEFS@
 
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
@@ -616,11 +640,14 @@ HOST_ERRORS = $(HOST_PREFIX)errors.o
 # Both . and srcdir are used, in that order,
 # so that tm.h and config.h will be found in the compilation
 # subdirectory rather than in the source directory.
-INCLUDES = -I. -I$(srcdir) -I$(srcdir)/config -I$(srcdir)/../include
+# -I$(@D) and -I$(srcdir)/$(@D) cause the subdirectory of the file
+# currently being compiled, in both source trees, to be examined as well.
+INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
+	   -I$(srcdir)/config -I$(srcdir)/../include
 
 # Always use -I$(srcdir)/config when compiling.
 .c.o:
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 # This tells GNU make version 3 not to export all the variables
 # defined in this file into the environment.
@@ -684,15 +711,12 @@ PREPEND_DOTDOT_TO_RELATIVE_PATHS = sed \
 	-e 's|%||g'
 SUBDIR_FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) \
 	"CC=`echo @quoted_cc_set_by_configure@ | $(PREPEND_DOTDOT_TO_RELATIVE_PATHS)`"
-# Flags to pass when recursing into a frontend subdirectory.
-LANG_FLAGS_TO_PASS = $(SUBDIR_FLAGS_TO_PASS) \
-	"CFLAGS=$(LOOSE_CFLAGS)"
 #
 # Lists of files for various purposes.
 
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
-  c-convert.o c-aux-info.o c-common.o c-semantics.o @extra_c_objs@
+  c-convert.o c-aux-info.o c-common.o c-semantics.o $(MAYBE_CPPLIB)
 
 # Language-specific object files for C.
 C_OBJS = c-parse.o c-lang.o $(C_AND_OBJC_OBJS)
@@ -838,7 +862,7 @@ Makefile: $(srcdir)/Makefile.in config.status $(srcdir)/version.c \
 	rm -f config.run
 
 $(srcdir)/configure: $(srcdir)/configure.in
-	cd $(srcdir); autoconf
+	(cd $(srcdir) && autoconf)
 
 gccbug:	$(srcdir)/gccbug.in
 	CONFIG_FILES=gccbug CONFIG_HEADERS= ./config.status 
@@ -857,7 +881,7 @@ mklibgcc: $(srcdir)/mklibgcc.in
 # ??? Newer versions have a maintainer mode that may be useful here.
 $(srcdir)/config.in: $(srcdir)/cstamp-h.in
 $(srcdir)/cstamp-h.in: $(srcdir)/configure.in $(srcdir)/acconfig.h
-	cd $(srcdir) && autoheader
+	(cd $(srcdir) && autoheader)
 	@rm -f $(srcdir)/cstamp-h.in
 	echo timestamp > $(srcdir)/cstamp-h.in
 auto-host.h: cstamp-h ; @true
@@ -950,7 +974,7 @@ specs: xgcc$(exeext)
 gcc-cross: xgcc$(exeext)
 	cp xgcc$(exeext) gcc-cross$(exeext)
 
-cc1$(exeext): $(P) $(C_OBJS) $(BACKEND) $(LIBDEPS)
+cc1$(exeext): $(C_OBJS) $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1$(exeext) \
 		$(C_OBJS) $(BACKEND) $(LIBS)
 
@@ -1109,8 +1133,8 @@ c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h $(GGC_H) intl.h \
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
 
 $(srcdir)/c-parse.c: $(srcdir)/c-parse.y
-	cd $(srcdir); $(BISON) $(BISONFLAGS) -o c-p$$$$.c c-parse.y ; \
-	mv -f c-p$$$$.c c-parse.c
+	(cd $(srcdir) && $(BISON) $(BISONFLAGS) -o c-p$$$$.c c-parse.y && \
+	mv -f c-p$$$$.c c-parse.c)
 $(srcdir)/c-parse.y: c-parse.in
 	echo '/*WARNING: This file is automatically generated!*/' >tmp-c-parse.y
 	sed -e "/^ifobjc$$/,/^end ifobjc$$/d" \
@@ -1158,13 +1182,15 @@ hash.o: hash.c hash.h system.h toplev.h
 vfprintf.o: $(srcdir)/../libiberty/vfprintf.c $(CONFIG_H) system.h
 	rm -f vfprintf.c
 	$(LN_S) $(srcdir)/../libiberty/vfprintf.c vfprintf.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) vfprintf.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		vfprintf.c $(OUTPUT_OPTION)
 
 splay-tree.o: $(srcdir)/../libiberty/splay-tree.c \
   $(srcdir)/../include/splay-tree.h $(srcdir)/../include/libiberty.h
 	rm -f splay-tree.c
 	$(LN_S) $(srcdir)/../libiberty/splay-tree.c splay-tree.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) splay-tree.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		splay-tree.c $(OUTPUT_OPTION)
 
 underscore.c: s-under ; @true
 
@@ -1242,7 +1268,8 @@ ggc-none.o: ggc-none.c $(CONFIG_H) $(RTL_H) $(GGC_H)
 obstack.o: $(srcdir)/../libiberty/obstack.c $(CONFIG_H)
 	rm -f obstack.c
 	$(LN_S) $(srcdir)/../libiberty/obstack.c obstack.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) obstack.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		obstack.c $(OUTPUT_OPTION)
 
 prefix.o: prefix.c $(CONFIG_H) system.h Makefile prefix.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
@@ -1437,7 +1464,8 @@ dependence.o : dependence.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) \
 $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) $(GGC_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h real.h insn-config.h conditions.h \
    insn-flags.h output.h $(INSN_ATTR_H) insn-codes.h system.h toplev.h function.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(out_file)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(out_file) $(OUTPUT_OPTION)
 
 # Build auxiliary files that support ecoff format.
 mips-tfile: mips-tfile.o version.o $(LIBDEPS)
@@ -1814,7 +1842,7 @@ PREPROCESSOR_DEFINES = \
 
 LIBCPP_OBJS =	cpplib.o cpplex.o cppmacro.o cppexp.o cppfiles.o \
 		cpphash.o cpperror.o cppinit.o cppdefault.o cppoutput.o \
-		mkdeps.o prefix.o version.o mbchar.o @extra_cpp_objs@
+		mkdeps.o prefix.o version.o mbchar.o
 
 LIBCPP_DEPS =	cpplib.h cpphash.h intl.h system.h
 
@@ -1859,8 +1887,8 @@ tradcpp.o: tradcpp.c $(CONFIG_H) system.h version.h cppdefault.h
 tradcif.o: $(srcdir)/tradcif.c $(CONFIG_H) system.h defaults.h
 
 $(srcdir)/tradcif.c: $(srcdir)/tradcif.y
-	cd $(srcdir); $(BISON) $(BISONFLAGS) -o tr$$$$.c tradcif.y ; \
-	mv -f tr$$$$.c tradcif.c
+	(cd $(srcdir) && $(BISON) $(BISONFLAGS) -o tr$$$$.c tradcif.y && \
+	mv -f tr$$$$.c tradcif.c)
 
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
@@ -1879,13 +1907,13 @@ protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h \
    Makefile version.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(DRIVER_DEFINES) $(PREPROCESSOR_DEFINES) \
-	  $(srcdir)/protoize.c
+	  $(srcdir)/protoize.c $(OUTPUT_OPTION)
 
 unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h \
    $(CONFIG_H) system.h Makefile version.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(DRIVER_DEFINES) $(PREPROCESSOR_DEFINES) \
-	  $(srcdir)/unprotoize.c
+	  $(srcdir)/unprotoize.c $(OUTPUT_OPTION)
 
 # This info describes the target machine, so compile with GCC just built.
 SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES) \
@@ -1986,26 +2014,26 @@ fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
 	$(FIXINCSRCDIR)/procopen.c $(FIXINCSRCDIR)/gnu-regex.c \
 	$(FIXINCSRCDIR)/server.c $(FIXINCSRCDIR)/gnu-regex.h \
 	$(FIXINCSRCDIR)/server.h $(FIXINCSRCDIR)/inclhack.def specs.ready
-	MAKE="$(MAKE)"; srcdir=`cd $(srcdir)/fixinc; pwd` ; \
+	(MAKE="$(MAKE)"; srcdir=`cd $(srcdir)/fixinc && pwd` ; \
 	CC="$(CC)"; CFLAGS="$(CFLAGS)"; LDFLAGS="$(LDFLAGS)"; \
 	export MAKE srcdir CC CFLAGS LDFLAGS; \
-	cd ./fixinc; $(SHELL) $${srcdir}/mkfixinc.sh $(target)
+	cd ./fixinc && $(SHELL) $${srcdir}/mkfixinc.sh $(target))
 
 # Build fixed copies of system files.
 stmp-fixinc: fixinc.sh gsyslimits.h
 	rm -rf include; mkdir include
 	-chmod a+rx include
-	TARGET_MACHINE=$(target); srcdir=`cd $(srcdir); pwd`; \
+	(TARGET_MACHINE=$(target); srcdir=`cd $(srcdir); pwd`; \
 	INSTALL_ASSERT_H=$(INSTALL_ASSERT_H); SHELL=$(SHELL) ;\
 	export TARGET_MACHINE srcdir INSTALL_ASSERT_H SHELL ; \
-	$(SHELL) ./fixinc.sh `pwd`/include $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS)
-	rm -f include/syslimits.h
+	$(SHELL) ./fixinc.sh `pwd`/include $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); \
+	rm -f include/syslimits.h; \
 	if [ -f include/limits.h ]; then \
 	  mv include/limits.h include/syslimits.h; \
 	else \
 	  cp $(srcdir)/gsyslimits.h include/syslimits.h; \
-	fi
-	chmod a+r include/syslimits.h
+	fi; \
+	chmod a+r include/syslimits.h)
 # If $(SYSTEM_HEADER_DIR) is $(tooldir)/sys-include, and
 # that directory exists, then make sure that $(libsubdir) exists.
 # This is because cpp is compiled to find $(tooldir)/include via
@@ -2136,8 +2164,8 @@ cpp.dvi: $(srcdir)/cpp.texi
 
 
 INSTALL: $(srcdir)/install1.texi $(srcdir)/install.texi
-	cd $(srcdir); $(MAKEINFO) -D INSTALLONLY \
-		--no-split --no-headers -o INSTALL install1.texi
+	(cd $(srcdir) && $(MAKEINFO) -D INSTALLONLY \
+		--no-split --no-headers -o INSTALL install1.texi)
 #
 # Deletion of files made during compilation.
 # There are four levels of this:
@@ -2191,7 +2219,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 # that don't exist in the distribution.
 INTL_CLEAN = intl.clean
 clean: mostlyclean $(INTL_CLEAN) lang.clean
-	-rm -f libgcc.a
+	-rm -f libgcc.a libgcc_s$(SHLIB_EXT)
 	-rm -rf libgcc
 	-rm -f *.dvi
 	-rm -f */*.dvi
@@ -2637,44 +2665,44 @@ testsuite/site.exp: site.exp
 	cp site.exp testsuite/site.exp
 
 check-g++: testsuite/site.exp
-	-rootme=`pwd`; export rootme; \
+	-(rootme=`pwd`; export rootme; \
 	srcdir=`cd ${srcdir}; pwd` ; export srcdir ; \
 	cd testsuite; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
 	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; pwd` ; \
 	    export TCL_LIBRARY ; fi ; \
-	$(RUNTEST) --tool g++ $(RUNTESTFLAGS)
+	$(RUNTEST) --tool g++ $(RUNTESTFLAGS))
 
 check-gcc: testsuite/site.exp
-	-rootme=`pwd`; export rootme; \
+	-(rootme=`pwd`; export rootme; \
 	srcdir=`cd ${srcdir}; pwd` ; export srcdir ; \
 	cd testsuite; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
 	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; pwd` ; \
 	   export TCL_LIBRARY ; fi ; \
-	$(RUNTEST) --tool gcc $(RUNTESTFLAGS)
+	$(RUNTEST) --tool gcc $(RUNTESTFLAGS))
 
 check-g77: testsuite/site.exp
-	-rootme=`pwd`; export rootme; \
+	-(rootme=`pwd`; export rootme; \
 	srcdir=`cd ${srcdir}; pwd` ; export srcdir ; \
 	cd testsuite; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
 	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; pwd` ; \
 	   export TCL_LIBRARY ; fi ; \
-	$(RUNTEST) --tool g77 $(RUNTESTFLAGS)
+	$(RUNTEST) --tool g77 $(RUNTESTFLAGS))
 
 check-objc: testsuite/site.exp
-	-rootme=`pwd`; export rootme; \
+	-(rootme=`pwd`; export rootme; \
 	srcdir=`cd ${srcdir}; pwd` ; export srcdir ; \
 	cd testsuite; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
 	if [ -f $${rootme}/../expect/expect ] ; then  \
 	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; pwd` ; \
 	    export TCL_LIBRARY ; fi ; \
-	$(RUNTEST) --tool objc $(RUNTESTFLAGS)
+	$(RUNTEST) --tool objc $(RUNTESTFLAGS))
 
 check-po:
 	if test -f cp/Makefile && test -f f/Makefile && \
@@ -2686,12 +2714,12 @@ check-po:
 
 # Update the tags table.
 TAGS: force
-	cd $(srcdir);							\
+	(cd $(srcdir);							\
 	mkdir tmp-tags;							\
 	mv -f c-parse.[ch] =*.[chy] tmp-tags;				\
 	etags *.y *.h *.c;						\
 	mv tmp-tags/* .;						\
-	rmdir tmp-tags
+	rmdir tmp-tags)
 
 # Create the distribution tar.gz file.
 dist: tmp-gcc.xtar
@@ -2703,7 +2731,7 @@ tmp-gcc.xtar: distdir
 	tar -chf tmp-gcc.xtar gcc-$(version)
 
 distdir-cvs: force
-	if [ -d $(srcdir)/CVS ]; then cd $(srcdir) && cvs -r update; fi
+	if [ -d $(srcdir)/CVS ]; then (cd $(srcdir) && cvs -r update); fi
 
 # This target exists to do the initial work before the language specific
 # stuff gets done.
@@ -2766,7 +2794,7 @@ distdir-finish:
 # Get rid of everything we don't want in the distribution.  We'd want
 # this to use Makefile.in, but it doesn't have the `lang.foo' targets
 # expanded.
-	cd gcc-$(version); make extraclean distdir-check VERSION_DEP=
+	(cd gcc-$(version) && make extraclean distdir-check VERSION_DEP=)
 
 distdir-check:
 	($(AWK) '/^[^#]/{print} /^#[A-Za-z]/{print substr($$1, 2)}' | sort) \
@@ -2796,6 +2824,18 @@ diff:
 # A list of files to be destroyed during "lean" builds.
 VOL_FILES=`echo $(BACKEND) $(OBJS) $(C_OBJS) $(LIBCPP_OBJS) *.c *.h gen*`
 
+# Flags to pass to stage2 and later recursive makes.  Note that the
+# WARN_CFLAGS setting can't be to the expansion of GCC_WARN_CFLAGS in
+# the context of the stage_x rule.
+STAGE2_FLAGS_TO_PASS = \
+	CFLAGS="$(BOOT_CFLAGS)" \
+	LDFLAGS="$(BOOT_LDFLAGS)" \
+	WARN_CFLAGS="\$$(GCC_WARN_CFLAGS)" \
+	STRICT_WARN="$(STRICT2_WARN)" \
+	libdir=$(libdir) \
+	LANGUAGES="$(LANGUAGES)" \
+	OUTPUT_OPTION="-o \$$@"
+
 # Only build the C compiler for stage1, because that is the only one that
 # we can guarantee will build with the native compiler, and also it is the
 # only thing useful for building stage2.
@@ -2813,25 +2853,31 @@ stage_b: stage_a
 # because alloca.o is newer, we permit these recursive makes to compile
 # alloca.o.  Then cc1 is newer, so it won't have to be relinked.
 stage_c: stage_b
-	+$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
+	+$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" \
+		 STAGE_PREFIX=stage1/ \
+		 $(STAGE2_FLAGS_TO_PASS)
 	touch stage_c
 
 stage_d: stage_c
 	+$(MAKE) stage2
 	touch stage_d
- 
+
 stage_e: stage_d
-	+$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+	+$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" \
+		 STAGE_PREFIX=stage2/ \
+		 $(STAGE2_FLAGS_TO_PASS)
 	touch stage_e
 
 # For bootstrap4:
 stage_f: stage_e
-	+$(MAKE) CC="stage3/xgcc$(exeext) -B$(build_tooldir)/bin/ -Bstage3/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage3/ LANGUAGES="$(LANGUAGES)"
+	+$(MAKE) CC="stage3/xgcc$(exeext) -B$(build_tooldir)/bin/ -Bstage3/" \
+		 STAGE_PREFIX=stage3/ \
+		 $(STAGE2_FLAGS_TO_PASS)
 	touch stage_f
 
 # Additional steps for *-lean targets:
 clean_s1: stage_b
-	-cd stage1; rm -f $(VOL_FILES)
+	-(cd stage1 && rm -f $(VOL_FILES))
 	touch clean_s1
 
 clean_s2: stage_d

@@ -36,12 +36,6 @@
 # - making any compiler driver (eg: g++)
 # - the compiler proper (eg: cc1plus)
 # - define the names for selecting the language in LANGUAGES.
-#
-# Extra flags to pass to recursive makes.
-CXX_FLAGS_TO_PASS = \
-	"CXX_FOR_BUILD=$(CXX_FOR_BUILD)" \
-	"CXXFLAGS=$(CXXFLAGS)" \
-	"CXX_FOR_TARGET=$(CXX_FOR_TARGET)"
 
 # Actual names to use when installing a native compiler.
 CXX_INSTALL_NAME = `t='$(program_transform_name)'; echo c++ | sed $$t`
@@ -56,12 +50,6 @@ DEMANGLER_CROSS_NAME = `t='$(program_transform_cross_name)'; echo c++filt | sed 
 # The name to use for the demangler program.
 DEMANGLER_PROG = c++filt$(exeext)
 
-# Extra code to include in libgcc2.
-CXX_LIB2FUNCS = tinfo.o tinfo2.o new.o opnew.o opnewnt.o opvnew.o opvnewnt.o \
-	opdel.o opdelnt.o opvdel.o opvdelnt.o exception.o vec.o
-CXX_LIB2SRCS = $(srcdir)/cp/new.cc $(srcdir)/cp/new1.cc $(srcdir)/cp/new2.cc \
-	$(srcdir)/cp/exception.cc $(srcdir)/cp/tinfo.cc \
-	$(srcdir)/cp/tinfo2.cc $(srcdir)/cp/tinfo.h
 #
 # Define the names for selecting c++ in LANGUAGES.
 # Note that it would be nice to move the dependency on g++
@@ -76,12 +64,6 @@ g++spec.o: $(srcdir)/cp/g++spec.c system.h $(GCC_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/cp/g++spec.c
 
 $(INTL_TARGETS): $(srcdir)/cp/parse.c
-$(srcdir)/cp/parse.c: $(srcdir)/cp/parse.y
-	@cp_srcdir=`sed -n 's/^srcdir[ 	]*=[	 ]*//p' cp/Makefile` && \
-	echo "cd cp && $(MAKE) $$cp_srcdir/parse.c" && \
-	cd cp && \
-	  $(MAKE) $(LANG_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) \
-	    $$cp_srcdir/parse.c
 
 # Create the compiler driver for g++.
 GXX_OBJS = gcc.o g++spec.o intl.o prefix.o version.o 
@@ -94,6 +76,7 @@ g++-cross$(exeext): g++$(exeext)
 	-rm -f g++-cross$(exeext)
 	cp g++$(exeext) g++-cross$(exeext)
 
+# The demangler.
 cxxmain.o: $(srcdir)/../libiberty/cplus-dem.c $(DEMANGLE_H)
 	rm -f cxxmain.c
 	$(LN_S) $(srcdir)/../libiberty/cplus-dem.c cxxmain.c
@@ -105,24 +88,36 @@ $(DEMANGLER_PROG): cxxmain.o underscore.o $(LIBDEPS)
 	$(CC) -o $@ $(ALL_CFLAGS) $(LDFLAGS) \
 	  cxxmain.o underscore.o $(LIBS)
 
-CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/class.c $(srcdir)/cp/cp-tree.def \
- $(srcdir)/c-common.def \
- $(srcdir)/cp/cp-tree.h $(srcdir)/cp/cvt.c $(srcdir)/cp/decl.c \
- $(srcdir)/cp/decl.h $(srcdir)/cp/decl2.c $(srcdir)/cp/dump.c \
- $(srcdir)/cp/errfn.c $(srcdir)/cp/error.c $(srcdir)/cp/except.c \
- $(srcdir)/cp/expr.c $(srcdir)/cp/friend.c $(srcdir)/cp/init.c \
- $(srcdir)/cp/lex.c $(srcdir)/cp/lex.h \
- $(srcdir)/cp/mangle.c $(srcdir)/cp/method.c $(srcdir)/cp/optimize.c \
- $(srcdir)/cp/parse.y $(srcdir)/cp/pt.c $(srcdir)/cp/ptree.c \
- $(srcdir)/cp/repo.c $(srcdir)/cp/rtti.c $(srcdir)/cp/search.c \
- $(srcdir)/cp/semantics.c $(srcdir)/cp/spew.c $(srcdir)/cp/tree.c \
- $(srcdir)/cp/typeck.c $(srcdir)/cp/typeck2.c $(srcdir)/cp/xref.c
+# The compiler itself.
+# Shared with C front end:
+CXX_C_OBJS = c-common.o c-pragma.o c-semantics.o c-lex.o
 
-cc1plus$(exeext): $(P) $(CXX_SRCS) $(LIBDEPS) $(BACKEND) c-common.o \
-	c-pragma.o c-semantics.o c-lex.o $(srcdir)/cp/cp-tree.h $(srcdir)/cp/cp-tree.def \
-	$(srcdir)/c-common.def $(srcdir)/cp/cfns.gperf hash.o \
-	$(srcdir)/cp/operators.def
-	cd cp; $(MAKE) $(LANG_FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) ../cc1plus$(exeext)
+# Language-specific object files.
+CXX_OBJS = cp/call.o cp/decl.o cp/errfn.o cp/expr.o cp/pt.o cp/typeck2.o \
+ cp/class.o cp/decl2.o cp/error.o cp/lex.o cp/parse.o cp/ptree.o cp/rtti.o \
+ cp/spew.o cp/typeck.o cp/cvt.o cp/except.o cp/friend.o cp/init.o cp/method.o \
+ cp/search.o cp/semantics.o cp/tree.o cp/xref.o cp/repo.o cp/dump.o \
+ cp/optimize.o cp/mangle.o
+
+# Use loose warnings for this front end.
+cp-warn =
+
+cc1plus$(exeext): $(CXX_OBJS) $(CXX_C_OBJS) $(BACKEND) \
+		  $(MAYBE_CPPLIB) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+	      $(CXX_OBJS) $(CXX_C_OBJS) $(BACKEND) $(MAYBE_CPPLIB) $(LIBS)
+
+# Special build rules.
+$(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf
+	gperf -o -C -E -k '1-6,$$' -j1 -D -N 'libc_name_p' \
+		$(srcdir)/cp/cfns.gperf > $(srcdir)/cp/cfns.h
+
+$(srcdir)/cp/parse.h $(srcdir)/cp/parse.c: $(srcdir)/cp/parse.y
+	@echo "Expect 33 shift/reduce conflicts and 58 reduce/reduce conflicts."
+	cd $(srcdir)/cp; $(BISON) $(BISONFLAGS) -d -o p$$$$.c parse.y ; \
+	grep '^#define[ 	]*YYEMPTY' p$$$$.c >> p$$$$.h ; \
+	mv -f p$$$$.c parse.c ; mv -f p$$$$.h parse.h
+
 #
 # Build hooks:
 
@@ -214,10 +209,10 @@ c++.mostlyclean:
 c++.clean:
 c++.distclean:
 	-rm -f cp/config.status cp/Makefile
-	-rm -f cp/parse.output
+	-rm -f $(srcdir)/cp/parse.output
 c++.extraclean:
 c++.maintainer-clean:
-	-rm -f cp/parse.c cp/parse.h
+	-rm -f $(srcdir)/cp/parse.c $(srcdir)/cp/parse.h
 #
 # Stage hooks:
 # The main makefile has already created stage?/cp.
@@ -248,3 +243,51 @@ c++.distdir:
 	  ln $$file ../../tmp/cp/inc >/dev/null 2>&1 \
 	   || cp $$file ../../tmp/cp/inc; \
 	done
+
+#
+# .o: .h dependencies.
+CXX_TREE_H = $(TREE_H) cp/cp-tree.h c-common.h cp/cp-tree.def c-common.def \
+	function.h varray.h system.h $(CONFIG_H) \
+	$(srcdir)/../include/hashtab.h $(srcdir)/../include/splay-tree.h
+
+cp/spew.o: cp/spew.c $(CXX_TREE_H) cp/parse.h flags.h cp/lex.h toplev.h
+cp/lex.o: cp/lex.c $(CXX_TREE_H) cp/parse.h flags.h cp/lex.h c-pragma.h \
+  toplev.h output.h mbchar.h $(GGC_H) input.h diagnostic.h cp/operators.def
+cp/decl.o: cp/decl.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h stack.h \
+  output.h $(EXPR_H) except.h toplev.h hash.h $(GGC_H) $(RTL_H) cp/operators.def
+cp/decl2.o: cp/decl2.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h $(EXPR_H) \
+  output.h except.h toplev.h dwarf2out.h dwarfout.h $(GGC_H) $(RTL_H)
+cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) flags.h toplev.h output.h
+cp/typeck.o: cp/typeck.c $(CXX_TREE_H) flags.h $(RTL_H) $(EXPR_H) toplev.h 
+cp/class.o: cp/class.c $(CXX_TREE_H) flags.h toplev.h $(RTL_H)
+cp/call.o: cp/call.c $(CXX_TREE_H) flags.h toplev.h $(RTL_H) $(EXPR_H) $(GGC_H)
+cp/friend.o: cp/friend.c $(CXX_TREE_H) flags.h $(RTL_H) toplev.h $(EXPR_H)
+cp/init.o: cp/init.c $(CXX_TREE_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \
+  $(GGC_H) except.h
+cp/method.o: cp/method.c $(CXX_TREE_H) toplev.h $(GGC_H) $(RTL_H) $(EXPR_H)
+cp/cvt.o: cp/cvt.c $(CXX_TREE_H) cp/decl.h flags.h toplev.h convert.h
+cp/search.o: cp/search.c $(CXX_TREE_H) stack.h flags.h toplev.h $(RTL_H)
+cp/tree.o: cp/tree.c $(CXX_TREE_H) flags.h toplev.h $(GGC_H) $(RTL_H) \
+  insn-config.h integrate.h
+cp/ptree.o: cp/ptree.c $(CXX_TREE_H) system.h
+cp/rtti.o: cp/rtti.c $(CXX_TREE_H) flags.h toplev.h defaults.h
+cp/except.o: cp/except.c $(CXX_TREE_H) flags.h $(RTL_H) except.h toplev.h \
+  cp/cfns.h $(EXPR_H) insn-flags.h cp/decl.h $(OBSTACK_H)
+cp/expr.o: cp/expr.c $(CXX_TREE_H) $(RTL_H) flags.h $(EXPR_H) toplev.h except.h
+cp/xref.o: cp/xref.c $(CXX_TREE_H) input.h toplev.h
+cp/pt.o: cp/pt.c $(CXX_TREE_H) cp/decl.h cp/parse.h cp/lex.h toplev.h \
+  $(GGC_H) $(RTL_H) except.h
+cp/error.o: cp/error.c $(CXX_TREE_H) toplev.h diagnostic.h
+cp/errfn.o: cp/errfn.c $(CXX_TREE_H) toplev.h
+cp/repo.o: cp/repo.c $(CXX_TREE_H) toplev.h $(GGC_H)
+cp/semantics.o: cp/semantics.c $(CXX_TREE_H) cp/lex.h except.h toplev.h \
+  flags.h $(GGC_H) output.h $(RTL_H) $(TIMEVAR_H)
+cp/dump.o: cp/dump.c $(CXX_TREE_H)
+cp/optimize.o: cp/optimize.c $(CXX_TREE_H) rtl.h integrate.h insn-config.h \
+  input.h
+cp/mangle.o: cp/mangle.c $(CXX_TREE_H) toplev.h
+
+cp/parse.o: cp/parse.c $(CXX_TREE_H) flags.h cp/lex.h except.h output.h \
+	system.h toplev.h $(GGC_H)
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
+		$(srcdir)/cp/parse.c $(OUTPUT_OPTION)

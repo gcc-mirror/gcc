@@ -255,16 +255,16 @@ elif test x$withval != xno; then
 fi])
 
 # Link cpplib into the compiler proper, for C/C++/ObjC.
+maybe_cpplib=
 AC_ARG_ENABLE(c-cpplib,
 [  --enable-c-cpplib       link cpplib directly into C and C++ compilers
                            (HIGHLY EXPERIMENTAL).],
 if test x$enable_c_cpplib != xno; then
-  extra_c_objs="${extra_c_objs} libcpp.a"
-  extra_cxx_objs="${extra_cxx_objs} ../libcpp.a"
+  maybe_cpplib=libcpp.a
   AC_DEFINE(USE_CPPLIB, 1,
-  [Define if you want the preprocessor merged into the C and C++ compilers.
-   This mode is not ready for production use.])
+  [Define if you want the preprocessor merged into the C and C++ compilers.])
 fi)
+AC_SUBST(maybe_cpplib)
 
 # Enable Multibyte Characters for C/C++
 AC_ARG_ENABLE(c-mbchar,
@@ -330,10 +330,14 @@ AC_CANONICAL_SYSTEM
 # Find the native compiler
 AC_PROG_CC
 AC_PROG_CC_C_O
+# autoconf is lame and doesn't give us any substitution variable for this.
 if eval "test \"`echo '$ac_cv_prog_cc_'${ac_cc}_c_o`\" = no"; then
   NO_MINUS_C_MINUS_O=yes
+else
+  OUTPUT_OPTION='-o $@'
 fi
 AC_SUBST(NO_MINUS_C_MINUS_O)
+AC_SUBST(OUTPUT_OPTION)
 
 gcc_AC_C_LONG_DOUBLE
 
@@ -344,34 +348,34 @@ CFLAGS="-Wno-long-long"
 AC_TRY_COMPILE(,,ac_cv_prog_cc_no_long_long=yes,
 	       ac_cv_prog_cc_no_long_long=no)
 CFLAGS="$save_CFLAGS"])
+strict1_warn=
+if test $ac_cv_prog_cc_no_long_long = yes; then
+  strict1_warn="-pedantic -Wno-long-long"
+fi
+AC_SUBST(strict1_warn)
 
 # If the native compiler is GCC, we can enable warnings even in stage1.  
 # That's useful for people building cross-compilers, or just running a
 # quick `make'.
-stage1_warn_cflags=" -W -Wall -Wtraditional -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes"
-stage2_warn_cflags="$stage1_warn_cflags -pedantic -Wno-long-long"
-if test "x$GCC" = "xyes"; then 
-  if test $ac_cv_prog_cc_no_long_long = yes; then
-    stage1_warn_cflags="$stage1_warn_cflags -pedantic -Wno-long-long"
-  fi
-else
-  stage1_warn_cflags=""
+warn_cflags=
+if test "x$GCC" = "xyes"; then
+  warn_cflags='$(GCC_WARN_CFLAGS)'
 fi
+AC_SUBST(warn_cflags)
 
 # Stage specific cflags for build.
+stage1_cflags=
 case $build in
 vax-*-*)
   if test x$GCC = xyes
   then
-    stage1_warn_cflags="$stage1_warn_cflags -Wa,-J"
+    stage1_cflags="-Wa,-J"
   else
-    stage1_warn_cflags="$stage1_warn_cflags -J"
+    stage1_cflags="-J"
   fi
   ;;
 esac
-
-AC_SUBST(stage1_warn_cflags)
-AC_SUBST(stage2_warn_cflags)
+AC_SUBST(stage1_cflags)
 
 AC_PROG_MAKE_SET
 
@@ -4875,8 +4879,8 @@ AC_SUBST(GGC)
 echo "Using $GGC for garbage collection."
 
 # Use the system's zlib library.
-zlibdir=-L../../zlib
-zlibinc="-I\$(srcdir)/../../zlib"
+zlibdir=-L../zlib
+zlibinc="-I\$(srcdir)/../zlib"
 AC_ARG_WITH(system-zlib,
 [  --with-system-zlib      use installed libz],
 zlibdir=
@@ -4983,7 +4987,6 @@ all_lib2funcs=
 
 language_fragments="Make-lang"
 language_hooks="Make-hooks"
-oldstyle_subdirs=
 
 for s in .. $subdirs
 do
@@ -5003,7 +5006,7 @@ do
 			echo "${srcdir}/$s/config-lang.in doesn't set \$language." 1>&2
 			exit 1
 		fi
-		all_lang_makefiles="$all_lang_makefiles ${srcdir}/$s/Make-lang.in ${srcdir}/$s/Makefile.in"
+		all_lang_makefiles="$all_lang_makefiles ${srcdir}/$s/Make-lang.in $outputs"
 		all_languages="$all_languages $language"
 		if test "x$boot_language" = xyes
 		then
@@ -5014,10 +5017,6 @@ do
 		all_diff_excludes="$all_diff_excludes $diff_excludes"
 		all_headers="$all_headers $headers"
 		all_outputs="$all_outputs $outputs"
-		if test x$outputs = x
-		then
-			oldstyle_subdirs="$oldstyle_subdirs $s"
-		fi
 		all_lib2funcs="$all_lib2funcs $lib2funcs"
 	fi
 done
@@ -5140,9 +5139,6 @@ AC_SUBST(cpp_install_dir)
 AC_SUBST(dep_host_xmake_file)
 AC_SUBST(dep_tmake_file)
 AC_SUBST(extra_c_flags)
-AC_SUBST(extra_c_objs)
-AC_SUBST(extra_cpp_objs)
-AC_SUBST(extra_cxx_objs)
 AC_SUBST(extra_headers_list)
 AC_SUBST(extra_objs)
 AC_SUBST(extra_parts)
@@ -5218,7 +5214,6 @@ fi
 # and configure language subdirectories
 AC_OUTPUT($all_outputs,
 [
-. $srcdir/configure.lang
 case x$CONFIG_HEADERS in
 xauto-host.h:config.in)
 echo > cstamp-h ;;
@@ -5256,7 +5251,6 @@ target='${target}'
 target_alias='${target_alias}'
 srcdir='${srcdir}'
 subdirs='${subdirs}'
-oldstyle_subdirs='${oldstyle_subdirs}'
 symbolic_link='${symbolic_link}'
 program_transform_set='${program_transform_set}'
 program_transform_name='${program_transform_name}'
