@@ -513,6 +513,34 @@ struct write_data
   int all : 1;			/* Invalidate all memory refs.  */
 };
 
+/* Define maximum length of a branch path.  */
+
+#define PATHLENGTH	10
+
+/* This data describes a block that will be processed by cse_basic_block.  */
+
+struct cse_basic_block_data {
+  /* Lowest CUID value of insns in block.  */
+  int low_cuid;
+  /* Highest CUID value of insns in block.  */
+  int high_cuid;
+  /* Total number of SETs in block.  */
+  int nsets;
+  /* Last insn in the block.  */
+  rtx last;
+  /* Size of current branch path, if any.  */
+  int path_size;
+  /* Current branch path, indicating which branches will be taken.  */
+  struct branch_path {
+    /* The branch insn. */
+    rtx branch;
+    /* Whether it should be taken or not.  AROUND is the same as taken
+       except that it is used when the destination label is not preceded
+       by a BARRIER.  */
+    enum taken {TAKEN, NOT_TAKEN, AROUND} status;
+  } path[PATHLENGTH];
+};
+
 /* Nonzero if X has the form (PLUS frame-pointer integer).  We check for
    virtual regs here because the simplify_*_operation routines are called
    by integrate.c, which is called before virtual register instantiation.  */
@@ -550,26 +578,56 @@ struct write_data
 	   || XEXP (X, 0) == virtual_stack_dynamic_rtx		\
 	   || XEXP (X, 0) == virtual_outgoing_args_rtx)))
 
-static struct table_elt *lookup ();
-static void free_element ();
-
-static int insert_regs ();
-static void rehash_using_reg ();
-static void remove_invalid_refs ();
-static int exp_equiv_p ();
-int refers_to_p ();
-int refers_to_mem_p ();
-static void invalidate_from_clobbers ();
-static int safe_hash ();
-static int canon_hash ();
-static rtx fold_rtx ();
-static rtx equiv_constant ();
-static void record_jump_cond ();
-static void note_mem_written ();
-static int cse_rtx_addr_varies_p ();
-static enum rtx_code find_comparison_args ();
-static void cse_insn ();
-static void cse_set_around_loop ();
+static void new_basic_block	PROTO((void));
+static void make_new_qty	PROTO((int));
+static void make_regs_eqv	PROTO((int, int));
+static void delete_reg_equiv	PROTO((int));
+static int mention_regs		PROTO((rtx));
+static int insert_regs		PROTO((rtx, struct table_elt *, int));
+static void free_element	PROTO((struct table_elt *));
+static void remove_from_table	PROTO((struct table_elt *, int));
+static struct table_elt *get_element PROTO((void));
+static struct table_elt *lookup	PROTO((rtx, int, enum machine_mode)),
+       *lookup_for_remove PROTO((rtx, int, enum machine_mode));
+static rtx lookup_as_function	PROTO((rtx, enum rtx_code));
+static struct table_elt *insert PROTO((rtx, struct table_elt *, int,
+				       enum machine_mode));
+static void merge_equiv_classes PROTO((struct table_elt *,
+				       struct table_elt *));
+static void invalidate		PROTO((rtx));
+static void remove_invalid_refs	PROTO((int));
+static void rehash_using_reg	PROTO((rtx));
+static void invalidate_memory	PROTO((struct write_data *));
+static void invalidate_for_call	PROTO((void));
+static rtx use_related_value	PROTO((rtx, struct table_elt *));
+static int canon_hash		PROTO((rtx, enum machine_mode));
+static int safe_hash		PROTO((rtx, enum machine_mode));
+static int exp_equiv_p		PROTO((rtx, rtx, int, int));
+static int refers_to_p		PROTO((rtx, rtx));
+int refers_to_mem_p		PROTO((rtx, rtx, HOST_WIDE_INT,
+				       HOST_WIDE_INT));
+static int cse_rtx_addr_varies_p PROTO((rtx));
+static rtx canon_reg		PROTO((rtx, rtx));
+static void find_best_addr	PROTO((rtx, rtx *));
+static enum rtx_code find_comparison_args PROTO((enum rtx_code, rtx *, rtx *,
+						 enum machine_mode *,
+						 enum machine_mode *));
+static rtx fold_rtx		PROTO((rtx, rtx));
+static rtx equiv_constant	PROTO((rtx));
+static void record_jump_equiv	PROTO((rtx, int));
+static void record_jump_cond	PROTO((enum rtx_code, enum machine_mode,
+				       rtx, rtx, int));
+static void cse_insn		PROTO((rtx, int));
+static void note_mem_written	PROTO((rtx, struct write_data *));
+static void invalidate_from_clobbers PROTO((struct write_data *, rtx));
+static rtx cse_process_notes	PROTO((rtx, rtx));
+static void cse_around_loop	PROTO((rtx));
+static void invalidate_skipped_set PROTO((rtx, rtx));
+static void invalidate_skipped_block PROTO((rtx));
+static void cse_check_loop_start PROTO((rtx, rtx));
+static void cse_set_around_loop	PROTO((rtx, rtx, rtx));
+static rtx cse_basic_block	PROTO((rtx, rtx, struct branch_path *, int));
+static void count_reg_usage	PROTO((rtx, int *, int));
 
 /* Return an estimate of the cost of computing rtx X.
    One use is in cse, to decide which expression to keep in the hash table.
@@ -2101,7 +2159,7 @@ exp_equiv_p (x, y, validate, equal_values)
    Here we do not require that X or Y be valid (for registers referred to)
    for being in the hash table.  */
 
-int
+static int
 refers_to_p (x, y)
      rtx x, y;
 {
@@ -2425,7 +2483,7 @@ canon_reg (x, insn)
    than hard registers here because we would also prefer the pseudo registers.
   */
 
-void
+static void
 find_best_addr (insn, loc)
      rtx insn;
      rtx *loc;
@@ -7356,32 +7414,6 @@ cse_set_around_loop (x, insn, loop_start)
    the current block.  The incoming structure's branch path, if any, is used
    to construct the output branch path.  */
 
-/* Define maximum length of a branch path.  */
-
-#define PATHLENGTH	10
-
-struct cse_basic_block_data {
-  /* Lowest CUID value of insns in block.  */
-  int low_cuid;
-  /* Highest CUID value of insns in block.  */
-  int high_cuid;
-  /* Total number of SETs in block.  */
-  int nsets;
-  /* Last insn in the block.  */
-  rtx last;
-  /* Size of current branch path, if any.  */
-  int path_size;
-  /* Current branch path, indicating which branches will be taken.  */
-  struct branch_path {
-    /* The branch insn. */
-    rtx branch;
-    /* Whether it should be taken or not.  AROUND is the same as taken
-       except that it is used when the destination label is not preceded
-       by a BARRIER.  */
-    enum taken {TAKEN, NOT_TAKEN, AROUND} status;
-  } path[PATHLENGTH];
-};
-
 void
 cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
      rtx insn;
@@ -7584,8 +7616,6 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
   data->path[path_size].branch = 0;
 }
 
-static rtx cse_basic_block ();
-
 /* Perform cse on the instructions of a function.
    F is the first instruction.
    NREGS is one plus the highest pseudo-reg number used in the instruction.
