@@ -1,3 +1,10 @@
+2003-11-27  Sascha Brawer  <brawer@dandelis.ch>
+
+	* javax/swing/UIManager.java (getDefaults, getDimension,
+	getIcon, getInsets, getInstalledLookAndFeels, getInt,
+	getLookAndFeel, getString, getSystemLookAndFeelClassName):
+	Declare as public.
+
 2003-11-26  Sascha Brawer  <brawer@dandelis.ch>
 
 	* javax/swing/undo/StateEdit.java (getPresentationName): Docfix.
