@@ -1,3 +1,7 @@
+2003-03-10  Roger Sayle  <roger@eyesopen.com>
+
+	* com.c (duplicate_decls): Synchronize with C's duplicate_decls.
+
 Sat Mar  8 21:11:40 2003  Neil Booth  <neil@daikokuya.co.uk>
 
 	* com.c (ffe_init): Update prototype; move code to ffe_post_options.
