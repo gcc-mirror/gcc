@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   ffi.c - Copyright (c) 1998 Cygnus Solutions
+   ffi.c - Copyright (c) 1998, 2001 Cygnus Solutions
    
    Alpha Foreign Function Interface 
 
@@ -166,8 +166,13 @@ ffi_prep_closure (ffi_closure* closure,
   closure->fun = fun;
   closure->user_data = user_data;
 
-  /* Flush the Icache.  */
-  asm volatile ("imb" : : : "memory");
+  /* Flush the Icache.
+
+     Tru64 UNIX as doesn't understand the imb mnemonic, so use call_pal
+     instead, since both Compaq as and gas can handle it.
+
+     0x86 is PAL_imb in Tru64 UNIX <alpha/pal.h>.  */
+  asm volatile ("call_pal 0x86" : : : "memory");
 
   return FFI_OK;
 }
