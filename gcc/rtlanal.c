@@ -1765,7 +1765,8 @@ inequality_comparisons_p (x)
   return 0;
 }
 
-/* Replace any occurrence of FROM in X with TO.
+/* Replace any occurrence of FROM in X with TO.  The function does
+   not enter into CONST_DOUBLE for the replace.
 
    Note that copying is not done so X must not be shared unless all copies
    are to be modified.  */
@@ -1776,6 +1777,11 @@ replace_rtx (x, from, to)
 {
   register int i, j;
   register char *fmt;
+
+  /* The following prevents loops occurrence when we change MEM in
+     CONST_DOUBLE onto the same CONST_DOUBLE. */
+  if (x != 0 && GET_CODE (x) == CONST_DOUBLE)
+    return x;
 
   if (x == from)
     return to;
