@@ -5131,6 +5131,10 @@ delete_null_pointer_checks_1 (block_reg, nonnull_avin, nonnull_avout, npi)
       /* LAST_INSN is a conditional jump.  Get its condition.  */
       condition = get_condition (last_insn, &earliest);
 
+      /* If we can't determine the condition then skip.  */
+      if (! condition)
+	continue;
+
       /* Is the register known to have a nonzero value?  */
       if (!TEST_BIT (nonnull_avout[bb], block_reg[bb] - npi->min_reg))
 	continue;

@@ -1,3 +1,8 @@
+Wed Jan 12 09:39:22 2000  Nick Burrett  <nick.burrett@btinternet.com>
+
+	* gcse.c (delete_null_pointer_checks_1): Cope when
+	get_condition cannot determine the condition.
+
 2000-01-12  Gabriel Dos Reis  <gdr@codesourcery.com>
  
        * toplev.h (set_message_length): Declare.
