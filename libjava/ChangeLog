@@ -1,3 +1,8 @@
+2001-12-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/io/DataOutputStream (write (byte[], int, int)): Update 
+	"written" correctly. Fix from the ORP team.
+
 2001-12-15  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* include/jvm.h (_Jv_VTable::idx_to_offset): New method.

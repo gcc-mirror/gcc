@@ -48,7 +48,7 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
     throws IOException, NullPointerException, IndexOutOfBoundsException
   {
     out.write(b, off, len);
-    written += len - off;
+    written += len;
   }
 
   public final void writeBoolean (boolean v) throws IOException
