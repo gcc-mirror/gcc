@@ -2275,14 +2275,14 @@ did the easy thing, and turned it off.
 @cindex assembler instructions
 @cindex registers
 
-In an assembler instruction using @code{asm}, you can now specify the
-operands of the instruction using C expressions.  This means no more
-guessing which registers or memory locations will contain the data you want
+In an assembler instruction using @code{asm}, you can specify the
+operands of the instruction using C expressions.  This means you need not
+guess which registers or memory locations will contain the data you want
 to use.
 
-You must specify an assembler instruction template much like what appears
-in a machine description, plus an operand constraint string for each
-operand.
+You must specify an assembler instruction template much like what
+appears in a machine description, plus an operand constraint string for
+each operand.
 
 For example, here is how to use the 68881's @code{fsinx} instruction:
 
@@ -2293,65 +2293,66 @@ asm ("fsinx %1,%0" : "=f" (result) : "f" (angle));
 @noindent
 Here @code{angle} is the C expression for the input operand while
 @code{result} is that of the output operand.  Each has @samp{"f"} as its
-operand constraint, saying that a floating point register is required.  The
-@samp{=} in @samp{=f} indicates that the operand is an output; all output
-operands' constraints must use @samp{=}.  The constraints use the same
-language used in the machine description (@pxref{Constraints}).
+operand constraint, saying that a floating point register is required.
+The @samp{=} in @samp{=f} indicates that the operand is an output; all
+output operands' constraints must use @samp{=}.  The constraints use the
+same language used in the machine description (@pxref{Constraints}).
 
-Each operand is described by an operand-constraint string followed by the C
-expression in parentheses.  A colon separates the assembler template from
-the first output operand, and another separates the last output operand
-from the first input, if any.  Commas separate output operands and separate
-inputs.  The total number of operands is limited to ten or to the maximum
-number of operands in any instruction pattern in the machine description,
-whichever is greater.
+Each operand is described by an operand-constraint string followed by
+the C expression in parentheses.  A colon separates the assembler
+template from the first output operand and another separates the last
+output operand from the first input, if any.  Commas separate the
+operands within each group.  The total number of operands is limited to
+ten or to the maximum number of operands in any instruction pattern in
+the machine description, whichever is greater.
 
-If there are no output operands, and there are input operands, then there
-must be two consecutive colons surrounding the place where the output
+If there are no output operands but there are input operands, you must
+place two consecutive colons surrounding the place where the output
 operands would go.
 
 Output operand expressions must be lvalues; the compiler can check this.
-The input operands need not be lvalues.  The compiler cannot check whether
-the operands have data types that are reasonable for the instruction being
-executed.  It does not parse the assembler instruction template and does
-not know what it means, or whether it is valid assembler input.  The
-extended @code{asm} feature is most often used for machine instructions
-that the compiler itself does not know exist.  If the output expression
-cannot be directly addressed (for example, it is a bit field), your
-constraint must allow a register.  In that case, GNU CC will use
-the register as the output of the @code{asm}, and then store that
-register into the output.
+The input operands need not be lvalues.  The compiler cannot check
+whether the operands have data types that are reasonable for the
+instruction being executed.  It does not parse the assembler instruction
+template and does not know what it means or even whether it is valid
+assembler input.  The extended @code{asm} feature is most often used for
+machine instructions the compiler itself does not know exist.  If
+the output expression cannot be directly addressed (for example, it is a
+bit field), your constraint must allow a register.  In that case, GNU CC
+will use the register as the output of the @code{asm}, and then store
+that register into the output.
 
-The ordinary output operands must be write-only; GNU CC will assume
-that the values in these operands before the instruction are dead and
-need not be generated.  Extended asm supports input-output or
-read-write operands.  Use the constraint character @samp{+} to indicate
-such an operand and list it with the output operands.
+The ordinary output operands must be write-only; GNU CC will assume that
+the values in these operands before the instruction are dead and need
+not be generated.  Extended asm supports input-output or read-write
+operands.  Use the constraint character @samp{+} to indicate such an
+operand and list it with the output operands.
 
-When the constraints for the read-write operand
-(or the operand in which only some of the bits are to be changed)
-allows a register, you may, as an alternative, logically
-split its function into two separate operands, one input operand and one
-write-only output operand.  The connection between them is expressed by
-constraints which say they need to be in the same location when the
-instruction executes.  You can use the same C expression for both
-operands, or different expressions.  For example, here we write the
-(fictitious) @samp{combine} instruction with @code{bar} as its read-only
-source operand and @code{foo} as its read-write destination:
+When the constraints for the read-write operand (or the operand in which
+only some of the bits are to be changed) allows a register, you may, as
+an alternative, logically split its function into two separate operands,
+one input operand and one write-only output operand.  The connection
+between them is expressed by constraints which say they need to be in
+the same location when the instruction executes.  You can use the same C
+expression for both operands, or different expressions.  For example,
+here we write the (fictitious) @samp{combine} instruction with
+@code{bar} as its read-only source operand and @code{foo} as its
+read-write destination:
 
 @example
 asm ("combine %2,%0" : "=r" (foo) : "0" (foo), "g" (bar));
 @end example
 
 @noindent
-The constraint @samp{"0"} for operand 1 says that it must occupy the same
-location as operand 0.  A digit in constraint is allowed only in an input
-operand, and it must refer to an output operand.
+The constraint @samp{"0"} for operand 1 says that it must occupy the
+same location as operand 0.  A digit in constraint is allowed only in an
+input operand and it must refer to an output operand.
 
 Only a digit in the constraint can guarantee that one operand will be in
-the same place as another.  The mere fact that @code{foo} is the value of
-both operands is not enough to guarantee that they will be in the same
-place in the generated assembler code.  The following would not work:
+the same place as another.  The mere fact that @code{foo} is the value
+of both operands is not enough to guarantee that they will be in the
+same place in the generated assembler code.  The following would not
+work reliably:
 
 @example
 asm ("combine %2,%0" : "=r" (foo) : "r" (foo), "g" (bar));
@@ -2365,10 +2366,10 @@ register (copying it afterward to @code{foo}'s own address).  Of course,
 since the register for operand 1 is not even mentioned in the assembler
 code, the result will not work, but GNU CC can't tell that.
 
-Some instructions clobber specific hard registers.  To describe this, write
-a third colon after the input operands, followed by the names of the
-clobbered hard registers (given as strings).  Here is a realistic example
-for the Vax:
+Some instructions clobber specific hard registers.  To describe this,
+write a third colon after the input operands, followed by the names of
+the clobbered hard registers (given as strings).  Here is a realistic
+example for the VAX:
 
 @example
 asm volatile ("movc3 %0,%1,%2"
@@ -2378,32 +2379,32 @@ asm volatile ("movc3 %0,%1,%2"
 @end example
 
 If you refer to a particular hardware register from the assembler code,
-then you will probably have to list the register after the third colon
-to tell the compiler that the register's value is modified.  In many
-assemblers, the register names begin with @samp{%}; to produce one
-@samp{%} in the assembler code, you must write @samp{%%} in the input.
+you will probably have to list the register after the third colon to
+tell the compiler the register's value is modified.  In some assemblers,
+the register names begin with @samp{%}; to produce one @samp{%} in the
+assembler code, you must write @samp{%%} in the input.
 
-If your assembler instruction can alter the condition code register,
-add @samp{cc} to the list of clobbered registers.  GNU CC on some
-machines represents the condition codes as a specific hardware
-register; @samp{cc} serves to name this register.  On other machines,
-the condition code is handled differently, and specifying @samp{cc}
-has no effect.  But it is valid no matter what the machine.
+If your assembler instruction can alter the condition code register, add
+@samp{cc} to the list of clobbered registers.  GNU CC on some machines
+represents the condition codes as a specific hardware register;
+@samp{cc} serves to name this register.  On other machines, the
+condition code is handled differently, and specifying @samp{cc} has no
+effect.  But it is valid no matter what the machine.
 
 If your assembler instruction modifies memory in an unpredictable
-fashion, add @samp{memory} to the list of clobbered registers.
-This will cause GNU CC to not keep memory values cached in
-registers across the assembler instruction.
+fashion, add @samp{memory} to the list of clobbered registers.  This
+will cause GNU CC to not keep memory values cached in registers across
+the assembler instruction.
 
-You can put multiple assembler instructions together in a single @code{asm}
-template, separated either with newlines (written as @samp{\n}) or with
-semicolons if the assembler allows such semicolons.  The GNU assembler
-allows semicolons and all Unix assemblers seem to do so.  The input
-operands are guaranteed not to use any of the clobbered registers, and
-neither will the output operands' addresses, so you can read and write the
-clobbered registers as many times as you like.  Here is an example of
-multiple instructions in a template; it assumes that the subroutine
-@code{_foo} accepts arguments in registers 9 and 10:
+You can put multiple assembler instructions together in a single
+@code{asm} template, separated either with newlines (written as
+@samp{\n}) or with semicolons if the assembler allows such semicolons.
+The GNU assembler allows semicolons and most Unix assemblers seem to do
+so.  The input operands are guaranteed not to use any of the clobbered
+registers, and neither will the output operands' addresses, so you can
+read and write the clobbered registers as many times as you like.  Here
+is an example of multiple instructions in a template; it assumes the
+subroutine @code{_foo} accepts arguments in registers 9 and 10:
 
 @example
 asm ("movl %0,r9;movl %1,r10;call _foo"
@@ -2412,16 +2413,16 @@ asm ("movl %0,r9;movl %1,r10;call _foo"
      : "r9", "r10");
 @end example
 
-Unless an output operand has the @samp{&} constraint modifier, GNU CC may
-allocate it in the same register as an unrelated input operand, on the
-assumption that the inputs are consumed before the outputs are produced.
+Unless an output operand has the @samp{&} constraint modifier, GNU CC
+may allocate it in the same register as an unrelated input operand, on
+the assumption the inputs are consumed before the outputs are produced.
 This assumption may be false if the assembler code actually consists of
 more than one instruction.  In such a case, use @samp{&} for each output
-operand that may not overlap an input.
-@xref{Modifiers}.
+operand that may not overlap an input.  @xref{Modifiers}.
 
-If you want to test the condition code produced by an assembler instruction,
-you must include a branch and a label in the @code{asm} construct, as follows:
+If you want to test the condition code produced by an assembler
+instruction, you must include a branch and a label in the @code{asm}
+construct, as follows:
 
 @example
 asm ("clr %0;frob %1;beq 0f;mov #1,%0;0:"
@@ -2434,8 +2435,8 @@ This assumes your assembler supports local labels, as the GNU assembler
 and most Unix assemblers do.
 
 Speaking of labels, jumps from one @code{asm} to another are not
-supported.  The compiler's optimizers do not know about these jumps,
-and therefore they cannot take account of them when deciding how to
+supported.  The compiler's optimizers do not know about these jumps, and
+therefore they cannot take account of them when deciding how to
 optimize.
 
 @cindex macros containing @code{asm}
@@ -2454,8 +2455,8 @@ Here the variable @code{__arg} is used to make sure that the instruction
 operates on a proper @code{double} value, and to accept only those
 arguments @code{x} which can convert automatically to a @code{double}.
 
-Another way to make sure the instruction operates on the correct data type
-is to use a cast in the @code{asm}.  This is different from using a
+Another way to make sure the instruction operates on the correct data
+type is to use a cast in the @code{asm}.  This is different from using a
 variable @code{__arg} in that it converts more different types.  For
 example, if the desired type were @code{int}, casting the argument to
 @code{int} would accept a pointer with no complaint, while assigning the
@@ -2463,27 +2464,40 @@ argument to an @code{int} variable named @code{__arg} would warn about
 using a pointer unless the caller explicitly casts it.
 
 If an @code{asm} has output operands, GNU CC assumes for optimization
-purposes that the instruction has no side effects except to change the
-output operands.  This does not mean that instructions with a side effect
-cannot be used, but you must be careful, because the compiler may eliminate
-them if the output operands aren't used, or move them out of loops, or
-replace two with one if they constitute a common subexpression.  Also, if
-your instruction does have a side effect on a variable that otherwise
-appears not to change, the old value of the variable may be reused later if
-it happens to be found in a register.
+purposes the instruction has no side effects except to change the output
+operands.  This does not mean instructions with a side effect cannot be
+used, but you must be careful, because the compiler may eliminate them
+if the output operands aren't used, or move them out of loops, or
+replace two with one if they constitute a common subexpression.  Also,
+if your instruction does have a side effect on a variable that otherwise
+appears not to change, the old value of the variable may be reused later
+if it happens to be found in a register.
 
 You can prevent an @code{asm} instruction from being deleted, moved
 significantly, or combined, by writing the keyword @code{volatile} after
 the @code{asm}.  For example:
 
 @example
-#define set_priority(x)  \
-asm volatile ("set_priority %0": /* no outputs */ : "g" (x))
-@end example
+#define get_and_set_priority(new)  \
+(@{ int __old; \
+   asm volatile ("get_and_set_priority %0, %1": "=g" (__old) : "g" (new)); \
+   __old; @})
+b@end example
 
 @noindent
-An instruction without output operands will not be deleted or moved
-significantly, regardless, unless it is unreachable.
+If you write an @code{asm} instruction with no outputs, GNU CC will know
+the instruction has side-effects and will not delete the instruction or
+move it outside of loops.  If the side-effects of your instruction are
+not purely external, but will affect variables in your program in ways
+other than reading the inputs and clobbering the specified registers or
+memory, you should write the @code{volatile} keyword to prevent future
+versions of GNU CC from moving the instruction around within a core
+region.
+
+An @code{asm} instruction without any operands or clobbers (and ``old
+style'' @code{asm}) will not be deleted or moved significantly,
+regardless, unless it is unreachable, the same wasy as if you had
+written a @code{volatile} keyword.
 
 Note that even a volatile @code{asm} instruction can be moved in ways
 that appear insignificant to the compiler, such as across jump
