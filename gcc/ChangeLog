@@ -1,3 +1,7 @@
+2001-06-13  Richard Henderson  <rth@redhat.com>
+
+	* ifcvt.c (dead_or_predicable): Fix return value last patch.
+
 2001-06-13  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/arm.c (add_minipool_backward_ref): Check that the

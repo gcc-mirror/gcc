@@ -1960,7 +1960,7 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
 	{
 	  enum rtx_code rev = reversed_comparison_code (cond, jump);
 	  if (rev == UNKNOWN)
-	    return NULL_RTX;
+	    return FALSE;
 	  cond = gen_rtx_fmt_ee (rev, GET_MODE (cond), XEXP (cond, 0),
 			         XEXP (cond, 1));
 	  if (prob_val)
