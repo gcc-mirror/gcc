@@ -1698,6 +1698,10 @@ extern struct rtx_def *sparc_builtin_saveregs ();
    save area.  */
 #define RETURN_ADDR_IN_PREVIOUS_FRAME
 
+/* This is the offset of the return address to the true next instruction to be
+   executed for normal void functions. */
+#define NORMAL_RETURN_ADDR_OFFSET (8)
+
 /* The current return address is in %i7.  The return address of anything
    farther back is in the register window save area at [%fp+60].  */
 /* ??? This ignores the fact that the actual return address is +8 for normal
@@ -1705,8 +1709,8 @@ extern struct rtx_def *sparc_builtin_saveregs ();
 #define RETURN_ADDR_RTX(count, frame)		\
   ((count == -1)				\
    ? gen_rtx (REG, Pmode, 31)			\
-   : copy_to_reg (gen_rtx (MEM, Pmode,		\
-			   memory_address (Pmode, plus_constant (frame, 15 * UNITS_PER_WORD)))))
+   : gen_rtx (MEM, Pmode,			\
+	      memory_address (Pmode, plus_constant (frame, 15 * UNITS_PER_WORD))))
 
 /* Addressing modes, and classification of registers for them.  */
 
