@@ -559,6 +559,10 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
    && !ROUND_TOWARDS_ZERO)
 #endif
 
+#ifndef TARGET_FLT_EVAL_METHOD
+#define TARGET_FLT_EVAL_METHOD 0
+#endif
+
 #ifndef HOT_TEXT_SECTION_NAME
 #define HOT_TEXT_SECTION_NAME "text.hot"
 #endif

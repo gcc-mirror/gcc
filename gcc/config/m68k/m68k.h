@@ -297,6 +297,11 @@ extern int target_flags;
 /* Define for XFmode extended real floating point support.  */
 #define LONG_DOUBLE_TYPE_SIZE 96
 
+/* Set the value of FLT_EVAL_METHOD in float.h.  When using 68040 fp
+   instructions, we get proper intermediate rounding, otherwise we 
+   get extended precision results.  */
+#define TARGET_FLT_EVAL_METHOD (TARGET_68040_ONLY ? 0 : 2)
+
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.
    This is true for 68020 insns such as bfins and bfexts.
