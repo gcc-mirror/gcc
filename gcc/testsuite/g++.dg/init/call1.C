@@ -1,6 +1,5 @@
 // Bug c++/16115
 // { dg-options "-O2" }
-// { dg-do run { xfail *-*-* } }
 
 extern "C" void abort(); 
  
