@@ -1,3 +1,8 @@
+2002-02-27  Adam Megacz <adam@xwt.org>
+
+	* java/net/natInetAddress.cc: Changed USE_WINSOCK to WIN32, added
+	'#undef STRICT'.
+
 2002-02-26  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natSystem.cc (init_properties): Use __VERSION__.
