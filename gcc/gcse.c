@@ -8319,10 +8319,12 @@ eliminate_partially_redundant_loads (basic_block bb, rtx insn,
 
   pat = PATTERN (insn);
   dest = SET_DEST (pat);
-  /* Check if the loaded register is not used nor killed from the beginning
-     of the block.  */
+  /* Check that the loaded register is not used, set, or killed from the
+     beginning of the block.  */
   if (reg_used_between_after_reload_p (dest,
-				       PREV_INSN (BB_HEAD (bb)), insn))
+                                       PREV_INSN (BB_HEAD (bb)), insn)
+      || reg_set_between_after_reload_p (dest,
+                                         PREV_INSN (BB_HEAD (bb)), insn))
     return;
 
   /* Check potential for replacing load with copy for predecessors.  */
