@@ -274,7 +274,24 @@ common_type (tree t1, tree t2)
       else if (TYPE_PRECISION (t2) > TYPE_PRECISION (t1))
 	return build_type_attribute_variant (t2, attributes);
 
-      /* Same precision.  Prefer longs to ints even when same size.  */
+      /* Same precision.  Prefer long longs to longs to ints when the
+	 same precision, following the C99 rules on integer type rank
+	 (which are equivalent to the C90 rules for C90 types).  */
+
+      if (TYPE_MAIN_VARIANT (t1) == long_long_unsigned_type_node
+	  || TYPE_MAIN_VARIANT (t2) == long_long_unsigned_type_node)
+	return build_type_attribute_variant (long_long_unsigned_type_node,
+					     attributes);
+
+      if (TYPE_MAIN_VARIANT (t1) == long_long_integer_type_node
+	  || TYPE_MAIN_VARIANT (t2) == long_long_integer_type_node)
+	{
+	  if (TYPE_UNSIGNED (t1) || TYPE_UNSIGNED (t2))
+	     t1 = long_long_unsigned_type_node;
+	  else
+	     t1 = long_long_integer_type_node;
+	  return build_type_attribute_variant (t1, attributes);
+	}
 
       if (TYPE_MAIN_VARIANT (t1) == long_unsigned_type_node
 	  || TYPE_MAIN_VARIANT (t2) == long_unsigned_type_node)

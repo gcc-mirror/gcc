@@ -1,3 +1,8 @@
+2004-04-10  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-typeck.c (common_type): Prefer long long to long when same
+	precision.
+
 2004-04-09  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 14887
