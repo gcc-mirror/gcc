@@ -396,6 +396,10 @@ extern char *getcwd PARAMS ((char *, size_t));
 extern char *getenv PARAMS ((const char *));
 #endif
 
+#if defined (HAVE_DECL_GETOPT) && !HAVE_DECL_GETOPT
+extern int getopt PARAMS ((int, char **, char *));
+#endif
+
 #if defined (HAVE_DECL_GETWD) && !HAVE_DECL_GETWD
 extern char *getwd PARAMS ((char *));
 #endif
