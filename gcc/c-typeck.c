@@ -228,9 +228,11 @@ common_type (t1, t2)
       else return t2;
 
     case POINTER_TYPE:
-#if 0
       /* For two pointers, do this recursively on the target type,
 	 and combine the qualifiers of the two types' targets.  */
+      /* This code was turned off; I don't know why.
+	 But ANSI C specifies doing this with the qualifiers.
+	 So I turned it on again.  */
       {
 	tree target = common_type (TYPE_MAIN_VARIANT (TREE_TYPE (t1)),
 				   TYPE_MAIN_VARIANT (TREE_TYPE (t2)));
@@ -240,8 +242,9 @@ common_type (t1, t2)
 	  = TYPE_VOLATILE (TREE_TYPE (t1)) || TYPE_VOLATILE (TREE_TYPE (t2));
 	return build_pointer_type (c_build_type_variant (target, constp, volatilep));
       }
-#endif
+#if 0
       return build_pointer_type (common_type (TREE_TYPE (t1), TREE_TYPE (t2)));
+#endif
 
     case ARRAY_TYPE:
       {
@@ -3167,8 +3170,10 @@ build_unary_op (code, xarg, noconvert)
 	  addr = build1 (code, argtype, arg);
 
 	/* Address of a static or external variable or
-	   function counts as a constant.  */
-	if (staticp (arg))
+	   file-scope function counts as a constant.  */
+	if (staticp (arg)
+	    && ! (TREE_CODE (arg) == FUNCTION_DECL
+		  && DECL_CONTEXT (arg) != 0))
 	  TREE_CONSTANT (addr) = 1;
 	return addr;
       }
