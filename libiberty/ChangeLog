@@ -1,3 +1,9 @@
+2001-07-05  Mark Klein  <mklein@dis.com>
+
+	* Makefile.in: Add ffs.c dependency.
+	* configure.in: Add ffs.c.
+	* ffs.c: New file.
+
 2001-06-18  Richard Henderson  <rth@redhat.com>
 
 	* concat.c: Include <sys/types.h>.
