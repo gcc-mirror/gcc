@@ -1,3 +1,7 @@
+2003-04-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/ultrasp8.c: Fix for 32-bit Sparc.
+
 2003-04-11  Bud Davis  <bdavis9659@comcast.net>
 
 	PR Fortran/9263
