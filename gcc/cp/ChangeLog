@@ -1,3 +1,8 @@
+2000-01-20  Brad Lucier  <lucier@math.purdue.edu>
+
+	* class.c (dump_class_hierarchy): Make format agree with argument;
+	cast pointer to unsigned long and print with %lx.
+	
 2000-01-19  Gabriel Dos Reis  <gdr@codesourcery>
 
 	* decl2.c (lang_decode_option): Set default line-wrap length to 72.
