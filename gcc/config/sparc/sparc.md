@@ -2756,8 +2756,7 @@
   "
 {
   /* Trap instruction to flush all the registers window.  */
-  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
-		      gen_rtvec (1, const0_rtx), 0));
+  emit_insn (gen_flush_register_windows ());
   /* Load the fp value for the containing fn into %fp.
      This is needed because operands[2] refers to %fp.
      Virtual register instantiation fails if the virtual %fp isn't set from a
@@ -2782,19 +2781,18 @@
   emit_insn (gen_rtx (USE, VOIDmode, static_chain_rtx));
   emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, SImode, 8)));
   /* Return, restoring reg window and jumping to goto handler.  */
-  emit_insn (gen_rtx (UNSPEC_VOLATILE, VOIDmode,
-		      gen_rtvec (1, const0_rtx), 1));
+  emit_insn (gen_goto_handler_and_restore ());
   DONE;
 }")
 
 ;; Special trap insn to flush register windows.
-(define_insn ""
+(define_insn "flush_register_windows"
   [(unspec_volatile [(const_int 0)] 0)]
   ""
   "ta 3"
   [(set_attr "type" "misc")])
 
-(define_insn ""
+(define_insn "goto_handler_and_restore"
   [(unspec_volatile [(const_int 0)] 1)]
   ""
   "jmp %%o0+0\;restore"
