@@ -1094,7 +1094,6 @@ type_promotes_to (type)
   return cp_build_type_variant (type, constp, volatilep);
 }
 
-
 /* The routines below this point are carefully written to conform to
    the standard.  They use the same terminology, and follow the rules
    closely.  Although they are used only in pt.c at the moment, they
@@ -1109,7 +1108,9 @@ perform_qualification_conversions (type, expr)
      tree type;
      tree expr;
 {
-  if (comp_target_types (type, TREE_TYPE (expr), 0) == 1)
+  if (TREE_CODE (type) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE
+      && comp_ptr_ttypes (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (expr))))
     return build1 (NOP_EXPR, type, expr);
   else
     return error_mark_node;

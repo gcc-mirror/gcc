@@ -912,6 +912,31 @@ comptypes (type1, type2, strict)
   return attrval == 2 && val == 1 ? 2 : val;
 }
 
+/* Subroutine of comp_target-types.  Make sure that the cv-quals change
+   only in the same direction as the target type.  */
+
+static int
+comp_cv_target_types (ttl, ttr, nptrs)
+     tree ttl, ttr;
+     int nptrs;
+{
+  int t;
+  int c = TYPE_READONLY (ttl) - TYPE_READONLY (ttr);
+  int v = TYPE_VOLATILE (ttl) - TYPE_VOLATILE (ttr);
+
+  if ((c > 0 && v < 0) || (c < 0 && v > 0))
+    return 0;
+
+  if (TYPE_MAIN_VARIANT (ttl) == TYPE_MAIN_VARIANT (ttr))
+    return (c + v < 0) ? -1 : 1;
+
+  t = comp_target_types (ttl, ttr, nptrs);
+  if ((t == 1 && c + v >= 0) || (t == -1 && c + v <= 0))
+    return t;
+
+  return 0;
+}
+
 /* Return 1 or -1 if TTL and TTR are pointers to types that are equivalent,
    ignoring their qualifiers, 0 if not. Return 1 means that TTR can be
    converted to TTL. Return -1 means that TTL can be converted to TTR but
@@ -937,15 +962,20 @@ comp_target_types (ttl, ttr, nptrs)
   if (TREE_CODE (ttr) != TREE_CODE (ttl))
     return 0;
 
-  if (TREE_CODE (ttr) == POINTER_TYPE
-      || (TREE_CODE (ttr) == REFERENCE_TYPE))
+  if ((TREE_CODE (ttr) == POINTER_TYPE
+       || TREE_CODE (ttr) == REFERENCE_TYPE)
+      /* If we get a pointer with nptrs == 0, we don't allow any tweaking
+	 of the type pointed to.  This is necessary for reference init
+	 semantics.  We won't get here from a previous call with nptrs == 1;
+	 for multi-level pointers we end up in comp_ptr_ttypes.  */
+      && nptrs > 0)
     {
       int is_ptr = TREE_CODE (ttr) == POINTER_TYPE;
 
       ttl = TREE_TYPE (ttl);
       ttr = TREE_TYPE (ttr);
 
-      if (nptrs > 0 && is_ptr)
+      if (is_ptr)
 	{
 	  if (TREE_CODE (ttl) == UNKNOWN_TYPE
 	      || TREE_CODE (ttr) == UNKNOWN_TYPE)
@@ -976,25 +1006,7 @@ comp_target_types (ttl, ttr, nptrs)
       if (TREE_CODE (ttl) == FUNCTION_TYPE || TREE_CODE (ttl) == METHOD_TYPE)
 	return comp_target_types (ttl, ttr, nptrs - 1);
 
-      /* Make sure that the cv-quals change only in the same direction as
-	 the target type.  */
-      {
-	int t;
-	int c = TYPE_READONLY (ttl) - TYPE_READONLY (ttr);
-	int v = TYPE_VOLATILE (ttl) - TYPE_VOLATILE (ttr);
-
-	if ((c > 0 && v < 0) || (c < 0 && v > 0))
-	  return 0;
-
-	if (TYPE_MAIN_VARIANT (ttl) == TYPE_MAIN_VARIANT (ttr))
-	  return (c + v < 0) ? -1 : 1;
-
-	t = comp_target_types (ttl, ttr, nptrs - 1);
-	if ((t == 1 && c + v >= 0) || (t == -1 && c + v <= 0))
-	  return t;
-
-	return 0;
-      }
+      return comp_cv_target_types (ttl, ttr, nptrs - 1);
     }
 
   if (TREE_CODE (ttr) == ARRAY_TYPE)
@@ -1054,16 +1066,42 @@ comp_target_types (ttl, ttr, nptrs)
   /* for C++ */
   else if (TREE_CODE (ttr) == OFFSET_TYPE)
     {
+      int base;
+      tree tmp;
+
       /* Contravariance: we can assign a pointer to base member to a pointer
 	 to derived member.  Note difference from simple pointer case, where
 	 we can pass a pointer to derived to a pointer to base.  */
       if (comptypes (TYPE_OFFSET_BASETYPE (ttr),
 		     TYPE_OFFSET_BASETYPE (ttl), 0))
-	return comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), nptrs);
+	base = 1;
       else if (comptypes (TYPE_OFFSET_BASETYPE (ttl),
-			  TYPE_OFFSET_BASETYPE (ttr), 0)
-	       && comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), nptrs))
-	return -1;
+			  TYPE_OFFSET_BASETYPE (ttr), 0))
+	{
+	  tree tmp = ttl;
+	  ttl = ttr;
+	  ttr = tmp;
+	  base = -1;
+	}
+      else
+	return 0;
+
+      ttl = TREE_TYPE (ttl);
+      ttr = TREE_TYPE (ttr);
+
+      if (TREE_CODE (ttl) == POINTER_TYPE
+	  || TREE_CODE (ttl) == ARRAY_TYPE)
+	{
+	  if (comp_ptr_ttypes (ttl, ttr))
+	    return base;
+	  return 0;
+	}
+      else
+	{
+	  if (comp_cv_target_types (ttl, ttr, nptrs) == 1)
+	    return base;
+	  return 0;
+	}
     }
   else if (IS_AGGR_TYPE (ttl))
     {
@@ -6515,7 +6553,7 @@ build_ptrmemfunc (type, pfn, force)
 
       pfn_type = TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (pfn));
       if (!force
-	  && comp_target_types (type, pfn_type, 0) != 1)
+	  && comp_target_types (type, pfn_type, 1) != 1)
 	cp_error ("conversion to `%T' from `%T'", type, pfn_type);
 
       ndelta = cp_convert (ptrdiff_type_node, build_component_ref (pfn, delta_identifier, NULL_TREE, 0));
