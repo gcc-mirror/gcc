@@ -1,5 +1,8 @@
 Thu May 14 14:11:37 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* alpha/vxworks.h: New file.
+	* configure.in (alpha*-*-vxworks*): New target.
+
 	* alpha.c (tree.h): Include earlier.
 	(alpha_initialize_trampoline): New function.
 	* alpha.h (INITIALIZE_TRAMPOLINE): Call it.
