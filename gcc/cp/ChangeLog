@@ -1,3 +1,207 @@
+2002-01-06  Graham Stott  <grahams@redhat.com>
+
+	* cp-tree.h (VAR_OR_FUNCTION_DECL_CHECK): Add parenthesis.
+	(VAR_FUNCTION_OR_PARM_DECL_CHECK): Likewise.
+	(VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK) Likewise.
+	(RECORD_OR_UNION_TYPE_CHECK): Likewise.
+	(BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK): Likewise.
+	(C_IS_RESERVED_WORD): Uppercase macro parameter.
+	(C_RID_YYCODE) Likewise.
+	(ptrmem_cst): Use rtx.
+	(LOCAL_BINDING_P): Add whitespace.
+	(INHERITED_VALUE_BINDING_P): Likewise.
+	(BINDING_SCOPE): Wrap long line.
+	(BINDING_HAS_LEVEL_P): Remove parenthesis.
+	(BINDING_VALUE): Wrap long line.
+	(BINDING_TYPE): Whitespace.
+	(IDENTIFIER_GLOBAL_VALUE): Add parenthesis.
+	(SET_IDENTIFIER_GLOBAL_VALUE): Likewise.
+	(IDENTIFIER_NAMESPACE_VALUE): Likewise. 
+	(SET_IDENTIFIER_NAMESPACE_VALUE: Likewise.
+	(same_type_p): Uppercase macro parameters.
+	(same_type_ignoring_top_level_qualifiers_p): Likewise.
+	(OVL_FUNCTION): Wrap long line.
+	(OVL_CHAIN): Whitespace.
+	(OVL_CURRENT): Add paranthesis and whitespace.
+	(OVL_NEXT): Whitespace.
+	(OVL_USED): Likewise.
+	(IDENTIFIER_TYPE_VALUE): Likewise.
+	(REAL_IDENTIFIER_TYPE_VALUE): Remove parenthesis.
+	(SET_IDENTIFIER_TYPE_VALUE): Add parenthesis and whitespace.
+	(LANG_ID_FIELD): Whitespace.
+	(SET_LANG_ID(NODE,VALUE,NAME): Likewise.
+	(IDENTIFIER_LABEL_VALUE): Whitespace and wrap.
+	(SET_IDENTIFIER_LABEL_VALUE): Whitespace.
+	(IDENTIFIER_IMPLICIT_DECL): Whitespace and wrap.
+	(SET_IDENTIFIER_IMPLICIT_DECL); Whitespace.
+	(IDENTIFIER_ERROR_LOCUS): Whitespace and wrap.
+	(SET_IDENTIFIER_ERROR_LOCUS); Whitespace.
+	(IDENTIFIER_VIRTUAL_P): Likewise.
+	(IDENTIFIER_OPNAME_P): Likewise.
+	(IDENTIFIER_TYPENAME_P): Remove parenthesis.
+	(C_TYPE_FIELDS_READONLY): Uppercase macro parameters.
+	(C_SET_EXP_ORIGINAL_CODE): Likewise.
+	(TYPE_ASSEMBLER_NAME_STRING): Wrap long line.
+	(TYPE_ASSEMBLER_NAME_LENGTH): Likewise.
+	(IS_AGGR_TYPE): Uppercase macro parameter.
+	(CLASS_TYPE_P): Likewise.
+	(IS_AGGR_TYPE_CODE): Uppercase macro parameter and parenthesis.
+	(IS_AGGR_TYPE_2): Whitespace.
+	(TAGGED_TYPE_P): Uppercase macro parameter.
+	(TYPE_BUILT_IN): Whitespace.
+	(TYPE_FOR_JAVA): Likewise.
+	(FUNCTION_ARG_CHAIN): Remove parenthesis.
+	(FUNCTION_FIRST_USER_PARMTYPE): Add parenthesis.
+	(FUNCTION_FIRST_USER_PARAM): Likewise.
+	(PROMOTES_TO_AGGR_TYPE): Whitespace.
+	(DERIVED_FROM_P): Add parenthesis and wrap.
+	(UNIQUELY_DERIVED_FROM_P): Likewise.
+	(ACCESSIBLY_UNIQUELY_DERIVED_P): Likewise.
+	(PUBLICLY_UNIQUELY_DERIVED_P): Likewise.
+	(CLASSTYPE_USE_TEMPLATE): Whitespace.
+	(CLASSTYPE_INLINE_FRIENDS): Remove parenthesis.
+	(TYPE_GETS_DELETE): Add parenthesis.
+	(TYPE_HAS_CONVERSION): Add parenthesis and wrap.
+	(TYPE_HAS_ASSIGN_REF): Likewise,
+	(TYPE_HAS_CONST_ASSIGN_REF): Likewise.
+	(TYPE_HAS_INIT_REF): Likewise.
+	(TYPE_HAS_CONST_INIT_REF): Likewise.
+	(TYPE_BEING_DEFINED): Likewise.
+	(TYPE_LANG_SPECIFIC): Likewise.
+	(CLASSTYPE_RTTI): Likewise.
+	(TYPE_OVERLOADS_CALL_EXPR): Likewise.
+	(TYPE_OVERLOADS_ARRAY_REF): Likewise.
+	(TYPE_OVERLOADS_ARROW): Likewise.
+	(TYPE_USES_MULTIPLE_INHERITANCE): Likewise.
+	(TYPE_USES_VIRTUAL_BASECLASSES): Add parenthesis.
+	(CLASSTYPE_METHOD_VEC): Likewise.
+	(CLASSTYPE_MARKED_N): Likewise.
+	(CLASSTYPE_MARKED): Likewise.
+	(CLASSTYPE_MARKED2): Likewise.
+	(CLASSTYPE_MARKED3): Likewise.
+	(CLASSTYPE_MARKED4): Likewise.
+	(CLASSTYPE_MARKED5): Likewise.
+	(CLASSTYPE_MARKED6): Likewise.
+	(SET_CLASSTYPE_MARKED): Whitespace.
+	(CLEAR_CLASSTYPE_MARKED): Likewise.
+	(SET_CLASSTYPE_MARKED2): Likewise.
+	(CLEAR_CLASSTYPE_MARKED2): Likewise.
+	(SET_CLASSTYPE_MARKED3): Likewise.
+	(CLEAR_CLASSTYPE_MARKED3): Likewise.
+	(SET_CLASSTYPE_MARKED4): Likewise.
+	(CLEAR_CLASSTYPE_MARKED4): Likewise.
+	(SET_CLASSTYPE_MARKED5): Likewise.
+	(CLEAR_CLASSTYPE_MARKED5): Likewise.
+	(SET_CLASSTYPE_MARKED6): Likewise.
+	(CLEAR_CLASSTYPE_MARKED6): Likewise.
+	(CLASSTYPE_TAGS): Likewise.
+	(CLASSTYPE_VSIZE): Likewise.
+	(CLASSTYPE_VBASECLASSES): Likewise.
+	(CANONICAL_BINFO): Add parenthesis.
+	(CLASSTYPE_SIZE(NODE): Likewise.
+	(CLASSTYPE_SIZE_UNIT): Likewise.
+	(CLASSTYPE_ALIGN(NODE): Likewise.
+	(CLASSTYPE_USER_ALIGN): Likewise.
+	(TYPE_JAVA_INTERFACE): Likewise.
+	(CLASSTYPE_PURE_VIRTUALS): Likewise.
+	(CLASSTYPE_NEEDS_VIRTUAL_REINIT): Whitespace and wrap.
+	(TYPE_HAS_DEFAULT_CONSTRUCTOR): Likewise.
+	(CLASSTYPE_HAS_MUTABLE): Likewise.
+	(CLASSTYPE_FRIEND_CLASSES): Likewise. Likewise.
+	(CLASSTYPE_DECLARED_CLASS): Whitespace and wrap.
+	(CLASSTYPE_READONLY_FIELDS_NEED_INIT): Likewise.
+	(CLASSTYPE_REF_FIELDS_NEED_INIT): Likewise.
+	(CLASSTYPE_INTERFACE_ONLY): Likewise.
+	(CLASSTYPE_INTERFACE_KNOWN): Likewise.
+	(CLASSTYPE_INTERFACE_UNKNOWN): Likewise.
+	(SET_CLASSTYPE_INTERFACE_UNKNOWN_X): Likewise.
+	(SET_CLASSTYPE_INTERFACE_UNKNOWN): Likewise.
+	(SET_CLASSTYPE_INTERFACE_KNOWN): Likewise.
+	(CLASSTYPE_DEBUG_REQUESTED): Whitespace and wrap.
+	(BINFO_UNSHARED_MARKED): Whitespace.
+	(BINFO_MARKED): Whitespace and wrap.
+	(SET_BINFO_MARKED): Likewise.
+	(CLEAR_BINFO_MARKED): Likewise.
+	(BINFO_VTABLE_PATH_MARKED): Likewise.
+	(SET_BINFO_VTABLE_PATH_MARKED): Likewise.
+	(CLEAR_BINFO_VTABLE_PATH_MARKED): Likewise.
+	(BINFO_SUBVTT_INDEX): Remove parenthesis.
+	(BINFO_VPTR_INDEX): Likewise.
+	(BINFO_PRIMARY_BASE_OF): Likewise,
+	(CLASSTYPE_VFIELDS): Whitespace.
+	(VF_DERIVED_VALUE): Wrap long line.
+	(NAMESPACE_LEVEL): Whitespace.
+        (CAN_HAVE_FULL_LANG_DECL_P): Remove parenthesis.
+        (DEFARG_POINTER): Whitespace.
+        (DECL_NEEDED_P): Remove parenthesis.
+        (DECL_LANGUAGE): Whitespace.
+        (SET_DECL_LANGUAGE): Add parenthesis.
+        (DECL_CONSTRUCTOR_P): Whitespace and wrap.
+        (DECL_OVERLOADED_OPERATOR_P): Remove parenthesis.
+        (DECL_IN_AGGR_P): Whitespace.
+        (DECL_FRIEND_P): Likewise.
+        (DECL_BEFRIENDING_CLASSES): Likewise.
+        (DECL_STATIC_FUNCTION_P): Whitespace and wrap.
+        (DECL_NONCONVERTING_P): Whitespace.
+        (DECL_PURE_VIRTUAL_P): Likewise.
+        (DECL_NEEDS_FINAL_OVERRIDER_P): Likewise.
+        (DECL_PENDING_INLINE_INFO): Whitespace.
+        (DECL_SORTED_FIELDS): Likewise.
+        (DECL_DEFERRED_FN): Likewise.
+        (DECL_TEMPLATE_INFO): Likewise.
+        (CLASSTYPE_TEMPLATE_INFO): Whitespace and wrap.
+        (TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO); Likewise.
+        (SET_TYPE_TEMPLATE_INFO): Add parenthesis.
+        (TMPL_ARGS_LEVEL): Likewise.
+        (SET_TMPL_ARGS_LEVEL): Likewise.
+        (INNERMOST_TEMPLATE_PARMS): Whitespace.
+        (C_TYPEDEF_EXPLICITLY_SIGNED): Uppercase macro parameter.
+        (INTEGRAL_CODE_P(CODE): Add parenthesis.
+        (CP_INTEGRAL_TYPE_P): Remove parenthesis.
+        (TYPE_HAS_CONSTRUCTOR): Whitespace.
+        (TREE_HAS_CONSTRUCTOR): Likewise.
+        (TYPE_HAS_DESTRUCTOR): Likewise.
+        (TYPE_HAS_REAL_ASSIGN_REF): Likewise.
+        (TYPE_HAS_COMPLEX_ASSIGN_REF): Likewise.
+        (TYPE_HAS_ABSTRACT_ASSIGN_REF): Likewise.
+        (TYPE_HAS_COMPLEX_INIT_REF): Likewise.
+        (TYPE_HAS_NONTRIVIAL_DESTRUCTOR): Likewise.
+        (TYPE_PTRMEMFUNC_P): Likewise.
+        (TYPE_PTRMEMFUNC_FLAG): Likewise.
+        (TYPE_GET_PTRMEMFUNC_TYPE): Likewise.
+        (TYPE_SET_PTRMEMFUNC_TYPE): Likewise.
+        (TYPE_PTRMEM_CLASS_TYPE): Remove paranthesis.
+        (TYPE_PTRMEM_POINTED_TO_TYPE): Likewise.
+        (DECL_ACCESS): Whitespace.
+        (DECL_GLOBAL_CTOR_P): Remove paranthesis.
+        (DECL_GLOBAL_DTOR_P): Likewise.
+        (GLOBAL_INIT_PRIORITY): Likewise.
+	(DECL_TEMPLATE_PARMS): Likewise.
+        (DECL_TEMPLATE_RESULT): Likewise.
+        (DECL_TEMPLATE_INSTANTIATIONS): Likewise.
+        (DECL_TEMPLATE_SPECIALIZATIONS): Likewise.
+        (DECL_IMPLICIT_TYPEDEF_P): Remove parenthesis.
+        (SET_DECL_IMPLICIT_TYPEDEF_P): Likewise.
+        (PRIMARY_TEMPLATE_P): Add parenthesis.
+        (DECL_USE_TEMPLATE): Whitespace.
+        (CLASSTYPE_IMPLICIT_INSTANTIATION): Likewise.
+        (SET_CLASSTYPE_IMPLICIT_INSTANTIATION): Likewise.
+        (CLASSTYPE_EXPLICIT_INSTANTIATION): Likewise.
+        (SET_CLASSTYPE_EXPLICIT_INSTANTIATION): Likewise.
+        (CALL_DECLARATOR_PARMS): Remove parenthesis.
+        (CALL_DECLARATOR_QUALS): Likewise.
+        (CALL_DECLARATOR_EXCEPTION_SPEC): Likewise.
+        (TEMP_NAME_P): Wrap.
+        (VFIELD_NAME_P): Likewise.
+        (B_SET): Uppercase macro parameters and add parenthesis.
+        (B_CLR): Likewise.
+        (B_TST): Likewise.
+        (LOOKUP_NAMESPACES_ONLY): Uppercase macro parameters.
+        (LOOKUP_TYPES_ONLY): Uppercase macro parameters.
+        (LOOKUP_QUALIFIERS_ONLY): Uppercase macro parameters.
+        (same_or_base_type_p): Likewise.
+        (cp_deprecated): Likewise.
+
 2002-01-05  Richard Henderson  <rth@redhat.com>
 
         * semantics.c (expand_body): Revert last change.
