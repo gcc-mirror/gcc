@@ -479,7 +479,7 @@ extern int warn_missing_braces;
 
 /* Warn about comparison of signed and unsigned values.  */
 
-int warn_sign_compare;
+extern int warn_sign_compare;
 
 /* Nonzero means this is a function to call to perform comptypes
    on two record types.  */
