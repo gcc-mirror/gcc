@@ -1,3 +1,8 @@
+Tue Jan  4 22:30:16 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* toplev.c (rest_of_compilation): Run shorten-branches before
+	reg-stack for now.
+
 2000-01-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (IS_XXX_REG, IS_XXX_REGNO): Swap behaviour of 
