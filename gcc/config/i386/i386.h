@@ -1086,9 +1086,18 @@ do {									\
 /* Register to hold the addressing base for position independent
    code access to data items.  We don't use PIC pointer for 64bit
    mode.  Define the regnum to dummy value to prevent gcc from
-   pessimizing code dealing with EBX.  */
-#define PIC_OFFSET_TABLE_REGNUM \
-  (TARGET_64BIT || !flag_pic ? INVALID_REGNUM : 3)
+   pessimizing code dealing with EBX. 
+
+   To avoid clobbering a call-saved register unnecessarily, we renumber
+   the pic register when possible.  The change is visible after the
+   prologue has been emitted.  */
+
+#define REAL_PIC_OFFSET_TABLE_REGNUM  3
+
+#define PIC_OFFSET_TABLE_REGNUM				\
+  (TARGET_64BIT || !flag_pic ? INVALID_REGNUM		\
+   : reload_completed ? REGNO (pic_offset_table_rtx)	\
+   : REAL_PIC_OFFSET_TABLE_REGNUM)
 
 /* Register in which address to store a structure value
    arrives in the function.  On the 386, the prologue
