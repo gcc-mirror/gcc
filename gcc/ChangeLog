@@ -1,4 +1,17 @@
-Mon Jun  8 12:13:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+Mon Jun  8 13:18:04 1998  Martin v. Loewis  <loewis@informatik.hu-berlin.de>
+
+	* Makefile.in (TREE_H): Add tree-check.h.
+	(tree-check.h, s-check, gencheck): New targets.
+	(STAGESTUFF): Add s-check.
+	* gencheck.c: New file.
+	* tree.c (tree_check, tree_class_check, expr_check): New functions.
+	* tree.h (TREE_CHECK, TREE_CLASS_CHECK): Define.
+	(TYPE_CHECK, DECL_CHECK): Define.
+	Modify all access macros to use generated checking macros.
+	* acconfig.h (ENABLE_CHECKING): Undefine.
+	* configure.in (--enable-checking): New option.
+
+Mon Jun  8 12:13:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.ed>
 
 	* regmove.c: Remove include for varargs or stdarg.
 
