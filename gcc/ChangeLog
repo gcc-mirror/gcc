@@ -1,3 +1,8 @@
+Tue Apr 14 07:30:57 1998  K. Richard Pixley  <rich@kyoto.noir.com>
+
+	* fixincludes: discard empty C++ comments, as found in sys/time.h
+	on hpux-11.0.
+
 Wed Apr 15 10:47:21 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* config/m68k/m68k.md (adddi3, subdi3): Optimize for constant
