@@ -749,8 +749,9 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
        && (GET_CODE (SUBREG_REG (OUT)) == MEM				\
 	   || (GET_CODE (SUBREG_REG (OUT)) == REG			\
 	       && REGNO (SUBREG_REG (OUT)) >= FIRST_PSEUDO_REGISTER)))) \
-  && ((((MODE) == HImode || (MODE) == QImode) && ! TARGET_BWX		\
-       || ((MODE) == SImode && (CLASS) == FLOAT_REGS))))		\
+  && ((((MODE) == HImode || (MODE) == QImode)				\
+       && (! TARGET_BWX || (CLASS) == FLOAT_REGS))			\
+      || ((MODE) == SImode && (CLASS) == FLOAT_REGS)))			\
  ? GENERAL_REGS								\
  : ((CLASS) == FLOAT_REGS && GET_CODE (OUT) == MEM			\
     && GET_CODE (XEXP (OUT, 0)) == AND) ? GENERAL_REGS			\
