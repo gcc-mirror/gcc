@@ -17,18 +17,22 @@
 #   include "private/gc_priv.h"
 # endif
 
-/* USE OF THIS FILE IS NOT RECOMMENDED unless the collector has been	*/
-/* compiled without -DALL_INTERIOR_POINTERS or with			*/
+/* USE OF THIS FILE IS NOT RECOMMENDED unless GC_all_interior_pointers	*/
+/* is always set, or the collector has been built with			*/
 /* -DDONT_ADD_BYTE_AT_END, or the specified size includes a pointerfree	*/
 /* word at the end.  In the standard collector configuration,		*/
 /* the final word of each object may not be scanned.			*/
-/* This is most useful for compilers that generate C.			*/
+/* This iinterface is most useful for compilers that generate C.	*/
 /* Manual use is hereby discouraged.					*/
 
 /* Allocate n words (NOT BYTES).  X is made to point to the result.	*/
 /* It is assumed that n < MAXOBJSZ, and					*/
 /* that n > 0.  On machines requiring double word alignment of some	*/
-/* data, we also assume that n is 1 or even.  This bypasses the		*/
+/* data, we also assume that n is 1 or even.				*/
+/* If the collector is built with -DUSE_MARK_BYTES or -DPARALLEL_MARK,	*/
+/* the n = 1 case is also disallowed.					*/
+/* Effectively this means that portable code should make sure n is even.*/
+/* This bypasses the							*/
 /* MERGE_SIZES mechanism.  In order to minimize the number of distinct	*/
 /* free lists that are maintained, the caller should ensure that a 	*/
 /* small number of distinct values of n are used.  (The MERGE_SIZES	*/

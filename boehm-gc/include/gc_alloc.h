@@ -25,6 +25,9 @@
 // This uses template classes with static members, and hence does not work
 // with g++ 2.7.2 and earlier.
 //
+// This code assumes that the collector itself has been compiled with a
+// compiler that defines __STDC__ .
+//
 
 #include "gc.h"
 

@@ -24,6 +24,10 @@
  * may be marked by the mark procedure passed to GC_init_gcj_malloc.
  */
 
+#ifndef GC_GCJ_H
+
+#define GC_GCJ_H
+
 #ifndef MARK_DESCR_OFFSET
 #  define MARK_DESCR_OFFSET	sizeof(word)
 #endif
@@ -41,10 +45,7 @@
 #endif
 
 /* The following allocators signal an out of memory condition with	*/
-/* return GC_oom_action();						*/
-/* The default GC_oom_action returns 0.					*/
-/* This functionality is currently restricted to the gcj allocators.	*/
-/* We may want to extend it to the others.				*/
+/* return GC_oom_fn(bytes);						*/
 
 extern void * (*GC_oom_action)(void);
 
@@ -58,8 +59,6 @@ extern void * (*GC_oom_action)(void);
 /* to use the same mark_proc for some of its generated mark descriptors.*/
 /* In that case, it should use a different "environment" value to	*/
 /* detect the presence or absence of the debug header.			*/
-
-/* the debugging interface.						*/
 /* Mp is really of type mark_proc, as defined in gc_mark.h.  We don't 	*/
 /* want to include that here for namespace pollution reasons.		*/
 extern void GC_init_gcj_malloc(int mp_index, void * /* really mark_proc */mp);
@@ -77,6 +76,9 @@ extern void * GC_debug_gcj_malloc(size_t lb,
 /* Similar to the above, but the size is in words, and we don't	*/
 /* adjust it.  The size is assumed to be such that it can be 	*/
 /* allocated as a small object.					*/
+/* Unless it is known that the collector is not configured 	*/
+/* with USE_MARK_BYTES and unless it is known that the object	*/
+/* has weak alignment requirements, lw must be even.		*/
 extern void * GC_gcj_fast_malloc(size_t lw,
 				 void * ptr_to_struct_containing_descr);
 extern void * GC_debug_gcj_fast_malloc(size_t lw,
@@ -91,11 +93,12 @@ extern void * GC_gcj_malloc_ignore_off_page(size_t lb,
 # ifdef GC_DEBUG
 #   define GC_GCJ_MALLOC(s,d) GC_debug_gcj_malloc(s,d,GC_EXTRAS)
 #   define GC_GCJ_FAST_MALLOC(s,d) GC_debug_gcj_fast_malloc(s,d,GC_EXTRAS)
-#   define GC_GCJ_MALLOC_IGNORE_OFF_PAGE(s,d) GC_gcj_debug_malloc(s,d,GC_EXTRAS)
+#   define GC_GCJ_MALLOC_IGNORE_OFF_PAGE(s,d) GC_debug_gcj_malloc(s,d,GC_EXTRAS)
 # else
 #   define GC_GCJ_MALLOC(s,d) GC_gcj_malloc(s,d)
 #   define GC_GCJ_FAST_MALLOC(s,d) GC_gcj_fast_malloc(s,d)
 #   define GC_GCJ_MALLOC_IGNORE_OFF_PAGE(s,d) \
-	GC_gcj_debug_malloc_ignore_off_page(s,d)
+	GC_gcj_malloc_ignore_off_page(s,d)
 # endif
 
+#endif /* GC_GCJ_H */
