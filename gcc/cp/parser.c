@@ -7035,6 +7035,7 @@ cp_parser_conversion_function_id (cp_parser* parser)
   tree saved_scope;
   tree saved_qualifying_scope;
   tree saved_object_scope;
+  bool pop_p = false;
 
   /* Look for the `operator' token.  */
   if (!cp_parser_require_keyword (parser, RID_OPERATOR, "`operator'"))
@@ -7059,11 +7060,11 @@ cp_parser_conversion_function_id (cp_parser* parser)
      In order to see that `I' is a type-name in the definition, we
      must be in the scope of `S'.  */
   if (saved_scope)
-    push_scope (saved_scope);
+    pop_p = push_scope (saved_scope);
   /* Parse the conversion-type-id.  */
   type = cp_parser_conversion_type_id (parser);
   /* Leave the scope of the class, if any.  */
-  if (saved_scope)
+  if (pop_p)
     pop_scope (saved_scope);
   /* Restore the saved scope.  */
   parser->scope = saved_scope;
@@ -9935,6 +9936,7 @@ cp_parser_init_declarator (cp_parser* parser,
   bool is_non_constant_init;
   int ctor_dtor_or_conv_p;
   bool friend_p;
+  bool pop_p = false;
 
   /* Assume that this is not the declarator for a function
      definition.  */
@@ -10092,7 +10094,7 @@ cp_parser_init_declarator (cp_parser* parser,
   /* Enter the SCOPE.  That way unqualified names appearing in the
      initializer will be looked up in SCOPE.  */
   if (scope)
-    push_scope (scope);
+    pop_p = push_scope (scope);
 
   /* Perform deferred access control checks, now that we know in which
      SCOPE the declared entity resides.  */
@@ -10142,7 +10144,7 @@ cp_parser_init_declarator (cp_parser* parser,
      is important to do this before calling cp_finish_decl because it
      makes decisions about whether to create DECL_STMTs or not based
      on the current scope.  */
-  if (scope)
+  if (pop_p)
     pop_scope (scope);
 
   /* For an in-class declaration, use `grokfield' to create the
@@ -10362,6 +10364,7 @@ cp_parser_direct_declarator (cp_parser* parser,
   bool saved_default_arg_ok_p = parser->default_arg_ok_p;
   bool saved_in_declarator_p = parser->in_declarator_p;
   bool first = true;
+  bool pop_p = false;
 
   while (true)
     {
@@ -10632,9 +10635,9 @@ cp_parser_direct_declarator (cp_parser* parser,
 	handle_declarator:;
 	  scope = get_scope_of_declarator (declarator);
 	  if (scope)
-	    /* Any names that appear after the declarator-id for a member
-       	       are looked up in the containing scope.  */
-	    push_scope (scope);
+	    /* Any names that appear after the declarator-id for a
+	       member are looked up in the containing scope.  */
+	    pop_p = push_scope (scope);
 	  parser->in_declarator_p = true;
 	  if ((ctor_dtor_or_conv_p && *ctor_dtor_or_conv_p)
 	      || (declarator
@@ -10659,7 +10662,7 @@ cp_parser_direct_declarator (cp_parser* parser,
     cp_parser_error (parser, "expected declarator");
 
   /* If we entered a scope, we must exit it now.  */
-  if (scope)
+  if (pop_p)
     pop_scope (scope);
 
   parser->default_arg_ok_p = saved_default_arg_ok_p;
@@ -11782,6 +11785,7 @@ cp_parser_class_specifier (cp_parser* parser)
   int has_trailing_semicolon;
   bool nested_name_specifier_p;
   unsigned saved_num_template_parameter_lists;
+  bool pop_p = false;
 
   push_deferring_access_checks (dk_no_deferred);
 
@@ -11816,7 +11820,7 @@ cp_parser_class_specifier (cp_parser* parser)
 
   /* Start the class.  */
   if (nested_name_specifier_p)
-    push_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL (type)));
+    pop_p = push_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL (type)));
   type = begin_class_definition (type);
   if (type == error_mark_node)
     /* If the type is erroneous, skip the entire body of the class.  */
@@ -11841,7 +11845,7 @@ cp_parser_class_specifier (cp_parser* parser)
       TYPE_ATTRIBUTES (type) = NULL_TREE;
       type = finish_struct (type, attributes);
     }
-  if (nested_name_specifier_p)
+  if (pop_p)
     pop_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL (type)));
   /* If this class is not itself within the scope of another class,
      then we need to parse the bodies of all of the queued function
@@ -11959,6 +11963,7 @@ cp_parser_class_head (cp_parser* parser,
   bool qualified_p = false;
   bool invalid_nested_name_p = false;
   bool invalid_explicit_specialization_p = false;
+  bool pop_p = false;
   unsigned num_templates;
 
   /* Assume no nested-name-specifier will be present.  */
@@ -12179,6 +12184,7 @@ cp_parser_class_head (cp_parser* parser,
   else
     {
       tree class_type;
+      bool pop_p = false;
 
       /* Given:
 
@@ -12205,7 +12211,7 @@ cp_parser_class_head (cp_parser* parser,
       class_type = current_class_type;
       /* Enter the scope indicated by the nested-name-specifier.  */
       if (nested_name_specifier)
-	push_scope (nested_name_specifier);
+	pop_p = push_scope (nested_name_specifier);
       /* Get the canonical version of this type.  */
       type = TYPE_MAIN_DECL (TREE_TYPE (type));
       if (PROCESSING_REAL_TEMPLATE_DECL_P ()
@@ -12215,7 +12221,8 @@ cp_parser_class_head (cp_parser* parser,
       if (nested_name_specifier)
 	{
 	  *nested_name_specifier_p = true;
-	  pop_scope (nested_name_specifier);
+	  if (pop_p)
+	    pop_scope (nested_name_specifier);
 	}
     }
   /* Indicate whether this class was declared as a `class' or as a
@@ -12232,7 +12239,7 @@ cp_parser_class_head (cp_parser* parser,
 
      is valid.  */
   if (nested_name_specifier)
-    push_scope (nested_name_specifier);
+    pop_p = push_scope (nested_name_specifier);
   /* Now, look for the base-clause.  */
   token = cp_lexer_peek_token (parser->lexer);
   if (token->type == CPP_COLON)
@@ -12246,7 +12253,7 @@ cp_parser_class_head (cp_parser* parser,
     }
   /* Leave the scope given by the nested-name-specifier.  We will
      enter the class scope itself while processing the members.  */
-  if (nested_name_specifier)
+  if (pop_p)
     pop_scope (nested_name_specifier);
 
  done:
@@ -13677,20 +13684,22 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	}
       else
 	{
+	  bool pop_p = false;
+
 	  /* If PARSER->SCOPE is a dependent type, then it must be a
 	     class type, and we must not be checking dependencies;
 	     otherwise, we would have processed this lookup above.  So
 	     that PARSER->SCOPE is not considered a dependent base by
 	     lookup_member, we must enter the scope here.  */
 	  if (dependent_p)
-	    push_scope (parser->scope);
+	    pop_p = push_scope (parser->scope);
 	  /* If the PARSER->SCOPE is a a template specialization, it
 	     may be instantiated during name lookup.  In that case,
 	     errors may be issued.  Even if we rollback the current
 	     tentative parse, those errors are valid.  */
 	  decl = lookup_qualified_name (parser->scope, name, is_type,
 					/*complain=*/true);
-	  if (dependent_p)
+	  if (pop_p)
 	    pop_scope (parser->scope);
 	}
       parser->qualifying_scope = parser->scope;
@@ -14122,6 +14131,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 	  && !cp_parser_storage_class_specifier_opt (parser))
 	{
 	  tree type;
+	  bool pop_p = false;
 	  unsigned saved_num_template_parameter_lists;
 
 	  /* Names appearing in the type-specifier should be looked up
@@ -14141,7 +14151,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 		      return false;
 		    }
 		}
-	      push_scope (type);
+	      pop_p = push_scope (type);
 	    }
 
 	  /* Inside the constructor parameter list, surrounding
@@ -14162,7 +14172,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 	    = saved_num_template_parameter_lists;
 
 	  /* Leave the scope of the class.  */
-	  if (type)
+	  if (pop_p)
 	    pop_scope (type);
 
 	  constructor_p = !cp_parser_error_occurred (parser);
