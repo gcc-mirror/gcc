@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -47,10 +47,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CRIS_CPP_SUBTARGET_SPEC
 #define CRIS_CPP_SUBTARGET_SPEC \
-  "-D__gnu_linux__ -D__linux__ -D__unix__  -D__ELF__\
-   %{pthread:-D_REENTRANT}\
-   %{fPIC|fpic: -D__PIC__ -D__pic__}\
-   %{!fleading-underscore:-fno-leading-underscore -D__NO_UNDERSCORES__}\
+  "%{pthread:-D_REENTRANT}\
    %{!march=*:%{!cpu=*:-D__arch_v10 -D__CRIS_arch_version=10}}\
    %{!ansi:%{!std=*:%{!undef:-Dlinux -Dunix}\
      -Asystem(unix) -Asystem(posix) -Acpu(cris) -Amachine(cris)}}"
@@ -98,6 +95,28 @@ Boston, MA 02111-1307, USA.  */
   %{!shared:%{!static:%{rdynamic:-export-dynamic}}}\
   %{!r:%{O2|O3: --gc-sections}}"
 
+
+/* Node: Run-time Target */
+
+/* For the cris-*-linux* subtarget.  */
+#undef TARGET_OS_CPP_BUILTINS
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("__gnu_linux__");		\
+      builtin_define ("__linux__");		\
+      builtin_define ("__unix__");		\
+      builtin_define ("__ELF__");		\
+      if (flag_pic)				\
+	{					\
+	  builtin_define ("__PIC__");		\
+	  builtin_define ("__pic__");		\
+	}					\
+      if (flag_leading_underscore <= 0)		\
+	builtin_define ("__NO_UNDERSCORES__");	\
+    }						\
+  while (0)
+     
 
 /* Node: Sections */
 
