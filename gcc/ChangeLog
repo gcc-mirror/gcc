@@ -1,3 +1,8 @@
+Wed Aug 12 12:39:16 1998  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* mips/mips.h (ENCODE_SECTION_INFO): Set SYMBOL_REF_FLAG for
+	VAR_DECL's in gp addressable sections.
+
 Tue Aug 11 23:02:31 1998  John Carr  <jfc@mit.edu>
 
 	* sparc.c: Change return <exp> to <exp>; return; in functions
