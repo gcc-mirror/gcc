@@ -1620,10 +1620,21 @@ alpha_emit_conditional_branch (code)
 	    1  true
 	 Convert the compare against the raw return value.  */
 
-      op0 = alpha_emit_xfloating_compare (code, op0, op1);
+      if (code == UNORDERED || code == ORDERED)
+	cmp_code = EQ;
+      else
+	cmp_code = code;
+
+      op0 = alpha_emit_xfloating_compare (cmp_code, op0, op1);
       op1 = const0_rtx;
       alpha_compare.fp_p = 0;
-      code = GT;
+
+      if (code == UNORDERED)
+	code = LT;
+      else if (code == ORDERED)
+	code = GE;
+      else
+        code = GT;
     }
 
   /* The general case: fold the comparison code to the types of compares
@@ -1713,11 +1724,12 @@ alpha_emit_conditional_branch (code)
 		}
 	    }
 	}
-    }
 
-  /* Force op0 into a register.  */
-  if (GET_CODE (op0) != REG)
-    op0 = force_reg (cmp_mode, op0);
+      if (!reg_or_0_operand (op0, DImode))
+	op0 = force_reg (DImode, op0);
+      if (cmp_code != PLUS && !reg_or_8bit_operand (op1, DImode))
+	op1 = force_reg (DImode, op1);
+    }
 
   /* Emit an initial compare instruction, if necessary.  */
   tem = op0;
@@ -1732,6 +1744,111 @@ alpha_emit_conditional_branch (code)
 
   /* Return the branch comparison.  */
   return gen_rtx_fmt_ee (branch_code, branch_mode, tem, CONST0_RTX (cmp_mode));
+}
+
+/* Certain simplifications can be done to make invalid setcc operations
+   valid.  Return the final comparison, or NULL if we can't work.  */
+
+rtx
+alpha_emit_setcc (code)
+     enum rtx_code code;
+{
+  enum rtx_code cmp_code;
+  rtx op0 = alpha_compare.op0, op1 = alpha_compare.op1;
+  int fp_p = alpha_compare.fp_p;
+  rtx tmp;
+
+  /* Zero the operands.  */
+  memset (&alpha_compare, 0, sizeof (alpha_compare));
+
+  if (fp_p && GET_MODE (op0) == TFmode)
+    {
+      if (! TARGET_HAS_XFLOATING_LIBS)
+	abort ();
+
+      /* X_floating library comparison functions return
+	   -1  unordered
+	    0  false
+	    1  true
+	 Convert the compare against the raw return value.  */
+
+      if (code == UNORDERED || code == ORDERED)
+	cmp_code = EQ;
+      else
+	cmp_code = code;
+
+      op0 = alpha_emit_xfloating_compare (cmp_code, op0, op1);
+      op1 = const0_rtx;
+      fp_p = 0;
+
+      if (code == UNORDERED)
+	code = LT;
+      else if (code == ORDERED)
+	code = GE;
+      else
+        code = GT;
+    }
+
+  if (fp_p && !TARGET_FIX)
+    return NULL_RTX;
+
+  /* The general case: fold the comparison code to the types of compares
+     that we have, choosing the branch as necessary.  */
+
+  cmp_code = NIL;
+  switch (code)
+    {
+    case EQ:  case LE:  case LT:  case LEU:  case LTU:
+    case UNORDERED:
+      /* We have these compares.  */
+      if (fp_p)
+	cmp_code = code, code = NE;
+      break;
+
+    case NE:
+      if (!fp_p && op1 == const0_rtx)
+	break;
+      /* FALLTHRU */
+
+    case ORDERED:
+      cmp_code = reverse_condition (code);
+      code = EQ;
+      break;
+
+    case GE:  case GT: case GEU:  case GTU:
+      code = swap_condition (code);
+      if (fp_p)
+	cmp_code = code, code = NE;
+      tmp = op0, op0 = op1, op1 = tmp;
+      break;
+
+    default:
+      abort ();
+    }
+
+  if (!fp_p)
+    {
+      if (!reg_or_0_operand (op0, DImode))
+	op0 = force_reg (DImode, op0);
+      if (!reg_or_8bit_operand (op1, DImode))
+	op1 = force_reg (DImode, op1);
+    }
+
+  /* Emit an initial compare instruction, if necessary.  */
+  if (cmp_code != NIL)
+    {
+      enum machine_mode mode = fp_p ? DFmode : DImode;
+
+      tmp = gen_reg_rtx (mode);
+      emit_insn (gen_rtx_SET (VOIDmode, tmp,
+			      gen_rtx_fmt_ee (cmp_code, mode, op0, op1)));
+
+      op0 = fp_p ? gen_lowpart (DImode, tmp) : tmp;
+      op1 = const0_rtx;
+    }
+
+  /* Return the setcc comparison.  */
+  return gen_rtx_fmt_ee (code, DImode, op0, op1);
 }
 
 
@@ -1836,15 +1953,21 @@ alpha_emit_conditional_move (cmp, mode)
       break;
 
     case GE:  case GT:  case GEU:  case GTU:
-      /* These must be swapped.  Make sure the new first operand is in
-	 a register.  */
+      /* These must be swapped.  */
       code = swap_condition (code);
       tem = op0, op0 = op1, op1 = tem;
-      op0 = force_reg (cmp_mode, op0);
       break;
 
     default:
       abort ();
+    }
+
+  if (!fp_p)
+    {
+      if (!reg_or_0_operand (op0, DImode))
+	op0 = force_reg (DImode, op0);
+      if (!reg_or_8bit_operand (op1, DImode))
+	op1 = force_reg (DImode, op1);
     }
 
   /* ??? We mark the branch mode to be CCmode to prevent the compare

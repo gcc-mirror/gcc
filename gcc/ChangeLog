@@ -1,5 +1,18 @@
 2000-09-24  Richard Henderson  <rth@cygnus.com>
 
+	* config/alpha/alpha.c (alpha_emit_conditional_branch): Handle
+	TFmode unordered compares properly.  Revalidate integer compare
+	operands.
+	(alpha_emit_setcc): New.
+	(alpha_emit_conditional_move): Revalidate integer compare operands.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/alpha.md (cmpdi): Allow general operands.
+	(sne): Use alpha_emit_setcc.
+	(seq, slt, sle, sgt, sge, sltu, sleu, sgtu, sgeu): Likewise.
+	(sunordered, sordered): New.
+
+2000-09-24  Richard Henderson  <rth@cygnus.com>
+
 	* config/ia64/ia64-protos.h: Update.
 	* config/ia64/ia64.c (call_multiple_values_operation): Remove.
 	(ia64_expand_call): New.
