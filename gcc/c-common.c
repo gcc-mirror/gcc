@@ -1859,7 +1859,7 @@ void
 binary_op_error (code)
      enum tree_code code;
 {
-  register char *opname = "unknown";
+  register char *opname;
 
   switch (code)
     {
@@ -1912,6 +1912,8 @@ binary_op_error (code)
     case LROTATE_EXPR:
     case RROTATE_EXPR:
       opname = "rotate"; break;
+    default:
+      opname = "unknown"; break;
     }
   error ("invalid operands to binary %s", opname);
 }
@@ -1997,6 +1999,8 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	  break;
 	case GE_EXPR:
 	  code = LE_EXPR;
+	  break;
+	default:
 	  break;
 	}
       *rescode_ptr = code;
@@ -2128,6 +2132,9 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 		primop1 = TYPE_MAX_VALUE (type);
 		val = 0;
 		break;
+
+	      default:
+		break;
 	      }
 	  type = unsigned_type (type);
 	}
@@ -2225,6 +2232,10 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 						     primop0))))
 		warning ("unsigned value < 0 is always 0");
 	      value = boolean_false_node;
+	      break;
+
+	    default:
+	      break;
 	    }
 
 	  if (value != 0)
@@ -2411,6 +2422,9 @@ truthvalue_conversion (expr)
     case MODIFY_EXPR:
       if (warn_parentheses && C_EXP_ORIGINAL_CODE (expr) == MODIFY_EXPR)
 	warning ("suggest parentheses around assignment used as truth value");
+      break;
+      
+    default:
       break;
     }
 
