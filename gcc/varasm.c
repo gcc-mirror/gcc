@@ -1614,7 +1614,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       rounded = (rounded / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
 		 * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
 
-/* Don't continue this line--convex cc version 4.1 would lose.  */
 #if !defined(ASM_OUTPUT_ALIGNED_COMMON) && !defined(ASM_OUTPUT_ALIGNED_DECL_COMMON) && !defined(ASM_OUTPUT_ALIGNED_BSS)
       if ((unsigned HOST_WIDE_INT) DECL_ALIGN (decl) / BITS_PER_UNIT > rounded)
 	warning_with_decl
