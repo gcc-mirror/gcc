@@ -1,3 +1,8 @@
+2005-04-06  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	PR target/17822
+	* config/avr/t-avr (AR_FOR_TARGET,RANLIB_FOR_TARGET): Remove.
+
 2005-04-06  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in (LIBGCC2_CFLAGS): Compile with -pipe.
