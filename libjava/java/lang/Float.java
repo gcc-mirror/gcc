@@ -438,7 +438,9 @@ public final class Float extends Number implements Comparable
    * @return the bits of the <code>float</code>
    * @see #intBitsToFloat(int)
    */
+  // GCJ LOCAL: We diverge from Classpath for efficiency.
   public static native int floatToIntBits(float value);
+  // END GCJ LOCAL
 
   /**
    * Convert the float to the IEEE 754 floating-point "single format" bit
@@ -453,7 +455,9 @@ public final class Float extends Number implements Comparable
    * @return the bits of the <code>float</code>
    * @see #intBitsToFloat(int)
    */
+  // GCJ LOCAL: We diverge from Classpath for efficiency.
   public static native int floatToRawIntBits(float value);
+  // END GCJ LOCAL
 
   /**
    * Convert the argument in IEEE 754 floating-point "single format" bit
@@ -468,7 +472,9 @@ public final class Float extends Number implements Comparable
    * @see #floatToIntBits(float)
    * @see #floatToRawIntBits(float)
    */
+  // GCJ LOCAL: We diverge from Classpath for efficiency.
   public static native float intBitsToFloat(int bits);
+  // END GCJ LOCAL
 
   /**
    * Compare two Floats numerically by comparing their <code>float</code>
