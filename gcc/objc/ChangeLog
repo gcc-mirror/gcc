@@ -1,3 +1,9 @@
+2005-03-23  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* objc-act.c (next_sjlj_build_enter_and_setjmp,
+	next_sjlj_build_catch_list, next_sjlj_build_try_catch_finally):
+	Call c_common_truthvalue_conversion.
+
 2005-02-25  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* Make-lang.in (objc/objc-parse.o-warn, objc/objc-parse.o,

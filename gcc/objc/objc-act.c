@@ -3019,7 +3019,7 @@ next_sjlj_build_enter_and_setjmp (void)
   sj = build_function_call (objc_setjmp_decl, t);
 
   cond = build (COMPOUND_EXPR, TREE_TYPE (sj), enter, sj);
-  cond = lang_hooks.truthvalue_conversion (cond);
+  cond = c_common_truthvalue_conversion (cond);
 
   return build (COND_EXPR, void_type_node, cond, NULL, NULL);
 }
@@ -3086,7 +3086,7 @@ next_sjlj_build_catch_list (void)
 	      t = objc_get_class_reference (OBJC_TYPE_NAME (TREE_TYPE (type)));
 	      args = tree_cons (NULL, t, args);
 	      t = build_function_call (objc_exception_match_decl, args);
-	      cond = lang_hooks.truthvalue_conversion (t);
+	      cond = c_common_truthvalue_conversion (t);
 	    }
 	  t = build (COND_EXPR, void_type_node, cond, body, NULL);
 	  SET_EXPR_LOCUS (t, EXPR_LOCUS (stmt));
@@ -3208,7 +3208,7 @@ next_sjlj_build_try_catch_finally (void)
   /* Build the complete FINALLY statement list.  */
   t = next_sjlj_build_try_exit ();
   t = build_stmt (COND_EXPR,
-		  lang_hooks.truthvalue_conversion (rethrow_decl),
+		  c_common_truthvalue_conversion (rethrow_decl),
 		  NULL, t);
   SET_EXPR_LOCATION (t, cur_try_context->finally_locus);
   append_to_statement_list (t, &TREE_OPERAND (try_fin, 1));
@@ -3219,7 +3219,7 @@ next_sjlj_build_try_catch_finally (void)
   t = tree_cons (NULL, rethrow_decl, NULL);
   t = build_function_call (objc_exception_throw_decl, t);
   t = build_stmt (COND_EXPR,
-		  lang_hooks.truthvalue_conversion (rethrow_decl),
+		  c_common_truthvalue_conversion (rethrow_decl),
 		  t, NULL);
   SET_EXPR_LOCATION (t, cur_try_context->end_finally_locus);
   append_to_statement_list (t, &TREE_OPERAND (try_fin, 1));

@@ -3580,7 +3580,8 @@ c_parser_paren_condition (c_parser *parser)
   if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return error_mark_node;
   loc = c_parser_peek_token (parser)->location;
-  cond = lang_hooks.truthvalue_conversion (c_parser_expression (parser).value);
+  cond = c_objc_common_truthvalue_conversion
+    (c_parser_expression (parser).value);
   if (EXPR_P (cond))
     SET_EXPR_LOCATION (cond, loc);
   c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
@@ -3816,7 +3817,7 @@ c_parser_for_statement (c_parser *parser)
       else
 	{
 	  tree ocond = c_parser_expression (parser).value;
-	  cond = lang_hooks.truthvalue_conversion (ocond);
+	  cond = c_objc_common_truthvalue_conversion (ocond);
 	  if (EXPR_P (cond))
 	    SET_EXPR_LOCATION (cond, loc);
 	  c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
@@ -4151,13 +4152,14 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after)
 	pedwarn ("ISO C forbids omitting the middle term of a ?: expression");
       /* Make sure first operand is calculated only once.  */
       exp1.value = save_expr (default_conversion (cond.value));
-      cond.value = lang_hooks.truthvalue_conversion (exp1.value);
+      cond.value = c_objc_common_truthvalue_conversion (exp1.value);
       skip_evaluation += cond.value == truthvalue_true_node;
     }
   else
     {
       cond.value
-	= lang_hooks.truthvalue_conversion (default_conversion (cond.value));
+	= c_objc_common_truthvalue_conversion
+	(default_conversion (cond.value));
       skip_evaluation += cond.value == truthvalue_false_node;
       exp1 = c_parser_expression (parser);
       skip_evaluation += ((cond.value == truthvalue_true_node)
@@ -4394,12 +4396,12 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after)
       switch (ocode)
 	{
 	case TRUTH_ANDIF_EXPR:
-	  stack[sp].expr.value = lang_hooks.truthvalue_conversion
+	  stack[sp].expr.value = c_objc_common_truthvalue_conversion
 	    (default_conversion (stack[sp].expr.value));
 	  skip_evaluation += stack[sp].expr.value == truthvalue_false_node;
 	  break;
 	case TRUTH_ORIF_EXPR:
-	  stack[sp].expr.value = lang_hooks.truthvalue_conversion
+	  stack[sp].expr.value = c_objc_common_truthvalue_conversion
 	    (default_conversion (stack[sp].expr.value));
 	  skip_evaluation += stack[sp].expr.value == truthvalue_true_node;
 	  break;
