@@ -183,8 +183,9 @@ namespace std
 	      ++__sep_pos;
 	      ++__beg;
 	    }
-          else if (__traits_type::eq(__c, __lc->_M_thousands_sep) 
-		   && __lc->_M_use_grouping && !__found_dec)
+          else if (__lc->_M_use_grouping
+		   && __traits_type::eq(__c, __lc->_M_thousands_sep)
+		   && !__found_dec && !__found_sci)
 	    {
               // NB: Thousands separator at the beginning of a string
               // is a no-no, as is two consecutive thousands separators.
@@ -201,7 +202,7 @@ namespace std
 		}
             }
 	  else if (__traits_type::eq(__c, __lc->_M_decimal_point) 
-		   && !__found_dec)
+		   && !__found_dec && !__found_sci)
 	    {
 	      // According to the standard, if no grouping chars are seen,
 	      // no grouping check is applied. Therefore __found_grouping

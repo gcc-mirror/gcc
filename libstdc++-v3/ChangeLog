@@ -1,3 +1,23 @@
+2003-12-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get::_M_extract_float):
+	When __found_sci becomes true stop eating thousands separators
+	and the decimal radix separator.
+	* testsuite/22_locale/num_get/get/char/9.cc: New.
+	* testsuite/22_locale/num_get/get/wchar_t/9.cc: Likewise.	
+	
+	* config/locale/generic/c_locale.cc (__convert_to_v): Don't
+	check that *__sanity == '\0': parsing may stop earlier, still
+	be successful.
+	* config/locale/gnu/c_locale.cc: Likewise.
+	* testsuite/22_locale/num_get/get/char/10.cc: New.
+	* testsuite/22_locale/num_get/get/wchar_t/10.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/10.cc:
+	Tweak in one place accordingly.
+
+	* testsuite/22_locale/money_get/get/char/1.cc: Fix typo.
+	* testsuite/22_locale/money_get/get/wchar_t/1.cc: Likewise.
+
 2003-12-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/stl_list.h: Formatting tweaks.
