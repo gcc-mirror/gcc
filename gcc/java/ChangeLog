@@ -1,3 +1,9 @@
+Mon Nov  1 23:42:00 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (method_header:): Issue error message for rule `type
+ 	error'.
+	(synchronized:): Error report when not using synchronized.
+	
 Mon Nov  1 01:32:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_qualified_expression_name): Prevent `this' from

@@ -890,7 +890,10 @@ method_header:
 |	modifiers VOID_TK method_declarator throws
 		{ $$ = method_header ($1, void_type_node, $3, $4); }
 |	type error
-		{RECOVER;}
+		{
+		  yyerror ("Invalid method declaration, method name required");
+		  RECOVER;
+		}
 |	modifiers type error
 		{RECOVER;}
 |	VOID_TK error
@@ -1669,10 +1672,14 @@ synchronized_statement:
 ;
 
 synchronized:
-	MODIFIER_TK
+	modifiers
 		{
-		  if ((1 << $1) != ACC_SYNCHRONIZED)
-		    fatal ("synchronized was '%d' - yyparse", (1 << $1));
+		  check_modifiers ("Illegal modifier `%s'. Only "
+				   "`synchronized' was expected here",
+				   $1, ACC_SYNCHRONIZED);
+		  if ($1 != ACC_SYNCHRONIZED)
+		    MODIFIER_WFL (SYNCHRONIZED_TK) = 
+		      build_wfl_node (NULL_TREE);
 		}
 ;
 
