@@ -732,9 +732,9 @@ C_OBJS = c-parse.o c-lang.o $(C_AND_OBJC_OBJS)
 # Language-independent object files.
 
 OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	\
- cfg.o cfganal.o cfgbuild.o cfgcleanup.o cfgloop.o cfgrtl.o combine.o	\
- conflict.o convert.o cse.o cselib.o dbxout.o debug.o dependence.o df.o	\
- diagnostic.o doloop.o dominance.o dwarf2asm.o dwarf2out.o dwarfout.o	\
+ cfg.o cfganal.o cfgbuild.o cfgcleanup.o  cfglayout.o cfgloop.o cfgrtl.o \
+ combine.o conflict.o convert.o cse.o cselib.o dbxout.o debug.o dependence.o \
+ df.o diagnostic.o doloop.o dominance.o dwarf2asm.o dwarf2out.o dwarfout.o \
  emit-rtl.o except.o explow.o expmed.o expr.o final.o flow.o 		\
  fold-const.o function.o gcse.o genrtl.o ggc-common.o global.o graph.o	\
  haifa-sched.o hash.o hashtable.o ifcvt.o insn-attrtab.o insn-emit.o	\
@@ -747,7 +747,6 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	\
  sibcall.o simplify-rtx.o splay-tree.o ssa.o ssa-ccp.o ssa-dce.o stmt.o	\
  stor-layout.o stringpool.o timevar.o toplev.o tree.o tree-dump.o 	\
  tree-inline.o unroll.o varasm.o varray.o version.o xcoffout.o 		\
- cfglayout.o								\
  $(GGC) $(out_object_file) $(EXTRA_OBJS)
 
 BACKEND = main.o libbackend.a
