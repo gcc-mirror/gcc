@@ -2047,7 +2047,7 @@ xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefil
 	rm -rf fixtmp.c
 
 fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) \
-   cpplib.o cpphash.o cppalloc.o cppexp.o cpperror.o prefix.o version.o
+   cpplib.o cpphash.o cppalloc.o cppexp.o prefix.o version.o
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ fix-header.o \
 	   scan-decls.o scan.o cpplib.o cpphash.o cppalloc.o prefix.o \
 	   version.o cppexp.o $(HOST_LIBS)

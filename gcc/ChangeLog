@@ -1,3 +1,48 @@
+Mon Jun 29 20:12:41 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * Makefile.in (fix-header): Don't needlessly depend on cpperror.o.
+
+	* alias.c (CHECK_ALIAS_SETS_FOR_CONSISTENCY): Cast expansion to
+	void since it is evaluated in a comma list.
+
+	* mips.h (ASM_GENERATE_INTERNAL_LABEL): Always sprintf `NUM'
+ 	argument as a long and cast `NUM' to long to ensure it is of the
+ 	proper width.  Wrap macro arguments in parens when they appear in
+ 	the expansion.
+
+	* sol2.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+
+	* sparc.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	(ASM_DECLARE_RESULT): Fix fprintf format specifier to match
+	function argument return type.
+	(REGNO_OK_FOR_INDEX_P, REGNO_OK_FOR_BASE_P, REGNO_OK_FOR_FP_P,
+	REGNO_OK_FOR_CCFP_P): Use `(unsigned)' not `U'.
+
+	* cpplib.c (cpp_message_from_errno): Remove unneeded argument to
+	cpp_message.
+
+        * dbxout.c: Fix the comments after an #endif to reflect the actual
+	condition tested in the preceding #if.
+
+	* except.c (find_all_handler_type_matches): Switch to old-style
+ 	function definition.
+
+	* expr.c (expand_builtin): Remove unused variable `type' twice.
+
+        * gbl-ctors.h (DO_GLOBAL_CTORS_BODY): Cast -1 before comparing it
+ 	to an unsigned long.
+
+	* haifa-sched.c (print_insn_chain): Remove unused function.
+
+        * objc/objc-act.c (build_msg_pool_reference): Hide prototype and
+	definition.
+
+        * toplev.c: When testing whether to include dbxout.h, also include
+	it when XCOFF_DEBUGGING_INFO is defined.
+
+        * unroll.c (unroll_loop): Add parentheses around assignment used
+	as truth value.
+
 Mon Jun 29 12:18:00 1998  Catherine Moore  <clm@cygnus.com>
 
         * config/lb1spc.asm (.div, .udiv): Replace routines.

@@ -456,7 +456,6 @@ static char *safe_concat PROTO ((char *, char *, char *));
 static int insn_issue_delay PROTO ((rtx));
 static int birthing_insn_p PROTO ((rtx));
 static void adjust_priority PROTO ((rtx));
-static void print_insn_chain PROTO ((rtx));
 
 /* Mapping of insns to their original block prior to scheduling.  */
 static int *insn_orig_block;
@@ -6276,36 +6275,6 @@ print_insn (buf, x, verbose)
 	sprintf (buf, "i%-4d  <What?>", INSN_UID (x));
     }
 }				/* print_insn */
-
-void
-print_insn_chain (rtx_first)
-     rtx rtx_first;
-{
-  register rtx tmp_rtx;
-  char str[BUF_LEN];
-
-  strcpy (str, "(nil)\n");
-  if (rtx_first != 0)
-    switch (GET_CODE (rtx_first))
-      {
-      case INSN:
-      case JUMP_INSN:
-      case CALL_INSN:
-      case NOTE:
-      case CODE_LABEL:
-      case BARRIER:
-	for (tmp_rtx = rtx_first; tmp_rtx != NULL;
-	     tmp_rtx = NEXT_INSN (tmp_rtx))
-	  {
-	    print_insn (str, tmp_rtx, 0);
-	    printf ("%s\n", str);
-	  }
-	break;
-      default:
-	print_insn (str, rtx_first, 0);
-	printf ("%s\n", str);
-      }
-}				/* print_insn_chain */
 
 /* Print visualization debugging info */
 

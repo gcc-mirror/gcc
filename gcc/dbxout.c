@@ -2710,4 +2710,4 @@ dbxout_function (decl)
     dbxout_function_end ();
 #endif
 }
-#endif /* DBX_DEBUGGING_INFO */
+#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */

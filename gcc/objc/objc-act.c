@@ -297,7 +297,9 @@ static tree init_objc_symtab			PROTO((tree));
 static void forward_declare_categories		PROTO((void));
 static void generate_objc_symtab_decl		PROTO((void));
 static tree build_selector			PROTO((tree));
+#if 0
 static tree build_msg_pool_reference		PROTO((int));
+#endif
 static tree build_typed_selector_reference     	PROTO((tree, tree));
 static tree build_selector_reference		PROTO((tree));
 static tree build_class_reference_decl		PROTO((tree));
@@ -2042,6 +2044,7 @@ build_selector (ident)
    grok.m: warning: initialization of non-const * pointer from const *
    grok.m: warning: initialization between incompatible pointer types.  */
 
+#if 0
 static tree
 build_msg_pool_reference (offset)
      int offset;
@@ -2059,7 +2062,6 @@ build_msg_pool_reference (offset)
   return expr;
 }
 
-#if 0
 static tree
 init_selector (offset)
      int offset;

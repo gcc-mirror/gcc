@@ -83,7 +83,7 @@ extern void __do_global_dtors (void);
 do {									\
   unsigned long nptrs = (unsigned long) __CTOR_LIST__[0];		\
   unsigned i;								\
-  if (nptrs == -1)							\
+  if (nptrs == (unsigned long)-1)				        \
     for (nptrs = 0; __CTOR_LIST__[nptrs + 1] != 0; nptrs++);		\
   for (i = nptrs; i >= 1; i--)						\
     __CTOR_LIST__[i] ();						\
