@@ -408,8 +408,6 @@ break_out_calls (exp)
 
 }
 
-extern struct obstack permanent_obstack;
-
 /* Here is how primitive or already-canonicalized types' hash
    codes are made.  MUST BE CONSISTENT WITH tree.c !!! */
 #define TYPE_HASH(TYPE) ((HOST_WIDE_INT) (TYPE) & 0777777)
@@ -1838,27 +1836,6 @@ get_type_decl (t)
   return 0;
 }
 
-int
-can_free (obstack, t)
-     struct obstack *obstack;
-     tree t;
-{
-  int size = 0;
-
-  if (TREE_CODE (t) == TREE_VEC)
-    size = (TREE_VEC_LENGTH (t)-1) * sizeof (tree) + sizeof (struct tree_vec);
-  else
-    my_friendly_abort (42);
-
-#define ROUND(x) ((x + obstack_alignment_mask (obstack)) \
-		  & ~ obstack_alignment_mask (obstack))
-  if ((char *)t + ROUND (size) == obstack_next_free (obstack))
-    return 1;
-#undef ROUND
-
-  return 0;
-}
-
 /* Return first vector element whose BINFO_TYPE is ELEM.
    Return 0 if ELEM is not in VEC.  VEC may be NULL_TREE.  */
 
@@ -2059,15 +2036,6 @@ build_ptr_wrapper (ptr)
   tree t = make_node (WRAPPER);
   WRAPPER_PTR (t) = ptr;
   return t;
-}
-
-/* Same, but on the expression_obstack.  */
-
-tree
-build_expr_ptr_wrapper (ptr)
-     void *ptr;
-{
-  return build_ptr_wrapper (ptr);
 }
 
 /* Build a wrapper around some integer I so we can use it as a tree.  */

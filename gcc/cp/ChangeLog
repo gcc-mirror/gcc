@@ -1,3 +1,11 @@
+2001-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (build_expr_ptr_wrapper, can_free): Remove.
+	* tree.c (build_expr_ptr_wrapper, can_free, permanent_obstack):
+	Remove.
+	* call.c (convert_class_to_reference, build_user_type_conversion_1,
+	add_warning): Change build_expr_ptr_wrapper to build_ptr_wrapper.
+
 2001-02-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (g++spec.o): Add DRIVER_DEFINES to the list
