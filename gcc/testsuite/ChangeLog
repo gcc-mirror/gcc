@@ -1,3 +1,7 @@
+2001-12-20  Release Manager
+
+	* GCC 3.0.3 Released.
+
 2001-12-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/concat.c: New test.

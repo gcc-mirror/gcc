@@ -1,3 +1,7 @@
+2001-12-20  Release Manager
+
+	* GCC 3.0.3 Released.
+
 2001-11-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* POTFILES.in: Add config/rs6000/freebsd.h and the s390 directory.
