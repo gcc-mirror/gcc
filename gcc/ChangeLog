@@ -1,4 +1,9 @@
-Sat Feb 21 20:36:23 PST 1998 Jeff Law  (law@cygnus.com)
+Sun Feb 22 09:45:39 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* collect2.c (scan_prog_file): Completely cover uses of variable
+	`exports' with macro COLLECT_EXPORT_LIST.
+
+Sat Feb 21 20:36:23 1998  Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
 
