@@ -1062,8 +1062,11 @@ compute_record_mode (type)
 
       /* If this field is the whole struct, remember its mode so
 	 that, say, we can put a double in a class into a DF
-	 register instead of forcing it to live in the stack.  */
-      if (field == TYPE_FIELDS (type) && TREE_CHAIN (field) == 0)
+	 register instead of forcing it to live in the stack.  However,
+	 we don't support using such a mode if there is no integer mode
+	 of the same size, so don't set it here.  */
+      if (field == TYPE_FIELDS (type) && TREE_CHAIN (field) == 0
+	  && int_mode_for_mode (DECL_MODE (field)) != BLKmode)
 	mode = DECL_MODE (field);
 
 #ifdef STRUCT_FORCE_BLK
