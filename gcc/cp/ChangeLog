@@ -1,3 +1,10 @@
+1998-11-23  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (instantiate_class_template): Don't try to figure out what
+	specialization to use for a partial instantiation.  Correct
+	typos in a couple of comments.  Avoid calling uses_template_parms
+	multiple times.
+
 1998-11-23  Benjamin Kosnik  <bkoz@cygnus.com>
 
         * method.c (process_overload_item): Add call to
