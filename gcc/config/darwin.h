@@ -82,19 +82,6 @@ Boston, MA 02111-1307, USA.  */
 #undef	DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-/* Strings provided by SUBTARGET_OPTIONS */
-extern const char *darwin_macosx_version_name;
-
-/* Override rs6000.h/i386.h definition */
-#undef SUBTARGET_OPTIONS
-#define SUBTARGET_OPTIONS					            \
-  { "macosx=", &darwin_macosx_version_name,		    \
-      N_("Earliest operating system for which code should be generated"), 0 }
-
-/* Earliest operating system for which generated code is targeted. 1000 for 10.0,
-   1010 for 10.1, etc. */
-extern unsigned int macosx_version_min_required;
-
 /* This table intercepts weirdo options whose names would interfere
    with normal driver conventions, and either translates them into
    standardly-named options, or adds a 'Z' so that they can get to
