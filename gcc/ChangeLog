@@ -1,3 +1,7 @@
+2003-09-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-common.c (c_common_type_for_mode): Check for VOIDmode.
+
 2003-09-24  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.h (ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP): Wrap in
