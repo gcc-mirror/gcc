@@ -44,7 +44,7 @@
 #	27-Aug-90   Vince Guarna/Tom Wood   
 #			Version 3 assembler syntax (-abi).
 #	16-Aug-90   Ron Guilmette
-#			Avoid problems on a Sparc.  The common
+#			Avoid problems on a SPARC.  The common
 #			denominator among shells seems to be '...\'
 #			rather than '...\\'.
 #	15-Aug-90   Ron Guilmette

@@ -4435,7 +4435,7 @@ Sun May  3 23:57:25 1998  Robert Lipe  <robertl@dgii.com>
 
 Sun May  3 13:51:34 1998  Richard Henderson  <rth@cygnus.com>
 
-	Support for official Sparc V9 ABI:
+	Support for official SPARC V9 ABI:
 	* sparc.c (sparc_override_options): Force stack bias off for !arch64.
 	Care for flag_pcc_struct_return default.
 	(output_move_quad): Rewrite to move by halves on v9 and in the

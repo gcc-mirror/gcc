@@ -2582,7 +2582,7 @@ simplify_subreg (outermode, op, innermode, byte)
 
       /* ??? We do allow it if the current REG is not valid for
 	 its mode.  This is a kludge to work around how float/complex
-	 arguments are passed on 32-bit Sparc and should be fixed.  */
+	 arguments are passed on 32-bit SPARC and should be fixed.  */
       if (HARD_REGNO_MODE_OK (final_regno, outermode)
 	  || ! HARD_REGNO_MODE_OK (REGNO (op), innermode))
 	{

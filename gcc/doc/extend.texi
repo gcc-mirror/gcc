@@ -3235,7 +3235,7 @@ typedef int more_aligned_int __attribute__ ((aligned (8)));
 @noindent
 force the compiler to insure (as far as it can) that each variable whose
 type is @code{struct S} or @code{more_aligned_int} will be allocated and
-aligned @emph{at least} on a 8-byte boundary.  On a Sparc, having all
+aligned @emph{at least} on a 8-byte boundary.  On a SPARC, having all
 variables of type @code{struct S} aligned to 8-byte boundaries allows
 the compiler to use the @code{ldd} and @code{std} (doubleword load and
 store) instructions when copying one variable of type @code{struct S} to
@@ -4140,7 +4140,7 @@ being used for other purposes in the preceding functions.
 Global register variables may not have initial values, because an
 executable file has no means to supply initial contents for a register.
 
-On the Sparc, there are reports that g3 @dots{} g7 are suitable
+On the SPARC, there are reports that g3 @dots{} g7 are suitable
 registers, but certain library functions, such as @code{getwd}, as well
 as the subroutines for division and remainder, modify g3 and g4.  g1 and
 g2 are local temporaries.

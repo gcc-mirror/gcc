@@ -1,3 +1,34 @@
+2002-09-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Follow spelling conventions.
+	* ChangeLog.0: Likewise.
+	* ChangeLog.1: Likewise.
+	* ChangeLog.2: Likewise.
+	* ChangeLog.4: Likewise.
+	* ChangeLog.6: Likewise.
+	* config.gcc: Likewise.
+	* dwarfout.c: Likewise.
+	* reload1.c: Likewise.
+	* simplify-rtx.c: Likewise.
+	* unwind-sjlj.c: Likewise.
+	* config/avr/avr.h: Likewise.
+	* config/d30v/d30v.h: Likewise.
+	* config/frv/frv.c: Likewise.
+	* config/frv/frv.h: Likewise.
+	* config/ip2k/ip2k.h: Likewise.
+	* config/m88k/m88k-move.sh: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/interface.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/md.texi: Likewise.
+	* doc/rtl.texi: Likewise.
+	* doc/tm.texi: Likewise.
+	* doc/trouble.texi: Likewise.
+	* ginclude/float.h: Likewise.
+	* treelang/treelang.texi: Likewise.
+
 2002-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* i386-protos.h (i386_pe_dllexport_name_p,
@@ -15272,7 +15303,7 @@ Sat May  4 13:20:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	config/sparc/ultra1_2.md, config/sparc/ultra3.md: ... into here.
 
 	* config/sparc/sparc.c (LEAF_REGISTERS): Do not do ifdef
-	checks on it, always defined for Sparc.
+	checks on it, always defined for SPARC.
 
 	* config/sparc/sparc.h (REG_ALLOC_ORDER, REG_LEAF_ALLOC_ORDER):
 	Tweak, and add more detailed comments.
@@ -15962,7 +15993,7 @@ Tue Apr 30 09:31:59 2002  Jeffrey A Law  (law@redhat.com)
 
 	2001-09-25  David S. Miller  <davem@redhat.com>
 
-	Convert all of Sparc scheduling to DFA
+	Convert all of SPARC scheduling to DFA
 	* config/sparc/sparc.md: Kill all define_function_unit
 	directives and replace with DFA equivalent.
 	* config/sparc/sparc.c (ultrasparc_adjust_cost,
@@ -16695,7 +16726,7 @@ objc:
 
 	PR target/6420
 	* config/sparc/sparc.h (FUNCTION_OK_FOR_SIBCALL): Return false if
-	32-bit Sparc and current_function_returns_struct is true.
+	32-bit SPARC and current_function_returns_struct is true.
 
 Wed Apr 24 13:48:25 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
@@ -18138,7 +18169,7 @@ Tue Apr  9 09:35:45 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	PR target/6082
 	* config/sparc/freebsd.h (SPARC_DEFAULT_CMODEL): Set to CM_MEDLOW
 
-	Make init_priority work on Sparc when using GNU ld.
+	Make init_priority work on SPARC when using GNU ld.
 	* config/sparc/linux.h, config/sparc/linux64.h,
 	config/sparc/netbsd-elf.h, config/sparc/freebsd.h
 	(CTORS_SECTION_ASM_OP, DTORS_SECTION_ASM_OP): Undefine.

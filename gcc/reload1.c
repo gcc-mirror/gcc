@@ -3411,7 +3411,7 @@ set_offsets_for_label (insn)
 }
 
 /* See if anything that happened changes which eliminations are valid.
-   For example, on the Sparc, whether or not the frame pointer can
+   For example, on the SPARC, whether or not the frame pointer can
    be eliminated can depend on what registers have been used.  We need
    not check some conditions again (such as flag_omit_frame_pointer)
    since they can't have changed.  */

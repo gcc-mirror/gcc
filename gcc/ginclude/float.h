@@ -57,7 +57,7 @@ Boston, MA 02111-1307, USA.  */
 #define DBL_DIG		__DBL_DIG__
 #define LDBL_DIG	__LDBL_DIG__
 
-/* Minimum int x such that FLT_RADIX**(x-1) is a normalised float, emin */
+/* Minimum int x such that FLT_RADIX**(x-1) is a normalized float, emin */
 #undef FLT_MIN_EXP
 #undef DBL_MIN_EXP
 #undef LDBL_MIN_EXP

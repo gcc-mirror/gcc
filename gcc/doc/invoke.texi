@@ -3725,7 +3725,7 @@ in the output file.
 
 Use these options on systems where the linker can perform optimizations
 to improve locality of reference in the instruction space.  HPPA
-processors running HP-UX and Sparc processors running Solaris 2 have
+processors running HP-UX and SPARC processors running Solaris 2 have
 linkers with such optimizations.  Other systems using the ELF object format
 as well as AIX may have these optimizations in the future.
 
@@ -5363,7 +5363,7 @@ With @option{-mfaster-structs}, the compiler assumes that structures
 should have 8 byte alignment.  This enables the use of pairs of
 @code{ldd} and @code{std} instructions for copies in structure
 assignment, in place of twice as many @code{ld} and @code{st} pairs.
-However, the use of this changed alignment directly violates the Sparc
+However, the use of this changed alignment directly violates the SPARC
 ABI@.  Thus, it's intended only for use on targets where the developer
 acknowledges that their resulting code will not be directly in line with
 the rules of the ABI@.
@@ -5395,11 +5395,11 @@ They have been replaced with @option{-mcpu=xxx}.
 These two options select the processor for which the code is optimized.
 
 With @option{-mcypress} (the default), the compiler optimizes code for the
-Cypress CY7C602 chip, as used in the SparcStation/SparcServer 3xx series.
-This is also appropriate for the older SparcStation 1, 2, IPX etc.
+Cypress CY7C602 chip, as used in the SPARCStation/SPARCServer 3xx series.
+This is also appropriate for the older SPARCStation 1, 2, IPX etc.
 
-With @option{-msupersparc} the compiler optimizes code for the SuperSparc cpu, as
-used in the SparcStation 10, 1000 and 2000 series.  This flag also enables use
+With @option{-msupersparc} the compiler optimizes code for the SuperSPARC cpu, as
+used in the SPARCStation 10, 1000 and 2000 series.  This flag also enables use
 of the full SPARC v8 instruction set.
 
 These options are deprecated and will be deleted in a future GCC release.
@@ -10027,7 +10027,7 @@ loader is not part of GCC; it is part of the operating system).  If
 the GOT size for the linked executable exceeds a machine-specific
 maximum size, you get an error message from the linker indicating that
 @option{-fpic} does not work; in that case, recompile with @option{-fPIC}
-instead.  (These maximums are 16k on the m88k, 8k on the Sparc, and 32k
+instead.  (These maximums are 16k on the m88k, 8k on the SPARC, and 32k
 on the m68k and RS/6000.  The 386 has no such limit.)
 
 Position-independent code requires special support, and therefore works
@@ -10040,7 +10040,7 @@ position-independent.
 If supported for the target machine, emit position-independent code,
 suitable for dynamic linking and avoiding any limit on the size of the
 global offset table.  This option makes a difference on the m68k, m88k,
-and the Sparc.
+and the SPARC.
 
 Position-independent code requires special support, and therefore works
 only on certain machines.

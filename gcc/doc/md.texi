@@ -3480,7 +3480,7 @@ multiple condition registers, use a pseudo register.
 @findex next_cc0_user
 On some machines, the type of branch instruction generated may depend on
 the way the condition code was produced; for example, on the 68k and
-Sparc, setting the condition code directly from an add or subtract
+SPARC, setting the condition code directly from an add or subtract
 instruction does not clear the overflow bit the way that a test
 instruction does, so a different branch instruction must be used for
 some conditional branches.  For machines that use @code{(cc0)}, the set
@@ -3499,7 +3499,7 @@ different formats of the condition code register.
 Registers used to store the condition code value should have a mode that
 is in class @code{MODE_CC}.  Normally, it will be @code{CCmode}.  If
 additional modes are required (as for the add example mentioned above in
-the Sparc), define the macro @code{EXTRA_CC_MODES} to list the
+the SPARC), define the macro @code{EXTRA_CC_MODES} to list the
 additional modes required (@pxref{Condition Code}).  Also define
 @code{SELECT_CC_MODE} to choose a mode given an operand of a compare.
 
@@ -3511,7 +3511,7 @@ be specified at that time.
 If the cases that require different modes would be made by instruction
 combination, the macro @code{SELECT_CC_MODE} determines which machine
 mode should be used for the comparison result.  The patterns should be
-written using that mode.  To support the case of the add on the Sparc
+written using that mode.  To support the case of the add on the SPARC
 discussed above, we have the pattern
 
 @smallexample
@@ -3525,7 +3525,7 @@ discussed above, we have the pattern
   "@dots{}")
 @end smallexample
 
-The @code{SELECT_CC_MODE} macro on the Sparc returns @code{CC_NOOVmode}
+The @code{SELECT_CC_MODE} macro on the SPARC returns @code{CC_NOOVmode}
 for comparisons whose argument is a @code{plus}.
 
 @node Looping Patterns

@@ -43,7 +43,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
  The generation of DWARF debugging information by the GNU version 2.x C
  compiler has now been tested rather extensively for m88k, i386, i860, and
- Sparc targets.  The DWARF output of the GNU C compiler appears to inter-
+ SPARC targets.  The DWARF output of the GNU C compiler appears to inter-
  operate well with the standard SVR4 SDB debugger on these kinds of target
  systems (but of course, there are no guarantees).
 

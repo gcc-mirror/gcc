@@ -1545,7 +1545,7 @@ preferable approach if only a small subset of instructions modify the
 condition code.  Other machines store condition codes in general
 registers; in such cases a pseudo register should be used.
 
-Some machines, such as the Sparc and RS/6000, have two sets of
+Some machines, such as the SPARC and RS/6000, have two sets of
 arithmetic instructions, one that sets and one that does not set the
 condition code.  This is best handled by normally generating the
 instruction that does not set the condition code, and making a pattern

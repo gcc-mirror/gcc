@@ -2330,17 +2330,17 @@ sparc-*-elf*)
 	tmake_file="sparc/t-elf sparc/t-crtfm"
 	extra_parts="crti.o crtn.o crtbegin.o crtend.o"
 	;;
-sparc-*-linux*aout*)		# Sparc's running GNU/Linux, a.out
+sparc-*-linux*aout*)		# SPARC's running GNU/Linux, a.out
 	tm_file="aoutos.h sparc/sparc.h sparc/aout.h sparc/linux-aout.h"
 	gnu_ld=yes
 	;;
-sparc-*-linux*libc1*)	# Sparc's running GNU/Linux, libc5
+sparc-*-linux*libc1*)	# SPARC's running GNU/Linux, libc5
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1 sparc/t-crtfm"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
 	;;
-sparc-*-linux*)		# Sparc's running GNU/Linux, libc6
+sparc-*-linux*)		# SPARC's running GNU/Linux, libc6
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-crtfm"
 	;;
@@ -2524,7 +2524,7 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 		*) echo "$with_cpu not supported for freebsd target"; exit 1 ;;
 	esac
 	;;
-sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
+sparc64-*-linux*)		# 64-bit SPARC's running GNU/Linux
 	tmake_file="t-slibgcc-elf-ver t-linux sparc/t-linux64 sparc/t-crtfm"
 	tm_file="sparc/biarch64.h ${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h sparc/linux64.h"
 	;;
