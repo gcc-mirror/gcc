@@ -38,8 +38,10 @@ exception statement from your version. */
 
 package javax.naming.directory;
 
-import javax.naming.*;
-import java.util.*;
+import java.util.NoSuchElementException;
+import java.util.Vector;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
 
 /**
  * @author Tom Tromey <tromey@redhat.com>
@@ -47,6 +49,8 @@ import java.util.*;
  */
 public class BasicAttributes implements Attributes
 {
+  private static final long serialVersionUID = 4980164073184639448L;
+  
   public BasicAttributes ()
   {
     this (false);

@@ -1,5 +1,37 @@
 2003-06-27  Michael Koch  <konqueror@gmx.de>
 
+	* javax/naming/CompositeName.java
+	(serialVersionUID): New member variable.
+	* javax/naming/CompoundName.java
+	(serialVersionUID): New member variable.
+	* javax/naming/InitialContext.java
+	(InitialContext): Throws NamingException.
+	(init): Likewise.
+	* javax/naming/LinkRef.java
+	(serialVersionUID): New member variable.
+	(gteLinkName): Throws NamingException.
+	* javax/naming/NamingException.java
+	(serialVersionUID): New member variable.
+	* javax/naming/NamingSecurityException.java
+	(NamingSecurityException): Made abstract.
+	(serialVersionUID): New member variable.
+	* javax/naming/ReferralException.java
+	(serialVersionUID): New member variable.
+	* javax/naming/StringRefAddr.java
+	(serialVersionUID): New member variable.
+	* javax/naming/directory/BasicAttribute.java:
+	Reworked imports.
+	(serialVersionUID): New member variable.
+	(get): Throws NamingException.
+	(getAll): Throws NamingException.
+	* javax/naming/directory/BasicAttributes.java:
+	Reworked imports.
+	(serialVersionUID): New member variable.
+	* javax/naming/ldap/UnsolicitedNotificationEvent.java
+	(serialVersionUID): New member variable.
+
+2003-06-27  Michael Koch  <konqueror@gmx.de>
+
 	* Makefile.am
 	(awt_java_source_files): Added new files:
 	javax/swing/Popup.java,

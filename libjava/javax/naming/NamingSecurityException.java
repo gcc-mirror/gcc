@@ -40,8 +40,10 @@ package javax.naming;
 
 import java.lang.Exception;
  
-public class NamingSecurityException extends NamingException
+public abstract class NamingSecurityException extends NamingException
 {
+  private static final long serialVersionUID = 5855287647294685775L;
+  
   public NamingSecurityException ()
   {
     super ();

@@ -55,6 +55,7 @@ import java.io.PrintWriter;
  */
 public class NamingException extends Exception
 {
+  private static final long serialVersionUID = -1299181962103167177L;
 
   /**
    * The root cause of this exception. Might be null. Set by calling

@@ -58,6 +58,8 @@ import java.util.Vector;
  */
 public class CompoundName implements Name, Cloneable, Serializable
 {
+  private static final long serialVersionUID = 3513100557083972036L;
+
   private CompoundName (Properties syntax)
   {
     elts = new Vector ();

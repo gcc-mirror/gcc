@@ -52,6 +52,8 @@ import java.util.Vector;
  */
 public class CompositeName implements Name, Cloneable, Serializable
 {
+  private static final long serialVersionUID = 1667768148915813118L;
+
   public CompositeName ()
   {
     elts = new Vector ();
