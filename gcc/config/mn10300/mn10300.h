@@ -177,6 +177,9 @@ extern int target_flags;
 #define MODES_TIEABLE_P(MODE1, MODE2) \
   (MODE1 == MODE2 || GET_MODE_SIZE (MODE1) <= 4 && GET_MODE_SIZE (MODE2) <= 4)
 
+/* 4 data, and effectively 3 address registers is small as far as I'm
+   concerned.  */
+#define SMALL_REGISTER_CLASSES 1
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
