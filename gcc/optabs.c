@@ -4142,10 +4142,6 @@ init_optabs ()
   smul_optab->handlers[(int) DImode].libfunc
     = gen_rtx (SYMBOL_REF, Pmode, MULDI3_LIBCALL);
 #endif
-#ifdef MULTI3_LIBCALL
-  smul_optab->handlers[(int) TImode].libfunc
-    = gen_rtx (SYMBOL_REF, Pmode, MULTI3_LIBCALL);
-#endif
 
 #ifdef DIVSI3_LIBCALL
   sdiv_optab->handlers[(int) SImode].libfunc
@@ -4154,10 +4150,6 @@ init_optabs ()
 #ifdef DIVDI3_LIBCALL
   sdiv_optab->handlers[(int) DImode].libfunc
     = gen_rtx (SYMBOL_REF, Pmode, DIVDI3_LIBCALL);
-#endif
-#ifdef DIVTI3_LIBCALL
-  sdiv_optab->handlers[(int) TImode].libfunc
-    = gen_rtx (SYMBOL_REF, Pmode, DIVTI3_LIBCALL);
 #endif
 
 #ifdef UDIVSI3_LIBCALL
@@ -4168,11 +4160,6 @@ init_optabs ()
   udiv_optab->handlers[(int) DImode].libfunc
     = gen_rtx (SYMBOL_REF, Pmode, UDIVDI3_LIBCALL);
 #endif
-#ifdef UDIVTI3_LIBCALL
-  udiv_optab->handlers[(int) TImode].libfunc
-    = gen_rtx (SYMBOL_REF, Pmode, UDIVTI3_LIBCALL);
-#endif
-
 
 #ifdef MODSI3_LIBCALL
   smod_optab->handlers[(int) SImode].libfunc
@@ -4182,11 +4169,6 @@ init_optabs ()
   smod_optab->handlers[(int) DImode].libfunc
     = gen_rtx (SYMBOL_REF, Pmode, MODDI3_LIBCALL);
 #endif
-#ifdef MODTI3_LIBCALL
-  smod_optab->handlers[(int) TImode].libfunc
-    = gen_rtx (SYMBOL_REF, Pmode, MODTI3_LIBCALL);
-#endif
-
 
 #ifdef UMODSI3_LIBCALL
   umod_optab->handlers[(int) SImode].libfunc
@@ -4195,32 +4177,6 @@ init_optabs ()
 #ifdef UMODDI3_LIBCALL
   umod_optab->handlers[(int) DImode].libfunc
     = gen_rtx (SYMBOL_REF, Pmode, UMODDI3_LIBCALL);
-#endif
-#ifdef UMODTI3_LIBCALL
-  umod_optab->handlers[(int) TImode].libfunc
-    = gen_rtx (SYMBOL_REF, Pmode, UMODTI3_LIBCALL);
-#endif
-
-/* Define library calls for quad FP instructions */
-#ifdef ADDTF3_LIBCALL
-  add_optab->handlers[(int) TFmode].libfunc
-    = gen_rtx (SYMBOL_REF, Pmode, ADDTF3_LIBCALL);
-#endif
-#ifdef SUBTF3_LIBCALL
-  sub_optab->handlers[(int) TFmode].libfunc
-    = gen_rtx (SYMBOL_REF, Pmode, SUBTF3_LIBCALL);
-#endif
-#ifdef MULTF3_LIBCALL
-  smul_optab->handlers[(int) TFmode].libfunc
-    = gen_rtx (SYMBOL_REF, Pmode, MULTF3_LIBCALL);
-#endif
-#ifdef DIVTF3_LIBCALL
-  flodiv_optab->handlers[(int) TFmode].libfunc
-    = gen_rtx (SYMBOL_REF, Pmode, DIVTF3_LIBCALL);
-#endif
-#ifdef SQRTTF2_LIBCALL
-  sqrt_optab->handlers[(int) TFmode].libfunc
-    = gen_rtx (SYMBOL_REF, Pmode, SQRTTF2_LIBCALL);
 #endif
 
   /* Use cabs for DC complex abs, since systems generally have cabs.
@@ -4289,26 +4245,6 @@ init_optabs ()
   lttf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__lttf2");
   letf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__letf2");
 
-/* Define library calls for quad FP instructions */
-#ifdef EQTF2_LIBCALL
-  eqtf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, EQTF2_LIBCALL);
-#endif
-#ifdef NETF2_LIBCALL
-  netf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, NETF2_LIBCALL);
-#endif
-#ifdef GTTF2_LIBCALL
-  gttf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, GTTF2_LIBCALL);
-#endif
-#ifdef GETF2_LIBCALL
-  getf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, GETF2_LIBCALL);
-#endif
-#ifdef LTTF2_LIBCALL
-  lttf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, LTTF2_LIBCALL);
-#endif
-#ifdef LETF2_LIBCALL
-  letf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, LETF2_LIBCALL);
-#endif
-
   floatsisf_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__floatsisf");
   floatdisf_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__floatdisf");
   floattisf_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__floattisf");
@@ -4356,29 +4292,6 @@ init_optabs ()
   fixunstfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunstfsi");
   fixunstfdi_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunstfdi");
   fixunstfti_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunstfti");
-
-/* Define library calls for quad FP instructions */
-#ifdef TRUNCTFSF2_LIBCALL
-  trunctfsf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, TRUNCTFSF2_LIBCALL);
-#endif
-#ifdef TRUNCTFDF2_LIBCALL
-  trunctfdf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, TRUNCTFDF2_LIBCALL);
-#endif
-#ifdef EXTENDSFTF2_LIBCALL
-  extendsftf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, EXTENDSFTF2_LIBCALL);
-#endif
-#ifdef EXTENDDFTF2_LIBCALL
-  extenddftf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, EXTENDDFTF2_LIBCALL);
-#endif
-#ifdef FLOATSITF2_LIBCALL
-  floatsitf_libfunc = gen_rtx (SYMBOL_REF, Pmode, FLOATSITF2_LIBCALL);
-#endif
-#ifdef FIX_TRUNCTFSI2_LIBCALL
-  fixtfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, FIX_TRUNCTFSI2_LIBCALL);
-#endif
-#ifdef FIXUNS_TRUNCTFSI2_LIBCALL
-  fixunstfsi_libfunc = gen_rtx (SYMBOL_REF, Pmode, FIXUNS_TRUNCTFSI2_LIBCALL);
-#endif
 
 #ifdef INIT_TARGET_OPTABS
   /* Allow the target to add more libcalls or rename some, etc.  */
