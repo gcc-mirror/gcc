@@ -271,9 +271,18 @@ int flag_caller_saves = 1;
 int flag_caller_saves = 0;
 #endif
 
+/* Nonzero if structures and unions should be returned in memory.
+
+   This should only be defined if compatibility with another compiler or
+   with an ABI is needed, because it results in slower code.  */
+
+#ifndef DEFAULT_PCC_STRUCT_RETURN
+#define DEFAULT_PCC_STRUCT_RETURN 1
+#endif
+
 /* Nonzero for -fpcc-struct-return: return values the same way PCC does.  */
 
-int flag_pcc_struct_return = 0;
+int flag_pcc_struct_return = DEFAULT_PCC_STRUCT_RETURN;
 
 /* Nonzero for -fforce-mem: load memory value into a register
    before arithmetic on it.  This makes better cse but slower compilation.  */
@@ -492,6 +501,7 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"shared-data", &flag_shared_data, 1},
   {"caller-saves", &flag_caller_saves, 1},
   {"pcc-struct-return", &flag_pcc_struct_return, 1},
+  {"reg-struct-return", &flag_pcc_struct_return, 0},
   {"delayed-branch", &flag_delayed_branch, 1},
   {"rerun-cse-after-loop", &flag_rerun_cse_after_loop, 1},
   {"pretend-float", &flag_pretend_float, 1},
