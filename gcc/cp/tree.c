@@ -1473,8 +1473,18 @@ mapcar (t, func)
       /* Rather than aborting, return error_mark_node.  This allows us
 	 to report a sensible error message on code like this:
 
-	 void g() { int i; f<i>(7); } */
-      return error_mark_node;
+	 void g() { int i; f<i>(7); } 
+
+         In a case like:
+
+           void g() { const int i = 7; f<i>(7); }
+
+	 however, we must actually return the constant initializer.  */
+      tmp = decl_constant_value (t);
+      if (tmp != t)
+	return mapcar (tmp, func);
+      else
+	return error_mark_node;
 
     case PARM_DECL:
       {
