@@ -231,7 +231,7 @@ extern char *version_string;
 /* Forward declaration for prototypes.  */
 struct path_prefix;
 
-static void init_spec		PROTO((int));
+static void init_spec		PROTO(());
 static void set_spec		PROTO((char *, char *));
 static struct compiler *lookup_compiler PROTO((char *, int, char *));
 static char *build_search_list	PROTO((struct path_prefix *, char *, int));
@@ -1227,8 +1227,7 @@ static struct spec_list *specs = (struct spec_list *)0;
 /* Initialize the specs lookup routines.  */
 
 static void
-init_spec (use_extra_p)
-     int use_extra_p;
+init_spec ()
 {
   struct spec_list *next = (struct spec_list *)0;
   struct spec_list *sl   = (struct spec_list *)0;
@@ -1238,15 +1237,14 @@ init_spec (use_extra_p)
     return;			/* already initialized */
 
 #ifdef EXTRA_SPECS
-  if (use_extra_p)
-    for (i = (sizeof (extra_specs) / sizeof (extra_specs[0])) - 1; i >= 0; i--)
-      {
-	sl = &extra_specs[i];
-	sl->next = next;
-	sl->name_len = strlen (sl->name);
-	sl->ptr_spec = &sl->ptr;
-	next = sl;
-      }
+  for (i = (sizeof (extra_specs) / sizeof (extra_specs[0])) - 1; i >= 0; i--)
+    {
+      sl = &extra_specs[i];
+      sl->next = next;
+      sl->name_len = strlen (sl->name);
+      sl->ptr_spec = &sl->ptr;
+      next = sl;
+    }
 #endif
 
   for (i = (sizeof (static_specs) / sizeof (static_specs[0])) - 1; i >= 0; i--)
@@ -2345,7 +2343,7 @@ process_command (argc, argv)
       if (! strcmp (argv[i], "-dumpspecs"))
 	{
 	  struct spec_list *sl;
-	  init_spec (TRUE);
+	  init_spec ();
 	  for (sl = specs; sl; sl = sl->next)
 	    printf ("*%s:\n%s\n\n", sl->name, *(sl->ptr_spec));
 	  exit (0);
@@ -4240,15 +4238,11 @@ main (argc, argv)
 			   spec_version, dir_separator_str, NULL_PTR);
   just_machine_suffix = concat (spec_machine, dir_separator_str, NULL_PTR);
 
+  init_spec ();
   specs_file = find_a_file (&startfile_prefixes, "specs", R_OK);
   /* Read the specs file unless it is a default one.  */
   if (specs_file != 0 && strcmp (specs_file, "specs"))
-    {
-      init_spec (TRUE);
-      read_specs (specs_file);
-    }
-  else
-    init_spec (FALSE);
+    read_specs (specs_file);
 
   /* Process any user specified specs in the order given on the command
      line.  */
