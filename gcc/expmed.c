@@ -1914,6 +1914,15 @@ struct algorithm
   char log[MAX_BITS_PER_WORD];
 };
 
+static void synth_mult			PROTO((struct algorithm *,
+					       unsigned HOST_WIDE_INT,
+					       int));
+static unsigned HOST_WIDE_INT choose_multiplier PROTO((unsigned HOST_WIDE_INT,
+						       int, int,
+						       unsigned HOST_WIDE_INT *,
+						       int *, int *));
+static unsigned HOST_WIDE_INT invert_mod2n	PROTO((unsigned HOST_WIDE_INT,
+						       int));
 /* Compute and return the best algorithm for multiplying by T.
    The algorithm must cost less than cost_limit
    If retval.cost >= COST_LIMIT, no algorithm was found and all
