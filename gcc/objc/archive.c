@@ -617,8 +617,11 @@ objc_read_string (struct objc_typed_stream* stream,
 
       case _B_UCOMM:
 	{
-	  len = __objc_read_nbyte_uint(stream, (buf[0] & _B_VALUE), &key);
-	  (*string) = hash_value_for_key (stream->stream_table, (void*)key);
+	  char *tmp;
+	  len = __objc_read_nbyte_uint (stream, (buf[0] & _B_VALUE), &key);
+	  tmp = hash_value_for_key (stream->stream_table, (void*)key);
+	  *string = __objc_xmalloc (strlen (tmp) + 1);
+	  strcpy (*string, tmp);
 	}
 	break;
 
