@@ -2741,6 +2741,36 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
       warned = 1;
     }
 
+  if (declspecs->inline_p)
+    {
+      error ("%<inline%> in empty declaration");
+      warned = 1;
+    }
+
+  if (current_scope == file_scope && declspecs->storage_class == csc_auto)
+    {
+      error ("%<auto%> in file-scope empty declaration");
+      warned = 1;
+    }
+
+  if (current_scope == file_scope && declspecs->storage_class == csc_register)
+    {
+      error ("%<register%> in file-scope empty declaration");
+      warned = 1;
+    }
+
+  if (!warned && !in_system_header && declspecs->storage_class != csc_none)
+    {
+      warning ("useless storage class specifier in empty declaration");
+      warned = 2;
+    }
+
+  if (!warned && !in_system_header && declspecs->thread_p)
+    {
+      warning ("useless %<__thread%> in empty declaration");
+      warned = 2;
+    }
+
   if (!warned && !in_system_header && declspecs->specbits)
     {
       warning ("useless keyword or type name in empty declaration");
@@ -3597,11 +3627,12 @@ grokdeclarator (const struct c_declarator *declarator,
 {
   int specbits = declspecs->specbits;
   tree type = declspecs->type;
+  bool threadp = declspecs->thread_p;
+  enum c_storage_class storage_class = declspecs->storage_class;
   int constp;
   int restrictp;
   int volatilep;
   int type_quals = TYPE_UNQUALIFIED;
-  int inlinep;
   int defaulted_int = 0;
   const char *name, *orig_name;
   tree typedef_type = 0;
@@ -3682,7 +3713,7 @@ grokdeclarator (const struct c_declarator *declarator,
 			  | (1 << (int) RID_UNSIGNED)
 			  | (1 << (int) RID_COMPLEX))))
 	  /* Don't warn about typedef foo = bar.  */
-	  && ! (specbits & (1 << (int) RID_TYPEDEF) && initialized)
+	  && ! (storage_class == csc_typedef && initialized)
 	  && ! in_system_header)
 	{
 	  /* Issue a warning if this is an ISO C 99 program or if -Wreturn-type
@@ -3866,7 +3897,6 @@ grokdeclarator (const struct c_declarator *declarator,
     = !! (specbits & 1 << (int) RID_RESTRICT) + TYPE_RESTRICT (element_type);
   volatilep
     = !! (specbits & 1 << (int) RID_VOLATILE) + TYPE_VOLATILE (element_type);
-  inlinep = !! (specbits & (1 << (int) RID_INLINE));
   if (pedantic && !flag_isoc99)
     {
       if (constp > 1)
@@ -3882,99 +3912,82 @@ grokdeclarator (const struct c_declarator *declarator,
 		| (restrictp ? TYPE_QUAL_RESTRICT : 0)
 		| (volatilep ? TYPE_QUAL_VOLATILE : 0));
 
-  /* Warn if two storage classes are given. Default to `auto'.  */
+  /* Warn about storage classes that are invalid for certain
+     kinds of declarations (parameters, typenames, etc.).  */
 
-  {
-    int nclasses = 0;
-
-    if (specbits & 1 << (int) RID_AUTO) nclasses++;
-    if (specbits & 1 << (int) RID_STATIC) nclasses++;
-    if (specbits & 1 << (int) RID_EXTERN) nclasses++;
-    if (specbits & 1 << (int) RID_REGISTER) nclasses++;
-    if (specbits & 1 << (int) RID_TYPEDEF) nclasses++;
-
-    /* "static __thread" and "extern __thread" are allowed.  */
-    if ((specbits & (1 << (int) RID_THREAD
-		     | 1 << (int) RID_STATIC
-		     | 1 << (int) RID_EXTERN)) == (1 << (int) RID_THREAD))
-      nclasses++;
-
-    /* Warn about storage classes that are invalid for certain
-       kinds of declarations (parameters, typenames, etc.).  */
-
-    if (nclasses > 1)
-      error ("multiple storage classes in declaration of `%s'", name);
-    else if (funcdef_flag
-	     && (specbits
-		 & ((1 << (int) RID_REGISTER)
-		    | (1 << (int) RID_AUTO)
-		    | (1 << (int) RID_TYPEDEF)
-		    | (1 << (int) RID_THREAD))))
-      {
-	if (specbits & 1 << (int) RID_AUTO
-	    && (pedantic || current_scope == file_scope))
-	  pedwarn ("function definition declared `auto'");
-	if (specbits & 1 << (int) RID_REGISTER)
-	  error ("function definition declared `register'");
-	if (specbits & 1 << (int) RID_TYPEDEF)
-	  error ("function definition declared `typedef'");
-	if (specbits & 1 << (int) RID_THREAD)
-	  error ("function definition declared `__thread'");
-	specbits &= ~((1 << (int) RID_TYPEDEF) | (1 << (int) RID_REGISTER)
-		      | (1 << (int) RID_AUTO) | (1 << (int) RID_THREAD));
-      }
-    else if (decl_context != NORMAL && nclasses > 0)
-      {
-	if (decl_context == PARM && specbits & 1 << (int) RID_REGISTER)
-	  ;
-	else
-	  {
-	    switch (decl_context)
-	      {
-	      case FIELD:
-		error ("storage class specified for structure field `%s'",
-		       name);
-		break;
-	      case PARM:
-		error ("storage class specified for parameter `%s'", name);
-		break;
-	      default:
-		error ("storage class specified for typename");
-		break;
-	      }
-	    specbits &= ~((1 << (int) RID_TYPEDEF) | (1 << (int) RID_REGISTER)
-			  | (1 << (int) RID_AUTO) | (1 << (int) RID_STATIC)
-			  | (1 << (int) RID_EXTERN) | (1 << (int) RID_THREAD));
-	  }
-      }
-    else if (specbits & 1 << (int) RID_EXTERN && initialized && ! funcdef_flag)
-      {
-	/* `extern' with initialization is invalid if not at file scope.  */
-	if (current_scope == file_scope)
-	  warning ("`%s' initialized and declared `extern'", name);
-	else
-	  error ("`%s' has both `extern' and initializer", name);
-      }
-    else if (current_scope == file_scope)
-      {
-	if (specbits & 1 << (int) RID_AUTO)
-	  error ("file-scope declaration of `%s' specifies `auto'", name);
-      }
-    else
-      {
-	if (specbits & 1 << (int) RID_EXTERN && funcdef_flag)
-	  error ("nested function `%s' declared `extern'", name);
-	else if ((specbits & (1 << (int) RID_THREAD
-			       | 1 << (int) RID_EXTERN
-			       | 1 << (int) RID_STATIC))
-		 == (1 << (int) RID_THREAD))
-	  {
-	    error ("function-scope `%s' implicitly auto and declared `__thread'",
-		   name);
-	    specbits &= ~(1 << (int) RID_THREAD);
-	  }
-      }
-  }
+  if (funcdef_flag
+      && (threadp
+	  || storage_class == csc_auto
+	  || storage_class == csc_register
+	  || storage_class == csc_typedef))
+    {
+      if (storage_class == csc_auto
+	  && (pedantic || current_scope == file_scope))
+	pedwarn ("function definition declared %<auto%>");
+      if (storage_class == csc_register)
+	error ("function definition declared %<register%>");
+      if (storage_class == csc_typedef)
+	error ("function definition declared %<typedef%>");
+      if (threadp)
+	error ("function definition declared %<__thread%>");
+      threadp = false;
+      if (storage_class == csc_auto
+	  || storage_class == csc_register
+	  || storage_class == csc_typedef)
+	storage_class = csc_none;
+    }
+  else if (decl_context != NORMAL && (storage_class != csc_none || threadp))
+    {
+      if (decl_context == PARM && storage_class == csc_register)
+	;
+      else
+	{
+	  switch (decl_context)
+	    {
+	    case FIELD:
+	      error ("storage class specified for structure field %qs",
+		     name);
+	      break;
+	    case PARM:
+	      error ("storage class specified for parameter %qs", name);
+	      break;
+	    default:
+	      error ("storage class specified for typename");
+	      break;
+	    }
+	  storage_class = csc_none;
+	  threadp = false;
+	}
+    }
+  else if (storage_class == csc_extern
+	   && initialized
+	   && !funcdef_flag)
+    {
+      /* 'extern' with initialization is invalid if not at file scope.  */
+      if (current_scope == file_scope)
+	warning ("%qs initialized and declared %<extern%>", name);
+      else
+	error ("%qs has both %<extern%> and initializer", name);
+    }
+  else if (current_scope == file_scope)
+    {
+      if (storage_class == csc_auto)
+	error ("file-scope declaration of `%s' specifies `auto'", name);
+      if (pedantic && storage_class == csc_register)
+	pedwarn ("file-scope declaration of %qs specifies %<register%>", name);
+    }
+  else
+    {
+      if (storage_class == csc_extern && funcdef_flag)
+	error ("nested function `%s' declared `extern'", name);
+      else if (threadp && storage_class == csc_none)
+	{
+	  error ("function-scope %qs implicitly auto and declared "
+		 "%<__thread%>",
+		 name);
+	  threadp = false;
+	}
+    }
 
   /* Now figure out the structure of the declarator proper.
      Descend through it, creating more complex types, until we reach
@@ -4337,7 +4350,7 @@ grokdeclarator (const struct c_declarator *declarator,
 
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
 
-  if (specbits & (1 << (int) RID_TYPEDEF))
+  if (storage_class == csc_typedef)
     {
       tree decl;
       /* Note that the grammar rejects storage classes
@@ -4394,10 +4407,10 @@ grokdeclarator (const struct c_declarator *declarator,
 
   if (VOID_TYPE_P (type) && decl_context != PARM
       && ! ((decl_context != FIELD && TREE_CODE (type) != FUNCTION_TYPE)
-	    && ((specbits & (1 << (int) RID_EXTERN))
+	    && (storage_class == csc_extern
 		|| (current_scope == file_scope
-		    && !(specbits
-			 & ((1 << (int) RID_STATIC) | (1 << (int) RID_REGISTER)))))))
+		    && !(storage_class == csc_static
+			 || storage_class == csc_register)))))
     {
       error ("variable or field `%s' declared void", name);
       type = integer_type_node;
@@ -4508,8 +4521,7 @@ grokdeclarator (const struct c_declarator *declarator,
       }
     else if (TREE_CODE (type) == FUNCTION_TYPE)
       {
-	if (specbits & (1 << (int) RID_REGISTER)
-	    || specbits & (1 << (int) RID_THREAD))
+	if (storage_class == csc_register || threadp)
 	  error ("invalid storage class for function `%s'", name);
 	else if (current_scope != file_scope)
 	  {
@@ -4518,12 +4530,12 @@ grokdeclarator (const struct c_declarator *declarator,
 	       6.7.1p5, and `extern' makes no difference.  However,
 	       GCC allows 'auto', perhaps with 'inline', to support
 	       nested functions.  */
-	    if (specbits & (1 << (int) RID_AUTO))
+	    if (storage_class == csc_auto)
 	      {
 		if (pedantic)
 		  pedwarn ("invalid storage class for function `%s'", name);
 	      }
-	    if (specbits & (1 << (int) RID_STATIC))
+	    if (storage_class == csc_static)
 	      error ("invalid storage class for function `%s'", name);
 	  }
 
@@ -4546,14 +4558,14 @@ grokdeclarator (const struct c_declarator *declarator,
 	   scope and are explicitly declared "auto".  This is
 	   forbidden by standard C (C99 6.7.1p5) and is interpreted by
 	   GCC to signify a forward declaration of a nested function.  */
-	if ((specbits & (1 << RID_AUTO)) && current_scope != file_scope)
+	if (storage_class == csc_auto && current_scope != file_scope)
 	  DECL_EXTERNAL (decl) = 0;
 	else
 	  DECL_EXTERNAL (decl) = 1;
 
 	/* Record absence of global scope for `static' or `auto'.  */
 	TREE_PUBLIC (decl)
-	  = !(specbits & ((1 << (int) RID_STATIC) | (1 << (int) RID_AUTO)));
+	  = !(storage_class == csc_static || storage_class == csc_auto);
 
 	/* For a function definition, record the argument information
 	   block where store_parm_decls will look for it.  */
@@ -4566,10 +4578,10 @@ grokdeclarator (const struct c_declarator *declarator,
 	/* Record presence of `inline', if it is reasonable.  */
 	if (MAIN_NAME_P (declarator->u.id))
 	  {
-	    if (inlinep)
+	    if (declspecs->inline_p)
 	      warning ("cannot inline function `main'");
 	  }
-	else if (inlinep)
+	else if (declspecs->inline_p)
 	  {
 	    /* Record that the function is declared `inline'.  */
 	    DECL_DECLARED_INLINE_P (decl) = 1;
@@ -4581,7 +4593,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	    if (initialized)
 	      {
 		DECL_INLINE (decl) = 1;
-		if (specbits & (1 << (int) RID_EXTERN))
+		if (storage_class == csc_extern)
 		  current_extern_inline = 1;
 	      }
 	  }
@@ -4595,7 +4607,7 @@ grokdeclarator (const struct c_declarator *declarator,
       {
 	/* It's a variable.  */
 	/* An uninitialized decl with `extern' is a reference.  */
-	int extern_ref = !initialized && (specbits & (1 << (int) RID_EXTERN));
+	int extern_ref = !initialized && storage_class == csc_extern;
 
 	/* Move type qualifiers down to element of an array.  */
 	if (TREE_CODE (type) == ARRAY_TYPE && type_quals)
@@ -4632,13 +4644,13 @@ grokdeclarator (const struct c_declarator *declarator,
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
 
-	if (inlinep)
+	if (declspecs->inline_p)
 	  pedwarn ("%Jvariable '%D' declared `inline'", decl, decl);
 
 	/* At file scope, an initialized extern declaration may follow
 	   a static declaration.  In that case, DECL_EXTERNAL will be
 	   reset later in start_decl.  */
-	DECL_EXTERNAL (decl) = !!(specbits & (1 << (int) RID_EXTERN));
+	DECL_EXTERNAL (decl) = (storage_class == csc_extern);
 
 	/* At file scope, the presence of a `static' or `register' storage
 	   class specifier, or the absence of all storage class specifiers
@@ -4646,18 +4658,18 @@ grokdeclarator (const struct c_declarator *declarator,
 	   the absence of both `static' and `register' makes it public.  */
 	if (current_scope == file_scope)
 	  {
-	    TREE_PUBLIC (decl) = !(specbits & ((1 << (int) RID_STATIC)
-					       | (1 << (int) RID_REGISTER)));
+	    TREE_PUBLIC (decl) = !(storage_class == csc_static
+				   || storage_class == csc_register);
 	    TREE_STATIC (decl) = !extern_ref;
 	  }
 	/* Not at file scope, only `static' makes a static definition.  */
 	else
 	  {
-	    TREE_STATIC (decl) = (specbits & (1 << (int) RID_STATIC)) != 0;
+	    TREE_STATIC (decl) = (storage_class == csc_static);
 	    TREE_PUBLIC (decl) = extern_ref;
 	  }
 
-	if (specbits & 1 << (int) RID_THREAD)
+	if (threadp)
 	  {
 	    if (targetm.have_tls)
 	      DECL_THREAD_LOCAL (decl) = 1;
@@ -4671,7 +4683,7 @@ grokdeclarator (const struct c_declarator *declarator,
     /* Record `register' declaration for warnings on &
        and in case doing stupid register allocation.  */
 
-    if (specbits & (1 << (int) RID_REGISTER))
+    if (storage_class == csc_register)
       {
 	C_DECL_REGISTER (decl) = 1;
 	DECL_REGISTER (decl) = 1;
@@ -6720,6 +6732,7 @@ build_null_declspecs (void)
   ret->decl_attr = 0;
   ret->attrs = 0;
   ret->specbits = 0;
+  ret->storage_class = csc_none;
   ret->non_sc_seen_p = false;
   ret->typedef_p = false;
   ret->typedef_signed_p = false;
@@ -6727,6 +6740,8 @@ build_null_declspecs (void)
   ret->explicit_int_p = false;
   ret->explicit_char_p = false;
   ret->long_long_p = false;
+  ret->inline_p = false;
+  ret->thread_p = false;
   return ret;
 }
 
@@ -6826,23 +6841,79 @@ struct c_declspecs *
 declspecs_add_scspec (struct c_declspecs *specs, tree scspec)
 {
   enum rid i;
+  enum c_storage_class n = csc_none;
+  bool dupe = false;
   gcc_assert (TREE_CODE (scspec) == IDENTIFIER_NODE
 	      && C_IS_RESERVED_WORD (scspec));
   i = C_RID_CODE (scspec);
   if (extra_warnings && specs->non_sc_seen_p)
     warning ("%qs is not at beginning of declaration",
 	     IDENTIFIER_POINTER (scspec));
-  if (specs->specbits & (1 << (int) i))
-    error ("duplicate %qs", IDENTIFIER_POINTER (scspec));
-  /* Diagnose "__thread extern" and "__thread static".  */
-  if (specs->specbits & (1 << (int) RID_THREAD))
+  switch (i)
     {
-      if (i == RID_EXTERN)
+    case RID_INLINE:
+      /* GCC has hitherto given an error for duplicate inline, but
+	 this should be revisited since C99 permits duplicate
+	 inline.  */
+      dupe = specs->inline_p;
+      specs->inline_p = true;
+      break;
+    case RID_THREAD:
+      dupe = specs->thread_p;
+      if (specs->storage_class == csc_auto)
+	error ("%<__thread%> used with %<auto%>");
+      else if (specs->storage_class == csc_register)
+	error ("%<__thread%> used with %<register%>");
+      else if (specs->storage_class == csc_typedef)
+	error ("%<__thread%> used with %<typedef%>");
+      else
+	specs->thread_p = true;
+      break;
+    case RID_AUTO:
+      n = csc_auto;
+      break;
+    case RID_EXTERN:
+      n = csc_extern;
+      /* Diagnose "__thread extern".  */
+      if (specs->thread_p)
 	error ("%<__thread%> before %<extern%>");
-      else if (i == RID_STATIC)	
+      break;
+    case RID_REGISTER:
+      n = csc_register;
+      break;
+    case RID_STATIC:
+      n = csc_static;
+      /* Diagnose "__thread static".  */
+      if (specs->thread_p)
 	error ("%<__thread%> before %<static%>");
+      break;
+    case RID_TYPEDEF:
+      n = csc_typedef;
+      break;
+    default:
+      gcc_unreachable ();
     }
-  specs->specbits |= 1 << (int) i;
+  if (n != csc_none && n == specs->storage_class)
+    dupe = true;
+  if (dupe)
+    error ("duplicate %qs", IDENTIFIER_POINTER (scspec));
+  if (n != csc_none)
+    {
+      if (specs->storage_class != csc_none && n != specs->storage_class)
+	{
+	  error ("multiple storage classes in declaration specifiers");
+	}
+      else
+	{
+	  specs->storage_class = n;
+	  if (n != csc_extern && n != csc_static && specs->thread_p)
+	    {
+	      error ("%<__thread%> used with %qs",
+		     IDENTIFIER_POINTER (scspec));
+	      specs->thread_p = false;
+	    }
+	}
+    }
   return specs;
 }
 

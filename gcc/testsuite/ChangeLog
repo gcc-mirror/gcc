@@ -1,3 +1,14 @@
+2004-09-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/declspec-4.c, gcc.dg/declspec-5.c, gcc.dg/declspec-6.c,
+	gcc.dg/tls/diag-2.c: Update expected messages.
+	* gcc.dg/991209-1.c: Specify compilation options.  Update expected
+	messages.
+	* gcc.dg/pr14289-2.c, gcc.dg/pr14289-3.c: Remove.
+	* gcc.dg/declspec-7.c, gcc.dg/declspec-8.c, gcc.dg/declspec-9.c,
+	gcc.dg/declspec-10.c, gcc.dg/declspec-11.c, gcc.dg/tls/diag-4.c,
+	gcc.dg/tls/diag-5.c: New tests.
+
 2004-09-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/20040910-1.c: Correct dg-error regexp.
