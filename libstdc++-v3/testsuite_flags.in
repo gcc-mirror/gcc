@@ -28,14 +28,14 @@ query=$1
 
 case ${query} in
     --install-includes)
-      INCLUDES="-I${SRC_DIR}/testsuite -I${BUILD_DIR}/testsuite"
+      INCLUDES="-I${SRC_DIR}/testsuite"
       echo ${INCLUDES}
       ;;
     --build-includes)
       INCLUDES="-nostdinc++ @GLIBCPP_INCLUDES@
 	        -I${SRC_DIR}/libsupc++ -I${SRC_DIR}/libio 
 		-I${SRC_DIR}/include/backward 
-		-I${SRC_DIR}/testsuite -I${BUILD_DIR}/testsuite"
+		-I${SRC_DIR}/testsuite"
       echo ${INCLUDES}
       ;;
     --install-cxx)

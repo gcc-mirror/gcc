@@ -161,11 +161,13 @@ OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
-CONFIG_CXXFLAGS =  	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @CSHADOW_FLAGS@ @DEBUG_FLAGS@ 
+CONFIG_CXXFLAGS = \
+	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @CSHADOW_FLAGS@ @DEBUG_FLAGS@ 
 
 
 # Warning flags to use.
-WARN_CXXFLAGS =  	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
+WARN_CXXFLAGS = \
+	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
@@ -175,17 +177,29 @@ LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
-INCLUDES =  	-nostdinc++ 	$(GLIBCPP_INCLUDES) 	$(LIBSUPCXX_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) 	$(TOPLEVEL_INCLUDES)
+INCLUDES = \
+	-nostdinc++ \
+	$(GLIBCPP_INCLUDES) \
+	$(LIBSUPCXX_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
+	$(TOPLEVEL_INCLUDES)
 
 
-sources =  	basic_file.cc bitset.cc c++locale.cc cmath.cc codecvt.cc 	complex_io.cc functexcept.cc globals.cc ios.cc limits.cc 	locale.cc locale-inst.cc localename.cc 	collate.cc messages.cc moneypunct.cc numpunct.cc 	misc-inst.cc stdexcept.cc stl-inst.cc string-inst.cc strstream.cc 	valarray-inst.cc wstring-inst.cc
+sources = \
+	basic_file.cc bitset.cc c++locale.cc cmath.cc codecvt.cc \
+	complex_io.cc functexcept.cc globals.cc ios.cc limits.cc \
+	locale.cc locale-inst.cc localename.cc \
+	collate.cc messages.cc moneypunct.cc numpunct.cc \
+	misc-inst.cc stdexcept.cc stl-inst.cc string-inst.cc strstream.cc \
+	valarray-inst.cc wstring-inst.cc
 
 
 VPATH = $(top_srcdir):$(top_srcdir)/src
 
 libstdc___la_SOURCES = $(sources)
 
-libstdc___la_LIBADD =  	../libmath/libmath.la @libio_la@ 	../libsupc++/libsupc++convenience.la
+libstdc___la_LIBADD = \
+	../libmath/libmath.la @libio_la@ \
+	../libsupc++/libsupc++convenience.la
 
 
 libstdc___la_LDFLAGS = -version-info @libtool_VERSION@ -lm
@@ -205,7 +219,12 @@ GLIBCPP_INCLUDE_DIR = @glibcpp_builddir@/include
 # The no-implicit-templates flag will generate unresolved references to
 # the concept-checking symbols.  So we must disable the checks while
 # actually building the library.
-AM_CXXFLAGS =  	-fno-implicit-templates 	$(LIBSUPCXX_CXXFLAGS) 	$(WARN_CXXFLAGS) 	$(OPTIMIZE_CXXFLAGS) 	$(CONFIG_CXXFLAGS) 
+AM_CXXFLAGS = \
+	-fno-implicit-templates \
+	$(LIBSUPCXX_CXXFLAGS) \
+	$(WARN_CXXFLAGS) \
+	$(OPTIMIZE_CXXFLAGS) \
+	$(CONFIG_CXXFLAGS) 
 
 
 # libstdc++ libtool notes
@@ -226,7 +245,8 @@ AM_CXXFLAGS =  	-fno-implicit-templates 	$(LIBSUPCXX_CXXFLAGS) 	$(WARN_CXXFLAGS)
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
 # attempt to infer which configuration to use
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
+	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 
 # 3) We'd have a problem when building the shared libstdc++ object if
@@ -235,7 +255,8 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) 	       $(
 # course is problematic at this point.  So, we get the top-level
 # directory to configure libstdc++-v3 to use gcc as the C++
 # compilation driver.
-CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) \
+	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
