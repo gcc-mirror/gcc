@@ -5381,14 +5381,16 @@ instantiate_class_template (tree type)
 		++processing_template_decl;
 
 	      if (new_friend_type != error_mark_node)
-	        make_friend_class (type, new_friend_type);
+	        make_friend_class (type, new_friend_type,
+				   /*complain=*/false);
 
 	      if (TREE_CODE (friend_type) == TEMPLATE_DECL)
 		--processing_template_decl;
 	    }
 	  else
 	    /* Build new DECL_FRIENDLIST.  */
-	    add_friend (type, tsubst_friend_function (t, args));
+	    add_friend (type, tsubst_friend_function (t, args),
+			/*complain=*/false);
 	}
     }
 

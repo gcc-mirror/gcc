@@ -3840,8 +3840,8 @@ extern tree cplus_expand_constant               (tree);
 
 /* friend.c */
 extern int is_friend				(tree, tree);
-extern void make_friend_class			(tree, tree);
-extern void add_friend                          (tree, tree);
+extern void make_friend_class			(tree, tree, bool);
+extern void add_friend                          (tree, tree, bool);
 extern tree do_friend				(tree, tree, tree, tree, tree, enum overload_flags, tree, int);
 
 /* in init.c */
