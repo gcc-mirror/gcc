@@ -27,8 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef __NEW_H__
-#define __NEW_H__
+#ifndef _CPP_BACKWARD_NEW_H
+#define _CPP_BACKWARD_NEW_H 1
 
 #include <new>
 
@@ -38,4 +38,4 @@ using std::nothrow;
 using std::new_handler;
 using std::set_new_handler;
 
-#endif // __NEW_H__
+#endif 
