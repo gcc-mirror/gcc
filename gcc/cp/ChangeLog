@@ -1,3 +1,9 @@
+2001-05-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (pushdecl): Adjust error string.
+	(xref_tag): Adjust friend class injection warning. Remove the
+	inherited name from the class shadowed scope.
+
 2001-05-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (cp_protect_cleanup_actions): New function.
