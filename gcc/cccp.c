@@ -62,33 +62,174 @@ typedef unsigned char U_CHAR;
 #define PATH_SEPARATOR ':'
 #endif
 
-/* In case config.h defines these.  */
-#undef bcopy
-#undef bzero
-#undef bcmp
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <signal.h>
 
-#ifndef VMS
-#ifndef USG
-#include <sys/time.h>		/* for __DATE__ and __TIME__ */
-#include <sys/resource.h>
+/* The following symbols should be autoconfigured:
+	HAVE_FCNTL_H
+	HAVE_STDLIB_H
+	HAVE_SYS_TIME_H
+	HAVE_UNISTD_H
+	STDC_HEADERS
+	TIME_WITH_SYS_TIME
+   In the mean time, we'll get by with approximations based
+   on existing GCC configuration symbols.  */
+
+#ifdef POSIX
+# ifndef HAVE_STDLIB_H
+# define HAVE_STDLIB_H 1
+# endif
+# ifndef HAVE_UNISTD_H
+# define HAVE_UNISTD_H 1
+# endif
+# ifndef STDC_HEADERS
+# define STDC_HEADERS 1
+# endif
+#endif /* defined (POSIX) */
+
+#if defined (POSIX) || (defined (USG) && !defined (VMS))
+# ifndef HAVE_FCNTL_H
+# define HAVE_FCNTL_H 1
+# endif
+#endif
+
+#ifndef RLIMIT_STACK
+# include <time.h>
 #else
-#include <time.h>
-#include <fcntl.h>
-#endif /* USG */
-#endif /* not VMS */
+# if TIME_WITH_SYS_TIME
+#  include <sys/time.h>
+#  include <time.h>
+# else
+#  if HAVE_SYS_TIME_H
+#   include <sys/time.h>
+#  else
+#   include <time.h>
+#  endif
+# endif
+# include <sys/resource.h>
+#endif
+
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 
 /* This defines "errno" properly for VMS, and gives us EACCES. */
 #include <errno.h>
 
+#if HAVE_STDLIB_H
+# include <stdlib.h>
+#else
+char *getenv ();
+#endif
+
+#if STDC_HEADERS
+# include <string.h>
+# ifndef bcmp
+# define bcmp(a, b, n) memcmp (a, b, n)
+# endif
+# ifndef bcopy
+# define bcopy(s, d, n) memcpy (d, s, n)
+# endif
+# ifndef bzero
+# define bzero(d, n) memset (d, 0, n)
+# endif
+#else /* !STDC_HEADERS */
+char *index ();
+char *rindex ();
+
+# if !defined (BSTRING) && (defined (USG) || defined (VMS))
+
+#  ifndef bcmp
+#  define bcmp my_bcmp
+static int
+my_bcmp (a, b, n)
+     register char *a;
+     register char *b;
+     register unsigned n;
+{
+   while (n-- > 0)
+     if (*a++ != *b++)
+       return 1;
+
+   return 0;
+}
+#  endif /* !defined (bcmp) */
+
+#  ifndef bcopy
+#  define bcopy my_bcopy
+static void
+my_bcopy (s, d, n)
+     register char *s;
+     register char *d;
+     register unsigned n;
+{
+  while (n-- > 0)
+    *d++ = *s++;
+}
+#  endif /* !defined (bcopy) */
+
+#  ifndef bzero
+#  define bzero my_bzero
+static void
+my_bzero (b, length)
+     register char *b;
+     register unsigned length;
+{
+  while (length-- > 0)
+    *b++ = 0;
+}
+#  endif /* !defined (bzero) */
+
+# endif /* !defined (BSTRING) && (defined (USG) || defined (VMS)) */
+#endif /* ! STDC_HEADERS */
+
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 6)
+# define __attribute__(x)
+#endif
+
+#ifndef PROTO
+# if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+#  define PROTO(ARGS) ARGS
+# else
+#  define PROTO(ARGS) ()
+# endif
+#endif
+
+#if defined (__STDC__) && defined (HAVE_VPRINTF)
+# include <stdarg.h>
+# define VA_START(va_list, var) va_start (va_list, var)
+# define PRINTF_ALIST(msg) char *msg, ...
+# define PRINTF_DCL(msg)
+# define PRINTF_PROTO(ARGS, m, n) PROTO (ARGS) __attribute__ ((format (printf, m, n)))
+#else
+# include <varargs.h>
+# define VA_START(va_list, var) va_start (va_list)
+# define PRINTF_ALIST(msg) msg, va_alist
+# define PRINTF_DCL(msg) char *msg; va_dcl
+# define PRINTF_PROTO(ARGS, m, n) () __attribute__ ((format (printf, m, n)))
+# define vfprintf(file, msg, args) \
+    { \
+      char *a0 = va_arg(args, char *); \
+      char *a1 = va_arg(args, char *); \
+      char *a2 = va_arg(args, char *); \
+      char *a3 = va_arg(args, char *); \
+      fprintf (file, msg, a0, a1, a2, a3); \
+    }
+#endif
+
+#define PRINTF_PROTO_1(ARGS) PRINTF_PROTO(ARGS, 1, 2)
+#define PRINTF_PROTO_2(ARGS) PRINTF_PROTO(ARGS, 2, 3)
+#define PRINTF_PROTO_3(ARGS) PRINTF_PROTO(ARGS, 3, 4)
+
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
 /* VMS-specific definitions */
 #ifdef VMS
-#include <time.h>
 #include <descrip.h>
 #define O_RDONLY	0	/* Open arg for Read/Only  */
 #define O_WRONLY	1	/* Open arg for Write/Only */
@@ -112,9 +253,6 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 #define BSTRING			/* VMS/GCC supplies the bstring routines */
 #endif /* __GNUC__ */
 #endif /* VMS */
-  
-extern char *index ();
-extern char *rindex ();
 
 #ifndef O_RDONLY
 #define O_RDONLY 0
@@ -169,18 +307,9 @@ extern char *rindex ();
 #define INCLUDE_LEN_FUDGE 0
 #endif
 
-/* Forward declarations.  */
-
-char *xmalloc ();
-void error ();
-void warning ();
-
 /* External declarations.  */
 
-extern char *getenv ();
-extern FILE *fdopen ();
 extern char *version_string;
-extern struct tm *localtime ();
 #ifndef VMS
 #ifndef HAVE_STRERROR
 extern int sys_nerr;
@@ -195,137 +324,12 @@ char *strerror ();
 #else	/* VMS */
 char *strerror (int,...);
 #endif
-extern int parse_escape ();
-extern HOST_WIDE_INT parse_c_expression ();
+int parse_escape PROTO((char **));
+HOST_WIDE_INT parse_c_expression PROTO((char *));
 
 #ifndef errno
 extern int errno;
 #endif
-
-/* Forward declarations.  */
-
-struct directive;
-struct file_buf;
-struct arglist;
-struct argdata;
-
-#if defined(USG) || defined(VMS)
-#ifndef BSTRING
-void bcopy ();
-void bzero ();
-int bcmp ();
-#endif
-#endif
-
-/* These functions are declared to return int instead of void since they
-   are going to be placed in a table and some old compilers have trouble with
-   pointers to functions returning void.  */
-
-static int do_define ();
-static int do_line ();
-static int do_include ();
-static int do_undef ();
-static int do_error ();
-static int do_pragma ();
-static int do_ident ();
-static int do_if ();
-static int do_xifdef ();
-static int do_else ();
-static int do_elif ();
-static int do_endif ();
-static int do_sccs ();
-static int do_once ();
-static int do_assert ();
-static int do_unassert ();
-static int do_warning ();
-
-static void add_import ();
-static void append_include_chain ();
-static void deps_output ();
-static void make_undef ();
-static void make_definition ();
-static void make_assertion ();
-static void path_include ();
-static void initialize_builtins ();
-static void initialize_char_syntax ();
-static void dump_arg_n ();
-static void dump_defn_1 ();
-static void delete_macro ();
-static void trigraph_pcp ();
-static void rescan ();
-static void finclude ();
-static void validate_else ();
-static int comp_def_part ();
-static void error_from_errno ();
-static void error_with_line ();
-void pedwarn ();
-void pedwarn_with_line ();
-static void pedwarn_with_file_and_line ();
-static void fatal ();
-void fancy_abort ();
-static void pfatal_with_name ();
-static void perror_with_name ();
-static void pipe_closed ();
-static void print_containing_files ();
-static int lookup_import ();
-static int redundant_include_p ();
-static is_system_include ();
-static struct file_name_map *read_name_map ();
-static char *read_filename_string ();
-static int open_include_file ();
-static int check_preconditions ();
-static void pcfinclude ();
-static void pcstring_used ();
-static void write_output ();
-static int check_macro_name ();
-static int compare_defs ();
-static int compare_token_lists ();
-static HOST_WIDE_INT eval_if_expression ();
-static int discard_comments ();
-static int change_newlines ();
-static int line_for_error ();
-static int hashf ();
-static int file_size_and_mode ();
-
-static struct arglist *read_token_list ();
-static void free_token_list ();
-
-static struct hashnode *install ();
-struct hashnode *lookup ();
-
-static struct assertion_hashnode *assertion_install ();
-static struct assertion_hashnode *assertion_lookup ();
-
-static char *xrealloc ();
-static char *xcalloc ();
-static char *savestring ();
-
-static void delete_assertion ();
-static void macroexpand ();
-static void dump_all_macros ();
-static void conditional_skip ();
-static void skip_if_group ();
-static void output_line_directive ();
-
-/* Last arg to output_line_directive.  */
-enum file_change_code {same_file, enter_file, leave_file};
-
-static int grow_outbuf ();
-static int handle_directive ();
-static void memory_full ();
-
-static U_CHAR *macarg1 ();
-static char *macarg ();
-
-static U_CHAR *skip_to_end_of_comment ();
-static U_CHAR *skip_quoted_string ();
-static U_CHAR *skip_paren_group ();
-static char *quote_string ();
-
-static char *check_precompiled ();
-/* static struct macrodef create_definition ();	[moved below] */
-static void dump_single_macro ();
-static void output_dots ();
 
 #ifndef FAILURE_EXIT_CODE
 #define FAILURE_EXIT_CODE 33	/* gnu cc command understands this */
@@ -673,9 +677,6 @@ struct macrodef
   U_CHAR *symnam;
   int symlen;
 };
-
-static struct macrodef create_definition ();
-
 
 enum sharp_token_type {
   NO_SHARP_TOKEN,		/* token not present */
@@ -923,15 +924,40 @@ static int assertions_flag;
 
 /* `struct directive' defines one #-directive, including how to handle it.  */
 
+#define DO_PROTO PROTO((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *))
+
 struct directive {
   int length;			/* Length of name */
-  int (*func)();		/* Function to handle directive */
+  int (*func) DO_PROTO;	/* Function to handle directive */
   char *name;			/* Name of directive */
   enum node_type type;		/* Code which describes which directive. */
   char angle_brackets;		/* Nonzero => <...> is special.  */
   char traditional_comments;	/* Nonzero: keep comments if -traditional.  */
   char pass_thru;		/* Copy preprocessed directive to output file.  */
 };
+
+/* These functions are declared to return int instead of void since they
+   are going to be placed in the table and some old compilers have trouble with
+   pointers to functions returning void.  */
+
+static int do_assert DO_PROTO;
+static int do_define DO_PROTO;
+static int do_elif DO_PROTO;
+static int do_else DO_PROTO;
+static int do_endif DO_PROTO;
+static int do_error DO_PROTO;
+static int do_ident DO_PROTO;
+static int do_if DO_PROTO;
+static int do_include DO_PROTO;
+static int do_line DO_PROTO;
+static int do_pragma DO_PROTO;
+#ifdef SCCS_DIRECTIVE
+static int do_sccs DO_PROTO;
+#endif
+static int do_unassert DO_PROTO;
+static int do_undef DO_PROTO;
+static int do_warning DO_PROTO;
+static int do_xifdef DO_PROTO;
 
 /* Here is the actual list of #-directives, most-often-used first.  */
 
@@ -995,9 +1021,6 @@ static int dollars_in_ident;
 #define DOLLARS_IN_IDENTIFIERS 1
 #endif
 
-static FILE_BUF expand_to_temp_buffer ();
-
-static DEFINITION *collect_expansion ();
 
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
@@ -1030,6 +1053,152 @@ static int deps_column;
 /* Nonzero means -I- has been seen,
    so don't look for #include "foo" the source-file directory.  */
 static int ignore_srcdir;
+
+static int safe_read PROTO((int, char *, int));
+static void safe_write PROTO((int, char *, int));
+
+int main PROTO((int, char **));
+
+static void path_include PROTO((char *));
+
+static U_CHAR *index0 PROTO((U_CHAR *, int, size_t));
+
+static void trigraph_pcp PROTO((FILE_BUF *));
+
+static void newline_fix PROTO((U_CHAR *));
+static void name_newline_fix PROTO((U_CHAR *));
+
+static char *get_lintcmd PROTO((U_CHAR *, U_CHAR *, U_CHAR **, int *, int *));
+
+static void rescan PROTO((FILE_BUF *, int));
+
+static FILE_BUF expand_to_temp_buffer PROTO((U_CHAR *, U_CHAR *, int, int));
+
+static int handle_directive PROTO((FILE_BUF *, FILE_BUF *));
+
+static struct tm *timestamp PROTO((void));
+static void special_symbol PROTO((HASHNODE *, FILE_BUF *));
+
+static int redundant_include_p PROTO((char *));
+static is_system_include PROTO((char *));
+
+static char *read_filename_string PROTO((int, FILE *));
+static struct file_name_map *read_name_map PROTO((char *));
+static int open_include_file PROTO((char *, struct file_name_list *));
+
+static void finclude PROTO((int, char *, FILE_BUF *, int, struct file_name_list *));
+static void record_control_macro PROTO((char *, U_CHAR *));
+
+static int import_hash PROTO((char *));
+static int lookup_import PROTO((char *, struct file_name_list *));
+static void add_import PROTO((int, char *));
+
+static char *check_precompiled PROTO((int, char *, char **));
+static int check_preconditions PROTO((char *));
+static void pcfinclude PROTO((U_CHAR *, U_CHAR *, U_CHAR *, FILE_BUF *));
+static void pcstring_used PROTO((HASHNODE *));
+static void write_output PROTO((void));
+static void pass_thru_directive PROTO((U_CHAR *, U_CHAR *, FILE_BUF *, struct directive *));
+
+static MACRODEF create_definition PROTO((U_CHAR *, U_CHAR *, FILE_BUF *));
+
+static int check_macro_name PROTO((U_CHAR *, char *));
+static int compare_defs PROTO((DEFINITION *, DEFINITION *));
+static int comp_def_part PROTO((int, U_CHAR *, int, U_CHAR *, int, int));
+
+static DEFINITION *collect_expansion  PROTO((U_CHAR *, U_CHAR *, int, struct arglist *));
+
+int check_assertion PROTO((U_CHAR *, int, int, struct arglist *));
+static int compare_token_lists PROTO((struct arglist *, struct arglist *));
+
+static struct arglist *read_token_list PROTO((U_CHAR **, U_CHAR *, int *));
+static void free_token_list PROTO((struct arglist *));
+
+static ASSERTION_HASHNODE *assertion_install PROTO((U_CHAR *, int, int));
+static ASSERTION_HASHNODE *assertion_lookup PROTO((U_CHAR *, int, int));
+static void delete_assertion PROTO((ASSERTION_HASHNODE *));
+
+static void do_once PROTO((void));
+
+static HOST_WIDE_INT eval_if_expression PROTO((U_CHAR *, int));
+static void conditional_skip PROTO((FILE_BUF *, int, enum node_type, U_CHAR *, FILE_BUF *));
+static void skip_if_group PROTO((FILE_BUF *, int, FILE_BUF *));
+static void validate_else PROTO((U_CHAR *));
+
+static U_CHAR *skip_to_end_of_comment PROTO((FILE_BUF *, int *, int));
+static U_CHAR *skip_quoted_string PROTO((U_CHAR *, U_CHAR *, int, int *, int *, int *));
+static char *quote_string PROTO((char *, char *));
+static U_CHAR *skip_paren_group PROTO((FILE_BUF *));
+
+/* Last arg to output_line_directive.  */
+enum file_change_code {same_file, enter_file, leave_file};
+static void output_line_directive PROTO((FILE_BUF *, FILE_BUF *, int, enum file_change_code));
+
+static void macroexpand PROTO((HASHNODE *, FILE_BUF *));
+
+struct argdata;
+static char *macarg PROTO((struct argdata *, int));
+
+static U_CHAR *macarg1 PROTO((U_CHAR *, U_CHAR *, int *, int *, int *, int));
+
+static int discard_comments PROTO((U_CHAR *, int, int));
+
+static int change_newlines PROTO((U_CHAR *, int));
+
+char *my_strerror PROTO((int));
+void error PRINTF_PROTO_1((char *, ...));
+static void verror PROTO((char *, va_list));
+static void error_from_errno PROTO((char *));
+void warning PRINTF_PROTO_1((char *, ...));
+static void vwarning PROTO((char *, va_list));
+static void error_with_line PRINTF_PROTO_2((int, char *, ...));
+static void verror_with_line PROTO((int, char *, va_list));
+static void vwarning_with_line PROTO((int, char *, va_list));
+void pedwarn PRINTF_PROTO_1((char *, ...));
+void pedwarn_with_line PRINTF_PROTO_2((int, char *, ...));
+static void pedwarn_with_file_and_line PRINTF_PROTO_3((char *, int, char *, ...));
+
+static void print_containing_files PROTO((void));
+
+static int line_for_error PROTO((int));
+static int grow_outbuf PROTO((FILE_BUF *, int));
+
+static HASHNODE *install PROTO((U_CHAR *, int, enum node_type, char *, int));
+HASHNODE *lookup PROTO((U_CHAR *, int, int));
+static void delete_macro PROTO((HASHNODE *));
+static int hashf PROTO((U_CHAR *, int, int));
+
+static void dump_single_macro PROTO((HASHNODE *, FILE *));
+static void dump_all_macros PROTO((void));
+static void dump_defn_1 PROTO((U_CHAR *, int, int, FILE *));
+static void dump_arg_n PROTO((DEFINITION *, int, FILE *));
+
+static void initialize_char_syntax PROTO((void));
+static void initialize_builtins PROTO((FILE_BUF *, FILE_BUF *));
+
+static void make_definition PROTO((char *, FILE_BUF *));
+static void make_undef PROTO((char *, FILE_BUF *));
+
+static void make_assertion PROTO((char *, char *));
+
+static void append_include_chain PROTO((struct file_name_list *, struct file_name_list *));
+
+static void deps_output PROTO((char *, int));
+
+static void fatal PRINTF_PROTO_1((char *, ...)) __attribute__ ((noreturn));
+void fancy_abort PROTO((void)) __attribute__ ((noreturn));
+static void perror_with_name PROTO((char *));
+static void pfatal_with_name PROTO((char *)) __attribute__ ((noreturn));
+static void pipe_closed PROTO((int)) __attribute__ ((noreturn));
+
+static void memory_full PROTO((void)) __attribute__ ((noreturn));
+GENERIC_PTR xmalloc PROTO((size_t));
+static GENERIC_PTR xrealloc PROTO((GENERIC_PTR, size_t));
+static GENERIC_PTR xcalloc PROTO((size_t, size_t));
+static char *savestring PROTO((char *));
+
+static int file_size_and_mode PROTO((int, int *, long int *));
+static void output_dots PROTO((FILE *, int));
 
 /* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
    retrying if necessary.  Return a negative value if an error occurs,
@@ -1093,7 +1262,7 @@ main (argc, argv)
   int st_mode;
   long st_size;
   char *in_fname;
-  char *p;
+  char *cp;
   int f, i;
   FILE_BUF *fp;
   char **pend_files = (char **) xmalloc (argc * sizeof (char *));
@@ -1143,18 +1312,19 @@ main (argc, argv)
   signal (SIGPIPE, pipe_closed);
 #endif
 
-  p = argv[0] + strlen (argv[0]);
-  while (p != argv[0] && p[-1] != '/'
+  cp = argv[0] + strlen (argv[0]);
+  while (cp != argv[0] && cp[-1] != '/'
 #ifdef DIR_SEPARATOR
-	 && p[-1] != DIR_SEPARATOR
+	 && cp[-1] != DIR_SEPARATOR
 #endif
 	 )
-    --p;
-  progname = p;
+    --cp;
+  progname = cp;
 
 #ifdef VMS
   {
     /* Remove directories from PROGNAME.  */
+    char *p;
     char *s = progname;
 
     if ((p = rindex (s, ':')) != 0) s = p + 1;	/* skip device */
@@ -1238,7 +1408,7 @@ main (argc, argv)
 	  dirtmp->next = 0;
 	  dirtmp->control_macro = 0;
 	  dirtmp->c_system_include_path = 1;
-	  dirtmp->fname = (char *) xmalloc (strlen (argv[i+1]) + 1);
+	  dirtmp->fname = xmalloc (strlen (argv[i+1]) + 1);
 	  strcpy (dirtmp->fname, argv[++i]);
 	  dirtmp->got_name_map = 0;
 
@@ -1271,8 +1441,7 @@ main (argc, argv)
 	  if (i + 1 == argc)
 	    fatal ("Directory name missing after `-iwithprefix' option");
 
-	  dirtmp->fname = (char *) xmalloc (strlen (argv[i+1])
-					    + strlen (prefix) + 1);
+	  dirtmp->fname = xmalloc (strlen (argv[i+1]) + strlen (prefix) + 1);
 	  strcpy (dirtmp->fname, prefix);
 	  strcat (dirtmp->fname, argv[++i]);
 	  dirtmp->got_name_map = 0;
@@ -1306,8 +1475,7 @@ main (argc, argv)
 	  if (i + 1 == argc)
 	    fatal ("Directory name missing after `-iwithprefixbefore' option");
 
-	  dirtmp->fname = (char *) xmalloc (strlen (argv[i+1])
-					    + strlen (prefix) + 1);
+	  dirtmp->fname = xmalloc (strlen (argv[i+1]) + strlen (prefix) + 1);
 	  strcpy (dirtmp->fname, prefix);
 	  strcat (dirtmp->fname, argv[++i]);
 	  dirtmp->got_name_map = 0;
@@ -1361,7 +1529,7 @@ main (argc, argv)
 	  pcp_outfile = 
 	    ((pcp_fname[0] != '-' || pcp_fname[1] != '\0')
 	     ? fopen (pcp_fname, "w")
-	     : fdopen (dup (fileno (stdout)), "w"));
+	     : stdout);
 	  if (pcp_outfile == 0)
 	    pfatal_with_name (pcp_fname);
 	  no_precomp = 1;
@@ -1481,7 +1649,7 @@ main (argc, argv)
 	{
 	  char *p = argv[i] + 2;
 	  char c;
-	  while (c = *p++) {
+	  while ((c = *p++)) {
 	    /* Arg to -d specifies what parts of macros to dump */
 	    switch (c) {
 	    case 'M':
@@ -1643,9 +1811,9 @@ main (argc, argv)
   /* Some people say that CPATH should replace the standard include dirs,
      but that seems pointless: it comes before them, so it overrides them
      anyway.  */
-  p = (char *) getenv ("CPATH");
-  if (p != 0 && ! no_standard_includes)
-    path_include (p);
+  cp = getenv ("CPATH");
+  if (cp && ! no_standard_includes)
+    path_include (cp);
 
   /* Now that dollars_in_ident is known, initialize is_idchar.  */
   initialize_char_syntax ();
@@ -1860,7 +2028,7 @@ main (argc, argv)
 	    struct file_name_list *new
 	      = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
 	    int this_len = strlen (specd_prefix) + strlen (p->fname) - default_len;
-	    char *str = (char *) xmalloc (this_len + 1);
+	    char *str = xmalloc (this_len + 1);
 	    strcpy (str, specd_prefix);
 	    strcat (str, p->fname + default_len);
 	    new->fname = str;
@@ -1964,7 +2132,7 @@ main (argc, argv)
     while (*s != 0 && *s != ' ') s++;
     if (*s != 0) {
       deps_target = s + 1;
-      output_file = (char *) xmalloc (s - spec + 1);
+      output_file = xmalloc (s - spec + 1);
       bcopy (spec, output_file, s - spec);
       output_file[s - spec] = 0;
     }
@@ -1981,7 +2149,7 @@ main (argc, argv)
      as the target of this Make-rule.  */
   if (print_deps) {
     deps_allocated_size = 200;
-    deps_buffer = (char *) xmalloc (deps_allocated_size);
+    deps_buffer = xmalloc (deps_allocated_size);
     deps_buffer[0] = 0;
     deps_size = 0;
     deps_column = 0;
@@ -2062,7 +2230,7 @@ main (argc, argv)
     size = 0;
     fp->buf = (U_CHAR *) xmalloc (bsize + 2);
     for (;;) {
-      cnt = safe_read (f, fp->buf + size, bsize - size);
+      cnt = safe_read (f, (char *) fp->buf + size, bsize - size);
       if (cnt < 0) goto perror;	/* error! */
       size += cnt;
       if (size != bsize) break;	/* End of file */
@@ -2074,7 +2242,7 @@ main (argc, argv)
     /* Read a file whose size we can determine in advance.
        For the sake of VMS, st_size is just an upper bound.  */
     fp->buf = (U_CHAR *) xmalloc (st_size + 2);
-    fp->length = safe_read (f, fp->buf, st_size);
+    fp->length = safe_read (f, (char *) fp->buf, st_size);
     if (fp->length < 0) goto perror;
   }
   fp->bufp = fp->buf;
@@ -2188,12 +2356,12 @@ path_include (path)
       while (*q != 0 && *q != PATH_SEPARATOR) q++;
       if (p == q) {
 	/* An empty name in the path stands for the current directory.  */
-	name = (char *) xmalloc (2);
+	name = xmalloc (2);
 	name[0] = '.';
 	name[1] = 0;
       } else {
 	/* Otherwise use the directory that is named.  */
-	name = (char *) xmalloc (q - p + 1);
+	name = xmalloc (q - p + 1);
 	bcopy (p, name, q - p);
 	name[q - p] = 0;
       }
@@ -2226,18 +2394,19 @@ static U_CHAR *
 index0 (s, c, n)
      U_CHAR *s;
      int c;
-     int n;
+     size_t n;
 {
+  char *p = (char *) s;
   for (;;) {
-    char *q = index (s, c);
+    char *q = index (p, c);
     if (q)
       return (U_CHAR *) q;
     else {
-      int l = strlen (s);
+      size_t l = strlen (p);
       if (l == n)
 	return 0;
       l++;
-      s += l;
+      p += l;
       n -= l;
     }
   }
@@ -2261,7 +2430,7 @@ trigraph_pcp (buf)
 
   fptr = bptr = sptr = buf->buf;
   lptr = fptr + buf->length;
-  while ((sptr = (U_CHAR *) index0 (sptr, '?', lptr - sptr)) != NULL) {
+  while ((sptr = index0 (sptr, '?', (size_t) (lptr - sptr))) != NULL) {
     if (*++sptr != '?')
       continue;
     switch (*++sptr) {
@@ -2417,19 +2586,19 @@ get_lintcmd (ibp, limit, argstart, arglen, cmdlen)
   linsize = limit - ibp;
   
   /* Oh, I wish C had lexical functions... hell, I'll just open-code the set */
-  if ((linsize >= 10) && !strncmp (ibp, "NOTREACHED", 10)) {
+  if ((linsize >= 10) && !bcmp (ibp, "NOTREACHED", 10)) {
     *cmdlen = 10;
     return "NOTREACHED";
   }
-  if ((linsize >= 8) && !strncmp (ibp, "ARGSUSED", 8)) {
+  if ((linsize >= 8) && !bcmp (ibp, "ARGSUSED", 8)) {
     *cmdlen = 8;
     return "ARGSUSED";
   }
-  if ((linsize >= 11) && !strncmp (ibp, "LINTLIBRARY", 11)) {
+  if ((linsize >= 11) && !bcmp (ibp, "LINTLIBRARY", 11)) {
     *cmdlen = 11;
     return "LINTLIBRARY";
   }
-  if ((linsize >= 7) && !strncmp (ibp, "VARARGS", 7)) {
+  if ((linsize >= 7) && !bcmp (ibp, "VARARGS", 7)) {
     *cmdlen = 7;
     ibp += 7; linsize -= 7;
     if ((linsize == 0) || ! isdigit (*ibp)) return "VARARGS";
@@ -3151,7 +3320,6 @@ randomchar:
 	   backed over.  OBP-IDENT_LENGTH points to the identifier.  */
 
 	if (!pcp_outfile || pcp_inside_if) {
-startagain:
 	  for (hp = hashtab[MAKE_POS (hash) % HASHSIZE]; hp != NULL;
 	       hp = hp->next) {
 	    
@@ -3367,7 +3535,7 @@ hashcollision:
  ending:
   if (if_stack != ip->if_stack)
     {
-      char *str = "unknown";
+      char *str;
 
       switch (if_stack->type)
 	{
@@ -3386,6 +3554,8 @@ hashcollision:
 	case T_ELIF:
 	  str = "elif";
 	  break;
+	default:
+	  abort ();
 	}
 
       error_with_line (line_for_error (if_stack->lineno),
@@ -3589,7 +3759,7 @@ handle_directive (ip, op)
    * routine, after moving the input pointer up to the next line.
    */
   for (kt = directive_table; kt->length > 0; kt++) {
-    if (kt->length == ident_length && !strncmp (kt->name, ident, ident_length)) {
+    if (kt->length == ident_length && !bcmp (kt->name, ident, ident_length)) {
       register U_CHAR *buf;
       register U_CHAR *limit;
       int unterminated;
@@ -3607,7 +3777,8 @@ handle_directive (ip, op)
       already_output = 0;
       keep_comments = traditional && kt->traditional_comments;
       /* #import is defined only in Objective C, or when on the NeXT.  */
-      if (kt->type == T_IMPORT && !(objc || lookup ("__NeXT__", -1, -1)))
+      if (kt->type == T_IMPORT
+	  && !(objc || lookup ((U_CHAR *) "__NeXT__", -1, -1)))
 	break;
 
       /* Find the end of this directive (first newline not backslashed
@@ -4025,7 +4196,7 @@ special_symbol (hp, op)
 
     if (!is_idstart[*ip->bufp])
       goto oops;
-    if (hp = lookup (ip->bufp, -1, -1)) {
+    if ((hp = lookup (ip->bufp, -1, -1))) {
       if (pcp_outfile && pcp_inside_if
 	  && (hp->type == T_CONST
 	      || (hp->type == T_MACRO && hp->value.defn->predefined)))
@@ -4300,7 +4471,7 @@ get_filename:
 
   /* Allocate this permanently, because it gets stored in the definitions
      of macros.  */
-  fname = (char *) xmalloc (max_include_len + flen + 4);
+  fname = xmalloc (max_include_len + flen + 4);
   /* + 2 above for slash and terminating null.  */
   /* + 2 added for '.h' on VMS (to support '#include filename') */
 
@@ -4311,7 +4482,7 @@ get_filename:
       || *fbeg == DIR_SEPARATOR
 #endif
       ) {
-    strncpy (fname, fbeg, flen);
+    strncpy (fname, (char *) fbeg, flen);
     fname[flen] = 0;
     if (redundant_include_p (fname))
       return 0;
@@ -4338,7 +4509,7 @@ get_filename:
       } else {
 	fname[0] = 0;
       }
-      strncat (fname, fbeg, flen);
+      strncat (fname, (char *) fbeg, flen);
 #ifdef VMS
       /* Change this 1/2 Unix 1/2 VMS file specification into a
          full VMS file specification */
@@ -4378,7 +4549,7 @@ get_filename:
   if (f < 0) {
     /* A file that was not found.  */
 
-    strncpy (fname, fbeg, flen);
+    strncpy (fname, (char *) fbeg, flen);
     fname[flen] = 0;
     /* If generating dependencies and -MG was specified, we assume missing
        files are leaf files, living in the same directory as the source file
@@ -4516,7 +4687,8 @@ get_filename:
     if (pcfbuf) {
       pcfname = xmalloc (strlen (pcftry) + 1);
       strcpy (pcfname, pcftry);
-      pcfinclude (pcfbuf, pcfbuflimit, fname, op);
+      pcfinclude ((U_CHAR *) pcfbuf, (U_CHAR *) pcfbuflimit,
+		  (U_CHAR *) fname, op);
     }
     else
       finclude (f, fname, op, is_system_include (fname), searchptr);
@@ -4842,7 +5014,7 @@ finclude (f, fname, op, system_header_p, dirptr)
 
     /* Read the file contents, knowing that st_size is an upper bound
        on the number of bytes we can read.  */
-    fp->length = safe_read (f, fp->buf, st_size);
+    fp->length = safe_read (f, (char *) fp->buf, st_size);
     if (fp->length < 0) goto nope;
   }
   else if (S_ISDIR (st_mode)) {
@@ -4860,7 +5032,7 @@ finclude (f, fname, op, system_header_p, dirptr)
     fp->buf = (U_CHAR *) xmalloc (bsize + 2);
 
     for (;;) {
-      i = safe_read (f, fp->buf + st_size, bsize - st_size);
+      i = safe_read (f, (char *) fp->buf + st_size, bsize - st_size);
       if (i < 0)
 	goto nope;      /* error! */
       st_size += i;
@@ -5026,7 +5198,7 @@ add_import (fd, fname)
   hashval = import_hash (fname);
   fstat (fd, &sb);
   i = (struct import_file *)xmalloc (sizeof (struct import_file));
-  i->name = (char *)xmalloc (strlen (fname)+1);
+  i->name = xmalloc (strlen (fname)+1);
   strcpy (i->name, fname);
   bcopy ((char *) &sb.st_ino, (char *) &i->inode, sizeof (sb.st_ino));
   i->dev = sb.st_dev;
@@ -5109,7 +5281,7 @@ check_preconditions (prec)
   char *lineend;
   
   while (*prec) {
-    lineend = (char *) index (prec, '\n');
+    lineend = index (prec, '\n');
     
     if (*prec++ != '#') {
       error ("Bad format encountered while reading precompiled file");
@@ -5119,7 +5291,7 @@ check_preconditions (prec)
       HASHNODE *hp;
       
       prec += 6;
-      mdef = create_definition (prec, lineend, NULL_PTR);
+      mdef = create_definition ((U_CHAR *) prec, (U_CHAR *) lineend, NULL_PTR);
 
       if (mdef.defn == 0)
 	abort ();
@@ -5144,7 +5316,7 @@ check_preconditions (prec)
 	prec++;
       len = prec - name;
       
-      if (lookup (name, len, -1))
+      if (lookup ((U_CHAR *) name, len, -1))
 	return 0;
     } else {
       error ("Bad format encountered while reading precompiled file");
@@ -5196,7 +5368,7 @@ pcfinclude (buf, limit, name, op)
       cp += 4 - ((HOST_WIDE_INT) cp & 3);
     
     /* Now get the string. */
-    str = (STRINGDEF *) cp;
+    str = (STRINGDEF *) (GENERIC_PTR) cp;
     string_start = cp += sizeof (STRINGDEF);
     
     for (; *cp; cp++)		/* skip the string */
@@ -5231,7 +5403,7 @@ pcfinclude (buf, limit, name, op)
     else
       /* Otherwise, for each key, */
       for (; nkeys--; free (tmpbuf.buf), cp = endofthiskey + 1) {
-	KEYDEF *kp = (KEYDEF *) cp;
+	KEYDEF *kp = (KEYDEF *) (GENERIC_PTR) cp;
 	HASHNODE *hp;
 	
 	/* It starts with a KEYDEF structure */
@@ -5239,7 +5411,7 @@ pcfinclude (buf, limit, name, op)
 	
 	/* Find the end of the key.  At the end of this for loop we
 	   advance CP to the start of the next key using this variable. */
-	endofthiskey = cp + strlen (cp);
+	endofthiskey = cp + strlen ((char *) cp);
 	kp->str = str;
 	
 	/* Expand the key, and enter it into the hash table. */
@@ -5308,16 +5480,17 @@ write_output ()
     if (next_string
 	&& cur_buf_loc - outbuf.buf == next_string->output_mark) {
       if (next_string->writeflag) {
-	len = 4 * strlen (next_string->filename) + 32;
+	len = 4 * strlen ((char *) next_string->filename) + 32;
 	while (len > line_directive_len)
 	  line_directive = xrealloc (line_directive, 
 				     line_directive_len *= 2);
 	sprintf (line_directive, "\n# %d ", next_string->lineno);
 	strcpy (quote_string (line_directive + strlen (line_directive),
-		              next_string->filename),
+			      (char *) next_string->filename),
 		"\n");
 	safe_write (fileno (stdout), line_directive, strlen (line_directive));
-	safe_write (fileno (stdout), next_string->contents, next_string->len);
+	safe_write (fileno (stdout),
+		    (char *) next_string->contents, next_string->len);
       }	      
       next_string = next_string->chain;
     }
@@ -5327,7 +5500,7 @@ write_output ()
 		- (cur_buf_loc - outbuf.buf))
 	     : outbuf.bufp - cur_buf_loc);
       
-      safe_write (fileno (stdout), cur_buf_loc, len);
+      safe_write (fileno (stdout), (char *) cur_buf_loc, len);
       cur_buf_loc += len;
     }
   }
@@ -5444,7 +5617,7 @@ create_definition (buf, limit, op)
 	bp++;
 	/* do we have a "special" rest-args extension here? */
 	if (limit - bp > REST_EXTENSION_LENGTH &&
-	    strncmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0) {
+	    bcmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0) {
 	  rest_args = 1;
 	  temp->rest_args = 1;
 	  break;
@@ -5477,13 +5650,9 @@ create_definition (buf, limit, op)
 
 	for (otemp = temp->next; otemp != NULL; otemp = otemp->next)
 	  if (temp->length == otemp->length &&
-	    strncmp (temp->name, otemp->name, temp->length) == 0) {
-	      U_CHAR *name;
-
-	      name = (U_CHAR *) alloca (temp->length + 1);
-	      (void) strncpy (name, temp->name, temp->length);
-	      name[temp->length] = '\0';
-	      error ("duplicate argument name `%s' in `#define'", name);
+	      bcmp (temp->name, otemp->name, temp->length) == 0) {
+	      error ("duplicate argument name `%.*s' in `#define'",
+		     temp->length, temp->name);
 	      goto nope;
 	  }
       }
@@ -5598,18 +5767,12 @@ do_define (buf, limit, op, keyword)
         ok = ! done_initializing;
       /* Print the warning if it's not ok.  */
       if (!ok) {
-	U_CHAR *msg;		/* what pain... */
-
         /* If we are passing through #define and #undef directives, do
 	   that for this re-definition now.  */
         if (debug_output && op)
 	  pass_thru_directive (buf, limit, op, keyword);
 
-	msg = (U_CHAR *) alloca (mdef.symlen + 22);
-	*msg = '`';
-	bcopy ((char *) mdef.symnam, (char *) (msg + 1), mdef.symlen);
-	strcpy ((char *) (msg + mdef.symlen + 1), "' redefined");
-	pedwarn (msg);
+	pedwarn ("`%.*s' redefined", mdef.symlen, mdef.symnam);
 	if (hp->type == T_MACRO)
 	  pedwarn_with_file_and_line (hp->value.defn->file, hp->value.defn->line,
 				      "this is the location of the previous definition");
@@ -5650,16 +5813,9 @@ check_macro_name (symname, usage)
   sym_length = p - symname;
   if (sym_length == 0)
     error ("invalid %s name", usage);
-  else if (!is_idstart[*symname]) {
-    U_CHAR *msg;			/* what pain... */
-    msg = (U_CHAR *) alloca (sym_length + 1);
-    bcopy ((char *) symname, (char *) msg, sym_length);
-    msg[sym_length] = 0;
-    error ("invalid %s name `%s'", usage, msg);
-  } else {
-    if (! strncmp (symname, "defined", 7) && sym_length == 7)
-      error ("invalid %s name `defined'", usage);
-  }
+  else if (!is_idstart[*symname]
+	   || (sym_length == 7 && ! bcmp (symname, "defined", 7)))
+    error ("invalid %s name `%.*s'", usage, sym_length, symname);
   return sym_length;
 }
 
@@ -5681,7 +5837,7 @@ compare_defs (d1, d2)
     return 1;
   for (a1 = d1->pattern, a2 = d2->pattern; a1 && a2;
        a1 = a1->next, a2 = a2->next) {
-    if (!((a1->nchars == a2->nchars && ! strncmp (p1, p2, a1->nchars))
+    if (!((a1->nchars == a2->nchars && ! bcmp (p1, p2, a1->nchars))
 	  || ! comp_def_part (first, p1, a1->nchars, p2, a2->nchars, 0))
 	|| a1->argno != a2->argno
 	|| a1->stringify != a2->stringify
@@ -5968,7 +6124,7 @@ collect_expansion (buf, end, nargs, arglist)
 
 	  if (arg->name[0] == c
 	      && arg->length == id_len
-	      && strncmp (arg->name, id_beg, id_len) == 0) {
+	      && bcmp (arg->name, id_beg, id_len) == 0) {
 	    if (expected_delimiter && warn_stringify) {
 	      if (traditional) {
 		warning ("macro argument `%.*s' is stringified.",
@@ -6116,7 +6272,7 @@ do_assert (buf, limit, op, keyword)
 
     hp = assertion_lookup (symname, sym_length, hashcode);
     if (hp == NULL) {
-      if (sym_length == 7 && ! strncmp (symname, "defined", sym_length))
+      if (sym_length == 7 && ! bcmp (symname, "defined", 7))
 	error ("`defined' redefined as assertion");
       hp = assertion_install (symname, sym_length, hashcode);
     }
@@ -6280,7 +6436,7 @@ compare_token_lists (l1, l2)
   while (l1 && l2) {
     if (l1->length != l2->length)
       return 0;
-    if (strncmp (l1->name, l2->name, l1->length))
+    if (bcmp (l1->name, l2->name, l1->length))
       return 0;
     l1 = l1->next;
     l2 = l2->next;
@@ -6432,7 +6588,7 @@ assertion_lookup (name, len, hash)
 
   bucket = assertion_hashtab[hash];
   while (bucket) {
-    if (bucket->length == len && strncmp (bucket->name, name, len) == 0)
+    if (bucket->length == len && bcmp (bucket->name, name, len) == 0)
       return bucket;
     bucket = bucket->next;
   }
@@ -6490,7 +6646,7 @@ do_line (buf, limit, op, keyword)
   /* The Newline at the end of this line remains to be processed.
      To put the next line at the specified line number,
      we must store a line number now that is one less.  */
-  new_lineno = atoi (bp) - 1;
+  new_lineno = atoi ((char *) bp) - 1;
 
   /* NEW_LINENO is one less than the actual line number here.  */
   if (pedantic && new_lineno < 0)
@@ -6584,7 +6740,7 @@ do_line (buf, limit, op, keyword)
       &fname_table[hashf (fname, fname_length, FNAME_HASHSIZE)];
     for (hp = *hash_bucket; hp != NULL; hp = hp->next)
       if (hp->length == fname_length &&
-	  strncmp (hp->value.cpval, fname, fname_length) == 0) {
+	  bcmp (hp->value.cpval, fname, fname_length) == 0) {
 	ip->nominal_fname = hp->value.cpval;
 	break;
       }
@@ -6696,7 +6852,7 @@ do_warning (buf, limit, op, keyword)
 /* Remember the name of the current file being read from so that we can
    avoid ever including it again.  */
 
-static int
+static void
 do_once ()
 {
   int i;
@@ -6719,18 +6875,18 @@ do_once ()
     new->got_name_map = 0;
     new->c_system_include_path = 0;
   }
-  return 0;
 }
 
 /* #ident has already been copied to the output file, so just ignore it.  */
 
 static int
-do_ident (buf, limit)
+do_ident (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
+     FILE_BUF *op;
+     struct directive *keyword;
 {
   FILE_BUF trybuf;
   int len;
-  FILE_BUF *op = &outbuf;
 
   /* Allow #ident in system headers, since that's not user's fault.  */
   if (pedantic && !instack[indepth].system_header_p)
@@ -6760,11 +6916,13 @@ do_ident (buf, limit)
    Just check for some recognized pragmas that need validation here.  */
 
 static int
-do_pragma (buf, limit)
+do_pragma (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
+     FILE_BUF *op;
+     struct directive *keyword;
 {
   SKIP_WHITE_SPACE (buf);
-  if (!strncmp (buf, "once", 4)) {
+  if (!strncmp ((char *) buf, "once", 4)) {
     /* Allow #pragma once in system headers, since that's not the user's
        fault.  */
     if (!instack[indepth].system_header_p)
@@ -6772,7 +6930,7 @@ do_pragma (buf, limit)
     do_once ();
   }
 
-  if (!strncmp (buf, "implementation", 14)) {
+  if (!strncmp ((char *) buf, "implementation", 14)) {
     /* Be quiet about `#pragma implementation' for a file only if it hasn't
        been included yet.  */
     struct file_name_list *ptr;
@@ -6782,13 +6940,13 @@ do_pragma (buf, limit)
       return 0;
 
     fname = p + 1;
-    if (p = (U_CHAR *) index (fname, '\"'))
+    if ((p = (U_CHAR *) index ((char *) fname, '\"')))
       *p = '\0';
     
     for (ptr = all_include_files; ptr; ptr = ptr->next) {
       inc_fname = (U_CHAR *) rindex (ptr->fname, '/');
       inc_fname = inc_fname ? inc_fname + 1 : (U_CHAR *) ptr->fname;
-      if (inc_fname && !strcmp (inc_fname, fname))
+      if (inc_fname && !strcmp ((char *) inc_fname, (char *) fname))
 	warning ("`#pragma implementation' for `%s' appears after file is included",
 		 fname);
     }
@@ -6824,15 +6982,22 @@ nope:
 }
 #endif
 
+#ifdef SCCS_DIRECTIVE
+
 /* Just ignore #sccs, on systems where we define it at all.  */
 
 static int
-do_sccs ()
+do_sccs (buf, limit, op, keyword)
+     U_CHAR *buf, *limit;
+     FILE_BUF *op;
+     struct directive *keyword;
 {
   if (pedantic)
     pedwarn ("ANSI C does not allow `#sccs'");
   return 0;
 }
+
+#endif /* defined (SCCS_DIRECTIVE) */
 
 /*
  * handle #if directive by
@@ -6917,13 +7082,14 @@ eval_if_expression (buf, length)
   HASHNODE *save_defined;
   HOST_WIDE_INT value;
 
-  save_defined = install ("defined", -1, T_SPEC_DEFINED, NULL_PTR, -1);
+  save_defined = install ((U_CHAR *) "defined", -1, T_SPEC_DEFINED,
+			  NULL_PTR, -1);
   pcp_inside_if = 1;
   temp_obuf = expand_to_temp_buffer (buf, buf + length, 0, 1);
   pcp_inside_if = 0;
   delete_macro (save_defined);	/* clean up special symbol */
 
-  value = parse_c_expression (temp_obuf.buf);
+  value = parse_c_expression ((char *) temp_obuf.buf);
 
   free (temp_obuf.buf);
 
@@ -7261,7 +7427,7 @@ skip_if_group (ip, any, op)
       for (kt = directive_table; kt->length >= 0; kt++) {
 	IF_STACK_FRAME *temp;
 	if (ident_length == kt->length
-	    && strncmp (cp, kt->name, kt->length) == 0) {
+	    && bcmp (cp, kt->name, kt->length) == 0) {
 	  /* If we are asked to return on next directive, do so now.  */
 	  if (any)
 	    goto done;
@@ -7299,6 +7465,9 @@ skip_if_group (ip, any, op)
 	    temp = if_stack;
 	    if_stack = if_stack->next;
 	    free (temp);
+	    break;
+
+	   default:
 	    break;
 	  }
 	  break;
@@ -8690,9 +8859,20 @@ my_strerror (errnum)
  */
 
 void
-error (msg, arg1, arg2, arg3)
+error (PRINTF_ALIST (msg))
+     PRINTF_DCL (msg)
+{
+  va_list args;
+
+  VA_START (args, msg);
+  verror (msg, args);
+  va_end (args);
+}
+
+static void
+verror (msg, args)
      char *msg;
-     char *arg1, *arg2, *arg3;
+     va_list args;
 {
   int i;
   FILE_BUF *ip = NULL;
@@ -8707,7 +8887,7 @@ error (msg, arg1, arg2, arg3)
 
   if (ip != NULL)
     fprintf (stderr, "%s:%d: ", ip->nominal_fname, ip->lineno);
-  fprintf (stderr, msg, arg1, arg2, arg3);
+  vfprintf (stderr, msg, args);
   fprintf (stderr, "\n");
   errors++;
 }
@@ -8740,9 +8920,20 @@ error_from_errno (name)
 /* Print error message but don't count it.  */
 
 void
-warning (msg, arg1, arg2, arg3)
+warning (PRINTF_ALIST (msg))
+     PRINTF_DCL (msg)
+{
+  va_list args;
+
+  VA_START (args, msg);
+  vwarning (msg, args);
+  va_end (args);
+}
+
+static void
+vwarning (msg, args)
      char *msg;
-     char *arg1, *arg2, *arg3;
+     va_list args;
 {
   int i;
   FILE_BUF *ip = NULL;
@@ -8764,15 +8955,31 @@ warning (msg, arg1, arg2, arg3)
   if (ip != NULL)
     fprintf (stderr, "%s:%d: ", ip->nominal_fname, ip->lineno);
   fprintf (stderr, "warning: ");
-  fprintf (stderr, msg, arg1, arg2, arg3);
+  vfprintf (stderr, msg, args);
   fprintf (stderr, "\n");
 }
 
 static void
-error_with_line (line, msg, arg1, arg2, arg3)
+#if defined (__STDC__) && defined (HAVE_VPRINTF)
+error_with_line (int line, PRINTF_ALIST (msg))
+#else
+error_with_line (line, PRINTF_ALIST (msg))
+     int line;
+     PRINTF_DCL (msg)
+#endif
+{
+  va_list args;
+
+  VA_START (args, msg);
+  verror_with_line (line, msg, args);
+  va_end (args);
+}
+
+static void
+verror_with_line (line, msg, args)
      int line;
      char *msg;
-     char *arg1, *arg2, *arg3;
+     va_list args;
 {
   int i;
   FILE_BUF *ip = NULL;
@@ -8787,16 +8994,16 @@ error_with_line (line, msg, arg1, arg2, arg3)
 
   if (ip != NULL)
     fprintf (stderr, "%s:%d: ", ip->nominal_fname, line);
-  fprintf (stderr, msg, arg1, arg2, arg3);
+  vfprintf (stderr, msg, args);
   fprintf (stderr, "\n");
   errors++;
 }
 
 static void
-warning_with_line (line, msg, arg1, arg2, arg3)
+vwarning_with_line (line, msg, args)
      int line;
      char *msg;
-     char *arg1, *arg2, *arg3;
+     va_list args;
 {
   int i;
   FILE_BUF *ip = NULL;
@@ -8818,45 +9025,60 @@ warning_with_line (line, msg, arg1, arg2, arg3)
   if (ip != NULL)
     fprintf (stderr, "%s:%d: ", ip->nominal_fname, line);
   fprintf (stderr, "warning: ");
-  fprintf (stderr, msg, arg1, arg2, arg3);
+  vfprintf (stderr, msg, args);
   fprintf (stderr, "\n");
 }
 
 /* print an error message and maybe count it.  */
 
 void
-pedwarn (msg, arg1, arg2, arg3)
-     char *msg;
-     char *arg1, *arg2, *arg3;
+pedwarn (PRINTF_ALIST (msg))
+     PRINTF_DCL (msg)
 {
+  va_list args;
+
+  VA_START (args, msg);
   if (pedantic_errors)
-    error (msg, arg1, arg2, arg3);
+    verror (msg, args);
   else
-    warning (msg, arg1, arg2, arg3);
+    vwarning (msg, args);
+  va_end (args);
 }
 
 void
-pedwarn_with_line (line, msg, arg1, arg2, arg3)
+#if defined (__STDC__) && defined (HAVE_VPRINTF)
+pedwarn_with_line (int line, PRINTF_ALIST (msg))
+#else
+pedwarn_with_line (line, PRINTF_ALIST (msg))
      int line;
-     char *msg;
-     char *arg1, *arg2, *arg3;
+     PRINTF_DCL (msg)
+#endif
 {
+  va_list args;
+
+  VA_START (args, msg);
   if (pedantic_errors)
-    error_with_line (line, msg, arg1, arg2, arg3);
+    verror_with_line (line, msg, args);
   else
-    warning_with_line (line, msg, arg1, arg2, arg3);
+    vwarning_with_line (line, msg, args);
+  va_end (args);
 }
 
 /* Report a warning (or an error if pedantic_errors)
    giving specified file name and line number, not current.  */
 
 static void
-pedwarn_with_file_and_line (file, line, msg, arg1, arg2, arg3)
+#if defined (__STDC__) && defined (HAVE_VPRINTF)
+pedwarn_with_file_and_line (char *file, int line, PRINTF_ALIST (msg))
+#else
+pedwarn_with_file_and_line (file, line, PRINTF_ALIST (msg))
      char *file;
      int line;
-     char *msg;
-     char *arg1, *arg2, *arg3;
+     PRINTF_DCL (msg)
+#endif
 {
+  va_list args;
+
   if (!pedantic_errors && inhibit_warnings)
     return;
   if (file != NULL)
@@ -8865,7 +9087,9 @@ pedwarn_with_file_and_line (file, line, msg, arg1, arg2, arg3)
     errors++;
   if (!pedantic_errors)
     fprintf (stderr, "warning: ");
-  fprintf (stderr, msg, arg1, arg2, arg3);
+  VA_START (args, msg);
+  vfprintf (stderr, msg, args);
+  va_end (args);
   fprintf (stderr, "\n");
 }
 
@@ -9068,7 +9292,7 @@ lookup (name, len, hash)
 
   bucket = hashtab[hash];
   while (bucket) {
-    if (bucket->length == len && strncmp (bucket->name, name, len) == 0)
+    if (bucket->length == len && bcmp (bucket->name, name, len) == 0)
       return bucket;
     bucket = bucket->next;
   }
@@ -9182,6 +9406,7 @@ dump_single_macro (hp, of)
 	 case WHITE_SHARP_TOKEN: fprintf (of, "# "); break;
 	 case PERCENT_COLON_TOKEN: fprintf (of, "%%:"); break;
 	 case WHITE_PERCENT_COLON_TOKEN: fprintf (of, "%%: "); break;
+	 default: abort ();
 	}
       }
       if (ap->raw_before) {
@@ -9191,6 +9416,8 @@ dump_single_macro (hp, of)
 	   case WHITE_PERCENT_COLON_TOKEN:
 	    fprintf (of, " ");
 	    break;
+	   default:
+	    break;
 	  }
 	} else {
 	  switch (ap->raw_before) {
@@ -9198,6 +9425,7 @@ dump_single_macro (hp, of)
 	   case WHITE_SHARP_TOKEN: fprintf (of, "## "); break;
 	   case PERCENT_COLON_TOKEN: fprintf (of, "%%:%%:"); break;
 	   case WHITE_PERCENT_COLON_TOKEN: fprintf (of, "%%:%%: "); break;
+	   default: abort ();
 	  }
 	}
       }
@@ -9210,6 +9438,7 @@ dump_single_macro (hp, of)
        case WHITE_SHARP_TOKEN: fprintf (of, " ##"); break;
        case PERCENT_COLON_TOKEN: fprintf (of, "%%:%%:"); break;
        case WHITE_PERCENT_COLON_TOKEN: fprintf (of, " %%:%%:"); break;
+       default: abort ();
       }
       concat = 1;
     }
@@ -9282,7 +9511,7 @@ dump_arg_n (defn, argnum, of)
 {
   register U_CHAR *p = defn->args.argnames;
   while (argnum + 1 < defn->nargs) {
-    p = (U_CHAR *) index (p, ' ') + 1;
+    p = (U_CHAR *) index ((char *) p, ' ') + 1;
     argnum++;
   }
 
@@ -9344,86 +9573,96 @@ initialize_builtins (inp, outp)
      FILE_BUF *inp;
      FILE_BUF *outp;
 {
-  install ("__LINE__", -1, T_SPECLINE, NULL_PTR, -1);
-  install ("__DATE__", -1, T_DATE, NULL_PTR, -1);
-  install ("__FILE__", -1, T_FILE, NULL_PTR, -1);
-  install ("__BASE_FILE__", -1, T_BASE_FILE, NULL_PTR, -1);
-  install ("__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, NULL_PTR, -1);
-  install ("__VERSION__", -1, T_VERSION, NULL_PTR, -1);
+  install ((U_CHAR *) "__LINE__", -1, T_SPECLINE, NULL_PTR, -1);
+  install ((U_CHAR *) "__DATE__", -1, T_DATE, NULL_PTR, -1);
+  install ((U_CHAR *) "__FILE__", -1, T_FILE, NULL_PTR, -1);
+  install ((U_CHAR *) "__BASE_FILE__", -1, T_BASE_FILE, NULL_PTR, -1);
+  install ((U_CHAR *) "__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, NULL_PTR, -1);
+  install ((U_CHAR *) "__VERSION__", -1, T_VERSION, NULL_PTR, -1);
 #ifndef NO_BUILTIN_SIZE_TYPE
-  install ("__SIZE_TYPE__", -1, T_SIZE_TYPE, NULL_PTR, -1);
+  install ((U_CHAR *) "__SIZE_TYPE__", -1, T_SIZE_TYPE, NULL_PTR, -1);
 #endif
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
-  install ("__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, NULL_PTR, -1);
+  install ((U_CHAR *) "__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, NULL_PTR, -1);
 #endif
-  install ("__WCHAR_TYPE__", -1, T_WCHAR_TYPE, NULL_PTR, -1);
-  install ("__USER_LABEL_PREFIX__",-1,T_USER_LABEL_PREFIX_TYPE, NULL_PTR, -1);
-  install ("__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE, NULL_PTR, -1);
-  install ("__TIME__", -1, T_TIME, NULL_PTR, -1);
+  install ((U_CHAR *) "__WCHAR_TYPE__", -1, T_WCHAR_TYPE, NULL_PTR, -1);
+  install ((U_CHAR *) "__USER_LABEL_PREFIX__", -1, T_USER_LABEL_PREFIX_TYPE,
+	   NULL_PTR, -1);
+  install ((U_CHAR *) "__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE,
+	   NULL_PTR, -1);
+  install ((U_CHAR *) "__TIME__", -1, T_TIME, NULL_PTR, -1);
   if (!traditional) {
-    install ("__STDC__", -1, T_CONST, "1", -1);
-    install ("__STDC_VERSION__", -1, T_CONST, "199409L", -1);
+    install ((U_CHAR *) "__STDC__", -1, T_CONST, "1", -1);
+    install ((U_CHAR *) "__STDC_VERSION__", -1, T_CONST, "199409L", -1);
   }
   if (objc)
-    install ("__OBJC__", -1, T_CONST, "1", -1);
+    install ((U_CHAR *) "__OBJC__", -1, T_CONST, "1", -1);
 /*  This is supplied using a -D by the compiler driver
     so that it is present only when truly compiling with GNU C.  */
-/*  install ("__GNUC__", -1, T_CONST, "2", -1);  */
+/*  install ((U_CHAR *) "__GNUC__", -1, T_CONST, "2", -1);  */
 
   if (debug_output)
     {
       char directive[2048];
+      U_CHAR *udirective = (U_CHAR *) directive;
       register struct directive *dp = &directive_table[0];
       struct tm *timebuf = timestamp ();
 
       sprintf (directive, " __BASE_FILE__ \"%s\"\n",
 	       instack[0].nominal_fname);
       output_line_directive (inp, outp, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
+      pass_thru_directive (udirective, &udirective[strlen (directive)],
+			   outp, dp);
 
       sprintf (directive, " __VERSION__ \"%s\"\n", version_string);
       output_line_directive (inp, outp, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
+      pass_thru_directive (udirective, &udirective[strlen (directive)],
+			   outp, dp);
 
 #ifndef NO_BUILTIN_SIZE_TYPE
       sprintf (directive, " __SIZE_TYPE__ %s\n", SIZE_TYPE);
       output_line_directive (inp, outp, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
+      pass_thru_directive (udirective, &udirective[strlen (directive)],
+			   outp, dp);
 #endif
 
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
       sprintf (directive, " __PTRDIFF_TYPE__ %s\n", PTRDIFF_TYPE);
       output_line_directive (inp, outp, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
+      pass_thru_directive (udirective, &udirective[strlen (directive)],
+			   outp, dp);
 #endif
 
       sprintf (directive, " __WCHAR_TYPE__ %s\n", wchar_type);
       output_line_directive (inp, outp, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
+      pass_thru_directive (udirective, &udirective[strlen (directive)],
+			   outp, dp);
 
       sprintf (directive, " __DATE__ \"%s %2d %4d\"\n",
 	       monthnames[timebuf->tm_mon],
 	       timebuf->tm_mday, timebuf->tm_year + 1900);
       output_line_directive (inp, outp, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
+      pass_thru_directive (udirective, &udirective[strlen (directive)],
+			   outp, dp);
 
       sprintf (directive, " __TIME__ \"%02d:%02d:%02d\"\n",
 	       timebuf->tm_hour, timebuf->tm_min, timebuf->tm_sec);
       output_line_directive (inp, outp, 0, same_file);
-      pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
+      pass_thru_directive (udirective, &udirective[strlen (directive)],
+			   outp, dp);
 
       if (!traditional)
 	{
           sprintf (directive, " __STDC__ 1");
           output_line_directive (inp, outp, 0, same_file);
-          pass_thru_directive (directive, &directive[strlen (directive)],
+          pass_thru_directive (udirective, &udirective[strlen (directive)],
 			       outp, dp);
 	}
       if (objc)
 	{
           sprintf (directive, " __OBJC__ 1");
           output_line_directive (inp, outp, 0, same_file);
-          pass_thru_directive (directive, &directive[strlen (directive)],
+          pass_thru_directive (udirective, &udirective[strlen (directive)],
 			       outp, dp);
 	}
     }
@@ -9438,15 +9677,14 @@ initialize_builtins (inp, outp)
 
 static void
 make_definition (str, op)
-     U_CHAR *str;
+     char *str;
      FILE_BUF *op;
 {
   FILE_BUF *ip;
   struct directive *kt;
   U_CHAR *buf, *p;
 
-  buf = str;
-  p = str;
+  p = buf = (U_CHAR *) str;
   if (!is_idstart[*p]) {
     error ("malformed option `-D %s'", str);
     return;
@@ -9457,7 +9695,7 @@ make_definition (str, op)
     while (is_idchar[*++p] || *p == ',' || is_hor_space[*p])
       ;
     if (*p++ != ')')
-      p = str;			/* Error */
+      p = (U_CHAR *) str;			/* Error */
   }
   if (*p == 0) {
     buf = (U_CHAR *) alloca (p - buf + 4);
@@ -9470,16 +9708,16 @@ make_definition (str, op)
     U_CHAR *q;
     /* Copy the entire option so we can modify it.  */
     buf = (U_CHAR *) alloca (2 * strlen (str) + 1);
-    strncpy (buf, str, p - str);
+    strncpy ((char *) buf, str, p - (U_CHAR *) str);
     /* Change the = to a space.  */
-    buf[p - str] = ' ';
+    buf[p - (U_CHAR *) str] = ' ';
     /* Scan for any backslash-newline and remove it.  */
     p++;
-    q = &buf[p - str];
+    q = &buf[p - (U_CHAR *) str];
     while (*p) {
       if (*p == '\"' || *p == '\'') {
 	int unterminated = 0;
-	U_CHAR *p1 = skip_quoted_string (p, p + strlen (p), 0,
+	U_CHAR *p1 = skip_quoted_string (p, p + strlen ((char *) p), 0,
 					 NULL_PTR, NULL_PTR, &unterminated);
 	if (unterminated)
 	  return;
@@ -9507,7 +9745,7 @@ make_definition (str, op)
   ip->nominal_fname = ip->fname = "*Initialization*";
 
   ip->buf = ip->bufp = buf;
-  ip->length = strlen (buf);
+  ip->length = strlen ((char *) buf);
   ip->lineno = 1;
   ip->macro = 0;
   ip->free_ptr = 0;
@@ -9518,7 +9756,7 @@ make_definition (str, op)
     ;
 
   /* Pass NULL instead of OP, since this is a "predefined" macro.  */
-  do_define (buf, buf + strlen (buf), NULL_PTR, kt);
+  do_define (buf, buf + strlen ((char *) buf), NULL_PTR, kt);
   --indepth;
 }
 
@@ -9526,7 +9764,7 @@ make_definition (str, op)
 
 static void
 make_undef (str, op)
-     U_CHAR *str;
+     char *str;
      FILE_BUF *op;
 {
   FILE_BUF *ip;
@@ -9535,7 +9773,7 @@ make_undef (str, op)
   ip = &instack[++indepth];
   ip->nominal_fname = ip->fname = "*undef*";
 
-  ip->buf = ip->bufp = str;
+  ip->buf = ip->bufp = (U_CHAR *) str;
   ip->length = strlen (str);
   ip->lineno = 1;
   ip->macro = 0;
@@ -9546,7 +9784,7 @@ make_undef (str, op)
   for (kt = directive_table; kt->type != T_UNDEF; kt++)
     ;
 
-  do_undef (str, str + strlen (str), op, kt);
+  do_undef ((U_CHAR *) str, (U_CHAR *) str + strlen (str), op, kt);
   --indepth;
 }
 
@@ -9556,7 +9794,7 @@ make_undef (str, op)
 static void
 make_assertion (option, str)
      char *option;
-     U_CHAR *str;
+     char *str;
 {
   FILE_BUF *ip;
   struct directive *kt;
@@ -9592,7 +9830,7 @@ make_assertion (option, str)
   ip->nominal_fname = ip->fname = "*Initialization*";
 
   ip->buf = ip->bufp = buf;
-  ip->length = strlen (buf);
+  ip->length = strlen ((char *) buf);
   ip->lineno = 1;
   ip->macro = 0;
   ip->free_ptr = 0;
@@ -9604,7 +9842,7 @@ make_assertion (option, str)
 
   /* pass NULL as output ptr to do_define since we KNOW it never
      does any output.... */
-  do_assert (buf, buf + strlen (buf) , NULL_PTR, kt);
+  do_assert (buf, buf + strlen ((char *) buf) , NULL_PTR, kt);
   --indepth;
 }
 
@@ -9669,7 +9907,7 @@ deps_output (string, spacer)
 
   if (deps_size + size + 8 > deps_allocated_size) {
     deps_allocated_size = (deps_size + size + 50) * 2;
-    deps_buffer = (char *) xrealloc (deps_buffer, deps_allocated_size);
+    deps_buffer = xrealloc (deps_buffer, deps_allocated_size);
   }
   if (spacer == ' ' && deps_column > 0)
     deps_buffer[deps_size++] = ' ';
@@ -9681,50 +9919,16 @@ deps_output (string, spacer)
   deps_buffer[deps_size] = 0;
 }
 
-#if defined(USG) || defined(VMS)
-#ifndef BSTRING
-
-void
-bzero (b, length)
-     register char *b;
-     register unsigned length;
-{
-  while (length-- > 0)
-    *b++ = 0;
-}
-
-void
-bcopy (b1, b2, length)
-     register char *b1;
-     register char *b2;
-     register unsigned length;
-{
-  while (length-- > 0)
-    *b2++ = *b1++;
-}
-
-int
-bcmp (b1, b2, length)	/* This could be a macro! */
-     register char *b1;
-     register char *b2;
-     register unsigned length;
-{
-   while (length-- > 0)
-     if (*b1++ != *b2++)
-       return 1;
-
-   return 0;
-}
-#endif /* not BSTRING */
-#endif /* USG or VMS */
-
-
 static void
-fatal (str, arg)
-     char *str, *arg;
+fatal (PRINTF_ALIST (msg))
+     PRINTF_DCL (msg)
 {
+  va_list args;
+
   fprintf (stderr, "%s: ", progname);
-  fprintf (stderr, str, arg);
+  VA_START (args, msg);
+  vfprintf (stderr, msg, args);
+  va_end (args);
   fprintf (stderr, "\n");
   exit (FAILURE_EXIT_CODE);
 }
@@ -9776,63 +9980,44 @@ memory_full ()
 }
 
 
-char *
+GENERIC_PTR
 xmalloc (size)
-     unsigned size;
+     size_t size;
 {
-  register char *ptr = (char *) malloc (size);
-  if (ptr != 0) return (ptr);
-  memory_full ();
-  /*NOTREACHED*/
-  return 0;
+  register GENERIC_PTR ptr = (GENERIC_PTR) malloc (size);
+  if (!ptr)
+    memory_full ();
+  return ptr;
 }
 
-static char *
+static GENERIC_PTR
 xrealloc (old, size)
-     char *old;
-     unsigned size;
+     GENERIC_PTR old;
+     size_t size;
 {
-  register char *ptr = (char *) realloc (old, size);
-  if (ptr != 0) return (ptr);
-  memory_full ();
-  /*NOTREACHED*/
-  return 0;
+  register GENERIC_PTR ptr = (GENERIC_PTR) realloc (old, size);
+  if (!ptr)
+    memory_full ();
+  return ptr;
 }
 
-static char *
+static GENERIC_PTR
 xcalloc (number, size)
-     unsigned number, size;
+     size_t number, size;
 {
-  register unsigned total = number * size;
-  register char *ptr = (char *) malloc (total);
-  if (ptr != 0) {
-    if (total > 100)
-      bzero (ptr, total);
-    else {
-      /* It's not too long, so loop, zeroing by longs.
-	 It must be safe because malloc values are always well aligned.  */
-      register long *zp = (long *) ptr;
-      register long *zl = (long *) (ptr + total - 4);
-      register int i = total - 4;
-      while (zp < zl)
-	*zp++ = 0;
-      if (i < 0)
-	i = 0;
-      while (i < total)
-	ptr[i++] = 0;
-    }
-    return ptr;
-  }
-  memory_full ();
-  /*NOTREACHED*/
-  return 0;
+  register size_t total = number * size;
+  register GENERIC_PTR ptr = (GENERIC_PTR) malloc (total);
+  if (!ptr)
+    memory_full ();
+  bzero (ptr, total);
+  return ptr;
 }
 
 static char *
 savestring (input)
      char *input;
 {
-  unsigned size = strlen (input);
+  size_t size = strlen (input);
   char *output = xmalloc (size + 1);
   strcpy (output, input);
   return output;
