@@ -5879,7 +5879,7 @@ static GTY(()) tree builtin_type_decls;
 /* Return a chain of TYPE_DECLs for the builtin types.  */
 
 tree
-cxx_builtin_type_decls ()
+cxx_builtin_type_decls (void)
 {
   return builtin_type_decls;
 }

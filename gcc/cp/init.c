@@ -2933,7 +2933,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
    Called from begin_destructor_body.  */
 
 void
-push_base_cleanups ()
+push_base_cleanups (void)
 {
   tree binfos;
   int i, n_baseclasses;

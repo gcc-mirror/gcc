@@ -116,7 +116,7 @@ static void mark_loop_exit_edges (void);
 
 /* Sets EDGE_LOOP_EXIT flag for all loop exits.  */
 static void
-mark_loop_exit_edges ()
+mark_loop_exit_edges (void)
 {
   struct loops loops;
   basic_block bb;

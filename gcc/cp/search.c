@@ -543,7 +543,7 @@ lookup_field_1 (tree type, tree name, bool want_type)
    function.  If so, we know to put the decls into the class's scope.  */
 
 tree
-current_scope ()
+current_scope (void)
 {
   if (current_function_decl == NULL_TREE)
     return current_class_type;
@@ -565,7 +565,7 @@ current_scope ()
    not within a member function body of the local class.  */
 
 int
-at_function_scope_p ()
+at_function_scope_p (void)
 {
   tree cs = current_scope ();
   return cs && TREE_CODE (cs) == FUNCTION_DECL;
@@ -574,7 +574,7 @@ at_function_scope_p ()
 /* Returns true if the innermost active scope is a class scope.  */
 
 bool
-at_class_scope_p ()
+at_class_scope_p (void)
 {
   tree cs = current_scope ();
   return cs && TYPE_P (cs);
@@ -2258,7 +2258,7 @@ unuse_fields (tree type)
 }
 
 void
-pop_class_decls ()
+pop_class_decls (void)
 {
   /* We haven't pushed a search level when dealing with cached classes,
      so we'd better not try to pop it.  */
@@ -2267,7 +2267,7 @@ pop_class_decls ()
 }
 
 void
-print_search_statistics ()
+print_search_statistics (void)
 {
 #ifdef GATHER_STATISTICS
   fprintf (stderr, "%d fields searched in %d[%d] calls to lookup_field[_1]\n",
@@ -2281,13 +2281,13 @@ print_search_statistics ()
 }
 
 void
-init_search_processing ()
+init_search_processing (void)
 {
   gcc_obstack_init (&search_obstack);
 }
 
 void
-reinit_search_statistics ()
+reinit_search_statistics (void)
 {
 #ifdef GATHER_STATISTICS
   n_fields_searched = 0;

@@ -2596,7 +2596,7 @@ cxx_callgraph_analyze_expr (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
    first, since that way we only need to reverse the decls once.  */
 
 void
-finish_file ()
+finish_file (void)
 {
   tree vars;
   bool reconsider;

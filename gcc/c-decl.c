@@ -6018,7 +6018,7 @@ store_parm_decls (void)
    This is called after parsing the body of the function definition.  */
 
 void
-finish_function ()
+finish_function (void)
 {
   tree fndecl = current_function_decl;
 
