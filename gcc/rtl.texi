@@ -2372,9 +2372,7 @@ These codes are printed symbolically when they appear in debugging dumps.
 @cindex @code{HImode}, in @code{insn}
 @cindex @code{QImode}, in @code{insn}
 The machine mode of an insn is normally @code{VOIDmode}, but some
-phases use the mode for various purposes; for example, the reload pass
-sets it to @code{HImode} if the insn needs reloading but not register
-elimination and @code{QImode} if both are required. 
+phases use the mode for various purposes. 
 
 The common subexpression elimination pass sets the mode of an insn to
 @code{QImode} when it is the first insn in a block that has already
