@@ -1,5 +1,19 @@
 2000-08-11  Richard Henderson  <rth@cygnus.com>
 
+	* config/ia64/ia64.c (do_spill): Pass cfa offset to move expander.
+	(do_restore): Likewise.
+	(gen_movdi_x, gen_fr_spill_x, gen_fr_restore_x): New.
+	(ia64_expand_prologue, ia64_expand_epilogue): Use them.
+	(rtx_needs_barrier): Track actual bit manipulation for 
+	ar.unat moves, gr_spill, and gr_restore.
+	(emit_insn_group_barriers): Special case gr_spill/gr_restore.
+	(process_set): Don't handle varargs spills.
+	* config/ia64/ia64.md (gr_spill): Accept cfa offset.  Emit
+	.mem.offset here instead of in process_set.
+	(gr_restore): Likewise.
+
+2000-08-11  Richard Henderson  <rth@cygnus.com>
+
 	* config/ia64/ia64.h (PROMOTE_MODE): Only extend to SImode.
 
 2000-08-11  Mark Elbrecht  <snowball3@bigfoot.com>
