@@ -1823,9 +1823,9 @@ all-zip:
 all-zlib:
 configure-target-zlib: $(ALL_GCC_C)
 all-target-zlib: configure-target-zlib
-all-fastjar: all-zlib
+all-fastjar: all-zlib all-libiberty
 configure-target-fastjar: configure-target-zlib
-all-target-fastjar: configure-target-fastjar all-target-zlib
+all-target-fastjar: configure-target-fastjar all-target-zlib all-target-libiberty
 configure-target-libiberty: $(ALL_GCC_C)
 all-target-libiberty: configure-target-libiberty
 all-target: $(ALL_TARGET_MODULES)
