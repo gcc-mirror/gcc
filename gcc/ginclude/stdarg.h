@@ -44,6 +44,9 @@
 #ifdef __sh__
 #include "va-sh.h"
 #else
+#ifdef __mn10300__
+#include "va-mn10300.h"
+#else
 
 /* Define __gnuc_va_list.  */
 
@@ -81,7 +84,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 /* We cast to void * and then to TYPE * because this avoids
    a warning about increasing the alignment requirement.  */
 
-#if defined (__arm__) || defined (__i386__) || defined (__i860__) || defined (__ns32000__) || defined (__vax__) || defined (__mn10300__)
+#if defined (__arm__) || defined (__i386__) || defined (__i860__) || defined (__ns32000__) || defined (__vax__)
 /* This is for little-endian machines; small args are padded upward.  */
 #define va_arg(AP, TYPE)						\
  (AP = (__gnuc_va_list) ((char *) (AP) + __va_rounded_size (TYPE)),	\
@@ -100,6 +103,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 
 #endif /* _STDARG_H */
 
+#endif /* not mn10300 */
 #endif /* not sh */
 #endif /* not powerpc with V.4 calling sequence */
 #endif /* not h8300 */

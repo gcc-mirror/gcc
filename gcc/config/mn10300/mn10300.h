@@ -351,7 +351,7 @@ enum reg_class {
 /* Is equal to the size of the saved fp + pc, even if an fp isn't
    saved since the value is used before we know.  */
 
-#define FIRST_PARM_OFFSET(FNDECL) -4
+#define FIRST_PARM_OFFSET(FNDECL) 4
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -404,7 +404,7 @@ enum reg_class {
   OFFSET = initial_offset (FROM, TO)
 
 #define FRAME_POINTER_REQUIRED \
-  !(leaf_function_p () || current_function_outgoing_args_size == 0)
+  !(leaf_function_p ())
 
 #define CAN_DEBUG_WITHOUT_FP
 
@@ -420,21 +420,16 @@ enum reg_class {
 
 #define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) 0
 
-/* On the mn10300, the caller is responsible for allocating and deallocating
-   a stack slot for the "call" and "calls" instructions to save their return
-   pointer.  We used to do this in the "call" and "call_value" expanders,
-   but that generated poor code.
-
-   Now we pretend that we have an outgoing register parameter space so that
-   the generic function calling code will allocate the slot.  */
-   
-#define REG_PARM_STACK_SPACE(FNDECL) 4
+/* We use d0/d1 for passing parameters, so allocate 8 bytes of space
+   for a register flushback area.  */
+#define REG_PARM_STACK_SPACE(DECL) 8
 #define OUTGOING_REG_PARM_STACK_SPACE
 
 /* 1 if N is a possible register number for function argument passing.
    On the MN10300, no registers are used in this way.  */
 
-#define FUNCTION_ARG_REGNO_P(N) 0
+#define FUNCTION_ARG_REGNO_P(N) ((N) <= 1)
+
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -445,7 +440,8 @@ enum reg_class {
    On the MN10300, this is a single integer, which is a number of bytes
    of arguments scanned so far.  */
 
-#define CUMULATIVE_ARGS int
+#define CUMULATIVE_ARGS struct cum_arg
+struct cum_arg {int nbytes; };
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
@@ -454,16 +450,16 @@ enum reg_class {
    On the MN10300, the offset starts at 0.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
- ((CUM) = 0)
+ ((CUM).nbytes = 0)
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
- ((CUM) += ((MODE) != BLKmode			\
-	    ? (GET_MODE_SIZE (MODE) + 3) & ~3	\
-	    : (int_size_in_bytes (TYPE) + 3) & ~3))
+ ((CUM).nbytes += ((MODE) != BLKmode			\
+	           ? (GET_MODE_SIZE (MODE) + 3) & ~3	\
+	           : (int_size_in_bytes (TYPE) + 3) & ~3))
 
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
@@ -480,7 +476,12 @@ enum reg_class {
 
 /* On the MN10300 all args are pushed.  */   
 
-#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) 0
+extern struct rtx_def *function_arg ();
+#define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
+  function_arg (&CUM, MODE, TYPE, NAMED)
+
+#define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
+  function_arg_partial_nregs (&CUM, MODE, TYPE, NAMED)
 
 
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
@@ -531,12 +532,11 @@ enum reg_class {
 #define TRAMPOLINE_TEMPLATE(FILE)			\
   do {							\
     fprintf (FILE, "\tadd -4,sp\n");			\
-    fprintf (FILE, "\t.long 0x0004fffa\n");			\
+    fprintf (FILE, "\t.long 0x0004fffa\n");		\
+    fprintf (FILE, "\tmov (0,sp),a0\n");		\
     fprintf (FILE, "\tadd 4,sp\n");			\
-    fprintf (FILE, "\tmov mdr,d0\n");		\
-    fprintf (FILE, "\tmov d0,a0\n");		\
-    fprintf (FILE, "\tmov (15,a0),a1\n");		\
-    fprintf (FILE, "\tmov (19,a0),a0\n");		\
+    fprintf (FILE, "\tmov (13,a0),a1\n");		\
+    fprintf (FILE, "\tmov (17,a0),a0\n");		\
     fprintf (FILE, "\tjmp (a0)\n");			\
     fprintf (FILE, "\t.long 0\n");			\
     fprintf (FILE, "\t.long 0\n");			\
@@ -544,7 +544,7 @@ enum reg_class {
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE 0x1d
+#define TRAMPOLINE_SIZE 0x1b
 
 #define TRAMPOLINE_ALIGNMENT 32
 
@@ -554,11 +554,18 @@ enum reg_class {
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 0x16)),	\
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 0x14)),	\
  		 (CXT));						\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 0x1a)),	\
+  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 0x18)),	\
 		 (FNADDR));						\
 }
+/* Emit code for a call to builtin_saveregs.  We must emit USE insns which
+   reference the 2 integer arg registers.
+   Ordinarily they are not call used registers, but they are for
+   _builtin_saveregs, so we must make this explicit.  */
+
+extern struct rtx_def *mn10300_builtin_saveregs ();
+#define EXPAND_BUILTIN_SAVEREGS(ARGLIST) mn10300_builtin_saveregs (ARGLIST)
 
 /* Addressing modes, and classification of registers for them.  */
 
@@ -740,21 +747,27 @@ enum reg_class {
 /* A crude cut at RTX_COSTS for the MN10300.  */
 
 /* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE. 
-
-   There aren't DImode MOD, DIV or MULT operations, so call them
-   very expensive.  Everything else is pretty much a costant cost.  */
-
+   switch on CODE.  */
 #define RTX_COSTS(RTX,CODE,OUTER_CODE) \
   case MOD:		\
   case DIV:		\
-    return 60;		\
+    return 8;		\
   case MULT:		\
-    return 20;
+    return 8;
 
 /* Nonzero if access to memory by bytes or half words is no faster
    than accessing full words.  */
 #define SLOW_BYTE_ACCESS 1
+
+/* Dispatch tables on the mn10300 are extremely expensive in terms of code
+   and readonly data size.  So we crank up the case threshold value to
+   encourage a series of if/else comparisons to implement many small switch
+   statements.  In theory, this value could be increased much more if we
+   were solely optimizing for space, but we keep it "reasonable" to avoid
+   serious code efficiency lossage.  */
+#define CASE_VALUES_THRESHOLD 6
+
+#define NO_FUNCTION_CSE
 
 /* According expr.c, a value of around 6 should minimize code size, and
    for the MN10300 series, that's our primary concern.  */
@@ -983,3 +996,4 @@ extern void notice_update_cc ();
 extern int call_address_operand ();
 extern enum reg_class secondary_reload_class ();
 extern int initial_offset ();
+extern char *output_tst ();
