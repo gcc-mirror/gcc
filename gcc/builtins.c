@@ -3102,7 +3102,7 @@ expand_builtin_stpcpy (tree arglist, rtx target, enum machine_mode mode)
     return 0;
   else
     {
-      tree dst, src, len;
+      tree dst, src, len, lenp1;
       tree narglist;
       rtx ret;
 
@@ -3117,8 +3117,8 @@ expand_builtin_stpcpy (tree arglist, rtx target, enum machine_mode mode)
 			      target, /*endp=*/2);
 
       dst = TREE_VALUE (arglist);
-      len = fold (size_binop (PLUS_EXPR, len, ssize_int (1)));
-      narglist = build_tree_list (NULL_TREE, len);
+      lenp1 = size_binop (PLUS_EXPR, len, ssize_int (1));
+      narglist = build_tree_list (NULL_TREE, lenp1);
       narglist = tree_cons (NULL_TREE, src, narglist);
       narglist = tree_cons (NULL_TREE, dst, narglist);
       ret = expand_builtin_mempcpy (narglist, target, mode, /*endp=*/2);
