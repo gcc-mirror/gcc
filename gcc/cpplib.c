@@ -225,6 +225,7 @@ start_directive (pfile)
 
   /* Some handlers need the position of the # for diagnostics.  */
   pfile->directive_pos = pfile->lexer_pos;
+  pfile->directive_line = pfile->line;
 
   /* Don't save directive tokens for external clients.  */
   pfile->la_saved = pfile->la_write;
@@ -476,7 +477,7 @@ do_define (pfile)
     {
       if (_cpp_create_definition (pfile, node))
 	if (pfile->cb.define)
-	  (*pfile->cb.define) (pfile, node);
+	  (*pfile->cb.define) (pfile, pfile->directive_line, node);
     }
 }
 
@@ -492,7 +493,7 @@ do_undef (pfile)
   if (node && node->type == NT_MACRO)
     {
       if (pfile->cb.undef)
-	(*pfile->cb.undef) (pfile, node);
+	(*pfile->cb.undef) (pfile, pfile->directive_line, node);
 
       if (node->flags & NODE_WARN)
 	cpp_warning (pfile, "undefining \"%s\"", NODE_NAME (node));
@@ -625,7 +626,8 @@ do_include_common (pfile, type)
 	  /* Get out of macro context, if we are.  */
 	  end_directive (pfile, 1);
 	  if (pfile->cb.include)
-	    (*pfile->cb.include) (pfile, pfile->directive->name, &header);
+	    (*pfile->cb.include) (pfile, pfile->directive_line,
+				  pfile->directive->name, &header);
 
 	  _cpp_execute_include (pfile, &header, type);
 	}
@@ -888,7 +890,7 @@ do_ident (pfile)
   if (str.type != CPP_STRING)
     cpp_error (pfile, "invalid #ident");
   else if (pfile->cb.ident)
-    (*pfile->cb.ident) (pfile, &str.val.str);
+    (*pfile->cb.ident) (pfile, pfile->directive_line, &str.val.str);
 
   check_eol (pfile);
 }
@@ -1042,7 +1044,7 @@ do_pragma (pfile)
   if (handler)
     (*handler) (pfile);
   else if (pfile->cb.def_pragma)
-    (*pfile->cb.def_pragma) (pfile);
+    (*pfile->cb.def_pragma) (pfile, pfile->directive_line);
 }
 
 static void

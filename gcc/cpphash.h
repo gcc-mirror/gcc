@@ -261,6 +261,7 @@ struct cpp_reader
   /* The position of the last lexed token and last lexed directive.  */
   cpp_lexer_pos lexer_pos;
   cpp_lexer_pos directive_pos;
+  unsigned int directive_line;
 
   /* Memory pools.  */
   cpp_pool ident_pool;		/* For all identifiers, and permanent
