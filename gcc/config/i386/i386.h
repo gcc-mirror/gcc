@@ -238,18 +238,9 @@ extern int target_flags;
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
    On the 80386, the stack pointer is such, as is the arg pointer. */
-#if LONG_DOUBLE_TYPE_SIZE == 96
-/* In XFmode, operands have to be loaded into an fp register.
- * The easy way to handle this is to declare one register not
- * available.  */
-#define FIXED_REGISTERS \
-/*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg*/       \
-{  0, 0, 0, 0, 0, 0, 0, 1, 0,  0,  0,  0,  0,  0,  0,  1,  1 }
-#else
 #define FIXED_REGISTERS \
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7,arg*/       \
 {  0, 0, 0, 0, 0, 0, 0, 1, 0,  0,  0,  0,  0,  0,  0,  0,  1 }
-#endif
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
