@@ -1371,7 +1371,8 @@ typedef struct rs6000_stack {
    outgoing parameter area.  */
 
 #define STARTING_FRAME_OFFSET						\
-  (RS6000_ALIGN (current_function_outgoing_args_size, 8)		\
+  (RS6000_ALIGN (current_function_outgoing_args_size,			\
+		 TARGET_ALTIVEC ? 16 : 8)				\
    + RS6000_VARARGS_AREA						\
    + RS6000_SAVE_AREA)
 
@@ -1382,7 +1383,8 @@ typedef struct rs6000_stack {
    length of the outgoing arguments.  The default is correct for most
    machines.  See `function.c' for details.  */
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  (RS6000_ALIGN (current_function_outgoing_args_size, 8)		\
+  (RS6000_ALIGN (current_function_outgoing_args_size,			\
+		 TARGET_ALTIVEC ? 16 : 8)				\
    + (STACK_POINTER_OFFSET))
 
 /* If we generate an insn to push BYTES bytes,
