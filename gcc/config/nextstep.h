@@ -1,4 +1,4 @@
-/* next.h -- operating system specific defines to be used when
+/* nextstep.h -- operating system specific defines to be used when
    targeting GCC for NeXTSTEP.
    Copyright (C) 1989, 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
 
@@ -37,6 +37,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
     { "/LocalDeveloper/Headers/bsd", 0},		\
     { "/NextDeveloper/2.0CompatibleHeaders", 0},	\
     { STANDARD_INCLUDE_DIR, 0},				\
+    { "/usr/include/bsd", 0}				\
     { 0, 0}						\
   }
 #endif /* CROSS_COMPILE */
