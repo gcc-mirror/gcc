@@ -215,6 +215,7 @@ in the following sections.
 -Wimplicit-function-declaration @gol
 -Werror-implicit-function-declaration @gol
 -Wimport  -Winline  -Winvalid-pch  -Wno-endif-labels @gol
+-Wno-invalid-offsetof @gol
 -Wlarger-than-@var{len}  -Wlong-long @gol
 -Wmain  -Wmissing-braces @gol
 -Wmissing-format-attribute  -Wmissing-noreturn @gol
@@ -2807,6 +2808,21 @@ code is to provide behavior which is selectable at compile-time.
 @item -Winline
 @opindex Winline
 Warn if a function can not be inlined and it was declared as inline.
+
+@item -Wno-invalid-offsetof @r{(C++ only)}
+@opindex Wno-invalid-offsetof
+Suppress warnings from applying the @samp{offsetof} macro to a non-POD
+type.  According to the 1998 ISO C++ standard, applying @samp{offsetof}
+to a non-POD type is undefined.  In existing C++ implementations,
+however, @samp{offsetof} typically gives meaningful results even when
+applied to certain kinds of non-POD types. (Such as a simple
+@samp{struct} that fails to be a POD type only by virtue of having a
+constructor.)  This flag is for users who are aware that they are
+writing nonportable code and who have deliberately chosen to ignore the
+warning about it.
+
+The restrictions on @samp{offsetof} may be relaxed in a future version
+of the C++ standard.
 
 @item -Winvalid-pch
 @opindex Winvalid-pch

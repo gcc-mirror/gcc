@@ -1,3 +1,12 @@
+2003-05-19  Matt Austern  <austern@apple.com>
+
+	* c-opts.c (COMMAND_LINE_OPTIONS): Add -Winvalid-offsetof option.
+	* c-common.h (warn_invalid_offsetof): Declare.
+	* c-common.c (warn_invalid_offsetof): Define.
+	* doc/invoke.texi: Document -Winvalid-offsetof.
+	* testsuite/g++.dg/other/offsetof3.C: New.
+	* testsuite/g++.dg/other/offsetof4.C: New.
+	
 2003-05-19  Kevin B. Hendricks  <kevin.hendricks@sympatico.ca>
             David Edelsohn  <edelsohn@gnu.org>
 

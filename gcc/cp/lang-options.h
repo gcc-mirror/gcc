@@ -157,3 +157,6 @@ DEFINE_LANG_NAME ("C++")
   { "-Wdeprecated", "" },
   { "-Wno-deprecated", 
     N_("Don't announce deprecation of compiler features") },
+  { "-Winvalid-offsetof", "" },
+  { "-Wno-invalid-offsetof",
+    N_("Don't warn about invalid uses of the offsetof macro") },
