@@ -1,3 +1,7 @@
+2004-11-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/union-2.c: New test.
+
 2004-11-10  Fariborz Jahanian <fjahanian@apple.com>
 
         * gcc.c-torture/execute/ieee/unsafe-fp-assoc-1.c: 
