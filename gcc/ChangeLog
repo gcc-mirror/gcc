@@ -20,6 +20,9 @@
 	* config/ia64/ia64.md (cond_opsi2_internal and splitters): New
 	patterns.
 
+	* expr.c (expand_expr, case COND_EXPR): Prefer working with a
+	temporary register than directly using a MEM.
+
 2001-08-04  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/sh/sh.c (sh_asm_named_section): Fix typo in align

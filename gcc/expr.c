@@ -8211,8 +8211,8 @@ expand_expr (exp, target, tmode, modifier)
 		     || GET_CODE (original_target) == REG
 		     || TREE_ADDRESSABLE (type))
 #endif
-		 && ! (GET_CODE (original_target) == MEM
-		       && MEM_VOLATILE_P (original_target)))
+		 && (GET_CODE (original_target) != MEM
+		     || TREE_ADDRESSABLE (type)))
 	  temp = original_target;
 	else if (TREE_ADDRESSABLE (type))
 	  abort ();
