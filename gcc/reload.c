@@ -2971,18 +2971,16 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	     Don't bother with this if this alternative will accept this
 	     operand.
 
-	     Don't do this for a multiword operand, if
-	     we have to worry about small classes, because making reg groups
-	     harder to allocate is asking for trouble.
+	     Don't do this for a multiword operand, since it is only a
+	     small win and has the risk of requiring more spill registers,
+	     which could cause a large loss.
 
 	     Don't do this if the preferred class has only one register
 	     because we might otherwise exhaust the class.  */
 
 
 	  if (! win && this_alternative[i] != (int) NO_REGS
-#ifdef SMALL_REGISTER_CLASSES
 	      && GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
-#endif
 	      && reg_class_size[(int) preferred_class[i]] > 1)
 	    {
 	      if (! reg_class_subset_p (this_alternative[i],
@@ -4408,92 +4406,107 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 {
   register RTX_CODE code = GET_CODE (x);
 
-  if (code == PLUS)
+  switch (code)
     {
-      register rtx orig_op0 = XEXP (x, 0);
-      register rtx orig_op1 = XEXP (x, 1);
-      register RTX_CODE code0 = GET_CODE (orig_op0);
-      register RTX_CODE code1 = GET_CODE (orig_op1);
-      register rtx op0 = orig_op0;
-      register rtx op1 = orig_op1;
+    case PLUS:
+      {
+	register rtx orig_op0 = XEXP (x, 0);
+	register rtx orig_op1 = XEXP (x, 1);
+	register RTX_CODE code0 = GET_CODE (orig_op0);
+	register RTX_CODE code1 = GET_CODE (orig_op1);
+	register rtx op0 = orig_op0;
+	register rtx op1 = orig_op1;
 
-      if (GET_CODE (op0) == SUBREG)
-	{
-	  op0 = SUBREG_REG (op0);
-	  code0 = GET_CODE (op0);
-	}
-      if (GET_CODE (op1) == SUBREG)
-	{
-	  op1 = SUBREG_REG (op1);
-	  code1 = GET_CODE (op1);
-	}
+	if (GET_CODE (op0) == SUBREG)
+	  {
+	    op0 = SUBREG_REG (op0);
+	    code0 = GET_CODE (op0);
+	  }
 
-      if (code0 == MULT || code0 == SIGN_EXTEND || code1 == MEM)
-	{
-	  find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type,
-				  ind_levels);
-	  find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
-				  ind_levels);
-	}
-      else if (code1 == MULT || code1 == SIGN_EXTEND || code0 == MEM)
-	{
-	  find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
-				  ind_levels);
-	  find_reloads_address_1 (orig_op1, 1, &XEXP (x, 1), opnum, type,
-				  ind_levels);
-	}
-      else if (code0 == CONST_INT || code0 == CONST
-	       || code0 == SYMBOL_REF || code0 == LABEL_REF)
-	find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type, ind_levels);
-      else if (code1 == CONST_INT || code1 == CONST
-	       || code1 == SYMBOL_REF || code1 == LABEL_REF)
-	find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type, ind_levels);
-      else if (code0 == REG && code1 == REG)
-	{
-	  if (REG_OK_FOR_INDEX_P (op0)
-	      && REG_OK_FOR_BASE_P (op1))
-	    return 0;
-	  else if (REG_OK_FOR_INDEX_P (op1)
-	      && REG_OK_FOR_BASE_P (op0))
-	    return 0;
-	  else if (REG_OK_FOR_BASE_P (op1))
-	    find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type, 
+	if (GET_CODE (op1) == SUBREG)
+	  {
+	    op1 = SUBREG_REG (op1);
+	    code1 = GET_CODE (op1);
+	  }
+
+	if (code0 == MULT || code0 == SIGN_EXTEND || code1 == MEM)
+	  {
+	    find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type,
 				    ind_levels);
-	  else if (REG_OK_FOR_BASE_P (op0))
-	    find_reloads_address_1 (orig_op1, 1, &XEXP (x, 1), opnum, type,
-				    ind_levels);
-	  else if (REG_OK_FOR_INDEX_P (op1))
-	    find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
-				    ind_levels);
-	  else if (REG_OK_FOR_INDEX_P (op0))
 	    find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
 				    ind_levels);
-	  else
-	    {
-	      find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type,
-				      ind_levels);
-	      find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
-				      ind_levels);
-	    }
-	}
-      else if (code0 == REG)
-	{
-	  find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type,
-				  ind_levels);
+	  }
+
+	else if (code1 == MULT || code1 == SIGN_EXTEND || code0 == MEM)
+	  {
+	    find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
+				    ind_levels);
+	    find_reloads_address_1 (orig_op1, 1, &XEXP (x, 1), opnum, type,
+				    ind_levels);
+	  }
+
+	else if (code0 == CONST_INT || code0 == CONST
+		 || code0 == SYMBOL_REF || code0 == LABEL_REF)
 	  find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
 				  ind_levels);
-	}
-      else if (code1 == REG)
-	{
-	  find_reloads_address_1 (orig_op1, 1, &XEXP (x, 1), opnum, type,
-				  ind_levels);
+
+	else if (code1 == CONST_INT || code1 == CONST
+		 || code1 == SYMBOL_REF || code1 == LABEL_REF)
 	  find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
 				  ind_levels);
-	}
-    }
-  else if (code == POST_INC || code == POST_DEC
-	   || code == PRE_INC || code == PRE_DEC)
-    {
+
+	else if (code0 == REG && code1 == REG)
+	  {
+	    if (REG_OK_FOR_INDEX_P (op0)
+		&& REG_OK_FOR_BASE_P (op1))
+	      return 0;
+	    else if (REG_OK_FOR_INDEX_P (op1)
+		     && REG_OK_FOR_BASE_P (op0))
+	      return 0;
+	    else if (REG_OK_FOR_BASE_P (op1))
+	      find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type, 
+				      ind_levels);
+	    else if (REG_OK_FOR_BASE_P (op0))
+	      find_reloads_address_1 (orig_op1, 1, &XEXP (x, 1), opnum, type,
+				      ind_levels);
+	    else if (REG_OK_FOR_INDEX_P (op1))
+	      find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
+				      ind_levels);
+	    else if (REG_OK_FOR_INDEX_P (op0))
+	    find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
+				    ind_levels);
+	    else
+	      {
+		find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type,
+					ind_levels);
+		find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
+					ind_levels);
+	      }
+	  }
+
+	else if (code0 == REG)
+	  {
+	    find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type,
+				    ind_levels);
+	    find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
+				    ind_levels);
+	  }
+
+	else if (code1 == REG)
+	  {
+	    find_reloads_address_1 (orig_op1, 1, &XEXP (x, 1), opnum, type,
+				    ind_levels);
+	    find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
+				    ind_levels);
+	  }
+      }
+
+      return 0;
+
+    case POST_INC:
+    case POST_DEC:
+    case PRE_INC:
+    case PRE_DEC:
       if (GET_CODE (XEXP (x, 0)) == REG)
 	{
 	  register int regno = REGNO (XEXP (x, 0));
@@ -4559,6 +4572,7 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 	    }
 	  return value;
 	}
+
       else if (GET_CODE (XEXP (x, 0)) == MEM)
 	{
 	  /* This is probably the result of a substitution, by eliminate_regs,
@@ -4591,16 +4605,16 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 
 	  return 1;
 	}
-    }
-  else if (code == MEM)
-    {
-      /* This is probably the result of a substitution, by eliminate_regs,
-	 of an equivalent address for a pseudo that was not allocated to a
-	 hard register.  Verify that the specified address is valid and reload
-	 it into a register.
+      return 0;
 
-	 Since we know we are going to reload this item, don't decrement
-	 for the indirection level.
+    case MEM:
+      /* This is probably the result of a substitution, by eliminate_regs, of
+	 an equivalent address for a pseudo that was not allocated to a hard
+	 register.  Verify that the specified address is valid and reload it
+	 into a register.
+
+	 Since we know we are going to reload this item, don't decrement for
+	 the indirection level.
 
 	 Note that this is actually conservative:  it would be slightly more
 	 efficient to use the value of SPILL_INDIRECT_LEVELS from
@@ -4608,77 +4622,101 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 
       find_reloads_address (GET_MODE (x), loc, XEXP (x, 0), &XEXP (x, 0),
 			    opnum, type, ind_levels);
-
       push_reload (*loc, NULL_RTX, loc, NULL_PTR,
 		   context ? INDEX_REG_CLASS : BASE_REG_CLASS,
 		   GET_MODE (x), VOIDmode, 0, 0, opnum, type);
       return 1;
-    }
-  else if (code == REG)
-    {
-      register int regno = REGNO (x);
 
-      if (reg_equiv_constant[regno] != 0)
-	{
-	  find_reloads_address_part (reg_equiv_constant[regno], loc, 
-				     (context ? INDEX_REG_CLASS
-				      : BASE_REG_CLASS),
-				     GET_MODE (x), opnum, type, ind_levels);
-	  return 1;
-	}
+    case REG:
+      {
+	register int regno = REGNO (x);
+
+	if (reg_equiv_constant[regno] != 0)
+	  {
+	    find_reloads_address_part (reg_equiv_constant[regno], loc, 
+				       (context ? INDEX_REG_CLASS
+					: BASE_REG_CLASS),
+				       GET_MODE (x), opnum, type, ind_levels);
+	    return 1;
+	  }
 
 #if 0 /* This might screw code in reload1.c to delete prior output-reload
 	 that feeds this insn.  */
-      if (reg_equiv_mem[regno] != 0)
-	{
-	  push_reload (reg_equiv_mem[regno], NULL_RTX, loc, NULL_PTR,
-		       context ? INDEX_REG_CLASS : BASE_REG_CLASS,
-		       GET_MODE (x), VOIDmode, 0, 0, opnum, type);
-	  return 1;
-	}
+	if (reg_equiv_mem[regno] != 0)
+	  {
+	    push_reload (reg_equiv_mem[regno], NULL_RTX, loc, NULL_PTR,
+			 context ? INDEX_REG_CLASS : BASE_REG_CLASS,
+			 GET_MODE (x), VOIDmode, 0, 0, opnum, type);
+	    return 1;
+	  }
 #endif
-      if (reg_equiv_address[regno] != 0)
-	{
-	  x = make_memloc (x, regno);
-	  find_reloads_address (GET_MODE (x), 0, XEXP (x, 0), &XEXP (x, 0),
-				opnum, type, ind_levels);
-	}
 
-      if (reg_renumber[regno] >= 0)
-	regno = reg_renumber[regno];
-      if ((regno >= FIRST_PSEUDO_REGISTER
-	   || !(context ? REGNO_OK_FOR_INDEX_P (regno)
-		: REGNO_OK_FOR_BASE_P (regno))))
-	{
-	  push_reload (x, NULL_RTX, loc, NULL_PTR,
-		       context ? INDEX_REG_CLASS : BASE_REG_CLASS,
-		       GET_MODE (x), VOIDmode, 0, 0, opnum, type);
-	  return 1;
-	}
+	if (reg_equiv_address[regno] != 0)
+	  {
+	    x = make_memloc (x, regno);
+	    find_reloads_address (GET_MODE (x), 0, XEXP (x, 0), &XEXP (x, 0),
+				  opnum, type, ind_levels);
+	  }
 
-      /* If a register appearing in an address is the subject of a CLOBBER
-	 in this insn, reload it into some other register to be safe.
-	 The CLOBBER is supposed to make the register unavailable
-	 from before this insn to after it.  */
-      if (regno_clobbered_p (regno, this_insn))
+	if (reg_renumber[regno] >= 0)
+	  regno = reg_renumber[regno];
+
+	if ((regno >= FIRST_PSEUDO_REGISTER
+	     || !(context ? REGNO_OK_FOR_INDEX_P (regno)
+		  : REGNO_OK_FOR_BASE_P (regno))))
+	  {
+	    push_reload (x, NULL_RTX, loc, NULL_PTR,
+			 context ? INDEX_REG_CLASS : BASE_REG_CLASS,
+			 GET_MODE (x), VOIDmode, 0, 0, opnum, type);
+	    return 1;
+	  }
+
+	/* If a register appearing in an address is the subject of a CLOBBER
+	   in this insn, reload it into some other register to be safe.
+	   The CLOBBER is supposed to make the register unavailable
+	   from before this insn to after it.  */
+	if (regno_clobbered_p (regno, this_insn))
+	  {
+	    push_reload (x, NULL_RTX, loc, NULL_PTR,
+			 context ? INDEX_REG_CLASS : BASE_REG_CLASS,
+			 GET_MODE (x), VOIDmode, 0, 0, opnum, type);
+	    return 1;
+	  }
+      }
+      return 0;
+
+    case SUBREG:
+      /* If this is a SUBREG of a hard register and the resulting register is
+	 of the wrong class, reload the whole SUBREG.  This avoids needless
+	 copies if SUBREG_REG is multi-word.  */
+      if (GET_CODE (SUBREG_REG (x)) == REG
+	  && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER)
 	{
-	  push_reload (x, NULL_RTX, loc, NULL_PTR,
-		       context ? INDEX_REG_CLASS : BASE_REG_CLASS,
-		       GET_MODE (x), VOIDmode, 0, 0, opnum, type);
-	  return 1;
+	  int regno = REGNO (SUBREG_REG (x)) + SUBREG_WORD (x);
+
+	  if (! (context ? REGNO_OK_FOR_INDEX_P (regno)
+		 : REGNO_OK_FOR_BASE_P (regno)))
+	    {
+	      push_reload (x, NULL_RTX, loc, NULL_PTR,
+			   context ? INDEX_REG_CLASS : BASE_REG_CLASS,
+			   GET_MODE (x), VOIDmode, 0, 0, opnum, type);
+	      return 1;
+	    }
 	}
+      break;
     }
-  else
-    {
-      register char *fmt = GET_RTX_FORMAT (code);
-      register int i;
-      for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-	{
-	  if (fmt[i] == 'e')
-	    find_reloads_address_1 (XEXP (x, i), context, &XEXP (x, i),
-				    opnum, type, ind_levels);
-	}
-    }
+
+  {
+    register char *fmt = GET_RTX_FORMAT (code);
+    register int i;
+
+    for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+      {
+	if (fmt[i] == 'e')
+	  find_reloads_address_1 (XEXP (x, i), context, &XEXP (x, i),
+				  opnum, type, ind_levels);
+      }
+  }
 
   return 0;
 }
