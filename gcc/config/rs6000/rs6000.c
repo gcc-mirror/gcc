@@ -349,15 +349,16 @@ input_operand (op, mode)
       || GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     return gen_reg_operand (op, mode);
 
-  /* For SImode, we can also load from a special register, so any register
-     is valid.  */
-  if (mode == SImode && register_operand (op, mode))
-    return 1;
+  /* The only cases left are integral modes one word or smaller (we
+     do not get called for MODE_CC values).  These can be in any
+     register.  */
+  if (register_operand (op, mode))
+    return;
 
-  /* For HImode and QImode, any constant is valid along with any
-     non-special register.  */
-  if (mode == HImode || mode == QImode)
-    return register_operand (op, mode) || GET_CODE (op) == CONST_INT;
+  /* For HImode and QImode, any constant is valid. */
+  if ((mode == HImode || mode == QImode)
+      && GET_CODE (op) == CONST_INT)
+    return 1;
 
   /* Otherwise, we will be doing this SET with an add, so anything valid
      for an add will be valid.  */
