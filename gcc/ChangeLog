@@ -1,3 +1,8 @@
+2005-02-24  Andrea Tarani  <andrea.tarani@gilbarco.com>
+
+	* config/m68k/m68k.c (m68k_save_reg): Also save A5 for non-leaf
+	functions when -mid-shared-library is being used.
+
 2005-02-23  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* doc/tm.texi (LINK_LIBGCC_SPECIAL): Remove.
