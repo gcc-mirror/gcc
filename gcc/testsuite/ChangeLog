@@ -1,3 +1,9 @@
+2004-08-10  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/mips-rsqrt-1.c: New test case.
+	* gcc.dg/mips-rsqrt-2.c: New test case.
+	* gcc.dg/mips-rsqrt-3.c: New test case.
+
 2004-08-10  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.dg/der_io_1.f90: New test.

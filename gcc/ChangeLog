@@ -1,3 +1,8 @@
+2004-08-10  Roger Sayle  <roger@eyesopen.com>
+
+	* config/mips/mips.md: New reciprocal square root patterns that
+	match sqrt(1.0/x) in addition to the existing 1.0/sqrt(x) insns.
+
 2004-08-10  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm-protos.h (arm_set_return_address,
