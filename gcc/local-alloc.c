@@ -1,5 +1,5 @@
 /* Allocate registers within a basic block, for GNU compiler.
-   Copyright (C) 1987, 88, 91, 93-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
