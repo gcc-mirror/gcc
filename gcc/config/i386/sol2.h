@@ -61,6 +61,14 @@ Boston, MA 02111-1307, USA.  */
 #define FORCE_INIT_SECTION_ALIGN asm (ALIGN_ASM_OP ## "16")
 #define FORCE_FINI_SECTION_ALIGN FORCE_INIT_SECTION_ALIGN
 
+/* Select a format to encode pointers in exception handling data.  CODE
+   is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
+   true if the symbol may be affected by dynamic relocations.  */
+#undef ASM_PREFERRED_EH_DATA_FORMAT
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)			\
+  (flag_pic ? (GLOBAL ? DW_EH_PE_indirect : 0) | DW_EH_PE_datarel	\
+   : DW_EH_PE_absptr)
+
 /* Add "sun" to the list of symbols defined for SVR4.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
