@@ -2340,7 +2340,7 @@ fold_if_not_in_template (tree expr)
   /* In the body of a template, there is never any need to call
      "fold".  We will call fold later when actually instantiating the
      template.  Integral constant expressions in templates will be
-     evaluted via fold_non_dependent_expr, as necessary.  */
+     evaluated via fold_non_dependent_expr, as necessary.  */
   return (processing_template_decl ? expr : fold (expr));
 }
 
