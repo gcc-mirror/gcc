@@ -467,7 +467,9 @@ cgraph_create_edges (struct cgraph_node *node, tree body)
 
 static bool error_found;
 
-/* Callbrack of verify_cgraph_node.  Check that all call_exprs have cgraph nodes.  */
+/* Callbrack of verify_cgraph_node.  Check that all call_exprs have cgraph
+   nodes.  */
+
 static tree
 verify_cgraph_node_1 (tree *tp, int *walk_subtrees, void *data)
 {
@@ -501,12 +503,12 @@ verify_cgraph_node_1 (tree *tp, int *walk_subtrees, void *data)
 	  error_found = true;
 	}
     }
+
   /* Save some cycles by not walking types and declaration as we
      won't find anything useful there anyway.  */
   if (DECL_P (*tp) || TYPE_P (*tp))
-    {
-      *walk_subtrees = 0;
-    }
+    *walk_subtrees = 0;
+
   return NULL_TREE;
 }
 
