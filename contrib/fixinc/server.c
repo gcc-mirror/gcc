@@ -1,6 +1,6 @@
 
 /*
- *  $Id: server.c,v 1.1 1998/03/20 16:19:41 korbb Exp $
+ *  $Id: server.c,v 1.2 1998/05/28 09:21:29 korbb Exp $
  *
  *  Server Handling copyright 1992-1998 Bruce Korb
  *
@@ -368,7 +368,7 @@ sigsend (idtype, id, sig)
 STATIC void
 closeServer ()
 {
-  sigsend (P_PID, (id_t) serverId, SIGKILL);
+  kill( (pid_t) serverId, SIGKILL);
   serverId = NULLPROCESS;
   fclose (serverPair.pfRead);
   fclose (serverPair.pfWrite);
@@ -392,15 +392,18 @@ sigHandler (signo)
 STATIC void
 serverSetup ()
 {
-
+#ifndef SA_SIGINFO
+#  define SA_SIGINFO 0
+#else
   currentAction.sa_sigaction =
-    currentAction.sa_handler = sigHandler;
-  currentAction.sa_flags = SA_SIGINFO;
-  sigemptyset (&currentAction.sa_mask);
+#endif
+  currentAction.sa_handler   = sigHandler;
+  currentAction.sa_flags     = SA_SIGINFO;
+  sigemptyset( &currentAction.sa_mask );
 
-  sigaction (SIGPIPE, &currentAction, &savePipeAction);
-  sigaction (SIGALRM, &currentAction, &saveAlrmAction);
-  atexit (&closeServer);
+  sigaction( SIGPIPE, &currentAction, &savePipeAction );
+  sigaction( SIGALRM, &currentAction, &saveAlrmAction );
+  atexit( &closeServer );
 
   fputs ("trap : INT\n", serverPair.pfWrite);
   fflush (serverPair.pfWrite);
