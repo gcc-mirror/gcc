@@ -1,3 +1,9 @@
+2003-03-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md (return_external_pic): Add !TARGET_PA_20 to constraint.
+	(epilogue): Don't generate return_external_pic when emitting PA 2.0
+	code.
+
 2003-03-05  Aldy Hernandez  <aldyh@redhat.com>
 
         * doc/tm.texi: Document TARGET_DWARF_REGISTER_SPAN.
