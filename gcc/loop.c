@@ -394,6 +394,8 @@ loop_optimize (f, dumpfile)
   /* See if we went too far.  */
   if (get_max_uid () > max_uid_for_loop)
     abort ();
+  /* Now reset it to the actual size we need.  See above.  */
+  max_uid_for_loop = get_max_uid () + 1;
 
   /* Compute the mapping from uids to luids.
      LUIDs are numbers assigned to insns, like uids,
@@ -3963,7 +3965,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		  /* We don't handle reversed biv's because bl->biv->insn
 		     does not have a valid INSN_LUID.  */
 		  && ! bl->reversed
-		  && v->always_executed && ! v->maybe_multiple)
+		  && v->always_executed && ! v->maybe_multiple
+		  && INSN_UID (v->insn) < max_uid_for_loop)
 		{
 		  /* If other giv's have been combined with this one, then
 		     this will work only if all uses of the other giv's occur
