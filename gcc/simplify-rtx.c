@@ -3123,7 +3123,7 @@ simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
 	      else
 		break;
 
-	      return simplify_gen_relational (code, op0_mode, cmp_mode,
+	      return simplify_gen_relational (code, mode, cmp_mode,
 					      XEXP (op0, 0), XEXP (op0, 1));
 	    }
 
