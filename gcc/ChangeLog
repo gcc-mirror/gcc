@@ -1,5 +1,16 @@
 2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* c-opts.c (missing_arg): Use cl_options[opt_index].opt_code
+	instead of just opt_index as switch expression.
+
+	* calls.c (store_one_arg): Change type of 'excess_align'
+	to unsigned int.
+
+	* profile.c (output_gcov_string): Change type of 'temp'
+	to size_t.
+
+2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/fixdfdi.h (__fixunsdfdi, __fixdfdi): Add prototypes.
 	(__fixunssfdi, __fixsfdi): Likewise.
 	* config/s390/s390.c (s390_single_hi): Initialize 'value'.
