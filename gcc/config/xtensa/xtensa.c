@@ -460,7 +460,7 @@ xtensa_valid_move (mode, operands)
       if (!ACC_REG_P (dst_regnum))
 	return true;
     }
-  else if (register_operand (operands[1], mode))
+  if (register_operand (operands[1], mode))
     {
       int src_regnum = xt_true_regnum (operands[1]);
       if (!ACC_REG_P (src_regnum))

@@ -1,3 +1,8 @@
+2002-03-26  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_valid_move): Allow move from
+	a register into the MAC16 accumulator.
+
 2002-03-26  Andrew Cagney  <ac131313@redhat.com>
 
 	* doc/invoke.texi (Option Summary): Mention -Wswitch-enum.
