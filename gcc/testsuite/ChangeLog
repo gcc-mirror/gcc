@@ -1,3 +1,7 @@
+2004-07-20  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/pr12625-1.c: New test.
+
 2004-07-20  Steven Bosscher  <stevenb@suse.de>
 
 	* testsuite/gcc.dg/switch-warn-1.c: New test.
