@@ -1,3 +1,10 @@
+2003-06-02  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (OLD_ARG_MODE): New macro.
+	(FUNCTION_ARG_ADVANCE, FUNCTION_ARG_PASS_BY_REFERENCE): Use it.
+	(FUNCTION_ARG_1): Break out of:
+	(FUNCTION_ARG).  Use OLD_ARG_MODE.
+
 2003-04-16  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
         * gcc/config.gcc Add support multilib parts for m32rx processor.
