@@ -1,3 +1,8 @@
+2003-06-13  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux.h (TARGET_ASM_FILE_END): Set TARGET_ASM_FILE_END
+	to file_end_indicate_exec_stack.
+
 2003-06-12  Richard Henderson  <rth@redhat.com>
 
 	PR target/11089
