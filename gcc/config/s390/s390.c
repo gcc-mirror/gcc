@@ -2989,11 +2989,13 @@ s390_emit_prologue ()
 	  got_symbol = force_const_mem (Pmode, got_symbol);
 	  insn = emit_move_insn (pic_offset_table_rtx,
 				 got_symbol);		 
+          REG_NOTES(insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, NULL_RTX,
+                                               REG_NOTES (insn));
+
 	  insn = emit_insn (gen_add2_insn (pic_offset_table_rtx,
 					   gen_rtx_REG (Pmode, BASE_REGISTER)));
-
-	  /* We need the GOT pointer even if we don't know it ...  */
-	  emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
+          REG_NOTES(insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, NULL_RTX,
+                                               REG_NOTES (insn));
 	}
     }      
 }
