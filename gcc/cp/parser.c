@@ -8647,6 +8647,14 @@ cp_parser_type_name (cp_parser* parser)
      typename :: [opt] nested-name-specifier template [opt] 
        template-id 
 
+   GNU extension:
+
+   elaborated-type-specifier:
+     class-key attributes :: [opt] nested-name-specifier [opt] identifier
+     class-key attributes :: [opt] nested-name-specifier [opt] 
+               template [opt] template-id
+     enum attributes :: [opt] nested-name-specifier [opt] identifier
+
    If IS_FRIEND is TRUE, then this elaborated-type-specifier is being
    declared `friend'.  If IS_DECLARATION is TRUE, then this
    elaborated-type-specifier appears in a decl-specifiers-seq, i.e.,
@@ -8662,6 +8670,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
   enum tag_types tag_type;
   tree identifier;
   tree type = NULL_TREE;
+  tree attributes = NULL_TREE;
 
   /* See if we're looking at the `enum' keyword.  */
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_ENUM))
@@ -8670,6 +8679,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       cp_lexer_consume_token (parser->lexer);
       /* Remember that it's an enumeration type.  */
       tag_type = enum_type;
+      /* Parse the attributes.  */
+      attributes = cp_parser_attributes_opt (parser);
     }
   /* Or, it might be `typename'.  */
   else if (cp_lexer_next_token_is_keyword (parser->lexer,
@@ -8689,6 +8700,8 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       tag_type = cp_parser_class_key (parser);
       if (tag_type == none_type)
 	return error_mark_node;
+      /* Parse the attributes.  */
+      attributes = cp_parser_attributes_opt (parser);
     }
 
   /* Look for the `::' operator.  */
@@ -8858,7 +8871,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	     declaration context.  */
 
 	  type = xref_tag (tag_type, identifier, 
-			   /*attributes=*/NULL_TREE,
+			   attributes,
 			   (is_friend 
 			    || !is_declaration
 			    || cp_lexer_next_token_is_not (parser->lexer, 

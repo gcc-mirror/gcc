@@ -1,5 +1,10 @@
 2003-12-05  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13305
+	* g++.dg/ext/attrib9.C: New test.
+
+2003-12-05  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/13314
 	* g++.dg/template/error7.C: New test.
 
