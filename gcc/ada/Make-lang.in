@@ -379,16 +379,18 @@ doc/gnat_ugn_unw.texi: $(srcdir)/ada/gnat_ugn.texi $(srcdir)/ada/ug_words
 	ada/doctools/xgnatugn unw $(srcdir)/ada/gnat_ugn.texi \
 	   $(srcdir)/ada/ug_words doc/gnat_ugn_unw.texi
 
-doc/gnat_ugn_unw.info: doc/gnat_ugn_unw.texi \
-   $(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
+doc/gnat_ugn_unw.info: doc/gnat_ugn_unw.texi			\
+   $(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi	\
+   gcc-vers.texi
+
 	if [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(@)*; \
 	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(docdir)/include \
             -I$(srcdir)/ada -o $@ $<; \
 	else true; fi
 
-doc/gnat_rm.info: ada/gnat_rm.texi $(docdir)/include/fdl.texi \
-   $(docdir)/include/gcc-common.texi
+doc/gnat_rm.info: ada/gnat_rm.texi $(docdir)/include/fdl.texi	\
+   $(docdir)/include/gcc-common.texi gcc-vers.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(@)*; \
 	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(docdir)/include \
@@ -417,12 +419,12 @@ install-info:: $(DESTDIR)$(infodir)/gnat_ugn_unw.info \
 dvi:: doc/gnat_ugn_unw.dvi \
       doc/gnat_rm.dvi doc/gnat-style.dvi
 
-doc/gnat_ugn_unw.dvi: doc/gnat_ugn_unw.texi \
-	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
+doc/gnat_ugn_unw.dvi: doc/gnat_ugn_unw.texi $(docdir)/include/fdl.texi	\
+	$(docdir)/include/gcc-common.texi gcc-vers.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
-doc/gnat_rm.dvi: ada/gnat_rm.texi \
-	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
+doc/gnat_rm.dvi: ada/gnat_rm.texi $(docdir)/include/fdl.texi	\
+	$(docdir)/include/gcc-common.texi gcc-vers.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 
 doc/gnat-style.dvi: ada/gnat-style.texi $(docdir)/include/fdl.texi

@@ -166,7 +166,8 @@ TEXI_TREELANG_FILES = treelang/treelang.texi \
 	 $(docdir)/include/gcc-common.texi \
 	 $(docdir)/include/gpl.texi \
 	 $(docdir)/include/fdl.texi \
-	 $(docdir)/include/funding.texi
+	 $(docdir)/include/funding.texi \
+	 gcc-vers.texi
 
 doc/treelang.info: $(TEXI_TREELANG_FILES)
 	$(MAKEINFO) $(MAKEINFOFLAGS) -I $(docdir)/include -o $@ $<

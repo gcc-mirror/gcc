@@ -370,8 +370,9 @@ java/jcf-path.o: java/jcf-path.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	  -DDEFAULT_TARGET_VERSION=\"$(version)\" \
 	  $(srcdir)/java/jcf-path.c $(OUTPUT_OPTION)
 
-TEXI_JAVA_FILES = java/gcj.texi $(docdir)/include/fdl.texi $(docdir)/include/gpl.texi \
-	 $(docdir)/include/gcc-common.texi
+TEXI_JAVA_FILES = java/gcj.texi $(docdir)/include/fdl.texi		\
+	 $(docdir)/include/gpl.texi $(docdir)/include/gcc-common.texi   \
+	 gcc-vers.texi
 
 # Documentation
 doc/gcj.info: $(TEXI_JAVA_FILES)

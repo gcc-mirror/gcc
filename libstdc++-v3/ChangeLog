@@ -1,3 +1,11 @@
+2005-03-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* include/Makefile.am (c++config.h): Depend on DATESTAMP from gcc
+	subdirectory.  Generate #define of __GLIBCXX__ from contents of
+	that file.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++config: Do not define __GLIBCXX__.
+
 2005-03-15  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/20352
@@ -92,14 +100,14 @@
 	New test of reference_wrapper typedefs and base classes.
 	* testsuite/tr1/3_function_objects/result_of.cc: Trivial cleanup
 	(e-mail address).
-	
+
 2005-03-02  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* include/tr1/function (result_of): New class template.
 	* include/tr1/functional/iterator.h: Implementation of TR1
 	result_of.
 	* testsuite/tr1/3_function_objects/result_of.cc: New test
-	
+
 2005-03-01  Vladimir Merzliakov  <wanderer@rsu.ru>
 
 	* testsuite/26_numerics/cmath/c99_classification_macros_c.cc: Tweak.
@@ -110,7 +118,7 @@
 	cons/auto_ptr_neg.cc: Correct line numbers.
 
 	* testsuite/testsuite_abi.cc: Add CXXABI_1.3.1.
-	
+
 2005-02-28  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/tr1/memory: Replace checked_deleter with (unchecked)
@@ -158,7 +166,7 @@
 	* acconfig.h: Same.
 	* configure: Regenerate.
 	* config.h.in: Same.
-	
+
 2005-02-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/functional (mem_fn): Avoid _T, badname on
@@ -170,7 +178,7 @@
 	(mem_fn): New function template.
 	Implementations of TR1 function and mem_fn facilities.
 	* include/tr1/functional_iterate.h: Implementations of TR1
-	function and mem_fn facilities. 
+	function and mem_fn facilities.
 	* testsuite/tr1/3_function_objects/function/1.cc: New
 	test of std::tr1::function.
 	* testsuite/tr1/3_function_objects/function/2.cc: New
@@ -190,8 +198,8 @@
 	* testsuite/tr1/3_function_objects/function/9.cc: New
 	test of std::tr1::function.
 	* testsuite/tr1/3_function_objects/mem_fn.cc: New test of
-	std::tr1::mem_fn. 
-	
+	std::tr1::mem_fn.
+
 2005-02-23  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Implement is_convertible.
@@ -207,7 +215,7 @@
 	is_function/is_function.cc: Add testcase.
 
 2005-02-22  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* scripts/check_performance: Tweaks.
 
 	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/2.cc: Name
@@ -338,7 +346,7 @@
 	* testsuite/tr1/6_containers/unordered/find/map1.cc: New test.
 	* testsuite/tr1/6_containers/unordered/find/multimap1.cc: New test.
 	* testsuite/tr1/6_containers/unordered/find/multiset1.cc: New test.
-	
+
 2005-02-19  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR libstdc++/20071
@@ -365,7 +373,7 @@
 	* testsuite/tr1/6_containers/unordered/insert/multimap_range.cc: New test.
 	* testsuite/tr1/6_containers/unordered/insert/multiset_range.cc: New test.
 	* testsuite/tr1/6_containers/unordered/insert/set_range.cc: New test.
-	
+
 2005-02-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* testsuite/thread/pthread1.cc: Do not invoke pthread_setconcurrency
@@ -395,7 +403,7 @@
 	* testsuite/tr1/6_containers/unordered/instantiate/multimap.cc: New test.
 	* testsuite/tr1/6_containers/unordered/instantiate/multiset.cc: New test.
 	* testsuite/tr1/6_containers/unordered/instantiate/set.cc: New test.
-	
+
 2005-02-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/23_containers/set/modifiers/16728.cc:
@@ -410,7 +418,7 @@
 
 2005-02-15  Paolo Carlini  <pcarlini@suse.de>
 	    Jon Grimm  <jgrimm2@us.ibm.com>
-	
+
 	PR libstdc++/19955
 	* include/bits/locale_facets.h (ctype<char>::_M_narrow_init()):
 	Fix the logic setting _M_narrow_ok: first check whether the
@@ -493,7 +501,7 @@
 2005-01-31  Brad Spencer  <spencer@infointeractive.com>
 
 	* crossconfig.m4: Repair Solaris cross bits for strtold and strtof.
-	* configure: Regenerated.	
+	* configure: Regenerated.
 
 2005-01-31  Mark Mitchell  <mark@codesourcery.com>
 
@@ -589,7 +597,7 @@
 	is_abstract.cc: New.
 	* testsuite/tr1/4_metaprogramming/type_properties/is_abstract/
 	typedefs.cc: Likewise.
-	
+
 	* include/tr1/type_traits (is_function): Rewrite, use the conversion
 	F& -> F* instead, thus avoiding problems with abstract classes.
 	* testsuite/tr1/4_metaprogramming/primary_type_categories/
@@ -750,7 +758,7 @@
 
 	* testsuite/27_io/basic_ostream/endl/char/1.cc: Minor tweaks.
 	* testsuite/27_io/basic_ostream/ends/char/1.cc: Likewise.
-	* testsuite/27_io/basic_ostream/exceptions/char/9561.cc: Likewise. 
+	* testsuite/27_io/basic_ostream/exceptions/char/9561.cc: Likewise.
 	* testsuite/27_io/basic_ostream/flush/char/1.cc: Likewise.
 	* testsuite/27_io/basic_ostream/flush/char/2.cc: Likewise.
 	* testsuite/27_io/basic_ostream/flush/char/
@@ -793,7 +801,7 @@
 	of aligned.
 
 2005-01-23  Paolo Carlini  <pcarlini@suse.de>
-            Andreas Jaeger  <aj@suse.de>
+	    Andreas Jaeger  <aj@suse.de>
 
 	PR libstdc++/19343
 	* include/bits/functexcept.h: Mark the helpers as 'noreturn'.
@@ -818,7 +826,7 @@
 2005-01-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/Makefile.am (check-compile): New.
-	* testsuite/Makefile.in: Regenerate.	
+	* testsuite/Makefile.in: Regenerate.
 	* scripts/check_compile_time: New.
 	* scripts/check_performance: Tweaks.
 
@@ -851,7 +859,7 @@
 	* testsuite/performance/20_util/allocator/insert.cc: Remove bogus
 	return, add return.
 	* testsuite/performance/20_util/allocator/map_thread.cc: Same.
-	
+
 2005-01-17  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/19433
@@ -860,10 +868,10 @@
 	Obtain amortized constant complexity if t is inserted right after
 	p - not before p - as per Table 69.
 	* testsuite/performance/23_containers/set_insert_from_sorted.cc: New.
-	
+
 	* testsuite/23_containers/multiset/insert/2.cc: New.
 	* testsuite/23_containers/set/insert/1.cc: Likewise.
-	
+
 	* testsuite/performance/23_containers/set_create_from_sorted.cc:
 	Simplify.
 
@@ -972,7 +980,7 @@
 	enc_traits to...
 	* config/locale/ieee_1003.1-2001/codecvt_specializations.h: Move...
 	* include/ext/codecvt_specializations.h: ...here. Remove
-	_GLIBCXX_USE___ENC_TRAITS. 
+	_GLIBCXX_USE___ENC_TRAITS.
 	(__enc_traits): To __encoding_state, put in __gnu_cxx namespace.
 	(enc_char_traits): To __encoding_char_traits, put in __gnu_cxx
 	namespace.
@@ -986,10 +994,10 @@
 	uglified data members of basic_filebuf, including _M_buf,
 	_M_buf_size, _M_mode, _M_pback_init.
 	* include/std/std_fstream.h: Same.
-	
+
 2005-01-05  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* testsuite/testsuite_hooks.h: 
+	* testsuite/testsuite_hooks.h:
 	(copy_constructor::mark_call):  Use __throw_runtime_error.
 	(assignment_operator::mark_call): Same.
 	* testsuite/testsuite_hooks.cc (verify_demangle): Same.
@@ -1010,14 +1018,14 @@
 
 	* testsuite/27_io/basic_filebuf/open/char/9507.cc: Remove child
 	process.
-	
+
 2005-01-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/istream.cc (basic_istream<char>::ignore(streamsize),
 	basic_istream<char>::ignore(streamsize, int_type),
 	basic_istream<wchar_t>::ignore(streamsize),
 	basic_istream<wchar_t>::ignore(streamsize, int_type)): At the end,
-	first check _M_gcount vs __n. 	
+	first check _M_gcount vs __n.
 	* include/bits/istream.tcc (ignore(streamsize), ignore(streamsize,
 	int_type)): Likewise.
 	* testsuite/27_io/basic_istream/ignore/char/4.cc: New.
@@ -1045,7 +1053,7 @@
 	* testsuite/27_io/objects/wchar_t/7.cc: Likewise.
 	* testsuite/27_io/objects/wchar_t/9661-1.cc: Likewise.
 
-	* configure.ac: Check for sys/ipc.h and sys/sem.h. 
+	* configure.ac: Check for sys/ipc.h and sys/sem.h.
 	* config.h.in: Regenerated.
 	* configure: Likewise.
 	* testsuite/testsuite_hooks.cc (_GLIBCXX_SYSV_SEM): Conditionally
@@ -1088,7 +1096,7 @@
 	basic_istream<char>::ignore(streamsize, int_type),
 	basic_istream<wchar_t>::ignore(streamsize),
 	basic_istream<wchar_t>::ignore(streamsize, int_type)): Avoid
-	_M_gcount overflows. 	
+	_M_gcount overflows.
 	* include/bits/istream.tcc (ignore(streamsize), ignore(streamsize,
 	int_type)): Likewise; use snextc in the main loop, consistently
 	with the specializations above.

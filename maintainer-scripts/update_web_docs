@@ -88,7 +88,7 @@ find $CVSROOT/gcc -name \*.texi,v -print | fgrep -v -f/home/gccadmin/scripts/doc
 
 
 # Checkout all the texi files.
-cvs -Q export -r$RELEASE `cat FILES` gcc/gcc/doc/install.texi2html gcc/gcc/doc/include/texinfo.tex gcc/gcc/ada/xgnatugn.adb gcc/gcc/ada/ug_words
+cvs -Q export -r$RELEASE `cat FILES` gcc/gcc/doc/install.texi2html gcc/gcc/doc/include/texinfo.tex gcc/gcc/ada/xgnatugn.adb gcc/gcc/ada/ug_words gcc/gcc/BASE-VER gcc/gcc/DEV-PHASE
 
 # Build a tarball of the sources.
 tar cf docs-sources.tar gcc
@@ -106,6 +106,16 @@ if [ -f gcc/gcc/ada/xgnatugn.adb ]; then
    ./xgnatugn unw gcc/gcc/ada/gnat_ugn.texi \
      gcc/gcc/ada/ug_words gnat_ugn_unw.texi
 fi
+
+# Generate gcc-vers.texi.
+(
+   echo "@set version-GCC $(cat gcc/gcc/BASE-VER)"
+   if "$(cat gcc/gcc/DEV-PHASE)" = "experimental"; then
+      echo "@set DEVELOPMENT"
+   else
+      echo "@clear DEVELOPMENT"
+   fi
+) > $includedir/gcc-vers.texi
 
 # Now convert the relevant files from texi to HTML and PostScript.
 for file in $MANUALS; do

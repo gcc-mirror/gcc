@@ -31,7 +31,11 @@ SUBMITTER=net
 GNATS_ADDR=gcc-gnats@gcc.gnu.org
 
 # The default release for this host.
-DEFAULT_RELEASE="@gcc_version_full@"
+# We have to guess at what program_transform_name might have done.
+# "sed 1q" because neither "head -1" nor "head -n 1" is universal, argh.
+
+DEFAULT_GCC="`echo $0 | sed -e 's/bug//'`"
+DEFAULT_RELEASE="`$DEFAULT_GCC --version | sed 1q`"
 
 # The default organization.
 DEFAULT_ORGANIZATION=

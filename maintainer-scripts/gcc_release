@@ -140,15 +140,25 @@ EOF
       fi
     done
 
-    # Update `gcc/version.c'.
-    for x in gcc/version.c; do 
-      y=`basename ${x}`
-      (changedir `dirname ${SOURCE_DIRECTORY}/${x}` && \
-          sed -e 's|version_string\[\] = \".*\"|version_string\[\] = \"'${RELEASE}'\"|g' < ${y} > ${y}.new && \
-	  mv ${y}.new ${y} && \
-          ${CVS} ci -m 'Update version' ${y}) || \
-	  error "Could not update ${x}"
-    done
+    # Update gcc/DEV-PHASE if it exists, otherwise gcc/version.c.
+
+    if [ -f ${SOURCE_DIRECTORY}/gcc/DEV-PHASE ]; then
+      [ `cat ${SOURCE_DIRECTORY}/gcc/BASE-VER` = ${RELEASE} ] || \
+      error "Release number ${RELEASE} does not match BASE-VER"
+      (changedir ${SOURCE_DIRECTORY}/gcc && \
+       : > DEV-PHASE && \
+       ${CVS} ci -m 'Mark as release' DEV-PHASE) || \
+      error "Could not update DEV-PHASE"
+    else
+      for x in gcc/version.c; do 
+        y=`basename ${x}`
+        (changedir `dirname ${SOURCE_DIRECTORY}/${x}` && \
+            sed -e 's|version_string\[\] = \".*\"|version_string\[\] = \"'${RELEASE}'\"|g' < ${y} > ${y}.new && \
+	    mv ${y}.new ${y} && \
+            ${CVS} ci -m 'Update version' ${y}) || \
+	    error "Could not update ${x}"
+      done
+    fi
 
     # Make sure we tag the sources for a final release.
     TAG="gcc_`echo ${RELEASE} | tr . _`_release"

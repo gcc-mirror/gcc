@@ -63,12 +63,16 @@ TEXINFO_TEX = ../gcc/doc/include/texinfo.tex
 info_TEXINFOS = fastjar.texi
 fastjar_TEXINFOS = \
 	../gcc/doc/include/gcc-common.texi \
-	../gcc/doc/include/gpl.texi
+	../gcc/doc/include/gpl.texi \
+	gcc-vers.texi
 man_MANS = fastjar.1 grepjar.1
 EXTRA_DIST = $(man_MANS)
 
+BASEVER = $(srcdir)/../gcc/BASE-VER
+DEVPHASE = $(srcdir)/../gcc/DEV-PHASE
+
 TEXI2POD = perl $(srcdir)/../contrib/texi2pod.pl
-POD2MAN = pod2man --center="GNU" --release="gcc-@gcc_version@"
+POD2MAN = pod2man --center="GNU" --release="gcc-$(shell cat $(BASEVER))"
 
 .pod.1:
 	-($(POD2MAN) --section=1 $< > $(@).T$$$$ && \
@@ -82,6 +86,17 @@ fastjar.pod: $(srcdir)/fastjar.texi
 
 grepjar.pod: $(srcdir)/fastjar.texi
 	-$(TEXI2POD) -D grepjar $< > $@
+
+fastjar.1 grepjar.1: $(BASEVER)
+
+# gcc-vers.texi is generated from the version files.
+gcc-vers.texi: $(BASEVER) $(DEVPHASE)
+	(echo "@set version-GCC $(shell cat $(BASEVER))"; \
+	 if [ "$(shell cat $(DEVPHASE))" = "experimental" ]; \
+	 then echo "@set DEVELOPMENT"; \
+	 else echo "@clear DEVELOPMENT"; \
+	 fi) > $@T
+	mv -f $@T $@
 
 # GCC LOCAL CHANGE
 # The following commands allow us to release tarballs with the man pages

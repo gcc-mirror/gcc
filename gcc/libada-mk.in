@@ -23,7 +23,6 @@
 
 exeext=@host_exeext@
 libdir=@libdir@
-gcc_version=@gcc_version@
 NOCOMMON_FLAG=@nocommon_flag@
 WARN_CFLAGS=@warn_cflags@
 gcc_tmake_file=@tmake_file@

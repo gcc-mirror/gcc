@@ -1,3 +1,7 @@
+2005-03-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in (GFORTRAN_TEXI): Add gcc-vers.texi.
+
 2005-03-15  Feng Wang  <fengwang@nudt.edu.cn>
 
 	* trans-stmt.c (gfc_trans_label_assign): Don't set DECL_ARTIFICIAL flag
@@ -68,7 +72,7 @@
 	* primary.c (match_complex_constant): Mangled complex constant may
 	be an implied do-loop.  Give implied do-loop matcher a chance.
 
-2005-03-05  Steven G. Kargl  <kargls@comcast.net> 
+2005-03-05  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/19754
 	* resolve.c (compare_shapes):  New function.
@@ -200,7 +204,7 @@
 	(compare_actual_formal): Check for NULL pointer instead of empty
 	string.
 	* intrinsic.c (gfc_current_intrinsic, gfc_current_intrinsic_arg):
-	Add 'const' qualifier.	
+	Add 'const' qualifier.
 	(conv_name): Return a heap allocated string.
 	(find_conv): Add 'const' qualifier to 'target'.
 	(add_sym): Use 'gfc_get_string' instead of 'strcpy'.
@@ -258,7 +262,7 @@
 	* expr.c (gfc_type_convert_binary): Typo in comment.
 
 2005-02-19  Steven G. Kargl  <kargls@comcast.net>
-  
+
 	* check.c (gfc_check_selected_int_kind): New function.
 	* intrinsic.h: Prototype it.
 	* intrinsic.c (add_function): Use it.
@@ -266,12 +270,12 @@
 	  BT_REAL to BT_INTEGER and use gfc_default_integer_kind.
 
 2005-02-19  Steven G. Kargl  <kargls@comcast.net>
-  
+
 	* check.c (gfc_check_int): improve checking of optional kind
 	* simplify.c (gfc_simplify_int): Change BT_REAL to BT_INTEGER
 
 2005-02-19  Steven G. Kargl  <kargls@comcast.net>
-  
+
 	* check.c (gfc_check_achar): New function
 	* intrinsic.h: Prototype it.
 	* intrinsic.c (add_function): Use it.
@@ -405,7 +409,7 @@
 
 2005-01-22  Steven G. Kargl  <kargls@comcast.net>
 
-	* intrinsic.c (make_alias):  Add standard argument. 
+	* intrinsic.c (make_alias):  Add standard argument.
 	(add_functions): Update make_alias calls.
 
 2005-01-22  Paul Brook  <paul@codesourcery.com>
@@ -580,7 +584,7 @@
 	gfc_check_getcwd_sub, gfc_check_exit, gfc_check_flush,
 	gfc_check_umask, gfc_check_umask_sub, gfc_check_unlink,
 	gfc_check_unlink_sub): Fix formatting issues.
-	
+
 2005-01-08  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.h: Remove outdated comment.  Don't include stdio.h
@@ -629,7 +633,7 @@
 
 	* gfortran.h (gfc_case): fix typo in comment.
 
-2004-12-27  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de> 
+2004-12-27  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans-intrinsic.c (gfc_conv_intrinsic_ishft): Change to
 	logical	shift.  Call fold.  Remove 0-bit shift shortcut.
@@ -913,7 +917,7 @@
 
 2004-10-30  Canqun Yang  <canqun@nudt.edu.cn>
 
-	* check.c (gfc_check_rand): Allow missing optional argument. 
+	* check.c (gfc_check_rand): Allow missing optional argument.
 	(gfc_check_irand): Ditto.
 	* intrinsic.c (add_functions): Set arg optional flag for {i,}rand.
 
@@ -958,7 +962,7 @@
 2004-10-08  Tobias Schlueter  <tobias.shclueter@physik.uni-muenchen.de>
 
 	* arith.c: Fix formatting issues.
-	
+
 2004-10-07  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17676
@@ -1012,7 +1016,7 @@
 	* trans-const.h (gfc_build_cstring_const): Add prototype.
 	* trans-io.c (set_string, set_error_locus): Use new function.
 	* trans-stmt.c (gfc_trans_goto): Use new function.
-	
+
 	PR fortran/17708
 	* parse.c (accept_statement): Don't treat END DO like END IF and
 	END SELECT.
@@ -1097,7 +1101,7 @@
 	PR fortran/17615
 	* trans-expr.c (gfc_trans_arrayfunc_assign): Look at resolved
 	function to determine return type.
-	
+
 2004-09-20  Jan Hubicka  <jh@suse.cz>
 
 	* trans-decl.c (build_entry_thunks): Finalize the function; do not lower

@@ -1,5 +1,5 @@
 # Under VMS, directory names cannot contain dots.
-version:=$(shell echo $(gcc_version) | sed -e 's/\./_/g')
+version:=$(shell echo $(BASEVER_c) | sed -e 's/\./_/g')
 
 libsubdir=$(libdir)/gcc-lib
 
