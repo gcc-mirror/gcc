@@ -24,17 +24,19 @@ The registers are allocated as follows:
 
 Register	Purpose
 -------------------------------------------------------------------
-r0, r1		Call-volatile.  May be changed during the execution
+r0, r1          Call-volatile.  May be changed during the execution
+                of a call instruction.
+r2 through r7   Argument passing;  call-clobbered.
+r8, r9		Call-volatile.  May be changed during the execution
 		of a call instruction.
-r2 through r9	Argument passing; call-clobbered.
 r10 through r13	Call-saved.
 r14		Program status word.
 r15		Stack pointer.
 
 
-The return value of a procedure is returned in r2-r9 if it fits,
-otherwise a pointer is passed as a `hidden' first argument
-and the return value is placed there.
+Scalar values are returned in register r2-r7 if the value fits.
+Otherwise, a pointer is passed as a 'hidden' first argument and
+the return value is placed there.
 
 Arguments are passed in registers starting in r2, then on the stack.
 Arguments of size not a multiple of a word are padded to whole words.
@@ -83,20 +85,18 @@ count += N;
 
 
 One implementation of this is if a variadic function first
-pushes registers 2 through 9 in sequence at entry, and
+pushes registers 2 through 7 in sequence at entry, and
 sets 'base' to the address of the first word pushed, 
 producing a stack that appears like:
 
 SP ->
 	[other data]
-	r9
-	r8
 	r7
 	r6
 	r5
 	r4
 	r3
-count-> r2
+count->	r2
 	Return address (two words)
 	9th procedure parameter word
 	10th procedure parameter word
