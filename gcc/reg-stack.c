@@ -245,7 +245,7 @@ static void dump_stack_info ();
 
 int
 stack_regs_mentioned_p (pat)
-     register rtx pat;
+     rtx pat;
 {
   register char *fmt;
   register int i;
@@ -445,36 +445,6 @@ get_true_reg (pat)
     pat = & XEXP (*pat, 0);
 
   return pat;
-}
-
-/* If REG is a stack register that is marked dead in REGSTACK, then
-   record that it is now live. If REG is not DEST, add a death note to
-   INSN if there isn't one already.  If DEST is not a reg, it is safe to
-   assume that it does not mention a reg anywhere within. */
-
-static void
-record_note_if_dead (insn, regstack, reg, dest)
-     rtx insn;
-     stack regstack;
-     rtx reg, dest;
-{
-  reg = * get_true_reg (& reg);
-
-  if (STACK_REG_P (reg))
-    {
-      if (! TEST_HARD_REG_BIT (regstack->reg_set, REGNO (reg)))
-	{
-	  if ((! REG_P (dest) || REGNO (dest) != REGNO (reg))
-	      && ! find_regno_note (insn, REG_DEAD, REGNO (reg)))
-	    REG_NOTES (insn) = gen_rtx (EXPR_LIST,
-					REG_DEAD, reg, REG_NOTES (insn));
-
-	  SET_HARD_REG_BIT (regstack->reg_set, REGNO (reg));
-	}
-    }
-  else
-    if (stack_regs_mentioned_p (reg))
-      abort ();
 }
 
 /* Scan the OPERANDS and OPERAND_CONSTRAINTS of an asm_operands.
@@ -796,7 +766,7 @@ record_asm_reg_life (insn, regstack, operands, constraints,
 
   rtx *clobber_reg;
 
-  /* Find out what the constraints required.  If no constraint
+  /* Find out what the constraints require.  If no constraint
      alternative matches, that is a compiler bug: we should have caught
      such an insn during reload.  */
   i = constrain_asm_operands (n_operands, operands, constraints,
@@ -981,103 +951,54 @@ record_asm_reg_life (insn, regstack, operands, constraints,
     }
 }
 
-/* Scan PAT, which is part of INSN, and record the life & death of
-   stack registers in REGSTACK.  If a register was dead, but is an input
-   operand in this insn, then mark the register live and record a death
-   note.
-
-   If a register is dead after this insn, but is an output operand in
-   this insn, record a REG_UNUSED note.
+/* Scan PAT, which is part of INSN, and record registers appearing in
+   a SET_DEST in DEST, and other registers in SRC.
 
    This function does not know about SET_DESTs that are both input and
    output (such as ZERO_EXTRACT) - this cannot happen on a 387. */
 
-static void
-record_reg_life_pat (insn, regstack, pat)
-     rtx insn;
-     stack regstack;
+void
+record_reg_life_pat (pat, src, dest)
      rtx pat;
+     HARD_REG_SET *src, *dest;
 {
-  rtx src, dest;
+  register char *fmt;
+  register int i;
 
-  /* We should have already handled any asm.  */
-  if (GET_CODE (pat) == ASM_INPUT || GET_CODE (pat) == ASM_OPERANDS)
-    abort ();
+  if (STACK_REG_P (pat))
+    {
+      if (src)
+	SET_HARD_REG_BIT (*src, REGNO (pat));
 
-  if (GET_CODE (pat) != SET)
+      if (dest)
+	SET_HARD_REG_BIT (*dest, REGNO (pat));
+
+      return;
+    }
+
+  if (GET_CODE (pat) == SET)
+    {
+      record_reg_life_pat (XEXP (pat, 0), NULL_PTR, dest);
+      record_reg_life_pat (XEXP (pat, 1), src, NULL_PTR);
+      return;
+    }
+
+  /* We don't need to consider either of these cases. */
+  if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
     return;
 
-  dest = * get_true_reg (& SET_DEST (pat));
-
-  /* The destination is dead before this insn.  If the destination is
-     not used after this insn, record this with REG_UNUSED. */
-
-  if (STACK_REG_P (dest))
+  fmt = GET_RTX_FORMAT (GET_CODE (pat));
+  for (i = GET_RTX_LENGTH (GET_CODE (pat)) - 1; i >= 0; i--)
     {
-      /* ??? This check is unnecessary. */
+      if (fmt[i] == 'E')
+	{
+	  register int j;
 
-      if (find_regno_note (insn, REG_UNUSED, REGNO (dest)))
-	abort ();
-
-      if (! TEST_HARD_REG_BIT (regstack->reg_set, REGNO (dest)))
-	REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_UNUSED, dest,
-				    REG_NOTES (insn));
-
-      CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (dest));
-    }
-  else
-    if (dest != cc0_rtx && stack_regs_mentioned_p (dest))
-      abort ();
-
-  src = * get_true_reg (& SET_SRC (pat));
-
-  switch (GET_CODE (src))
-    {
-      /* ??? get_true_reg will make some of these cases redundant. */
-
-    case PLUS:
-    case MINUS:
-    case MULT:
-    case DIV:
-    case COMPARE:
-      record_note_if_dead (insn, regstack, XEXP (src, 0), dest);
-      record_note_if_dead (insn, regstack, XEXP (src, 1), dest);
-      break;
-
-    case ABS:
-    case NEG:
-    case SQRT:
-    case FLOAT_EXTEND:
-    case FLOAT_TRUNCATE:
-    case FLOAT:
-    case UNSIGNED_FLOAT:
-      record_note_if_dead (insn, regstack, XEXP (src, 0), dest);
-      break;
-
-    case UNSIGNED_FIX:
-    case FIX:
-      src = XEXP (src, 0);
-      if (GET_CODE (src) == FIX)
-	record_note_if_dead (insn, regstack, XEXP (src, 0), dest);
-      else
-	record_note_if_dead (insn, regstack, src, dest);
-      break;
-
-    case ASM_OPERANDS:
-    case ASM_INPUT:
-      abort ();  /* we should have caught this already. */
-      break;
-
-    case REG:
-      record_note_if_dead (insn, regstack, src, dest);
-      break;
-
-    default:
-      /* If a stack register appears in the src RTL, it is a bug, and
-	 code should be added above to handle it. */
-
-      if (stack_regs_mentioned_p (src))
-	abort ();
+	  for (j = XVECLEN (pat, i) - 1; j >= 0; j--)
+	    record_reg_life_pat (XVECEXP (pat, i, j), src, dest);
+	}
+      else if (fmt[i] == 'e')
+	record_reg_life_pat (XEXP (pat, i), src, dest);
     }
 }
 
@@ -1167,15 +1088,34 @@ record_reg_life (insn, block, regstack)
       return;
     }
 
-  if (GET_CODE (PATTERN (insn)) == PARALLEL)
+  /* An insn referencing a stack reg has a mode of QImode. */
+  if (GET_MODE (insn) == QImode)
     {
-      register int i;
+      HARD_REG_SET src, dest;
+      int regno;
 
-      for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
-	record_reg_life_pat (insn, regstack, XVECEXP (PATTERN (insn), 0, i));
+      CLEAR_HARD_REG_SET (src);
+      CLEAR_HARD_REG_SET (dest);
+      record_reg_life_pat (PATTERN (insn), &src, &dest);
+
+      for (regno = FIRST_STACK_REG; regno <= LAST_STACK_REG; regno++)
+	if (! TEST_HARD_REG_BIT (regstack->reg_set, regno))
+	  {
+	    if (TEST_HARD_REG_BIT (src, regno)
+		&& ! TEST_HARD_REG_BIT (dest, regno))
+	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_DEAD,
+					  FP_mode_reg[regno][(int) DFmode],
+					  REG_NOTES (insn));
+	    else if (TEST_HARD_REG_BIT (dest, regno)
+		     && ! TEST_HARD_REG_BIT (src, regno))
+	      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_UNUSED,
+					  FP_mode_reg[regno][(int) DFmode],
+					  REG_NOTES (insn));
+	  }
+
+      AND_COMPL_HARD_REG_SET (regstack->reg_set, dest);
+      IOR_HARD_REG_SET (regstack->reg_set, src);
     }
-  else if (GET_MODE (insn) == QImode)
-    record_reg_life_pat (insn, regstack, PATTERN (insn));
 
   /* There might be a reg that is live after a function call.
      Initialize it to zero so that the program does not crash.  See comment
@@ -1186,8 +1126,7 @@ record_reg_life (insn, block, regstack)
       int reg = FIRST_FLOAT_REG;
 
       /* If a stack reg is mentioned in a CALL_INSN, it must be as the
-	 return value; conversely, if a float is returned, a stack reg
-	 must be mentioned. */
+	 return value.  */
 
       if (stack_regs_mentioned_p (PATTERN (insn)))
 	reg++;
@@ -1317,21 +1256,24 @@ stack_reg_life_analysis (first)
   int reg, block;
   struct stack_def regstack;
 
-  if (current_function_returns_real)
+  if (current_function_returns_real
+      && STACK_REG_P (DECL_RTL (DECL_RESULT (current_function_decl))))
     {
       /* Find all RETURN insns and mark them. */
+
+      int value_regno = REGNO (DECL_RTL (DECL_RESULT (current_function_decl)));
 
       for (block = blocks - 1; block >= 0; block--)
 	if (GET_CODE (block_end[block]) == JUMP_INSN
 	    && GET_CODE (PATTERN (block_end[block])) == RETURN)
-	  SET_HARD_REG_BIT (block_out_reg_set[block], FIRST_STACK_REG);
+	  SET_HARD_REG_BIT (block_out_reg_set[block], value_regno);
 
       /* Mark of the end of last block if we "fall off" the end of the
 	 function into the epilogue. */
 
       if (GET_CODE (block_end[blocks-1]) != JUMP_INSN
 	  || GET_CODE (PATTERN (block_end[blocks-1])) == RETURN)
-	SET_HARD_REG_BIT (block_out_reg_set[blocks-1], FIRST_STACK_REG);
+	SET_HARD_REG_BIT (block_out_reg_set[blocks-1], value_regno);
     }
 
   /* now scan all blocks backward for stack register use */
@@ -2033,6 +1975,38 @@ subst_stack_regs_pat (insn, regstack, pat)
 	    replace_reg (dest, get_hard_regnum (regstack, *dest));
 	  }
 
+	break;
+
+      case UNSPEC:
+	switch (XINT (SET_SRC (pat), 1))
+	  {
+	  case 1: /* sin */
+	  case 2: /* cos */
+	    /* These insns only operate on the top of the stack.  */
+
+	    src1 = get_true_reg (&XVECEXP (SET_SRC (pat), 0, 0));
+
+	    emit_swap_insn (insn, regstack, *src1, emit_insn_before);
+
+	    src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
+
+	    if (STACK_REG_P (*dest))
+	      replace_reg (dest, FIRST_STACK_REG);
+
+	    if (src1_note)
+	      {
+		replace_reg (&XEXP (src1_note, 0), FIRST_STACK_REG);
+		regstack->top--;
+		CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (*src1));
+	      }
+
+	    replace_reg (src1, FIRST_STACK_REG);
+
+	    break;
+
+	  default:
+	    abort ();
+	  }
 	break;
 
       default:
