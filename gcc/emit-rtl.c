@@ -651,7 +651,7 @@ gen_lowpart_common (mode, x)
 	 either a reasonable negative value or a reasonable unsigned value
 	 for this mode.  */
 
-      if (GET_MODE_BITSIZE (mode) == 2 * HOST_BITS_PER_WIDE_INT)
+      if (GET_MODE_BITSIZE (mode) >= 2 * HOST_BITS_PER_WIDE_INT)
 	return x;
       else if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
 	return 0;
