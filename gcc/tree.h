@@ -955,6 +955,9 @@ struct tree_type
 #define DECL_STATIC_CONSTRUCTOR(NODE) ((NODE)->decl.static_ctor_flag)
 #define DECL_STATIC_DESTRUCTOR(NODE) ((NODE)->decl.static_dtor_flag)
 
+/* Used to indicate that this DECL represents a compiler-generated entity.  */
+#define DECL_ARTIFICIAL(NODE) ((NODE)->decl.artificial_flag)
+
 /* Additional flags for language-specific uses.  */
 #define DECL_LANG_FLAG_0(NODE) ((NODE)->decl.lang_flag_0)
 #define DECL_LANG_FLAG_1(NODE) ((NODE)->decl.lang_flag_1)
@@ -993,7 +996,8 @@ struct tree_decl
   unsigned transparent_union : 1;
   unsigned static_ctor_flag : 1;
   unsigned static_dtor_flag : 1;
-  /* room for two more */
+  unsigned artificial_flag : 1;
+  /* room for one more */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
