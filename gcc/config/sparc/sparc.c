@@ -5596,10 +5596,8 @@ function_arg_pass_by_reference (const struct sparc_args *cum ATTRIBUTE_UNUSED,
   if (TARGET_ARCH32)
     {
       return ((type && AGGREGATE_TYPE_P (type))
-	      || mode == TFmode
 	      || mode == SCmode
-	      || mode == DCmode
-	      || mode == TCmode);
+	      || GET_MODE_SIZE (mode) > 8);
     }
   else
     {
@@ -5810,10 +5808,8 @@ sparc_va_arg (tree valist, tree type)
   else
     {
       if (AGGREGATE_TYPE_P (type)
-	  || TYPE_MODE (type) == TFmode
 	  || TYPE_MODE (type) == SCmode
-	  || TYPE_MODE (type) == DCmode
-	  || TYPE_MODE (type) == TCmode)
+	  || GET_MODE_SIZE (TYPE_MODE (type)) > 8)
 	{
 	  indirect = 1;
 	  size = rsize = UNITS_PER_WORD;
