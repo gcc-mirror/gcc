@@ -1,3 +1,17 @@
+2000-02-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* flow.c (mark_regs_live_at_end): Delete unused variables.
+
+	* ggc-page.c (ggc_page_print_statistics): bzero -> memset.
+
+	* integrate.c (copy_rtx_and_substitute): Wrap variable `alignment'
+	in macro FRAME_GROWS_DOWNWARD.
+
+	* stmt.c (expand_end_bindings): Delete unused variable.
+
+	* unroll.c (iteration_info): Mark parameter `loop' with
+	ATTRIBUTE_UNUSED.
+
 2000-02-10  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* fixinc/server.c (load_data): Return NULL if the marker line is

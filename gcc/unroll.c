@@ -2427,7 +2427,7 @@ biv_total_increment (bl)
 
 static void
 iteration_info (loop, iteration_var, initial_value, increment)
-     const struct loop *loop;
+     const struct loop *loop ATTRIBUTE_UNUSED;
      rtx iteration_var, *initial_value, *increment;
 {
   struct iv_class *bl;
