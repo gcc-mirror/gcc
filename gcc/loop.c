@@ -2761,14 +2761,19 @@ invariant_p (x)
     case REG:
       /* We used to check RTX_UNCHANGING_P (x) here, but that is invalid
 	 since the reg might be set by initialization within the loop.  */
-      if (x == frame_pointer_rtx || x == hard_frame_pointer_rtx
-	  || x == arg_pointer_rtx)
+
+      if ((x == frame_pointer_rtx || x == hard_frame_pointer_rtx
+	   || x == arg_pointer_rtx)
+	  && ! current_function_has_nonlocal_goto)
 	return 1;
+
       if (loop_has_call
 	  && REGNO (x) < FIRST_PSEUDO_REGISTER && call_used_regs[REGNO (x)])
 	return 0;
+
       if (n_times_set[REGNO (x)] < 0)
 	return 2;
+
       return n_times_set[REGNO (x)] == 0;
 
     case MEM:
