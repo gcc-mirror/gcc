@@ -1,3 +1,21 @@
+2002-01-21  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	Remove workaround for register stack overwrite bug in mmix.
+	* config/mmix/mmix.c (mmix_target_asm_function_prologue): Remove
+	support for TARGET_REG_STACK_FILL_BUG.
+	* config/mmix/mmix.h: Remove member has_call_without_parameters.
+	(TARGET_MASK_REG_STACK_FILL_BUG, TARGET_REG_STACK_FILL_BUG):
+	Delete.
+	(TARGET_DEFAULT): Remove TARGET_MASK_REG_STACK_FILL_BUG.
+	(TARGET_SWITCHES): Remove -mreg-stack-fill-bug-workaround and
+	-mno-reg-stack-fill-bug-workaround.
+	* config/mmix/mmix.md ("call", "call_value"): Don't set struct
+	machine member has_call_without_parameters.
+	* doc/invoke.texi (Option Summary) <MMIX Options>: Remove
+	-mreg-stack-fill-bug-workaround	and
+	-mno-reg-stack-fill-bug-workaround.
+	(MMIX Options): Ditto.
+
 2002-01-21  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (function_arg): Replace 0 with NULL_RTX

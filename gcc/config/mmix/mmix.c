@@ -966,52 +966,6 @@ mmix_target_asm_function_prologue (stream, locals_size)
       break;
 
   mmix_highest_saved_stack_register = regno;
-
-  /* FIXME: Remove this when a corrected mmix version is released.
-
-     This kludge is a work-around for a presumed bug in the mmix simulator
-     (reported to knuth-bug), all versions up and including "Version of 14
-     October 2001".  When the circular register stack fills up, the parts
-     that would be overwritten need to be written to memory.  If the
-     "filling" instruction is a PUSHJ or PUSHGO, rL == 0 afterwards.  That
-     precise condition (rS == rO && rL == 0) is the same as for an empty
-     register stack, which means no more data is written to memory for
-     that round.  A hack is to remove the "&& L!=0" from "@<Increase
-     rL@>=" in mmix-sim.w: the register stack isn't empty under normal
-     circumstances, unless SAVE or UNSAVE is used, interrupts are enabled
-     or cases where rS == rO and rL is explicitly written to 0 as in
-     "PUT rL,0".
-
-     A workaround is to make sure PUSHJ or PUSHGO isn't filling up the
-     register stac.  This is accomplished if $16 or higher is written
-     before the function call.  This doesn't happen from a leaf functions
-     of course.  For the MMIXware ABI, this can't happen if all called
-     functions have parameters, because parameters start at $16.
-     Otherwise, and for the GNU ABI, if any register $16 and up is used,
-     we can see if it's mentioned before any function-call without
-     parameters.  This isn't too important; the bug will probably be fixed
-     soon and there's an option to not emit the work-around code.  The
-     call-with-parameters kludge wouldn't be there if it hadn't been for
-     it being left-over from a previous mmix version.
-
-     The actual code makes sure any register stack fill happens as early
-     as in the function prologue with a "SET $16,$16" (essentially a nop
-     except for the effects on the register stack).  */
-  if (TARGET_REG_STACK_FILL_BUG
-      && ((TARGET_ABI_GNU && !leaf_function_p ())
-	  || (!TARGET_ABI_GNU
-	      && cfun->machine->has_call_without_parameters)))
-    {
-      /* We don't have a specific macro or derivable expression for the
-	 first non-call-saved register.  If we need it in other places
-	 than here (which is temporary code anyway), such a macro should
-	 be added.  */
-      int flush_regno
-	= TARGET_ABI_GNU ? mmix_highest_saved_stack_register + 2 : 16;
-
-      fprintf (stream, "\tSET %s,%s\n",
-	       reg_names[flush_regno], reg_names[flush_regno]);
-    }
 }
 
 /* TARGET_ASM_FUNCTION_EPILOGUE.  */
