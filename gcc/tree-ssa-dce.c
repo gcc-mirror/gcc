@@ -286,7 +286,8 @@ static void
 mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
 {
   def_optype defs;
-  vdef_optype vdefs;
+  v_may_def_optype v_may_defs;
+  v_must_def_optype v_must_defs;
   stmt_ann_t ann;
   size_t i;
 
@@ -387,11 +388,22 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
         }
     }
 
-  vdefs = VDEF_OPS (ann);
-  for (i = 0; i < NUM_VDEFS (vdefs); i++)
+  v_may_defs = V_MAY_DEF_OPS (ann);
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
     {
-      tree vdef = VDEF_RESULT (vdefs, i);
-      if (need_to_preserve_store (vdef))
+      tree v_may_def = V_MAY_DEF_RESULT (v_may_defs, i);
+      if (need_to_preserve_store (v_may_def))
+	{
+	  mark_stmt_necessary (stmt, true);
+	  return;
+        }
+    }
+    
+  v_must_defs = V_MUST_DEF_OPS (ann);
+  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+    {
+      tree v_must_def = V_MUST_DEF_OP (v_must_defs, i);
+      if (need_to_preserve_store (v_must_def))
 	{
 	  mark_stmt_necessary (stmt, true);
 	  return;
@@ -558,10 +570,10 @@ propagate_necessity (struct edge_list *el)
       else
 	{
 	  /* Propagate through the operands.  Examine all the USE, VUSE and
-	     VDEF operands in this statement.  Mark all the statements which
-	     feed this statement's uses as necessary.  */
+	     V_MAY_DEF operands in this statement.  Mark all the statements 
+	     which feed this statement's uses as necessary.  */
 	  vuse_optype vuses;
-	  vdef_optype vdefs;
+	  v_may_def_optype v_may_defs;
 	  use_optype uses;
 	  stmt_ann_t ann;
 	  size_t k;
@@ -577,12 +589,13 @@ propagate_necessity (struct edge_list *el)
 	  for (k = 0; k < NUM_VUSES (vuses); k++)
 	    mark_operand_necessary (VUSE_OP (vuses, k));
 
-	  /* The operands of VDEF expressions are also needed as they
+	  /* The operands of V_MAY_DEF expressions are also needed as they
 	     represent potential definitions that may reach this
-	     statement (VDEF operands allow us to follow def-def links).  */
-	  vdefs = VDEF_OPS (ann);
-	  for (k = 0; k < NUM_VDEFS (vdefs); k++)
-	    mark_operand_necessary (VDEF_OP (vdefs, k));
+	     statement (V_MAY_DEF operands allow us to follow def-def 
+	     links).  */
+	  v_may_defs = V_MAY_DEF_OPS (ann);
+	  for (k = 0; k < NUM_V_MAY_DEFS (v_may_defs); k++)
+	    mark_operand_necessary (V_MAY_DEF_OP (v_may_defs, k));
 	}
     }
 }

@@ -172,16 +172,22 @@ get_use_ops (stmt_ann_t ann)
   return ann ? ann->use_ops : NULL;
 }
 
-static inline vdef_optype
-get_vdef_ops (stmt_ann_t ann)
+static inline v_may_def_optype
+get_v_may_def_ops (stmt_ann_t ann)
 {
-  return ann ? ann->vdef_ops : NULL;
+  return ann ? ann->v_may_def_ops : NULL;
 }
 
 static inline vuse_optype
 get_vuse_ops (stmt_ann_t ann)
 {
   return ann ? ann->vuse_ops : NULL;
+}
+
+static inline v_must_def_optype
+get_v_must_def_ops (stmt_ann_t ann)
+{
+  return ann ? ann->v_must_def_ops : NULL;
 }
 
 static inline tree *
@@ -205,23 +211,23 @@ get_def_op_ptr (def_optype defs, unsigned int index)
 }
 
 static inline tree *
-get_vdef_result_ptr(vdef_optype vdefs, unsigned int index)
+get_v_may_def_result_ptr(v_may_def_optype v_may_defs, unsigned int index)
 {
 #ifdef ENABLE_CHECKING
-  if (index >= vdefs->num_vdefs)
+  if (index >= v_may_defs->num_v_may_defs)
     abort();
 #endif
-  return &(vdefs->vdefs[index * 2]);
+  return &(v_may_defs->v_may_defs[index * 2]);
 }
 
 static inline tree *
-get_vdef_op_ptr(vdef_optype vdefs, unsigned int index)
+get_v_may_def_op_ptr(v_may_def_optype v_may_defs, unsigned int index)
 {
 #ifdef ENABLE_CHECKING
-  if (index >= vdefs->num_vdefs)
+  if (index >= v_may_defs->num_v_may_defs)
     abort();
 #endif
-  return &(vdefs->vdefs[index * 2 + 1]);
+  return &(v_may_defs->v_may_defs[index * 2 + 1]);
 }
 
 static inline tree *
@@ -232,6 +238,16 @@ get_vuse_op_ptr(vuse_optype vuses, unsigned int index)
     abort();
 #endif
   return &(vuses->vuses[index]);
+}
+
+static inline tree *
+get_v_must_def_op_ptr (v_must_def_optype v_must_defs, unsigned int index)
+{
+#ifdef ENABLE_CHECKING
+  if (index >= v_must_defs->num_v_must_defs)
+    abort();
+#endif
+  return &(v_must_defs->v_must_defs[index]);
 }
 
 static inline void

@@ -347,7 +347,8 @@ redirect_edges_and_update_ssa_graph (varray_type redirection_edges)
 	{
 	  unsigned int j;
 	  def_optype defs;
-	  vdef_optype vdefs;
+	  v_may_def_optype v_may_defs;
+	  v_must_def_optype v_must_defs;
 	  tree stmt = bsi_stmt (bsi);
 	  stmt_ann_t ann = stmt_ann (stmt);
 
@@ -363,11 +364,18 @@ redirect_edges_and_update_ssa_graph (varray_type redirection_edges)
 	      bitmap_set_bit (vars_to_rename, var_ann (op)->uid);
 	    }
 
-	  vdefs = VDEF_OPS (ann);
-	  for (j = 0; j < NUM_VDEFS (vdefs); j++)
+	  v_may_defs = STMT_V_MAY_DEF_OPS (stmt);
+	  for (j = 0; j < NUM_V_MAY_DEFS (v_may_defs); j++)
 	    {
-	      tree op = VDEF_RESULT (vdefs, j);
-	      bitmap_set_bit (virtuals_to_rename, var_ann (op)->uid);
+	      tree op = V_MAY_DEF_RESULT (v_may_defs, j);
+	      bitmap_set_bit (vars_to_rename, var_ann (op)->uid);
+	    }
+	    
+	  v_must_defs = STMT_V_MUST_DEF_OPS (stmt);
+	  for (j = 0; j < NUM_V_MUST_DEFS (v_must_defs); j++)
+	    {
+	      tree op = V_MUST_DEF_OP (v_must_defs, j);
+	      bitmap_set_bit (vars_to_rename, var_ann (op)->uid);
 	    }
 	}
 
@@ -2289,7 +2297,7 @@ static bool
 eliminate_redundant_computations (struct dom_walk_data *walk_data,
 				  tree stmt, stmt_ann_t ann)
 {
-  vdef_optype vdefs = VDEF_OPS (ann);
+  v_may_def_optype v_may_defs = V_MAY_DEF_OPS (ann);
   tree *expr_p, def = NULL_TREE;
   bool insert = true;
   tree cached_lhs;
@@ -2306,7 +2314,7 @@ eliminate_redundant_computations (struct dom_walk_data *walk_data,
       || ! def
       || TREE_CODE (def) != SSA_NAME
       || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (def)
-      || NUM_VDEFS (vdefs) != 0)
+      || NUM_V_MAY_DEFS (v_may_defs) != 0)
     insert = false;
 
   /* Check if the expression has been computed before.  */
@@ -2511,7 +2519,8 @@ record_equivalences_from_stmt (tree stmt,
 
       if (rhs)
 	{
-	  vdef_optype vdefs = VDEF_OPS (ann);
+	  v_may_def_optype v_may_defs = V_MAY_DEF_OPS (ann);
+	  v_must_def_optype v_must_defs = V_MUST_DEF_OPS (ann);
 
 	  /* Build a new statement with the RHS and LHS exchanged.  */
 	  new = build (MODIFY_EXPR, TREE_TYPE (stmt), rhs, lhs);
@@ -2523,14 +2532,22 @@ record_equivalences_from_stmt (tree stmt,
 	  /* Clear out the virtual operands on the new statement, we are
 	     going to set them explicitly below.  */
 	  remove_vuses (new);
-	  remove_vdefs (new);
+	  remove_v_may_defs (new);
+	  remove_v_must_defs (new);
 
 	  start_ssa_stmt_operands (new);
 	  /* For each VDEF on the original statement, we want to create a
-	     VUSE of the VDEF result on the new statement.  */
-	  for (j = 0; j < NUM_VDEFS (vdefs); j++)
+	     VUSE of the V_MAY_DEF result or V_MUST_DEF op on the new 
+	     statement.  */
+	  for (j = 0; j < NUM_V_MAY_DEFS (v_may_defs); j++)
 	    {
-	      tree op = VDEF_RESULT (vdefs, j);
+	      tree op = V_MAY_DEF_RESULT (v_may_defs, j);
+	      add_vuse (op, new);
+	    }
+	    
+	  for (j = 0; j < NUM_V_MUST_DEFS (v_must_defs); j++)
+	    {
+	      tree op = V_MUST_DEF_OP (v_must_defs, j);
 	      add_vuse (op, new);
 	    }
 
@@ -2565,7 +2582,6 @@ optimize_stmt (struct dom_walk_data *walk_data,
 {
   stmt_ann_t ann;
   tree stmt;
-  vdef_optype vdefs;
   bool may_optimize_p;
   bool may_have_exposed_new_symbols = false;
   struct dom_walk_block_data *bd
@@ -2575,7 +2591,6 @@ optimize_stmt (struct dom_walk_data *walk_data,
 
   get_stmt_operands (stmt);
   ann = stmt_ann (stmt);
-  vdefs = VDEF_OPS (ann);
   opt_stats.num_stmts++;
   may_have_exposed_new_symbols = false;
 
@@ -2585,7 +2600,7 @@ optimize_stmt (struct dom_walk_data *walk_data,
       print_generic_stmt (dump_file, stmt, TDF_SLIM);
     }
 
-  /* Const/copy propagate into USES, VUSES and the RHS of VDEFs.  */
+  /* Const/copy propagate into USES, VUSES and the RHS of V_MAY_DEFs.  */
   may_have_exposed_new_symbols = cprop_into_stmt (stmt, const_and_copies);
 
   /* If the statement has been modified with constant replacements,
@@ -3171,7 +3186,8 @@ static void
 register_definitions_for_stmt (stmt_ann_t ann, varray_type *block_defs_p)
 {
   def_optype defs;
-  vdef_optype vdefs;
+  v_may_def_optype v_may_defs;
+  v_must_def_optype v_must_defs;
   unsigned int i;
 
   defs = DEF_OPS (ann);
@@ -3185,12 +3201,21 @@ register_definitions_for_stmt (stmt_ann_t ann, varray_type *block_defs_p)
     }
 
   /* Register new virtual definitions made by the statement.  */
-  vdefs = VDEF_OPS (ann);
-  for (i = 0; i < NUM_VDEFS (vdefs); i++)
+  v_may_defs = V_MAY_DEF_OPS (ann);
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
     {
       /* FIXME: We shouldn't be registering new defs if the variable
 	 doesn't need to be renamed.  */
-      register_new_def (VDEF_RESULT (vdefs, i), block_defs_p);
+      register_new_def (V_MAY_DEF_RESULT (v_may_defs, i), block_defs_p);
+    }
+    
+  /* Register new virtual mustdefs made by the statement.  */
+  v_must_defs = V_MUST_DEF_OPS (ann);
+  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+    {
+      /* FIXME: We shouldn't be registering new defs if the variable
+	 doesn't need to be renamed.  */
+      register_new_def (V_MUST_DEF_OP (v_must_defs, i), block_defs_p);
     }
 }
 

@@ -697,8 +697,17 @@ variable @code{b} is completely modified with the contents of
 variable @code{a}.  Real definition are also known as @dfn{killing
 definitions}.  Similarly, the use of @code{a} reads all its bits.
 
-In contrast, virtual operands represent partial or ambiguous
-references to a variable.  For instance, given
+In contrast, virtual operands are used with variables that can have
+a partial or ambiguous reference. This includes structures, arrays,
+globals, and aliased variables. In these cases, we have two types of
+definitions. For globals, structures, and arrays, we can determine from
+a statement whether a variable of these types has a killing definition. 
+If the variable does, then the statement is marked as having a
+@dfn{must definition} of that variable. However, if a statement is only
+defining a part of the variable (ie. a field in a structure), or if we
+know that a statement might define the variable but we cannot say for sure,
+then we mark that statement as having a @dfn{may definition}.  For 
+instance, given
 
 @smallexample
 @{
@@ -730,8 +739,8 @@ operands, use the @option{-vops} option to @option{-fdump-tree}:
     p = &a;
   else
     p = &b;
-  # a = VDEF <a>
-  # b = VDEF <b>
+  # a = V_MAY_DEF <a>
+  # b = V_MAY_DEF <b>
   *p = 5;
 
   # VUSE <a>
@@ -740,21 +749,21 @@ operands, use the @option{-vops} option to @option{-fdump-tree}:
 @}
 @end smallexample
 
-Notice that @code{VDEF} operands have two copies of the referenced
+Notice that @code{V_MAY_DEF} operands have two copies of the referenced
 variable.  This indicates that this is not a killing definition of
 that variable.  In this case we refer to it as a @dfn{may definition}
 or @dfn{aliased store}.  The presence of the second copy of the
-variable in the @code{VDEF} operand will become important when the
+variable in the @code{V_MAY_DEF} operand will become important when the
 function is converted into SSA form.  This will be used to link all
 the non-killing definitions to prevent optimizations from making
 incorrect assumptions about them.
 
 Operands are collected by @file{tree-ssa-operands.c}.  They are stored
 inside each statement's annotation and can be accessed with
-@code{DEF_OPS}, @code{USE_OPS}, @code{VDEF_OPS} and @code{VUSE_OPS}.
-The following are all the accessor macros available to access USE
-operands.  To access all the other operand arrays, just change the
-name accordingly:
+@code{DEF_OPS}, @code{USE_OPS}, @code{V_MAY_DEF_OPS}, 
+@code{V_MUST_DEF_OPS} and @code{VUSE_OPS}. The following are all the 
+accessor macros available to access USE operands.  To access all the 
+other operand arrays, just change the name accordingly:
 
 @defmac USE_OPS (@var{ann})
 Returns the array of operands used by the statement with annotation
@@ -786,7 +795,8 @@ void
 print_ops (tree stmt)
 @{
   vuse_optype vuses;
-  vdef_optype vdefs;
+  v_may_def_optype v_may_defs;
+  v_must_def_optype v_must_defs;
   def_optype defs;
   use_optype uses;
   stmt_ann_t ann;
@@ -803,9 +813,13 @@ print_ops (tree stmt)
   for (i = 0; i < NUM_USES (uses); i++)
     print_generic_expr (stderr, USE_OP (uses, i), 0);
   
-  vdefs = VDEF_OPS (ann);
-  for (i = 0; i < NUM_VDEFS (vdefs); i++)
-    print_generic_expr (stderr, VDEF_OP (vdefs, i), 0);
+  v_may_defs = V_MAY_DEF_OPS (ann);
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
+    print_generic_expr (stderr, V_MAY_DEF_OP (v_may_defs, i), 0);
+
+  v_must_defs = V_MUST_DEF_OPS (ann);
+  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+    print_generic_expr (stderr, V_MUST_DEF_OP (v_must_defs, i), 0);
   
   vuses = VUSE_OPS (ann);
   for (i = 0; i < NUM_VUSES (vuses); i++)
@@ -1095,11 +1109,11 @@ foo (int i)
     p_6 = &b;
   # p_1 = PHI <p_4(1), p_6(2)>;
 
-  # a_7 = VDEF <a_3>;
-  # b_8 = VDEF <b_5>;
+  # a_7 = V_MAY_DEF <a_3>;
+  # b_8 = V_MAY_DEF <b_5>;
   *p_1 = 3;
 
-  # a_9 = VDEF <a_7>
+  # a_9 = V_MAY_DEF <a_7>
   # VUSE <b_8>
   a_9 = b_8 + 2;
 

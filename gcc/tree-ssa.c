@@ -314,23 +314,38 @@ verify_ssa (void)
 	  tree stmt;
 	  stmt_ann_t ann;
 	  unsigned int j;
-	  vdef_optype vdefs;
+	  v_may_def_optype v_may_defs;
+	  v_must_def_optype v_must_defs;
 	  def_optype defs;
 
 	  stmt = bsi_stmt (bsi);
 	  ann = stmt_ann (stmt);
 	  get_stmt_operands (stmt);
 
-	  vdefs = VDEF_OPS (ann);
-	  if (ann->makes_aliased_stores && NUM_VDEFS (vdefs) == 0)
-	    error ("Makes aliased stores, but no VDEFS");
-
-	  for (j = 0; j < NUM_VDEFS (vdefs); j++)
+	  v_may_defs = V_MAY_DEF_OPS (ann);
+	  if (ann->makes_aliased_stores && NUM_V_MAY_DEFS (v_may_defs) == 0)
+	    error ("Makes aliased stores, but no V_MAY_DEFS");
+	    
+	  for (j = 0; j < NUM_V_MAY_DEFS (v_may_defs); j++)
 	    {
-	      tree op = VDEF_RESULT (vdefs, j);
+	      tree op = V_MAY_DEF_RESULT (v_may_defs, j);
 	      if (is_gimple_reg (op))
 		{
 		  error ("Found a virtual definition for a GIMPLE register");
+		  debug_generic_stmt (op);
+		  debug_generic_stmt (stmt);
+		  err = true;
+		}
+	      err |= verify_def (bb, definition_block, op, stmt);
+	    }
+          
+	  v_must_defs = STMT_V_MUST_DEF_OPS (stmt);
+	  for (j = 0; j < NUM_V_MUST_DEFS (v_must_defs); j++)
+	    {
+	      tree op = V_MUST_DEF_OP (v_must_defs, j);
+	      if (is_gimple_reg (op))
+		{
+		  error ("Found a virtual must-def for a GIMPLE register");
 		  debug_generic_stmt (op);
 		  debug_generic_stmt (stmt);
 		  err = true;
@@ -380,14 +395,14 @@ verify_ssa (void)
 
       /* Now verify all the uses and vuses in every statement of the block. 
 
-	 Remember, the RHS of a VDEF is a use as well.  */
+	 Remember, the RHS of a V_MAY_DEF is a use as well.  */
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	{
 	  tree stmt = bsi_stmt (bsi);
 	  stmt_ann_t ann = stmt_ann (stmt);
 	  unsigned int j;
 	  vuse_optype vuses;
-	  vdef_optype vdefs;
+	  v_may_def_optype v_may_defs;
 	  use_optype uses;
 
 	  vuses = VUSE_OPS (ann); 
@@ -406,10 +421,10 @@ verify_ssa (void)
 				 op, stmt, false);
 	    }
 
-	  vdefs = VDEF_OPS (ann);
-	  for (j = 0; j < NUM_VDEFS (vdefs); j++)
+	  v_may_defs = V_MAY_DEF_OPS (ann);
+	  for (j = 0; j < NUM_V_MAY_DEFS (v_may_defs); j++)
 	    {
-	      tree op = VDEF_OP (vdefs, j);
+	      tree op = V_MAY_DEF_OP (v_may_defs, j);
 
 	      if (is_gimple_reg (op))
 		{
@@ -699,7 +714,7 @@ replace_immediate_uses (tree var, tree repl)
 {
   use_optype uses;
   vuse_optype vuses;
-  vdef_optype vdefs;
+  v_may_def_optype v_may_defs;
   int i, j, n;
   dataflow_t df;
   tree stmt;
@@ -742,10 +757,10 @@ replace_immediate_uses (tree var, tree repl)
 	    if (VUSE_OP (vuses, j) == var)
 	      propagate_value (VUSE_OP_PTR (vuses, j), repl);
 
-	  vdefs = VDEF_OPS (ann);
-	  for (j = 0; j < (int) NUM_VDEFS (vdefs); j++)
-	    if (VDEF_OP (vdefs, j) == var)
-	      propagate_value (VDEF_OP_PTR (vdefs, j), repl);
+	  v_may_defs = V_MAY_DEF_OPS (ann);
+	  for (j = 0; j < (int) NUM_V_MAY_DEFS (v_may_defs); j++)
+	    if (V_MAY_DEF_OP (v_may_defs, j) == var)
+	      propagate_value (V_MAY_DEF_OP_PTR (v_may_defs, j), repl);
 	}
 
       modify_stmt (stmt);

@@ -112,22 +112,42 @@ sra_elt_eq (const void *x, const void *y)
   return true;
 }
 
-/* Mark all the variables in VDEF operands for STMT for renaming.
+/* Mark all the variables in V_MAY_DEF operands for STMT for renaming.
    This becomes necessary when we modify all of a non-scalar.  */
 
 static void
-mark_all_vdefs (tree stmt)
+mark_all_v_may_defs (tree stmt)
 {
-  vdef_optype vdefs;
+  v_may_def_optype v_may_defs;
   size_t i, n;
 
   get_stmt_operands (stmt);
-  vdefs = VDEF_OPS (stmt_ann (stmt));
-  n = NUM_VDEFS (vdefs);
+  v_may_defs = V_MAY_DEF_OPS (stmt_ann (stmt));
+  n = NUM_V_MAY_DEFS (v_may_defs);
 
   for (i = 0; i < n; i++)
     {
-      tree sym = VDEF_RESULT (vdefs, i);
+      tree sym = V_MAY_DEF_RESULT (v_may_defs, i);
+      bitmap_set_bit (vars_to_rename, var_ann (sym)->uid);
+    }
+}
+
+/* Mark all the variables in V_MUST_DEF operands for STMT for renaming.
+   This becomes necessary when we modify all of a non-scalar.  */
+
+static void
+mark_all_v_must_defs (tree stmt)
+{
+  v_must_def_optype v_must_defs;
+  size_t i, n;
+
+  get_stmt_operands (stmt);
+  v_must_defs = V_MUST_DEF_OPS (stmt_ann (stmt));
+  n = NUM_V_MUST_DEFS (v_must_defs);
+
+  for (i = 0; i < n; i++)
+    {
+      tree sym = V_MUST_DEF_OP (v_must_defs, i);
       bitmap_set_bit (vars_to_rename, var_ann (sym)->uid);
     }
 }
@@ -685,7 +705,8 @@ create_scalar_copies (tree lhs, tree rhs, enum sra_copy_mode mode)
 
       /* Mark all the variables in VDEF operands for renaming, because
 	 the VA_ARG_EXPR will now be in a different statement.  */
-      mark_all_vdefs (stmt);
+      mark_all_v_may_defs (stmt);
+      mark_all_v_must_defs (stmt);
 
       /* Set RHS to be the new temporary TMP.  */
       rhs = tmp;
@@ -784,7 +805,8 @@ create_scalar_copies (tree lhs, tree rhs, enum sra_copy_mode mode)
 	  /* Otherwise, mark all the symbols in the VDEFs for the last
 	     scalarized statement just created.  Since all the statements
 	     introduce the same VDEFs, we only need to check the last one.  */
-	  mark_all_vdefs (tsi_stmt (tsi));
+	  mark_all_v_may_defs (tsi_stmt (tsi));
+	  mark_all_v_must_defs (tsi_stmt (tsi));
 	}
       else
 	abort ();
@@ -830,8 +852,9 @@ scalarize_structures (void)
 
 	/* If the statement has no virtual operands, then it doesn't make
 	   structure references that we care about.  */
-	if (NUM_VDEFS (VDEF_OPS (ann)) == 0
-	    && NUM_VUSES (VUSE_OPS (ann)) == 0)
+	if (NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann)) == 0
+	    && NUM_VUSES (VUSE_OPS (ann)) == 0
+	    && NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann)) == 0)
 	  continue;
 
 	/* Structure references may only appear in certain statements.  */
@@ -899,17 +922,17 @@ scalarize_modify_expr (block_stmt_iterator *si_p)
   if (is_sra_candidate_ref (lhs, false))
     {
       tree sym;
-      vdef_optype vdefs;
+      v_may_def_optype v_may_defs;
 
       scalarize_component_ref (stmt, &TREE_OPERAND (stmt, 0));
 
       /* Mark the LHS to be renamed, as we have just removed the previous
-	 VDEF for AGGREGATE.  The statement should have exactly one VDEF
-	 for variable AGGREGATE.  */
-      vdefs = STMT_VDEF_OPS (stmt);
-      if (NUM_VDEFS (vdefs) != 1)
+	 V_MAY_DEF for AGGREGATE.  The statement should have exactly one 
+	 V_MAY_DEF for variable AGGREGATE.  */
+      v_may_defs = STMT_V_MAY_DEF_OPS (stmt);
+      if (NUM_V_MAY_DEFS (v_may_defs) != 1)
 	abort ();
-      sym = SSA_NAME_VAR (VDEF_RESULT (vdefs, 0));
+      sym = SSA_NAME_VAR (V_MAY_DEF_RESULT (v_may_defs, 0));
       bitmap_set_bit (vars_to_rename, var_ann (sym)->uid);
     }
 

@@ -2061,15 +2061,27 @@ dump_vops (pretty_printer *buffer, tree stmt, int spc, int flags)
 {
   size_t i;
   stmt_ann_t ann = stmt_ann (stmt);
-  vdef_optype vdefs = VDEF_OPS (ann);
+  v_may_def_optype v_may_defs = V_MAY_DEF_OPS (ann);
+  v_must_def_optype v_must_defs = V_MUST_DEF_OPS (ann);
   vuse_optype vuses = VUSE_OPS (ann);
 
-  for (i = 0; i < NUM_VDEFS (vdefs); i++)
+  for (i = 0; i < NUM_V_MAY_DEFS (v_may_defs); i++)
     {
       pp_string (buffer, "#   ");
-      dump_generic_node (buffer, VDEF_RESULT (vdefs, i), spc + 2, flags, false);
-      pp_string (buffer, " = VDEF <");
-      dump_generic_node (buffer, VDEF_OP (vdefs, i), spc + 2, flags, false);
+      dump_generic_node (buffer, V_MAY_DEF_RESULT (v_may_defs, i), 
+                         spc + 2, flags, false);
+      pp_string (buffer, " = V_MAY_DEF <");
+      dump_generic_node (buffer, V_MAY_DEF_OP (v_may_defs, i), 
+                         spc + 2, flags, false);
+      pp_string (buffer, ">;");
+      newline_and_indent (buffer, spc);
+    }
+
+  for (i = 0; i < NUM_V_MUST_DEFS (v_must_defs); i++)
+    {
+      tree v_must_def = V_MUST_DEF_OP (v_must_defs, i);
+      pp_string (buffer, "#   V_MUST_DEF <");
+      dump_generic_node (buffer, v_must_def, spc + 2, flags, false);
       pp_string (buffer, ">;");
       newline_and_indent (buffer, spc);
     }

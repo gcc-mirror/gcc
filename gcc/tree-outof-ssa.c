@@ -1134,8 +1134,8 @@ coalesce_vars (var_map map, tree_live_info_p liveinfo)
    dependent on any virtual variable (via a VUSE) has a dependence added
    to the special partition defined by VIRTUAL_PARTITION.
 
-   Whenever a VDEF is seen, all expressions dependent this VIRTUAL_PARTITION
-   are removed from consideration.
+   Whenever a V_MAY_DEF is seen, all expressions dependent this 
+   VIRTUAL_PARTITION are removed from consideration.
 
    At the end of a basic block, all expression are removed from consideration
    in preparation for the next block.  
@@ -1171,7 +1171,7 @@ typedef struct temp_expr_table_d
   value_expr_p pending_dependence;
 } *temp_expr_table_p;
 
-/* Used to indicate a dependancy on VDEFs.  */
+/* Used to indicate a dependancy on V_MAY_DEFs.  */
 #define VIRTUAL_PARTITION(table)	(table->virtual_partition)
 
 static temp_expr_table_p new_temp_expr_table (var_map);
@@ -1437,8 +1437,12 @@ check_replaceable (temp_expr_table_p tab, tree stmt)
   if (DECL_HARD_REGISTER (SSA_NAME_VAR (def)))
     return false;
 
-  /* There must be no VDEFS.  */
-  if (NUM_VDEFS (VDEF_OPS (ann)) != 0)
+  /* There must be no V_MAY_DEFS.  */
+  if (NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann)) != 0)
+    return false;
+
+  /* There must be no V_MUST_DEFS.  */
+  if (NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann)) != 0)
     return false;
 
   /* Float expressions must go through memory if float-store is on.  */
@@ -1646,8 +1650,12 @@ find_replaceable_in_bb (temp_expr_table_p tab, basic_block bb)
 	  free_value_expr (tab, p);
 	}
 
-      /* A VDEF kills any expression using a virtual operand.  */
-      if (NUM_VDEFS (VDEF_OPS (ann)) > 0)
+      /* A V_MAY_DEF kills any expression using a virtual operand.  */
+      if (NUM_V_MAY_DEFS (V_MAY_DEF_OPS (ann)) > 0)
+        kill_virtual_exprs (tab, true);
+	
+      /* A V_MUST_DEF kills any expression using a virtual operand.  */
+      if (NUM_V_MUST_DEFS (V_MUST_DEF_OPS (ann)) > 0)
         kill_virtual_exprs (tab, true);
     }
 }

@@ -298,7 +298,8 @@ create_ssa_var_map (int flags)
   tree stmt;
   stmt_ann_t ann;
   vuse_optype vuses;
-  vdef_optype vdefs;
+  v_may_def_optype v_may_defs;
+  v_must_def_optype v_must_defs;
   use_optype uses;
   def_optype defs;
   unsigned x;
@@ -383,16 +384,26 @@ create_ssa_var_map (int flags)
 #endif
 	    }
 
-	  vdefs = VDEF_OPS (ann);
-	  for (x = 0; x < NUM_VDEFS (vdefs); x++)
+	  v_may_defs = V_MAY_DEF_OPS (ann);
+	  for (x = 0; x < NUM_V_MAY_DEFS (v_may_defs); x++)
 	    {
-	      tree var = VDEF_OP (vdefs, x);
+	      tree var = V_MAY_DEF_OP (v_may_defs, x);
 	      set_is_used (var);
 
 #if defined ENABLE_CHECKING
 	      SET_BIT (used_in_virtual_ops, var_ann (SSA_NAME_VAR (var))->uid);
 #endif
 	    }
+	    
+	  v_must_defs = V_MUST_DEF_OPS (ann);
+	  for (x = 0; x < NUM_V_MUST_DEFS (v_must_defs); x++)
+	    {
+	      tree var = V_MUST_DEF_OP (v_must_defs, x);
+	      set_is_used (var);
+#if defined ENABLE_CHECKING
+	      SET_BIT (used_in_virtual_ops, var_ann (SSA_NAME_VAR (var))->uid);
+#endif
+	    }	    
 	}
     }
 
