@@ -1,3 +1,8 @@
+2001-03-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (set_decl_assembler_name): Set DECL_ASSEMBLER_NAME for
+	variables that are TREE_PUBLIC, even if not TREE_STATIC.
+
 2001-03-20  DJ Delorie  <dj@redhat.com>
 
 	* Makefile.in (install-libgcc): Pass complete list of variables.
