@@ -52,5 +52,8 @@
 #define __off64_t off64_t
 #define __ssize_t ssize_t
 
+#undef _G_USING_THUNKS
+#define _G_USING_THUNKS 0
+
 #endif
 

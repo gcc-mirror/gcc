@@ -13,7 +13,15 @@ echo "running mknumeric_limits"
 case `uname` in
     CYGWIN*) 
 	LDFLAGS='-nodefaultlibs -lcygwin -lc -lkernel32 -lgcc' ;;
-    *) 
+    AIX*) 
+	case $CXX in
+	    *pthread*)
+		LDFLAGS='-nodefaultlibs -lgcc -L/usr/lib/threads -lpthreads -lc_r /usr/lib/libc.a' ;;
+	    *)
+		LDFLAGS='-nodefaultlibs -lgcc -lc' ;;
+	esac
+	;;
+    *)
 	LDFLAGS='-nodefaultlibs -lgcc -lc' ;;
 esac
 
