@@ -420,7 +420,7 @@ while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 16]"
+#define MIPS_VERSION "[AL 1.1, MM 17]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
