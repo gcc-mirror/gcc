@@ -64,7 +64,7 @@ DEF_PREDICTOR (PRED_BUILTIN_EXPECT, "__builtin_expect", PROB_VERY_LIKELY,
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Branch to basic block containing call marked by noreturn attribute.  */
-DEF_PREDICTOR (PRED_NORETURN, "noreturn call", PROB_ALWAYS,
+DEF_PREDICTOR (PRED_NORETURN, "noreturn call", HITRATE (99),
 	       PRED_FLAG_FIRST_MATCH)
 
 /* Loopback edge is taken.  */
@@ -86,15 +86,15 @@ DEF_PREDICTOR (PRED_LOOP_PRECONDITIONING, "loop preconditioning", PROB_VERY_LIKE
 DEF_PREDICTOR (PRED_LOOP_HEADER, "loop header", HITRATE (64), 0)
 
 /* Pointers are usually not NULL.  */
-DEF_PREDICTOR (PRED_POINTER, "pointer", HITRATE (83), 0)
+DEF_PREDICTOR (PRED_POINTER, "pointer", HITRATE (81), 0)
 
 /* NE is probable, EQ not etc...  */
-DEF_PREDICTOR (PRED_OPCODE_POSITIVE, "opcode values positive", HITRATE (78), 0)
-DEF_PREDICTOR (PRED_OPCODE_NONEQUAL, "opcode values nonequal", HITRATE (70), 0)
+DEF_PREDICTOR (PRED_OPCODE_POSITIVE, "opcode values positive", HITRATE (79), 0)
+DEF_PREDICTOR (PRED_OPCODE_NONEQUAL, "opcode values nonequal", HITRATE (71), 0)
 DEF_PREDICTOR (PRED_FPOPCODE, "fp_opcode", HITRATE (90), 0)
 
 /* Branch guarding call is probably taken.  */
 DEF_PREDICTOR (PRED_CALL, "call", HITRATE (70), 0)
 
 /* Branch causing function to terminate is probably not taken.  */
-DEF_PREDICTOR (PRED_ERROR_RETURN, "error return", PROB_LIKELY, 0)
+DEF_PREDICTOR (PRED_ERROR_RETURN, "error return", HITRATE (52), 0)
