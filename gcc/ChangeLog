@@ -1,3 +1,9 @@
+2001-12-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* doc/extend.texi (Deprecated Features): Deprecate implicit
+	typename. Document that named return and initializer lists are now
+	removed.
+
 2001-12-11  Roger Sayle <roger@eyesopen.com>
 
 	* except.c (reachable_next_level): Handle ERT_UNKNOWN to avoid

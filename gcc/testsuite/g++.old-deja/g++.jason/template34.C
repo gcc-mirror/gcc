@@ -14,7 +14,7 @@ int gen_cmp(const T& a, const T& b) {
 }
 
 template<class T>
-Set<T>::Compare Set<T>::cmp1 = &gen_cmp;
+typename Set<T>::Compare Set<T>::cmp1 = &gen_cmp;
 
 template<class T>
 int (*Set<T>::cmp2)(const T&, const T&) = &gen_cmp;

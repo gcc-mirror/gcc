@@ -1,5 +1,5 @@
 // Build don't link:
-// Special g++ Options:
+// Special g++ Options: -Wno-deprecated
 
 template <class T>
 struct B {
@@ -10,6 +10,6 @@ template <class T>
 struct S : public B<T>
 {
   struct I {
-    void f(X x);
+    void f(X x);   // WARNING - implicit typename
   };
 };

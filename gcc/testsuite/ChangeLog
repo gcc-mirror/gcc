@@ -1,3 +1,24 @@
+2001-12-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.brendan/crash56.C: Adjust implicit typename.
+	* g++.old-deja/g++.jason/2371.C: Likewise.
+	* g++.old-deja/g++.jason/template33.C: Likewise.
+	* g++.old-deja/g++.jason/template34.C: Likewise.
+	* g++.old-deja/g++.jason/template36.C: Likewise.
+	* g++.old-deja/g++.oliva/typename1.C: Likewise.
+	* g++.old-deja/g++.oliva/typename2.C: Likewise.
+	* g++.old-deja/g++.other/typename1.C: Likewise.
+	* g++.old-deja/g++.pt/inherit2.C: Likewise.
+	* g++.old-deja/g++.pt/nontype5.C: Likewise.
+	* g++.old-deja/g++.pt/typename11.C: Likewise.
+	* g++.old-deja/g++.pt/typename14.C: Likewise.
+	* g++.old-deja/g++.pt/typename16.C: Likewise.
+	* g++.old-deja/g++.pt/typename3.C: Likewise.
+	* g++.old-deja/g++.pt/typename4.C: Likewise.
+	* g++.old-deja/g++.pt/typename5.C: Likewise.
+	* g++.old-deja/g++.pt/typename7.C: Likewise.
+	* g++.old-deja/g++.robertl/eb9.C: Likewise.
+
 2001-12-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/other/linkage1.C: New test.

@@ -15,7 +15,8 @@ public:
 
 
 template <class Key>
-d0om_Hashmap<Key>::value_type* d0om_Hashmap<Key>::iterator::operator-> () const
+typename d0om_Hashmap<Key>::value_type*
+d0om_Hashmap<Key>::iterator::operator-> () const
 {
   return 0;
 }
