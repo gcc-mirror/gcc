@@ -1,0 +1,26 @@
+# Build libunwind for ELF with the GNU linker.
+
+# Use unwind-dw2-fde-glibc
+LIBUNWIND = $(srcdir)/unwind-dw2.c $(srcdir)/unwind-dw2-fde-glibc.c
+LIBUNWINDDEP = unwind.inc unwind-dw2-fde.h unwind-dw2-fde.c
+
+SHLIBUNWIND_SOVERSION = 7
+SHLIBUNWIND_SONAME = @shlib_so_name@.so.$(SHLIBUNWIND_SOVERSION)
+SHLIBUNWIND_NAME = @shlib_dir@@shlib_so_name@.so.$(SHLIBUNWIND_SOVERSION)
+
+SHLIBUNWIND_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared \
+	-nodefaultlibs -Wl,-h,$(SHLIBUNWIND_SONAME) \
+	-Wl,-z,text -Wl,-z,defs \
+	-o $(SHLIBUNWIND_NAME) @multilib_flags@ $(SHLIB_OBJS) -lc && \
+	rm -f $(SHLIB_SOLINK) && \
+	$(LN_S) $(SHLIBUNWIND_NAME) $(SHLIB_SOLINK)
+
+# $(slibdir) double quoted to protect it from expansion while building
+# libgcc.mk.  We want this delayed until actual install time.
+SHLIBUNWIND_INSTALL = \
+	$$(SHELL) $$(srcdir)/mkinstalldirs $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL); \
+	$(INSTALL_DATA) $(SHLIBUNWIND_NAME) \
+	  $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIBUNWIND_SONAME); \
+	rm -f $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK); \
+	$(LN_S) $(SHLIBUNWIND_SONAME) \
+	  $$(DESTDIR)$$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK)
