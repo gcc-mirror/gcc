@@ -2353,7 +2353,7 @@ subst_constants (loc, insn, map, memonly)
 /* Show that register modified no longer contain known constants.  We are
    called from note_stores with parts of the new insn.  */
 
-void
+static void
 mark_stores (dest, x, data)
      rtx dest;
      rtx x ATTRIBUTE_UNUSED;
