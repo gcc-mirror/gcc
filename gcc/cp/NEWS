@@ -63,6 +63,7 @@
      + Member class templates.
      + Template template parameters.
      + Template friends.
+     + Template static member functions.
 
 * Exception handling support has been significantly improved and is on by
   default.  This can result in significant runtime overhead.  You can turn
