@@ -25,10 +25,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <cassert>
 #include <string>
 #include <iostream>
 #include <ext/array_allocator.h>
+#include <testsuite_hooks.h>
 
 typedef char char_type;
 typedef std::char_traits<char_type> traits_type;
@@ -38,6 +38,8 @@ array_type extern_array;
 
 void test01() 
 {
+  bool test __attribute__((unused)) = true;
+
   using std::basic_string;
   typedef __gnu_cxx::array_allocator<char_type, array_type> allocator_type;
   typedef basic_string<char_type, traits_type, allocator_type> string_type;
@@ -52,11 +54,11 @@ void test01()
     }
   catch(std::bad_alloc& obj)
     {
-      assert(false);
+      VERIFY( false );
     }
   catch(...)
     {
-      assert(false);
+      VERIFY( false );
     }
 
   s.append(1, 'c');

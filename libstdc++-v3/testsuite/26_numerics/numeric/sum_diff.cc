@@ -1,4 +1,4 @@
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,7 +21,7 @@
 
 #include <algorithm>
 #include <numeric>
-#include <cassert>
+#include <testsuite_hooks.h>
 
 int A[] = {1, 4, 9, 16, 25, 36, 49, 64, 81, 100};
 int B[] = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19};
@@ -30,13 +30,15 @@ const int N = sizeof(A) / sizeof(int);
 void
 test01()
 {
-    int D[N];
+  bool test __attribute__((unused)) = true;
 
-    std::adjacent_difference(A, A + N, D);
-    assert(std::equal(D, D + N, B));
+  int D[N];
 
-    std::partial_sum(D, D + N, D);
-    assert(std::equal(D, D + N, A));
+  std::adjacent_difference(A, A + N, D);
+  VERIFY( std::equal(D, D + N, B) );
+  
+  std::partial_sum(D, D + N, D);
+  VERIFY( std::equal(D, D + N, A) );
 }
 
 int
