@@ -145,15 +145,22 @@ public abstract class AbstractList extends AbstractCollection implements List
     return -1;
   }
 
+  /**
+   * Return an Iterator over this List. This implementation calls
+   * listIterator(0).
+   *
+   * @return an Iterator over this List
+   */
   public ListIterator listIterator()
   {
-    return new AbstractListItr(0);
+    return listIterator(0);
   }
 
   public ListIterator listIterator(int index)
   {
     if (index < 0 || index > size())
-      throw new IndexOutOfBoundsException();
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size());
 
     return new AbstractListItr(index);
   }
@@ -193,10 +200,10 @@ public abstract class AbstractList extends AbstractCollection implements List
     throw new UnsupportedOperationException();
   }
 
-  public List subList(final int fromIndex, final int toIndex)
+  public List subList(int fromIndex, int toIndex)
   {
     if (fromIndex > toIndex)
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException(fromIndex + " > " + toIndex);
     if (fromIndex < 0 || toIndex > size())
       throw new IndexOutOfBoundsException();
 
@@ -208,6 +215,7 @@ public abstract class AbstractList extends AbstractCollection implements List
     private int knownMod = modCount;
     private int position;
     private int lastReturned = -1;
+    private int size = size();
 
     AbstractListItr(int start_pos)
     {
@@ -223,7 +231,7 @@ public abstract class AbstractList extends AbstractCollection implements List
     public boolean hasNext()
     {
       checkMod();
-      return position < size();
+      return position < size;
     }
 
     public boolean hasPrevious()
@@ -235,7 +243,7 @@ public abstract class AbstractList extends AbstractCollection implements List
     public Object next()
     {
       checkMod();
-      if (position < size())
+      if (position < size)
 	{
 	  lastReturned = position++;
 	  return get(lastReturned);
@@ -280,7 +288,7 @@ public abstract class AbstractList extends AbstractCollection implements List
 	  throw new IllegalStateException();
 	}
       AbstractList.this.remove(lastReturned);
-      knownMod = modCount;
+      knownMod++;
       position = lastReturned;
       lastReturned = -1;
     }
@@ -298,7 +306,7 @@ public abstract class AbstractList extends AbstractCollection implements List
       checkMod();
       AbstractList.this.add(position++, o);
       lastReturned = -1;
-      knownMod = modCount;
+      knownMod++;
     }
   }				// AbstractList.Iterator
 
@@ -311,7 +319,9 @@ public abstract class AbstractList extends AbstractCollection implements List
     public SubList(AbstractList backing, int fromIndex, int toIndex)
     {
       backingList = backing;
-      upMod();
+      // FIXME: The `this' prefixes in this class are a workaround for a
+      // gcj bug. They should be removed later.
+      this.modCount = backingList.modCount;
       offset = fromIndex;
       size = toIndex - fromIndex;
     }
@@ -332,17 +342,6 @@ public abstract class AbstractList extends AbstractCollection implements List
     }
 
     /**
-     * This method is called after every method that causes a structural
-     * modification to the backing list. It updates the local modCount field
-     * to match that of the backing list.
-     * Note that since this method is private, it will be inlined.
-     */
-    private void upMod()
-    {
-      this.modCount = backingList.modCount;
-    }
-
-    /**
      * This method checks that a value is between 0 and size (inclusive). If
      * it is not, an exception is thrown.
      * Note that since this method is private, it will be inlined.
@@ -352,7 +351,8 @@ public abstract class AbstractList extends AbstractCollection implements List
     private void checkBoundsInclusive(int index)
     {
       if (index < 0 || index > size)
-	throw new IndexOutOfBoundsException();
+	throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                            size);
     }
 
     /**
@@ -365,7 +365,8 @@ public abstract class AbstractList extends AbstractCollection implements List
     private void checkBoundsExclusive(int index)
     {
       if (index < 0 || index >= size)
-	throw new IndexOutOfBoundsException();
+	throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                            size);
     }
 
     public int size()
@@ -379,7 +380,6 @@ public abstract class AbstractList extends AbstractCollection implements List
       checkMod();
       checkBoundsExclusive(index);
       o = backingList.set(index + offset, o);
-      upMod();
       return o;
     }
 
@@ -395,7 +395,7 @@ public abstract class AbstractList extends AbstractCollection implements List
       checkMod();
       checkBoundsInclusive(index);
       backingList.add(index + offset, o);
-      upMod();
+      this.modCount++;
       size++;
     }
 
@@ -404,7 +404,7 @@ public abstract class AbstractList extends AbstractCollection implements List
       checkMod();
       checkBoundsExclusive(index);
       Object o = backingList.remove(index + offset);
-      upMod();
+      this.modCount++;
       size--;
       return o;
     }
@@ -417,19 +417,122 @@ public abstract class AbstractList extends AbstractCollection implements List
 
       // this call will catch the toIndex < fromIndex condition
       backingList.removeRange(offset + fromIndex, offset + toIndex);
-      upMod();
+      this.modCount = backingList.modCount;
       size -= toIndex - fromIndex;
     }
-
+    
     public boolean addAll(int index, Collection c)
     {
       checkMod();
       checkBoundsInclusive(index);
-      int s = backingList.size();
+      int csize = c.size();
       boolean result = backingList.addAll(offset + index, c);
-      upMod();
-      size += backingList.size() - s;
+      this.modCount = backingList.modCount;
+      size += csize;
       return result;
     }
-  }				// AbstractList.SubList
+    
+    public Iterator iterator()
+    {
+      return listIterator(0);
+    }
+
+    public ListIterator listIterator(final int index)
+    {      
+      checkMod();
+      checkBoundsInclusive(index);
+      
+      return new ListIterator() 
+      {
+        ListIterator i = backingList.listIterator(index + offset);
+        int position = index;
+        
+        public boolean hasNext()
+	{
+          checkMod();
+          return position < size;
+        }
+        
+        public boolean hasPrevious()
+	{
+          checkMod();
+          return position > 0;
+        }
+        
+        public Object next()
+	{
+          if (position < size)
+	    {
+              Object o = i.next();
+              position++;
+              return o;
+            }
+	  else
+            throw new NoSuchElementException();
+	}
+        
+        public Object previous()
+	{
+          if (position > 0)
+	    {
+              Object o = i.previous();
+              position--;
+              return o;
+            }
+	  else
+            throw new NoSuchElementException();
+        }
+        
+        public int nextIndex()
+	{
+          return offset + i.nextIndex();
+        }
+        
+        public int previousIndex()
+	{
+          return offset + i.previousIndex();
+        }
+
+        public void remove()
+	{
+          i.remove();
+	  SubList.this.modCount++;
+          size--;
+          position = nextIndex();
+        }
+        
+        public void set(Object o)
+	{
+          i.set(o);
+        }
+        
+        public void add(Object o)
+	{
+          i.add(o);
+	  SubList.this.modCount++;
+          size++;
+          position++;
+        }
+
+        // Here is the reason why the various modCount fields are mostly
+        // ignored in this wrapper listIterator.
+        // IF the backing listIterator is failfast, then the following holds:
+        //   Using any other method on this list will call a corresponding
+        //   method on the backing list *after* the backing listIterator
+        //   is created, which will in turn cause a ConcurrentModException
+        //   when this listIterator comes to use the backing one. So it is
+        //   implicitly failfast.
+        // If the backing listIterator is NOT failfast, then the whole of
+        //   this list isn't failfast, because the modCount field of the
+        //   backing list is not valid. It would still be *possible* to
+        //   make the iterator failfast wrt modifications of the sublist
+        //   only, but somewhat pointless when the list can be changed under
+        //   us.
+        // Either way, no explicit handling of modCount is needed.
+        // However modCount++ must be executed in add and remove, and size
+        // must also be updated in these two methods, since they do not go
+        // through the corresponding methods of the subList.
+      };
+    }
+  }  // AbstractList.SubList
 }

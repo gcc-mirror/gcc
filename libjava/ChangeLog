@@ -1,3 +1,29 @@
+2000-11-02  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/AbstractList.java: Throw messages with 
+	IndexOutOfBoundsExceptions.
+	 (listIterator()): Call listIterator(0).
+	(size): New field. Initialize to size().
+	(hasNext): Test position against size, not size().
+	(remove): Increment knownMod by one instead of resetting it from 
+	modCount.
+	(add): Ditto.
+	(SubList.upMod): Removed.
+	(SubList.set): Don't call upMod() or update knownMod.
+	(SubList.add(int,Object)): Increment modCount instead of caling upMod().
+	(SubList.remove): Ditto.
+	(SubList.addAll): Don't call backingList.size(). Increment size from 
+	c.size().
+	(SubList.iterator): New method. Call listIterator(0).
+	(SubList.listIterator): New method. Restore code to return an anonymous
+	listIterator implementation (with some changes).
+	* java/util/AbstractSequentialList.java: Throw messages with 
+	IndexOutOfBoundsExceptions.
+	(addAll): Add a specnote.
+	* java/util/ArrayList.java (removeRange): Get the math right.
+	(addAll): Increment modCount _before_ creating iterator.
+	* java/util/LinkedList.java: Rewritten, mostly.
+
 2000-11-01  Tom Tromey  <tromey@cygnus.com>
 
 	* scripts/encodings.pl: Added `ASCII' alias.

@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -30,16 +30,17 @@ import java.io.Serializable;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 
 // TO DO:
 // ~ Doc comment for the class.
 // ~ Doc comments for the non-list methods.
-// ~ Some commenting on the Backing API and other general implementation notes.
+// ~ other general implementation notes.
 
 /**
  * Linked list implementation of the List interface.
  */
-public class LinkedList extends AbstractSequentialList 
+public class LinkedList extends AbstractSequentialList
   implements Serializable, Cloneable
 {
   static final long serialVersionUID = 876323262645176354L;
@@ -49,7 +50,8 @@ public class LinkedList extends AbstractSequentialList
    * previous field) of the list. The data field is null. If the list is empty,
    * both the head and the tail point to ends itself.
    */
-  transient Entry ends = new Entry();
+  transient Entry first;
+  transient Entry last;
 
   /**
    * The current length of the list.
@@ -59,260 +61,86 @@ public class LinkedList extends AbstractSequentialList
   /**
    * Class to represent an entry in the list. Holds a single element.
    */
-  private static class Entry {
-
-    /**
-     * The list element.
-     */
-    Object data = null;
-
-    /**
-     * The next entry in the list. If this is the last entry in the list, the
-     * ends field of the list is held here.
-     */
+  private static class Entry
+  {
+    Object data;
     Entry next;
-
-    /**
-     * The previous entry in the list. If this is the first entry in the list,
-     * the ends field of the list is held here.
-     */
     Entry previous;
-
-    /**
-     * Create an entry with given data and linkage.
-     */
-    Entry(Object d, Entry n, Entry p) {
-      data = d;
-      next = n;
-      previous = p;
-    }
-
-    /**
-     * Create an entry with no data and linking to itself, for use as the ends
-     * field of the list.
-     */
-    Entry() {
-      next = previous = this;
-    }
-
-    /**
-     * Remove this entry.
-     */
-    Object remove() {
-      previous.next = next;
-      next.previous = previous;
-      return data;
+    
+    Entry(Object data)
+    {
+      this.data = data;
     }
   }
-
-  private static interface Backing {
-    void checkMod(int known);
-    void upMod();
-    void incSize(int by);
-    void decSize(int by);
-  }
-
-  private final Backing back = new Backing() {
-    public void checkMod(int known) {
-      if (known != modCount) {
-	throw new ConcurrentModificationException();
-      }
-    }
-    public void upMod() {
-      modCount++;
-    }
-    public void incSize(int by) {
-      size += by;
-    }
-    public void decSize(int by) {
-      size -= by;
-    }
-  };
-
-  /** A ListIterator over the list. This class keeps track of its
-   * position in the list, the size of the list, and the two list
-   * entries it is between.  This enables it to be used identically
-   * for both the list itself and a sublist of the list.
-   */
-  private static class Iter implements ListIterator {
-
-    /**
-     * The index of the element that will be returned by next().
-     */
-    int pos;
-
-    /**
-     * The size of the backing list.
-     */
-    int size;
-
-    /**
-     * The entry containing the element that will be returned by next().
-     */
-    Entry next;
-
-    /**
-     * The entry containing the element that will be returned by previous().
-     */
-    Entry previous;
-
-    /**
-     * The entry that will be affected by remove() or set().
-     */
-    Entry recent;
-
-    /**
-     * The known value of the modCount of the backing list.
-     */
-    int knownMod;
-
-    private final Backing b;
-
-    /**
-     * Create a new Iter starting at a given Entry within the list, at a given
-     * position, in a list of given size.
-     *
-     * @param index the index to begin iteration.
-     * @exception IndexOutOfBoundsException if index < 0 || index > size.
-     */
-    Iter(Backing backing, Entry n, int index, int s, int modCount) {
-      b = backing;
-      pos = index;
-      size = s;
-      next = n;
-      previous = n.previous;
-      knownMod = modCount;
-    }
-
-    public int nextIndex() {
-      b.checkMod(knownMod);
-      return pos;
-    }
-
-    public int previousIndex() {
-      b.checkMod(knownMod);
-      return pos - 1;
-    }
-
-    public boolean hasNext() {
-      b.checkMod(knownMod);
-      return pos < size;
-    }
-
-    public boolean hasPrevious() {
-      b.checkMod(knownMod);
-      return pos > 0;
-    }
-
-    public Object next() {
-      b.checkMod(knownMod);
-      if (pos >= size) {
-	throw new NoSuchElementException();
-      } else {
-	pos++;
-	recent = previous = next;
-	next = recent.next;
-	return recent.data;
-      }
-    }
-
-    public Object previous() {
-      b.checkMod(knownMod);
-      if (pos <= 0) {
-	throw new NoSuchElementException();
-      } else {
-	pos--;
-	recent = next = previous;
-	previous = recent.previous;
-	return recent.data;
-      }
-    }
-
-    public void remove() {
-      b.checkMod(knownMod);
-      if (recent == null) {
-	throw new IllegalStateException();
-      }
-
-      // Adjust the position to before the removed element
-      if (recent == previous) pos--;
-
-      // Could use recent.remove() but this way is quicker, and also correctly
-      // fixes next and previous.
-      next = recent.previous.next = recent.next;
-      previous = recent.next.previous = recent.previous;
-      size--;
-      b.decSize(1);
-      knownMod++;
-      b.upMod();
-      recent = null;
-    }
-
-    public void add(Object o) {
-      b.checkMod(knownMod);
-      previous.next = next.previous = new Entry(o, next, previous);
-
-      // New for 1.2RC1 - the semantics changed so that the iterator is
-      // positioned *after* the new element.
-      previous = previous.next;
-      pos++;
-
-      size++;
-      b.incSize(1);
-      knownMod++;
-      b.upMod();
-      recent = null;
-    }
-
-    public void set(Object o) {
-      b.checkMod(knownMod);
-      if (recent == null) {
-	throw new IllegalStateException();
-      }
-      recent.data = o;
-    }
-  }
-
+  
   /**
    * Obtain the Entry at a given position in a list. This method of course
    * takes linear time, but it is intelligent enough to take the shorter of the
    * paths to get to the Entry required. This implies that the first or last
    * entry in the list is obtained in constant time, which is a very desirable
    * property.
-   * For speed and flexibility in which ranges are valid, range checking is not
-   * done in this method, and if n is outside the range -1 <= n <= size, the
-   * result will be wrong (but no exception will be thrown).
-   * Note that you *can* obtain entries at position -1 and size, which are
-   * equal to prehead and posttail respectively.
-   * This method is static so that it can also be used in subList.
+   * For speed and flexibility, range checking is not done in this method:
+   * Incorrect values will be returned if (n < 0) or (n >= size).
    *
    * @param n the number of the entry to get.
-   * @param size the size of the list to get the entry in.
-   * @param head the entry before the first element of the list (usually ends).
-   * @param tail the entry after the last element of the list (usually ends).
    */
-  static Entry getEntry(int n, int size, Entry head, Entry tail) {
-
-    // n less than size/2, iterate from start
-    if (n < size >> 1) {
-      while (n-- >= 0) {
-	head = head.next;
+  private Entry getEntry(int n)
+  {
+    Entry e;
+    if (n < size / 2)
+      {
+        e = first;
+	// n less than size/2, iterate from start
+	while (n-- > 0)
+	  {
+	    e = e.next;
+	  }
       }
-      return head;
-
-    // n greater than size/2, iterate from end
-    } else {
-      while (++n <= size) {
-	tail = tail.previous;
+    else
+      {
+        e = last;      
+	// n greater than size/2, iterate from end
+	while (++n < size)
+	  {
+	    e = e.previous;
+	  }
       }
-      return tail;
-    }
+    return e;
+  }
+  
+  /** Remove an entry from the list. This will adjust size and deal with
+   *  `first' and  `last' appropriatly. It does not effect modCount, that is 
+   *  the responsibility of the caller. */
+  private void removeEntry(Entry e)
+  {
+    if (size == 1)
+      first = last = null;
+    else
+      {
+	if (e == first)
+	  {
+	    first = e.next;
+	    e.next.previous = null;
+	  }
+	else if (e == last)
+	  {
+	    last = e.previous;
+	    e.previous.next = null;
+	  }
+	else
+	  {
+	    e.next.previous = e.previous;	
+	    e.previous.next = e.next;
+	  }
+      }
+    size--;
   }
 
   /**
    * Create an empty linked list.
    */
-  public LinkedList() {
+  public LinkedList()
+  {
     super();
   }
 
@@ -322,7 +150,8 @@ public class LinkedList extends AbstractSequentialList
    *
    * @param c the collection to populate this list from.
    */
-  public LinkedList(Collection c) {
+  public LinkedList(Collection c)
+  {
     super();
     // Note: addAll could be made slightly faster, but not enough so to justify
     // re-implementing it from scratch. It is just a matter of a relatively
@@ -330,82 +159,277 @@ public class LinkedList extends AbstractSequentialList
     addAll(c);
   }
 
-  public Object getFirst() {
-    if (size == 0) {
+  public Object getFirst()
+  {
+    if (size == 0)
       throw new NoSuchElementException();
-    }
-    return ends.next.data;
+    return first.data;
   }
 
-  public Object getLast() {
-    if (size == 0) {
+  public Object getLast()
+  {
+    if (size == 0)
       throw new NoSuchElementException();
-    }
-    return ends.previous.data;
+    return last.data;
   }
 
-  public Object removeFirst() {
-    if (size == 0) {
+  public Object removeFirst()
+  {
+    if (size == 0)
       throw new NoSuchElementException();
-    }
     size--;
     modCount++;
-    return ends.next.remove();
+    Object r = first.data;
+    
+    if (first.next != null)
+      first.next.previous = null;
+    return r;
   }
 
-  public Object removeLast() {
-    if (size == 0) {
+  public Object removeLast()
+  {
+    if (size == 0)
       throw new NoSuchElementException();
-    }
     size--;
     modCount++;
-    return ends.previous.remove();
+    Object r = last.data;
+    
+    if (last.previous != null)
+      last.previous.next = null;    
+    return r;
   }
 
-  public void addFirst(Object o) {
-    ends.next.previous = ends.next = new Entry(o, ends.next, ends);
-    size++;
+  public void addFirst(Object o)
+  {
     modCount++;
-  }
-
-  public void addLast(Object o) {
-    ends.previous.next = ends.previous = new Entry(o, ends, ends.previous);
+    Entry e = new Entry(o);
+    
+    if (size == 0)
+      first = last = e;
+    else
+      {
+	e.next = first;
+        first.previous = e;
+	first = e;
+      }    
     size++;
-    modCount++;
   }
 
-  /**
-   * Obtain the number of elements currently in this list.
-   *
-   * @returns the number of elements currently in this list.
-   */
-  public int size() {
+  public void addLast(Object o)
+  {
+    modCount++;
+    addLastEntry(new Entry(o));
+  }
+  
+  private void addLastEntry(Entry e)
+  {
+    if (size == 0)
+      first = last = e;
+    else
+      {
+	e.previous = last;
+        last.next = e;
+	last = e;
+      }
+    size++;
+  }
+
+  public boolean contains(Object o)
+  {
+    Entry e = first;
+    while (e != null)
+      {
+        if (e.data == null ? o == null : o.equals(e.data))
+	  return true;
+        e = e.next;
+      }
+    return false;
+  }
+
+  public int size()
+  {
     return size;
   }
-
-  /**
-   * Remove a range of elements from this list.
-   *
-   * @param fromIndex the index, inclusive, to remove from.
-   * @param toIndex the index, exclusive, to remove to.
-   * @exception IndexOutOfBoundsException if fromIndex > toIndex || fromIndex <
-   *   0 || toIndex > size().
-   */
-  // Note: normally removeRange is provided to allow efficient ways to
-  // implement clear() on subLists. However, in this case clear on subLists
-  // works anyway, so this implementation is included just for completeness
-  // and because subclasses might try to use it.
-  protected void removeRange(int fromIndex, int toIndex) {
-    subList(fromIndex, toIndex).clear();
+  
+  public boolean add(Object o)
+  {
+    modCount++;
+    addLastEntry(new Entry(o));
+    return true;
+  }
+  
+  public boolean remove(Object o)
+  {
+    modCount++;
+    Entry e = first;
+    while (e != null)
+      {
+        if (e.data == null ? o == null : o.equals(e.data))
+	  {
+	    removeEntry(e);
+	    return true;
+	  }
+        e = e.next;
+      }
+    return false;
   }
 
-  /**
-   * Clear the list.
-   */
-  public void clear() {
-    ends.next = ends.previous = ends;
+  public boolean addAll(Collection c)
+  {
+    return addAll(size, c);
+  }
+  
+  public boolean addAll(int index, Collection c)
+  {
+    if (index < 0 || index > size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size);
     modCount++;
+    int csize = c.size();
+
+    if (csize == 0)
+      return false;
+
+    Iterator itr = c.iterator();
+    
+    // Get the entries just before and after index. If index is at the start
+    // of the list, BEFORE is null. If index is at the end of thelist, AFTER is
+    // null. If the list is empty, both are null.
+    Entry after = null;
+    Entry before = null;    
+    if (index != size)
+      {
+	after = getEntry(index);
+	before = after.previous;
+      }
+    else
+      before = last;
+      
+    // Create the first new entry. We do not yet set the link from `before'
+    // to the first entry, in order to deal with the case where (c == this). 
+    // [Actually, we don't have to handle this case to fufill the 
+    // contract for addAll(), but Sun's implementation appears to.]
+    Entry e = new Entry(itr.next());
+    e.previous = before;
+    Entry prev = e;
+    Entry firstNew = e;
+    
+    // Create and link all the remaining entries.
+    for (int pos = 1; pos < csize; pos++)
+      {
+        e = new Entry(itr.next());
+	e.previous = prev;	
+	prev.next = e;
+	prev = e;
+      }
+    // Fix up the links between the last new entry and the following entry.
+    prev.next = after;
+    if (after != null)
+      after.previous = e;
+    else
+      last = e;
+    
+    if (before != null)
+      before.next = firstNew;
+    else
+      first = firstNew;
+    
+    size += csize;
+    return true;
+  }
+
+  public void clear()
+  {
+    modCount++;
+    first = null;
+    last = null;
     size = 0;
+  }
+
+  public Object get(int index)
+  {
+    if (index < 0 || index >= size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size);
+    Entry e = getEntry(index);
+    return e.data;
+  }
+  
+  public Object set(int index, Object o)
+  {
+    if (index < 0 || index >= size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size);
+    Entry e = getEntry(index);
+    Object old = e.data;
+    e.data = o;
+    return old;
+  }
+
+  public void add(int index, Object o)
+  {
+    if (index < 0 || index > size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size);
+    modCount++;
+    addEntry(index, new Entry(o));    
+  }
+  
+  private void addEntry(int index, Entry e)
+  {
+    if (index < size)
+      {
+	Entry after = getEntry(index);
+	e.next = after;
+	e.previous = after.previous;
+	if (after.previous == null)
+	  first = e;
+	else
+	  after.previous.next = e;
+	after.previous = e;
+	size++;        
+      }
+    else
+      addLastEntry(e);
+  }
+  
+  public Object remove(int index)
+  {
+    if (index < 0 || index >= size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size);
+    modCount++;
+    Entry e = getEntry(index);
+    removeEntry(e);
+    return e.data;
+  }
+  
+  public int indexOf(Object o)
+  {
+    int index = 0;
+    Entry e = first;
+    while (e != null)
+      {
+        if (e.data == null ? o == null : o.equals(e.data))
+	  return index;
+	++index;
+        e = e.next;
+      }
+    return -1;
+  }
+  
+  public int lastIndexOf(Object o)
+  {
+    int index = size - 1;
+    Entry e = last;
+    while (e != null)
+      {
+        if (e.data == null ? o == null : o.equals(e.data))
+	  return index;
+	--index;
+        e = e.previous;
+      }
+    return -1;  
   }
 
   /**
@@ -417,120 +441,12 @@ public class LinkedList extends AbstractSequentialList
    *   next(), or size() to be initially positioned at the end of the list.
    * @exception IndexOutOfBoundsException if index < 0 || index > size().
    */
-  public ListIterator listIterator(int index) {
-
-    // Check bounds
-    if (index < 0 || index > size) {
-      throw new IndexOutOfBoundsException();
-    }
-
-    return new Iter(back, getEntry(index, size, ends, ends), 
-		    index, size, modCount);
-  }
-
-  /**
-   * Obtain a List view of a subsection of this list, from fromIndex
-   * (inclusive) to toIndex (exclusive). The returned list is modifiable in
-   * every respect. Changes to the returned list are reflected in this list. If
-   * this list is structurally modified is any way other than through the
-   * returned list, any subsequent operations on the returned list will result
-   * in a ConcurrentModificationException (that is, the returned list is
-   * fail-fast).
-   *
-   * @param fromIndex the index that the returned list should start from
-   *    (inclusive).
-   * @param toIndex the index that the returned list should go to (exclusive).
-   * @returns a List backed by a subsection of this list.
-   * @exception IndexOutOfBoundsException if fromIndex < 0 || toIndex > size()
-   *   || fromIndex > toIndex.
-   */
-  public List subList(int fromIndex, int toIndex) {
-
-    // Check bounds
-    if (fromIndex > toIndex || fromIndex < 0 || toIndex > size) {
-      throw new IndexOutOfBoundsException();
-    }
-
-    return new SubLinkedList(back, modCount,
-			     getEntry(fromIndex - 1, size, ends, ends),
-			     getEntry(toIndex, size, ends, ends),
-			     toIndex - fromIndex);
-  }
-
-  private static class SubLinkedList extends AbstractSequentialList {
-
-    Entry head; // entry before the beginning
-    Entry tail; // entry after the end
-    int size;
-    private final Backing b;
-
-    private final Backing back = new Backing() {
-      public void checkMod(int known) {
-	if (known != modCount) {
-	  throw new ConcurrentModificationException();
-	}
-      }
-      public void upMod() {
-	modCount++;
-      }
-      public void incSize(int by) {
-	size += by;
-      }
-      public void decSize(int by) {
-	size -= by;
-      }
-    };
-
-    SubLinkedList(Backing backing, int knownMod, Entry h, Entry t, int s) {
-      this.modCount = knownMod;
-      b = backing;
-      head = h;
-      tail = t;
-      size = s;
-    }
-
-    public int size() {
-      b.checkMod(this.modCount);
-      return size;
-    }
-
-    public ListIterator listIterator(int index) {
-      b.checkMod(this.modCount);
-
-      // Check bounds
-      if (index < 0 || index > size) {
-	throw new IndexOutOfBoundsException();
-      }
-
-      return new Iter(back, getEntry(index, size, head, tail), 
-		      index, size, modCount);
-    }
-
-    public void clear() {
-      b.checkMod(this.modCount);
-      head.next = tail;
-      tail.previous = head;
-      size = 0;
-      b.decSize(size);
-      modCount++;
-      b.upMod();
-    }
-
-    // No removeRange because this class cannot be publically subclassed.
-
-    public List subList(int fromIndex, int toIndex) {
-      b.checkMod(this.modCount);
-
-      // Check bounds
-      if (fromIndex > toIndex || fromIndex < 0 || toIndex > size) {
-	throw new IndexOutOfBoundsException();
-      }
-
-      return new SubLinkedList(back, this.modCount,
-			       getEntry(fromIndex - 1, size, head, tail),
-			       getEntry(toIndex, size, head, tail),
-			       toIndex - fromIndex);
-    }
+  public ListIterator listIterator(int index)
+  {
+    if (index < 0 || index > size)
+      throw new IndexOutOfBoundsException("Index: " + index + ", Size:" + 
+                                          size);
+    return new LinkedListItr(index);
   }
 
   /**
@@ -538,21 +454,47 @@ public class LinkedList extends AbstractSequentialList
    * @return an object of the same class as this object, containing the
    * same elements in the same order.
    */
-  public Object clone() 
+  public Object clone()
   {
-    LinkedList copy;
+    LinkedList copy = null;
     try
       {
 	copy = (LinkedList) super.clone();
       }
     catch (CloneNotSupportedException ex)
       {
-	throw new InternalError(ex.getMessage());
       }
     copy.size = 0;
-    copy.ends = new Entry();
     copy.addAll(this);
     return copy;
+  }
+  
+  public Object[] toArray()
+  {
+    Object[] array = new Object[size];
+    Entry e = first;
+    for (int i = 0; i < size; i++)
+      {
+        array[i] = e.data;
+        e = e.next;
+      }
+    return array;
+  }
+  
+  public Object[] toArray(Object[] array)
+  {
+    if (array.length < size)
+      array = (Object[]) Array.newInstance(array.getClass().getComponentType(), 
+        				   size);
+    else if (array.length > size)
+      array[size] = null;
+    Entry e = first;
+    for (int i = 0; i < size; i++)
+      {
+        array[i] = e.data;
+        e = e.next;
+      }
+    return array;  
   }
 
   /**
@@ -560,12 +502,12 @@ public class LinkedList extends AbstractSequentialList
    * @serialdata the size of the list (int), followed by all the elements
    * (Object) in proper order.
    */
-  private void writeObject(ObjectOutputStream s)
-    throws IOException
+  private void writeObject(ObjectOutputStream s) throws IOException
   {
     s.writeInt(size);
-    for (Iterator i = iterator(); i.hasNext(); )
-      s.writeObject(i.next());
+    Iterator itr = iterator();
+    for (int i = 0; i < size; i++)
+      s.writeObject(itr.next());
   }
 
   /**
@@ -577,8 +519,133 @@ public class LinkedList extends AbstractSequentialList
     throws IOException, ClassNotFoundException
   {
     int serialSize = s.readInt();
-    ends = new Entry();
-    for (int i=0; i< serialSize; i++)
-      addLast(s.readObject());
+    for (int i = 0; i < serialSize; i++)
+      addLastEntry(new Entry(s.readObject()));
   }
+  
+  /** A ListIterator over the list. This class keeps track of its
+   * position in the list, the size of the list, and the two list
+   * entries it is between.  This enables it to be used identically
+   * for both the list itself and a sublist of the list.
+   */
+  class LinkedListItr implements ListIterator
+  {
+    int knownMod;
+    Entry next;         // entry that will be returned by next().
+    Entry previous;     // entry that will be returned by previous().
+    Entry lastReturned; // entry that will be affected by remove() or set().
+    int position;       // index of `next'.
+
+    /**
+     * Create a new Iter starting at a given Entry within the list, at a given
+     * position, in a list of given size.
+     */
+    LinkedListItr(int index)
+    {      
+      if (index == size)
+        {
+          next = null;
+	  previous = last;
+	}
+      else
+        {
+          next = getEntry(index);
+	  previous = next.previous;
+	}
+      position = index;
+      knownMod = modCount;
+    }
+
+    private void checkMod()
+    {
+      if (knownMod != modCount)
+	throw new ConcurrentModificationException();
+    }
+
+    public int nextIndex()
+    {
+      checkMod();
+      return position;
+    }
+
+    public int previousIndex()
+    {
+      checkMod();
+      return position - 1;
+    }
+
+    public boolean hasNext()
+    {
+      checkMod();
+      return (next != null);
+    }
+
+    public boolean hasPrevious()
+    {
+      checkMod();
+      return (previous != null);
+    }
+
+    public Object next()
+    {
+      checkMod();
+      if (next == null)
+	throw new NoSuchElementException();
+      position++;
+      lastReturned = previous = next;
+      next = lastReturned.next;
+      return lastReturned.data;
+    }
+
+    public Object previous()
+    {
+      checkMod();
+      if (previous == null)
+	throw new NoSuchElementException();
+      position--;
+      lastReturned = next = previous;
+      previous = lastReturned.previous;
+      return lastReturned.data;
+    }
+
+    public void remove()
+    {
+      checkMod();
+      if (lastReturned == null)
+	throw new IllegalStateException();
+
+      // Adjust the position to before the removed element, if the element
+      // being removed is behind the cursor.
+      if (lastReturned == previous)
+	position--;
+
+      next = lastReturned.next;
+      previous = lastReturned.previous;
+      // Because the list is being manipulated directly, there's no need to 
+      // touch either modCount or knownMod here.
+      removeEntry(lastReturned);
+      
+      lastReturned = null;
+    }
+
+    public void add(Object o)
+    {
+      checkMod();
+      // Because the list is being manipulated directly, there's no need to 
+      // touch either modCount or knownMod here.
+      Entry e = new Entry(o);
+      addEntry(position, e);
+      previous = e;
+      position++;
+      lastReturned = null;
+    }
+
+    public void set(Object o)
+    {
+      checkMod();
+      if (lastReturned == null)
+	throw new IllegalStateException();
+      lastReturned.data = o;
+    }
+  }  // class LinkedListItr  
 }
