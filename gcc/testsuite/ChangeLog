@@ -1,3 +1,7 @@
+2004-07-29  Richard Henderson  <rth@redhat.com>
+
+	* g++.dg/template/sizeof8.C: Don't assume 32bit pointers.
+
 2004-07-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/inline1.C: New test.
