@@ -1,3 +1,9 @@
+2004-03-05  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	PR middle-end/14203
+	* function.c (uninitialized_vars_warning): Use DECL_RTL_SET_P
+	instead of testing whether DECL_RTL is not NULL.
+
 2004-03-05  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* rtl.h (mem_expr_equal_p): Function prototype added.

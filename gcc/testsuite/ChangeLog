@@ -1,3 +1,8 @@
+2004-03-05  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/14203
+	* g++.dg/warn/Wunused-6.C: New test case.
+
 2004-03-05  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.dg/20040305-1.c: New test.
