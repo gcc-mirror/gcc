@@ -130,9 +130,9 @@ extern int target_flags;
 /* No structure field wants to be aligned rounder than this.  */
 #define BIGGEST_FIELD_ALIGNMENT (TARGET_VAXC_ALIGNMENT ? 8 : 32)
 
-/* Define this if move instructions will actually fail to work
+/* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
-/* #define STRICT_ALIGNMENT */
+#define STRICT_ALIGNMENT 0
 
 /* Standard register usage.  */
 
