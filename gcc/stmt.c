@@ -3264,7 +3264,8 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
   if (warn_unused)
     for (decl = vars; decl; decl = TREE_CHAIN (decl))
       if (! TREE_USED (decl) && TREE_CODE (decl) == VAR_DECL
-	  && ! DECL_IN_SYSTEM_HEADER (decl))
+	  && ! DECL_IN_SYSTEM_HEADER (decl)
+	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)) 
 	warning_with_decl (decl, "unused variable `%s'");
 
   if (thisblock->exit_label)
