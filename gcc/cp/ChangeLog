@@ -1,3 +1,8 @@
+2001-07-26  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c (tsubst_template_parms): Call maybe_fold_nontype_arg and
+	tsubst_expr for default template arguments.
+
 2001-07-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* spew.c (yylex): Only copy the token's lineno, if it is

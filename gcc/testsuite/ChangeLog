@@ -1,3 +1,7 @@
+2001-07-26  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.old-deja/g++.pt/defarg14.C: New test.
+
 2001-07-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/lineno5.C: New test.

@@ -5377,8 +5377,9 @@ tsubst_template_parms (parms, args, complain)
 	    TREE_VALUE (TREE_VEC_ELT (TREE_VALUE (parms), i));
 	  
 	  TREE_VEC_ELT (new_vec, i)
-	    = build_tree_list (tsubst (default_value, args, complain,
-				       NULL_TREE), 
+	    = build_tree_list (maybe_fold_nontype_arg (
+				  tsubst_expr (default_value, args, complain,
+					       NULL_TREE)), 
 			       tsubst (parm_decl, args, complain,
 				       NULL_TREE));
 	}
