@@ -113,8 +113,8 @@ static rtx expand_builtin_strspn (tree, rtx, enum machine_mode);
 static rtx expand_builtin_strcspn (tree, rtx, enum machine_mode);
 static rtx expand_builtin_memcpy (tree, rtx, enum machine_mode);
 static rtx expand_builtin_mempcpy (tree, rtx, enum machine_mode, int);
-static rtx expand_builtin_memmove (tree, rtx, enum machine_mode);
-static rtx expand_builtin_bcopy (tree);
+static rtx expand_builtin_memmove (tree, tree, rtx, enum machine_mode);
+static rtx expand_builtin_bcopy (tree, tree);
 static rtx expand_builtin_strcpy (tree, rtx, enum machine_mode);
 static rtx expand_builtin_stpcpy (tree, rtx, enum machine_mode);
 static rtx builtin_strncpy_read_str (void *, HOST_WIDE_INT, enum machine_mode);
@@ -163,7 +163,7 @@ static tree fold_builtin_round (tree);
 static tree fold_builtin_bitop (tree);
 static tree fold_builtin_memcpy (tree);
 static tree fold_builtin_mempcpy (tree);
-static tree fold_builtin_memmove (tree);
+static tree fold_builtin_memmove (tree, tree);
 static tree fold_builtin_strchr (tree);
 static tree fold_builtin_memcmp (tree);
 static tree fold_builtin_strcmp (tree);
@@ -2735,7 +2735,8 @@ expand_builtin_mempcpy (tree arglist, rtx target, enum machine_mode mode,
    if we failed the caller should emit a normal call.  */
 
 static rtx
-expand_builtin_memmove (tree arglist, rtx target, enum machine_mode mode)
+expand_builtin_memmove (tree arglist, tree type, rtx target,
+			enum machine_mode mode)
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -2749,26 +2750,14 @@ expand_builtin_memmove (tree arglist, rtx target, enum machine_mode mode)
       unsigned int src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
       unsigned int dest_align
 	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+      tree result = fold_builtin_memmove (arglist, type);
+
+      if (result)
+	expand_expr (result, target, mode, EXPAND_NORMAL);
 
       /* If DEST is not a pointer type, call the normal function.  */
       if (dest_align == 0)
 	return 0;
-
-      /* If the LEN parameter is zero, return DEST.  */
-      if (integer_zerop (len))
-	{
-	  /* Evaluate and ignore SRC in case it has side-effects.  */
-	  expand_expr (src, const0_rtx, VOIDmode, EXPAND_NORMAL);
-	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
-	}
-
-      /* If SRC and DEST are the same (and not volatile), return DEST.  */
-      if (operand_equal_p (src, dest, 0))
-	{
-	  /* Evaluate and ignore LEN in case it has side-effects.  */
-	  expand_expr (len, const0_rtx, VOIDmode, EXPAND_NORMAL);
-	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
-	}
 
       /* If either SRC is not a pointer type, don't do this
          operation in-line.  */
@@ -2805,7 +2794,7 @@ expand_builtin_memmove (tree arglist, rtx target, enum machine_mode mode)
    if we failed the caller should emit a normal call.  */
 
 static rtx
-expand_builtin_bcopy (tree arglist)
+expand_builtin_bcopy (tree arglist, tree type)
 {
   tree src, dest, size, newarglist;
 
@@ -2826,7 +2815,7 @@ expand_builtin_bcopy (tree arglist)
   newarglist = tree_cons (NULL_TREE, src, newarglist);
   newarglist = tree_cons (NULL_TREE, dest, newarglist);
 
-  return expand_builtin_memmove (newarglist, const0_rtx, VOIDmode);
+  return expand_builtin_memmove (newarglist, type, const0_rtx, VOIDmode);
 }
 
 #ifndef HAVE_movstr
@@ -5491,13 +5480,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     case BUILT_IN_MEMMOVE:
-      target = expand_builtin_memmove (arglist, target, mode);
+      target = expand_builtin_memmove (arglist, TREE_TYPE (exp), target, mode);
       if (target)
 	return target;
       break;
 
     case BUILT_IN_BCOPY:
-      target = expand_builtin_bcopy (arglist);
+      target = expand_builtin_bcopy (arglist, TREE_TYPE (exp));
       if (target)
 	return target;
       break;
@@ -7049,9 +7038,8 @@ fold_builtin_mempcpy (tree exp)
    NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_memmove (tree exp)
+fold_builtin_memmove (tree arglist, tree type)
 {
-  tree arglist = TREE_OPERAND (exp, 1);
   tree dest, src, len;
 
   if (!validate_arglist (arglist,
@@ -7064,11 +7052,11 @@ fold_builtin_memmove (tree exp)
 
   /* If the LEN parameter is zero, return DEST.  */
   if (integer_zerop (len))
-    return omit_one_operand (TREE_TYPE (exp), dest, src);
+    return omit_one_operand (type, dest, src);
 
   /* If SRC and DEST are the same (and not volatile), return DEST.  */
   if (operand_equal_p (src, dest, 0))
-    return omit_one_operand (TREE_TYPE (exp), dest, len);
+    return omit_one_operand (type, dest, len);
 
   return 0;
 }
@@ -8014,7 +8002,7 @@ fold_builtin_1 (tree exp, bool ignore)
       return fold_builtin_mempcpy (exp);
 
     case BUILT_IN_MEMMOVE:
-      return fold_builtin_memmove (exp);
+      return fold_builtin_memmove (arglist, type);
 
     case BUILT_IN_SIGNBIT:
     case BUILT_IN_SIGNBITF:

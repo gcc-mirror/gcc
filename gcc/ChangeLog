@@ -1,3 +1,11 @@
+2004-10-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_memmove): Delete duplicate code
+	and accept a tree type for the result.
+	(expand_builtin_bcopy): Accept a tree type for the result.
+	(fold_builtin_memmove): Accept an arglist and tree type for
+	the result.
+
 2004-10-05  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_dump_pool): Remove return value.
