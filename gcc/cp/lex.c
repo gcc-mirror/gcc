@@ -392,7 +392,10 @@ cxx_init (void)
 
   INIT_STATEMENT_CODES (stmt_codes);
 
-  input_filename = "<internal>";
+  /* We cannot just assign to input_filename because it has already
+     been initialized and will be used later as an N_BINCL for stabs+
+     debugging.  */
+  push_srcloc ("<internal>", 0);
 
   init_reswords ();
   init_tree ();
@@ -429,12 +432,16 @@ cxx_init (void)
   interface_unknown = 1;
 
   if (c_common_init () == false)
-    return false;
+    {
+      pop_srcloc();
+      return false;
+    }
 
   init_cp_pragma ();
 
   init_repo (main_input_filename);
 
+  pop_srcloc();
   return true;
 }
 
