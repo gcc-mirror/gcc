@@ -5649,7 +5649,7 @@ tsubst_copy (t, args, in_decl)
 	     should find it again here during instantiation.  */
 	my_friendly_abort (0);
       }
-      break;
+      return t;
 
     case FIELD_DECL:
       if (DECL_CONTEXT (t))

@@ -1,3 +1,9 @@
+1998-08-13  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst_copy): Hush warning.
+
+	* rtti.c (get_tinfo_fn): Also set DECL_IGNORED_P.
+
 1998-08-12  Mark Mitchell  <mark@markmitchell.com>
 
 	* pt.c (print_template_context): Don't abort when instantiating a
