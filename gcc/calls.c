@@ -2280,7 +2280,8 @@ expand_call (exp, target, ignore)
     {
       /* When the stack adjustment is pending,
 	 we get better code by combining the adjustments.  */
-      if (pending_stack_adjust && !is_const)
+      if (pending_stack_adjust && !is_const
+	  && !inhibit_defer_pop)
 	{
 	  args_size.constant = (unadjusted_args_size
 			        + ((pending_stack_adjust + args_size.constant
