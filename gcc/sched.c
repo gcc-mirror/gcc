@@ -2043,9 +2043,9 @@ sched_analyze_insn (x, insn)
     for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
       {
 	if (GET_CODE (XEXP (link, 0)) == CLOBBER)
-	  sched_analyze_1 (XEXP (XEXP (link, 0), 0), insn);
+	  sched_analyze_1 (XEXP (link, 0), insn);
 	else
-	  sched_analyze_2 (XEXP (XEXP (link, 0), 0), insn);
+	  sched_analyze_2 (XEXP (link, 0), insn);
       }
 
   /* After reload, it is possible for an instruction to have a REG_DEAD note
