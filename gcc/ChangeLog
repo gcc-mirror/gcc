@@ -1,3 +1,29 @@
+2003-10-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* ia64.md (UNSPEC_SETF_EXP,UNSPEC_FR_SQRT_RECIP_APPROX): New constants.
+	(*sqrt_approx): New instruction pattern for approximate square roots.
+	(*setf_exp_xf): New instruction pattern for exponentiation.
+	(*maddxf4_alts_truncsf): New instruction pattern for truncation.
+	(sqrtsf2_internal_thr): New define_and_split implementing
+	throughput-optimized inline calculation of SFmode square root.
+	(sqrtdf2_internal_thr): Likewise for DFmode.
+	(sqrtxf2_internal_thr): Likewise for XFmode.
+	(sqrtsf2, sqrtdf2, sqrtxf2): New expanders to choose between
+	latency- and throughput-optimized square root algorithms.
+	* ia64.h (MASK_INLINE_SQRT_LAT, MASK_INLINE_SQRT_THR,
+	TARGET_INLINE_SQRT_LAT, TARGET_INLINE_SQRT_THR, TARGET_INLINE_SQRT):
+	New macros.
+	(TARGET_SWITCHES): Add -minline-sqrt-min-latency and
+	-minline-sqrt-max-throughput.
+	* ia64.c (ia64_override_options): If both -minline-sqrt-min-latency
+	and -minline-sqrt-max-throughput are given, notify the user
+	that both options cannot be used simultaneously.
+	If -minline-sqrt-min-latency is given, notify the user that
+	this mode is not yet implemented.
+	(rtx_needs_barrier): Reformat initial comment to obey
+	72-character width limit.  Support UNSPEC_SETF_EXP and
+	UNSPEC_FR_SQRT_RECIP_APPROX.
+
 2003-10-29  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.md (movdf_softfloat64): Allow dummy ctr,ctr
@@ -12,7 +38,7 @@
 2003-10-28  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_output_epilogue): When using a frame pointer, don't emit
-	an extra stack adjustment insn if the stack pointer is already 
+	an extra stack adjustment insn if the stack pointer is already
 	pointing at the right place.
 	(use_return_insn): Allow a return insn to be used when we have a
 	frame pointer if the stack pointer is in the right place.
