@@ -1,3 +1,8 @@
+Thu Oct 14 16:27:50 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (propagate_block): Add call-clobbered registers to
+	significant too.
+
 Thu Oct 14 13:54:25 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* toplev.c (main): Don't complain about options for other languages.
