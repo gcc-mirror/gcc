@@ -1,3 +1,7 @@
+1998-09-17  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* exception.cc (__cplus_type_matcher): realign some code.
+
 1998-09-16  Mark Mitchell  <mark@markmitchell.com>
 
 	* Make-lang.in (tinfo.o): Use CXXFLAGS when compiling.

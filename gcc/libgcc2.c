@@ -3058,6 +3058,7 @@ __empty ()
 /* Include definitions of EH context and table layout */
 
 #include "eh-common.h"
+#include <stdio.h>
 
 /* This is a safeguard for dynamic handler chain. */
 
@@ -3364,10 +3365,15 @@ __eh_rtime_match (void *rtime)
 
   info = *(__get_eh_info ());
   matcher = ((__eh_info *)info)->match_function;
-  if (!matcher)
-    perror ("No runtime type matcher available");
+#ifndef inhibit_libc
+  if (! matcher)
+    {
+      fprintf (stderr, "Internal Compiler Bug: No runtime type matcher.");
+      return 0;
+    }
+#endif
   ret = (*matcher) (info, rtime, (void *)0);
-  return ((int)ret);
+  return (ret != NULL);
 }
 
 /* This value identifies the place from which an exception is being
