@@ -7804,27 +7804,34 @@ arm_expand_prologue ()
 		  
 	     If neither of these places is available, we abort (for now).
 
-	     Note - setting RTX_FRAME_RELATED_P on these insns breaks
-	     the dwarf2 parsing code in various bits of gcc.  This ought
-	     to be fixed sometime, but until then the flag is suppressed.
-	     [Use gcc/testsuite/gcc.c-torture/execute/921215-1.c with
-	     "-O3 -g" to test this].  */
+	     Note - we only need to tell the dwarf2 backend about the SP
+	     adjustment in the second variant; the static chain register
+	     doesn't need to be unwound, as it doesn't contain a value
+	     inherited from the caller.  */
 
 	  if (regs_ever_live[3] == 0)
 	    {
 	      insn = gen_rtx_REG (SImode, 3);
 	      insn = gen_rtx_SET (SImode, insn, ip_rtx);
 	      insn = emit_insn (insn);
-	      /* RTX_FRAME_RELATED_P (insn) = 1; */
 	    }
 	  else if (current_function_pretend_args_size == 0)
 	    {
+	      rtx dwarf;
 	      insn = gen_rtx_PRE_DEC (SImode, stack_pointer_rtx);
 	      insn = gen_rtx_MEM (SImode, insn);
 	      insn = gen_rtx_SET (VOIDmode, insn, ip_rtx);
 	      insn = emit_insn (insn);
-	      /* RTX_FRAME_RELATED_P (insn) = 1; */
+
 	      fp_offset = 4;
+
+	      /* Just tell the dwarf backend that we adjusted SP.  */
+	      dwarf = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+				   gen_rtx_PLUS (SImode, stack_pointer_rtx,
+						 GEN_INT (-fp_offset)));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+						    dwarf, REG_NOTES (insn));
 	    }
 	  else
 	    /* FIXME - the way to handle this situation is to allow
@@ -7931,7 +7938,6 @@ arm_expand_prologue ()
 	      insn = gen_rtx_REG (SImode, 3);
 	      insn = gen_rtx_SET (SImode, ip_rtx, insn);
 	      insn = emit_insn (insn);
-	      /* RTX_FRAME_RELATED_P (insn) = 1; */
 	    }
 	  else /* if (current_function_pretend_args_size == 0) */
 	    {
@@ -7939,7 +7945,6 @@ arm_expand_prologue ()
 	      insn = gen_rtx_MEM (SImode, insn);
 	      insn = gen_rtx_SET (SImode, ip_rtx, insn);
 	      insn = emit_insn (insn);
-	      /* RTX_FRAME_RELATED_P (insn) = 1; */
 	    }
 	}
     }
