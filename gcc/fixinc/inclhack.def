@@ -301,6 +301,14 @@ fix = {
  */
 fix = {
     hackname = AAB_svr4_replace_byteorder;
+    mach     = "*-*-sysv4*";
+    mach     = "i[34567]86-*-sysv5*";
+    mach     = "i[34567]86-*-sco3.2v5*";
+    mach     = "i[34567]86-*-udk*";
+    mach     = "i[34567]86-*-solaris2.[0-4]";
+    mach     = "powerpcle-*-solaris2.[0-4]";
+    mach     = "sparc-*-solaris2.[0-4]";
+    mach     = "i[34567]86-sequent-ptx*";
     files    = sys/byteorder.h;
     replace  = '#ifndef _SYS_BYTEORDER_H
 \#define _SYS_BYTEORDER_H

@@ -342,7 +342,16 @@ tSCC zAab_Svr4_Replace_ByteorderList[] =
 /*
  *  Machine/OS name selection pattern
  */
-#define apzAab_Svr4_Replace_ByteorderMachs (const char**)NULL
+tSCC* apzAab_Svr4_Replace_ByteorderMachs[] = {
+        "*-*-sysv4*",
+        "i[34567]86-*-sysv5*",
+        "i[34567]86-*-sco3.2v5*",
+        "i[34567]86-*-udk*",
+        "i[34567]86-*-solaris2.[0-4]",
+        "powerpcle-*-solaris2.[0-4]",
+        "sparc-*-solaris2.[0-4]",
+        "i[34567]86-sequent-ptx*",
+        (const char*)NULL };
 #define AAB_SVR4_REPLACE_BYTEORDER_TEST_CT  0
 #define aAab_Svr4_Replace_ByteorderTests   (tTestDesc*)NULL
 
@@ -6410,7 +6419,7 @@ static const char* apzX11_SprintfPatch[] = {
  *  List of all fixes
  */
 #define REGEX_COUNT          177
-#define MACH_LIST_SIZE_LIMIT 261
+#define MACH_LIST_SIZE_LIMIT 334
 #define FIX_COUNT            163
 
 /*
