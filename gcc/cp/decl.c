@@ -9553,8 +9553,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		      error ("destructor cannot be static member function");
 		    if (quals)
 		      {
-			error ("destructors cannot be declared `const' or `volatile'");
-			return void_type_node;
+			cp_error ("destructors may not be `%s'",
+				  IDENTIFIER_POINTER (TREE_VALUE (quals)));
+			quals = NULL_TREE;
 		      }
 		    if (decl_context == FIELD)
 		      {
@@ -9579,8 +9580,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		      }
 		    if (quals)
 		      {
-			error ("constructors cannot be declared `const' or `volatile'");
-			return void_type_node;
+			cp_error ("constructors may not be `%s'",
+				  IDENTIFIER_POINTER (TREE_VALUE (quals)));
+			quals = NULL_TREE;
  		      }
 		    {
 		      RID_BIT_TYPE tmp_bits;
@@ -9638,24 +9640,22 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 	    arg_types = grokparms (inner_parms, funcdecl_p ? funcdef_flag : 0);
 
-	    if (declarator)
+	    if (declarator && flags == DTOR_FLAG)
 	      {
-		/* Get past destructors, etc.
-		   We know we have one because FLAGS will be non-zero.
-
-		   Complain about improper parameter lists here.  */
+		/* A destructor declared in the body of a class will
+		   be represented as a BIT_NOT_EXPR.  But, we just
+		   want the underlying IDENTIFIER.  */
 		if (TREE_CODE (declarator) == BIT_NOT_EXPR)
+		  declarator = TREE_OPERAND (declarator, 0);
+		
+		if (strict_prototype == 0 && arg_types == NULL_TREE)
+		  arg_types = void_list_node;
+		else if (arg_types == NULL_TREE
+			 || arg_types != void_list_node)
 		  {
-		    declarator = TREE_OPERAND (declarator, 0);
-
-		    if (strict_prototype == 0 && arg_types == NULL_TREE)
-		      arg_types = void_list_node;
-		    else if (arg_types == NULL_TREE
-			     || arg_types != void_list_node)
-		      {
-			error ("destructors cannot be specified with parameters");
-			arg_types = void_list_node;
-		      }
+		    cp_error ("destructors may not have parameters");
+		    arg_types = void_list_node;
+		    last_function_parms = NULL_TREE;
 		  }
 	      }
 

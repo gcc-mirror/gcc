@@ -1464,9 +1464,12 @@ check_classfn (ctype, function)
 		  fndecl = OVL_CURRENT (fndecls);
 		  /* The DECL_ASSEMBLER_NAME for a TEMPLATE_DECL is
 		     not mangled, so the check below does not work
-		     correctly in that case.  */
+		     correctly in that case.  Since mangled destructor names
+		     do not include the type of the arguments, we
+		     can't use this short-cut for them, either.  */
 		  if (TREE_CODE (function) != TEMPLATE_DECL
 		      && TREE_CODE (fndecl) != TEMPLATE_DECL
+		      && !DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (function))
 		      && (DECL_ASSEMBLER_NAME (function) 
 			  == DECL_ASSEMBLER_NAME (fndecl)))
 		    return fndecl;
