@@ -6324,7 +6324,7 @@ expand_ptrmemfunc_cst (cst, delta, idx, pfn, delta2)
   if (!DECL_VIRTUAL_P (fn))
     {
       if (!flag_new_abi)
-	*idx = convert (TYPE_PTRMEMFUNC_FN_TYPE (type), build_int_2 (-1, -1));
+	*idx = build_int_2 (-1, -1);
       else
 	*idx = NULL_TREE;
       *pfn = convert (TYPE_PTRMEMFUNC_FN_TYPE (type), build_addr_func (fn));
