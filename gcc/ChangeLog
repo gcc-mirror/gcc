@@ -1,3 +1,7 @@
+2004-05-28  DJ Delorie  <dj@redhat.com>
+
+	* stor-layout.c (place_field): Revert erroneous commit.
+
 2004-05-28  Ziemowit Laski  <zlaski@apple.com>
 
 	* config/rs6000/altivec.h (vec_ctf, vec_vcfsx, vec_vcfux, vec_cts,
