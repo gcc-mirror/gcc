@@ -1,3 +1,8 @@
+2003-07-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR other/11123
+	* toplev.c: Don't cut off option names.
+
 2003-07-13  Andreas Jaeger  <aj@suse.de>
 
 	* c-decl.c (link_hash_hash): Avoid warning about casting pointer

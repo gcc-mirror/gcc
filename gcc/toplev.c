@@ -3818,7 +3818,7 @@ display_help (void)
 	      undoc = 1;
 
 	      if (extra_warnings)
-		printf (_("  %-23.23s [undocumented]\n"), option);
+		printf (_("  %-23s [undocumented]\n"), option);
 	    }
 	  else if (*description == 0)
 	    continue;
@@ -3835,7 +3835,7 @@ display_help (void)
 	      lang = description;
 	    }
 	  else
-	    printf ("  %-23.23s %s\n", option, _(description));
+	    printf ("  %-23s %s\n", option, _(description));
 	}
     }
 
@@ -3883,10 +3883,10 @@ display_target_options (void)
 	      undoc = 1;
 
 	      if (extra_warnings)
-		printf (_("  -m%-23.23s [undocumented]\n"), option);
+		printf (_("  -m%-23s [undocumented]\n"), option);
 	    }
 	  else if (*description != 0)
-	    doc += printf ("  -m%-23.23s %s\n", option, _(description));
+	    doc += printf ("  -m%-23s %s\n", option, _(description));
 	}
 
 #ifdef TARGET_OPTIONS
@@ -3902,10 +3902,10 @@ display_target_options (void)
 	      undoc = 1;
 
 	      if (extra_warnings)
-		printf (_("  -m%-23.23s [undocumented]\n"), option);
+		printf (_("  -m%-23s [undocumented]\n"), option);
 	    }
 	  else if (*description != 0)
-	    doc += printf ("  -m%-23.23s %s\n", option, _(description));
+	    doc += printf ("  -m%-23s %s\n", option, _(description));
 	}
 #endif
       if (undoc)
