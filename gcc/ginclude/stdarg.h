@@ -41,6 +41,9 @@
 #if defined (__PPC__) && (defined (_CALL_SYSV) || defined (_WIN32))
 #include "va-ppc.h"
 #else
+#ifdef __arc__
+#include "va-arc.h"
+#else
 #ifdef __M32R__
 #include "va-m32r.h"
 #else
@@ -117,6 +120,7 @@ void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #endif /* not mn10300 */
 #endif /* not sh */
 #endif /* not m32r */
+#endif /* not arc */
 #endif /* not powerpc with V.4 calling sequence */
 #endif /* not h8300 */
 #endif /* not alpha */
