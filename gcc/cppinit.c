@@ -204,10 +204,6 @@ static void append_include_chain	PARAMS ((cpp_reader *,
 						 struct cpp_pending *,
 						 char *, int));
 
-#ifdef CPP_PREDEFINES
-static void install_predefs		PARAMS ((cpp_reader *));
-#endif
-
 /* Last argument to append_include_chain: chain to use */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
 
@@ -627,6 +623,7 @@ initialize_builtins (pfile)
   cpp_install (pfile, NAME("__WCHAR_TYPE__"),	  T_CONST, WCHAR_TYPE, -1);
   cpp_install (pfile, NAME("__USER_LABEL_PREFIX__"), T_CONST, user_label_prefix, -1);
   cpp_install (pfile, NAME("__REGISTER_PREFIX__"),  T_CONST, REGISTER_PREFIX, -1);
+  cpp_install (pfile, NAME("__HAVE_BUILTIN_SETJMP__"), T_CONST, "1", -1);
   if (!CPP_TRADITIONAL (pfile))
     {
       cpp_install (pfile, NAME("__STDC__"),	  T_STDC,  0, -1);
@@ -656,44 +653,6 @@ initialize_builtins (pfile)
 	dump_special_to_buffer (pfile, "__STDC__");
     }
 }
-
-/* Subroutine of cpp_start_read.  Installs the predefined macros
-   and assertions found in CPP_PREDEFINES.
-
-   CPP_PREDEFINES is a string of -D and -A options separated by
-   whitespace, like this:
-   "-D__unix__ -D__sparc__ -Asystem(unix) -Amachine(sparc)" */
-#ifdef CPP_PREDEFINES
-static void
-install_predefs (pfile)
-     cpp_reader *pfile;
-{
-  char *p = (char *) alloca (strlen (CPP_PREDEFINES) + 1);
-  char *q;
-  strcpy (p, CPP_PREDEFINES);
-
-  while (*p)
-    {
-      while (*p == ' ' || *p == '\t') p++;
-      if (*p != '-')
-	abort();
-      p = q = p + 2;
-
-      while (*p && *p != ' ' && *p != '\t') p++;
-      if (*p != 0)
-	*p++= 0;
-      if (CPP_OPTIONS (pfile)->debug_output)
-	output_line_command (pfile, 0, same_file);
-
-      if (q[-1] == 'D')
-	cpp_define (pfile, q);
-      else if (q[-1] == 'A')
-	cpp_assert (pfile, q);
-      else
-	abort ();
-    }
-}
-#endif
 
 /* Another subroutine of cpp_start_read.  This one sets up to do
    dependency-file output. */
@@ -849,13 +808,6 @@ cpp_start_read (pfile, fname)
   /* Install __LINE__, etc.  Must follow initialize_char_syntax
      and option processing.  */
   initialize_builtins (pfile);
-
-#ifdef CPP_PREDEFINES
-  /* Do standard #defines and assertions
-     that identify system and machine type.  */
-  if (!opts->inhibit_predefs)
-    install_predefs (pfile);
-#endif
 
   /* Do -U's, -D's and -A's in the order they were seen.  */
   p = opts->pending->define_head;
@@ -1621,8 +1573,6 @@ cpp_handle_option (pfile, argc, argv)
 	      opts->pending->assert_tail = NULL;
 	      opts->pending->define_head = NULL;
 	      opts->pending->define_tail = NULL;
-	      
-	      opts->inhibit_predefs = 1;
 	    }
 	}
 	break;
@@ -1680,11 +1630,6 @@ cpp_handle_option (pfile, argc, argv)
       case 'r':
 	if (!strcmp (argv[i], "-remap"))
 	  opts->remap = 1;
-	break;
-      
-      case 'u':
-	if (!strcmp (argv[i], "-undef"))
-	  opts->inhibit_predefs = 1;
 	break;
       
       case '\0': /* JF handle '-' as file name meaning stdin or stdout */
@@ -1789,7 +1734,6 @@ Switches:\n\
   -D<macro>=<val>           Define a <macro> with <val> as its value\n\
   -A<question> (<answer>)   Assert the <answer> to <question>\n\
   -U<macro>                 Undefine <macro> \n\
-  -u or -undef              Do not predefine any macros\n\
   -v                        Display the version number\n\
   -H                        Print the name of header files as they are used\n\
   -C                        Do not discard comments\n\

@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
   {"@chill",
      {"cpp -lang-chill %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU CHILL does not support -C without using -E}}\
-        -undef -D__GNUCHILL__=%v1 -D__GNUC_MINOR__=%v2\
+        -D__GNUCHILL__=%v1 -D__GNUC_MINOR__=%v2\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:-D__OPTIMIZE__} %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional} %{!undef:%{!ansi:%p} %P} %{trigraphs}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\

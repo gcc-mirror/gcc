@@ -592,7 +592,7 @@ static struct compiler default_compilers[] =
 	%{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+        -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 	%{ansi|std=*:%{!std=gnu*:-trigraphs -D__STRICT_ANSI__}}\
 	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
@@ -606,7 +606,7 @@ static struct compiler default_compilers[] =
                   %{std*} %{nostdinc*} %{A*} %{I*} %I\
                   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
                   %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-                  -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+                  -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 		  %{ansi|std=*:%{!std=gnu*:-trigraphs -D__STRICT_ANSI__}}\
 		  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
                   %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
@@ -629,7 +629,7 @@ static struct compiler default_compilers[] =
 	%{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+        -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 	%{ansi|std=*:%{!std=gnu*:-trigraphs -D__STRICT_ANSI__}}\
 	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
@@ -657,7 +657,7 @@ static struct compiler default_compilers[] =
 	%{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+        -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 	%{ansi|std=*:%{!std=gnu*:-trigraphs -D__STRICT_ANSI__}}\
 	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
@@ -674,7 +674,7 @@ static struct compiler default_compilers[] =
     cpp %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	 %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+        -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 	%{std=*:%{!std=gnu*:-trigraphs -D__STRICT_ANSI__}}\
 	%{!undef:%{!std=*:%p}%{std=gnu*:%p} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
@@ -705,7 +705,7 @@ static struct compiler default_compilers[] =
    {"cpp -lang-asm %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG} %{trigraphs}\
-        -undef -$ %{!undef:%p %P} -D__ASSEMBLER__ \
+        -$ %{!undef:%p %P} -D__ASSEMBLER__ \
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
         %{traditional} %{ftraditional:-traditional}\
