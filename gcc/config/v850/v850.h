@@ -58,6 +58,8 @@ extern int target_flags;
 #define MASK_CPU                0x00000030
 #define MASK_V850               0x00000010
 
+#define MASK_BIG_SWITCH		0x00000100
+
 #ifndef MASK_DEFAULT
 #define MASK_DEFAULT            MASK_V850
 #endif
@@ -97,6 +99,9 @@ extern int target_flags;
 /* Whether to call out-of-line functions to save registers or not.  */
 #define TARGET_PROLOG_FUNCTION (target_flags & MASK_PROLOG_FUNCTION)
 
+/* Whether to emit 2 byte per entry or 4 byte per entry switch tables.  */
+#define TARGET_BIG_SWITCH (target_flags & MASK_BIG_SWITCH)
+
 /* General debug flag */
 #define TARGET_DEBUG (target_flags & MASK_DEBUG)
 
@@ -119,6 +124,7 @@ extern int target_flags;
    { "debug",			 MASK_DEBUG },				\
    { "v850",		 	 MASK_V850 },				\
    { "v850",		 	 -(MASK_V850 ^ MASK_CPU) },		\
+   { "big-switch",		 MASK_BIG_SWITCH },			\
    EXTRA_SWITCHES							\
    { "",			 TARGET_DEFAULT}}
 
@@ -1267,12 +1273,15 @@ do { char dstr[30];					\
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) \
-  asm_fprintf (FILE, "\t%s .L%d\n", ".long", VALUE)
+  asm_fprintf (FILE, "\t%s .L%d\n",					\
+	       (TARGET_BIG_SWITCH ? ".long" : ".short"), VALUE)
 
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
-  fprintf (FILE, "\t%s .L%d-.L%d\n", ".long", VALUE, REL)
+  fprintf (FILE, "\t%s .L%d-.L%d\n",					\
+	   (TARGET_BIG_SWITCH ? ".long" : ".short"),			\
+	   VALUE, REL)
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) != 0)			\
@@ -1293,12 +1302,26 @@ do { char dstr[30];					\
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
-#define CASE_VECTOR_MODE Pmode
+#define CASE_VECTOR_MODE (TARGET_BIG_SWITCH ? SImode : HImode)
 
 /* Define this if the case instruction drops through after the table
    when the index is out of range.  Don't define it if the case insn
    jumps to the default label instead.  */
-#define CASE_DROPS_THROUGH
+/* #define CASE_DROPS_THROUGH */
+
+/* We must use a PC relative entry for small tables.  It would be more
+   efficient to use an absolute entry for big tables, but this is not
+   a runtime choice yet.  */
+#define CASE_VECTOR_PC_RELATIVE
+
+/* The switch instruction requires that the jump table immediately follow
+   it. */
+#define JUMP_TABLES_IN_TEXT_SECTION
+
+/* svr4.h defines this assuming that 4 byte alignment is required.  */
+#undef ASM_OUTPUT_BEFORE_CASE_LABEL
+#define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE) \
+  ASM_OUTPUT_ALIGN ((FILE), (TARGET_BIG_SWITCH ? 2 : 1));
 
 #define WORD_REGISTER_OPERATIONS
 
