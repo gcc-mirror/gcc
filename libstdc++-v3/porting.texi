@@ -74,6 +74,7 @@ Here are the primary steps required to port the library:
 * Operating system::    Configuring for your operating system.
 * Character types::     Implementing character classification.
 * Thread safety::       Implementing atomic operations.
+* Numeric limits::	Implementing numeric limits.
 * Libtool::             Using libtool.
 * GNU Free Documentation License:: How you can copy and share this manual.
 @end menu
@@ -435,6 +436,31 @@ __atomic_add (_Atomic_word* __mem, int __val)
   *__mem += __val;
 @}
 @end example
+
+@c ---------------------------------------------------------------------
+@c Numeric limits
+@c ---------------------------------------------------------------------
+
+@node Numeric limits
+@chapter Numeric limits
+
+The C++ library requires information about the fundamental data types,
+such as the minimum and maximum representable values of each type.
+You can define each of these values individually, but it is usually
+easiest just to indicate how many bits are used in each of the data
+types and let the library do the rest.  For information about the
+macros to define, see the top of @file{include/bits/std_limits.h}.
+
+If you need to define any macros, you can do so in
+@file{os_defines.h}.  However, if all operating systems for your CPU
+are likely to use the same values, you can provide a CPU-specific file
+instead so that you do not have to provide the same definitions for
+each operating system.  To take that approach, create a new file
+called @file{limits.h} in your CPU configuration directory (e.g.,
+@file{config/cpu/i386/bits}) and then modify @file{configure.target}
+so that @code{LIMITSH} is set to the CPU directory (e.g.,
+@file{config/cpu/i386}).  Note that @code{LIMITSH} should not include
+the @samp{bits} part of the directory name.
 
 @c ---------------------------------------------------------------------
 @c Libtool
