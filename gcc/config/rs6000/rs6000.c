@@ -222,6 +222,7 @@ direct_return ()
       if (info->first_gp_reg_save == 32
 	  && info->first_fp_reg_save == 64
 	  && !info->lr_save_p
+	  && !info->cr_save_p
 	  && !info->push_p)
 	return 1;
     }
