@@ -875,7 +875,11 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
       /* Can't merge a function call.  */
       || GET_CODE (src) == CALL
       /* Don't eliminate a function call argument.  */
-      || (GET_CODE (i3) == CALL_INSN && find_reg_fusage (i3, USE, dest))
+      || (GET_CODE (i3) == CALL_INSN
+	  && (find_reg_fusage (i3, USE, dest)
+	      || (GET_CODE (dest) == REG
+		  && REGNO (dest) < FIRST_PSEUDO_REGISTER
+		  && global_regs[REGNO (dest)])))
       /* Don't substitute into an incremented register.  */
       || FIND_REG_INC_NOTE (i3, dest)
       || (succ && FIND_REG_INC_NOTE (succ, dest))
