@@ -100,7 +100,7 @@ DEFINE_LANG_NAME ("C++")
   { "-fstrict-prototype", "" },
   { "-fno-strict-prototype", "Do not assume that empty prototype means no args" },
   { "-ftemplate-depth-", "Specify maximum template instantiation depth"},
-  { "-fthis-is-variable", "Make 'this' not be type '* const'"  },
+  { "-fthis-is-variable", ""  },
   { "-fno-this-is-variable", "" },
   { "-fuse-cxa-atexit", "Use __cxa_atexit to register destructors." },
   { "-fno-use-cxa-atexit", "" },
