@@ -767,10 +767,8 @@ pop_scope (void)
 	      && !DECL_IN_SYSTEM_HEADER (p)
 	      && DECL_NAME (p)
 	      && !DECL_ARTIFICIAL (p)
-	      && (scope != file_scope
-		  || (TREE_STATIC (p) && !TREE_PUBLIC (p)
-		      && !TREE_THIS_VOLATILE (p)))
-	      && scope != external_scope)
+	      && scope != file_scope
+	      && scope != external_scope) 
 	    warning ("%Junused variable %qD", p, p);
 
 	  if (b->inner_comp)

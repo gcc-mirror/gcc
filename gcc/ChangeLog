@@ -1,3 +1,9 @@
+2004-10-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/17178, PR c/17820
+	* c-decl.c (pop_scope): Do not warn about unused static
+	variables as they warned in the middle-end.
+
 2004-10-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_memcpy): Delete duplicate code
