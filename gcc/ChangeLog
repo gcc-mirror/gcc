@@ -1,3 +1,8 @@
+Mon Jan 25 16:53:37 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (instantiate_virtual_regs_1, case SET): Handle case where
+	both SET_DEST and SET_SRC reference a virtual register.
+
 Sun Jan 24 09:31:35 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* integrate.c (expand_inline_function): Handle case of setting
