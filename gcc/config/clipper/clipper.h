@@ -52,17 +52,8 @@ extern int target_flags;
 #define TARGET_DEFAULT TARGET_C300
 #endif
 
-/* Omit frame pointer at -O2.  Inline functions at -O3.  */
-
-#define OPTIMIZATION_OPTIONS(LEVEL)		\
-{						\
-  if ((LEVEL) >= 2)				\
-    {						\
-      flag_omit_frame_pointer = 1;		\
-    }						\
-  if ((LEVEL) >= 3)				\
-    flag_inline_functions = 1;			\
-}
+/* Show that we can debug generated code without a frame pointer.  */
+#define CAN_DEBUG_WITHOUT_FP
 
 /* Target machine storage layout */
 

@@ -157,39 +157,8 @@ extern char * reg_names[];
 #define MONITOR_GCC 0
 #endif
 
-/*** Controlling the Compilation Driver, `gcc' ***/
-
-/* Some machines may desire to change what optimizations are performed for
-   various optimization levels.   This macro, if defined, is executed once
-   just after the optimization level is determined and before the remainder
-   of the command options have been parsed.  Values set in this macro are
-   used as the default values for the other command line options.
-
-   LEVEL is the optimization level specified; 2 if -O2 is specified,
-   1 if -O is specified, and 0 if neither is specified.  */
-
-/* This macro used to store 0 in flag_signed_bitfields.
-   Not only is that misuse of this macro; the whole idea is wrong.
-
-   The GNU C dialect makes bitfields signed by default,
-   regardless of machine type.  Making any machine inconsistent in this
-   regard is bad for portability.
-
-   I chose to make bitfields signed by default because this is consistent
-   with the way ordinary variables are handled: `int' equals `signed int'.
-   If there is a good reason to prefer making bitfields unsigned by default,
-   it cannot have anything to do with the choice of machine.
-   If the reason is good enough, we should change the convention for all machines.
-
-   -- rms, 20 July 1991.  */
-
-#define OPTIMIZATION_OPTIONS(LEVEL)			\
-  do {							\
-    if (LEVEL)						\
-      {							\
-	flag_omit_frame_pointer = 1;			\
-      }							\
-  } while (0)
+/* Show we can debug even without a frame pointer.  */
+#define CAN_DEBUG_WITHOUT_FP
 
 /* If -m88100 is in effect, add -D__m88100__; similarly for -m88110.
    Here, the CPU_DEFAULT is assumed to be -m88100.  */

@@ -49,15 +49,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define WCHAR_TYPE "short unsigned int"
 #define WCHAR_TYPE_SIZE 16
 
-/* Omit frame pointer at high optimization levels.  */
-  
-#define OPTIMIZATION_OPTIONS(OPTIMIZE) \
-{  								\
-  if (OPTIMIZE >= 2) 						\
-    {								\
-      flag_omit_frame_pointer = 1;				\
-    }								\
-}
+/* Show we can debug even without a frame pointer.  */
+#define CAN_DEBUG_WITHOUT_FP
 
 /* To make profiling work with -f{pic,PIC}, we need to emit the profiling
    code into the rtl.  Also, if we are profiling, we cannot eliminate

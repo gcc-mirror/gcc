@@ -107,17 +107,8 @@ extern int target_flags;
     for (i = 32; i < 64; i++)		\
       fixed_regs[i] = call_used_regs[i] = 1;
 
-/* Define this to change the optimizations performed by default.  */
-
-#define OPTIMIZATION_OPTIONS(LEVEL)	\
-{					\
-  if ((LEVEL) > 0)			\
-    {					\
-      flag_force_addr = 1;		\
-      flag_force_mem = 1;		\
-      flag_omit_frame_pointer = 1;	\
-    }					\
-}
+/* Show we can debug even without a frame pointer.  */
+#define CAN_DEBUG_WITHOUT_FP
 
 /* target machine storage layout */
 

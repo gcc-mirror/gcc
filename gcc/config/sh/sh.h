@@ -34,15 +34,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define CPP_PREDEFINES "-D__sh__ -Acpu(sh) -Amachine(sh)"
 
-
-/* Omitting the frame pointer is a very good idea on the SH */
-
-#define OPTIMIZATION_OPTIONS(OPTIMIZE)  \
-{					\
-  if (OPTIMIZE)				\
-    flag_omit_frame_pointer = 1;	\
-   if (OPTIMIZE==0)OPTIMIZE=1;		\
-}
+/* Show we can debug even without a frame pointer.  */
+#define CAN_DEBUG_WITHOUT_FP
 
 /* Run-time compilation parameters selecting different hardware subsets. */
 

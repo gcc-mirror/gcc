@@ -107,17 +107,8 @@ extern int target_flags;
 
 #define TARGET_DEFAULT 3
 
-/* Define this to change the optimizations performed by default.  */
-
-#define OPTIMIZATION_OPTIONS(LEVEL)	\
-{					\
-  if ((LEVEL) > 0)			\
-    {					\
-      flag_force_addr = 1;		\
-      flag_force_mem = 1;		\
-      flag_omit_frame_pointer = 1;	\
-    }					\
-}
+/* Show we can debug even without a frame pointer.  */
+#define CAN_DEBUG_WITHOUT_FP
 
 /* target machine storage layout */
 

@@ -190,14 +190,8 @@ extern char *rs6000_cpu_string;
 
 #define OVERRIDE_OPTIONS rs6000_override_options ()
 
-#define OPTIMIZATION_OPTIONS(LEVEL)	\
-{					\
-  if ((LEVEL) > 0)			\
-    {					\
-      flag_force_mem = 1;		\
-      flag_omit_frame_pointer = 1;	\
-    }					\
-}
+/* Show we can debug even without a frame pointer.  */
+#define CAN_DEBUG_WITHOUT_FP
 
 /* target machine storage layout */
 
