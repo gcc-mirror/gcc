@@ -26,7 +26,7 @@ static char *buffer = NULL;
 static char *inpoint = NULL;
 
 
-/* Safely allocate NBYTES bytes of memory. Reuturns pointer to block of
+/* Safely allocate NBYTES bytes of memory.  Returns pointer to block of
    memory. */
 
 static char *

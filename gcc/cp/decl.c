@@ -430,7 +430,7 @@ extern int flag_huge_objects;
 
 /* Nonzero if we want to conserve space in the .o files.  We do this
    by putting uninitialized data and runtime initialized data into
-   .common instead of .data at the expense of not flaging multiple
+   .common instead of .data at the expense of not flagging multiple
    definitions.  */
 extern int flag_conserve_space;
 
@@ -1223,9 +1223,9 @@ poplevel_class (force)
   for (shadowed = level->shadowed; shadowed; shadowed = TREE_CHAIN (shadowed))
     IDENTIFIER_LOCAL_VALUE (TREE_PURPOSE (shadowed)) = TREE_VALUE (shadowed);
   /* If we're leaving a toplevel class, don't bother to do the setting
-     of IDENTIFER_CLASS_VALUE to NULL_TREE, since first of all this slot
+     of IDENTIFIER_CLASS_VALUE to NULL_TREE, since first of all this slot
      shouldn't even be used when current_class_type isn't set, and second,
-     if we don't touch it here, we're able to use the caching effect if the
+     if we don't touch it here, we're able to use the cache effect if the
      next time we're entering a class scope, it is the same class.  */
   if (current_class_depth != 1 || force)
     for (shadowed = level->class_shadowed;
@@ -1729,7 +1729,7 @@ make_type_decl (name, type)
 #endif
 
 /* Push a tag name NAME for struct/class/union/enum type TYPE.
-   Normally put into into the inner-most non-tag-tranparent scope,
+   Normally put into into the inner-most non-tag-transparent scope,
    but if GLOBALIZE is true, put it in the inner-most non-class scope.
    The latter is needed for implicit declarations. */
 
@@ -5160,7 +5160,7 @@ init_decl_processing ()
     {
       flag_inline_functions = 0;
 #if 0
-      /* This causes uneccessary emission of inline functions.  */
+      /* This causes unnecessary emission of inline functions.  */
       flag_default_inline = 0;
 #endif
     }
@@ -11197,7 +11197,7 @@ store_parm_decls ()
 	expand_expr (build_function_call (lookup_name (get_identifier ("__gc_main"), 0), NULL_TREE),
 		     0, VOIDmode, 0);
 #if 0
-      /* done at a differnet time */
+      /* done at a different time */
       if (flag_rtti)
 	output_builtin_tdesc_entries ();
 #endif

@@ -63,7 +63,7 @@
 ;; length default is 1 word each
 (define_attr "length" "" (const_int 1))
 
-;; a users asm staement 
+;; a user's asm statement
 (define_asm_attributes
   [(set_attr "type" "unknown")
 ; all bets are off how long it is - make it 256, forces long jumps 
@@ -679,7 +679,7 @@
   [(set_attr "length" "8,8,8")])
 
 ;; maybe fiddle a bit with move_ratio, then 
-;; let contraints only accept a register ...
+;; let constraints only accept a register ...
 
 (define_expand "movstrhi"
   [(parallel [(set (mem:BLK (match_operand:BLK 0 "general_operand" "=g,g"))
@@ -881,7 +881,7 @@
   [(set_attr "length" "6")])
 
 ;; make float to int and vice versa 
-;; using the cc_status.flag field we coulf probably cut down
+;; using the cc_status.flag field we could probably cut down
 ;; on seti and setl
 ;; assume that we are normally in double and integer mode -
 ;; what do pdp library routines do to fpu mode ?
@@ -1015,7 +1015,7 @@
 
 ;;- subtract instructions
 ;; we don't have to care for constant second 
-;; args, since they are cononical plus:xx now!
+;; args, since they are canonical plus:xx now!
 ;; also for minus:DF ??
 
 (define_insn "subdf3"
@@ -1058,7 +1058,7 @@
   output_asm_insn (\"sub %2, %0\", lateoperands);
   return \"\";
 }"
-;; offsetable memory addresses always are expensive!!!
+;; offsettable memory addresses always are expensive!!!
   [(set_attr "length" "3,5,6,8")])
 
 (define_insn "subhi3"

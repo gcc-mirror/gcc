@@ -109,7 +109,7 @@ void init_init_processing ()
    pointer to the type of the real derived type that we want to
    initialize for.  This is the case when addr is a pointer to a sub
    object of a complete object, and we only want to do part of the
-   complete object's initiailzation of vtable pointers.  This is done
+   complete object's initialization of vtable pointers.  This is done
    for all virtual table pointers in virtual base classes.  REAL_BINFO
    is used to find the BINFO_VTABLE that we initialize with.  BINFO is
    used for conversions of addr to subobjects.
@@ -3157,7 +3157,7 @@ build_new (placement, decl, init, use_global_new)
 	  /* If we want to check the value of the allocation expression,
              and the number of elements in the array is not a constant, we
              *must* expand the SAVE_EXPR for nelts in alloc_expr before we
-             expand it in the actual initalization.  So we need to build up
+             expand it in the actual initialization.  So we need to build up
              an RTL_EXPR for alloc_expr.  Sigh.  */
 	  if (alloc_expr && ! TREE_CONSTANT (nelts))
 	    {

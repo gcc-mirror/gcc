@@ -120,7 +120,7 @@ static int combine_successes;
 
 static int total_attempts, total_merges, total_extras, total_successes;
 
-/* Define a defulat value for REVERSIBLE_CC_MODE.
+/* Define a default value for REVERSIBLE_CC_MODE.
    We can never assume that a condition code mode is safe to reverse unless
    the md tells us so.  */
 #ifndef REVERSIBLE_CC_MODE
@@ -2426,7 +2426,7 @@ find_split_point (loc, insn)
       /* If we have a PLUS whose second operand is a constant and the
 	 address is not valid, perhaps will can split it up using
 	 the machine-specific way to split large constants.  We use
-	 the first psuedo-reg (one of the virtual regs) as a placeholder;
+	 the first pseudo-reg (one of the virtual regs) as a placeholder;
 	 it will not remain in the result.  */
       if (GET_CODE (XEXP (x, 0)) == PLUS
 	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
@@ -6163,7 +6163,7 @@ if_then_else_cond (x, ptrue, pfalse)
     }
 
   /* If this is a COMPARE, do nothing, since the IF_THEN_ELSE we would
-     make can't possibly match and would supress other optimizations.  */
+     make can't possibly match and would suppress other optimizations.  */
   else if (code == COMPARE)
     ;
 
@@ -10013,7 +10013,7 @@ get_last_value (x)
 	  value = SET_SRC (set);
 
 	  /* Make sure that VALUE doesn't reference X.  Replace any
-	     expliit references with a CLOBBER.  If there are any remaining
+	     explicit references with a CLOBBER.  If there are any remaining
 	     references (rare), don't use the value.  */
 
 	  if (reg_mentioned_p (x, value))
@@ -10101,7 +10101,7 @@ static int reg_dead_flag;
 
 /* Function called via note_stores from reg_dead_at_p.
 
-   If DEST is within [reg_dead_rengno, reg_dead_endregno), set 
+   If DEST is within [reg_dead_regno, reg_dead_endregno), set 
    reg_dead_flag to 1 if X is a CLOBBER and to -1 it is a SET.  */
 
 static void

@@ -1318,7 +1318,7 @@ output_prolog (file, size)
      linked to procedure descriptors.
      Outputting the lineno helps debugging of one line functions as they
      would otherwise get no line number at all. Please note that we would
-     like to put out last_linenum from final.c, but it is not accesible.  */
+     like to put out last_linenum from final.c, but it is not accessible.  */
 
   if (write_symbols == SDB_DEBUG)
     {

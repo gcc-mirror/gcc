@@ -344,7 +344,7 @@ struct cpp_options {
   char for_lint;
 
   /* Nonzero means handle CHILL comment syntax
-     and output CHILL string delimeter for __DATE___ etc. */
+     and output CHILL string delimiter for __DATE___ etc. */
 
   char chill;
 

@@ -75,7 +75,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef EMPTY_FIELD_BOUNDARY
 #define EMPTY_FIELD_BOUNDARY 32
 
-/* Allocation boundry in bits for the code of a function */
+/* Allocation boundary in bits for the code of a function */
 #undef  FUNCTION_BOUNDARY
 #define FUNCTION_BOUNDARY 32
 

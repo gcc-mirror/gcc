@@ -54,7 +54,7 @@
 ; but are if the branch wasn't taken; the effect is to limit the branch
 ; elimination scanning.
 
-; NOCOND means that the condition codes are niether altered nor affect the
+; NOCOND means that the condition codes are neither altered nor affect the
 ; output of this insn
 
 (define_attr "conds" "use,set,clob,jump_clob,nocond"
@@ -2104,7 +2104,7 @@
 ;; Operand 1 is the destination address in a register (SImode)
 
 ;; In both this routine and the next, we must be careful not to spill
-;; a memory address of reg+large_const into a seperate PLUS insn, since this
+;; a memory address of reg+large_const into a separate PLUS insn, since this
 ;; can generate unrecognizable rtl.
 
 (define_expand "storehi"
@@ -3990,7 +3990,7 @@
 ")
 
 ;; Don't match these patterns if we can use a conditional compare, since they
-;; tell the final prescan branch elimator code that full branch inlining
+;; tell the final prescan branch eliminator code that full branch inlining
 ;; can't be done.
 
 (define_insn ""
@@ -4227,7 +4227,7 @@
 ")
 
 ;; Don't match these patterns if we can use a conditional compare, since they
-;; tell the final prescan branch elimator code that full branch inlining
+;; tell the final prescan branch eliminator code that full branch inlining
 ;; can't be done.
 
 (define_insn ""
@@ -4390,7 +4390,7 @@
   ""
   "*
   /* If we have an operation where (op x 0) is the identity operation and
-     the condtional operator is LT or GE and we are comparing against zero and
+     the conditional operator is LT or GE and we are comparing against zero and
      everything is in registers then we can do this in two instructions */
   if (operands[3] == const0_rtx
       && GET_CODE (operands[7]) != AND
@@ -4435,7 +4435,7 @@
   ""
   "*
   /* If we have an operation where (op x 0) is the identity operation and
-     the condtional operator is LT or GE and we are comparing against zero and
+     the conditional operator is LT or GE and we are comparing against zero and
      everything is in registers then we can do this in two instructions */
   if (operands[5] == const0_rtx
       && GET_CODE (operands[7]) != AND
@@ -5306,7 +5306,7 @@
 ;; any of our local variables.  If we call alloca then this is unsafe
 ;; since restoring the frame frees the memory, which is not what we want.
 ;; Sometimes the return might have been targeted by the final prescan:
-;; if so then emit a propper return insn as well.
+;; if so then emit a proper return insn as well.
 ;; Unfortunately, if the frame pointer is required, we don't know if the
 ;; current function has any implicit stack pointer adjustments that will 
 ;; be restored by the return: we can't therefore do a tail call.
@@ -5416,7 +5416,7 @@
 ;; and jump direct to the subroutine.  On return from the subroutine
 ;; execution continues at the branch; this avoids a prefetch stall.
 ;; We use the length attribute (via short_branch ()) to establish whether or
-;; not this is possible, this is the same asthe sparc does.
+;; not this is possible, this is the same as the sparc does.
 
 (define_peephole
   [(parallel[(call (mem:SI (match_operand:SI 0 "" "i"))

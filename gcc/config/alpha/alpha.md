@@ -3558,7 +3558,7 @@
 { extern rtx get_unaligned_address ();
   rtx addr = get_unaligned_address (operands[1]);
   /* It is possible that one of the registers we got for operands[2]
-     might co-incide with that of operands[0] (which is why we made
+     might coincide with that of operands[0] (which is why we made
      it TImode).  Pick the other one to use as our scratch.  */
   rtx scratch = gen_rtx (REG, DImode,
 			 REGNO (operands[0]) == REGNO (operands[2]) 

@@ -59,7 +59,7 @@
   (const_string "clobber")))
 
 ;;
-;; clipper seems to be a tradional risc processor
+;; clipper seems to be a traditional risc processor
 ;; we define a functional unit 'memory'
 ;;
 (define_function_unit "memory" 1 1 (eq_attr "type" "load") 4 0)     
@@ -305,7 +305,7 @@
     operands[1] = force_reg (DImode, operands[1]);
 }")
 
-;; If an operand is a MEM but not offsetable, we can't load it into
+;; If an operand is a MEM but not offsettable, we can't load it into
 ;; a register, so we must force the third alternative to be the one
 ;; reloaded.  Hence we show the first as more expensive.
 (define_insn ""

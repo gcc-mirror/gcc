@@ -803,7 +803,7 @@ fixname(nam, buf)
   return buf;
 }
 
-/* Open file for xrefing.  */
+/* Open file for xreffing.  */
 
 static void
 open_xref_file(file)

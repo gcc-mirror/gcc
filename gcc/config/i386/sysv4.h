@@ -133,7 +133,7 @@ do { long value[3];							\
    broken with respect to FP registers that it is hardly worth thinking
    of it as something to strive for compatibility with.
 
-   The verison of x86/svr4 SDB I have at the moment does (partially)
+   The version of x86/svr4 SDB I have at the moment does (partially)
    seem to believe that DWARF register number 11 is associated with
    the x86 register %st(0), but that's about all.  Higher DWARF
    register numbers don't seem to be associated with anything in

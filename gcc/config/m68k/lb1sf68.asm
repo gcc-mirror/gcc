@@ -315,7 +315,7 @@ L4:	lsrl	IMM (1), d1	/* shift divisor */
 	divu	d1, d0		/* now we have 16 bit divisor */
 	andl	IMM (0xffff), d0 /* mask out divisor, ignore remainder */
 
-/* Muliply the 16 bit tentative quotient with the 32 bit divisor.  Because of
+/* Multiply the 16 bit tentative quotient with the 32 bit divisor.  Because of
    the operand ranges, this might give a 33 bit product.  If this product is
    greater than the dividend, the tentative quotient was too large. */
 	movel	d2, d1
@@ -628,7 +628,7 @@ Ladddf$2:
 | Here we have a's exponent larger than b's, so we have to shift b. We do 
 | this by using as counter d2:
 1:	movew	d4,d2		| move largest exponent to d2
-	subw	d5,d2		| and substract second exponent
+	subw	d5,d2		| and subtract second exponent
 	exg	d4,a2		| get back the longs we saved
 	exg	d5,a3		|
 | if difference is too large we don't shift (actually, we can just exit) '
@@ -714,7 +714,7 @@ Ladddf$4:
 | Now we have the numbers in d0--d3 and d4--d7, the exponent in a2, and
 | the signs in a4.
 
-| Here we have to decide whether to add or substract the numbers:
+| Here we have to decide whether to add or subtract the numbers:
 	exg	d7,a0		| get the signs 
 	exg	d6,a3		| a3 is free to be used
 	movel	d7,d6		|
@@ -723,7 +723,7 @@ Ladddf$4:
 	movew	IMM (0),d6	| and b's sign in d6 '
 	eorl	d7,d6		| compare the signs
 	bmi	Lsubdf$0	| if the signs are different we have 
-				| to substract
+				| to subtract
 	exg	d7,a0		| else we add the numbers
 	exg	d6,a3		|
 	addl	d7,d3		|
@@ -739,7 +739,7 @@ Ladddf$4:
 
 | Before rounding normalize so bit #DBL_MANT_DIG is set (we will consider
 | the case of denormalized numbers in the rounding routine itself).
-| As in the addition (not in the substraction!) we could have set 
+| As in the addition (not in the subtraction!) we could have set 
 | one more bit we check this:
 	btst	IMM (DBL_MANT_DIG+1),d0	
 	beq	1f
@@ -772,7 +772,7 @@ Ladddf$5:
 	bra	Ld$overflow
 
 Lsubdf$0:
-| Here we do the substraction.
+| Here we do the subtraction.
 	exg	d7,a0		| put sign back in a0
 	exg	d6,a3		|
 	subl	d7,d3		|
@@ -796,7 +796,7 @@ Lsubdf$0:
 
 | Before rounding normalize so bit #DBL_MANT_DIG is set (we will consider
 | the case of denormalized numbers in the rounding routine itself).
-| As in the addition (not in the substraction!) we could have set 
+| As in the addition (not in the subtraction!) we could have set 
 | one more bit we check this:
 	btst	IMM (DBL_MANT_DIG+1),d0	
 	beq	1f
@@ -927,7 +927,7 @@ Ladddf$nf:
 3:
 | Now comes the check for +/-INFINITY. We know that both are (maybe not
 | finite) numbers, but we have to check if both are infinite whether we
-| are adding or substracting them.
+| are adding or subtracting them.
 	eorl	d7,d6		| to check sign bits
 	bmi	1f
 	andl	IMM (0x80000000),d7 | get (common) sign bit
@@ -999,7 +999,7 @@ Lmuldf$1:
 	lsrw	IMM (4),d5		|
 Lmuldf$2:				|
 	addw	d5,d4			| add exponents
-	subw	IMM (D_BIAS+1),d4	| and substract bias (plus one)
+	subw	IMM (D_BIAS+1),d4	| and subtract bias (plus one)
 
 | We are now ready to do the multiplication. The situation is as follows:
 | both a and b have bit 52 ( bit 20 of d0 and d2) set (even if they were 
@@ -1210,7 +1210,7 @@ Ldivdf$1:			|
 	swap	d5		|
 	lsrw	IMM (4),d5	|
 Ldivdf$2:			|
-	subw	d5,d4		| substract exponents
+	subw	d5,d4		| subtract exponents
 	addw	IMM (D_BIAS),d4	| and add bias
 
 | We are now ready to do the division. We have prepared things in such a way
@@ -1245,7 +1245,7 @@ Ldivdf$2:			|
 	dbra	d5,1b		| and branch back
 	bra	5f			
 4:	cmpl	d1,d3		| here d0==d2, so check d1 and d3
-	bhi	3b		| if d1 > d2 skip the substraction
+	bhi	3b		| if d1 > d2 skip the subtraction
 	bra	2b		| else go do it
 5:
 | Here we have to start setting the bits in the second long.
@@ -1262,7 +1262,7 @@ Ldivdf$2:			|
 	dbra	d5,1b		| and branch back
 	bra	5f			
 4:	cmpl	d1,d3		| here d0==d2, so check d1 and d3
-	bhi	3b		| if d1 > d2 skip the substraction
+	bhi	3b		| if d1 > d2 skip the subtraction
 	bra	2b		| else go do it
 5:
 | Now go ahead checking until we hit a one, which we store in d2.
@@ -1902,12 +1902,12 @@ Laddsf$2:
 | signs are stored in a0 and a1).
 
 Laddsf$3:
-| Here we have to decide whether to add or substract the numbers
+| Here we have to decide whether to add or subtract the numbers
 	exg	d6,a0		| get signs back
 	exg	d7,a1		| and save the exponents
 	eorl	d6,d7		| combine sign bits
 	bmi	Lsubsf$0	| if negative a and b have opposite 
-				| sign so we actually substract the
+				| sign so we actually subtract the
 				| numbers
 
 | Here we have both positive or both negative
@@ -1926,7 +1926,7 @@ Laddsf$3:
 
 | Before rounding normalize so bit #FLT_MANT_DIG is set (we will consider
 | the case of denormalized numbers in the rounding routine itself).
-| As in the addition (not in the substraction!) we could have set 
+| As in the addition (not in the subtraction!) we could have set 
 | one more bit we check this:
 	btst	IMM (FLT_MANT_DIG+1),d0	
 	beq	1f
@@ -1957,7 +1957,7 @@ Laddsf$4:
 
 Lsubsf$0:
 | We are here if a > 0 and b < 0 (sign bits cleared).
-| Here we do the substraction.
+| Here we do the subtraction.
 	movel	d6,d7		| put sign in d7
 	andl	IMM (0x80000000),d7
 
@@ -1974,7 +1974,7 @@ Lsubsf$0:
 
 | Now d0-d1 is positive and the sign bit is in d7.
 
-| Note that we do not have to normalize, since in the substraction bit
+| Note that we do not have to normalize, since in the subtraction bit
 | #FLT_MANT_DIG+1 is never set, and denormalized numbers are handled by
 | the rounding routines themselves.
 	lea	Lsubsf$1,a0	| to return from rounding routine
@@ -2071,7 +2071,7 @@ Laddsf$ret$den:
 
 | Note: when adding two floats of the same sign if either one is 
 | NaN we return NaN without regard to whether the other is finite or 
-| not. When substracting them (i.e., when adding two numbers of 
+| not. When subtracting them (i.e., when adding two numbers of 
 | opposite signs) things are more complicated: if both are INFINITY 
 | we return NaN, if only one is INFINITY and the other is NaN we return
 | NaN, but if it is finite we return INFINITY with the corresponding sign.
@@ -2095,7 +2095,7 @@ Laddsf$nf:
 	bhi	Lf$inop		
 | Now comes the check for +/-INFINITY. We know that both are (maybe not
 | finite) numbers, but we have to check if both are infinite whether we
-| are adding or substracting them.
+| are adding or subtracting them.
 	eorl	d3,d2		| to check sign bits
 	bmi	1f
 	movel	d0,d7
@@ -2161,7 +2161,7 @@ Lmulsf$1:			| number
 	lsrw	IMM (7),d3	|
 Lmulsf$2:			|
 	addw	d3,d2		| add exponents
-	subw	IMM (F_BIAS+1),d2 | and substract bias (plus one)
+	subw	IMM (F_BIAS+1),d2 | and subtract bias (plus one)
 
 | We are now ready to do the multiplication. The situation is as follows:
 | both a and b have bit FLT_MANT_DIG-1 set (even if they were 
@@ -2292,7 +2292,7 @@ SYM (__divsf3):
 	beq	Ldivsf$b$0		| branch if b is zero
 	cmpl	d6,d0			| is a big?
 	bhi	Ldivsf$inop		| if a is NaN return NaN
-	beq	Ldivsf$inf		| if a is INIFINITY we have to check b
+	beq	Ldivsf$inf		| if a is INFINITY we have to check b
 	cmpl	d6,d1			| now compare b with INFINITY 
 	bhi	Ldivsf$inop		| if b is NaN return NaN
 	beq	Ldivsf$underflow
@@ -2314,7 +2314,7 @@ Ldivsf$1:			|
 	swap	d3		|
 	lsrw	IMM (7),d3	|
 Ldivsf$2:			|
-	subw	d3,d2		| substract exponents
+	subw	d3,d2		| subtract exponents
  	addw	IMM (F_BIAS),d2	| and add bias
  
 | We are now ready to do the division. We have prepared things in such a way

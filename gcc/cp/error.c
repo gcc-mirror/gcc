@@ -275,7 +275,7 @@ dump_aggr_type (t, v)
       OB_PUTC2 (':', ':');
     }
 
-  /* kludge around wierd behavior on g++.brendan/line1.C */
+  /* kludge around weird behavior on g++.brendan/line1.C */
   if (TREE_CODE (name) != IDENTIFIER_NODE)
     name = DECL_NAME (name);
 

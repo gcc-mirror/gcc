@@ -297,7 +297,7 @@
 ;; we take advantage of the library routines which don't clobber as many
 ;; registers as a normal function call would.
 
-;; We must use a psuedo-reg forced to reg 0 in the SET_DEST rather than
+;; We must use a pseudo-reg forced to reg 0 in the SET_DEST rather than
 ;; hard register 0.  If we used hard register 0, then the next instruction
 ;; would be a move from hard register 0 to a pseudo-reg.  If the pseudo-reg
 ;; gets allocated to a stack slot that needs its address reloaded, then

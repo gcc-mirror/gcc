@@ -417,7 +417,7 @@ do {								\
 /* The SH has two sorts of general registers, R0 and the rest.  R0 can
    be used as the destination of some of the arithmetic ops. There are
    also some special purpose registers; the T bit register, the
-   Procedure Return Register and the Multipy Accumulate Registers.  */
+   Procedure Return Register and the Multiply Accumulate Registers.  */
 
 enum reg_class
 {
@@ -705,7 +705,7 @@ extern int current_function_anonymous_args;
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.
 
-   On the SH, the trapoline looks like
+   On the SH, the trampoline looks like
    1 0000 D301     		mov.l	l1,r3
    2 0002 DD02     	   	mov.l	l2,r13
    3 0004 4D2B     		jmp	@r13

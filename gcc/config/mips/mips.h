@@ -3314,7 +3314,7 @@ while (0)
 #define ASM_OUTPUT_SOURCE_FILENAME(STREAM, NAME)			\
   mips_output_filename (STREAM, NAME)
 
-/* This is defined so that it can be overriden in iris6.h.  */
+/* This is defined so that it can be overridden in iris6.h.  */
 #define ASM_OUTPUT_FILENAME(STREAM, NUM_SOURCE_FILENAMES, NAME) \
 do								\
   {								\

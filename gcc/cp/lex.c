@@ -2544,7 +2544,7 @@ linenum:
 		}
 	    }
 
-	  /* Do the actions implied by the preceeding numbers.  */
+	  /* Do the actions implied by the preceding numbers.  */
 
 	  if (action == act_push)
 	    {

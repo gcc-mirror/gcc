@@ -1030,7 +1030,7 @@ notice_update_cc_on_set(exp, insn)
     }
     else /* if (GET_CODE (SET_DEST (exp)) == MEM)	*/	
     {  
-	/* the last else is a bit paranoic, but since nearly all instructions 
+	/* the last else is a bit paranoiac, but since nearly all instructions 
 	   play with condition codes, it's reasonable! */
 
 	CC_STATUS_INIT; /* paranoia*/ 

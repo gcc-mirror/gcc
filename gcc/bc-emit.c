@@ -441,7 +441,7 @@ bc_initialize ()
 /* External addresses referenced in a function.  Rather than trying to
    work relocatable address directly into bytecoded functions (which would
    require us to provide hairy location info and possibly obey alignment
-   rules imposed by the architecture) we build an auxilary table of
+   rules imposed by the architecture) we build an auxiliary table of
    pointer constants, and encode just offsets into this table into the
    actual bytecode. */
 static struct bc_seg *ptrconsts;

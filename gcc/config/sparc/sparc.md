@@ -5243,7 +5243,7 @@
 ;; The scan instruction searches from the most significant bit while ffs
 ;; searches from the least significant bit.  The bit index and treatment of
 ;; zero also differ.  It takes at least 7 instructions to get the proper
-;; result.  Here is an obvious 8 instruction seequence.
+;; result.  Here is an obvious 8 instruction sequence.
 
 (define_insn "ffssi2"
   [(set (match_operand:SI 0 "register_operand" "=&r")

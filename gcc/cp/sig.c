@@ -239,7 +239,7 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
   current_obstack = ambient_obstack;
   saveable_obstack = ambient_saveable_obstack;
 
-  /* Ouput debug information for this type.  */
+  /* Output debug information for this type.  */
   rest_of_type_compilation (t, 1);
 
   return t;

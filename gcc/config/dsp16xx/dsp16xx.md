@@ -962,8 +962,8 @@
 	switch (which_alternative)
 	{
 		case 0:
-		   /* We have to use the move mneumonic otherwise the 1610 will
-		      attempt to transfer all 32-bits of 'y', 'p' or an accumualtor
+		   /* We have to use the move mnemonic otherwise the 1610 will
+		      attempt to transfer all 32-bits of 'y', 'p' or an accumulator
 		      , which we don't want */
 		   if (REGNO(operands[1]) == REG_Y || REGNO(operands[1]) == REG_PROD
 			|| IS_ACCUM_REG(REGNO(operands[1])))
@@ -1008,8 +1008,8 @@
 	switch (which_alternative)
 	{
 		case 0:
-		   /* We have to use the move mneumonic otherwise the 1610 will
-		      attempt to transfer all 32-bits of 'y', 'p' or an accumualtor
+		   /* We have to use the move mnemonic otherwise the 1610 will
+		      attempt to transfer all 32-bits of 'y', 'p' or an accumulator
 		      , which we don't want */
 		   if (REGNO(operands[1]) == REG_Y || REGNO(operands[1]) == REG_PROD
 			|| IS_ACCUM_REG(REGNO(operands[1])))

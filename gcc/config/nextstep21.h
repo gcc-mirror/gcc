@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef USE_COLLECT2
 #define USE_COLLECT2
 
-/* use this until a newer gdb for NeXTStep21 is availible */
+/* use this until a newer gdb for NeXTStep21 is available */
 #define DEFAULT_GDB_EXTENSIONS 0
 
 /* we need the call to __main to start all global destructors and constructors

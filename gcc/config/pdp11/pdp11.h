@@ -25,7 +25,7 @@ char *output_move_double();
 char *output_move_quad();
 char *output_block_move();
 
-/* check whther load_fpu_reg or not */
+/* check whether load_fpu_reg or not */
 #define LOAD_FPU_REG_P(x) ((x)>=8 && (x)<=11)
 #define NO_LOAD_FPU_REG_P(x) ((x)==12 || (x)==13)
 #define FPU_REG_P(x)	(LOAD_FPU_REG_P(x) || NO_LOAD_FPU_REG_P(x))
@@ -85,7 +85,7 @@ extern int target_flags;
     { "abshi", 128},		\
     { "no-abshi", -128},	\
 /* is branching expensive - on a PDP, it's actually really cheap */ \
-/* this is just to play aroound and check what code gcc generates */ \
+/* this is just to play around and check what code gcc generates */ \
     { "branch-expensive", 256}, \
     { "branch-cheap", -256},	\
 /* optimize for space instead of time - just in a couple of places */ \
@@ -170,7 +170,7 @@ extern int target_flags;
 /* Define this if most significant word of a multiword number is numbered.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* number of bits in an addressible storage unit */
+/* number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -453,8 +453,8 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
    operand as its first argument and the constraint letter as its
    second operand.
 
-   `Q'	is for memory refereces using take more than 1 instruction.
-   `R'	is for memory refereces which take 1 word for the instruction.  */
+   `Q'	is for memory references using take more than 1 instruction.
+   `R'	is for memory references which take 1 word for the instruction.  */
 
 #define EXTRA_CONSTRAINT(OP,CODE)					\
   ((GET_CODE (OP) != MEM) ? 0						\

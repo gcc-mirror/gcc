@@ -1349,7 +1349,7 @@ real_or_0_operand (op, mode)
 	      && op == CONST0_RTX (mode)));
 }
 
-/* Return true if OP is valid to use in the context of logic aritmethic
+/* Return true if OP is valid to use in the context of logic arithmetic
    on condition codes. */
 
 int
@@ -2029,7 +2029,7 @@ m88k_end_epilogue (stream, size)
     PUT_OCS_FUNCTION_END (stream);
 
   /* If the last insn isn't a BARRIER, we must write a return insn.  This
-     should only happen if the function has no prologe and no body.  */
+     should only happen if the function has no prologue and no body.  */
   if (GET_CODE (insn) == NOTE)
     insn = prev_nonnote_insn (insn);
   if (insn == 0 || GET_CODE (insn) != BARRIER)

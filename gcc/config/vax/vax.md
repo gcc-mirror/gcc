@@ -1419,7 +1419,7 @@
 
 ;; When the field position and size are constant and the destination
 ;; is a register, extv and extzv are much slower than a rotate followed
-;; by a bicl or sign extension.  Becase we might end up choosing ext[z]v
+;; by a bicl or sign extension.  Because we might end up choosing ext[z]v
 ;; anyway, we can't allow immediate values for the primary source operand.
 
 (define_insn ""

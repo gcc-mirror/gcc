@@ -827,7 +827,7 @@ i960_function_name_declare (file, name, fndecl)
   else
     leaf_proc_ok = 0;
 
-  /* Even if nobody uses extra parms, can't have leafroc or tail calls if
+  /* Even if nobody uses extra parms, can't have leafproc or tail calls if
      argblock, because argblock uses g14 implicitly.  */
 
   if (current_function_args_size != 0 || VARARGS_STDARG_FUNCTION (fndecl))

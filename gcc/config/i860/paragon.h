@@ -55,7 +55,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* autoinit.o autolaunches NX applications */
 #define STARTFILE_SPEC "-ycrt0.o%s %{mnx:-yoptions/autoinit.o%s}"
 
-/* libic.a is the PGI intrisic library */
+/* libic.a is the PGI intrinsic library */
 /* libpm.o and guard.o are for the performance monitoring modules (ignored) */
 /* /usr/lib/noieee contains non-IEEE compliant (but faster) math routines */
 #if	HAVE_DASH_G

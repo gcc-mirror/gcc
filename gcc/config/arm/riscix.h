@@ -58,7 +58,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	%{!mbsd:%{!mxopen:%{!ansi: -D_BSD_C}}}"
 #endif
 
-/* RISCiX has some wierd symbol name munging, that is done to the object module
+/* RISCiX has some weird symbol name munging, that is done to the object module
    after assembly, which enables multiple libraries to be supported within
    one (possibly shared) library.  It basically changes the symbol name of
    certain symbols (for example _bcopy is converted to _$bcopy if using BSD)

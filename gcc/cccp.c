@@ -320,7 +320,7 @@ extern const char *const sys_errlist[];
 #else
 extern char *sys_errlist[];
 #endif
-#else	/* HAVE_STERRROR */
+#else	/* HAVE_STRERROR */
 char *strerror ();
 #endif
 #else	/* VMS */
@@ -10308,7 +10308,7 @@ fopen (fname, type)
 #undef fopen	/* Get back the REAL fopen routine */
   /* The gcc-vms-1.42 distribution's header files prototype fopen with two
      fixed arguments, which matches ANSI's specification but not VAXCRTL's
-     pre-ANSI implmentation.  This hack circumvents the mismatch problem.  */
+     pre-ANSI implementation.  This hack circumvents the mismatch problem.  */
   FILE *(*vmslib_fopen)() = (FILE *(*)()) fopen;
 
   if (*type == 'w')

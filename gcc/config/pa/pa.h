@@ -155,7 +155,7 @@ extern int target_flags;
 #define DEFAULT_GDB_EXTENSIONS 1
 
 /* This is the way other stabs-in-XXX tools do things.  We will be
-   compatable.  */
+   compatible.  */
 #define DBX_BLOCKS_FUNCTION_RELATIVE 1
 
 /* Likewise for linenos.
@@ -180,7 +180,7 @@ extern int target_flags;
    name *first*...  */
 #define DBX_FUNCTION_FIRST
 
-/* Only lables should ever begin in colunm zero.  */
+/* Only labels should ever begin in column zero.  */
 #define ASM_STABS_OP "\t.stabs"
 #define ASM_STABN_OP "\t.stabn"
 
@@ -265,7 +265,7 @@ do {								\
 /* target machine storage layout */
 
 /* Define for cross-compilation from a host with a different float format
-   or endianess (e.g. VAX, x86).  */
+   or endianness (e.g. VAX, x86).  */
 #define REAL_ARITHMETIC
 
 /* Define this macro if it is advisable to hold scalars in registers
@@ -1526,7 +1526,7 @@ while (0)
 
 /* Arghh.  This is used for stuff in the constant pool; this may include
    function addresses on the PA, which during PIC code generation must
-   reside in the data space.  Unfortuantely, there's no way to determine
+   reside in the data space.  Unfortunately, there's no way to determine
    if a particular label in the constant pool refers to a function address.
    So just force everything into the data space during PIC generation.  */
 #define SELECT_RTX_SECTION(RTX,MODE)	\
@@ -1995,7 +1995,7 @@ readonly_data ()							\
 /* This is how to output an element of a case-vector that is relative.
    This must be defined correctly as it is used when generating PIC code.
 
-   I belive it safe to use the same definition as ASM_OUTPUT_ADDR_VEC_ELT
+   I believe it safe to use the same definition as ASM_OUTPUT_ADDR_VEC_ELT
    on the PA since ASM_OUTPUT_ADDR_VEC_ELT uses pc-relative jump instructions
    rather than a table of absolute addresses.  */
 

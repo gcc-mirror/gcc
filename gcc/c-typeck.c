@@ -4921,7 +4921,7 @@ static tree constructor_fields;
 static tree constructor_index;
 
 /* For an ARRAY_TYPE, this is the end index of the range
-   to intitialize with the next element, or NULL in the ordinary case
+   to initialize with the next element, or NULL in the ordinary case
    where the element is used just once.  */
 static tree constructor_range_end;
 

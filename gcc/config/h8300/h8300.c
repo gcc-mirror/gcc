@@ -869,7 +869,7 @@ print_operand (file, x, code)
       break;
     case 'L':
       /* 'L' must always be used twice in a single pattern.  It generates
-	 the same lable twice, and then will generate a unique label the
+	 the same label twice, and then will generate a unique label the
 	 next time it is used.  */
       asm_fprintf (file, "tl%d", (lab++) / 2);
       break;
