@@ -1699,9 +1699,9 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 	      || (methods == OPTAB_WIDEN
 		  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (output_mode)))
 	    {
-	      rtx shifted1 = convert_to_mode (output_mode,
-					      protect_from_queue (shifted, 0),
-					      1);
+	      rtx shifted1 = convert_modes (output_mode, mode,
+					    protect_from_queue (shifted, 0),
+					    1);
 	      enum machine_mode length_mode
 		= insn_operand_mode[(int) CODE_FOR_extzv][2];
 	      enum machine_mode pos_mode
@@ -1730,8 +1730,8 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 		target1 = gen_reg_rtx (output_mode);
 
 	      xop1 = protect_from_queue (xop1, 0);
-	      xop1 = convert_to_mode (pos_mode, xop1,
-				      TREE_UNSIGNED (TREE_TYPE (amount)));
+	      xop1 = convert_modes (pos_mode, TYPE_MODE (TREE_TYPE (amount)),
+				    xop1, TREE_UNSIGNED (TREE_TYPE (amount)));
 
 	      /* If this machine's extzv insists on a register for
 		 operand 3 (position), arrange for that.  */
@@ -2906,7 +2906,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 			    subtarget, normalizep != -1);
 
       if (mode != target_mode)
-	op0 = convert_to_mode (target_mode, op0, 0);
+	op0 = convert_modes (target_mode, mode, op0, 0);
 
       return op0;
     }
@@ -3128,7 +3128,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
       else if (GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	{
 	  op0 = protect_from_queue (op0, 0);
-	  tem = convert_to_mode (word_mode, mode, op0, 1);
+	  tem = convert_modes (word_mode, mode, op0, 1);
 	  mode = word_mode;
 	}
 
