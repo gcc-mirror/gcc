@@ -1392,11 +1392,13 @@ carefully.
 
 The keyword @code{__attribute__} allows you to specify special
 attributes when making a declaration.  This keyword is followed by an
-attribute specification inside double parentheses.  Ten attributes,
-@code{noreturn}, @code{const}, @code{format},
-@code{no_instrument_function}, @code{section}, @code{constructor},
-@code{destructor}, @code{unused}, @code{weak} and @code{malloc} are
-currently defined for functions.  Other attributes, including
+attribute specification inside double parentheses.  Fourteen attributes,
+@code{noreturn}, @code{pure}, @code{const}, @code{format},
+@code{format_arg}, @code{no_instrument_function}, @code{section},
+@code{constructor}, @code{destructor}, @code{unused}, @code{weak},
+@code{malloc}, @code{alias} and @code{no_check_memory_usage} are
+currently defined for functions.  Several other attributes are defined
+for functions on particular target systems.  Other attributes, including
 @code{section} are supported for variables declarations (@pxref{Variable
 Attributes}) and for types (@pxref{Type Attributes}).
 
@@ -1831,9 +1833,10 @@ attribute declaration with another attribute declaration.
 
 @cindex @code{#pragma}, reason for not using
 @cindex pragma, reason for not using
-Some people object to the @code{__attribute__} feature, suggesting that ANSI C's
-@code{#pragma} should be used instead.  There are two reasons for not
-doing this.
+Some people object to the @code{__attribute__} feature, suggesting that
+ISO C's @code{#pragma} should be used instead.  At the time
+@code{__attribute__} was designed, there were two reasons for not doing
+this.
 
 @enumerate
 @item
@@ -1844,9 +1847,18 @@ There is no telling what the same @code{#pragma} might mean in another
 compiler.
 @end enumerate
 
-These two reasons apply to almost any application that might be proposed
-for @code{#pragma}.  It is basically a mistake to use @code{#pragma} for
-@emph{anything}.
+These two reasons applied to almost any application that might have been
+proposed for @code{#pragma}.  It was basically a mistake to use
+@code{#pragma} for @emph{anything}.
+
+The ISO C99 standard includes @code{_Pragma}, which now allows pragmas
+to be generated from macros.  In addition, a @code{#pragma GCC}
+namespace is now in use for GCC-specific pragmas.  However, it has been
+found convenient to use @code{__attribute__} to achieve a natural
+attachment of attributes to their corresponding declarations, whereas
+@code{#pragma GCC} is of use for constructs that do not naturally form
+part of the grammar.  @xref{Other Directives,,Miscellaneous
+Preprocessing Directives, cpp, The C Preprocessor}.
 
 @node Function Prototypes
 @section Prototypes and Old-Style Function Definitions
@@ -1986,7 +1998,8 @@ attributes of variables or structure fields.  This keyword is followed
 by an attribute specification inside double parentheses.  Eight
 attributes are currently defined for variables: @code{aligned},
 @code{mode}, @code{nocommon}, @code{packed}, @code{section},
-@code{transparent_union}, @code{unused}, and @code{weak}.  Other
+@code{transparent_union}, @code{unused}, and @code{weak}.  Some other
+attributes are defined for variables on particular target systems.  Other
 attributes are available for functions (@pxref{Function Attributes}) and
 for types (@pxref{Type Attributes}).
 
@@ -2215,9 +2228,9 @@ packed))}.
 The keyword @code{__attribute__} allows you to specify special
 attributes of @code{struct} and @code{union} types when you define such
 types.  This keyword is followed by an attribute specification inside
-double parentheses.  Three attributes are currently defined for types:
-@code{aligned}, @code{packed}, and @code{transparent_union}.  Other
-attributes are defined for functions (@pxref{Function Attributes}) and
+double parentheses.  Four attributes are currently defined for types:
+@code{aligned}, @code{packed}, @code{transparent_union}, and @code{unused}.
+Other attributes are defined for functions (@pxref{Function Attributes}) and
 for variables (@pxref{Variable Attributes}).
 
 You may also specify any one of these attributes with @samp{__}
