@@ -278,6 +278,7 @@ static tree lookup_protocol_in_reflist		PARAMS ((tree, tree));
 static tree create_builtin_decl			PARAMS ((enum tree_code,
 						       tree, const char *));
 static void setup_string_decl			PARAMS ((void));
+static void build_string_class_template		PARAMS ((void));
 static tree my_build_string			PARAMS ((int, const char *));
 static void build_objc_symtab_template		PARAMS ((void));
 static tree init_def_list			PARAMS ((tree));
@@ -1231,9 +1232,37 @@ synth_module_prologue ()
   /* Forward declare constant_string_id and constant_string_type.  */
   if (!constant_string_class_name)
     constant_string_class_name = STRING_OBJECT_CLASS_NAME;
-  
+
   constant_string_id = get_identifier (constant_string_class_name);
   constant_string_type = xref_tag (RECORD_TYPE, constant_string_id);
+}
+
+/* Predefine the following data type:
+
+   struct STRING_OBJECT_CLASS_NAME 
+   {
+     Object isa;
+     char *cString;
+     unsigned int length;
+   }; */
+
+static void
+build_string_class_template ()
+{
+  tree field_decl, field_decl_chain;
+
+  field_decl = create_builtin_decl (FIELD_DECL, id_type, "isa");
+  field_decl_chain = field_decl;
+
+  field_decl = create_builtin_decl (FIELD_DECL,
+				    build_pointer_type (char_type_node),
+				    "cString");
+  chainon (field_decl_chain, field_decl);
+
+  field_decl = create_builtin_decl (FIELD_DECL, unsigned_type_node, "length");
+  chainon (field_decl_chain, field_decl);
+
+  finish_struct (constant_string_type, field_decl_chain, NULL_TREE);
 }
 
 /* Custom build_string which sets TREE_TYPE!  */
@@ -1287,7 +1316,12 @@ build_objc_string_object (strings)
   TREE_SET_CODE (string, STRING_CST);
   length = TREE_STRING_LENGTH (string) - 1;
 
-  /* & ((NXConstantString) {0, string, length})  */
+  /* We could not properly create NXConstantString in synth_module_prologue,
+     because that's called before debugging is initialized.  Do it now.  */
+  if (TYPE_FIELDS (constant_string_type) == NULL_TREE)
+    build_string_class_template ();
+
+  /* & ((NXConstantString) { NULL, string, length })  */
 
   if (flag_next_runtime)
     {
