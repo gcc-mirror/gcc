@@ -891,7 +891,7 @@ do \
 
 /* The relative costs of various types of constants.  Note that cse.c defines
    REG = 1, SUBREG = 2, any node = (2 + sum of subnodes).  */
-#define CONST_COSTS(RTX, CODE)  \
+#define CONST_COSTS(RTX, CODE, OUTER_CODE)  \
   case CONST_INT:				\
     if (const_ok_for_arm (INTVAL (RTX)))	\
       return (2);				\

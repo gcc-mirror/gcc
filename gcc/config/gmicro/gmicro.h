@@ -1177,7 +1177,7 @@ extern enum reg_class regno_reg_class[];
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 
-#define CONST_COSTS(RTX,CODE) \
+#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
     if ((unsigned) INTVAL (RTX) < 8) return 0;			\
     if ((unsigned) (INTVAL (RTX) + 0x80) < 0x100) return 1;	\
