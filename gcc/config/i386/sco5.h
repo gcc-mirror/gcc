@@ -506,12 +506,6 @@ do {									\
 } while (0)
 
 
-#undef CLASS_LIKELY_SPILLED_P
-#define CLASS_LIKELY_SPILLED_P(CLASS)					\
-  (TARGET_ELF) ? (reg_class_size[(int)(CLASS)] == 1) :			\
-    (((CLASS) == AREG) || ((CLASS) == DREG) || ((CLASS) == CREG) ||	\
-    ((CLASS) == BREG) || ((CLASS) == SIREG) || ((CLASS) == DIREG))
-
 #undef CTOR_LIST_BEGIN
 #define CTOR_LIST_BEGIN							\
 do {									\
@@ -713,16 +707,10 @@ dtors_section ()							\
 
 #undef SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR) 						\
-  (   (CHAR) == 'D' 							\
-   || (CHAR) == 'U' 							\
-   || (CHAR) == 'o' 							\
-   || (CHAR) == 'e' 							\
-   || (CHAR) == 'u' 							\
-   || (CHAR) == 'I' 							\
-   || (CHAR) == 'm' 							\
-   || (CHAR) == 'L' 							\
-   || (CHAR) == 'A' 							\
+  (DEFAULT_SWITCH_TAKES_ARG(CHAR)					\
    || (CHAR) == 'h' 							\
+   || (CHAR) == 'R' 							\
+   || (CHAR) == 'Y' 							\
    || (CHAR) == 'z')
 
 #undef WORD_SWITCH_TAKES_ARG
@@ -798,17 +786,17 @@ dtors_section ()							\
  "%{!shared:\
    %{!symbolic: \
     %{pg:gcrt.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}}} \
+  %{ansi:values-Xc.o%s} \
+  %{!ansi: \
+   %{traditional:values-Xt.o%s} \
+    %{!traditional: \
+     %{Xa:values-Xa.o%s} \
+      %{!Xa:%{Xc:values-Xc.o%s} \
+       %{!Xc:%{Xk:values-Xk.o%s} \
+        %{!Xk:%{Xt:values-Xt.o%s} \
+         %{!Xt:values-Xa.o%s}}}}}} \
   %{!melf:crtbegin.o%s} \
-  %{melf:%{ansi:values-Xc.o%s} \
-    %{!ansi: \
-     %{traditional:values-Xt.o%s} \
-     %{!traditional: \
-      %{Xa:values-Xa.o%s} \
-       %{!Xa:%{Xc:values-Xc.o%s} \
-        %{!Xc:%{Xk:values-Xk.o%s} \
-         %{!Xk:%{Xt:values-Xt.o%s} \
-          %{!Xt:values-Xa.o%s}}}}}} \
-   %{static:crtbegin.o%s}%{!static:crtbeginS.o%s}}"
+  %{melf:%{static:crtbegin.o%s}%{!static:crtbeginS.o%s}}"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
@@ -824,46 +812,36 @@ dtors_section ()							\
 
 #undef CPP_SPEC
 #define CPP_SPEC \
- "%{melf:-Asystem(svr4) -D__svr4__} \
-  %{fpic:%{!melf:%e-fpic is only valid with -melf}} \
+ "%{fpic:%{!melf:%e-fpic is only valid with -melf}} \
   %{fPIC:%{!melf:%e-fPIC is only valid with -melf}} \
   -D__i386 -D__unix -D_SCO_DS=1 -D_M_I386 -D_M_XENIX -D_M_UNIX \
   %{!Xods30:-D_STRICT_NAMES} \
   %{!ansi:%{!posix:%{!Xods30:-D_SCO_XPG_VERS=4}}} \
-  %{ansi:-D_STRICT_ANSI} \
+  %{ansi:-isystem include/ansi%s -isystem /usr/include/ansi -D_STRICT_ANSI} \
   %{!ansi: \
-   %{!Xpg4: \
-    %{!Xpg4plus: \
-     %{!Xods30: \
-      %{posix:-D_POSIX_C_SOURCE=2 -D_POSIX_SOURCE}}}}} \
-  %{!ansi: \
-   %{!posix: \
-    %{!Xods30: \
-     %{!Xpg4plus: \
-      %{Xpg4:-D_XOPEN_SOURCE}}}}} \
-  %{!ansi: \
-   %{!posix: \
-    %{!Xpg4: \
-     %{!Xpg4plus: \
-      %{Xods30:-D_SCO_ODS_30 -DM_I86 -DM_I86SM -DM_SDATA -DM_STEXT \
-               -DM_BITFIELDS -DM_SYS5 -DM_SYSV -DM_SYS3 -DM_SYSIII \
-               -DM_WORDSWAP}}}}} \
-  %{!ansi: \
-   %{!posix: \
-    %{!Xpg4:-D_M_I86 -D_M_I86SM -D_M_I86SM -D_M_SDATA -D_M_STEXT \
-            -D_M_BITFIELDS -D_M_SYS5 -D_M_SYSV -D_M_SYS3 -D_M_SYSIII \
-            -D_M_WORDSWAP -Di386 -Dunix -DM_I386 -DM_UNIX -DM_XENIX}}} \
+   %{posix:-isystem include/posix%s -isystem /usr/include/posix \
+           -D_POSIX_C_SOURCE=2 -D_POSIX_SOURCE=1} \
+    %{!posix:%{Xpg4:-isystem include/xpg4%s -isystem /usr/include/xpg4 \
+                    -D_XOPEN_SOURCE=1} \
+     %{!Xpg4:-D_M_I86 -D_M_I86SM -D_M_INTERNAT -D_M_SDATA -D_M_STEXT \
+             -D_M_BITFIELDS -D_M_SYS5 -D_M_SYSV -D_M_SYSIII \
+             -D_M_WORDSWAP -Dunix -DM_I386 -DM_UNIX -DM_XENIX \
+             %{Xods30:-isystem include/ods_30_compat%s \
+                      -isystem /usr/include/ods_30_compat \
+                      -D_SCO_ODS_30 -DM_I86 -DM_I86SM -DM_SDATA -DM_STEXT \
+                      -DM_BITFIELDS -DM_SYS5 -DM_SYSV -DM_INTERNAT -DM_SYSIII \
+                      -DM_WORDSWAP}}}} \
   %{scointl:-DM_INTERNAT -D_M_INTERNAT} \
   %{traditional:-D_KR -D_SVID -D_NO_PROTOTYPE} \
-  %{melf:-D_SCO_ELF -DM_ELF -D_M_ELF} \
-  %{!melf:-D_M_COFF -DM_COFF -D_SCO_COFF} \
+  %{melf:-D_SCO_ELF} \
+  %{!melf:-D_M_COFF -D_SCO_COFF} \
   %{melf:%{fpic:-D__PIC__ -D__pic__} \
          %{fPIC:%{!fpic:-D__PIC__ -D__pic__}}} \
   %{Xa:-D_SCO_C_DIALECT=1} \
-   %{!Xa:%{Xc:-D_SCO_C_DIALECT=3} \
-    %{!Xc:%{Xk:-D_SCO_C_DIALECT=4} \
-     %{!Xk:%{Xt:-D_SCO_C_DIALECT=2  \
-             %{!traditional:-traditional -D_KR -D_NO_PROTOTYPE}}}}} \
+  %{!Xa:%{Xc:-D_SCO_C_DIALECT=3} \
+   %{!Xc:%{Xk:-D_SCO_C_DIALECT=4} \
+    %{!Xk:%{Xt:-D_SCO_C_DIALECT=2} \
+     %{!Xt:-D_SCO_C_DIALECT=1}}}} \
   %{traditional:-traditional -D_KR -D_NO_PROTOTYPE}"
 
 #undef LINK_SPEC
@@ -879,7 +857,7 @@ dtors_section ()							\
   %{!YP,*:%{p:-YP,/usr/ccs/libp:/lib/libp:/usr/lib/libp:/usr/ccs/lib:/lib:/usr/lib} \
    %{!p:-YP,/usr/ccs/lib:/lib:/usr/lib}} \
   %{h*} %{static:-dn -Bstatic} %{shared:-G -dy %{!z*:-z text}} \
-  %{symbolic:-Bsymbolic -G -dy %{!z*:-z text}} \
+  %{symbolic:-Bsymbolic -G -dy %{!z*:-z text}} %{z*} %{R*} %{Y*} \
   %{G:-G} %{melf:%{Qn:} %{!Qy:-Qn}}"
 
 /* Library spec. If we are not building a shared library, provide the
@@ -912,44 +890,28 @@ compiler at the end of the day. Onward we go ...
 */
 
 #if defined(CRT_BEGIN) || defined(CRT_END) || defined(IN_LIBGCC2)
+# undef OBJECT_FORMAT_ELF
+# undef HAVE_ATEXIT
+# undef INIT_SECTION_ASM_OP
+# undef FINI_SECTION_ASM_OP
+# undef CTORS_SECTION_ASM_OP
+# undef DTORS_SECTION_ASM_OP
+# undef CTOR_LIST_BEGIN
+# undef CTOR_LIST_END
+# undef DO_GLOBAL_CTORS_BODY
+
 # if defined (_SCO_ELF)
-#  undef OBJECT_FORMAT_ELF
 #  define OBJECT_FORMAT_ELF
-#  undef INIT_SECTION_ASM_OP
-#  undef FINI_SECTION_ASM_OP
-#  undef DTORS_SECTION_ASM_OP
-#  undef CTORS_SECTION_ASM_OP
-#  undef CTOR_LIST_BEGIN
-#  undef CTOR_LIST_END
-#  undef DO_GLOBAL_CTORS_BODY
+#  define HAVE_ATEXIT
 #  define INIT_SECTION_ASM_OP INIT_SECTION_ASM_OP_ELF
 #  define FINI_SECTION_ASM_OP FINI_SECTION_ASM_OP_ELF
 #  define DTORS_SECTION_ASM_OP DTORS_SECTION_ASM_OP_ELF
 #  define CTORS_SECTION_ASM_OP CTORS_SECTION_ASM_OP_ELF
-#  define CTOR_LIST_BEGIN asm (CTORS_SECTION_ASM_OP_ELF); \
-    STATIC func_ptr __CTOR_LIST__[1] = { (func_ptr) (-1) };
-#  define DO_GLOBAL_CTORS_BODY						\
-do {									\
-    unsigned long nptrs = (unsigned long) __CTOR_LIST__[0];		\
-    unsigned i;								\
-    if (nptrs == -1)							\
-      for (nptrs=0; __CTOR_LIST__[nptrs+1] != 0; nptrs++);		\
-    for (i = nptrs; i >= 1; i--)					\
-      __CTOR_LIST__[i] ();						\
-} while (0)
 # else /* ! _SCO_ELF */
-#  undef OBJECT_FORMAT_ELF
-#  undef INIT_SECTION_ASM_OP
-#  undef FINI_SECTION_ASM_OP
-#  undef DTORS_SECTION_ASM_OP
-#  undef CTORS_SECTION_ASM_OP
 #  define INIT_SECTION_ASM_OP INIT_SECTION_ASM_OP_COFF
 #  define FINI_SECTION_ASM_OP FINI_SECTION_ASM_OP_COFF
 #  define DTORS_SECTION_ASM_OP DTORS_SECTION_ASM_OP_COFF
 #  define CTORS_SECTION_ASM_OP CTORS_SECTION_ASM_OP_COFF
-#  undef CTOR_LIST_BEGIN
-#  undef CTOR_LIST_END
-#  undef DO_GLOBAL_CTORS_BODY
 #  define CTOR_LIST_BEGIN asm (INIT_SECTION_ASM_OP); asm ("pushl $0")
 #  define CTOR_LIST_END CTOR_LIST_BEGIN
 #  define DO_GLOBAL_CTORS_BODY						\
