@@ -11315,7 +11315,7 @@ else
 	if test x$gcc_cv_objdump != x \
        && $gcc_cv_objdump -s -j .text conftest.o 2> /dev/null \
           | grep ' 82106000 82106000' > /dev/null 2>&1; then
-	 gcc_cv_as_offsetable_lo10=yes
+	 gcc_cv_as_sparc_offsetable_lo10=yes
        fi
     else
       echo "configure: failed program was" >&5

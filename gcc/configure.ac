@@ -2403,7 +2403,7 @@ foo:
       [if test x$gcc_cv_objdump != x \
        && $gcc_cv_objdump -s -j .text conftest.o 2> /dev/null \
           | grep ' 82106000 82106000' > /dev/null 2>&1; then
-	 gcc_cv_as_offsetable_lo10=yes
+	 gcc_cv_as_sparc_offsetable_lo10=yes
        fi],
        [AC_DEFINE(HAVE_AS_OFFSETABLE_LO10, 1,
 	         [Define if your assembler supports offsetable %lo().])])
