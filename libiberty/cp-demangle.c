@@ -51,6 +51,8 @@
 #include <string.h>
 #endif
 
+#include <ctype.h>
+
 #include "ansidecl.h"
 #include "libiberty.h"
 #include "dyn-string.h"
@@ -1466,9 +1468,45 @@ demangle_identifier (dm, length, identifier)
 
   while (length-- > 0)
     {
+      int ch;
       if (end_of_name_p (dm))
 	return "Unexpected end of name in <identifier>.";
-      if (!dyn_string_append_char (identifier, next_char (dm)))
+      ch = next_char (dm);
+
+      /* Handle extended Unicode characters.  We encode them as __U{hex}_,
+         where {hex} omits leading 0's.  For instance, '$' is encoded as
+         "__U24_".  */
+      if (ch == '_'
+	  && peek_char (dm) == '_'
+	  && peek_char_next (dm) == 'U')
+	{
+	  char buf[10];
+	  int pos = 0;
+	  advance_char (dm); advance_char (dm); length -= 2;
+	  while (length-- > 0)
+	    {
+	      ch = next_char (dm);
+	      if (!isxdigit (ch))
+		break;
+	      buf[pos++] = ch;
+	    }
+	  if (ch != '_' || length < 0)
+	    return STATUS_ERROR;
+	  if (pos == 0)
+	    {
+	      /* __U_ just means __U.  */
+	      if (!dyn_string_append_cstr (identifier, "__U"))
+		return STATUS_ALLOCATION_FAILED;
+	      continue;
+	    }
+	  else
+	    {
+	      buf[pos] = '\0';
+	      ch = strtol (buf, 0, 16);
+	    }
+	}
+
+      if (!dyn_string_append_char (identifier, ch))
 	return STATUS_ALLOCATION_FAILED;
     }
 

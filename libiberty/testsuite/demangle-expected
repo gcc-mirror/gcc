@@ -2587,6 +2587,10 @@ JArray.t(JArray[])
 _ZN4Prim1iEibcdfwPN4java4lang6StringEsx
 Prim.i(int, boolean, byte, double, float, char, java.lang.String, short, long)
 #
+--format=java
+_ZN4java4util14Map__U24_Entry11class__U24_E
+java.util.Map$Entry.class$
+#
 --format=hp
 _Utf58_0_1__1_2147483647__2147483648
 _Utf58_0_1__1_2147483647__2147483648
