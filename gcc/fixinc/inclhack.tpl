@@ -15,6 +15,9 @@ sh
 #
 # See README-fixinc for more information.
 #
+#  fixincludes copyright (c) [=_eval "date +%Y" _shell
+                                =] The Free Software Foundation, Inc.
+#
 [=_eval fixincludes "## " _gpl=]
 #
 # # # # # # # # # # # # # # # # # # # # #
@@ -334,9 +337,9 @@ while [ $# != 0 ]; do
   cd ${INPUT}[=
 _IF PROGRAM _env ! =]
   files=`if $LINKS; then
-    find ${FIND_BASE}/. \( -type f -o \( -type l -exec test ! -d {} \; \) \) -print
+    find ${FIND_BASE}/. -name '*.h' \( -type f -o -type l \) -print
   else
-    find ${FIND_BASE}/. -type f -print
+    find ${FIND_BASE}/. -name '*.h' -type f -print
   fi | \
     sed -e 's;/\./;/;g' -e 's;//*;/;g' `
 [=
@@ -347,9 +350,9 @@ _IF PROGRAM _env ! =]
 
 =]
   required="$required `if $LINKS; then
-    find ${FIND_BASE}/. \( -type f -o -type l \) -print
+    find ${FIND_BASE}/. -name '*.h' \( -type f -o -type l \) -print
   else
-    find ${FIND_BASE}/. -type f -print
+    find ${FIND_BASE}/. -name '*.h' -type f -print
   fi | \
     sed -e 's;/\./;/;g' -e 's;//*;/;g' | \
     ${FIXINCL}`"[=
