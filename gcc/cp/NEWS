@@ -1,5 +1,7 @@
 *** Changes in GCC 3.0:
 
+* Support for signatures, a G++ extension, have been removed.
+
 * Certain invalid conversions that were previously accepted will now
   be rejected.  For example, assigning function pointers of one type
   to function pointers of another type now requires a cast, whereas
