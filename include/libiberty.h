@@ -261,14 +261,14 @@ extern double physmem_available PARAMS ((void));
 
 #define XNEW(T)			((T *) xmalloc (sizeof (T)))
 #define XCNEW(T)		((T *) xcalloc (1, sizeof (T)))
-#define XDELETE(P)		free ((P))
+#define XDELETE(P)		free ((void*) (P))
 
 /* Array allocators.  */
 
 #define XNEWVEC(T, N)		((T *) xmalloc (sizeof (T) * (N)))
 #define XCNEWVEC(T, N)		((T *) xcalloc ((N), sizeof (T)))
-#define XRESIZEVEC(T, P, N)	((T *) xrealloc ((P), sizeof (T) * (N)))
-#define XDELETEVEC(P)		free ((P))
+#define XRESIZEVEC(T, P, N)	((T *) xrealloc ((void *) (P), sizeof (T) * (N)))
+#define XDELETEVEC(P)		free ((void*) (P))
 
 /* Allocators for variable-sized structures and raw buffers.  */
 

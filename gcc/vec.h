@@ -390,7 +390,7 @@ static inline int VEC_OP (TDEF,iterate)			  	     	  \
 static inline VEC (TDEF) *VEC_OP (TDEF,alloc)				  \
      (int alloc_ MEM_STAT_DECL)						  \
 {									  \
-  return vec_p_reserve (NULL, alloc_ - !alloc_ PASS_MEM_STAT);		  \
+  return (VEC (TDEF) *) vec_p_reserve (NULL, alloc_ - !alloc_ PASS_MEM_STAT);\
 }									  \
 									  \
 static inline size_t VEC_OP (TDEF,embedded_size)			  \
@@ -419,7 +419,7 @@ static inline int VEC_OP (TDEF,reserve)	       				  \
   int extend = VEC_OP (TDEF,space) (*vec_, alloc_);			  \
 		  							  \
   if (extend)	  							  \
-    *vec_ = vec_p_reserve (*vec_, alloc_ PASS_MEM_STAT);		  \
+    *vec_ = (VEC (TDEF) *) vec_p_reserve (*vec_, alloc_ PASS_MEM_STAT);   \
 		  							  \
   return extend;							  \
 }									  \
@@ -583,9 +583,9 @@ static inline int VEC_OP (TDEF,iterate)			  	     	  \
 static inline VEC (TDEF) *VEC_OP (TDEF,alloc)      			  \
      (int alloc_ MEM_STAT_DECL)						  \
 {									  \
-  return vec_o_reserve (NULL, alloc_ - !alloc_,				  \
-			offsetof (VEC(TDEF),vec), sizeof (TDEF)		  \
-			PASS_MEM_STAT);					  \
+  return (VEC (TDEF) *) vec_o_reserve (NULL, alloc_ - !alloc_,		  \
+                                       offsetof (VEC(TDEF),vec), sizeof (TDEF)\
+                                       PASS_MEM_STAT);			  \
 }									  \
 									  \
 static inline size_t VEC_OP (TDEF,embedded_size)			  \
@@ -614,7 +614,7 @@ static inline int VEC_OP (TDEF,reserve)	   	    			  \
   int extend = VEC_OP (TDEF,space) (*vec_, alloc_);			  \
 									  \
   if (extend)								  \
-    *vec_ = vec_o_reserve (*vec_, alloc_,				  \
+    *vec_ = (VEC (TDEF) *) vec_o_reserve (*vec_, alloc_,		  \
 			   offsetof (VEC(TDEF),vec), sizeof (TDEF)	  \
 			   PASS_MEM_STAT);				  \
 									  \

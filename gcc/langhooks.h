@@ -411,7 +411,7 @@ struct lang_hooks
      the name to be called if we can't opencode the function.  If
      ATTRS is nonzero, use that for the function's attribute list.  */
   tree (*builtin_function) (const char *name, tree type, int function_code,
-			    enum built_in_class class,
+			    enum built_in_class bt_class,
 			    const char *library_name, tree attrs);
 
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
