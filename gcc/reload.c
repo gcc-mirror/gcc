@@ -3033,6 +3033,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		   were handled in find_reloads_address.  */
 		this_alternative[i] = (int) MODE_BASE_REG_CLASS (VOIDmode);
 		win = 1;
+		badop = 0;
 		break;
 
 	      case 'm':

@@ -1,3 +1,7 @@
+Wed May  1 10:32:37 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reload.c (find_reloads, case 'p'): Set BADOP to 0.
+
 2002-05-01	Joel Sherrill <joel@OARcorp.com>
 
 	* config/sparc/t-elf (sparc-rtems, sparc-elf): Build assembly
