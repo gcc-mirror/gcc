@@ -44,6 +44,10 @@ port, build, and install `g77', *Note Problems Installing::.
 
      Fixed in `egcs' version 1.1.
 
+   * `g77' fails to warn about use of a "live" iterative-DO variable as
+     an implied-DO variable in a `WRITE' or `PRINT' statement (although
+     it does warn about this in a `READ' statement).
+
    * A compiler crash, or apparently infinite run time, can result when
      compiling complicated expressions involving `COMPLEX' arithmetic
      (especially multiplication).
@@ -156,15 +160,12 @@ port, build, and install `g77', *Note Problems Installing::.
      the same "broken" mechanism as that used by versions of `g77'
      prior to 0.5.20.
 
-   * There seem to be some problems with passing constants, and perhaps
-     general expressions (other than simple variables/arrays), to
-     procedures when compiling on some systems (such as i386) with
-     `-fPIC', as in when compiling for ELF targets.  The symptom is
-     that the assembler complains about invalid opcodes.  This bug is
-     in the gcc back end, and it apparently occurs only when compiling
-     sufficiently complicated functions *without* the `-O' option.
+   * `g77' sometimes produces invalid assembler code when using the
+     `-fPIC' option (such as compiling for ELF targets) on the Intel
+     x86 architecture target.  The symptom is that the assembler
+     complains about invalid opcodes.  This bug is in the gcc back end.
 
-     Fixed in `egcs' version 1.1.
+     Fixed in `egcs' version 1.0.2.
 
    * `g77' currently inserts needless padding for things like `COMMON
      A,IPAD' where `A' is `CHARACTER*1' and `IPAD' is `INTEGER(KIND=1)'
