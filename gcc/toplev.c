@@ -4247,18 +4247,21 @@ independent_decode_option (argc, argv)
     {
       display_help ();
       exit_after_options = 1;
+      return 1;
     }
 
   if (!strcmp (arg, "-target-help"))
     {
       display_target_options ();
       exit_after_options = 1;
+      return 1;
     }
 
   if (!strcmp (arg, "-version"))
     {
       print_version (stderr, "");
       exit_after_options = 1;
+      return 1;
     }
 
   /* Handle '--param <name>=<value>'.  */

@@ -1,3 +1,8 @@
+2003-03-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* toplev.c (independent_decode_option): Return success for --help,
+	--target-help and --version.
+
 2003-03-19  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/10073
