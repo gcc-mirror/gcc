@@ -1,3 +1,8 @@
+2003-06-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (init_cumulative_args): Limit CALL_LIBCALL
+	to ABI_V4.
+
 2003-06-18  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR bootstrap/4068
