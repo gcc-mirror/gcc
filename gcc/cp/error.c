@@ -1319,6 +1319,11 @@ dump_expr (tree t, int flags)
        pp_c_constant (pp_c_base (cxx_pp), t);
       break;
 
+    case THROW_EXPR:
+      pp_identifier (cxx_pp, "throw");
+      dump_expr (TREE_OPERAND (t, 0), flags);
+      break;
+
     case PTRMEM_CST:
       pp_ampersand (cxx_pp);
       dump_type (PTRMEM_CST_CLASS (t), flags);
