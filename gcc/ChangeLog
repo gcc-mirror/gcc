@@ -1,3 +1,9 @@
+2002-10-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*movdi_64"): Fix op_type attribute.
+	("*movdf_64"): Likewise.
+	("*lshrdi3_64"): Likewise.
+
 2002-10-21  Matthias Klose  <doko@debian.org>
 
 	* Backport, without whitespace change:
