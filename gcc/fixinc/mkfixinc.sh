@@ -13,8 +13,8 @@ echo constructing ${target} for $machine
 fixincludes="${target}"
 
 case $machine in
-	*-*-gnu*)
-		fixincludes=
+	i[34567]86-*-linux-gnu*)
+		fixincludes=fixinc.x86-linux-gnu
 		;;
 
 	*-*-sysv4*)
@@ -67,7 +67,7 @@ case $machine in
 	alpha*-dec-vms* | \
 	arm-semi-aout | armel-semi-aout | \
 	arm-semi-aof | armel-semi-aof | \
-	arm-*-linux-gnuaout* | \
+	arm-*-gnu* | \
 	c*-convex-* | \
 	hppa1.1-*-osf* | \
 	hppa1.0-*-osf* | \
@@ -91,13 +91,6 @@ case $machine in
 	powerpcle-*-pe | powerpcle-*-cygwin32 | \
 	thumb-*-coff* | thumbel-*-coff* )
 		fixincludes=
-		;;
-
-	i[34567]86-*-linux-gnulibc1 | \
-	i[34567]86-*-linux-gnuaout* | \
-	i[34567]86-*-linux-gnuoldld* | \
-	i[34567]86-*-linux-gnu*)
-		fixincludes=fixinc.x86-linux-gnu
 		;;
 
 	*-sgi-irix*)
