@@ -1220,6 +1220,27 @@ extern int lvalue_or_else		PROTO((tree, char *));
 
 extern tree save_expr			PROTO((tree));
 
+/* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
+   or offset that depends on a field within a record.
+
+   Note that we only allow such expressions within simple arithmetic
+   or a COND_EXPR.  */
+
+extern int contains_placeholder_p	PROTO((tree));
+
+/* Given a tree EXP, a FIELD_DECL F, and a replacement value R,
+   return a tree with all occurrences of references to F in a
+   PLACEHOLDER_EXPR replaced by R.   Note that we assume here that EXP
+   contains only arithmetic expressions.  */
+
+extern tree substitute_in_expr		PROTO((tree, tree, tree));
+
+/* Given a type T, a FIELD_DECL F, and a replacement value R,
+   return a new type with all size expressions that contain F
+   updated by replacing the reference to F with R.  */
+
+extern tree substitute_in_type		PROTO((tree, tree, tree));
+
 /* variable_size (EXP) is like save_expr (EXP) except that it
    is for the special case of something that is part of a
    variable size for a data type.  It makes special arrangements
