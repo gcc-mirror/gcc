@@ -1,3 +1,31 @@
+Tue Nov  9 14:55:44 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/m32r/m32r-protos.h: New file: Prototypes for functions
+	defined in m32r.c
+	
+	* config/m32r/m32r.h: Move prototypes to m32r-protos.h
+	Add support for subtargets.
+	Add prototypes for new predicates.
+	Add scheduling macros.
+	
+	* config/m32r/m32r.c: Fix compile time warnings.
+	(int8_operand): New predicate function.
+	(reg_or_cmp_int16_operand): New predicate function.
+	(extend_operand): New predicate function.
+	(m32r_adjust_code): New scheduling function.
+	(m32r_adjust_priorty): New scheduling function.
+	(m32r_sched_init): New scheduling function.
+	(m32r_sched_reorder): New scheduling function.
+	(m32r_sched_variable_issue): New scheduling function.
+	(direct_return): New codegen function.
+	(m32r_not_same_reg): New rtl testsing function.
+	
+	* config/m32r/m32r.md: Fix compile time warnings.
+	Add support for pre decrement and post increment memory
+	references.
+	Add S<cc> patterns.
+	Add fabs patterns.
+	
 Mon Nov  8 22:20:13 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* global.c (EXECUTE_IF_CONFLICT): Don't define.
