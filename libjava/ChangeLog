@@ -1,3 +1,11 @@
+2004-10-12  Rutger Ovidius  <ovidr@users.sourceforge.net>
+
+	PR libgcj/17903:
+	* testsuite/libjava.lang/md5test.java: New file.
+	* testsuite/libjava.lang/md5test.out: Likewise.
+	* testsuite/libjava.lang/shatest.java: Likewise.
+	* testsuite/libjava.lang/shatest.out: Likewise.
+
 2004-10-11  Richard Henderson  <rth@redhat.com>
 
 	* include/posix-threads.h <__alpha__> (_Jv_ThreadId_t): Use void*.
