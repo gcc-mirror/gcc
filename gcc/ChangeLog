@@ -1,3 +1,10 @@
+2005-01-31  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR target/19704
+	* config/i386/i386.c (ix86_function_ok_for_sibcall):  Also check
+	that dllimport'd functions do not use all call-clobbered registers
+	to pass parameters.
+
 2005-01-30  Richard Henderson  <rth@redhat.com>
 
 	PR 19696
