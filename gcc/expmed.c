@@ -1233,22 +1233,16 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     {
       if (mode1 != GET_MODE (op0))
 	{
-	  if (GET_CODE (op0) == SUBREG)
-	    {
-	      if (GET_MODE (SUBREG_REG (op0)) == mode1
-		  || GET_MODE_CLASS (mode1) == MODE_INT
-		  || GET_MODE_CLASS (mode1) == MODE_PARTIAL_INT)
-		op0 = SUBREG_REG (op0);
-	      else
-		/* Else we've got some float mode source being extracted into
-		   a different float mode destination -- this combination of
-		   subregs results in Severe Tire Damage.  */
-		goto no_subreg_mode_swap;
-	    }
-	  if (REG_P (op0))
-	    op0 = gen_rtx_SUBREG (mode1, op0, byte_offset);
-	  else
+	  if (MEM_P (op0))
 	    op0 = adjust_address (op0, mode1, offset);
+	  else
+	    {
+	      rtx sub = simplify_gen_subreg (mode1, op0, GET_MODE (op0),
+					     byte_offset);
+	      if (sub == NULL)
+		goto no_subreg_mode_swap;
+	      op0 = sub;
+	    }
 	}
       if (mode1 != mode)
 	return convert_to_mode (tmode, op0, unsignedp);
@@ -1628,19 +1622,41 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     return spec_target;
   if (GET_MODE (target) != tmode && GET_MODE (target) != mode)
     {
-      /* If the target mode is floating-point, first convert to the
-	 integer mode of that size and then access it as a floating-point
-	 value via a SUBREG.  */
-      if (GET_MODE_CLASS (tmode) != MODE_INT
-	  && GET_MODE_CLASS (tmode) != MODE_PARTIAL_INT)
+      /* If the target mode is complex, then extract the two scalar elements
+	 from the value now.  Creating (subreg:SC (reg:DI) 0), as we would do
+	 with the clause below, will cause gen_realpart or gen_imagpart to
+	 fail, since those functions must return lvalues.  */
+      if (COMPLEX_MODE_P (tmode))
 	{
+	  rtx realpart, imagpart;
+	  enum machine_mode itmode = GET_MODE_INNER (tmode);
+
 	  target = convert_to_mode (mode_for_size (GET_MODE_BITSIZE (tmode),
 						   MODE_INT, 0),
 				    target, unsignedp);
+
+	  realpart = extract_bit_field (target, GET_MODE_BITSIZE (itmode), 0,
+					unsignedp, NULL, itmode, itmode);
+	  imagpart = extract_bit_field (target, GET_MODE_BITSIZE (itmode),
+					GET_MODE_BITSIZE (itmode), unsignedp,
+					NULL, itmode, itmode);
+
+	  return gen_rtx_CONCAT (tmode, realpart, imagpart);
+	}
+
+      /* If the target mode is not a scalar integral, first convert to the
+	 integer mode of that size and then access it as a floating-point
+	 value via a SUBREG.  */
+      if (!SCALAR_INT_MODE_P (tmode))
+	{
+	  enum machine_mode smode
+	    = mode_for_size (GET_MODE_BITSIZE (tmode), MODE_INT, 0);
+	  target = convert_to_mode (smode, target, unsignedp);
+	  target = force_reg (smode, target);
 	  return gen_lowpart (tmode, target);
 	}
-      else
-	return convert_to_mode (tmode, target, unsignedp);
+
+      return convert_to_mode (tmode, target, unsignedp);
     }
   return target;
 }
