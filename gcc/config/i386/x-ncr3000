@@ -36,9 +36,3 @@ CLIB=-lc /usr/ucblib/libucb.a
 # and that it is easy enough to debug using shared libraries.
 # CCLIBFLAGS=-Bstatic -dn -g
 # GCC_CFLAGS=-static -g -O2 -B./
-
-# For svr4 we link stuff *without* dynamic libraries for now... at least
-# until there is a version of GDB which understands *both* Dwarf *and*
-# svr4 shared libraries.
-
-X_CFLAGS=-static
