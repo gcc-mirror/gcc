@@ -1,3 +1,7 @@
+2003-10-21  Eric Christopher  <echristo@redhat.com>
+
+	* expr.c (convert_move): Use FLOAT_EXTEND for extensions.
+
 2003-10-21  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-pch.c: Add comments in various places.

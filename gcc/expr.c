@@ -634,8 +634,10 @@ convert_move (rtx to, rtx from, int unsignedp)
 				       1, from, from_mode);
       insns = get_insns ();
       end_sequence ();
-      emit_libcall_block (insns, to, value, gen_rtx_FLOAT_TRUNCATE (to_mode,
-								    from));
+      emit_libcall_block (insns, to, value,
+			  tab == trunc_optab ? gen_rtx_FLOAT_TRUNCATE (to_mode,
+								       from)
+			  : gen_rtx_FLOAT_EXTEND (to_mode, from));
       return;
     }
 
@@ -1398,7 +1400,7 @@ block_move_libcall_safe_for_call_parm (void)
   if (PUSH_ARGS)
     return true;
 
-  /* If registers go on the stack anyway, any argument is sure to clobber 
+  /* If registers go on the stack anyway, any argument is sure to clobber
      an outgoing argument.  */
 #if defined (REG_PARM_STACK_SPACE) && defined (OUTGOING_REG_PARM_STACK_SPACE)
   {
@@ -1414,10 +1416,10 @@ block_move_libcall_safe_for_call_parm (void)
   {
     CUMULATIVE_ARGS args_so_far;
     tree fn, arg;
-    
+
     fn = emit_block_move_libcall_fn (false);
     INIT_CUMULATIVE_ARGS (args_so_far, TREE_TYPE (fn), NULL_RTX, 0);
-    
+
     arg = TYPE_ARG_TYPES (TREE_TYPE (fn));
     for ( ; arg != void_list_node ; arg = TREE_CHAIN (arg))
       {
@@ -1830,7 +1832,7 @@ gen_group_rtx (rtx orig)
 /* Emit code to move a block ORIG_SRC of type TYPE to a block DST,
    where DST is non-consecutive registers represented by a PARALLEL.
    SSIZE represents the total size of block ORIG_SRC in bytes, or -1
-   if not known.  */ 
+   if not known.  */
 
 void
 emit_group_load (rtx dst, rtx orig_src, tree type ATTRIBUTE_UNUSED, int ssize)
@@ -7106,7 +7108,7 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 					  (TYPE_QUALS (TREE_TYPE (tem))
 					   | TYPE_QUAL_CONST));
 		rtx memloc = assign_temp (nt, 1, 1, 1);
-		
+
 		emit_move_insn (memloc, op0);
 		op0 = memloc;
 	      }
@@ -9550,7 +9552,7 @@ do_store_flag (tree exp, rtx target, enum machine_mode mode, int only_cheap)
     {
       tree type = (*lang_hooks.types.type_for_mode) (mode, unsignedp);
       return expand_expr (fold_single_bit_test (code == NE ? NE_EXPR : EQ_EXPR,
-						arg0, arg1, type), 
+						arg0, arg1, type),
 			  target, VOIDmode, EXPAND_NORMAL);
     }
 
