@@ -1,3 +1,9 @@
+2002-01-26  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* configure.in (*-*-netbsd*): New.  Skip target-newlib, 
+	target-libiberty, and target-libgloss.  Skip Java-related 
+	libraries if not supported for NetBSD on target CPU.
+
 2002-01-25  Douglas B Rupp  <rupp@gnat.com>
 
 	* install-sh: Use _inst.$$_ for temp file name.
