@@ -1139,8 +1139,8 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
 	    else_bb->end = PREV_INSN (insn_b);
 	  reorder_insns (insn_b, insn_b, PREV_INSN (if_info.cond_earliest));
 	  insn_b = NULL_RTX;
-	  x = orig_x;
 	}
+      x = orig_x;
       goto success;
     }
 
