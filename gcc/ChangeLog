@@ -17,6 +17,9 @@ Wed Dec 15 02:19:32 1999  David Edelsohn  <edelsohn@gnu.org>
 
 1999-12-14  Jason Merrill  <jason@casey.cygnus.com>
 
+	* dwarf2out.c (add_abstract_origin_attribute): Do call abort if
+	the abstract origin wasn't emitted.
+
 	* dwarf2out.c (class_scope_p): New fn.
 	(gen_subprogram_die): Use it.
 	(gen_variable_die): Use it.  Tweak logic.

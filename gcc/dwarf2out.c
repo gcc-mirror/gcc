@@ -7511,7 +7511,7 @@ add_abstract_origin_attribute (die, origin)
     origin_die = lookup_type_die (origin);
 
   if (origin_die == NULL)
-    return;
+    abort ();
   
   add_AT_die_ref (die, DW_AT_abstract_origin, origin_die);
 }
