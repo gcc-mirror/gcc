@@ -1,5 +1,95 @@
 1999-09-17  Mark Mitchell  <mark@codesourcery.com>
 
+        Turn on function-at-a-time processing.  
+	* cp-tree.h (doing_semantic_analysis_p): New macro.
+	(SF_DEFAULT): Define to zero, not SF_EXPAND.
+	(start_handler_parms): Change prototype.
+	(expand_start_catch_block): Likewise.
+	(expand_end_catch_block): Likewise.
+	(expand_start_eh_spec): Likewise.
+	(expand_end_eh_spec): Declare.
+	(finish_handler_parms): Change prototype.
+	(begin_catch_block): Declare.
+	(finish_handler): Change prototype.
+	(do_pushlevel): Declare.
+	(do_poplevel): Likewise.  
+	* decl.c (pushlevel): Don't create
+	binding levels when not doing semantic analysis.
+	(poplevel): Don't pop them.
+	(pushdecl): Assert that we are never called when not doing
+	semantic analysis.
+	(pushdecl_top_level): Use push_to_top_level.
+	(make_label_decl): Don't fiddle with obstacks.  Make RTL For the
+	label when expanding.
+	(cp_finish_decl): Only inject for-scope variables when doing
+	semantic analysis.  Add comments.
+	(start_handler_parms): Return the handler parm.
+	(start_function): Reorganize.  Don't clear DECL_INITIAL if it is
+	already set.  Reinitialize from saved function data if available.
+	Don't pushlevel when not doing semantic analysis.
+	(store_parm_decls): Only generate RTL when expanding.  Only
+	pushdecl when doing semantic analysis.  Set
+	current_eh_spec_try_block if appropriate.
+	(finish_function): Simplify.  Use do_pushlevel and do_poplevel.
+	Combine common code.  Don't poplevel when not doing semantic
+	analysis.
+	(push_cp_function_context): Don't expand functions without an
+	explicit call to expand_body.
+	(mark_lang_function): Make eh_spec_try_block and
+	x_scope_stmt_stack.  
+	* except.c (expand_end_eh_spec): Don't
+	declare.
+	(process_start_catch_block): Likewise.
+	(push_eh_cleanup): Use finish_decl_cleanup.
+	(initialize_handler_parm): New function.
+	(expand_start_catch_block): Use it.
+	(expand_end_catch_block): Use tree-generation functions, not
+	RTL-generation functions.
+	(expand_start_eh_spec): Likewise.
+	(expand_end_eh_spec): Likewise.
+	(expand_exception_blocks): Simplify.
+	(start_anon_func): Use do_pushlevel.
+	(end_anon_func): Use do_poplvel.  Call expand_body for the
+	function.  
+	* expr.c (do_case): Don't call define_case_label.  
+	* init.c (create_temporary_var): Set DECL_CONTEXT for local
+	variables.  
+	* method.c (emit_thunk): Call expand_body for the
+	thunk.
+	(sythesize_method): Likewise.  
+	* parse.y (handler_args): Give it ttype.
+	(eat_saved_input): Call expand_body.
+	(base_init): Use do_pushlevel.
+	(pending_inline): Call expand_body.
+	(handler): Adjust calls to finish_handler_parms and
+	finish_handler.
+	(handler_args): Don't call expand_start_catch_block.  Return the
+	catch parameter.  * pt.c (tsubst_expr): Adjust HANDLER handling.
+	* parse.c: Regenerated.
+	* rtti.c (synthesize_tinfo_fn): Call finish_function.  
+	* semantics.c (do_pushlevel): Give it external linkage.  Build
+	SCOPE_STMTs.
+	(do_poplevel): Likewise.
+	(finish_case_label): Call define_case_label when doing semantic
+	analysis.
+	(finish_goto_stmt): Create RTL for labels.
+	(finish_function_try_block): Set in_function_try_handler
+	unconditionally.
+	(finish_function_handler_sequence): Unset it.
+	(finish_handler_parms): Use expand_start_catch_block even when
+	building a statement-tree.
+	(begin_catch_block): New function.
+	(finish_handler): Move a little RTL-generation logic here.
+	(finish_decl_cleanup): Allow cleanups for empty declarations.
+	(finish_named_return_value): Don't pushdecl when not doing
+	semantic analysis.
+	(expand_stmt): Don't do semantic analysis for variable
+	declarations.  Handle START_CATCH_STMT.  Call expand_label
+	directly for a LABEL_STMT.  Tweak handling of GOTO_STMT.  Adjust
+	HANDLERs.  Handle SCOPE_STMT, CTOR_INITIALIZER, and RETURN_INIT.
+	(expand_body): Let expand_stmt handle CTOR_INITIALIZER,
+	RETURN_INIT and function try blocks.
+	
 	* cp-tree.h (language_function): Add x_eh_spec_try_block.  Add
 	x_scope_stmt_stack.  Add x_in_charge_parm.
 	(current_eh_spec_try_block): New macro.

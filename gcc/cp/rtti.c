@@ -1196,5 +1196,5 @@ synthesize_tinfo_fn (fndecl)
   pop_momentary ();
   /* Finish the function body.  */
   finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
-  finish_function (lineno, 0);
+  expand_body (finish_function (lineno, 0));
 }

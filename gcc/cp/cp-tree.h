@@ -747,6 +747,12 @@ struct language_function
 
 #define expanding_p cp_function_chain->x_expanding_p
 
+/* Non-zero if we are in the semantic analysis phase for the current
+   function.  */
+
+#define doing_semantic_analysis_p() \
+  (!expanding_p || !current_function->x_whole_function_mode_p)
+
 /* Non-zero if we should treat statements as full expressions.  In
    particular, this variable is no-zero if at the end of a statement
    we should destroy any temporaries created during that statement.
@@ -3022,11 +3028,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 				   result of a using declaration.  */
 
 /* Used with start function.  */
-#define SF_DEFAULT           SF_EXPAND
-                                /* No flags.  Temporarily, this is
-				   SF_EXPAND.  Once we are fully
-				   function-at-a-time, this will be
-				   0.  */
+#define SF_DEFAULT           0  /* No flags.  */
 #define SF_PRE_PARSED        1  /* The function declaration has
 				   already been parsed.  */
 #define SF_INCLASS_INLINE    2  /* The function is an inline, defined
@@ -3237,7 +3239,7 @@ extern void finish_decl				PROTO((tree, tree, tree));
 extern void maybe_inject_for_scope_var          PROTO((tree));
 extern void initialize_local_var                PROTO((tree, tree, int));
 extern void expand_static_init			PROTO((tree, tree));
-extern void start_handler_parms                 PROTO((tree, tree));
+extern tree start_handler_parms                 PROTO((tree, tree));
 extern int complete_array_type			PROTO((tree, tree, int));
 extern tree build_ptrmemfunc_type		PROTO((tree));
 /* the grokdeclarator prototype is in decl.h */
@@ -3389,10 +3391,11 @@ extern int cp_line_of				PROTO((tree));
 
 /* in except.c */
 extern void init_exception_processing		PROTO((void));
-extern void expand_start_catch_block		PROTO((tree));
-extern void expand_end_catch_block		PROTO((void));
+extern tree expand_start_catch_block		PROTO((tree));
+extern void expand_end_catch_block		PROTO((tree));
 extern void expand_builtin_throw		PROTO((void));
-extern void expand_start_eh_spec		PROTO((void));
+extern tree expand_start_eh_spec		PROTO((void));
+extern void expand_end_eh_spec		        PROTO((tree, tree));
 extern void expand_exception_blocks		PROTO((void));
 extern tree start_anon_func			PROTO((void));
 extern void end_anon_func			PROTO((void));
@@ -3660,9 +3663,9 @@ extern void finish_function_try_block           PROTO((tree));
 extern void finish_function_handler_sequence    PROTO((tree));
 extern void finish_cleanup_try_block            PROTO((tree));
 extern tree begin_handler                       PROTO((void));
-extern void start_handler_parms                 PROTO((tree, tree));
-extern void finish_handler_parms                PROTO((tree));
-extern void finish_handler                      PROTO((tree));
+extern tree finish_handler_parms                PROTO((tree, tree));
+extern void begin_catch_block                   PROTO((tree));
+extern void finish_handler                      PROTO((tree, tree));
 extern void finish_cleanup                      PROTO((tree, tree));
 extern tree begin_compound_stmt                 PROTO((int));
 extern tree finish_compound_stmt                PROTO((int, tree));
@@ -3713,6 +3716,8 @@ extern void expand_body                         PROTO((tree));
 extern void begin_stmt_tree                     PROTO((tree));
 extern void finish_stmt_tree                    PROTO((tree));
 extern void prep_stmt                           PROTO((tree));
+extern void do_pushlevel                        PROTO((void));
+extern tree do_poplevel                         PROTO((void));
 /* Non-zero if we are presently building a statement tree, rather
    than expanding each statement as we encounter it.  */
 #define building_stmt_tree()					  \

@@ -282,7 +282,7 @@ empty_parms ()
 %token TYPENAME_DEFN IDENTIFIER_DEFN PTYPENAME_DEFN
 %type <ttype> named_class_head_sans_basetype_defn
 %type <ttype> identifier_defn IDENTIFIER_DEFN TYPENAME_DEFN PTYPENAME_DEFN
-
+%type <ttype> handler_args
 %type <ttype> self_template_type .finish_template_type
 
 %token NSNAME
@@ -660,9 +660,9 @@ eat_saved_input:
 
 fndef:
 	  fn.def1 maybe_return_init ctor_initializer_opt compstmt_or_error
-		{ finish_function (lineno, (int)$3); }
+		{ expand_body (finish_function (lineno, (int)$3)); }
 	| fn.def1 maybe_return_init function_try_block
-		{ finish_function (lineno, (int)$3); }
+		{ expand_body (finish_function (lineno, (int)$3)); }
 	| fn.def1 maybe_return_init error
 		{ }
 	;
@@ -805,12 +805,8 @@ base_init:
 		    store_parm_decls ();
 
 		  if (DECL_CONSTRUCTOR_P (current_function_decl))
-		    {
-		      /* Make a contour for the initializer list.  */
-		      pushlevel (0);
-		      clear_last_expr ();
-		      expand_start_bindings (0);
-		    }
+		    /* Make a contour for the initializer list.  */
+		    do_pushlevel ();
 		  else if (current_class_type == NULL_TREE)
 		    error ("base initializers not allowed for non-member functions");
 		  else if (! DECL_CONSTRUCTOR_P (current_function_decl))
@@ -2073,12 +2069,12 @@ fn.defpen:
 pending_inline:
 	  fn.defpen maybe_return_init ctor_initializer_opt compstmt_or_error
 		{
-		  finish_function (lineno, (int)$3 | 2);
+		  expand_body (finish_function (lineno, (int)$3 | 2));
 		  process_next_inline ($1);
 		}
 	| fn.defpen maybe_return_init function_try_block
 		{ 
-		  finish_function (lineno, (int)$3 | 2); 
+		  expand_body (finish_function (lineno, (int)$3 | 2)); 
                   process_next_inline ($1);
 		}
 	| fn.defpen maybe_return_init error
@@ -3368,9 +3364,9 @@ handler:
 	  CATCH
                 { $<ttype>$ = begin_handler(); }
           handler_args
-                { finish_handler_parms ($<ttype>2); }
+                { $<ttype>$ = finish_handler_parms ($3, $<ttype>2); }
 	  compstmt
-                { finish_handler ($<ttype>2); }
+                { finish_handler ($<ttype>4, $<ttype>2); }
 	;
 
 type_specifier_seq:
@@ -3380,7 +3376,7 @@ type_specifier_seq:
 
 handler_args:
 	  '(' ELLIPSIS ')'
-		{ expand_start_catch_block (NULL_TREE); }
+		{ $$ = NULL_TREE; }
 	/* This doesn't allow reference parameters, the below does.
 	| '(' type_specifier_seq absdcl ')'
 		{ check_for_new_type ("inside exception declarations", $2);
@@ -3398,8 +3394,8 @@ handler_args:
 	| '(' parm ')'
 		{ 
 		  check_for_new_type ("inside exception declarations", $2);
-		  start_handler_parms (TREE_PURPOSE ($2.t),
-				       TREE_VALUE ($2.t));
+		  $$ = start_handler_parms (TREE_PURPOSE ($2.t),
+					    TREE_VALUE ($2.t));
 		}
 	;
 

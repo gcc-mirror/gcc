@@ -39,7 +39,6 @@ Boston, MA 02111-1307, USA.  */
 static void push_eh_cleanup PROTO((void));
 static tree build_eh_type_type PROTO((tree));
 static tree build_eh_type PROTO((tree));
-static void expand_end_eh_spec PROTO((tree));
 static tree call_eh_info PROTO((void));
 static void push_eh_info PROTO((void));
 static tree get_eh_info PROTO((void));
@@ -50,11 +49,11 @@ static tree get_eh_caught PROTO((void));
 static tree get_eh_handlers PROTO((void));
 #endif
 static tree do_pop_exception PROTO((void));
-static void process_start_catch_block PROTO((tree));
 static tree build_eh_type_type_ref PROTO((tree));
 static tree build_terminate_handler PROTO((void));
 static tree alloc_eh_object PROTO((tree));
 static int complete_ptr_ref_or_void_ptr_p PROTO((tree, tree));
+static void initialize_handler_parm PROTO((tree));
 
 #if 0
 /* This is the startup, and finish stuff per exception table.  */
@@ -483,7 +482,7 @@ push_eh_cleanup ()
 
   yes = suspend_momentary ();
   /* All cleanups must last longer than normal.  */
-  expand_decl_cleanup (NULL_TREE, do_pop_exception ());
+  finish_decl_cleanup (NULL_TREE, do_pop_exception ());
   resume_momentary (yes);
 }
 
@@ -499,131 +498,96 @@ build_terminate_handler ()
   return term;
 }
 
-/* Call this to start a catch block. Typename is the typename, and identifier
-   is the variable to place the object in or NULL if the variable doesn't
-   matter.  If typename is NULL, that means its a "catch (...)" or catch
-   everything.  In that case we don't need to do any type checking.
-   (ie: it ends up as the "else" clause rather than an "else if" clause) */
+/* Initialize the catch parameter DECL.  */
 
-void
+static void 
+initialize_handler_parm (decl)
+     tree decl;
+{
+  tree exp;
+  tree init;
+  tree init_type;
+
+  /* Make sure we mark the catch param as used, otherwise we'll get a
+     warning about an unused ((anonymous)).  */
+  TREE_USED (decl) = 1;
+
+  /* Figure out the type that the initializer is.  */
+  init_type = TREE_TYPE (decl);
+  if (TREE_CODE (init_type) != REFERENCE_TYPE
+      && TREE_CODE (init_type) != POINTER_TYPE)
+    init_type = build_reference_type (init_type);
+
+  exp = get_eh_value ();
+
+  /* Since pointers are passed by value, initialize a reference to
+     pointer catch parm with the address of the value slot.  */ 
+  if (TREE_CODE (init_type) == REFERENCE_TYPE 
+      && TREE_CODE (TREE_TYPE (init_type)) == POINTER_TYPE)
+    exp = build_unary_op (ADDR_EXPR, exp, 1);
+
+  exp = ocp_convert (init_type , exp, CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
+
+  init = convert_from_reference (exp);
+
+  /* If the constructor for the catch parm exits via an exception, we
+     must call terminate.  See eh23.C.  */
+  if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
+    {
+      /* Generate the copy constructor call directly so we can wrap it.
+	 See also expand_default_init.  */
+      init = ocp_convert (TREE_TYPE (decl), init,
+			  CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
+      init = build (TRY_CATCH_EXPR, TREE_TYPE (init), init,
+		    build_terminate_handler ());
+    }
+
+  /* Let `cp_finish_decl' know that this initializer is ok.  */
+  DECL_INITIAL (decl) = error_mark_node;
+  decl = pushdecl (decl);
+
+  start_decl_1 (decl);
+  cp_finish_decl (decl, init, NULL_TREE, 0,
+		  LOOKUP_ONLYCONVERTING|DIRECT_BIND);
+}
+
+/* Call this to start a catch block.  DECL is the catch parameter.  */
+
+tree
 expand_start_catch_block (decl)
      tree decl;
 {
-  if (building_stmt_tree ())
-    {
-      if (decl)
-	{
- 	  /* We must ensure that DECL_CONTEXT is set up before we call
- 	     push_template_decl; that code depends on DECL_CONTEXT
- 	     being set correctly.  */
- 	  DECL_CONTEXT (decl) = current_function_decl;
-	  if (processing_template_decl)
-	    decl = push_template_decl (decl);
-	  pushdecl (decl);
-	  add_decl_stmt (decl);
-	}
-      return;
-    }
+  tree compound_stmt_1;
+  tree compound_stmt_2;
+  tree type;
 
   if (! doing_eh (1))
-    return;
+    return NULL_TREE;
 
-  process_start_catch_block (decl);
-}
-
-/* This function performs the expand_start_catch_block functionality for 
-   exceptions implemented in the new style. __throw determines whether
-   a handler needs to be called or not, so the handler itself has to do
-   nothing additional. */
-
-static void 
-process_start_catch_block (decl)
-     tree decl;
-{
-  tree init;
-
-  /* Create a binding level for the eh_info and the exception object
-     cleanup.  */
-  pushlevel (0);
-  expand_start_bindings (0);
-
+  /* Make sure this declaration is reasonable.  */
   if (decl && !complete_ptr_ref_or_void_ptr_p (TREE_TYPE (decl), NULL_TREE))
     decl = NULL_TREE;
 
-  if (decl)
-    start_catch_handler (build_eh_type_type_ref (TREE_TYPE (decl)));
-  else
-    start_catch_handler (CATCH_ALL_TYPE);
+  /* Create a binding level for the eh_info and the exception object
+     cleanup.  */
+  compound_stmt_1 = begin_compound_stmt (/*has_no_scope=*/0);
 
-  emit_line_note (input_filename, lineno);
+  if (decl)
+    type = build_eh_type_type_ref (TREE_TYPE (decl));
+  else
+    type = NULL_TREE;
+  begin_catch_block (type);
 
   push_eh_info ();
+  push_eh_cleanup ();
+
+  /* Create a binding level for the parm.  */
+  compound_stmt_2 = begin_compound_stmt (/*has_no_scope=*/0);
 
   if (decl)
-    {
-      tree exp;
-      tree init_type;
+    initialize_handler_parm (decl);
 
-      /* Make sure we mark the catch param as used, otherwise we'll get
-	 a warning about an unused ((anonymous)).  */
-      TREE_USED (decl) = 1;
-
-      /* Figure out the type that the initializer is.  */
-      init_type = TREE_TYPE (decl);
-      if (TREE_CODE (init_type) != REFERENCE_TYPE
-	  && TREE_CODE (init_type) != POINTER_TYPE)
-	init_type = build_reference_type (init_type);
-
-      exp = get_eh_value ();
-
-      /* Since pointers are passed by value, initialize a reference to
-	 pointer catch parm with the address of the value slot.  */
-      if (TREE_CODE (init_type) == REFERENCE_TYPE
-	  && TREE_CODE (TREE_TYPE (init_type)) == POINTER_TYPE)
-	exp = build_unary_op (ADDR_EXPR, exp, 1);
-
-      exp = ocp_convert (init_type , exp, CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
-
-      push_eh_cleanup ();
-
-      /* Create a binding level for the parm.  */
-      pushlevel (0);
-      expand_start_bindings (0);
-
-      init = convert_from_reference (exp);
-
-      /* If the constructor for the catch parm exits via an exception, we
-         must call terminate.  See eh23.C.  */
-      if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
-	{
-	  /* Generate the copy constructor call directly so we can wrap it.
-	     See also expand_default_init.  */
-	  init = ocp_convert (TREE_TYPE (decl), init,
-			      CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
-	  init = build (TRY_CATCH_EXPR, TREE_TYPE (init), init,
-			build_terminate_handler ());
-	}
-
-      /* Let `cp_finish_decl' know that this initializer is ok.  */
-      DECL_INITIAL (decl) = init;
-      decl = pushdecl (decl);
-
-      start_decl_1 (decl);
-      cp_finish_decl (decl, init, NULL_TREE, 0,
-		      LOOKUP_ONLYCONVERTING|DIRECT_BIND);
-    }
-  else
-    {
-      push_eh_cleanup ();
-
-      /* Create a binding level for the parm.  */
-      pushlevel (0);
-      expand_start_bindings (0);
-
-      /* Fall into the catch all section.  */
-    }
-
-  emit_line_note (input_filename, lineno);
+  return build_tree_list (compound_stmt_1, compound_stmt_2);
 }
 
 
@@ -632,8 +596,12 @@ process_start_catch_block (decl)
    the label to jump to if this catch block didn't match.  */
 
 void
-expand_end_catch_block ()
+expand_end_catch_block (blocks)
+     tree blocks;
 {
+  tree compound_stmt_1 = blocks ? TREE_PURPOSE (blocks): NULL_TREE;
+  tree compound_stmt_2 = blocks ? TREE_VALUE (blocks): NULL_TREE;
+
   if (! doing_eh (1))
     return;
 
@@ -642,22 +610,12 @@ expand_end_catch_block ()
   if (in_function_try_handler
       && (DECL_CONSTRUCTOR_P (current_function_decl)
 	  || DECL_DESTRUCTOR_P (current_function_decl)))
-    expand_throw (NULL_TREE);
+    finish_expr_stmt (build_throw (NULL_TREE));
 
   /* Cleanup the EH parameter.  */
-  expand_end_bindings (getdecls (), kept_level_p (), 0);
-  poplevel (kept_level_p (), 1, 0);
-      
-  /* Cleanup the EH object.  */
-  expand_end_bindings (getdecls (), kept_level_p (), 0);
-  poplevel (kept_level_p (), 1, 0);
-
-  /* Fall to outside the try statement when done executing handler and
-     we fall off end of handler.  This is jump Lresume in the
-     documentation.  */
-  expand_goto (top_label_entry (&caught_return_label_stack));
-
-  end_catch_handler ();
+  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt_1);
+    /* Cleanup the EH object.  */
+  finish_compound_stmt (/*has_no_scope=*/0, compound_stmt_2);
 }
 
 /* An exception spec is implemented more or less like:
@@ -671,21 +629,25 @@ expand_end_catch_block ()
 
    __check_eh_spec in exception.cc handles all the details.  */
 
-void
+tree
 expand_start_eh_spec ()
 {
-  expand_start_try_stmts ();
+  return begin_try_block ();
 }
 
-static void
-expand_end_eh_spec (raises)
+void
+expand_end_eh_spec (raises, try_block)
      tree raises;
+     tree try_block;
 {
   tree tmp, fn, decl, types = NULL_TREE;
+  tree blocks;
+  tree handler;
   int count = 0;
 
-  expand_start_all_catch ();
-  expand_start_catch_block (NULL_TREE);
+  finish_try_block (try_block);
+  handler = begin_handler ();
+  blocks = finish_handler_parms (NULL_TREE, handler);
 
   /* Build up an array of type_infos.  */
   for (; raises && TREE_VALUE (raises); raises = TREE_CHAIN (raises))
@@ -733,10 +695,10 @@ expand_end_eh_spec (raises)
   tmp = tree_cons (NULL_TREE, build_int_2 (count, 0), 
 		   tree_cons (NULL_TREE, decl, NULL_TREE));
   tmp = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), tmp);
-  expand_expr (tmp, const0_rtx, VOIDmode, EXPAND_NORMAL);
+  finish_expr_stmt (tmp);
 
-  expand_end_catch_block ();
-  expand_end_all_catch ();
+  finish_handler (blocks, handler);
+  finish_handler_sequence (try_block);
 }
 
 /* This is called to expand all the toplevel exception handling
@@ -752,21 +714,6 @@ expand_exception_blocks ()
   do_pending_stack_adjust ();
   catch_clauses = get_insns ();
   end_sequence ();
-
-  /* Do this after we expand leftover cleanups, so that the
-     expand_eh_region_end that expand_end_eh_spec does will match the
-     right expand_eh_region_start, and make sure it comes out before
-     the terminate protected region.  */
-  if (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
-    {
-     expand_end_eh_spec (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)));
-     do_pending_stack_adjust ();
-     push_to_sequence (catch_clauses);
-     expand_leftover_cleanups ();
-     do_pending_stack_adjust ();
-     catch_clauses = get_insns ();
-     end_sequence ();
-    }
 
   if (catch_clauses)
     {
@@ -815,12 +762,7 @@ start_anon_func ()
   start_function (decl_tree_cons (NULL_TREE, get_identifier ("static"),
 				  void_list_node),
 		  t, NULL_TREE, SF_DEFAULT);
-  store_parm_decls ();
-  pushlevel (0);
-  clear_last_expr ();
-  push_momentary ();
-  expand_start_bindings (0);
-  emit_line_note (input_filename, lineno);
+  do_pushlevel ();
 
   interface_unknown = old_interface_unknown;
 
@@ -832,11 +774,9 @@ start_anon_func ()
 void
 end_anon_func ()
 {
-  expand_end_bindings (getdecls (), 1, 0);
-  poplevel (1, 0, 0);
-  pop_momentary ();
+  do_poplevel ();
 
-  finish_function (lineno, 0);
+  expand_body (finish_function (lineno, 0));
 
   pop_from_top_level ();
 }
