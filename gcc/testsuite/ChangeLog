@@ -1,5 +1,7 @@
 2004-01-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/init/copy7.C: Add missing dg-error markers.
+
 	PR c++/12226
 	* g++.dg/init/copy7.c: New test.
 
