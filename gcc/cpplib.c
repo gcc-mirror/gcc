@@ -42,10 +42,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define STANDARD_INCLUDE_DIR "/usr/include"
 #endif
 
-#ifndef LOCAL_INCLUDE_DIR
-#define LOCAL_INCLUDE_DIR "/usr/local/include"
-#endif
-
 #if 0 /* We can't get ptrdiff_t, so I arranged not to need PTR_INT_TYPE.  */
 #ifdef __STDC__
 #define PTR_INT_TYPE ptrdiff_t
@@ -375,15 +371,21 @@ static struct default_include {
     /* For cross-compilation, this dir name is generated
        automatically in Makefile.in.  */
     { CROSS_INCLUDE_DIR, 0, 0 },
+#ifdef TOOL_INCLUDE_DIR
     /* This is another place that the target system's headers might be.  */
     { TOOL_INCLUDE_DIR, 0, 1 },
+#endif
 #else /* not CROSS_COMPILE */
+#ifdef LOCAL_INCLUDE_DIR
     /* This should be /usr/local/include and should come before
        the fixincludes-fixed header files.  */
     { LOCAL_INCLUDE_DIR, 0, 1 },
+#endif
+#ifdef TOOL_INCLUDE_DIR
     /* This is here ahead of GCC_INCLUDE_DIR because assert.h goes here.
        Likewise, behind LOCAL_INCLUDE_DIR, where glibc puts its assert.h.  */
     { TOOL_INCLUDE_DIR, 0, 1 },
+#endif
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
     { GCC_INCLUDE_DIR, 0, 0 },
