@@ -522,6 +522,8 @@ attr_rtx (va_alist)
 
    rtx attr_printf (len, format, [arg1, ..., argn])  */
 
+#ifdef HAVE_VPRINTF
+
 /*VARARGS2*/
 static char *
 attr_printf (va_alist)
@@ -542,6 +544,24 @@ attr_printf (va_alist)
 
   return attr_string (str, strlen (str));
 }
+
+#else /* not HAVE_VPRINTF */
+
+static char *
+attr_printf (len, fmt, arg1, arg2, arg3)
+     int len;
+     char *fmt;
+     char *arg1, *arg2, *arg3; /* also int */
+{
+  register char *str;
+
+  /* Print the string into a temporary location.  */
+  str = (char *) alloca (len);
+  sprintf (str, fmt, arg1, arg2, arg3);
+
+  return attr_string (str, strlen (str));
+}
+#endif /* not HAVE_VPRINTF */
 
 /* Return a permanent (possibly shared) copy of a string STR (not assumed
    to be null terminated) with LEN bytes.  */
