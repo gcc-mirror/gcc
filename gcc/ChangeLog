@@ -1,3 +1,9 @@
+2000-02-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* fold-const.c (size_binop): Don't asert inputs are the same and
+	have TYPE_IS_SIZETYPE set.
+	(size_diffop): Likewise.
+
 2000-02-29  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarfout.c (output_block): Output abstract blocks even if they

@@ -1868,8 +1868,8 @@ size_binop (code, arg0, arg1)
 {
   tree type = TREE_TYPE (arg0);
 
-  if (type != TREE_TYPE (arg1)
-      || TREE_CODE (type) != INTEGER_TYPE || ! TYPE_IS_SIZETYPE (type))
+  if (TREE_CODE (type) != INTEGER_TYPE 
+      || TREE_CODE (TREE_TYPE (arg1)) != INTEGER_TYPE)
     abort ();
 
   /* Handle the special case of two integer constants faster.  */
@@ -1905,8 +1905,8 @@ size_diffop (arg0, arg1)
   tree type = TREE_TYPE (arg0);
   tree ctype;
 
-  if (TREE_TYPE (arg1) != type || TREE_CODE (type) != INTEGER_TYPE
-      || ! TYPE_IS_SIZETYPE (type))
+  if (TREE_CODE (type) != INTEGER_TYPE 
+      || TREE_CODE (TREE_TYPE (arg1)) != INTEGER_TYPE)
     abort ();
 
   /* If the type is already signed, just do the simple thing.  */
