@@ -231,9 +231,6 @@ private:
 	if (target->isPrimitive () || source->isPrimitive ())
 	  return false;
 
-	// Check array case first because we can have an array whose
-	// component type is not prepared; _Jv_IsAssignableFrom
-	// doesn't handle this correctly.
 	if (target->isArray ())
 	  {
 	    if (! source->isArray ())
@@ -241,11 +238,6 @@ private:
 	    target = target->getComponentType ();
 	    source = source->getComponentType ();
 	  }
-	// _Jv_IsAssignableFrom can handle a target which is an
-	// interface even if it hasn't been prepared.
-	else if ((target->state > JV_STATE_LINKED || target->isInterface ())
-		 && source->state > JV_STATE_LINKED)
-	  return _Jv_IsAssignableFrom (target, source);
 	else if (target->isInterface ())
 	  {
 	    for (int i = 0; i < source->interface_count; ++i)
@@ -912,8 +904,6 @@ private:
       stack[0] = t;
       for (int i = stacktop; i < max_stack; ++i)
 	stack[i] = unsuitable_type;
-
-      // FIXME: subroutine handling?
     }
 
     // Modify this state to reflect entry into a subroutine.
@@ -982,8 +972,14 @@ private:
 	    {
 	      if (locals[i].merge (state_old->locals[i], true, verifier))
 		{
+		  // Note that we don't call `note_variable' here.
+		  // This change doesn't represent a real change to a
+		  // local, but rather a merge artifact.  If we're in
+		  // a subroutine which is called with two
+		  // incompatible types in a slot that is unused by
+		  // the subroutine, then we don't want to mark that
+		  // variable as having been modified.
 		  changed = true;
-		  note_variable (i);
 		}
 	    }
 
@@ -1072,7 +1068,10 @@ private:
 	debug_print (".");
       debug_print ("    [local] ");
       for (i = 0; i < max_locals; ++i)
-	locals[i].print ();
+	{
+	  locals[i].print ();
+	  debug_print (local_changed[i] ? "+" : " ");
+	}
       if (subroutine == 0)
 	debug_print ("   | None");
       else
@@ -2055,6 +2054,7 @@ private:
 	      verify_fail ("can't happen: saw state::INVALID");
 	    if (PC == state::NO_NEXT)
 	      break;
+	    debug_print ("== State pop from pending list\n");
 	    // Set up the current state.
 	    current_state->copy (states[PC], current_method->max_stack,
 				 current_method->max_locals);
