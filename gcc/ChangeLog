@@ -1,3 +1,8 @@
+2003-01-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (pa_output_function_prologue, pa_output_function_epilogue): Move
+	updating of total_code_bytes from prologue to epilogue.
+
 2003-01-31  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload.c (find_reloads): Do not use the mode specified in the insn

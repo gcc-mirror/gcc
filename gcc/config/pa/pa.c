@@ -3306,26 +3306,6 @@ pa_output_function_prologue (file, size)
 
   fputs ("\n\t.ENTRY\n", file);
 
-  /* If we're using GAS and SOM, and not using the portable runtime model,
-     or function sections, then we don't need to accumulate the total number
-     of code bytes.  */
-  if ((TARGET_GAS && TARGET_SOM && ! TARGET_PORTABLE_RUNTIME)
-      || flag_function_sections)
-    total_code_bytes = 0;
-  else if (INSN_ADDRESSES_SET_P ())
-    {
-      unsigned long old_total = total_code_bytes;
-
-      total_code_bytes += INSN_ADDRESSES (INSN_UID (get_last_nonnote_insn ()));
-      total_code_bytes += FUNCTION_BOUNDARY / BITS_PER_UNIT;
-
-      /* Be prepared to handle overflows.  */
-      if (old_total > total_code_bytes)
-	total_code_bytes = -1;
-    }
-  else
-    total_code_bytes = -1;
-
   remove_useless_addtr_insns (get_insns (), 0);
 }
 
@@ -3647,6 +3627,7 @@ pa_output_function_epilogue (file, size)
      FILE *file;
      HOST_WIDE_INT size ATTRIBUTE_UNUSED;
 {
+  int last_address = 0;
   rtx insn = get_last_insn ();
 
   /* hppa_expand_epilogue does the dirty work now.  We just need
@@ -3669,9 +3650,36 @@ pa_output_function_epilogue (file, size)
   /* If insn is a CALL_INSN, then it must be a call to a volatile
      function (otherwise there would be epilogue insns).  */
   if (insn && GET_CODE (insn) == CALL_INSN)
-    fputs ("\tnop\n", file);
+    {
+      fputs ("\tnop\n", file);
+      last_address += 4;
+    }
 
   fputs ("\t.EXIT\n\t.PROCEND\n", file);
+
+  /* Finally, update the total number of code bytes output so far.  */
+  if ((TARGET_PORTABLE_RUNTIME || !TARGET_GAS || !TARGET_SOM)
+      && !flag_function_sections)
+    {
+      if (INSN_ADDRESSES_SET_P ())
+	{
+	  unsigned long old_total = total_code_bytes;
+
+	  insn = get_last_nonnote_insn ();
+	  last_address += INSN_ADDRESSES (INSN_UID (insn));
+	  if (INSN_P (insn))
+	    last_address += insn_default_length (insn);
+
+	  total_code_bytes += last_address;
+	  total_code_bytes += FUNCTION_BOUNDARY / BITS_PER_UNIT;
+
+	  /* Be prepared to handle overflows.  */
+	  if (old_total > total_code_bytes)
+	    total_code_bytes = -1;
+	}
+      else
+	total_code_bytes = -1;
+    }
 }
 
 void
