@@ -1,3 +1,24 @@
+2001-08-28  Eric Christopher <echristo@redhat.com>
+	    Richard Henderson <rth@redhat.com>
+
+	* c-pragma.h (add_weak): Move prototype from here...
+	* output.h (add_weak): ... to here.
+	* varasm.c (add_weak): Fix typo.
+	* config/mips/crti.asm: New file.
+	* config/mips/crtn.asm: Ditto.
+	* config/mips/elf.h (SBSS_SECTION_ASM_OP) Add #undef.
+	(CTOR_LISTS_DEFINED_EXTERNALLY): Remove.
+	(INVOKE__main): Ditto.
+	(INIT_SECTION_ASM_OP): New.
+	(FINI_SECTION_ASM_OP): Ditto.
+	(STARTFILE_SPEC): Add crti.
+	(ENDFILE_SPEC): Add crtn.
+	* config/mips/elf64.h: Same.
+	* config/mips/rtems64.h (INVOKE__main, NAME__MAIN, SYMBOL__MAIN):
+	Remove.
+	* config/mips/vxworks.h: Ditto.
+	* config/mips/t-elf: Support crti and crtn.
+
 2001-08-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* jump.c (mark_jump_label): Fix typo: REG_LABEL is EXPR_LIST, not
@@ -47,7 +68,7 @@
 	bordered, bunordered, buneq, bunge, bungt, bunle, bunlt, bltgt,
 	bordered_rev, bunordered_rev, buneq_rev, bunge_rev, bungt_rev,
 	bunle_rev, bunlt_rev, bltgt_rev): New patterns.
-	
+
 2001-08-27  Roman Zippel  <zippel@linux-m68k.org>
 
 	* config/m68k/m68k.md (subreghi1ashrdi_const32, bsetmemqi,
@@ -104,13 +125,13 @@
 	PRESENCE_SET, ABSENCE_SET, DEFINE_BYPASS, DEFINE_AUTOMATON,
 	AUTOMATA_OPTION, DEFINE_RESERVATION, DEFINE_INSN_RESERVATION): New
 	RTL constructions.
-	
+
 	* genattr.c (main): New variable num_insn_reservations.  Increase
 	it if there is DEFINE_INSN_RESERVATION.  Output automaton based
 	pipeline hazard recognizer interface.
 
 	* genattrtab.h: New file.
-	
+
 	* genattrtab.c: Include genattrtab.h.
 	(attr_printf, check_attr_test, make_internal_attr,
 	make_numeric_value): Move protypes into genattrtab.h.  Define them
@@ -124,11 +145,11 @@
 	* genautomata.c: New file.
 
 	* rtl.h (LINK_COST_ZERO, LINK_COST_FREE): Remove them.
-	
+
 	* sched-int.h: (curr_state): Add the external definition for
 	automaton pipeline interface.
 	(haifa_insn_data): Add comments for members blockage and units.
-	
+
 	* target-def.h (TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE,
 	TARGET_SCHED_INIT_DFA_PRE_CYCLE_INSN,
 	TARGET_SCHED_DFA_PRE_CYCLE_INSN,
@@ -143,7 +164,7 @@
 	dfa_pre_cycle_insn, init_dfa_post_cycle_insn, dfa_post_cycle_insn,
 	first_cycle_multipass_dfa_lookahead, init_dfa_bubbles,
 	dfa_bubble): New members in gcc_target.sched.
-	
+
 	* haifa-sched.c (insert_schedule_bubbles_p): New variable.
 	(MAX_INSN_QUEUE_INDEX): New macro for automaton interface.
 	(insn_queue): Redefine it as pointer to array.
@@ -177,7 +198,7 @@
 	Initiate insn cost by -1.
 	(sched_finish): Free the current automaton state and finalize
 	automaton pipeline interface.
-	
+
 	* sched-rgn.c: Include target.h.
 	(init_ready_list, new_ready, debug_dependencies): Add new code for
 	automaton pipeline interface.
@@ -185,7 +206,7 @@
 	* sched-vis.c: Include target.h.
 	(get_visual_tbl_length): Add code for automaton interface.
 	(target_units, print_block_visualization):  Add comments.
-	
+
 	* Makefile.in (GETRUNTIME, HASHTAB, HOST_GETRUNTIME, HOST_HASHTAB,
 	USE_HOST_GETRUNTIME, USE_HOST_HASHTAB, HOST_VARRAY): New variables.
 	(sched-rgn.o, sched-vis.o): Add new dependency file target.h.
@@ -195,7 +216,7 @@
 	(getruntime.o, hashtab.o): New entries for canadian cross.
 
 	* doc/md.texi: Description of automaton based model.
-	
+
 	* doc/tm.texi (TARGET_SCHED_ISSUE_RATE, TARGET_SCHED_ADJUST_COST):
 	Add comments.
 	(TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE,
@@ -208,7 +229,7 @@
 	hook descriptions.
 	(TRADITIONAL_PIPELINE_INTERFACE, DFA_PIPELINE_INTERFACE,
 	MAX_DFA_ISSUE_RATE): New macro descriptions.
-	
+
 	* doc/contrib.texi: Add dfa based scheduler contribution.
 
 	* doc/gcc.texi: Add more information about genattrtab.
@@ -241,7 +262,7 @@
 	* c-tree.h: Add prototyp for c_sizeof_nowarn.
 
 2001-08-25 Dan Nicolaescu  <dann@ics.uci.edu>
-  
+
 	* ssa-ccp.c (ssa_const_prop): Free ssa_edges.
 
 2001-08-27  Alan Modra  <amodra@bigpond.net.au>
