@@ -489,7 +489,7 @@ extern void		sbss_section PARAMS ((void));
 #else
 #define TARGET_64BIT		0
 #endif
-#else /* IN_LIBGCC2 */
+#endif /* IN_LIBGCC2 */
 
 #ifndef MULTILIB_ENDIAN_DEFAULT
 #if TARGET_ENDIAN_DEFAULT == 0
