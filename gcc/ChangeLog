@@ -1,3 +1,9 @@
+2004-09-30  Roger Sayle  <roger@eyesopen.com>
+
+	* combine.c (force_to_mode) <NE_EXPR>: Only convert the expression
+	(AND (NE FOO 0) CONST) into (AND FOO CONST) if FOO has the same
+	machine mode as the result.
+
 2004-09-30  Ben Elliston  <bje@au.ibm.com>
 
 	PR bootstrap/17761

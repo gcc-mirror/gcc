@@ -7338,6 +7338,7 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	 in STORE_FLAG_VALUE and FOO has a single bit that might be nonzero,
 	 which is equal to STORE_FLAG_VALUE.  */
       if ((mask & ~STORE_FLAG_VALUE) == 0 && XEXP (x, 1) == const0_rtx
+	  && GET_MODE (XEXP (x, 0)) == mode
 	  && exact_log2 (nonzero_bits (XEXP (x, 0), mode)) >= 0
 	  && (nonzero_bits (XEXP (x, 0), mode)
 	      == (unsigned HOST_WIDE_INT) STORE_FLAG_VALUE))
