@@ -2156,7 +2156,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
 	       && const48_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
 	{
 	  *total = (rtx_cost (XEXP (XEXP (x, 0), 0), outer_code)
-		    + rtx_cost (XEXP (x, 1), outer_code) + 2);
+		    + rtx_cost (XEXP (x, 1), outer_code) + COSTS_N_INSNS (1));
 	  return true;
 	}
       return false;
