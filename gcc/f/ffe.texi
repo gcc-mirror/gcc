@@ -199,8 +199,7 @@ in @file{xyz.h} and implemented there (if it's a macro) or in @file{xyz.c}.
 The ``porting'' files of note currently are:
 
 @table @file
-@item proj.c
-@itemx proj.h
+@item proj.h
 This defines the ``language'' used by all the other source files,
 the language being Standard C plus some useful things
 like @code{ARRAY_SIZE} and such.
