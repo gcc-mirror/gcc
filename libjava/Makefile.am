@@ -161,6 +161,9 @@ SUFFIXES = .class .java .h
 .class.lo:
 	$(GCJCOMPILE) -o $@ $<
 
+.java.lo:
+	$(GCJCOMPILE) -o $@ $<
+
 ## This is GNU make specific.  For the .o files in subdirs, use a
 ## special rule.  The standard automake rule can't be overridden (this
 ## is a bug in automake), and it also won't put the .o files into

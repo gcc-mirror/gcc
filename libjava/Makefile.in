@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4a from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -9,6 +9,7 @@
 # but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
+
 
 SHELL = @SHELL@
 
@@ -45,10 +46,9 @@ AUTOMAKE = @AUTOMAKE@
 AUTOHEADER = @AUTOHEADER@
 
 INSTALL = @INSTALL@
-INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
-INSTALL_STRIP_FLAG =
 transform = @program_transform_name@
 
 NORMAL_INSTALL = :
@@ -71,9 +71,7 @@ COMPPATH = @COMPPATH@
 CPP = @CPP@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
-DIVIDESPEC = @DIVIDESPEC@
 DLLTOOL = @DLLTOOL@
-EH_COMMON_INCLUDE = @EH_COMMON_INCLUDE@
 EXEEXT = @EXEEXT@
 GCDEPS = @GCDEPS@
 GCINCS = @GCINCS@
@@ -107,28 +105,27 @@ ZLIBSPEC = @ZLIBSPEC@
 here = @here@
 libgcj_basedir = @libgcj_basedir@
 
-
 AUTOMAKE_OPTIONS = foreign no-installinfo
 
-@TESTSUBDIR_TRUE@SUBDIRS = @TESTSUBDIR_TRUE@testsuite
-@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@TESTSUBDIR_TRUE@SUBDIRS = testsuite
+@USE_LIBDIR_TRUE@toolexeclibdir = $(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = $(exec_prefix)/$(target_alias)
 
 toolexeclib_LTLIBRARIES = libgcj.la
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
 
-@NATIVE_TRUE@bin_PROGRAMS = @NATIVE_TRUE@jv-convert gij
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@GCJ = @CANADIAN_TRUE@@NULL_TARGET_TRUE@gcj
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@GCJ = @CANADIAN_TRUE@@NULL_TARGET_FALSE@$(target_alias)-gcj
-@CANADIAN_FALSE@GCJ = @CANADIAN_FALSE@$(expanded)/gcj$(EXEEXT) -B$(expanded)/
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_FALSE@zip
-@CANADIAN_FALSE@ZIP = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
-@CANADIAN_TRUE@GCJH = @CANADIAN_TRUE@gcjh
-@CANADIAN_FALSE@GCJH = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
-@CANADIAN_FALSE@expanded = @CANADIAN_FALSE@`cd $(MULTIBUILDTOP)../$(COMPPATH)/gcc && pwd`
+@NATIVE_TRUE@bin_PROGRAMS = jv-convert gij
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@GCJ = gcj
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@GCJ = $(target_alias)-gcj
+@CANADIAN_FALSE@GCJ = $(expanded)/gcj$(EXEEXT) -B$(expanded)/
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = zip
+@CANADIAN_FALSE@ZIP = $(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_TRUE@GCJH = gcjh
+@CANADIAN_FALSE@GCJH = $(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
+@CANADIAN_FALSE@expanded = `cd $(MULTIBUILDTOP)../$(COMPPATH)/gcc && pwd`
 
 GCJCOMPILE = CLASSPATH=$(here) $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled $(JC1FLAGS) -c
 
@@ -138,42 +135,35 @@ EH_COMMON_INCLUDE = @EH_COMMON_INCLUDE@
 
 WARNINGS = -W -Wall
 AM_CXXFLAGS = -fno-rtti -fvtable-thunks @LIBGCJ_CXXFLAGS@ $(WARNINGS)
-@USING_GCC_TRUE@AM_CFLAGS = @USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
-@USING_GCC_FALSE@AM_CFLAGS = @USING_GCC_FALSE@@LIBGCJ_CFLAGS@
+@USING_GCC_TRUE@AM_CFLAGS = @LIBGCJ_CFLAGS@ $(WARNINGS)
+@USING_GCC_FALSE@AM_CFLAGS = @LIBGCJ_CFLAGS@
 
 JCFLAGS = -g
 JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
 
 LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I../libffi/include
 
-INCLUDES = -Iinclude -I$(top_srcdir)/include $(GCINCS) $(THREADINCS) \
-	$(EH_COMMON_INCLUDE) $(ZINCS) $(LIBFFIINCS)
+INCLUDES = -Iinclude -I$(top_srcdir)/include $(GCINCS) $(THREADINCS) 	$(EH_COMMON_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
 
 DIVIDESPEC = @DIVIDESPEC@
 
 nat_files = $(nat_source_files:.cc=.lo)
 c_files = $(c_source_files:.c=.lo)
-javao_files = $(java_source_files:.java=.lo) \
-	$(built_java_source_files:.java=.lo)
+javao_files = $(java_source_files:.java=.lo) 	$(built_java_source_files:.java=.lo)
 
 
 libffi_files = `$(AR) t ../libffi/.libs/libffi.a 2>/dev/null | sed 's/\.o/\.lo/g' | sed 's/^/..\/libffi\//g'`
 
-libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
-	resolve.cc defineclass.cc interpret.cc
+libgcj_la_SOURCES = prims.cc jni.cc exception.cc 	resolve.cc defineclass.cc interpret.cc
 
-EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
-	$(c_source_files) $(java_source_files) $(built_java_source_files)
+EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc 	$(c_source_files) $(java_source_files) $(built_java_source_files)
 
-libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
-	$(c_files) $(GCOBJS) $(THREADOBJS)
+libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) 	$(c_files) $(GCOBJS) $(THREADOBJS)
 
-libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
-	$(THREADOBJS) $(libffi_files)
+libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) 	$(THREADOBJS) $(libffi_files)
 
-libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
-	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
+libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 
 MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files)
@@ -181,467 +171,72 @@ CLEANFILES = libgcj.zip
 
 SUFFIXES = .class .java .h
 
-nat_headers = $(ordinary_java_source_files:.java=.h) \
-	$(built_java_source_files:.java=.h)
+nat_headers = $(ordinary_java_source_files:.java=.h) 	$(built_java_source_files:.java=.h)
 
 
 NM = nm
 
-@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
+@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = gen-from-JIS
 
 CONVERT_DIR = gnu/gcj/convert
 
 jv_convert_SOURCES = 
 EXTRA_jv_convert_SOURCES = $(convert_source_files)
-jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert \
-	-rpath $(toolexeclibdir)
+jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert 	-rpath $(toolexeclibdir)
 
-jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
-	-o jv-convert
+jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) 	-o jv-convert
 
-jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
-	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
+jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la 	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
 
-jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
-	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
+jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) 	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
 
 
 gij_SOURCES = 
 EXTRA_gij_SOURCES = gij.cc
 gij_LDFLAGS = -rpath $(toolexeclibdir)
-gij_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
-	-o gij
+gij_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) 	-o gij
 
-gij_LDADD = gij.lo libgcj.la \
-	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
+gij_LDADD = gij.lo libgcj.la 	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
 
-gij_DEPENDENCIES = gij.lo \
-	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
+gij_DEPENDENCIES = gij.lo 	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
 
 
 gen_from_JIS_SOURCES = 
-EXTRA_gen_from_JIS_SOURCES = $(srcdir)/$(CONVERT_DIR)/gen-from-JIS.c \
-		$(srcdir)/$(CONVERT_DIR)/make-trie.c \
-		$(srcdir)/$(CONVERT_DIR)/JIS0201.h \
-		$(srcdir)/$(CONVERT_DIR)/JIS0208.h \
-		$(srcdir)/$(CONVERT_DIR)/JIS0212.h
+EXTRA_gen_from_JIS_SOURCES = $(srcdir)/$(CONVERT_DIR)/gen-from-JIS.c 		$(srcdir)/$(CONVERT_DIR)/make-trie.c 		$(srcdir)/$(CONVERT_DIR)/JIS0201.h 		$(srcdir)/$(CONVERT_DIR)/JIS0208.h 		$(srcdir)/$(CONVERT_DIR)/JIS0212.h
 
 gen_from_JIS_LDADD = $(CONVERT_DIR)/gen-from-JIS.o $(CONVERT_DIR)/make-trie.o
-gen_from_JIS_DEPENDENCIES = $(CONVERT_DIR)/gen-from-JIS.o \
-		$(CONVERT_DIR)/make-trie.o
+gen_from_JIS_DEPENDENCIES = $(CONVERT_DIR)/gen-from-JIS.o 		$(CONVERT_DIR)/make-trie.o
 
 
-convert_source_files = \
-gnu/gcj/convert/BytesToUnicode.java \
-gnu/gcj/convert/Convert.java \
-gnu/gcj/convert/Input_8859_1.java \
-gnu/gcj/convert/Input_EUCJIS.java \
-gnu/gcj/convert/Input_JavaSrc.java \
-gnu/gcj/convert/Input_SJIS.java \
-gnu/gcj/convert/Input_UTF8.java	\
-gnu/gcj/convert/Output_8859_1.java \
-gnu/gcj/convert/Output_EUCJIS.java \
-gnu/gcj/convert/Output_JavaSrc.java \
-gnu/gcj/convert/Output_SJIS.java \
-gnu/gcj/convert/Output_UTF8.java \
-gnu/gcj/convert/UnicodeToBytes.java
+convert_source_files =  gnu/gcj/convert/BytesToUnicode.java gnu/gcj/convert/Convert.java gnu/gcj/convert/Input_8859_1.java gnu/gcj/convert/Input_EUCJIS.java gnu/gcj/convert/Input_JavaSrc.java gnu/gcj/convert/Input_SJIS.java gnu/gcj/convert/Input_UTF8.java	gnu/gcj/convert/Output_8859_1.java gnu/gcj/convert/Output_EUCJIS.java gnu/gcj/convert/Output_JavaSrc.java gnu/gcj/convert/Output_SJIS.java gnu/gcj/convert/Output_UTF8.java gnu/gcj/convert/UnicodeToBytes.java
 
 
 special_java_source_files = java/lang/Class.java java/lang/Object.java
 
-awt_java_source_files = \
-java/awt/AWTEvent.java \
-java/awt/BorderLayout.java \
-java/awt/Component.java \
-java/awt/Container.java \
-java/awt/Dimension.java \
-java/awt/Event.java \
-java/awt/Font.java \
-java/awt/Frame.java \
-java/awt/LayoutManager.java \
-java/awt/LayoutManager2.java \
-java/awt/Menu.java \
-java/awt/MenuBar.java \
-java/awt/MenuItem.java \
-java/awt/MenuComponent.java \
-java/awt/MenuContainer.java \
-java/awt/Point.java \
-java/awt/Rectangle.java \
-java/awt/Shape.java \
-java/awt/TextArea.java \
-java/awt/TextComponent.java \
-java/awt/Toolkit.java \
-java/awt/Window.java \
-java/awt/event/ActionEvent.java \
-java/awt/event/ActionListener.java \
-java/awt/event/ComponentEvent.java \
-java/awt/event/InputEvent.java \
-java/awt/event/KeyEvent.java \
-java/awt/event/KeyListener.java \
-java/awt/event/TextEvent.java \
-java/awt/event/TextListener.java \
-java/awt/event/WindowAdapter.java \
-java/awt/event/WindowEvent.java \
-java/awt/event/WindowListener.java \
-java/awt/geom/Point2D.java \
-java/awt/geom/Dimension2D.java \
-java/awt/peer/ComponentPeer.java \
-java/awt/peer/ContainerPeer.java \
-java/awt/peer/FramePeer.java \
-java/awt/peer/WindowPeer.java
+awt_java_source_files =  java/awt/AWTEvent.java java/awt/BorderLayout.java java/awt/Component.java java/awt/Container.java java/awt/Dimension.java java/awt/Event.java java/awt/Font.java java/awt/Frame.java java/awt/LayoutManager.java java/awt/LayoutManager2.java java/awt/Menu.java java/awt/MenuBar.java java/awt/MenuItem.java java/awt/MenuComponent.java java/awt/MenuContainer.java java/awt/Point.java java/awt/Rectangle.java java/awt/Shape.java java/awt/TextArea.java java/awt/TextComponent.java java/awt/Toolkit.java java/awt/Window.java java/awt/event/ActionEvent.java java/awt/event/ActionListener.java java/awt/event/ComponentEvent.java java/awt/event/InputEvent.java java/awt/event/KeyEvent.java java/awt/event/KeyListener.java java/awt/event/TextEvent.java java/awt/event/TextListener.java java/awt/event/WindowAdapter.java java/awt/event/WindowEvent.java java/awt/event/WindowListener.java java/awt/geom/Point2D.java java/awt/geom/Dimension2D.java java/awt/peer/ComponentPeer.java java/awt/peer/ContainerPeer.java java/awt/peer/FramePeer.java java/awt/peer/WindowPeer.java
 
 
 # $(awt_java_source_files)
 
 built_java_source_files = java/lang/ConcreteProcess.java
 
-ordinary_java_source_files = $(convert_source_files) \
-gnu/gcj/runtime/MethodInvocation.java \
-gnu/gcj/runtime/VMClassLoader.java \
-gnu/gcj/text/BaseBreakIterator.java \
-gnu/gcj/text/CharacterBreakIterator.java \
-gnu/gcj/text/LineBreakIterator.java \
-gnu/gcj/text/LocaleData_en.java	\
-gnu/gcj/text/LocaleData_en_US.java \
-gnu/gcj/text/SentenceBreakIterator.java	\
-gnu/gcj/text/WordBreakIterator.java \
-gnu/gcj/protocol/file/Connection.java \
-gnu/gcj/protocol/file/Handler.java \
-gnu/gcj/protocol/http/Connection.java \
-gnu/gcj/protocol/http/Handler.java \
-gnu/gcj/protocol/jar/Handler.java \
-gnu/gcj/protocol/jar/Connection.java \
-gnu/gcj/RawData.java \
-gnu/gcj/util/EnumerationChain.java \
-java/io/BufferedInputStream.java \
-java/io/BufferedOutputStream.java \
-java/io/BufferedReader.java \
-java/io/BufferedWriter.java \
-java/io/ByteArrayInputStream.java \
-java/io/ByteArrayOutputStream.java \
-java/io/CharArrayReader.java \
-java/io/CharArrayWriter.java \
-java/io/CharConversionException.java \
-java/io/DataInput.java \
-java/io/DataInputStream.java \
-java/io/DataOutput.java	\
-java/io/DataOutputStream.java \
-java/io/EOFException.java \
-java/io/File.java \
-java/io/FileDescriptor.java \
-java/io/FileInputStream.java \
-java/io/FileNotFoundException.java \
-java/io/FileOutputStream.java \
-java/io/FileReader.java	\
-java/io/FileWriter.java	\
-java/io/FilenameFilter.java \
-java/io/FilterInputStream.java \
-java/io/FilterOutputStream.java	\
-java/io/FilterReader.java \
-java/io/FilterWriter.java \
-java/io/IOException.java \
-java/io/InputStream.java \
-java/io/InputStreamReader.java \
-java/io/InterruptedIOException.java \
-java/io/LineNumberInputStream.java \
-java/io/LineNumberReader.java \
-java/io/OutputStream.java \
-java/io/OutputStreamWriter.java	\
-java/io/PipedInputStream.java \
-java/io/PipedOutputStream.java \
-java/io/PipedReader.java \
-java/io/PipedWriter.java \
-java/io/PrintStream.java \
-java/io/PrintWriter.java \
-java/io/PushbackInputStream.java \
-java/io/PushbackReader.java \
-java/io/RandomAccessFile.java \
-java/io/Reader.java \
-java/io/SequenceInputStream.java \
-java/io/Serializable.java \
-java/io/StreamTokenizer.java \
-java/io/StringBufferInputStream.java \
-java/io/StringReader.java \
-java/io/StringWriter.java \
-java/io/SyncFailedException.java \
-java/io/UTFDataFormatException.java \
-java/io/UnsupportedEncodingException.java \
-java/io/Writer.java \
-java/lang/AbstractMethodError.java \
-java/lang/ArithmeticException.java \
-java/lang/ArrayIndexOutOfBoundsException.java \
-java/lang/ArrayStoreException.java \
-java/lang/Boolean.java \
-java/lang/Byte.java \
-java/lang/Character.java \
-java/lang/ClassCastException.java \
-java/lang/ClassCircularityError.java \
-java/lang/ClassFormatError.java	\
-java/lang/ClassLoader.java \
-java/lang/ClassNotFoundException.java \
-java/lang/CloneNotSupportedException.java \
-java/lang/Cloneable.java \
-java/lang/Comparable.java \
-java/lang/Compiler.java	\
-java/lang/Double.java \
-java/lang/Error.java \
-java/lang/Exception.java \
-java/lang/ExceptionInInitializerError.java \
-java/lang/FirstThread.java \
-java/lang/Float.java \
-java/lang/IllegalAccessError.java \
-java/lang/IllegalAccessException.java \
-java/lang/IllegalArgumentException.java	\
-java/lang/IllegalMonitorStateException.java \
-java/lang/IllegalStateException.java \
-java/lang/IllegalThreadStateException.java \
-java/lang/IncompatibleClassChangeError.java \
-java/lang/IndexOutOfBoundsException.java \
-java/lang/InstantiationError.java \
-java/lang/InstantiationException.java \
-java/lang/Integer.java \
-java/lang/InternalError.java \
-java/lang/InterruptedException.java \
-java/lang/LinkageError.java \
-java/lang/Long.java \
-java/lang/Math.java \
-java/lang/NegativeArraySizeException.java \
-java/lang/NoClassDefFoundError.java \
-java/lang/NoSuchFieldError.java	\
-java/lang/NoSuchFieldException.java \
-java/lang/NoSuchMethodError.java \
-java/lang/NoSuchMethodException.java \
-java/lang/NullPointerException.java \
-java/lang/Number.java \
-java/lang/NumberFormatException.java \
-java/lang/OutOfMemoryError.java	\
-java/lang/Process.java \
-java/lang/Runnable.java	\
-java/lang/Runtime.java \
-java/lang/RuntimeException.java	\
-java/lang/SecurityException.java \
-java/lang/SecurityManager.java \
-java/lang/Short.java \
-java/lang/StackOverflowError.java \
-java/lang/String.java \
-java/lang/StringBuffer.java \
-java/lang/StringIndexOutOfBoundsException.java \
-java/lang/System.java \
-java/lang/Thread.java \
-java/lang/ThreadDeath.java \
-java/lang/ThreadGroup.java \
-java/lang/Throwable.java \
-java/lang/UnknownError.java \
-java/lang/UnsatisfiedLinkError.java \
-java/lang/UnsupportedOperationException.java \
-java/lang/VerifyError.java \
-java/lang/VirtualMachineError.java \
-java/lang/Void.java \
-java/lang/reflect/AccessibleObject.java	\
-java/lang/reflect/Array.java \
-java/lang/reflect/Constructor.java \
-java/lang/reflect/Field.java \
-java/lang/reflect/InvocationTargetException.java \
-java/lang/reflect/Member.java \
-java/lang/reflect/Method.java \
-java/lang/reflect/Modifier.java	\
-java/net/BindException.java \
-java/net/ConnectException.java \
-java/net/ContentHandler.java \
-java/net/ContentHandlerFactory.java \
-java/net/DatagramPacket.java \
-java/net/DatagramSocket.java \
-java/net/DatagramSocketImpl.java \
-java/net/FileNameMap.java \
-java/net/HttpURLConnection.java \
-java/net/InetAddress.java \
-java/net/JarURLConnection.java \
-java/net/MalformedURLException.java \
-java/net/MulticastSocket.java \
-java/net/NoRouteToHostException.java \
-java/net/PlainDatagramSocketImpl.java \
-java/net/PlainSocketImpl.java \
-java/net/ProtocolException.java	\
-java/net/ServerSocket.java \
-java/net/Socket.java \
-java/net/SocketException.java \
-java/net/SocketImpl.java \
-java/net/SocketImplFactory.java	\
-java/net/SocketOptions.java \
-java/net/URL.java \
-java/net/URLClassLoader.java \
-java/net/URLConnection.java \
-java/net/URLDecoder.java \
-java/net/URLEncoder.java \
-java/net/URLStreamHandler.java \
-java/net/URLStreamHandlerFactory.java \
-java/net/UnknownHostException.java \
-java/net/UnknownServiceException.java \
-java/security/MessageDigest.java \
-java/security/NoSuchAlgorithmException.java \
-java/security/SecureClassLoader.java \
-java/text/BreakIterator.java \
-java/text/CharacterIterator.java \
-java/text/ChoiceFormat.java \
-java/text/CollationElementIterator.java \
-java/text/CollationKey.java \
-java/text/Collator.java \
-java/text/DateFormat.java \
-java/text/DateFormatSymbols.java \
-java/text/DecimalFormat.java \
-java/text/DecimalFormatSymbols.java \
-java/text/FieldPosition.java \
-java/text/Format.java \
-java/text/MessageFormat.java \
-java/text/NumberFormat.java \
-java/text/ParseException.java \
-java/text/ParsePosition.java \
-java/text/RuleBasedCollator.java \
-java/text/SimpleDateFormat.java	\
-java/text/StringCharacterIterator.java \
-java/util/BitSet.java \
-java/util/Calendar.java	\
-java/util/ConcurrentModificationException.java \
-java/util/Date.java \
-java/util/Dictionary.java \
-java/util/EmptyStackException.java \
-java/util/Enumeration.java \
-java/util/EventListener.java \
-java/util/EventObject.java \
-java/util/GregorianCalendar.java \
-java/util/Hashtable.java \
-java/util/ListResourceBundle.java \
-java/util/Locale.java \
-java/util/MissingResourceException.java	\
-java/util/NoSuchElementException.java \
-java/util/Observable.java \
-java/util/Observer.java	\
-java/util/Properties.java \
-java/util/PropertyResourceBundle.java \
-java/util/Random.java \
-java/util/ResourceBundle.java \
-java/util/SimpleTimeZone.java \
-java/util/Stack.java \
-java/util/StringTokenizer.java \
-java/util/TimeZone.java	\
-java/util/TooManyListenersException.java \
-java/util/Vector.java \
-java/util/jar/JarFile.java \
-java/util/jar/JarInputStream.java \
-java/util/jar/JarEntry.java \
-java/util/zip/Adler32.java \
-java/util/zip/CRC32.java \
-java/util/zip/CheckedInputStream.java \
-java/util/zip/CheckedOutputStream.java \
-java/util/zip/Checksum.java \
-java/util/zip/DataFormatException.java \
-java/util/zip/Deflater.java \
-java/util/zip/DeflaterOutputStream.java	\
-java/util/zip/GZIPInputStream.java \
-java/util/zip/GZIPOutputStream.java \
-java/util/zip/Inflater.java \
-java/util/zip/InflaterInputStream.java	\
-java/util/zip/ZipConstants.java	\
-java/util/zip/ZipEntry.java \
-java/util/zip/ZipException.java	\
-java/util/zip/ZipFile.java \
-java/util/zip/ZipInputStream.java \
-java/util/zip/ZipOutputStream.java
+ordinary_java_source_files = $(convert_source_files) gnu/gcj/runtime/MethodInvocation.java gnu/gcj/runtime/VMClassLoader.java gnu/gcj/text/BaseBreakIterator.java gnu/gcj/text/CharacterBreakIterator.java gnu/gcj/text/LineBreakIterator.java gnu/gcj/text/LocaleData_en.java	gnu/gcj/text/LocaleData_en_US.java gnu/gcj/text/SentenceBreakIterator.java	gnu/gcj/text/WordBreakIterator.java gnu/gcj/protocol/file/Connection.java gnu/gcj/protocol/file/Handler.java gnu/gcj/protocol/http/Connection.java gnu/gcj/protocol/http/Handler.java gnu/gcj/protocol/jar/Handler.java gnu/gcj/protocol/jar/Connection.java gnu/gcj/RawData.java gnu/gcj/util/EnumerationChain.java java/io/BufferedInputStream.java java/io/BufferedOutputStream.java java/io/BufferedReader.java java/io/BufferedWriter.java java/io/ByteArrayInputStream.java java/io/ByteArrayOutputStream.java java/io/CharArrayReader.java java/io/CharArrayWriter.java java/io/CharConversionException.java java/io/DataInput.java java/io/DataInputStream.java java/io/DataOutput.java	java/io/DataOutputStream.java java/io/EOFException.java java/io/File.java java/io/FileDescriptor.java java/io/FileInputStream.java java/io/FileNotFoundException.java java/io/FileOutputStream.java java/io/FileReader.java	java/io/FileWriter.java	java/io/FilenameFilter.java java/io/FilterInputStream.java java/io/FilterOutputStream.java	java/io/FilterReader.java java/io/FilterWriter.java java/io/IOException.java java/io/InputStream.java java/io/InputStreamReader.java java/io/InterruptedIOException.java java/io/LineNumberInputStream.java java/io/LineNumberReader.java java/io/OutputStream.java java/io/OutputStreamWriter.java	java/io/PipedInputStream.java java/io/PipedOutputStream.java java/io/PipedReader.java java/io/PipedWriter.java java/io/PrintStream.java java/io/PrintWriter.java java/io/PushbackInputStream.java java/io/PushbackReader.java java/io/RandomAccessFile.java java/io/Reader.java java/io/SequenceInputStream.java java/io/Serializable.java java/io/StreamTokenizer.java java/io/StringBufferInputStream.java java/io/StringReader.java java/io/StringWriter.java java/io/SyncFailedException.java java/io/UTFDataFormatException.java java/io/UnsupportedEncodingException.java java/io/Writer.java java/lang/AbstractMethodError.java java/lang/ArithmeticException.java java/lang/ArrayIndexOutOfBoundsException.java java/lang/ArrayStoreException.java java/lang/Boolean.java java/lang/Byte.java java/lang/Character.java java/lang/ClassCastException.java java/lang/ClassCircularityError.java java/lang/ClassFormatError.java	java/lang/ClassLoader.java java/lang/ClassNotFoundException.java java/lang/CloneNotSupportedException.java java/lang/Cloneable.java java/lang/Comparable.java java/lang/Compiler.java	java/lang/Double.java java/lang/Error.java java/lang/Exception.java java/lang/ExceptionInInitializerError.java java/lang/FirstThread.java java/lang/Float.java java/lang/IllegalAccessError.java java/lang/IllegalAccessException.java java/lang/IllegalArgumentException.java	java/lang/IllegalMonitorStateException.java java/lang/IllegalStateException.java java/lang/IllegalThreadStateException.java java/lang/IncompatibleClassChangeError.java java/lang/IndexOutOfBoundsException.java java/lang/InstantiationError.java java/lang/InstantiationException.java java/lang/Integer.java java/lang/InternalError.java java/lang/InterruptedException.java java/lang/LinkageError.java java/lang/Long.java java/lang/Math.java java/lang/NegativeArraySizeException.java java/lang/NoClassDefFoundError.java java/lang/NoSuchFieldError.java	java/lang/NoSuchFieldException.java java/lang/NoSuchMethodError.java java/lang/NoSuchMethodException.java java/lang/NullPointerException.java java/lang/Number.java java/lang/NumberFormatException.java java/lang/OutOfMemoryError.java	java/lang/Process.java java/lang/Runnable.java	java/lang/Runtime.java java/lang/RuntimeException.java	java/lang/SecurityException.java java/lang/SecurityManager.java java/lang/Short.java java/lang/StackOverflowError.java java/lang/String.java java/lang/StringBuffer.java java/lang/StringIndexOutOfBoundsException.java java/lang/System.java java/lang/Thread.java java/lang/ThreadDeath.java java/lang/ThreadGroup.java java/lang/Throwable.java java/lang/UnknownError.java java/lang/UnsatisfiedLinkError.java java/lang/UnsupportedOperationException.java java/lang/VerifyError.java java/lang/VirtualMachineError.java java/lang/Void.java java/lang/reflect/AccessibleObject.java	java/lang/reflect/Array.java java/lang/reflect/Constructor.java java/lang/reflect/Field.java java/lang/reflect/InvocationTargetException.java java/lang/reflect/Member.java java/lang/reflect/Method.java java/lang/reflect/Modifier.java	java/net/BindException.java java/net/ConnectException.java java/net/ContentHandler.java java/net/ContentHandlerFactory.java java/net/DatagramPacket.java java/net/DatagramSocket.java java/net/DatagramSocketImpl.java java/net/FileNameMap.java java/net/HttpURLConnection.java java/net/InetAddress.java java/net/JarURLConnection.java java/net/MalformedURLException.java java/net/MulticastSocket.java java/net/NoRouteToHostException.java java/net/PlainDatagramSocketImpl.java java/net/PlainSocketImpl.java java/net/ProtocolException.java	java/net/ServerSocket.java java/net/Socket.java java/net/SocketException.java java/net/SocketImpl.java java/net/SocketImplFactory.java	java/net/SocketOptions.java java/net/URL.java java/net/URLClassLoader.java java/net/URLConnection.java java/net/URLDecoder.java java/net/URLEncoder.java java/net/URLStreamHandler.java java/net/URLStreamHandlerFactory.java java/net/UnknownHostException.java java/net/UnknownServiceException.java java/security/MessageDigest.java java/security/NoSuchAlgorithmException.java java/security/SecureClassLoader.java java/text/BreakIterator.java java/text/CharacterIterator.java java/text/ChoiceFormat.java java/text/CollationElementIterator.java java/text/CollationKey.java java/text/Collator.java java/text/DateFormat.java java/text/DateFormatSymbols.java java/text/DecimalFormat.java java/text/DecimalFormatSymbols.java java/text/FieldPosition.java java/text/Format.java java/text/MessageFormat.java java/text/NumberFormat.java java/text/ParseException.java java/text/ParsePosition.java java/text/RuleBasedCollator.java java/text/SimpleDateFormat.java	java/text/StringCharacterIterator.java java/util/BitSet.java java/util/Calendar.java	java/util/ConcurrentModificationException.java java/util/Date.java java/util/Dictionary.java java/util/EmptyStackException.java java/util/Enumeration.java java/util/EventListener.java java/util/EventObject.java java/util/GregorianCalendar.java java/util/Hashtable.java java/util/ListResourceBundle.java java/util/Locale.java java/util/MissingResourceException.java	java/util/NoSuchElementException.java java/util/Observable.java java/util/Observer.java	java/util/Properties.java java/util/PropertyResourceBundle.java java/util/Random.java java/util/ResourceBundle.java java/util/SimpleTimeZone.java java/util/Stack.java java/util/StringTokenizer.java java/util/TimeZone.java	java/util/TooManyListenersException.java java/util/Vector.java java/util/jar/JarFile.java java/util/jar/JarInputStream.java java/util/jar/JarEntry.java java/util/zip/Adler32.java java/util/zip/CRC32.java java/util/zip/CheckedInputStream.java java/util/zip/CheckedOutputStream.java java/util/zip/Checksum.java java/util/zip/DataFormatException.java java/util/zip/Deflater.java java/util/zip/DeflaterOutputStream.java	java/util/zip/GZIPInputStream.java java/util/zip/GZIPOutputStream.java java/util/zip/Inflater.java java/util/zip/InflaterInputStream.java	java/util/zip/ZipConstants.java	java/util/zip/ZipEntry.java java/util/zip/ZipException.java	java/util/zip/ZipFile.java java/util/zip/ZipInputStream.java java/util/zip/ZipOutputStream.java
 
 
 java_source_files = $(ordinary_java_source_files) $(special_java_source_files)
 
-c_source_files = \
-  java/lang/dtoa.c        java/lang/k_rem_pio2.c  java/lang/s_tan.c       \
-  java/lang/e_acos.c      java/lang/k_sin.c       java/lang/strtod.c      \
-  java/lang/e_asin.c      java/lang/k_tan.c       java/lang/w_acos.c      \
-  java/lang/e_atan2.c     java/lang/mprec.c       java/lang/w_asin.c      \
-  java/lang/e_exp.c       java/lang/s_atan.c      java/lang/w_atan2.c     \
-  java/lang/e_fmod.c      java/lang/s_ceil.c      java/lang/w_exp.c       \
-  java/lang/e_log.c       java/lang/s_copysign.c  java/lang/w_fmod.c      \
-  java/lang/e_pow.c       java/lang/s_cos.c       java/lang/w_log.c       \
-  java/lang/e_rem_pio2.c  java/lang/s_fabs.c      java/lang/w_pow.c       \
-  java/lang/e_remainder.c java/lang/s_floor.c     java/lang/w_remainder.c \
-  java/lang/e_scalb.c     java/lang/s_rint.c      java/lang/w_sqrt.c      \
-  java/lang/e_sqrt.c      java/lang/s_scalbn.c    java/lang/sf_rint.c     \
-  java/lang/k_cos.c       java/lang/s_sin.c
+c_source_files =    java/lang/dtoa.c        java/lang/k_rem_pio2.c  java/lang/s_tan.c         java/lang/e_acos.c      java/lang/k_sin.c       java/lang/strtod.c        java/lang/e_asin.c      java/lang/k_tan.c       java/lang/w_acos.c        java/lang/e_atan2.c     java/lang/mprec.c       java/lang/w_asin.c        java/lang/e_exp.c       java/lang/s_atan.c      java/lang/w_atan2.c       java/lang/e_fmod.c      java/lang/s_ceil.c      java/lang/w_exp.c         java/lang/e_log.c       java/lang/s_copysign.c  java/lang/w_fmod.c        java/lang/e_pow.c       java/lang/s_cos.c       java/lang/w_log.c         java/lang/e_rem_pio2.c  java/lang/s_fabs.c      java/lang/w_pow.c         java/lang/e_remainder.c java/lang/s_floor.c     java/lang/w_remainder.c   java/lang/e_scalb.c     java/lang/s_rint.c      java/lang/w_sqrt.c        java/lang/e_sqrt.c      java/lang/s_scalbn.c    java/lang/sf_rint.c       java/lang/k_cos.c       java/lang/s_sin.c
 
 
 #java/awt/natToolkit.cc
 
-nat_source_files = \
-gnu/gcj/convert/JIS0208_to_Unicode.cc \
-gnu/gcj/convert/JIS0212_to_Unicode.cc \
-gnu/gcj/convert/Unicode_to_JIS.cc \
-gnu/gcj/convert/natInput_EUCJIS.cc \
-gnu/gcj/convert/natInput_SJIS.cc \
-gnu/gcj/convert/natOutput_EUCJIS.cc \
-gnu/gcj/convert/natOutput_SJIS.cc \
-java/io/natFile.cc \
-java/io/natFileDescriptor.cc \
-java/lang/natCharacter.cc \
-java/lang/natClass.cc \
-java/lang/natClassLoader.cc \
-java/lang/natConcreteProcess.cc \
-java/lang/natDouble.cc \
-java/lang/natFirstThread.cc \
-java/lang/natFloat.cc \
-java/lang/natMath.cc \
-java/lang/natObject.cc \
-java/lang/natRuntime.cc	\
-java/lang/natString.cc \
-java/lang/natSystem.cc \
-java/lang/natThread.cc \
-java/lang/reflect/natArray.cc \
-java/lang/reflect/natField.cc \
-java/lang/reflect/natMethod.cc \
-java/net/natInetAddress.cc \
-java/net/natPlainDatagramSocketImpl.cc \
-java/net/natPlainSocketImpl.cc \
-java/text/natCollator.cc \
-java/util/natDate.cc \
-java/util/natGregorianCalendar.cc \
-java/util/zip/natDeflater.cc \
-java/util/zip/natInflater.cc
+nat_source_files =  gnu/gcj/convert/JIS0208_to_Unicode.cc gnu/gcj/convert/JIS0212_to_Unicode.cc gnu/gcj/convert/Unicode_to_JIS.cc gnu/gcj/convert/natInput_EUCJIS.cc gnu/gcj/convert/natInput_SJIS.cc gnu/gcj/convert/natOutput_EUCJIS.cc gnu/gcj/convert/natOutput_SJIS.cc java/io/natFile.cc java/io/natFileDescriptor.cc java/lang/natCharacter.cc java/lang/natClass.cc java/lang/natClassLoader.cc java/lang/natConcreteProcess.cc java/lang/natDouble.cc java/lang/natFirstThread.cc java/lang/natFloat.cc java/lang/natMath.cc java/lang/natObject.cc java/lang/natRuntime.cc	java/lang/natString.cc java/lang/natSystem.cc java/lang/natThread.cc java/lang/reflect/natArray.cc java/lang/reflect/natField.cc java/lang/reflect/natMethod.cc java/net/natInetAddress.cc java/net/natPlainDatagramSocketImpl.cc java/net/natPlainSocketImpl.cc java/text/natCollator.cc java/util/natDate.cc java/util/natGregorianCalendar.cc java/util/zip/natDeflater.cc java/util/zip/natInflater.cc
 
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
-AM_MAKEFLAGS = \
-	"AR_FLAGS=$(AR_FLAGS)" \
-	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
-	"CFLAGS=$(CFLAGS)" \
-	"CXXFLAGS=$(CXXFLAGS)" \
-	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
-	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
-	"INSTALL=$(INSTALL)" \
-	"INSTALL_DATA=$(INSTALL_DATA)" \
-	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
-	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
-	"JC1FLAGS=$(JC1FLAGS)" \
-	"LDFLAGS=$(LDFLAGS)" \
-	"LIBCFLAGS=$(LIBCFLAGS)" \
-	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
-	"MAKE=$(MAKE)" \
-	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
-	"PICFLAG=$(PICFLAG)" \
-	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
-	"SHELL=$(SHELL)" \
-	"exec_prefix=$(exec_prefix)" \
-	"infodir=$(infodir)" \
-	"libdir=$(libdir)" \
-	"prefix=$(prefix)" \
-	"AR=$(AR)" \
-	"AS=$(AS)" \
-	"CC=$(CC)" \
-	"CXX=$(CXX)" \
-	"LD=$(LD)" \
-	"LIBCFLAGS=$(LIBCFLAGS)" \
-	"NM=$(NM)" \
-	"PICFLAG=$(PICFLAG)" \
-	"RANLIB=$(RANLIB)" \
-	"DESTDIR=$(DESTDIR)"
+AM_MAKEFLAGS =  	"AR_FLAGS=$(AR_FLAGS)" 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" 	"CFLAGS=$(CFLAGS)" 	"CXXFLAGS=$(CXXFLAGS)" 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" 	"INSTALL=$(INSTALL)" 	"INSTALL_DATA=$(INSTALL_DATA)" 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" 	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" 	"JC1FLAGS=$(JC1FLAGS)" 	"LDFLAGS=$(LDFLAGS)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" 	"MAKE=$(MAKE)" 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" 	"SHELL=$(SHELL)" 	"exec_prefix=$(exec_prefix)" 	"infodir=$(infodir)" 	"libdir=$(libdir)" 	"prefix=$(prefix)" 	"AR=$(AR)" 	"AS=$(AS)" 	"CC=$(CC)" 	"CXX=$(CXX)" 	"LD=$(LD)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"NM=$(NM)" 	"PICFLAG=$(PICFLAG)" 	"RANLIB=$(RANLIB)" 	"DESTDIR=$(DESTDIR)"
 
 
 CONFIG_STATUS_DEPENDENCIES = $(libgcj_basedir)/configure.host
@@ -657,7 +252,6 @@ MULTIDO = true
 MULTICLEAN = true
 
 cygnus_hack = 
-subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ./include/config.h
@@ -669,54 +263,44 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I./include
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-am_libgcj_la_OBJECTS =  prims.lo jni.lo exception.lo resolve.lo \
+libgcj_la_OBJECTS =  prims.lo jni.lo exception.lo resolve.lo \
 defineclass.lo interpret.lo
-libgcj_la_OBJECTS =  $(am_libgcj_la_OBJECTS)
 @NATIVE_TRUE@bin_PROGRAMS =  jv-convert$(EXEEXT) gij$(EXEEXT)
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS =  \
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
-gen_from_JIS_OBJECTS =  $(am_gen_from_JIS_OBJECTS)
+jv_convert_OBJECTS = 
+gij_OBJECTS = 
+gen_from_JIS_OBJECTS = 
 gen_from_JIS_LDFLAGS = 
-gij_OBJECTS =  $(am_gij_OBJECTS)
-jv_convert_OBJECTS =  $(am_jv_convert_OBJECTS)
-COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CFLAGS = @CFLAGS@
+CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-CXXFLAGS = @CXXFLAGS@
 CXXLD = $(CXX)
-CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-LTGCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) $(DEFS) $(INCLUDES) $(AM_GCJFLAGS) $(GCJFLAGS)
-GCJFLAGS = @GCJFLAGS@
-GCJLD = $(GCJ)
-GCJLINK = $(LIBTOOL) --mode=link $(GCJLD) $(AM_GCJFLAGS) $(GCJFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
-LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-DIST_SOURCES =  $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) \
-$(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES) $(gij_SOURCES) \
-$(EXTRA_gij_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(data_DATA) $(toolexeclib_DATA)
 
-DIST_COMMON =  $(data_DATA) $(toolexeclib_DATA) COPYING.LIB ChangeLog \
-Makefile.am Makefile.in NEWS THANKS acconfig.h acinclude.m4 aclocal.m4 \
-configure configure.in include/config.h.in include/stamp-h.in \
-libgcj.spec.in
+DIST_COMMON =  COPYING.LIB ChangeLog Makefile.am Makefile.in NEWS THANKS \
+acconfig.h acinclude.m4 aclocal.m4 configure configure.in \
+include/config.h.in include/stamp-h.in libgcj.spec.in
 
 
-DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  testsuite
-DEP_FILES =  .deps/boehm.P .deps/defineclass.P .deps/dtoa.P \
-.deps/e_acos.P .deps/e_asin.P .deps/e_atan2.P .deps/e_exp.P \
-.deps/e_fmod.P .deps/e_log.P .deps/e_pow.P .deps/e_rem_pio2.P \
-.deps/e_remainder.P .deps/e_scalb.P .deps/e_sqrt.P .deps/exception.P \
-.deps/gen-from-JIS.P .deps/gij.P .deps/gnu/gcj/RawData.P \
-.deps/gnu/gcj/convert/BytesToUnicode.P .deps/gnu/gcj/convert/Convert.P \
-.deps/gnu/gcj/convert/Input_8859_1.P \
+DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
+.deps/$(srcdir)/$(CONVERT_DIR)/make-trie.P .deps/boehm.P \
+.deps/defineclass.P .deps/exception.P .deps/gij.P \
+.deps/gnu/gcj/RawData.P .deps/gnu/gcj/convert/BytesToUnicode.P \
+.deps/gnu/gcj/convert/Convert.P .deps/gnu/gcj/convert/Input_8859_1.P \
 .deps/gnu/gcj/convert/Input_EUCJIS.P \
 .deps/gnu/gcj/convert/Input_JavaSrc.P \
 .deps/gnu/gcj/convert/Input_SJIS.P .deps/gnu/gcj/convert/Input_UTF8.P \
@@ -819,17 +403,36 @@ DEP_FILES =  .deps/boehm.P .deps/defineclass.P .deps/dtoa.P \
 .deps/java/lang/UnsatisfiedLinkError.P \
 .deps/java/lang/UnsupportedOperationException.P \
 .deps/java/lang/VerifyError.P .deps/java/lang/VirtualMachineError.P \
-.deps/java/lang/Void.P .deps/java/lang/reflect/AccessibleObject.P \
+.deps/java/lang/Void.P .deps/java/lang/dtoa.P .deps/java/lang/e_acos.P \
+.deps/java/lang/e_asin.P .deps/java/lang/e_atan2.P \
+.deps/java/lang/e_exp.P .deps/java/lang/e_fmod.P \
+.deps/java/lang/e_log.P .deps/java/lang/e_pow.P \
+.deps/java/lang/e_rem_pio2.P .deps/java/lang/e_remainder.P \
+.deps/java/lang/e_scalb.P .deps/java/lang/e_sqrt.P \
+.deps/java/lang/k_cos.P .deps/java/lang/k_rem_pio2.P \
+.deps/java/lang/k_sin.P .deps/java/lang/k_tan.P .deps/java/lang/mprec.P \
+.deps/java/lang/reflect/AccessibleObject.P \
 .deps/java/lang/reflect/Array.P .deps/java/lang/reflect/Constructor.P \
 .deps/java/lang/reflect/Field.P \
 .deps/java/lang/reflect/InvocationTargetException.P \
 .deps/java/lang/reflect/Member.P .deps/java/lang/reflect/Method.P \
-.deps/java/lang/reflect/Modifier.P .deps/java/net/BindException.P \
-.deps/java/net/ConnectException.P .deps/java/net/ContentHandler.P \
-.deps/java/net/ContentHandlerFactory.P .deps/java/net/DatagramPacket.P \
-.deps/java/net/DatagramSocket.P .deps/java/net/DatagramSocketImpl.P \
-.deps/java/net/FileNameMap.P .deps/java/net/HttpURLConnection.P \
-.deps/java/net/InetAddress.P .deps/java/net/JarURLConnection.P \
+.deps/java/lang/reflect/Modifier.P .deps/java/lang/s_atan.P \
+.deps/java/lang/s_ceil.P .deps/java/lang/s_copysign.P \
+.deps/java/lang/s_cos.P .deps/java/lang/s_fabs.P \
+.deps/java/lang/s_floor.P .deps/java/lang/s_rint.P \
+.deps/java/lang/s_scalbn.P .deps/java/lang/s_sin.P \
+.deps/java/lang/s_tan.P .deps/java/lang/sf_rint.P \
+.deps/java/lang/strtod.P .deps/java/lang/w_acos.P \
+.deps/java/lang/w_asin.P .deps/java/lang/w_atan2.P \
+.deps/java/lang/w_exp.P .deps/java/lang/w_fmod.P \
+.deps/java/lang/w_log.P .deps/java/lang/w_pow.P \
+.deps/java/lang/w_remainder.P .deps/java/lang/w_sqrt.P \
+.deps/java/net/BindException.P .deps/java/net/ConnectException.P \
+.deps/java/net/ContentHandler.P .deps/java/net/ContentHandlerFactory.P \
+.deps/java/net/DatagramPacket.P .deps/java/net/DatagramSocket.P \
+.deps/java/net/DatagramSocketImpl.P .deps/java/net/FileNameMap.P \
+.deps/java/net/HttpURLConnection.P .deps/java/net/InetAddress.P \
+.deps/java/net/JarURLConnection.P \
 .deps/java/net/MalformedURLException.P .deps/java/net/MulticastSocket.P \
 .deps/java/net/NoRouteToHostException.P \
 .deps/java/net/PlainDatagramSocketImpl.P \
@@ -885,21 +488,14 @@ DEP_FILES =  .deps/boehm.P .deps/defineclass.P .deps/dtoa.P \
 .deps/java/util/zip/ZipConstants.P .deps/java/util/zip/ZipEntry.P \
 .deps/java/util/zip/ZipException.P .deps/java/util/zip/ZipFile.P \
 .deps/java/util/zip/ZipInputStream.P \
-.deps/java/util/zip/ZipOutputStream.P .deps/jni.P .deps/k_cos.P \
-.deps/k_rem_pio2.P .deps/k_sin.P .deps/k_tan.P .deps/make-trie.P \
-.deps/mprec.P .deps/no-threads.P .deps/nogc.P .deps/posix-threads.P \
-.deps/prims.P .deps/resolve.P .deps/s_atan.P .deps/s_ceil.P \
-.deps/s_copysign.P .deps/s_cos.P .deps/s_fabs.P .deps/s_floor.P \
-.deps/s_rint.P .deps/s_scalbn.P .deps/s_sin.P .deps/s_tan.P \
-.deps/sf_rint.P .deps/strtod.P .deps/w_acos.P .deps/w_asin.P \
-.deps/w_atan2.P .deps/w_exp.P .deps/w_fmod.P .deps/w_log.P \
-.deps/w_pow.P .deps/w_remainder.P .deps/w_sqrt.P
-SOURCES = $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES) $(gij_SOURCES) $(EXTRA_gij_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES)
-OBJECTS = $(am_libgcj_la_OBJECTS) $(am_gen_from_JIS_OBJECTS) $(am_gij_OBJECTS) $(am_jv_convert_OBJECTS)
+.deps/java/util/zip/ZipOutputStream.P .deps/jni.P .deps/no-threads.P \
+.deps/nogc.P .deps/posix-threads.P .deps/prims.P .deps/resolve.P
+SOURCES = $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(EXTRA_gij_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
+OBJECTS = $(libgcj_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(gen_from_JIS_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .c .cc .class .h .java .lo .o
+.SUFFIXES: .S .c .cc .class .h .java .lo .o .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile
 
@@ -921,22 +517,18 @@ include/config.h: include/stamp-h
 		$(MAKE) include/stamp-h; \
 	else :; fi
 include/stamp-h: $(srcdir)/include/config.h.in $(top_builddir)/config.status
-	@rm -f include/stamp-h include/stamp-hT
-	@echo timestamp > include/stamp-hT 2> /dev/null
 	cd $(top_builddir) \
 	  && CONFIG_FILES= CONFIG_HEADERS=include/config.h \
 	     $(SHELL) ./config.status
-	@mv include/stamp-hT include/stamp-h
+	@echo timestamp > include/stamp-h 2> /dev/null
 $(srcdir)/include/config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/include/stamp-h.in
 	@if test ! -f $@; then \
 		rm -f $(srcdir)/include/stamp-h.in; \
 		$(MAKE) $(srcdir)/include/stamp-h.in; \
 	else :; fi
 $(srcdir)/include/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
-	@rm -f $(srcdir)/include/stamp-h.in $(srcdir)/include/stamp-h.inT
-	@echo timestamp > $(srcdir)/include/stamp-h.inT 2> /dev/null
 	cd $(top_srcdir) && $(AUTOHEADER)
-	@mv $(srcdir)/include/stamp-h.inT $(srcdir)/include/stamp-h.in
+	@echo timestamp > $(srcdir)/include/stamp-h.in 2> /dev/null
 
 mostlyclean-hdr:
 
@@ -963,17 +555,22 @@ install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	$(mkinstalldirs) $(DESTDIR)$(toolexeclibdir)
 	@list='$(toolexeclib_LTLIBRARIES)'; for p in $$list; do \
 	  if test -f $$p; then \
-	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$p $(DESTDIR)$(toolexeclibdir)/$$p"; \
-	    $(LIBTOOL)  --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$p $(DESTDIR)$(toolexeclibdir)/$$p; \
+	    echo "$(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(toolexeclibdir)/$$p"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL) $$p $(DESTDIR)$(toolexeclibdir)/$$p; \
 	  else :; fi; \
 	done
 
 uninstall-toolexeclibLTLIBRARIES:
 	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclib_LTLIBRARIES)'; for p in $$list; do \
-	  echo " $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(toolexeclibdir)/$$p"; \
+	list='$(toolexeclib_LTLIBRARIES)'; for p in $$list; do \
 	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(toolexeclibdir)/$$p; \
 	done
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
 
 mostlyclean-compile:
 	-rm -f *.o core *.core
@@ -985,6 +582,12 @@ distclean-compile:
 
 maintainer-clean-compile:
 
+.s.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.S.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -994,724 +597,6 @@ clean-libtool:
 distclean-libtool:
 
 maintainer-clean-libtool:
-dtoa.lo: java/lang/dtoa.c
-k_rem_pio2.lo: java/lang/k_rem_pio2.c
-s_tan.lo: java/lang/s_tan.c
-e_acos.lo: java/lang/e_acos.c
-k_sin.lo: java/lang/k_sin.c
-strtod.lo: java/lang/strtod.c
-e_asin.lo: java/lang/e_asin.c
-k_tan.lo: java/lang/k_tan.c
-w_acos.lo: java/lang/w_acos.c
-e_atan2.lo: java/lang/e_atan2.c
-mprec.lo: java/lang/mprec.c
-w_asin.lo: java/lang/w_asin.c
-e_exp.lo: java/lang/e_exp.c
-s_atan.lo: java/lang/s_atan.c
-w_atan2.lo: java/lang/w_atan2.c
-e_fmod.lo: java/lang/e_fmod.c
-s_ceil.lo: java/lang/s_ceil.c
-w_exp.lo: java/lang/w_exp.c
-e_log.lo: java/lang/e_log.c
-s_copysign.lo: java/lang/s_copysign.c
-w_fmod.lo: java/lang/w_fmod.c
-e_pow.lo: java/lang/e_pow.c
-s_cos.lo: java/lang/s_cos.c
-w_log.lo: java/lang/w_log.c
-e_rem_pio2.lo: java/lang/e_rem_pio2.c
-s_fabs.lo: java/lang/s_fabs.c
-w_pow.lo: java/lang/w_pow.c
-e_remainder.lo: java/lang/e_remainder.c
-s_floor.lo: java/lang/s_floor.c
-w_remainder.lo: java/lang/w_remainder.c
-e_scalb.lo: java/lang/e_scalb.c
-s_rint.lo: java/lang/s_rint.c
-w_sqrt.lo: java/lang/w_sqrt.c
-e_sqrt.lo: java/lang/e_sqrt.c
-s_scalbn.lo: java/lang/s_scalbn.c
-sf_rint.lo: java/lang/sf_rint.c
-k_cos.lo: java/lang/k_cos.c
-s_sin.lo: java/lang/s_sin.c
-gnu/gcj/convert/.dirstamp:
-	@$(mkinstalldirs) gnu/gcj/convert
-	@: > gnu/gcj/convert/.dirstamp
-.deps/gnu/gcj/convert/.dirstamp:
-	@$(mkinstalldirs) .deps/gnu/gcj/convert
-	@: > .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/BytesToUnicode.lo: gnu/gcj/convert/BytesToUnicode.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Convert.lo: gnu/gcj/convert/Convert.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Input_8859_1.lo: gnu/gcj/convert/Input_8859_1.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Input_EUCJIS.lo: gnu/gcj/convert/Input_EUCJIS.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Input_JavaSrc.lo: gnu/gcj/convert/Input_JavaSrc.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Input_SJIS.lo: gnu/gcj/convert/Input_SJIS.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Input_UTF8.lo: gnu/gcj/convert/Input_UTF8.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Output_8859_1.lo: gnu/gcj/convert/Output_8859_1.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Output_EUCJIS.lo: gnu/gcj/convert/Output_EUCJIS.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Output_JavaSrc.lo: gnu/gcj/convert/Output_JavaSrc.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Output_SJIS.lo: gnu/gcj/convert/Output_SJIS.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Output_UTF8.lo: gnu/gcj/convert/Output_UTF8.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/UnicodeToBytes.lo: gnu/gcj/convert/UnicodeToBytes.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/runtime/.dirstamp:
-	@$(mkinstalldirs) gnu/gcj/runtime
-	@: > gnu/gcj/runtime/.dirstamp
-.deps/gnu/gcj/runtime/.dirstamp:
-	@$(mkinstalldirs) .deps/gnu/gcj/runtime
-	@: > .deps/gnu/gcj/runtime/.dirstamp
-gnu/gcj/runtime/MethodInvocation.lo: \
-	gnu/gcj/runtime/MethodInvocation.java gnu/gcj/runtime/.dirstamp \
-	.deps/gnu/gcj/runtime/.dirstamp
-gnu/gcj/runtime/VMClassLoader.lo: gnu/gcj/runtime/VMClassLoader.java \
-	gnu/gcj/runtime/.dirstamp .deps/gnu/gcj/runtime/.dirstamp
-gnu/gcj/text/.dirstamp:
-	@$(mkinstalldirs) gnu/gcj/text
-	@: > gnu/gcj/text/.dirstamp
-.deps/gnu/gcj/text/.dirstamp:
-	@$(mkinstalldirs) .deps/gnu/gcj/text
-	@: > .deps/gnu/gcj/text/.dirstamp
-gnu/gcj/text/BaseBreakIterator.lo: gnu/gcj/text/BaseBreakIterator.java \
-	gnu/gcj/text/.dirstamp .deps/gnu/gcj/text/.dirstamp
-gnu/gcj/text/CharacterBreakIterator.lo: \
-	gnu/gcj/text/CharacterBreakIterator.java gnu/gcj/text/.dirstamp \
-	.deps/gnu/gcj/text/.dirstamp
-gnu/gcj/text/LineBreakIterator.lo: gnu/gcj/text/LineBreakIterator.java \
-	gnu/gcj/text/.dirstamp .deps/gnu/gcj/text/.dirstamp
-gnu/gcj/text/LocaleData_en.lo: gnu/gcj/text/LocaleData_en.java \
-	gnu/gcj/text/.dirstamp .deps/gnu/gcj/text/.dirstamp
-gnu/gcj/text/LocaleData_en_US.lo: gnu/gcj/text/LocaleData_en_US.java \
-	gnu/gcj/text/.dirstamp .deps/gnu/gcj/text/.dirstamp
-gnu/gcj/text/SentenceBreakIterator.lo: \
-	gnu/gcj/text/SentenceBreakIterator.java gnu/gcj/text/.dirstamp \
-	.deps/gnu/gcj/text/.dirstamp
-gnu/gcj/text/WordBreakIterator.lo: gnu/gcj/text/WordBreakIterator.java \
-	gnu/gcj/text/.dirstamp .deps/gnu/gcj/text/.dirstamp
-gnu/gcj/protocol/file/.dirstamp:
-	@$(mkinstalldirs) gnu/gcj/protocol/file
-	@: > gnu/gcj/protocol/file/.dirstamp
-.deps/gnu/gcj/protocol/file/.dirstamp:
-	@$(mkinstalldirs) .deps/gnu/gcj/protocol/file
-	@: > .deps/gnu/gcj/protocol/file/.dirstamp
-gnu/gcj/protocol/file/Connection.lo: \
-	gnu/gcj/protocol/file/Connection.java \
-	gnu/gcj/protocol/file/.dirstamp \
-	.deps/gnu/gcj/protocol/file/.dirstamp
-gnu/gcj/protocol/file/Handler.lo: gnu/gcj/protocol/file/Handler.java \
-	gnu/gcj/protocol/file/.dirstamp \
-	.deps/gnu/gcj/protocol/file/.dirstamp
-gnu/gcj/protocol/http/.dirstamp:
-	@$(mkinstalldirs) gnu/gcj/protocol/http
-	@: > gnu/gcj/protocol/http/.dirstamp
-.deps/gnu/gcj/protocol/http/.dirstamp:
-	@$(mkinstalldirs) .deps/gnu/gcj/protocol/http
-	@: > .deps/gnu/gcj/protocol/http/.dirstamp
-gnu/gcj/protocol/http/Connection.lo: \
-	gnu/gcj/protocol/http/Connection.java \
-	gnu/gcj/protocol/http/.dirstamp \
-	.deps/gnu/gcj/protocol/http/.dirstamp
-gnu/gcj/protocol/http/Handler.lo: gnu/gcj/protocol/http/Handler.java \
-	gnu/gcj/protocol/http/.dirstamp \
-	.deps/gnu/gcj/protocol/http/.dirstamp
-gnu/gcj/protocol/jar/.dirstamp:
-	@$(mkinstalldirs) gnu/gcj/protocol/jar
-	@: > gnu/gcj/protocol/jar/.dirstamp
-.deps/gnu/gcj/protocol/jar/.dirstamp:
-	@$(mkinstalldirs) .deps/gnu/gcj/protocol/jar
-	@: > .deps/gnu/gcj/protocol/jar/.dirstamp
-gnu/gcj/protocol/jar/Handler.lo: gnu/gcj/protocol/jar/Handler.java \
-	gnu/gcj/protocol/jar/.dirstamp \
-	.deps/gnu/gcj/protocol/jar/.dirstamp
-gnu/gcj/protocol/jar/Connection.lo: gnu/gcj/protocol/jar/Connection.java \
-	gnu/gcj/protocol/jar/.dirstamp \
-	.deps/gnu/gcj/protocol/jar/.dirstamp
-gnu/gcj/.dirstamp:
-	@$(mkinstalldirs) gnu/gcj
-	@: > gnu/gcj/.dirstamp
-.deps/gnu/gcj/.dirstamp:
-	@$(mkinstalldirs) .deps/gnu/gcj
-	@: > .deps/gnu/gcj/.dirstamp
-gnu/gcj/RawData.lo: gnu/gcj/RawData.java gnu/gcj/.dirstamp \
-	.deps/gnu/gcj/.dirstamp
-gnu/gcj/util/.dirstamp:
-	@$(mkinstalldirs) gnu/gcj/util
-	@: > gnu/gcj/util/.dirstamp
-.deps/gnu/gcj/util/.dirstamp:
-	@$(mkinstalldirs) .deps/gnu/gcj/util
-	@: > .deps/gnu/gcj/util/.dirstamp
-gnu/gcj/util/EnumerationChain.lo: gnu/gcj/util/EnumerationChain.java \
-	gnu/gcj/util/.dirstamp .deps/gnu/gcj/util/.dirstamp
-java/io/.dirstamp:
-	@$(mkinstalldirs) java/io
-	@: > java/io/.dirstamp
-.deps/java/io/.dirstamp:
-	@$(mkinstalldirs) .deps/java/io
-	@: > .deps/java/io/.dirstamp
-java/io/BufferedInputStream.lo: java/io/BufferedInputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/BufferedOutputStream.lo: java/io/BufferedOutputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/BufferedReader.lo: java/io/BufferedReader.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/BufferedWriter.lo: java/io/BufferedWriter.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/ByteArrayInputStream.lo: java/io/ByteArrayInputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/ByteArrayOutputStream.lo: java/io/ByteArrayOutputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/CharArrayReader.lo: java/io/CharArrayReader.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/CharArrayWriter.lo: java/io/CharArrayWriter.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/CharConversionException.lo: java/io/CharConversionException.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/DataInput.lo: java/io/DataInput.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/DataInputStream.lo: java/io/DataInputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/DataOutput.lo: java/io/DataOutput.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/DataOutputStream.lo: java/io/DataOutputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/EOFException.lo: java/io/EOFException.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/File.lo: java/io/File.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/FileDescriptor.lo: java/io/FileDescriptor.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/FileInputStream.lo: java/io/FileInputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/FileNotFoundException.lo: java/io/FileNotFoundException.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/FileOutputStream.lo: java/io/FileOutputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/FileReader.lo: java/io/FileReader.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/FileWriter.lo: java/io/FileWriter.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/FilenameFilter.lo: java/io/FilenameFilter.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/FilterInputStream.lo: java/io/FilterInputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/FilterOutputStream.lo: java/io/FilterOutputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/FilterReader.lo: java/io/FilterReader.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/FilterWriter.lo: java/io/FilterWriter.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/IOException.lo: java/io/IOException.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/InputStream.lo: java/io/InputStream.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/InputStreamReader.lo: java/io/InputStreamReader.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/InterruptedIOException.lo: java/io/InterruptedIOException.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/LineNumberInputStream.lo: java/io/LineNumberInputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/LineNumberReader.lo: java/io/LineNumberReader.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/OutputStream.lo: java/io/OutputStream.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/OutputStreamWriter.lo: java/io/OutputStreamWriter.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/PipedInputStream.lo: java/io/PipedInputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/PipedOutputStream.lo: java/io/PipedOutputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/PipedReader.lo: java/io/PipedReader.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/PipedWriter.lo: java/io/PipedWriter.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/PrintStream.lo: java/io/PrintStream.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/PrintWriter.lo: java/io/PrintWriter.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/PushbackInputStream.lo: java/io/PushbackInputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/PushbackReader.lo: java/io/PushbackReader.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/RandomAccessFile.lo: java/io/RandomAccessFile.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/Reader.lo: java/io/Reader.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/SequenceInputStream.lo: java/io/SequenceInputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/Serializable.lo: java/io/Serializable.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/StreamTokenizer.lo: java/io/StreamTokenizer.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/StringBufferInputStream.lo: java/io/StringBufferInputStream.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/StringReader.lo: java/io/StringReader.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/StringWriter.lo: java/io/StringWriter.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/SyncFailedException.lo: java/io/SyncFailedException.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/UTFDataFormatException.lo: java/io/UTFDataFormatException.java \
-	java/io/.dirstamp .deps/java/io/.dirstamp
-java/io/UnsupportedEncodingException.lo: \
-	java/io/UnsupportedEncodingException.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/io/Writer.lo: java/io/Writer.java java/io/.dirstamp \
-	.deps/java/io/.dirstamp
-java/lang/.dirstamp:
-	@$(mkinstalldirs) java/lang
-	@: > java/lang/.dirstamp
-.deps/java/lang/.dirstamp:
-	@$(mkinstalldirs) .deps/java/lang
-	@: > .deps/java/lang/.dirstamp
-java/lang/AbstractMethodError.lo: java/lang/AbstractMethodError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/ArithmeticException.lo: java/lang/ArithmeticException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/ArrayIndexOutOfBoundsException.lo: \
-	java/lang/ArrayIndexOutOfBoundsException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/ArrayStoreException.lo: java/lang/ArrayStoreException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/Boolean.lo: java/lang/Boolean.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Byte.lo: java/lang/Byte.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Character.lo: java/lang/Character.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/ClassCastException.lo: java/lang/ClassCastException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/ClassCircularityError.lo: java/lang/ClassCircularityError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/ClassFormatError.lo: java/lang/ClassFormatError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/ClassLoader.lo: java/lang/ClassLoader.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/ClassNotFoundException.lo: \
-	java/lang/ClassNotFoundException.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/CloneNotSupportedException.lo: \
-	java/lang/CloneNotSupportedException.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Cloneable.lo: java/lang/Cloneable.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Comparable.lo: java/lang/Comparable.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Compiler.lo: java/lang/Compiler.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Double.lo: java/lang/Double.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Error.lo: java/lang/Error.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Exception.lo: java/lang/Exception.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/ExceptionInInitializerError.lo: \
-	java/lang/ExceptionInInitializerError.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/FirstThread.lo: java/lang/FirstThread.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Float.lo: java/lang/Float.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/IllegalAccessError.lo: java/lang/IllegalAccessError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/IllegalAccessException.lo: \
-	java/lang/IllegalAccessException.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/IllegalArgumentException.lo: \
-	java/lang/IllegalArgumentException.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/IllegalMonitorStateException.lo: \
-	java/lang/IllegalMonitorStateException.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/IllegalStateException.lo: java/lang/IllegalStateException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/IllegalThreadStateException.lo: \
-	java/lang/IllegalThreadStateException.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/IncompatibleClassChangeError.lo: \
-	java/lang/IncompatibleClassChangeError.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/IndexOutOfBoundsException.lo: \
-	java/lang/IndexOutOfBoundsException.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/InstantiationError.lo: java/lang/InstantiationError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/InstantiationException.lo: \
-	java/lang/InstantiationException.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Integer.lo: java/lang/Integer.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/InternalError.lo: java/lang/InternalError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/InterruptedException.lo: java/lang/InterruptedException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/LinkageError.lo: java/lang/LinkageError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/Long.lo: java/lang/Long.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Math.lo: java/lang/Math.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/NegativeArraySizeException.lo: \
-	java/lang/NegativeArraySizeException.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/NoClassDefFoundError.lo: java/lang/NoClassDefFoundError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/NoSuchFieldError.lo: java/lang/NoSuchFieldError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/NoSuchFieldException.lo: java/lang/NoSuchFieldException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/NoSuchMethodError.lo: java/lang/NoSuchMethodError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/NoSuchMethodException.lo: java/lang/NoSuchMethodException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/NullPointerException.lo: java/lang/NullPointerException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/Number.lo: java/lang/Number.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/NumberFormatException.lo: java/lang/NumberFormatException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/OutOfMemoryError.lo: java/lang/OutOfMemoryError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/Process.lo: java/lang/Process.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Runnable.lo: java/lang/Runnable.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Runtime.lo: java/lang/Runtime.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/RuntimeException.lo: java/lang/RuntimeException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/SecurityException.lo: java/lang/SecurityException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/SecurityManager.lo: java/lang/SecurityManager.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/Short.lo: java/lang/Short.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/StackOverflowError.lo: java/lang/StackOverflowError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/String.lo: java/lang/String.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/StringBuffer.lo: java/lang/StringBuffer.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/StringIndexOutOfBoundsException.lo: \
-	java/lang/StringIndexOutOfBoundsException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/System.lo: java/lang/System.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Thread.lo: java/lang/Thread.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/ThreadDeath.lo: java/lang/ThreadDeath.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/ThreadGroup.lo: java/lang/ThreadGroup.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Throwable.lo: java/lang/Throwable.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/UnknownError.lo: java/lang/UnknownError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/UnsatisfiedLinkError.lo: java/lang/UnsatisfiedLinkError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/UnsupportedOperationException.lo: \
-	java/lang/UnsupportedOperationException.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/VerifyError.lo: java/lang/VerifyError.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/VirtualMachineError.lo: java/lang/VirtualMachineError.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
-java/lang/Void.lo: java/lang/Void.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/reflect/.dirstamp:
-	@$(mkinstalldirs) java/lang/reflect
-	@: > java/lang/reflect/.dirstamp
-.deps/java/lang/reflect/.dirstamp:
-	@$(mkinstalldirs) .deps/java/lang/reflect
-	@: > .deps/java/lang/reflect/.dirstamp
-java/lang/reflect/AccessibleObject.lo: \
-	java/lang/reflect/AccessibleObject.java \
-	java/lang/reflect/.dirstamp .deps/java/lang/reflect/.dirstamp
-java/lang/reflect/Array.lo: java/lang/reflect/Array.java \
-	java/lang/reflect/.dirstamp .deps/java/lang/reflect/.dirstamp
-java/lang/reflect/Constructor.lo: java/lang/reflect/Constructor.java \
-	java/lang/reflect/.dirstamp .deps/java/lang/reflect/.dirstamp
-java/lang/reflect/Field.lo: java/lang/reflect/Field.java \
-	java/lang/reflect/.dirstamp .deps/java/lang/reflect/.dirstamp
-java/lang/reflect/InvocationTargetException.lo: \
-	java/lang/reflect/InvocationTargetException.java \
-	java/lang/reflect/.dirstamp .deps/java/lang/reflect/.dirstamp
-java/lang/reflect/Member.lo: java/lang/reflect/Member.java \
-	java/lang/reflect/.dirstamp .deps/java/lang/reflect/.dirstamp
-java/lang/reflect/Method.lo: java/lang/reflect/Method.java \
-	java/lang/reflect/.dirstamp .deps/java/lang/reflect/.dirstamp
-java/lang/reflect/Modifier.lo: java/lang/reflect/Modifier.java \
-	java/lang/reflect/.dirstamp .deps/java/lang/reflect/.dirstamp
-java/net/.dirstamp:
-	@$(mkinstalldirs) java/net
-	@: > java/net/.dirstamp
-.deps/java/net/.dirstamp:
-	@$(mkinstalldirs) .deps/java/net
-	@: > .deps/java/net/.dirstamp
-java/net/BindException.lo: java/net/BindException.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/ConnectException.lo: java/net/ConnectException.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/ContentHandler.lo: java/net/ContentHandler.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/ContentHandlerFactory.lo: java/net/ContentHandlerFactory.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/DatagramPacket.lo: java/net/DatagramPacket.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/DatagramSocket.lo: java/net/DatagramSocket.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/DatagramSocketImpl.lo: java/net/DatagramSocketImpl.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/FileNameMap.lo: java/net/FileNameMap.java java/net/.dirstamp \
-	.deps/java/net/.dirstamp
-java/net/HttpURLConnection.lo: java/net/HttpURLConnection.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/InetAddress.lo: java/net/InetAddress.java java/net/.dirstamp \
-	.deps/java/net/.dirstamp
-java/net/JarURLConnection.lo: java/net/JarURLConnection.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/MalformedURLException.lo: java/net/MalformedURLException.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/MulticastSocket.lo: java/net/MulticastSocket.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/NoRouteToHostException.lo: java/net/NoRouteToHostException.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/PlainDatagramSocketImpl.lo: \
-	java/net/PlainDatagramSocketImpl.java java/net/.dirstamp \
-	.deps/java/net/.dirstamp
-java/net/PlainSocketImpl.lo: java/net/PlainSocketImpl.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/ProtocolException.lo: java/net/ProtocolException.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/ServerSocket.lo: java/net/ServerSocket.java java/net/.dirstamp \
-	.deps/java/net/.dirstamp
-java/net/Socket.lo: java/net/Socket.java java/net/.dirstamp \
-	.deps/java/net/.dirstamp
-java/net/SocketException.lo: java/net/SocketException.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/SocketImpl.lo: java/net/SocketImpl.java java/net/.dirstamp \
-	.deps/java/net/.dirstamp
-java/net/SocketImplFactory.lo: java/net/SocketImplFactory.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/SocketOptions.lo: java/net/SocketOptions.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/URL.lo: java/net/URL.java java/net/.dirstamp \
-	.deps/java/net/.dirstamp
-java/net/URLClassLoader.lo: java/net/URLClassLoader.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/URLConnection.lo: java/net/URLConnection.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/URLDecoder.lo: java/net/URLDecoder.java java/net/.dirstamp \
-	.deps/java/net/.dirstamp
-java/net/URLEncoder.lo: java/net/URLEncoder.java java/net/.dirstamp \
-	.deps/java/net/.dirstamp
-java/net/URLStreamHandler.lo: java/net/URLStreamHandler.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/URLStreamHandlerFactory.lo: \
-	java/net/URLStreamHandlerFactory.java java/net/.dirstamp \
-	.deps/java/net/.dirstamp
-java/net/UnknownHostException.lo: java/net/UnknownHostException.java \
-	java/net/.dirstamp .deps/java/net/.dirstamp
-java/net/UnknownServiceException.lo: \
-	java/net/UnknownServiceException.java java/net/.dirstamp \
-	.deps/java/net/.dirstamp
-java/security/.dirstamp:
-	@$(mkinstalldirs) java/security
-	@: > java/security/.dirstamp
-.deps/java/security/.dirstamp:
-	@$(mkinstalldirs) .deps/java/security
-	@: > .deps/java/security/.dirstamp
-java/security/MessageDigest.lo: java/security/MessageDigest.java \
-	java/security/.dirstamp .deps/java/security/.dirstamp
-java/security/NoSuchAlgorithmException.lo: \
-	java/security/NoSuchAlgorithmException.java \
-	java/security/.dirstamp .deps/java/security/.dirstamp
-java/security/SecureClassLoader.lo: java/security/SecureClassLoader.java \
-	java/security/.dirstamp .deps/java/security/.dirstamp
-java/text/.dirstamp:
-	@$(mkinstalldirs) java/text
-	@: > java/text/.dirstamp
-.deps/java/text/.dirstamp:
-	@$(mkinstalldirs) .deps/java/text
-	@: > .deps/java/text/.dirstamp
-java/text/BreakIterator.lo: java/text/BreakIterator.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/CharacterIterator.lo: java/text/CharacterIterator.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/ChoiceFormat.lo: java/text/ChoiceFormat.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/CollationElementIterator.lo: \
-	java/text/CollationElementIterator.java java/text/.dirstamp \
-	.deps/java/text/.dirstamp
-java/text/CollationKey.lo: java/text/CollationKey.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/Collator.lo: java/text/Collator.java java/text/.dirstamp \
-	.deps/java/text/.dirstamp
-java/text/DateFormat.lo: java/text/DateFormat.java java/text/.dirstamp \
-	.deps/java/text/.dirstamp
-java/text/DateFormatSymbols.lo: java/text/DateFormatSymbols.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/DecimalFormat.lo: java/text/DecimalFormat.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/DecimalFormatSymbols.lo: java/text/DecimalFormatSymbols.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/FieldPosition.lo: java/text/FieldPosition.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/Format.lo: java/text/Format.java java/text/.dirstamp \
-	.deps/java/text/.dirstamp
-java/text/MessageFormat.lo: java/text/MessageFormat.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/NumberFormat.lo: java/text/NumberFormat.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/ParseException.lo: java/text/ParseException.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/ParsePosition.lo: java/text/ParsePosition.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/RuleBasedCollator.lo: java/text/RuleBasedCollator.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/SimpleDateFormat.lo: java/text/SimpleDateFormat.java \
-	java/text/.dirstamp .deps/java/text/.dirstamp
-java/text/StringCharacterIterator.lo: \
-	java/text/StringCharacterIterator.java java/text/.dirstamp \
-	.deps/java/text/.dirstamp
-java/util/.dirstamp:
-	@$(mkinstalldirs) java/util
-	@: > java/util/.dirstamp
-.deps/java/util/.dirstamp:
-	@$(mkinstalldirs) .deps/java/util
-	@: > .deps/java/util/.dirstamp
-java/util/BitSet.lo: java/util/BitSet.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/Calendar.lo: java/util/Calendar.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/ConcurrentModificationException.lo: \
-	java/util/ConcurrentModificationException.java \
-	java/util/.dirstamp .deps/java/util/.dirstamp
-java/util/Date.lo: java/util/Date.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/Dictionary.lo: java/util/Dictionary.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/EmptyStackException.lo: java/util/EmptyStackException.java \
-	java/util/.dirstamp .deps/java/util/.dirstamp
-java/util/Enumeration.lo: java/util/Enumeration.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/EventListener.lo: java/util/EventListener.java \
-	java/util/.dirstamp .deps/java/util/.dirstamp
-java/util/EventObject.lo: java/util/EventObject.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/GregorianCalendar.lo: java/util/GregorianCalendar.java \
-	java/util/.dirstamp .deps/java/util/.dirstamp
-java/util/Hashtable.lo: java/util/Hashtable.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/ListResourceBundle.lo: java/util/ListResourceBundle.java \
-	java/util/.dirstamp .deps/java/util/.dirstamp
-java/util/Locale.lo: java/util/Locale.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/MissingResourceException.lo: \
-	java/util/MissingResourceException.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/NoSuchElementException.lo: \
-	java/util/NoSuchElementException.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/Observable.lo: java/util/Observable.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/Observer.lo: java/util/Observer.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/Properties.lo: java/util/Properties.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/PropertyResourceBundle.lo: \
-	java/util/PropertyResourceBundle.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/Random.lo: java/util/Random.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/ResourceBundle.lo: java/util/ResourceBundle.java \
-	java/util/.dirstamp .deps/java/util/.dirstamp
-java/util/SimpleTimeZone.lo: java/util/SimpleTimeZone.java \
-	java/util/.dirstamp .deps/java/util/.dirstamp
-java/util/Stack.lo: java/util/Stack.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/StringTokenizer.lo: java/util/StringTokenizer.java \
-	java/util/.dirstamp .deps/java/util/.dirstamp
-java/util/TimeZone.lo: java/util/TimeZone.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/TooManyListenersException.lo: \
-	java/util/TooManyListenersException.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/Vector.lo: java/util/Vector.java java/util/.dirstamp \
-	.deps/java/util/.dirstamp
-java/util/jar/.dirstamp:
-	@$(mkinstalldirs) java/util/jar
-	@: > java/util/jar/.dirstamp
-.deps/java/util/jar/.dirstamp:
-	@$(mkinstalldirs) .deps/java/util/jar
-	@: > .deps/java/util/jar/.dirstamp
-java/util/jar/JarFile.lo: java/util/jar/JarFile.java \
-	java/util/jar/.dirstamp .deps/java/util/jar/.dirstamp
-java/util/jar/JarInputStream.lo: java/util/jar/JarInputStream.java \
-	java/util/jar/.dirstamp .deps/java/util/jar/.dirstamp
-java/util/jar/JarEntry.lo: java/util/jar/JarEntry.java \
-	java/util/jar/.dirstamp .deps/java/util/jar/.dirstamp
-java/util/zip/.dirstamp:
-	@$(mkinstalldirs) java/util/zip
-	@: > java/util/zip/.dirstamp
-.deps/java/util/zip/.dirstamp:
-	@$(mkinstalldirs) .deps/java/util/zip
-	@: > .deps/java/util/zip/.dirstamp
-java/util/zip/Adler32.lo: java/util/zip/Adler32.java \
-	java/util/zip/.dirstamp .deps/java/util/zip/.dirstamp
-java/util/zip/CRC32.lo: java/util/zip/CRC32.java java/util/zip/.dirstamp \
-	.deps/java/util/zip/.dirstamp
-java/util/zip/CheckedInputStream.lo: \
-	java/util/zip/CheckedInputStream.java java/util/zip/.dirstamp \
-	.deps/java/util/zip/.dirstamp
-java/util/zip/CheckedOutputStream.lo: \
-	java/util/zip/CheckedOutputStream.java java/util/zip/.dirstamp \
-	.deps/java/util/zip/.dirstamp
-java/util/zip/Checksum.lo: java/util/zip/Checksum.java \
-	java/util/zip/.dirstamp .deps/java/util/zip/.dirstamp
-java/util/zip/DataFormatException.lo: \
-	java/util/zip/DataFormatException.java java/util/zip/.dirstamp \
-	.deps/java/util/zip/.dirstamp
-java/util/zip/Deflater.lo: java/util/zip/Deflater.java \
-	java/util/zip/.dirstamp .deps/java/util/zip/.dirstamp
-java/util/zip/DeflaterOutputStream.lo: \
-	java/util/zip/DeflaterOutputStream.java java/util/zip/.dirstamp \
-	.deps/java/util/zip/.dirstamp
-java/util/zip/GZIPInputStream.lo: java/util/zip/GZIPInputStream.java \
-	java/util/zip/.dirstamp .deps/java/util/zip/.dirstamp
-java/util/zip/GZIPOutputStream.lo: java/util/zip/GZIPOutputStream.java \
-	java/util/zip/.dirstamp .deps/java/util/zip/.dirstamp
-java/util/zip/Inflater.lo: java/util/zip/Inflater.java \
-	java/util/zip/.dirstamp .deps/java/util/zip/.dirstamp
-java/util/zip/InflaterInputStream.lo: \
-	java/util/zip/InflaterInputStream.java java/util/zip/.dirstamp \
-	.deps/java/util/zip/.dirstamp
-java/util/zip/ZipConstants.lo: java/util/zip/ZipConstants.java \
-	java/util/zip/.dirstamp .deps/java/util/zip/.dirstamp
-java/util/zip/ZipEntry.lo: java/util/zip/ZipEntry.java \
-	java/util/zip/.dirstamp .deps/java/util/zip/.dirstamp
-java/util/zip/ZipException.lo: java/util/zip/ZipException.java \
-	java/util/zip/.dirstamp .deps/java/util/zip/.dirstamp
-java/util/zip/ZipFile.lo: java/util/zip/ZipFile.java \
-	java/util/zip/.dirstamp .deps/java/util/zip/.dirstamp
-java/util/zip/ZipInputStream.lo: java/util/zip/ZipInputStream.java \
-	java/util/zip/.dirstamp .deps/java/util/zip/.dirstamp
-java/util/zip/ZipOutputStream.lo: java/util/zip/ZipOutputStream.java \
-	java/util/zip/.dirstamp .deps/java/util/zip/.dirstamp
-java/lang/Class.lo: java/lang/Class.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/Object.lo: java/lang/Object.java java/lang/.dirstamp \
-	.deps/java/lang/.dirstamp
-java/lang/ConcreteProcess.lo: java/lang/ConcreteProcess.java \
-	java/lang/.dirstamp .deps/java/lang/.dirstamp
 
 libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	$(CXXLINK) -rpath $(toolexeclibdir) $(libgcj_la_LDFLAGS) $(libgcj_la_OBJECTS) $(libgcj_la_LIBADD) $(LIBS)
@@ -1730,18 +615,15 @@ install-binPROGRAMS: $(bin_PROGRAMS)
 	$(mkinstalldirs) $(DESTDIR)$(bindir)
 	@list='$(bin_PROGRAMS)'; for p in $$list; do \
 	  if test -f $$p; then \
-	    f="`echo $$p|sed -e 's/$(EXEEXT)$$//' -e '$(transform)' -e 's/$$/$(EXEEXT)/'`"; \
-	    echo " $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $(INSTALL_STRIP_FLAG) $$p $(DESTDIR)$(bindir)/$$f"; \
-	    $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $(INSTALL_STRIP_FLAG) $$p $(DESTDIR)$(bindir)/$$f; \
+	    echo " $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL_PROGRAM) $$p $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
 	  else :; fi; \
 	done
 
 uninstall-binPROGRAMS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  f="`echo $$p|sed -e 's/$(EXEEXT)$$//' -e '$(transform)' -e 's/$$/$(EXEEXT)/'`"; \
-	  echo " rm -f $(DESTDIR)$(bindir)/$$f"; \
-	  rm -f $(DESTDIR)$(bindir)/$$f; \
+	list='$(bin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(bindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
 	done
 
 mostlyclean-noinstPROGRAMS:
@@ -1752,93 +634,59 @@ clean-noinstPROGRAMS:
 distclean-noinstPROGRAMS:
 
 maintainer-clean-noinstPROGRAMS:
-gen-from-JIS.o: $(srcdir)/$(CONVERT_DIR)/gen-from-JIS.c
-make-trie.o: $(srcdir)/$(CONVERT_DIR)/make-trie.c
-
-gen-from-JIS$(EXEEXT): $(gen_from_JIS_OBJECTS) $(gen_from_JIS_DEPENDENCIES)
-	@rm -f gen-from-JIS$(EXEEXT)
-	$(LINK) $(gen_from_JIS_LDFLAGS) $(gen_from_JIS_OBJECTS) $(gen_from_JIS_LDADD) $(LIBS)
-
-gij$(EXEEXT): $(gij_OBJECTS) $(gij_DEPENDENCIES)
-	@rm -f gij$(EXEEXT)
-	$(gij_LINK) $(gij_LDFLAGS) $(gij_OBJECTS) $(gij_LDADD) $(LIBS)
-gnu/gcj/convert/BytesToUnicode.o: gnu/gcj/convert/BytesToUnicode.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Convert.o: gnu/gcj/convert/Convert.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Input_8859_1.o: gnu/gcj/convert/Input_8859_1.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Input_EUCJIS.o: gnu/gcj/convert/Input_EUCJIS.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Input_JavaSrc.o: gnu/gcj/convert/Input_JavaSrc.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Input_SJIS.o: gnu/gcj/convert/Input_SJIS.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Input_UTF8.o: gnu/gcj/convert/Input_UTF8.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Output_8859_1.o: gnu/gcj/convert/Output_8859_1.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Output_EUCJIS.o: gnu/gcj/convert/Output_EUCJIS.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Output_JavaSrc.o: gnu/gcj/convert/Output_JavaSrc.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Output_SJIS.o: gnu/gcj/convert/Output_SJIS.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/Output_UTF8.o: gnu/gcj/convert/Output_UTF8.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
-gnu/gcj/convert/UnicodeToBytes.o: gnu/gcj/convert/UnicodeToBytes.java \
-	gnu/gcj/convert/.dirstamp .deps/gnu/gcj/convert/.dirstamp
 
 jv-convert$(EXEEXT): $(jv_convert_OBJECTS) $(jv_convert_DEPENDENCIES)
 	@rm -f jv-convert$(EXEEXT)
 	$(jv_convert_LINK) $(jv_convert_LDFLAGS) $(jv_convert_OBJECTS) $(jv_convert_LDADD) $(LIBS)
-.c.o:
-	$(COMPILE) -c $<
-.c.lo:
-	$(LTCOMPILE) -c -o $@ $<
+
+gij$(EXEEXT): $(gij_OBJECTS) $(gij_DEPENDENCIES)
+	@rm -f gij$(EXEEXT)
+	$(gij_LINK) $(gij_LDFLAGS) $(gij_OBJECTS) $(gij_LDADD) $(LIBS)
+
+gen-from-JIS$(EXEEXT): $(gen_from_JIS_OBJECTS) $(gen_from_JIS_DEPENDENCIES)
+	@rm -f gen-from-JIS$(EXEEXT)
+	$(LINK) $(gen_from_JIS_LDFLAGS) $(gen_from_JIS_OBJECTS) $(gen_from_JIS_LDADD) $(LIBS)
 .cc.o:
-	$(CXXCOMPILE) -c -o $@ $<
+	$(CXXCOMPILE) -c $<
 .cc.lo:
-	$(LTCXXCOMPILE) -c -o $@ $<
-.java.o:
-	$(GCJCOMPILE) -c -o $@ $<
-.java.lo:
-	$(LTGCJCOMPILE) -c -o $@ $<
+	$(LTCXXCOMPILE) -c $<
 
 install-dataDATA: $(data_DATA)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(datadir)
 	@list='$(data_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(datadir)/$$f"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(datadir)/$$f; \
+	  if test -f $(srcdir)/$$p; then \
+	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(datadir)/$$p"; \
+	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(datadir)/$$p; \
+	  else if test -f $$p; then \
+	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(datadir)/$$p"; \
+	    $(INSTALL_DATA) $$p $(DESTDIR)$(datadir)/$$p; \
+	  fi; fi; \
 	done
 
 uninstall-dataDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(data_DATA)'; for p in $$list; do \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(datadir)/$$f"; \
-	  rm -f $(DESTDIR)$(datadir)/$$f; \
+	list='$(data_DATA)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(datadir)/$$p; \
 	done
 
 install-toolexeclibDATA: $(toolexeclib_DATA)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(DESTDIR)$(toolexeclibdir)
 	@list='$(toolexeclib_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(toolexeclibdir)/$$f"; \
-	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(toolexeclibdir)/$$f; \
+	  if test -f $(srcdir)/$$p; then \
+	    echo " $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(toolexeclibdir)/$$p"; \
+	    $(INSTALL_DATA) $(srcdir)/$$p $(DESTDIR)$(toolexeclibdir)/$$p; \
+	  else if test -f $$p; then \
+	    echo " $(INSTALL_DATA) $$p $(DESTDIR)$(toolexeclibdir)/$$p"; \
+	    $(INSTALL_DATA) $$p $(DESTDIR)$(toolexeclibdir)/$$p; \
+	  fi; fi; \
 	done
 
 uninstall-toolexeclibDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(toolexeclib_DATA)'; for p in $$list; do \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " rm -f $(DESTDIR)$(toolexeclibdir)/$$f"; \
-	  rm -f $(DESTDIR)$(toolexeclibdir)/$$f; \
+	list='$(toolexeclib_DATA)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(toolexeclibdir)/$$p; \
 	done
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -1877,7 +725,7 @@ maintainer-clean-recursive:
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  if test "$$subdir" = "."; then dot_seen=yes; else :; fi; \
+	  test "$$subdir" = "." && dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -1898,17 +746,15 @@ tags-recursive:
 
 tags: TAGS
 
-ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
-	list='$(SOURCES) $(HEADERS) $(TAGS_FILES)'; \
-	unique=`for i in $$list; do \
-	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
-	  done | \
-	  $(AWK) '    { files[$$0] = 1; } \
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
-	mkid -f$$here/ID $$unique $(LISP)
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
 
-TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
-		$(TAGS_FILES) $(LISP)
+TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	tags=; \
 	here=`pwd`; \
 	list='$(SUBDIRS)'; for subdir in $$list; do \
@@ -1916,14 +762,12 @@ TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 	    test -f $$subdir/TAGS && tags="$$tags -i $$here/$$subdir/TAGS"; \
    fi; \
 	done; \
-	list='$(SOURCES) $(HEADERS) $(TAGS_FILES)'; \
-	unique=`for i in $$list; do \
-	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
-	  done | \
-	  $(AWK) '    { files[$$0] = 1; } \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
-	  || etags $(ETAGS_ARGS) $$tags  $$unique $(LISP)
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
 
 mostlyclean-tags:
 
@@ -1942,11 +786,11 @@ top_distdir = $(distdir)
 # tarfile.
 distcheck: dist
 	-rm -rf $(distdir)
-	GZIP=$(GZIP_ENV) gunzip -c $(distdir).tar.gz | $(AMTAR) xf -
+	GZIP=$(GZIP_ENV) $(TAR) zxf $(distdir).tar.gz
 	mkdir $(distdir)/=build
 	mkdir $(distdir)/=inst
-	dc_install_base=`cd $(distdir)/=inst && pwd` \
-	  && cd $(distdir)/=build \
+	dc_install_base=`cd $(distdir)/=inst && pwd`; \
+	cd $(distdir)/=build \
 	  && ../configure --srcdir=.. --prefix=$$dc_install_base \
 	  && $(MAKE) $(AM_MAKEFLAGS) \
 	  && $(MAKE) $(AM_MAKEFLAGS) dvi \
@@ -1961,22 +805,17 @@ distcheck: dist
 	echo "$$banner"; \
 	echo "$$dashes"
 dist: distdir
-	-find $(distdir) -type d ! -perm -777 -exec chmod a+rwx {} \; -o \
-	  ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
-	  ! -type d ! -perm -444 -exec $(SHELL) $(install_sh) -c -m a+r {} {} \; \
-	|| chmod -R a+r $(distdir)
-	$(AMTAR) ch$(AMTARFLAGS)f - $(distdir) | GZIP=$(GZIP_ENV) gzip -c > $(distdir).tar.gz
+	-chmod -R a+r $(distdir)
+	GZIP=$(GZIP_ENV) $(TAR) chozf $(distdir).tar.gz $(distdir)
 	-rm -rf $(distdir)
 dist-all: distdir
-	-find $(distdir) -type d ! -perm -777 -exec chmod a+rwx {} \; -o \
-	  ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
-	  ! -type d ! -perm -444 -exec $(SHELL) $(install_sh) -c -m a+r {} {} \; \
-	|| chmod -R a+r $(distdir)
-	$(AMTAR) ch$(AMTARFLAGS)f - $(distdir) | GZIP=$(GZIP_ENV) gzip -c > $(distdir).tar.gz
+	-chmod -R a+r $(distdir)
+	GZIP=$(GZIP_ENV) $(TAR) chozf $(distdir).tar.gz $(distdir)
 	-rm -rf $(distdir)
 distdir: $(DISTFILES)
 	-rm -rf $(distdir)
 	mkdir $(distdir)
+	-chmod 777 $(distdir)
 	here=`cd $(top_builddir) && pwd`; \
 	top_distdir=`cd $(distdir) && pwd`; \
 	distdir=`cd $(distdir) && pwd`; \
@@ -1985,7 +824,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+	    cp -pr $$/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -1997,6 +836,7 @@ distdir: $(DISTFILES)
 	    test -d $(distdir)/$$subdir \
 	    || mkdir $(distdir)/$$subdir \
 	    || exit 1; \
+	    chmod 777 $(distdir)/$$subdir; \
 	    (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) top_distdir=../$(distdir) distdir=../$(distdir)/$$subdir distdir) \
 	      || exit 1; \
 	  fi; \
@@ -2016,42 +856,42 @@ distclean-depend:
 maintainer-clean-depend:
 
 %.o: %.c
-	@echo '$(COMPILE) -c -o $@ $<'; \
-	$(COMPILE) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
-	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
-	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
 	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
-	    >> .deps/$(*D)/$(*F).P; \
-	rm .deps/$(*D)/$(*F).pp
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
 
 %.lo: %.c
-	@echo '$(LTCOMPILE) -c -o $@ $<'; \
-	$(LTCOMPILE) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
 	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
-	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
-	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
 	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
-	    >> .deps/$(*D)/$(*F).P; \
-	rm -f .deps/$(*D)/$(*F).pp
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
 
 %.o: %.cc
-	@echo '$(CXXCOMPILE) -c -o $@ $<'; \
-	$(CXXCOMPILE) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
-	@-cp .deps/$(*D)/$(*F).pp .deps/$(*D)/$(*F).P; \
-	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	@echo '$(CXXCOMPILE) -c $<'; \
+	$(CXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
 	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
-	    >> .deps/$(*D)/$(*F).P; \
-	rm .deps/$(*D)/$(*F).pp
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
 
 %.lo: %.cc
-	@echo '$(LTCXXCOMPILE) -c -o $@ $<'; \
-	$(LTCXXCOMPILE) -Wp,-MD,.deps/$(*D)/$(*F).pp -c -o $@ $<
+	@echo '$(LTCXXCOMPILE) -c $<'; \
+	$(LTCXXCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
 	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
-	  < .deps/$(*D)/$(*F).pp > .deps/$(*D)/$(*F).P; \
-	tr ' ' '\012' < .deps/$(*D)/$(*F).pp \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
 	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
-	    >> .deps/$(*D)/$(*F).P; \
-	rm -f .deps/$(*D)/$(*F).pp
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
 info-am:
 info: info-recursive
 dvi-am:
@@ -2078,7 +918,7 @@ uninstall: uninstall-recursive
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA)
 all-redirect: all-recursive
 install-strip:
-	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs: installdirs-recursive
 installdirs-am:
 	$(mkinstalldirs)  $(DESTDIR)$(toolexeclibdir) $(DESTDIR)$(bindir) \
@@ -2144,22 +984,20 @@ distclean-binPROGRAMS clean-binPROGRAMS maintainer-clean-binPROGRAMS \
 uninstall-binPROGRAMS install-binPROGRAMS mostlyclean-noinstPROGRAMS \
 distclean-noinstPROGRAMS clean-noinstPROGRAMS \
 maintainer-clean-noinstPROGRAMS uninstall-dataDATA install-dataDATA \
-uninstall-toolexeclibDATA install-toolexeclibDATA install-recursive \
-uninstall-recursive install-data-recursive uninstall-data-recursive \
-install-exec-recursive uninstall-exec-recursive installdirs-recursive \
-uninstalldirs-recursive all-recursive check-recursive \
-installcheck-recursive info-recursive dvi-recursive \
-mostlyclean-recursive distclean-recursive clean-recursive \
+uninstall-toolexeclibDATA install-toolexeclibDATA \
+install-data-recursive uninstall-data-recursive install-exec-recursive \
+uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
+all-recursive check-recursive installcheck-recursive info-recursive \
+dvi-recursive mostlyclean-recursive distclean-recursive clean-recursive \
 maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
 distclean-tags clean-tags maintainer-clean-tags distdir \
 mostlyclean-depend distclean-depend clean-depend \
 maintainer-clean-depend info-am info dvi-am dvi check check-am \
 installcheck-am installcheck install-info-am install-info \
 install-exec-am install-exec install-data-am install-data install-am \
-install uninstall-am uninstall all-redirect all-am all install-strip \
-installdirs-am installdirs mostlyclean-generic distclean-generic \
-clean-generic maintainer-clean-generic clean mostlyclean distclean \
-maintainer-clean
+install uninstall-am uninstall all-redirect all-am all installdirs-am \
+installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 $(java_source_files:.java=.class): libgcj.zip
@@ -2181,6 +1019,9 @@ clean-local:
 	find . -name '*.class' -print | xargs rm -f
 
 .class.lo:
+	$(GCJCOMPILE) -o $@ $<
+
+.java.lo:
 	$(GCJCOMPILE) -o $@ $<
 
 $(nat_files): %.lo: %.cc
