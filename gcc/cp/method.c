@@ -1944,14 +1944,9 @@ hack_identifier (value, name)
     }
   else if (TREE_CODE (value) == TREE_LIST && TREE_NONLOCAL_FLAG (value))
     {
-      if (type == 0)
-	{
-	  error ("request for member `%s' is ambiguous in multiple inheritance lattice",
-		 IDENTIFIER_POINTER (name));
-	  return error_mark_node;
-	}
-
-      return value;
+      error ("request for member `%s' is ambiguous in multiple inheritance lattice",
+	     IDENTIFIER_POINTER (name));
+      return error_mark_node;
     }
 
   if (! processing_template_decl)

@@ -1,3 +1,8 @@
+1998-09-20  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* method.c (hack_identifier): Finding multiple members is always
+	an error.
+
 1998-09-21  Per Bothner  <bothner@cygnus.com>
 
 	* Make-lang.in (c++-filt):  Link libiberty.a after cxxmain.o.
