@@ -1,3 +1,7 @@
+2003-02-18  Richard Henderson  <rth@redhat.com>
+
+	* c-common.c (handle_used_attribute): Accept static data too.
+
 2003-02-18  Jim Wilson  <wilson@redhat.com>
 
 	* config/ia64/ia64.md (floatdidf2, floatdisf2): Add %, before second

@@ -5383,16 +5383,19 @@ handle_always_inline_attribute (node, name, args, flags, no_add_attrs)
    struct attribute_spec.handler.  */
 
 static tree
-handle_used_attribute (node, name, args, flags, no_add_attrs)
-     tree *node;
+handle_used_attribute (pnode, name, args, flags, no_add_attrs)
+     tree *pnode;
      tree name;
      tree args ATTRIBUTE_UNUSED;
      int flags ATTRIBUTE_UNUSED;
      bool *no_add_attrs;
 {
-  if (TREE_CODE (*node) == FUNCTION_DECL)
-    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (*node))
-      = TREE_USED (*node) = 1;
+  tree node = *pnode;
+
+  if (TREE_CODE (node) == FUNCTION_DECL
+      || (TREE_CODE (node) == VAR_DECL && TREE_STATIC (node)))
+    TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (node))
+      = TREE_USED (node) = 1;
   else
     {
       warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
