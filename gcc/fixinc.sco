@@ -145,7 +145,6 @@ while [ $# != 0 ]; do
   echo 'Checking header files:'
   for file in $files; do
     if egrep '!__STDC__' $file >/dev/null; then
-      echo Fixing $file
       if [ -r $file ]; then
 	cp $file $2/$file >/dev/null 2>&1 || echo "Can't copy $file"
 	chmod +w $2/$file
@@ -163,6 +162,8 @@ while [ $# != 0 ]; do
 	mv $2/$file.sed $2/$file
 	if cmp $file $2/$file >/dev/null 2>&1; then
 	   rm $2/$file
+	else
+	   echo Fixed $file
 	fi
       fi
     fi
