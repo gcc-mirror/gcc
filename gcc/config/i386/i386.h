@@ -3319,6 +3319,7 @@ do {						\
 			SYMBOL_REF, LABEL_REF, SUBREG, REG, MEM}},	\
   {"nonmemory_no_elim_operand", {CONST_INT, REG, SUBREG}},		\
   {"index_register_operand", {SUBREG, REG}},				\
+  {"flags_reg_operand", {REG}},						\
   {"q_regs_operand", {SUBREG, REG}},					\
   {"non_q_regs_operand", {SUBREG, REG}},				\
   {"fcmov_comparison_operator", {EQ, NE, LTU, GTU, LEU, GEU, UNORDERED, \
@@ -3354,6 +3355,7 @@ do {						\
   {"fp_register_operand", {REG}},					\
   {"register_and_not_fp_reg_operand", {REG}},				\
   {"vector_move_operand", {CONST_VECTOR, SUBREG, REG, MEM}},		\
+  {"compare_operator", {COMPARE}},
 
 /* A list of predicates that do special things with modes, and so
    should not elicit warnings for VOIDmode match_operand.  */

@@ -3609,6 +3609,20 @@ q_regs_operand (op, mode)
   return ANY_QI_REG_P (op);
 }
 
+/* Return true if op is an flags register.  */
+
+int
+flags_reg_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (mode != VOIDmode && GET_MODE (op) != mode)
+    return 0;
+  return (GET_CODE (op) == REG
+	  && REGNO (op) == FLAGS_REG
+	  && GET_MODE (op) != VOIDmode);
+}
+
 /* Return true if op is a NON_Q_REGS class register.  */
 
 int
@@ -3968,6 +3982,14 @@ aligned_operand (op, mode)
 
   /* Didn't find one -- this must be an aligned address.  */
   return 1;
+}
+
+int
+compare_operator (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return GET_CODE (op) == COMPARE;
 }
 
 /* Return true if the constant is something that can be loaded with
