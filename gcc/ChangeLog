@@ -1,5 +1,8 @@
 Wed Apr  7 16:30:04 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* alpha.c (add_long_const): Correct conditional for test on
+	too-large constants.
+
 	* regclass.c (record_reg_classes): Properly handle register move
 	directions.
 
