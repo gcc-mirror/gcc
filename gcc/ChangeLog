@@ -1,5 +1,12 @@
 2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
 
+	* config/sh/netbsd-elf.h (SUBTARGET_EXTRA_SPECS): Define
+	and include netbsd_entry_point.
+	(SUBTARGET_LINK_SPEC): Define as NETBSD_LINK_SPEC_ELF.
+	(NETBSD_ENTRY_POINT): Define.
+
+2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
+
 	* config/sh/sh.h (SUBTARGET_EXTRA_SPECS): Define empty
 	if not already defined. 
 	(EXTRA_SPECS): Add SUBTARGET_EXTRA_SPECS.

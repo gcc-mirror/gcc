@@ -41,6 +41,13 @@ Boston, MA 02111-1307, USA.  */
                                  TARGET_VERSION_CPU, TARGET_VERSION_ENDIAN)
 
 
+/* Extra specs needed for NetBSD SuperH ELF targets.  */
+
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS						\
+  { "netbsd_entry_point", NETBSD_ENTRY_POINT },
+
+
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
     {									\
@@ -73,22 +80,12 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_LINK_EMUL_SUFFIX "_nbsd"
 
 #undef SUBTARGET_LINK_SPEC
-#define SUBTARGET_LINK_SPEC \
-  "%{assert*} %{R*} \
-   %{shared:-shared} \
-   %{!shared: \
-     -dc -dp \
-     %{!nostdlib: \
-       %{!r*: \
-	 %{!e*:-e __start}}} \
-     %{!static: \
-       %{rdynamic:-export-dynamic} \
-       %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}} \
-     %{static:-static}}"
+#define SUBTARGET_LINK_SPEC NETBSD_LINK_SPEC_ELF
 
 #undef LINK_SPEC
 #define LINK_SPEC SH_LINK_SPEC
 
+#define NETBSD_ENTRY_POINT "__start"
 
 /* Provide a CPP_SPEC appropriate for NetBSD.  */
 #undef SUBTARGET_CPP_SPEC
