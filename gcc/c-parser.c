@@ -3238,7 +3238,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
       location_t loc = c_parser_peek_token (parser)->location;
       if (c_parser_next_token_is (parser, CPP_EOF))
 	{
-	  parser->error = true;
+	  c_parser_error (parser, "expected declaration or statement");
 	  return;
 	}
       if (c_parser_next_token_is_keyword (parser, RID_CASE)
