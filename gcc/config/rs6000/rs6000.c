@@ -533,8 +533,6 @@ easy_fp_constant (op, mode)
      register rtx op;
      register enum machine_mode mode;
 {
-  rtx low, high;
-
   if (GET_CODE (op) != CONST_DOUBLE
       || GET_MODE (op) != mode
       || GET_MODE_CLASS (mode) != MODE_FLOAT)
@@ -544,14 +542,27 @@ easy_fp_constant (op, mode)
   if (TARGET_SOFT_FLOAT)
     return 1;
 
-  high = operand_subword (op, 0, 0, mode);
-  low = operand_subword (op, 1, 0, mode);
+  if (mode == DFmode)
+    {
+      long k[2];
+      REAL_VALUE_TYPE rv;
 
-  if (high == 0 || ! input_operand (high, word_mode))
-    return 0;
+      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
+      REAL_VALUE_TO_TARGET_DOUBLE (rv, k);
 
-  return (mode == SFmode
-	  || (low != 0 && input_operand (low, word_mode)));
+      return (((unsigned) (k[0] + 0x8000) < 0x10000 || (k[0] & 0xffff) == 0)
+	      && ((unsigned) (k[1] + 0x8000) < 0x10000 || (k[1] & 0xffff) == 0));
+    }
+  else
+    {
+      long l;
+      REAL_VALUE_TYPE rv;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
+      REAL_VALUE_TO_TARGET_SINGLE (rv, l);
+
+      return ((unsigned) (l + 0x8000) < 0x10000 || (l & 0xffff) == 0);
+    }
 }
 
 /* Return 1 if the operand is in volatile memory.  Note that during the
@@ -843,9 +854,7 @@ input_operand (op, mode)
       && small_data_operand (op, Pmode))
     return 1;
 
-  /* Otherwise, we will be doing this SET with an add, so anything valid
-     for an add will be valid.  */
-  return add_operand (op, mode);
+  return 0;
 }
 
 /* Return 1 for an operand in small memory on V.4/eabi */
@@ -3603,34 +3612,66 @@ output_toc (file, x, labelno)
   /* Handle FP constants specially.  Note that if we have a minimal
      TOC, things we put here aren't actually in the TOC, so we can allow
      FP constants.  */
-  if (GET_CODE (x) == CONST_DOUBLE
-      && GET_MODE (x) == DFmode
+  if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == DFmode
       && ! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC))
     {
-      REAL_VALUE_TYPE r;
-      long l[2];
+      REAL_VALUE_TYPE rv;
+      long k[2];
 
-      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-      REAL_VALUE_TO_TARGET_DOUBLE (r, l);
+      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+      REAL_VALUE_TO_TARGET_DOUBLE (rv, k);
       if (TARGET_MINIMAL_TOC)
-	fprintf (file, "\t.long %ld\n\t.long %ld\n", l[0], l[1]);
+	fprintf (file, "\t.long %ld\n\t.long %ld\n", k[0], k[1]);
       else
 	fprintf (file, "\t.tc FD_%lx_%lx[TC],%ld,%ld\n",
-		 l[0], l[1], l[0], l[1]);
+		 k[0], k[1], k[0], k[1]);
       return;
     }
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == SFmode
 	   && ! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC))
     {
-      rtx val = operand_subword (x, 0, 0, SFmode);
+      REAL_VALUE_TYPE rv;
+      long l;
 
-      if (val == 0 || GET_CODE (val) != CONST_INT)
-	abort ();
+      REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
+      REAL_VALUE_TO_TARGET_SINGLE (rv, l);
 
       if (TARGET_MINIMAL_TOC)
-	fprintf (file, "\t.long %d\n", INTVAL (val));
+	fprintf (file, "\t.long %d\n", l);
       else
-	fprintf (file, "\t.tc FS_%x[TC],%d\n", INTVAL (val), INTVAL (val));
+	fprintf (file, "\t.tc FS_%x[TC],%d\n", l, l);
+      return;
+    }
+  else if (GET_MODE (x) == DImode
+	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
+	   && ! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC))
+    {
+      HOST_WIDE_INT low;
+      HOST_WIDE_INT high;
+
+      if (GET_CODE (x) == CONST_DOUBLE)
+	{
+	  low = CONST_DOUBLE_LOW (x);
+	  high = CONST_DOUBLE_HIGH (x);
+	}
+      else
+#if HOST_BITS_PER_WIDE_INT == 32
+	{
+	  low = INTVAL (x);
+	  high = (low < 0) ? ~0 : 0;
+	}
+#else
+	{
+          low = INTVAL (x) & 0xffffffff;
+          high = (HOST_WIDE_INT) INTVAL (x) >> 32;
+	}
+#endif
+
+      if (TARGET_MINIMAL_TOC)
+	fprintf (file, "\t.long %ld\n\t.long %ld\n", high, low);
+      else
+	fprintf (file, "\t.tc ID_%lx_%lx[TC],%ld,%ld\n",
+		 high, low, high, low);
       return;
     }
 
