@@ -1,5 +1,5 @@
 /* InputContext.java -- provides the context for text input
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -340,7 +340,6 @@ public class InputContext
    *
    * @throws UnsupportedOperationException if there is no current input method,
    *         or the input method does not support reconversion
-   * @throws UnsupportedOperationException if ther
    * @since 1.3
    */
   public void reconvert()
