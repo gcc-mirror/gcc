@@ -687,8 +687,6 @@ static void find_best_addr	PROTO((rtx, rtx *));
 static enum rtx_code find_comparison_args PROTO((enum rtx_code, rtx *, rtx *,
 						 enum machine_mode *,
 						 enum machine_mode *));
-static rtx simplify_plus_minus	PROTO((enum rtx_code, enum machine_mode,
-				       rtx, rtx));
 static rtx fold_rtx		PROTO((rtx, rtx));
 static rtx equiv_constant	PROTO((rtx));
 static void record_jump_equiv	PROTO((rtx, int));
@@ -708,7 +706,6 @@ static void cse_set_around_loop	PROTO((rtx, rtx, rtx));
 static rtx cse_basic_block	PROTO((rtx, rtx, struct branch_path *, int));
 static void count_reg_usage	PROTO((rtx, int *, rtx, int));
 extern void dump_class          PROTO((struct table_elt*));
-static void check_fold_consts	PROTO((PTR));
 static struct cse_reg_info* get_cse_reg_info PROTO((int));
 static unsigned int hash_cse_reg_info PROTO((hash_table_entry_t));
 static int cse_reg_info_equal_p	PROTO((hash_table_entry_t,
