@@ -3071,6 +3071,17 @@ expand_eh_return ()
   emit_label (around_label);
 }
 
+/* In the following functions, we represent entries in the action table
+   as 1-based indicies.  Special cases are:
+
+	 0:	null action record, non-null landing pad; implies cleanups
+	-1:	null action record, null landing pad; implies no action
+	-2:	no call-site entry; implies must_not_throw
+	-3:	we have yet to process outer regions
+
+   Further, no special cases apply to the "next" field of the record.
+   For next, 0 means end of list.  */
+
 struct action_record
 {
   int offset;
@@ -3174,8 +3185,16 @@ collect_one_action_chain (ar_hash, region)
 	      if (next == -3)
 		{
 		  next = collect_one_action_chain (ar_hash, region->outer);
-		  if (next < 0)
+
+		  /* If there is no next action, terminate the chain.  */
+		  if (next == -1)
 		    next = 0;
+		  /* If all outer actions are cleanups or must_not_throw,
+		     we'll have no action record for it, since we had wanted
+		     to encode these states in the call-site record directly.
+		     Add a cleanup action to the chain to catch these.  */
+		  else if (next <= 0)
+		    next = add_action_record (ar_hash, 0, 0);
 		}
 	      next = add_action_record (ar_hash, c->u.catch.filter, next);
 	    }
