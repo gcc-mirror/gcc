@@ -1,3 +1,11 @@
+2002-10-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/inherit/override1.C: New test.
+
+	* g++.dg/abi/mangle11.C: New test.
+	* g++.dg/abi/mangle14.C: New test.
+	* g++.dg/abi/mangle17.C: New test.
+
 2002-10-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/overload/member2.C: New test.
