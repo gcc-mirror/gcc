@@ -963,7 +963,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loops *loops,
   add_bb_to_loop (bb_before_second_loop, first_loop->outer);
 
   pre_condition =
-        build2 (LE_EXPR, boolean_type_node, first_niters, integer_zero_node);
+    fold (build2 (LE_EXPR, boolean_type_node, first_niters, integer_zero_node));
   skip_e = slpeel_add_loop_guard (bb_before_first_loop, pre_condition,
                                   bb_before_second_loop, bb_before_first_loop);
   slpeel_update_phi_nodes_for_guard (skip_e, first_loop, true /* entry-phis */,
@@ -1001,7 +1001,8 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loops *loops,
   bb_after_second_loop = split_edge (second_loop->single_exit);
   add_bb_to_loop (bb_after_second_loop, second_loop->outer);
 
-  pre_condition = build2 (EQ_EXPR, boolean_type_node, first_niters, niters);
+  pre_condition = 
+	fold (build2 (EQ_EXPR, boolean_type_node, first_niters, niters));
   skip_e = slpeel_add_loop_guard (bb_between_loops, pre_condition,
                                   bb_after_second_loop, bb_before_first_loop);
   slpeel_update_phi_nodes_for_guard (skip_e, second_loop, false /* exit-phis */,
@@ -1213,7 +1214,7 @@ new_loop_vec_info (struct loop *loop)
   LOOP_VINFO_EXIT_COND (res) = NULL;
   LOOP_VINFO_NITERS (res) = NULL;
   LOOP_VINFO_VECTORIZABLE_P (res) = 0;
-  LOOP_DO_PEELING_FOR_ALIGNMENT (res) = false;
+  LOOP_PEELING_FOR_ALIGNMENT (res) = 0;
   LOOP_VINFO_VECT_FACTOR (res) = 0;
   VARRAY_GENERIC_PTR_INIT (LOOP_VINFO_DATAREF_WRITES (res), 20,
 			   "loop_write_datarefs");
