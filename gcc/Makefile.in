@@ -935,7 +935,7 @@ aux-output.o : aux-output.c $(CONFIG_H) \
 # from the GNU Emacs distribution.
 alloca.o:	alloca.c
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(ALLOCA_FLAGS) \
-	  -Demacs -c `echo $(srcdir)/alloca.c | sed 's,^\./,,'`
+	  -c `echo $(srcdir)/alloca.c | sed 's,^\./,,'`
 	$(ALLOCA_FINISH)
 
 # Generate header and source files from the machine description, 
