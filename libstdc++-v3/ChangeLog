@@ -1,5 +1,9 @@
 2000-11-26  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/27_io/istream_unformatted.cc (test05): Fixup.
+
+2000-11-26  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* acinclude.m4: Only sanity check for compiler version when
 	configuring. More fixes for 'make clean'.
 	* aclocal.m4: Regenerate.
