@@ -6361,25 +6361,34 @@ tsubst (t, args, complain, in_decl)
 	  {
 	  case TEMPLATE_TYPE_PARM:
 	  case TEMPLATE_TEMPLATE_PARM:
-	    r = copy_node (t);
-	    TEMPLATE_TYPE_PARM_INDEX (r)
-	      = reduce_template_parm_level (TEMPLATE_TYPE_PARM_INDEX (t),
-					    r, levels);
-	    TYPE_STUB_DECL (r) = TYPE_NAME (r) = TEMPLATE_TYPE_DECL (r);
-	    TYPE_MAIN_VARIANT (r) = r;
-	    TYPE_POINTER_TO (r) = NULL_TREE;
-	    TYPE_REFERENCE_TO (r) = NULL_TREE;
-
-	    if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM
-		&& TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t))
+	    if (CP_TYPE_QUALS (t))
 	      {
-		tree argvec = tsubst (TYPE_TI_ARGS (t), args,
-				      complain, in_decl); 
-		if (argvec == error_mark_node)
-		  return error_mark_node;
+		r = tsubst (TYPE_MAIN_VARIANT (t), args, complain, in_decl);
+		r = cp_build_qualified_type_real (r, CP_TYPE_QUALS (t),
+						  complain);
+	      }
+	    else
+	      {
+		r = copy_node (t);
+		TEMPLATE_TYPE_PARM_INDEX (r)
+		  = reduce_template_parm_level (TEMPLATE_TYPE_PARM_INDEX (t),
+						r, levels);
+		TYPE_STUB_DECL (r) = TYPE_NAME (r) = TEMPLATE_TYPE_DECL (r);
+		TYPE_MAIN_VARIANT (r) = r;
+		TYPE_POINTER_TO (r) = NULL_TREE;
+		TYPE_REFERENCE_TO (r) = NULL_TREE;
 
-		TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (r)
-		  = tree_cons (TYPE_TI_TEMPLATE (t), argvec, NULL_TREE);
+		if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM
+		    && TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (t))
+		  {
+		    tree argvec = tsubst (TYPE_TI_ARGS (t), args,
+					  complain, in_decl); 
+		    if (argvec == error_mark_node)
+		      return error_mark_node;
+
+		    TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (r)
+		      = tree_cons (TYPE_TI_TEMPLATE (t), argvec, NULL_TREE);
+		  }
 	      }
 	    break;
 

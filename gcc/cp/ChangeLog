@@ -1,3 +1,27 @@
+2000-06-28  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (CLEAR_BINFO_NEW_VTABLE_MARKED): Remove.
+	* class.c (update_vtable_entry_for_fn): Correct logic for deciding
+	where to emit thunks.
+	(build_vtt): Adjust call to build_vtt_inits.
+	(build_vtt_inits): Add parameter to indicate whether or not
+	sub-VTTs for virtual bases should be included.  Adjust handling of
+	construction vtables.
+	(get_matching_base): New function.
+	(dfs_build_vtt_inits): Rename to ...
+	(dfs_build_secondary_vptr_vtt_inits): Adjust handling of
+	construction vtables.
+	(dfs_fixup_binfo_vtbls): Likewise.
+	(build_ctor_vtbl_groups): Build construction vtables for virtual
+	bases, too.
+	(accumulate_vtbl_inits): Tweak logic for deciding whether or not
+	to build construction vtbls.
+	(dfs_accumulate_vtbl_inits): Adjust handling of
+	construction vtables.
+
+	* pt.c (tsubst, case TEMPLATE_TEMPLATE_PARM): Handle cv-qualified
+	types correctly.
+	
 2000-06-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (grokfndecl): Set DECL_CONTEXT for static functions too.

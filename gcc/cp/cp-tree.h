@@ -1781,8 +1781,6 @@ struct lang_type
    my_friendly_assert (!BINFO_PRIMARY_MARKED_P (B), 20000517),		 \
    my_friendly_assert (CLASSTYPE_VFIELDS (BINFO_TYPE (B)) != NULL_TREE,  \
 		       20000517))
-#define CLEAR_BINFO_NEW_VTABLE_MARKED(B, C) \
-  (BINFO_NEW_VTABLE_MARKED (B, C) = 0)
 
 /* Nonzero means this class has done dfs_pushdecls.  */
 #define BINFO_PUSHDECLS_MARKED(NODE) BINFO_VTABLE_PATH_MARKED (NODE)
