@@ -1,3 +1,12 @@
+2004-07-09  Bryce McKinlay  <mckinlay@redhat.com>
+
+	Fix or remove some bogus test cases.
+	* testsuite/libjava.compile/pr10459_2.java: Removed.
+	* testsuite/libjava.compile/pr10459.java: Test using its own method,
+	not Object.clone().
+	* testsuite/libjava.compile/inner_data.java: Test against its own
+	protected field.
+
 2004-07-09  Michael Koch  <konqueror@gmx.de>
 
 	* scripts/unicode-muncher.pl: Updated to version 2.1

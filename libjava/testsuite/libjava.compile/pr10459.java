@@ -4,7 +4,12 @@ public class pr10459
 
   public void aMethod() throws Throwable
   {
-    for (; ;x.clone().clone())
+    for (; ;x.foo().foo())
       ;
+  }
+  
+  pr10459 foo() 
+  {
+    return null;
   }
 }

@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class inner_data
 {
-    private class Randomer extends Random {
+    private class Randomer extends Super {
 	public long xxx ()
 	{
 	    return seed;
@@ -12,3 +12,7 @@ public class inner_data
     }
 }
 
+class Super
+{
+  protected long seed;
+}
