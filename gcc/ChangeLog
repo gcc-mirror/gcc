@@ -1,3 +1,9 @@
+Sun Sep 14 11:11:05 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* regmove.c (regmove_optimize): If we end up moving the
+	original insn due to lifetime overlaps, make sure to move
+	REG_NOTES too.
+
 Sat Sep 13 15:51:11 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (INSTALL_{PROGRAM,DATA}): Use value found by configure.
