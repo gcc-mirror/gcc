@@ -132,6 +132,7 @@ build_headof (exp)
   tree type = TREE_TYPE (exp);
   tree aref;
   tree offset;
+  tree index;
 
   my_friendly_assert (TREE_CODE (type) == POINTER_TYPE, 20000112);
   type = TREE_TYPE (type);
@@ -151,7 +152,15 @@ build_headof (exp)
   /* We use this a couple of times below, protect it.  */
   exp = save_expr (exp);
 
-  aref = build_vtbl_ref (build_indirect_ref (exp, NULL_PTR), integer_zero_node);
+  /* Under the new ABI, the offset-to-top field is at index -2 from
+     the vptr.  */
+  if (new_abi_rtti_p ())
+    index = build_int_2 (-2, -1);
+  /* But under the old ABI, it is at offset zero.  */
+  else
+    index = integer_zero_node;
+
+  aref = build_vtbl_ref (build_indirect_ref (exp, NULL_PTR), index);
 
   if (flag_vtable_thunks)
     offset = aref;
@@ -230,6 +239,7 @@ get_tinfo_decl_dynamic (exp)
     {
       /* build reference to type_info from vtable.  */
       tree t;
+      tree index;
 
       if (! flag_rtti)
 	error ("taking dynamic typeid of object with -fno-rtti");
@@ -247,10 +257,15 @@ get_tinfo_decl_dynamic (exp)
 	  exp = build_indirect_ref (exp, NULL_PTR);
 	}
 
-      if (flag_vtable_thunks)
-	t = build_vfn_ref ((tree *) 0, exp, integer_one_node);
+      /* The RTTI information is always in the vtable, but it's at
+	 different indices depending on the ABI.  */
+      if (new_abi_rtti_p ())
+	index = minus_one_node;
+      else if (flag_vtable_thunks)
+	index = integer_one_node;
       else
-	t = build_vfn_ref ((tree *) 0, exp, integer_zero_node);
+	index = integer_zero_node;
+      t = build_vfn_ref ((tree *) 0, exp, index);
       TREE_TYPE (t) = build_pointer_type (tinfo_decl_type);
       return t;
     }
@@ -1284,8 +1299,7 @@ tinfo_base_init (desc, target)
   
   if (TINFO_VTABLE_DECL (desc))
     {
-      tree vtbl_ptr = build_unary_op (ADDR_EXPR, TINFO_VTABLE_DECL (desc), 0);
-  
+      tree vtbl_ptr = TINFO_VTABLE_DECL (desc);
       init = tree_cons (NULL_TREE, vtbl_ptr, init);
     }
   
@@ -1616,7 +1630,18 @@ create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
   /* Get the vtable decl. */
   real_type = xref_tag (class_type_node, get_identifier (real_name), 1);
   vtable_decl = get_vtable_decl (real_type, /*complete=*/1);
-  
+  vtable_decl = build_unary_op (ADDR_EXPR, vtable_decl, 0);
+
+  /* Under the new ABI, we need to point into the middle of the
+     vtable.  */
+  if (vbase_offsets_in_vtable_p ())
+    {
+      vtable_decl = build (PLUS_EXPR, TREE_TYPE (vtable_decl), 
+			   vtable_decl,
+			   size_extra_vtbl_entries (TYPE_BINFO (real_type)));
+      TREE_CONSTANT (vtable_decl) = 1;
+    }
+
   /* First field is the pseudo type_info base class. */
   fields[0] = build_lang_decl (FIELD_DECL, NULL_TREE, ti_desc_type_node);
   

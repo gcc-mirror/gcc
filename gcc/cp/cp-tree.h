@@ -1545,8 +1545,8 @@ struct lang_type
 		     CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (NODE)))	\
    : NULL_TREE)
 
-/* The number of virtual functions defined for this
-   _CLASSTYPE node.  */
+/* The number of virtual functions present in this classes virtual
+   function table.  */
 #define CLASSTYPE_VSIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->vsize)
 
 /* A chain of BINFOs for the direct and indirect virtual base classes
@@ -3685,8 +3685,7 @@ extern void push_lang_context			PARAMS ((tree));
 extern void pop_lang_context			PARAMS ((void));
 extern tree instantiate_type			PARAMS ((tree, tree, int));
 extern void print_class_statistics		PARAMS ((void));
-extern tree skip_rtti_stuff	                PARAMS ((tree, tree,
-							 HOST_WIDE_INT *));
+extern int first_vfun_index                     PARAMS ((tree));
 extern void build_self_reference		PARAMS ((void));
 extern void warn_hidden				PARAMS ((tree));
 extern tree get_enclosing_class			PARAMS ((tree));
@@ -4212,11 +4211,9 @@ extern tree dfs_skip_nonprimary_vbases_unmarkedp PARAMS ((tree, void *));
 extern tree dfs_skip_nonprimary_vbases_markedp  PARAMS ((tree, void *));
 extern tree dfs_unmarked_real_bases_queue_p     PARAMS ((tree, void *));
 extern tree dfs_marked_real_bases_queue_p       PARAMS ((tree, void *));
-extern tree dfs_vtable_path_unmarked_real_bases_queue_p
-                                                PARAMS ((tree, void *));
-extern tree dfs_vtable_path_marked_real_bases_queue_p
-                                                PARAMS ((tree, void *));
 extern tree dfs_skip_vbases                     PARAMS ((tree, void *));
+extern tree marked_vtable_pathp                 PARAMS ((tree, void *));
+extern tree unmarked_vtable_pathp               PARAMS ((tree, void *));
 extern void mark_primary_bases                  PARAMS ((tree));
 extern tree convert_pointer_to_vbase            PARAMS ((tree, tree));
 extern tree find_vbase_instance                 PARAMS ((tree, tree));
