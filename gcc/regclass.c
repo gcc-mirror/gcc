@@ -503,10 +503,13 @@ static int loop_depth;
 
 static int loop_cost;
 
-static int copy_cost ();
-static void record_reg_classes ();
-static void record_address_regs ();
-
+static void record_reg_classes	PROTO((int, int, rtx *, enum machine_mode *,
+				       char **, rtx));
+static int copy_cost		PROTO((rtx, enum machine_mode, 
+				       enum reg_class, int));
+static void record_address_regs	PROTO((rtx, enum reg_class, int));
+static auto_inc_dec_reg_p	PROTO((rtx, enum machine_mode));
+static void reg_scan_mark_refs	PROTO((rtx, rtx, int));
 
 /* Return the reg_class in which pseudo reg number REGNO is best allocated.
    This function is sometimes called before the info has been computed.
@@ -584,16 +587,23 @@ regclass (f, nregs)
 	      if (HARD_REGNO_MODE_OK (j, m))
 		{
 		  PUT_MODE (r, m);
-		  if (0
+
+		  /* If a register is not directly suitable for an
+		     auto-increment or decrement addressing mode and
+		     requires secondary reloads, disallow its class from
+		     being used in such addresses.  */
+
+		  if ((0
 #ifdef SECONDARY_INPUT_RELOAD_CLASS
-		      || (SECONDARY_INPUT_RELOAD_CLASS (BASE_REG_CLASS, m, r)
-			  != NO_REGS)
+		       || (SECONDARY_INPUT_RELOAD_CLASS (BASE_REG_CLASS, m, r)
+			   != NO_REGS)
 #endif
 #ifdef SECONDARY_OUTPUT_RELOAD_CLASS
-		      || (SECONDARY_OUTPUT_RELOAD_CLASS (BASE_REG_CLASS, m, r)
-			  != NO_REGS)
+		       || (SECONDARY_OUTPUT_RELOAD_CLASS (BASE_REG_CLASS, m, r)
+			   != NO_REGS)
 #endif
-		      )
+		       )
+		      && ! auto_inc_dec_reg_p (r, m))
 		    forbidden_inc_dec_class[i] = 1;
 		}
 	  }
@@ -1478,6 +1488,41 @@ record_address_regs (x, class, scale)
       }
     }
 }
+
+#ifdef FORBIDDEN_INC_DEC_CLASSES
+
+/* Return 1 if REG is valid as an auto-increment memory reference
+   to an object of MODE.  */
+
+static 
+auto_inc_dec_reg_p (reg, mode)
+     rtx reg;
+     enum machine_mode mode;
+{
+#ifdef HAVE_POST_INCREMENT
+  if (memory_address_p (mode, gen_rtx (POST_INC, Pmode, reg)))
+    return 1;
+#endif
+
+#ifdef HAVE_POST_DECREMENT
+  if (memory_address_p (mode, gen_rtx (POST_DEC, Pmode, reg)))
+    return 1;
+#endif
+
+#ifdef HAVE_PRE_INCREMENT
+  if (memory_address_p (mode, gen_rtx (PRE_INC, Pmode, reg)))
+    return 1;
+#endif
+
+#ifdef HAVE_PRE_DECREMENT
+  if (memory_address_p (mode, gen_rtx (PRE_DEC, Pmode, reg)))
+    return 1;
+#endif
+
+  return 0;
+}
+#endif
+
 #endif /* REGISTER_CONSTRAINTS */
 
 /* This is the `regscan' pass of the compiler, run just before cse
@@ -1515,8 +1560,6 @@ static int highest_regno_in_uid_map;
    and we want this to remain correct for all the remaining passes.  */
 
 int max_parallel;
-
-void reg_scan_mark_refs ();
 
 void
 reg_scan (f, nregs, repeat)
@@ -1565,7 +1608,7 @@ reg_scan (f, nregs, repeat)
 /* X is the expression to scan.  INSN is the insn it appears in.
    NOTE_FLAG is nonzero if X is from INSN's notes rather than its body.  */
 
-void
+static void
 reg_scan_mark_refs (x, insn, note_flag)
      rtx x;
      rtx insn;
