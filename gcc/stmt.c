@@ -4871,6 +4871,10 @@ expand_end_case (orig_index)
   /* An ERROR_MARK occurs for various reasons including invalid data type.  */
   if (index_type != error_mark_node)
     {
+      if (thiscase->data.case_stmt.case_list)
+	thiscase->data.case_stmt.case_list
+	  = case_tree2list (thiscase->data.case_stmt.case_list, 0);
+
       /* If switch expression was an enumerated type, check that all
 	 enumeration literals are covered by the cases.
 	 No sense trying this if there's a default case, however.  */
@@ -4907,10 +4911,6 @@ expand_end_case (orig_index)
       default_label = label_rtx (thiscase->data.case_stmt.default_label);
 
       before_case = get_last_insn ();
-
-      if (thiscase->data.case_stmt.case_list)
-	thiscase->data.case_stmt.case_list
-	  = case_tree2list(thiscase->data.case_stmt.case_list, 0);
 
       /* Simplify the case-list before we count it.  */
       group_case_nodes (thiscase->data.case_stmt.case_list);
