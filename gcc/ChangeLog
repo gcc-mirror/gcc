@@ -1,3 +1,11 @@
+2000-01-07  Nick Clifton  <nickc@cygnus.com>
+
+	* config/elfos.h: Tidy up formatting of marcos.  Make sure
+	that .section directives are always prefixed by a tab.
+
+	* config/svr4.h: Add #include "elfos.h" and remove duplicate
+	definitions.
+
 2000-01-07  Matt Austern <austern@sgi.com>
 
 	* fold-const.c (real_hex_to_f): Remove duplicate declaration of
