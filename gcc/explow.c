@@ -1254,7 +1254,7 @@ probe_stack_range (first, size)
 
       if (insn_operand_predicate[(int) CODE_FOR_check_stack][0]
 	  && ! ((*insn_operand_predicate[(int) CODE_FOR_check_stack][0])
-		(last_address, Pmode)))
+		(last_addr, Pmode)))
 	last_addr = copy_to_mode_reg (Pmode, last_addr);
 
       emit_insn (gen_check_stack (last_addr));
