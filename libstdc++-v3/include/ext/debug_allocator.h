@@ -108,7 +108,9 @@ namespace __gnu_cxx
       void
       deallocate(pointer __p, size_type __n)
       {
-        pointer __real_p = __p - _M_extra;
+	if (!__p)
+	  abort();
+	pointer __real_p = __p - _M_extra;
         if (*reinterpret_cast<size_type*>(__real_p) != __n)
           abort();
         _M_allocator.deallocate(__real_p, __n + _M_extra);
