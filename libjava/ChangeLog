@@ -1,5 +1,10 @@
 2000-08-07  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/reflect/Method.java (toString): Use Class.getName, not
+	Class.toString.
+	* java/lang/reflect/Field.java (toString): Correct formatting.
+	From Corey Minyard.
+
 	* java/io/PipedInputStream.java (read(byte[],int,int)): Mostly
 	rewrote.
 	(receive): Streamlined.
