@@ -2393,24 +2393,30 @@ named_class_head:
 		{ 
 		  if ($1.t != error_mark_node)
 		    {
-		      $$.t = TREE_TYPE ($1.t);
+		      tree type = TREE_TYPE ($1.t);
+
+		      $$.t = type;
 		      $$.new_type_flag = $1.new_type_flag;
-		      if (current_aggr == union_type_node
-			  && TREE_CODE ($$.t) != UNION_TYPE)
-			cp_pedwarn ("`union' tag used in declaring `%#T'", 
-				    $$.t);
-		      else if (TREE_CODE ($$.t) == UNION_TYPE
-			       && current_aggr != union_type_node)
-			cp_pedwarn ("non-`union' tag used in declaring `%#T'", $$);
-		      else if (TREE_CODE ($$.t) == RECORD_TYPE)
+		      if ((current_aggr == union_type_node)
+			  != (TREE_CODE (type) == UNION_TYPE))
+			cp_pedwarn (current_aggr == union_type_node
+	                            ? "`union' tag used in declaring `%#T'"
+	                            : "non-`union' tag used in declaring `%#T'", 
+				    type);
+		      else if (TREE_CODE (type) == RECORD_TYPE)
 			/* We might be specializing a template with a different
 			   class-key; deal.  */
-			CLASSTYPE_DECLARED_CLASS ($$.t) 
+			CLASSTYPE_DECLARED_CLASS (type) 
 			  = (current_aggr == class_type_node);
 		      if ($2)
 			{
-			  maybe_process_partial_specialization ($$.t);
-			  xref_basetypes (current_aggr, $1.t, $$.t, $2); 
+                          if (TREE_CODE (type) == TYPENAME_TYPE)
+                            /* In a definition of a member class template, we
+                               will get here with an implicit typename, a
+                               TYPENAME_TYPE with a type. */
+                            type = TREE_TYPE (type);
+			  maybe_process_partial_specialization (type);
+			  xref_basetypes (current_aggr, $1.t, type, $2); 
 			}
 		    }
 		}
