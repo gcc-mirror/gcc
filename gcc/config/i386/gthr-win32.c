@@ -203,7 +203,7 @@ __gthr_win32_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
     }
   else if (mutex->owner == me)
     {
-      InterlockedDecrement (&mx->lock_idx);
+      InterlockedDecrement (&mutex->counter);
       ++(mutex->depth);
     }
   else if (WaitForSingleObject (mutex->sema, INFINITE) == WAIT_OBJECT_0)

@@ -1,3 +1,21 @@
+2004-09-01  Wu Yongwei  <adah@sh163.net>
+	    Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* gthr-win32.h (__gthread_recursive_mutex_t): Use 'unsigned long',
+	not Windows 'DWORD'.
+	(__GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION): Correct typo.
+	(__GTHREAD_RECURSIVE_MUTEX_INIT_DEFAULT): Likewise.
+	(__gthr_win32_recursive_mutex_init_function): Add prototype for
+	__GTHREAD_HIDE_WIN32API case..
+	(__gthr_win32_recursive_mutex_lock): Likewise.
+	(__gthr_win32_recursive_mutex_trylock): Likewise.
+	(__gthr_win32_recursive_mutex_unlock): Likewise.
+	(__gthread_recursive_mutex_init_function); Add definition for
+	__GTHREAD_HIDE_WIN32API case.
+	(__gthread_recursive_mutex_lock): Correct call to InterlockedDecrement.
+	* config/i386/grthr-win32.c (__gthread_recursive_mutex_lock): Correct
+	call to InterlockedDecrement.
+
 2004-09-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-tailcall.c (find_tail_calls): Also fail is statement has
