@@ -390,7 +390,7 @@ namespace std
       __s.flags(__os.flags());
       __s.imbue(__os.getloc());
       __s.precision(__os.precision());
-      __s << '(' << __x.real() << "," << __x.imag() << ')';
+      __s << '(' << __x.real() << ',' << __x.imag() << ')';
       return __os << __s.str();
     }
 
