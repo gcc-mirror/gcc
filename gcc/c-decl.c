@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -5568,6 +5568,13 @@ finish_struct (t, fieldlist, attributes)
       if (DECL_INITIAL (x))
 	{
 	  register int width = TREE_INT_CST_LOW (DECL_INITIAL (x));
+
+	  if (TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
+	      && (width < min_precision (TYPE_MIN_VALUE (TREE_TYPE (x)),
+					 TREE_UNSIGNED (TREE_TYPE (x)))
+		  || width < min_precision (TYPE_MAX_VALUE (TREE_TYPE (x)),
+					    TREE_UNSIGNED (TREE_TYPE (x)))))
+	    warning_with_decl (x, "`%s' is narrower than values of its type");
 
 	  DECL_FIELD_SIZE (x) = width;
 	  DECL_BIT_FIELD (x) = DECL_C_BIT_FIELD (x) = 1;
