@@ -1,3 +1,11 @@
+2005-03-18  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/20225
+	* cgraph.c (cgraph_mark_reachable_node): Assert that it is not called
+	too late.
+	* varasm.c (find_decl_and_mark_needed): Mark needed only when not
+	called too late.
+
 2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-into-ssa.c (find_idf): Use VEC_quick_push instead of
