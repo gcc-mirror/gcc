@@ -1,3 +1,7 @@
+2004-05-07  Uros Bizjak  <uros@kss-loka.si>
+
+	* gcc.dg/builtins-33.c:  Also check log1p*.
+
 2004-05-07  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR optimization/15296

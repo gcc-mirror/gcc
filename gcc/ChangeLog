@@ -1,3 +1,27 @@
+2004-05-07  Uros Bizjak  <uros@kss-loka.si>
+
+	* optabs.h (enum optab_index): Add new OTI_log1p.
+	(log1p_optab): Define corresponding macro.
+	* optabs.c (init_optabs): Initialize log1p_optab.
+	* genopinit.c (optabs): Implement log1p_optab using log1p?f2
+	patterns.
+	* builtins.c (expand_builtin_mathfn): Handle BUILT_IN_LOG1P{,F,L}
+	using log1p_optab.
+	(expand_builtin): Expand BUILT_IN_LOG1P{,F,L} using
+	expand_builtin_mathfn if flag_unsafe_math_optimizations is set.
+
+	* reg-stack.c (subst_stack_regs_pat): Handle UNSPEC_FYL2XP1.
+
+	* config/i386/i386.c (ix86_emit_i387_log1p): New function.
+	* config/i386/i386-protos.h (ix86_emit_i387_log1p):
+	Prototype here.
+	* config/i386/i386.md (UNSPEC_FYL2XP1): New unspec to represent
+	x87's fyl2xp1 instruction.
+	(*fyl2x_xf3): Rename insn definition to fyl2x_xf3.
+	(fyl2xp1_xf3): New pattern to implement fyl2xp1 x87 instruction.
+	(log1psf2, log1pdf2, log1pxf2): New expanders to implement log1pf,
+	log1p  and log1pl built-ins as inline x87 intrinsics.
+
 2004-05-07  Loren James Rittle  <ljrittle@acm.org>
 
 	* config/alpha/freebsd.h (SUBTARGET_EXTRA_SPECS): Pass -Werror.

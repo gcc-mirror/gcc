@@ -184,6 +184,8 @@ extern void x86_function_profiler (FILE *, int);
 extern void x86_emit_floatuns (rtx [2]);
 extern void ix86_emit_fp_unordered_jump (rtx);
 
+extern void ix86_emit_i387_log1p (rtx, rtx);
+
 extern enum rtx_code ix86_reverse_condition (enum rtx_code, enum machine_mode);
 
 #ifdef TREE_CODE

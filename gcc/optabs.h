@@ -178,6 +178,8 @@ enum optab_index
   OTI_log10,
   /* Base-2 Logarithm */
   OTI_log2,
+  /* logarithm of 1 plus argument */
+  OTI_log1p,
   /* Rounding functions */
   OTI_floor,
   OTI_ceil,
@@ -294,6 +296,7 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define log_optab (optab_table[OTI_log])
 #define log10_optab (optab_table[OTI_log10])
 #define log2_optab (optab_table[OTI_log2])
+#define log1p_optab (optab_table[OTI_log1p])
 #define floor_optab (optab_table[OTI_floor])
 #define ceil_optab (optab_table[OTI_ceil])
 #define btrunc_optab (optab_table[OTI_trunc])
