@@ -1,3 +1,8 @@
+2001-04-04  Richard Henderson  <rth@redhat.com>
+
+	* configure.in (gcc_cv_as_leb128): Escape "." in regexp.
+	* configure: Rebuilt.
+
 2001-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcse.c (delete_null_pointer_checks_1): Add delete_list argument,
