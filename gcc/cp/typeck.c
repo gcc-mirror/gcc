@@ -6213,7 +6213,7 @@ language_lvalue_valid (exp)
 }
 
 /* Get difference in deltas for different pointer to member function
-   types.  Return inetger_zero_node, if FROM cannot be converted to a
+   types.  Return integer_zero_node, if FROM cannot be converted to a
    TO type.  If FORCE is true, then allow reverse conversions as well.  */
 static tree
 get_delta_difference (from, to, force)

@@ -46,7 +46,7 @@ tree size_one_node;
    The value is measured in bits.  */
 int maximum_field_alignment;
 
-/* If non-zero, the alignment of a bitsting or (power-)set value, in bits.
+/* If non-zero, the alignment of a bitstring or (power-)set value, in bits.
    May be overridden by front-ends.  */
 int set_alignment = 0;
 

@@ -566,7 +566,7 @@ maybe ac0 ? - as option someday! */
 /* should probably return DImode and DFmode in memory,lest
    we fill up all regs!
 
- have to, else we crash - exceptio: maybe return result in 
+ have to, else we crash - exception: maybe return result in 
  ac0 if DFmode and FPU present - compatibility problem with
  libraries for non-floating point ...
 */

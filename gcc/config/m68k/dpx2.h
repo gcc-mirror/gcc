@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  
    Bull DPX/2 200 and 300 systems (m68k, SysVr3).
-   Copyright (C) 1987, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Frederic Pierresteguy (F.Pierresteguy@frcl.bull.fr).
 
 This file is part of GNU CC.
@@ -75,7 +75,7 @@ Boston, MA 02111-1307, USA.  */
  * handle the native MOTOROLA VERSAdos assembler.
  */
 
-/* See m68k.h.  3 means 68020 with 68881 and no bitfiled
+/* See m68k.h.  3 means 68020 with 68881 and no bitfield
  * bitfield instructions do not seem to work a clean way.
  */
 #undef TARGET_DEFAULT

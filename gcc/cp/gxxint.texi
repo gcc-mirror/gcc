@@ -1214,7 +1214,7 @@ nop, if they are the same size.
 
 When we invoke the copy constructor for an exception object because it
 is passed by value, and if we take a hit (exception) inside the copy
-constructor someplace, where do we go?  I have tentatively choosen to
+constructor someplace, where do we go?  I have tentatively chosen to
 not catch throws by the outer block at the same unwind level, if one
 exists, but rather to allow the frame to unwind into the next series of
 handlers, if any.  If this is the wrong way to do it, we will need to

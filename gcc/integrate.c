@@ -669,7 +669,7 @@ copy_decl_tree (block)
   BLOCK_VARS (t) = vars;
   BLOCK_SUBBLOCKS (t) = nreverse (subblocks);
   /* If the BLOCK being cloned is already marked as having been instantiated
-     from something else, then leave that `origin' marking alone.  Elsewise,
+     from something else, then leave that `origin' marking alone.  Otherwise,
      mark the clone as having originated from the BLOCK we are cloning.  */
   if (BLOCK_ABSTRACT_ORIGIN (t) == NULL_TREE)
     BLOCK_ABSTRACT_ORIGIN (t) = block;

@@ -1007,7 +1007,7 @@ enum reg_class
 #endif
 
 /* A C expression for the maximum number of consecutive registers of class CLASS
-   needed to hold a vlaue of mode MODE */
+   needed to hold a value of mode MODE */
 #define CLASS_MAX_NREGS(CLASS, MODE)                                \
     class_max_nregs(CLASS, MODE)
 

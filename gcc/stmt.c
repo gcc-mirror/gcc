@@ -2781,7 +2781,7 @@ expand_return (retval)
 	   bitpos += bitsize, xbitpos += bitsize)
 	{
 	  /* We need a new destination pseudo each time xbitpos is
-	     on a word boundary and when xbitpos == big_endian_corrction
+	     on a word boundary and when xbitpos == big_endian_correction
 	     (the first time through).  */
 	  if (xbitpos % BITS_PER_WORD == 0
 	      || xbitpos == big_endian_correction)

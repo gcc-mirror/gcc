@@ -753,7 +753,7 @@ layout_basetypes (rec, binfos)
   /* Record size so far is CONST_SIZE + VAR_SIZE bits, where CONST_SIZE is
      an integer and VAR_SIZE is a tree expression.  If VAR_SIZE is null,
      the size is just CONST_SIZE.  Naturally we try to avoid using
-     VAR_SIZE.  And so far, we've been sucessful. */
+     VAR_SIZE.  And so far, we've been successful. */
 #if 0
   register tree var_size = 0;
 #endif

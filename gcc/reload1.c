@@ -3236,7 +3236,7 @@ eliminate_regs_in_insn (insn, replace)
 	       will delete it in reload_as_needed once we know that this
 	       elimination is, in fact, being done.
 
-	       If REPLACE isn't set, we can't delete this insn, but neededn't
+	       If REPLACE isn't set, we can't delete this insn, but needn't
 	       process it since it won't be used unless something changes.  */
 	    if (replace)
 	      delete_dead_insn (insn);

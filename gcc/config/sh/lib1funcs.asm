@@ -1,4 +1,4 @@
-/* Copyright (C) 1994 Free Software Foundation, Inc.
+/* Copyright (C) 1994, 1995 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -779,7 +779,7 @@ ___mulsi3:
 	xtrct   r2,r3		! r3 = aacc
 	tst  	r3,r3		! msws zero ?
 	bf      hiset
-	rts			! yes - then weve got the answer
+	rts			! yes - then we have the answer
 	sts     macl,r0
 
 hiset:	sts	macl,r0		! r0 = bb*dd

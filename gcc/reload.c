@@ -4862,7 +4862,7 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 		  return 1;
 		}
 	    }
-	  /* If this is a SUBREG of a pseudo-register, and the psuedo-register
+	  /* If this is a SUBREG of a pseudo-register, and the pseudo-register
 	     is larger than the class size, then reload the whole SUBREG.  */
 	  else
 	    {
@@ -5155,7 +5155,7 @@ refers_to_regno_for_reload_p (regno, endregno, x, loc)
 	       && refers_to_regno_for_reload_p (regno, endregno,
 						SUBREG_REG (SET_DEST (x)),
 						loc))
-	      /* If the ouput is an earlyclobber operand, this is
+	      /* If the output is an earlyclobber operand, this is
 		 a conflict.  */
 	      || ((GET_CODE (SET_DEST (x)) != REG
 		   || earlyclobber_operand_p (SET_DEST (x)))

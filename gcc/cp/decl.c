@@ -553,7 +553,7 @@ struct binding_level
     unsigned int n_incomplete;
 
     /* List of VAR_DECLS saved from a previous for statement.
-       These would be dead in ANSI-conformant code, but might
+       These would be dead in ANSI-conforming code, but might
        be referenced in traditional code. */
     tree dead_vars_from_for;
 
@@ -1704,7 +1704,7 @@ push_namespace (name)
 
   if (! name)
     {
-      /* Create a truely ugly name! */
+      /* Create a truly ugly name! */
       name = get_unique_name ();
     }
 

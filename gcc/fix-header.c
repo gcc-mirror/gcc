@@ -16,7 +16,7 @@ along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* This program massages a system include file (such as stdio.h),
-   into a form more conformant with ANSI/POSIX, and more suitable for C++:
+   into a form more conforming with ANSI/POSIX, and more suitable for C++:
 
    * extern "C" { ... } braces are added (inside #ifndef __cplusplus),
    if they seem to be needed.  These prevent C++ compilers from name

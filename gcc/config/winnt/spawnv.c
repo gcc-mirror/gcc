@@ -1,5 +1,5 @@
 /* This is a kludge to get around the Microsoft C spawn functions' propensity
-   to remove the outermost set of double quotes from all arguements.  */
+   to remove the outermost set of double quotes from all arguments.  */
 
 
 #define index(s,c) strchr((s),(c))

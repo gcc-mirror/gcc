@@ -365,7 +365,7 @@ int flag_check_new;
    initialization variables.
    0: Old rules, set by -fno-for-scope.
    2: New ANSI rules, set by -ffor-scope.
-   1: Try to implement new ANSI rules, but with backup compatility
+   1: Try to implement new ANSI rules, but with backup compatibility
    (and warnings).  This is the default, for now.  */
 
 int flag_new_for_scope = 1;

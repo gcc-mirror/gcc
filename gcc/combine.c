@@ -7658,7 +7658,7 @@ simplify_shift_const (x, code, result_mode, varop, count)
       if (complement_p)
 	break;
 
-      /* Convert ROTATETRT to ROTATE.  */
+      /* Convert ROTATERT to ROTATE.  */
       if (code == ROTATERT)
 	code = ROTATE, count = GET_MODE_BITSIZE (result_mode) - count;
 
@@ -9215,7 +9215,7 @@ simplify_comparison (code, pop0, pop1)
 
 	case SUBREG:
 	  /* Check for the case where we are comparing A - C1 with C2,
-	     both constants are smaller than 1/2 the maxium positive
+	     both constants are smaller than 1/2 the maximum positive
 	     value in MODE, and the comparison is equality or unsigned.
 	     In that case, if A is either zero-extended to MODE or has
 	     sufficient sign bits so that the high-order bit in MODE

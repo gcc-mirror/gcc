@@ -2270,7 +2270,7 @@ set_nonvarying_address_components (addr, size, pbase, pstart, pend)
       base = qty_const[reg_qty[REGNO (XEXP (base, 0))]];
     }
   /* This can happen as the result of virtual register instantiation,
-     if the inital offset is too large to be a valid address.  */
+     if the initial offset is too large to be a valid address.  */
   else if (GET_CODE (base) == PLUS
 	   && GET_CODE (XEXP (base, 0)) == REG
 	   && GET_CODE (XEXP (base, 1)) == REG
