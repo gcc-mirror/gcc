@@ -43,17 +43,19 @@
 	# sequences here, it is just not worth it.  Instead keep things
 	# simple.  Restore all the save resgisters, including the link
 	# register and then perform the correct function return instruction.
+	# We also save/restore r3 to ensure stack alignment.
 .macro FUNC_END
 #ifdef __thumb__
 	.thumb
 	
-	pop	{r4, r5, r6, r7}
+	pop	{r3, r4, r5, r6, r7}
 	pop	{r3}
 	mov	lr, r3
 #else
 	.arm
 	
-	ldmdb	fp, {r4, r5, r6, r7, r8, r9, sl, fp, sp, lr}
+	sub	sp, fp, #40
+	ldmfd	sp, {r4, r5, r6, r7, r8, r9, sl, fp, sp, lr}
 #endif
 	
 #if defined __THUMB_INTERWORK__ || defined __thumb__
