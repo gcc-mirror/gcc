@@ -1,3 +1,7 @@
+2002-08-02  Jason Merrill  <jason@redhat.com>
+
+	* gdbinit.in (pct): New macro.
+
 2002-08-01  Stan Shebs  <shebs@apple.com>
 	    Andreas Tobler  <toa@pop.agri.ch>
 

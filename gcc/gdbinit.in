@@ -31,6 +31,15 @@ Print the full structure of the tree that is $.
 Works only when an inferior is executing.
 end
 
+define pct
+set debug_c_tree ($)
+end
+
+document pct
+Print the tree that is $ in C syntax.
+Works only when an inferior is executing.
+end
+
 define ptc
 output (enum tree_code) $.common.code
 echo \n
