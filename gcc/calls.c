@@ -843,10 +843,13 @@ flags_from_decl_or_type (exp)
 
       if (TREE_NOTHROW (exp))
 	flags |= ECF_NOTHROW;
+
+      if (TREE_READONLY (exp) && ! TREE_THIS_VOLATILE (exp))
+	flags |= ECF_LIBCALL_BLOCK;
     }
 
   if (TREE_READONLY (exp) && ! TREE_THIS_VOLATILE (exp))
-    flags |= ECF_CONST | ECF_LIBCALL_BLOCK;
+    flags |= ECF_CONST;
 
   if (TREE_THIS_VOLATILE (exp))
     flags |= ECF_NORETURN;
