@@ -681,7 +681,7 @@ static const char *cpp_unique_options =
 /* This contains cpp options which are common with cc1_options and are passed
    only when preprocessing only to avoid duplication.  */
 static const char *cpp_options =
-"%(cpp_unique_options) %{std*} %{d*} %{W*} %{w} %{pedantic*}\
+"%(cpp_unique_options) %{std*} %{d*} %{W*&pedantic*} %{w}\
  %{fshow-column} %{fno-show-column}\
  %{fsigned-char&funsigned-char}\
  %{fleading-underscore} %{fno-leading-underscore}\
@@ -691,7 +691,7 @@ static const char *cpp_options =
 static const char *cc1_options =
 "%{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
  %1 %{!Q:-quiet} -dumpbase %B %{d*} %{m*} %{a*}\
- %{g*} %{O*} %{W*} %{w} %{pedantic*} %{std*} %{ansi}\
+ %{g*} %{O*} %{W*&pedantic*} %{w} %{std*} %{ansi}\
  %{v:-version} %{pg:-p} %{p} %{f*}\
  %{Qn:-fno-ident} %{--help:--help}\
  %{--target-help:--target-help}\
