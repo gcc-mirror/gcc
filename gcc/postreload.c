@@ -1255,12 +1255,8 @@ reload_cse_move2add (rtx first)
 		  else if (rtx_cost (new_src, PLUS) < rtx_cost (src, SET)
 			   && have_add2_insn (reg, new_src))
 		    {
-		      rtx newpat = gen_rtx_SET (VOIDmode,
-						reg,
-						gen_rtx_PLUS (GET_MODE (reg),
-						 	      reg,
-						 	      new_src));
-		      validate_change (insn, &PATTERN (insn), newpat, 0);
+		      rtx tem = gen_rtx_PLUS (GET_MODE (reg), reg, new_src);
+		      validate_change (insn, &SET_SRC (pat), tem, 0);
 		    }
 		  else
 		    {

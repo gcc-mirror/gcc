@@ -1,3 +1,8 @@
+2004-02-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* postreload.c (reload_cse_move2add): Generate just a PLUS
+	instead of an entire SET.
+
 2004-02-26  Jan Hubicka  <jh@suse.cz>
 
 	* config.gcc: Add support for nocoma/prescott/pentium-m/pentium3m
