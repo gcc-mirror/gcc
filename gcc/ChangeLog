@@ -1,3 +1,13 @@
+2001-01-01  Michael Hayes  <mhayes@redhat.com>
+
+	* loop.h (struct iv): New.
+	(REG_IV_TYPE, REG_IV_CLASS, REG_INFO): Modify to use 'struct iv'.
+	(struct loop_ivs): Replace 'reg_iv_type', 'reg_iv_info',
+	'reg_biv_class' fields with 'regs' and 'n_regs'.
+	(struct ivs): Rename 'loop_iv_list' field to 'list'.
+	* loop.c (loop_bivs_find, strength_reduce): Use ivs->regs array.
+	* unroll.c (loop_iterations): Check array bounds with ivs->n_regs.
+
 2000-12-31  Alexandre Oliva  <aoliva@redhat.com>
 
 	* resource.c (mark_referenced_resources): Abort() before

@@ -3652,27 +3652,16 @@ loop_bivs_find (loop)
 {
   struct loop_regs *regs = LOOP_REGS (loop);
   struct loop_ivs *ivs = LOOP_IVS (loop);
-  /* Temporary list pointers for traversing ivs->loop_iv_list.  */
+  /* Temporary list pointers for traversing ivs->list.  */
   struct iv_class *bl, **backbl;
-  /* Ratio of extra register life span we can justify
-     for saving an instruction.  More if loop doesn't call subroutines
-     since in that case saving an insn makes more difference
-     and more registers are available.  */
-  /* ??? could set this to last value of threshold in move_movables */
 
-  ivs->loop_iv_list = 0;
-
-  VARRAY_INT_INIT (ivs->reg_iv_type, max_reg_before_loop, "reg_iv_type");
-  VARRAY_GENERIC_PTR_INIT (ivs->reg_iv_info, max_reg_before_loop,
-			   "reg_iv_info");
-  ivs->reg_biv_class = (struct iv_class **)
-    xcalloc (max_reg_before_loop, sizeof (struct iv_class *));
+  ivs->list = 0;
 
   for_each_insn_in_loop (loop, check_insn_for_bivs);
   
-  /* Scan ivs->loop_iv_list to remove all regs that proved not to be bivs.
+  /* Scan ivs->list to remove all regs that proved not to be bivs.
      Make a sanity check against regs->n_times_set.  */
-  for (backbl = &ivs->loop_iv_list, bl = *backbl; bl; bl = bl->next)
+  for (backbl = &ivs->list, bl = *backbl; bl; bl = bl->next)
     {
       if (REG_IV_TYPE (ivs, bl->regno) != BASIC_INDUCT
 	  /* Above happens if register modified by subreg, etc.  */
@@ -3711,7 +3700,7 @@ loop_bivs_init_find (loop)
      struct loop *loop;
 {
   struct loop_ivs *ivs = LOOP_IVS (loop);
-  /* Temporary list pointers for traversing ivs->loop_iv_list.  */
+  /* Temporary list pointers for traversing ivs->list.  */
   struct iv_class *bl;
   int call_seen;
   rtx p;
@@ -3767,11 +3756,11 @@ loop_bivs_check (loop)
      struct loop *loop;
 {
   struct loop_ivs *ivs = LOOP_IVS (loop);
-  /* Temporary list pointers for traversing ivs->loop_iv_list.  */
+  /* Temporary list pointers for traversing ivs->list.  */
   struct iv_class *bl;
   struct iv_class **backbl;
 
-  for (backbl = &ivs->loop_iv_list; (bl = *backbl); backbl = &bl->next)
+  for (backbl = &ivs->list; (bl = *backbl); backbl = &bl->next)
     {
       rtx src;
       rtx note;
@@ -3846,7 +3835,7 @@ loop_givs_check (loop)
   struct loop_ivs *ivs = LOOP_IVS (loop);
   struct iv_class *bl;
 
-  for (bl = ivs->loop_iv_list; bl; bl = bl->next)
+  for (bl = ivs->list; bl; bl = bl->next)
     {
       struct induction *v;
 
@@ -4280,7 +4269,7 @@ strength_reduce (loop, insn_count, flags)
   struct loop_regs *regs = LOOP_REGS (loop);
   struct loop_ivs *ivs = LOOP_IVS (loop);
   rtx p;
-  /* Temporary list pointer for traversing ivs->loop_iv_list.  */
+  /* Temporary list pointer for traversing ivs->list.  */
   struct iv_class *bl;
   /* Ratio of extra register life span we can justify
      for saving an instruction.  More if loop doesn't call subroutines
@@ -4309,12 +4298,14 @@ strength_reduce (loop, insn_count, flags)
   else
     end_insert_before = emit_note_after (NOTE_INSN_DELETED, loop->end);
 
+  ivs->n_regs = max_reg_before_loop;
+  ivs->regs = (struct iv *) xcalloc (ivs->n_regs, sizeof (struct iv));
 
   /* Find all BIVs in loop.  */
   loop_bivs_find (loop);
 
   /* Exit if there are no bivs.  */
-  if (! ivs->loop_iv_list)
+  if (! ivs->list)
     {
       /* Can still unroll the loop anyways, but indicate that there is no
 	 strength reduction info available.  */
@@ -4355,13 +4346,13 @@ strength_reduce (loop, insn_count, flags)
   /* Create reg_map to hold substitutions for replaceable giv regs.
      Some givs might have been made from biv increments, so look at
      ivs->reg_iv_type for a suitable size.  */
-  reg_map_size = ivs->reg_iv_type->num_elements;
+  reg_map_size = ivs->n_regs;
   reg_map = (rtx *) xcalloc (reg_map_size, sizeof (rtx));
 
   /* Examine each iv class for feasibility of strength reduction/induction
      variable elimination.  */
 
-  for (bl = ivs->loop_iv_list; bl; bl = bl->next)
+  for (bl = ivs->list; bl; bl = bl->next)
     {
       struct induction *v;
       int benefit;
@@ -4581,11 +4572,9 @@ strength_reduce (loop, insn_count, flags)
     fprintf (loop_dump_stream, "\n");
 
 egress:
-  VARRAY_FREE (ivs->reg_iv_type);
-  VARRAY_FREE (ivs->reg_iv_info);
-  free (ivs->reg_biv_class);
+  free (ivs->regs);
   {
-    struct iv_class *iv = ivs->loop_iv_list;
+    struct iv_class *iv = ivs->list;
 
     while (iv) {
       struct iv_class *next = iv->next;
@@ -4941,9 +4930,9 @@ record_biv (loop, v, insn, dest_reg, inc_val, mult_val, location,
       bl->reversed = 0;
       bl->total_benefit = 0;
 
-      /* Add this class to ivs->loop_iv_list.  */
-      bl->next = ivs->loop_iv_list;
-      ivs->loop_iv_list = bl;
+      /* Add this class to ivs->list.  */
+      bl->next = ivs->list;
+      ivs->list = bl;
 
       /* Put it in the array of biv register classes.  */
       REG_IV_CLASS (ivs, REGNO (dest_reg)) = bl;
@@ -5448,7 +5437,7 @@ update_giv_derive (loop, p)
      subsequent biv update was performed.  If this adjustment cannot be done,
      the giv cannot derive further givs.  */
 
-  for (bl = ivs->loop_iv_list; bl; bl = bl->next)
+  for (bl = ivs->list; bl; bl = bl->next)
     for (biv = bl->biv; biv; biv = biv->next_iv)
       if (GET_CODE (p) == CODE_LABEL || GET_CODE (p) == JUMP_INSN
 	  || biv->insn == p)
@@ -5750,7 +5739,7 @@ general_induction_var (loop, x, src_reg, add_val, mult_val, ext_val,
       /* Since this is now an invariant and wasn't before, it must be a giv
 	 with MULT_VAL == 0.  It doesn't matter which BIV we associate this
 	 with.  */
-      *src_reg = ivs->loop_iv_list->biv->dest_reg;
+      *src_reg = ivs->list->biv->dest_reg;
       *mult_val = const0_rtx;
       *add_val = x;
       break;
@@ -7271,7 +7260,7 @@ check_dbra_loop (loop, insn_count)
      it will be zero on the last iteration.  Also skip if the biv is
      used between its update and the test insn.  */
 
-  for (bl = ivs->loop_iv_list; bl; bl = bl->next)
+  for (bl = ivs->list; bl; bl = bl->next)
     {
       if (bl->biv_count == 1
 	  && ! bl->biv->maybe_multiple
@@ -7461,7 +7450,7 @@ check_dbra_loop (loop, insn_count)
 	   && reversible_mem_store
 	   && (bl->giv_count + bl->biv_count + loop_info->num_mem_sets
 	       + LOOP_MOVABLES (loop)->num + compare_and_branch == insn_count)
-	   && (bl == ivs->loop_iv_list && bl->next == 0))
+	   && (bl == ivs->list && bl->next == 0))
 	  || no_use_except_counting)
 	{
 	  rtx tem;
@@ -7760,7 +7749,7 @@ check_dbra_loop (loop, insn_count)
 		       REG_EQUAL notes should still be correct.  */
 		    if (! set
 			|| GET_CODE (SET_DEST (set)) != REG
-			|| (size_t) REGNO (SET_DEST (set)) >= ivs->reg_iv_type->num_elements
+			|| (size_t) REGNO (SET_DEST (set)) >= ivs->n_regs
 			|| REG_IV_TYPE (ivs, REGNO (SET_DEST (set))) != GENERAL_INDUCT
 			|| REG_IV_INFO (ivs, REGNO (SET_DEST (set)))->src_reg != bl->biv->src_reg)
 		      for (pnote = &REG_NOTES (p); *pnote;)

@@ -54,7 +54,7 @@ Boston, MA 02111-1307, USA.  */
    value is a linear function of a biv.  */
 
 /* Bivs are recognized by `basic_induction_var';
-   Givs by `general_induct_var'.  */
+   Givs by `general_induction_var'.  */
 
 /* An enum for the two different types of givs, those that are used
    as memory addresses and those that are calculated into registers.  */
@@ -63,6 +63,7 @@ enum g_types
   DEST_ADDR,
   DEST_REG
 };
+
 
 /* A `struct induction' is created for every instruction that sets
    an induction variable (either a biv or a giv).  */
@@ -152,6 +153,7 @@ struct induction
 				   a substitute for the lifetime information.  */
 };
 
+
 /* A `struct iv_class' is created for each biv.  */
 
 struct iv_class
@@ -182,6 +184,50 @@ struct iv_class
                                    been reduced. */
 };
 
+
+/* Definitions used by the basic induction variable discovery code.  */
+enum iv_mode
+{
+  UNKNOWN_INDUCT,
+  BASIC_INDUCT,
+  NOT_BASIC_INDUCT,
+  GENERAL_INDUCT
+};
+
+
+/* A `struct iv' is created for every register.  */
+
+struct iv
+{
+  enum iv_mode type;
+  union 
+  {
+    struct iv_class *class;
+    struct induction *info;
+  } iv;
+};
+
+
+#define REG_IV_TYPE(ivs, n) ivs->regs[n].type
+#define REG_IV_INFO(ivs, n) ivs->regs[n].iv.info
+#define REG_IV_CLASS(ivs, n) ivs->regs[n].iv.class
+
+
+struct loop_ivs
+{
+  /* Indexed by register number, contains pointer to `struct
+     iv' if register is an induction variable.  */
+  struct iv *regs;
+
+  /* Size of regs array.  */
+  unsigned int n_regs;
+
+  /* The head of a list which links together (via the next field)
+     every iv class for the current loop.  */
+  struct iv_class *list;
+};
+
+
 typedef struct loop_mem_info
 {
   rtx mem;      /* The MEM itself.  */
@@ -189,27 +235,6 @@ typedef struct loop_mem_info
   int optimize; /* Nonzero if we can optimize access to this MEM.  */
 } loop_mem_info;
 
-struct loop_ivs
-{
-  /* Indexed by register number, indicates whether or not register is
-     an induction variable, and if so what type.  */
-  varray_type reg_iv_type;
-
-  /* Indexed by register number, contains pointer to `struct
-     induction' if register is an induction variable.  This holds
-     general info for all induction variables.  */
-  varray_type reg_iv_info;
-
-  /* Indexed by register number, contains pointer to `struct iv_class'
-     if register is a basic induction variable.  This holds info
-     describing the class (a related group) of induction variables
-     that the biv belongs to.  */
-  struct iv_class **reg_biv_class;
-
-  /* The head of a list which links together (via the next field)
-     every iv class for the current loop.  */
-  struct iv_class *loop_iv_list;
-};
 
 struct loop_regs
 {
@@ -342,14 +367,6 @@ struct loop_info
   int pre_header_has_call;
 };
 
-/* Definitions used by the basic induction variable discovery code.  */
-enum iv_mode
-{
-  UNKNOWN_INDUCT,
-  BASIC_INDUCT,
-  NOT_BASIC_INDUCT,
-  GENERAL_INDUCT
-};
 
 /* Variables declared in loop.c, but also needed in unroll.c.  */
 
@@ -359,11 +376,6 @@ extern unsigned int max_reg_before_loop;
 extern struct loop **uid_loop;
 extern FILE *loop_dump_stream;
 
-#define REG_IV_TYPE(ivs, n) \
-  (*(enum iv_mode *) &VARRAY_INT(ivs->reg_iv_type, (n)))
-#define REG_IV_INFO(ivs, n) \
-  (*(struct induction **) &VARRAY_GENERIC_PTR(ivs->reg_iv_info, (n)))
-#define REG_IV_CLASS(ivs, n) ivs->reg_biv_class[n]
 
 /* Forward declarations for non-static functions declared in loop.c and
    unroll.c.  */
