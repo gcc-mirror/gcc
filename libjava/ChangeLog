@@ -1,5 +1,12 @@
 2001-11-16  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (_Jv_BytecodeVerifier::is_assignable_from_slow): New
+	method.
+	(type::compatible): Use it.
+	(type::merge): Likewise.
+	(type::promote): Return a `type&'.
+	(get_one_type): Promote return value.
+
 	Re-merge with Classpath, from Brian Jones:
 	* java/lang/Integer.java (getInteger): Attempt to decode the value
 	of the system property instead of the name of the system property.
