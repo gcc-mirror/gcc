@@ -315,6 +315,16 @@ EOF
     sun4H:SunOS:5.*:*)
 	echo sparc-hal-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit 0 ;;
+    sun4u:SunOS:5.*:*)
+	# Detect whether or not this machine can run 64-bit binaries.
+	# Note that even with hardware that is capable, the user can
+	# run a kernel that only allows 32-bit binaries.
+	case `(isalist) 2>/dev/null || echo sparc` in
+	    *sparcv9*)	UNAME_MACHINE=sparcv9 ;;
+	    *)		UNAME_MACHINE=sparc ;;
+	esac
+	echo ${UNAME_MACHINE}-sun-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
+	exit 0 ;;
     sun4*:SunOS:5.*:* | tadpole*:SunOS:5.*:*)
 	echo sparc-sun-solaris2`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit 0 ;;

@@ -1,3 +1,8 @@
+2002-04-12  Richard Henderson  <rth@redhat.com>
+
+	* config.guess (sun4u:SunOS:5.*:*): Guess sparcv9 if 64-bit isa
+	is supported.
+
 2002-04-09  Loren J. Rittle <ljrittle@acm.org>
 
 	* configure.in: Add *-*-freebsd* configurations.
