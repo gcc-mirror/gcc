@@ -1,3 +1,8 @@
+2001-02-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.texi (Incompatibilities): Update documentation of
+	preprocessing numbers.
+
 2001-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.c (finish_enum): Revert part of 2000-01-05 change.
