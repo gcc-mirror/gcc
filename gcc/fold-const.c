@@ -1894,7 +1894,7 @@ operand_equal_for_comparison_p (arg0, arg1, other)
      tree other;
 {
   int unsignedp1, unsignedpo;
-  tree primarg1, primother;
+  tree primarg0, primarg1, primother;
   unsigned correct_width;
 
   if (operand_equal_p (arg0, arg1, 0))
@@ -1903,6 +1903,14 @@ operand_equal_for_comparison_p (arg0, arg1, other)
   if (! INTEGRAL_TYPE_P (TREE_TYPE (arg0))
       || ! INTEGRAL_TYPE_P (TREE_TYPE (arg1)))
     return 0;
+
+  /* Discard any conversions that don't change the modes of ARG0 and ARG1
+     and see if the inner values are the same.  This removes any
+     signedness comparison, which doesn't matter here.  */
+  primarg0 = arg0, primarg1 = arg1;
+  STRIP_NOPS (primarg0);  STRIP_NOPS (primarg1);
+  if (operand_equal_p (primarg0, primarg1, 0))
+    return 1;
 
   /* Duplicate what shorten_compare does to ARG1 and see if that gives the
      actual comparison operand, ARG0.
