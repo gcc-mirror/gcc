@@ -7063,6 +7063,8 @@ dfs_accumulate_vtbl_inits (tree binfo,
   return inits;
 }
 
+static GTY(()) tree abort_fndecl_addr;
+
 /* Construct the initializer for BINFO's virtual function table.  BINFO
    is part of the hierarchy dominated by T.  If we're building a
    construction vtable, the ORIG_BINFO is the binfo we should use to
@@ -7212,16 +7214,24 @@ build_vtbl_initializer (tree binfo,
 	  /* You can't call an abstract virtual function; it's abstract.
 	     So, we replace these functions with __pure_virtual.  */
 	  if (DECL_PURE_VIRTUAL_P (fn_original))
-	    fn = abort_fndecl;
-	  else if (!integer_zerop (delta) || vcall_index)
 	    {
-	      fn = make_thunk (fn, /*this_adjusting=*/1, delta, vcall_index);
-	      if (!DECL_NAME (fn))
-		finish_thunk (fn);
+	      fn = abort_fndecl;
+	      if (abort_fndecl_addr == NULL)
+		abort_fndecl_addr = build1 (ADDR_EXPR, vfunc_ptr_type_node, fn);
+	      init = abort_fndecl_addr;
 	    }
-	  /* Take the address of the function, considering it to be of an
-	     appropriate generic type.  */
-	  init = build1 (ADDR_EXPR, vfunc_ptr_type_node, fn);
+	  else
+	    {
+	      if (!integer_zerop (delta) || vcall_index)
+		{
+		  fn = make_thunk (fn, /*this_adjusting=*/1, delta, vcall_index);
+		  if (!DECL_NAME (fn))
+		    finish_thunk (fn);
+		}
+	      /* Take the address of the function, considering it to be of an
+		 appropriate generic type.  */
+	      init = build1 (ADDR_EXPR, vfunc_ptr_type_node, fn);
+	    }
 	}
 
       /* And add it to the chain of initializers.  */
@@ -7682,3 +7692,4 @@ cp_fold_obj_type_ref (tree ref, tree known_type)
   return build_address (fndecl);
 }
 
+#include "gt-cp-class.h"
