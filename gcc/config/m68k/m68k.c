@@ -53,10 +53,6 @@ static rtx find_addr_reg (rtx);
 static const char *singlemove_string (rtx *);
 static void m68k_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void m68k_output_function_epilogue (FILE *, HOST_WIDE_INT);
-static void m68k_coff_asm_named_section (const char *, unsigned int);
-#ifdef CTOR_LIST_BEGIN
-static void m68k_svr3_asm_out_constructor (rtx, int);
-#endif
 #ifdef HPUX_ASM
 static void m68k_hp320_internal_label (FILE *, const char *, unsigned long);
 static void m68k_hp320_file_start (void);
@@ -3345,35 +3341,6 @@ output_xorsi3 (rtx *operands)
     }
   return "eor%.l %2,%0";
 }
-
-/* Output assembly to switch to section NAME with attribute FLAGS.  */
-
-static void
-m68k_coff_asm_named_section (const char *name, unsigned int flags)
-{
-  char flagchar;
-
-  if (flags & SECTION_WRITE)
-    flagchar = 'd';
-  else
-    flagchar = 'x';
-
-  fprintf (asm_out_file, "\t.section\t%s,\"%c\"\n", name, flagchar);
-}
-
-#ifdef CTOR_LIST_BEGIN
-static void
-m68k_svr3_asm_out_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
-{
-  rtx xop[2];
-
-  xop[1] = symbol;
-  xop[0] = gen_rtx_MEM (SImode, gen_rtx_PRE_DEC (SImode, stack_pointer_rtx));
-
-  init_section ();
-  output_asm_insn (output_move_simode (xop), xop);
-}
-#endif
 
 #ifdef HPUX_ASM
 static void
