@@ -1,3 +1,15 @@
+1998-08-31  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h, decl2.c: Remove support for -fall-virtual,
+	-fenum-int-equivalence and -fno-nonnull-objects.
+	* class.c (check_for_override): Remove support for -fall-virtual.
+	(finish_struct_1): Likewise.
+	* call.c (build_new_op): Remove support for -fenum-int-equivalence.
+	* typeck.c (build_binary_op_nodefault): Likewise.
+	* cvt.c (ocp_convert): Likewise.
+	* call.c (build_vfield_ref): Remove support for -fno-nonnull-objects.
+	* class.c (build_vbase_path): Likewise.
+
 Sun Aug 30 22:16:31 1998  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.in (INTERFACE): New, set to 1.
@@ -47,7 +59,7 @@ Sun Aug 30 22:16:31 1998  H.J. Lu  (hjl@gnu.org)
 	* decl.c (finish_enum): Don't set the TREE_TYPE for the
 	enumeration constant values if we're processing_template_decls.
 	Don't set the type for the CONST_DECLs either; that's done in
-	build_enumerator. 
+	build_enumerator.
 	(build_enumerator): Take the enumeration type as a
 	parameter. 
 	* lex.c (do_identifier): Don't resolve enumeration constants while

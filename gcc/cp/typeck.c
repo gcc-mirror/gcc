@@ -3904,8 +3904,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  tree primop1 = get_narrower (op1, &unsignedp1);
 
 	  /* Check for comparison of different enum types.  */
-	  if (flag_int_enum_equivalence == 0 
-	      && TREE_CODE (TREE_TYPE (orig_op0)) == ENUMERAL_TYPE 
+	  if (TREE_CODE (TREE_TYPE (orig_op0)) == ENUMERAL_TYPE 
 	      && TREE_CODE (TREE_TYPE (orig_op1)) == ENUMERAL_TYPE 
 	      && TYPE_MAIN_VARIANT (TREE_TYPE (orig_op0))
 	         != TYPE_MAIN_VARIANT (TREE_TYPE (orig_op1)))

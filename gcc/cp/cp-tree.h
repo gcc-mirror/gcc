@@ -2186,23 +2186,10 @@ struct pending_inline
 /* in method.c */
 extern struct pending_inline *pending_inlines;
 
-/* 1 for -fall-virtual: make every member function (except
-   constructors) lay down in the virtual function table.
-   Calls can then either go through the virtual function table or not,
-   depending on whether we know what function will actually be called.  */
-
-extern int flag_all_virtual;
-
 /* Positive values means that we cannot make optimizing assumptions about
    `this'.  Negative values means we know `this' to be of static type.  */
 
 extern int flag_this_is_variable;
-
-/* Controls whether enums and ints freely convert.
-   1 means with complete freedom.
-   0 means enums can convert to ints, but not vice-versa.  */
-
-extern int flag_int_enum_equivalence;
 
 /* Nonzero means generate 'rtti' that give run-time type information.  */
 
@@ -2564,7 +2551,6 @@ extern void cat_namespace_levels                PROTO((void));
 
 /* in decl2.c */
 extern int check_java_method			PROTO((tree, tree));
-extern int flag_assume_nonnull_objects;
 extern int lang_decode_option			PROTO((int, char **));
 extern tree grok_method_quals			PROTO((tree, tree, tree));
 extern void warn_if_unknown_interface		PROTO((tree));
@@ -2879,6 +2865,7 @@ extern void reinit_search_statistics		PROTO((void));
 extern tree current_scope			PROTO((void));
 extern tree lookup_conversions			PROTO((tree));
 extern tree get_template_base			PROTO((tree, tree));
+extern tree binfo_for_vtable			PROTO((tree));
 
 /* in semantics.c */
 extern void finish_expr_stmt                    PROTO((tree));

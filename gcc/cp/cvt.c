@@ -700,8 +700,7 @@ ocp_convert (type, expr, convtype, flags)
       tree intype = TREE_TYPE (e);
       /* enum = enum, enum = int, enum = float, (enum)pointer are all
          errors.  */
-      if (flag_int_enum_equivalence == 0
-	  && TREE_CODE (type) == ENUMERAL_TYPE
+      if (TREE_CODE (type) == ENUMERAL_TYPE
 	  && ((ARITHMETIC_TYPE_P (intype) && ! (convtype & CONV_STATIC))
 	      || (TREE_CODE (intype) == POINTER_TYPE)))
 	{
