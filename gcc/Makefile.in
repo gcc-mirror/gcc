@@ -662,12 +662,16 @@ Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
 $(srcdir)/configure: $(srcdir)/configure.in
 	cd $(srcdir); autoconf
 
-$(srcdir)/config.in: $(srcdir)/stamp-h.in
-$(srcdir)/stamp-h.in: $(srcdir)/configure.in $(srcdir)/acconfig.h
+# cstamp-h.in controls rebuilding of config.in.
+# It remains in the source directory and is part of the distribution.
+# This follows what is done in shellutils, fileutils, etc.
+# ??? Newer versions have a maintainer mode that may be useful here.
+$(srcdir)/config.in: $(srcdir)/cstamp-h.in
+$(srcdir)/cstamp-h.in: $(srcdir)/configure.in $(srcdir)/acconfig.h
 	cd $(srcdir) && autoheader
-	touch $(srcdir)/stamp-h.in
-config.h: stamp-h ; @true
-stamp-h: config.in config.status
+	touch $(srcdir)/cstamp-h.in
+config.h: cstamp-h ; @true
+cstamp-h: config.in config.status
 	CONFIG_HEADERS=config.h:config.in $(SHELL) config.status
 
 all.internal: start.encap rest.encap
@@ -2039,7 +2043,7 @@ clean: mostlyclean bytecode.clean lang.clean
 # Delete all files that users would normally create
 # while building and installing GCC.
 distclean: clean bytecode.distclean lang.distclean
-	-rm -f tm.h config.h config2.h tconfig.h hconfig.h md stamp-h
+	-rm -f tm.h config.h config2.h tconfig.h hconfig.h md cstamp-h
 	-rm -f config.status config.run config.cache config.bak
 	-rm -f Make-lang Make-hooks
 	-rm -f Makefile specs.h options.h *.oaux
