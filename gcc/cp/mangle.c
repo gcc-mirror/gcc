@@ -1595,6 +1595,17 @@ write_function_type (type)
 {
   MANGLE_TRACE_TREE ("function-type", type);
 
+  /* For a pointer to member function, the function type may have
+     cv-qualifiers, indicating the quals for the artificial 'this'
+     parameter.  */
+  if (TREE_CODE (type) == METHOD_TYPE)
+    {
+      /* The first parameter must be a POINTER_TYPE pointing to the
+	 `this' parameter.  */
+      tree this_type = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (type)));
+      write_CV_qualifiers_for_type (this_type);
+    }
+
   write_char ('F');
   /* We don't track whether or not a type is `extern "C"'.  Note that
      you can have an `extern "C"' function that does not have
@@ -2021,24 +2032,7 @@ write_pointer_to_member_type (type)
      tree type;
 {
   write_char ('M');
-  /* For a pointer-to-function member, the class type may be
-     cv-qualified, but that won't be reflected in
-     TYPE_PTRMEM_CLASS_TYPE.  So, we go fishing around in
-     TYPE_PTRMEM_POINTED_TO_TYPE instead.  */
-  if (TYPE_PTRMEMFUNC_P (type))
-    {
-      tree fn_type;
-      tree this_type;
-
-      fn_type = TYPE_PTRMEM_POINTED_TO_TYPE (type);
-      /* The first parameter must be a POINTER_TYPE pointing to the
-	 `this' parameter.  */
-      this_type = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fn_type)));
-      write_type (this_type);
-    }
-  /* For a pointer-to-data member, things are simpler.  */
-  else
-    write_type (TYPE_PTRMEM_CLASS_TYPE (type));
+  write_type (TYPE_PTRMEM_CLASS_TYPE (type));
   write_type (TYPE_PTRMEM_POINTED_TO_TYPE (type));
 }
 
