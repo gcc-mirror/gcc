@@ -210,6 +210,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define nongcc_SI_type long int
 #endif
 
+/* Define the C data type to use for a value of word size */
+#ifndef nongcc_word_type
+#define nongcc_word_type nongcc_SI_type
+#endif
+
 /* Define the type to be used for returning an SF mode value
    and the method for turning a float into that type.
    These definitions work for machines where an SF value is
@@ -368,7 +373,7 @@ __subdf3 (a, b)
    and so on.  */
 
 #ifdef L_eqdf2
-nongcc_SI_type
+nongcc_word_type
 __eqdf2 (a, b)
      double a, b;
 {
@@ -378,7 +383,7 @@ __eqdf2 (a, b)
 #endif
 
 #ifdef L_nedf2
-nongcc_SI_type
+nongcc_word_type
 __nedf2 (a, b)
      double a, b;
 {
@@ -388,7 +393,7 @@ __nedf2 (a, b)
 #endif
 
 #ifdef L_gtdf2
-nongcc_SI_type
+nongcc_word_type
 __gtdf2 (a, b)
      double a, b;
 {
@@ -398,7 +403,7 @@ __gtdf2 (a, b)
 #endif
 
 #ifdef L_gedf2
-nongcc_SI_type
+nongcc_word_type
 __gedf2 (a, b)
      double a, b;
 {
@@ -408,7 +413,7 @@ __gedf2 (a, b)
 #endif
 
 #ifdef L_ltdf2
-nongcc_SI_type
+nongcc_word_type
 __ltdf2 (a, b)
      double a, b;
 {
@@ -418,7 +423,7 @@ __ltdf2 (a, b)
 #endif
 
 #ifdef L_ledf2
-nongcc_SI_type
+nongcc_word_type
 __ledf2 (a, b)
      double a, b;
 {
@@ -496,7 +501,7 @@ __subsf3 (a, b)
 #endif
 
 #ifdef L_eqsf2
-nongcc_SI_type
+nongcc_word_type
 __eqsf2 (a, b)
      FLOAT_ARG_TYPE a, b;
 {
@@ -507,7 +512,7 @@ __eqsf2 (a, b)
 #endif
 
 #ifdef L_nesf2
-nongcc_SI_type
+nongcc_word_type
 __nesf2 (a, b)
      FLOAT_ARG_TYPE a, b;
 {
@@ -518,7 +523,7 @@ __nesf2 (a, b)
 #endif
 
 #ifdef L_gtsf2
-nongcc_SI_type
+nongcc_word_type
 __gtsf2 (a, b)
      FLOAT_ARG_TYPE a, b;
 {
@@ -529,7 +534,7 @@ __gtsf2 (a, b)
 #endif
 
 #ifdef L_gesf2
-nongcc_SI_type
+nongcc_word_type
 __gesf2 (a, b)
      FLOAT_ARG_TYPE a, b;
 {
@@ -540,7 +545,7 @@ __gesf2 (a, b)
 #endif
 
 #ifdef L_ltsf2
-nongcc_SI_type
+nongcc_word_type
 __ltsf2 (a, b)
      FLOAT_ARG_TYPE a, b;
 {
@@ -551,7 +556,7 @@ __ltsf2 (a, b)
 #endif
 
 #ifdef L_lesf2
-nongcc_SI_type
+nongcc_word_type
 __lesf2 (a, b)
      FLOAT_ARG_TYPE a, b;
 {
