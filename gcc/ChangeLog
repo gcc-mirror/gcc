@@ -1,3 +1,12 @@
+Thu Sep  4 23:14:27 1997  Stan Cox  (coxs@dg-rtp.dg.com)
+
+	* reg-stack.c (subst_stack_regs): Pop the stack register for a
+	computed goto which sets the same stack register.
+
+	* reg-stack.c (compare_for_stack_reg): Swap only if the source and
+	destination are both on the regstack.
+	(subst_stack_regs_pat): Put the destination at the top of the regstack.
+
 Thu Sep  4 15:02:27 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* mips.md (nonlocal_goto_receiver): Define.

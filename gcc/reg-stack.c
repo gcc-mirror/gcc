@@ -1,5 +1,5 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2018,6 +2018,7 @@ compare_for_stack_reg (insn, regstack, pat)
   rtx *src1, *src2;
   rtx src1_note, src2_note;
   rtx cc0_user;
+  int have_cmove; 
 
   src1 = get_true_reg (&XEXP (SET_SRC (pat), 0));
   src2 = get_true_reg (&XEXP (SET_SRC (pat), 1));
@@ -2032,11 +2033,16 @@ compare_for_stack_reg (insn, regstack, pat)
       rtx *dest, src_note;
       
       dest = get_true_reg (&SET_DEST (PATTERN (cc0_user)));
-      if (REGNO (*dest) != regstack->reg[regstack->top])
+
+      have_cmove = 1;
+      if (get_hard_regnum (regstack, *dest) >= FIRST_STACK_REG
+	  && REGNO (*dest) != regstack->reg[regstack->top])
 	{
 	  emit_swap_insn (insn, regstack, *dest);	
 	}
     }
+  else
+    have_cmove = 0;
 
   /* ??? If fxch turns out to be cheaper than fstp, give priority to
      registers that die in this insn - move those to stack top first.  */
@@ -2071,7 +2077,8 @@ compare_for_stack_reg (insn, regstack, pat)
   else
     src2_note = NULL_RTX;
 
-  emit_swap_insn (insn, regstack, *src1);
+  if (! have_cmove)
+     emit_swap_insn (insn, regstack, *src1);
 
   replace_reg (src1, FIRST_STACK_REG);
 
@@ -2378,8 +2385,6 @@ subst_stack_regs_pat (insn, regstack, pat)
 	  for (i = 1; i <= 2; i++)
 	    if (src_note [i])
 	      {
-		int regno = get_hard_regnum (regstack, XEXP (src_note [i], 0));
-
 		/* If the register that dies is not at the top of stack, then
 		   move the top of stack to the dead reg */
 		if (REGNO (XEXP (src_note[i], 0))
@@ -2397,12 +2402,14 @@ subst_stack_regs_pat (insn, regstack, pat)
 		    replace_reg (&XEXP (src_note[i], 0), FIRST_STACK_REG);
 		    regstack->top--;
 		  }
-		
 	      }
-
-	  SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
-	  replace_reg (dest, FIRST_STACK_REG);
 	}
+
+	/* Make dest the top of stack.  Add dest to regstack if not present. */
+	if (get_hard_regnum (regstack, *dest) < FIRST_STACK_REG)
+	  regstack->reg[++regstack->top] = REGNO (*dest);	
+	SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
+	replace_reg (dest, FIRST_STACK_REG);
 
 	break;
 
@@ -2719,6 +2726,7 @@ subst_stack_regs (insn, regstack)
 {
   register rtx *note_link, note;
   register int i;
+  rtx head, jump, pat, cipat;
   int n_operands;
 
   if (GET_CODE (insn) == CALL_INSN)
@@ -2789,6 +2797,39 @@ subst_stack_regs (insn, regstack)
 
   if (GET_CODE (insn) == NOTE)
     return;
+
+  /* If we are reached by a computed goto which sets this same stack register,
+     then pop this stack register, but maintain regstack. */
+
+  pat = single_set (insn);
+  if (pat != 0
+      && INSN_UID (insn) <= max_uid
+      && GET_CODE (block_begin[BLOCK_NUM(insn)]) == CODE_LABEL
+      && GET_CODE (pat) == SET && STACK_REG_P (SET_DEST (pat)))
+    for (head = block_begin[BLOCK_NUM(insn)], jump = LABEL_REFS (head);
+	 jump != head;
+	 jump = LABEL_NEXTREF (jump))
+      {
+	cipat = single_set (CONTAINING_INSN (jump));
+	if (cipat != 0
+	    && GET_CODE (cipat) == SET
+	    && SET_DEST (cipat) == pc_rtx
+	    && uses_reg_or_mem (SET_SRC (cipat))
+	    && INSN_UID (CONTAINING_INSN (jump)) <= max_uid)
+	  {
+	    int from_block = BLOCK_NUM (CONTAINING_INSN (jump));
+	    if (TEST_HARD_REG_BIT (block_out_reg_set[from_block],
+				   REGNO (SET_DEST (pat))))
+	      {
+		struct stack_def old;
+		bcopy (regstack->reg, old.reg, sizeof (old.reg));
+		emit_pop_insn (insn, regstack, SET_DEST (pat), emit_insn_before);
+		regstack->top += 1;
+		bcopy (old.reg, regstack->reg, sizeof (old.reg));
+		SET_HARD_REG_BIT (regstack->reg_set, REGNO (SET_DEST (pat)));
+	      }
+	  }
+      }
 
   /* If there is a REG_UNUSED note on a stack register on this insn,
      the indicated reg must be popped.  The REG_UNUSED note is removed,
