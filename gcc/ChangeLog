@@ -1,5 +1,9 @@
 2003-03-05  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* emit-rtl.c (gen_highpart_mode): Fix a comment typo.
+
+2003-03-05  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (a peephole2): Generalize to
 	accept a memory operand.
 
