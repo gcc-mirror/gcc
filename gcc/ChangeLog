@@ -1,3 +1,9 @@
+2004-11-30  Eric Christopher  <echristo@redhat.com>
+
+	* fold-const.c (fold_widened_comparison): Make sure that we're
+	passing an INTEGER_TYPE to int_fits_type_p.
+	(fold): Clean up comment.
+
 2004-11-30  Zack Weinberg  <zack@codesourcery.com>
 
 	* mklibgcc.in: Correct calculation of libgcc_s_soname and

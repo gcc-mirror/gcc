@@ -6000,6 +6000,7 @@ fold_widened_comparison (enum tree_code code, tree type, tree arg0, tree arg1)
        || TYPE_UNSIGNED (TREE_TYPE (arg0)) == TYPE_UNSIGNED (shorter_type))
       && (TREE_TYPE (arg1_unw) == shorter_type
 	  || (TREE_CODE (arg1_unw) == INTEGER_CST
+	      && TREE_CODE (shorter_type) == INTEGER_TYPE
 	      && int_fits_type_p (arg1_unw, shorter_type))))
     return fold (build (code, type, arg0_unw,
 			fold_convert (shorter_type, arg1_unw)));
@@ -8428,9 +8429,8 @@ fold (tree expr)
       /* Comparisons with the highest or lowest possible integer of
 	 the specified size will have known values.
 
-	 This is quite similar to fold_relational_hi_lo; however, my
-	 attempts to share the code have been nothing but trouble.
-	 I give up for now.  */
+	 This is quite similar to fold_relational_hi_lo, however,
+	 attempts to share the code have been nothing but trouble.  */
       {
 	int width = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (arg1)));
 
