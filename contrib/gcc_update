@@ -66,12 +66,15 @@ texinfo/stamp-h.in: texinfo/configure.in texinfo/aclocal.m4 texinfo/acconfig.h
 texinfo/lib/Makefile.in: texinfo/lib/Makefile.am texinfo/configure.in texinfo/aclocal.m4
 texinfo/makeinfo/Makefile.in: texinfo/makeinfo/Makefile.am texinfo/configure.in texinfo/aclocal.m4
 texinfo/util/Makefile.in: texinfo/util/Makefile.am texinfo/configure.in texinfo/aclocal.m4
+# intl library
+intl/plural.c: intl/plural.y
+intl/configure: intl/configure.in intl/aclocal.m4
+intl/config.h.in: intl/configure.in intl/aclocal.m4
 # Now, proceed to gcc automatically generated files
 gcc/configure: gcc/configure.in
 gcc/cstamp-h.in: gcc/configure.in gcc/acconfig.h
 gcc/config.in: gcc/cstamp-h.in
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
-gcc/intl/plural.c: gcc/intl/plural.y
 # And then, language-specific files
 gcc/f/intdoc.texi: gcc/f/intdoc.in gcc/f/intdoc.c gcc/f/intrin.h gcc/f/intrin.def
 gcc/cp/cfns.h: gcc/cp/cfns.gperf

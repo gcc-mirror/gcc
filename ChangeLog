@@ -1,3 +1,10 @@
+2003-07-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* intl: New directory; see intl/ChangeLog for details.
+	* ABOUT-NLS, config.rpath: Import from gettext 0.12.1.
+	* Makefile.tpl: all-gcc depends on maybe-all-intl.
+	* Makefile.in: Regenerate.
+
 2003-06-27  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Clean up config-lang.in handling.  Delete
@@ -33,7 +40,7 @@
 
 	* configure.in: Update testsuite_flags to new location.
 	* configure. Regenerate.
-	
+
 2003-06-18  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Remove BUILD_CC stuff.
@@ -48,7 +55,7 @@
 	* MAINTAINERS (Write After Approval): Add myself.
 
 2003-06-14  H.J. Lu <hongjiu.lu@intel.com>
- 
+
 	* config.guess: Update to 2003-06-12 version.
 	* config.sub: Update to 2003-06-13 version.
 
@@ -128,7 +135,7 @@
 	* configure: Regenerate.
 
 2003-05-21  DJ Delorie  <dj@redhat.com>
-	
+
 	* Makefile.tpl (configure-target-libiberty): Depend only on gcc, not
 	newlib or libgloss.
 	* Makefile.in: Regenerate.
@@ -145,7 +152,7 @@
 2003-05-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Switch more things to use maybe dependencies.
-	* Makefile.tpl: Switch more things to use maybe dependencies.  
+	* Makefile.tpl: Switch more things to use maybe dependencies.
 	Factor out common code from autogen IF statements.
 	* configure: Regenerate.
 	* Makefile.in: Regenerate.
@@ -199,8 +206,8 @@
 
 2003-05-02  Chris Demetriou  <cgd@broadcom.com>
 
-        * Makefile.tpl: Require "makeinfo" from texinfo 4.2 or later.
-        * Makefile.in: Regenerate.
+	* Makefile.tpl: Require "makeinfo" from texinfo 4.2 or later.
+	* Makefile.in: Regenerate.
 
 2003-05-02  Wolfgang Bangerth  <bangerth@dealii.org>
 

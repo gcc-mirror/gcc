@@ -1,0 +1,27 @@
+AC_PREREQ(2.13)
+AC_INIT(gettext.c)
+AC_CONFIG_AUX_DIR(..)
+AC_CONFIG_HEADER(config.h)
+AM_GNU_GETTEXT_VERSION(0.12.1)
+AM_GNU_GETTEXT
+
+dnl This replaces the extensive use of DEFS in the original Makefile.in.
+AC_DEFINE_UNQUOTED(LOCALEDIR, "$localedir",
+[Define to the directory holding the locale files.])
+AC_DEFINE_UNQUOTED(LOCALE_ALIAS_PATH, "$aliaspath",
+[Define to the locale alias path.])
+AC_DEFINE_UNQUOTED(LIBDIR, "$libdir",
+[Define to the library directory.])
+AC_DEFINE_UNQUOTED(INSTALLDIR, "$libdir",
+[Define to the installation directory.])
+AC_DEFINE(IN_LIBINTL, 1, [Define because this is libintl.])
+AC_DEFINE(IN_LIBRARY, 1, [Define because this is a library.])
+AC_DEFINE(DEPENDS_ON_LIBICONV, 1, [Define because we depend on libiconv.])
+AC_DEFINE(ENABLE_RELOCATABLE, 1, [Define to enable relocation.])
+AC_DEFINE(NO_XMALLOC, 1, [Define if there is no xmalloc.])
+AC_DEFINE(set_relocation_prefix, libintl_set_relocation_prefix,
+[Define this entry point correctly.])
+AC_DEFINE(relocate, libintl_relocate,
+[Define this entry point correctly.])
+
+AC_OUTPUT(Makefile)

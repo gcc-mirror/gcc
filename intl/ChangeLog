@@ -1,0 +1,20 @@
+2003-07-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in: Remove unnecessary capabilities for
+	installation, build of shared libraries, generation of
+	distribution tarballs, etc.  Fix all the places that rely on
+	the parent directory.  Don't generate libgnuintl.h from
+	anything; do generate $(objdir)/libintl.h from libgnuintl.h if
+	necessary.  Adjust DEFS for use of config.h.
+	* libgnuintl.h.in: Rename libgnuintl.h.
+	* README: New file.
+	* config.charset, ref-add.sin, ref-del.sin: Delete (unused).
+	* COPYING.LIB-2.0, COPYING.LIB-2.1: Delete (redundant).
+	* aclocal.m4: New; generated per instructions in gettext manual.
+	* configure.in: New; written from scratch for this configuration.
+	* configure, config.h.in: Generated.
+
+2003-05-22  GNU  <bug-gnu-gettext@gnu.org>
+
+	* Version 0.12.1 released.
+

@@ -27,17 +27,8 @@
 # define setlocale(category, locale) (locale)
 #endif
 
-#ifdef USE_INCLUDED_LIBINTL
-# include <intl/libgnuintl.h>
-#else
-# ifdef HAVE_LIBINTL_H
-#  include <libintl.h>
-# else
-#  undef ENABLE_NLS
-# endif
-#endif
-
 #ifdef ENABLE_NLS
+#include <libintl.h>
 extern void gcc_init_libintl (void);
 extern size_t gcc_gettext_width (const char *);
 #else

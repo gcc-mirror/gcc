@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -22,6 +22,9 @@
 
 /* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
 #undef HAVE_ALLOCA_H
+
+/* Define if you have a working `mmap' system call.  */
+#undef HAVE_MMAP
 
 /* Define if you have <sys/wait.h> that is POSIX.1 compatible.  */
 #undef HAVE_SYS_WAIT_H
@@ -108,12 +111,6 @@
 /* Define if you have the dup2 function.  */
 #undef HAVE_DUP2
 
-/* Define if you have the feof_unlocked function.  */
-#undef HAVE_FEOF_UNLOCKED
-
-/* Define if you have the fgets_unlocked function.  */
-#undef HAVE_FGETS_UNLOCKED
-
 /* Define if you have the fprintf_unlocked function.  */
 #undef HAVE_FPRINTF_UNLOCKED
 
@@ -129,14 +126,8 @@
 /* Define if you have the getcwd function.  */
 #undef HAVE_GETCWD
 
-/* Define if you have the getegid function.  */
-#undef HAVE_GETEGID
-
-/* Define if you have the geteuid function.  */
-#undef HAVE_GETEUID
-
-/* Define if you have the getgid function.  */
-#undef HAVE_GETGID
+/* Define if you have the getpagesize function.  */
+#undef HAVE_GETPAGESIZE
 
 /* Define if you have the getrlimit function.  */
 #undef HAVE_GETRLIMIT
@@ -147,9 +138,6 @@
 /* Define if you have the gettimeofday function.  */
 #undef HAVE_GETTIMEOFDAY
 
-/* Define if you have the getuid function.  */
-#undef HAVE_GETUID
-
 /* Define if you have the kill function.  */
 #undef HAVE_KILL
 
@@ -158,9 +146,6 @@
 
 /* Define if you have the mbstowcs function.  */
 #undef HAVE_MBSTOWCS
-
-/* Define if you have the mempcpy function.  */
-#undef HAVE_MEMPCPY
 
 /* Define if you have the mincore function.  */
 #undef HAVE_MINCORE
@@ -201,23 +186,14 @@
 /* Define if you have the strchr function.  */
 #undef HAVE_STRCHR
 
-/* Define if you have the strdup function.  */
-#undef HAVE_STRDUP
-
 /* Define if you have the strsignal function.  */
 #undef HAVE_STRSIGNAL
-
-/* Define if you have the strtoul function.  */
-#undef HAVE_STRTOUL
 
 /* Define if you have the sysconf function.  */
 #undef HAVE_SYSCONF
 
 /* Define if you have the times function.  */
 #undef HAVE_TIMES
-
-/* Define if you have the tsearch function.  */
-#undef HAVE_TSEARCH
 
 /* Define if you have the wcswidth function.  */
 #undef HAVE_WCSWIDTH
@@ -287,6 +263,9 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
+
+/* Define if you have the <values.h> header file.  */
+#undef HAVE_VALUES_H
 
 /* Define if you have the <wchar.h> header file.  */
 #undef HAVE_WCHAR_H
@@ -529,31 +508,17 @@
    the results of comparisons. */
 #undef EXTRA_CC_MODES
 
-/* Define if you have the iconv() function. */
-#undef HAVE_ICONV
+/* Define if you have the stpcpy function */
+#undef HAVE_STPCPY
 
-/* Define as const if the declaration of iconv() needs const. */
-#undef ICONV_CONST
-
-/* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
-#undef HAVE_LANGINFO_CODESET
-
-/* Define if your <locale.h> file defines LC_MESSAGES. */
+/* Define if your locale.h file contains LC_MESSAGES. */
 #undef HAVE_LC_MESSAGES
 
-/* Define to 1 if translation of program messages to the user's native language
-   is requested. */
+/* Define to 1 if NLS is requested */
 #undef ENABLE_NLS
 
-/* Define if you have the <libintl.h> header file. */
-#undef HAVE_LIBINTL_H
-
-/* Define if the GNU gettext() function is already present or preinstalled. */
+/* Define as 1 if you have gettext and don't want to use GNU gettext. */
 #undef HAVE_GETTEXT
-
-/* Define to use the libintl included with this package instead of any
-   version in the system libraries. */
-#undef USE_INCLUDED_LIBINTL
 
 /* Define to 1 if installation paths should be looked up in Windows32
    Registry. Ignored on non windows32 hosts. */
