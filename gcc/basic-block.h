@@ -328,7 +328,7 @@ extern struct edge_list *pre_edge_rev_lcm PROTO ((FILE *, int, sbitmap *,
 						  sbitmap *, sbitmap *, 
 						  sbitmap *, sbitmap **, 
 						  sbitmap **));
-extern int compute_available		PROTO ((sbitmap *, sbitmap *,
+extern void compute_available		PROTO ((sbitmap *, sbitmap *,
 						sbitmap *, sbitmap *));
 
 /* In emit-rtl.c.  */

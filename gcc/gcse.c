@@ -3404,15 +3404,12 @@ one_classic_gcse_pass (pass)
 		     expr_hash_table_size, n_exprs);
   if (n_exprs > 0)
     {
-      int passes;
       compute_kill_rd ();
       compute_rd ();
       alloc_avail_expr_mem (n_basic_blocks, n_exprs);
       compute_ae_gen ();
       compute_ae_kill (ae_gen, ae_kill);
-      passes = compute_available (ae_gen, ae_kill, ae_out, ae_in);
-      if (gcse_file)
-	fprintf (gcse_file, "avail expr computation: %d passes\n", passes);
+      compute_available (ae_gen, ae_kill, ae_out, ae_in);
       changed = classic_gcse ();
       free_avail_expr_mem ();
     }
