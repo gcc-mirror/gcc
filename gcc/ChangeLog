@@ -1,3 +1,11 @@
+Sat Sep 18 16:01:18 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* config/i386/sol2.h (CPP_SPEC): Support -[p]threads
+	(LIB_SPEC): Likewise.
+	(LINK_SPEC): Do not assert -z text with -shared -mimpure-text.
+	Reindent -YP/-p/-pg.
+	Copied from config/sparc/sol2.h.
+
 Sat Sep 18 11:52:43 1999  Richard Henderson  <rth@cygnus.com>
 
 	* c-pragma.c (mark_align_stack): New.
