@@ -1,5 +1,5 @@
 /* intrin.c -- Recognize references to intrinsics
-   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 2002 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -622,10 +622,11 @@ ffeintrin_check_ (ffeintrinImp imp, ffebldOp op,
     {
       bool okay = TRUE;
       bool have_anynum = FALSE;
+      int  arg_count=0;
 
-      for (arg = args;
+      for (arg = args, arg_count=0;
 	   arg != NULL;
-	   arg = (c[colon + 1] == '*') ? ffebld_trail (arg) : NULL)
+	   arg = ffebld_trail (arg), arg_count++ )
 	{
 	  ffebld a = ffebld_head (arg);
 	  ffeinfo i;
@@ -634,6 +635,9 @@ ffeintrin_check_ (ffeintrinImp imp, ffebldOp op,
 	  if (a == NULL)
 	    continue;
 	  i = ffebld_info (a);
+
+	  if ( c[colon+1] != '*' && (c[colon+1]-'0') != arg_count )
+	    continue;
 
 	  anynum = (ffeinfo_basictype (i) == FFEINFO_basictypeHOLLERITH)
 	    || (ffeinfo_basictype (i) == FFEINFO_basictypeTYPELESS);
