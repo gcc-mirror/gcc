@@ -171,50 +171,24 @@ OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
-CONFIG_CXXFLAGS = \
-	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @CSHADOW_FLAGS@ @DEBUG_FLAGS@ 
+CONFIG_CXXFLAGS =  	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @CSHADOW_FLAGS@ @DEBUG_FLAGS@ 
 
 
 # Warning flags to use.
-WARN_CXXFLAGS = \
-	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
+WARN_CXXFLAGS =  	@WARN_FLAGS@ $(WERROR) -fdiagnostics-show-location=once
 
 
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
 GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
 LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 
-INCLUDES = \
-	-I$(toplevel_srcdir)/gcc -I$(toplevel_srcdir)/include \
-	$(GLIBCPP_INCLUDES) $(LIBSUPCXX_INCLUDES)
+INCLUDES =  	-I$(toplevel_srcdir)/gcc -I$(toplevel_srcdir)/include 	$(GLIBCPP_INCLUDES) $(LIBSUPCXX_INCLUDES)
 
 
-headers = \
-	exception new typeinfo cxxabi.h exception_defines.h 
+headers =  	exception new typeinfo cxxabi.h exception_defines.h 
 
 
-sources = \
-	del_op.cc \
-	del_opnt.cc \
-	del_opv.cc \
-	del_opvnt.cc \
-	eh_alloc.cc \
-	eh_aux_runtime.cc \
-	eh_catch.cc \
-	eh_exception.cc \
-	eh_globals.cc \
-	eh_personality.cc \
-	eh_terminate.cc \
-	eh_throw.cc \
-	new_handler.cc \
-	new_op.cc \
-	new_opnt.cc \
-	new_opv.cc \
-	new_opvnt.cc \
-	pure.cc \
-	tinfo.cc \
-	tinfo2.cc \
-	vec.cc
+sources =  	del_op.cc 	del_opnt.cc 	del_opv.cc 	del_opvnt.cc 	eh_alloc.cc 	eh_aux_runtime.cc 	eh_catch.cc 	eh_exception.cc 	eh_globals.cc 	eh_personality.cc 	eh_terminate.cc 	eh_throw.cc 	new_handler.cc 	new_op.cc 	new_opnt.cc 	new_opv.cc 	new_opvnt.cc 	pure.cc 	tinfo.cc 	tinfo2.cc 	vec.cc
 
 
 libsupc___la_SOURCES = $(sources)
@@ -230,12 +204,7 @@ LIBSUPCXX_CXXFLAGS = $(LIBSUPCXX_PICFLAGS)
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
 # as the occasion call for it. (ie, --enable-debug)
-AM_CXXFLAGS = \
-	-fno-implicit-templates \
-	$(LIBSUPCXX_CXXFLAGS) \
-	$(WARN_CXXFLAGS) \
-	$(OPTIMIZE_CXXFLAGS) \
-	$(CONFIG_CXXFLAGS) 
+AM_CXXFLAGS =  	-fno-implicit-templates 	$(LIBSUPCXX_CXXFLAGS) 	$(WARN_CXXFLAGS) 	$(OPTIMIZE_CXXFLAGS) 	$(CONFIG_CXXFLAGS) 
 
 
 # libstdc++ libtool notes
@@ -259,9 +228,7 @@ AM_CXXFLAGS = \
 #
 # We have to put --tag disable-shared after --tag CXX lest things
 # CXX undo the affect of disable-shared.
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared \
-               --mode=compile $(CXX) $(INCLUDES) \
-	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared                --mode=compile $(CXX) $(INCLUDES) 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 
 # 3) We'd have a problem when building the shared libstdc++ object if
@@ -270,9 +237,7 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared \
 # course is problematic at this point.  So, we get the top-level
 # directory to configure libstdc++-v3 to use gcc as the C++
 # compilation driver.
-CXXLINK = $(LIBTOOL) --tag CXX --tag disable-shared \
-          --mode=link $(CXX) \
-          @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(LIBTOOL) --tag CXX --tag disable-shared           --mode=link $(CXX)           @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
