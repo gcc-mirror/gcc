@@ -24,8 +24,8 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 
 static int rtx_addr_can_trap_p	PROTO((rtx));
-static void reg_set_p_1		PROTO((rtx, rtx));
-static void reg_set_last_1	PROTO((rtx, rtx));
+static void reg_set_p_1		PROTO((rtx, rtx, void *));
+static void reg_set_last_1	PROTO((rtx, rtx, void *));
 
 
 /* Forward declarations */
@@ -473,9 +473,10 @@ static rtx reg_set_reg;
 static int reg_set_flag;
 
 static void
-reg_set_p_1 (x, pat)
+reg_set_p_1 (x, pat, data)
      rtx x;
      rtx pat ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   /* We don't want to return 1 if X is a MEM that contains a register
      within REG_SET_REG.  */
@@ -514,7 +515,7 @@ reg_set_p (reg, insn)
 
   reg_set_reg = reg;
   reg_set_flag = 0;
-  note_stores (body, reg_set_p_1);
+  note_stores (body, reg_set_p_1, NULL);
   return reg_set_flag;
 }
 
@@ -980,9 +981,10 @@ static int reg_set_last_first_regno, reg_set_last_last_regno;
 /* Called via note_stores from reg_set_last.  */
 
 static void
-reg_set_last_1 (x, pat)
+reg_set_last_1 (x, pat, data)
      rtx x;
      rtx pat;
+     void *data ATTRIBUTE_UNUSED;
 {
   int first, last;
 
@@ -1047,7 +1049,7 @@ reg_set_last (x, insn)
        insn = PREV_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
       {
-	note_stores (PATTERN (insn), reg_set_last_1);
+	note_stores (PATTERN (insn), reg_set_last_1, NULL);
 	if (reg_set_last_unknown)
 	  return 0;
 	else if (reg_set_last_value)
@@ -1184,9 +1186,10 @@ rtx_equal_p (x, y)
   the SUBREG will be passed.  */
      
 void
-note_stores (x, fun)
+note_stores (x, fun, data)
      register rtx x;
-     void (*fun) PROTO ((rtx, rtx));
+     void (*fun) PROTO ((rtx, rtx, void *));
+     void *data;
 {
   if ((GET_CODE (x) == SET || GET_CODE (x) == CLOBBER))
     {
@@ -1204,10 +1207,10 @@ note_stores (x, fun)
 	{
 	  register int i;
 	  for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
-	    (*fun) (SET_DEST (XVECEXP (dest, 0, i)), x);
+	    (*fun) (SET_DEST (XVECEXP (dest, 0, i)), x, data);
 	}
       else
-	(*fun) (dest, x);
+	(*fun) (dest, x, data);
     }
   else if (GET_CODE (x) == PARALLEL)
     {
@@ -1231,10 +1234,10 @@ note_stores (x, fun)
 		{
 		  register int i;
 		  for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
-		    (*fun) (SET_DEST (XVECEXP (dest, 0, i)), y);
+		    (*fun) (SET_DEST (XVECEXP (dest, 0, i)), y, data);
 		}
 	      else
-		(*fun) (dest, y);
+		(*fun) (dest, y, data);
 	    }
 	}
     }

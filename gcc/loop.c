@@ -269,9 +269,6 @@ static struct movable *the_movables;
 
 FILE *loop_dump_stream;
 
-/* For communicating return values from note_set_pseudo_multiple_uses.  */
-static int note_set_pseudo_multiple_uses_retval;
-
 /* Forward declarations.  */
 
 static void verify_dominator PROTO((int));
@@ -285,8 +282,8 @@ static void count_one_set PROTO((rtx, rtx, varray_type, rtx *));
 
 static void count_loop_regs_set PROTO((rtx, rtx, varray_type, varray_type,
 				       int *, int)); 
-static void note_addr_stored PROTO((rtx, rtx));
-static void note_set_pseudo_multiple_uses PROTO((rtx, rtx));
+static void note_addr_stored PROTO((rtx, rtx, void *));
+static void note_set_pseudo_multiple_uses PROTO((rtx, rtx, void *));
 static int loop_reg_used_before_p PROTO((rtx, rtx, rtx, rtx, rtx));
 static void scan_loop PROTO((rtx, rtx, rtx, int, int));
 #if 0
@@ -327,7 +324,7 @@ static int product_cheap_p PROTO((rtx, rtx));
 static int maybe_eliminate_biv PROTO((struct iv_class *, rtx, rtx, int, int, int));
 static int maybe_eliminate_biv_1 PROTO((rtx, rtx, struct iv_class *, int, rtx));
 static int last_use_this_basic_block PROTO((rtx, rtx));
-static void record_initial PROTO((rtx, rtx));
+static void record_initial PROTO((rtx, rtx, void *));
 static void update_reg_last_use PROTO((rtx, rtx));
 static rtx next_insn_in_loop PROTO((rtx, rtx, rtx, rtx));
 static void load_mems_and_recount_loop_regs_set PROTO((rtx, rtx, rtx,
@@ -2476,7 +2473,7 @@ prescan_loop (start, end, loop_info)
 		  || GET_CODE (PATTERN (insn)) == ADDR_VEC))
 	    loop_info->has_tablejump = 1;
 	  
-	  note_stores (PATTERN (insn), note_addr_stored);
+	  note_stores (PATTERN (insn), note_addr_stored, NULL);
 	  if (! first_loop_store_insn && loop_store_mems)
 	    first_loop_store_insn = insn;
 
@@ -3156,9 +3153,10 @@ labels_in_range_p (insn, end)
 /* Record that a memory reference X is being set.  */
 
 static void
-note_addr_stored (x, y)
+note_addr_stored (x, y, data)
      rtx x;
      rtx y ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   if (x == 0 || GET_CODE (x) != MEM)
     return;
@@ -3180,12 +3178,14 @@ note_addr_stored (x, y)
 /* X is a value modified by an INSN that references a biv inside a loop
    exit test (ie, X is somehow related to the value of the biv).  If X
    is a pseudo that is used more than once, then the biv is (effectively)
-   used more than once.  */
+   used more than once.  DATA is really an `int *', and is set if the
+   biv is used more than once.  */
 
 static void
-note_set_pseudo_multiple_uses (x, y)
+note_set_pseudo_multiple_uses (x, y, data)
      rtx x;
      rtx y ATTRIBUTE_UNUSED;
+     void *data;
 {
   if (x == 0)
     return;
@@ -3204,7 +3204,7 @@ note_set_pseudo_multiple_uses (x, y)
   if (REGNO (x) >= max_reg_before_loop
       || ! VARRAY_RTX (reg_single_usage, REGNO (x))
       || VARRAY_RTX (reg_single_usage, REGNO (x)) == const0_rtx)
-    note_set_pseudo_multiple_uses_retval = 1;
+    *((int *) data) = 1;
 }
 
 /* Return nonzero if the rtx X is invariant over the current loop.
@@ -3998,7 +3998,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
       if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
 	  || GET_CODE (p) == CALL_INSN)
-	note_stores (PATTERN (p), record_initial);
+	note_stores (PATTERN (p), record_initial, NULL);
 
       /* Record any test of a biv that branches around the loop if no store
 	 between it and the start of loop.  We only care about tests with
@@ -7976,8 +7976,9 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		       that has more than one usage, then the biv has uses
 		       other than counting since it's used to derive a value
 		       that is used more than one time.  */
-		    note_set_pseudo_multiple_uses_retval = 0;
-		    note_stores (PATTERN (p), note_set_pseudo_multiple_uses);
+		    int note_set_pseudo_multiple_uses_retval = 0;
+		    note_stores (PATTERN (p), note_set_pseudo_multiple_uses,
+				 &note_set_pseudo_multiple_uses_retval);
 		    if (note_set_pseudo_multiple_uses_retval)
 		      {
 			no_use_except_counting = 0;
@@ -8902,9 +8903,10 @@ last_use_this_basic_block (reg, insn)
    just record the location of the set and process it later.  */
 
 static void
-record_initial (dest, set)
+record_initial (dest, set, data)
      rtx dest;
      rtx set;
+     void *data ATTRIBUTE_UNUSED;
 {
   struct iv_class *bl;
 

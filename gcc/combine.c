@@ -354,7 +354,7 @@ static void do_SUBST			PROTO((rtx *, rtx));
 static void do_SUBST_INT		PROTO((int *, int));
 static void init_reg_last_arrays	PROTO((void));
 static void setup_incoming_promotions   PROTO((void));
-static void set_nonzero_bits_and_sign_copies  PROTO((rtx, rtx));
+static void set_nonzero_bits_and_sign_copies  PROTO((rtx, rtx, void *));
 static int can_combine_p	PROTO((rtx, rtx, rtx, rtx, rtx *, rtx *));
 static int sets_function_arg_p	PROTO((rtx));
 static int combinable_i3pat	PROTO((rtx, rtx *, rtx, rtx, int, rtx *));
@@ -401,12 +401,12 @@ static enum rtx_code simplify_comparison  PROTO((enum rtx_code, rtx *, rtx *));
 static int reversible_comparison_p  PROTO((rtx));
 static void update_table_tick	PROTO((rtx));
 static void record_value_for_reg  PROTO((rtx, rtx, rtx));
-static void record_dead_and_set_regs_1  PROTO((rtx, rtx));
+static void record_dead_and_set_regs_1  PROTO((rtx, rtx, void *));
 static void record_dead_and_set_regs  PROTO((rtx));
 static int get_last_value_validate  PROTO((rtx *, rtx, int, int));
 static rtx get_last_value	PROTO((rtx));
 static int use_crosses_set_p	PROTO((rtx, int));
-static void reg_dead_at_p_1	PROTO((rtx, rtx));
+static void reg_dead_at_p_1	PROTO((rtx, rtx, void *));
 static int reg_dead_at_p	PROTO((rtx, rtx));
 static void move_deaths		PROTO((rtx, rtx, int, rtx, rtx *));
 static int reg_bitfield_target_p  PROTO((rtx, rtx));
@@ -569,13 +569,15 @@ combine_instructions (f, nregs)
 
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
-	  note_stores (PATTERN (insn), set_nonzero_bits_and_sign_copies);
+	  note_stores (PATTERN (insn), set_nonzero_bits_and_sign_copies, 
+		       NULL);
 	  record_dead_and_set_regs (insn);
 
 #ifdef AUTO_INC_DEC
 	  for (links = REG_NOTES (insn); links; links = XEXP (links, 1))
 	    if (REG_NOTE_KIND (links) == REG_INC)
-	      set_nonzero_bits_and_sign_copies (XEXP (links, 0), NULL_RTX);
+	      set_nonzero_bits_and_sign_copies (XEXP (links, 0), NULL_RTX,
+						NULL);
 #endif
 	}
 
@@ -769,9 +771,10 @@ setup_incoming_promotions ()
    by any set of X.  */
 
 static void
-set_nonzero_bits_and_sign_copies (x, set)
+set_nonzero_bits_and_sign_copies (x, set, data)
      rtx x;
      rtx set;
+     void *data ATTRIBUTE_UNUSED;
 {
   int num;
 
@@ -2557,9 +2560,9 @@ try_combine (i3, i2, i1)
     /* Update reg_nonzero_bits et al for any changes that may have been made
        to this insn.  */
 
-    note_stores (newpat, set_nonzero_bits_and_sign_copies);
+    note_stores (newpat, set_nonzero_bits_and_sign_copies, NULL);
     if (newi2pat)
-      note_stores (newi2pat, set_nonzero_bits_and_sign_copies);
+      note_stores (newi2pat, set_nonzero_bits_and_sign_copies, NULL);
 
     /* If I3 is now an unconditional jump, ensure that it has a 
        BARRIER following it since it may have initially been a
@@ -10753,16 +10756,17 @@ record_value_for_reg (reg, insn, value)
     }
 }
 
-/* Used for communication between the following two routines.  */
-static rtx record_dead_insn;
-
 /* Called via note_stores from record_dead_and_set_regs to handle one
-   SET or CLOBBER in an insn.  */
+   SET or CLOBBER in an insn.  DATA is the instruction in which the
+   set is occurring.  */
 
 static void
-record_dead_and_set_regs_1 (dest, setter)
+record_dead_and_set_regs_1 (dest, setter, data)
      rtx dest, setter;
+     void *data;
 {
+  rtx record_dead_insn = (rtx) data;
+
   if (GET_CODE (dest) == SUBREG)
     dest = SUBREG_REG (dest);
 
@@ -10840,8 +10844,7 @@ record_dead_and_set_regs (insn)
       last_call_cuid = mem_last_set = INSN_CUID (insn);
     }
 
-  record_dead_insn = insn;
-  note_stores (PATTERN (insn), record_dead_and_set_regs_1);
+  note_stores (PATTERN (insn), record_dead_and_set_regs_1, insn);
 }
 
 /* Utility routine for the following function.  Verify that all the registers
@@ -11040,9 +11043,10 @@ static int reg_dead_flag;
    reg_dead_flag to 1 if X is a CLOBBER and to -1 it is a SET.  */
 
 static void
-reg_dead_at_p_1 (dest, x)
+reg_dead_at_p_1 (dest, x, data)
      rtx dest;
      rtx x;
+     void *data ATTRIBUTE_UNUSED;
 {
   int regno, endregno;
 
@@ -11094,7 +11098,7 @@ reg_dead_at_p (reg, insn)
   for (; insn && GET_CODE (insn) != CODE_LABEL && GET_CODE (insn) != BARRIER;
        insn = prev_nonnote_insn (insn))
     {
-      note_stores (PATTERN (insn), reg_dead_at_p_1);
+      note_stores (PATTERN (insn), reg_dead_at_p_1, NULL);
       if (reg_dead_flag)
 	return reg_dead_flag == 1 ? 1 : 0;
 

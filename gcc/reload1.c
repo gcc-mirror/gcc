@@ -398,7 +398,7 @@ static void check_eliminable_occurrences	PROTO((rtx));
 static void elimination_effects		PROTO((rtx, enum machine_mode));
 static int eliminate_regs_in_insn	PROTO((rtx, int));
 static void update_eliminable_offsets	PROTO((void));
-static void mark_not_eliminable		PROTO((rtx, rtx));
+static void mark_not_eliminable		PROTO((rtx, rtx, void *));
 static void set_initial_elim_offsets	PROTO((void));
 static void verify_initial_elim_offsets	PROTO((void));
 static void set_initial_label_offsets	PROTO((void));
@@ -413,7 +413,7 @@ static int hard_reg_use_compare		PROTO((const PTR, const PTR));
 static void count_pseudo		PROTO((struct hard_reg_n_uses *, int));
 static void order_regs_for_reload	PROTO((struct insn_chain *));
 static void reload_as_needed		PROTO((int));
-static void forget_old_reloads_1	PROTO((rtx, rtx));
+static void forget_old_reloads_1	PROTO((rtx, rtx, void *));
 static int reload_reg_class_lower	PROTO((const PTR, const PTR));
 static void mark_reload_reg_in_use	PROTO((int, int, enum reload_type,
 					       enum machine_mode));
@@ -437,18 +437,18 @@ static void reload_cse_regs_1		PROTO((rtx));
 static void reload_cse_invalidate_regno	PROTO((int, enum machine_mode, int));
 static int reload_cse_mem_conflict_p	PROTO((rtx, rtx));
 static void reload_cse_invalidate_mem	PROTO((rtx));
-static void reload_cse_invalidate_rtx	PROTO((rtx, rtx));
+static void reload_cse_invalidate_rtx	PROTO((rtx, rtx, void *));
 static int reload_cse_regno_equal_p	PROTO((int, rtx, enum machine_mode));
 static int reload_cse_noop_set_p	PROTO((rtx, rtx));
 static int reload_cse_simplify_set	PROTO((rtx, rtx));
 static int reload_cse_simplify_operands	PROTO((rtx));
-static void reload_cse_check_clobber	PROTO((rtx, rtx));
+static void reload_cse_check_clobber	PROTO((rtx, rtx, void *));
 static void reload_cse_record_set	PROTO((rtx, rtx));
 static void reload_combine PROTO((void));
 static void reload_combine_note_use PROTO((rtx *, rtx));
-static void reload_combine_note_store PROTO((rtx, rtx));
+static void reload_combine_note_store PROTO((rtx, rtx, void *));
 static void reload_cse_move2add PROTO((rtx));
-static void move2add_note_store PROTO((rtx, rtx));
+static void move2add_note_store PROTO((rtx, rtx, void *));
 #ifdef AUTO_INC_DEC
 static void add_auto_inc_notes PROTO((rtx, rtx));
 #endif
@@ -805,7 +805,7 @@ reload (first, global, dumpfile)
   for (insn = first; insn && num_eliminable; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN
 	|| GET_CODE (insn) == CALL_INSN)
-      note_stores (PATTERN (insn), mark_not_eliminable);
+      note_stores (PATTERN (insn), mark_not_eliminable, NULL);
 
   maybe_fix_stack_asms ();
 
@@ -3631,9 +3631,10 @@ update_eliminable_offsets ()
    the insns of the function.  */
 
 static void
-mark_not_eliminable (dest, x)
+mark_not_eliminable (dest, x, data)
      rtx dest;
      rtx x;
+     void *data ATTRIBUTE_UNUSED;
 {
   register unsigned int i;
 
@@ -4424,13 +4425,13 @@ reload_as_needed (live_known)
 	     for this insn in order to be stored in
 	     (obeying register constraints).  That is correct; such reload
 	     registers ARE still valid.  */
-	  note_stores (oldpat, forget_old_reloads_1);
+	  note_stores (oldpat, forget_old_reloads_1, NULL);
 
 	  /* There may have been CLOBBER insns placed after INSN.  So scan
 	     between INSN and NEXT and use them to forget old reloads.  */
 	  for (x = NEXT_INSN (insn); x != old_next; x = NEXT_INSN (x))
 	    if (GET_CODE (x) == INSN && GET_CODE (PATTERN (x)) == CLOBBER)
-	      note_stores (PATTERN (x), forget_old_reloads_1);
+	      note_stores (PATTERN (x), forget_old_reloads_1, NULL);
 
 #ifdef AUTO_INC_DEC
 	  /* Likewise for regs altered by auto-increment in this insn.
@@ -4512,7 +4513,8 @@ reload_as_needed (live_known)
 			  reg_has_output_reload[REGNO (XEXP (in_reg, 0))] = 1;
 			}
 		      else
-			forget_old_reloads_1 (XEXP (in_reg, 0), NULL_RTX);
+			forget_old_reloads_1 (XEXP (in_reg, 0), NULL_RTX, 
+					      NULL);
 		    }
 		  else if ((code == PRE_INC || code == PRE_DEC)
 			   && TEST_HARD_REG_BIT (reg_reloaded_valid,
@@ -4542,7 +4544,7 @@ reload_as_needed (live_known)
 		    break;
 
 		if (i == n_reloads)
-		  forget_old_reloads_1 (XEXP (x, 0), NULL_RTX);
+		  forget_old_reloads_1 (XEXP (x, 0), NULL_RTX, NULL);
 	      }
 #endif
 	}
@@ -4579,9 +4581,10 @@ reload_as_needed (live_known)
    or it may be a pseudo reg that was reloaded from.  */
 
 static void
-forget_old_reloads_1 (x, ignored)
+forget_old_reloads_1 (x, ignored, data)
      rtx x;
      rtx ignored ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   register int regno;
   int nr;
@@ -7312,7 +7315,7 @@ emit_reload_insns (chain)
 		   clear any memory of reloaded copies of the pseudo reg.
 		   If this output reload comes from a spill reg,
 		   reg_has_output_reload will make this do nothing.  */
-		note_stores (pat, forget_old_reloads_1);
+		note_stores (pat, forget_old_reloads_1, NULL);
 
 		if (reg_mentioned_p (rld[j].reg_rtx, pat))
 		  {
@@ -8680,9 +8683,10 @@ reload_cse_invalidate_mem (mem_rtx)
    note_stores; it is ignored.  */
 
 static void
-reload_cse_invalidate_rtx (dest, ignore)
+reload_cse_invalidate_rtx (dest, ignore, data)
      rtx dest;
      rtx ignore ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   while (GET_CODE (dest) == STRICT_LOW_PART
 	 || GET_CODE (dest) == SIGN_EXTRACT
@@ -8895,11 +8899,11 @@ reload_cse_regs_1 (first)
 	      if (GET_CODE (x) == SET)
 		reload_cse_record_set (x, body);
 	      else
-		note_stores (x, reload_cse_invalidate_rtx);
+		note_stores (x, reload_cse_invalidate_rtx, NULL);
 	    }
 	}
       else
-	note_stores (body, reload_cse_invalidate_rtx);
+	note_stores (body, reload_cse_invalidate_rtx, NULL);
 
 #ifdef AUTO_INC_DEC
       /* Clobber any registers which appear in REG_INC notes.  We
@@ -8910,7 +8914,7 @@ reload_cse_regs_1 (first)
 
 	for (x = REG_NOTES (insn); x; x = XEXP (x, 1))
 	  if (REG_NOTE_KIND (x) == REG_INC)
-	    reload_cse_invalidate_rtx (XEXP (x, 0), NULL_RTX);
+	    reload_cse_invalidate_rtx (XEXP (x, 0), NULL_RTX, NULL);
       }
 #endif
 
@@ -8922,7 +8926,8 @@ reload_cse_regs_1 (first)
 
 	  for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
 	    if (GET_CODE (XEXP (x, 0)) == CLOBBER)
-	      reload_cse_invalidate_rtx (XEXP (XEXP (x, 0), 0), NULL_RTX);
+	      reload_cse_invalidate_rtx (XEXP (XEXP (x, 0), 0), NULL_RTX,
+					 NULL);
 	}
     }
 
@@ -9367,9 +9372,10 @@ static rtx reload_cse_check_src;
    second argument, which is passed by note_stores, is ignored.  */
 
 static void
-reload_cse_check_clobber (dest, ignore)
+reload_cse_check_clobber (dest, ignore, data)
      rtx dest;
      rtx ignore ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   if (reg_overlap_mentioned_p (dest, reload_cse_check_src))
     reload_cse_check_clobbered = 1;
@@ -9405,8 +9411,8 @@ reload_cse_record_set (set, body)
     x = XEXP (x, 0);
   if (push_operand (x, GET_MODE (x)))
     {
-      reload_cse_invalidate_rtx (stack_pointer_rtx, NULL_RTX);
-      reload_cse_invalidate_rtx (dest, NULL_RTX);
+      reload_cse_invalidate_rtx (stack_pointer_rtx, NULL_RTX, NULL);
+      reload_cse_invalidate_rtx (dest, NULL_RTX, NULL);
       return;
     }
 
@@ -9418,7 +9424,7 @@ reload_cse_record_set (set, body)
       || side_effects_p (src)
       || side_effects_p (dest))
     {
-      reload_cse_invalidate_rtx (dest, NULL_RTX);
+      reload_cse_invalidate_rtx (dest, NULL_RTX, NULL);
       return;
     }
 
@@ -9428,7 +9434,7 @@ reload_cse_record_set (set, body)
   if (reg_mentioned_p (cc0_rtx, src)
       || reg_mentioned_p (cc0_rtx, dest))
     {
-      reload_cse_invalidate_rtx (dest, NULL_RTX);
+      reload_cse_invalidate_rtx (dest, NULL_RTX, NULL);
       return;
     }
 #endif
@@ -9449,10 +9455,10 @@ reload_cse_record_set (set, body)
 
 	  reload_cse_check_clobbered = 0;
 	  reload_cse_check_src = src;
-	  note_stores (x, reload_cse_check_clobber);
+	  note_stores (x, reload_cse_check_clobber, NULL);
 	  if (reload_cse_check_clobbered)
 	    {
-	      reload_cse_invalidate_rtx (dest, NULL_RTX);
+	      reload_cse_invalidate_rtx (dest, NULL_RTX, NULL);
 	      return;
 	    }
 	}
@@ -9767,7 +9773,7 @@ reload_combine ()
 		}
 	    }
 	}
-      note_stores (PATTERN (insn), reload_combine_note_store);
+      note_stores (PATTERN (insn), reload_combine_note_store, NULL);
       if (GET_CODE (insn) == CALL_INSN)
 	{
 	  rtx link;
@@ -9830,8 +9836,9 @@ reload_combine ()
    update reg_state[regno].store_ruid and reg_state[regno].use_index
    accordingly.  Called via note_stores from reload_combine.  */
 static void
-reload_combine_note_store (dst, set)
+reload_combine_note_store (dst, set, data)
      rtx dst, set;
+     void *data ATTRIBUTE_UNUSED;
 {
   int regno = 0;
   int i;
@@ -10157,7 +10164,7 @@ reload_cse_move2add (first)
 		}
 	    }
 	}
-      note_stores (PATTERN (insn), move2add_note_store);
+      note_stores (PATTERN (insn), move2add_note_store, NULL);
       /* If this is a CALL_INSN, all call used registers are stored with
 	 unknown values.  */
       if (GET_CODE (insn) == CALL_INSN)
@@ -10178,8 +10185,9 @@ reload_cse_move2add (first)
    Update reg_set_luid, reg_offset and reg_base_reg accordingly.
    Called from reload_cse_move2add via note_stores.  */
 static void
-move2add_note_store (dst, set)
+move2add_note_store (dst, set, data)
      rtx dst, set;
+     void *data ATTRIBUTE_UNUSED;
 {
   int regno = 0;
   int i;

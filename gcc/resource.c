@@ -73,7 +73,7 @@ static HARD_REG_SET current_live_regs;
 
 static HARD_REG_SET pending_dead_regs;
 
-static void update_live_status		PROTO ((rtx, rtx));
+static void update_live_status		PROTO ((rtx, rtx, void *));
 static rtx next_insn_no_annul		PROTO ((rtx));
 static rtx find_dead_or_set_registers	PROTO ((rtx, struct resources*,
 						rtx*, int, struct resources,
@@ -83,9 +83,10 @@ static rtx find_dead_or_set_registers	PROTO ((rtx, struct resources*,
    It deadens any CLOBBERed registers and livens any SET registers.  */
 
 static void
-update_live_status (dest, x)
+update_live_status (dest, x, data)
      rtx dest;
      rtx x;
+     void *data ATTRIBUTE_UNUSED;
 {
   int first_regno, last_regno;
   int i;
@@ -973,7 +974,7 @@ mark_target_live_regs (insns, target, res)
 		      SET_HARD_REG_BIT (pending_dead_regs, i);
 		  }
 
-	      note_stores (PATTERN (real_insn), update_live_status);
+	      note_stores (PATTERN (real_insn), update_live_status, NULL);
 
 	      /* If any registers were unused after this insn, kill them.
 		 These notes will always be accurate.  */

@@ -122,7 +122,7 @@ static void mark_jump_label		PROTO((rtx, rtx, int));
 static void delete_computation		PROTO((rtx));
 static void delete_from_jump_chain	PROTO((rtx));
 static int delete_labelref_insn		PROTO((rtx, rtx, int));
-static void mark_modified_reg		PROTO((rtx, rtx));
+static void mark_modified_reg		PROTO((rtx, rtx, void *));
 static void redirect_tablejump		PROTO((rtx, rtx));
 static void jump_optimize_1		PROTO ((rtx, int, int, int, int));
 #if ! defined(HAVE_cc0) && ! defined(HAVE_conditional_arithmetic)
@@ -5091,9 +5091,10 @@ static int modified_mem;
    branch and the second branch.  It marks any changed registers.  */
 
 static void
-mark_modified_reg (dest, x)
+mark_modified_reg (dest, x, data)
      rtx dest;
      rtx x ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   int regno, i;
 
@@ -5205,7 +5206,7 @@ thread_jumps (f, max_reg, flag_before_loop)
 		      modified_regs[i] = 1;
 		}
 
-	      note_stores (PATTERN (b2), mark_modified_reg);
+	      note_stores (PATTERN (b2), mark_modified_reg, NULL);
 	    }
 
 	  /* Check the next candidate branch insn from the label

@@ -328,7 +328,7 @@ static void verify_wide_reg		PROTO((int, rtx, rtx));
 static void verify_local_live_at_start	PROTO((regset, basic_block));
 static int set_noop_p			PROTO((rtx));
 static int noop_move_p			PROTO((rtx));
-static void notice_stack_pointer_modification PROTO ((rtx, rtx));
+static void notice_stack_pointer_modification PROTO ((rtx, rtx, void *));
 static void record_volatile_insns	PROTO((rtx));
 static void mark_reg			PROTO((regset, rtx));
 static void mark_regs_live_at_end	PROTO((regset));
@@ -361,7 +361,6 @@ static void add_pred_succ		PROTO ((int, int, int_list_ptr *,
 static void count_reg_sets_1		PROTO ((rtx));
 static void count_reg_sets		PROTO ((rtx));
 static void count_reg_references	PROTO ((rtx));
-static void notice_stack_pointer_modification PROTO ((rtx, rtx));
 static void invalidate_mems_from_autoinc	PROTO ((rtx));
 static void remove_edge			PROTO ((edge));
 static void remove_fake_successors	PROTO ((basic_block));
@@ -2694,9 +2693,10 @@ noop_move_p (insn)
 }
 
 static void
-notice_stack_pointer_modification (x, pat)
+notice_stack_pointer_modification (x, pat, data)
      rtx x;
      rtx pat ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   if (x == stack_pointer_rtx
       /* The stack pointer is only modified indirectly as the result
@@ -2759,7 +2759,9 @@ record_volatile_insns (f)
       /* Check if insn modifies the stack pointer.  */
       if ( current_function_sp_is_unchanging
 	   && GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	note_stores (PATTERN (insn), notice_stack_pointer_modification);
+	note_stores (PATTERN (insn),
+		     notice_stack_pointer_modification,
+		     NULL);
     }
 }
 
