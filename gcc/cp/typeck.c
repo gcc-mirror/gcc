@@ -2162,7 +2162,7 @@ build_x_function_call (function, params, decl)
 	  decl = convert_pointer_to (TREE_TYPE (ctypeptr), decl);
 	}
       else
-	decl = build_c_cast (ctypeptr, decl);
+	decl = build_c_cast (ctypeptr, decl, 0);
       params = tree_cons (NULL_TREE, decl, params);
     }
 
@@ -2370,8 +2370,6 @@ build_function_call_real (function, params, require_complete, flags)
 	     function, coerced_params, NULL_TREE);
 
     TREE_SIDE_EFFECTS (result) = 1;
-    /* Remove this sometime. */
-    TREE_RAISES (result) |= !! TYPE_RAISES_EXCEPTIONS (fntype);
     if (! require_complete)
       return result;
     if (value_type == void_type_node)
@@ -2427,7 +2425,6 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
   register tree typetail, valtail;
   register tree result = NULL_TREE;
   char *called_thing;
-  int maybe_raises = 0;
   int i = 0;
 
   if (! flag_elide_constructors)
@@ -2541,8 +2538,6 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
       if (val == error_mark_node)
 	continue;
 
-      maybe_raises |= TREE_RAISES (val);
-
       if (type != 0)
 	{
 	  /* Formal parm type is specified by a function prototype.  */
@@ -2648,7 +2643,6 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 		    parmval = default_conversion (parmval);
 #endif
 		}
-	      maybe_raises |= TREE_RAISES (parmval);
 
 	      if (flag_gc
 		  && type_needs_gc_entry (TREE_TYPE (parmval))
@@ -2676,8 +2670,6 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	  return error_mark_list;
 	}
     }
-  if (result)
-    TREE_RAISES (result) = maybe_raises;
 
   return nreverse (result);
 }
@@ -2733,14 +2725,13 @@ build_binary_op (code, arg1, arg2, convert_p)
       type1 = TREE_TYPE (args[0]);
       type2 = TREE_TYPE (args[1]);
 
-      if (IS_AGGR_TYPE_2 (type1, type2) && ! TYPE_PTRMEMFUNC_P (type1))
+      if (IS_AGGR_TYPE_2 (type1, type2))
 	{
 	  /* Try to convert this to something reasonable.  */
 	  if (! build_default_binary_type_conversion(code, &args[0], &args[1]))
 	    return error_mark_node;
 	}
-      else if ((IS_AGGR_TYPE (type1) && ! TYPE_PTRMEMFUNC_P (type1))
-	       || (IS_AGGR_TYPE (type2) && ! TYPE_PTRMEMFUNC_P (type2)))
+      else if (IS_AGGR_TYPE (type1) || IS_AGGR_TYPE (type2))
 	{
 	  int convert_index = IS_AGGR_TYPE (type2);
 	  /* Avoid being tripped up by things like (ARG1 != 0).  */
@@ -3735,7 +3726,7 @@ build_component_addr (arg, argtype, msg)
     }
   else
     /* This conversion is harmless.  */
-    rval = convert_force (argtype, rval);
+    rval = convert_force (argtype, rval, 0);
 
   if (! integer_zerop (DECL_FIELD_BITPOS (field)))
     {
@@ -4871,27 +4862,31 @@ build_compound_expr (list)
 tree build_static_cast (type, expr)
    tree type, expr;
 {
-  return build_c_cast (type, expr);
+  return build_c_cast (type, expr, 0);
 }
 
 tree build_reinterpret_cast (type, expr)
    tree type, expr;
 {
-  return build_c_cast (type, expr);
+  return build_c_cast (type, expr, 0);
 }
 
 tree build_const_cast (type, expr)
    tree type, expr;
 {
-  return build_c_cast (type, expr);
+  return build_c_cast (type, expr, 0);
 }
 
-/* Build an expression representing a cast to type TYPE of expression EXPR.  */
+/* Build an expression representing a cast to type TYPE of expression EXPR.
+
+   ALLOW_NONCONVERTING is true if we should allow non-converting constructors
+   when doing the cast.  */
 
 tree
-build_c_cast (type, expr)
+build_c_cast (type, expr, allow_nonconverting)
      register tree type;
      tree expr;
+     int allow_nonconverting;
 {
   register tree value = expr;
 
@@ -5014,7 +5009,7 @@ build_c_cast (type, expr)
 	value = decl_constant_value (value);
 
       ovalue = value;
-      value = convert_force (type, value);
+      value = convert_force (type, value, allow_nonconverting?CONV_NONCONVERTING:0);
 
       /* Ignore any integer overflow caused by the cast.  */
       if (TREE_CODE (value) == INTEGER_CST)
@@ -5848,7 +5843,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	{
 	  newrhs = convert_for_assignment (olhstype, newrhs, "assignment",
 					   NULL_TREE, 0);
-	  newrhs = convert_force (lhstype, newrhs);
+	  newrhs = convert_force (lhstype, newrhs, 0);
 	}
       else
 	newrhs = convert_for_assignment (lhstype, newrhs, "assignment",
@@ -6121,7 +6116,7 @@ build_ptrmemfunc (type, pfn, force)
   /* Handle null pointer to member function conversions. */
   if (integer_zerop (pfn))
     {
-      pfn = build_c_cast (type, integer_zero_node);
+      pfn = build_c_cast (type, integer_zero_node, 0);
       u = build_nt (CONSTRUCTOR, 0, tree_cons (pfn_identifier, pfn, NULL_TREE));
       u = build_nt (CONSTRUCTOR, 0, tree_cons (NULL_TREE, integer_zero_node,
 					       tree_cons (NULL_TREE, integer_zero_node,
@@ -6299,11 +6294,11 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
     }
   /* Conversions involving enums.  */
   else if ((codel == ENUMERAL_TYPE
-	    && (coder == ENUMERAL_TYPE || coder == INTEGER_TYPE || coder == REAL_TYPE))
+	    && (INTEGRAL_CODE_P (coder) || coder == REAL_TYPE))
 	   || (coder == ENUMERAL_TYPE
-	       && (codel == ENUMERAL_TYPE || codel == INTEGER_TYPE || codel == REAL_TYPE)))
+	       && (INTEGRAL_CODE_P (codel) || codel == REAL_TYPE)))
     {
-      return convert (type, rhs);
+      return cp_convert (type, rhs, CONV_IMPLICIT, 0);
     }
   /* Conversions among pointers */
   else if (codel == POINTER_TYPE
@@ -7065,7 +7060,7 @@ c_expand_return (retval)
       if (TREE_CODE (retval) == WITH_CLEANUP_EXPR
 	  && TREE_CODE (TREE_OPERAND (retval, 0)) == TARGET_EXPR)
 	retval = TREE_OPERAND (retval, 0);
-      expand_aggr_init (result, retval, 0);
+      expand_aggr_init (result, retval, 0, LOOKUP_ONLYCONVERTING);
       expand_cleanups_to (NULL_TREE);
       DECL_INITIAL (result) = NULL_TREE;
       retval = 0;

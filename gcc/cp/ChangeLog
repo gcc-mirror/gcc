@@ -1,3 +1,80 @@
+Thu Dec 15 16:32:12 1994  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (check_classfn): Use decls_match to check if this has
+	already been declared, as the DECL_ASSEMBLER_NAME may have been
+	changed via asm("new_name").
+	* decl.c (decls_match): Make public.
+
+Thu Dec 15 15:17:55 1994  Mike Stump  <mrs@cygnus.com>
+
+	* *.[chy] (expand_aggr_init) Add fourth argument to handle
+	distinction between = init and (init) style of initializations.
+	* *.[chy] (finish_decl): Add fifth argument to to handle
+	distinction between = init and (init) style of initializations.
+
+Tue Dec 13 19:16:05 1994  Mike Stump  <mrs@cygnus.com>
+
+	Fix some random `explicit' bugs.
+
+	* cvt.c (convert_to_reference): Add third parameter to
+	convert_force.
+	(convert_force): Ditto.
+	* call.c (build_method_call): Ditto.
+	* decl2.c (setup_vtbl_ptr): Ditto.
+	* init.c (expand_virtual_init): Ditto.
+	(build_member_call): Ditto.
+	(build_delete): Ditto.
+	(build_vbase_delete): Ditto.
+	* typeck.c (build_component_addr): Ditto.
+	(build_c_cast): Ditto.
+	(build_modify_expr): Ditto.
+	* cp-tree.h (CONV_NONCONVERTING): Ditto. Add so that we can
+	distinguish the context in which the conversion appears.  Add thrid
+	argument to build_c_cast.
+	* cvt.c (cp_convert): Pass whether or not we want to consider
+	non-converting constructors down to build_method_call.
+	* decl2.c (reparse_absdcl_as_casts): Add third argument to
+	build_c_cast.
+	* gc.c (build_m_desc): Ditto.
+	* init.c (build_new): Ditto.
+	* parse.y (expr_no_commas): Ditto.
+	(primary): Ditto.
+	* typeck.c (build_x_function_call): Ditto.
+	(build_static_cast): Ditto.
+	(build_reinterpret_cast): Ditto.
+	(build_const_cast): Ditto.
+	(build_c_cast): Ditto.
+	(build_ptrmemfunc): Ditto.
+	* typeck2.c (build_functional_cast): Ditto.
+	* init.c (expand_aggr_init): Added LOOKUP_ONLYCONVERTING to
+	expand_aggr_init_1 as inits are converted to the destination type.
+
+Tue Dec 13 16:18:57 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* Make-lang.in (cc1plus): Depends on c-pragma.o.
+
+	* Makefile.in (OBJ{DEP,}S): Add ../c-pragma.o.
+
+	* lex.c (check_newline): If the #pragma is not recognized by g++,
+	try machine-specific ones too.
+	(handle_sysv_pragma): Copied from c-lex.c.
+
+Mon Dec 12 23:53:06 1994  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_throw): Fix Dec 6th change, build_new likes a
+	reference better.
+
+Mon Dec 12 18:01:00 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (build_binary_op): Lose checks on TYPE_PTRMEMFUNC_P with
+	IS_AGGR_TYPE, since now they will not both be set on the same type.
+
+	* pt.c (do_pending_expansions): Don't clear TREE_PUBLIC on
+	instantiations controlled by -fexternal-templates.
+
+	* decl.c (duplicate_decls): Don't complain about different values of
+	__attribute__ ((const)) and ((noreturn)).
+
 Fri Dec  9 18:17:37 1994  Doug Evans  <dje@cygnus.com>
 
 	* Makefile.in (BISONFLAGS): Delete --yacc.
@@ -8,6 +85,148 @@ Fri Dec  2 10:44:36 1994  Mike Stump  (mrs@wombat.gnu.ai.mit.edu)
 
 	* Makefile.in (BISONFLAGS): Add --yacc so that output winds up in
 	y.tab.c.
+
+Thu Dec  8 17:39:46 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (finish_decl): Don't call obscure_complex_init for decls
+	of indeterminate size.
+
+Wed Dec  7 16:49:22 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (obscure_complex_init): Function to tweak the decl to
+	prevent expand_decl from tring to initialize it.
+	(finish_decl): Use it rather than writing the same code in three
+	different places.
+
+	* parse.y (bad_parm): Stop trying to support parms without types.
+
+Wed Dec  7 12:06:56 1994  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (grokfield): Make asm specs on static member functions
+	work.
+
+Tue Dec  6 15:43:20 1994  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_throw): Make a copy of the thrown object.
+
+Tue Dec  6 14:16:34 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* parse.y: : has lower precedence than =.
+
+Tue Dec  6 12:46:17 1994  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (pushdecl): Use DECL_NAME of VAR_DECLs to avoid namespace
+	manglings.
+	(grokvardecl): Add namespace into variable name.
+
+Tue Dec  6 11:26:55 1994  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (current_namespace_id): New routine to transform a simple
+	name into a name in a namespace.
+	* decl.c (grokdeclarator): Use it.
+	* decl2.c (get_namespace_id): Find the name of the current
+	namespace.
+	(push_namespace, pop_namespace): Complete out missing
+	functionality.
+
+Mon Dec  5 17:11:51 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* class.c (finish_struct): Don't use LONG_LONG_TYPE_SIZE, as it may
+	not be defined.  Fix warning message for enums and restore warning
+	for non-enums.
+
+	* decl2.c (push_namespace): Dummy function.
+	(pop_namespace): Ditto.
+	(do_namespace_alias): Ditto.
+	(do_using_decl): Ditto.
+	(do_using_directive): Ditto.
+
+	* parse.y: New token NSNAME for namespace names.
+	(extdef): Add namespace, using definitions.
+	(using_decl): New rule for using declarations.
+	(any_id): New rule for identifiers with any degree of scoping.
+	(identifier): Add NSNAME.
+	(notype_identifier): Ditto.
+	(component_decl): Add using_decl.
+	(nested_name_specifier): Add NSNAME SCOPE.
+
+	* typeck.c (convert_for_assignment): Handle conversions between
+	enums and bool.
+
+	* decl.c (duplicate_decls): Only propagate DECL_MAIN_VARIANT on
+	FUNCTION_DECLs.
+
+Mon Dec  5 13:03:16 1994  Mike Stump  <mrs@cygnus.com>
+
+	* class.c (finish_struct): Give an error if one tries to declare a
+	bit-field's size greater than a long long, as the backend will dump.
+	It is not an error to declare an enum bit-field greater than its
+	precision.  Warn if an enum bit-field is too small to hold all
+	its values.
+
+Mon Dec  5 11:41:50 1994  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (convert_for_assignment): Use cp_convert instead of
+	convert so that we don't get static casts.
+
+Sun Dec  4 11:59:01 1994  Mike Stump  <mrs@cygnus.com>
+
+	* cvt.c (cp_convert): Don't complain about int->enum conversion if
+	we are doing static casts.
+
+Fri Dec  2 18:32:41 1994  Mike Stump  <mrs@cygnus.com>
+
+	* error.c (dump_expr): Do something more intelligent with SAVE_EXPRs
+	when dumping expressions in error messages.
+
+Fri Dec  2 17:04:27 1994  Mike Stump  <mrs@cygnus.com>
+
+	* gc.c (build_dynamic_cast): Change interface to libg++, ensure that
+        the return type is the right type, and make references work.
+
+Fri Dec  2 16:36:43 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (poplevel): Don't be confused by function-scope
+	declarations of non-nested functions.
+	(duplicate_decls): Propagate DECL_MAIN_VARIANT.
+	(pushdecl): Use duplicate_decls to copy info from old decl into new
+	function-scope one rather than doing it here.
+
+	* decl2.c (mark_inline_for_output): Deal with the DECL_MAIN_VARIANT
+	of this decl, in case this is a function-scope declaration.
+
+	* decl.c (finish_enum): Make sure that the type has the right
+	precision when we call fixup_*_type.
+
+Tue Nov 29 19:12:07 1994  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* cvt.c (build_up_reference): Strip superfluous NOP_EXPRs; we do
+	want to build up references to rvalues if possible.
+	(cp_convert): Stick on a NOP_EXPR when converting to the same type.
+
+Tue Nov 29 11:28:59 1994  Mike Stump  <mrs@cygnus.com>
+
+	* parse.y (maybe_raises): Handle throw ().
+	* parse.y (ansi_raise_identifier): grok type-ids in exception
+	specifications.
+	* tree.c (build_exception_variant): Use list compare to check if
+	two exception specifications match.
+	* decl.c (duplicate_decls, bad_specifiers): Enhance wording on error
+	messages.
+	* call.c (build_method_call): Remove TREE_RAISES.
+	* cvt.c (convert_to_aggr): Ditto.
+	* typeck.c (build_function_call_real, convert_arguments): Ditto.
+	* init.c (expand_aggr_init_1): Ditto.
+
+Tue Nov 29 09:50:39 1994  Mike Stump  <mrs@cygnus.com>
+
+	* except.c: Add support for m68k and mips exception handling
+	support.
+
+Tue Nov 29 08:48:33 1994  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_end_all_catch): Throw into outer context, if we
+	fall off end of catch handlers.
 
 Mon Nov 28 16:44:41 1994  Mike Stump  <mrs@cygnus.com>
 
@@ -527,7 +746,7 @@ Thu Sep 29 13:08:50 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* decl.c (finish_decl): Also end temporary allocation if the decl in
 	question has a type of error_mark_node.
 
-Wed Sep 28 21:45:00 1994  Mike Stump  (mrs@cygnus.com)
+Wed Sep 28 21:45:00 1994  Mike Stump  <mrs@cygnus.com>
 
 	* typeck.c (build_modify_expr): When optimizing ?: on lhs, make sure
 	that if the ?: was a reference type, that the subparts will be also.
@@ -804,7 +1023,7 @@ Wed Aug 24 11:11:50 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* error.c (cp_line_of): Use CLASSTYPE_SOURCE_LINE for aggregates.
 	* class.c (finish_struct): Set CLASSTYPE_SOURCE_LINE.
 
-Tue Aug 23 09:28:35 1994  Mike Stump  (mrs@cygnus.com)
+Tue Aug 23 09:28:35 1994  Mike Stump  <mrs@cygnus.com>
 
 	* error.c (dump_decl): Improve wording, so that error messages
 	dont't read template<, class foo>...
@@ -839,7 +1058,7 @@ Fri Aug 19 14:04:47 1994  Kung Hsu  (kung@mexican.cygnus.com)
 	* method.c (build_overload_name): ditto.
 	* method.c (build_overload_identifier): ditto.
 
-Thu Aug 18 16:24:43 1994  Mike Stump  (mrs@cygnus.com)
+Thu Aug 18 16:24:43 1994  Mike Stump  <mrs@cygnus.com>
 
 	* error.c (dump_decl): Handle NULL args.
 
@@ -853,7 +1072,7 @@ Wed Sep 14 10:17:27 1994  Michael I Bushnell  <mib@churchy.gnu.ai.mit.edu>
 	* g++.c: Include <sys/errno.h> in case `errno' is a macro
 	as permitted by ANSI C.
 
-Thu Aug 18 12:48:09 1994  Mike Stump  (mrs@cygnus.com)
+Thu Aug 18 12:48:09 1994  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (finish_struct): Move setting of CLASSTYPE_INTERFACE and
 	CLASSTYPE_VTABLE_NEEDS_WRITING up to left_curly time.
@@ -1061,7 +1280,7 @@ Fri Aug  5 14:20:16 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	(finish_function): Use DECL_DEFER_OUTPUT to decide which inlines to
 	mark for later consideration, rather than DECL_FUNCTION_MEMBER_P.
 
-Fri Aug  5 01:12:20 1994  Mike Stump  (mrs@cygnus.com)
+Fri Aug  5 01:12:20 1994  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (get_class_offset_1, get_class_offset): New routine to
 	find the offset of the class where a virtual function is defined,
@@ -1207,7 +1426,7 @@ Mon Jul 11 18:37:20 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* decl.c (grok_reference_init): Always save the initializer of a
 	reference.
 
-Fri Jul  8 17:41:46 1994  Mike Stump  (mrs@cygnus.com)
+Fri Jul  8 17:41:46 1994  Mike Stump  <mrs@cygnus.com>
 
 	* decl.c (cplus_expand_expr_stmt): Wrap statement expressions inside
 	CLEANUP_POINT_EXPRs so that the stack slots can be reused.
@@ -1263,7 +1482,7 @@ Thu Jul  7 13:39:37 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	(finish_vtable_vardecl): Call import_export_template before
 	import_export_vtable.
 
-Wed Jul  6 20:25:48 1994  Mike Stump  (mrs@cygnus.com)
+Wed Jul  6 20:25:48 1994  Mike Stump  <mrs@cygnus.com>
 
 	* except.c (init_exception_processing): Setup interim_eh_hook to
 	call lang_interim_eh. 
@@ -1360,7 +1579,7 @@ Fri Jun 24 16:49:41 1994  Gerald Baumgartner  (gb@cs.purdue.edu)
 	* decl.c (grokdeclarator): If we are grokking an opaque typedef
 	in a signature, don't complain about it begin static.
 
-Wed Jun 29 16:44:45 1994  Mike Stump  (mrs@cygnus.com)
+Wed Jun 29 16:44:45 1994  Mike Stump  <mrs@cygnus.com>
 
 	Fixes a problem of the this pointer being wrong in virtual calls to
 	methods that are not overridden in more derived classes.
@@ -1493,7 +1712,7 @@ Wed Jun 15 19:34:54 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* typeck2.c (process_init_constructor): Don't treat empty_init_node
 	specially.
 
-Wed Jun 15 19:05:25 1994  Mike Stump  (mrs@cygnus.com)
+Wed Jun 15 19:05:25 1994  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (override_one_vtable): Don't forget to merge in an old
 	overrider when we wanted to reuse a vtable, but couldn't.
@@ -1576,7 +1795,7 @@ Thu Jun  9 19:04:59 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	(finish_file): Output all pending inlines if
 	flag_keep_inline_functions.
 
-Wed Jun  8 20:48:02 1994  Mike Stump  (mrs@cygnus.com)
+Wed Jun  8 20:48:02 1994  Mike Stump  <mrs@cygnus.com>
 
 	* tree.c (layout_vbasetypes): Align virtual base classes inside
 	complete objects, so that we don't core dump on machines such as
@@ -1662,7 +1881,7 @@ Wed Jun  1 18:57:35 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* typeck.c (convert_arguments): Make sure type is not NULL before
 	checking its TREE_CODE.
 
-Wed Jun  1 17:40:39 1994  Mike Stump  (mrs@cygnus.com)
+Wed Jun  1 17:40:39 1994  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (get_derived_offset): New routine.
 	* class.c (finish_base_struct): Make sure we set BINFO_VTABLE and
@@ -1684,7 +1903,7 @@ Wed Jun  1 11:11:15 1994  Brendan Kehoe  (brendan@lisa.cygnus.com)
 	* decl.c (grokdeclarator): Make sure we have a DNAME set before we
 	try to use it in an error.
 
-Wed Jun  1 09:48:49 1994  Mike Stump  (mrs@cygnus.com)
+Wed Jun  1 09:48:49 1994  Mike Stump  <mrs@cygnus.com>
 
 	* typeck.c (convert_arguments, convert_for_initialization): Don't
 	strip NOP_EXPRs, when we are converting to a reference.
@@ -1780,7 +1999,7 @@ Fri May 27 13:57:40 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* typeck.c (build_binary_op_nodefault): Division by constant zero is
 	an error.
 
-Fri May 27 13:50:15 1994  Mike Stump  (mrs@cygnus.com)
+Fri May 27 13:50:15 1994  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (override_one_vtable): Don't modify things we don't own.
 
@@ -2049,7 +2268,7 @@ Fri May 13 16:45:07 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* class.c (finish_struct_bits): Set TYPE_HAS_INT_CONVERSION if it
 	has a conversion to enum or bool, too.
 
-Fri May 13 16:31:27 1994  Mike Stump  (mrs@cygnus.com)
+Fri May 13 16:31:27 1994  Mike Stump  <mrs@cygnus.com>
 
 	* method.c (emit_thunk):  Make declaration for
 	current_call_is_indirect local (needed for hppa).
@@ -2059,7 +2278,7 @@ Fri May 13 16:16:37 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* pt.c (uses_template_parms): Grok BOOLEAN_TYPE.
 	(tsubst): Ditto.
 
-Fri May 13 16:23:32 1994  Mike Stump  (mrs@cygnus.com)
+Fri May 13 16:23:32 1994  Mike Stump  <mrs@cygnus.com>
 
 	* pt.c (tsubst): If there is already a function for this expansion,
 	use it.
@@ -2074,7 +2293,7 @@ Fri May 13 10:30:42 1994  Brendan Kehoe  (brendan@lisa.cygnus.com)
 	* cp-tree.h (build_static_cast, build_reinterpret_cast,
 	build_const_cast): Add declarations.
 
-Fri May 13 09:50:31 1994  Mike Stump  (mrs@cygnus.com)
+Fri May 13 09:50:31 1994  Mike Stump  <mrs@cygnus.com>
 
 	* search.c (expand_indirect_vtbls_init): Fix breakage from Apr 27
 	fix.  We now try get_binfo, and if that doesn't find what we want,
@@ -2095,7 +2314,7 @@ Fri May 13 01:43:18 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	(build_default_unary_type_conversion): Convert arg of ! to bool.
 	(type_promotes_to): bool promotes to int.
 
-Fri May 13 01:43:18 1994  Mike Stump  (mrs@cygnus.com)
+Fri May 13 01:43:18 1994  Mike Stump  <mrs@cygnus.com>
 
 	Implement the new builtin `bool' type.
 	* typeck.c (build_binary_op_nodefault): Convert args of && and || to
@@ -2117,7 +2336,7 @@ Thu May 12 19:13:54 1994  Richard Earnshaw  (rwe11@cl.cam.ac.uk)
 
 	* g++.c: Use #ifdef for __MSDOS__, not #if.
 
-Thu May 12 18:05:18 1994  Mike Stump  (mrs@cygnus.com)
+Thu May 12 18:05:18 1994  Mike Stump  <mrs@cygnus.com>
 
 	* decl2.c (lang_f_options): Handle -fshort-temps.  -fshort-temps
 	gives old behavior , and destroys temporaries earlier.  Default
@@ -2188,7 +2407,7 @@ Tue May 10 11:52:04 1994  Brendan Kehoe  (brendan@lisa.cygnus.com)
 	* init.c (emit_base_init): Check if there's a DECL_NAME on the
 	member before trying to do an initialization for it.
 
-Tue May 10 11:34:37 1994  Mike Stump  (mrs@cygnus.com)
+Tue May 10 11:34:37 1994  Mike Stump  <mrs@cygnus.com>
 
 	* except.c: Don't do anything useful when cross compiling.
 
@@ -2225,7 +2444,7 @@ Sun May  8 01:29:13 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* decl.c (poplevel): Always call poplevel recursively if we're
 	dealing with a temporary binding level.
 
-Sat May  7 10:52:28 1994  Mike Stump  (mrs@cygnus.com)
+Sat May  7 10:52:28 1994  Mike Stump  <mrs@cygnus.com>
 
 	* decl.c (finish_decl): Make sure we run cleanups for initial values
 	of decls.  Cures memory leak.
@@ -2297,7 +2516,7 @@ Fri May  6 03:53:23 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* cp/decl.c (finish_decl): Setting asmspec_tree should not
 	zero out the old RTL.
 
-Fri May  6 01:25:38 1994  Mike Stump  (mrs@cygnus.com)
+Fri May  6 01:25:38 1994  Mike Stump  <mrs@cygnus.com>
 
 	Add alpha exception handling support to the compiler.
 	Quick and dirty backend in except.c.
@@ -2556,7 +2775,7 @@ Thu Apr 28 02:12:08 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* typeck2.c (build_functional_cast): Don't look for a function call
 	interpretation.
 
-Thu Apr 28 15:19:46 1994  Mike Stump  (mrs@cygnus.com)
+Thu Apr 28 15:19:46 1994  Mike Stump  <mrs@cygnus.com>
 
 	* cp-tree.h: disable use of backend EH.
 
@@ -2585,7 +2804,7 @@ Wed Apr 27 18:10:12 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* call.c (build_overload_call_real): Don't take the single-function
 	shortcut if we're dealing with an overloaded operator.
 
-Wed Apr 27 17:35:37 1994  Mike Stump  (mrs@cygnus.com)
+Wed Apr 27 17:35:37 1994  Mike Stump  <mrs@cygnus.com>
 
 	* search.c (get_base_distance): Search the virtual base class
 	binfos, incase someone wants to convert to a real virtual base
@@ -2600,7 +2819,7 @@ Wed Apr 27 15:36:49 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* typeck.c (build_unary_op): References are too lvalues.
 
-Wed Apr 27 13:58:05 1994  Mike Stump  (mrs@cygnus.com)
+Wed Apr 27 13:58:05 1994  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (override_one_vtable): We have to prepare_fresh_vtable
 	before we modify it, not after, also, we cannot reuse an old vtable,
@@ -2642,7 +2861,7 @@ Wed Apr 27 01:17:08 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* decl.c (grokdeclarator): Don't bash references to arrays into
 	references to pointers in function parms.  Use type_promotes_to.
 
-Tue Apr 26 23:44:36 1994  Mike Stump  (mrs@cygnus.com)
+Tue Apr 26 23:44:36 1994  Mike Stump  <mrs@cygnus.com>
 
 	Finish off Apr 19th work.
 
@@ -2885,7 +3104,7 @@ Wed Apr 20 16:51:06 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* lex.c (process_next_inline): Don't muck with DECL_INLINE.
 	(do_pending_inlines): Ditto.
 
-Tue Apr 19 22:25:41 1994  Mike Stump  (mrs@cygnus.com)
+Tue Apr 19 22:25:41 1994  Mike Stump  <mrs@cygnus.com>
 
 	Reimplement vtable building, and most vtable pointer setting.
 	Allows for earier maintenance, easier understandability, and most
@@ -3305,7 +3524,7 @@ Thu Apr  7 17:47:53 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* decl.c (lookup_name): When called from the lexer, look at
 	got_scope and looking_at_typename; otherwise don't.
 
-Thu Apr  7 22:05:47 1994  Mike Stump  (mrs@cygnus.com)
+Thu Apr  7 22:05:47 1994  Mike Stump  <mrs@cygnus.com>
 
 	31th Cygnus<->FSF merge.
 
@@ -3322,7 +3541,7 @@ Thu Apr  7 17:47:53 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* typeck.c (compparms): Also allow t1 to be ... if strict == 0.
 
-Thu Apr  7 16:17:50 1994  Mike Stump  (mrs@cygnus.com)
+Thu Apr  7 16:17:50 1994  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (build_vtable_entry): Fix breakage introduced Apr 5
 	17:48:41.
@@ -3403,7 +3622,7 @@ Tue Apr  5 17:48:41 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 	instead.  (The rationale is that these optimizations both break binary
 	compatibility, but should become the default in a future release.)
 
-Wed Apr  6 10:53:56 1994  Mike Stump  (mrs@cygnus.com)
+Wed Apr  6 10:53:56 1994  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (modify_vtable_entries): Never reset the DECL_CONTEXT
 	of a fndecl, as we might not be from that vfield.
@@ -3468,7 +3687,7 @@ Sat Jan 23 23:23:26 1994  Stephen R. van den Berg  (berg@pool.informatik.rwth-aa
 	* decl.c (init_decl_processing): Declare __builtin_return_address
 	and __builtin_frame_address for C++ as well.
 
-Thu Mar 31 12:35:49 1994  Mike Stump  (mrs@cygnus.com)
+Thu Mar 31 12:35:49 1994  Mike Stump  <mrs@cygnus.com>
 
 	* typeck2.c (store_init_value): Integral constant variables are
 	always constant, even when doing -fpic.
@@ -3478,7 +3697,7 @@ Sat Jan 23 23:23:26 1994  Stephen R. van den Berg  (berg@pool.informatik.rwth-aa
 	* decl.c (redeclaration_error_message): Pass the types to
 	comptypes.
 
-Wed Mar 30 21:29:25 1994  Mike Stump  (mrs@cygnus.com)
+Wed Mar 30 21:29:25 1994  Mike Stump  <mrs@cygnus.com>
 
 	Cures incorrect errors about pure virtuals in a class, when they
 	have been overridden in a derived class.
@@ -3514,7 +3733,7 @@ Wed Mar 30 14:10:04 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	(pushdecl): Use DECL_FUNCTION_MEMBER_P to decide whether or not
 	a function is a member.
 
-Wed Mar 30 14:20:50 1994  Mike Stump  (mrs@cygnus.com)
+Wed Mar 30 14:20:50 1994  Mike Stump  <mrs@cygnus.com>
 
 	Cures calling a more base base class function, when a more derived
 	base class member should be called in some MI situations.
@@ -3642,7 +3861,7 @@ Thu Mar 24 23:18:19 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* call.c (build_method_call): Preserve const & volatile on
 	`this'.
 
-Thu Mar 24 16:21:52 1994  Mike Stump  (mrs@cygnus.com)
+Thu Mar 24 16:21:52 1994  Mike Stump  <mrs@cygnus.com>
 
 	* init.c (build_new, build_vec_delete): Use global new and delete
 	for arrays. 
@@ -3661,11 +3880,11 @@ Wed Mar 23 17:45:37 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* init.c (build_new): Handle array typedefs properly.
 
-Wed Mar 23 18:23:33 1994  Mike Stump  (mrs@cygnus.com)
+Wed Mar 23 18:23:33 1994  Mike Stump  <mrs@cygnus.com>
 
 	30th Cygnus<->FSF merge.
 
-Wed Mar 23 00:46:24 1994  Mike Stump  (mrs@cygnus.com)
+Wed Mar 23 00:46:24 1994  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (modify_vtable_entries): Avoid running off the end of the
 	virtuals list when processing a virtual destructor.
@@ -3681,7 +3900,7 @@ Tue Mar 22 23:49:41 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* typeck.c (convert_for_assignment): Don't pedwarn about
 	converting function pointer to void *.
 
-Tue Mar 22 22:23:19 1994  Mike Stump  (mrs@cygnus.com)
+Tue Mar 22 22:23:19 1994  Mike Stump  <mrs@cygnus.com>
 
 	Major revamp of pointer to member functions.  Cures major
 	nonfunctionality when used in casts, and MI situations.
@@ -3702,7 +3921,7 @@ Tue Mar 22 22:23:19 1994  Mike Stump  (mrs@cygnus.com)
 	* typeck.c (build_ptrmemfunc): Revamp to handle casting better, also
 	get vtable pointer out of right subobject.
 
-Tue Mar 22 17:56:48 1994  Mike Stump  (mrs@cygnus.com)
+Tue Mar 22 17:56:48 1994  Mike Stump  <mrs@cygnus.com>
 
 	* search.c (get_binfo): Return NULL instead of aborting, when
 	passed a UNION_TYPE.
@@ -3839,7 +4058,7 @@ Thu Mar 17 17:30:01 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	(finish_decl_parsing): New function to deal with parse nodes for
 	code like `int (*a);'.  See the difference?
 
-Thu Mar 17 12:16:10 1994  Mike Stump  (mrs@cygnus.com)
+Thu Mar 17 12:16:10 1994  Mike Stump  <mrs@cygnus.com>
 
 	These changes break binary compatibility in code with classes
 	that use virtual bases.
@@ -3866,7 +4085,7 @@ Wed Mar 16 17:43:07 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* parse.y (direct_notype_declarator): Add PTYPENAME rule, remove
 	all of the scoped PTYPENAME rules.
 
-Wed Mar 16 16:39:02 1994  Mike Stump  (mrs@cygnus.com)
+Wed Mar 16 16:39:02 1994  Mike Stump  <mrs@cygnus.com>
 
 	* init.c (build_offset_ref): The value of A::typedef_name is
 	always the TYPE_DECL, and never an error.
@@ -3890,7 +4109,7 @@ Tue Mar 15 15:33:31 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* error.c (dump_expr): Support member functions (which show up as
 	OFFSET_REFs).
 
-Mon Mar 14 16:24:36 1994  Mike Stump  (mrs@cygnus.com)
+Mon Mar 14 16:24:36 1994  Mike Stump  <mrs@cygnus.com>
 
 	* init.c (build_new): Set the return type of multidimensional
 	news correctly.
@@ -3950,7 +4169,7 @@ Fri Mar  4 18:22:39 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	(direct_abstract_declarator): Replace `LEFT_RIGHT type_quals' rule
 	with `fcast_or_absdcl type_quals' rule.
 
-Fri Mar  4 16:18:03 1994  Mike Stump  (mrs@cygnus.com)
+Fri Mar  4 16:18:03 1994  Mike Stump  <mrs@cygnus.com>
 
 	* tree.c (lvalue_p): Improve OFFSET_REF handling, so that it
 	matches Section 5.5.
@@ -3960,7 +4179,7 @@ Fri Mar  4 14:01:59 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* error.c (dump_type_prefix): Don't print basetype twice for
 	pmfs.
 
-Fri Mar  4 13:24:33 1994  Mike Stump  (mrs@cygnus.com)
+Fri Mar  4 13:24:33 1994  Mike Stump  <mrs@cygnus.com>
 
 	* typeck.c (convert_arguments): Handle setHandler(A::handlerFn)
 	so that it is like setHandler(&A::handlerFn).  Cures an `invalid
@@ -3990,7 +4209,7 @@ Fri Mar  4 11:15:59 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	a decl.  Also move the IS_AGGR_TYPE check after the stripping of
 	REFERENCE_TYPE.
 
-Fri Mar  4 04:46:05 1994  Mike Stump  (mrs@cygnus.com)
+Fri Mar  4 04:46:05 1994  Mike Stump  <mrs@cygnus.com>
 
 	* call.c (build_method_call): Handle b->setHandler(A::handlerFn)
 	so that it is like b->setHandler(&A::handlerFn).  Cures an `invalid
@@ -4092,7 +4311,7 @@ Fri Feb 25 15:23:42 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* decl.c (start_function): Fix detection of function overloading.
 
-Thu Feb 24 22:26:19 1994  Mike Stump  (mrs@cygnus.com)
+Thu Feb 24 22:26:19 1994  Mike Stump  <mrs@cygnus.com>
 
 	* lex.c (check_newline): #pragma interface can take a string
 	argument, just like #pragma implementation.  #pragma implementation
@@ -4152,7 +4371,7 @@ Tue Feb 22 12:10:32 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* tree.c (lvalue_p): A COND_EXPR is an lvalue if both of the
 	options are.
 
-Mon Feb 21 19:59:40 1994  Mike Stump  (mrs@cygnus.com)
+Mon Feb 21 19:59:40 1994  Mike Stump  <mrs@cygnus.com>
 
 	* Makefile.in (mostlyclean): lex.c is a source file, don't
 	remove.
@@ -4313,21 +4532,21 @@ hu Jan 13 17:55:51 EST 1994 Gnanasekaran Swaminathan (gs4t@virginia.edu)
 	store_init_value fails, build and expand an INIT_EXPR.  If
 	store_init_value succeeds, call expand_decl_init.
 
-Fri Feb 11 02:49:23 1994  Mike Stump  (mrs@cygnus.com)
+Fri Feb 11 02:49:23 1994  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (build_vbase_path): Use complete_type_p instead of
 	resolves_to_fixed_type_p to determine if the virtual bases are in
 	their right place for the type of expr.  Cures problem of thinking a
 	virtual base class is one place, when it is in fact someplace else.
 
-Fri Feb 11 00:26:46 1994  Mike Stump  (mrs@cygnus.com)
+Fri Feb 11 00:26:46 1994  Mike Stump  <mrs@cygnus.com>
 
 	* init.c (resolve_offset_ref): Make sure we first convert to
 	intermediate type, if given, when dealing with members off `this'.
 	Solves an incorrrect `type `foo' is not a base type for type
 	`multiple'' when it is infact, a base type.
 
-Thu Feb 10 21:49:35 1994  Mike Stump  (mrs@cygnus.com)
+Thu Feb 10 21:49:35 1994  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (modify_other_vtable_entries): Use get_binfo, instead
 	of binfo_value.  Solves problem with compiler giving a `base class
@@ -4335,7 +4554,7 @@ Thu Feb 10 21:49:35 1994  Mike Stump  (mrs@cygnus.com)
 	herarchies, when a virtual function is first defied in a virtual
 	base class.
 
-Thu Feb 10 17:19:32 1994  Mike Stump  (mrs@cygnus.com)
+Thu Feb 10 17:19:32 1994  Mike Stump  <mrs@cygnus.com>
 
 	* class.c (build_vbase_path): Don't complain about ambiguous
 	intermediate conversion when converting down to a virtual base
@@ -4351,7 +4570,7 @@ Thu Feb 10 12:18:26 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* decl.c (grokdeclarator): Fix detection of virtual new/delete.
 
-Wed Feb  9 22:02:32 1994  Mike Stump  (mrs@cygnus.com)
+Wed Feb  9 22:02:32 1994  Mike Stump  <mrs@cygnus.com>
 
 	* search.c (build_mi_virtuals, add_mi_virtuals,
 	report_ambiguous_mi_virtuals): Removed unneeded code.
@@ -4535,7 +4754,7 @@ Fri Feb  4 14:21:00 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* decl.c (grokdeclarator): If friendp && virtualp, friendp = 0.
 
-Fri Feb  4 13:02:56 1994  Mike Stump  (mrs@cygnus.com)
+Fri Feb  4 13:02:56 1994  Mike Stump  <mrs@cygnus.com>
 
 	* lex.c (reinit_parse_for_method, cons_up_default_function):
 	Don't give warn_if_unknown_interface warning when it came from a
@@ -4689,7 +4908,7 @@ Mon Jan 31 12:07:30 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	(build_x_unary_op): Ditto.
 	(build_x_conditional_expr): Ditto.
 
-Mon Jan 31 10:00:30 1994  Mike Stump  (mrs@cygnus.com)
+Mon Jan 31 10:00:30 1994  Mike Stump  <mrs@cygnus.com>
 
 	* cvt.c (build_type_conversion_1): Change call to pedwarn into
 	warning, and conditionalize upon warn_cast_qual.
@@ -4723,7 +4942,7 @@ Thu Jan 27 19:26:51 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* decl.c (grokparms): Abort if we get called with something we don't
 	expect.
 
-Thu Jan 27 17:37:25 1994  Mike Stump  (mrs@cygnus.com)
+Thu Jan 27 17:37:25 1994  Mike Stump  <mrs@cygnus.com>
 
 	* call.c (build_overload_call_real): Change argument complain to
 	flags to match style of rest of code.  Pass it down to
@@ -4784,12 +5003,12 @@ Wed Jan 26 18:28:14 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	(add_friend): Never stick in ctype.
 	Why are the friendship functions in init.c, anyway?
 
-Wed Jan 26 17:50:00 1994  Mike Stump  (mrs@cygnus.com)
+Wed Jan 26 17:50:00 1994  Mike Stump  <mrs@cygnus.com>
 
 	* cvt.c (build_type_conversion_1): Don't conditionalize call to
 	pedwarn upon pedantic.
 
-Wed Jan 26 17:20:46 1994  Mike Stump  (mrs@cygnus.com)
+Wed Jan 26 17:20:46 1994  Mike Stump  <mrs@cygnus.com>
 
 	* cvt.c (convert_to_reference): Add 8.4.3 checking so that one
 	gets a warning if one tries to initialize a non-const & from a
@@ -4797,7 +5016,7 @@ Wed Jan 26 17:20:46 1994  Mike Stump  (mrs@cygnus.com)
 	* cvt.c (convert_to_reference): Use %P format for argument
 	numbers in warnings.
 
-Wed Jan 26 14:35:06 1994  Mike Stump  (mrs@cygnus.com)
+Wed Jan 26 14:35:06 1994  Mike Stump  <mrs@cygnus.com>
 
 	* init.c (build_delete): Follow style in call.c to construct the
 	virtual call to the desctructor, as that code is right.  Fixes a
@@ -4814,7 +5033,7 @@ Tue Jan 25 18:39:12 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* typeck.c (build_modify_expr): Don't smash references if INIT_EXPR.
 
-Tue Jan 25 13:54:29 1994  Mike Stump  (mrs@cygnus.com)
+Tue Jan 25 13:54:29 1994  Mike Stump  <mrs@cygnus.com>
 
 	* init.c (build_delete): Back out Jan 17th & 18th pacthes, as
 	they break libg++.
@@ -4933,7 +5152,7 @@ Mon Jan 17 13:58:18 1994  Jason Merrill  (jason@deneb.cygnus.com)
 
 	* Makefile.in (TAGS): Don't try to run etags on cp-parse.y.
 
-Sat Jan 15 18:34:33 1994  Mike Stump  (mrs@cygnus.com)
+Sat Jan 15 18:34:33 1994  Mike Stump  <mrs@cygnus.com>
 
 	* Makefile.in, configure: Handle the C++ front-end in a
 	subdirectory.
@@ -4974,7 +5193,7 @@ Fri Jan 14 18:25:29 1994  Kung Hsu  (kung@mexican.cygnus.com)
 	* cp-spew.c (yylex) : generated SCOPED_NAME token.
 	* cp-lex.c (yyprint): handle SCOPED_NAME.
 
-Fri Jan 14 17:00:29 1994  Mike Stump  (mrs@cygnus.com)
+Fri Jan 14 17:00:29 1994  Mike Stump  <mrs@cygnus.com>
 
 	* cp-decl.c (pushdecl): Revert patch from Jan 11 19:33:03, as it is
 	not right.
@@ -4984,7 +5203,7 @@ Thu Jan 13 14:00:35 1994  Kung Hsu  (kung@mexican.cygnus.com)
 	* cp-decl2.c (grok_x_components): fix a bug that enum type does not
 	have type_flags.
 
-Thu Jan 13 11:39:34 1994  Mike Stump  (mrs@cygnus.com)
+Thu Jan 13 11:39:34 1994  Mike Stump  <mrs@cygnus.com>
 
 	Ensure that all vtable pointers are initialized with all the right
 	values.
@@ -5034,7 +5253,7 @@ Tue Jan 11 19:33:03 1994  Jason Merrill  (jason@deneb.cygnus.com)
 	* cp-class.c (finish_struct): When generating default op=,
 	set TYPE_HAS_ASSIGNMENT.
 
-Mon Jan 10 18:48:06 1994  Mike Stump  (mrs@cygnus.com)
+Mon Jan 10 18:48:06 1994  Mike Stump  <mrs@cygnus.com>
 
 	* cp-cvt.c (convert): Make {double, clashing enum} -> enum
 	invalid.
@@ -5093,18 +5312,18 @@ Mon Jan  3 22:22:32 1994  Gerald Baumgartner  (gb@cygnus.com)
 	* invoke.texi: Added `-fhandle-signatures' in the list of
 	C++ language options.  Added explanation for this option.
 
-Tue Dec 28 21:10:03 1993  Mike Stump  (mrs@cygnus.com)
+Tue Dec 28 21:10:03 1993  Mike Stump  <mrs@cygnus.com>
 
 	* cp-init.c (expand_vec_init): Remove comptypes test, as it is too
 	harsh here.
 
-Tue Dec 28 13:42:22 1993  Mike Stump  (mrs@cygnus.com)
+Tue Dec 28 13:42:22 1993  Mike Stump  <mrs@cygnus.com>
 
 	* cp-pt.c (do_pending_expansions): Decide to expand a template
 	member function, based upon it's class type, not the class type of
 	the first place it was declared.
 
-Tue Dec 28 05:42:31 1993  Mike Stump  (mrs@cygnus.com)
+Tue Dec 28 05:42:31 1993  Mike Stump  <mrs@cygnus.com>
 
 	* cp-class.c (is_normal): New routine, use to determine when the
 	given binfo is the normal one.  (The one that should have the simple
@@ -5238,7 +5457,7 @@ Thu Dec 16 12:17:06 1993  Brendan Kehoe  (brendan@lisa.cygnus.com)
 	* cp-method.c (hack_identifier): Also check for a TYPE_PTRMEMFUNC_P
 	to see if something is a method.
 
-Wed Dec 15 18:35:58 1993  Mike Stump  (mrs@cygnus.com)
+Wed Dec 15 18:35:58 1993  Mike Stump  <mrs@cygnus.com>
 
 	* cp-typeck.c (build_modify_expr): Avoid error messages on small
 	enum bit fields.
@@ -5287,7 +5506,7 @@ Fri Dec 10 12:40:25 1993  Brendan Kehoe  (brendan@lisa.cygnus.com)
 	only go for setting TRIVIAL_CODE if we are dealing with types that
 	are compatible.
 
-Thu Dec  9 18:27:22 1993  Mike Stump  (mrs@cygnus.com)
+Thu Dec  9 18:27:22 1993  Mike Stump  <mrs@cygnus.com>
 
 	* cp-decl.c (flag_huge_objects): New flag to allow large objects.
 	* toplev.c (lang_options): Ditto.
@@ -5305,7 +5524,7 @@ Thu Dec  9 16:19:05 1993  Brendan Kehoe  (brendan@lisa.cygnus.com)
 	NO_{DOLLAR,DOT} macro checks, so it always gets defined.
 	(VTABLE_NAME_P): Define for NO_DOT && NO_DOLLAR_IN_LABEL.
 
-Wed Dec  8 17:38:06 1993  Mike Stump  (mrs@cygnus.com)
+Wed Dec  8 17:38:06 1993  Mike Stump  <mrs@cygnus.com>
 
 	* cp-decl.c (finish_decl): Make sure things that can go into
 	"common", do go into common, if -fcommon is given.
@@ -5593,7 +5812,7 @@ Wed Nov 24 00:49:35 1993  Jason Merrill  (jason@deneb.cygnus.com)
 	Propagate TYPE_GETS_ASSIGN_REF.  Use cant_synth_copy_ctor.  Add call
 	to cons_up_default_function for operator=.
 
-Tue Nov 23 20:24:58 1993  Mike Stump  (mrs@cygnus.com)
+Tue Nov 23 20:24:58 1993  Mike Stump  <mrs@cygnus.com>
 
 	* cp-cvt.c (convert_force): Add code to perform casting of pointer
 	to member function types.
@@ -5612,7 +5831,7 @@ Tue Nov 23 18:06:58 1993  Jason Merrill  (jason@deneb.cygnus.com)
 	and its kin properly.
 	(xref_tag): Propagate TYPE_GETS_ASSIGN_REF.
 
-Tue Nov 23 12:26:13 1993  Mike Stump  (mrs@cygnus.com)
+Tue Nov 23 12:26:13 1993  Mike Stump  <mrs@cygnus.com>
 
 	* cp-method.c (build_opfncall): Don't count pointer to member
 	functions as aggregates here, as we don't want to look up methods in

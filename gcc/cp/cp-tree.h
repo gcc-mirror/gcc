@@ -1787,6 +1787,7 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
      as well as the space of member functions.
    LOOKUP_HAS_IN_CHARGE means that the "in charge" variable is already
      in the parameter list.
+   LOOKUP_ONLYCONVERTING means that non-conversion constructors are not tried.
    LOOKUP_NO_CONVERSION means that user-defined conversions are not
      permitted.  Built-in conversions are permitted.
    LOOKUP_DESTRUCTOR means explicit call to destructor.  */
@@ -1809,13 +1810,15 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
    CONV_STATIC     :  Perform the explicit conversions for static_cast.
    CONV_CONST      :  Perform the explicit conversions for const_cast.
    CONV_REINTERPRET:  Perform the explicit conversions for reinterpret_cast.
-   CONV_PRIVATE    :  Perform upcasts to private bases.  */
+   CONV_PRIVATE    :  Perform upcasts to private bases.
+   CONV_NONCONVERTING : Allow non-converting constructors to be used.  */
 
 #define CONV_IMPLICIT    1
 #define CONV_STATIC      2
 #define CONV_CONST       4
 #define CONV_REINTERPRET 8
 #define CONV_PRIVATE	 16
+#define CONV_NONCONVERTING 32
 #define CONV_STATIC_CAST (CONV_IMPLICIT | CONV_STATIC)
 #define CONV_OLD_CONVERT (CONV_IMPLICIT | CONV_STATIC | CONV_CONST \
 			  | CONV_REINTERPRET)
@@ -1896,7 +1899,8 @@ extern tree convert_pointer_to			PROTO((tree, tree));
 extern tree convert_pointer_to_real		PROTO((tree, tree));
 extern tree convert_pointer_to_vbase		PROTO((tree, tree));
 extern tree convert				PROTO((tree, tree));
-extern tree convert_force			PROTO((tree, tree));
+extern tree cp_convert				PROTO((tree, tree, int, int));
+extern tree convert_force			PROTO((tree, tree, int));
 extern tree build_type_conversion		PROTO((enum tree_code, tree, tree, int));
 extern int build_default_binary_type_conversion	PROTO((enum tree_code, tree *, tree *));
 extern int build_default_unary_type_conversion	PROTO((enum tree_code, tree *));
@@ -1956,7 +1960,7 @@ extern void shadow_tag				PROTO((tree));
 extern int grok_ctor_properties			PROTO((tree, tree));
 extern tree groktypename			PROTO((tree));
 extern tree start_decl				PROTO((tree, tree, int, tree));
-extern void finish_decl				PROTO((tree, tree, tree, int));
+extern void finish_decl				PROTO((tree, tree, tree, int, int));
 extern void expand_static_init			PROTO((tree, tree));
 extern int complete_array_type			PROTO((tree, tree, int));
 extern tree build_ptrmemfunc_type		PROTO((tree));
@@ -2018,6 +2022,9 @@ extern tree reparse_decl_as_expr		PROTO((tree, tree));
 extern tree finish_decl_parsing			PROTO((tree));
 extern tree lookup_name_nonclass		PROTO((tree));
 extern tree check_cp_case_value			PROTO((tree));
+extern tree do_using_decl			PROTO((tree));
+extern tree current_namespace_id		PROTO((tree));
+extern tree get_namespace_id			PROTO((void));
 
 /* in edsel.c */
 
@@ -2066,7 +2073,7 @@ extern void check_base_init			PROTO((tree));
 extern void expand_direct_vtbls_init		PROTO((tree, tree, int, int, tree));
 extern void do_member_init			PROTO((tree, tree, tree));
 extern void expand_member_init			PROTO((tree, tree, tree));
-extern void expand_aggr_init			PROTO((tree, tree, int));
+extern void expand_aggr_init			PROTO((tree, tree, int, int));
 extern int is_aggr_typedef			PROTO((tree, int));
 extern tree get_aggr_from_typedef		PROTO((tree, int));
 extern tree get_type_value			PROTO((tree));
@@ -2347,7 +2354,7 @@ extern tree build_compound_expr			PROTO((tree));
 extern tree build_static_cast			PROTO((tree, tree));
 extern tree build_reinterpret_cast		PROTO((tree, tree));
 extern tree build_const_cast			PROTO((tree, tree));
-extern tree build_c_cast			PROTO((tree, tree));
+extern tree build_c_cast			PROTO((tree, tree, int));
 extern tree build_modify_expr			PROTO((tree, enum tree_code, tree));
 extern int language_lvalue_valid		PROTO((tree));
 extern void warn_for_assignment			PROTO((char *, char *, char *, tree, int, int));

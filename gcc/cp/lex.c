@@ -2587,6 +2587,15 @@ check_newline ()
 		      TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
 		    }
 		}
+#ifdef HANDLE_SYSV_PRAGMA
+	      else
+		return handle_sysv_pragma (finput, c);
+#else
+#ifdef HANDLE_PRAGMA
+	      else
+	        HANDLE_PRAGMA (finput);
+#endif
+#endif
 	    }
 	  goto skipline;
 	}
@@ -4874,3 +4883,46 @@ yyerror (string)
 
   error (buf, token_buffer);
 }
+
+#ifdef HANDLE_SYSV_PRAGMA
+
+/* Handle a #pragma directive.  INPUT is the current input stream,
+   and C is a character to reread.  Processes the entire input line
+   and returns a character for the caller to reread: either \n or EOF.  */
+
+/* This function has to be in this file, in order to get at
+   the token types.  */
+
+int
+handle_sysv_pragma (input, c)
+     FILE *input;
+     int c;
+{
+  for (;;)
+    {
+      while (c == ' ' || c == '\t')
+	c = getc (input);
+      if (c == '\n' || c == EOF)
+	{
+	  handle_pragma_token (0, 0);
+	  return c;
+	}
+      ungetc (c, input);
+      switch (yylex ())
+	{
+	case IDENTIFIER:
+	case TYPENAME:
+	case STRING:
+	case CONSTANT:
+	  handle_pragma_token (token_buffer, yylval.ttype);
+	  break;
+	default:
+	  handle_pragma_token (token_buffer, 0);
+	}
+      if (nextchar >= 0)
+	c = nextchar, nextchar = -1;
+      else
+	c = getc (input);
+    }
+}
+#endif /* HANDLE_SYSV_PRAGMA */

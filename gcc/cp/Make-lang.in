@@ -75,7 +75,7 @@ CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
  $(srcdir)/cp/error.c $(srcdir)/cp/init.c $(srcdir)/cp/parse.y \
  $(srcdir)/cp/sig.c $(srcdir)/cp/typeck2.c
 
-cc1plus: $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o
+cc1plus: $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o c-pragma.o
 	cd cp; $(MAKE) $(FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) ../cc1plus
 
 # Build hooks:

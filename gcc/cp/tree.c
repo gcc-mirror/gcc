@@ -1503,24 +1503,13 @@ build_exception_variant (ctype, type, raises)
 	  || TYPE_VOLATILE (v) != volatilep)
 	continue;
 
-      t = raises;
-      t2 = TYPE_RAISES_EXCEPTIONS (v);
-      while (t && t2)
-	{
-	  if (TREE_TYPE (t) == TREE_TYPE (t2))
-	    {
-	      t = TREE_CHAIN (t);
-	      t2 = TREE_CHAIN (t2);
-	    }
-	  else break;
-	}
-      if (t || t2)
-	continue;
-      /* List of exceptions raised matches previously found list.
+      /* @@ This should do set equality, not exact match. */
+      if (simple_cst_list_equal (TYPE_RAISES_EXCEPTIONS (v), raises))
+	/* List of exceptions raised matches previously found list.
 
-         @@ Nice to free up storage used in consing up the
-	 @@ list of exceptions raised.  */
-      return v;
+	   @@ Nice to free up storage used in consing up the
+	   @@ list of exceptions raised.  */
+	return v;
     }
 
   /* Need to build a new variant.  */

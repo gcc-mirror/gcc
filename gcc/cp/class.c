@@ -2116,7 +2116,7 @@ finish_vtbls (binfo, do_self, t)
 	      && DECL_INITIAL (decl) != BINFO_VIRTUALS (binfo))
 	    DECL_INITIAL (decl) = build_nt (CONSTRUCTOR, NULL_TREE,
 					    BINFO_VIRTUALS (binfo));
-	  finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0);
+	  finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0, 0);
 	  DECL_CONTEXT (decl) = context;
 	}
       CLEAR_BINFO_NEW_VTABLE_MARKED (binfo);
@@ -3161,10 +3161,26 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 		      DECL_INITIAL (x) = NULL;
 		      cp_error_at ("zero width for bit-field `%D'", x);
 		    }
-		  else if ((unsigned)width > TYPE_PRECISION (TREE_TYPE (x)))
+		  else if (width
+			   > TYPE_PRECISION (long_long_unsigned_type_node))
 		    {
+		      /* The backend will dump if you try to use something
+			 too big; avoid that.  */
 		      DECL_INITIAL (x) = NULL;
-		      cp_error_at ("width of `%D' exceeds its type", x);
+		      sorry ("bit-fields larger than %d bits",
+			     TYPE_PRECISION (long_long_unsigned_type_node));
+		      cp_error_at ("  in declaration of `%D'", x);
+		    }
+		  else if (width > TYPE_PRECISION (TREE_TYPE (x))
+			   && TREE_CODE (TREE_TYPE (x)) != ENUMERAL_TYPE)
+		    {
+		      cp_warning_at ("width of `%D' exceeds its type", x);
+		    }
+		  else if (width < TYPE_PRECISION (TREE_TYPE (x))
+			   && TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE)
+		    {
+		      cp_warning_at ("`%D' is too small to hold all values of `%#T'",
+				     x, TREE_TYPE (x));
 		    }
 		}
 

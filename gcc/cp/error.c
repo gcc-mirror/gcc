@@ -1017,8 +1017,7 @@ dump_expr (t, nop)
 	}
       else
 	{
-	  sorry ("operand of SAVE_EXPR not understood");
-	  goto error;
+	  dump_expr (TREE_OPERAND (t, 0), 0);
 	}
       break;
 
