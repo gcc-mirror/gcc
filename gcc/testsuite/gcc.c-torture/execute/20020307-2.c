@@ -38,7 +38,8 @@ void foo (int size, ...)
 
 int main (void)
 {
-  struct { char a[5]; } x, y;
+  int z = 5;
+  struct { char a[z]; } x, y;
           
   x.a[0] = '0';
   x.a[1] = '1';
@@ -50,6 +51,6 @@ int main (void)
   y.a[2] = '7';
   y.a[3] = '8';
   y.a[4] = '9';
-  foo (5, x, y);
+  foo (z, x, y);
   exit (0);
 }
