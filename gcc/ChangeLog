@@ -1,3 +1,8 @@
+Mon Oct  4 08:54:12 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* cppinit.c (is_idchar initializer): Loosen tests to accept
+	gcc 2.>6 and >2.
+
 Mon Oct  4 02:31:20 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* mips.md: Define conditional move patterns for floating point
