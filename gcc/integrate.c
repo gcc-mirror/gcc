@@ -2926,7 +2926,8 @@ set_decl_origin_self (decl)
 
 	  for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
 	    DECL_ABSTRACT_ORIGIN (arg) = arg;
-	  if (DECL_INITIAL (decl) != NULL_TREE)
+	  if (DECL_INITIAL (decl) != NULL_TREE
+	      && DECL_INITIAL (decl) != error_mark_node)
 	    set_block_origin_self (DECL_INITIAL (decl));
 	}
     }
@@ -2981,7 +2982,8 @@ set_decl_abstract_flags (decl, setting)
 
       for (arg = DECL_ARGUMENTS (decl); arg; arg = TREE_CHAIN (arg))
 	DECL_ABSTRACT (arg) = setting;
-      if (DECL_INITIAL (decl) != NULL_TREE)
+      if (DECL_INITIAL (decl) != NULL_TREE
+	  && DECL_INITIAL (decl) != error_mark_node)
 	set_block_abstract_flags (DECL_INITIAL (decl), setting);
     }
 }
