@@ -1460,16 +1460,37 @@ move_block_to_reg (regno, x, nregs, mode)
 }
 
 /* Copy all or part of a BLKmode value X out of registers starting at REGNO.
-   The number of registers to be filled is NREGS.  */
+   The number of registers to be filled is NREGS.  SIZE indicates the number
+   of bytes in the object X.  */
+
 
 void
-move_block_from_reg (regno, x, nregs)
+move_block_from_reg (regno, x, nregs, size)
      int regno;
      rtx x;
      int nregs;
+     int size;
 {
   int i;
   rtx pat, last;
+
+  /* Blocks smaller than a word on a BYTES_BIG_ENDIAN machine must be aligned
+     to the left before storing to memory.  */
+  if (size < UNITS_PER_WORD && BYTES_BIG_ENDIAN)
+    {
+      rtx tem = operand_subword (x, 0, 1, BLKmode);
+      rtx shift;
+
+      if (tem == 0)
+	abort ();
+
+      shift = expand_shift (LSHIFT_EXPR, word_mode,
+			    gen_rtx (REG, word_mode, regno),
+			    build_int_2 ((UNITS_PER_WORD - size)
+					 * BITS_PER_UNIT, 0), NULL_RTX, 0);
+      emit_move_insn (tem, shift);
+      return;
+    }
 
   /* See if the machine can do this with a store multiple insn.  */
 #ifdef HAVE_store_multiple
