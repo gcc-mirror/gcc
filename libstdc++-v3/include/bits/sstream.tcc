@@ -185,7 +185,7 @@ namespace std
       
       if (_M_string.capacity())
 	{
-	  off_type __pos = __sp; // Use streamoff operator to do conversion.
+	  off_type __pos (__sp);
 	  const bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
 	  const bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
 	  char_type* __beg = __testin ? this->eback() : this->pbase();

@@ -260,13 +260,9 @@ namespace std
     return __ret;
   }
 
-  streampos
+  streamoff
   __basic_file<char>::seekoff(streamoff __off, ios_base::seekdir __way)
   { return lseek(this->fd(), __off, __way); }
-
-  streampos
-  __basic_file<char>::seekpos(streampos __pos)
-  { return lseek(this->fd(), __pos, ios_base::beg); }
 
   int 
   __basic_file<char>::sync() 

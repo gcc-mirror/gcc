@@ -1153,11 +1153,7 @@ AC_DEFUN(GLIBCXX_ENABLE_CSTDIO, [
       ;;
   esac
 
-  dnl Set directory for fpos.h
-  FPOS_H=$fpos_include_dir
-
   AC_SUBST(CSTDIO_H)
-  AC_SUBST(FPOS_H)
   AC_SUBST(BASIC_FILE_H)
   AC_SUBST(BASIC_FILE_CC)
 ])

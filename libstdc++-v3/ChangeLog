@@ -1,3 +1,74 @@
+2003-10-16  Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/8610
+	PR libstdc++/11450
+	PR libstdc++/11543
+	PR libstdc++/12065
+	* config/io/basic_file_stdio.cc (__basic_file::seekoff):
+	Change return value from streampos to streamoff.
+	(__basic_file::seekpos): Delete.
+	* config/io/basic_file_stdio.h: Same.
+	* config/io/c_io_stdio.h: Remove streamoff and wstreamsize typedefs.
+	* include/Makefile.am (bits_headers): Add bits/postypes.h.
+	* include/bits/char_traits.h: Include bits/postypes.h instead of
+	bits/fpos.h.
+	* include/bits/fstream.tcc (basic_filebuf::open,
+	basic_filebuf::pbackfail): Don't use < or >= to compare pos_type
+	values, use == and != instead.
+	(basic_filebuf::_M_seek): Use explicit conversion from streamoff
+	to pos_type.
+	(basic_filebuf::imbue):  Don't use ! on pos_type values, use
+	== instead. Don't use __check_facet(_M_codecvt) unless is_open().
+	* include/bits/postypes.h: New file.
+	Add __streamoff_base_type typedef, streamsize.
+	(streamoff, streampos, wstreampos): Define typedefs, with
+	streamoff defined as...
+	(streamoff): New class. Document implementation defined
+	aspects.
+	(fpos): New implementation. Document implementation defined
+	aspects.
+	* include/bits/sstream.tcc (basic_stringbuf::seekpos): Use
+	explicit conversion from pos_type to off_type.
+	* include/std/std_iosfwd.h: Include bits/postypes.h instead
+	of bits/fpos.h.
+	* testsuite/27_io/basic_filebuf/seekoff/char/11543.cc: New test.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/11543.cc: New test.
+	* testsuite/27_io/fpos/11450.cc: New test.
+	* testsuite/27_io/fpos/mbstate_t/12065.cc: New test.
+	* testsuite/27_io/fpos/mbstate_t/4_neg.cc: New test.
+	* testsuite/27_io/types/3.cc: New test.
+
+2003-10-16  Benjamin Kosnik  <bkoz@redhat.com>
+ 
+        * configure.host: Remove fpos_include_dir.
+        * configure.ac: Remove FPOS_INC_SRCDIR.
+        * configure: Regenerate.
+        * acinclude.m4 (GLIBCXX_ENABLE_CSTDIO): Remove FPOS_H.
+        * aclocal.m4: Regenerate.
+        * include/Makefile.am (host_headers): Remove fpos.h.
+        (bits_headers): Add postypes.h.
+        * include/Makefile.in: Regenerate.
+        * config/os/gnu-linux/fposh: Remove.
+        * config/os/generic/fpos.h: Remove.
+ 
+        * testsuite/27_io/basic_filebuf/seekoff/char/1-in.cc: Fixup.
+        * testsuite/27_io/basic_filebuf/seekoff/char/1-io.cc: Same.
+        * testsuite/27_io/basic_filebuf/seekoff/char/1-out.cc: Same.
+        * testsuite/27_io/basic_filebuf/seekoff/char/2-in.cc: Same.
+        * testsuite/27_io/basic_filebuf/seekoff/char/2-io.cc: Same.
+        * testsuite/27_io/basic_filebuf/seekoff/char/2-out.cc: Same.
+        * testsuite/27_io/basic_filebuf/seekpos/char/1-in.cc: Same.
+        * testsuite/27_io/basic_filebuf/seekpos/char/1-io.cc: Same.
+        * testsuite/27_io/basic_filebuf/seekpos/char/1-out.cc: Same.
+        * testsuite/27_io/basic_filebuf/seekpos/char/2-in.cc: Same.
+        * testsuite/27_io/basic_filebuf/seekpos/char/2-io.cc: Same.
+        * testsuite/27_io/basic_filebuf/seekpos/char/2-out.cc: Same.
+        * testsuite/27_io/basic_istream/seekg/char/2.cc: Same.
+        * testsuite/27_io/basic_stringbuf/seekoff/char/1.cc: Same.
+        * testsuite/27_io/basic_stringbuf/seekpos/char/1.cc: Same.
+        * testsuite/27_io/fpos/mbstate_t/3.cc: Same.
+        * testsuite/27_io/objects/char/10.cc: Same.
+
 2003-10-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/locale.cc (locale::locale(const char*)): ... one

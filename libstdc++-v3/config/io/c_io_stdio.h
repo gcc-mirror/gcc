@@ -38,13 +38,6 @@
 
 namespace std 
 {
-  // for fpos.h
-  typedef long  	streamoff;
-  typedef ptrdiff_t	streamsize; // Signed integral type
-#if _GLIBCXX_USE_WCHAR_T
-  typedef ptrdiff_t	wstreamsize;
-#endif
-
   typedef __gthread_mutex_t __c_lock;
 
   // for basic_file.h
