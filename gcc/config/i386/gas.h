@@ -134,3 +134,25 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Print opcodes the way that GAS expects them. */
 #define GAS_MNEMONICS 1
+
+#ifdef NO_UNDERSCORES /* If user-symbols don't have underscores,
+			 then it must take more than `L' to identify
+			 a label that should be ignored.  */
+
+/* This is how to store into the string BUF
+   the symbol_ref name of an internal numbered label where
+   PREFIX is the class of label and NUM is the number within the class.
+   This is suitable for output with `assemble_name'.  */
+
+#undef ASM_GENERATE_INTERNAL_LABEL
+#define ASM_GENERATE_INTERNAL_LABEL(BUF,PREFIX,NUMBER)	\
+    sprintf ((BUF), ".%s%d", (PREFIX), (NUMBER))
+
+/* This is how to output an internal numbered label where
+   PREFIX is the class of label and NUM is the number within the class.  */
+
+#undef ASM_OUTPUT_INTERNAL_LABEL
+#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
+  fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
+
+#endif /* NO_UNDERSCORES */
