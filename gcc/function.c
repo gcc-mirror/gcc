@@ -1976,6 +1976,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    replacement->new = copy_most_rtx (x, var);
 
 	  *loc = x = replacement->new;
+	  code = GET_CODE (x);
 	}
       break;
 
