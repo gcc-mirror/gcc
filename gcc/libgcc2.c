@@ -62,6 +62,16 @@ typedef		float XFtype	__attribute__ ((mode (XF)));
 typedef		float TFtype	__attribute__ ((mode (TF)));
 #endif
 
+#if BITS_PER_WORD==16
+typedef int word_type __attribute__ ((mode (HI)));
+#endif
+#if BITS_PER_WORD==32
+typedef int word_type __attribute__ ((mode (SI)));
+#endif
+#if BITS_PER_WORD==64
+typedef int word_type __attribute__ ((mode (DI)));
+#endif
+
 /* Make sure that we don't accidentally use any normal C language built-in
    type names in the first part of this file.  Instead we want to use *only*
    the type names defined above.  The following macro definitions insure
@@ -708,7 +718,7 @@ __udivdi3 (n, d)
 #endif
 
 #ifdef L_cmpdi2
-SItype
+word_type
 __cmpdi2 (a, b)
      DItype a, b;
 {
@@ -729,7 +739,7 @@ __cmpdi2 (a, b)
 #endif
 
 #ifdef L_ucmpdi2
-SItype
+word_type
 __ucmpdi2 (a, b)
      DItype a, b;
 {
