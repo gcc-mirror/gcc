@@ -123,7 +123,7 @@ namespace std
 	  const char* __old = setlocale(LC_ALL, "C");
 	  char* __sanity;
 	  errno = 0;
-#if defined(_GLIBCPP_USE_C99) || defined(_GLIBCPP_HAVE_STRTOF)
+#if defined(_GLIBCPP_USE_C99)
 	  float __f = strtof(__s, &__sanity);
 #else
 	  double __d = strtod(__s, &__sanity);
@@ -179,7 +179,7 @@ namespace std
 	{
 	  // Assumes __s formatted for "C" locale.
 	  const char* __old = setlocale(LC_ALL, "C");
-#if defined(_GLIBCPP_USE_C99) || defined(_GLIBCPP_HAVE_STRTOLD)
+#if defined(_GLIBCPP_USE_C99)
 	  char* __sanity;
 	  errno = 0;
 	  long double __ld = strtold(__s, &__sanity);
