@@ -2,9 +2,5 @@
 CC	= $(OLDCC)
 OLDCC	= /bin/gcc
 
-# ??? This takes far too long to run, several hours, so let's not do it for
-# now.
-STMP_FIXPROTO =
-
 # /bin/sh is too buggy, so use /bin/bash instead.
 SHELL = /bin/bash
