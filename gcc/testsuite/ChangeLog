@@ -1,5 +1,8 @@
 2005-01-28  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/19253
+	* g++.dg/template/crash33.C: New test.
+
 	PR c++/19667
 	* g++.dg/template/crash32.C: New test.
 
