@@ -115,14 +115,6 @@ void gnu::gcj::xlib::GC::drawString(jstring text, jint x, jint y)
       xc->byte2 = jc & 0xff;
     }
   XDrawString16(dpy, drawableXID, gc, x, y, xwchars, length);
-
-  // FIXME, temporary code:
-  int len = JvGetStringUTFLength(text);
-  char ctxt[len+1];
-  JvGetStringUTFRegion(text, 0, text->length(), ctxt);
-  ctxt[len] = '\0';
-  XDrawString(dpy, drawableXID, gc, x, y, ctxt, len);
-  // no fast fail
 }
 
 void gnu::gcj::xlib::GC::drawLine(jint x1, jint y1, jint x2, jint y2)
