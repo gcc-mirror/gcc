@@ -924,7 +924,6 @@ void java_fix_constructors PARAMS ((void));
 void java_layout_classes PARAMS ((void));
 void java_reorder_fields PARAMS ((void));
 tree java_method_add_stmt PARAMS ((tree, tree));
-void java_expand_switch PARAMS ((tree));
 int java_report_errors PARAMS ((void));
 extern tree do_resolve_class PARAMS ((tree, tree, tree, tree));
 #endif
