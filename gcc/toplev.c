@@ -29,6 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <signal.h>
 #include <setjmp.h>
 #include <sys/types.h>
+#include <ctype.h>
 #include <sys/stat.h>
 
 #ifdef USG
