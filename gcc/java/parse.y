@@ -2932,7 +2932,7 @@ yyerror (msg)
   else
     java_error_count++;
   
-  if (elc.col == 0 && msg[1] == ';')
+  if (elc.col == 0 && msg && msg[1] == ';')
     {
       elc.col  = ctxp->p_line->char_col-1;
       elc.line = ctxp->p_line->lineno;
