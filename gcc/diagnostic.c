@@ -93,7 +93,6 @@ static void output_append_r PARAMS ((output_buffer *, const char *, int));
 static void wrap_text PARAMS ((output_buffer *, const char *, const char *));
 static void maybe_wrap_text PARAMS ((output_buffer *, const char *,
                                      const char *));
-static void clear_text_info PARAMS ((output_buffer *));
 static void clear_diagnostic_info PARAMS ((output_buffer *));
 
 static void default_diagnostic_starter PARAMS ((output_buffer *,
@@ -303,8 +302,8 @@ output_destroy_prefix (buffer)
 
 /* Zero out any text output so far in BUFFER.  */
 
-static void
-clear_text_info (buffer)
+void
+output_clear_message_text (buffer)
      output_buffer *buffer;
 {
   obstack_free (&buffer->obstack, obstack_base (&buffer->obstack));
@@ -367,7 +366,7 @@ void
 output_clear (buffer)
      output_buffer *buffer;
 {
-  clear_text_info (buffer);
+  output_clear_message_text (buffer);
   clear_diagnostic_info (buffer);
 }
 
@@ -375,11 +374,11 @@ output_clear (buffer)
    the BUFFERed message.  */
 
 const char *
-output_finish (buffer)
+output_finalize_message (buffer)
      output_buffer *buffer;
 {
   obstack_1grow (&buffer->obstack, '\0');
-  return (const char *) obstack_finish (&buffer->obstack);
+  return output_message_text (buffer);
 }
 
 void
@@ -652,9 +651,9 @@ output_to_stream (buffer, file)
      output_buffer *buffer;
      FILE *file;
 {
-  const char *text = output_finish (buffer);
+  const char *text = output_finalize_message (buffer);
   fputs (text, file);
-  clear_text_info (buffer);
+  output_clear_message_text (buffer);
 }
 
 /* Format a message pointed to by output_buffer_text_cursor (BUFFER) using
