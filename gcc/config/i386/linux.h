@@ -73,13 +73,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 #undef STARTFILE_SPEC
-#undef GPLUSPLUS_INCLUDE_DIR
-
 #define STARTFILE_SPEC  \
-  "%{pg:gcrt0.o%s -static} %{!pg:%{p:gcrt0.o%s -static} %{!p:crt0.o%s %{g*:-static}%{!static:%{nojump:-nojump}} %{static:-static}}}"
+  "%{pg:gcrt0.o%s -static} %{!pg:%{p:gcrt0.o%s -static} %{!p:crt0.o%s %{g*:-static} %{static:-static}}}"
 
-/*  The native Linux system uses this. */
-#define GPLUSPLUS_INCLUDE_DIR "/usr/g++-include"
 
 /* There are conflicting reports about whether this system uses
    a different assembler syntax.  wilson@cygnus.com says # is right.  */
