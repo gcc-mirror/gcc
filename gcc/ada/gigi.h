@@ -58,10 +58,6 @@ extern tree emit_stack_check (tree);
 /* Make a TRANSFORM_EXPR to later expand GNAT_NODE into code.  */
 extern tree make_transform_expr (Node_Id);
 
-/* Update the setjmp buffer BUF with the current stack pointer.  We assume
-   here that a __builtin_setjmp was done to BUF.  */
-extern void update_setjmp_buf (tree);
-
 /* GNU_TYPE is a type. Determine if it should be passed by reference by
    default.  */
 extern int default_pass_by_ref (tree);
@@ -346,6 +342,7 @@ enum standard_datatypes
   ADT_get_excptr_decl,
   ADT_setjmp_decl,
   ADT_longjmp_decl,
+  ADT_update_setjmp_buf_decl,
   ADT_raise_nodefer_decl,
   ADT_begin_handler_decl,
   ADT_end_handler_decl,
@@ -369,6 +366,7 @@ extern GTY(()) tree gnat_raise_decls[(int) LAST_REASON_CODE + 1];
 #define get_excptr_decl gnat_std_decls[(int) ADT_get_excptr_decl]
 #define setjmp_decl gnat_std_decls[(int) ADT_setjmp_decl]
 #define longjmp_decl gnat_std_decls[(int) ADT_longjmp_decl]
+#define update_setjmp_buf_decl gnat_std_decls[(int) ADT_update_setjmp_buf_decl]
 #define raise_nodefer_decl gnat_std_decls[(int) ADT_raise_nodefer_decl]
 #define begin_handler_decl gnat_std_decls[(int) ADT_begin_handler_decl]
 #define end_handler_decl gnat_std_decls[(int) ADT_end_handler_decl]

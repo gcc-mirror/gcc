@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -42,7 +42,7 @@
 --  difference in semantics so that it is invisible to the Ada programmer.
 
 private generic
-   type Num is range <>;
+   type Num is mod <>;
 
 package Ada.Wide_Text_IO.Modular_IO is
 

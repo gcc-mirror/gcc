@@ -1,3 +1,23 @@
+2004-04-27  Ed Schonberg  <schonberg@gnat.com>
+
+	* a-wtmoio.ads: Formal type must be a modular type, not a signed
+	integer type.
+
+2004-04-27  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (gnat_to_gnu_entity, case object): Call
+	__builtin_update_setjmp_buf.
+
+	* gigi.h (update_setjmp_buf): Deleted.
+	(ADT_update_setjmp_buf_decl, update_setjmp_buf_decl): New.
+
+	* misc.c: (update_setjmp_buf): Deleted.
+
+	* trans.c (gnat_to_gnu): Call do_pending_stack_adjust and emit_queue
+	around block of RTL.
+
+	* utils.c (init_gigi_decls): Initialize update_setjmp_buf.
+
 2004-04-26  Thomas Quinot  <quinot@act-europe.fr>
 
 	* sem_dist.adb, exp_dist.adb: When constructing a RAS value for a local
