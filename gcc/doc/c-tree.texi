@@ -2234,10 +2234,7 @@ second operand is a @code{TREE_LIST}.  If the @code{TREE_TYPE} of the
 @code{CONSTRUCTOR} is a @code{RECORD_TYPE} or @code{UNION_TYPE}, then
 the @code{TREE_PURPOSE} of each node in the @code{TREE_LIST} will be a
 @code{FIELD_DECL} and the @code{TREE_VALUE} of each node will be the
-expression used to initialize that field.  You should not depend on the
-fields appearing in any particular order, nor should you assume that all
-fields will be represented.  Unrepresented fields may be assigned any
-value.
+expression used to initialize that field.
 
 If the @code{TREE_TYPE} of the @code{CONSTRUCTOR} is an
 @code{ARRAY_TYPE}, then the @code{TREE_PURPOSE} of each element in the
@@ -2247,8 +2244,10 @@ again, the @code{TREE_VALUE} is the corresponding initializer.  If the
 @code{TREE_PURPOSE} is @code{NULL_TREE}, then the initializer is for the
 next available array element.
 
-Conceptually, before any initialization is done, the entire area of
-storage is initialized to zero.
+In the front end, you should not depend on the fields appearing in any
+particular order.  However, in the middle end, fields must appear in
+declaration order.  You should not assume that all fields will be
+represented.  Unrepresented fields will be set to zero.
 
 @item COMPOUND_LITERAL_EXPR
 @findex COMPOUND_LITERAL_EXPR_DECL_STMT
