@@ -1,4 +1,4 @@
-2004-10-24  Geoffrey Keating  <geoffk@redhat.com>
+2004-10-24  Geoffrey Keating  <geoffk@geoffk.org>
 
 	* gcc.dg/c90-const-expr-3.c: xfail all the ASSERT_NOT_NPC tests.
 	* gcc.dg/c99-const-expr-3.c: Likewise.
