@@ -132,7 +132,7 @@ dtor_section ()							\
    function named by the symbol (such as what section it is in).
 
    On i386, if using PIC, mark a SYMBOL_REF for a non-global symbol
-   so that we may access it directly in the GOT.  */
+   so that we may access it directly in the GOT.
 
    On i386 running Windows NT, modify the assembler name with a suffix 
    consisting of an atsign (@) followed by string of digits that represents
