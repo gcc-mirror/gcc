@@ -3461,7 +3461,10 @@ hppa_profile_hook (label_no)
    the current frame, after the prologue.  FRAMEADDR is the
    frame pointer of the COUNT frame.
 
-   We want to ignore any export stub remnants here.
+   We want to ignore any export stub remnants here.  To handle this,
+   we examine the code at the return address, and if it is an export
+   stub, we return a memory rtx for the stub return address stored
+   at frame-24.
 
    The value returned is used in two different ways:
 
@@ -3476,42 +3479,36 @@ hppa_profile_hook (label_no)
 
    This function handles most instances of case 2; however, it will
    fail if we did not originally have stub code on the return path
-   but will need code on the new return path.  This can happen if
+   but will need stub code on the new return path.  This can happen if
    the caller & callee are both in the main program, but the new
-   return location is in a shared library.
-
-   To handle this correctly we need to set the return pointer at
-   frame-20 to point to a return stub frame-24 to point to the
-   location we wish to return to.  */
+   return location is in a shared library.  */
 
 rtx
 return_addr_rtx (count, frameaddr)
-     int count ATTRIBUTE_UNUSED;
+     int count;
      rtx frameaddr;
 {
   rtx label;
+  rtx rp;
   rtx saved_rp;
   rtx ins;
 
-  if (TARGET_64BIT)
-    return gen_rtx_MEM (Pmode, plus_constant (frameaddr, -16));
+  if (count != 0)
+    return NULL_RTX;
 
-  if (TARGET_NO_SPACE_REGS)
-    return gen_rtx_MEM (Pmode, plus_constant (frameaddr, -20));
+  rp = get_hard_reg_initial_val (Pmode, 2);
 
-  /* First, we start off with the normal return address pointer from
-     -20[frameaddr].  */
+  if (TARGET_64BIT || TARGET_NO_SPACE_REGS)
+    return rp;
 
   saved_rp = gen_reg_rtx (Pmode);
-  emit_move_insn (saved_rp, plus_constant (frameaddr, -20));
+  emit_move_insn (saved_rp, rp);
 
   /* Get pointer to the instruction stream.  We have to mask out the
      privilege level from the two low order bits of the return address
      pointer here so that ins will point to the start of the first
      instruction that would have been executed if we returned.  */
-  ins = copy_to_reg (gen_rtx_AND (Pmode,
-				  copy_to_reg (gen_rtx_MEM (Pmode, saved_rp)),
-				  MASK_RETURN_ADDR));
+  ins = copy_to_reg (gen_rtx_AND (Pmode, rp, MASK_RETURN_ADDR));
   label = gen_label_rtx ();
 
   /* Check the instruction stream at the normal return address for the
@@ -3544,20 +3541,24 @@ return_addr_rtx (count, frameaddr)
 		 GEN_INT (0xe0400002),
 		 NE, NULL_RTX, SImode, 1, 0);
 
-  /* If there is no export stub then just use our initial guess of
-     -20[frameaddr].  */
+  /* If there is no export stub then just use the value saved from
+     the return pointer register.  */
 
   emit_jump_insn (gen_bne (label));
 
-  /* Here we know that our return address pointer points to an export
+  /* Here we know that our return address points to an export
      stub.  We don't want to return the address of the export stub,
-     but rather the return address that leads back into user code.
-     That return address is stored at -24[frameaddr].  */
+     but rather the return address of the export stub.  That return
+     address is stored at -24[frameaddr].  */
 
-  emit_move_insn (saved_rp, plus_constant (frameaddr, -24));
+  emit_move_insn (saved_rp,
+		  gen_rtx_MEM (Pmode,
+			       memory_address (Pmode,
+					       plus_constant (frameaddr,
+							      -24))));
 
   emit_label (label);
-  return gen_rtx_MEM (Pmode, memory_address (Pmode, saved_rp));
+  return saved_rp;
 }
 
 /* This is only valid once reload has completed because it depends on
