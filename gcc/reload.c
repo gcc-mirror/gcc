@@ -6017,6 +6017,9 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 		   && (valueno = true_regnum (valtry = SET_SRC (pat))) >= 0)
 		  ||
 		  (goal_const && rtx_equal_p (SET_SRC (pat), goal)
+		   /* When looking for stack pointer + const,
+		      make sure we don't use a stack adjust.  */
+		   && !reg_overlap_mentioned_for_reload_p (SET_DEST (pat), goal)
 		   && (valueno = true_regnum (valtry = SET_DEST (pat))) >= 0)
 		  || (goal_mem
 		      && (valueno = true_regnum (valtry = SET_DEST (pat))) >= 0
