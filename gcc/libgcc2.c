@@ -3335,7 +3335,7 @@ find_exception_handler (void *pc, exception_table *table)
   if (table)
     {
       int pos;
-      int best = 0;
+      int best = -1;
 
       /* We can't do a binary search because the table isn't guaranteed
 	 to be sorted from function to function.  */
@@ -3345,15 +3345,15 @@ find_exception_handler (void *pc, exception_table *table)
 	    {
 	      /* This can apply.  Make sure it is at least as small as
 		 the previous best.  */
-	      if (best == 0 || (table[pos].end <= table[best].end
-				&& table[pos].start >= table[best].start))
+	      if (best == -1 || (table[pos].end <= table[best].end
+				 && table[pos].start >= table[best].start))
 		best = pos;
 	    }
 	  /* But it is sorted by starting PC within a function.  */
 	  else if (best && table[pos].start > pc)
 	    break;
 	}
-      if (best != 0)
+      if (best != -1)
 	return table[best].exception_handler;
     }
 
