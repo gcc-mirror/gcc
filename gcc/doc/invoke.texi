@@ -1844,9 +1844,9 @@ Options,,Options Controlling C Dialect}.
 
 @option{-Wformat} is included in @option{-Wall}.  For more control over some
 aspects of format checking, the options @option{-Wno-format-y2k},
-@option{-Wno-format-extra-args}, @option{-Wformat-nonliteral},
-@option{-Wformat-security} and @option{-Wformat=2} are available, but are
-not included in @option{-Wall}.
+@option{-Wno-format-extra-args}, @option{-Wno-format-zero-length},
+@option{-Wformat-nonliteral}, @option{-Wformat-security}, and
+@option{-Wformat=2} are available, but are not included in @option{-Wall}.
 
 @item -Wno-format-y2k
 @opindex Wno-format-y2k
@@ -1866,6 +1866,11 @@ type to pass to @code{va_arg} to skip the unused arguments.  However,
 in the case of @code{scanf} formats, this option will suppress the
 warning if the unused arguments are all pointers, since the Single
 Unix Specification says that such unused arguments are allowed.
+
+@item -Wno-format-zero-length
+@opindex Wno-format-zero-length
+If @option{-Wformat} is specified, do not warn about zero-length formats.
+The C standard specifies that zero-length formats are allowed.
 
 @item -Wformat-nonliteral
 @opindex Wformat-nonliteral

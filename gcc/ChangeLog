@@ -1,3 +1,17 @@
+2002-05-18  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* c-common.c (c_common_post_options): Warn if -Wformat-zero-length
+	is used without -Wformat.  
+	* c-common.h (warn_format_zero_length): Declare extern.
+	* c-decl.c (warn_options): Add "format-zero-length".
+	* c-format.c (warn_format_zero_length): Declare.
+	(set_Wformat): Set warn_format_zero_length for -Wformat.
+	(check_format_info): Only warn about zero-length formats if
+	warn_format_zero_length is true.  Include the format type
+	name in the warning message.
+	* doc/invoke.texi: Document -Wformat-zero-length.
+	* testsuite/gcc.dg/format/zero-length-1.c: New test.
+
 2002-05-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* timevar.c: Fix formatting.

@@ -4311,6 +4311,8 @@ c_common_post_options ()
     warning ("-Wformat-y2k ignored without -Wformat");
   if (warn_format_extra_args && !warn_format)
     warning ("-Wformat-extra-args ignored without -Wformat");
+  if (warn_format_zero_length && !warn_format)
+    warning ("-Wformat-zero-length ignored without -Wformat");
   if (warn_format_nonliteral && !warn_format)
     warning ("-Wformat-nonliteral ignored without -Wformat");
   if (warn_format_security && !warn_format)

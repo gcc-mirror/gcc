@@ -474,6 +474,7 @@ c_decode_option (argc, argv)
     { "div-by-zero", &warn_div_by_zero },
     { "float-equal", &warn_float_equal },
     { "format-extra-args", &warn_format_extra_args },
+    { "format-zero-length", &warn_format_zero_length },
     { "format-nonliteral", &warn_format_nonliteral },
     { "format-security", &warn_format_security },
     { "format-y2k", &warn_format_y2k },
