@@ -1,3 +1,8 @@
+2001-08-10  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* MAINTAINERS (Various maintainers: s390 port): Added myself
+	and Hartmut Penner <hpenner@de.ibm.com>.
+
 2001-07-30  Jeff Sturm  <jsturm@one-pont.com>
 
 	* ltcf-c.sh: Use $objext, not $ac_objext.
