@@ -437,11 +437,9 @@ c4x_hard_regno_rename_ok (regno1, regno2)
 {
   /* We can not copy call saved registers from mode QI into QF or from
      mode QF into QI.  */
-  if ((regno1 == R6_REGNO || regno1 == R7_REGNO)
-      && (regno2 == R4_REGNO || regno2 == R5_REGNO || regno2 == R8_REGNO))
+  if (IS_FLOAT_CALL_SAVED_REGNO (regno1) && IS_INT_CALL_SAVED_REGNO (regno2))
     return 0;
-  if ((regno1 == R4_REGNO || regno1 == R5_REGNO || regno1 == R8_REGNO)
-      && (regno2 == R6_REGNO || regno2 == R7_REGNO))
+  if (IS_INT_CALL_SAVED_REGNO (regno1) && IS_FLOAT_CALL_SAVED_REGNO (regno2))
     return 0;
   /* We cannot copy from an extended (40 bit) register to a standard
      (32 bit) register because we only set the condition codes for
@@ -987,9 +985,8 @@ c4x_expand_prologue ()
 	{
 	  if (regs_ever_live[regno] && ! call_used_regs[regno])
 	    {
-	      if ((regno == R6_REGNO) || (regno == R7_REGNO))
+	      if (IS_FLOAT_CALL_SAVED_REGNO (regno))
 		{
-		  /* R6 and R7 are saved as floating point.  */
 		  if (TARGET_PRESERVE_FLOAT)
 		    {
                       insn = emit_insn (gen_pushqi
@@ -1119,8 +1116,7 @@ c4x_expand_epilogue()
 	      if (regno == AR3_REGNO && dont_pop_ar3)
 		continue;
 	      
-	      /* R6 and R7 are saved as floating point.  */
-	      if ((regno == R6_REGNO) || (regno == R7_REGNO))
+	      if (IS_FLOAT_CALL_SAVED_REGNO (regno))
 		{
 		  insn = emit_insn (gen_popqf_unspec
 				    (gen_rtx_REG (QFmode, regno)));
