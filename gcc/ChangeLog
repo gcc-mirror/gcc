@@ -1,3 +1,8 @@
+Mon Apr 20 07:37:49 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* i386.c: Include expr.h to get the change_address prototype
+	declared.
+	
 Mon Apr 20 01:00:05 1998  H.J. Lu  (hjl@gnu.org)
 
 	* reg-stack.c (subst_asm_stack_regs): Change to return the last
