@@ -3261,10 +3261,7 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	  && (temp = simplify_unary_operation (NOT, mode,
 					       XEXP (XEXP (x, 0), 1),
 					       mode)) != 0)
-	{
-	  SUBST (XEXP (XEXP (x, 0), 1), temp);
-	  return XEXP (x, 0);
-	}
+	return gen_binary (XOR, mode, XEXP (XEXP (x, 0), 0), temp);
 	      
       /* (not (ashift 1 X)) is (rotate ~1 X).  We used to do this for operands
 	 other than 1, but that is not valid.  We could do a similar
