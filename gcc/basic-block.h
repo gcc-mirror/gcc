@@ -251,8 +251,8 @@ do {									\
 } while (0)
 
 /* Allocate a register set with oballoc.  */
-#define OBALLOC_REG_SET()						\
-  ((regset) obstack_alloc (&flow_obstack, regset_bytes))
+#define OBSTACK_ALLOC_REG_SET(OBSTACK)					\
+  ((regset) obstack_alloc (OBSTACK, regset_bytes))
 
 /* Allocate a register set with alloca.  */
 #define ALLOCA_REG_SET() ((regset) alloca (regset_bytes))

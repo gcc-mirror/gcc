@@ -3857,12 +3857,13 @@ schedule_block (b, file)
 	      attach_deaths_insn (insn);
 
 	      /* Find registers now made live by that instruction.  */
-	      EXECUTE_IF_SET_IN_REG_SET (bb_live_regs, 0, i,
-					 {
-					   sometimes_max
-					     = new_sometimes_live (regs_sometimes_live,
-								   i, sometimes_max);
-					 });
+	      EXECUTE_IF_AND_COMPL_IN_REG_SET (bb_live_regs, old_live_regs, 0, i,
+					       {
+						 sometimes_max
+						   = new_sometimes_live (regs_sometimes_live,
+									 i, sometimes_max);
+					       });
+	      IOR_REG_SET (old_live_regs, bb_live_regs);
 
 	      /* Count lengths of all regs we are worrying about now,
 		 and handle registers no longer live.  */
@@ -3874,7 +3875,7 @@ schedule_block (b, file)
 
 		  p->live_length += 1;
 
-		  if (REGNO_REG_SET_P (bb_live_regs, p->regno))
+		  if (!REGNO_REG_SET_P (bb_live_regs, p->regno))
 		    {
 		      /* This is the end of one of this register's lifetime
 			 segments.  Save the lifetime info collected so far,
