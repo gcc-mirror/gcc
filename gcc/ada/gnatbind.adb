@@ -113,7 +113,7 @@ procedure Gnatbind is
          No_Reentrancy            => True,
          --  Not checkable at compile time
 
-         Max_Entry_Queue_Depth    => True,
+         Max_Entry_Queue_Length    => True,
          --  Not checkable at compile time
 
          Max_Storage_At_Blocking  => True,

@@ -41,6 +41,7 @@ with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Warn; use Sem_Warn;
 with Sinfo;    use Sinfo;
+with Snames;   use Snames;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
@@ -216,6 +217,13 @@ package body Exp_Ch2 is
          --  issue that they do not get replaced when they could be).
 
          and then Nkind (Parent (N)) /= N_Pragma_Argument_Association
+
+         --  Same for Asm_Input and Asm_Output attribute references.
+
+         and then not (Nkind (Parent (N)) = N_Attribute_Reference
+           and then (Attribute_Name (Parent (N)) = Name_Asm_Input
+             or else Attribute_Name (Parent (N)) = Name_Asm_Output))
+
       then
          --  Case of Current_Value is a compile time known value
 

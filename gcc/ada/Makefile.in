@@ -1606,7 +1606,7 @@ gnattools2: ../stamp-tools
 	  ../../gnatls$(exeext) ../../gnatprep$(exeext) \
 	  ../../gnatxref$(exeext) \
 	  ../../gnatfind$(exeext) ../../gnatname$(exeext) \
-	  ../../gnatclean$(exeext) \
+	  ../../gnatclean$(exeext) ../../gprmake$(exeext) \
 	  ../../gprcmd$(exeext)   ../../gpr2make$(exeext)
 
 # These tools are only built for the native version.
@@ -1646,6 +1646,12 @@ gnattools4: ../stamp-tools
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatname --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatname 
 	$(GNATLINK) -v gnatname -o $@ --GCC="$(CC) $(ADA_INCLUDES)" \
+		    $(TOOLS_LIBS)
+
+../../gprmake$(exeext): ../stamp-tools
+	$(GNATMAKE) -c $(ADA_INCLUDES) gprmake --GCC="$(CC) $(ALL_ADAFLAGS)"
+	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gprmake
+	$(GNATLINK) -v gprmake -o $@ --GCC="$(CC) $(ADA_INCLUDES)" \
 		    $(TOOLS_LIBS)
 
 ../../gpr2make$(exeext): ../stamp-tools

@@ -5896,7 +5896,7 @@ package body Sem_Attr is
          Id  : RE_Id;
 
       begin
-         if Is_RTE (P_Root_Type, RE_Address) then
+         if Is_Descendent_Of_Address (Typ) then
             Id := RE_Type_Class_Address;
 
          elsif Is_Enumeration_Type (Typ) then

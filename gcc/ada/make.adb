@@ -343,12 +343,12 @@ package body Make is
    --  Can be set to False with the switches -c, -b and -l.
    --  These flags are reset to True for each invokation of procedure Gnatmake.
 
-   Shared_String : aliased String := "-shared";
+   Shared_String           : aliased String := "-shared";
    Force_Elab_Flags_String : aliased String := "-F";
 
-   No_Shared_Switch  : aliased Argument_List := (1 .. 0 => null);
-   Shared_Switch     : aliased Argument_List := (1 => Shared_String'Access);
-   Bind_Shared       : Argument_List_Access := No_Shared_Switch'Access;
+   No_Shared_Switch : aliased Argument_List := (1 .. 0 => null);
+   Shared_Switch    : aliased Argument_List := (1 => Shared_String'Access);
+   Bind_Shared      : Argument_List_Access := No_Shared_Switch'Access;
    --  Switch to added in front of gnatbind switches. By default no switch is
    --  added. Switch "-shared" is added if there is a non-static Library
    --  Project File.
@@ -378,7 +378,9 @@ package body Make is
    --  and is set to True whenever one of the source of the executable is
    --  compiled, or has already been compiled for another executable.
 
-   Max_Header : constant := 200; --  Arbitrary
+   Max_Header : constant := 200;
+   --  This needs a proper comment, it used to say "arbitrary"
+   --  that's not an adequate comment ???
 
    type Header_Num is range 1 .. Max_Header;
    --  Header_Num for the hash table Obsoleted below

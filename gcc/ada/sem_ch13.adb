@@ -45,6 +45,7 @@ with Snames;   use Snames;
 with Stand;    use Stand;
 with Sinfo;    use Sinfo;
 with Table;
+with Targparm; use Targparm;
 with Ttypes;   use Ttypes;
 with Tbuild;   use Tbuild;
 with Urealp;   use Urealp;
@@ -2699,8 +2700,19 @@ package body Sem_Ch13 is
                   end if;
                end if;
 
-            when N_Integer_Literal   |
-                 N_Real_Literal      |
+            when N_Integer_Literal   =>
+
+               --  If this is a rewritten unchecked conversion, in a system
+               --  where Address is an integer type, always use the base type
+               --  for a literal value. This is user-friendly and prevents
+               --  order-of-elaboration issues with instances of unchecked
+               --  conversion.
+
+               if Nkind (Original_Node (Nod)) = N_Function_Call then
+                  Set_Etype (Nod, Base_Type (Etype (Nod)));
+               end if;
+
+            when N_Real_Literal      |
                  N_String_Literal    |
                  N_Character_Literal =>
                return;
@@ -3068,10 +3080,19 @@ package body Sem_Ch13 is
       then
          return 0;
 
-      --  Access types
+         --  Access types. Normally an access type cannot have a size smaller
+         --  than the size of System.Address. The exception is on VMS, where
+         --  we have short and long addresses, and it is possible for an access
+         --  type to have a short address size (and thus be less than the size
+         --  of System.Address itself). We simply skip the check for VMS, and
+         --  leave the back end to do the check.
 
       elsif Is_Access_Type (T) then
-         return System_Address_Size;
+         if OpenVMS_On_Target then
+            return 0;
+         else
+            return System_Address_Size;
+         end if;
 
       --  Floating-point types
 

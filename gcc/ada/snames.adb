@@ -319,6 +319,7 @@ package body Snames is
      "win32#" &
      "as_is#" &
      "body_file_name#" &
+     "boolean_entry_barriers#" &
      "casing#" &
      "code#" &
      "component#" &
@@ -340,6 +341,7 @@ package body Snames is
      "internal#" &
      "link_name#" &
      "lowercase#" &
+     "max_entry_queue_depth#" &
      "max_size#" &
      "mechanism#" &
      "mixedcase#" &
@@ -350,6 +352,7 @@ package body Snames is
      "on#" &
      "parameter_types#" &
      "reference#" &
+     "no_dynamic_interrupts#" &
      "no_requeue#" &
      "no_task_attributes#" &
      "restricted#" &

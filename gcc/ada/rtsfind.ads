@@ -2712,6 +2712,12 @@ package Rtsfind is
    --  exception and without generating an error message, i.e. if the
    --  call will obtain the desired entity without any problems.
 
+   function RTU_Loaded (U : RTU_Id) return Boolean;
+   pragma Inline (RTU_Loaded);
+   --  Returns true if indicated unit has already been successfully loaded.
+   --  If the unit has not been loaded, returns False. Note that this does
+   --  not mean that an attempt to load it subsequently would fail.
+
    procedure Text_IO_Kludge (Nam : Node_Id);
    --  In Ada 83, and hence for compatibility in Ada 9X, package Text_IO has
    --  generic subpackages (e.g. Integer_IO). They really should be child
