@@ -1,5 +1,10 @@
 2004-01-05  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/12132
+	* parser.c (cp_parser_explicit_instantiation): Improve error
+	recovery.
+	(cp_parser_require): Improve indication of the error location.
+
 	PR c++/13451
 	* parser.c (cp_parser_class_head): Reorder logic to check for
 	invalid qualification.

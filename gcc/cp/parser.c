@@ -8392,13 +8392,22 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 				/*parenthesized_p=*/NULL);
       cp_parser_check_for_definition_in_return_type (declarator, 
 						     declares_class_or_enum);
-      decl = grokdeclarator (declarator, decl_specifiers, 
-			     NORMAL, 0, NULL);
-      /* Turn access control back on for names used during
-	 template instantiation.  */
-      pop_deferring_access_checks ();
-      /* Do the explicit instantiation.  */
-      do_decl_instantiation (decl, extension_specifier);
+      if (declarator != error_mark_node)
+	{
+	  decl = grokdeclarator (declarator, decl_specifiers, 
+				 NORMAL, 0, NULL);
+	  /* Turn access control back on for names used during
+	     template instantiation.  */
+	  pop_deferring_access_checks ();
+	  /* Do the explicit instantiation.  */
+	  do_decl_instantiation (decl, extension_specifier);
+	}
+      else
+	{
+	  pop_deferring_access_checks ();
+	  /* Skip the body of the explicit instantiation.  */
+	  cp_parser_skip_to_end_of_statement (parser);
+	}
     }
   /* We're done with the instantiation.  */
   end_explicit_instantiation ();
@@ -14630,7 +14639,11 @@ cp_parser_require (cp_parser* parser,
     {
       /* Output the MESSAGE -- unless we're parsing tentatively.  */
       if (!cp_parser_simulate_error (parser))
-	error ("expected %s", token_desc);
+	{
+	  char *message = concat ("expected ", token_desc, NULL);
+	  cp_parser_error (parser, message);
+	  free (message);
+	}
       return NULL;
     }
 }
