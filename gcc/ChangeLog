@@ -1,3 +1,7 @@
+2001-02-03  Michael Hayes  <m.hayes@elec.canterbury.ac.nz)
+
+	* c4x.h	(HARD_REGNO_CALL_PART_CLOBBERED): Fix typo.
+
 2001-02-02  lars brinkhoff  <lars@nocrew.org>
 
 	* md.texi (Standard Names): remove reference to spur.md.
