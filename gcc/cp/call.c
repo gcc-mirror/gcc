@@ -47,8 +47,10 @@ static int joust PARAMS ((struct z_candidate *, struct z_candidate *, int));
 static int compare_ics PARAMS ((tree, tree));
 static tree build_over_call PARAMS ((struct z_candidate *, tree, int));
 static tree build_java_interface_fn_ref PARAMS ((tree, tree));
-#define convert_like(CONV, EXPR) convert_like_real (CONV, EXPR, NULL_TREE, 0, 0)
-#define convert_like_with_context(CONV, EXPR, FN, ARGNO) convert_like_real (CONV, EXPR, FN, ARGNO, 0)
+#define convert_like(CONV, EXPR) \
+  convert_like_real ((CONV), (EXPR), NULL_TREE, 0, 0)
+#define convert_like_with_context(CONV, EXPR, FN, ARGNO) \
+  convert_like_real ((CONV), (EXPR), (FN), (ARGNO), 0)
 static tree convert_like_real PARAMS ((tree, tree, tree, int, int));
 static void op_error PARAMS ((enum tree_code, enum tree_code, tree, tree,
 			    tree, const char *));
@@ -564,7 +566,7 @@ struct z_candidate {
 #define BAD_RANK 7
 
 #define ICS_RANK(NODE)				\
-  (ICS_BAD_FLAG (NODE) ? BAD_RANK   \
+  (ICS_BAD_FLAG (NODE) ? BAD_RANK   		\
    : ICS_ELLIPSIS_FLAG (NODE) ? ELLIPSIS_RANK	\
    : ICS_USER_FLAG (NODE) ? USER_RANK		\
    : ICS_STD_RANK (NODE))
@@ -578,7 +580,7 @@ struct z_candidate {
 
 /* In a REF_BIND or a BASE_CONV, this indicates that a temporary
    should be created to hold the result of the conversion.  */
-#define NEED_TEMPORARY_P(NODE) (TREE_LANG_FLAG_4 ((NODE)))
+#define NEED_TEMPORARY_P(NODE) TREE_LANG_FLAG_4 (NODE)
 
 #define USER_CONV_CAND(NODE) \
   ((struct z_candidate *)WRAPPER_PTR (TREE_OPERAND (NODE, 1)))
