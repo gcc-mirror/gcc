@@ -188,7 +188,7 @@ static rtx expand_builtin_apply_args PROTO((void));
 static rtx expand_builtin_apply	PROTO((rtx, rtx, rtx));
 static void expand_builtin_return PROTO((rtx));
 static rtx expand_increment	PROTO((tree, int));
-rtx bc_expand_increment		PROTO((struct increment_operator *, tree));
+void bc_expand_increment	PROTO((struct increment_operator *, tree));
 tree bc_runtime_type_code 	PROTO((tree));
 rtx bc_allocate_local		PROTO((int, int));
 void bc_store_memory 		PROTO((tree, tree));
