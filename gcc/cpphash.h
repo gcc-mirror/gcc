@@ -171,10 +171,9 @@ struct spec_nodes
 struct cpp_buffer
 {
   const unsigned char *cur;	 /* current position */
+  const unsigned char *backup_to; /* if peeked character is not wanted */
   const unsigned char *rlimit; /* end of valid data */
   const unsigned char *line_base; /* start of current line */
-  cppchar_t read_ahead;		/* read ahead character */
-  cppchar_t extra_char;		/* extra read-ahead for long tokens.  */
 
   struct cpp_buffer *prev;
 

@@ -66,6 +66,7 @@ static const struct token_spelling token_spellings[N_TTYPES] = { TTYPE_TABLE };
 
 #define TOKEN_SPELL(token) (token_spellings[(token)->type].category)
 #define TOKEN_NAME(token) (token_spellings[(token)->type].name)
+#define BACKUP() do {buffer->cur = buffer->backup_to;} while (0)
 
 static void handle_newline PARAMS ((cpp_reader *));
 static cppchar_t skip_escaped_newlines PARAMS ((cpp_reader *));
@@ -84,8 +85,6 @@ static void parse_string PARAMS ((cpp_reader *, cpp_token *, cppchar_t));
 static void unterminated PARAMS ((cpp_reader *, int));
 static bool trigraph_p PARAMS ((cpp_reader *));
 static void save_comment PARAMS ((cpp_reader *, cpp_token *, const U_CHAR *));
-static void lex_percent PARAMS ((cpp_reader *, cpp_token *));
-static void lex_dot PARAMS ((cpp_reader *, cpp_token *));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
 static int maybe_read_ucs PARAMS ((cpp_reader *, const unsigned char **,
 				   const unsigned char *, unsigned int *));
@@ -172,14 +171,10 @@ trigraph_p (pfile)
   return accept;
 }
 
-/* Assumes local variables buffer and result.  */
-#define ACCEPT_CHAR(t) \
-  do { result->type = t; buffer->read_ahead = EOF; } while (0)
-
 /* Skips any escaped newlines introduced by '?' or a '\\', assumed to
-   lie in buffer->cur[-1].  Returns the next character, which will
-   then be in buffer->cur[-1].  This routine performs preprocessing
-   stages 1 and 2 of the ISO C standard.  */
+   lie in buffer->cur[-1].  Returns the next byte, which will be in
+   buffer->cur[-1].  This routine performs preprocessing stages 1 and
+   2 of the ISO C standard.  */
 static cppchar_t
 skip_escaped_newlines (pfile)
      cpp_reader *pfile;
@@ -231,6 +226,7 @@ skip_escaped_newlines (pfile)
 	    cpp_warning (pfile, "backslash and newline separated by space");
 
 	  handle_newline (pfile);
+	  buffer->backup_to = buffer->cur;
 	  if (buffer->cur == buffer->rlimit)
 	    {
 	      cpp_pedwarn (pfile, "backslash-newline at end of file");
@@ -248,28 +244,24 @@ skip_escaped_newlines (pfile)
 /* Obtain the next character, after trigraph conversion and skipping
    an arbitrarily long string of escaped newlines.  The common case of
    no trigraphs or escaped newlines falls through quickly.  On return,
-   buffer->cur points after the returned character.  */
+   buffer->backup_to points to where to return to if the character is
+   not to be processed.  */
 static cppchar_t
 get_effective_char (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *buffer = pfile->buffer;
   cppchar_t next = EOF;
+  cpp_buffer *buffer = pfile->buffer;
 
+  buffer->backup_to = buffer->cur;
   if (buffer->cur < buffer->rlimit)
     {
       next = *buffer->cur++;
-
-      /* '?' can introduce trigraphs (and therefore backslash); '\\'
-	 can introduce escaped newlines, which we want to skip, or
-	 UCNs, which, depending upon lexer state, we will handle in
-	 the future.  */
-      if (next == '?' || next == '\\')
+      if (__builtin_expect (next == '?' || next == '\\', 0))
 	next = skip_escaped_newlines (pfile);
     }
 
-  buffer->read_ahead = next;
-  return next;
+   return next;
 }
 
 /* Skip a C-style block comment.  We find the end of the comment by
@@ -316,13 +308,12 @@ skip_block_comment (pfile)
     }
 
   pfile->state.lexing_comment = 0;
-  buffer->read_ahead = EOF;
   return c != '/' || prevc != '*';
 }
 
-/* Skip a C++ line comment.  Handles escaped newlines.  Returns
-   non-zero if a multiline comment.  The following new line, if any,
-   is left in buffer->read_ahead.  */
+/* Skip a C++ line comment, leaving buffer->cur pointing to the
+   terminating newline.  Handles escaped newlines.  Returns non-zero
+   if a multiline comment.  */
 static int
 skip_line_comment (pfile)
      cpp_reader *pfile;
@@ -334,9 +325,8 @@ skip_line_comment (pfile)
   pfile->state.lexing_comment = 1;
   do
     {
-      c = EOF;
       if (buffer->cur == buffer->rlimit)
-	break;
+	goto at_eof;
 
       c = *buffer->cur++;
       if (c == '?' || c == '\\')
@@ -344,8 +334,11 @@ skip_line_comment (pfile)
     }
   while (!is_vspace (c));
 
+  /* Step back over the newline, except at EOF.  */
+  buffer->cur--;
+ at_eof:
+
   pfile->state.lexing_comment = 0;
-  buffer->read_ahead = c;	/* Leave any newline for caller.  */
   return orig_line != pfile->line;
 }
 
@@ -397,16 +390,14 @@ skip_whitespace (pfile, c)
 			       "%s in preprocessing directive",
 			       c == '\f' ? "form feed" : "vertical tab");
 
-      c = EOF;
       if (buffer->cur == buffer->rlimit)
-	break;
+	return;
       c = *buffer->cur++;
     }
   /* We only want non-vertical space, i.e. ' ' \t \f \v \0.  */
   while (is_nvspace (c));
 
-  /* Remember the next character.  */
-  buffer->read_ahead = c;
+  buffer->cur--;
 }
 
 /* See if the characters of a number token are valid in a name (no
@@ -510,22 +501,23 @@ parse_identifier_slow (pfile, cur)
           if (c == '$')
             saw_dollar++;
 
-          c = EOF;
           if (buffer->cur == buffer->rlimit)
-            break;
+            goto at_eof;
 
           c = *buffer->cur++;
         }
 
       /* Potential escaped newline?  */
+      buffer->backup_to = buffer->cur - 1;
       if (c != '?' && c != '\\')
         break;
       c = skip_escaped_newlines (pfile);
     }
   while (is_idchar (c));
 
-  /* Remember the next character.  */
-  buffer->read_ahead = c;
+  /* Step back over the unwanted char, except at EOF.  */
+  BACKUP ();
+ at_eof:
 
   /* $ is not an identifier character in the standard, but is commonly
      accepted as an extension.  Don't warn about it in skipped
@@ -581,23 +573,24 @@ parse_number (pfile, number, c, leading_period)
 	    }
 	  *dest++ = c;
 
-	  c = EOF;
 	  if (buffer->cur == buffer->rlimit)
-	    break;
+	    goto at_eof;
 
 	  c = *buffer->cur++;
 	}
       while (is_numchar (c) || c == '.' || VALID_SIGN (c, dest[-1]));
 
       /* Potential escaped newline?  */
+      buffer->backup_to = buffer->cur - 1;
       if (c != '?' && c != '\\')
 	break;
       c = skip_escaped_newlines (pfile);
     }
   while (is_numchar (c) || c == '.' || VALID_SIGN (c, dest[-1]));
 
-  /* Remember the next character.  */
-  buffer->read_ahead = c;
+  /* Step back over the unwanted char, except at EOF.  */
+  BACKUP ();
+ at_eof:
 
   /* Null-terminate the number.  */
   *dest = '\0';
@@ -740,7 +733,6 @@ parse_string (pfile, token, terminator)
       *dest++ = c;
     }
 
-  buffer->read_ahead = EOF;
   *dest = '\0';
 
   token->val.str.text = BUFF_FRONT (pfile->u_buff);
@@ -759,9 +751,10 @@ save_comment (pfile, token, from)
   unsigned int len;
   
   len = pfile->buffer->cur - from + 1; /* + 1 for the initial '/'.  */
+
   /* C++ comments probably (not definitely) have moved past a new
      line, which we don't want to save in the comment.  */
-  if (pfile->buffer->read_ahead != EOF)
+  if (is_vspace (pfile->buffer->cur[-1]))
     len--;
   buffer = _cpp_unaligned_alloc (pfile, len);
   
@@ -771,101 +764,6 @@ save_comment (pfile, token, from)
 
   buffer[0] = '/';
   memcpy (buffer + 1, from, len - 1);
-}
-
-/* Subroutine of _cpp_lex_direct to handle '%'.  A little tricky, since we
-   want to avoid stepping back when lexing %:%X.  */
-static void
-lex_percent (pfile, result)
-     cpp_reader *pfile;
-     cpp_token *result;
-{
-  cpp_buffer *buffer= pfile->buffer;
-  cppchar_t c;
-
-  result->type = CPP_MOD;
-  /* Parsing %:%X could leave an extra character.  */
-  if (buffer->extra_char == EOF)
-    c = get_effective_char (pfile);
-  else
-    {
-      c = buffer->read_ahead = buffer->extra_char;
-      buffer->extra_char = EOF;
-    }
-
-  if (c == '=')
-    ACCEPT_CHAR (CPP_MOD_EQ);
-  else if (CPP_OPTION (pfile, digraphs))
-    {
-      if (c == ':')
-	{
-	  result->flags |= DIGRAPH;
-	  ACCEPT_CHAR (CPP_HASH);
-	  if (get_effective_char (pfile) == '%')
-	    {
-	      buffer->extra_char = get_effective_char (pfile);
-	      if (buffer->extra_char == ':')
-		{
-		  buffer->extra_char = EOF;
-		  ACCEPT_CHAR (CPP_PASTE);
-		}
-	      else
-		/* We'll catch the extra_char when we're called back.  */
-		buffer->read_ahead = '%';
-	    }
-	}
-      else if (c == '>')
-	{
-	  result->flags |= DIGRAPH;
-	  ACCEPT_CHAR (CPP_CLOSE_BRACE);
-	}
-    }
-}
-
-/* Subroutine of _cpp_lex_direct to handle '.'.  This is tricky, since we
-   want to avoid stepping back when lexing '...' or '.123'.  In the
-   latter case we should also set a flag for parse_number.  */
-static void
-lex_dot (pfile, result)
-     cpp_reader *pfile;
-     cpp_token *result;
-{
-  cpp_buffer *buffer = pfile->buffer;
-  cppchar_t c;
-
-  /* Parsing ..X could leave an extra character.  */
-  if (buffer->extra_char == EOF)
-    c = get_effective_char (pfile);
-  else
-    {
-      c = buffer->read_ahead = buffer->extra_char;
-      buffer->extra_char = EOF;
-    }
-
-  /* All known character sets have 0...9 contiguous.  */
-  if (c >= '0' && c <= '9')
-    {
-      result->type = CPP_NUMBER;
-      parse_number (pfile, &result->val.str, c, 1);
-    }
-  else
-    {
-      result->type = CPP_DOT;
-      if (c == '.')
-	{
-	  buffer->extra_char = get_effective_char (pfile);
-	  if (buffer->extra_char == '.')
-	    {
-	      buffer->extra_char = EOF;
-	      ACCEPT_CHAR (CPP_ELLIPSIS);
-	    }
-	  else
-	    /* We'll catch the extra_char when we're called back.  */
-	    buffer->read_ahead = '.';
-	}
-      else if (c == '*' && CPP_OPTION (pfile, cplusplus))
-	ACCEPT_CHAR (CPP_DOT_STAR);
-    }
 }
 
 /* Allocate COUNT tokens for RUN.  */
@@ -970,6 +868,17 @@ _cpp_lex_token (pfile)
   return result;
 }
 
+#define IF_NEXT_IS(CHAR, THEN_TYPE, ELSE_TYPE)	\
+  do {						\
+    if (get_effective_char (pfile) == CHAR)	\
+      result->type = THEN_TYPE;			\
+    else					\
+      {						\
+        BACKUP ();				\
+        result->type = ELSE_TYPE;		\
+      }						\
+  } while (0)
+
 /* Lex a token into pfile->cur_token, which is also incremented, to
    get diagnostics pointing to the correct location.
 
@@ -998,16 +907,15 @@ _cpp_lex_direct (pfile)
   result->line = pfile->line;
 
  skipped_white:
-  c = buffer->read_ahead;
-  if (c == EOF && buffer->cur < buffer->rlimit)
-    c = *buffer->cur++;
+  if (buffer->cur == buffer->rlimit)
+    goto at_eof;
+  c = *buffer->cur++;
   result->col = CPP_BUF_COLUMN (buffer, buffer->cur);
-  buffer->read_ahead = EOF;
 
  trigraph:
   switch (c)
     {
-    case EOF:
+    at_eof:
       buffer->saved_flags = BOL;
       if (!pfile->state.parsing_args && !pfile->state.in_directive)
 	{
@@ -1066,20 +974,20 @@ _cpp_lex_direct (pfile)
 	c = skip_escaped_newlines (pfile);
 	if (line != pfile->line)
 	  {
-	    buffer->read_ahead = c;
+	    buffer->cur--;
 	    /* We had at least one escaped newline of some sort.
 	       Update the token's line and column.  */
 	    goto update_tokens_line;
 	  }
-
-	/* We are either the original '?' or '\\', or a trigraph.  */
-	result->type = CPP_QUERY;
-	buffer->read_ahead = EOF;
-	if (c == '\\')
-	  goto random_char;
-	else if (c != '?')
-	  goto trigraph;
       }
+
+      /* We are either the original '?' or '\\', or a trigraph.  */
+      if (c == '?')
+	result->type = CPP_QUERY;
+      else if (c == '\\')
+	goto random_char;
+      else
+	goto trigraph;
       break;
 
     case '0': case '1': case '2': case '3': case '4':
@@ -1108,16 +1016,15 @@ _cpp_lex_direct (pfile)
       result->val.node = parse_identifier (pfile);
 
       /* 'L' may introduce wide characters or strings.  */
-      if (result->val.node == pfile->spec_nodes.n_L)
+      if (result->val.node == pfile->spec_nodes.n_L
+	  && buffer->cur < buffer->rlimit)
 	{
-	  c = buffer->read_ahead;
-	  if (c == EOF && buffer->cur < buffer->rlimit)
-	    c = *buffer->cur;
+	  c = *buffer->cur;
 	  if (c == '\'' || c == '"')
 	    {
 	      buffer->cur++;
-	      ACCEPT_CHAR (c == '"' ? CPP_WSTRING: CPP_WCHAR);
-	      goto make_string;
+	      result->type = (c == '"' ? CPP_WSTRING: CPP_WCHAR);
+	      parse_string (pfile, result, c);
 	    }
 	}
       /* Convert named operators to their proper types.  */
@@ -1131,31 +1038,22 @@ _cpp_lex_direct (pfile)
     case '\'':
     case '"':
       result->type = c == '"' ? CPP_STRING: CPP_CHAR;
-    make_string:
       parse_string (pfile, result, c);
       break;
 
     case '/':
       /* A potential block or line comment.  */
       comment_start = buffer->cur;
-      result->type = CPP_DIV;
       c = get_effective_char (pfile);
-      if (c == '=')
-	ACCEPT_CHAR (CPP_DIV_EQ);
-      if (c != '/' && c != '*')
-	break;
-      
+
       if (c == '*')
 	{
 	  if (skip_block_comment (pfile))
 	    cpp_error (pfile, "unterminated comment");
 	}
-      else
+      else if (c == '/' && (CPP_OPTION (pfile, cplusplus_comments)
+			    || CPP_IN_SYSTEM_HEADER (pfile)))
 	{
-	  if (!CPP_OPTION (pfile, cplusplus_comments)
-	      && !CPP_IN_SYSTEM_HEADER (pfile))
-	    break;
-
 	  /* Warn about comments only if pedantically GNUC89, and not
 	     in system headers.  */
 	  if (CPP_OPTION (pfile, lang) == CLK_GNUC89 && CPP_PEDANTIC (pfile)
@@ -1168,12 +1066,21 @@ _cpp_lex_direct (pfile)
 	      buffer->warned_cplusplus_comments = 1;
 	    }
 
-	  /* Skip_line_comment updates buffer->read_ahead.  */
 	  if (skip_line_comment (pfile) && CPP_OPTION (pfile, warn_comments))
 	    cpp_warning (pfile, "multi-line comment");
 	}
+      else if (c == '=')
+	{
+	  result->type = CPP_DIV_EQ;
+	  break;
+	}
+      else
+	{
+	  BACKUP ();
+	  result->type = CPP_DIV;
+	  break;
+	}
 
-      /* Skipping the comment has updated buffer->read_ahead.  */
       if (!pfile->state.save_comments)
 	{
 	  result->flags |= PREV_WHITE;
@@ -1188,149 +1095,189 @@ _cpp_lex_direct (pfile)
       if (pfile->state.angled_headers)
 	{
 	  result->type = CPP_HEADER_NAME;
-	  c = '>';		/* terminator.  */
-	  goto make_string;
+	  parse_string (pfile, result, '>');
+	  break;
 	}
 
-      result->type = CPP_LESS;
       c = get_effective_char (pfile);
       if (c == '=')
-	ACCEPT_CHAR (CPP_LESS_EQ);
+	result->type = CPP_LESS_EQ;
       else if (c == '<')
-	{
-	  ACCEPT_CHAR (CPP_LSHIFT);
-	  if (get_effective_char (pfile) == '=')
-	    ACCEPT_CHAR (CPP_LSHIFT_EQ);
-	}
+	IF_NEXT_IS ('=', CPP_LSHIFT_EQ, CPP_LSHIFT);
       else if (c == '?' && CPP_OPTION (pfile, cplusplus))
-	{
-	  ACCEPT_CHAR (CPP_MIN);
-	  if (get_effective_char (pfile) == '=')
-	    ACCEPT_CHAR (CPP_MIN_EQ);
-	}
+	IF_NEXT_IS ('=', CPP_MIN_EQ, CPP_MIN);
       else if (c == ':' && CPP_OPTION (pfile, digraphs))
 	{
-	  ACCEPT_CHAR (CPP_OPEN_SQUARE);
+	  result->type = CPP_OPEN_SQUARE;
 	  result->flags |= DIGRAPH;
 	}
       else if (c == '%' && CPP_OPTION (pfile, digraphs))
 	{
-	  ACCEPT_CHAR (CPP_OPEN_BRACE);
+	  result->type = CPP_OPEN_BRACE;
 	  result->flags |= DIGRAPH;
+	}
+      else
+	{
+	  BACKUP ();
+	  result->type = CPP_LESS;
 	}
       break;
 
     case '>':
-      result->type = CPP_GREATER;
       c = get_effective_char (pfile);
       if (c == '=')
-	ACCEPT_CHAR (CPP_GREATER_EQ);
+	result->type = CPP_GREATER_EQ;
       else if (c == '>')
-	{
-	  ACCEPT_CHAR (CPP_RSHIFT);
-	  if (get_effective_char (pfile) == '=')
-	    ACCEPT_CHAR (CPP_RSHIFT_EQ);
-	}
+	IF_NEXT_IS ('=', CPP_RSHIFT_EQ, CPP_RSHIFT);
       else if (c == '?' && CPP_OPTION (pfile, cplusplus))
+	IF_NEXT_IS ('=', CPP_MAX_EQ, CPP_MAX);
+      else
 	{
-	  ACCEPT_CHAR (CPP_MAX);
-	  if (get_effective_char (pfile) == '=')
-	    ACCEPT_CHAR (CPP_MAX_EQ);
+	  BACKUP ();
+	  result->type = CPP_GREATER;
 	}
       break;
 
     case '%':
-      lex_percent (pfile, result);
+      c = get_effective_char (pfile);
+      if (c == '=')
+	result->type = CPP_MOD_EQ;
+      else if (CPP_OPTION (pfile, digraphs) && c == ':')
+	{
+	  result->flags |= DIGRAPH;
+	  result->type = CPP_HASH;
+	  if (get_effective_char (pfile) == '%')
+	    {
+	      const unsigned char *pos = buffer->cur;
+
+	      if (get_effective_char (pfile) == ':')
+		result->type = CPP_PASTE;
+	      else
+		buffer->cur = pos - 1;
+	    }
+	  else
+	    BACKUP ();
+	}
+      else if (CPP_OPTION (pfile, digraphs) && c == '>')
+	{
+	  result->flags |= DIGRAPH;
+	  result->type = CPP_CLOSE_BRACE;
+	}
+      else
+	{
+	  BACKUP ();
+	  result->type = CPP_MOD;
+	}
       break;
 
     case '.':
-      lex_dot (pfile, result);
+      result->type = CPP_DOT;
+      c = get_effective_char (pfile);
+      if (c == '.')
+	{
+	  const unsigned char *pos = buffer->cur;
+
+	  if (get_effective_char (pfile) == '.')
+	    result->type = CPP_ELLIPSIS;
+	  else
+	    buffer->cur = pos - 1;
+	}
+      /* All known character sets have 0...9 contiguous.  */
+      else if (c >= '0' && c <= '9')
+	{
+	  result->type = CPP_NUMBER;
+	  parse_number (pfile, &result->val.str, c, 1);
+	}
+      else if (c == '*' && CPP_OPTION (pfile, cplusplus))
+	result->type = CPP_DOT_STAR;
+      else
+	BACKUP ();
       break;
 
     case '+':
-      result->type = CPP_PLUS;
       c = get_effective_char (pfile);
-      if (c == '=')
-	ACCEPT_CHAR (CPP_PLUS_EQ);
-      else if (c == '+')
-	ACCEPT_CHAR (CPP_PLUS_PLUS);
+      if (c == '+')
+	result->type = CPP_PLUS_PLUS;
+      else if (c == '=')
+	result->type = CPP_PLUS_EQ;
+      else
+	{
+	  BACKUP ();
+	  result->type = CPP_PLUS;
+	}
       break;
 
     case '-':
-      result->type = CPP_MINUS;
       c = get_effective_char (pfile);
       if (c == '>')
 	{
-	  ACCEPT_CHAR (CPP_DEREF);
-	  if (CPP_OPTION (pfile, cplusplus)
-	      && get_effective_char (pfile) == '*')
-	    ACCEPT_CHAR (CPP_DEREF_STAR);
+	  result->type = CPP_DEREF;
+	  if (CPP_OPTION (pfile, cplusplus))
+	    {
+	      if (get_effective_char (pfile) == '*')
+		result->type = CPP_DEREF_STAR;
+	      else
+		BACKUP ();
+	    }
 	}
-      else if (c == '=')
-	ACCEPT_CHAR (CPP_MINUS_EQ);
       else if (c == '-')
-	ACCEPT_CHAR (CPP_MINUS_MINUS);
-      break;
-
-    case '*':
-      result->type = CPP_MULT;
-      if (get_effective_char (pfile) == '=')
-	ACCEPT_CHAR (CPP_MULT_EQ);
-      break;
-
-    case '=':
-      result->type = CPP_EQ;
-      if (get_effective_char (pfile) == '=')
-	ACCEPT_CHAR (CPP_EQ_EQ);
-      break;
-
-    case '!':
-      result->type = CPP_NOT;
-      if (get_effective_char (pfile) == '=')
-	ACCEPT_CHAR (CPP_NOT_EQ);
+	result->type = CPP_MINUS_MINUS;
+      else if (c == '=')
+	result->type = CPP_MINUS_EQ;
+      else
+	{
+	  BACKUP ();
+	  result->type = CPP_MINUS;
+	}
       break;
 
     case '&':
-      result->type = CPP_AND;
       c = get_effective_char (pfile);
-      if (c == '=')
-	ACCEPT_CHAR (CPP_AND_EQ);
-      else if (c == '&')
-	ACCEPT_CHAR (CPP_AND_AND);
+      if (c == '&')
+	result->type = CPP_AND_AND;
+      else if (c == '=')
+	result->type = CPP_AND_EQ;
+      else
+	{
+	  BACKUP ();
+	  result->type = CPP_AND;
+	}
       break;
 	  
-    case '#':
-      result->type = CPP_HASH;
-      if (get_effective_char (pfile) == '#')
-	  ACCEPT_CHAR (CPP_PASTE);
-      break;
-
     case '|':
-      result->type = CPP_OR;
       c = get_effective_char (pfile);
-      if (c == '=')
-	ACCEPT_CHAR (CPP_OR_EQ);
-      else if (c == '|')
-	ACCEPT_CHAR (CPP_OR_OR);
-      break;
-
-    case '^':
-      result->type = CPP_XOR;
-      if (get_effective_char (pfile) == '=')
-	ACCEPT_CHAR (CPP_XOR_EQ);
+      if (c == '|')
+	result->type = CPP_OR_OR;
+      else if (c == '=')
+	result->type = CPP_OR_EQ;
+      else
+	{
+	  BACKUP ();
+	  result->type = CPP_OR;
+	}
       break;
 
     case ':':
-      result->type = CPP_COLON;
       c = get_effective_char (pfile);
       if (c == ':' && CPP_OPTION (pfile, cplusplus))
-	ACCEPT_CHAR (CPP_SCOPE);
+	result->type = CPP_SCOPE;
       else if (c == '>' && CPP_OPTION (pfile, digraphs))
 	{
 	  result->flags |= DIGRAPH;
-	  ACCEPT_CHAR (CPP_CLOSE_SQUARE);
+	  result->type = CPP_CLOSE_SQUARE;
+	}
+      else
+	{
+	  BACKUP ();
+	  result->type = CPP_COLON;
 	}
       break;
+
+    case '*': IF_NEXT_IS ('=', CPP_MULT_EQ, CPP_MULT); break;
+    case '=': IF_NEXT_IS ('=', CPP_EQ_EQ, CPP_EQ); break;
+    case '!': IF_NEXT_IS ('=', CPP_NOT_EQ, CPP_NOT); break;
+    case '^': IF_NEXT_IS ('=', CPP_XOR_EQ, CPP_XOR); break;
+    case '#': IF_NEXT_IS ('#', CPP_PASTE, CPP_HASH); break;
 
     case '~': result->type = CPP_COMPL; break;
     case ',': result->type = CPP_COMMA; break;
