@@ -5111,6 +5111,19 @@ case x$CONFIG_HEADERS in
 xconfig.h:config.in)
 echo > cstamp-h ;;
 esac
+# Make sure we create things so -Bstage1/ will work.
+for d in .. ${subdirs} ; do
+  if [ $d != .. ]; then
+	STARTDIR=`pwd`
+	cd $d
+	for t in stage1 stage2 stage3 stage4 include
+	do
+		rm -f $t
+		$symbolic_link ../$t $t 2>/dev/null
+	done
+	cd $STARTDIR
+  fi
+done
 
 exit 0
 EOF
