@@ -1,32 +1,40 @@
-%% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.224 1998/02/24 22:48:24 karl Exp karl $
-
-%  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
-%                94, 95, 96, 97 Free Software Foundation, Inc.
-
-%This texinfo.tex file is free software; you can redistribute it and/or
-%modify it under the terms of the GNU General Public License as
-%published by the Free Software Foundation; either version 2, or (at
-%your option) any later version.
-
-%This texinfo.tex file is distributed in the hope that it will be
-%useful, but WITHOUT ANY WARRANTY; without even the implied warranty
-%of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-%General Public License for more details.
-
-%You should have received a copy of the GNU General Public License
-%along with this texinfo.tex file; see the file COPYING.  If not, write
-%to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-%Boston, MA 02111-1307, USA.
-
-
-%In other words, you are welcome to use, share and improve this program.
-%You are forbidden to forbid anyone else to use, share and improve
-%what you give them.   Help stamp out software-hoarding!
-
-
-% Send bug reports to bug-texinfo@prep.ai.mit.edu.
-% Please include a *precise* test case in each bug report.
+% texinfo.tex -- TeX macros to handle Texinfo files.
+% $Id: texinfo.tex,v 2.225 1998/02/24 23:05:08 karl Exp karl $
+%
+% Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
+% Free Software Foundation, Inc.
+%
+% This texinfo.tex file is free software; you can redistribute it and/or
+% modify it under the terms of the GNU General Public License as
+% published by the Free Software Foundation; either version 2, or (at
+% your option) any later version.
+%
+% This texinfo.tex file is distributed in the hope that it will be
+% useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+% of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+% General Public License for more details.
+%
+% You should have received a copy of the GNU General Public License
+% along with this texinfo.tex file; see the file COPYING.  If not, write
+% to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+% Boston, MA 02111-1307, USA.
+%
+% In other words, you are welcome to use, share and improve this program.
+% You are forbidden to forbid anyone else to use, share and improve
+% what you give them.   Help stamp out software-hoarding!
+%
+% Please try the latest version of texinfo.tex before submitting bug
+% reports; you can get the latest version from:
+% ftp://ftp.cs.umb.edu/pub/tex/texinfo.tex
+% /home/gd/gnu/doc/texinfo.tex on the GNU machines.
+% 
+% Send bug reports to bug-texinfo@gnu.org.
+% Please include a precise test case in each bug report,
+% including a complete document with which we can reproduce the problem.
+% 
+% Texinfo macros (with @macro) are *not* supported by texinfo.tex.  You
+% have to run makeinfo -E to expand macros first; the texi2dvi script
+% does this.
 
 
 % Make it possible to create a .fmt file just by loading this file:
@@ -36,7 +44,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.224 $
+\deftexinfoversion$Revision: 2.225 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -2063,10 +2071,7 @@ July\or August\or September\or October\or November\or December\fi
 % @multitablelinespace is space to leave between table items, baseline
 %                                                            to baseline.
 %   0pt means it depends on current normal line spacing.
-
-%%%%
-% Dimensions
-
+%
 \newskip\multitableparskip
 \newskip\multitableparindent
 \newdimen\multitablecolspace
@@ -2076,15 +2081,15 @@ July\or August\or September\or October\or November\or December\fi
 \multitablecolspace=12pt
 \multitablelinespace=0pt
 
-%%%%
 % Macros used to set up halign preamble:
+% 
 \let\endsetuptable\relax
 \def\xendsetuptable{\endsetuptable}
 \let\columnfractions\relax
 \def\xcolumnfractions{\columnfractions}
 \newif\ifsetpercent
 
-%% 2/1/96, to allow fractions to be given with more than one digit.
+% 2/1/96, to allow fractions to be given with more than one digit.
 \def\pickupwholefraction#1 {\global\advance\colcount by1 %
 \expandafter\xdef\csname col\the\colcount\endcsname{.#1\hsize}%
 \setuptable}
@@ -2110,80 +2115,84 @@ July\or August\or September\or October\or November\or December\fi
 \ifx\go\pickupwholefraction\else\let\go\setuptable\fi%
 \fi\go}
 
-%%%%
 % multitable syntax
 \def\tab{&\hskip1sp\relax} % 2/2/96
                            % tiny skip here makes sure this column space is
                            % maintained, even if it is never used.
 
-
-%%%%
 % @multitable ... @end multitable definitions:
 
 \def\multitable{\parsearg\dotable}
-
 \def\dotable#1{\bgroup
-\let\item\cr
-\tolerance=9500
-\hbadness=9500
-\setmultitablespacing
-\parskip=\multitableparskip
-\parindent=\multitableparindent
-\overfullrule=0pt
-\global\colcount=0\relax%
-\def\Emultitable{\global\setpercentfalse\global\everycr{}\cr\egroup\egroup}%
- % To parse everything between @multitable and @item :
-\setuptable#1 \endsetuptable
- % Need to reset this to 0 after \setuptable.
-\global\colcount=0\relax%
- %
- % This preamble sets up a generic column definition, which will
- % be used as many times as user calls for columns.
- % \vtop will set a single line and will also let text wrap and
- % continue for many paragraphs if desired.
-\halign\bgroup&\global\advance\colcount by 1\relax%
-\multistrut\vtop{\hsize=\expandafter\csname col\the\colcount\endcsname
- % In order to keep entries from bumping into each other
- % we will add a \leftskip of \multitablecolspace to all columns after
- % the first one.
- %  If a template has been used, we will add \multitablecolspace
- % to the width of each template entry.
- %  If user has set preamble in terms of percent of \hsize
- % we will use that dimension as the width of the column, and
- % the \leftskip will keep entries from bumping into each other.
- % Table will start at left margin and final column will justify at
- % right margin.
-\ifnum\colcount=1
-\else
-  \ifsetpercent
+  \vskip\parskip
+  \let\item\crcr
+  \tolerance=9500
+  \hbadness=9500
+  \setmultitablespacing
+  \parskip=\multitableparskip
+  \parindent=\multitableparindent
+  \overfullrule=0pt
+  \global\colcount=0
+  \def\Emultitable{\global\setpercentfalse\cr\egroup\egroup}%
+  %
+  % To parse everything between @multitable and @item:
+  \setuptable#1 \endsetuptable
+  %
+  % \everycr will reset column counter, \colcount, at the end of
+  % each line. Every column entry will cause \colcount to advance by one.
+  % The table preamble
+  % looks at the current \colcount to find the correct column width.
+  \everycr{\noalign{%
+  %
+  % \filbreak%% keeps underfull box messages off when table breaks over pages.
+  % Maybe so, but it also creates really weird page breaks when the table
+  % breaks over pages. Wouldn't \vfil be better?  Wait until the problem
+  % manifests itself, so it can be fixed for real --karl.
+    \global\colcount=0\relax}}%
+  %
+  % This preamble sets up a generic column definition, which will
+  % be used as many times as user calls for columns.
+  % \vtop will set a single line and will also let text wrap and
+  % continue for many paragraphs if desired.
+  \halign\bgroup&\global\advance\colcount by 1\relax
+    \multistrut\vtop{\hsize=\expandafter\csname col\the\colcount\endcsname
+  %
+  % In order to keep entries from bumping into each other
+  % we will add a \leftskip of \multitablecolspace to all columns after
+  % the first one.
+  % 
+  % If a template has been used, we will add \multitablecolspace
+  % to the width of each template entry.
+  % 
+  % If the user has set preamble in terms of percent of \hsize we will
+  % use that dimension as the width of the column, and the \leftskip
+  % will keep entries from bumping into each other.  Table will start at
+  % left margin and final column will justify at right margin.
+  % 
+  % Make sure we don't inherit \rightskip from the outer environment.
+  \rightskip=0pt
+  \ifnum\colcount=1
+    % The first column will be indented with the surrounding text.
+    \advance\hsize by\leftskip
   \else
-   % If user has <not> set preamble in terms of percent of \hsize
-   % we will advance \hsize by \multitablecolspace
-  \advance\hsize by \multitablecolspace
+    \ifsetpercent \else
+      % If user has not set preamble in terms of percent of \hsize
+      % we will advance \hsize by \multitablecolspace.
+      \advance\hsize by \multitablecolspace
+    \fi
+   % In either case we will make \leftskip=\multitablecolspace:
+  \leftskip=\multitablecolspace
   \fi
- % In either case we will make \leftskip=\multitablecolspace:
-\leftskip=\multitablecolspace
-\fi
- % Ignoring space at the beginning and end avoids an occasional spurious
- % blank line, when TeX decides to break the line at the space before the
- % box from the multistrut, so the strut ends up on a line by itself.
- % For example:
- % @multitable @columnfractions .11 .89
- % @item @code{#}
- % @tab Legal holiday which is valid in major parts of the whole country.
- % Is automatically provided with highlighting sequences respectively marking
- % characters.
- \noindent\ignorespaces##\unskip\multistrut}\cr
- % \everycr will reset column counter, \colcount, at the end of
- % each line. Every column  entry will cause \colcount to advance by one.
- % The table preamble
- % looks at the current \colcount to find the correct column width.
-\global\everycr{\noalign{%
-% \filbreak%% keeps underfull box messages off when table breaks over pages.
-% Maybe so, but it also creates really weird page breaks when the table
-% breaks over pages Wouldn't \vfil be better?  Wait until the problem
-% manifests itself, so it can be fixed for real --karl.
-\global\colcount=0\relax}}
+  % Ignoring space at the beginning and end avoids an occasional spurious
+  % blank line, when TeX decides to break the line at the space before the
+  % box from the multistrut, so the strut ends up on a line by itself.
+  % For example:
+  % @multitable @columnfractions .11 .89
+  % @item @code{#}
+  % @tab Legal holiday which is valid in major parts of the whole country.
+  % Is automatically provided with highlighting sequences respectively marking
+  % characters.
+  \noindent\ignorespaces##\unskip\multistrut}\cr
 }
 
 \def\setmultitablespacing{% test to see if user has set \multitablelinespace.
