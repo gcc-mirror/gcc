@@ -1,0 +1,11 @@
+vms-ld.o : $(srcdir)/config/alpha/vms-ld.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+ld.exe : vms-ld.o
+	$(CC) -o $@ vms-ld.o ../libiberty/libiberty.a
+
+vms-cc.o : $(srcdir)/config/alpha/vms-cc.c
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
+decc.exe : vms-cc.o
+	$(CC) -o $@ vms-cc.o ../libiberty/libiberty.a
+
+EXTRA_PROGRAMS=ld.exe decc.exe
