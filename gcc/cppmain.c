@@ -284,7 +284,10 @@ maybe_print_line (line)
     }
 
   if (print.no_line_dirs)
-    return;
+    {
+      print.lineno = line;
+      return;
+    }
 
   /* print.lineno is zero if this is the first token of the file.  We
      handle this specially, so that a first line of "# 1 "foo.c" in
