@@ -1,3 +1,8 @@
+Tue May  4 14:52:53 1999  Dave Brolley  <brolley@cygnus.com>
+
+	* actions.c (chill_expand_assignment): Use powersetlen to calculate the
+	length of an array of packed bits.
+
 Tue Apr 20 23:37:01 1999   Nathan Sidwell  <nathan@acm.org>
 
 	* Make-lang.in (ch/chill.info): Put MAKEINFO parameters in correct
