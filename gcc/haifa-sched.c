@@ -1061,7 +1061,7 @@ build_control_flow (edge_list)
       basic_block b = BASIC_BLOCK (i);
 
       if (b->pred == NULL
-	  || (b->pred->dest == b
+	  || (b->pred->src == b
 	      && b->pred->pred_next == NULL))
 	unreachable = 1;
     }
@@ -1531,12 +1531,14 @@ find_rgns (edge_list, dom)
      to hold degree counts.  */
   degree = dfs_nr;
 
+  for (i = 0; i < n_basic_blocks; i++)
+    degree[i] = 0;
   for (i = 0; i < num_edges; i++)
     {
       edge e = INDEX_EDGE (edge_list, i);
 
-      if (e->src != ENTRY_BLOCK_PTR)
-	degree[e->src->index]++;
+      if (e->dest != EXIT_BLOCK_PTR)
+	degree[e->dest->index]++;
     }
 
   /* Do not perform region scheduling if there are any unreachable
