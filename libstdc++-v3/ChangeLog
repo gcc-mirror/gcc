@@ -1,5 +1,10 @@
 2004-01-13  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (num_get::do_get(void*&)):
+	Set correctly just basefield, the only group that matters.
+
+2004-01-13  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/ext/rope (_Rope_rep_alloc_base): Eliminate.
 	(_Rope_rep_base): Inherit directly from the rope allocator;
 	use rebinding instead of _Alloc_traits; pick up data member
