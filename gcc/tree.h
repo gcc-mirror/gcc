@@ -2768,7 +2768,6 @@ extern tree make_tree_vec_stat (int MEM_STAT_DECL);
 
 /* Tree nodes for SSA analysis.  */
 
-extern tree make_phi_node (tree, int);
 extern void init_phinodes (void);
 extern void fini_phinodes (void);
 extern void release_phi_node (tree);
