@@ -1,3 +1,11 @@
+2000-03-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* function.c (free_temps_for_rtl_expr): Don't free slots
+	that have been pushed into a higher level.
+	
+	Revert this patch:
+	2000-03-05  Mark Mitchell  <mark@codesourcery.com>
+
 2000-03-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* basic-block.h (ALLOCA_REG_SET): Remove.
