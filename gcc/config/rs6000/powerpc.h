@@ -64,3 +64,22 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef PROCESSOR_DEFAULT
 #define PROCESSOR_DEFAULT PROCESSOR_PPC601
+
+/* These are not necessary when we pass -u to the assembler, and undefining
+   them saves a great deal of space in object files.  */
+
+#undef ASM_OUTPUT_EXTERNAL
+#undef ASM_OUTPUT_EXTERNAL_LIBCALL
+#define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)	\
+{ rtx _symref = XEXP (DECL_RTL (DECL), 0);	\
+  if ((TREE_CODE (DECL) == VAR_DECL		\
+       || TREE_CODE (DECL) == FUNCTION_DECL)	\
+      && (NAME)[0] != '*'			\
+      && (NAME)[strlen (NAME) - 1] != ']')	\
+    {						\
+      char *_name = (char *) permalloc (strlen (XSTR (_symref, 0)) + 5); \
+      strcpy (_name, XSTR (_symref, 0));	\
+      strcat (_name, TREE_CODE (DECL) == FUNCTION_DECL ? "[DS]" : "[RW]"); \
+      XSTR (_symref, 0) = _name;		\
+    }						\
+}

@@ -88,12 +88,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    export list with the -Wl,-bE option.  */
 
 #define LINK_SPEC "-T512 -H512 %{!r:-btextro} -bhalt:4 -bnodelcsect\
-   %{static:-bnso -bI:/lib/syscalls.exp} %{g*:-bexport:/usr/lib/libg.exp}\
-   %{shared:-bM:SRE}"
+   %{static:-bnso -bI:/lib/syscalls.exp} \
+   %{!shared:%{g*:-bexport:/usr/lib/libg.exp}} %{shared:-bM:SRE}"
 
 /* Profiled library versions are used by linking with special directories.  */
 #define LIB_SPEC "%{pg:-L/lib/profiled -L/usr/lib/profiled}\
-   %{p:-L/lib/profiled -L/usr/lib/profiled} %{g*:-lg} -lc"
+   %{p:-L/lib/profiled -L/usr/lib/profiled} %{!shared:%{g*:-lg}} -lc"
 
 /* gcc must do the search itself to find libgcc.a, not use -l.  */
 #define LIBGCC_SPEC "%{!shared:libgcc.a%s}"
