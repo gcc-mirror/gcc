@@ -3408,6 +3408,8 @@ s390_emit_prologue ()
 	      note = gen_store_multiple (gen_rtx_MEM (Pmode, naddr), 
 					 gen_rtx_REG (Pmode, 6),
 					 GEN_INT (frame.last_save_gpr - 6 + 1));
+	      note = PATTERN (note);
+
 	      REG_NOTES (insn) =
 		gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, 
 				   note, REG_NOTES (insn));
