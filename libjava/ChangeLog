@@ -1,3 +1,12 @@
+2004-07-21  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/net/URLConnection.java (position): New field.
+	(dateFormat1, dateFormat2, dateFormat3): Removed.
+	(dateFormats): New field.
+	(getHeaderFieldDate): Use new dateFormats array. Re-use parsePosition
+	each time instead of re-allocating.
+	(initializeDateFormats): Initialize 'dateFormats'.
+
 2004-07-20  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/16591
