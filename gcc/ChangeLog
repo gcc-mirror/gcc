@@ -1,3 +1,7 @@
+2002-06-17  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/m32r/m32r.md: Replace gen_sequence with get_insns.
+
 2002-06-16  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.h (BIGGEST_FIELD_ALIGNMENT): Define instead
