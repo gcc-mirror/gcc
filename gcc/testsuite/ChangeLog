@@ -1,3 +1,8 @@
+2003-06-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10940
+	* g++.dg/template/spec10.C: New test.
+
 2003-06-03  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-16.c: New test case.
