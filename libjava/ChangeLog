@@ -1,3 +1,10 @@
+2000-06-27  Andrew Haley  <aph@cygnus.com>
+
+       * java/io/File.java (createTempFile): Close the FileDescriptor
+       used to create a temp file.  Fixes some of PR 203.
+       * java/io/natFileDescriptorPosix.cc (open): Call garbage
+       collection if we run out of file handles.
+
 2000-06-28  Warren Levy  <warrenl@cygnus.com>
 
 	* gnu/java/security/provider/Gnu.java: New file.

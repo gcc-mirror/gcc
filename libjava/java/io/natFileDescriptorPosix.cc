@@ -43,6 +43,7 @@ details.  */
 #include <java/io/EOFException.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/NullPointerException.h>
+#include <java/lang/System.h>
 #include <java/lang/String.h>
 #include <java/lang/Thread.h>
 #include <java/io/FileNotFoundException.h>
@@ -105,6 +106,13 @@ java::io::FileDescriptor::open (jstring path, jint jflags)
     }
 
   int fd = ::open (buf, flags, mode);
+  if (fd == -1 && errno == EMFILE)
+    {
+      // Because finalize () calls close () we might be able to continue.
+      java::lang::System::gc ();
+      java::lang::System::runFinalization ();
+      fd = ::open (buf, flags, mode);
+    }
   if (fd == -1)
     {
       char msg[MAXPATHLEN + 200];
