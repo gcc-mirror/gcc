@@ -19,9 +19,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* This file exports two functions: choose_temp_base and make_temp_file.  */
 
-/* This file lives in at least two places: libiberty and gcc.
-   Don't change one without the other.  */
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -148,7 +145,7 @@ choose_temp_base ()
 
 char *
 make_temp_file (suffix)
-     char *suffix;
+     const char *suffix;
 {
   char *base = 0;
   char *temp_filename;

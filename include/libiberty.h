@@ -64,6 +64,10 @@ extern long get_run_time PARAMS ((void));
 
 extern char *choose_temp_base PARAMS ((void));
 
+/* Return a temporary file name or NULL if unable to create one.  */
+
+extern char *make_temp_file PARAMS ((const char *));
+
 /* Allocate memory filled with spaces.  Allocates using malloc.  */
 
 extern const char *spaces PARAMS ((int count));
