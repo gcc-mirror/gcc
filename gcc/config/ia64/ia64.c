@@ -1146,7 +1146,7 @@ int
 ia64_direct_return ()
 {
   return (reload_completed && ! frame_pointer_needed
-	  && ia64_compute_frame_size (get_frame_size ()));
+	  && ia64_compute_frame_size (get_frame_size ()) == 0);
 }
 
 
