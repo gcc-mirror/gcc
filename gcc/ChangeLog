@@ -1,4 +1,10 @@
-Tue Oct  5 15:37:04 1999  Michael Meissner  <meissner@cygnus.com>
+Tue Oct  5 16:14:40 1999  Michael Meissner  <meissner@cygnus.com>
+
+	* libgcc1-test.c (toplevel): Include stddef.h to get size_t.
+	({,d}discard): Add forward declarations.  Declare parameter as
+	unused.
+	(main_without_main): Explicitly declare return type to be int.
+	(memcpy): Properly declare.
 
 	* libgcc2.c (toplevel): If inhibit_libc is defined and not
 	building the trampoline support, declare malloc, free, and

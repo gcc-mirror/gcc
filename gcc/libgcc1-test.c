@@ -3,12 +3,17 @@
    you have provided replacements for all the libgcc1.c functions that
    your target machine needs.  */
 
+#include <stddef.h>
+
 int foo ();
 double dfoo ();
+void discard (int);
+void ddiscard (double);
 
 /* We don't want __main here because that can drag in atexit (among other
    things) which won't necessarily exist yet.  */
 
+int
 main_without__main ()
 {
   int a = foo (), b = foo ();
@@ -65,14 +70,17 @@ main_without__main ()
   return 0;
 }
 
+void
 discard (x)
-     int x;
+     int x __attribute__((__unused__));
 {}
 
+void
 ddiscard (x)
-     double x;
+     double x __attribute__((__unused__));
 {}
 
+int
 foo ()
 {
   static int table[] = {20, 69, 4, 12};
@@ -98,7 +106,12 @@ extern void _start() __asm__("_start");
 extern void __start() __asm__("__start");
 
 /* Provide functions that might be needed by soft-float emulation routines.  */
-void memcpy() {}
+void *memcpy(void *to,
+	     const void *from __attribute__((__unused__)),
+	     size_t len __attribute__((__unused__)))
+{
+  return to;
+}
 
 void start() {}
 void _start() {}
