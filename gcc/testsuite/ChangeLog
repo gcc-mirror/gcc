@@ -1,3 +1,8 @@
+2002-10-27  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/nest.c: Expect error for mmix-*-*.
+	* gcc.dg/20021014-1.c: Use dg-error, not dg-build.
+
 2002-10-26  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/wint_t-1.c, gcc.dg/wchar_t-1.c: Remove excess-errors
