@@ -4495,6 +4495,33 @@ store_init_value (decl, init)
   /* ANSI wants warnings about out-of-range constant initializers.  */
   STRIP_TYPE_NOPS (value);
   constant_expression_warning (value);
+
+  /* Check if we need to set array size from compound literal size.  */
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_DOMAIN (type) == 0
+      && value != error_mark_node)
+    {
+      tree inside_init = init;
+
+      if (TREE_CODE (init) == NON_LVALUE_EXPR)
+	inside_init = TREE_OPERAND (init, 0);
+      inside_init = fold (inside_init);
+
+      if (TREE_CODE (inside_init) == COMPOUND_LITERAL_EXPR)
+	{
+	  tree decl = COMPOUND_LITERAL_EXPR_DECL (inside_init);
+
+	  if (TYPE_DOMAIN (TREE_TYPE (decl)))
+	    {
+	      /* For int foo[] = (int [3]){1}; we need to set array size
+		 now since later on array initializer will be just the
+		 brace enclosed list of the compound literal.  */
+	      TYPE_DOMAIN (type) = TYPE_DOMAIN (TREE_TYPE (decl));
+	      layout_type (type);
+	      layout_decl (decl, 0);
+	    }
+	}
+    }
 }
 
 /* Methods for storing and printing names for error messages.  */

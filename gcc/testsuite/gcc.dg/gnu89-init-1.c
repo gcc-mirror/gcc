@@ -20,6 +20,8 @@ struct A a = (struct A) { .j = 6, .k[2] = 12 };
 struct B b = (struct B) { };
 int c[] = (int []) { [2] = 6, 7, 8 };
 int d[] = (int [3]) { 1 };
+int e[2] = (int []) { 1, 2 };
+int f[2] = (int [2]) { 1 };
 
 int main (void)
 {
@@ -29,9 +31,17 @@ int main (void)
     abort ();
   if (sizeof (c) != 5 * sizeof (int))
     abort ();
-  if (d[0] != 1)
+  if (d[0] != 1 || d[1] || d[2])
     abort ();
-  if (sizeof (d) != sizeof (int))
+  if (sizeof (d) != 3 * sizeof (int))
+    abort ();
+  if (e[0] != 1 || e[1] != 2)
+    abort ();
+  if (sizeof (e) != 2 * sizeof (int))
+    abort ();
+  if (f[0] != 1 || f[1])
+    abort ();
+  if (sizeof (f) != 2 * sizeof (int))
     abort ();
   exit (0);
 }
