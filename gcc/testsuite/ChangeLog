@@ -1,3 +1,9 @@
+2005-03-31  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (remove-build-file): New.
+	(cleanup-coverage-files, cleanup-repo-files, cleanup-rtl-dump,
+	cleanup-tree-dump, cleanup-saved-temps): New.
+
 2005-03-31  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/19203, DR 214

@@ -1,3 +1,7 @@
+2005-03-31  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/sourcebuild.texi (Test Directives): Describe cleanup-* procs.
+
 2005-03-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-alias.c: Follow spelling conventions.
