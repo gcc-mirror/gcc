@@ -1,5 +1,13 @@
 2003-03-30  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/String.java (data, boffset, count): Documented.
+	(String(byte[],String)): Reformatted.
+	(String(byte[])): Likewise.
+	(lastIndexOf(int)): Likewise.
+	(lastIndexOf(String)): Likewise.
+	(substring(int)): Renamed argument to match Classpath.
+	(String(StringBuffer)): Don't share buffer if it is nearly empty.
+
 	* java/lang/String.java: Miscellaneous minor formatting changes
 	to match Classpath more closely.
 
