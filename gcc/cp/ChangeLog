@@ -1,3 +1,12 @@
+1999-01-15  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (process_template_parm): Ignore top-level qualifiers on
+	non-type parameters.
+
+	* decl.c (start_function): Use current_function_parms in the call
+	to require_complete_type_for_parms, not the probably empty
+	DECL_ARGUMENTS.
+
 1999-01-14  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* semantics.c (finish_asm_stmt): Don't warn about redundant volatile.

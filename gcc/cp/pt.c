@@ -1591,6 +1591,13 @@ process_template_parm (list, next)
       /* is a const-param */
       parm = grokdeclarator (TREE_VALUE (parm), TREE_PURPOSE (parm),
 			     PARM, 0, NULL_TREE);
+
+      /* [temp.param]
+
+	 The top-level cv-qualifiers on the template-parameter are
+	 ignored when determining its type.  */
+      TREE_TYPE (parm) = TYPE_MAIN_VARIANT (TREE_TYPE (parm));
+
       /* A template parameter is not modifiable.  */
       TREE_READONLY (parm) = 1;
       if (IS_AGGR_TYPE (TREE_TYPE (parm))
