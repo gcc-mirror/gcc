@@ -405,7 +405,7 @@ Give strings the type \"array of char\"
 
 ansi
 C ObjC C++ ObjC++
-A synonym for -std=c89.  In a future version of GCC it will become synonymous with -std=c99 instead
+A synonym for -std=c89 (for C) or -std=c++98 (for C++).
 
 d
 C ObjC C++ ObjC++ Joined
@@ -788,7 +788,7 @@ Deprecated in favor of -std=gnu99
 
 std=iso9899:1990
 C ObjC
-Deprecated in favor of -std=c89
+Conform to the ISO 1990 C standard
 
 std=iso9899:199409
 C ObjC
@@ -796,11 +796,11 @@ Conform to the ISO 1990 C standard as amended in 1994
 
 std=iso9899:1999
 C ObjC
-Deprecated in favor of -std=c99
+Conform to the ISO 1999 C standard
 
 std=iso9899:199x
 C ObjC
-Deprecated in favor of -std=c99
+Deprecated in favor of -std=iso9899:1999
 
 traditional-cpp
 C ObjC C++ ObjC++

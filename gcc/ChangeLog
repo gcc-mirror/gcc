@@ -1,3 +1,8 @@
+2005-03-19  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c.opt (ansi, std=iso9899:1990, std=iso9899:1999,
+	std=iso9899:199x): Correct descriptions.
+
 2005-03-19  Andy Hutchinson  <HutchinsonAndy@netscape.net>
 
 	PR target/18251
