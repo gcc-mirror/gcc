@@ -1,3 +1,8 @@
+2002-10-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	* gcc.dg/special/mips-abi.exp: New test.
+	* gcc.dg/special/mips-abi.s: Empty file used by the above.
+
 2002-10-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/mangle16.C: New test.
