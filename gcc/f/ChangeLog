@@ -1,3 +1,7 @@
+2000-07-26  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* lang-specs.h: Remove one /dev/null from tradcpp invocation.
+
 Sun Jul 23 15:47:30 2000  Billinghurst, David <David.Billinghurst@riotinto.com>
 
 	* Make-lang.in: Put $(build_exeext) suffix on programs which run
