@@ -1,3 +1,14 @@
+2004-02-24  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c (d_print_comp) [RESTRICT, VOLATILE, CONST]: Don't
+	push more than one of the same CV-qualifier on the top of the
+	stack.
+	(d_print_comp) [ARRAY_TYPE]: If the array itself is CV-qualified,
+	move the CV-qualifiers to apply to the element type instead.
+	(d_print_array_type): When checking the modifiers, keep looking
+	past ones which have been printed already.
+	* testsuite/demangle-expected: Add three test cases.
+
 2004-02-23  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cp-demangle.c (__cxa_demangle): Adjust last patch to handle
