@@ -355,6 +355,10 @@ Mon Apr 30 16:14:10 2001  Mark P Mitchell  <mark@codesourcery.com>
 	* method.c (implicitly_declare_fn): Likewise.
 	* optimize.c (maybe_clone_body): Likewise.
 	
+2001-04-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* lang-specs.h: Add __DEPRECATED.
+	
 2001-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* optimize.c (expand_call_inline): Only add newly inlined statements
