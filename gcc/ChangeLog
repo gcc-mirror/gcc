@@ -1,4 +1,5 @@
 2004-06-01  Peter Barada  <peter@the-baradas.com>
+            Peter Jakubek  <peter@laseranimation.com>
 
 	* config/m68k/m68k.c(m68k_output_mi_thunk):  For ColdFire, use %d0 as
 	a scratch to perform an add to memory.
