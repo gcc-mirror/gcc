@@ -1,3 +1,7 @@
+2004-05-24  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* s-osinte-linux-ia64.ads: Renamed system-linux-ia64.ads
+
 2004-05-19  Joel Brobecker  <brobecker@gnat.com>
 
 	* exp_dbug.ads: Correct comments concerning handling of overloading,
