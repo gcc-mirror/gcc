@@ -3162,7 +3162,14 @@ get_narrower (op, unsignedp_ptr)
 	    break;
 	  first = 0;
 	}
-      /* A change in nominal type can always be stripped.  */
+      else /* bitschange == 0 */
+	{
+	  /* A change in nominal type can always be stripped, but we must
+	     preserve the unsignedness.  */
+	  if (first)
+	    uns = TREE_UNSIGNED (TREE_TYPE (op));
+	  first = 0;
+	}
 
       win = op;
     }
