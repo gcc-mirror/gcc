@@ -1,3 +1,8 @@
+2001-01-14  Richard Henderson  <rth@redhat.com>
+
+	* config/vax/vax.md: Use nonimmediate_operand instead of
+	general_operand in destinations.
+
 2001-01-14  Andreas Jaeger  <aj@suse.de>
 
 	* config/i386/i386.c (ix86_split_fp_branch): Remove unused
