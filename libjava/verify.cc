@@ -19,6 +19,11 @@ details.  */
 #include <java-insns.h>
 #include <java-interp.h>
 
+// On Solaris 10/x86, <signal.h> indirectly includes <ia32/sys/reg.h>, which 
+// defines PC since g++ predefines __EXTENSIONS__.  Undef here to avoid clash
+// with PC member of class _Jv_BytecodeVerifier below.
+#undef PC
+
 #ifdef INTERPRETER
 
 #include <java/lang/Class.h>
