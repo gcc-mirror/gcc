@@ -1,3 +1,7 @@
+2002-05-17  Richard Sandiford  <rsandifo@redhat.com>
+
+	* expr.c (force_operand): Fix reversed move.
+
 2002-05-17  Kurt Wall <kwall@kurtwerks.com>
 
 	* doc/install.texi (Testing): Mention two common DejaGnu warnings
