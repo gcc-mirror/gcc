@@ -4937,7 +4937,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 #endif
 	   || operand == stack_pointer_rtx)
 	  && ! maybe_memory_address_p (mode, ad, 
-				       &XEXP (XEXP (ad, 0), op_index)))
+				       &XEXP (XEXP (ad, 0), 1 - op_index)))
 	{
 	  rtx offset_reg;
 	  rtx addend;
