@@ -2306,11 +2306,23 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	       emit them before the peephole.  */
 	    if (next != 0 && next != NEXT_INSN (insn))
 	      {
-		rtx note;
+		rtx note, prev = PREV_INSN (insn);
 
 		for (note = NEXT_INSN (insn); note != next;
 		     note = NEXT_INSN (note))
 		  final_scan_insn (note, file, optimize, nopeepholes, seen);
+
+		/* Put the notes in the proper position for a later
+		   rescan.  For example, the SH target can do this
+		   when generating a far jump in a delayed branch
+		   sequence.  */
+		note = NEXT_INSN (insn);
+		PREV_INSN (note) = prev;
+		NEXT_INSN (prev) = note;
+		NEXT_INSN (PREV_INSN (next)) = insn;
+		PREV_INSN (insn) = PREV_INSN (next);
+		NEXT_INSN (insn) = next;
+		PREV_INSN (next) = insn;
 	      }
 
 	    /* PEEPHOLE might have changed this.  */

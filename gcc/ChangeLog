@@ -1,3 +1,9 @@
+2005-04-01  Ian Lance Taylor  <ian@airs.com>
+
+	* final.c (final_scan_insn): Revert part of 2005-03-30 patch: when
+	doing a peephole optimization, once again put any notes in the
+	proper position.
+
 2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* bb-reorder.c, fold-const.c, varasm.c: Fix comment typos.
