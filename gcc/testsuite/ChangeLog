@@ -1,3 +1,7 @@
+1998-07-26  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/noncompile/980615-0.f: New test.
+
 Sun Jul 26 01:15:56 1998  H.J. Lu  (hjl@gnu.org)
 
 	* gcc.dg/980312-1.c: Do link instead of compile.
