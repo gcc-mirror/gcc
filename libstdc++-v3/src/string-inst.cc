@@ -63,10 +63,6 @@ namespace std
   template 
     S::basic_string(S::iterator, S::iterator, const allocator<C>&);
 
-  template
-    S&
-    S::_M_replace(S::iterator, S::iterator, const C*, const C*);  
-
   template 
     C* 
     S::_S_construct(S::iterator, S::iterator, 

@@ -794,7 +794,10 @@ namespace std
        *  of available characters in @a str, the remainder of @a str is used.
        */
       basic_string&
-      assign(const basic_string& __str, size_type __pos, size_type __n);
+      assign(const basic_string& __str, size_type __pos, size_type __n)
+      { return this->assign(__str._M_data()
+			    + __str._M_check(__pos, "basic_string::assign"),
+			    __str._M_limit(__pos, __n)); }
 
       /**
        *  @brief  Set value to a C substring.
@@ -1127,7 +1130,10 @@ namespace std
       */
       basic_string&
       replace(size_type __pos1, size_type __n1, const basic_string& __str,
-	      size_type __pos2, size_type __n2);
+	      size_type __pos2, size_type __n2)
+      { return this->replace(__pos1, __n1, __str._M_data()
+			     + __str._M_check(__pos2, "basic_string::replace"),
+			     __str._M_limit(__pos2, __n2)); }
 
       /**
        *  @brief  Replace characters with value of a C substring.
@@ -1357,16 +1363,10 @@ namespace std
       template<class _InputIterator>
 	basic_string&
 	_M_replace_dispatch(iterator __i1, iterator __i2, _InputIterator __k1,
-			    _InputIterator __k2, __false_type)
-        { return _M_replace(__i1, __i2, __k1, __k2); }
+			    _InputIterator __k2, __false_type);
 
       basic_string&
       _M_replace_aux(size_type __pos1, size_type __n1, size_type __n2, _CharT __c);
-
-      template<class _InputIterator>
-        basic_string&
-        _M_replace(iterator __i1, iterator __i2, _InputIterator __k1,
-		   _InputIterator __k2);
 
       basic_string&
       _M_replace_safe(size_type __pos1, size_type __n1, const _CharT* __s,

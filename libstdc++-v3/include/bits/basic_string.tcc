@@ -270,16 +270,6 @@ namespace std
    template<typename _CharT, typename _Traits, typename _Alloc>
      basic_string<_CharT, _Traits, _Alloc>&
      basic_string<_CharT, _Traits, _Alloc>::
-     assign(const basic_string& __str, size_type __pos, size_type __n)
-     {
-       return this->assign(__str._M_data()
-			   + __str._M_check(__pos, "basic_string::assign"),
-			   __str._M_limit(__pos, __n));
-     }
-
-   template<typename _CharT, typename _Traits, typename _Alloc>
-     basic_string<_CharT, _Traits, _Alloc>&
-     basic_string<_CharT, _Traits, _Alloc>::
      assign(const _CharT* __s, size_type __n)
      {
        __glibcxx_requires_string_len(__s, __n);
@@ -581,7 +571,7 @@ namespace std
                               __requested_cap : 2*this->_M_capacity, __alloc);
       else
         __r = _Rep::_S_create(__requested_cap, __alloc);
-      
+
       if (this->_M_length)
 	traits_type::copy(__r->_M_refdata(), _M_refdata(),
 			  this->_M_length);
@@ -606,32 +596,16 @@ namespace std
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
-    basic_string<_CharT, _Traits, _Alloc>&
-    basic_string<_CharT, _Traits, _Alloc>::
-    _M_replace_aux(size_type __pos1, size_type __n1, size_type __n2,
-		   _CharT __c)
-    {
-      if (this->max_size() - (this->size() - __n1) < __n2)
-	__throw_length_error("basic_string::_M_replace_aux");
-      _M_mutate(__pos1, __n1, __n2);
-      if (__n2)
-	traits_type::assign(_M_data() + __pos1, __n2, __c);
-      return *this;
-    }
-
-  // This is the general replace helper. It buffers internally and then calls
-  // _M_replace_safe.
-  template<typename _CharT, typename _Traits, typename _Alloc>
     template<typename _InputIterator>
       basic_string<_CharT, _Traits, _Alloc>&
       basic_string<_CharT, _Traits, _Alloc>::
-      _M_replace(iterator __i1, iterator __i2, _InputIterator __k1, 
-		 _InputIterator __k2)
+      _M_replace_dispatch(iterator __i1, iterator __i2, _InputIterator __k1, 
+			  _InputIterator __k2, __false_type)
       {
 	const basic_string __s(__k1, __k2);
 	const size_type __n1 = __i2 - __i1;
 	if (this->max_size() - (this->size() - __n1) < __s.size())
-	  __throw_length_error("basic_string::_M_replace");
+	  __throw_length_error("basic_string::_M_replace_dispatch");
 	return _M_replace_safe(__i1 - _M_ibegin(), __n1, __s._M_data(),
 			       __s.size());
       }
@@ -653,12 +627,15 @@ namespace std
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>&
     basic_string<_CharT, _Traits, _Alloc>::
-    replace(size_type __pos1, size_type __n1, const basic_string& __str,
-	    size_type __pos2, size_type __n2)
+    _M_replace_aux(size_type __pos1, size_type __n1, size_type __n2,
+		   _CharT __c)
     {
-      return this->replace(__pos1, __n1, __str._M_data()
-			   + __str._M_check(__pos2, "basic_string::replace"),
-			   __str._M_limit(__pos2, __n2));
+      if (this->max_size() - (this->size() - __n1) < __n2)
+	__throw_length_error("basic_string::_M_replace_aux");
+      _M_mutate(__pos1, __n1, __n2);
+      if (__n2)
+	traits_type::assign(_M_data() + __pos1, __n2, __c);
+      return *this;
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -756,13 +733,11 @@ namespace std
     find(const _CharT* __s, size_type __pos, size_type __n) const
     {
       __glibcxx_requires_string_len(__s, __n);
-
       const size_type __size = this->size();
-      size_t __xpos = __pos;
       const _CharT* __data = _M_data();
-      for (; __xpos + __n <= __size; ++__xpos)
-	if (traits_type::compare(__data + __xpos, __s, __n) == 0)
-	  return __xpos;
+      for (; __pos + __n <= __size; ++__pos)
+	if (traits_type::compare(__data + __pos, __s, __n) == 0)
+	  return __pos;
       return npos;
     }
 
@@ -790,7 +765,6 @@ namespace std
     rfind(const _CharT* __s, size_type __pos, size_type __n) const
     {
       __glibcxx_requires_string_len(__s, __n);
-
       const size_type __size = this->size();
       if (__n <= __size)
 	{
@@ -814,13 +788,10 @@ namespace std
       const size_type __size = this->size();
       if (__size)
 	{
-	  size_t __xpos = __size - 1;
-	  if (__xpos > __pos)
-	    __xpos = __pos;
-      
-	  for (++__xpos; __xpos-- > 0; )
-	    if (traits_type::eq(_M_data()[__xpos], __c))
-	      return __xpos;
+	  __pos = std::min(size_type(__size - 1), __pos);
+	  for (++__pos; __pos-- > 0; )
+	    if (traits_type::eq(_M_data()[__pos], __c))
+	      return __pos;
 	}
       return npos;
     }
@@ -831,7 +802,6 @@ namespace std
     find_first_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
       __glibcxx_requires_string_len(__s, __n);
-
       for (; __n && __pos < this->size(); ++__pos)
 	{
 	  const _CharT* __p = traits_type::find(__s, __n, _M_data()[__pos]);
@@ -847,7 +817,6 @@ namespace std
     find_last_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
       __glibcxx_requires_string_len(__s, __n);
-
       size_type __size = this->size();
       if (__size && __n)
 	{ 
@@ -869,11 +838,9 @@ namespace std
     find_first_not_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
       __glibcxx_requires_string_len(__s, __n);
-
-      size_t __xpos = __pos;
-      for (; __xpos < this->size(); ++__xpos)
-	if (!traits_type::find(__s, __n, _M_data()[__xpos]))
-	  return __xpos;
+      for (; __pos < this->size(); ++__pos)
+	if (!traits_type::find(__s, __n, _M_data()[__pos]))
+	  return __pos;
       return npos;
     }
 
@@ -882,10 +849,9 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     find_first_not_of(_CharT __c, size_type __pos) const
     {
-      size_t __xpos = __pos;
-      for (; __xpos < this->size(); ++__xpos)
-	if (!traits_type::eq(_M_data()[__xpos], __c))
-	  return __xpos;
+      for (; __pos < this->size(); ++__pos)
+	if (!traits_type::eq(_M_data()[__pos], __c))
+	  return __pos;
       return npos;
     }
 
@@ -895,18 +861,16 @@ namespace std
     find_last_not_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
       __glibcxx_requires_string_len(__s, __n);
-
-      size_type __size = this->size();
+      const size_type __size = this->size();
       if (__size)
 	{ 
-	  if (--__size > __pos) 
-	    __size = __pos;
+	  __pos = std::min(size_type(__size - 1), __pos);
 	  do
 	    {
-	      if (!traits_type::find(__s, __n, _M_data()[__size]))
-		return __size;
+	      if (!traits_type::find(__s, __n, _M_data()[__pos]))
+		return __pos;
 	    } 
-	  while (__size--);
+	  while (__pos--);
 	}
       return npos;
     }
@@ -916,17 +880,16 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     find_last_not_of(_CharT __c, size_type __pos) const
     {
-      size_type __size = this->size();
+      const size_type __size = this->size();
       if (__size)
-	{ 
-	  if (--__size > __pos) 
-	    __size = __pos;
+	{
+	  __pos = std::min(size_type(__size - 1), __pos);
 	  do
 	    {
-	      if (!traits_type::eq(_M_data()[__size], __c))
-		return __size;
+	      if (!traits_type::eq(_M_data()[__pos], __c))
+		return __pos;
 	    } 
-	  while (__size--);
+	  while (__pos--);
 	}
       return npos;
     }
