@@ -4088,6 +4088,9 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 {
   HOST_WIDE_INT width_mask = 0;
 
+  if (TREE_CODE (exp) == ERROR_MARK)
+    return const0_rtx;
+
   if (bitsize < HOST_BITS_PER_WIDE_INT)
     width_mask = ((HOST_WIDE_INT) 1 << bitsize) - 1;
 
