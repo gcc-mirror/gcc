@@ -100,9 +100,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 "-DMIPSEB -DR3000 -D_MIPSEB -D_R3000 \
 -D_MIPS_SZINT=32 -D_MIPS_SZLONG=32 -D_MIPS_SZPTR=32"
 
-#undef STANDARD_INCLUDE_DIR
-#define STANDARD_INCLUDE_DIR "/include"
-
 #undef ASM_SPEC
 #define ASM_SPEC "\
 %{mmips-as: \
