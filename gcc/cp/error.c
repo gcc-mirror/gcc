@@ -2209,7 +2209,7 @@ print_instantiation_full_context (diagnostic_context *context)
                          decl_as_string (TINST_DECL (p),
                                          TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
 
-	  location = EXPR_LOCATION (p);
+	  location = TINST_LOCATION (p);
 	  p = TREE_CHAIN (p);
 	}
     }
@@ -2232,7 +2232,7 @@ print_instantiation_partial_context (diagnostic_context *context,
                    xloc.file, xloc.line,
                    decl_as_string (TINST_DECL (t),
                                    TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
-      loc = EXPR_LOCATION (t);
+      loc = TINST_LOCATION (t);
     }
   pp_verbatim (context->printer, "%s:%d:   instantiated from here\n",
                xloc.file, xloc.line);

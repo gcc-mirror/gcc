@@ -1,3 +1,19 @@
+2004-07-20  Steven Bosscher  <stevenb@suse.de>
+
+	* cp-tree.def (TINST_LEVEL): Make it an 'x' node.
+	* cp-tree.h (tinst_level_t): New tree type.
+	(union lang_tree_node): Handle it.
+	(TINST_LOCATION): New accessor macro.
+	(make_tinst_level): New prototype.
+	* cp-lang.c (cp_tree_size): Handle TINST_LEVEL.
+	* decl.c (cp_tree_node_structure): Likewise.
+	* error.c (print_instantiation_full_context): Use TINST_LOCATION.
+	(print_instantiation_partial_context): Likewise.
+	* pt.c (pop_tinst_level): Likewise.
+	 (push_tinst_level): Use make_tinst_level.
+	* tree.c (make_tinst_level): New function.
+	(cp_walk_subtrees): Walk TINST_DECL for a TINST_LEVEL node.
+
 2004-07-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* parser.c (cp_parser_simple_type_specifier): Fix typo.
