@@ -1717,11 +1717,15 @@ sched_analyze_2 (x, insn)
 
 	/* Make a copy of all dependencies on the immediately previous insn,
 	   and add to this insn.  This is so that all the dependencies will
-	   apply to the group.  */
+	   apply to the group.  Remove an explicit dependence on this insn
+	   as SCHED_GROUP_P now represents it.  */
 
 	prev = PREV_INSN (insn);
 	while (GET_CODE (prev) == NOTE)
 	  prev = PREV_INSN (prev);
+
+	if (find_insn_list (prev, LOG_LINKS (insn)))
+	  remove_dependence (insn, prev);
 
 	for (link = LOG_LINKS (prev); link; link = XEXP (link, 1))
 	  add_dependence (insn, XEXP (link, 0), GET_MODE (link));
@@ -2933,10 +2937,12 @@ schedule_block (b, file)
      at the end because they can't be moved away from their cc0 user.  */
   last = 0;
   while (GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN
-	 || (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE)
+	 || (GET_CODE (insn) == INSN
+	     && (GET_CODE (PATTERN (insn)) == USE
 #ifdef HAVE_cc0
-	 || sets_cc0_p (PATTERN (insn))
+		 || sets_cc0_p (PATTERN (insn))
 #endif
+		 ))
 	 || GET_CODE (insn) == NOTE)
     {
       if (GET_CODE (insn) != NOTE)
