@@ -1,3 +1,9 @@
+2004-08-03  Mike Stump  <mrs@apple.com>
+
+	* config/darwin-c.c: Don't search in "/Local/Library/Frameworks"
+	for frameworks.
+	* doc/invoke.texi (Darwin Options): Update to reflect above.
+
 2004-08-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/16790

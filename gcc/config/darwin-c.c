@@ -417,7 +417,6 @@ static const char *framework_defaults [] =
   {
     "/System/Library/Frameworks",
     "/Library/Frameworks",
-    "/Local/Library/Frameworks",
   };
 
 
