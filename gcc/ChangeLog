@@ -1,5 +1,11 @@
 2004-03-27  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* function.c (thread_prologue_and_epilogue): Move
+	NOTE_INSN_FUNCTION_END and NOTE_INSN_FUNCTION_BEG notes
+	before the epilogue.
+
+2004-03-27  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* expr.c (store_constructor): Use gen_int_mode to correctly
 	sign-extend CONST_INT value.
 
