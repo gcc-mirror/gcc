@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "c-pragma.h"
 #include "lex.h"
-#include "parse.h"
 #include "flags.h"
 #include "obstack.h"
 #include "toplev.h"

@@ -1034,20 +1034,6 @@ really_overloaded_fn (x)
 	  || TREE_CODE (x) == TEMPLATE_ID_EXPR);
 }
 
-/* Return the OVERLOAD or FUNCTION_DECL inside FNS.  FNS can be an
-   OVERLOAD, FUNCTION_DECL, TEMPLATE_ID_EXPR, or baselink.  */
-
-tree
-get_overloaded_fn (fns)
-     tree fns;
-{
-  if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
-    fns = TREE_OPERAND (fns, 0);
-  if (BASELINK_P (fns))
-    fns = BASELINK_FUNCTIONS (fns);
-  return fns;
-}
-
 tree
 get_first_fn (from)
      tree from;

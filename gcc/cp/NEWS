@@ -1,3 +1,75 @@
+*** Changes in GCC 3.4:
+
+* The C++ parser in G++ has been rewritten from scratch.  As a result, G++ 
+  is considerably more compliant to the C++ standard.  As a result, it 
+  accepts more valid programs, and rejects more invalid programs.  
+
+  Many of the changes below are a consequence of the new parser.
+
+* Friend declarations that refer to template specializations are rejected
+  if the template has not already been declared.
+
+  For example:
+
+    template <typename T>
+    class C {
+      friend void f<>(C&);
+    };
+
+  is rejected; you must first declare `f' as a template:
+
+    template <typename T>
+    void f(T);
+
+* You must use "template <>" to introduce template specializations, as 
+  required by the standard.  For example:
+
+    template <typename T>
+    struct S;
+    
+    struct S<int> { };
+
+  is rejected; you must write:
+
+    template <> struct S<int> {};
+
+* You must now use the `typename' and `template' keywords to disambiguate
+  dependent names, as required by the C++ standard.
+
+* The "named return value" extension has been removed.
+
+* The "implicit typename" extension has been removed.
+
+* G++ used to accept code like this:
+
+    struct S {
+      int h();
+      void f(int i = g());
+      int g(int i = h());
+    };
+
+  This behavior is not mandated by the standard. 
+
+  Now G++ issues an error about this code.  To avoid the error, you must
+  move the declaration of `g' before the declaration of `f'.  The 
+  default arguments for `g' must be visible at the point where it is
+  called.
+
+* When -pedantic is used, G++ now issues errors about spurious semicolons;
+  for example:
+
+    namespace N {}; // Invalid semicolon.
+    void f() {}; // Invalid semicolon.
+  
+* G++ no longer accepts attributes for a declarator after the
+  initializer associated with that declarator.  For example:
+
+    X x(1) __attribute__((...));
+
+  is no longer accepted.  Instead, use:
+
+    X x __attribute__((...)) (1);
+
 *** Changes in GCC 3.3:
 
 * The "new X = 3" extension has been removed; you must now use "new X(3)".

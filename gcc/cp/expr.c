@@ -122,6 +122,10 @@ cxx_expand_expr (exp, target, tmode, modifier)
       /* We don't need to generate any code for an empty class.  */
       return const0_rtx;
 
+    case BASELINK:
+      return expand_expr (BASELINK_FUNCTIONS (exp), target, tmode,
+			  modifier);
+
     default:
       return c_expand_expr (exp, target, tmode, modifier);
     }

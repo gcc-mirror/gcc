@@ -947,9 +947,9 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
 					&allows_reg,
 					&is_inout))
 	    {
-	      /* By marking the type as erroneous, we will not try to
-		 process this operand again in expand_asm_operands.  */
-	      TREE_TYPE (operand) = error_mark_node;
+	      /* By marking this operand as erroneous, we will not try
+		 to process this operand again in expand_asm_operands.  */
+	      TREE_VALUE (t) = error_mark_node;
 	      continue;
 	    }
 
@@ -972,12 +972,12 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
 
 /* Finish a label with the indicated NAME.  */
 
-void
+tree
 finish_label_stmt (name)
      tree name;
 {
   tree decl = define_label (input_filename, lineno, name);
-  add_stmt (build_stmt (LABEL_STMT, decl));
+  return add_stmt (build_stmt (LABEL_STMT, decl));
 }
 
 /* Finish a series of declarations for local labels.  G++ allows users
@@ -1146,6 +1146,58 @@ finish_parenthesized_expr (expr)
   return expr;
 }
 
+/* Finish a reference to a non-static data member (DECL) that is not
+   preceded by `.' or `->'.  */
+
+tree
+finish_non_static_data_member (tree decl, tree qualifying_scope)
+{
+  my_friendly_assert (TREE_CODE (decl) == FIELD_DECL, 20020909);
+
+  if (current_class_ptr == NULL_TREE)
+    {
+      if (current_function_decl 
+	  && DECL_STATIC_FUNCTION_P (current_function_decl))
+	cp_error_at ("invalid use of member `%D' in static member function",
+		     decl);
+      else
+	cp_error_at ("invalid use of non-static data member `%D'", decl);
+      error ("from this location");
+
+      return error_mark_node;
+    }
+  TREE_USED (current_class_ptr) = 1;
+  if (processing_template_decl)
+    return build_min_nt (COMPONENT_REF, current_class_ref, DECL_NAME (decl));
+  else
+    {
+      tree access_type = current_class_type;
+      tree object = current_class_ref;
+
+      while (!DERIVED_FROM_P (context_for_name_lookup (decl), access_type))
+	{
+	  access_type = TYPE_CONTEXT (access_type);
+	  while (DECL_P (access_type))
+	    access_type = DECL_CONTEXT (access_type);
+	}
+
+      enforce_access (access_type, decl);
+
+      /* If the data member was named `C::M', convert `*this' to `C'
+	 first.  */
+      if (qualifying_scope)
+	{
+	  tree binfo = NULL_TREE;
+	  object = build_scoped_ref (object, qualifying_scope,
+				     &binfo);
+	}
+
+      return build_class_member_access_expr (object, decl,
+					     /*access_path=*/NULL_TREE,
+					     /*preserve_reference=*/false);
+    }
+}
+
 /* Begin a statement-expression.  The value returned must be passed to
    finish_stmt_expr.  */
 
@@ -1251,6 +1303,26 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual)
   my_friendly_assert (!args || TREE_CODE (args) == TREE_LIST,
 		      20020712);
 
+  /* A reference to a member function will appear as an overloaded
+     function (rather than a BASELINK) if an unqualified name was used
+     to refer to it.  */
+  if (!BASELINK_P (fn) && is_overloaded_fn (fn))
+    {
+      tree f;
+
+      if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
+	f = get_first_fn (TREE_OPERAND (fn, 0));
+      else
+	f = get_first_fn (fn);
+      if (DECL_FUNCTION_MEMBER_P (f))
+	{
+	  tree type = currently_open_derived_class (DECL_CONTEXT (f));
+	  fn = build_baselink (TYPE_BINFO (type),
+			       TYPE_BINFO (type),
+			       fn, /*optype=*/NULL_TREE);
+	}
+    }
+
   if (BASELINK_P (fn))
     {
       tree object;
@@ -1296,6 +1368,20 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual)
   else if (is_overloaded_fn (fn))
     /* A call to a namespace-scope function.  */
     return build_new_function_call (fn, args);
+  else if (TREE_CODE (fn) == PSEUDO_DTOR_EXPR)
+    {
+      tree result;
+
+      if (args)
+	error ("arguments to destructor are not allowed");
+      /* Mark the pseudo-destructor call as having side-effects so
+	 that we do not issue warnings about its use.  */
+      result = build1 (NOP_EXPR,
+		       void_type_node,
+		       TREE_OPERAND (fn, 0));
+      TREE_SIDE_EFFECTS (result) = 1;
+      return result;
+    }
   else if (CLASS_TYPE_P (TREE_TYPE (fn)))
     {
       /* If the "function" is really an object of class type, it might
@@ -1386,6 +1472,11 @@ finish_object_call_expr (fn, object, args)
 	}
     }
   
+  if (processing_template_decl)
+    return build_nt (CALL_EXPR,
+		     build_nt (COMPONENT_REF, object, fn),
+		     args);
+
   if (name_p (fn))
     return build_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);
   else
@@ -1405,29 +1496,38 @@ finish_qualified_object_call_expr (fn, object, args)
 				   TREE_OPERAND (fn, 1), args);
 }
 
-/* Finish a pseudo-destructor call expression of OBJECT, with SCOPE
-   being the scope, if any, of DESTRUCTOR.  Returns an expression for
-   the call.  */
+/* Finish a pseudo-destructor expression.  If SCOPE is NULL, the
+   expression was of the form `OBJECT.~DESTRUCTOR' where DESTRUCTOR is
+   the TYPE for the type given.  If SCOPE is non-NULL, the expression
+   was of the form `OBJECT.SCOPE::~DESTRUCTOR'.  */
 
 tree 
-finish_pseudo_destructor_call_expr (object, scope, destructor)
+finish_pseudo_destructor_expr (object, scope, destructor)
      tree object;
      tree scope;
      tree destructor;
 {
-  if (processing_template_decl)
-    return build_min_nt (PSEUDO_DTOR_EXPR, object, scope, destructor);
+  if (destructor == error_mark_node)
+    return error_mark_node;
 
-  if (scope && scope != destructor)
-    error ("destructor specifier `%T::~%T()' must have matching names", 
-	      scope, destructor);
+  my_friendly_assert (TYPE_P (destructor), 20010905);
 
-  if ((scope == NULL_TREE || IDENTIFIER_GLOBAL_VALUE (destructor))
-      && (TREE_CODE (TREE_TYPE (object)) !=
-	  TREE_CODE (TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (destructor)))))
-    error ("`%E' is not of type `%T'", object, destructor);
+  if (!processing_template_decl)
+    {
+      if (scope == error_mark_node)
+	{
+	  error ("invalid qualifying scope in pseudo-destructor name");
+	  return error_mark_node;
+	}
+      
+      if (!same_type_p (TREE_TYPE (object), destructor))
+	{
+	  error ("`%E' is not of type `%T'", object, destructor);
+	  return error_mark_node;
+	}
+    }
 
-  return cp_convert (void_type_node, object);
+  return build (PSEUDO_DTOR_EXPR, void_type_node, object, scope, destructor);
 }
 
 /* Finish an expression of the form CODE EXPR.  */
@@ -1462,6 +1562,40 @@ finish_id_expr (expr)
   if (TREE_TYPE (expr) == error_mark_node)
     expr = error_mark_node;
   return expr;
+}
+
+/* Finish a compound-literal expression.  TYPE is the type to which
+   the INITIALIZER_LIST is being cast.  */
+
+tree
+finish_compound_literal (type, initializer_list)
+     tree type;
+     tree initializer_list;
+{
+  tree compound_literal;
+
+  /* Build a CONSTRUCTOR for the INITIALIZER_LIST.  */
+  compound_literal = build_nt (CONSTRUCTOR, NULL_TREE,
+			       initializer_list);
+  /* Mark it as a compound-literal.  */
+  TREE_HAS_CONSTRUCTOR (compound_literal) = 1;
+  if (processing_template_decl)
+    TREE_TYPE (compound_literal) = type;
+  else
+    {
+      /* Check the initialization.  */
+      compound_literal = digest_init (type, compound_literal, NULL);
+      /* If the TYPE was an array type with an unknown bound, then we can
+	 figure out the dimension now.  For example, something like:
+
+	   `(int []) { 2, 3 }'
+
+	 implies that the array has two elements.  */
+      if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
+	complete_array_type (type, compound_literal, 1);
+    }
+
+  return compound_literal;
 }
 
 /* Return the declaration for the function-name variable indicated by
@@ -1922,24 +2056,10 @@ finish_class_definition (t, attributes, semi, pop_scope_p)
 	note_got_semicolon (t);
     }
 
-  if (! semi)
-    check_for_missing_semicolon (t); 
   if (pop_scope_p)
     pop_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL (t)));
-  if (current_scope () == current_function_decl)
-    do_pending_defargs ();
 
   return t;
-}
-
-/* Finish processing the default argument expressions cached during
-   the processing of a class definition.  */
-
-void
-begin_inline_definitions ()
-{
-  if (current_scope () == current_function_decl)
-    do_pending_inlines ();
 }
 
 /* Finish processing the declaration of a member class template
@@ -2124,9 +2244,6 @@ tree
 finish_sizeof (t)
      tree t;
 {
-  if (processing_template_decl)
-    return build_min_nt (SIZEOF_EXPR, t);
-
   return TYPE_P (t) ? cxx_sizeof (t) : expr_sizeof (t);
 }
 
@@ -2138,7 +2255,7 @@ finish_alignof (t)
      tree t;
 {
   if (processing_template_decl)
-    return build_min_nt (ALIGNOF_EXPR, t);
+    return build_min (ALIGNOF_EXPR, size_type_node, t);
 
   return TYPE_P (t) ? cxx_alignof (t) : c_alignof_expr (t);
 }

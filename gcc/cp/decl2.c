@@ -1220,51 +1220,34 @@ cplus_decl_attributes (decl, attributes, flags)
     SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (*decl), TREE_TYPE (*decl));
 }
 
-/* CONSTRUCTOR_NAME:
-   Return the name for the constructor (or destructor) for the
-   specified class.  Argument can be RECORD_TYPE, TYPE_DECL, or
-   IDENTIFIER_NODE.  When given a template, this routine doesn't
+/* Return the name for the constructor (or destructor) for the
+   specified class TYPE.  When given a template, this routine doesn't
    lose the specialization.  */
 
 tree
-constructor_name_full (thing)
-     tree thing;
+constructor_name_full (tree type)
 {
-  if (TREE_CODE (thing) == TEMPLATE_TYPE_PARM
-      || TREE_CODE (thing) == BOUND_TEMPLATE_TEMPLATE_PARM
-      || TREE_CODE (thing) == TYPENAME_TYPE)
-    thing = TYPE_NAME (thing);
-  else if (IS_AGGR_TYPE_CODE (TREE_CODE (thing)))
-    {
-      if (TYPE_WAS_ANONYMOUS (thing) && TYPE_HAS_CONSTRUCTOR (thing))
-	thing = DECL_NAME (OVL_CURRENT (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (thing), 0)));
-      else
-	thing = TYPE_NAME (thing);
-    }
-  if (TREE_CODE (thing) == TYPE_DECL
-      || (TREE_CODE (thing) == TEMPLATE_DECL
-	  && TREE_CODE (DECL_TEMPLATE_RESULT (thing)) == TYPE_DECL))
-    thing = DECL_NAME (thing);
-  my_friendly_assert (TREE_CODE (thing) == IDENTIFIER_NODE, 197);
-  return thing;
+  type = TYPE_MAIN_VARIANT (type);
+  if (CLASS_TYPE_P (type) && TYPE_WAS_ANONYMOUS (type) 
+      && TYPE_HAS_CONSTRUCTOR (type))
+    return DECL_NAME (OVL_CURRENT (CLASSTYPE_CONSTRUCTORS (type)));
+  else
+    return TYPE_IDENTIFIER (type);
 }
 
-/* CONSTRUCTOR_NAME:
-   Return the name for the constructor (or destructor) for the
-   specified class.  Argument can be RECORD_TYPE, TYPE_DECL, or
-   IDENTIFIER_NODE.  When given a template, return the plain
+/* Return the name for the constructor (or destructor) for the
+   specified class.  When given a template, return the plain
    unspecialized name.  */
 
 tree
-constructor_name (thing)
-     tree thing;
+constructor_name (type)
+     tree type;
 {
-  tree t;
-  thing = constructor_name_full (thing);
-  t = IDENTIFIER_TEMPLATE (thing);
-  if (!t)
-    return thing;
-  return t;
+  tree name;
+  name = constructor_name_full (type);
+  if (IDENTIFIER_TEMPLATE (name))
+    name = IDENTIFIER_TEMPLATE (name);
+  return name;
 }
 
 /* Returns TRUE if NAME is the name for the constructor for TYPE.  */
@@ -3036,7 +3019,12 @@ build_expr_from_tree (t)
 	  return do_scoped_id (token, IDENTIFIER_GLOBAL_VALUE (token));
 	}
       else
-	return do_identifier (TREE_OPERAND (t, 0), 0, NULL_TREE);
+	{
+	  t = do_identifier (TREE_OPERAND (t, 0), 0, NULL_TREE);
+	  if (TREE_CODE (t) == ALIAS_DECL)
+	    t = DECL_INITIAL (t);
+	  return t;
+	}
 
     case TEMPLATE_ID_EXPR:
       {
@@ -3292,7 +3280,7 @@ build_expr_from_tree (t)
 	 build_expr_from_tree (TREE_OPERAND (t, 2)));
 
     case PSEUDO_DTOR_EXPR:
-      return (finish_pseudo_destructor_call_expr 
+      return (finish_pseudo_destructor_expr 
 	      (build_expr_from_tree (TREE_OPERAND (t, 0)),
 	       build_expr_from_tree (TREE_OPERAND (t, 1)),
 	       build_expr_from_tree (TREE_OPERAND (t, 2))));
@@ -3319,8 +3307,48 @@ build_expr_from_tree (t)
     case COMPONENT_REF:
       {
 	tree object = build_expr_from_tree (TREE_OPERAND (t, 0));
-	return finish_class_member_access_expr (object, 
-						TREE_OPERAND (t, 1));
+	tree member = TREE_OPERAND (t, 1);
+
+	if (!CLASS_TYPE_P (TREE_TYPE (object)))
+	  {
+	    if (TREE_CODE (member) == BIT_NOT_EXPR)
+	      return finish_pseudo_destructor_expr (object, 
+						    NULL_TREE,
+						    TREE_TYPE (object));
+	    else if (TREE_CODE (member) == SCOPE_REF
+		     && (TREE_CODE (TREE_OPERAND (member, 1)) == BIT_NOT_EXPR))
+	      return finish_pseudo_destructor_expr (object, 
+						    TREE_OPERAND (t, 0),
+						    TREE_TYPE (object));
+	  }
+	else if (TREE_CODE (member) == SCOPE_REF
+		 && TREE_CODE (TREE_OPERAND (member, 1)) == TEMPLATE_ID_EXPR)
+	  {
+	    tree tmpl;
+	    tree args;
+	
+	    /* Lookup the template functions now that we know what the
+	       scope is.  */
+	    tmpl = TREE_OPERAND (TREE_OPERAND (member, 1), 0);
+	    args = TREE_OPERAND (TREE_OPERAND (member, 1), 1);
+	    member = lookup_qualified_name (TREE_OPERAND (member, 0),
+					    tmpl, 
+					    /*is_type=*/0,
+					    /*flags=*/0);
+	    if (BASELINK_P (member))
+	      BASELINK_FUNCTIONS (member) 
+		= build_nt (TEMPLATE_ID_EXPR, BASELINK_FUNCTIONS (member),
+			    args);
+	    else
+	      {
+		error ("`%D' is not a member of `%T'",
+		       tmpl, TREE_TYPE (object));
+		return error_mark_node;
+	      }
+	  }
+
+
+	return finish_class_member_access_expr (object, member);
       }
 
     case THROW_EXPR:
@@ -3366,6 +3394,7 @@ build_expr_from_tree (t)
 	return get_typeid (TREE_OPERAND (t, 0));
       return build_typeid (build_expr_from_tree (TREE_OPERAND (t, 0)));
 
+    case PARM_DECL:
     case VAR_DECL:
       return convert_from_reference (t);
 
@@ -3857,13 +3886,19 @@ set_decl_namespace (decl, scope, friendp)
       if (!is_overloaded_fn (old))
 	goto complain;
       if (processing_template_decl || processing_specialization)
-	/* We have not yet called push_template_decl to turn the
+	/* We have not yet called push_template_decl to turn a
 	   FUNCTION_DECL into a TEMPLATE_DECL, so the declarations
 	   won't match.  But, we'll check later, when we construct the
 	   template.  */
 	return;
-      for (; old; old = OVL_NEXT (old))
-	if (decls_match (decl, OVL_CURRENT (old)))
+      if (is_overloaded_fn (old))
+	{
+	  for (; old; old = OVL_NEXT (old))
+	    if (decls_match (decl, OVL_CURRENT (old)))
+	      return;
+	}
+      else
+	if (decls_match (decl, old))
 	  return;
     }
   else
@@ -3939,8 +3974,8 @@ push_scope (t)
 {
   if (TREE_CODE (t) == NAMESPACE_DECL)
     push_decl_namespace (t);
-  else
-    pushclass (t, 2);
+  else if CLASS_TYPE_P (t)
+    push_nested_class (t, 2);
 }
 
 /* Leave scope pushed by push_scope.  */
@@ -3951,8 +3986,8 @@ pop_scope (t)
 {
   if (TREE_CODE (t) == NAMESPACE_DECL)
     pop_decl_namespace ();
-  else
-    popclass ();
+  else if CLASS_TYPE_P (t)
+    pop_nested_class ();
 }
 
 /* [basic.lookup.koenig] */
@@ -4340,52 +4375,47 @@ validate_nonmember_using_decl (decl, scope, name)
      tree *scope;
      tree *name;
 {
-  if (TREE_CODE (decl) == SCOPE_REF)
-    {
-      *scope = TREE_OPERAND (decl, 0);
-      *name = TREE_OPERAND (decl, 1);
+  *scope = global_namespace;
+  *name = NULL_TREE;
 
-      if (!processing_template_decl)
-        {
-          /* [namespace.udecl]
-             A using-declaration for a class member shall be a
-             member-declaration.  */
-          if(TREE_CODE (*scope) != NAMESPACE_DECL)
-            {
-              if (TYPE_P (*scope))
-                error ("`%T' is not a namespace", *scope);
-              else
-                error ("`%D' is not a namespace", *scope);
-              return NULL_TREE;
-            }
-          
-          /* 7.3.3/5
-             A using-declaration shall not name a template-id.  */
-          if (TREE_CODE (*name) == TEMPLATE_ID_EXPR)
-            {
-              *name = TREE_OPERAND (*name, 0);
-              error ("a using-declaration cannot specify a template-id.  Try `using %D'", *name);
-              return NULL_TREE;
-            }
-        }
-    }
-  else if (TREE_CODE (decl) == IDENTIFIER_NODE
-           || TREE_CODE (decl) == TYPE_DECL
-	   || TREE_CODE (decl) == TEMPLATE_DECL)
+  if (TREE_CODE (decl) == TEMPLATE_ID_EXPR)
     {
-      *scope = global_namespace;
-      *name = decl;
+      *name = TREE_OPERAND (decl, 0);
+      /* 7.3.3/5
+	   A using-declaration shall not name a template-id.  */
+      error ("a using-declaration cannot specify a template-id.  Try `using %D'", *name);
+      return NULL_TREE;
     }
-  else if (TREE_CODE (decl) == NAMESPACE_DECL)
+
+  if (TREE_CODE (decl) == NAMESPACE_DECL)
     {
       error ("namespace `%D' not allowed in using-declaration", decl);
       return NULL_TREE;
     }
+
+  if (is_overloaded_fn (decl))
+    decl = get_first_fn (decl);
+
+  my_friendly_assert (DECL_P (decl), 20020908);
+
+  if (TREE_CODE (decl) == CONST_DECL)
+    /* Enumeration constants to not have DECL_CONTEXT set.  */
+    *scope = TYPE_CONTEXT (TREE_TYPE (decl));
   else
-    abort ();
-  if (DECL_P (*name))
-    *name = DECL_NAME (*name);
-  /* Make a USING_DECL.  */
+    *scope = DECL_CONTEXT (decl);
+  if (!*scope)
+    *scope = global_namespace;
+
+  /* [namespace.udecl]
+       A using-declaration for a class member shall be a
+       member-declaration.  */
+  if (TYPE_P (*scope))
+    {
+      error ("`%T' is not a namespace", *scope);
+      return NULL_TREE;
+    }
+  *name = DECL_NAME (decl);
+  /* Make a USING_DECL. */
   return push_using_decl (*scope, *name);
 }
 
@@ -4591,14 +4621,32 @@ do_class_using_decl (decl)
       error ("a using-declaration cannot specify a template-id.  Try  `using %T::%D'", TREE_OPERAND (decl, 0), name);
       return NULL_TREE;
     }
-  if (TREE_CODE (name) == TYPE_DECL || TREE_CODE (name) == TEMPLATE_DECL)
-    name = DECL_NAME (name);
+  if (TREE_CODE (name) == TYPE_DECL)
+    {
+      tree type = TREE_TYPE (name);
+      if (CLASSTYPE_USE_TEMPLATE (TREE_TYPE (name)))
+	{
+	  name = DECL_NAME (CLASSTYPE_TI_TEMPLATE (type));
+	  error ("a using-declaration cannot specify a template-id.");
+	  return NULL_TREE;
+	}
+      name = DECL_NAME (name);
+    }
+  else if (TREE_CODE (name) == TEMPLATE_DECL)
+     name = DECL_NAME (name);
   else if (BASELINK_P (name))
     {
-      name = BASELINK_FUNCTIONS (name);
-      if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
-	name = TREE_OPERAND (name, 0);
-      name = DECL_NAME (get_first_fn (name));
+      tree fns;
+
+      fns = BASELINK_FUNCTIONS (name);
+      if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
+	{
+	  fns = TREE_OPERAND (fns, 0);
+	  error ("a using-declaration cannot specify a template-id.  Try  `using %T::%D'", 
+		 BASELINK_ACCESS_BINFO (name),
+		 DECL_NAME (get_first_fn (fns)));
+	}
+      name = DECL_NAME (get_first_fn (fns));
     }
 
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 980716);
@@ -4785,13 +4833,9 @@ handle_class_head (tag_kind, scope, id, attributes, defn_p, new_type_p)
       if (*new_type_p)
 	push_scope (context);
 
-      if (TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE)
-	/* It is valid to define a class with a different class key,
-	   and this changes the default member access.  */
-	CLASSTYPE_DECLARED_CLASS (TREE_TYPE (decl))
-	  = (tag_kind == class_type);
-	
-      if (!xrefd_p && PROCESSING_REAL_TEMPLATE_DECL_P ())
+      if (!xrefd_p 
+	  && PROCESSING_REAL_TEMPLATE_DECL_P ()
+	  && !CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
 	decl = push_template_decl (decl);
     }
 

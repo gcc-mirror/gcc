@@ -32,7 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "cpplib.h"
 #include "lex.h"
-#include "parse.h"
 #include "flags.h"
 #include "c-pragma.h"
 #include "toplev.h"
@@ -46,8 +45,6 @@ Boston, MA 02111-1307, USA.  */
 #include "mbchar.h"
 #include <locale.h>
 #endif
-
-extern void yyprint PARAMS ((FILE *, int, YYSTYPE));
 
 static int interface_strcmp PARAMS ((const char *));
 static int *init_cpp_parse PARAMS ((void));
@@ -80,8 +77,6 @@ static void copy_lang_type PARAMS ((tree));
 #include "cpplib.h"
 
 extern int yychar;		/*  the lookahead symbol		*/
-extern YYSTYPE yylval;		/*  the semantic value of the		*/
-				/*  lookahead symbol			*/
 
 /* the declaration found for the last IDENTIFIER token read in.  yylex
    must look this up to detect typedefs, which get token type
@@ -153,21 +148,6 @@ tree
 make_reference_declarator (cv_qualifiers, target)
      tree cv_qualifiers, target;
 {
-  if (target)
-    {
-      if (TREE_CODE (target) == ADDR_EXPR)
-	{
-	  error ("cannot declare references to references");
-	  return target;
-	}
-      if (TREE_CODE (target) == INDIRECT_REF)
-	{
-	  error ("cannot declare pointers to references");
-	  return target;
-	}
-      if (TREE_CODE (target) == IDENTIFIER_NODE && ANON_AGGRNAME_P (target))
-	  error ("type name expected before `&'");
-    }
   target = build_nt (ADDR_EXPR, target);
   TREE_TYPE (target) = cv_qualifiers;
   return target;
@@ -431,134 +411,6 @@ static const struct resword reswords[] =
 
 };
 
-/* Table mapping from RID_* constants to yacc token numbers.
-   Unfortunately we have to have entries for all the keywords in all
-   three languages.  */
-const short rid_to_yy[RID_MAX] =
-{
-  /* RID_STATIC */	SCSPEC,
-  /* RID_UNSIGNED */	TYPESPEC,
-  /* RID_LONG */	TYPESPEC,
-  /* RID_CONST */	CV_QUALIFIER,
-  /* RID_EXTERN */	SCSPEC,
-  /* RID_REGISTER */	SCSPEC,
-  /* RID_TYPEDEF */	SCSPEC,
-  /* RID_SHORT */	TYPESPEC,
-  /* RID_INLINE */	SCSPEC,
-  /* RID_VOLATILE */	CV_QUALIFIER,
-  /* RID_SIGNED */	TYPESPEC,
-  /* RID_AUTO */	SCSPEC,
-  /* RID_RESTRICT */	CV_QUALIFIER,
-
-  /* C extensions.  Bounded pointers are not yet in C++ */
-  /* RID_BOUNDED */	0,
-  /* RID_UNBOUNDED */	0,
-  /* RID_COMPLEX */	TYPESPEC,
-  /* RID_THREAD */	SCSPEC,
-
-  /* C++ */
-  /* RID_FRIEND */	SCSPEC,
-  /* RID_VIRTUAL */	SCSPEC,
-  /* RID_EXPLICIT */	SCSPEC,
-  /* RID_EXPORT */	EXPORT,
-  /* RID_MUTABLE */	SCSPEC,
-
-  /* ObjC */
-  /* RID_IN */		0,
-  /* RID_OUT */		0,
-  /* RID_INOUT */	0,
-  /* RID_BYCOPY */	0,
-  /* RID_BYREF */	0,
-  /* RID_ONEWAY */	0,
-
-  /* C */
-  /* RID_INT */		TYPESPEC,
-  /* RID_CHAR */	TYPESPEC,
-  /* RID_FLOAT */	TYPESPEC,
-  /* RID_DOUBLE */	TYPESPEC,
-  /* RID_VOID */	TYPESPEC,
-  /* RID_ENUM */	ENUM,
-  /* RID_STRUCT */	AGGR,
-  /* RID_UNION */	AGGR,
-  /* RID_IF */		IF,
-  /* RID_ELSE */	ELSE,
-  /* RID_WHILE */	WHILE,
-  /* RID_DO */		DO,
-  /* RID_FOR */		FOR,
-  /* RID_SWITCH */	SWITCH,
-  /* RID_CASE */	CASE,
-  /* RID_DEFAULT */	DEFAULT,
-  /* RID_BREAK */	BREAK,
-  /* RID_CONTINUE */	CONTINUE,
-  /* RID_RETURN */	RETURN_KEYWORD,
-  /* RID_GOTO */	GOTO,
-  /* RID_SIZEOF */	SIZEOF,
-
-  /* C extensions */
-  /* RID_ASM */		ASM_KEYWORD,
-  /* RID_TYPEOF */	TYPEOF,
-  /* RID_ALIGNOF */	ALIGNOF,
-  /* RID_ATTRIBUTE */	ATTRIBUTE,
-  /* RID_VA_ARG */	VA_ARG,
-  /* RID_EXTENSION */	EXTENSION,
-  /* RID_IMAGPART */	IMAGPART,
-  /* RID_REALPART */	REALPART,
-  /* RID_LABEL */	LABEL,
-  /* RID_PTRBASE */	0,
-  /* RID_PTREXTENT */	0,
-  /* RID_PTRVALUE */	0,
-  /* RID_CHOOSE_EXPR */	0,
-  /* RID_TYPES_COMPATIBLE_P */ 0,
-
-  /* RID_FUNCTION_NAME */	VAR_FUNC_NAME,
-  /* RID_PRETTY_FUNCTION_NAME */ VAR_FUNC_NAME,
-  /* RID_c99_FUNCTION_NAME */	VAR_FUNC_NAME,
-
-  /* C++ */
-  /* RID_BOOL */	TYPESPEC,
-  /* RID_WCHAR */	TYPESPEC,
-  /* RID_CLASS */	AGGR,
-  /* RID_PUBLIC */	VISSPEC,
-  /* RID_PRIVATE */	VISSPEC,
-  /* RID_PROTECTED */	VISSPEC,
-  /* RID_TEMPLATE */	TEMPLATE,
-  /* RID_NULL */	CONSTANT,
-  /* RID_CATCH */	CATCH,
-  /* RID_DELETE */	DELETE,
-  /* RID_FALSE */	CXX_FALSE,
-  /* RID_NAMESPACE */	NAMESPACE,
-  /* RID_NEW */		NEW,
-  /* RID_OPERATOR */	OPERATOR,
-  /* RID_THIS */	THIS,
-  /* RID_THROW */	THROW,
-  /* RID_TRUE */	CXX_TRUE,
-  /* RID_TRY */		TRY,
-  /* RID_TYPENAME */	TYPENAME_KEYWORD,
-  /* RID_TYPEID */	TYPEID,
-  /* RID_USING */	USING,
-
-  /* casts */
-  /* RID_CONSTCAST */	CONST_CAST,
-  /* RID_DYNCAST */	DYNAMIC_CAST,
-  /* RID_REINTCAST */	REINTERPRET_CAST,
-  /* RID_STATCAST */	STATIC_CAST,
-
-  /* Objective-C */
-  /* RID_ID */			0,
-  /* RID_AT_ENCODE */		0,
-  /* RID_AT_END */		0,
-  /* RID_AT_CLASS */		0,
-  /* RID_AT_ALIAS */		0,
-  /* RID_AT_DEFS */		0,
-  /* RID_AT_PRIVATE */		0,
-  /* RID_AT_PROTECTED */	0,
-  /* RID_AT_PUBLIC */		0,
-  /* RID_AT_PROTOCOL */		0,
-  /* RID_AT_SELECTOR */		0,
-  /* RID_AT_INTERFACE */	0,
-  /* RID_AT_IMPLEMENTATION */	0
-};
-
 void
 init_reswords ()
 {
@@ -609,7 +461,6 @@ cxx_init (filename)
   input_filename = "<internal>";
 
   init_reswords ();
-  init_spew ();
   init_tree ();
   init_cp_semantics ();
   init_operators ();
@@ -655,75 +506,6 @@ cxx_init (filename)
   return filename;
 }
 
-inline void
-yyprint (file, yychar, yylval)
-     FILE *file;
-     int yychar;
-     YYSTYPE yylval;
-{
-  tree t;
-  switch (yychar)
-    {
-    case IDENTIFIER:
-    case tTYPENAME:
-    case TYPESPEC:
-    case PTYPENAME:
-    case PFUNCNAME:
-    case IDENTIFIER_DEFN:
-    case TYPENAME_DEFN:
-    case PTYPENAME_DEFN:
-    case SCSPEC:
-    case PRE_PARSED_CLASS_DECL:
-      t = yylval.ttype;
-      if (TREE_CODE (t) == TYPE_DECL || TREE_CODE (t) == TEMPLATE_DECL)
-	{
-	  fprintf (file, " `%s'", IDENTIFIER_POINTER (DECL_NAME (t)));
-	  break;
-	}
-      my_friendly_assert (TREE_CODE (t) == IDENTIFIER_NODE, 224);
-      if (IDENTIFIER_POINTER (t))
-	  fprintf (file, " `%s'", IDENTIFIER_POINTER (t));
-      break;
-
-    case AGGR:
-      if (yylval.ttype == class_type_node)
-	fprintf (file, " `class'");
-      else if (yylval.ttype == record_type_node)
-	fprintf (file, " `struct'");
-      else if (yylval.ttype == union_type_node)
-	fprintf (file, " `union'");
-      else if (yylval.ttype == enum_type_node)
-	fprintf (file, " `enum'");
-      else
-	abort ();
-      break;
-
-    case CONSTANT:
-      t = yylval.ttype;
-      if (TREE_CODE (t) == INTEGER_CST)
-	fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == 64
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		 " 0x%x%016x",
-#else
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-		 " 0x%lx%016lx",
-#else
-		 " 0x%llx%016llx",
-#endif
-#endif
-#else
-#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
-		 " 0x%lx%08lx",
-#else
-		 " 0x%x%08x",
-#endif
-#endif
-		 TREE_INT_CST_HIGH (t), TREE_INT_CST_LOW (t));
-      break;
-    }
-}
-
 #if defined(GATHER_STATISTICS) && defined(REDUCE_LENGTH)
 static int *reduce_count;
 #endif
@@ -871,36 +653,6 @@ interface_strcmp (s)
 
   /* No matches.  */
   return 1;
-}
-
-/* Heuristic to tell whether the user is missing a semicolon
-   after a struct or enum declaration.  Emit an error message
-   if we know the user has blown it.  */
-
-void
-check_for_missing_semicolon (type)
-     tree type;
-{
-  if (yychar < 0)
-    yychar = yylex ();
-
-  if ((yychar > 255
-       && yychar != SCSPEC
-       && yychar != IDENTIFIER
-       && yychar != tTYPENAME
-       && yychar != CV_QUALIFIER
-       && yychar != SELFNAME)
-      || yychar == 0  /* EOF */)
-    {
-      if (TYPE_ANONYMOUS_P (type))
-	error ("semicolon missing after %s declaration",
-	       TREE_CODE (type) == ENUMERAL_TYPE ? "enum" : "struct");
-      else
-	error ("semicolon missing after declaration of `%T'", type);
-      shadow_tag (build_tree_list (0, type));
-    }
-  /* Could probably also hack cases where class { ... } f (); appears.  */
-  clear_anon_tags ();
 }
 
 void

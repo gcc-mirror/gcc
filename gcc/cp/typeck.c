@@ -66,6 +66,7 @@ static void casts_away_constness_r PARAMS ((tree *, tree *));
 static int casts_away_constness PARAMS ((tree, tree));
 static void maybe_warn_about_returning_address_of_local PARAMS ((tree));
 static tree strip_all_pointer_quals PARAMS ((tree));
+static tree lookup_destructor (tree, tree, tree);
 
 /* Return the target type of TYPE, which means return T for:
    T*, T&, T[], T (...), and otherwise, just T.  */
@@ -1858,6 +1859,9 @@ build_class_member_access_expr (tree object, tree member,
   if (object == error_mark_node || member == error_mark_node)
     return error_mark_node;
 
+  if (TREE_CODE (member) == PSEUDO_DTOR_EXPR)
+    return member;
+
   my_friendly_assert (DECL_P (member) || BASELINK_P (member),
 		      20020801);
 
@@ -1988,7 +1992,14 @@ build_class_member_access_expr (tree object, tree member,
 	 anonymous union.  Generate a reference to the anonymous union
 	 itself, and recur to find MEMBER.  */
       if (ANON_AGGR_TYPE_P (DECL_CONTEXT (member))
-	  && !same_type_p (object_type, DECL_CONTEXT (member)))
+	  /* When this code is called from build_field_call, the
+	     object already has the type of the anonymous union.
+	     That is because the COMPONENT_REF was already
+	     constructed, and was then disassembled before calling
+	     build_field_call.  After the function-call code is
+	     cleaned up, this waste can be eliminated.  */
+	  && (!same_type_ignoring_top_level_qualifiers_p 
+	      (TREE_TYPE (object), DECL_CONTEXT (member))))
 	{
 	  tree anonymous_union;
 
@@ -2030,6 +2041,7 @@ build_class_member_access_expr (tree object, tree member,
     {
       /* The member is a (possibly overloaded) member function.  */
       tree functions;
+      tree type;
 
       /* If the MEMBER is exactly one static member function, then we
 	 know the type of the expression.  Otherwise, we must wait
@@ -2037,19 +2049,12 @@ build_class_member_access_expr (tree object, tree member,
       functions = BASELINK_FUNCTIONS (member);
       if (TREE_CODE (functions) == FUNCTION_DECL
 	  && DECL_STATIC_FUNCTION_P (functions))
-	{
-	  /* A static member function.  */
-	  result = functions;
-	  mark_used (result);
-	  /* If OBJECT has side-effects, they are supposed to occur.  */
-	  if (TREE_SIDE_EFFECTS (object))
-	    result = build (COMPOUND_EXPR, TREE_TYPE (result),
-			    object, result);
-	}
+	type = TREE_TYPE (functions);
       else
-	/* Note that we do not convert OBJECT to the BASELINK_BINFO
-	   base.  That will happen when the function is called.  */
-	result = build (COMPONENT_REF, unknown_type_node, object, member);
+	type = unknown_type_node;
+      /* Note that we do not convert OBJECT to the BASELINK_BINFO
+	 base.  That will happen when the function is called.  */
+      result = build (COMPONENT_REF, type, object, member);
     }
   else if (TREE_CODE (member) == CONST_DECL)
     {
@@ -2074,6 +2079,34 @@ build_class_member_access_expr (tree object, tree member,
     result = convert_from_reference (result);
 
   return result;
+}
+
+/* Return the destructor denoted by OBJECT.SCOPE::~DTOR_NAME, or, if
+   SCOPE is NULL, by OBJECT.~DTOR_NAME.  */
+
+static tree
+lookup_destructor (tree object, tree scope, tree dtor_name)
+{
+  tree object_type = TREE_TYPE (object);
+  tree dtor_type = TREE_OPERAND (dtor_name, 0);
+
+  if (scope && !check_dtor_name (scope, dtor_name))
+    {
+      error ("qualified type `%T' does not match destructor name `~%T'",
+	     scope, dtor_type);
+      return error_mark_node;
+    }
+  if (!same_type_p (dtor_type, TYPE_MAIN_VARIANT (object_type)))
+    {
+      error ("destructor name `%T' does not match type `%T' of expression",
+	     dtor_type, object_type);
+      return error_mark_node;
+    }
+  if (!TYPE_HAS_DESTRUCTOR (object_type))
+    return build (PSEUDO_DTOR_EXPR, void_type_node, object, scope,
+		  dtor_type);
+  return lookup_member (object_type, complete_dtor_identifier,
+			/*protect=*/1, /*want_type=*/0);
 }
 
 /* This function is called by the parser to process a class member
@@ -2171,33 +2204,24 @@ finish_class_member_access_expr (tree object, tree name)
 	  if (!access_path || access_path == error_mark_node)
 	    return error_mark_node;
 
-	  /* Look up the member.  */
-	  member = lookup_member (access_path, name, /*protect=*/1, 
-				  /*want_type=*/0);
-	  if (member == NULL_TREE)
+	  if (TREE_CODE (name) == BIT_NOT_EXPR)
+	    member = lookup_destructor (object, scope, name);
+	  else
 	    {
-	      error ("'%D' has no member named '%E'", object_type, name);
-	      return error_mark_node;
+	      /* Look up the member.  */
+	      member = lookup_member (access_path, name, /*protect=*/1, 
+				      /*want_type=*/0);
+	      if (member == NULL_TREE)
+		{
+		  error ("'%D' has no member named '%E'", object_type, name);
+		  return error_mark_node;
+		}
+	      if (member == error_mark_node)
+		return error_mark_node;
 	    }
-	  else if (member == error_mark_node)
-	    return error_mark_node;
 	}
       else if (TREE_CODE (name) == BIT_NOT_EXPR)
-	{
-	  /* A destructor.  */
-	  if (TYPE_IDENTIFIER (object_type) != TREE_OPERAND (name, 0))
-	    {
-	      error ("destructor specifier `%T::~%T' must have matching names",
-		     object_type, TREE_OPERAND (name, 0));
-	      return error_mark_node;
-	    }
-	  if (! TYPE_HAS_DESTRUCTOR (object_type))
-	    {
-	      error ("type `%T' has no destructor", object_type);
-	      return error_mark_node;
-	    }
-	  member = CLASSTYPE_DESTRUCTORS (object_type);
-	}
+	member = lookup_destructor (object, /*scope=*/NULL_TREE, name);
       else if (TREE_CODE (name) == IDENTIFIER_NODE)
 	{
 	  /* An unqualified name.  */
@@ -2237,6 +2261,9 @@ finish_class_member_access_expr (tree object, tree name)
 	    }
 	}
     }
+
+  if (TREE_DEPRECATED (member))
+    warn_deprecated_use (member);
 
   return build_class_member_access_expr (object, member, access_path,
 					 /*preserve_reference=*/false);
@@ -2907,7 +2934,8 @@ convert_arguments (typelist, values, fndecl, flags)
   if (typetail != 0 && typetail != void_list_node)
     {
       /* See if there are default arguments that can be used */
-      if (TREE_PURPOSE (typetail))
+      if (TREE_PURPOSE (typetail) 
+	  && TREE_CODE (TREE_PURPOSE (typetail)) != DEFAULT_ARG)
 	{
 	  for (; typetail != void_list_node; ++i)
 	    {
@@ -4233,7 +4261,7 @@ build_unary_op (code, xarg, noconvert)
 	      if (current_class_type
 		  && TREE_OPERAND (arg, 0) == current_class_ref)
 		/* An expression like &memfn.  */
-		pedwarn ("ISO C++ forbids taking the address of an unqualified non-static member function to form a pointer to member function.  Say `&%T::%D'", base, name);
+		pedwarn ("ISO C++ forbids taking the address of an unqualified or parenthesized non-static member function to form a pointer to member function.  Say `&%T::%D'", base, name);
 	      else
 		pedwarn ("ISO C++ forbids taking the address of a bound member function to form a pointer to member function.  Say `&%T::%D'", base, name);
 	    }
@@ -4286,6 +4314,10 @@ build_unary_op (code, xarg, noconvert)
 
       {
 	tree addr;
+
+	if (TREE_CODE (arg) == COMPONENT_REF
+	    && TREE_CODE (TREE_OPERAND (arg, 1)) == BASELINK)
+	  arg = BASELINK_FUNCTIONS (TREE_OPERAND (arg, 1));
 
 	if (TREE_CODE (arg) == COMPONENT_REF
 	    && DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)))

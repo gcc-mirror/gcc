@@ -1439,6 +1439,7 @@ dump_expr (t, flags)
     case TEMPLATE_DECL:
     case NAMESPACE_DECL:
     case OVERLOAD:
+    case IDENTIFIER_NODE:
       dump_decl (t, flags & ~TFF_DECL_SPECIFIERS);
       break;
 
@@ -1913,10 +1914,6 @@ dump_expr (t, flags)
       dump_decl (TEMPLATE_PARM_DECL (t), flags & ~TFF_DECL_SPECIFIERS);
       break;
 
-    case IDENTIFIER_NODE:
-      print_tree_identifier (scratch_buffer, t);
-      break;
-
     case SCOPE_REF:
       dump_type (TREE_OPERAND (t, 0), flags);
       print_scope_operator (scratch_buffer);
@@ -2031,12 +2028,10 @@ dump_expr (t, flags)
       output_add_string (scratch_buffer, ") break; ");
       break;
 
-    case TREE_LIST:
-      if (TREE_VALUE (t) && TREE_CODE (TREE_VALUE (t)) == FUNCTION_DECL)
-	{
-	  print_tree_identifier (scratch_buffer, DECL_NAME (TREE_VALUE (t)));
-	  break;
-	}
+    case BASELINK:
+      print_tree_identifier (scratch_buffer, DECL_NAME (get_first_fn (t)));
+      break;
+
       /* else fall through */
 
       /*  This list is incomplete, but should suffice for now.

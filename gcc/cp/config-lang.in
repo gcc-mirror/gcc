@@ -34,4 +34,4 @@ stagestuff="g++\$(exeext) g++-cross\$(exeext) cc1plus\$(exeext)"
 
 target_libs="${libstdcxx_version} target-gperf"
 
-gtfiles="\$(srcdir)/cp/cp-tree.h \$(srcdir)/cp/decl.h \$(srcdir)/cp/lex.h \$(srcdir)/cp/call.c \$(srcdir)/cp/decl.c \$(srcdir)/cp/decl2.c \$(srcdir)/cp/parse.y \$(srcdir)/cp/pt.c \$(srcdir)/cp/repo.c \$(srcdir)/cp/spew.c \$(srcdir)/cp/tree.c \$(srcdir)/c-common.c \$(srcdir)/c-common.h \$(srcdir)/c-pragma.c"
+gtfiles="\$(srcdir)/cp/cp-tree.h \$(srcdir)/cp/decl.h \$(srcdir)/cp/lex.h \$(srcdir)/cp/call.c \$(srcdir)/cp/decl.c \$(srcdir)/cp/decl2.c \$(srcdir)/cp/pt.c \$(srcdir)/cp/repo.c \$(srcdir)/cp/tree.c \$(srcdir)/cp/parser.c \$(srcdir)/c-common.c \$(srcdir)/c-common.h \$(srcdir)/c-pragma.c"

@@ -74,10 +74,6 @@ extern GTY(()) tree lastiddecl;
 extern int looking_for_typename;
 extern int looking_for_template;
 
-/* Tell the lexer where to look for names.  */
-extern GTY(()) tree got_scope;
-extern GTY(()) tree got_object;
-
 /* Pending language change.
    Positive is push count, negative is pop count.  */
 extern int pending_lang_change;

@@ -2739,7 +2739,7 @@ finish_struct_anon (t)
 		      || TYPE_ANONYMOUS_P (TREE_TYPE (elt))))
 		continue;
 
-	      if (DECL_NAME (elt) == constructor_name (t))
+	      if (constructor_name_p (DECL_NAME (elt), t))
 		cp_pedwarn_at ("ISO C++ forbids member `%D' with same name as enclosing class",
 			       elt);
 
@@ -3341,8 +3341,7 @@ check_field_decls (tree t, tree *access_decls,
       /* Core issue 80: A nonstatic data member is required to have a
 	 different name from the class iff the class has a
 	 user-defined constructor.  */
-      if (DECL_NAME (x) == constructor_name (t)
-	  && TYPE_HAS_CONSTRUCTOR (t))
+      if (constructor_name_p (x, t) && TYPE_HAS_CONSTRUCTOR (t))
 	cp_pedwarn_at ("field `%#D' with same name as class", x);
 
       /* We set DECL_C_BIT_FIELD in grokbitfield.
@@ -5642,15 +5641,8 @@ init_class_processing ()
   ridpointers[(int) RID_PROTECTED] = access_protected_node;
 }
 
-/* Set current scope to NAME. CODE tells us if this is a
-   STRUCT, UNION, or ENUM environment.
-
-   NAME may end up being NULL_TREE if this is an anonymous or
-   late-bound struct (as in "struct { ... } foo;")  */
-
-/* Set global variables CURRENT_CLASS_NAME and CURRENT_CLASS_TYPE to
-   appropriate values, found by looking up the type definition of
-   NAME (as a CODE).
+/* Set global variables CURRENT_CLASS_NAME and CURRENT_CLASS_TYPE as
+   appropriate for TYPE.
 
    If MODIFY is 1, we set IDENTIFIER_CLASS_VALUE's of names
    which can be seen locally to the class.  They are shadowed by
@@ -5860,7 +5852,7 @@ push_nested_class (type, modify)
   pushclass (type, modify);
 }
 
-/* Undoes a push_nested_class call.  MODIFY is passed on to popclass.  */
+/* Undoes a push_nested_class call.  */
 
 void
 pop_nested_class ()
@@ -6024,9 +6016,9 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
     {
       tree fns;
 
-      for (fns = overload; fns; fns = OVL_CHAIN (fns))
+      for (fns = overload; fns; fns = OVL_NEXT (fns))
 	{
-	  tree fn = OVL_FUNCTION (fns);
+	  tree fn = OVL_CURRENT (fns);
 	  tree fntype;
 
 	  if (TREE_CODE (fn) == TEMPLATE_DECL)
@@ -6073,9 +6065,9 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
       if (TREE_CODE (target_fn_type) == METHOD_TYPE)
 	target_arg_types = TREE_CHAIN (target_arg_types);
 	  
-      for (fns = overload; fns; fns = OVL_CHAIN (fns))
+      for (fns = overload; fns; fns = OVL_NEXT (fns))
 	{
-	  tree fn = OVL_FUNCTION (fns);
+	  tree fn = OVL_CURRENT (fns);
 	  tree instantiation;
 	  tree instantiation_type;
 	  tree targs;
@@ -6235,10 +6227,19 @@ instantiate_type (lhstype, rhs, flags)
     {
       if (comptypes (lhstype, TREE_TYPE (rhs), strict))
 	return rhs;
-      if (complain)
-	error ("argument of type `%T' does not match `%T'",
-		  TREE_TYPE (rhs), lhstype);
-      return error_mark_node;
+      if (flag_ms_extensions 
+	  && TYPE_PTRMEMFUNC_P (lhstype)
+	  && !TYPE_PTRMEMFUNC_P (TREE_TYPE (rhs)))
+	/* Microsoft allows `A::f' to be resolved to a
+	   pointer-to-member.  */
+	;
+      else
+	{
+	  if (complain)
+	    error ("argument of type `%T' does not match `%T'",
+		   TREE_TYPE (rhs), lhstype);
+	  return error_mark_node;
+	}
     }
 
   if (TREE_CODE (rhs) == BASELINK)
@@ -6314,6 +6315,7 @@ instantiate_type (lhstype, rhs, flags)
       }
 
     case OVERLOAD:
+    case FUNCTION_DECL:
       return 
 	resolve_address_of_overloaded_function (lhstype, 
 						rhs,
@@ -6771,10 +6773,8 @@ get_primary_binfo (binfo)
 
   if (TREE_CHAIN (virtuals))
     {
-      /* We found more than one instance of the base. We must make
-         sure that, if one is the canonical one, it is the first one
-         we found. As the chain is in reverse dfs order, that means
-         the last on the list.  */
+      /* We found more than one instance of the base.  If one is the
+	 canonical one, choose that one.  */
       tree complete_binfo;
       tree canonical;
       
@@ -6790,12 +6790,7 @@ get_primary_binfo (binfo)
 	  result = TREE_VALUE (virtuals);
 
 	  if (canonical == result)
-	    {
-	      /* This is the unshared instance. Make sure it was the
-		 first one found.  */
-	      my_friendly_assert (!TREE_CHAIN (virtuals), 20010612);
-	      break;
-	    }
+	    break;
 	}
     }
   else

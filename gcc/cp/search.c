@@ -1035,7 +1035,7 @@ accessible_p (type, decl)
   int protected_ok = 0;
 
   /* If we're not checking access, everything is accessible.  */
-  if (!flag_access_control)
+  if (!scope_chain->check_access)
     return 1;
 
   /* If this declaration is in a block or namespace scope, there's no
@@ -1674,11 +1674,11 @@ lookup_fnfields_1 (type, name)
   return -1;
 }
 
-/* DECL is the result of a qualified name lookup.  QUALIFYING_CLASS
-   was the class used to qualify the name.  CONTEXT_CLASS is the class
-   corresponding to the object in which DECL will be used.  Return a
-   possibly modified version of DECL that takes into account the
-   CONTEXT_CLASS.
+/* DECL is the result of a qualified name lookup.  QUALIFYING_SCOPE is
+   the class or namespace used to qualify the name.  CONTEXT_CLASS is
+   the class corresponding to the object in which DECL will be used.
+   Return a possibly modified version of DECL that takes into account
+   the CONTEXT_CLASS.
 
    In particular, consider an expression like `B::m' in the context of
    a derived class `D'.  If `B::m' has been resolved to a BASELINK,
@@ -1687,22 +1687,22 @@ lookup_fnfields_1 (type, name)
 
 tree
 adjust_result_of_qualified_name_lookup (tree decl, 
-					tree qualifying_class,
+					tree qualifying_scope,
 					tree context_class)
 {
-  my_friendly_assert (CLASS_TYPE_P (qualifying_class), 20020808);
-  my_friendly_assert (CLASS_TYPE_P (context_class), 20020808);
-
-  if (BASELINK_P (decl) 
-      && DERIVED_FROM_P (qualifying_class, context_class))
+  if (context_class && CLASS_TYPE_P (qualifying_scope) 
+      && DERIVED_FROM_P (qualifying_scope, context_class)
+      && BASELINK_P (decl))
     {
       tree base;
 
-      /* Look for the QUALIFYING_CLASS as a base of the
-	 CONTEXT_CLASS.  If QUALIFYING_CLASS is ambiguous, we cannot
+      my_friendly_assert (CLASS_TYPE_P (context_class), 20020808);
+
+      /* Look for the QUALIFYING_SCOPE as a base of the
+	 CONTEXT_CLASS.  If QUALIFYING_SCOPE is ambiguous, we cannot
 	 be sure yet than an error has occurred; perhaps the function
 	 chosen by overload resolution will be static.  */
-      base = lookup_base (context_class, qualifying_class,
+      base = lookup_base (context_class, qualifying_scope,
 			  ba_ignore | ba_quiet, NULL);
       if (base)
 	{
