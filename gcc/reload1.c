@@ -5249,7 +5249,8 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 	      if ((time1 >= time2
 		   && (! reload_in[i] || reload_out[i]
 		       || ! rtx_equal_p (reload_in[i], value)))
-		  || (out && time2 >= MAX_RECOG_OPERANDS * 4 + 3))
+		  || (out && reload_out_reg[reloadnum]
+		      && time2 >= MAX_RECOG_OPERANDS * 4 + 3))
 		return 0;
 	    }
 	}
