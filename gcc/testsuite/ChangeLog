@@ -1,3 +1,7 @@
+2003-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/opt/reg-stack3.C: New test.
+
 2003-10-16  Release Manager
 
 	* GCC 3.3.2 Released.
