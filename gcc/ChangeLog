@@ -1,3 +1,8 @@
+2004-12-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-dom.c (record_equivalences_from_phis): Speed up by
+	doing a pointer comparison.
+
 2004-12-13  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/t-linux (SHLIB_MAPFILES): Add libgcc-glibc.ver to
