@@ -279,7 +279,10 @@ override_options ()
 	fatal ("-mregparm=%d is not between 0 and %d", i386_regparm, REGPARM_MAX);
     }
 
-  def_align = (TARGET_386) ? 2 : 4;
+  /* The 486 suffers more from non-aligned cache line fills, and the larger code
+     size results in a larger cache foot-print and more misses.  The 486 has a
+     16 byte cache line, pentium and pentiumpro have a 32 byte cache line */
+  def_align = (TARGET_486) ? 4 : 2;
 
   /* Validate -malign-loops= value, or provide default */
   if (i386_align_loops_string)
