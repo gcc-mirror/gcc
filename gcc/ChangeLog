@@ -1,3 +1,8 @@
+2003-02-13  Robert Lipe <robertlipe@usa.net>
+            Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Specific): Update three SCO-related URLs.
+
 2003-02-12  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* doc/tm.texi (MODIFY_JNI_METHOD_CALL): Document.
