@@ -660,7 +660,7 @@ extern void		sbss_section PARAMS ((void));
 				)
 
 /* ISA has conditional trap instructions.  */
-#define ISA_HAS_COND_TRAP	(mips_isa >= 2)
+#define ISA_HAS_COND_TRAP	(mips_isa >= 2 && ! TARGET_MIPS16)
 
 /* ISA has multiply-accumulate instructions, madd and msub.  */
 #define ISA_HAS_MADD_MSUB       (mips_isa == 32                         \
