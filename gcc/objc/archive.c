@@ -1324,7 +1324,7 @@ static void __objc_finish_write_root_object(struct objc_typed_stream* stream)
 static void __objc_finish_read_root_object(struct objc_typed_stream* stream)
 {
   node_ptr node;
-  SEL awake_sel = sel_get_uid ("awake:");
+  SEL awake_sel = sel_get_uid ("awake");
 
   /* resolve object forward references */
   for (node = hash_next (stream->object_refs, NULL); node;
@@ -1354,7 +1354,7 @@ static void __objc_finish_read_root_object(struct objc_typed_stream* stream)
 	{
 	  id object = node->value;
 	  if (__objc_responds_to (object, awake_sel))
-	    (*objc_msg_lookup(object, awake_sel))(object, awake_sel, stream);
+	    (*objc_msg_lookup(object, awake_sel))(object, awake_sel);
 	}
     }
 
@@ -1476,3 +1476,11 @@ objc_flush_typed_stream (TypedStream* stream)
   (*stream->flush)(stream->physical);
 }
 
+int 
+objc_get_stream_class_version (TypedStream* stream, Class* class)
+{
+  if (stream->class_table)
+    return (int) hash_value_for_key (stream->class_table, class->name);
+  else
+    return class_get_version (class);
+}
