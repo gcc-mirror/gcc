@@ -70,6 +70,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "short unsigned int"
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE 16
 #undef SIZE_TYPE
 #define SIZE_TYPE "long unsigned int"
 
