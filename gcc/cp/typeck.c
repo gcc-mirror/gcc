@@ -5695,7 +5695,7 @@ expand_ptrmemfunc_cst (cst, delta, pfn)
       /* If we're dealing with a virtual function, we have to adjust 'this'
          again, to point to the base which provides the vtable entry for
          fn; the call will do the opposite adjustment.  */
-      tree orig_class = DECL_VIRTUAL_CONTEXT (fn);
+      tree orig_class = DECL_CONTEXT (fn);
       tree binfo = binfo_or_else (orig_class, fn_class);
       *delta = fold (build (PLUS_EXPR, TREE_TYPE (*delta),
 			    *delta, BINFO_OFFSET (binfo)));

@@ -4,6 +4,8 @@
 
 2002-10-25  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/lookup/ptrmem1.C: New test.
+
 	* g++.dg/abi/vthunk2.C: New test.
 
 2002-10-25  Zack Weinberg  <zack@codesourcery.com>

@@ -4507,7 +4507,7 @@ build_over_call (cand, args, flags)
     {
       tree t, *p = &TREE_VALUE (converted_args);
       tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (*p)),
-				DECL_VIRTUAL_CONTEXT (fn),
+				DECL_CONTEXT (fn),
 				ba_any, NULL);
       my_friendly_assert (binfo && binfo != error_mark_node, 20010730);
       

@@ -6,6 +6,28 @@
 
 2002-10-25  Mark Mitchell  <mark@codesourcery.com>
 
+	* call.c (build_over_call): Use DECL_CONTEXT, not
+	DECL_VIRTUAL_CONTEXT.
+	* class.c (modify_vtable_entry): Don't mess with
+	DECL_VIRTUAL_CONTEXT.
+	(set_vindex): Remove.
+	(set_primary_base): Remove vfuns_p parameter.
+	(determine_primary_base): Likewise.
+	(modify_all_vtables): Likewise.
+	(layout_class_type): Likewise.  Adjust calls to other functions
+	accordingly.
+	(finish_struct_1): Adjust calls to modified functions.  Set
+	DECL_VINDEX here.
+	* cp-tree.h (lang_type_class): Remove vsize.
+	(CLASSTYPE_VSIZE): Remove.
+	(lang_decl): Remove thunks.
+	(DECL_THUNKS): Adjust.
+	(DECL_VIRTUAL_CONTEXT): Remove.
+	(duplicate_decls): Don't copy it.
+	* pt.c (build_template_decl): Don't set it.
+	(tsubst_decl): Likewise.
+	* typeck.c (expand_ptrmemfunc_cst): Don't use it.
+		
 	* class.c (build_vtbl_initializer): Don't use build_vtable_entry.
 	(build_vtable_entry): Remove.
 	* cp-tree.h (BINFO_VIRTUALS): Expand documentation.

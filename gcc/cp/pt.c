@@ -2106,8 +2106,6 @@ build_template_decl (decl, parms)
   DECL_CONTEXT (tmpl) = DECL_CONTEXT (decl);
   if (DECL_LANG_SPECIFIC (decl))
     {
-      if (CAN_HAVE_FULL_LANG_DECL_P (decl))
-	DECL_VIRTUAL_CONTEXT (tmpl) = DECL_VIRTUAL_CONTEXT (decl);
       DECL_STATIC_FUNCTION_P (tmpl) = DECL_STATIC_FUNCTION_P (decl);
       DECL_CONSTRUCTOR_P (tmpl) = DECL_CONSTRUCTOR_P (decl);
       DECL_DESTRUCTOR_P (tmpl) = DECL_DESTRUCTOR_P (decl);
@@ -5777,10 +5775,6 @@ tsubst_decl (t, args, type, complain)
 	  = tsubst_aggr_type (DECL_CONTEXT (t), args, 
 			      complain, in_decl, 
 			      /*entering_scope=*/1); 
-	DECL_VIRTUAL_CONTEXT (r) 
-	  = tsubst_aggr_type (DECL_VIRTUAL_CONTEXT (t), args, 
-			      complain, in_decl, 
-			      /*entering_scope=*/1);
 	DECL_TEMPLATE_INFO (r) = build_tree_list (t, args);
 
 	if (TREE_CODE (decl) == TYPE_DECL)
@@ -5951,10 +5945,6 @@ tsubst_decl (t, args, type, complain)
 	SET_DECL_RTL (r, NULL_RTX);
 
 	DECL_CONTEXT (r) = ctx;
-	DECL_VIRTUAL_CONTEXT (r)
-	  = tsubst_aggr_type (DECL_VIRTUAL_CONTEXT (t), args, 
-			      complain, t,
-			      /*entering_scope=*/1);
 
 	if (member && DECL_CONV_FN_P (r)) 
 	  /* Type-conversion operator.  Reconstruct the name, in

@@ -3374,8 +3374,6 @@ duplicate_decls (newdecl, olddecl)
 	 definition.  */
       if (DECL_VINDEX (olddecl))
 	DECL_VINDEX (newdecl) = DECL_VINDEX (olddecl);
-      if (DECL_VIRTUAL_CONTEXT (olddecl))
-	DECL_VIRTUAL_CONTEXT (newdecl) = DECL_VIRTUAL_CONTEXT (olddecl);
       if (DECL_CONTEXT (olddecl))
 	DECL_CONTEXT (newdecl) = DECL_CONTEXT (olddecl);
       DECL_STATIC_CONSTRUCTOR (newdecl) |= DECL_STATIC_CONSTRUCTOR (olddecl);
@@ -3412,12 +3410,9 @@ duplicate_decls (newdecl, olddecl)
 
       if (newtype != error_mark_node && oldtype != error_mark_node
 	  && TYPE_LANG_SPECIFIC (newtype) && TYPE_LANG_SPECIFIC (oldtype))
-	{
-	  CLASSTYPE_VSIZE (newtype) = CLASSTYPE_VSIZE (oldtype);
-	  CLASSTYPE_FRIEND_CLASSES (newtype)
-	    = CLASSTYPE_FRIEND_CLASSES (oldtype);
-	}
-
+	CLASSTYPE_FRIEND_CLASSES (newtype)
+	  = CLASSTYPE_FRIEND_CLASSES (oldtype);
+\
       DECL_ORIGINAL_TYPE (newdecl) = DECL_ORIGINAL_TYPE (olddecl);
     }
 
