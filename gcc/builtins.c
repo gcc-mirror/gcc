@@ -3709,7 +3709,7 @@ validate_arglist VPARAMS ((tree arglist, ...))
       /* This signifies an endlink, if no arguments remain, return
          true, otherwise return false.  */
       va_end (ap);
-      return (arglist == 0);
+      return arglist == 0;
     default:
       /* If no parameters remain or the parameter's code does not
          match the specified code, return false.  Otherwise continue
