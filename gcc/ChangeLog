@@ -1,3 +1,8 @@
+2002-03-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	* combine.c (simplify_comparison): If simplifying a logical shift
+	right and compare with constant, force the comparison to unsigned.
+
 2002-03-07  Aldy Hernandez  <aldyh@redhat.com>
 
         * doc/invoke.texi: Add documentation for -mabi=no-altivec.
