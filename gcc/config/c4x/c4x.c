@@ -515,7 +515,7 @@ c4x_function_arg (cum, mode, type, named)
       cum->maxints = (cum->ints > 6 - cum->maxfloats) ? 
 	6 - cum->maxfloats : cum->ints;
 
-      /* If there is no prototype, assume all the arguments are integers. */
+      /* If there is no prototype, assume all the arguments are integers.  */
       if (! cum->prototype)
 	cum->maxints = 6;
 
@@ -1555,7 +1555,7 @@ rtx addr;
 	    
 	    op1 = eliminate_constant_term (op1, &offset);
 	    
-	    /* ??? These costs need rethinking... */
+	    /* ??? These costs need rethinking...  */
 	    if (GET_CODE (op1) == LABEL_REF)
 	      return 3;
 	    
@@ -2072,7 +2072,7 @@ c4x_rptb_nop_p (insn)
 
       /* If we have a jump instruction we should insert a NOP. If we
 	 hit repeat block top we should only insert a NOP if the loop
-	 is empty. */
+	 is empty.  */
       if (GET_CODE (insn) == JUMP_INSN)
 	return 1;
       insn = previous_insn (insn);
@@ -2138,7 +2138,7 @@ c4x_process_after_reload (first)
 	    continue;
 
 	  /* Insert the RTX for RPTB at the top of the loop
-	     and a label at the end of the loop. */
+	     and a label at the end of the loop.  */
 	  if (insn_code_number == CODE_FOR_rptb_end)
 	    c4x_rptb_insert(insn);
 
@@ -3270,7 +3270,7 @@ c4x_address_conflict (op0, op1, store0, store1)
     return 1;
 
   /* We can not optimize the case where op1 and op2 refer to the same
-     address. */
+     address.  */
   if (base0 == base1 && disp0 == disp1 && index0 == index1)
     return 1;
 
@@ -3580,7 +3580,7 @@ c4x_valid_operands (code, operands, mode, force)
 	return 0;
       break;
 
-      /* Any valid memory operand screened by src_operand is OK. */      
+      /* Any valid memory operand screened by src_operand is OK.  */      
     case MEM:
 
       /* After CSE, any remaining (ADDRESSOF:P reg) gets converted
