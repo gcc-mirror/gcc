@@ -2163,10 +2163,11 @@ static tree root_type			PROTO((tree));
 static int is_base_type			PROTO((tree));
 static dw_die_ref modified_type_die	PROTO((tree, int, int, dw_die_ref));
 static int type_is_enum			PROTO((tree));
-static dw_loc_descr_ref reg_loc_descr_ref PROTO((rtx));
+static dw_loc_descr_ref reg_loc_descriptor PROTO((rtx));
 static dw_loc_descr_ref based_loc_descr	PROTO((unsigned, long));
 static int is_based_loc			PROTO((rtx));
 static dw_loc_descr_ref mem_loc_descriptor PROTO((rtx));
+static dw_loc_descr_ref concat_loc_descriptor PROTO((rtx, rtx));
 static dw_loc_descr_ref loc_descriptor	PROTO((rtx));
 static unsigned ceiling			PROTO((unsigned, unsigned));
 static tree field_type			PROTO((tree));
@@ -6188,6 +6189,30 @@ mem_loc_descriptor (rtl)
   return mem_loc_result;
 }
 
+/* Return a descriptor that describes the concatination of two locations.
+   This is typically a complex variable.  */
+
+static dw_loc_descr_ref
+concat_loc_descriptor (x0, x1)
+     register rtx x0, x1;
+{
+  dw_loc_descr_ref cc_loc_result = NULL;
+
+  if (!is_pseudo_reg (x0)
+      && (GET_CODE (x0) != MEM || !is_pseudo_reg (XEXP (x0, 0))))
+    add_loc_descr (&cc_loc_result, loc_descriptor (x0));
+  add_loc_descr (&cc_loc_result,
+	         new_loc_descr (DW_OP_piece, GET_MODE_SIZE (GET_MODE (x0)), 0));
+
+  if (!is_pseudo_reg (x1)
+      && (GET_CODE (x1) != MEM || !is_pseudo_reg (XEXP (x1, 0))))
+    add_loc_descr (&cc_loc_result, loc_descriptor (x1));
+  add_loc_descr (&cc_loc_result,
+		 new_loc_descr (DW_OP_piece, GET_MODE_SIZE (GET_MODE (x1)), 0));
+
+  return cc_loc_result;
+}
+
 /* Output a proper Dwarf location descriptor for a variable or parameter
    which is either allocated in a register or in a memory location.  For a
    register, we just generate an OP_REG and the register number.  For a
@@ -6217,6 +6242,10 @@ loc_descriptor (rtl)
 
     case MEM:
       loc_result = mem_loc_descriptor (XEXP (rtl, 0));
+      break;
+
+    case CONCAT:
+      loc_result = concat_loc_descriptor (XEXP (rtl, 0), XEXP (rtl, 1));
       break;
 
     default:
@@ -6426,7 +6455,10 @@ add_AT_location_description (die, attr_kind, rtl)
 
   if (is_pseudo_reg (rtl)
       || (GET_CODE (rtl) == MEM
-	  && is_pseudo_reg (XEXP (rtl, 0))))
+	  && is_pseudo_reg (XEXP (rtl, 0)))
+      || (GET_CODE (rtl) == CONCAT
+	  && is_pseudo_reg (XEXP (rtl, 0))
+	  && is_pseudo_reg (XEXP (rtl, 1))))
     return;
 
   add_AT_loc (die, attr_kind, loc_descriptor (rtl));
@@ -6724,6 +6756,7 @@ add_location_or_const_value_attribute (die, decl)
     case MEM:
     case REG:
     case SUBREG:
+    case CONCAT:
       add_AT_location_description (die, DW_AT_location, rtl);
       break;
 
@@ -7684,6 +7717,17 @@ gen_subprogram_die (decl, context_die)
       subr_die = new_die (DW_TAG_subprogram, context_die);
       add_abstract_origin_attribute (subr_die, origin);
     }
+  else if (old_die && DECL_ABSTRACT (decl)
+	   && get_AT_unsigned (old_die, DW_AT_inline))
+    {
+      /* This must be a redefinition of an extern inline function.
+	 We can just reuse the old die here.  */
+      subr_die = old_die;
+
+      /* Clear out the inlined attribute and parm types.  */
+      remove_AT (subr_die, DW_AT_inline);
+      remove_children (subr_die);
+    }
   else if (old_die)
     {
       register unsigned file_index
@@ -7768,6 +7812,10 @@ gen_subprogram_die (decl, context_die)
     }
   else if (DECL_ABSTRACT (decl))
     {
+      /* ??? Checking DECL_DEFER_OUTPUT is correct for static inline functions,
+	 but not for extern inline functions.  We can't get this completely
+	 correct because information about whether the function was declared
+	 inline is not saved anywhere.  */
       if (DECL_DEFER_OUTPUT (decl))
 	{
 	  if (DECL_INLINE (decl))

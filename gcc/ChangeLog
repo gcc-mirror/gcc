@@ -1,3 +1,17 @@
+Mon Sep 15 22:40:55 1997  Jim Wilson  (wilson@cygnus.com)
+
+	* dwarf2out.c (gen_subprogram_die): Handle redefinition of an
+	extern inline function.
+
+Mon Sep 15 22:40:55 1997  Richard Henderson  (rth@cygnus.com)
+
+	* dwarf2out.c (reg_loc_descriptor): Fix prototype.
+	(concat_loc_descriptor): New function.
+	(loc_descriptor): Call it.
+	(add_AT_location_description): Also elide the descriptor if both
+	halves of a CONCAT are pseudos.
+	(add_location_or_const_value_attribute): Recognize CONCAT too.
+
 Mon Sep 15 15:24:00 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (movdi): Handle CONST_DOUBLE for TARGET_BUILD_CONSTANTS.
