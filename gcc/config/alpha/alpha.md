@@ -1883,7 +1883,7 @@
 (define_expand "cmpdf"
   [(set (cc0) (compare (match_operand:DF 0 "reg_or_fp0_operand" "")
 		       (match_operand:DF 1 "reg_or_fp0_operand" "")))]
-  ""
+  "TARGET_FP"
   "
 {
   alpha_compare_op0 = operands[0];
