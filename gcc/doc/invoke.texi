@@ -356,15 +356,17 @@ in the following sections.
 @gccoptlist{-mcpu=@var{cpu-type} @gol
 -mtune=@var{cpu-type} @gol
 -mcmodel=@var{code-model} @gol
--m32  -m64 @gol
--mapp-regs  -mbroken-saverestore  -mcypress @gol
--mfaster-structs  -mflat @gol
--mfpu  -mhard-float  -mhard-quad-float @gol
--mimpure-text  -mlittle-endian  -mlive-g0  -mno-app-regs @gol
--mno-faster-structs  -mno-flat  -mno-fpu @gol
--mno-impure-text  -mno-stack-bias  -mno-unaligned-doubles @gol
--msoft-float  -msoft-quad-float  -msparclite  -mstack-bias @gol
--msupersparc  -munaligned-doubles  -mv8}
+-m32  -m64  -mapp-regs  -mno-app-regs @gol
+-mfaster-structs  -mno-faster-structs @gol
+-mflat  -mno-flat  -mfpu  -mno-fpu @gol
+-mhard-float  -msoft-float @gol
+-mhard-quad-float  -msoft-quad-float @gol
+-mimpure-text  -mno-impure-text  -mlittle-endian @gol
+-mstack-bias  -mno-stack-bias @gol
+-munaligned-doubles  -mno-unaligned-doubles @gol
+-mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
+-mcypress  -mf930  -mf934 @gol
+-msparclite  -msupersparc  -mv8}
 
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
@@ -6146,7 +6148,7 @@ Output code for g-format floating point numbers instead of d-format.
 @subsection SPARC Options
 @cindex SPARC options
 
-These @samp{-m} switches are supported on the SPARC:
+These @samp{-m} options are supported on the SPARC:
 
 @table @gcctabopt
 @item -mno-app-regs
@@ -6197,7 +6199,7 @@ Generate output containing library calls for quad-word (long double)
 floating point instructions.  The functions called are those specified
 in the SPARC ABI@.  This is the default.
 
-As of this writing, there are no sparc implementations that have hardware
+As of this writing, there are no SPARC implementations that have hardware
 support for the quad-word floating point instructions.  They all invoke
 a trap handler for one of these instructions, and then the trap handler
 emulates the effect of the instruction.  Because of the trap handler overhead,
@@ -6267,24 +6269,28 @@ This option is only available on SunOS and Solaris.
 These two options select variations on the SPARC architecture.
 
 By default (unless specifically configured for the Fujitsu SPARClite),
-GCC generates code for the v7 variant of the SPARC architecture.
+GCC generates code for the V7 variant of the SPARC architecture.
 
-@option{-mv8} will give you SPARC v8 code.  The only difference from v7
+@option{-mv8} will give you SPARC-V8 code.  The only difference from V7
 code is that the compiler emits the integer multiply and integer
-divide instructions which exist in SPARC v8 but not in SPARC v7.
+divide instructions which exist in SPARC-V8 but not in SPARC-V7.
 
 @option{-msparclite} will give you SPARClite code.  This adds the integer
 multiply, integer divide step and scan (@code{ffs}) instructions which
-exist in SPARClite but not in SPARC v7.
+exist in SPARClite but not in SPARC-V7.
 
 These options are deprecated and will be deleted in a future GCC release.
 They have been replaced with @option{-mcpu=xxx}.
 
 @item -mcypress
 @itemx -msupersparc
+@itemx -mf930
+@itemx -mf934
 @opindex mcypress
 @opindex msupersparc
-These two options select the processor for which the code is optimized.
+@opindex -mf930
+@opindex -mf934
+These four options select the processor for which the code is optimized.
 
 With @option{-mcypress} (the default), the compiler optimizes code for the
 Cypress CY7C602 chip, as used in the SPARCStation/SPARCServer 3xx series.
@@ -6292,7 +6298,15 @@ This is also appropriate for the older SPARCStation 1, 2, IPX etc.
 
 With @option{-msupersparc} the compiler optimizes code for the SuperSPARC cpu, as
 used in the SPARCStation 10, 1000 and 2000 series.  This flag also enables use
-of the full SPARC v8 instruction set.
+of the SPARC-V8 instruction set.
+
+With @option{-mf930} the compiler optimizes code for the Fujitsu MB86930 chip,
+which is the original SPARClite, with no FPU.  This flag also enables use
+of the SPARClite instruction set and disables the FPU support.
+
+With @option{-mf934} the compiler optimizes code for the Fujitsu MB86934 chip,
+which is the more recent SPARClite with FPU.  This flag also enables use
+of the SPARClite instruction set and enables the FPU support.
 
 These options are deprecated and will be deleted in a future GCC release.
 They have been replaced with @option{-mcpu=xxx}.
@@ -6302,7 +6316,7 @@ They have been replaced with @option{-mcpu=xxx}.
 Set the instruction set, register set, and instruction scheduling parameters
 for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
 @samp{v7}, @samp{cypress}, @samp{v8}, @samp{supersparc}, @samp{sparclite},
-@samp{hypersparc}, @samp{sparclite86x}, @samp{f930}, @samp{f934},
+@samp{f930}, @samp{f934}, @samp{hypersparc}, @samp{sparclite86x},
 @samp{sparclet}, @samp{tsc701}, @samp{v9}, @samp{ultrasparc}, and
 @samp{ultrasparc3}.
 
@@ -6334,36 +6348,24 @@ that select a particular cpu implementation.  Those are @samp{cypress},
 @samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc}, and
 @samp{ultrasparc3}.
 
+@item -mv8plus
+@itemx -mno-v8plus
+@opindex -mv8plus
+@opindex -mno-v8plus
+@option{-mv8plus} will give you SPARC-V8+ code.  The difference from V8 is
+that the global and out registers are considered 64-bit wide.  This is the
+default on Solaris in 32-bit mode for all SPARC-V9 processors.
+
+@item -mvis
+@itemx -mno-vis
+@opindex -mvis
+@opindex -mno-vis
+@option{-mvis} will give you code that takes advantage of the UltraSPARC
+Visual Instruction Set extensions.  The default is @option{-mno-vis}.
 @end table
 
-These @samp{-m} switches are supported in addition to the above
-on the SPARCLET processor.
-
-@table @gcctabopt
-@item -mlittle-endian
-@opindex mlittle-endian
-Generate code for a processor running in little-endian mode.
-
-@item -mlive-g0
-@opindex mlive-g0
-Treat register @code{%g0} as a normal register.
-GCC will continue to clobber it as necessary but will not assume
-it always reads as 0.
-
-@item -mbroken-saverestore
-@opindex mbroken-saverestore
-Generate code that does not use non-trivial forms of the @code{save} and
-@code{restore} instructions.  Early versions of the SPARCLET processor do
-not correctly handle @code{save} and @code{restore} instructions used with
-arguments.  They correctly handle them used without arguments.  A @code{save}
-instruction used without arguments increments the current window pointer
-but does not allocate a new stack frame.  It is assumed that the window
-overflow trap handler will properly handle this case as will interrupt
-handlers.
-@end table
-
-These @samp{-m} switches are supported in addition to the above
-on SPARC V9 processors in 64-bit environments.
+These @samp{-m} options are supported in addition to the above
+on SPARC-V9 processors in 64-bit environments:
 
 @table @gcctabopt
 @item -mlittle-endian
@@ -6414,7 +6416,7 @@ Programs are statically linked, PIC is not supported.
 @opindex mno-stack-bias
 With @option{-mstack-bias}, GCC assumes that the stack pointer, and
 frame pointer if present, are offset by @minus{}2047 which must be added back
-when making stack frame references.
+when making stack frame references.  This is the default in 64-bit mode.
 Otherwise, assume no such offset is present.
 @end table
 
