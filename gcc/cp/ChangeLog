@@ -1,3 +1,9 @@
+2002-03-12  Richard Sandiford  <rsandifo@redhat.com>
+
+	* cp-tree.h (init_init_processing): Remove declaration.
+	* init.c (BI_header_type, init_init_processing): Remove old ABI stuff.
+	* decl.c (cxx_init_decl_processing): Don't call init_init_processing.
+
 2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-lang.c (tree_code_type, tree_code_length, tree_code_name):

@@ -56,26 +56,6 @@ static tree build_dtor_call PARAMS ((tree, special_function_kind, int));
 static tree build_field_list PARAMS ((tree, tree, int *));
 static tree build_vtbl_address PARAMS ((tree));
 
-/* Set up local variable for this file.  MUST BE CALLED AFTER
-   INIT_DECL_PROCESSING.  */
-
-static tree BI_header_type;
-
-void init_init_processing ()
-{
-  tree fields[1];
-
-  /* Define the structure that holds header information for
-     arrays allocated via operator new.  */
-  BI_header_type = make_aggr_type (RECORD_TYPE);
-  fields[0] = build_decl (FIELD_DECL, nelts_identifier, sizetype);
-
-  finish_builtin_type (BI_header_type, "__new_cookie", fields,
-		       0, double_type_node);
-
-  ggc_add_tree_root (&BI_header_type, 1);
-}
-
 /* We are about to generate some complex initialization code.
    Conceptually, it is all a single expression.  However, we may want
    to include conditionals, loops, and other such statement-level
