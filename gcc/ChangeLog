@@ -1,3 +1,8 @@
+Wed Aug 20 22:47:33 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* alias.c (init_alias_analysis): When simplifying the reg_base_value
+	array, simplify entries for hard registers too.
+
 Wed Aug 20 12:35:47 1997  Dave Love  <d.love@dl.ac.uk>
 
 	* dwarf2.h (enum dwarf_call_frame_info): Remove trailing comma from
