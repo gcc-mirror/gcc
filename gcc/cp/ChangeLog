@@ -1,3 +1,7 @@
+1998-08-26  Mark Mitchell  <mark@markmitchell.com>
+
+	* lex.c (do_identifier): Fix typo in comment.
+
 Wed Aug 26 10:54:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* errfn.c: Remove stdarg.h/varargs.h.
