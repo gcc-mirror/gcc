@@ -1919,9 +1919,10 @@ expand_assignment (to, from, want_value, suggest_reg)
       enum machine_mode mode1;
       int bitsize;
       int bitpos;
+      tree offset;
       int unsignedp;
       int volatilep = 0;
-      tree tem = get_inner_reference (to, &bitsize, &bitpos,
+      tree tem = get_inner_reference (to, &bitsize, &bitpos, &offset,
 				      &mode1, &unsignedp, &volatilep);
 
       /* If we are going to use store_bit_field and extract_bit_field,
@@ -1931,6 +1932,16 @@ expand_assignment (to, from, want_value, suggest_reg)
 	tem = stabilize_reference (tem);
 
       to_rtx = expand_expr (tem, 0, VOIDmode, 0);
+      if (offset != 0)
+	{
+	  rtx offset_rtx = expand_expr (offset, 0, VOIDmode, 0);
+
+	  if (GET_CODE (to_rtx) != MEM)
+	    abort ();
+	  to_rtx = change_address (to_rtx, VOIDmode,
+				   gen_rtx (PLUS, Pmode, XEXP (to_rtx, 0),
+					    force_reg (Pmode, offset_rtx)));
+	}
       if (volatilep)
 	{
 	  if (GET_CODE (to_rtx) == MEM)
@@ -2445,6 +2456,10 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 
    We set *PBITSIZE to the size in bits that we want, *PBITPOS to the
    bit position, and *PUNSIGNEDP to the signedness of the field.
+   If the position of the field is variable, we store a tree
+   giving the variable offset (in units) in *POFFSET.
+   This offset is in addition to the bit position.
+   If the position is not variable, we store 0 in *POFFSET.
 
    If any of the extraction expressions is volatile,
    we store 1 in *PVOLATILEP.  Otherwise we don't change that.
@@ -2458,16 +2473,18 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
    this case, but the address of the object can be found.  */
 
 tree
-get_inner_reference (exp, pbitsize, pbitpos, pmode, punsignedp, pvolatilep)
+get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode, punsignedp, pvolatilep)
      tree exp;
      int *pbitsize;
      int *pbitpos;
+     tree *poffset;
      enum machine_mode *pmode;
      int *punsignedp;
      int *pvolatilep;
 {
   tree size_tree = 0;
   enum machine_mode mode = VOIDmode;
+  tree offset = 0;
 
   if (TREE_CODE (exp) == COMPONENT_REF)
     {
@@ -2503,36 +2520,58 @@ get_inner_reference (exp, pbitsize, pbitpos, pmode, punsignedp, pvolatilep)
 
   while (1)
     {
-      if (TREE_CODE (exp) == COMPONENT_REF)
+      if (TREE_CODE (exp) == COMPONENT_REF || TREE_CODE (exp) == BIT_FIELD_REF)
 	{
-	  tree field = TREE_OPERAND (exp, 1);
+	  tree pos = (TREE_CODE (exp) == COMPONENT_REF
+		      ? DECL_FIELD_BITPOS (TREE_OPERAND (exp, 1))
+		      : TREE_OPERAND (exp, 2));
 
-	  if (TREE_CODE (DECL_FIELD_BITPOS (field)) != INTEGER_CST)
-	    /* ??? This case remains to be written.  */
-	    abort ();
-
-	  *pbitpos += TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field));
-	  if (TREE_THIS_VOLATILE (exp))
-	    *pvolatilep = 1;
+	  if (TREE_CODE (pos) == PLUS_EXPR)
+	    {
+	      tree constant, var;
+	      if (TREE_CODE (TREE_OPERAND (pos, 0)) == INTEGER_CST)
+		{
+		  constant = TREE_OPERAND (pos, 0);
+		  var = TREE_OPERAND (pos, 1);
+		}
+	      else if (TREE_CODE (TREE_OPERAND (pos, 1)) == INTEGER_CST)
+		{
+		  constant = TREE_OPERAND (pos, 1);
+		  var = TREE_OPERAND (pos, 0);
+		}
+	      else
+		abort ();
+	      *pbitpos += TREE_INT_CST_LOW (constant);
+	      if (offset)
+		offset = size_binop (PLUS_EXPR, offset,
+				     size_binop (FLOOR_DIV_EXPR, var,
+						 size_int (BITS_PER_UNIT)));
+	      else
+		offset = size_binop (FLOOR_DIV_EXPR, var,
+				     size_int (BITS_PER_UNIT));
+	    }
+	  else if (TREE_CODE (pos) == INTEGER_CST)
+	    *pbitpos += TREE_INT_CST_LOW (pos);
+	  else
+	    {
+	      /* Assume here that the offset is a multiple of a unit.
+		 If not, there should be an explicitly added constant.  */
+	      if (offset)
+		offset = size_binop (PLUS_EXPR, offset,
+				     size_binop (FLOOR_DIV_EXPR, pos,
+						 size_int (BITS_PER_UNIT)));
+	      else
+		offset = size_binop (FLOOR_DIV_EXPR, pos,
+				     size_int (BITS_PER_UNIT));
+	    }
 	}
-      else if (TREE_CODE (exp) == BIT_FIELD_REF)
-	{
-	  if (TREE_CODE (TREE_OPERAND (exp, 2)) != INTEGER_CST)
-	    /* ??? This case remains to be written.  */
-	    abort ();
 
-	  *pbitpos += TREE_INT_CST_LOW (TREE_OPERAND (exp, 2));
-	  if (TREE_THIS_VOLATILE (exp))
-	    *pvolatilep = 1;
-	}
       else if (TREE_CODE (exp) == ARRAY_REF
 	       && TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
 	       && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) == INTEGER_CST)
 	{
 	  *pbitpos += (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1))
 		       * TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp))));
-	  if (TREE_THIS_VOLATILE (exp))
-	    *pvolatilep = 1;
 	}
       else if (TREE_CODE (exp) != NON_LVALUE_EXPR
 	       && ! ((TREE_CODE (exp) == NOP_EXPR
@@ -2540,6 +2579,10 @@ get_inner_reference (exp, pbitsize, pbitpos, pmode, punsignedp, pvolatilep)
 		     && (TYPE_MODE (TREE_TYPE (exp))
 			 == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))))
 	break;
+
+      /* If any reference in the chain is volatile, the effect is volatile.  */
+      if (TREE_THIS_VOLATILE (exp))
+	*pvolatilep = 1;
       exp = TREE_OPERAND (exp, 0);
     }
 
@@ -2553,6 +2596,12 @@ get_inner_reference (exp, pbitsize, pbitpos, pmode, punsignedp, pvolatilep)
     }
 
   *pmode = mode;
+  *poffset = offset;
+#if 0
+  /* We aren't finished fixing the callers to really handle nonzero offset.  */
+  if (offset != 0)
+    abort ();
+#endif
 
   return exp;
 }
@@ -3404,8 +3453,9 @@ expand_expr (exp, target, tmode, modifier)
 	enum machine_mode mode1;
 	int bitsize;
 	int bitpos;
+	tree offset;
 	int volatilep = 0;
-	tree tem = get_inner_reference (exp, &bitsize, &bitpos,
+	tree tem = get_inner_reference (exp, &bitsize, &bitpos, &offset,
 					&mode1, &unsignedp, &volatilep);
 
 	/* In some cases, we will be offsetting OP0's address by a constant.
@@ -3422,6 +3472,17 @@ expand_expr (exp, target, tmode, modifier)
 	      op0 = force_reg (mode, op0);
 	    else
 	      op0 = validize_mem (force_const_mem (mode, op0));
+	  }
+
+	if (offset != 0)
+	  {
+	    rtx offset_rtx = expand_expr (offset, 0, VOIDmode, 0);
+
+	    if (GET_CODE (op0) != MEM)
+	      abort ();
+	    op0 = change_address (op0, VOIDmode,
+				  gen_rtx (PLUS, Pmode, XEXP (op0, 0),
+					   force_reg (Pmode, offset_rtx)));
 	  }
 
 	/* Don't forget about volatility even if this is a bitfield.  */
@@ -5815,12 +5876,13 @@ do_jump (exp, if_false_label, if_true_label)
 	int bitsize, bitpos, unsignedp;
 	enum machine_mode mode;
 	tree type;
+	tree offset;
 	int volatilep = 0;
 
 	/* Get description of this reference.  We don't actually care
 	   about the underlying object here.  */
-	get_inner_reference (exp, &bitsize, &bitpos, &mode, &unsignedp,
-			     &volatilep);
+	get_inner_reference (exp, &bitsize, &bitpos, &offset,
+			     &mode, &unsignedp, &volatilep);
 
 	type = type_for_size (bitsize, unsignedp);
 	if (type != 0 && bitsize >= 0
