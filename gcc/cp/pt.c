@@ -4553,11 +4553,12 @@ tsubst_copy (t, args, in_decl)
 	       build_expr_from_tree.  So, we need to expand the
 	       BIND_EXPR here.  */ 
 	    tree rtl_exp = expand_start_stmt_expr();
-	    tsubst_expr (TREE_OPERAND (r, 1), args, in_decl);
+	    tree block = tsubst_expr (TREE_OPERAND (r, 1), args, in_decl);
 	    rtl_exp = expand_end_stmt_expr (rtl_exp);
 	    TREE_SIDE_EFFECTS (rtl_exp) = 1;
-	    return build (BIND_EXPR, TREE_TYPE (rtl_exp), 
-			  NULL_TREE, rtl_exp, TREE_OPERAND (r, 2));
+	    r = build (BIND_EXPR, TREE_TYPE (rtl_exp), 
+		       NULL_TREE, rtl_exp, block);
+	    delete_block (block);
 	  }
 
 	return r;
@@ -4841,7 +4842,7 @@ tsubst_expr (t, args, in_decl)
 	  tsubst_expr (substmt, args, in_decl);
 
 	if (COMPOUND_STMT_NO_SCOPE (t) == 0)
-	  do_poplevel ();
+	  return do_poplevel ();
       }
       break;
 
