@@ -3963,7 +3963,7 @@ output_set_got (dest)
   rtx xops[3];
 
   xops[0] = dest;
-  xops[1] = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
+  xops[1] = gen_rtx_SYMBOL_REF (Pmode, GOT_SYMBOL_NAME);
 
   if (! TARGET_DEEP_BRANCH_PREDICTION || !flag_pic)
     {
@@ -7335,8 +7335,8 @@ ix86_output_addr_diff_elt (file, value, rel)
 	     machopic_function_base_name () + 1);
 #endif
   else
-    asm_fprintf (file, "%s%U_GLOBAL_OFFSET_TABLE_+[.-%s%d]\n",
-		 ASM_LONG, LPREFIX, value);
+    asm_fprintf (file, "%s%U%s+[.-%s%d]\n",
+		 ASM_LONG, GOT_SYMBOL_NAME, LPREFIX, value);
 }
 
 /* Generate either "mov $0, reg" or "xor reg, reg", as appropriate
@@ -13800,7 +13800,7 @@ x86_output_mi_thunk (file, delta, function)
 	{
 	  xops[0] = pic_offset_table_rtx;
 	  xops[1] = gen_label_rtx ();
-	  xops[2] = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
+	  xops[2] = gen_rtx_SYMBOL_REF (Pmode, GOT_SYMBOL_NAME);
 
 	  if (ix86_regparm > 2)
 	    abort ();
