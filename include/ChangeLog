@@ -1,3 +1,7 @@
+2000-04-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* sort.h: New file.
+
 Tue Apr 18 16:22:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* hashtab.h (enum insert_option): New type.
