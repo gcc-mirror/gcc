@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_PAIR_H
-#define __SGI_STL_INTERNAL_PAIR_H
+#ifndef __GLIBCPP_INTERNAL_PAIR_H
+#define __GLIBCPP_INTERNAL_PAIR_H
 
 namespace std
 {
@@ -150,7 +150,7 @@ inline pair<_T1, _T2> make_pair(const _T1& __x, const _T2& __y)
 
 } // namespace std
 
-#endif /* __SGI_STL_INTERNAL_PAIR_H */
+#endif /* __GLIBCPP_INTERNAL_PAIR_H */
 
 // Local Variables:
 // mode:C++

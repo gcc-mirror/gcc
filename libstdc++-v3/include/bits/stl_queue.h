@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_QUEUE_H
-#define __SGI_STL_INTERNAL_QUEUE_H
+#ifndef __GLIBCPP_INTERNAL_QUEUE_H
+#define __GLIBCPP_INTERNAL_QUEUE_H
 
 #include <bits/concept_check.h>
 
@@ -237,7 +237,7 @@ public:
 
 } // namespace std
 
-#endif /* __SGI_STL_INTERNAL_QUEUE_H */
+#endif /* __GLIBCPP_INTERNAL_QUEUE_H */
 
 // Local Variables:
 // mode:C++

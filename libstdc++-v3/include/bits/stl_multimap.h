@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_MULTIMAP_H
-#define __SGI_STL_INTERNAL_MULTIMAP_H
+#ifndef __GLIBCPP_INTERNAL_MULTIMAP_H
+#define __GLIBCPP_INTERNAL_MULTIMAP_H
 
 #include <bits/concept_check.h>
 
@@ -258,7 +258,7 @@ inline void swap(multimap<_Key,_Tp,_Compare,_Alloc>& __x,
 
 } // namespace std
 
-#endif /* __SGI_STL_INTERNAL_MULTIMAP_H */
+#endif /* __GLIBCPP_INTERNAL_MULTIMAP_H */
 
 // Local Variables:
 // mode:C++

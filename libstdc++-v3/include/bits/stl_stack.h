@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_STACK_H
-#define __SGI_STL_INTERNAL_STACK_H
+#ifndef __GLIBCPP_INTERNAL_STACK_H
+#define __GLIBCPP_INTERNAL_STACK_H
 
 #include <bits/concept_check.h>
 
@@ -153,7 +153,7 @@ bool operator>=(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y)
 
 } // namespace std
 
-#endif /* __SGI_STL_INTERNAL_STACK_H */
+#endif /* __GLIBCPP_INTERNAL_STACK_H */
 
 // Local Variables:
 // mode:C++

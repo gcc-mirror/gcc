@@ -62,8 +62,8 @@
 #include <bits/stl_iterator_base_types.h>
 #include <bits/stl_iterator_base_funcs.h>
 
-#ifndef __SGI_STL_INTERNAL_DEQUE_H
-#define __SGI_STL_INTERNAL_DEQUE_H
+#ifndef __GLIBCPP_INTERNAL_DEQUE_H
+#define __GLIBCPP_INTERNAL_DEQUE_H
 
 /* Class invariants:
  *  For any nonsingular iterator i:
@@ -1447,7 +1447,7 @@ inline void swap(deque<_Tp,_Alloc>& __x, deque<_Tp,_Alloc>& __y) {
 
 } // namespace std 
   
-#endif /* __SGI_STL_INTERNAL_DEQUE_H */
+#endif /* __GLIBCPP_INTERNAL_DEQUE_H */
 
 // Local Variables:
 // mode:C++

@@ -863,15 +863,15 @@ bool rope<_CharT, _Alloc>::_S_apply_to_pieces(
 		size_t __len = __end - __begin;
 		bool __result;
 		_CharT* __buffer =
-		  (_CharT*)alloc::allocate(__len * sizeof(_CharT));
+		  (_CharT*)__alloc::allocate(__len * sizeof(_CharT));
 		try {
 		  (*(__f->_M_fn))(__begin, __len, __buffer);
 		  __result = __c(__buffer, __len);
-                  alloc::deallocate(__buffer, __len * sizeof(_CharT));
+                  __alloc::deallocate(__buffer, __len * sizeof(_CharT));
                 }
 		catch(...)
 		  {
-		    alloc::deallocate(__buffer, __len * sizeof(_CharT));
+		    __alloc::deallocate(__buffer, __len * sizeof(_CharT));
 		    __throw_exception_again;
 		  }
 		return __result;

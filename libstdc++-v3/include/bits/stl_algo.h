@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_ALGO_H
-#define __SGI_STL_INTERNAL_ALGO_H
+#ifndef __GLIBCPP_INTERNAL_ALGO_H
+#define __GLIBCPP_INTERNAL_ALGO_H
 
 #include <bits/stl_heap.h>
 
@@ -3601,7 +3601,7 @@ __result, __binary_pred, _IterType());
 
 } // namespace std
 
-#endif /* __SGI_STL_INTERNAL_ALGO_H */
+#endif /* __GLIBCPP_INTERNAL_ALGO_H */
 
 // Local Variables:
 // mode:C++

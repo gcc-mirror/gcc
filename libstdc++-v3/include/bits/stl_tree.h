@@ -60,8 +60,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_TREE_H
-#define __SGI_STL_INTERNAL_TREE_H
+#ifndef __GLIBCPP_INTERNAL_TREE_H
+#define __GLIBCPP_INTERNAL_TREE_H
 
 /*
 
@@ -1309,7 +1309,7 @@ struct rb_tree : public _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc>
 
 } // namespace std 
 
-#endif /* __SGI_STL_INTERNAL_TREE_H */
+#endif /* __GLIBCPP_INTERNAL_TREE_H */
 
 // Local Variables:
 // mode:C++

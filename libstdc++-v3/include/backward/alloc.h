@@ -50,8 +50,8 @@
 using std::__malloc_alloc_template; 
 using std::__simple_alloc; 
 using std::__debug_alloc; 
-using std::alloc; 
-using std::single_client_alloc; 
+using std::__alloc; 
+using std::__single_client_alloc; 
 using std::allocator;
 #ifdef __USE_MALLOC
 using std::malloc_alloc; 

@@ -58,8 +58,8 @@
  *  You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_ITERATOR_H
-#define __SGI_STL_INTERNAL_ITERATOR_H
+#ifndef __GLIBCPP_INTERNAL_ITERATOR_H
+#define __GLIBCPP_INTERNAL_ITERATOR_H
 
 namespace std
 {
