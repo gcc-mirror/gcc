@@ -1476,7 +1476,9 @@ build_exception_variant (type, raises)
       for (t = TYPE_RAISES_EXCEPTIONS (v), u = raises;
 	   t != NULL_TREE && u != NULL_TREE;
 	   t = TREE_CHAIN (t), u = TREE_CHAIN (v))
-	if (!same_type_p (TREE_VALUE (t), TREE_VALUE (u)))
+	if (((TREE_VALUE (t) != NULL_TREE) 
+	     != (TREE_VALUE (u) != NULL_TREE))
+	    || !same_type_p (TREE_VALUE (t), TREE_VALUE (u)))
 	  break;
 
       if (!t && !u)

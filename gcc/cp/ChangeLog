@@ -1,3 +1,9 @@
+1998-12-22  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (TYPE_RAISES_EXCEPTIONS): Improve documentation.
+	* tree.c (build_exception_variant): Don't crash on empty throw
+	specs. 
+
 1998-12-18  DJ Delorie  <dj@cygnus.com>
 
 	* cvt.c (convert_to_reference): Check for both error_mark_node
