@@ -1,3 +1,11 @@
+2004-02-05  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.md ("*tmqidi_ext"): New insn.
+	("*extendqidi2_short_displ", "*extendsiqi2_short_displ"): Old
+	pre-reload splitters are transformed to post-reload
+	define_insn_and_split patterns.
+	("*tmqisi_ext"): Renamed old "*tmqi_ext".
+
 2004-02-05  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR middle-end/13750
