@@ -1,3 +1,17 @@
+2001-04-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/fstream.tcc: Add bool parameter to filebuf ctor.
+	* include/bits/ios_base.h(ios_base::Init): Remove _M_cout, _M_cin,
+	_M_cerr, _M_wcout, _M_wcin, _M_wcerr.
+	(ios_base::Init::_S_ios_create): New.
+	(ios_base::Init::_S_ios_destroy): New.	
+	* include/bits/std_fstream.h: Change ctor args.
+	* src/ios.cc (ios_base::Init::Init): Use _S_ios_create.
+	(ios_base::Init::~Init): Use _S_ios_destroy.
+	(ios_base::sync_with_stdio): Use new members.
+	* testsuite/27_io/filebuf_members.cc: Fix calling conventions for
+	filebuf ctor.
+
 2001-04-03  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
         * include/backward/fstream.h:  Expose streampos to global

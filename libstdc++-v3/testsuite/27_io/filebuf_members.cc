@@ -52,7 +52,7 @@ test_01()
   FILE* f2 = fopen(name_01, "r");
   VERIFY( f2 != NULL );
   {
-    std::filebuf fb(f2, std::ios_base::in);
+    std::filebuf fb(f2, false, std::ios_base::in);
   }
   close_num = fclose(f2);
   VERIFY( close_num == 0 );
