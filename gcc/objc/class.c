@@ -1,22 +1,21 @@
 /* GNU Objective C Runtime class related functions
-   Copyright (C) 1993 Free Software Foundation, Inc.
-
-Author: Kresten Krab Thorup, Dennis Glatting
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Contributed by Kresten Krab Thorup and Dennis Glatting.
 
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify it under the
-   terms of the GNU General Public License as published by the Free Software
-   Foundation; either version 2, or (at your option) any later version.
+terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2, or (at your option) any later version.
 
 GNU CC is distributed in the hope that it will be useful, but WITHOUT ANY
-   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-   details.
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+details.
 
 You should have received a copy of the GNU General Public License along with
-   GNU CC; see the file COPYING.  If not, write to the Free Software
-   Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+GNU CC; see the file COPYING.  If not, write to the Free Software
+Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* As a special exception, if you link this library with files compiled with
    GCC to produce an executable, this does not cause the resulting executable
@@ -33,7 +32,7 @@ static cache_ptr __objc_class_hash = 0;
 /* This is a hook which is called by objc_get_class and 
    objc_lookup_class if the runtime is not able to find the class.
    This may e.g. try to load in the class using dynamic loading */
-Class* (*_objc_lookup_class)(const char* name) = 0;
+Class (*_objc_lookup_class)(const char* name) = 0;
 
 
 /* True when class links has been resolved */     
@@ -59,9 +58,9 @@ void __objc_init_class_tables()
 /* This function adds a class to the class hash table, and assigns the 
    class a number, unless it's already known */
 void
-__objc_add_class_to_hash(Class* class)
+__objc_add_class_to_hash(Class class)
 {
-  Class* h_class;
+  Class h_class;
 
   /* make sure the table is there */
   assert(__objc_class_hash);
@@ -88,9 +87,9 @@ __objc_add_class_to_hash(Class* class)
 /* Get the class object for the class named NAME.  If NAME does not
    identify a known class, the hook _objc_lookup_class is called.  If
    this fails, nil is returned */
-Class* objc_lookup_class (const char* name)
+Class objc_lookup_class (const char* name)
 {
-  Class* class;
+  Class class;
 
   /* Make sure the class hash table exists.  */
   assert (__objc_class_hash);
@@ -109,10 +108,10 @@ Class* objc_lookup_class (const char* name)
 /* Get the class object for the class named NAME.  If NAME does not
    identify a known class, the hook _objc_lookup_class is called.  If
    this fails,  an error message is issued and the system aborts */
-Class*
+Class
 objc_get_class (const char *name)
 {
-  Class* class;
+  Class class;
 
   /* Make sure the class hash table exists.  */
   assert (__objc_class_hash);
@@ -132,7 +131,7 @@ objc_get_class (const char *name)
   abort();
 }
 
-MetaClass*
+MetaClass
 objc_get_meta_class(const char *name)
 {
   return objc_get_class(name)->class_pointer;
@@ -147,7 +146,7 @@ objc_get_meta_class(const char *name)
        while ((class = objc_next_class(&es)))
          ... do something with class; 
 */
-Class* 
+Class
 objc_next_class(void **enum_state)
 {
   /* make sure the table is there */
@@ -157,7 +156,7 @@ objc_next_class(void **enum_state)
     hash_next(__objc_class_hash, *(node_ptr*)enum_state);
   if (*(node_ptr*)enum_state)
     return (*(node_ptr*)enum_state)->value;
-  return (Class*)0;
+  return (Class)0;
 }
 
 /* Resolve super/subclass links for all classes.  The only thing we 
@@ -166,7 +165,7 @@ objc_next_class(void **enum_state)
 void __objc_resolve_class_links()
 {
   node_ptr node;
-  Class* object_class = objc_get_class ("Object");
+  Class object_class = objc_get_class ("Object");
 
   assert(object_class);
 
@@ -174,7 +173,7 @@ void __objc_resolve_class_links()
   for (node = hash_next (__objc_class_hash, NULL); node;
        node = hash_next (__objc_class_hash, node))
     {
-      Class* class1 = node->value;
+      Class class1 = node->value;
 
       /* Make sure we have what we think we have.  */
       assert (CLS_ISCLASS(class1));
@@ -190,7 +189,7 @@ void __objc_resolve_class_links()
               
           if(class1->super_class)
             {   
-              Class* a_super_class 
+              Class a_super_class 
                 = objc_get_class ((char *) class1->super_class);
               
               assert (a_super_class);
@@ -225,8 +224,8 @@ void __objc_resolve_class_links()
   for (node = hash_next (__objc_class_hash, NULL); node;
        node = hash_next (__objc_class_hash, node))
     {
-      Class* class1 = node->value;
-      Class* sub_class;
+      Class class1 = node->value;
+      Class sub_class;
       for (sub_class = class1->subclass_list; sub_class;
            sub_class = sub_class->sibling_class)
         {
@@ -241,11 +240,11 @@ void __objc_resolve_class_links()
 
 #define CLASSOF(c) ((c)->class_pointer)
 
-Class*
-class_pose_as (Class* impostor, Class* super_class)
+Class
+class_pose_as (Class impostor, Class super_class)
 {
   node_ptr node;
-  Class* class1;
+  Class class1;
 
   if (!CLS_ISRESOLV (impostor))
     __objc_resolve_class_links ();
@@ -259,16 +258,16 @@ class_pose_as (Class* impostor, Class* super_class)
   assert (impostor->instance_size == super_class->instance_size);
 
   {
-    Class **subclass = &(super_class->subclass_list);
+    Class *subclass = &(super_class->subclass_list);
 
     /* move subclasses of super_class to impostor */
     while (*subclass)
       {
-	Class *nextSub = (*subclass)->sibling_class;
+	Class nextSub = (*subclass)->sibling_class;
 
 	if (*subclass != impostor)
 	  {
-	    Class *sub = *subclass;
+	    Class sub = *subclass;
 
 	    /* classes */
 	    sub->sibling_class = impostor->subclass_list;
@@ -311,7 +310,7 @@ class_pose_as (Class* impostor, Class* super_class)
   for (node = hash_next (__objc_class_hash, NULL); node;
        node = hash_next (__objc_class_hash, node))
     {
-      class1 = (Class*)node->value;
+      class1 = (Class)node->value;
       if (class1 == super_class)
 	{
 	  node->value = impostor; /* change hash table value */

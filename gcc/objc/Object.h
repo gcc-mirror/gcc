@@ -1,5 +1,5 @@
 /* Interface for the Object class for Objective-C.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -35,7 +35,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  */
 @interface Object
 {
-    Class*	isa;	/* A pointer to the instance's class structure */
+    Class	isa;	/* A pointer to the instance's class structure */
 }
 
         /* Initializing classes and instances */
@@ -52,9 +52,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 - deepCopy;
 
         /* Identifying classes */
-- (Class*)class;
-- (Class*)superClass;
-- (MetaClass*)metaClass;
+- (Class)class;
+- (Class)superClass;
+- (MetaClass)metaClass;
 - (const char *)name;
 
         /* Identifying and comparing objects */
@@ -69,8 +69,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 - (BOOL)isInstance;
 
         /* Testing inheritance relationships */
-- (BOOL)isKindOf:(Class*)aClassObject;
-- (BOOL)isMemberOf:(Class*)aClassObject;
+- (BOOL)isKindOf:(Class)aClassObject;
+- (BOOL)isMemberOf:(Class)aClassObject;
 - (BOOL)isKindOfClassNamed:(const char *)aClassName;
 - (BOOL)isMemberOfClassNamed:(const char *)aClassName;
 
@@ -97,8 +97,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 - (retval_t)performv:(SEL)aSel :(arglist_t)argFrame;
 
         /* Posing */
-+ poseAs:(Class*)aClassObject;
-- (Class*)transmuteClassTo:(Class*)aClassObject;
++ poseAs:(Class)aClassObject;
+- (Class)transmuteClassTo:(Class)aClassObject;
 
         /* Enforcing intentions */
 - subclassResponsibility:(SEL)aSel;

@@ -1,5 +1,5 @@
 /* GNU Objective-C Typed Streams interface.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -98,7 +98,7 @@ int objc_read_types (TypedStream* stream, const char* type, ...);
 int objc_write_object_reference (TypedStream* stream, id object);
 int objc_write_root_object (TypedStream* stream, id object);
 
-long objc_get_stream_class_version (TypedStream* stream, Class* class);
+long objc_get_stream_class_version (TypedStream* stream, Class class);
 
 
 /*

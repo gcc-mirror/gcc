@@ -1,5 +1,5 @@
 /* Basic data types for Objective C.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -76,7 +76,7 @@ typedef id (*IMP)(id, SEL, ...);
 ** More simple types...
 */
 #define nil (id)0                               /* id of Nil instance */
-#define Nil (Class*)0                          /* id of Nil class */
+#define Nil (Class)0                            /* id of Nil class */
 typedef char *STR;                              /* String alias */
 
 /*
@@ -89,10 +89,10 @@ typedef char *STR;                              /* String alias */
 ** change type. The compiler generates "char* const" and places a string in
 ** the following member variables:  super_class. 
 */
-typedef struct objc_class MetaClass;
-typedef struct objc_class Class;
+typedef struct objc_class *MetaClass;
+typedef struct objc_class *Class;
 struct objc_class {     
-  MetaClass*         class_pointer;          /* Pointer to the class's
+  MetaClass           class_pointer;          /* Pointer to the class's
                                                 meta class. */
   struct objc_class*  super_class;            /* Pointer to the super 
                                                 class. NULL for class 

@@ -1,22 +1,21 @@
 /* GNU Objective C Runtime class related functions
-   Copyright (C) 1993 Free Software Foundation, Inc.
-
-Author: Kresten Krab Thorup
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify it under the
-   terms of the GNU General Public License as published by the Free Software
-   Foundation; either version 2, or (at your option) any later version.
+terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2, or (at your option) any later version.
 
 GNU CC is distributed in the hope that it will be useful, but WITHOUT ANY
-   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-   details.
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+details.
 
 You should have received a copy of the GNU General Public License along with
-   GNU CC; see the file COPYING.  If not, write to the Free Software
-   Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+GNU CC; see the file COPYING.  If not, write to the Free Software
+Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* As a special exception, if you link this library with files compiled with
    GCC to produce an executable, this does not cause the resulting executable
@@ -27,16 +26,16 @@ You should have received a copy of the GNU General Public License along with
 #include "../tconfig.h"         /* include defs of bzero for target */
 #include "runtime.h"		/* the kitchen sink */
 
-id __objc_object_alloc(Class*);
+id __objc_object_alloc(Class);
 id __objc_object_dispose(id);
 id __objc_object_copy(id);
 
-id (*_objc_object_alloc)(Class*) = __objc_object_alloc;
+id (*_objc_object_alloc)(Class)   = __objc_object_alloc;
 id (*_objc_object_dispose)(id)    = __objc_object_dispose;
 id (*_objc_object_copy)(id)       = __objc_object_copy;
 
 id
-class_create_instance(Class* class)
+class_create_instance(Class class)
 {
   id new = nil;
   if (CLS_ISCLASS(class))
@@ -71,7 +70,7 @@ object_dispose(id object)
   return nil;
 }
 
-id __objc_object_alloc(Class* class)
+id __objc_object_alloc(Class class)
 {
   return (id)__objc_xmalloc(class->instance_size);
 }
