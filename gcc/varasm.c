@@ -2874,6 +2874,14 @@ const_rtx_hash_1 (rtx *xp, void *data)
 	h ^= real_hash (CONST_DOUBLE_REAL_VALUE (x));
       break;
 
+    case CONST_VECTOR:
+      {
+	int i;
+	for (i = XVECLEN (x, 0); i-- > 0; )
+	  h = h * 251 + const_rtx_hash_1 (&XVECEXP (x, 0, i), data);
+      }
+      break;
+
     case SYMBOL_REF:
       h ^= htab_hash_string (XSTR (x, 0));
       break;
