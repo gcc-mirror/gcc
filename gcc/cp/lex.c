@@ -685,6 +685,8 @@ cxx_init (filename)
   interface_unknown = 1;
 
   filename = c_common_init (filename);
+  if (filename == NULL)
+    return NULL;
 
   init_cp_pragma ();
 

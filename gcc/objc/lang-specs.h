@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
       %{!E:%{!M:%{!MM:\
 	%{traditional|ftraditional|traditional-cpp:\
 %eGNU Objective C no longer supports traditional compilation}\
-	%{save-temps:cpp0 -lang-objc %{ansi:-std=c89}\
+	%{save-temps:cc1obj -E -lang-objc %{ansi:-std=c89}\
 	  %(cpp_options) %b.mi \n\
 	    cc1obj -fpreprocessed %b.mi %(cc1_options) %{gen-decls}}\
 	%{!save-temps:\

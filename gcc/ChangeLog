@@ -1,3 +1,27 @@
+2002-03-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	Removal of separate preprocessor cpp0.
+
+	* Makefile.in (GCC_PASSES, STAGESTUFF, LIBCPP_OBJS,
+	cpp0, install-common): Update.
+	* c-common.c (flag_preprocess_only): New.
+	(c_common_init): Preprocess for -E.
+	* c-common.h (flag_preprocess_only): New.
+	* c-decl.c (c_decode_option): Handle -E and -std=c++98.
+	* c-objc-common.c (c_init_decl_processing): Exit quickly
+	for NULL return from c_common_init.
+	* cpplib.h (cpp_preprocess_file): New.
+	* cppmain.c (main, general_init, pfile, progname): Remove.
+	(do_preprocessing): Rename cpp_preprocess_file, don't call
+	cpp_finish.  Don't close stdout here.
+	(setup_callbacks): Update prototype.
+	* gcc.c (trad_capable_cpp, cpp_unique_options, default_compilers):
+	Update.
+	* tradcpp.c (main): Ignore -quiet.
+objc:
+	* lang-specs.h (default_compilers): Preprocess with cc1obj.
+
 2002-03-24  Richard Henderson  <rth@redhat.com>
 
 	PR optimization/5742

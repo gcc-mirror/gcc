@@ -217,6 +217,8 @@ c_objc_common_init (filename)
   c_init_decl_processing ();
 
   filename = c_common_init (filename);
+  if (filename == NULL)
+    return NULL;
 
   lang_unsafe_for_reeval = c_unsafe_for_reeval;
 

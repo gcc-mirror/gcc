@@ -603,6 +603,9 @@ extern unsigned char *cpp_quote_string	PARAMS ((unsigned char *,
 extern int cpp_included	PARAMS ((cpp_reader *, const char *));
 extern void cpp_make_system_header PARAMS ((cpp_reader *, int, int));
 
+/* In cppmain.c */
+extern void cpp_preprocess_file PARAMS ((cpp_reader *));
+
 #ifdef __cplusplus
 }
 #endif

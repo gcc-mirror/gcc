@@ -181,6 +181,9 @@ enum c_language_kind c_language;
 
 tree c_global_trees[CTI_MAX];
 
+/* Nonzero if prepreprocessing only.  */
+int flag_preprocess_only;
+
 /* Nonzero means don't recognize the non-ANSI builtin functions.  */
 
 int flag_no_builtin;
@@ -4141,6 +4144,13 @@ const char *
 c_common_init (filename)
      const char *filename;
 {
+  /* NULL is passed up to toplev.c and we exit quickly.  */
+  if (flag_preprocess_only)
+    {
+      cpp_preprocess_file (parse_in);
+      return NULL;
+    }
+
   /* Do this before initializing pragmas, as then cpplib's hash table
      has been set up.  */
   filename = init_c_lex (filename);

@@ -581,6 +581,8 @@ c_decode_option (argc, argv)
 	  flag_isoc99 = 1;
 	  flag_isoc94 = 1;
 	}
+      else if (!strcmp (argstart, "c++98"))
+	; /* Handled by cpplib.  */
       else
 	error ("unknown C standard `%s'", argstart);
     }
@@ -685,6 +687,8 @@ c_decode_option (argc, argv)
       /* Only warn about unknown pragmas that are not in system headers.  */
       warn_unknown_pragmas = 1;
     }
+  else if (!strcmp (p, "-E"))
+    flag_preprocess_only = 1;
   else
     {
       size_t i;
