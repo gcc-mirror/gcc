@@ -45,7 +45,7 @@ OUT_H="$BUILD_DIR/include/bits/std_limits.h"
 OUT_C="$BUILD_DIR/src/limitsMEMBERS.cc"
 
 if [ -f $OUT_C ]; then
-    rm -f $OUT_H OUT_C
+    rm -f $OUT_H $OUT_C $OUT_H-t $OUT_C-t
 fi
 
 SRC_DIR=$2
@@ -64,7 +64,9 @@ fi
 
 : ${CXX:="$BUILD_DIR/../../gcc/g++ -B$BUILD_DIR/../../gcc/"}
 
-cat <<EOF > $OUT_H
+# We output to a temporary file, so that we don't appear to have
+# succeeded unless we actually do.
+cat <<EOF > $OUT_H-t
 // The template and inlines for the -*- C++ -*- numeric_limits classes.
 
 // Copyright (C) 1999, 2000 Free Software Foundation, Inc.
@@ -189,9 +191,9 @@ if [ ! -f "$BUILD_DIR/src/gen-num-limits" ]; then
   exit 1
 fi
 
-"$BUILD_DIR/src/gen-num-limits" >> $OUT_H
+"$BUILD_DIR/src/gen-num-limits" >> $OUT_H-t
 
-cat <<EOF >> $OUT_H
+cat <<EOF >> $OUT_H-t
 } // namespace std
 
 #endif // _CPP_NUMERIC_LIMITS
@@ -245,8 +247,8 @@ for type_name in bool char 'signed char' 'unsigned char' \
 	    long 'unsigned long' 'long long' 'unsigned long long' \
 	    float double 'long double'
     do
-     grep "<$type_name>" $OUT_H >/dev/null 2>&1 || continue
-     cat <<EOF >> $OUT_C
+     grep "<$type_name>" $OUT_H-t >/dev/null 2>&1 || continue
+     cat <<EOF >> $OUT_C-t
 
     const bool $trait_name<$type_name>::is_specialized;
     const int  $trait_name<$type_name>::digits;
@@ -274,8 +276,11 @@ EOF
 
 done
 
-cat <<EOF >> $OUT_C
+cat <<EOF >> $OUT_C-t
 } // namespace std
 
 
 EOF
+
+mv $OUT_C-t $OUT_C
+mv $OUT_H-t $OUT_H
