@@ -1011,31 +1011,6 @@ All code must be recompiled.  The calling convention now passes the
 first three arguments in function calls in registers.  Structures are no
 longer a multiple of 2 bytes.
 
-@item hppa*-*-*
-There are several variants of the HP-PA processor which run a variety
-of operating systems.  GNU CC must be configured to use the correct
-processor type and operating system, or GNU CC will not function correctly.
-The easiest way to handle this problem is to @emph{not} specify a target
-when configuring GNU CC, the @file{configure} script will try to automatically
-determine the right processor type and operating system.
-
-@samp{-g} does not work on HP-UX, since that system uses a peculiar
-debugging format which GNU CC does not know about.  However, @samp{-g}
-will work if you also use GAS and GDB in conjunction with GCC.  We
-highly recommend using GAS for all HP-PA configurations.
-
-You should be using GAS-2.6 (or later) along with GDB-4.16 (or later).  These
-can be retrieved from all the traditional GNU ftp archive sites.
-
-On some versions of HP-UX, you will need to install GNU @file{sed}.
-
-You will need to be install GAS into a directory before @code{/bin},
-@code{/usr/bin}, and @code{/usr/ccs/bin} in your search path.  You
-should install GAS before you build GNU CC.
-
-To enable debugging, you must configure GNU CC with the @samp{--with-gnu-as}
-option before building.
-
 @item i370-*-*
 This port is very preliminary and has many known bugs.  We hope to
 have a higher-quality port for this machine soon.
