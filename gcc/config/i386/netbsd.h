@@ -1,3 +1,10 @@
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      NETBSD_OS_CPP_BUILTINS_AOUT();		\
+    }						\
+  while (0)
+
 #define TARGET_VERSION fprintf (stderr, " (NetBSD/i386 a.out)");
 
 /* This goes away when the math-emulator is fixed */
@@ -5,12 +12,12 @@
 #define TARGET_SUBTARGET_DEFAULT \
   (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_NO_FANCY_MATH_387)
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -D__NetBSD__ \
- -Asystem=unix -Asystem=bsd -Asystem=NetBSD"
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS			\
+  { "netbsd_cpp_spec", NETBSD_CPP_SPEC },
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%(cpp_cpu) %(netbsd_cpp_spec)"
 
 
 #undef SIZE_TYPE
