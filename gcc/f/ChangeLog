@@ -1,3 +1,8 @@
+2004-04-18  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* g77.texi (Floating-point Errors): Avoid referencing 
+	http://www.linuxsupportline.com/~billm/ which as has been hijacked.
+
 2004-04-02  Jan Hubicka  <jh@suse.cz>
 
 	* Make-lang.in (com.o): Add dependnecy on function.h
