@@ -1,3 +1,8 @@
+2000-09-07  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.md (symPLT_label2reg): Force the initialization of
+	the PIC register.
+
 2000-09-06  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.in (clean_s1): Depend on stage_b.
