@@ -1,3 +1,8 @@
+2004-11-19  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* c-decl.c (push_scope): Remove "\n" from end of diagnostic for
+	too many nested scopes.
+
 2004-11-19  Dorit Naishlos  <dorit@il.ibm.com>
 
 	PR tree-opt/18181
