@@ -2022,7 +2022,7 @@ write_pointer_to_member_type (type)
 {
   write_char ('M');
   /* For a pointer-to-function member, the class type may be
-     cv-qualified, bug that won't be reflected in
+     cv-qualified, but that won't be reflected in
      TYPE_PTRMEM_CLASS_TYPE.  So, we go fishing around in
      TYPE_PTRMEM_POINTED_TO_TYPE instead.  */
   if (TYPE_PTRMEMFUNC_P (type))
