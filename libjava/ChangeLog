@@ -1,3 +1,14 @@
+2003-06-11  Scott Gilbertson  <scottg@mantatest.com>
+
+	* gnu/awt/j2d/IntegerGraphicsState.java (drawOval): implemented.
+	(fillOval): implemented
+	* gnu/awt/xlib/XGraphics.java (drawArc): implemented.
+	(fillArc): implemented.
+	* gnu/gcj/xlib/GC.java (drawArc): added native method.
+	(fillArc): added native method.
+	* gnu/gcj/xlib/natGC.cc (drawArc): added native method.
+	(fillArc): added native method.
+
 2003-06-11  Michael Koch  <konqueror@gmx.de>
 
 	* java/awt/im/InputSubset.java:

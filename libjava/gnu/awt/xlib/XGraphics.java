@@ -156,13 +156,13 @@ public class XGraphics implements Cloneable, DirectRasterGraphics
   public void drawArc(int x, int y, int width, int height, int
 		      startAngle, int arcAngle)
   {
-    throw new UnsupportedOperationException("not implemented");
+    context.drawArc (x, y, width, height, startAngle, arcAngle);
   }
     
   public void fillArc(int x, int y, int width, int height, int
 		      startAngle, int arcAngle)
   {
-    throw new UnsupportedOperationException("not implemented");
+    context.fillArc (x, y, width, height, startAngle, arcAngle);
   }
     
   public void drawPolyline(int[] xPoints, int[] yPoints, int

@@ -110,6 +110,11 @@ public class GC implements Cloneable
   public native void fillRectangle(int x, int y, int w, int h);
   public native void fillPolygon(int[] xPoints, int[] yPoints, int nPoints,
 				 int translateX, int translateY);
+  
+  public native void drawArc(int x, int y, int w, int h,
+			     int startAngle, int arcAngle);
+  public native void fillArc(int x, int y, int w, int h,
+			     int startAngle, int arcAngle);
 
   /** 
    * 
