@@ -23,8 +23,6 @@ Boston, MA 02111-1307, USA.  */
 #define __LIBGCC2_H__
 
 extern int __gcc_bcmp (const unsigned char *, const unsigned char *, size_t);
-extern void *__builtin_saveregs (void);
-extern void __dummy (void);
 extern void __clear_cache (char *, char *);
 extern void __eprintf (const char *, const char *, unsigned int, const char *)
   __attribute__ ((__noreturn__));

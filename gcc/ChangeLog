@@ -1,3 +1,12 @@
+2001-04-24  Zack Weinberg  <zackw@stanford.edu>
+
+	* Makefile.in (LIB2FUNCS): Remove _varargs and __dummy.
+	* libgcc-std.ver: Remove __builtin_saveregs, __dummy, and __empty.
+	* libgcc2.c: Remove __dummy and __builtin_saveregs.
+	* libgcc2.h: Don't prototype __builtin_saveregs or __dummy.
+	* config/i860/varargs.asm: New file - preserve i860 __builtin_saveregs
+	for future reference.
+
 2001-04-24  Jason Merrill  <jason_merrill@redhat.com>
 
 	* except.c (reachable_handlers): Step out one level from a RESX.
