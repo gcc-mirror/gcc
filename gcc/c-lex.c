@@ -245,7 +245,8 @@ cb_file_change (pfile, fc)
 {
   if (fc->reason == FC_ENTER)
     {
-      /* Don't stack the main buffer on the input stack.  */
+      /* Don't stack the main buffer on the input stack;
+	 we already did in compile_file.  */
       if (fc->from.filename)
 	{
 	  lineno = fc->from.lineno;
@@ -282,7 +283,7 @@ cb_file_change (pfile, fc)
 	  if (indent_level != input_file_stack->indent_level)
 	    {
 	      warning_with_file_and_line
-		(input_filename, lex_lineno,
+		(input_filename, lineno,
 		 "This file contains more '%c's than '%c's.",
 		 indent_level > input_file_stack->indent_level ? '{' : '}',
 		 indent_level > input_file_stack->indent_level ? '}' : '{');
