@@ -1,3 +1,10 @@
+2003-07-08  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/11370
+	* calls.c (emit_call_1): Don't bother popping the arguments off of
+	the stack after a noreturn function call;  The adjustment is dead.
+	(expand_call): Likewise.
+
 2003-07-08  Geoffrey Keating  <geoffk@apple.com>
 
 	* expr.c (MOVE_MAX_PIECES): Move from here...

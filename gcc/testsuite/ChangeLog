@@ -1,3 +1,9 @@
+2003-07-08  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/11370
+	* gcc.dg/Wunreachable-6.c: New testcase.
+	* gcc.dg/Wunreachable-7.c: New testcase.
+
 2003-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/11420
