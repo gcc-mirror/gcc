@@ -9,7 +9,7 @@
 
 
 # We can check now that the version of doxygen is >= this variable.
-DOXYVER=1.2.14
+DOXYVER=1.2.15
 doxygen=
 
 find_doxygen() {
