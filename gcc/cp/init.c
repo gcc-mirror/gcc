@@ -1618,6 +1618,8 @@ build_offset_ref (type, name)
 	      return error_mark_node;
 	    }
 	  mark_used (t);
+	  if (DECL_STATIC_FUNCTION_P (t))
+	    return t;
 	  return build (OFFSET_REF, TREE_TYPE (t), decl, t);
 	}
 

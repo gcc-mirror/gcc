@@ -683,7 +683,12 @@ ocp_convert (type, expr, convtype, flags)
     }
 
   if (code == VOID_TYPE && (convtype & CONV_STATIC))
-    return build1 (CONVERT_EXPR, type, e);
+    {
+      if (type_unknown_p (e))
+	error ("address of overloaded function with no contextual type information");
+
+      return build1 (CONVERT_EXPR, type, e);
+    }
 
 #if 0
   /* This is incorrect.  A truncation can't be stripped this way.

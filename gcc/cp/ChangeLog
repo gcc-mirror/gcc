@@ -1,4 +1,28 @@
+1998-11-16  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (cplus_expand_expr_stmt): Promote warning about naked
+	member function reference to error.
+	* cvt.c (ocp_convert): Complain about converting an overloaded 
+	function to void.
+
+	* init.c (build_offset_ref): Just return a lone static member
+	function.
+
+	* decl.c (cp_finish_decl): Only complain about real CONSTRUCTORs,
+	not internal ones.
+
+	* typeck.c (build_binary_op_nodefault): Improve error handling.
+
+	* decl.c (grokfndecl): Complain about making 'main' a template.
+
+	* typeck.c (string_conv_p): Don't convert from wchar_t[] to char*.
+
+	* call.c (build_method_call): Handle a BIT_NOT_EXPR around a 
+	TYPE_DECL in a template.
+
 1998-11-15  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck2.c (my_friendly_abort): Add URL in the other case, too.
 
 	* decl.c (struct cp_function): Add named_label_uses.
 	(push_cp_function_context): Save it.

@@ -7217,7 +7217,8 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	{
 	  if (TREE_CODE (type) == ARRAY_TYPE)
 	    init = digest_init (type, init, (tree *) 0);
-	  else if (TREE_CODE (init) == CONSTRUCTOR)
+	  else if (TREE_CODE (init) == CONSTRUCTOR
+		   && TREE_HAS_CONSTRUCTOR (init))
 	    {
 	      if (TYPE_NON_AGGREGATE_CLASS (type))
 		{
@@ -8073,6 +8074,8 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 
   if (ctype == NULL_TREE && DECL_MAIN_P (decl))
     {
+      if (processing_template_decl)
+	error ("cannot declare `main' to be a template");
       if (inlinep)
 	error ("cannot declare `main' to be inline");
       else if (! publicp)
@@ -13891,7 +13894,7 @@ cplus_expand_expr_stmt (exp)
       if (TREE_CODE (exp) == ADDR_EXPR || TREE_CODE (exp) == TREE_LIST)
 	error ("address of overloaded function with no contextual type information");
       else if (TREE_CODE (exp) == COMPONENT_REF)
-	warning ("useless reference to a member function name, did you forget the ()?");
+	error ("invalid reference to a member function name, did you forget the ()?");
     }
   else
     {
