@@ -113,6 +113,13 @@ append_unicode_mangled_name (name, len)
 		  uuU = 0;
 		  obstack_grow (mangle_obstack, "U_", 2);
 		}
+	      /* Otherwise, just reset uuU and emit the character we
+                 have. */
+	      else
+		{
+		  uuU = 0;
+		  obstack_1grow (mangle_obstack, ch);
+		}
 	      continue;
 	    }
 	  sprintf (buf, "__U%x_", ch);
@@ -156,19 +163,25 @@ unicode_mangling_length (name, len)
 
 	  if (ch == '_' || ch == 'U')
 	    {
+	      /* It's always at least one character. */
+	      num_chars++;
+
 	      /* Prepare to recognize __U */
 	      if (ch == '_' && (uuU < 3))
-		{
-		  num_chars++;
-		  uuU++;
-		}
-	      /* We recognize __U that we wish to encode __U_ */
+		uuU++;
+
+	      /* We recognize __U that we wish to encode __U_, we
+	         count one more character. */
 	      else if (ch == 'U' && (uuU == 2))
 		{
-		  num_chars += 2;
+		  num_chars++;
 		  need_escapes = 1;
 		  uuU = 0;
 		}
+	      /* Otherwise, just reset uuU */
+	      else
+		uuU = 0;
+
 	      continue;
 	    }
 	  

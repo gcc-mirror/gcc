@@ -1,5 +1,12 @@
 2001-02-09  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
+	* mangle_name (append_unicode_mangled_name): Emit `_' or `U'
+	outside of the `__U' sequence too.
+	(unicode_mangling_length): Count `_' or `U' outside of the `__U'
+	sequence too.
+
+2001-02-09  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
 	* jvgenmain.c (error): Reversed 2001-02-01 deletion.
 
 2001-02-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
