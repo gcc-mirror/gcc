@@ -1,3 +1,7 @@
+Thu Aug 27 15:14:18 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* haifa-sched.c (sched_analyze_insn): Fix thinko in last change.
+
 Thu Aug 27 16:34:51 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (check_dbra_loop): Enable code for reversal
