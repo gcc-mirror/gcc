@@ -1,3 +1,7 @@
+2004-10-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.c-torture/execute/ieee/ieee.exp: Disable on powerpc-*-*spe.
+
 2004-10-15  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc.dg/compat/struct-layout-1_generate.c (switchfiles):  Use
