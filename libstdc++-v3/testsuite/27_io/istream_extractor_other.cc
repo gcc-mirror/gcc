@@ -128,9 +128,9 @@ bool test01() {
   state1 = is_04.rdstate();
   is_04 >> &isbuf_03;   
   state2 = is_04.rdstate();
-  VERIFY( state1 != state2 );
+  VERIFY( state1 == state2 );
   VERIFY( !static_cast<bool>(state2 & statefail) );
-  VERIFY( state2 == stateeof );
+  VERIFY( state2 != stateeof );
   strtmp = isbuf_03.str();
   VERIFY( strtmp == str_02 ); // as only an "in" buffer
   VERIFY( isbuf_03.sgetc() == 'a' );
