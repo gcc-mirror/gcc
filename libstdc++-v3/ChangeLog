@@ -1,3 +1,14 @@
+2005-02-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* testsuite/thread/pthread1.cc: Do not invoke pthread_setconcurrency
+	on Solaris 2.6 and below.
+	* testsuite/thread/pthread2.cc: Likewise.
+	* testsuite/thread/pthread3.cc: Likewise.
+	* testsuite/thread/pthread4.cc: Likewise.
+	* testsuite/thread/pthread5.cc: Likewise.
+	* testsuite/thread/pthread6.cc: Likewise.
+	* testsuite/thread/pthread7-rope.cc: Likewise.
+
 2005-02-16  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/19829
