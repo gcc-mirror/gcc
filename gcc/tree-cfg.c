@@ -2003,10 +2003,10 @@ remove_bb (basic_block bb)
           && FORCED_LABEL (LABEL_EXPR_LABEL (stmt)))
 	{
 	  basic_block new_bb = bb->prev_bb;
-	  block_stmt_iterator new_bsi = bsi_after_labels (new_bb);
+	  block_stmt_iterator new_bsi = bsi_start (new_bb);
 	  	  
 	  bsi_remove (&i);
-	  bsi_insert_after (&new_bsi, stmt, BSI_NEW_STMT);
+	  bsi_insert_before (&new_bsi, stmt, BSI_NEW_STMT);
 	}
       else
         {
