@@ -40,11 +40,16 @@ Boston, MA 02111-1307, USA.  */
 void print_operand_address ();
 char *index ();
 
+static int h8300_interrupt_function_p PROTO ((tree));
+static int h8300_funcvec_function_p PROTO ((tree));
+
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
 
-/* True if a #pragma interrupt has been seen for the current function.  */
-int pragma_interrupt;
+/* True if the current function is an interrupt handler
+   (either via #pragma or an attribute specification).  */
+int interrupt_handler;
+
 
 /* True if a #pragma saveall has been seen for the current function.  */
 int pragma_saveall;
@@ -110,7 +115,7 @@ byte_reg (x, b)
 
 #define WORD_REG_USED(regno)					\
   (regno < 7 &&							\
-   (pragma_interrupt						\
+   (interrupt_handler						\
     || pragma_saveall						\
     || (regno == FRAME_POINTER_REGNUM && regs_ever_live[regno])	\
     || (regs_ever_live[regno] & !call_used_regs[regno])))
@@ -189,6 +194,9 @@ function_prologue (file, size)
   int fsize = (size + STACK_BOUNDARY / 8 - 1) & -STACK_BOUNDARY / 8;
   int idx;
   extra_pop = 0;
+
+  if (h8300_interrupt_function_p (current_function_decl))
+    interrupt_handler = 1;
 
   if (current_function_anonymous_args && TARGET_QUICKCALL)
     {
@@ -325,13 +333,13 @@ function_epilogue (file, size)
     }
   else
     {
-      if (pragma_interrupt)
+      if (interrupt_handler)
 	fprintf (file, "\trte\n");
       else
 	fprintf (file, "\trts\n");
     }
 
-  pragma_interrupt = 0;
+  interrupt_handler = 0;
   pragma_saveall = 0;
 
   current_function_anonymous_args = 0;
@@ -470,6 +478,32 @@ call_insn_operand (op, mode)
   return 0;
 }
 
+/* Return true if OP is a valid call operand, and OP represents
+   an operand for a small call (4 bytes instead of 6 bytes).  */
+
+int
+small_call_insn_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == MEM)
+    {
+      rtx inside = XEXP (op, 0);
+
+      /* Register indirect is a small call.  */
+      if (register_operand (inside, Pmode))
+	return 1;
+
+      /* A call through the function vector is a small
+	 call too.  */
+      if (GET_CODE (inside) == SYMBOL_REF
+	  && SYMBOL_REF_FLAG (inside))
+	return 1;
+    }
+  /* Otherwise it's a large call.  */
+  return 0;
+}
+
 /* Return true if OP is a valid jump operand.  */
 
 int
@@ -569,7 +603,7 @@ handle_pragma (file, c)
       pbuf[psize] = 0;
 
       if (strcmp (pbuf, "interrupt") == 0)
-	pragma_interrupt = 1;
+	interrupt_handler = 1;
       else if (strcmp (pbuf, "saveall") == 0)
 	pragma_saveall = 1;
 
@@ -2065,3 +2099,65 @@ fix_bit_operand (operands, what, type)
   }
   return 1;
 }
+
+
+/* Return nonzero if FUNC is an interrupt function as specified
+   by the "interrupt" attribute.  */
+
+static int
+h8300_interrupt_function_p (func)
+     tree func;
+{
+  tree a;
+
+  if (TREE_CODE (func) != FUNCTION_DECL)
+    return 0;
+
+  a = lookup_attribute ("interrupt-handler", DECL_MACHINE_ATTRIBUTES (func));
+  return a != NULL_TREE;
+}
+
+/* Return nonzero if FUNC is a function that should be called
+   through the function vector.  */
+
+int
+h8300_funcvec_function_p (func)
+     tree func;
+{
+  tree a;
+
+  if (TREE_CODE (func) != FUNCTION_DECL)
+    return 0;
+
+  a = lookup_attribute ("function-vector", DECL_MACHINE_ATTRIBUTES (func));
+  return a != NULL_TREE;
+}
+
+/* Return nonzero if ATTR is a valid attribute for DECL.
+   ATTRIBUTES are any existing attributes and ARGS are the arguments
+   supplied with ATTR.
+
+   Supported attributes:
+
+   interrupt-handler: output a prologue and epilogue suitable for an
+   interrupt handler.
+
+   function-vector: This function should be called through the
+   function vector.  */
+
+int
+h8300_valid_machine_decl_attribute (decl, attributes, attr, args)
+     tree decl;
+     tree attributes;
+     tree attr;
+     tree args;
+{
+  if (args != NULL_TREE)
+    return 0;
+
+  if (is_attribute_p ("interrupt-handler", attr)
+      || is_attribute_p ("function-vector", attr))
+    return TREE_CODE (decl) == FUNCTION_DECL;
+  return 0;
+}
+
