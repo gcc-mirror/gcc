@@ -38,10 +38,13 @@
 
 
 # Default options used when updating via CVS.
-UPDATE_OPTIONS=-P
-# Add -d to create any directories that exist in the repository but not
-#        locally.
-# Add -A to reset any sticky tags, dates, or `-k' options.
+UPDATE_OPTIONS=-Pd
+# Use -P to prune empty directories.
+# Use -d to create any directories that exist in the repository but not
+#           locally.
+# Use -A to reset any sticky tags, dates, or `-k' options.
+
+######## Anything below shouldn't be changed by regular users.
 
 # Arrange for the value of $0 to be available for functions
 self=$0

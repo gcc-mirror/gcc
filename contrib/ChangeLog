@@ -1,3 +1,7 @@
+2001-05-23  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_update (UPDATE_OPTIONS): Add -d to the default settings.
+
 2001-05-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_build: Use -d when invoking gcc_update.
