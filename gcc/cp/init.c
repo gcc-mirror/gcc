@@ -2430,7 +2430,7 @@ build_new_1 (exp)
 	    }
 
 	  /* Copy size to the saveable obstack.  */
-	  size = copy_node (size);
+	  size = mapcar (size, permanent_p);
 
 	  cleanup = build_op_delete_call (dcode, alloc_node, size, flags, fn);
 

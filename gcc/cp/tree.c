@@ -1724,10 +1724,8 @@ no_linkage_check (t)
 }
 
 
-/* Subroutine of copy_to_permanent
-
-   Assuming T is a node build bottom-up, make it all exist on
-   permanent obstack, if it is not permanent already.  */
+/* Make copies of all the nodes below T.  If FUNC is non-NULL, call it
+   for each node.  */
 
 tree
 mapcar (t, func)
@@ -1739,8 +1737,12 @@ mapcar (t, func)
   if (t == NULL_TREE)
     return t;
 
-  if (tmp = func (t), tmp != NULL_TREE)
-    return tmp;
+  if (func) 
+    {
+      tmp = func (t);
+      if (tmp)
+	return tmp;
+    }
 
   switch (TREE_CODE (t))
     {
@@ -1982,6 +1984,16 @@ mapcar (t, func)
   my_friendly_abort (107);
   /* NOTREACHED */
   return NULL_TREE;
+}
+
+/* Returns T if T is allocated on the permanent obstack, NULL_TREE
+   otherwise.  */
+
+tree
+permanent_p (t)
+     tree t;
+{
+  return TREE_PERMANENT (t) ? t : NULL_TREE;
 }
 
 static tree
