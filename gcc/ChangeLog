@@ -1,3 +1,8 @@
+2003-10-07  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (Warning Options): Simplify and clarify the
+	descriptions of -Wnonnull and -Winit-self.
+
 2003-10-07  Richard Earnshaw  <rearnsha@arm.com>
 
 	* optabs.c (init_intraclass_conv_libfuncs): Fix order of array
