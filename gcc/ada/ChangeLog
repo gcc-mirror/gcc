@@ -1,5 +1,10 @@
+2004-12-30  Sohail Somani <sohail@sohailsomani.com>
+
+	PR ada/19128
+	* trans.c (gnat_to_gnu): Fix typo: Use correct return variable.
+
 2004-12-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
- 
+
 	* trans.c (Attribute_to_gnu): Adjust call to get_inner_reference.
 	* utils2.c (build_unary_op): Likewise.
 
@@ -291,7 +296,7 @@
 
 2004-12-07  Ed Schonberg  <schonberg@adacore.com>
 
-	* lib-xref.adb: 
+	* lib-xref.adb:
 	(Generate_Reference): Handle properly a reference to an entry formal,
 	 when an accept statement has a pragma Unreferenced for it.
 
@@ -491,7 +496,7 @@
 
 2004-11-18  Robert Dewar  <dewar@adacore.com>
 
-	* a-stmaco.ads, exp_util.ads, exp_util.adb, i-cpp.ads, i-cpp.adb: 
+	* a-stmaco.ads, exp_util.ads, exp_util.adb, i-cpp.ads, i-cpp.adb:
 	Minor reformatting througout (including new function specs)
 	Add ??? comments asking for clarification.
 
@@ -721,7 +726,7 @@
 2004-11-18  Robert Dewar  <dewar@adacore.com>
 	    Sergey Rybin  <rybin@adacore.com>
 
-	* gnat_ugn.texi: 
+	* gnat_ugn.texi:
 	Remove extra paren check from list of checks for redundant constructs
 	Add documentation of new -gnatyx style check (check extra parens)
 	Remove paragraph about gnatelim debug options.
@@ -920,7 +925,7 @@
 	Rename RCI_Info to RCI_Locator, for consistency between the PolyORB
 	version and the GARLIC version.
 
-	* snames.ads, snames.adb, s-parint.ads, s-parint.adb: 
+	* snames.ads, snames.adb, s-parint.ads, s-parint.adb:
 	Rename RCI_Info to RCI_Locator for better consistency between the
 	GARLIC and PolyORB versions of the distributed systems annex.
 	(DSA_Implementation_Name): This enumeration lists the possible
@@ -1351,9 +1356,9 @@
 
 2004-10-04  Vincent Celier  <celier@gnat.com>
 
-	* mlib-tgt-tru64.adb, mlib-tgt-aix.adb, mlib-tgt-irix.adb, 
-	mlib-tgt-hpux.adb, mlib-tgt-linux.adb, mlib-tgt-solaris.adb, 
-	mlib-tgt-vms-alpha.adb, mlib-tgt-vms-ia64.adb, mlib-tgt-mingw.adb, 
+	* mlib-tgt-tru64.adb, mlib-tgt-aix.adb, mlib-tgt-irix.adb,
+	mlib-tgt-hpux.adb, mlib-tgt-linux.adb, mlib-tgt-solaris.adb,
+	mlib-tgt-vms-alpha.adb, mlib-tgt-vms-ia64.adb, mlib-tgt-mingw.adb,
 	mlib-tgt-vxworks.adb, mlib-tgt.adb (Build_Dynamic_Library): New
 	parameter Options_2.
 
@@ -1384,16 +1389,16 @@
 	(Get_Target_Parameters): Including the processing for
 	Preallocated_Stacks.
 
-	* system.ads, system-vxworks-x86.ads, system-darwin-ppc.ads, 
-	system-vms_64.ads, system-unixware.ads, system-linux-ia64.ads, 
-	system-freebsd-x86.ads, system-lynxos-ppc.ads, system-lynxos-x86.ads, 
-	system-linux-x86_64.ads, system-tru64.ads, system-aix.ads, 
-	system-vxworks-sparcv9.ads, system-vxworks-xscale.ads, 
-	system-solaris-x86.ads, system-irix-o32.ads, system-irix-n32.ads, 
-	system-hpux.ads, system-vxworks-m68k.ads, system-linux-x86.ads, 
-	system-vxworks-mips.ads, system-os2.ads, system-interix.ads, 
-	system-solaris-sparc.ads, system-solaris-sparcv9.ads, system-vms.ads, 
-	system-mingw.ads, system-vms-zcx.ads, system-vxworks-ppc.ads, 
+	* system.ads, system-vxworks-x86.ads, system-darwin-ppc.ads,
+	system-vms_64.ads, system-unixware.ads, system-linux-ia64.ads,
+	system-freebsd-x86.ads, system-lynxos-ppc.ads, system-lynxos-x86.ads,
+	system-linux-x86_64.ads, system-tru64.ads, system-aix.ads,
+	system-vxworks-sparcv9.ads, system-vxworks-xscale.ads,
+	system-solaris-x86.ads, system-irix-o32.ads, system-irix-n32.ads,
+	system-hpux.ads, system-vxworks-m68k.ads, system-linux-x86.ads,
+	system-vxworks-mips.ads, system-os2.ads, system-interix.ads,
+	system-solaris-sparc.ads, system-solaris-sparcv9.ads, system-vms.ads,
+	system-mingw.ads, system-vms-zcx.ads, system-vxworks-ppc.ads,
 	system-vxworks-alpha.ads: Add the flag Preallocated_Stacks, that is
 	used to signal whether the compiler creates the required stacks and
 	descriptors for the different tasks (when True) or it is done by the
@@ -1432,9 +1437,9 @@
 2004-10-04  Thomas Quinot  <quinot@act-europe.fr>
 
 	* g-socket.ads, g-socket.adb, g-socthi.adb, socket.c,
-	g-soccon-aix.ads, g-soccon-irix.ads, g-soccon-hpux.ads, 
-	g-soccon-interix.ads, g-soccon-solaris.ads, g-soccon-vms.adb, 
-	g-soccon-mingw.ads, g-soccon-vxworks.ads, g-soccon-freebsd.ads, 
+	g-soccon-aix.ads, g-soccon-irix.ads, g-soccon-hpux.ads,
+	g-soccon-interix.ads, g-soccon-solaris.ads, g-soccon-vms.adb,
+	g-soccon-mingw.ads, g-soccon-vxworks.ads, g-soccon-freebsd.ads,
 	g-soccon.ads, g-soccon-unixware.ads, g-soccon-tru64.ads:  Add new
 	sockets constant MSG_NOSIGNAL (Linux-specific).
 	Add new sockets constant MSG_Forced_Flags, list of flags to be set on
@@ -2972,7 +2977,7 @@
 
 	* decl.c: Remove calls to add_decl_expr, pushdecl, rest_of_compilation,
 	and rest_of_type_compilation; add arg to create_*_decl.
- 	(annotate_decl_with_node): Deleted.
+	(annotate_decl_with_node): Deleted.
 	(gnat_to_gnu_entity, case E_Array_Type): Set location of fields.
 	* gigi.h (get_decls, block_has_vars, pushdecl): Deleted.
 	(get_current_block_context, gnat_pushdecl): New declarations.
@@ -3115,7 +3120,7 @@
 	* decl.c: add_decl_stmt now add_decl_expr.
 	* gigi.h: Likewise.
 	* trans.c: Likewise.
- 	(gnat_gimplify_type_sizes, gnat_gimplify_one_sizepos): Deleted.
+	(gnat_gimplify_type_sizes, gnat_gimplify_one_sizepos): Deleted.
 	(gnat_to_gnu, case N_Subprogram_Body): Set cfun->function_end_locus.
 	(add_stmt): Only handle padded type here.
 	(add_stmt_with_node): Allow gnat_node to not be present.
@@ -3822,7 +3827,7 @@
 	(STMT_STMT, USE_STMT): New statement codes.
 	(LOOP_STMT, EXIT_STMT): Make slight semantic changes.
 	* ada-tree.h: Reflect above changes.
- 	(struct tree_loop_id): Deleted.
+	(struct tree_loop_id): Deleted.
 	(union lang_tree_node, struct lang_decl, struct lang_type):
 	Now just contains a tree node; update macros using TYPE_LANG_SPECIFIC
 	and DECL_LANGUAGE_SPECIFIC to reflect these changes.
