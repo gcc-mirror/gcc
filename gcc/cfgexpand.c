@@ -960,7 +960,7 @@ expand_gimple_tailcall (basic_block bb, tree stmt, bool *can_fallthru)
     if (CALL_P (last) && SIBLING_CALL_P (last))
       goto found;
 
-  maybe_dump_rtl_for_tree_stmt (stmt, last);
+  maybe_dump_rtl_for_tree_stmt (stmt, last2);
 
   *can_fallthru = true;
   return NULL;
