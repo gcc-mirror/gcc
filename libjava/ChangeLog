@@ -1,5 +1,13 @@
 2003-08-26  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/ref/Reference.java (get): Indentation fix.
+	(clear): Comment fix.
+	(enqueue): Likewise.
+	(lock): Likewise.
+	(referent): Likewise.
+
+2003-08-26  Tom Tromey  <tromey@redhat.com>
+
 	PR java/12058:
 	* java/lang/reflect/natArray.cc (set): Allow null as argument.
 

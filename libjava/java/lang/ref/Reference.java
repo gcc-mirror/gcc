@@ -40,7 +40,7 @@ package java.lang.ref;
 
 /**
  * This is the base class of all references.  A reference allows
- * refering to an object without preventing the garbage collection to
+ * refering to an object without preventing the garbage collector to
  * collect it.  The only way to get the referred object is via the
  * <code>get()</code>-method.  This method will return
  * <code>null</code> if the object was collected. <br>
@@ -52,11 +52,11 @@ package java.lang.ref;
  * There are currently three types of references:  soft reference,
  * weak reference and phantom reference. <br>
  *
- * Soft references will be cleared if the garbage collection is told
+ * Soft references will be cleared if the garbage collector is told
  * to free some memory and there are no unreferenced or weakly referenced
  * objects.  It is useful for caches. <br>
  *
- * Weak references will be cleared as soon as the garbage collection
+ * Weak references will be cleared as soon as the garbage collector
  * determines that the refered object is only weakly reachable.  They
  * are useful as keys in hashtables (see <code>WeakHashtable</code>) as
  * you get notified when nobody has the key anymore.
@@ -74,7 +74,7 @@ public abstract class Reference
 {
   /**
    * The underlying object.  This field is handled in a special way by
-   * the garbage collection.
+   * the garbage collector.
    * GCJ LOCAL:
    * This is a RawData because it must be disguised from the GC.
    * END GCJ LOCAL
@@ -117,7 +117,7 @@ public abstract class Reference
   Reference nextOnQueue;
 
   /**
-   * This lock should be taken by the garbage collection, before
+   * This lock should be taken by the garbage collector, before
    * determining reachability.  It will prevent the get()-method to
    * return the reference so that reachability doesn't change.
    */
@@ -162,7 +162,7 @@ public abstract class Reference
    */
   public Object get()
   {
-    synchronized(lock)
+    synchronized (lock)
       {
 	return referent;
       }
@@ -171,7 +171,7 @@ public abstract class Reference
   /**
    * Clears the reference, so that it doesn't refer to its object
    * anymore.  For soft and weak references this is called by the
-   * garbage collection.  For phantom references you should call 
+   * garbage collector.  For phantom references you should call 
    * this when enqueuing the reference.
    */
   public void clear()
@@ -190,7 +190,7 @@ public abstract class Reference
 
   /**
    * Enqueue an object on a reference queue.  This is normally executed
-   * by the garbage collection.
+   * by the garbage collector.
    */
   public boolean enqueue() 
   {
