@@ -66,11 +66,11 @@ static func_ptr __DTOR_LIST__[1] __attribute__ ((section (".dtors")))
    refers to one particular associated `__DTOR_LIST__' which belongs to the
    same particular root executable or shared library file.  */
 
-static void __do_global_dtors ()
+static void __do_global_dtors (void)
 asm ("__do_global_dtors") __attribute__ ((section (".text")));
 
 static void
-__do_global_dtors ()
+__do_global_dtors (void)
 {
   func_ptr *p;
   for (p = __DTOR_LIST__ + 1; *p; p++)
@@ -125,11 +125,11 @@ static func_ptr __DTOR_END__[1] __attribute__ ((section (".dtors")))
 /* Run all global constructors for the program.
    Note that they are run in reverse order.  */
 
-static void __do_global_ctors ()
+static void __do_global_ctors (void)
 asm ("__do_global_ctors") __attribute__ ((section (".text")));
 
 static void
-__do_global_ctors ()
+__do_global_ctors (void)
 {
   func_ptr *p;
   for (p = __CTOR_END__ - 1; *p != (func_ptr) -1; p--)
