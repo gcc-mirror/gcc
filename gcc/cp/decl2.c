@@ -2760,8 +2760,6 @@ build_cleanup (decl)
   return temp;
 }
 
-extern int parse_time, varconst_time;
-
 static tree
 get_sentry (base)
      tree base;
@@ -2771,6 +2769,7 @@ get_sentry (base)
      __snfoo. Since base is already an assembler name, sname should
      be globally unique */
   tree sentry = IDENTIFIER_GLOBAL_VALUE (sname);
+
   if (! sentry)
     {
       sentry = build_decl (VAR_DECL, sname, integer_type_node);
@@ -3413,8 +3412,7 @@ generate_ctor_and_dtor_functions_for_priority (n, data)
 void
 finish_file ()
 {
-  extern int lineno;
-  int start_time, this_time;
+  long start_time, this_time;
   tree vars;
   int reconsider;
   size_t i;
