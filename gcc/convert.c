@@ -376,6 +376,12 @@ convert_to_integer (type, expr)
 	  }
 
 	case NOP_EXPR:
+	  /* Don't introduce a
+	     "can't convert between vector values of different size" error.  */
+	  if (TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == VECTOR_TYPE
+	      && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_OPERAND (expr, 0))))
+		  != GET_MODE_SIZE (TYPE_MODE (type))))
+	    break;
 	  /* If truncating after truncating, might as well do all at once.
 	     If truncating after extending, we may get rid of wasted work.  */
 	  return convert (type, get_unwidened (TREE_OPERAND (expr, 0), type));

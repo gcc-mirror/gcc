@@ -6202,9 +6202,8 @@ cse_insn (insn, libcall_insn)
 		    && ! exp_equiv_p (elt->exp, elt->exp, 1, 0))
 		  continue;
 
-		new_src = gen_lowpart_if_possible (new_mode, elt->exp);
-		if (new_src == 0)
-		  new_src = gen_rtx_SUBREG (new_mode, elt->exp, 0);
+		new_src
+		  = simplify_gen_subreg (new_mode, elt->exp, elt->mode, 0);
 
 		src_hash = HASH (new_src, new_mode);
 		src_elt = lookup (new_src, src_hash, new_mode);
