@@ -29,6 +29,20 @@ Boston, MA 02111-1307, USA.  */
 #include "integrate.h"
 #include "langhooks.h"
 
+/* Do nothing; in many cases the default hook.  */
+void
+lang_hook_default_do_nothing ()
+{
+}
+
+/* Do nothing; the default hook to decode an option.  */
+int
+lang_hook_default_decode_option (argc, argv)
+     int argc ATTRIBUTE_UNUSED;
+     char **argv ATTRIBUTE_UNUSED;
+{
+  return 0;
+}
 
 /* lang_hooks.tree_inlining.walk_subtrees is called by walk_tree()
    after handling common cases, but before walking code-specific

@@ -2227,8 +2227,7 @@ compile_file (name)
 
   /* Perform language-specific initialization.
      This may set main_input_filename.  */
-  if (lang_hooks.init)
-    (*lang_hooks.init) ();
+  (*lang_hooks.init) ();
 
   /* If the input doesn't start with a #line, use the input name
      as the official input file name.  */
@@ -2428,8 +2427,7 @@ compile_file (name)
 
   /* Language-specific end of compilation actions.  */
  finish_syntax:
-  if (lang_hooks.finish)
-    (*lang_hooks.finish) ();
+  (*lang_hooks.finish) ();
 
   /* Close the dump files.  */
 
@@ -4671,8 +4669,7 @@ toplev_main (argc, argv)
   add_params (lang_independent_params, LAST_PARAM);
 
   /* Perform language-specific options intialization.  */
-  if (lang_hooks.init_options)
-    (*lang_hooks.init_options) ();
+  (*lang_hooks.init_options) ();
 
   /* Scan to see what optimization level has been specified.  That will
      determine the default value of many flags.  */
@@ -4847,8 +4844,7 @@ toplev_main (argc, argv)
     }
 
   /* All command line options have been processed.  */
-  if (lang_hooks.post_options)
-    (*lang_hooks.post_options) ();
+  (*lang_hooks.post_options) ();
 
   if (exit_after_options)
     exit (0);

@@ -138,7 +138,7 @@ struct lang_hooks_for_tree_inlining
   int (*anon_aggr_type_p) PARAMS ((union tree_node *));
 };
 
-/* Language-specific hooks.  Can be NULL unless otherwise specified.  */
+/* Language-specific hooks.  See langhooks.h for defaults.  */
 
 struct lang_hooks
 {
@@ -158,9 +158,7 @@ struct lang_hooks
      option.  If this function returns a negative number, then its
      absolute value is the number of command-line arguments used, but,
      in addition, no language-independent option processing should be
-     done for this option.
-
-     This hook cannot be NULL.  */
+     done for this option.  */
   int (*decode_option) PARAMS ((int, char **));
 
   /* Called when all command line options have been processed.  */
