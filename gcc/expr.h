@@ -845,6 +845,7 @@ extern rtx store_bit_field PROTO((rtx, int, int, enum machine_mode, rtx, int, in
 extern rtx extract_bit_field PROTO((rtx, int, int, int, rtx, enum machine_mode, enum machine_mode, int, int));
 extern rtx expand_mult PROTO((enum machine_mode, rtx, rtx, rtx, int));
 extern rtx expand_mult_add PROTO((rtx, rtx, rtx, rtx,enum machine_mode, int));
+extern rtx expand_mult_highpart_adjust PROTO((enum machine_mode, rtx, rtx, rtx, rtx, int));
 
 extern rtx assemble_static_space PROTO((int));
 
