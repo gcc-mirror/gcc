@@ -4348,7 +4348,21 @@ build_x_unary_op (code, xarg)
   return exp;
 }
 
-/* Just like truthvalue_conversion, but we want a CLEANUP_POINT_EXPR.  */
+/* Like truthvalue_conversion, but handle pointer-to-member constants, where
+   a null value is represented by an INTEGER_CST of -1.  */
+
+tree
+cp_truthvalue_conversion (expr)
+     tree expr;
+{
+  tree type = TREE_TYPE (expr);
+  if (TYPE_PTRMEM_P (type))
+    return build_binary_op (NE_EXPR, expr, integer_zero_node, 1);
+  else
+    return truthvalue_conversion (expr);
+}
+
+/* Just like cp_truthvalue_conversion, but we want a CLEANUP_POINT_EXPR.  */
    
 tree
 condition_conversion (expr)
@@ -4682,15 +4696,31 @@ build_unary_op (code, xarg, noconvert)
 	  return build1 (ADDR_EXPR, unknown_type_node, arg);
 	}
 
-      if (TREE_CODE (arg) == COMPONENT_REF && flag_ms_extensions
-          && type_unknown_p (arg)
+      if (TREE_CODE (arg) == COMPONENT_REF && type_unknown_p (arg)
           && OVL_NEXT (TREE_OPERAND (arg, 1)) == NULL_TREE)
         {
 	  /* They're trying to take the address of a unique non-static
-	     member function.  This is ill-formed, except in microsoft-land.  */
+	     member function.  This is ill-formed (except in MS-land),
+	     but let's try to DTRT.
+	     Note: We only handle unique functions here because we don't
+	     want to complain if there's a static overload; non-unique
+	     cases will be handled by instantiate_type.  But we need to
+	     handle this case here to allow casts on the resulting PMF.
+	     We could defer this in non-MS mode, but it's easier to give
+	     a useful error here.  */
 
 	  tree base = TREE_TYPE (TREE_OPERAND (arg, 0));
 	  tree name = DECL_NAME (OVL_CURRENT (TREE_OPERAND (arg, 1)));
+
+	  if (! flag_ms_extensions)
+	    {
+	      if (current_class_type
+		  && TREE_OPERAND (arg, 0) == current_class_ref)
+		/* An expression like &memfn.  */
+		cp_pedwarn ("ISO C++ forbids taking the address of a non-static member function to form a pointer to member function.  Say `&%T::%D'", base, name);
+	      else
+		cp_pedwarn ("ISO C++ forbids taking the address of a bound member function to form a pointer to member function.  Say `&%T::%D'", base, name);
+	    }
 	  arg = build_offset_ref (base, name);
         }
         

@@ -3190,40 +3190,6 @@ extern int warn_multichar;
    flag_guiding_decls in do_friend. */
 extern int warn_nontemplate_friend;
 
-/* in c-common.c */
-extern void declare_function_name               PARAMS ((void));
-extern void decl_attributes                     PARAMS ((tree, tree, tree));
-extern void init_function_format_info		PARAMS ((void));
-extern void record_function_format		PARAMS ((tree, tree, int, int, int));
-extern void check_function_format		PARAMS ((int *, tree, tree, tree));
-/* Print an error message for invalid operands to arith operation CODE.
-   NOP_EXPR is used as a special case (see truthvalue_conversion).  */
-extern void binary_op_error                     PARAMS ((enum tree_code));
-extern tree canonical_type_variant              PARAMS ((tree));
-/* Validate the expression after `case' and apply default promotions.  */
-extern tree check_case_value                    PARAMS ((tree));
-/* Concatenate a list of STRING_CST nodes into one STRING_CST.  */
-extern tree combine_strings                     PARAMS ((tree));
-extern void constant_expression_warning         PARAMS ((tree));
-extern tree convert_and_check			PARAMS ((tree, tree));
-extern void overflow_warning			PARAMS ((tree));
-extern void unsigned_conversion_warning		PARAMS ((tree, tree));
-extern void c_apply_type_quals_to_decl          PARAMS ((int, tree));
-
-/* Read the rest of the current #-directive line.  */
-extern char *get_directive_line                 PARAMS ((void));
-#define GET_DIRECTIVE_LINE() get_directive_line ()
-
-/* Subroutine of build_binary_op, used for comparison operations.
-   See if the operands have both been converted from subword integer types
-   and, if so, perhaps change them both back to their original type.  */
-extern tree shorten_compare                     PARAMS ((tree *, tree *, tree *, enum tree_code *));
-/* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
-   or validate its data type for an `if' or `while' statement or ?..: exp.  */
-extern tree truthvalue_conversion               PARAMS ((tree));
-extern tree type_for_mode                       PARAMS ((enum machine_mode, int));
-extern tree type_for_size                       PARAMS ((unsigned, int));
-
 /* in decl{2}.c */
 /* A node that is a list (length 1) of error_mark_nodes.  */
 extern tree error_mark_list;
@@ -4391,6 +4357,7 @@ extern tree frob_opname                         PARAMS ((tree));
 /* in tree.c */
 extern void init_tree			        PARAMS ((void));
 extern int pod_type_p				PARAMS ((tree));
+extern tree canonical_type_variant              PARAMS ((tree));
 extern void unshare_base_binfos			PARAMS ((tree));
 extern int member_p				PARAMS ((tree));
 extern cp_lvalue_kind real_lvalue_p		PARAMS ((tree));
@@ -4470,6 +4437,7 @@ extern linkage_kind decl_linkage                PARAMS ((tree));
 
 /* in typeck.c */
 extern int string_conv_p			PARAMS ((tree, tree, int));
+extern tree cp_truthvalue_conversion		PARAMS ((tree));
 extern tree condition_conversion		PARAMS ((tree));
 extern tree target_type				PARAMS ((tree));
 extern tree require_complete_type		PARAMS ((tree));
