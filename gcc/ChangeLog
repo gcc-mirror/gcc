@@ -1,3 +1,7 @@
+2001-07-03  Jan Hubicka  <jh@suse.cz>
+
+	* optabs.c (expand_twoval_binop): Avoid undefined behaviour.
+
 2001-07-03  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/i386/sol2.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.

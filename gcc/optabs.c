@@ -1974,12 +1974,10 @@ expand_twoval_binop (binoptab, op0, op1, targ0, targ1, unsignedp)
 	    {
 	      register rtx t0 = gen_reg_rtx (wider_mode);
 	      register rtx t1 = gen_reg_rtx (wider_mode);
+	      rtx cop0 = convert_modes (wider_mode, mode, op0, unsignedp);
+	      rtx cop1 = convert_modes (wider_mode, mode, op1, unsignedp);
 
-	      if (expand_twoval_binop (binoptab,
-				       convert_modes (wider_mode, mode, op0,
-						      unsignedp),
-				       convert_modes (wider_mode, mode, op1,
-						      unsignedp),
+	      if (expand_twoval_binop (binoptab, cop0, cop1,
 				       t0, t1, unsignedp))
 		{
 		  convert_move (targ0, t0, unsignedp);
