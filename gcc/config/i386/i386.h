@@ -587,10 +587,7 @@ extern int ix86_arch;
 #define PREFERRED_STACK_BOUNDARY ix86_preferred_stack_boundary
 
 /* Allocation boundary for the code of a function. */
-#define FUNCTION_BOUNDARY \
-   ((unsigned int) 1 << ((ix86_align_funcs >= 0				\
-			  ? ix86_align_funcs : -ix86_align_funcs)	\
-			 + 3))
+#define FUNCTION_BOUNDARY 16
 
 /* Alignment of field after `int : 0' in a structure. */
 
@@ -601,7 +598,7 @@ extern int ix86_arch;
    might need to be aligned. No data type wants to be aligned
    rounder than this.
    
-   Pentium+ preferrs DFmode values to be alignmed to 64 bit boundary
+   Pentium+ preferrs DFmode values to be aligned to 64 bit boundary
    and Pentium Pro XFmode values at 128 bit boundaries.  */
 
 #define BIGGEST_ALIGNMENT 128
@@ -670,18 +667,6 @@ extern int ix86_arch;
    and give entire struct the alignment of an int.  */
 /* Required on the 386 since it doesn't have bitfield insns.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
-
-/* Align loop starts for optimal branching.  */
-#define LOOP_ALIGN(LABEL) \
-	(ix86_align_loops < 0 ? -ix86_align_loops : ix86_align_loops)
-#define LOOP_ALIGN_MAX_SKIP \
-	(ix86_align_loops < -3 ? (1<<(-ix86_align_loops-1))-1 : 0)
-
-/* This is how to align an instruction for optimal branching.  */
-#define LABEL_ALIGN_AFTER_BARRIER(LABEL) \
-	(ix86_align_jumps < 0 ? -ix86_align_jumps : ix86_align_jumps)
-#define LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP \
-	(ix86_align_jumps < -3 ? (1<<(-ix86_align_jumps-1))-1 : 0)
 
 /* Standard register usage.  */
 
@@ -3138,9 +3123,6 @@ extern const char *ix86_align_funcs_string;	/* power of two alignment for functi
 extern const char *ix86_preferred_stack_boundary_string;/* power of two alignment for stack boundary */
 extern const char *ix86_branch_cost_string;	/* values 1-5: see jump.c */
 extern int ix86_regparm;			/* ix86_regparm_string as a number */
-extern int ix86_align_loops;			/* power of two alignment for loops */
-extern int ix86_align_jumps;			/* power of two alignment for non-loop jumps */
-extern int ix86_align_funcs;			/* power of two alignment for functions */
 extern int ix86_preferred_stack_boundary;	/* preferred stack boundary alignment in bits */
 extern int ix86_branch_cost;			/* values 1-5: see jump.c */
 extern const char * const hi_reg_name[];	/* names for 16 bit regs */
