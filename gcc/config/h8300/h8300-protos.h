@@ -90,6 +90,9 @@ extern int h8300_tiny_data_p PARAMS ((tree));
 #endif /* TREE_CODE */
 
 extern void h8300_init_once PARAMS ((void));
+extern int h8300_can_use_return_insn_p PARAMS ((void));
+extern void h8300_expand_prologue PARAMS ((void));
+extern void h8300_expand_epilogue PARAMS ((void));
 extern int h8300_current_function_interrupt_function_p PARAMS ((void));
 extern void asm_file_start PARAMS ((FILE *));
 extern void asm_file_end PARAMS ((FILE *));
