@@ -2361,15 +2361,11 @@ typedef struct
 #define ARM_LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)	\
 do {							\
   X = arm_legitimize_address (X, OLDX, MODE);		\
-							\
-  if (memory_address_p (MODE, X))			\
-    goto WIN;						\
 } while (0)
 
-#define THUMB_LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)		\
-do {								\
-  if (flag_pic)							\
-    (X) = legitimize_pic_address (OLDX, MODE, NULL_RTX);	\
+#define THUMB_LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)	\
+do {							\
+  X = thumb_legitimize_address (X, OLDX, MODE);		\
 } while (0)
 
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)		\
@@ -2378,6 +2374,9 @@ do {							\
     ARM_LEGITIMIZE_ADDRESS (X, OLDX, MODE, WIN);	\
   else							\
     THUMB_LEGITIMIZE_ADDRESS (X, OLDX, MODE, WIN);	\
+							\
+  if (memory_address_p (MODE, X))			\
+    goto WIN;						\
 } while (0)
      
 /* Go to LABEL if ADDR (a legitimate address expression)

@@ -1,3 +1,10 @@
+2004-02-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (thumb_legitimize_address): New function.
+	* arm-protos.h: Prototype it.
+	* arm.h (THUMB_LEGITIMIZE_ADDRESS): Define.
+	(LEGITIMIZE_ADDRESS): Use it.
+
 2004-02-25  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* reload1.c (reload): Only spill eliminable register with multiple
