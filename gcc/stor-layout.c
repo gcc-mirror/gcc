@@ -327,7 +327,13 @@ layout_record (rec)
 	  /* A named bit field of declared type `int'
 	     forces the entire structure to have `int' alignment.  */
 	  if (DECL_NAME (field) != 0)
-	    record_align = MAX (record_align, TYPE_ALIGN (TREE_TYPE (field)));
+	    {
+	      int type_align = TYPE_ALIGN (TREE_TYPE (field));
+	      if (maximum_field_alignment != 0)
+		type_align = MIN (type_align, maximum_field_alignment);
+
+	      record_align = MAX (record_align, type_align);
+	    }
 	}
       else
 	record_align = MAX (record_align, desired_align);
@@ -371,8 +377,15 @@ layout_record (rec)
 	  register tree dsize = DECL_SIZE (field);
 	  int field_size = TREE_INT_CST_LOW (dsize);
 
+	  if (maximum_field_alignment != 0)
+	    type_align = MIN (type_align, maximum_field_alignment);
+
 	  /* A bit field may not span the unit of alignment of its type.
 	     Advance to next boundary if necessary.  */
+	  /* ??? There is some uncertainty here as to what
+	     should be done if type_align is less than the width of the type.
+	     That can happen because the width exceeds BIGGEST_ALIGNMENT
+	     or because it exceeds maximum_field_alignment.  */
 	  if (const_size / type_align
 	      != (const_size + field_size - 1) / type_align)
 	    const_size = CEIL (const_size, type_align) * type_align;
@@ -392,6 +405,9 @@ layout_record (rec)
 	  int type_align = TYPE_ALIGN (TREE_TYPE (field));
 	  register tree dsize = DECL_SIZE (field);
 	  int field_size = TREE_INT_CST_LOW (dsize);
+
+	  if (maximum_field_alignment != 0)
+	    type_align = MIN (type_align, maximum_field_alignment);
 
 	  /* A bit field may not span the unit of alignment of its type.
 	     Advance to next boundary if necessary.  */
