@@ -1,3 +1,18 @@
+2005-04-05  Richard Henderson  <rth@redhat.com>
+
+	PR target/20342
+	PR target/20447
+	* config/i386/i386.c (print_operand): Handle vector zeros.
+	(ix86_split_to_parts): Handle CONST_VECTOR.
+	(ix86_hard_regno_mode_ok): Allow MMX modes in general regs.
+	(ix86_modes_tieable_p): Use ix86_hard_regno_mode_ok to decide
+	what modes to tie for MMX and SSE registers.
+	* config/i386/i386.h (MMX_REG_MODE_P): Remove.
+	* config/i386/i386.md: Extend move 0 -> xor peephole to apply
+	to vector modes as well.
+	* config/i386/predicates.md (const0_operand): Handle VOIDmode
+	properly as an input mode.
+
 2005-04-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/20527
@@ -20,7 +35,7 @@
 	former.
 
 2005-04-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Sebastian Pop <sebastian.pop@cri.ensmp.fr>
+	    Sebastian Pop <sebastian.pop@cri.ensmp.fr>
 
 	PR tree-optimization/19903
 	* tree-chrec.c (chrec_convert): Return chrec_dont_know for constants
@@ -82,9 +97,9 @@
 
 2005-04-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 	 
-        PR c++/18644
-        * doc/invoke.texi (-Wsynth): Don't document, as it now is void of
-        semantics. 
+	PR c++/18644
+	* doc/invoke.texi (-Wsynth): Don't document, as it now is void of
+	semantics. 
 	
 2005-04-02  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -205,8 +220,8 @@
 
 2005-03-31  Olivier Hainque  <hainque@adacore.com>
 
-        * dwarf2out.c (dwarf2out_frame_finish): Honor DWARF2_FRAME_INFO
-        defined and non-zero.
+	* dwarf2out.c (dwarf2out_frame_finish): Honor DWARF2_FRAME_INFO
+	defined and non-zero.
 	
 2005-03-31  Alan Modra  <amodra@bigpond.net.au>
 

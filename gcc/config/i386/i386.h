@@ -1107,11 +1107,6 @@ do {									\
    || (MODE) == V8HImode || (MODE) == V2DFmode || (MODE) == V2DImode	\
    || (MODE) == V4SFmode || (MODE) == V4SImode)
 
-/* Return true for modes passed in MMX registers.  */
-#define MMX_REG_MODE_P(MODE) \
- ((MODE) == V8QImode || (MODE) == V4HImode || (MODE) == V2SImode	\
-   || (MODE) == V2SFmode)
-
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE)	\
