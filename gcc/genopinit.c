@@ -121,7 +121,7 @@ const char * const optabs[] =
   "movstr_optab[(int) %A] = CODE_FOR_%(movstr%a%)",
   "clrstr_optab[(int) %A] = CODE_FOR_%(clrstr%a%)" };
 
-static void gen_insn PROTO((rtx));
+static void gen_insn PARAMS ((rtx));
 
 static void
 gen_insn (insn)
@@ -304,7 +304,7 @@ xrealloc (old, size)
   return ptr;
 }
 
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)

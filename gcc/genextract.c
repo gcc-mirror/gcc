@@ -97,10 +97,10 @@ static int dupnums[MAX_DUP_OPERANDS];
 
 static struct code_ptr *peepholes;
 
-static void gen_insn PROTO ((rtx));
-static void walk_rtx PROTO ((rtx, const char *));
-static void print_path PROTO ((const char *));
-static void record_insn_name PROTO((int, const char *));
+static void gen_insn PARAMS ((rtx));
+static void walk_rtx PARAMS ((rtx, const char *));
+static void print_path PARAMS ((const char *));
+static void record_insn_name PARAMS ((int, const char *));
 
 static void
 gen_insn (insn)
@@ -380,7 +380,7 @@ xstrdup (input)
   return output;
 }
 
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)

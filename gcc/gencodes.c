@@ -35,7 +35,7 @@ struct obstack *rtl_obstack = &obstack;
 
 static int insn_code_number;
 
-static void gen_insn PROTO((rtx));
+static void gen_insn PARAMS ((rtx));
 
 static void
 gen_insn (insn)
@@ -75,7 +75,7 @@ xrealloc (old, size)
   return ptr;
 }
 
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)

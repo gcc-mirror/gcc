@@ -88,17 +88,17 @@ struct rtx_definition defs[] =
 
 const char *formats[NUM_RTX_CODE];
 
-static const char *type_from_format	PROTO((int));
-static const char *accessor_from_format	PROTO((int));
-static int special_format		PROTO((const char *));
-static int special_rtx			PROTO((int));
-static void find_formats		PROTO((void));
-static void gendecl			PROTO((const char *));
-static void genmacro			PROTO((int));
-static void gendef			PROTO((const char *));
-static void genlegend			PROTO((void));
-static void genheader			PROTO((void));
-static void gencode			PROTO((void));
+static const char *type_from_format	PARAMS ((int));
+static const char *accessor_from_format	PARAMS ((int));
+static int special_format		PARAMS ((const char *));
+static int special_rtx			PARAMS ((int));
+static void find_formats		PARAMS ((void));
+static void gendecl			PARAMS ((const char *));
+static void genmacro			PARAMS ((int));
+static void gendef			PARAMS ((const char *));
+static void genlegend			PARAMS ((void));
+static void genheader			PARAMS ((void));
+static void gencode			PARAMS ((void));
 
 /* Decode a format letter into a C type string.  */
 
@@ -224,7 +224,7 @@ gendecl (format)
   const char *p;
   int i, pos;
   
-  printf ("extern rtx gen_rtx_fmt_%s\tPROTO((RTX_CODE, ", format);
+  printf ("extern rtx gen_rtx_fmt_%s\tPARAMS ((RTX_CODE, ", format);
   printf ("enum machine_mode mode");
 
   /* Write each parameter that is needed and start a new line when the line
@@ -359,7 +359,7 @@ gencode ()
   puts ("#include \"rtl.h\"\n");
   puts ("#include \"ggc.h\"\n\n");
   puts ("extern struct obstack *rtl_obstack;\n\n");
-  puts ("static rtx obstack_alloc_rtx PROTO((int length));\n");
+  puts ("static rtx obstack_alloc_rtx PARAMS ((int length));\n");
   puts ("static rtx obstack_alloc_rtx (length)\n");
   puts ("     register int length;\n{\n");
   puts ("  rtx rt = (rtx) obstack_alloc (rtl_obstack, length);\n\n");
@@ -391,7 +391,7 @@ xmalloc (nbytes)
 /* This is the main program.  We accept only one argument, "-h", which
    says we are writing the genrtl.h file.  Otherwise we are writing the
    genrtl.c file.  */
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)

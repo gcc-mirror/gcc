@@ -228,93 +228,93 @@ static const char * special_mode_pred_table[] = {
   (sizeof (special_mode_pred_table) / sizeof (special_mode_pred_table[0]))
 
 static void message_with_line
-  PVPROTO ((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
+  PARAMS ((int, const char *, ...)) ATTRIBUTE_PRINTF_2;
 
 static struct decision *new_decision
-  PROTO((const char *, struct decision_head *));
+  PARAMS ((const char *, struct decision_head *));
 static struct decision_test *new_decision_test
-  PROTO((enum decision_type, struct decision_test ***));
+  PARAMS ((enum decision_type, struct decision_test ***));
 static rtx find_operand
-  PROTO((rtx, int));
+  PARAMS ((rtx, int));
 static void validate_pattern
-  PROTO((rtx, rtx, rtx));
+  PARAMS ((rtx, rtx, rtx));
 static struct decision *add_to_sequence
-  PROTO((rtx, struct decision_head *, const char *, enum routine_type, int));
+  PARAMS ((rtx, struct decision_head *, const char *, enum routine_type, int));
 
 static int maybe_both_true_2
-  PROTO((struct decision_test *, struct decision_test *));
+  PARAMS ((struct decision_test *, struct decision_test *));
 static int maybe_both_true_1
-  PROTO((struct decision_test *, struct decision_test *));
+  PARAMS ((struct decision_test *, struct decision_test *));
 static int maybe_both_true
-  PROTO((struct decision *, struct decision *, int));
+  PARAMS ((struct decision *, struct decision *, int));
 
 static int nodes_identical_1
-  PROTO((struct decision_test *, struct decision_test *));
+  PARAMS ((struct decision_test *, struct decision_test *));
 static int nodes_identical
-  PROTO((struct decision *, struct decision *));
+  PARAMS ((struct decision *, struct decision *));
 static void merge_accept_insn
-  PROTO((struct decision *, struct decision *));
+  PARAMS ((struct decision *, struct decision *));
 static void merge_trees
-  PROTO((struct decision_head *, struct decision_head *));
+  PARAMS ((struct decision_head *, struct decision_head *));
 
 static void factor_tests
-  PROTO((struct decision_head *));
+  PARAMS ((struct decision_head *));
 static void simplify_tests
-  PROTO((struct decision_head *));
+  PARAMS ((struct decision_head *));
 static int break_out_subroutines
-  PROTO((struct decision_head *, int));
+  PARAMS ((struct decision_head *, int));
 static void find_afterward
-  PROTO((struct decision_head *, struct decision *));
+  PARAMS ((struct decision_head *, struct decision *));
 
 static void change_state
-  PROTO((const char *, const char *, struct decision *, const char *));
+  PARAMS ((const char *, const char *, struct decision *, const char *));
 static void print_code
-  PROTO((enum rtx_code));
+  PARAMS ((enum rtx_code));
 static void write_afterward
-  PROTO((struct decision *, struct decision *, const char *));
+  PARAMS ((struct decision *, struct decision *, const char *));
 static struct decision *write_switch
-  PROTO((struct decision *, int));
+  PARAMS ((struct decision *, int));
 static void write_cond
-  PROTO((struct decision_test *, int, enum routine_type));
+  PARAMS ((struct decision_test *, int, enum routine_type));
 static void write_action
-  PROTO((struct decision_test *, int, int, struct decision *,
+  PARAMS ((struct decision_test *, int, int, struct decision *,
 	 enum routine_type));
 static int is_unconditional
-  PROTO((struct decision_test *, enum routine_type));
+  PARAMS ((struct decision_test *, enum routine_type));
 static int write_node
-  PROTO((struct decision *, int, enum routine_type));
+  PARAMS ((struct decision *, int, enum routine_type));
 static void write_tree_1
-  PROTO((struct decision_head *, int, enum routine_type));
+  PARAMS ((struct decision_head *, int, enum routine_type));
 static void write_tree
-  PROTO((struct decision_head *, const char *, enum routine_type, int));
+  PARAMS ((struct decision_head *, const char *, enum routine_type, int));
 static void write_subroutine
-  PROTO((struct decision_head *, enum routine_type));
+  PARAMS ((struct decision_head *, enum routine_type));
 static void write_subroutines
-  PROTO((struct decision_head *, enum routine_type));
+  PARAMS ((struct decision_head *, enum routine_type));
 static void write_header
-  PROTO((void));
+  PARAMS ((void));
 
 static struct decision_head make_insn_sequence
-  PROTO((rtx, enum routine_type));
+  PARAMS ((rtx, enum routine_type));
 static void process_tree
-  PROTO((struct decision_head *, enum routine_type));
+  PARAMS ((struct decision_head *, enum routine_type));
   
 static void record_insn_name
-  PROTO((int, const char *));
+  PARAMS ((int, const char *));
 
 static void debug_decision_0
-  PROTO((struct decision *, int, int));
+  PARAMS ((struct decision *, int, int));
 static void debug_decision_1
-  PROTO((struct decision *, int));
+  PARAMS ((struct decision *, int));
 static void debug_decision_2
-  PROTO((struct decision_test *));
+  PARAMS ((struct decision_test *));
 extern void debug_decision
-  PROTO((struct decision *));
+  PARAMS ((struct decision *));
 extern void debug_decision_list
-  PROTO((struct decision *));
+  PARAMS ((struct decision *));
 
 static void
-message_with_line VPROTO ((int lineno, const char *msg, ...))
+message_with_line VPARAMS ((int lineno, const char *msg, ...))
 {
 #ifndef ANSI_PROTOTYPES
   int lineno;
@@ -2178,7 +2178,7 @@ write_subroutine (head, type)
   switch (type)
     {
     case RECOG:
-      printf ("%sint recog%s PROTO ((rtx, rtx, int *));\n", s_or_e, extension);
+      printf ("%sint recog%s PARAMS ((rtx, rtx, int *));\n", s_or_e, extension);
       printf ("%sint\n\
 recog%s (x0, insn, pnum_clobbers)\n\
      register rtx x0;\n\
@@ -2186,14 +2186,14 @@ recog%s (x0, insn, pnum_clobbers)\n\
      int *pnum_clobbers ATTRIBUTE_UNUSED;\n", s_or_e, extension);
       break;
     case SPLIT:
-      printf ("%srtx split%s PROTO ((rtx, rtx));\n", s_or_e, extension);
+      printf ("%srtx split%s PARAMS ((rtx, rtx));\n", s_or_e, extension);
       printf ("%srtx\n\
 split%s (x0, insn)\n\
      register rtx x0;\n\
      rtx insn ATTRIBUTE_UNUSED;\n", s_or_e, extension);
       break;
     case PEEPHOLE2:
-      printf ("%srtx peephole2%s PROTO ((rtx, rtx, rtx *));\n", s_or_e, extension);
+      printf ("%srtx peephole2%s PARAMS ((rtx, rtx, rtx *));\n", s_or_e, extension);
       printf ("%srtx\n\
 peephole2%s (x0, insn, _plast_insn)\n\
      register rtx x0;\n\
@@ -2442,12 +2442,12 @@ make_insn_sequence (insn, type)
 
     case SPLIT:
       /* Define the subroutine we will call below and emit in genemit.  */
-      printf ("extern rtx gen_split_%d PROTO ((rtx *));\n", next_insn_code);
+      printf ("extern rtx gen_split_%d PARAMS ((rtx *));\n", next_insn_code);
       break;
 
     case PEEPHOLE2:
       /* Define the subroutine we will call below and emit in genemit.  */
-      printf ("extern rtx gen_peephole2_%d PROTO ((rtx, rtx *));\n",
+      printf ("extern rtx gen_peephole2_%d PARAMS ((rtx, rtx *));\n",
 	      next_insn_code);
       break;
     }
@@ -2486,7 +2486,7 @@ process_tree (head, subroutine_type)
   write_subroutine (head, subroutine_type);
 }
 
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)

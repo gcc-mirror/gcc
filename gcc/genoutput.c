@@ -103,7 +103,7 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-static int n_occurrences PROTO((int, char *));
+static int n_occurrences PARAMS ((int, char *));
 
 /* insns in the machine description are assigned sequential code numbers
    that are used by insn-recog.c (produced by genrecog) to communicate
@@ -175,22 +175,22 @@ struct data
 
 static struct data *idata, **idata_end = &idata;
 
-static void output_prologue PROTO((void));
-static void output_predicate_decls PROTO((void));
-static void output_operand_data PROTO((void));
-static void output_insn_data PROTO((void));
-static void output_get_insn_name PROTO((void));
-static void scan_operands PROTO((struct data *, rtx, int, int));
-static int compare_operands PROTO((struct operand_data *,
+static void output_prologue PARAMS ((void));
+static void output_predicate_decls PARAMS ((void));
+static void output_operand_data PARAMS ((void));
+static void output_insn_data PARAMS ((void));
+static void output_get_insn_name PARAMS ((void));
+static void scan_operands PARAMS ((struct data *, rtx, int, int));
+static int compare_operands PARAMS ((struct operand_data *,
 				   struct operand_data *));
-static void place_operands PROTO((struct data *));
-static void process_template PROTO((struct data *, char *));
-static void validate_insn_alternatives PROTO((struct data *));
-static void gen_insn PROTO((rtx));
-static void gen_peephole PROTO((rtx));
-static void gen_expand PROTO((rtx));
-static void gen_split PROTO((rtx));
-static int n_occurrences PROTO((int, char *));
+static void place_operands PARAMS ((struct data *));
+static void process_template PARAMS ((struct data *, char *));
+static void validate_insn_alternatives PARAMS ((struct data *));
+static void gen_insn PARAMS ((rtx));
+static void gen_peephole PARAMS ((rtx));
+static void gen_expand PARAMS ((rtx));
+static void gen_split PARAMS ((rtx));
+static int n_occurrences PARAMS ((int, char *));
 
 const char *
 get_insn_name (index)
@@ -262,7 +262,7 @@ output_predicate_decls ()
 
 	if (p == 0)
 	  {
-	    printf ("extern int %s PROTO ((rtx, enum machine_mode));\n",
+	    printf ("extern int %s PARAMS ((rtx, enum machine_mode));\n",
 		    d->predicate);
 	    p = (struct predicate *) alloca (sizeof (struct predicate));
 	    p->name = d->predicate;
@@ -641,7 +641,7 @@ process_template (d, template)
       d->template = 0;
       d->output_format = INSN_OUTPUT_FORMAT_FUNCTION;
 
-      printf ("\nstatic const char *output_%d PROTO ((rtx *, rtx));\n",
+      printf ("\nstatic const char *output_%d PARAMS ((rtx *, rtx));\n",
 	      d->code_number);
       puts ("\nstatic const char *");
       printf ("output_%d (operands, insn)\n", d->code_number);
@@ -897,7 +897,7 @@ xrealloc (old, size)
   return ptr;
 }
 
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)

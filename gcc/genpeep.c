@@ -55,10 +55,10 @@ static int n_operands;
 
 static int insn_code_number = 0;
 
-static void gen_peephole PROTO((rtx));
-static void match_rtx PROTO((rtx, struct link *, int));
-static void print_path PROTO((struct link *));
-static void print_code PROTO((RTX_CODE));
+static void gen_peephole PARAMS ((rtx));
+static void match_rtx PARAMS ((rtx, struct link *, int));
+static void print_path PARAMS ((struct link *));
+static void print_code PARAMS ((RTX_CODE));
 
 static void
 gen_peephole (peep)
@@ -399,7 +399,7 @@ xrealloc (old, size)
   return ptr;
 }
 
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)

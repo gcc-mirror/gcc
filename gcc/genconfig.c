@@ -49,11 +49,11 @@ static int max_insns_per_split = 1;
 static int clobbers_seen_this_insn;
 static int dup_operands_seen_this_insn;
 
-static void walk_insn_part PROTO((rtx, int, int));
-static void gen_insn PROTO((rtx));
-static void gen_expand PROTO((rtx));
-static void gen_split PROTO((rtx));
-static void gen_peephole PROTO((rtx));
+static void walk_insn_part PARAMS ((rtx, int, int));
+static void gen_insn PARAMS ((rtx));
+static void gen_expand PARAMS ((rtx));
+static void gen_split PARAMS ((rtx));
+static void gen_peephole PARAMS ((rtx));
 
 /* RECOG_P will be non-zero if this pattern was seen in a context where it will
    be used to recognize, rather than just generate an insn. 
@@ -274,7 +274,7 @@ xrealloc (old, size)
   return ptr;
 }
 
-extern int main PROTO ((int, char **));
+extern int main PARAMS ((int, char **));
 
 int
 main (argc, argv)
