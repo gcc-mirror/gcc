@@ -1926,7 +1926,7 @@ carefully.
 The keyword @code{__attribute__} allows you to specify special
 attributes when making a declaration.  This keyword is followed by an
 attribute specification inside double parentheses.  The following
-attributs are currently defined for functions on all targets:
+attributes are currently defined for functions on all targets:
 @code{noreturn}, @code{noinline}, @code{pure}, @code{const},
 @code{format}, @code{format_arg}, @code{no_instrument_function},
 @code{section}, @code{constructor}, @code{destructor}, @code{used},
