@@ -1,5 +1,28 @@
 2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/mcore/mcore-protos.h: Remove the prototype for
+	mcore_setup_incoming_varargs.
+	* config/mcore/mcore.c (TARGET_ASM_EXTERNAL_LIBCALL): New.
+	(TARGET_PROMOTE_FUNCTION_ARGS): Likewise.
+	(TARGET_PROMOTE_FUNCTION_RETURN): Likewise.
+	(TARGET_PROMOTE_PROTOTYPES): Likewise.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(TARGET_RETURN_IN_MEMORY): Likewise.
+	(TARGET_SETUP_INCOMING_VARARGS): Likewise.
+	(mcore_setup_incoming_varargs): Make it static.  Receive the
+	first argument by reference.  Add argument second_time.
+	(mcore_external_libcall): New.
+	(mcore_return_in_memory): Likewise.
+	* config/mcore/mcore.h (PROMOTE_FUNCTION_ARGS): New.
+	(PROMOTE_FUNCTION_RETURN): Likewise.
+	(STRUCT_VALUE): Likewise.
+	(RETURN_IN_MEMORY): Likewise.
+	(SETUP_INCOMING_VARARGS): Likewise.
+	(PROMOTE_PROTOTYPES): Likewise.
+	(ASM_OUTPUT_EXTERNAL_LIBCALL): Likewise.
+
+2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/m32r/m32r-protos.h: Remove the prototype for
 	m32r_setup_incoming_varargs.
 	* config/m32r/m32r.c (TARGET_PROMOTE_PROTOTYPES): New.

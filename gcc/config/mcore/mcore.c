@@ -1,5 +1,6 @@
 /* Output routines for Motorola MCore processor
-   Copyright (C) 1993, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -123,6 +124,7 @@ static int        try_constant_tricks           (long, int *, int *);
 static const char *     output_inline_const     (enum machine_mode, rtx *);
 static void       block_move_sequence           (rtx, rtx, rtx, rtx, int, int, int);
 static void       layout_mcore_frame            (struct mcore_frame *);
+static void       mcore_setup_incoming_varargs	(CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int);
 static cond_type  is_cond_candidate             (rtx);
 static rtx        emit_new_cond_insn            (rtx, int);
 static rtx        conditionalize_block          (rtx);
@@ -146,8 +148,14 @@ static int        mcore_const_costs            	(rtx, RTX_CODE);
 static int        mcore_and_cost               	(rtx);
 static int        mcore_ior_cost               	(rtx);
 static bool       mcore_rtx_costs		(rtx, int, int, int *);
+static void       mcore_external_libcall	(rtx);
+static bool       mcore_return_in_memory	(tree, tree);
+
 
 /* Initialize the GCC target structure.  */
+#undef  TARGET_ASM_EXTERNAL_LIBCALL
+#define TARGET_ASM_EXTERNAL_LIBCALL	mcore_external_libcall
+
 #ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
 #undef  TARGET_MERGE_DECL_ATTRIBUTES
 #define TARGET_MERGE_DECL_ATTRIBUTES	merge_dllimport_decl_attributes
@@ -174,6 +182,21 @@ static bool       mcore_rtx_costs		(rtx, int, int, int *);
 #define TARGET_ADDRESS_COST 		hook_int_rtx_0
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG	mcore_reorg
+
+#undef  TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS	hook_bool_tree_true
+#undef  TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN	hook_bool_tree_true
+#undef  TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES	hook_bool_tree_true
+
+#undef  TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX		hook_rtx_tree_int_null
+#undef  TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY		mcore_return_in_memory
+
+#undef  TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS	mcore_setup_incoming_varargs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2188,22 +2211,23 @@ mcore_initial_elimination_offset (int from, int to)
 
 /* Keep track of some information about varargs for the prolog.  */
 
-void
-mcore_setup_incoming_varargs (CUMULATIVE_ARGS args_so_far,
+static void
+mcore_setup_incoming_varargs (CUMULATIVE_ARGS *args_so_far,
 			      enum machine_mode mode, tree type,
-			      int * ptr_pretend_size ATTRIBUTE_UNUSED)
+			      int * ptr_pretend_size ATTRIBUTE_UNUSED,
+			      int second_time ATTRIBUTE_UNUSED)
 {
   current_function_anonymous_args = 1;
 
   /* We need to know how many argument registers are used before
      the varargs start, so that we can push the remaining argument
      registers during the prologue.  */
-  number_of_regs_before_varargs = args_so_far + mcore_num_arg_regs (mode, type);
+  number_of_regs_before_varargs = *args_so_far + mcore_num_arg_regs (mode, type);
   
   /* There is a bug somewhere in the arg handling code.
      Until I can find it this workaround always pushes the
      last named argument onto the stack.  */
-  number_of_regs_before_varargs = args_so_far;
+  number_of_regs_before_varargs = *args_so_far;
   
   /* The last named argument may be split between argument registers
      and the stack.  Allow for this here.  */
@@ -3428,3 +3452,17 @@ mcore_asm_named_section (const char *name, unsigned int flags ATTRIBUTE_UNUSED)
   fprintf (asm_out_file, "\t.section %s\n", name);
 }
 #endif /* OBJECT_FORMAT_ELF */
+
+static void
+mcore_external_libcall (rtx fun)
+{
+  fprintf (asm_out_file, "\t.import\t");
+  assemble_name (asm_out_file, XSTR (fun, 0));
+  fprintf (asm_out_file, "\n");
+}
+
+static bool
+mcore_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  return int_size_in_bytes (type) > 2 * UNITS_PER_WORD;
+}

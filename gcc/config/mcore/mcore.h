@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for Motorola M*CORE Processor.
-   Copyright (C) 1993, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1993, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
    This file is part of GCC.
@@ -216,10 +216,6 @@ extern const char * mcore_stack_increment_string;
       (UNSIGNEDP) = 1;				\
     }
 
-#define PROMOTE_FUNCTION_ARGS
-
-#define PROMOTE_FUNCTION_RETURN
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN  0
@@ -434,9 +430,6 @@ extern int mcore_stack_increment;
    its replacement, at the start of a routine.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   OFFSET = mcore_initial_elimination_offset (FROM, TO)
-
-/* Place that structure value return address is placed.  */
-#define STRUCT_VALUE 0
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -661,9 +654,6 @@ extern const enum reg_class reg_class_from_letter[];
    we want to retain compatibility with older gcc versions.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-/* How many registers to use for struct return.  */
-#define	RETURN_IN_MEMORY(TYPE) (int_size_in_bytes (TYPE) > 2 * UNITS_PER_WORD)
-
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 #define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, FIRST_RET_REG)
@@ -740,11 +730,6 @@ extern const enum reg_class reg_class_from_letter[];
    fit in them needs partial registers on the MCore.  */
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
   mcore_function_arg_partial_nregs (CUM, MODE, TYPE, NAMED)
-
-/* Perform any needed actions needed for a function that is receiving a
-   variable number of arguments.  */
-#define SETUP_INCOMING_VARARGS(ASF, MODE, TYPE, PAS, ST) \
-  mcore_setup_incoming_varargs (ASF, MODE, TYPE, & PAS)
 
 /* Call the function profiler with a given profile label.  */
 #define FUNCTION_PROFILER(STREAM,LABELNO)		\
@@ -962,9 +947,6 @@ extern const enum reg_class reg_class_from_letter[];
 /* Why is this defined??? -- dac */
 #define NO_FUNCTION_CSE 1
 
-/* Chars and shorts should be passed as ints.  */
-#define PROMOTE_PROTOTYPES 1
-
 /* The machine modes of pointers and functions.  */
 #define Pmode          SImode
 #define FUNCTION_MODE  Pmode
@@ -1163,18 +1145,6 @@ extern long mcore_current_compilation_timestamp;
    inlined member functions (or any inlined function) to be instantiated
    regardless of whether any call sites remain.
    This makes this aspect of the compiler non-ABI compliant.  */
-
-/* Similar, but for libcall. FUN is an rtx.  */
-#undef  ASM_OUTPUT_EXTERNAL_LIBCALL
-#define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)	\
-  do						\
-    {						\
-      fprintf (FILE, "\t.import\t");		\
-      assemble_name (FILE, XSTR (FUN, 0));	\
-      fprintf (FILE, "\n");			\
-    }						\
-  while (0)
-
 
 /* This says how to output an assembler line
    to define a local common symbol....  */
