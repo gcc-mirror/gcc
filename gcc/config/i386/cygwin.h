@@ -105,7 +105,7 @@ Boston, MA 02111-1307, USA. */
     MINGW_INCLUDES "} \
   %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__ -Dunix -D__unix__ -D__unix "\
     CYGWIN_INCLUDES "}\
-  %{mwin32|no-cygwin:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT}\
+  %{mwin32|mno-cygwin:-DWIN32 -D_WIN32 -D__WIN32 -D__WIN32__ -DWINNT}\
   %{!mno-win32:" W32API_INC "}\
 "
 
