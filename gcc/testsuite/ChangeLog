@@ -1,5 +1,9 @@
 2002-05-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* gcc.dg/cpp/paste12.c: New test.
+
+2002-05-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* g++.dg/parse/named_ops.C: New test.
 
 2002-05-23  Jakub Jelinek  <jakub@redhat.com>

@@ -673,6 +673,8 @@ enter_macro_context (pfile, node)
   /* The presence of a macro invalidates a file's controlling macro.  */
   pfile->mi_valid = false;
 
+  pfile->state.angled_headers = false;
+
   /* Handle standard macros.  */
   if (! (node->flags & NODE_BUILTIN))
     {
