@@ -39,6 +39,8 @@ package java.beans;
 public class PropertyVetoException extends Exception {
 	PropertyChangeEvent evt;
 
+	private static final long serialVersionUID = 129596057694162164L;
+
 	/** Instantiate this exception with the given message and property change.
 	 ** @param msg the reason for the veto.
 	 ** @param changeEvent the PropertyChangeEvent that was thrown.

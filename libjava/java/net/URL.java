@@ -1,6 +1,6 @@
 // URL.java - A Uniform Resource Locator.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -32,9 +32,12 @@ public final class URL implements Serializable
   private int port = -1;	// Initialize for constructor using context.
   private String file;
   private String ref;
-  private URLStreamHandler handler;
+  private int hashCode = 0;
+  transient private URLStreamHandler handler;
   private static Hashtable handlers = new Hashtable();
   private static URLStreamHandlerFactory factory;
+
+  private static final long serialVersionUID = -7627629688361524110L;
 
   public URL(String protocol, String host, int port, String file)
     throws MalformedURLException
@@ -90,6 +93,7 @@ public final class URL implements Serializable
 	this.file = file.substring(0, hashAt);
 	this.ref = file.substring(hashAt + 1);
       }
+    hashCode = hashCode();			// Used for serialization.
   }
 
   public URL(String spec) throws MalformedURLException
@@ -181,6 +185,8 @@ public final class URL implements Serializable
 			  hashAt < 0 ? spec.length() : hashAt);
     if (hashAt >= 0)
       ref = spec.substring(hashAt + 1);
+
+    hashCode = hashCode();			// Used for serialization.
   }
 
   public boolean equals(Object obj)
@@ -249,7 +255,10 @@ public final class URL implements Serializable
     // (which was reduced to "" with a hashcode of zero).  A "" host also
     // causes the port number and the two hashcodes to be summed.
 
-    return (protocol.hashCode() + ((host == null) ? 0 : host.hashCode()) +
+    if (hashCode != 0)
+      return hashCode;		// Use cached value if available.
+    else
+      return (protocol.hashCode() + ((host == null) ? 0 : host.hashCode()) +
 	port + file.hashCode());
   }
 
@@ -290,6 +299,7 @@ public final class URL implements Serializable
     this.host = host;
     this.file = file;
     this.ref = ref;
+    hashCode = hashCode();			// Used for serialization.
   }
 
   public static synchronized void
@@ -383,5 +393,19 @@ public final class URL implements Serializable
 	handler = null;
 
     return handler;
+  }
+
+  private void readObject(ObjectInputStream ois)
+    throws IOException, ClassNotFoundException
+  {
+    ois.defaultReadObject();
+    this.handler = setURLStreamHandler(protocol);
+    if (this.handler == null)
+      throw new IOException("Handler for protocol " + protocol + " not found");
+  }
+
+  private void writeObject(ObjectOutputStream oos) throws IOException
+  {
+    oos.defaultWriteObject();
   }
 }

@@ -1,6 +1,6 @@
 // Character.java - Character class.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -83,6 +83,7 @@ public final class Character implements Serializable, Comparable
   public static final byte PRIVATE_USE = 18;
   public static final byte SURROGATE   = 19;
 
+  private static final long serialVersionUID = 3786198910865385080L;
 
   public Character (char ch)
   {

@@ -1,3 +1,52 @@
+2000-09-08  Warren Levy  <warrenl@cygnus.com>
+
+	* java/beans/PropertyChangeEvent.java (serialVersionUID): Added.
+	* java/beans/PropertyVetoException.java (serialVersionUID): Added.
+	* java/io/File.java (writeObject): Added.
+	(readObject): Added.
+	(serialVersionUID): Added.
+	* java/io/ObjectOutputStream.java (writeObject): Initialized
+	fieldsAlreadyWritten before recursion rather than after.
+	* java/io/ObjectStreamClass.java (serialVersionUID): Added.
+	* java/io/OptionalDataException.java (serialVersionUID): Added.
+	(OptionalDataException): Made package private.
+	* java/io/SyncFailedException.java (SyncFailedException): Removed
+	default constructor to match spec.
+	* java/lang/Boolean.java (serialVersionUID): Added.
+	* java/lang/Byte.java (serialVersionUID): Added.
+	* java/lang/Character.java (serialVersionUID): Added.
+	* java/lang/Double.java (serialVersionUID): Added.
+	* java/lang/Float.java (serialVersionUID): Added.
+	* java/lang/Integer.java (serialVersionUID): Added.
+	* java/lang/Long.java (serialVersionUID): Added.
+	* java/lang/Number.java (serialVersionUID): Added.
+	* java/lang/Short.java (serialVersionUID): Added.
+	* java/lang/String.java (serialVersionUID): Added.
+	* java/lang/ThreadDeath.java (ThreadDeath): Removed constructor
+	to match spec.
+	* java/lang/reflect/InvocationTargetException.java
+	(serialVersionUID): Added.
+	* java/net/URL.java (handler): Made transient.
+	(hashCode): Added field for serialization, per spec. and use
+	cached value if available.
+	(serialVersionUID): Added.
+	(URL): Initialize hashCode.
+	(set): Adjust hashCode.
+	(readObject): New Method to initialize the protocol handler when
+	deserializing.
+	(writeObject): New method.
+	* java/text/BreakIterator.java: Removed 'implements Serializable'.
+	* java/text/Collator.java: Removed 'implements Serializable'.
+	* java/util/GregorianCalendar.java (serialVersionUID): Added.
+	* java/util/Properties.java (serialVersionUID): Added.
+	* java/util/Random.java (serialVersionUID): Added.
+	(seed): Made private.
+	(nextNextGaussian): Made private.
+	(haveNextNextGaussian): Made private.
+	* java/util/Stack.java (serialVersionUID): Added.
+	* java/util/TimeZone.java (serialVersionUID): Added.
+	* java/util/Vector.java (serialVersionUID): Added.
+
 2000-09-07  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.am (Thread.h): Don't be friends with native threads 

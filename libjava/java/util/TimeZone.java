@@ -30,6 +30,8 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
 
   private static TimeZone zoneDefault;
 
+  private static final long serialVersionUID = 3581463369166924961L;
+
   public TimeZone ()
   {
   }

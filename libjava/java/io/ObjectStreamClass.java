@@ -635,6 +635,10 @@ public class ObjectStreamClass implements Serializable
   // these are accessed by ObjectIn/OutputStream
   int primFieldSize = -1;  // -1 if not yet calculated
   int objectFieldCount;
+
+  // This is probably not necessary because this class is special cased already
+  // but it will avoid showing up as a discrepancy when comparing SUIDs.
+  private static final long serialVersionUID = -6120832682080437368L;
 }
 
 

@@ -89,6 +89,8 @@ public class GregorianCalendar extends Calendar {
     3600000 /* DST_OFFSET */
   };
 
+  private static final long serialVersionUID = -8125100834729963327L;
+
   public GregorianCalendar ()
   {
     this(null, null);

@@ -313,11 +313,11 @@ public class ObjectOutputStream extends OutputStream
 	  {
 	    currentObjectStreamClass = hierarchy[i];
 
+	    fieldsAlreadyWritten = false;
 	    has_write = currentObjectStreamClass.hasWriteMethod ();
+
 	    writeFields (obj, currentObjectStreamClass.fields,
 			 has_write);
-
-	    fieldsAlreadyWritten = false;
 
 	    if (has_write)
 	    {

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -28,6 +28,8 @@ public final class Byte extends Number implements Comparable
   // This initialization is seemingly circular, but it is accepted
   // by javac, and is handled specially by gcc.
   public static final Class TYPE = byte.class;
+
+  private static final long serialVersionUID = -7183698231559129828L;
 
   public Byte(byte value)
   {

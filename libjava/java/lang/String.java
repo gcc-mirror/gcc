@@ -26,6 +26,10 @@ public final class String implements Serializable, Comparable
   private int boffset; // Note this is a byte offset - don't use in Java code!
   private int count;
 
+  // This is probably not necessary because this class is special cased already
+  // but it will avoid showing up as a discrepancy when comparing SUIDs.
+  private static final long serialVersionUID = -6849794470754667710L;
+
   public String ()
   {
     init();

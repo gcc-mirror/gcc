@@ -10,7 +10,6 @@ details.  */
 
 package java.text;
 
-import java.io.Serializable;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -24,7 +23,7 @@ import java.util.ResourceBundle;
  * Status:  Believed complete and correct to 1.1.
  */
 
-public abstract class BreakIterator implements Cloneable, Serializable
+public abstract class BreakIterator implements Cloneable
 {
   // The value was discovered by writing a test program.
   public static final int DONE = -1;
