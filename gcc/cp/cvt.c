@@ -345,8 +345,6 @@ build_up_reference (type, arg, flags)
 
   if ((flags & DIRECT_BIND) && ! real_lvalue_p (arg))
     {
-      tree compound_stmt;
-
       /* Create a new temporary variable.  */
       tree targ = arg;
       if (toplevel_bindings_p ())
@@ -355,25 +353,12 @@ build_up_reference (type, arg, flags)
 	{
 	  arg = pushdecl (build_decl (VAR_DECL, NULL_TREE, argtype));
 	  DECL_ARTIFICIAL (arg) = 1;
-	  /* Generate code to initialize it.  We wrap it in a
-	     statement-expression so that when we are building a
-	     statement-tree we will have a representation of this
-	     declaration.  */
-	  begin_init_stmts (&stmt_expr, &compound_stmt);
 	}
 
       /* Process the initializer for the declaration.  */
       DECL_INITIAL (arg) = targ;
       cp_finish_decl (arg, targ, NULL_TREE, 0,
 		      LOOKUP_ONLYCONVERTING|DIRECT_BIND);
-
-      /* And wrap up the statement-expression, if necessary.  */
-      if (!toplevel_bindings_p ())
-	{
-	  if (building_stmt_tree ())
-	    add_decl_stmt (arg);
-	  stmt_expr = finish_init_stmts (stmt_expr, compound_stmt);
-	}
     }
   else if (!(flags & DIRECT_BIND) && ! lvalue_p (arg))
     {
@@ -719,26 +704,12 @@ ocp_convert (type, expr, convtype, flags)
       return e;
     }
 
-#if 0
-  /* This is incorrect.  A truncation can't be stripped this way.
-     Extensions will be stripped by the use of get_unwidened.  */
-  if (TREE_CODE (e) == NOP_EXPR)
-    return cp_convert (type, TREE_OPERAND (e, 0));
-#endif
-
   /* Just convert to the type of the member.  */
   if (code == OFFSET_TYPE)
     {
       type = TREE_TYPE (type);
       code = TREE_CODE (type);
     }
-
-#if 0
-  if (code == REFERENCE_TYPE)
-    return fold (convert_to_reference (type, e, convtype, flags, NULL_TREE));
-  else if (TREE_CODE (TREE_TYPE (e)) == REFERENCE_TYPE)
-    e = convert_from_reference (e);
-#endif
 
   if (TREE_CODE (e) == OFFSET_REF)
     e = resolve_offset_ref (e);

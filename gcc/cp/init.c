@@ -2668,9 +2668,6 @@ create_temporary_var (type)
   DECL_SOURCE_LINE (decl) = lineno;
   DECL_IGNORED_P (decl) = 1;
 
-  if (building_stmt_tree ())
-    add_decl_stmt (decl);
-
   return decl;
 }
 
@@ -2688,6 +2685,8 @@ get_temp_regvar (type, init)
   tree decl;
 
   decl = create_temporary_var (type);
+  if (building_stmt_tree ())
+    add_decl_stmt (decl);
   DECL_REGISTER (decl) = 1;
   if (!building_stmt_tree ())
     DECL_RTL (decl) = assign_temp (type, 2, 0, 1);

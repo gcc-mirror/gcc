@@ -869,6 +869,14 @@ begin_compound_stmt (has_no_scope)
        to accidentally keep a block *inside* the scopeless block.  */ 
     keep_next_level (0);
 
+  /* If this is the outermost block of the function, declare the
+     variables __FUNCTION__, __PRETTY_FUNCTION__, and so forth.  */
+  if (!current_function_name_declared && !processing_template_decl)
+    {
+      declare_function_name ();
+      current_function_name_declared = 1;
+    }
+
   return r;
 }
 
@@ -1025,6 +1033,19 @@ finish_subobject (cleanup)
     }
   else
     add_partial_entry (cleanup);
+}
+
+/* When DECL goes out of scope, make sure that CLEANUP is executed.  */
+
+void 
+finish_decl_cleanup (decl, cleanup)
+     tree decl;
+     tree cleanup;
+{
+  if (building_stmt_tree ())
+    add_tree (build_min_nt (CLEANUP_STMT, decl, cleanup));
+  else if (DECL_SIZE (decl) && TREE_TYPE (decl) != error_mark_node)
+    expand_decl_cleanup (decl, cleanup);
 }
 
 /* Bind a name and initialization to the return value of
@@ -2153,11 +2174,15 @@ expand_stmt (t)
 		       compatibility.  */
 		    maybe_inject_for_scope_var (decl);
 		    /* Let the back-end know about this variable.  */
-		    initialize_local_var (decl, DECL_INITIAL (decl), 0);
+		    emit_local_var (decl);
 		  }
 	      }
 	    resume_momentary (i);
 	  }
+	  break;
+
+	case CLEANUP_STMT:
+	  finish_decl_cleanup (CLEANUP_DECL (t), CLEANUP_EXPR (t));
 	  break;
 
 	case FOR_STMT:
@@ -2337,6 +2362,11 @@ expand_body (fn)
 
   start_function (NULL_TREE, fn, NULL_TREE, SF_PRE_PARSED | SF_EXPAND);
   store_parm_decls ();
+
+  /* We don't need to redeclare __FUNCTION__, __PRETTY_FUNCTION__, or
+     any of the other magic variables we set up when starting a
+     function body.  */
+  current_function_name_declared = 1;
 
   /* There are a few things that we do not handle recursively.  For
      example, a function try-block is handled differently from an

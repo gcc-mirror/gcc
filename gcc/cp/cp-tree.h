@@ -636,6 +636,7 @@ struct language_function
   int in_function_try_handler;
   int x_expanding_p;
   int stmts_are_full_exprs_p; 
+  int name_declared;
 
   struct named_label_list *x_named_label_uses;
   struct binding_level *bindings;
@@ -707,6 +708,12 @@ struct language_function
 
 #define current_function_parms_stored \
   cp_function_chain->parms_stored
+
+/* Non-zero if we have already declared __FUNCTION__ (and related
+   variables) in the current function.  */
+
+#define current_function_name_declared \
+  cp_function_chain->name_declared
 
 /* Used to help generate temporary names which are unique within
    a function.  Reset to 0 by start_function.  */
@@ -2437,6 +2444,8 @@ extern int flag_new_for_scope;
 #define DECL_STMT_DECL(NODE)    TREE_OPERAND (NODE, 0)
 #define STMT_EXPR_STMT(NODE)    TREE_OPERAND (NODE, 0)
 #define SUBOBJECT_CLEANUP(NODE) TREE_OPERAND (NODE, 0)
+#define CLEANUP_DECL(NODE)      TREE_OPERAND (NODE, 0)
+#define CLEANUP_EXPR(NODE)      TREE_OPERAND (NODE, 1)
 #define LABEL_STMT_LABEL(NODE)  TREE_OPERAND (NODE, 0)
 
 /* Nonzero for an ASM_STMT if the assembly statement is volatile.  */
@@ -3237,6 +3246,7 @@ extern int wrapup_globals_for_namespace         PROTO((tree, void *));
 extern tree cp_namespace_decls                  PROTO((tree));
 extern tree create_implicit_typedef             PROTO((tree, tree));
 extern tree maybe_push_decl                     PROTO((tree));
+extern void emit_local_var                      PROTO((tree));
 
 /* in decl2.c */
 extern void init_decl2				PROTO((void));
@@ -3651,6 +3661,7 @@ extern void finish_member_declaration           PROTO((tree));
 extern void check_multiple_declarators          PROTO((void));
 extern tree finish_typeof			PROTO((tree));
 extern void add_decl_stmt                       PROTO((tree));
+extern void finish_decl_cleanup                 PROTO((tree, tree));
 extern void finish_named_return_value           PROTO((tree, tree));
 extern tree expand_stmt                         PROTO((tree));
 extern void expand_body                         PROTO((tree));

@@ -179,6 +179,7 @@ static void mark_cp_function_context PROTO((struct function *));
 static void mark_saved_scope PROTO((void *));
 static void check_function_type PROTO((tree));
 static void destroy_local_static PROTO((tree));
+static void destroy_local_var PROTO((tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -6843,15 +6844,9 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
     {
       if (at_function_scope_p ())
 	push_permanent_obstack ();
-
       tem = push_template_decl (tem);
-      /* In a a local scope, add a representation of this declaration
-	 to the statement tree.  */
       if (at_function_scope_p ())
-	{
-	  add_decl_stmt (decl);
-	  pop_obstacks ();
-	}
+	pop_obstacks ();
     }
 
 
@@ -6987,7 +6982,14 @@ grok_reference_init (decl, type, init)
       /* Note: default conversion is only called in very special cases.  */
       init = default_conversion (init);
     }
-
+  
+  /* Convert INIT to the reference type TYPE.  This may involve the
+     creation of a temporary, whose lifetime must be the same as that
+     of the reference.  If so, a DECL_STMT for the temporary will be
+     added just after the DECL_STMT for DECL.  That's why we don't set
+     DECL_INITIAL for local references (instead assigning to them
+     explicitly); we need to allow the temporary to be initialized
+     first.  */
   tmp = convert_to_reference
     (type, init, CONV_IMPLICIT,
      LOOKUP_SPECULATIVELY|LOOKUP_NORMAL|DIRECT_BIND, decl);
@@ -6997,18 +6999,24 @@ grok_reference_init (decl, type, init)
   else if (tmp != NULL_TREE)
     {
       init = tmp;
-      DECL_INITIAL (decl) = save_expr (init);
+      tmp = save_expr (tmp);
+      if (building_stmt_tree ())
+	{
+	  /* Initialize the declaration.  */
+	  tmp = build (INIT_EXPR, TREE_TYPE (decl), decl, tmp);
+	  /* Setting TREE_SIDE_EFFECTS prevents expand_expr from
+	     omitting this expression entirely.  */
+	  TREE_SIDE_EFFECTS (tmp) = 1;
+	  finish_expr_stmt (tmp);
+	}
+      else
+	DECL_INITIAL (decl) = tmp;
     }
   else
     {
       cp_error ("cannot initialize `%T' from `%T'", type, TREE_TYPE (init));
       return;
     }
-
-  /* ?? Can this be optimized in some cases to
-     hand back the DECL_INITIAL slot??  */
-  if (TYPE_SIZE (TREE_TYPE (type)))
-    init = convert_from_reference (decl);
 
   if (TREE_STATIC (decl) && ! TREE_CONSTANT (DECL_INITIAL (decl)))
     {
@@ -7526,11 +7534,8 @@ initialize_local_var (decl, init, flags)
      int flags;
 {
   tree type;
-  tree cleanup;
 
   type = complete_type (TREE_TYPE (decl));
-
-  cleanup = build_cleanup_on_safe_obstack (decl);
 
   if (DECL_SIZE (decl) == NULL_TREE && !TREE_STATIC (decl))
     {
@@ -7538,16 +7543,6 @@ initialize_local_var (decl, init, flags)
       DECL_INITIAL (decl) = NULL_TREE;
       TREE_ADDRESSABLE (decl) = TREE_USED (decl);
     }
-
-  if (DECL_RTL (decl))
-    /* Only a RESULT_DECL should have non-NULL RTL when arriving here.
-       All other local variables are assigned RTL in this function.  */
-    my_friendly_assert (TREE_CODE (decl) == RESULT_DECL, 19990828);
-  else
-    /* Create RTL for this variable.  */
-    expand_decl (decl);
-
-  expand_start_target_temps ();
 
   if (DECL_SIZE (decl) && type != error_mark_node)
     {
@@ -7558,21 +7553,15 @@ initialize_local_var (decl, init, flags)
 
       if (init || TYPE_NEEDS_CONSTRUCTING (type))
 	{
+	  int saved_stmts_are_full_exprs_p;
+
 	  emit_line_note (DECL_SOURCE_FILE (decl),
 			  DECL_SOURCE_LINE (decl));
-	  /* We call push_momentary here so that when
-	     finish_expr_stmt clears the momentary obstack it
-	     doesn't destory any momentary expressions we may
-	     have lying around.  Although cp_finish_decl is
-	     usually called at the end of a declaration
-	     statement, it may also be called for a temporary
-	     object in the middle of an expression.  */
-	  push_momentary ();
+	  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p;
+	  stmts_are_full_exprs_p = 1;
 	  finish_expr_stmt (build_aggr_init (decl, init, flags));
-	  pop_momentary ();
+	  stmts_are_full_exprs_p = saved_stmts_are_full_exprs_p;
 	}
-      else
-	expand_decl_init (decl);
 
       /* Set this to 0 so we can tell whether an aggregate which was
 	 initialized was ever used.  Don't do this if it has a
@@ -7582,22 +7571,48 @@ initialize_local_var (decl, init, flags)
 	 marked used. (see TREE_USED, above.)  */
       if (TYPE_NEEDS_CONSTRUCTING (type)
 	  && ! already_used
-	  && cleanup == NULL_TREE
+	  && !TYPE_NEEDS_DESTRUCTOR (type) 
 	  && DECL_NAME (decl))
 	TREE_USED (decl) = 0;
       else if (already_used)
 	TREE_USED (decl) = 1;
     }
+}
 
-  /* Cleanup any temporaries needed for the initial value.  */
-  expand_end_target_temps ();
+/* Generate code to destroy DECL (a local variable).  */
+
+void 
+destroy_local_var (decl)
+     tree decl;
+{
+  tree cleanup = build_cleanup_on_safe_obstack (decl);
 
   /* Record the cleanup required for this declaration.  */
-  if (DECL_SIZE (decl) 
-      && type != error_mark_node
-      && cleanup
-      && !expand_decl_cleanup (decl, cleanup))
-    cp_error ("parser lost in parsing declaration of `%D'", decl);
+  if (DECL_SIZE (decl) && TREE_TYPE (decl) != error_mark_node
+      && cleanup)
+    finish_decl_cleanup (decl, cleanup);
+}
+
+/* Let the back-end know about DECL.  */
+
+void
+emit_local_var (decl)
+     tree decl;
+{
+  /* Create RTL for this variable.  */
+  if (DECL_RTL (decl))
+    /* Only a RESULT_DECL should have non-NULL RTL when
+		     arriving here.  All other local variables are
+		     assigned RTL in this function.  */
+    my_friendly_assert (TREE_CODE (decl) == RESULT_DECL, 
+			19990828);
+  else
+    expand_decl (decl);
+
+  /* Actually do the initialization.  */
+  expand_start_target_temps ();
+  expand_decl_init (decl);
+  expand_end_target_temps ();
 }
 
 /* Finish processing of a declaration;
@@ -7680,9 +7695,14 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       return;
     }
 
+  /* Add this declaration to the statement-tree.  */
+  if (building_stmt_tree () 
+      && TREE_CODE (current_scope ()) == FUNCTION_DECL)
+    add_decl_stmt (decl);
+
   if (TYPE_HAS_MUTABLE_P (type))
     TREE_READONLY (decl) = 0;
-  
+
   if (processing_template_decl)
     {
       if (init && DECL_INITIAL (decl))
@@ -7808,10 +7828,19 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	  /* Initialize the local variable.  But, if we're building a
 	     statement-tree, we'll do the initialization when we
 	     expand the tree.  */
-	  if (!building_stmt_tree ())
-	    initialize_local_var (decl, init, flags);
-	  else if (init || DECL_INITIAL (decl) == error_mark_node)
-	    DECL_INITIAL (decl) = init;
+	  if (processing_template_decl)
+	    {
+	      if (init || DECL_INITIAL (decl) == error_mark_node)
+		DECL_INITIAL (decl) = init;
+	    }
+	  else
+	    {
+	      if (!building_stmt_tree ())
+		emit_local_var (decl);
+	      initialize_local_var (decl, init, flags);
+	      /* Clean up the variable.  */
+	      destroy_local_var (decl);
+	    }
 	}
     finish_end0:
 
@@ -12900,7 +12929,7 @@ start_function (declspecs, declarator, attrs, flags)
   get_pending_sizes ();
 
   /* Let the user know we're compiling this function.  */
-  if (!building_stmt_tree ())
+  if (processing_template_decl || !building_stmt_tree ())
     announce_function (decl1);
 
   /* Record the decl so that the function name is defined.
@@ -13209,9 +13238,6 @@ store_parm_decls ()
      DECL_ARGUMENTS is not modified.  */
 
   storedecls (chainon (nonparms, DECL_ARGUMENTS (fndecl)));
-
-  /* Declare __FUNCTION__ and __PRETTY_FUNCTION__ for this function.  */
-  declare_function_name ();
 
   /* Initialize the RTL code for the function.  */
   DECL_SAVED_INSNS (fndecl) = 0;
@@ -14222,7 +14248,8 @@ finish_stmt ()
   if (!current_function_assigns_this
       && current_function_just_assigned_this)
     {
-      if (DECL_CONSTRUCTOR_P (current_function_decl))
+      if (DECL_CONSTRUCTOR_P (current_function_decl) 
+	  && !building_stmt_tree ())
 	{
 	  /* Constructors must wait until we are out of control
 	     zones before calling base constructors.  */

@@ -235,6 +235,10 @@ DEFTREECODE (ASM_STMT, "asm_stmt", 'e', 5)
    run if an exception is thrown before the end of the enclosing
    function.  */
 DEFTREECODE (SUBOBJECT, "subobject", 'e', 1)
+/* A CLEANUP_STMT marks the point at which a declaration is fully
+   constructed.  If, after this point, the CLEANUP_DECL goes out of
+   scope, the CLEANUP_EXPR must be run.  */
+DEFTREECODE (CLEANUP_STMT, "cleanup", 'e', 2)
 DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", 'e', 2)
 DEFTREECODE (CASE_LABEL, "case_label", 'e', 2)
 DEFTREECODE (RETURN_INIT, "return_init", 'e', 2)
