@@ -4749,10 +4749,11 @@ gfc_resolve (gfc_namespace * ns)
       if (cl->length == NULL || gfc_resolve_expr (cl->length) == FAILURE)
 	continue;
 
-      if (cl->length->ts.type != BT_INTEGER)
-	gfc_error
-	  ("Character length specification at %L must be of type INTEGER",
-	   &cl->length->where);
+      if (gfc_simplify_expr (cl->length, 0) == FAILURE)
+	continue;
+
+      if (gfc_specification_expr (cl->length) == FAILURE)
+	continue;
     }
 
   gfc_traverse_ns (ns, resolve_values);
