@@ -1,5 +1,10 @@
 2003-10-01  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/bits/locale_facets.tcc (time_put::put): Minor
+	tweak to the previous commit.
+
+2003-10-01  Paolo Carlini  <pcarlini@unitus.it>
+
 	PR libstdc++/12439
 	* include/bits/locale_facets.tcc (time_put::put): Deal
 	with the three issues pointed out by the PR.
