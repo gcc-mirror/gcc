@@ -286,6 +286,12 @@ optab_for_tree_code (enum tree_code code, tree type)
     case MIN_EXPR:
       return TYPE_UNSIGNED (type) ? umin_optab : smin_optab;
 
+    case REALIGN_STORE_EXPR:
+      return vec_realign_store_optab;
+
+    case REALIGN_LOAD_EXPR:
+      return vec_realign_load_optab;
+
     default:
       break;
     }
@@ -313,6 +319,88 @@ optab_for_tree_code (enum tree_code code, tree type)
     }
 }
 
+
+/* Generate code to perform an operation specified by TERNARY_OPTAB
+   on operands OP0, OP1 and OP2, with result having machine-mode MODE.
+
+   UNSIGNEDP is for the case where we have to widen the operands
+   to perform the operation.  It says to use zero-extension.
+
+   If TARGET is nonzero, the value
+   is generated there, if it is convenient to do so.
+   In all cases an rtx is returned for the locus of the value;
+   this may or may not be TARGET.  */
+
+rtx
+expand_ternary_op (enum machine_mode mode, optab ternary_optab, rtx op0, 
+		   rtx op1, rtx op2, rtx target, int unsignedp) 
+{
+  int icode = (int) ternary_optab->handlers[(int) mode].insn_code;
+  enum machine_mode mode0 = insn_data[icode].operand[1].mode;
+  enum machine_mode mode1 = insn_data[icode].operand[2].mode;
+  enum machine_mode mode2 = insn_data[icode].operand[3].mode;
+  rtx temp;
+  rtx pat;
+  rtx xop0 = op0, xop1 = op1, xop2 = op2;
+
+  if (ternary_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing)
+    abort ();
+
+  if (!target
+      || ! (*insn_data[icode].operand[0].predicate) (target, mode))
+    temp = gen_reg_rtx (mode);
+  else
+    temp = target;
+
+  /* In case the insn wants input operands in modes different from
+     those of the actual operands, convert the operands.  It would
+     seem that we don't need to convert CONST_INTs, but we do, so
+     that they're properly zero-extended, sign-extended or truncated
+     for their mode.  */
+
+  if (GET_MODE (op0) != mode0 && mode0 != VOIDmode)
+    xop0 = convert_modes (mode0,
+                          GET_MODE (op0) != VOIDmode
+                          ? GET_MODE (op0) 
+                          : mode,
+                          xop0, unsignedp);
+
+  if (GET_MODE (op1) != mode1 && mode1 != VOIDmode)
+    xop1 = convert_modes (mode1,
+                          GET_MODE (op1) != VOIDmode
+                          ? GET_MODE (op1)
+                          : mode,
+                          xop1, unsignedp);
+
+  if (GET_MODE (op2) != mode2 && mode2 != VOIDmode)
+    xop2 = convert_modes (mode2,
+                          GET_MODE (op2) != VOIDmode
+                          ? GET_MODE (op2)
+                          : mode,
+                          xop2, unsignedp);
+
+  /* Now, if insn's predicates don't allow our operands, put them into
+     pseudo regs.  */
+  
+  if (! (*insn_data[icode].operand[1].predicate) (xop0, mode0)
+      && mode0 != VOIDmode) 
+    xop0 = copy_to_mode_reg (mode0, xop0);
+  
+  if (! (*insn_data[icode].operand[2].predicate) (xop1, mode1)
+      && mode1 != VOIDmode)
+    xop1 = copy_to_mode_reg (mode1, xop1);
+    
+  if (! (*insn_data[icode].operand[3].predicate) (xop2, mode2)
+      && mode2 != VOIDmode)
+    xop2 = copy_to_mode_reg (mode2, xop2);
+    
+  pat = GEN_FCN (icode) (temp, xop0, xop1, xop2);
+    
+  emit_insn (pat);
+  return temp; 
+}
+
+
 /* Like expand_binop, but return a constant rtx if the result can be
    calculated at compile time.  The arguments and return value are
    otherwise the same as for expand_binop.  */
@@ -4657,6 +4745,8 @@ init_optabs (void)
   vec_extract_optab = init_optab (UNKNOWN);
   vec_set_optab = init_optab (UNKNOWN);
   vec_init_optab = init_optab (UNKNOWN);
+  vec_realign_load_optab = init_optab (UNKNOWN);
+
   /* Conversions.  */
   sext_optab = init_convert_optab (SIGN_EXTEND);
   zext_optab = init_convert_optab (ZERO_EXTEND);

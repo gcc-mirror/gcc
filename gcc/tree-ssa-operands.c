@@ -1009,6 +1009,11 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
       add_stmt_operand (expr_p, stmt, flags);
       return;
 
+    case MISALIGNED_INDIRECT_REF:
+      get_expr_operands (stmt, &TREE_OPERAND (expr, 1), flags);
+      /* fall through */
+
+    case ALIGN_INDIRECT_REF:
     case INDIRECT_REF:
       get_indirect_ref_operands (stmt, expr, flags);
       return;
@@ -1162,6 +1167,14 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 	return;
       }
 
+    case REALIGN_LOAD_EXPR:
+      {
+	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags);
+        get_expr_operands (stmt, &TREE_OPERAND (expr, 1), flags);
+        get_expr_operands (stmt, &TREE_OPERAND (expr, 2), flags);
+        return;
+      }
+
     case BLOCK:
     case FUNCTION_DECL:
     case EXC_PTR_EXPR:
@@ -1274,7 +1287,8 @@ get_asm_expr_operands (tree stmt)
       }
 }
 
-/* A subroutine of get_expr_operands to handle INDIRECT_REF.  */
+/* A subroutine of get_expr_operands to handle INDIRECT_REF,
+   ALIGN_INDIRECT_REF and MISALIGNED_INDIRECT_REF.  */
 
 static void
 get_indirect_ref_operands (tree stmt, tree expr, int flags)

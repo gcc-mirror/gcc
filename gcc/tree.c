@@ -1493,6 +1493,8 @@ staticp (tree arg)
     case BIT_FIELD_REF:
       return NULL;
 
+    case MISALIGNED_INDIRECT_REF:
+    case ALIGN_INDIRECT_REF:
     case INDIRECT_REF:
       return TREE_CONSTANT (TREE_OPERAND (arg, 0)) ? arg : NULL;
 
@@ -2412,6 +2414,8 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
       TREE_READONLY (t) = 0;
       break;
 
+    case MISALIGNED_INDIRECT_REF:
+    case ALIGN_INDIRECT_REF:
     case INDIRECT_REF:
       /* Whether a dereference is readonly has nothing to do with whether
 	 its operand is readonly.  */

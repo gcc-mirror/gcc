@@ -1269,7 +1269,9 @@ find_interesting_uses_address (struct ivopts_data *data, tree stmt, tree *op_p)
       || zero_p (step))
     goto fail;
 
-  if (TREE_CODE (base) == INDIRECT_REF)
+  if (TREE_CODE (base) == INDIRECT_REF
+      || TREE_CODE (base) == ALIGN_INDIRECT_REF
+      || TREE_CODE (base) == MISALIGNED_INDIRECT_REF)
     base = TREE_OPERAND (base, 0);
   else
     base = build_addr (base);
@@ -1699,7 +1701,9 @@ add_address_candidates (struct ivopts_data *data,
 
       if (base != TREE_OPERAND (iv->base, 0))
 	{ 
-	  if (TREE_CODE (base) == INDIRECT_REF)
+	  if (TREE_CODE (base) == INDIRECT_REF
+	      || TREE_CODE (base) == ALIGN_INDIRECT_REF
+	      || TREE_CODE (base) == MISALIGNED_INDIRECT_REF)
 	    base = TREE_OPERAND (base, 0);
 	  else
 	    base = build_addr (base);
@@ -3826,13 +3830,16 @@ unshare_and_remove_ssa_names (tree ref)
 static void
 rewrite_address_base (block_stmt_iterator *bsi, tree *op, tree with)
 {
-  tree var = get_base_address (*op), new_var, new_name, copy, name;
+  tree bvar, var, new_var, new_name, copy, name;
   tree orig;
+
+  var = bvar = get_base_address (*op);
 
   if (!var || TREE_CODE (with) != SSA_NAME)
     goto do_rewrite;
-
-  if (TREE_CODE (var) == INDIRECT_REF)
+  if (TREE_CODE (var) == INDIRECT_REF
+      || TREE_CODE (var) == ALIGN_INDIRECT_REF
+      || TREE_CODE (var) == MISALIGNED_INDIRECT_REF)
     var = TREE_OPERAND (var, 0);
   if (TREE_CODE (var) == SSA_NAME)
     {
@@ -3869,12 +3876,20 @@ rewrite_address_base (block_stmt_iterator *bsi, tree *op, tree with)
 do_rewrite:
 
   orig = NULL_TREE;
-  if (TREE_CODE (*op) == INDIRECT_REF)
+  if (TREE_CODE (*op) == INDIRECT_REF
+      || TREE_CODE (*op) == ALIGN_INDIRECT_REF
+      || TREE_CODE (*op) == MISALIGNED_INDIRECT_REF)
     orig = REF_ORIGINAL (*op);
   if (!orig)
     orig = unshare_and_remove_ssa_names (*op);
 
-  *op = build1 (INDIRECT_REF, TREE_TYPE (*op), with);
+  if (TREE_CODE (bvar) == ALIGN_INDIRECT_REF)
+    *op = build1 (ALIGN_INDIRECT_REF, TREE_TYPE (*op), with);
+  else if (TREE_CODE (bvar) == MISALIGNED_INDIRECT_REF)
+    *op = build2 (MISALIGNED_INDIRECT_REF, TREE_TYPE (*op), with, TREE_OPERAND (*op, 1));
+  else
+    *op = build1 (INDIRECT_REF, TREE_TYPE (*op), with);
+
   /* Record the original reference, for purposes of alias analysis.  */
   REF_ORIGINAL (*op) = orig;
 }

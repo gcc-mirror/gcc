@@ -1485,7 +1485,9 @@ mem_expr_equal_p (tree expr1, tree expr2)
       && mem_expr_equal_p (TREE_OPERAND (expr1, 1), /* field decl */
 			   TREE_OPERAND (expr2, 1));
   
-  if (TREE_CODE (expr1) == INDIRECT_REF)
+  if (TREE_CODE (expr1) == INDIRECT_REF
+      || TREE_CODE (expr1) == ALIGN_INDIRECT_REF
+      || TREE_CODE (expr1) == MISALIGNED_INDIRECT_REF)
     return mem_expr_equal_p (TREE_OPERAND (expr1, 0),
 			     TREE_OPERAND (expr2, 0));
 
@@ -1546,8 +1548,19 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 
   /* We can set the alignment from the type if we are making an object,
      this is an INDIRECT_REF, or if TYPE_ALIGN_OK.  */
-  if (objectp || TREE_CODE (t) == INDIRECT_REF || TYPE_ALIGN_OK (type))
+  if (objectp || TREE_CODE (t) == INDIRECT_REF 
+      || TREE_CODE (t) == ALIGN_INDIRECT_REF 
+      || TYPE_ALIGN_OK (type))
     align = MAX (align, TYPE_ALIGN (type));
+  else 
+    if (TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
+      {
+	if (integer_zerop (TREE_OPERAND (t, 1)))
+	  /* We don't know anything about the alignment.  */
+	  align = BITS_PER_UNIT;
+	else
+	  align = tree_low_cst (TREE_OPERAND (t, 1), 1);
+      }
 
   /* If the size is known, we can set that.  */
   if (TYPE_SIZE_UNIT (type) && host_integerp (TYPE_SIZE_UNIT (type), 1))
@@ -1672,7 +1685,9 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 		 the size we got from the type?  */
 	    }
 	  else if (flag_argument_noalias > 1
-		   && TREE_CODE (t2) == INDIRECT_REF
+		   && (TREE_CODE (t2) == INDIRECT_REF 
+		       || TREE_CODE (t2) == ALIGN_INDIRECT_REF
+		       || TREE_CODE (t2) == MISALIGNED_INDIRECT_REF)	
 		   && TREE_CODE (TREE_OPERAND (t2, 0)) == PARM_DECL)
 	    {
 	      expr = t2;
@@ -1683,7 +1698,9 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       /* If this is a Fortran indirect argument reference, record the
 	 parameter decl.  */
       else if (flag_argument_noalias > 1
-	       && TREE_CODE (t) == INDIRECT_REF
+	       && (TREE_CODE (t) == INDIRECT_REF
+		   || TREE_CODE (t) == ALIGN_INDIRECT_REF
+		   || TREE_CODE (t) == MISALIGNED_INDIRECT_REF)
 	       && TREE_CODE (TREE_OPERAND (t, 0)) == PARM_DECL)
 	{
 	  expr = t;
@@ -1699,6 +1716,14 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       offset = plus_constant (offset, -(apply_bitpos / BITS_PER_UNIT));
       if (size)
 	size = plus_constant (size, apply_bitpos / BITS_PER_UNIT);
+    }
+
+  if (TREE_CODE (t) == ALIGN_INDIRECT_REF)
+    {
+      /* Force EXPR and OFFSE to NULL, since we don't know exactly what
+	 we're overlapping.  */
+      offset = NULL;
+      expr = NULL;
     }
 
   /* Now set the attributes we computed above.  */

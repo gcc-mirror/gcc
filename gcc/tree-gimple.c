@@ -323,7 +323,9 @@ is_gimple_addressable (tree t)
   return (is_gimple_id (t) || handled_component_p (t)
 	  || TREE_CODE (t) == REALPART_EXPR
 	  || TREE_CODE (t) == IMAGPART_EXPR
-	  || TREE_CODE (t) == INDIRECT_REF);
+	  || TREE_CODE (t) == INDIRECT_REF
+	  || TREE_CODE (t) == ALIGN_INDIRECT_REF
+	  || TREE_CODE (t) == MISALIGNED_INDIRECT_REF);
 }
 
 /* Return true if T is function invariant.  Or rather a restricted
@@ -563,6 +565,8 @@ get_base_address (tree t)
   if (SSA_VAR_P (t)
       || TREE_CODE (t) == STRING_CST
       || TREE_CODE (t) == CONSTRUCTOR
+      || TREE_CODE (t) == MISALIGNED_INDIRECT_REF
+      || TREE_CODE (t) == ALIGN_INDIRECT_REF
       || TREE_CODE (t) == INDIRECT_REF)
     return t;
   else

@@ -1,3 +1,97 @@
+2004-09-23  Dorit Naishlos <dorit@il.ibm.com>
+
+        * tree.def (ALIGN_INDIRECT_REF, MISALIGNED_INDIRECT_REF):
+        New tree-codes.
+        * tree.h (REF_ORIGINAL): Consider ALIGN_INDIRECT_REF and
+        MISALIGNED_INDIRECT_REF.
+        * alias.c (get_alias_set, nonoverlapping_memrefs_p): Likewise.
+        * emit-rtl.c (mem_expr_equal_p, set_mem_attributes_minus_bitpos):
+        Likewise.
+        * expr.c (safe_from_p, expand_expr_real_1, rewrite_address_base)
+        (find_interesting_uses_address): Likewise.
+        * fold-const.c (non_lvalue, operand_equal_p): Likewise.
+        (build_fold_addr_expr_with_type): Likewise.
+        * gimplify.c (gimplify_addr_expr, gimplify_expr): Likewise.
+        * print-rtl.c (print_mem_expr): Likewise.
+        * tree-dump.c (dequeue_and_dump): Likewise.
+        * tree-eh.c (tree_could_trap_p): Likewise.
+        * tree-gimple.c (is_gimple_addressable, get_base_address): Likewise.
+        * tree-pretty-print.c (op_prio, op_symbol, dump_generic_node): Likewise.
+        * tree-ssa-alias.c (find_ptr_dereference, ptr_is_dereferenced_by):
+        Likewise.
+        * tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Likewise.
+        * tree-ssa-dom.c (record_equivalences_from_stmt): Likewise.
+        * tree-ssa-loop-im.c (for_each_index, is_call_clobbered_ref): Likewise.
+        * tree-ssa-loop-ivopts.c (find_interesting_uses_address): Likewise.
+        (add_address_candidates, rewrite_address_base): Likewise.
+        * tree-ssa-operands.c (get_expr_operands, get_indirect_ref_operands):
+        Likewise.
+        * tree.c (staticp, build1_stat): Likewise.
+
+        * tree.def (REALIGN_LOAD_EXPR, REALIGN_STORE_EXPR): New tree-codes.
+        * tree-pretty-print.c (dump_generic_node): Consider REALIGN_LOAD_EXPR.
+        * tree-ssa-operands.c (get_expr_operands): Likewise.
+        * expr.c (expand_expr_real_1): Likewise.
+
+        * optabs.h (vec_realign_store_optab, vec_realign_load_optab): New
+        optabs.
+        (OTI_vec_realign_store, OTI_vec_realign_load): New optab_index values
+        for the new optabs.
+        (expand_ternary_op): New function.
+        * genopinit.c (optabs): Handle the new optabs.
+        * optabs.c (optab_for_tree_code): Add cases for the new tree-codes.
+        (init_optabs): Initialize vec_realign_load_optab.
+        (expand_ternary_op): New functions.
+
+        * target-def.h (TARGET_VECTORIZE): New member for struct gcc_target.
+        (TARGET_VECTORIZE_MISALIGNED_MEM_OK): New member for targetm.vectorize.
+        (TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD): Likewise.
+        (TARGET_VECTORIZE_BUILTIN_MASK_FOR_STORE): Likewise.
+        * target.h (struct vectorize): New member for struct gcc_target.
+        (misaligned_mem_ok): New member for targetm.vectorize.
+        (builtin_mask_for_load): Likewise.
+        (builtin_mask_for_store): Likewise.
+        * targethooks.c (default_vect_misaligned_mem_ok): New function.
+        * targethooks.h (default_vect_misaligned_mem_ok): New function.
+
+        * config/rs6000/altivec.md (build_vector_mask_for_load): New
+        define_expand.
+        (vec_realign_load_v4si, vec_realign_load_v4sf, vec_realign_load_v8hi)
+        (vec_realign_load_v16qi): New define_insn.
+        * config/rs6000/rs6000.h (ALTIVEC_BUILTIN_MASK_FOR_LOAD):
+        (ALTIVEC_BUILTIN_MASK_FOR_STORE): New target builtins.
+        * config/rs6000/rs6000.c (altivec_builtin_mask_for_load):
+        (altivec_builtin_mask_for_store): New variables.
+        (rs6000_builtin_mask_for_load): New function. Implements
+        TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD.
+        (rs6000_builtin_mask_for_store): New function. Implements
+        TARGET_VECTORIZE_BUILTIN_MASK_FOR_STORE.
+        (rs6000_expand_builtin): Expand the target builtins
+        builtin_mask_for_load and builtin_mask_for_store.
+        (altivec_init_builtins): Initialize the new target builtins.
+        * config/i386/i386.c (ix86_misaligned_mem_ok): New function.
+        Implements the target hook TARGET_VECTORIZE_MISALIGNED_MEM_OK.
+
+        * tree-vectorizer.c (vect_create_data_ref): Renamed to
+        vect_create_data_ref_ptr. Returns a pointer instead of an array-ref.
+        (vect_create_addr_base_for_vector_ref): Additional argument (offset).
+        (vectorizable_store): Call vect_create_data_ref_ptr with additional
+        arguments, and create an indirect_ref with its return value data_ref.
+        Check aligned_access_p.
+        (vectorizable_load): Handle misaligned loads, using software-pipelined
+        scheme with REALIGN_LOAD_EXPR and ALIGN_INDIRECT_REF if
+        vec_realign_load_optab is supported, or using a scheme without
+        software-pipelining with MISALIGNED_INDIRECT_REF if the target hook
+        misaligned_mem_ok is supported.
+
+        (vect_finish_stmt_generation): Typo.
+        (vect_enhance_data_refs_alignment): Rename loop_vinfo to loop_info.
+        (vect_analyze_data_refs_alignment): Don't fail vectorization in the
+        presence of misaligned loads.
+        (vect_analyze_data_ref_access): Add check for constant init.
+        (vect_get_symbl_and_dr): Remove duplicate line.
+        * tree-vectorizer.h (DR_MISALIGNMENT): Add comment.
+
 2004-09-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c: Fix a comment typo.

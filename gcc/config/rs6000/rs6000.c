@@ -143,6 +143,11 @@ enum rs6000_dependence_cost rs6000_sched_costly_dep;
 const char *rs6000_sched_insert_nops_str;
 enum rs6000_nop_insertion rs6000_sched_insert_nops;
 
+/* Support targetm.vectorize.builtin_mask_for_load.  */
+tree altivec_builtin_mask_for_load;
+/* Support targetm.vectorize.builtin_mask_for_store.  */
+tree altivec_builtin_mask_for_store;
+
 /* Size of long double */
 const char *rs6000_long_double_size_string;
 int rs6000_long_double_type_size;
@@ -681,6 +686,8 @@ static int redefine_groups (FILE *, int, rtx, rtx);
 static int pad_groups (FILE *, int, rtx, rtx);
 static void rs6000_sched_finish (FILE *, int);
 static int rs6000_use_sched_lookahead (void);
+static tree rs6000_builtin_mask_for_load (void);
+static tree rs6000_builtin_mask_for_store (void);
 
 static void rs6000_init_builtins (void);
 static rtx rs6000_expand_unop_builtin (enum insn_code, tree, rtx);
@@ -904,6 +911,12 @@ static const char alt_reg_names[][8] =
 
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD rs6000_use_sched_lookahead
+
+#undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
+#define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD rs6000_builtin_mask_for_load
+
+#undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_STORE
+#define TARGET_VECTORIZE_BUILTIN_MASK_FOR_STORE rs6000_builtin_mask_for_store
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS rs6000_init_builtins
@@ -1534,6 +1547,26 @@ rs6000_override_options (const char *default_cpu)
       default:
 	abort ();
       }
+}
+
+/* Implement targetm.vectorize.builtin_mask_for_load.  */
+static tree
+rs6000_builtin_mask_for_load (void)
+{
+  if (TARGET_ALTIVEC)
+    return altivec_builtin_mask_for_load;
+  else
+    return 0;
+}
+
+/* Implement targetm.vectorize.builtin_mask_for_store.  */
+static tree
+rs6000_builtin_mask_for_store (void)
+{
+  if (TARGET_ALTIVEC)
+    return altivec_builtin_mask_for_store;
+  else
+    return 0;
 }
 
 /* Handle generic options of the form -mfoo=yes/no.
@@ -7202,6 +7235,48 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   rtx ret;
   bool success;
 
+  if (fcode == ALTIVEC_BUILTIN_MASK_FOR_LOAD
+      || fcode == ALTIVEC_BUILTIN_MASK_FOR_STORE)
+    {
+      int icode = (int) CODE_FOR_altivec_lvsr;
+      enum machine_mode tmode = insn_data[icode].operand[0].mode;
+      enum machine_mode mode = insn_data[icode].operand[1].mode;
+      tree arg;
+      rtx op, addr, pat;
+
+      if (!TARGET_ALTIVEC)
+	abort ();
+
+      arg = TREE_VALUE (arglist);
+      if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE)
+	abort ();
+      op = expand_expr (arg, NULL_RTX, Pmode, EXPAND_NORMAL);
+      addr = memory_address (mode, op);
+      if (fcode == ALTIVEC_BUILTIN_MASK_FOR_STORE)
+	op = addr;
+      else
+	{
+	  /* For the load case need to negate the address.  */
+	  op = gen_reg_rtx (GET_MODE (addr));
+	  emit_insn (gen_rtx_SET (VOIDmode, op,
+			 gen_rtx_NEG (GET_MODE (addr), addr)));
+        }
+      op = gen_rtx_MEM (mode, op);
+
+      if (target == 0
+	  || GET_MODE (target) != tmode
+	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
+	target = gen_reg_rtx (tmode);
+
+      /*pat = gen_altivec_lvsr (target, op);*/
+      pat = GEN_FCN (icode) (target, op);
+      if (!pat)
+	return 0;
+      emit_insn (pat);
+
+      return target;
+    }
+
   if (TARGET_ALTIVEC)
     {
       ret = altivec_expand_builtin (exp, target, &success);
@@ -7691,6 +7766,9 @@ altivec_init_builtins (void)
     = build_function_type_list (integer_type_node,
 				pcchar_type_node, NULL_TREE);
 
+  tree id;
+  tree decl;
+
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_ld_internal_4sf", v4sf_ftype_pcfloat,
 	       ALTIVEC_BUILTIN_LD_INTERNAL_4sf);
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_st_internal_4sf", void_ftype_pfloat_v4sf,
@@ -7792,6 +7870,24 @@ altivec_init_builtins (void)
 
       def_builtin (d->mask, d->name, type, d->code);
     }
+
+  /* Initialize target builtin that implements 
+     targetm.vectorize.builtin_mask_for_load.  */
+  id = get_identifier ("__builtin_altivec_mask_for_load");
+  decl = build_decl (FUNCTION_DECL, id, v16qi_ftype_long_pcvoid);
+  DECL_BUILT_IN_CLASS (decl) = BUILT_IN_MD;
+  DECL_FUNCTION_CODE (decl) = ALTIVEC_BUILTIN_MASK_FOR_LOAD;
+  /* Record the decl. Will be used by rs6000_builtin_mask_for_load.  */
+  altivec_builtin_mask_for_load = decl;
+
+  /* Initialize target builtin that implements 
+     targetm.vectorize.builtin_mask_for_store.  */
+  id = get_identifier ("__builtin_altivec_mask_for_store");
+  decl = build_decl (FUNCTION_DECL, id, v16qi_ftype_long_pcvoid);
+  DECL_BUILT_IN_CLASS (decl) = BUILT_IN_MD;
+  DECL_FUNCTION_CODE (decl) = ALTIVEC_BUILTIN_MASK_FOR_STORE;
+  /* Record the decl. Will be used by rs6000_builtin_mask_for_store.  */
+  altivec_builtin_mask_for_store = decl;
 }
 
 static void

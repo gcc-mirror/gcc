@@ -5829,6 +5829,8 @@ safe_from_p (rtx x, tree exp, int top_p)
 	    }
 	  break;
 
+	case MISALIGNED_INDIRECT_REF:
+	case ALIGN_INDIRECT_REF:
 	case INDIRECT_REF:
 	  if (MEM_P (x)
 	      && alias_sets_conflict_p (MEM_ALIAS_SET (x),
@@ -6745,10 +6747,16 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  return target;
 	}
 
+    case MISALIGNED_INDIRECT_REF:
+    case ALIGN_INDIRECT_REF:
     case INDIRECT_REF:
       {
 	tree exp1 = TREE_OPERAND (exp, 0);
 	tree orig;
+
+	if (code == MISALIGNED_INDIRECT_REF
+	    && !targetm.vectorize.misaligned_mem_ok (mode))
+	  abort ();
 
 	if (modifier != EXPAND_WRITE)
 	  {
@@ -6761,6 +6769,14 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
 	op0 = memory_address (mode, op0);
+
+	if (code == ALIGN_INDIRECT_REF)
+	  {
+	    int align = TYPE_ALIGN_UNIT (type);
+	    op0 = gen_rtx_AND (Pmode, op0, GEN_INT (-align));
+	    op0 = memory_address (mode, op0);
+	  }
+
 	temp = gen_rtx_MEM (mode, op0);
 
 	orig = REF_ORIGINAL (exp);
@@ -8202,6 +8218,24 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	 have pulled out the size to use in whatever context it needed.  */
       return expand_expr_real (TREE_OPERAND (exp, 0), original_target, tmode,
 			       modifier, alt_rtl);
+
+    case REALIGN_LOAD_EXPR:
+      {
+        tree oprnd0 = TREE_OPERAND (exp, 0); 
+        tree oprnd1 = TREE_OPERAND (exp, 1);
+        tree oprnd2 = TREE_OPERAND (exp, 2);
+        rtx op2;
+
+        this_optab = optab_for_tree_code (code, type);
+        expand_operands (oprnd0, oprnd1, NULL_RTX, &op0, &op1, 0);
+        op2 = expand_expr (oprnd2, NULL_RTX, VOIDmode, 0);
+        temp = expand_ternary_op (mode, this_optab, op0, op1, op2, 
+				  target, unsignedp);
+        if (temp == 0)
+          abort ();
+        return temp;
+      }
+
 
     default:
       return lang_hooks.expand_expr (exp, original_target, tmode,

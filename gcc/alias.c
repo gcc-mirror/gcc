@@ -450,7 +450,9 @@ get_alias_set (tree t)
 	}
 
       /* Check for accesses through restrict-qualified pointers.  */
-      if (TREE_CODE (inner) == INDIRECT_REF)
+      if (TREE_CODE (inner) == INDIRECT_REF
+	  || TREE_CODE (inner) == ALIGN_INDIRECT_REF
+	  || TREE_CODE (inner) == MISALIGNED_INDIRECT_REF)
 	{
 	  tree decl = find_base_decl (TREE_OPERAND (inner, 0));
 
@@ -2006,7 +2008,9 @@ nonoverlapping_memrefs_p (rtx x, rtx y)
       moffsetx = adjust_offset_for_component_ref (exprx, moffsetx);
       exprx = t;
     }
-  else if (TREE_CODE (exprx) == INDIRECT_REF)
+  else if (TREE_CODE (exprx) == INDIRECT_REF
+	   || TREE_CODE (exprx) == ALIGN_INDIRECT_REF
+	   || TREE_CODE (exprx) == MISALIGNED_INDIRECT_REF)
     {
       exprx = TREE_OPERAND (exprx, 0);
       if (flag_argument_noalias < 2
@@ -2023,7 +2027,9 @@ nonoverlapping_memrefs_p (rtx x, rtx y)
       moffsety = adjust_offset_for_component_ref (expry, moffsety);
       expry = t;
     }
-  else if (TREE_CODE (expry) == INDIRECT_REF)
+  else if (TREE_CODE (expry) == INDIRECT_REF
+           || TREE_CODE (expry) == ALIGN_INDIRECT_REF
+           || TREE_CODE (expry) == MISALIGNED_INDIRECT_REF)
     {
       expry = TREE_OPERAND (expry, 0);
       if (flag_argument_noalias < 2
