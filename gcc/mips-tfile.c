@@ -5477,7 +5477,7 @@ free_thead (ptr)
 
 }
 
-#endif /* MIPS_DEBUGGING_INFO *?
+#endif /* MIPS_DEBUGGING_INFO */
 
 
 /* Output an error message and exit */
