@@ -5265,12 +5265,12 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	tree arg1_tree;
 	tree arg2_tree;
 
-	arg1_tree = ffecom_arg_ptr_to_expr (arg1, &arg1_len);
+	arg1_tree = ffecom_arg_ptr_to_expr (arg2, &arg1_len);
 
 	arg2_tree = convert (((gfrt == FFEINTRIN_impCTIME_subr) ?
 			      ffecom_f2c_longint_type_node :
 			      ffecom_f2c_integer_type_node),
-			     ffecom_expr (arg2));
+			     ffecom_expr (arg1));
 	arg2_tree = ffecom_1 (ADDR_EXPR,
 			      build_pointer_type (TREE_TYPE (arg2_tree)),
 			      arg2_tree);
@@ -5289,6 +5289,7 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 			  arg1_tree,
 			  NULL_TREE, NULL, NULL, NULL_TREE, TRUE,
 			  ffebld_nonter_hook (expr));
+	TREE_SIDE_EFFECTS (expr_tree) = 1;
       }
       return expr_tree;
 
@@ -5382,22 +5383,22 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
     case FFEINTRIN_impETIME_subr:
       {
 	tree arg1_tree;
-	tree arg2_tree;
+	tree result_tree;
 
-	arg1_tree = ffecom_expr_w (NULL_TREE, arg1);
+	result_tree = ffecom_expr_w (NULL_TREE, arg2);
 
-	arg2_tree = ffecom_ptr_to_expr (arg2);
+	arg1_tree = ffecom_ptr_to_expr (arg1);
 
 	expr_tree = ffecom_call_ (ffecom_gfrt_tree_ (gfrt),
 				  ffecom_gfrt_kindtype (gfrt),
 				  FALSE,
 				  NULL_TREE,
-				  build_tree_list (NULL_TREE, arg2_tree),
+				  build_tree_list (NULL_TREE, arg1_tree),
 				  NULL_TREE, NULL, NULL, NULL_TREE,
 				  TRUE,
 				  ffebld_nonter_hook (expr));
-	expr_tree = ffecom_modify (NULL_TREE, arg1_tree,
-				   convert (TREE_TYPE (arg1_tree),
+	expr_tree = ffecom_modify (NULL_TREE, result_tree,
+				   convert (TREE_TYPE (result_tree),
 					    expr_tree));
       }
       return expr_tree;

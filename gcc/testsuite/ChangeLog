@@ -1,3 +1,8 @@
+1999-05-03  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.f-torture/execute/u77-test.f: Reverse order of two
+	arguments to CTIME_subr, DTIME_subr, ETIME_subr, and TTYNAM_subr.
+
 1999-05-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/compare1.c: New test.

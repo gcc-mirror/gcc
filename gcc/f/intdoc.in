@@ -1043,9 +1043,9 @@ and returns that string as the function value.
 ")
 
 DEFDOC (CTIME_subr, "Convert time to Day Mon dd hh:mm:ss yyyy.", "\
-Converts @var{@2@}, a system time value, such as returned by
+Converts @var{@1@}, a system time value, such as returned by
 @code{TIME8()}, to a string of the form @samp{Sat Aug 19 18:13:14 1995},
-and returns that string in @var{@1@}.
+and returns that string in @var{@2@}.
 
 @xref{Time8 Intrinsic}.
 
@@ -1096,10 +1096,10 @@ form is not recommended.
 DEFDOC (DTIME_subr, "Get elapsed time since last time.", "\
 Initially, return the number of seconds of runtime
 since the start of the process's execution
-in @var{@1@},
-and the user and system components of this in @samp{@var{@2@}(1)}
-and @samp{@var{@2@}(2)} respectively.
-The value of @var{@1@} is equal to @samp{@var{@2@}(1) + @var{@2@}(2)}.
+in @var{@2@},
+and the user and system components of this in @samp{@var{@1@}(1)}
+and @samp{@var{@1@}(2)} respectively.
+The value of @var{@2@} is equal to @samp{@var{@1@}(1) + @var{@1@}(2)}.
 
 Subsequent invocations of @samp{@0@()} set values based on accumulations
 since the previous invocation.
@@ -1140,10 +1140,10 @@ during a single run of the compiled program.
 DEFDOC (ETIME_subr, "Get elapsed time for process.", "\
 Return the number of seconds of runtime
 since the start of the process's execution
-in @var{@1@},
-and the user and system components of this in @samp{@var{@2@}(1)}
-and @samp{@var{@2@}(2)} respectively.
-The value of @var{@1@} is equal to @samp{@var{@2@}(1) + @var{@2@}(2)}.
+in @var{@2@},
+and the user and system components of this in @samp{@var{@1@}(1)}
+and @samp{@var{@1@}(2)} respectively.
+The value of @var{@2@} is equal to @samp{@var{@1@}(1) + @var{@1@}(2)}.
 
 @cindex wraparound, timings
 @cindex limits, timings
@@ -2381,8 +2381,8 @@ terminal.
 ")
 
 DEFDOC (TTYNAM_subr, "Get name of terminal device for unit.", "\
-Sets @var{@1@} to the name of the terminal device open on logical unit
-@var{@2@} or a blank string if @var{@2@} is not connected to a
+Sets @var{@2@} to the name of the terminal device open on logical unit
+@var{@1@} or to a blank string if @var{@1@} is not connected to a
 terminal.
 
 Some non-GNU implementations of Fortran provide this intrinsic as

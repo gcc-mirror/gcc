@@ -1,3 +1,15 @@
+Mon May  3 18:11:48 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Reverse order of two arguments to CTIME_subr, DTIME_subr,
+	ETIME_subr, and TTYNAM_subr:
+	* com.c (ffecom_expr_intrinsic_): Reverse the arguments.
+	While at it, set TREE_SIDE_EFFECTS for CTIME_subr and
+	TTYNAM_subr.
+	* intdoc.in: Document the new calling sequences.
+	* intrin.def: Reverse the arguments.
+	* news.texi: Document the fact that they changed.
+	* version.c: Bump version.
+
 Mon May  3 11:28:14 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* news.texi: Doc upgrade to netlib libf2c as of today.
