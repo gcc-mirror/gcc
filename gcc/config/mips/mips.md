@@ -3292,8 +3292,8 @@ dsrl\t%3,%3,1\n\
 
 (define_insn "*zero_extendsidi2_mem"
   [(set (match_operand:DI 0 "register_operand" "=d")
-        (zero_extend:DI (match_operand:SI 1 "memory_operand" "m")))]
-  "TARGET_64BIT && !TARGET_MIPS16"
+        (zero_extend:DI (match_operand:SI 1 "memory_operand" "W")))]
+  "TARGET_64BIT"
   "lwu\t%0,%1"
   [(set_attr "type"     "load")
    (set_attr "mode"     "DI")])

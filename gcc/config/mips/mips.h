@@ -2035,7 +2035,11 @@ extern enum reg_class mips_char_to_class[256];
 	 constraint has often been used in linux and glibc code.
    `S' is for legitimate constant call addresses.
    `T' is for constant move_operands that cannot be safely loaded into $25.
-   `U' is for constant move_operands that can be safely loaded into $25.  */
+   `U' is for constant move_operands that can be safely loaded into $25.
+   `W' is for memory references that are based on a member of BASE_REG_CLASS.
+	 This is true for all non-mips16 references (although it can somtimes
+	 be indirect if !TARGET_EXPLICIT_RELOCS).  For mips16, it excludes
+	 stack and constant-pool references.  */
 
 #define EXTRA_CONSTRAINT(OP,CODE)					\
   (((CODE) == 'Q')	  ? const_arith_operand (OP, VOIDmode)		\
@@ -2049,7 +2053,15 @@ extern enum reg_class mips_char_to_class[256];
    : ((CODE) == 'U')	  ? (CONSTANT_P (OP)				\
 			     && move_operand (OP, VOIDmode)		\
 			     && !DANGEROUS_FOR_LA25_P (OP))		\
+   : ((CODE) == 'W')	  ? (GET_CODE (OP) == MEM			\
+			     && memory_operand (OP, VOIDmode)		\
+			     && (!TARGET_MIPS16				\
+				 || (!stack_operand (OP, VOIDmode)	\
+				     && !CONSTANT_P (XEXP (OP, 0)))))	\
    : FALSE)
+
+/* Say which of the above are memory constraints.  */
+#define EXTRA_MEMORY_CONSTRAINT(C, STR) ((C) == 'R' || (C) == 'W')
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -2150,15 +2162,10 @@ extern enum reg_class mips_char_to_class[256];
    In mips16 mode, we need a frame pointer for a large frame; otherwise,
    reload may be unable to compute the address of a local variable,
    since there is no way to add a large constant to the stack pointer
-   without using a temporary register.
-
-   Also, for some mips16 instructions (eg lwu), we can't eliminate the
-   frame pointer for the stack pointer.  These instructions are
-   only generated in TARGET_64BIT mode.  */
+   without using a temporary register.  */
 #define CAN_ELIMINATE(FROM, TO)						\
   ((TO) == HARD_FRAME_POINTER_REGNUM 				        \
    || ((TO) == STACK_POINTER_REGNUM && !frame_pointer_needed		\
-       && !(TARGET_MIPS16 && TARGET_64BIT)				\
        && (!TARGET_MIPS16						\
 	   || compute_frame_size (get_frame_size ()) < 32768)))
 
