@@ -7797,8 +7797,7 @@ remove_reachable_equiv_notes (basic_block bb, struct ls_expr *smexpr)
       bb = act->dest;
       
       if (bb == EXIT_BLOCK_PTR
-	  || TEST_BIT (visited, bb->index)
-	  || TEST_BIT (ae_kill[bb->index], smexpr->index))
+	  || TEST_BIT (visited, bb->index))
 	{
 	  act = act->succ_next;
 	  continue;

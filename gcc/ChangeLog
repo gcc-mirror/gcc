@@ -1,3 +1,8 @@
+2004-04-30  Josef Zlomek  <zlomekj@suse.cz>
+
+	* gcse.c (remove_reachable_equiv_notes): Delete notes also in
+	blocks which have kill flag set.
+
 2004-04-29  Ben Elliston  <bje@au.ibm.com>
 
 	* configure.ac (--with-as): Abort if user-supplied assembler
