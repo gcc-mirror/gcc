@@ -1623,7 +1623,7 @@ find_sym_in_symtree (gfc_symbol * sym)
 
 /* This subroutine is called when an expression is being resolved.
    The expression node in question is either a user defined operator
-   or an instrinsic operator with arguments that aren't compatible
+   or an intrinsic operator with arguments that aren't compatible
    with the operator.  This subroutine builds an actual argument list
    corresponding to the operands, then searches for a compatible
    interface.  If one is found, the expression node is replaced with

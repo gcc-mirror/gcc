@@ -403,7 +403,7 @@ pushlevel (int ignore ATTRIBUTE_UNUSED)
 tree
 poplevel (int keep, int reverse, int functionbody)
 {
-  /* Points to a BLOCK tree node. This is the BLOCK node construted for the
+  /* Points to a BLOCK tree node. This is the BLOCK node constructed for the
      binding level that we are about to exit and which is returned by this
      routine.  */
   tree block_node = NULL_TREE;
@@ -413,7 +413,7 @@ poplevel (int keep, int reverse, int functionbody)
 
   /* Reverse the list of XXXX_DECL nodes if desired.  Note that the ..._DECL
      nodes chained through the `names' field of current_binding_level are in
-     reverse order except for PARM_DECL node, which are explicitely stored in
+     reverse order except for PARM_DECL node, which are explicitly stored in
      the right order.  */
   decl_chain = (reverse) ? nreverse (current_binding_level->names)
     : current_binding_level->names;
@@ -665,7 +665,7 @@ gfc_mark_addressable (tree exp)
 
 int ggc_p = 1;
 
-/* Builtin function initialisation.  */
+/* Builtin function initialization.  */
 
 /* Return a definition for a builtin function named NAME and whose data type
    is TYPE.  TYPE should be a function type with argument types.
@@ -752,7 +752,7 @@ build_builtin_fntypes (tree * fntype, tree type)
 }
 
 
-/* Initialisation of builtin function nodes.  */
+/* Initialization of builtin function nodes.  */
 
 static void
 gfc_init_builtin_functions (void)

@@ -739,7 +739,7 @@ gfc_get_element_type (tree type)
    the calculation for stride02 would overflow.  This may still work, but
    I haven't checked, and it relies on the overflow doing the right thing.
 
-   The way to fix this problem is to access alements as follows:
+   The way to fix this problem is to access elements as follows:
    data[(index0-lbound0)*stride0 + (index1-lbound1)*stride1]
    Obviously this is much slower.  I will make this a compile time option,
    something like -fsmall-array-offsets.  Mixing code compiled with and without
@@ -1392,13 +1392,13 @@ gfc_get_derived_type (gfc_symbol * derived)
 	  field_type = gfc_typenode_for_spec (&c->ts);
 	}
 
-      /* This returns an array descriptor type.  Initialisation may be
+      /* This returns an array descriptor type.  Initialization may be
          required.  */
       if (c->dimension)
 	{
 	  if (c->pointer)
 	    {
-	      /* Pointers to arrays aren't actualy pointer types.  The
+	      /* Pointers to arrays aren't actually pointer types.  The
 	         descriptors are seperate, but the data is common.  */
 	      field_type = gfc_build_array_type (field_type, c->as);
 	    }

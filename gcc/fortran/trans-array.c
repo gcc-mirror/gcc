@@ -60,7 +60,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    The scalar gfc_conv_* functions are then used to build the main body of the
    scalarization loop.  Scalarization loop variables and precalculated scalar
-   values are automaticaly substituted.  Note that gfc_advance_se_ss_chain
+   values are automatically substituted.  Note that gfc_advance_se_ss_chain
    must be used, rather than changing the se->ss directly.
 
    For assignment expressions requiring a temporary two sub loops are
@@ -1289,7 +1289,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
 }
 
 
-/* Initialise a gfc_loopinfo structure.  */
+/* Initialize a gfc_loopinfo structure.  */
 
 void
 gfc_init_loopinfo (gfc_loopinfo * loop)
@@ -1670,7 +1670,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar)
   /* Calculate the offsets from all the dimensions.  */
   for (n = 0; n < ar->dimen; n++)
     {
-      /* Calculate the index for this demension.  */
+      /* Calculate the index for this dimension.  */
       gfc_init_se (&indexse, NULL);
       gfc_conv_expr_type (&indexse, ar->start[n], gfc_array_index_type);
       gfc_add_block_to_block (&se->pre, &indexse.pre);
@@ -2392,7 +2392,7 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 }
 
 
-/* Initialise the scalarization loop.  Creates the loop variables.  Determines
+/* Initialize the scalarization loop.  Creates the loop variables.  Determines
    the range of the loop variables.  Creates a temporary if required.
    Calculates how to transform from loop variables to array indices for each
    expression.  Also generates code for scalar expressions which have been
@@ -2619,7 +2619,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 
 /* Fills in an array descriptor, and returns the size of the array.  The size
    will be a simple_val, ie a variable or a constant.  Also calculates the
-   offset of the base.  Returns the size of the arrary.
+   offset of the base.  Returns the size of the array.
    {
     stride = 1;
     offset = 0;
@@ -2735,7 +2735,7 @@ gfc_array_init_size (tree descriptor, int rank, tree * poffset,
 }
 
 
-/* Initialises the descriptor and generates a call to _gfor_allocate.  Does
+/* Initializes the descriptor and generates a call to _gfor_allocate.  Does
    the work for an ALLOCATE statement.  */
 /*GCC ARRAYS*/
 
@@ -3154,7 +3154,7 @@ gfc_trans_g77_array (gfc_symbol * sym, tree body)
   if (TREE_CODE (GFC_TYPE_ARRAY_OFFSET (type)) == VAR_DECL)
     gfc_add_modify_expr (&block, GFC_TYPE_ARRAY_OFFSET (type), offset);
 
-  /* Set the pointer itself if we aren't using the parameter dirtectly.  */
+  /* Set the pointer itself if we aren't using the parameter directly.  */
   if (TREE_CODE (parm) != PARM_DECL)
     {
       tmp = convert (TREE_TYPE (parm), GFC_DECL_SAVED_DESCRIPTOR (parm));
@@ -3272,7 +3272,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
   else
     {
       gcc_assert (integer_onep (GFC_TYPE_ARRAY_STRIDE (type, 0)));
-      /* A library call to repack the array if neccessary.  */
+      /* A library call to repack the array if necessary.  */
       tmp = GFC_DECL_SAVED_DESCRIPTOR (tmpdesc);
       tmp = gfc_chainon_list (NULL_TREE, tmp);
       stmt_unpacked = gfc_build_function_call (gfor_fndecl_in_pack, tmp);
@@ -4268,7 +4268,7 @@ gfc_walk_elemental_function_args (gfc_ss * ss, gfc_expr * expr,
       newss = gfc_walk_subexpr (head, arg->expr);
       if (newss == head)
 	{
-	  /* Scalar argumet.  */
+	  /* Scalar argument.  */
 	  newss = gfc_get_ss ();
 	  newss->type = type;
 	  newss->expr = arg->expr;
@@ -4365,7 +4365,7 @@ gfc_walk_array_constructor (gfc_ss * ss, gfc_expr * expr)
 }
 
 
-/* Walk an expresson.  Add walked expressions to the head of the SS chain.
+/* Walk an expression.  Add walked expressions to the head of the SS chain.
    A wholy scalar expression will not be added.  */
 
 static gfc_ss *
@@ -4412,7 +4412,7 @@ gfc_walk_subexpr (gfc_ss * ss, gfc_expr * expr)
 /* Entry point for expression walking.
    A return value equal to the passed chain means this is
    a scalar expression.  It is up to the caller to take whatever action is
-   neccessary to translate these.  */
+   necessary to translate these.  */
 
 gfc_ss *
 gfc_walk_expr (gfc_expr * expr)

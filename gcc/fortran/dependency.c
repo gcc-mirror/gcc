@@ -306,7 +306,7 @@ gfc_check_dependency (gfc_expr * expr1, gfc_expr * expr2, gfc_expr ** vars,
       return 1;
 
     case EXPR_FUNCTION:
-      /* Remember possible differences betweeen elemental and
+      /* Remember possible differences between elemental and
          transformational functions.  All functions inside a FORALL
          will be pure.  */
       for (actual = expr2->value.function.actual;

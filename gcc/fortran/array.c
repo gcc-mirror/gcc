@@ -941,7 +941,7 @@ check_element_type (gfc_expr * expr)
 {
 
   if (cons_state == CONS_BAD)
-    return 0;			/* Supress further errors */
+    return 0;			/* Suppress further errors */
 
   if (cons_state == CONS_START)
     {
@@ -1607,7 +1607,7 @@ gfc_get_array_element (gfc_expr * array, int element)
 
 /********* Subroutines for determining the size of an array *********/
 
-/* These are needed just to accomodate RESHAPE().  There are no
+/* These are needed just to accommodate RESHAPE().  There are no
    diagnostics here, we just return a negative number if something
    goes wrong. */
 

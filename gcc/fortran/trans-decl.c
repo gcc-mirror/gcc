@@ -1079,7 +1079,7 @@ build_function_decl (gfc_symbol * sym)
     {
       /* TODO: check if a pure SUBROUTINE has no INTENT(OUT) arguments
 	 including a alternate return. In that case it can also be
-	 marked as PURE. See also in gfc_get_extern_fucntion_decl().  */
+	 marked as PURE. See also in gfc_get_extern_function_decl().  */
       if (attr.function)
 	DECL_IS_PURE (fndecl) = 1;
       TREE_SIDE_EFFECTS (fndecl) = 0;
@@ -1844,7 +1844,7 @@ gfc_build_builtin_function_decls (void)
 }
 
 
-/* Exaluate the length of dummy character variables.  */
+/* Evaluate the length of dummy character variables.  */
 
 static tree
 gfc_trans_dummy_character (gfc_charlen * cl, tree fnbody)

@@ -741,7 +741,7 @@ gfc_status_char (char c)
 }
 
 
-/* Report the number of warnings and errors that occured to the caller.  */
+/* Report the number of warnings and errors that occurred to the caller.  */
 
 void
 gfc_get_errors (int *w, int *e)

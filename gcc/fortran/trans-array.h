@@ -22,7 +22,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Generate code to free an array.  */
 tree gfc_array_deallocate (tree);
 
-/* Generate code to initialise an allocate an array.  Statements are added to
+/* Generate code to initialize an allocate an array.  Statements are added to
    se, which should contain an expression for the array descriptor.  */
 void gfc_array_allocate (gfc_se *, gfc_ref *, tree);
 
@@ -36,7 +36,7 @@ tree gfc_trans_auto_array_allocation (tree, gfc_symbol *, tree);
 tree gfc_trans_dummy_array_bias (gfc_symbol *, tree, tree);
 /* Generate entry and exit code for g77 calling convention arrays.  */
 tree gfc_trans_g77_array (gfc_symbol *, tree);
-/* Add initialisation for deferred arrays.  */
+/* Add initialization for deferred arrays.  */
 tree gfc_trans_deferred_array (gfc_symbol *, tree);
 /* Generate an initializer for a static pointer or allocatable array.  */
 void gfc_trans_static_array_pointer (gfc_symbol *);
@@ -49,7 +49,7 @@ gfc_ss *gfc_walk_elemental_function_args (gfc_ss *, gfc_expr *, gfc_ss_type);
 gfc_ss *gfc_walk_intrinsic_function (gfc_ss *, gfc_expr *,
 				     gfc_intrinsic_sym *);
 
-/* Free the SS assocuated with a loop.  */
+/* Free the SS associated with a loop.  */
 void gfc_cleanup_loop (gfc_loopinfo *);
 /* Associate a SS chain with a loop.  */
 void gfc_add_ss_to_loop (gfc_loopinfo *, gfc_ss *);
@@ -68,7 +68,7 @@ void gfc_start_scalarized_body (gfc_loopinfo *, stmtblock_t *);
 void gfc_trans_scalarizing_loops (gfc_loopinfo *, stmtblock_t *);
 /* Mark the end of the main loop body and the start of the copying loop.  */
 void gfc_trans_scalarized_loop_boundary (gfc_loopinfo *, stmtblock_t *);
-/* Initialise the scalarization loop parameters.  */
+/* Initialize the scalarization loop parameters.  */
 void gfc_conv_loop_setup (gfc_loopinfo *);
 /* Resolve array assignment dependencies.  */
 void gfc_conv_resolve_dependencies (gfc_loopinfo *, gfc_ss *, gfc_ss *);

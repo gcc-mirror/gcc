@@ -35,7 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "intrinsic.h"
 
 
-/* Nanespace to hold the resolved symbols for intrinsic subroutines.  */
+/* Namespace to hold the resolved symbols for intrinsic subroutines.  */
 static gfc_namespace *gfc_intrinsic_namespace;
 
 int gfc_init_expr = 0;

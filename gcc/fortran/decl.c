@@ -2444,7 +2444,7 @@ gfc_match_subroutine (void)
 }
 
 
-/* Return nonzero if we're currenly compiling a contained procedure.  */
+/* Return nonzero if we're currently compiling a contained procedure.  */
 
 static int
 contained_procedure (void)

@@ -78,7 +78,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define MODULE_EXTENSION ".mod"
 
 
-/* Structure that descibes a position within a module file */
+/* Structure that describes a position within a module file */
 
 typedef struct
 {
@@ -1706,7 +1706,7 @@ done:
    gfc_ref structure), find the corresponding array specification
    structure.  Storing the pointer in the ref structure doesn't quite
    work when loading from a module. Generating code for an array
-   reference also needs more infomation than just the array spec.  */
+   reference also needs more information than just the array spec.  */
 
 static const mstring array_ref_types[] = {
     minit ("FULL", AR_FULL),

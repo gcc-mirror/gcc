@@ -542,7 +542,7 @@ gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
 
 
 /* Rearrange a structure constructor so the elements are in the specified
-   order.  Also insert NULL entries if neccessary.  */
+   order.  Also insert NULL entries if necessary.  */
 
 static void
 formalize_structure_cons (gfc_expr * expr)

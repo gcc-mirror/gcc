@@ -1773,7 +1773,7 @@ gfc_resolve_dt (gfc_dt * dt)
   if (gfc_reference_st_label (dt->eor, ST_LABEL_TARGET) == FAILURE)
     return FAILURE;
 
-  /* Check the format label ectually exists.  */
+  /* Check the format label actually exists.  */
   if (dt->format_label && dt->format_label != &format_asterisk
       && dt->format_label->defined == ST_LABEL_UNKNOWN)
     {
