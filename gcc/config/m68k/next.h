@@ -204,3 +204,5 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CLEAR_INSN_CACHE(BEG, END)   \
    asm volatile ("trap #2")
 
+/* GCC is the primary compiler for NeXTSTEP, so we don't need this.  */
+#undef PCC_STATIC_STRUCT_RETURN
