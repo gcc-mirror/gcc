@@ -2035,9 +2035,9 @@ check_sibcall_argument_overlap (insn, arg)
       break;
 
 #ifdef ARGS_GROW_DOWNWARD
-  low = -arg->offset.constant - arg->size.constant;
+  low = -arg->slot_offset.constant - arg->size.constant;
 #else
-  low = arg->offset.constant;
+  low = arg->slot_offset.constant;
 #endif
 
   for (high = low + arg->size.constant; low < high; low++)

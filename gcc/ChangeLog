@@ -1,3 +1,8 @@
+2001-10-09  Andrew Haley  <aph@redhat.com>
+
+	* calls.c (check_sibcall_argument_overlap): Use slot_offset for
+	start of stack slot.
+
 2001-11-22  Graham Stott  <grahams@redhat.com>
 
 	* cfgrtl.c (try_redirect_by_replacing_jump): Fix typo, emit
