@@ -3564,6 +3564,17 @@ subst (x, from, to, in_dest, unique_copy)
 				      - INTVAL (XEXP (XEXP (x, 1), 1)) - 1);
 	  goto restart;
 	}
+
+      /* Canonicalize (minus A (plus B C)) to (minus (minus A B) C) for
+	 integers.  */
+      if (GET_CODE (XEXP (x, 1)) == PLUS && INTEGRAL_MODE_P (mode))
+	{
+	  x = gen_binary (MINUS, mode,
+			  gen_binary (MINUS, mode, XEXP (x, 0),
+				      XEXP (XEXP (x, 1), 0)),
+			  XEXP (XEXP (x, 1), 1));
+	  goto restart;
+	}
       break;
 
     case MULT:
