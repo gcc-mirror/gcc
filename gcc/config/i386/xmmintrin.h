@@ -1058,7 +1058,7 @@ do {									\
   (row3) = __builtin_ia32_shufps (__t2, __t3, 0xDD);			\
 } while (0)
 
-#ifdef __SSE2_BUILTINS__
+#ifdef __SSE2__
 /* SSE2 */
 typedef int __v2df __attribute__ ((mode (V2DF)));
 typedef int __v2di __attribute__ ((mode (V2DI)));
