@@ -1,3 +1,8 @@
+2003-09-09  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
+
+	PR bootstrap/12168
+	* method.c (use_thunk): Clear DECL_RTL of copied nodes.
+
 2003-09-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-lang.c (LANG_HOOKS_REGISTER_BUILTIN_TYPE): Define to

@@ -426,6 +426,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 	  tree x = copy_node (a);
 	  TREE_CHAIN (x) = t;
 	  DECL_CONTEXT (x) = thunk_fndecl;
+	  SET_DECL_RTL (x, NULL_RTX);
 	  t = x;
 	}
       a = nreverse (t);
