@@ -228,8 +228,7 @@ namespace std
   locale::facet::_S_clone_c_locale(__c_locale&)
   { return __c_locale(); }
 
-  const char* locale::_S_categories[_S_categories_size 
-				    + _S_extra_categories_size] =
+  const char* locale::_S_categories[_S_categories_size] = 
     {
       "LC_CTYPE", 
       "LC_NUMERIC",

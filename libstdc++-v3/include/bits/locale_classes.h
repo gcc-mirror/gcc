@@ -146,21 +146,18 @@ namespace std
     // directly correspond to ISO C99 macros LC_COLLATE, LC_CTYPE,
     // LC_MONETARY, LC_NUMERIC, and LC_TIME. In addition, POSIX (IEEE
     // 1003.1-2001) specifies LC_MESSAGES.
-    static const size_t	_S_categories_size = 6;
-
     // In addition to the standard categories, the underlying
     // operating system is allowed to define extra LC_*
     // macros. For GNU systems, the following are also valid:
     // LC_PAPER, LC_NAME, LC_ADDRESS, LC_TELEPHONE, LC_MEASUREMENT,
     // and LC_IDENTIFICATION.
-    static const size_t	_S_extra_categories_size = _GLIBCPP_NUM_CATEGORIES;
+    static const size_t _S_categories_size = 6 + _GLIBCPP_NUM_CATEGORIES;
 
     // Names of underlying locale categories.  
     // NB: locale::global() has to know how to modify all the
     // underlying categories, not just the ones required by the C++
     // standard.
-    static const char* 	_S_categories[_S_categories_size 
-				      + _S_extra_categories_size];
+    static const char* 	_S_categories[_S_categories_size]; 
 
     explicit 
     locale(_Impl*) throw();
@@ -201,9 +198,7 @@ namespace std
     _Atomic_word			_M_references;
     const facet**			_M_facets;
     size_t 				_M_facets_size;
-
-    char* 				_M_names[_S_categories_size
-						 + _S_extra_categories_size];
+    char* 				_M_names[_S_categories_size];
     static const locale::id* const 	_S_id_ctype[];
     static const locale::id* const 	_S_id_numeric[];
     static const locale::id* const 	_S_id_collate[];
@@ -243,9 +238,7 @@ namespace std
     _M_check_same_name()
     {
       bool __ret = true;
-      for (size_t __i = 0; 
-	   __ret && __i < _S_categories_size + _S_extra_categories_size - 1; 
-	   ++__i)
+      for (size_t __i = 0; __ret && __i < _S_categories_size - 1; ++__i)
 	__ret &= (strcmp(_M_names[__i], _M_names[__i + 1]) == 0);
       return __ret;
     }
@@ -273,8 +266,7 @@ namespace std
     {
       _M_impl = new _Impl(*__other._M_impl, 1);
       _M_impl->_M_install_facet(&_Facet::id, __f);
-      for (size_t __i = 0; 
-	   __i < _S_categories_size + _S_extra_categories_size; ++__i)
+      for (size_t __i = 0; __i < _S_categories_size ; ++__i)
 	{
 	  delete [] _M_impl->_M_names[__i];
 	  char* __new = new char[2];

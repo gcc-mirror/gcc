@@ -62,7 +62,6 @@ namespace std
   locale::_Impl* 		locale::_S_classic;
   locale::_Impl* 		locale::_S_global; 
   const size_t 			locale::_S_categories_size;
-  const size_t 			locale::_S_extra_categories_size;
 
   // Definitions for static const data members of locale::id
   _Atomic_word locale::id::_S_highwater;  // init'd to 0 by linker
@@ -208,8 +207,7 @@ namespace std
 		// different from LANG.
 		size_t __i = 0;
 		if (strcmp(__res, "C") == 0)
-		  for (; __i < _S_categories_size
-			 + _S_extra_categories_size; ++__i)
+		  for (; __i < _S_categories_size ; ++__i)
 		    {
 		      __env = getenv(_S_categories[__i]);
 		      if (__env && strcmp(__env, "") != 0 
@@ -218,8 +216,7 @@ namespace std
 			break;
 		    }
 		else
-		  for (; __i < _S_categories_size
-			 + _S_extra_categories_size; ++__i)
+		  for (; __i < _S_categories_size ; ++__i)
 		    {
 		      __env = getenv(_S_categories[__i]);
 		      if (__env && strcmp(__env, "") != 0 
@@ -229,7 +226,7 @@ namespace std
 	
 		// If one is found, build the complete string of
 		// the form LC_CTYPE=xxx;LC_NUMERIC=yyy; and so on...
-		if (__i < _S_categories_size + _S_extra_categories_size)
+		if (__i < _S_categories_size)
 		  {
 		    string __str;
 		    for (size_t __j = 0; __j < __i; ++__j)
@@ -244,8 +241,7 @@ namespace std
 		    __str += __env;
 		    __str += ';';
 		    __i++;
-		    for (; __i < _S_categories_size
-			   + _S_extra_categories_size; ++__i)
+		    for (; __i < _S_categories_size ; ++__i)
 		      {
 			__env = getenv(_S_categories[__i]);
 			if (!__env || strcmp(__env, "") == 0)
@@ -349,9 +345,7 @@ namespace std
 	__ret += _S_categories[0];
 	__ret += '=';
 	__ret += _M_impl->_M_names[0]; 
-	for (size_t __i = 1; 
-	     __i < _S_categories_size + _S_extra_categories_size; 
-	     ++__i)
+	for (size_t __i = 1; __i < _S_categories_size ; ++__i)
 	  {
 	    __ret += ';';
 	    __ret += _S_categories[__i];
