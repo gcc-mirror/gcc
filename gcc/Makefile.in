@@ -2937,8 +2937,7 @@ STAGE2_FLAGS_TO_PASS = \
 # we can guarantee will build with the native compiler, and also it is the
 # only thing useful for building stage2.
 stage1_build:
-	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)" \
-		CFLAGS="$(CFLAGS)"
+	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)"
 	touch stage1_build
 	echo stage1_build > stage_last
 
