@@ -1,3 +1,8 @@
+Thu Jul 30 19:11:30 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (fp cmp): Replicate patterns for ALPHA_TP_INSN.
+	(fcmov): Remove ALPHA_TP_INSN patterns -- fcmov doesn't trap.
+
 Thu Jul 30 12:51:09 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* dyn-string.h: New file.
