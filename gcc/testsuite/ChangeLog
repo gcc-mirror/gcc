@@ -1,3 +1,8 @@
+2003-01-28  Jeffrey D. Oldham  <oldham@codesourcery.com>
+
+	* g++.dg/lookup/nested1.C: Test moved from ...
+	* g++.old-deja/g++.other/lookup24.C: ... here.
+
 Tue Jan 28 12:19:35 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-cmov5.c:  New test.
