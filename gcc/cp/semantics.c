@@ -4,7 +4,7 @@
    and during the instantiation of template functions. 
 
    Copyright (C) 1998, 1999, 2000, 2001, 2002,
-   2003 Free Software Foundation, Inc.
+   2003, 2004 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.  
 
@@ -136,7 +136,8 @@ static GTY(()) deferred_access *deferred_access_free_list;
 /* Save the current deferred access states and start deferred
    access checking iff DEFER_P is true.  */
 
-void push_deferring_access_checks (deferring_kind deferring)
+void
+push_deferring_access_checks (deferring_kind deferring)
 {
   deferred_access *d;
 
@@ -164,7 +165,8 @@ void push_deferring_access_checks (deferring_kind deferring)
 /* Resume deferring access checks again after we stopped doing
    this previously.  */
 
-void resume_deferring_access_checks (void)
+void
+resume_deferring_access_checks (void)
 {
   if (deferred_access_stack->deferring_access_checks_kind == dk_no_deferred)
     deferred_access_stack->deferring_access_checks_kind = dk_deferred;
@@ -172,7 +174,8 @@ void resume_deferring_access_checks (void)
 
 /* Stop deferring access checks.  */
 
-void stop_deferring_access_checks (void)
+void
+stop_deferring_access_checks (void)
 {
   if (deferred_access_stack->deferring_access_checks_kind == dk_deferred)
     deferred_access_stack->deferring_access_checks_kind = dk_no_deferred;
@@ -181,7 +184,8 @@ void stop_deferring_access_checks (void)
 /* Discard the current deferred access checks and restore the
    previous states.  */
 
-void pop_deferring_access_checks (void)
+void
+pop_deferring_access_checks (void)
 {
   deferred_access *d = deferred_access_stack;
   deferred_access_stack = d->next;
@@ -199,7 +203,8 @@ void pop_deferring_access_checks (void)
    access occurred; the TREE_VALUE is the declaration named.
    */
 
-tree get_deferred_access_checks (void)
+tree
+get_deferred_access_checks (void)
 {
   return deferred_access_stack->deferred_access_checks;
 }
@@ -208,7 +213,8 @@ tree get_deferred_access_checks (void)
    previous states if we also defer checks previously.
    Otherwise perform checks now.  */
 
-void pop_to_parent_deferring_access_checks (void)
+void
+pop_to_parent_deferring_access_checks (void)
 {
   tree deferred_check = get_deferred_access_checks ();
   deferred_access *d1 = deferred_access_stack;
@@ -249,7 +255,8 @@ void pop_to_parent_deferring_access_checks (void)
    We have to perform deferred access of `A::X', first with `A::a',
    next with `x'.  */
 
-void perform_deferred_access_checks (void)
+void
+perform_deferred_access_checks (void)
 {
   tree deferred_check;
   for (deferred_check = deferred_access_stack->deferred_access_checks;
@@ -263,7 +270,8 @@ void perform_deferred_access_checks (void)
 /* Defer checking the accessibility of DECL, when looked up in
    BINFO.  */
 
-void perform_or_defer_access_check (tree binfo, tree decl)
+void
+perform_or_defer_access_check (tree binfo, tree decl)
 {
   tree check;
 

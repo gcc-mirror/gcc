@@ -1,3 +1,14 @@
+2004-01-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* semantics.c (push_deferring_access_checks): Fix format.
+	(resume_deferring_access_checks): Likewise.
+	(stop_deferring_access_checks): Likewise.
+	(pop_deferring_access_checks): Likewise.
+	(get_deferred_access_checks): Likewise.
+	(pop_to_parent_deferring_access_checks): Likewise.
+	(perform_deferred_access_checks): Likewise.
+	(perform_or_defer_access_check): Likewise.
+
 2004-01-04  Richard Henderson  <rth@redhat.com>
 
 	* call.c (build_over_call): Don't create a save_expr of an
