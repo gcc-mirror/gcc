@@ -5666,7 +5666,7 @@ lookup_field_wrapper (class, name)
   java_parser_context_save_global ();
   decl = lookup_field (&type, name);
   java_parser_context_restore_global ();
-  return decl;
+  return decl == error_mark_node ? NULL : decl;
 }
 
 /* Find duplicate field within the same class declarations and report
@@ -11682,7 +11682,8 @@ valid_ref_assignconv_cast_p (source, dest, cast)
 	    return source == dest || interface_of_p (dest, source);
 	}
       else			/* Array */
-	return 0;
+	return (cast ? 
+		(DECL_NAME (TYPE_NAME (source)) == java_lang_cloneable) : 0);
     }
   if (TYPE_ARRAY_P (source))
     {
@@ -14049,7 +14050,7 @@ patch_conditional_expr (node, wfl_cond, wfl_op1)
       /* Otherwise, binary numeric promotion is applied and the
 	 resulting type is the promoted type of operand 1 and 2 */
       else 
-	resulting_type = binary_numeric_promotion (t2, t2, 
+	resulting_type = binary_numeric_promotion (t1, t2, 
 						   &TREE_OPERAND (node, 1), 
 						   &TREE_OPERAND (node, 2));
     }
@@ -14106,8 +14107,11 @@ fold_constant_for_init (node, context)
   tree op0, op1, val;
   enum tree_code code = TREE_CODE (node);
 
-  if (code == INTEGER_CST || code == REAL_CST || code == STRING_CST)
+  if (code == STRING_CST)
     return node;
+
+  if (code == INTEGER_CST || code == REAL_CST)
+    return convert (TREE_TYPE (context), node);
   if (TREE_TYPE (node) != NULL_TREE && code != VAR_DECL)
     return NULL_TREE;
 
@@ -14202,13 +14206,11 @@ fold_constant_for_init (node, context)
 	    }
 	  else
 	    {
-#if 0
 	      /* Wait until the USE_COMPONENT_REF re-write.  FIXME. */
 	      qualify_ambiguous_name (node);
 	      if (resolve_field_access (node, &decl, NULL)
 		  && decl != NULL_TREE)
 		return fold_constant_for_init (decl, decl);
-#endif
 	      return NULL_TREE;
 	    }
 	}

@@ -1,3 +1,27 @@
+Fri May 28 18:22:45 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * parse.y (lookup_field_wrapper): Unified returned value to NULL
+          or the searched field decl.
+	
+Fri May 28 11:34:05 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (fold_constant_for_init): Convert numerical constant
+ 	values to the type of the assigned field.
+
+Thu May 27 19:57:40 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (lookup_field): Relaxed the test on class loading error
+ 	detection.
+	* parse.y (fold_constant_for_init): Enabeled old code.
+
+Wed May 26 18:06:02 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (valid_ref_assignconv_cast_p): Let `_Jv_CheckCast'
+ 	decide the validity of the cast of a java.lang.Cloneable reference
+ 	to an array.
+	(patch_conditional_expr): Fixed first argument passed to
+ 	binary_numeric_promotion.
+
 Wed May 26 15:33:06 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (qualify_ambiguous_name): Take into account that a

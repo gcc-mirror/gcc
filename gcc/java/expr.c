@@ -1162,7 +1162,7 @@ lookup_field (typep, name)
   if (CLASS_P (*typep) && !CLASS_LOADED_P (*typep))
     {
       load_class (*typep, 1);
-      if (TREE_CODE (TYPE_SIZE (*typep)) == ERROR_MARK)
+      if (!TYPE_SIZE (*typep) || TREE_CODE (TYPE_SIZE (*typep)) == ERROR_MARK)
 	return error_mark_node;
     }
   do
