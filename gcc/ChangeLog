@@ -1,3 +1,7 @@
+2000-11-10  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.texi, gcov.texi: Update dates and version numbers.
+
 2000-11-10  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* configure.in: Remove AC_PROG_LEX and AC_PROG_YACC.  Look for
