@@ -1,3 +1,11 @@
+2004-10-04  Olivier Hainque  <hainque@act-europe.fr>
+
+	* init.c (__gnat_initialize): Call an Ada subprogram to perform the
+	table registration calls when need be. Ensures no reference to the crt
+	ctors symbol are issued in the SJLJ case, which avoids possible
+	undefined symbol errors in the case of modules to be statically linked
+	with the kernel.
+
 2004-10-04  Javier Miranda  <miranda@gnat.com>
 
 	* sem_ch4.adb (Try_Object_Operation): Reformat the code to expand
