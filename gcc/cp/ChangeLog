@@ -1,3 +1,19 @@
+2000-05-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Update new-abi upcast algorithm.
+	* inc/cxxabi.h (__class_type_info::__do_upcast): Change
+	prototype and meaning of return value.
+	(__si_class_type_info::__do_upcast): Likewise.
+	(__vmi_class_type_info::__do_upcast): Likewise.
+	* tinfo.cc (__class_type_info::__upcast_result): Replace
+	whole2dst with part2dst. Adjust ctor.
+	(__class_type_info::__do_upcast): Adjust call of worker function.
+	(__class_type_info::__do_upcast): Adjust.
+	(__si_class_type_info::__do_upcast): Adjust. Use parent's
+	__do_upcast.
+	(__vmi_class_type_info::__do_upcast): Likewise. Fix private
+	virtual base in diamond heirarchy bug.
+
 2000-05-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (lang_decl_flags): Rename mutable_flag to uninlinable

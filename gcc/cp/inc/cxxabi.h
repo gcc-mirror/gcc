@@ -266,11 +266,9 @@ protected:
 
 
 public:
-  /* Helper for upcast. See if DST is us, or one of our bases. ACCESS_PATH */
-  /* gives the access from the start object. Return TRUE if we know the upcast */
-  /* fails. */
-  virtual bool __do_upcast (__sub_kind __access_path,
-                            const __class_type_info *__dst,
+  /* Helper for upcast. See if DST is us, or one of our bases. */
+  /* Return false if not found, true if found. */
+  virtual bool __do_upcast (const __class_type_info *__dst,
                             const void *__obj,
                             __upcast_result &__restrict __result) const;
 
@@ -341,8 +339,7 @@ protected:
                                            const void *__obj_ptr,
                                            const __class_type_info *__src_type,
                                            const void *__sub_ptr) const;
-  virtual bool __do_upcast (__sub_kind __access_path,
-                            const __class_type_info *__dst,
+  virtual bool __do_upcast (const __class_type_info *__dst,
                             const void *__obj,
                             __upcast_result &__restrict __result) const;
 };
@@ -391,8 +388,7 @@ protected:
                                            const void *__obj_ptr,
                                            const __class_type_info *__src_type,
                                            const void *__src_ptr) const;
-  virtual bool __do_upcast (__sub_kind __access_path,
-                            const __class_type_info *__dst,
+  virtual bool __do_upcast (const __class_type_info *__dst,
                             const void *__obj,
                             __upcast_result &__restrict __result) const;
 };
