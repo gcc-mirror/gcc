@@ -1,5 +1,10 @@
 2003-07-14  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/rmi/server/UnicastServerRef.java:
+	New version from classpath.
+
+2003-07-14  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/image/MemoryImageSource.java,
 	java/beans/PropertyEditorManager.java,
 	javax/naming/CompoundName.java,
