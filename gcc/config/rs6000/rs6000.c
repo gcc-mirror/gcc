@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on IBM RS/6000.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 
-   2000, 2001, 2002 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -12978,9 +12978,10 @@ machopic_output_stub (file, symb, stub)
   GEN_LOCAL_LABEL_FOR_SYMBOL (local_label_0, symb, length, 0);
 
   if (flag_pic == 2)
-    machopic_picsymbol_stub_section ();
+    machopic_picsymbol_stub1_section ();
   else
-    machopic_symbol_stub_section ();
+    machopic_symbol_stub1_section ();
+  fprintf (file, "\t.align 2\n");
 
   fprintf (file, "%s:\n", stub);
   fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
@@ -12993,11 +12994,9 @@ machopic_output_stub (file, symb, stub)
       fprintf (file, "\taddis r11,r11,ha16(%s-%s)\n",
 	       lazy_ptr_name, local_label_0);
       fprintf (file, "\tmtlr r0\n");
-      fprintf (file, "\tlwz r12,lo16(%s-%s)(r11)\n",
+      fprintf (file, "\tlwzu r12,lo16(%s-%s)(r11)\n",
 	       lazy_ptr_name, local_label_0);
       fprintf (file, "\tmtctr r12\n");
-      fprintf (file, "\taddi r11,r11,lo16(%s-%s)\n",
-	       lazy_ptr_name, local_label_0);
       fprintf (file, "\tbctr\n");
     }
   else
