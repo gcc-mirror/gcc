@@ -7867,7 +7867,10 @@ reload_cse_no_longer_dead (regno, mode)
 {
   int nregs = HARD_REGNO_NREGS (regno, mode);
   while (nregs-- > 0)
-    SET_HARD_REG_BIT (no_longer_dead_regs, regno++);
+    {
+      SET_HARD_REG_BIT (no_longer_dead_regs, regno);
+      regno++;
+    }
 }
 
 
