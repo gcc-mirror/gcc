@@ -8243,6 +8243,10 @@ sh_register_move_cost (mode, srcclass, dstclass)
       && REGCLASS_HAS_FP_REG (dstclass))
     return 4;
 
+  if ((REGCLASS_HAS_FP_REG (dstclass) && srcclass == MAC_REGS)
+      || (dstclass== MAC_REGS && REGCLASS_HAS_FP_REG (srcclass)))
+    return 9;
+
   if ((REGCLASS_HAS_FP_REG (dstclass)
        && REGCLASS_HAS_GENERAL_REG (srcclass))
       || (REGCLASS_HAS_GENERAL_REG (dstclass)
