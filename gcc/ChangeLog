@@ -20,7 +20,7 @@
 	* integrate.c: Likewise.
 	* input.h: Likewise.
 	* ifcvt.c: Likewise.
-	* jump.c: Convert prototypes to ISO C90.
+	* jump.c: Likewise.
 	* langhooks-def.h: Likewise.  Add extern to prototypes.
 	* langhooks.c: Likewise.
 	* langhooks.h: Likewise.
