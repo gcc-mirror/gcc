@@ -4839,7 +4839,7 @@ rs6000_va_arg (tree valist, tree type)
 
 	  return expand_expr (t, NULL_RTX, VOIDmode, EXPAND_NORMAL);
 	}
-      if (SPLIT_COMPLEX_ARGS
+      if (targetm.calls.split_complex_arg
 	  && TREE_CODE (type) == COMPLEX_TYPE)
 	{
 	  tree elem_type = TREE_TYPE (type);
