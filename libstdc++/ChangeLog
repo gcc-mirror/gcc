@@ -1,3 +1,7 @@
+1998-08-17  Mark Mitchell  <mark@markmitchell.com>
+
+	* stdexcept: Put things in the std namespace, if appropriate.
+
 1998-07-12  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Makefile.in (VERSION): Bump to 2.9.0.
