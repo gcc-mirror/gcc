@@ -56,6 +56,8 @@ struct weak_syms
 
 /* Declared in varasm.c */
 extern struct weak_syms * weak_decls;
+
+extern int add_weak PROTO((char *, char *));
 #endif /* HANDLE_PRAGMA_WEAK */
 
 
