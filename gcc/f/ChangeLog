@@ -1,3 +1,7 @@
+2003-09-21  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Update with fixed PR's.
+
 2003-09-21  George Helffrich  <bugzilla@w170.uklinux.net>
 
 	* g77.texi: Remove ancient part about debugging COMMON

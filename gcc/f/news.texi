@@ -11,7 +11,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002,2003
 
-@set last-update-news 2003-05-18
+@set last-update-news 2003-09-21
 
 @ifset DOC-NEWS
 @include root.texi
@@ -160,6 +160,10 @@ Problem Reports fixed (in chronological order of submission):
 @table @code
 @item 8485
 g77 doesn't accept INTEGER*8 constant in PARAMETER multiplication.
+@item 11918
+(libf2c) isatty does not call f_init.
+@item 12317
+Incorrect documentation for Fortran debugging features.
 @end table
 @item
 Roger Sayle (@email{roger@@eyesopen.com}) fixed the remaining
