@@ -59,7 +59,7 @@ case $LIB in
 /*)
 	;;
 *)
-	cd $LIB; LIB=`${PWDCMD}`
+	cd $LIB; LIB=`${PWDCMD-pwd}`
 	;;
 esac
 
@@ -197,7 +197,7 @@ while [ $# != 0 ]; do
 	if cmp $file $2/$file >/dev/null 2>&1; then
 	   rm $2/$file
 	else
-	   Fixed $file
+	   echo Fixed $file
 	fi
       fi
   done
