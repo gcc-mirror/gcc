@@ -1,5 +1,5 @@
 /* Output Dwarf format symbol table information from the GNU C compiler.
-   Copyright (C) 1992, 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1995, 1996 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com) for
    Network Computing Devices, August, September, October, November 1990.
@@ -734,16 +734,6 @@ static unsigned lookup_filename ();
 #endif
 
 /************************ general utility functions **************************/
-
-inline char *
-xstrdup (s)
-     register char *s;
-{
-  register char *p = (char *) xmalloc (strlen (s) + 1);
-
-  strcpy (p, s);
-  return p;
-}
 
 inline int
 is_pseudo_reg (rtl)
