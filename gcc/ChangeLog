@@ -1,5 +1,16 @@
 Fri Oct  2 10:51:35 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 
+	* caller-save.c (insert_save_restore): Break this function up
+	into new functions insert_restore, insert_save and insert_one_insn.
+	All callers changed.
+	(insert_restore): New function, mostly broken out of
+	insert_save_restore.
+	(insert_save): Likewise.
+	(insert_one_insn): Likewise.
+	(restore_referenced_regs): New argument BLOCK.  All callers changed.
+	(save_call_clobbered_regs): Don't keep track of basic block boundaries
+	in this function, do it in insert_one_insn instead.
+
 	* reload1.c (reload): Break out some more pieces into separate
 	functions.
 	(dump_needs): New function, broken out of reload.
