@@ -1,5 +1,11 @@
 Fri Dec 19 09:37:26 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* cp-tree.h (struct lang_decl_flags): Add comdat.
+	(DECL_COMDAT): New macro.
+	* decl.c (duplicate_decls): Propagate it.
+	(cp_finish_decl): Handle it.
+	* decl2.c (import_export_decl): Just set DECL_COMDAT on VAR_DECLs.
+
 	* except.c (expand_start_catch_block): suspend_momentary for the
 	terminate handler.
 

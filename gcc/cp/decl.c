@@ -2853,6 +2853,7 @@ duplicate_decls (newdecl, olddecl)
     {
       DECL_INTERFACE_KNOWN (newdecl) |= DECL_INTERFACE_KNOWN (olddecl);
       DECL_NOT_REALLY_EXTERN (newdecl) |= DECL_NOT_REALLY_EXTERN (olddecl);
+      DECL_COMDAT (newdecl) |= DECL_COMDAT (olddecl);
     }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
@@ -6714,6 +6715,32 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	      = build_static_name (current_function_decl, DECL_NAME (decl));
 	  else if (! DECL_ARTIFICIAL (decl))
 	    cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
+	}
+
+      else if (TREE_CODE (decl) == VAR_DECL
+	       && DECL_LANG_SPECIFIC (decl)
+	       && DECL_COMDAT (decl))
+	{
+	  /* Dynamically initialized vars go into common.  */
+	  if (DECL_INITIAL (decl) == NULL_TREE
+	      || DECL_INITIAL (decl) == error_mark_node)
+	    DECL_COMMON (decl) = 1;
+	  else if (EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
+	    {
+	      DECL_COMMON (decl) = 1;
+	      DECL_INITIAL (decl) = error_mark_node;
+	    }
+	  else
+	    {
+	      /* Statically initialized vars are weak or comdat, if
+                 supported.  */
+	      if (flag_weak)
+		make_decl_one_only (decl);
+	      else
+		/* we can't do anything useful; leave vars for explicit
+                   instantiation.  */
+		DECL_EXTERNAL (decl) = 1;
+	    }
 	}
 
       if (TREE_CODE (decl) == VAR_DECL && DECL_VIRTUAL_P (decl))

@@ -2769,26 +2769,8 @@ import_export_decl (decl)
 	{
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
 	    comdat_linkage (decl);
-	  /* Dynamically initialized vars go into common.  */
-	  else if (DECL_INITIAL (decl) == NULL_TREE
-		   || DECL_INITIAL (decl) == error_mark_node)
-	    DECL_COMMON (decl) = 1;
-	  else if (EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
-	    {
-	      DECL_COMMON (decl) = 1;
-	      DECL_INITIAL (decl) = error_mark_node;
-	    }
 	  else
-	    {
-	      /* Statically initialized vars are weak or comdat, if
-                 supported.  */
-	      if (flag_weak)
-		make_decl_one_only (decl);
-	      else
-		/* we can't do anything useful; leave vars for explicit
-                   instantiation.  */
-		DECL_NOT_REALLY_EXTERN (decl) = 0;
-	    }
+	    DECL_COMDAT (decl) = 1;
 	}
       else
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
