@@ -81,8 +81,6 @@ static tree find_vars_r (tree *, int *, void *);
 static void add_referenced_var (tree, struct walk_state *);
 static void compute_immediate_uses_for_phi (tree, bool (*)(tree));
 static void compute_immediate_uses_for_stmt (tree, int, bool (*)(tree));
-static void find_hidden_use_vars (tree);
-static tree find_hidden_use_vars_r (tree *, int *, void *);
 
 
 /* Global declarations.  */
@@ -109,21 +107,6 @@ find_referenced_vars (void)
   basic_block bb;
   block_stmt_iterator si;
   struct walk_state walk_state;
-  tree block;
-
-  /* Walk the lexical blocks in the function looking for variables that may
-     have been used to declare VLAs and for nested functions.  Both
-     constructs create hidden uses of variables. 
-
-     Note that at this point we may have multiple blocks hung off
-     DECL_INITIAL chained through the BLOCK_CHAIN field due to
-     how inlining works.  Egad.  */
-  block = DECL_INITIAL (current_function_decl);
-  while (block)
-    {
-      find_hidden_use_vars (block);
-      block = BLOCK_CHAIN (block);
-    }
 
   vars_found = htab_create (50, htab_hash_pointer, htab_eq_pointer, NULL);
   memset (&walk_state, 0, sizeof (walk_state));
@@ -570,9 +553,6 @@ dump_variable (FILE *file, tree var)
 
   fprintf (file, ", UID %u", (unsigned) ann->uid);
 
-  if (ann->has_hidden_use)
-    fprintf (file, ", has hidden uses");
-
   if (ann->type_mem_tag)
     {
       fprintf (file, ", type memory tag: ");
@@ -957,82 +937,6 @@ get_virtual_var (tree var)
 
   return var;
 }
-
-
-/* Mark variables in BLOCK that have hidden uses.  A hidden use can
-   occur due to VLA declarations or nested functions.  */
-
-static void
-find_hidden_use_vars (tree block)
-{
-  tree sub, decl, tem;
-
-  /* Check all the arrays declared in the block for VLAs.
-     While scanning the block's variables, also see if there is
-     a nested function at this scope.  */
-  for (decl = BLOCK_VARS (block); decl; decl = TREE_CHAIN (decl))
-    {
-      int inside_vla = 0;
-      walk_tree (&decl, find_hidden_use_vars_r, &inside_vla, NULL);
-    }
-
-  /* Now repeat the search in any sub-blocks.  */
-  for (sub = BLOCK_SUBBLOCKS (block); sub; sub = TREE_CHAIN (sub))
-    find_hidden_use_vars (sub);
-
-  /* A VLA parameter may use a variable which as set from another
-     parameter to declare the size of the VLA.  We need to mark the
-     variable as having a hidden use since it is used to declare the
-     VLA parameter and that declaration is not seen by the SSA code. 
-
-     Note get_pending_sizes clears the PENDING_SIZES chain, so we
-     must restore it.  */
-  tem = get_pending_sizes ();
-  put_pending_sizes (tem);
-  for (; tem; tem = TREE_CHAIN (tem))
-    {
-      int inside_vla = 1;
-      walk_tree (&TREE_VALUE (tem), find_hidden_use_vars_r, &inside_vla, NULL);
-    }
-}
-
-
-/* Callback for walk_tree used by find_hidden_use_vars to analyze each 
-   variable in a lexical block.  If the variable's size has a variable
-   size, then mark all objects needed to compute the variable's size
-   as having hidden uses.  */
-
-static tree
-find_hidden_use_vars_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-			void *data ATTRIBUTE_UNUSED)
-{
-  int *inside_vla = (int *) data;
-
-  /* We need to look for hidden uses due to VLAs in variable
-     definitions.  We originally used to look for these hidden
-     uses in the variable's type, but that's unreliable if the
-     type's size contains a SAVE_EXPR for a different function
-     context than the variable is used within.  */
-  if (SSA_VAR_P (*tp)
-      && ((DECL_SIZE (*tp)
-	   && ! really_constant_p (DECL_SIZE (*tp)))
-	  || (DECL_SIZE_UNIT (*tp)
-	      && ! really_constant_p (DECL_SIZE_UNIT (*tp)))))
-    {
-      int save = *inside_vla;
-
-      *inside_vla = 1;
-      walk_tree (&DECL_SIZE (*tp), find_hidden_use_vars_r, inside_vla, NULL);
-      walk_tree (&DECL_SIZE_UNIT (*tp), find_hidden_use_vars_r,
-		 inside_vla, NULL);
-      *inside_vla = save;
-    }
-  else if (*inside_vla && SSA_VAR_P (*tp))
-    set_has_hidden_use (*tp);
-
-  return NULL_TREE;
-}
-
 
 /* Add a temporary variable to REFERENCED_VARS.  This is similar to
    add_referenced_var, but is used by passes that need to add new temps to

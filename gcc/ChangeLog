@@ -1,5 +1,16 @@
 2004-07-16  Richard Henderson  <rth@redhat.com>
 
+	* tree-flow.h (struct var_ann_d): Remove has_hidden_use.
+	* gimple-low.c (expand_var_p): Don't check it.
+	* tree-ssa-alias.c (setup_pointers_and_addressables): Likewise.
+	* tree-ssa-copyrename.c (rename_ssa_copies): Likewise.
+	* tree-ssa-operands.c (add_stmt_operand): Likewise.
+	* tree-dfa.c (find_hidden_use_vars, find_hidden_use_vars_r): Kill.
+	(find_referenced_vars): Don't call them.
+	* tree-flow-inline.h (has_hidden_use, set_has_hidden_use): Kill.
+
+2004-07-16  Richard Henderson  <rth@redhat.com>
+
 	* function.c (pass_by_reference): True for all variable sized types.
 
 2004-07-16  Sebastian Pop  <pop@cri.ensmp.fr>

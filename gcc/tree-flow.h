@@ -138,17 +138,6 @@ struct var_ann_d GTY(())
 {
   struct tree_ann_common_d common;
 
-  /* Nonzero if this variable has uses which may not appear
-     in the IL.  This can happen in the following cases:
-
-       1. If the variable is used in a variable length
-          array declaration.
-
-	2. If the variable is the return value in a C++
-	   function where the named return value optimization
-	   has been performed.  */
-  unsigned has_hidden_use : 1;
-
   /* Used by the out of SSA pass to determine whether this variable has
      been seen yet or not.  */
   unsigned out_of_ssa_tag : 1;
@@ -334,8 +323,6 @@ static inline bitmap addresses_taken (tree);
 static inline int num_immediate_uses (dataflow_t);
 static inline tree immediate_use (dataflow_t, int);
 static inline dataflow_t get_immediate_uses (tree);
-static inline bool has_hidden_use (tree);
-static inline void set_has_hidden_use (tree);
 static inline void set_default_def (tree, tree);
 static inline tree default_def (tree);
 static inline bool may_be_aliased (tree);

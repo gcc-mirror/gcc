@@ -1219,12 +1219,10 @@ setup_pointers_and_addressables (struct alias_info *ai)
 
       if (POINTER_TYPE_P (TREE_TYPE (var)))
 	{
-	  /* Since we don't keep track of volatile variables nor
-	     variables with hidden uses, assume that these pointers
-	     are used in indirect store operations.  */
-	  var_ann_t ann = var_ann (var);
-	  if (TREE_THIS_VOLATILE (var) || ann->has_hidden_use)
-	    bitmap_set_bit (ai->dereferenced_ptrs_store, ann->uid);
+	  /* Since we don't keep track of volatile variables, assume that
+	     these pointers are used in indirect store operations.  */
+	  if (TREE_THIS_VOLATILE (var))
+	    bitmap_set_bit (ai->dereferenced_ptrs_store, var_ann (var)->uid);
 
 	  num_pointers++;
 	}
@@ -1266,7 +1264,6 @@ setup_pointers_and_addressables (struct alias_info *ai)
       if (TREE_ADDRESSABLE (var))
 	{
 	  if (!bitmap_bit_p (ai->addresses_needed, v_ann->uid)
-	      && !v_ann->has_hidden_use
 	      && v_ann->mem_tag_kind == NOT_A_TAG
 	      && !needs_to_live_in_memory (var))
 	    {

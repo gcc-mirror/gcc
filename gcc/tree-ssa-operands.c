@@ -1298,18 +1298,6 @@ add_stmt_operand (tree *var_p, tree stmt, int flags, voperands_t prev_vops)
   sym = (TREE_CODE (var) == SSA_NAME ? SSA_NAME_VAR (var) : var);
   v_ann = var_ann (sym);
 
-  /* FIXME: We currently refuse to optimize variables that have hidden uses
-     (variables used in VLA declarations, MD builtin calls and variables
-     from the parent function in nested functions).  This is because not
-     all uses of these variables are exposed in the IL or the statements
-     that reference them are not in GIMPLE form.  If that's the case, mark
-     the statement as having volatile operands and return.  */
-  if (v_ann->has_hidden_use)
-    {
-      s_ann->has_volatile_ops = true;
-      return;
-    }
-
   /* Don't expose volatile variables to the optimizers.  */
   if (TREE_THIS_VOLATILE (sym))
     {
