@@ -14,7 +14,7 @@ struct wedge {
 #ifdef __cplusplus
 	Widget	old, c_new;
 #else
-   Widget	old, new; /* fix the new */
+   Widget	old, new; /* fixinc check FAILS ON BSD */
 #endif
 };
 extern Wedged( Widget c_new, Widget old );

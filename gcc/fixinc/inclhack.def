@@ -1952,7 +1952,7 @@ fix = {
     "#ifdef __STDC__\n"
     "static int\tstat(const char *__f, struct stat *__p) {\n"
     "\treturn __stat32(__f, __p);\n"
-    "}\n\n#  else /* !__STDC__ */\n"
+    "}\n\n#  else /* !__STDC__ THIS FAILS ON BSD SYSTEMS */\n"
 
     "static int\tstat(__f, __p)\n"
     "\tchar *__f;\n"
@@ -2988,7 +2988,7 @@ fix = {
     test_text =
     "@(#)stat.h      6.1     (ULTRIX)\n"
     "#define S_IFPORT S_IFIFO\n"
-    "\tfstat(),\n";
+    "\tfstat(),\n/* THE INSERTION LINE FAILS ON BSD SYSTEMS */";
 };
 
 
@@ -3321,7 +3321,7 @@ fix = {
     sed      = "s/Widget new,/Widget c_new,/g";
     test_text =
     "struct wedge {\n"
-    "   Widget\told, new; /* fix the new */\n"
+    "   Widget\told, new; /* fixinc check FAILS ON BSD */\n"
     "};\nextern Wedged( Widget new, Widget old );";
 };
 
