@@ -1,3 +1,10 @@
+Wed Mar  3 00:38:42 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi, news.texi: Conditionalize cross-references
+	on non-html processing, providing temporary HTML "links".
+
+	* g77.texi: Fix up a reference.
+
 Wed Mar  3 00:12:31 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* news.texi, bugs.texi: Delete fixed bugs, make one

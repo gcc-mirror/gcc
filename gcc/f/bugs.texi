@@ -17,16 +17,37 @@
 @end ifclear
 
 This section identifies bugs that @code{g77} @emph{users}
-might run into.
+might run into in
+@ifhtml
+the current development
+@end ifhtml
+version
+@ifnothtml
+@value{version-g77}
+@end ifnothtml
+of @code{g77}.
 This includes bugs that are actually in the @code{gcc}
 back end (GBE) or in @code{libf2c}, because those
 sets of code are at least somewhat under the control
-of (and necessarily intertwined with) @code{g77}, so it
-isn't worth separating them out.
+of (and necessarily intertwined with) @code{g77},
+so it isn't worth separating them out.
+
+For information on bugs in @emph{other} versions of @code{g77},
+@ifhtml
+see the page on Fortran news.
+@end ifhtml
+@ifnothtml
+@ref{News,,News About GNU Fortran}.
+@end ifnothtml
 
 For information on bugs that might afflict people who
 configure, port, build, and install @code{g77},
+@ifhtml
+see the chapter on installing in the @code{g77} documentation.
+@end ifhtml
+@ifnothtml
 @ref{Problems Installing}.
+@end ifnothtml
 
 @itemize @bullet
 @item
@@ -108,7 +129,12 @@ improvements to the compiler.)
 
 Note that @code{g77} does display a warning message to
 notify the user before the compiler appears to hang.
+@ifhtml
+See the @code{g77} installation documentation
+@end ifhtml
+@ifnothtml
 @xref{Large Initialization,,Initialization of Large Aggregate Areas},
+@end ifnothtml
 for information on how to change the point at which
 @code{g77} decides to issue this warning.
 
@@ -128,7 +154,12 @@ As of Version 0.5.19, a temporary kludge solution is provided whereby
 some rudimentary information on a member is written as a string that
 is the member's value as a character string.
 
+@ifhtml
+See the @code{g77} documentation
+@end ifhtml
+@ifnothtml
 @xref{Code Gen Options,,Options for Code Generation Conventions},
+@end ifnothtml
 for information on the @samp{-fdebug-kludge} option.
 
 @cindex code, displaying main source
