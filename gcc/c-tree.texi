@@ -1574,9 +1574,20 @@ always have pointer type.
 @item IF_STMT
 
 Used to represent an @code{if} statement.  The @code{IF_COND} is the
-expression or statement used as the condition.  If the condition is a
-statement, it will always be a @code{DECL_STMT}; the variable will then
-be used as the condition.
+expression. 
+
+If the condition is a @code{TREE_LIST}, then the @code{TREE_PURPOSE} is
+a statement (usually a @code{DECL_STMT}).  Each time the coondition is
+evaluated, the statement should be executed.  Then, the
+@code{TREE_VALUE} should be used as the conditional expression itself.
+This representation is used to handle C++ code like this:
+
+@example
+if (int i = 7) ...
+@end example
+
+where there is a new local variable (or variables) declared within the
+condition.
 
 The @code{THEN_CLAUSE} represents the statement given by the @code{then}
 condition, while the @code{ELSE_CLAUSE} represents the statement given
@@ -1643,9 +1654,10 @@ cleanups must be executed in the reverse order in which they appear.
 @item SWITCH_STMT
 
 Used to represent a @code{switch} statement.  The @code{SWITCH_COND} is
-the expression on which the switch is occurring.  (It may be either a
-statement, or an expression.)  The @code{SWITCH_BODY} is the body of the
-switch statement.
+the expression on which the switch is occurring.  See the documentation
+for an @code{IF_STMT} for more information on the representation used
+for the condition.  The @code{SWITCH_BODY} is the body of the switch
+statement.
 
 @item TRY_BLOCK
 Used to represent a @code{try} block.  The body of the try block is
@@ -1665,9 +1677,9 @@ And, if an exception is thrown while the expression is executing,
 @item WHILE_STMT
 
 Used to represent a @code{while} loop.  The @code{WHILE_COND} is the
-termination condition for the loop.  This condition may be either a
-statement or an expression.  If the condition is a statement, it will
-always be a @code{DECL_STMT}; see @code{IF_STMT} for more information.
+termination condition for the loop.  See the documentation for an
+@code{IF_STMT} for more information on the representation used for the
+condition.
 
 The @code{WHILE_BODY} is the body of the loop.
 

@@ -1,3 +1,8 @@
+2000-10-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-tree.texi: Improve documentation for IF_STMTs and related
+	conditional statements.
+
 2000-10-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.c (do_preexpand_calls): Remove.
