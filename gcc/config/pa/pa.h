@@ -1172,18 +1172,27 @@ extern int may_call_alloca;
 
 /* Macros to check register numbers against specific register classes.  */
 
-/* These assume that REGNO is a hard or pseudo reg number.
-   They give nonzero only if REGNO is a hard reg of the suitable class
+/* The following macros assume that X is a hard or pseudo reg number.
+   They give nonzero only if X is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
    has been allocated, which happens in local-alloc.c.  */
 
-#define REGNO_OK_FOR_INDEX_P(REGNO) \
-  ((REGNO) && ((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32))
-#define REGNO_OK_FOR_BASE_P(REGNO)  \
-  ((REGNO) && ((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32))
-#define REGNO_OK_FOR_FP_P(REGNO) \
-  (FP_REGNO_P (REGNO) || FP_REGNO_P (reg_renumber[REGNO]))
+#define REGNO_OK_FOR_INDEX_P(X) \
+  ((X) && ((X) < 32							\
+   || (X >= FIRST_PSEUDO_REGISTER					\
+       && reg_renumber							\
+       && (unsigned) reg_renumber[X] < 32)))
+#define REGNO_OK_FOR_BASE_P(X) \
+  ((X) && ((X) < 32							\
+   || (X >= FIRST_PSEUDO_REGISTER					\
+       && reg_renumber							\
+       && (unsigned) reg_renumber[X] < 32)))
+#define REGNO_OK_FOR_FP_P(X) \
+  (FP_REGNO_P (X)							\
+   || (X >= FIRST_PSEUDO_REGISTER					\
+       && reg_renumber							\
+       && FP_REGNO_P (reg_renumber[X])))
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.

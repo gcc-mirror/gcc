@@ -1,3 +1,8 @@
+2004-12-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.h (REGNO_OK_FOR_INDEX_P, REGNO_OK_FOR_BASE_P, REGNO_OK_FOR_FP_P):
+	Check register number and that reg_renumber is nonzero before using it.
+
 2004-12-14  Steve Ellcey  <sje@cup.hp.com>
 
 	* doc/invoke.texi (IA-64 options): Add existing options that
