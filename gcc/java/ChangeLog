@@ -1,3 +1,8 @@
+2003-03-11  Andrew Haley  <aph@redhat.com>
+
+	* jcf-io.c (caching_stat): Initialize origsep to remove compiler
+	warning.
+
 2003-03-10  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* jcf-io.c (caching_stat): Account for both DIR_SEPARATOR

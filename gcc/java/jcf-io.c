@@ -336,7 +336,7 @@ caching_stat (char *filename, struct stat *buf)
 {
 #if JCF_USE_SCANDIR
   char *sep;
-  char origsep;
+  char origsep = 0;
   char *base;
   memoized_dirlist_entry *dent;
   void **slot;
