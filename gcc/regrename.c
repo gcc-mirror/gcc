@@ -1268,6 +1268,26 @@ copy_value (dest, src, vd)
   if (vd->e[sr].mode == VOIDmode)
     set_value_regno (sr, vd->e[dr].mode, vd);
 
+  /* If we are narrowing the the input to a smaller number of hard regs,
+     and it is in big endian, we are really extracting a high part.
+     Since we generally associate a low part of a value with the value itself,
+     we must not do the same for the high part.
+     Note we can still get low parts for the same mode combination through
+     a two-step copy involving differently sized hard regs.
+     Assume hard regs fr* are 32 bits bits each, while r* are 64 bits each:
+     (set (reg:DI r0) (reg:DI fr0))
+     (set (reg:SI fr2) (reg:SI r0))
+     loads the low part of (reg:DI fr0) - i.e. fr1 - into fr2, while:
+     (set (reg:SI fr2) (reg:SI fr0))
+     loads the high part of (reg:DI fr0) into fr2.
+
+     We can't properly represent the latter case in our tables, so don't
+     record anything then.  */
+  else if (sn < (unsigned int) HARD_REGNO_NREGS (sr, vd->e[sr].mode)
+	   && (GET_MODE_SIZE (vd->e[sr].mode) > UNITS_PER_WORD
+	       ? WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN))
+    return;
+
   /* If SRC had been assigned a mode narrower than the copy, we can't
      link DEST into the chain, because not all of the pieces of the
      copy came from oldest_regno.  */

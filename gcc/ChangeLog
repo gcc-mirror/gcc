@@ -1,3 +1,7 @@
+Tue Jul 16 19:32:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* regrename.c (copy_value): Don't record high part copies.
+
 2002-07-16  Steve Ellcey  <sje@cup.hp.com>
 
 	* gcc/config/pa/long_double.h (FIXUNS_TRUNCTFDI2_LIBCALL): New define.
