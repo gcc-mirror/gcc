@@ -2476,7 +2476,7 @@ emit_soft_tfmode_libcall (func_name, nargs, operands)
      rtx *operands;
 {
   rtx ret_slot = NULL, arg[3], func_sym;
-  int i, j;
+  int i;
 
   /* We only expect to be called for conversions, unary, and binary ops.  */
   if (nargs < 2 || nargs > 3)
@@ -2490,27 +2490,17 @@ emit_soft_tfmode_libcall (func_name, nargs, operands)
       /* TFmode arguments and return values are passed by reference.  */
       if (GET_MODE (this_arg) == TFmode)
 	{
-	  if (GET_CODE (this_arg) == MEM)
-	    {
-	      this_arg = XEXP (this_arg, 0);
+	  int force_stack_temp;
 
-	      /* Make sure the output is not in the same place
-		 as one of our inputs.  */
-	      if (i == 0)
-		{
-		  for (j = 1; j < nargs; j++)
-		    if (rtx_equal_p (operands[0], operands[j]))
-		      break;
+	  force_stack_temp = 0;
+	  if (TARGET_BUGGY_QP_LIB && i == 0)
+	    force_stack_temp = 1;
 
-		  if (j != nargs)
-		    {
-		      ret_slot = assign_stack_temp (TFmode,
-						    GET_MODE_SIZE (TFmode), 0);
-		      this_arg = XEXP (ret_slot, 0);
-		    }
-		}
-	    }
-	  else if (CONSTANT_P (this_arg))
+	  if (GET_CODE (this_arg) == MEM
+	      && ! force_stack_temp)
+	    this_arg = XEXP (this_arg, 0);
+	  else if (CONSTANT_P (this_arg)
+		   && ! force_stack_temp)
 	    {
 	      this_slot = force_const_mem (TFmode, this_arg);
 	      this_arg = XEXP (this_slot, 0);

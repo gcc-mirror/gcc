@@ -225,6 +225,12 @@ Boston, MA 02111-1307, USA.  */
 #define MODDI3_LIBCALL "__rem64"
 #define UMODDI3_LIBCALL "__urem64"
 
+/* Solaris's _Qp_* library routine implementation clobbers the output
+   memory before the inputs are fully consumed.  */
+
+#undef TARGET_BUGGY_QP_LIB
+#define TARGET_BUGGY_QP_LIB	1
+
 #undef INIT_SUBTARGET_OPTABS
 #define INIT_SUBTARGET_OPTABS						\
   fixsfdi_libfunc							\
