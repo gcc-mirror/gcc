@@ -269,13 +269,6 @@ int in_std;
 /* Expect only namespace names now. */
 static int only_namespace_names;
 
-/* If original DECL_RESULT of current function was a register,
-   but due to being an addressable named return value, would up
-   on the stack, this variable holds the named return value's
-   original location.  */
-
-#define original_result_rtx cp_function_chain->x_result_rtx
-
 /* Used only for jumps to as-yet undefined labels, since jumps to
    defined labels can have their validity checked immediately.  */
 
@@ -8092,7 +8085,9 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
     return;
   
   /* Add this declaration to the statement-tree.  */
-  if (building_stmt_tree () && at_function_scope_p ())
+  if (building_stmt_tree () 
+      && at_function_scope_p ()
+      && TREE_CODE (decl) != RESULT_DECL)
     add_decl_stmt (decl);
 
   if (TYPE_HAS_MUTABLE_P (type))
@@ -8215,8 +8210,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 	    {
 	      /* If we're not building RTL, then we need to do so
 		 now.  */
-	      if (!building_stmt_tree ())
-		emit_local_var (decl);
+	      my_friendly_assert (building_stmt_tree (), 20000906);
 	      /* Initialize the variable.  */
 	      initialize_local_var (decl, init, flags);
 	      /* Clean up the variable.  */
@@ -14032,31 +14026,6 @@ store_parm_decls ()
       && building_stmt_tree ()
       && TYPE_RAISES_EXCEPTIONS (TREE_TYPE (current_function_decl)))
     current_eh_spec_try_block = expand_start_eh_spec ();
-}
-
-/* Bind a name and initialization to the return value of
-   the current function.  */
-
-void
-store_return_init (decl)
-     tree decl;
-{
-  /* If this named return value comes in a register, put it in a
-     pseudo-register.  */
-  if (DECL_REGISTER (decl))
-    {
-      original_result_rtx = DECL_RTL (decl);
-      /* Note that the mode of the old DECL_RTL may be wider than the
-	 mode of DECL_RESULT, depending on the calling conventions for
-	 the processor.  For example, on the Alpha, a 32-bit integer
-	 is returned in a DImode register -- the DECL_RESULT has
-	 SImode but the DECL_RTL for the DECL_RESULT has DImode.  So,
-	 here, we use the mode the back-end has already assigned for
-	 the return value.  */
-      DECL_RTL (decl) = gen_reg_rtx (GET_MODE (original_result_rtx));
-      if (TREE_ADDRESSABLE (decl))
-	put_var_into_stack (decl);
-    }
 }
 
 

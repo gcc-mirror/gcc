@@ -3333,8 +3333,10 @@ Previously it was possible to use an empty prototype parameter list to
 indicate an unspecified number of parameters (like C), rather than no
 parameters, as C++ demands. This feature has been removed, except where
 it is required for backwards compatibility @xref{Backwards Compatibility}.
-
 @end table
+
+The named return value extension has been deprecated, and will be
+removed from g++ at some point.
 
 @node Backwards Compatibility
 @section Backwards Compatibility
@@ -3379,7 +3381,6 @@ test specifically for GNU C++ (@pxref{Standard Predefined,,Standard
 Predefined Macros,cpp.info,The C Preprocessor}).
 
 @menu
-* Naming Results::      Giving a name to C++ function return values.
 * Min and Max::		C++ Minimum and maximum operators.
 * Volatiles::		What constitutes an access to a volatile object.
 * Restricted Pointers:: C99 restricted pointers and references.
@@ -3390,119 +3391,6 @@ Predefined Macros,cpp.info,The C Preprocessor}).
 * Bound member functions:: You can extract a function pointer to the
                         method denoted by a @samp{->*} or @samp{.*} expression.
 @end menu
-
-@node Naming Results
-@section Named Return Values in C++
-
-@cindex @code{return}, in C++ function header
-@cindex return value, named, in C++
-@cindex named return value in C++
-@cindex C++ named return value
-GNU C++ extends the function-definition syntax to allow you to specify a
-name for the result of a function outside the body of the definition, in
-C++ programs:
-
-@example
-@group
-@var{type}
-@var{functionname} (@var{args}) return @var{resultname};
-@{
-  @dots{}
-  @var{body}
-  @dots{}
-@}
-@end group
-@end example
-
-You can use this feature to avoid an extra constructor call when
-a function result has a class type.  For example, consider a function
-@code{m}, declared as @w{@samp{X v = m ();}}, whose result is of class
-@code{X}:
-
-@example
-X
-m ()
-@{
-  X b;
-  b.a = 23;
-  return b;
-@}
-@end example
-
-@cindex implicit argument: return value
-Although @code{m} appears to have no arguments, in fact it has one implicit
-argument: the address of the return value.  At invocation, the address
-of enough space to hold @code{v} is sent in as the implicit argument.
-Then @code{b} is constructed and its @code{a} field is set to the value
-23.  Finally, a copy constructor (a constructor of the form @samp{X(X&)})
-is applied to @code{b}, with the (implicit) return value location as the
-target, so that @code{v} is now bound to the return value.
-
-But this is wasteful.  The local @code{b} is declared just to hold
-something that will be copied right out.  While a compiler that
-combined an ``elision'' algorithm with interprocedural data flow
-analysis could conceivably eliminate all of this, it is much more
-practical to allow you to assist the compiler in generating
-efficient code by manipulating the return value explicitly,
-thus avoiding the local variable and copy constructor altogether.
-
-Using the extended GNU C++ function-definition syntax, you can avoid the
-temporary allocation and copying by naming @code{r} as your return value
-at the outset, and assigning to its @code{a} field directly:
-
-@example
-X
-m () return r;
-@{
-  r.a = 23;
-@}
-@end example
-
-@noindent
-The declaration of @code{r} is a standard, proper declaration, whose effects
-are executed @strong{before} any of the body of @code{m}.
-
-Functions of this type impose no additional restrictions; in particular,
-you can execute @code{return} statements, or return implicitly by
-reaching the end of the function body (``falling off the edge'').
-Cases like
-
-@example
-X
-m () return r (23);
-@{
-  return;
-@}
-@end example
-
-@noindent
-(or even @w{@samp{X m () return r (23); @{ @}}}) are unambiguous, since
-the return value @code{r} has been initialized in either case.  The
-following code may be hard to read, but also works predictably:
-
-@example
-X
-m () return r;
-@{
-  X b;
-  return b;
-@}
-@end example
-
-The return value slot denoted by @code{r} is initialized at the outset,
-but the statement @samp{return b;} overrides this value.  The compiler
-deals with this by destroying @code{r} (calling the destructor if there
-is one, or doing nothing if there is not), and then reinitializing
-@code{r} with @code{b}.
-
-This extension is provided primarily to help people who use overloaded
-operators, where there is a great need to control not just the
-arguments, but the return values of functions.  For classes where the
-copy constructor incurs a heavy performance penalty (especially in the
-common case where there is a quick default constructor), this is a major
-savings.  The disadvantage of this extension is that you do not control
-when the default constructor for the return value is called: it is
-always called at the beginning.
 
 @node Min and Max
 @section Minimum and Maximum Operators in C++

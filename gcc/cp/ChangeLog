@@ -1,3 +1,24 @@
+2000-09-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* NEWS: Mention that the named return value extension has been
+	deprecated.
+	* cp-tree.h (original_result_rtx): Define.
+	(TREE_REFERENCE_EXPR): Remove.
+	(DECL_VPARENT): Likewise.
+	(pushdecl_nonclass_level): Likewise.
+	(store_return_init): Likewise.
+	(reinit_lang_specific): Likewise.
+	(genrtl_named_return_value): Change prototype.
+	* decl.c (original_result_rtx): Remove.
+	(cp_finish_decl): Don't build DECL_STMTs for RESULT_DECLs.
+	Do not generate RTL for local variables here.
+	(store_return_init): Remove.
+	* semantics.c (genrtl_named_return_value): Simplify.  Fold in
+	store_return_init.
+	(finish_named_return_value): Adjust accordingly.  Warn that this
+	extension is deprecated.
+	(lang_expand_stmt): Adjust call to genrtl_named_return_value.
+
 2000-09-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (type_unification_real): Replace switch with if.

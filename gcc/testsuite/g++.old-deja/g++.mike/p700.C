@@ -1,4 +1,4 @@
-// Special g++ Options:
+// Special g++ Options: -Wno-deprecated
 // prms-id: 700
 
 //# 1 "../../../../libg++/etc/benchmarks/dhrystone.cc"

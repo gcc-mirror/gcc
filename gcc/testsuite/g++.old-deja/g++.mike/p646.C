@@ -6,7 +6,7 @@
 */
 
 
-// Special g++ Options: 
+// Special g++ Options: -Wno-deprecated
 
 extern "C"
 {

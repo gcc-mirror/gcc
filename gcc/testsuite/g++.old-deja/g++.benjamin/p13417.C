@@ -1,5 +1,5 @@
 // Build don't link:
-// Special g++ Options:  
+// Special g++ Options: -Wno-deprecated
 // prms-id: 13417
 
 class   Foo {
