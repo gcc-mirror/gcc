@@ -1,3 +1,10 @@
+2003-11-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.h
+	(__numpunct_cache<>::_M_cache): Avoid zeroing _M_grouping,
+	_M_truename and _M_falsename: the constructor always does
+	it immediately before the _M_cache call.
+
 2003-11-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/gnu/codecvt_members.cc (codecvt::do_length):
