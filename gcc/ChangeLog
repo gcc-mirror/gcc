@@ -1,3 +1,8 @@
+Sun Apr 18 00:08:45 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (GO_IF_LEGITIMATE_SIMPLE_ADDRESS): Correct last change --
+	make sure FP_BASE_P registers are only used with an integer.
+
 Sat Apr 17 22:54:17 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (REG_OK_FP_BASE_P): New macro.

@@ -1426,20 +1426,21 @@ extern void alpha_init_expanders ();
 
    First define the basic valid address.  */
 
-#define GO_IF_LEGITIMATE_SIMPLE_ADDRESS(MODE, X, ADDR) \
-{ if (REG_P (X) && REG_OK_FOR_BASE_P (X))	\
-    goto ADDR;					\
-  if (CONSTANT_ADDRESS_P (X))			\
-    goto ADDR;					\
-  if (GET_CODE (X) == PLUS			\
-      && REG_P (XEXP (X, 0)))			\
-    {						\
-      if (REG_OK_FP_BASE_P (XEXP (X, 0)))	\
-	goto ADDR;				\
-      if (REG_OK_FOR_BASE_P (XEXP (X, 0))	\
-	  && CONSTANT_ADDRESS_P (XEXP (X, 1)))	\
-	goto ADDR;				\
-    }						\
+#define GO_IF_LEGITIMATE_SIMPLE_ADDRESS(MODE, X, ADDR)	\
+{ if (REG_P (X) && REG_OK_FOR_BASE_P (X))		\
+    goto ADDR;						\
+  if (CONSTANT_ADDRESS_P (X))				\
+    goto ADDR;						\
+  if (GET_CODE (X) == PLUS				\
+      && REG_P (XEXP (X, 0)))				\
+    {							\
+      if (REG_OK_FP_BASE_P (XEXP (X, 0))		\
+	  && GET_CODE (XEXP (X, 1)) == CONST_INT)	\
+	goto ADDR;					\
+      if (REG_OK_FOR_BASE_P (XEXP (X, 0))		\
+	  && CONSTANT_ADDRESS_P (XEXP (X, 1)))		\
+	goto ADDR;					\
+    }							\
 }
 
 /* Now accept the simple address, or, for DImode only, an AND of a simple
