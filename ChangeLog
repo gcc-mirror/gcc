@@ -1,3 +1,7 @@
+2004-01-02  Roger Sayle  <roger@eyesopen.com>
+
+	* configure.in (ia64*-*-hpux*): Disable building java libraries.
+
 2003-10-21  Matt Thomas  <matt@3am-software.com>
 
 	* MAINTAINERS: Add myself as a vax port maintainer.

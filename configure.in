@@ -14,8 +14,8 @@
 ## For more information on these two systems, check out the documentation
 ## for 'Autoconf' (autoconf.texi) and 'Configure' (configure.texi).  
 
-#   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+#   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+#   2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -416,7 +416,7 @@ case "${target}" in
     ;;
   ia64*-**-hpux*)
     # No gdb or ld support yet.
-    noconfigdirs="$noconfigdirs tix readline mmalloc libgui itcl gdb ld"
+    noconfigdirs="$noconfigdirs ${libgcj} tix readline mmalloc libgui itcl gdb ld"
     ;;
   i[3456]86-*-coff | i[3456]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
