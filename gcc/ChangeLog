@@ -1,3 +1,10 @@
+2004-01-12  J"orn Rennecke <joern.rennecke@superh.com>
+
+	PR target/13585
+	* sh-protos.h (check_use_sfunc_addr): Declare.
+	* sh.c (extract_sfunc_addr, check_use_sfunc_addr): New functions.
+	* sh.md (use_sfunc_addr): Use check_use_sfunc_addr in insn predicate.
+
 2004-01-12  Matthias Klose  <doko@debian.org>
 
 	Backport from mainline
