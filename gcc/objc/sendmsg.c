@@ -49,6 +49,14 @@ static void __objc_install_dispatch_table_for_class (Class);
 
 /* Forward declare some functions */
 static void __objc_init_install_dtable(id, SEL);
+
+/* Various forwarding functions that are used based upon the
+   return type for the selector.
+   __objc_block_forward for structures.
+   __objc_double_forward for floats/doubles.
+   __objc_word_forward for pointers or types that fit in registers.
+   */
+static double __objc_double_forward(id, SEL, ...);
 static id __objc_word_forward(id, SEL, ...);
 typedef struct { id many[8]; } __big;
 #if INVISIBLE_STRUCT_RETURN 
@@ -80,6 +88,8 @@ get_imp (Class class, SEL sel)
       const char *t = sel->sel_types;
       if (t && (*t == '[' || *t == '(' || *t == '{'))
 	res = (IMP)__objc_block_forward;
+      else if (t && (*t == 'f' || *t == 'd'))
+	res = (IMP)__objc_double_forward;
       else
 	res = (IMP)__objc_word_forward;
     }
@@ -116,6 +126,8 @@ objc_msg_lookup(id receiver, SEL op)
 	  const char *t = op->sel_types;
 	  if (t && (*t == '[' || *t == '(' || *t == '{'))
 	    result = (IMP)__objc_block_forward;
+	  else if (t && (*t == 'f' || *t == 'd'))
+	    result = (IMP)__objc_double_forward;
 	  else
 	    result = (IMP)__objc_word_forward;
 	}
@@ -458,6 +470,7 @@ search_for_method_in_list (MethodList_t list, SEL op)
 
 static retval_t __objc_forward (id object, SEL sel, arglist_t args);
 
+/* Forwarding pointers/integers through the normal registers */
 static id
 __objc_word_forward (id rcv, SEL op, ...)
 {
@@ -469,6 +482,21 @@ __objc_word_forward (id rcv, SEL op, ...)
     __builtin_return (res);
   else
     return res;
+}
+
+/* Specific routine for forwarding floats/double because of
+   architectural differences on some processors.  i386s for
+   example which uses a floating point stack versus general
+   registers for floating point numbers.  This forward routine 
+   makes sure that GCC restores the proper return values. */
+static double
+__objc_double_forward (id rcv, SEL op, ...)
+{
+  void *args, *res;
+
+  args = __builtin_apply_args ();
+  res = __objc_forward (rcv, op, args);
+  __builtin_return (res);
 }
 
 #if INVISIBLE_STRUCT_RETURN
