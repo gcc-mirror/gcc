@@ -20,7 +20,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Run-time Target Specification.  */
+#ifndef TARGET_VERSION
 #define TARGET_VERSION	fputs (" (ARM/ELF non-Linux)", stderr);
+#endif
 
 /* If you don't define HAVE_ATEXIT, and the object file format/OS/whatever 
    does not support constructors/destructors, then gcc implements destructors

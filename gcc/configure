@@ -3001,6 +3001,10 @@ for machine in $build $host $target; do
 		tm_file=arm/aout.h
 		tmake_file=arm/t-bare
 		;;
+        arm*-*-ecos-elf)
+                tm_file=arm/ecos-elf.h
+                tmake_file=arm/t-elf
+                ;;
 	arm*-*-elf)
 		tm_file=arm/unknown-elf.h
 		tmake_file=arm/t-arm-elf
