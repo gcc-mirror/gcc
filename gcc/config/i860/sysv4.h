@@ -82,7 +82,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	fprintf (FILE, "\t.word 0x%lx\n\t.word 0x%lx\n", t[0], t[1]);	\
       }									\
     else								\
-      fprintf (FILE, "\t.double 0r%.17g\n", VALUE);			\
+      fprintf (FILE, "\t.double %.20g\n", VALUE);			\
   }
 
 /* This is how to output an assembler line defining a `float' constant.
@@ -103,7 +103,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	fprintf (FILE, "\t.word 0x%lx\n", t);				\
       }									\
     else								\
-      fprintf (FILE, "\t.single 0r%.9g\n", VALUE);			\
+      fprintf (FILE, "\t.float %.12g\n", VALUE);			\
   }
 
 #endif /* word order matches */
