@@ -1,4 +1,4 @@
-2002-10-11  Michael Koch  <konqueror@gmx.de>
+2002-10-21  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URL.java
 	(URL): Activate SecurityManager checks.
@@ -15,7 +15,6 @@
 	* java/net/natPlainDatagramSocketImpl.cc:
 	No lines longer then 80 characters.
 	
-
 2002-10-20  Adam Megacz <adam@xwt.org>
 
 	* aclocal.m4 (CHECK_FOR_BROKEN_MINGW_LD): added
