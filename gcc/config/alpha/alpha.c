@@ -1300,6 +1300,23 @@ print_operand (file, x, code)
 	fputs ("su", file);
       break;
 
+    case '`':
+      /* Generates trap-mode suffix for instructions that accept the
+	 v and sv suffix.  The only instruction that needs this is cvtql.  */
+      switch (alpha_fptm)
+	{
+	case ALPHA_FPTM_N:
+	  break;
+	case ALPHA_FPTM_U:
+	  fputs ("v", file);
+	  break;
+	case ALPHA_FPTM_SU:
+	case ALPHA_FPTM_SUI:
+	  fputs ("sv", file);
+	  break;
+	}
+      break;
+
     case '(':
       /* Generates trap-mode suffix for instructions that accept the
 	 v, sv, and svi suffix.  The only instruction that needs this
