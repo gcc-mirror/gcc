@@ -1133,11 +1133,13 @@ static dw_cfa_location cfa_temp;
 	       cfa_store.reg to the actual CFA
   cfa_temp     register holding an integral value.  cfa_temp.offset
 	       stores the value, which will be used to adjust the
-	       stack pointer.
+	       stack pointer.  cfa_temp is also used like cfa_store,
+	       to track stores to the stack via fp or a temp reg.
  
   Rules  1- 4: Setting a register's value to cfa.reg or an expression
   	       with cfa.reg as the first operand changes the cfa.reg and its
-	       cfa.offset.
+	       cfa.offset.  Rule 1 and 4 also set cfa_temp.reg and
+	       cfa_temp.offset.
 
   Rules  6- 9: Set a non-cfa.reg register value to a constant or an
 	       expression yielding a constant.  This sets cfa_temp.reg
@@ -1146,9 +1148,9 @@ static dw_cfa_location cfa_temp;
   Rule 5:      Create a new register cfa_store used to save items to the
 	       stack.
 
-  Rules 10-13: Save a register to the stack.  Define offset as the
+  Rules 10-14: Save a register to the stack.  Define offset as the
 	       difference of the original location and cfa_store's
-	       location.
+	       location (or cfa_temp's location if cfa_temp is used).
 
   The Rules
 
@@ -1157,26 +1159,30 @@ static dw_cfa_location cfa_temp;
 
   Rule 1:
   (set <reg1> <reg2>:cfa.reg)
-  effects: cfa.reg = <REG1>
+  effects: cfa.reg = <reg1>
            cfa.offset unchanged
+	   cfa_temp.reg = <reg1>
+	   cfa_temp.offset = cfa.offset
 
   Rule 2:
-  (set sp ({minus,plus} {sp,fp}:cfa.reg {<const_int>,<reg>:cfa_temp.reg}))
+  (set sp ({minus,plus,losum} {sp,fp}:cfa.reg {<const_int>,<reg>:cfa_temp.reg}))
   effects: cfa.reg = sp if fp used
  	   cfa.offset += {+/- <const_int>, cfa_temp.offset} if cfa.reg==sp
 	   cfa_store.offset += {+/- <const_int>, cfa_temp.offset}
 	     if cfa_store.reg==sp
 
   Rule 3:
-  (set fp ({minus,plus} <reg>:cfa.reg <const_int>))
+  (set fp ({minus,plus,losum} <reg>:cfa.reg <const_int>))
   effects: cfa.reg = fp
   	   cfa_offset += +/- <const_int>
 
   Rule 4:
-  (set <reg1> (plus <reg2>:cfa.reg <const_int>))
+  (set <reg1> ({plus,losum} <reg2>:cfa.reg <const_int>))
   constraints: <reg1> != fp
   	       <reg1> != sp
   effects: cfa.reg = <reg1>
+	   cfa_temp.reg = <reg1>
+	   cfa_temp.offset = cfa.offset
 
   Rule 5:
   (set <reg1> (plus <reg2>:cfa_temp.reg sp:cfa.reg))
@@ -1208,30 +1214,31 @@ static dw_cfa_location cfa_temp;
   (set (mem (pre_modify sp:cfa_store (???? <reg1> <const_int>))) <reg2>)
   effects: cfa_store.offset -= <const_int>
 	   cfa.offset = cfa_store.offset if cfa.reg == sp
-	   offset = -cfa_store.offset
 	   cfa.reg = sp
-	   cfa.base_offset = offset
+	   cfa.base_offset = -cfa_store.offset
 
   Rule 11:
   (set (mem ({pre_inc,pre_dec} sp:cfa_store.reg)) <reg>)
   effects: cfa_store.offset += -/+ mode_size(mem)
 	   cfa.offset = cfa_store.offset if cfa.reg == sp
-	   offset = -cfa_store.offset
 	   cfa.reg = sp
-	   cfa.base_offset = offset
+	   cfa.base_offset = -cfa_store.offset
 
   Rule 12:
-  (set (mem ({minus,plus} <reg1>:cfa_store <const_int>)) <reg2>)
-  effects: cfa_store.offset += -/+ <const_int>
-	   offset = -cfa_store.offset
-	   cfa.reg = <reg1
-	   cfa.base_offset = offset
+  (set (mem ({minus,plus,losum} <reg1>:{cfa_store,cfa_temp} <const_int>)) <reg2>)
+  effects: cfa.reg = <reg1>
+	   cfa.base_offset = -/+ <const_int> - {cfa_store,cfa_temp}.offset
 
   Rule 13:
-  (set (mem <reg1>:cfa_store) <reg2>)
-  effects: offset = -cfa_store.offset
-	   cfa.reg = <reg1>
-	   cfa.base_offset = offset */
+  (set (mem <reg1>:{cfa_store,cfa_temp}) <reg2>)
+  effects: cfa.reg = <reg1>
+	   cfa.base_offset = -{cfa_store,cfa_temp}.offset
+
+  Rule 14:
+  (set (mem (postinc <reg1>:cfa_temp <const_int>)) <reg2>)
+  effects: cfa.reg = <reg1>
+	   cfa.base_offset = -cfa_temp.offset
+	   cfa_temp.offset -= mode_size(mem)  */
 
 static void
 dwarf2out_frame_debug_expr (expr, label)
@@ -1291,10 +1298,13 @@ dwarf2out_frame_debug_expr (expr, label)
 	     FP.  So we just rely on the backends to only set
 	     RTX_FRAME_RELATED_P on appropriate insns.  */
 	  cfa.reg = REGNO (dest);
+	  cfa_temp.reg = cfa.reg;
+	  cfa_temp.offset = cfa.offset;
 	  break;
 
 	case PLUS:
 	case MINUS:
+	case LO_SUM:
 	  if (dest == stack_pointer_rtx)
 	    {
 	      /* Rule 2 */
@@ -1320,10 +1330,13 @@ dwarf2out_frame_debug_expr (expr, label)
 		    abort ();
 		  cfa.reg = STACK_POINTER_REGNUM;
 		}
+	      else if (GET_CODE (src) == LO_SUM)
+		/* Assume we've set the source reg of the LO_SUM from sp.  */
+		;
 	      else if (XEXP (src, 0) != stack_pointer_rtx)
 		abort ();
 
-	      if (GET_CODE (src) == PLUS)
+	      if (GET_CODE (src) != MINUS)
 		offset = -offset;
 	      if (cfa.reg == STACK_POINTER_REGNUM)
 		cfa.offset += offset;
@@ -1343,7 +1356,7 @@ dwarf2out_frame_debug_expr (expr, label)
 		  && GET_CODE (XEXP (src, 1)) == CONST_INT)
 		{
 		  offset = INTVAL (XEXP (src, 1));
-		  if (GET_CODE (src) == PLUS)
+		  if (GET_CODE (src) != MINUS)
 		    offset = -offset;
 		  cfa.offset += offset;
 		  cfa.reg = HARD_FRAME_POINTER_REGNUM;
@@ -1353,7 +1366,7 @@ dwarf2out_frame_debug_expr (expr, label)
 	    }
 	  else
 	    {
-	      if (GET_CODE (src) != PLUS)
+	      if (GET_CODE (src) == MINUS)
 		abort ();
 
 	      /* Rule 4 */
@@ -1363,27 +1376,34 @@ dwarf2out_frame_debug_expr (expr, label)
 		{
 		  /* Setting a temporary CFA register that will be copied
 		     into the FP later on.  */
-		  offset = INTVAL (XEXP (src, 1));
-		  if (GET_CODE (src) == PLUS)
-		    offset = -offset;
+		  offset = - INTVAL (XEXP (src, 1));
 		  cfa.offset += offset;
 		  cfa.reg = REGNO (dest);
+		  /* Or used to save regs to the stack.  */
+		  cfa_temp.reg = cfa.reg;
+		  cfa_temp.offset = cfa.offset;
 		}
 	      /* Rule 5 */
-	      else
+	      else if (GET_CODE (XEXP (src, 0)) == REG
+		       && REGNO (XEXP (src, 0)) == cfa_temp.reg
+		       && XEXP (src, 1) == stack_pointer_rtx)
 		{
 		  /* Setting a scratch register that we will use instead
 		     of SP for saving registers to the stack.  */
-		  if (XEXP (src, 1) != stack_pointer_rtx)
-		    abort ();
-		  if (GET_CODE (XEXP (src, 0)) != REG
- 		      || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp.reg)
-		    abort ();
 		  if (cfa.reg != STACK_POINTER_REGNUM)
 		    abort ();
 		  cfa_store.reg = REGNO (dest);
 		  cfa_store.offset = cfa.offset - cfa_temp.offset;
 		}
+	      /* Rule 9 */
+	      else if (GET_CODE (src) == LO_SUM
+		       && GET_CODE (XEXP (src, 1)) == CONST_INT)
+		{
+		  cfa_temp.reg = REGNO (dest);
+		  cfa_temp.offset = INTVAL (XEXP (src, 1));
+		}
+	      else
+		abort ();
 	    }
 	  break;
 
@@ -1408,14 +1428,6 @@ dwarf2out_frame_debug_expr (expr, label)
 	     which will fill in all of the bits.  */
 	  /* Rule 8 */
 	case HIGH:
-	  break;
-
-	  /* Rule 9 */
-	case LO_SUM:
-	  if (GET_CODE (XEXP (src, 1)) != CONST_INT)
-	    abort ();
-	  cfa_temp.reg = REGNO (dest);
-	  cfa_temp.offset = INTVAL (XEXP (src, 1));
 	  break;
 
 	default:
@@ -1470,23 +1482,38 @@ dwarf2out_frame_debug_expr (expr, label)
 	  /* With an offset.  */
 	case PLUS:
 	case MINUS:
+	case LO_SUM:
 	  if (GET_CODE (XEXP (XEXP (dest, 0), 1)) != CONST_INT)
 	    abort ();
 	  offset = INTVAL (XEXP (XEXP (dest, 0), 1));
 	  if (GET_CODE (XEXP (dest, 0)) == MINUS)
 	    offset = -offset;
 
-	  if (cfa_store.reg != (unsigned) REGNO (XEXP (XEXP (dest, 0), 0)))
+	  if (cfa_store.reg == (unsigned) REGNO (XEXP (XEXP (dest, 0), 0)))
+	    offset -= cfa_store.offset;
+	  else if (cfa_temp.reg == (unsigned) REGNO (XEXP (XEXP (dest, 0), 0)))
+	    offset -= cfa_temp.offset;
+	  else
 	    abort ();
-	  offset -= cfa_store.offset;
 	  break;
 
 	  /* Rule 13 */
 	  /* Without an offset.  */
 	case REG:
-	  if (cfa_store.reg != (unsigned) REGNO (XEXP (dest, 0)))
+	  if (cfa_store.reg == (unsigned) REGNO (XEXP (dest, 0)))
+	    offset = -cfa_store.offset;
+	  else if (cfa_temp.reg == (unsigned) REGNO (XEXP (dest, 0)))
+	    offset = -cfa_temp.offset;
+	  else
 	    abort ();
-	  offset = -cfa_store.offset;
+	  break;
+
+	  /* Rule 14 */
+	case POST_INC:
+	  if (cfa_temp.reg != (unsigned) REGNO (XEXP (XEXP (dest, 0), 0)))
+	    abort ();
+	  offset = -cfa_temp.offset;
+	  cfa_temp.offset -= GET_MODE_SIZE (GET_MODE (dest));
 	  break;
 
 	default:

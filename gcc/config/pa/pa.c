@@ -42,21 +42,29 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "tm_p.h"
 
+#ifndef DO_FRAME_NOTES
+#ifdef INCOMING_RETURN_ADDR_RTX
+#define DO_FRAME_NOTES 1
+#else
+#define DO_FRAME_NOTES 0
+#endif
+#endif
+
 static void pa_init_machine_status PARAMS ((struct function *));
 static void pa_mark_machine_status PARAMS ((struct function *));
 static void pa_free_machine_status PARAMS ((struct function *));
-static void pa_combine_instructions			PARAMS ((rtx));
-static int pa_can_combine_p	PARAMS ((rtx, rtx, rtx, int, rtx, rtx, rtx));
-static int forward_branch_p				PARAMS ((rtx));
-static int shadd_constant_p				PARAMS ((int));
-static void pa_add_gc_roots                             PARAMS ((void));
-static void mark_deferred_plabels                       PARAMS ((void *));
-static void compute_zdepwi_operands			PARAMS ((unsigned HOST_WIDE_INT, unsigned *));
-static int compute_movstrsi_length			PARAMS ((rtx));
-static void remove_useless_addtr_insns			PARAMS ((rtx, int));
-static void store_reg					PARAMS ((int, int, int));
-static void load_reg					PARAMS ((int, int, int));
-static void set_reg_plus_d				PARAMS ((int, int, int));
+static void pa_combine_instructions PARAMS ((rtx));
+static int pa_can_combine_p PARAMS ((rtx, rtx, rtx, int, rtx, rtx, rtx));
+static int forward_branch_p PARAMS ((rtx));
+static int shadd_constant_p PARAMS ((int));
+static void pa_add_gc_roots PARAMS ((void));
+static void mark_deferred_plabels PARAMS ((void *));
+static void compute_zdepwi_operands PARAMS ((unsigned HOST_WIDE_INT, unsigned *));
+static int compute_movstrsi_length PARAMS ((rtx));
+static void remove_useless_addtr_insns PARAMS ((rtx, int));
+static rtx store_reg PARAMS ((int, int, int));
+static rtx load_reg PARAMS ((int, int, int));
+static rtx set_reg_plus_d PARAMS ((int, int, int));
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -2003,7 +2011,6 @@ output_move_double (operands)
 			       xoperands);
 	      return "ldw 0(%R0),%0\n\tldw 4(%R0),%R0";
 	    }
-	   
 	}
     }
 
@@ -2743,60 +2750,41 @@ remove_useless_addtr_insns (insns, check_notes)
 
 */
 
+/* Global variables set by FUNCTION_PROLOGUE.  */
+/* Size of frame.  Need to know this to emit return insns from
+   leaf procedures.  */
+static int actual_fsize;
+static int local_fsize, save_fregs;
+
 /* Emit RTL to store REG at the memory location specified by BASE+DISP.
    Handle case where DISP > 8k by using the add_high_const patterns.
 
    Note in DISP > 8k case, we will leave the high part of the address
    in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
 
-static void
+static rtx
 store_reg (reg, disp, base)
      int reg, disp, base;
 {
+  rtx i, dest, src, basereg;
+
+  src = gen_rtx_REG (word_mode, reg);
+  basereg = gen_rtx_REG (Pmode, base);
   if (VAL_14_BITS_P (disp))
-    emit_move_insn (gen_rtx_MEM (word_mode,
-				 plus_constant (gen_rtx_REG (Pmode, base),
-						disp)),
-		    gen_rtx_REG (word_mode, reg));
+    {
+      dest = gen_rtx_MEM (word_mode, plus_constant (basereg, disp));
+      i = emit_move_insn (dest, src);
+    }
   else
     {
-      emit_move_insn (gen_rtx_REG (Pmode, 1),
-		      gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, base),
-				    gen_rtx_HIGH (Pmode, GEN_INT (disp))));
-      emit_move_insn (gen_rtx_MEM (word_mode,
-				   gen_rtx_LO_SUM (Pmode,
-						   gen_rtx_REG (Pmode, 1),
-						   GEN_INT (disp))),
-		      gen_rtx_REG (word_mode, reg));
+      rtx delta = GEN_INT (disp);
+      rtx high = gen_rtx_PLUS (Pmode, basereg, gen_rtx_HIGH (Pmode, delta));
+      rtx tmpreg = gen_rtx_REG (Pmode, 1);
+      emit_move_insn (tmpreg, high);
+      dest = gen_rtx_MEM (word_mode, gen_rtx_LO_SUM (Pmode, tmpreg, delta));
+      i = emit_move_insn (dest, src);
     }
-}
-
-/* Emit RTL to load REG from the memory location specified by BASE+DISP.
-   Handle case where DISP > 8k by using the add_high_const patterns.
-
-   Note in DISP > 8k case, we will leave the high part of the address
-   in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
-
-static void
-load_reg (reg, disp, base)
-     int reg, disp, base;
-{
-  if (VAL_14_BITS_P (disp))
-    emit_move_insn (gen_rtx_REG (word_mode, reg),
-		    gen_rtx_MEM (word_mode,
-				 plus_constant (gen_rtx_REG (Pmode, base),
-						disp)));
-  else
-    {
-      emit_move_insn (gen_rtx_REG (Pmode, 1),
-		      gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, base),
-				    gen_rtx_HIGH (Pmode, GEN_INT (disp))));
-      emit_move_insn (gen_rtx_REG (word_mode, reg),
-		      gen_rtx_MEM (word_mode,
-				   gen_rtx_LO_SUM (Pmode,
-						   gen_rtx_REG (Pmode, 1),
-						   GEN_INT (disp))));
-    }
+  return i;
 }
 
 /* Emit RTL to set REG to the value specified by BASE+DISP.
@@ -2805,30 +2793,29 @@ load_reg (reg, disp, base)
    Note in DISP > 8k case, we will leave the high part of the address
    in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
 
-static void
+static rtx
 set_reg_plus_d (reg, base, disp)
      int reg, base, disp;
 {
+  rtx i;
+
   if (VAL_14_BITS_P (disp))
-    emit_move_insn (gen_rtx_REG (Pmode, reg),
-		    plus_constant (gen_rtx_REG (Pmode, base), disp));
+    {
+      i = emit_move_insn (gen_rtx_REG (Pmode, reg),
+			  plus_constant (gen_rtx_REG (Pmode, base), disp));
+    }
   else
     {
+      rtx delta = GEN_INT (disp);
       emit_move_insn (gen_rtx_REG (Pmode, 1),
 		      gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, base),
-				    gen_rtx_HIGH (Pmode, GEN_INT (disp))));
-      emit_move_insn (gen_rtx_REG (Pmode, reg),
-		      gen_rtx_LO_SUM (Pmode,
-				      gen_rtx_REG (Pmode, 1),
-				       GEN_INT (disp)));
+				    gen_rtx_HIGH (Pmode, delta)));
+      i = emit_move_insn (gen_rtx_REG (Pmode, reg),
+			  gen_rtx_LO_SUM (Pmode, gen_rtx_REG (Pmode, 1),
+					  delta));
     }
+  return i;
 }
-
-/* Global variables set by FUNCTION_PROLOGUE.  */
-/* Size of frame.  Need to know this to emit return insns from
-   leaf procedures.  */
-static int actual_fsize;
-static int local_fsize, save_fregs;
 
 int
 compute_frame_size (size, fregs_live)
@@ -2937,8 +2924,20 @@ output_function_prologue (file, size)
   remove_useless_addtr_insns (get_insns (), 0);
 }
 
+#if DO_FRAME_NOTES
+#define FRP(INSN) \
+  do					\
+    {					\
+      rtx insn = INSN;			\
+      RTX_FRAME_RELATED_P (insn) = 1;	\
+    }					\
+  while (0)
+#else
+#define FRP (INSN) INSN
+#endif
+
 void
-hppa_expand_prologue()
+hppa_expand_prologue ()
 {
   extern char call_used_regs[];
   int size = get_frame_size ();
@@ -2965,10 +2964,10 @@ hppa_expand_prologue()
   size_rtx = GEN_INT (actual_fsize);
 
   /* Save RP first.  The calling conventions manual states RP will
-     always be stored into the caller's frame at sp-20 or sp - 16
+     always be stored into the caller's frame at sp - 20 or sp - 16
      depending on which ABI is in use.  */
   if (regs_ever_live[2])
-    store_reg (2, TARGET_64BIT ? -16 : -20, STACK_POINTER_REGNUM);
+    FRP (store_reg (2, TARGET_64BIT ? -16 : -20, STACK_POINTER_REGNUM));
 
   /* Allocate the local frame and set up the frame pointer if needed.  */
   if (actual_fsize != 0)
@@ -2982,9 +2981,31 @@ hppa_expand_prologue()
 	     handles small (<8k) frames.  The second handles large (>=8k)
 	     frames.  */
 	  emit_move_insn (tmpreg, frame_pointer_rtx);
-	  emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
+	  FRP (emit_move_insn (frame_pointer_rtx, stack_pointer_rtx));
 	  if (VAL_14_BITS_P (actual_fsize))
-	    emit_insn (gen_post_store (stack_pointer_rtx, tmpreg, size_rtx));
+	    {
+	      rtx insn = emit_insn (gen_post_store (stack_pointer_rtx, tmpreg,
+						    size_rtx));
+	      if (DO_FRAME_NOTES)
+		{
+		  rtvec vec;
+		  RTX_FRAME_RELATED_P (insn) = 1;
+		  vec = gen_rtvec (2,
+				   gen_rtx_SET (VOIDmode,
+						gen_rtx_MEM (word_mode,
+							     stack_pointer_rtx),
+						frame_pointer_rtx),
+				   gen_rtx_SET (VOIDmode,
+						stack_pointer_rtx,
+						gen_rtx_PLUS (word_mode,
+							      stack_pointer_rtx,
+							      size_rtx)));
+		  REG_NOTES (insn)
+		    = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+					 gen_rtx_SEQUENCE (VOIDmode, vec),
+					 REG_NOTES (insn));
+		}
+	    }
 	  else
 	    {
 	      /* It is incorrect to store the saved frame pointer at *sp,
@@ -2996,10 +3017,31 @@ hppa_expand_prologue()
 	      int adjust1 = 8192 - 64;
 	      int adjust2 = actual_fsize - adjust1;
 	      rtx delta = GEN_INT (adjust1);
-	      emit_insn (gen_post_store (stack_pointer_rtx, tmpreg, delta));
-	      set_reg_plus_d (STACK_POINTER_REGNUM,
-			      STACK_POINTER_REGNUM,
-			      adjust2);
+	      rtx insn = emit_insn (gen_post_store (stack_pointer_rtx, tmpreg,
+						    delta));
+	      if (DO_FRAME_NOTES)
+		{
+		  rtvec vec;
+		  RTX_FRAME_RELATED_P (insn) = 1;
+		  vec = gen_rtvec (2,
+				   gen_rtx_SET (VOIDmode,
+						gen_rtx_MEM (word_mode,
+							     stack_pointer_rtx),
+						frame_pointer_rtx),
+				   gen_rtx_SET (VOIDmode,
+						stack_pointer_rtx,
+						gen_rtx_PLUS (word_mode,
+							      stack_pointer_rtx,
+							      delta)));
+		  REG_NOTES (insn)
+		    = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+					 gen_rtx_SEQUENCE (VOIDmode, vec),
+					 REG_NOTES (insn));
+		}
+
+	      FRP (set_reg_plus_d (STACK_POINTER_REGNUM,
+				   STACK_POINTER_REGNUM,
+				   adjust2));
 	    }
 	  /* Prevent register spills from being scheduled before the
 	     stack pointer is raised.  Necessary as we will be storing
@@ -3019,9 +3061,9 @@ hppa_expand_prologue()
 	  /* Can not optimize.  Adjust the stack frame by actual_fsize
 	     bytes.  */
 	  else
-	    set_reg_plus_d (STACK_POINTER_REGNUM,
-			    STACK_POINTER_REGNUM,
-			    actual_fsize);
+	    FRP (set_reg_plus_d (STACK_POINTER_REGNUM,
+				 STACK_POINTER_REGNUM,
+				 actual_fsize));
 	}
     }
 
@@ -3034,7 +3076,7 @@ hppa_expand_prologue()
       for (i = 18, offset = local_fsize; i >= 4; i--)
 	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
-	    store_reg (i, offset, FRAME_POINTER_REGNUM);
+	    FRP (store_reg (i, offset, FRAME_POINTER_REGNUM));
 	    offset += UNITS_PER_WORD;
 	    gr_saved++;
 	  }
@@ -3051,13 +3093,14 @@ hppa_expand_prologue()
 	       optimize the first GR save.  */
 	    if (merge_sp_adjust_with_store)
 	      {
+		rtx delta = GEN_INT (-offset);
 		merge_sp_adjust_with_store = 0;
-	        emit_insn (gen_post_store (stack_pointer_rtx,
-					   gen_rtx_REG (word_mode, i),
-					   GEN_INT (-offset)));
+	        FRP (emit_insn (gen_post_store (stack_pointer_rtx,
+						gen_rtx_REG (word_mode, i),
+						delta)));
 	      }
 	    else
-	      store_reg (i, offset, STACK_POINTER_REGNUM);
+	      FRP (store_reg (i, offset, STACK_POINTER_REGNUM));
 	    offset += UNITS_PER_WORD;
 	    gr_saved++;
 	  }
@@ -3065,9 +3108,9 @@ hppa_expand_prologue()
       /* If we wanted to merge the SP adjustment with a GR save, but we never
 	 did any GR saves, then just emit the adjustment here.  */
       if (merge_sp_adjust_with_store)
-	set_reg_plus_d (STACK_POINTER_REGNUM,
-			STACK_POINTER_REGNUM,
-			actual_fsize);
+	FRP (set_reg_plus_d (STACK_POINTER_REGNUM,
+			     STACK_POINTER_REGNUM,
+			     actual_fsize));
     }
 
   /* The hppa calling conventions say that %r19, the pic offset
@@ -3088,9 +3131,9 @@ hppa_expand_prologue()
       /* First get the frame or stack pointer to the start of the FP register
 	 save area.  */
       if (frame_pointer_needed)
-	set_reg_plus_d (1, FRAME_POINTER_REGNUM, offset);
+	FRP (set_reg_plus_d (1, FRAME_POINTER_REGNUM, offset));
       else
-	set_reg_plus_d (1, STACK_POINTER_REGNUM, offset);
+	FRP (set_reg_plus_d (1, STACK_POINTER_REGNUM, offset));
 
       /* Now actually save the FP registers.  */
       for (i = FP_SAVED_REG_LAST; i >= FP_SAVED_REG_FIRST; i -= FP_REG_STEP)
@@ -3098,15 +3141,49 @@ hppa_expand_prologue()
 	  if (regs_ever_live[i]
 	      || (! TARGET_64BIT && regs_ever_live[i + 1]))
 	    {
-	      emit_move_insn (gen_rtx_MEM (DFmode,
-				           gen_rtx_POST_INC (DFmode, tmpreg)),
-			      gen_rtx_REG (DFmode, i));
+	      rtx addr, reg;
+	      addr = gen_rtx_MEM (DFmode, gen_rtx_POST_INC (DFmode, tmpreg));
+	      reg = gen_rtx_REG (DFmode, i);
+	      FRP (emit_move_insn (addr, reg));
 	      fr_saved++;
 	    }
 	}
     }
 }
 
+/* ?!? Do we want frame notes in the epilogue yet?  */
+#undef DO_FRAME_NOTES
+#define DO_FRAME_NOTES 0
+#undef FRP
+#define FRP(INSN) INSN
+
+/* Emit RTL to load REG from the memory location specified by BASE+DISP.
+   Handle case where DISP > 8k by using the add_high_const patterns.  */
+
+static rtx
+load_reg (reg, disp, base)
+     int reg, disp, base;
+{
+  rtx i, src, dest, basereg;
+
+  dest = gen_rtx_REG (word_mode, reg);
+  basereg = gen_rtx_REG (Pmode, base);
+  if (VAL_14_BITS_P (disp))
+    {
+      src = gen_rtx_MEM (word_mode, plus_constant (basereg, disp));
+      i = emit_move_insn (dest, src);
+    }
+  else
+    {
+      rtx delta = GEN_INT (disp);
+      rtx high = gen_rtx_PLUS (Pmode, basereg, gen_rtx_HIGH (Pmode, delta));
+      rtx tmpreg = gen_rtx_REG (Pmode, 1);
+      emit_move_insn (tmpreg, high);
+      src = gen_rtx_MEM (word_mode, gen_rtx_LO_SUM (Pmode, tmpreg, delta));
+      i = emit_move_insn (dest, src);
+    }
+  return i;
+}
 
 void
 output_function_epilogue (file, size)
@@ -3159,7 +3236,7 @@ hppa_expand_epilogue ()
       ret_off = TARGET_64BIT ? -16 : -20;
       if (frame_pointer_needed)
 	{
-	  load_reg (2, ret_off, FRAME_POINTER_REGNUM);
+	  FRP (load_reg (2, ret_off, FRAME_POINTER_REGNUM));
 	  ret_off = 0;
 	}
       else
@@ -3167,7 +3244,7 @@ hppa_expand_epilogue ()
 	  /* No frame pointer, and stack is smaller than 8k.  */
 	  if (VAL_14_BITS_P (ret_off - actual_fsize))
 	    {
-	      load_reg (2, ret_off - actual_fsize, STACK_POINTER_REGNUM);
+	      FRP (load_reg (2, ret_off - actual_fsize, STACK_POINTER_REGNUM));
 	      ret_off = 0;
 	    }
 	}
@@ -3179,7 +3256,7 @@ hppa_expand_epilogue ()
       for (i = 18, offset = local_fsize; i >= 4; i--)
 	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
-	    load_reg (i, offset, FRAME_POINTER_REGNUM);
+	    FRP (load_reg (i, offset, FRAME_POINTER_REGNUM));
 	    offset += UNITS_PER_WORD;
 	  }
     }
@@ -3197,7 +3274,7 @@ hppa_expand_epilogue ()
 		  && VAL_14_BITS_P (-actual_fsize))
 	        merge_sp_adjust_with_load = i;
 	      else
-	        load_reg (i, offset, STACK_POINTER_REGNUM);
+		FRP (load_reg (i, offset, STACK_POINTER_REGNUM));
 	      offset += UNITS_PER_WORD;
 	    }
 	}
@@ -3211,21 +3288,19 @@ hppa_expand_epilogue ()
     {
       /* Adjust the register to index off of.  */
       if (frame_pointer_needed)
-	set_reg_plus_d (1, FRAME_POINTER_REGNUM, offset);
+	FRP (set_reg_plus_d (1, FRAME_POINTER_REGNUM, offset));
       else
-	set_reg_plus_d (1, STACK_POINTER_REGNUM, offset);
+	FRP (set_reg_plus_d (1, STACK_POINTER_REGNUM, offset));
 
       /* Actually do the restores now.  */
       for (i = FP_SAVED_REG_LAST; i >= FP_SAVED_REG_FIRST; i -= FP_REG_STEP)
-	{
-	  if (regs_ever_live[i]
-	      || (! TARGET_64BIT && regs_ever_live[i + 1]))
-	    {
-	      emit_move_insn (gen_rtx_REG (DFmode, i),
-			      gen_rtx_MEM (DFmode,
-				           gen_rtx_POST_INC (DFmode, tmpreg)));
-	    }
-	}
+	if (regs_ever_live[i]
+	    || (! TARGET_64BIT && regs_ever_live[i + 1]))
+	  {
+	    rtx src = gen_rtx_MEM (DFmode, gen_rtx_POST_INC (DFmode, tmpreg));
+	    rtx dest = gen_rtx_REG (DFmode, i);
+	    FRP (emit_move_insn (dest, src));
+	  }
     }
 
   /* Emit a blockage insn here to keep these insns from being moved to
@@ -3239,35 +3314,33 @@ hppa_expand_epilogue ()
      pointer is initially set to fp + 64 to avoid a race condition.  */
   if (frame_pointer_needed)
     {
-      set_reg_plus_d (STACK_POINTER_REGNUM, FRAME_POINTER_REGNUM, 64);
-      emit_insn (gen_pre_load (frame_pointer_rtx, 
-			       stack_pointer_rtx,
-			       GEN_INT (-64)));
+      rtx delta = GEN_INT (-64);
+      FRP (set_reg_plus_d (STACK_POINTER_REGNUM, FRAME_POINTER_REGNUM, 64));
+      FRP (emit_insn (gen_pre_load (frame_pointer_rtx, 
+				    stack_pointer_rtx,
+				    delta)));
     }
   /* If we were deferring a callee register restore, do it now.  */
   else if (merge_sp_adjust_with_load)
     {
       rtx delta = GEN_INT (-actual_fsize);
-      emit_insn (gen_pre_load (gen_rtx_REG (word_mode,
-					    merge_sp_adjust_with_load),
-			       stack_pointer_rtx,
-			       delta));
+      rtx dest = gen_rtx_REG (word_mode, merge_sp_adjust_with_load);
+      FRP (emit_insn (gen_pre_load (dest, stack_pointer_rtx, delta)));
     }
   else if (actual_fsize != 0)
-    {
-      set_reg_plus_d (STACK_POINTER_REGNUM,
-		      STACK_POINTER_REGNUM,
-		      - actual_fsize);
-    }
+    FRP (set_reg_plus_d (STACK_POINTER_REGNUM,
+			 STACK_POINTER_REGNUM,
+			 - actual_fsize));
 
   /* If we haven't restored %r2 yet (no frame pointer, and a stack
      frame greater than 8k), do so now.  */
   if (ret_off != 0)
-    load_reg (2, ret_off, STACK_POINTER_REGNUM);
+    FRP (load_reg (2, ret_off, STACK_POINTER_REGNUM));
 }
 
 /* Set up a callee saved register for the pic offset table register.  */
-void hppa_init_pic_save ()
+void
+hppa_init_pic_save ()
 {
   rtx insn, picreg;
 
