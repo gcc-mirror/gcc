@@ -598,7 +598,7 @@ ns32k_address_cost (rtx operand)
 
     case MULT:
       cost += 2;
-      /* FALLTHRU */
+      /* Fall through.  */
     case PLUS:
       cost += ns32k_address_cost (XEXP (operand, 0));
       cost += ns32k_address_cost (XEXP (operand, 1));

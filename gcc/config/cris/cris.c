@@ -1308,7 +1308,7 @@ cris_print_operand (FILE *file, rtx x, int code)
   switch (code)
     {
     case 'b':
-      /* Print the unsigned supplied integer as if it was signed
+      /* Print the unsigned supplied integer as if it were signed
 	 and < 0, i.e print 255 or 65535 as -1, 254, 65534 as -2, etc.  */
       if (GET_CODE (x) != CONST_INT
 	  || ! CONST_OK_FOR_LETTER_P (INTVAL (x), 'O'))
@@ -1734,7 +1734,7 @@ cris_initial_elimination_offset (int fromreg, int toreg)
     = regs_ever_live[CRIS_SRP_REGNUM]
     || cfun->machine->needs_return_address_on_stack != 0;
 
-  /* Here we act as if the frame-pointer is needed.  */
+  /* Here we act as if the frame-pointer were needed.  */
   int ap_fp_offset = 4 + (return_address_on_stack ? 4 : 0);
 
   if (fromreg == ARG_POINTER_REGNUM

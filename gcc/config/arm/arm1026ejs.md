@@ -141,7 +141,7 @@
 
 ;; The "umulls", "umlals", "smulls", and "smlals" instructions loop in
 ;; the execute stage for five iterations in order to set the flags.
-;; The value result is vailable after four iterations.
+;; The value result is available after four iterations.
 (define_insn_reservation "mult6" 4
  (and (eq_attr "tune" "arm1026ejs")
       (eq_attr "insn" "umulls,umlals,smulls,smlals"))
@@ -185,7 +185,7 @@
 ;; base address is 64-bit aligned; if it is not, an additional cycle
 ;; is required.  This model assumes that the address is always 64-bit
 ;; aligned.  Because the processor can load two registers per cycle,
-;; that assumption means that we use the same instruction rservations
+;; that assumption means that we use the same instruction reservations
 ;; for loading 2k and 2k - 1 registers.
 ;;
 ;; The ALU pipeline is stalled until the completion of the last memory
@@ -233,7 +233,7 @@
  "nothing")
 
 ;; The latency for a call is not predictable.  Therefore, we use 32 as
-;; roughly equivalent to postive infinity.
+;; roughly equivalent to positive infinity.
 
 (define_insn_reservation "call_op" 32
  (and (eq_attr "tune" "arm1026ejs")

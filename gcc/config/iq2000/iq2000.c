@@ -2860,7 +2860,7 @@ iq2000_output_conditional_branch (rtx insn, rtx * operands, int two_operands_p,
 	char *c;
 
 	c = strchr (buffer, '\0');
-	/* Generate the reversed comparision.  This takes four
+	/* Generate the reversed comparison.  This takes four
 	   bytes.  */
 	if (float_p)
 	  sprintf (c, "b%s\t%%Z2%s",

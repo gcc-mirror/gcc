@@ -180,7 +180,7 @@
  "nothing")
 
 ;; The latency for a call is not predictable.  Therefore, we use 32 as
-;; roughly equivalent to postive infinity.
+;; roughly equivalent to positive infinity.
 
 (define_insn_reservation "9_call_op" 32
  (and (eq_attr "tune" "arm926ejs")

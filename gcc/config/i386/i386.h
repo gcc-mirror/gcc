@@ -580,7 +580,7 @@ extern int x86_prefetch_sse;
 	    {							\
 	    case '3':						\
 	      builtin_define ("__tune_pentium3__");		\
-	      /* FALLTHRU */					\
+	      /* Fall through.  */				\
 	    case '2':						\
 	      builtin_define ("__tune_pentium2__");		\
 	      break;						\

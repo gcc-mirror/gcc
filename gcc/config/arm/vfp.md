@@ -42,10 +42,10 @@
 ;;   second memory stage for loads.
 
 ;; We do not model Write-After-Read hazards.
-;; We do not do write scheduling with the arm core, so it is only neccessary
-;; to model the first stage of each pieline
+;; We do not do write scheduling with the arm core, so it is only necessary
+;; to model the first stage of each pipeline
 ;; ??? Need to model LS pipeline properly for load/store multiple?
-;; We do not model fmstat properly.  This could be done by modeiling pipelines
+;; We do not model fmstat properly.  This could be done by modeling pipelines
 ;; properly and defining an absence set between a dummy fmstat unit and all
 ;; other vfp units.
 
@@ -58,7 +58,7 @@
 ;; The VFP "type" attributes differ from those used in the FPA model.
 ;; ffarith	Fast floating point insns, eg. abs, neg, cpy, cmp.
 ;; farith	Most arithmetic insns.
-;; fmul		Double preision multiply.
+;; fmul		Double precision multiply.
 ;; fdivs	Single precision sqrt or division.
 ;; fdivd	Double precision sqrt or division.
 ;; f_load	Floating point load from memory.
@@ -104,12 +104,12 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Insn pattersn
+;; Insn pattern
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; SImode moves
 ;; ??? For now do not allow loading constants into vfp regs.  This causes
-;; problems because small sonstants get converted into adds.
+;; problems because small constants get converted into adds.
 (define_insn "*arm_movsi_vfp"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r ,m,!w,r,!w,!w, U")
       (match_operand:SI 1 "general_operand"	   "rI,K,mi,r,r,!w,!w,Ui,!w"))]
@@ -738,7 +738,7 @@
 ;; fldm*
 ;; fstm*
 ;; fmdhr et al (VFPv1)
-;; Support for xD (single precisio only) variants.
+;; Support for xD (single precision only) variants.
 ;; fmrrs, fmsrr
 ;; fuito*
 ;; ftoui*

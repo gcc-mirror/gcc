@@ -1026,7 +1026,7 @@ mips_regno_mode_ok_for_base_p (int regno, enum machine_mode mode, int strict)
 	   stack pointer (which needs the restriction) or the hard frame
 	   pointer (which doesn't).
 
-     All in all, it seems more consitent to only enforce this restriction
+     All in all, it seems more consistent to only enforce this restriction
      during and after reload.  */
   if (TARGET_MIPS16 && regno == STACK_POINTER_REGNUM)
     return !strict || GET_MODE_SIZE (mode) == 4 || GET_MODE_SIZE (mode) == 8;

@@ -2455,7 +2455,7 @@ mmix_symbolic_or_address_operand (rtx op, enum machine_mode mode)
 	      || (GET_CODE (XEXP (op, 1)) == CONST_DOUBLE
 		  && GET_MODE (XEXP (op, 1)) == VOIDmode)))
 	return 1;
-      /* FALLTHROUGH */
+      /* Fall through.  */
     default:
       return address_operand (op, mode);
     }

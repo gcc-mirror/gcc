@@ -103,7 +103,7 @@ _xlqadd (double a, double b, double c, double d)
       c = t;
     }
 
-  /* Thanks to commutivity, sum is invariant w.r.t. the next
+  /* Thanks to commutativity, sum is invariant w.r.t. the next
      conditional exchange. */
   tau = d + c;
 
