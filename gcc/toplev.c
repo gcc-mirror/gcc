@@ -418,7 +418,6 @@ int warn_return_type;
 FILE *asm_out_file;
 FILE *aux_info_file;
 FILE *dump_file = NULL;
-FILE *cgraph_dump_file = NULL;
 char *dump_file_name;
 
 /* The current working directory of a translation.  It's generally the
@@ -978,6 +977,7 @@ compile_file (void)
 {
   /* Initialize yet another pass.  */
 
+  init_cgraph ();
   init_final (main_input_filename);
   coverage_init (aux_base_name);
 

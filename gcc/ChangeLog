@@ -1,3 +1,17 @@
+2004-09-10  Paolo Bonzini  <bonzini@gnu.org>
+
+	* cgraph.h (cgraph_dump_file): Do not declare.
+	* cgraphunit.c (cgraph_dump_file): Declare as static.
+	(init_cgraph): New.
+	* toplev.c (cgraph_dump_file): Do not declare.
+	(compile_file): Call init_cgraph.
+	* tree-dump.c (dump_files): Add IPA dump file, remove
+	XML dump of call graph.
+	(get_dump_file_name): Support IPA dump file naming scheme.
+	* tree.h (enum tree_dump_index): Add IPA dump file, remove
+	XML dump of call graph.
+	* doc/invoke.texi (Debugging Options): Document the new options.
+
 2004-09-10  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/extend.texi: Document the FR-V built-in functions.

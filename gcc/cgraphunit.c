@@ -163,6 +163,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	cgraph_decide_inlining implements heuristics taking whole callgraph
 	into account, while cgraph_decide_inlining_incrementally considers
 	only one function at a time and is used in non-unit-at-a-time mode.  */
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -208,6 +209,8 @@ static int overall_insns;
    once because it gets a new htab upon each recursive call from
    record_calls_1.  */
 static htab_t visited_nodes;
+
+static FILE *cgraph_dump_file;
 
 /* Determine if function DECL is needed.  That is, visible to something
    either outside this translation unit, something magic in the system
@@ -1865,4 +1868,10 @@ cgraph_build_static_cdtor (char which, tree body, int priority)
 	fn = targetm.asm_out.destructor;
       fn (XEXP (DECL_RTL (decl), 0), priority);
     }
+}
+
+void
+init_cgraph (void)
+{
+  cgraph_dump_file = dump_begin (TDI_cgraph, NULL);
 }
