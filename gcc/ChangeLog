@@ -1,3 +1,8 @@
+2003-10-07  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Clean up thread file logic.
+	* configure: Regenerate.
+
 2003-10-07  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygming.h (READONLY_DATA_SECTION_ASM_OP): Define.

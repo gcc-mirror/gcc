@@ -478,27 +478,8 @@ AC_ARG_ENABLE(threads,
 [  --enable-threads        enable thread usage for target GCC
   --enable-threads=LIB    use LIB thread package for target GCC],,
 enable_threads='')
-
+# Save in case it gets overwritten in config.gcc
 enable_threads_flag=$enable_threads
-# Check if a valid thread package
-case x${enable_threads_flag} in
-	x | xno)
-		# No threads
-		target_thread_file='single'
-		;;
-	xyes)
-		# default
-		target_thread_file=''
-		;;
-	xdecosf1 | xirix | xmach | xos2 | xposix | xpthreads | xsingle | \
-	xsolaris | xwin32 | xdce | xrtems| xvxworks | xaix | xgnat)
-		target_thread_file=$enable_threads_flag
-		;;
-	*)
-		echo "$enable_threads is an unknown thread package" 1>&2
-		exit 1
-		;;
-esac
 
 AC_ARG_ENABLE(objc-gc,
 [  --enable-objc-gc	  enable the use of Boehm's garbage collector with
@@ -1079,12 +1060,30 @@ if test "$host_xm_file" != "$build_xm_file"; then
 	fi
 fi
 
-if test x$thread_file = x; then
-	if test x$target_thread_file != x; then
-		thread_file=$target_thread_file
-	else
-		thread_file='single'
-	fi
+# Check if a valid thread package
+case ${enable_threads_flag} in
+  "" | no)
+    # No threads
+    target_thread_file='single'
+    ;;
+  yes)
+    # default
+    target_thread_file='single'
+    ;;
+  decosf1 | irix | mach | os2 | posix | pthreads | single | \
+  solaris | win32 | dce | rtems| vxworks | aix | gnat)
+    target_thread_file=${enable_threads_flag}
+    ;;
+  *)
+    echo "${enable_threads_flag} is an unknown thread package" 1>&2
+    exit 1
+    ;;
+esac
+
+if test x${thread_file} = x; then
+  # No thread file set by target-specific clauses in config.gcc,
+  # so use file chosen by default logic above
+  thread_file=${target_thread_file}
 fi
 
 if test x$enable___cxa_atexit = xyes || \
