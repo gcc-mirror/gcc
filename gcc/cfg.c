@@ -234,7 +234,7 @@ link_block (b, after)
   after->next_bb = b;
   b->next_bb->prev_bb = b;
 }
-  
+
 /* Unlink block B from chain.  */
 void
 unlink_block (b)
@@ -243,7 +243,7 @@ unlink_block (b)
   b->next_bb->prev_bb = b->prev_bb;
   b->prev_bb->next_bb = b->next_bb;
 }
-  
+
 
 /* Remove block B from the basic block array and compact behind it.  */
 

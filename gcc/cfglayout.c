@@ -127,7 +127,7 @@ skip_insns_after_block (bb)
 	      last_insn = insn;
 	      continue;
 	    }
-          break;
+	  break;
 
 	default:
 	  break;
@@ -137,7 +137,7 @@ skip_insns_after_block (bb)
     }
 
   /* It is possible to hit contradictory sequence.  For instance:
-    
+
      jump_insn
      NOTE_INSN_LOOP_BEG
      barrier
@@ -152,14 +152,14 @@ skip_insns_after_block (bb)
       if (GET_CODE (insn) == NOTE)
 	switch (NOTE_LINE_NUMBER (insn))
 	  {
-          case NOTE_INSN_LOOP_END:
-          case NOTE_INSN_BLOCK_END:
-          case NOTE_INSN_DELETED:
-          case NOTE_INSN_DELETED_LABEL:
+	  case NOTE_INSN_LOOP_END:
+	  case NOTE_INSN_BLOCK_END:
+	  case NOTE_INSN_DELETED:
+	  case NOTE_INSN_DELETED_LABEL:
 	    continue;
-          default:
+	  default:
 	    reorder_insns (insn, insn, last_insn);
-        }
+	  }
     }
 
   return last_insn;
@@ -192,7 +192,7 @@ record_effective_endpoints ()
 {
   rtx next_insn = get_insns ();
   int i;
-  
+
   for (i = 0; i < n_basic_blocks; i++)
     {
       basic_block bb = BASIC_BLOCK (i);
@@ -203,7 +203,7 @@ record_effective_endpoints ()
 					      PREV_INSN (bb->head));
       end = skip_insns_after_block (bb);
       if (NEXT_INSN (bb->end) && bb->end != end)
-        RBI (bb)->footer = unlink_insn_chain (NEXT_INSN (bb->end), end);
+	RBI (bb)->footer = unlink_insn_chain (NEXT_INSN (bb->end), end);
       next_insn = NEXT_INSN (bb->end);
     }
 
@@ -461,7 +461,7 @@ fixup_reorder_chain ()
 		    }
 		}
 
-	      /* Otherwise we can try to invert the jump.  This will 
+	      /* Otherwise we can try to invert the jump.  This will
 		 basically never fail, however, keep up the pretense.  */
 	      else if (invert_jump (bb_end_insn,
 				    label_for_bb (e_fall->dest), 0))
@@ -883,7 +883,7 @@ cfg_layout_duplicate_bb (bb, e)
 
   insn = duplicate_insn_chain (bb->head, bb->end);
   new_bb = create_basic_block (insn,
-		 	       insn ? get_last_insn () : NULL,
+			       insn ? get_last_insn () : NULL,
 			       EXIT_BLOCK_PTR->prev_bb);
   alloc_aux_for_block (new_bb, sizeof (struct reorder_block_def));
 
@@ -933,12 +933,12 @@ cfg_layout_duplicate_bb (bb, e)
   bb->count -= new_count;
 
   if (e)
-   {
-     new_bb->frequency = EDGE_FREQUENCY (e);
-     bb->frequency -= EDGE_FREQUENCY (e);
+    {
+      new_bb->frequency = EDGE_FREQUENCY (e);
+      bb->frequency -= EDGE_FREQUENCY (e);
 
-     cfg_layout_redirect_edge (e, new_bb);
-   }
+      cfg_layout_redirect_edge (e, new_bb);
+    }
 
   if (bb->count < 0)
     bb->count = 0;
