@@ -185,11 +185,9 @@ Boston, MA 02111-1307, USA.  */
    enclosed in `extern "C" {...}'. */
 #define NO_IMPLICIT_EXTERN_C
 
-#ifdef NO_LONG_DOUBLE
 /* Turn off long double being 96 bits.  */
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 64
-#endif
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
