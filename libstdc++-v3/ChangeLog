@@ -19,6 +19,24 @@
 	(numeric_limits<float>::is_iec559): Use has_infinity & has_quiet_NaN.
 	(numeric_limits<double>, numeric_limits<long double>): Similarly.
 
+	* include/std/std_limits.h (__glibcpp_integral_traps): New.
+	(__glibcpp_char_traps, __glibcpp_short_traps, __glibcpp_int_traps,
+	__glibcpp_long_traps, __glibcpp_wchar_t_traps,
+	__glibcpp_long_long_traps, __glibcpp_plain_char_traps,
+	__glibcpp_signed_char_traps, __glibcpp_unsigned_char_traps,
+	__glibcpp_signed_short_traps, __glibcpp_unsigned_short_traps,
+	__glibcpp_signed_int_traps, __glibcpp_unsigned_int_traps,
+	__glibcpp_signed_long_traps, __glibcpp_unsigned_long_traps,
+	__glibcpp_signed_long_long_traps, __glibcpp_unsigned_long_long_traps,
+	__glibcpp_char_is_modulo, __glibcpp_signed_char_is_modulo,
+	__glibcpp_signed_short_is_modulo, __glibcpp_signed_int_is_modulo,
+	__glibcpp_signed_long_is_modulo, __glibcpp_signed_long_long_is_modulo,
+	__glibcpp_wchar_t_is_modulo, __glibcpp_float_is_bounded,
+	__glibcpp_double_is_bounded, __glibcpp_long_double_is_bounded): Kill.
+	(numeric_limits<T>::traps, T integral): Use __glibcpp_integral_traps.
+	(numeric_limits<T>::is_modulo, T integral): Use true.
+	(numeric_limits<T>::is_bounded, T floating): Use true.
+
 2002-09-18  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/18_support/numeric_limits.cc (test_epsilon): New.
