@@ -1,3 +1,7 @@
+2002-03-28  Loren J. Rittle <ljrittle@acm.org>
+
+	* testsuite/18_support/numeric_limits.cc (test_extrema): Fix typo.
+
 2002-03-28  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/24_iterators/istream_iterator.cc
