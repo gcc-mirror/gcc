@@ -6247,7 +6247,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
       if (! current_function_decl)
 	tem = push_template_decl (tem);
       else if (minimal_parse_mode)
-	DECL_VINDEX (decl)
+	DECL_VINDEX (tem)
 	    = build_min_nt (DECL_STMT, copy_to_permanent (declarator),
 			    copy_to_permanent (declspecs),
 			    NULL_TREE);
