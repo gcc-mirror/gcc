@@ -1,3 +1,7 @@
+2005-03-14  Devang Patel  <dpatel@apple.com>
+
+	* doc/invoke.texi: Add reference to Visibility document.
+	
 2005-03-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config.gcc (mips*-*-*): Rename MASK_SPLIT_ADDRS to
