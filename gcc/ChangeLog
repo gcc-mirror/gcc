@@ -1,3 +1,7 @@
+2002-09-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (setccfp0, setccfp1): New patterns.
+
 2002-09-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* frv-protos.h (frv_init_builtins, frv_expand_builtin,
