@@ -1,3 +1,23 @@
+2000-06-14  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+      	* src/Makefile.am (string_sources): Simplify, assuming that with
+	-ffunction-sections, -fdata-sections, -Wl,--gc-sections, all this
+	hacking is not necessary.
+        (wstring_sources): Same.
+        (OPTIMIZE_CXXFLAGS): Enable -fdata-sections -ffunction-sections
+	-Wl,--gc-sections.
+	* src/string-inst.cc: Remove macro blocks.
+	* mkcheck.in (CXX_FLAG): Add bits here.
+	
+	* src/string-inst.cc: Remove iostream-related string instantiations.
+	* src/misc-inst.cc: Add here.
+
+	* acinclude.m4 (GLIBCPP_CHECK_COMPILER_VERSION): Change FMTFLAGS
+	to WFMT_FLAGS.
+	* aclocal.m4: Regenerate.
+	* configure.in: Change up.
+	* configure: Regenerate.
+	
 2000-06-13  Steven King  <sxking@uswest.net>
 
         * acinclude.m4:  Fixup some of the builtin math tests and add tests for
