@@ -87,7 +87,7 @@ public class DSAPrivateKeySpec extends Object implements KeySpec
   */
   public BigInteger getP() 
   {
-    return this.q;
+    return this.p;
   }
 
   /**

@@ -74,7 +74,7 @@ public class DSAParameterSpec extends Object implements AlgorithmParameterSpec, 
   */
   public BigInteger getP() 
   {
-    return this.q;
+    return this.p;
   }
 
   /**
