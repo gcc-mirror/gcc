@@ -1373,7 +1373,7 @@ Thu Jun 12 21:12:28 1997  Bob Manson  <manson@charmed.cygnus.com>
 
 Fri Jun  6 21:38:40 1997  Rob Savoye  <rob@chinadoll.cygnus.com>
 
-	* configure: Use '|' instead of ":" as the seperator in
+	* configure: Use '|' instead of ":" as the separator in
 	sed. Otherwise sed chokes on NT path names with drive
 	designators. Also look for "?:*" as the leading characters in an
 	absolute pathname.
