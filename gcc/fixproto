@@ -193,6 +193,11 @@ for code in ALL STD ; do
 	    new_files_to_check=""
 	    for file in $files_to_check ; do
 	      xxfile=`echo $file | sed -e 's|/\([^/\.][^/\.]*\)/\.\./|/|'`
+	      # Create the dir where this file will go when fixed.
+	      xxdir=`echo ./$file | sed -e 's|/[^/]*$||'`
+	      if [ \! -d $abs_target_subdir/$xxdir ] ; then
+		mkdir $abs_target_subdir/$xxdir
+	      fi
 	      # Just in case we have edited out a symbolic link
 	      if [ -f $src_dir_std/$file -a -f $src_dir_std/$xxfile ] ; then
 		file=$xxfile
