@@ -1,3 +1,9 @@
+2000-07-20  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/cpp/20000625-2.c, gcc.dg/cpp/macsyntx.c: Update error
+	regexps. 
+	* gcc.dg/cpp/paste6.c: New test.
+
 2000-07-19  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/cpp/tr-direct.c: New test.

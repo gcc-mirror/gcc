@@ -53,6 +53,14 @@ static unsigned int find_param PARAMS ((const cpp_token *,
  					const cpp_token *));
 static cpp_toklist * alloc_macro PARAMS ((cpp_reader *, struct macro_info *));
 
+/* These are all the tokens that can have something pasted after them.
+   Comma is included in the list only to support the GNU varargs extension
+   (where you write a ## b and a disappears if b is an empty rest argument).  */
+#define CAN_PASTE_AFTER(type) \
+((type) <= CPP_LAST_EQ || (type) == CPP_COLON || (type) == CPP_HASH \
+ || (type) == CPP_DEREF || (type) == CPP_DOT || (type) == CPP_NAME \
+ || (type) == CPP_INT || (type) == CPP_FLOAT || (type) == CPP_NUMBER \
+ || (type) == CPP_MACRO_ARG || (type) == CPP_PLACEMARKER || (type) == CPP_COMMA)
 
 /* Scans for a given token, returning the parameter number if found,
    or 0 if not found.  Scans from FIRST to TOKEN - 1 or the first
@@ -192,7 +200,6 @@ count_params (pfile, info)
 	    }
 	  else
 	    {
-	      info->flags |= GNU_REST_ARGS;
 	      if (CPP_PEDANTIC (pfile))
 		cpp_pedwarn (pfile,
 			     "ISO C does not permit named varargs parameters");
@@ -294,9 +301,6 @@ parse_define (pfile, info)
 	  /* Constraint 6.10.3.5  */
 	  if (!(info->flags & VAR_ARGS) && is__va_args__ (pfile, token))
 	    return 1;
-	  /* It might be worth doing a check here that we aren't a
-	     macro argument, since we don't store the text of macro
-	     arguments.  This would reduce "len" and save space.  */
 	}
       info->ntokens++;
       if (TOKEN_SPELL (token) == SPELL_STRING)
@@ -463,7 +467,15 @@ save_expansion (pfile, info)
 	  continue;
 
 	case CPP_PASTE:
-	  dest[-1].flags |= PASTE_LEFT;
+	  /* Set the paste flag on the token to our left, unless there
+	     is no possible token to which it might be pasted.  That
+	     is critical for correct operation under some circumstances;
+	     see gcc.dg/cpp/paste6.c. */
+	  if (CAN_PASTE_AFTER (dest[-1].type) || (dest[-1].flags & NAMED_OP))
+	    dest[-1].flags |= PASTE_LEFT;
+	  else if (CPP_OPTION (pfile, warn_paste))
+	    cpp_warning_with_line (pfile, dest[-1].line, dest[-1].col,
+				   "nothing can be pasted after this token");
 	  continue;
 
 	case CPP_HASH:
