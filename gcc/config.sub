@@ -676,6 +676,9 @@ case $os in
 	-ctix* | -uts*)
 		os=-sysv
 		;;
+	-ns2 )
+	        os=-nextstep2
+		;;
 	# Preserve the version number of sinix5.
 	-sinix5.*)
 		os=`echo $os | sed -e 's|sinix|sysv|'`
@@ -782,6 +785,9 @@ case $basic_machine in
 		;;
 	m88k-omron*)
 		os=-luna
+		;;
+	*-next )
+		os=-nextstep
 		;;
 	*-sequent)
 		os=-ptx
