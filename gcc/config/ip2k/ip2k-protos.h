@@ -28,7 +28,6 @@ extern int find_one_clear_bit_p PARAMS ((HOST_WIDE_INT));
 
 #ifdef TREE_CODE
 extern void unique_section PARAMS ((tree, int));
-extern void encode_section_info PARAMS ((tree, int));
 extern void asm_output_section_name PARAMS ((FILE *, tree, const char *,
 					     int));
 extern int valid_machine_type_attribute PARAMS ((tree, tree, tree, tree));

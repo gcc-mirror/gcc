@@ -1,5 +1,11 @@
 2003-04-17  Richard Henderson  <rth@redhat.com>
 
+	* config/ip2k/ip2k.c (is_regfile_address): Use SYMBOL_REF_FUNCTION_P.
+	(encode_section_info): Remove.
+	* config/ip2k/ip2k-protos.h: Update.
+
+2003-04-17  Richard Henderson  <rth@redhat.com>
+
 	* varasm.c (default_encode_section_info): Don't set 
 	SYMBOL_FLAG_EXTERNAL if not TREE_PUBLIC.
 	* config/i370/i370.c (i370_encode_section_info): Remove.

@@ -97,9 +97,6 @@ const struct attribute_spec ip2k_attribute_table[];
 #undef TARGET_ASM_UNIQUE_SECTION
 #define TARGET_ASM_UNIQUE_SECTION unique_section
 
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO encode_section_info
-
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE ip2k_attribute_table
 
@@ -756,7 +753,7 @@ is_regfile_address (x)
     switch (GET_CODE (x))
       {
       case SYMBOL_REF:
-	return ! SYMBOL_REF_FLAG (x); /* Declared as function.  */
+	return ! SYMBOL_REF_FUNCTION_P (x); /* Declared as function.  */
       case CONST:
       case PLUS:
 	x = XEXP (x, 0);
@@ -3238,20 +3235,6 @@ ip2k_handle_fndecl_attribute (node, name, args, flags, no_add_attrs)
 
   return NULL_TREE;
 }
-
-/* Encode section information about tree DECL.  */
-  
-void
-encode_section_info (decl, first)
-     tree decl;
-     int first ATTRIBUTE_UNUSED;
-{
-  if (! DECL_P (decl))
-    return;
-
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
-}   
 
 /* Outputs to the stdio stream FILE some
    appropriate text to go at the start of an assembler file.  */
