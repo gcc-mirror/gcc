@@ -1,3 +1,17 @@
+Sun Oct 10 20:58:27 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (scc patterns): Disable most SImode variants if
+	TARGET_POWERPC64.
+	* rs6000.c (expand_block_move): Fix gen_movsi typos.
+
+	Thu Oct  7 23:06:50 1999  Richard Henderson  <rth@cygnus.com>
+	* rs6000.md (fix_truncdfsi2_internal+1): Emit a clobber
+	before the fctiwz insn.
+
+	Thu Oct  7 00:36:17 1999  Diego Novillo  <dnovillo@cygnus.com>
+	* config/rs6000/rs6000.c (secondary_reload_class): For TARGET_ELF
+	make sure that HIGH instructions are copied into BASE_REGS.
+	
 Thu Sep 30 05:40:34 1999  Richard Earnshaw <rearnsha@arm.com>
 
 	* c-lang.c (finish_file case ndef ASM_OUTPUT_{CON,DE}STRUCTOR): 

@@ -2119,7 +2119,7 @@ expand_block_move (operands)
 	    {
 	      move_bytes = 2;
 	      tmp_reg = gen_reg_rtx (HImode);
-	      emit_insn (gen_movsi (tmp_reg,
+	      emit_insn (gen_movhi (tmp_reg,
 				    expand_block_move_mem (HImode,
 							   src_addr,
 							   orig_src)));
@@ -2132,7 +2132,7 @@ expand_block_move (operands)
 	    {
 	      move_bytes = 1;
 	      tmp_reg = gen_reg_rtx (QImode);
-	      emit_insn (gen_movsi (tmp_reg,
+	      emit_insn (gen_movqi (tmp_reg,
 				    expand_block_move_mem (QImode,
 							   src_addr,
 							   orig_src)));
@@ -2441,6 +2441,7 @@ secondary_reload_class (class, mode, in)
   if (TARGET_ELF
       && class != BASE_REGS
       && (GET_CODE (in) == SYMBOL_REF
+	  || GET_CODE (in) == HIGH
 	  || GET_CODE (in) == LABEL_REF
 	  || GET_CODE (in) == CONST))
     return BASE_REGS;
