@@ -30,7 +30,7 @@
 ;; Addition insns.
 
 (define_insn "adddi3"
-  [(set (match_operand:DI 0 "di_operand" "=r")
+  [(set (match_operand:DI 0 "di_operand" "=&r")
 	(plus:DI (match_operand:DI 1 "di_operand" "%r")
 		 (match_operand:DI 2 "di_operand" "r")))]
   ""
@@ -73,7 +73,7 @@
 ")
 
 (define_insn "subdi3"
-  [(set (match_operand:DI 0 "di_operand" "=r")
+  [(set (match_operand:DI 0 "di_operand" "=&r")
 	(minus:DI (match_operand:DI 1 "di_operand" "%r")
 		  (match_operand:DI 2 "di_operand" "r")))]
   ""
@@ -246,7 +246,7 @@
 ;; Boolean and,ior,xor insns
 
 (define_insn "anddi3"
-  [(set (match_operand:DI 0 "di_operand" "=r")
+  [(set (match_operand:DI 0 "di_operand" "=&r")
 	(and:DI (match_operand:DI 1 "di_operand" "%r")
 		(match_operand:DI 2 "di_operand" "r")))]
   ""
@@ -274,7 +274,7 @@
 ")
 
 (define_insn "iordi3"
-  [(set (match_operand:DI 0 "di_operand" "=r")
+  [(set (match_operand:DI 0 "di_operand" "=&r")
 	(ior:DI (match_operand:DI 1 "di_operand" "%r")
 		(match_operand:DI 2 "di_operand" "r")))]
   ""
@@ -380,7 +380,7 @@
 ;; Unary arithmetic insns
 
 (define_insn "negdi2"
-  [(set (match_operand:DI 0 "di_operand" "=r")
+  [(set (match_operand:DI 0 "di_operand" "=&r")
 	(neg:DI (match_operand:DI 1 "di_operand" "r")))]
   ""
   "*
