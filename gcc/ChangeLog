@@ -1,3 +1,8 @@
+2000-07-19  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.h (HARD_REGNO_MODE_OK): Don't allow XFmode in
+	GR_REGS.
+
 2000-07-19  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* tradcpp.c (rescan): Do not recognize directives when the #

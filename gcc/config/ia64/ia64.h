@@ -810,10 +810,11 @@ while (0)
 /* A C expression that is nonzero if it is permissible to store a value of mode
    MODE in hard register number REGNO (or in several registers starting with
    that one).  */
-/* ??? movxf_internal does not support XFmode values in integer registers.  */
+
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   (FR_REGNO_P (REGNO) ? (MODE) != CCmode				\
    : PR_REGNO_P (REGNO) ? (MODE) == CCmode				\
+   : GR_REGNO_P (REGNO) ? (MODE) != XFmode				\
    : 1)
 
 /* A C expression that is nonzero if it is desirable to choose register
