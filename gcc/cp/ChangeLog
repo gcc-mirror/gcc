@@ -1,5 +1,10 @@
 2005-04-05  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/20763
+	* decl.c (grokdeclarator): Correct attribute handling.
+
+2005-04-05  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/19159
 	* decl2.c (import_export_decl): Use non-COMDAT external linkage
 	for virtual tables, typeinfo, etc. that will be emitted in only
