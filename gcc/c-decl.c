@@ -6203,8 +6203,7 @@ store_parm_decls ()
 
       else
 	{
-	  register tree actual, type;
-	  register tree last = 0;
+	  tree actual = 0, last = 0, type;
 
 	  for (parm = DECL_ARGUMENTS (fndecl); parm; parm = TREE_CHAIN (parm))
 	    {
