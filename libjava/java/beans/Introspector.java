@@ -1,5 +1,5 @@
 /* java.beans.Introspector
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -206,6 +206,32 @@ public class Introspector {
 	cachedInfo = getBeanInfo(beanClass,null);
 	beanInfoCache.put(beanClass,cachedInfo);
 	return cachedInfo;
+      }
+  }
+
+  /**
+   * Flush all of the Introspector's internal caches.
+   *
+   * @since 1.2
+   */
+  public static void flushCaches()
+  {
+    beanInfoCache.clear();
+  }
+
+  /**
+   * Flush the Introspector's internal cached information for a given
+   * class.
+   *
+   * @param clz the class to be flushed.
+   * @throws NullPointerException if clz is null.
+   * @since 1.2
+   */
+  public static void flushFromCaches(Class clz)
+  {
+    synchronized (clz)
+      {
+	beanInfoCache.remove(clz);
       }
   }
 
