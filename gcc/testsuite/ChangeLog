@@ -1,5 +1,6 @@
 Tue Mar 14 08:58:37 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc.c-torture/execute/20000314-2.c: New test.
 	* gcc.c-torture/execute/20000314-1.c: New test.
 	* gcc.c-torture/compile/20000314-2.c: New test.
 	* gcc.c-torture/compile/20000314-1.c: New test.
