@@ -1556,11 +1556,6 @@ check_format (info, params)
 	  if (*format_chars == '.')
 	    {
 	      precise = TRUE;
-	      /* "For d, i, o, u, x, and X conversions,
-		 if a precision is specified, the 0 flag will be ignored.
-		 For other conversions, the behavior is undefined."  */
-	      if (index (flag_chars, '0') != 0)
-		warning ("precision and `0' flag both used in one %%-sequence");
 	      ++format_chars;
 	      if (*format_chars != '*' && !ISDIGIT (*format_chars))
 		warning ("`.' not followed by `*' or digit in format");
@@ -1666,6 +1661,16 @@ check_format (info, params)
 		       flag_chars[i], format_char);
 	      warning (message);
 	    }
+	}
+      if (precise && index (flag_chars, '0') != 0
+	  && (format_char == 'd' || format_char == 'i'
+	      || format_char == 'o' || format_char == 'u'
+	      || format_char == 'x' || format_char == 'x'))
+	{
+	  sprintf (message,
+		   "precision and `0' flag not both allowed with `%c' format",
+		   format_char);
+	  warning (message);
 	}
       switch (length_char)
 	{
