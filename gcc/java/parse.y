@@ -5488,15 +5488,17 @@ do_resolve_class (enclosing, class_type, decl, cl)
   while (enclosing)
     {
       tree name;
+      tree intermediate;
 
       if ((new_class_decl = find_as_inner_class (enclosing, class_type, cl)))
         return new_class_decl;
-
+      
+      intermediate = enclosing;
       /* Explore enclosing contexts. */
-      while (INNER_CLASS_DECL_P (enclosing))
+      while (INNER_CLASS_DECL_P (intermediate))
 	{
-	  enclosing = DECL_CONTEXT (enclosing);
-	  if ((new_class_decl = find_as_inner_class (enclosing, 
+	  intermediate = DECL_CONTEXT (intermediate);
+	  if ((new_class_decl = find_as_inner_class (intermediate, 
 						     class_type, cl)))
 	    return new_class_decl;
 	}

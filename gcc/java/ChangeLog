@@ -423,6 +423,11 @@ Wed Sep 13 11:50:35 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	compression_method fields.
 	* zextract.c (read_zip_archive): Collect file compression info.
 
+2000-08-15  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* parse.y (do_resolve_class): Also explore superclasses of 
+	intermediate enclosing contexts when searching for inner classes.
+
 2000-08-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (variable_declarator_id:): Better error message.
