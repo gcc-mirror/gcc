@@ -75,6 +75,11 @@ case "${target_cpu}" in
   hppa*)
     cpu_include_dir="cpu/hppa"
     ;;
+  mips*)
+    # cpu/mips/atomicity.h needs MIPS II or above.  Only use it
+    # where it is known to be safe.
+    ATOMICITYH="cpu/generic"
+    ;;
   m680[246]0)
     cpu_include_dir="cpu/m68k"
     ;;
