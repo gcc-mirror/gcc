@@ -1,5 +1,8 @@
 2003-12-08  Jason Merrill  <jason@redhat.com>
 
+	* name-lookup.c, init.c, except.c: Revert Giovanni's patch from
+	yesterday.
+
 	Give the anonymous namespace a null DECL_NAME.
 	* cp-tree.h: Don't declare anonymous_namespace_name.
 	* decl.c: Don't define it.

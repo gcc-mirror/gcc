@@ -2006,11 +2006,7 @@ push_overloaded_decl (tree decl, int flags)
 	}
     }
 
-  /* FIXME: We should build OVERLOADs for all function declarations here.
-     But right now, there are too many places where the code creates an
-     artificial declaration and expects the name to be bound exactly
-     to a FUNCTION_DECL.  */
-  if (!DECL_ARTIFICIAL (decl))
+  if (old || TREE_CODE (decl) == TEMPLATE_DECL)
     {
       if (old && TREE_CODE (old) != OVERLOAD)
 	new_binding = ovl_cons (decl, ovl_cons (old, NULL_TREE));
@@ -2020,6 +2016,7 @@ push_overloaded_decl (tree decl, int flags)
 	OVL_USED (new_binding) = 1;
     }
   else
+    /* NAME is not ambiguous.  */
     new_binding = decl;
 
   if (doing_global)
@@ -2877,11 +2874,7 @@ set_namespace_binding (tree name, tree scope, tree val)
   if (scope == NULL_TREE)
     scope = global_namespace;
   b = binding_for_name (NAMESPACE_LEVEL (scope), name);
-  if (!b->value
-      /* If OVL_CHAIN is NULL, it's the first FUNCTION_DECL for this name,
-       and we still need to call supplement_binding.  */
-      || (TREE_CODE (val) == OVERLOAD && OVL_CHAIN (val))
-      || val == error_mark_node)
+  if (!b->value || TREE_CODE (val) == OVERLOAD || val == error_mark_node)
     b->value = val;
   else
     supplement_binding (b, val);
