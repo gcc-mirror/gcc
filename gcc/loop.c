@@ -8155,6 +8155,40 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		  bl->nonneg = 1;
 		}
 
+	      /* No insn may reference both the reversed and another biv or it
+		 will fail (see comment near the top of the loop reversal
+		 code).
+		 Earlier on, we have verified that the biv has no use except
+		 counting, or it is the only biv in this function.
+		 However, the code that computes no_use_except_counting does
+		 not verify reg notes.  It's possible to have an insn that
+		 references another biv, and has a REG_EQUAL note with an
+		 expression based on the reversed biv.  To avoid this case,
+		 remove all REG_EQUAL notes based on the reversed biv
+		 here.  */
+	      for (p = loop_start; p != loop_end; p = NEXT_INSN (p))
+		if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
+		  {
+		    rtx *pnote;
+		    rtx set = single_set (p);
+		    /* If this is a set of a GIV based on the reversed biv, any
+		       REG_EQUAL notes should still be correct.  */
+		    if (! set
+			|| GET_CODE (SET_DEST (set)) != REG
+			|| (size_t) REGNO (SET_DEST (set)) >= reg_iv_type->num_elements
+			|| REG_IV_TYPE (REGNO (SET_DEST (set))) != GENERAL_INDUCT
+			|| REG_IV_INFO (REGNO (SET_DEST (set)))->src_reg != bl->biv->src_reg)
+		      for (pnote = &REG_NOTES (p); *pnote;)
+			{
+			  if (REG_NOTE_KIND (*pnote) == REG_EQUAL
+			      && reg_mentioned_p (regno_reg_rtx[bl->regno],
+						  XEXP (*pnote, 0)))
+			    *pnote = XEXP (*pnote, 1);
+			  else
+			    pnote = &XEXP (*pnote, 1);
+			}
+		  }
+
 	      /* Mark that this biv has been reversed.  Each giv which depends
 		 on this biv, and which is also live past the end of the loop
 		 will have to be fixed up.  */

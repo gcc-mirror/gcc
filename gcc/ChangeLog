@@ -1,5 +1,10 @@
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	Fri Jul  9 10:48:28 1999  Bernd Schmidt  <bernds@redhat.co.uk>
+	* loop.c (check_dbra_loop): When reversing a loop, delete all
+	REG_EQUAL notes referencing the reversed biv except those which are
+	for a giv based on it.
+
 	2000-11-24  Bernd Schmidt  <bernds@redhat.co.uk>
 	* reload1.c (conflicts_with_override): New function.
 	(emit_input_reload_insns): Use it to tighten test for validity
