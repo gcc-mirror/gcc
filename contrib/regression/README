@@ -1,5 +1,5 @@
 This directory contains scripts that are used by the regression
-tester, <http://people.redhat.com/geoffk/gcc-regression/>.
+tester, <http://gcc.gnu.org/regtest/>
 
 The primary script is 'btest-gcc.sh'.  This is the script that is run
 to actually test the compiler.
