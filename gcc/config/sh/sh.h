@@ -1871,7 +1871,4 @@ do {									\
 /* For the sake of libgcc2.c, indicate target supports atexit.  */
 #define HAVE_ATEXIT
 
-/* Enable the register move pass to improve code.  */
-#define ENABLE_REGMOVE_PASS
-
 #define SH_DYNAMIC_SHIFT_COST (TARGET_SH3 ? (TARGET_SMALLCODE ? 1 : 2) : 20)
