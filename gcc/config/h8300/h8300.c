@@ -816,7 +816,7 @@ single_one_operand (operand, mode)
       unsigned HOST_WIDE_INT mask =
 	(GET_MODE_BITSIZE (mode) < HOST_BITS_PER_WIDE_INT)
 	? ((unsigned HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (mode)) - 1
-	: ~0;
+	: ~(unsigned HOST_WIDE_INT) 0;
       unsigned HOST_WIDE_INT value = INTVAL (operand);
 
       if (exact_log2 (value & mask) >= 0)
@@ -841,7 +841,7 @@ single_zero_operand (operand, mode)
       unsigned HOST_WIDE_INT mask =
 	(GET_MODE_BITSIZE (mode) < HOST_BITS_PER_WIDE_INT)
 	? ((unsigned HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (mode)) - 1
-	: ~0;
+	: ~(unsigned HOST_WIDE_INT) 0;
       unsigned HOST_WIDE_INT value = INTVAL (operand);
 
       if (exact_log2 (~value & mask) >= 0)
