@@ -1,3 +1,9 @@
+2004-01-21  Ralf Corsepius  <corsepiu@faw.uni-ulm.de>
+
+	PR target/13073
+        * config/h8300/t-rtems (h8300-*-rtems*): New.
+        * config.gcc: Use config/h8300/t-rtems.
+	
 2004-01-20  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
         Backport from mainline

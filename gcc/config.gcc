@@ -792,7 +792,7 @@ frv-*-elf)
 	;;
 h8300-*-rtems*)
 	xm_defines=POSIX
-	tmake_file="h8300/t-h8300 t-rtems"
+	tmake_file="h8300/t-h8300 t-rtems h8300/t-rtems"
 	tm_file="h8300/h8300.h h8300/rtems.h rtems.h"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
