@@ -1352,11 +1352,7 @@ struct tree_type
 /* The name of the object as the assembler will see it (but before any
    translations made by ASM_OUTPUT_LABELREF).  Often this is the same
    as DECL_NAME.  It is an IDENTIFIER_NODE.  */
-#define DECL_ASSEMBLER_NAME(NODE)		\
-  ((DECL_ASSEMBLER_NAME_SET_P (NODE)		\
-    ? (void) 0					\
-    : (*lang_set_decl_assembler_name) (NODE)),	\
-   DECL_CHECK (NODE)->decl.assembler_name)
+#define DECL_ASSEMBLER_NAME(NODE) decl_assembler_name (NODE)
 
 /* Returns non-zero if the DECL_ASSEMBLER_NAME for NODE has been set.  If zero,
    the NODE might still have a DECL_ASSEMBLER_NAME -- it just hasn't been set
@@ -2057,6 +2053,7 @@ extern double approx_sqrt		PARAMS ((double));
 
 extern char *permalloc			PARAMS ((int));
 extern char *expralloc			PARAMS ((int));
+extern tree decl_assembler_name		PARAMS ((tree));
 
 /* Compute the number of bytes occupied by 'node'.  This routine only
    looks at TREE_CODE and, if the code is TREE_VEC, TREE_VEC_LENGTH.  */
@@ -2810,13 +2807,6 @@ extern int alias_sets_conflict_p		PARAMS ((HOST_WIDE_INT,
 							 HOST_WIDE_INT));
 extern int readonly_fields_p			PARAMS ((tree));
 extern int objects_must_conflict_p		PARAMS ((tree, tree));
-
-/* Set the DECL_ASSEMBLER_NAME for a node.  If it is the sort of thing
-   that the assembler should talk about, set DECL_ASSEMBLER_NAME to an
-   appropriate IDENTIFIER_NODE.  Otherwise, set it to the
-   ERROR_MARK_NODE to ensure that the assembler does not talk about
-   it.  */
-extern void (*lang_set_decl_assembler_name)     PARAMS ((tree));
 
 struct obstack;
 

@@ -67,6 +67,8 @@ static bool ok_to_generate_alias_set_for_type PARAMS ((tree));
 #define LANG_HOOKS_MARK_TREE cxx_mark_tree
 #undef LANG_HOOKS_UNSAFE_FOR_REEVAL
 #define LANG_HOOKS_UNSAFE_FOR_REEVAL c_common_unsafe_for_reeval
+#undef LANG_HOOKS_SET_DECL_ASSEMBLER_NAME
+#define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME mangle_decl
 #undef LANG_HOOKS_MARK_ADDRESSABLE
 #define LANG_HOOKS_MARK_ADDRESSABLE cxx_mark_addressable
 #undef LANG_HOOKS_PRINT_STATISTICS

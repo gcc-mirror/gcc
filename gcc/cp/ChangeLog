@@ -1,3 +1,8 @@
+2002-04-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_SET_DECL_ASSEMBLER_NAME): Redefine.
+	* tree.c (init_tree): Don't set hook.
+
 2002-04-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR c++/5998:

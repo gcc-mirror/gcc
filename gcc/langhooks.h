@@ -242,6 +242,13 @@ struct lang_hooks
   /* Mark nodes held through the lang_specific hooks in the tree.  */
   void (*mark_tree) PARAMS ((tree));
 
+  /* Set the DECL_ASSEMBLER_NAME for a node.  If it is the sort of
+     thing that the assembler should talk about, set
+     DECL_ASSEMBLER_NAME to an appropriate IDENTIFIER_NODE.
+     Otherwise, set it to the ERROR_MARK_NODE to ensure that the
+     assembler does not talk about it.  */
+  void (*set_decl_assembler_name) PARAMS ((tree));
+
   /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
   bool honor_readonly;
 
