@@ -1,5 +1,10 @@
 Wed Apr 12 00:42:19 2000  Jeffrey A Law  (law@cygnus.com)
 
+	2000-02-19  Richard Henderson  <rth@cygnus.com>
+        * c-typeck.c (add_pending_init): Don't abort for multiple
+        fields at the same offset.
+        (pending_init_member): Test the correct member.
+
 	Wed Apr 12 00:44:31 2000  Jeffrey A Law  (law@cygnus.com)
 	* config/i386/freebsd-elf.h (DEFAULT_VTABLE_THUNKS): Changed to 2.
 
