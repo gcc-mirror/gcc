@@ -1,3 +1,7 @@
+Thu Jun 13 18:02:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* reload.c (find_valid_class):  Fix thinko in my previous patch.
+
 2002-06-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/6997
