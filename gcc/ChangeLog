@@ -1,6 +1,6 @@
 2000-09-13  Michael Hayes  <mhayes@cygnus.com>
 
-
+        * loop.c (note_set_pseudo_multiple_uses): Correct.
 
 2000-09-12  Jim Wilson  <wilson@cygnus.com>
 
