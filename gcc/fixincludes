@@ -847,7 +847,7 @@ extern char *memset();
 
 extern int memcmp();
 
-#endif __memory_h__
+#endif /* __memory_h__ */
 EOF
   fi
 fi
