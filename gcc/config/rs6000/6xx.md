@@ -165,7 +165,7 @@
 (define_insn_reservation "ppc630-fpcompare" 5
   (and (eq_attr "type" "fpcompare")
        (eq_attr "cpu" "ppc630"))
-  "(fpu1_6xx|fpu2_6xx)")
+  "fpu1_6xx|fpu2_6xx")
 
 (define_insn_reservation "ppc630-fp" 3
   (and (eq_attr "type" "fp,dmul")
@@ -200,22 +200,32 @@
 (define_insn_reservation "ppc604-mtcr" 2
   (and (eq_attr "type" "mtcr")
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
-  "mciu_6xx")
+  "iu1_6xx|iu2_6xx")
 
-(define_insn_reservation "ppc604-crlogical" 1
+(define_insn_reservation "ppc604-crlogical" 2
   (and (eq_attr "type" "cr_logical,delayed_cr")
        (eq_attr "cpu" "ppc604"))
   "bpu_6xx")
 
-(define_insn_reservation "ppc604e-crlogical" 1
+(define_insn_reservation "ppc604e-crlogical" 2
   (and (eq_attr "type" "cr_logical,delayed_cr")
        (eq_attr "cpu" "ppc604e,ppc620,ppc630"))
   "cru_6xx")
 
-(define_insn_reservation "ppc604-mtjmpr" 4
+(define_insn_reservation "ppc604-mtjmpr" 2
   (and (eq_attr "type" "mtjmpr")
        (eq_attr "cpu" "ppc604,ppc604e,ppc620,ppc630"))
-  "bpu_6xx")
+  "mciu_6xx")
+
+(define_insn_reservation "ppc604-mfjmpr" 3
+  (and (eq_attr "type" "mfjmpr")
+       (eq_attr "cpu" "ppc604,ppc604e,ppc620"))
+  "mciu_6xx")
+
+(define_insn_reservation "ppc630-mfjmpr" 2
+  (and (eq_attr "type" "mfjmpr")
+       (eq_attr "cpu" "ppc630"))
+  "mciu_6xx")
 
 (define_insn_reservation "ppc604-jmpreg" 1
   (and (eq_attr "type" "jmpreg,branch")

@@ -88,7 +88,7 @@
   "fpu_mpc*17")
 
 (define_insn_reservation "mpccore-mtjmpr" 4
-  (and (eq_attr "type" "mtjmpr")
+  (and (eq_attr "type" "mtjmpr,mfjmpr")
        (eq_attr "cpu" "mpccore"))
   "bpu_mpc")
 

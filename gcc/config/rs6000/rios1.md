@@ -51,7 +51,7 @@
   "iu_rios1+fpu_rios1")
 
 (define_insn_reservation "rios1-integer" 1
-  (and (eq_attr "type" "integer,mfcr,mtcr")
+  (and (eq_attr "type" "integer")
        (eq_attr "cpu" "rios1,ppc601"))
   "iu_rios1")
 
@@ -142,6 +142,16 @@
        (eq_attr "cpu" "ppc601"))
   "fpu_rios1*31")
 
+(define_insn_reservation "rios1-mfcr" 2
+  (and (eq_attr "type" "mfcr")
+       (eq_attr "cpu" "rios1,ppc601"))
+  "iu_rios1,bpu_rios1")
+
+(define_insn_reservation "rios1-mtcr" 4
+  (and (eq_attr "type" "mtcr")
+       (eq_attr "cpu" "rios1,ppc601"))
+  "iu_rios1,bpu_rios1")
+
 (define_insn_reservation "rios1-crlogical" 4
   (and (eq_attr "type" "cr_logical,delayed_cr")
        (eq_attr "cpu" "rios1,ppc601"))
@@ -150,12 +160,17 @@
 (define_insn_reservation "rios1-mtjmpr" 5
   (and (eq_attr "type" "mtjmpr")
        (eq_attr "cpu" "rios1"))
-  "bpu_rios1")
+  "iu_rios1,bpu_rios1")
 
 (define_insn_reservation "ppc601-mtjmpr" 4
   (and (eq_attr "type" "mtjmpr")
        (eq_attr "cpu" "ppc601"))
-  "bpu_rios1")
+  "iu_rios1,bpu_rios1")
+
+(define_insn_reservation "rios1-mfjmpr" 2
+  (and (eq_attr "type" "mfjmpr")
+       (eq_attr "cpu" "rios1,ppc601"))
+  "iu_rios1,bpu_rios1")
 
 (define_insn_reservation "rios1-branch" 1
   (and (eq_attr "type" "jmpreg,branch")
