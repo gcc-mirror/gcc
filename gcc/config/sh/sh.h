@@ -306,8 +306,9 @@ do {									\
 #define STACK_BOUNDARY  BIGGEST_ALIGNMENT
 
 /* The log (base 2) of the cache line size, in bytes.  Processors prior to
-   SH3 have no actual cache, but they fetch code in chunks of 4 bytes.  */
-#define CACHE_LOG (TARGET_CACHE32 ? 5 : TARGET_SH3 ? 4 : 2)
+   SH2 have no actual cache, but they fetch code in chunks of 4 bytes.
+   The SH2/3 have 16 byte cache lines, and the SH4 has a 32 byte cache line */
+#define CACHE_LOG (TARGET_CACHE32 ? 5 : TARGET_SH2 ? 4 : 2)
 
 /* Allocation boundary (in *bits*) for the code of a function.
    32 bit alignment is faster, because instructions are always fetched as a

@@ -1,3 +1,8 @@
+Mon Mar  1 21:44:30 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	From Toshiyasu Morita:
+	* sh.h (CACHE_LOG): SH2 has cache, too.
+
 Mon Mar  1 14:23:36 1999  Catherine Moore  <clm@cygnus.com>
  
         * toplev.c (compile_file):  Disable -ffunction-sections and
