@@ -583,6 +583,22 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
       /* Don't begin a cross-jump with a USE or CLOBBER insn.  */
       if (GET_CODE (p1) != USE && GET_CODE (p1) != CLOBBER)
 	{
+	  /* If the merged insns have different REG_EQUAL notes, then
+	     remove them.  */
+	  rtx equiv1 = find_reg_equal_equiv_note (i1);
+	  rtx equiv2 = find_reg_equal_equiv_note (i2);
+
+	  if (equiv1 && !equiv2)
+	    remove_note (i1, equiv1);
+	  else if (!equiv1 && equiv2)
+	    remove_note (i2, equiv2);
+	  else if (equiv1 && equiv2
+		   && !rtx_equal_p (XEXP (equiv1, 0), XEXP (equiv2, 0)))
+	    {
+	      remove_note (i1, equiv1);
+	      remove_note (i2, equiv2);
+	    }
+	     
 	  afterlast1 = last1, afterlast2 = last2;
 	  last1 = i1, last2 = i2;
           ninsns++;
