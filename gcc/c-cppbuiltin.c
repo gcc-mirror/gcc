@@ -275,7 +275,7 @@ define__GNUC__ (void)
   if (c_dialect_cxx ())
     builtin_define_with_value_n ("__GNUG__", q, v - q);
 
-  gcc_assert (*v == '.' || ISDIGIT (v[1]));
+  gcc_assert (*v == '.' && ISDIGIT (v[1]));
   
   q = ++v;
   while (ISDIGIT (*v))
