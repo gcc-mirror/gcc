@@ -1,3 +1,19 @@
+2000-12-07 Dec  8 11:23:29 2000  Richard Henderson  <rth@redhat.com>
+
+	* src/raw_api.c (ffi_translate_args): Fix typo.
+	(ffi_prep_closure): Likewise.
+
+	* include/ffi.h.in [ALPHA]: Define FFI_CLOSURES and
+	FFI_TRAMPOLINE_SIZE.
+	* src/alpha/ffi.c (ffi_prep_cif_machdep): Adjust minimal
+	cif->bytes for new ffi_call_osf implementation.
+	(ffi_prep_args): Absorb into ...
+	(ffi_call): ... here.  Do all stack allocation here and
+	avoid a callback function.
+	(ffi_prep_closure, ffi_closure_osf_inner): New.
+	* src/alpha/osf.S (ffi_call_osf): Reimplement with no callback.
+	(ffi_closure_osf): New.
+
 2000-09-10  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config.guess, config.sub, install-sh: Removed.

@@ -30,131 +30,25 @@
 
 #include <stdlib.h>
 
-/* ffi_prep_args is called by the assembly routine once stack space
-   has been allocated for the function's arguments */
+extern void ffi_call_osf(void *, unsigned long, unsigned, void *, void (*)());
+extern void ffi_closure_osf(void);
 
-static void
-ffi_prep_args(char *stack, extended_cif *ecif, int bytes, int flags)
-{
-  register long i, avn;
-  register void **p_argv;
-  register char *argp;
-  register ffi_type **p_arg;
 
-  /* To streamline things in the assembly code, we always allocate 12
-     words for loading up the int and fp argument registers.  The layout
-     is as when processing varargs: the 6 fp args, the 6 int args, then
-     the incoming stack.  ARGP points to the first int slot.  */
-  argp = stack + 6 * SIZEOF_ARG;
-  memset (stack, 0, 12 * SIZEOF_ARG);
-
-  if ( ecif->cif->rtype->type == FFI_TYPE_STRUCT )
-    {
-      *(void **) argp = ecif->rvalue;
-      argp += sizeof(void *);
-    }
-
-  i = 0;
-  avn = ecif->cif->nargs;
-  p_arg = ecif->cif->arg_types;
-  p_argv = ecif->avalue;
-  while (i < avn)
-    {
-      size_t z = ALIGN((*p_arg)->size, SIZEOF_ARG);
-
-      switch ((*p_arg)->type)
-	{
-	case FFI_TYPE_SINT8:
-	  *(SINT64 *) argp = *(SINT8 *)(* p_argv);
-	  break;
-		  
-	case FFI_TYPE_UINT8:
-	  *(UINT64 *) argp = *(UINT8 *)(* p_argv);
-	  break;
-		  
-	case FFI_TYPE_SINT16:
-	  *(SINT64 *) argp = *(SINT16 *)(* p_argv);
-	  break;
-		  
-	case FFI_TYPE_UINT16:
-	  *(UINT64 *) argp = *(UINT16 *)(* p_argv);
-	  break;
-		  
-	case FFI_TYPE_SINT32:
-	  *(SINT64 *) argp = *(SINT32 *)(* p_argv);
-	  break;
-		  
-	case FFI_TYPE_UINT32:
-	  *(UINT64 *) argp = *(UINT32 *)(* p_argv);
-	  break;
-
-	case FFI_TYPE_SINT64:
-	case FFI_TYPE_UINT64:
-	case FFI_TYPE_POINTER:
-	  *(UINT64 *) argp = *(UINT64 *)(* p_argv);
-	  break;
-
-	case FFI_TYPE_FLOAT:
-	  if (argp - stack < 12 * SIZEOF_ARG)
-	    {
-	      /* Note the conversion -- all the fp regs are loaded as
-		 doubles.  The in-register format is the same.  */
-	      *(double *) (argp - 6 * SIZEOF_ARG) = *(float *)(* p_argv);
-	    }
-	  else
-	    *(float *) argp = *(float *)(* p_argv);
-	  break;
-
-	case FFI_TYPE_DOUBLE:
-	  if (argp - stack < 12 * SIZEOF_ARG)
-	    *(double *) (argp - 6 * SIZEOF_ARG) = *(double *)(* p_argv);
-	  else
-	    *(double *) argp = *(double *)(* p_argv);
-	  break;
-
-	case FFI_TYPE_STRUCT:
-	  memcpy(argp, *p_argv, (*p_arg)->size);
-	  break;
-
-	default:
-	  FFI_ASSERT(0);
-	}
-
-      argp += z;
-      i++, p_arg++, p_argv++;
-    }
-}
-
-/* Perform machine dependent cif processing */
 ffi_status
 ffi_prep_cif_machdep(ffi_cif *cif)
 {
-  /* Adjust cif->bytes. to include 12 words for the temporary register
-     argument loading area.  This will be removed before the call.  */
-
-  cif->bytes += 6*SIZEOF_ARG;
-  if (cif->bytes < 12*SIZEOF_ARG)
-    cif->bytes = 12*SIZEOF_ARG;
-
-  /* The stack must be double word aligned, so round bytes up
-     appropriately. */
-
-  cif->bytes = ALIGN(cif->bytes, 2*sizeof(void*));
+  /* Adjust cif->bytes to represent a minimum 6 words for the temporary
+     register argument loading area.  */
+  if (cif->bytes < 6*SIZEOF_ARG)
+    cif->bytes = 6*SIZEOF_ARG;
 
   /* Set the return type flag */
   switch (cif->rtype->type)
     {
-    case FFI_TYPE_VOID:
     case FFI_TYPE_STRUCT:
-      cif->flags = cif->rtype->type;
-      break;
-
     case FFI_TYPE_FLOAT:
-      cif->flags = FFI_TYPE_FLOAT;
-      break;
-
     case FFI_TYPE_DOUBLE:
-      cif->flags = FFI_TYPE_DOUBLE;
+      cif->flags = cif->rtype->type;
       break;
 
     default:
@@ -165,35 +59,191 @@ ffi_prep_cif_machdep(ffi_cif *cif)
   return FFI_OK;
 }
 
-extern int ffi_call_osf(void (*)(char *, extended_cif *, int, int), 
-			extended_cif *, unsigned, 
-			unsigned, unsigned *, void (*)());
-
 void
 ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 {
-  extended_cif ecif;
-
-  ecif.cif = cif;
-  ecif.avalue = avalue;
+  unsigned long *stack, *argp;
+  long i, avn;
+  ffi_type **arg_types;
   
+  FFI_ASSERT (cif->abi == FFI_OSF);
+
   /* If the return value is a struct and we don't have a return
      value address then we need to make one.  */
-  
   if (rvalue == NULL && cif->rtype->type == FFI_TYPE_STRUCT)
-    ecif.rvalue = alloca(cif->rtype->size);
-  else
-    ecif.rvalue = rvalue;
-    
-  switch (cif->abi) 
-    {
-    case FFI_OSF:
-      ffi_call_osf(ffi_prep_args, &ecif, cif->bytes, 
-		   cif->flags, rvalue, fn);
-      break;
+    rvalue = alloca(cif->rtype->size);
 
-    default:
-      FFI_ASSERT(0);
-      break;
+  /* Allocate the space for the arguments, plus 4 words of temp
+     space for ffi_call_osf.  */
+  argp = stack = alloca(cif->bytes + 4*SIZEOF_ARG);
+
+  if (cif->flags == FFI_TYPE_STRUCT)
+    *(void **) argp++ = rvalue;
+
+  i = 0;
+  avn = cif->nargs;
+  arg_types = cif->arg_types;
+
+  while (i < avn)
+    {
+      switch ((*arg_types)->type)
+	{
+	case FFI_TYPE_SINT8:
+	  *(SINT64 *) argp = *(SINT8 *)(* avalue);
+	  break;
+		  
+	case FFI_TYPE_UINT8:
+	  *(SINT64 *) argp = *(UINT8 *)(* avalue);
+	  break;
+		  
+	case FFI_TYPE_SINT16:
+	  *(SINT64 *) argp = *(SINT16 *)(* avalue);
+	  break;
+		  
+	case FFI_TYPE_UINT16:
+	  *(SINT64 *) argp = *(UINT16 *)(* avalue);
+	  break;
+		  
+	case FFI_TYPE_SINT32:
+	case FFI_TYPE_UINT32:
+	  /* Note that unsigned 32-bit quantities are sign extended.  */
+	  *(SINT64 *) argp = *(SINT32 *)(* avalue);
+	  break;
+		  
+	case FFI_TYPE_SINT64:
+	case FFI_TYPE_UINT64:
+	case FFI_TYPE_POINTER:
+	  *(UINT64 *) argp = *(UINT64 *)(* avalue);
+	  break;
+
+	case FFI_TYPE_FLOAT:
+	  if (argp - stack < 6)
+	    {
+	      /* Note the conversion -- all the fp regs are loaded as
+		 doubles.  The in-register format is the same.  */
+	      *(double *) argp = *(float *)(* avalue);
+	    }
+	  else
+	    *(float *) argp = *(float *)(* avalue);
+	  break;
+
+	case FFI_TYPE_DOUBLE:
+	  *(double *) argp = *(double *)(* avalue);
+	  break;
+
+	case FFI_TYPE_STRUCT:
+	  memcpy(argp, *avalue, (*arg_types)->size);
+	  break;
+
+	default:
+	  FFI_ASSERT(0);
+	}
+
+      argp += ALIGN((*arg_types)->size, SIZEOF_ARG) / SIZEOF_ARG;
+      i++, arg_types++, avalue++;
     }
+
+  ffi_call_osf(stack, cif->bytes, cif->flags, rvalue, fn);
+}
+
+
+ffi_status
+ffi_prep_closure (ffi_closure* closure,
+		  ffi_cif* cif,
+		  void (*fun)(ffi_cif*, void*, void**, void*),
+		  void *user_data)
+{
+  unsigned int *tramp;
+
+  FFI_ASSERT (cif->abi == FFI_OSF);
+
+  tramp = (unsigned int *) &closure->tramp[0];
+  tramp[0] = 0x47fb0401;	/* mov $27,$1		*/
+  tramp[1] = 0xa77b0010;	/* ldq $27,16($27)	*/
+  tramp[2] = 0x6bfb0000;	/* jmp $31,($27),0	*/
+  tramp[3] = 0x47ff041f;	/* nop			*/
+  *(void **) &tramp[4] = ffi_closure_osf;
+
+  closure->cif = cif;
+  closure->fun = fun;
+  closure->user_data = user_data;
+
+  /* Flush the Icache.  */
+  asm volatile ("imb" : : : "memory");
+
+  return FFI_OK;
+}
+
+int
+ffi_closure_osf_inner(ffi_closure *closure, void *rvalue, unsigned long *argp)
+{
+  ffi_cif *cif;
+  void **avalue;
+  ffi_type **arg_types;
+  long i, avn, argn;
+
+  cif = closure->cif;
+  avalue = alloca(cif->nargs * sizeof(void *));
+
+  argn = 0;
+
+  /* Copy the caller's structure return address to that the closure
+     returns the data directly to the caller.  */
+  if (cif->flags == FFI_TYPE_STRUCT)
+    {
+      rvalue = (void *) argp[0];
+      argn = 1;
+    }
+
+  i = 0;
+  avn = cif->nargs;
+  arg_types = cif->arg_types;
+  
+  /* Grab the addresses of the arguments from the stack frame.  */
+  while (i < avn)
+    {
+      switch ((*arg_types)->type)
+	{
+	case FFI_TYPE_SINT8:
+	case FFI_TYPE_UINT8:
+	case FFI_TYPE_SINT16:
+	case FFI_TYPE_UINT16:
+	case FFI_TYPE_SINT32:
+	case FFI_TYPE_UINT32:
+	case FFI_TYPE_SINT64:
+	case FFI_TYPE_UINT64:
+	case FFI_TYPE_POINTER:
+	case FFI_TYPE_STRUCT:
+	  *avalue = &argp[argn];
+	  break;
+
+	case FFI_TYPE_FLOAT:
+	  if (argn < 6)
+	    {
+	      /* Floats coming from registers need conversion from double
+	         back to float format.  */
+	      *(float *)&argp[argn - 6] = *(double *)&argp[argn - 6];
+	      *avalue = &argp[argn - 6];
+	    }
+	  else
+	    *avalue = &argp[argn];
+	  break;
+
+	case FFI_TYPE_DOUBLE:
+	  *avalue = &argp[argn - (argn < 6 ? 6 : 0)];
+	  break;
+
+	default:
+	  FFI_ASSERT(0);
+	}
+
+      argn += ALIGN((*arg_types)->size, SIZEOF_ARG) / SIZEOF_ARG;
+      i++, arg_types++, avalue++;
+    }
+
+  /* Invoke the closure.  */
+  (closure->fun) (cif, rvalue, avalue, closure->user_data);
+
+  /* Tell ffi_closure_osf what register to put the return value in.  */
+  return cif->flags;
 }
