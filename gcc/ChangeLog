@@ -1,3 +1,8 @@
+2003-03-24  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/ia64.c (spill_tfmode_operand): Adjust calls to
+	gen_mem_addressof.
+
 2003-03-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (do_jump): Handle UNSAVE_EXPR specially.

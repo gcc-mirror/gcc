@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -1374,12 +1374,12 @@ spill_tfmode_operand (in, force)
       && GET_MODE (SUBREG_REG (in)) == TImode
       && GET_CODE (SUBREG_REG (in)) == REG)
     {
-      rtx mem = gen_mem_addressof (SUBREG_REG (in), NULL_TREE);
+      rtx mem = gen_mem_addressof (SUBREG_REG (in), NULL_TREE, true);
       return gen_rtx_MEM (TFmode, copy_to_reg (XEXP (mem, 0)));
     }
   else if (force && GET_CODE (in) == REG)
     {
-      rtx mem = gen_mem_addressof (in, NULL_TREE);
+      rtx mem = gen_mem_addressof (in, NULL_TREE, true);
       return gen_rtx_MEM (TFmode, copy_to_reg (XEXP (mem, 0)));
     }
   else if (GET_CODE (in) == MEM
