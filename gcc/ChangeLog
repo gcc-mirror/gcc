@@ -1,3 +1,8 @@
+2003-12-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/darwin.h (LINK_COMMAND_SPEC): Arrange
+	-fprofile-generate to imply -lgcov.
+
 2003-12-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (ldm_h8300s_2_normal): Use HImode for
