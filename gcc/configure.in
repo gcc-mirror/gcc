@@ -1611,8 +1611,8 @@ for machine in $build $host $target; do
 		fi
 		;;
 	mips-sgi-irix5cross64)		# Irix5 host, Irix 6 target, cross64
-		tm_file=mips/cross64.h
-		xm_file=mips/xm-iris5.h
+		tm_file="mips/iris6.h mips/cross64.h"
+		xm_file="${xm_file} xm-usg.h mips/xm-iris5.h"
 		broken_install=yes
 		fixincludes=Makefile.in
 		xmake_file=mips/x-iris
@@ -1630,12 +1630,12 @@ for machine in $build $host $target; do
 			then
 				tm_file=mips/iris5gdb.h
 			else
-				tm_file=mips/sni-gas.h
+				tm_file="mips/sni-svr4.h mips/sni-gas.h"
 			fi
 		else
 			tm_file=mips/sni-svr4.h
 		fi
-                xm_file=mips/xm-sysv.h
+                xm_file="${xm_file} xm-usg.h"
                 xmake_file=mips/x-sni-svr4
                 tmake_file=mips/t-mips-gas
                 if [[ x$gnu_ld != xyes ]]
@@ -1647,7 +1647,7 @@ for machine in $build $host $target; do
 	mips-sgi-irix5*)		# SGI System V.4., IRIX 5
 		if [[ x$gas = xyes ]]
 		then
-			tm_file=mips/iris5gas.h
+			tm_file="mips/iris5.h mips/iris5gas.h"
 			if [[ x$stabs = xyes ]]
 			then
 				tm_file="${tm_file} dbx.h"
@@ -1655,7 +1655,7 @@ for machine in $build $host $target; do
 		else
 			tm_file=mips/iris5.h
 		fi
-		xm_file=mips/xm-iris5.h
+		xm_file="${xm_file} xm-usg.h mips/xm-iris5.h"
 		broken_install=yes
 		fixincludes=fixinc.irix
 		xmake_file=mips/x-iris
@@ -1668,11 +1668,11 @@ for machine in $build $host $target; do
 		fi
 		;;
 	mips-sgi-irix4loser*)		# Mostly like a MIPS.
-		tm_file=mips/iris4loser.h
+		tm_file="mips/iris4loser.h mips/iris3.h ${tm_file} mips/iris4.h"
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file=mips/xm-iris4.h
+		xm_file="${xm_file} xm-usg.h"
 		broken_install=yes
 		xmake_file=mips/x-iris
 		if [[ x$gas = xyes ]]
@@ -1690,11 +1690,11 @@ for machine in $build $host $target; do
 		fi
 		;;
 	mips-sgi-irix4*)		# Mostly like a MIPS.
-		tm_file=mips/iris4.h
+		tm_file="mips/iris3.h ${tm_file} mips/iris4.h"
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file=mips/xm-iris4.h
+		xm_file="{$xm_file} xm-usg.h"
 		broken_install=yes
 		xmake_file=mips/x-iris
 		if [[ x$gas = xyes ]]
@@ -1712,11 +1712,11 @@ for machine in $build $host $target; do
 		fi
 		;;
 	mips-sgi-*)			# Mostly like a MIPS.
-		tm_file=mips/iris3.h
+		tm_file="mips/iris3.h ${tm_file}"
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file=mips/xm-iris3.h
+		xm_file="${xm_file} xm-usg"
 		broken_install=yes
 		xmake_file=mips/x-iris3
 		if [[ x$gas = xyes ]]
@@ -1731,7 +1731,7 @@ for machine in $build $host $target; do
 		fi
 		;;
 	mips-dec-osfrose*)		# Decstation running OSF/1 reference port with OSF/rose.
-		tm_file=mips/osfrose.h
+		tm_file="mips/osfrose.h ${tm_file}"
 		xmake_file=mips/x-osfrose
 		tmake_file=mips/t-osfrose
 		extra_objs=halfpic.o
@@ -1780,7 +1780,7 @@ for machine in $build $host $target; do
 		fi
 		;;
 	mips-sony-bsd* | mips-sony-newsos*)	# Sony NEWS 3600 or risc/news.
-		tm_file=mips/news4.h
+		tm_file="mips/news4.h ${tm_file}"
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
@@ -1799,11 +1799,11 @@ for machine in $build $host $target; do
 	mips-sony-sysv*)		# Sony NEWS 3800 with NEWSOS5.0.
 					# That is based on svr4.
 		# t-svr4 is not right because this system doesn't use ELF.
-		tm_file=mips/news5.h
+		tm_file="mips/news5.h ${tm_file}"
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file=mips/xm-news.h
+		xm_file="${xm_file} xm-usg.h mips/xm-news.h"
 		if [[ x$gas = xyes ]]
 		then
 			tmake_file=mips/t-mips-gas
@@ -1816,11 +1816,11 @@ for machine in $build $host $target; do
 		fi
 		;;
 	mips-tandem-sysv4*)		# Tandem S2 running NonStop UX
-		tm_file=mips/svr4-t.h
+		tm_file="mips/svr4-5.h mips/svr4-t.h"
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file=mips/xm-sysv4.h
+		xm_file="${xm_file} xm-usg.h mips/xm-sysv4.h"
 		xmake_file=mips/x-sysv
 		if [[ x$gas = xyes ]]
 		then
@@ -1837,7 +1837,7 @@ for machine in $build $host $target; do
 		broken_install=yes
 		;;
 	mips-*-ultrix* | mips-dec-mach3)	# Decstation.
-		tm_file=mips/ultrix.h
+		tm_file="mips/ultrix.h ${tm_file}"
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
@@ -1873,7 +1873,7 @@ for machine in $build $host $target; do
 		broken_install=yes
 	        ;;
 	mips-*-bsd* | mips-*-riscosbsd* | mips-*-riscos[[1234]]bsd*)
-		tm_file=mips/bsd-4.h	# MIPS BSD 4.3, RISC-OS 4.0
+		tm_file="mips/bsd-4.h ${tm_file}" # MIPS BSD 4.3, RISC-OS 4.0
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
@@ -1911,11 +1911,11 @@ for machine in $build $host $target; do
 		broken_install=yes
 		;;
 	mips-*-sysv4* | mips-*-riscos[[1234]]sysv4* | mips-*-riscossysv4*)
-		tm_file=mips/svr4-4.h	# MIPS System V.4. RISC-OS 4.0
+		tm_file="mips/svr4-4.h ${tm_file}"
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file=mips/xm-sysv.h
+		xm_file="${xm_file} xm-usg.h"
 		xmake_file=mips/x-sysv
 		if [[ x$gas = xyes ]]
 		then
@@ -1935,7 +1935,7 @@ for machine in $build $host $target; do
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file=mips/xm-sysv.h
+		xm_file="${xm_file} xm-usg.h"
 		xmake_file=mips/x-sysv
 		if [[ x$gas = xyes ]]
 		then
@@ -1951,11 +1951,11 @@ for machine in $build $host $target; do
 		broken_install=yes
 		;;
 	mips-*-sysv* | mips-*-riscos*sysv*)
-		tm_file=mips/svr3-4.h	# MIPS System V.3, RISC-OS 4.0
+		tm_file="mips/svr3-4.h ${tm_file}"
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
-		xm_file=mips/xm-sysv.h
+		xm_file="${xm_file} xm-usg.h"
 		xmake_file=mips/x-sysv
 		if [[ x$gas = xyes ]]
 		then
@@ -1997,7 +1997,7 @@ for machine in $build $host $target; do
 		tmake_file=mips/t-ecoff
 		;;
 	mips-*-ecoff*)
-		tm_file=mips/ecoff.h
+		tm_file="${tm_file} gofast.h mips/ecoff.h"
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
 		fi
@@ -2017,7 +2017,7 @@ for machine in $build $host $target; do
 		tmake_file=mips/t-ecoff
 		;;
 	mips64orionel-*-elf*)
-		tm_file="mips/elflorion.h libgloss.h"
+		tm_file="mips/elforion.h mips/elfl64.h libgloss.h"
 		tmake_file=mips/t-ecoff
 		;;
 	mips64-*-elf*)
@@ -2025,11 +2025,11 @@ for machine in $build $host $target; do
 		tmake_file=mips/t-ecoff
 		;;
 	mips64orion-*-elf*)
-		tm_file="mips/elforion.h libgloss.h"
+		tm_file="mips/elforion.h mips/elf64.h libgloss.h"
 		tmake_file=mips/t-ecoff
 		;;
 	mips64orion-*-rtems*)
-		tm_file=mips/rtems64.h
+		tm_file="mips/elforion.h mips/elfl64.h mips/rtems64.h"
 		tmake_file="mips/t-ecoff t-rtems"
 		;;
 	mipstx39el-*-elf*)
