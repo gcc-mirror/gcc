@@ -161,7 +161,6 @@ DIRECTIVE_TABLE
 #define D(n, tag, o, f) tag,
 enum
 {
-  T_BAD_DIRECTIVE,
   DIRECTIVE_TABLE
   N_DIRECTIVES
 };
@@ -1870,17 +1869,17 @@ void
 _cpp_init_stacks (pfile)
      cpp_reader *pfile;
 {
-  int i;
+  unsigned int i;
   cpp_hashnode *node;
 
   pfile->buffer_ob = xnew (struct obstack);
   obstack_init (pfile->buffer_ob);
 
   /* Register the directives.  */
-  for (i = 1; i < N_DIRECTIVES; i++)
+  for (i = 0; i < N_DIRECTIVES; i++)
     {
-      node = cpp_lookup (pfile, dtable[i - 1].name, dtable[i - 1].length);
-      node->directive_index = i;
+      node = cpp_lookup (pfile, dtable[i].name, dtable[i].length);
+      node->directive_index = i + 1;
     }
 }
 
