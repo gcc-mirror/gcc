@@ -1,3 +1,11 @@
+Wed Sep 22 17:58:01 1999  Stan Cox  <scox@cygnus.com>
+
+	* mips.h (GO_IF_LEGITIMATE_ADDRESS): Don't accept large
+	register offsets; let LEGITIMIZE_ADDRESS load it into a register.
+	(LEGITIMIZE_ADDRESS): Use plus_constant to avoid
+	(plus (reg) (const_int 0))
+	* mips.md (call_internal3c): New pattern for -mips16 -mlong-calls.
+	
 Wed Sep 22 17:55:31 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (expand_block_move): DImode loads and stores require
