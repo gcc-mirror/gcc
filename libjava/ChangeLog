@@ -20,8 +20,8 @@
 2003-08-19  Andrew Haley  <aph@redhat.com>
 
 	* prims.cc (unblock_signal): New function.
-	(SIGNAL_HANDLER): Use it.
-	(SIGNAL_HANDLER): Likewise.
+	(catch_segv): Use it.
+	(catch_fpe): Likewise.
 
 2003-08-19  Danny Smith  <dannysmith@users.sourceforge.net>
 
