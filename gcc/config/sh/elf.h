@@ -151,3 +151,7 @@ do {									\
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
+
+/* ASM_OUTPUT_CASE_LABEL is defined in elfos.h.  With it,
+   a redundant .align was generated.  */
+#undef  ASM_OUTPUT_CASE_LABEL
