@@ -3717,7 +3717,7 @@ static bool is_subrange_type (tree);
 static dw_die_ref subrange_type_die (tree, dw_die_ref);
 static dw_die_ref modified_type_die (tree, int, int, dw_die_ref);
 static int type_is_enum (tree);
-static unsigned int reg_number (rtx);
+static unsigned int dbx_reg_number (rtx);
 static dw_loc_descr_ref reg_loc_descriptor (rtx);
 static dw_loc_descr_ref one_reg_loc_descriptor (unsigned int);
 static dw_loc_descr_ref multiple_reg_loc_descriptor (rtx, rtx);
@@ -8042,10 +8042,10 @@ type_is_enum (tree type)
   return TREE_CODE (type) == ENUMERAL_TYPE;
 }
 
-/* Return the register number described by a given RTL node.  */
+/* Return the DBX register number described by a given RTL node.  */
 
 static unsigned int
-reg_number (rtx rtl)
+dbx_reg_number (rtx rtl)
 {
   unsigned regno = REGNO (rtl);
 
@@ -8067,10 +8067,10 @@ reg_loc_descriptor (rtx rtl)
   if (REGNO (rtl) >= FIRST_PSEUDO_REGISTER)
     return 0;
 
-  reg = reg_number (rtl);
+  reg = dbx_reg_number (rtl);
   regs = (*targetm.dwarf_register_span) (rtl);
 
-  if (HARD_REGNO_NREGS (reg, GET_MODE (rtl)) > 1
+  if (HARD_REGNO_NREGS (REGNO (rtl), GET_MODE (rtl)) > 1
       || regs)
     return multiple_reg_loc_descriptor (rtl, regs);
   else
@@ -8099,8 +8099,8 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs)
   unsigned reg;
   dw_loc_descr_ref loc_result = NULL;
 
-  reg = reg_number (rtl);
-  nregs = HARD_REGNO_NREGS (reg, GET_MODE (rtl));
+  reg = dbx_reg_number (rtl);
+  nregs = HARD_REGNO_NREGS (REGNO (rtl), GET_MODE (rtl));
 
   /* Simple, contiguous registers.  */
   if (regs == NULL_RTX)
@@ -8275,7 +8275,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode)
 	 memory) so DWARF consumers need to be aware of the subtle
 	 distinction between OP_REG and OP_BASEREG.  */
       if (REGNO (rtl) < FIRST_PSEUDO_REGISTER)
-	mem_loc_result = based_loc_descr (reg_number (rtl), 0);
+	mem_loc_result = based_loc_descr (dbx_reg_number (rtl), 0);
       break;
 
     case MEM:
@@ -8345,7 +8345,7 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode)
     case PLUS:
     plus:
       if (is_based_loc (rtl))
-	mem_loc_result = based_loc_descr (reg_number (XEXP (rtl, 0)),
+	mem_loc_result = based_loc_descr (dbx_reg_number (XEXP (rtl, 0)),
 					  INTVAL (XEXP (rtl, 1)));
       else
 	{
