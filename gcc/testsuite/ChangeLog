@@ -1,3 +1,7 @@
+2001-05-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* gcc.c-torture/execute/ieee/ieee.exp: Don't run ieee tests on VAX.
+
 2001-05-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/objc.exp: Add -lposix4 on Solaris 2.8.
