@@ -1,3 +1,22 @@
+2003-04-22  Jerry Quinn  <jlquinn@optonline.net>
+	    Benjamin Kosnik <bkoz at redhat dot com>
+
+	* include/bits/basic_ios.h (ios_base::Init::_S_ios_create):
+        Declare friend.
+	(basic_ios::init, basic_ios::_M_cache_locale): Add locale
+        cache argument.
+	* include/bits/basic_ios.tcc (basic_ios::init): Pass cache to
+        _M_cache_locale.
+	(basic_ios::_M_cache_locale): Use placement new if cache is
+        provided.  Track the distinction in iword(0).
+	* include/bits/locale_facets.tcc
+        (__locale_cache::_S_callback): Only delete cache if iword(0)
+        is 0, i.e. not static.
+	* src/globals.cc: Allocate space for __locale_cache objects.
+	* src/ios.cc (__gnu_cxx): Declare extern __locale_cache objects
+	for standard wide and narrow stream objects.	
+	(ios_base::Init::_S_ios_create): Use them.
+
 2003-04-18  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config/os/bsd/freebsd/ctype_inline.h:  Support _M_table

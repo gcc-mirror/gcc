@@ -48,11 +48,19 @@ namespace __gnu_cxx
   extern stdio_filebuf<char> buf_cout;
   extern stdio_filebuf<char> buf_cin;
   extern stdio_filebuf<char> buf_cerr;
+  extern std::__locale_cache<char> locale_cache_cout;
+  extern std::__locale_cache<char> locale_cache_cin;
+  extern std::__locale_cache<char> locale_cache_cerr;
+  extern std::__locale_cache<char> locale_cache_clog;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   extern stdio_filebuf<wchar_t> buf_wcout;
   extern stdio_filebuf<wchar_t> buf_wcin;
   extern stdio_filebuf<wchar_t> buf_wcerr;
+  extern std::__locale_cache<wchar_t> locale_cache_wcout;
+  extern std::__locale_cache<wchar_t> locale_cache_wcin;
+  extern std::__locale_cache<wchar_t> locale_cache_wcerr;
+  extern std::__locale_cache<wchar_t> locale_cache_wclog;
 #endif
 } // namespace __gnu_cxx
 
@@ -173,10 +181,15 @@ namespace std
     new (&buf_cout) stdio_filebuf<char>(stdout, ios_base::out, __out_size);
     new (&buf_cin) stdio_filebuf<char>(stdin, ios_base::in, __in_size);
     new (&buf_cerr) stdio_filebuf<char>(stderr, ios_base::out, __out_size);
+
     new (&cout) ostream(&buf_cout);
     new (&cin) istream(&buf_cin);
     new (&cerr) ostream(&buf_cerr);
     new (&clog) ostream(&buf_cerr);
+    cout.init(&buf_cout, &locale_cache_cout);
+    cin.init(&buf_cin, &locale_cache_cin);
+    cerr.init(&buf_cerr, &locale_cache_cerr);
+    clog.init(&buf_cerr, &locale_cache_clog);
     cin.tie(&cout);
     cerr.flags(ios_base::unitbuf);
     
@@ -188,6 +201,10 @@ namespace std
     new (&wcin) wistream(&buf_wcin);
     new (&wcerr) wostream(&buf_wcerr);
     new (&wclog) wostream(&buf_wcerr);
+    wcout.init(&buf_wcout, &locale_cache_wcout);
+    wcin.init(&buf_wcin, &locale_cache_wcin);
+    wcerr.init(&buf_wcerr, &locale_cache_wcerr);
+    wclog.init(&buf_wcerr, &locale_cache_wclog);
     wcin.tie(&wcout);
     wcerr.flags(ios_base::unitbuf);
 #endif

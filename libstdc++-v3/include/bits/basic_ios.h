@@ -81,6 +81,8 @@ namespace std
       typedef istreambuf_iterator<_CharT, _Traits>   __istreambuf_iter;
       typedef num_get<_CharT, __istreambuf_iter>     __numget_type;
       //@}
+
+      friend void ios_base::Init::_S_ios_create(bool);
       
       // Data members:
     protected:
@@ -418,10 +420,13 @@ namespace std
        *  @brief  All setup is performed here.
        *
        *  This is called from the public constructor.  It is not virtual and
-       *  cannot be redefined.
+       *  cannot be redefined.  The second argument, __cache, is used
+       *  to initialize the standard streams without allocating
+       *  memory.
       */
       void 
-      init(basic_streambuf<_CharT, _Traits>* __sb);
+      init(basic_streambuf<_CharT, _Traits>* __sb,
+ 	   __locale_cache<_CharT>* __cache=0);
 
       bool
       _M_check_facet(const locale::facet* __f) const
@@ -432,7 +437,7 @@ namespace std
       }
 
       void
-      _M_cache_locale(const locale& __loc);
+      _M_cache_locale(const locale& __loc,__locale_cache<_CharT>* __cache = 0);
 
 #if 1
       // XXX GLIBCXX_ABI Deprecated, compatibility only.

@@ -2293,7 +2293,7 @@ namespace std
       switch (__ev)
 	{
 	case ios_base::erase_event:
-	  if (__io.pword(0))
+	  if (__io.pword(0) && !__io.iword(0))
 	    delete &__io._M_cache();
 	  break;
 
@@ -2307,6 +2307,7 @@ namespace std
 	  // basic_ios::_M_cache_locale.
 	  typedef __locale_cache<_CharT> __cache_t;
 	  __io.pword(0) = auto_ptr<__cache_t>(new __cache_t()).release();
+	  __io.iword(0) = 0;
 	  break;
 	}
     }
