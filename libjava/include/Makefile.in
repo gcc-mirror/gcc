@@ -41,9 +41,14 @@ subdir = include
 DIST_COMMON = $(include_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/../config/accross.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/accross.m4 \
 	$(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/iconv.m4 \
+	$(top_srcdir)/../config/lcmessage.m4 \
+	$(top_srcdir)/../config/lib-ld.m4 \
+	$(top_srcdir)/../config/lib-link.m4 \
+	$(top_srcdir)/../config/lib-prefix.m4 $(top_srcdir)/pkg.m4 \
+	$(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -145,6 +150,7 @@ LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
+LTLIBICONV = @LTLIBICONV@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@

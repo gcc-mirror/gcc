@@ -2,7 +2,7 @@
 
 AUTOMAKE_OPTIONS = foreign subdir-objects
 
-ACLOCAL_AMFLAGS = -I .
+ACLOCAL_AMFLAGS = -I . -I ../config
 
 ## Garbage collector conditionals.
 if USING_BOEHMGC

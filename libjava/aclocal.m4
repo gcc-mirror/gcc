@@ -1128,4 +1128,12 @@ AC_SUBST([am__tar])
 AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
+m4_include([../config/accross.m4])
+m4_include([../config/acx.m4])
+m4_include([../config/iconv.m4])
+m4_include([../config/lcmessage.m4])
+m4_include([../config/lib-ld.m4])
+m4_include([../config/lib-link.m4])
+m4_include([../config/lib-prefix.m4])
+m4_include([pkg.m4])
 m4_include([acinclude.m4])
