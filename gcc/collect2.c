@@ -2594,62 +2594,68 @@ scan_libraries (prog_name)
     {
       LDHDR ldh;
       char *impbuf;
-      int idx;
+      int entry;
+
       FSEEK (ldptr, ldsh.s_scnptr, BEGINNING);
-      FREAD (&ldh, sizeof ldh, 1, ldptr);
+      FREAD (&ldh, sizeof (ldh), 1, ldptr);
       /* read import library list */
       impbuf = alloca (ldh.l_istlen);
       FSEEK (ldptr, ldh.l_impoff + ldsh.s_scnptr, BEGINNING);
       FREAD (impbuf, ldh.l_istlen, 1, ldptr);
-      idx = strlen (impbuf) + 1;
-      idx += strlen (impbuf+idx) + 1;
+
       if (debug)
 	fprintf (stderr, "LIBPATH=%s\n", impbuf);
       prefix_from_string (impbuf, &libpath);
-      while (idx < ldh.l_istlen)
+
+      /* skip LIBPATH and empty base and member fields */
+      impbuf += strlen (impbuf) + 3;
+      for (entry = 1; entry < ldh.l_nimpid; ++entry)
 	{
-	  char *implib = impbuf + idx;
+	  char *impath = impbuf;
+	  char *implib = impath + strlen (impath) + 1;
 	  char *impmem = implib + strlen (implib) + 1;
-	  char *soname = 0;
+	  char *soname = NULL;
+	  char *trial;
 	  LDFILE *libptr = NULL;
 	  struct prefix_list *pl;
 	  ARCHDR ah;
-	  idx += strlen (implib) + 1;
-	  if (!implib[0])
+
+	  impbuf = impmem + strlen (impmem) + 1;
+	  if (debug)
+	    fprintf (stderr, "PATH+BASE=%s%s\n", impath, implib);
+	  /* Skip AIX kernel exports */
+	  if (*impath == '/' && *(impath+1) == '\0'
+	      && strcmp (implib, "unix") == 0)
 	    continue;
-	  idx += strlen (impmem) + 1;
-	  if (*implib == '/')
+          trial = alloca (MAX (strlen (impath), libpath.max_len)
+			  + strlen (implib) + 1);
+	  if (*impath)
 	    {
-	      if (access (soname, R_OK) == 0)
-		soname = implib;
+	      strcpy (trial, impath);
+	      strcat (trial, implib);
+	      if (access (trial, R_OK) == 0)
+		soname = trial;
 	    }
 	  else
-	    {
-	      char *temp = alloca (libpath.max_len + strlen (implib) + 1);
-	      for (pl = libpath.plist; pl; pl = pl->next)
-		{
-		  strcpy (temp, pl->prefix);
-		  strcat (temp, implib);
-		  if (access (temp, R_OK) == 0)
-		    {
-		      soname = temp;
-		      break;
-		    }
-		}
-	    }
-	  if (!soname)
-	    {
-	      fatal ("%s: library not found", implib);
-	      continue;
-	    }
+	    for (pl = libpath.plist; pl; pl = pl->next)
+	      {
+		strcpy (trial, pl->prefix);
+		strcat (trial, implib);
+		if (access (trial, R_OK) == 0)
+		  {
+		    soname = trial;
+		    break;
+		  }
+	      }
+
+	  if (! soname)
+	    fatal ("%s: library not found", implib);
 	  if (debug)
-	    {
-	      if (impmem[0])
-		fprintf (stderr, "%s (%s)\n", soname, impmem);
-	      else
-		fprintf (stderr, "%s\n", soname);
-	    }
-	  ah.ar_name[0] = 0;
+	    if (*impmem)
+	      fprintf (stderr, "%s (%s)\n", soname, impmem);
+	    else
+	      fprintf (stderr, "%s\n", soname);
+
 	  do
 	    {
 	      /* scan imported shared objects for GCC GLOBAL ctors */
@@ -2659,7 +2665,7 @@ scan_libraries (prog_name)
 	      if (TYPE (libptr) == ARTYPE)
 		{
 		  LDFILE *memptr;
-		  if (!impmem[0])
+		  if (! *impmem)
 		    fatal ("%s: no archive member specified", soname);
 		  ldahread (libptr, &ah);
 		  if (strcmp (ah.ar_name, impmem))
@@ -2676,12 +2682,12 @@ scan_libraries (prog_name)
 		  if (!ldnshread (libptr, _LOADER, &soldsh))
 		    fatal ("%s: not an import library", soname);
 		  FSEEK (libptr, soldsh.s_scnptr, BEGINNING);
-		  if (FREAD (&soldh, sizeof soldh, 1, libptr) != 1)
+		  if (FREAD (&soldh, sizeof (soldh), 1, libptr) != 1)
 		    fatal ("%s: can't read loader section", soname);
 		  /*fprintf (stderr, "\tscanning %s\n", soname);*/
 		  symcnt = soldh.l_nsyms;
-		  lsyms = (LDSYM*) alloca (symcnt * sizeof *lsyms);
-		  symcnt = FREAD (lsyms, sizeof *lsyms, symcnt, libptr);
+		  lsyms = (LDSYM*) alloca (symcnt * sizeof (*lsyms));
+		  symcnt = FREAD (lsyms, sizeof (*lsyms), symcnt, libptr);
 		  ldstrings = alloca (soldh.l_stlen);
 		  FSEEK (libptr, soldsh.s_scnptr+soldh.l_stoff, BEGINNING);
 		  FREAD (ldstrings, soldh.l_stlen, 1, libptr);
