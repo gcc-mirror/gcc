@@ -1615,11 +1615,12 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
      in SAVE_EXPRs for TYPE_SIZEs as local.  */
 
   inline_function_decl = fndecl;
-  integrate_decl_tree ((tree) ORIGINAL_DECL_INITIAL (header), 0, map, 0);
   integrate_parm_decls (DECL_ARGUMENTS (fndecl), map, arg_vector);
+  integrate_decl_tree ((tree) ORIGINAL_DECL_INITIAL (header), 0, map);
   inline_function_decl = 0;
 
-  /* End the scope containing the copied formal parameter variables.  */
+  /* End the scope containing the copied formal parameter variables
+     and copied LABEL_DECLs.  */
 
   expand_end_bindings (getdecls (), 1, 1);
   poplevel (1, 1, 0);
@@ -1670,33 +1671,29 @@ integrate_parm_decls (args, map, arg_vector)
    current function a tree of contexts isomorphic to the one that is given.
 
    LEVEL indicates how far down into the BLOCK tree is the node we are
-   currently traversing.  It is always zero for the initial call.
+   currently traversing.  It is always zero except for recursive calls.
 
    MAP, if nonzero, is a pointer to a inline_remap map which indicates how
    registers used in the DECL_RTL field should be remapped.  If it is zero,
-   no mapping is necessary.
-
-   FUNCTIONBODY indicates whether the top level block tree corresponds to
-   a function body.  This is identical in meaning to the functionbody
-   argument of poplevel.  */
+   no mapping is necessary.  */
 
 static void
-integrate_decl_tree (let, level, map, functionbody)
+integrate_decl_tree (let, level, map)
      tree let;
      int level;
      struct inline_remap *map;
-     int functionbody;
 {
   tree t, node;
 
-  pushlevel (0);
+  if (level > 0)
+    pushlevel (0);
   
   for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
     {
       tree d = build_decl (TREE_CODE (t), DECL_NAME (t), TREE_TYPE (t));
       DECL_SOURCE_LINE (d) = DECL_SOURCE_LINE (t);
       DECL_SOURCE_FILE (d) = DECL_SOURCE_FILE (t);
-      if (! functionbody && DECL_RTL (t) != 0)
+      if (DECL_RTL (t) != 0)
 	{
 	  DECL_RTL (d) = copy_rtx_and_substitute (DECL_RTL (t), map);
 	  /* Fully instantiate the address with the equivalent form so that the
@@ -1723,11 +1720,14 @@ integrate_decl_tree (let, level, map, functionbody)
     }
 
   for (t = BLOCK_SUBBLOCKS (let); t; t = TREE_CHAIN (t))
-    integrate_decl_tree (t, level + 1, map, functionbody);
+    integrate_decl_tree (t, level + 1, map);
 
-  node = poplevel (level > 0, 0, level == 0 && functionbody);
-  if (node)
-    TREE_USED (node) = TREE_USED (let);
+  if (level > 0)
+    {
+      node = poplevel (1, 0, 0);
+      if (node)
+	TREE_USED (node) = TREE_USED (let);
+    }
 }
 
 /* Create a new copy of an rtx.
