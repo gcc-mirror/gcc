@@ -1,3 +1,12 @@
+2001-10-02  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.am (core_java_source_files): add InheritableThreadLocal
+	* Makefile.in: regenerate
+	* gcj/javaprims.h: ditto
+	* java/lang/InheritableThreadLocal.java: new class from Classpath
+	* java/lang/Thread.java Thread (Thread, ThreadGroup, Runnable, String):
+	call InheritableThreadLocal.newChildThread()
+
 2001-10-01  Mark Wielaard  <mark@klomp.org>
 
 	* Makefile.am: Add new classes
