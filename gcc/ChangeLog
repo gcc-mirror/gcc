@@ -1,4 +1,10 @@
-2005-02-28   <bosch@gnat.com>
+2005-02-28  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/19874
+	* tree-ssa.c (tree_ssa_useless_type_conversion_1): A conversion
+	between different machine modes is never a "useless" conversion.
+
+2005-02-28  Geert Bosch  <bosch@gnat.com>
 
 	PR ada/15977
 	* doc/contrib.texi: List contributors for Ada front end
