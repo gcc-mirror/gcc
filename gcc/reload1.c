@@ -6865,6 +6865,7 @@ emit_reload_insns (chain)
 		  int secondary_reload = reload_secondary_in_reload[j];
 		  rtx real_oldequiv = oldequiv;
 		  rtx real_old = old;
+		  rtx tmp;
 
 		  /* If OLDEQUIV is a pseudo with a MEM, get the real MEM
 		     and similarly for OLD.
@@ -6873,30 +6874,42 @@ emit_reload_insns (chain)
 		     equivalent MEM, we must fall back to reload_in, which
 		     will have all the necessary substitutions registered.
 		     Likewise for a pseudo that can't be replaced with its
-		     equivalent constant.  */
+		     equivalent constant. 
+
+		     Take extra care for subregs of such pseudos.  Note that
+		     we cannot use reg_equiv_mem in this case because it is
+		     not in the right mode.  */
 				
-		  if (GET_CODE (oldequiv) == REG
-		      && REGNO (oldequiv) >= FIRST_PSEUDO_REGISTER
-		      && (reg_equiv_memory_loc[REGNO (oldequiv)] != 0
-			  || reg_equiv_constant[REGNO (oldequiv)] != 0))
+		  tmp = oldequiv;
+		  if (GET_CODE (tmp) == SUBREG)
+		    tmp = SUBREG_REG (tmp);
+		  if (GET_CODE (tmp) == REG
+		      && REGNO (tmp) >= FIRST_PSEUDO_REGISTER
+		      && (reg_equiv_memory_loc[REGNO (tmp)] != 0
+			  || reg_equiv_constant[REGNO (tmp)] != 0))
 		    {
-		      if (! reg_equiv_mem[REGNO (oldequiv)]
-			  || num_not_at_initial_offset)
+		      if (! reg_equiv_mem[REGNO (tmp)]
+			  || num_not_at_initial_offset
+			  || GET_CODE (oldequiv) == SUBREG)
 			real_oldequiv = reload_in[j];
 		      else
-			real_oldequiv = reg_equiv_mem[REGNO (oldequiv)];
+			real_oldequiv = reg_equiv_mem[REGNO (tmp)];
 		    }
 
-		  if (GET_CODE (old) == REG
-		      && REGNO (old) >= FIRST_PSEUDO_REGISTER
-		      && (reg_equiv_memory_loc[REGNO (old)] != 0
-			  || reg_equiv_constant[REGNO (old)] != 0))
+		  tmp = old;
+		  if (GET_CODE (tmp) == SUBREG)
+		    tmp = SUBREG_REG (tmp);
+		  if (GET_CODE (tmp) == REG
+		      && REGNO (tmp) >= FIRST_PSEUDO_REGISTER
+		      && (reg_equiv_memory_loc[REGNO (tmp)] != 0
+			  || reg_equiv_constant[REGNO (tmp)] != 0))
 		    {
-		      if (! reg_equiv_mem[REGNO (old)]
-			  || num_not_at_initial_offset)
+		      if (! reg_equiv_mem[REGNO (tmp)]
+			  || num_not_at_initial_offset
+			  || GET_CODE (old) == SUBREG)
 			real_old = reload_in[j];
 		      else
-			real_old = reg_equiv_mem[REGNO (old)];
+			real_old = reg_equiv_mem[REGNO (tmp)];
 		    }
 
 		  second_reload_reg = reload_reg_rtx[secondary_reload];
