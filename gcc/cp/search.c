@@ -3311,6 +3311,12 @@ add_conversions (binfo)
       if (!tmp || ! DECL_CONV_FN_P (OVL_CURRENT (tmp)))
 	break;
 
+      if (TREE_CODE (tmp) == OVERLOAD)
+	{
+	  my_friendly_assert (TREE_CHAIN (tmp) == NULL_TREE, 981121);
+	  tmp = OVL_FUNCTION (tmp);
+	}
+
       /* We don't want to mark 'name' until we've seen all the overloads
 	 in this class; we could be overloading on the quals of 'this'.  */
       if (name && name != DECL_NAME (tmp))

@@ -5227,8 +5227,6 @@ instantiate_type (lhstype, rhs, complain)
 
     case TREE_LIST:
       {
-	tree elem, baselink, name = NULL_TREE;
-
 	if (TREE_PURPOSE (rhs) == error_mark_node)
 	  {
 	    /* Make sure we don't drop the non-local flag, as the old code
@@ -5242,41 +5240,12 @@ instantiate_type (lhstype, rhs, complain)
 	/* Now we should have a baselink. */
 	my_friendly_assert (TREE_CODE (TREE_PURPOSE (rhs)) == TREE_VEC,
 			    980331);
-	/* First look for an exact match.  Search member functions.
-	   May have to undo what `default_conversion' might do to
-	   lhstype.  */
-
-	lhstype = validate_lhs (lhstype, complain);
-	if (lhstype == error_mark_node)
-	  return lhstype;
-
 	my_friendly_assert (TREE_CHAIN (rhs) == NULL_TREE, 181);
 	my_friendly_assert (TREE_CODE (TREE_VALUE (rhs)) == FUNCTION_DECL
 			    || TREE_CODE (TREE_VALUE (rhs)) == OVERLOAD,
 			    182);
 
-	for (baselink = rhs; baselink;
-	     baselink = next_baselink (baselink))
-	  {
-	    elem = TREE_VALUE (baselink);
-	    while (elem)
-	      if (same_type_p (lhstype, TREE_TYPE (OVL_CURRENT (elem))))
-		{
-		  mark_used (OVL_CURRENT (elem));
-		  return OVL_CURRENT (elem);
-		}
-	      else
-		elem = OVL_NEXT (elem);
-	  }
-
-	name = rhs;
-	while (TREE_CODE (name) == TREE_LIST)
-	  name = TREE_VALUE (name);
-	name = DECL_NAME (OVL_CURRENT (name));
-
-	if (complain)
-	  cp_error ("no compatible member functions named `%D'", name);
-	return error_mark_node;
+	return instantiate_type (lhstype, TREE_VALUE (rhs), complain);
       }
 
     case CALL_EXPR:

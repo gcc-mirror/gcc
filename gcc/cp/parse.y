@@ -1316,7 +1316,16 @@ notype_unqualified_id:
 	;
 
 do_id:
-		{ $$ = do_identifier ($<ttype>-1, 1, NULL_TREE); }
+		{
+		  /* If lastiddecl is a TREE_LIST, it's a baselink, which
+		     means that we're in an expression like S::f<int>, so
+		     don't do_identifier; we only do that for unqualified
+		     identifiers.  */
+		  if (lastiddecl && TREE_CODE (lastiddecl) != TREE_LIST)
+		    $$ = do_identifier ($<ttype>-1, 1, NULL_TREE);
+		  else
+		    $$ = $<ttype>-1;
+		}
 
 template_id:
           PFUNCNAME '<' do_id template_arg_list_opt template_close_bracket 

@@ -1370,9 +1370,9 @@ build_overload (decl, chain)
      tree decl;
      tree chain;
 {
-  if (!chain)
+  if (! chain && TREE_CODE (decl) != TEMPLATE_DECL)
     return decl;
-  if (TREE_CODE (chain) != OVERLOAD)
+  if (chain && TREE_CODE (chain) != OVERLOAD)
     chain = ovl_cons (chain, NULL_TREE);
   return ovl_cons (decl, chain);
 }

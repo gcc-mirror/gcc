@@ -2809,6 +2809,10 @@ identifier_type (decl)
     }
   if (looking_for_template && really_overloaded_fn (decl))
     {
+      /* See through a baselink.  */
+      if (TREE_CODE (decl) == TREE_LIST)
+	decl = TREE_VALUE (decl);
+
       for (t = decl; t != NULL_TREE; t = OVL_CHAIN (t))
 	if (DECL_FUNCTION_TEMPLATE_P (OVL_FUNCTION (t))) 
 	  return PFUNCNAME;

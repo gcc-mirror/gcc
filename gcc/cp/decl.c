@@ -9692,7 +9692,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  }
 
 		if (TREE_CODE (TREE_TYPE (size)) != INTEGER_TYPE
-		    && TREE_CODE (TREE_TYPE (size)) != ENUMERAL_TYPE)
+		    && TREE_CODE (TREE_TYPE (size)) != ENUMERAL_TYPE
+		    && TREE_CODE (TREE_TYPE (size)) != BOOLEAN_TYPE)
 		  {
 		    cp_error ("size of array `%D' has non-integer type",
 			      dname);

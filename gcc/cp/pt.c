@@ -75,6 +75,7 @@ static tree saved_trees;
 #define UNIFY_ALLOW_MORE_CV_QUAL 1
 #define UNIFY_ALLOW_LESS_CV_QUAL 2
 #define UNIFY_ALLOW_DERIVED 4
+#define UNIFY_ALLOW_INTEGER 8
 
 static int unify PROTO((tree, tree, tree, tree, int, int*));
 static int resolve_overloaded_unification PROTO((tree, tree, tree, tree,
@@ -7304,7 +7305,10 @@ check_cv_quals_for_unify (strict, arg, parm)
      UNIFY_ALLOW_DERIVED:
        Allow the deduced ARG to be a template base class of ARG,
        or a pointer to a template base class of the type pointed to by
-       ARG.  */
+       ARG.
+     UNIFY_ALLOW_INTEGER:
+       Allow any integral type to be deduced.  See the TEMPLATE_PARM_INDEX
+       case for more information.  */
 
 int
 unify (tparms, targs, parm, arg, strict, explicit_mask)
@@ -7487,6 +7491,22 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 	    my_friendly_abort (42);
 	}
 
+      /* [temp.deduct.type] If, in the declaration of a function template
+	 with a non-type template-parameter, the non-type
+	 template-parameter is used in an expression in the function
+	 parameter-list and, if the corresponding template-argument is
+	 deduced, the template-argument type shall match the type of the
+	 template-parameter exactly, except that a template-argument
+	 deduced from an array bound may be of any integral type.  */
+      if (same_type_p (TREE_TYPE (arg), TREE_TYPE (parm)))
+	/* OK */;
+      else if ((strict & UNIFY_ALLOW_INTEGER)
+	       && (TREE_CODE (TREE_TYPE (parm)) == INTEGER_TYPE
+		   || TREE_CODE (TREE_TYPE (parm)) == BOOLEAN_TYPE))
+	/* OK */;
+      else
+	return 1;
+
       TREE_VEC_ELT (targs, idx) = copy_to_permanent (arg);
       return 0;
 
@@ -7560,11 +7580,13 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 	{
 	  if (TYPE_MIN_VALUE (parm) && TYPE_MIN_VALUE (arg)
 	      && unify (tparms, targs, TYPE_MIN_VALUE (parm),
-			TYPE_MIN_VALUE (arg), UNIFY_ALLOW_NONE, explicit_mask))
+			TYPE_MIN_VALUE (arg), UNIFY_ALLOW_INTEGER,
+			explicit_mask))
 	    return 1;
 	  if (TYPE_MAX_VALUE (parm) && TYPE_MAX_VALUE (arg)
 	      && unify (tparms, targs, TYPE_MAX_VALUE (parm),
-			TYPE_MAX_VALUE (arg), UNIFY_ALLOW_NONE, explicit_mask))
+			TYPE_MAX_VALUE (arg), UNIFY_ALLOW_INTEGER,
+			explicit_mask))
 	    return 1;
 	}
       /* We use the TYPE_MAIN_VARIANT since we have already
@@ -7695,8 +7717,7 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 					     integer_type_node,
 					     arg, t2));
 
-	  return unify (tparms, targs, t1, t, UNIFY_ALLOW_NONE,
-			explicit_mask);
+	  return unify (tparms, targs, t1, t, strict, explicit_mask);
 	}
       /* else fall through */
 

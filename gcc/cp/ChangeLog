@@ -1,3 +1,20 @@
+1998-11-21  Jason Merrill  <jason@yorick.cygnus.com>
+
+	Handle specifying template args to member function templates.
+	* tree.c (build_overload): Always create an OVERLOAD for a template.
+	* search.c (add_conversions): Handle finding an OVERLOAD.
+	* decl2.c (check_classfn): Likewise.
+	* lex.c (identifier_type): See through a baselink.
+	* parse.y (do_id): Don't call do_identifier if we got a baselink.
+	* class.c (instantiate_type, case TREE_LIST): Recurse.
+
+	* decl.c (grokdeclarator): Allow a boolean constant for array
+	bounds, odd as that sounds.
+
+	* pt.c (unify): Be more strict about non-type parms, except for
+	array bounds.
+	(UNIFY_ALLOW_INTEGER): New macro.
+
 1998-11-19  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Make-lang.in (mandir): Replace all uses of $(mandir) by $(man1dir).
