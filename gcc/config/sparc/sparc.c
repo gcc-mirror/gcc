@@ -63,6 +63,10 @@ Boston, MA 02111-1307, USA.  */
 static int apparent_fsize;
 static int actual_fsize;
 
+/* Number of live general or floating point registers needed to be saved
+   (as 4-byte quantities).  This is only done if TARGET_EPILOGUE.  */
+static int num_gfregs;
+
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
 
@@ -124,7 +128,7 @@ static void sparc_output_deferred_case_vectors PROTO((void));
 static void sparc_add_gc_roots    PROTO ((void));
 static void mark_ultrasparc_pipeline_state PROTO ((void *));
 static int check_return_regs PROTO ((rtx));
-static void epilogue_renumber PROTO ((rtx *));
+static int epilogue_renumber PROTO ((rtx *, int));
 static int ultra_cmove_results_ready_p PROTO ((rtx));
 static int ultra_fpmode_conflict_exists PROTO ((enum machine_mode));
 static rtx *ultra_find_type PROTO ((int, rtx *, int));
@@ -2208,6 +2212,11 @@ eligible_for_epilogue_delay (trial, slot)
      optimize things as necessary.  */
   if (TARGET_LIVE_G0)
     return 0;
+    
+  /* If there are any call-saved registers, we should scan TRIAL if it
+     does not reference them.  For now just make it easy.  */
+  if (num_gfregs)
+    return 0;
 
   /* In the case of a true leaf function, anything can go into the delay slot.
      A delay slot only exists however if the frame size is zero, otherwise
@@ -2228,7 +2237,7 @@ eligible_for_epilogue_delay (trial, slot)
   pat = PATTERN (trial);
 
   /* Otherwise, only operations which can be done in tandem with
-     a `restore' insn can go into the delay slot.  */
+     a `restore' or `return' insn can go into the delay slot.  */
   if (GET_CODE (SET_DEST (pat)) != REG
       || REGNO (SET_DEST (pat)) >= 32
       || REGNO (SET_DEST (pat)) < 24)
@@ -2247,7 +2256,7 @@ eligible_for_epilogue_delay (trial, slot)
       else
         return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (SImode);
     }
-    
+
   /* This matches "*return_di".  */
   else if (arith_double_operand (src, GET_MODE (src)))
     return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (DImode);
@@ -2255,6 +2264,12 @@ eligible_for_epilogue_delay (trial, slot)
   /* This matches "*return_sf_no_fpu".  */
   else if (! TARGET_FPU && restore_operand (SET_DEST (pat), SFmode)
 	   && register_operand (src, SFmode))
+    return 1;
+
+  /* If we have return instruction, anything that does not use
+     local or output registers and can go into a delay slot wins.  */
+  else if (TARGET_V9 && ! epilogue_renumber (&pat, 1)
+	   && (get_attr_in_uncond_branch_delay (trial) == IN_BRANCH_DELAY_TRUE))
     return 1;
 
   /* This matches "*return_addsi".  */
@@ -2271,6 +2286,25 @@ eligible_for_epilogue_delay (trial, slot)
 	   && arith_double_operand (XEXP (src, 1), DImode)
 	   && (register_operand (XEXP (src, 0), DImode)
 	       || register_operand (XEXP (src, 1), DImode)))
+    return 1;
+
+  /* This can match "*return_losum_[sd]i".
+     Catch only some cases, so that return_losum* don't have
+     to be too big.  */
+  else if (GET_CODE (src) == LO_SUM
+	   && ! TARGET_CM_MEDMID
+	   && ((register_operand (XEXP (src, 0), SImode)
+	        && immediate_operand (XEXP (src, 1), SImode))
+	       || (TARGET_ARCH64
+		   && register_operand (XEXP (src, 0), DImode)
+		   && immediate_operand (XEXP (src, 1), DImode))))
+    return 1;
+
+  /* sll{,x} reg,1,reg2 is add reg,reg,reg2 as well.  */
+  else if (GET_CODE (src) == ASHIFT
+	   && (register_operand (XEXP (src, 0), SImode)
+	       || register_operand (XEXP (src, 0), DImode))
+	   && XEXP (src, 1) == const1_rtx)
     return 1;
 
   return 0;
@@ -2979,12 +3013,6 @@ restore_regs (file, low, high, base, offset, n_regs)
   return n_regs;
 }
 
-/* Static variables we want to share between prologue and epilogue.  */
-
-/* Number of live general or floating point registers needed to be saved
-   (as 4-byte quantities).  This is only done if TARGET_EPILOGUE.  */
-static int num_gfregs;
-
 /* Compute the frame size required by the function.  This function is called
    during the reload pass and also by output_function_prologue().  */
 
@@ -3283,7 +3311,7 @@ output_function_epilogue (file, size, leaf_function)
 #endif
 
   else if (current_function_epilogue_delay_list == 0)
-    {                                                
+    {
       /* If code does not drop into the epilogue, we need
 	 do nothing except output pending case vectors.  */
       rtx insn = get_last_insn ();                               
@@ -3339,13 +3367,38 @@ output_function_epilogue (file, size, leaf_function)
 	  /* If we wound up with things in our delay slot, flush them here.  */
 	  if (current_function_epilogue_delay_list)
 	    {
-	      rtx insn = emit_jump_insn_after (gen_rtx_RETURN (VOIDmode),
-					       get_last_insn ());
-	      PATTERN (insn) = gen_rtx_PARALLEL (VOIDmode,
-					gen_rtvec (2,
-						   PATTERN (XEXP (current_function_epilogue_delay_list, 0)),
-						   PATTERN (insn)));
-	      final_scan_insn (insn, file, 1, 0, 1);
+	      rtx delay = PATTERN (XEXP (current_function_epilogue_delay_list, 0));
+
+	      if (TARGET_V9 && ! epilogue_renumber (&delay, 1))
+		{
+		  epilogue_renumber (&delay, 0);
+		  fputs (SKIP_CALLERS_UNIMP_P
+			 ? "\treturn\t%i7+12\n"
+			 : "\treturn\t%i7+8\n", file);
+		  final_scan_insn (XEXP (current_function_epilogue_delay_list, 0), file, 1, 0, 0);
+		}
+	      else
+		{
+		  rtx insn = emit_jump_insn_after (gen_rtx_RETURN (VOIDmode),
+						   get_last_insn ());
+		  rtx src;
+
+		  if (GET_CODE (delay) != SET)
+		    abort();
+
+		  src = SET_SRC (delay);
+		  if (GET_CODE (src) == ASHIFT)
+		    {
+		      if (XEXP (src, 1) != const1_rtx)
+			abort();
+		      SET_SRC (delay) = gen_rtx_PLUS (GET_MODE (src), XEXP (src, 0),
+						      XEXP (src, 0));
+		    }
+
+		  PATTERN (insn) = gen_rtx_PARALLEL (VOIDmode,
+					gen_rtvec (2, delay, PATTERN (insn)));
+		  final_scan_insn (insn, file, 1, 0, 1);
+		}
 	    }
 	  else if (TARGET_V9 && ! SKIP_CALLERS_UNIMP_P)
 	    fputs ("\treturn\t%i7+8\n\tnop\n", file);
@@ -4726,56 +4779,56 @@ output_v9branch (op, reg, label, reversed, annul, noop, insn)
   return string;
 }
 
-/* Renumber registers in delay slot.  Replace registers instead of
-   renumbering because they may be shared.
+/* Return 1, if any of the registers of the instruction are %l[0-7] or %o[0-7].
+   Such instructions cannot be used in the delay slot of return insn on v9.
+   If TEST is 0, also rename all %i[0-7] registers to their %o[0-7] counterparts.
+ */
 
-   This does not handle instructions other than move.  */
-
-static void
-epilogue_renumber (where)
-     rtx *where;
+static int
+epilogue_renumber (where, test)
+     register rtx *where;
+     int test;
 {
-  rtx x = *where;
-  enum rtx_code code = GET_CODE (x);
+  register const char *fmt;
+  register int i;
+  register enum rtx_code code;
+
+  if (*where == 0)
+    return 0;
+
+  code = GET_CODE (*where);
 
   switch (code)
     {
-    case MEM:
-      *where = x = copy_rtx (x);
-      epilogue_renumber (&XEXP (x, 0));
-      return;
-
     case REG:
-      {
-	int regno = REGNO (x);
-	if (regno > 8 && regno < 24)
-	  abort ();
-	if (regno >= 24 && regno < 32)
-	  *where = gen_rtx_REG (GET_MODE (x), regno - 16);
-	return;
-      }
+      if (REGNO (*where) >= 8 && REGNO (*where) < 24)      /* oX or lX */
+	return 1;
+      if (! test && REGNO (*where) >= 24 && REGNO (*where) < 32)
+	*where = gen_rtx (REG, GET_MODE (*where), OUTGOING_REGNO (REGNO(*where)));
+    case SCRATCH:
+    case CC0:
+    case PC:
     case CONST_INT:
     case CONST_DOUBLE:
-    case CONST:
-    case SYMBOL_REF:
-    case LABEL_REF:
-      return;
-
-    case IOR:
-    case AND:
-    case XOR:
-    case PLUS:
-    case MINUS:
-      epilogue_renumber (&XEXP (x, 1));
-    case NEG:
-    case NOT:
-      epilogue_renumber (&XEXP (x, 0));
-      return;
-
-    default:
-      debug_rtx (*where);
-      abort ();
+      return 0;
     }
+
+  fmt = GET_RTX_FORMAT (code);
+
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'E')
+	{
+	  register int j;
+	  for (j = XVECLEN (*where, i) - 1; j >= 0; j--)
+	    if (epilogue_renumber (&(XVECEXP (*where, i, j)), test))
+	      return 1;
+	}
+      else if (fmt[i] == 'e'
+	       && epilogue_renumber (&(XEXP (*where, i)), test))
+	return 1;
+    }
+  return 0;
 }
 
 /* Output assembler code to return from a function.  */
@@ -4840,8 +4893,8 @@ output_return (operands)
     {
       if (delay)
 	{
-	  epilogue_renumber (&SET_DEST (PATTERN (delay)));
-	  epilogue_renumber (&SET_SRC (PATTERN (delay)));
+	  epilogue_renumber (&SET_DEST (PATTERN (delay)), 0);
+	  epilogue_renumber (&SET_SRC (PATTERN (delay)), 0);
 	}
       if (SKIP_CALLERS_UNIMP_P)
 	return "return\t%%i7+12%#";
