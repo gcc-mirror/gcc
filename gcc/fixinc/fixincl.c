@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "fixlib.h"
 
-#if HAVE_MMAP_FILE
+#if defined( HAVE_MMAP_FILE )
 #include <sys/mman.h>
 #define  BAD_ADDR ((void*)-1)
 #endif
