@@ -2528,14 +2528,15 @@ check_default_tmpl_args (tree decl, tree parms, int is_primary, int is_partial)
       && DECL_LANG_SPECIFIC (decl)
       /* If this is either a friend defined in the scope of the class
 	 or a member function.  */
-      && ((DECL_CONTEXT (decl) 
-	   && same_type_p (DECL_CONTEXT (decl), current_class_type))
-	  || (DECL_FRIEND_CONTEXT (decl)
-	      && same_type_p (DECL_FRIEND_CONTEXT (decl), 
-			      current_class_type)))
+      && (DECL_FUNCTION_MEMBER_P (decl)
+	  ? same_type_p (DECL_CONTEXT (decl), current_class_type)
+	  : DECL_FRIEND_CONTEXT (decl)
+	  ? same_type_p (DECL_FRIEND_CONTEXT (decl), current_class_type)
+	  : false)
       /* And, if it was a member function, it really was defined in
 	 the scope of the class.  */
-      && (!DECL_FUNCTION_MEMBER_P (decl) || DECL_INITIALIZED_IN_CLASS_P (decl)))
+      && (!DECL_FUNCTION_MEMBER_P (decl)
+	  || DECL_INITIALIZED_IN_CLASS_P (decl)))
     /* We already checked these parameters when the template was
        declared, so there's no need to do it again now.  This function
        was defined in class scope, but we're processing it's body now
@@ -4234,21 +4235,20 @@ lookup_template_class (tree d1,
 	    {
 	      tree ctx;
 	      
-	      /* Note that we use DECL_CONTEXT, rather than
-		 CP_DECL_CONTEXT, so that the termination test is
-		 always just `ctx'.  We're not interested in namespace
-		 scopes.  */
 	      for (ctx = current_class_type; 
 		   ctx; 
-		   ctx = (TYPE_P (ctx)) ? TYPE_CONTEXT (ctx) : DECL_CONTEXT (ctx))
-		if (same_type_p (ctx, template_type))
-		  break;
+		   ctx = TYPE_CONTEXT (ctx))
+		{
+		  if (TREE_CODE (ctx) == NAMESPACE_DECL)
+		    break;
+		  if (same_type_p (ctx, template_type))
+		    goto found_ctx;
+		}
 	      
-	      if (!ctx)
-		/* We're not in the scope of the class, so the
-		   TEMPLATE_TYPE is not the type we want after
-		   all.  */
-		found = NULL_TREE;
+	      /* We're not in the scope of the class, so the
+		 TEMPLATE_TYPE is not the type we want after all.  */
+	      found = NULL_TREE;
+	    found_ctx:;
 	    }
 	}
       if (found)

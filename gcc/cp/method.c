@@ -182,7 +182,7 @@ hack_identifier (tree value, tree name)
 	{
 	  tree path;
 	  path = currently_open_derived_class (DECL_CONTEXT (value));
-	  perform_or_defer_access_check (path, value);
+	  perform_or_defer_access_check (TYPE_BINFO (path), value);
 	}
     }
   else if (TREE_CODE (value) == TREE_LIST 
