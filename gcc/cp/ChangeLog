@@ -1,5 +1,11 @@
 2004-01-28  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13791
+	* typeck.c (merge_types): Do not merge attributes into
+	TYPENAME_TYPEs.
+
+2004-01-28  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/13736
 	* parser.c (cp_parser_direct_declarator): Do not prevent
 	backtracking inside a parenthesized declarator.

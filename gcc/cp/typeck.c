@@ -714,6 +714,12 @@ merge_types (tree t1, tree t2)
 	break;
       }
 
+    case TYPENAME_TYPE:
+      /* There is no need to merge attributes into a TYPENAME_TYPE.
+	 When the type is instantiated it will have whatever
+	 attributes result from the instantiation.  */
+      return t1;
+
     default:;
     }
   return build_type_attribute_variant (t1, attributes);

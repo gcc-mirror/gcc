@@ -1,5 +1,10 @@
 2004-01-28  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13791
+	* g++.dg/ext/attrib12.C: New test.
+
+2004-01-28  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/13736
 	* g++.dg/parse/cast2.C: New test.
 
