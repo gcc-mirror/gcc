@@ -41,6 +41,7 @@ package gnu.java.awt.peer.gtk;
 import java.awt.AWTEvent;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.TextField;
 import java.awt.event.KeyEvent;
 import java.awt.peer.TextFieldPeer;
@@ -48,14 +49,38 @@ import java.awt.peer.TextFieldPeer;
 public class GtkTextFieldPeer extends GtkTextComponentPeer
   implements TextFieldPeer
 {
+  native void create (int width);
 
-//    native void create (ComponentPeer parent, String text);
+  void create ()
+  {
+    Font f = awtComponent.getFont ();
 
-  native void create ();
+    // By default, Sun sets a TextField's font when its peer is
+    // created.  If f != null then the peer's font is set by
+    // GtkComponent.create.
+    if (f == null)
+      {
+	f = new Font ("Fixed", Font.PLAIN, 12);
+	awtComponent.setFont (f);
+      }
 
-  native void gtkEntryGetSize (int dims[]);
+    FontMetrics fm;
+    if (GtkToolkit.useGraphics2D ())
+      fm = new GdkClasspathFontPeerMetrics (f);
+    else
+      fm = new GdkFontMetrics (f);
 
-  native void gtkSetFont(String name, int style, int size);
+    TextField tf = ((TextField) awtComponent);
+    int cols = tf.getColumns ();
+
+    int text_width = cols * fm.getMaxAdvance ();
+
+    create (text_width);
+  }
+
+  native int gtkEntryGetBorderWidth ();
+
+  native void gtkSetFont (String name, int style, int size);
 
   public GtkTextFieldPeer (TextField tf)
   {
@@ -67,34 +92,61 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
 
   public Dimension getMinimumSize (int cols)
   {
-    int dims[] = new int[2];
-
-    gtkEntryGetSize (dims);
-
-    return (new Dimension (dims[0], dims[1]));
+    return minimumSize (cols);
   }
 
   public Dimension getPreferredSize (int cols)
   {
-    int dims[] = new int[2];
-
-    gtkEntryGetSize (dims);
-
-    return (new Dimension (dims[0], dims[1]));
+    return preferredSize (cols);
   }
-  
+
   public native void setEchoChar (char c);
 
-  /* Deprecated */
-
+  // Deprecated
   public Dimension minimumSize (int cols)
   {
-    return getMinimumSize (cols);
+    int dim[] = new int[2];
+
+    gtkWidgetGetPreferredDimensions (dim);
+
+    Font f = awtComponent.getFont ();
+    if (f == null)
+      return new Dimension (2 * gtkEntryGetBorderWidth (), dim[1]);
+
+    FontMetrics fm;
+    if (GtkToolkit.useGraphics2D ())
+      fm = new GdkClasspathFontPeerMetrics (f);
+    else
+      fm = new GdkFontMetrics (f);
+
+    int text_width = cols * fm.getMaxAdvance ();
+
+    int width = text_width + 2 * gtkEntryGetBorderWidth ();
+
+    return new Dimension (width, dim[1]);
   }
 
   public Dimension preferredSize (int cols)
   {
-    return getPreferredSize (cols);
+    int dim[] = new int[2];
+
+    gtkWidgetGetPreferredDimensions (dim);
+
+    Font f = awtComponent.getFont ();
+    if (f == null)
+      return new Dimension (2 * gtkEntryGetBorderWidth (), dim[1]);
+
+    FontMetrics fm;
+    if (GtkToolkit.useGraphics2D ())
+      fm = new GdkClasspathFontPeerMetrics (f);
+    else
+      fm = new GdkFontMetrics (f);
+
+    int text_width = cols * fm.getMaxAdvance ();
+
+    int width = text_width + 2 * gtkEntryGetBorderWidth ();
+
+    return new Dimension (width, dim[1]);
   }
 
   public void setEchoCharacter (char c)
@@ -104,18 +156,18 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
 
   public void setFont (Font f)
   {
-    gtkSetFont(f.getName(), f.getStyle(), f.getSize());
+    gtkSetFont (f.getName (), f.getStyle (), f.getSize ());
   }
 
   public void handleEvent (AWTEvent e)
   {
     if (e.getID () == KeyEvent.KEY_PRESSED)
       {
-        KeyEvent ke = (KeyEvent)e;
+        KeyEvent ke = (KeyEvent) e;
 
-        if (!ke.isConsumed()
-            && ke.getKeyCode() == KeyEvent.VK_ENTER)
-          postActionEvent (getText(), ke.getModifiers ());
+        if (!ke.isConsumed ()
+            && ke.getKeyCode () == KeyEvent.VK_ENTER)
+          postActionEvent (getText (), ke.getModifiers ());
       }
 
     super.handleEvent (e);
