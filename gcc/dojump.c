@@ -338,7 +338,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
             && type != 0 && bitsize >= 0
             && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
             && (cmp_optab->handlers[(int) TYPE_MODE (type)].insn_code
-          != CODE_FOR_nothing))
+		!= CODE_FOR_nothing))
           {
             do_jump (convert (type, exp), if_false_label, if_true_label);
             break;
