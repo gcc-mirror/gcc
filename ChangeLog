@@ -1,3 +1,7 @@
+2000-09-15  Kazu Hirata  <kazu@hxi.com>
+
+	* MAINTAINERS: Add myself to Write After Approval list.
+
 Wed Sep 13 11:11:29 2000  Jeffrey A Law  (law@cygnus.com)
 
         * configure.in: Do not build byacc for hppa64.  Provide paths to the
