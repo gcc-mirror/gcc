@@ -119,6 +119,9 @@ extern int target_flags;
   
 #define LINK_SPEC "-u main"
 
+/* Allow $ in identifiers.  */
+#define DOLLARS_IN_IDENTIFIERS 2
+
 /* Make gcc agree with <machine/ansi.h> */
 
 #define SIZE_TYPE "unsigned int"
