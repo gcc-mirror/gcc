@@ -1,3 +1,10 @@
+2004-02-03  Felix Yen  <fwy@alumni.brown.edu>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* testsuite/performance/20_util/allocator.cc: Add map,
+	deque, set tests.
+	* testsuite/performance/20_util/allocator_thread.cc: Same.
+	
 2004-02-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.h (insert(iterator)): Remove,
