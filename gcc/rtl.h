@@ -453,6 +453,9 @@ extern char *note_insn_name[];
    loop containing the reference.  */
 #define LABEL_OUTSIDE_LOOP_P(RTX) ((RTX)->in_struct)
 
+/* For a LABEL_REF, 1 means it is for a nonlocal label.  */
+#define LABEL_REF_NONLOCAL_P(RTX) ((RTX)->volatil)
+
 /* For a CODE_LABEL, 1 means always consider this label to be needed.  */
 #define LABEL_PRESERVE_P(RTX) ((RTX)->in_struct)
 
