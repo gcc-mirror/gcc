@@ -813,17 +813,34 @@ assemble_asm (string)
   fprintf (asm_out_file, "\t%s\n", TREE_STRING_POINTER (string));
 }
 
-/* Record an element in the table of global destructors.
-   How this is done depends on what sort of assembler and linker
-   are in use.
-
-   NAME should be the name of a global function to be called
-   at exit time.  This name is output using assemble_name.  */
+/* Record an element in the table of global destructors.  The argument
+   should be a SYMBOL_REF of the function to be called.  */
 
 void
-assemble_destructor (name)
-     const char *name;
+assemble_destructor (symbol, priority)
+     rtx symbol;
+     int priority;
 {
+  const char *name;
+
+  if (GET_CODE (symbol) != SYMBOL_REF)
+    abort ();
+  name = XSTR (symbol, 0);
+
+  if (priority != DEFAULT_INIT_PRIORITY
+      && targetm.have_named_sections)
+    {
+      char buf[15];
+      sprintf (buf, ".dtors.%.5u",
+	       /* Invert the numbering so the linker puts us in the proper
+		  order; constructors are run from right to left, and the
+		  linker sorts in increasing order.  */
+	       MAX_INIT_PRIORITY - priority);
+      named_section_flags (buf, SECTION_WRITE, POINTER_SIZE / BITS_PER_UNIT);
+      assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+      return;
+    }
+
 #ifdef ASM_OUTPUT_DESTRUCTOR
   ASM_OUTPUT_DESTRUCTOR (asm_out_file, name);
 #else
@@ -841,9 +858,30 @@ assemble_destructor (name)
 /* Likewise for global constructors.  */
 
 void
-assemble_constructor (name)
-     const char *name;
+assemble_constructor (symbol, priority)
+     rtx symbol;
+     int priority;
 {
+  const char *name;
+
+  if (GET_CODE (symbol) != SYMBOL_REF)
+    abort ();
+  name = XSTR (symbol, 0);
+
+  if (priority != DEFAULT_INIT_PRIORITY
+      && targetm.have_named_sections)
+    {
+      char buf[15];
+      sprintf (buf, ".ctors.%.5u",
+	       /* Invert the numbering so the linker puts us in the proper
+		  order; constructors are run from right to left, and the
+		  linker sorts in increasing order.  */
+	       MAX_INIT_PRIORITY - priority);
+      named_section_flags (buf, SECTION_WRITE, POINTER_SIZE / BITS_PER_UNIT);
+      assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+      return;
+    }
+
 #ifdef ASM_OUTPUT_CONSTRUCTOR
   ASM_OUTPUT_CONSTRUCTOR (asm_out_file, name);
 #else

@@ -1903,7 +1903,7 @@ emit_register_classes ()
     flag_inline_functions = saved_flag;
   }
   current_function_decl = NULL_TREE;
-  assemble_constructor (IDENTIFIER_POINTER (init_name));
+  assemble_constructor (XEXP (DECL_RTL (init_decl), 0), DEFAULT_INIT_PRIORITY);
 }
 
 void

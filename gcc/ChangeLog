@@ -1,3 +1,16 @@
+2001-08-06  Richard Henderson  <rth@redhat.com>
+
+	* varasm.c (assemble_constructor): Take a symbol_ref and a
+	priority instead of a bare string.  Move priority handling
+	here from cp/decl2.c.
+	* output.h: Update decls.
+
+	* c-decl.c (c_expand_body): Update calls to assemble_constructor
+	and assemble_destructor.
+	* profile.c (output_func_start_profiler): Likewise.
+	* objc/objc-act.c (finish_objc): Likewise.
+	(build_module_descriptor): Return the symbol not the symbol name.
+
 2001-08-06  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/darwin.h (DOUBLE_INT_ASM_OP): Add whitespace.

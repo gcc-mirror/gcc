@@ -1,3 +1,8 @@
+2001-08-06  Richard Henderson  <rth@redhat.com>
+
+	* decl2.c (finish_objects): Pass a symbol_ref and priority to
+	assemble_{constructor,destructor}.  Remove priority handling.
+
 2001-08-05  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	Don't allow template-id in using-declaration.

@@ -257,16 +257,14 @@ extern void assemble_variable		PARAMS ((tree, int, int, int));
 extern void assemble_external		PARAMS ((tree));
 #endif /* TREE_CODE */
 
-/* Record an element in the table of global destructors.
-   How this is done depends on what sort of assembler and linker
-   are in use.
-
-   NAME should be the name of a global function to be called
-   at exit time.  This name is output using assemble_name.  */
-extern void assemble_destructor		PARAMS ((const char *));
+#ifdef RTX_CODE
+/* Record an element in the table of global destructors.  The argument
+   should be a SYMBOL_REF of the function to be called.  */
+extern void assemble_destructor		PARAMS ((rtx, int));
 
 /* Likewise for global constructors.  */
-extern void assemble_constructor	PARAMS ((const char *));
+extern void assemble_constructor	PARAMS ((rtx, int));
+#endif
 
 /* Likewise for entries we want to record for garbage collection.
    Garbage collection is still under development.  */

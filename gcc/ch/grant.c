@@ -3048,7 +3048,8 @@ chill_finish_compile ()
 
       if (pass == 2)
 	{
-	  assemble_constructor (IDENTIFIER_POINTER (chill_init_name));
+	  assemble_constructor (XEXP (DECL_RTL (chill_init_function), 0),
+				DEFAULT_INIT_PRIORITY);
 	  globalize_decl (chill_init_function);
 	}
 

@@ -165,7 +165,7 @@ static void objc_post_options			PARAMS ((void));
 
 static void synth_module_prologue		PARAMS ((void));
 static tree build_constructor			PARAMS ((tree, tree));
-static const char *build_module_descriptor      PARAMS ((void));
+static rtx build_module_descriptor		PARAMS ((void));
 static tree init_module_descriptor		PARAMS ((tree));
 static tree build_objc_method_call		PARAMS ((int, tree, tree,
 						       tree, tree, tree));
@@ -1836,13 +1836,12 @@ init_module_descriptor (type)
 
 /* Write out the data structures to describe Objective C classes defined.
    If appropriate, compile and output a setup function to initialize them.
-   Return a string which is the name of a function to call to initialize
-   the Objective C data structures for this file (and perhaps for other files
-   also).
+   Return a symbol_ref to the function to call to initialize the Objective C
+   data structures for this file (and perhaps for other files also).
 
    struct objc_module { ... } _OBJC_MODULE = { ... };   */
 
-static const char *
+static rtx
 build_module_descriptor ()
 {
   tree decl_specs, field_decl, field_decl_chain;
@@ -1911,7 +1910,7 @@ build_module_descriptor ()
      way of generating the requisite code.  */
 
   if (flag_next_runtime)
-    return 0;
+    return NULL_RTX;
 
   {
     tree parms, function_decl, decelerator, void_list_node_1;
@@ -1967,8 +1966,7 @@ build_module_descriptor ()
     function_decl = current_function_decl;
     finish_function (0);
 
-    /* Return the name of the constructor function.  */
-    return XSTR (XEXP (DECL_RTL (function_decl), 0), 0);
+    return XEXP (DECL_RTL (function_decl), 0);
   }
 }
 
@@ -8361,9 +8359,9 @@ finish_objc ()
       || meth_var_names_chain || meth_var_types_chain || sel_ref_chain)
     {
       /* Arrange for Objc data structures to be initialized at run time.  */
-      const char *init_name = build_module_descriptor ();
-      if (init_name)
-	assemble_constructor (init_name);
+      rtx init_sym = build_module_descriptor ();
+      if (init_sym)
+	assemble_constructor (init_sym, DEFAULT_INIT_PRIORITY);
     }
 
   /* Dump the class references.  This forces the appropriate classes
