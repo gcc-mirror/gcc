@@ -317,10 +317,12 @@ do { long l[3];								\
   fprintf (FILE, "\tshort L%d-L%d\n", VALUE, REL)
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
+do {					\
   if ((LOG) == 1)			\
     fprintf (FILE, "\tlalign 2\n");	\
   else if ((LOG) != 0)			\
-    abort ();
+    abort ();				\
+} while (0)
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\tspace %u\n", (SIZE))

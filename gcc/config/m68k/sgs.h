@@ -143,10 +143,12 @@ do { long l;						\
 
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)				\
+do {								\
   if ((LOG) > 0)						\
     fprintf ((FILE), "%s%u\n", ALIGN_ASM_OP, 1 << (LOG));	\
   else if ((LOG) > 31)						\
-    abort ();
+    abort ();							\
+} while (0)
 
 /* The routine used to output null terminated string literals.  We cannot
    use the ".string" pseudo op, because it silently truncates strings to

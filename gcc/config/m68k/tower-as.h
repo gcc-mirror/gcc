@@ -314,10 +314,12 @@ do { long l;					\
 
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
+do {					\
   if ((LOG) == 1)			\
     fprintf (FILE, "\teven\n");	        \
   else if ((LOG) != 0)			\
-    abort ();
+    abort ();				\
+} while (0)
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
