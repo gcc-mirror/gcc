@@ -347,7 +347,7 @@ do
 #define ${rel_source_ident}
 #endif
 EOF
-    $original_dir/fix-header $rel_source_file tmp.h $abs_target_dir/$rel_source_file "$required_list" </dev/null
+    ${FIX_HEADER} $rel_source_file tmp.h $abs_target_dir/$rel_source_file "$required_list" </dev/null
     rm tmp.h
   fi
 done
