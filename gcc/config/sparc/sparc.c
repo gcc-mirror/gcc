@@ -5512,10 +5512,10 @@ print_operand (file, x, code)
 	       || GET_MODE_CLASS (GET_MODE (x)) == MODE_INT))
     {
       if (CONST_DOUBLE_HIGH (x) == 0)
-	fprintf (file, "%u", CONST_DOUBLE_LOW (x));
+	fprintf (file, "%u", (unsigned int) CONST_DOUBLE_LOW (x));
       else if (CONST_DOUBLE_HIGH (x) == -1
 	       && CONST_DOUBLE_LOW (x) < 0)
-	fprintf (file, "%d", CONST_DOUBLE_LOW (x));
+	fprintf (file, "%d", (int) CONST_DOUBLE_LOW (x));
       else
 	output_operand_lossage ("long long constant not a valid immediate operand");
     }
