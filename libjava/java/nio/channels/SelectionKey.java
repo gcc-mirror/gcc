@@ -147,6 +147,8 @@ public abstract class SelectionKey
  
   /**
    * Tells whether or not this key is valid.
+   * 
+   * @exception CancelledKeyException If this key has been cancelled
    */
   public abstract boolean isValid ();
  

@@ -59,7 +59,7 @@ public abstract class Selector
    * 
    * @exception IOException If an error occurs
    */
-  public static Selector open ()
+  public static Selector open () throws IOException
   {
     return SelectorProvider.provider ().openSelector ();
   }
