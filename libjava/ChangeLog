@@ -1,5 +1,9 @@
 1999-09-01  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/natClassLoader.cc (_Jv_NewClass): Use
+	JV_STATE_NOTHING, not `0'.
+	* java/lang/Class.h: Replaced JV_STATE_ defines with enum.
+
 	* posix-threads.cc (_Jv_CondWait): Use _Jv_PthreadGetMutex.
 	* include/posix-threads.h (_Jv_Mutex_t): Define as structure,
 	except on Linux.

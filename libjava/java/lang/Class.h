@@ -23,25 +23,26 @@ extern "C" void _Jv_InitClass (jclass klass);
 extern "C" void _Jv_RegisterClasses (jclass *classes);
 
 // These are the possible values for the `state' field of the class
-// structure.  Note that ordering is important here; in particular
-// `resolved' must come between `nothing' and the other states.
-// Whenever the state changes, one should notify all waiters of this
-// class.
-#define JV_STATE_NOTHING       0 // set by compiler
+// structure.  Note that ordering is important here.  Whenever the
+// state changes, one should notify all waiters of this class.
+enum
+{
+  JV_STATE_NOTHING = 0,		// Set by compiler.
 
-#define JV_STATE_PRELOADING    1 // can do _Jv_FindClass
-#define JV_STATE_LOADING       3 // has super installed
-#define JV_STATE_LOADED        5 // is complete
+  JV_STATE_PRELOADING = 1,	// Can do _Jv_FindClass.
+  JV_STATE_LOADING = 3,		// Has super installed.
+  JV_STATE_LOADED = 5,		// Is complete.
     
-#define JV_STATE_COMPILED      6 // this was a compiled class
+  JV_STATE_COMPILED = 6,	// This was a compiled class.
 
-#define JV_STATE_PREPARED      7 // layout & static init done
-#define JV_STATE_LINKED        9 // strings interned
+  JV_STATE_PREPARED = 7,	// Layout & static init done.
+  JV_STATE_LINKED = 9,		// Strings interned.
 
-#define JV_STATE_IN_PROGRESS  10 // <clinit> running
-#define JV_STATE_DONE         12 // 
+  JV_STATE_IN_PROGRESS = 10,	// <Clinit> running.
+  JV_STATE_DONE = 12,		// 
 
-#define JV_STATE_ERROR        14 // must be last
+  JV_STATE_ERROR = 14		// must be last.
+};
 
 struct _Jv_Field;
 struct _Jv_VTable;
