@@ -218,6 +218,10 @@ INSTALL_HEADERS=install-headers
 # Select which version of fixincludes to use (I.E. regular versus SVR4)
 FIXINCLUDES=fixincludes
 
+# Additional directories of header files to run fixincludes on.
+# On most systems, this is empty.
+OTHER_FIXINCLUDES_DIRS=
+
 # List of things which should already be built whenever we try to use xgcc
 # to compile anything (without linking).
 GCC_PASSES=xgcc cc1 cpp $(EXTRA_PASSES)
@@ -1593,7 +1597,9 @@ install-fixincludes: install-headers
 	done; \
 	rm -rf *
 # Install fixed copies of system files.
-	$(srcdir)/$(FIXINCLUDES) $(libsubdir)/include /usr/include $(srcdir)
+	for dir in /usr/include $(OTHER_FIXINCLUDES_DIRS); do \
+	  $(srcdir)/$(FIXINCLUDES) $(libsubdir)/include $(dir) $(srcdir); \
+	done
 	-cd $(libsubdir)/include; \
 	if [ -f limits.h ]; then \
 	  rm -f ../tmp/syslimits.h; \
