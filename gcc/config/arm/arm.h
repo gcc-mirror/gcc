@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for ARM.
    Copyright (C) 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002 Free Software Foundation, Inc.
+   2001, 2002, 2004 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rearnsha@arm.com)
@@ -2180,6 +2180,7 @@ typedef struct
 	goto WIN;							\
     }									\
   else if (GET_MODE_CLASS (MODE) != MODE_FLOAT				\
+	   && GET_MODE_SIZE (mode) == 4					\
 	   && GET_CODE (X) == SYMBOL_REF				\
 	   && CONSTANT_POOL_ADDRESS_P (X)				\
 	   && ! (flag_pic						\
