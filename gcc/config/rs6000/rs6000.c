@@ -3324,7 +3324,8 @@ legitimate_lo_sum_address_p (enum machine_mode mode, rtx x, int strict)
 	return false;
       if (GET_MODE_NUNITS (mode) != 1)
 	return false;
-      if (GET_MODE_BITSIZE (mode) > 64)
+      if (GET_MODE_BITSIZE (mode) > 64
+	  || (GET_MODE_BITSIZE (mode) > 32 && !TARGET_POWERPC64))
 	return false;
 
       return CONSTANT_P (x);
