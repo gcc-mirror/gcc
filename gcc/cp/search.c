@@ -1206,12 +1206,15 @@ lookup_field (xbasetype, name, protect, want_type)
     }
   else if (IS_AGGR_TYPE_CODE (TREE_CODE (xbasetype)))
     {
-      type = complete_type (xbasetype);
+      type = xbasetype;
       basetype_path = TYPE_BINFO (type);
       BINFO_VIA_PUBLIC (basetype_path) = 1;
       BINFO_INHERITANCE_CHAIN (basetype_path) = NULL_TREE;
     }
-  else my_friendly_abort (97);
+  else
+    my_friendly_abort (97);
+
+  complete_type (type);
 
   if (CLASSTYPE_MTABLE_ENTRY (type))
     {

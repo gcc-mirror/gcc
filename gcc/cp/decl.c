@@ -12264,7 +12264,7 @@ finish_function (lineno, call_poplevel, nested)
 	{
 	  /* If this function returns non-void and control can drop through,
 	     complain.  */
-	  cp_pedwarn ("control reaches end of non-void function `%D'", fndecl);
+	  cp_warning ("control reaches end of non-void function `%D'", fndecl);
 	}
       /* With just -W, complain only if function returns both with
 	 and without a value.  */
