@@ -1,4 +1,8 @@
-20011019  Geert Bosh  <bosch@gnat.com>
+2001-10-22  Geert Bosh  <bosch@gnat.com>
+
+	* Make-lang.in (gnattools, cross-gnattools): Remove gnatmem.
+
+2001-10-19  Geert Bosh  <bosch@gnat.com>
 
 	* Makefile.in (tools, gnattools): Remove gnatmem.
 
