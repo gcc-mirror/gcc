@@ -1,3 +1,7 @@
+2002-01-10  Ira Ruben	<ira@apple.com>
+
+	* decl.c (start_method): Handle attrlist.
+
 2002-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl2.c (max_tinst_depth): Increase default limit to 500.
@@ -288,6 +292,7 @@
 
 2002-01-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/4122
 	* class.c (update_vtable_entry_for_fn): Set delta to zero for a
 	lost primary.
 
@@ -427,6 +432,7 @@
 
 2001-12-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/3242
 	* class.c (add_method): Do compare 'this' quals when trying to match a
 	used function.  Don't defer to another used function.
 
@@ -770,7 +776,7 @@ Tue Nov 27 09:03:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-11-25  Aldy Hernandez  <aldyh@redhat.com>
 
-	* cp/search.c (lookup_base_r): Declare bk in variable declaration
+	* search.c (lookup_base_r): Declare bk in variable declaration
 	space.
 
 2001-11-25  Nathan Sidwell  <nathan@codesourcery.com>
@@ -937,7 +943,7 @@ Tue Nov 27 09:03:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-11-12  H.J. Lu <hjl@gnu.org>
 
-	* cp/cvt.c (ocp_convert): Don't warn the address of a weak
+	* cvt.c (ocp_convert): Don't warn the address of a weak
 	function is always `true'.
 
 2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
