@@ -5,6 +5,11 @@ Wed Feb 24 17:47:28 1999  Jim Wilson  <wilson@cygnus.com>
 
 Wed Feb 24 14:03:54 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* calls.c (initialize_argument_information): New function extracted
+	from expand_call.
+	(expand_call): Use initialize_argument_information.  Remove variables
+	which are no longer used due to cleanups.
+
 	* calls.c (compute_argument_block_size): New function, extracted from
 	expand_calls.
 	(expand_calls): Use compute_argument_block_size.  Delete
