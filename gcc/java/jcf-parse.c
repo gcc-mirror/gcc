@@ -605,6 +605,8 @@ jcf_parse (jcf)
   if (! quiet_flag && TYPE_NAME (current_class))
     fprintf (stderr, " class %s",
 	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))));
+  if (CLASS_LOADED_P (current_class))
+    return;
   CLASS_LOADED_P (current_class) = 1;
 
   for (i = 1; i < JPOOL_SIZE(jcf); i++)
