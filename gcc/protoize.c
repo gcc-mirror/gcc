@@ -170,7 +170,6 @@ extern void longjmp ();
 	 If so, we would get a warning from this.  */
 extern size_t   strlen ()
 #endif
-extern char *   rindex ();
 
 /* Fork is not declared because the declaration caused a conflict
    on the HPPA.  */
@@ -179,6 +178,8 @@ extern char *   rindex ();
 #endif /* (defined (USG) || defined (VMS)) */
 
 #endif /* !defined (POSIX) */
+
+extern char *rindex ();
 
 /* Look for these where the `const' qualifier is intentionally cast aside.  */
 
