@@ -1,3 +1,7 @@
+2002-03-24  Richard Henderson  <rth@redhat.com>
+
+	* objc/execute/formal_protocol-6.x: New XFAIL.
+
 2002-03-25  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* gcc.dg/weak-1.c:  Early return from dg-final on platforms
