@@ -497,6 +497,16 @@ struct table_elt
 
 #define REGNO_QTY_VALID_P(N) (reg_qty[N] != (N))
 
+#ifdef ADDRESS_COST
+/* The ADDRESS_COST macro does not deal with ADDRESSOF nodes.  But,
+   during CSE, such nodes are present.  Using an ADDRESSOF node which
+   refers to the address of a REG is a good thing because we can then
+   turn (MEM (ADDRESSSOF (REG))) into just plain REG.  */
+#define CSE_ADDRESS_COST(RTX)					\
+  ((GET_CODE (RTX) == ADDRESSOF && REG_P (XEXP ((RTX), 0)))	\
+   ? -1 : ADDRESS_COST(RTX))
+#endif 
+
 static struct table_elt *table[NBUCKETS];
 
 /* Chain of `struct table_elt's made so far for this function
@@ -2629,8 +2639,8 @@ find_best_addr (insn, loc)
 
       if (1
 #ifdef ADDRESS_COST
-	  && (ADDRESS_COST (folded) < ADDRESS_COST (addr)
-	      || (ADDRESS_COST (folded) == ADDRESS_COST (addr)
+	  && (CSE_ADDRESS_COST (folded) < CSE_ADDRESS_COST (addr)
+	      || (CSE_ADDRESS_COST (folded) == CSE_ADDRESS_COST (addr)
 		  && rtx_cost (folded, MEM) > rtx_cost (addr, MEM)))
 #else
 	  && rtx_cost (folded, MEM) < rtx_cost (addr, MEM)
@@ -2682,23 +2692,25 @@ find_best_addr (insn, loc)
 
       while (found_better)
 	{
-	  int best_addr_cost = ADDRESS_COST (*loc);
+	  int best_addr_cost = CSE_ADDRESS_COST (*loc);
 	  int best_rtx_cost = (elt->cost + 1) >> 1;
 	  struct table_elt *best_elt = elt; 
 
 	  found_better = 0;
 	  for (p = elt->first_same_value; p; p = p->next_same_value)
-	    if (! p->flag
-		&& (GET_CODE (p->exp) == REG
-		    || exp_equiv_p (p->exp, p->exp, 1, 0))
-		&& (ADDRESS_COST (p->exp) < best_addr_cost
-		    || (ADDRESS_COST (p->exp) == best_addr_cost
-			&& (p->cost + 1) >> 1 > best_rtx_cost)))
+	    if (! p->flag)
 	      {
-		found_better = 1;
-		best_addr_cost = ADDRESS_COST (p->exp);
-		best_rtx_cost = (p->cost + 1) >> 1;
-		best_elt = p;
+		if ((GET_CODE (p->exp) == REG
+		     || exp_equiv_p (p->exp, p->exp, 1, 0))
+		    && (CSE_ADDRESS_COST (p->exp) < best_addr_cost
+			|| (CSE_ADDRESS_COST (p->exp) == best_addr_cost
+			    && (p->cost + 1) >> 1 > best_rtx_cost)))
+		  {
+		    found_better = 1;
+		    best_addr_cost = CSE_ADDRESS_COST (p->exp);
+		    best_rtx_cost = (p->cost + 1) >> 1;
+		    best_elt = p;
+		  }
 	      }
 
 	  if (found_better)
@@ -2750,7 +2762,7 @@ find_best_addr (insn, loc)
 
       while (found_better)
 	{
-	  int best_addr_cost = ADDRESS_COST (*loc);
+	  int best_addr_cost = CSE_ADDRESS_COST (*loc);
 	  int best_rtx_cost = (COST (*loc) + 1) >> 1;
 	  struct table_elt *best_elt = elt; 
 	  rtx best_rtx = *loc;
@@ -2771,12 +2783,12 @@ find_best_addr (insn, loc)
 	      {
 		rtx new = cse_gen_binary (GET_CODE (*loc), Pmode, p->exp, c);
 
-		if ((ADDRESS_COST (new) < best_addr_cost
-		    || (ADDRESS_COST (new) == best_addr_cost
+		if ((CSE_ADDRESS_COST (new) < best_addr_cost
+		    || (CSE_ADDRESS_COST (new) == best_addr_cost
 			&& (COST (new) + 1) >> 1 > best_rtx_cost)))
 		  {
 		    found_better = 1;
-		    best_addr_cost = ADDRESS_COST (new);
+		    best_addr_cost = CSE_ADDRESS_COST (new);
 		    best_rtx_cost = (COST (new) + 1) >> 1;
 		    best_elt = p;
 		    best_rtx = new;

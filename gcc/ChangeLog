@@ -1,3 +1,9 @@
+Mon Jul  6 09:38:15 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* cse.c (CSE_ADDRESS_COST): New macro, based on ADDRESS_COST, but 
+	dealing with ADDRESSOF.
+	(find_best_addr): Use it. 
+
 Mon Jul  6 09:27:08 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha/vms.h (TRAMPOLINE_TEMPLATE): Revert last change.
