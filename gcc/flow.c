@@ -2726,6 +2726,21 @@ life_analysis (f, file, flags)
     dump_flow_info (file);
 
   free_basic_block_vars (1);
+
+#ifdef ENABLE_CHECKING
+  {
+    rtx insn;
+
+    /* Search for any REG_LABEL notes whih reference deleted labels.  */
+    for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+      {
+	rtx inote = find_reg_note (insn, REG_LABEL, NULL_RTX);
+
+	if (inote && GET_CODE (inote) == NOTE_INSN_DELETED_LABEL)
+	  abort ();
+      }
+  }
+#endif
 }
 
 /* A subroutine of verify_wide_reg, called through for_each_rtx.
@@ -3526,9 +3541,18 @@ propagate_block_delete_insn (bb, insn)
   /* If the insn referred to a label, and that label was attached to
      an ADDR_VEC, it's safe to delete the ADDR_VEC.  In fact, it's
      pretty much mandatory to delete it, because the ADDR_VEC may be
-     referencing labels that no longer exist.  */
+     referencing labels that no longer exist.
 
-  if (inote)
+     INSN may reference a deleted label, particularly when a jump
+     table has been optimized into a direct jump.  There's no
+     real good way to fix up the reference to the deleted label
+     when the label is deleted, so we just allow it here.
+
+     After dead code elimination is complete, we do search for
+     any REG_LABEL notes which reference deleted labels as a
+     sanity check.  */
+
+  if (inote && GET_CODE (inote) == CODE_LABEL)
     {
       rtx label = XEXP (inote, 0);
       rtx next;
