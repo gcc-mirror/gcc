@@ -1,3 +1,11 @@
+2003-10-07  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc: Minor cosmetic changes
+	and const-ifications of some variables.
+
+	* include/bits/locale_facets.tcc
+	(money_get::do_get(..., string_type&)): Simplify an if-else.
+
 2003-10-06  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/11740
