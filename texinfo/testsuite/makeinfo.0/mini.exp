@@ -1,0 +1,17 @@
+# Lessons:
+# 1) may use \ to continue long lines
+# 2) Careful in specifying string end on string match, to be sure
+#    to exclude errors!  (cf output from nonsense.exp)
+
+catch "exec $MAKEINFO -o ./mini.info $srcdir/text/minimal.texi" maki_out
+
+verbose "Makeinfo output: $maki_out" 1
+
+if [string match                               \
+	"Making*file*mini*from*minimal.texi'." \
+	"$maki_out"                            \
+   ] then {
+	pass "minimal source file"
+} else {
+	fail "minimal source file"
+}

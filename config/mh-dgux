@@ -1,0 +1,4 @@
+HDEFINES=-DHOST_SYS=DGUX_SYS
+CC=gcc -Wall -ansi -D__using_DGUX
+RANLIB=true
+

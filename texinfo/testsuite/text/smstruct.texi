@@ -1,0 +1,21 @@
+@setfilename smstruct
+
+@node Top, First,,
+@top Hoity
+
+@menu
+* First::	The Very First Node
+* Second::	Another Whole Node
+@end menu
+
+@node First, Second, Top, Top
+@chapter The Very First Node
+
+This node is a real node, yes indeed.
+
+@node Second,,First,Top
+@chapter Another Whole Node
+
+Will wonders never cease?
+
+@bye

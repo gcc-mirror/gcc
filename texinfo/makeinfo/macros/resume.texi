@@ -1,0 +1,64 @@
+@c 
+@c Reusme writing macros.  Produce a very specific format.
+@c 
+
+@c A macro which creates a macro.  The resultant macro can be called to
+@c set a variable which has the same name as the macro.  Use
+@c @value{name} to get the value set in @name{}.
+@macro make-var-macro{macro-name}
+@macro \macro-name\{value}
+@quote-arg
+@set \macro-name\ \value\
+@end macro
+@end macro
+
+@make-var-macro{name}
+@make-var-macro{street}
+@make-var-macro{city}
+@make-var-macro{state}
+@make-var-macro{zip}
+@make-var-macro{phone}
+@make-var-macro{email}
+
+@c Give all of the above variable/macros a null value to start.
+@name
+@street
+@city
+@state
+@zip
+@phone
+@email
+
+@c A typical heading for a resume block is a non-indented line.
+@macro block{title}
+@paragraphindent none
+@comment @noindent
+@heading \title\
+@end macro
+
+@c A typical entry in a resume has a from-date, a to-date, a location,
+@c a job title, and a longer descrition body.
+
+@macro entry{from-date, to-date, where, what, body}
+@paragraphindent 8
+@b{\where\: \what\ (\from-date\ --- \to-date\)}
+@paragraphindent 3
+
+\body\
+@paragraphindent none
+@end macro
+
+@macro address{}
+@value{name}@*
+@value{street}@*
+@value{city}, @value{state}@*
+@value{zip}@*
+@value{phone}
+@end macro
+
+@macro resume{}
+@center @value{name}@*
+@center @value{street}@*
+@center @value{city}, @value{state} @value{zip}@*
+@center @value{email}
+@end macro

@@ -1,0 +1,5 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_PREREQ(2.5)
+AC_INIT(makeinfo.0/atnode.exp)
+
+AC_OUTPUT(Makefile)

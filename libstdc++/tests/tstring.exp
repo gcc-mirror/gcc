@@ -1,0 +1,20 @@
+an empty string:
+A string initialized to Hello:Hello
+A string initialized to previous string:Hello
+A string initialized to (previous string, 1, 2):el
+A string initialized to @:@
+A string initialized to 20:20
+n = 20 atoi(n) = 20 atof(n) = 20
+z = x + y = Helloworld
+x += y; x = Helloworld
+y.insert (0, x); y = Helloworld
+x = x + y + x; x = HelloworldHello
+x = y + x + x; x = worldHelloHello
+z = x + s +  + y.substr (y.find (w), 1) + y.substr (y.find (w) + 1) + . = Hello, world.
+ch = x[0] = H
+z = x.substr (2, 3) = llo
+x.replace (2, 2, r); x = Hero
+x.replace (0, 1, 'j'); x = jello
+enter a word:word =abcdefghijklmnopqrstuvwxyz length = 26
+
+End of test

@@ -1,0 +1,269 @@
+@c  html.texi: -*- Texinfo -*- Macros which support HTML output.
+
+@c  Copyright (c) 1995 Brian Fox (bfox@ai.mit.edu)
+@c  Author: Brian J. Fox (bfox@ai.mit.edu) Sat Apr  1 20:30:54 1995.
+@c
+@c I didn't want to write this myself, because I wanted some HTML wizard
+@c to get everything exactly right.  However, rms continues to believe
+@c that the macro system is not a good idea.  I couldn't disagree more,
+@c so I am writing this as an example of how useful such macros can be.
+
+@macro html
+@set html
+<html>
+@end macro
+
+@c
+@c The first step is to define the macros which really only have meaning
+@c when producing output for HTML.
+
+@c
+@c @anchor{Brian Fox, http://www.ua.com/users/bfox/}
+@c
+@macro anchor{text, link}
+@ifset html
+<a href="\link\">\text\</a>
+@end ifset
+@ifclear html
+\text\
+@end ifclear
+@end macro
+
+@macro pre{}
+@ifset html
+<pre>
+@end ifset
+@end macro
+
+@macro endpre{}
+@ifset html
+</pre>
+@end ifset
+@end macro
+
+@macro TeX
+@ifset html
+<i>T</i>e<i>X</i>
+@end ifset
+@ifclear html
+@TeX{}
+@end ifclear
+@end macro
+
+@macro paragraph{}
+@ifset html
+<p>
+@end ifset
+@end macro
+
+@c
+@c @email{bfox@@ai.mit.edu}
+@c
+@macro email{address}
+@anchor{mailto:\address\, \address\}
+@end macro
+
+@c
+@c Redefine the TeXinfo commands which have direct HTML counterparts.
+@c 
+
+@macro html-define-0arg{command, html-insertion}
+@macro \command\
+@ifset html
+\html-insertion\
+@end ifset
+@ifclear html
+@\command\
+@end ifclear
+@end macro
+@end macro
+
+@macro html-define-1arg{command, html-insertion}
+@macro \command\{arg}
+@ifset html
+\html-insertion\
+@end ifset
+@ifclear html
+@\command\{\arg\}
+@end ifclear
+@end macro
+@end macro
+
+@macro html-define-line{command, html-insertion}
+@macro \command\{line}
+@ifset html
+\html-insertion\
+@end ifset
+@ifclear html
+@\command\ \line\
+@end ifclear
+@end macro
+@end macro
+
+@html-define-0arg{*, <br>}
+@html-define-1arg{b, <b>\\arg\\</b>}
+@html-define-1arg{code, <tt><b>\\arg\\</b></tt>}
+@html-define-line{itemize, <ul>}
+@html-define-line{item,<p><li>}
+@html-define-line{heading,<h1>\\line\\</h1>}
+@html-define-0arg{bye, </html>}
+
+@c 
+@c Define into nothing the macros which do nothing in html.
+@c 
+@html-define-line{group,}
+
+@c
+@c Define a macro which is used to define other macros.  This one makes
+@c a macro which creates an HTML header line.  No sectioning commands
+@c are used.  This takes advantage of the non-recursion feature of
+@c macro execution.
+@macro node_define{orig-name, header-style}
+@macro \orig-name\{title}
+@ifset html
+@node \title\
+<a name="\title\"><\header-style\>\title\</\header-style\></a>
+@end ifset
+@ifclear html
+@\orig-name\ \title\
+@end ifclear
+@end macro
+@end macro
+
+@c
+@c The same as NODE_DEFINE, but italicized.
+@macro inode_define{orig-name, header-style}
+@macro \orig-name\{title}
+@ifset html
+@node \title\
+<a name="\title\"><\header-style\><i>\title\</i></\header-style\></a>
+@end ifset
+@ifclear html
+@\orig-name\ \title\
+@end ifclear
+@end macro
+@end macro
+
+@c Ignore @node commands.
+@html-define-line{node,}
+
+@c Here is a special one for "@top".
+@macro top{title}
+@end macro
+
+@c Now actually define a new set of sectioning commands.
+@node_define {appendix, h1}
+@node_define {appendixsec, h2}
+@node_define {appendixsubsec, h3}
+@node_define {appendixsubsubsec, h4}
+@node_define {chapter, h1}
+@node_define {section, h2}
+@node_define {subsection, h3}
+@node_define {subsubsec, h4}
+@node_define {unnumbered, h1}
+@node_define {unnumberedsec, h2}
+@node_define {unnumberedsubsec, h3}
+@node_define {unnumberedsubsubsec, h4}
+
+@c The italicized analogues.
+@inode_define {iappendix, h1}
+@inode_define {iappendixsec, h2}
+@inode_define {iappendixsubsec, h3}
+@inode_define {iappendixsubsubsec, h4}
+@inode_define {ichapter, h1}
+@inode_define {isection, h2}
+@inode_define {isubsection, h3}
+@inode_define {isubsubsec, h4}
+@inode_define {iunnumbered, h1}
+@inode_define {iunnumberedsec, h2}
+@inode_define {iunnumberedsubsec, h3}
+@inode_define {iunnumberedsubsubsec, h4}
+
+@c Manual starter:
+@c 
+@c Pass arguments of TITLE, AUTHOR, and a short DESCRIPTION.
+@c Immediately following, insert the Top node's menu.
+@c 
+@c Typical usage:
+@c 
+@c @document{Makeinfo, Brian J. Fox, This file documents the use of the
+@c @code{makeinfo} program\, versions 1.61 and later.}
+@c 
+@c @menu
+@c * What is @makeinfo{}?::
+@c @end menu
+@macro document{title, author, description}
+@ifinfo
+\description\
+
+Copyright @copyright{} 1995 \author\
+Copyright @copyright{} 1995 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+Permission is granted to process this file through TeX and print the
+results, provided the printed document carries copying permission
+notice identical to this one except for the removal of this paragraph
+(this paragraph not being relevant to the printed manual).
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by the copyright holders.
+@end ifinfo
+
+@titlepage
+@title \title\
+@author \author\
+
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 1995 \author\
+Copyright @copyright{} 1995 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by the copyright holders.
+@end titlepage
+
+@top{\title\}
+
+\description\
+@end macro
+
+@html-define-line{end,
+@ifeq{"\\line\\"\, "ifinfo"\, @end ifinfo}
+@ifeq{"\\line\\"\, "ifset"\, @end ifset}
+@ifeq{"\\line\\"\, "ifclear"\, @end ifclear}
+@ifeq{"\\line\\"\, "cartouche"\, @end cartouche}
+@ifeq{"\\line\\"\, "menu"\, @end menu}
+@ifeq{"\\line\\"\, "itemize"\, </ul>}
+@ifeq{"\\line\\"\, "enumerate"\, </ul>}
+@ifeq{"\\line\\"\, "table"\, </ul>}
+@ifeq{"\\line\\"\, "ftable"\, </ul>}
+@ifeq{"\\line\\"\, "vtable"\, </ul>}
+@ifeq{"\\line\\"\, "menu"\, xxx}
+@ifeq{"\\line\\"\, "quotation"\, </pre>}
+@ifeq{"\\line\\"\, "example"\, </tt></pre>}
+@ifeq{"\\line\\"\, "smallexample"\, </tt></pre>}
+@ifeq{"\\line\\"\, "lisp"\, </tt></pre>}
+@ifeq{"\\line\\"\, "format"\, </tt></pre>}
+@ifeq{"\\line\\"\, "display"\, </tt></pre>}
+@ifeq{"\\line\\"\, "group"}}

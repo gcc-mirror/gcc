@@ -1,0 +1,4 @@
+# Define SYSV as -DSYSV if you are using a System V operating system.
+CC = cc -Wp,-H256000
+SYSV = -DSYSV
+RANLIB = true

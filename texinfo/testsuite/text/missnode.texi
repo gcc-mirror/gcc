@@ -1,0 +1,22 @@
+@setfilename missingnode
+
+@node Top, First,,
+@top Hoity
+
+@menu
+* First::	The very first node
+* Second::	Another whole node
+* Third::	No such thing
+@end menu
+
+@node First, Second, Top, Top
+@chapter The Very First Node
+
+This node is a real node, yes indeed.
+
+@node Second, Third, First, Top
+@chapter Another Whole Node
+
+Will wonders never cease?
+
+@bye

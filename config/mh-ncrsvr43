@@ -1,0 +1,9 @@
+# Host configuration file for an NCR 3000 (i486/SVR43) system.
+
+# The MetaWare compiler will generate a copyright message unless you
+# turn it off by adding the -Hnocopyr flag.
+CC = cc -Hnocopyr
+
+# Define SYSV as -DSYSV if you are using a System V operating system.
+SYSV = -DSYSV -DSVR4
+RANLIB = true

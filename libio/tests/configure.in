@@ -1,0 +1,21 @@
+# This file is a shell script fragment that supplies the information
+# necessary for a configure script to process the program in
+# this directory.  For more information, look at ../../configure.
+
+configdirs=
+srctrigger=tFile.cc
+srcname="test C++ input/output library"
+package_makefile_frag=Make.pack
+
+# per-host:
+
+# per-target:
+
+TO_TOPDIR=../../
+ALL=' '
+XCINCLUDES='-I. -I.. -I$(srcdir) -I$(srcdir)/..'
+XCXXINCLUDES='-I. -I.. -I$(srcdir) -I$(srcdir)/..'
+MOSTLYCLEAN='*.o core $(JUNK_TO_CLEAN)'
+(. ${srcdir}/../config.shared) >${package_makefile_frag}
+
+# post-target:

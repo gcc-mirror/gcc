@@ -1,0 +1,16 @@
+# We don't want debugging info in Win32-hosted toolchains.
+# Accomplish this by overriding CFLAGS.
+CFLAGS=-O2
+CXXFLAGS=-O2
+
+# We also need to override LIBGCC2_DEBUG_CFLAGS so libgcc2 will be
+# build without debugging information
+
+LIBGCC2_DEBUG_CFLAGS=
+
+# We set MAKEINFOFLAGS to not split .info files, because the resulting
+# file names don't work on DOS.
+MAKEINFOFLAGS=--no-split
+
+# custom installation rules for cygwin32 (append .exe to binaries, etc.)
+INSTALL_DOSREL=install-dosrel

@@ -1,0 +1,116 @@
+# Makefile for GNU makeinfo.
+# $Id: Makefile.in,v 1.1 1997/08/21 22:58:07 jason Exp $
+# 
+# Copyright (C) 1993, 96 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+#### Start of system configuration section. ####
+
+srcdir = @srcdir@
+VPATH = $(srcdir):$(common)
+
+common = $(srcdir)/../libtxi
+
+EXEEXT = @EXEEXT@
+CC = @CC@
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+
+LN	= ln
+RM	= rm -f
+MKDIR	= mkdir
+
+DEFS = @DEFS@
+LIBS = -L../libtxi -ltxi @LIBS@
+LOADLIBES = $(LIBS)
+
+SHELL = /bin/sh
+
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+bindir = @bindir@
+# Prefix for each installed program, normally empty or `g'.
+binprefix = 
+infodir = @infodir@
+
+#### End of system configuration section. ####
+
+SRCS =  makeinfo.c multi.c
+OBJS =  makeinfo.o multi.o
+
+PROGS = makeinfo$(EXEEXT)
+
+all: $(PROGS) makeinfo.info
+sub-all: all
+
+.c.o:
+	$(CC) -c $(CPPFLAGS) -I. -I$(srcdir) -I$(common) $(DEFS) $(CFLAGS) $<
+
+makeinfo$(EXEEXT): $(OBJS) ../libtxi/libtxi.a
+	$(CC) $(LDFLAGS) -o makeinfo $(OBJS) $(LOADLIBES)
+
+../libtxi/libtxi.a:
+	(cd ../libtxi && $(MAKE) $(MFLAGS) libtxi.a)
+
+makeinfo.o: makeinfo.c $(common)/getopt.h
+
+$(OBJS): makeinfo.h
+
+info makeinfo.info: ./makeinfo makeinfo.texi #macro.texi
+	./makeinfo --no-split -I$(srcdir) makeinfo.texi
+
+# makeinfo.texi: ./makeinfo makeinfo.mki
+# 	./makeinfo -E makeinfo.texi -I$(srcdir) makeinfo.mki
+
+dvi makeinfo.dvi: ./makeinfo makeinfo.texi #macro.texi
+	$(srcdir)/../util/texi2dvi makeinfo.txi
+
+install: all
+	$(INSTALL_PROGRAM) makeinfo$(EXEEXT) $(bindir)/$(binprefix)makeinfo$(EXEEXT)
+	-d=$(srcdir); test -f ./makeinfo.info && d=.; $(INSTALL_DATA) $$d/makeinfo.info $(infodir)/makeinfo.info
+	$(POST_INSTALL)
+
+install-info: 
+	-d=$(srcdir); test -f ./makeinfo.info && d=.; $(INSTALL_DATA) $$d/makeinfo.info $(infodir)/makeinfo.info
+	../util/install-info --info-dir=$(infodir) $(infodir)/makeinfo.info
+
+uninstall:
+	for f in $(PROGS); do rm -f $(bindir)/$(binprefix)$$f; done
+	rm -f $(infodir)/makeinfo.info
+
+TAGS: $(SRCS)
+	etags $(SRCS)
+
+clean:
+	rm -f *.o a.out core core.* $(PROGS)
+
+mostlyclean: clean
+
+distclean: clean
+	rm -f TAGS Makefile config.status *.info */*.info
+
+realclean: distclean
+maintainer-clean: distclean
+
+Makefile: Makefile.in ../config.status
+	cd .. && sh config.status
+
+# Prevent GNU make v3 from overflowing arg limit on SysV.
+.NOEXPORT:

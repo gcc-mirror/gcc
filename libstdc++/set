@@ -1,0 +1,7 @@
+// -*- C++ -*- forwarding header.
+// This file is part of the GNU ANSI C++ Library.
+
+#ifndef __SET__
+#define __SET__
+#include <set.h>
+#endif
