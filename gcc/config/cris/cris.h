@@ -782,7 +782,7 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
   && ((GET_CODE (XEXP (X, 0)) == MEM					\
        /* Double indirect: [[reg]] or [[reg+]]?  */			\
        && (BASE_OR_AUTOINCR_P (XEXP (XEXP (X, 0), 0))))			\
-      /* Just an explicite indirect reference: [const]?  */		\
+      /* Just an explicit indirect reference: [const]?  */		\
       || CONSTANT_P (XEXP (X, 0))					\
       /* Something that is indexed; [...+...]?  */			\
       || (GET_CODE (XEXP (X, 0)) == PLUS				\

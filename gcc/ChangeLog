@@ -6,6 +6,7 @@
 	clear overlapped value, don't just CC_STATUS_INIT.
 
 	* config/cris/cris.h (EXTRA_CONSTRAINT_T): Fix spacing and FIXME.
+	Fix typo in comment.
 	(LINK_SPEC): Remove whitespace at end of line.
 	
 2001-11-29  Jakub Jelinek  <jakub@redhat.com>
