@@ -1,5 +1,5 @@
 /* Output routines for GCC for Renesas / SuperH SH.
-   Copyright (C) 1993, 1994, 1995, 1997, 1997, 1998, 1999, 2000, 2001, 2002,
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
    2003, 2004 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -47,7 +47,6 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "langhooks.h"
 #include "basic-block.h"
-#include "ra.h"
 #include "cfglayout.h"
 #include "intl.h"
 #include "sched-int.h"
@@ -289,6 +288,7 @@ static bool sh_callee_copies (CUMULATIVE_ARGS *, enum machine_mode,
 static int sh_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 			         tree, bool);
 static int sh_dwarf_calling_convention (tree);
+static int hard_regs_intersect_p (HARD_REG_SET *, HARD_REG_SET *);
 
 
 /* Initialize the GCC target structure.  */
@@ -10167,6 +10167,21 @@ sh_init_cumulative_args (CUMULATIVE_ARGS *  pcum,
 	  pcum->force_mem = FALSE;
 	}
     }
+}
+
+/* Determine if two hard register sets intersect.
+   Return 1 if they do.  */
+
+static int
+hard_regs_intersect_p (HARD_REG_SET *a, HARD_REG_SET *b)
+{
+  HARD_REG_SET c;
+  COPY_HARD_REG_SET (c, *a);
+  AND_HARD_REG_SET (c, *b);
+  GO_IF_HARD_REG_SUBSET (c, reg_class_contents[(int) NO_REGS], lose);
+  return 1;
+lose:
+  return 0;
 }
 
 #include "gt-sh.h"
