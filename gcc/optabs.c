@@ -3290,8 +3290,7 @@ emit_cmp_and_jump_insns (x, y, comparison, size, mode, unsignedp, align, label)
   rtx op0;
   rtx op1;
 	  
-  if ((CONSTANT_P (x) && ! CONSTANT_P (y))
-      || (GET_CODE (x) == CONST_INT && GET_CODE (y) != CONST_INT))
+  if (swap_commutative_operands_p (x, y))
     {
       /* Swap operands and condition to ensure canonical RTL.  */
       op0 = y;
@@ -3609,12 +3608,12 @@ emit_conditional_move (target, code, op0, op1, cmode, op2, op3, mode,
 {
   rtx tem, subtarget, comparison, insn;
   enum insn_code icode;
+  enum rtx_code reversed;
 
   /* If one operand is constant, make it the second one.  Only do this
      if the other operand is not constant as well.  */
 
-  if ((CONSTANT_P (op0) && ! CONSTANT_P (op1))
-      || (GET_CODE (op0) == CONST_INT && GET_CODE (op1) != CONST_INT))
+  if (swap_commutative_operands_p (op0, op1))
     {
       tem = op0;
       op0 = op1;
@@ -3633,16 +3632,14 @@ emit_conditional_move (target, code, op0, op1, cmode, op2, op3, mode,
   if (cmode == VOIDmode)
     cmode = GET_MODE (op0);
 
-  if (((CONSTANT_P (op2) && ! CONSTANT_P (op3))
-       || (GET_CODE (op2) == CONST_INT && GET_CODE (op3) != CONST_INT))
-      && (GET_MODE_CLASS (GET_MODE (op1)) != MODE_FLOAT
-	  || TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT 
-	  || flag_unsafe_math_optimizations))
+  if (swap_commutative_operands_p (op2, op3)
+      && ((reversed = reversed_comparison_code_parts (code, op0, op1, NULL))
+          != UNKNOWN))
     {
       tem = op2;
       op2 = op3;
       op3 = tem;
-      code = reverse_condition (code);
+      code = reversed;
     }
 
   if (mode == VOIDmode)

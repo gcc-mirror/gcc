@@ -1308,10 +1308,6 @@ int
 subreg_lowpart_p (x)
      rtx x;
 {
-  unsigned int offset = 0;
-  int difference = (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
-		    - GET_MODE_SIZE (GET_MODE (x)));
-
   if (GET_CODE (x) != SUBREG)
     return 1;
   else if (GET_MODE (SUBREG_REG (x)) == VOIDmode)

@@ -3514,12 +3514,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
   /* If this is a commutative operation, put a constant last and a complex
      expression first.  We don't need to do this for comparisons here.  */
   if (GET_RTX_CLASS (code) == 'c'
-      && ((CONSTANT_P (XEXP (x, 0)) && GET_CODE (XEXP (x, 1)) != CONST_INT)
-	  || (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == 'o'
-	      && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) != 'o')
-	  || (GET_CODE (XEXP (x, 0)) == SUBREG
-	      && GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (x, 0)))) == 'o'
-	      && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) != 'o')))
+      && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
     {
       temp = XEXP (x, 0);
       SUBST (XEXP (x, 0), XEXP (x, 1));
@@ -9818,12 +9813,7 @@ gen_binary (code, mode, op0, op1)
 
   /* Put complex operands first and constants second.  */
   if (GET_RTX_CLASS (code) == 'c'
-      && ((CONSTANT_P (op0) && GET_CODE (op1) != CONST_INT)
-	  || (GET_RTX_CLASS (GET_CODE (op0)) == 'o'
-	      && GET_RTX_CLASS (GET_CODE (op1)) != 'o')
-	  || (GET_CODE (op0) == SUBREG
-	      && GET_RTX_CLASS (GET_CODE (SUBREG_REG (op0))) == 'o'
-	      && GET_RTX_CLASS (GET_CODE (op1)) != 'o')))
+      && swap_commutative_operands_p (op0, op1))
     return gen_rtx_fmt_ee (code, mode, op1, op0);
 
   /* If we are turning off bits already known off in OP0, we need not do
