@@ -1,5 +1,6 @@
 2004-10-18  Pat Haugen  <pthaugen@us.ibm.com>
 
+	PR rtl-optimization/18002
 	* simplify-rtx.c (mode_signbit_p): Externalize function...
 	* rtl.h (mode_signbit_p): ... to here.
 	* combine.c (simplify_shift_const): Recognize PLUS signbit as
