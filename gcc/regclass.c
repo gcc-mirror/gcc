@@ -893,7 +893,7 @@ regclass (f, nregs)
 	  if (pass == 1 || ! flag_expensive_optimizations)
 	    for (class = 0; class < N_REG_CLASSES; class++)
 	      if (p->cost[class] < p->mem_cost
-		  && (reg_class_size[reg_class_subunion[(int) alt][class]]
+		  && (reg_class_size[(int) reg_class_subunion[(int) alt][class]]
 		      > reg_class_size[(int) alt])
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 		  && ! (in_inc_dec[i] && forbidden_inc_dec_class[class])
