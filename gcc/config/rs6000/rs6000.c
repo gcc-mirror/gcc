@@ -884,7 +884,7 @@ rs6000_parse_yes_no_option (const char *name, const char *value, int *flag)
 
 /* Handle -mabi= options.  */
 static void
-rs6000_parse_abi_options ()
+rs6000_parse_abi_options (void)
 {
   if (rs6000_abi_string == 0)
     return;
@@ -907,7 +907,7 @@ rs6000_parse_abi_options ()
 
 /* Handle -malign-XXXXXX options.  */
 static void
-rs6000_parse_alignment_option ()
+rs6000_parse_alignment_option (void)
 {
   if (rs6000_alignment_string == 0
       || ! strcmp (rs6000_alignment_string, "power"))
@@ -922,7 +922,7 @@ rs6000_parse_alignment_option ()
 /* Validate and record the size specified with the -mtls-size option.  */
 
 static void
-rs6000_parse_tls_size_option ()
+rs6000_parse_tls_size_option (void)
 {
   if (rs6000_tls_size_string == 0)
     return;
@@ -944,7 +944,7 @@ optimization_options (int level ATTRIBUTE_UNUSED, int size ATTRIBUTE_UNUSED)
 /* Do anything needed at the start of the asm file.  */
 
 static void
-rs6000_file_start ()
+rs6000_file_start (void)
 {
   size_t i;
   char buffer[80];
@@ -1000,7 +1000,7 @@ rs6000_file_start ()
 /* Return nonzero if this function is known to have a null epilogue.  */
 
 int
-direct_return ()
+direct_return (void)
 {
   if (reload_completed)
     {
@@ -2545,7 +2545,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 
 static GTY(()) rtx rs6000_tls_symbol;
 static rtx
-rs6000_tls_get_addr ()
+rs6000_tls_get_addr (void)
 {
   if (!rs6000_tls_symbol)
     rs6000_tls_symbol = init_one_libfunc ("__tls_get_addr");
@@ -2557,7 +2557,7 @@ rs6000_tls_get_addr ()
 
 static GTY(()) rtx rs6000_got_symbol;
 static rtx
-rs6000_got_sym ()
+rs6000_got_sym (void)
 {
   if (!rs6000_got_symbol)
     {
@@ -4095,7 +4095,7 @@ setup_incoming_varargs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 /* Create the va_list data type.  */
 
 tree
-rs6000_build_va_list ()
+rs6000_build_va_list (void)
 {
   tree f_gpr, f_fpr, f_res, f_ovf, f_sav, record, type_decl;
 
@@ -5860,7 +5860,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 }
 
 static void
-rs6000_init_builtins ()
+rs6000_init_builtins (void)
 {
   opaque_V2SI_type_node = copy_node (V2SI_type_node);
   opaque_V2SF_type_node = copy_node (V2SF_type_node);
@@ -5903,7 +5903,7 @@ enable_mask_for_builtins (struct builtin_description *desc, int size,
 }
 
 static void
-spe_init_builtins ()
+spe_init_builtins (void)
 {
   tree endlink = void_list_node;
   tree puint_type_node = build_pointer_type (unsigned_type_node);
@@ -6122,7 +6122,7 @@ spe_init_builtins ()
 }
 
 static void
-altivec_init_builtins ()
+altivec_init_builtins (void)
 {
   struct builtin_description *d;
   struct builtin_description_predicates *dp;
@@ -6321,7 +6321,7 @@ altivec_init_builtins ()
 }
 
 static void
-rs6000_common_init_builtins ()
+rs6000_common_init_builtins (void)
 {
   struct builtin_description *d;
   size_t i;
@@ -7924,7 +7924,7 @@ rs6000_got_register (rtx value ATTRIBUTE_UNUSED)
    from push_function_context.  */
 
 static struct machine_function *
-rs6000_init_machine_status ()
+rs6000_init_machine_status (void)
 {
   return ggc_alloc_cleared (sizeof (machine_function));
 }
@@ -8008,7 +8008,7 @@ extract_ME (rtx op)
    so that we can print its name in some tls_ld pattern.  */
 
 static const char *
-rs6000_get_some_local_dynamic_name ()
+rs6000_get_some_local_dynamic_name (void)
 {
   rtx insn;
 
@@ -9552,7 +9552,7 @@ rs6000_split_altivec_in_gprs (rtx *operands)
    saved. 32 if none.  */
 
 int
-first_reg_to_save ()
+first_reg_to_save (void)
 {
   int first_reg;
 
@@ -9578,7 +9578,7 @@ first_reg_to_save ()
 /* Similar, for FP regs.  */
 
 int
-first_fp_reg_to_save ()
+first_fp_reg_to_save (void)
 {
   int first_reg;
 
@@ -9593,7 +9593,7 @@ first_fp_reg_to_save ()
 /* Similar, for AltiVec regs.  */
 
 static int
-first_altivec_reg_to_save ()
+first_altivec_reg_to_save (void)
 {
   int i;
 
@@ -9614,7 +9614,7 @@ first_altivec_reg_to_save ()
    the 32-bit word is 0.  */
 
 static unsigned int
-compute_vrsave_mask ()
+compute_vrsave_mask (void)
 {
   unsigned int i, mask = 0;
 
@@ -9752,7 +9752,7 @@ is_altivec_return_reg (rtx reg, void *xyes)
 #endif
 
 rs6000_stack_t *
-rs6000_stack_info ()
+rs6000_stack_info (void)
 {
   static rs6000_stack_t info, zero_info;
   rs6000_stack_t *info_ptr = &info;
@@ -10061,7 +10061,7 @@ rs6000_stack_info ()
    mode.  */
 
 static bool
-spe_func_has_64bit_regs_p ()
+spe_func_has_64bit_regs_p (void)
 {
   rtx insns, insn;
 
@@ -10295,7 +10295,7 @@ rs6000_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
 }
 
 static int
-rs6000_ra_ever_killed ()
+rs6000_ra_ever_killed (void)
 {
   rtx top;
   rtx reg;
@@ -10459,7 +10459,7 @@ rs6000_emit_load_toc_table (int fromprolog)
 }
 
 int   
-get_TOC_alias_set ()
+get_TOC_alias_set (void)
 {
     static int set = -1;
     if (set == -1)
@@ -10514,7 +10514,7 @@ create_TOC_reference (rtx symbol)
    entry.  Save it there in that case.  */
 
 void
-rs6000_aix_emit_builtin_unwind_init ()
+rs6000_aix_emit_builtin_unwind_init (void)
 {
   rtx mem;
   rtx stack_top = gen_reg_rtx (Pmode);
@@ -10549,7 +10549,7 @@ rs6000_aix_emit_builtin_unwind_init ()
    rs6000_sr_alias_set) and the change to the stack pointer.  */
 
 static void
-rs6000_emit_stack_tie ()
+rs6000_emit_stack_tie (void)
 {
   rtx mem = gen_rtx_MEM (BLKmode, gen_rtx_REG (Pmode, STACK_POINTER_REGNUM));
 
@@ -10918,7 +10918,7 @@ gen_frame_mem_offset (enum machine_mode mode, rtx reg, int offset)
 /* Emit function prologue as insns.  */
 
 void
-rs6000_emit_prologue ()
+rs6000_emit_prologue (void)
 {
   rs6000_stack_t *info = rs6000_stack_info ();
   enum machine_mode reg_mode = TARGET_POWERPC64 ? DImode : SImode;
@@ -12893,7 +12893,7 @@ output_function_profiler (FILE *file, int labelno)
 
 
 static int
-rs6000_use_dfa_pipeline_interface ()
+rs6000_use_dfa_pipeline_interface (void)
 {
   return 1;
 }
@@ -13037,7 +13037,7 @@ rs6000_adjust_priority (rtx insn ATTRIBUTE_UNUSED, int priority)
 /* Return how many instructions the machine can issue per cycle.  */
 
 static int
-rs6000_issue_rate ()
+rs6000_issue_rate (void)
 {
   /* Use issue rate of 1 for first scheduling pass to decrease degradation.  */
   if (!reload_completed)
@@ -13071,7 +13071,7 @@ rs6000_issue_rate ()
    scheduling.  */
 
 static int
-rs6000_use_sched_lookahead ()
+rs6000_use_sched_lookahead (void)
 {
   if (rs6000_cpu_attr == CPU_PPC8540)
     return 4;
@@ -13082,7 +13082,7 @@ rs6000_use_sched_lookahead ()
 /* Length in units of the trampoline for entering a nested function.  */
 
 int
-rs6000_trampoline_size ()
+rs6000_trampoline_size (void)
 {
   int ret = 0;
 
@@ -13428,7 +13428,7 @@ add_compiler_stub (tree label_name, tree function_name, int line_number)
    linked list.  */
 
 void
-output_compiler_stub ()
+output_compiler_stub (void)
 {
   char tmp_buf[256];
   char label_buf[256];
@@ -13661,7 +13661,7 @@ rs6000_machopic_legitimize_pic_address (rtx orig, enum machine_mode mode,
    real definition.  */
 
 void
-toc_section ()
+toc_section (void)
 {
 }
 
@@ -13947,7 +13947,7 @@ rs6000_xcoff_section_type_flags (tree decl, const char *name, int reloc)
    Finally, declare mcount when profiling to make the assembler happy.  */
 
 static void
-rs6000_xcoff_file_start ()
+rs6000_xcoff_file_start (void)
 {
   rs6000_gen_section_name (&xcoff_bss_section_name,
 			   main_input_filename, ".bss_");
@@ -13972,7 +13972,7 @@ rs6000_xcoff_file_start ()
    On the RS/6000, referencing data should automatically pull in text.  */
 
 static void
-rs6000_xcoff_file_end ()
+rs6000_xcoff_file_end (void)
 {
   text_section ();
   fputs ("_section_.text:\n", asm_out_file);
