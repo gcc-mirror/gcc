@@ -3357,7 +3357,6 @@ do {									\
 
    Defined in svr4.h.  */
 /* #define INIT_SECTION_ASM_OP */
-#undef INIT_SECTION_ASM_OP
 
 /* If defined, `main' will not call `__main' as described above.  This macro
    should be defined for systems that control the contents of the init section
