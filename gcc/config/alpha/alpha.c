@@ -2848,10 +2848,19 @@ summarize_insn (x, sum, set)
       summarize_insn (XEXP (x, 0), sum, 0);
       break;
 
+    case ASM_OPERANDS:
+      for (i = ASM_OPERANDS_INPUT_LENGTH (x) - 1; i >= 0; i--)
+	summarize_insn (ASM_OPERANDS_INPUT (x, i), sum, 0);
+      break;
+
     case PARALLEL:
       for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
 	summarize_insn (XVECEXP (x, 0, i), sum, 0);
       break;
+
+    case SUBREG:
+      x = SUBREG_REG (x);
+      /* FALLTHRU */
 
     case REG:
       {
@@ -2886,10 +2895,6 @@ summarize_insn (x, sum, set)
 
       /* Find the regs used in memory address computation: */
       summarize_insn (XEXP (x, 0), sum, 0);
-      break;
-
-    case SUBREG:
-      summarize_insn (SUBREG_REG (x), sum, set);
       break;
 
     case CONST_INT:   case CONST_DOUBLE:
@@ -3022,7 +3027,7 @@ alpha_handle_trap_shadows (insns)
 		  sum.used.i = 0;
 		  sum.used.fp = 0;
 		  sum.used.mem = 0;
-		  sum.defd = shadow.used;
+		  sum.defd = sum.used;
 
 		  switch (GET_CODE (i))
 		    {

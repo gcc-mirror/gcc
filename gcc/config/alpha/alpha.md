@@ -39,7 +39,7 @@
 ;; The TRAP_TYPE attribute marks instructions that may generate traps
 ;; (which are imprecise and may need a trapb if software complention
 ;; is desired).
-(define_attr "trap" "yes,no" (const_string "no"))
+(define_attr "trap" "no,yes" (const_string "no"))
 
 ;; For the EV4 we include four function units: ABOX, which computes
 ;; the address, BBOX, used for branches, EBOX, used for integer
