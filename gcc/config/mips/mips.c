@@ -814,8 +814,6 @@ mips_const_double_ok (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  REAL_VALUE_TYPE d;
-
   if (GET_CODE (op) != CONST_DOUBLE)
     return 0;
 
