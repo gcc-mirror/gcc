@@ -1,3 +1,22 @@
+1999-10-14 Mark Elbrecht <snowball3@bigfoot.com>
+
+	* configure.in (djgpp configuration): Define extra_objects..
+	* configure: Rebuilt.
+	* config/i386/djgpp.h (CTORS_SECTION_ASM_OP): Define.
+	(DTORS_SECTION_ASM_OP): Define.
+	(INIT_SECTION_ASM_OP): Define.
+	(FINI_SECTION_ASM_OP): Define.
+	(DATA_SECTION_ASM_OP): Define.
+	(TEXT_SECTION_ASM_OP): Define.
+	(EH_FRAME_SECTION_ASM_OP): Define.
+	(LINK_COMMAND_SPEC): Remove -Tdjgpp.djl.
+	(STARTFILE_SPEC): Add crtbegin.o.
+	(ENDFILE_SPEC): Define and add crtend.o. Move argument -Tdjgpp.djl
+	to here from LINK_COMMAND_SPEC.
+	(DO_GLOBAL_CTORS_BODY): Define.
+	(CRTSTUFF_USE_FINI_SECTION): Define
+	(HAS_INIT_SECTION): Delete.
+
 Thu Oct 14 05:08:14 1999  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (all.cross): Depend on xcpp$(exeext).
