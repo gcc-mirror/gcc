@@ -1,3 +1,19 @@
+Wed Aug  4 13:29:23 1999  Zack Weinberg  <zack@bitmover.com>
+
+	* cpphash.c (macroexpand): Delete leading whitespace when arg
+	is concatenated before.
+	(unsafe_chars): Correct test for whether + and - can extend a
+	token.
+
+	* cppinit.c (cpp_start_read): Do dependencies for
+	-include/-imacros files also.
+
+	* cpplib.c (cpp_scan_buffer): In no-output mode, don't bother
+	tokenizing non-directive lines.
+	(cpp_expand_to_buffer): Temporarily disable no-output mode.
+	* cppmain.c: In no-output mode, just call cpp_scan_buffer for
+	the input file.
+
 Wed Aug  4 12:53:44 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* expr.c (expand_expr, case PLUS_EXPR): Fix parallel case, too.

@@ -1029,8 +1029,15 @@ cpp_start_read (pfile, fname)
       ih_fake->control_macro = 0;
       ih_fake->buf = (char *)-1;
       ih_fake->limit = 0;
-      if (!finclude (pfile, fd, ih_fake))
-	cpp_scan_buffer (pfile);
+      if (finclude (pfile, fd, ih_fake))
+	{
+	  if (CPP_PRINT_DEPS (pfile))
+	    deps_output (pfile, ih_fake->name, ' ');
+
+	  cpp_scan_buffer (pfile);
+	}
+      else
+	cpp_pop_buffer (pfile);
       free (ih_fake);
 
       q = p->next;
@@ -1062,8 +1069,14 @@ cpp_start_read (pfile, fname)
       ih_fake->buf = (char *)-1;
       ih_fake->limit = 0;
       if (finclude (pfile, fd, ih_fake))
-	output_line_command (pfile, enter_file);
-
+	{
+	  if (CPP_PRINT_DEPS (pfile))
+	    deps_output (pfile, ih_fake->name, ' ');
+	  
+	  output_line_command (pfile, enter_file);
+	}
+      else
+	cpp_pop_buffer (pfile);
       q = p->next;
       free (p);
       p = q;
