@@ -1,3 +1,9 @@
+2002-01-07  Jason Merrill  <jason@redhat.com>
+
+	* method.c (make_thunk): If !flag_weak, give the thunk the
+	function's linkage.
+	(use_thunk): Here, too.
+
 2001-12-21  Jason Merrill  <jason@redhat.com>
 
 	* class.c (update_vtable_entry_for_fn): Set delta to zero for a

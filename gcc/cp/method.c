@@ -345,7 +345,9 @@ make_thunk (function, delta, vcall_index)
       DECL_CONTEXT (thunk) = DECL_CONTEXT (func_decl);
       TREE_READONLY (thunk) = TREE_READONLY (func_decl);
       TREE_THIS_VOLATILE (thunk) = TREE_THIS_VOLATILE (func_decl);
-      comdat_linkage (thunk);
+      TREE_PUBLIC (thunk) = TREE_PUBLIC (func_decl);
+      if (flag_weak)
+	comdat_linkage (thunk);
       SET_DECL_THUNK_P (thunk);
       DECL_INITIAL (thunk) = function;
       THUNK_DELTA (thunk) = d;
@@ -418,6 +420,9 @@ use_thunk (thunk_fndecl, emit_p)
   mark_used (thunk_fndecl);
   /* This thunk is actually defined.  */
   DECL_EXTERNAL (thunk_fndecl) = 0;
+  /* The linkage of the function may have changed.  FIXME in linkage
+     rewrite.  */
+  TREE_PUBLIC (thunk_fndecl) = TREE_PUBLIC (function);
 
   if (flag_syntax_only)
     {
