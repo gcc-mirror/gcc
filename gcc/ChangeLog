@@ -1,3 +1,7 @@
+2005-03-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fold-const.c (fold_unary_to_constant): Add FIX_ROUND_EXPR case.
+
 2005-03-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c (fold_unary, fold_binary, fold_ternary): Return
