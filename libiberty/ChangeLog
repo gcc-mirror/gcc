@@ -1,3 +1,21 @@
+2000-08-25  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c (result_add_separated_char): Change parameter to
+	int.
+	(substitution_add): Don't check for duplicates.  Check if
+	previously allocated size is zero.
+	(demangle_name): Remove duplicate check for std substitution.
+	Clear template flag appropriately.
+	(demangle_prefix): Remove argument to demangle_substitution.
+	Don't check that template flag is already set.
+	(demangle_operator_name): Add pt operator.
+	(demangle_type): Don't treat r as built-in type.  Remove argument
+	to demangle_substitution.  Fix substitution candidate mechanics.
+	Handle <template-template-parm>s.  Improve comments.
+	(demangle_template_param): Don't handle template arg lists here. 
+	(demangle_substitution): Remove parameter.
+	(print_usage): Remove extra fprintf option.
+
 2000-08-24  Greg McGary  <greg@mcgary.org>
 
 	* libiberty/random.c (end_ptr): Revert previous change.

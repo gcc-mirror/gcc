@@ -21,7 +21,8 @@
    the IA64 / g++ standard C++ ABI.  Use the cp_demangle function to
    demangle a mangled name, or compile with the preprocessor macro
    STANDALONE_DEMANGLER defined to create a demangling filter
-   executable.  */
+   executable (functionally similar to c++filt, but includes this
+   demangler only).  */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -197,7 +198,7 @@ static string_list_t string_list_new
 static void string_list_delete
   PARAMS ((string_list_t));
 static status_t result_add_separated_char
-  PARAMS ((demangling_t, char));
+  PARAMS ((demangling_t, int));
 static status_t result_push
   PARAMS ((demangling_t));
 static string_list_t result_pop
@@ -391,7 +392,7 @@ string_list_delete (node)
 static status_t
 result_add_separated_char (dm, character)
      demangling_t dm;
-     char character;
+     int character;
 {
   dyn_string_t s = &dm->result->string;
 
@@ -487,23 +488,14 @@ substitution_add (dm, start_position, template_p, template_parm_number)
       return STATUS_ALLOCATION_FAILED;
     }
 
-  /* Check whether SUBSTITUTION already occurs.  */
-  for (i = 0; i < dm->num_substitutions; ++i)
-    if (dyn_string_eq (dm->substitutions[i].text, substitution)
-	&& dm->substitutions[i].template_parm_number == template_parm_number)
-      /* Found SUBSTITUTION already present.  */
-      {
-	/* Callers expect this function to take ownership of
-	   SUBSTITUTION, so delete it.  */
-	dyn_string_delete (substitution);
-	return STATUS_OK;
-      }
-
   /* If there's no room for the new entry, grow the array.  */
   if (dm->substitutions_allocated == dm->num_substitutions)
     {
       size_t new_array_size;
-      dm->substitutions_allocated *= 2;
+      if (dm->substitutions_allocated > 0)
+	dm->substitutions_allocated *= 2;
+      else
+	dm->substitutions_allocated = 2;
       new_array_size = 
 	sizeof (struct substitution_def) * dm->substitutions_allocated;
 
@@ -518,10 +510,10 @@ substitution_add (dm, start_position, template_p, template_parm_number)
     }
 
   /* Add the substitution to the array.  */
+  i = dm->num_substitutions++;
   dm->substitutions[i].text = substitution;
   dm->substitutions[i].template_p = template_p;
   dm->substitutions[i].template_parm_number = template_parm_number;
-  ++dm->num_substitutions;
 
 #ifdef CP_DEMANGLE_DEBUG
   substitutions_print (dm, stderr);
@@ -853,7 +845,7 @@ static status_t demangle_scope_expression
 static status_t demangle_expr_primary
   PARAMS ((demangling_t));
 static status_t demangle_substitution
-  PARAMS ((demangling_t, int *, int *));
+  PARAMS ((demangling_t, int *));
 static status_t demangle_local_name
   PARAMS ((demangling_t));
 static status_t demangle_discriminator 
@@ -980,7 +972,6 @@ demangle_name (dm, template_p)
      demangling_t dm;
      int *template_p;
 {
-  int special_std_substitution;
   int start = substitution_start (dm);
 
   DEMANGLE_TRACE ("name", dm);
@@ -1008,16 +999,7 @@ demangle_name (dm, template_p)
 	}
       else
 	{
-	  RETURN_IF_ERROR (demangle_substitution (dm, template_p,
-						  &special_std_substitution));
-	  if (special_std_substitution)
-	    {
-	      /* This was the magic `std::' substitution.  We can have
-		 a <nested-name> or one of the unscoped names
-		 following.  */
-	      RETURN_IF_ERROR (result_append (dm, "::"));
-	      RETURN_IF_ERROR (demangle_name (dm, template_p));
-	    }
+	  RETURN_IF_ERROR (demangle_substitution (dm, template_p));
 	}
       /* Check if a template argument list immediately follows.
 	 If so, then we just demangled an <unqualified-template-name>.  */
@@ -1026,7 +1008,11 @@ demangle_name (dm, template_p)
 	  RETURN_IF_ERROR (substitution_add (dm, start, 0, 
 					     NOT_TEMPLATE_PARM));
 	  RETURN_IF_ERROR (demangle_template_args (dm));
+	  *template_p = 1;
 	}
+      else
+	*template_p = 0;
+
       break;
 
     default:
@@ -1127,7 +1113,6 @@ demangle_prefix (dm, template_p)
   while (1)
     {
       char peek;
-      int unused;
 
       if (end_of_name_p (dm))
 	return "Unexpected end of name in <compound-name>.";
@@ -1157,8 +1142,7 @@ demangle_prefix (dm, template_p)
 	  if (peek == 'S')
 	    /* The substitution determines whether this is a
 	       template-id.  */
-	    RETURN_IF_ERROR (demangle_substitution (dm, template_p, 
-						    &unused));
+	    RETURN_IF_ERROR (demangle_substitution (dm, template_p));
 	  else
 	    {
 	      /* It's just a name.  Remember whether it's a
@@ -1176,11 +1160,6 @@ demangle_prefix (dm, template_p)
 	RETURN_IF_ERROR (demangle_local_name (dm));
       else if (peek == 'I')
 	{
-	  /* If the template flag is already set, this is the second
-             set of template args in a row.  Something is wrong with
-             the mangled name.  */
-	  if (*template_p) 
-	    return "Unexpected second consecutive template args in <prefix>.";
 	  /* The template name is a substitution candidate.  */
 	  RETURN_IF_ERROR (substitution_add (dm, start, 0, NOT_TEMPLATE_PARM));
 	  RETURN_IF_ERROR (demangle_template_args (dm));
@@ -1492,6 +1471,7 @@ demangle_operator_name (dm, short_name, num_args)
     { "pm", "->*"      , 2 },
     { "pp", "++"       , 1 },
     { "ps", "+"        , 1 },
+    { "pt", "->"       , 2 },
     { "qu", "?"        , 3 },
     { "rM", "%="       , 2 },
     { "rS", ">>="      , 2 },
@@ -1966,6 +1946,7 @@ demangle_type_ptr (dm)
 	   ::= <array-type>
 	   ::= <pointer-to-member-type>
 	   ::= <template-param>
+	   ::= <template-template-param> <template-args>
            ::= <CV-qualifiers> <type>
 	   ::= P <type>   # pointer-to
 	   ::= R <type>   # reference-to
@@ -1982,10 +1963,13 @@ demangle_type (dm)
   char peek = peek_char (dm);
   char peek_next;
   int template_p = 0;
-  int special_std_substitution;
-  int is_builtin_type = 0;
   template_arg_list_t old_arg_list = current_template_arg_list (dm);
   int template_parm = NOT_TEMPLATE_PARM;
+
+  /* A <type> can be a <substitution>; therefore, this <type> is a
+     substitution candidate unless a special condition holds (see
+     below).  */
+  int is_substitution_candidate = 1;
 
   DEMANGLE_TRACE ("type", dm);
 
@@ -1993,10 +1977,13 @@ demangle_type (dm)
      N (a <nested-name>), or a Z (a <local-name>).  */
   if (IS_DIGIT ((unsigned char) peek) || peek == 'N' || peek == 'Z')
     RETURN_IF_ERROR (demangle_class_enum_type (dm, &template_p));
-  else if (peek >= 'a' && peek <= 'z')
+  /* Lower-case letters begin <builtin-type>s, except for `r', which
+     denotes restrict.  */
+  else if (peek >= 'a' && peek <= 'z' && peek != 'r')
     {
       RETURN_IF_ERROR (demangle_builtin_type (dm));
-      is_builtin_type = 1;
+      /* Built-in types are not substitution candidates.  */
+      is_substitution_candidate = 0;
     }
   else
     switch (peek)
@@ -2004,6 +1991,9 @@ demangle_type (dm)
       case 'r':
       case 'V':
       case 'K':
+	/* CV-qualifiers (including restrict).  We have to demangle
+	   them off to the side, since C++ syntax puts them in a funny
+	   place for qualified pointer and reference types.  */
 	{
 	  status_t status;
 	  dyn_string_t cv_qualifiers = dyn_string_new (24);
@@ -2046,7 +2036,29 @@ demangle_type (dm)
 	break;
 
       case 'T':
+	/* It's either a <template-param> or a
+	   <template-template-param>.  In either case, demangle the
+	   `T' token first.  */
 	RETURN_IF_ERROR (demangle_template_param (dm, &template_parm));
+
+	/* Check for a template argument list; if one is found, it's a
+	     <template-template-param> ::= <template-param>
+                                       ::= <substitution>  */
+	if (peek_char (dm) == 'I')
+	  {
+	    /* Add a substitution candidate.  The template parameter
+	       `T' token is a substitution candidate by itself,
+	       without the template argument list.  */
+	    RETURN_IF_ERROR (substitution_add (dm, start, template_p, 
+					       template_parm));
+
+	    /* Now demangle the template argument list.  */
+	    RETURN_IF_ERROR (demangle_template_args (dm));
+	    /* The entire type, including the template template
+	       parameter and its argument list, will be added as a
+	       substitution candidate below.  */
+	  }
+
 	break;
 
       case 'S':
@@ -2057,18 +2069,24 @@ demangle_type (dm)
 	peek_next = peek_char_next (dm);
 	if (IS_DIGIT (peek_next) || peek_next == '_')
 	  {
-	    RETURN_IF_ERROR (
-              demangle_substitution (dm, &template_p,
-				     &special_std_substitution));
+	    RETURN_IF_ERROR (demangle_substitution (dm, &template_p));
 	    
 	    /* The substituted name may have been a template name.
 	       Check if template arguments follow, and if so, demangle
 	       them.  */
 	    if (peek_char (dm) == 'I')
 	      RETURN_IF_ERROR (demangle_template_args (dm));
+
+	    /* A substitution token is not itself a substitution
+	       candidate.  */
+	    is_substitution_candidate = 0;
 	  }
 	else
+	  /* While the special substitution token itself is not a
+	     substitution candidate, the <class-enum-type> is, so
+	     don't clear is_substitution_candidate.  */
 	  demangle_class_enum_type (dm, &template_p);
+
 	break;
 
       case 'P':
@@ -2103,11 +2121,10 @@ demangle_type (dm)
 	return "Unexpected character in <type>.";
       }
 
-  /* Unqualified builin types are not substitution candidates.  */
-  if (!is_builtin_type)
+  if (is_substitution_candidate)
     /* Add a new substitution for the type. If this type was a
        <template-param>, pass its index since from the point of
-       substitutions, a <template-param> token is a substitution
+       substitutions; a <template-param> token is a substitution
        candidate distinct from the type that is substituted for it.  */
     RETURN_IF_ERROR (substitution_add (dm, start, template_p, template_parm));
 
@@ -2457,9 +2474,6 @@ demangle_template_param (dm, template_parm_number)
     return "Template parameter number out of bounds.";
   RETURN_IF_ERROR (result_append_string (dm, (dyn_string_t) arg));
 
-  if (peek_char (dm) == 'I')
-    RETURN_IF_ERROR (demangle_template_args (dm));
-
   *template_parm_number = parm_number;
   return STATUS_OK;
 }
@@ -2795,10 +2809,7 @@ demangle_expr_primary (dm)
 }
 
 /* Demangles and emits a <substitution>.  Sets *TEMPLATE_P to non-zero
-   if the substitution is the name of a template, zero otherwise.  If
-   the substitution token is St, which corresponds to the `::std::'
-   namespace and can appear in a non-nested name, sets
-   *SPECIAL_STD_SUBSTITUTION to non-zero; zero otherwise.  
+   if the substitution is the name of a template, zero otherwise. 
 
      <substitution> ::= S <seq-id> _
                     ::= S_
@@ -2818,10 +2829,9 @@ demangle_expr_primary (dm)
 */
 
 static status_t
-demangle_substitution (dm, template_p, special_std_substitution)
+demangle_substitution (dm, template_p)
      demangling_t dm;
      int *template_p;
-     int *special_std_substitution;
 {
   int seq_id;
   int peek;
@@ -2830,7 +2840,6 @@ demangle_substitution (dm, template_p, special_std_substitution)
   DEMANGLE_TRACE ("substitution", dm);
 
   RETURN_IF_ERROR (demangle_char (dm, 'S'));
-  *special_std_substitution = 0;
 
   /* Scan the substitution sequence index.  A missing number denotes
      the first index.  */
@@ -2851,7 +2860,6 @@ demangle_substitution (dm, template_p, special_std_substitution)
 	{
 	case 't':
 	  RETURN_IF_ERROR (result_append (dm, "std"));
-	  *special_std_substitution = 1;
 	  break;
 
 	case 'a':
@@ -3302,7 +3310,7 @@ print_usage (fp, exit_value)
      int exit_value;
 {
   fprintf (fp, "Usage: %s [options] [names ...]\n", program_name);
-  fprintf (fp, "Options:\n", program_name);
+  fprintf (fp, "Options:\n");
   fprintf (fp, "  -h,--help       Display this message.\n");
   fprintf (fp, "  -s,--strict     Demangle standard names only.\n");
   fprintf (fp, "  -v,--verbose    Produce verbose demanglings.\n");
