@@ -4276,6 +4276,20 @@
     }
 }")
 
+(define_insn "*call_osf_1_noreturn"
+  [(call (mem:DI (match_operand:DI 0 "call_operand" "c,R,i"))
+	 (match_operand 1 "" ""))
+   (clobber (reg:DI 27))
+   (clobber (reg:DI 26))]
+  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS
+   && find_reg_note (insn, REG_NORETURN, NULL_RTX)"
+  "@
+   jsr $26,($27),0
+   bsr $26,$%0..ng
+   jsr $26,%0"
+  [(set_attr "type" "jsr")
+   (set_attr "length" "*,*,8")])
+      
 (define_insn "*call_osf_1"
   [(call (mem:DI (match_operand:DI 0 "call_operand" "c,R,i"))
 	 (match_operand 1 "" ""))

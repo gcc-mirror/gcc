@@ -1,5 +1,9 @@
 2001-03-07  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.md (call_osf_1_noreturn): New pattern.
+
+2001-03-07  Richard Henderson  <rth@redhat.com>
+
 	* emit-rtl.c (remove_unnecessary_notes): Verify proper nesting
 	of block notes and exception handling notes.
 
