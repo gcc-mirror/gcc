@@ -1,3 +1,7 @@
+2004-02-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (two peephole2's): New.
+
 2004-02-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sol2-bi.h: Handle TARGET_CPU_ultrasparc3.
