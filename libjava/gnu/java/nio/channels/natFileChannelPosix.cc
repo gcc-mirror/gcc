@@ -274,7 +274,10 @@ FileChannelImpl::implTruncate (jlong size)
     }
   else
     {
-      if (::ftruncate (fd, (off_t) pos))
+      if (::ftruncate (fd, (off_t) size))
+	throw new IOException (JvNewStringLatin1 (strerror (errno)));
+      if (pos > size
+	  && ::lseek (fd, (off_t) size, SEEK_SET) == -1)
 	throw new IOException (JvNewStringLatin1 (strerror (errno)));
       pos = size;
     }

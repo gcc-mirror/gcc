@@ -1,5 +1,19 @@
 2004-07-17  Mark Wielaard  <mark@klomp.org>
 
+	* gnu/java/nio/channels/FileChannelImpl.java (truncate): Only truncate
+	when size is smaller.
+	* java/io/RandomAccessFile.java (setLength): Use truncate for
+	shrinking the file and seek plus write for expanding the file.
+
+2004-07-17  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/channels/natFileChannelPosix.cc
+	(implTruncate): Always save current position. Only reposition file
+	pointer to where we started if not beyond new lenght. Reposition file
+	pointer to file length if it points beyond the end of file.
+
+2004-07-17  Mark Wielaard  <mark@klomp.org>
+
 	* javax/swing/Box.java: Put FIXME comment above class declaration.
 	* javax/swing/JButton.java: Remove illegal L&F HTML from comments.
 	* javax/swing/JCheckBox.java: Likewise.
