@@ -51,7 +51,7 @@ import java.awt.Insets;
  * explicitly specify the border colors, or to let the colors derive
  * from the background color of the enclosed Component.
  *
- * <p><img src="EtchedBorder-1.png" width="500" height="200"
+ * <p><img src="doc-files/EtchedBorder-1.png" width="500" height="200"
  * alt="[An illustration of the two EtchedBorder variants]" />
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
@@ -119,7 +119,7 @@ public class EtchedBorder
    * colors will be derived from the background color of the enclosed
    * Component when the border gets painted.
    *
-   * <p><img src="EtchedBorder-1.png" width="500" height="200"
+   * <p><img src="doc-files/EtchedBorder-1.png" width="500" height="200"
    * alt="[An illustration of the two EtchedBorder variants]" />
    *
    * @param etchType the desired appearance of the border. The value
@@ -165,7 +165,7 @@ public class EtchedBorder
    * explicitly selecting the colors that will be used for
    * highlight and shadow.
    *
-   * <p><img src="EtchedBorder-2.png" width="500" height="200"
+   * <p><img src="doc-files/EtchedBorder-2.png" width="500" height="200"
    * alt="[An illustration that shows which pixels get painted
    * in what color]" />
    *

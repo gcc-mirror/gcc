@@ -49,7 +49,7 @@ import javax.swing.Icon;
  * A border that is filled with either a solid color or with repeated
  * icon tiles.
  *
- * <p><img src="MatteBorder-1.png" width="500" height="150"
+ * <p><img src="doc-files/MatteBorder-1.png" width="500" height="150"
  * alt="[Two MatteBorders]" />
  *
  * @author Sascha Brawer (brawer@dandelis.ch)
@@ -88,7 +88,7 @@ public class MatteBorder
    * Constructs a MatteBorder given the width on each side
    * and a fill color.
    *
-   * <p><img src="MatteBorder-2.png" width="500" height="150"
+   * <p><img src="doc-files/MatteBorder-2.png" width="500" height="150"
    * alt="[A picture of a MatteBorder made by this constructor]" />
    *
    * @param top the width of the border at its top edge.
@@ -112,7 +112,7 @@ public class MatteBorder
   /**
    * Constructs a MatteBorder given its insets and fill color.
    *
-   * <p><img src="MatteBorder-3.png" width="500" height="150"
+   * <p><img src="doc-files/MatteBorder-3.png" width="500" height="150"
    * alt="[A picture of a MatteBorder made by this constructor]" />
    *
    * @param borderInsets an Insets object whose <code>top</code>,
@@ -134,7 +134,7 @@ public class MatteBorder
    * Constructs a MatteBorder given the width on each side
    * and an icon for tiling the border area.
    *
-   * <p><img src="MatteBorder-4.png" width="500" height="150"
+   * <p><img src="doc-files/MatteBorder-4.png" width="500" height="150"
    * alt="[A picture of a MatteBorder made by this constructor]" />
    *
    * @param top the width of the border at its top edge.
@@ -159,7 +159,7 @@ public class MatteBorder
    * Constructs a MatteBorder given its insets and an icon
    * for tiling the border area.
    *
-   * <p><img src="MatteBorder-5.png" width="500" height="150"
+   * <p><img src="doc-files/MatteBorder-5.png" width="500" height="150"
    * alt="[A picture of a MatteBorder made by this constructor]" />
    *
    * @param borderInsets an Insets object whose <code>top</code>,
@@ -183,7 +183,7 @@ public class MatteBorder
    * at the left and right edge, the icon height for the top and
    * bottom edge.
    *
-   * <p><img src="MatteBorder-6.png" width="500" height="150"
+   * <p><img src="doc-files/MatteBorder-6.png" width="500" height="150"
    * alt="[A picture of a MatteBorder made by this constructor]" />
    *
    * @param tileIcon an icon for tiling the border area.

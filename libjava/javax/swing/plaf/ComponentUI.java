@@ -50,7 +50,7 @@ import javax.swing.JComponent;
  * should not need to access this class; it is internal to Swing
  * and the look-and-feel implementations.
  *
- * <p><img src="ComponentUI-1.png" width="700" height="550"
+ * <p><img src="doc-files/ComponentUI-1.png" width="700" height="550"
  * alt="[UML diagram illustrating the architecture for pluggable
  * look and feels]" />
  *

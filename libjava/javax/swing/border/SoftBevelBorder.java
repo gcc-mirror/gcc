@@ -74,7 +74,7 @@ public class SoftBevelBorder
    * constructed by this method will automatically reflect a change
    * to the component&#x2019;s background color.
    *
-   * <p><img src="SoftBevelBorder-1.png" width="500" height="200"
+   * <p><img src="doc-files/SoftBevelBorder-1.png" width="500" height="200"
    * alt="[An illustration showing raised and lowered SoftBevelBorders]" />
    *
    * @param bevelType the desired appearance of the border. The value
@@ -94,7 +94,7 @@ public class SoftBevelBorder
    * Constructs a SoftBevelBorder given its appearance type and two
    * colors for its highlight and shadow.
    *
-   * <p><img src="SoftBevelBorder-2.png" width="500" height="150"
+   * <p><img src="doc-files/SoftBevelBorder-2.png" width="500" height="150"
    * alt="[An illustration showing SoftBevelBorders that were
    * constructed with this method]" />
    *
@@ -136,7 +136,7 @@ public class SoftBevelBorder
    * Constructs a SoftBevelBorder given its appearance type and all
    * colors.
    *
-   * <p><img src="SoftBevelBorder-3.png" width="500" height="150"
+   * <p><img src="doc-files/SoftBevelBorder-3.png" width="500" height="150"
    * alt="[An illustration showing SoftBevelBorders that were
    * constructed with this method]" />
    *

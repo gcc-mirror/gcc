@@ -1,3 +1,19 @@
+2003-08-01  Sascha Brawer  <brawer@dandelis.ch>
+
+	* javax/swing/border/BevelBorder.java,
+	javax/swing/border/EtchedBorder.java,
+	javax/swing/border/LineBorder.java,
+	javax/swing/border/MatteBorder.java,
+	javax/swing/border/SoftBevelBorder.java,
+	javax/swing/plaf/BorderUIResource.java,
+	javax/swing/plaf/ComponentUI.java,
+	javax/swing/plaf/TreeUI.java,
+	javax/swing/plaf/basic/BasicBorders.java,
+	javax/swing/plaf/basic/BasicGraphicsUtils.java,
+	javax/swing/plaf/basic/BasicTreeUI.java:
+	Prepend "doc-files" to all paths to embedded Javadoc images, so
+	that the generated documentation contains the correct URL.
+
 2003-08-01  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.
