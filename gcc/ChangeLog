@@ -1,3 +1,7 @@
+2002-05-05  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* doc/install.texi (powerpc-*-linux-gnu*): Update build requirements.
+
 2002-05-04  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/linux.h, config/sparc/linux64.h
