@@ -32,20 +32,13 @@ strlen(@var{src}).
 */
 
 #include <ansidecl.h>
-#ifdef ANSI_PROTOTYPES
 #include <stddef.h>
-#else
-#define size_t unsigned long
-#endif
 
-extern size_t strlen PARAMS ((const char *));
-extern char *strncpy PARAMS ((char *, const char *, size_t));
+extern size_t strlen (const char *);
+extern char *strncpy (char *, const char *, size_t);
 
 char *
-stpncpy (dst, src, len)
-     char *dst;
-     const char *src;
-     size_t len;
+stpncpy (char *dst, const char *src, size_t len)
 {
   size_t n = strlen (src);
   if (n > len)

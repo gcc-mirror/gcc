@@ -71,9 +71,7 @@ reading and writing.
 */
 
 int
-mkstemps (template, suffix_len)
-     char *template;
-     int suffix_len;
+mkstemps (char *template, int suffix_len)
 {
   static const char letters[]
     = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

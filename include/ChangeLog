@@ -4,6 +4,13 @@
 
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* partition.h: Remove use of PARAMS.
+	* obstack.h: Remove conditional prototypes __STDC__.
+	* objalloc.h:  Remove use of PARAMS.
+	* splay-tree.h: Likewise.
+
+2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* md5.h: Remove definition and uses of __P.
 	* dyn-string.h: Remove uses of PARAMS.
 	* fibheap.h: Likewise.

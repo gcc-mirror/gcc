@@ -40,8 +40,7 @@ static int elem_compare PARAMS ((const void *, const void *));
    element is in a class by itself.  */
 
 partition
-partition_new (num_elements)
-     int num_elements;
+partition_new (int num_elements)
 {
   int e;
   
@@ -62,8 +61,7 @@ partition_new (num_elements)
 /* Freeds a partition.  */
 
 void
-partition_delete (part)
-      partition part;
+partition_delete (partition part)
 {
   free (part);
 }
@@ -74,10 +72,7 @@ partition_delete (part)
    resulting union class.  */
 
 int
-partition_union (part, elem1, elem2)
-     partition part;
-     int elem1;
-     int elem2;
+partition_union (partition part, int elem1, int elem2)
 {
   struct partition_elem *elements = part->elements;
   struct partition_elem *e1;
@@ -126,9 +121,7 @@ partition_union (part, elem1, elem2)
    pointer to each.  Used to qsort such an array.  */
 
 static int 
-elem_compare (elem1, elem2)
-     const void *elem1;
-     const void *elem2;
+elem_compare (const void *elem1, const void *elem2)
 {
   int e1 = * (const int *) elem1;
   int e2 = * (const int *) elem2;
@@ -144,9 +137,7 @@ elem_compare (elem1, elem2)
    class are sorted.  */
 
 void
-partition_print (part, fp)
-     partition part;
-     FILE *fp;
+partition_print (partition part, FILE *fp)
 {
   char *done;
   int num_elements = part->num_elements;

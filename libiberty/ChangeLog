@@ -1,5 +1,50 @@
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	Convert libiberty to use ISO C prototype style 5/n.
+	* random.c (srandom, initstate, setstate, random): Use ISO C
+	prototypes. 
+	* putenv.c (putenv): Likewise.
+	* physmem.c (physmem_available, physmem_total, main): Likewise.
+	* pex-win32.c (fix_argv, pexecute, pwait): Likewise.
+	* pex-unix.c (pexecute, pwait): Likewise.
+	* pex-msdos.c (pexecute, pwait): Likewise.
+	* pex-djgpp.c (pexecute, pwait): Likewise.
+	* partition.c (partition_new, partition_delete, partition_union) 
+	(elem_compare, partition_print): Likewise.
+	* obstack.c (_obstack_begin, _obstack_begin_1, _obstack_newchunk, 
+	_obstack_allocated_p, _obstack_free, obstack_free, 
+	_obstack_memory_used, print_and_abort, obstack_next_free,
+	obstack_object_size, obstack_base): Likewise.  Remove codes
+	predicated on !defined(__STDC__).
+	* objalloc.c (objalloc_create, _objalloc_alloc, objalloc_free, 
+	objalloc_free_block): Use ISO C prototypes.
+	* mkstemps.c (mkstemps): Likewise.
+	* memset.c (memset): Likewise.
+	* mempcpy.c (mempcpy): Likewise.
+	* rename.c (rename): Likewise.
+	* rindex.c (rindex): Likewise.
+	* setenv.c (setenv, unsetenv): Likewise.
+	* sigsetmask.c (sigsetmask): Likewise.
+	* snprintf.c (snprintf): Likewise.
+	* sort.c (sort_pointers, xmalloc): Likewise. 
+	* spaces.c (spaces): Likewise.
+	* splay-tree.c (splay_tree_delete_helper, 
+	splay_tree_splay_helper, splay_tree_splay, 
+	splay_tree_foreach_helper, splay_tree_xmalloc_allocate,
+	splay_tree_new, splay_tree_xmalloc_allocate, 
+	splay_tree_new_with_allocator, splay_tree_delete,
+	splay_tree_insert, splay_tree_remove, splay_tree_lookup, 
+	splay_tree_max, splay_tree_min, splay_tree_predecessor, 
+	splay_tree_successor, splay_tree_foreach, 
+	splay_tree_compare_ints, splay_tree_compare_pointers): Likewise.
+	* stpcpy.c (stpcpy): Likewise.
+	* stpncpy.c (stpncpy): Likewise.
+	* strcasecmp.c (strcasecmp): Likewise.
+	* strchr.c (strchr): Likewise.
+	* strdup.c (strdup): Likewise.
+
+2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	Convert libiberty to use ISO C prototype style 6/n.
 	* strerror.c (init_error_tables, errno_max, strerror, strerrno, 
 	strtoerrno, main): Use ISO C prototype style.

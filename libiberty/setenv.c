@@ -80,10 +80,7 @@ static char **last_environ;
 
 
 int
-setenv (name, value, replace)
-     const char *name;
-     const char *value;
-     int replace;
+setenv (const char *name, const char *value, int replace)
 {
   register char **ep = 0;
   register size_t size;
@@ -164,8 +161,7 @@ setenv (name, value, replace)
 }
 
 void
-unsetenv (name)
-     const char *name;
+unsetenv (const char *name)
 {
   const size_t len = strlen (name);
   char **ep;

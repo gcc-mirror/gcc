@@ -16,9 +16,7 @@ null character, the results are undefined.
 #include <ansidecl.h>
 
 char *
-strchr (s, c)
-  register const char *s;
-  int c;
+strchr (register const char *s, int c)
 {
   do {
     if (*s == c)

@@ -64,13 +64,10 @@ typedef struct partition_def
   struct partition_elem elements[1];
 } *partition;
 
-extern partition partition_new          PARAMS((int));
-extern void partition_delete            PARAMS((partition));
-extern int partition_union              PARAMS((partition,
-						int,
-						int));
-extern void partition_print             PARAMS((partition,
-						FILE*));
+extern partition partition_new (int);
+extern void partition_delete (partition);
+extern int partition_union (partition, int, int);
+extern void partition_print (partition,	FILE*);
 
 /* Returns the canonical element corresponding to the class containing
    ELEMENT__ in PARTITION__.  */

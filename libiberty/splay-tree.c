@@ -37,27 +37,20 @@ Boston, MA 02111-1307, USA.  */
 #include "libiberty.h"
 #include "splay-tree.h"
 
-static void splay_tree_delete_helper    PARAMS((splay_tree, 
-						splay_tree_node));
-static void splay_tree_splay            PARAMS((splay_tree,
-						splay_tree_key));
-static splay_tree_node splay_tree_splay_helper     
-                                        PARAMS((splay_tree,
+static void splay_tree_delete_helper (splay_tree, splay_tree_node);
+static void splay_tree_splay (splay_tree, splay_tree_key);
+static splay_tree_node splay_tree_splay_helper (splay_tree,
 						splay_tree_key,
 						splay_tree_node*,
 						splay_tree_node*,
-						splay_tree_node*));
-static int splay_tree_foreach_helper    PARAMS((splay_tree,
-					        splay_tree_node,
-						splay_tree_foreach_fn,
-						void*));
+						splay_tree_node*);
+static int splay_tree_foreach_helper (splay_tree, splay_tree_node,
+                                      splay_tree_foreach_fn, void*);
 
 /* Deallocate NODE (a member of SP), and all its sub-trees.  */
 
 static void 
-splay_tree_delete_helper (sp, node)
-     splay_tree sp;
-     splay_tree_node node;
+splay_tree_delete_helper (splay_tree sp, splay_tree_node node)
 {
   splay_tree_node pending = 0;
   splay_tree_node active = 0;
@@ -118,12 +111,9 @@ splay_tree_delete_helper (sp, node)
    and grandparent, respectively, of NODE.  */
 
 static splay_tree_node
-splay_tree_splay_helper (sp, key, node, parent, grandparent)
-     splay_tree sp;
-     splay_tree_key key;
-     splay_tree_node *node;
-     splay_tree_node *parent;
-     splay_tree_node *grandparent;
+splay_tree_splay_helper (splay_tree sp, splay_tree_key key,
+                         splay_tree_node *node, splay_tree_node *parent,
+                         splay_tree_node *grandparent)
 {
   splay_tree_node *next;
   splay_tree_node n;
@@ -229,9 +219,7 @@ splay_tree_splay_helper (sp, key, node, parent, grandparent)
 /* Splay SP around KEY.  */
 
 static void
-splay_tree_splay (sp, key)
-     splay_tree sp;
-     splay_tree_key key;
+splay_tree_splay (splay_tree sp, splay_tree_key key)
 {
   if (sp->root == 0)
     return;
@@ -246,11 +234,8 @@ splay_tree_splay (sp, key)
    value is returned.  Otherwise, this function returns 0.  */
 
 static int
-splay_tree_foreach_helper (sp, node, fn, data)
-     splay_tree sp;
-     splay_tree_node node;
-     splay_tree_foreach_fn fn;
-     void* data;
+splay_tree_foreach_helper (splay_tree sp, splay_tree_node node,
+                           splay_tree_foreach_fn fn, void *data)
 {
   int val;
 
@@ -271,17 +256,13 @@ splay_tree_foreach_helper (sp, node, fn, data)
 
 /* An allocator and deallocator based on xmalloc.  */
 static void *
-splay_tree_xmalloc_allocate (size, data)
-     int size;
-     void *data ATTRIBUTE_UNUSED;
+splay_tree_xmalloc_allocate (int size, void *data ATTRIBUTE_UNUSED)
 {
   return (void *) xmalloc (size);
 }
 
 static void
-splay_tree_xmalloc_deallocate (object, data)
-     void *object;
-     void *data ATTRIBUTE_UNUSED;
+splay_tree_xmalloc_deallocate (void *object, void *data ATTRIBUTE_UNUSED)
 {
   free (object);
 }
@@ -293,10 +274,9 @@ splay_tree_xmalloc_deallocate (object, data)
    nodes added.  */
 
 splay_tree 
-splay_tree_new (compare_fn, delete_key_fn, delete_value_fn)
-     splay_tree_compare_fn compare_fn;
-     splay_tree_delete_key_fn delete_key_fn;
-     splay_tree_delete_value_fn delete_value_fn;
+splay_tree_new (splay_tree_compare_fn compare_fn,
+                splay_tree_delete_key_fn delete_key_fn,
+                splay_tree_delete_value_fn delete_value_fn)
 {
   return (splay_tree_new_with_allocator
           (compare_fn, delete_key_fn, delete_value_fn,
@@ -309,14 +289,12 @@ splay_tree_new (compare_fn, delete_key_fn, delete_value_fn)
    values.  */
 
 splay_tree 
-splay_tree_new_with_allocator (compare_fn, delete_key_fn, delete_value_fn,
-                               allocate_fn, deallocate_fn, allocate_data)
-     splay_tree_compare_fn compare_fn;
-     splay_tree_delete_key_fn delete_key_fn;
-     splay_tree_delete_value_fn delete_value_fn;
-     splay_tree_allocate_fn allocate_fn;
-     splay_tree_deallocate_fn deallocate_fn;
-     void *allocate_data;
+splay_tree_new_with_allocator (splay_tree_compare_fn compare_fn,
+                               splay_tree_delete_key_fn delete_key_fn,
+                               splay_tree_delete_value_fn delete_value_fn,
+                               splay_tree_allocate_fn allocate_fn,
+                               splay_tree_deallocate_fn deallocate_fn,
+                               void *allocate_data)
 {
   splay_tree sp = (splay_tree) (*allocate_fn) (sizeof (struct splay_tree_s),
                                                allocate_data);
@@ -334,8 +312,7 @@ splay_tree_new_with_allocator (compare_fn, delete_key_fn, delete_value_fn,
 /* Deallocate SP.  */
 
 void 
-splay_tree_delete (sp)
-     splay_tree sp;
+splay_tree_delete (splay_tree sp)
 {
   splay_tree_delete_helper (sp, sp->root);
   (*sp->deallocate) ((char*) sp, sp->allocate_data);
@@ -346,10 +323,7 @@ splay_tree_delete (sp)
    with the new value.  Returns the new node.  */
 
 splay_tree_node
-splay_tree_insert (sp, key, value)
-     splay_tree sp;
-     splay_tree_key key;
-     splay_tree_value value;
+splay_tree_insert (splay_tree sp, splay_tree_key key, splay_tree_value value)
 {
   int comparison = 0;
 
@@ -401,9 +375,7 @@ splay_tree_insert (sp, key, value)
 /* Remove KEY from SP.  It is not an error if it did not exist.  */
 
 void
-splay_tree_remove (sp, key)
-     splay_tree sp;
-     splay_tree_key key;
+splay_tree_remove (splay_tree sp, splay_tree_key key)
 {
   splay_tree_splay (sp, key);
 
@@ -443,9 +415,7 @@ splay_tree_remove (sp, key)
    otherwise.  */
 
 splay_tree_node
-splay_tree_lookup (sp, key)
-     splay_tree sp;
-     splay_tree_key key;
+splay_tree_lookup (splay_tree sp, splay_tree_key key)
 {
   splay_tree_splay (sp, key);
 
@@ -458,8 +428,7 @@ splay_tree_lookup (sp, key)
 /* Return the node in SP with the greatest key.  */
 
 splay_tree_node
-splay_tree_max (sp)
-     splay_tree sp;
+splay_tree_max (splay_tree sp)
 {
   splay_tree_node n = sp->root;
 
@@ -475,8 +444,7 @@ splay_tree_max (sp)
 /* Return the node in SP with the smallest key.  */
 
 splay_tree_node
-splay_tree_min (sp)
-     splay_tree sp;
+splay_tree_min (splay_tree sp)
 {
   splay_tree_node n = sp->root;
 
@@ -493,9 +461,7 @@ splay_tree_min (sp)
    predecessor.  KEY need not be present in the tree.  */
 
 splay_tree_node
-splay_tree_predecessor (sp, key)
-     splay_tree sp;
-     splay_tree_key key;
+splay_tree_predecessor (splay_tree sp, splay_tree_key key)
 {
   int comparison;
   splay_tree_node node;
@@ -526,9 +492,7 @@ splay_tree_predecessor (sp, key)
    successor.  KEY need not be present in the tree.  */
 
 splay_tree_node
-splay_tree_successor (sp, key)
-     splay_tree sp;
-     splay_tree_key key;
+splay_tree_successor (splay_tree sp, splay_tree_key key)
 {
   int comparison;
   splay_tree_node node;
@@ -561,10 +525,7 @@ splay_tree_successor (sp, key)
    Otherwise, this function returns 0.  */
 
 int
-splay_tree_foreach (sp, fn, data)
-     splay_tree sp;
-     splay_tree_foreach_fn fn;
-     void *data;
+splay_tree_foreach (splay_tree sp, splay_tree_foreach_fn fn, void *data)
 {
   return splay_tree_foreach_helper (sp, sp->root, fn, data);
 }
@@ -572,9 +533,7 @@ splay_tree_foreach (sp, fn, data)
 /* Splay-tree comparison function, treating the keys as ints.  */
 
 int
-splay_tree_compare_ints (k1, k2)
-     splay_tree_key k1;
-     splay_tree_key k2;
+splay_tree_compare_ints (splay_tree_key k1, splay_tree_key k2)
 {
   if ((int) k1 < (int) k2)
     return -1;
@@ -587,9 +546,7 @@ splay_tree_compare_ints (k1, k2)
 /* Splay-tree comparison function, treating the keys as pointers.  */
 
 int
-splay_tree_compare_pointers (k1, k2)
-     splay_tree_key k1;
-     splay_tree_key k2;
+splay_tree_compare_pointers (splay_tree_key k1, splay_tree_key k2)
 {
   if ((char*) k1 < (char*) k2)
     return -1;

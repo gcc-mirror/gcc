@@ -64,12 +64,12 @@ struct objalloc_align { char x; double d; };
 
 /* Create an objalloc structure.  Returns NULL if malloc fails.  */
 
-extern struct objalloc *objalloc_create PARAMS ((void));
+extern struct objalloc *objalloc_create (void);
 
 /* Allocate space from an objalloc structure.  Returns NULL if malloc
    fails.  */
 
-extern PTR _objalloc_alloc PARAMS ((struct objalloc *, unsigned long));
+extern PTR _objalloc_alloc (struct objalloc *, unsigned long);
 
 /* The macro version of objalloc_alloc.  We only define this if using
    gcc, because otherwise we would have to evaluate the arguments
@@ -105,11 +105,11 @@ extern PTR _objalloc_alloc PARAMS ((struct objalloc *, unsigned long));
 
 /* Free an entire objalloc structure.  */
 
-extern void objalloc_free PARAMS ((struct objalloc *));
+extern void objalloc_free (struct objalloc *);
 
 /* Free a block allocated by objalloc_alloc.  This also frees all more
    recently allocated blocks.  */
 
-extern void objalloc_free_block PARAMS ((struct objalloc *, PTR));
+extern void objalloc_free_block (struct objalloc *, PTR);
 
 #endif /* OBJALLOC_H */

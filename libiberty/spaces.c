@@ -37,13 +37,12 @@ valid until at least the next call.
 #include <unixlib.h>
 #else
 /* For systems with larger pointers than ints, these must be declared.  */
-extern PTR malloc PARAMS ((size_t));
-extern void free PARAMS ((PTR));
+extern PTR malloc (size_t);
+extern void free (PTR);
 #endif
 
 const char *
-spaces (count)
-  int count;
+spaces (int count)
 {
   register char *t;
   static char *buf;

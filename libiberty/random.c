@@ -80,7 +80,7 @@ control over the state of the random number generator.
 
 #endif
 
-long int random ();
+long int random (void);
 
 /* An improved random number generation package.  In addition to the standard
    rand()/srand() like interface, this package also has a special state info
@@ -227,8 +227,7 @@ static long int *end_ptr = &randtbl[sizeof(randtbl) / sizeof(randtbl[0])];
    introduced by the L.C.R.N.G.  Note that the initialization of randtbl[]
    for default usage relies on values produced by this routine.  */
 void
-srandom (x)
-  unsigned int x;
+srandom (unsigned int x)
 {
   state[0] = x;
   if (rand_type != TYPE_0)
@@ -255,10 +254,7 @@ srandom (x)
    setstate so that it doesn't matter when initstate is called.
    Returns a pointer to the old state.  */
 PTR
-initstate (seed, arg_state, n)
-  unsigned int seed;
-  PTR arg_state;
-  unsigned long n;
+initstate (unsigned int seed, PTR arg_state, unsigned long n)
 {
   PTR ostate = (PTR) &state[-1];
 
@@ -324,8 +320,7 @@ initstate (seed, arg_state, n)
    Returns a pointer to the old state information.  */
 
 PTR
-setstate (arg_state)
-  PTR arg_state;
+setstate (PTR arg_state)
 {
   register long int *new_state = (long int *) arg_state;
   register int type = new_state[0] % MAX_TYPES;
@@ -378,7 +373,7 @@ setstate (arg_state)
    pointer if the front one has wrapped.  Returns a 31-bit random number.  */
 
 long int
-random ()
+random (void)
 {
   if (rand_type == TYPE_0)
     {

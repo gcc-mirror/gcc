@@ -49,13 +49,9 @@ static int last_status = 0;
 static int last_reaped = 0;
 
 int
-pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
-     const char *program;
-     char * const *argv;
-     const char *this_pname;
-     const char *temp_base;
-     char **errmsg_fmt, **errmsg_arg;
-     int flags;
+pexecute (const char *program, char * const *argv, const char *this_pname,
+          const char *temp_base, char **errmsg_fmt,
+          char **errmsg_arg, int flags)
 {
   int rc;
 
@@ -82,10 +78,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 }
 
 int
-pwait (pid, status, flags)
-     int pid;
-     int *status;
-     int flags;
+pwait (int pid, int *status, int flags)
 {
   /* On MSDOS each pexecute must be followed by its associated pwait.  */
   if (pid != last_pid
