@@ -2,6 +2,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -Wmissing-noreturn" } */
 
+extern void exit (int);
+
 extern void foo1(void) __attribute__ ((__noreturn__));
 void
 foo1(void)

@@ -1,6 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-ansi" } */
 
+extern void abort (void);
+
 /* Basic tests for trigraph conversion.
    All of them are here, but not in all possible contexts.  *??/
 /

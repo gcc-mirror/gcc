@@ -1,6 +1,8 @@
 /* Test that __LINE__ works when embedded in a macro. */
 /* { dg-do run } */
 
+extern void abort (void);
+
 #define XLINE __LINE__
 
 void

@@ -8,6 +8,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O -Wuninitialized" } */
 
+extern void abort (void);
+
 struct operation {
     short op;
     char rprio;

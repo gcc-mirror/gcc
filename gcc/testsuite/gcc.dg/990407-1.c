@@ -4,6 +4,7 @@
 /* { dg-do run } */
 
 #include <string.h>
+#include <stdlib.h>
 
 #define STR(x) #x
 

@@ -1,5 +1,7 @@
 /* { dg-do link } */
 
+#include <stdlib.h>
+
 extern int foo(void) __attribute__((alias("bar")));
 
 int bar(void) {

@@ -6,6 +6,9 @@
 
 void __attribute__((stdcall)) foo(int a, int b, int c);
 
+extern void abort (void);
+extern void exit (int);
+
 int
 main ()
 {

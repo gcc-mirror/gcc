@@ -3,6 +3,9 @@
 
 /* Test that floating point greater-than tests are compiled correctly with
    -ffast-math.  */
+
+extern void abort (void);
+
 static int gt (double a, double b)
 {
   if (a > b)

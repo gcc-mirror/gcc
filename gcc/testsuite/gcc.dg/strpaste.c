@@ -4,6 +4,7 @@
    We got internal escape markers in the strings.  */
 
 #include <string.h>
+#include <stdlib.h>
 
 #define S(x) _S(x)
 #define _S(x) #x

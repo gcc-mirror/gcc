@@ -1,5 +1,7 @@
 /* { dg-do link } */
 
+#include <stdlib.h>
+
 extern int foo(void) __attribute__((weak, alias("bar")));
 
 int bar(void) {
