@@ -4463,7 +4463,10 @@ thread_jumps (f, max_reg, flag_before_loop)
 	  if (rtx_equal_for_thread_p (b1op0, b2op0, b2)
 	      && rtx_equal_for_thread_p (b1op1, b2op1, b2)
 	      && (comparison_dominates_p (code1, code2)
-		  || comparison_dominates_p (code1, reverse_condition (code2))))
+		  || (comparison_dominates_p (code1, reverse_condition (code2))
+		      && can_reverse_comparison_p (XEXP (SET_SRC (PATTERN (b1)),
+							 0),
+						   b1))))
 	    {
 	      t1 = prev_nonnote_insn (b1);
 	      t2 = prev_nonnote_insn (b2);
