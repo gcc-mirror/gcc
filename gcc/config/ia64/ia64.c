@@ -176,10 +176,10 @@ sdata_symbolic_operand (op, mode)
   return 0;
 }
 
-/* Return 1 if OP refers to a symbol.  */
+/* Return 1 if OP refers to a symbol, and is appropriate for a GOT load.  */
 
 int
-symbolic_operand (op, mode)
+got_symbolic_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
@@ -194,12 +194,43 @@ symbolic_operand (op, mode)
       op = XEXP (op, 1);
       if (GET_CODE (op) != CONST_INT)
 	return 0;
-      /* Force the low 13 bits of the constant to zero so that we do not
+
+	return 1;
+
+      /* Ok if we're not using GOT entries at all.  */
+      if (TARGET_NO_PIC || TARGET_AUTO_PIC)
+	return 1;
+
+      /* "Ok" while emitting rtl, since otherwise we won't be provided
+	 with the entire offset during emission, which makes it very
+	 hard to split the offset into high and low parts.  */
+      if (rtx_equal_function_value_matters)
+	return 1;
+
+      /* Force the low 14 bits of the constant to zero so that we do not
 	 use up so many GOT entries.  */
-      if (! TARGET_NO_PIC && ! TARGET_AUTO_PIC && (INTVAL (op) & 0x1fff) != 0)
-	return 0;
+      return (INTVAL (op) & 0x3fff) == 0;
+
+    case SYMBOL_REF:
+    case LABEL_REF:
       return 1;
 
+    default:
+      break;
+    }
+  return 0;
+}
+
+/* Return 1 if OP refers to a symbol.  */
+
+int
+symbolic_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  switch (GET_CODE (op))
+    {
+    case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
       return 1;
@@ -284,10 +315,7 @@ move_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (! TARGET_NO_PIC
-      && (GET_CODE (op) == CONST
-	  || GET_CODE (op) == SYMBOL_REF
-	  || GET_CODE (op) == LABEL_REF))
+  if (! TARGET_NO_PIC && symbolic_operand (op, mode))
     return 0;
 
   return general_operand (op, mode);
