@@ -19,42 +19,34 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define MIPS_NEWS
 
-#define CPP_PREDEFINES "-Dr3000 -Dnews3700 -DLANGUAGE_C -DMIPSEB -DSYSTYPE_BSD -Dsony_news -Dsony -Dunix -Dmips -Dhost_mips"
+#define CPP_PREDEFINES "-Dr3000 -Dnews3700 -DLANGUAGE_C -DMIPSEB -DSYSTYPE_BSD \
+-Dsony_news -Dsony -Dunix -Dmips -Dhost_mips"
 
-#define ASM_SPEC	"%{!mgas:					\
-				%{!mrnames: -nocpp}			\
-			 	%{pipe:%e:-pipe not supported}		\
-				%{EB} %{!EB:-EB}			\
-				%{EL: %e-EL not supported}		\
-				%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}	\
-				%{g} %{g1} %{g2} %{g3} %{g0} %{v} %{K}	\
-			 %{G*}"
+#define ASM_SPEC "\
+%{!mgas: \
+	%{!mrnames: -nocpp} \
+	%{pipe:%e:-pipe not supported} \
+	%{EB} %{!EB:-EB} \
+	%{EL: %e-EL not supported} \
+	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
+	%{g} %{g1} %{g2} %{g3} %{g0} %{v} %{K} \
+	%{G*}}"
 
-#define CPP_SPEC	"-I/usr/include2.0				\
-			 %{.S:	-D__LANGUAGE_ASSEMBLY__			\
-				-D_LANGUAGE_ASSEMBLY			\
-				%{!ansi:-DLANGUAGE_ASSEMBLY}}		\
-			 %{.cc:	-D__LANGUAGE_C_PLUS_PLUS__		\
-				-D_LANGUAGE_C_PLUS_PLUS			\
-				%{!ansi:-DLANGUAGE_C_PLUS_PLUS}}	\
-			 %{.cxx:-D__LANGUAGE_C_PLUS_PLUS__		\
-				-D_LANGUAGE_C_PLUS_PLUS			\
-				%{!ansi:-DLANGUAGE_C_PLUS_PLUS}}	\
-			 %{.C:	-D__LANGUAGE_C_PLUS_PLUS__		\
-				-D_LANGUAGE_C_PLUS_PLUS			\
-				%{!ansi:-DLANGUAGE_C_PLUS_PLUS}}	\
-			 %{.m:	-D__LANGUAGE_OBJECTIVE_C__		\
-				-D_LANGUAGE_OBJECTIVE_C			\
-				%{!ansi:-DLANGUAGE_OBJECTIVE_C}}	\
-			 %{!.S: -D__LANGUAGE_C__			\
-				-D_LANGUAGE_C				\
-				%{!ansi:-DLANGUAGE_C}}"
+#define CPP_SPEC "\
+%{!nostdinc: -I/usr/include2.0} \
+%{.cc:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
+%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
+%{.C:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
+%{.m:	-D__LANGUAGE_OBJECTIVE_C -D_LANGUAGE_OBJECTIVE_C} \
+%{.S:	-D__LANGUAGE_ASSEMBLY -D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{!.S:	-D__LANGUAGE_C -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
 
-#define LINK_SPEC	"%{G*}						\
-			 %{!mgas:					\
-				%{EB} %{!EB:-EB}			\
-				%{EL: %e-EL not supported}		\
-				%{bestGnum}}"
+#define LINK_SPEC "\
+%{G*} \
+%{!mgas: \
+	%{EB} %{!EB:-EB} \
+	%{EL: %e-EL not supported} \
+	%{bestGnum}}"
 
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc"
 
