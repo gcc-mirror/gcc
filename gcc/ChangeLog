@@ -1,3 +1,8 @@
+2000-01-16  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* config/i386/i386.md: Add peephole to merge successive stack
+	adjusts. 
+
 Sat Jan 15 15:41:14 EST 2000  John Wehle  (john@feith.com)
 
 	* gcse.c (insert_insn_end_bb): Use emit_block_insn_before
