@@ -1,3 +1,7 @@
+2000-12-07  Mike Stump  <mrs@wrs.com>
+
+	* Makefile.in (distclean): Remove alloca.c hashtab.c.
+
 2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* Makefile.in (HOST_RTL): Add safe-ctype.o.
