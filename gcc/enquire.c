@@ -1590,18 +1590,20 @@ if (V) printf ("%s%s %s %s%s\n", co, "Type size_t is",
 
 	Vprintf("\n%sPROPERTIES OF POINTERS%s\n", co, oc);
 
-	if ((long) (char *) &variable == (long) (int *) &variable)
+	if ((long) (char *) &variable == (long) (int *) &variable) {
 		Vprintf("%sChar and int pointer formats seem identical%s\n",
 		       co, oc);
-	else
+	} else {
 		Vprintf("%sChar and int pointer formats are different%s\n",
 		       co, oc);
-	if ((long) (char *) &variable == (long) (function *) &variable)
+	}
+	if ((long) (char *) &variable == (long) (function *) &variable) {
 		Vprintf("%sChar and function pointer formats seem identical%s\n",
 		       co, oc);
-	else
+	} else {
 		Vprintf("%sChar and function pointer formats are different%s\n",
 		       co, oc);
+	}
 
 	if (V) {
 		if ("abcd"=="abcd")
