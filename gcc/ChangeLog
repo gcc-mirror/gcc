@@ -1,3 +1,8 @@
+Mon May 10 12:59:20 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* optabs.c (emit_cmp_and_jump_insns): Handle the case where both
+	operands to the comparison are constants.
+
 Mon May 10 07:28:10 1999  Bruce Korb <autogen@autogen.freeservers.com>
 
 	* fixinc/inclhack.def(arm_norcroft_hint): check before fixing
