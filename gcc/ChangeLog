@@ -1,3 +1,9 @@
+Thu Jul  8 14:18:46 1999  Richard Henderson  <rth@cygnus.com>
+
+	* m68k.c (output_function_prologue): Add pic register to mask
+	if live and flag_pic.
+	(output_function_epilogue): Likewise.
+
 Thu Jul  8 10:28:25 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* invoke.texi (DEC Alpha Options): Put @end table at
