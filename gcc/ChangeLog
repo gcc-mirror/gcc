@@ -4,7 +4,9 @@
 
 	* fp-bit.h (usi_to_float): Add prototype.
 
-	* i386.c (file_info_cmp): Likewise.
+	* i386.c (ix86_expand_builtin): Delete unused label.
+
+	* dwarf2out.c (file_info_cmp): Prototype.
 	(dwarf2out_line): Hide variable `old_in_use'.
 	
 	* objc-act.c (objc_fatal): Delete.
