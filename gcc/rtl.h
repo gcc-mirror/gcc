@@ -678,6 +678,7 @@ extern rtx copy_rtx_if_shared		PROTO((rtx));
 extern rtx copy_most_rtx		PROTO((rtx, rtx));
 extern rtx replace_rtx			PROTO((rtx, rtx, rtx));
 extern rtvec gen_rtvec_v		PROTO((int, rtx *));
+extern rtvec gen_rtvec_vv		PROTO((int, rtunion *));
 extern rtx gen_reg_rtx			PROTO((enum machine_mode));
 extern rtx gen_label_rtx		PROTO((void));
 extern rtx gen_inline_header_rtx	PROTO((rtx, rtx, int, int, int, int,
