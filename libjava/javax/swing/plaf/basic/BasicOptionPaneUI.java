@@ -139,4 +139,14 @@ public class BasicOptionPaneUI extends OptionPaneUI
 
 	return d2;
     }
+
+  public void selectInitialValue(JOptionPane op)
+  {
+     throw new Error ("Not implemented");
+  }
+
+  public boolean containsCustomComponents(JOptionPane op)
+  {
+     throw new Error ("Not implemented");
+  }
 }

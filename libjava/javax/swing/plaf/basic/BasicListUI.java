@@ -159,12 +159,19 @@ public class BasicListUI extends ListUI
 		a.y += dim.height + gap_between_cells;
 	    }
     }
+
+  public int locationToIndex(JList list, Point location)
+  {
+    throw new Error ("Not implemented");
+  }
+
+  public Point indexToLocation(JList list, int index)
+  {
+    throw new Error ("Not implemented");
+  }
+
+  public Rectangle getCellBounds(JList list, int index1, int index2)
+  {
+    throw new Error ("Not implemented");
+  }
 }
-
-
-
-
-
-
-
-

@@ -1,5 +1,11 @@
 2003-06-25  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/plaf/basic/BasicListUI.java,
+	javax/swing/plaf/basic/BasicOptionPaneUI.java:
+	Added missing methods.
+
+2003-06-25  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/event/AncestorEvent.java
 	javax/swing/event/HyperlinkEvent.java
 	javax/swing/event/InternalFrameEvent.java
