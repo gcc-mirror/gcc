@@ -655,6 +655,13 @@ shorten_branches (first)
   rtx body;
   int uid;
 
+  /* In order to make sure that all instructions have valid length info,
+     we must split them before we compute the address/length info.  */
+
+  for (insn = NEXT_INSN (first); insn; insn = NEXT_INSN (insn))
+    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+      insn = try_split (PATTERN (insn), insn, 1);
+
   /* Compute maximum UID and allocate arrays.  */
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (INSN_UID (insn) > max_uid)
@@ -2090,6 +2097,13 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    if (new == insn && PATTERN (new) == body)
 	      abort ();
 	      
+#ifdef HAVE_ATTR_length
+	    /* This instruction should have been split in shorten_branches,
+	       to ensure that we would have valid length info for the
+	       splitees.  */
+	    abort ();
+#endif
+
 	    new_block = 0;
 	    return new;
 	  }
