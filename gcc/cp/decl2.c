@@ -307,6 +307,11 @@ int warn_unknown_pragmas; /* Tri state variable.  */
 
 int warn_multichar = 1;
 
+/* Nonzero means warn when non-templatized friend functions are
+   declared within a template */
+
+int warn_nontemplate_friend = 1;
+
 /* Nonzero means `$' can be in an identifier.  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
@@ -704,6 +709,8 @@ lang_decode_option (argc, argv)
 	/* Set to greater than 1, so that even unknown pragmas in
 	   system headers will be warned about.  */  
 	warn_unknown_pragmas = setting * 2;
+      else if (!strcmp (p, "non-template-friend"))
+	warn_nontemplate_friend = setting;
       else if (!strcmp (p, "comment"))
 	;			/* cpp handles this one.  */
       else if (!strcmp (p, "comments"))
@@ -735,7 +742,8 @@ lang_decode_option (argc, argv)
 	  warn_sign_promo = setting;
 	  /* Only warn about unknown pragmas that are not in system
 	     headers.  */                                        
-	  warn_unknown_pragmas = 1;                  
+	  warn_unknown_pragmas = 1;       
+	  warn_nontemplate_friend = setting;           
 	}
       else return strings_processed;
     }

@@ -447,7 +447,8 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	  else 
 	    decl = push_template_decl_real (decl, /*is_friend=*/1); 
 
-	  if (! funcdef_flag && ! flag_guiding_decls && ! is_friend_template
+	  if (warn_nontemplate_friend
+	      && ! funcdef_flag && ! flag_guiding_decls && ! is_friend_template
 	      && current_template_parms && uses_template_parms (decl))
 	    {
 	      static int explained;
@@ -458,6 +459,7 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 		  warning ("  (if this is not what you intended, make sure");
 		  warning ("  the function template has already been declared,");
 		  warning ("  and add <> after the function name here)");
+ 		  warning ("  To disable warning use -Wno-non-template-friend");
 		  explained = 1;
 		}
 	    }
