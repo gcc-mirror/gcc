@@ -1,3 +1,10 @@
+2003-08-21  Per Bothner  <bothner@pbothner.com>
+
+	* cppfiles.c (stack_file):  Correctly pass return_at_eof parameter
+	to cpp_push_buffer.
+	* cpplex.c (_cpp_get_fresh_line):  Don't buffer->prev - handled
+	by return_at_eof check.  Always call _cpp_pop_buffer at end.
+
 2003-08-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR target/11805

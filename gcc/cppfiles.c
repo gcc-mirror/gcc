@@ -615,7 +615,8 @@ stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
 
   /* Stack the buffer.  */
   buffer = cpp_push_buffer (pfile, file->buffer, file->st.st_size,
-			    CPP_OPTION (pfile, preprocessed), 0);
+			    CPP_OPTION (pfile, preprocessed),
+			    ! pfile->buffer);
   buffer->file = file;
 
   /* Initialize controlling macro state.  */
