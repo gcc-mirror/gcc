@@ -1,3 +1,7 @@
+Sat Jun 13 14:30:25 1998  David W. Schuler  <schuld@btv.ibm.com>
+
+	* i386/aix386ng.h (CPP_SPEC): Remove bogus quote.
+
 Sat Jun 13 14:16:34 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* expr.c (do_jump, case EQ_EXPR, NE_EXPR): When comparing complex
