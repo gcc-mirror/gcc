@@ -1194,7 +1194,7 @@ get_jump_flags (insn, label)
      If LABEL is zero, then there is no way to determine the branch
      direction.  */
   if (GET_CODE (insn) == JUMP_INSN
-      && condjump_p (insn)
+      && (condjump_p (insn) || condjump_in_parallel_p (insn))
       && INSN_UID (insn) <= max_uid
       && label != 0
       && INSN_UID (label) <= max_uid)
@@ -1210,7 +1210,7 @@ get_jump_flags (insn, label)
 
      Non conditional branches are predicted as very likely taken.  */
   if (GET_CODE (insn) == JUMP_INSN
-      && condjump_p (insn))
+      && (condjump_p (insn) || condjump_in_parallel_p (insn)))
     {
       int prediction;
 
@@ -1403,6 +1403,9 @@ get_branch_condition (insn, target)
   rtx pat = PATTERN (insn);
   rtx src;
   
+  if (condjump_in_parallel_p (insn))
+    pat = XVECEXP (pat, 0, 0);
+
   if (GET_CODE (pat) == RETURN)
     return target == 0 ? const_true_rtx : 0;
 
@@ -2868,7 +2871,8 @@ fill_simple_delay_slots (first, non_jumps_p)
 #if defined(ANNUL_IFFALSE_SLOTS) || defined(ANNUL_IFTRUE_SLOTS)
       if (slots_filled != slots_to_fill
 	  && delay_list == 0
-	  && GET_CODE (insn) == JUMP_INSN && condjump_p (insn))
+	  && GET_CODE (insn) == JUMP_INSN 
+	  && (condjump_p (insn) || condjump_in_parallel_p (insn)))
 	{
 	  delay_list = optimize_skip (insn);
 	  if (delay_list)
@@ -2893,7 +2897,8 @@ fill_simple_delay_slots (first, non_jumps_p)
 
       if (slots_filled != slots_to_fill
           && (GET_CODE (insn) != JUMP_INSN
-	      || (condjump_p (insn) && ! simplejump_p (insn)
+	      || ((condjump_p (insn) || condjump_in_parallel_p (insn))
+		   && ! simplejump_p (insn)
 		   && JUMP_LABEL (insn) != 0)))
 	{
 	  rtx target = 0;
@@ -3546,7 +3551,7 @@ fill_eager_delay_slots (first)
       if (insn == 0
 	  || INSN_DELETED_P (insn)
 	  || GET_CODE (insn) != JUMP_INSN
-	  || ! condjump_p (insn))
+	  || ! (condjump_p (insn) || condjump_in_parallel_p (insn)))
 	continue;
 
       slots_to_fill = num_delay_slots (insn);
@@ -3659,7 +3664,7 @@ relax_delay_slots (first)
 	 the next insn, or jumps to a label that is not the last of a
 	 group of consecutive labels.  */
       if (GET_CODE (insn) == JUMP_INSN
-	  && condjump_p (insn)
+	  && (condjump_p (insn) || condjump_in_parallel_p (insn))
 	  && (target_label = JUMP_LABEL (insn)) != 0)
 	{
 	  target_label = follow_jumps (target_label);
@@ -3668,7 +3673,8 @@ relax_delay_slots (first)
 	  if (target_label == 0)
 	    target_label = find_end_label ();
 
-	  if (next_active_insn (target_label) == next)
+	  if (next_active_insn (target_label) == next
+	      && ! condjump_in_parallel_p (insn))
 	    {
 	      delete_jump (insn);
 	      continue;
@@ -3725,7 +3731,7 @@ relax_delay_slots (first)
       if (GET_CODE (insn) == JUMP_INSN
 	  && (simplejump_p (insn) || GET_CODE (PATTERN (insn)) == RETURN)
 	  && (other = prev_active_insn (insn)) != 0
-	  && condjump_p (other)
+	  && (condjump_p (other) || condjump_in_parallel_p (other))
 	  && no_labels_between_p (other, insn)
 	  && 0 < mostly_true_jump (other,
 				   get_branch_condition (other,
@@ -3766,7 +3772,8 @@ relax_delay_slots (first)
 
       /* Now look only at the cases where we have a filled JUMP_INSN.  */
       if (GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) != JUMP_INSN
-	  || ! condjump_p (XVECEXP (PATTERN (insn), 0, 0)))
+	  || ! (condjump_p (XVECEXP (PATTERN (insn), 0, 0))
+		|| condjump_in_parallel_p (XVECEXP (PATTERN (insn), 0, 0))))
 	continue;
 
       target_label = JUMP_LABEL (delay_insn);
@@ -3828,6 +3835,7 @@ relax_delay_slots (first)
 
       if (! INSN_ANNULLED_BRANCH_P (delay_insn)
 	  && prev_active_insn (target_label) == insn
+	  && ! condjump_in_parallel_p (delay_insn)
 #ifdef HAVE_cc0
 	  /* If the last insn in the delay slot sets CC0 for some insn,
 	     various code assumes that it is in a delay slot.  We could
@@ -4110,7 +4118,8 @@ dbr_schedule (first, file)
 	obstack_ptr_grow (&unfilled_slots_obstack, insn);
 
       /* Ensure all jumps go to the last of a set of consecutive labels.  */
-      if (GET_CODE (insn) == JUMP_INSN && condjump_p (insn)
+      if (GET_CODE (insn) == JUMP_INSN 
+	  && (condjump_p (insn) || condjump_in_parallel_p (insn))
 	  && JUMP_LABEL (insn) != 0
 	  && ((target = prev_label (next_active_insn (JUMP_LABEL (insn))))
 	      != JUMP_LABEL (insn)))
