@@ -2285,7 +2285,7 @@ distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f site.exp site.bak testsuite/site.exp testsuite/site.bak
 	-rm -f testsuite/{gcc,g++}.{log,sum}
 	-rm -f intl/libintl.h libintl.h
-	-rm -f cxxmain.c splay-tree.c obstack.c
+	-rm -f cxxmain.c splay-tree.c obstack.c alloca.c hashtab.c
 	-rm -f mklibgcc libgcc.map gccbug .gdbinit configargs.h
 	-rm -f c-tree.info c-tree.info-1 c-tree.info-2 c-tree.info-3
 	-rm -f gcov.pod
