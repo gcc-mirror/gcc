@@ -334,6 +334,14 @@ zdepi_operand (op, mode)
   return ((t & (t - 1)) == 0);
 }
 
+int
+arith32_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return register_operand (op, mode) || GET_CODE (op) == CONST_INT;
+}
+
 /* Return truth value of statement that OP is a call-clobbered register.  */
 int
 clobbered_register (op, mode)
@@ -2281,15 +2289,12 @@ secondary_reload_class (class, mode, in)
 {
   int regno = true_regnum (in);
 
-  if (regno >= FIRST_PSEUDO_REGISTER)
-    regno = -1;
-
-  if (class == FP_REGS || class == SNAKE_FP_REGS || class == HI_SNAKE_FP_REGS)
-    {
-      if (regno == -1 || !REGNO_OK_FOR_FP_P (regno))
-	return GENERAL_REGS;
-    }
-  return NO_REGS;
+  if ((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
+      && (class == FP_REGS || class == SNAKE_FP_REGS
+	  || class == HI_SNAKE_FP_REGS))
+    return GENERAL_REGS;
+  else
+    return NO_REGS;
 }
 
 enum direction
@@ -2348,92 +2353,14 @@ hppa_builtin_saveregs (arglist)
     offset = plus_constant (current_function_arg_offset_rtx, argadj);
   else
     offset = current_function_arg_offset_rtx;
-  /* Allocate the va_list structure. */
-  block = assign_stack_local (BLKmode, 4 * UNITS_PER_WORD, BITS_PER_UNIT);
-  RTX_UNCHANGING_P (block) = 1;
-  RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
-  /* 
-   * Store a pointer to where arguments should begin on the stack in 
-   * __va_stack_start. 
-   */
-  emit_move_insn (change_address (block, Pmode, XEXP (block, 0)),
-		  copy_to_reg
-		  (plus_constant (current_function_internal_arg_pointer,
-				  -16)));
-  /* Store where to start getting args from in the __va_int member. */
-  emit_move_insn (change_address (block, Pmode,
-				  plus_constant (XEXP (block, 0),
-						 UNITS_PER_WORD)),
-		  copy_to_reg (expand_binop (Pmode, add_optab,
-					     current_function_internal_arg_pointer,
-					     offset,
-					     0, 0, OPTAB_LIB_WIDEN)));
+
   /* Store general registers on the stack. */
   move_block_from_reg (23,
 		       gen_rtx (MEM, BLKmode,
 				plus_constant
 				(current_function_internal_arg_pointer, -16)),
 		       4); 
-  /* 
-   * Allocate space for the float args, and store it in the 
-   * __va_float member.
-   */
-  float_addr = copy_to_reg (XEXP (float_mem =
-				  assign_stack_local (BLKmode,
-						      4 * UNITS_PER_WORD, -1),
-				  0));
-  MEM_IN_STRUCT_P (float_mem) = 1;
-  RTX_UNCHANGING_P (float_mem) = 1;
-  RTX_UNCHANGING_P (XEXP (float_mem, 0)) = 1;
-  emit_move_insn (change_address (block, Pmode,
-				  plus_constant (XEXP (block, 0),
-						 2 * UNITS_PER_WORD)),
-		  copy_to_reg (expand_binop (Pmode, add_optab,
-					     float_addr,
-					     plus_constant (offset, 4 *
-							    UNITS_PER_WORD),
-					     0, 0, OPTAB_LIB_WIDEN)));
-  /* Store fp registers. */
-  emit_move_insn (gen_rtx (MEM, SFmode, float_addr),
-		  gen_rtx (REG, SFmode, TARGET_SNAKE ? 60 : 39));
-  emit_move_insn (gen_rtx (MEM, SFmode, gen_rtx (PLUS, Pmode, float_addr,
-						 gen_rtx (CONST_INT,
-							  Pmode, 4))),
-		  gen_rtx (REG, SFmode, TARGET_SNAKE ? 58 : 38));
-  emit_move_insn (gen_rtx (MEM, SFmode, gen_rtx (PLUS, Pmode, float_addr,
-						 gen_rtx (CONST_INT,
-							  Pmode, 8))),
-		  gen_rtx (REG, SFmode, TARGET_SNAKE ? 56 : 37));
-  emit_move_insn (gen_rtx (MEM, SFmode, gen_rtx (PLUS, Pmode, float_addr,
-						 gen_rtx (CONST_INT,
-							  Pmode, 12))),
-		  gen_rtx (REG, SFmode, TARGET_SNAKE ? 54 : 36));
-  /* 
-   * Allocate space for the double args, and store it in the 
-   * __va_double member.
-   */
-  float_addr = copy_to_reg (XEXP (float_mem =
-				  assign_stack_local (BLKmode,
-						      4 * UNITS_PER_WORD, -1),
-				  0));
-  MEM_IN_STRUCT_P (float_mem) = 1;
-  RTX_UNCHANGING_P (float_mem) = 1;
-  RTX_UNCHANGING_P (XEXP (float_mem, 0)) = 1;
-  emit_move_insn (change_address (block, Pmode,
-				  plus_constant (XEXP (block, 0),
-						 3 * UNITS_PER_WORD)),
-		  copy_to_reg (expand_binop (Pmode, add_optab,
-					     float_addr,
-					     plus_constant (offset, 4 *
-							    UNITS_PER_WORD),
-					     0, 0, OPTAB_LIB_WIDEN)));
-  /* Store fp registers as doubles. */
-
-  emit_move_insn (gen_rtx (MEM, DFmode, float_addr),
-		  (gen_rtx (REG, DFmode, TARGET_SNAKE ? 60 : 39)));
-  emit_move_insn (gen_rtx (MEM, DFmode, gen_rtx (PLUS, Pmode, float_addr,
-						 gen_rtx (CONST_INT,
-							  Pmode, 8))),
-		  gen_rtx (REG, DFmode, TARGET_SNAKE ? 56 : 37));
-  return copy_to_reg (XEXP (block, 0));
+  return copy_to_reg (expand_binop (Pmode, add_optab,
+				    current_function_internal_arg_pointer,
+				    offset, 0, 0, OPTAB_LIB_WIDEN));
 }
