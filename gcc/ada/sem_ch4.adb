@@ -4637,19 +4637,19 @@ package body Sem_Ch4 is
    --------------------------
 
    function Try_Object_Operation (N : Node_Id) return Boolean is
-      Loc      : constant Source_Ptr := Sloc (N);
-      Obj      : constant Node_Id := Prefix (N);
-      Obj_Type : Entity_Id := Etype (Obj);
-      Subprog  : constant Node_Id := Selector_Name (N);
+      K               : constant Node_Kind  := Nkind (Parent (N));
+      Loc             : constant Source_Ptr := Sloc (N);
+      Is_Subprg_Call  : constant Boolean    := K = N_Procedure_Call_Statement
+                                                or else K = N_Function_Call;
+      Obj             : constant Node_Id    := Prefix (N);
+      Subprog         : constant Node_Id    := Selector_Name (N);
 
+      Actual          : Node_Id;
       Call_Node       : Node_Id;
       Call_Node_Case  : Node_Id := Empty;
       First_Actual    : Node_Id;
       Node_To_Replace : Node_Id;
-
-      procedure Analyze_Actuals;
-      --  If the parent of N is a subprogram call, then analyze the actual
-      --  parameters of the parent of N.
+      Obj_Type        : Entity_Id := Etype (Obj);
 
       procedure Complete_Object_Operation
         (Call_Node       : Node_Id;
@@ -4680,32 +4680,6 @@ package body Sem_Ch4 is
          Node_To_Replace : Node_Id) return Boolean;
       --  Traverse the list of primitive subprograms looking for a subprogram
       --  than matches Subprog.
-
-      ---------------------
-      -- Analyze_Actuals --
-      ---------------------
-
-      procedure Analyze_Actuals is
-         Actual : Node_Id;
-
-      begin
-         if (Nkind (Parent (N)) = N_Procedure_Call_Statement
-               or else
-             Nkind (Parent (N)) = N_Function_Call)
-
-            --  Avoid recursive calls
-
-           and then N /= First (Parameter_Associations (Parent (N)))
-         then
-            Actual := First (Parameter_Associations (Parent (N)));
-            while Present (Actual) loop
-               Analyze (Actual);
-               Check_Parameterless_Call (Actual);
-               Next (Actual);
-
-            end loop;
-         end if;
-      end Analyze_Actuals;
 
       -------------------------------
       -- Complete_Object_Operation --
@@ -4993,7 +4967,16 @@ package body Sem_Ch4 is
          Obj_Type := Etype (Class_Wide_Type (Obj_Type));
       end if;
 
-      Analyze_Actuals;
+      --  Analyze the actuals in case of subprogram call
+
+      if Is_Subprg_Call and then N = Name (Parent (N)) then
+         Actual := First (Parameter_Associations (Parent (N)));
+         while Present (Actual) loop
+            Analyze (Actual);
+            Check_Parameterless_Call (Actual);
+            Next (Actual);
+         end loop;
+      end if;
 
       --  If the object is of an Access type, explicit dereference is
       --  required.

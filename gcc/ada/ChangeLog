@@ -1,3 +1,9 @@
+2004-10-04  Javier Miranda  <miranda@gnat.com>
+
+	* sem_ch4.adb (Try_Object_Operation): Reformat the code to expand
+	in-line the code corresponding to subprogram Analyze_Actuals. In
+	addition, analyze the actuals only in case of subprogram call.
+
 2004-10-04  Ed Falis  <falis@gnat.com>
 
 	* s-vxwork-x86.ads: (FP_CONTEXT): Defined to be correct size
