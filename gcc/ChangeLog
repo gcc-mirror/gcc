@@ -1,3 +1,8 @@
+2004-11-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-forwprop.c (substitute_single_use_vars): Remove
+	duplicate code.
+
 2004-11-25  Andrew Pinski <pinskia@physics.uc.edu>
 
 	* bitmap.h (BITMAP_XMALLOC): Use BITMAP_ALLOC and not
