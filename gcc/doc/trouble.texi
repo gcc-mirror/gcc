@@ -110,9 +110,6 @@ libraries and debuggers on certain systems.
 
 @itemize @bullet
 @item
-Objective-C does not work on the RS/6000.
-
-@item
 G++ does not do name mangling in the same way as other C++
 compilers.  This means that object files compiled with one compiler
 cannot be used with another.
@@ -282,30 +279,6 @@ the form:
 These warnings are harmless and can be safely ignored.
 
 @item
-The current version of the assembler (@file{/bin/as}) for the RS/6000
-has certain problems that prevent the @option{-g} option in GCC from
-working.  Note that @file{Makefile.in} uses @option{-g} by default when
-compiling @file{libgcc2.c}.
-
-IBM has produced a fixed version of the assembler.  The upgraded
-assembler unfortunately was not included in any of the AIX 3.2 update
-PTF releases (3.2.2, 3.2.3, or 3.2.3e).  Users of AIX 3.1 should request
-PTF U403044 from IBM and users of AIX 3.2 should request PTF U416277.
-See the file @file{README.RS6000} for more details on these updates.
-
-You can test for the presence of a fixed assembler by using the
-command
-
-@smallexample
-as -u < /dev/null
-@end smallexample
-
-@noindent
-If the command exits normally, the assembler fix already is installed.
-If the assembler complains that @option{-u} is an unknown flag, you need to
-order the fix.
-
-@item
 On the IBM RS/6000, compiling code of the form
 
 @smallexample
@@ -338,11 +311,6 @@ Even if you specify @option{-fdollars-in-identifiers},
 you cannot successfully use @samp{$} in identifiers on the RS/6000 due
 to a restriction in the IBM assembler.  GAS supports these
 identifiers.
-
-@item
-On the RS/6000, XLC version 1.3.0.0 will miscompile @file{jump.c}.  XLC
-version 1.3.0.1 or later fixes this problem.  You can obtain XLC-1.3.0.2
-by requesting PTF 421749 from IBM@.
 
 @item
 @opindex mno-serialize-volatile
