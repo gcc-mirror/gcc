@@ -56,118 +56,143 @@ public abstract class AbstractAction
 {
   static final long serialVersionUID = -6803159439231523484L;
 
-	/**
-	 * enabled
-	 */
-	protected boolean enabled = true;
+  /**
+   * enabled
+   */
+  protected boolean enabled = true;
 
-	/**
-	 * changeSupport
-	 */
-	protected SwingPropertyChangeSupport changeSupport =
-				new SwingPropertyChangeSupport(this);
+  /**
+   * changeSupport
+   */
+  protected SwingPropertyChangeSupport changeSupport =
+    new SwingPropertyChangeSupport(this);
 
-	/**
-	 * store
-	 */
-	private transient HashMap store = new HashMap();
+  /**
+   * store
+   */
+  private transient HashMap store = new HashMap();
 
-	/**
-	 * Constructor AbstractAction
-	 */
-	public AbstractAction() {
-		this(""); // TODO: default name
-	} // AbstractAction()
+  /**
+   * Constructor AbstractAction
+   */
+  public AbstractAction()
+  {
+    this(""); // TODO: default name
+  }
 
-	/**
-	 * Constructor AbstractAction
-	 * @param name TODO
-	 */
-	public AbstractAction(String name) {
-		this(name, null); // TODO: default icon??
-	} // AbstractAction()
+  /**
+   * Constructor AbstractAction
+   *
+   * @param name TODO
+   */
+  public AbstractAction(String name)
+  {
+    this(name, null); // TODO: default icon??
+  }
 
-	/**
-	 * Constructor AbstractAction
-	 * @param name TODO
-	 * @param icon TODO
-	 */
-	public AbstractAction(String name, Icon icon) {
-		putValue(NAME, name);
-		putValue(SMALL_ICON, icon);
-	} // AbstractAction()
+  /**
+   * Constructor AbstractAction
+   *
+   * @param name TODO
+   * @param icon TODO
+   */
+  public AbstractAction(String name, Icon icon)
+  {
+    putValue(NAME, name);
+    putValue(SMALL_ICON, icon);
+  }
 
-	/**
-	 * readObject
-	 * @param stream TODO
-	 * @exception ClassNotFoundException TODO
-	 * @exception IOException TODO
-	 */
-	private void readObject(ObjectInputStream stream) 
-			throws ClassNotFoundException, IOException {
-		// TODO
-	} // readObject()
+  /**
+   * readObject
+   *
+   * @param stream the stream to read from
+   *
+   * @exception ClassNotFoundException TODO
+   * @exception IOException if an error occurs
+   */
+  private void readObject(ObjectInputStream stream)
+    throws ClassNotFoundException, IOException
+  {
+    // TODO
+  }
 
-	/**
-	 * writeObject
-	 * @param stream TODO
-	 * @exception IOException TODO
-	 */
-	private void writeObject(ObjectOutputStream stream) throws IOException {
-		// TODO
-	} // writeObject()
+  /**
+   * writeObject
+   *
+   * @param stream the stream to write to
+   *
+   * @exception IOException if an error occurs
+   */
+  private void writeObject(ObjectOutputStream stream) throws IOException
+  {
+    // TODO
+  }
 
-	/**
-	 * clone
-	 * @exception CloneNotSupportedException TODO
-	 * @returns Object
-	 */
-	protected Object clone() throws CloneNotSupportedException {
-		// What to do??
-		return null;
-	} // clone()
+  /**
+   * clone
+   *
+   * @return Object
+   *
+   * @exception CloneNotSupportedException TODO
+   */
+  protected Object clone() throws CloneNotSupportedException
+  {
+    AbstractAction copy = (AbstractAction) super.clone();
+    copy.store = (HashMap) store.clone();
+    return copy;
+  }
 
-	/**
-	 * getValue
-	 * @param key TODO
-	 * @returns Object
-	 */
-	public Object getValue(String key) {
-		return store.get(key);
-	} // getValue()
+  /**
+   * Returns a value for a given key from the built-in store.
+   *
+   * @param key the key to get the value for
+   *
+   * @return Object
+   */
+  public Object getValue(String key)
+  {
+    return store.get(key);
+  }
 
-	/**
-	 * putValue
-	 * @param key TODO
-	 * @param value TODO
-	 */
-	public void putValue(String key, Object value) {
-		store.put(key, value);
-	} // putValue()
+  /**
+   * Puts a key/value pair into the built-in store.
+   *
+   * @param key the key
+   * @param value the value
+   */
+  public void putValue(String key, Object value)
+  {
+    store.put(key, value);
+  }
 
-	/**
-	 * isEnabled
-	 * @returns boolean
-	 */
-	public boolean isEnabled() {
-		return enabled;
-	} // isEnabled()
+  /**
+   * isEnabled
+   *
+   * @return boolean
+   */
+  public boolean isEnabled()
+  {
+    return enabled;
+  }
 
-	/**
-	 * setEnabled
-	 * @param enabled TODO
-	 */
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	} // setEnabled()
+  /**
+   * setEnabled
+   *
+   * @param enabled TODO
+   */
+  public void setEnabled(boolean enabled)
+  {
+    this.enabled = enabled;
+  }
 
-	/**
-	 * getKeys
-	 * @returns Object[]
-	 */
-	public Object[] getKeys() {
-		return store.keySet().toArray();
-	} // getKeys()
+  /**
+   * getKeys
+   * @returns Object[]
+   */
+  public Object[] getKeys()
+  {
+    return store.keySet().toArray();
+  }
 
   /**
    * firePropertyChange
