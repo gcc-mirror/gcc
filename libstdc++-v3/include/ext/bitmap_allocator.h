@@ -56,8 +56,9 @@
 // itself(to debug the allocator itself).
 //#define _BALLOC_SANITY_CHECK
 
-// The constant in the expression below is the alignment required in
-// bytes.
+/** @brief The constant in the expression below is the alignment
+ * required in bytes.
+ */
 #define _BALLOC_ALIGN_BYTES 8
 
 #if defined _BALLOC_SANITY_CHECK
@@ -73,17 +74,23 @@ namespace __gnu_cxx
 #if defined __GTHREADS
   namespace
   {
-    // If true, then the application being compiled will be using
-    // threads, so use mutexes as a synchronization primitive, else do
-    // no use any synchronization primitives.
+    /** @brief  If true, then the application being compiled will be
+     *  using threads, so use mutexes as a synchronization primitive,
+     *  else do no use any synchronization primitives.
+     */
     bool const __threads_enabled = __gthread_active_p();
   }
 #endif
 
 #if defined __GTHREADS
-  // _Mutex is an OO-Wrapper for __gthread_mutex_t. It does not allow
-  // you to copy or assign an already initialized mutex. This is used
-  // merely as a convenience for the locking classes.
+  /** @class  _Mutex bitmap_allocator.h bitmap_allocator.h
+   *
+   *  @brief  _Mutex is an OO-Wrapper for __gthread_mutex_t. 
+   *
+   *  It does not allow you to copy or assign an already initialized
+   *  mutex. This is used merely as a convenience for the locking
+   *  classes.
+   */
   class _Mutex 
   {
     __gthread_mutex_t _M_mut;
@@ -115,12 +122,16 @@ namespace __gnu_cxx
     _M_get() { return &_M_mut; }
   };
 
-  // _Lock is a simple manual lokcing class which allows you to
-  // manually lock and unlock a mutex associated with the lock. There
-  // is not automatic locking or unlocking happening without the
-  // programmer's explicit instructions. This class unlocks the mutex
-  // ONLY if it has not been locked. However, this check does not
-  // apply for lokcing, and wayward use may cause dead-locks.
+  /** @class  _Lock bitmap_allocator.h bitmap_allocator.h
+   *
+   *  @brief  _Lock is a simple manual locking class which allows you to
+   *  manually lock and unlock a mutex associated with the lock. 
+   *
+   *  There is no automatic locking or unlocking happening without the
+   *  programmer's explicit instructions. This class unlocks the mutex
+   *  ONLY if it has not been locked. However, this check does not
+   *  apply for locking, and wayward use may cause dead-locks.
+   */
   class _Lock 
   {
     _Mutex* _M_pmt;
@@ -161,9 +172,14 @@ namespace __gnu_cxx
     ~_Lock() { }
   };
 
-  // _Auto_Lock locks the associated mutex on construction, and
-  // unlocks on it's destruction. There are no checks performed, and
-  // this calss follows the RAII principle.
+  /** @class  _Auto_Lock bitmap_allocator.h bitmap_allocator.h
+   *
+   *  @brief  _Auto_Lock locks the associated mutex on construction, and
+   *  unlocks on destruction.
+   *
+   *  There are no checks performed, and this class follows the RAII
+   *  principle.
+   */
   class _Auto_Lock 
   {
     _Mutex* _M_pmt;
@@ -195,14 +211,22 @@ namespace __gnu_cxx
 
   namespace balloc
   {
-    // __mini_vector<> is to be used only for built-in types or
-    // PODs. It is a stripped down version of the full-fledged
-    // std::vector<>. Noteable differences are: 
-    // 
-    // 1. Not all accessor functions are present.
-    // 2. Used ONLY for PODs.
-    // 3. No Allocator template argument. Uses ::operator new() to get
-    // memory, and ::operator delete() to free it.
+    /** @class  __mini_vector bitmap_allocator.h bitmap_allocator.h
+     *
+     *  @brief  __mini_vector<> is a stripped down version of the
+     *  full-fledged std::vector<>.
+     *
+     *  It is to be used only for built-in types or PODs. Notable
+     *  differences are:
+     * 
+     *  @detail
+     *  1. Not all accessor functions are present.
+     *  2. Used ONLY for PODs.
+     *  3. No Allocator template argument. Uses ::operator new() to get
+     *  memory, and ::operator delete() to free it.
+     *  Caveat: The dtor does NOT free the memory allocated, so this a
+     *  memory-leaking vector!
+     */
     template<typename _Tp>
       class __mini_vector
       {
@@ -421,11 +445,17 @@ namespace __gnu_cxx
 	return __first;
       }
 
+    /** @brief The number of Blocks pointed to by the address pair
+     *  passed to the function.
+     */
     template<typename _AddrPair>
       inline size_t
       __num_blocks(_AddrPair __ap)
       { return (__ap.second - __ap.first) + 1; }
 
+    /** @brief The number of Bit-maps pointed to by the address pair
+     *  passed to the function.
+     */
     template<typename _AddrPair>
       inline size_t
       __num_bitmaps(_AddrPair __ap)
@@ -475,6 +505,11 @@ namespace __gnu_cxx
 	{ return _M_fref(__arg); }
       };
 
+    /** @class  _Ffit_finder bitmap_allocator.h bitmap_allocator.h
+     *
+     *  @brief  The class which acts as a predicate for applying the
+     *  first-fit memory allocation policy for the bitmap allocator.
+     */
     // _Tp should be a pointer type, and _Alloc is the Allocator for
     // the vector.
     template<typename _Tp>
@@ -539,7 +574,12 @@ namespace __gnu_cxx
       };
 
 
-  
+    /** @class  _Bitmap_counter bitmap_allocator.h bitmap_allocator.h
+     *
+     *  @brief  The bitmap counter which acts as the bitmap
+     *  manipulator, and manages the bit-manipulation functions and
+     *  the searching and identification functions on the bit-map.
+     */
     // _Tp should be a pointer type.
     template<typename _Tp>
       class _Bitmap_counter
@@ -630,6 +670,9 @@ namespace __gnu_cxx
 	{ return _M_curr_index; }
       };
 
+    /** @brief  Mark a memory address as allocated by re-setting the
+     *  corresponding bit in the bit-map.
+     */
     inline void 
     __bit_allocate(size_t* __pbmap, size_t __pos) throw()
     {
@@ -638,6 +681,9 @@ namespace __gnu_cxx
       *__pbmap &= __mask;
     }
   
+    /** @brief  Mark a memory address as free by setting the
+     *  corresponding bit in the bit-map.
+     */
     inline void 
     __bit_free(size_t* __pbmap, size_t __pos) throw()
     {
@@ -646,11 +692,17 @@ namespace __gnu_cxx
     }
   } // namespace balloc
 
-  // Generic Version of the bsf instruction.
+  /** @brief  Generic Version of the bsf instruction.
+   */
   inline size_t 
   _Bit_scan_forward(size_t __num)
   { return static_cast<size_t>(__builtin_ctzl(__num)); }
 
+  /** @class  free_list bitmap_allocator.h bitmap_allocator.h
+   *
+   *  @brief  The free list class for managing chunks of memory to be
+   *  given to and returned by the bitmap_allocator.
+   */
   class free_list
   {
     typedef size_t* value_type;
@@ -669,7 +721,17 @@ namespace __gnu_cxx
     static _Mutex _S_bfl_mutex;
 #endif
     static vector_type _S_free_list;
-    
+
+    /** @brief  Performs validation of memory based on their size.
+     *
+     *  @param  __addr The pointer to the memory block to be
+     *  validated.
+     *
+     *  @detail  Validates the memory block passed to this function and
+     *  appropriately performs the action of managing the free list of
+     *  blocks by adding this block to the free list or deleting this
+     *  or larger blocks from the free list.
+     */
     void
     _M_validate(size_t* __addr) throw()
     {
@@ -704,6 +766,17 @@ namespace __gnu_cxx
       _S_free_list.insert(__temp, __addr);
     }
 
+    /** @brief  Decides whether the wastage of memory is acceptable for
+     *  the current memory request and returns accordingly.
+     *
+     *  @param __block_size The size of the block available in the free
+     *  list.
+     *
+     *  @param __required_size The required size of the memory block.
+     *
+     *  @return true if the wastage incurred is acceptable, else returns
+     *  false.
+     */
     bool 
     _M_should_i_give(size_t __block_size, 
 		     size_t __required_size) throw()
@@ -718,6 +791,12 @@ namespace __gnu_cxx
     }
 
   public:
+    /** @brief This function returns the block of memory to the
+     *  internal free list.
+     *
+     *  @param  __addr The pointer to the memory block that was given
+     *  by a call to the _M_get function.
+     */
     inline void 
     _M_insert(size_t* __addr) throw()
     {
@@ -730,11 +809,20 @@ namespace __gnu_cxx
       // See discussion as to why this is 1!
     }
     
+    /** @brief  This function gets a block of memory of the specified
+     *  size from the free list.
+     *
+     *  @param  __sz The size in bytes of the memory required.
+     *
+     *  @return  A pointer to the new memory block of size at least
+     *  equal to that requested.
+     */
     size_t*
     _M_get(size_t __sz) throw(std::bad_alloc);
 
-    // This function just clears the internal Free List, and gives back
-    // all the memory to the OS.
+    /** @brief  This function just clears the internal Free List, and
+     *  gives back all the memory to the OS.
+     */
     void 
     _M_clear();
   };
@@ -820,12 +908,17 @@ namespace __gnu_cxx
       }
 #endif
 
-      // Complexity: O(1), but internally depends upon the complexity
-      // of the function free_list::_M_get. The
-      // part where the bitmap headers are written is of worst case
-      // complexity: O(X),where X is the number of blocks of size
-      // sizeof(value_type) within the newly acquired block. Having a
-      // tight bound.
+      /** @brief  Responsible for exponentially growing the internal
+       *  memory pool.
+       *
+       *  @throw  std::bad_alloc. If memory can not be allocated.
+       *
+       *  @detail  Complexity: O(1), but internally depends upon the
+       *  complexity of the function free_list::_M_get. The part where
+       *  the bitmap headers are written has complexity: O(X),where X
+       *  is the number of blocks of size sizeof(value_type) within
+       *  the newly acquired block. Having a tight bound.
+       */
       void 
       _S_refill_pool() throw(std::bad_alloc)
       {
@@ -876,13 +969,19 @@ namespace __gnu_cxx
 
     public:
 
-      // Complexity: Worst case complexity is O(N), but that is hardly
-      // ever hit. if and when this particular case is encountered,
-      // the next few cases are guaranteed to have a worst case
-      // complexity of O(1)!  That's why this function performs very
-      // well on the average. you can consider this function to be
-      // having a complexity referred to commonly as: Amortized
-      // Constant time.
+      /** @brief  Allocates memory for a single object of size
+       *  sizeof(_Tp).
+       *
+       *  @throw  std::bad_alloc. If memory can not be allocated.
+       *
+       *  @detail  Complexity: Worst case complexity is O(N), but that
+       *  is hardly ever hit. If and when this particular case is
+       *  encountered, the next few cases are guaranteed to have a
+       *  worst case complexity of O(1)!  That's why this function
+       *  performs very well on average. You can consider this
+       *  function to have a complexity referred to commonly as:
+       *  Amortized Constant time.
+       */
       pointer 
       _M_allocate_single_object() throw(std::bad_alloc)
       {
@@ -973,9 +1072,14 @@ namespace __gnu_cxx
 	return __ret;
       }
 
-      // Complexity: O(lg(N)), but the worst case is hit quite often!
-      // I need to do something about this. I'll be able to work on
-      // it, only when I have some solid figures from a few real apps.
+      /** @brief  Deallocates memory that belongs to a single object of
+       *  size sizeof(_Tp).
+       *
+       *  @detail  Complexity: O(lg(N)), but the worst case is not hit
+       *  often!  This is because containers usually deallocate memory
+       *  close to each other and this case is handled in O(1) time by
+       *  the deallocate function.
+       */
       void 
       _M_deallocate_single_object(pointer __p) throw()
       {
@@ -1080,9 +1184,6 @@ namespace __gnu_cxx
       ~bitmap_allocator() throw()
       { }
 
-      // Complexity: O(1), but internally the complexity depends upon the
-      // complexity of the function(s) _S_allocate_single_object and
-      // operator new.
       pointer 
       allocate(size_type __n)
       {
