@@ -1,3 +1,11 @@
+2002-03-22  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (FUNCTION_ARG_REGNO_P): Simplify.
+	(CLASS_UNITS): Undefine.
+	(CLASS_MAX_NREGS): Use FP_INC.
+	* config/mips/mips.c (compute_frame_size): Likewise.
+	(override_options): Use FP_INC and UNITS_PER_FPVALUE.
+
 2002-03-22  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplex.c (parse_identifier_slow): Rename parse_slow, adjust

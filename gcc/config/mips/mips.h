@@ -2331,15 +2331,10 @@ extern enum reg_class mips_char_to_class[256];
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 
-#define CLASS_UNITS(mode, size)						\
-  ((GET_MODE_SIZE (mode) + (size) - 1) / (size))
-
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
   ((CLASS) == FP_REGS							\
-   ? (TARGET_FLOAT64							\
-      ? CLASS_UNITS (MODE, 8)						\
-      : 2 * CLASS_UNITS (MODE, 8))					\
-   : CLASS_UNITS (MODE, UNITS_PER_WORD))
+   ? FP_INC								\
+   : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* If defined, gives a class of registers that cannot be used as the
    operand of a SUBREG that changes the mode of the object illegally.
@@ -2718,11 +2713,9 @@ extern struct mips_frame_info current_frame_info;
    are 32 bits, we can't directly reference the odd numbered ones.  */
 
 #define FUNCTION_ARG_REGNO_P(N)					\
-  (((N) >= GP_ARG_FIRST && (N) <= GP_ARG_LAST)			\
-   || ((! TARGET_SOFT_FLOAT					\
-       && ((N) >= FP_ARG_FIRST && (N) <= FP_ARG_LAST)		\
-       && (TARGET_FLOAT64 || (0 == (N) % 2)))			\
-       && ! fixed_regs[N]))
+  ((((N) >= GP_ARG_FIRST && (N) <= GP_ARG_LAST)			\
+    || ((N) >= FP_ARG_FIRST && (N) <= FP_ARG_LAST))		\
+   && !fixed_regs[N])
 
 /* A C expression which can inhibit the returning of certain function
    values in registers, based on the type of value.  A nonzero value says
