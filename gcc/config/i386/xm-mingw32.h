@@ -25,5 +25,5 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef PATH_SEPARATOR
 #define PATH_SEPARATOR ';'
 
-/* This is the name of the null device on windows. */ 
+/* This is the name of the null device on windows.  */
 #define HOST_BIT_BUCKET "nul"

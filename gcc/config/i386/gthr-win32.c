@@ -1,5 +1,5 @@
 /* Implementation of W32-specific threads compatibility routines for
-   libgcc2.   */ 
+   libgcc2.  */
 
 /* Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Mumit Khan <khan@xraylith.wisc.edu>.

@@ -320,7 +320,7 @@ extern int x86_prefetch_sse;
 
 /* WARNING: Do not mark empty strings for translation, as calling
             gettext on an empty string does NOT return an empty
-            string. */
+            string.  */
 
 
 #define TARGET_SWITCHES							      \
@@ -477,9 +477,9 @@ extern int x86_prefetch_sse;
   { "cmodel=", &ix86_cmodel_string,				\
     N_("Use given x86-64 code model"), 0},			\
   { "debug-arg", &ix86_debug_arg_string,			\
-    "" /* Undocumented. */, 0},					\
+    "" /* Undocumented.  */, 0},				\
   { "debug-addr", &ix86_debug_addr_string,			\
-    "" /* Undocumented. */, 0},					\
+    "" /* Undocumented.  */, 0},				\
   { "asm=", &ix86_asm_string,					\
     N_("Use given assembler dialect"), 0},			\
   { "tls-dialect=", &ix86_tls_dialect_string,			\
@@ -1311,7 +1311,7 @@ enum reg_class
 #define Q_CLASS_P(CLASS) \
   reg_class_subset_p ((CLASS), Q_REGS)
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES \
 {  "NO_REGS",				\
@@ -3132,7 +3132,7 @@ enum fp_cw_mode {FP_CW_STORED, FP_CW_UNINITIALIZED, FP_CW_ANY};
    scheduling just increases amount of live registers at time and in
    the turn amount of fxch instructions needed.
 
-   ??? Maybe Pentium chips benefits from renaming, someone can try...  */
+   ??? Maybe Pentium chips benefits from renaming, someone can try....  */
 
 #define HARD_REGNO_RENAME_OK(SRC, TARGET)  \
    ((SRC) < FIRST_STACK_REG || (SRC) > LAST_STACK_REG)

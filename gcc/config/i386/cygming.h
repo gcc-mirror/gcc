@@ -230,7 +230,7 @@ do {							\
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    returns float values in the 387 and needs stack probes.
-   We also align doubles to 64-bits for MSVC default compatibility. */
+   We also align doubles to 64-bits for MSVC default compatibility.  */
 
 #undef TARGET_SUBTARGET_DEFAULT
 #define TARGET_SUBTARGET_DEFAULT \
