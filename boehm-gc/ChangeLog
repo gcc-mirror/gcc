@@ -1,3 +1,9 @@
+2001-08-02  David Billinghurst <David.Billinghurst>
+
+	* configure: Rebuilt.
+	* configure.in:  POSIX threads on cygwin does not link with
+	-lpthreads.
+
 2001-07-03  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR bootstrap/3281:

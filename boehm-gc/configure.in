@@ -56,6 +56,9 @@ case "$THREADS" in
      *-*-irix*)
 	AC_DEFINE(IRIX_THREADS)
 	;;
+     *-*-cygwin*)
+	THREADLIBS=
+	;;
     esac
     ;;
  decosf1 | irix | mach | os2 | solaris | win32 | dce | vxworks)
