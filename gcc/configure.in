@@ -178,6 +178,17 @@ AC_CANONICAL_SYSTEM
 
 # Find the native compiler
 AC_PROG_CC
+
+# If the native compiler is GCC, we can enable warnings even in stage1.  
+# That's useful for people building cross-compilers, or just running a
+# quick `make'.
+if test "x$GCC" = "xyes"; then 
+  stage1_warn_cflags='$(WARN_CFLAGS)'
+else
+  stage1_warn_cflags=""
+fi
+AC_SUBST(stage1_warn_cflags)
+
 AC_PROG_MAKE_SET
 
 # Find some useful tools

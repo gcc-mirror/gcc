@@ -1,3 +1,10 @@
+Sun Aug 30 22:17:20 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* configure.in: If the native compiler is GCC use $(WARN_CFLAGS) 
+	even in stage1. 
+	* Makefile.in: Likewise.
+	* configure: Regenerated.
+
 Sun Aug 30 22:15:41 1998  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in (gxx_include_dir): Changed to
