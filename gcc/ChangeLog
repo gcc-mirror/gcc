@@ -65,6 +65,12 @@ Tue May  7 10:06:22 2002  Jeffrey A Law  (law@redhat.com)
 
         * config/rs6000/rs6000.c (bdesc_2arg): Fix vmax typos.
 
+2002-05-06  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.md (shift insns): Do not mask off
+	second operand, 'I' constraint and SHIFT_COUNT_TRUNCATED
+	take care of it.
+
 2002-05-06  Richard Henderson  <rth@redhat.com>
 
 	PR c++/6212
