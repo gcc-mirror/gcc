@@ -1285,9 +1285,8 @@ widen_bitfield (tree val, tree field, tree var)
       for (i = 0, mask = 0; i < field_size; i++)
 	mask |= ((HOST_WIDE_INT) 1) << i;
 
-      wide_val = build (BIT_AND_EXPR, TREE_TYPE (var), val, 
-			fold_convert (TREE_TYPE (var),
-				      build_int_cst (NULL_TREE, mask)));
+      wide_val = build2 (BIT_AND_EXPR, TREE_TYPE (var), val, 
+			 build_int_cst (TREE_TYPE (var), mask));
     }
   else
     {
@@ -1297,9 +1296,8 @@ widen_bitfield (tree val, tree field, tree var)
       for (i = 0, mask = 0; i < (var_size - field_size); i++)
 	mask |= ((HOST_WIDE_INT) 1) << (var_size - i - 1);
 
-      wide_val = build (BIT_IOR_EXPR, TREE_TYPE (var), val,
-			fold_convert (TREE_TYPE (var),
-				      build_int_cst (NULL_TREE, mask)));
+      wide_val = build2 (BIT_IOR_EXPR, TREE_TYPE (var), val,
+			 build_int_cst (TREE_TYPE (var), mask));
     }
 
   return fold (wide_val);

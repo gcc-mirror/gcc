@@ -1,3 +1,8 @@
+2005-02-18  James A. Morrison  <phython@gcc.gnu.org>
+
+	* tree-ssa-ccp.c (widen_bitfield): Pass type to build_int_cst and don't
+	call fold_convert.
+
 2005-02-18  James E. Wilson  <wilson@specifixinc.com>
 
 	* doc/invoke.texi (IA-64 Options): Delete -mb-step.
