@@ -16,55 +16,45 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 23.2.2.2 list capacity [lib.list.capacity]
+// 23.2.2.4 list operations [lib.list.ops]
 
 #include <list>
 #include <testsuite_hooks.h>
 
 bool test = true;
 
-// This test verifies the following.
-//
-// 23.2.2       bool empty() const
-// 23.2.2       size_type size() const
-// 23.2.2       iterator begin()
-// 23.2.2       iterator end()
-// 23.2.2.3     void push_back(const T&)
-// 23.2.2       size_type max_size() const
-// 23.2.2.2     void resize(size_type s, T c = T())
-//
+// splice(p, x, i) + remove_if + operator==
 void
-test01()
+test02()
 {
-  std::list<int> list0101;
-  VERIFY(list0101.empty());
-  VERIFY(list0101.size() == 0);
+  const int A[] = {1, 2, 3, 4, 5};
+  const int B[] = {2, 1, 3, 4, 5};
+  const int C[] = {1, 3, 4, 5, 2};
+  const int N = sizeof(A) / sizeof(int);
+  std::list<int> list0201(A, A + N);
+  std::list<int> list0202(A, A + N);
+  std::list<int> list0203(B, B + N);
+  std::list<int> list0204(C, C + N);
+  std::list<int>::iterator i = list0201.begin();
 
-  list0101.push_back(1);
-  VERIFY(!list0101.empty());
-  VERIFY(list0101.size() == 1);
+  // result should be unchanged
+  list0201.splice(list0201.begin(), list0201, i);
+  VERIFY(list0201 == list0202);
 
-  list0101.resize(3, 2);
-  VERIFY(!list0101.empty());
-  VERIFY(list0101.size() == 3);
+  // result should be [2 1 3 4 5]
+  ++i;
+  list0201.splice(list0201.begin(), list0201, i);
+  VERIFY(list0201 != list0202);
+  VERIFY(list0201 == list0203);
 
-  std::list<int>::iterator i = list0101.begin();
-  VERIFY(*i == 1); ++i;
-  VERIFY(*i == 2); ++i;
-  VERIFY(*i == 2); ++i;
-  VERIFY(i == list0101.end());
-
-  list0101.resize(0);
-  VERIFY(list0101.empty());
-  VERIFY(list0101.size() == 0);
+  // result should be [1 3 4 5 2]
+  list0201.splice(list0201.end(), list0201, i);
+  VERIFY(list0201 == list0204);
 }
 
-int
 main(int argc, char* argv[])
 {
-    test01();
-
-    return !test;
+  test02();
+  return 0;
 }
-
 // vi:set sw=2 ts=2:

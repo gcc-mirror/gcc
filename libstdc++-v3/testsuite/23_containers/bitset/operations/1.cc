@@ -21,7 +21,6 @@
 #include <string>
 #include <set>
 #include <bitset>
-
 #include <testsuite_hooks.h>
 
 static char original_bits[1024];
@@ -102,21 +101,9 @@ test01() {
   return test;
 }
 
-bool
-test02()
-{
-  bool test = true;
-
-  std::bitset<66>  b;
-  b <<= 400;
-  VERIFY( b.count() == 0 );
-  return test;
-}
-
 int
-main() {
+main() 
+{
   test01();
-  test02();
-
   return 0;
 }

@@ -25,55 +25,24 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
-void 
-test01(void)
-{
-  bool test = true;
-  const size_t n1 = 5;
-
-  // the other 22 member functions should be in here too...
-  try {
-    std::bitset<n1> five_bits;
-    bool unused = five_bits.test(n1);   // should throw
-    VERIFY( false );
-  }
-  catch(std::out_of_range& fail) {
-    VERIFY( true );
-  }
-  catch(...) {
-    VERIFY( false );
-  }
-  VERIFY( test );
-}
-
-// libstdc++/6124
-void test02()
-{
-  std::bitset<1> bs;
-  bs.count();
-}
-
 void test03()
 {
   bool test = true;
   std::bitset<5>      b;
-  std::stringstream   ss ("101");
-
+  std::stringstream   ss("101");
   ss.exceptions(std::ios_base::eofbit);
 
   try
   {
     ss >> b;
   }
-  catch (std::exception&) {}
+  catch (std::exception&) { }
 
   VERIFY( b.to_ulong() == 5 );
 }
 
 int main()
 {
-  test01();
-  test02();
   test03();
   return 0;
 }

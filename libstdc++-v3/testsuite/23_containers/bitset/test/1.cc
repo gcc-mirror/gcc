@@ -1,6 +1,6 @@
-// 2002-06-28 pme
+// 2001-06-03 pme
 
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,62 +18,36 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 23.2.3 container adaptros
+// 23.3.5.2 bitset members
 
-#include <queue>
-#include <stack>
+#include <bitset>
+#include <stdexcept>
+#include <sstream>
 #include <testsuite_hooks.h>
 
-// libstdc++/7157
-void
-test01()
+void 
+test01(void)
 {
-  std::queue<int> q;
+  bool test = true;
+  const size_t n1 = 5;
 
-  q.push(1);
-  q.front();
-  q.pop();
+  // the other 22 member functions should be in here too...
+  try {
+    std::bitset<n1> five_bits;
+    bool unused = five_bits.test(n1);   // should throw
+    VERIFY( false );
+  }
+  catch(std::out_of_range& fail) {
+    VERIFY( true );
+  }
+  catch(...) {
+    VERIFY( false );
+  }
+  VERIFY( test );
 }
-
-
-// libstdc++/7158
-void
-test02()
-{
-  std::stack<int> st;
-
-  st.push(1);
-  st.top() = 42;
-  st.pop();
-}
-
-
-// libstdc++/7161
-void
-test03()
-{
-  int data[] = {1, 2, 3};
-  std::priority_queue<int> pq;
-  std::size_t size = pq.size();
-
-  for (int i = 0; i < 3; ++i)
-    pq.push(data[i]);
-
-  size = pq.size();
-  pq.top();
-  for (int i = 0; i < 2; ++i)
-    pq.pop();
-
-  while (!pq.empty())
-    pq.pop();
-}
-
 
 int main()
 {
   test01();
-  test02();
-  test03();
-
   return 0;
 }
