@@ -6631,7 +6631,7 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"none")
    (set_attr "length"	"2")])
 
-(define_insn "call_value_multiple_internal0"
+(define_expand "call_value_multiple_internal0"
   [(parallel [(set (match_operand 0 "" "")
 		   (call (match_operand 1 "" "")
 			 (match_operand 2 "" "")))
