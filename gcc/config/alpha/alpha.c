@@ -3164,6 +3164,35 @@ alpha_expand_unaligned_load (rtx tgt, rtx mem, HOST_WIDE_INT size,
   rtx meml, memh, addr, extl, exth, tmp, mema;
   enum machine_mode mode;
 
+  if (TARGET_BWX && size == 2)
+    {
+      meml = adjust_address (mem, QImode, 0);
+      memh = adjust_address (mem, QImode, 1);
+      if (BYTES_BIG_ENDIAN)
+	tmp = meml, meml = memh, memh = tmp;
+      extl = gen_reg_rtx (DImode);
+      exth = gen_reg_rtx (DImode);
+      emit_insn (gen_zero_extendqidi2 (extl, meml));
+      emit_insn (gen_zero_extendqidi2 (exth, memh));
+      exth = expand_simple_binop (DImode, ASHIFT, exth, GEN_INT (8),
+				  NULL, 1, OPTAB_LIB_WIDEN);
+      addr = expand_simple_binop (DImode, IOR, extl, exth,
+				  NULL, 1, OPTAB_LIB_WIDEN);
+
+      if (sign && GET_MODE (tgt) != HImode)
+	{
+	  addr = gen_lowpart (HImode, addr);
+	  emit_insn (gen_extend_insn (tgt, addr, GET_MODE (tgt), HImode, 0));
+	}
+      else
+	{
+	  if (GET_MODE (tgt) != DImode)
+	    addr = gen_lowpart (GET_MODE (tgt), addr);
+	  emit_move_insn (tgt, addr);
+	}
+      return;
+    }
+
   meml = gen_reg_rtx (DImode);
   memh = gen_reg_rtx (DImode);
   addr = gen_reg_rtx (DImode);
@@ -3276,7 +3305,7 @@ alpha_expand_unaligned_load (rtx tgt, rtx mem, HOST_WIDE_INT size,
     }
 
   if (addr != tgt)
-    emit_move_insn (tgt, gen_lowpart(GET_MODE (tgt), addr));
+    emit_move_insn (tgt, gen_lowpart (GET_MODE (tgt), addr));
 }
 
 /* Similarly, use ins and msk instructions to perform unaligned stores.  */
@@ -3286,6 +3315,28 @@ alpha_expand_unaligned_store (rtx dst, rtx src,
 			      HOST_WIDE_INT size, HOST_WIDE_INT ofs)
 {
   rtx dstl, dsth, addr, insl, insh, meml, memh, dsta;
+
+  if (TARGET_BWX && size == 2)
+    {
+      if (src != const0_rtx)
+	{
+	  dstl = gen_lowpart (QImode, src);
+	  dsth = expand_simple_binop (DImode, LSHIFTRT, src, GEN_INT (8),
+				      NULL, 1, OPTAB_LIB_WIDEN);
+	  dsth = gen_lowpart (QImode, dsth);
+	}
+      else
+	dstl = dsth = const0_rtx;
+
+      meml = adjust_address (dst, QImode, 0);
+      memh = adjust_address (dst, QImode, 1);
+      if (BYTES_BIG_ENDIAN)
+	addr = meml, meml = memh, memh = addr;
+
+      emit_move_insn (meml, dstl);
+      emit_move_insn (memh, dsth);
+      return;
+    }
 
   dstl = gen_reg_rtx (DImode);
   dsth = gen_reg_rtx (DImode);
