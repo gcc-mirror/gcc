@@ -829,7 +829,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
     ctype_bsd=yes, ctype_bsd=no)
     AC_MSG_RESULT($ctype_bsd)
     if test $ctype_bsd = "yes"; then
-      ctype_include_dir="config/os/bsd"
+      ctype_include_dir="config/os/freebsd"
       ctype_default=no
     fi
     fi
@@ -845,7 +845,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
     ctype_freebsd34=yes, ctype_freebsd34=no)
     AC_MSG_RESULT($ctype_freebsd34)
     if test $ctype_freebsd34 = "yes"; then
-      ctype_include_dir="config/os/bsd"
+      ctype_include_dir="config/os/freebsd"
       ctype_default=no
     fi
     fi

@@ -17844,7 +17844,7 @@ fi
 rm -f conftest*
     echo "$ac_t""$ctype_bsd" 1>&6
     if test $ctype_bsd = "yes"; then
-      ctype_include_dir="config/os/bsd"
+      ctype_include_dir="config/os/freebsd"
       ctype_default=no
     fi
     fi
@@ -17876,7 +17876,7 @@ fi
 rm -f conftest*
     echo "$ac_t""$ctype_freebsd34" 1>&6
     if test $ctype_freebsd34 = "yes"; then
-      ctype_include_dir="config/os/bsd"
+      ctype_include_dir="config/os/freebsd"
       ctype_default=no
     fi
     fi
