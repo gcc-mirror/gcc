@@ -1,6 +1,26 @@
 2002-01-16  Benjamin Kosnik  <bkoz@redhat.com>
-            Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
+	* include/Makefile.am (c_base_headers_rename): New.
+	(c_base_headers_extra): New.
+	(stamp-c_base): Modify.
+	(install-data-local): Use both.
+	* include/Makefile.in: Regenerate.
+	* include/c/[cctype ciso646 cmath cstdarg cstdlib cerrno climits
+	csetjmp cstddef cstring cwchar cassert cfloat clocale csignal
+	cstdio ctime cwctype]: Move to..
+	* include/c/std_*: Here.
+	* include/c_std/[cctype ciso646 cmath cstdarg cstdlib cerrno climits
+	csetjmp cstddef cstring cwchar cassert cfloat clocale csignal
+	cstdio ctime cwctype]: Move to..
+	* include/c_std/std_*: Here.
+
+	Alexandre Oliva  <aoliva@redhat.com>	
+	* include/Makefile.am (.PRECIOUS): Add rule.
+	* include/Makefile.in: Regenerate.
+	
+2002-01-16  Benjamin Kosnik  <bkoz@redhat.com>
+            Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+	
 	* include/bits/stl_iterator.h (reverse_iterator::_M_current):
 	Deuglify, should be current.
 	(back_insert_iterator::_M_container): Deuglify, should be container.

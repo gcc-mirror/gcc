@@ -290,25 +290,48 @@ ext_headers = \
 c_base_srcdir = @C_INCLUDE_DIR@
 c_base_builddir = ./
 c_base_headers = \
-	${c_base_srcdir}/cassert \
-	${c_base_srcdir}/cctype \
-	${c_base_srcdir}/cerrno \
-	${c_base_srcdir}/cfloat \
-	${c_base_srcdir}/ciso646 \
-	${c_base_srcdir}/climits \
-	${c_base_srcdir}/clocale \
-	${c_base_srcdir}/cmath \
-	${c_base_srcdir}/csetjmp \
-	${c_base_srcdir}/csignal \
-	${c_base_srcdir}/cstdarg \
-	${c_base_srcdir}/cstddef \
-	${c_base_srcdir}/cstdio \
-	${c_base_srcdir}/cstdlib \
-	${c_base_srcdir}/cstring \
-	${c_base_srcdir}/ctime \
-	${c_base_srcdir}/cwchar \
-	${c_base_srcdir}/cwctype \
+	${c_base_srcdir}/std_cassert.h \
+	${c_base_srcdir}/std_cctype.h \
+	${c_base_srcdir}/std_cerrno.h \
+	${c_base_srcdir}/std_cfloat.h \
+	${c_base_srcdir}/std_ciso646.h \
+	${c_base_srcdir}/std_climits.h \
+	${c_base_srcdir}/std_clocale.h \
+	${c_base_srcdir}/std_cmath.h \
+	${c_base_srcdir}/std_csetjmp.h \
+	${c_base_srcdir}/std_csignal.h \
+	${c_base_srcdir}/std_cstdarg.h \
+	${c_base_srcdir}/std_cstddef.h \
+	${c_base_srcdir}/std_cstdio.h \
+	${c_base_srcdir}/std_cstdlib.h \
+	${c_base_srcdir}/std_cstring.h \
+	${c_base_srcdir}/std_ctime.h \
+	${c_base_srcdir}/std_cwchar.h \
+	${c_base_srcdir}/std_cwctype.h 
+
+# Some of the "C" headers need extra files.
+c_base_headers_extra = \
 	${c_base_srcdir}/cmath.tcc 
+
+c_base_headers_rename = \
+	cassert \
+	cctype \
+	cerrno \
+	cfloat \
+	ciso646 \
+	climits \
+	clocale \
+	cmath \
+	csetjmp \
+	csignal \
+	cstdarg \
+	cstddef \
+	cstdio \
+	cstdlib \
+	cstring \
+	ctime \
+	cwchar \
+	cwctype 
 
 
 std_srcdir = ${glibcpp_srcdir}/include/std
@@ -346,35 +369,35 @@ std_headers = \
 
 # Renamed at build time. 
 std_headers_rename = \
-	${std_builddir}/algorithm \
-	${std_builddir}/bitset \
-	${std_builddir}/complex \
-	${std_builddir}/deque \
-	${std_builddir}/fstream \
-	${std_builddir}/functional \
-	${std_builddir}/iomanip \
-	${std_builddir}/ios \
-	${std_builddir}/iosfwd \
-	${std_builddir}/iostream \
-	${std_builddir}/istream \
-	${std_builddir}/iterator \
-	${std_builddir}/limits \
-	${std_builddir}/list \
-	${std_builddir}/locale \
-	${std_builddir}/map \
-	${std_builddir}/memory \
-	${std_builddir}/numeric \
-	${std_builddir}/ostream \
+	algorithm \
+	bitset \
+	complex \
+	deque \
+	fstream \
+	functional \
+	iomanip \
+	ios \
+	iosfwd \
+	iostream \
+	istream \
+	iterator \
+	limits \
+	list \
+	locale \
+	map \
+	memory \
+	numeric \
+	ostream \
 	${std_builddir}/queue \
-	${std_builddir}/set \
-	${std_builddir}/sstream \
-	${std_builddir}/stack \
-	${std_builddir}/stdexcept \
-	${std_builddir}/streambuf \
-	${std_builddir}/string \
-	${std_builddir}/utility \
-	${std_builddir}/valarray \
-	${std_builddir}/vector
+	set \
+	sstream \
+	stack \
+	stdexcept \
+	streambuf \
+	string \
+	utility \
+	valarray \
+	vector
 
 
 target_srcdir = ${glibcpp_srcdir}/@OS_INC_SRCDIR@
@@ -547,11 +570,15 @@ stamp-bits: ${bits_headers}
 	(cd ${bits_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-bits
 
-stamp-c_base: ${c_base_headers}
+stamp-c_base: ${c_base_headers} ${c_base_headers_extra}
 	@if [ ! -d "${c_base_builddir}" ]; then \
 	  mkdir -p ${c_base_builddir} ;\
 	fi ;\
-	(cd ${c_base_builddir} && @LN_S@ $? . || true) ;\
+	(cd ${c_base_builddir} && for h in ${c_base_headers}; do \
+	  official_name=`echo $$h | sed -e 's,.*/std_,,' -e 's,\.h$$,,'` ;\
+	  @LN_S@ $$h ./$${official_name} || true ;\
+	done) ;\
+	(cd ${c_base_builddir} && @LN_S@ ${c_base_headers_extra}  . || true) ;\
 	echo `date` > stamp-c_base
 
 stamp-backward: ${backward_headers}
@@ -634,10 +661,12 @@ install-data-local:
 	for file in ${ext_headers}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${ext_builddir}; done
 	$(INSTALL) -d ${gxx_include_dir}/${c_base_builddir}
-	for file in ${c_base_headers}; do \
+	for file in ${c_base_builddir}/${c_base_headers_rename}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${c_base_builddir}; done
+	for file in ${c_base_headers_extra}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${c_base_builddir}; done
 	$(INSTALL) -d ${gxx_include_dir}/${std_builddir}
-	for file in ${std_headers_rename}; do \
+	for file in ${std_builddir}/${std_headers_rename}; do \
 	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${std_builddir}; done
 	$(INSTALL) -d ${gxx_include_dir}/${target_builddir}
 	for file in ${target_headers} ${extra_target_headers}; do \
@@ -648,6 +677,14 @@ install-data-local:
 
 # By adding these files here, automake will remove them for 'make clean'
 #CLEANFILES = ${allstamps}
+
+# Stop implicit '.o' make rules from ever stomping on extensionless
+# headers, in the improbable case where some foolish, crack-addled
+# developer tries to create them via make in the include build
+# directory.
+.PRECIOUS: $(std_headers_rename) $(c_base_headers_rename)
+$(std_headers_rename): ; @:
+$(c_base_headers_rename): ; @:
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
