@@ -1198,8 +1198,7 @@ make_class_data (type)
 }
 
 void
-finish_class (cl)
-     tree cl;
+finish_class ()
 {
   tree method;
   tree type_methods = TYPE_METHODS (CLASS_TO_HANDLE_TYPE (current_class));

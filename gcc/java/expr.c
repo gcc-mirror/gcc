@@ -46,7 +46,7 @@ static void push_value PROTO ((tree));
 static tree pop_value PROTO ((tree));
 static void java_stack_swap PROTO ((void));
 static void java_stack_dup PROTO ((int, int));
-static tree build_java_athrow PROTO ((tree));
+static void build_java_athrow PROTO ((tree));
 static void build_java_jsr PROTO ((tree, tree));
 static void build_java_ret PROTO ((tree));
 static void expand_java_multianewarray PROTO ((tree, int));
@@ -525,7 +525,7 @@ java_stack_dup (size, offset)
 
 /* Calls _Jv_Throw.  Discard the contents of the value stack. */
 
-static tree
+static void
 build_java_athrow (node)
     tree node;
 {
@@ -1982,7 +1982,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	  expand_end_bindings (getdecls (), 1, 0);
 	  return const0_rtx;
 	}
-      break;
+      return const0_rtx;
 
     case CASE_EXPR:
       {
@@ -2033,7 +2033,7 @@ java_lang_expand_expr (exp, target, tmode, modifier)
 	  end_catch_handler ();
 	}
       expand_end_all_catch ();
-      break;
+      return const0_rtx;
 
     default:
       fatal ("Can't expand '%s' tree - java_lang_expand_expr",

@@ -262,6 +262,8 @@ static int java_decl_equiv PROTO ((tree, tree));
 static int binop_compound_p PROTO ((enum tree_code));
 static tree search_loop PROTO ((tree));
 static int labeled_block_contains_loop_p PROTO ((tree, tree));
+static void check_abstract_method_definitions PROTO ((int, tree, tree));
+static void java_check_abstract_method_definitions PROTO ((tree));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -6064,7 +6066,7 @@ java_complete_expand_methods ()
 	  if (flag_emit_xref)
 	    expand_xref (current_class);
 	  else if (! flag_syntax_only)
-	    finish_class (current_class);
+	    finish_class ();
 	}
     }
 }

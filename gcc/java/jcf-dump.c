@@ -86,7 +86,7 @@ static void disassemble_method PROTO ((JCF*, const unsigned char *, int));
 static void print_name PROTO ((FILE*, JCF*, int));
 static void print_signature PROTO ((FILE*, JCF*, int, int));
 static int utf8_equal_string PROTO ((struct JCF*, int, const char *));
-static int usage PROTO ((void));
+static int usage PROTO ((void)) ATTRIBUTE_NORETURN;
 static void process_class PROTO ((struct JCF *));
 static void print_constant_pool PROTO ((struct JCF *));
 static void print_exception_table PROTO ((struct JCF *,
@@ -760,7 +760,7 @@ DEFUN(main, (argc, argv),
       else
 	{
 	  fprintf (stderr, "%s: illegal argument\n", argv[argi]);
-	  exit (FATAL_EXIT_CODE);
+	  return FATAL_EXIT_CODE;
 	}
     }
 
@@ -784,7 +784,7 @@ DEFUN(main, (argc, argv),
       if (out)
 	{
 	  fprintf (stderr, "Cannot open '%s' for output.\n", output_file);
-	  exit (FATAL_EXIT_CODE);
+	  return FATAL_EXIT_CODE;
 	}
     }
   else
@@ -811,7 +811,7 @@ DEFUN(main, (argc, argv),
 	  if (class_filename == NULL)
 	    {
 	      perror ("Could not find class");
-	      exit (FATAL_EXIT_CODE);
+	      return FATAL_EXIT_CODE;
 	    }
 	  JCF_FILL (jcf, 4);
 	  if (GET_u4 (jcf->read_ptr) == ZIPMAGIC)
@@ -834,7 +834,7 @@ DEFUN(main, (argc, argv),
 		  if (magic != 0x04034b50) /* ZIPMAGIC (little-endian) */
 		    {
 		      fprintf (stderr, "bad format of .zip/.jar archive\n");
-		      exit (FATAL_EXIT_CODE);
+		      return FATAL_EXIT_CODE;
 		    }
 		  JCF_FILL (jcf, 26);
 		  JCF_SKIP (jcf, 2);
@@ -908,7 +908,7 @@ DEFUN(main, (argc, argv),
 	}
     }
 
-  exit (SUCCESS_EXIT_CODE);
+  return SUCCESS_EXIT_CODE;
 }
 
 static void
