@@ -9,7 +9,8 @@
 
 	* reg-stack.c (convert_regs_2): Free stack.
 
-	* tree-ssa-dom.c (thread_across_edge): Fix a comment typo.
+	* tree-ssa-dom.c (thread_across_edge, dom_opt_finalize_block): Fix
+	comment typos.
 
 2004-12-12  Daniel Berlin  <dberlin@dberlin.org>
 
