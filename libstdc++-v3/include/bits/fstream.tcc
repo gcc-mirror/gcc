@@ -189,7 +189,7 @@ namespace std
 	  if (__testpb)
 	    {
 	      const bool __testout = this->_M_mode & ios_base::out;
-	      const bool __testeq = traits_type::eq(__c, this->gptr()[-1]);
+	      const bool __testeq = traits_type::eq(__c, this->_M_in_cur[-1]);
 
 	      // Try to put back __c into input sequence in one of three ways.
 	      // Order these tests done in is unspecified by the standard.
@@ -520,7 +520,8 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     imbue(const locale& __loc)
     {
-      const bool __testbeg = gptr() == eback() && pptr() == pbase();
+      const bool __testbeg = this->_M_in_cur == this->_M_in_beg
+	                     && this->_M_out_cur == this->_M_out_beg;
 
       if (__testbeg && this->_M_buf_locale != __loc)
 	this->_M_buf_locale = __loc;

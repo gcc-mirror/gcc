@@ -51,7 +51,7 @@ namespace std
       int_type __ret;
       if (_M_in_cur < _M_in_end)
 	{
-	  char_type __c = *(this->gptr());
+	  char_type __c = *this->_M_in_cur;
 	  _M_in_cur_move(1);
 	  __ret = traits_type::to_int_type(__c);
 	}
@@ -67,12 +67,12 @@ namespace std
     {
       int_type __ret;
       const bool __testpos = _M_in_beg < _M_in_cur;
-      if (!__testpos || !traits_type::eq(__c, this->gptr()[-1]))
+      if (!__testpos || !traits_type::eq(__c, this->_M_in_cur[-1]))
 	__ret = this->pbackfail(traits_type::to_int_type(__c));
       else 
 	{
 	  _M_in_cur_move(-1);
-	  __ret = traits_type::to_int_type(*this->gptr());
+	  __ret = traits_type::to_int_type(*this->_M_in_cur);
 	}
       return __ret;
     }
@@ -201,10 +201,10 @@ namespace std
 	{
 	  while (__in_avail != -1)
   	    {
- 	      if (__in_avail != 0 && __sbin->gptr()
-		  && __sbin->gptr() + __in_avail <= __sbin->egptr()) 
+ 	      if (__in_avail != 0 && __sbin->_M_in_cur
+		  && __sbin->_M_in_cur + __in_avail <= __sbin->_M_in_end) 
 		{
-		  __xtrct = __sbout->sputn(__sbin->gptr(), __in_avail);
+		  __xtrct = __sbout->sputn(__sbin->_M_in_cur, __in_avail);
 		  __ret += __xtrct;
 		  __sbin->_M_in_cur_move(__xtrct);
 		  if (__xtrct != __in_avail)
