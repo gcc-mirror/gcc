@@ -1,3 +1,8 @@
+Mon Sep 18 21:00:47 2000  J"orn Rennecke <amylaar@redhat.co.uk>
+
+	* sdbout.c (PUT_SDB_DEF, PUT_SDB_TAG, PUT_SDB_EPILOGUE_END):
+	Replace ASM_OUTPUT_LABELREF with assemble_name.
+
 Mon Sep 18 20:26:50 2000  J"orn Rennecke <amylaar@redhat.co.uk>
 
 	* sh.c (addsubcosts): CONST is not cheap.

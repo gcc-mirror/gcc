@@ -161,9 +161,14 @@ static void sdbout_reg_parms		PARAMS ((tree));
 
 #ifndef PUT_SDB_DEF
 #define PUT_SDB_DEF(a)				\
+
+#undef PUT_SDB_DEF
+PUT_SDB_DEF(a)				\
+char *a; {
 do { fprintf (asm_out_file, "\t.def\t");	\
-     ASM_OUTPUT_LABELREF (asm_out_file, a); 	\
+     assemble_name (asm_out_file, a); 	\
      fprintf (asm_out_file, SDB_DELIM); } while (0)
+; }
 #endif
 
 #ifndef PUT_SDB_PLAIN_DEF
@@ -202,7 +207,7 @@ do { fprintf (asm_out_file, "\t.def\t");	\
 #ifndef PUT_SDB_TAG
 #define PUT_SDB_TAG(a)				\
 do { fprintf (asm_out_file, "\t.tag\t");	\
-     ASM_OUTPUT_LABELREF (asm_out_file, a);	\
+     assemble_name (asm_out_file, a);	\
      fprintf (asm_out_file, SDB_DELIM); } while (0)
 #endif
 
@@ -237,7 +242,7 @@ do { fprintf (asm_out_file, "\t.tag\t");	\
 #ifndef PUT_SDB_EPILOGUE_END
 #define PUT_SDB_EPILOGUE_END(NAME)			\
 do { fprintf (asm_out_file, "\t.def\t");		\
-     ASM_OUTPUT_LABELREF (asm_out_file, NAME);		\
+     assemble_name (asm_out_file, NAME);		\
      fprintf (asm_out_file,				\
 	      "%s\t.val\t.%s\t.scl\t-1%s\t.endef\n",	\
 	      SDB_DELIM, SDB_DELIM, SDB_DELIM); } while (0)
