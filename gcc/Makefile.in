@@ -3545,6 +3545,7 @@ unstage1 unstage2 unstage3 unstage4:
 	rm -f $$stage/ld$(exeext); \
 	rm -f $$stage/collect-ld$(exeext); \
 	if test -d $$stage; then \
+	  mv $$stage/specs $(SPECS) 2>/dev/null || :; \
 	  mv $$stage/* . 2>/dev/null; \
 	  for i in `cd $$stage; echo *` ; do \
 	    if test -d $$stage/$$i; then \
@@ -3678,6 +3679,8 @@ stage1-start:
 	 do \
 	   if [ -d stage1/$$dir ] ; then true ; else mkdir stage1/$$dir ; fi ; \
 	 done
+# If SPECS is overridden, make sure it is `installed' as specs.
+	-mv $(SPECS) stage1/specs
 	-mv $(STAGESTUFF) stage1
 	-mv intl/*$(objext) stage1/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
@@ -3710,6 +3713,8 @@ stage2-start:
 	 do \
 	   if [ -d stage2/$$dir ] ; then true ; else mkdir stage2/$$dir ; fi ; \
 	 done
+# If SPECS is overridden, make sure it is `installed' as specs.
+	-mv $(SPECS) stage2/specs
 	-mv $(STAGESTUFF) stage2
 	-mv intl/*$(objext) stage2/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
@@ -3738,6 +3743,8 @@ stage3-start:
 	 do \
 	   if [ -d stage3/$$dir ] ; then true ; else mkdir stage3/$$dir ; fi ; \
 	 done
+# If SPECS is overridden, make sure it is `installed' as specs.
+	-mv $(SPECS) stage3/specs
 	-mv $(STAGESTUFF) stage3
 	-mv intl/*$(objext) stage3/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
@@ -3766,6 +3773,8 @@ stage4-start:
 	 do \
 	   if [ -d stage4/$$dir ] ; then true ; else mkdir stage4/$$dir ; fi ; \
 	 done
+# If SPECS is overridden, make sure it is `installed' as specs.
+	-mv $(SPECS) stage4/specs
 	-mv $(STAGESTUFF) stage4
 	-mv intl/*$(objext) stage4/intl
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage

@@ -1,5 +1,12 @@
 2003-04-12  Alexandre Oliva  <aoliva@redhat.com>
 
+	* Makefile.in (stage1-start, stage2-start, stage3-start,
+	stage4-start): Move $(SPECS) to specs in stage dir.
+	(unstage1 unstage2 unstage3 unstage4): Move specs in stage dir
+	back as $(SPECS).
+
+2003-04-12  Alexandre Oliva  <aoliva@redhat.com>
+
 	* mklibgcc.in (libgcc-stage-start): Move into the stage directory
 	object files from the non-libgcc/ multilib directories as well.
 
