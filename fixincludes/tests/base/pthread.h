@@ -61,6 +61,11 @@ extern int __page_size;
 #endif  /* PTHREAD_PAGE_SIZE_CHECK */
 
 
+#if defined( PTHREAD_INCOMPLETE_STRUCT_ARGUMENT_CHECK )
+extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask);
+#endif  /* PTHREAD_INCOMPLETE_STRUCT_ARGUMENT_CHECK */
+
+
 #if defined( SOLARIS_MUTEX_INIT_1_CHECK )
 #ident "@(#)pthread.h  1.16    97/05/05 SMI"
 #if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)

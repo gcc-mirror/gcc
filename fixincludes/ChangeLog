@@ -1,3 +1,11 @@
+2005-03-21  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	PR target/20166
+	* inclhack.def: Add fix for array of incomplete structures
+	in function prototype in pthread.h.
+	* fixincl.x: Regenerate.
+	* tests/base/pthread.h: Adjust.
+
 2005-03-15  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* inclhack.def (hpux_htonl): New fix.
