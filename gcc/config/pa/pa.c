@@ -3225,10 +3225,13 @@ output_cbranch (operands, nullify, length, negated, insn)
 	  strcat (buf, "%S3");
 	else
 	  strcat (buf, "%B3");
-	/* Regardless of whether or not this branch got its slot
-	   filled we can nullify the following instruction and 
-	   avoid emitting a nop.  */
-	strcat (buf, " %2,%1,0\n\tbl%* %0,0");
+	/* Nullify the delay slot if the delay slot was explicitly
+	   nullified by the delay branch scheduler or if no insn
+	   could be placed in the delay slot.  */
+	if (nullify)
+	  strcat (buf, " %2,%1,0\n\tbl,n %0,0");
+	else
+	  strcat (buf, " %2,%1,0\n\tbl%* %0,0");
 	break;
 
       /* Long backward conditional branch with nullification.  */
@@ -3308,10 +3311,14 @@ output_bb (operands, nullify, length, negated, insn, which)
 	  strcat (buf, "<");
 	else
 	  strcat (buf, ">=");
-	/* Regardless of whether or not this branch got its slot
-	   filled we can nullify the following instruction and 
-	   avoid emitting a nop.  */
-	if (negated)
+	/* Nullify the delay slot if the delay slot was explicitly
+	   nullified by the delay branch scheduler or if no insn
+	   could be placed in the delay slot.  */
+	if (nullify && negated)
+	  strcat (buf, " %0,%1,1,0\n\tbl,n %3,0");
+	else if (nullify && ! negated)
+	  strcat (buf, " %0,%1,1,0\n\tbl,n %2,0");
+	else if (negated)
 	  strcat (buf, " %0,%1,1,0\n\tbl%* %3,0");
 	else 
 	  strcat (buf, " %0,%1,1,0\n\tbl%* %2,0");
