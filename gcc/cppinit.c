@@ -1094,25 +1094,6 @@ cpp_finish (pfile)
 	    }
 	}
     }
-
-  if (opts->dump_macros == dump_only)
-    {
-      int i;
-      HASHNODE *h;
-      MACRODEF m;
-      for (i = HASHSIZE; --i >= 0;)
-	{
-	  for (h = pfile->hashtab[i]; h; h = h->next)
-	    if (h->type == T_MACRO)
-	      {
-		m.defn = h->value.defn;
-		m.symnam = h->name;
-		m.symlen = h->length;
-		dump_definition (pfile, m);
-		CPP_PUTC (pfile, '\n');
-	      }
-	}
-    }
 }
 
 /* Handle one command-line option in (argc, argv).
