@@ -1,5 +1,10 @@
 2004-10-30  Roger Sayle  <roger@eyesopen.com>
 
+	PR rtl-optimization/18084
+	* g++.dg/opt/pr18084-1.C: New testcase.
+
+2004-10-30  Roger Sayle  <roger@eyesopen.com>
+
 	PR rtl-optimization/17581
 	* gcc.dg/pr17581-1.c: New test case.
 
