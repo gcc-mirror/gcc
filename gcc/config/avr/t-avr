@@ -43,8 +43,12 @@ MULTILIB_DIRNAMES = avr2 avr3 avr4 avr5
 # The many avr2 matches are not listed here - this is the default.
 MULTILIB_MATCHES = \
 	mmcu?avr3=mmcu?atmega103 mmcu?avr3=mmcu?atmega603 \
+	mmcu?avr3=mmcu?at43usb320 mmcu?avr3=mmcu?at76c711 \
 	mmcu?avr4=mmcu?atmega83  mmcu?avr4=mmcu?atmega85  \
+	mmcu?avr4=mmcu?atmega8   mmcu?avr5=mmcu?atmega16  \
 	mmcu?avr5=mmcu?atmega161 mmcu?avr5=mmcu?atmega163 \
+	mmcu?avr5=mmcu?atmega64  mmcu?avr5=mmcu?atmega128 \
+	mmcu?avr5=mmcu?at43usb355 mmcu?avr5=mmcu?atmega323 \
 	mmcu?avr5=mmcu?atmega32  mmcu?avr5=mmcu?at94k
 
 MULTILIB_EXCEPTIONS =

@@ -1,3 +1,12 @@
+2002-01-07  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (avr_mcu_types): Add new MCU types.
+	* config/avr/avr.h (CPP_SPEC): Likewise.
+	(LINK_SPEC): Likewise.
+	(CRT_BINUTILS_SPECS): Likewise.
+	* config/avr/t-avr (MULTILIB_MATCHES): Likewise.
+	* doc/invoke.texi (AVR Options): Document them.
+
 Mon Jan  7 11:59:34 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* unroll.c (copy_loop_body): Always properly update JUMP_LABEL and
