@@ -5806,9 +5806,16 @@ find_reloads_subreg_address (rtx x, int force_replace, int opnum,
 	  if (force_replace
 	      || ! rtx_equal_p (tem, reg_equiv_mem[regno]))
 	    {
-	      int offset = SUBREG_BYTE (x);
 	      unsigned outer_size = GET_MODE_SIZE (GET_MODE (x));
 	      unsigned inner_size = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
+	      int offset;
+
+	      /* For big-endian paradoxical subregs, SUBREG_BYTE does not
+		 hold the correct (negative) byte offset.  */
+	      if (BYTES_BIG_ENDIAN && outer_size > inner_size)
+		offset = inner_size - outer_size;
+	      else
+		offset = SUBREG_BYTE (x);
 
 	      XEXP (tem, 0) = plus_constant (XEXP (tem, 0), offset);
 	      PUT_MODE (tem, GET_MODE (x));
