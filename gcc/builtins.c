@@ -176,7 +176,8 @@ static tree fold_builtin_toascii (tree);
 static tree fold_builtin_isdigit (tree);
 static tree fold_builtin_fabs (tree, tree);
 static tree fold_builtin_abs (tree, tree);
-static tree fold_builtin_unordered_cmp (tree, enum tree_code, enum tree_code);
+static tree fold_builtin_unordered_cmp (tree, tree, enum tree_code,
+					enum tree_code);
 static tree fold_builtin_1 (tree, bool);
 
 static tree fold_builtin_strpbrk (tree, tree);
@@ -7766,19 +7767,18 @@ fold_builtin_classify (tree exp, int builtin_index)
 }
 
 /* Fold a call to an unordered comparison function such as
-   __builtin_isgreater().  EXP is the CALL_EXPR for the call.
+   __builtin_isgreater().  FNDECL is the FUNCTION_DECL for the function
+   being called and ARGLIST is the argument list for the call.
    UNORDERED_CODE and ORDERED_CODE are comparison codes that give
    the opposite of the desired result.  UNORDERED_CODE is used
    for modes that can hold NaNs and ORDERED_CODE is used for
    the rest.  */
 
 static tree
-fold_builtin_unordered_cmp (tree exp,
+fold_builtin_unordered_cmp (tree fndecl, tree arglist,
 			    enum tree_code unordered_code,
 			    enum tree_code ordered_code)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
   enum tree_code code;
   tree arg0, arg1;
@@ -8211,17 +8211,18 @@ fold_builtin_1 (tree exp, bool ignore)
       return fold_builtin_classify (exp, BUILT_IN_ISNAN);
 
     case BUILT_IN_ISGREATER:
-      return fold_builtin_unordered_cmp (exp, UNLE_EXPR, LE_EXPR);
+      return fold_builtin_unordered_cmp (fndecl, arglist, UNLE_EXPR, LE_EXPR);
     case BUILT_IN_ISGREATEREQUAL:
-      return fold_builtin_unordered_cmp (exp, UNLT_EXPR, LT_EXPR);
+      return fold_builtin_unordered_cmp (fndecl, arglist, UNLT_EXPR, LT_EXPR);
     case BUILT_IN_ISLESS:
-      return fold_builtin_unordered_cmp (exp, UNGE_EXPR, GE_EXPR);
+      return fold_builtin_unordered_cmp (fndecl, arglist, UNGE_EXPR, GE_EXPR);
     case BUILT_IN_ISLESSEQUAL:
-      return fold_builtin_unordered_cmp (exp, UNGT_EXPR, GT_EXPR);
+      return fold_builtin_unordered_cmp (fndecl, arglist, UNGT_EXPR, GT_EXPR);
     case BUILT_IN_ISLESSGREATER:
-      return fold_builtin_unordered_cmp (exp, UNEQ_EXPR, EQ_EXPR);
+      return fold_builtin_unordered_cmp (fndecl, arglist, UNEQ_EXPR, EQ_EXPR);
     case BUILT_IN_ISUNORDERED:
-      return fold_builtin_unordered_cmp (exp, UNORDERED_EXPR, NOP_EXPR);
+      return fold_builtin_unordered_cmp (fndecl, arglist, UNORDERED_EXPR,
+					 NOP_EXPR);
 
       /* We do the folding for va_start in the expander.  */
     case BUILT_IN_VA_START:
