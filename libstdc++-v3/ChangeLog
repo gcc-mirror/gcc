@@ -1,5 +1,11 @@
 2004-10-27  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.h (assign(const basic_string&)):
+	Move out of line...
+	* include/bits/basic_string.tcc: ... here.
+
+2004-10-27  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.h (_M_replace_aux, _M_replace_safe):
 	Move out of line...
 	* include/bits/basic_string.tcc: ... here.
