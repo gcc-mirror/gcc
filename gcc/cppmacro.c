@@ -596,7 +596,7 @@ funlike_invocation_p (pfile, node, list)
      const cpp_hashnode *node;
      struct toklist *list;
 {
-  cpp_context *orig, *final;
+  cpp_context *orig;
   cpp_token maybe_paren;
   macro_arg *args = 0;
   cpp_lexer_pos macro_pos;
@@ -618,7 +618,6 @@ funlike_invocation_p (pfile, node, list)
 		 node->name);
 
   /* Restore original context.  */
-  final = pfile->context;
   pfile->context = orig;
   pfile->state.prevent_expansion--;
   pfile->state.parsing_args = 0;
@@ -637,13 +636,6 @@ funlike_invocation_p (pfile, node, list)
 	  pfile->la_write = la_saved;
 	}
       free (args);
-    }
-
-  /* Re-disable macros *after* pre-expansion.  */
-  while (final != orig)
-    {
-      final = final->next;
-      final->macro->disabled = 1;
     }
 
   return args != 0;
