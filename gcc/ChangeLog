@@ -1,3 +1,10 @@
+2001-07-30  Roman Zippel  <zippel@linux-m68k.org>
+
+	* config/m68k/m68k.h (TARGET_SWITCHES/TARGET_OPTIONS):
+	Add missing doc strings
+	* config/m68k/linux-aout.h (SUBTARGET_SWITCHES): Likewise
+	* config/m68k/linux.h (SUBTARGET_SWITCHES): Likewise
+
 Mon Jul 30 22:16:08 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_output_main_function_alignment_hack): New function.
