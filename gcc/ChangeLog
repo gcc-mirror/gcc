@@ -1,3 +1,11 @@
+Mon Sep 21 17:15:26 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* expr.h (eh_rtime_match_libfunc): New extern declaration.
+	* optabs.c (init_optabs): Set eh_rtime_match_libfunc.
+	* except.c (start_catch_handler): Use eh_rtime_match_libfunc.
+	* libgcc2.c (__eh_rtime_match): Always return 0 if the matcher is
+	NULL. Only include <stdio.h> if inhibit_libc is not defined.
+
 Mon Sep 21 14:10:51 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* toplev.c (rest_of_compilation): Skip compiling anything with

@@ -3058,7 +3058,9 @@ __empty ()
 /* Include definitions of EH context and table layout */
 
 #include "eh-common.h"
+#ifndef inhibit_libc
 #include <stdio.h>
+#endif
 
 /* This is a safeguard for dynamic handler chain. */
 
@@ -3365,13 +3367,13 @@ __eh_rtime_match (void *rtime)
 
   info = *(__get_eh_info ());
   matcher = ((__eh_info *)info)->match_function;
-#ifndef inhibit_libc
   if (! matcher)
     {
+#ifndef inhibit_libc
       fprintf (stderr, "Internal Compiler Bug: No runtime type matcher.");
+#endif
       return 0;
     }
-#endif
   ret = (*matcher) (info, rtime, (void *)0);
   return (ret != NULL);
 }

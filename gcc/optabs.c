@@ -124,6 +124,7 @@ rtx sjpopnthrow_libfunc;
 rtx terminate_libfunc;
 rtx setjmp_libfunc;
 rtx longjmp_libfunc;
+rtx eh_rtime_match_libfunc;
 
 rtx eqhf2_libfunc;
 rtx nehf2_libfunc;
@@ -4296,6 +4297,7 @@ init_optabs ()
   sjthrow_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__sjthrow");
   sjpopnthrow_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__sjpopnthrow");
   terminate_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__terminate");
+  eh_rtime_match_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__eh_rtime_match");
 #ifndef DONT_USE_BUILTIN_SETJMP
   setjmp_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__builtin_setjmp");
   longjmp_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__builtin_longjmp");
