@@ -1,4 +1,4 @@
-#include "xm-m68k.h"
+#include "m68k/xm-m68k.h"
 
 /* malloc does better with chunks the size of a page.  */ 
 
