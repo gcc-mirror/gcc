@@ -109,7 +109,7 @@ in the following sections.
 -fhonor-std -fhuge-objects  -fno-implicit-templates  -finit-priority
 -fno-implement-inlines -fname-mangling-version-@var{n}  -fno-default-inline  
 -foperator-names  -fno-optional-diags  -fpermissive -frepo  -fstrict-prototype
--fsquangle  -ftemplate-depth-@var{n} -fvtable-thunks
+-fsquangle  -ftemplate-depth-@var{n} -fuse-cxa-atexit -fvtable-thunks
 -nostdinc++  -Wctor-dtor-privacy -Wno-deprecated -Weffc++  
 -Wno-non-template-friend 
 -Wnon-virtual-dtor  -Wold-style-cast  -Woverloaded-virtual  
@@ -1216,6 +1216,13 @@ Set the maximum instantiation depth for template classes to @var{n}.
 A limit on the template instantiation depth is needed to detect
 endless recursions during template class instantiation. ANSI/ISO C++
 conforming programs must not rely on a maximum depth greater than 17.
+
+@item -fuse-cxa-atexit
+Register destructors for objects with static storage duration with the
+@code{__cxa_atexit} function rather than the @code{atexit} function.
+This option is required for fully standards-compliant handling of static
+destructors, but will only work if your C library supports
+@code{__cxa_atexit}.
 
 @item -fvtable-thunks
 Use @samp{thunks} to implement the virtual function dispatch table

@@ -129,6 +129,19 @@ typedef void (*func_ptr) (void);
 
 #ifdef OBJECT_FORMAT_ELF
 
+/* Declare the __dso_handle variable.  It should have a unique value
+   in every shared-object; in a main program its value is zero.  */
+
+#ifdef CRTSTUFFS_O
+void *__dso_handle = &__dso_handle;
+#else
+void *__dso_handle = 0;
+#endif
+
+/* The __cxa_finalize function may not be available so we use only a
+   weak declaration.  */
+extern void __cxa_finalize (void *) TARGET_ATTRIBUTE_WEAK;
+
 /* Run all the global destructors on exit from the program.  */
  
 /* Some systems place the number of pointers in the first word of the
@@ -158,6 +171,9 @@ __do_global_dtors_aux (void)
 
   if (completed)
     return;
+
+  if (__dso_handle && __cxa_finalize)
+    __cxa_finalize (__dso_handle);
 
   while (*p)
     {
