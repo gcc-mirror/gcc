@@ -1,3 +1,7 @@
+2004-10-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* stmt.c (expand_case): Remove an obsolete comment.
+
 2004-10-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/17407

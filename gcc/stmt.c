@@ -2384,8 +2384,7 @@ expand_case (tree exp)
 
       before_case = get_last_insn ();
 
-      /* Get upper and lower bounds of case values.
-	 Also convert all the case values to the index expr's data type.  */
+      /* Get upper and lower bounds of case values.  */
 
       uniq = 0;
       count = 0;
