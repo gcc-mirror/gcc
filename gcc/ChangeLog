@@ -1,3 +1,11 @@
+2003-12-01  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/12628
+	* toplev.c (rest_of_handle_jump_bypass): Call reg_scan.
+	* regclass.c (reg_scan): Include allocate_reg_info time in
+	TV_REG_SCAN.  Minor clean-ups.
+	(reg_scan_update): Minor clean-ups.
+
 2003-12-01  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config.gcc (s390x-ibm-tpf*): Add extra_parts.

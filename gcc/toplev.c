@@ -2571,6 +2571,7 @@ rest_of_handle_jump_bypass (tree decl, rtx insns)
   open_dump_file (DFI_bypass, decl);
 
   cleanup_cfg (CLEANUP_EXPENSIVE);
+  reg_scan (insns, max_reg_num (), 1);
 
   if (bypass_jumps (rtl_dump_file))
     {

@@ -2293,21 +2293,20 @@ reg_scan (rtx f, unsigned int nregs, int repeat ATTRIBUTE_UNUSED)
 {
   rtx insn;
 
+  timevar_push (TV_REG_SCAN);
+
   allocate_reg_info (nregs, TRUE, FALSE);
   max_parallel = 3;
   max_set_parallel = 0;
 
-  timevar_push (TV_REG_SCAN);
-
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == INSN
-	|| GET_CODE (insn) == CALL_INSN
-	|| GET_CODE (insn) == JUMP_INSN)
+    if (INSN_P (insn))
       {
-	if (GET_CODE (PATTERN (insn)) == PARALLEL
-	    && XVECLEN (PATTERN (insn), 0) > max_parallel)
-	  max_parallel = XVECLEN (PATTERN (insn), 0);
-	reg_scan_mark_refs (PATTERN (insn), insn, 0, 0);
+	rtx pat = PATTERN (insn);
+	if (GET_CODE (pat) == PARALLEL
+	    && XVECLEN (pat, 0) > max_parallel)
+	  max_parallel = XVECLEN (pat, 0);
+	reg_scan_mark_refs (pat, insn, 0, 0);
 
 	if (REG_NOTES (insn))
 	  reg_scan_mark_refs (REG_NOTES (insn), insn, 1, 0);
@@ -2331,14 +2330,13 @@ reg_scan_update (rtx first, rtx last, unsigned int old_max_regno)
   allocate_reg_info (max_reg_num (), FALSE, FALSE);
 
   for (insn = first; insn != last; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == INSN
-	|| GET_CODE (insn) == CALL_INSN
-	|| GET_CODE (insn) == JUMP_INSN)
+    if (INSN_P (insn))
       {
-	if (GET_CODE (PATTERN (insn)) == PARALLEL
-	    && XVECLEN (PATTERN (insn), 0) > max_parallel)
-	  max_parallel = XVECLEN (PATTERN (insn), 0);
-	reg_scan_mark_refs (PATTERN (insn), insn, 0, old_max_regno);
+	rtx pat = PATTERN (insn);
+	if (GET_CODE (pat) == PARALLEL
+	    && XVECLEN (pat, 0) > max_parallel)
+	  max_parallel = XVECLEN (pat, 0);
+	reg_scan_mark_refs (pat, insn, 0, old_max_regno);
 
 	if (REG_NOTES (insn))
 	  reg_scan_mark_refs (REG_NOTES (insn), insn, 1, old_max_regno);
