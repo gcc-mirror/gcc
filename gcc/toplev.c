@@ -3350,7 +3350,7 @@ compile_file (name)
 	finish_graph_dump_file (dump_base_name, ".lreg");
       if (global_reg_dump)
 	finish_graph_dump_file (dump_base_name, ".greg");
-      if (flow_dump)
+      if (flow2_dump)
 	finish_graph_dump_file (dump_base_name, ".flow2");
       if (sched2_dump)
 	finish_graph_dump_file (dump_base_name, ".sched2");
