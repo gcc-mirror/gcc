@@ -2005,12 +2005,18 @@ test explicitly for C++ as well.
 @item
 Deleting ``empty'' loops.
 
-GNU CC does not delete ``empty'' loops because the most likely reason
-you would put one in a program is to have a delay.  Deleting them will
-not make real programs run any faster, so it would be pointless.
+Historically, GNU CC has not deleted ``empty'' loops under the
+assumption that the most likely reason you would put one in a program is
+to have a delay, so deleting them will not make real programs run any
+faster.
 
-It would be different if optimization of a nonempty loop could produce
-an empty one.  But this generally can't happen.
+However, the rationale here is that optimization of a nonempty loop
+cannot produce an empty one, which holds for C but is not always the
+case for C++.
+
+Moreover, with @samp{-funroll-loops} small ``empty'' loops are already
+removed, so the current behavior is both sub-optimal and inconsistent
+and will change in the future.
 
 @item
 Making side effects happen in the same order as in some other compiler.
