@@ -6821,7 +6821,7 @@ finish_vtbls (t)
       tree base = BINFO_BASETYPE (TYPE_BINFO (t), i);
       if (TREE_VIA_VIRTUAL (base))
 	{
-	  tree vbase = binfo_for_vbase (BINFO_TYPE (base), t);
+	  vbase = binfo_for_vbase (BINFO_TYPE (base), t);
 	  BINFO_VPTR_FIELD (base) = BINFO_VPTR_FIELD (vbase);
 	}
     }
