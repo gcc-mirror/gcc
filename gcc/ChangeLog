@@ -1,3 +1,8 @@
+2002-11-05  Andrew Haley  <aph@redhat.com>
+
+	* fold-const.c (fold): Don't transform (a0 op compound(a1,a2))
+	to (compound(a1,a0 op a2)) if a0 or a1 have side effects.
+
 2002-11-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (CANNOT_CHANGE_MODE_CLASS): Move comment to...
