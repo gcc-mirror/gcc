@@ -17,6 +17,11 @@
 	Renumber case labels to match the _mm_prefetch constants defined in
 	xmmintrin.h.
 
+	* recog.c (split_all_insns): Don't try to call cleanup_subreg_operands
+	if the splitter didn't emit new insns.
+	Make sure we call cleanup_subreg_operands even when splitting the last
+	insn in a basic block.
+
 2000-10-30  Neil Booth  <neilb@earthling.net>
 
 	* cppfiles.c (stack_include_file): Check for stacked contexts

@@ -2747,29 +2747,31 @@ split_all_insns (upd_life)
 		  changed = 1;
 
 		  /* try_split returns the NOTE that INSN became.  */
-		  first = NEXT_INSN (first);
 		  PUT_CODE (insn, NOTE);
 		  NOTE_SOURCE_FILE (insn) = 0;
 		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+
+		  /* ??? Coddle to md files that generate subregs in post-
+		     reload splitters instead of computing the proper 
+		     hard register.  */
+		  if (reload_completed && first != last)
+		    {
+		      first = NEXT_INSN (first);
+		      while (1)
+			{
+			  if (INSN_P (first))
+			    cleanup_subreg_operands (first);
+			  if (first == last)
+			    break;
+			  first = NEXT_INSN (first);
+			}
+		    }
 
 		  if (insn == bb->end)
 		    {
 		      bb->end = last;
 		      break;
 		    }
-
-		  /* ??? Coddle to md files that generate subregs in post-
-		     reload splitters instead of computing the proper 
-		     hard register.  */
-		  if (reload_completed)
-		    while (1)
-		      {
-			if (INSN_P (first))
-			  cleanup_subreg_operands (first);
-			if (first == last)
-			  break;
-			first = NEXT_INSN (first);
-		      }
 		}
 	    }
 
