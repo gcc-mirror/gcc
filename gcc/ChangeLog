@@ -1,3 +1,8 @@
+2003-01-10    <aph@host240.cambridge.redhat.com>
+
+	* config/i386/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Rename
+	registers to be in correct order.  Add rip.
+
 2003-01-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*andsi3_lshiftrt_9_sb): New.
