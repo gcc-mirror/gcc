@@ -1,3 +1,21 @@
+2005-04-02  Daniel Berlin  <dberlin@dberlin.org>
+	    Diego Novillo <dnovillo@redhat.com>
+	    
+	Fix PR tree-optimization/20703
+	Fix PR tree-optimization/20725
+	
+	* tree-ssa-pre.c (phi_translate): Handle tcc_comparison.
+	(create_expression_by_pieces): Ditto.
+	(valid_in_set): Ditto. Also handle tcc_declaration.
+	(find_or_generate_expression): Handle comparison class.
+	(insert_into_preds_of_block): Ditto.
+	(insert_aux): Ditto.
+	(create_value_expr_from): Handle comparison class, recursively
+	handle reference nodes.
+	(compute_avail): Handle comparison classes, rewrite a little cleaner.
+	(execute_pre): Fix spacing.
+	(do_fre): Renamed to execute_fre.
+
 2005-04-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/invoke.texi (SPARC options): Document that
