@@ -673,7 +673,6 @@ get_vfield_offset (binfo)
    on method calling is expected to point to a DECL_CONTEXT (fndecl)
    object, and not a baseclass of it.   */
 
-
 static tree
 get_derived_offset (binfo, type)
      tree binfo, type;
@@ -695,9 +694,9 @@ get_derived_offset (binfo, type)
   return size_binop (MINUS_EXPR, offset1, offset2);
 }
 
-/* Create a VAR_DECL for a primary or secondary vtable for
-   CLASS_TYPE.  Use NAME for the name of the vtable, and VTABLE_TYPE
-   for its type.  */
+/* Create a VAR_DECL for a primary or secondary vtable for CLASS_TYPE.
+   (For a secondary vtable for B-in-D, CLASS_TYPE should be D, not B.)
+   Use NAME for the name of the vtable, and VTABLE_TYPE for its type.  */
 
 static tree
 build_vtable (class_type, name, vtable_type)
@@ -6781,7 +6780,7 @@ build_ctor_vtbl_group (binfo, t)
   /* Build a version of VTBL (with the wrong type) for use in
      constructing the addresses of secondary vtables in the
      construction vtable group.  */
-  vtbl = build_vtable (BINFO_TYPE (binfo), id, ptr_type_node);
+  vtbl = build_vtable (t, id, ptr_type_node);
   list = build_tree_list (vtbl, NULL_TREE);
   accumulate_vtbl_inits (binfo, TYPE_BINFO (TREE_TYPE (binfo)),
 			 binfo, t, list);

@@ -1,3 +1,24 @@
+2000-06-11  Mark Mitchell <mark@codesourcery.com>
+	
+	* mangle.c (NESTED_TEMPLATE_MATCH): Fix typo in comment.
+	(is_std_substitution): Don't check CLASSTYPE_USE_TEMPLATE here.
+	(find_substitution): Only use the `Sa' substitution for
+	std::allocator, not instantiations of it.
+	(write_template_prefix): Move comment.  Only use a TREE_LIST to
+	represent substitutions for a member template.
+	(write_array_type): Mangle array dimensions correctly.
+	* optimize.c (maybe_clone_body): Copy more information from the
+	cloned function.
+	* pt.c (regenerate_decl_from_template): Preserve DECL_USE_TEMPLATE
+	on the regenerated declaration.
+
+2000-06-11  Chip Salzenberg  <chip@valinux.com>
+	    Mark Mitchell <mark@codesourcery.com>
+
+	* class.c (build_vtable): Clarify comment.
+	(build_ctor_vtbl_group): Pass the most derived type to
+	build_vtable.
+	
 2000-06-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl2.c (compare_options): Don't needlessly cast away const-ness.
