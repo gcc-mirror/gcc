@@ -293,6 +293,18 @@ If this macro is not defined, the GCC driver provides a default that
 passes the string @option{-lgcc} to the linker.
 @end defmac
 
+@defmac REAL_LIBGCC_SPEC
+By default, if @code{ENABLE_SHARED_LIBGCC} is defined, the
+@code{LIBGCC_SPEC} is not directly used by the driver program but is
+instead modified to refer to different versions of @file{libgcc.a}
+depending on the values of the command line flags @code{-static},
+@code{-shared}, @code{-static-libgcc}, and @code{-shared-libgcc}.  On
+targets where these modifications are inappropriate, define
+@code{REAL_LIBGCC_SPEC} instead.  @code{REAL_LIBGCC_SPEC} tells the
+driver how to place a reference to @file{libgcc} on the link command
+line, but, unlike @code{LIBGCC_SPEC}, it is used unmodified.
+@end defmac
+
 @defmac STARTFILE_SPEC
 Another C string constant used much like @code{LINK_SPEC}.  The
 difference between the two is that @code{STARTFILE_SPEC} is used at

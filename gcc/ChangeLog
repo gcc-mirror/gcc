@@ -1,3 +1,12 @@
+2003-02-18  Matt Austern  <austern@apple.com>
+
+	* gcc.c (LIBGCC_SPEC): If REAL_LIBGCC_SPEC is defined, and
+	LIBGCC_SPEC isn't, set LIBGCC_SPEC to REAL_LIBGCC_SPEC.
+	(init_gcc_spec): Don't define or call if REAL_LIBGCC_SPEC is
+	defined.  Instead use REAL_LIBGCC_SPEC, unmodifed, as the libgcc
+	spec string.
+	* doc/tm.texi (REAL_LIBGCC_SPEC): Document.
+	
 2004-02-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* dwarf2out.c (loclabel_num): Move outside #ifdef
