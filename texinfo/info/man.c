@@ -1,9 +1,7 @@
-/*  man.c: How to read and format man files. */
+/*  man.c: How to read and format man files.
+    $Id: man.c,v 1.4 1998/03/22 21:47:54 law Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
-   stored in Info format.
-
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -23,7 +21,6 @@
 
 #include "info.h"
 #include <sys/ioctl.h>
-#include <sys/file.h>
 #include "signals.h"
 #if defined (HAVE_SYS_TIME_H)
 #include <sys/time.h>
@@ -31,8 +28,8 @@
 #if defined (HAVE_SYS_WAIT_H)
 #include <sys/wait.h>
 #endif
-#include "tilde.h"
 
+#include "tilde.h"
 #include "man.h"
 
 #if !defined (SIGCHLD) && defined (SIGCLD)
@@ -81,31 +78,31 @@ get_manpage_node (file_buffer, pagename)
       page = get_manpage_contents (pagename);
 
       if (page)
-	{
-	  char header[1024];
-	  long oldsize, newsize;
-	  int hlen, plen;
+        {
+          char header[1024];
+          long oldsize, newsize;
+          int hlen, plen;
 
-	  sprintf (header, "\n\n%c\n%s %s,  %s %s,  %s (dir)\n\n",
-		   INFO_COOKIE,
-		   INFO_FILE_LABEL, file_buffer->filename,
-		   INFO_NODE_LABEL, pagename,
-		   INFO_UP_LABEL);
-	  oldsize = file_buffer->filesize;
-	  hlen = strlen (header);
-	  plen = strlen (page);
-	  newsize = (oldsize + hlen + plen);
-	  file_buffer->contents =
-	    (char *)xrealloc (file_buffer->contents, 1 + newsize);
-	  memcpy (file_buffer->contents + oldsize, header, hlen);
-	  oldsize += hlen;
-	  memcpy (file_buffer->contents + oldsize, page, plen);
-	  file_buffer->contents[newsize] = '\0';
-	  file_buffer->filesize = newsize;
-	  file_buffer->finfo.st_size = newsize;
-	  build_tags_and_nodes (file_buffer);
-	  free (page);
-	}
+          sprintf (header, "\n\n%c\n%s %s,  %s %s,  %s (dir)\n\n",
+                   INFO_COOKIE,
+                   INFO_FILE_LABEL, file_buffer->filename,
+                   INFO_NODE_LABEL, pagename,
+                   INFO_UP_LABEL);
+          oldsize = file_buffer->filesize;
+          hlen = strlen (header);
+          plen = strlen (page);
+          newsize = (oldsize + hlen + plen);
+          file_buffer->contents =
+            (char *)xrealloc (file_buffer->contents, 1 + newsize);
+          memcpy (file_buffer->contents + oldsize, header, hlen);
+          oldsize += hlen;
+          memcpy (file_buffer->contents + oldsize, page, plen);
+          file_buffer->contents[newsize] = '\0';
+          file_buffer->filesize = newsize;
+          file_buffer->finfo.st_size = newsize;
+          build_tags_and_nodes (file_buffer);
+          free (page);
+        }
 
       node = manpage_node_of_file_buffer (file_buffer, pagename);
     }
@@ -116,12 +113,9 @@ get_manpage_node (file_buffer, pagename)
 FILE_BUFFER *
 create_manpage_file_buffer ()
 {
-  FILE_BUFFER *file_buffer;
-  struct stat *finfo;
-
-  file_buffer = make_file_buffer ();
-  file_buffer->filename = strdup (MANPAGE_FILE_BUFFER_NAME);
-  file_buffer->fullpath = strdup (MANPAGE_FILE_BUFFER_NAME);
+  FILE_BUFFER *file_buffer = make_file_buffer ();
+  file_buffer->filename = xstrdup (MANPAGE_FILE_BUFFER_NAME);
+  file_buffer->fullpath = xstrdup (MANPAGE_FILE_BUFFER_NAME);
   file_buffer->finfo.st_size = 0;
   file_buffer->filesize = 0;
   file_buffer->contents = (char *)NULL;
@@ -143,25 +137,24 @@ executable_file_in_path (filename, path)
 
   dirname_index = 0;
 
-  while (temp_dirname = extract_colon_unit (path, &dirname_index))
+  while ((temp_dirname = extract_colon_unit (path, &dirname_index)))
     {
-      register int i;
       char *temp;
 
       /* Expand a leading tilde if one is present. */
       if (*temp_dirname == '~')
-	{
-	  char *expanded_dirname;
+        {
+          char *expanded_dirname;
 
-	  expanded_dirname = tilde_expand_word (temp_dirname);
-	  free (temp_dirname);
-	  temp_dirname = expanded_dirname;
-	}
+          expanded_dirname = tilde_expand_word (temp_dirname);
+          free (temp_dirname);
+          temp_dirname = expanded_dirname;
+        }
 
       temp = (char *)xmalloc (30 + strlen (temp_dirname) + strlen (filename));
       strcpy (temp, temp_dirname);
       if (temp[(strlen (temp)) - 1] != '/')
-	strcat (temp, "/");
+        strcat (temp, "/");
       strcat (temp, filename);
 
       free (temp_dirname);
@@ -170,10 +163,10 @@ executable_file_in_path (filename, path)
 
       /* If we have found a regular executable file, then use it. */
       if ((statable) && (S_ISREG (finfo.st_mode)) &&
-	  (access (temp, X_OK) == 0))
-	return (temp);
+          (access (temp, X_OK) == 0))
+        return (temp);
       else
-	free (temp);
+        free (temp);
     }
   return ((char *)NULL);
 }
@@ -227,7 +220,7 @@ static void
 reap_children (sig)
      int sig;
 {
-  unsigned int status;
+  int status;
   wait (&status);
 }
 
@@ -239,7 +232,6 @@ get_manpage_contents (pagename)
   int pipes[2];
   pid_t child;
   char *formatted_page = (char *)NULL;
-  char *section = (char *)NULL;
   int arg_index = 1;
 
   if (formatter_args[0] == (char *)NULL)
@@ -271,7 +263,7 @@ get_manpage_contents (pagename)
   if (child != 0)
     {
       /* In the parent, close the writing end of the pipe, and read from
-	 the exec'd child. */
+         the exec'd child. */
       close (pipes[1]);
       formatted_page = read_from_fd (pipes[0]);
       close (pipes[0]);
@@ -279,16 +271,16 @@ get_manpage_contents (pagename)
   else
     {
       /* In the child, close the read end of the pipe, make the write end
-	 of the pipe be stdout, and execute the man page formatter. */
+         of the pipe be stdout, and execute the man page formatter. */
       close (pipes[0]);
       close (fileno (stderr));
-      close (fileno (stdin));	/* Don't print errors. */
+      close (fileno (stdin));   /* Don't print errors. */
       dup2 (pipes[1], fileno (stdout));
 
       execv (formatter_args[0], formatter_args);
 
       /* If we get here, we couldn't exec, so close out the pipe and
-	 exit. */
+         exit. */
       close (pipes[1]);
       exit (0);
     }
@@ -310,21 +302,21 @@ clean_manpage (manpage)
 
   newpage = (char *)xmalloc (1 + strlen (manpage));
 
-  for (i = 0, j = 0; newpage[j] = manpage[i]; i++, j++)
+  for (i = 0, j = 0; (newpage[j] = manpage[i]); i++, j++)
     {
       if (manpage[i] == '\n')
-	newline_count++;
+        newline_count++;
       else
-	newline_count = 0;
+        newline_count = 0;
 
       if (newline_count == 3)
-	{
-	  j--;
-	  newline_count--;
-	}
+        {
+          j--;
+          newline_count--;
+        }
 
       if (manpage[i] == '\b' || manpage[i] == '\f')
-	j -= 2;
+        j -= 2;
     }
 
   newpage[j++] = '\0';
@@ -345,11 +337,11 @@ manpage_node_of_file_buffer (file_buffer, pagename)
     {
       register int i;
 
-      for (i = 0; tag = file_buffer->tags[i]; i++)
-	{
-	  if (strcasecmp (pagename, tag->nodename) == 0)
-	    break;
-	}
+      for (i = 0; (tag = file_buffer->tags[i]); i++)
+        {
+          if (strcasecmp (pagename, tag->nodename) == 0)
+            break;
+        }
     }
 
   if (tag)
@@ -465,7 +457,7 @@ find_reference_section (node)
     {
       position = search_forward (reference_section_starters[i], &frs_binding);
       if (position != -1)
-	break;
+        break;
     }
 
   if (position == -1)
@@ -479,11 +471,11 @@ find_reference_section (node)
   for (i = frs_binding.start; i < frs_binding.end - 2; i++)
     {
       if ((frs_binding.buffer[i] == '\n') &&
-	  (!whitespace (frs_binding.buffer[i + 1])))
-	{
-	  frs_binding.end = i;
-	  break;
-	}
+          (!whitespace (frs_binding.buffer[i + 1])))
+        {
+          frs_binding.end = i;
+          break;
+        }
     }
 
   return (&frs_binding);
@@ -514,43 +506,43 @@ xrefs_of_manpage (node)
       register int start, end;
 
       for (start = position; start > reference_section->start; start--)
-	if (whitespace (reference_section->buffer[start]))
-	  break;
+        if (whitespace (reference_section->buffer[start]))
+          break;
 
       start++;
 
       for (end = position; end < reference_section->end; end++)
-	{
-	  if (whitespace (reference_section->buffer[end]))
-	    {
-	      end = start;
-	      break;
-	    }
+        {
+          if (whitespace (reference_section->buffer[end]))
+            {
+              end = start;
+              break;
+            }
 
-	  if (reference_section->buffer[end] == ')')
-	    {
-	      end++;
-	      break;
-	    }
-	}
+          if (reference_section->buffer[end] == ')')
+            {
+              end++;
+              break;
+            }
+        }
 
       if (end != start)
-	{
-	  REFERENCE *entry;
-	  int len = end - start;
+        {
+          REFERENCE *entry;
+          int len = end - start;
 
-	  entry = (REFERENCE *)xmalloc (sizeof (REFERENCE));
-	  entry->label = (char *)xmalloc (1 + len);
-	  strncpy (entry->label, (reference_section->buffer) + start, len);
-	  entry->label[len] = '\0';
-	  entry->filename = strdup (node->filename);
-	  entry->nodename = strdup (entry->label);
-	  entry->start = start;
-	  entry->end = end;
+          entry = (REFERENCE *)xmalloc (sizeof (REFERENCE));
+          entry->label = (char *)xmalloc (1 + len);
+          strncpy (entry->label, (reference_section->buffer) + start, len);
+          entry->label[len] = '\0';
+          entry->filename = xstrdup (node->filename);
+          entry->nodename = xstrdup (entry->label);
+          entry->start = start;
+          entry->end = end;
 
-	  add_pointer_to_array
-	    (entry, refs_index, refs, refs_slots, 10, REFERENCE *);
-	}
+          add_pointer_to_array
+            (entry, refs_index, refs, refs_slots, 10, REFERENCE *);
+        }
 
       reference_section->start = position + 1;
     }
@@ -564,7 +556,6 @@ locate_manpage_xref (node, start, dir)
      long start;
      int dir;
 {
-  register int i, count;
   REFERENCE **refs;
   long position = -1;
 
@@ -579,27 +570,27 @@ locate_manpage_xref (node, start, dir)
       count = i;
 
       if (dir > 0)
-	{
-	  for (i = 0; entry = refs[i]; i++)
-	    if (entry->start > start)
-	      {
-		position = entry->start;
-		break;
-	      }
-	}
+        {
+          for (i = 0; (entry = refs[i]); i++)
+            if (entry->start > start)
+              {
+                position = entry->start;
+                break;
+              }
+        }
       else
-	{
-	  for (i = count - 1; i > -1; i--)
-	    {
-	      entry = refs[i];
+        {
+          for (i = count - 1; i > -1; i--)
+            {
+              entry = refs[i];
 
-	      if (entry->start < start)
-		{
-		  position = entry->start;
-		  break;
-		}
-	    }
-	}
+              if (entry->start < start)
+                {
+                  position = entry->start;
+                  break;
+                }
+            }
+        }
 
       info_free_references (refs);
     }
@@ -628,20 +619,20 @@ manpage_xrefs_in_binding (node, binding)
   start = binding->start + (binding->buffer - node->contents);
   end = binding->end + (binding->buffer - node->contents);
 
-  for (i = 0; entry = all_refs[i]; i++)
+  for (i = 0; (entry = all_refs[i]); i++)
     {
       if ((entry->start > start) && (entry->end < end))
-	{
-	  add_pointer_to_array
-	    (entry, brefs_index, brefs, brefs_slots, 10, REFERENCE *);
-	}
+        {
+          add_pointer_to_array
+            (entry, brefs_index, brefs, brefs_slots, 10, REFERENCE *);
+        }
       else
-	{
-	  maybe_free (entry->label);
-	  maybe_free (entry->filename);
-	  maybe_free (entry->nodename);
-	  free (entry);
-	}
+        {
+          maybe_free (entry->label);
+          maybe_free (entry->filename);
+          maybe_free (entry->nodename);
+          free (entry);
+        }
     }
 
   free (all_refs);

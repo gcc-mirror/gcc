@@ -1,12 +1,8 @@
-/* terminal.c -- How to handle the physical terminal for Info. */
+/* terminal.c -- How to handle the physical terminal for Info.
+   $Id: terminal.c,v 1.4 1998/03/24 18:06:53 law Exp $
 
-/* This file is part of GNU Info, a program for reading online documentation
-   stored in Info format.
-
-   This file has appeared in prior works by the Free Software Foundation;
-   thus it carries copyright dates from 1988 through 1993.
-
-   Copyright (C) 1988, 89, 90, 91, 92, 93, 96 Free Software Foundation, Inc.
+   Copyright (C) 1988, 89, 90, 91, 92, 93, 96, 97 Free Software
+   Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,19 +20,33 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#include <stdio.h>
-#include <sys/types.h>
+#include "info.h"
 #include "terminal.h"
 #include "termdep.h"
 
-extern void *xmalloc (), *xrealloc ();
+#include <sys/types.h>
+#include <signal.h>
 
 /* The Unix termcap interface code. */
+#ifdef HAVE_NCURSES_TERMCAP_H
+#include <ncurses/termcap.h>
+#else
+#ifdef HAVE_TERMCAP_H
+#include <termcap.h>
+#else
+/* On Solaris2, sys/types.h #includes sys/reg.h, which #defines PC.
+   Unfortunately, PC is a global variable used by the termcap library. */
+#undef PC
 
+/* Termcap requires these variables, whether we access them or not. */
+char *BC, *UP;
+char PC;      /* Pad character */
+short ospeed; /* Terminal output baud rate */
 extern int tgetnum (), tgetflag (), tgetent ();
 extern char *tgetstr (), *tgoto ();
-extern char *getenv ();
 extern void tputs ();
+#endif /* not HAVE_TERMCAP_H */
+#endif /* not HAVE_NCURSES_TERMCAP_H */
 
 /* Function "hooks".  If you make one of these point to a function, that
    function is called when appropriate instead of its namesake.  Your
@@ -60,19 +70,10 @@ VFunction *terminal_write_chars_hook = (VFunction *)NULL;
 VFunction *terminal_scroll_terminal_hook = (VFunction *)NULL;
 
 /* **************************************************************** */
-/*								    */
-/*			Terminal and Termcap			    */
-/*								    */
+/*                                                                  */
+/*                      Terminal and Termcap                        */
+/*                                                                  */
 /* **************************************************************** */
-
-/* On Solaris2, sys/types.h #includes sys/reg.h, which #defines PC.
-   Unfortunately, PC is a global variable used by the termcap library. */
-#undef PC
-
-/* TERMCAP requires these variables, whether we access them or not. */
-char PC;
-char *BC, *UP;
-short ospeed;
 
 /* A buffer which holds onto the current terminal description, and a pointer
    used to float within it. */
@@ -83,6 +84,8 @@ static char *term_string_buffer = (char *)NULL;
 static char *term_goto, *term_clreol, *term_cr, *term_clrpag;
 static char *term_begin_use, *term_end_use;
 static char *term_AL, *term_DL, *term_al, *term_dl;
+
+static char *term_keypad_on, *term_keypad_off;
 
 /* How to go up a line. */
 static char *term_up;
@@ -108,11 +111,15 @@ static char *term_invbeg;
 /* The string to turn off inverse mode, if this term has one. */
 static char *term_invend;
 
-static void
+/* Although I can't find any documentation that says this is supposed to
+   return its argument, all the code I've looked at (termutils, less)
+   does so, so fine.  */
+static int
 output_character_function (c)
      int c;
 {
   putc (c, stdout);
+  return c;
 }
 
 /* Macro to send STRING to the terminal. */
@@ -122,25 +129,53 @@ output_character_function (c)
       tputs (string, 1, output_character_function); \
      } while (0)
 
-/* Tell the terminal that we will be doing cursor addressable motion. */
+/* Tell the terminal that we will be doing cursor addressable motion.  */
 static void
 terminal_begin_using_terminal ()
 {
+  RETSIGTYPE (*sigsave) ();
+
+  if (term_keypad_on)
+      send_to_terminal (term_keypad_on);
+  
+  if (!term_begin_use || !*term_begin_use)
+    return;
+
+  sigsave = signal (SIGWINCH, SIG_IGN); 
   send_to_terminal (term_begin_use);
+  /* Without this fflush and sleep, running info in a shelltool or
+     cmdtool (TERM=sun-cmd) with scrollbars loses -- the scrollbars are
+     not restored properly.
+     From: strube@physik3.gwdg.de (Hans Werner Strube).  */
+  fflush (stdout);
+  sleep (1);
+  signal (SIGWINCH, sigsave);
 }
 
-/* Tell the terminal that we will not be doing any more cursor addressable
-   motion. */
+/* Tell the terminal that we will not be doing any more cursor
+   addressable motion. */
 static void
 terminal_end_using_terminal ()
 {
+  RETSIGTYPE (*sigsave) ();
+
+  if (term_keypad_off)
+      send_to_terminal (term_keypad_off);
+  
+  if (!term_end_use || !*term_end_use)
+    return;
+
+  sigsave = signal (SIGWINCH, SIG_IGN);
   send_to_terminal (term_end_use);
+  fflush (stdout);
+  sleep (1);
+  signal (SIGWINCH, sigsave);
 }
 
 /* **************************************************************** */
-/*								    */
-/*		     Necessary Terminal Functions		    */
-/*								    */
+/*                                                                  */
+/*                   Necessary Terminal Functions                   */
+/*                                                                  */
 /* **************************************************************** */
 
 /* The functions and variables on this page implement the user visible
@@ -169,6 +204,8 @@ char *term_ku = (char *)NULL;
 char *term_kd = (char *)NULL;
 char *term_kr = (char *)NULL;
 char *term_kl = (char *)NULL;
+char *term_kP = (char *)NULL;   /* page-up */
+char *term_kN = (char *)NULL;   /* page-down */
 
 /* Move the cursor to the terminal location of X and Y. */
 void
@@ -180,7 +217,7 @@ terminal_goto_xy (x, y)
   else
     {
       if (term_goto)
-	tputs (tgoto (term_goto, x, y), 1, output_character_function);
+        tputs (tgoto (term_goto, x, y), 1, output_character_function);
     }
 }
 
@@ -208,7 +245,7 @@ terminal_write_chars (string, nchars)
   else
     {
       if (nchars)
-	fwrite (string, 1, nchars, stdout);
+        fwrite (string, 1, nchars, stdout);
     }
 }
 
@@ -294,9 +331,9 @@ terminal_ring_bell ()
   else
     {
       if (terminal_has_visible_bell_p && terminal_use_visible_bell_p)
-	send_to_terminal (visible_bell);
+        send_to_terminal (visible_bell);
       else
-	send_to_terminal (audible_bell);
+        send_to_terminal (audible_bell);
     }
 }
 
@@ -318,7 +355,7 @@ terminal_delete_lines (start, count)
   else
     {
       while (count--)
-	tputs (term_dl, lines, output_character_function);
+        tputs (term_dl, lines, output_character_function);
     }
 
   fflush (stdout);
@@ -343,7 +380,7 @@ terminal_insert_lines (start, count)
   else
     {
       while (count--)
-	tputs (term_al, lines, output_character_function);
+        tputs (term_al, lines, output_character_function);
     }
 
   fflush (stdout);
@@ -369,22 +406,22 @@ terminal_scroll_terminal (start, end, amount)
   else
     {
       /* If we are scrolling down, delete AMOUNT lines at END.  Then insert
-	 AMOUNT lines at START. */
+         AMOUNT lines at START. */
       if (amount > 0)
-	{
-	  terminal_delete_lines (end, amount);
-	  terminal_insert_lines (start, amount);
-	}
+        {
+          terminal_delete_lines (end, amount);
+          terminal_insert_lines (start, amount);
+        }
 
       /* If we are scrolling up, delete AMOUNT lines before START.  This
-	 actually does the upwards scroll.  Then, insert AMOUNT lines
-	 after the already scrolled region (i.e., END - AMOUNT). */
+         actually does the upwards scroll.  Then, insert AMOUNT lines
+         after the already scrolled region (i.e., END - AMOUNT). */
       if (amount < 0)
-	{
-	  int abs_amount = -amount;
-	  terminal_delete_lines (start - abs_amount, abs_amount);
-	  terminal_insert_lines (end - abs_amount, abs_amount);
-	}
+        {
+          int abs_amount = -amount;
+          terminal_delete_lines (start - abs_amount, abs_amount);
+          terminal_insert_lines (end - abs_amount, abs_amount);
+        }
     }
 }
 
@@ -414,55 +451,55 @@ terminal_get_screen_size ()
 
 #if defined (TIOCGWINSZ)
       {
-	struct winsize window_size;
+        struct winsize window_size;
 
-	if (ioctl (fileno (stdout), TIOCGWINSZ, &window_size) == 0)
-	  {
-	    screenwidth = (int) window_size.ws_col;
-	    screenheight = (int) window_size.ws_row;
-	  }
+        if (ioctl (fileno (stdout), TIOCGWINSZ, &window_size) == 0)
+          {
+            screenwidth = (int) window_size.ws_col;
+            screenheight = (int) window_size.ws_row;
+          }
       }
-#endif				/* TIOCGWINSZ */
+#endif                          /* TIOCGWINSZ */
 
       /* Environment variable COLUMNS overrides setting of "co". */
       if (screenwidth <= 0)
-	{
-	  char *sw = getenv ("COLUMNS");
+        {
+          char *sw = getenv ("COLUMNS");
 
-	  if (sw)
-	    screenwidth = atoi (sw);
+          if (sw)
+            screenwidth = atoi (sw);
 
-	  if (screenwidth <= 0)
-	    screenwidth = tgetnum ("co");
-	}
+          if (screenwidth <= 0)
+            screenwidth = tgetnum ("co");
+        }
 
       /* Environment variable LINES overrides setting of "li". */
       if (screenheight <= 0)
-	{
-	  char *sh = getenv ("LINES");
+        {
+          char *sh = getenv ("LINES");
 
-	  if (sh)
-	    screenheight = atoi (sh);
+          if (sh)
+            screenheight = atoi (sh);
 
-	  if (screenheight <= 0)
-	    screenheight = tgetnum ("li");
-	}
+          if (screenheight <= 0)
+            screenheight = tgetnum ("li");
+        }
 
       /* If all else fails, default to 80x24 terminal. */
       if (screenwidth <= 0)
-	screenwidth = 80;
+        screenwidth = 80;
 
       if (screenheight <= 0)
-	screenheight = 24;
+        screenheight = 24;
     }
 }
 
-/* Initialize the terminal which is known as TERMINAL_NAME.  If this terminal
-   doesn't have cursor addressability, TERMINAL_IS_DUMB_P becomes non-zero.
-   The variables SCREENHEIGHT and SCREENWIDTH are set to the dimensions that
-   this terminal actually has.  The variable TERMINAL_HAS_META_P becomes non-
-   zero if this terminal supports a Meta key.  Finally, the terminal screen is
-   cleared. */
+/* Initialize the terminal which is known as TERMINAL_NAME.  If this
+   terminal doesn't have cursor addressability, `terminal_is_dumb_p'
+   becomes nonzero.  The variables SCREENHEIGHT and SCREENWIDTH are set
+   to the dimensions that this terminal actually has.  The variable
+   TERMINAL_HAS_META_P becomes nonzero if this terminal supports a Meta
+   key.  Finally, the terminal screen is cleared. */
 void
 terminal_initialize_terminal (terminal_name)
      char *terminal_name;
@@ -500,6 +537,7 @@ terminal_initialize_terminal (terminal_name)
       term_cr = "\r";
       term_up = term_dn = audible_bell = visible_bell = (char *)NULL;
       term_ku = term_kd = term_kl = term_kr = (char *)NULL;
+      term_kP = term_kN = (char *)NULL;
       return;
     }
 
@@ -517,7 +555,7 @@ terminal_initialize_terminal (terminal_name)
   }
 #else
   ospeed = B9600;
-#endif				/* !TIOCGETP */
+#endif                          /* !TIOCGETP */
 
   term_cr = tgetstr ("cr", &buffer);
   term_clreol = tgetstr ("ce", &buffer);
@@ -553,6 +591,9 @@ terminal_initialize_terminal (terminal_name)
   term_begin_use = tgetstr ("ti", &buffer);
   term_end_use = tgetstr ("te", &buffer);
 
+  term_keypad_on = tgetstr ("ks", &buffer);
+  term_keypad_off = tgetstr ("ke", &buffer);
+
   /* Check to see if this terminal has a meta key. */
   terminal_has_meta_p = (tgetflag ("km") || tgetflag ("MT"));
   if (terminal_has_meta_p)
@@ -572,17 +613,18 @@ terminal_initialize_terminal (terminal_name)
   term_kr = tgetstr ("kr", &buffer);
   term_kl = tgetstr ("kl", &buffer);
 
+  term_kP = tgetstr ("kP", &buffer);
+  term_kN = tgetstr ("kN", &buffer);
+
   /* If this terminal is not cursor addressable, then it is really dumb. */
   if (!term_goto)
     terminal_is_dumb_p = 1;
-
-  terminal_begin_using_terminal ();
 }
 
 /* **************************************************************** */
-/*								    */
-/*		 How to Read Characters From the Terminal	    */
-/*								    */
+/*                                                                  */
+/*               How to Read Characters From the Terminal           */
+/*                                                                  */
 /* **************************************************************** */
 
 #if defined (TIOCGETC)
@@ -623,6 +665,8 @@ terminal_prep_terminal ()
       return;
     }
 
+  terminal_begin_using_terminal ();
+
   tty = fileno (stdin);
 
 #if defined (HAVE_TERMIOS_H)
@@ -655,7 +699,12 @@ terminal_prep_terminal ()
 
   if (ttybuff.c_cc[VQUIT] == '\177')
     ttybuff.c_cc[VQUIT] = -1;
-#endif
+
+#ifdef VLNEXT
+  if (ttybuff.c_cc[VLNEXT] == '\026')
+    ttybuff.c_cc[VLNEXT] = -1;
+#endif /* VLNEXT */
+#endif /* TERMIOS or TERMIO */
 
 #if defined (HAVE_TERMIOS_H)
   tcsetattr (tty, TCSANOW, &ttybuff);
@@ -719,9 +768,9 @@ terminal_prep_terminal ()
     temp = original_ltchars;
 
     /* Make the interrupt keys go away.  Just enough to make people happy. */
-    temp.t_lnextc = -1;		/* C-v. */
-    temp.t_dsuspc = -1;		/* C-y. */
-    temp.t_flushc = -1;		/* C-o. */
+    temp.t_lnextc = -1;         /* C-v. */
+    temp.t_dsuspc = -1;         /* C-y. */
+    temp.t_flushc = -1;         /* C-o. */
     ioctl (tty, TIOCSLTC, &temp);
   }
 #  endif /* TIOCGLTC */
