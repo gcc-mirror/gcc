@@ -1,3 +1,8 @@
+2005-02-23  Michael Beach  <michaelb@ieee.org>
+
+	PR target/20159
+	* config/sparc/t-elf (startup files): Assemble with CPP.
+
 2005-02-17  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/install.texi (Specific): Update link for Darwin-specific
