@@ -4215,7 +4215,7 @@ do {									\
    to a multiple of 2**LOG bytes.  */
 
 #define ASM_OUTPUT_ALIGN(STREAM,LOG)					\
-  fprintf (STREAM, "\t.align\t%d\n", (LOG));
+  fprintf (STREAM, "\t.align\t%d\n", (LOG))
 
 /* This is how to output an assembler line to advance the location
    counter by SIZE bytes.  */
