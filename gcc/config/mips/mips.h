@@ -182,82 +182,83 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define MASK_MIPS_TFILE	0		/* flag for mips-tfile usage */
 
 					/* r4000 64 bit sizes */
-#define TARGET_INT64		(target_flags & MASK_INT64)
-#define TARGET_LONG64		(target_flags & MASK_LONG64)
-#define TARGET_FLOAT64		(target_flags & MASK_FLOAT64)
-#define TARGET_64BIT		(target_flags & MASK_64BIT)
+#define TARGET_INT64		((target_flags & MASK_INT64) != 0)
+#define TARGET_LONG64		((target_flags & MASK_LONG64) != 0)
+#define TARGET_FLOAT64		((target_flags & MASK_FLOAT64) != 0)
+#define TARGET_64BIT		((target_flags & MASK_64BIT) != 0)
 
 					/* Mips vs. GNU linker */
-#define TARGET_SPLIT_ADDRESSES	(target_flags & MASK_SPLIT_ADDR)
+#define TARGET_SPLIT_ADDRESSES	((target_flags & MASK_SPLIT_ADDR) != 0)
 
 					/* Mips vs. GNU assembler */
-#define TARGET_GAS		(target_flags & MASK_GAS)
+#define TARGET_GAS		((target_flags & MASK_GAS) != 0)
 #define TARGET_MIPS_AS		(!TARGET_GAS)
 
 					/* Debug Modes */
-#define TARGET_DEBUG_MODE	(target_flags & MASK_DEBUG)
-#define TARGET_DEBUG_D_MODE	(target_flags & MASK_DEBUG_D)
+#define TARGET_DEBUG_MODE	((target_flags & MASK_DEBUG) != 0)
+#define TARGET_DEBUG_D_MODE	((target_flags & MASK_DEBUG_D) != 0)
 
 					/* Reg. Naming in .s ($21 vs. $a0) */
-#define TARGET_NAME_REGS	(target_flags & MASK_NAME_REGS)
+#define TARGET_NAME_REGS	((target_flags & MASK_NAME_REGS) != 0)
 
 					/* call memcpy instead of inline code */
-#define TARGET_MEMCPY		(target_flags & MASK_MEMCPY)
+#define TARGET_MEMCPY		((target_flags & MASK_MEMCPY) != 0)
 
 					/* .abicalls, etc from Pyramid V.4 */
-#define TARGET_ABICALLS		(target_flags & MASK_ABICALLS)
-#define TARGET_XGOT		(target_flags & MASK_XGOT)
+#define TARGET_ABICALLS		((target_flags & MASK_ABICALLS) != 0)
+#define TARGET_XGOT		((target_flags & MASK_XGOT) != 0)
 
 					/* software floating point */
-#define TARGET_SOFT_FLOAT	(target_flags & MASK_SOFT_FLOAT)
+#define TARGET_SOFT_FLOAT	((target_flags & MASK_SOFT_FLOAT) != 0)
 #define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
 
 					/* always call through a register */
-#define TARGET_LONG_CALLS	(target_flags & MASK_LONG_CALLS)
+#define TARGET_LONG_CALLS	((target_flags & MASK_LONG_CALLS) != 0)
 
 					/* for embedded systems, optimize for
 					   reduced RAM space instead of for
 					   fastest code.  */
-#define TARGET_EMBEDDED_DATA	(target_flags & MASK_EMBEDDED_DATA)
+#define TARGET_EMBEDDED_DATA	((target_flags & MASK_EMBEDDED_DATA) != 0)
 
 					/* always store uninitialized const
 					   variables in rodata, requires
 					   TARGET_EMBEDDED_DATA.  */
-#define TARGET_UNINIT_CONST_IN_RODATA	(target_flags & MASK_UNINIT_CONST_IN_RODATA)
+#define TARGET_UNINIT_CONST_IN_RODATA	\
+			((target_flags & MASK_UNINIT_CONST_IN_RODATA) != 0)
 
 					/* generate big endian code.  */
-#define TARGET_BIG_ENDIAN	(target_flags & MASK_BIG_ENDIAN)
+#define TARGET_BIG_ENDIAN	((target_flags & MASK_BIG_ENDIAN) != 0)
 
-#define TARGET_SINGLE_FLOAT	(target_flags & MASK_SINGLE_FLOAT)
+#define TARGET_SINGLE_FLOAT	((target_flags & MASK_SINGLE_FLOAT) != 0)
 #define TARGET_DOUBLE_FLOAT	(! TARGET_SINGLE_FLOAT)
 
-#define TARGET_MAD		(target_flags & MASK_MAD)
+#define TARGET_MAD		((target_flags & MASK_MAD) != 0)
 
-#define TARGET_FUSED_MADD	(! (target_flags & MASK_NO_FUSED_MADD))
+#define TARGET_FUSED_MADD	((target_flags & MASK_NO_FUSED_MADD) == 0)
 
-#define TARGET_4300_MUL_FIX     (target_flags & MASK_4300_MUL_FIX)
+#define TARGET_4300_MUL_FIX     ((target_flags & MASK_4300_MUL_FIX) != 0)
 
-#define TARGET_CHECK_ZERO_DIV   (!(target_flags & MASK_NO_CHECK_ZERO_DIV))
+#define TARGET_CHECK_ZERO_DIV   ((target_flags & MASK_NO_CHECK_ZERO_DIV) == 0)
 
-#define TARGET_BRANCHLIKELY	(target_flags & MASK_BRANCHLIKELY)
+#define TARGET_BRANCHLIKELY	((target_flags & MASK_BRANCHLIKELY) != 0)
 
-#define TARGET_FIX_SB1		(target_flags & MASK_FIX_SB1)
+#define TARGET_FIX_SB1		((target_flags & MASK_FIX_SB1) != 0)
 
 					/* Work around R4000 errata.  */
-#define TARGET_FIX_R4000	(target_flags & MASK_FIX_R4000)
+#define TARGET_FIX_R4000	((target_flags & MASK_FIX_R4000) != 0)
 
 					/* Work around R4400 errata.  */
-#define TARGET_FIX_R4400	(target_flags & MASK_FIX_R4400)
-#define TARGET_FIX_VR4120	(target_flags & MASK_FIX_VR4120)
-#define TARGET_VR4130_ALIGN	(target_flags & MASK_VR4130_ALIGN)
+#define TARGET_FIX_R4400	((target_flags & MASK_FIX_R4400) != 0)
+#define TARGET_FIX_VR4120	((target_flags & MASK_FIX_VR4120) != 0)
+#define TARGET_VR4130_ALIGN	((target_flags & MASK_VR4130_ALIGN) != 0)
 
-#define TARGET_FP_EXCEPTIONS	(target_flags & MASK_FP_EXCEPTIONS)
+#define TARGET_FP_EXCEPTIONS	((target_flags & MASK_FP_EXCEPTIONS) != 0)
 
 /* True if we should use NewABI-style relocation operators for
    symbolic addresses.  This is never true for mips16 code,
    which has its own conventions.  */
 
-#define TARGET_EXPLICIT_RELOCS	(target_flags & MASK_EXPLICIT_RELOCS)
+#define TARGET_EXPLICIT_RELOCS	((target_flags & MASK_EXPLICIT_RELOCS) != 0)
 
 
 /* True if the call patterns should be split into a jalr followed by
@@ -303,7 +304,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TARGET_GPWORD (TARGET_ABICALLS && !(TARGET_NEWABI && TARGET_IRIX))
 
 					/* Generate mips16 code */
-#define TARGET_MIPS16		(target_flags & MASK_MIPS16)
+#define TARGET_MIPS16		((target_flags & MASK_MIPS16) != 0)
 
 /* Generic ISA defines.  */
 #define ISA_MIPS1		    (mips_isa == 1)
