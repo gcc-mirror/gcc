@@ -33,9 +33,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "real.h"
 #include "tree-gimple.h"
 #include "flags.h"
-#include <gmp.h>
 #include <assert.h>
 #include "gfortran.h"
+#include "arith.h"
 #include "intrinsic.h"
 #include "trans.h"
 #include "trans-const.h"
@@ -308,7 +308,7 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, int op)
   tree arg;
   tree tmp;
   tree cond;
-  mpf_t huge;
+  mpfr_t huge;
   int n;
   int kind;
 
@@ -363,14 +363,15 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, int op)
   arg = gfc_evaluate_now (arg, &se->pre);
 
   /* Test if the value is too large to handle sensibly.  */
-  mpf_init (huge);
+  gfc_set_model_kind (kind);
+  mpfr_init (huge);
   n = gfc_validate_kind (BT_INTEGER, kind);
-  mpf_set_z (huge, gfc_integer_kinds[n].huge);
-  tmp = gfc_conv_mpf_to_tree (huge, kind);
+  mpfr_set_z (huge, gfc_integer_kinds[n].huge, GFC_RND_MODE);
+  tmp = gfc_conv_mpfr_to_tree (huge, kind);
   cond = build (LT_EXPR, boolean_type_node, arg, tmp);
 
-  mpf_neg (huge, huge);
-  tmp = gfc_conv_mpf_to_tree (huge, kind);
+  mpfr_neg (huge, huge, GFC_RND_MODE);
+  tmp = gfc_conv_mpfr_to_tree (huge, kind);
   tmp = build (GT_EXPR, boolean_type_node, arg, tmp);
   cond = build (TRUTH_AND_EXPR, boolean_type_node, cond, tmp);
   itype = gfc_get_int_type (kind);
@@ -378,6 +379,7 @@ gfc_conv_intrinsic_aint (gfc_se * se, gfc_expr * expr, int op)
   tmp = build_fix_expr (&se->pre, arg, itype, op);
   tmp = convert (type, tmp);
   se->expr = build (COND_EXPR, type, cond, tmp, arg);
+  mpfr_clear (huge);
 }
 
 
@@ -777,7 +779,7 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
   tree zero;
   tree test;
   tree test2;
-  mpf_t huge;
+  mpfr_t huge;
   int n;
 
   arg = gfc_conv_intrinsic_function_args (se, expr);
@@ -799,14 +801,15 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
 
       tmp = build (RDIV_EXPR, type, arg, arg2);
       /* Test if the value is too large to handle sensibly.  */
-      mpf_init (huge);
+      gfc_set_model_kind (expr->ts.kind);
+      mpfr_init (huge);
       n = gfc_validate_kind (BT_INTEGER, expr->ts.kind);
-      mpf_set_z (huge, gfc_integer_kinds[n].huge);
-      test = gfc_conv_mpf_to_tree (huge, expr->ts.kind);
+      mpfr_set_z (huge, gfc_integer_kinds[n].huge, GFC_RND_MODE);
+      test = gfc_conv_mpfr_to_tree (huge, expr->ts.kind);
       test2 = build (LT_EXPR, boolean_type_node, tmp, test);
 
-      mpf_neg (huge, huge);
-      test = gfc_conv_mpf_to_tree (huge, expr->ts.kind);
+      mpfr_neg (huge, huge, GFC_RND_MODE);
+      test = gfc_conv_mpfr_to_tree (huge, expr->ts.kind);
       test = build (GT_EXPR, boolean_type_node, tmp, test);
       test2 = build (TRUTH_AND_EXPR, boolean_type_node, test, test2);
 
@@ -816,6 +819,7 @@ gfc_conv_intrinsic_mod (gfc_se * se, gfc_expr * expr, int modulo)
       tmp = build (COND_EXPR, type, test2, tmp, arg);
       tmp = build (MULT_EXPR, type, tmp, arg2);
       se->expr = build (MINUS_EXPR, type, arg, tmp);
+      mpfr_clear (huge);
       break;
 
     default:
@@ -1423,7 +1427,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
   switch (arrayexpr->ts.type)
     {
     case BT_REAL:
-      tmp = gfc_conv_mpf_to_tree (gfc_real_kinds[n].huge, arrayexpr->ts.kind);
+      tmp = gfc_conv_mpfr_to_tree (gfc_real_kinds[n].huge, arrayexpr->ts.kind);
       break;
 
     case BT_INTEGER:
@@ -1564,7 +1568,7 @@ gfc_conv_intrinsic_minmaxval (gfc_se * se, gfc_expr * expr, int op)
   switch (expr->ts.type)
     {
     case BT_REAL:
-      tmp = gfc_conv_mpf_to_tree (gfc_real_kinds[n].huge, expr->ts.kind);
+      tmp = gfc_conv_mpfr_to_tree (gfc_real_kinds[n].huge, expr->ts.kind);
       break;
 
     case BT_INTEGER:

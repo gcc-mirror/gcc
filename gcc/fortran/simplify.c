@@ -30,9 +30,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "arith.h"
 #include "intrinsic.h"
 
-static mpf_t mpf_zero, mpf_half, mpf_one;
-static mpz_t mpz_zero;
-
 gfc_expr gfc_bad_expr;
 
 
@@ -148,7 +145,7 @@ gfc_expr *
 gfc_simplify_abs (gfc_expr * e)
 {
   gfc_expr *result;
-  mpf_t a, b;
+  mpfr_t a, b;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -166,7 +163,7 @@ gfc_simplify_abs (gfc_expr * e)
     case BT_REAL:
       result = gfc_constant_result (BT_REAL, e->ts.kind, &e->where);
 
-      mpf_abs (result->value.real, e->value.real);
+      mpfr_abs (result->value.real, e->value.real, GFC_RND_MODE);
 
       result = range_check (result, "ABS");
       break;
@@ -174,17 +171,17 @@ gfc_simplify_abs (gfc_expr * e)
     case BT_COMPLEX:
       result = gfc_constant_result (BT_REAL, e->ts.kind, &e->where);
 
-      mpf_init (a);
-      mpf_mul (a, e->value.complex.r, e->value.complex.r);
+      gfc_set_model_kind (e->ts.kind);
+      mpfr_init (a);
+      mpfr_init (b);
+      /* FIXME:  Possible numerical problems.  */
+      mpfr_mul (a, e->value.complex.r, e->value.complex.r, GFC_RND_MODE);
+      mpfr_mul (b, e->value.complex.i, e->value.complex.i, GFC_RND_MODE);
+      mpfr_add (a, a, b, GFC_RND_MODE);
+      mpfr_sqrt (result->value.real, a, GFC_RND_MODE);
 
-      mpf_init (b);
-      mpf_mul (b, e->value.complex.i, e->value.complex.i);
-
-      mpf_add (a, a, b);
-      mpf_sqrt (result->value.real, a);
-
-      mpf_clear (a);
-      mpf_clear (b);
+      mpfr_clear (a);
+      mpfr_clear (b);
 
       result = range_check (result, "CABS");
       break;
@@ -231,12 +228,11 @@ gfc_expr *
 gfc_simplify_acos (gfc_expr * x)
 {
   gfc_expr *result;
-  mpf_t negative, square, term;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (mpf_cmp_si (x->value.real, 1) > 0 || mpf_cmp_si (x->value.real, -1) < 0)
+  if (mpfr_cmp_si (x->value.real, 1) > 0 || mpfr_cmp_si (x->value.real, -1) < 0)
     {
       gfc_error ("Argument of ACOS at %L must be between -1 and 1",
 		 &x->where);
@@ -245,33 +241,7 @@ gfc_simplify_acos (gfc_expr * x)
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
-  if (mpf_cmp_si (x->value.real, 1) == 0)
-    {
-      mpf_set_ui (result->value.real, 0);
-      return range_check (result, "ACOS");
-    }
-
-  if (mpf_cmp_si (x->value.real, -1) == 0)
-    {
-      mpf_set (result->value.real, pi);
-      return range_check (result, "ACOS");
-    }
-
-  mpf_init (negative);
-  mpf_init (square);
-  mpf_init (term);
-
-  mpf_pow_ui (square, x->value.real, 2);
-  mpf_ui_sub (term, 1, square);
-  mpf_sqrt (term, term);
-  mpf_div (term, x->value.real, term);
-  mpf_neg (term, term);
-  arctangent (&term, &negative);
-  mpf_add (result->value.real, half_pi, negative);
-
-  mpf_clear (negative);
-  mpf_clear (square);
-  mpf_clear (term);
+  mpfr_acos (result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "ACOS");
 }
@@ -370,7 +340,7 @@ gfc_simplify_aimag (gfc_expr * e)
     return NULL;
 
   result = gfc_constant_result (BT_REAL, e->ts.kind, &e->where);
-  mpf_set (result->value.real, e->value.complex.i);
+  mpfr_set (result->value.real, e->value.complex.i, GFC_RND_MODE);
 
   return range_check (result, "AIMAG");
 }
@@ -391,7 +361,7 @@ gfc_simplify_aint (gfc_expr * e, gfc_expr * k)
 
   rtrunc = gfc_copy_expr (e);
 
-  mpf_trunc (rtrunc->value.real, e->value.real);
+  mpfr_trunc (rtrunc->value.real, e->value.real);
 
   result = gfc_real2real (rtrunc, kind);
   gfc_free_expr (rtrunc);
@@ -410,7 +380,7 @@ gfc_simplify_dint (gfc_expr * e)
 
   rtrunc = gfc_copy_expr (e);
 
-  mpf_trunc (rtrunc->value.real, e->value.real);
+  mpfr_trunc (rtrunc->value.real, e->value.real);
 
   result = gfc_real2real (rtrunc, gfc_default_double_kind ());
   gfc_free_expr (rtrunc);
@@ -425,6 +395,7 @@ gfc_simplify_anint (gfc_expr * e, gfc_expr * k)
 {
   gfc_expr *rtrunc, *result;
   int kind, cmp;
+  mpfr_t half;
 
   kind = get_kind (BT_REAL, k, "ANINT", e->ts.kind);
   if (kind == -1)
@@ -437,22 +408,27 @@ gfc_simplify_anint (gfc_expr * e, gfc_expr * k)
 
   rtrunc = gfc_copy_expr (e);
 
-  cmp = mpf_cmp_ui (e->value.real, 0);
+  cmp = mpfr_cmp_ui (e->value.real, 0);
+
+  gfc_set_model_kind (kind);
+  mpfr_init (half);
+  mpfr_set_str (half, "0.5", 10, GFC_RND_MODE);
 
   if (cmp > 0)
     {
-      mpf_add (rtrunc->value.real, e->value.real, mpf_half);
-      mpf_trunc (result->value.real, rtrunc->value.real);
+      mpfr_add (rtrunc->value.real, e->value.real, half, GFC_RND_MODE);
+      mpfr_trunc (result->value.real, rtrunc->value.real);
     }
   else if (cmp < 0)
     {
-      mpf_sub (rtrunc->value.real, e->value.real, mpf_half);
-      mpf_trunc (result->value.real, rtrunc->value.real);
+      mpfr_sub (rtrunc->value.real, e->value.real, half, GFC_RND_MODE);
+      mpfr_trunc (result->value.real, rtrunc->value.real);
     }
   else
-    mpf_set_ui (result->value.real, 0);
+    mpfr_set_ui (result->value.real, 0, GFC_RND_MODE);
 
   gfc_free_expr (rtrunc);
+  mpfr_clear (half);
 
   return range_check (result, "ANINT");
 }
@@ -463,6 +439,7 @@ gfc_simplify_dnint (gfc_expr * e)
 {
   gfc_expr *rtrunc, *result;
   int cmp;
+  mpfr_t half;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -472,22 +449,27 @@ gfc_simplify_dnint (gfc_expr * e)
 
   rtrunc = gfc_copy_expr (e);
 
-  cmp = mpf_cmp_ui (e->value.real, 0);
+  cmp = mpfr_cmp_ui (e->value.real, 0);
+
+  gfc_set_model_kind (gfc_default_double_kind ());
+  mpfr_init (half);
+  mpfr_set_str (half, "0.5", 10, GFC_RND_MODE);
 
   if (cmp > 0)
     {
-      mpf_add (rtrunc->value.real, e->value.real, mpf_half);
-      mpf_trunc (result->value.real, rtrunc->value.real);
+      mpfr_add (rtrunc->value.real, e->value.real, half, GFC_RND_MODE);
+      mpfr_trunc (result->value.real, rtrunc->value.real);
     }
   else if (cmp < 0)
     {
-      mpf_sub (rtrunc->value.real, e->value.real, mpf_half);
-      mpf_trunc (result->value.real, rtrunc->value.real);
+      mpfr_sub (rtrunc->value.real, e->value.real, half, GFC_RND_MODE);
+      mpfr_trunc (result->value.real, rtrunc->value.real);
     }
   else
-    mpf_set_ui (result->value.real, 0);
+    mpfr_set_ui (result->value.real, 0, GFC_RND_MODE);
 
   gfc_free_expr (rtrunc);
+  mpfr_clear (half);
 
   return range_check (result, "DNINT");
 }
@@ -497,12 +479,11 @@ gfc_expr *
 gfc_simplify_asin (gfc_expr * x)
 {
   gfc_expr *result;
-  mpf_t negative, square, term;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (mpf_cmp_si (x->value.real, 1) > 0 || mpf_cmp_si (x->value.real, -1) < 0)
+  if (mpfr_cmp_si (x->value.real, 1) > 0 || mpfr_cmp_si (x->value.real, -1) < 0)
     {
       gfc_error ("Argument of ASIN at %L must be between -1 and 1",
 		 &x->where);
@@ -511,32 +492,7 @@ gfc_simplify_asin (gfc_expr * x)
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
-  if (mpf_cmp_si (x->value.real, 1) == 0)
-    {
-      mpf_set (result->value.real, half_pi);
-      return range_check (result, "ASIN");
-    }
-
-  if (mpf_cmp_si (x->value.real, -1) == 0)
-    {
-      mpf_init (negative);
-      mpf_neg (negative, half_pi);
-      mpf_set (result->value.real, negative);
-      mpf_clear (negative);
-      return range_check (result, "ASIN");
-    }
-
-  mpf_init (square);
-  mpf_init (term);
-
-  mpf_pow_ui (square, x->value.real, 2);
-  mpf_ui_sub (term, 1, square);
-  mpf_sqrt (term, term);
-  mpf_div (term, x->value.real, term);
-  arctangent (&term, &result->value.real);
-
-  mpf_clear (square);
-  mpf_clear (term);
+  mpfr_asin(result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "ASIN");
 }
@@ -552,7 +508,7 @@ gfc_simplify_atan (gfc_expr * x)
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
-  arctangent (&x->value.real, &result->value.real);
+  mpfr_atan(result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "ATAN");
 
@@ -569,17 +525,16 @@ gfc_simplify_atan2 (gfc_expr * y, gfc_expr * x)
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
-
-  if (mpf_sgn (y->value.real) == 0 && mpf_sgn (x->value.real) == 0)
+  if (mpfr_sgn (y->value.real) == 0 && mpfr_sgn (x->value.real) == 0)
     {
       gfc_error
-	("If first argument of ATAN2 %L is zero, the second argument "
+	("If first argument of ATAN2 %L is zero, then the second argument "
 	  "must not be zero", &x->where);
       gfc_free_expr (result);
       return &gfc_bad_expr;
     }
 
-  arctangent2 (&y->value.real, &x->value.real, &result->value.real);
+  arctangent2 (y->value.real, x->value.real, result->value.real);
 
   return range_check (result, "ATAN2");
 
@@ -635,8 +590,8 @@ gfc_simplify_ceiling (gfc_expr * e, gfc_expr * k)
 
   ceil = gfc_copy_expr (e);
 
-  mpf_ceil (ceil->value.real, e->value.real);
-  mpz_set_f (result->value.integer, ceil->value.real);
+  mpfr_ceil (ceil->value.real, e->value.real);
+  gfc_mpfr_to_mpz(result->value.integer, ceil->value.real);
 
   gfc_free_expr (ceil);
 
@@ -684,21 +639,21 @@ simplify_cmplx (const char *name, gfc_expr * x, gfc_expr * y, int kind)
 
   result = gfc_constant_result (BT_COMPLEX, kind, &x->where);
 
-  mpf_set_ui (result->value.complex.i, 0);
+  mpfr_set_ui (result->value.complex.i, 0, GFC_RND_MODE);
 
   switch (x->ts.type)
     {
     case BT_INTEGER:
-      mpf_set_z (result->value.complex.r, x->value.integer);
+      mpfr_set_z (result->value.complex.r, x->value.integer, GFC_RND_MODE);
       break;
 
     case BT_REAL:
-      mpf_set (result->value.complex.r, x->value.real);
+      mpfr_set (result->value.complex.r, x->value.real, GFC_RND_MODE);
       break;
 
     case BT_COMPLEX:
-      mpf_set (result->value.complex.r, x->value.complex.r);
-      mpf_set (result->value.complex.i, x->value.complex.i);
+      mpfr_set (result->value.complex.r, x->value.complex.r, GFC_RND_MODE);
+      mpfr_set (result->value.complex.i, x->value.complex.i, GFC_RND_MODE);
       break;
 
     default:
@@ -710,11 +665,11 @@ simplify_cmplx (const char *name, gfc_expr * x, gfc_expr * y, int kind)
       switch (y->ts.type)
 	{
 	case BT_INTEGER:
-	  mpf_set_z (result->value.complex.i, y->value.integer);
+	  mpfr_set_z (result->value.complex.i, y->value.integer, GFC_RND_MODE);
 	  break;
 
 	case BT_REAL:
-	  mpf_set (result->value.complex.i, y->value.real);
+	  mpfr_set (result->value.complex.i, y->value.real, GFC_RND_MODE);
 	  break;
 
 	default:
@@ -752,7 +707,7 @@ gfc_simplify_conjg (gfc_expr * e)
     return NULL;
 
   result = gfc_copy_expr (e);
-  mpf_neg (result->value.complex.i, result->value.complex.i);
+  mpfr_neg (result->value.complex.i, result->value.complex.i, GFC_RND_MODE);
 
   return range_check (result, "CONJG");
 }
@@ -762,7 +717,7 @@ gfc_expr *
 gfc_simplify_cos (gfc_expr * x)
 {
   gfc_expr *result;
-  mpf_t xp, xq;
+  mpfr_t xp, xq;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -772,23 +727,24 @@ gfc_simplify_cos (gfc_expr * x)
   switch (x->ts.type)
     {
     case BT_REAL:
-      cosine (&x->value.real, &result->value.real);
+      mpfr_cos (result->value.real, x->value.real, GFC_RND_MODE);
       break;
     case BT_COMPLEX:
-      mpf_init (xp);
-      mpf_init (xq);
+      gfc_set_model_kind (x->ts.kind);
+      mpfr_init (xp);
+      mpfr_init (xq);
 
-      cosine (&x->value.complex.r, &xp);
-      hypercos (&x->value.complex.i, &xq);
-      mpf_mul (result->value.complex.r, xp, xq);
+      mpfr_cos  (xp, x->value.complex.r, GFC_RND_MODE);
+      mpfr_cosh (xq, x->value.complex.i, GFC_RND_MODE);
+      mpfr_mul(result->value.complex.r, xp, xq, GFC_RND_MODE);
 
-      sine (&x->value.complex.r, &xp);
-      hypersine (&x->value.complex.i, &xq);
-      mpf_mul (xp, xp, xq);
-      mpf_neg (result->value.complex.i, xp);
+      mpfr_sin  (xp, x->value.complex.r, GFC_RND_MODE);
+      mpfr_sinh (xq, x->value.complex.i, GFC_RND_MODE);
+      mpfr_mul (xp, xp, xq, GFC_RND_MODE);
+      mpfr_neg (result->value.complex.i, xp, GFC_RND_MODE );
 
-      mpf_clear (xp);
-      mpf_clear (xq);
+      mpfr_clear (xp);
+      mpfr_clear (xq);
       break;
     default:
       gfc_internal_error ("in gfc_simplify_cos(): Bad type");
@@ -809,7 +765,7 @@ gfc_simplify_cosh (gfc_expr * x)
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
-  hypercos (&x->value.real, &result->value.real);
+  mpfr_cosh (result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "COSH");
 }
@@ -902,15 +858,15 @@ gfc_simplify_dim (gfc_expr * x, gfc_expr * y)
       if (mpz_cmp (x->value.integer, y->value.integer) > 0)
 	mpz_sub (result->value.integer, x->value.integer, y->value.integer);
       else
-	mpz_set (result->value.integer, mpz_zero);
+	mpz_set_ui (result->value.integer, 0);
 
       break;
 
     case BT_REAL:
-      if (mpf_cmp (x->value.real, y->value.real) > 0)
-	mpf_sub (result->value.real, x->value.real, y->value.real);
+      if (mpfr_cmp (x->value.real, y->value.real) > 0)
+	mpfr_sub (result->value.real, x->value.real, y->value.real, GFC_RND_MODE);
       else
-	mpf_set (result->value.real, mpf_zero);
+	mpfr_set_ui (result->value.real, 0, GFC_RND_MODE);
 
       break;
 
@@ -925,7 +881,7 @@ gfc_simplify_dim (gfc_expr * x, gfc_expr * y)
 gfc_expr *
 gfc_simplify_dprod (gfc_expr * x, gfc_expr * y)
 {
-  gfc_expr *mult1, *mult2, *result;
+  gfc_expr *a1, *a2, *result;
 
   if (x->expr_type != EXPR_CONSTANT || y->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -933,13 +889,13 @@ gfc_simplify_dprod (gfc_expr * x, gfc_expr * y)
   result =
     gfc_constant_result (BT_REAL, gfc_default_double_kind (), &x->where);
 
-  mult1 = gfc_real2real (x, gfc_default_double_kind ());
-  mult2 = gfc_real2real (y, gfc_default_double_kind ());
+  a1 = gfc_real2real (x, gfc_default_double_kind ());
+  a2 = gfc_real2real (y, gfc_default_double_kind ());
 
-  mpf_mul (result->value.real, mult1->value.real, mult2->value.real);
+  mpfr_mul (result->value.real, a1->value.real, a2->value.real, GFC_RND_MODE);
 
-  gfc_free_expr (mult1);
-  gfc_free_expr (mult2);
+  gfc_free_expr (a1);
+  gfc_free_expr (a2);
 
   return range_check (result, "DPROD");
 }
@@ -957,7 +913,7 @@ gfc_simplify_epsilon (gfc_expr * e)
 
   result = gfc_constant_result (BT_REAL, e->ts.kind, &e->where);
 
-  mpf_set (result->value.real, gfc_real_kinds[i].epsilon);
+  mpfr_set (result->value.real, gfc_real_kinds[i].epsilon, GFC_RND_MODE);
 
   return range_check (result, "EPSILON");
 }
@@ -967,86 +923,30 @@ gfc_expr *
 gfc_simplify_exp (gfc_expr * x)
 {
   gfc_expr *result;
-  mpf_t xp, xq;
-  double ln2, absval, rhuge;
+  mpfr_t xp, xq;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
-  /* Exactitude doesn't matter here */
-  ln2 = .6931472;
-  rhuge = ln2 * mpz_get_d (gfc_integer_kinds[0].huge);
-
   switch (x->ts.type)
     {
     case BT_REAL:
-      absval = mpf_get_d (x->value.real);
-      if (absval < 0)
-	absval = -absval;
-      if (absval > rhuge)
-	{
-	  /* Underflow (set arg to zero) if x is negative and its
-	     magnitude is greater than the maximum C long int times
-	     ln2, because the exponential method in arith.c will fail
-	     for such values.  */
-	  if (mpf_cmp_ui (x->value.real, 0) < 0)
-	    {
-	      if (pedantic == 1)
-		gfc_warning_now
-		  ("Argument of EXP at %L is negative and too large, "
-		   "setting result to zero", &x->where);
-	      mpf_set_ui (result->value.real, 0);
-	      return range_check (result, "EXP");
-	    }
-	  /* Overflow if magnitude of x is greater than C long int
-             huge times ln2.  */
-	  else
-	    {
-	      gfc_error ("Argument of EXP at %L too large", &x->where);
-	      gfc_free_expr (result);
-	      return &gfc_bad_expr;
-	    }
-	}
-      exponential (&x->value.real, &result->value.real);
+      mpfr_exp(result->value.real, x->value.real, GFC_RND_MODE);
       break;
 
     case BT_COMPLEX:
-      /* Using Euler's formula.  */
-      absval = mpf_get_d (x->value.complex.r);
-      if (absval < 0)
-	absval = -absval;
-      if (absval > rhuge)
-	{
-	  if (mpf_cmp_ui (x->value.complex.r, 0) < 0)
-	    {
-	      if (pedantic == 1)
-		gfc_warning_now
-		  ("Real part of argument of EXP at %L is negative "
-		   "and too large, setting result to zero", &x->where);
-
-	      mpf_set_ui (result->value.complex.r, 0);
-	      mpf_set_ui (result->value.complex.i, 0);
-	      return range_check (result, "EXP");
-	    }
-	  else
-	    {
-	      gfc_error ("Real part of argument of EXP at %L too large",
-			 &x->where);
-	      gfc_free_expr (result);
-	      return &gfc_bad_expr;
-	    }
-	}
-      mpf_init (xp);
-      mpf_init (xq);
-      exponential (&x->value.complex.r, &xq);
-      cosine (&x->value.complex.i, &xp);
-      mpf_mul (result->value.complex.r, xq, xp);
-      sine (&x->value.complex.i, &xp);
-      mpf_mul (result->value.complex.i, xq, xp);
-      mpf_clear (xp);
-      mpf_clear (xq);
+      gfc_set_model_kind (x->ts.kind);
+      mpfr_init (xp);
+      mpfr_init (xq);
+      mpfr_exp (xq, x->value.complex.r, GFC_RND_MODE);
+      mpfr_cos (xp, x->value.complex.i, GFC_RND_MODE);
+      mpfr_mul (result->value.complex.r, xq, xp, GFC_RND_MODE);
+      mpfr_sin (xp, x->value.complex.i, GFC_RND_MODE);
+      mpfr_mul (result->value.complex.i, xq, xp, GFC_RND_MODE);
+      mpfr_clear (xp);
+      mpfr_clear (xq);
       break;
 
     default:
@@ -1056,11 +956,11 @@ gfc_simplify_exp (gfc_expr * x)
   return range_check (result, "EXP");
 }
 
-
+/* FIXME:  MPFR should be able to do this better */
 gfc_expr *
 gfc_simplify_exponent (gfc_expr * x)
 {
-  mpf_t i2, absv, ln2, lnx;
+  mpfr_t i2, absv, ln2, lnx, zero;
   gfc_expr *result;
 
   if (x->expr_type != EXPR_CONSTANT)
@@ -1069,31 +969,39 @@ gfc_simplify_exponent (gfc_expr * x)
   result = gfc_constant_result (BT_INTEGER, gfc_default_integer_kind (),
 				&x->where);
 
-  if (mpf_cmp (x->value.real, mpf_zero) == 0)
+  gfc_set_model (x->value.real);
+  mpfr_init (zero);
+  mpfr_set_ui (zero, 0, GFC_RND_MODE);
+
+  if (mpfr_cmp (x->value.real, zero) == 0)
     {
       mpz_set_ui (result->value.integer, 0);
+      mpfr_clear (zero);
       return result;
     }
 
-  mpf_init_set_ui (i2, 2);
-  mpf_init (absv);
-  mpf_init (ln2);
-  mpf_init (lnx);
+  mpfr_init (i2);
+  mpfr_init (absv);
+  mpfr_init (ln2);
+  mpfr_init (lnx);
 
-  natural_logarithm (&i2, &ln2);
+  mpfr_set_ui (i2, 2, GFC_RND_MODE);
 
-  mpf_abs (absv, x->value.real);
-  natural_logarithm (&absv, &lnx);
+  mpfr_log (ln2, i2, GFC_RND_MODE); 
+  mpfr_abs (absv, x->value.real, GFC_RND_MODE);
+  mpfr_log (lnx, absv, GFC_RND_MODE); 
 
-  mpf_div (lnx, lnx, ln2);
-  mpf_trunc (lnx, lnx);
-  mpf_add_ui (lnx, lnx, 1);
-  mpz_set_f (result->value.integer, lnx);
+  mpfr_div (lnx, lnx, ln2, GFC_RND_MODE);
+  mpfr_trunc (lnx, lnx);
+  mpfr_add_ui (lnx, lnx, 1, GFC_RND_MODE);
 
-  mpf_clear (i2);
-  mpf_clear (ln2);
-  mpf_clear (lnx);
-  mpf_clear (absv);
+  gfc_mpfr_to_mpz (result->value.integer, lnx);
+
+  mpfr_clear (i2);
+  mpfr_clear (ln2);
+  mpfr_clear (lnx);
+  mpfr_clear (absv);
+  mpfr_clear (zero);
 
   return range_check (result, "EXPONENT");
 }
@@ -1116,7 +1024,7 @@ gfc_expr *
 gfc_simplify_floor (gfc_expr * e, gfc_expr * k)
 {
   gfc_expr *result;
-  mpf_t floor;
+  mpfr_t floor;
   int kind;
 
   kind = get_kind (BT_REAL, k, "FLOOR", gfc_default_real_kind ());
@@ -1128,10 +1036,13 @@ gfc_simplify_floor (gfc_expr * e, gfc_expr * k)
 
   result = gfc_constant_result (BT_INTEGER, kind, &e->where);
 
-  mpf_init (floor);
-  mpf_floor (floor, e->value.real);
-  mpz_set_f (result->value.integer, floor);
-  mpf_clear (floor);
+  gfc_set_model_kind (kind);
+  mpfr_init (floor);
+  mpfr_floor (floor, e->value.real);
+
+  gfc_mpfr_to_mpz (result->value.integer, floor);
+
+  mpfr_clear (floor);
 
   return range_check (result, "FLOOR");
 }
@@ -1141,7 +1052,7 @@ gfc_expr *
 gfc_simplify_fraction (gfc_expr * x)
 {
   gfc_expr *result;
-  mpf_t i2, absv, ln2, lnx, pow2;
+  mpfr_t i2, absv, ln2, lnx, pow2, zero;
   unsigned long exp2;
 
   if (x->expr_type != EXPR_CONSTANT)
@@ -1149,37 +1060,44 @@ gfc_simplify_fraction (gfc_expr * x)
 
   result = gfc_constant_result (BT_REAL, x->ts.kind, &x->where);
 
-  if (mpf_cmp (x->value.real, mpf_zero) == 0)
+  gfc_set_model_kind (x->ts.kind);
+  mpfr_init (zero);
+  mpfr_set_ui (zero, 0, GFC_RND_MODE);
+
+  if (mpfr_cmp (x->value.real, zero) == 0)
     {
-      mpf_set (result->value.real, mpf_zero);
+      mpfr_set (result->value.real, zero, GFC_RND_MODE);
+      mpfr_clear (zero);
       return result;
     }
 
-  mpf_init_set_ui (i2, 2);
-  mpf_init (absv);
-  mpf_init (ln2);
-  mpf_init (lnx);
-  mpf_init (pow2);
+  mpfr_init (i2);
+  mpfr_init (absv);
+  mpfr_init (ln2);
+  mpfr_init (lnx);
+  mpfr_init (pow2);
 
-  natural_logarithm (&i2, &ln2);
+  mpfr_set_ui (i2, 2, GFC_RND_MODE);
 
-  mpf_abs (absv, x->value.real);
-  natural_logarithm (&absv, &lnx);
+  mpfr_log (ln2, i2, GFC_RND_MODE);
+  mpfr_abs (absv, x->value.real, GFC_RND_MODE);
+  mpfr_log (lnx, absv, GFC_RND_MODE);
 
-  mpf_div (lnx, lnx, ln2);
-  mpf_trunc (lnx, lnx);
-  mpf_add_ui (lnx, lnx, 1);
+  mpfr_div (lnx, lnx, ln2, GFC_RND_MODE);
+  mpfr_trunc (lnx, lnx);
+  mpfr_add_ui (lnx, lnx, 1, GFC_RND_MODE);
 
-  exp2 = (unsigned long) mpf_get_d (lnx);
-  mpf_pow_ui (pow2, i2, exp2);
+  exp2 = (unsigned long) mpfr_get_d (lnx, GFC_RND_MODE);
+  mpfr_pow_ui (pow2, i2, exp2, GFC_RND_MODE);
 
-  mpf_div (result->value.real, absv, pow2);
+  mpfr_div (result->value.real, absv, pow2, GFC_RND_MODE);
 
-  mpf_clear (i2);
-  mpf_clear (ln2);
-  mpf_clear (absv);
-  mpf_clear (lnx);
-  mpf_clear (pow2);
+  mpfr_clear (i2);
+  mpfr_clear (ln2);
+  mpfr_clear (absv);
+  mpfr_clear (lnx);
+  mpfr_clear (pow2);
+  mpfr_clear (zero);
 
   return range_check (result, "FRACTION");
 }
@@ -1204,7 +1122,7 @@ gfc_simplify_huge (gfc_expr * e)
       break;
 
     case BT_REAL:
-      mpf_set (result->value.real, gfc_real_kinds[i].huge);
+      mpfr_set (result->value.real, gfc_real_kinds[i].huge, GFC_RND_MODE);
       break;
 
     bad_type:
@@ -1605,16 +1523,16 @@ gfc_simplify_int (gfc_expr * e, gfc_expr * k)
 
     case BT_REAL:
       rtrunc = gfc_copy_expr (e);
-      mpf_trunc (rtrunc->value.real, e->value.real);
-      mpz_set_f (result->value.integer, rtrunc->value.real);
+      mpfr_trunc (rtrunc->value.real, e->value.real);
+      gfc_mpfr_to_mpz (result->value.integer, rtrunc->value.real);
       gfc_free_expr (rtrunc);
       break;
 
     case BT_COMPLEX:
       rpart = gfc_complex2real (e, kind);
       rtrunc = gfc_copy_expr (rpart);
-      mpf_trunc (rtrunc->value.real, rpart->value.real);
-      mpz_set_f (result->value.integer, rtrunc->value.real);
+      mpfr_trunc (rtrunc->value.real, rpart->value.real);
+      gfc_mpfr_to_mpz (result->value.integer, rtrunc->value.real);
       gfc_free_expr (rpart);
       gfc_free_expr (rtrunc);
       break;
@@ -1642,8 +1560,8 @@ gfc_simplify_ifix (gfc_expr * e)
 
   rtrunc = gfc_copy_expr (e);
 
-  mpf_trunc (rtrunc->value.real, e->value.real);
-  mpz_set_f (result->value.integer, rtrunc->value.real);
+  mpfr_trunc (rtrunc->value.real, e->value.real);
+  gfc_mpfr_to_mpz (result->value.integer, rtrunc->value.real);
 
   gfc_free_expr (rtrunc);
   return range_check (result, "IFIX");
@@ -1663,8 +1581,8 @@ gfc_simplify_idint (gfc_expr * e)
 
   rtrunc = gfc_copy_expr (e);
 
-  mpf_trunc (rtrunc->value.real, e->value.real);
-  mpz_set_f (result->value.integer, rtrunc->value.real);
+  mpfr_trunc (rtrunc->value.real, e->value.real);
+  gfc_mpfr_to_mpz (result->value.integer, rtrunc->value.real);
 
   gfc_free_expr (rtrunc);
   return range_check (result, "IDINT");
@@ -2000,52 +1918,60 @@ gfc_expr *
 gfc_simplify_log (gfc_expr * x)
 {
   gfc_expr *result;
-  mpf_t xr, xi;
+  mpfr_t xr, xi, zero;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
+  gfc_set_model_kind (x->ts.kind);
+  mpfr_init (zero);
+  mpfr_set_ui (zero, 0, GFC_RND_MODE);
+
   switch (x->ts.type)
     {
     case BT_REAL:
-      if (mpf_cmp (x->value.real, mpf_zero) <= 0)
+      if (mpfr_cmp (x->value.real, zero) <= 0)
 	{
 	  gfc_error
 	    ("Argument of LOG at %L cannot be less than or equal to zero",
 	     &x->where);
 	  gfc_free_expr (result);
+          mpfr_clear (zero);
 	  return &gfc_bad_expr;
 	}
 
-      natural_logarithm (&x->value.real, &result->value.real);
+      mpfr_log(result->value.real, x->value.real, GFC_RND_MODE);
+      mpfr_clear (zero);
       break;
 
     case BT_COMPLEX:
-      if ((mpf_cmp (x->value.complex.r, mpf_zero) == 0)
-	  && (mpf_cmp (x->value.complex.i, mpf_zero) == 0))
+      if ((mpfr_cmp (x->value.complex.r, zero) == 0)
+	  && (mpfr_cmp (x->value.complex.i, zero) == 0))
 	{
 	  gfc_error ("Complex argument of LOG at %L cannot be zero",
 		     &x->where);
 	  gfc_free_expr (result);
+          mpfr_clear (zero);
 	  return &gfc_bad_expr;
 	}
 
-      mpf_init (xr);
-      mpf_init (xi);
+      mpfr_init (xr);
+      mpfr_init (xi);
 
-      arctangent2 (&x->value.complex.i, &x->value.complex.r,
-	&result->value.complex.i);
+      arctangent2 (x->value.complex.i, x->value.complex.r,
+	           result->value.complex.i);
 
-      mpf_mul (xr, x->value.complex.r, x->value.complex.r);
-      mpf_mul (xi, x->value.complex.i, x->value.complex.i);
-      mpf_add (xr, xr, xi);
-      mpf_sqrt (xr, xr);
-      natural_logarithm (&xr, &result->value.complex.r);
+      mpfr_mul (xr, x->value.complex.r, x->value.complex.r, GFC_RND_MODE);
+      mpfr_mul (xi, x->value.complex.i, x->value.complex.i, GFC_RND_MODE);
+      mpfr_add (xr, xr, xi, GFC_RND_MODE);
+      mpfr_sqrt (xr, xr, GFC_RND_MODE);
+      mpfr_log (result->value.complex.r, xr, GFC_RND_MODE);
 
-      mpf_clear (xr);
-      mpf_clear (xi);
+      mpfr_clear (xr);
+      mpfr_clear (xi);
+      mpfr_clear (zero);
 
       break;
 
@@ -2061,21 +1987,28 @@ gfc_expr *
 gfc_simplify_log10 (gfc_expr * x)
 {
   gfc_expr *result;
+  mpfr_t zero;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
 
-  if (mpf_cmp (x->value.real, mpf_zero) <= 0)
+  gfc_set_model_kind (x->ts.kind);
+  mpfr_init (zero);
+  mpfr_set_ui (zero, 0, GFC_RND_MODE);
+
+  if (mpfr_cmp (x->value.real, zero) <= 0)
     {
       gfc_error
 	("Argument of LOG10 at %L cannot be less than or equal to zero",
 	 &x->where);
+      mpfr_clear (zero);
       return &gfc_bad_expr;
     }
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
-  common_logarithm (&x->value.real, &result->value.real);
+  mpfr_log10 (result->value.real, x->value.real, GFC_RND_MODE);
+  mpfr_clear (zero);
 
   return range_check (result, "LOG10");
 }
@@ -2142,9 +2075,10 @@ simplify_min_max (gfc_expr * expr, int sign)
 	  break;
 
 	case BT_REAL:
-	  if (mpf_cmp (arg->expr->value.real, extremum->expr->value.real) *
+	  if (mpfr_cmp (arg->expr->value.real, extremum->expr->value.real) *
 	      sign > 0)
-	    mpf_set (extremum->expr->value.real, arg->expr->value.real);
+	    mpfr_set (extremum->expr->value.real, arg->expr->value.real,
+                      GFC_RND_MODE);
 
 	  break;
 
@@ -2235,7 +2169,7 @@ gfc_expr *
 gfc_simplify_mod (gfc_expr * a, gfc_expr * p)
 {
   gfc_expr *result;
-  mpf_t quot, iquot, term;
+  mpfr_t quot, iquot, term;
 
   if (a->expr_type != EXPR_CONSTANT || p->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -2256,7 +2190,7 @@ gfc_simplify_mod (gfc_expr * a, gfc_expr * p)
       break;
 
     case BT_REAL:
-      if (mpf_cmp_ui (p->value.real, 0) == 0)
+      if (mpfr_cmp_ui (p->value.real, 0) == 0)
 	{
 	  /* Result is processor-dependent.  */
 	  gfc_error ("Second argument of MOD at %L is zero", &p->where);
@@ -2264,18 +2198,19 @@ gfc_simplify_mod (gfc_expr * a, gfc_expr * p)
 	  return &gfc_bad_expr;
 	}
 
-      mpf_init (quot);
-      mpf_init (iquot);
-      mpf_init (term);
+      gfc_set_model_kind (a->ts.kind);
+      mpfr_init (quot);
+      mpfr_init (iquot);
+      mpfr_init (term);
 
-      mpf_div (quot, a->value.real, p->value.real);
-      mpf_trunc (iquot, quot);
-      mpf_mul (term, iquot, p->value.real);
-      mpf_sub (result->value.real, a->value.real, term);
+      mpfr_div (quot, a->value.real, p->value.real, GFC_RND_MODE);
+      mpfr_trunc (iquot, quot);
+      mpfr_mul (term, iquot, p->value.real, GFC_RND_MODE);
+      mpfr_sub (result->value.real, a->value.real, term, GFC_RND_MODE);
 
-      mpf_clear (quot);
-      mpf_clear (iquot);
-      mpf_clear (term);
+      mpfr_clear (quot);
+      mpfr_clear (iquot);
+      mpfr_clear (term);
       break;
 
     default:
@@ -2290,7 +2225,7 @@ gfc_expr *
 gfc_simplify_modulo (gfc_expr * a, gfc_expr * p)
 {
   gfc_expr *result;
-  mpf_t quot, iquot, term;
+  mpfr_t quot, iquot, term;
 
   if (a->expr_type != EXPR_CONSTANT || p->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -2313,7 +2248,7 @@ gfc_simplify_modulo (gfc_expr * a, gfc_expr * p)
       break;
 
     case BT_REAL:
-      if (mpf_cmp_ui (p->value.real, 0) == 0)
+      if (mpfr_cmp_ui (p->value.real, 0) == 0)
 	{
 	  /* Result is processor-dependent.  */
 	  gfc_error ("Second argument of MODULO at %L is zero", &p->where);
@@ -2321,19 +2256,20 @@ gfc_simplify_modulo (gfc_expr * a, gfc_expr * p)
 	  return &gfc_bad_expr;
 	}
 
-      mpf_init (quot);
-      mpf_init (iquot);
-      mpf_init (term);
+      gfc_set_model_kind (a->ts.kind);
+      mpfr_init (quot);
+      mpfr_init (iquot);
+      mpfr_init (term);
 
-      mpf_div (quot, a->value.real, p->value.real);
-      mpf_floor (iquot, quot);
-      mpf_mul (term, iquot, p->value.real);
+      mpfr_div (quot, a->value.real, p->value.real, GFC_RND_MODE);
+      mpfr_floor (iquot, quot);
+      mpfr_mul (term, iquot, p->value.real, GFC_RND_MODE);
 
-      mpf_clear (quot);
-      mpf_clear (iquot);
-      mpf_clear (term);
+      mpfr_clear (quot);
+      mpfr_clear (iquot);
+      mpfr_clear (term);
 
-      mpf_sub (result->value.real, a->value.real, term);
+      mpfr_sub (result->value.real, a->value.real, term, GFC_RND_MODE);
       break;
 
     default:
@@ -2376,7 +2312,7 @@ gfc_simplify_nearest (gfc_expr * x, gfc_expr * s)
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
-  val = mpf_get_d (x->value.real);
+  val = mpfr_get_d (x->value.real, GFC_RND_MODE);
   p = gfc_real_kinds[k].digits;
 
   eps = 1.;
@@ -2387,32 +2323,32 @@ gfc_simplify_nearest (gfc_expr * x, gfc_expr * s)
 
   /* TODO we should make sure that 'float' matches kind 4 */
   match_float = gfc_real_kinds[k].kind == 4;
-  if (mpf_cmp_ui (s->value.real, 0) > 0)
+  if (mpfr_cmp_ui (s->value.real, 0) > 0)
     {
       if (match_float)
 	{
 	  rval = (float) val;
 	  rval = rval + eps;
-	  mpf_set_d (result->value.real, rval);
+	  mpfr_set_d (result->value.real, rval, GFC_RND_MODE);
 	}
       else
 	{
 	  val = val + eps;
-	  mpf_set_d (result->value.real, val);
+	  mpfr_set_d (result->value.real, val, GFC_RND_MODE);
 	}
     }
-  else if (mpf_cmp_ui (s->value.real, 0) < 0)
+  else if (mpfr_cmp_ui (s->value.real, 0) < 0)
     {
       if (match_float)
 	{
 	  rval = (float) val;
 	  rval = rval - eps;
-	  mpf_set_d (result->value.real, rval);
+	  mpfr_set_d (result->value.real, rval, GFC_RND_MODE);
 	}
       else
 	{
 	  val = val - eps;
-	  mpf_set_d (result->value.real, val);
+	  mpfr_set_d (result->value.real, val, GFC_RND_MODE);
 	}
     }
   else
@@ -2432,6 +2368,7 @@ simplify_nint (const char *name, gfc_expr * e, gfc_expr * k)
 {
   gfc_expr *rtrunc, *itrunc, *result;
   int kind, cmp;
+  mpfr_t half;
 
   kind = get_kind (BT_INTEGER, k, name, gfc_default_integer_kind ());
   if (kind == -1)
@@ -2445,25 +2382,30 @@ simplify_nint (const char *name, gfc_expr * e, gfc_expr * k)
   rtrunc = gfc_copy_expr (e);
   itrunc = gfc_copy_expr (e);
 
-  cmp = mpf_cmp_ui (e->value.real, 0);
+  cmp = mpfr_cmp_ui (e->value.real, 0);
+
+  gfc_set_model (e->value.real);
+  mpfr_init (half);
+  mpfr_set_str (half, "0.5", 10, GFC_RND_MODE);
 
   if (cmp > 0)
     {
-      mpf_add (rtrunc->value.real, e->value.real, mpf_half);
-      mpf_trunc (itrunc->value.real, rtrunc->value.real);
+      mpfr_add (rtrunc->value.real, e->value.real, half, GFC_RND_MODE);
+      mpfr_trunc (itrunc->value.real, rtrunc->value.real);
     }
   else if (cmp < 0)
     {
-      mpf_sub (rtrunc->value.real, e->value.real, mpf_half);
-      mpf_trunc (itrunc->value.real, rtrunc->value.real);
+      mpfr_sub (rtrunc->value.real, e->value.real, half, GFC_RND_MODE);
+      mpfr_trunc (itrunc->value.real, rtrunc->value.real);
     }
   else
-    mpf_set_ui (itrunc->value.real, 0);
+    mpfr_set_ui (itrunc->value.real, 0, GFC_RND_MODE);
 
-  mpz_set_f (result->value.integer, itrunc->value.real);
+  gfc_mpfr_to_mpz (result->value.integer, itrunc->value.real);
 
   gfc_free_expr (itrunc);
   gfc_free_expr (rtrunc);
+  mpfr_clear (half);
 
   return range_check (result, name);
 }
@@ -2937,7 +2879,7 @@ gfc_expr *
 gfc_simplify_rrspacing (gfc_expr * x)
 {
   gfc_expr *result;
-  mpf_t i2, absv, ln2, lnx, frac, pow2;
+  mpfr_t i2, absv, ln2, lnx, frac, pow2, zero;
   unsigned long exp2;
   int i, p;
 
@@ -2952,41 +2894,48 @@ gfc_simplify_rrspacing (gfc_expr * x)
 
   p = gfc_real_kinds[i].digits;
 
-  if (mpf_cmp (x->value.real, mpf_zero) == 0)
+  gfc_set_model_kind (x->ts.kind);
+  mpfr_init (zero);
+  mpfr_set_ui (zero, 0, GFC_RND_MODE);
+
+  if (mpfr_cmp (x->value.real, zero) == 0)
     {
-      mpf_ui_div (result->value.real, 1, gfc_real_kinds[i].tiny);
+      mpfr_ui_div (result->value.real, 1, gfc_real_kinds[i].tiny, GFC_RND_MODE);
+      mpfr_clear (zero);
       return result;
     }
 
-  mpf_init_set_ui (i2, 2);
-  mpf_init (ln2);
-  mpf_init (absv);
-  mpf_init (lnx);
-  mpf_init (frac);
-  mpf_init (pow2);
+  mpfr_init (i2);
+  mpfr_init (ln2);
+  mpfr_init (absv);
+  mpfr_init (lnx);
+  mpfr_init (frac);
+  mpfr_init (pow2);
 
-  natural_logarithm (&i2, &ln2);
+  mpfr_set_ui (i2, 2, GFC_RND_MODE);
 
-  mpf_abs (absv, x->value.real);
-  natural_logarithm (&absv, &lnx);
+  mpfr_log (ln2, i2, GFC_RND_MODE);
+  mpfr_abs (absv, x->value.real, GFC_RND_MODE);
+  mpfr_log (lnx, absv, GFC_RND_MODE);
 
-  mpf_div (lnx, lnx, ln2);
-  mpf_trunc (lnx, lnx);
-  mpf_add_ui (lnx, lnx, 1);
+  mpfr_div (lnx, lnx, ln2, GFC_RND_MODE);
+  mpfr_trunc (lnx, lnx);
+  mpfr_add_ui (lnx, lnx, 1, GFC_RND_MODE);
 
-  exp2 = (unsigned long) mpf_get_d (lnx);
-  mpf_pow_ui (pow2, i2, exp2);
-  mpf_div (frac, absv, pow2);
+  exp2 = (unsigned long) mpfr_get_d (lnx, GFC_RND_MODE);
+  mpfr_pow_ui (pow2, i2, exp2, GFC_RND_MODE);
+  mpfr_div (frac, absv, pow2, GFC_RND_MODE);
 
   exp2 = (unsigned long) p;
-  mpf_mul_2exp (result->value.real, frac, exp2);
+  mpfr_mul_2exp (result->value.real, frac, exp2, GFC_RND_MODE);
 
-  mpf_clear (i2);
-  mpf_clear (ln2);
-  mpf_clear (absv);
-  mpf_clear (lnx);
-  mpf_clear (frac);
-  mpf_clear (pow2);
+  mpfr_clear (i2);
+  mpfr_clear (ln2);
+  mpfr_clear (absv);
+  mpfr_clear (lnx);
+  mpfr_clear (frac);
+  mpfr_clear (pow2);
+  mpfr_clear (zero);
 
   return range_check (result, "RRSPACING");
 }
@@ -2996,7 +2945,7 @@ gfc_expr *
 gfc_simplify_scale (gfc_expr * x, gfc_expr * i)
 {
   int k, neg_flag, power, exp_range;
-  mpf_t scale, radix;
+  mpfr_t scale, radix;
   gfc_expr *result;
 
   if (x->expr_type != EXPR_CONSTANT || i->expr_type != EXPR_CONSTANT)
@@ -3004,9 +2953,9 @@ gfc_simplify_scale (gfc_expr * x, gfc_expr * i)
 
   result = gfc_constant_result (BT_REAL, x->ts.kind, &x->where);
 
-  if (mpf_sgn (x->value.real) == 0)
+  if (mpfr_sgn (x->value.real) == 0)
     {
-      mpf_set_ui (result->value.real, 0);
+      mpfr_set_ui (result->value.real, 0, GFC_RND_MODE);
       return result;
     }
 
@@ -3035,17 +2984,19 @@ gfc_simplify_scale (gfc_expr * x, gfc_expr * i)
       power = -power;
     }
 
-  mpf_init_set_ui (radix, gfc_real_kinds[k].radix);
-  mpf_init (scale);
-  mpf_pow_ui (scale, radix, power);
+  gfc_set_model_kind (x->ts.kind);
+  mpfr_init (scale);
+  mpfr_init (radix);
+  mpfr_set_ui (radix, gfc_real_kinds[k].radix, GFC_RND_MODE);
+  mpfr_pow_ui (scale, radix, power, GFC_RND_MODE);
 
   if (neg_flag)
-    mpf_div (result->value.real, x->value.real, scale);
+    mpfr_div (result->value.real, x->value.real, scale, GFC_RND_MODE);
   else
-    mpf_mul (result->value.real, x->value.real, scale);
+    mpfr_mul (result->value.real, x->value.real, scale, GFC_RND_MODE);
 
-  mpf_clear (scale);
-  mpf_clear (radix);
+  mpfr_clear (scale);
+  mpfr_clear (radix);
 
   return range_check (result, "SCALE");
 }
@@ -3195,7 +3146,7 @@ gfc_expr *
 gfc_simplify_set_exponent (gfc_expr * x, gfc_expr * i)
 {
   gfc_expr *result;
-  mpf_t i2, ln2, absv, lnx, pow2, frac;
+  mpfr_t i2, ln2, absv, lnx, pow2, frac, zero;
   unsigned long exp2;
 
   if (x->expr_type != EXPR_CONSTANT || i->expr_type != EXPR_CONSTANT)
@@ -3203,44 +3154,51 @@ gfc_simplify_set_exponent (gfc_expr * x, gfc_expr * i)
 
   result = gfc_constant_result (BT_REAL, x->ts.kind, &x->where);
 
-  if (mpf_cmp (x->value.real, mpf_zero) == 0)
+  gfc_set_model_kind (x->ts.kind);
+  mpfr_init (zero);
+  mpfr_set_ui (zero, 0, GFC_RND_MODE);
+
+  if (mpfr_cmp (x->value.real, zero) == 0)
     {
-      mpf_set (result->value.real, mpf_zero);
+      mpfr_set (result->value.real, zero, GFC_RND_MODE);
+      mpfr_clear (zero);
       return result;
     }
 
-  mpf_init_set_ui (i2, 2);
-  mpf_init (ln2);
-  mpf_init (absv);
-  mpf_init (lnx);
-  mpf_init (pow2);
-  mpf_init (frac);
+  mpfr_init (i2);
+  mpfr_init (ln2);
+  mpfr_init (absv);
+  mpfr_init (lnx);
+  mpfr_init (pow2);
+  mpfr_init (frac);
 
-  natural_logarithm (&i2, &ln2);
+  mpfr_set_ui (i2, 2, GFC_RND_MODE);
+  mpfr_log (ln2, i2, GFC_RND_MODE);
 
-  mpf_abs (absv, x->value.real);
-  natural_logarithm (&absv, &lnx);
+  mpfr_abs (absv, x->value.real, GFC_RND_MODE);
+  mpfr_log (lnx, absv, GFC_RND_MODE);
 
-  mpf_div (lnx, lnx, ln2);
-  mpf_trunc (lnx, lnx);
-  mpf_add_ui (lnx, lnx, 1);
+  mpfr_div (lnx, lnx, ln2, GFC_RND_MODE);
+  mpfr_trunc (lnx, lnx);
+  mpfr_add_ui (lnx, lnx, 1, GFC_RND_MODE);
 
   /* Old exponent value, and fraction.  */
-  exp2 = (unsigned long) mpf_get_d (lnx);
-  mpf_pow_ui (pow2, i2, exp2);
+  exp2 = (unsigned long) mpfr_get_d (lnx, GFC_RND_MODE);
+  mpfr_pow_ui (pow2, i2, exp2, GFC_RND_MODE);
 
-  mpf_div (frac, absv, pow2);
+  mpfr_div (frac, absv, pow2, GFC_RND_MODE);
 
   /* New exponent.  */
   exp2 = (unsigned long) mpz_get_d (i->value.integer);
-  mpf_mul_2exp (result->value.real, frac, exp2);
+  mpfr_mul_2exp (result->value.real, frac, exp2, GFC_RND_MODE);
 
-  mpf_clear (i2);
-  mpf_clear (ln2);
-  mpf_clear (absv);
-  mpf_clear (lnx);
-  mpf_clear (pow2);
-  mpf_clear (frac);
+  mpfr_clear (i2);
+  mpfr_clear (ln2);
+  mpfr_clear (absv);
+  mpfr_clear (lnx);
+  mpfr_clear (pow2);
+  mpfr_clear (frac);
+  mpfr_clear (zero);
 
   return range_check (result, "SET_EXPONENT");
 }
@@ -3352,9 +3310,9 @@ gfc_simplify_sign (gfc_expr * x, gfc_expr * y)
     case BT_REAL:
       /* TODO: Handle -0.0 and +0.0 correctly on machines that support
          it.  */
-      mpf_abs (result->value.real, x->value.real);
-      if (mpf_sgn (y->value.integer) < 0)
-	mpf_neg (result->value.real, result->value.real);
+      mpfr_abs (result->value.real, x->value.real, GFC_RND_MODE);
+      if (mpfr_sgn (y->value.real) < 0)
+	mpfr_neg (result->value.real, result->value.real, GFC_RND_MODE);
 
       break;
 
@@ -3370,7 +3328,7 @@ gfc_expr *
 gfc_simplify_sin (gfc_expr * x)
 {
   gfc_expr *result;
-  mpf_t xp, xq;
+  mpfr_t xp, xq;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -3380,23 +3338,24 @@ gfc_simplify_sin (gfc_expr * x)
   switch (x->ts.type)
     {
     case BT_REAL:
-      sine (&x->value.real, &result->value.real);
+      mpfr_sin (result->value.real, x->value.real, GFC_RND_MODE);
       break;
 
     case BT_COMPLEX:
-      mpf_init (xp);
-      mpf_init (xq);
+      gfc_set_model (x->value.real);
+      mpfr_init (xp);
+      mpfr_init (xq);
 
-      sine (&x->value.complex.r, &xp);
-      hypercos (&x->value.complex.i, &xq);
-      mpf_mul (result->value.complex.r, xp, xq);
+      mpfr_sin  (xp, x->value.complex.r, GFC_RND_MODE);
+      mpfr_cosh (xq, x->value.complex.i, GFC_RND_MODE);
+      mpfr_mul (result->value.complex.r, xp, xq, GFC_RND_MODE);
 
-      cosine (&x->value.complex.r, &xp);
-      hypersine (&x->value.complex.i, &xq);
-      mpf_mul (result->value.complex.i, xp, xq);
+      mpfr_cos  (xp, x->value.complex.r, GFC_RND_MODE);
+      mpfr_sinh (xq, x->value.complex.i, GFC_RND_MODE);
+      mpfr_mul (result->value.complex.i, xp, xq, GFC_RND_MODE);
 
-      mpf_clear (xp);
-      mpf_clear (xq);
+      mpfr_clear (xp);
+      mpfr_clear (xq);
       break;
 
     default:
@@ -3417,7 +3376,7 @@ gfc_simplify_sinh (gfc_expr * x)
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
-  hypersine (&x->value.real, &result->value.real);
+  mpfr_sinh(result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "SINH");
 }
@@ -3443,7 +3402,7 @@ gfc_expr *
 gfc_simplify_spacing (gfc_expr * x)
 {
   gfc_expr *result;
-  mpf_t i1, i2, ln2, absv, lnx;
+  mpfr_t i1, i2, ln2, absv, lnx, zero;
   long diff;
   unsigned long exp2;
   int i, p;
@@ -3459,48 +3418,56 @@ gfc_simplify_spacing (gfc_expr * x)
 
   result = gfc_constant_result (BT_REAL, x->ts.kind, &x->where);
 
-  if (mpf_cmp (x->value.real, mpf_zero) == 0)
+  gfc_set_model_kind (x->ts.kind);
+  mpfr_init (zero);
+  mpfr_set_ui (zero, 0, GFC_RND_MODE);
+
+  if (mpfr_cmp (x->value.real, zero) == 0)
     {
-      mpf_set (result->value.real, gfc_real_kinds[i].tiny);
+      mpfr_set (result->value.real, gfc_real_kinds[i].tiny, GFC_RND_MODE);
+      mpfr_clear (zero);
       return result;
     }
 
-  mpf_init_set_ui (i1, 1);
-  mpf_init_set_ui (i2, 2);
-  mpf_init (ln2);
-  mpf_init (absv);
-  mpf_init (lnx);
+  mpfr_init (i1);
+  mpfr_init (i2);
+  mpfr_init (ln2);
+  mpfr_init (absv);
+  mpfr_init (lnx);
 
-  natural_logarithm (&i2, &ln2);
+  mpfr_set_ui (i1, 1, GFC_RND_MODE);
+  mpfr_set_ui (i2, 2, GFC_RND_MODE);
 
-  mpf_abs (absv, x->value.real);
-  natural_logarithm (&absv, &lnx);
+  mpfr_log (ln2, i2, GFC_RND_MODE);
+  mpfr_abs (absv, x->value.real, GFC_RND_MODE);
+  mpfr_log (lnx, absv, GFC_RND_MODE);
 
-  mpf_div (lnx, lnx, ln2);
-  mpf_trunc (lnx, lnx);
-  mpf_add_ui (lnx, lnx, 1);
+  mpfr_div (lnx, lnx, ln2, GFC_RND_MODE);
+  mpfr_trunc (lnx, lnx);
+  mpfr_add_ui (lnx, lnx, 1, GFC_RND_MODE);
 
-  diff = (long) mpf_get_d (lnx) - (long) p;
+  diff = (long) mpfr_get_d (lnx, GFC_RND_MODE) - (long) p;
   if (diff >= 0)
     {
       exp2 = (unsigned) diff;
-      mpf_mul_2exp (result->value.real, i1, exp2);
+      mpfr_mul_2exp (result->value.real, i1, exp2, GFC_RND_MODE);
     }
   else
     {
       diff = -diff;
       exp2 = (unsigned) diff;
-      mpf_div_2exp (result->value.real, i1, exp2);
+      mpfr_div_2exp (result->value.real, i1, exp2, GFC_RND_MODE);
     }
 
-  mpf_clear (i1);
-  mpf_clear (i2);
-  mpf_clear (ln2);
-  mpf_clear (absv);
-  mpf_clear (lnx);
+  mpfr_clear (i1);
+  mpfr_clear (i2);
+  mpfr_clear (ln2);
+  mpfr_clear (absv);
+  mpfr_clear (lnx);
+  mpfr_clear (zero);
 
-  if (mpf_cmp (result->value.real, gfc_real_kinds[i].tiny) < 0)
-    mpf_set (result->value.real, gfc_real_kinds[i].tiny);
+  if (mpfr_cmp (result->value.real, gfc_real_kinds[i].tiny) < 0)
+    mpfr_set (result->value.real, gfc_real_kinds[i].tiny, GFC_RND_MODE);
 
   return range_check (result, "SPACING");
 }
@@ -3510,7 +3477,7 @@ gfc_expr *
 gfc_simplify_sqrt (gfc_expr * e)
 {
   gfc_expr *result;
-  mpf_t ac, ad, s, t, w;
+  mpfr_t ac, ad, s, t, w;
 
   if (e->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -3520,9 +3487,9 @@ gfc_simplify_sqrt (gfc_expr * e)
   switch (e->ts.type)
     {
     case BT_REAL:
-      if (mpf_cmp_si (e->value.real, 0) < 0)
+      if (mpfr_cmp_si (e->value.real, 0) < 0)
 	goto negative_arg;
-      mpf_sqrt (result->value.real, e->value.real);
+      mpfr_sqrt (result->value.real, e->value.real, GFC_RND_MODE);
 
       break;
 
@@ -3530,82 +3497,83 @@ gfc_simplify_sqrt (gfc_expr * e)
       /* Formula taken from Numerical Recipes to avoid over- and
          underflow.  */
 
-      mpf_init (ac);
-      mpf_init (ad);
-      mpf_init (s);
-      mpf_init (t);
-      mpf_init (w);
+      gfc_set_model (e->value.real);
+      mpfr_init (ac);
+      mpfr_init (ad);
+      mpfr_init (s);
+      mpfr_init (t);
+      mpfr_init (w);
 
-      if (mpf_cmp_ui (e->value.complex.r, 0) == 0
-	  && mpf_cmp_ui (e->value.complex.i, 0) == 0)
+      if (mpfr_cmp_ui (e->value.complex.r, 0) == 0
+	  && mpfr_cmp_ui (e->value.complex.i, 0) == 0)
 	{
 
-	  mpf_set_ui (result->value.complex.r, 0);
-	  mpf_set_ui (result->value.complex.i, 0);
+	  mpfr_set_ui (result->value.complex.r, 0, GFC_RND_MODE);
+	  mpfr_set_ui (result->value.complex.i, 0, GFC_RND_MODE);
 	  break;
 	}
 
-      mpf_abs (ac, e->value.complex.r);
-      mpf_abs (ad, e->value.complex.i);
+      mpfr_abs (ac, e->value.complex.r, GFC_RND_MODE);
+      mpfr_abs (ad, e->value.complex.i, GFC_RND_MODE);
 
-      if (mpf_cmp (ac, ad) >= 0)
+      if (mpfr_cmp (ac, ad) >= 0)
 	{
-	  mpf_div (t, e->value.complex.i, e->value.complex.r);
-	  mpf_mul (t, t, t);
-	  mpf_add_ui (t, t, 1);
-	  mpf_sqrt (t, t);
-	  mpf_add_ui (t, t, 1);
-	  mpf_div_ui (t, t, 2);
-	  mpf_sqrt (t, t);
-	  mpf_sqrt (s, ac);
-	  mpf_mul (w, s, t);
+	  mpfr_div (t, e->value.complex.i, e->value.complex.r, GFC_RND_MODE);
+	  mpfr_mul (t, t, t, GFC_RND_MODE);
+	  mpfr_add_ui (t, t, 1, GFC_RND_MODE);
+	  mpfr_sqrt (t, t, GFC_RND_MODE);
+	  mpfr_add_ui (t, t, 1, GFC_RND_MODE);
+	  mpfr_div_ui (t, t, 2, GFC_RND_MODE);
+	  mpfr_sqrt (t, t, GFC_RND_MODE);
+	  mpfr_sqrt (s, ac, GFC_RND_MODE);
+	  mpfr_mul (w, s, t, GFC_RND_MODE);
 	}
       else
 	{
-	  mpf_div (s, e->value.complex.r, e->value.complex.i);
-	  mpf_mul (t, s, s);
-	  mpf_add_ui (t, t, 1);
-	  mpf_sqrt (t, t);
-	  mpf_abs (s, s);
-	  mpf_add (t, t, s);
-	  mpf_div_ui (t, t, 2);
-	  mpf_sqrt (t, t);
-	  mpf_sqrt (s, ad);
-	  mpf_mul (w, s, t);
+	  mpfr_div (s, e->value.complex.r, e->value.complex.i, GFC_RND_MODE);
+	  mpfr_mul (t, s, s, GFC_RND_MODE);
+	  mpfr_add_ui (t, t, 1, GFC_RND_MODE);
+	  mpfr_sqrt (t, t, GFC_RND_MODE);
+	  mpfr_abs (s, s, GFC_RND_MODE);
+	  mpfr_add (t, t, s, GFC_RND_MODE);
+	  mpfr_div_ui (t, t, 2, GFC_RND_MODE);
+	  mpfr_sqrt (t, t, GFC_RND_MODE);
+	  mpfr_sqrt (s, ad, GFC_RND_MODE);
+	  mpfr_mul (w, s, t, GFC_RND_MODE);
 	}
 
-      if (mpf_cmp_ui (w, 0) != 0 && mpf_cmp_ui (e->value.complex.r, 0) >= 0)
+      if (mpfr_cmp_ui (w, 0) != 0 && mpfr_cmp_ui (e->value.complex.r, 0) >= 0)
 	{
-	  mpf_mul_ui (t, w, 2);
-	  mpf_div (result->value.complex.i, e->value.complex.i, t);
-	  mpf_set (result->value.complex.r, w);
+	  mpfr_mul_ui (t, w, 2, GFC_RND_MODE);
+	  mpfr_div (result->value.complex.i, e->value.complex.i, t, GFC_RND_MODE);
+	  mpfr_set (result->value.complex.r, w, GFC_RND_MODE);
 	}
-      else if (mpf_cmp_ui (w, 0) != 0
-	       && mpf_cmp_ui (e->value.complex.r, 0) < 0
-	       && mpf_cmp_ui (e->value.complex.i, 0) >= 0)
+      else if (mpfr_cmp_ui (w, 0) != 0
+	       && mpfr_cmp_ui (e->value.complex.r, 0) < 0
+	       && mpfr_cmp_ui (e->value.complex.i, 0) >= 0)
 	{
-	  mpf_mul_ui (t, w, 2);
-	  mpf_div (result->value.complex.r, e->value.complex.i, t);
-	  mpf_set (result->value.complex.i, w);
+	  mpfr_mul_ui (t, w, 2, GFC_RND_MODE);
+	  mpfr_div (result->value.complex.r, e->value.complex.i, t, GFC_RND_MODE);
+	  mpfr_set (result->value.complex.i, w, GFC_RND_MODE);
 	}
-      else if (mpf_cmp_ui (w, 0) != 0
-	       && mpf_cmp_ui (e->value.complex.r, 0) < 0
-	       && mpf_cmp_ui (e->value.complex.i, 0) < 0)
+      else if (mpfr_cmp_ui (w, 0) != 0
+	       && mpfr_cmp_ui (e->value.complex.r, 0) < 0
+	       && mpfr_cmp_ui (e->value.complex.i, 0) < 0)
 	{
-	  mpf_mul_ui (t, w, 2);
-	  mpf_div (result->value.complex.r, ad, t);
-	  mpf_neg (w, w);
-	  mpf_set (result->value.complex.i, w);
+	  mpfr_mul_ui (t, w, 2, GFC_RND_MODE);
+	  mpfr_div (result->value.complex.r, ad, t, GFC_RND_MODE);
+	  mpfr_neg (w, w, GFC_RND_MODE);
+	  mpfr_set (result->value.complex.i, w, GFC_RND_MODE);
 	}
       else
 	gfc_internal_error ("invalid complex argument of SQRT at %L",
 			    &e->where);
 
-      mpf_clear (s);
-      mpf_clear (t);
-      mpf_clear (ac);
-      mpf_clear (ad);
-      mpf_clear (w);
+      mpfr_clear (s);
+      mpfr_clear (t);
+      mpfr_clear (ac);
+      mpfr_clear (ad);
+      mpfr_clear (w);
 
       break;
 
@@ -3625,9 +3593,8 @@ negative_arg:
 gfc_expr *
 gfc_simplify_tan (gfc_expr * x)
 {
-  gfc_expr *result;
-  mpf_t mpf_sin, mpf_cos, mag_cos;
   int i;
+  gfc_expr *result;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -3638,37 +3605,7 @@ gfc_simplify_tan (gfc_expr * x)
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
-  mpf_init (mpf_sin);
-  mpf_init (mpf_cos);
-  mpf_init (mag_cos);
-  sine (&x->value.real, &mpf_sin);
-  cosine (&x->value.real, &mpf_cos);
-  mpf_abs (mag_cos, mpf_cos);
-  if (mpf_cmp_ui (mag_cos, 0) == 0)
-    {
-      gfc_error ("Tangent undefined at %L", &x->where);
-      mpf_clear (mpf_sin);
-      mpf_clear (mpf_cos);
-      mpf_clear (mag_cos);
-      gfc_free_expr (result);
-      return &gfc_bad_expr;
-    }
-  else if (mpf_cmp (mag_cos, gfc_real_kinds[i].tiny) < 0)
-    {
-      gfc_error ("Tangent cannot be accurately evaluated at %L", &x->where);
-      mpf_clear (mpf_sin);
-      mpf_clear (mpf_cos);
-      mpf_clear (mag_cos);
-      gfc_free_expr (result);
-      return &gfc_bad_expr;
-    }
-  else
-    {
-      mpf_div (result->value.real, mpf_sin, mpf_cos);
-      mpf_clear (mpf_sin);
-      mpf_clear (mpf_cos);
-      mpf_clear (mag_cos);
-    }
+  mpfr_tan (result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "TAN");
 }
@@ -3678,23 +3615,13 @@ gfc_expr *
 gfc_simplify_tanh (gfc_expr * x)
 {
   gfc_expr *result;
-  mpf_t xp, xq;
 
   if (x->expr_type != EXPR_CONSTANT)
     return NULL;
 
   result = gfc_constant_result (x->ts.type, x->ts.kind, &x->where);
 
-  mpf_init (xp);
-  mpf_init (xq);
-
-  hypersine (&x->value.real, &xq);
-  hypercos (&x->value.real, &xp);
-
-  mpf_div (result->value.real, xq, xp);
-
-  mpf_clear (xp);
-  mpf_clear (xq);
+  mpfr_tanh (result->value.real, x->value.real, GFC_RND_MODE);
 
   return range_check (result, "TANH");
 
@@ -3712,7 +3639,7 @@ gfc_simplify_tiny (gfc_expr * e)
     gfc_internal_error ("gfc_simplify_error(): Bad kind");
 
   result = gfc_constant_result (BT_REAL, e->ts.kind, &e->where);
-  mpf_set (result->value.real, gfc_real_kinds[i].tiny);
+  mpfr_set (result->value.real, gfc_real_kinds[i].tiny, GFC_RND_MODE);
 
   return result;
 }
@@ -3988,21 +3915,5 @@ void
 gfc_simplify_init_1 (void)
 {
 
-  mpf_init_set_str (mpf_zero, "0.0", 10);
-  mpf_init_set_str (mpf_half, "0.5", 10);
-  mpf_init_set_str (mpf_one, "1.0", 10);
-  mpz_init_set_str (mpz_zero, "0", 10);
-
   invert_table (ascii_table, xascii_table);
-}
-
-
-void
-gfc_simplify_done_1 (void)
-{
-
-  mpf_clear (mpf_zero);
-  mpf_clear (mpf_half);
-  mpf_clear (mpf_one);
-  mpz_clear (mpz_zero);
 }

@@ -23,7 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 tree gfc_conv_mpz_to_tree (mpz_t, int);
 
 /* Returns a REAL_CST.  */
-tree gfc_conv_mpf_to_tree (mpf_t, int);
+tree gfc_conv_mpfr_to_tree (mpfr_t, int);
 
 /* Build a tree for a constant.  Must be an EXPR_CONSTANT gfc_expr.
    For CHARACTER literal constants, the caller still has to set the

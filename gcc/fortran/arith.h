@@ -24,19 +24,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "gfortran.h"
 
-/* Constants calculated during initialization.  */
-extern mpf_t pi, half_pi, two_pi, e;
+/* MPFR does not have mpfr_atan2(), which needs to return the principle
+   value of atan2().  MPFR also does not have the conversion of a mpfr_t
+   to a mpz_t, so declare a function for this as well.  */
 
-/* Calculate mathematically interesting functions.  */
-void natural_logarithm (mpf_t *, mpf_t *);
-void common_logarithm (mpf_t *, mpf_t *);
-void exponential (mpf_t *, mpf_t *);
-void sine (mpf_t *, mpf_t *);
-void cosine (mpf_t *, mpf_t *);
-void arctangent (mpf_t *, mpf_t *);
-void arctangent2 (mpf_t *, mpf_t *, mpf_t *);
-void hypercos (mpf_t *, mpf_t *);
-void hypersine (mpf_t *, mpf_t *);
+void arctangent2 (mpfr_t, mpfr_t, mpfr_t);
+void gfc_mpfr_to_mpz(mpz_t, mpfr_t);
+void gfc_set_model_kind (int);
+void gfc_set_model (mpfr_t);
 
 /* Return a constant result of a given type and kind, with locus.  */
 gfc_expr *gfc_constant_result (bt, int, locus *);

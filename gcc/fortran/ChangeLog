@@ -1,3 +1,60 @@
+2004-08-06  Steven G. Kargl  <kargls@comcast.net>
+
+	* arith.c: Add #define for model numbers.  Remove global GMP variables.
+	(natural_logarithm,common_logarithm,exponential,sine,
+	cosine,arctangent,hypercos,hypersine ): Remove.
+	(gfc_mpfr_to_mpz,gfc_set_model_kind,gfc_set_model): New functions.
+	(arctangent2,gfc_arith_init_1,gfc_arith_done_1
+	gfc_check_real_range, gfc_constant_result, gfc_range_check,
+	gfc_arith_uminus,gfc_arith_plus, gfc_arith_minus, gfc_arith_times,
+	gfc_arith_divide,complex_reciprocal,complex_pow_ui,
+	gfc_arith_power,gfc_compare_expr,compare_complex,gfc_convert_real,
+	gfc_convert_complex,gfc_int2real,gfc_int2complex,
+	gfc_real2int,gfc_real2real,gfc_real2complex,
+	gfc_complex2int,gfc_complex2real,gfc_complex2complex): Convert GMP
+	to MPFR, use new functions.
+	* arith.h: Remove extern global variables.
+	(natural_logarithm,common_logarithm,exponential, sine, cosine,
+	arctangent,hypercos,hypersine): Remove prototypes.
+	(arctangent2): Update prototype from GMP to MPFR.
+	(gfc_mpfr_to_mpz, gfc_set_model_kind,gfc_set_model): Add prototypes.
+	* dump-parse-tree.c (gfc_show_expr): Convert GMP to MPFR.
+	* expr.c (free_expr0,gfc_copy_expr): Convert GMP to MPFR.
+	* gfortran.h (GFC_REAL_BITS): Remove.
+	(arith): Add ARITH_NAN.
+	Include mpfr.h.  Define GFC_RND_MODE.
+	Rename GCC_GFORTRAN_H GFC_GFC_H.
+	(gfc_expr): Convert GMP to MPFR.
+	* module.c: Add arith.h, correct type in comment.
+	(mio_gmp_real): Convert GMP to MPFR.
+	(mio_expr):  Use gfc_set_model_kind().
+	* primary.c:  Update copyright date with 2004.
+	(match_real_constant,match_const_complex_part): Convert GMP to MPFR.
+	* simplify.c: Remove global GMP variables
+	(gfc_simplify_abs,gfc_simplify_acos,gfc_simplify_aimag,
+	gfc_simplify_aint,gfc_simplify_dint,gfc_simplify_anint,
+	gfc_simplify_dnint,gfc_simplify_asin,gfc_simplify_atan,
+	gfc_simplify_atan2,gfc_simplify_ceiling,simplify_cmplx,
+	gfc_simplify_conjg,gfc_simplify_cos,gfc_simplify_cosh,
+	gfc_simplify_dim,gfc_simplify_dprod,gfc_simplify_epsilon,
+	gfc_simplify_exp,gfc_simplify_exponent,gfc_simplify_floor,
+	gfc_simplify_fraction,gfc_simplify_huge,gfc_simplify_int,
+	gfc_simplify_ifix,gfc_simplify_idint,gfc_simplify_log,
+	gfc_simplify_log10,simplify_min_max,gfc_simplify_mod,
+	gfc_simplify_modulo,gfc_simplify_nearest,simplify_nint,
+	gfc_simplify_rrspacing,gfc_simplify_scale,
+	gfc_simplify_set_exponent,gfc_simplify_sign,gfc_simplify_sin,
+	gfc_simplify_sinh,gfc_simplify_spacing,gfc_simplify_sqrt,
+	gfc_simplify_tan,gfc_simplify_tanh,gfc_simplify_tiny,
+	gfc_simplify_init_1,gfc_simplify_done_1):  Convert GMP to MPFR.
+	Use new functions.
+	* trans-const.c (gfc_conv_mpfr_to_tree): Rename from
+	gfc_conv_mpf_to_tree.  Convert it to use MPFR
+	(gfc_conv_constant_to_tree): Use it.
+	* trans-const.h: Update prototype for gfc_conv_mpfr_to_tree().
+	* trans-intrinsic.c: Add arith.h, remove gmp.h
+	(gfc_conv_intrinsic_aint,gfc_conv_intrinsic_mod): Convert GMP to MPFR.
+
 2004-08-06  Victor Leikehman  <lei@il.ibm.com>
 	Paul Brook  <paul@codesourcery.com>
 

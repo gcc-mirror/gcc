@@ -363,7 +363,7 @@ gfc_show_expr (gfc_expr * p)
 	  break;
 
 	case BT_REAL:
-	  mpf_out_str (stdout, 10, 0, p->value.real);
+	  mpfr_out_str (stdout, 10, 0, p->value.real, GFC_RND_MODE);
 	  if (p->ts.kind != gfc_default_real_kind ())
 	    gfc_status ("_%d", p->ts.kind);
 	  break;
@@ -388,13 +388,13 @@ gfc_show_expr (gfc_expr * p)
 	case BT_COMPLEX:
 	  gfc_status ("(complex ");
 
-	  mpf_out_str (stdout, 10, 0, p->value.complex.r);
+	  mpfr_out_str (stdout, 10, 0, p->value.complex.r, GFC_RND_MODE);
 	  if (p->ts.kind != gfc_default_complex_kind ())
 	    gfc_status ("_%d", p->ts.kind);
 
 	  gfc_status (" ");
 
-	  mpf_out_str (stdout, 10, 0, p->value.complex.i);
+	  mpfr_out_str (stdout, 10, 0, p->value.complex.i, GFC_RND_MODE);
 	  if (p->ts.kind != gfc_default_complex_kind ())
 	    gfc_status ("_%d", p->ts.kind);
 
