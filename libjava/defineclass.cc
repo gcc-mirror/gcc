@@ -582,7 +582,9 @@ void _Jv_ClassReader::read_one_method_attribute (int method_index)
 
 	  if (start_pc > end_pc
 	      || start_pc < 0
-	      || end_pc >= code_length
+	      // END_PC can be equal to CODE_LENGTH.
+	      // See JVM Spec 4.7.4.
+	      || end_pc > code_length
 	      || handler_pc >= code_length)
 	    throw_class_format_error ("erroneous exception handler info");
 

@@ -1,3 +1,28 @@
+2001-12-04  Tom Tromey  <tromey@redhat.com>
+
+	* defineclass.cc (read_one_method_attribute): `end_pc' for an
+	exception can be equal to code length.
+	* verify.cc (_Jv_BytecodeVerifier::verify_instructions_0): Removed
+	`start_PC' from error invocation where it didn't make sense, and
+	updated error message.  Use `copy' to copy a state.  Only try to
+	merge current state with saved state when we've fallen through
+	from the previous instruction.
+	(_Jv_BytecodeVerifier::pop_ref_or_return): New method.
+	(_Jv_BytecodeVerifier::verify_instructions_0) [op_astore_0]: Use
+	pop_ref_or_return.
+	(_Jv_BytecodeVerifier::verify_instructions_0) [op_astore]:
+	Likewise.
+	(_Jv_BytecodeVerifier::push_jump_merge): Pass max_locals, not
+	max_stack, to merge.
+	(_Jv_BytecodeVerifier::verify_instructions_0): Likewise.
+	(_Jv_BytecodeVerifier::push_jump_merge): Merge from new state into
+	state at branch target, not vice versa.
+	(_Jv_BytecodeVerifier::branch_prepass): Allow end of exception to
+	be equal to code length.  Removed redundant test to see if
+	exception start is after exception end.
+	(_Jv_BytecodeVerifier::verify_instructions_0): Type of argument to
+	`finally' is Throwable.
+
 2001-12-04  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* Makefile.in: Rebuilt with automake-gcj.

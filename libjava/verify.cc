@@ -8,7 +8,7 @@ This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
-// Writte by Tom Tromey <tromey@redhat.com>
+// Written by Tom Tromey <tromey@redhat.com>
 
 #include <config.h>
 
@@ -889,6 +889,15 @@ private:
     return t;
   }
 
+  // Pop a reference type or a return address.
+  type pop_ref_or_return ()
+  {
+    type t = pop_raw ();
+    if (! t.isreference () && t.key != return_address_type)
+      verify_fail ("expected reference or return address on stack", start_PC);
+    return t;
+  }
+
   void push_type (type t)
   {
     // If T is a numeric type like short, promote it to int.
@@ -1006,10 +1015,11 @@ private:
     return npc;
   }
 
-  // Merge the indicated state into a new state and schedule a new PC if
-  // there is a change.  If RET_SEMANTICS is true, then we are merging
-  // from a `ret' instruction into the instruction after a `jsr'.  This
-  // is a special case with its own modified semantics.
+  // Merge the indicated state into the state at the branch target and
+  // schedule a new PC if there is a change.  If RET_SEMANTICS is
+  // true, then we are merging from a `ret' instruction into the
+  // instruction after a `jsr'.  This is a special case with its own
+  // modified semantics.
   void push_jump_merge (int npc, state *nstate, bool ret_semantics = false)
   {
     bool changed = true;
@@ -1021,8 +1031,8 @@ private:
 				 current_method->max_locals);
       }
     else
-      changed = nstate->merge (states[npc], ret_semantics,
-			       current_method->max_stack);
+      changed = states[npc]->merge (nstate, ret_semantics,
+				    current_method->max_locals);
 
     if (changed && states[npc]->next == state::INVALID)
       {
@@ -1506,12 +1516,11 @@ private:
 	if (! (flags[exception[i].handler_pc] & FLAG_INSN_START))
 	  verify_fail ("exception handler not at instruction start",
 		       exception[i].handler_pc);
-	if (exception[i].start_pc > exception[i].end_pc)
-	  verify_fail ("exception range inverted");
 	if (! (flags[exception[i].start_pc] & FLAG_INSN_START))
 	  verify_fail ("exception start not at instruction start",
 		       exception[i].start_pc);
-	else if (! (flags[exception[i].end_pc] & FLAG_INSN_START))
+	if (exception[i].end_pc != current_method->code_length
+	    && ! (flags[exception[i].end_pc] & FLAG_INSN_START))
 	  verify_fail ("exception end not at instruction start",
 		       exception[i].end_pc);
 
@@ -1729,35 +1738,48 @@ private:
 	  {
 	    PC = pop_jump ();
 	    if (PC == state::INVALID)
-	      verify_fail ("saw state::INVALID", start_PC);
+	      verify_fail ("can't happen: saw state::INVALID");
 	    if (PC == state::NO_NEXT)
 	      break;
 	    // Set up the current state.
-	    *current_state = *states[PC];
+	    current_state->copy (states[PC], current_method->max_stack,
+				 current_method->max_locals);
 	  }
-
-	// Control can't fall off the end of the bytecode.
-	if (PC >= current_method->code_length)
-	  verify_fail ("fell off end");
-
-	if (states[PC] != NULL)
+	else
 	  {
-	    // We've already visited this instruction.  So merge the
-	    // states together.  If this yields no change then we don't
-	    // have to re-verify.
-	    if (! current_state->merge (states[PC], false,
-					current_method->max_stack))
+	    // Control can't fall off the end of the bytecode.  We
+	    // only need to check this in the fall-through case,
+	    // because branch bounds are checked when they are
+	    // pushed.
+	    if (PC >= current_method->code_length)
+	      verify_fail ("fell off end");
+
+	    // We only have to do this checking in the situation where
+	    // control flow falls through from the previous
+	    // instruction.  Otherwise merging is done at the time we
+	    // push the branch.
+	    if (states[PC] != NULL)
 	      {
-		invalidate_pc ();
-		continue;
+		// We've already visited this instruction.  So merge
+		// the states together.  If this yields no change then
+		// we don't have to re-verify.
+		if (! current_state->merge (states[PC], false,
+					    current_method->max_locals))
+		  {
+		    invalidate_pc ();
+		    continue;
+		  }
+		// Save a copy of it for later.
+		states[PC]->copy (current_state, current_method->max_stack,
+				  current_method->max_locals);
 	      }
-	    // Save a copy of it for later.
-	    states[PC]->copy (current_state, current_method->max_stack,
-			      current_method->max_locals);
 	  }
-	else if ((flags[PC] & FLAG_BRANCH_TARGET))
+
+	// We only have to keep saved state at branch targets.  If
+	// we're at a branch target and the state here hasn't been set
+	// yet, we set it now.
+	if (states[PC] == NULL && (flags[PC] & FLAG_BRANCH_TARGET))
 	  {
-	    // We only have to keep saved state at branch targets.
 	    states[PC] = new state (current_state, current_method->max_stack,
 				    current_method->max_locals);
 	  }
@@ -1769,7 +1791,7 @@ private:
 	  {
 	    if (PC >= exception[i].start_pc && PC < exception[i].end_pc)
 	      {
-		type handler = reference_type;
+		type handler (&java::lang::Throwable::class$);
 		if (exception[i].handler_type != 0)
 		  handler = check_class_constant (exception[i].handler_type);
 		push_exception_jump (handler, exception[i].handler_pc);
@@ -1932,7 +1954,7 @@ private:
 	    set_variable (get_byte (), pop_type (double_type));
 	    break;
 	  case op_astore:
-	    set_variable (get_byte (), pop_type (reference_type));
+	    set_variable (get_byte (), pop_ref_or_return ());
 	    break;
 	  case op_istore_0:
 	  case op_istore_1:
@@ -1962,7 +1984,7 @@ private:
 	  case op_astore_1:
 	  case op_astore_2:
 	  case op_astore_3:
-	    set_variable (opcode - op_astore_0, pop_type (reference_type));
+	    set_variable (opcode - op_astore_0, pop_ref_or_return ());
 	    break;
 	  case op_iastore:
 	    pop_type (int_type);
