@@ -519,7 +519,7 @@ divmodsi4:
         mov.b	A2H,S2H
         or	A2L,S2H
         or	A3H,S2H
-        bne	DenHighZero
+        bne	DenHighNonZero
         mov.b	A0H,A0H
         bne	NumByte0Zero
         mov.b	A0L,A0L
@@ -549,7 +549,7 @@ NumByte3Zero:
         rts
 
 ; have to do the divide by shift and test
-DenHighZero:
+DenHighNonZero:
 	mov.b	A0H,S1L
         mov.b	A0L,A0H
         mov.b	A1H,A0L
@@ -591,7 +591,7 @@ setone:
 divmodsi4:
 	sub.l	S0P,S0P		; zero play area
 	mov.w	A1E,A1E		; denominator top word 0?
-	bne	DenHighZero
+	bne	DenHighNonZero
 
 	; do it the easy way, see page 107 in manual
 	mov.w	A0E,A2
@@ -604,7 +604,7 @@ divmodsi4:
 	extu.l	S0P
 	rts
 
-DenHighZero:
+DenHighNonZero:
 	mov.w	A0E,A2
 	mov.b	A2H,S0L
 	mov.b	A2L,A2H
