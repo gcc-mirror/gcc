@@ -1,5 +1,10 @@
 2001-10-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* tree-inline.c (WALK_SUBTREE_TAIL): New macro.
+	(walk_tree): Use it for tail calls where appropriate.
+
+2001-10-26  Alexandre Oliva  <aoliva@redhat.com>
+
 	* cse.c (check_for_label_ref): Don't require REG_LABEL notes for
 	non-local label_refs.
 
