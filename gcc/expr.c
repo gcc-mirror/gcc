@@ -3275,12 +3275,11 @@ store_constructor_field (target, bitsize, bitpos,
   if (TREE_CODE (exp) == CONSTRUCTOR
       && (bitpos % BITS_PER_UNIT) == 0)
     {
-      bitpos /= BITS_PER_UNIT;
-      store_constructor (exp,
-			 change_address (target, VOIDmode,
-					 plus_constant (XEXP (target, 0),
-							bitpos)),
-			 cleared);
+      if (bitpos != 0)
+	target = change_address (target, VOIDmode,
+				 plus_constant (XEXP (target, 0),
+						bitpos / BITS_PER_UNIT));
+      store_constructor (exp, target, cleared);
     }
   else
     store_field (target, bitsize, bitpos, mode, exp,
