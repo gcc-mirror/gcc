@@ -4299,8 +4299,8 @@ extract_muldiv (t, c, code, wide_type)
     case CONVERT_EXPR:  case NON_LVALUE_EXPR:  case NOP_EXPR:
 
       /* Pass the constant down and see if we can make a simplification.  If
-	 we can, replace this expression with a conversion of that result to
-	 our type.  */
+	 we can, replace this expression with the inner simplification for
+	 possible later conversion to our or some other type.  */
       if (0 != (t1 = extract_muldiv (op0, convert (TREE_TYPE (op0), c), code,
 				     code == MULT_EXPR ? ctype : NULL_TREE)))
 	return t1;
@@ -4315,8 +4315,13 @@ extract_muldiv (t, c, code, wide_type)
       /* MIN (a, b) / 5 -> MIN (a / 5, b / 5)  */
       if ((t1 = extract_muldiv (op0, c, code, wide_type)) != 0
 	  && (t2 = extract_muldiv (op1, c, code, wide_type)) != 0)
-	return fold (build (tcode, ctype, convert (ctype, t1),
-			    convert (ctype, t2)));
+	{
+	  if (tree_int_cst_sgn (c) < 0)
+	    tcode = (tcode == MIN_EXPR ? MAX_EXPR : MIN_EXPR);
+
+	  return fold (build (tcode, ctype, convert (ctype, t1),
+			      convert (ctype, t2)));
+	}
       break;
 
     case WITH_RECORD_EXPR:
@@ -4326,9 +4331,12 @@ extract_muldiv (t, c, code, wide_type)
       break;
 
     case SAVE_EXPR:
-      /* If this has not been evaluated, we can see if we can do
-	 something inside it and make a new one.  */
-      if (SAVE_EXPR_RTL (t) == 0
+      /* If this has not been evaluated and the operand has no side effects,
+	 we can see if we can do something inside it and make a new one.
+	 Note that this test is overly conservative since we can do this
+	 if the only reason it had side effects is that it was another
+	 similar SAVE_EXPR, but that isn't worth bothering with.  */
+      if (SAVE_EXPR_RTL (t) == 0 && ! TREE_SIDE_EFFECTS (TREE_OPERAND (t, 0))
 	  && 0 != (t1 = extract_muldiv (TREE_OPERAND (t, 0), c, code,
 					wide_type)))
 	return save_expr (t1);
@@ -4362,26 +4370,46 @@ extract_muldiv (t, c, code, wide_type)
       else if (TREE_CODE (op1) != INTEGER_CST)
 	break;
 
+      /* If this was a subtraction, negate OP1 and set it to be an addition.
+	 This simplifies the logic below.  */
+      if (tcode == MINUS_EXPR)
+	tcode = PLUS_EXPR, op1 = negate_expr (op1);
+
+      /* If either OP1 or C are negative, this optimization is not safe for
+	 some of the division and remainder types while for others we need
+	 to change the code.  */
+      if (tree_int_cst_sgn (op1) < 0 || tree_int_cst_sgn (c) < 0)
+	{
+	  if (code == CEIL_DIV_EXPR)
+	    code = FLOOR_DIV_EXPR;
+	  else if (code == CEIL_MOD_EXPR)
+	    code = FLOOR_MOD_EXPR;
+	  else if (code == FLOOR_DIV_EXPR)
+	    code = CEIL_DIV_EXPR;
+	  else if (code == FLOOR_MOD_EXPR)
+	    code = CEIL_MOD_EXPR;
+	  else if (code != MULT_EXPR)
+	    break;
+	}
+
+      /* Now do the operation and verify it doesn't overflow.  */
+      op1 = const_binop (code, convert (ctype, op1), convert (ctype, c), 0);
+      if (op1 == 0 || TREE_OVERFLOW (op1))
+	break;
+
       /* If we were able to eliminate our operation from the first side,
-	 apply our operation to the second side and reform the PLUS or
-	 MINUS.  */
-      if (t1 != 0 && (TREE_CODE (t1) != code || code == MULT_EXPR)
-	  && 0 != (t2 = const_binop (code, convert (ctype, op1),
-				     convert (ctype, c), 0))
-	  && ! TREE_OVERFLOW (t2))
-	return fold (build (tcode, ctype, convert (ctype, t1), t2));
+	 apply our operation to the second side and reform the PLUS.  */
+      if (t1 != 0 && (TREE_CODE (t1) != code || code == MULT_EXPR))
+	return fold (build (tcode, ctype, convert (ctype, t1), op1));
 
       /* The last case is if we are a multiply.  In that case, we can
 	 apply the distributive law to commute the multiply and addition
 	 if the multiplication of the constants doesn't overflow. */
-      if (code == MULT_EXPR
-	  && 0 != (t1 = const_binop (code, convert (ctype, op1),
-				     convert (ctype, c), 0))
-	  && ! TREE_OVERFLOW (t1))
+      if (code == MULT_EXPR)
 	return fold (build (tcode, ctype, fold (build (code, ctype,
 						       convert (ctype, op0),
 						       convert (ctype, c))),
-			    t1));
+			    op1));
 
       break;
 
