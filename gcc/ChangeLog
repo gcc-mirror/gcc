@@ -1,3 +1,7 @@
+Mon Jul  3 21:31:43 2000  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* calls.c (emit_library_call_value_1): Revert previous change.
+
 2000-07-03  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* fix-header.c (struct partial_proto): Remove unnecessary fields.
