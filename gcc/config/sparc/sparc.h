@@ -823,15 +823,35 @@ extern int leaf_function;
    class that represents their union.  */
 
 /* The SPARC has two kinds of registers, general and floating point.
+
+   For v9 we must distinguish between the upper and lower floating point
+   registers because the upper ones can't hold SFmode values.
+   HARD_REGNO_MODE_OK won't help here because reload assumes that register(s)
+   satisfying a group need for a class will also satisfy a single need for
+   that class.  EXTRA_FP_REGS is a bit of a misnomer as it covers all 64 fp
+   regs.
+
+   It is important that one class contains all the general and all the standard
+   fp regs.  Otherwise find_reg() won't properly allocate int regs for moves,
+   because reg_class_record() will bias the selection in favor of fp regs,
+   because reg_class_subunion[GENERAL_REGS][FP_REGS] will yield FP_REGS,
+   because FP_REGS > GENERAL_REGS.
+
+   It is also important that one class contain all the general and all the
+   fp regs.  Otherwise when spilling a DFmode reg, it may be from EXTRA_FP_REGS
+   but find_reloads() may use class GENERAL_OR_FP_REGS. This will cause
+   allocate_reload_reg() to bypass it causing an abort because the compiler
+   thinks it doesn't have a spill reg when in fact it does.
+
    v9 also has 4 floating point condition code registers.  Since we don't
    have a class that is the union of FPCC_REGS with either of the others,
    it is important that it appear first.  Otherwise the compiler will die
    trying to compile _fixunsdfsi because fix_truncdfsi2 won't match its
    constraints.  */
-   /* ??? As an experiment for v9, we treat all fp regs similarily here.  */
 
 #ifdef SPARCV9
-enum reg_class { NO_REGS, FPCC_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
+enum reg_class { NO_REGS, FPCC_REGS, GENERAL_REGS, FP_REGS, EXTRA_FP_REGS,
+		 GENERAL_OR_FP_REGS, GENERAL_OR_EXTRA_FP_REGS,
 		 ALL_REGS, LIM_REG_CLASSES };
 #else
 enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
@@ -843,11 +863,11 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #ifdef SPARCV9
 #define REG_CLASS_NAMES \
-  {"NO_REGS", "FPCC_REGS", "GENERAL_REGS", "FP_REGS", "GENERAL_OR_FP_REGS", \
-   "ALL_REGS" }
+  { "NO_REGS", "FPCC_REGS", "GENERAL_REGS", "FP_REGS", "EXTRA_FP_REGS", \
+    "GENERAL_OR_FP_REGS", "GENERAL_OR_EXTRA_FP_REGS", "ALL_REGS" }
 #else
 #define REG_CLASS_NAMES \
-  {"NO_REGS", "GENERAL_REGS", "FP_REGS", "ALL_REGS" }
+  { "NO_REGS", "GENERAL_REGS", "FP_REGS", "ALL_REGS" }
 #endif
 
 /* Define which registers fit in which classes.
@@ -856,8 +876,9 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #ifdef SPARCV9
 #define REG_CLASS_CONTENTS \
-  {{0, 0, 0, 0}, {0, 0, 0, 0xf}, {-2, 0, 0, 0}, {0, -1, -1, 0}, \
-   {-2, -1, -1, 0}, {-2, -1, -1, 0xf}}
+  {{0, 0, 0, 0}, {0, 0, 0, 0xf}, {-2, 0, 0, 0}, \
+   {0, -1, 0, 0}, {0, -1, -1, 0}, {-2, -1, 0, 0}, {-2, -1, -1, 0}, \
+   {-2, -1, -1, 0xf}}
 #else
 #if 0 && defined (__GNUC__)
 #define REG_CLASS_CONTENTS {0LL, 0xfffffffeLL, 0xffffffff00000000LL, 0xfffffffffffffffeLL}
@@ -872,11 +893,12 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    or could index an array.  */
 
 #ifdef SPARCV9
-#define REGNO_REG_CLASS(REGNO)				\
-  ((REGNO) == 0 ? NO_REGS				\
-   : ((REGNO) < 32 ? GENERAL_REGS			\
-      : ((REGNO) < 96 ? FP_REGS				\
-	 : FPCC_REGS)))
+#define REGNO_REG_CLASS(REGNO) \
+  ((REGNO) == 0 ? NO_REGS		\
+   : (REGNO) < 32 ? GENERAL_REGS	\
+   : (REGNO) < 64 ? FP_REGS		\
+   : (REGNO) < 96 ? EXTRA_FP_REGS	\
+   : FPCC_REGS)
 #else
 #define REGNO_REG_CLASS(REGNO) \
   ((REGNO) >= 32 ? FP_REGS : (REGNO) == 0 ? NO_REGS : GENERAL_REGS)
@@ -995,14 +1017,26 @@ extern char leaf_reg_remap[];
 #define INDEX_REG_CLASS GENERAL_REGS
 #define BASE_REG_CLASS GENERAL_REGS
 
+/* Local macro to handle the two v9 classes of FP regs.  */
+#ifdef SPARCV9
+#define FP_REG_CLASS_P(CLASS) ((CLASS) == FP_REGS || (CLASS) == EXTRA_FP_REGS)
+#else
+#define FP_REG_CLASS_P(CLASS) ((CLASS) == FP_REGS)
+#endif
+
 /* Get reg_class from a letter such as appears in the machine description.  */
 
 #ifdef SPARCV9
 #define REG_CLASS_FROM_LETTER(C) \
-  ((C) == 'f' ? FP_REGS : (C) == 'c' ? FPCC_REGS : NO_REGS)
+  ((C) == 'f' ? FP_REGS		\
+   : (C) == 'e' ? EXTRA_FP_REGS	\
+   : (C) == 'c' ? FPCC_REGS	\
+   : NO_REGS)
 #else
+/* Coerce v9's 'e' class to 'f', so we can use 'e' in the .md file for
+   v8 and v9.  */
 #define REG_CLASS_FROM_LETTER(C) \
-  ((C) == 'f' ? FP_REGS : NO_REGS)
+  ((C) == 'f' ? FP_REGS : (C) == 'e' ? FP_REGS : NO_REGS)
 #endif
 
 /* The letters I, J, K, L and M in a register constraint string
@@ -1040,7 +1074,7 @@ extern char leaf_reg_remap[];
    if an 'E' constraint fails to match it.  */
 #define PREFERRED_RELOAD_CLASS(X,CLASS)			\
   (CONSTANT_P (X)					\
-   && ((CLASS) == FP_REGS				\
+   && (FP_REG_CLASS_P (CLASS)				\
        || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT	\
 	   && (HOST_FLOAT_FORMAT != IEEE_FLOAT_FORMAT	\
 	       || HOST_BITS_PER_INT != BITS_PER_WORD)))	\
@@ -1057,20 +1091,21 @@ extern char leaf_reg_remap[];
    a paradoxical subreg in a float/fix conversion insn.  */
 
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, IN)		\
-  (((CLASS) == FP_REGS && ((MODE) == HImode || (MODE) == QImode)\
-      && (GET_CODE (IN) == MEM					\
-	  || ((GET_CODE (IN) == REG || GET_CODE (IN) == SUBREG)	\
-	      && true_regnum (IN) == -1))) ? GENERAL_REGS : NO_REGS)
+  ((FP_REG_CLASS_P (CLASS) && ((MODE) == HImode || (MODE) == QImode) \
+    && (GET_CODE (IN) == MEM					\
+	|| ((GET_CODE (IN) == REG || GET_CODE (IN) == SUBREG)	\
+	    && true_regnum (IN) == -1))) ? GENERAL_REGS : NO_REGS)
 
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, IN)		\
-  ((CLASS) == FP_REGS && ((MODE) == HImode || (MODE) == QImode)	\
-   && (GET_CODE (IN) == MEM					\
-       || ((GET_CODE (IN) == REG || GET_CODE (IN) == SUBREG)	\
-	   && true_regnum (IN) == -1)) ? GENERAL_REGS : NO_REGS)
+  ((FP_REG_CLASS_P (CLASS) && ((MODE) == HImode || (MODE) == QImode) \
+    && (GET_CODE (IN) == MEM					\
+	|| ((GET_CODE (IN) == REG || GET_CODE (IN) == SUBREG)	\
+	    && true_regnum (IN) == -1))) ? GENERAL_REGS : NO_REGS)
 
 /* On SPARC it is not possible to directly move data between 
    GENERAL_REGS and FP_REGS.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) ((CLASS1) != (CLASS2))
+#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
+  (FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2))
 
 /* Return the stack location to use for secondary memory needed reloads.
    We want to use the reserved location just below the frame pointer.
@@ -1098,7 +1133,7 @@ extern char leaf_reg_remap[];
    needed to represent mode MODE in a register of class CLASS.  */
 /* On SPARC, this is the size of MODE in words.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
-  ((CLASS) == FP_REGS ? (GET_MODE_SIZE (MODE) + 3) / 4 \
+  (FP_REG_CLASS_P (CLASS) ? (GET_MODE_SIZE (MODE) + 3) / 4 \
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Stack layout; function entry, exit and calling.  */
@@ -2118,8 +2153,8 @@ extern struct rtx_def *legitimize_pic_address ();
    and another.
    ??? v9: We ignore FPCC_REGS on the assumption they'll never be seen.  */
 #define REGISTER_MOVE_COST(CLASS1, CLASS2) \
-  (((CLASS1 == FP_REGS && CLASS2 == GENERAL_REGS) \
-    || (CLASS1 == GENERAL_REGS && CLASS2 == FP_REGS)) ? 6 : 2)
+  (((FP_REG_CLASS_P (CLASS1) && (CLASS2) == GENERAL_REGS) \
+    || ((CLASS1) == GENERAL_REGS && FP_REG_CLASS_P (CLASS2))) ? 6 : 2)
 
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE.  The purpose for the cost of MULT is to encourage
