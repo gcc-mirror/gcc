@@ -3003,6 +3003,7 @@ extern tree identifier_typedecl_value		PROTO((tree));
 extern int real_yylex				PROTO((void));
 extern int is_rid				PROTO((tree));
 extern tree build_lang_decl			PROTO((enum tree_code, tree, tree));
+extern void retrofit_lang_decl			PROTO((tree));
 extern tree build_lang_field_decl		PROTO((enum tree_code, tree, tree));
 extern void copy_lang_decl			PROTO((tree));
 extern tree make_lang_type			PROTO((enum tree_code));
