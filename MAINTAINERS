@@ -58,7 +58,7 @@ c++ runtime libs	Ulrich Drepper		drepper@cygnus.com
 *synthetic multiply	Torbjorn Granlund	tege@swox.com
 *c-torture		Torbjorn Granlund	tege@swox.com
 *f-torture		Kate Hedstrom		kate@ahab.rutgers.edu
-sco5, unixware, sco udk	Robert Lipe		robertl@dgii.com
+sco5, unixware, sco udk	Robert Lipe		robertlipe@usa.net
 new fixincludes		Bruce Korb		korbb@datadesign.com
 gcse.c 			Jeff Law		law@cygnus.com
 global opt framework	Jeff Law		law@cygnus.com
