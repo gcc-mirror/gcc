@@ -1,5 +1,5 @@
 ;;- Machine description for the Hitachi SH.
-;;  Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
+;;  Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
@@ -2749,15 +2749,17 @@
 	  rtx regop = operands[store_p], word0 ,word1;
 
 	  if (GET_CODE (regop) == SUBREG)
-	    regop = alter_subreg (regop);
+	    alter_subreg (&regop);
 	  if (REGNO (XEXP (addr, 0)) == REGNO (XEXP (addr, 1)))
 	    offset = 2;
 	  else
 	    offset = 4;
 	  mem = copy_rtx (mem);
 	  PUT_MODE (mem, SImode);
-	  word0 = alter_subreg (gen_rtx (SUBREG, SImode, regop, 0));
-	  word1 = alter_subreg (gen_rtx (SUBREG, SImode, regop, 4));
+	  word0 = gen_rtx (SUBREG, SImode, regop, 0);
+	  alter_subreg (&word0);
+	  word1 = gen_rtx (SUBREG, SImode, regop, 4);
+	  alter_subreg (&word1);
 	  if (store_p || ! refers_to_regno_p (REGNO (word0),
 					      REGNO (word0) + 1, addr, 0))
 	    {
