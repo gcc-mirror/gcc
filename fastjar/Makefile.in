@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -107,7 +107,7 @@ fastjar_TEXINFOS =  	../gcc/doc/include/gcc-common.texi 	../gcc/doc/include/gpl.
 man_MANS = jar.1 grepjar.1
 EXTRA_DIST = $(man_MANS)
 
-my_makei_flags =  -I ../gcc/doc/include
+my_makei_flags =  -I $(srcdir)/../gcc/doc/include
 
 TEXI2POD = perl $(srcdir)/../contrib/texi2pod.pl
 POD2MAN = pod2man --center="GNU" --release="gcc-@gcc_version@"
@@ -426,7 +426,7 @@ TAGS:  $(HEADERS) $(SOURCES) config.h.in $(TAGS_DEPENDENCIES) $(LISP)
 	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)config.h.in$$unique$(LISP)$$tags" \
-	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags config.h.in $$unique $(LISP))
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags config.h.in $$unique $(LISP) -o $$here/TAGS)
 
 mostlyclean-tags:
 
@@ -570,23 +570,21 @@ mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 fastjar.info: fastjar.texi $(fastjar_TEXINFOS)
-	@cd $(srcdir) && rm -f $@ $@-[0-9] $@-[0-9][0-9]
-	cd $(srcdir) \
-	  && $(MAKEINFO) $(my_makei_flags) `echo $< | sed 's,.*/,,'`
+	rm -f $@ $@-[0-9] $@-[0-9][0-9]
+	$(MAKEINFO) $(my_makei_flags) -o $@ $<
 
-$(srcdir)/jar.1: $(srcdir)/fastjar.texi
-	-$(TEXI2POD) -D jar < $(srcdir)/fastjar.texi > fastjar.pod
-	-($(POD2MAN) --section=1 fastjar.pod > jar.1.T$$$$ && \
-		mv -f jar.1.T$$$$ $(srcdir)/jar.1) || \
-		(rm -f jar.1.T$$$$ && exit 1)
-	-rm -f fastjar.pod
+%.1: %.pod
+	-($(POD2MAN) --section=1 $< > $(@).T$$$$ && \
+		mv -f $(@).T$$$$ $@) || \
+		(rm -f $(@).T$$$$ && exit 1)
 
-$(srcdir)/grepjar.1: $(srcdir)/fastjar.texi
-	-$(TEXI2POD) -D grepjar < $(srcdir)/fastjar.texi > grepjar.pod
-	-($(POD2MAN) --section=1 grepjar.pod > grepjar.1.T$$$$ && \
-		mv -f grepjar.1.T$$$$ $(srcdir)/grepjar.1) || \
-		(rm -f grepjar.1.T$$$$ && exit 1)
-	-rm -f grepjar.pod
+.INTERMEDIATE: jar.pod grepjar.pod
+
+jar.pod: $(srcdir)/fastjar.texi
+	-$(TEXI2POD) -D jar $< > $@
+
+grepjar.pod: $(srcdir)/fastjar.texi
+	-$(TEXI2POD) -D grepjar $< > $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

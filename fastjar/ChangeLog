@@ -1,3 +1,15 @@
+2003-10-30  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.am (my_make_i_flags): Add $(srcdir) and update comment
+	to match.
+	(fastjar.info): Update target to write to build directory.
+	(%.1): New implicit rule from a .pod file.
+	(jar.1): Delete.
+	(grepjar.1): Delete.
+	(jar.pod): New intermediate rule.
+	(grepjar.pod): Likewise.
+	* Makefile.in: Regenerate.
+
 2003-08-13  Matthias Klose  <doko@debian.org>
 
 	* fastjar.texi: License manual under the GPL.
