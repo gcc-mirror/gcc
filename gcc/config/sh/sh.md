@@ -4295,7 +4295,7 @@
 (define_expand "fpu_switch0"
   [(set (match_operand:SI 0 "" "") (match_dup 2))
    (set (match_dup 1) (mem:PSI (match_dup 0)))]
-  ""
+  "TARGET_SH4"
   "
 {
   operands[1] = get_fpscr_rtx ();
@@ -4309,7 +4309,7 @@
   [(set (match_operand:SI 0 "" "") (match_dup 2))
    (set (match_dup 3) (plus:SI (match_dup 0) (const_int 4)))
    (set (match_dup 1) (mem:PSI (match_dup 3)))]
-  ""
+  "TARGET_SH4"
   "
 {
   operands[1] = get_fpscr_rtx ();
@@ -4323,7 +4323,7 @@
 (define_expand "movpsi"
   [(set (match_operand:PSI 0 "register_operand" "")
 	(match_operand:PSI 1 "general_movsrc_operand" ""))]
-  ""
+  "TARGET_SH4"
   "")
 
 ;; The c / m alternative is a fake to guide reload to load directly into
@@ -4336,9 +4336,11 @@
 (define_insn "fpu_switch"
   [(set (match_operand:PSI 0 "register_operand" "=c,c,r,c,c,r,m,r")
 	(match_operand:PSI 1 "general_movsrc_operand" "c,>,m,m,r,r,r,!c"))]
-  "! reload_completed
-   || true_regnum (operands[0]) != FPSCR_REG || GET_CODE (operands[1]) != MEM
-   || GET_CODE (XEXP (operands[1], 0)) != PLUS"
+  "TARGET_SH4
+   && (! reload_completed
+       || true_regnum (operands[0]) != FPSCR_REG
+       || GET_CODE (operands[1]) != MEM
+       || GET_CODE (XEXP (operands[1], 0)) != PLUS)"
   "@
 	! precision stays the same
 	lds.l	%1,fpscr
@@ -4354,7 +4356,7 @@
 (define_split
   [(set (reg:PSI FPSCR_REG)
 	(mem:PSI (match_operand:SI 0 "register_operand" "r")))]
-  "find_regno_note (insn, REG_DEAD, true_regnum (operands[0]))"
+  "TARGET_SH4 && find_regno_note (insn, REG_DEAD, true_regnum (operands[0]))"
   [(set (match_dup 0) (match_dup 0))]
   "
 {
@@ -4368,7 +4370,7 @@
 (define_split
   [(set (reg:PSI FPSCR_REG)
 	(mem:PSI (match_operand:SI 0 "register_operand" "r")))]
-  ""
+  "TARGET_SH4"
   [(set (match_dup 0) (plus:SI (match_dup 0) (const_int -4)))]
   "
 {
