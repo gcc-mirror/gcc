@@ -1976,10 +1976,12 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 
       /* Convert a == b ? b : a to "a".  */
       if (GET_CODE (op0) == NE && ! side_effects_p (op0)
+	  && (! FLOAT_MODE_P (mode) || flag_fast_math)
 	  && rtx_equal_p (XEXP (op0, 0), op1)
 	  && rtx_equal_p (XEXP (op0, 1), op2))
 	return op1;
       else if (GET_CODE (op0) == EQ && ! side_effects_p (op0)
+	  && (! FLOAT_MODE_P (mode) || flag_fast_math)
 	  && rtx_equal_p (XEXP (op0, 1), op1)
 	  && rtx_equal_p (XEXP (op0, 0), op2))
 	return op2;
