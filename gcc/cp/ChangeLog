@@ -1,3 +1,7 @@
+Mon Jan 19 13:18:51 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (build_up_reference): A TARGET_EXPR has side effects.
+
 Fri Jan 16 11:40:50 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
 
         * error.c (dump_decl): For enum tags, output the tag, not its value.

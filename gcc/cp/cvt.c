@@ -422,6 +422,7 @@ build_up_reference (type, arg, flags, checkconst)
     {
       tree slot = build_decl (VAR_DECL, NULL_TREE, argtype);
       arg = build (TARGET_EXPR, argtype, slot, arg, NULL_TREE, NULL_TREE);
+      TREE_SIDE_EFFECTS (arg) = 1;
     }
 
   /* If we had a way to wrap this up, and say, if we ever needed it's
