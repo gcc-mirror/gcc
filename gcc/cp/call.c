@@ -3341,6 +3341,8 @@ build_over_call (fn, convs, args, flags)
 	if (converted_args == 0)
 	  return integer_zero_node;
 	return build_unary_op (ABS_EXPR, TREE_VALUE (converted_args), 0);
+      default:
+        break;
       }
 
   fn = build_call (fn, TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))), converted_args);

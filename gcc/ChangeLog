@@ -1,3 +1,10 @@
+Thu Mar 12 09:11:35 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* i386.md (andsi): Add default case in enumeration switch.
+	(iorsi3): Likewise.
+	(iorhi3): Likewise.
+	(xorsi3): Likewise.
+
 Thu Mar 12 08:37:02 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* c-decl (finish_struct): Change type of min_align to unsigned.
