@@ -78,7 +78,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ASM_OUTPUT_INT
 #define ASM_OUTPUT_INT(FILE,VALUE)                      \
-( fprintf ((FILE), "\t%s ", LONG_ASM_OP),               \
+( fprintf ((FILE), "%s", LONG_ASM_OP),                  \
   output_addr_const ((FILE), (VALUE)),                  \
   fprintf ((FILE), "\n"))
 

@@ -558,7 +558,7 @@ do { register int i;			\
 	putc('\n', (f));		\
 	inside = FALSE;			\
       }					\
-      fprintf((f), "\t%s ", ASCII_DATA_ASM_OP);	\
+      fprintf((f), "%s", ASCII_DATA_ASM_OP);	\
     }					\
     if ((p)[i] < 32 || (p)[i] == '\\' || (p)[i] == '"' || (p)[i] == 127) {	\
       if (inside) {			\

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MIPS GNU Hurd version.
-   Copyright (C) 1995, 1996, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
   do {				 					\
 	mips_asm_file_end(FILE);					\
 	if (!flag_no_ident)						\
-	  fprintf ((FILE), "\t%s\t\"GCC: (GNU) %s\"\n",			\
+	  fprintf ((FILE), "%s\"GCC: (GNU) %s\"\n",			\
 		   IDENT_ASM_OP, version_string);			\
   } while (0)
 
@@ -61,7 +61,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)				\
   do {									\
       ++sym_lineno;							\
-      fprintf ((FILE), ".LM%d:\n\t%s %d,0,%d,.LM%d\n",			\
+      fprintf ((FILE), ".LM%d:\n%s%d,0,%d,.LM%d\n",			\
 	       sym_lineno, ASM_STABN_OP, N_SLINE, (LINE), sym_lineno);	\
   } while (0)
 
@@ -72,7 +72,7 @@ Boston, MA 02111-1307, USA.  */
 									\
     if (TARGET_GP_OPT)							\
       STREAM = asm_out_text_file;					\
-    fprintf (STREAM, "\t%s\t ", TYPE_ASM_OP);				\
+    fprintf (STREAM, "%s", TYPE_ASM_OP);				\
     assemble_name (STREAM, NAME);					\
     putc (',', STREAM);							\
     fprintf (STREAM, TYPE_OPERAND_FMT, "function");			\

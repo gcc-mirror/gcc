@@ -195,7 +195,7 @@ rdata_section ()						\
   do						\
     {						\
       ctors_section ();				\
-      fprintf (STREAM, "\t%s\t ", INT_ASM_OP);	\
+      fprintf (STREAM, "%s", INT_ASM_OP);	\
       assemble_name (STREAM, NAME);		\
       fprintf (STREAM, "\n");			\
     }						\
@@ -208,7 +208,7 @@ rdata_section ()						\
   do						\
     {						\
       dtors_section ();                   	\
-      fprintf (STREAM, "\t%s\t ", INT_ASM_OP);	\
+      fprintf (STREAM, "%s", INT_ASM_OP);	\
       assemble_name (STREAM, NAME);             \
       fprintf (STREAM, "\n");			\
     }						\

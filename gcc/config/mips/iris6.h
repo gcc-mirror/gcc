@@ -411,7 +411,7 @@ do									   \
 	mips_declare_object (STREAM, NAME, "", ":\n", 0);		   \
 	ASM_OUTPUT_ALIGN (STREAM, floor_log2 (ALIGN / BITS_PER_UNIT));	   \
 	ASM_OUTPUT_SKIP (STREAM, SIZE);					   \
-	fprintf (STREAM, "\t%s\n", POPSECTION_ASM_OP);			   \
+	fprintf (STREAM, "%s\n", POPSECTION_ASM_OP);			   \
       }									   \
     else								   \
       mips_declare_object (STREAM, NAME, "\n\t.lcomm\t", ",%u\n", (SIZE)); \
@@ -436,7 +436,7 @@ do									\
    if (!flag_inhibit_size_directive && DECL_SIZE (DECL))	\
      {									\
        size_directive_output = 1;					\
-       fprintf (STREAM, "\t%s\t ", SIZE_ASM_OP);			\
+       fprintf (STREAM, "%s", SIZE_ASM_OP);				\
        assemble_name (STREAM, NAME);					\
        fprintf (STREAM, ",%d\n", int_size_in_bytes (TREE_TYPE (DECL)));	\
      }									\
@@ -465,7 +465,7 @@ do {									 \
 	 && !size_directive_output)					 \
        {								 \
 	 size_directive_output = 1;					 \
-	 fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			 \
+	 fprintf (FILE, "%s", SIZE_ASM_OP);				 \
 	 assemble_name (FILE, name);					 \
 	 fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
        }								 \

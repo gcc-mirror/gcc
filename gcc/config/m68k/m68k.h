@@ -1328,7 +1328,7 @@ void								\
 __transfer_from_trampoline ()					\
 {								\
   register char *a0 asm ("%a0");				\
-  asm (GLOBAL_ASM_OP " ___trampoline");				\
+  asm (GLOBAL_ASM_OP "___trampoline");				\
   asm ("___trampoline:");					\
   asm volatile ("move%.l %0,%@" : : "m" (a0[22]));		\
   asm volatile ("move%.l %1,%0" : "=a" (a0) : "m" (a0[18]));	\
@@ -1894,7 +1894,7 @@ __transfer_from_trampoline ()					\
 
 #define GLOBAL_ASM_OP "\t.globl\t"
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
-  do { fprintf (FILE, "%s ", GLOBAL_ASM_OP);		\
+  do { fprintf (FILE, "%s", GLOBAL_ASM_OP);		\
        assemble_name (FILE, NAME);			\
        fputs ("\n", FILE);} while (0)
 

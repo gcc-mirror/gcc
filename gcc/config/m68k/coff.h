@@ -155,7 +155,7 @@ dtors_section ()							\
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
   do {									\
     ctors_section ();							\
-    fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
+    fprintf (FILE, "%s", INT_ASM_OP);					\
     assemble_name (FILE, NAME);						\
     fprintf (FILE, "\n");						\
   } while (0)
@@ -165,7 +165,7 @@ dtors_section ()							\
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
   do {									\
     dtors_section ();                   				\
-    fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
+    fprintf (FILE, "%s", INT_ASM_OP);					\
     assemble_name (FILE, NAME);              				\
     fprintf (FILE, "\n");						\
   } while (0)

@@ -5857,7 +5857,7 @@ mips_output_filename (stream, name)
   else if (write_symbols == DBX_DEBUG)
     {
       ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext", 0);
-      fprintf (stream, "%s ", ASM_STABS_OP);
+      fprintf (stream, "%s", ASM_STABS_OP);
       output_quoted_string (stream, name);
       fprintf (stream, ",%d,0,0,%s\n", N_SOL, &ltext_label_name[1]);
     }
@@ -5896,7 +5896,7 @@ mips_output_lineno (stream, line)
   if (write_symbols == DBX_DEBUG)
     {
       ++sym_lineno;
-      fprintf (stream, "%sLM%d:\n\t%s %d,0,%d,%sLM%d\n",
+      fprintf (stream, "%sLM%d:\n%s%d,0,%d,%sLM%d\n",
 	       LOCAL_LABEL_PREFIX, sym_lineno, ASM_STABN_OP, N_SLINE, line,
 	       LOCAL_LABEL_PREFIX, sym_lineno);
     }
@@ -5992,7 +5992,7 @@ mips_asm_file_start (stream)
 #endif
   if (TARGET_ABICALLS)
     /* ??? but do not want this (or want pic0) if -non-shared? */
-    fprintf (stream, "\t%s\n", ABICALLS_ASM_OP);
+    fprintf (stream, "%s\n", ABICALLS_ASM_OP);
 
   if (TARGET_MIPS16)
     fprintf (stream, "\t.set\tmips16\n");

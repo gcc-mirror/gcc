@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Atari TT ASV version.
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -46,7 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)				\
 do {									\
   if (switch_table_difference_label_flag)				\
-    asm_fprintf ((FILE), "\t%s %LLD%d,%LL%d\n", SET_ASM_OP, (NUM), (NUM));\
+    asm_fprintf ((FILE), "%s%LLD%d,%LL%d\n", SET_ASM_OP, (NUM), (NUM));\
   switch_table_difference_label_flag = 0;				\
 } while (0)
 
@@ -61,7 +61,7 @@ int switch_table_difference_label_flag;
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
 {								\
   register int sp = 0, lp = 0, ch;				\
-  fprintf ((FILE), "\t%s ", BYTE_ASM_OP);				\
+  fprintf ((FILE), "%s", BYTE_ASM_OP);				\
   do {								\
     ch = (PTR)[sp];						\
     if (ch > ' ' && ! (ch & 0x80) && ch != '\\')		\
@@ -76,7 +76,7 @@ int switch_table_difference_label_flag;
       {								\
 	if ((sp % 10) == 0)					\
 	  {							\
-	    fprintf ((FILE), "\n\t%s ", BYTE_ASM_OP);		\
+	    fprintf ((FILE), "\n%s", BYTE_ASM_OP);		\
 	  }							\
 	else							\
 	  {							\

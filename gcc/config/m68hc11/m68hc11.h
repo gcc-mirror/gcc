@@ -1659,12 +1659,12 @@ do { long l;						\
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 #define ASM_OUTPUT_CHAR(FILE,VALUE)			\
-( fprintf (FILE, "\t%s\t", ASM_BYTE_OP),		\
+( fprintf (FILE, "%s", ASM_BYTE_OP),			\
   output_addr_const (FILE, (VALUE)),			\
   putc ('\n', FILE))
 
 #define ASM_OUTPUT_BYTE(FILE,VALUE)			\
-  fprintf ((FILE), "%s 0x%x\n", ASM_BYTE_OP, (VALUE))
+  fprintf ((FILE), "%s0x%x\n", ASM_BYTE_OP, (VALUE))
 
 
 /* Define the parentheses used to group arithmetic operations in assembler
@@ -1684,7 +1684,7 @@ do { long l;						\
    defined for reference from other files.  */
 
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
-  do { fprintf (FILE, "%s ", GLOBAL_ASM_OP);		\
+  do { fprintf (FILE, "%s", GLOBAL_ASM_OP);		\
        assemble_name (FILE, NAME);			\
        fputs ("\n", FILE);} while (0)
 
@@ -1773,7 +1773,7 @@ do { long l;						\
 #define ASM_OUTPUT_ALIGN(FILE,LOG)			\
   do {                                                  \
       if ((LOG) > 1)                                    \
-          asm_fprintf ((FILE), "\t%s\n", ALIGN_ASM_OP); \
+          asm_fprintf ((FILE), "%s\n", ALIGN_ASM_OP); \
   } while (0)
 
 
