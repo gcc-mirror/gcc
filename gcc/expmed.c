@@ -1257,6 +1257,16 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
 
       total_bits = GET_MODE_BITSIZE (mode);
 
+      /* Make sure bitpos is valid for the chosen mode.  Adjust BITPOS to
+	 be be in the range 0 to total_bits-1, and put any excess bytes in
+	 OFFSET.  */
+      if (bitpos >= total_bits)
+	{
+	  offset += (bitpos / total_bits) * (total_bits / BITS_PER_UNIT);
+	  bitpos -= ((bitpos / total_bits) * (total_bits / BITS_PER_UNIT)
+		     * BITS_PER_UNIT);
+	}
+
       /* Get ref to an aligned byte, halfword, or word containing the field.
 	 Adjust BITPOS to be position within a word,
 	 and OFFSET to be the offset of that word.
