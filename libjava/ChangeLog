@@ -1,3 +1,18 @@
+2004-02-16  Per Bothner  <per@bothner.com>
+
+	* java/nio/CharBufferImpl.java:  Inline super constructor.
+	* java/nio/DoubleBufferImpl.java:  Likewise.
+	* java/nio/FloatBufferImpl.java:  Likewise.
+	* java/nio/IntBufferImpl.java:  Likewise.
+	* java/nio/LongBufferImpl.java:  Likewise.
+	* java/nio/ShortBufferImpl.java:  Likewise.
+	* java/nio/CharBuffer.java:  Remove unused constructor.
+	* java/nio/DoubleBuffer.java:  Likewise.
+	* java/nio/FloatBuffer.java:  Likewise.
+	* java/nio/IntBuffer.java:  Likewise.
+	* java/nio/LongBuffer.java:  Likewise.
+	* java/nio/ShortBuffer.java:  Likewise.
+
 2004-02-15  Ito Kazumitsu  <kaz@maczuka.gcd.org>
 
 	* java/io/ObjectInputStream.java (readClassDescriptor): Avoid the
