@@ -994,19 +994,6 @@ union tree_node
 #ifndef NULL_PTR
 #define NULL_PTR ((GENERIC_PTR)0)
 #endif
-
-/* Format for global names of constructor and destructor functions.  */
-#ifndef CONSTRUCTOR_NAME_FORMAT  /* Some machines need to override this.  */
-#ifndef NO_DOLLAR_IN_LABEL
-#define CONSTRUCTOR_NAME_FORMAT "_GLOBAL_$I$%s"
-#else
-#ifdef NO_DOT_IN_LABEL
-#define CONSTRUCTOR_NAME_FORMAT "____GLOBAL__I_%s"
-#else
-#define CONSTRUCTOR_NAME_FORMAT "_GLOBAL_.I.%s"
-#endif
-#endif
-#endif
 
 /* The following functions accept a wide integer argument.  Rather than
    having to cast on every function call, we use a macro instead, that is
