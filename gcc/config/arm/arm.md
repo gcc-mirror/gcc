@@ -571,32 +571,13 @@
   [(set_attr "conds" "set")]
 )
 
-;; These patterns are the same ones as the two regular addsi3_compare0
-;; patterns, except we write them slightly different - the combiner
-;; tends to generate them this way.
-(define_insn "*addsi3_compare0_for_combiner"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC
-	 (match_operand:SI 1 "s_register_operand" "r,r")
-	 (neg:SI (match_operand:SI 2 "arm_add_operand" "rI,L"))))
-   (set (match_operand:SI 0 "s_register_operand" "=r,r")
-	(plus:SI (match_dup 1) (match_dup 2)))]
+(define_insn "*compare_negsi_si"
+  [(set (reg:CC_Z CC_REGNUM)
+	(compare:CC_Z
+	 (neg:SI (match_operand:SI 0 "s_register_operand" "r"))
+	 (match_operand:SI 1 "s_register_operand" "r")))]
   "TARGET_ARM"
-  "@
-   add%?s\\t%0, %1, %2
-   sub%?s\\t%0, %1, #%n2"
-  [(set_attr "conds" "set")]
-)
-
-(define_insn "*addsi3_compare0_scratch_for_combiner"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC
-	 (match_operand:SI 0 "s_register_operand" "r,r")
-	 (neg:SI (match_operand:SI 1 "arm_add_operand" "rI,L"))))]
-  "TARGET_ARM"
-  "@
-   cmn%?\\t%0, %1
-   cmp%?\\t%0, #%n1"
+  "cmn%?\\t%1, %0"
   [(set_attr "conds" "set")]
 )
 
@@ -4861,7 +4842,7 @@
   "@
    mov%?\\t%0, %1\\t%@ movhi
    mvn%?\\t%0, #%B1\\t%@ movhi
-   str%?h\\t%1, %0\\t%@ movhi 
+   str%?h\\t%1, %0\\t%@ movhi
    ldr%?h\\t%0, %1\\t%@ movhi"
   [(set_attr "type" "*,*,store1,load1")
    (set_attr "predicable" "yes")
@@ -5777,7 +5758,7 @@
 (define_insn "*negated_cbranchsi4"
   [(set (pc)
 	(if_then_else
-	 (match_operator 0 "arm_comparison_operator"
+	 (match_operator 0 "equality_operator"
 	  [(match_operand:SI 1 "s_register_operand" "l")
 	   (neg:SI (match_operand:SI 2 "s_register_operand" "l"))])
 	 (label_ref (match_operand 3 "" ""))
@@ -6724,19 +6705,19 @@
 		      (const_string "alu_shift_reg")))]
 )
 
-(define_insn "*cmpsi_neg_shiftsi"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC (match_operand:SI 0 "s_register_operand" "r")
-		    (neg:SI (match_operator:SI 3 "shift_operator"
-			     [(match_operand:SI 1 "s_register_operand" "r")
-			      (match_operand:SI 2 "arm_rhs_operand" "rM")]))))]
+(define_insn "*cmpsi_negshiftsi_si"
+  [(set (reg:CC_Z CC_REGNUM)
+	(compare:CC_Z
+	 (neg:SI (match_operator:SI 1 "shift_operator"
+		    [(match_operand:SI 2 "s_register_operand" "r")
+		     (match_operand:SI 3 "reg_or_int_operand" "rM")]))
+	 (match_operand:SI 0 "s_register_operand" "r")))]
   "TARGET_ARM"
-  "cmn%?\\t%0, %1%S3"
+  "cmn%?\\t%0, %2%S1"
   [(set_attr "conds" "set")
-   (set_attr "shift" "1")
-   (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
-		      (const_string "alu_shift")
-		      (const_string "alu_shift_reg")))]
+   (set (attr "type") (if_then_else (match_operand 3 "const_int_operand" "")
+				    (const_string "alu_shift")
+				    (const_string "alu_shift_reg")))]
 )
 
 ;; Cirrus SF compare instruction

@@ -1,3 +1,16 @@
+2005-04-03  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	PR target/14812
+	* arm.md (addsi3_compare0_for_combiner): Delete.
+	(addsi3_compare0_scratch_for_combiner): Delete.
+	(cmpsi_neg_shiftsi): Delete.
+	(compare_negsi_si): New pattern.
+	(cmpsi_negshiftsi_si): New pattern.
+	(negated_cbranchsi4): Restrict to equality_operator.
+	
+	* arm.md (movhi_insn_arch4): delete trailing white space from assembler
+	template.
+
 2005-04-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfghooks.c, cfgrtl.c, modulo-sched.c, config/i386/winnt.c:
