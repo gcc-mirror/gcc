@@ -1244,8 +1244,9 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	      cleanup_insns = get_insns ();
 	      poplevel (1, 0, 0);
 	      end_sequence ();
-	      f->before_jump
-		= emit_insns_after (cleanup_insns, f->before_jump);
+	      if (cleanup_insns != 0)
+		f->before_jump
+		  = emit_insns_after (cleanup_insns, f->before_jump);
 
 	      f->cleanup_list_list = TREE_CHAIN (lists);
 	    }
