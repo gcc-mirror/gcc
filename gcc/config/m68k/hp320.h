@@ -32,6 +32,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SGS_CMP_ORDER		/* Takes cmp operands in reverse order */
 #define HPUX_ASM
 
+#if !defined (CROSS_COMPILE) && !defined (NO_BUGS)
+/* The assembler on HP 9k3xx machines running HPUX 8.0 doesn't translate
+   floating point constants behind some operands.  The workaround is to
+   use hex constants.  Reported by Thomas Nau (nau@medizin.uni-ulm.de).  */
+#define AS_BUG_FLOATING_CONSTANT
+/* The assembler on HP 9k3xx machines running HPUX 8.0 doesn't accept
+   labels followed by a text, data, or other section directive.  Reported
+   by Thomas Nau (nau@medizin.uni-ulm.de).  */
+#define AS_BUG_TRAILING_LABEL
+#endif
+
 /* gcc.c should find libgcc.a itself rather than expecting linker to.  */
 #define LINK_LIBGCC_SPECIAL
 /* The arguments of -L must be a separate argv element.  */
@@ -288,9 +299,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM_APP_OFF ""
 
+#ifdef AS_BUG_TRAILING_LABEL
+#define TEXT_SECTION_ASM_OP "\tlalign\t1\ntext"
+#define DATA_SECTION_ASM_OP "\tlalign\t1\ndata"
+#else
 #define TEXT_SECTION_ASM_OP "text"
-
 #define DATA_SECTION_ASM_OP "data"
+#endif
 
 #define	ASCII_DATA_ASM_OP "byte"
  
@@ -336,6 +351,24 @@ do{  if (PREFIX[0] == 'L' && PREFIX[1] == 'I')		\
 #define ASM_OUTPUT_FLOAT(FILE, VALUE)					\
   fprintf (FILE, "\tfloat 0f%.9g\n", (VALUE))
 
+#ifdef AS_BUG_FLOATING_CONSTANT
+#undef  ASM_OUTPUT_DOUBLE_OPERAND
+#define ASM_OUTPUT_DOUBLE_OPERAND(FILE, VALUE)                  \
+  do {								\
+    union { double d; int i[2]; } dummy_u;			\
+    dummy_u.d = (VALUE);					\
+    asm_fprintf (FILE, "%I0x%x%08x", dummy_u.i[0], dummy_u.i[1]); \ 
+  } while (0)
+
+#undef  ASM_OUTPUT_FLOAT_OPERAND
+#define ASM_OUTPUT_FLOAT_OPERAND(FILE, VALUE)                   \
+  do {								\
+    union { float f; int i; } dummy_u;				\
+    dummy_u.f = (VALUE);					\
+    asm_fprintf (FILE, "%I0x%08x", dummy_u.i);			\
+  } while (0)
+#endif /* AS_BUG_FLOATING_CONSTANT */
+
 /* This is how to output an assembler line defining an `int' constant.  */
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
@@ -378,6 +411,17 @@ do{  if (PREFIX[0] == 'L' && PREFIX[1] == 'I')		\
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, FILENAME)
 #define ASM_OUTPUT_SOURCE_LINE(FILE, LINENO)
 
+#ifdef AS_BUG_FLOATING_CONSTANT
+#define PRINT_OPERAND_FLOAT(FILE,CODE,FLOAT,INT)	\
+  fprintf (FILE, "&0x%x", (INT))
+#else
+#define PRINT_OPERAND_FLOAT(FILE,CODE,FLOAT,INT)	\
+  if (CODE == 'f')					\
+    fprintf (FILE, "&0f%.9g", (FLOAT));			\
+  else							\
+    fprintf (FILE, "&0x%x", (INT))
+#endif /* AS_BUG_FLOATING_CONSTANT */
+
 #define PRINT_OPERAND(FILE, X, CODE)  \
 { if (CODE == '.') fprintf (FILE, ".");					\
   else if (CODE == '#') fprintf (FILE, "&");				\
@@ -396,10 +440,7 @@ do{  if (PREFIX[0] == 'L' && PREFIX[1] == 'I')		\
       union { float f; int i; } u1;					\
       u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
       u1.f = u.d;							\
-      if (CODE == 'f')							\
-        fprintf (FILE, "&0f%.9g", u1.f);				\
-      else								\
-        fprintf (FILE, "&0x%x", u1.i); }				\
+      PRINT_OPERAND_FLOAT (FILE,CODE, u1.f, u1.i); }			\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
     { union { double d; int i[2]; } u;					\
       u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
