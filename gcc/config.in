@@ -320,16 +320,6 @@
 /* Define if the host execution character set is EBCDIC. */
 #undef HOST_EBCDIC
 
-/* Define to the floating point format of the host machine, if not IEEE. */
-#undef HOST_FLOAT_FORMAT
-
-/* Define to 1 if the host machine stores floating point numbers in
-   memory with the word containing the sign bit at the lowest address.
-
-   This macro need not be defined if the ordering is the same as for
-   multi-word integers. */
-#undef HOST_FLOAT_WORDS_BIG_ENDIAN
-
 /* Always define this when using the GNU C Library */
 #undef _GNU_SOURCE
 
@@ -342,6 +332,17 @@
 /* Define if the host machine stores words of multi-word integers in
    big-endian order. */
 #undef HOST_WORDS_BIG_ENDIAN
+
+/* Define to the floating point format of the host machine, if not IEEE. */
+#undef HOST_FLOAT_FORMAT
+
+/* Define to 1 if the host machine stores floating point numbers in
+   memory with the word containing the sign bit at the lowest address,
+   or to 0 if it does it the other way around.
+
+   This macro should not be defined if the ordering is the same as for
+   multi-word integers. */
+#undef HOST_FLOAT_WORDS_BIG_ENDIAN
 
 /* Define if you have a working <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
