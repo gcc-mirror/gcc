@@ -285,10 +285,6 @@ struct bb_str {
   int length;			/* string length */
 };
 
-#ifdef HAVE_peephole
-extern rtx peephole		PROTO((rtx));
-#endif
-
 static struct bb_str *sbb_head	= 0;		/* Head of string list.  */
 static struct bb_str **sbb_tail	= &sbb_head;	/* Ptr to store next bb str */
 static int sbb_label_num	= 0;		/* Last label used */

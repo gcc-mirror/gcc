@@ -621,9 +621,9 @@ static int can_disregard_other_sets   PROTO ((struct reg_set **, rtx, int));
 static int handle_avail_expr	  PROTO ((rtx, struct expr *));
 static int classic_gcse	       PROTO ((void));
 static int one_classic_gcse_pass      PROTO ((int));
-
 static void invalidate_nonnull_info	PROTO ((rtx, rtx));
-
+static rtx process_insert_insn	PROTO ((struct expr *));
+static int pre_edge_insert	PROTO ((struct edge_list *, struct expr **));
 
 /* Entry point for global common subexpression elimination.
    F is the first instruction in the function.  */
@@ -4553,7 +4553,7 @@ pre_insert_copy_insn (expr, insn)
 static void
 pre_insert_copies ()
 {
-  int i, bb;
+  int i;
 
   /* For each available expression in the table, copy the result to
      `reaching_reg' if the expression reaches a deleted one.

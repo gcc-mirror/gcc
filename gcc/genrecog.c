@@ -302,11 +302,15 @@ static void process_tree
 static void record_insn_name
   PROTO((int, const char *));
 
+static void debug_decision_0
+  PROTO((struct decision *, int, int));
 static void debug_decision_1
   PROTO((struct decision *, int));
 static void debug_decision_2
   PROTO((struct decision_test *));
 extern void debug_decision
+  PROTO((struct decision *));
+extern void debug_decision_list
   PROTO((struct decision *));
 
 static void
@@ -2477,6 +2481,8 @@ process_tree (head, subroutine_type)
   write_subroutine (head, subroutine_type);
 }
 
+extern int main PROTO ((int, char **));
+
 int
 main (argc, argv)
      int argc;
