@@ -17,7 +17,18 @@ XCINCLUDES='-I. -I.. -I$(srcdir) -I$(srcdir)/..'
 XCXXINCLUDES='-I. -I.. -I$(srcdir) -I$(srcdir)/..'
 MOSTLYCLEAN='*.o core $(JUNK_TO_CLEAN)'
 (. ${srcdir}/../config.shared) >${package_makefile_frag}
-if [ ! -d ${srcdir}/../../gcc ] ; then
+
+if [ "${srcdir}" = "." ] ; then
+  if [ "${with_target_subdir}" != "." ] ; then
+    topsrcdir=${with_multisrctop}../../..
+  else
+    topsrcdir=${with_multisrctop}../..
+  fi
+else
+  topsrcdir=${srcdir}/../..
+fi
+
+if [ ! -d ${topsrcdir}/gcc ] ; then
   echo "CHECK = check-iostream check-iostdio" >>${package_makefile_frag}
 fi
 

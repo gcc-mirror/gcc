@@ -1,3 +1,12 @@
+Tue Jan 27 10:35:22 1998  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in (topsrcdir): New.
+	(CHECK_SUBDIRS, configdirs): Check ${topsrcdir}/gcc instead.
+	(config-ml.in): Use ${topsrcdir}/config-ml.in.
+
+	* tests/configure.in (topsrcdir): New.
+	(CHECK): Check ${topsrcdir}/gcc instead.
+
 Fri Jan 16 00:48:03 1998  Manfred Hollstein  <manfred@lts.sel.alcatel.de>
 
 	* config.shared (FLAGS_TO_PASS): Add SHELL.
