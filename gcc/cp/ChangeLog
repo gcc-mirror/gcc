@@ -1,3 +1,12 @@
+2004-12-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/18949
+	* pt.c (tsubst_copy_and_build): <INDIRECT_REF case> Check that a
+	REFERENCE_REF_P is dereferencing a reference type.
+	* typeck.c (build_static_cast): Convert from reference even in a
+	template.
+	(build_reinterpret_cast, build_const_cast, build_c_cast): Likewise.
+
 2004-12-14  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* parser.c (cp_parser_uncommitted_to_tentative_parse_p): New function.

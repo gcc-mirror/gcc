@@ -4767,7 +4767,7 @@ build_static_cast (tree type, tree expr)
       expr = build_min (STATIC_CAST_EXPR, type, expr);
       /* We don't know if it will or will not have side effects.  */
       TREE_SIDE_EFFECTS (expr) = 1;
-      return expr;
+      return convert_from_reference (expr);
     }
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
@@ -4983,7 +4983,7 @@ build_reinterpret_cast (tree type, tree expr)
 	  && type_dependent_expression_p (expr))
 	/* There might turn out to be side effects inside expr.  */
 	TREE_SIDE_EFFECTS (t) = 1;
-      return t;
+      return convert_from_reference (t);
     }
 
   return build_reinterpret_cast_1 (type, expr, /*c_cast_p=*/false,
@@ -5111,7 +5111,7 @@ build_const_cast (tree type, tree expr)
 	  && type_dependent_expression_p (expr))
 	/* There might turn out to be side effects inside expr.  */
 	TREE_SIDE_EFFECTS (t) = 1;
-      return t;
+      return convert_from_reference (t);
     }
 
   return build_const_cast_1 (type, expr, /*complain=*/true,
@@ -5137,7 +5137,7 @@ build_c_cast (tree type, tree expr)
 			  tree_cons (NULL_TREE, value, NULL_TREE));
       /* We don't know if it will or will not have side effects.  */
       TREE_SIDE_EFFECTS (t) = 1;
-      return t;
+      return convert_from_reference (t);
     }
 
   /* Casts to a (pointer to a) specific ObjC class (or 'id' or

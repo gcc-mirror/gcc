@@ -8395,8 +8395,11 @@ tsubst_copy_and_build (tree t,
 
 	if (REFERENCE_REF_P (t))
 	  {
-	    gcc_assert (TREE_CODE (TREE_TYPE (r)) == REFERENCE_TYPE);
-	    r = convert_from_reference (r);
+	    /* A type conversion to reference type will be enclosed in
+	       such an indirect ref, but the substitution of the cast
+	       will have also added such an indirect ref.  */
+	    if (TREE_CODE (TREE_TYPE (r)) == REFERENCE_TYPE)
+	      r = convert_from_reference (r);
 	  }
 	else
 	  r = build_x_indirect_ref (r, "unary *");
