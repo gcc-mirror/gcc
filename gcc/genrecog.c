@@ -213,7 +213,7 @@ make_insn_sequence (insn, type)
   struct decision_head head;
 
   {
-    static char *last_real_name = "insn";
+    static const char *last_real_name = "insn";
     static int last_real_code = 0;
     char *name;
 
@@ -306,7 +306,7 @@ make_insn_sequence (insn, type)
 
   if (type == SPLIT)
     /* Define the subroutine we will call below and emit in genemit.  */
-    printf ("extern rtx gen_split_%d ();\n", last->insn_code_number);
+    printf ("extern rtx gen_split_%d PROTO ((rtx *));\n", last->insn_code_number);
 
   return head;
 }
@@ -1030,6 +1030,19 @@ write_subroutine (tree, type)
      enum routine_type type;
 {
   int i;
+
+  if (type == SPLIT)
+    printf ("extern rtx split");
+  else
+    printf ("extern int recog");
+  if (tree != 0 && tree->subroutine_number > 0)
+    printf ("_%d", tree->subroutine_number);
+  else if (type == SPLIT)
+    printf ("_insns");
+  printf (" PROTO ((rtx, rtx");
+  if (type == RECOG)
+    printf (", int *");
+  printf ("));\n");
 
   if (type == SPLIT)
     printf ("rtx\nsplit");

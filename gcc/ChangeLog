@@ -1,3 +1,28 @@
+Tue Aug 24 09:32:07 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genattr.c (function_unit_desc): Constify a char*.  Add prototype.
+	(main): Add prototypes.
+
+	* genattrtab.c (substitute_address, write_const_num_delay_slots,
+	attr_eq, attr_numeral, attr_equal_p, attr_copy_rtx): Prototype.
+	(write_attr_get): Emit prototypes along with function definition.
+	(write_eligible_delay): Mark a parameter with ATTRIBUTE_UNUSED.
+	(write_complex_function): Emit static prototype along with
+	function definition.
+
+	* genemit.c (gen_split): Emit prototypes along with function
+	definition.
+
+	* genoutput.c (output_epilogue): Add prototype to `insn_outfun'.
+	Likewise for predicates and `insn_operand_predicate'.
+	(process_template): Emit static prototype along with function
+	definition.
+
+	* genrecog.c (make_insn_sequence): Constify a char*.  Add
+	prototypes for get_split_*().
+	(write_subroutine): Emit prototypes along with function
+	definition.
+
 Tue Aug 24 12:35:20 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* tree.h (current_function_calls_setjmp,

@@ -244,7 +244,7 @@ output_epilogue ()
     }
   printf ("  };\n");
 
-  printf ("\nconst char *(*const insn_outfun[])() =\n  {\n");
+  printf ("\nconst char *(*const insn_outfun[]) PROTO((rtx *, rtx)) =\n  {\n");
   for (d = insn_data; d; d = d->next)
     {
       if (d->outfun)
@@ -398,7 +398,8 @@ output_epilogue ()
 
 	    if (p == 0)
 	      {
-		printf ("extern int %s ();\n", d->predicates[i]);
+		printf ("extern int %s PROTO ((rtx, enum machine_mode));\n",
+			d->predicates[i]);
 		p = (struct predicate *) alloca (sizeof (struct predicate));
 		p->name = d->predicates[i];
 		p->next = predicates;
@@ -406,7 +407,7 @@ output_epilogue ()
 	      }
 	  }
     
-    printf ("\nint (*const insn_operand_predicate[][MAX_RECOG_OPERANDS])() =\n  {\n");
+    printf ("\nint (*const insn_operand_predicate[][MAX_RECOG_OPERANDS]) PROTO ((rtx, enum machine_mode)) =\n  {\n");
     for (d = insn_data; d; d = d->next)
       {
 	printf ("    {");
@@ -596,6 +597,8 @@ process_template (d, template)
   d->template = 0;
   d->outfun = 1;
 
+  printf ("\nstatic const char *output_%d PROTO ((rtx *, rtx));\n",
+	  d->code_number);
   printf ("\nstatic const char *\n");
   printf ("output_%d (operands, insn)\n", d->code_number);
   printf ("     rtx *operands ATTRIBUTE_UNUSED;\n");

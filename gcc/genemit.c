@@ -539,7 +539,8 @@ gen_split (split)
   max_operand_vec (split, 2);
   operands = MAX (max_opno, max_dup_opno) + 1;
 
-  /* Output the function name and argument declarations.  */
+  /* Output the prototype, the function name and argument declarations.  */
+  printf ("extern rtx gen_split_%d PROTO ((rtx *));\n", insn_code_number);
   printf ("rtx\ngen_split_%d (operands)\n     rtx *operands;\n",
 	  insn_code_number);
   printf ("{\n");

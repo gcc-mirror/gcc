@@ -387,7 +387,7 @@ static rtx simplify_knowing	PROTO((rtx, rtx));
 static rtx encode_units_mask	PROTO((rtx));
 static void fill_attr		PROTO((struct attr_desc *));
 /* dpx2 compiler chokes if we specify the arg types of the args.  */
-static rtx substitute_address	PROTO((rtx, rtx (*) (), rtx (*) ()));
+static rtx substitute_address	PROTO((rtx, rtx (*) (rtx), rtx (*) (rtx)));
 static void make_length_attrs	PROTO((void));
 static rtx identity_fn		PROTO((rtx));
 static rtx zero_fn		PROTO((rtx));
@@ -447,6 +447,7 @@ static void write_complex_function PROTO((struct function_unit *, const char *,
 					  const char *));
 static int write_expr_attr_cache PROTO((rtx, struct attr_desc *));
 static void write_toplevel_expr	PROTO((rtx));
+static void write_const_num_delay_slots PROTO ((void));
 static int n_comma_elts		PROTO((char *));
 static char *next_comma_elt	PROTO((char **));
 static struct attr_desc *find_attr PROTO((const char *, int));
@@ -455,6 +456,10 @@ static struct attr_value *find_most_used  PROTO((struct attr_desc *));
 static rtx find_single_value	PROTO((struct attr_desc *));
 static rtx make_numeric_value	PROTO((int));
 static void extend_range	PROTO((struct range *, int, int));
+static rtx attr_eq		PROTO((char *, char *));
+static char *attr_numeral	PROTO((int));
+static int attr_equal_p		PROTO((rtx, rtx));
+static rtx attr_copy_rtx	PROTO((rtx));
 
 #define oballoc(size) obstack_alloc (hash_obstack, size)
 
@@ -757,7 +762,7 @@ attr_printf VPROTO((register int len, const char *fmt, ...))
   return attr_string (str, strlen (str));
 }
 
-rtx
+static rtx
 attr_eq (name, value)
      char *name, *value;
 {
@@ -765,7 +770,7 @@ attr_eq (name, value)
 		   attr_string (value, strlen (value)));
 }
 
-char *
+static char *
 attr_numeral (n)
      int n;
 {
@@ -811,7 +816,7 @@ attr_string (str, len)
    taking advantage of the fact that if both are hashed
    then they can't be equal unless they are the same object.  */
 
-int
+static int
 attr_equal_p (x, y)
      rtx x, y;
 {
@@ -823,7 +828,7 @@ attr_equal_p (x, y)
    descending to all depths, but not copying any
    permanent hashed subexpressions.  */
 
-rtx
+static rtx
 attr_copy_rtx (orig)
      register rtx orig;
 {
@@ -2327,8 +2332,8 @@ fill_attr (attr)
 static rtx
 substitute_address (exp, no_address_fn, address_fn)
      rtx exp;
-     rtx (*no_address_fn) ();
-     rtx (*address_fn) ();
+     rtx (*no_address_fn) PROTO ((rtx));
+     rtx (*address_fn) PROTO ((rtx));
 {
   int i;
   rtx newexp;
@@ -4844,6 +4849,21 @@ write_attr_get (attr)
      switch we will generate.  */
   common_av = find_most_used (attr);
 
+  /* Write out prototype of function. */
+  if (!attr->is_numeric)
+    printf ("extern enum attr_%s ", attr->name);
+  else if (attr->unsigned_p)
+    printf ("extern unsigned int ");
+  else
+    printf ("extern int ");
+  /* If the attribute name starts with a star, the remainder is the name of
+     the subroutine to use, instead of `get_attr_...'.  */
+  if (attr->name[0] == '*')
+    printf ("%s PROTO ((rtx));\n", &attr->name[1]);
+  else
+    printf ("get_attr_%s PROTO ((%s));\n", attr->name,
+	    (attr->is_const ? "void" : "rtx"));
+
   /* Write out start of function, then all values with explicit `case' lines,
      then a `default', then the value with the most uses.  */
   if (!attr->is_numeric)
@@ -5380,7 +5400,7 @@ write_eligible_delay (kind)
   printf ("     rtx delay_insn;\n");
   printf ("     int slot;\n");
   printf ("     rtx candidate_insn;\n");
-  printf ("     int flags;\n");
+  printf ("     int flags ATTRIBUTE_UNUSED;\n");
   printf ("{\n");
   printf ("  rtx insn;\n");
   printf ("\n");
@@ -5553,6 +5573,7 @@ write_complex_function (unit, name, connection)
   int using_case;
   int i;
 
+  printf ("static int %s_unit_%s PROTO ((rtx, rtx));\n", unit->name, name);
   printf ("static int\n");
   printf ("%s_unit_%s (executing_insn, candidate_insn)\n",
 	  unit->name, name);
@@ -5919,7 +5940,7 @@ fancy_abort ()
 /* Determine if an insn has a constant number of delay slots, i.e., the
    number of delay slots is not a function of the length of the insn.  */
 
-void
+static void
 write_const_num_delay_slots ()
 {
   struct attr_desc *attr = find_attr ("*num_delay_slots", 0);

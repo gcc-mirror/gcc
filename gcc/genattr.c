@@ -163,17 +163,17 @@ write_units (num_units, multiplicity, simultaneity,
   printf ("extern int function_units_used PROTO((rtx));\n\n");
   printf ("extern struct function_unit_desc\n");
   printf ("{\n");
-  printf ("  char *name;\n");
+  printf ("  const char *name;\n");
   printf ("  int bitmask;\n");
   printf ("  int multiplicity;\n");
   printf ("  int simultaneity;\n");
   printf ("  int default_cost;\n");
   printf ("  int max_issue_delay;\n");
-  printf ("  int (*ready_cost_function) ();\n");
-  printf ("  int (*conflict_cost_function) ();\n");
+  printf ("  int (*ready_cost_function) PROTO ((rtx));\n");
+  printf ("  int (*conflict_cost_function) PROTO ((rtx, rtx));\n");
   printf ("  int max_blockage;\n");
-  printf ("  unsigned int (*blockage_range_function) ();\n");
-  printf ("  int (*blockage_function) ();\n");
+  printf ("  unsigned int (*blockage_range_function) PROTO ((rtx));\n");
+  printf ("  int (*blockage_function) PROTO ((rtx, rtx));\n");
   printf ("} function_units[];\n\n");
   printf ("#define FUNCTION_UNITS_SIZE %d\n", num_units);
   printf ("#define MIN_MULTIPLICITY %d\n", multiplicity->min);
@@ -329,14 +329,14 @@ from the machine description file `md'.  */\n\n");
 	      if (XVECEXP (desc, 1, i + 1) && ! have_annul_true)
 		{
 		  printf ("#define ANNUL_IFTRUE_SLOTS\n");
-		  printf ("extern int eligible_for_annul_true ();\n");
+		  printf ("extern int eligible_for_annul_true PROTO ((rtx, int, rtx, int));\n");
 		  have_annul_true = 1;
 		}
 
 	      if (XVECEXP (desc, 1, i + 2) && ! have_annul_false)
 		{
 		  printf ("#define ANNUL_IFFALSE_SLOTS\n");
-		  printf ("extern int eligible_for_annul_false ();\n");
+		  printf ("extern int eligible_for_annul_false PROTO ((rtx, int, rtx, int));\n");
 		  have_annul_false = 1;
 		}
 	    }
