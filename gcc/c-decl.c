@@ -1968,13 +1968,14 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
     }
   if (different_binding_level)
     {
-      /* Don't output a duplicate symbol for this declaration.  */
-      TREE_ASM_WRITTEN (newdecl) = 1;
+      /* Don't output a duplicate symbol or debugging information for this
+	 declaration.  */
+      TREE_ASM_WRITTEN (newdecl) = DECL_IGNORED_P (newdecl) = 1;
       return 0;
     }
 
   /* Copy most of the decl-specific fields of NEWDECL into OLDDECL.
-     But preserve OLDdECL's DECL_UID.  */
+     But preserve OLDDECL's DECL_UID.  */
   {
     register unsigned olddecl_uid = DECL_UID (olddecl);
 
