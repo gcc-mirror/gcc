@@ -625,8 +625,8 @@ memref_referenced_p (memref, x)
       return 0;
 
     case REG:
-      return (reg_equiv_replacement[REGNO (x)] == 0
-	      || memref_referenced_p (memref,
+      return (reg_equiv_replacement[REGNO (x)]
+	      && memref_referenced_p (memref,
 				      reg_equiv_replacement[REGNO (x)]));
 
     case MEM:
