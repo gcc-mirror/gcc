@@ -982,6 +982,9 @@ ocp_convert (type, expr, convtype, flags)
       || TREE_TYPE (e) == error_mark_node)
     return error_mark_node;
 
+  if (TREE_READONLY_DECL_P (e))
+    e = decl_constant_value (e);
+
   if (IS_AGGR_TYPE (type) && (convtype & CONV_FORCE_TEMP))
     /* We need a new temporary; don't take this shortcut.  */;
   else if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (e)))
@@ -1014,9 +1017,6 @@ ocp_convert (type, expr, convtype, flags)
 
   if (TREE_CODE (e) == OFFSET_REF)
     e = resolve_offset_ref (e);
-
-  if (TREE_READONLY_DECL_P (e))
-    e = decl_constant_value (e);
 
   if (INTEGRAL_CODE_P (code))
     {
@@ -1186,7 +1186,7 @@ ocp_convert (type, expr, convtype, flags)
     }
 
   /* If TYPE or TREE_TYPE (E) is not on the permanent_obstack,
-     then the it won't be hashed and hence compare as not equal,
+     then it won't be hashed and hence compare as not equal,
      even when it is.  */
   if (code == ARRAY_TYPE
       && TREE_TYPE (TREE_TYPE (e)) == TREE_TYPE (type)

@@ -3286,6 +3286,25 @@ finish_file ()
 	      p = &TREE_CHAIN (*p);
 	  }
       }
+
+    /* It's possible that some of the remaining inlines will still be
+       needed.  For example, a static inline whose address is used in
+       the initializer for a file-scope static variable will be
+       needed.  Code in compile_file will handle this, but we mustn't
+       pretend that there are no definitions for the inlines, or it
+       won't be able to.
+
+       FIXME: This won't catch member functions.  We should really
+       unify this stuff with the compile_file stuff.  */
+    for (vars = saved_inlines; vars != NULL_TREE; vars = TREE_CHAIN (vars))
+      {
+	tree decl = TREE_VALUE (vars);
+
+	if (DECL_NOT_REALLY_EXTERN (decl)
+	    && !DECL_COMDAT (decl)
+	    && DECL_INITIAL (decl) != NULL_TREE)
+	  DECL_EXTERNAL (decl) = 0;
+      }
   }
 
   /* Now delete from the chain of variables all virtual function tables.
