@@ -12,9 +12,6 @@ vector int foobar;
 struct X { int frances; };
 vector struct X hotdog;	/* { dg-error "invalid vector type" } */
 
-/* We don't have a V2DF.  */
-vector double x;	/* { dg-error "no vector mode" } */
-
 /* Arrays of vectors.  */
 vector char b[10], ouch;
 

@@ -1,3 +1,7 @@
+2002-06-04  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcc.dg/altivec-2.c: Remove test for invalid vector type V2DF.
+
 2002-06-03  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/alpha-base-1.c, gcc.dg/alpha-base-2.c: New.
