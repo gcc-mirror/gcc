@@ -61,5 +61,8 @@ output_file_directive ((FILE), main_input_filename)
 }
 
 #undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-  fprintf (FILE, "\t.double 0d%.20e\n", (VALUE))
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
+do { char dstr[30];					\
+     REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", dstr);	\
+     fprintf (FILE, "\t.double 0d%s\n", dstr);		\
+   } while (0)
