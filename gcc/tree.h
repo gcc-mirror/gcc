@@ -2300,6 +2300,7 @@ extern int tree_int_cst_lt		PARAMS ((tree, tree));
 extern int tree_int_cst_compare         PARAMS ((tree, tree));
 extern int host_integerp		PARAMS ((tree, int));
 extern HOST_WIDE_INT tree_low_cst	PARAMS ((tree, int));
+extern int tree_int_cst_msb		PARAMS ((tree));
 extern int tree_int_cst_sgn		PARAMS ((tree));
 extern int tree_expr_nonnegative_p	PARAMS ((tree));
 extern int rtl_expr_nonnegative_p	PARAMS ((rtx));

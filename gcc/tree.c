@@ -3245,6 +3245,24 @@ tree_low_cst (t, pos)
     abort ();
 }
 
+/* Return the most significant bit of the integer constant T.  */
+
+int
+tree_int_cst_msb (t)
+     tree t;
+{
+  int prec;
+  HOST_WIDE_INT h;
+  unsigned HOST_WIDE_INT l;
+
+  /* Note that using TYPE_PRECISION here is wrong.  We care about the
+     actual bits, not the (arbitrary) range of the type.  */
+  prec = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (t))) - 1;
+  rshift_double (TREE_INT_CST_LOW (t), TREE_INT_CST_HIGH (t), prec,
+		 2 * HOST_BITS_PER_WIDE_INT, &l, &h, 0);
+  return (l & 1) == 1;
+}
+
 /* Return an indication of the sign of the integer constant T.
    The return value is -1 if T < 0, 0 if T == 0, and 1 if T > 0.
    Note that -1 will never be returned it T's type is unsigned.  */
@@ -4069,29 +4087,58 @@ int
 int_fits_type_p (c, type)
      tree c, type;
 {
-  /* If the bounds of the type are integers, we can check ourselves.
-     If not, but this type is a subtype, try checking against that.
-     Otherwise, use force_fit_type, which checks against the precision.  */
-  if (TYPE_MAX_VALUE (type) != NULL_TREE
-      && TYPE_MIN_VALUE (type) != NULL_TREE
-      && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST
-      && TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST)
+  tree type_low_bound = TYPE_MIN_VALUE (type);
+  tree type_high_bound = TYPE_MAX_VALUE (type);
+  int ok_for_low_bound, ok_for_high_bound;
+    
+  /* Perform some generic filtering first, which may allow making a decision
+     even if the bounds are not constant.  First, negative integers never fit
+     in unsigned types, */
+  if ((TREE_UNSIGNED (type) && tree_int_cst_sgn (c) < 0)
+      /* Also, unsigned integers with top bit set never fit signed types.  */
+      || (! TREE_UNSIGNED (type) 
+	  && TREE_UNSIGNED (TREE_TYPE (c)) && tree_int_cst_msb (c)))
+    return 0;
+
+  /* If at least one bound of the type is a constant integer, we can check
+     ourselves and maybe make a decision. If no such decision is possible, but
+     this type is a subtype, try checking against that.  Otherwise, use
+     force_fit_type, which checks against the precision.
+
+     Compute the status for each possibly constant bound, and return if we see
+     one does not match. Use ok_for_xxx_bound for this purpose, assigning -1
+     for "unknown if constant fits", 0 for "constant known *not* to fit" and 1
+     for "constant known to fit".  */
+
+  ok_for_low_bound = -1;
+  ok_for_high_bound = -1;
+    
+  /* Check if C >= type_low_bound.  */
+  if (type_low_bound && TREE_CODE (type_low_bound) == INTEGER_CST)
     {
-      if (TREE_UNSIGNED (type))
-	return (! INT_CST_LT_UNSIGNED (TYPE_MAX_VALUE (type), c)
-		&& ! INT_CST_LT_UNSIGNED (c, TYPE_MIN_VALUE (type))
-		/* Negative ints never fit unsigned types.  */
-		&& ! (TREE_INT_CST_HIGH (c) < 0
-		      && ! TREE_UNSIGNED (TREE_TYPE (c))));
-      else
-	return (! INT_CST_LT (TYPE_MAX_VALUE (type), c)
-		&& ! INT_CST_LT (c, TYPE_MIN_VALUE (type))
-		/* Unsigned ints with top bit set never fit signed types.  */
-		&& ! (TREE_INT_CST_HIGH (c) < 0
-		      && TREE_UNSIGNED (TREE_TYPE (c))));
+      ok_for_low_bound = ! tree_int_cst_lt (c, type_low_bound);
+      if (! ok_for_low_bound)
+	return 0;
     }
+
+  /* Check if c <= type_high_bound.  */
+  if (type_high_bound && TREE_CODE (type_high_bound) == INTEGER_CST)
+    {
+      ok_for_high_bound = ! tree_int_cst_lt (type_high_bound, c);
+      if (! ok_for_high_bound)
+	return 0;
+    }
+
+  /* If the constant fits both bounds, the result is known.  */
+  if (ok_for_low_bound == 1 && ok_for_high_bound == 1)
+    return 1;
+
+  /* If we haven't been able to decide at this point, there nothing more we
+     can check ourselves here. Look at the base type if we have one.  */
   else if (TREE_CODE (type) == INTEGER_TYPE && TREE_TYPE (type) != 0)
     return int_fits_type_p (c, TREE_TYPE (type));
+  
+  /* Or to force_fit_type, if nothing else.  */
   else
     {
       c = copy_node (c);
