@@ -6070,41 +6070,42 @@ static char *reg_class_names[] = REG_CLASS_NAMES;
 /* This function is used to print the variables set by 'find_reloads' */
 
 void
-debug_reload()
+debug_reload ()
 {
   int r;
-
-  fprintf (stderr, "\nn_reloads = %d\n", n_reloads);
+  char *prefix;
 
   for (r = 0; r < n_reloads; r++)
     {
-      fprintf (stderr, "\nRELOAD %d\n", r);
+      fprintf (stderr, "Reload %d: ", r);
 
-      if (reload_in[r])
+      if (reload_in[r] != 0)
 	{
-	  fprintf (stderr, "\nreload_in (%s) = ",
+	  fprintf (stderr, "reload_in (%s) = ",
 		   GET_MODE_NAME (reload_inmode[r]));
-	  debug_rtx (reload_in[r]);
+	  print_inline_rtx (stderr, reload_in[r], 24);
+	  fprintf (stderr, "\n\t");
 	}
 
-      if (reload_out[r])
+      if (reload_out[r] != 0)
 	{
-	  fprintf (stderr, "\nreload_out (%s) = ",
+	  fprintf (stderr, "reload_out (%s) = ",
 		   GET_MODE_NAME (reload_outmode[r]));
-	  debug_rtx (reload_out[r]);
+	  print_inline_rtx (stderr, reload_out[r], 24);
+	  fprintf (stderr, "\n\t");
 	}
 
       fprintf (stderr, "%s, ", reg_class_names[(int) reload_reg_class[r]]);
 
       fprintf (stderr, "%s (opnum = %d)",
-	       reload_when_needed_name[(int)reload_when_needed[r]],
+	       reload_when_needed_name[(int) reload_when_needed[r]],
 	       reload_opnum[r]);
 
       if (reload_optional[r])
 	fprintf (stderr, ", optional");
 
-      if (reload_in[r])
-	fprintf (stderr, ", inc by %d\n", reload_inc[r]);
+      if (reload_inc[r] != 0)
+	fprintf (stderr, ", inc by %d", reload_inc[r]);
 
       if (reload_nocombine[r])
 	fprintf (stderr, ", can't combine");
@@ -6112,52 +6113,40 @@ debug_reload()
       if (reload_secondary_p[r])
 	fprintf (stderr, ", secondary_reload_p");
 
-      if (reload_in_reg[r])
+      if (reload_in_reg[r] != 0)
 	{
-	  fprintf (stderr, "\nreload_in_reg:\t\t\t");
-	  debug_rtx (reload_in_reg[r]);
+	  fprintf (stderr, "\n\treload_in_reg: ");
+	  print_inline_rtx (stderr, reload_in_reg[r], 24);
 	}
 
-      if (reload_reg_rtx[r])
+      if (reload_reg_rtx[r] != 0)
 	{
-	  fprintf (stderr, "\nreload_reg_rtx:\t\t\t");
-	  debug_rtx (reload_reg_rtx[r]);
+	  fprintf (stderr, "\n\treload_reg_rtx: ");
+	  print_inline_rtx (stderr, reload_reg_rtx[r], 24);
 	}
 
+      prefix = "\n\t";
       if (reload_secondary_in_reload[r] != -1)
 	{
-	  fprintf (stderr, "\nsecondary_in_reload = ");
-	  fprintf (stderr, "%d ", reload_secondary_in_reload[r]);
+	  fprintf (stderr, "%ssecondary_in_reload = %d",
+		   prefix, reload_secondary_in_reload[r]);
+	  prefix = ", ";
 	}
 
       if (reload_secondary_out_reload[r] != -1)
-	{
-	  if (reload_secondary_in_reload[r] != -1)
-	    fprintf (stderr, ", secondary_out_reload = ");
-	  else
-	    fprintf (stderr, "\nsecondary_out_reload = ");
+	fprintf (stderr, "%ssecondary_out_reload = %d\n",
+		 prefix, reload_secondary_out_reload[r]);
 
-	  fprintf (stderr, "%d", reload_secondary_out_reload[r]);
-	}
-
-
+      prefix = "\n\t";
       if (reload_secondary_in_icode[r] != CODE_FOR_nothing)
 	{
-	  fprintf (stderr, "\nsecondary_in_icode = ");
-	  fprintf (stderr, "%s", insn_name[r]);
+	  fprintf (stderr, "%ssecondary_in_icode = %s", prefix, insn_name[r]);
+	  prefix = ", ";
 	}
 
       if (reload_secondary_out_icode[r] != CODE_FOR_nothing)
-	{
-	  if (reload_secondary_in_icode[r] != CODE_FOR_nothing)
-	    fprintf (stderr, ", secondary_out_icode = ");
-	  else
-	    fprintf (stderr, "\nsecondary_out_icode = ");
+	fprintf (stderr, "%ssecondary_out_icode = %s", prefix, insn_name[r]);
 
-	  fprintf (stderr, "%s ", insn_name[r]);
-	}
       fprintf (stderr, "\n");
     }
-
-  fprintf (stderr, "\n");
 }
