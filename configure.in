@@ -1445,7 +1445,7 @@ if test -n "${with_gxx_include_dir}"; then
 fi
 if test x${gxx_include_dir} = x; then
   if test x${enable_version_specific_runtime_libs} = xyes; then
-    gxx_include_dir='${libsubdir}/include/g++'
+    gxx_include_dir='${libsubdir}/include/c++'
   else
     . ${srcdir}/config.if
     gxx_include_dir='${prefix}/include/${libstdcxx_incdir}'
