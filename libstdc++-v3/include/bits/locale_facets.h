@@ -232,16 +232,16 @@ namespace std
       ctype(const mask* __table = 0, bool __del = false, size_t __refs = 0);
 
       inline bool 
-      is(mask __m, char __c) const throw();
+      is(mask __m, char __c) const;
  
       inline const char*
-      is(const char* __low, const char* __high, mask* __vec) const throw();
+      is(const char* __low, const char* __high, mask* __vec) const;
  
       inline const char*
-      scan_is(mask __m, const char* __low, const char* __high) const throw();
+      scan_is(mask __m, const char* __low, const char* __high) const;
 
       inline const char*
-      scan_not(mask __m, const char* __low, const char* __high) const throw();
+      scan_not(mask __m, const char* __low, const char* __high) const;
      
     protected:
       virtual 
