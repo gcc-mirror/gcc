@@ -1,3 +1,8 @@
+2000-12-09  Anthony Green  <green@redhat.com>
+
+	* zipfile.h (ZipDirectory): Declare size, uncompressed_size,
+	filestart and filename_length as int values.
+
 2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* jvgenmain.c: Use ISPRINT not isascii.
