@@ -1,3 +1,10 @@
+2001-12-11  Ed Schonberg <schonber@gnat.com>
+
+	* sem_ch10.adb (Install_Withed_Unit): If the unit is a generic instance
+	that is the parent of other generics, the instance body replaces the 
+	instance node.  Retrieve the instance of the spec, which is the one 
+	that is visible in clients and within the body.
+
 2001-12-11  Vincent Celier <celier@gnat.com>
 
 	* gnatmain.adb: Initial version.
