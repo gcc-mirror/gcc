@@ -2360,10 +2360,11 @@ canon_reg (x, insn)
 	  rtx new = canon_reg (XEXP (x, i), insn);
 
 	  /* If replacing pseudo with hard reg or vice versa, ensure the
-	     insn remains valid.  */
+	     insn remains valid.  Likewise if the insn has MATCH_DUPs.  */
 	  if (new && GET_CODE (new) == REG && GET_CODE (XEXP (x, i)) == REG
-	      && ((REGNO (new) < FIRST_PSEUDO_REGISTER)
-		  != (REGNO (XEXP (x, i)) < FIRST_PSEUDO_REGISTER)))
+	      && (((REGNO (new) < FIRST_PSEUDO_REGISTER)
+		   != (REGNO (XEXP (x, i)) < FIRST_PSEUDO_REGISTER))
+		  || (insn != 0 && insn_n_dups[recog_memoized (insn)] > 0)))
 	    validate_change (insn, &XEXP (x, i), new, 0);
 	  else
 	    XEXP (x, i) = new;
