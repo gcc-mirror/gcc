@@ -1,3 +1,9 @@
+2004-08-16  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* configure.in (AC_CONF_SUBDIRS): Use literal for ltdl directory
+	to avoid autoconf warning.
+	* configure: Rebuilt.
+
 2004-08-14  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* java/net/natInetAddressPosix.cc (lookup): Reflect rename of 
