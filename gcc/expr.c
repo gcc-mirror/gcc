@@ -4655,13 +4655,20 @@ expand_expr (exp, target, tmode, modifier)
 	       matter, since expand_expr should not care.)  */
 	    TREE_SIDE_EFFECTS (array_adr) = 0;
 
-	    elt = build1 (INDIRECT_REF, type,
-			  fold (build (PLUS_EXPR,
-				       TYPE_POINTER_TO (variant_type),
-				       array_adr,
-				       fold (build (MULT_EXPR,
-						    TYPE_POINTER_TO (variant_type),
-						    index, size)))));
+	    elt
+	      = build1
+		(INDIRECT_REF, type,
+		 fold (build (PLUS_EXPR,
+			      TYPE_POINTER_TO (variant_type),
+			      array_adr,
+			      fold
+			      (build1
+			       (NOP_EXPR,
+				TYPE_POINTER_TO (variant_type),
+				fold (build (MULT_EXPR, TREE_TYPE (index),
+					     index,
+					     convert (TREE_TYPE (index),
+						      size))))))));;
 
 	    /* Volatility, etc., of new expression is same as old
 	       expression.  */
