@@ -1,3 +1,9 @@
+Fri Jan 19 09:18:42 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* alias.c (find_base_value): Recognize TRUNCATE.
+	(record_set): In PLUS case, invalidate if other summand is also a
+	base value.
+
 Thu Jan 18 06:43:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* flow.c (mark_set_1, case PARALLEL): Now case; rework to allow
