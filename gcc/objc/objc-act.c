@@ -50,6 +50,7 @@ Boston, MA 02111-1307, USA.  */
 #include "c-tree.h"
 #include "c-common.h"
 #include "flags.h"
+#include "langhooks.h"
 #include "objc-act.h"
 #include "input.h"
 #include "except.h"
@@ -2850,7 +2851,7 @@ objc_build_try_enter_fragment (void)
   cond = build_unary_op (TRUTH_NOT_EXPR,
 			 build_function_call (objc_setjmp_decl, func_params),
 			 0);
-  c_expand_start_cond (c_common_truthvalue_conversion (cond),
+  c_expand_start_cond ((*lang_hooks.truthvalue_conversion) (cond),
 		       0, if_stmt);
   objc_enter_block ();
 }
@@ -2978,7 +2979,7 @@ objc_build_try_epilogue (int also_catch_prologue)
       val_stack_push (&catch_count_stack, 1);
       if_stmt = c_begin_if_stmt ();
       if_nesting_count++;
-      c_expand_start_cond (c_common_truthvalue_conversion (boolean_false_node),
+      c_expand_start_cond ((*lang_hooks.truthvalue_conversion) (boolean_false_node),
 			   0, if_stmt);
       objc_enter_block ();
 
@@ -3068,7 +3069,7 @@ objc_build_catch_stmt (tree catch_expr)
       cond = build_function_call (objc_exception_match_decl, func_params);
     }
 
-  c_expand_start_cond (c_common_truthvalue_conversion (cond),
+  c_expand_start_cond ((*lang_hooks.truthvalue_conversion) (cond),
 		       0, if_stmt);
   objc_enter_block ();
   objc_declare_variable (RID_REGISTER, var_name,
@@ -3138,7 +3139,7 @@ objc_build_finally_prologue (void)
   tree if_stmt = c_begin_if_stmt ();
   if_nesting_count++;
 
-  c_expand_start_cond (c_common_truthvalue_conversion
+  c_expand_start_cond ((*lang_hooks.truthvalue_conversion)
 		       (build_unary_op
 		        (TRUTH_NOT_EXPR,
 			 TREE_VALUE (objc_rethrow_exception), 0)),
@@ -3166,7 +3167,7 @@ objc_build_finally_epilogue (void)
   if_nesting_count++;
 
   c_expand_start_cond
-    (c_common_truthvalue_conversion (TREE_VALUE (objc_rethrow_exception)),
+    ((*lang_hooks.truthvalue_conversion) (TREE_VALUE (objc_rethrow_exception)),
      0, if_stmt);
   objc_enter_block ();
   objc_build_throw_stmt (TREE_VALUE (objc_rethrow_exception));

@@ -33,6 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "flags.h"
 #include "convert.h"
 #include "c-common.h"
+#include "langhooks.h"
 #include "toplev.h"
 
 /* Change of width--truncation and extension of integers or reals--
@@ -94,7 +95,10 @@ convert (tree type, tree expr)
     return fold (convert_to_integer (type, e));
   if (code == BOOLEAN_TYPE)
     {
-      tree t = c_common_truthvalue_conversion (expr);
+      tree t = (*lang_hooks.truthvalue_conversion) (expr);
+      if (TREE_CODE (t) == ERROR_MARK)
+	return t;
+
       /* If it returns a NOP_EXPR, we must fold it here to avoid
 	 infinite recursion between fold () and convert ().  */
       if (TREE_CODE (t) == NOP_EXPR)
