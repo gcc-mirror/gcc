@@ -153,12 +153,43 @@ DEFPARAM(PARAM_MAX_UNROLLED_INSNS,
 
 DEFPARAM(HOT_BB_COUNT_FRACTION,
 	 "hot-bb-count-fraction",
-	 "Select fraction of the maximal count of repetitions of basic block in program given basic block needs to have to be considered hot",
+	 "Select fraction of the maximal count of repetitions of basic block in \
+program given basic block needs to have to be considered hot",
 	 10000)
 DEFPARAM(HOT_BB_FREQUENCY_FRACTION,
 	 "hot-bb-frequency-fraction",
-	 "Select fraction of the maximal frequency of executions of basic block in function given basic block needs to have to be considered hot",
+	 "Select fraction of the maximal frequency of executions of basic \
+block in function given basic block needs to have to be considered hot",
 	 1000)
+DEFPARAM(TRACER_DYNAMIC_COVERAGE_FEEDBACK,
+	 "tracer-dynamic-coverage-feedback",
+	 "The percentage of function, weighted by execution frequency, that \
+must be covered by trace formation. Used when profile feedback is available",
+	 95)
+DEFPARAM(TRACER_DYNAMIC_COVERAGE,
+	 "tracer-dynamic-coverage",
+	 "The percentage of function, weighted by execution frequency, that \
+must be covered by trace formation. Used when profile feedback is not available",
+	 75)
+DEFPARAM(TRACER_MAX_CODE_GROWTH,
+	 "tracer-max-code-growth",
+	 "Maximal code growth caused by tail duplication (in percents)",
+	 100)
+DEFPARAM(TRACER_MIN_BRANCH_RATIO,
+	 "tracer-min-branch-ratio",
+	 "Stop reverse growth if the reverse probability of best edge is less \
+than this threshold (in percents)",
+	 10)
+DEFPARAM(TRACER_MIN_BRANCH_PROBABILITY_FEEDBACK,
+	 "tracer-min-branch-probability-feedback",
+	 "Stop forward growth if the probability of best edge is less than \
+this threshold (in percents). Used when profile feedback is available",
+	 30)
+DEFPARAM(TRACER_MIN_BRANCH_PROBABILITY,
+	 "tracer-min-branch-probability",
+	 "Stop forward growth if the probability of best edge is less than \
+this threshold (in percents). Used when profile feedback is not available",
+	 50)
 /*
 Local variables:
 mode:c

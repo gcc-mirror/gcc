@@ -1,3 +1,18 @@
+Sat Jun  1 23:29:51 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (tracer.o): New.
+	* params.def (TRACER_*): New options.
+	* rtl.h (tracer): Declare.
+	* timevar.def (TV_TRACER): New.
+	* toplev.c (dump_file_index): Add DFI_tracer.
+	(dump_file_info): Add tracer.
+	(flag_tracer): New.
+	(lang_indepdenent_options): Add tracer.
+	(rest_of_compilation): Call tracer.
+	* tracer.c: New file.
+	* invoke.texi (-ftracer): Document.
+	(--param tracer-*): Document.
+
 2002-06-01  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-inline.c (expand_call_inline): Make the statement

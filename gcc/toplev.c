@@ -224,6 +224,7 @@ enum dump_file_index
   DFI_loop,
   DFI_cfg,
   DFI_bp,
+  DFI_tracer,
   DFI_cse2,
   DFI_life,
   DFI_combine,
@@ -271,6 +272,7 @@ static struct dump_file_info dump_file[DFI_MAX] =
   { "loop",	'L', 1, 0, 0 },
   { "cfg",	'f', 1, 0, 0 },
   { "bp",	'b', 1, 0, 0 },
+  { "tracer",	'T', 1, 0, 0 },
   { "cse2",	't', 1, 0, 0 },
   { "life",	'f', 1, 0, 0 },	/* Yes, duplicate enable switch.  */
   { "combine",	'c', 1, 0, 0 },
@@ -866,6 +868,10 @@ int flag_merge_constants = 1;
    one, unconditionally renumber instruction UIDs.  */
 int flag_renumber_insns = 1;
 
+/* Nonzero if we perform superblock formation.  */
+
+int flag_tracer = 0;
+
 /* Values of the -falign-* flags: how much to align labels in code.
    0 means `use default', 1 means `don't align'.
    For each variable, there is an _log variant which is the power
@@ -977,6 +983,8 @@ static const lang_independent_options f_options[] =
    N_("When possible do not generate stack frames") },
   {"optimize-sibling-calls", &flag_optimize_sibling_calls, 1,
    N_("Optimize sibling and tail recursive calls") },
+  {"tracer", &flag_tracer, 1,
+   N_("Perform superblock formation via tail duplication") },
   {"cse-follow-jumps", &flag_cse_follow_jumps, 1,
    N_("When running CSE, follow jumps to their targets") },
   {"cse-skip-blocks", &flag_cse_skip_blocks, 1,
@@ -2957,6 +2965,19 @@ rest_of_compilation (decl)
       flow_loops_free (&loops);
       close_dump_file (DFI_bp, print_rtl_with_bb, insns);
       timevar_pop (TV_BRANCH_PROB);
+    }
+  if (flag_tracer)
+    {
+      timevar_push (TV_TRACER);
+      open_dump_file (DFI_tracer, decl);
+      if (rtl_dump_file)
+	dump_flow_info (rtl_dump_file);
+      cleanup_cfg (CLEANUP_EXPENSIVE);
+      tracer ();
+      cleanup_cfg (CLEANUP_EXPENSIVE);
+      close_dump_file (DFI_tracer, print_rtl_with_bb, get_insns ());
+      timevar_pop (TV_TRACER);
+      reg_scan (get_insns (), max_reg_num (), 0);
     }
 
   if (optimize > 0)
