@@ -1,3 +1,22 @@
+2004-11-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/2064.md ("z_o2", "z_o3"): Remove.
+	* config/s390/2084.md ("x_o2", "x_o3"): Remove.
+	("x_fdivd"): Use also for fsqrtd type.
+	("x_fdivs"): Use also for fsqrts type.
+	* config/s390/s390.md (attribute "type"): Remove "o2" and "o3" types.
+	("fix_truncdfsi2_ieee"): Set type to "ftoi".
+	("fix_truncdfsi2_ibm"): Set type to "other".
+	("floatdidf2", "floatdisf2"): Do not clobber CC.
+	("floatsidf2", "floatsidf2_ieee"): Likewise.
+	("floatsisf2", "floatsisf2_ieee"): Likewise.
+	("truncdfsf2", "truncdfsf2_ieee"): Only allow "register_operand".
+	("truncdfsf2_ibm"): Only allow "nonimmediate_operand".  Use LER
+	instead of LRER. 
+	("extendsfdf2_ibm"): Do not set atype.  Set type to "floads".
+	("sqrtdf2"): Set type to "fsqrtd".
+	("sqrtsf2"): Set type to "fsqrts".
+
 2004-11-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-phinodes.c (remove_all_phi_nodes_for): Speed up using a
