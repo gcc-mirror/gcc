@@ -177,6 +177,7 @@ static void set_spec		PROTO((const char *, const char *));
 static struct compiler *lookup_compiler PROTO((const char *, size_t, const char *));
 static char *build_search_list	PROTO((struct path_prefix *, const char *, int));
 static void putenv_from_prefixes PROTO((struct path_prefix *, const char *));
+static int access_check		PROTO((const char *, int));
 static char *find_a_file	PROTO((struct path_prefix *, const char *, int));
 static void add_prefix		PROTO((struct path_prefix *, const char *,
 				       const char *, int, int, int *));
@@ -1954,6 +1955,26 @@ putenv_from_prefixes (paths, env_var)
   putenv (build_search_list (paths, env_var, 1));
 }
 
+/* Check whether NAME can be accessed in MODE.  This is like access,
+   except that it never considers directories to be executable.  */
+
+static int
+access_check (name, mode)
+     const char *name;
+     int mode;
+{
+  if (mode == X_OK)
+    {
+      struct stat st;
+
+      if (stat (name, &st) < 0
+	  || S_ISDIR (st.st_mode))
+	return -1;
+    }
+
+  return access (name, mode);
+}
+
 /* Search for NAME using the prefix list PREFIXES.  MODE is passed to
    access to check permissions.
    Return 0 if not found, otherwise return its name, allocated with malloc.  */
@@ -2022,7 +2043,7 @@ find_a_file (pprefix, name, mode)
 		strcat (temp, machine_suffix);
 		strcat (temp, name);
 		strcat (temp, file_suffix);
-		if (access (temp, mode) == 0)
+		if (access_check (temp, mode) == 0)
 		  {
 		    if (pl->used_flag_ptr != 0)
 		      *pl->used_flag_ptr = 1;
@@ -2034,7 +2055,7 @@ find_a_file (pprefix, name, mode)
 	    strcpy (temp, pl->prefix);
 	    strcat (temp, machine_suffix);
 	    strcat (temp, name);
-	    if (access (temp, mode) == 0)
+	    if (access_check (temp, mode) == 0)
 	      {
 		if (pl->used_flag_ptr != 0)
 		  *pl->used_flag_ptr = 1;
@@ -2054,7 +2075,7 @@ find_a_file (pprefix, name, mode)
 		strcat (temp, just_machine_suffix);
 		strcat (temp, name);
 		strcat (temp, file_suffix);
-		if (access (temp, mode) == 0)
+		if (access_check (temp, mode) == 0)
 		  {
 		    if (pl->used_flag_ptr != 0)
 		      *pl->used_flag_ptr = 1;
@@ -2065,7 +2086,7 @@ find_a_file (pprefix, name, mode)
 	    strcpy (temp, pl->prefix);
 	    strcat (temp, just_machine_suffix);
 	    strcat (temp, name);
-	    if (access (temp, mode) == 0)
+	    if (access_check (temp, mode) == 0)
 	      {
 		if (pl->used_flag_ptr != 0)
 		  *pl->used_flag_ptr = 1;
@@ -2084,7 +2105,7 @@ find_a_file (pprefix, name, mode)
 		strcpy (temp, pl->prefix);
 		strcat (temp, name);
 		strcat (temp, file_suffix);
-		if (access (temp, mode) == 0)
+		if (access_check (temp, mode) == 0)
 		  {
 		    if (pl->used_flag_ptr != 0)
 		      *pl->used_flag_ptr = 1;
@@ -2094,7 +2115,7 @@ find_a_file (pprefix, name, mode)
 
 	    strcpy (temp, pl->prefix);
 	    strcat (temp, name);
-	    if (access (temp, mode) == 0)
+	    if (access_check (temp, mode) == 0)
 	      {
 		if (pl->used_flag_ptr != 0)
 		  *pl->used_flag_ptr = 1;

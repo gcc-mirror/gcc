@@ -1,3 +1,10 @@
+Wed Aug  4 01:43:01 1999  Ian Lance Taylor  <ian@zembu.com>
+
+	* gcc.c (access_check): New static function.
+	(find_a_file): Use it when searching a directory list.
+	* collect2.c (find_a_file): Don't accept directories found when
+	searching a directory list.
+
 Wed Aug  4 01:40:43 1999  Philippe De Muyter  <phdm@macqel.be>
 
 	* tlink.c (symbol_hash_lookup): Do not prefix functions used as
