@@ -62,6 +62,8 @@ struct processor_costs {
   int mult_bit;			/* cost of multiply per each bit set */
   int divide;			/* cost of a divide/mod */
   int large_insn;		/* insns larger than this cost more */
+  int move_ratio;		/* The threshold of number of scalar memory-to-memory
+				   move insns.  */
   int movzbl_load;		/* cost of loading using movzbl */
   int int_load[3];		/* cost of loading integer registers
 				   in QImode, HImode and SImode relative
@@ -1709,13 +1711,9 @@ while (0)
    Increasing the value will always make code faster, but eventually
    incurs high cost in increased code size.
 
-   If you don't define this, a reasonable default is used.
+   If you don't define this, a reasonable default is used.  */
 
-   Make this large on i386, since the block move is very inefficient with small
-   blocks, and the hard register needs of the block move require much reload
-   work. */
-
-#define MOVE_RATIO 5
+#define MOVE_RATIO (optimize_size ? 3 : ix86_cost->move_ratio)
 
 /* Define if shifts truncate the shift count
    which implies one can omit a sign-extension or zero-extension

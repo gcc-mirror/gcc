@@ -64,6 +64,7 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   1,					/* cost of multiply per each bit set */
   23,					/* cost of a divide/mod */
   15,					/* "large" insn */
+  3,					/* MOVE_RATIO */
   4,					/* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -84,6 +85,7 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   1,					/* cost of multiply per each bit set */
   40,					/* cost of a divide/mod */
   15,					/* "large" insn */
+  3,					/* MOVE_RATIO */
   4,					/* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -104,6 +106,7 @@ struct processor_costs pentium_cost = {
   0,					/* cost of multiply per each bit set */
   25,					/* cost of a divide/mod */
   8,					/* "large" insn */
+  6,					/* MOVE_RATIO */
   6,					/* cost for loading QImode using movzbl */
   {2, 4, 2},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -124,6 +127,7 @@ struct processor_costs pentiumpro_cost = {
   0,					/* cost of multiply per each bit set */
   17,					/* cost of a divide/mod */
   8,					/* "large" insn */
+  6,					/* MOVE_RATIO */
   2,					/* cost for loading QImode using movzbl */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -144,6 +148,7 @@ struct processor_costs k6_cost = {
   0,					/* cost of multiply per each bit set */
   18,					/* cost of a divide/mod */
   8,					/* "large" insn */
+  4,					/* MOVE_RATIO */
   3,					/* cost for loading QImode using movzbl */
   {4, 5, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -164,6 +169,7 @@ struct processor_costs athlon_cost = {
   0,					/* cost of multiply per each bit set */
   19,					/* cost of a divide/mod */
   8,					/* "large" insn */
+  9,					/* MOVE_RATIO */
   4,					/* cost for loading QImode using movzbl */
   {4, 5, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
@@ -191,7 +197,7 @@ const int x86_zero_extend_with_and = m_486 | m_PENT;
 const int x86_movx = m_ATHLON /* m_386 | m_PPRO | m_K6 */;
 const int x86_double_with_add = ~m_386;
 const int x86_use_bit_test = m_386;
-const int x86_unroll_strlen = m_486 | m_PENT;
+const int x86_unroll_strlen = m_486 | m_PENT | m_PPRO | m_ATHLON | m_K6;
 const int x86_use_q_reg = m_PENT | m_PPRO | m_K6;
 const int x86_use_any_reg = m_486;
 const int x86_cmove = m_PPRO | m_ATHLON;
@@ -5149,10 +5155,9 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
   rtx align_3_label = NULL_RTX;
   rtx align_4_label = gen_label_rtx ();
   rtx end_0_label = gen_label_rtx ();
-  rtx end_2_label = gen_label_rtx ();
-  rtx end_3_label = gen_label_rtx ();
   rtx mem;
   rtx flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
+  rtx tmpreg = gen_reg_rtx (SImode);
 
   align = 0;
   if (GET_CODE (align_rtx) == CONST_INT)
@@ -5269,48 +5274,69 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
 
   mem = gen_rtx_MEM (SImode, out);
   emit_move_insn (scratch, mem);
-
-  /* Check first byte. */
-  emit_insn (gen_cmpqi_0 (gen_lowpart (QImode, scratch), const0_rtx));
-  tmp = gen_rtx_EQ (VOIDmode, flags, const0_rtx);
-  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
-			      gen_rtx_LABEL_REF (VOIDmode, end_0_label),
-			      pc_rtx);
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
-
-  /* Check second byte. */
-  emit_insn (gen_cmpqi_ext_3 (scratch, const0_rtx));
-  tmp = gen_rtx_EQ (VOIDmode, flags, const0_rtx);
-  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
-			      gen_rtx_LABEL_REF (VOIDmode, end_3_label),
-			      pc_rtx);
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
-
-  /* Check third byte. */
-  emit_insn (gen_testsi_1 (scratch, GEN_INT (0x00ff0000)));
-  tmp = gen_rtx_EQ (VOIDmode, flags, const0_rtx);
-  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
-			      gen_rtx_LABEL_REF (VOIDmode, end_2_label),
-			      pc_rtx);
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
-
-  /* Check fourth byte and increment address. */
   emit_insn (gen_addsi3 (out, out, GEN_INT (4)));
-  emit_insn (gen_testsi_1 (scratch, GEN_INT (0xff000000)));
-  tmp = gen_rtx_NE (VOIDmode, flags, const0_rtx);
-  tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp, 
-			      gen_rtx_LABEL_REF (VOIDmode, align_4_label),
-			      pc_rtx);
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
 
-  /* Now generate fixups when the compare stops within a 4-byte word. */
-  emit_insn (gen_subsi3 (out, out, GEN_INT (3)));
-  
-  emit_label (end_2_label);
-  emit_insn (gen_addsi3 (out, out, const1_rtx));
+  /* This formula yields a nonzero result iff one of the bytes is zero.
+     This saves three branches inside loop and many cycles.  */
 
-  emit_label (end_3_label);
-  emit_insn (gen_addsi3 (out, out, const1_rtx));
+  emit_insn (gen_addsi3 (tmpreg, scratch, GEN_INT (-0x01010101)));
+  emit_insn (gen_one_cmplsi2 (scratch, scratch));
+  emit_insn (gen_andsi3 (tmpreg, tmpreg, scratch));
+  emit_insn (gen_andsi3 (tmpreg, tmpreg, GEN_INT (0x80808080)));
+  emit_cmp_and_jump_insns (tmpreg, const0_rtx, EQ, 0, SImode, 1, 0, align_4_label);
+
+  if (TARGET_CMOVE)
+    {
+       rtx reg = gen_reg_rtx (SImode);
+       emit_move_insn (reg, tmpreg);
+       emit_insn (gen_lshrsi3 (reg, reg, GEN_INT (16)));
+
+       /* If zero is not in the first two bytes, move two bytes forward. */
+       emit_insn (gen_testsi_1 (tmpreg, GEN_INT (0x8080)));
+       tmp = gen_rtx_REG (CCNOmode, FLAGS_REG);
+       tmp = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
+       emit_insn (gen_rtx_SET (VOIDmode, tmpreg,
+			       gen_rtx_IF_THEN_ELSE (SImode, tmp,
+				       		     reg, 
+				       		     tmpreg)));
+       /* Emit lea manually to avoid clobbering of flags.  */
+       emit_insn (gen_rtx_SET (SImode, reg,
+			       gen_rtx_PLUS (SImode, out, GEN_INT (2))));
+
+       tmp = gen_rtx_REG (CCNOmode, FLAGS_REG);
+       tmp = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
+       emit_insn (gen_rtx_SET (VOIDmode, out,
+			       gen_rtx_IF_THEN_ELSE (SImode, tmp,
+				       		     reg,
+				       		     out)));
+
+    }
+  else
+    {
+       rtx end_2_label = gen_label_rtx ();
+       /* Is zero in the first two bytes? */
+
+       emit_insn (gen_testsi_1 (tmpreg, GEN_INT (0x8080)));
+       tmp = gen_rtx_REG (CCNOmode, FLAGS_REG);
+       tmp = gen_rtx_NE (VOIDmode, tmp, const0_rtx);
+       tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
+                            gen_rtx_LABEL_REF (VOIDmode, end_2_label),
+                            pc_rtx);
+       tmp = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
+       JUMP_LABEL (tmp) = end_2_label;
+
+       /* Not in the first two.  Move two bytes forward. */
+       emit_insn (gen_lshrsi3 (tmpreg, tmpreg, GEN_INT (16)));
+       emit_insn (gen_addsi3 (out, out, GEN_INT (2)));
+
+       emit_label (end_2_label);
+
+    }
+
+  /* Avoid branch in fixing the byte. */
+  tmpreg = gen_lowpart (QImode, tmpreg);
+  emit_insn (gen_addqi3_cc (tmpreg, tmpreg, tmpreg));
+  emit_insn (gen_subsi3_carry (out, out, GEN_INT (3)));
 
   emit_label (end_0_label);
 }
