@@ -773,7 +773,7 @@ LDEXP_LIB = @LDEXP_LIB@
 # even if we are cross-building GCC.
 BUILD_LIBS = $(BUILD_LIBIBERTY)
 
-BUILD_RTL = $(BUILD_PREFIX)rtl.o read-rtl.o $(BUILD_PREFIX)bitmap.o \
+BUILD_RTL = $(BUILD_PREFIX)rtl.o read-rtl.o \
 		$(BUILD_PREFIX)ggc-none.o min-insn-modes.o
 BUILD_SUPPORT = gensupport.o insn-conditions.o
 BUILD_EARLY_SUPPORT = gensupport.o dummy-conditions.o
@@ -2588,12 +2588,6 @@ print-rtl1.o: $(srcdir)/print-rtl.c $(BCONFIG_H) $(SYSTEM_H) coretypes.h \
 	rm -f print-rtl1.c
 	sed -e 's/config[.]h/bconfig.h/' $(srcdir)/print-rtl.c > print-rtl1.c
 	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) print-rtl1.c $(OUTPUT_OPTION)
-
-$(BUILD_PREFIX_1)bitmap.o: $(srcdir)/bitmap.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYSTEM_H) \
-  $(RTL_H) $(FLAGS_H) $(BASIC_BLOCK_H) $(REGS_H) $(GGC_H)
-	rm -f $(BUILD_PREFIX)bitmap.c
-	sed -e 's/config[.]h/bconfig.h/' $(srcdir)/bitmap.c > $(BUILD_PREFIX)bitmap.c
-	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) $(BUILD_PREFIX)bitmap.c $(OUTPUT_OPTION)
 
 $(BUILD_PREFIX_1)errors.o: errors.c $(BCONFIG_H) $(SYSTEM_H) errors.h
 	rm -f $(BUILD_PREFIX)errors.c
