@@ -2331,7 +2331,7 @@ rest_of_handle_reorder_blocks (tree decl, rtx insns)
      but should not be terribly bad.  */
   if (changed && HAVE_conditional_execution)
     update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
-		      PROP_DEATH_NOTES | PROP_REG_INFO);
+		      PROP_DEATH_NOTES);
   close_dump_file (DFI_bbro, print_rtl_with_bb, insns);
 }
 
