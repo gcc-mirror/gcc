@@ -1,3 +1,12 @@
+2005-01-27  Ian Lance Taylor  <ian@c2micro.com>
+
+	PR middle-end/19583
+	* gimple-low.c (try_catch_may_fallthru): New static function.
+	(block_may_fallthru): Handle TRY_CATCH_EXPR.
+	* tree-inline.c (expand_call_inline): Don't warn about reaching
+	the end of a non-void function being inlined if the function uses
+	a return slot.
+
 2005-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.h (CALL_USED_REGISTERS): Fix comment pastos.
