@@ -160,33 +160,33 @@ for @code{long double} on some architectures.
 
 @deftypefn {Runtime Function} float __addsf3 (float @var{a}, float @var{b})
 @deftypefnx {Runtime Function} double __adddf3 (double @var{a}, double @var{b})
-@deftypefnx {Runtime Function} long double __addtf3 (long double @var{a}, long double @var{b})
+@deftypefnx {Runtime Function} {long double} __addtf3 (long double @var{a}, long double @var{b})
 These functions return the sum of @var{a} and @var{b}.
 @end deftypefn
 
 @deftypefn {Runtime Function} float __subsf3 (float @var{a}, float @var{b})
 @deftypefnx {Runtime Function} double __subdf3 (double @var{a}, double @var{b})
-@deftypefnx {Runtime Function} long double __subtf3 (long double @var{a}, long double @var{b})
+@deftypefnx {Runtime Function} {long double} __subtf3 (long double @var{a}, long double @var{b})
 These functions return the difference between @var{b} and @var{a};
 that is, @w{@math{@var{a} - @var{b}}}.
 @end deftypefn
 
 @deftypefn {Runtime Function} float __mulsf3 (float @var{a}, float @var{b})
 @deftypefnx {Runtime Function} double __muldf3 (double @var{a}, double @var{b})
-@deftypefnx {Runtime Function} long double __multf3 (long double @var{a}, long double @var{b})
+@deftypefnx {Runtime Function} {long double} __multf3 (long double @var{a}, long double @var{b})
 These functions return the product of @var{a} and @var{b}.
 @end deftypefn
 
 @deftypefn {Runtime Function} float __divsf3 (float @var{a}, float @var{b})
 @deftypefnx {Runtime Function} double __divdf3 (double @var{a}, double @var{b})
-@deftypefnx {Runtime Function} long double __divtf3 (long double @var{a}, long double @var{b})
+@deftypefnx {Runtime Function} {long double} __divtf3 (long double @var{a}, long double @var{b})
 These functions return the quotient of @var{a} and @var{b}; that is,
 @w{@math{@var{a} / @var{b}}}.
 @end deftypefn
 
-@deftypefn {Runtime Function} double __negdf2 (double @var{a})
-@deftypefnx {Runtime Function} long double __negtf2 (long double @var{a})
-@deftypefnx {Runtime Function} float __negsf2 (float @var{a})
+@deftypefn {Runtime Function} float __negsf2 (float @var{a})
+@deftypefnx {Runtime Function} double __negdf2 (double @var{a})
+@deftypefnx {Runtime Function} {long double} __negtf2 (long double @var{a})
 These functions return the negation of @var{a}.  They simply flip the
 sign bit, so they can produce negative zero and negative NaN.
 @end deftypefn
@@ -194,8 +194,8 @@ sign bit, so they can produce negative zero and negative NaN.
 @subsection Conversion functions
 
 @deftypefn {Runtime Function} double __extendsfdf2 (float @var{a})
-@deftypefnx {Runtime Function} long double __extendsftf2 (float @var{a})
-@deftypefnx {Runtime Function} long double __extenddftf2 (double @var{a})
+@deftypefnx {Runtime Function} {long double} __extendsftf2 (float @var{a})
+@deftypefnx {Runtime Function} {long double} __extenddftf2 (double @var{a})
 These functions extend @var{a} to the wider mode of their return
 type.
 @end deftypefn
@@ -213,22 +213,22 @@ type, rounding toward zero.
 These functions convert @var{a} to a signed integer, rounding toward zero.
 @end deftypefn
 
-@deftypefn {Runtime Function} unsigned int __fixunssfsi (float @var{a})
-@deftypefnx {Runtime Function} unsigned int __fixunsdfsi (double @var{a})
-@deftypefnx {Runtime Function} unsigned int __fixunstfsi (long double @var{a})
+@deftypefn {Runtime Function} {unsigned int} __fixunssfsi (float @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fixunsdfsi (double @var{a})
+@deftypefnx {Runtime Function} {unsigned int} __fixunstfsi (long double @var{a})
 These functions convert @var{a} to an unsigned integer, rounding
 toward zero.  Negative values all become zero.
 @end deftypefn
 
 @deftypefn {Runtime Function} float __floatsisf (int @var{i})
 @deftypefnx {Runtime Function} double __floatsidf (int @var{i})
-@deftypefnx {Runtime Function} long double __floatsitf (int @var{i})
+@deftypefnx {Runtime Function} {long double} __floatsitf (int @var{i})
 These functions convert @var{i}, a signed integer, to floating point.
 @end deftypefn
 
 @deftypefn {Runtime Function} float __floatunsisf (unsigned int @var{n})
 @deftypefnx {Runtime Function} double __floatunsidf (unsigned int @var{n})
-@deftypefnx {Runtime Function} long double __floatunsitf (unsigned int @var{n})
+@deftypefnx {Runtime Function} {long double} __floatunsitf (unsigned int @var{n})
 These functions convert @var{n}, an unsigned integer, to floating point.
 @end deftypefn
 
@@ -256,7 +256,7 @@ functions.
 @deftypefn {Runtime Function} int __unordsf2 (float @var{a}, float @var{b})
 @deftypefnx {Runtime Function} int __unorddf2 (double @var{a}, double @var{b})
 @deftypefnx {Runtime Function} int __unordtf2 (long double @var{a}, long double @var{b})
-These functions return 1 if either argument is NaN, otherwise 0.
+These functions return a nonzero value if either argument is NaN, otherwise 0.
 @end deftypefn
 
 There is also a complete group of higher level functions which
