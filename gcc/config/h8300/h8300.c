@@ -1793,14 +1793,14 @@ eqne_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
   return (code == EQ || code == NE);
 }
 
-/* Return nonzero if X is GT, LE, GTU, or LEU.  */
+/* Return nonzero if X is either GT or LE.  */
 
 int
 gtle_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   enum rtx_code code = GET_CODE (x);
 
-  return (code == GT || code == LE || code == GTU || code == LEU);
+  return (code == GT || code == LE);
 }
 
 /* Return nonzero if X is either GTU or LEU.  */
