@@ -1,6 +1,6 @@
 // TR1 functional header -*- C++ -*-
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,6 +26,7 @@
 #define _TR1_FUNCTIONAL 1
 
 #include "../functional"
+#include <string>		// for std::tr1::hash
 
 namespace std
 {
@@ -78,8 +79,75 @@ namespace tr1
   template<typename _Tp>
     reference_wrapper<const _Tp> cref(reference_wrapper<_Tp> __t)
     { return cref(__t.get()); }
+
+
+// Definition of default hash function std::tr1::hash<>.  The types for
+// which std::tr1::hash<T> is defined is in clause 6.3.3. of the PDTR.
+
+  template <typename T> struct hash;
+
+  #define tr1_hashtable_define_trivial_hash(T) 				    \
+    template <> struct hash<T> {						    \
+      std::size_t operator()(T val) { return static_cast<std::size_t>(val); } \
+    }									    \
+
+  tr1_hashtable_define_trivial_hash(bool);
+  tr1_hashtable_define_trivial_hash(char);
+  tr1_hashtable_define_trivial_hash(signed char);
+  tr1_hashtable_define_trivial_hash(unsigned char);
+  tr1_hashtable_define_trivial_hash(wchar_t);
+  tr1_hashtable_define_trivial_hash(short);
+  tr1_hashtable_define_trivial_hash(int);
+  tr1_hashtable_define_trivial_hash(long);
+  tr1_hashtable_define_trivial_hash(unsigned short);
+  tr1_hashtable_define_trivial_hash(unsigned int);
+  tr1_hashtable_define_trivial_hash(unsigned long);
+
+  tr1_hashtable_define_trivial_hash(float);
+  tr1_hashtable_define_trivial_hash(double);
+  tr1_hashtable_define_trivial_hash(long double);
+
+  #undef tr1_hashtable_define_trivial_hash
+
+  template <typename T>
+    struct hash<T*> {
+      std::size_t operator()(T* p) const {
+	return reinterpret_cast<std::size_t>(p);
+      }
+    };
+
+  // ??? We can probably find a better hash function than this (i.e. one
+  // that vectorizes better and that produces a more uniform distribution).
+
+  // XXX String hash probably shouldn't be an inline member function,
+  // since it's nontrivial.  Once we have the framework for TR1 .cc
+  // files, this should go in one.
+
+  template <>
+    struct hash<std::string>
+    {
+      std::size_t operator()(const std::string& s) const
+      {
+	std::size_t result = 0;
+	for (std::string::const_iterator i = s.begin(); i != s.end(); ++i)
+	  result = (result * 131) + *i;
+	return result;
+      }
+    };
+
+  template <>
+    struct hash<std::wstring>
+    {
+      std::size_t operator()(const std::wstring& s) const
+      {
+	std::size_t result = 0;
+	for (std::wstring::const_iterator i = s.begin(); i != s.end(); ++i)
+	  result = (result * 131) + *i;
+	return result;
+      }
+    };
+
 }
 }
 
 #endif
-
