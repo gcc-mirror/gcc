@@ -1843,6 +1843,8 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
       DECL_EXTERNAL (newdecl) = DECL_EXTERNAL (olddecl);
       /* An extern decl does not override previous storage class.  */
       TREE_PUBLIC (newdecl) = TREE_PUBLIC (olddecl);
+      if (! DECL_EXTERNAL (newdecl))
+	DECL_CONTEXT (newdecl) = DECL_CONTEXT (olddecl);
     }
   else
     {
