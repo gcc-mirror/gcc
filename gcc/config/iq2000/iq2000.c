@@ -50,7 +50,8 @@ Boston, MA 02111-1307, USA.  */
    arrays indexed by the test type, and not worry about the order
    of EQ, NE, etc.  */
 
-enum internal_test {
+enum internal_test
+  {
     ITEST_EQ,
     ITEST_NE,
     ITEST_GT,
@@ -66,114 +67,118 @@ enum internal_test {
 
 struct constant;
 
-static void iq2000_count_memory_refs (rtx, int);
-static enum internal_test map_test_to_internal_test (enum rtx_code);
-static rtx iq2000_add_large_offset_to_sp (HOST_WIDE_INT);
-static void iq2000_annotate_frame_insn (rtx, rtx);
-static void iq2000_emit_frame_related_store (rtx, rtx,
-					     HOST_WIDE_INT);
-static struct machine_function * iq2000_init_machine_status (void);
-static void save_restore_insns (int);
-static void abort_with_insn (rtx, const char *)
-     ATTRIBUTE_NORETURN;
-static int symbolic_expression_p (rtx);
-static enum processor_type iq2000_parse_cpu (const char *);
-static void iq2000_select_rtx_section (enum machine_mode, rtx,
-				       unsigned HOST_WIDE_INT);
-static void iq2000_select_section (tree, int, unsigned HOST_WIDE_INT);
-static rtx expand_one_builtin (enum insn_code, rtx, tree, enum rtx_code*,
-			       int);
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
 
 struct iq2000_frame_info
 {
-  long total_size;		/* # bytes that the entire frame takes up */
-  long var_size;		/* # bytes that variables take up */
-  long args_size;		/* # bytes that outgoing arguments take up */
-  long extra_size;		/* # bytes of extra gunk */
-  int  gp_reg_size;		/* # bytes needed to store gp regs */
-  int  fp_reg_size;		/* # bytes needed to store fp regs */
-  long mask;			/* mask of saved gp registers */
-  long gp_save_offset;		/* offset from vfp to store gp registers */
-  long fp_save_offset;		/* offset from vfp to store fp registers */
-  long gp_sp_offset;		/* offset from new sp to store gp registers */
-  long fp_sp_offset;		/* offset from new sp to store fp registers */
-  int  initialized;		/* != 0 if frame size already calculated */
-  int  num_gp;			/* number of gp registers saved */
-};
+  long total_size;		/* # bytes that the entire frame takes up.  */
+  long var_size;		/* # bytes that variables take up.  */
+  long args_size;		/* # bytes that outgoing arguments take up.  */
+  long extra_size;		/* # bytes of extra gunk.  */
+  int  gp_reg_size;		/* # bytes needed to store gp regs.  */
+  int  fp_reg_size;		/* # bytes needed to store fp regs.  */
+  long mask;			/* Mask of saved gp registers.  */
+  long gp_save_offset;		/* Offset from vfp to store gp registers.  */
+  long fp_save_offset;		/* Offset from vfp to store fp registers.  */
+  long gp_sp_offset;		/* Offset from new sp to store gp registers.  */
+  long fp_sp_offset;		/* Offset from new sp to store fp registers.  */
+  int  initialized;		/* != 0 if frame size already calculated.  */
+  int  num_gp;			/* Number of gp registers saved.  */
+} iq2000_frame_info;
 
-struct machine_function
+struct machine_function GTY(())
 {
   /* Current frame information, calculated by compute_frame_size.  */
-  struct iq2000_frame_info frame;
+  long total_size;		/* # bytes that the entire frame takes up.  */
+  long var_size;		/* # bytes that variables take up.  */
+  long args_size;		/* # bytes that outgoing arguments take up.  */
+  long extra_size;		/* # bytes of extra gunk.  */
+  int  gp_reg_size;		/* # bytes needed to store gp regs.  */
+  int  fp_reg_size;		/* # bytes needed to store fp regs.  */
+  long mask;			/* Mask of saved gp registers.  */
+  long gp_save_offset;		/* Offset from vfp to store gp registers.  */
+  long fp_save_offset;		/* Offset from vfp to store fp registers.  */
+  long gp_sp_offset;		/* Offset from new sp to store gp registers.  */
+  long fp_sp_offset;		/* Offset from new sp to store fp registers.  */
+  int  initialized;		/* != 0 if frame size already calculated.  */
+  int  num_gp;			/* Number of gp registers saved.  */
 };
 
 /* Global variables for machine-dependent things.  */
 
-/* Count the number of .file directives, so that .loc is up to date.  */
-int num_source_filenames = 0;
+/* List of all IQ2000 punctuation characters used by print_operand.  */
+char iq2000_print_operand_punct[256];
 
-/* Files to separate the text and the data output, so that all of the data
-   can be emitted before the text, which will mean that the assembler will
-   generate smaller code, based on the global pointer.  */
-FILE *asm_out_data_file;
-FILE *asm_out_text_file;
+/* The target cpu for optimization and scheduling.  */
+enum processor_type iq2000_tune;
 
-/* The next branch instruction is a branch likely, not branch normal.  */
-int iq2000_branch_likely;
-
-/* Count of delay slots and how many are filled.  */
-int dslots_load_total;
-int dslots_load_filled;
-int dslots_jump_total;
-int dslots_jump_filled;
-
-/* # of nops needed by previous insn */
-int dslots_number_nops;
-
-/* Number of 1/2/3 word references to data items (ie, not jal's).  */
-int num_refs[3];
-
-/* registers to check for load delay */
-rtx iq2000_load_reg, iq2000_load_reg2, iq2000_load_reg3, iq2000_load_reg4;
+/* Which instruction set architecture to use.  */
+int iq2000_isa;
 
 /* Cached operands, and operator to compare for use in set/branch/trap
    on condition codes.  */
 rtx branch_cmp[2];
 
-/* what type of branch to use */
+/* What type of branch to use.  */
 enum cmp_type branch_type;
 
-/* The target cpu for code generation.  */
-enum processor_type iq2000_arch;
-
-/* The target cpu for optimization and scheduling.  */
-enum processor_type iq2000_tune;
-
-/* which instruction set architecture to use.  */
-int iq2000_isa;
-
 /* Strings to hold which cpu and instruction set architecture to use.  */
-const char *iq2000_cpu_string;	/* for -mcpu=<xxx> */
-const char *iq2000_arch_string;   /* for -march=<xxx> */
+const char * iq2000_cpu_string;	  /* For -mcpu=<xxx>.  */
+const char * iq2000_arch_string;  /* For -march=<xxx>.  */
+
+
+/* Local variables.  */
+
+/* The next branch instruction is a branch likely, not branch normal.  */
+static int iq2000_branch_likely;
+
+/* Count of delay slots and how many are filled.  */
+static int dslots_load_total;
+static int dslots_load_filled;
+static int dslots_jump_total;
+
+/* # of nops needed by previous insn.  */
+static int dslots_number_nops;
+
+/* Number of 1/2/3 word references to data items (ie, not jal's).  */
+static int num_refs[3];
+
+/* Registers to check for load delay.  */
+static rtx iq2000_load_reg;
+static rtx iq2000_load_reg2;
+static rtx iq2000_load_reg3;
+static rtx iq2000_load_reg4;
+
+/* The target cpu for code generation.  */
+static enum processor_type iq2000_arch;
 
 /* Mode used for saving/restoring general purpose registers.  */
 static enum machine_mode gpr_mode;
 
-/* List of all IQ2000 punctuation characters used by print_operand.  */
-char iq2000_print_operand_punct[256];
 
 /* Initialize the GCC target structure.  */
-#undef TARGET_INIT_BUILTINS
-#define TARGET_INIT_BUILTINS iq2000_init_builtins
+static struct machine_function* iq2000_init_machine_status (void);
+static void iq2000_select_rtx_section (enum machine_mode, rtx, unsigned HOST_WIDE_INT);
+static void iq2000_init_builtins      (void);
+static rtx  iq2000_expand_builtin     (tree, rtx, rtx, enum machine_mode, int);
+static bool iq2000_rtx_costs          (rtx, int, int, int *);
+static int  iq2000_address_cost       (rtx);
+static void iq2000_select_section     (tree, int, unsigned HOST_WIDE_INT);
 
-#undef TARGET_EXPAND_BUILTIN
-#define TARGET_EXPAND_BUILTIN iq2000_expand_builtin
-
-#undef TARGET_ASM_SELECT_RTX_SECTION
-#define TARGET_ASM_SELECT_RTX_SECTION iq2000_select_rtx_section
+#undef  TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS 		iq2000_init_builtins
+#undef  TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN 		iq2000_expand_builtin
+#undef  TARGET_ASM_SELECT_RTX_SECTION
+#define TARGET_ASM_SELECT_RTX_SECTION	iq2000_select_rtx_section
+#undef  TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS		iq2000_rtx_costs
+#undef  TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST		iq2000_address_cost
+#undef  TARGET_ASM_SELECT_SECTION
+#define TARGET_ASM_SELECT_SECTION	iq2000_select_section
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -189,7 +194,7 @@ uns_arith_operand (rtx op, enum machine_mode mode)
   return register_operand (op, mode);
 }
 
-/* Return 1 if OP can be used as an operand where a 16 bit integer is needed. */
+/* Return 1 if OP can be used as an operand where a 16 bit integer is needed.  */
 
 int
 arith_operand (rtx op, enum machine_mode mode)
@@ -200,7 +205,7 @@ arith_operand (rtx op, enum machine_mode mode)
   return register_operand (op, mode);
 }
 
-/* Return 1 if OP is a integer which fits in 16 bits  */
+/* Return 1 if OP is a integer which fits in 16 bits.  */
 
 int
 small_int (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
@@ -221,15 +226,15 @@ large_int (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 
   value = INTVAL (op);
 
-  /* ior reg,$r0,value */
+  /* IOR reg,$r0,value.  */
   if ((value & ~ ((HOST_WIDE_INT) 0x0000ffff)) == 0)
     return 0;
 
-  /* subu reg,$r0,value */
+  /* SUBU reg,$r0,value.  */
   if (((unsigned HOST_WIDE_INT) (value + 32768)) <= 32767)
     return 0;
 
-  /* lui reg,value>>16 */
+  /* LUI reg,value >> 16.  */
   if ((value & 0x0000ffff) == 0)
     return 0;
 
@@ -268,11 +273,11 @@ simple_memory_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   rtx addr, plus0, plus1;
 
-  /* Eliminate non-memory operations */
+  /* Eliminate non-memory operations.  */
   if (GET_CODE (op) != MEM)
     return 0;
 
-  /* dword operations really put out 2 instructions, so eliminate them.  */
+  /* Dword operations really put out 2 instructions, so eliminate them.  */
   if (GET_MODE_SIZE (GET_MODE (op)) > (unsigned) UNITS_PER_WORD)
     return 0;
 
@@ -292,12 +297,12 @@ simple_memory_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
       plus1 = XEXP (addr, 1);
       if (GET_CODE (plus0) == REG
 	  && GET_CODE (plus1) == CONST_INT && SMALL_INT (plus1)
-	  && SMALL_INT_UNSIGNED (plus1) /* No negative offsets */)
+	  && SMALL_INT_UNSIGNED (plus1) /* No negative offsets.  */)
 	return 1;
 
       else if (GET_CODE (plus1) == REG
 	       && GET_CODE (plus0) == CONST_INT && SMALL_INT (plus0)
-	       && SMALL_INT_UNSIGNED (plus1) /* No negative offsets */)
+	       && SMALL_INT_UNSIGNED (plus1) /* No negative offsets.  */)
 	return 1;
 
       else
@@ -324,7 +329,7 @@ equality_op (rtx op, enum machine_mode mode)
   return GET_CODE (op) == EQ || GET_CODE (op) == NE;
 }
 
-/* Return nonzero if the code is a relational operations (EQ, LE, etc.) */
+/* Return nonzero if the code is a relational operations (EQ, LE, etc).  */
 
 int
 cmp_op (rtx op, enum machine_mode mode)
@@ -449,8 +454,8 @@ iq2000_legitimate_address_p (enum machine_mode mode, rtx xinsn, int strict)
 
   if (GET_CODE (xinsn) == LO_SUM)
     {
-      register rtx xlow0 = XEXP (xinsn, 0);
-      register rtx xlow1 = XEXP (xinsn, 1);
+      rtx xlow0 = XEXP (xinsn, 0);
+      rtx xlow1 = XEXP (xinsn, 1);
 
       while (GET_CODE (xlow0) == SUBREG)
 	xlow0 = SUBREG_REG (xlow0);
@@ -462,10 +467,10 @@ iq2000_legitimate_address_p (enum machine_mode mode, rtx xinsn, int strict)
 
   if (GET_CODE (xinsn) == PLUS)
     {
-      register rtx xplus0 = XEXP (xinsn, 0);
-      register rtx xplus1 = XEXP (xinsn, 1);
-      register enum rtx_code code0;
-      register enum rtx_code code1;
+      rtx xplus0 = XEXP (xinsn, 0);
+      rtx xplus1 = XEXP (xinsn, 1);
+      enum rtx_code code0;
+      enum rtx_code code1;
 
       while (GET_CODE (xplus0) == SUBREG)
 	xplus0 = SUBREG_REG (xplus0);
@@ -504,10 +509,10 @@ const char *
 iq2000_fill_delay_slot (const char *ret, enum delay_type type, rtx operands[],
 			rtx cur_insn)
 {
-  register rtx set_reg;
-  register enum machine_mode mode;
-  register rtx next_insn = cur_insn ? NEXT_INSN (cur_insn) : NULL_RTX;
-  register int num_nops;
+  rtx set_reg;
+  enum machine_mode mode;
+  rtx next_insn = cur_insn ? NEXT_INSN (cur_insn) : NULL_RTX;
+  int num_nops;
 
   if (type == DELAY_LOAD || type == DELAY_FCMP)
     num_nops = 1;
@@ -536,6 +541,7 @@ iq2000_fill_delay_slot (const char *ret, enum delay_type type, rtx operands[],
       iq2000_load_reg2 = 0;
       iq2000_load_reg3 = 0;
       iq2000_load_reg4 = 0;
+
       return ret;
     }
 
@@ -644,7 +650,7 @@ iq2000_count_memory_refs (rtx op, int num)
 	  break;
 
 	case LABEL_REF:
-	  n_words = 2;		/* always 2 words */
+	  n_words = 2;		/* Always 2 words.  */
 	  break;
 
 	case CONST:
@@ -670,6 +676,16 @@ iq2000_count_memory_refs (rtx op, int num)
     n_words = 3;
 
   num_refs[n_words-1] += num;
+}
+
+/* Abort after printing out a specific insn.  */
+
+static void
+abort_with_insn (rtx insn, const char * reason)
+{
+  error (reason);
+  debug_rtx (insn);
+  abort ();
 }
 
 /* Return the appropriate instructions to move one operand to another.  */
@@ -904,7 +920,7 @@ iq2000_move_1word (rtx operands[], rtx insn, int unsignedp)
 
 /* Provide the costs of an addressing mode that contains ADDR.  */
 
-int
+static int
 iq2000_address_cost (rtx addr)
 {
   switch (GET_CODE (addr))
@@ -918,7 +934,8 @@ iq2000_address_cost (rtx addr)
     case CONST:
       {
 	rtx offset = const0_rtx;
-	addr = eliminate_constant_term (XEXP (addr, 0), &offset);
+
+	addr = eliminate_constant_term (XEXP (addr, 0), & offset);
 	if (GET_CODE (addr) == LABEL_REF)
 	  return 2;
 
@@ -929,15 +946,15 @@ iq2000_address_cost (rtx addr)
 	  return 2;
       }
 
-      /* ... fall through ... */
+      /* Fall through.  */
 
     case SYMBOL_REF:
       return SYMBOL_REF_FLAG (addr) ? 1 : 2;
 
     case PLUS:
       {
-	register rtx plus0 = XEXP (addr, 0);
-	register rtx plus1 = XEXP (addr, 1);
+	rtx plus0 = XEXP (addr, 0);
+	rtx plus1 = XEXP (addr, 1);
 
 	if (GET_CODE (plus0) != REG && GET_CODE (plus1) == REG)
 	  plus0 = XEXP (addr, 1), plus1 = XEXP (addr, 0);
@@ -994,15 +1011,11 @@ map_test_to_internal_test (enum rtx_code test_code)
   return test;
 }
 
-/* Generate the code to compare two integer values.  The return value is:
+/* Generate the code to do a TEST_CODE comparison on two integer values CMP0
+   and CMP1.  P_INVERT is NULL or ptr if branch needs to reverse its test.
+   The return value RESULT is:
    (reg:SI xx)		The pseudo register the comparison is in
-   0		       	No register, generate a simple branch.
-
-   TEST_CODE: relational test (EQ, etc).
-   RESULT: result to store comp. or 0 if branch.
-   CMP0: first operand to compare 
-   CMP1: second operand to compare 
-   *P_INVERT: NULL or ptr to hold whether branch needs to reverse its test.  */
+   0		       	No register, generate a simple branch.  */
 
 rtx
 gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0, rtx cmp1,
@@ -1010,18 +1023,18 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0, rtx cmp1,
 {
   struct cmp_info
   {
-    enum rtx_code test_code;	/* code to use in instruction (LT vs. LTU) */
-    int const_low;		/* low bound of constant we can accept */
-    int const_high;		/* high bound of constant we can accept */
-    int const_add;		/* constant to add (convert LE -> LT) */
-    int reverse_regs;		/* reverse registers in test */
-    int invert_const;		/* != 0 if invert value if cmp1 is constant */
-    int invert_reg;		/* != 0 if invert value if cmp1 is register */
+    enum rtx_code test_code;	/* Code to use in instruction (LT vs. LTU).  */
+    int const_low;		/* Low bound of constant we can accept.  */
+    int const_high;		/* High bound of constant we can accept.  */
+    int const_add;		/* Constant to add (convert LE -> LT).  */
+    int reverse_regs;		/* Reverse registers in test.  */
+    int invert_const;		/* != 0 if invert value if cmp1 is constant.  */
+    int invert_reg;		/* != 0 if invert value if cmp1 is register.  */
     int unsignedp;		/* != 0 for unsigned comparisons.  */
   };
 
-  static struct cmp_info info[ (int)ITEST_MAX ] = {
-
+  static struct cmp_info info[ (int)ITEST_MAX ] =
+  {
     { XOR,	 0,  65535,  0,	 0,  0,	 0, 0 },	/* EQ  */
     { XOR,	 0,  65535,  0,	 0,  1,	 1, 0 },	/* NE  */
     { LT,   -32769,  32766,  1,	 1,  1,	 0, 0 },	/* GT  */
@@ -1054,13 +1067,13 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0, rtx cmp1,
   if (mode == VOIDmode)
     mode = GET_MODE (cmp1);
 
-  /* Eliminate simple branches */
+  /* Eliminate simple branches.  */
   branch_p = (result == 0);
   if (branch_p)
     {
       if (GET_CODE (cmp0) == REG || GET_CODE (cmp0) == SUBREG)
 	{
-	  /* Comparisons against zero are simple branches */
+	  /* Comparisons against zero are simple branches.  */
 	  if (GET_CODE (cmp1) == CONST_INT && INTVAL (cmp1) == 0)
 	    return 0;
 
@@ -1069,7 +1082,7 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0, rtx cmp1,
 	    return 0;
 	}
 
-      /* allocate a pseudo to calculate the value in.  */
+      /* Allocate a pseudo to calculate the value in.  */
       result = gen_reg_rtx (mode);
     }
 
@@ -1205,7 +1218,7 @@ gen_conditional_branch (rtx operands[], enum rtx_code test_code)
     case CMP_DF:
       reg = gen_reg_rtx (CCmode);
 
-      /* For cmp0 != cmp1, build cmp0 == cmp1, and test for result == 0 */
+      /* For cmp0 != cmp1, build cmp0 == cmp1, and test for result == 0.  */
       emit_insn (gen_rtx_SET (VOIDmode, reg,
 			      gen_rtx (test_code == NE ? EQ : test_code,
 				       CCmode, cmp0, cmp1)));
@@ -1222,7 +1235,6 @@ gen_conditional_branch (rtx operands[], enum rtx_code test_code)
     }
 
   /* Generate the branch.  */
-
   label1 = gen_rtx_LABEL_REF (VOIDmode, operands[0]);
   label2 = pc_rtx;
 
@@ -1239,19 +1251,20 @@ gen_conditional_branch (rtx operands[], enum rtx_code test_code)
 						     label1, label2)));
 }
 
-/* Initialize CUMULATIVE_ARGS for a function.  */
+/* Initialize CUM for a function FNTYPE.  */
 
 void
 init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 		      rtx libname ATTRIBUTE_UNUSED)
 {
   static CUMULATIVE_ARGS zero_cum;
-  tree param, next_param;
+  tree param;
+  tree next_param;
 
   if (TARGET_DEBUG_D_MODE)
     {
       fprintf (stderr,
-	       "\ninit_cumulative_args, fntype = 0x%.8lx", (long)fntype);
+	       "\ninit_cumulative_args, fntype = 0x%.8lx", (long) fntype);
 
       if (!fntype)
 	fputc ('\n', stderr);
@@ -1259,6 +1272,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
       else
 	{
 	  tree ret_type = TREE_TYPE (fntype);
+
 	  fprintf (stderr, ", fntype code = %s, ret code = %s\n",
 		   tree_code_name[(int)TREE_CODE (fntype)],
 		   tree_code_name[(int)TREE_CODE (ret_type)]);
@@ -1281,7 +1295,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
     }
 }
 
-/* Advance the argument to the next argument position.  */
+/* Advance the argument of type TYPE and mode MODE to the next argument
+   position in CUM.  */
 
 void
 function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
@@ -1320,7 +1335,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
       break;
 
     case SFmode:
-      cum->arg_words++;
+      cum->arg_words ++;
       if (! cum->gp_reg_found && cum->arg_number <= 2)
 	cum->fp_code += 1 << ((cum->arg_number - 1) * 2);
       break;
@@ -1340,13 +1355,13 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
     case HImode:
     case SImode:
       cum->gp_reg_found = 1;
-      cum->arg_words++;
+      cum->arg_words ++;
       break;
     }
 }
 
-/* Return an RTL expression containing the register for the given mode,
-   or 0 if the argument is to be passed on the stack.  */
+/* Return an RTL expression containing the register for the given mode MODE
+   and type TYPE in CUM, or 0 if the argument is to be passed on the stack.  */
 
 struct rtx_def *
 function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
@@ -1450,13 +1465,12 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 
 	      /* ??? If this is a packed structure, then the last hunk won't
 		 be 64 bits.  */
-
 	      chunks
 		= tree_low_cst (TYPE_SIZE_UNIT (type), 1) / UNITS_PER_WORD;
 	      if (chunks + *arg_words + bias > (unsigned) MAX_ARGS_IN_REGISTERS)
 		chunks = MAX_ARGS_IN_REGISTERS - *arg_words - bias;
 
-	      /* assign_parms checks the mode of ENTRY_PARM, so we must
+	      /* Assign_parms checks the mode of ENTRY_PARM, so we must
 		 use the actual mode here.  */
 	      ret = gen_rtx_PARALLEL (mode, rtvec_alloc (chunks));
 
@@ -1532,21 +1546,20 @@ void
 iq2000_va_start (tree valist, rtx nextarg)
 {
   int int_arg_words;
-
-  /* Find out how many non-float named formals */
+  /* Find out how many non-float named formals.  */
   int gpr_save_area_size;
-  /* Note UNITS_PER_WORD is 4 bytes */
+  /* Note UNITS_PER_WORD is 4 bytes.  */
   int_arg_words = current_function_args_info.arg_words;
+
   if (int_arg_words < 8 )
-    /* Adjust for the prologue's economy measure */
+    /* Adjust for the prologue's economy measure.  */
     gpr_save_area_size = (8 - int_arg_words) * UNITS_PER_WORD;
   else
     gpr_save_area_size = 0;
 
   /* Everything is in the GPR save area, or in the overflow
      area which is contiguous with it.  */
-
-  nextarg = plus_constant (nextarg, -gpr_save_area_size);
+  nextarg = plus_constant (nextarg, - gpr_save_area_size);
   std_expand_builtin_va_start (valist, nextarg);
 }
 
@@ -1558,7 +1571,6 @@ iq2000_va_arg (tree valist, tree type)
   HOST_WIDE_INT size, rsize;
   rtx addr_rtx;
   tree t;
-
   int indirect;
   rtx r, lab_over = NULL_RTX, lab_false;
   tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff;
@@ -1579,8 +1591,8 @@ iq2000_va_arg (tree valist, tree type)
   {
     /* Case of all args in a merged stack. No need to check bounds,
        just advance valist along the stack.  */
-
     tree gpr = valist;
+
     if (! indirect
 	&& TYPE_ALIGN (type) > (unsigned) BITS_PER_WORD)
       {
@@ -1616,7 +1628,6 @@ iq2000_va_arg (tree valist, tree type)
   }
 
   /* Not a simple merged stack.  Need ptrs and indexes left by va_start.  */
-
   f_ovfl  = TYPE_FIELDS (va_list_type_node);
   f_gtop = TREE_CHAIN (f_ovfl);
   f_ftop = TREE_CHAIN (f_gtop);
@@ -1634,26 +1645,25 @@ iq2000_va_arg (tree valist, tree type)
 
   if (TREE_CODE (type) == REAL_TYPE)
     {
-
       /* Emit code to branch if foff == 0.  */
       r = expand_expr (foff, NULL_RTX, TYPE_MODE (TREE_TYPE (foff)),
 		       EXPAND_NORMAL);
       emit_cmp_and_jump_insns (r, const0_rtx, EQ,
 			       const1_rtx, GET_MODE (r), 1, lab_false);
 
-      /* Emit code for addr_rtx = ftop - foff */
+      /* Emit code for addr_rtx = ftop - foff.  */
       t = build (MINUS_EXPR, TREE_TYPE (ftop), ftop, foff );
       r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
       if (r != addr_rtx)
 	emit_move_insn (addr_rtx, r);
 
       /* Emit code for foff-=8.
-	 Advances the offset up FPR save area by one double */
+	 Advances the offset up FPR save area by one double.  */
       t = build (MINUS_EXPR, TREE_TYPE (foff), foff, build_int_2 (8, 0));
       t = build (MODIFY_EXPR, TREE_TYPE (foff), foff, t);
       expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 
-      emit_queue();
+      emit_queue ();
       emit_jump (lab_over);
       emit_barrier ();
       emit_label (lab_false);
@@ -1681,7 +1691,7 @@ iq2000_va_arg (tree valist, tree type)
     }
   else
     {
-      /* not REAL_TYPE */
+      /* Not REAL_TYPE.  */
       int step_size;
 
       if (TREE_CODE (type) == INTEGER_TYPE
@@ -1726,7 +1736,7 @@ iq2000_va_arg (tree valist, tree type)
       emit_barrier ();
       emit_label (lab_false);
 
-      /* Emit code for addr_rtx -> overflow area, postinc by step_size */
+      /* Emit code for addr_rtx -> overflow area, postinc by step_size.  */
       t = build (POSTINCREMENT_EXPR, TREE_TYPE(ovfl), ovfl,
 		 size_int (step_size));
       r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
@@ -1751,22 +1761,46 @@ iq2000_va_arg (tree valist, tree type)
     }
 }
 
-/* Abort after printing out a specific insn.  */
+/* Allocate a chunk of memory for per-function machine-dependent data.  */
 
-static void
-abort_with_insn (rtx insn, const char *reason)
+static struct machine_function *
+iq2000_init_machine_status (void)
 {
-  error (reason);
-  debug_rtx (insn);
-  abort ();
+  struct machine_function *f;
+
+  f = ggc_alloc_cleared (sizeof (struct machine_function));
+
+  return f;
 }
-
+
+static enum processor_type
+iq2000_parse_cpu (const char * cpu_string)
+{
+  const char *p = cpu_string;
+  enum processor_type cpu;
+
+  cpu = PROCESSOR_DEFAULT;
+  switch (p[2])
+    {
+    case '1':
+      if (!strcmp (p, "iq10"))
+	cpu = PROCESSOR_IQ10;
+      break;
+    case '2':
+      if (!strcmp (p, "iq2000"))
+	cpu = PROCESSOR_IQ2000;
+      break;
+    }
+
+  return cpu;
+}
+
 /* Detect any conflicts in the switches.  */
 
 void
 override_options (void)
 {
-  register enum processor_type iq2000_cpu;
+  enum processor_type iq2000_cpu;
 
   target_flags &= ~MASK_GPOPT;
 
@@ -1838,16 +1872,7 @@ override_options (void)
   gpr_mode = SImode;
 
   /* Function to allocate machine-dependent function status.  */
-  init_machine_status = &iq2000_init_machine_status;
-}
-
-/* Allocate a chunk of memory for per-function machine-dependent data.  */
-
-static struct machine_function *
-iq2000_init_machine_status (void)
-{
-  return ((struct machine_function *)
-	  ggc_alloc_cleared (sizeof (struct machine_function)));
+  init_machine_status = iq2000_init_machine_status;
 }
 
 /* The arg pointer (which is eliminated) points to the virtual frame pointer,
@@ -1858,7 +1883,7 @@ HOST_WIDE_INT
 iq2000_debugger_offset (rtx addr, HOST_WIDE_INT offset)
 {
   rtx offset2 = const0_rtx;
-  rtx reg = eliminate_constant_term (addr, &offset2);
+  rtx reg = eliminate_constant_term (addr, & offset2);
 
   if (offset == 0)
     offset = INTVAL (offset2);
@@ -1866,9 +1891,9 @@ iq2000_debugger_offset (rtx addr, HOST_WIDE_INT offset)
   if (reg == stack_pointer_rtx || reg == frame_pointer_rtx
       || reg == hard_frame_pointer_rtx)
     {
-      HOST_WIDE_INT frame_size = (!cfun->machine->frame.initialized)
+      HOST_WIDE_INT frame_size = (!cfun->machine->initialized)
 				  ? compute_frame_size (get_frame_size ())
-				  : cfun->machine->frame.total_size;
+				  : cfun->machine->total_size;
 
       offset = offset - frame_size;
     }
@@ -1898,7 +1923,7 @@ final_prescan_insn (rtx insn, rtx opvec[] ATTRIBUTE_UNUSED,
       rtx pattern = PATTERN (insn);
       int length = get_attr_length (insn);
 
-      /* Do we need to emit a NOP? */
+      /* Do we need to emit a NOP?  */
       if (length == 0
 	  || (iq2000_load_reg != 0 && reg_mentioned_p (iq2000_load_reg,  pattern))
 	  || (iq2000_load_reg2 != 0 && reg_mentioned_p (iq2000_load_reg2, pattern))
@@ -1908,7 +1933,7 @@ final_prescan_insn (rtx insn, rtx opvec[] ATTRIBUTE_UNUSED,
 	fputs ("\tnop\n", asm_out_file);
 
       else
-	dslots_load_filled++;
+	dslots_load_filled ++;
 
       while (--dslots_number_nops > 0)
 	fputs ("\tnop\n", asm_out_file);
@@ -1919,22 +1944,23 @@ final_prescan_insn (rtx insn, rtx opvec[] ATTRIBUTE_UNUSED,
       iq2000_load_reg4 = 0;
     }
 
-  if ((GET_CODE (insn) == JUMP_INSN
+  if (   (GET_CODE (insn) == JUMP_INSN
        || GET_CODE (insn) == CALL_INSN
        || (GET_CODE (PATTERN (insn)) == RETURN))
 	   && NEXT_INSN (PREV_INSN (insn)) == insn)
     {
       rtx nop_insn = emit_insn_after (gen_nop (), insn);
+
       INSN_ADDRESSES_NEW (nop_insn, -1);
     }
   
   if (TARGET_STATS
       && (GET_CODE (insn) == JUMP_INSN || GET_CODE (insn) == CALL_INSN))
-    dslots_jump_total++;
+    dslots_jump_total ++;
 }
 
 /* Return the bytes needed to compute the frame pointer from the current
-   stack pointer.
+   stack pointer where SIZE is the # of var. bytes allocated.
 
    IQ2000 stack frames look like:
 
@@ -1982,24 +2008,22 @@ final_prescan_insn (rtx insn, rtx opvec[] ATTRIBUTE_UNUSED,
 					|  arguments passed     |
                                         |  in registers, even   |
    low                              SP->|  if not passed.       |
-   memory        			+-----------------------+
-
-*/
+   memory        			+-----------------------+  */
 
 HOST_WIDE_INT
 compute_frame_size (HOST_WIDE_INT size)
 {
   int regno;
-  HOST_WIDE_INT total_size;	/* # bytes that the entire frame takes up */
-  HOST_WIDE_INT var_size;	/* # bytes that variables take up */
-  HOST_WIDE_INT args_size;	/* # bytes that outgoing arguments take up */
-  HOST_WIDE_INT extra_size;	/* # extra bytes */
-  HOST_WIDE_INT gp_reg_rounded;	/* # bytes needed to store gp after rounding */
-  HOST_WIDE_INT gp_reg_size;	/* # bytes needed to store gp regs */
-  HOST_WIDE_INT fp_reg_size;	/* # bytes needed to store fp regs */
-  long mask;			/* mask of saved gp registers */
-  int  fp_inc;			/* 1 or 2 depending on the size of fp regs */
-  long fp_bits;			/* bitmask to use for each fp register */
+  HOST_WIDE_INT total_size;	/* # bytes that the entire frame takes up.  */
+  HOST_WIDE_INT var_size;	/* # bytes that variables take up.  */
+  HOST_WIDE_INT args_size;	/* # bytes that outgoing arguments take up.  */
+  HOST_WIDE_INT extra_size;	/* # extra bytes.  */
+  HOST_WIDE_INT gp_reg_rounded;	/* # bytes needed to store gp after rounding.  */
+  HOST_WIDE_INT gp_reg_size;	/* # bytes needed to store gp regs.  */
+  HOST_WIDE_INT fp_reg_size;	/* # bytes needed to store fp regs.  */
+  long mask;			/* mask of saved gp registers.  */
+  int  fp_inc;			/* 1 or 2 depending on the size of fp regs.  */
+  long fp_bits;			/* bitmask to use for each fp register.  */
 
   gp_reg_size = 0;
   fp_reg_size = 0;
@@ -2009,8 +2033,7 @@ compute_frame_size (HOST_WIDE_INT size)
   args_size = IQ2000_STACK_ALIGN (current_function_outgoing_args_size);
 
   /* If a function dynamically allocates the stack and
-     has 0 for STACK_DYNAMIC_OFFSET then allocate some stack space */
-
+     has 0 for STACK_DYNAMIC_OFFSET then allocate some stack space.  */
   if (args_size == 0 && current_function_calls_alloca)
     args_size = 4 * UNITS_PER_WORD;
 
@@ -2029,11 +2052,12 @@ compute_frame_size (HOST_WIDE_INT size)
   /* We need to restore these for the handler.  */
   if (current_function_calls_eh_return)
     {
-      int i;
+      unsigned int i;
+
       for (i = 0; ; ++i)
 	{
 	  regno = EH_RETURN_DATA_REGNO (i);
-	  if (regno == (signed int) INVALID_REGNUM)
+	  if (regno == (int) INVALID_REGNUM)
 	    break;
 	  gp_reg_size += GET_MODE_SIZE (gpr_mode);
 	  mask |= 1L << (regno - GP_REG_FIRST);
@@ -2054,15 +2078,15 @@ compute_frame_size (HOST_WIDE_INT size)
   total_size += IQ2000_STACK_ALIGN (current_function_pretend_args_size);
 
   /* Save other computed information.  */
-  cfun->machine->frame.total_size = total_size;
-  cfun->machine->frame.var_size = var_size;
-  cfun->machine->frame.args_size = args_size;
-  cfun->machine->frame.extra_size = extra_size;
-  cfun->machine->frame.gp_reg_size = gp_reg_size;
-  cfun->machine->frame.fp_reg_size = fp_reg_size;
-  cfun->machine->frame.mask = mask;
-  cfun->machine->frame.initialized = reload_completed;
-  cfun->machine->frame.num_gp = gp_reg_size / UNITS_PER_WORD;
+  cfun->machine->total_size = total_size;
+  cfun->machine->var_size = var_size;
+  cfun->machine->args_size = args_size;
+  cfun->machine->extra_size = extra_size;
+  cfun->machine->gp_reg_size = gp_reg_size;
+  cfun->machine->fp_reg_size = fp_reg_size;
+  cfun->machine->mask = mask;
+  cfun->machine->initialized = reload_completed;
+  cfun->machine->num_gp = gp_reg_size / UNITS_PER_WORD;
 
   if (mask)
     {
@@ -2071,17 +2095,17 @@ compute_frame_size (HOST_WIDE_INT size)
       offset = (args_size + extra_size + var_size
 		+ gp_reg_size - GET_MODE_SIZE (gpr_mode));
 
-      cfun->machine->frame.gp_sp_offset = offset;
-      cfun->machine->frame.gp_save_offset = offset - total_size;
+      cfun->machine->gp_sp_offset = offset;
+      cfun->machine->gp_save_offset = offset - total_size;
     }
   else
     {
-      cfun->machine->frame.gp_sp_offset = 0;
-      cfun->machine->frame.gp_save_offset = 0;
+      cfun->machine->gp_sp_offset = 0;
+      cfun->machine->gp_save_offset = 0;
     }
 
-  cfun->machine->frame.fp_sp_offset = 0;
-  cfun->machine->frame.fp_save_offset = 0;
+  cfun->machine->fp_sp_offset = 0;
+  cfun->machine->fp_save_offset = 0;
 
   /* Ok, we're done.  */
   return total_size;
@@ -2100,15 +2124,15 @@ iq2000_initial_elimination_offset (int from, int to ATTRIBUTE_UNUSED)
   if ((from) == FRAME_POINTER_REGNUM) 
     (offset) = 0; 
   else if ((from) == ARG_POINTER_REGNUM) 
-    (offset) = (cfun->machine->frame.total_size); 
+    (offset) = (cfun->machine->total_size); 
   else if ((from) == RETURN_ADDRESS_POINTER_REGNUM) 
-  {
-   if (leaf_function_p ()) 
-      (offset) = 0; 
-   else (offset) = cfun->machine->frame.gp_sp_offset 
-	       + ((UNITS_PER_WORD - (POINTER_SIZE / BITS_PER_UNIT)) 
-		  * (BYTES_BIG_ENDIAN != 0)); 
-  } 
+    {
+      if (leaf_function_p ()) 
+	(offset) = 0; 
+      else (offset) = cfun->machine->gp_sp_offset 
+	     + ((UNITS_PER_WORD - (POINTER_SIZE / BITS_PER_UNIT)) 
+		* (BYTES_BIG_ENDIAN != 0)); 
+    }
 
   return offset;
 }
@@ -2164,10 +2188,12 @@ iq2000_emit_frame_related_store (rtx mem, rtx reg, HOST_WIDE_INT offset)
 			    gen_rtx_SET (GET_MODE (reg), dwarf_mem, reg));
 }
 
+/* Emit instructions to save/restore registers, as determined by STORE_P.  */
+
 static void
 save_restore_insns (int store_p)
 {
-  long mask = cfun->machine->frame.mask;
+  long mask = cfun->machine->mask;
   int regno;
   rtx base_reg_rtx;
   HOST_WIDE_INT base_offset;
@@ -2196,9 +2222,9 @@ save_restore_insns (int store_p)
      the constant created in the prologue/epilogue to adjust the stack
      frame.  */
 
-  gp_offset = cfun->machine->frame.gp_sp_offset;
+  gp_offset = cfun->machine->gp_sp_offset;
   end_offset
-    = gp_offset - (cfun->machine->frame.gp_reg_size
+    = gp_offset - (cfun->machine->gp_reg_size
 		   - GET_MODE_SIZE (gpr_mode));
 
   if (gp_offset < 0 || end_offset < 0)
@@ -2212,6 +2238,7 @@ save_restore_insns (int store_p)
     {
       int regno;
       int reg_save_count = 0;
+
       for (regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)
 	if (BITSET_P (mask, regno - GP_REG_FIRST)) reg_save_count += 1;
       base_offset = gp_offset - ((reg_save_count - 1) * 4);
@@ -2263,9 +2290,9 @@ iq2000_expand_prologue (void)
   int store_args_on_stack = (iq2000_can_use_return_insn ());
 
   /* If struct value address is treated as the first argument.  */
-  if (aggregate_value_p (DECL_RESULT (fndecl))
+  if (aggregate_value_p (DECL_RESULT (fndecl), fndecl)
       && ! current_function_returns_pcc_struct
-      && struct_value_incoming_rtx == 0)
+      && targetm.calls.struct_value_rtx (TREE_TYPE (fndecl), 1) == 0)
     {
       tree type = build_pointer_type (fntype);
       tree function_result_decl = build_decl (PARM_DECL, NULL_TREE, type);
@@ -2282,7 +2309,6 @@ iq2000_expand_prologue (void)
      variable arguments.
 
      This is only needed if store_args_on_stack is true.  */
-
   INIT_CUMULATIVE_ARGS (args_so_far, fntype, NULL_RTX, 0);
   regno = GP_ARG_FIRST;
 
@@ -2343,7 +2369,6 @@ iq2000_expand_prologue (void)
      Function_arg has encoded a PARALLEL rtx, holding a vector of
      adjustments to be made as the next_arg_reg variable, so we split up the
      insns, and emit them separately.  */
-
   next_arg_reg = FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1);
   if (next_arg_reg != 0 && GET_CODE (next_arg_reg) == PARALLEL)
     {
@@ -2438,7 +2463,7 @@ iq2000_expand_prologue (void)
 void
 iq2000_expand_epilogue (void)
 {
-  HOST_WIDE_INT tsize = cfun->machine->frame.total_size;
+  HOST_WIDE_INT tsize = cfun->machine->total_size;
   rtx tsize_rtx = GEN_INT (tsize);
   rtx tmp_rtx = (rtx)0;
 
@@ -2499,7 +2524,7 @@ iq2000_expand_epilogue (void)
 void
 iq2000_expand_eh_return (rtx address)
 {
-  HOST_WIDE_INT gp_offset = cfun->machine->frame.gp_sp_offset;
+  HOST_WIDE_INT gp_offset = cfun->machine->gp_sp_offset;
   rtx scratch;
 
   scratch = plus_constant (stack_pointer_rtx, gp_offset);
@@ -2519,8 +2544,8 @@ iq2000_can_use_return_insn (void)
   if (regs_ever_live[31] || profile_flag)
     return 0;
 
-  if (cfun->machine->frame.initialized)
-    return cfun->machine->frame.total_size == 0;
+  if (cfun->machine->initialized)
+    return cfun->machine->total_size == 0;
 
   return compute_frame_size (get_frame_size ()) == 0;
 }
@@ -2576,7 +2601,6 @@ iq2000_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
     {
       /* For embedded applications, always put an object in read-only data
 	 if possible, in order to reduce RAM usage.  */
-
       if (((TREE_CODE (decl) == VAR_DECL
 	    && TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
 	    && DECL_INITIAL (decl)
@@ -2594,7 +2618,6 @@ iq2000_select_section (tree decl, int reloc ATTRIBUTE_UNUSED,
     {
       /* For hosted applications, always put an object in small data if
 	 possible, as this gives the best performance.  */
-
       if (((TREE_CODE (decl) == VAR_DECL
 		 && TREE_READONLY (decl) && !TREE_SIDE_EFFECTS (decl)
 		 && DECL_INITIAL (decl)
@@ -2639,13 +2662,13 @@ function_arg_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
   /* We must pass by reference if we would be both passing in registers
      and the stack.  This is because any subsequent partial arg would be
      handled incorrectly in this case.  */
-
   if (cum && MUST_PASS_IN_STACK (mode, type))
      {
        /* Don't pass the actual CUM to FUNCTION_ARG, because we would
 	  get double copies of any offsets generated for small structs
 	  passed in registers.  */
        CUMULATIVE_ARGS temp;
+
        temp = *cum;
        if (FUNCTION_ARG (temp, mode, type, named) != 0)
 	 return 1;
@@ -2665,10 +2688,10 @@ int
 iq2000_adjust_insn_length (rtx insn, int length)
 {
   /* A unconditional jump has an unfilled delay slot if it is not part
-     of a sequence.  A conditional jump normally has a delay slot */
+     of a sequence.  A conditional jump normally has a delay slot.  */
   if (simplejump_p (insn)
-      || ((GET_CODE (insn) == JUMP_INSN
-			      || GET_CODE (insn) == CALL_INSN)))
+      || (   (GET_CODE (insn) == JUMP_INSN
+	   || GET_CODE (insn) == CALL_INSN)))
     length += 4;
 
   return length;
@@ -2690,13 +2713,13 @@ iq2000_adjust_insn_length (rtx insn, int length)
    reversed conditional branch around a `jr' instruction.  */
 
 char *
-iq2000_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
+iq2000_output_conditional_branch (rtx insn, rtx * operands, int two_operands_p,
 				  int float_p, int inverted_p, int length)
 {
   static char buffer[200];
   /* The kind of comparison we are doing.  */
   enum rtx_code code = GET_CODE (operands[0]);
-  /* Nonzero if the opcode for the comparison needs a `z' indicating
+  /* nonzero if the opcode for the comparison needs a `z' indicating
      that it is a comparison against zero.  */
   int need_z_p;
   /* A string to use in the assembly output to represent the first
@@ -2711,7 +2734,7 @@ iq2000_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
   /* The operand-printing string for the inverted comparison.  */
   const char *inverted_comp = (float_p ? "%W0" : "%N0");
 
-  /* likely variants of each branch instruction annul the instruction
+  /* Likely variants of each branch instruction annul the instruction
      in the delay slot if the branch is not taken.  */
   iq2000_branch_likely = (final_sequence && INSN_ANNULLED_BRANCH_P (insn));
 
@@ -2813,7 +2836,7 @@ iq2000_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
 	char *c;
 
 	c = strchr (buffer, '\0');
-	/* Generate the reversed comparison.  This takes four
+	/* Generate the reversed comparision.  This takes four
 	   bytes.  */
 	if (float_p)
 	  sprintf (c, "b%s\t%%Z2%s",
@@ -2843,32 +2866,10 @@ iq2000_output_conditional_branch (rtx insn, rtx *operands, int two_operands_p,
   return 0;
 }
 
-static enum processor_type
-iq2000_parse_cpu (const char *cpu_string)
-{
-  const char *p = cpu_string;
-  enum processor_type cpu;
-
-  cpu = PROCESSOR_DEFAULT;
-  switch (p[2])
-    {
-    case '1':
-      if (!strcmp (p, "iq10"))
-	cpu = PROCESSOR_IQ10;
-      break;
-    case '2':
-      if (!strcmp (p, "iq2000"))
-	cpu = PROCESSOR_IQ2000;
-      break;
-    }
-
-  return cpu;
-}
-
 #define def_builtin(NAME, TYPE, CODE) \
   builtin_function ((NAME), (TYPE), (CODE), BUILT_IN_MD, NULL, NULL_TREE)
 
-void
+static void
 iq2000_init_builtins (void)
 {
   tree endlink = void_list_node;
@@ -2999,7 +3000,7 @@ void_ftype_int_int_int
 }
 
 /* Builtin for ICODE having ARGCOUNT args in ARGLIST where each arg
-   has an rtx CODE */
+   has an rtx CODE.  */
 
 static rtx
 expand_one_builtin (enum insn_code icode, rtx target, tree arglist,
@@ -3079,7 +3080,7 @@ expand_one_builtin (enum insn_code icode, rtx target, tree arglist,
    SUBTARGET may be used as the target for computing one of EXP's operands.
    IGNORE is nonzero if the value is to be ignored.  */
 
-rtx
+static rtx
 iq2000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		       enum machine_mode mode ATTRIBUTE_UNUSED,
 		       int ignore ATTRIBUTE_UNUSED)
@@ -3263,11 +3264,12 @@ iq2000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
 void
 iq2000_setup_incoming_varargs (CUMULATIVE_ARGS cum, int mode ATTRIBUTE_UNUSED,
-			       tree type ATTRIBUTE_UNUSED, int *pretend_size,
-			       int no_rtl) 
+			       tree type ATTRIBUTE_UNUSED, int * pretend_size,
+			       int no_rtl)
 {
   unsigned int iq2000_off = (! (cum).last_arg_fp); 
   unsigned int iq2000_fp_off = ((cum).last_arg_fp); 
+
   if (((cum).arg_words < MAX_ARGS_IN_REGISTERS - iq2000_off))
     {
       int iq2000_save_gp_regs 
@@ -3303,11 +3305,10 @@ iq2000_setup_incoming_varargs (CUMULATIVE_ARGS cum, int mode ATTRIBUTE_UNUSED,
 
 /* A C compound statement to output to stdio stream STREAM the
    assembler syntax for an instruction operand that is a memory
-   reference whose address is ADDR.  ADDR is an RTL expression.
-*/
+   reference whose address is ADDR.  ADDR is an RTL expression.  */
 
 void
-print_operand_address (FILE *file, rtx addr)
+print_operand_address (FILE * file, rtx addr)
 {
   if (!addr)
     error ("PRINT_OPERAND_ADDRESS, null pointer");
@@ -3324,8 +3325,8 @@ print_operand_address (FILE *file, rtx addr)
 
       case LO_SUM:
 	{
-	  register rtx arg0 = XEXP (addr, 0);
-	  register rtx arg1 = XEXP (addr, 1);
+	  rtx arg0 = XEXP (addr, 0);
+	  rtx arg1 = XEXP (addr, 1);
 
 	  if (GET_CODE (arg0) != REG)
 	    abort_with_insn (addr,
@@ -3339,10 +3340,10 @@ print_operand_address (FILE *file, rtx addr)
 
       case PLUS:
 	{
-	  register rtx reg = 0;
-	  register rtx offset = 0;
-	  register rtx arg0 = XEXP (addr, 0);
-	  register rtx arg1 = XEXP (addr, 1);
+	  rtx reg = 0;
+	  rtx offset = 0;
+	  rtx arg0 = XEXP (addr, 0);
+	  rtx arg1 = XEXP (addr, 1);
 
 	  if (GET_CODE (arg0) == REG)
 	    {
@@ -3388,25 +3389,24 @@ print_operand_address (FILE *file, rtx addr)
     }
 }
 
-/* A C compound statement to output to stdio stream STREAM the
-   assembler syntax for an instruction operand X.  X is an RTL
-   expression.
+/* A C compound statement to output to stdio stream FILE the
+   assembler syntax for an instruction operand OP.
 
-   CODE is a value that can be used to specify one of several ways
+   LETTER is a value that can be used to specify one of several ways
    of printing the operand.  It is used when identical operands
-   must be printed differently depending on the context.  CODE
+   must be printed differently depending on the context.  LETTER
    comes from the `%' specification that was used to request
    printing of the operand.  If the specification was just `%DIGIT'
-   then CODE is 0; if the specification was `%LTR DIGIT' then CODE
+   then LETTER is 0; if the specification was `%LTR DIGIT' then LETTER
    is the ASCII code for LTR.
 
-   If X is a register, this macro should print the register's name.
+   If OP is a register, this macro should print the register's name.
    The names can be found in an array `reg_names' whose type is
    `char *[]'.  `reg_names' is initialized from `REGISTER_NAMES'.
 
    When the machine description has a specification `%PUNCT' (a `%'
    followed by a punctuation character), this macro is called with
-   a null pointer for X and the punctuation character for CODE.
+   a null pointer for X and the punctuation character for LETTER.
 
    The IQ2000 specific codes are:
 
@@ -3438,7 +3438,7 @@ print_operand_address (FILE *file, rtx addr)
 void
 print_operand (FILE *file, rtx op, int letter)
 {
-  register enum rtx_code code;
+  enum rtx_code code;
 
   if (PRINT_OPERAND_PUNCT_VALID_P (letter))
     {
@@ -3558,7 +3558,7 @@ print_operand (FILE *file, rtx op, int letter)
 
   else if (letter == 'Z')
     {
-      register int regnum;
+      int regnum;
 
       if (code != REG)
 	abort ();
@@ -3571,7 +3571,7 @@ print_operand (FILE *file, rtx op, int letter)
 
   else if (code == REG || code == SUBREG)
     {
-      register int regnum;
+      int regnum;
 
       if (code == REG)
 	regnum = REGNO (op);
@@ -3635,3 +3635,143 @@ print_operand (FILE *file, rtx op, int letter)
   else
     output_addr_const (file, op);
 }
+
+static bool
+iq2000_rtx_costs (rtx x, int code, int outer_code ATTRIBUTE_UNUSED, int * total)
+{
+  enum machine_mode mode = GET_MODE (x);
+
+  switch (code)
+    {
+    case MEM:
+      {
+	int num_words = (GET_MODE_SIZE (mode) > UNITS_PER_WORD) ? 2 : 1;
+
+	if (simple_memory_operand (x, mode))
+	  return COSTS_N_INSNS (num_words);
+
+	* total = COSTS_N_INSNS (2 * num_words);
+	break;
+      }
+      
+    case FFS:
+      * total = COSTS_N_INSNS (6);
+      break;
+
+    case AND:
+    case IOR:
+    case XOR:
+    case NOT:
+      * total = COSTS_N_INSNS (mode == DImode ? 2 : 1);
+      break;
+
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      if (mode == DImode)
+	* total = COSTS_N_INSNS ((GET_CODE (XEXP (x, 1)) == CONST_INT) ? 4 : 12);
+      else
+	* total = COSTS_N_INSNS (1);
+    break;								
+
+    case ABS:
+      if (mode == SFmode || mode == DFmode)
+	* total = COSTS_N_INSNS (1);
+      else
+	* total = COSTS_N_INSNS (4);
+      break;
+    
+    case PLUS:
+    case MINUS:
+      if (mode == SFmode || mode == DFmode)
+	* total = COSTS_N_INSNS (6);
+      else if (mode == DImode)
+	* total = COSTS_N_INSNS (4);
+      else
+	* total = COSTS_N_INSNS (1);
+      break;
+    
+    case NEG:
+      * total = (mode == DImode) ? 4 : 1;
+      break;
+
+    case MULT:
+      if (mode == SFmode)
+	* total = COSTS_N_INSNS (7);
+      else if (mode == DFmode)
+	* total = COSTS_N_INSNS (8);
+      else
+	* total = COSTS_N_INSNS (10);
+      break;
+
+    case DIV:
+    case MOD:
+      if (mode == SFmode)
+	* total = COSTS_N_INSNS (23);
+      else if (mode == DFmode)
+	* total = COSTS_N_INSNS (36);
+      else
+	* total = COSTS_N_INSNS (69);
+      break;
+      
+    case UDIV:
+    case UMOD:
+      * total = COSTS_N_INSNS (69);
+      break;
+      
+    case SIGN_EXTEND:
+      * total = COSTS_N_INSNS (2);
+      break;
+    
+    case ZERO_EXTEND:
+      * total = COSTS_N_INSNS (1);
+      break;
+
+    case CONST_INT:
+      * total = 0;
+      break;
+    
+    case LABEL_REF:
+      * total = COSTS_N_INSNS (2);
+      break;
+
+    case CONST:
+      {
+	rtx offset = const0_rtx;
+	rtx symref = eliminate_constant_term (XEXP (x, 0), & offset);
+
+	if (GET_CODE (symref) == LABEL_REF)
+	  * total = COSTS_N_INSNS (2);
+	else if (GET_CODE (symref) != SYMBOL_REF)
+	  * total = COSTS_N_INSNS (4);
+	/* let's be paranoid....  */
+	else if (INTVAL (offset) < -32768 || INTVAL (offset) > 32767)
+	  * total = COSTS_N_INSNS (2);
+	else
+	  * total = COSTS_N_INSNS (SYMBOL_REF_FLAG (symref) ? 1 : 2);
+	break;
+      }
+
+    case SYMBOL_REF:
+      * total = COSTS_N_INSNS (SYMBOL_REF_FLAG (x) ? 1 : 2);
+      break;
+    
+    case CONST_DOUBLE:
+      {
+	rtx high, low;
+      
+	split_double (x, & high, & low);
+      
+	* total = COSTS_N_INSNS (  (high == CONST0_RTX (GET_MODE (high))
+				  || low == CONST0_RTX (GET_MODE (low)))
+				   ? 2 : 4);
+	break;
+      }
+    
+    default:
+      return false;
+    }
+  return true;
+}
+
+#include "gt-iq2000.h"

@@ -1,3 +1,12 @@
+2003-12-16  Stan Cox  <scox@redhat.com>
+
+	* config/iq2000/iq2000.h: Formatting.
+	(MAX_INT_TYPE_SIZE, MAX_INT_TYPE_SIZE, CONST_COSTS, RTX_COSTS)
+	(ADDRESS_COST, ASM_OUTPUT_INTERNAL_LABEL, ASM_OUTPUT_INTERNAL_LABEL)
+	(IMPLICIT_FIX_EXPR, EASY_DIV_EXPR, SLOW_ZERO_EXTEND): Remove
+	* config/iq2000/iq2000.c: Formatting.
+	(iq2000_rtx_costs): New.
+
 2003-12-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (addsi3_carryin_shift): Add missing register constraints.
