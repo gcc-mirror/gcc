@@ -206,7 +206,7 @@ reg_or_0_operand (op, mode)
 /* Return non-zero if OP is suitable for use in a call to a named
    function.
 
-   (???) For 2.5 try to eliminate either call_operand_address or
+   For 2.5 try to eliminate either call_operand_address or
    function_label_operand, they perform very similar functions.  */
 int
 call_operand_address (op, mode)
@@ -1278,7 +1278,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 
      use scratch_reg to hold the address of the memory location.
 
-     ??? The proper fix is to change PREFERRED_RELOAD_CLASS to return
+     The proper fix is to change PREFERRED_RELOAD_CLASS to return
      NO_REGS when presented with a const_int and an register class
      containing only FP registers.  Doing so unfortunately creates
      more problems than it solves.   Fix this for 2.5.  */
@@ -4489,7 +4489,7 @@ hppa_va_arg (valist, type)
       t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
 		 build_int_2 (-size, -1));
 
-      /* ??? Copied from va-pa.h, but we probably don't need to align
+      /* Copied from va-pa.h, but we probably don't need to align
 	 to word size, since we generate and preserve that invariant.  */
       t = build (BIT_AND_EXPR, TREE_TYPE (valist), t,
 		 build_int_2 ((size > 4 ? -8 : -4), -1));
