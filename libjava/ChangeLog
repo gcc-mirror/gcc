@@ -1,3 +1,11 @@
+2004-07-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* include/s390-signal.c (SIGNAL_HANDLER): Use SIGINFO-style prototype.
+	(struct old_s390_kernel_sigaction): Likewise for k_sa_handler.
+	(MAKE_THROW_FRAME): Do not modify PSW address.
+	(INIT_SEGV): Install SIGINFO-style signal handler.
+	(INIT_FPE): Likewise.
+
 2004-07-10  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* testsuite/libjava.jacks/jacks.xfail: Updates to reflect current
