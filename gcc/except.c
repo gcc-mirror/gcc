@@ -305,7 +305,6 @@ static void sjlj_build_landing_pads		PARAMS ((void));
 static hashval_t ehl_hash			PARAMS ((const PTR));
 static int ehl_eq				PARAMS ((const PTR,
 							 const PTR));
-static void ehl_free				PARAMS ((PTR));
 static void add_ehl_entry			PARAMS ((rtx,
 							 struct eh_region *));
 static void remove_exception_handler_label	PARAMS ((rtx));
@@ -1184,14 +1183,6 @@ add_ehl_entry (label, region)
     abort ();
 
   *slot = entry;
-}
-
-static void
-ehl_free (pentry)
-     PTR pentry;
-{
-  struct ehl_map_entry *entry = (struct ehl_map_entry *)pentry;
-  LABEL_PRESERVE_P (entry->label) = 0;
 }
 
 void
