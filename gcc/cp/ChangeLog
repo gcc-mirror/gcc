@@ -1,6 +1,19 @@
 2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport:
+	2004-03-08  Mark Mitchell  <mark@codesourcery.com>
+	PR c++/14401
+	* class.c (check_field_decls): Complain about non-static data
+	members of reference type in unions.  Propagate
+	CLASSTYPE_REF_FIELDS_NEED_INIT and
+	CLASSTYPE_READONLY_FIELDS_NEED_INIT from the types of non-static
+	data members.
+	* init.c (perform_member_init): Complain about members with const
+	type that are not explicitly initialized.
+
+2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Backport:
 	2004-03-09  Mark Mitchell  <mark@codesourcery.com>
         PR c++/14230
         * call.c (initialize_reference): Handle initializers that are
