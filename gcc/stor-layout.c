@@ -671,7 +671,8 @@ layout_type (type)
 
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
-      if (TREE_INT_CST_HIGH (TYPE_MIN_VALUE (type)) >= 0)
+      if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
+	  && tree_int_cst_sgn (TYPE_MIN_VALUE (type)) >= 0)
 	TREE_UNSIGNED (type) = 1;
 
       TYPE_MODE (type) = smallest_mode_for_size (TYPE_PRECISION (type),
