@@ -127,6 +127,11 @@ cplus_demangle_name_to_style PARAMS ((const char *name));
 extern char*
 cplus_demangle_v3 PARAMS ((const char* mangled));
 
+/* V3 ABI demangling entry points, defined in cp-demangle.c. Also
+   demagle types. */
+extern char*
+cplus_demangle_v3_type PARAMS ((const char* mangled));
+
 extern char*
 java_demangle_v3 PARAMS ((const char* mangled));
 
