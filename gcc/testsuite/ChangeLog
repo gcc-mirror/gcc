@@ -1,6 +1,10 @@
+Sun Apr 23 14:41:33 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/20000422-1.c: New test.
+
 Thu Apr 20 11:57:03 2000  Jeffrey A Law  (law@cygnus.com)
 
-        * gcc.dg/20000420-1.c: New test.
+        * gcc.c-torture/compile/20000420-1.c: New test.
 
 2000-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 
