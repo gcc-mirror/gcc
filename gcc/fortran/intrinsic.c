@@ -1307,7 +1307,7 @@ add_functions (void)
   /* The following function is for G77 compatibility.  */
   add_sym_1 ("irand", 0, 1, BT_INTEGER, 4,
              gfc_check_irand, NULL, NULL,
-             i, BT_INTEGER, 4, 0);
+             i, BT_INTEGER, 4, 1);
 
   make_generic ("irand", GFC_ISYM_IRAND);
 
@@ -1602,7 +1602,7 @@ add_functions (void)
   /* The following function is for G77 compatibility.  */
   add_sym_1 ("rand", 0, 1, BT_REAL, 4,
              gfc_check_rand, NULL, NULL,
-             i, BT_INTEGER, 4, 0);
+             i, BT_INTEGER, 4, 1);
 
   /* Compatibility with HP FORTRAN 77/iX Reference.  Note, rand() and 
      ran() use slightly different shoddy multiplicative congruential 

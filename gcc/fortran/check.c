@@ -2001,6 +2001,9 @@ gfc_check_system_clock (gfc_expr * count, gfc_expr * count_rate,
 try
 gfc_check_irand (gfc_expr * x)
 {
+  if (x == NULL)
+    return SUCCESS;
+
   if (scalar_check (x, 0) == FAILURE)
     return FAILURE;
 
@@ -2016,6 +2019,9 @@ gfc_check_irand (gfc_expr * x)
 try
 gfc_check_rand (gfc_expr * x)
 {
+  if (x == NULL)
+    return SUCCESS;
+
   if (scalar_check (x, 0) == FAILURE)
     return FAILURE;
 
