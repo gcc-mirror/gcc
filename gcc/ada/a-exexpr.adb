@@ -224,15 +224,16 @@ package body Exception_Propagation is
    procedure End_Handler (GCC_Exception : GNAT_GCC_Exception_Access);
    pragma Export (C, End_Handler, "__gnat_end_handler");
 
+   Setup_Key : constant := 16#DEAD#;
    --  To handle the case of a task "transferring" an exception occurrence to
    --  another task, for instance via Exceptional_Complete_Rendezvous, we need
    --  to be able to identify occurrences which have been Setup and not yet
    --  Propagated. We hijack one of the common header fields for that purpose,
    --  setting it to a special key value during the setup process, clearing it
    --  at the very beginning of the propagation phase, and expecting it never
-   --  to be reset to the special value later on.
-
-   Setup_Key : constant := 16#DEAD_BEEF#;
+   --  to be reset to the special value later on. A 16-bit value is used rather
+   --  than a 32-bit value for static compatibility with 16-bit targets such as
+   --  AAMP (where type Unwind_Word will be 16 bits).
 
    function Is_Setup_And_Not_Propagated (E : EOA) return Boolean;
 
