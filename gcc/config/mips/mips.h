@@ -364,13 +364,17 @@ extern char	       *mktemp ();
   {"debugh",		  MASK_DEBUG_H},				\
   {"debugi",		  MASK_DEBUG_I},				\
   {"debugj",		  MASK_DEBUG_J},				\
-  {"",			  TARGET_DEFAULT}				\
+  {"",			  TARGET_DEFAULT | TARGET_CPU_DEFAULT}		\
 }
 
 /* Default target_flags if no switches are specified  */
 
 #ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT 0
+#endif
+
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT 0
 #endif
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
