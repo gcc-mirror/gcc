@@ -1873,6 +1873,7 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       tree newupperbound, newlowerbound;
       lambda_linear_expression offset;
       tree type;
+      bool insert_after;
 
       oldiv = VEC_index (tree, old_ivs, i);
       type = TREE_TYPE (oldiv);
@@ -1915,14 +1916,12 @@ lambda_loopnest_to_gcc_loopnest (struct loop *old_loopnest,
       bsi = bsi_start (bb);
       bsi_insert_after (&bsi, stmts, BSI_NEW_STMT);
 
-      /* Create the new iv, and insert it's increment on the latch
-         block.  */
+      /* Create the new iv.  */
 
-      bb = EDGE_PRED (temp->latch, 0)->src;
-      bsi = bsi_last (bb);
+      standard_iv_increment_position (temp, &bsi, &insert_after);
       create_iv (newlowerbound,
 		 build_int_cst (type, LL_STEP (newloop)),
-		 ivvar, temp, &bsi, false, &ivvar,
+		 ivvar, temp, &bsi, insert_after, &ivvar,
 		 &ivvarinced);
 
       /* Replace the exit condition with the new upper bound
@@ -2297,6 +2296,7 @@ perfect_nestify (struct loops *loops,
   basic_block preheaderbb, headerbb, bodybb, latchbb, olddest;
   size_t i;
   block_stmt_iterator bsi;
+  bool insert_after;
   edge e;
   struct loop *newloop;
   tree phi;
@@ -2377,10 +2377,10 @@ perfect_nestify (struct loops *loops,
   /* Create the new iv.  */
   ivvar = create_tmp_var (integer_type_node, "perfectiv");
   add_referenced_tmp_var (ivvar);
-  bsi = bsi_last (EDGE_PRED (newloop->latch, 0)->src);
+  standard_iv_increment_position (newloop, &bsi, &insert_after);
   create_iv (VEC_index (tree, lbounds, 0),
 	     build_int_cst (integer_type_node, VEC_index (int, steps, 0)),
-	     ivvar, newloop, &bsi, false, &ivvar, &ivvarinced);	     
+	     ivvar, newloop, &bsi, insert_after, &ivvar, &ivvarinced);	     
 
   /* Create the new upper bound.  This may be not just a variable, so we copy
      it to one just in case.  */
@@ -2392,7 +2392,12 @@ perfect_nestify (struct loops *loops,
 		VEC_index (tree, ubounds, 0));
   uboundvar = make_ssa_name (uboundvar, stmt);
   TREE_OPERAND (stmt, 0) = uboundvar;
-  bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
+
+  if (insert_after)
+    bsi_insert_after (&bsi, stmt, BSI_SAME_STMT);
+  else
+    bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
+
   COND_EXPR_COND (exit_condition) = build (GE_EXPR, 
 					   boolean_type_node,
 					   uboundvar,
