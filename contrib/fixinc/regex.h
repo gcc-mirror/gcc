@@ -15,9 +15,10 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
 
-/* $Id: regex.h,v 1.1 1998/03/20 16:19:41 korbb Exp $ */
+/* $Id: regex.h,v 1.2 1999/01/11 13:25:48 law Exp $ */
 
 #ifndef __REGEXP_LIBRARY_H__
 #define __REGEXP_LIBRARY_H__
