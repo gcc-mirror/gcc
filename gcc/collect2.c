@@ -277,14 +277,14 @@ dup2 (oldfd, newfd)
   int fd;
  
   if (oldfd == newfd)
-    return 0;
+    return oldfd;
   close (newfd);
-  while ((fd = dup (oldfd)) != newfd) /* good enough for low fd's */
+  while ((fd = dup (oldfd)) != newfd && fd >= 0) /* good enough for low fd's */
     fdtmp[fdx++] = fd;
   while (fdx > 0)
     close (fdtmp[--fdx]);
 
-  return 0;
+  return fd;
 }
 #endif
 
