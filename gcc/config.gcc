@@ -1830,7 +1830,7 @@ mips-*-ecoff* | mipsel-*-ecoff*)
 mipsisa32-*-elf* | mipsisa32el-*-elf*)
 	tm_file="${tm_file} mips/elf.h"
 	tmake_file=mips/t-isa3264
-	tm_defines="MIPS_ISA_DEFAULT=32 MIPS_ABI_DEFAULT=ABI_MEABI"
+	tm_defines="MIPS_ISA_DEFAULT=32 MIPS_ABI_DEFAULT=ABI_EABI"
 	;;
 mipsisa64-*-elf* | mipsisa64el-*-elf*)
 	tm_file="${tm_file} mips/elf.h"
