@@ -1,3 +1,32 @@
+2004-10-29 Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (struct edge_info): New structure holding
+	edge equivalences and edge redirection information.
+	(get_eq_expr_value, record_dominating_conditions): Kill.
+	(propagate_to_outgoing_edges): Renamed from cprop_into_phis.
+	Call record_edge_info.
+	(allocate_edge_info, free_edge_info): New.
+	(tree_ssa_dominator_optimize): Use propagate_to_outgoing_edges
+	rather than cprop_into_phis.  Free all edge infos before threading
+	jumps.
+	(thread_across_edge): Allocate new edge info structures as needed
+	and store the redirection target into the edge info structure
+	instead of the edge's AUX field.
+	(dom_opt_initialize_block): Mark unused argument with ATTRIBUTE_UNUSED.
+	(record_equivalence_from_incoming_edge): Lose unnecessary argument.
+	Revamp code which finds and records equivalences associated with
+	edges to use saved data in the edge_info structure.
+	(record_equivalencs_from_phis): Similarly.
+	(dom_opt_finalize_block): Revamp code which finds and records
+	equivalences associated with edges to use saved data in the
+	edge_info structure.
+	(build_and_record_new_cond): New function.
+	(record_conditions): Use build_and_record_new_cond to record
+	dominating conditions.
+	(record_edge_info): New function.
+	(record_range): Tighten test for conditions which create
+	useful range records.
+
 2004-10-29  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/darwin-fallback.c: Include <mach/thread_status.h>.
