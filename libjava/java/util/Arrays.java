@@ -1,5 +1,5 @@
 /* Arrays.java -- Utility class with methods to operate on arrays
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -398,23 +398,18 @@ public class Arrays
     if (a1 == a2)
       return true;
 
-    try
+    if (null == a1 || null == a2)
+      return false;
+    
+    // If they're the same length, test each element
+    if (a1.length == a2.length)
       {
-        // If they're the same length, test each element
-        if (a1.length == a2.length)
-          {
-            int i = a1.length;
-            while (--i >= 0)
-              if (a1[i] != a2[i])
-                return false;
-            return true;
-          }
+	int i = a1.length;
+	while (--i >= 0)
+	  if (a1[i] != a2[i])
+	    return false;
+	return true;
       }
-    catch (NullPointerException e)
-      {
-        // If one is null, we get a harmless NullPointerException
-      }
-
     return false;
   }
 
@@ -433,21 +428,17 @@ public class Arrays
     if (a1 == a2)
       return true;
 
-    try
+    if (null == a1 || null == a2)
+      return false;
+
+    // If they're the same length, test each element
+    if (a1.length == a2.length)
       {
-        // If they're the same length, test each element
-        if (a1.length == a2.length)
-          {
-            int i = a1.length;
-            while (--i >= 0)
-              if (a1[i] != a2[i])
-                return false;
-            return true;
-          }
-      }
-    catch (NullPointerException e)
-      {
-        // If one is null, we get a harmless NullPointerException
+	int i = a1.length;
+	while (--i >= 0)
+	  if (a1[i] != a2[i])
+	    return false;
+	return true;
       }
     return false;
   }
@@ -467,21 +458,17 @@ public class Arrays
     if (a1 == a2)
       return true;
 
-    try
+    if (null == a1 || null == a2)
+      return false;
+    
+    // If they're the same length, test each element
+    if (a1.length == a2.length)
       {
-        // If they're the same length, test each element
-        if (a1.length == a2.length)
-          {
-            int i = a1.length;
-            while (--i >= 0)
-              if (a1[i] != a2[i])
-                return false;
-            return true;
-          }
-      }
-    catch (NullPointerException e)
-      {
-        // If one is null, we get a harmless NullPointerException
+	int i = a1.length;
+	while (--i >= 0)
+	  if (a1[i] != a2[i])
+	    return false;
+	return true;
       }
     return false;
   }
@@ -501,21 +488,17 @@ public class Arrays
     if (a1 == a2)
       return true;
 
-    try
+    if (null == a1 || null == a2)
+      return false;
+
+    // If they're the same length, test each element
+    if (a1.length == a2.length)
       {
-        // If they're the same length, test each element
-        if (a1.length == a2.length)
-          {
-            int i = a1.length;
-            while (--i >= 0)
-              if (a1[i] != a2[i])
-                return false;
-            return true;
-          }
-      }
-    catch (NullPointerException e)
-      {
-        // If one is null, we get a harmless NullPointerException
+	int i = a1.length;
+	while (--i >= 0)
+	  if (a1[i] != a2[i])
+	    return false;
+	return true;
       }
     return false;
   }
@@ -535,21 +518,17 @@ public class Arrays
     if (a1 == a2)
       return true;
 
-    try
+    if (null == a1 || null == a2)
+      return false;
+
+    // If they're the same length, test each element
+    if (a1.length == a2.length)
       {
-        // If they're the same length, test each element
-        if (a1.length == a2.length)
-          {
-            int i = a1.length;
-            while (--i >= 0)
-              if (a1[i] != a2[i])
-                return false;
-            return true;
-          }
-      }
-    catch (NullPointerException e)
-      {
-        // If one is null, we get a harmless NullPointerException
+	int i = a1.length;
+	while (--i >= 0)
+	  if (a1[i] != a2[i])
+	    return false;
+	return true;
       }
     return false;
   }
@@ -569,21 +548,17 @@ public class Arrays
     if (a1 == a2)
       return true;
 
-    try
+    if (null == a1 || null == a2)
+      return false;
+
+    // If they're the same length, test each element
+    if (a1.length == a2.length)
       {
-        // If they're the same length, test each element
-        if (a1.length == a2.length)
-          {
-            int i = a1.length;
-            while (--i >= 0)
-              if (a1[i] != a2[i])
-                return false;
-            return true;
-          }
-      }
-    catch (NullPointerException e)
-      {
-        // If one is null, we get a harmless NullPointerException
+	int i = a1.length;
+	while (--i >= 0)
+	  if (a1[i] != a2[i])
+	    return false;
+	return true;
       }
     return false;
   }
@@ -603,22 +578,18 @@ public class Arrays
     if (a1 == a2)
       return true;
 
+    if (null == a1 || null == a2)
+      return false;
+
     // Must use Float.compare to take into account NaN, +-0.
-    try
+    // If they're the same length, test each element
+    if (a1.length == a2.length)
       {
-        // If they're the same length, test each element
-        if (a1.length == a2.length)
-          {
-            int i = a1.length;
-            while (--i >= 0)
-              if (Float.compare(a1[i], a2[i]) != 0)
-                return false;
-            return true;
-          }
-      }
-    catch (NullPointerException e)
-      {
-        // If one is null, we get a harmless NullPointerException
+	int i = a1.length;
+	while (--i >= 0)
+	  if (Float.compare(a1[i], a2[i]) != 0)
+	    return false;
+	return true;
       }
     return false;
   }
@@ -638,22 +609,18 @@ public class Arrays
     if (a1 == a2)
       return true;
 
+    if (null == a1 || null == a2)
+      return false;
+    
     // Must use Double.compare to take into account NaN, +-0.
-    try
+    // If they're the same length, test each element
+    if (a1.length == a2.length)
       {
-        // If they're the same length, test each element
-        if (a1.length == a2.length)
-          {
-            int i = a1.length;
-            while (--i >= 0)
-              if (Double.compare(a1[i], a2[i]) != 0)
-                return false;
-            return true;
-          }
-      }
-    catch (NullPointerException e)
-      {
-        // If one is null, we get a harmless NullPointerException
+	int i = a1.length;
+	while (--i >= 0)
+	  if (Double.compare(a1[i], a2[i]) != 0)
+	    return false;
+	return true;
       }
     return false;
   }
@@ -674,21 +641,17 @@ public class Arrays
     if (a1 == a2)
       return true;
 
-    try
+    if (null == a1 || null == a2)
+      return false;
+    
+    // If they're the same length, test each element
+    if (a1.length == a2.length)
       {
-        // If they're the same length, test each element
-        if (a1.length == a2.length)
-          {
-            int i = a1.length;
-            while (--i >= 0)
-              if (! AbstractCollection.equals(a1[i], a2[i]))
-                return false;
-            return true;
-          }
-      }
-    catch (NullPointerException e)
-      {
-        // If one is null, we get a harmless NullPointerException
+	int i = a1.length;
+	while (--i >= 0)
+	  if (! AbstractCollection.equals(a1[i], a2[i]))
+	    return false;
+	return true;
       }
     return false;
   }
