@@ -1571,7 +1571,7 @@ extern void init_regs			PROTO ((void));
 extern void init_reg_sets		PROTO ((void));
 extern void regset_release_memory	PROTO ((void));
 extern void regclass_init		PROTO ((void));
-extern void regclass			PROTO ((rtx, int));
+extern void regclass			PROTO ((rtx, int, FILE *));
 extern void reg_scan			PROTO ((rtx, int, int));
 extern void reg_scan_update		PROTO ((rtx, rtx, int));
 extern void fix_register		PROTO ((const char *, int, int));

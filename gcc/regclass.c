@@ -696,6 +696,7 @@ static int loop_depth;
 static int loop_cost;
 
 static rtx scan_one_insn	PROTO((rtx, int));
+static void dump_regclass	PROTO((FILE *));
 static void record_reg_classes	PROTO((int, int, rtx *, enum machine_mode *,
 				       char *, const char **, rtx));
 static int copy_cost		PROTO((rtx, enum machine_mode, 
@@ -744,6 +745,28 @@ regclass_init ()
      before regclass is run.  */
   prefclass = 0;
 }
+
+/* Dump register costs.  */
+void
+dump_regclass (dump)
+     FILE *dump;
+{
+  static const char *const reg_class_names[] = REG_CLASS_NAMES;
+  int i;
+  for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+    {
+      enum reg_class class;
+      if (REG_N_REFS (i))
+	{
+	  fprintf (dump, ";; Register %i costs:", i);
+	  for (class = 0; class < N_REG_CLASSES; class++)
+	    fprintf (dump, " %s:%i", reg_class_names[(int) class],
+		     costs[i].cost[class]);
+	  fprintf (dump, " MEM:%i\n\n", costs[i].mem_cost);
+	}
+    }
+}
+
 
 /* Subroutine of regclass, processes one insn INSN.  Scan it and record each
    time it would save code to put a certain register in a certain class.
@@ -951,9 +974,10 @@ scan_one_insn (insn, pass)
    This pass comes just before local register allocation.  */
 
 void
-regclass (f, nregs)
+regclass (f, nregs, dump)
      rtx f;
      int nregs;
+     FILE *dump;
 {
   register rtx insn;
   register int i;
@@ -1109,6 +1133,8 @@ regclass (f, nregs)
 	}
     }
 
+  if (dump)
+    dump_regclass (dump);
 #ifdef FORBIDDEN_INC_DEC_CLASSES
   free (in_inc_dec);
 #endif

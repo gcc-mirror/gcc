@@ -4032,7 +4032,7 @@ rest_of_compilation (decl)
     {
       TIMEVAR (flow_time,
 	       {
-		 regclass (insns, max_reg_num ());
+		 regclass (insns, max_reg_num (), NULL);
 		 stupid_life_analysis (insns, max_reg_num (),
 				       rtl_dump_file);
 	       });
@@ -4146,6 +4146,9 @@ rest_of_compilation (decl)
      epilogue thus changing register elimination offsets.  */
   current_function_is_leaf = leaf_function_p ();
 
+  if (local_reg_dump)
+    open_dump_file (".12.lreg", decl_printable_name (decl, 2));
+
   /* Unless we did stupid register allocation,
      allocate pseudo-regs that are used only within 1 basic block. 
 
@@ -4159,7 +4162,7 @@ rest_of_compilation (decl)
 		  of life info during sched.  */
 	       if (! flag_schedule_insns)
 		 recompute_reg_usage (insns, ! optimize_size);
-	       regclass (insns, max_reg_num ());
+	       regclass (insns, max_reg_num (), rtl_dump_file);
 	       rebuild_label_notes_after_reload = local_alloc ();
 	     });
   else
@@ -4169,8 +4172,6 @@ rest_of_compilation (decl)
 
   if (local_reg_dump)
     {
-      open_dump_file (".12.lreg", decl_printable_name (decl, 2));
-
       TIMEVAR (dump_time, dump_flow_info (rtl_dump_file));
       TIMEVAR (dump_time, dump_local_alloc (rtl_dump_file));
 
