@@ -78,6 +78,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "rtl.h"
 #include "flags.h"
 #include "regs.h"
+#include "hard-reg-set.h"
 #include "expr.h"
 #include "basic-block.h"
 #include "insn-config.h"
@@ -262,7 +263,7 @@ static short label_tick;
 
    If an entry is zero, it means that we don't know anything special.  */
 
-static HOST_WIDE_INT *reg_nonzero_bits;
+static unsigned HOST_WIDE_INT *reg_nonzero_bits;
 
 /* Mode used to compute significance in reg_nonzero_bits.  It is the largest
    integer mode that can fit in HOST_BITS_PER_WIDE_INT.  */
@@ -280,6 +281,15 @@ static char *reg_sign_bit_copies;
    which can be incorrect if a variable is modified in a loop.  */
 
 static int nonzero_sign_valid;
+
+/* These arrays are maintained in parallel with reg_last_set_value
+   and are used to store the mode in which the register was last set,
+   the bits that were known to be zero when it was last set, and the
+   number of sign bits copies it was known to have when it was last set.  */
+
+static enum machine_mode *reg_last_set_mode;
+static unsigned HOST_WIDE_INT *reg_last_set_nonzero_bits;
+static char *reg_last_set_sign_bit_copies;
 
 /* Record one modification to rtl structure
    to be undone by storing old_contents into *where.
@@ -417,7 +427,15 @@ combine_instructions (f, nregs)
   reg_last_set_table_tick = (short *) alloca (nregs * sizeof (short));
   reg_last_set_label = (short *) alloca (nregs * sizeof (short));
   reg_last_set_invalid = (char *) alloca (nregs * sizeof (char));
-  reg_nonzero_bits = (HOST_WIDE_INT *) alloca (nregs * sizeof (HOST_WIDE_INT));
+  reg_last_set_mode
+    = (enum machine_mode *) alloca (nregs * sizeof (enum machine_mode));
+  reg_last_set_nonzero_bits
+    = (unsigned HOST_WIDE_INT *) alloca (nregs * sizeof (HOST_WIDE_INT));
+  reg_last_set_sign_bit_copies
+    = (char *) alloca (nregs * sizeof (char));
+
+  reg_nonzero_bits
+    = (unsigned HOST_WIDE_INT *) alloca (nregs * sizeof (HOST_WIDE_INT));
   reg_sign_bit_copies = (char *) alloca (nregs * sizeof (char));
 
   bzero (reg_last_death, nregs * sizeof (rtx));
@@ -426,6 +444,9 @@ combine_instructions (f, nregs)
   bzero (reg_last_set_table_tick, nregs * sizeof (short));
   bzero (reg_last_set_label, nregs * sizeof (short));
   bzero (reg_last_set_invalid, nregs * sizeof (char));
+  bzero (reg_last_set_mode, nregs * sizeof (enum machine_mode));
+  bzero (reg_last_set_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
+  bzero (reg_last_set_sign_bit_copies, nregs * sizeof (char));
   bzero (reg_nonzero_bits, nregs * sizeof (HOST_WIDE_INT));
   bzero (reg_sign_bit_copies, nregs * sizeof (char));
 
@@ -6144,9 +6165,17 @@ nonzero_bits (x, mode)
 	}
 #endif
 
-      /* If X is a register whose value we can find, use that value.  
-	 Otherwise, use the previously-computed nonzero bits for this
-	 register.  */
+      /* If X is a register whose nonzero bits value is current, use it.
+	 Otherwise, if X is a register whose value we can find, use that
+	 value.  Otherwise, use the previously-computed global nonzero bits
+	 for this register.  */
+
+      if (reg_last_set_value[REGNO (x)] != 0
+	  && reg_last_set_mode[REGNO (x)] == mode
+	  && (reg_n_sets[REGNO (x)] == 1
+	      || reg_last_set_label[REGNO (x)] == label_tick)
+	  && INSN_CUID (reg_last_set[REGNO (x)]) < subst_low_cuid)
+	return reg_last_set_nonzero_bits[REGNO (x)];
 
       tem = get_last_value (x);
       if (tem)
@@ -6425,12 +6454,20 @@ num_sign_bit_copies (x, mode)
   switch (code)
     {
     case REG:
-      if (nonzero_sign_valid && reg_sign_bit_copies[REGNO (x)] != 0)
-	return reg_sign_bit_copies[REGNO (x)];
+
+      if (reg_last_set_value[REGNO (x)] != 0
+	  && reg_last_set_mode[REGNO (x)] == mode
+	  && (reg_n_sets[REGNO (x)] == 1
+	      || reg_last_set_label[REGNO (x)] == label_tick)
+	  && INSN_CUID (reg_last_set[REGNO (x)]) < subst_low_cuid)
+	return reg_last_set_sign_bit_copies[REGNO (x)];
 
       tem =  get_last_value (x);
       if (tem != 0)
 	return num_sign_bit_copies (tem, mode);
+
+      if (nonzero_sign_valid && reg_sign_bit_copies[REGNO (x)] != 0)
+	return reg_sign_bit_copies[REGNO (x)];
       break;
 
 #ifdef BYTE_LOADS_SIGN_EXTEND
@@ -8856,9 +8893,18 @@ record_value_for_reg (reg, insn, value)
 	value = 0;
     }
 
-  /* For the main register being modified, update the value.  */
+  /* For the main register being modified, update the value, the mode, the
+     nonzero bits, and the number of sign bit copies.  */
+
   reg_last_set_value[regno] = value;
 
+  if (value)
+    {
+      reg_last_set_mode[regno] = GET_MODE (reg);
+      reg_last_set_nonzero_bits[regno] = nonzero_bits (value, GET_MODE (reg));
+      reg_last_set_sign_bit_copies[regno]
+	= num_sign_bit_copies (value, GET_MODE (reg));
+    }
 }
 
 /* Used for communication between the following two routines.  */
@@ -8907,6 +8953,8 @@ record_dead_and_set_regs (insn)
      rtx insn;
 {
   register rtx link;
+  int i;
+
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     {
       if (REG_NOTE_KIND (link) == REG_DEAD
@@ -8917,7 +8965,6 @@ record_dead_and_set_regs (insn)
 	    = regno + (regno < FIRST_PSEUDO_REGISTER
 		       ? HARD_REGNO_NREGS (regno, GET_MODE (XEXP (link, 0)))
 		       : 1);
-	  int i;
 
 	  for (i = regno; i < endregno; i++)
 	    reg_last_death[i] = insn;
@@ -8927,7 +8974,16 @@ record_dead_and_set_regs (insn)
     }
 
   if (GET_CODE (insn) == CALL_INSN)
-    last_call_cuid = mem_last_set = INSN_CUID (insn);
+    {
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (call_used_regs[i])
+	  {
+	    reg_last_set_value[i] = 0;
+	    reg_last_death[i] = 0;
+	  }
+
+      last_call_cuid = mem_last_set = INSN_CUID (insn);
+    }
 
   record_dead_insn = insn;
   note_stores (PATTERN (insn), record_dead_and_set_regs_1);
@@ -9018,7 +9074,7 @@ get_last_value (x)
 
   if (value == 0
       || (reg_n_sets[regno] != 1
-	  && (reg_last_set_label[regno] != label_tick)))
+	  && reg_last_set_label[regno] != label_tick))
     return 0;
 
   /* If the value was set in a later insn that the ones we are processing,
