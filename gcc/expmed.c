@@ -3284,7 +3284,16 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		      goto fail1;
 		  }
 		else if (EXACT_POWER_OF_2_OR_ZERO_P (d)
-			 && (rem_flag ? smod_pow2_cheap : sdiv_pow2_cheap))
+			 && (rem_flag ? smod_pow2_cheap : sdiv_pow2_cheap)
+			 /* ??? The cheap metric is computed only for
+			    word_mode.  If this operation is wider, this may
+			    not be so.  Assume true if the optab has an
+			    expander for this mode.  */
+			 && (((rem_flag ? smod_optab : sdiv_optab)
+			      ->handlers[(int) compute_mode].insn_code
+			      != CODE_FOR_nothing)
+			     || (sdivmod_optab->handlers[(int) compute_mode]
+				 .insn_code != CODE_FOR_nothing)))
 		  ;
 		else if (EXACT_POWER_OF_2_OR_ZERO_P (abs_d))
 		  {

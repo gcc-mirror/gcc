@@ -1,3 +1,8 @@
+2001-12-11  Richard Henderson  <rth@redhat.com>
+
+	* expmed.c (expand_divmod): Ignore sdiv_pow2_cheap for modes in
+	which there is no divide expander.
+
 2002-01-21  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/t-ppccomm (CRTSTUFF_T_CFLAGS_S): Re-add -fPIC.
