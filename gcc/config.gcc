@@ -417,7 +417,7 @@ case $machine in
 	fi
 	;;
 *-*-netbsd*)
-	tmake_file="t-slibgcc-elf-ver t-libc-ok t-netbsd"
+	tmake_file="t-slibgcc-elf-ver t-libc-ok t-netbsd t-libgcc-pic"
 	gas=yes
 	gnu_ld=yes
 
