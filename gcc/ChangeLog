@@ -407,7 +407,6 @@
 	them static.
 	* expr.h: Remove the corresponding prototypes.
 
->>>>>>> 2.6266
 2004-11-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_handle_notshared_attribute): Wrap declaration and use
