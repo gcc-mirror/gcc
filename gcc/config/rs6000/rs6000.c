@@ -2621,8 +2621,8 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	       || ((TARGET_HARD_FLOAT && TARGET_FPRS) && mode == DFmode)))
     {
       rtx reg = gen_reg_rtx (Pmode);
-      emit_insn (gen_elf_high (reg, (x)));
-      return gen_rtx_LO_SUM (Pmode, reg, (x));
+      emit_insn (gen_elf_high (reg, x));
+      return gen_rtx_LO_SUM (Pmode, reg, x);
     }
   else if (TARGET_MACHO && TARGET_32BIT && TARGET_NO_TOC
 	   && ! flag_pic
@@ -2637,8 +2637,8 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	   && mode != TImode)
     {
       rtx reg = gen_reg_rtx (Pmode);
-      emit_insn (gen_macho_high (reg, (x)));
-      return gen_rtx_LO_SUM (Pmode, reg, (x));
+      emit_insn (gen_macho_high (reg, x));
+      return gen_rtx_LO_SUM (Pmode, reg, x);
     }
   else if (TARGET_TOC 
 	   && constant_pool_expr_p (x)
