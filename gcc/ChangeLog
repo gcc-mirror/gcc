@@ -1,3 +1,7 @@
+2004-12-05  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* mklibgcc.in (vis_hide): Add the prototype for the test.
+
 2004-12-05  Roger Sayle  <roger@eyesopen.com>
 
 	* c-typeck.c (c_finish_loop): Improve initial implementations
