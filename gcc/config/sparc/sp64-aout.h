@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARC64, a.out.
-   Copyright (C) 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1996, 1997, 1998  Free Software Foundation, Inc.
    Contributed by Doug Evans, dje@cygnus.com.
 
 This file is part of GNU CC.
@@ -28,8 +28,11 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
   (MASK_V9 + MASK_PTR64 + MASK_64BIT + MASK_HARD_QUAD \
-   + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU)
+   + MASK_APP_REGS + MASK_EPILOGUE + MASK_FPU + MASK_STACK_BIAS)
 
 /* The only code model supported is Medium/Low.  */
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_MEDLOW
+
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-Dsparc -Acpu(sparc) -Amachine(sparc)"

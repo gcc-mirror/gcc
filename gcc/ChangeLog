@@ -1,3 +1,41 @@
+Sun May  3 13:51:34 PDT 1998  Richard Henerson  <rth@cygnus.com>
+
+	Support for official Sparc V9 ABI:
+	* sparc.c (sparc_override_options): Force stack bias off for !arch64.
+	Care for flag_pcc_struct_return default.
+	(output_move_quad): Rewrite to move by halves on v9 and in the
+	proper direction.
+	(move_quad_direction): New function.
+	(output_fp_move_quad): Use it to determine the direction of copy.
+	(function_arg_slotno): Return -1 for FP reg overflow as well.
+	(function_arg_record_value*): New functions.
+	(function_arg): Use them.  Streamline unprototyped parameter passing.
+	(function_arg_pass_by_reference): Pass TCmode by reference.
+	(function_value): New function.
+	* sparc.h (PTRDIFF_TYPE, SIZE_TYPE): For -pedantic's sake, don't use
+	long long in 64-bit mode.
+	(RETURN_IN_MEMORY): v9 returns structs < 32-bytes in regs.
+	(DEFAULT_PCC_STRUCT_RETURN): Make the default detectable.
+	(BASE_RETURN_VALUE_REG): Consider complex float types for arch64.
+	(BASE_OUTGOING_VALUE_REG, BASE_PASSING_ARG_REG): Likewise.
+	(BASE_INCOMING_ARG_REG): Likewise.
+	(FUNCTION_VALUE): Call function_value.
+	(FUNCTION_OUTGOING_VALUE, LIBCALL_VALUE): Likewise.
+	* sparc.md (movdi_sp32_v9): Disable for arch64.
+	(movsf, movdf, movtf): Sort all ulternatives using fp regs first.
+	(call_value_address_sp64): Remove register class constraints.
+	(call_value_symbolic_sp64): Likewise.
+	(nonlocal_goto): Pass label reg directly to goto_handlers.  Constrain
+	v9 case to 32-bit constants.
+	(goto_handler_and_restore_v9): Provide a version for arch64.
+	* sparc/linux64.h (SIZE_TYPE, PTRDIFF_TYPE): Remove private definition.
+	* sparc/sp64-aout.h (TARGET_DEFAULT): Turn on stack bias.
+	(CPP_PREDEFINES): New.
+	* sparc/sp64-elf.h: Likewise.
+	(PREFERRED_DEBUGGING_TYPE): Dwarf2.
+	(ASM_OUTPUT_DWARF2_ADDR_CONST): New.
+	* sparc/sysv4.h (SIZE_TYPE, PTRDIFF_TYPE): Undo svr4.h's changes.
+
 Sat May 2 17:47:17 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

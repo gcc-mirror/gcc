@@ -2202,7 +2202,7 @@
 (define_insn "*movdi_sp32_v9"
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand" "=r,T,Q,r,r,?e,?e,?Q,?b")
 	(match_operand:DI 1 "general_operand" "r,J,r,Q,i,e,Q,e,J"))]
-  "TARGET_V9
+  "TARGET_V9 && ! TARGET_ARCH64
    && (register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode)
        || operands[1] == const0_rtx)
@@ -2297,7 +2297,7 @@
     case 3:
       return \"stx %r1,%0\";
     case 4:
-      return \"mov %1,%0\";
+      return \"fmovd %1,%0\";
     case 5:
       return \"ldd %1,%0\";
     case 6:
@@ -2367,8 +2367,8 @@
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general movsf pattern.
 (define_insn "*movsf_const_insn"
-  [(set (match_operand:SF 0 "general_operand" "=?r,f,m,d")
-	(match_operand:SF 1 "" "?F,m,G,G"))]
+  [(set (match_operand:SF 0 "general_operand" "=f,d,m,?r")
+	(match_operand:SF 1 "" "m,G,G,?F"))]
   "TARGET_FPU
    && GET_CODE (operands[1]) == CONST_DOUBLE
    && (GET_CODE (operands[0]) == REG
@@ -2378,19 +2378,19 @@
   switch (which_alternative)
     {
     case 0:
-      return singlemove_string (operands);
-    case 1:
       return \"ld %1,%0\";
+    case 1:
+      return \"fzeros %0\";
     case 2:
       return \"st %%g0,%0\";
     case 3:
-      return \"fzeros %0\";
+      return singlemove_string (operands);
     default:
       abort ();
     }
 }"
-  [(set_attr "type" "load,fpload,store,fpmove")
-   (set_attr "length" "2,1,1,1")])
+  [(set_attr "type" "fpload,fpmove,store,load")
+   (set_attr "length" "1,1,1,2")])
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "general_operand" "")
@@ -2403,19 +2403,19 @@
 }")
 
 (define_insn "*movsf_insn"
-  [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand" "=f,r,f,r,Q,Q")
-	(match_operand:SF 1 "reg_or_nonsymb_mem_operand" "f,r,Q,Q,f,r"))]
+  [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand" "=f,f,Q,r,r,Q")
+	(match_operand:SF 1 "reg_or_nonsymb_mem_operand"  "f,Q,f,r,Q,r"))]
   "TARGET_FPU
    && (register_operand (operands[0], SFmode)
        || register_operand (operands[1], SFmode))"
   "@
    fmovs %1,%0
-   mov %1,%0
-   ld %1,%0
    ld %1,%0
    st %1,%0
+   mov %1,%0
+   ld %1,%0
    st %1,%0"
-  [(set_attr "type" "fpmove,move,fpload,load,fpstore,store")])
+  [(set_attr "type" "fpmove,fpload,fpstore,move,load,store")])
 
 ;; Exactly the same as above, except that all `f' cases are deleted.
 ;; This is necessary to prevent reload from ever trying to use a `f' reg
@@ -2492,8 +2492,8 @@
 }")
 
 (define_insn "*movdf_insn"
-  [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand" "=T,U,e,r,Q,Q,e,r")
-	(match_operand:DF 1 "reg_or_nonsymb_mem_operand" "U,T,e,r,e,r,Q,Q"))]
+  [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand" "=e,Q,e,T,U,r,Q,r")
+	(match_operand:DF 1 "reg_or_nonsymb_mem_operand"  "e,e,Q,U,T,r,r,Q"))]
   "TARGET_FPU
    && (register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
@@ -2512,7 +2512,7 @@
 
 (define_insn "*movdf_no_e_insn"
   [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand" "=T,U,r,Q,&r")
-	(match_operand:DF 1 "reg_or_nonsymb_mem_operand" "U,T,r,r,Q"))]
+	(match_operand:DF 1 "reg_or_nonsymb_mem_operand"  "U,T,r,r,Q"))]
   "! TARGET_FPU
    && (register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
@@ -2619,8 +2619,8 @@
 }")
 
 (define_insn "*movtf_insn"
-  [(set (match_operand:TF 0 "reg_or_nonsymb_mem_operand" "=e,r,Q,Q,e,&r")
-	(match_operand:TF 1 "reg_or_nonsymb_mem_operand" "e,r,e,r,Q,Q"))]
+  [(set (match_operand:TF 0 "reg_or_nonsymb_mem_operand" "=e,Q,e,r,Q,r")
+	(match_operand:TF 1 "reg_or_nonsymb_mem_operand"  "e,e,Q,r,r,Q"))]
   "TARGET_FPU
    && (register_operand (operands[0], TFmode)
        || register_operand (operands[1], TFmode))"
@@ -5517,7 +5517,8 @@ if (! TARGET_ARCH64)
   ""
   "*
 {
-  /* Some implementations are reported to have problems with
+  /* Some implementations (e.g. TurboSparc) are reported to have problems
+     with
 	foo: b,a foo
      i.e. an empty loop with the annul bit set.  The workaround is to use 
         foo: b foo; nop
@@ -5824,7 +5825,7 @@ if (! TARGET_ARCH64)
   [(set_attr "type" "call")])
 
 (define_insn "*call_value_address_sp64"
-  [(set (match_operand 0 "" "=rf")
+  [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand:DI 1 "address_operand" "p"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 15))]
@@ -5834,7 +5835,7 @@ if (! TARGET_ARCH64)
   [(set_attr "type" "call")])
 
 (define_insn "*call_value_symbolic_sp64"
-  [(set (match_operand 0 "" "=rf")
+  [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand:DI 1 "symbolic_operand" "s"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 15))]
@@ -5982,6 +5983,7 @@ if (! TARGET_ARCH64)
   rtx fp = operands[1];
   rtx stack = operands[2];
   rtx lab = operands[3];
+  rtx labreg;
 
   /* Trap instruction to flush all the register windows.  */
   emit_insn (gen_flush_register_windows ());
@@ -5995,7 +5997,8 @@ if (! TARGET_ARCH64)
 
   /* Find the containing function's current nonlocal goto handler,
      which will do any cleanups and then jump to the label.  */
-  emit_move_insn (gen_rtx (REG, Pmode, 8), lab);
+  labreg = gen_rtx (REG, Pmode, 8);
+  emit_move_insn (labreg, lab);
 
   /* Restore %fp from stack pointer value for containing function.
      The restore insn that follows will move this to %sp,
@@ -6007,16 +6010,18 @@ if (! TARGET_ARCH64)
   /*emit_insn (gen_rtx (USE, VOIDmode, frame_pointer_rtx));*/
   emit_insn (gen_rtx (USE, VOIDmode, stack_pointer_rtx));
   /* Return, restoring reg window and jumping to goto handler.  */
-  if (TARGET_V9 && GET_CODE (chain) == CONST_INT)
+  if (TARGET_V9 && GET_CODE (chain) == CONST_INT
+      && ! (INTVAL (chain) & ~(HOST_WIDE_INT)0xffffffff))
     {
-      emit_insn (gen_goto_handler_and_restore_v9 (static_chain_rtx, chain));
+      emit_insn (gen_goto_handler_and_restore_v9 (labreg, static_chain_rtx,
+						  chain));
       emit_barrier ();
       DONE;
     }
   /* Put in the static chain register the nonlocal label address.  */
   emit_move_insn (static_chain_rtx, chain);
   emit_insn (gen_rtx (USE, VOIDmode, static_chain_rtx));
-  emit_insn (gen_goto_handler_and_restore ());
+  emit_insn (gen_goto_handler_and_restore (labreg));
   emit_barrier ();
   DONE;
 }")
@@ -6029,20 +6034,31 @@ if (! TARGET_ARCH64)
   [(set_attr "type" "misc")])
 
 (define_insn "goto_handler_and_restore"
-  [(unspec_volatile [(reg:SI 8)] 2)]
-  "! TARGET_V9"
-  "jmp %%o0+0\;restore"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "=r")] 2)]
+  ""
+  "jmp %0+0\;restore"
   [(set_attr "type" "misc")
    (set_attr "length" "2")])
 
 (define_insn "goto_handler_and_restore_v9"
-  [(unspec_volatile [(reg:SI 8)
-		     (match_operand:SI 0 "register_operand" "=r,r")
-		     (match_operand:SI 1 "const_int_operand" "I,n")] 3)]
-  "TARGET_V9"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "=r,r")
+		     (match_operand:SI 1 "register_operand" "=r,r")
+		     (match_operand:SI 2 "const_int_operand" "I,n")] 3)]
+  "TARGET_V9 && ! TARGET_ARCH64"
   "@
-   return %%o0+0\;mov %1,%Y0
-   sethi %%hi(%1),%0\;return %%o0+0\;or %Y0,%%lo(%1),%Y0"
+   return %0+0\;mov %2,%Y1
+   sethi %%hi(%2),%1\;return %0+0\;or %Y1,%%lo(%2),%Y1"
+  [(set_attr "type" "misc")
+   (set_attr "length" "2,3")])
+
+(define_insn "*goto_handler_and_restore_v9_sp64"
+  [(unspec_volatile [(match_operand:DI 0 "register_operand" "=r,r")
+		     (match_operand:DI 1 "register_operand" "=r,r")
+		     (match_operand:SI 2 "const_int_operand" "I,n")] 3)]
+  "TARGET_V9 && TARGET_ARCH64"
+  "@
+   return %0+0\;mov %2,%Y1
+   sethi %%hi(%2),%1\;return %0+0\;or %Y1,%%lo(%2),%Y1"
   [(set_attr "type" "misc")
    (set_attr "length" "2,3")])
 
