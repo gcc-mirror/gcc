@@ -4174,6 +4174,18 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	}
     }
 
+  /* Compute reload_mode and reload_nregs.  */
+  for (i = 0; i < n_reloads; i++)
+    {
+      rld[i].mode
+	= (rld[i].inmode == VOIDmode
+	   || (GET_MODE_SIZE (rld[i].outmode)
+	       > GET_MODE_SIZE (rld[i].inmode)))
+	  ? rld[i].outmode : rld[i].inmode;
+
+      rld[i].nregs = CLASS_MAX_NREGS (rld[i].class, rld[i].mode);
+    }
+
   return retval;
 }
 

@@ -1,3 +1,16 @@
+Tue Oct 26 15:42:56 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* reload.c (find_reloads): Compute mode and nregs fields of all
+	reloads.
+	* reload1.c (calculate_needs_all_insns): Simplify a bit.
+	(calculate_needs): Use precomputed mode/nregs values.
+	(allocate_reload_reg): Likewise.
+	Break out two...
+	(failed_reload, set_reload_reg): ... new functions.
+	(choose_reload_regs_init): New function, mostly broken out from...
+	(choose_reload_regs): ... here.  Lose all the save_xxx nonsense.
+	Also lose one #if 0 block.
+
 Tue Oct 26 02:48:32 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* Makefile.in (AR_FOR_TARGET, RANLIB_FOR_TARGET):  Fix target name 
