@@ -2250,7 +2250,9 @@ LFLGRET"ID":\n\
 
 #define LEGITIMATE_CONSTANT_P(X) 					\
   (GET_CODE (X) != CONST_DOUBLE || GET_MODE (X) == VOIDmode || 		\
-   (TARGET_VIS && (GET_MODE (X) == SFmode || GET_MODE (X) == DFmode) &&	\
+   (TARGET_VIS &&							\
+    (GET_MODE (X) == SFmode || GET_MODE (X) == DFmode ||		\
+     GET_MODE (X) == TFmode) &&						\
     fp_zero_operand (X)))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
