@@ -1366,6 +1366,14 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
      rtx op1;
      rtx temp1;
 {
+  rtx ti_temp1 = 0;
+
+  if (temp1 && GET_MODE (temp1) == TImode)
+    {
+      ti_temp1 = temp1;
+      temp1 = gen_rtx_REG (DImode, REGNO (temp1));
+    }
+
   switch (sparc_cmodel)
     {
     case CM_MEDLOW:
@@ -1419,12 +1427,16 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
 	 sllx	%temp3, 32, %temp5
 	 or	%temp4, %temp5, %reg  */
 
-      /* Getting this right wrt. reloading is really tricky.
-	 We _MUST_ have a separate temporary at this point,
-	 if we don't barf immediately instead of generating
-	 incorrect code.  */
+      /* It is possible that one of the registers we got for operands[2]
+	 might coincide with that of operands[0] (which is why we made
+	 it TImode).  Pick the other one to use as our scratch.  */
       if (rtx_equal_p (temp1, op0))
-	abort ();
+	{
+	  if (ti_temp1)
+	    temp1 = gen_rtx_REG (DImode, REGNO (temp1) + 1);
+	  else
+	    abort();
+	}
 
       emit_insn (gen_sethh (op0, op1));
       emit_insn (gen_setlm (temp1, op1));
@@ -1462,12 +1474,16 @@ sparc_emit_set_symbolic_const64 (op0, op1, temp1)
 	}
       else
 	{
-	  /* Getting this right wrt. reloading is really tricky.
-	     We _MUST_ have a separate temporary at this point,
-	     so we barf immediately instead of generating
-	     incorrect code.  */
-	  if (temp1 == op0)
-	    abort ();
+	  /* It is possible that one of the registers we got for operands[2]
+	     might coincide with that of operands[0] (which is why we made
+	     it TImode).  Pick the other one to use as our scratch.  */
+	  if (rtx_equal_p (temp1, op0))
+	    {
+	      if (ti_temp1)
+		temp1 = gen_rtx_REG (DImode, REGNO (temp1) + 1);
+	      else
+		abort();
+	    }
 
 	  emit_insn (gen_embmedany_textuhi (op0, op1));
 	  emit_insn (gen_embmedany_texthi  (temp1, op1));
