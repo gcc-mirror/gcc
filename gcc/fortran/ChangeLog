@@ -67,8 +67,8 @@
 	create_common.
 	(named_common): take 'gfc_symtree' instead of 'gfc_symbol'.
 	(gfc_trans_common): Adapt to new data structures.
-	* trans-decl.c (gfc_create_module_variables): Also output
-	symbols from commons.
+	* trans-decl.c (gfc_create_module_variables): Remove test for 
+	removed attribute.
 
 2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
