@@ -13619,7 +13619,7 @@ cp_parser_resolve_typename_type (parser, type)
 		      20010702);
 
   scope = TYPE_CONTEXT (type);
-  name = DECL_NAME (TYPE_NAME (type));
+  name = TYPE_IDENTIFIER (type);
 
   /* If the SCOPE is itself a TYPENAME_TYPE, then we need to resolve
      it first before we can figure out what NAME refers to.  */
@@ -13627,7 +13627,7 @@ cp_parser_resolve_typename_type (parser, type)
     scope = cp_parser_resolve_typename_type (parser, scope);
   /* If we don't know what SCOPE refers to, then we cannot resolve the
      TYPENAME_TYPE.  */
-  if (scope == error_mark_node)
+  if (scope == error_mark_node || TREE_CODE (scope) == TYPENAME_TYPE)
     return error_mark_node;
   /* If the SCOPE is a template type parameter, we have no way of
      resolving the name.  */
@@ -14001,39 +14001,31 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 	  && cp_lexer_next_token_is_not (parser->lexer, CPP_ELLIPSIS)
 	  && !cp_parser_storage_class_specifier_opt (parser))
 	{
-	  if (current_class_type 
-	      && !same_type_p (current_class_type, TREE_TYPE (type_decl)))
-	    /* The constructor for one class cannot be declared inside
-	       another.  */
-	    constructor_p = false;
+	  tree type;
+
+	  /* Names appearing in the type-specifier should be looked up
+	     in the scope of the class.  */
+	  if (current_class_type)
+	    type = NULL_TREE;
 	  else
 	    {
-	      tree type;
-
-	      /* Names appearing in the type-specifier should be looked up
-		 in the scope of the class.  */
-	      if (current_class_type)
-		type = NULL_TREE;
-	      else
-		{
-		  type = TREE_TYPE (type_decl);
-		  if (TREE_CODE (type) == TYPENAME_TYPE)
-		    type = cp_parser_resolve_typename_type (parser, type);
-		  push_scope (type);
-		}
-	      /* Look for the type-specifier.  */
-	      cp_parser_type_specifier (parser,
-					CP_PARSER_FLAGS_NONE,
-					/*is_friend=*/false,
-					/*is_declarator=*/true,
-					/*declares_class_or_enum=*/NULL,
-					/*is_cv_qualifier=*/NULL);
-	      /* Leave the scope of the class.  */
-	      if (type)
-		pop_scope (type);
-
-	      constructor_p = !cp_parser_error_occurred (parser);
+	      type = TREE_TYPE (type_decl);
+	      if (TREE_CODE (type) == TYPENAME_TYPE)
+		type = cp_parser_resolve_typename_type (parser, type);
+	      push_scope (type);
 	    }
+	  /* Look for the type-specifier.  */
+	  cp_parser_type_specifier (parser,
+				    CP_PARSER_FLAGS_NONE,
+				    /*is_friend=*/false,
+				    /*is_declarator=*/true,
+				    /*declares_class_or_enum=*/NULL,
+				    /*is_cv_qualifier=*/NULL);
+	  /* Leave the scope of the class.  */
+	  if (type)
+	    pop_scope (type);
+
+	  constructor_p = !cp_parser_error_occurred (parser);
 	}
     }
   else

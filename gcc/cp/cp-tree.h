@@ -373,16 +373,16 @@ struct tree_overload GTY(())
   (TREE_CODE (NODE) == BASELINK)
 /* The BINFO indicating the base from which the BASELINK_FUNCTIONS came.  */
 #define BASELINK_BINFO(NODE) \
-  (TREE_OPERAND (BASELINK_CHECK (NODE), 0))
+  (((struct tree_baselink*) BASELINK_CHECK (NODE))->binfo)
 /* The functions referred to by the BASELINK; either a FUNCTION_DECL,
    a TEMPLATE_DECL, an OVERLOAD, or a TEMPLATE_ID_EXPR.  */
 #define BASELINK_FUNCTIONS(NODE) \
-  (TREE_OPERAND (BASELINK_CHECK (NODE), 1))
+  (((struct tree_baselink*) BASELINK_CHECK (NODE))->functions)
 /* The BINFO in which the search for the functions indicated by this baselink 
    began.  This base is used to determine the accessibility of functions 
    selected by overload resolution.  */
 #define BASELINK_ACCESS_BINFO(NODE) \
-  (TREE_OPERAND (BASELINK_CHECK (NODE), 2))
+  (((struct tree_baselink*) BASELINK_CHECK (NODE))->access_binfo)
 /* For a type-conversion operator, the BASELINK_OPTYPE indicates the type
    to which the conversion should occur.  This value is important if
    the BASELINK_FUNCTIONS include a template conversion operator --
@@ -390,6 +390,14 @@ struct tree_overload GTY(())
    requested.  */
 #define BASELINK_OPTYPE(NODE) \
   (TREE_CHAIN (BASELINK_CHECK (NODE)))
+
+struct tree_baselink GTY(())
+{
+  struct tree_common common;
+  tree binfo;
+  tree functions;
+  tree access_binfo;
+};
 
 #define WRAPPER_ZC(NODE) (((struct tree_wrapper*)WRAPPER_CHECK (NODE))->z_c)
 
@@ -520,6 +528,7 @@ enum cp_tree_node_structure_enum {
   TS_CP_PTRMEM,
   TS_CP_BINDING,
   TS_CP_OVERLOAD,
+  TS_CP_BASELINK,
   TS_CP_WRAPPER,
   TS_CP_SRCLOC,
   TS_CP_DEFAULT_ARG,
@@ -537,6 +546,7 @@ union lang_tree_node GTY((desc ("cp_tree_node_structure (&%h)"),
   struct ptrmem_cst GTY ((tag ("TS_CP_PTRMEM"))) ptrmem;
   struct tree_binding GTY ((tag ("TS_CP_BINDING"))) binding;
   struct tree_overload GTY ((tag ("TS_CP_OVERLOAD"))) overload;
+  struct tree_baselink GTY ((tag ("TS_CP_BASELINK"))) baselink;
   struct tree_wrapper GTY ((tag ("TS_CP_WRAPPER"))) wrapper;
   struct tree_srcloc GTY ((tag ("TS_CP_SRCLOC"))) srcloc;
   struct tree_default_arg GTY ((tag ("TS_CP_DEFAULT_ARG"))) default_arg;
