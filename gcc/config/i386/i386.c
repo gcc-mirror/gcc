@@ -2117,10 +2117,10 @@ classify_argument (enum machine_mode mode, tree type,
 	  if (TYPE_BINFO (type))
 	    {
 	      tree binfo, base_binfo;
-	      int i;
+	      int basenum;
 
-	      for (binfo = TYPE_BINFO (type), i = 0;
-		   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+	      for (binfo = TYPE_BINFO (type), basenum = 0;
+		   BINFO_BASE_ITERATE (binfo, basenum, base_binfo); basenum++)
 		{
 		   int num;
 		   int offset = tree_low_cst (BINFO_OFFSET (base_binfo), 0) * 8;
@@ -2204,10 +2204,10 @@ classify_argument (enum machine_mode mode, tree type,
 	  if (TYPE_BINFO (type))
 	    {
 	      tree binfo, base_binfo;
-	      int i;
+	      int basenum;
 
-	      for (binfo = TYPE_BINFO (type), i = 0;
-		   BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
+	      for (binfo = TYPE_BINFO (type), basenum = 0;
+		   BINFO_BASE_ITERATE (binfo, basenum, base_binfo); basenum++)
 		{
 		   int num;
 		   int offset = tree_low_cst (BINFO_OFFSET (base_binfo), 0) * 8;
