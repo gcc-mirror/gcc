@@ -607,7 +607,7 @@ load_class (tree class_or_name, int verbose)
 
 /* Parse the .class file JCF. */
 
-void
+static void
 jcf_parse (JCF* jcf)
 {
   int i, code;

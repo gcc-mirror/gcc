@@ -1786,7 +1786,7 @@ cp_parser_is_keyword (cp_token* token, enum rid keyword)
    or `x', respectively.  If the DECL was named as `A::B' then
    NESTED_NAME_SPECIFIER is `A'.  */
 
-tree
+static tree
 cp_parser_scope_through_which_access_occurs (tree decl, 
 					     tree object_type,
 					     tree nested_name_specifier)

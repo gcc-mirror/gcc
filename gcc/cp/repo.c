@@ -234,7 +234,7 @@ extract_string (char **pp)
   return obstack_finish (&temporary_obstack);
 }
 
-const char *
+static const char *
 get_base_filename (const char *filename)
 {
   char *p = getenv ("COLLECT_GCC_OPTIONS");

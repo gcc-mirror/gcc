@@ -116,7 +116,7 @@ handle_format_arg_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
 
 /* Verify that the format_num argument is actually a string, in case
    the format attribute is in error.  */
-bool
+static bool
 check_format_string (tree argument, unsigned HOST_WIDE_INT format_num,
 		     int flags, bool *no_add_attrs)
 {
@@ -146,7 +146,7 @@ check_format_string (tree argument, unsigned HOST_WIDE_INT format_num,
 /* Strip any conversions from the expression, verify it is a constant,
    and store its value. If validated_p is true, abort on errors.
    Returns true on success, false otherwise.  */
-bool
+static bool
 get_constant(tree expr, unsigned HOST_WIDE_INT *value, int validated_p)
 {
   while (TREE_CODE (expr) == NOP_EXPR

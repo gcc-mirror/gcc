@@ -5415,7 +5415,7 @@ typename_compare (const void * k1, const void * k2)
 
 static GTY ((param_is (union tree_node))) htab_t typename_htab;
 
-tree
+static tree
 build_typename_type (tree context, tree name, tree fullname)
 {
   tree t;

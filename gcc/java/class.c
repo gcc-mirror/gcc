@@ -2042,7 +2042,7 @@ emit_register_classes (void)
 
 /* Make a method_symbol_type (_Jv_MethodSymbol) node for METHOD. */
 
-tree
+static tree
 build_method_symbols_entry (tree method)
 {
   tree clname, name, signature, method_symbol;

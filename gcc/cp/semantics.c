@@ -393,7 +393,7 @@ finish_goto_stmt (tree destination)
 /* COND is the condition-expression for an if, while, etc.,
    statement.  Convert it to a boolean value, if appropriate.  */
 
-tree
+static tree
 maybe_convert_cond (tree cond)
 {
   /* Empty conditions remain empty.  */

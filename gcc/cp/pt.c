@@ -180,7 +180,7 @@ static tree tsubst_copy_and_build (tree, tree, tsubst_flags_t, tree);
    template argument for TEMPLATE_DECL.  If CONTEXT is not NULL_TREE, 
    this is used instead of the context of T.  */
 
-void
+static void
 push_access_scope_real (tree t, tree args, tree context)
 {
   if (TREE_CODE (t) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (t))
@@ -227,7 +227,7 @@ push_access_scope_real (tree t, tree args, tree context)
 
 /* Like push_access_scope_real, but always uses DECL_CONTEXT.  */
 
-void
+static void
 push_access_scope (tree t)
 {
   push_access_scope_real (t, NULL_TREE, NULL_TREE);
@@ -236,7 +236,7 @@ push_access_scope (tree t)
 /* Restore the scope set up by push_access_scope.  T is the node we
    are processing.  */
 
-void
+static void
 pop_access_scope (tree t)
 {
   if (TREE_CODE (t) == FUNCTION_DECL || DECL_FUNCTION_TEMPLATE_P (t))

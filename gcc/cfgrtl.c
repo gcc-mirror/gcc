@@ -1200,7 +1200,7 @@ back_edge_of_syntactic_loop_p (basic_block bb1, basic_block bb2)
    The case of a block ending in an unconditional jump to a
    block with multiple predecessors is not handled optimally.  */
 
-basic_block
+static basic_block
 rtl_split_edge (edge edge_in)
 {
   basic_block bb;
