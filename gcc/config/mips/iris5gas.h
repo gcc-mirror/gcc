@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler.  Irix version 5 with gas.
+/* Definitions of target machine for GNU compiler.  IRIX version 5 with gas.
    Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
@@ -18,6 +18,9 @@
    along with GCC; see the file COPYING.  If not, write to
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
+
+/* Reenable debugging.  */
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* GNU as does handle DWARF2 directives.  */
 #undef DWARF2_UNWIND_INFO

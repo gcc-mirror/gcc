@@ -2011,7 +2011,7 @@ fi
 # Default to using --with-stabs for certain targets.
 if test x${with_stabs} = x ; then
   case "${target}" in
-  mips*-*-irix6*)
+  mips*-*-irix[56]*)
     ;;
   mips*-*-* | alpha*-*-osf*)
     with_stabs=yes;
