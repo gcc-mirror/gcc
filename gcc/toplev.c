@@ -3745,8 +3745,6 @@ rest_of_compilation (decl)
 
       TIMEVAR (cse_time, tem = cse_main (insns, max_reg_num (),
 					 0, rtl_dump_file));
-      TIMEVAR (cse_time, delete_trivially_dead_insns (insns, max_reg_num ()));
-
       /* If we are not running the second CSE pass, then we are no longer
 	 expecting CSE to be run.  */
       cse_not_expected = !flag_rerun_cse_after_loop;
@@ -3756,6 +3754,10 @@ rest_of_compilation (decl)
 					   !JUMP_NOOP_MOVES,
 					   !JUMP_AFTER_REGSCAN));
  
+      /* Run this after jump optmizations remove all the unreachable code
+	 so that unreachable code will not keep values live.  */
+      TIMEVAR (cse_time, delete_trivially_dead_insns (insns, max_reg_num ()));
+
       /* Try to identify useless null pointer tests and delete them.  */
       if (flag_delete_null_pointer_checks)
 	TIMEVAR (jump_time, delete_null_pointer_checks (get_insns ()));
