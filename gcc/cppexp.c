@@ -377,9 +377,11 @@ cpp_interpret_integer (pfile, token, type)
 		   "integer constant is too large for its type");
       /* If too big to be signed, consider it unsigned.  Only warn for
 	 decimal numbers.  Traditional numbers were always signed (but
-	 we still honour an explicit U suffix).  */
+	 we still honour an explicit U suffix); but we only have
+	 traditional semantics in directives.  */
       else if (!result.unsignedp
-	       && !CPP_OPTION (pfile, traditional)
+	       && !(CPP_OPTION (pfile, traditional)
+		    && pfile->state.in_directive)
 	       && !num_positive (result, precision))
 	{
 	  if (base == 10)
