@@ -388,6 +388,7 @@ BASE_FLAGS_TO_PASS = \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CXXFLAGS_FOR_TARGET=$(CXXFLAGS_FOR_TARGET)" \
 	"CXX_FOR_TARGET=$(CXX_FOR_TARGET)" \
+	"DESTDIR=$(DESTDIR)" \
 	"DLLTOOL_FOR_TARGET=$(DLLTOOL_FOR_TARGET)" \
 	"INSTALL=$(INSTALL)" \
 	"INSTALL_DATA=$(INSTALL_DATA)" \
@@ -633,7 +634,7 @@ do-info: maybe-all-texinfo
 install-info: do-install-info dir.info
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	if [ -f dir.info ] ; then \
-	  $(INSTALL_DATA) dir.info $(infodir)/dir.info ; \
+	  $(INSTALL_DATA) dir.info $(DESTDIR)$(infodir)/dir.info ; \
 	else true ; fi
 
 local-clean:
@@ -764,7 +765,7 @@ installdirs: mkinstalldirs
 
 dir.info: do-install-info
 	if [ -f $(srcdir)/texinfo/gen-info-dir ] ; then \
-	  $(srcdir)/texinfo/gen-info-dir $(infodir) $(srcdir)/texinfo/dir.info-template > dir.info.new ; \
+	  $(srcdir)/texinfo/gen-info-dir $(DESTDIR)$(infodir) $(srcdir)/texinfo/dir.info-template > dir.info.new ; \
 	  mv -f dir.info.new dir.info ; \
 	else true ; \
 	fi
