@@ -4259,6 +4259,7 @@ build_unary_op (code, xarg, noconvert)
 	  if (!noconvert)
 	   arg = default_conversion (arg);
 	  arg = build1 (NON_LVALUE_EXPR, TREE_TYPE (arg), arg);
+	  TREE_CONSTANT (arg) = TREE_CONSTANT (TREE_OPERAND (arg, 0));
 	}
       break;
 

@@ -72,11 +72,13 @@ cp_thing (errfn, atarg1, format, ap)
   const char *f;
   tree atarg = 0;
 
+  maybe_print_template_context ();
+
   len = strlen (format) + 1;
   if (len > buflen)
     {
       buflen = len;
-      buf = xmalloc (buflen);
+      buf = xrealloc (buf, buflen);
     }
   offset = 0;
 
