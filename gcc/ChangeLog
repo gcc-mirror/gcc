@@ -1,3 +1,10 @@
+2003-05-05  DJ Delorie  <dj@redhat.com>
+
+	* config/stormy16/stormy16.md (negsi2): Allocate the pseudos
+	before reload, but defer the split until after.
+	* config/stormy16/stormy16.c (xstormy16_expand_arith): Modify
+	to match.
+
 2003-05-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add 440 support.

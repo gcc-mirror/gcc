@@ -603,11 +603,23 @@
   [(set_attr "length" "4")])
 
 (define_expand "negsi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(neg:SI (match_operand:SI 1 "register_operand" "")))]
+  [(parallel [(set (match_operand:SI 0 "register_operand" "")
+		   (neg:SI (match_operand:SI 1 "register_operand" "")))
+	      (clobber (match_scratch:BI 2 ""))])]
   ""
-  "{ xstormy16_expand_arith (SImode, NEG, operands[0], const0_rtx,
-			    operands[1], gen_reg_rtx (BImode)); DONE; }")
+  "{ operands[2] = gen_reg_rtx (HImode);
+     operands[3] = gen_reg_rtx (BImode); }")
+
+(define_insn_and_split "*negsi2_internal"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(neg:SI (match_operand:SI 1 "register_operand" "r")))
+   (clobber (match_scratch:BI 2 "=y"))]
+  ""
+  "#"
+  "reload_completed"
+  [(pc)]
+  "{ xstormy16_expand_arith (SImode, NEG, operands[0], operands[0],
+			    operands[1], operands[2]); DONE; }")
 
 ;; ::::::::::::::::::::
 ;; ::
