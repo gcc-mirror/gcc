@@ -186,8 +186,8 @@ get_pointer_alignment (exp, max_align)
 	  if (! host_integerp (TREE_OPERAND (exp, 1), 1))
 	    return align;
 
-	  while (((tree_low_cst (TREE_OPERAND (exp, 1), 1) * BITS_PER_UNIT)
-		  & (max_align - 1))
+	  while (((tree_low_cst (TREE_OPERAND (exp, 1), 1))
+		  & (max_align / BITS_PER_UNIT - 1))
 		 != 0)
 	    max_align >>= 1;
 
