@@ -8652,7 +8652,8 @@ expand_expr (exp, target, tmode, modifier)
 	  /* If OP0 is not aligned as least as much as the type requires,
 	     we need to make a temporary, copy OP0 to it, and take the
 	     address of the temporary.  */
-	  if (expr_align (TREE_OPERAND (exp, 0)) > MEM_ALIGN (op0))
+	  if (GET_MODE (op0) == BLKmode
+	      && expr_align (TREE_OPERAND (exp, 0)) > MEM_ALIGN (op0))
 	    {
 	      tree inner_type = TREE_TYPE (TREE_OPERAND (exp, 0));
 	      rtx new
