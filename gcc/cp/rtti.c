@@ -472,28 +472,15 @@ build_dynamic_cast_1 (type, expr)
   /* If *type is an unambiguous accessible base class of *exprtype,
      convert statically.  */
   {
-    int distance;
-    tree path;
+    tree binfo;
 
-    distance = get_base_distance (TREE_TYPE (type), TREE_TYPE (exprtype), 1,
-				  &path);
+    binfo = lookup_base (TREE_TYPE (exprtype), TREE_TYPE (type),
+			 ba_not_special, NULL);
 
-    if (distance == -2)
+    if (binfo)
       {
-	cp_error ("dynamic_cast from `%T' to ambiguous base class `%T'",
-		  TREE_TYPE (exprtype), TREE_TYPE (type));
-	return error_mark_node;
-      }
-    if (distance == -3)
-      {
-	cp_error ("dynamic_cast from `%T' to private base class `%T'",
-		  TREE_TYPE (exprtype), TREE_TYPE (type));
-	return error_mark_node;
-      }
-
-    if (distance >= 0)
-      {
-	expr = build_vbase_path (PLUS_EXPR, type, expr, path, 0);
+	expr = build_base_path (PLUS_EXPR, convert_from_reference (expr),
+				binfo, 0);
 	if (TREE_CODE (exprtype) == POINTER_TYPE)
 	  expr = non_lvalue (expr);
 	return expr;

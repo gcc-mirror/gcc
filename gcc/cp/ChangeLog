@@ -1,3 +1,46 @@
+2001-11-25  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR g++/3145
+	* class.c (build_vbase_pointer): Remove.
+	(build_vbase_path): Remove.
+	(build_base_path): New function.
+	* cp-tree.h (base_access, base_kind): New enumerations.
+	(build_base_path): Declare.
+	(convert_pointer_to_real): Remove.
+	(convert_pointer_to): Remove.
+	(lookup_base): Declare.
+	(convert_pointer_to_vbase): Remove.
+	* call.c (build_scoped_method_call): Use lookup_base &
+	build_base_path instead of convert_pointer_to_real,
+	get_base_distance & get_binfo.
+	(build_over_call): Likewise.
+	* cvt.c (cp_convert_to_pointer): Likewise.
+	(convert_to_pointer_force): Likewise.
+	(build_up_reference): Likewise.
+	(convert_pointer_to_real): Remove.
+	(convert_pointer_to): Remove.
+	* init.c (dfs_initialize_vtbl_ptrs): Use build_base_path
+	instead of convert_pointer_to_vbase & build_vbase_path.
+	(emit_base_init): Use build_base_path instead of
+	convert_pointer_to_real.
+	(expand_virtual_init): Lose unrequired conversions.
+	(resolve_offset_ref): Use lookup_base and build_base_path
+	instead of convert_pointer_to.
+	* rtti.c (build_dynamic_cast_1): Use lookup_base &
+	build_base_path instead of get_base_distance & build_vbase_path.
+	* search.c (get_vbase_1): Remove.
+	(get_vbase): Remove.
+	(convert_pointer_to_vbase): Remove.
+	(lookup_base_recursive): New function.
+	(lookup_base): New function.
+	* typeck.c (require_complete_type): Use lookup_base &
+	build_base_path instead of convert_pointer_to.
+	(build_component_ref): Likewise.
+	(build_x_function_call): Likewise.
+	(get_member_function_from_ptrfunc): Likewise.
+	(build_component_addr): Likewise.
+	* typeck2.c (build_scoped_ref): Likewise.
+
 2001-11-22  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* cp-tree.h (CP_TYPE_QUALS): Removed.

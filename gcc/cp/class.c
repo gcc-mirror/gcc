@@ -106,7 +106,6 @@ varray_type local_classes;
 
 static tree get_vfield_name PARAMS ((tree));
 static void finish_struct_anon PARAMS ((tree));
-static tree build_vbase_pointer PARAMS ((tree, tree));
 static tree build_vtable_entry PARAMS ((tree, tree, tree));
 static tree get_vtable_name PARAMS ((tree));
 static tree get_basefndecls PARAMS ((tree, tree));
@@ -236,190 +235,122 @@ int n_build_method_call = 0;
 int n_inner_fields_searched = 0;
 #endif
 
-/* Virtual base class layout.  */
-
-/* Returns a pointer to the virtual base class of EXP that has the
-   indicated TYPE.  EXP is of class type, not a pointer type.  */
-
-static tree
-build_vbase_pointer (exp, type)
-     tree exp, type;
-{
-  tree vbase;
-  tree vbase_ptr;
-
-  /* Find the shared copy of TYPE; that's where the vtable offset is
-     recorded.  */
-  vbase = binfo_for_vbase (type, TREE_TYPE (exp));
-  /* Find the virtual function table pointer.  */
-  vbase_ptr = build_vfield_ref (exp, TREE_TYPE (exp));
-  /* Compute the location where the offset will lie.  */
-  vbase_ptr = build (PLUS_EXPR, 
-		     TREE_TYPE (vbase_ptr),
-		     vbase_ptr,
-		     BINFO_VPTR_FIELD (vbase));
-  vbase_ptr = build1 (NOP_EXPR, 
-		      build_pointer_type (ptrdiff_type_node),
-		      vbase_ptr);
-  /* Add the contents of this location to EXP.  */
-  return build (PLUS_EXPR,
-		build_pointer_type (type),
-		build_unary_op (ADDR_EXPR, exp, /*noconvert=*/0),
-		build1 (INDIRECT_REF, ptrdiff_type_node, vbase_ptr));
-}
-
-/* Build multi-level access to EXPR using hierarchy path PATH.
-   CODE is PLUS_EXPR if we are going with the grain,
-   and MINUS_EXPR if we are not (in which case, we cannot traverse
-   virtual baseclass links).
-
-   TYPE is the type we want this path to have on exit.
-
-   NONNULL is non-zero if  we know (for any reason) that EXPR is
-   not, in fact, zero.  */
+/* Convert to or from a base subobject.  EXPR is an expression of type
+   `A' or `A*', an expression of type `B' or `B*' is returned.  To
+   convert A to a base B, CODE is PLUS_EXPR and BINFO is the binfo for
+   the B base instance within A.  To convert base A to derived B, CODE
+   is MINUS_EXPR and BINFO is the binfo for the A instance within B.
+   In this latter case, A must not be a morally virtual base of B.
+   NONNULL is true if EXPR is known to be non-NULL (this is only
+   needed when EXPR is of pointer type).  CV qualifiers are preserved
+   from EXPR.  */
 
 tree
-build_vbase_path (code, type, expr, path, nonnull)
+build_base_path (code, expr, binfo, nonnull)
      enum tree_code code;
-     tree type, expr, path;
+     tree expr;
+     tree binfo;
      int nonnull;
 {
-  register int changed = 0;
-  tree last = NULL_TREE, last_virtual = NULL_TREE;
+  tree v_binfo = NULL_TREE;
+  tree t;
+  tree probe;
+  tree offset;
+  tree target_type;
+  tree null_test = NULL;
+  tree ptr_target_type;
   int fixed_type_p;
-  tree null_expr = 0, nonnull_expr;
-  tree basetype;
-  tree offset = integer_zero_node;
+  int want_pointer = TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE;
 
-  if (BINFO_INHERITANCE_CHAIN (path) == NULL_TREE)
-    return build1 (NOP_EXPR, type, expr);
+  if (expr == error_mark_node || binfo == error_mark_node || !binfo)
+    return error_mark_node;
+  
+  for (probe = binfo; probe;
+       t = probe, probe = BINFO_INHERITANCE_CHAIN (probe))
+    if (!v_binfo && TREE_VIA_VIRTUAL (probe))
+      v_binfo = probe;
 
-  /* We could do better if we had additional logic to convert back to the
-     unconverted type (the static type of the complete object), and then
-     convert back to the type we want.  Until that is done, we only optimize
-     if the complete type is the same type as expr has.  */
+  probe = TYPE_MAIN_VARIANT (TREE_TYPE (expr));
+  if (want_pointer)
+    probe = TYPE_MAIN_VARIANT (TREE_TYPE (probe));
+  
+  my_friendly_assert (code == MINUS_EXPR
+		      ? same_type_p (BINFO_TYPE (binfo), probe)
+		      : code == PLUS_EXPR
+		      ? same_type_p (BINFO_TYPE (t), probe)
+		      : false, 20010723);
+  
+  if (code == MINUS_EXPR && v_binfo)
+    {
+      cp_error ("cannot convert from base `%T' to derived type `%T' via virtual base `%T'",
+		BINFO_TYPE (binfo), BINFO_TYPE (t), BINFO_TYPE (v_binfo));
+      return error_mark_node;
+    }
+
   fixed_type_p = resolves_to_fixed_type_p (expr, &nonnull);
   if (fixed_type_p < 0)
     /* Virtual base layout is not fixed, even in ctors and dtors. */
     fixed_type_p = 0;
-
   if (!fixed_type_p && TREE_SIDE_EFFECTS (expr))
     expr = save_expr (expr);
-  nonnull_expr = expr;
-
-  path = reverse_path (path);
-
-  basetype = BINFO_TYPE (path);
-
-  while (path)
+    
+  if (!want_pointer)
+    expr = build_unary_op (ADDR_EXPR, expr, 0);
+  else if (!nonnull)
+    null_test = build (EQ_EXPR, boolean_type_node, expr, integer_zero_node);
+  
+  offset = BINFO_OFFSET (binfo);
+  
+  if (v_binfo && !fixed_type_p)
     {
-      if (TREE_VIA_VIRTUAL (TREE_VALUE (path)))
-	{
-	  last_virtual = BINFO_TYPE (TREE_VALUE (path));
-	  if (code == PLUS_EXPR)
-	    {
-	      changed = ! fixed_type_p;
+      /* Going via virtual base V_BINFO.  We need the static offset
+         from V_BINFO to BINFO, and the dynamic offset from T to
+         V_BINFO.  That offset is an entry in T's vtable.  */
+      tree v_offset = build_vfield_ref (build_indirect_ref (expr, NULL),
+					TREE_TYPE (TREE_TYPE (expr)));
+      
+      v_binfo = binfo_for_vbase (BINFO_TYPE (v_binfo), BINFO_TYPE (t));
+      
+      v_offset = build (PLUS_EXPR, TREE_TYPE (v_offset),
+			v_offset,  BINFO_VPTR_FIELD (v_binfo));
+      v_offset = build1 (NOP_EXPR, 
+			 build_pointer_type (ptrdiff_type_node),
+			 v_offset);
+      v_offset = build_indirect_ref (v_offset, NULL);
+      
+      offset = cp_convert (ptrdiff_type_node,
+			   size_diffop (offset, BINFO_OFFSET (v_binfo)));
 
-	      if (changed)
-		{
-		  tree ind;
-
-		  /* We already check for ambiguous things in the caller, just
-		     find a path.  */
-		  if (last)
-		    {
-		      tree binfo = get_binfo (last, TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (nonnull_expr))), 0);
-		      nonnull_expr = convert_pointer_to_real (binfo, nonnull_expr);
-		    }
-		  ind = build_indirect_ref (nonnull_expr, NULL);
-		  nonnull_expr = build_vbase_pointer (ind, last_virtual);
-		  if (nonnull == 0
-		      && TREE_CODE (type) == POINTER_TYPE
-		      && null_expr == NULL_TREE)
-		    {
-		      null_expr = build1 (NOP_EXPR, build_pointer_type (last_virtual), integer_zero_node);
-		      expr = build (COND_EXPR, build_pointer_type (last_virtual),
-				    build (EQ_EXPR, boolean_type_node, expr,
-					   integer_zero_node),
-				    null_expr, nonnull_expr);
-		    }
-		}
-	      /* else we'll figure out the offset below.  */
-
-	      /* Happens in the case of parse errors.  */
-	      if (nonnull_expr == error_mark_node)
-		return error_mark_node;
-	    }
-	  else
-	    {
-	      cp_error ("cannot cast up from virtual baseclass `%T'",
-			  last_virtual);
-	      return error_mark_node;
-	    }
-	}
-      last = TREE_VALUE (path);
-      path = TREE_CHAIN (path);
+      if (!integer_zerop (offset))
+	offset = build (code, ptrdiff_type_node, v_offset, offset);
+      else
+	offset = v_offset;
     }
-  /* LAST is now the last basetype assoc on the path.  */
 
-  /* A pointer to a virtual base member of a non-null object
-     is non-null.  Therefore, we only need to test for zeroness once.
-     Make EXPR the canonical expression to deal with here.  */
-  if (null_expr)
-    {
-      TREE_OPERAND (expr, 2) = nonnull_expr;
-      TREE_TYPE (expr) = TREE_TYPE (TREE_OPERAND (expr, 1))
-	= TREE_TYPE (nonnull_expr);
-    }
+  target_type = code == PLUS_EXPR ? BINFO_TYPE (binfo) : BINFO_TYPE (t);
+  
+  target_type = cp_build_qualified_type
+    (target_type, cp_type_quals (TREE_TYPE (TREE_TYPE (expr))));
+  ptr_target_type = build_pointer_type (target_type);
+  if (want_pointer)
+    target_type = ptr_target_type;
+  
+  expr = build1 (NOP_EXPR, ptr_target_type, expr);
+
+  if (!integer_zerop (offset))
+    expr = build (code, ptr_target_type, expr, offset);
   else
-    expr = nonnull_expr;
+    null_test = NULL;
+  
+  if (!want_pointer)
+    expr = build_indirect_ref (expr, NULL);
 
-  /* If we go through any virtual base pointers, make sure that
-     casts to BASETYPE from the last virtual base class use
-     the right value for BASETYPE.  */
-  if (changed)
-    {
-      tree intype = TREE_TYPE (TREE_TYPE (expr));
-
-      if (TYPE_MAIN_VARIANT (intype) != BINFO_TYPE (last))
-	offset
-	  = BINFO_OFFSET (get_binfo (last, TYPE_MAIN_VARIANT (intype), 0));
-    }
-  else
-    offset = BINFO_OFFSET (last);
-
-  if (! integer_zerop (offset))
-    {
-      /* Bash types to make the backend happy.  */
-      offset = cp_convert (type, offset);
-
-      /* If expr might be 0, we need to preserve that zeroness.  */
-      if (nonnull == 0)
-	{
-	  if (null_expr)
-	    TREE_TYPE (null_expr) = type;
-	  else
-	    null_expr = build1 (NOP_EXPR, type, integer_zero_node);
-	  if (TREE_SIDE_EFFECTS (expr))
-	    expr = save_expr (expr);
-
-	  return build (COND_EXPR, type,
-			build (EQ_EXPR, boolean_type_node, expr, integer_zero_node),
-			null_expr,
-			build (code, type, expr, offset));
-	}
-      else return build (code, type, expr, offset);
-    }
-
-  /* Cannot change the TREE_TYPE of a NOP_EXPR here, since it may
-     be used multiple times in initialization of multiple inheritance.  */
-  if (null_expr)
-    {
-      TREE_TYPE (expr) = type;
-      return expr;
-    }
-  else
-    return build1 (NOP_EXPR, type, expr);
+  if (null_test)
+    expr = build (COND_EXPR, target_type, null_test,
+		  build1 (NOP_EXPR, target_type, integer_zero_node),
+		  expr);
+  
+  return expr;
 }
 
 
@@ -5468,11 +5399,12 @@ fixed_type_or_null (instance, nonnull, cdtorp)
     }
 }
 
-/* Return non-zero if the dynamic type of INSTANCE is known, and equivalent
-   to the static type.  We also handle the case where INSTANCE is really
-   a pointer. Return negative if this is a ctor/dtor. There the dynamic type
-   is known, but this might not be the most derived base of the original object,
-   and hence virtual bases may not be layed out according to this type.
+/* Return non-zero if the dynamic type of INSTANCE is known, and
+   equivalent to the static type.  We also handle the case where
+   INSTANCE is really a pointer. Return negative if this is a
+   ctor/dtor. There the dynamic type is known, but this might not be
+   the most derived base of the original object, and hence virtual
+   bases may not be layed out according to this type.
 
    Used to determine whether the virtual function table is needed
    or not.

@@ -116,8 +116,11 @@ require_complete_type (value)
     {
       tree base, member = TREE_OPERAND (value, 1);
       tree basetype = TYPE_OFFSET_BASETYPE (type);
+      
       my_friendly_assert (TREE_CODE (member) == FIELD_DECL, 305);
-      base = convert_pointer_to (basetype, current_class_ptr);
+      basetype = lookup_base (current_class_type, basetype, ba_check, NULL);
+      base = build_base_path (PLUS_EXPR, current_class_ptr, basetype, 1);
+      
       value = build (COMPONENT_REF, TREE_TYPE (member),
 		     build_indirect_ref (base, NULL), member);
       return require_complete_type (value);
@@ -2208,14 +2211,15 @@ build_component_ref (datum, component, basetype_path, protect)
       /* Handle base classes here...  */
       if (base != basetype && TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype))
 	{
-	  tree addr = build_unary_op (ADDR_EXPR, datum, 0);
-	  if (integer_zerop (addr))
+ 	  tree binfo = lookup_base (TREE_TYPE (datum), base, ba_check, NULL);
+ 
+	  if (TREE_CODE (datum) == INDIRECT_REF
+	      && integer_zerop (TREE_OPERAND (datum, 0)))
 	    {
 	      error ("invalid reference to NULL ptr, use ptr-to-member instead");
 	      return error_mark_node;
 	    }
-	  addr = convert_pointer_to (base, addr);
-	  datum = build_indirect_ref (addr, NULL);
+ 	  datum = build_base_path (PLUS_EXPR, datum, binfo, 1);
 	  if (datum == error_mark_node)
 	    return error_mark_node;
 	}
@@ -2806,8 +2810,11 @@ build_x_function_call (function, params, decl)
       if (TREE_CODE (TREE_TYPE (decl)) != POINTER_TYPE
 	  && ! TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)))
 	{
+	  tree binfo = lookup_base (TREE_TYPE (decl), TREE_TYPE (ctypeptr),
+				    ba_check, NULL);
+	  
 	  decl = build_unary_op (ADDR_EXPR, decl, 0);
-	  decl = convert_pointer_to (TREE_TYPE (ctypeptr), decl);
+	  decl = build_base_path (PLUS_EXPR, decl, binfo, 1);
 	}
       else
 	decl = build_c_cast (ctypeptr, decl);
@@ -2826,9 +2833,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
      tree function;
 {
   if (TREE_CODE (function) == OFFSET_REF)
-    {
-      function = TREE_OPERAND (function, 1);
-    }
+    function = TREE_OPERAND (function, 1);
 
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (function)))
     {
@@ -2857,14 +2862,18 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
       fntype = TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (function));
       basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (fntype));
 
-      /* Convert down to the right base, before using the instance.  */
-      instance = convert_pointer_to_real (basetype, instance_ptr);
+      /* Convert down to the right base, before using the instance. */
+      instance = lookup_base (TREE_TYPE (TREE_TYPE (instance_ptr)), basetype,
+			      ba_check, NULL);
+      instance = build_base_path (PLUS_EXPR, instance_ptr, instance, 1);
       if (instance == error_mark_node && instance_ptr != error_mark_node)
 	return instance;
 
       e3 = PFN_FROM_PTRMEMFUNC (function);
-
-      vtbl = convert_pointer_to (ptr_type_node, instance);
+      
+      vtbl = build1 (NOP_EXPR, build_pointer_type (ptr_type_node), instance);
+      TREE_CONSTANT (vtbl) = TREE_CONSTANT (instance);
+      
       delta = cp_convert (ptrdiff_type_node,
 			  build_component_ref (function, delta_identifier,
 					       NULL_TREE, 0));
@@ -4229,8 +4238,11 @@ build_component_addr (arg, argtype)
       /* Can't convert directly to ARGTYPE, since that
 	 may have the same pointer type as one of our
 	 baseclasses.  */
-      rval = build1 (NOP_EXPR, argtype,
-		     convert_pointer_to (basetype, rval));
+      tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (rval)), basetype,
+				ba_check, NULL);
+
+      rval = build_base_path (PLUS_EXPR, rval, binfo, 1);
+      rval = build1 (NOP_EXPR, argtype, rval);
       TREE_CONSTANT (rval) = TREE_CONSTANT (TREE_OPERAND (rval, 0));
     }
   else

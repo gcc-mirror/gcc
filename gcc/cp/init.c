@@ -130,7 +130,9 @@ finish_init_stmts (stmt_expr, compound_stmt)
 
 /* Constructors */
 
-/* Called from initialize_vtbl_ptrs via dfs_walk.  */
+/* Called from initialize_vtbl_ptrs via dfs_walk.  BINFO is the base
+   which we want to initialize the vtable pointer for, DATA is
+   TREE_LIST whose TREE_VALUE is the this ptr expression.  */
 
 static tree
 dfs_initialize_vtbl_ptrs (binfo, data)
@@ -142,16 +144,7 @@ dfs_initialize_vtbl_ptrs (binfo, data)
     {
       tree base_ptr = TREE_VALUE ((tree) data);
 
-      if (TREE_VIA_VIRTUAL (binfo))
-	base_ptr = convert_pointer_to_vbase (BINFO_TYPE (binfo),
-					     base_ptr);
-      else
-	base_ptr 
-	  = build_vbase_path (PLUS_EXPR, 
-			      build_pointer_type (BINFO_TYPE (binfo)),
-			      base_ptr,
-			      binfo,
-			      /*nonnull=*/1);
+      base_ptr = build_base_path (PLUS_EXPR, base_ptr, binfo, /*nonnull=*/1);
 
       expand_virtual_init (binfo, base_ptr);
     }
@@ -711,7 +704,8 @@ emit_base_init (mem_init_list, base_init_list)
 
       if (init != void_list_node)
 	{
-	  member = convert_pointer_to_real (base_binfo, current_class_ptr);
+	  member = build_base_path (PLUS_EXPR, current_class_ptr,
+				    base_binfo, 1);
 	  expand_aggr_init_1 (base_binfo, NULL_TREE,
 			      build_indirect_ref (member, NULL), init,
 			      LOOKUP_NORMAL);
@@ -802,15 +796,9 @@ static void
 expand_virtual_init (binfo, decl)
      tree binfo, decl;
 {
-  tree type = BINFO_TYPE (binfo);
   tree vtbl, vtbl_ptr;
-  tree vtype, vtype_binfo;
   tree vtt_index;
 
-  /* Compute the location of the vtable.  */
-  vtype = DECL_CONTEXT (TYPE_VFIELD (type));
-  vtype_binfo = get_binfo (vtype, TREE_TYPE (TREE_TYPE (decl)), 0);
-  
   /* Compute the initializer for vptr.  */
   vtbl = build_vtbl_address (binfo);
 
@@ -842,10 +830,9 @@ expand_virtual_init (binfo, decl)
     }
 
   /* Compute the location of the vtpr.  */
-  decl = convert_pointer_to_real (vtype_binfo, decl);
-  vtbl_ptr = build_vfield_ref (build_indirect_ref (decl, NULL), vtype);
-  if (vtbl_ptr == error_mark_node)
-    return;
+  vtbl_ptr = build_vfield_ref (build_indirect_ref (decl, NULL),
+			       TREE_TYPE (binfo));
+  my_friendly_assert (vtbl_ptr != error_mark_node, 20010730);
 
   /* Assign the vtable to the vptr.  */
   vtbl = convert_force (TREE_TYPE (vtbl_ptr), vtbl, 0);
@@ -1842,14 +1829,14 @@ resolve_offset_ref (exp)
       if (TREE_CODE (exp) == OFFSET_REF && TREE_CODE (type) == OFFSET_TYPE)
 	base = build_scoped_ref (base, TYPE_OFFSET_BASETYPE (type));
 
-      addr = build_unary_op (ADDR_EXPR, base, 0);
-      addr = convert_pointer_to (basetype, addr);
-
-      if (addr == error_mark_node)
+      basetype = lookup_base (TREE_TYPE (base), basetype, ba_check, NULL);
+      expr = build_base_path (PLUS_EXPR, base, basetype, 1);
+      
+      if (expr == error_mark_node)
 	return error_mark_node;
 
       expr = build (COMPONENT_REF, TREE_TYPE (member),
-		    build_indirect_ref (addr, NULL), member);
+		    expr, member);
       return convert_from_reference (expr);
     }
 
@@ -1872,7 +1859,10 @@ resolve_offset_ref (exp)
 	}
 
       basetype = TYPE_OFFSET_BASETYPE (TREE_TYPE (TREE_TYPE (member)));
-      addr = convert_pointer_to (basetype, addr);
+      basetype = lookup_base (TREE_TYPE (TREE_TYPE (addr)),
+			      basetype, ba_check, NULL);
+      addr = build_base_path (PLUS_EXPR, addr, basetype, 1);
+      
       member = cp_convert (ptrdiff_type_node, member);
 
       return build1 (INDIRECT_REF, type,
