@@ -316,7 +316,8 @@ arith5_operand (op, mode)
 }
 
 /* True iff zdepi can be used to generate this CONST_INT.  */
-zdepi_operand (op, mode)
+int
+depi_cint_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
@@ -332,6 +333,45 @@ zdepi_operand (op, mode)
   lbmask = x & -x;
   t = ((x >> 4) + lbmask) & ~(lbmask - 1);
   return ((t & (t - 1)) == 0);
+}
+
+/* True iff depi or extru can be used to compute (reg & mask).  */
+int
+consec_zeros_p (mask)
+     unsigned mask;
+{
+  mask = ~mask;
+  mask += mask & -mask;
+  return (mask & (mask - 1)) == 0;
+}
+
+/* True iff depi or extru can be used to compute (reg & OP).  */
+int
+and_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT && consec_zeros_p (INTVAL (op))));
+}
+
+/* True iff depi can be used to compute (reg | MASK).  */
+int
+ior_mask_p (mask)
+     unsigned mask;
+{
+  mask += mask & -mask;
+  return (mask & (mask - 1)) == 0;
+}
+
+/* True iff depi can be used to compute (reg | OP).  */
+int
+ior_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  || (GET_CODE (op) == CONST_INT && ior_mask_p (INTVAL (op))));
 }
 
 int
@@ -648,7 +688,7 @@ emit_move_sequence (operands, mode)
 	      return 1;
 	    }
 	}
-      else if (zdepi_operand (operand1, VOIDmode))
+      else if (depi_cint_operand (operand1, VOIDmode))
 	return 0;
       else if (GET_CODE (operand1) == CONST_INT
 	       ? (! SMALL_INT (operand1)
@@ -699,43 +739,43 @@ singlemove_string (operands)
 }
 
 
-char *
-output_zdepi (operands)
+/* Compute position (in OPERANDS[2]) and width (in OPERANDS[3])
+   useful for copying or or'ing IMM to a register using bit field
+   instructions.  Store the immediate value to insert in OPERANDS[1].  */
+void
+compute_xdepi_operands_from_integer (imm, operands)
+     unsigned imm;
      rtx *operands;
 {
-  unsigned long x = INTVAL (operands[1]);
-  int i;
+  int lsb, len;
 
-  for (i = 0; i < 32; i++)
+  /* Find the least significant set bit in IMM.  */
+  for (lsb = 0; lsb < 32; lsb++)
     {
-      if ((x & 1) != 0)
+      if ((imm & 1) != 0)
         break;
-      x >>= 1;
+      imm >>= 1;
     }
 
-  if ((x & 0x10) == 0)
-    {
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, x);
-      operands[2] = gen_rtx (CONST_INT, VOIDmode, 31 - i);
-      operands[3] = gen_rtx (CONST_INT, VOIDmode, 32 - i < 4 ? 32 - i : 4);
-    }
+  /* Choose variants based on *sign* of the 5-bit field.  */
+  if ((imm & 0x10) == 0)
+    len = (lsb <= 28) ? 4 : 32 - lsb;
   else
     {
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, (x & 0xf) - 0x10);
-      operands[2] = gen_rtx (CONST_INT, VOIDmode, 31 - i);
-
-      x >>= 5;
-      for (i = 0; i < 32; i++)
+      /* Find the width of the bitstring in IMM.  */
+      for (len = 5; len < 32; len++)
 	{
-	  if ((x & 1) == 0)
+	  if ((imm & (1 << len)) == 0)
 	    break;
-	  x >>= 1;
 	}
 
-      operands[3] = gen_rtx (CONST_INT, VOIDmode, i + 5);
+      /* Sign extend IMM as a 5-bit value.  */
+      imm = (imm & 0xf) - 0x10;
     }
 
-  return "zdepi %1,%2,%3,%0";
+  operands[1] = gen_rtx (CONST_INT, VOIDmode, imm);
+  operands[2] = gen_rtx (CONST_INT, VOIDmode, 31 - lsb);
+  operands[3] = gen_rtx (CONST_INT, VOIDmode, len);
 }
 
 /* Output assembler code to perform a doubleword move insn
@@ -1011,85 +1051,6 @@ find_addr_reg (addr)
   abort ();
 }
 
-/* Load the address specified by OPERANDS[3] into the register
-   specified by OPERANDS[0].
-
-   OPERANDS[3] may be the result of a sum, hence it could either be:
-
-   (1) CONST
-   (2) REG
-   (2) REG + CONST_INT
-   (3) REG + REG + CONST_INT
-   (4) REG + REG  (special case of 3).
-
-   Note that (3) is not a legitimate address.
-   All cases are handled here.  */
-
-void
-output_load_address (operands)
-     rtx *operands;
-{
-  rtx base, offset;
-
-  if (CONSTANT_P (operands[3]))
-    {
-      output_asm_insn ("ldi %3,%0", operands);
-      return;
-    }
-
-  if (REG_P (operands[3]))
-    {
-      if (REGNO (operands[0]) != REGNO (operands[3]))
-	output_asm_insn ("copy %3,%0", operands);
-      return;
-    }
-
-  if (GET_CODE (operands[3]) != PLUS)
-    abort ();
-
-  base = XEXP (operands[3], 0);
-  offset = XEXP (operands[3], 1);
-
-  if (GET_CODE (base) == CONST_INT)
-    {
-      rtx tmp = base;
-      base = offset;
-      offset = tmp;
-    }
-
-  if (GET_CODE (offset) != CONST_INT)
-    {
-      /* Operand is (PLUS (REG) (REG)).  */
-      base = operands[3];
-      offset = const0_rtx;
-    }
-
-  if (REG_P (base))
-    {
-      operands[6] = base;
-      operands[7] = offset;
-      if (INT_14_BITS (offset))
-	output_asm_insn ("ldo %7(%6),%0", operands);
-      else
-	output_asm_insn ("addil L'%7,%6\n\tldo R'%7(1),%0", operands);
-    }
-  else if (GET_CODE (base) == PLUS)
-    {
-      operands[6] = XEXP (base, 0);
-      operands[7] = XEXP (base, 1);
-      operands[8] = offset;
-
-      if (offset == const0_rtx)
-	output_asm_insn ("add %6,%7,%0", operands);
-      else if (INT_14_BITS (offset))
-	output_asm_insn ("add %6,%7,%0\n\tldo %8(%0),%0", operands);
-      else
-	output_asm_insn ("addil L'%8,%6\n\tldo R'%8(1),%0\n\tadd %0,%7,%0", operands);
-    }
-  else
-    abort ();
-}
-
 /* Emit code to perform a block move.
 
    Restriction: If the length argument is non-constant, alignment
@@ -1262,6 +1223,88 @@ output_block_move (operands, size_is_constant)
 }
 
 
+char *
+output_and (operands)
+     rtx *operands;
+{
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      unsigned mask = INTVAL (operands[2]);
+      int ls0, ls1, ms0, p, len;
+
+      for (ls0 = 0; ls0 < 32; ls0++)
+	if ((mask & (1 << ls0)) == 0)
+	  break;
+
+      for (ls1 = ls0; ls1 < 32; ls1++)
+	if ((mask & (1 << ls1)) != 0)
+	  break;
+
+      for (ms0 = ls1; ms0 < 32; ms0++)
+	if ((mask & (1 << ms0)) == 0)
+	  break;
+
+      if (ms0 != 32)
+	abort();
+
+      if (ls1 == 32)
+	{
+	  len = ls0;
+
+	  if (len == 0)
+	    abort ();
+
+	  operands[2] = gen_rtx (CONST_INT, VOIDmode, len);
+	  return "extru %1,31,%2,%0";
+	}
+      else
+	{
+	  /* We could use this `depi' for the case above as well, but `depi'
+	     requires one more register file access than an `extru'.  */
+
+	  p = 31 - ls0;
+	  len = ls1 - ls0;
+
+	  operands[2] = gen_rtx (CONST_INT, VOIDmode, p);
+	  operands[3] = gen_rtx (CONST_INT, VOIDmode, len);
+	  return "depi 0,%2,%3,%0";
+	}
+    }
+  else
+    return "and %1,%2,%0";
+}
+
+char *
+output_ior (operands)
+     rtx *operands;
+{
+  if (GET_CODE (operands[2]) == CONST_INT)
+    {
+      unsigned mask = INTVAL (operands[2]);
+      int bs0, bs1, bs2, p, len;
+
+      for (bs0 = 0; bs0 < 32; bs0++)
+	if ((mask & (1 << bs0)) != 0)
+	  break;
+
+      for (bs1 = bs0; bs1 < 32; bs1++)
+	if ((mask & (1 << bs1)) == 0)
+	  break;
+
+      if (bs1 != 32 && ((unsigned) 1 << bs1) <= mask)
+	abort();
+
+      p = 31 - bs0;
+      len = bs1 - bs0;
+
+      operands[2] = gen_rtx (CONST_INT, VOIDmode, p);
+      operands[3] = gen_rtx (CONST_INT, VOIDmode, len);
+      return "depi -1,%2,%3,%0";
+    }
+  else
+    return "or %1,%2,%0";
+}
+
 /* Output an ascii string.  */
 output_ascii (file, p, size)
      FILE *file;
