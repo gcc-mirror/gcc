@@ -1,5 +1,5 @@
 # Makefile for GNU C compiler.
-#   Copyright (C) 1987, 1988, 1990, 1991, 1992 Free Software Foundation, Inc.
+#   Copyright (C) 1987, 88, 90, 91, 92, 1993 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -1470,7 +1470,7 @@ distclean: clean
 extraclean: distclean
 	-rm -rf =* ./"#"* *~* config/=* config/"#"* config/*~*
 	-rm -f patch* *.orig *.rej config/patch* config/*.orig config/*.rej
-	-rm -f *.dvi *.oaux *.d *.Z *.tar *.xtar *diff
+	-rm -f *.dvi *.oaux *.d *.[zZ] *.tar *.xtar *diff
 	-rm -f *lose config/*lose
 	-rm -f *.s *.s[0-9] *.i install1.texi config/ChangeLog
 
