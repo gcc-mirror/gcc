@@ -1329,9 +1329,50 @@
 		  (match_operand:HI 1 "s_register_operand" "%r"))
 		 (sign_extend:SI
 		  (match_operand:HI 2 "s_register_operand" "r"))))]
-  "TARGET_ARM && arm_is_xscale"
+  "TARGET_ARM && arm_arch5e"
   "smulbb%?\\t%0, %1, %2"
-  [(set_attr "type" "mult")]
+  [(set_attr "type" "mult")
+   (set_attr "predicable" "yes")]
+)
+
+(define_insn "*mulhisi3tb"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(mult:SI (ashiftrt:SI
+		  (match_operand:SI 1 "s_register_operand" "r")
+		  (const_int 16))
+		 (sign_extend:SI
+		  (match_operand:HI 2 "s_register_operand" "r"))))]
+  "TARGET_ARM && arm_arch5e"
+  "smultb%?\\t%0, %1, %2"
+  [(set_attr "type" "mult")
+   (set_attr "predicable" "yes")]
+)
+
+(define_insn "*mulhisi3bt"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(mult:SI (sign_extend:SI
+		  (match_operand:HI 1 "s_register_operand" "r"))
+		 (ashiftrt:SI
+		  (match_operand:SI 2 "s_register_operand" "r")
+		  (const_int 16))))]
+  "TARGET_ARM && arm_arch5e"
+  "smulbt%?\\t%0, %1, %2"
+  [(set_attr "type" "mult")
+   (set_attr "predicable" "yes")]
+)
+
+(define_insn "*mulhisi3tt"
+  [(set (match_operand:SI 0 "s_register_operand" "=r")
+	(mult:SI (ashiftrt:SI
+		  (match_operand:SI 1 "s_register_operand" "r")
+		  (const_int 16))
+		 (ashiftrt:SI
+		  (match_operand:SI 2 "s_register_operand" "r")
+		  (const_int 16))))]
+  "TARGET_ARM && arm_arch5e"
+  "smultt%?\\t%0, %1, %2"
+  [(set_attr "type" "mult")
+   (set_attr "predicable" "yes")]
 )
 
 (define_insn "*mulhisi3addsi"
@@ -1341,9 +1382,10 @@
 			   (match_operand:HI 2 "s_register_operand" "%r"))
 			  (sign_extend:SI
 			   (match_operand:HI 3 "s_register_operand" "r")))))]
-  "TARGET_ARM && arm_is_xscale"
+  "TARGET_ARM && arm_arch5e"
   "smlabb%?\\t%0, %2, %3, %1"
-  [(set_attr "type" "mult")]
+  [(set_attr "type" "mult")
+   (set_attr "predicable" "yes")]
 )
 
 (define_insn "*mulhidi3adddi"
@@ -1354,9 +1396,10 @@
 	 	    (match_operand:HI 2 "s_register_operand" "%r"))
 		   (sign_extend:DI
 		    (match_operand:HI 3 "s_register_operand" "r")))))]
-  "TARGET_ARM && arm_is_xscale"
+  "TARGET_ARM && arm_arch5e"
   "smlalbb%?\\t%Q0, %R0, %2, %3"
-[(set_attr "type" "mult")])
+  [(set_attr "type" "mult")
+   (set_attr "predicable" "yes")])
 
 (define_insn "*arm_mulsf3"
   [(set (match_operand:SF 0 "s_register_operand" "=f")

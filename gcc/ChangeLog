@@ -1,3 +1,9 @@
+2003-02-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (mulhisi3, mulhisi3addsi, mulhidi3adddi): Enable for any 
+	ARMv5e processor, not just for XScale.  Instructions are predicable.
+	(mulhisi3tb, mulhisi3bt, mulhisi3tt): New patterns for ARMv5e.
+
 2003-02-28  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (note_invalid_constants): Change parameter type
