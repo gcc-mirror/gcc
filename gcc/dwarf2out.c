@@ -1998,7 +1998,7 @@ decl_ultimate_origin (decl)
 {
   register tree immediate_origin = DECL_ABSTRACT_ORIGIN (decl);
 
-  if (immediate_origin == NULL_TREE || immediate_origin == decl)
+  if (immediate_origin == NULL_TREE)
     return NULL_TREE;
   else
     {
@@ -7453,9 +7453,15 @@ gen_variable_die (decl, context_die)
 
   if (origin != NULL)
     add_abstract_origin_attribute (var_die, origin);
-  else if (old_die && TREE_STATIC (decl))
+  /* Loop unrolling can create multiple blocks that refer to the same
+     static variable, so we must test for the DW_AT_declaration flag.  */
+  /* ??? Loop unrolling/reorder_blocks should perhaps be rewritten to
+     copy decls and set the DECL_ABSTRACT flag on them instead of
+     sharing them.  */
+  else if (old_die && TREE_STATIC (decl)
+ 	   && get_AT_flag (old_die, DW_AT_declaration) == 1)
     {
-      assert (get_AT_flag (old_die, DW_AT_declaration) == 1);
+      /* ??? This is an instantiation of a C++ class level static.  */
       add_AT_die_ref (var_die, DW_AT_specification, old_die);
       if (DECL_NAME (decl))
 	{
