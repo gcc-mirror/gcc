@@ -1609,7 +1609,7 @@ final_prescan_insn (insn, operand, num_operands)
   /* This holds the last insn address.  */
   static int last_insn_address = 0;
 
-  int uid = INSN_UID (insn);
+  const int uid = INSN_UID (insn);
 
   if (TARGET_RTL_DUMP)
     {
@@ -2055,12 +2055,12 @@ output_logical_op (mode, operands)
   /* Figure out the logical op that we need to perform.  */
   enum rtx_code code = GET_CODE (operands[3]);
   /* Pretend that every byte is affected if both operands are registers.  */
-  unsigned HOST_WIDE_INT intval =
+  const unsigned HOST_WIDE_INT intval =
     (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
 			      ? INTVAL (operands[2]) : 0x55555555);
   /* The determinant of the algorithm.  If we perform an AND, 0
      affects a bit.  Otherwise, 1 affects a bit.  */
-  unsigned HOST_WIDE_INT det = (code != AND) ? intval : ~intval;
+  const unsigned HOST_WIDE_INT det = (code != AND) ? intval : ~intval;
   /* The name of an insn.  */
   const char *opname;
   char insn_buf[100];
@@ -2208,12 +2208,12 @@ compute_logical_op_length (mode, operands)
   /* Figure out the logical op that we need to perform.  */
   enum rtx_code code = GET_CODE (operands[3]);
   /* Pretend that every byte is affected if both operands are registers.  */
-  unsigned HOST_WIDE_INT intval =
+  const unsigned HOST_WIDE_INT intval =
     (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
 			      ? INTVAL (operands[2]) : 0x55555555);
   /* The determinant of the algorithm.  If we perform an AND, 0
      affects a bit.  Otherwise, 1 affects a bit.  */
-  unsigned HOST_WIDE_INT det = (code != AND) ? intval : ~intval;
+  const unsigned HOST_WIDE_INT det = (code != AND) ? intval : ~intval;
   /* Insn length.  */
   unsigned int length = 0;
 
@@ -2330,12 +2330,12 @@ compute_logical_op_cc (mode, operands)
   /* Figure out the logical op that we need to perform.  */
   enum rtx_code code = GET_CODE (operands[3]);
   /* Pretend that every byte is affected if both operands are registers.  */
-  unsigned HOST_WIDE_INT intval =
+  const unsigned HOST_WIDE_INT intval =
     (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
 			      ? INTVAL (operands[2]) : 0x55555555);
   /* The determinant of the algorithm.  If we perform an AND, 0
      affects a bit.  Otherwise, 1 affects a bit.  */
-  unsigned HOST_WIDE_INT det = (code != AND) ? intval : ~intval;
+  const unsigned HOST_WIDE_INT det = (code != AND) ? intval : ~intval;
   /* Condition code.  */
   enum attr_cc cc = CC_CLOBBER;
 
@@ -3245,9 +3245,9 @@ output_a_shift (operands)
 	case SHIFT_ROT_AND:
 	  {
 	    int m = GET_MODE_BITSIZE (mode) - n;
-	    int mask = (shift_type == SHIFT_ASHIFT
-			? ((1 << m) - 1) << n
-			: (1 << m) - 1);
+	    const int mask = (shift_type == SHIFT_ASHIFT
+			      ? ((1 << m) - 1) << n
+			      : (1 << m) - 1);
 	    char insn_buf[200];
 
 	    /* Not all possibilities of rotate are supported.  They shouldn't
@@ -3912,7 +3912,7 @@ h8300_encode_label (decl)
      tree decl;
 {
   const char *str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-  int len = strlen (str);
+  const int len = strlen (str);
   char *newstr = alloca (len + 2);
 
   newstr[0] = '&';
