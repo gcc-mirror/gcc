@@ -5093,6 +5093,13 @@ build_static_cast (type, expr)
 	   && TREE_CODE (type) != FUNCTION_TYPE
 	   && can_convert (intype, strip_all_pointer_quals (type)))
     ok = 1;
+  else if (TREE_CODE (intype) == ENUMERAL_TYPE
+           && TREE_CODE (type) == ENUMERAL_TYPE)
+    /* DR 128: "A value of integral _or enumeration_ type can be explicitly
+       converted to an enumeration type."
+       The integral to enumeration will be accepted by the previous clause.
+       We need to explicitly check for enumeration to enumeration.  */
+    ok = 1;
 
   /* [expr.static.cast]
 
