@@ -10,7 +10,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002
 
-@set last-update-news 2002-07-25
+@set last-update-news 2002-11-02
 
 @include root.texi
 
@@ -156,6 +156,33 @@ The following information was last updated on @value{last-update-news}:
 @heading In @code{GCC} 3.3 versus @code{GCC} 3.2:
 @itemize @bullet
 @item
+Problem Reports fixed (in chronological order of submission):
+@table @code
+@item 3924
+g77 generates code which is rejected by GAS if COFF debugging info is
+requested
+@item 6286
+Broken links on web pages
+@item 6367
+(libf2c) multiple repeat counts confuse namelist read into array
+@item 6491
+Logical operations error on logicals when using -fugly-logint
+@item 6742
+Generation of C++ Prototype for FORTRAN and extern "C"
+@item 7113
+Failure of g77.f-torture/execute/f90-intrinsic-bit.f -Os on irix6.5
+@item 7236
+(libf2c) OPEN(...,RECL=nnn,...) without ACCESS='DIRECT' should assume a direct
+access file
+@item 7278
+g77 "bug"; the executable misbehave (use of options -O2 -fno-automatic
+gave wrong results)
+@item 7384
+(libf2c) DATE_AND_TIME milliseconds field inactive on Windows
+@item 7388
+Incorrect output with 0-based array of characters
+@end table
+@item
 Richard Henderson (@email{rth@@redhat.com}) analysed and improved the handling
 of (no-)aliasing information for dummy arguments and improved the optimization
 of induction variables in unrolled loops.
@@ -164,7 +191,11 @@ of induction variables in unrolled loops.
 @heading In @code{GCC} 3.2 versus @code{GCC} 3.1:
 @itemize @bullet
 @item
-Nothing.
+Problem Reports fixed (in chronological order of submission):
+@table @code
+@item 8308
+gcc-3.x does not compile files with suffix .f (RATFOR) [Fixed in 3.2.1]
+@end table
 @end itemize
 
 @heading In @code{GCC} 3.1 (formerly known as g77-0.5.27) versus @code{GCC} 3.0:
@@ -196,6 +227,12 @@ ICE on compiling source with 540 000 000 REAL array
 ICE on BESJN(integer*8,real)
 @item 5837
 bug in loop unrolling
+@item 6106
+sparc-sun-solaris2.7 gcc-3.1 extra g77 testsuite failures w/-m64
+@item 6138
+Incorrect acces of integer*1 variables on PA
+@item 6304
+Failure of LAPACK test dtest on irix6.5 with -mabi=64 -O2
 @end table
 
 @item
