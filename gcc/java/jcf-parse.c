@@ -567,6 +567,7 @@ load_class (tree class_or_name, int verbose)
 {
   tree name, saved;
   int class_loaded;
+  tree class_decl;
 
   /* class_or_name can be the name of the class we want to load */
   if (TREE_CODE (class_or_name) == IDENTIFIER_NODE)
@@ -577,12 +578,12 @@ load_class (tree class_or_name, int verbose)
     name = TYPE_NAME (TREE_PURPOSE (class_or_name));
   /* Or it's a type in the making */
   else
-    {
-      /* If the class is from source code, then it must already be loaded.  */
-      if (CLASS_FROM_SOURCE_P (class_or_name))
-        return;
-      name = DECL_NAME (TYPE_NAME (class_or_name));
-    }
+    name = DECL_NAME (TYPE_NAME (class_or_name));
+
+  /* If the class is from source code, then it must already be loaded.  */
+  class_decl = IDENTIFIER_CLASS_VALUE (name);
+  if (class_decl && CLASS_FROM_SOURCE_P (TREE_TYPE (class_decl)))
+    return;
 
   saved = name;
   while (1)
