@@ -1,3 +1,10 @@
+1998-07-22  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* inc/exception: Change terminate and unexpected to ().
+
+	* parse.y (named_class_head_sans_basetype_defn): A
+	named_class_head_sans_basetype followed by '{' or ':' is a defn.
+
 1998-07-21  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (canonical_type_variant): New fn to handle arrays.
