@@ -53,6 +53,7 @@ struct c_pretty_print_info
   c_pretty_print_fn primary_expression;
   c_pretty_print_fn postfix_expression;
   c_pretty_print_fn unary_expression;
+  c_pretty_print_fn initializer;
   c_pretty_print_fn multiplicative_expression;
   c_pretty_print_fn conditional_expression;
   c_pretty_print_fn assignment_expression;
@@ -115,6 +116,7 @@ struct c_pretty_print_info
 #define pp_primary_expression(PPI, E)     (*(PPI)->primary_expression) (PPI, E)
 #define pp_postfix_expression(PPI, E)     (*(PPI)->postfix_expression) (PPI, E)
 #define pp_unary_expression(PPI, E)       (*(PPI)->unary_expression) (PPI, E)
+#define pp_initializer(PPI, E)            (*(PPI)->initializer) (PPI, E)
 #define pp_multiplicative_expression(PPI, E)\
    (*(PPI)->multiplicative_expression) (PPI, E)
 #define pp_conditional_expession(PPI, E)  \
@@ -136,4 +138,5 @@ void pp_c_logical_or_expression PARAMS ((c_pretty_print_info *, tree));
 void pp_c_expression_list PARAMS ((c_pretty_print_info *, tree));
 void pp_c_cast_expression PARAMS ((c_pretty_print_info *, tree));
 void pp_c_postfix_expression PARAMS ((c_pretty_print_info *, tree));
+void pp_c_initializer PARAMS ((c_pretty_print_info *, tree));
 void pp_c_literal PARAMS ((c_pretty_print_info *, tree));

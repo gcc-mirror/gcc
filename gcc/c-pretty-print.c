@@ -35,6 +35,9 @@ static void pp_c_string_literal    PARAMS ((c_pretty_print_info *, tree));
 
 static void pp_c_primary_expression PARAMS ((c_pretty_print_info *, tree));
 
+/* postfix-expression  */
+static void pp_c_initializer_list PARAMS ((c_pretty_print_info *, tree));
+
 static void pp_c_unary_expression PARAMS ((c_pretty_print_info *, tree));
 static void pp_c_multiplicative_expression PARAMS ((c_pretty_print_info *,
 						    tree));
@@ -316,6 +319,22 @@ pp_c_primary_expression (ppi, e)
       pp_c_literal (ppi, e);
       break;
 
+    case TARGET_EXPR:
+      pp_c_left_paren (ppi);
+      pp_c_identifier (ppi, "__builtin_memcpy");
+      pp_c_left_paren (ppi);
+      pp_ampersand (ppi);
+      pp_c_primary_expression (ppi, TREE_OPERAND (e, 0));
+      pp_separate_with (ppi, ',');
+      pp_ampersand (ppi);
+      pp_initializer (ppi, TREE_OPERAND (e, 1));
+      if (TREE_OPERAND (e, 2))
+	{
+	  pp_separate_with (ppi, ',');
+	  pp_c_expression (ppi, TREE_OPERAND (e, 2));
+	}
+      pp_c_right_paren (ppi);
+
     default:
       /*  Make sure this call won't cause any infinite loop. */
       pp_c_left_paren (ppi);
@@ -323,6 +342,65 @@ pp_c_primary_expression (ppi, e)
       pp_c_right_paren (ppi);
       break;
     }
+}
+
+/* Print out a C initializer -- also support C compound-literals.  */
+void
+pp_c_initializer (ppi, e)
+     c_pretty_print_info *ppi;
+     tree e;
+{
+  if (TREE_CODE (e) == CONSTRUCTOR)
+    {
+      enum tree_code code = TREE_CODE (TREE_TYPE (e));
+      if (code == RECORD_TYPE || code == UNION_TYPE || code == ARRAY_TYPE)
+	{
+	  pp_left_brace (ppi);
+	  pp_c_initializer_list (ppi, e);
+	  pp_right_brace (ppi);
+	}
+      else
+	pp_unsupported_tree (ppi, TREE_OPERAND (e, 1));
+    }
+  else
+    pp_assignment_expression (ppi, e);
+}
+
+static void
+pp_c_initializer_list (ppi, e)
+     c_pretty_print_info *ppi;
+     tree e;
+{
+  tree type = TREE_TYPE (e);
+  const enum tree_code code = TREE_CODE (type);
+
+  if (code == RECORD_TYPE || code == UNION_TYPE || code == ARRAY_TYPE)
+    {
+      tree init = TREE_OPERAND (e, 1);
+      for (; init != NULL_TREE; init = TREE_CHAIN (init))
+	{
+	  if (code == RECORD_TYPE || code == UNION_TYPE)
+	    {
+	      pp_dot (ppi);
+	      pp_c_primary_expression (ppi, TREE_PURPOSE (init));
+	    }
+	  else
+	    {
+	      pp_c_left_bracket (ppi);
+	      if (TREE_PURPOSE (init))
+		pp_c_literal (ppi, TREE_PURPOSE (init));
+	      pp_c_right_bracket (ppi);
+	    }
+	  pp_c_whitespace (ppi);
+	  pp_equal (ppi);
+	  pp_c_whitespace (ppi);
+	  pp_initializer (ppi, TREE_VALUE (init));
+	  if (TREE_CHAIN (init))
+	    pp_separate_with (ppi, ',');
+	}
+    }
+  else
+    pp_unsupported_tree (ppi, type);
 }
 
 void
@@ -353,6 +431,13 @@ pp_c_postfix_expression (ppi, e)
       pp_c_right_paren (ppi);
       break;
 
+    case ABS_EXPR:
+      pp_c_identifier (ppi, "abs");
+      pp_c_left_paren (ppi);
+      pp_c_expression (ppi, TREE_OPERAND (e, 0));
+      pp_c_right_paren (ppi);
+      break;
+
     case COMPONENT_REF:
       {
 	tree object = TREE_OPERAND (e, 0);
@@ -370,10 +455,34 @@ pp_c_postfix_expression (ppi, e)
       }
       break;
 
-    case CONSTRUCTOR:
     case COMPLEX_CST:
     case VECTOR_CST:
-      pp_unsupported_tree (ppi, e);
+    case COMPLEX_EXPR:
+      pp_c_left_paren (ppi);
+      pp_type_id (ppi, TREE_TYPE (e));
+      pp_c_right_paren (ppi);
+      pp_left_brace (ppi);
+      
+      if (code == COMPLEX_CST)
+	{
+	  pp_c_expression (ppi, TREE_REALPART (e));
+	  pp_separate_with (ppi, ',');
+	  pp_c_expression (ppi, TREE_IMAGPART (e));
+	}
+      else if (code == VECTOR_CST)
+	pp_c_expression_list (ppi, TREE_VECTOR_CST_ELTS (e));
+      else if (code == COMPLEX_EXPR)
+	{
+	  pp_c_expression (ppi, TREE_OPERAND (e, 0));
+	  pp_separate_with (ppi, ',');
+	  pp_c_expression (ppi, TREE_OPERAND (e, 1));
+	}
+      
+      pp_right_brace (ppi);
+      break;
+
+    case CONSTRUCTOR:
+      pp_initializer (ppi, e);
       break;
 
     default:
@@ -416,13 +525,14 @@ pp_c_unary_expression (ppi, e)
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
     case TRUTH_NOT_EXPR:
+    case CONJ_EXPR:
       if (code == ADDR_EXPR)
 	pp_ampersand (ppi);
       else if (code == INDIRECT_REF)
 	pp_star (ppi);
       else if (code == NEGATE_EXPR)
 	pp_minus (ppi);
-      else if (code == BIT_NOT_EXPR)
+      else if (code == BIT_NOT_EXPR || code == CONJ_EXPR)
 	pp_complement (ppi);
       else if (code == TRUTH_NOT_EXPR)
 	pp_exclamation (ppi);
@@ -443,6 +553,13 @@ pp_c_unary_expression (ppi, e)
 	pp_c_unary_expression (ppi, TREE_OPERAND (e, 0));
       break;
 
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      pp_c_identifier (ppi, code == REALPART_EXPR ? "__real__" : "__imag__");
+      pp_c_whitespace (ppi);
+      pp_unary_expression (ppi, TREE_OPERAND (e, 0));
+      break;
+      
     default:
       pp_postfix_expression (ppi, e);
       break;
@@ -454,7 +571,7 @@ pp_c_cast_expression (ppi, e)
      c_pretty_print_info *ppi;
      tree e;
 {
-  if (TREE_CODE (e) == CONVERT_EXPR)
+  if (TREE_CODE (e) == CONVERT_EXPR || TREE_CODE (e) == FLOAT_EXPR)
     {
       pp_c_left_paren (ppi);
       pp_type_id (ppi, TREE_TYPE (e));
@@ -710,7 +827,7 @@ pp_c_assignment_expression (ppi, e)
      c_pretty_print_info *ppi;
      tree e;
 {
-  if (TREE_CODE (e) == MODIFY_EXPR)
+  if (TREE_CODE (e) == MODIFY_EXPR || TREE_CODE (e) == INIT_EXPR)
     {
       pp_c_unary_expression (ppi, TREE_OPERAND (e, 0));
       pp_c_maybe_whitespace (ppi);
@@ -750,6 +867,7 @@ pp_c_expression (ppi, e)
     case FIELD_DECL:
     case LABEL_DECL:
     case ERROR_MARK:
+    case TARGET_EXPR:
       pp_c_primary_expression (ppi, e);
       break;
 
@@ -758,13 +876,31 @@ pp_c_expression (ppi, e)
     case ARRAY_REF:
     case CALL_EXPR:
     case COMPONENT_REF:
-    case CONSTRUCTOR:
     case COMPLEX_CST:
     case VECTOR_CST:
+    case ABS_EXPR:
+    case CONSTRUCTOR:
+    case COMPLEX_EXPR:
       pp_c_postfix_expression (ppi, e);
       break;
 
+    case CONJ_EXPR:
+    case ADDR_EXPR:
+    case INDIRECT_REF:
+    case NEGATE_EXPR:
+    case BIT_NOT_EXPR:
+    case TRUTH_NOT_EXPR:
+    case PREINCREMENT_EXPR:
+    case PREDECREMENT_EXPR:
+    case SIZEOF_EXPR:
+    case ALIGNOF_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      pp_c_unary_expression (ppi, e);
+      break;
+
     case CONVERT_EXPR:
+    case FLOAT_EXPR:
       pp_c_cast_expression (ppi, e);
       break;
 
@@ -811,6 +947,7 @@ pp_c_expression (ppi, e)
       break;
 
     case MODIFY_EXPR:
+    case INIT_EXPR:
       pp_c_assignment_expression (ppi, e);
       break;
 
