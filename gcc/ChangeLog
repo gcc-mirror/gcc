@@ -1,3 +1,11 @@
+2005-01-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	2004-11-11  Eric Christopher  <echristo@redhat.com>
+
+        * config/frv/frv.md: Add fr400_integer automaton. Don't
+        allow TYPE_MUL, TYPE_MACC, or TYPE_CUT to issue in parallel
+        to TYPE_MACC.
+
 2005-01-26  Steven Bosscher  <stevenb@suse.de>
 
 	PR middle-end/16585
