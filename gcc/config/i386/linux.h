@@ -151,7 +151,11 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-D__ELF__ -Dunix -Dlinux -Asystem(posix)"
 
 #undef CPP_SPEC
+#ifdef USE_GNULIBC_1
 #define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"
+#else
+#define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
+#endif
 
 #undef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) %{profile:-p}"
@@ -173,6 +177,7 @@ Boston, MA 02111-1307, USA.  */
 /* If ELF is the default format, we should not use /lib/elf. */
 
 #undef	LINK_SPEC
+#ifdef USE_GNULIBC_1
 #ifndef LINUX_DEFAULT_ELF
 #define LINK_SPEC "-m elf_i386 %{shared:-shared} \
   %{!shared: \
@@ -188,6 +193,15 @@ Boston, MA 02111-1307, USA.  */
       %{!static: \
 	%{rdynamic:-export-dynamic} \
 	%{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.1}} \
+	%{static:-static}}}"
+#endif
+#else
+#define LINK_SPEC "-m elf_i386 %{shared:-shared} \
+  %{!shared: \
+    %{!ibcs: \
+      %{!static: \
+	%{rdynamic:-export-dynamic} \
+	%{!dynamic-linker:-dynamic-linker /lib/ld-linux.so.2}} \
 	%{static:-static}}}"
 #endif
 
