@@ -1,5 +1,5 @@
-/* Definitions for Linux
-   Copyright (C) 1995 Free Software Foundation, Inc.
+/* Definitions for Linux-based GNU systems.
+   Copyright (C) 1995, 1997 Free Software Foundation, Inc.
    Contributed by H.J. Lu (hjl@nynexst.com)
 
 This file is part of GNU CC.
@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #undef HAVE_ATEXIT
 #define HAVE_ATEXIT
 
-/* Linux uses ctype from glibc.a. I am not sure how complete it is.
+/* GNU/Linux uses ctype from glibc.a. I am not sure how complete it is.
    For now, we play safe. It may change later. */
 
 #if 0
@@ -35,6 +35,9 @@ Boston, MA 02111-1307, USA.  */
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC  "%{pg:gcrt0.o%s} %{!pg:%{p:gcrt0.o%s} %{!p:crt0.o%s}} %{static:-static}"
+
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START "#"
 
 #undef ASM_APP_ON
 #define ASM_APP_ON "#APP\n"
