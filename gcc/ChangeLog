@@ -1,3 +1,11 @@
+2004-04-23  Paolo Bonzini  <bonzini@gnu.org>
+
+	* doc/invoke.texi (Optimize Options): Refer to "unit-at-a-time
+	mode" rather than "-funit-at-a-time" since -O2 enables it
+	without requiring -f* options.	Refer to -fprofile-generate and
+	-fprofile-use correctly.  Move -funit-at-a-time among options
+	enabled by -O.	Add information about unit-at-a-time caveats.
+
 2004-04-22  Per Bothner  <per@bothner.com>
 
 	* line-map.h (struct line_maps):  New field highest_line.
