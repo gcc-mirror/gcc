@@ -1,5 +1,13 @@
+2003-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/8316, c++/9315, c++/10136
+	* call.c (print_z_candidate): Split out from...
+	(print_z_candidiates): ...here.
+	(joust): Use it.
+
 2003-03-17  Roger Sayle  <roger@eyesopen.com>
 
+	PR c++/10031
 	* decl.c (duplicate_decls): Use the new type when prototyping
 	anticipated decls, even when the types match.  This defines the
 	exception list for the built-in function.

@@ -2435,6 +2435,36 @@ equal_functions (tree fn1, tree fn2)
   return fn1 == fn2;
 }
 
+/* Print information about one overload candidate CANDIDATE.  STR is the
+   text to print before the candidate itself and ERRFN is the routine
+   (i.e. error, warning or pedwarn) used to do the printing.  */
+
+static void
+print_z_candidate (const char *str, struct z_candidate *candidate,
+		   void (*errfn)(const char *, ...))
+{
+  if (TREE_CODE (candidate->fn) == IDENTIFIER_NODE)
+    {
+      if (TREE_VEC_LENGTH (candidate->convs) == 3)
+	errfn ("%s %D(%T, %T, %T) <built-in>", str, candidate->fn,
+	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 0)),
+	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 1)),
+	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 2)));
+      else if (TREE_VEC_LENGTH (candidate->convs) == 2)
+	errfn ("%s %D(%T, %T) <built-in>", str, candidate->fn,
+	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 0)),
+	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 1)));
+      else
+	errfn ("%s %D(%T) <built-in>", str, candidate->fn,
+	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 0)));
+    }
+  else if (TYPE_P (candidate->fn))
+    errfn ("%s %T <conversion>", str, candidate->fn);
+  else
+    errfn ("%H%s %+#D%s", &DECL_SOURCE_LOCATION (candidate->fn), str,
+	   candidate->fn, candidate->viable == -1 ? " <near match>" : "");
+}
+
 static void
 print_z_candidates (struct z_candidate *candidates)
 {
@@ -2467,26 +2497,7 @@ print_z_candidates (struct z_candidate *candidates)
   str = "candidates are:";
   for (; candidates; candidates = candidates->next)
     {
-      if (TREE_CODE (candidates->fn) == IDENTIFIER_NODE)
-	{
-	  if (TREE_VEC_LENGTH (candidates->convs) == 3)
-	    error ("%s %D(%T, %T, %T) <built-in>", str, candidates->fn,
-		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)),
-		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 1)),
-		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 2)));
-	  else if (TREE_VEC_LENGTH (candidates->convs) == 2)
-	    error ("%s %D(%T, %T) <built-in>", str, candidates->fn,
-		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)),
-		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 1)));
-	  else
-	    error ("%s %D(%T) <built-in>", str, candidates->fn,
-		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)));
-	}
-      else if (TYPE_P (candidates->fn))
-	error ("%s %T <conversion>", str, candidates->fn);
-      else
-	cp_error_at ("%s %+#D%s", str, candidates->fn,
-		     candidates->viable == -1 ? " <near match>" : "");
+      print_z_candidate (str, candidates, error);
       str = "               "; 
     }
 }
@@ -5861,9 +5872,11 @@ tweak:
         {
 	  if (warn)
 	    {
-	      pedwarn ("choosing `%D' over `%D'", w->fn, l->fn);
-	      pedwarn (
-"  because worst conversion for the former is better than worst conversion for the latter");
+	      print_z_candidate ("ISO C++ says that ", w, pedwarn);
+	      print_z_candidate ("              and ", l, pedwarn);
+	      pedwarn ("are ambiguous even though the worst conversion \
+for the former is better than the worst conversion for the latter",
+		       w->fn, l->fn);
 	    }
 	  else
 	    add_warning (w, l);
