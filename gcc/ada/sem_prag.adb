@@ -38,7 +38,6 @@ with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Dist; use Exp_Dist;
-with Fname;    use Fname;
 with Hostparm; use Hostparm;
 with Lib;      use Lib;
 with Lib.Writ; use Lib.Writ;
@@ -2017,16 +2016,24 @@ package body Sem_Prag is
 
          --  Go to renamed subprogram if present, since convention applies
          --  to the actual renamed entity, not to the renaming entity.
+         --  If subprogram is inherited, go to parent subprogram.
 
          if Is_Subprogram (E)
            and then Present (Alias (E))
-           and then Nkind (Parent (Declaration_Node (E))) =
-                      N_Subprogram_Renaming_Declaration
          then
-            E := Alias (E);
+            if Nkind (Parent (Declaration_Node (E)))
+              = N_Subprogram_Renaming_Declaration
+            then
+               E := Alias (E);
+
+            elsif Nkind (Parent (E)) = N_Full_Type_Declaration
+              and then Scope (E) = Scope (Alias (E))
+            then
+               E := Alias (E);
+            end if;
          end if;
 
-         --  Check that we not applying this to a specless body
+         --  Check that we are not applying this to a specless body
 
          if Is_Subprogram (E)
            and then Nkind (Parent (Declaration_Node (E))) = N_Subprogram_Body
@@ -6836,22 +6843,7 @@ package body Sem_Prag is
 
             --  Pragma is active if inlining option is active
 
-            if Inline_Active then
-               Process_Inline (True);
-
-            --  Pragma is active in a predefined file in config run time mode
-
-            elsif Configurable_Run_Time_Mode
-              and then
-                Is_Predefined_File_Name (Unit_File_Name (Current_Sem_Unit))
-            then
-               Process_Inline (True);
-
-            --  Otherwise inlining is not active
-
-            else
-               Process_Inline (False);
-            end if;
+            Process_Inline (Inline_Active);
 
          -------------------
          -- Inline_Always --
