@@ -1,3 +1,7 @@
+2000-04-10  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* lex.c (init_parse): Remove traces of classof and headof.
+
 2000-04-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (struct lang_decl): Remove main_decl_variant.

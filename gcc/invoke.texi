@@ -1101,11 +1101,9 @@ but to allow and give a warning for old-style code that would
 otherwise be invalid, or have different behavior.
 
 @item -fno-gnu-keywords
-Do not recognize @code{classof}, @code{headof}, or @code{typeof} as a
-keyword, so that code can use these words as identifiers.  You can use
-the keywords @code{__classof__}, @code{__headof__}, and
-@code{__typeof__} instead.  @samp{-ansi} implies
-@samp{-fno-gnu-keywords}.
+Do not recognize @code{typeof} as a keyword, so that code can use these
+words as identifiers. You can use the keywords @code{__typeof__}
+instead.  @samp{-ansi} implies @samp{-fno-gnu-keywords}.
 
 @item -fguiding-decls
 Treat a function declaration with the same type as a potential function
