@@ -1,3 +1,10 @@
+2003-08-24  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/inclhack.def (AAB_svr4_replace_byteorder):  Enhance
+	comment.  Enable for DYNIX/ptx systems (when they switch to
+	regular fixincludes).
+	* fixinc/fixincl.x: Regenerate.
+
 2003-08-23  Jason Eckhardt  <jle@rice.edu>
 
 	* config/i860/t-i860: New.
