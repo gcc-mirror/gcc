@@ -5200,6 +5200,7 @@ finish_struct (t, fieldlist, attributes)
 {
   register tree x;
   int toplevel = global_binding_level == current_binding_level;
+  int saw_named_field;
 
   /* If this type was previously laid out as a forward reference,
      make sure we lay it out again.  */
@@ -5238,6 +5239,7 @@ finish_struct (t, fieldlist, attributes)
      Store 0 there, except for ": 0" fields (so we can find them
      and delete them, below).  */
 
+  saw_named_field = 0;
   for (x = fieldlist; x; x = TREE_CHAIN (x))
     {
       DECL_CONTEXT (x) = t;
@@ -5371,6 +5373,22 @@ finish_struct (t, fieldlist, attributes)
 	}
 
       DECL_INITIAL (x) = 0;
+
+      /* Detect flexible array member in an invalid context.  */
+      if (TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
+	  && TYPE_SIZE (TREE_TYPE (x)) == NULL_TREE
+	  && TYPE_DOMAIN (TREE_TYPE (x)) != NULL_TREE
+	  && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (x))) == NULL_TREE)
+	{
+	  if (TREE_CODE (t) == UNION_TYPE)
+	    error_with_decl (x, "flexible array member in union");
+	  else if (TREE_CHAIN (x) != NULL_TREE)
+	    error_with_decl (x, "flexible array member not at end of struct");
+	  else if (! saw_named_field)
+	    error_with_decl (x, "flexible array member in otherwise empty struct");
+	}
+      if (DECL_NAME (x))
+	saw_named_field = 1;
     }
 
   /* Delete all duplicate fields from the fieldlist */
@@ -5416,8 +5434,8 @@ finish_struct (t, fieldlist, attributes)
 	fieldlistp = &TREE_CHAIN (*fieldlistp);
   }
 
-  /*  Now we have the truly final field list.
-      Store it in this type and in the variants.  */
+  /* Now we have the truly final field list.
+     Store it in this type and in the variants.  */
 
   TYPE_FIELDS (t) = fieldlist;
 

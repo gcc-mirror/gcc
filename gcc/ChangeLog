@@ -1,3 +1,24 @@
+2001-01-04  Richard Henderson  <rth@redhat.com>
+
+	* c-decl.c (finish_struct): Detect flexible array members
+	used in an inappropriate context.
+	* c-typeck.c (really_start_incremental_init): Special case
+	constructor_max_index for zero length arrays.
+	(pop_init_level): Allow initialization of flexible array
+	members.  Deprecate initialization of zero length arrays.
+	Don't issue missing initializer warning for flexible array
+	members or zero length arrays.
+	(process_init_element): Don't dereference null DECL_SIZE.
+	* varasm.c (array_size_for_constructor): Return a HOST_WIDE_INT.
+	Don't abort for empty constructors.  Use size_binop
+	(output_constructor): Add commentary regarding zero length 
+	array futures.  Abort if we try to initialize an array of
+	unspecified length with a non-empty constructor in the middle
+	of a structure.
+
+	* extend.texi (Zero Length): Update and clarify documentation
+	on static initialization.
+
 2001-01-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_expand_prologue): Don't compile an ISR

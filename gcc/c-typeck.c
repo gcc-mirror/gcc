@@ -5162,6 +5162,11 @@ really_start_incremental_init (type)
 	{
 	  constructor_max_index
 	    = TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type));
+
+	  /* Detect non-empty initializations of zero-length arrays.  */
+	  if (constructor_max_index == NULL_TREE)
+	    constructor_max_index = build_int_2 (-1, -1);
+
 	  constructor_index
 	    = convert (bitsizetype,
 		       TYPE_MIN_VALUE (TYPE_DOMAIN (constructor_type)));
@@ -5292,6 +5297,11 @@ push_init_level (implicit)
 	  constructor_index
 	    = convert (bitsizetype, 
 		       TYPE_MIN_VALUE (TYPE_DOMAIN (constructor_type)));
+
+	  /* ??? For GCC 3.1, remove special case initialization of
+	     zero-length array members from pop_init_level and set
+	     constructor_max_index such that we get the normal
+	     "excess elements" warning.  */
 	}
       else
 	constructor_index = bitsize_zero_node;
@@ -5337,20 +5347,42 @@ pop_init_level (implicit)
 
   /* Error for initializing a flexible array member, or a zero-length
      array member in an inappropriate context.  */
-  if (constructor_type
+  if (constructor_type && constructor_fields
       && TREE_CODE (constructor_type) == ARRAY_TYPE
       && TYPE_DOMAIN (constructor_type)
       && ! TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type)))
     {
-      if (! TYPE_SIZE (constructor_type))
-	error_init ("initialization of a flexible array member");
-      /* Silently discard empty initializations of zero-length arrays.  */
-      else if (integer_zerop (constructor_unfilled_index))
-	constructor_type = 0;
-      /* Otherwise we must be initializing a member of a top-level
-	 structure.  */
-      else if (constructor_depth != 2)
-	error_init ("initialization of zero-length array inside a nested structure");
+      /* Silently discard empty initializations.  The parser will
+	 already have pedwarned for empty brackets.  */
+      if (integer_zerop (constructor_unfilled_index))
+	constructor_type = NULL_TREE;
+      else if (! TYPE_SIZE (constructor_type))
+	{
+	  if (constructor_depth > 2)
+	    error_init ("initialization of flexible array member in a nested context");
+	  else if (pedantic)
+	    pedwarn_init ("initialization of a flexible array member");
+
+          /* We have already issued an error message for the existance
+	     of a flexible array member not at the end of the structure.
+	     Discard the initializer so that we do not abort later.  */
+	  if (TREE_CHAIN (constructor_fields) != NULL_TREE)
+	    constructor_type = NULL_TREE;
+	}
+      else
+	{
+	  warning_init ("deprecated initialization of zero-length array");
+
+          /* We must be initializing the last member of a top-level struct.  */
+	  if (TREE_CHAIN (constructor_fields) != NULL_TREE)
+	    {
+	      error_init ("initialization of zero-length array before end of structure");
+	      /* Discard the initializer so that we do not abort later.  */
+	      constructor_type = NULL_TREE;
+	    }
+	  else if (constructor_depth > 2)
+	    error_init ("initialization of zero-length array inside a nested context");
+	}
     }
 
   /* Warn when some struct elements are implicitly initialized to zero.  */
@@ -5359,9 +5391,18 @@ pop_init_level (implicit)
       && TREE_CODE (constructor_type) == RECORD_TYPE
       && constructor_unfilled_fields)
     {
-      push_member_name (constructor_unfilled_fields);
-      warning_init ("missing initializer");
-      RESTORE_SPELLING_DEPTH (constructor_depth);
+      /* Do not warn for flexible array members or zero-length arrays.  */
+      while (constructor_unfilled_fields
+	     && (! DECL_SIZE (constructor_unfilled_fields)
+		 || integer_zerop (DECL_SIZE (constructor_unfilled_fields))))
+	constructor_unfilled_fields = TREE_CHAIN (constructor_unfilled_fields);
+
+      if (constructor_unfilled_fields)
+	{
+	  push_member_name (constructor_unfilled_fields);
+	  warning_init ("missing initializer");
+	  RESTORE_SPELLING_DEPTH (constructor_depth);
+	}
     }
 
   /* Now output all pending elements.  */
@@ -6129,10 +6170,11 @@ process_init_element (value)
 	       directly output as a constructor.  */
 	    {
 	      /* For a record, keep track of end position of last field.  */
-	      constructor_bit_index
-		= size_binop (PLUS_EXPR,
-			      bit_position (constructor_fields),
-			      DECL_SIZE (constructor_fields));
+	      if (DECL_SIZE (constructor_fields))
+	        constructor_bit_index
+		  = size_binop (PLUS_EXPR,
+			        bit_position (constructor_fields),
+			        DECL_SIZE (constructor_fields));
 
 	      constructor_unfilled_fields = TREE_CHAIN (constructor_fields);
 	      /* Skip any nameless bit fields.  */
