@@ -126,12 +126,6 @@ put_back (ch)
 
 int linemode;
 
-/* the declaration found for the last IDENTIFIER token read in.
-   yylex must look this up to detect typedefs, which get token type TYPENAME,
-   so it is left around in case the identifier is not a typedef but is
-   used in a context which makes it a reference to a variable.  */
-tree lastiddecl;
-
 extern int yydebug;
 
 /* File used for outputting assembler code.  */
@@ -1400,10 +1394,10 @@ yylex ()
 	    /* Only return OBJECTNAME if it is a typedef.  */
 	    if (doing_objc_thang && value == OBJECTNAME)
 	      {
-		lastiddecl = lookup_name(yylval.ttype);
+		tree decl = lookup_name(yylval.ttype);
 
-		if (lastiddecl == NULL_TREE
-		    || TREE_CODE (lastiddecl) != TYPE_DECL)
+		if (decl == NULL_TREE
+		    || TREE_CODE (decl) != TYPE_DECL)
 		  value = IDENTIFIER;
 	      }
 
@@ -1422,24 +1416,26 @@ yylex ()
 
       if (value == IDENTIFIER)
 	{
+	  tree decl;
+
  	  if (token_buffer[0] == '@')
 	    error("invalid identifier `%s'", token_buffer);
 
           yylval.ttype = get_identifier (token_buffer);
-	  lastiddecl = lookup_name (yylval.ttype);
+	  decl = lookup_name (yylval.ttype);
 
-	  if (lastiddecl != 0 && TREE_CODE (lastiddecl) == TYPE_DECL)
+	  if (decl != 0 && TREE_CODE (decl) == TYPE_DECL)
 	    value = TYPENAME;
 	  /* A user-invisible read-only initialized variable
 	     should be replaced by its value.
 	     We handle only strings since that's the only case used in C.  */
-	  else if (lastiddecl != 0 && TREE_CODE (lastiddecl) == VAR_DECL
-		   && DECL_IGNORED_P (lastiddecl)
-		   && TREE_READONLY (lastiddecl)
-		   && DECL_INITIAL (lastiddecl) != 0
-		   && TREE_CODE (DECL_INITIAL (lastiddecl)) == STRING_CST)
+	  else if (decl != 0 && TREE_CODE (decl) == VAR_DECL
+		   && DECL_IGNORED_P (decl)
+		   && TREE_READONLY (decl)
+		   && DECL_INITIAL (decl) != 0
+		   && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST)
 	    {
-	      tree stringval = DECL_INITIAL (lastiddecl);
+	      tree stringval = DECL_INITIAL (decl);
 
 	      /* Copy the string value so that we won't clobber anything
 		 if we put something in the TREE_CHAIN of this one.  */

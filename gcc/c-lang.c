@@ -171,6 +171,15 @@ build_objc_string (len, str)
   return NULL_TREE;
 }
 
+/* Used by c-typeck.c (build_external_ref), but only for objc.  */
+
+tree
+lookup_objc_ivar (id)
+     tree id ATTRIBUTE_UNUSED;
+{
+  return 0;
+}
+
 /* Called at end of parsing, but before end-of-file processing.  */
 
 void

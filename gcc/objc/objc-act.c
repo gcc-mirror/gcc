@@ -8614,3 +8614,24 @@ objc_act_parse_init ()
   ggc_add_root (&nst_method_hash_list, 1, sizeof nst_method_hash_list, ggc_mark_hash_table);
   ggc_add_root (&cls_method_hash_list, 1, sizeof cls_method_hash_list, ggc_mark_hash_table);
 }
+
+/* Look up ID as an instance variable.  */
+tree
+lookup_objc_ivar (id)
+     tree id;
+{
+  tree decl;
+
+  if (objc_receiver_context && !strcmp (IDENTIFIER_POINTER (id), "super"))
+    /* we have a message to super */
+    return get_super_receiver ();
+  else if (objc_method_context && (decl = is_ivar (objc_ivar_chain, id)))
+    {
+      if (is_private (decl))
+	return error_mark_node;
+      else
+        return build_ivar_reference (id);
+    }
+  else
+    return 0;
+}

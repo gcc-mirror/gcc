@@ -47,6 +47,9 @@ Boston, MA 02111-1307, USA.  */
    message within this initializer.  */
 static int missing_braces_mentioned;
 
+/* 1 if we explained undeclared var errors.  */
+static int undeclared_variable_notice;
+
 static tree qualify_type		PARAMS ((tree, tree));
 static int comp_target_types		PARAMS ((tree, tree));
 static int function_types_compatible_p	PARAMS ((tree, tree));
@@ -1389,6 +1392,95 @@ build_array_ref (array, index)
   }
 }
 
+/* Build an external reference to identifier ID.  FUN indicates
+   whether this will be used for a function call.  */
+tree
+build_external_ref (id, fun)
+     tree id;
+     int fun;
+{
+  tree ref;
+  tree decl = lookup_name (id);
+  tree objc_ivar = lookup_objc_ivar (id);
+
+  if (!decl || decl == error_mark_node || C_DECL_ANTICIPATED (decl))
+    {
+      if (objc_ivar)
+	ref = objc_ivar;
+      else if (fun)
+	{
+	  if (!decl || decl == error_mark_node)
+	    /* Ordinary implicit function declaration.  */
+	    ref = implicitly_declare (id);
+	  else
+	    {
+	      /* Implicit declaration of built-in function.  Don't
+		 change the built-in declaration, but don't let this
+		 go by silently, either.  */
+	      pedwarn ("implicit declaration of function `%s'",
+		       IDENTIFIER_POINTER (DECL_NAME (decl)));
+	      C_DECL_ANTICIPATED (decl) = 0;  /* only issue this warning once */
+	      ref = decl;
+	    }
+	}
+      else
+	{
+	  /* Reference to undeclared variable, including reference to
+	     builtin outside of function-call context.  */
+	  if (current_function_decl == 0)
+	    error ("`%s' undeclared here (not in a function)",
+		   IDENTIFIER_POINTER (id));
+	  else
+	    {
+	      if (IDENTIFIER_GLOBAL_VALUE (id) != error_mark_node
+		  || IDENTIFIER_ERROR_LOCUS (id) != current_function_decl)
+		{
+		  error ("`%s' undeclared (first use in this function)",
+			 IDENTIFIER_POINTER (id));
+
+		  if (! undeclared_variable_notice)
+		    {
+		      error ("(Each undeclared identifier is reported only once");
+		      error ("for each function it appears in.)");
+		      undeclared_variable_notice = 1;
+		    }
+		}
+	      IDENTIFIER_GLOBAL_VALUE (id) = error_mark_node;
+	      IDENTIFIER_ERROR_LOCUS (id) = current_function_decl;
+	    }
+	  return error_mark_node;
+	}
+    }
+  else
+    {
+      /* Properly declared variable or function reference.  */
+      if (!objc_ivar)
+	ref = decl;
+      else if (decl != objc_ivar && IDENTIFIER_LOCAL_VALUE (id))
+	{
+	  warning ("local declaration of `%s' hides instance variable",
+		   IDENTIFIER_POINTER (id));
+	  ref = decl;
+	}
+      else
+	ref = objc_ivar;
+    }
+
+  if (TREE_TYPE (ref) == error_mark_node)
+    return error_mark_node;
+
+  assemble_external (ref);
+  TREE_USED (ref) = 1;
+
+  if (TREE_CODE (ref) == CONST_DECL)
+    {
+      ref = DECL_INITIAL (ref);
+      TREE_CONSTANT (ref) = 1;
+    }
+
+  return ref;
+}
+
 /* Build a function call to function FUNCTION with parameters PARAMS.
    PARAMS is a list--a chain of TREE_LIST nodes--in which the
    TREE_VALUE of each node is a parameter-expression.

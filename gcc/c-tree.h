@@ -163,6 +163,7 @@ extern tree maybe_building_objc_message_expr    PARAMS ((void));
 extern tree maybe_objc_method_name		PARAMS ((tree));
 extern int recognize_objc_keyword		PARAMS ((void));
 extern tree build_objc_string			PARAMS ((int, const char *));
+extern tree lookup_objc_ivar			PARAMS ((tree));
 
 /* in c-parse.in */
 extern void c_parse_init			PARAMS ((void));
@@ -263,6 +264,7 @@ extern tree default_conversion                  PARAMS ((tree));
 extern tree build_component_ref                 PARAMS ((tree, tree));
 extern tree build_indirect_ref                  PARAMS ((tree, const char *));
 extern tree build_array_ref                     PARAMS ((tree, tree));
+extern tree build_external_ref			PARAMS ((tree, int));
 extern tree build_function_call                 PARAMS ((tree, tree));
 extern tree parser_build_binary_op              PARAMS ((enum tree_code,
 							 tree, tree));
