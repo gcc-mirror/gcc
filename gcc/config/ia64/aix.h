@@ -35,9 +35,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define SET_ASM_OP	"\t.set\t"
 
-/*#undef PREFERRED_DEBUGGING_TYPE*/
-/*#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG*/
-
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX "/usr/lib/ia64l64/"
