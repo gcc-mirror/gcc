@@ -1,3 +1,8 @@
+2004-10-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gengtype-lex.l: Add commented } & ) characters to unconfuse
+	editor's paren matching. Allow #define inside a struct.
+
 2004-10-10  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/17703
