@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.1.6.3 2001/08/13 22:22:26 mmitchel Exp $
+## $Id: Makefile.am,v 1.1.6.4 2001/08/18 05:03:40 ljrittle Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -417,7 +417,7 @@ ${thread_builddir}/gthr-default.h:
 gxx_include_dir = @gxx_include_dir@
 
 install-data-local:
-	for file in `find . ! -name stamp-\* -print`; do \
+	for file in `find . ! -name stamp-\* ! -name Makefile -print`; do \
 	installFile=${gxx_include_dir}/$${file} ;\
 	if [ -d $${file} ]; then \
 	  $(INSTALL) -d $${installFile} ;\

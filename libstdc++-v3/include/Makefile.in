@@ -391,7 +391,7 @@ ${thread_builddir}/gthr-default.h:
 	    < ${glibcpp_srcdir}/../gcc/${glibcpp_thread_h} > $@
 
 install-data-local:
-	for file in `find . ! -name stamp-\* -print`; do \
+	for file in `find . ! -name stamp-\* ! -name Makefile -print`; do \
 	installFile=${gxx_include_dir}/$${file} ;\
 	if [ -d $${file} ]; then \
 	  $(INSTALL) -d $${installFile} ;\
