@@ -1,5 +1,8 @@
 2002-06-14  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (begin_for_stmt): Push the 'for' scope before
+	adding the FOR_STMT.
+
 	C++ ABI changes.
 	* class.c (build_base_field): Set DECL_PACKED.
 	(layout_class_type): Don't use tail padding of PODs.
