@@ -2749,6 +2749,83 @@
   return \"call %a1,%2%#\";
 }"
   [(set_attr "type" "call")])
+
+(define_expand "untyped_call"
+  [(parallel [(call (match_operand:SI 0 "call_operand" "")
+		    (const_int 0))
+	      (match_operand:BLK 1 "memory_operand" "")
+	      (match_operand 2 "" "")
+	      (clobber (reg:SI 15))])]
+  ""
+  "
+{
+  operands[1] = change_address (operands[1], DImode, XEXP (operands[1], 0));
+}")
+
+;; Make a call followed by two nops in case the function being called
+;; returns a structure value and expects to skip an unimp instruction.
+
+(define_insn ""
+  [(call (mem:SI (match_operand:SI 0 "call_operand_address" "rS"))
+	 (const_int 0))
+   (match_operand:DI 1 "memory_operand" "o")
+   (match_operand 2 "" "")
+   (clobber (reg:SI 15))]
+  ""
+  "*
+{
+  operands[2] = adj_offsettable_operand (operands[1], 8);
+  return \"call %a0,0\;nop\;nop\;std %%o0,%1\;st %%f0,%2\";
+}"
+  [(set_attr "type" "multi")])
+
+;; Prepare to return any type including a structure value.
+
+(define_expand "untyped_return"
+  [(match_operand:BLK 0 "memory_operand" "")
+   (match_operand 1 "" "")]
+  ""
+  "
+{
+  rtx valreg1 = gen_rtx (REG, DImode, 24);
+  rtx valreg2 = gen_rtx (REG, DFmode, 32);
+  rtx result = operands[0];
+  rtx rtnreg = gen_rtx (REG, SImode, (leaf_function ? 15 : 31));
+  rtx value = gen_reg_rtx (SImode);
+
+  /* Fetch the instruction where we will return to and see if it's an unimp
+     instruction (the most significant 10 bits will be zero).  If so,
+     update the return address to skip the unimp instruction.  */
+  emit_move_insn (value,
+		  gen_rtx (MEM, SImode, plus_constant (rtnreg, 8)));
+  emit_insn (gen_lshrsi3 (value, value, GEN_INT (22)));
+  emit_insn (gen_update_return (rtnreg, value));
+
+  /* Reload the function value registers.  */
+  emit_move_insn (valreg1, change_address (result, DImode, XEXP (result, 0)));
+  emit_move_insn (valreg2,
+		  change_address (result, DFmode,
+				  plus_constant (XEXP (result, 0), 8)));
+
+  /* Put USE insns before the return.  */
+  emit_insn (gen_rtx (USE, VOIDmode, valreg1));
+  emit_insn (gen_rtx (USE, VOIDmode, valreg2));
+
+  /* Construct the return.  */
+  expand_null_return ();
+
+  DONE;
+}")
+
+;; This is a bit of a hack.  We're incrementing a fixed register (%i7),
+;; and parts of the compiler don't want to believe that the add is needed.
+
+(define_insn "update_return"
+  [(unspec:SI [(match_operand:SI 0 "register_operand" "r")
+	       (match_operand:SI 1 "register_operand" "r")] 0)]
+  ""
+  "cmp %1,0\;be,a .+8\;add %0,4,%0"
+  [(set_attr "type" "multi")])
 
 (define_insn "return"
   [(return)]
