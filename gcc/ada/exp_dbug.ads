@@ -354,8 +354,8 @@ package Exp_Dbug is
       --  calls from other operations on the same object. The locking operation
       --  simply acquires the lock, and then calls the non-locking version.
       --  The names of all of these have a prefix constructed from the name of
-      --  the type, the string "PT", and a suffix which is P or N, depending on
-      --  whether this is the protected/non-locking version of the operation.
+      --  the type, and a suffix which is P or N, depending on whether this is
+      --  the protected/non-locking version of the operation.
 
       --  Operations generated for protected entries follow the same encoding.
       --  Each entry results in two suprograms: a procedure that holds the
@@ -376,14 +376,14 @@ package Exp_Dbug is
 
       --  the following operations are created:
 
-      --    lockPT_getN
-      --    lockPT_getP,
+      --    lock_getN
+      --    lock_getP,
 
-      --    lockPT_setN
-      --    lockPT_setP
+      --    lock_setN
+      --    lock_setP
 
-      --    lockPT_update1sE
-      --    lockPT_udpate2sB
+      --    lock_update1sE
+      --    lock_udpate2sB
 
    ----------------------------------------------------
    -- Conversion between Entities and External Names --
