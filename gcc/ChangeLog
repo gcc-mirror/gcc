@@ -1,5 +1,12 @@
 2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_zero_if_equal): Only use XORs if the second
+	operand is an uns_arith_operand; use subtraction otherwise.
+	* config/mips/mips.md (cmpsi, cmpdi): Allow any nonmemory_operand,
+	not just arith_operands.
+
+2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips-protos.h (gen_int_relational): Delete.
 	(mips_emit_scc): Declare.
 	* config/mips/mips.c (internal_test): Delete.

@@ -5472,7 +5472,7 @@ dsrl\t%3,%3,1\n\
 (define_expand "cmpsi"
   [(set (cc0)
 	(compare:CC (match_operand:SI 0 "register_operand")
-		    (match_operand:SI 1 "arith_operand")))]
+		    (match_operand:SI 1 "nonmemory_operand")))]
   ""
 {
   cmp_operands[0] = operands[0];
@@ -5483,7 +5483,7 @@ dsrl\t%3,%3,1\n\
 (define_expand "cmpdi"
   [(set (cc0)
 	(compare:CC (match_operand:DI 0 "register_operand")
-		    (match_operand:DI 1 "arith_operand")))]
+		    (match_operand:DI 1 "nonmemory_operand")))]
   "TARGET_64BIT"
 {
   cmp_operands[0] = operands[0];

@@ -2776,7 +2776,11 @@ mips_zero_if_equal (rtx cmp0, rtx cmp1)
   if (cmp1 == const0_rtx)
     return cmp0;
 
-  return expand_binop (GET_MODE (cmp0), xor_optab,
+  if (uns_arith_operand (cmp1, VOIDmode))
+    return expand_binop (GET_MODE (cmp0), xor_optab,
+			 cmp0, cmp1, 0, 0, OPTAB_DIRECT);
+
+  return expand_binop (GET_MODE (cmp0), sub_optab,
 		       cmp0, cmp1, 0, 0, OPTAB_DIRECT);
 }
 
