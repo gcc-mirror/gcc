@@ -1,3 +1,16 @@
+2002-01-11  Chris Sears  <cbsears_sf@yahoo.com>
+
+	* interpret.cc (NULLARRAYCHECK): New macro.
+	(SAVE_PC): Just store `pc'.
+	(find_exception): Subtract one from `pc' here.
+	(continue1) [insn_iaload, insn_laload, insn_faload, insn_daload,
+	insn_aaload, insn_baload, insn_caload, insn_saload, insn_iastore,
+	insn_lastore, insn_fastore, insn_dastore, insn_aastore,
+	insn_bastore, insn_castore, insn_sastore]: Use NULLARRAYCHECK, and
+	don't call SAVE_PC.
+	(continue1) [insn_fdiv, insn_ddiv, insn_frem, insn_drem]: Don't
+	call SAVE_PC.
+
 2002-01-11  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natSystem.cc (init_properties): Only look for default
