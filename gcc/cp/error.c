@@ -338,45 +338,14 @@ dump_type (tree t, int flags)
       dump_decl (t, flags & ~TFF_DECL_SPECIFIERS);
       break;
 
-    case COMPLEX_TYPE:
-      pp_string (cxx_pp, "__complex__ ");
-      dump_type (TREE_TYPE (t), flags);
-      break;
-
-    case VECTOR_TYPE:
-      pp_string (cxx_pp, "__vector__ ");
-      {
-	/* The subtype of a VECTOR_TYPE is something like intQI_type_node,
-	   which has no name and is not very useful for diagnostics.  So
-	   look up the equivalent C type and print its name.  */
-	tree elt = TREE_TYPE (t);
-	elt = c_common_type_for_mode (TYPE_MODE (elt), TREE_UNSIGNED (elt));
-	dump_type (elt, flags);
-      }
-      break;
-
     case INTEGER_TYPE:
-      if (!TREE_UNSIGNED (TYPE_MAIN_VARIANT (t)) && TREE_UNSIGNED (t))
-	pp_string (cxx_pp, "unsigned ");
-      else if (TREE_UNSIGNED (TYPE_MAIN_VARIANT (t)) && !TREE_UNSIGNED (t))
-	pp_string (cxx_pp, "signed ");
-
-      /* fall through.  */
     case REAL_TYPE:
     case VOID_TYPE:
     case BOOLEAN_TYPE:
-      {
-	tree type;
-	dump_qualifiers (t, after);
-	type = flags & TFF_CHASE_TYPEDEF ? TYPE_MAIN_VARIANT (t) : t;
-	if (TYPE_NAME (type) && TYPE_IDENTIFIER (type))
-	  pp_tree_identifier (cxx_pp, TYPE_IDENTIFIER (type));
-	else
-	  /* Types like intQI_type_node and friends have no names.
-	     These don't come up in user error messages, but it's nice
-	     to be able to print them from the debugger.  */
-	  pp_identifier (cxx_pp, "<anonymous>");
-      }
+    case COMPLEX_TYPE:
+    case VECTOR_TYPE:
+      pp_base (cxx_pp)->padding = pp_none;
+      pp_type_specifier_seq (cxx_pp, t);
       break;
 
     case TEMPLATE_TEMPLATE_PARM:

@@ -106,7 +106,7 @@ struct c_pretty_print_info
 #define pp_abstract_declarator(PP, D)             \
    pp_c_base (PP)->abstract_declarator (pp_c_base (PP), D)
 #define pp_type_specifier_seq(PPI, D)             \
-   pp_c_base (PPI)->type_specifie_seqr (pp_c_base (PPI), D)
+   pp_c_base (PPI)->type_specifier_seq (pp_c_base (PPI), D)
 #define pp_declarator(PPI, D)                     \
    pp_c_base (PPI)->declarator (pp_c_base (PPI), D)
 #define pp_direct_declarator(PPI, D)              \

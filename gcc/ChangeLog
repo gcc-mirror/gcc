@@ -1,3 +1,15 @@
+2003-09-18  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.h (pp_type_specifier_seq): Fix thinko.
+	* c-pretty-print.c: Fix formatting.
+	(pp_c_integer_constant): Append type annotation to literals.  Tidy.
+	(pp_c_type_specifier): Tidy.
+	(pp_c_compound_literal): New function.
+	(pp_c_initializer): Simplify..
+	(pp_c_initializer_list): Likewise.
+	(pp_c_brace_enclosed_initializer_list): New function.
+	(pp_c_postfix_expression): Simplify.
+
 2003-09-17  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mn10300/mn10300.md (andsi3, iorsi3, xorsi3,
