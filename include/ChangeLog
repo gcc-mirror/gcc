@@ -1,3 +1,8 @@
+2003-12-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* include/fibheap.h (fibnode): Use unsigned long int for
+	bit-fields if __GNUC__ is defined.
+
 2003-10-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* obstack.h: Merge the following change from gnulib:
