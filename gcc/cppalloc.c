@@ -1,5 +1,5 @@
 /* Part of CPP library.  (memory allocation - xmalloc etc)
-   Copyright (C) 1986, 87, 89, 92-95, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1986, 87, 89, 92-95, 98, 99, 2000 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
