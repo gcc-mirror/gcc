@@ -1406,7 +1406,7 @@ add_functions (void)
   make_generic ("maxloc", GFC_ISYM_MAXLOC);
 
   add_sym_3red ("maxval", 0, 1, BT_REAL, dr,
-                gfc_check_reduction, NULL, gfc_resolve_maxval,
+                gfc_check_minval_maxval, NULL, gfc_resolve_maxval,
                 ar, BT_REAL, dr, 0, dm, BT_INTEGER, ii, 1,
                 msk, BT_LOGICAL, dl, 1);
 
@@ -1461,7 +1461,7 @@ add_functions (void)
   make_generic ("minloc", GFC_ISYM_MINLOC);
 
   add_sym_3red ("minval", 0, 1, BT_REAL, dr,
-                gfc_check_reduction, NULL, gfc_resolve_minval,
+                gfc_check_minval_maxval, NULL, gfc_resolve_minval,
                 ar, BT_REAL, dr, 0, dm, BT_INTEGER, ii, 1,
                 msk, BT_LOGICAL, dl, 1);
 
@@ -1534,7 +1534,7 @@ add_functions (void)
   make_generic ("present", GFC_ISYM_PRESENT);
 
   add_sym_3red ("product", 0, 1, BT_REAL, dr,
-                gfc_check_reduction, NULL, gfc_resolve_product,
+                gfc_check_product_sum, NULL, gfc_resolve_product,
                 ar, BT_REAL, dr, 0, dm, BT_INTEGER, ii, 1,
                 msk, BT_LOGICAL, dl, 1);
 
@@ -1716,7 +1716,7 @@ add_functions (void)
   make_generic ("sqrt", GFC_ISYM_SQRT);
 
   add_sym_3red ("sum", 0, 1, BT_UNKNOWN, 0,
-                gfc_check_reduction, NULL, gfc_resolve_sum,
+                gfc_check_product_sum, NULL, gfc_resolve_sum,
                 ar, BT_REAL, dr, 0, dm, BT_INTEGER, ii, 1,
                 msk, BT_LOGICAL, dl, 1);
 
@@ -2493,10 +2493,14 @@ check_specific (gfc_intrinsic_sym * specific, gfc_expr * expr, int error_flag)
     /* This is special because we might have to reorder the argument
        list.  */
     t = gfc_check_minloc_maxloc (*ap);
-  else if (specific->check.f3red == gfc_check_reduction)
+  else if (specific->check.f3red == gfc_check_minval_maxval)
     /* This is also special because we also might have to reorder the
        argument list.  */
-    t = gfc_check_reduction (*ap);
+    t = gfc_check_minval_maxval (*ap);
+  else if (specific->check.f3red == gfc_check_product_sum)
+    /* Same here. The difference to the previous case is that we allow a
+       general numeric type.  */
+    t = gfc_check_product_sum (*ap);
   else
      {
        if (specific->check.f1 == NULL)

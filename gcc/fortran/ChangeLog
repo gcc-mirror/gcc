@@ -1,3 +1,16 @@
+2004-08-22  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* check.c (gfc_check_reduction): Rename to ...
+	(check_reduction): ... this. Make static. Don't check type of 
+	first argument.
+	(gfc_check_minval_maxval, gfc_check_prodcut_sum): New functions.
+	* intrinsic.c (add_functions): Change MAXVAL, MINVAL, PRODUCT and
+	SUM to use new check functions.
+	(check_specific): Change logic to call new functions.
+	* intrinsic.h (gfc_check_minval_maxval, gfc_check_product_sum):
+	Add prototypes.
+	(gfc_check_reduction): Remove prototype.
+
 2004-08-20  Paul Brook  <paul@codesourcery.com>
 	Canqun Yang  <canqun@nudt.edu.cn>
 
