@@ -44,6 +44,10 @@ Boston, MA 02111-1307, USA.  */
 #include "errors.h"
 #include "hashtab.h"
 
+/* Nonzero if the user passes the -mone-byte-bool switch, which forces
+   sizeof(bool) to be 1. */
+const char *darwin_one_byte_bool = 0;
+
 int
 name_needs_quotes (const char *name)
 {
