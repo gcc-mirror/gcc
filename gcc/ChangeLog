@@ -1,6 +1,6 @@
 2002-04-03  Richard Henderson  <rth@redhat.com>
 
-	PR opt/4330
+	PR opt/3569
 	* langhooks.h (lang_hooks.decls.warn_unused_global): New.
 	* toplev.c (check_global_declarations): Use it.
 	* langhooks-def.h (lhd_warn_unused_global_decl): Declare.
