@@ -1567,7 +1567,7 @@ output_call_frame_info (for_eh)
 	}
       else
 	{
-	  ASM_OUTPUT_ASCII (asm_out_file, "eh", 2);
+	  ASM_OUTPUT_ASCII (asm_out_file, "eh", 3);
 	}
       fputc ('\n', asm_out_file);
 
@@ -5158,7 +5158,7 @@ output_die (die)
 	  else
 	    ASM_OUTPUT_ASCII (asm_out_file,
 			      a->dw_attr_val.v.val_str,
-			      strlen (a->dw_attr_val.v.val_str));
+			      strlen (a->dw_attr_val.v.val_str) + 1);
 	  break;
 
 	default:
@@ -5310,7 +5310,7 @@ output_pubnames ()
 	}
       else
 	{
-	  ASM_OUTPUT_ASCII (asm_out_file, pub->name, strlen (pub->name));
+	  ASM_OUTPUT_ASCII (asm_out_file, pub->name, strlen (pub->name) + 1);
 	}
 
       fputc ('\n', asm_out_file);
@@ -5546,7 +5546,7 @@ output_line_info ()
 	{
 	  ASM_OUTPUT_ASCII (asm_out_file,
 			    file_table[ft_index],
-			    strlen (file_table[ft_index]));
+			    strlen (file_table[ft_index]) + 1);
 	}
 
       fputc ('\n', asm_out_file);

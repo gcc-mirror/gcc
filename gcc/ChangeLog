@@ -1,3 +1,9 @@
+Sat Nov  1 13:42:19 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* dwarf2out.c (output_call_frame_info): Fix length argument
+	to ASM_OUTPUT_ASCII.
+	(output_die, output_pubnames, output_line_info): Likewise.
+
 Fri Oct 31 07:10:09 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
