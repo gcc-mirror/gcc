@@ -156,6 +156,10 @@ extern tree combine_strings                     PROTO((tree));
 extern void constant_expression_warning         PROTO((tree));
 extern void decl_attributes                     PROTO((tree, tree));
 extern void declare_function_name               PROTO((void));
+extern tree convert_and_check			PROTO((tree, tree));
+extern void constant_expression_warning		PROTO((tree));
+extern void overflow_warning			PROTO((tree));
+extern void unsigned_conversion_warning		PROTO((tree, tree));
 /* Read the rest of the current #-directive line.  */
 #if 0
 extern char *get_directive_line                 PROTO((FILE *));
