@@ -62,6 +62,19 @@ Boston, MA 02111-1307, USA.  */
       || EH_RETURN_DATA_REGNO (2) == REGNO	\
       || EH_RETURN_DATA_REGNO (3) == REGNO))
 
+/* For the default ABI, we rename registers at output-time to fill the gap
+   between the (statically partitioned) saved registers and call-clobbered
+   registers.  In effect this makes unused call-saved registers to be used
+   as call-clobbered registers.  The benefit comes from keeping the number
+   of local registers (value of rL) low, since there's a cost of
+   increasing rL and clearing unused (unset) registers with lower numbers.  */
+#define MMIX_OUTPUT_REGNO(N)					\
+ (TARGET_ABI_GNU 						\
+  || (N) < MMIX_RETURN_VALUE_REGNUM				\
+  || (N) > MMIX_LAST_STACK_REGISTER_REGNUM			\
+  ? (N) : ((N) - MMIX_RETURN_VALUE_REGNUM			\
+	   + cfun->machine->highest_saved_stack_register + 1))
+
 /* The canonical saved comparison operands for non-cc0 machines, set in
    the compare expander.  */
 rtx mmix_compare_op0;
@@ -73,10 +86,6 @@ rtx mmix_compare_op1;
 const char *mmix_cc1_ignored_option;
 
 /* Declarations of locals.  */
-
-/* This is used in the prologue for what number to pass in a PUSHJ or
-   PUSHGO insn.  */
-static int mmix_highest_saved_stack_register;
 
 /* Intermediate for insn output.  */
 static int mmix_output_destination_register;
@@ -981,19 +990,50 @@ mmix_target_asm_function_prologue (stream, locals_size)
 			       cfa_offset);
 	}
     }
+}
+
+/* MACHINE_DEPENDENT_REORG.
+   No actual rearrangements done here; just virtually by calculating the
+   highest saved stack register number used to modify the register numbers
+   at output time.  */
+
+void
+mmix_machine_dependent_reorg (first)
+     rtx first ATTRIBUTE_UNUSED;
+{
+  int regno;
 
   /* We put the number of the highest saved register-file register in a
      location convenient for the call-patterns to output.  Note that we
      don't tell dwarf2 about these registers, since it can't restore them
      anyway.  */
-  for (regno = MMIX_LAST_REGISTER_FILE_REGNUM;
+  for (regno = MMIX_LAST_STACK_REGISTER_REGNUM;
        regno >= 0;
        regno--)
     if ((regs_ever_live[regno] && !call_used_regs[regno])
 	|| (regno == MMIX_FRAME_POINTER_REGNUM && frame_pointer_needed))
       break;
 
-  mmix_highest_saved_stack_register = regno;
+  /* Regardless of whether they're saved (they might be just read), we
+     mustn't include registers that carry parameters.  We could scan the
+     insns to see whether they're actually used (and indeed do other less
+     trivial register usage analysis and transformations), but it seems
+     wasteful to optimize for unused parameter registers.  As of
+     2002-04-30, regs_ever_live[n] seems to be set for only-reads too, but
+     that might change.  */
+  if (!TARGET_ABI_GNU && regno < current_function_args_info.regs - 1)
+    {
+      regno = current_function_args_info.regs - 1;
+
+      /* We don't want to let this cause us to go over the limit and make
+	 incoming parameter registers be misnumbered and treating the last
+	 parameter register and incoming return value register call-saved.
+	 Stop things at the unmodified scheme.  */
+      if (regno > MMIX_RETURN_VALUE_REGNUM - 1)
+	regno = MMIX_RETURN_VALUE_REGNUM - 1;
+    }
+
+  cfun->machine->highest_saved_stack_register = regno;
 }
 
 /* TARGET_ASM_FUNCTION_EPILOGUE.  */
@@ -2165,6 +2205,7 @@ mmix_print_operand (stream, x, code)
   /* When we add support for different codes later, we can, when needed,
      drop through to the main handler with a modified operand.  */
   rtx modified_x = x;
+  int regno = x != NULL_RTX && REG_P (x) ? REGNO (x) : 0;
 
   switch (code)
     {
@@ -2189,11 +2230,11 @@ mmix_print_operand (stream, x, code)
     case 'H':
       /* Highpart.  Must be general register, and not the last one, as
 	 that one cannot be part of a consecutive register pair.  */
-      if (REGNO (x) > MMIX_LAST_GENERAL_REGISTER - 1)
-	internal_error ("MMIX Internal: Bad register: %d", REGNO (x));
+      if (regno > MMIX_LAST_GENERAL_REGISTER - 1)
+	internal_error ("MMIX Internal: Bad register: %d", regno);
 
       /* This is big-endian, so the high-part is the first one.  */
-      fprintf (stream, "%s", reg_names[REGNO (x)]);
+      fprintf (stream, "%s", reg_names[MMIX_OUTPUT_REGNO (regno)]);
       return;
 
     case 'L':
@@ -2213,11 +2254,11 @@ mmix_print_operand (stream, x, code)
 	  return;
 	}
 
-      if (REGNO (x) > MMIX_LAST_GENERAL_REGISTER - 1)
-	internal_error ("MMIX Internal: Bad register: %d", REGNO (x));
+      if (regno > MMIX_LAST_GENERAL_REGISTER - 1)
+	internal_error ("MMIX Internal: Bad register: %d", regno);
 
       /* This is big-endian, so the low-part is + 1.  */
-      fprintf (stream, "%s", reg_names[REGNO (x) + 1]);
+      fprintf (stream, "%s", reg_names[MMIX_OUTPUT_REGNO (regno) + 1]);
       return;
 
       /* Can't use 'a' because that's a generic modifier for address
@@ -2273,19 +2314,15 @@ mmix_print_operand (stream, x, code)
 	 by the prologue.  The actual operand contains the number of
 	 registers to pass, but we don't use it currently.  Anyway, we
 	 need to output the number of saved registers here.  */
-      if (TARGET_ABI_GNU)
-	fprintf (stream, "%d", mmix_highest_saved_stack_register + 1);
-      else
-	/* FIXME: Get the effect of renaming $16, $17.. to the first
-	   unused call-saved reg.  */
-	fprintf (stream, "15");
+      fprintf (stream, "%d",
+	       cfun->machine->highest_saved_stack_register + 1);
       return;
 
     case 'r':
       /* Store the register to output a constant to.  */
       if (! REG_P (x))
 	fatal_insn ("MMIX Internal: Expected a register, not this", x);
-      mmix_output_destination_register = REGNO (x);
+      mmix_output_destination_register = MMIX_OUTPUT_REGNO (regno);
       return;
 
     case 'I':
@@ -2332,9 +2369,10 @@ mmix_print_operand (stream, x, code)
   switch (GET_CODE (modified_x))
     {
     case REG:
-      if (REGNO (modified_x) >= FIRST_PSEUDO_REGISTER)
-	internal_error ("MMIX Internal: Bad register: %d", REGNO (modified_x));
-      fprintf (stream, "%s", reg_names[REGNO (modified_x)]);
+      regno = REGNO (modified_x);
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	internal_error ("MMIX Internal: Bad register: %d", regno);
+      fprintf (stream, "%s", reg_names[MMIX_OUTPUT_REGNO (regno)]);
       return;
 
     case MEM:
@@ -2402,7 +2440,7 @@ mmix_print_operand_address (stream, x)
     {
       /* I find the generated assembly code harder to read without
 	 the ",0".  */
-      fprintf (stream, "%s,0",reg_names[REGNO (x)]);
+      fprintf (stream, "%s,0", reg_names[MMIX_OUTPUT_REGNO (REGNO (x))]);
       return;
     }
   else if (GET_CODE (x) == PLUS)
@@ -2420,11 +2458,12 @@ mmix_print_operand_address (stream, x)
 
       if (REG_P (x1))
 	{
-	  fprintf (stream, "%s,", reg_names[REGNO (x1)]);
+	  fprintf (stream, "%s,", reg_names[MMIX_OUTPUT_REGNO (REGNO (x1))]);
 
 	  if (REG_P (x2))
 	    {
-	      fprintf (stream, "%s", reg_names[REGNO (x2)]);
+	      fprintf (stream, "%s",
+		       reg_names[MMIX_OUTPUT_REGNO (REGNO (x2))]);
 	      return;
 	    }
 	  else if (GET_CODE (x2) == CONST_INT
@@ -2455,7 +2494,7 @@ mmix_asm_output_reg_push (stream, regno)
   fprintf (stream, "\tSUBU %s,%s,8\n\tSTOU %s,%s,0\n",
 	   reg_names[MMIX_STACK_POINTER_REGNUM],
 	   reg_names[MMIX_STACK_POINTER_REGNUM],
-	   reg_names[regno],
+	   reg_names[MMIX_OUTPUT_REGNO (regno)],
 	   reg_names[MMIX_STACK_POINTER_REGNUM]);
 }
 
@@ -2467,7 +2506,7 @@ mmix_asm_output_reg_pop (stream, regno)
      int regno;
 {
   fprintf (stream, "\tLDOU %s,%s,0\n\tINCL %s,8\n",
-	   reg_names[regno],
+	   reg_names[MMIX_OUTPUT_REGNO (regno)],
 	   reg_names[MMIX_STACK_POINTER_REGNUM],
 	   reg_names[MMIX_STACK_POINTER_REGNUM]);
 }
@@ -2527,8 +2566,11 @@ int
 mmix_dbx_register_number (regno)
      int regno;
 {
-  /* FIXME: Implement final register renumbering if necessary.  (Use
-     target state in cfun).  */
+  /* Adjust the register number to the one it will be output as, dammit.
+     It'd be nice if we could check the assumption that we're filling a
+     gap, but every register between the last saved register and parameter
+     registers might be a valid parameter register.  */
+  regno = MMIX_OUTPUT_REGNO (regno);
 
   /* We need to renumber registers to get the number of the return address
      register in the range 0..255.  It is also space-saving if registers
