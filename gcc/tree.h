@@ -551,7 +551,8 @@ struct tree_block
 #define TYPE_MAX_VALUE(NODE) ((NODE)->type.maxval)
 #define TYPE_PRECISION(NODE) ((NODE)->type.precision)
 #define TYPE_PARSE_INFO(NODE) ((NODE)->type.parse_info)
-#define TYPE_SYMTAB_ADDRESS(NODE) ((NODE)->type.symtab_address)
+#define TYPE_SYMTAB_ADDRESS(NODE) ((NODE)->type.symtab.address)
+#define TYPE_SYMTAB_POINTER(NODE) ((NODE)->type.symtab.pointer)
 #define TYPE_NAME(NODE) ((NODE)->type.name)
 #define TYPE_NEXT_VARIANT(NODE) ((NODE)->type.next_variant)
 #define TYPE_MAIN_VARIANT(NODE) ((NODE)->type.main_variant)
@@ -614,7 +615,7 @@ struct tree_type
   union tree_node *pointer_to;
   union tree_node *reference_to;
   int parse_info;
-  int symtab_address;
+  union {int address; char *pointer; } symtab;
   union tree_node *name;
   union tree_node *minval;
   union tree_node *maxval;
