@@ -36,17 +36,17 @@ Boston, MA 02111-1307, USA. */
 #define	CPP_PREDEFINES "-D_WIN32 -DWINNT -D__CYGWIN32__ -DPOSIX \
   -D_POWER -D_ARCH_PPC -D__PPC__ -Asystem(winnt) -Acpu(powerpc) -Amachine(powerpc)"
 
-/* We have to dynamic link to get to the system dlls,
-   and I've put all of libc and libm and the unix stuff into
-   cygwin.dll, the import library is called 'libcygwin.a' */
+/* We have to dynamic link to get to the system DLLs.  All of libc, libm and
+   the Unix stuff is in cygwin.dll.  The import library is called
+   'libcygwin.a'.  For Windows applications, include more libraries, but
+   always include kernel32.  We'd like to specific subsystem windows to
+   ld, but that doesn't work just yet.  */
 
 #undef LIB_SPEC
-#define LIB_SPEC "-lcygwin"
-
+#define LIB_SPEC "-lcygwin %{mwindows:-luser32 -lgdi32 -lcomdlg32} -lkernel32"
 
 #undef	LINK_SPEC
 #define	LINK_SPEC "%{v:-V}"
-
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "crti%O%s %{!:crt0%O%s}"
