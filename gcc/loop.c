@@ -9423,7 +9423,7 @@ load_mems (scan_start, end, loop_top, start)
 
 	      /* Load the memory immediately before START, which is
 		 the NOTE_LOOP_BEG.  */
-	      set = gen_rtx_SET (GET_MODE (reg), reg, mem);
+	      set = gen_move_insn (reg, mem);
 	      emit_insn_before (set, start);
 
 	      if (written)
@@ -9440,7 +9440,7 @@ load_mems (scan_start, end, loop_top, start)
 
 		  /* Store the memory immediately after END, which is
 		   the NOTE_LOOP_END.  */
-		  set = gen_rtx_SET (GET_MODE (reg), copy_rtx (mem), reg); 
+		  set = gen_move_insn (copy_rtx (mem), reg); 
 		  emit_insn_after (set, label);
 		}
 
