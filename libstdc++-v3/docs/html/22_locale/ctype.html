@@ -1,144 +1,144 @@
-<HTML>
-<HEAD>
-  <H1>
+<html>
+<head>
+  <h1>
   Notes on the ctype implementation.
-  </H1>
-</HEAD>
+  </h1>
+</head>
 <I>
 prepared by Benjamin Kosnik (bkoz@redhat.com) on August 30, 2000
 </I>
 
-<P>
-<H2>
+<p>
+<h2>
 1. Abstract
-</H2>
-<P>
+</h2>
+<p>
 Woe is me.
-</P>
+</p>
 
-<P>
-<H2>
+<p>
+<h2>
 2. What the standard says
-</H2>
+</h2>
 
 
-<P>
-<H2>
+<p>
+<h2>
 3. Problems with &quot;C&quot; ctype : global locales, termination.
-</H2>
+</h2>
 
-<P>
+<p>
 For the required specialization codecvt&lt;wchar_t, char, mbstate_t&gt; ,
 conversions are made between the internal character set (always UCS4
 on GNU/Linux) and whatever the currently selected locale for the
 LC_CTYPE category implements.
 
-<P>
-<H2>
+<p>
+<h2>
 4. Design
-</H2>
+</h2>
 The two required specializations are implemented as follows:
 
-<P>
-<TT>
+<p>
+<code>
 ctype&lt;char&gt;
-</TT>
-<P>
+</code>
+<p>
 This is simple specialization. Implementing this was a piece of cake.
 
-<P>
-<TT>
+<p>
+<code>
 ctype&lt;wchar_t&gt;
-</TT>
-<P>
+</code>
+<p>
 This specialization, by specifying all the template parameters, pretty
 much ties the hands of implementors. As such, the implementation is
 straightforward, involving mcsrtombs for the conversions between char
 to wchar_t and wcsrtombs for conversions between wchar_t and char.
 
-<P>
+<p>
 Neither of these two required specializations deals with Unicode
 characters. As such, libstdc++-v3 implements 
 
 
 
-<P>
-<H2>
+<p>
+<h2>
 5.  Examples
-</H2>
+</h2>
 
 <pre>
   typedef ctype<char> cctype;
 </pre>
 
 More information can be found in the following testcases:
-<UL>
-<LI> testsuite/22_locale/ctype_char_members.cc 
-<LI> testsuite/22_locale/ctype_wchar_t_members.cc 
-</UL>
+<ul>
+<li> testsuite/22_locale/ctype_char_members.cc 
+<li> testsuite/22_locale/ctype_wchar_t_members.cc 
+</ul>
 
-<P>
-<H2>
+<p>
+<h2>
 6.  Unresolved Issues
-</H2>
+</h2>
 
-<UL>
-	<LI> how to deal with the global locale issue?
+<ul>
+	<li> how to deal with the global locale issue?
 
-	<LI> how to deal with different types than char, wchar_t?
+	<li> how to deal with different types than char, wchar_t?
 
-	<LI> codecvt/ctype overlap: narrow/widen
+	<li> codecvt/ctype overlap: narrow/widen
 
-	<LI> mask typedef in codecvt_base, argument types in codecvt.
+	<li> mask typedef in codecvt_base, argument types in codecvt.
 	what is know about this type?
 
-	<LI> why mask* argument in codecvt?
+	<li> why mask* argument in codecvt?
 	
-	<LI> can this be made (more) generic? is there a simple way to
+	<li> can this be made (more) generic? is there a simple way to
 	straighten out the configure-time mess that is a by-product of
 	this class?
 
-	<LI> get the ctype<wchar_t>::mask stuff under control. Need to
+	<li> get the ctype<wchar_t>::mask stuff under control. Need to
 	make some kind of static table, and not do lookup evertime
 	somebody hits the do_is... functions. Too bad we can't just
 	redefine mask for ctype<wchar_t>
 	
-	<LI> rename abstract base class. See if just smash-overriding
+	<li> rename abstract base class. See if just smash-overriding
 	is a better approach. Clarify, add sanity to naming.
 
-</UL>
+</ul>
 
 
-<P>
-<H2>
+<p>
+<h2>
 7. Acknowledgments
-</H2>
+</h2>
 Ulrich Drepper for patient answering of late-night questions, skeletal
 examples, and C language expertise.
 
-<P>
-<H2>
+<p>
+<h2>
 8. Bibliography / Referenced Documents
-</H2>
+</h2>
 
 Drepper, Ulrich, GNU libc (glibc) 2.2 manual. In particular, Chapters &quot;6. Character Set Handling&quot; and &quot;7 Locales and Internationalization&quot;
 
-<P>
+<p>
 Drepper, Ulrich, Numerous, late-night email correspondence
 
-<P>
+<p>
 ISO/IEC 14882:1998 Programming languages - C++
 
-<P>
+<p>
 ISO/IEC 9899:1999 Programming languages - C
 
-<P>
+<p>
 Langer, Angelika and Klaus Kreft, Standard C++ IOStreams and Locales, Advanced Programmer's Guide and Reference, Addison Wesley Longman, Inc. 2000
 
-<P>
+<p>
 Stroustrup, Bjarne, Appendix D, The C++ Programming Language, Special Edition, Addison Wesley, Inc. 2000
 
-<P>
+<p>
 System Interface Definitions, Issue 6 (IEEE Std. 1003.1-200x)
 The Open Group/The Institute of Electrical and Electronics Engineers, Inc.
 http://www.opennc.org/austin/docreg.html

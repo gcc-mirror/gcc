@@ -1,3 +1,22 @@
+2001-10-19  Phil Edwards  <pme@gcc.gnu.org>
+
+	Bulk documentation merge (copy) from trunk.
+	* docs/html/17_intro/COPYING.DOC, docs/html/17_intro/license.html,
+	docs/html/22_locale/messages.html, docs/html/ext/lwg-active.html,
+	docs/html/ext/lwg-defects.html, docs/html/ext/sgiexts.html:  New.
+
+	* docs/html/configopts.html, docs/html/documentation.html,
+	docs/html/explanations.html, docs/html/install.html,
+	docs/html/17_intro/howto.html, docs/html/18_support/howto.html,
+	docs/html/19_diagnostics/howto.html, docs/html/20_util/howto.html,
+	docs/html/21_strings/howto.html, docs/html/22_locale/codecvt.html,
+	docs/html/22_locale/ctype.html, docs/html/22_locale/howto.html,
+	docs/html/22_locale/locale.html, docs/html/23_containers/howto.html,
+	docs/html/24_iterators/howto.html, docs/html/25_algorithms/howto.html,
+	docs/html/26_numerics/howto.html, docs/html/27_io/howto.html,
+	docs/html/ext/howto.html, docs/html/faq/index.html,
+	docs/html/faq/index.txt:  Merge from trunk.
+
 2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* docs/html/22_locale/locale.html: Fix spelling error of
