@@ -1,5 +1,9 @@
 2000-12-09  Laurynas Biveinis  <lauras@softhome.net>
 
+	* djunpack.bat: removed.
+
+2000-12-09  Laurynas Biveinis  <lauras@softhome.net>
+
 	* Makefile.in: handle DOS-style absolute paths.
 	* config-ml.in: likewise.
 	* symlink-tree: likewise.
