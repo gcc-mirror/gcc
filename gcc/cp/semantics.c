@@ -120,7 +120,7 @@ finish_if_stmt_cond (cond, if_stmt)
       if (last_tree != if_stmt)
 	RECHAIN_STMTS_FROM_LAST (if_stmt, IF_COND (if_stmt));
       else
-	IF_COND (if_stmt) = cond;
+	IF_COND (if_stmt) = copy_to_permanent (cond);
     }
   else
     {
@@ -219,7 +219,7 @@ finish_while_stmt_cond (cond, while_stmt)
 	RECHAIN_STMTS_FROM_LAST (while_stmt, 
 				      WHILE_COND (while_stmt)); 
       else
-	TREE_OPERAND (while_stmt, 0) = cond;
+	TREE_OPERAND (while_stmt, 0) = copy_to_permanent (cond);
     }
   else
     {
@@ -294,7 +294,7 @@ finish_do_stmt (cond, do_stmt)
      tree do_stmt;
 {
   if (processing_template_decl)
-    DO_COND (do_stmt) = cond;
+    DO_COND (do_stmt) = copy_to_permanent (cond);
   else
     {
       emit_line_note (input_filename, lineno);
@@ -378,7 +378,7 @@ finish_for_cond (cond, for_stmt)
       if (last_tree != for_stmt)
 	RECHAIN_STMTS_FROM_LAST (for_stmt, FOR_COND (for_stmt));
       else
-	FOR_COND (for_stmt) = cond;
+	FOR_COND (for_stmt) = copy_to_permanent (cond);
     }
   else
     {
