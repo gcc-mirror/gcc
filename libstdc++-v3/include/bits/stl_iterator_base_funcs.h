@@ -67,113 +67,105 @@
 #pragma GCC system_header
 #include <bits/concept_check.h>
 
-// Since this entire file is within namespace std, there's no reason to
-// waste two spaces along the left column.  Thus the leading indentation is
-// slightly violated from here on.
 namespace std
 {
-template<typename _InputIterator>
-  inline typename iterator_traits<_InputIterator>::difference_type
-  __distance(_InputIterator __first, _InputIterator __last, input_iterator_tag)
-  {
-    // concept requirements
-    __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
-
-    typename iterator_traits<_InputIterator>::difference_type __n = 0;
-    while (__first != __last) {
-      ++__first; ++__n;
+  template<typename _InputIterator>
+    inline typename iterator_traits<_InputIterator>::difference_type
+    __distance(_InputIterator __first, _InputIterator __last,
+               input_iterator_tag)
+    {
+      // concept requirements
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIterator>)
+  
+      typename iterator_traits<_InputIterator>::difference_type __n = 0;
+      while (__first != __last) {
+        ++__first; ++__n;
+      }
+      return __n;
     }
-    return __n;
-  }
-
-template<typename _RandomAccessIterator>
-  inline typename iterator_traits<_RandomAccessIterator>::difference_type
-  __distance(_RandomAccessIterator __first, _RandomAccessIterator __last,
-             random_access_iterator_tag)
-  {
-    // concept requirements
-    __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
-    return __last - __first;
-  }
-
-/**
- *  @brief A generalization of pointer arithmetic.
- *  @param  first  An input iterator.
- *  @param  last  An input iterator.
- *  @return  The distance between them.
- *
- *  Returns @c n such that first + n == last.  This requires that @p last
- *  must be reachable from @p first.  Note that @c n may be negative.
- *
- *  For random access iterators, this uses their @c + and @c - operations
- *  and are constant time.  For other %iterator classes they are linear time.
-*/
-template<typename _InputIterator>
-  inline typename iterator_traits<_InputIterator>::difference_type
-  distance(_InputIterator __first, _InputIterator __last)
-  {
-    // concept requirements -- taken care of in __distance
-    return __distance(__first, __last, __iterator_category(__first));
-  }
-
-template<typename _InputIter, typename _Distance>
-  inline void
-  __advance(_InputIter& __i, _Distance __n, input_iterator_tag)
-  {
-    // concept requirements
-    __glibcpp_function_requires(_InputIteratorConcept<_InputIter>)
-    while (__n--) ++__i;
-  }
-
-template<typename _BidirectionalIterator, typename _Distance>
-  inline void
-  __advance(_BidirectionalIterator& __i, _Distance __n,
-            bidirectional_iterator_tag)
-  {
-    // concept requirements
-    __glibcpp_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator>)
-
-    if (__n > 0)
+  
+  template<typename _RandomAccessIterator>
+    inline typename iterator_traits<_RandomAccessIterator>::difference_type
+    __distance(_RandomAccessIterator __first, _RandomAccessIterator __last,
+               random_access_iterator_tag)
+    {
+      // concept requirements
+      __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
+      return __last - __first;
+    }
+  
+  /**
+   *  @brief A generalization of pointer arithmetic.
+   *  @param  first  An input iterator.
+   *  @param  last  An input iterator.
+   *  @return  The distance between them.
+   *
+   *  Returns @c n such that first + n == last.  This requires that @p last
+   *  must be reachable from @p first.  Note that @c n may be negative.
+   *
+   *  For random access iterators, this uses their @c + and @c - operations
+   *  and are constant time.  For other %iterator classes they are linear time.
+  */
+  template<typename _InputIterator>
+    inline typename iterator_traits<_InputIterator>::difference_type
+    distance(_InputIterator __first, _InputIterator __last)
+    {
+      // concept requirements -- taken care of in __distance
+      return __distance(__first, __last, __iterator_category(__first));
+    }
+  
+  template<typename _InputIter, typename _Distance>
+    inline void
+    __advance(_InputIter& __i, _Distance __n, input_iterator_tag)
+    {
+      // concept requirements
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIter>)
       while (__n--) ++__i;
-    else
-      while (__n++) --__i;
-  }
-
-template<typename _RandomAccessIterator, typename _Distance>
-  inline void
-  __advance(_RandomAccessIterator& __i, _Distance __n,
-            random_access_iterator_tag)
-  {
-    // concept requirements
-    __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
-    __i += __n;
-  }
-
-/**
- *  @brief A generalization of pointer arithmetic.
- *  @param  i  An input iterator.
- *  @param  n  The "delta" by which to change @p i.
- *  @return  Nothing.
- *
- *  This increments @p i by @p n.  For bidirectional and random access
- *  iterators, @p n may be negative, in which case @p i is decremented.
- *
- *  For random access iterators, this uses their @c + and @c - operations
- *  and are constant time.  For other %iterator classes they are linear time.
-*/
-template<typename _InputIterator, typename _Distance>
-  inline void
-  advance(_InputIterator& __i, _Distance __n)
-  {
-    // concept requirements -- taken care of in __advance
-    __advance(__i, __n, __iterator_category(__i));
-  }
-
+    }
+  
+  template<typename _BidirectionalIterator, typename _Distance>
+    inline void
+    __advance(_BidirectionalIterator& __i, _Distance __n,
+              bidirectional_iterator_tag)
+    {
+      // concept requirements
+      __glibcpp_function_requires(_BidirectionalIteratorConcept<_BidirectionalIterator>)
+  
+      if (__n > 0)
+        while (__n--) ++__i;
+      else
+        while (__n++) --__i;
+    }
+  
+  template<typename _RandomAccessIterator, typename _Distance>
+    inline void
+    __advance(_RandomAccessIterator& __i, _Distance __n,
+              random_access_iterator_tag)
+    {
+      // concept requirements
+      __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIterator>)
+      __i += __n;
+    }
+  
+  /**
+   *  @brief A generalization of pointer arithmetic.
+   *  @param  i  An input iterator.
+   *  @param  n  The "delta" by which to change @p i.
+   *  @return  Nothing.
+   *
+   *  This increments @p i by @p n.  For bidirectional and random access
+   *  iterators, @p n may be negative, in which case @p i is decremented.
+   *
+   *  For random access iterators, this uses their @c + and @c - operations
+   *  and are constant time.  For other %iterator classes they are linear time.
+  */
+  template<typename _InputIterator, typename _Distance>
+    inline void
+    advance(_InputIterator& __i, _Distance __n)
+    {
+      // concept requirements -- taken care of in __advance
+      __advance(__i, __n, __iterator_category(__i));
+    }
 } // namespace std
 
 #endif /* __GLIBCPP_INTERNAL_ITERATOR_BASE_FUNCS_H */
-
-
-// Local Variables:
-// mode:C++
-// End:
