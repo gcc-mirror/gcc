@@ -3588,7 +3588,6 @@ loop_iterations (loop_start, loop_end, loop_info)
   rtx comparison, comparison_value;
   rtx iteration_var, initial_value, increment, final_value;
   enum rtx_code comparison_code;
-  enum machine_mode comparison_mode;
   HOST_WIDE_INT abs_inc;
   unsigned HOST_WIDE_INT abs_diff;
   int off_by_one;
@@ -3653,7 +3652,6 @@ loop_iterations (loop_start, loop_end, loop_info)
      invariant register when it canonicalizes the comparison.  */
 
   comparison_code = GET_CODE (comparison);
-  comparison_mode = GET_MODE (comparison);
   iteration_var = XEXP (comparison, 0);
   comparison_value = XEXP (comparison, 1);
 
@@ -3992,10 +3990,6 @@ loop_iterations (loop_start, loop_end, loop_info)
     }
   else
     abort ();
-
-  /* It may be that comparison_mode is smaller than a HOST_WIDE_INT,
-     for instance on a 64-bit host when comparison_mode is SImode.  */
-  abs_diff &= GET_MODE_MASK (comparison_mode);
 
   /* For NE tests, make sure that the iteration variable won't miss
      the final value.  If abs_diff mod abs_incr is not zero, then the
