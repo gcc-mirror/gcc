@@ -1,5 +1,8 @@
 2004-08-17  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/15871
+	* semantics.c (expand_or_defer_fn): Honor -fkeep-inline-functions.
+
 	PR c++/16965
 	* cp-tree.h (qualified_name_lookup_error): Add parameter.
 	* name-lookup.c (do_class_using_decl): Restrict set of entities
