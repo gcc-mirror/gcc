@@ -1,3 +1,8 @@
+2003-08-30  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/java_raw_api.c: Include <stdlib.h> to fix compiler warning
+	about implicit declaration of abort().
+
 2003-09-04  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* Makefile.am: Add dejagnu test framework. Fixes PR other/11411.
