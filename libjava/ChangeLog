@@ -1,3 +1,8 @@
+2005-03-10  Chris Burdess  <dog@bluezoo.org>
+
+	* gnu/xml/dom/ls/SAXEventSink.java: Ignore element declarations if
+	not currently parsing the DTD.
+
 2005-03-10  Bryce McKinlay  <mckinlay@redhat.com>
 
 	New Stack Trace infrastructure.
