@@ -1,5 +1,11 @@
 2002-02-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config.gcc (s390x-*-linux*): Add t-linux64 makefile fragment.
+	* config/s390/t-linux64: New file.
+	* config/s390/libgcc-glibc.ver: New file.
+
+2002-02-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/linux64.h: Delete file.
 	* config/s390/s390x.h: New file.
 	* config.gcc (s390x-*-linux*): Use s390x.h instead of linux64.h
