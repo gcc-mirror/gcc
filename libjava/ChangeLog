@@ -1,3 +1,15 @@
+1999-11-24  Tom Tromey  <tromey@cygnus.com>
+
+	* prims.cc (_Jv_NewObjectArray): Use
+	_Jv_GetArrayElementFromElementType.
+	(_Jv_NewPrimArray): Likewise.
+	* java/lang/natObject.cc (clone): Use
+	_Jv_GetArrayElementFromElementType instead of sizeof.
+	* java/lang/natSystem.cc (arraycopy): Use
+	_Jv_GetArrayElementFromElementType.
+	* include/jvm.h (_Jv_GetArrayElementFromElementType): New
+	function.
+
 1999-11-23  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/net/natPlainSocketImpl.cc: Fix potential buffer overruns in
