@@ -31,8 +31,8 @@ Boston, MA 02111-1307, USA.  */
    opcode.  fucomp is only used when generating IEEE compliant code.
    So don't make TARGET_IEEE_FP default for SCO. */
 
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_80387 | MASK_FLOAT_RETURNS)
+#undef TARGET_SUBTARGET_DEFAULT
+#define TARGET_SUBTARGET_DEFAULT (MASK_80387 | MASK_FLOAT_RETURNS)
 
 /* Let's guess that the SCO software FPU emulator can't handle
    80-bit XFmode insns, so don't generate them.  */
