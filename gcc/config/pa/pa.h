@@ -57,7 +57,7 @@ extern int target_flags;
 /* Generate code that will link against HPUX 8.0 shared libraries.
    Older linkers and assemblers might not support this. */
 
-#define TARGET_SHARED_LIBS (target_flags & 8)
+#define TARGET_SHARED_LIBS 1 /* was (target_flags & 8) */
 
 /* Force all function calls to indirect addressing via a register.  This
    avoids lossage when the function is very far away from the current PC.
@@ -720,9 +720,10 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 
 /* 1 if N is a possible register number for function argument passing.  */
 
-#define FUNCTION_ARG_REGNO_P(N) (((N) >= 23 && (N) <= 26) || \
-				 ((N) >= 32 && (N) <= 35) || \
-				 ((N) >= 44 && (N) <= 51))
+#define FUNCTION_ARG_REGNO_P(N)				\
+  (((N) >= 23 && (N) <= 26) 				\
+   || ((N) >= 32 && (N) <= 35 && ! TARGET_SNAKE)	\
+   || ((N) >= 44 && (N) <= 51 && TARGET_SNAKE))
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
@@ -774,7 +775,12 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    and the rest are pushed.  But any arg that won't entirely fit in regs
    is pushed.
 
-   Arguments passed in registers are either 1 or 2 words long. */
+   Arguments passed in registers are either 1 or 2 words long.
+
+   The caller must make a distinction between calls to explicitly named
+   functions and calls through pointers to functions -- the conventions
+   are different!  Calls through pointers to functions only use general
+   registers for the first four argument words.  */
 
 #define FUNCTION_ARG_PADDING(MODE, TYPE) function_arg_padding ((MODE), (TYPE))
 
@@ -782,11 +788,13 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   (4 >= ((CUM) + FUNCTION_ARG_SIZE ((MODE), (TYPE)))			\
    ? gen_rtx (REG, (MODE),						\
 	      (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1			\
-	       ? ((MODE) == DFmode					\
+	       ? ((! (TARGET_SHARED_LIBS && current_call_is_indirect)	\
+		   && (MODE) == DFmode)					\
 		  ? ((CUM) ? (TARGET_SNAKE ? 50 : 35)			\
 		     : (TARGET_SNAKE ? 46 : 33))			\
 		  : ((CUM) ? 23 : 25))					\
-	       : ((MODE) == SFmode					\
+	       : ((! (TARGET_SHARED_LIBS && current_call_is_indirect)	\
+		   && (MODE) == SFmode)					\
 		  ? (TARGET_SNAKE ? 44 + 2 * (CUM) : 32  + (CUM))	\
 		  : (27 - (CUM) - FUNCTION_ARG_SIZE ((MODE), (TYPE))))))\
    : 0)
