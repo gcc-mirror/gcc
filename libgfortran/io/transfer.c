@@ -843,6 +843,9 @@ us_read (void)
   n = sizeof (gfc_offset);
   p = salloc_r (current_unit->s, &n);
 
+  if (n == 0)
+    return;  /* end of file */
+
   if (p == NULL || n != sizeof (gfc_offset))
     {
       generate_error (ERROR_BAD_US, NULL);
