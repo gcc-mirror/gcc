@@ -1,3 +1,7 @@
+2003-12-07  Falk Hueffner  <falk@debian.org>
+
+	* g++.dg/opt/noreturn-1.C: New test.
+
 2003-12-07  Wolfgang Bangerth  <bangerth@dealii.org>
 
 	* gcc.dg/overflow-1.c: New test.
