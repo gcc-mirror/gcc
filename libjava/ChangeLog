@@ -1,3 +1,17 @@
+2004-10-25  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/java/text/WordBreakIterator.java (WordBreakIterator): Don't
+	initialize `iter'.
+	* gnu/java/text/SentenceBreakIterator.java
+	(SentenceBreakIterator): Don't initialize `iter'.
+	* gnu/java/text/LineBreakIterator.java (LineBreakIterator): Don't
+	initialize `iter'.
+	* gnu/java/text/CharacterBreakIterator.java
+	(CharacterBreakIterator): Don't initialize `iter'.
+	* gnu/java/text/BaseBreakIterator.java (BaseBreakIterator): New
+	constructor.
+	* java/text/BreakIterator.java: Updated documentation.
+
 2004-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR other/18138

@@ -1,5 +1,5 @@
 /* SentenceBreakIterator.java - Default sentence BreakIterator.
-   Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,7 +55,6 @@ public class SentenceBreakIterator extends BaseBreakIterator
 
   public SentenceBreakIterator ()
   {
-    iter = null;
   }
 
   private SentenceBreakIterator (SentenceBreakIterator other)
