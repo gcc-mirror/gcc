@@ -739,7 +739,8 @@ expand_call (exp, target, ignore)
 
 	  if (stack_arg_under_construction || i >= 0)
 	    {
-	      rtx insn = NEXT_INSN (before_call), seq;
+	      rtx insn = before_call ? NEXT_INSN (before_call) : get_insns ();
+	      rtx seq;
 
 	      /* Look for a call in the inline function code.
 		 If OUTGOING_ARGS_SIZE (DECL_SAVED_INSNS (fndecl)) is
