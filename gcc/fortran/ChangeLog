@@ -1,3 +1,12 @@
+2004-08-30  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.h (gfc_namespace): Add new field is_block_data.
+	* parse.c (accept_statement): Remove special handling for BLOCK DATA.
+	(parse_block_data): Record BLOCK DATA name, set is_block_data field.
+	* trans.c (gfc_generate_code): Handle BLOCK DATA units.
+	* trans.h (gfc_generate_block_data): Add prototype.
+	* trans-decl.c (gfc_generate_block_data): New function.
+
 2004-08-29  Richard Henderson  <rth@redhat.com>
 
 	* trans-const.c (gfc_conv_mpz_to_tree): Use mpz_export.

@@ -647,6 +647,12 @@ gfc_generate_code (gfc_namespace * ns)
   gfc_symbol *main_program = NULL;
   symbol_attribute attr;
 
+  if (ns->is_block_data)
+    {
+      gfc_generate_block_data (ns);
+      return;
+    }
+
   /* Main program subroutine.  */
   if (!ns->proc_name)
     {

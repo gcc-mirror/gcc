@@ -2350,4 +2350,30 @@ gfc_generate_constructors (void)
 #endif
 }
 
+/* Translates a BLOCK DATA program unit. This means emitting the
+   commons contained therein plus their initializations. We also emit
+   a globally visible symbol to make sure that each BLOCK DATA program
+   unit remains unique.  */
+
+void
+gfc_generate_block_data (gfc_namespace * ns)
+{
+  tree decl;
+  tree id;
+
+  gfc_trans_common (ns);
+
+  if (ns->proc_name)
+    id = gfc_sym_mangled_function_id (ns->proc_name);
+  else
+    id = get_identifier ("__BLOCK_DATA__");
+
+  decl = build_decl (VAR_DECL, id, gfc_array_index_type);
+  TREE_PUBLIC (decl) = 1;
+  TREE_STATIC (decl) = 1;
+
+  pushdecl (decl);
+  rest_of_decl_compilation (decl, 1, 0);
+}
+
 #include "gt-fortran-trans-decl.h"

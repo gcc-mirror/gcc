@@ -804,6 +804,9 @@ typedef struct gfc_namespace
 
   /* A list of all alternate entry points to this procedure (or NULL).  */
   gfc_entry_list *entries;
+
+  /* Set to 1 if namespace is a BLOCK DATA program unit.  */
+  int is_block_data;
 }
 gfc_namespace;
 
