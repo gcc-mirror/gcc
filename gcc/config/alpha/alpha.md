@@ -5212,6 +5212,7 @@
      where to look for it when we get back to setjmp's function for
      restoring the gp.  */
   emit_indirect_jump (pv);
+  DONE;
 }")
 
 (define_insn "builtin_setjmp_receiver"
