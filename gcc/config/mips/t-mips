@@ -4,8 +4,12 @@ LIBGCC2_CFLAGS	= -O2 $(GCC_CFLAGS) -g1 -G 0
 CONFIG2_H	= $(srcdir)/config/mips.h
 
 # We have a premade insn-attrtab.c to save the hour it takes to run genattrtab.
-PREMADE_ATTRTAB = config/mips-at.c
-PREMADE_ATTRTAB_MD = config/mips-at.md
+PREMADE_ATTRTAB = $(srcdir)/config/mips-at.c
+PREMADE_ATTRTAB_MD = $(srcdir)/config/mips-at.md
+
+# Supress building libgcc1.a, since the MIPS compiler port is complete
+# and does not need anything from libgcc1.a.
+LIBGCC1 = libgcc1.null
 
 # Add additional dependencies to recompile selected modules whenever the
 # tm.h file changes.  The files compiled are:
