@@ -236,6 +236,7 @@ AC_LINK_FILES($ATOMICITYH/bits/atomicity.h, include/bits/atomicity.h)
 AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes || test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
+AC_SUBST(xcompiling)
  
 AC_CACHE_SAVE
 AC_LC_MESSAGES
@@ -272,7 +273,7 @@ fi
 # installed in the correct place. To work around this not being passed
 # down from config-ml.in -> top_srcdir/Makefile.am ->
 # top_srcdir/{src,libsupc++}/Makefile.am, manually append it here.
-AC_OUTPUT(tests_flags mkcheck Makefile src/Makefile libmath/Makefile libio/Makefile libsupc++/Makefile,
+AC_OUTPUT(tests_flags mkcheck Makefile src/Makefile libmath/Makefile libio/Makefile libsupc++/Makefile testsuite/Makefile,
 [if test -n "$CONFIG_FILES"; then
   ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
   grep '^MULTISUBDIR =' Makefile >> src/Makefile

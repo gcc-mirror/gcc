@@ -15774,6 +15774,7 @@ else
   CANADIAN_TRUE='#'
   CANADIAN_FALSE=
 fi
+
  
 cat > confcache <<\EOF
 # This file is a shell script that caches the results of configure
@@ -15825,17 +15826,17 @@ rm -f confcache
 
   ac_safe=`echo "locale.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for locale.h""... $ac_c" 1>&6
-echo "configure:15829: checking for locale.h" >&5
+echo "configure:15830: checking for locale.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 15834 "configure"
+#line 15835 "configure"
 #include "confdefs.h"
 #include <locale.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:15839: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:15840: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -15853,19 +15854,19 @@ if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
   echo "$ac_t""yes" 1>&6
   
     echo $ac_n "checking for LC_MESSAGES""... $ac_c" 1>&6
-echo "configure:15857: checking for LC_MESSAGES" >&5
+echo "configure:15858: checking for LC_MESSAGES" >&5
 if eval "test \"`echo '$''{'ac_cv_val_LC_MESSAGES'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 15862 "configure"
+#line 15863 "configure"
 #include "confdefs.h"
 #include <locale.h>
 int main() {
 return LC_MESSAGES
 ; return 0; }
 EOF
-if { (eval echo configure:15869: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:15870: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_val_LC_MESSAGES=yes
 else
@@ -15910,13 +15911,13 @@ glibcpp_toolexecdir=no
 glibcpp_toolexeclibdir=no
 
 echo $ac_n "checking for interface version number""... $ac_c" 1>&6
-echo "configure:15914: checking for interface version number" >&5
+echo "configure:15915: checking for interface version number" >&5
 libstdcxx_interface=$INTERFACE
 echo "$ac_t""$libstdcxx_interface" 1>&6
 
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 echo $ac_n "checking for --with-gxx-include-dir""... $ac_c" 1>&6
-echo "configure:15920: checking for --with-gxx-include-dir" >&5
+echo "configure:15921: checking for --with-gxx-include-dir" >&5
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
   withval="$with_gxx_include_dir"
@@ -15940,7 +15941,7 @@ echo "$ac_t""$gxx_include_dir" 1>&6
 
 # Process the option "--enable-version-specific-runtime-libs"
 echo $ac_n "checking for --enable-version-specific-runtime-libs""... $ac_c" 1>&6
-echo "configure:15944: checking for --enable-version-specific-runtime-libs" >&5
+echo "configure:15945: checking for --enable-version-specific-runtime-libs" >&5
 # Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   enableval="$enable_version_specific_runtime_libs"
@@ -15980,7 +15981,7 @@ if test x"$glibcpp_toolexecdir" = x"no"; then
 fi
 
 echo $ac_n "checking for install location""... $ac_c" 1>&6
-echo "configure:15984: checking for install location" >&5
+echo "configure:15985: checking for install location" >&5
 echo "$ac_t""$gxx_include_dir" 1>&6
 
 
@@ -16152,7 +16153,7 @@ done
 ac_given_srcdir=$srcdir
 ac_given_INSTALL="$INSTALL"
 
-trap 'rm -fr `echo "tests_flags mkcheck Makefile src/Makefile libmath/Makefile libio/Makefile libsupc++/Makefile config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+trap 'rm -fr `echo "tests_flags mkcheck Makefile src/Makefile libmath/Makefile libio/Makefile libsupc++/Makefile testsuite/Makefile config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -16256,6 +16257,7 @@ s%@NATIVE_TRUE@%$NATIVE_TRUE%g
 s%@NATIVE_FALSE@%$NATIVE_FALSE%g
 s%@CANADIAN_TRUE@%$CANADIAN_TRUE%g
 s%@CANADIAN_FALSE@%$CANADIAN_FALSE%g
+s%@xcompiling@%$xcompiling%g
 s%@gxx_include_dir@%$gxx_include_dir%g
 s%@glibcpp_toolexecdir@%$glibcpp_toolexecdir%g
 s%@glibcpp_toolexeclibdir@%$glibcpp_toolexeclibdir%g
@@ -16308,7 +16310,7 @@ EOF
 
 cat >> $CONFIG_STATUS <<EOF
 
-CONFIG_FILES=\${CONFIG_FILES-"tests_flags mkcheck Makefile src/Makefile libmath/Makefile libio/Makefile libsupc++/Makefile"}
+CONFIG_FILES=\${CONFIG_FILES-"tests_flags mkcheck Makefile src/Makefile libmath/Makefile libio/Makefile libsupc++/Makefile testsuite/Makefile"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then

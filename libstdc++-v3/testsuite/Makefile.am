@@ -21,8 +21,14 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-AUTOMAKE_OPTIONS = 1.3 cygnus dejagnu
+AUTOMAKE_OPTIONS =  foreign dejagnu no-installinfo
 
 DEJATOOL = libstdc++
 
-RUNTEST	= runtest
+EXPECT = `if [ -f $(top_builddir)/../expect/expect ] ; then \
+            echo $(top_builddir)/../expect/expect ; \
+          else echo expect ; fi`
+
+RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then \
+	       echo $(top_srcdir)/../dejagnu/runtest ; \
+	    else echo runtest; fi`
