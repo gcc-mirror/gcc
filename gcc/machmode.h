@@ -33,6 +33,34 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
+/* Find the largest host integer type and set its size and type.  */
+
+#ifndef HOST_BITS_PER_WIDE_INT
+
+#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
+#define HOST_WIDE_INT long
+#else
+#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
+#define HOST_WIDE_INT int
+#endif
+
+#endif
+
+/* Define the number of entries in an 8-bit `shorts' array needed to represent
+   the largest supported constant, which is twice the width of the largest
+   host integer type.  */
+
+#ifndef MAX_SHORTS
+#define MAX_SHORTS (HOST_BITS_PER_WIDE_INT * 2 / 8)
+#endif
+
+/* Provide a default way to print an address in hex via printf.  */
+
+#ifndef HOST_PTR_PRINTF
+#define HOST_PTR_PRINTF sizeof (int) == sizeof (char *) ? "%x" : "%lx"
+#endif
+
 /* Make an enum class that gives all the machine modes.  */
 
 #define DEF_MACHMODE(SYM, NAME, TYPE, SIZE, UNIT, WIDER)  SYM,
@@ -90,8 +118,8 @@ extern int mode_unit_size[];
    that fit within mode MODE.  */
 
 #define GET_MODE_MASK(MODE)  \
-   ((GET_MODE_BITSIZE (MODE) >= HOST_BITS_PER_INT)  \
-    ? -1 : ((1 << GET_MODE_BITSIZE (MODE)) - 1))
+   ((GET_MODE_BITSIZE (MODE) >= HOST_BITS_PER_WIDE_INT)  \
+    ?(HOST_WIDE_INT) ~0 : (((HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (MODE)) - 1))
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 

@@ -455,7 +455,7 @@ find_basic_blocks (f, nonlocal_label_list)
 	/* Make a list of all labels referred to other than by jumps.  */
 	if (code == INSN || code == CALL_INSN)
 	  {
-	    rtx note = find_reg_note (insn, REG_LABEL, 0);
+	    rtx note = find_reg_note (insn, REG_LABEL, NULL_RTX);
 	    if (note != 0)
 	      label_value_list = gen_rtx (EXPR_LIST, VOIDmode, XEXP (note, 0),
 					  label_value_list);
@@ -787,7 +787,7 @@ life_analysis (f, nregs)
 	      && REGNO (SET_DEST (PATTERN (insn))) ==
 			REGNO (SET_SRC (PATTERN (insn)))
 	      /* Insns carrying these notes are useful later on.  */
-	      && ! find_reg_note (insn, REG_EQUAL, 0))
+	      && ! find_reg_note (insn, REG_EQUAL, NULL_RTX))
 	    {
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
@@ -814,7 +814,7 @@ life_analysis (f, nregs)
 		
 	      if (i == XVECLEN (PATTERN (insn), 0)
 		  /* Insns carrying these notes are useful later on.  */
-		  && ! find_reg_note (insn, REG_EQUAL, 0))
+		  && ! find_reg_note (insn, REG_EQUAL, NULL_RTX))
 		{
 		  PUT_CODE (insn, NOTE);
 		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
@@ -906,8 +906,9 @@ life_analysis (f, nregs)
 
 	      for (j = 0; j < regset_size; j++)
 		{
-		  register int x = (basic_block_new_live_at_end[i][j]
-				    & ~basic_block_live_at_end[i][j]);
+		  register REGSET_ELT_TYPE x
+		    = (basic_block_new_live_at_end[i][j]
+		       & ~basic_block_live_at_end[i][j]);
 		  if (x)
 		    consider = 1;
 		  if (x & basic_block_significant[i][j])
@@ -933,8 +934,9 @@ life_analysis (f, nregs)
 		 as live at start as well.  */
 	      for (j = 0; j < regset_size; j++)
 		{
-		  register int x = basic_block_new_live_at_end[i][j]
-			& ~basic_block_live_at_end[i][j];
+		  register REGSET_ELT_TYPE x
+		    = (basic_block_new_live_at_end[i][j]
+		       & ~basic_block_live_at_end[i][j]);
 		  basic_block_live_at_start[i][j] |= x;
 		  basic_block_live_at_end[i][j] |= x;
 		}
@@ -949,7 +951,8 @@ life_analysis (f, nregs)
 		     basic_block_live_at_start[i], regset_bytes);
 	      propagate_block (basic_block_live_at_start[i],
 			       basic_block_head[i], basic_block_end[i], 0,
-			       first_pass ? basic_block_significant[i] : 0,
+			       first_pass ? basic_block_significant[i]
+			       : (regset) 0,
 			       i);
 	    }
 
@@ -996,7 +999,7 @@ life_analysis (f, nregs)
   if (n_basic_blocks > 0)
     for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
       if (basic_block_live_at_start[0][i / REGSET_ELT_BITS]
-	  & (1 << (i % REGSET_ELT_BITS)))
+	  & ((REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS)))
 	reg_basic_block[i] = REG_BLOCK_GLOBAL;
 
   /* Now the life information is accurate.
@@ -1014,7 +1017,8 @@ life_analysis (f, nregs)
   for (i = 0; i < n_basic_blocks; i++)
     {
       propagate_block (basic_block_live_at_end[i],
-		       basic_block_head[i], basic_block_end[i], 1, 0, i);
+		       basic_block_head[i], basic_block_end[i], 1,
+		       (regset) 0, i);
 #ifdef USE_C_ALLOCA
       alloca (0);
 #endif
@@ -1028,7 +1032,8 @@ life_analysis (f, nregs)
      ANSI says only volatile variables need this.  */
 #ifdef LONGJMP_RESTORE_FROM_STACK
   for (i = FIRST_PSEUDO_REGISTER; i < nregs; i++)
-    if (regs_live_at_setjmp[i / REGSET_ELT_BITS] & (1 << (i % REGSET_ELT_BITS))
+    if (regs_live_at_setjmp[i / REGSET_ELT_BITS]
+	& ((REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS))
 	&& regno_reg_rtx[i] != 0 && ! REG_USERVAR_P (regno_reg_rtx[i]))
       {
 	reg_live_length[i] = -1;
@@ -1047,14 +1052,15 @@ life_analysis (f, nregs)
      that hard reg where this pseudo is dead, thus clobbering the pseudo.
      Conclusion: such a pseudo must not go in a hard reg.  */
   for (i = FIRST_PSEUDO_REGISTER; i < nregs; i++)
-    if (regs_live_at_setjmp[i / REGSET_ELT_BITS] & (1 << (i % REGSET_ELT_BITS))
+    if ((regs_live_at_setjmp[i / REGSET_ELT_BITS]
+	 & ((REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS)))
 	&& regno_reg_rtx[i] != 0)
       {
 	reg_live_length[i] = -1;
 	reg_basic_block[i] = -1;
       }
 
-  obstack_free (&flow_obstack, 0);
+  obstack_free (&flow_obstack, NULL_PTR);
 }
 
 /* Subroutines of life analysis.  */
@@ -1193,7 +1199,8 @@ propagate_block (old, first, last, final, significant, bnum)
 
   if (final)
     {
-      register int i, offset, bit;
+      register int i, offset;
+      REGSET_ELT_TYPE bit;
 
       num_scratch = 0;
       maxlive = (regset) alloca (regset_bytes);
@@ -1260,7 +1267,7 @@ propagate_block (old, first, last, final, significant, bnum)
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
 	  register int i;
-	  rtx note = find_reg_note (insn, REG_RETVAL, 0);
+	  rtx note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
 	  int insn_is_dead
 	    = (insn_dead_p (PATTERN (insn), old, 0)
 	       /* Don't delete something that refers to volatile storage!  */
@@ -1337,7 +1344,7 @@ propagate_block (old, first, last, final, significant, bnum)
 	  if (libcall_is_dead)
 	    {
 	      /* Mark the dest reg as `significant'.  */
-	      mark_set_regs (old, dead, PATTERN (insn), 0, significant);
+	      mark_set_regs (old, dead, PATTERN (insn), NULL_RTX, significant);
 
 	      insn = XEXP (note, 0);
 	      prev = PREV_INSN (insn);
@@ -1358,8 +1365,8 @@ propagate_block (old, first, last, final, significant, bnum)
 		 DEAD gets those set by it.  Dead insns don't make anything
 		 live.  */
 
-	      mark_set_regs (old, dead, PATTERN (insn), final ? insn : 0,
-			     significant);
+	      mark_set_regs (old, dead, PATTERN (insn),
+			     final ? insn : NULL_RTX, significant);
 
 	      /* If an insn doesn't use CC0, it becomes dead since we 
 		 assume that every insn clobbers it.  So show it dead here;
@@ -1388,11 +1395,12 @@ propagate_block (old, first, last, final, significant, bnum)
 		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 		    if (call_used_regs[i] && ! global_regs[i])
 		      dead[i / REGSET_ELT_BITS]
-			|= (1 << (i % REGSET_ELT_BITS));
+			|= ((REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS));
 
 		  /* The stack ptr is used (honorarily) by a CALL insn.  */
 		  live[STACK_POINTER_REGNUM / REGSET_ELT_BITS]
-		    |= (1 << (STACK_POINTER_REGNUM % REGSET_ELT_BITS));
+		    |= ((REGSET_ELT_TYPE) 1
+			<< (STACK_POINTER_REGNUM % REGSET_ELT_BITS));
 
 		  /* Calls may also reference any of the global registers,
 		     so they are made live.  */
@@ -1400,7 +1408,7 @@ propagate_block (old, first, last, final, significant, bnum)
 		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 		    if (global_regs[i])
 		      live[i / REGSET_ELT_BITS]
-			|= (1 << (i % REGSET_ELT_BITS));
+			|= ((REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS));
 
 		  /* Calls also clobber memory.  */
 		  last_mem_set = 0;
@@ -1435,18 +1443,18 @@ propagate_block (old, first, last, final, significant, bnum)
 	    {
 	      for (i = 0; i < regset_size; i++)
 		{
-		  register int diff = live[i] & ~maxlive[i];
+		  register REGSET_ELT_TYPE diff = live[i] & ~maxlive[i];
 
 		  if (diff)
 		    {
 		      register int regno;
 		      maxlive[i] |= diff;
 		      for (regno = 0; diff && regno < REGSET_ELT_BITS; regno++)
-			if (diff & (1 << regno))
+			if (diff & ((REGSET_ELT_TYPE) 1 << regno))
 			  {
 			    regs_sometimes_live[sometimes_max].offset = i;
 			    regs_sometimes_live[sometimes_max].bit = regno;
-			    diff &= ~ (1 << regno);
+			    diff &= ~ ((REGSET_ELT_TYPE) 1 << regno);
 			    sometimes_max++;
 			  }
 		    }
@@ -1456,7 +1464,7 @@ propagate_block (old, first, last, final, significant, bnum)
 		register struct foo *p = regs_sometimes_live;
 		for (i = 0; i < sometimes_max; i++, p++)
 		  {
-		    if (old[p->offset] & (1 << p->bit))
+		    if (old[p->offset] & ((REGSET_ELT_TYPE) 1 << p->bit))
 		      reg_live_length[p->offset * REGSET_ELT_BITS + p->bit]++;
 		  }
 	      }
@@ -1513,7 +1521,8 @@ insn_dead_p (x, needed, call_ok)
 	{
 	  register int regno = REGNO (r);
 	  register int offset = regno / REGSET_ELT_BITS;
-	  register int bit = 1 << (regno % REGSET_ELT_BITS);
+	  register REGSET_ELT_TYPE bit
+	    = (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
 
 	  if ((regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
 	      /* Make sure insns to set frame pointer aren't deleted.  */
@@ -1535,7 +1544,8 @@ insn_dead_p (x, needed, call_ok)
 
 	      while (--n > 0)
 		if ((needed[(regno + n) / REGSET_ELT_BITS]
-		     & 1 << ((regno + n) % REGSET_ELT_BITS)) != 0)
+		     & ((REGSET_ELT_TYPE) 1
+			<< ((regno + n) % REGSET_ELT_BITS))) != 0)
 		  return 0;
 	    }
 
@@ -1639,7 +1649,7 @@ regno_uninitialized (regno)
     return 0;
 
   return (basic_block_live_at_start[0][regno / REGSET_ELT_BITS]
-	  & (1 << (regno % REGSET_ELT_BITS)));
+	  & ((REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS)));
 }
 
 /* 1 if register REGNO was alive at a place where `setjmp' was called
@@ -1655,9 +1665,9 @@ regno_clobbered_at_setjmp (regno)
 
   return ((reg_n_sets[regno] > 1
 	   || (basic_block_live_at_start[0][regno / REGSET_ELT_BITS]
-	       & (1 << (regno % REGSET_ELT_BITS))))
+	       & ((REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS))))
 	  && (regs_live_at_setjmp[regno / REGSET_ELT_BITS]
-	      & (1 << (regno % REGSET_ELT_BITS))));
+	      & ((REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS))));
 }
 
 /* Process the registers that are set within X.
@@ -1750,9 +1760,10 @@ mark_set_1 (needed, dead, x, insn, significant)
     /* && regno != STACK_POINTER_REGNUM) -- let's try without this.  */
     {
       register int offset = regno / REGSET_ELT_BITS;
-      register int bit = 1 << (regno % REGSET_ELT_BITS);
-      int all_needed = (needed[offset] & bit) != 0;
-      int some_needed = (needed[offset] & bit) != 0;
+      register REGSET_ELT_TYPE bit
+	= (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
+      REGSET_ELT_TYPE all_needed = (needed[offset] & bit);
+      REGSET_ELT_TYPE some_needed = (needed[offset] & bit);
 
       /* Mark it as a significant register for this basic block.  */
       if (significant)
@@ -1777,13 +1788,15 @@ mark_set_1 (needed, dead, x, insn, significant)
 	    {
 	      if (significant)
 		significant[(regno + n) / REGSET_ELT_BITS]
-		  |= 1 << ((regno + n) % REGSET_ELT_BITS);
+		  |= (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS);
 	      dead[(regno + n) / REGSET_ELT_BITS]
-		|= 1 << ((regno + n) % REGSET_ELT_BITS);
-	      some_needed |= (needed[(regno + n) / REGSET_ELT_BITS]
-			      & 1 << ((regno + n) % REGSET_ELT_BITS));
-	      all_needed &= (needed[(regno + n) / REGSET_ELT_BITS]
-			     & 1 << ((regno + n) % REGSET_ELT_BITS));
+		|= (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS);
+	      some_needed
+		|= (needed[(regno + n) / REGSET_ELT_BITS]
+		    & (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS));
+	      all_needed
+		&= (needed[(regno + n) / REGSET_ELT_BITS]
+		    & (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS));
 	    }
 	}
       /* Additional data to record if this is the final pass.  */
@@ -1870,7 +1883,8 @@ mark_set_1 (needed, dead, x, insn, significant)
 	      for (i = HARD_REGNO_NREGS (regno, GET_MODE (reg)) - 1;
 		   i >= 0; i--)
 		if ((needed[(regno + i) / REGSET_ELT_BITS]
-		     & 1 << ((regno + i) % REGSET_ELT_BITS)) == 0)
+		     & ((REGSET_ELT_TYPE) 1
+			<< ((regno + i) % REGSET_ELT_BITS))) == 0)
 		  REG_NOTES (insn)
 		    = gen_rtx (EXPR_LIST, REG_UNUSED,
 			       gen_rtx (REG, word_mode, regno + i),
@@ -2002,7 +2016,7 @@ find_auto_inc (needed, x, insn)
 		 it as needed, we'll put a REG_DEAD note for it
 		 on this insn, which is incorrect.  */
 	      needed[regno / REGSET_ELT_BITS]
-		|= 1 << (regno % REGSET_ELT_BITS);
+		|= (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
 
 	      /* If there are any calls between INSN and INCR, show
 		 that REGNO now crosses them.  */
@@ -2119,7 +2133,8 @@ mark_used_regs (needed, live, x, final, insn)
       regno = REGNO (x);
       {
 	register int offset = regno / REGSET_ELT_BITS;
-	register int bit = 1 << (regno % REGSET_ELT_BITS);
+	register REGSET_ELT_TYPE bit
+	  = (REGSET_ELT_TYPE) 1 << (regno % REGSET_ELT_BITS);
 	int all_needed = (needed[offset] & bit) != 0;
 	int some_needed = (needed[offset] & bit) != 0;
 
@@ -2158,11 +2173,13 @@ mark_used_regs (needed, live, x, final, insn)
 	    while (--n > 0)
 	      {
 		live[(regno + n) / REGSET_ELT_BITS]
-		  |= 1 << ((regno + n) % REGSET_ELT_BITS);
-		some_needed |= (needed[(regno + n) / REGSET_ELT_BITS]
-				& 1 << ((regno + n) % REGSET_ELT_BITS));
-		all_needed &= (needed[(regno + n) / REGSET_ELT_BITS]
-			       & 1 << ((regno + n) % REGSET_ELT_BITS));
+		  |= (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS);
+		some_needed
+		  |= (needed[(regno + n) / REGSET_ELT_BITS]
+		      & (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS));
+		all_needed
+		  &= (needed[(regno + n) / REGSET_ELT_BITS]
+		      & (REGSET_ELT_TYPE) 1 << ((regno + n) % REGSET_ELT_BITS));
 	      }
 	  }
 	if (final)
@@ -2231,7 +2248,8 @@ mark_used_regs (needed, live, x, final, insn)
 		    for (i = HARD_REGNO_NREGS (regno, GET_MODE (x)) - 1;
 			 i >= 0; i--)
 		      if ((needed[(regno + i) / REGSET_ELT_BITS]
-			   & 1 << ((regno + i) % REGSET_ELT_BITS)) == 0
+			   & ((REGSET_ELT_TYPE) 1
+			      << ((regno + i) % REGSET_ELT_BITS))) == 0
 			  && ! dead_or_set_regno_p (insn, regno + i))
 			REG_NOTES (insn)
 			  = gen_rtx (EXPR_LIST, REG_DEAD,
@@ -2313,11 +2331,12 @@ mark_used_regs (needed, live, x, final, insn)
 	  || (! FRAME_POINTER_REQUIRED && flag_omit_frame_pointer))
 #endif
 	live[STACK_POINTER_REGNUM / REGSET_ELT_BITS]
-	  |= 1 << (STACK_POINTER_REGNUM % REGSET_ELT_BITS);
+	  |= (REGSET_ELT_TYPE) 1 << (STACK_POINTER_REGNUM % REGSET_ELT_BITS);
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (global_regs[i])
-	  live[i / REGSET_ELT_BITS] |= 1 << (i % REGSET_ELT_BITS);
+	  live[i / REGSET_ELT_BITS]
+	    |= (REGSET_ELT_TYPE) 1 << (i % REGSET_ELT_BITS);
       break;
     }
 
@@ -2358,7 +2377,7 @@ try_pre_increment_1 (insn)
   /* Find the next use of this reg.  If in same basic block,
      make it do pre-increment or pre-decrement if appropriate.  */
   rtx x = PATTERN (insn);
-  int amount = ((GET_CODE (SET_SRC (x)) == PLUS ? 1 : -1)
+  HOST_WIDE_INT amount = ((GET_CODE (SET_SRC (x)) == PLUS ? 1 : -1)
 		* INTVAL (XEXP (SET_SRC (x), 1)));
   int regno = REGNO (SET_DEST (x));
   rtx y = reg_next_use[regno];
@@ -2396,7 +2415,7 @@ try_pre_increment_1 (insn)
 static int
 try_pre_increment (insn, reg, amount)
      rtx insn, reg;
-     int amount;
+     HOST_WIDE_INT amount;
 {
   register rtx use;
 
