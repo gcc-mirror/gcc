@@ -54,6 +54,13 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "toplev.h"
 
+#define LOOP_REG_LIFETIME(LOOP, REGNO) \
+((REGNO_LAST_LUID (REGNO) - REGNO_FIRST_LUID (REGNO)))
+
+#define LOOP_REG_GLOBAL_P(LOOP, REGNO) \
+((REGNO_LAST_LUID (REGNO) > INSN_LUID ((LOOP)->end) \
+ || REGNO_FIRST_LUID (REGNO) < INSN_LUID ((LOOP)->start)))
+
 
 /* Vector mapping INSN_UIDs to luids.
    The luids are like uids but increase monotonically always.
@@ -824,12 +831,9 @@ scan_loop (loop, flags)
 		 or consec_sets_invariant_p returned 2
 		 (only conditionally invariant).  */
 	      m->cond = ((tem | tem1 | tem2) > 1);
-	      m->global = (REGNO_LAST_LUID (regno)
-			   > INSN_LUID (loop_end)
-			   || REGNO_FIRST_LUID (regno) < INSN_LUID (loop_start));
+	      m->global =  LOOP_REG_GLOBAL_P (loop, regno);
 	      m->match = 0;
-	      m->lifetime = (REGNO_LAST_LUID (regno)
-			     - REGNO_FIRST_LUID (regno));
+	      m->lifetime = LOOP_REG_LIFETIME (loop, regno);
 	      m->savings = VARRAY_INT (regs->n_times_set, regno);
 	      if (find_reg_note (p, REG_RETVAL, NULL_RTX))
 		m->savings += libcall_benefit (p);
@@ -922,10 +926,7 @@ scan_loop (loop, flags)
 		     INSN_LUID and hence must make a conservative
 		     assumption.  */
 		  m->global = (INSN_UID (p) >= max_uid_for_loop
-			       || (REGNO_LAST_LUID (regno)
-				   > INSN_LUID (loop_end))
-			       || (REGNO_FIRST_LUID (regno)
-				   < INSN_LUID (p))
+			       || LOOP_REG_GLOBAL_P (loop, regno)
 			       || (labels_in_range_p
 				   (p, REGNO_FIRST_LUID (regno))));
 		  if (maybe_never && m->global)
@@ -935,8 +936,7 @@ scan_loop (loop, flags)
 		  m->regno = regno;
 		  m->cond = 0;
 		  m->match = 0;
-		  m->lifetime = (REGNO_LAST_LUID (regno)
-				 - REGNO_FIRST_LUID (regno));
+		  m->lifetime = LOOP_REG_LIFETIME (loop, regno);
 		  m->savings = 1;
 		  VARRAY_INT (regs->set_in_loop, regno) = -1;
 		  /* Add M to the end of the chain MOVABLES.  */
@@ -4936,8 +4936,7 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, ext_val,
     {
       v->mode = GET_MODE (SET_DEST (set));
 
-      v->lifetime = (REGNO_LAST_LUID (REGNO (dest_reg))
-		     - REGNO_FIRST_LUID (REGNO (dest_reg)));
+      v->lifetime = LOOP_REG_LIFETIME (loop, REGNO (dest_reg));
 
       /* If the lifetime is zero, it means that this register is
 	 really a dead store.  So mark this as a giv that can be
