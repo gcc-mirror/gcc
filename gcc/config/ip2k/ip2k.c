@@ -90,9 +90,6 @@ static void mdr_try_wreg_elim PARAMS ((rtx));
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
-/* Commands count in the compiled file.  */
-static int commands_in_file;
-
 /* Commands in the functions prologues in the compiled file.  */
 static int commands_in_prologues;
 
@@ -304,7 +301,6 @@ function_epilogue (file, size)
 {
   int leaf_func_p;
   int reg,savelimit;
-  int function_size;
   rtx operands[2];		/* Dummy used by OUT_ASn  */
   int need_ret = 1;
 
@@ -324,9 +320,6 @@ function_epilogue (file, size)
     }
 
   leaf_func_p = leaf_function_p ();
-  function_size = (INSN_ADDRESSES (INSN_UID (get_last_insn ()))
-		   - INSN_ADDRESSES (INSN_UID (get_insns ())));
-  
   epilogue_size = 0;
   fprintf (file, "/* epilogue: frame size=%d */\n", size);
 
@@ -508,9 +501,6 @@ function_epilogue (file, size)
     }
   
   fprintf (file, "/* epilogue end (size=%d) */\n", epilogue_size);
-  fprintf (file, "/* function %s size %d (%d) */\n", current_function_name,
-	   prologue_size + function_size + epilogue_size, function_size);
-  commands_in_file += prologue_size + function_size + epilogue_size;
   commands_in_prologues += prologue_size;
   commands_in_epilogues += epilogue_size;
 }
@@ -1091,7 +1081,7 @@ ip2k_set_compare (x, y)
     {
       rtx value;
       size_t i;
-      
+
       value = rtx_alloc (CONST_DOUBLE);
       PUT_MODE (value, VOIDmode);
 
@@ -1101,7 +1091,7 @@ ip2k_set_compare (x, y)
       for (i = 2; i < (sizeof CONST_DOUBLE_FORMAT - 1); i++)
 	XWINT (value, i) = 0;
       
-      y = lookup_const_double (value);
+      y = value;
     }
   
   ip2k_compare_operands[0] = x;
@@ -3196,7 +3186,6 @@ asm_file_start (file)
 {
   output_file_directive (file, main_input_filename);
   
-  commands_in_file = 0;
   commands_in_prologues = 0;
   commands_in_epilogues = 0;
 }
@@ -3210,12 +3199,8 @@ asm_file_end (file)
 {
   fprintf
     (file,
-     "/* File %s: code %4d = 0x%04x (%4d), prologues %3d, epilogues %3d */\n",
-     main_input_filename,
-     commands_in_file,
-     commands_in_file,
-     commands_in_file - commands_in_prologues - commands_in_epilogues,
-     commands_in_prologues, commands_in_epilogues);
+     "/* File %s: prologues %3d, epilogues %3d */\n",
+     main_input_filename, commands_in_prologues, commands_in_epilogues);
 }
 
 /* Cost functions.  */
