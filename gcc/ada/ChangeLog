@@ -1,3 +1,10 @@
+2002-04-04  Laurent Guerby  <guerby@acm.org>
+
+	* make.adb: Implement -margs, remove restriction about file name placement.
+	* makeusg.adb: Documentation update.
+	* Makefile.in (TOOLS_FLAGS_TO_PASS): Add VPATH=$(fsrcdir).
+	* Makefile.in (gnattools3): Comment out, gnatmem does not build without libaddr2line.
+
 2002-04-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* utils.c (create_subprog_decl): Use SET_DECL_ASSEMBLER_NAME.
