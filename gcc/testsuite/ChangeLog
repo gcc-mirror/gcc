@@ -1,3 +1,8 @@
+2003-12-19  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/format/ext-1.c: Allow 'I' flag on floating point decimal
+	formats.
+
 2003-12-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12795
