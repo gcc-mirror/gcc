@@ -1,3 +1,14 @@
+1999-08-11  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lang-options.h: Add -fms-extensions.
+	* cp-tree.h: Declare flag_ms_extensions.
+	* decl2.c: Define it.
+	* class.c (instantiate_type): Don't complain about taking the address
+	of a bound member function if -fms-extensions.
+	* typeck.c (build_unary_op): Likewise.
+	* decl.c (grokdeclarator): Or about implicit int.
+	* init.c (resolve_offset_ref): Or about implicit '&'.
+
 1999-08-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (minimal_parse_mode): Remove.

@@ -5123,32 +5123,27 @@ instantiate_type (lhstype, rhs, flags)
 
     case COMPONENT_REF:
       {
-	tree field = TREE_OPERAND (rhs, 1);
-	tree r;
+	tree r = instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
 
-	r = instantiate_type (lhstype, field, flags);
-
-	if (r != error_mark_node && TYPE_PTRMEMFUNC_P (lhstype))
+	if (r != error_mark_node && TYPE_PTRMEMFUNC_P (lhstype)
+	    && complain && !flag_ms_extensions)
 	  {
-	    if (complain)
-	      {
-	        tree t = TYPE_PTRMEMFUNC_OBJECT_TYPE (lhstype);
+	    /* Note: we check this after the recursive call to avoid
+	       complaining about cases where overload resolution fails.  */
 
-	        if (TREE_CODE (field) == OVERLOAD)
-	          field = OVL_FUNCTION (field);
-	        if (TREE_CODE (field) == FUNCTION_DECL)
-	          {
-		    cp_pedwarn ("object-dependent reference `%E' can only be used in a call",
-		    	      DECL_NAME (field));
-  	    	    cp_pedwarn ("  to form a pointer to member function, say `&%T::%E'",
-		    	      t, DECL_NAME (field));
-    	          }
-	        else
-	          cp_pedwarn ("object-dependent reference can only be used in a call");
-	      }
-	    return r;
+	    tree t = TREE_TYPE (TREE_OPERAND (rhs, 0));
+	    tree fn = PTRMEM_CST_MEMBER (r);
+
+	    my_friendly_assert (TREE_CODE (r) == PTRMEM_CST, 990811);
+
+	    cp_pedwarn
+	      ("object-dependent reference to `%E' can only be used in a call",
+	       DECL_NAME (fn));
+	    cp_pedwarn
+	      ("  to form a pointer to member function, say `&%T::%E'",
+	       t, DECL_NAME (fn));
 	  }
-	
+
 	return r;
       }
 

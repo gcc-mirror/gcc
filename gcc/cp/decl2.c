@@ -369,6 +369,10 @@ int strict_prototypes_lang_c, strict_prototypes_lang_cplusplus = 1;
 
 int flag_labels_ok;
 
+/* Nonzero means allow Microsoft extensions without a pedwarn.  */
+
+int flag_ms_extensions;
+
 /* Non-zero means to collect statistics which might be expensive
    and to print them when we are done.  */
 int flag_detailed_statistics;
@@ -510,6 +514,7 @@ lang_f_options[] =
   {"implicit-inline-templates", &flag_implicit_inline_templates, 1},
   {"implicit-templates", &flag_implicit_templates, 1},
   {"labels-ok", &flag_labels_ok, 1},
+  {"ms-extensions", &flag_ms_extensions, 1},
   {"nonansi-builtins", &flag_no_nonansi_builtin, 0},
   {"operator-names", &flag_operator_names, 1},
   {"optional-diags", &flag_optional_diags, 1},

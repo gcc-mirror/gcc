@@ -9426,7 +9426,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			 && in_namespace == NULL_TREE
 			 && current_namespace == global_namespace);
 
-	  if (in_system_header)
+	  if (in_system_header || flag_ms_extensions)
 	    /* Allow it, sigh.  */;
 	  else if (pedantic || ! is_main)
 	    cp_pedwarn ("ANSI C++ forbids declaration `%D' with no type",

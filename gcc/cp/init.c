@@ -1755,13 +1755,15 @@ resolve_offset_ref (exp)
 
   if (BASELINK_P (member))
     {
-      cp_pedwarn ("assuming & on overloaded member function");
+      if (! flag_ms_extensions)
+	cp_pedwarn ("assuming & on overloaded member function");
       return build_unary_op (ADDR_EXPR, exp, 0);
     }
 
   if (TREE_CODE (TREE_TYPE (member)) == METHOD_TYPE)
     {
-      cp_pedwarn ("assuming & on `%E'", member);
+      if (! flag_ms_extensions)
+	cp_pedwarn ("assuming & on `%E'", member);
       return build_unary_op (ADDR_EXPR, exp, 0);
     }
 

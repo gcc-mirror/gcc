@@ -72,6 +72,8 @@ DEFINE_LANG_NAME ("C++")
   { "-fno-labels-ok", "" },
   { "-fmemoize-lookups", "" },
   { "-fno-memoize-lookups", "" },
+  { "-fms-extensions", "Don't pedwarn about uses of Microsoft extensions" },
+  { "-fno-ms-extensions", "" },
   { "-fname-mangling-version-", "" },
   { "-fnew-abi", "Enable experimental ABI changes" },
   { "-fno-new-abi", "" },
