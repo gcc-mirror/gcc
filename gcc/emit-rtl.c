@@ -1376,6 +1376,9 @@ change_address (memref, mode, addr)
   else
     addr = memory_address (mode, addr);
 	
+  if (rtx_equal_p (addr, XEXP (memref, 0)) && mode == GET_MODE (memref))
+    return memref;
+
   new = gen_rtx (MEM, mode, addr);
   MEM_VOLATILE_P (new) = MEM_VOLATILE_P (memref);
   RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (memref);
