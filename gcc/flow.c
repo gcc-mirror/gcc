@@ -233,11 +233,6 @@ static char *basic_block_drops_in;
 
 static short *basic_block_loop_depth;
 
-/* Element N nonzero if basic block N can actually be reached.
-   Vector exists only during find_basic_blocks.  */
-
-static char *block_live_static;
-
 /* Depth within loops of basic block being scanned for lifetime analysis,
    plus one.  This is the weight attached to references to registers.  */
 
@@ -259,11 +254,18 @@ static HARD_REG_SET elim_reg_set;
 
 /* Forward declarations */
 static void find_basic_blocks_1		PROTO((rtx, rtx, int));
+static void make_edges			PROTO((int));
 static void mark_label_ref		PROTO((rtx, rtx, int));
+static int delete_unreachable_blocks	PROTO((void));
+static int delete_block			PROTO((int));
 static void life_analysis_1		PROTO((rtx, int));
 static void propagate_block		PROTO((regset, rtx, rtx, int, 
 					       regset, int));
 static rtx flow_delete_insn		PROTO((rtx));
+static int set_noop_p			PROTO((rtx));
+static int noop_move_p			PROTO((rtx));
+static void record_volatile_insns	PROTO((rtx));
+static void mark_regs_live_at_end	PROTO((regset));
 static int insn_dead_p			PROTO((rtx, regset, int));
 static int libcall_dead_p		PROTO((rtx, regset, rtx, rtx));
 static void mark_set_regs		PROTO((regset, regset, rtx,
@@ -403,12 +405,30 @@ find_basic_blocks (f, nregs, file, live_reachable_p)
   find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p);
 }
 
+/* For communication between find_basic_blocks_1 and its subroutines.  */
+
+/* An array of CODE_LABELs, indexed by UID for the start of the active
+   EH handler for each insn in F.  */
+static int *active_eh_region;
+static int *nested_eh_region;
+
+/* Element N nonzero if basic block N can actually be reached.  */
+
+static char *block_live_static;
+
+/* List of label_refs to all labels whose addresses are taken
+   and used as data.  */
+static rtx label_value_list;
+
+/* a list of non-local labels in the function.  */
+static rtx nonlocal_label_list;
+
 /* Find all basic blocks of the function whose first insn is F.
    Store the correct data in the tables that describe the basic blocks,
    set up the chains of references for each CODE_LABEL, and
    delete any entire basic blocks that cannot be reached.
 
-   NONLOCAL_LABEL_LIST is a list of non-local labels in the function.
+   NONLOCAL_LABELS is a list of non-local labels in the function.
    Blocks that are otherwise unreachable may be reachable with a non-local
    goto.
    LIVE_REACHABLE_P is non-zero if the caller needs all live blocks to
@@ -416,31 +436,24 @@ find_basic_blocks (f, nregs, file, live_reachable_p)
    information to be inaccurate and not suitable for passes like GCSE.  */
 
 static void
-find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
-     rtx f, nonlocal_label_list;
+find_basic_blocks_1 (f, nonlocal_labels, live_reachable_p)
+     rtx f, nonlocal_labels;
      int live_reachable_p;
 {
   register rtx insn;
   register int i;
   register char *block_live = (char *) alloca (n_basic_blocks);
   register char *block_marked = (char *) alloca (n_basic_blocks);
-  /* An array of CODE_LABELs, indexed by UID for the start of the active
-     EH handler for each insn in F.  */
-  int *active_eh_region;
-  int *nested_eh_region;
-  /* List of label_refs to all labels whose addresses are taken
-     and used as data.  */
-  rtx label_value_list;
-  rtx x, note, eh_note;
+  rtx note, eh_note;
   enum rtx_code prev_code, code;
   int depth, pass;
   int in_libcall_block = 0;
-  int deleted_handler = 0;
   int call_had_abnormal_edge = 0;
 
   pass = 1;
   active_eh_region = (int *) alloca ((max_uid_for_flow + 1) * sizeof (int));
   nested_eh_region = (int *) alloca ((max_label_num () + 1) * sizeof (int));
+  nonlocal_label_list = nonlocal_labels;
  restart:
 
   label_value_list = 0;
@@ -555,7 +568,7 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 	       && (asynchronous_exceptions
 		   || (GET_CODE (insn) == CALL_INSN
 		       && ! in_libcall_block)))
-	active_eh_region[INSN_UID (insn)] = 
+	active_eh_region[INSN_UID (insn)] =
                                         NOTE_BLOCK_NUMBER (XEXP (eh_note, 0));
       BLOCK_NUM (insn) = i;
 
@@ -617,150 +630,8 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 	      {
 		block_marked[i] = 1;
 		something_marked = 1;
-		if (i + 1 < n_basic_blocks && basic_block_drops_in[i + 1])
-		  block_live[i + 1] = 1;
-		insn = basic_block_end[i];
-		if (GET_CODE (insn) == JUMP_INSN)
-		  mark_label_ref (PATTERN (insn), insn, 0);
 
-		/* If we have any forced labels, mark them as potentially
-		   reachable from this block.  */
-		for (x = forced_labels; x; x = XEXP (x, 1))
-		  if (! LABEL_REF_NONLOCAL_P (x))
-		    mark_label_ref (gen_rtx_LABEL_REF (VOIDmode, XEXP (x, 0)),
-				    insn, 0);
-
-		/* Now scan the insns for this block, we may need to make
-		   edges for some of them to various non-obvious locations
-		   (exception handlers, nonlocal labels, etc).  */
-		for (insn = basic_block_head[i];
-		     insn != NEXT_INSN (basic_block_end[i]);
-		     insn = NEXT_INSN (insn))
-		  {
-		    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-		      {
-			/* References to labels in non-jumping insns have
-			   REG_LABEL notes attached to them.
-
-			   This can happen for computed gotos; we don't care
-			   about them here since the values are also on the
-			   label_value_list and will be marked live if we find
-			   a live computed goto.
-
-			   This can also happen when we take the address of
-			   a label to pass as an argument to __throw.  Note
-			   throw only uses the value to determine what handler
-			   should be called -- ie the label is not used as
-			   a jump target, it just marks regions in the code.
-
-			   In theory we should be able to ignore the REG_LABEL
-			   notes, but we have to make sure that the label and
-			   associated insns aren't marked dead, so we make
-			   the block in question live and create an edge from
-			   this insn to the label.  This is not strictly
-			   correct, but it is close enough for now.  
-
-			   See below for code that handles the eh_stub labels
-			   specially.  */
-			for (note = REG_NOTES (insn);
-			     note;
-			     note = XEXP (note, 1))
-			  {
-			    if (REG_NOTE_KIND (note) == REG_LABEL
-				&& XEXP (note, 0) != eh_return_stub_label)
-			      {
-				x = XEXP (note, 0);
-				block_live[BLOCK_NUM (x)] = 1;
-				mark_label_ref (gen_rtx_LABEL_REF (VOIDmode, x),
-						insn, 0);
-			      }
-			  }
-
-			/* If this is a computed jump, then mark it as
-			   reaching everything on the label_value_list
-			   and forced_labels list.  */
-			if (computed_jump_p (insn))
-			  {
-			    current_function_has_computed_jump = 1;
-			    for (x = label_value_list; x; x = XEXP (x, 1))
-			      {
-				int b = BLOCK_NUM (XEXP (x, 0));
-				basic_block_computed_jump_target[b] = 1;
-				mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
-								   XEXP (x, 0)),
-						insn, 0);
-			      }
-
-			    for (x = forced_labels; x; x = XEXP (x, 1))
-			      {
-				int b = BLOCK_NUM (XEXP (x, 0));
-				basic_block_computed_jump_target[b] = 1;
-				mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
-								   XEXP (x, 0)),
-						insn, 0);
-			      }
-			  }
-
-			/* If this is a CALL_INSN, then mark it as reaching
-			   the active EH handler for this CALL_INSN.  If
-			   we're handling asynchronous exceptions mark every
-			   insn as reaching the active EH handler.
-
-			   Also mark the CALL_INSN as reaching any nonlocal
-			   goto sites.  */
-			else if (asynchronous_exceptions
-				 || (GET_CODE (insn) == CALL_INSN
-				     && ! find_reg_note (insn, REG_RETVAL,
-							 NULL_RTX)))
-			  {
-			    if (active_eh_region[INSN_UID (insn)]) 
-                              {
-                                int region;
-                                handler_info *ptr;
-                                region = active_eh_region[INSN_UID (insn)];
-                                for ( ; region; 
-                                             region = nested_eh_region[region]) 
-                                  {
-                                    ptr = get_first_handler (region);
-                                    for ( ; ptr ; ptr = ptr->next)
-                                      mark_label_ref (gen_rtx_LABEL_REF 
-                                       (VOIDmode, ptr->handler_label), insn, 0);
-                                  }
-                              }
-			    if (!asynchronous_exceptions)
-			      {
-				for (x = nonlocal_label_list;
-				     x;
-				     x = XEXP (x, 1))
-				  mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
-								     XEXP (x, 0)),
-						  insn, 0);
-			      }
-			    /* ??? This could be made smarter:
-			       in some cases it's possible to tell that
-			       certain calls will not do a nonlocal goto.
-
-			       For example, if the nested functions that
-			       do the nonlocal gotos do not have their
-			       addresses taken, then only calls to those
-			       functions or to other nested functions that
-			       use them could possibly do nonlocal gotos.  */
-			  }
-		      }
-		  }
-		/* We know something about the structure of the function
-		   __throw in libgcc2.c.  It is the only function that ever
-		   contains eh_stub labels.  It modifies its return address
-		   so that the last block returns to one of the eh_stub labels
-		   within it.  So we have to make additional edges in the
-		   flow graph.  */
-		if (i + 1 == n_basic_blocks
-		    && eh_return_stub_label != 0)
-		  {
-		    mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
-						       eh_return_stub_label),
-				    basic_block_end[i], 0);
-		  }
+		make_edges (i);
 	      }
 	}
 
@@ -777,160 +648,7 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 	    && LABEL_REFS (basic_block_head[i]) == basic_block_head[i])
 	  abort ();
 
-      /* Now delete the code for any basic blocks that can't be reached.
-	 They can occur because jump_optimize does not recognize
-	 unreachable loops as unreachable.  */
-
-      deleted = 0;
-      for (i = 0; i < n_basic_blocks; i++)
-	if (!block_live[i])
-	  {
-	    deleted++;
-
-	    /* Delete the insns in a (non-live) block.  We physically delete
-	       every non-note insn except the start and end (so
-	       basic_block_head/end needn't be updated), we turn the latter
-	       into NOTE_INSN_DELETED notes.
-	       We use to "delete" the insns by turning them into notes, but
-	       we may be deleting lots of insns that subsequent passes would
-	       otherwise have to process.  Secondly, lots of deleted blocks in
-	       a row can really slow down propagate_block since it will
-	       otherwise process insn-turned-notes multiple times when it
-	       looks for loop begin/end notes.  */
-	    if (basic_block_head[i] != basic_block_end[i])
-	      {
-		/* It would be quicker to delete all of these with a single
-		   unchaining, rather than one at a time, but we need to keep
-		   the NOTE's.  */
-		insn = NEXT_INSN (basic_block_head[i]);
-		while (insn != basic_block_end[i])
-		  {
-		    if (GET_CODE (insn) == BARRIER)
-		      abort ();
-		    else if (GET_CODE (insn) != NOTE)
-		      insn = flow_delete_insn (insn);
-		    else
-		      insn = NEXT_INSN (insn);
-		  }
-	      }
-	    insn = basic_block_head[i];
-	    if (GET_CODE (insn) != NOTE)
-	      {
-		/* Turn the head into a deleted insn note.  */
-		if (GET_CODE (insn) == BARRIER)
-		  abort ();
-
-		/* If the head of this block is a CODE_LABEL, then it might
-		   be the label for an exception handler which can't be
-		   reached.
-
-		   We need to remove the label from the exception_handler_label
-		   list and remove the associated NOTE_EH_REGION_BEG and
-		   NOTE_EH_REGION_END notes.  */
-		if (GET_CODE (insn) == CODE_LABEL)
-		  {
-		    rtx x, *prev = &exception_handler_labels;
-
-		    for (x = exception_handler_labels; x; x = XEXP (x, 1))
-		      {
-			if (XEXP (x, 0) == insn)
-			  {
-			    /* Found a match, splice this label out of the
-			       EH label list.  */
-			    *prev = XEXP (x, 1);
-			    XEXP (x, 1) = NULL_RTX;
-			    XEXP (x, 0) = NULL_RTX;
-
-                            /* Remove the handler from all regions */
-                            remove_handler (insn);
-                            deleted_handler = 1;
-			    break;
-			  }
-			prev = &XEXP (x, 1);
-		      }
-		  }
-		 
-		PUT_CODE (insn, NOTE);
-		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		NOTE_SOURCE_FILE (insn) = 0;
-	      }
-	    insn = basic_block_end[i];
-	    if (GET_CODE (insn) != NOTE)
-	      {
-		/* Turn the tail into a deleted insn note.  */
-		if (GET_CODE (insn) == BARRIER)
-		  abort ();
-		PUT_CODE (insn, NOTE);
-		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		NOTE_SOURCE_FILE (insn) = 0;
-	      }
-	    /* BARRIERs are between basic blocks, not part of one.
-	       Delete a BARRIER if the preceding jump is deleted.
-	       We cannot alter a BARRIER into a NOTE
-	       because it is too short; but we can really delete
-	       it because it is not part of a basic block.  */
-	    if (NEXT_INSN (insn) != 0
-		&& GET_CODE (NEXT_INSN (insn)) == BARRIER)
-	      delete_insn (NEXT_INSN (insn));
-
-	    /* Each time we delete some basic blocks,
-	       see if there is a jump around them that is
-	       being turned into a no-op.  If so, delete it.  */
-
-	    if (block_live[i - 1])
-	      {
-		register int j;
-		for (j = i + 1; j < n_basic_blocks; j++)
-		  if (block_live[j])
-		    {
-		      rtx label;
-		      insn = basic_block_end[i - 1];
-		      if (GET_CODE (insn) == JUMP_INSN
-			  /* An unconditional jump is the only possibility
-			     we must check for, since a conditional one
-			     would make these blocks live.  */
-			  && simplejump_p (insn)
-			  && (label = XEXP (SET_SRC (PATTERN (insn)), 0), 1)
-			  && INSN_UID (label) != 0
-			  && BLOCK_NUM (label) == j)
-			{
-			  int k;
-
-			  /* The deleted blocks still show up in the cfg,
-			     so we must set basic_block_drops_in for blocks
-			     I to J inclusive to keep the cfg accurate.  */
-			  for (k = i; k <= j; k++)
-			    basic_block_drops_in[k] = 1;
-
-			  PUT_CODE (insn, NOTE);
-			  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-			  NOTE_SOURCE_FILE (insn) = 0;
-			  if (GET_CODE (NEXT_INSN (insn)) != BARRIER)
-			    abort ();
-			  delete_insn (NEXT_INSN (insn));
-			}
-		      break;
-		    }
-	      }
-	  }
-      /* If we deleted an exception handler, we may have EH region
-         begin/end blocks to remove as well. */
-      if (deleted_handler)
-        for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-          if (GET_CODE (insn) == NOTE)
-            {
-              if ((NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG) ||
-                  (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)) 
-                {
-                  int num = CODE_LABEL_NUMBER (insn);
-                  /* A NULL handler indicates a region is no longer needed */
-                  if (get_first_handler (num) == NULL)
-                    {
-                      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-                      NOTE_SOURCE_FILE (insn) = 0;
-                    }
-                }
-            }
+      deleted = delete_unreachable_blocks ();
 
       /* There are pathological cases where one function calling hundreds of
 	 nested inline functions can generate lots and lots of unreachable
@@ -980,6 +698,144 @@ set_block_num (insn, bb)
 
 
 /* Subroutines of find_basic_blocks.  */
+
+/* For basic block I, make edges and mark live all blocks which are reachable
+   from it.  */
+static void
+make_edges (i)
+     int i;
+{
+  rtx insn, x;
+
+  if (i + 1 < n_basic_blocks && basic_block_drops_in[i + 1])
+    block_live_static[i + 1] = 1;
+  insn = basic_block_end[i];
+  if (GET_CODE (insn) == JUMP_INSN)
+    mark_label_ref (PATTERN (insn), insn, 0);
+
+  /* If we have any forced labels, mark them as potentially reachable from
+     this block.  */
+  for (x = forced_labels; x; x = XEXP (x, 1))
+    if (! LABEL_REF_NONLOCAL_P (x))
+      mark_label_ref (gen_rtx_LABEL_REF (VOIDmode, XEXP (x, 0)),
+		      insn, 0);
+
+  /* Now scan the insns for this block, we may need to make edges for some of
+     them to various non-obvious locations (exception handlers, nonlocal
+     labels, etc).  */
+  for (insn = basic_block_head[i];
+       insn != NEXT_INSN (basic_block_end[i]);
+       insn = NEXT_INSN (insn))
+    {
+      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	{
+	  rtx note;
+	  /* References to labels in non-jumping insns have REG_LABEL notes
+	     attached to them.
+
+	     This can happen for computed gotos; we don't care about them
+	     here since the values are also on the label_value_list and will
+	     be marked live if we find a live computed goto.
+
+	     This can also happen when we take the address of a label to pass
+	     as an argument to __throw.  Note throw only uses the value to
+	     determine what handler should be called -- ie the label is not
+	     used as a jump target, it just marks regions in the code.
+
+	     In theory we should be able to ignore the REG_LABEL notes, but
+	     we have to make sure that the label and associated insns aren't
+	     marked dead, so we make the block in question live and create an
+	     edge from this insn to the label.  This is not strictly correct,
+	     but it is close enough for now.  
+
+	     See below for code that handles the eh_stub label specially.  */
+	  for (note = REG_NOTES (insn);
+	       note;
+	       note = XEXP (note, 1))
+	    {
+	      if (REG_NOTE_KIND (note) == REG_LABEL
+		  && XEXP (note, 0) != eh_return_stub_label)
+		{
+		  x = XEXP (note, 0);
+		  block_live_static[BLOCK_NUM (x)] = 1;
+		  mark_label_ref (gen_rtx_LABEL_REF (VOIDmode, x),
+				  insn, 0);
+		}
+	    }
+
+	  /* If this is a computed jump, then mark it as reaching everything
+	     on the label_value_list and forced_labels list.  */
+	  if (computed_jump_p (insn))
+	    {
+	      current_function_has_computed_jump = 1;
+	      for (x = label_value_list; x; x = XEXP (x, 1))
+		{
+		  int b = BLOCK_NUM (XEXP (x, 0));
+		  basic_block_computed_jump_target[b] = 1;
+		  mark_label_ref (gen_rtx_LABEL_REF (VOIDmode, XEXP (x, 0)),
+				  insn, 0);
+		}
+
+	      for (x = forced_labels; x; x = XEXP (x, 1))
+		{
+		  int b = BLOCK_NUM (XEXP (x, 0));
+		  basic_block_computed_jump_target[b] = 1;
+		  mark_label_ref (gen_rtx_LABEL_REF (VOIDmode, XEXP (x, 0)),
+				  insn, 0);
+		}
+	    }
+
+	  /* If this is a CALL_INSN, then mark it as reaching the active EH
+	     handler for this CALL_INSN.  If we're handling asynchronous
+	     exceptions mark every insn as reaching the active EH handler.
+
+	     Also mark the CALL_INSN as reaching any nonlocal goto sites.  */
+	  else if (asynchronous_exceptions
+		   || (GET_CODE (insn) == CALL_INSN
+		       && ! find_reg_note (insn, REG_RETVAL, NULL_RTX)))
+	    {
+	      if (active_eh_region[INSN_UID (insn)]) 
+		{
+		  int region;
+		  handler_info *ptr;
+		  region = active_eh_region[INSN_UID (insn)];
+		  for ( ; region; 
+			region = nested_eh_region[region]) 
+		    {
+		      ptr = get_first_handler (region);
+		      for ( ; ptr ; ptr = ptr->next)
+			mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
+							   ptr->handler_label),
+					insn, 0);
+		    }
+		}
+	      if (! asynchronous_exceptions)
+		{
+		  for (x = nonlocal_label_list; x; x = XEXP (x, 1))
+		    mark_label_ref (gen_rtx_LABEL_REF (VOIDmode, XEXP (x, 0)),
+				    insn, 0);
+		}
+	      /* ??? This could be made smarter: in some cases it's possible
+		 to tell that certain calls will not do a nonlocal goto.
+
+		 For example, if the nested functions that do the nonlocal
+		 gotos do not have their addresses taken, then only calls to
+		 those functions or to other nested functions that use them
+		 could possibly do nonlocal gotos.  */
+	    }
+	}
+    }
+  /* We know something about the structure of the function __throw in
+     libgcc2.c.  It is the only function that ever contains eh_stub labels.
+     It modifies its return address so that the last block returns to one of
+     the eh_stub labels within it.  So we have to make additional edges in
+     the flow graph.  */
+  if (i + 1 == n_basic_blocks && eh_return_stub_label != 0)
+    {
+      mark_label_ref (gen_rtx_LABEL_REF (VOIDmode, eh_return_stub_label),
+		      basic_block_end[i], 0);
+    }
+}
 
 /* Check expression X for label references;
    if one is found, add INSN to the label's chain of references.
@@ -1040,6 +896,185 @@ mark_label_ref (x, insn, checkdup)
 	    mark_label_ref (XVECEXP (x, i, j), insn, 1);
 	}
     }
+}
+
+/* Now delete the code for any basic blocks that can't be reached.
+   They can occur because jump_optimize does not recognize unreachable loops
+   as unreachable.
+   Return the number of deleted blocks.  */
+static int
+delete_unreachable_blocks ()
+{
+  int deleted_handler = 0;
+  int deleted = 0;
+  int i;
+  rtx insn;
+
+  for (i = 0; i < n_basic_blocks; i++)
+    if (! block_live_static[i])
+      {
+	deleted++;
+
+	deleted_handler |= delete_block (i);
+      }
+
+  /* If we deleted an exception handler, we may have EH region
+     begin/end blocks to remove as well. */
+  if (deleted_handler)
+    for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+      if (GET_CODE (insn) == NOTE)
+	{
+	  if ((NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG) ||
+	      (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)) 
+	    {
+	      int num = CODE_LABEL_NUMBER (insn);
+	      /* A NULL handler indicates a region is no longer needed */
+	      if (get_first_handler (num) == NULL)
+		{
+		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		  NOTE_SOURCE_FILE (insn) = 0;
+		}
+	    }
+	}
+  return deleted;
+}
+
+/* Delete the insns in a (non-live) block.  We physically delete every
+   non-note insn except the start and end (so basic_block_head/end needn't
+   be updated), we turn the latter into NOTE_INSN_DELETED notes.
+
+   We use to "delete" the insns by turning them into notes, but we may be
+   deleting lots of insns that subsequent passes would otherwise have to
+   process.  Secondly, lots of deleted blocks in a row can really slow down
+   propagate_block since it will otherwise process insn-turned-notes multiple
+   times when it looks for loop begin/end notes.
+
+   Return nonzero if we deleted an exception handler.  */
+static int
+delete_block (i)
+     int i;
+{
+  int deleted_handler = 0;
+  rtx insn;
+
+  if (basic_block_head[i] != basic_block_end[i])
+    {
+      /* It would be quicker to delete all of these with a single
+	 unchaining, rather than one at a time, but we need to keep
+	 the NOTE's.  */
+      insn = NEXT_INSN (basic_block_head[i]);
+      while (insn != basic_block_end[i])
+	{
+	  if (GET_CODE (insn) == BARRIER)
+	    abort ();
+	  else if (GET_CODE (insn) != NOTE)
+	    insn = flow_delete_insn (insn);
+	  else
+	    insn = NEXT_INSN (insn);
+	}
+    }
+
+  insn = basic_block_head[i];
+  if (GET_CODE (insn) != NOTE)
+    {
+      /* Turn the head into a deleted insn note.  */
+      if (GET_CODE (insn) == BARRIER)
+	abort ();
+
+      /* If the head of this block is a CODE_LABEL, then it might
+	 be the label for an exception handler which can't be
+	 reached.
+
+	 We need to remove the label from the exception_handler_label
+	 list and remove the associated NOTE_EH_REGION_BEG and
+	 NOTE_EH_REGION_END notes.  */
+      if (GET_CODE (insn) == CODE_LABEL)
+	{
+	  rtx x, *prev = &exception_handler_labels;
+
+	  for (x = exception_handler_labels; x; x = XEXP (x, 1))
+	    {
+	      if (XEXP (x, 0) == insn)
+		{
+		  /* Found a match, splice this label out of the
+		     EH label list.  */
+		  *prev = XEXP (x, 1);
+		  XEXP (x, 1) = NULL_RTX;
+		  XEXP (x, 0) = NULL_RTX;
+
+		  /* Remove the handler from all regions */
+		  remove_handler (insn);
+		  deleted_handler = 1;
+		  break;
+		}
+	      prev = &XEXP (x, 1);
+	    }
+	}
+		 
+      PUT_CODE (insn, NOTE);
+      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+      NOTE_SOURCE_FILE (insn) = 0;
+    }
+  insn = basic_block_end[i];
+  if (GET_CODE (insn) != NOTE)
+    {
+      /* Turn the tail into a deleted insn note.  */
+      if (GET_CODE (insn) == BARRIER)
+	abort ();
+      PUT_CODE (insn, NOTE);
+      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+      NOTE_SOURCE_FILE (insn) = 0;
+    }
+  /* BARRIERs are between basic blocks, not part of one.
+     Delete a BARRIER if the preceding jump is deleted.
+     We cannot alter a BARRIER into a NOTE
+     because it is too short; but we can really delete
+     it because it is not part of a basic block.  */
+  if (NEXT_INSN (insn) != 0
+      && GET_CODE (NEXT_INSN (insn)) == BARRIER)
+    delete_insn (NEXT_INSN (insn));
+
+  /* Each time we delete some basic blocks,
+     see if there is a jump around them that is
+     being turned into a no-op.  If so, delete it.  */
+
+  if (block_live_static[i - 1])
+    {
+      register int j;
+      for (j = i + 1; j < n_basic_blocks; j++)
+	if (block_live_static[j])
+	  {
+	    rtx label;
+	    insn = basic_block_end[i - 1];
+	    if (GET_CODE (insn) == JUMP_INSN
+		/* An unconditional jump is the only possibility
+		   we must check for, since a conditional one
+		   would make these blocks live.  */
+		&& simplejump_p (insn)
+		&& (label = XEXP (SET_SRC (PATTERN (insn)), 0), 1)
+		&& INSN_UID (label) != 0
+		&& BLOCK_NUM (label) == j)
+	      {
+		int k;
+
+		/* The deleted blocks still show up in the cfg,
+		   so we must set basic_block_drops_in for blocks
+		   I to J inclusive to keep the cfg accurate.  */
+		for (k = i; k <= j; k++)
+		  basic_block_drops_in[k] = 1;
+
+		PUT_CODE (insn, NOTE);
+		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+		NOTE_SOURCE_FILE (insn) = 0;
+		if (GET_CODE (NEXT_INSN (insn)) != BARRIER)
+		  abort ();
+		delete_insn (NEXT_INSN (insn));
+	      }
+	    break;
+	  }
+    }
+
+  return deleted_handler;
 }
 
 /* Delete INSN by patching it out.
@@ -1130,6 +1165,151 @@ free_basic_block_vars (keep_head_end_p)
     }
 }
 
+/* Return nonzero if the destination of SET equals the source.  */
+static int
+set_noop_p (set)
+     rtx set;
+{
+  rtx src = SET_SRC (set);
+  rtx dst = SET_DEST (set);
+  if (GET_CODE (src) == REG && GET_CODE (dst) == REG
+      && REGNO (src) == REGNO (dst))
+    return 1;
+  if (GET_CODE (src) != SUBREG || GET_CODE (dst) != SUBREG
+      || SUBREG_WORD (src) != SUBREG_WORD (dst))
+    return 0;
+  src = SUBREG_REG (src);
+  dst = SUBREG_REG (dst);
+  if (GET_CODE (src) == REG && GET_CODE (dst) == REG
+      && REGNO (src) == REGNO (dst))
+    return 1;
+  return 0;
+}
+
+/* Return nonzero if an insn consists only of SETs, each of which only sets a
+   value to itself.  */
+static int
+noop_move_p (insn)
+     rtx insn;
+{
+  rtx pat = PATTERN (insn);
+
+  /* Insns carrying these notes are useful later on.  */
+  if (find_reg_note (insn, REG_EQUAL, NULL_RTX))
+    return 0;
+
+  if (GET_CODE (pat) == SET && set_noop_p (pat))
+    return 1;
+
+  if (GET_CODE (pat) == PARALLEL)
+    {
+      int i;
+      /* If nothing but SETs of registers to themselves,
+	 this insn can also be deleted.  */
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	{
+	  rtx tem = XVECEXP (pat, 0, i);
+
+	  if (GET_CODE (tem) == USE
+	      || GET_CODE (tem) == CLOBBER)
+	    continue;
+
+	  if (GET_CODE (tem) != SET || ! set_noop_p (tem))
+	    return 0;
+	}
+
+      return 1;
+    }
+  return 0;
+}
+
+/* Record which insns refer to any volatile memory
+   or for any reason can't be deleted just because they are dead stores.
+   Also, delete any insns that copy a register to itself.  */
+static void
+record_volatile_insns (f)
+     rtx f;
+{
+  rtx insn;
+  for (insn = f; insn; insn = NEXT_INSN (insn))
+    {
+      enum rtx_code code1 = GET_CODE (insn);
+      if (code1 == CALL_INSN)
+	INSN_VOLATILE (insn) = 1;
+      else if (code1 == INSN || code1 == JUMP_INSN)
+	{
+	  if (GET_CODE (PATTERN (insn)) != USE
+	      && volatile_refs_p (PATTERN (insn)))
+	    INSN_VOLATILE (insn) = 1;
+
+	  /* A SET that makes space on the stack cannot be dead.
+	     (Such SETs occur only for allocating variable-size data,
+	     so they will always have a PLUS or MINUS according to the
+	     direction of stack growth.)
+	     Even if this function never uses this stack pointer value,
+	     signal handlers do!  */
+	  else if (code1 == INSN && GET_CODE (PATTERN (insn)) == SET
+		   && SET_DEST (PATTERN (insn)) == stack_pointer_rtx
+#ifdef STACK_GROWS_DOWNWARD
+		   && GET_CODE (SET_SRC (PATTERN (insn))) == MINUS
+#else
+		   && GET_CODE (SET_SRC (PATTERN (insn))) == PLUS
+#endif
+		   && XEXP (SET_SRC (PATTERN (insn)), 0) == stack_pointer_rtx)
+	    INSN_VOLATILE (insn) = 1;
+
+	  /* Delete (in effect) any obvious no-op moves.  */
+	  else if (noop_move_p (insn))
+	    {
+	      PUT_CODE (insn, NOTE);
+	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	      NOTE_SOURCE_FILE (insn) = 0;
+	    }
+	}
+    }
+}
+
+/* Mark those regs which are needed at the end of the function as live
+   at the end of the last basic block.  */
+static void
+mark_regs_live_at_end (set)
+     regset set;
+{
+  int i;
+  
+#ifdef EXIT_IGNORE_STACK
+  if (! EXIT_IGNORE_STACK
+      || (! FRAME_POINTER_REQUIRED
+	  && ! current_function_calls_alloca
+	  && flag_omit_frame_pointer))
+#endif
+    /* If exiting needs the right stack value,
+       consider the stack pointer live at the end of the function.  */
+    SET_REGNO_REG_SET (set, STACK_POINTER_REGNUM);
+
+  /* Mark the frame pointer is needed at the end of the function.  If
+     we end up eliminating it, it will be removed from the live list
+     of each basic block by reload.  */
+
+  SET_REGNO_REG_SET (set, FRAME_POINTER_REGNUM);
+#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+  /* If they are different, also mark the hard frame pointer as live */
+  SET_REGNO_REG_SET (set, HARD_FRAME_POINTER_REGNUM);
+#endif      
+
+
+  /* Mark all global registers and all registers used by the epilogue
+     as being live at the end of the function since they may be
+     referenced by our caller.  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    if (global_regs[i]
+#ifdef EPILOGUE_USES
+	|| EPILOGUE_USES (i)
+#endif
+	)
+      SET_REGNO_REG_SET (set, i);
+}
+
 /* Determine which registers are live at the start of each
    basic block of the function whose first insn is F.
    NREGS is the number of registers used in F.
@@ -1198,147 +1378,14 @@ life_analysis_1 (f, nregs)
     = (regset *) alloca (n_basic_blocks * sizeof (regset));
   init_regset_vector (basic_block_significant, n_basic_blocks, &flow_obstack);
 
-  /* Record which insns refer to any volatile memory
-     or for any reason can't be deleted just because they are dead stores.
-     Also, delete any insns that copy a register to itself.  */
+  record_volatile_insns (f);
 
-  for (insn = f; insn; insn = NEXT_INSN (insn))
+  if (n_basic_blocks > 0)
     {
-      enum rtx_code code1 = GET_CODE (insn);
-      if (code1 == CALL_INSN)
-	INSN_VOLATILE (insn) = 1;
-      else if (code1 == INSN || code1 == JUMP_INSN)
-	{
-	  /* Delete (in effect) any obvious no-op moves.  */
-	  if (GET_CODE (PATTERN (insn)) == SET
-	      && GET_CODE (SET_DEST (PATTERN (insn))) == REG
-	      && GET_CODE (SET_SRC (PATTERN (insn))) == REG
-	      && (REGNO (SET_DEST (PATTERN (insn)))
-		  == REGNO (SET_SRC (PATTERN (insn))))
-	      /* Insns carrying these notes are useful later on.  */
-	      && ! find_reg_note (insn, REG_EQUAL, NULL_RTX))
-	    {
-	      PUT_CODE (insn, NOTE);
-	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	      NOTE_SOURCE_FILE (insn) = 0;
-	    }
-	  /* Delete (in effect) any obvious no-op moves.  */
-	  else if (GET_CODE (PATTERN (insn)) == SET
-	      && GET_CODE (SET_DEST (PATTERN (insn))) == SUBREG
-	      && GET_CODE (SUBREG_REG (SET_DEST (PATTERN (insn)))) == REG
-	      && GET_CODE (SET_SRC (PATTERN (insn))) == SUBREG
-	      && GET_CODE (SUBREG_REG (SET_SRC (PATTERN (insn)))) == REG
-	      && (REGNO (SUBREG_REG (SET_DEST (PATTERN (insn))))
-		  == REGNO (SUBREG_REG (SET_SRC (PATTERN (insn)))))
-	      && SUBREG_WORD (SET_DEST (PATTERN (insn))) ==
-			      SUBREG_WORD (SET_SRC (PATTERN (insn)))
-	      /* Insns carrying these notes are useful later on.  */
-	      && ! find_reg_note (insn, REG_EQUAL, NULL_RTX))
-	    {
-	      PUT_CODE (insn, NOTE);
-	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	      NOTE_SOURCE_FILE (insn) = 0;
-	    }
-	  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
-	    {
-	      /* If nothing but SETs of registers to themselves,
-		 this insn can also be deleted.  */
-	      for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
-		{
-		  rtx tem = XVECEXP (PATTERN (insn), 0, i);
-
-		  if (GET_CODE (tem) == USE
-		      || GET_CODE (tem) == CLOBBER)
-		    continue;
-		    
-		  if (GET_CODE (tem) != SET
-		      || GET_CODE (SET_DEST (tem)) != REG
-		      || GET_CODE (SET_SRC (tem)) != REG
-		      || REGNO (SET_DEST (tem)) != REGNO (SET_SRC (tem)))
-		    break;
-		}
-		
-	      if (i == XVECLEN (PATTERN (insn), 0)
-		  /* Insns carrying these notes are useful later on.  */
-		  && ! find_reg_note (insn, REG_EQUAL, NULL_RTX))
-		{
-		  PUT_CODE (insn, NOTE);
-		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		  NOTE_SOURCE_FILE (insn) = 0;
-		}
-	      else
-		INSN_VOLATILE (insn) = volatile_refs_p (PATTERN (insn));
-	    }
-	  else if (GET_CODE (PATTERN (insn)) != USE)
-	    INSN_VOLATILE (insn) = volatile_refs_p (PATTERN (insn));
-	  /* A SET that makes space on the stack cannot be dead.
-	     (Such SETs occur only for allocating variable-size data,
-	     so they will always have a PLUS or MINUS according to the
-	     direction of stack growth.)
-	     Even if this function never uses this stack pointer value,
-	     signal handlers do!  */
-	  else if (code1 == INSN && GET_CODE (PATTERN (insn)) == SET
-		   && SET_DEST (PATTERN (insn)) == stack_pointer_rtx
-#ifdef STACK_GROWS_DOWNWARD
-		   && GET_CODE (SET_SRC (PATTERN (insn))) == MINUS
-#else
-		   && GET_CODE (SET_SRC (PATTERN (insn))) == PLUS
-#endif
-		   && XEXP (SET_SRC (PATTERN (insn)), 0) == stack_pointer_rtx)
-	    INSN_VOLATILE (insn) = 1;
-	}
+      mark_regs_live_at_end (basic_block_live_at_end[n_basic_blocks - 1]);
+      COPY_REG_SET (basic_block_new_live_at_end[n_basic_blocks - 1],
+		    basic_block_live_at_end[n_basic_blocks - 1]);
     }
-
-  if (n_basic_blocks > 0)
-#ifdef EXIT_IGNORE_STACK
-    if (! EXIT_IGNORE_STACK
-	|| (! FRAME_POINTER_REQUIRED
-	    && ! current_function_calls_alloca
-	    && flag_omit_frame_pointer))
-#endif
-      {
-	/* If exiting needs the right stack value,
-	   consider the stack pointer live at the end of the function.  */
-	SET_REGNO_REG_SET (basic_block_live_at_end[n_basic_blocks - 1],
-			   STACK_POINTER_REGNUM);
-	SET_REGNO_REG_SET (basic_block_new_live_at_end[n_basic_blocks - 1],
-			   STACK_POINTER_REGNUM);
-      }
-
-  /* Mark the frame pointer is needed at the end of the function.  If
-     we end up eliminating it, it will be removed from the live list
-     of each basic block by reload.  */
-
-  if (n_basic_blocks > 0)
-    {
-      SET_REGNO_REG_SET (basic_block_live_at_end[n_basic_blocks - 1],
-			 FRAME_POINTER_REGNUM);
-      SET_REGNO_REG_SET (basic_block_new_live_at_end[n_basic_blocks - 1],
-			 FRAME_POINTER_REGNUM);
-#if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-      /* If they are different, also mark the hard frame pointer as live */
-      SET_REGNO_REG_SET (basic_block_live_at_end[n_basic_blocks - 1],
-			 HARD_FRAME_POINTER_REGNUM);
-      SET_REGNO_REG_SET (basic_block_new_live_at_end[n_basic_blocks - 1],
-			 HARD_FRAME_POINTER_REGNUM);
-#endif      
-      }
-
-  /* Mark all global registers and all registers used by the epilogue
-     as being live at the end of the function since they may be
-     referenced by our caller.  */
-
-  if (n_basic_blocks > 0)
-    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      if (global_regs[i]
-#ifdef EPILOGUE_USES
-	  || EPILOGUE_USES (i)
-#endif
-	  )
-	{
-	  SET_REGNO_REG_SET (basic_block_live_at_end[n_basic_blocks - 1], i);
-	  SET_REGNO_REG_SET (basic_block_new_live_at_end[n_basic_blocks - 1], i);
-	}
 
   /* Propagate life info through the basic blocks
      around the graph of basic blocks.
