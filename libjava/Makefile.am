@@ -223,9 +223,9 @@ $(javao_files) $(x_javao_files): %.lo: %.java
 
 ## Pass the list of object files to libtool in a temporary file to 
 ## avoid tripping platform command line length limits. We also use
-# libgcj_convenience.la to avoid creating a long linker command line
-# which causes problems on some OSes and makes it almost impossible to
-# debug the linker under a debugger.
+## libgcj_convenience.la to avoid creating a long linker command line
+## which causes problems on some OSes and makes it almost impossible to
+## debug the linker under a debugger.
 libgcj_convenience.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	@: $(shell echo Creating list of files to link...) $(shell rm -f libgcj.objectlist || :) $(shell touch libgcj.objectlist) $(foreach object,$(libgcj_la_OBJECTS) $(libgcj_la_LIBADD),$(shell echo $(object) >> libgcj.objectlist))
 	$(libgcj_la_LINK) -objectlist libgcj.objectlist
