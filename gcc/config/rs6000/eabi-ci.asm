@@ -85,7 +85,7 @@ _SDA_BASE_:
 	.type	__SBSS_START__,@object
 __SBSS_START__:
 
-	.section ".sdata2","aw"
+	.section ".sdata2","a"
 	.weak	_SDA2_BASE_
 	.type	_SDA2_BASE_,@object
 	.globl	__SDATA2_START__
@@ -93,7 +93,7 @@ __SBSS_START__:
 __SDATA2_START__:
 _SDA2_BASE_:
 
-	.section ".sbss2","aw"
+	.section ".sbss2","a",@nobits
 	.globl	__SBSS2_START__
 	.type	__SBSS2_START__,@object
 __SBSS2_START__:

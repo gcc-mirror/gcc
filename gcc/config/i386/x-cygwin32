@@ -1,0 +1,2 @@
+USE_COLLECT2 =
+LANGUAGES=c c++ objective-c

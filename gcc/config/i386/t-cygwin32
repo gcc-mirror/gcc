@@ -1,0 +1,9 @@
+# CYGNUS LOCAL entire file
+LIBGCC1 = libgcc1-asm.a
+CROSS_LIBGCC1 = libgcc1-asm.a
+LIB1ASMSRC = i386/cygwin32.asm
+LIB1ASMFUNCS = _chkstk
+
+winnt.o: $(srcdir)/config/i386/winnt.c
+	$(CC) -I. -I$(srcdir) -I$(srcdir)/config -c $(srcdir)/config/i386/winnt.c
+
