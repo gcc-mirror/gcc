@@ -1005,7 +1005,7 @@ extern tree build_chill_writerecord             PROTO((tree, tree));
 extern tree build_chill_writetext               PROTO((tree, tree));
 extern void build_enum_tables                   PROTO((void));
 extern tree build_text_mode                     PROTO((tree, tree, int));
-extern tree check_text_length                   PROTO((tree, tree));
+extern tree check_text_length                   PROTO((tree));
 extern void init_access_location                PROTO((tree, tree));
 extern void init_text_location                  PROTO((tree, tree));
 extern void inout_init                          PROTO((void));

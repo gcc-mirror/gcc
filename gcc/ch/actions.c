@@ -127,7 +127,9 @@ static int
 id_cmp (p1, p2)
      tree *p1, *p2;
 {
-  return (int)TREE_VALUE (*p1) - (int)TREE_VALUE (*p2);
+  long diff = (long)TREE_VALUE (*p1) - (long)TREE_VALUE (*p2);
+
+  return (diff < 0) ? -1 : (diff > 0);
 }
 
 /* Build the FUNCTION_TYPE or METHOD_TYPE which may raise exceptions

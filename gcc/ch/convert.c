@@ -589,9 +589,9 @@ display_int_cst (val)
       else if (x == '\n')
 	strcpy (buffer, "'^J'");
       else if (x < ' ' || x > '~')
-	sprintf (buffer, "'^(%u)'", x);
+	sprintf (buffer, "'^(%u)'", (unsigned int) x);
       else
-	sprintf (buffer, "'%c'", x);
+	sprintf (buffer, "'%c'", (char) x);
       return buffer;
     case ENUMERAL_TYPE:
       for (fields = TYPE_VALUES (TREE_TYPE (val)); fields != NULL_TREE;

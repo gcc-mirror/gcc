@@ -877,7 +877,7 @@ maybe_downcase (str)
   while (*str)
     {
       if (ISUPPER ((unsigned char) *str))
-	*str = tolower (*str);
+	*str = tolower ((unsigned char)*str);
       str++;
     }
 }

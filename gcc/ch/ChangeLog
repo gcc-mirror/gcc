@@ -1,3 +1,37 @@
+Wed Sep 30 19:24:41 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* actions.c (id_cmp): Do pointer arithmetic as `long' not `int' to
+ 	ensure enough bits for calculation.
+
+	* ch-tree.h (check_text_length): Remove unused parameter.
+
+	* convert.c (display_int_cst): Cast a HOST_WIDE_INT argument to
+	function sprintf into the appropriate type for printing.
+
+	* decl.c (print_lang_decl): Use HOST_WIDE_INT_PRINT_DEC as the
+	format specifier.
+	(print_mode): Likewise.
+	(init_decl_processing): Cast the arguments of bcopy/bzero to char *.
+
+	* grant.c (grant_array_type): Use HOST_WIDE_INT_PRINT_DEC as
+	the format specifier.
+
+	* inout.c (check_text_length): Remove unused parameter `type'.
+	(build_chill_associate): Initialize variables `arg1', `arg2',
+	`arg3', `arg4' and `arg5'.
+	(build_chill_modify): Likewise.
+	(scanformcont): Change type of variable `curr' to `unsigned char'.
+
+	* lex.c (maybe_downcase): Cast the argument of `tolower' to
+	`unsigned char'.
+
+	* satisfy.c (satisfy): Remove unused parameter in call to
+	`check_text_length'.
+
+	* tasking.c (generate_tasking_code_variable): Pass a HOST_WIDE_INT
+	as a `long' in call to function `error'.
+	(decl_tasking_code_variable): Likewise.
+
 Wed Sep 30 19:03:02 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* grant.c (decode_decl_selective): Cast switch's enum argument to

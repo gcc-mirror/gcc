@@ -1615,8 +1615,8 @@ build_text_mode (textlength, indexmode, dynamic)
 }
 
 tree
-check_text_length (type, length)
-     tree type, length;
+check_text_length (length)
+     tree length;
 {
   if (length == NULL_TREE || TREE_CODE (length) == ERROR_MARK)
     return length;
@@ -1750,7 +1750,8 @@ build_chill_associate (assoc, fname, attr)
      tree fname;
      tree attr;
 {
-  tree arg1, arg2, arg3, arg4, arg5, arg6, arg7;
+  tree arg1 = NULL_TREE, arg2 = NULL_TREE, arg3 = NULL_TREE, arg4 = NULL_TREE,
+  arg5 = NULL_TREE, arg6, arg7;
   int had_errors = 0;
   tree result;
 
@@ -1982,7 +1983,8 @@ build_chill_modify (assoc, list)
      tree assoc;
      tree list;
 {
-  tree arg1, arg2, arg3, arg4, arg5, arg6, arg7;
+  tree arg1 = NULL_TREE, arg2 = NULL_TREE, arg3 = NULL_TREE, arg4 = NULL_TREE,
+  arg5 = NULL_TREE, arg6, arg7;
   int had_errors = 0, numargs;
   tree fname = NULL_TREE, attr = NULL_TREE;
   tree result;
@@ -3898,7 +3900,7 @@ scanformcont (fcs, len, fcsptr, lenptr, exprlist, exprptr,
      int *nextargnum;
 {
   fcsstate_t state = FormatText;
-  char curr;
+  unsigned char curr;
   int dig;
 
   while (len--)

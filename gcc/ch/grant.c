@@ -270,7 +270,8 @@ grant_array_type (type)
       if (TREE_CODE (maxval) == INTEGER_CST)
 	{
 	  char	wrk[20];
-	  sprintf (wrk, "%d", TREE_INT_CST_LOW (maxval) + 1);
+	  sprintf (wrk, HOST_WIDE_INT_PRINT_DEC,
+		   TREE_INT_CST_LOW (maxval) + 1);
 	  APPEND (result, wrk);
 	}
       else if (TREE_CODE (maxval) == MINUS_EXPR
