@@ -1,3 +1,11 @@
+2004-01-09  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.in:  Rename file to ...
+	* configure.ac:  ... this.
+	* Makefile.in: Update a comment for above change.
+	* README: Likewise.
+	* config.in: Regenerate.
+
 2004-01-02  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cp-demangle.c (d_encoding): When DMGL_PARAMS is not set, strip
