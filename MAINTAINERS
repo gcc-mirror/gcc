@@ -94,6 +94,10 @@ Bernd Schmidt					crux@pool.informatik.rwth-aachen.de
 Zack Weinberg					zack@rabi.columbia.edu
 John Wehle					john@feith.com
 Nathan Sidwell					nathan@acm.org
+Tom Tromey					tromey@cygnus.com
+Andrew Haley					aph@cygnus.com
+Alexandre Petit-Bianco				apbianco@cygnus.com
+Anthony Green					green@cygnus.com
 
 
 * Indicates folks we need to get Kerberos/ssh accounts ready so they
