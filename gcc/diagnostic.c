@@ -71,7 +71,6 @@ static void output_format PARAMS ((output_buffer *));
 static char *vbuild_message_string PARAMS ((const char *, va_list));
 static char *build_message_string PARAMS ((const char *, ...))
      ATTRIBUTE_PRINTF_1;
-static char *context_as_prefix PARAMS ((const char *, int, int));
 static void output_do_printf PARAMS ((output_buffer *, const char *));
 static void format_with_decl PARAMS ((output_buffer *, tree));
 static void file_and_line_for_asm PARAMS ((rtx, const char **, int *));
@@ -121,8 +120,6 @@ static char digit_buffer[128];
 static output_buffer global_output_buffer;
 output_buffer *diagnostic_buffer = &global_output_buffer;
 
-static int need_error_newline;
-
 /* Function of last error message;
    more generally, function such that if next error message is in it
    then we don't have to mention the function name.  */
@@ -137,6 +134,10 @@ static int last_error_tick;
 void (*print_error_function) PARAMS ((const char *)) =
   default_print_error_function;
 
+/* Hooks for language specific diagnostic messages pager and finalizer.  */
+diagnostic_starter_fn lang_diagnostic_starter;
+diagnostic_finalizer_fn lang_diagnostic_finalizer;
+
 /* Maximum characters per line in automatic line wrapping mode.
    Zero means don't wrap lines. */
 
@@ -150,6 +151,36 @@ static int current_prefixing_rule;
 static int diagnostic_lock;
 
 
+/* Return truthvalue if current input file is different from the most recent
+   file involved in a diagnostic message.  */
+int
+error_module_changed ()
+{
+  return last_error_tick != input_file_stack_tick;
+}
+
+/* Remember current file as being the most recent file involved in a
+   diagnostic message.  */
+void
+record_last_error_module ()
+{
+  last_error_tick = input_file_stack_tick;
+}
+
+/* Same as error_module_changed, but for function.  */
+int
+error_function_changed ()
+{
+  return last_error_function != current_function_decl;
+}
+
+/* Same as record_last_error_module, but for function.  */
+void
+record_last_error_function ()
+{
+  last_error_function = current_function_decl;
+}
+
 /* Initialize the diagnostic message outputting machinery.  */
 
 void
@@ -161,6 +192,9 @@ initialize_diagnostics ()
 
   /* Proceed to actual initialization.  */
   default_initialize_buffer (diagnostic_buffer);
+
+  lang_diagnostic_starter = default_diagnostic_starter;
+  lang_diagnostic_finalizer = default_diagnostic_finalizer;
 }
 
 void
@@ -278,6 +312,7 @@ init_output_buffer (buffer, prefix, maximum_length)
      const char *prefix;
      int maximum_length;
 {
+  bzero (buffer, sizeof (output_buffer));
   obstack_init (&buffer->obstack);
   ideal_line_wrap_cutoff (buffer) = maximum_length;
   prefixing_policy (buffer) = current_prefixing_rule;
@@ -744,11 +779,9 @@ build_message_string VPARAMS ((const char *msgid, ...))
   return str;
 }
 
-
 /* Return a malloc'd string describing a location.  The caller is
    responsible for freeing the memory.  */
-
-static char *
+char *
 context_as_prefix (file, line, warn)
      const char *file;
      int line;
@@ -768,6 +801,14 @@ context_as_prefix (file, line, warn)
       else
 	return build_message_string ("%s: ", progname);
     }
+}
+
+/* Same as context_as_prefix, but only the source FILE is given.  */
+char *
+file_name_as_prefix (f)
+     const char *f;
+{
+  return build_message_string ("%s: ", f);
 }
 
 /* Format a MESSAGE into BUFFER.  Automatically wrap lines.  */
@@ -1150,8 +1191,8 @@ announce_function (decl)
       else
         verbatim (" %s", (*decl_printable_name) (decl, 2));
       fflush (stderr);
-      need_error_newline = 1;
-      last_error_function = current_function_decl;
+      output_needs_newline (diagnostic_buffer) = 1;
+      record_last_error_function ();
     }
 }
 
@@ -1162,7 +1203,7 @@ void
 default_print_error_function (file)
   const char *file;
 {
-  if (last_error_function != current_function_decl)
+  if (error_function_changed ())
     {
       char *prefix = file ? build_message_string ("%s: ", file) : NULL;
       output_state os;
@@ -1187,7 +1228,7 @@ default_print_error_function (file)
                (*decl_printable_name) (current_function_decl, 2));
 	}
 
-      last_error_function = current_function_decl;
+      record_last_error_function ();
       output_to_stream (diagnostic_buffer, stderr);
       diagnostic_buffer->state = os;
       free ((char*) prefix);
@@ -1204,14 +1245,14 @@ report_error_function (file)
 {
   struct file_stack *p;
 
-  if (need_error_newline)
+  if (output_needs_newline (diagnostic_buffer))
     {
       verbatim ("\n");
-      need_error_newline = 0;
+      output_needs_newline (diagnostic_buffer) = 0;
     }
 
   if (input_file_stack && input_file_stack->next != 0
-      && input_file_stack_tick != last_error_tick)
+      && error_function_changed ())
     {
       for (p = input_file_stack->next; p; p = p->next)
 	if (p == input_file_stack->next)
@@ -1219,7 +1260,7 @@ report_error_function (file)
 	else
 	  verbatim (",\n                 from %s:%d", p->name, p->line);
       verbatim (":\n");
-      last_error_tick = input_file_stack_tick;
+      record_last_error_function ();
     }
 
   (*print_error_function) (input_filename);
@@ -1616,8 +1657,7 @@ See %s for instructions.",
 
 /* Setup DC for reporting a diagnostic MESSAGE (an error of a WARNING),
    using arguments pointed to by ARGS_PTR, issued at a location specified
-   by FILE and LINE.  Front-ends may override the defaut diagnostic pager
-   and finalizer *after* this subroutine completes.  */
+   by FILE and LINE.  */
 void
 set_diagnostic_context (dc, message, args_ptr, file, line, warn)
      diagnostic_context *dc;
@@ -1633,8 +1673,8 @@ set_diagnostic_context (dc, message, args_ptr, file, line, warn)
   diagnostic_file_location (dc) = file;
   diagnostic_line_location (dc) = line;
   diagnostic_is_warning (dc) = warn;
-  diagnostic_starter (dc) = default_diagnostic_starter;
-  diagnostic_finalizer (dc) = default_diagnostic_finalizer;
+  diagnostic_starter (dc) = lang_diagnostic_starter;
+  diagnostic_finalizer (dc) = lang_diagnostic_finalizer;
 }
 
 static void

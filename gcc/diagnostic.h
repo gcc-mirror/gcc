@@ -27,6 +27,9 @@ Boston, MA 02111-1307, USA.  */
 /*  Forward declarations.  */
 typedef struct output_buffer output_buffer;
 typedef struct diagnostic_context diagnostic_context;
+typedef void (*diagnostic_starter_fn) PARAMS ((output_buffer *,
+                                               diagnostic_context *));
+typedef diagnostic_starter_fn diagnostic_finalizer_fn;
 
 #define DIAGNOSTICS_SHOW_PREFIX_ONCE       0x0
 #define DIAGNOSTICS_SHOW_PREFIX_NEVER      0x1
@@ -50,6 +53,10 @@ typedef struct
   int ideal_maximum_length;
   /* Nonzero if current PREFIX was emitted at least once.  */
   int emitted_prefix_p;
+
+  /* Nonzero means one should emit a newline before outputing anything.  */
+  int need_newline_p;
+
   /* Tells how often current PREFIX should be emitted:
      o DIAGNOSTICS_SHOW_PREFIX_NEVER: never - not yet supported;
      o DIAGNOSTICS_SHOW_PREFIX_ONCE: emit current PREFIX only once;
@@ -79,6 +86,7 @@ struct output_buffer
 
 #define output_buffer_text_cursor(BUFFER) (BUFFER)->state.cursor
 #define output_buffer_format_args(BUFFER) *((BUFFER)->state.format_args)
+#define output_needs_newline(BUFFER) (BUFFER)->state.need_newline_p
 
 /* This data structure bundles altogether any information relevent to
    the context of a diagnostic message.  */
@@ -137,6 +145,9 @@ struct diagnostic_context
 
 extern printer_fn lang_printer;
 
+extern diagnostic_starter_fn lang_diagnostic_starter;
+extern diagnostic_finalizer_fn lang_diagnostic_finalizer;
+
 extern int diagnostic_message_length_per_line;
 
 /* This output buffer is used by front-ends that directly output
@@ -178,5 +189,12 @@ void set_message_prefixing_rule PARAMS ((int));
 void output_verbatim            PARAMS ((output_buffer *, const char *, ...))
      ATTRIBUTE_PRINTF_2;
 void verbatim PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
+char *context_as_prefix         PARAMS ((const char *, int, int));
+char *file_name_as_prefix       PARAMS ((const char *));
+int error_module_changed        PARAMS ((void));
+void record_last_error_module   PARAMS ((void));
+int error_function_changed      PARAMS ((void));
+void record_last_error_function PARAMS ((void));
+     
 
 #endif /* __GCC_DIAGNOSTIC_H__ */

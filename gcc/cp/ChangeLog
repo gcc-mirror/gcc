@@ -1,3 +1,8 @@
+2000-08-21  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* lex.c (lang_init_options): Default diagnostic message maximum
+	length to 80, when line-wrapping.
+
 2000-08-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (build_vtbl_initializer): Clear the entire
