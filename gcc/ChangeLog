@@ -1,3 +1,14 @@
+2002-05-31  Stan Shebs  <shebs@apple.com>
+	    Turly O'Connor  <turly@apple.com>
+
+	* c-decl.c (struct binding_level): Change int field n_incomplete
+	to tree list incomplete_list.
+	(clear_binding_level): Init field with NULL.
+	(pushdecl): Add incomplete type to list.
+	(mark_binding_level): Mark the incomplete list.
+	(finish_struct): Scan the incomplete list for types instead
+	of all decls in the current binding level.
+
 2002-05-31  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.c (output_millicode_call): Add missing '%' characters.
