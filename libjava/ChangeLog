@@ -1,3 +1,8 @@
+2000-04-24  Jeff Sturm  <jsturm@sigma6.com>
+
+	* gnu/gcj/runtime/natFirstThread.cc (run): Initialize class before
+	calling main.
+
 2000-04-22  Anthony Green  <green@cygnus.com>
 
 	* include/jvm.h (__builtin_expect): Define as unused for now.

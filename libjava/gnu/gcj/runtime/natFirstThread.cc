@@ -74,10 +74,9 @@ gnu::gcj::runtime::FirstThread::run (void)
     }
 
   if (klass == NULL)
-    {
-      klass = java::lang::Class::forName (klass_name);
-      if (klass != NULL) _Jv_InitClass (klass);
-    }
+    klass = java::lang::Class::forName (klass_name);
+  if (klass != NULL)
+    _Jv_InitClass (klass);
 
   _Jv_Method *meth = _Jv_GetMethodLocal (klass, main_name, main_signature);
 
