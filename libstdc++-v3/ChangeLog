@@ -1,3 +1,8 @@
+2003-11-29  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-2.cc:
+	Tweak for a few small problems (fix timings, use VERIFY..)
+
 2003-11-28  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_filebuf/imbue/char/13171-3.cc: Remove.
