@@ -1,3 +1,10 @@
+2001-05-13  Richard Henderson  <rth@redhat.com>
+
+	2001-03-28  Richard Henderson  <rth@redhat.com>
+	* config/rs6000/rs6000.h (EPILOGUE_USES): Use TARGET_AIX,
+	not TARGET_TOC for special toc restore handling.
+	* config/rs6000/rs6000.md (eh_return): Likewise.
+
 2001-05-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* tm.texi (THREAD_MODEL_SPEC): Document it.
@@ -31,10 +38,10 @@
 	EH merge from mainline, continued.
 
 	2001-05-12  Richard Henderson  <rth@redhat.com>
-        * dwarf2asm.c (size_of_encoded_value): New function.
-        * dwarf2asm.h: Declare it.
-        * except.c (output_function_exception_table): Align the TType
-        array only as wide as the encoding.
+	* dwarf2asm.c (size_of_encoded_value): New function.
+	* dwarf2asm.h: Declare it.
+	* except.c (output_function_exception_table): Align the TType
+	array only as wide as the encoding.
 
 	2001-05-11  Richard Henderson  <rth@redhat.com>
 	* defaults.h (ASM_PREFERRED_EH_DATA_FORMAT): New.
