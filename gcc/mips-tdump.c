@@ -594,7 +594,7 @@ type_to_string (aux_ptr, index)
       break;
 
     case bt_Indirect:		/* forward or unnamed typedef */
-      strcpy (p1, "forward/unamed typedef");
+      strcpy (p1, "forward/unnamed typedef");
       break;
 
     case bt_FixedDec:		/* Fixed Decimal */
