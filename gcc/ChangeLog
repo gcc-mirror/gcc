@@ -1,3 +1,7 @@
+Mon Nov  3 14:36:50 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (sco5): Use cpio to install header files.
+
 Sun Nov  2 23:31:43 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* aclocal.m4 (conftestdata_from, conftestdata_to): Names shortened to
