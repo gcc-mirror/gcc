@@ -6764,7 +6764,7 @@ merge_translation_unit_decls (void)
 	      tree old_decl = (tree) *slot;
 
 	      /* If this is weak or common or whatever, suppress it
-		 in favour of the other definition.  */
+		 in favor of the other definition.  */
 	      if (DECL_WEAK (decl))
 		DECL_EXTERNAL (decl) = 1;
 	      else if (DECL_WEAK (old_decl) && ! DECL_WEAK (decl))
