@@ -1,6 +1,6 @@
 /* lang-options.h file for Fortran
    Copyright (C) 1995-1998 Free Software Foundation, Inc.
-   Contributed by James Craig Burley (burley@gnu.org).
+   Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
 

@@ -1,3 +1,7 @@
+1999-02-15  Craig Burley  <craig@jcb-sc.com>
+
+	* f2c.h: Delete my (old) email address.
+
 1999-02-14  Craig Burley  <craig@jcb-sc.com>
 
 	* libU77/Version.c: Bump ("update" below) to date of last change.
