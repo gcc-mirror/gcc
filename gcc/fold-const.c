@@ -5103,7 +5103,7 @@ fold (expr)
 	  if (TYPE_MAIN_VARIANT (inside_type) == TYPE_MAIN_VARIANT (final_type)
 	      && ((inter_int && final_int) || (inter_float && final_float))
 	      && inter_prec >= final_prec)
-	    return TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+	    return convert (final_type, TREE_OPERAND (TREE_OPERAND (t, 0), 0));
 
 	  /* Likewise, if the intermediate and final types are either both
 	     float or both integer, we don't need the middle conversion if
