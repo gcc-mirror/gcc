@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
 -- GNARL was developed by the GNARL team at Florida State University.       --
--- Extensive contributions were provided by Ada Core Technologies Inc.      --
+-- Extensive contributions were provided by Ada Core Technologies, Inc.     --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -233,6 +233,11 @@ package System.OS_Interface is
      (tv : access struct_timeval;
       tz : System.Address := System.Null_Address) return int;
    pragma Import (C, gettimeofday, "gettimeofday");
+
+   function sysconf (name : int) return long;
+   pragma Import (C, sysconf);
+
+   SC_CLK_TCK : constant := 2;
 
    -------------------------
    -- Priority Scheduling --
@@ -443,11 +448,8 @@ package System.OS_Interface is
 
 private
 
-   type sigset_t is array (0 .. 31) of unsigned_long;
+   type sigset_t is array (0 .. 127) of unsigned_char;
    pragma Convention (C, sigset_t);
-   for sigset_t'Size use 1024;
-   --  This is for GNU libc version 2 but should be backward compatible with
-   --  other libc where sigset_t is smaller.
 
    type pid_t is new int;
 
@@ -476,7 +478,7 @@ private
       stackaddr     : System.Address;
       stacksize     : size_t;
    end record;
-   pragma Convention (C_Pass_By_Copy, pthread_attr_t);
+   pragma Convention (C, pthread_attr_t);
 
    type pthread_condattr_t is record
       dummy : int;
@@ -490,25 +492,22 @@ private
 
    type pthread_t is new unsigned_long;
 
-   type struct_pthread_queue is record
-      head : System.Address;
-      tail : System.Address;
+   type struct_pthread_fast_lock is record
+      status   : long;
+      spinlock : int;
    end record;
-   pragma Convention (C, struct_pthread_queue);
+   pragma Convention (C, struct_pthread_fast_lock);
 
    type pthread_mutex_t is record
-      m_spinlock : int;
+      m_reserved : int;
       m_count    : int;
       m_owner    : System.Address;
       m_kind     : int;
-      m_waiting  : struct_pthread_queue;
+      m_lock     : struct_pthread_fast_lock;
    end record;
    pragma Convention (C, pthread_mutex_t);
 
-   type pthread_cond_t is record
-      c_spinlock : int;
-      c_waiting  : struct_pthread_queue;
-   end record;
+   type pthread_cond_t is array (0 .. 47) of unsigned_char;
    pragma Convention (C, pthread_cond_t);
 
    type pthread_key_t is new unsigned;
