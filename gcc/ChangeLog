@@ -1,3 +1,8 @@
+2003-11-01  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* config/rs6000/sysv4.h (EXTRA_SECTION_FUNCTIONS): Update to C90
+	prototypes.
+
 2003-11-01  Andreas Jaeger  <aj@suse.de>
 
 	* unwind-dw2.c (_Unwind_FindEnclosingFunction): Constify variable.

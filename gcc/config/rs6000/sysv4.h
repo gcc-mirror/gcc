@@ -468,7 +468,7 @@ do {									\
 
 #define	TOC_SECTION_FUNCTION						\
 void									\
-toc_section ()								\
+toc_section (void)							\
 {									\
   if (in_section != in_toc)						\
     {									\
@@ -510,14 +510,14 @@ toc_section ()								\
 }									\
 									\
 extern int in_toc_section (void);					\
-int in_toc_section ()							\
+int in_toc_section (void)						\
 {									\
   return in_section == in_toc;						\
 }
 
 #define	SDATA_SECTION_FUNCTION						\
 void									\
-sdata_section ()							\
+sdata_section (void)							\
 {									\
   if (in_section != in_sdata)						\
     {									\
@@ -528,7 +528,7 @@ sdata_section ()							\
 
 #define	SDATA2_SECTION_FUNCTION						\
 void									\
-sdata2_section ()							\
+sdata2_section (void)							\
 {									\
   if (in_section != in_sdata2)						\
     {									\
@@ -539,7 +539,7 @@ sdata2_section ()							\
 
 #define	SBSS_SECTION_FUNCTION						\
 void									\
-sbss_section ()								\
+sbss_section (void)							\
 {									\
   if (in_section != in_sbss)						\
     {									\
@@ -550,7 +550,7 @@ sbss_section ()								\
 
 #define	INIT_SECTION_FUNCTION						\
 void									\
-init_section ()								\
+init_section (void)							\
 {									\
   if (in_section != in_init)						\
     {									\
@@ -561,7 +561,7 @@ init_section ()								\
 
 #define	FINI_SECTION_FUNCTION						\
 void									\
-fini_section ()								\
+fini_section (void)							\
 {									\
   if (in_section != in_fini)						\
     {									\
