@@ -363,6 +363,9 @@ for machine in $build $host $target; do
 		    # a broken tar, so we use cpio instead.
 		    install_headers_dir=install-headers-cpio
 		    ;;
+		  *-*-osf*)
+		    tm_file="${tm_file} alpha/osf.h"
+		    ;;
 		esac
 		case $machine in
 		  *-*-osf4.0[[b-z]] | *-*-osf4.[[1-9]]*)
