@@ -1191,9 +1191,7 @@ copy_node (node)
     t = (tree) obstack_alloc (current_obstack, length);
   memcpy (t, node, length);
 
-  /* EXPR_WITH_FILE_LOCATION must keep filename info stored in TREE_CHAIN */
-  if (TREE_CODE (node) != EXPR_WITH_FILE_LOCATION)
-    TREE_CHAIN (t) = 0;
+  TREE_CHAIN (t) = 0;
   TREE_ASM_WRITTEN (t) = 0;
 
   if (TREE_CODE_CLASS (code) == 'd')
