@@ -674,6 +674,9 @@ finish_try_block (try_block)
     expand_start_all_catch ();  
 }
 
+/* Finish the body of a cleanup try-block, which may be given by
+   TRY_BLOCK.  */
+
 void
 finish_cleanup_try_block (try_block)
      tree try_block;
