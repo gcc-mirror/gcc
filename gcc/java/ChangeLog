@@ -1,3 +1,8 @@
+2003-09-23  Roger Sayle  <roger@eyesopen.com>
+
+	* jcf-write.c (generate_bytecode_insns): Optimize binary operations
+	with equal operands without side-effects.
+
 2003-09-22  Jeff Sturm  <jsturm@one-point.com>
 
 	* decl.c (java_init_decl_processing): Don't emit otable decls
