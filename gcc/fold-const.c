@@ -5099,7 +5099,7 @@ fold (expr)
 	     handled below, if we are converting something to its own
 	     type via an object of identical or wider precision, neither
 	     conversion is needed.  */
-	  if (inside_type == final_type
+	  if (TYPE_MAIN_VARIANT (inside_type) == TYPE_MAIN_VARIANT (final_type)
 	      && ((inter_int && final_int) || (inter_float && final_float))
 	      && inter_prec >= final_prec)
 	    return TREE_OPERAND (TREE_OPERAND (t, 0), 0);
