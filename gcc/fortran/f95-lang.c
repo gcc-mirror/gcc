@@ -1,4 +1,4 @@
-/* G95 Backend interface
+/* gfortran backend interface
    Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation,
    Inc.
    Contributed by Paul Brook.
