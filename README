@@ -1,17 +1,17 @@
-		   README for GNU development tools
+This directory contains the GNU Compiler Collection (GCC) version 3.0.
 
-This directory contains various GNU compilers, assemblers, linkers, 
-debuggers, etc., plus their support routines, definitions, and documentation.
+The GNU Compiler Collection is free software.  See the file COPYING
+for copying permission.  The manuals, and some of the runtime
+libraries, are under different terms; see the individual source files
+for details.
 
+The directory INSTALL contains copies of the installation information
+as HTML and plain text.  The source of this information is
+gcc/doc/install.texi.  The installation information includes details
+of what is included in the GCC sources and what files GCC installs.
 
-Check the INSTALL directory for detailed configuration and installation
-instructions.
+See the file gcc/doc/gcc.texi (together with other files that it
+includes) for usage and porting information.  An online readable
+version of the manual is in the files gcc/doc/gcc.info*.
 
-
-Much of the code and documentation enclosed is copyright by
-the Free Software Foundation, Inc.  See the file COPYING or
-COPYING.LIB in the various directories, for a description of the
-GNU General Public License terms under which you can copy the files.
-
-REPORTING BUGS: Again, see gdb/README, binutils/README, etc., for info
-on where and how to report problems.
+See http://gcc.gnu.org/bugs.html for how to report bugs usefully.
