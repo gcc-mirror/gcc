@@ -3002,15 +3002,17 @@ set_decl_abstract_flags (decl, setting)
    from its DECL_SAVED_INSNS.  Used for inline functions that are output
    at end of compilation instead of where they came in the source.  */
 
+static GTY(()) struct function *old_cfun;
+
 void
 output_inline_function (fndecl)
      tree fndecl;
 {
-  struct function *old_cfun = cfun;
   enum debug_info_type old_write_symbols = write_symbols;
   const struct gcc_debug_hooks *const old_debug_hooks = debug_hooks;
   struct function *f = DECL_SAVED_INSNS (fndecl);
 
+  old_cfun = cfun;
   cfun = f;
   current_function_decl = fndecl;
 
