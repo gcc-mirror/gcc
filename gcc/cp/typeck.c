@@ -7325,7 +7325,13 @@ c_expand_return (retval)
       result = build (INIT_EXPR, TREE_TYPE (result), result, retval);
       TREE_SIDE_EFFECTS (result) = 1;
     }
+
+  expand_start_target_temps ();
+
   expand_return (result);
+
+  expand_end_target_temps ();
+
   current_function_returns_value = 1;
 }
 

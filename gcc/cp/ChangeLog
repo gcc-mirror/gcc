@@ -1,3 +1,12 @@
+Thu Jun 19 16:49:28 1997  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (c_expand_return): Make sure we clean up temporaries at
+	the end of return x;
+
+Thu Jun 19 12:28:43 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* lex.c (check_for_missing_semicolon): Also check for CV_QUALIFIER.
+
 Tue Jun 17 18:35:57 1997  Mike Stump  <mrs@cygnus.com>
 
 	* except.c (expand_builtin_throw): Add support
