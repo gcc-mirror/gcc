@@ -6796,7 +6796,7 @@ case 623:
 			  && ! IDENTIFIER_CLASS_VALUE (yyvsp[-1].ttype))
 			pushdecl_class_level (yyval.ttype);
 		    }
-		  got_scope = yyval.ttype = TREE_TYPE (yyval.ttype);
+		  got_scope = yyval.ttype = TYPE_MAIN_VARIANT (TREE_TYPE (yyval.ttype));
 		;
     break;}
 case 624:
