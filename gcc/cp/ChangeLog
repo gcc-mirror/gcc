@@ -1,6 +1,7 @@
 1998-10-29  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (lookup_name_real): OK, only warn if not lexing.
+	Simplify suggested fix.
 
 	* cp-tree.h (IDENTIFIER_MARKED): New macro.
 	* search.c (lookup_conversions): Use breadth_first_search.

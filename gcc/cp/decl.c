@@ -5243,17 +5243,11 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	      && ! (TREE_CODE (locval) == TYPE_DECL
 		    && comptypes (TREE_TYPE (locval), subtype, 1)))
 	    {
-	      static int explained;
-
 	      cp_warning ("lookup of `%D' finds `%#D'", name, locval);
-	      cp_warning
-		("  instead of `%D' from dependent base class", classval);
-	      if (! explained)
-		{
-		  explained = 1;
-		  cp_warning ("  (use `typename %D' if that's what you meant)",
-			      classval);
-		}
+	      cp_warning ("  instead of `%D' from dependent base class",
+			  classval);
+	      cp_warning ("  (use `typename %T::%D' if that's what you meant)",
+			  constructor_name (current_class_type), name);
 	    }
 	}
     }
