@@ -1,3 +1,22 @@
+Wed Nov 26 16:08:50 1997  Richard Henderson  (rth@cygnus.com)
+
+	* configure.in (target frags): Add powerpc*-linux-gnulibc1.
+	(stdio-lock): Similarly.
+
+	* configure.in (target frags): Add alpha*-linux-gnulibc1.
+	(pic frags): Its alpha*- not alpha-.
+	(stdio-lock): Kill everything.  Add alpha*-linux-gnulibc1.
+	* libio.h: Check __GLIBC_MINOR__ to find stdio-lock.h.  If not
+	_IO_MTSAFE_IO & GLIBC, make sure the lock pointer is still there.
+	* libioP.h: Check __GLIBC_MINOR__ to find libc-lock.h.
+
+	* config/linuxaxp1-libc-lock.h: New file.
+	* config/linuxaxp1-stdio-lock.h: New file.
+	* config/linuxaxp1.mt: New file.
+
+	* gen-params (va_list): Check for and use __gnuc_va_list.
+	(NULL): Work around some linux kernel headers and redefine NULL.
+
 Tue Nov 18 09:53:58 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* stdstrbufs.cc (DEF_STDFILE): Use STD_VTABLE.

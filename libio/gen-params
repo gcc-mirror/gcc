@@ -487,9 +487,18 @@ if ${CXX} -c dummy.C >/dev/null 2>&1 ; then
   # Ok: We have something that works.
   echo "typedef ${va_list-char* /* default */} ${macro_prefix}va_list;"
 else
-  # No, it breaks.  Indicate that <stdarg.h> must be included.
-  echo "#define ${macro_prefix}NEED_STDARG_H
-#define ${macro_prefix}va_list va_list"
+  echo "#define ${macro_prefix}NEED_STDARG_H"
+  # Check and see if we have __gnuc_va_list, as we might set up define
+  # loops if we use va_list.
+  cat >dummy.C <<!EOF!
+#include <stdarg.h>
+long foo(__gnuc_va_list ap) { return va_arg(ap, long); }
+!EOF!
+  if ${CXX} -c dummy.C >/dev/null 2>&1 ; then
+    echo "#define ${macro_prefix}va_list __gnuc_va_list"
+  else
+    echo "#define ${macro_prefix}va_list va_list"
+  fi
 fi
 
 cat >dummy.c <<!EOF!
