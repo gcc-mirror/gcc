@@ -649,7 +649,7 @@ do {									\
 #define ARG_POINTER_REGNUM	AP_REG
 
 /* Register in which the static-chain is passed to a function.  */
-#define STATIC_CHAIN_REGNUM	13
+#define STATIC_CHAIN_REGNUM	3
 
 /* The register in which a struct value address is passed.  */
 
@@ -1223,12 +1223,12 @@ extern int current_function_anonymous_args;
 
 /* 
    On the SH, the trampoline looks like
-   2 0002 DD02     	   	mov.l	l2,r13
+   2 0002 D202     	   	mov.l	l2,r2
    1 0000 D301     		mov.l	l1,r3
-   3 0004 4D2B     		jmp	@r13
+   3 0004 422B     		jmp	@r2
    4 0006 0009     		nop
-   5 0008 00000000 	l1:  	.long   function
-   6 000c 00000000 	l2:	.long   area  */
+   5 0008 00000000 	l1:  	.long   area
+   6 000c 00000000 	l2:	.long   function  */
 
 /* Length in units of the trampoline for entering a nested function.  */
 #define TRAMPOLINE_SIZE  16
@@ -1244,9 +1244,9 @@ extern int current_function_anonymous_args;
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) do			\
 {									\
   emit_move_insn (gen_rtx_MEM (SImode, (TRAMP)),			\
-		  GEN_INT (TARGET_LITTLE_ENDIAN ? 0xd301dd02 : 0xdd02d301));\
+		  GEN_INT (TARGET_LITTLE_ENDIAN ? 0xd301d202 : 0xd202d301));\
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 4)),	\
-		  GEN_INT (TARGET_LITTLE_ENDIAN ? 0x00094d2b : 0x4d2b0009));\
+		  GEN_INT (TARGET_LITTLE_ENDIAN ? 0x0009422b : 0x422b0009));\
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 8)),	\
 		  (CXT));						\
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 12)),	\

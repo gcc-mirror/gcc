@@ -3922,7 +3922,7 @@ sh_expand_prologue ()
   /* We have pretend args if we had an object sent partially in registers
      and partially on the stack, e.g. a large structure.  */
   output_stack_adjust (-current_function_pretend_args_size,
-		       stack_pointer_rtx, 3);
+		       stack_pointer_rtx, 1);
 
   extra_push = 0;
 
@@ -3970,7 +3970,7 @@ sh_expand_prologue ()
   target_flags = save_flags;
 
   output_stack_adjust (-rounded_frame_size (d),
-		       stack_pointer_rtx, 3);
+		       stack_pointer_rtx, 1);
 
   if (frame_pointer_needed)
     emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
