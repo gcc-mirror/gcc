@@ -1,3 +1,8 @@
+2002-12-30  Loren J. Rittle  <ljrittle@acm.org>
+
+	* src/Makefile.am: Resolve non-portable use of $<.
+	* src/Makefile.in: Rebuilt.
+
 2002-12-30  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure.in (GLIBCPP_ENABLE_CXX_FLAGS):  Do not pass arguments,

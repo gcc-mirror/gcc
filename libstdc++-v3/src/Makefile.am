@@ -39,7 +39,7 @@ toolexeclib_LTLIBRARIES = libstdc++.la
 if GLIBCPP_BUILD_VERSIONED_SHLIB
 version_arg = -Wl,--version-script=libstdc++-symbol.ver
 libstdc++-symbol.ver:  ${glibcpp_srcdir}/@SYMVER_MAP@
-	@LN_S@  $< ./libstdc++-symbol.ver || true
+	@LN_S@  ${glibcpp_srcdir}/@SYMVER_MAP@ ./libstdc++-symbol.ver || true
 else
 version_arg =
 libstdc++-symbol.ver:
@@ -83,25 +83,25 @@ target_sources = \
 	time_members.cc
 
 codecvt_members.cc: ${glibcpp_srcdir}/@CCODECVT_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CCODECVT_CC@ . || true
 
 collate_members.cc: ${glibcpp_srcdir}/@CCOLLATE_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CCOLLATE_CC@ . || true
 
 ctype_members.cc: ${glibcpp_srcdir}/@CCTYPE_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CCTYPE_CC@ . || true
 
 messages_members.cc: ${glibcpp_srcdir}/@CMESSAGES_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CMESSAGES_CC@ . || true
 
 monetary_members.cc: ${glibcpp_srcdir}/@CMONEY_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CMONEY_CC@ . || true
 
 numeric_members.cc: ${glibcpp_srcdir}/@CNUMERIC_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CNUMERIC_CC@ . || true
 
 time_members.cc: ${glibcpp_srcdir}/@CTIME_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CTIME_CC@ . || true
 
 # Source files linked in via configuration/make substitution for a
 # particular target, but with ad hoc naming rules.
@@ -110,10 +110,10 @@ target_sources_extra = \
 	c++locale.cc 
 
 c++locale.cc: ${glibcpp_srcdir}/@CLOCALE_CC@
-	@LN_S@ $< ./$@ || true
+	@LN_S@ ${glibcpp_srcdir}/@CLOCALE_CC@ ./$@ || true
 
 basic_file.cc: ${glibcpp_srcdir}/@BASIC_FILE_CC@
-	@LN_S@ $< ./$@ || true
+	@LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_CC@ ./$@ || true
 
 # Sources present in the src directory.
 sources = \
