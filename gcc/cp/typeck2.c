@@ -326,7 +326,7 @@ my_friendly_abort (i)
 	    ack ("Internal compiler error.");
 	  else
 	    ack ("Internal compiler error %d.", i);
-	  ack ("Please submit a full bug report to `egcs-bugs@cygnus.com'.");
+	  ack ("Please submit a full bug report to `egcs-bugs@egcs.cygnus.com'.");
 	  ack ("See <URL:http://egcs.cygnus.com/faq.html#bugreport> for details.");
 	}
       else
@@ -341,7 +341,7 @@ my_friendly_abort (i)
   else
     error ("Internal compiler error %d.", i);
 
-  error ("Please submit a full bug report to `egcs-bugs@cygnus.com'.");
+  error ("Please submit a full bug report to `egcs-bugs@egcs.cygnus.com'.");
   fatal ("See <URL:http://egcs.cygnus.com/faq.html#bugreport> for details.");
 }
 
