@@ -2870,6 +2870,7 @@ gnu/awt/xlib/XGraphics.java \
 gnu/awt/xlib/XGraphicsConfiguration.java \
 gnu/awt/xlib/XOffScreenImage.java \
 gnu/awt/xlib/XPanelPeer.java \
+gnu/awt/xlib/XFontPeer.java \
 gnu/awt/xlib/XToolkit.java
 
 x_nat_source_files = \

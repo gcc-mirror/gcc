@@ -2568,6 +2568,7 @@ gnu/awt/xlib/XGraphics.java \
 gnu/awt/xlib/XGraphicsConfiguration.java \
 gnu/awt/xlib/XOffScreenImage.java \
 gnu/awt/xlib/XPanelPeer.java \
+gnu/awt/xlib/XFontPeer.java \
 gnu/awt/xlib/XToolkit.java
 
 
@@ -2947,8 +2948,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/awt/j2d/IntegerGraphicsState.P \
 .deps/gnu/awt/j2d/MappedRaster.P .deps/gnu/awt/xlib/XCanvasPeer.P \
 .deps/gnu/awt/xlib/XEventLoop.P .deps/gnu/awt/xlib/XEventQueue.P \
-.deps/gnu/awt/xlib/XFontMetrics.P .deps/gnu/awt/xlib/XFramePeer.P \
-.deps/gnu/awt/xlib/XGraphics.P \
+.deps/gnu/awt/xlib/XFontMetrics.P .deps/gnu/awt/xlib/XFontPeer.P \
+.deps/gnu/awt/xlib/XFramePeer.P .deps/gnu/awt/xlib/XGraphics.P \
 .deps/gnu/awt/xlib/XGraphicsConfiguration.P \
 .deps/gnu/awt/xlib/XOffScreenImage.P .deps/gnu/awt/xlib/XPanelPeer.P \
 .deps/gnu/awt/xlib/XToolkit.P .deps/gnu/classpath/Configuration.P \
