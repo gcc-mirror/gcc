@@ -274,8 +274,9 @@ enum reg_class {
 #define REGNO_REG_CLASS(REGNO) \
   ((REGNO) < 4 ? DATA_REGS : \
    (REGNO) < 9 ? ADDRESS_REGS : \
-    (REGNO) == 9 ? SP_REGS : \
-     (REGNO) < 18 ? EXTENDED_REGS : 0)
+   (REGNO) == 9 ? SP_REGS : \
+   (REGNO) < 18 ? EXTENDED_REGS : \
+   NO_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS DATA_OR_EXTENDED_REGS

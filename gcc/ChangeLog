@@ -1,3 +1,8 @@
+Fri Apr 21 18:33:09 2000  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.h (REGNO_REG_CLASS): Use NO_REGS instead
+	of explicit 0.
+
 Fri Apr 21 18:30:00 2000  Alexandre Oliva  <aoliva@cygnus.com>
 
 	* config/mn10300/mn10300.h (REGISTER_MOVE_COST): Provide more
