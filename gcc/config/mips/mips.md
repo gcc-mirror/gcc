@@ -4058,6 +4058,10 @@ dsrl\t%3,%3,1\n\
 ;; refers to just the first or the last byte (depending on endianness).
 ;; We therefore use two memory operands to each instruction, one to
 ;; describe the rtl effect and one to use in the assembly output.
+;;
+;; Operands 0 and 1 are the rtl-level target and source respectively.
+;; This allows us to use the standard length calculations for the "load"
+;; and "store" type attributes.
 
 (define_insn "mov_lwl"
   [(set (match_operand:SI 0 "register_operand" "=d")

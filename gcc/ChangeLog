@@ -1,3 +1,8 @@
+2004-02-19  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_address_insns): Treat BLKmode specially.
+	* config/mips/mips.md: Expand comment above unaligned loads and stores.
+
 2004-02-20  Alan Modra  <amodra@bigpond.net.au>
 
 	* function.c (assign_parms): Correct leakage of mainline code
