@@ -174,7 +174,7 @@ all: ../../include/f2c.h $(lib)
 $(lib): stamp-lib ; @true
 stamp-lib: stamp-libf77 stamp-libi77 stamp-libu77
 	rm -f stamp-lib
-	$(AR) $(AR_FLAGS) $(lib) $?
+	$(AR) $(AR_FLAGS) $(lib) $(FOBJ) $(IOBJ) $(UOBJ)
 	rm -fr libE77
 	mkdir libE77
 	for name in $(F2CEXT); \
