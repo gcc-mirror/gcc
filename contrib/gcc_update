@@ -106,10 +106,10 @@ boehm-gc/configure: boehm-gc/configure.in boehm-gc/aclocal.m4
 libjava/aclocal.m4: libjava/configure.in libjava/acinclude.m4
 libjava/Makefile.in: libjava/Makefile.am libjava/configure.in libjava/aclocal.m4
 libjava/configure: libjava/configure.in libjava/aclocal.m4
-libjava/libltdl/aclocal.m4: libjava/libltdl/configure.in libjava/libltdl/acinclude.m4
-libjava/libltdl/Makefile.in: libjava/libltdl/Makefile.am libjava/libltdl/configure.in libjava/libltdl/aclocal.m4
-libjava/libltdl/configure: libjava/libltdl/configure.in libjava/libltdl/aclocal.m4
-libjava/libltdl/stamp-h.in: libjava/libltdl/configure.in libjava/libltdl/aclocal.m4 libjava/libltdl/acconfig.h
+libjava/libltdl/aclocal.m4: libjava/libltdl/configure.ac libjava/libltdl/acinclude.m4
+libjava/libltdl/Makefile.in: libjava/libltdl/Makefile.am libjava/libltdl/configure.ac libjava/libltdl/aclocal.m4
+libjava/libltdl/configure: libjava/libltdl/configure.ac libjava/libltdl/aclocal.m4
+libjava/libltdl/config-h.in: libjava/libltdl/configure.ac libjava/libltdl/aclocal.m4 libjava/libltdl/acconfig.h
 # Top level
 Makefile.in: Makefile.tpl Makefile.def
 configure: configure.in config/acx.m4
