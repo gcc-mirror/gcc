@@ -2499,9 +2499,8 @@ expand_case (tree exp)
 	  if (MEM_P (index))
 	    index = copy_to_reg (index);
 
-	  /* If the index expression is not constant we generate
-	     a binary decision tree to select the appropriate
-	     target code.  This is done as follows:
+	  /* We generate a binary decision tree to select the
+	     appropriate target code.  This is done as follows:
 
 	     The list of cases is rearranged into a binary tree,
 	     nearly optimal assuming equal probability for each case.
