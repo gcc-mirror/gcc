@@ -202,15 +202,6 @@ Related expressions:
    so that it is possible to find out if there exists any
    register equivalent to an expression related to a given expression.  */
 
-/* One plus largest register number used in this function.  */
-
-static int max_reg;
-
-/* One plus largest instruction UID used in this function at time of
-   cse_main call.  */
-
-static int max_insn_uid;
-
 /* Length of qty_table vector.  We know in advance we will not need
    a quantity number this big.  */
 
@@ -6725,10 +6716,6 @@ cse_main (rtx f, int nregs, FILE *file)
 
   init_recog ();
   init_alias_analysis ();
-
-  max_reg = nregs;
-
-  max_insn_uid = get_max_uid ();
 
   reg_eqv_table = xmalloc (nregs * sizeof (struct reg_eqv_elem));
 
