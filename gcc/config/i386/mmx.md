@@ -482,6 +482,51 @@
   DONE;
 })
 
+(define_insn_and_split "*vec_extractv2sf_0"
+  [(set (match_operand:SF 0 "nonimmediate_operand"     "=x,y,m,m,frxy")
+	(vec_select:SF
+	  (match_operand:V2SF 1 "nonimmediate_operand" " x,y,x,y,m")
+	  (parallel [(const_int 0)])))]
+  "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx op1 = operands[1];
+  if (REG_P (op1))
+    op1 = gen_rtx_REG (SFmode, REGNO (op1));
+  else
+    op1 = gen_lowpart (SFmode, op1);
+  emit_move_insn (operands[0], op1);
+  DONE;
+})
+
+(define_insn "*vec_extractv2sf_1"
+  [(set (match_operand:SF 0 "nonimmediate_operand"     "=y,x,frxy")
+	(vec_select:SF
+	  (match_operand:V2SF 1 "nonimmediate_operand" " 0,0,o")
+	  (parallel [(const_int 1)])))]
+  "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "@
+   punpckhdq\t%0, %0
+   unpckhps\t%0, %0
+   #"
+  [(set_attr "type" "mmxcvt,sselog1,*")
+   (set_attr "mode" "DI,V4SF,SI")])
+
+(define_split
+  [(set (match_operand:SF 0 "register_operand" "")
+	(vec_select:SF
+	  (match_operand:V2SF 1 "memory_operand" "")
+	  (parallel [(const_int 1)])))]
+  "TARGET_MMX && reload_completed"
+  [(const_int 0)]
+{
+  operands[1] = adjust_address (operands[1], SFmode, 4);
+  emit_move_insn (operands[0], operands[1]);
+  DONE;
+})
+
 (define_expand "vec_extractv2sf"
   [(match_operand:SF 0 "register_operand" "")
    (match_operand:V2SF 1 "register_operand" "")
@@ -1100,6 +1145,53 @@
 {
   ix86_expand_vector_set (false, operands[0], operands[1],
 			  INTVAL (operands[2]));
+  DONE;
+})
+
+(define_insn_and_split "*vec_extractv2si_0"
+  [(set (match_operand:SI 0 "nonimmediate_operand"     "=x,y,m,m,frxy")
+	(vec_select:SI
+	  (match_operand:V2SI 1 "nonimmediate_operand" " x,y,x,y,m")
+	  (parallel [(const_int 0)])))]
+  "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx op1 = operands[1];
+  if (REG_P (op1))
+    op1 = gen_rtx_REG (SImode, REGNO (op1));
+  else
+    op1 = gen_lowpart (SImode, op1);
+  emit_move_insn (operands[0], op1);
+  DONE;
+})
+
+(define_insn "*vec_extractv2si_1"
+  [(set (match_operand:SI 0 "nonimmediate_operand"     "=y,Y,Y,x,frxy")
+	(vec_select:SI
+	  (match_operand:V2SI 1 "nonimmediate_operand" " 0,0,Y,0,o")
+	  (parallel [(const_int 1)])))]
+  "TARGET_MMX && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "@
+   punpckhdq\t%0, %0
+   punpckhdq\t%0, %0
+   pshufd\t{$85, %1, %0|%0, %1, 85}
+   unpckhps\t%0, %0
+   #"
+  [(set_attr "type" "mmxcvt,sselog1,sselog1,sselog1,*")
+   (set_attr "mode" "DI,TI,TI,V4SF,SI")])
+
+(define_split
+  [(set (match_operand:SI 0 "register_operand" "")
+	(vec_select:SI
+	  (match_operand:V2SI 1 "memory_operand" "")
+	  (parallel [(const_int 1)])))]
+  "TARGET_MMX && reload_completed"
+  [(const_int 0)]
+{
+  operands[1] = adjust_address (operands[1], SImode, 4);
+  emit_move_insn (operands[0], operands[1]);
   DONE;
 })
 
