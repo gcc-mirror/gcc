@@ -4828,15 +4828,6 @@ assemble_alias (decl, target)
 #endif
 }
 
-/* This determines whether or not we support link-once semantics.  */
-#ifndef SUPPORTS_ONE_ONLY
-#ifdef MAKE_DECL_ONE_ONLY
-#define SUPPORTS_ONE_ONLY 1
-#else
-#define SUPPORTS_ONE_ONLY 0
-#endif
-#endif
-
 /* Returns 1 if the target configuration supports defining public symbols
    so that one of them will be chosen at link time instead of generating a
    multiply-defined symbol error, whether through the use of weak symbols or

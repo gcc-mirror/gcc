@@ -643,6 +643,7 @@ struct builtin
 #define OPERATOR  	0x10
 
 #define B(n, t)       { U n, 0, t, 0, BUILTIN, sizeof n - 1 }
+#define BC(n, t)      { U n, 0, t, 0, BUILTIN | CPLUS, sizeof n - 1 }
 #define C(n, v)       { U n, v, 0, 0, 0, sizeof n - 1 }
 #define X(n, f)       { U n, 0, 0, 0, f, sizeof n - 1 }
 #define O(n, c, f)    { U n, 0, 0, c, OPERATOR | f, sizeof n - 1 }
@@ -655,6 +656,7 @@ static const struct builtin builtin_array[] =
   B("__LINE__",		 BT_SPECLINE),
   B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL),
   B("__STDC__",		 BT_STDC),
+  BC("__GXX_WEAK__",     BT_WEAK),
 
   X("__VERSION__",		VERS),
   X("__USER_LABEL_PREFIX__",	ULP),

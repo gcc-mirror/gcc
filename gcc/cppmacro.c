@@ -216,6 +216,10 @@ builtin_macro (pfile, token)
       *token = node->value.builtin == BT_DATE ? pfile->date: pfile->time;
       break;
 
+    case BT_WEAK:
+      make_number_token (pfile, token, SUPPORTS_ONE_ONLY);
+      break;
+
     default:
       cpp_ice (pfile, "invalid builtin macro \"%s\"", node->name);
       break;

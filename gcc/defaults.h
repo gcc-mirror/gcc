@@ -149,6 +149,15 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 #endif
 #endif
 
+/* This determines whether or not we support link-once semantics.  */
+#ifndef SUPPORTS_ONE_ONLY
+#ifdef MAKE_DECL_ONE_ONLY
+#define SUPPORTS_ONE_ONLY 1
+#else
+#define SUPPORTS_ONE_ONLY 0
+#endif
+#endif
+
 /* If the target supports weak symbols, define TARGET_ATTRIBUTE_WEAK to
    provide a weak attribute.  Else define it to nothing. 
 
