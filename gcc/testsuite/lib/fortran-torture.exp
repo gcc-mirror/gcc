@@ -139,6 +139,7 @@ proc fortran-torture-execute { src } {
     global TORTURE_OPTIONS
 
     # Check for alternate driver.
+    set additional_flags "";
     if [file exists [file rootname $src].x] {
 	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
 	set done_p 0
@@ -184,6 +185,9 @@ proc fortran-torture-execute { src } {
 
 	set options ""
 	lappend options "additional_flags=-w $option"
+	if { $additional_flags != "" } {
+	    lappend options "additional_flags=$additional_flags";
+	}
 	set comp_output [gfortran_target_compile "$src" "$executable" executable $options];
 
 	# See if we got something bad.
@@ -341,3 +345,21 @@ proc fortran-torture { args } {
     }
 }
 
+#
+# ieee-options -- return options necessary for 100% ieee conformance.
+#
+proc ieee-options { } {
+    # Ensure that excess precision does not cause problems.
+    if [istarget "i?86-*-*"] then {
+      return "-ffloat-store"
+    }
+    if [istarget "m68k-*-*"] then {
+      return "-ffloat-store"
+    }
+                                                                                
+    # Enable full IEEE compliance mode.
+    if { [istarget "alpha*-*-*"]
+         || [istarget "sh*-*-*"] } then {
+      return "-mieee"
+    }
+}
