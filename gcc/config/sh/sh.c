@@ -2473,12 +2473,15 @@ output_jump_label_table ()
 
 static int extra_push;
 
-/* Adjust the stack and return the number of bytes taken to do it.  */
+/* Adjust the stack by SIZE bytes.  REG holds the rtl of the register
+  to be adjusted, and TEMP, if nonnegative, holds the register number
+  of a general register that we may clobber.  */
 
 static void
-output_stack_adjust (size, reg)
+output_stack_adjust (size, reg, temp)
      int size;
      rtx reg;
+     int temp;
 {
   if (size)
     {
@@ -2487,9 +2490,25 @@ output_stack_adjust (size, reg)
 
       if (! CONST_OK_FOR_I (size))
 	{
-	  rtx reg = gen_rtx (REG, SImode, 3);
-	  emit_insn (gen_movsi (reg, val));
-	  val = reg;
+	  if (CONST_OK_FOR_I (size / 2) && CONST_OK_FOR_I (size - size / 2))
+	    {
+	      val = GEN_INT (size / 2);
+	      emit_insn (gen_addsi3 (reg, reg, val));
+	      val = GEN_INT (size - size / 2);
+	    }
+	  else
+	    {
+	      rtx reg;
+
+	      /* If TEMP is invalid, we could temporarily save a general
+		 register to MACL.  However, there is currently no need
+		 to handle this case, so just abort when we see it.  */
+	      if (temp < 0)
+		abort ();
+	      reg = gen_rtx (REG, SImode, temp);
+	      emit_insn (gen_movsi (reg, val));
+	      val = reg;
+	    }
 	}
 
       insn = gen_addsi3 (reg, reg, val);
@@ -2615,7 +2634,8 @@ sh_expand_prologue ()
 
   /* We have pretend args if we had an object sent partially in registers
      and partially on the stack, e.g. a large structure.  */
-  output_stack_adjust (-current_function_pretend_args_size, stack_pointer_rtx);
+  output_stack_adjust (-current_function_pretend_args_size,
+		       stack_pointer_rtx, 3);
 
   extra_push = 0;
 
@@ -2644,7 +2664,7 @@ sh_expand_prologue ()
 
   push_regs (live_regs_mask, live_regs_mask2);
 
-  output_stack_adjust (-get_frame_size (), stack_pointer_rtx);
+  output_stack_adjust (-get_frame_size (), stack_pointer_rtx, 3);
 
   if (frame_pointer_needed)
     emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
@@ -2665,11 +2685,11 @@ sh_expand_epilogue ()
 	 to ensure that instruction scheduling won't move the stack pointer
 	 adjust before instructions reading from the frame.  This can fail
 	 if there is an interrupt which then writes to the stack.  */
-      output_stack_adjust (get_frame_size (), frame_pointer_rtx);
+      output_stack_adjust (get_frame_size (), frame_pointer_rtx, 7);
       emit_insn (gen_movsi (stack_pointer_rtx, frame_pointer_rtx));
     }
   else
-    output_stack_adjust (get_frame_size (), stack_pointer_rtx);
+    output_stack_adjust (get_frame_size (), stack_pointer_rtx, 7);
 
   /* Pop all the registers.  */
 
@@ -2683,7 +2703,7 @@ sh_expand_epilogue ()
     }
 
   output_stack_adjust (extra_push + current_function_pretend_args_size,
-		       stack_pointer_rtx);
+		       stack_pointer_rtx, 7);
 }
 
 /* Clear variables at function end.  */
