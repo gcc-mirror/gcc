@@ -10514,9 +10514,9 @@ patch_method_invocation (patch, primary, where, from_super,
       /* Generate the code used to initialize fields declared with an
 	 initialization statement and build a compound statement along
 	 with the super constructor invocation. */
+      CAN_COMPLETE_NORMALLY (patch) = 1;
       patch = build (COMPOUND_EXPR, void_type_node, patch,
 		     java_complete_tree (finit_call));
-      CAN_COMPLETE_NORMALLY (patch) = 1;
     }
   return patch;
 }
