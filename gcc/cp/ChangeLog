@@ -1,3 +1,7 @@
+2000-02-29  Jason Merrill  <jason@casey.cygnus.com>
+
+	* init.c (construct_virtual_bases): Fix thinko.
+
 2000-03-01  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (current_function_decl): Move to toplev.c.
