@@ -1847,8 +1847,11 @@ yylex ()
 	if (! wide_flag)
 	  {
 	    int num_bits = num_chars * width;
-	    if (TREE_UNSIGNED (char_type_node)
-		|| ((result >> (num_bits - 1)) & 1) == 0)
+	    if (num_bits == 0)
+	      /* We already got an error; avoid invalid shift.  */
+	      yylval.ttype = build_int_2 (0, 0);
+	    else if (TREE_UNSIGNED (char_type_node)
+		     || ((result >> (num_bits - 1)) & 1) == 0)
 	      yylval.ttype
 		= build_int_2 (result & ((unsigned HOST_WIDE_INT) ~0
 					 >> (HOST_BITS_PER_WIDE_INT - num_bits)),
