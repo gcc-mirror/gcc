@@ -1,5 +1,6 @@
 2004-11-12  Steven Bosscher  <stevenb@suse.de>
 
+	PR tree-optimization/18419
 	* tree-ssa.c (walk_use_def_chains_1): Make the visited map a
 	pointer set instead of a bitmap.
 	(walk_use_def_chains): Create, pass and clean up that pointer_set.
