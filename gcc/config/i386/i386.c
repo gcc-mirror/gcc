@@ -6662,6 +6662,35 @@ ix86_output_addr_diff_elt (file, value, rel)
 		 ASM_LONG, LPREFIX, value);
 }
 
+/* Generate either "mov $0, reg" or "xor reg, reg", as appropriate
+   for the target.  */
+
+void
+ix86_expand_clear (dest)
+     rtx dest;
+{
+  rtx tmp;
+
+  /* We play register width games, which are only valid after reload.  */
+  if (!reload_completed)
+    abort ();
+
+  /* Avoid HImode and its attendant prefix byte.  */
+  if (GET_MODE_SIZE (GET_MODE (dest)) < 4)
+    dest = gen_rtx_REG (SImode, REGNO (dest));
+
+  tmp = gen_rtx_SET (VOIDmode, dest, const0_rtx);
+
+  /* This predicate should match that for movsi_xor and movdi_xor_rex64.  */
+  if (reload_completed && (!TARGET_USE_MOV0 || optimize_size))
+    {
+      rtx clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, 17));
+      tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, tmp, clob));
+    }
+
+  emit_insn (tmp);
+}
+
 void
 ix86_expand_move (mode, operands)
      enum machine_mode mode;

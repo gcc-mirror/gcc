@@ -106,6 +106,7 @@ extern const char *output_fp_compare PARAMS ((rtx, rtx*, int, int));
 extern void i386_dwarf_output_addr_const PARAMS ((FILE*, rtx));
 extern rtx i386_simplify_dwarf_addr PARAMS ((rtx));
 
+extern void ix86_expand_clear PARAMS ((rtx));
 extern void ix86_expand_move PARAMS ((enum machine_mode, rtx[]));
 extern void ix86_expand_binary_operator PARAMS ((enum rtx_code,
 					       enum machine_mode, rtx[]));
