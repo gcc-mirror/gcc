@@ -472,6 +472,10 @@ case $basic_machine in
 		basic_machine=sparc-sun
 		os=-sunos4
 		;;
+	sun4sol2)
+		basic_machine=sparc-sun
+		os=-solaris2
+		;;
 	sun3 | sun3-*)
 		basic_machine=m68k-sun
 		;;
