@@ -1179,7 +1179,6 @@ __bb_init_func (blocks)
 typedef void (*vfp)(void);
 
 extern vfp __new_handler;
-extern void *malloc ();
 
 void *
 __builtin_new (sz)
