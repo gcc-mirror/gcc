@@ -3612,7 +3612,7 @@ convert_nontype_argument (tree type, tree expr)
       if (!expr || expr == error_mark_node)
 	return expr;
 
-      expr = build_nop(type, build_address (expr));
+      expr = build_nop (type, build_address (expr));
     }
   /* [temp.arg.nontype]/5, bullet 6
 
@@ -7342,7 +7342,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (e1 == error_mark_node || e2 == error_mark_node)
 	  return error_mark_node;
 
-	return fold (build2 (TREE_CODE (t), TREE_TYPE (t), e1, e2));
+	return fold_build2 (TREE_CODE (t), TREE_TYPE (t), e1, e2);
       }
 
     case NEGATE_EXPR:
@@ -7352,7 +7352,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (e == error_mark_node)
 	  return error_mark_node;
 
-	return fold (build1 (TREE_CODE (t), TREE_TYPE (t), e));
+	return fold_build1 (TREE_CODE (t), TREE_TYPE (t), e);
       }
 
     case TYPENAME_TYPE:
@@ -10158,10 +10158,10 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	     not an integer constant.  */
 	  if (TREE_CODE (parm_max) == MINUS_EXPR)
 	    {
-	      arg_max = fold (build2 (PLUS_EXPR, 
-				      integer_type_node,
-				      arg_max,
-				      TREE_OPERAND (parm_max, 1)));
+	      arg_max = fold_build2 (PLUS_EXPR, 
+				     integer_type_node,
+				     arg_max,
+				     TREE_OPERAND (parm_max, 1));
 	      parm_max = TREE_OPERAND (parm_max, 0);
 	    }
 

@@ -296,8 +296,8 @@ build_base_path (enum tree_code code,
   if (null_test)
     {
       tree zero = cp_convert (TREE_TYPE (expr), integer_zero_node);
-      null_test = fold (build2 (NE_EXPR, boolean_type_node,
-				expr, zero));
+      null_test = fold_build2 (NE_EXPR, boolean_type_node,
+			       expr, zero);
     }
 
   /* If this is a simple base reference, express it as a COMPONENT_REF.  */
@@ -388,9 +388,9 @@ build_base_path (enum tree_code code,
 
  out:
   if (null_test)
-    expr = fold (build3 (COND_EXPR, target_type, null_test, expr,
-			 fold (build1 (NOP_EXPR, target_type,
-				       integer_zero_node))));
+    expr = fold_build3 (COND_EXPR, target_type, null_test, expr,
+			fold_build1 (NOP_EXPR, target_type,
+				     integer_zero_node));
 
   return expr;
 }
@@ -7406,9 +7406,9 @@ build_vbase_offset_vtbl_entries (tree binfo, vtbl_init_data* vid)
       
       *vid->last_init 
 	= build_tree_list (NULL_TREE,
-			   fold (build1 (NOP_EXPR, 
-					 vtable_entry_type,
-					 delta)));
+			   fold_build1 (NOP_EXPR, 
+					vtable_entry_type,
+					delta));
       vid->last_init = &TREE_CHAIN (*vid->last_init);
     }
 }
@@ -7633,8 +7633,8 @@ add_vcall_offset (tree orig_fn, tree binfo, vtbl_init_data *vid)
 	     BINFO_OFFSET from vid->binfo.  */
 	  vcall_offset = size_diffop (BINFO_OFFSET (base),
 				      BINFO_OFFSET (vid->binfo));
-	  vcall_offset = fold (build1 (NOP_EXPR, vtable_entry_type,
-				       vcall_offset));
+	  vcall_offset = fold_build1 (NOP_EXPR, vtable_entry_type,
+				      vcall_offset);
 	}
       /* Add the initializer to the vtable.  */
       *vid->last_init = build_tree_list (NULL_TREE, vcall_offset);

@@ -222,8 +222,8 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
       /* Iterate over the array elements, building initializations.  */
       inits = NULL_TREE;
       if (nelts)
-	max_index = fold (build2 (MINUS_EXPR, TREE_TYPE (nelts),
-				  nelts, integer_one_node));
+	max_index = fold_build2 (MINUS_EXPR, TREE_TYPE (nelts),
+				 nelts, integer_one_node);
       else
 	max_index = array_type_nelts (type);
       gcc_assert (TREE_CODE (max_index) == INTEGER_CST);
@@ -826,9 +826,9 @@ expand_cleanup_for_base (tree binfo, tree flag)
 				    binfo,
 				    LOOKUP_NORMAL | LOOKUP_NONVIRTUAL);
   if (flag)
-    expr = fold (build3 (COND_EXPR, void_type_node,
-			 c_common_truthvalue_conversion (flag),
-			 expr, integer_zero_node));
+    expr = fold_build3 (COND_EXPR, void_type_node,
+			c_common_truthvalue_conversion (flag),
+			expr, integer_zero_node);
 
   finish_eh_cleanup (expr);
 }
@@ -2241,9 +2241,9 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 
   tbase = create_temporary_var (ptype);
   tbase_init = build_modify_expr (tbase, NOP_EXPR,
-				  fold (build2 (PLUS_EXPR, ptype,
-						base,
-						virtual_size)));
+				  fold_build2 (PLUS_EXPR, ptype,
+					       base,
+					       virtual_size));
   DECL_REGISTER (tbase) = 1;
   controller = build3 (BIND_EXPR, void_type_node, tbase,
 		       NULL_TREE, NULL_TREE);
@@ -2308,11 +2308,11 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
     body = integer_zero_node;
   
   /* Outermost wrapper: If pointer is null, punt.  */
-  body = fold (build3 (COND_EXPR, void_type_node,
-		       fold (build2 (NE_EXPR, boolean_type_node, base,
-				     convert (TREE_TYPE (base),
-					      integer_zero_node))),
-		       body, integer_zero_node));
+  body = fold_build3 (COND_EXPR, void_type_node,
+		      fold_build2 (NE_EXPR, boolean_type_node, base,
+				   convert (TREE_TYPE (base),
+					    integer_zero_node)),
+		      body, integer_zero_node);
   body = build1 (NOP_EXPR, void_type_node, body);
 
   if (controller)

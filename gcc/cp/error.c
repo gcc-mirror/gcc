@@ -1413,9 +1413,9 @@ dump_expr (tree t, int flags)
 	if (TREE_CODE (type) == ARRAY_REF)
 	  type = build_cplus_array_type
 	    (TREE_OPERAND (type, 0),
-	     build_index_type (fold (build2 (MINUS_EXPR, integer_type_node,
-					     TREE_OPERAND (type, 1),
-					     integer_one_node))));
+	     build_index_type (fold_build2 (MINUS_EXPR, integer_type_node,
+					    TREE_OPERAND (type, 1),
+					    integer_one_node)));
 	dump_type (type, flags);
 	if (init)
 	  {
