@@ -2,4 +2,4 @@
 
 AUTOMAKE_OPTIONS = foreign no-installinfo
 
-include_HEADERS = jni.h
+include_HEADERS = jni.h jvmpi.h
