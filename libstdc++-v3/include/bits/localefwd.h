@@ -270,7 +270,7 @@ namespace std
 
     inline bool  
     operator!=(const locale& __other) const throw ()
-    { return !(operator==(__other));  }
+    { return !(this->operator==(__other));  }
 
     template<typename _Char, typename _Traits, typename _Alloc>
       bool  
@@ -361,10 +361,9 @@ namespace std
 	}
     }
 
-    _Impl(const _Impl&, size_t __refs);
-    _Impl(const _Impl&, const string&, category, size_t __refs);
-    _Impl(size_t __facets, size_t __refs, bool __has_name, 
-	  string __name = "*");
+    _Impl(const _Impl&, size_t);
+    _Impl(const _Impl&, const string&, category, size_t);
+    _Impl(size_t, size_t, bool __has_name = false, string __name = "*");
    ~_Impl() throw();
 
     void 

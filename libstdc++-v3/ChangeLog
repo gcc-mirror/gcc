@@ -1,3 +1,24 @@
+2001-01-05  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Fix 27_io/filebuf_members.cc
+	* src/localename.cc (locale::_Impl::_Impl(const _Impl& __imp,
+	const string& __name, category __cat, size_t __refs): Set
+	_M_has_name with _M_name.
+	* include/bits/localefwd.h (locale::operator!=): Protect member
+	function call with this->.
+	* src/locale.cc (locale::operator==): Make fast checks first.
+	* include/bits/basic_ios.tcc (basic_ios::init): Simplify.
+
+	* include/bits/ios_base.h (_M_synced_with_stdio): Add data member
+	to ios_base::Init.
+	* src/ios.cc (ios_base::Init::Init): Initialize here.
+	(ios_base::sync_with_stdio): Set here.
+	
+2001-01-04  Loren J. Rittle  <ljrittle@acm.org>
+
+        * config/c_io_stdio.cc (__basic_file<_CharT>::sys_open()): On
+        systems that support it, call dup() before fdopen().
+
 2001-01-03  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_std/bits/std_cwctype.h: Include std_cwchar.h for wint_t.

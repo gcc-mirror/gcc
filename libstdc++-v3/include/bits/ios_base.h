@@ -1,6 +1,6 @@
 // Iostreams base classes -*- C++ -*-
 
-// Copyright (C) 1997-2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -138,7 +138,7 @@ namespace std {
   class ios_base
   {
   public:
-
+    
     // 27.4.2.1.1  Class ios_base::failure
     class failure : public exception
     {
@@ -294,6 +294,7 @@ namespace std {
       ~Init();
     private:
       static int 	_S_ios_base_init;
+      bool		_M_synced_with_stdio;
       filebuf* 		_M_cout;
       filebuf* 		_M_cin;
       filebuf* 		_M_cerr;
