@@ -1,3 +1,13 @@
+2002-11-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/8275
+
+	Merge from mainline:
+	2002-09-19  Dale Johannesen <dalej@apple.com>
+
+	* combine.c (make_extraction): Don't create
+	invalid subreg.
+
 2002-11-23  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	2002-09-26  Theodore A. Roth  <troth@verinet.com>

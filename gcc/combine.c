@@ -6016,6 +6016,11 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 		final_word += (GET_MODE_SIZE (inner_mode)
 			       - GET_MODE_SIZE (tmode)) % UNITS_PER_WORD;
 
+	      /* Avoid creating invalid subregs, for example when
+		 simplifying (x>>32)&255. */
+	      if (final_word >= GET_MODE_SIZE (inner_mode))
+		return NULL_RTX;
+
 	      new = gen_rtx_SUBREG (tmode, inner, final_word);
 	    }
 	  else
