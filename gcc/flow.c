@@ -335,6 +335,7 @@ static void count_reg_sets		PROTO ((rtx));
 static void count_reg_references	PROTO ((rtx));
 static void notice_stack_pointer_modification PROTO ((rtx, rtx));
 static void invalidate_mems_from_autoinc	PROTO ((rtx));
+void verify_flow_info			PROTO ((void));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -418,6 +419,10 @@ find_basic_blocks (f, nregs, file, do_cleanup)
 
   /* Kill the data we won't maintain.  */
   label_value_list = 0;
+
+#ifdef ENABLE_CHECKING
+  verify_flow_info ();
+#endif
 }
 
 /* Count the basic blocks of the function.  */
@@ -1945,15 +1950,14 @@ merge_blocks (e, b, c)
 	 jump must go in a new basic block D.  */
     }
 
-  /* If a label still appears somewhere, we cannot delete the label, which
-     means we cannot merge the blocks.  We have still won a tad by tidying
-     the interface between the two blocks.  */
-  if (GET_CODE (c->head) == CODE_LABEL
-      && ! can_delete_label_p (c->head))
-    {
-      tidy_fallthru_edge (e, b, c);
-      return 0;
-    }
+  /* If a label still appears somewhere and we cannot delete the label,
+     then we cannot merge the blocks.  The edge was tidied already.  */
+  {
+    rtx insn, stop = NEXT_INSN (c->head);
+    for (insn = NEXT_INSN (b->end); insn != stop; insn = NEXT_INSN (insn))
+      if (GET_CODE (insn) == CODE_LABEL && !can_delete_label_p (insn))
+	return 0;
+  }
 
   merge_blocks_nomove (b, c);
   return 1;
@@ -5000,4 +5004,221 @@ set_block_num (insn, bb)
      int bb;
 {
   set_block_for_insn (insn, BASIC_BLOCK (bb));
+}
+
+/* Verify the CFG consistency.  This function check some CFG invariants and
+   aborts when something is wrong.  Hope that this function will help to
+   convert many optimization passes to preserve CFG consistent.
+
+   Currently it does following checks: 
+
+   - test head/end pointers
+   - overlapping of basic blocks
+   - edge list corectness
+   - headers of basic blocks (the NOTE_INSN_BASIC_BLOCK note)
+   - tails of basic blocks (ensure that boundary is necesary)
+   - scans body of the basic block for JUMP_INSN, CODE_LABEL
+     and NOTE_INSN_BASIC_BLOCK
+   - check that all insns are in the basic blocks 
+   (except the switch handling code, barriers and notes)
+
+   In future it can be extended check a lot of other stuff as well
+   (reachability of basic blocks, life information, etc. etc.).  */
+
+void
+verify_flow_info ()
+{
+  const int max_uid = get_max_uid ();
+  const rtx rtx_first = get_insns ();
+  basic_block *bb_info;
+  rtx x;
+  int i;
+
+  bb_info = (basic_block *) alloca (max_uid * sizeof (basic_block));
+  memset (bb_info, 0, max_uid * sizeof (basic_block));
+
+  /* First pass check head/end pointers and set bb_info array used by
+     later passes.  */
+  for (i = n_basic_blocks - 1; i >= 0; i--)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+
+      /* Check the head pointer and make sure that it is pointing into
+         insn list.  */
+      for (x = rtx_first; x != NULL_RTX; x = NEXT_INSN (x))
+	if (x == bb->head)
+	  break;
+      if (!x)
+	{
+	  fatal ("verify_flow_info: Head insn %d for block %d not found in the insn stream.\n",
+		 INSN_UID (bb->head), bb->index);
+	}
+
+      /* Check the end pointer and make sure that it is pointing into
+         insn list.  */
+      for (x = bb->head; x != NULL_RTX; x = NEXT_INSN (x))
+	{
+	  if (bb_info[INSN_UID (x)] != NULL)
+	    {
+	      fatal ("verify_flow_info: Insn %d is in multiple basic blocks (%d and %d)",
+		     INSN_UID (x), bb->index, bb_info[INSN_UID (x)]->index);
+	    }
+	  bb_info[INSN_UID (x)] = bb;
+
+	  if (x == bb->end)
+	    break;
+	}
+      if (!x)
+	{
+	  fatal ("verify_flow_info: End insn %d for block %d not found in the insn stream.\n",
+		 INSN_UID (bb->end), bb->index);
+	}
+    }
+
+  /* Now check the basic blocks (boundaries etc.) */
+  for (i = n_basic_blocks - 1; i >= 0; i--)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+      /* Check corectness of edge lists */
+      edge e;
+
+      e = bb->succ;
+      while (e)
+	{
+	  if (e->src != bb)
+	    {
+	      fprintf (stderr, "verify_flow_info: Basic block %d succ edge is corrupted\n",
+		       bb->index);
+	      fprintf (stderr, "Predecessor: ");
+	      dump_edge_info (stderr, e, 0);
+	      fprintf (stderr, "\nSuccessor: ");
+	      dump_edge_info (stderr, e, 1);
+	      fflush (stderr);
+	      abort ();
+	    }
+	  if (e->dest != EXIT_BLOCK_PTR)
+	    {
+	      edge e2 = e->dest->pred;
+	      while (e2 && e2 != e)
+		e2 = e2->pred_next;
+	      if (!e2)
+		{
+		  fatal ("verify_flow_info: Basic block %i edge lists are corrupted\n",
+			 bb->index);
+		}
+	    }
+	  e = e->succ_next;
+	}
+
+      e = bb->pred;
+      while (e)
+	{
+	  if (e->dest != bb)
+	    {
+	      fprintf (stderr, "verify_flow_info: Basic block %d pred edge is corrupted\n",
+		       bb->index);
+	      fprintf (stderr, "Predecessor: ");
+	      dump_edge_info (stderr, e, 0);
+	      fprintf (stderr, "\nSuccessor: ");
+	      dump_edge_info (stderr, e, 1);
+	      fflush (stderr);
+	      abort ();
+	    }
+	  if (e->src != ENTRY_BLOCK_PTR)
+	    {
+	      edge e2 = e->src->succ;
+	      while (e2 && e2 != e)
+		e2 = e2->succ_next;
+	      if (!e2)
+		{
+		  fatal ("verify_flow_info: Basic block %i edge lists are corrupted\n",
+			 bb->index);
+		}
+	    }
+	  e = e->pred_next;
+	}
+
+      /* OK pointers are correct.  Now check the header of basic
+         block.  It ought to contain optional CODE_LABEL followed
+	 by NOTE_BASIC_BLOCK.  */
+      x = bb->head;
+      if (GET_CODE (x) == CODE_LABEL)
+	{
+	  if (bb->end == x)
+	    {
+	      fatal ("verify_flow_info: Basic block contains only CODE_LABEL and no NOTE_INSN_BASIC_BLOCK note\n");
+	    }
+	  x = NEXT_INSN (x);
+	}
+      if (GET_CODE (x) != NOTE
+	  || NOTE_LINE_NUMBER (x) != NOTE_INSN_BASIC_BLOCK
+	  || NOTE_BASIC_BLOCK (x) != bb)
+	{
+	  fatal ("verify_flow_info: NOTE_INSN_BASIC_BLOCK is missing for block %d\n",
+		 bb->index);
+	}
+
+      if (bb->end == x)
+	{
+	  /* Do checks for empty blocks here */
+	}
+      else
+	{
+	  x = NEXT_INSN (x);
+	  while (x)
+	    {
+	      if (GET_CODE (x) == NOTE
+		  && NOTE_LINE_NUMBER (x) == NOTE_INSN_BASIC_BLOCK)
+		{
+		  fatal ("verify_flow_info: NOTE_INSN_BASIC_BLOCK %d in the middle of basic block %d\n",
+			 INSN_UID (x), bb->index);
+		}
+
+	      if (x == bb->end)
+		break;
+
+	      if (GET_CODE (x) == JUMP_INSN
+		  || GET_CODE (x) == CODE_LABEL
+		  || GET_CODE (x) == BARRIER)
+		{
+		  fatal_insn ("verify_flow_info: Incorrect insn in the middle of basic block %d\n",
+			      x, bb->index);
+		}
+
+	      x = NEXT_INSN (x);
+	    }
+	}
+    }
+
+  x = rtx_first;
+  while (x)
+    {
+      if (!bb_info[INSN_UID (x)])
+	{
+	  switch (GET_CODE (x))
+	    {
+	    case BARRIER:
+	    case NOTE:
+	      break;
+
+	    case CODE_LABEL:
+	      /* An addr_vec is placed outside any block block.  */
+	      if (NEXT_INSN (x)
+		  && GET_CODE (NEXT_INSN (x)) == JUMP_INSN
+		  && (GET_CODE (PATTERN (NEXT_INSN (x))) == ADDR_DIFF_VEC
+		      || GET_CODE (PATTERN (NEXT_INSN (x))) == ADDR_VEC))
+		{
+		  x = NEXT_INSN (x);
+		}
+
+	      /* But in any case, non-deletable labels can appear anywhere.  */
+	      break;
+
+	    default:
+	      fatal_insn ("verify_flow_info: Insn outside basic block\n", x);
+	    }
+	}
+
+      x = NEXT_INSN (x);
+    }
 }

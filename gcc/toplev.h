@@ -43,8 +43,9 @@ extern void pfatal_with_name		PROTO ((const char *))
   ATTRIBUTE_NORETURN;
 extern void fatal_insn_not_found	PROTO ((struct rtx_def *))
   ATTRIBUTE_NORETURN;
-extern void fatal_insn			PROTO ((const char *, struct rtx_def *))
-  ATTRIBUTE_NORETURN;
+extern void fatal_insn			PVPROTO ((const char *,
+						  struct rtx_def *, ...))
+  ATTRIBUTE_PRINTF(1, 3) ATTRIBUTE_NORETURN;
 extern void warning			PVPROTO ((const char *, ...))
 						ATTRIBUTE_PRINTF_1;
 extern void error			PVPROTO ((const char *, ...))

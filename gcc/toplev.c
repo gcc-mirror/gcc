@@ -1436,21 +1436,24 @@ fatal_io_error (name)
    just calling abort().  */
 
 void
-fatal_insn (msgid, insn)
-     const char *msgid;
-     rtx insn;
+fatal_insn VPROTO((const char *msgid, rtx insn, ...))
 {
-  error (msgid);
+#ifndef ANSI_PROTOTYPES
+  const char *msgid;
+  rtx insn;
+#endif
+  va_list ap;
+
+  VA_START (ap, insn);
+
+#ifndef ANSI_PROTOTYPES
+  msgid = va_arg (ap, const char *);
+  insn = va_arg (ap, rtx);
+#endif
+
+  verror (msgid, ap);
   debug_rtx (insn);
-  if (asm_out_file)
-    fflush (asm_out_file);
-  if (aux_info_file)
-    fflush (aux_info_file);
-  if (rtl_dump_file != NULL)
-    fflush (rtl_dump_file);
-  fflush (stdout);
-  fflush (stderr);
-  abort ();
+  exit (FATAL_EXIT_CODE);
 }
 
 /* Called to give a better error message when we don't have an insn to match
