@@ -1,5 +1,5 @@
 // Member templates for the -*- C++ -*- string classes.
-// Copyright (C) 1994 Free Software Foundation
+// Copyright (C) 1994, 1999 Free Software Foundation
 
 // This file is part of the GNU ANSI C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -94,14 +94,14 @@ check_realloc (basic_string::size_type s) const
 
 template <class charT, class traits, class Allocator>
 void basic_string <charT, traits, Allocator>::
-alloc (basic_string::size_type size, bool save)
+alloc (basic_string::size_type __size, bool __save)
 {
-  if (! check_realloc (size))
+  if (! check_realloc (__size))
     return;
 
-  Rep *p = Rep::create (size);
+  Rep *p = Rep::create (__size);
 
-  if (save)
+  if (__save)
     {
       p->copy (0, data (), length ());
       p->len = length ();
