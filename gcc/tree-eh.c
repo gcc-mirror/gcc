@@ -1552,14 +1552,17 @@ lower_eh_constructs_1 (struct leh_state *state, tree *tp)
       /* Look for things that can throw exceptions, and record them.  */
       if (state->cur_region && tree_could_throw_p (t))
 	{
+	  tree op;
+
 	  record_stmt_eh_region (state->cur_region, t);
 	  note_eh_region_may_contain_throw (state->cur_region);
 
 	  /* ??? For the benefit of calls.c, converting all this to rtl, 
 	     we need to record the call expression, not just the outer
 	     modify statement.  */
-	  if (TREE_CODE (TREE_OPERAND (t, 1)) == CALL_EXPR)
-	    record_stmt_eh_region (state->cur_region, TREE_OPERAND (t, 1));
+	  op = get_call_expr_in (t);
+	  if (op)
+	    record_stmt_eh_region (state->cur_region, op);
 	}
       break;
 

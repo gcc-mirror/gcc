@@ -290,6 +290,7 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
   v_must_def_optype v_must_defs;
   stmt_ann_t ann;
   size_t i;
+  tree op;
 
   /* Statements that are implicitly live.  Most function calls, asm and return
      statements are required.  Labels and BIND_EXPR nodes are kept because
@@ -319,8 +320,8 @@ mark_stmt_if_obviously_necessary (tree stmt, bool aggressive)
       return;
 
     case MODIFY_EXPR:
-      if (TREE_CODE (TREE_OPERAND (stmt, 1)) == CALL_EXPR
-	  && TREE_SIDE_EFFECTS (TREE_OPERAND (stmt, 1)))
+      op = get_call_expr_in (stmt);
+      if (op && TREE_SIDE_EFFECTS (op))
 	{
 	  mark_stmt_necessary (stmt, true);
 	  return;
@@ -638,11 +639,9 @@ eliminate_unnecessary_stmts (void)
 	    remove_dead_stmt (&i, bb);
 	  else
 	    {
-	      if (TREE_CODE (t) == CALL_EXPR)
-		notice_special_calls (t);
-	      else if (TREE_CODE (t) == MODIFY_EXPR
-		       && TREE_CODE (TREE_OPERAND (t, 1)) == CALL_EXPR)
-		notice_special_calls (TREE_OPERAND (t, 1));
+	      tree call = get_call_expr_in (t);
+	      if (call)
+		notice_special_calls (call);
 	      bsi_next (&i);
 	    }
 	}

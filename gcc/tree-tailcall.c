@@ -757,10 +757,7 @@ optimize_tail_call (struct tailcall *t, bool opt_tailcalls)
     {
       tree stmt = bsi_stmt (t->call_bsi);
 
-      if (TREE_CODE (stmt) == MODIFY_EXPR)
-	stmt = TREE_OPERAND (stmt, 1);
-      if (TREE_CODE (stmt) != CALL_EXPR)
-	abort ();
+      stmt = get_call_expr_in (stmt);
       CALL_EXPR_TAILCALL (stmt) = 1;
       if (dump_file && (dump_flags & TDF_DETAILS))
         {
