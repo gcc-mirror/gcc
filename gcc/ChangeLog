@@ -1,3 +1,8 @@
+2002-07-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/linux.h (CRIS_LINK_SUBTARGET_SPEC): Don't
+	--gc-sections if -r.
+
 2002-07-15  Eric Botcazou  <ebotcazou@multimania.com>
 
 	PR optimization/7153

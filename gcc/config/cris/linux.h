@@ -96,7 +96,7 @@ Boston, MA 02111-1307, USA.  */
   %{shared} %{static}\
   %{symbolic:-Bdynamic} %{shlib:-Bdynamic} %{static:-Bstatic}\
   %{!shared:%{!static:%{rdynamic:-export-dynamic}}}\
-  %{O2|O3: --gc-sections}"
+  %{!r:%{O2|O3: --gc-sections}}"
 
 
 /* Node: Sections */
