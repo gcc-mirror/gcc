@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O3" } */
 
 void generic_sendmsg (char *fmt, ...)
 {
