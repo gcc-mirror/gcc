@@ -3515,6 +3515,10 @@ instantiate_virtual_regs (fndecl, insns)
       {
 	instantiate_virtual_regs_1 (&PATTERN (insn), insn, 1);
 	instantiate_virtual_regs_1 (&REG_NOTES (insn), NULL_RTX, 0);
+	/* Instantiate any virtual registers in CALL_INSN_FUNCTION_USAGE.  */
+	if (GET_CODE (insn) == CALL_INSN)
+	  instantiate_virtual_regs_1 (&CALL_INSN_FUNCTION_USAGE (insn),
+				      NULL_RTX, 0);
       }
 
   /* Instantiate the stack slots for the parm registers, for later use in
