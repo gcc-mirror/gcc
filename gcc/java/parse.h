@@ -780,10 +780,6 @@ struct parser_ctxt {
 
   tree package;			    /* Defined package ID */
 
-  /* Those two list are saved accross file traversal */
-  tree  incomplete_class;	    /* List of non-complete classes */
-  tree  gclass_list;		    /* All classes seen from source code */
-
   /* These two lists won't survive file traversal */
   tree  class_list;		    /* List of classes in a CU */
   jdeplist *classd_list;	    /* Classe dependencies in a CU */
@@ -947,4 +943,7 @@ ATTRIBUTE_NORETURN
 #endif
 ;
 extern void java_expand_classes PARAMS ((void));
+
+extern struct parser_ctxt *ctxp;
+struct parser_ctxt *ctxp_for_generation;
 #endif
