@@ -17,13 +17,13 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* Note that seq386gas.h is a GAS configuration that does not use this
+/* Note that i386/seq-gas.h is a GAS configuration that does not use this
    file. */
 
-#include "i386.h"
+#include "i386/386.h"
 
 #ifndef YES_UNDERSCORES
-/* Define this now, because bsd386.h tests it.  */
+/* Define this now, because i386/bsd.h tests it.  */
 #define NO_UNDERSCORES
 #endif
 
@@ -43,9 +43,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  * people who want both form will have to compile twice.
  */
 
-#include "bsd386.h"
+#include "i386/bsd.h"
 
-/* these come from bsd386.h, but are specific to sequent */
+/* these come from i386/bsd.h, but are specific to sequent */
 #undef DBX_NO_XREFS
 #undef DBX_CONTIN_LENGTH
 
@@ -127,7 +127,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    count is in %cl.  Some assemblers require %cl as an argument;
    some don't.
 
-   GAS requires the %cl argument, so override unx386.h. */
+   GAS requires the %cl argument, so override i386/unix.h. */
 
 #undef AS3_SHIFT_DOUBLE
 #define AS3_SHIFT_DOUBLE(a,b,c,d) AS3 (a,b,c,d)
