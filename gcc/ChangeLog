@@ -1,3 +1,10 @@
+2001-02-12  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/rs6000/sysv4.h (MASK_NO_BITFIELD_WORD): New macro.
+	(TARGET_NO_BITFIELD_WORD): New macro.
+	(SUBTARGET_SWITCHES): Add -mbit-word, -mno-bit-word options.
+	(BITFIELD_NBYTES_LIMITED): Define based on TARGET_NO_BITFIELD_WORD.
+
 Mon Feb 12 18:13:26 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cselib.c: New file, from simplify-rtx.c.
