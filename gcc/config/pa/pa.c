@@ -4283,6 +4283,7 @@ hppa_builtin_saveregs ()
   dest = gen_rtx_MEM (BLKmode,
 		      plus_constant (current_function_internal_arg_pointer,
 				     -16));
+  MEM_ALIAS_SET (dest) = get_varargs_alias_set ();
   move_block_from_reg (23, dest, 4, 4 * UNITS_PER_WORD);
 
   /* move_block_from_reg will emit code to store the argument registers
@@ -4307,6 +4308,73 @@ hppa_builtin_saveregs ()
 				    current_function_internal_arg_pointer,
 				    offset, 0, 0, OPTAB_LIB_WIDEN));
 }
+
+void
+hppa_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg;
+{
+  nextarg = expand_builtin_saveregs ();
+  std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+}
+
+rtx
+hppa_va_arg (valist, type)
+     tree valist, type;
+{
+  HOST_WIDE_INT align, size, ofs;
+  tree t, ptr, pptr;
+
+  /* Compute the rounded size of the type.  */
+  align = PARM_BOUNDARY / BITS_PER_UNIT;
+  size = int_size_in_bytes (type);
+
+  ptr = build_pointer_type (type);
+
+  /* "Large" types are passed by reference.  */
+  if (size > 8)
+    {
+      t = build (PREDECREMENT_EXPR, TREE_TYPE (valist), valist, 
+		 build_int_2 (POINTER_SIZE / BITS_PER_UNIT, 0));
+      TREE_SIDE_EFFECTS (t) = 1;
+
+      pptr = build_pointer_type (ptr);
+      t = build1 (NOP_EXPR, pptr, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+
+      t = build1 (INDIRECT_REF, ptr, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+    }
+  else
+    {
+      t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
+		 build_int_2 (-size, -1));
+
+      /* ??? Copied from va-pa.h, but we probably don't need to align
+	 to word size, since we generate and preserve that invariant.  */
+      t = build (BIT_AND_EXPR, TREE_TYPE (valist), t,
+		 build_int_2 ((size > 4 ? -8 : -4), -1));
+
+      t = build (MODIFY_EXPR, TREE_TYPE (valist), valist, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+      
+      ofs = (8 - size) % 4;
+      if (ofs)
+	{
+	  t = build (PLUS_EXPR, TREE_TYPE (valist), t, build_int_2 (ofs, 0));
+	  TREE_SIDE_EFFECTS (t) = 1;
+	}
+
+      t = build1 (NOP_EXPR, ptr, t);
+      TREE_SIDE_EFFECTS (t) = 1;
+    }
+
+  /* Calculate!  */
+  return expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
+}
+
+
 
 /* This routine handles all the normal conditional branch sequences we
    might need to generate.  It handles compare immediate vs compare
