@@ -1,3 +1,8 @@
+Mon Oct 18 18:50:51 1999  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.h (INITIAL_FRAME_POINTER_OFFSET): Add one word
+	if the pic register is used.
+
 Mon Oct 18 02:38:46 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* c-decl.c (pushdecl): Use TYPE_CONTEXT rather than TREE_PERMANENT.
