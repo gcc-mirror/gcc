@@ -1,5 +1,8 @@
 2003-07-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/11420
+	* gcc.dg/20030707-1.c: New test.
+
 	* g++.dg/opt/strength-reduce.C: New test.
 
 2003-07-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
