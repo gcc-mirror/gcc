@@ -6240,8 +6240,8 @@
    (clobber (match_scratch:SI 4 "=X,&h"))]
   "TARGET_V8PLUS"
   "@
-   smul %1,%2,%0\;srlx %0,%3,%0
-   smul %1,%2,%4\;srlx %4,%3,%0"
+   smul\\t%1, %2, %0\;srlx\\t%0, %3, %0
+   smul\\t%1, %2, %4\;srlx\\t%4, %3, %0"
   [(set_attr "length" "2")])
 
 ;; The combiner changes TRUNCATE in the previous pattern to SUBREG.
@@ -8100,8 +8100,8 @@
   "*
 {
   if (GET_CODE (operands[2]) == REG && REGNO (operands[2]) == REGNO (operands[0]))
-    return \"mov 1,%L0\;sllx %L0,%2,%L0\;sub %L0,1,%L0\;srlx %L0,32,%H0\";
-  return \"mov 1,%H0\;sllx %H0,%2,%L0\;sub %L0,1,%L0\;srlx %L0,32,%H0\";
+    return \"mov\\t1, %L0\;sllx\\t%L0, %2, %L0\;sub\\t%L0, 1, %L0\;srlx\\t%L0, 32, %H0\";
+  return \"mov\\t1, %H0\;sllx\\t%H0, %2, %L0\;sub\\t%L0, 1, %L0\;srlx\\t%L0, 32, %H0\";
 }"
   [(set_attr "length" "4")])
 
@@ -8859,7 +8859,7 @@
   [(unspec:SI [(match_operand:SI 0 "register_operand" "r")
 	       (match_operand:SI 1 "register_operand" "r")] 1)]
   "! TARGET_ARCH64"
-  "cmp %1,0\;be,a .+8\;add %0,4,%0"
+  "cmp\\t%1, 0\;be,a\\t.+8\;add\\t%0, 4, %0"
   [(set_attr "type" "multi")])
 
 (define_insn "return"
@@ -9039,13 +9039,13 @@
 (define_insn "flush"
   [(unspec_volatile [(match_operand:SI 0 "memory_operand" "m")] 3)]
   ""
-  "* return TARGET_V9 ? \"flush %f0\" : \"iflush %f0\";"
+  "* return TARGET_V9 ? \"flush\\t%f0\" : \"iflush\\t%f0\";"
   [(set_attr "type" "misc")])
 
 (define_insn "flushdi"
   [(unspec_volatile [(match_operand:DI 0 "memory_operand" "m")] 3)]
   ""
-  "* return TARGET_V9 ? \"flush %f0\" : \"iflush %f0\";"
+  "* return TARGET_V9 ? \"flush\\t%f0\" : \"iflush\\t%f0\";"
   [(set_attr "type" "misc")])
 
 
@@ -9064,7 +9064,7 @@
   "TARGET_SPARCLITE || TARGET_SPARCLET"
   "*
 {
-  return \"sub %%g0,%1,%0\;and %0,%1,%0\;scan %0,0,%0\;mov 32,%2\;sub %2,%0,%0\;sra %0,31,%2\;and %2,31,%2\;add %2,%0,%0\";
+  return \"sub\\t%%g0, %1, %0\;and\\t%0, %1, %0\;scan\\t%0, 0, %0\;mov\\t32, %2\;sub\\t%2, %0, %0\;sra\\t%0, 31, %2\;and\\t%2, 31, %2\;add\\t%2, %0, %0\";
 }"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
@@ -9080,7 +9080,7 @@
 ;	(ffs:DI (match_operand:DI 1 "register_operand" "r")))
 ;   (clobber (match_scratch:DI 2 "=&r"))]
 ;  "TARGET_ARCH64"
-;  "neg %1,%2\;xnor %1,%2,%2\;popc %2,%0\;movzr %1,0,%0"
+;  "neg\\t%1, %2\;xnor\\t%1, %2, %2\;popc\\t%2, %0\;movzr\\t%1, 0, %0"
 ;  [(set_attr "type" "multi")
 ;   (set_attr "length" "4")])
 
