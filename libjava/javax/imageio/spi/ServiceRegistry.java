@@ -62,6 +62,7 @@ import java.util.Set;
  */
 public class ServiceRegistry
 {
+  // Package-private to avoid a trampoline.
   /**
    * The service categories of this registry.
    *
@@ -73,7 +74,7 @@ public class ServiceRegistry
    *
    * @see #providers
    */
-  private final Class[] categories;
+  final Class[] categories;
 
 
   /**
