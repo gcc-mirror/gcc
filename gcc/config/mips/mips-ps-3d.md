@@ -18,26 +18,11 @@
 ;; the Free Software Foundation, 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
 
-(define_insn "*movcc_v2sf_di"
+(define_insn "*movcc_v2sf_<mode>"
   [(set (match_operand:V2SF 0 "register_operand" "=f,f")
 	(if_then_else:V2SF
-	 (match_operator:DI 4 "equality_operator"
-			 [(match_operand:DI 1 "register_operand" "d,d")
-			  (const_int 0)])
-	 (match_operand:V2SF 2 "register_operand" "f,0")
-	 (match_operand:V2SF 3 "register_operand" "0,f")))]
-  "TARGET_PAIRED_SINGLE_FLOAT"
-  "@
-    mov%T4.ps\t%0,%2,%1
-    mov%t4.ps\t%0,%3,%1"
-  [(set_attr "type" "condmove")
-   (set_attr "mode" "SF")])
-
-(define_insn "*movcc_v2sf_si"
-  [(set (match_operand:V2SF 0 "register_operand" "=f,f")
-	(if_then_else:V2SF
-	 (match_operator:SI 4 "equality_operator"
-			 [(match_operand:SI 1 "register_operand" "d,d")
+	 (match_operator:GPR 4 "equality_operator"
+			 [(match_operand:GPR 1 "register_operand" "d,d")
 			  (const_int 0)])
 	 (match_operand:V2SF 2 "register_operand" "f,0")
 	 (match_operand:V2SF 3 "register_operand" "0,f")))]
@@ -1423,136 +1408,40 @@
 ; Floating Point Reduced Precision Reciprocal Square Root Instructions.
 ;----------------------------------------------------------------------------
 
-; Floating Point Reduced Precision Reciprocal Square Root
-; for Single (Sequence Step 1)
-(define_insn "mips_rsqrt1_s"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(unspec:SF [(match_operand:SF 1 "register_operand" "f")]
-		   UNSPEC_RSQRT1_S))]
+(define_insn "mips_rsqrt1_<fmt>"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")]
+		     UNSPEC_RSQRT1))]
   "TARGET_MIPS3D"
-  "rsqrt1.s\t%0,%1"
+  "rsqrt1.<fmt>\t%0,%1"
   [(set_attr "type" "frsqrt")
-   (set_attr "mode" "SF")])
+   (set_attr "mode" "<UNITMODE>")])
 
-; Floating Point Reduced Precision Reciprocal Square Root
-; for Double (Sequence Step 1)
-(define_insn "mips_rsqrt1_d"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(unspec:DF [(match_operand:DF 1 "register_operand" "f")]
-		   UNSPEC_RSQRT1_D))]
+(define_insn "mips_rsqrt2_<fmt>"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")
+		      (match_operand:ANYF 2 "register_operand" "f")]
+		     UNSPEC_RSQRT2))]
   "TARGET_MIPS3D"
-  "rsqrt1.d\t%0,%1"
+  "rsqrt2.<fmt>\t%0,%1,%2"
   [(set_attr "type" "frsqrt")
-   (set_attr "mode" "DF")])
+   (set_attr "mode" "<UNITMODE>")])
 
-; Floating Point Reduced Precision Reciprocal Square Root
-; for Paired Singles (Sequence Step 1)
-(define_insn "mips_rsqrt1_ps"
-  [(set (match_operand:V2SF 0 "register_operand" "=f")
-	(unspec:V2SF [(match_operand:V2SF 1 "register_operand" "f")]
-		   UNSPEC_RSQRT1_PS))]
+(define_insn "mips_recip1_<fmt>"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")]
+		     UNSPEC_RECIP1))]
   "TARGET_MIPS3D"
-  "rsqrt1.ps\t%0,%1"
-  [(set_attr "type" "frsqrt")
-   (set_attr "mode" "SF")])
-
-; Floating Point Reduced Precision Reciprocal Square Root
-; for Single (Sequence Step 2)
-(define_insn "mips_rsqrt2_s"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(unspec:SF [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_RSQRT2_S))]
-  "TARGET_MIPS3D"
-  "rsqrt2.s\t%0,%1,%2"
-  [(set_attr "type" "frsqrt")
-   (set_attr "mode" "SF")])
-
-; Floating Point Reduced Precision Reciprocal Square Root
-; for Double (Sequence Step 2)
-(define_insn "mips_rsqrt2_d"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(unspec:DF [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_RSQRT2_D))]
-  "TARGET_MIPS3D"
-  "rsqrt2.d\t%0,%1,%2"
-  [(set_attr "type" "frsqrt")
-   (set_attr "mode" "DF")])
-
-; Floating Point Reduced Precision Reciprocal Square Root 
-; for Paired Singles (Sequence Step 2)
-(define_insn "mips_rsqrt2_ps"
-  [(set (match_operand:V2SF 0 "register_operand" "=f")
-	(unspec:V2SF [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")]
-		     UNSPEC_RSQRT2_PS))]
-  "TARGET_MIPS3D"
-  "rsqrt2.ps\t%0,%1,%2"
-  [(set_attr "type" "frsqrt")
-   (set_attr "mode" "SF")])
-
-; Floating Point Reduced Precision Reciprocal for Single (Sequence Step 1)
-(define_insn "mips_recip1_s"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(unspec:SF [(match_operand:SF 1 "register_operand" "f")]
-		   UNSPEC_RECIP1_S))]
-  "TARGET_MIPS3D"
-  "recip1.s\t%0,%1"
+  "recip1.<fmt>\t%0,%1"
   [(set_attr "type" "frdiv")
-   (set_attr "mode" "SF")])
+   (set_attr "mode" "<UNITMODE>")])
 
-; Floating Point Reduced Precision Reciprocal for Double (Sequence Step 1)
-(define_insn "mips_recip1_d"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(unspec:DF [(match_operand:DF 1 "register_operand" "f")]
-		   UNSPEC_RECIP1_D))]
+(define_insn "mips_recip2_<fmt>"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")
+		      (match_operand:ANYF 2 "register_operand" "f")]
+		     UNSPEC_RECIP2))]
   "TARGET_MIPS3D"
-  "recip1.d\t%0,%1"
+  "recip2.<fmt>\t%0,%1,%2"
   [(set_attr "type" "frdiv")
-   (set_attr "mode" "DF")])
-
-; Floating Point Reduced Precision Reciprocal for Paired Singles 
-; (Sequence Step 1)
-(define_insn "mips_recip1_ps"
-  [(set (match_operand:V2SF 0 "register_operand" "=f")
-	(unspec:V2SF [(match_operand:V2SF 1 "register_operand" "f")]
-		     UNSPEC_RECIP1_PS))]
-  "TARGET_MIPS3D"
-  "recip1.ps\t%0,%1"
-  [(set_attr "type" "frdiv")
-   (set_attr "mode" "SF")])
-
-; Floating Point Reduced Precision Reciprocal for Single (Sequence Step 2)
-(define_insn "mips_recip2_s"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(unspec:SF [(match_operand:SF 1 "register_operand" "f")
-		    (match_operand:SF 2 "register_operand" "f")]
-		   UNSPEC_RECIP2_S))]
-  "TARGET_MIPS3D"
-  "recip2.s\t%0,%1,%2"
-  [(set_attr "type" "frdiv")
-   (set_attr "mode" "SF")])
-
-; Floating Point Reduced Precision Reciprocal for Double (Sequence Step 2)
-(define_insn "mips_recip2_d"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(unspec:DF [(match_operand:DF 1 "register_operand" "f")
-		    (match_operand:DF 2 "register_operand" "f")]
-		   UNSPEC_RECIP2_D))]
-  "TARGET_MIPS3D"
-  "recip2.d\t%0,%1,%2"
-  [(set_attr "type" "frdiv")
-   (set_attr "mode" "DF")])
-
-; Floating Point Reduced Precision Reciprocal for Paired Singles 
-; (Sequence Step 2)
-(define_insn "mips_recip2_ps"
-  [(set (match_operand:V2SF 0 "register_operand" "=f")
-	(unspec:V2SF [(match_operand:V2SF 1 "register_operand" "f")
-		      (match_operand:V2SF 2 "register_operand" "f")]
-		     UNSPEC_RECIP2_PS))]
-  "TARGET_MIPS3D"
-  "recip2.ps\t%0,%1,%2"
-  [(set_attr "type" "frdiv")
-   (set_attr "mode" "SF")])
+   (set_attr "mode" "<UNITMODE>")])

@@ -1,3 +1,11 @@
+2004-08-30  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (UNSPEC_{RSQRT,RECIP}[12]_{S,D,PS}): Delete.
+	(UNSPEC_{RSQRT,RECIP}[12]): New constants.
+	(UNSPEC_MOVE_TF_PS): Renumber to avoid gaps.
+	* config/mips/mips-ps-3d.md (*movcc_v2sf_[sd]i): Use :GPR.
+	(mips_{rsqrt,recip}[12]_{s,d,ps}): Use :ANYF.
+
 2004-08-30  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-pretty-print.c (dump_generic_node): Handle VALUE_HANDLE
