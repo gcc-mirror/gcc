@@ -1,3 +1,40 @@
+2003-12-17  Ed Falis  <falis@gnat.com>
+
+	* a-elchha.adb (Tailored_Exception_Information): made Info constant to
+	eliminate warning.
+
+	* a-exextr.adb: Add context clause for
+	Ada.Exceptions.Last_Chance_Handler.
+
+2003-12-17  Sergey Rybin  <rybin@act-europe.fr>
+
+	* cstand.adb (Create_Standard): Change the way how the declaration of
+	the Duration type is created (making it the same way as it is for all
+	the other standard types).
+
+2003-12-17  Robert Dewar  <dewar@gnat.com>
+
+	* s-crtl.ads: Fix header format
+	Change Pure to Preelaborate
+
+2003-12-17  Ed Schonberg  <schonberg@gnat.com>
+
+	* checks.adb (Selected_Length_Checks): Generate an Itype reference for
+	the expression type only if it is declared in the current unit.
+
+	* sem_ch3.adb (Constrain_Index): Handle properly a range whose bounds
+	are universal and already analyzed, as can occur in constrained
+	subcomponents that depend on discriminants, when one constraint is a
+	subtype mark.
+
+	* sem_res.adb (Resolve_Type_Conversion): Any arithmetic expression of
+	type Any_Fixed is legal as the argument of a conversion, if only one
+	fixed-point type is in context.
+
+2003-12-17  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2003-12-15  Robert Dewar  <dewar@gnat.com>
 
 	* exp_ch6.adb (Expand_Thread_Body): Fix error in picking up default

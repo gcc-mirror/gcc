@@ -33,6 +33,11 @@
 
 with Unchecked_Conversion;
 
+pragma Warnings (Off);
+with Ada.Exceptions.Last_Chance_Handler;
+pragma Warnings (On);
+--  Bring last chance handler into closure
+
 separate (Ada.Exceptions)
 package body Exception_Traces is
 

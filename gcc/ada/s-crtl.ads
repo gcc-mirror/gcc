@@ -2,7 +2,7 @@
 --                                                                          --
 --                        GNAT RUN-TIME COMPONENTS                          --
 --                                                                          --
---                         S Y S T E M . C R T L                            --
+--                          S Y S T E M . C R T L                           --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
@@ -36,7 +36,7 @@
 
 with System.Parameters;
 package System.CRTL is
-   pragma Pure (CRTL);
+pragma Preelaborate (CRTL);
 
    subtype chars is System.Address;
    --  Pointer to null-terminated array of characters

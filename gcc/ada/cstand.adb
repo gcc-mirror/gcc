@@ -104,8 +104,7 @@ package body CStand is
 
    function Make_Formal
      (Typ         : Entity_Id;
-      Formal_Name : String)
-      return        Entity_Id;
+      Formal_Name : String) return Entity_Id;
    --  Construct entity for subprogram formal with given name and type
 
    function Make_Integer (V : Uint) return Node_Id;
@@ -118,8 +117,7 @@ package body CStand is
    --  Build entity for standard operator with given name and type.
 
    function New_Standard_Entity
-     (New_Node_Kind : Node_Kind := N_Defining_Identifier)
-      return          Entity_Id;
+     (New_Node_Kind : Node_Kind := N_Defining_Identifier) return Entity_Id;
    --  Builds a new entity for Standard
 
    procedure Print_Standard;
@@ -1009,9 +1007,9 @@ package body CStand is
       --  delta and size values depend on the mode set in system.ads.
 
       Build_Duration : declare
-         Dlo         : Uint;
-         Dhi         : Uint;
-         Delta_Val   : Ureal;
+         Dlo       : Uint;
+         Dhi       : Uint;
+         Delta_Val : Ureal;
 
       begin
          --  In 32 bit mode, the size is 32 bits, and the delta and
@@ -1031,18 +1029,16 @@ package body CStand is
             Delta_Val := UR_From_Components (Uint_1, Uint_9, 10);
          end if;
 
-         Decl :=
-           Make_Full_Type_Declaration (Stloc,
-             Defining_Identifier => Standard_Duration,
-             Type_Definition =>
-               Make_Ordinary_Fixed_Point_Definition (Stloc,
+         Tdef_Node := Make_Ordinary_Fixed_Point_Definition (Stloc,
                  Delta_Expression => Make_Real_Literal (Stloc, Delta_Val),
                  Real_Range_Specification =>
                    Make_Real_Range_Specification (Stloc,
                      Low_Bound  => Make_Real_Literal (Stloc,
                        Realval => Dlo * Delta_Val),
                      High_Bound => Make_Real_Literal (Stloc,
-                       Realval => Dhi * Delta_Val))));
+                       Realval => Dhi * Delta_Val)));
+
+         Set_Type_Definition (Parent (Standard_Duration), Tdef_Node);
 
          Set_Ekind (Standard_Duration, E_Ordinary_Fixed_Point_Type);
          Set_Etype (Standard_Duration, Standard_Duration);
@@ -1058,7 +1054,7 @@ package body CStand is
          Set_Small_Value    (Standard_Duration, Delta_Val);
          Set_Scalar_Range   (Standard_Duration,
                               Real_Range_Specification
-                                (Type_Definition (Decl)));
+                               (Type_Definition (Parent (Standard_Duration))));
 
          --  Normally it does not matter that nodes in package Standard are
          --  not marked as analyzed. The Scalar_Range of the fixed-point
@@ -1325,8 +1321,7 @@ package body CStand is
 
    function Make_Formal
      (Typ         : Entity_Id;
-      Formal_Name : String)
-      return        Entity_Id
+      Formal_Name : String) return Entity_Id
    is
       Formal : Entity_Id;
 
@@ -1348,7 +1343,6 @@ package body CStand is
 
    function Make_Integer (V : Uint) return Node_Id is
       N : constant Node_Id := Make_Integer_Literal (Stloc, V);
-
    begin
       Set_Is_Static_Expression (N);
       return N;
@@ -1398,8 +1392,7 @@ package body CStand is
    -------------------------
 
    function New_Standard_Entity
-     (New_Node_Kind : Node_Kind := N_Defining_Identifier)
-      return          Entity_Id
+     (New_Node_Kind : Node_Kind := N_Defining_Identifier) return Entity_Id
    is
       E : constant Entity_Id := New_Entity (New_Node_Kind, Stloc);
 
