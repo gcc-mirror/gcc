@@ -3168,16 +3168,6 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
 	  
 	default:
 	  return 99;
-#if 0	  
-	case FFS:
-	case FLOAT:
-	case FIX:
-	case UNSIGNED_FIX:
-	  /* XXX guess */
-	  fprintf (stderr, "unexpected code for thumb in rtx_costs: %s\n",
-		   rtx_name[code]);
-	  abort ();
-#endif
 	}
     }
   
@@ -3706,10 +3696,6 @@ arm_reload_memory_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 int
 bad_signed_byte_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
-#if 0
-  if ((mode == QImode && !memory_operand (op, mode)) || GET_CODE (op) != MEM)
-    return 0;
-#endif
   if (GET_CODE (op) != MEM)
     return 0;
 
@@ -8601,13 +8587,6 @@ arm_output_epilogue (int really_return)
 	}
     }
 
-#if 0
-  if (ARM_FUNC_TYPE (func_type) == ARM_FT_EXCEPTION_HANDLER)
-    /* Adjust the stack to remove the exception handler stuff.  */
-    asm_fprintf (f, "\tadd\t%r, %r, %r\n", SP_REGNUM, SP_REGNUM,
-		 REGNO (eh_ofs));
-#endif
-
   if (! really_return
     || (ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL
 	&& current_function_pretend_args_size == 0
@@ -9982,15 +9961,6 @@ arm_final_prescan_insn (rtx insn)
      the jump should always come first */
   if (GET_CODE (body) == PARALLEL && XVECLEN (body, 0) > 0)
     body = XVECEXP (body, 0, 0);
-
-#if 0  
-  /* If this is a conditional return then we don't want to know */
-  if (GET_CODE (body) == SET && GET_CODE (SET_DEST (body)) == PC
-      && GET_CODE (SET_SRC (body)) == IF_THEN_ELSE
-      && (GET_CODE (XEXP (SET_SRC (body), 1)) == RETURN
-          || GET_CODE (XEXP (SET_SRC (body), 2)) == RETURN))
-    return;
-#endif
 
   if (reverse
       || (GET_CODE (body) == SET && GET_CODE (SET_DEST (body)) == PC
