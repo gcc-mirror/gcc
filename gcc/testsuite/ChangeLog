@@ -1,5 +1,18 @@
 2004-11-04  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* gcc.dg/asm-qual-1.c, gcc.dg/declspec-15.c, gcc.dg/declspec-16.c,
+	gcc.dg/declspec-17.c, gcc.dg/empty-source-1.c,
+	gcc.dg/empty-source-2.c, gcc.dg/empty-source-3.c,
+	gcc.dg/extra-semi-1.c, gcc.dg/extra-semi-2.c,
+	gcc.dg/extra-semi-3.c, gcc.dg/gnu-cond-expr-1.c,
+	gcc.dg/gnu-cond-expr-2.c, gcc.dg/gnu-cond-expr-3.c,
+	gcc.dg/init-empty-1.c, gcc.dg/init-empty-2.c,
+	gcc.dg/init-empty-3.c, gcc.dg/noncompile/old-style-parm-1.c,
+	gcc.dg/noncompile/old-style-parm-2.c, gcc.dg/stmt-expr-1.c,
+	gcc.dg/stmt-expr-2.c, gcc.dg/stmt-expr-3.c: New tests.
+
+2004-11-04  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* gcc.dg/c90-restrict-1.c, gcc.dg/c99-arraydecl-2.c,
 	gcc.dg/c99-func-2.c, gcc.dg/charset/asm2.c, gcc.dg/concat.c,
 	gcc.dg/cpp/19990413-1.c, gcc.dg/cpp/paste4.c,
