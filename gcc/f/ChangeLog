@@ -1,3 +1,8 @@
+2002-04-20  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* root.texi: Remove variable version-g77.
+	* g77.texi: Remove the single use of that variable.
+
 Thu Apr 18 19:10:44 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.c (incomplete_type_error): Remove.
