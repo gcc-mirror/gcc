@@ -636,7 +636,22 @@ run_compiles ()
    Input:    the name of the file to create
    Returns:  a file pointer to the new, open file  */
 
-#define S_IRALL (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
+#if defined(S_IRUSR) && defined(S_IWUSR) && \
+    defined(S_IRGRP) && defined(S_IROTH)
+
+#   define S_IRALL (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
+#else
+#   define S_IRALL 0644
+#endif
+
+#if defined(S_IRWXU) && defined(S_IRGRP) && defined(S_IXGRP) && \
+    defined(S_IROTH) && defined(S_IXOTH)
+
+#   define S_DIRALL (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)
+#else
+#   define S_DIRALL 0755
+#endif
+
 
 FILE *
 create_file ()
@@ -660,8 +675,7 @@ create_file ()
           *pz_dir = NUL;
           if (stat (fname, &stbf) < 0)
             {
-              mkdir (fname, S_IFDIR | S_IRWXU | S_IRGRP | S_IXGRP
-                     | S_IROTH | S_IXOTH);
+              mkdir (fname, S_IFDIR | S_DIRALL);
             }
 
           *pz_dir = '/';

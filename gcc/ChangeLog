@@ -2,6 +2,16 @@ Thu Nov  4 06:39:47 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (schedule_block): Fix thinko.
 
+1999-11-03  James McKelvey <mckelvey@fafnir.com>
+
+	* fixinc/fixincl.c(create_file):  Allow for systems that do not have
+	S_IR* defined values
+
+1999-11-03  Philippe De Muyter  <phdm@macqel.be>
+
+	* fixlib.c (load_file_data): Do not call `realloc' with a NULL pointer;
+	call `malloc' instead.
+
 Wed Nov  3 23:05:14 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* flags.h (flag_renumber_insns): Declare.
