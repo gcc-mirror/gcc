@@ -126,10 +126,12 @@ extern int target_flags;
 #define TARGET_IEEE_FLOAT          1
 
 #ifdef DEFAULT_TARGET_64BIT
-#define TARGET_DEFAULT             0x31
+#define TARGET_DEFAULT             (MASK_64BIT | MASK_ZARCH | MASK_HARD_FLOAT)
 #else
-#define TARGET_DEFAULT             0x1
+#define TARGET_DEFAULT             MASK_HARD_FLOAT
 #endif
+
+#define TARGET_DEFAULT_BACKCHAIN ""
 
 #define TARGET_SWITCHES                                                  \
 { { "hard-float",      1, N_("Use hardware fp")},                        \

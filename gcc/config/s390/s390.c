@@ -195,9 +195,9 @@ enum processor_flags s390_arch_flags;
 const char *s390_tune_string;		/* for -mtune=<xxx> */
 const char *s390_arch_string;		/* for -march=<xxx> */
 
-/* String to specify backchain mode.  */
-const char *s390_backchain_string = ""; /* "" no-backchain ,"1" backchain,
-					   "2" kernel-backchain */
+/* String to specify backchain mode: 
+   "" no-backchain, "1" backchain, "2" kernel-backchain.  */
+const char *s390_backchain_string = TARGET_DEFAULT_BACKCHAIN;
 
 const char *s390_warn_framesize_string;
 const char *s390_warn_dynamicstack_string;

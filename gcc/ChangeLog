@@ -1,3 +1,12 @@
+2004-10-08  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (TARGET_DEFAULT_BACKCHAIN): New define.
+	(TARGET_DEFAULT): Use symbolic values.
+	* config/s390/tpf.h (TARGET_DEFAULT_BACKCHAIN): Redefine.
+	(TARGET_DEFAULT): Use symbolic values.
+	* config/s390/s390.c (s390_backchain_string): Initialize to
+	TARGET_DEFAULT_BACKCHAIN.
+
 2004-10-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_mempcpy): Move tree handling code to

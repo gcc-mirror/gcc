@@ -54,9 +54,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef STACK_POINTER_OFFSET
 #define STACK_POINTER_OFFSET 		448
 
-/* When building for TPF, set a generic default target that is 64 bits.  */
+/* When building for TPF, set a generic default target that is 64 bits.
+   Also, enable TPF profiling support and the standard backchain by default.  */
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT             0xb3
+#define TARGET_DEFAULT		(MASK_64BIT | MASK_ZARCH | MASK_HARD_FLOAT \
+				 | MASK_TPF_PROFILING)
+#undef TARGET_DEFAULT_BACKCHAIN
+#define TARGET_DEFAULT_BACKCHAIN "1"
 
 /* Exception handling.  */
 
