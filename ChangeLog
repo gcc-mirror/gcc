@@ -1,3 +1,8 @@
+2004-03-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* ltconfig: Disable building static libraries if building shared
+	libraries on AIX 5L.
+
 2004-03-01  Richard Sandiford  <rsandifo@redhat.com>
 
 	* configure.in (mips64*-*-linux*): Override mips*-*-linux* case
