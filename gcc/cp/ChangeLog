@@ -1,3 +1,117 @@
+Thu Mar  7 14:11:49 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.def: Add RETURN_INIT.
+	* pt.c (instantiate_decl): Handle RETURN_INIT.
+	* decl.c (store_return_init): Handle minimal_parse_mode.
+
+	* tree.c (cp_build_type_variant): Just return an error_mark_node.
+	* decl.c (make_typename_type): Don't try to get the file and line
+ 	of an identifier.
+	* typeck.c (comptypes): Handle TYPENAME_TYPE.
+
+Wed Mar  6 18:47:50 1996  Per Bothner  <bothner@kalessin.cygnus.com>
+
+	* decl.c (poplevel): Make sure we clear out and restore old local
+	non-VAR_DECL values by default when they go out of scope.
+
+Wed Mar  6 09:57:36 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (build_overload_value): Use DECL_ASSEMBLER_NAME in
+ 	referring to addresses of variables and functions.
+
+	* error.c (dump_expr): Support SIZEOF_EXPR.
+
+	* init.c (do_friend): Use the return value of check_classfn.
+
+	* typeck.c (convert_arguments): Call complete_type.
+
+	* method.c (hack_identifier): After giving an error, set value to
+ 	error_mark_node.
+
+Tue Mar  5 16:00:15 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (hack_decl_function_context): Kludge around DECL_CONTEXT
+ 	lossage for local classes.
+	* cp-tree.h: Declare it.
+	* decl.c (lookup_name_real): Evil, painful hack for local classes.
+	(grokfndecl): Set DECL_CLASS_CONTEXT and DECL_NO_STATIC_CHAIN here.
+	Use hack_decl_function_context.
+	(grokdeclarator): Don't set DECL_NO_STATIC_CHAIN here.
+	(start_function): Use hack_decl_function_context.
+	(finish_function): Ditto.
+	* method.c (synthesize_method): Ditto.
+	* lex.c (process_next_inline): Ditto.
+	(do_pending_inlines): Ditto.
+	* decl2.c (finish_file): Unset DECL_STATIC_FUNCTION_P when we're
+ 	done with it.
+
+Mon Mar  4 22:38:39 1996  Gerald Baumgartner  <gb@alexander.cs.purdue.edu>
+
+	* sig.c (build_signature_pointer_or_reference_type): Align
+	signature pointers/references on 8-byte boundaries so they can be
+	grabbed 2 words at a time on a Sparc.
+
+Tue Mar  5 10:21:01 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (hack_identifier): Requiring a static chain is now a
+ 	hard error.
+	* decl.c (grokdeclarator): Set DECL_NO_STATIC_CHAIN on nested
+ 	functions.
+
+Mon Mar  4 20:03:33 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_offset_ref): Call complete_type.
+
+	* decl.c (pop_from_top_level): Always pop previous_class_type.
+
+	* parse.y: Handle multiple decls in a for-init-statement.
+	* pt.c (tsubst_expr): Ditto.
+
+	* pt.c (tsubst): Use tsubst_expr for the second operand of an
+ 	ARRAY_REF.
+
+	* decl.c (maybe_push_to_top_level): Don't save previous_class_type.
+	(poplevel_class): Set it here.
+	(pop_from_top_level): Pop it here if we're returning to class scope.
+	* class.c (pushclass): Don't set it here.
+
+	* decl.c (maybe_push_to_top_level): Save current_template_parms,
+ 	and clear it if !pseudo.
+	(pop_from_top_level): Restore it.
+
+	* decl2.c (finish_file): Push the dummy each time we walk the list
+ 	of vtables.
+
+	* error.c (dump_expr): Support LOOKUP_EXPR and actually do
+ 	something for CAST_EXPR.
+	
+Mon Feb 19 14:49:18 1996  Rusty Russell  <rusty@adelaide.maptek.com.au>
+
+	* cvt.c (cp_convert): Warn about implicit conversion of the
+	address of a function to bool, as it is always true.
+
+Fri Feb 23 23:06:01 1996  Rusty Russell  <rusty@adelaide.maptek.com.au>
+
+	* typeck.c (c_expand_return): Fix warning for local externs returned.
+
+Mon Mar  4 15:03:11 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (mapcar): Propagate const and volatile properly.
+
+	* typeck.c (complete_type): Be sure to instantiate the
+ 	MAIN_VARIANT of the type.
+
+	* method.c (synthesize_method): Class interface hackery does not
+	apply to synthesized methods.
+
+Mon Mar  4 14:05:23 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (comp_template_args): Use comptypes rather than just
+ 	checking for TEMPLATE_TYPE_PARM equivalence.
+
+	* typeck.c (build_x_function_call): Call complete_type before
+ 	checking TYPE_OVERLOADS_CALL_EXPR.
+
 Mon Mar  4 18:48:30 1996  Manfred Hollstein   <manfred@lts.sel.alcatel.de>
 
 	* g++.c (main): Check also for new define ALT_LIBM.

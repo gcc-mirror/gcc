@@ -1815,7 +1815,7 @@ build_offset_ref (type, name)
   if (name == constructor_name_full (type))
     name = constructor_name (type);
 
-  if (TYPE_SIZE (type) == 0)
+  if (TYPE_SIZE (complete_type (type)) == 0)
     {
       if (type == current_class_type)
 	t = IDENTIFIER_CLASS_VALUE (name);
@@ -2432,25 +2432,16 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	  /* This will set up DECL_ARGUMENTS for us.  */
 	  grokclassfn (ctype, cname, decl, flags, quals);
 	  if (TYPE_SIZE (ctype) != 0)
-	    check_classfn (ctype, decl);
+	    decl = check_classfn (ctype, decl);
 
 	  if (TREE_TYPE (decl) != error_mark_node)
 	    {
 	      if (TYPE_SIZE (ctype))
-		{
-		  /* We don't call pushdecl here yet, or ever on this
-		     actual FUNCTION_DECL.  We must preserve its TREE_CHAIN
-		     until the end.  */
-		  make_decl_rtl (decl, NULL_PTR, 1);
-		  add_friend (current_class_type, decl);
-		}
+		add_friend (current_class_type, decl);
 	      else
 		{
-		  register char *classname
-		    = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (ctype)));
-
-		  error ("member declared as friend before type `%s' defined",
-			 classname);
+		  cp_error ("member `%D' declared as friend before type `%T' defined",
+			    decl, ctype);
 		}
 	    }
 	}

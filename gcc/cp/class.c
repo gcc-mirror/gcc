@@ -4660,8 +4660,6 @@ pushclass (type, modify)
 	  build_mi_matrix (type);
 	  push_class_decls (type);
 	  free_mi_matrix ();
-	  if (current_class_depth == 1)
-	    previous_class_type = type;
 	}
       else
 	{

@@ -1285,7 +1285,36 @@ dump_expr (t, nop)
       break;
 
     case CAST_EXPR:
-      break;			/* XXX */
+      if (TREE_CHAIN (TREE_OPERAND (t, 0)))
+	{
+	  dump_type (TREE_TYPE (t), 0);
+	  OB_PUTC ('(');
+	  dump_expr_list (TREE_OPERAND (t, 0), 0);
+	  OB_PUTC (')');
+	}
+      else
+	{
+	  OB_PUTC ('(');
+	  dump_type (TREE_TYPE (t), 0);
+	  OB_PUTC (')');
+	  OB_PUTC ('(');
+	  dump_expr_list (TREE_OPERAND (t, 0));
+	  OB_PUTC (')');
+	}
+      break;
+
+    case LOOKUP_EXPR:
+      OB_PUTID (TREE_OPERAND (t, 0));
+      break;
+
+    case SIZEOF_EXPR:
+      OB_PUTS ("sizeof (");
+      if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t, 0))) == 't')
+	dump_type (TREE_OPERAND (t, 0), 0);
+      else
+	dump_unary_op ("*", t, 0);
+      OB_PUTC (')');
+      break;
 
     case TREE_LIST:
       if (TREE_VALUE (t) && TREE_CODE (TREE_VALUE (t)) == FUNCTION_DECL)

@@ -2402,6 +2402,7 @@ extern tree build_unsave_expr			PROTO((tree));
 extern tree unsave_expr				PROTO((tree));
 extern int cp_expand_decl_cleanup		PROTO((tree, tree));
 extern tree get_type_decl			PROTO((tree));
+extern tree hack_decl_function_context 		PROTO((tree));
 
 /* in typeck.c */
 extern tree condition_conversion		PROTO((tree));

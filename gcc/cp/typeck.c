@@ -134,7 +134,7 @@ complete_type (type)
 	type = build_cplus_array_type (t, TYPE_DOMAIN (type));
     }
   else if (IS_AGGR_TYPE (type) && CLASSTYPE_TEMPLATE_INSTANTIATION (type))
-    instantiate_class_template (type);
+    instantiate_class_template (TYPE_MAIN_VARIANT (type));
 
   return type;
 }
@@ -796,6 +796,11 @@ comptypes (type1, type2, strict)
 
     case TEMPLATE_TYPE_PARM:
       return TEMPLATE_TYPE_IDX (t1) == TEMPLATE_TYPE_IDX (t2);
+
+    case TYPENAME_TYPE:
+      if (TYPE_IDENTIFIER (t1) != TYPE_IDENTIFIER (t2))
+	return 0;
+      return comptypes (TYPE_CONTEXT (t1), TYPE_CONTEXT (t2), 1);
     }
   return attrval == 2 && val == 1 ? 2 : val;
 }
@@ -2350,7 +2355,8 @@ build_x_function_call (function, params, decl)
       if (TREE_CODE (type) == REFERENCE_TYPE)
 	type = TREE_TYPE (type);
 
-      if (TYPE_LANG_SPECIFIC (type) && TYPE_OVERLOADS_CALL_EXPR (type))
+      if (TYPE_LANG_SPECIFIC (type)
+	  && TYPE_OVERLOADS_CALL_EXPR (complete_type (type)))
 	return build_opfncall (CALL_EXPR, LOOKUP_NORMAL, function, params, NULL_TREE);
     }
 
@@ -2778,7 +2784,7 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	  /* Formal parm type is specified by a function prototype.  */
 	  tree parmval;
 
-	  if (TYPE_SIZE (type) == 0)
+	  if (TYPE_SIZE (complete_type (type)) == 0)
 	    {
 	      error ("parameter type of called function is incomplete");
 	      parmval = val;
@@ -6920,7 +6926,8 @@ c_expand_return (retval)
 	  if (TEMP_NAME_P (DECL_NAME (whats_returned)))
 	    warning ("reference to non-lvalue returned");
 	  else if (! TREE_STATIC (whats_returned)
-		   && IDENTIFIER_LOCAL_VALUE (DECL_NAME (whats_returned)))
+		   && IDENTIFIER_LOCAL_VALUE (DECL_NAME (whats_returned))
+		   && !TREE_PUBLIC (whats_returned))
 	    cp_warning_at ("reference to local variable `%D' returned", whats_returned);
 	}
     }
@@ -6931,7 +6938,8 @@ c_expand_return (retval)
       if (TREE_CODE (whats_returned) == VAR_DECL
 	  && DECL_NAME (whats_returned)
 	  && IDENTIFIER_LOCAL_VALUE (DECL_NAME (whats_returned))
-	  && !TREE_STATIC (whats_returned))
+	  && !TREE_STATIC (whats_returned)
+	  && !TREE_PUBLIC (whats_returned))
 	cp_warning_at ("address of local variable `%D' returned", whats_returned);
     }
   

@@ -442,6 +442,9 @@ cp_build_type_variant (type, constp, volatilep)
      tree type;
      int constp, volatilep;
 {
+  if (type == error_mark_node)
+    return type;
+  
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree real_main_variant = TYPE_MAIN_VARIANT (type);
@@ -1578,27 +1581,32 @@ mapcar (t, func)
       return t;
 
     case POINTER_TYPE:
-      return build_pointer_type (mapcar (TREE_TYPE (t), func));
+      tmp = build_pointer_type (mapcar (TREE_TYPE (t), func));
+      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
     case REFERENCE_TYPE:
-      return build_reference_type (mapcar (TREE_TYPE (t), func));
+      tmp = build_reference_type (mapcar (TREE_TYPE (t), func));
+      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
     case FUNCTION_TYPE:
-      return build_function_type (mapcar (TREE_TYPE (t), func),
-				  mapcar (TYPE_ARG_TYPES (t), func));
+      tmp = build_function_type (mapcar (TREE_TYPE (t), func),
+				 mapcar (TYPE_ARG_TYPES (t), func));
+      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
     case ARRAY_TYPE:
-      return build_array_type (mapcar (TREE_TYPE (t), func),
-			       mapcar (TYPE_DOMAIN (t), func));
+      tmp = build_array_type (mapcar (TREE_TYPE (t), func),
+			      mapcar (TYPE_DOMAIN (t), func));
+      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
     case INTEGER_TYPE:
-      return build_index_type (mapcar (TYPE_MAX_VALUE (t), func));
-
+      tmp = build_index_type (mapcar (TYPE_MAX_VALUE (t), func));
+      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
     case OFFSET_TYPE:
-      return build_offset_type (mapcar (TYPE_OFFSET_BASETYPE (t), func),
-				mapcar (TREE_TYPE (t), func));
+      tmp = build_offset_type (mapcar (TYPE_OFFSET_BASETYPE (t), func),
+			       mapcar (TREE_TYPE (t), func));
+      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
     case METHOD_TYPE:
-      return build_method_type
-	(mapcar (TYPE_METHOD_BASETYPE (t), func),
-	 build_function_type
-	 (mapcar (TREE_TYPE (t), func),
-	  mapcar (TREE_CHAIN (TYPE_ARG_TYPES (t)), func)));
+      tmp = build_cplus_method_type
+	(mapcar (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t))), func),
+	 mapcar (TREE_TYPE (t), func),
+	 mapcar (TREE_CHAIN (TYPE_ARG_TYPES (t)), func));
+      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
 
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
@@ -1607,7 +1615,7 @@ mapcar (t, func)
       /* else fall through */
       
       /*  This list is incomplete, but should suffice for now.
-	  It is very important that `sorry' does not call
+	  It is very important that `sorry' not call
 	  `report_error_function'.  That could cause an infinite loop.  */
     default:
       sorry ("initializer contains unrecognized tree code");
@@ -1987,4 +1995,18 @@ vec_binfo_member (elem, vec)
     if (elem == BINFO_TYPE (TREE_VEC_ELT (vec, i)))
       return TREE_VEC_ELT (vec, i);
   return NULL_TREE;
+}
+
+/* Kludge around the fact that DECL_CONTEXT for virtual functions returns
+   the wrong thing for decl_function_context.  Hopefully the uses in the
+   backend won't matter, since we don't need a static chain for local class
+   methods.  FIXME!  */
+
+tree
+hack_decl_function_context (decl)
+     tree decl;
+{
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_FUNCTION_MEMBER_P (decl))
+    return decl_function_context (TYPE_MAIN_DECL (DECL_CLASS_CONTEXT (decl)));
+  return decl_function_context (decl);
 }
