@@ -1468,6 +1468,12 @@ init_gcc_specs (obstack, shared_name, static_name, eh_name)
 
   buf = concat ("%{static|static-libgcc:", static_name, " ", eh_name,
 		"}%{!static:%{!static-libgcc:",
+#ifdef HAVE_LD_AS_NEEDED
+		"%{!shared-libgcc:", static_name,
+		" --as-needed ", shared_name, " --no-as-needed}"
+		"%{shared-libgcc:", shared_name, "%{!shared: ", static_name,
+		"}",
+#else
 		"%{!shared:%{!shared-libgcc:", static_name, " ",
 		eh_name, "}%{shared-libgcc:", shared_name, " ",
 		static_name, "}}%{shared:",
@@ -1476,6 +1482,7 @@ init_gcc_specs (obstack, shared_name, static_name, eh_name)
 		"}%{!shared-libgcc:", static_name, "}",
 #else
 		shared_name,
+#endif
 #endif
 		"}}}", NULL);
 

@@ -8119,6 +8119,27 @@ EOF
 fi
 echo "$ac_t""$gcc_cv_ld_eh_frame_hdr" 1>&6
 
+echo $ac_n "checking linker --as-needed support""... $ac_c" 1>&6
+echo "configure:8250: checking linker --as-needed support" >&5
+gcc_cv_ld_as_needed=no
+if test x$gcc_cv_gld_major_version != x -a x$gcc_cv_gld_minor_version != x; then
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
+    gcc_cv_ld_as_needed=yes
+  fi
+elif test x$gcc_cv_ld != x; then
+	# Check if linker supports --as-needed and --no-as-needed options
+	if $gcc_cv_ld --help 2>/dev/null | grep as-needed > /dev/null; then
+		gcc_cv_ld_as_needed=yes
+	fi
+fi
+if test x"$gcc_cv_ld_as_needed" = xyes; then
+	cat >> confdefs.h <<\EOF
+#define HAVE_LD_AS_NEEDED 1
+EOF
+
+fi
+echo "$ac_t""$gcc_cv_ld_as_needed" 1>&6
+
 # Miscellaneous target-specific checks.
 case "$target" in
   mips*-*-*)
