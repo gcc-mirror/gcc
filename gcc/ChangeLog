@@ -1,3 +1,11 @@
+Wed Apr  7 03:16:45 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (reg_no_subreg_operand): New function.
+	* alpha.h (PREDICATE_CODES): Add it.
+	* alpha.md (floatdi?f patterns): Use it for op1.
+
+	* alpha.c (alpha_end_function): Don't flag weak functions.
+
 Wed Apr  7 02:11:55 1999  Richard Henderson  <rth@cygnus.com>
 
 	* expr.c (expand_builtin) [BUILT_IN_RETURN_ADDRESS]: Use
