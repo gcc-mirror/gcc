@@ -1580,6 +1580,7 @@ extern void delete_null_pointer_checks	PARAMS ((rtx));
 #ifdef BUFSIZ
 extern void regmove_optimize		PARAMS ((rtx, int, FILE *));
 #endif
+extern void combine_stack_adjustments	PARAMS ((void));
 
 /* In reorg.c */
 #ifdef BUFSIZ
