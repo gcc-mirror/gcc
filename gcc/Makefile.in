@@ -2297,7 +2297,6 @@ fixhdr.ready: fix-header
 # The if statement is so that we don't run fixproto a second time
 # if it has already been run on the files in `include'.
 stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
-	@echo "Various warnings and error messages from fixproto are normal"
 	if [ -f include/fixed ] ; then true; \
 	else \
 	  : This line works around a 'make' bug in BSDI 1.1.; \

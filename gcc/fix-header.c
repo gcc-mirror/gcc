@@ -602,11 +602,13 @@ check_macro_names (pfile, names)
      cpp_reader *pfile;
      namelist names;
 {
+  size_t len;
   while (*names)
     {
-      if (cpp_defined (pfile, names, -1))
+      len = strlen (names);
+      if (cpp_defined (pfile, names, len))
 	recognized_macro (names);
-      names += strlen (names) + 1;
+      names += len + 1;
     }
 }
 
@@ -637,6 +639,9 @@ read_scan_file (in_fname, argc, argv)
   if (! cpp_start_read (&scan_in, 0, in_fname))
     exit (FATAL_EXIT_CODE);
 
+  /* We are scanning a system header, so mark it as such.  */
+  CPP_BUFFER (&scan_in)->system_header_p = 1;
+
   scan_decls (&scan_in, argc, argv);
   for (cur_symbols = &symbol_table[0]; cur_symbols->names; cur_symbols++)
     check_macro_names (&scan_in, cur_symbols->names);
@@ -663,6 +668,8 @@ read_scan_file (in_fname, argc, argv)
 	{
 	  enum cpp_ttype token = cpp_get_token (&scan_in);
 	  int length = CPP_WRITTEN (&scan_in) - old_written;
+	  unsigned char *id = scan_in.token_buffer + old_written;
+	  
 	  CPP_SET_WRITTEN (&scan_in, old_written);
 	  if (token == CPP_EOF) /* Should not happen ...  */
 	    break;
@@ -671,8 +678,7 @@ read_scan_file (in_fname, argc, argv)
 	      cpp_pop_buffer (&scan_in);
 	      break;
 	    }
-	  if (token == CPP_NAME && length == 7
-	      && strcmp ("_filbuf", scan_in.token_buffer + old_written) == 0)
+	  if (token == CPP_NAME && cpp_idcmp (id, length, "_filbuf") == 0)
 	    seen_filbuf++;
 	}
       if (seen_filbuf)
@@ -690,7 +696,7 @@ read_scan_file (in_fname, argc, argv)
 		SET_REQUIRED (fn);
 	      if (need_flsbuf)
 		SET_REQUIRED (flsbuf_fn);
-	      if (need_flsbuf + need_filbuf == 2)
+	      if (need_flsbuf && need_filbuf)
 		new_list = "_filbuf\0_flsbuf\0";
 	      else if (need_flsbuf)
 		new_list = "_flsbuf\0";

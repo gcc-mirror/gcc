@@ -2048,6 +2048,37 @@ _cpp_init_input_buffer (pfile)
   pfile->input_buffer_len = 8192;
 }
 
+/* Utility routine:
+   Compares, in the manner of strcmp(3), the token beginning at TOKEN
+   and extending for LEN characters to the NUL-terminated string
+   STRING.  Typical usage:
+
+   if (! cpp_idcmp (pfile->token_buffer + here, CPP_WRITTEN (pfile) - here,
+                 "inline"))
+     { ... }
+ */
+
+int
+cpp_idcmp (token, len, string)
+     const U_CHAR *token;
+     size_t len;
+     const char *string;
+{
+  size_t len2 = strlen (string);
+  int r;
+
+  if ((r = memcmp (token, string, MIN (len, len2))))
+    return r;
+
+  /* The longer of the two strings sorts after the shorter.  */
+  if (len == len2)
+    return 0;
+  else if (len < len2)
+    return -1;
+  else
+    return 1;
+}
+
 #if 0
 
 /* Lexing algorithm.
