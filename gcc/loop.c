@@ -5724,6 +5724,11 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	 all memory references have non-overlapping addresses
 	 (obviously true if only one write)
 	 allow 2 insns for the compare/jump at the end of the loop.  */
+      /* Also, we must avoid any instructions which use both the reversed
+	 biv and another biv.  Such instructions will fail if the loop is
+	 reversed.  We meet this condition by requiring that either
+	 no_use_except_counting is true, or else that there is only
+	 one biv.  */
       int num_nonfixed_reads = 0;
       /* 1 if the iteration var is used only to count iterations.  */
       int no_use_except_counting = 0;
@@ -5788,8 +5793,9 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	  && !loop_has_volatile
 	  && reversible_mem_store
 	  && (no_use_except_counting
-	      || (bl->giv_count + bl->biv_count + num_mem_sets
-		  + num_movables + 2 == insn_count)))
+	      || ((bl->giv_count + bl->biv_count + num_mem_sets
+		   + num_movables + 2 == insn_count)
+		  && (bl == loop_iv_list && bl->next == 0))))
 	{
 	  rtx tem;
 
