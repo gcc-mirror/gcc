@@ -35,6 +35,8 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "toplev.h"
 
+static bool begin_init_stmts (tree *, tree *);
+static tree finish_init_stmts (bool, tree, tree);
 static void construct_virtual_base (tree, tree);
 static void expand_aggr_init_1 (tree, tree, tree, tree, int);
 static void expand_default_init (tree, tree, tree, tree, int);
@@ -64,40 +66,31 @@ static tree build_vtbl_address (tree);
    pass them back to finish_init_stmts when the expression is
    complete.  */
 
-void
+static bool
 begin_init_stmts (tree *stmt_expr_p, tree *compound_stmt_p)
 {
-  if (building_stmt_tree ())
-    *stmt_expr_p = begin_stmt_expr ();
-  else
-    *stmt_expr_p = begin_global_stmt_expr ();
+  bool is_global = !building_stmt_tree ();
   
-  if (building_stmt_tree ())
-    *compound_stmt_p = begin_compound_stmt (/*has_no_scope=*/1);
+  *stmt_expr_p = begin_stmt_expr ();
+  *compound_stmt_p = begin_compound_stmt (/*has_no_scope=*/1);
+
+  return is_global;
 }
 
 /* Finish out the statement-expression begun by the previous call to
    begin_init_stmts.  Returns the statement-expression itself.  */
 
-tree
-finish_init_stmts (tree stmt_expr, tree compound_stmt)
+static tree
+finish_init_stmts (bool is_global, tree stmt_expr, tree compound_stmt)
 {  
-  if (building_stmt_tree ())
-    finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
+  finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
   
-  if (building_stmt_tree ())
-    {
-      stmt_expr = finish_stmt_expr (stmt_expr);
-      STMT_EXPR_NO_SCOPE (stmt_expr) = true;
-    }
-  else
-    stmt_expr = finish_global_stmt_expr (stmt_expr);
-  
-  /* To avoid spurious warnings about unused values, we set 
-     TREE_USED.  */
-  if (stmt_expr)
-    TREE_USED (stmt_expr) = 1;
+  stmt_expr = finish_stmt_expr (stmt_expr);
+  STMT_EXPR_NO_SCOPE (stmt_expr) = true;
+  TREE_USED (stmt_expr) = 1;
 
+  my_friendly_assert (!building_stmt_tree () == is_global, 20030726);
+  
   return stmt_expr;
 }
 
@@ -1045,6 +1038,7 @@ build_aggr_init (tree exp, tree init, int flags)
   tree type = TREE_TYPE (exp);
   int was_const = TREE_READONLY (exp);
   int was_volatile = TREE_THIS_VOLATILE (exp);
+  int is_global;
 
   if (init == error_mark_node)
     return error_mark_node;
@@ -1098,12 +1092,12 @@ build_aggr_init (tree exp, tree init, int flags)
     TREE_USED (exp) = 1;
 
   TREE_TYPE (exp) = TYPE_MAIN_VARIANT (type);
-  begin_init_stmts (&stmt_expr, &compound_stmt);
+  is_global = begin_init_stmts (&stmt_expr, &compound_stmt);
   destroy_temps = stmts_are_full_exprs_p ();
   current_stmt_tree ()->stmts_are_full_exprs_p = 0;
   expand_aggr_init_1 (TYPE_BINFO (type), exp, exp,
 		      init, LOOKUP_NORMAL|flags);
-  stmt_expr = finish_init_stmts (stmt_expr, compound_stmt);
+  stmt_expr = finish_init_stmts (is_global, stmt_expr, compound_stmt);
   current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
   TREE_TYPE (exp) = type;
   TREE_READONLY (exp) = was_const;
@@ -1200,12 +1194,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags)
 
   rval = build_special_member_call (exp, ctor_name, parms, binfo, flags);
   if (TREE_SIDE_EFFECTS (rval))
-    {
-      if (building_stmt_tree ())
-	finish_expr_stmt (rval);
-      else
-	genrtl_expr_stmt (rval);
-    }
+    finish_expr_stmt (rval);
 }
 
 /* This function is responsible for initializing EXP with INIT
@@ -2377,10 +2366,8 @@ get_temp_regvar (tree type, tree init)
   tree decl;
 
   decl = create_temporary_var (type);
-  if (building_stmt_tree ())
-    add_decl_stmt (decl);
-  else
-    SET_DECL_RTL (decl, assign_temp (type, 2, 0, 1));
+  add_decl_stmt (decl);
+  
   finish_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 
   return decl;
@@ -2422,7 +2409,8 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
   tree try_block = NULL_TREE;
   tree try_body = NULL_TREE;
   int num_initialized_elts = 0;
-
+  bool is_global;
+  
   if (TYPE_DOMAIN (atype))
     maxindex = array_type_nelts (atype);
 
@@ -2483,7 +2471,7 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
      of whatever cleverness the back-end has for dealing with copies
      of blocks of memory.  */
 
-  begin_init_stmts (&stmt_expr, &compound_stmt);
+  is_global = begin_init_stmts (&stmt_expr, &compound_stmt);
   destroy_temps = stmts_are_full_exprs_p ();
   current_stmt_tree ()->stmts_are_full_exprs_p = 0;
   rval = get_temp_regvar (ptype, base);
@@ -2578,20 +2566,6 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
       /* Otherwise, loop through the elements.  */
       for_body = begin_compound_stmt (/*has_no_scope=*/1);
 
-      /* When we're not building a statement-tree, things are a little
-	 complicated.  If, when we recursively call build_aggr_init,
-	 an expression containing a TARGET_EXPR is expanded, then it
-	 may get a cleanup.  Then, the result of that expression is
-	 passed to finish_expr_stmt, which will call
-	 expand_start_target_temps/expand_end_target_temps.  However,
-	 the latter call will not cause the cleanup to run because
-	 that block will still be on the block stack.  So, we call
-	 expand_start_target_temps here manually; the corresponding
-	 call to expand_end_target_temps below will cause the cleanup
-	 to be performed.  */
-      if (!building_stmt_tree ())
-	expand_start_target_temps ();
-
       if (from_array)
 	{
 	  tree to = build1 (INDIRECT_REF, type, base);
@@ -2623,19 +2597,9 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
 	elt_init = build_aggr_init (build1 (INDIRECT_REF, type, base), 
 				    init, 0);
       
-      /* The initialization of each array element is a
-	 full-expression, as per core issue 124.  */
-      if (!building_stmt_tree ())
-	{
-	  genrtl_expr_stmt (elt_init);
-	  expand_end_target_temps ();
-	}
-      else
-	{
-	  current_stmt_tree ()->stmts_are_full_exprs_p = 1;
-	  finish_expr_stmt (elt_init);
-	  current_stmt_tree ()->stmts_are_full_exprs_p = 0;
-	}
+      current_stmt_tree ()->stmts_are_full_exprs_p = 1;
+      finish_expr_stmt (elt_init);
+      current_stmt_tree ()->stmts_are_full_exprs_p = 0;
 
       finish_expr_stmt (build_unary_op (PREINCREMENT_EXPR, base, 0));
       if (base2)
@@ -2674,7 +2638,7 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
      first element in the array.  */
   finish_expr_stmt (rval);
 
-  stmt_expr = finish_init_stmts (stmt_expr, compound_stmt);
+  stmt_expr = finish_init_stmts (is_global, stmt_expr, compound_stmt);
   current_stmt_tree ()->stmts_are_full_exprs_p = destroy_temps;
   return stmt_expr;
 }
