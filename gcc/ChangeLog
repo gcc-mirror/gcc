@@ -1,3 +1,8 @@
+Tue Sep 14 01:33:15 1999  Andreas Schwab  <schwab@suse.de>
+
+	* loop.c (strength_reduce): Don't call reg_used_between_p if the
+	insn from BL2 is after the insn from BL.
+
 Mon Sep 13 21:06:01 1999  Richard Henderson  <rth@cygnus.com>
 
 	* recog.h (INSN_OUTPUT_FORMAT_*): New.
