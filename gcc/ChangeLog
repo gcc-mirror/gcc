@@ -1,3 +1,7 @@
+Wed Sep 24 21:34:06 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarf2out.c: s/flag_verbose_asm/flag_debug_asm/
+
 Wed Sep 24 22:05:30 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
@@ -100,6 +104,12 @@ Tue Sep 23 12:34:51 1997  Bernd Schmidt  <crux@pool.informatik.rwth-aachen.de>
 	* fold-const.c (merge_ranges): Make sure that if one range is subset
 	of another, it will always be the second range.  Correct (+,-) case to
 	account for this.
+
+Tue Sep 23 08:32:51 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* final.c (final_end_function): Also do dwarf2 thing if
+	DWARF2_DEBUGGING_INFO.
+	(final_start_function): Likewise.
 
 Tue Sep 23 01:15:50 1997  David S. Miller  <davem@tanya.rutgers.edu>
 

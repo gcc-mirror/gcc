@@ -955,7 +955,7 @@ final_start_function (first, file, optimize)
     last_linenum = high_block_linenum = high_function_linenum
       = NOTE_LINE_NUMBER (first);
 
-#if defined (DWARF2_UNWIND_INFO)
+#if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
   /* Output DWARF definition of the function.  */
   if (dwarf2out_do_frame ())
     dwarf2out_begin_prologue ();
@@ -1147,7 +1147,7 @@ final_end_function (first, file, optimize)
     dwarfout_end_epilogue ();
 #endif
 
-#if defined (DWARF2_UNWIND_INFO)
+#if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
   if (dwarf2out_do_frame ())
     dwarf2out_end_epilogue ();
 #endif
