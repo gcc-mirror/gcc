@@ -887,7 +887,7 @@ cs-hconfig.h: Makefile
 	TARGET_CPU_DEFAULT="$(target_cpu_default)" \
 	$(SHELL) $(srcdir)/mkconfig.sh hconfig.h
 
-cs-tconfig.h: Makefile $(GCONFIG_H) insn-flags.h except.h
+cs-tconfig.h: Makefile $(CONFIG_H) except.h
 	HEADERS="$(xm_file)" DEFINES="$(xm_defines)" \
 	TARGET_CPU_DEFAULT="" \
 	$(SHELL) $(srcdir)/mkconfig.sh tconfig.h
@@ -896,7 +896,7 @@ cs-tconfig.h: Makefile $(GCONFIG_H) insn-flags.h except.h
 	echo '#include "config.h"' > conftest.c
 	echo '#include "except.h"' >> conftest.c
 	echo 'xyzzy USING_SJLJ_EXCEPTIONS' >> conftest.c
-	$(HOST_CC) -E conftest.c $(HOST_CFLAGS) $(INCLUDES) > conftest.out
+	$(HOST_CC) -E conftest.c $(ALL_CFLAGS) $(INCLUDES) > conftest.out
 	sed -e 's/xyzzy/#define USING_SJLJ_EXCEPTIONS/' -e '/#define/p' \
 		-e d conftest.out >> tconfig.h
 	rm conftest.*
