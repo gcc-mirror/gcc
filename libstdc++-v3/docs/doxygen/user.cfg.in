@@ -113,7 +113,7 @@ INPUT                  = @srcdir@/docs/doxygen/doxygroups.cc \
                          include/ext/slist \
                          include/tr1/array \
                          include/tr1/tuple \
-			 include/i686-pc-linux-gnu/bits
+			 include/@build_alias@/bits
 FILE_PATTERNS          = *.h \
                          *.tcc
 RECURSIVE              = NO
@@ -254,7 +254,7 @@ PERL_PATH              = /usr/bin/perl
 #---------------------------------------------------------------------------
 CLASS_DIAGRAMS         = YES
 HIDE_UNDOC_RELATIONS   = YES
-HAVE_DOT               = NO
+HAVE_DOT               = YES
 CLASS_GRAPH            = YES
 COLLABORATION_GRAPH    = YES
 UML_LOOK               = NO

@@ -35,18 +35,21 @@ doxygen:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
 	  builddir=`${PWD_COMMAND}`; \
 	  ${SHELL} ${srcdir}/docs/doxygen/run_doxygen \
+	            --build_alias=$(build_alias) \
 	            --mode=user $${srcdir} $${builddir})
 
 doxygen-maint:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
 	  builddir=`${PWD_COMMAND}`; \
 	  ${SHELL} ${srcdir}/docs/doxygen/run_doxygen \
+	            --build_alias=$(build_alias) \
 	            --mode=maint $${srcdir} $${builddir})
 
 doxygen-man:
 	-(srcdir=`cd ${top_srcdir}; ${PWD_COMMAND}`; \
 	  builddir=`${PWD_COMMAND}`; \
 	  ${SHELL} ${srcdir}/docs/doxygen/run_doxygen \
+	            --build_alias=$(build_alias) \
 	            --mode=man $${srcdir} $${builddir})
 
 .PHONY: doxygen doxygen-maint doxygen-man
