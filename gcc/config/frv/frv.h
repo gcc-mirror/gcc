@@ -2013,7 +2013,7 @@ struct machine_function GTY(())
    because these are returned in another way.  See
    `TARGET_STRUCT_VALUE_RTX' and related macros, below.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), RETURN_VALUE_REGNUM)
+  gen_rtx_REG (TYPE_MODE (VALTYPE), RETURN_VALUE_REGNUM)
 
 /* A C expression to create an RTX representing the place where a library
    function returns a value of mode MODE.
@@ -2024,7 +2024,7 @@ struct machine_function GTY(())
 
    The definition of `LIBRARY_VALUE' need not be concerned aggregate data
    types, because none of the library functions returns such types.  */
-#define LIBCALL_VALUE(MODE) gen_rtx (REG, MODE, RETURN_VALUE_REGNUM)
+#define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, RETURN_VALUE_REGNUM)
 
 /* A C expression that is nonzero if REGNO is the number of a hard register in
    which the values of called function may come back.

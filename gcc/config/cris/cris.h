@@ -822,7 +822,7 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
 #define RETURN_ADDR_RTX(COUNT, FRAMEADDR) \
  cris_return_addr_rtx (COUNT, FRAMEADDR)
 
-#define INCOMING_RETURN_ADDR_RTX gen_rtx (REG, Pmode, CRIS_SRP_REGNUM)
+#define INCOMING_RETURN_ADDR_RTX gen_rtx_REG (Pmode, CRIS_SRP_REGNUM)
 
 /* FIXME: Any __builtin_eh_return callers must not return anything and
    there must not be collisions with incoming parameters.  Luckily the
@@ -915,7 +915,7 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
  ((CUM).regs < CRIS_MAX_ARGS_IN_REGS				\
   && (TYPE) != void_type_node					\
   && ! FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED)	\
-  ? gen_rtx (REG, MODE, (CRIS_FIRST_ARG_REG) + (CUM).regs)	\
+  ? gen_rtx_REG (MODE, (CRIS_FIRST_ARG_REG) + (CUM).regs)	\
   : NULL_RTX)
 
 /* The differences between this and the previous, is that this one checks
@@ -925,7 +925,7 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
 #define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED)			\
  (((NAMED) && (CUM).regs < CRIS_MAX_ARGS_IN_REGS			\
    && ! FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED))	\
-  ? gen_rtx (REG, MODE, CRIS_FIRST_ARG_REG + (CUM).regs)		\
+  ? gen_rtx_REG (MODE, CRIS_FIRST_ARG_REG + (CUM).regs)		\
   : NULL_RTX)
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)	\
@@ -976,9 +976,9 @@ struct cum_args {int regs;};
 /* Let's assume all functions return in r[CRIS_FIRST_ARG_REG] for the
    time being.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
- gen_rtx (REG, TYPE_MODE (VALTYPE), CRIS_FIRST_ARG_REG)
+ gen_rtx_REG (TYPE_MODE (VALTYPE), CRIS_FIRST_ARG_REG)
 
-#define LIBCALL_VALUE(MODE) gen_rtx (REG, MODE, CRIS_FIRST_ARG_REG)
+#define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, CRIS_FIRST_ARG_REG)
 
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == CRIS_FIRST_ARG_REG)
 
@@ -1063,10 +1063,10 @@ struct cum_args {int regs;};
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)		\
   do								\
     {								\
-      emit_move_insn (gen_rtx (MEM, SImode,			\
+      emit_move_insn (gen_rtx_MEM (SImode,			\
 			       plus_constant (TRAMP, 10)),	\
 		      CXT);					\
-      emit_move_insn (gen_rtx (MEM, SImode,			\
+      emit_move_insn (gen_rtx_MEM (SImode,			\
 			       plus_constant (TRAMP, 16)),	\
 		      FNADDR);					\
     }								\

@@ -130,7 +130,7 @@ arm_mark_dllexport (decl)
   idp = get_identifier (newname);
 
   XEXP (DECL_RTL (decl), 0) =
-    gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (idp));
+    gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
 }
 
 /* Mark a DECL as being dllimport'd.  */
@@ -200,9 +200,9 @@ arm_mark_dllimport (decl)
   /* ??? At least I think that's why we do this.  */
   idp = get_identifier (newname);
 
-  newrtl = gen_rtx (MEM, Pmode,
-		    gen_rtx (SYMBOL_REF, Pmode,
-			     IDENTIFIER_POINTER (idp)));
+  newrtl = gen_rtx_MEM (Pmode,
+			gen_rtx_SYMBOL_REF (Pmode,
+					    IDENTIFIER_POINTER (idp)));
   XEXP (DECL_RTL (decl), 0) = newrtl;
 }
 
@@ -236,7 +236,7 @@ arm_pe_encode_section_info (decl, rtl, first)
     {
       const char *oldname = XSTR (XEXP (XEXP (DECL_RTL (decl), 0), 0), 0);
       tree idp = get_identifier (oldname + 9);
-      rtx newrtl = gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (idp));
+      rtx newrtl = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (idp));
 
       XEXP (DECL_RTL (decl), 0) = newrtl;
 

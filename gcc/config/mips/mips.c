@@ -3008,7 +3008,7 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0,
     {
       if (! TARGET_MIPS16)
 	{
-	  convert_move (result, gen_rtx (GTU, mode, reg, const0_rtx), 0);
+	  convert_move (result, gen_rtx_GTU (mode, reg, const0_rtx), 0);
 	  if (p_invert != NULL)
 	    *p_invert = 0;
 	  invert = 0;
@@ -3016,7 +3016,7 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0,
       else
 	{
 	  reg2 = invert ? gen_reg_rtx (mode) : result;
-	  convert_move (reg2, gen_rtx (LTU, mode, reg, const1_rtx), 0);
+	  convert_move (reg2, gen_rtx_LTU (mode, reg, const1_rtx), 0);
 	  reg = reg2;
 	}
     }
@@ -3044,7 +3044,7 @@ gen_int_relational (enum rtx_code test_code, rtx result, rtx cmp0,
 	  reg = reg2;
 	  one = force_reg (mode, const1_rtx);
 	}
-      convert_move (result, gen_rtx (XOR, mode, reg, one), 0);
+      convert_move (result, gen_rtx_XOR (mode, reg, one), 0);
     }
 
   return result;
@@ -7050,10 +7050,10 @@ mips_expand_epilogue (int sibcall_p)
     {
       /* The mips16 loads the return address into $7, not $31.  */
       if (TARGET_MIPS16 && (cfun->machine->frame.mask & RA_MASK) != 0)
-	emit_jump_insn (gen_return_internal (gen_rtx (REG, Pmode,
+	emit_jump_insn (gen_return_internal (gen_rtx_REG (Pmode,
 						      GP_REG_FIRST + 7)));
       else
-	emit_jump_insn (gen_return_internal (gen_rtx (REG, Pmode,
+	emit_jump_insn (gen_return_internal (gen_rtx_REG (Pmode,
 						      GP_REG_FIRST + 31)));
     }
 }
@@ -8076,9 +8076,9 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
 		: ""),
 	       fp_code);
       id = get_identifier (buf);
-      stub_fn = gen_rtx (SYMBOL_REF, Pmode, IDENTIFIER_POINTER (id));
+      stub_fn = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (id));
 
-      emit_move_insn (gen_rtx (REG, Pmode, 2), fn);
+      emit_move_insn (gen_rtx_REG (Pmode, 2), fn);
 
       if (retval == NULL_RTX)
 	insn = gen_call_internal (stub_fn, arg_size);
@@ -8090,9 +8090,9 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
       if (GET_CODE (insn) != CALL_INSN)
 	abort ();
       CALL_INSN_FUNCTION_USAGE (insn) =
-	gen_rtx (EXPR_LIST, VOIDmode,
-		 gen_rtx (USE, VOIDmode, gen_rtx (REG, Pmode, 2)),
-		 CALL_INSN_FUNCTION_USAGE (insn));
+	gen_rtx_EXPR_LIST (VOIDmode,
+			   gen_rtx_USE (VOIDmode, gen_rtx_REG (Pmode, 2)),
+			   CALL_INSN_FUNCTION_USAGE (insn));
 
       /* If we are handling a floating point return value, we need to
          save $18 in the function prologue.  Putting a note on the
@@ -8101,9 +8101,10 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
          code.  */
       if (fpret)
 	CALL_INSN_FUNCTION_USAGE (insn) =
-	  gen_rtx (EXPR_LIST, VOIDmode,
-		   gen_rtx (USE, VOIDmode, gen_rtx (REG, word_mode, 18)),
-		   CALL_INSN_FUNCTION_USAGE (insn));
+	  gen_rtx_EXPR_LIST (VOIDmode,
+			     gen_rtx_USE (VOIDmode,
+					  gen_rtx_REG (word_mode, 18)),
+			     CALL_INSN_FUNCTION_USAGE (insn));
 
       /* Return 1 to tell the caller that we've generated the call
          insn.  */
@@ -8292,9 +8293,9 @@ build_mips16_call_stub (rtx retval, rtx fn, rtx arg_size, int fp_code)
 	abort ();
 
       CALL_INSN_FUNCTION_USAGE (insn) =
-	gen_rtx (EXPR_LIST, VOIDmode,
-		 gen_rtx (USE, VOIDmode, gen_rtx (REG, word_mode, 18)),
-		 CALL_INSN_FUNCTION_USAGE (insn));
+	gen_rtx_EXPR_LIST (VOIDmode,
+			   gen_rtx_USE (VOIDmode, gen_rtx_REG (word_mode, 18)),
+			   CALL_INSN_FUNCTION_USAGE (insn));
 
       /* Return 1 to tell the caller that we've generated the call
          insn.  */
@@ -8556,12 +8557,12 @@ mips16_lay_out_constants (void)
 		 particular string constant.  */
 
 	      lab = add_constant (&constants, val, mode);
-	      newsrc = gen_rtx (MEM, mode,
-				gen_rtx (LABEL_REF, VOIDmode, lab));
+	      newsrc = gen_rtx_MEM (mode,
+				    gen_rtx_LABEL_REF (VOIDmode, lab));
 	      RTX_UNCHANGING_P (newsrc) = 1;
-	      PATTERN (insn) = gen_rtx (SET, VOIDmode,
-					SET_DEST (PATTERN (insn)),
-					newsrc);
+	      PATTERN (insn) = gen_rtx_SET (VOIDmode,
+					    SET_DEST (PATTERN (insn)),
+					    newsrc);
 	      INSN_CODE (insn) = -1;
 
 	      if (first_constant_ref < 0)

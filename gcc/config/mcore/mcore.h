@@ -656,7 +656,7 @@ extern const enum reg_class reg_class_from_letter[];
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
-#define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, FIRST_RET_REG)
+#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, FIRST_RET_REG)
 
 /* 1 if N is a possible register number for a function value.
    On the MCore, only r4 can return results.  */
@@ -775,9 +775,9 @@ extern const enum reg_class reg_class_from_letter[];
    CXT is an RTX for the static chain value for the function.  */
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)  \
 {									\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 8)),	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 8)),	\
 		  (CXT));						\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 12)),	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 12)),	\
 		  (FNADDR));						\
 }
 

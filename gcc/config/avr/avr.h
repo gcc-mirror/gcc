@@ -793,8 +793,8 @@ extern int avr_case_values_threshold;
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			      \
 {									      \
-  emit_move_insn (gen_rtx (MEM, HImode, plus_constant ((TRAMP), 2)), CXT);    \
-  emit_move_insn (gen_rtx (MEM, HImode, plus_constant ((TRAMP), 6)), FNADDR); \
+  emit_move_insn (gen_rtx_MEM (HImode, plus_constant ((TRAMP), 2)), CXT);    \
+  emit_move_insn (gen_rtx_MEM (HImode, plus_constant ((TRAMP), 6)), FNADDR); \
 }
 /* Store in cc_status the expressions
    that the condition codes will describe

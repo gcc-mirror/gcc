@@ -908,7 +908,7 @@ typedef struct xtensa_args {
     rtx addr = ADDR;							\
     emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 12)), CHAIN); \
     emit_move_insn (gen_rtx_MEM (SImode, plus_constant (addr, 16)), FUNC); \
-    emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__xtensa_sync_caches"), \
+    emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_sync_caches"), \
 		       0, VOIDmode, 1, addr, Pmode);			\
   } while (0)
 
@@ -953,7 +953,7 @@ typedef struct xtensa_args {
    when count == 0 and the stack pointer when count > 0.  */
 
 #define DYNAMIC_CHAIN_ADDRESS(frame)					\
-  gen_rtx (PLUS, Pmode, frame, GEN_INT (-3 * UNITS_PER_WORD))
+  gen_rtx_PLUS (Pmode, frame, GEN_INT (-3 * UNITS_PER_WORD))
 
 /* Define this if the return address of a particular stack frame is
    accessed from the frame pointer of the previous stack frame.  */
@@ -1098,10 +1098,10 @@ typedef struct xtensa_args {
 	    && xtensa_simm8x256 (INTVAL (plus1) & ~0xff))		\
 	  {								\
 	    rtx temp = gen_reg_rtx (Pmode);				\
-	    emit_insn (gen_rtx (SET, Pmode, temp,			\
-				gen_rtx (PLUS, Pmode, plus0,		\
+	    emit_insn (gen_rtx_SET (Pmode, temp,			\
+				gen_rtx_PLUS (Pmode, plus0,		\
 					 GEN_INT (INTVAL (plus1) & ~0xff)))); \
-	    (X) = gen_rtx (PLUS, Pmode, temp,				\
+	    (X) = gen_rtx_PLUS (Pmode, temp,				\
 			   GEN_INT (INTVAL (plus1) & 0xff));		\
 	    goto WIN;							\
 	  }								\

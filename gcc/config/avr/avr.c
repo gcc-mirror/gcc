@@ -83,10 +83,10 @@ static bool avr_return_in_memory (tree, tree);
 /* Allocate registers from r25 to r8 for parameters for function calls.  */
 #define FIRST_CUM_REG 26
 
-/* Temporary register RTX (gen_rtx (REG,QImode,TMP_REGNO)) */
+/* Temporary register RTX (gen_rtx_REG (QImode, TMP_REGNO)) */
 static GTY(()) rtx tmp_reg_rtx;
 
-/* Zeroed register RTX (gen_rtx (REG,QImode,ZERO_REGNO)) */
+/* Zeroed register RTX (gen_rtx_REG (QImode, ZERO_REGNO)) */
 static GTY(()) rtx zero_reg_rtx;
 
 /* AVR register names {"r0", "r1", ..., "r31"} */
@@ -1472,7 +1472,7 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
   int bytes = avr_num_arg_regs (mode, type);
 
   if (cum->nregs && bytes <= cum->nregs)
-    return gen_rtx (REG, mode, cum->regno - bytes);
+    return gen_rtx_REG (mode, cum->regno - bytes);
 
   return NULL_RTX;
 }
@@ -2782,7 +2782,7 @@ out_shift_with_cnt (const char *template, rtx insn, rtx operands[],
 	  /* No scratch register available, use one from LD_REGS (saved in
 	     __tmp_reg__) that doesn't overlap with registers to shift.  */
 
-	  op[3] = gen_rtx (REG, QImode,
+	  op[3] = gen_rtx_REG (QImode,
 			   ((true_regnum (operands[0]) - 1) & 15) + 16);
 	  op[4] = tmp_reg_rtx;
 	  saved_in_tmp = 1;
@@ -5001,9 +5001,8 @@ avr_reorg (void)
 	      rtx t = XEXP (src,0);
 
 	      PUT_CODE (t, swap_condition (GET_CODE (t)));
-	      SET_SRC (pattern) = gen_rtx (NEG,
-					   GET_MODE (SET_SRC (pattern)),
-					   SET_SRC (pattern));
+	      SET_SRC (pattern) = gen_rtx_NEG (GET_MODE (SET_SRC (pattern)),
+					       SET_SRC (pattern));
 	      INSN_CODE (next) = -1;
 	      INSN_CODE (insn) = -1;
 	    }
@@ -5028,7 +5027,7 @@ avr_libcall_value (enum machine_mode mode)
   int offs = GET_MODE_SIZE (mode);
   if (offs < 2)
     offs = 2;
-  return gen_rtx (REG, mode, RET_REGISTER + 2 - offs);
+  return gen_rtx_REG (mode, RET_REGISTER + 2 - offs);
 }
 
 /* Create an RTX representing the place where a
@@ -5050,7 +5049,7 @@ avr_function_value (tree type, tree func ATTRIBUTE_UNUSED)
   else if (offs > GET_MODE_SIZE (SImode) && offs < GET_MODE_SIZE (DImode))
     offs = GET_MODE_SIZE (DImode);
   
-  return gen_rtx (REG, BLKmode, RET_REGISTER + 2 - offs);
+  return gen_rtx_REG (BLKmode, RET_REGISTER + 2 - offs);
 }
 
 /* Returns nonzero if the number MASK has only one bit set.  */

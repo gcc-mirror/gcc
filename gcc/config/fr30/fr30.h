@@ -696,7 +696,7 @@ enum reg_class
   (  (NAMED) == 0                    ? NULL_RTX			\
    : MUST_PASS_IN_STACK (MODE, TYPE) ? NULL_RTX			\
    : (CUM) >= FR30_NUM_ARG_REGS      ? NULL_RTX			\
-   : gen_rtx (REG, MODE, CUM + FIRST_ARG_REGNUM))
+   : gen_rtx_REG (MODE, CUM + FIRST_ARG_REGNUM))
 
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  For some target machines, the type
@@ -816,7 +816,7 @@ enum reg_class
 
    The definition of `LIBRARY_VALUE' need not be concerned aggregate data
    types, because none of the library functions returns such types.  */
-#define LIBCALL_VALUE(MODE) gen_rtx (REG, MODE, RETURN_VALUE_REGNUM)
+#define LIBCALL_VALUE(MODE) gen_rtx_REG (MODE, RETURN_VALUE_REGNUM)
 
 /* A C expression that is nonzero if REGNO is the number of a hard register in
    which the values of called function may come back. */
@@ -941,8 +941,8 @@ enum reg_class
 #define INITIALIZE_TRAMPOLINE(ADDR, FNADDR, STATIC_CHAIN)			\
 do										\
 {										\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (ADDR, 4)), STATIC_CHAIN);\
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (ADDR, 12)), FNADDR);	\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (ADDR, 4)), STATIC_CHAIN);\
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (ADDR, 12)), FNADDR);	\
 } while (0);
 
 /*}}}*/ 

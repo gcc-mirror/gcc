@@ -1,5 +1,24 @@
 2004-02-01  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/arm/arm.c, config/arm/arm.h, config/arm/arm.md,
+	config/arm/linux-gas.h, config/arm/netbsd-elf.h,
+	config/arm/netbsd.h, config/arm/pe.c, config/avr/avr.c,
+	config/avr/avr.h, config/avr/avr.md, config/c4x/c4x.h,
+	config/cris/cris.h, config/fr30/fr30.h, config/frv/frv.c,
+	config/frv/frv.h, config/ip2k/ip2k.c, config/iq2000/iq2000.c,
+	config/iq2000/iq2000.h, config/m32r/m32r.c,
+	config/m68hc11/m68hc11.c, config/m68hc11/m68hc11.h,
+	config/m68hc11/m68hc11.md, config/m68k/m68k.md,
+	config/mcore/mcore.c, config/mcore/mcore.h,
+	config/mcore/mcore.md, config/mips/mips.c,
+	config/ns32k/ns32k.h, config/ns32k/ns32k.md,
+	config/rs6000/rs6000.c, config/s390/s390.c,
+	config/s390/s390.md, config/sparc/sparc.c, config/v850/v850.c,
+	config/xtensa/xtensa.h, config/xtensa/xtensa.md: Replace
+	"gen_rtx (FOO, " with "gen_rtx_FOO (".
+
+2004-02-01  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (two peephole2's): New.
 
 2004-02-01  Eric Botcazou  <ebotcazou@libertysurf.fr>

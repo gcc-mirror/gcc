@@ -615,7 +615,7 @@ print_operand (FILE * file, rtx x, int code)
 	{
 	case MEM:
 	  if (GET_CODE (XEXP (x, 0)) == CONST_INT)
-	    output_address (gen_rtx_PLUS (SImode, gen_rtx (REG, SImode, 0),
+	    output_address (gen_rtx_PLUS (SImode, gen_rtx_REG (SImode, 0),
 					  XEXP (x, 0)));
 	  else
 	    output_address (XEXP (x, 0));

@@ -569,7 +569,7 @@ enum reg_class
    Before the prologue, RA is at 0(sp).  */
 
 #define INCOMING_RETURN_ADDR_RTX \
-  gen_rtx (MEM, VOIDmode, gen_rtx (REG, VOIDmode, STACK_POINTER_REGNUM))
+  gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
 
 /* A C expression whose value is RTL representing the value of the
    return address for the frame COUNT steps up from the current frame,
@@ -581,7 +581,7 @@ enum reg_class
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)					\
   ((COUNT> 0 && flag_omit_frame_pointer)? NULL_RTX			\
-   : gen_rtx (MEM, Pmode, gen_rtx (PLUS, Pmode, (FRAME), GEN_INT(4))))
+   : gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, (FRAME), GEN_INT(4))))
 
 /* A C expression whose value is an integer giving the offset, in
    bytes, from the value of the stack pointer register to the top of

@@ -3896,7 +3896,7 @@
     case 5:
       return thumb_load_double_from_address (operands);
     case 6:
-      operands[2] = gen_rtx (MEM, SImode,
+      operands[2] = gen_rtx_MEM (SImode,
 			     plus_constant (XEXP (operands[0], 0), 4));
       output_asm_insn (\"str\\t%1, %0\;str\\t%H1, %2\", operands);
       return \"\";
@@ -4472,7 +4472,7 @@
           if (GET_CODE (operands[0]) != REG)
 	    abort ();
 
-          operands[0] = gen_rtx (SUBREG, SImode, operands[0], 0);
+          operands[0] = gen_rtx_SUBREG (SImode, operands[0], 0);
           emit_insn (gen_movsi (operands[0], operands[1]));
           DONE;
         }
@@ -4996,8 +4996,8 @@
     case 3:
       return thumb_load_double_from_address (operands);
     case 4:
-      operands[2] = gen_rtx (MEM, SImode,
-			     plus_constant (XEXP (operands[0], 0), 4));
+      operands[2] = gen_rtx_MEM (SImode,
+				 plus_constant (XEXP (operands[0], 0), 4));
       output_asm_insn (\"str\\t%1, %0\;str\\t%H1, %2\", operands);
       return \"\";
     case 5:
@@ -9714,7 +9714,7 @@
     enum rtx_code rc = GET_CODE (operands[1]);
 
     operands[6] = gen_rtx_REG (mode, CC_REGNUM);
-    operands[7] = gen_rtx (COMPARE, mode, operands[2], operands[3]);
+    operands[7] = gen_rtx_COMPARE (mode, operands[2], operands[3]);
     if (mode == CCFPmode || mode == CCFPEmode)
       rc = reverse_condition_maybe_unordered (rc);
     else
