@@ -177,7 +177,7 @@ static rtx store_field		PROTO((rtx, int, int, enum machine_mode, tree,
 				       enum machine_mode, int, int, int));
 static tree save_noncopied_parts PROTO((tree, tree));
 static tree init_noncopied_parts PROTO((tree, tree));
-static int safe_from_p		PROTO((rtx, tree));
+static int safe_from_p		PROTO((rtx, tree, int));
 static int fixed_type_p		PROTO((tree));
 static rtx var_rtx		PROTO((tree));
 static int get_pointer_alignment PROTO((tree, unsigned));
@@ -4640,12 +4640,15 @@ init_noncopied_parts (lhs, list)
 }
 
 /* Subroutine of expand_expr: return nonzero iff there is no way that
-   EXP can reference X, which is being modified.  */
+   EXP can reference X, which is being modified.  TOP_P is nonzero if this
+   call is going to be used to determine whether we need a temporary
+   for EXP, as opposed to a recursive call to this function.  */
 
 static int
-safe_from_p (x, exp)
+safe_from_p (x, exp, top_p)
      rtx x;
      tree exp;
+     int top_p;
 {
   rtx exp_rtl = 0;
   int i, nops;
@@ -4656,8 +4659,8 @@ safe_from_p (x, exp)
 	 (except for arrays that have TYPE_ARRAY_MAX_SIZE set).
 	 So we assume here that something at a higher level has prevented a
 	 clash.  This is somewhat bogus, but the best we can do.  Only
-	 do this when X is BLKmode.  */
-      || (TREE_TYPE (exp) != 0 && TYPE_SIZE (TREE_TYPE (exp)) != 0
+	 do this when X is BLKmode and when we are at the top level.  */
+      || (top_p && TREE_TYPE (exp) != 0 && TYPE_SIZE (TREE_TYPE (exp)) != 0
 	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) != INTEGER_CST
 	  && (TREE_CODE (TREE_TYPE (exp)) != ARRAY_TYPE
 	      || TYPE_ARRAY_MAX_SIZE (TREE_TYPE (exp)) == NULL_TREE
@@ -4694,19 +4697,19 @@ safe_from_p (x, exp)
     case 'x':
       if (TREE_CODE (exp) == TREE_LIST)
 	return ((TREE_VALUE (exp) == 0
-		 || safe_from_p (x, TREE_VALUE (exp)))
+		 || safe_from_p (x, TREE_VALUE (exp), 0))
 		&& (TREE_CHAIN (exp) == 0
-		    || safe_from_p (x, TREE_CHAIN (exp))));
+		    || safe_from_p (x, TREE_CHAIN (exp), 0)));
       else
 	return 0;
 
     case '1':
-      return safe_from_p (x, TREE_OPERAND (exp, 0));
+      return safe_from_p (x, TREE_OPERAND (exp, 0), 0);
 
     case '2':
     case '<':
-      return (safe_from_p (x, TREE_OPERAND (exp, 0))
-	      && safe_from_p (x, TREE_OPERAND (exp, 1)));
+      return (safe_from_p (x, TREE_OPERAND (exp, 0), 0)
+	      && safe_from_p (x, TREE_OPERAND (exp, 1), 0));
 
     case 'e':
     case 'r':
@@ -4719,7 +4722,7 @@ safe_from_p (x, exp)
 	{
 	case ADDR_EXPR:
 	  return (staticp (TREE_OPERAND (exp, 0))
-		  || safe_from_p (x, TREE_OPERAND (exp, 0))
+		  || safe_from_p (x, TREE_OPERAND (exp, 0), 0)
 		  || TREE_STATIC (exp));
 
 	case INDIRECT_REF:
@@ -4755,7 +4758,7 @@ safe_from_p (x, exp)
 	  break;
 
 	case CLEANUP_POINT_EXPR:
-	  return safe_from_p (x, TREE_OPERAND (exp, 0));
+	  return safe_from_p (x, TREE_OPERAND (exp, 0), 0);
 
 	case SAVE_EXPR:
 	  exp_rtl = SAVE_EXPR_RTL (exp);
@@ -4764,7 +4767,7 @@ safe_from_p (x, exp)
 	case BIND_EXPR:
 	  /* The only operand we look at is operand 1.  The rest aren't
 	     part of the expression.  */
-	  return safe_from_p (x, TREE_OPERAND (exp, 1));
+	  return safe_from_p (x, TREE_OPERAND (exp, 1), 0);
 
 	case METHOD_CALL_EXPR:
 	  /* This takes a rtx argument, but shouldn't appear here.  */
@@ -4781,7 +4784,7 @@ safe_from_p (x, exp)
       nops = tree_code_length[(int) TREE_CODE (exp)];
       for (i = 0; i < nops; i++)
 	if (TREE_OPERAND (exp, i) != 0
-	    && ! safe_from_p (x, TREE_OPERAND (exp, i)))
+	    && ! safe_from_p (x, TREE_OPERAND (exp, i), 0))
 	  return 0;
     }
 
@@ -5449,7 +5452,7 @@ expand_expr (exp, target, tmode, modifier)
 	 all operands are constant, put it in memory as well.  */
       else if ((TREE_STATIC (exp)
 		&& ((mode == BLKmode
-		     && ! (target != 0 && safe_from_p (target, exp)))
+		     && ! (target != 0 && safe_from_p (target, exp, 1)))
 		    || TREE_ADDRESSABLE (exp)
 		    || (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 			&& (move_by_pieces_ninsns
@@ -5476,7 +5479,7 @@ expand_expr (exp, target, tmode, modifier)
 	{
 	  /* Handle calls that pass values in multiple non-contiguous
 	     locations.  The Irix 6 ABI has examples of this.  */
-	  if (target == 0 || ! safe_from_p (target, exp)
+	  if (target == 0 || ! safe_from_p (target, exp, 1)
 	      || GET_CODE (target) == PARALLEL)
 	    {
 	      if (mode != BLKmode && ! TREE_ADDRESSABLE (exp))
@@ -6210,7 +6213,7 @@ expand_expr (exp, target, tmode, modifier)
 	goto binop;
 
       preexpand_calls (exp);
-      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1)))
+      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
 	subtarget = 0;
 
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, ro_modifier);
@@ -6355,7 +6358,7 @@ expand_expr (exp, target, tmode, modifier)
 			  GEN_INT (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1))));
 	}
 
-      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1)))
+      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
 	subtarget = 0;
 
       /* Check for multiplying things that have been extended
@@ -6438,7 +6441,7 @@ expand_expr (exp, target, tmode, modifier)
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
       preexpand_calls (exp);
-      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1)))
+      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
 	subtarget = 0;
       /* Possible optimization: compute the dividend with EXPAND_SUM
 	 then if the divisor is constant can optimize the case
@@ -6456,7 +6459,7 @@ expand_expr (exp, target, tmode, modifier)
     case CEIL_MOD_EXPR:
     case ROUND_MOD_EXPR:
       preexpand_calls (exp);
-      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1)))
+      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
 	subtarget = 0;
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
       op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
@@ -6508,12 +6511,12 @@ expand_expr (exp, target, tmode, modifier)
 	return op0;
 
       return expand_abs (mode, op0, target, unsignedp,
-			 safe_from_p (target, TREE_OPERAND (exp, 0)));
+			 safe_from_p (target, TREE_OPERAND (exp, 0), 1));
 
     case MAX_EXPR:
     case MIN_EXPR:
       target = original_target;
-      if (target == 0 || ! safe_from_p (target, TREE_OPERAND (exp, 1))
+      if (target == 0 || ! safe_from_p (target, TREE_OPERAND (exp, 1), 1)
 	  || (GET_CODE (target) == MEM && MEM_VOLATILE_P (target))
 	  || GET_MODE (target) != mode
 	  || (GET_CODE (target) == REG
@@ -6628,7 +6631,7 @@ expand_expr (exp, target, tmode, modifier)
     case LROTATE_EXPR:
     case RROTATE_EXPR:
       preexpand_calls (exp);
-      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1)))
+      if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
 	subtarget = 0;
       op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
       return expand_shift (code, mode, op0, TREE_OPERAND (exp, 1), target,
@@ -6676,7 +6679,7 @@ expand_expr (exp, target, tmode, modifier)
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
       if (! ignore
-	  && (target == 0 || ! safe_from_p (target, exp)
+	  && (target == 0 || ! safe_from_p (target, exp, 1)
 	      /* Make sure we don't have a hard reg (such as function's return
 		 value) live across basic blocks, if not optimizing.  */
 	      || (!optimize && GET_CODE (target) == REG
@@ -6804,7 +6807,7 @@ expand_expr (exp, target, tmode, modifier)
 	if (ignore)
 	  temp = 0;
 	else if (original_target
-		 && (safe_from_p (original_target, TREE_OPERAND (exp, 0))
+		 && (safe_from_p (original_target, TREE_OPERAND (exp, 0), 1)
 		     || (singleton && GET_CODE (original_target) == REG
 			 && REGNO (original_target) >= FIRST_PSEUDO_REGISTER
 			 && original_target == var_rtx (singleton)))
@@ -6848,7 +6851,7 @@ expand_expr (exp, target, tmode, modifier)
 		= invert_truthvalue (TREE_OPERAND (exp, 0));
 
 	    result = do_store_flag (TREE_OPERAND (exp, 0),
-				    (safe_from_p (temp, singleton)
+				    (safe_from_p (temp, singleton, 1)
 				     ? temp : NULL_RTX),
 				    mode, BRANCH_COST <= 1);
 
@@ -6858,7 +6861,7 @@ expand_expr (exp, target, tmode, modifier)
 						  (TREE_OPERAND
 						   (binary_op, 1)),
 						  0),
-				     (safe_from_p (temp, singleton)
+				     (safe_from_p (temp, singleton, 1)
 				      ? temp : NULL_RTX), 0);
 
 	    if (result)
@@ -6885,7 +6888,7 @@ expand_expr (exp, target, tmode, modifier)
 		   if it is a hard register, because evaluating the condition
 		   might clobber it.  */
 		if ((binary_op
-		     && ! safe_from_p (temp, TREE_OPERAND (binary_op, 1)))
+		     && ! safe_from_p (temp, TREE_OPERAND (binary_op, 1), 1))
 		    || (GET_CODE (temp) == REG
 			&& REGNO (temp) < FIRST_PSEUDO_REGISTER))
 		  temp = gen_reg_rtx (mode);
@@ -6926,7 +6929,7 @@ expand_expr (exp, target, tmode, modifier)
 				     TREE_OPERAND (exp, 1), 0)
 		 && (! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0))
 		     || TREE_CODE (TREE_OPERAND (exp, 1)) == SAVE_EXPR)
-		 && safe_from_p (temp, TREE_OPERAND (exp, 2)))
+		 && safe_from_p (temp, TREE_OPERAND (exp, 2), 1))
 	  {
 	    if (GET_CODE (temp) == REG && REGNO (temp) < FIRST_PSEUDO_REGISTER)
 	      temp = gen_reg_rtx (mode);
@@ -6944,7 +6947,7 @@ expand_expr (exp, target, tmode, modifier)
 				     TREE_OPERAND (exp, 2), 0)
 		 && (! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0))
 		     || TREE_CODE (TREE_OPERAND (exp, 2)) == SAVE_EXPR)
-		 && safe_from_p (temp, TREE_OPERAND (exp, 1)))
+		 && safe_from_p (temp, TREE_OPERAND (exp, 1), 1))
 	  {
 	    if (GET_CODE (temp) == REG && REGNO (temp) < FIRST_PSEUDO_REGISTER)
 	      temp = gen_reg_rtx (mode);
@@ -7409,7 +7412,7 @@ expand_expr (exp, target, tmode, modifier)
      from the optab already placed in `this_optab'.  */
  binop:
   preexpand_calls (exp);
-  if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1)))
+  if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
     subtarget = 0;
   op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
   op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX, VOIDmode, 0);
@@ -11157,7 +11160,7 @@ do_store_flag (exp, target, mode, only_cheap)
 
       if (subtarget == 0 || GET_CODE (subtarget) != REG
 	  || GET_MODE (subtarget) != operand_mode
-	  || ! safe_from_p (subtarget, inner))
+	  || ! safe_from_p (subtarget, inner, 1))
 	subtarget = 0;
 
       op0 = expand_expr (inner, subtarget, VOIDmode, 0);
@@ -11207,7 +11210,7 @@ do_store_flag (exp, target, mode, only_cheap)
   preexpand_calls (exp);
   if (subtarget == 0 || GET_CODE (subtarget) != REG
       || GET_MODE (subtarget) != operand_mode
-      || ! safe_from_p (subtarget, arg1))
+      || ! safe_from_p (subtarget, arg1, 1))
     subtarget = 0;
 
   op0 = expand_expr (arg0, subtarget, VOIDmode, 0);
