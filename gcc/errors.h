@@ -39,5 +39,5 @@ extern void fancy_abort PARAMS ((const char *, int, const char *))
 
 extern int have_error;
 extern const char *progname;
-    
+
 #endif /* ! GCC_ERRORS_H */

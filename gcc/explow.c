@@ -391,7 +391,7 @@ convert_memory_address (to_mode, x)
 
     case CONST:
       if (POINTERS_EXTEND_UNSIGNED >= 0)
-        return gen_rtx_CONST (to_mode,
+	return gen_rtx_CONST (to_mode,
 			      convert_memory_address (to_mode, XEXP (x, 0)));
       break;
 
@@ -1375,7 +1375,7 @@ allocate_dynamic_stack_space (size, target, known_align)
 #ifdef SETJMP_VIA_SAVE_AREA
       if (setjmpless_size != NULL_RTX)
 	{
- 	  rtx note_target = get_last_insn ();
+	  rtx note_target = get_last_insn ();
 
 	  REG_NOTES (note_target)
 	    = gen_rtx_EXPR_LIST (REG_SAVE_AREA, setjmpless_size,
@@ -1620,17 +1620,17 @@ hard_function_value (valtype, func, outgoing)
 	 will match and we will abort later in this function.  */
 
       for (tmpmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-           tmpmode != VOIDmode;
-           tmpmode = GET_MODE_WIDER_MODE (tmpmode))
-        {
-          /* Have we found a large enough mode?  */
-          if (GET_MODE_SIZE (tmpmode) >= bytes)
-            break;
-        }
+	   tmpmode != VOIDmode;
+	   tmpmode = GET_MODE_WIDER_MODE (tmpmode))
+	{
+	  /* Have we found a large enough mode?  */
+	  if (GET_MODE_SIZE (tmpmode) >= bytes)
+	    break;
+	}
 
       /* No suitable mode found.  */
       if (tmpmode == VOIDmode)
-        abort ();
+	abort ();
 
       PUT_MODE (val, tmpmode);
     }

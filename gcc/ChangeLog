@@ -1,5 +1,15 @@
 2002-06-02  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* emit-rtl.c: Likewise.
+	* errors.h: Likewise.
+	* except.c: Likewise.
+	* explow.c: Likewise.
+	* expmed.c: Likewise.
+	* expr.c: Likewise.
+	* expr.h: Likewise.
+
+2002-06-02  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/elf.h: Fix formatting.
 	* config/h8300/rtems.h: Likewise.
 

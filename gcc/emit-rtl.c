@@ -650,7 +650,7 @@ gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
 	HOST_WIDE_INT arg0 = va_arg (p, HOST_WIDE_INT);
 	HOST_WIDE_INT arg1 = va_arg (p, HOST_WIDE_INT);
 
-        rt_val = immed_double_const (arg0, arg1, mode);
+	rt_val = immed_double_const (arg0, arg1, mode);
       }
       break;
 
@@ -3050,9 +3050,9 @@ mark_label_nuses (x)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-        mark_label_nuses (XEXP (x, i));
+	mark_label_nuses (XEXP (x, i));
       else if (fmt[i] == 'E')
-        for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	for (j = XVECLEN (x, i) - 1; j >= 0; j--)
 	  mark_label_nuses (XVECEXP (x, i, j));
     }
 }
@@ -3634,7 +3634,7 @@ find_line_note (insn)
 
   for (; insn; insn = PREV_INSN (insn))
     if (GET_CODE (insn) == NOTE
-        && NOTE_LINE_NUMBER (insn) >= 0)
+	&& NOTE_LINE_NUMBER (insn) >= 0)
       break;
 
   return insn;
@@ -4162,10 +4162,10 @@ emit_insns_after (first, after)
     {
       bb->flags |= BB_DIRTY;
       for (last = first; NEXT_INSN (last); last = NEXT_INSN (last))
-        if (GET_CODE (last) != BARRIER)
+	if (GET_CODE (last) != BARRIER)
 	  set_block_for_insn (last, bb);
       if (GET_CODE (last) != BARRIER)
-        set_block_for_insn (last, bb);
+	set_block_for_insn (last, bb);
       if (bb->end == after)
 	bb->end = last;
     }
