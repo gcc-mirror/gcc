@@ -3114,6 +3114,11 @@ can_throw_internal (rtx insn)
   if (! INSN_P (insn))
     return false;
 
+  if (GET_CODE (insn) == JUMP_INSN
+      && GET_CODE (PATTERN (insn)) == RESX
+      && XINT (PATTERN (insn), 0) > 0)
+    return can_throw_internal_1 (XINT (PATTERN (insn), 0));
+
   if (GET_CODE (insn) == INSN
       && GET_CODE (PATTERN (insn)) == SEQUENCE)
     insn = XVECEXP (PATTERN (insn), 0, 0);
