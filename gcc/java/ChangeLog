@@ -1,3 +1,8 @@
+1999-10-19  Tom Tromey  <tromey@cygnus.com>
+
+	* jcf-parse.c (parse_source_file): Call jcf_dependency_add_file.
+	From Mike Moreton <mike@pillim.demon.co.uk>.
+
 1999-10-15  Greg McGary  <gkm@gnu.org>
 
 	* java-tree.h (flag_bounds_check): Remove extern decl.
