@@ -325,7 +325,7 @@ static rtx combine_givs_p PROTO((struct induction *, struct induction *));
 static void combine_givs PROTO((struct iv_class *));
 struct recombine_givs_stats;
 static int find_life_end (rtx,  struct recombine_givs_stats *, rtx, rtx);
-static void recombine_givs PROTO((struct iv_class *, rtx, rtx));
+static void recombine_givs PROTO((struct iv_class *, rtx, rtx, int));
 static int product_cheap_p PROTO((rtx, rtx));
 static int maybe_eliminate_biv PROTO((struct iv_class *, rtx, rtx, int, int, int));
 static int maybe_eliminate_biv_1 PROTO((rtx, rtx, struct iv_class *, int, rtx));
@@ -3924,7 +3924,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   /* Look at the each biv and see if we can say anything better about its
      initial value from any initializing insns set up above.  (This is done
      in two passes to avoid missing SETs in a PARALLEL.)  */
-  for (backbl = &loop_iv_list; bl = *backbl; backbl = &bl->next)
+  for (backbl = &loop_iv_list; (bl = *backbl); backbl = &bl->next)
     {
       rtx src;
       rtx note;
@@ -4019,7 +4019,6 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	    {
 	      int loop_num = uid_loop_num[INSN_UID (loop_start)];
 	      rtx dominator = loop_number_cont_dominator[loop_num];
-	      rtx cont = loop_number_loop_cont[loop_num];
 	      rtx giv = bl->biv->src_reg;
 	      rtx giv_insn = bl->biv->insn;
 	      rtx after_giv = NEXT_INSN (giv_insn);
@@ -4584,7 +4583,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
       /* Now that we know which givs will be reduced, try to rearrange the
          combinations to reduce register pressure.  */
-      recombine_givs (bl, loop_start, loop_end);
+      recombine_givs (bl, loop_start, loop_end, unroll_p);
 
       /* Reduce each giv that we decided to reduce.  */
 
@@ -7030,9 +7029,10 @@ find_life_end (x, stats, insn, biv)
    This tends to shorten giv lifetimes, and helps the next step:
    try to derive givs from other givs.  */
 static void
-recombine_givs (bl, loop_start, loop_end)
+recombine_givs (bl, loop_start, loop_end, unroll_p)
      struct iv_class *bl;
      rtx loop_start, loop_end;
+     int unroll_p;
 {
   struct induction *v, **giv_array, *last_giv;
   struct recombine_givs_stats *stats;
@@ -7284,6 +7284,17 @@ recombine_givs (bl, loop_start, loop_end)
 		 validity of last_giv.  */
 	      && (v->always_executed || ! v->combined_with)
 	      && (sum = express_from (last_giv, v))
+	      /* Make sure we don't make the add more expensive.  ADD_COST
+		 doesn't take different costs of registers and constants into
+		 account, so compare the cost of the actual SET_SRCs.  */
+	      && (rtx_cost (sum, SET)
+		  <= rtx_cost (SET_SRC (single_set (v->insn)), SET))
+	      /* ??? unroll can't understand anything but reg + const_int
+		 sums.  It would be cleaner to fix unroll.  */
+	      && ((GET_CODE (sum) == PLUS
+		   && GET_CODE (XEXP (sum, 0)) == REG
+		   && GET_CODE (XEXP (sum, 1)) == CONST_INT)
+		  || ! unroll_p)
 	      && validate_change (v->insn, &PATTERN (v->insn),
 				  gen_rtx_SET (GET_MODE (v->dest_reg),
 					       v->dest_reg, sum), 0))
