@@ -6062,7 +6062,7 @@ add_name_and_src_coords_attributes (die, decl)
 {
   register tree decl_name;
   register unsigned file_index;
-  if (staticp (decl))
+  if (decl_function_context (decl) == NULL_TREE)
     decl_name = DECL_ASSEMBLER_NAME (decl);
   else
     decl_name = DECL_NAME (decl); 
@@ -6118,13 +6118,8 @@ scope_die_for (t, context_die)
     {
       for (i = decl_scope_depth, scope_die = context_die;
 	   i > 0 && decl_scope_table[i - 1] != containing_scope;
-	   scope_die = scope_die->die_parent)
-	{
-	  if (scope_die->die_tag == DW_TAG_lexical_block)
-	    /* nothing */ ;
-	  else
-	    --i;
-	}
+	   scope_die = scope_die->die_parent, --i)
+	/* nothing */ ;
       if (i == 0)
 	{
 	  assert (scope_die == comp_unit_die);
@@ -6655,14 +6650,8 @@ gen_subprogram_die (decl, context_die)
     {
       if (origin == NULL)
 	equate_decl_number_to_die (decl, subr_die);
-      if (DECL_WEAK (current_function_decl)
-	  || DECL_ONE_ONLY (current_function_decl))
-	{
-	  sprintf (label_id, FUNC_BEGIN_LABEL_FMT, current_funcdef_number);
-	  add_AT_lbl_id (subr_die, DW_AT_low_pc, label_id);
-	}
-      else
-	add_AT_lbl_id (subr_die, DW_AT_low_pc, decl_start_label (decl));
+      sprintf (label_id, FUNC_BEGIN_LABEL_FMT, current_funcdef_number);
+      add_AT_lbl_id (subr_die, DW_AT_low_pc, label_id);
       sprintf (label_id, FUNC_END_LABEL_FMT, current_funcdef_number);
       add_AT_lbl_id (subr_die, DW_AT_high_pc, label_id);
 
@@ -6915,7 +6904,9 @@ gen_lexical_block_die (stmt, context_die, depth)
       sprintf (label, BLOCK_END_LABEL_FMT, next_block_number);
       add_AT_lbl_id (stmt_die, DW_AT_high_pc, label);
     }
+  push_decl_scope (stmt);
   decls_for_scope (stmt, stmt_die, depth);
+  pop_decl_scope ();
 }
 
 /* Generate a DIE for an inlined subprogram.  */
@@ -7899,11 +7890,7 @@ dwarfout_begin_prologue ()
 
   /* Add the new FDE at the end of the fde_table.  */
   fde = &fde_table[fde_table_in_use++];
-  if (DECL_WEAK (current_function_decl)
-      || DECL_ONE_ONLY (current_function_decl))
-    fde->dw_fde_begin = xstrdup (label);
-  else
-    fde->dw_fde_begin = xstrdup (decl_start_label (current_function_decl));
+  fde->dw_fde_begin = xstrdup (label);
   fde->dw_fde_end_prolog = NULL;
   fde->dw_fde_begin_epilogue = NULL;
   fde->dw_fde_end = NULL;
