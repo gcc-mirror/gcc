@@ -126,6 +126,8 @@ static rtx expand_builtin_strcspn	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_memcpy	PARAMS ((tree, rtx,
 						 enum machine_mode, int));
+static rtx expand_builtin_mempcpy	PARAMS ((tree, rtx,
+						 enum machine_mode));
 static rtx expand_builtin_memmove	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_bcopy		PARAMS ((tree));
@@ -2345,6 +2347,43 @@ expand_builtin_memcpy (arglist, target, mode, endp)
     }
 }
 
+/* Expand a call to the mempcpy builtin, with arguments in ARGLIST.
+   Return 0 if we failed the caller should emit a normal call,
+   otherwise try to get the result in TARGET, if convenient (and in
+   mode MODE if that's convenient).  */
+
+static rtx
+expand_builtin_mempcpy (arglist, target, mode)
+     tree arglist;
+     rtx target;
+     enum machine_mode mode;
+{
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+  else
+    {
+      /* If return value is ignored, transform mempcpy into memcpy.  */
+      if (target == const0_rtx)
+	{
+	  tree fn;
+	  rtx ret = expand_builtin_memcpy (arglist, target, mode, /*endp=*/0);
+
+	  if (ret)
+	    return ret;
+
+	  fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
+	  if (!fn)
+	    return 0;
+
+	  return expand_expr (build_function_call_expr (fn, arglist),
+			      target, mode, EXPAND_NORMAL);
+	}
+
+      return expand_builtin_memcpy (arglist, target, mode, /*endp=*/1);
+    }
+}
+
 /* Expand expression EXP, which is a call to the memmove builtin.  Return 0
    if we failed the caller should emit a normal call.  */
 
@@ -2469,7 +2508,26 @@ expand_builtin_stpcpy (arglist, target, mode)
   else
     {
       tree newarglist;
-      tree len = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)));
+      tree len;
+
+      /* If return value is ignored, transform stpcpy into strcpy.  */
+      if (target == const0_rtx)
+	{
+	  tree fn;
+	  rtx ret = expand_builtin_strcpy (arglist, target, mode);
+
+	  if (ret)
+	    return ret;
+
+	  fn = implicit_built_in_decls[BUILT_IN_STRCPY];
+	  if (!fn)
+	    return 0;
+
+	  return expand_expr (build_function_call_expr (fn, arglist),
+			      target, mode, EXPAND_NORMAL);
+	}
+
+      len = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)));
       if (len == 0)
 	return 0;
 
@@ -4586,7 +4644,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       break;
 
     case BUILT_IN_MEMPCPY:
-      target = expand_builtin_memcpy (arglist, target, mode, /*endp=*/1);
+      target = expand_builtin_mempcpy (arglist, target, mode);
       if (target)
 	return target;
       break;

@@ -1,3 +1,7 @@
+2003-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/string-opt-18.c (main): Add 3 new tests.
+
 2003-05-05  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/unused-5.c: New test.
