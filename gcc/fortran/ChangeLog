@@ -1,4 +1,8 @@
-2004-05-22  Pau Brook  <paul@codesourcery.com>
+2004-05-22  Steven G. Kargl  <kargls@comcast.net>
+
+	* intrinsic.c (add_subroutines): Use add_sym_3s for random_seed.
+
+2004-05-22  Paul Brook  <paul@codesourcery.com>
 
 	* dump-parse-tree.c (gfc_show_equiv): New function.
 	(gfc_show_namespace): Use it.
