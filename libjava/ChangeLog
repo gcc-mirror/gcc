@@ -1,4 +1,16 @@
 2002-12-31  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/7416:
+	* javax/naming/InitialContext.java (init): Use
+	gnu.classpath.home.url.
+	* java/security/Security.java: Use new properties.
+	(loadProviders): Accept base url; use it.
+	* java/lang/System.java: Document gnu.classpath.vm.shortname, and
+	gnu.classpath.home.url.
+	(gnu.classpath.home.url): Define.
+	(gnu.classpath.vm.shortname): Likewise.
+
+2002-12-31  Tom Tromey  <tromey@redhat.com>
 	Ranjit Mathew  <rmathew@hotmail.com>
 
 	Fix for PR libgcj/8997:

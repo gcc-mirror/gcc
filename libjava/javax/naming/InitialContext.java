@@ -1,5 +1,5 @@
 /* InitialContext.java --
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -126,18 +126,22 @@ public class InitialContext implements Context
 	}
       catch (IOException e) {}
 
-      String home = System.getProperty("java.home");
+      String home = System.getProperty("gnu.classpath.home.url");
       if (home != null)
 	{
-	  String fileName = home + File.separator
-	    + "lib" + File.separator + "jndi.properties";
+	  String url = home + "/jndi.properties";
 	  Properties p = new Properties ();
 	
-	  try {
-	    InputStream is = new FileInputStream (fileName);
-	    p.load (is);
-	    is.close ();
-	  } catch (IOException e) {}
+	  try
+	    {
+	      InputStream is = new URL(url).openStream();
+	      p.load (is);
+	      is.close ();
+	    }
+	  catch (IOException e)
+	    {
+	      // Ignore.
+	    }
 
 	  merge (myProps, p);
 	}
