@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "output.h"
 
 #ifndef WCHAR_TYPE_SIZE
 #ifdef INT_TYPE_SIZE
@@ -1235,7 +1236,6 @@ check_format_info (info, params)
   int length_char;
   int format_char;
   int format_length;
-  int integral_format;
   tree format_tree;
   tree cur_param;
   tree cur_type;

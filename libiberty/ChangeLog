@@ -1,3 +1,12 @@
+Wed May 13 14:24:38 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * cplus-dem.c (squangle_mop_up): Change return type to void.
+        (internal_cplus_demangle): Remove unused parameter `options'.
+        All callers changed.
+        (cplus_demangle_opname): Remove function wide variable `int i' and
+        replace with `size_t i' at each location where it is used.
+        (cplus_mangle_opname): change type of `i' from int to size_t.
+
 Mon Apr 27 15:53:30 EDT 1998 Andrew MacLeod <amacleod@cygnus.com>
 
 	* cplus-dem.c (demangle_qualified): Replace missing else.

@@ -7933,7 +7933,7 @@ static rtx cse_check_loop_start_value;
 static void
 cse_check_loop_start (x, set)
      rtx x;
-     rtx set;
+     rtx set ATTRIBUTE_UNUSED;
 {
   if (cse_check_loop_start_value == 0
       || GET_CODE (x) == CC0 || GET_CODE (x) == PC)

@@ -3360,6 +3360,7 @@ EH_TABLE_LOOKUP
 
 #else
 
+#ifdef DWARF2_UNWIND_INFO
 typedef struct exception_table {
   void *start;
   void *end;
@@ -3404,6 +3405,7 @@ find_exception_handler (void *pc, exception_table *table)
 
   return (void *) 0;
 }
+#endif /* DWARF2_UNWIND_INFO */
 #endif /* EH_TABLE_LOOKUP */
 
 #ifdef DWARF2_UNWIND_INFO

@@ -58,7 +58,7 @@ hashf (name, len, hashsize)
 
 HASHNODE *
 cpp_lookup (pfile, name, len, hash)
-     cpp_reader *pfile;
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
      const U_CHAR *name;
      int len;
      int hash;
@@ -193,7 +193,7 @@ install (name, len, type, ivalue, value, hash)
 
 void
 cpp_hash_cleanup (pfile)
-     cpp_reader *pfile;
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
   register int i;
   for (i = HASHSIZE; --i >= 0; )

@@ -88,7 +88,7 @@ $(srcdir)/objc/objc-parse.y: $(srcdir)/c-parse.in
 
 objc-act.o : $(srcdir)/objc/objc-act.c \
    $(CONFIG_H) $(TREE_H) $(RTL_H) system.h \
-   $(srcdir)/c-tree.h $(srcdir)/c-lex.h \
+   $(srcdir)/c-tree.h $(srcdir)/c-lex.h $(srcdir)/toplev.h \
    $(srcdir)/flags.h $(srcdir)/objc/objc-act.h $(srcdir)/input.h \
    $(srcdir)/function.h $(srcdir)/output.h $(srcdir)/c-parse.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \

@@ -230,7 +230,7 @@ typedef struct string		/* Beware: these aren't required to be */
 static char *
 mop_up PARAMS ((struct work_stuff *, string *, int));
 
-static char *
+static void
 squangle_mop_up PARAMS ((struct work_stuff *));
 
 #if 0
@@ -239,7 +239,7 @@ demangle_method_args PARAMS ((struct work_stuff *, const char **, string *));
 #endif
 
 static char *
-internal_cplus_demangle PARAMS ((struct work_stuff *, const char *, int));
+internal_cplus_demangle PARAMS ((struct work_stuff *, const char *));
 
 static int
 demangle_template_template_parm PARAMS ((struct work_stuff *work, 
@@ -422,7 +422,7 @@ cplus_demangle_opname (opname, result, options)
      char *result;
      int options;
 {
-  int len, i, len1, ret;
+  int len, len1, ret;
   string type;
   struct work_stuff work[1];
   const char *tem;
@@ -453,6 +453,7 @@ cplus_demangle_opname (opname, result, options)
       if (opname[4] == '\0')
 	{
 	  /* Operator.  */
+	  size_t i;
 	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
 	    {
 	      if (strlen (optable[i].in) == 2
@@ -470,6 +471,7 @@ cplus_demangle_opname (opname, result, options)
 	  if (opname[2] == 'a' && opname[5] == '\0')
 	    {
 	      /* Assignment.  */
+	      size_t i;
 	      for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
 		{
 		  if (strlen (optable[i].in) == 3
@@ -493,6 +495,7 @@ cplus_demangle_opname (opname, result, options)
       if (len >= 10 /* op$assign_ */
 	  && memcmp (opname + 3, "assign_", 7) == 0)
 	{
+	  size_t i;
 	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
 	    {
 	      len1 = len - 10;
@@ -509,6 +512,7 @@ cplus_demangle_opname (opname, result, options)
 	}
       else
 	{
+	  size_t i;
 	  for (i = 0; i < sizeof (optable) / sizeof (optable[0]); i++)
 	    {
 	      len1 = len - 3;
@@ -551,7 +555,7 @@ cplus_mangle_opname (opname, options)
      const char *opname;
      int options;
 {
-  int i;
+  size_t i;
   int len;
 
   len = strlen (opname);
@@ -605,7 +609,7 @@ cplus_demangle (mangled, options)
   if ((work -> options & DMGL_STYLE_MASK) == 0)
     work -> options |= (int) current_demangling_style & DMGL_STYLE_MASK;
 
-  ret = internal_cplus_demangle (work, mangled, options);
+  ret = internal_cplus_demangle (work, mangled);
   squangle_mop_up (work);
   return (ret);
 }
@@ -618,10 +622,9 @@ cplus_demangle (mangled, options)
    calls go directly to this routine to avoid resetting that info. */
 
 static char *
-internal_cplus_demangle (work, mangled, options)
+internal_cplus_demangle (work, mangled)
      struct work_stuff *work;
      const char *mangled;
-     int options;
 {
 
   string decl;
@@ -679,7 +682,7 @@ internal_cplus_demangle (work, mangled, options)
 
 
 /* Clear out and squangling related storage */
-static char *
+static void
 squangle_mop_up (work)
      struct work_stuff *work;
 {
@@ -1340,7 +1343,7 @@ demangle_template_value_parm (work, mangled, s)
 	  char *p = xmalloc (symbol_len + 1), *q;
 	  strncpy (p, *mangled, symbol_len);
 	  p [symbol_len] = '\0';
-	  q = internal_cplus_demangle (work, p, work->options);
+	  q = internal_cplus_demangle (work, p);
 	  string_appendn (s, "&", 1);
 	  if (q)
 	    {
@@ -2073,7 +2076,7 @@ gnu_special (work, mangled, declp)
   else if (strncmp (*mangled, "__thunk_", 8) == 0)
     {
       int delta = ((*mangled) += 8, consume_count (mangled));
-      char *method = internal_cplus_demangle (work, ++*mangled, work->options);
+      char *method = internal_cplus_demangle (work, ++*mangled);
       if (method)
 	{
 	  char buf[50];

@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "insn-flags.h"
 #include "toplev.h"
+#include "output.h"
 
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.

@@ -262,7 +262,7 @@ gencode (f)
   fputs ("  else if (sizeof(struct rtx_def) - sizeof(rtunion) == sizeof(HOST_WIDE_INT))\n", f);
   fputs ("    *(HOST_WIDE_INT *)rt = 0;\n", f);
   fputs ("  else\n", f);
-  fputs ("    bzero(rt, sizeof(struct rtx_def) - sizeof(rtunion));\n\n", f);
+  fputs ("    bzero((char *) rt, sizeof(struct rtx_def) - sizeof(rtunion));\n\n", f);
   fputs ("  return rt;\n}\n\n", f);
 
   for (fmt = formats; *fmt; ++fmt)

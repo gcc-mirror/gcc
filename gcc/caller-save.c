@@ -505,7 +505,8 @@ save_call_clobbered_regs (insn_mode)
 
 static void
 set_reg_live (reg, setter)
-     rtx reg, setter;
+     rtx reg;
+     rtx setter ATTRIBUTE_UNUSED;
 {
   register int regno, endregno, i;
   enum machine_mode mode = GET_MODE (reg);

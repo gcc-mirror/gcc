@@ -414,7 +414,7 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
   bzero (block_live, n_basic_blocks);
   bzero (block_marked, n_basic_blocks);
   bzero (basic_block_computed_jump_target, n_basic_blocks);
-  bzero (active_eh_handler, (max_uid_for_flow + 1) * sizeof (rtx));
+  bzero ((char *) active_eh_handler, (max_uid_for_flow + 1) * sizeof (rtx));
   current_function_has_computed_jump = 0;
 
   /* Initialize with just block 0 reachable and no blocks marked.  */

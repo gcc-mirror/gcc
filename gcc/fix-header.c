@@ -1341,7 +1341,7 @@ cpp_file_line_for_message (filename, line, column)
 
 void
 cpp_print_containing_files (pfile)
-     cpp_reader *pfile;
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
 }
 
@@ -1377,7 +1377,7 @@ fatal (str, arg)
 
 void
 cpp_fatal (pfile, str, arg)
-     cpp_reader *pfile;
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
      char *str, *arg;
 {
   fatal (str, arg);

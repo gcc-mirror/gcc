@@ -459,7 +459,7 @@ from the machine description file `md'.  */\n\n");
 
   /* This variable exists only so it can be the "location"
      of any missing operand whose numbers are skipped by a given pattern.  */
-  printf ("static rtx junk;\n");
+  printf ("static rtx junk ATTRIBUTE_UNUSED;\n");
 
   printf ("extern rtx recog_operand[];\n");
   printf ("extern rtx *recog_operand_loc[];\n");

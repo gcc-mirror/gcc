@@ -2506,7 +2506,9 @@ static tree member_declared_type	PROTO((tree));
 static char *decl_start_label		PROTO((tree));
 static void gen_array_type_die		PROTO((tree, dw_die_ref));
 static void gen_set_type_die		PROTO((tree, dw_die_ref));
+#if 0
 static void gen_entry_point_die		PROTO((tree, dw_die_ref));
+#endif
 static void pend_type			PROTO((tree));
 static void output_pending_types_for_scope PROTO((dw_die_ref));
 static void gen_inlined_enumeration_type_die PROTO((tree, dw_die_ref));
@@ -7816,6 +7818,7 @@ gen_set_type_die (type, context_die)
   add_type_attribute (type_die, TREE_TYPE (type), 0, 0, context_die);
 }
 
+#if 0
 static void
 gen_entry_point_die (decl, context_die)
      register tree decl;
@@ -7837,6 +7840,7 @@ gen_entry_point_die (decl, context_die)
   else
     add_AT_lbl_id (decl_die, DW_AT_low_pc, decl_start_label (decl));
 }
+#endif
 
 /* Remember a type in the pending_types_list.  */
 

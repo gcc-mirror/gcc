@@ -1202,6 +1202,7 @@ extern void debug_rtx_list		PROTO ((rtx, int));
 extern rtx debug_rtx_find		PROTO ((rtx, int));
 #ifdef BUFSIZ
 extern void print_rtl			PROTO ((FILE *, rtx));
+extern void print_rtl_single		PROTO ((FILE *, rtx));
 extern void print_inline_rtx		PROTO ((FILE *, rtx, int));
 #endif
 
@@ -1292,12 +1293,14 @@ extern rtx expand_mult_highpart		PROTO ((enum machine_mode, rtx,
 						int, int));
 
 /* In global.c */
+extern void mark_elimiation		PROTO ((int, int));
 #ifdef BUFSIZ
 extern int global_alloc			PROTO ((FILE *));
 extern void dump_global_regs		PROTO ((FILE *));
 #endif
 
 /* In regclass.c */
+extern int reg_class_subset_p		PROTO ((enum reg_class, enum reg_class));
 extern void globalize_reg		PROTO ((int));
 extern void init_regs			PROTO ((void));
 extern void init_reg_sets		PROTO ((void));
@@ -1329,6 +1332,7 @@ extern void init_caller_save		PROTO ((void));
 
 /* In profile.c */
 extern void init_branch_prob		PROTO ((char *));
+extern void output_func_start_profiler	PROTO ((void));
 
 /* In reg-stack.c */
 #ifdef BUFSIZ

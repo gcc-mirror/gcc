@@ -6724,12 +6724,14 @@ sparc_check_64 (x, insn)
     set_once = 1;
 
   if (insn == 0)
-    if (set_once)
-      insn = get_last_insn_anywhere ();
-    else
-      return 0;
+    {
+      if (set_once)
+	insn = get_last_insn_anywhere ();
+      else
+	return 0;
+    }
 
-  while (insn = PREV_INSN (insn))
+  while ((insn = PREV_INSN (insn)))
     {
       switch (GET_CODE (insn))
 	{

@@ -808,17 +808,17 @@ c_decode_option (p)
 
 void
 print_lang_decl (file, node, indent)
-     FILE *file;
-     tree node;
-     int indent;
+     FILE *file ATTRIBUTE_UNUSED;
+     tree node ATTRIBUTE_UNUSED;
+     int indent ATTRIBUTE_UNUSED;
 {
 }
 
 void
 print_lang_type (file, node, indent)
-     FILE *file;
-     tree node;
-     int indent;
+     FILE *file ATTRIBUTE_UNUSED;
+     tree node ATTRIBUTE_UNUSED;
+     int indent ATTRIBUTE_UNUSED;
 {
 }
 
@@ -4083,7 +4083,7 @@ finish_decl (decl, init, asmspec_tree)
 
 tree
 maybe_build_cleanup (decl)
-     tree decl;
+     tree decl ATTRIBUTE_UNUSED;
 {
   /* There are no cleanups in C.  */
   return NULL_TREE;
@@ -7296,6 +7296,6 @@ pop_c_function_context ()
 
 void
 copy_lang_decl (node)
-     tree node;
+     tree node ATTRIBUTE_UNUSED;
 {
 }

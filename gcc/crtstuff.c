@@ -274,7 +274,7 @@ __frame_dummy ()
 #endif /* defined(INIT_SECTION_ASM_OP) */
 
 /* Force cc1 to switch to .data section.  */
-static func_ptr force_to_data[0] = { };
+static func_ptr force_to_data[0] __attribute__ ((__unused__)) = { };
 
 /* NOTE:  In order to be able to support SVR4 shared libraries, we arrange
    to have one set of symbols { __CTOR_LIST__, __DTOR_LIST__, __CTOR_END__,
@@ -294,7 +294,8 @@ static func_ptr force_to_data[0] = { };
 CTOR_LIST_BEGIN;
 #else
 asm (CTORS_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
-STATIC func_ptr __CTOR_LIST__[1] = { (func_ptr) (-1) };
+STATIC func_ptr __CTOR_LIST__[1] __attribute__ ((__unused__))
+  = { (func_ptr) (-1) };
 #endif
 
 #ifdef DTOR_LIST_BEGIN
@@ -421,7 +422,7 @@ __do_global_ctors ()
 #endif /* defined(INIT_SECTION_ASM_OP) */
 
 /* Force cc1 to switch to .data section.  */
-static func_ptr force_to_data[0] = { };
+static func_ptr force_to_data[0] __attribute__ ((__unused__)) = { };
 
 /* Put a word containing zero at the end of each of our two lists of function
    addresses.  Note that the words defined here go into the .ctors and .dtors
@@ -440,7 +441,8 @@ STATIC func_ptr __CTOR_END__[1] = { (func_ptr) 0 };
 DTOR_LIST_END;
 #else
 asm (DTORS_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
-STATIC func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
+STATIC func_ptr __DTOR_END__[1] __attribute__ ((__unused__))
+  = { (func_ptr) 0 };
 #endif
 
 #ifdef EH_FRAME_SECTION_ASM_OP
@@ -449,7 +451,7 @@ STATIC func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
 
 typedef unsigned int ui32 __attribute__ ((mode (SI)));
 asm (EH_FRAME_SECTION_ASM_OP);
-STATIC ui32 __FRAME_END__[] = { 0 };
+STATIC ui32 __FRAME_END__[] __attribute__ ((__unused__)) = { 0 };
 #endif /* EH_FRAME_SECTION */
 
 #endif /* defined(CRT_END) */

@@ -242,6 +242,7 @@ static char *savestring ();
 
 static void conditional_skip ();
 static void skip_if_group ();
+static int parse_name PARAMS ((cpp_reader *, int));
 
 /* Last arg to output_line_command.  */
 enum file_change_code {same_file, enter_file, leave_file};
@@ -768,15 +769,15 @@ cpp_options_init (opts)
 
 enum cpp_token
 null_underflow (pfile)
-     cpp_reader *pfile;
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
   return CPP_EOF;
 }
 
 int
 null_cleanup (pbuf, pfile)
-     cpp_buffer *pbuf;
-     cpp_reader *pfile;
+     cpp_buffer *pbuf ATTRIBUTE_UNUSED;
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
   return 0;
 }
@@ -784,7 +785,7 @@ null_cleanup (pbuf, pfile)
 int
 macro_cleanup (pbuf, pfile)
      cpp_buffer *pbuf;
-     cpp_reader *pfile;
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
   HASHNODE *macro = (HASHNODE *) pbuf->data;
   if (macro->type == T_DISABLED)
@@ -797,7 +798,7 @@ macro_cleanup (pbuf, pfile)
 int
 file_cleanup (pbuf, pfile)
      cpp_buffer *pbuf;
-     cpp_reader *pfile;
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
   if (pbuf->buf)
     {
@@ -5200,7 +5201,7 @@ cpp_get_non_space_token (pfile)
 
 /* Parse an identifier starting with C.  */
 
-int
+static int
 parse_name (pfile, c)
      cpp_reader *pfile; int c;
 {
