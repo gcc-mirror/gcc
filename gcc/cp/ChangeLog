@@ -1,3 +1,11 @@
+2001-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* mangle.c (write_mangled_name, write_encoding): Mangle overloaded
+	operators even in "C" linkage.
+	* method.c (set_mangled_name_for_decl): Likewise.
+	* decl.c (grokfndecl): Call set_mangled_name_for_decl even for
+	overloaded operators in "C" linkage.
+
 2001-01-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (tsubst_decl): Remove IN_DECL parameter.

@@ -602,10 +602,14 @@ write_mangled_name (decl)
 {
   MANGLE_TRACE_TREE ("mangled-name", decl);
 
-  if (DECL_LANG_SPECIFIC (decl) && DECL_EXTERN_C_FUNCTION_P (decl))
+  if (DECL_LANG_SPECIFIC (decl)
+      && DECL_EXTERN_C_FUNCTION_P (decl)
+      && ! DECL_OVERLOADED_OPERATOR_P (decl))
     /* The standard notes:
          "The <encoding> of an extern "C" function is treated like
-	 global-scope data, i.e. as its <source-name> without a type."  */
+	 global-scope data, i.e. as its <source-name> without a type."
+       We cannot write overloaded operators that way though,
+       because it contains characters invalid in assembler.  */
     write_source_name (DECL_NAME (decl));
   else
     /* C++ name; needs to be mangled.  */
@@ -626,7 +630,12 @@ write_encoding (decl)
 
   if (DECL_LANG_SPECIFIC (decl) && DECL_EXTERN_C_FUNCTION_P (decl))
     {
-      write_source_name (DECL_NAME (decl));
+      /* For overloaded operators write just the mangled name
+	 without arguments.  */
+      if (DECL_OVERLOADED_OPERATOR_P (decl))
+	write_name (decl, /*ignore_local_scope=*/0);
+      else
+	write_source_name (DECL_NAME (decl));
       return;
     }
 

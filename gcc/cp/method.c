@@ -1763,6 +1763,24 @@ set_mangled_name_for_decl (decl)
       return;
     }
 
+  if (DECL_EXTERN_C_P (decl))
+    {
+      /* In extern "C" we have to mangle at least overloaded operators,
+	 because they contain characters invalid in assembler.  */
+      enum tree_code code = DECL_OVERLOADED_OPERATOR_P (decl);
+      const char *name;
+
+      if (code)
+	{
+	  if (DECL_ASSIGNMENT_OPERATOR_P (decl))
+	    name = assignment_operator_name_info[(int) code].mangled_name;
+	  else
+	    name = operator_name_info[(int) code].mangled_name;
+	  DECL_ASSEMBLER_NAME (decl) = get_identifier (name);
+	  return;
+	}
+    }
+
   parm_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
 
   if (DECL_STATIC_FUNCTION_P (decl))
