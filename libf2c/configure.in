@@ -23,15 +23,20 @@ AC_INIT(libF77/Version.c)
 
 AC_REVISION(1.10)
 
-dnl Checks for programs.
-# For g77 we'll set CC to point at the built gcc, but this will get it into
-# the makefiles
-AC_PROG_CC
 dnl AC_C_CROSS
 dnl Gives misleading `(cached)' message from the check.
 if test "$CROSS";then
+  if test "$CC_FOR_TARGET"; then
+    CC="$CC_FOR_TARGET"
+  else
+    CC="../../xgcc -B../../xgcc/"
+  fi
   ac_cv_c_cross=yes
 else
+  dnl Checks for programs.
+  # For g77 we'll set CC to point at the built gcc, but this will get it into
+  # the makefiles
+  AC_PROG_CC
   ac_cv_c_cross=no
 fi
 

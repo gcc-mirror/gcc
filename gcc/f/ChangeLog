@@ -8,6 +8,15 @@ Fri Feb 20 10:11:20 1998  Craig Burley  <burley@gnu.org>
 
 Sun Jan 11 02:14:47 1998  Craig Burley  <burley@gnu.org>
 
+	Fix 970626-2.f by not doing most back-end processing
+	when current_function_decl is an ERROR_MARK, and by
+	making that the case when its type would be an ERROR_MARK:
+	* com.c (ffecom_start_progunit_, finish_function,
+	lang_printable_name, start_function,
+	ffecom_finish_symbol_transform_): Test for ERROR_MARK.
+	* std.c (ffestd_stmt_pass_): Don't do any downstream
+	processing if ERROR_MARK.
+
 	Support FORMAT(I<1+2>) (constant variable-FORMAT
 	expressions):
 	* bad.def (FFEBAD_FORMAT_VARIABLE): New diagnostic.
@@ -105,6 +114,22 @@ Sun Nov 30 22:22:22 1997  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_arglist_expr_): Pass null pointers for optional
 	args which aren't supplied.
+
+Sun Oct 26 02:36:21 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* com.c (lang_print_error_function): Fix to more
+	reliably notice when the diagnosed region changes.
+
+Sat Oct 25 23:43:36 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	Fix 950327-0.f:
+	* sta.c, sta.h (ffesta_outpooldisp): New function.
+	* std.c (ffestd_stmt_pass_): Don't kill NULL pool.
+	(ffestd_R842): If pool already preserved, save NULL
+	for pool, because it should be killed only once.
+
+	* malloc.c [MALLOC_DEBUG]: Put initializer for `name'
+	component in braces, to avoid compiler warning.
 
 Fri Oct 10 13:00:48 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
