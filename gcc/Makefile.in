@@ -123,8 +123,7 @@ BOOT_CFLAGS = -g -O2
 
 # Flags to determine code coverage. When coverage is disabled, this will
 # contain the optimization flags, as you normally want code coverage
-# without optimization. The -dumpbase $@ makes sure that the auxilary
-# files end up near the object files.
+# without optimization.
 COVERAGE_FLAGS = @coverage_flags@
 coverageexts = .{da,bbg}
 

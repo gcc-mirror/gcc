@@ -1600,7 +1600,7 @@ randomize (void)
       sprintf (random_seed, HOST_WIDE_INT_PRINT_HEX, value);
       flag_random_seed = random_seed;
     }
-  else
+  else if (!local_tick)
     local_tick = -1;
 }
 
