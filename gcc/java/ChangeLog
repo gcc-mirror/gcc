@@ -1,3 +1,8 @@
+2000-04-22  Tom Tromey  <tromey@cygnus.com>
+
+	* boehm.c (mark_reference_fields): Added `last_view_index'
+	argument.  Use DECL_FIELD_OFFSET to determine field's offset.
+
 Thu Apr 20 17:41:28 2000  Mo DeJong  <mdejong@cygnus.com>
 
 	* parse.h (INTERFACE_INNER_MODIFIERS): New macro.
