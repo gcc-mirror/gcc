@@ -1,3 +1,10 @@
+1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (version): Rename to gcc_version.
+	* configure.in (version): Likewise.
+	(gcc_version): Add code to use an option passed from parent configure.
+	* configure: Regenerate.
+
 1998-06-21  Dave Love  <d.love@dl.ac.uk>
 
 	* configure.in (version, target_alias): Define.
