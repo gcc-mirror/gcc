@@ -1,3 +1,15 @@
+2003-09-11  Peter Barada <peter@baradas.org>
+	    Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k.c (m68k_frame): Move before protos referencing it.
+	(m68k_save_reg): Add boolean parameter `interrupt_handler'.
+	(m68k_interrupt_function_p): New function.
+	(m68k_handle_fndecl_attribute): Ditto.
+	(m68k_compute_frame_layout): Ditto.
+	(m68k_attribute_table): Define back-end specific attributes.
+	(m68k_output_function_epilogue): Emit RTE instruction for interrupt
+	functions.
+
 2003-10-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* gengenrtl.c (find_formats, genheader): Make i an unsigned
