@@ -1,6 +1,7 @@
 Sat Dec 22 08:59:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* predict.c: Reformatting and minor cleanups.
+	* cfg.c, cfganal.c, cfgbuild.c: Likewise.
 
 	* expr.c (expand_expr, case ADDR_EXPR): Handling taking address of
 	SAVE_EXPR.
