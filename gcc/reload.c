@@ -4855,9 +4855,12 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels)
 	  if (reg_equiv_address[regno] != 0)
 	    {
 	      rtx tem = make_memloc (XEXP (x, 0), regno);
-	      /* First reload the memory location's address.  */
+	      /* First reload the memory location's address.
+		 We can't use ADDR_TYPE (type) here, because we need to
+		 write back the value after reading it, hence we actually
+		 need two registers.  */
 	      find_reloads_address (GET_MODE (tem), 0, XEXP (tem, 0),
-				    &XEXP (tem, 0), opnum, ADDR_TYPE (type),
+				    &XEXP (tem, 0), opnum, type,
 				    ind_levels);
 	      /* Put this inside a new increment-expression.  */
 	      x = gen_rtx (GET_CODE (x), GET_MODE (x), tem);
@@ -4924,9 +4927,12 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels)
 	     Note that this is actually conservative:  it would be slightly
 	     more efficient to use the value of SPILL_INDIRECT_LEVELS from
 	     reload1.c here.  */
+	  /* We can't use ADDR_TYPE (type) here, because we need to
+	     write back the value after reading it, hence we actually
+	     need two registers.  */
 	  find_reloads_address (GET_MODE (x), &XEXP (x, 0),
 				XEXP (XEXP (x, 0), 0), &XEXP (XEXP (x, 0), 0),
-				opnum, ADDR_TYPE (type), ind_levels);
+				opnum, type, ind_levels);
 
 	  reloadnum = push_reload (x, NULL_RTX, loc, NULL_PTR,
 				   (context
