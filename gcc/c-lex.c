@@ -29,12 +29,13 @@ Boston, MA 02111-1307, USA.  */
 #include "c-lex.h"
 #include "c-tree.h"
 #include "flags.h"
-#include "c-parse.h"
+#include "timevar.h"
 #include "c-pragma.h"
 #include "toplev.h"
 #include "intl.h"
 #include "ggc.h"
 #include "tm_p.h"
+#include "splay-tree.h"
 
 /* MULTIBYTE_CHARS support only works for native compilers.
    ??? Ideally what we want is to model widechar support after
@@ -51,35 +52,29 @@ Boston, MA 02111-1307, USA.  */
 #define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ((ENV_VALUE) = getenv (ENV_NAME))
 #endif
 
-#if USE_CPPLIB
 #include "cpplib.h"
+
+#if USE_CPPLIB
 extern cpp_reader  parse_in;
-extern cpp_options parse_options;
 #else
 /* Stream for reading from the input file.  */
 FILE *finput;
 #endif
 
-extern void yyprint			PARAMS ((FILE *, int, YYSTYPE));
+/* Private idea of the line number.  See discussion in c_lex().  */
+static int lex_lineno;
+
+/* We may keep statistics about how long which files took to compile.  */
+static int header_time, body_time;
+static splay_tree file_info_tree;
 
 /* Cause the `yydebug' variable to be defined.  */
 #define YYDEBUG 1
 
-#if USE_CPPLIB
-extern unsigned char *yy_cur, *yy_lim;
-extern enum cpp_token cpp_token;
+#if !USE_CPPLIB
 
-extern int yy_get_token ();
-
-#define GETC() (yy_cur < yy_lim ? *yy_cur++ : yy_get_token ())
-#define UNGETC(c) ((c) == EOF ? 0 : yy_cur--)
-
-#else /* ! USE_CPPLIB */
-
-#define GETC() getch ()
-#define UNGETC(c) put_back (c)
-
-struct putback_buffer {
+struct putback_buffer
+{
   unsigned char *buffer;
   int   buffer_size;
   int   index;
@@ -117,11 +112,10 @@ put_back (ch)
       putback.buffer[++putback.index] = ch;
     }
 }
-#endif /* ! USE_CPPLIB */
 
 int linemode;
 
-extern int yydebug;
+#endif
 
 /* File used for outputting assembler code.  */
 extern FILE *asm_out_file;
@@ -132,85 +126,69 @@ extern FILE *asm_out_file;
 /* Number of bytes in a wide character.  */
 #define WCHAR_BYTES (WCHAR_TYPE_SIZE / BITS_PER_UNIT)
 
+#if !USE_CPPLIB
 static int maxtoken;		/* Current nominal length of token buffer.  */
-char *token_buffer;	/* Pointer to token buffer.
-			   Actual allocated length is maxtoken + 2.
-			   This is not static because objc-parse.y uses it.  */
+static char *token_buffer;	/* Pointer to token buffer.
+				   Actual allocated length is maxtoken + 2. */
+#endif
 
-static int indent_level;        /* Number of { minus number of }. */
+int indent_level;        /* Number of { minus number of }. */
+int pending_lang_change; /* If we need to switch languages - C++ only */
+int c_header_level;	 /* depth in C headers - C++ only */
 
 /* Nonzero tells yylex to ignore \ in string constants.  */
 static int ignore_escape_flag;
 
-/* Nonzero if end-of-file has been seen on input.  */
-static int end_of_file;
+static const char *readescape	PARAMS ((const char *, const char *,
+					 unsigned int *));
+static const char *read_ucs 	PARAMS ((const char *, const char *,
+					 unsigned int *, int));
+static void parse_float		PARAMS ((PTR));
+static tree lex_number		PARAMS ((const char *, unsigned int));
+static tree lex_string		PARAMS ((const char *, unsigned int, int));
+static tree lex_charconst	PARAMS ((const char *, unsigned int, int));
+static void update_header_times	PARAMS ((const char *));
+static int dump_one_header	PARAMS ((splay_tree_node, void *));
 
-#ifdef HANDLE_GENERIC_PRAGMAS
-static int handle_generic_pragma	PARAMS ((int));
-#endif /* HANDLE_GENERIC_PRAGMAS */
-static int whitespace_cr		PARAMS ((int));
+#if !USE_CPPLIB
 static int skip_white_space		PARAMS ((int));
 static char *extend_token_buffer	PARAMS ((const char *));
-static int readescape			PARAMS ((int *));
-static void parse_float			PARAMS ((PTR));
 static void extend_token_buffer_to	PARAMS ((int));
 static int read_line_number		PARAMS ((int *));
-
-/* Do not insert generated code into the source, instead, include it.
-   This allows us to build gcc automatically even for targets that
-   need to add or modify the reserved keyword lists.  */
-#include "c-gperf.h"
-
-/* Return something to represent absolute declarators containing a *.
-   TARGET is the absolute declarator that the * contains.
-   TYPE_QUALS is a list of modifiers such as const or volatile
-   to apply to the pointer type, represented as identifiers.
+static void process_directive		PARAMS ((void));
+#else
+static void cb_ident		PARAMS ((cpp_reader *, const unsigned char *,
+					 unsigned int));
+static void cb_enter_file	PARAMS ((cpp_reader *));
+static void cb_leave_file	PARAMS ((cpp_reader *));
+static void cb_rename_file	PARAMS ((cpp_reader *));
+#endif
 
-   We return an INDIRECT_REF whose "contents" are TARGET
-   and whose type is the modifier list.  */
-
-tree
-make_pointer_declarator (type_quals, target)
-     tree type_quals, target;
-{
-  return build1 (INDIRECT_REF, type_quals, target);
-}
-
-void
-forget_protocol_qualifiers ()
-{
-  int i, n = sizeof wordlist / sizeof (struct resword);
-
-  for (i = 0; i < n; i++)
-    if ((int) wordlist[i].rid >= (int) RID_IN
-        && (int) wordlist[i].rid <= (int) RID_ONEWAY)
-      wordlist[i].name = "";
-}
-
-void
-remember_protocol_qualifiers ()
-{
-  int i, n = sizeof wordlist / sizeof (struct resword);
-
-  for (i = 0; i < n; i++)
-    if (wordlist[i].rid == RID_IN)
-      wordlist[i].name = "in";
-    else if (wordlist[i].rid == RID_OUT)
-      wordlist[i].name = "out";
-    else if (wordlist[i].rid == RID_INOUT)
-      wordlist[i].name = "inout";
-    else if (wordlist[i].rid == RID_BYCOPY)
-      wordlist[i].name = "bycopy";
-    else if (wordlist[i].rid == RID_BYREF)
-      wordlist[i].name = "byref";
-    else if (wordlist[i].rid == RID_ONEWAY)
-      wordlist[i].name = "oneway";
-}
 
 const char *
-init_parse (filename)
+init_c_lex (filename)
      const char *filename;
 {
+  struct c_fileinfo *toplevel;
+
+  /* Set up filename timing.  Must happen before cpp_start_read.  */
+  file_info_tree = splay_tree_new ((splay_tree_compare_fn)strcmp,
+				   0,
+				   (splay_tree_delete_value_fn)free);
+  toplevel = get_fileinfo ("<top level>");
+  if (flag_detailed_statistics)
+    {
+      header_time = 0;
+      body_time = get_run_time ();
+      toplevel->time = body_time;
+    }
+  
+#ifdef MULTIBYTE_CHARS
+  /* Change to the native locale for multibyte conversions.  */
+  setlocale (LC_CTYPE, "");
+  GET_ENVIRONMENT (literal_codeset, "LANG");
+#endif
+
 #if !USE_CPPLIB
   /* Open input file.  */
   if (filename == 0 || !strcmp (filename, "-"))
@@ -227,194 +205,97 @@ init_parse (filename)
   setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
 #endif
 #else /* !USE_CPPLIB */
-  parse_in.show_column = 1;
-  if (! cpp_start_read (&parse_in, filename))
+
+  parse_in.cb.ident = cb_ident;
+  parse_in.cb.enter_file = cb_enter_file;
+  parse_in.cb.leave_file = cb_leave_file;
+  parse_in.cb.rename_file = cb_rename_file;
+
+  /* Make sure parse_in.digraphs matches flag_digraphs.  */
+  CPP_OPTION (&parse_in, digraphs) = flag_digraphs;
+
+  if (! cpp_start_read (&parse_in, 0 /* no printer */, filename))
     abort ();
 
   if (filename == 0 || !strcmp (filename, "-"))
     filename = "stdin";
-
-  /* cpp_start_read always puts at least one line directive into the
-     token buffer.  We must arrange to read it out here. */
-  yy_cur = parse_in.token_buffer;
-  yy_lim = CPP_PWRITTEN (&parse_in);
-  cpp_token = CPP_DIRECTIVE;
 #endif
 
-  add_c_tree_codes ();
-  
-  init_lex ();
-  init_pragma ();
+#if !USE_CPPLIB
+  maxtoken = 40;
+  token_buffer = (char *) xmalloc (maxtoken + 2);
+#endif
+  /* Start it at 0, because check_newline is called at the very beginning
+     and will increment it to 1.  */
+  lineno = lex_lineno = 0;
 
   return filename;
 }
 
-void
-finish_parse ()
+struct c_fileinfo *
+get_fileinfo (name)
+     const char *name;
 {
-#if USE_CPPLIB
-  cpp_finish (&parse_in);
-  errorcount += parse_in.errors;
-#else
-  fclose (finput);
-#endif
+  splay_tree_node n;
+  struct c_fileinfo *fi;
+
+  n = splay_tree_lookup (file_info_tree, (splay_tree_key) name);
+  if (n)
+    return (struct c_fileinfo *) n->value;
+
+  fi = (struct c_fileinfo *) xmalloc (sizeof (struct c_fileinfo));
+  fi->time = 0;
+  fi->interface_only = 0;
+  fi->interface_unknown = 1;
+  splay_tree_insert (file_info_tree, (splay_tree_key) name,
+		     (splay_tree_value) fi);
+  return fi;
 }
 
-void
-init_lex ()
+static void
+update_header_times (name)
+     const char *name;
 {
-  /* Make identifier nodes long enough for the language-specific slots.  */
-  set_identifier_size (sizeof (struct lang_identifier));
-
-  /* Start it at 0, because check_newline is called at the very beginning
-     and will increment it to 1.  */
-  lineno = 0;
-
-#ifdef MULTIBYTE_CHARS
-  /* Change to the native locale for multibyte conversions.  */
-  setlocale (LC_CTYPE, "");
-  GET_ENVIRONMENT (literal_codeset, "LANG");
-#endif
-
-  maxtoken = 40;
-  token_buffer = (char *) xmalloc (maxtoken + 2);
-
-  ridpointers = (tree *) xcalloc ((int) RID_MAX, sizeof (tree));
-  ridpointers[(int) RID_INT] = get_identifier ("int");
-  ridpointers[(int) RID_CHAR] = get_identifier ("char");
-  ridpointers[(int) RID_VOID] = get_identifier ("void");
-  ridpointers[(int) RID_FLOAT] = get_identifier ("float");
-  ridpointers[(int) RID_DOUBLE] = get_identifier ("double");
-  ridpointers[(int) RID_SHORT] = get_identifier ("short");
-  ridpointers[(int) RID_LONG] = get_identifier ("long");
-  ridpointers[(int) RID_UNSIGNED] = get_identifier ("unsigned");
-  ridpointers[(int) RID_SIGNED] = get_identifier ("signed");
-  ridpointers[(int) RID_INLINE] = get_identifier ("inline");
-  ridpointers[(int) RID_CONST] = get_identifier ("const");
-  ridpointers[(int) RID_RESTRICT] = get_identifier ("restrict");
-  ridpointers[(int) RID_VOLATILE] = get_identifier ("volatile");
-  ridpointers[(int) RID_BOUNDED] = get_identifier ("__bounded");
-  ridpointers[(int) RID_UNBOUNDED] = get_identifier ("__unbounded");
-  ridpointers[(int) RID_AUTO] = get_identifier ("auto");
-  ridpointers[(int) RID_STATIC] = get_identifier ("static");
-  ridpointers[(int) RID_EXTERN] = get_identifier ("extern");
-  ridpointers[(int) RID_TYPEDEF] = get_identifier ("typedef");
-  ridpointers[(int) RID_REGISTER] = get_identifier ("register");
-  ridpointers[(int) RID_COMPLEX] = get_identifier ("complex");
-  ridpointers[(int) RID_ID] = get_identifier ("id");
-  ridpointers[(int) RID_IN] = get_identifier ("in");
-  ridpointers[(int) RID_OUT] = get_identifier ("out");
-  ridpointers[(int) RID_INOUT] = get_identifier ("inout");
-  ridpointers[(int) RID_BYCOPY] = get_identifier ("bycopy");
-  ridpointers[(int) RID_BYREF] = get_identifier ("byref");
-  ridpointers[(int) RID_ONEWAY] = get_identifier ("oneway");
-  forget_protocol_qualifiers();
-
-  /* Some options inhibit certain reserved words.
-     Clear those words out of the hash table so they won't be recognized.  */
-#define UNSET_RESERVED_WORD(STRING) \
-  do { struct resword *s = is_reserved_word (STRING, sizeof (STRING) - 1); \
-       if (s) s->name = ""; } while (0)
-
-  if (! doing_objc_thang)
-    UNSET_RESERVED_WORD ("id");
-
-  if (flag_traditional)
+  /* Changing files again.  This means currently collected time
+     is charged against header time, and body time starts back at 0.  */
+  if (flag_detailed_statistics)
     {
-      UNSET_RESERVED_WORD ("const");
-      UNSET_RESERVED_WORD ("restrict");
-      UNSET_RESERVED_WORD ("volatile");
-      UNSET_RESERVED_WORD ("typeof");
-      UNSET_RESERVED_WORD ("signed");
-      UNSET_RESERVED_WORD ("inline");
-      UNSET_RESERVED_WORD ("complex");
-    }
-  else if (!flag_isoc99)
-    UNSET_RESERVED_WORD ("restrict");
-
-  if (flag_no_asm)
-    {
-      UNSET_RESERVED_WORD ("asm");
-      UNSET_RESERVED_WORD ("typeof");
-      if (! flag_isoc99)
-	UNSET_RESERVED_WORD ("inline");
-      UNSET_RESERVED_WORD ("complex");
+      int this_time = get_run_time ();
+      struct c_fileinfo *file = get_fileinfo (name);
+      header_time += this_time - body_time;
+      file->time += this_time - body_time;
+      body_time = this_time;
     }
 }
-
-void
-reinit_parse_for_function ()
-{
-}
-
-/* Function used when yydebug is set, to print a token in more detail.  */
-
-void
-yyprint (file, yychar, yylval)
-     FILE *file;
-     int yychar;
-     YYSTYPE yylval;
-{
-  tree t;
-  switch (yychar)
-    {
-    case IDENTIFIER:
-    case TYPENAME:
-    case OBJECTNAME:
-      t = yylval.ttype;
-      if (IDENTIFIER_POINTER (t))
-	fprintf (file, " `%s'", IDENTIFIER_POINTER (t));
-      break;
-
-    case CONSTANT:
-      t = yylval.ttype;
-      if (TREE_CODE (t) == INTEGER_CST)
-	fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == 64
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		 " 0x%x%016x",
-#else
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-		 " 0x%lx%016lx",
-#else
-		 " 0x%llx%016llx",
-#endif
-#endif
-#else
-#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
-		 " 0x%lx%08lx",
-#else
-		 " 0x%x%08x",
-#endif
-#endif
-		 TREE_INT_CST_HIGH (t), TREE_INT_CST_LOW (t));
-      break;
-    }
-}
-
-/* Iff C is a carriage return, warn about it - if appropriate -
-   and return nonzero.  */
 
 static int
-whitespace_cr (c)
-     int c;
+dump_one_header (n, dummy)
+     splay_tree_node n;
+     void *dummy ATTRIBUTE_UNUSED;
 {
-  static int newline_warning = 0;
-
-  if (c == '\r')
-    {
-      /* ANSI C says the effects of a carriage return in a source file
-	 are undefined.  */
-      if (pedantic && !newline_warning)
-	{
-	  warning ("carriage return in source file");
-	  warning ("(we only warn about the first carriage return)");
-	  newline_warning = 1;
-	}
-      return 1;
-    }
+  print_time ((const char *) n->key,
+	      ((struct c_fileinfo *) n->value)->time);
   return 0;
 }
+
+void
+dump_time_statistics ()
+{
+  struct c_fileinfo *file = get_fileinfo (input_filename);
+  int this_time = get_run_time ();
+  file->time += this_time - body_time;
+
+  fprintf (stderr, "\n******\n");
+  print_time ("header files (total)", header_time);
+  print_time ("main file (total)", this_time - body_time);
+  fprintf (stderr, "ratio = %g : 1\n",
+	   (double)header_time / (double)(this_time - body_time));
+  fprintf (stderr, "\n******\n");
+
+  splay_tree_foreach (file_info_tree, dump_one_header, 0);
+}
+
+#if !USE_CPPLIB
 
 /* If C is not whitespace, return C.
    Otherwise skip whitespace and return first nonwhite char read.  */
@@ -427,46 +308,29 @@ skip_white_space (c)
     {
       switch (c)
 	{
-	  /* We don't recognize comments here, because
-	     cpp output can include / and * consecutively as operators.
-	     Also, there's no need, since cpp removes all comments.  */
+	  /* There is no need to process comments, backslash-newline,
+             or \r here.  None can occur in the output of cpp.  */
 
 	case '\n':
 	  if (linemode)
 	    {
-	      UNGETC (c);
+	      put_back (c);
 	      return EOF;
 	    }
 	  c = check_newline ();
 	  break;
 
+	  /* Per C99, horizontal whitespace is just these four characters.  */
 	case ' ':
 	case '\t':
 	case '\f':
 	case '\v':
-	case '\b':
-#if USE_CPPLIB
-	  /* While processing a # directive we don't get CPP_HSPACE
-	     tokens, so we also need to handle whitespace the normal way.  */
-	  if (cpp_token == CPP_HSPACE)
-	    c = yy_get_token ();
-	  else
-#endif
-	    c = GETC();
-	  break;
-
-	case '\r':
-	  whitespace_cr (c);
-	  c = GETC();
+	    c = getch ();
 	  break;
 
 	case '\\':
-	  c = GETC();
-	  if (c == '\n')
-	    lineno++;
-	  else
-	    error ("stray '\\' in program");
-	  c = GETC();
+	  error ("stray '\\' in program");
+	  c = getch ();
 	  break;
 
 	default:
@@ -482,9 +346,9 @@ position_after_white_space ()
 {
   register int c;
 
-  c = GETC();
+  c = getch ();
 
-  UNGETC (skip_white_space (c));
+  put_back (skip_white_space (c));
 }
 
 /* Make the token buffer longer, preserving the data in it.
@@ -511,183 +375,132 @@ extend_token_buffer (p)
   return token_buffer + offset;
 }
 
-#if defined HANDLE_PRAGMA
-/* Local versions of these macros, that can be passed as function pointers.  */
-static int
-pragma_getc ()
-{
-  return GETC ();
-}
-
-static void
-pragma_ungetc (arg)
-     int arg;
-{
-  UNGETC (arg);
-}
-#endif
 
 static int
 read_line_number (num)
      int *num;
 {
-  register int token = yylex ();
+  tree value;
+  enum cpp_ttype token = c_lex (&value);
 
-  if (token == CONSTANT
-      && TREE_CODE (yylval.ttype) == INTEGER_CST)
+  if (token == CPP_NUMBER && TREE_CODE (value) == INTEGER_CST)
     {
-      *num = TREE_INT_CST_LOW (yylval.ttype);
+      *num = TREE_INT_CST_LOW (value);
       return 1;
     }
   else
     {
-      if (token != END_OF_LINE)
+      if (token != CPP_EOF)
 	error ("invalid #-line");
       return 0;
     }
 }
-  
+
 /* At the beginning of a line, increment the line number
    and process any #-directive on this line.
    If the line is a #-directive, read the entire line and return a newline.
-   Otherwise, return the line's first non-whitespace character.
-
-   Note that in the case of USE_CPPLIB, we get the whole line as one
-   CPP_DIRECTIVE token.  */
+   Otherwise, return the line's first non-whitespace character.  */
 
 int
 check_newline ()
 {
   register int c;
-  register int token;
+
+  /* Loop till we get a nonblank, non-directive line.  */
+  for (;;)
+    {
+      /* Read first nonwhite char on the line.  */
+      do
+	c = getch ();
+      while (c == ' ' || c == '\t');
+
+      lex_lineno++;
+      if (c == '#')
+	{
+	  process_directive ();
+	  return '\n';
+	}
+
+      else if (c != '\n')
+	break;
+    }
+  return c;
+}
+
+static void
+process_directive ()
+{
+  enum cpp_ttype token;
+  tree value;
   int saw_line;
   enum { act_none, act_push, act_pop } action;
-  int old_lineno, action_number, l;
-
- restart:
-  /* Read first nonwhite char on the line.  */
-
-#ifdef USE_CPPLIB
-  c = GETC ();
-  /* In some cases where we're leaving an include file, we can get multiple
-     CPP_HSPACE tokens in a row, so we need to loop.  */
-  while (cpp_token == CPP_HSPACE)
-    c = yy_get_token ();
-#else
-  do
-    c = GETC ();
-  while (c == ' ' || c == '\t');
+  int action_number, l;
+  char *new_file;
+#ifndef NO_IMPLICIT_EXTERN_C
+  int entering_c_header;
 #endif
-
-  lineno++;
-
-  if (c != '#')
-    {
-      /* Sequences of multiple newlines are very common; optimize them.  */
-      if (c == '\n')
-	goto restart;
-
-      /* If not #, return it so caller will use it.  */
-      return c;
-    }
-
+  
   /* Don't read beyond this line.  */
   saw_line = 0;
   linemode = 1;
   
-#if USE_CPPLIB
-  if (cpp_token == CPP_VSPACE)
-    {
-      /* Format is "<space> <line number> <filename> <newline>".
-	 Only the line number is interesting, and even that
-	 we can get more efficiently than scanning the line.  */
-      yy_cur = yy_lim - 1;
-      lineno = parse_in.lineno - 1;
-      goto skipline;
-    }
-#endif
+  token = c_lex (&value);
 
-  token = yylex ();
-
-  if (token == IDENTIFIER)
+  if (token == CPP_NAME)
     {
       /* If a letter follows, then if the word here is `line', skip
 	 it and ignore it; otherwise, ignore the line, with an error
 	 if the word isn't `pragma'.  */
 
-      const char *name = IDENTIFIER_POINTER (yylval.ttype);
+      const char *name = IDENTIFIER_POINTER (value);
 
       if (!strcmp (name, "pragma"))
 	{
-	  token = yylex ();
-	  if (token != IDENTIFIER
-	      || TREE_CODE (yylval.ttype) != IDENTIFIER_NODE)
-	    goto skipline;
+	  dispatch_pragma ();
+	  goto skipline;
 
+#if 0
 #ifdef HANDLE_PRAGMA
 	  /* We invoke HANDLE_PRAGMA before HANDLE_GENERIC_PRAGMAS
 	     (if both are defined), in order to give the back
 	     end a chance to override the interpretation of
 	     SYSV style pragmas.  */
-	  if (HANDLE_PRAGMA (pragma_getc, pragma_ungetc,
-			     IDENTIFIER_POINTER (yylval.ttype)))
+	  if (HANDLE_PRAGMA (getch, put_back, IDENTIFIER_POINTER (value)))
 	    goto skipline;
 #endif /* HANDLE_PRAGMA */
-	      
-#ifdef HANDLE_GENERIC_PRAGMAS
-	  if (handle_generic_pragma (token))
-	    goto skipline;
-#endif /* HANDLE_GENERIC_PRAGMAS */
-
-	  /* Issue a warning message if we have been asked to do so.
-	     Ignoring unknown pragmas in system header file unless
-	     an explcit -Wunknown-pragmas has been given. */
-	  if (warn_unknown_pragmas > 1
-	      || (warn_unknown_pragmas && ! in_system_header))
-	    warning ("ignoring pragma: %s", token_buffer);
-
-	  goto skipline;
+#endif
 	}
       else if (!strcmp (name, "define"))
 	{
-	  debug_define (lineno, GET_DIRECTIVE_LINE ());
+	  debug_define (lex_lineno, GET_DIRECTIVE_LINE ());
 	  goto skipline;
 	}
       else if (!strcmp (name, "undef"))
 	{
-	  debug_undef (lineno, GET_DIRECTIVE_LINE ());
+	  debug_undef (lex_lineno, GET_DIRECTIVE_LINE ());
 	  goto skipline;
 	}
       else if (!strcmp (name, "line"))
 	{
 	  saw_line = 1;
-	  token = yylex ();
+	  token = c_lex (&value);
 	  goto linenum;
 	}
       else if (!strcmp (name, "ident"))
 	{
-	  /* #ident.  The pedantic warning is now in cpp.  */
+	  /* #ident.  We expect a string constant here.
+	     The pedantic warning and syntax error are now in cpp.  */
 
-	  /* Here we have just seen `#ident '.
-	     A string constant should follow.  */
-
-	  token = yylex ();
-	  if (token == END_OF_LINE)
+	  token = c_lex (&value);
+	  if (token != CPP_STRING || TREE_CODE (value) != STRING_CST)
 	    goto skipline;
-	  if (token != STRING
-	      || TREE_CODE (yylval.ttype) != STRING_CST)
-	    {
-	      error ("invalid #ident");
-	      goto skipline;
-	    }
 
+#ifdef ASM_OUTPUT_IDENT
 	  if (! flag_no_ident)
 	    {
-#ifdef ASM_OUTPUT_IDENT
-	      ASM_OUTPUT_IDENT (asm_out_file,
-				TREE_STRING_POINTER (yylval.ttype));
-#endif
+	      ASM_OUTPUT_IDENT (asm_out_file, TREE_STRING_POINTER (value));
 	    }
+#endif
 
 	  /* Skip the rest of this line.  */
 	  goto skipline;
@@ -699,15 +512,14 @@ check_newline ()
 
   /* If the # is the only nonwhite char on the line,
      just ignore it.  Check the new newline.  */
-  if (token == END_OF_LINE)
+  if (token == CPP_EOF)
     goto skipline;
 
 linenum:
   /* Here we have either `#line' or `# <nonletter>'.
      In either case, it should be a line number; a digit should follow.  */
 
-  if (token != CONSTANT
-      || TREE_CODE (yylval.ttype) != INTEGER_CST)
+  if (token != CPP_NUMBER || TREE_CODE (value) != INTEGER_CST)
     {
       error ("invalid #-line");
       goto skipline;
@@ -716,7 +528,7 @@ linenum:
   /* subtract one, because it is the following line that
      gets the specified number */
 
-  l = TREE_INT_CST_LOW (yylval.ttype) - 1;
+  l = TREE_INT_CST_LOW (value) - 1;
 
   /* More follows: it must be a string constant (filename).
      It would be neat to use cpplib to quickly process the string, but
@@ -732,32 +544,30 @@ linenum:
     }
 
   /* Read the string constant.  */
-  token = yylex ();
+  token = c_lex (&value);
 
   ignore_escape_flag = 0;
 
-  if (token == END_OF_LINE)
+  if (token == CPP_EOF)
     {
       /* No more: store the line number and check following line.  */
-      lineno = l;
+      lex_lineno = l;
       goto skipline;
     }
 
-  if (token != STRING || TREE_CODE (yylval.ttype) != STRING_CST)
+  if (token != CPP_STRING || TREE_CODE (value) != STRING_CST)
     {
       error ("invalid #line");
       goto skipline;
     }
 
-  input_filename = TREE_STRING_POINTER (yylval.ttype);
+  new_file = TREE_STRING_POINTER (value);
 
   if (main_input_filename == 0)
-    main_input_filename = input_filename;
+    main_input_filename = new_file;
 
-  old_lineno = lineno;
   action = act_none;
   action_number = 0;
-  lineno = l;
 
   /* Each change of file name
      reinitializes whether we are now in a system header.  */
@@ -789,112 +599,281 @@ linenum:
       in_system_header = 1;
       read_line_number (&action_number);
     }
+#ifndef NO_IMPLICIT_EXTERN_C
+  if (action_number == 4)
+    {
+      /* `4' after file name means this is a C header file.  */
+      entering_c_header = 1;
+      read_line_number (&action_number);
+    }
+#endif
 
   /* Do the actions implied by the preceding numbers.  */
-
   if (action == act_push)
     {
-      /* Pushing to a new file.  */
-      struct file_stack *p
-	= (struct file_stack *) xmalloc (sizeof (struct file_stack));
-      input_file_stack->line = old_lineno;
-      p->next = input_file_stack;
-      p->name = input_filename;
-      p->indent_level = indent_level;
-      input_file_stack = p;
-      input_file_stack_tick++;
+      lineno = lex_lineno;
+      push_srcloc (input_filename, 1);
+      input_file_stack->indent_level = indent_level;
       debug_start_source_file (input_filename);
+#ifndef NO_IMPLICIT_EXTERN_C
+      if (c_header_level)
+	++c_header_level;
+      else if (entering_c_header)
+	{
+	  c_header_level = 1;
+	  ++pending_lang_change;
+	}
+#endif
     }
   else if (action == act_pop)
     {
       /* Popping out of a file.  */
       if (input_file_stack->next)
 	{
-	  struct file_stack *p = input_file_stack;
-	  if (indent_level != p->indent_level)
+#ifndef NO_IMPLICIT_EXTERN_C
+	  if (c_header_level && --c_header_level == 0)
+	    {
+	      if (entering_c_header)
+		warning ("badly nested C headers from preprocessor");
+	      --pending_lang_change;
+	    }
+#endif
+#if 0
+	  if (indent_level != input_file_stack->indent_level)
 	    {
 	      warning_with_file_and_line
-		(p->name, old_lineno,
-		 "This file contains more `%c's than `%c's.",
-		 indent_level > p->indent_level ? '{' : '}',
-		 indent_level > p->indent_level ? '}' : '{');
+		(input_filename, lex_lineno,
+		 "This file contains more '%c's than '%c's.",
+		 indent_level > input_file_stack->indent_level ? '{' : '}',
+		 indent_level > input_file_stack->indent_level ? '}' : '{');
 	    }
-	  input_file_stack = p->next;
-	  free (p);
-	  input_file_stack_tick++;
+#endif
+	  pop_srcloc ();
 	  debug_end_source_file (input_file_stack->line);
 	}
       else
 	error ("#-lines for entering and leaving files don't match");
     }
 
-  /* Now that we've pushed or popped the input stack,
-     update the name in the top element.  */
-  if (input_file_stack)
-    input_file_stack->name = input_filename;
+  update_header_times (new_file);
+
+  input_filename = new_file;
+  lex_lineno = l;
+
+  /* Hook for C++.  */
+  extract_interface_info ();
 
   /* skip the rest of this line.  */
  skipline:
   linemode = 0;
-  end_of_file = 0;
 
-  do
-    c = GETC();
-  while (c != '\n' && c != EOF);
-  return c;
+  while (getch () != '\n');
 }
-
-#ifdef HANDLE_GENERIC_PRAGMAS
+#else /* USE_CPPLIB */
 
-/* Handle a #pragma directive.
-   TOKEN is the token we read after `#pragma'.  Processes the entire input
-   line and return non-zero iff the pragma has been successfully parsed.  */
+/* Not yet handled: #pragma, #define, #undef.
+   No need to deal with linemarkers under normal conditions.  */
 
-/* This function has to be in this file, in order to get at
-   the token types.  */
-
-static int
-handle_generic_pragma (token)
-     register int token;
+static void
+cb_ident (pfile, str, len)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     const unsigned char *str;
+     unsigned int len;
 {
-  for (;;)
+#ifdef ASM_OUTPUT_IDENT
+  if (! flag_no_ident)
     {
-      switch (token)
+      /* Convert escapes in the string.  */
+      tree value = lex_string ((const char *)str, len, 0);
+      ASM_OUTPUT_IDENT (asm_out_file, TREE_STRING_POINTER (value));
+    }
+#endif
+}
+
+static void
+cb_enter_file (pfile)
+     cpp_reader *pfile;
+{
+  cpp_buffer *ip = CPP_BUFFER (pfile);
+  /* Bleah, need a better interface to this.  */
+  const char *flags = cpp_syshdr_flags (pfile, ip);
+
+  /* Mustn't stack the main buffer on the input stack.  (Ick.)  */
+  if (ip->prev)
+    {
+      lex_lineno = lineno = ip->prev->lineno - 1;
+      push_srcloc (ggc_alloc_string (ip->nominal_fname, -1), 1);
+      input_file_stack->indent_level = indent_level;
+      debug_start_source_file (ip->nominal_fname);
+    }
+  else
+    lex_lineno = 1;
+
+  update_header_times (ip->nominal_fname);
+
+  /* Hook for C++.  */
+  extract_interface_info ();
+
+  in_system_header = (flags[0] != 0);
+#ifndef NO_IMPLICIT_EXTERN_C
+  if (c_header_level)
+    ++c_header_level;
+  else if (flags[2] != 0)
+    {
+      c_header_level = 1;
+      ++pending_lang_change;
+    }
+#endif
+}
+
+static void
+cb_leave_file (pfile)
+     cpp_reader *pfile;
+{
+  /* Bleah, need a better interface to this.  */
+  const char *flags = cpp_syshdr_flags (pfile, CPP_BUFFER (pfile));
+#if 0
+  if (indent_level != input_file_stack->indent_level)
+    {
+      warning_with_file_and_line
+	(input_filename, lex_lineno,
+	 "This file contains more '%c's than '%c's.",
+	 indent_level > input_file_stack->indent_level ? '{' : '}',
+	 indent_level > input_file_stack->indent_level ? '}' : '{');
+    }
+#endif
+  /* We get called for the main buffer, but we mustn't pop it.  */
+  if (input_file_stack->next)
+    pop_srcloc ();
+  in_system_header = (flags[0] != 0);
+#ifndef NO_IMPLICIT_EXTERN_C
+  if (c_header_level && --c_header_level == 0)
+    {
+      if (flags[2] != 0)
+	warning ("badly nested C headers from preprocessor");
+      --pending_lang_change;
+    }
+#endif
+  lex_lineno = CPP_BUFFER (pfile)->lineno;
+  debug_end_source_file (input_file_stack->line);
+
+  update_header_times (input_file_stack->name);
+  /* Hook for C++.  */
+  extract_interface_info ();
+}
+
+static void
+cb_rename_file (pfile)
+     cpp_reader *pfile;
+{
+  cpp_buffer *ip = CPP_BUFFER (pfile);
+  /* Bleah, need a better interface to this.  */
+  const char *flags = cpp_syshdr_flags (pfile, ip);
+  input_filename = ggc_alloc_string (ip->nominal_fname, -1);
+  lex_lineno = ip->lineno;
+  in_system_header = (flags[0] != 0);
+
+  update_header_times (ip->nominal_fname);
+  /* Hook for C++.  */
+  extract_interface_info ();
+}
+#endif /* USE_CPPLIB */
+
+/* Parse a '\uNNNN' or '\UNNNNNNNN' sequence.
+
+   [lex.charset]: The character designated by the universal-character-name 
+   \UNNNNNNNN is that character whose character short name in ISO/IEC 10646
+   is NNNNNNNN; the character designated by the universal-character-name
+   \uNNNN is that character whose character short name in ISO/IEC 10646 is
+   0000NNNN. If the hexadecimal value for a universal character name is
+   less than 0x20 or in the range 0x7F-0x9F (inclusive), or if the
+   universal character name designates a character in the basic source
+   character set, then the program is ill-formed.
+
+   We assume that wchar_t is Unicode, so we don't need to do any
+   mapping.  Is this ever wrong?  */
+
+static const char *
+read_ucs (p, limit, cptr, length)
+     const char *p;
+     const char *limit;
+     unsigned int *cptr;
+     int length;
+{
+  unsigned int code = 0;
+  int c;
+
+  for (; length; --length)
+    {
+      if (p >= limit)
 	{
-	case IDENTIFIER:
-	case TYPENAME:
-	case STRING:
-	case CONSTANT:
-	  handle_pragma_token (token_buffer, yylval.ttype);
+	  error ("incomplete universal-character-name");
 	  break;
-
-	case END_OF_LINE:
-	  return handle_pragma_token (NULL_PTR, NULL_TREE);
-
-	default:
-	  handle_pragma_token (token_buffer, NULL);
 	}
 
-      token = yylex ();
+      c = *p++;
+      if (! ISXDIGIT (c))
+	{
+	  error ("non hex digit '%c' in universal-character-name", c);
+	  p--;
+	  break;
+	}
+
+      code <<= 4;
+      if (c >= 'a' && c <= 'f')
+	code += c - 'a' + 10;
+      if (c >= 'A' && c <= 'F')
+	code += c - 'A' + 10;
+      if (c >= '0' && c <= '9')
+	code += c - '0';
     }
+
+#ifdef TARGET_EBCDIC
+  sorry ("universal-character-name on EBCDIC target");
+  *cptr = 0x3f;  /* EBCDIC invalid character */
+  return p;
+#endif
+
+  if (code > 0x9f && !(code & 0x80000000))
+    /* True extended character, OK.  */;
+  else if (code >= 0x20 && code < 0x7f)
+    {
+      /* ASCII printable character.  The C character set consists of all of
+	 these except $, @ and `.  We use hex escapes so that this also
+	 works with EBCDIC hosts.  */
+      if (code != 0x24 && code != 0x40 && code != 0x60)
+	error ("universal-character-name used for '%c'", code);
+    }
+  else
+    error ("invalid universal-character-name");
+
+  *cptr = code;
+  return p;
 }
 
-#endif /* HANDLE_GENERIC_PRAGMAS */
-
-#define ENDFILE -1  /* token that represents end-of-file */
+/* Read an escape sequence and write its character equivalent into *CPTR.
+   P is the input pointer, which is just after the backslash.  LIMIT
+   is how much text we have.
+   Returns the updated input pointer.  */
 
-/* Read an escape sequence, returning its equivalent as a character,
-   or store 1 in *ignore_ptr if it is backslash-newline.  */
-
-static int
-readescape (ignore_ptr)
-     int *ignore_ptr;
+static const char *
+readescape (p, limit, cptr)
+     const char *p;
+     const char *limit;
+     unsigned int *cptr;
 {
-  register int c = GETC();
-  register int code;
-  register unsigned count;
+  unsigned int c, code, count;
   unsigned firstdig = 0;
   int nonnull;
+
+  if (p == limit)
+    {
+      /* cpp has already issued an error for this.  */
+      *cptr = 0;
+      return p;
+    }
+
+  c = *p++;
 
   switch (c)
     {
@@ -903,17 +882,20 @@ readescape (ignore_ptr)
 	warning ("the meaning of `\\x' varies with -traditional");
 
       if (flag_traditional)
-	return c;
+	{
+	  *cptr = 'x';
+	  return p;
+	}
 
       code = 0;
       count = 0;
       nonnull = 0;
-      while (1)
+      while (p < limit)
 	{
-	  c = GETC();
+	  c = *p++;
 	  if (! ISXDIGIT (c))
 	    {
-	      UNGETC (c);
+	      p--;
 	      break;
 	    }
 	  code *= 16;
@@ -934,7 +916,8 @@ readescape (ignore_ptr)
       if (! nonnull)
 	{
 	  warning ("\\x used with no following hex digits");
-	  return 'x';
+	  *cptr = 'x';
+	  return p;
 	}
       else if (count == 0)
 	/* Digits are all 0's.  Ok.  */
@@ -946,108 +929,390 @@ readescape (ignore_ptr)
 			    - (count - 1) * 4))
 		       <= firstdig)))
 	pedwarn ("hex escape out of range");
-      return code;
+      *cptr = code;
+      return p;
 
     case '0':  case '1':  case '2':  case '3':  case '4':
     case '5':  case '6':  case '7':
       code = 0;
-      count = 0;
-      while ((c <= '7') && (c >= '0') && (count++ < 3))
+      for (count = 0; count < 3; count++)
 	{
+	  if (c < '0' || c > '7')
+	    {
+	      p--;
+	      break;
+	    }
 	  code = (code * 8) + (c - '0');
-	  c = GETC();
+	  if (p == limit)
+	    break;
+	  c = *p++;
 	}
-      UNGETC (c);
-      return code;
 
-    case '\\': case '\'': case '"':
-      return c;
+      if (count == 3)
+	p--;
 
-    case '\n':
-      lineno++;
-      *ignore_ptr = 1;
-      return 0;
+      *cptr = code;
+      return p;
 
-    case 'n':
-      return TARGET_NEWLINE;
+    case '\\': case '\'': case '"': case '?':
+      *cptr = c;
+      return p;
 
-    case 't':
-      return TARGET_TAB;
-
-    case 'r':
-      return TARGET_CR;
-
-    case 'f':
-      return TARGET_FF;
-
-    case 'b':
-      return TARGET_BS;
-
+    case 'n': *cptr = TARGET_NEWLINE;	return p;
+    case 't': *cptr = TARGET_TAB;	return p;
+    case 'r': *cptr = TARGET_CR;	return p;
+    case 'f': *cptr = TARGET_FF;	return p;
+    case 'b': *cptr = TARGET_BS;	return p;
+    case 'v': *cptr = TARGET_VT;	return p;
     case 'a':
       if (warn_traditional && !in_system_header)
-	warning ("the meaning of `\\a' varies with -traditional");
+	warning ("the meaning of '\\a' varies with -traditional");
+      *cptr = flag_traditional ? c : TARGET_BELL;
+      return p;
 
-      if (flag_traditional)
-	return c;
-      return TARGET_BELL;
+      /* Warnings and support checks handled by read_ucs().  */
+    case 'u': case 'U':
+      if (c_language != clk_cplusplus && !flag_isoc99)
+	break;
 
-    case 'v':
-#if 0 /* Vertical tab is present in common usage compilers.  */
-      if (flag_traditional)
-	return c;
-#endif
-      return TARGET_VT;
+      if (warn_traditional && !in_system_header)
+	warning ("the meaning of '\\%c' varies with -traditional", c);
 
-    case 'e':
-    case 'E':
+      return read_ucs (p, limit, cptr, c == 'u' ? 4 : 8);
+      
+    case 'e': case 'E':
       if (pedantic)
-	pedwarn ("non-ANSI-standard escape sequence, `\\%c'", c);
-      return TARGET_ESC;
+	pedwarn ("non-ISO-standard escape sequence, '\\%c'", c);
+      *cptr = TARGET_ESC; return p;
 
-    case '?':
-      return c;
-
-      /* `\(', etc, are used at beginning of line to avoid confusing Emacs.  */
-    case '(':
-    case '{':
-    case '[':
-      /* `\%' is used to prevent SCCS from getting confused.  */
-    case '%':
+      /* '\(', etc, are used at beginning of line to avoid confusing Emacs.
+	 '\%' is used to prevent SCCS from getting confused.  */
+    case '(': case '{': case '[': case '%':
       if (pedantic)
-	pedwarn ("unknown escape sequence `\\%c'", c);
-      return c;
+	pedwarn ("unknown escape sequence '\\%c'", c);
+      *cptr = c;
+      return p;
     }
-  if (ISGRAPH (c))
-    pedwarn ("unknown escape sequence `\\%c'", c);
-  else
-    pedwarn ("unknown escape sequence: `\\' followed by char code 0x%x", c);
-  return c;
-}
-
-void
-yyerror (msgid)
-     const char *msgid;
-{
-  const char *string = _(msgid);
 
-  /* We can't print string and character constants well
-     because the token_buffer contains the result of processing escapes.  */
-  if (end_of_file)
-    error ("%s at end of input", string);
-  else if (token_buffer[0] == 0)
-    error ("%s at null character", string);
-  else if (token_buffer[0] == '"')
-    error ("%s before string constant", string);
-  else if (token_buffer[0] == '\'')
-    error ("%s before character constant", string);
-  else if (!ISGRAPH(token_buffer[0]))
-    error ("%s before character 0%o", string, (unsigned char) token_buffer[0]);
+  if (ISGRAPH (c))
+    pedwarn ("unknown escape sequence '\\%c'", c);
   else
-    error ("%s before `%s'", string, token_buffer);
+    pedwarn ("unknown escape sequence: '\\' followed by char 0x%.2x", c);
+
+  *cptr = c;
+  return p;
 }
+
+#if 0 /* not yet */
+/* Returns nonzero if C is a universal-character-name.  Give an error if it
+   is not one which may appear in an identifier, as per [extendid].
+
+   Note that extended character support in identifiers has not yet been
+   implemented.  It is my personal opinion that this is not a desirable
+   feature.  Portable code cannot count on support for more than the basic
+   identifier character set.  */
+
+static inline int
+is_extended_char (c)
+     int c;
+{
+#ifdef TARGET_EBCDIC
+  return 0;
+#else
+  /* ASCII.  */
+  if (c < 0x7f)
+    return 0;
+
+  /* None of the valid chars are outside the Basic Multilingual Plane (the
+     low 16 bits).  */
+  if (c > 0xffff)
+    {
+      error ("universal-character-name '\\U%08x' not valid in identifier", c);
+      return 1;
+    }
+  
+  /* Latin */
+  if ((c >= 0x00c0 && c <= 0x00d6)
+      || (c >= 0x00d8 && c <= 0x00f6)
+      || (c >= 0x00f8 && c <= 0x01f5)
+      || (c >= 0x01fa && c <= 0x0217)
+      || (c >= 0x0250 && c <= 0x02a8)
+      || (c >= 0x1e00 && c <= 0x1e9a)
+      || (c >= 0x1ea0 && c <= 0x1ef9))
+    return 1;
+
+  /* Greek */
+  if ((c == 0x0384)
+      || (c >= 0x0388 && c <= 0x038a)
+      || (c == 0x038c)
+      || (c >= 0x038e && c <= 0x03a1)
+      || (c >= 0x03a3 && c <= 0x03ce)
+      || (c >= 0x03d0 && c <= 0x03d6)
+      || (c == 0x03da)
+      || (c == 0x03dc)
+      || (c == 0x03de)
+      || (c == 0x03e0)
+      || (c >= 0x03e2 && c <= 0x03f3)
+      || (c >= 0x1f00 && c <= 0x1f15)
+      || (c >= 0x1f18 && c <= 0x1f1d)
+      || (c >= 0x1f20 && c <= 0x1f45)
+      || (c >= 0x1f48 && c <= 0x1f4d)
+      || (c >= 0x1f50 && c <= 0x1f57)
+      || (c == 0x1f59)
+      || (c == 0x1f5b)
+      || (c == 0x1f5d)
+      || (c >= 0x1f5f && c <= 0x1f7d)
+      || (c >= 0x1f80 && c <= 0x1fb4)
+      || (c >= 0x1fb6 && c <= 0x1fbc)
+      || (c >= 0x1fc2 && c <= 0x1fc4)
+      || (c >= 0x1fc6 && c <= 0x1fcc)
+      || (c >= 0x1fd0 && c <= 0x1fd3)
+      || (c >= 0x1fd6 && c <= 0x1fdb)
+      || (c >= 0x1fe0 && c <= 0x1fec)
+      || (c >= 0x1ff2 && c <= 0x1ff4)
+      || (c >= 0x1ff6 && c <= 0x1ffc))
+    return 1;
+
+  /* Cyrillic */
+  if ((c >= 0x0401 && c <= 0x040d)
+      || (c >= 0x040f && c <= 0x044f)
+      || (c >= 0x0451 && c <= 0x045c)
+      || (c >= 0x045e && c <= 0x0481)
+      || (c >= 0x0490 && c <= 0x04c4)
+      || (c >= 0x04c7 && c <= 0x04c8)
+      || (c >= 0x04cb && c <= 0x04cc)
+      || (c >= 0x04d0 && c <= 0x04eb)
+      || (c >= 0x04ee && c <= 0x04f5)
+      || (c >= 0x04f8 && c <= 0x04f9))
+    return 1;
+
+  /* Armenian */
+  if ((c >= 0x0531 && c <= 0x0556)
+      || (c >= 0x0561 && c <= 0x0587))
+    return 1;
+
+  /* Hebrew */
+  if ((c >= 0x05d0 && c <= 0x05ea)
+      || (c >= 0x05f0 && c <= 0x05f4))
+    return 1;
+
+  /* Arabic */
+  if ((c >= 0x0621 && c <= 0x063a)
+      || (c >= 0x0640 && c <= 0x0652)
+      || (c >= 0x0670 && c <= 0x06b7)
+      || (c >= 0x06ba && c <= 0x06be)
+      || (c >= 0x06c0 && c <= 0x06ce)
+      || (c >= 0x06e5 && c <= 0x06e7))
+    return 1;
+
+  /* Devanagari */
+  if ((c >= 0x0905 && c <= 0x0939)
+      || (c >= 0x0958 && c <= 0x0962))
+    return 1;
+
+  /* Bengali */
+  if ((c >= 0x0985 && c <= 0x098c)
+      || (c >= 0x098f && c <= 0x0990)
+      || (c >= 0x0993 && c <= 0x09a8)
+      || (c >= 0x09aa && c <= 0x09b0)
+      || (c == 0x09b2)
+      || (c >= 0x09b6 && c <= 0x09b9)
+      || (c >= 0x09dc && c <= 0x09dd)
+      || (c >= 0x09df && c <= 0x09e1)
+      || (c >= 0x09f0 && c <= 0x09f1))
+    return 1;
+
+  /* Gurmukhi */
+  if ((c >= 0x0a05 && c <= 0x0a0a)
+      || (c >= 0x0a0f && c <= 0x0a10)
+      || (c >= 0x0a13 && c <= 0x0a28)
+      || (c >= 0x0a2a && c <= 0x0a30)
+      || (c >= 0x0a32 && c <= 0x0a33)
+      || (c >= 0x0a35 && c <= 0x0a36)
+      || (c >= 0x0a38 && c <= 0x0a39)
+      || (c >= 0x0a59 && c <= 0x0a5c)
+      || (c == 0x0a5e))
+    return 1;
+
+  /* Gujarati */
+  if ((c >= 0x0a85 && c <= 0x0a8b)
+      || (c == 0x0a8d)
+      || (c >= 0x0a8f && c <= 0x0a91)
+      || (c >= 0x0a93 && c <= 0x0aa8)
+      || (c >= 0x0aaa && c <= 0x0ab0)
+      || (c >= 0x0ab2 && c <= 0x0ab3)
+      || (c >= 0x0ab5 && c <= 0x0ab9)
+      || (c == 0x0ae0))
+    return 1;
+
+  /* Oriya */
+  if ((c >= 0x0b05 && c <= 0x0b0c)
+      || (c >= 0x0b0f && c <= 0x0b10)
+      || (c >= 0x0b13 && c <= 0x0b28)
+      || (c >= 0x0b2a && c <= 0x0b30)
+      || (c >= 0x0b32 && c <= 0x0b33)
+      || (c >= 0x0b36 && c <= 0x0b39)
+      || (c >= 0x0b5c && c <= 0x0b5d)
+      || (c >= 0x0b5f && c <= 0x0b61))
+    return 1;
+
+  /* Tamil */
+  if ((c >= 0x0b85 && c <= 0x0b8a)
+      || (c >= 0x0b8e && c <= 0x0b90)
+      || (c >= 0x0b92 && c <= 0x0b95)
+      || (c >= 0x0b99 && c <= 0x0b9a)
+      || (c == 0x0b9c)
+      || (c >= 0x0b9e && c <= 0x0b9f)
+      || (c >= 0x0ba3 && c <= 0x0ba4)
+      || (c >= 0x0ba8 && c <= 0x0baa)
+      || (c >= 0x0bae && c <= 0x0bb5)
+      || (c >= 0x0bb7 && c <= 0x0bb9))
+    return 1;
+
+  /* Telugu */
+  if ((c >= 0x0c05 && c <= 0x0c0c)
+      || (c >= 0x0c0e && c <= 0x0c10)
+      || (c >= 0x0c12 && c <= 0x0c28)
+      || (c >= 0x0c2a && c <= 0x0c33)
+      || (c >= 0x0c35 && c <= 0x0c39)
+      || (c >= 0x0c60 && c <= 0x0c61))
+    return 1;
+
+  /* Kannada */
+  if ((c >= 0x0c85 && c <= 0x0c8c)
+      || (c >= 0x0c8e && c <= 0x0c90)
+      || (c >= 0x0c92 && c <= 0x0ca8)
+      || (c >= 0x0caa && c <= 0x0cb3)
+      || (c >= 0x0cb5 && c <= 0x0cb9)
+      || (c >= 0x0ce0 && c <= 0x0ce1))
+    return 1;
+
+  /* Malayalam */
+  if ((c >= 0x0d05 && c <= 0x0d0c)
+      || (c >= 0x0d0e && c <= 0x0d10)
+      || (c >= 0x0d12 && c <= 0x0d28)
+      || (c >= 0x0d2a && c <= 0x0d39)
+      || (c >= 0x0d60 && c <= 0x0d61))
+    return 1;
+
+  /* Thai */
+  if ((c >= 0x0e01 && c <= 0x0e30)
+      || (c >= 0x0e32 && c <= 0x0e33)
+      || (c >= 0x0e40 && c <= 0x0e46)
+      || (c >= 0x0e4f && c <= 0x0e5b))
+    return 1;
+
+  /* Lao */
+  if ((c >= 0x0e81 && c <= 0x0e82)
+      || (c == 0x0e84)
+      || (c == 0x0e87)
+      || (c == 0x0e88)
+      || (c == 0x0e8a)
+      || (c == 0x0e0d)
+      || (c >= 0x0e94 && c <= 0x0e97)
+      || (c >= 0x0e99 && c <= 0x0e9f)
+      || (c >= 0x0ea1 && c <= 0x0ea3)
+      || (c == 0x0ea5)
+      || (c == 0x0ea7)
+      || (c == 0x0eaa)
+      || (c == 0x0eab)
+      || (c >= 0x0ead && c <= 0x0eb0)
+      || (c == 0x0eb2)
+      || (c == 0x0eb3)
+      || (c == 0x0ebd)
+      || (c >= 0x0ec0 && c <= 0x0ec4)
+      || (c == 0x0ec6))
+    return 1;
+
+  /* Georgian */
+  if ((c >= 0x10a0 && c <= 0x10c5)
+      || (c >= 0x10d0 && c <= 0x10f6))
+    return 1;
+
+  /* Hiragana */
+  if ((c >= 0x3041 && c <= 0x3094)
+      || (c >= 0x309b && c <= 0x309e))
+    return 1;
+
+  /* Katakana */
+  if ((c >= 0x30a1 && c <= 0x30fe))
+    return 1;
+
+  /* Bopmofo */
+  if ((c >= 0x3105 && c <= 0x312c))
+    return 1;
+
+  /* Hangul */
+  if ((c >= 0x1100 && c <= 0x1159)
+      || (c >= 0x1161 && c <= 0x11a2)
+      || (c >= 0x11a8 && c <= 0x11f9))
+    return 1;
+
+  /* CJK Unified Ideographs */
+  if ((c >= 0xf900 && c <= 0xfa2d)
+      || (c >= 0xfb1f && c <= 0xfb36)
+      || (c >= 0xfb38 && c <= 0xfb3c)
+      || (c == 0xfb3e)
+      || (c >= 0xfb40 && c <= 0xfb41)
+      || (c >= 0xfb42 && c <= 0xfb44)
+      || (c >= 0xfb46 && c <= 0xfbb1)
+      || (c >= 0xfbd3 && c <= 0xfd3f)
+      || (c >= 0xfd50 && c <= 0xfd8f)
+      || (c >= 0xfd92 && c <= 0xfdc7)
+      || (c >= 0xfdf0 && c <= 0xfdfb)
+      || (c >= 0xfe70 && c <= 0xfe72)
+      || (c == 0xfe74)
+      || (c >= 0xfe76 && c <= 0xfefc)
+      || (c >= 0xff21 && c <= 0xff3a)
+      || (c >= 0xff41 && c <= 0xff5a)
+      || (c >= 0xff66 && c <= 0xffbe)
+      || (c >= 0xffc2 && c <= 0xffc7)
+      || (c >= 0xffca && c <= 0xffcf)
+      || (c >= 0xffd2 && c <= 0xffd7)
+      || (c >= 0xffda && c <= 0xffdc)
+      || (c >= 0x4e00 && c <= 0x9fa5))
+    return 1;
+
+  error ("universal-character-name '\\u%04x' not valid in identifier", c);
+  return 1;
+#endif
+}
+
+/* Add the UTF-8 representation of C to the token_buffer.  */
+
+static void
+utf8_extend_token (c)
+     int c;
+{
+  int shift, mask;
+
+  if      (c <= 0x0000007f)
+    {
+      extend_token (c);
+      return;
+    }
+  else if (c <= 0x000007ff)
+    shift = 6, mask = 0xc0;
+  else if (c <= 0x0000ffff)
+    shift = 12, mask = 0xe0;
+  else if (c <= 0x001fffff)
+    shift = 18, mask = 0xf0;
+  else if (c <= 0x03ffffff)
+    shift = 24, mask = 0xf8;
+  else
+    shift = 30, mask = 0xfc;
+
+  extend_token (mask | (c >> shift));
+  do
+    {
+      shift -= 6;
+      extend_token ((unsigned char) (0x80 | (c >> shift)));
+    }
+  while (shift);
+}
+#endif
 
 #if 0
-
 struct try_type
 {
   tree *node_var;
@@ -1070,15 +1335,14 @@ struct try_type type_sequence[] =
 struct pf_args
 {
   /* Input */
+  const char *str;
+  int fflag;
+  int lflag;
   int base;
-  char * p;
-  /* I/O */
-  int c;
   /* Output */
-  int imag;
-  tree type;
   int conversion_errno;
   REAL_VALUE_TYPE value;
+  tree type;
 };
  
 static void
@@ -1086,154 +1350,137 @@ parse_float (data)
   PTR data;
 {
   struct pf_args * args = (struct pf_args *) data;
-  int fflag = 0, lflag = 0;
-  /* Copy token_buffer now, while it has just the number
-     and not the suffixes; once we add `f' or `i',
-     REAL_VALUE_ATOF may not work any more.  */
-  char *copy = (char *) alloca (args->p - token_buffer + 1);
-  bcopy (token_buffer, copy, args->p - token_buffer + 1);
-  args->imag = 0;
+  const char *typename;
+
   args->conversion_errno = 0;
   args->type = double_type_node;
-
-  while (1)
-    {
-      int lose = 0;
-
-      /* Read the suffixes to choose a data type.  */
-      switch (args->c)
-	{
-	case 'f': case 'F':
-	  if (fflag)
-	    error ("more than one `f' in numeric constant");
-	  else if (warn_traditional && !in_system_header)
-	    warning ("traditional C rejects the `%c' suffix", args->c);
-	  fflag = 1;
-	  break;
-
-	case 'l': case 'L':
-	  if (lflag)
-	    error ("more than one `l' in numeric constant");
-	  else if (warn_traditional && !in_system_header)
-	    warning ("traditional C rejects the `%c' suffix", args->c);
-	  lflag = 1;
-	  break;
-
-	case 'i': case 'I':
-	  if (args->imag)
-	    error ("more than one `i' or `j' in numeric constant");
-	  else if (pedantic)
-	    pedwarn ("ISO C forbids imaginary numeric constants");
-	  args->imag = 1;
-	  break;
-
-	default:
-	  lose = 1;
-	}
-
-      if (lose)
-	break;
-
-      if (args->p >= token_buffer + maxtoken - 3)
-	args->p = extend_token_buffer (args->p);
-      *(args->p++) = args->c;
-      *(args->p) = 0;
-      args->c = GETC();
-    }
+  typename = "double";
 
   /* The second argument, machine_mode, of REAL_VALUE_ATOF
      tells the desired precision of the binary result
      of decimal-to-binary conversion.  */
 
-  if (fflag)
+  if (args->fflag)
     {
-      if (lflag)
-	error ("both `f' and `l' in floating constant");
+      if (args->lflag)
+	error ("both 'f' and 'l' suffixes on floating constant");
 
       args->type = float_type_node;
-      errno = 0;
-      if (args->base == 16)
-	args->value = REAL_VALUE_HTOF (copy, TYPE_MODE (args->type));
-      else
-	args->value = REAL_VALUE_ATOF (copy, TYPE_MODE (args->type));
-      args->conversion_errno = errno;
-      /* A diagnostic is required here by some ANSI C testsuites.
-	 This is not pedwarn, because some people don't want
-	 an error for this.  */
-      if (REAL_VALUE_ISINF (args->value) && pedantic)
-	warning ("floating point number exceeds range of `float'");
+      typename = "float";
     }
-  else if (lflag)
+  else if (args->lflag)
     {
       args->type = long_double_type_node;
-      errno = 0;
-      if (args->base == 16)
-	args->value = REAL_VALUE_HTOF (copy, TYPE_MODE (args->type));
-      else
-	args->value = REAL_VALUE_ATOF (copy, TYPE_MODE (args->type));
-      args->conversion_errno = errno;
-      if (REAL_VALUE_ISINF (args->value) && pedantic)
-	warning ("floating point number exceeds range of `long double'");
+      typename = "long double";
     }
-  else
+  else if (flag_single_precision_constant)
     {
-      errno = 0;
-      if (flag_single_precision_constant)
-        args->type = float_type_node;
-      if (args->base == 16)
-	args->value = REAL_VALUE_HTOF (copy, TYPE_MODE (args->type));
-      else
-	args->value = REAL_VALUE_ATOF (copy, TYPE_MODE (args->type));
-      args->conversion_errno = errno;
-      if (REAL_VALUE_ISINF (args->value) && pedantic)
-	warning ("floating point number exceeds range of `double'");
+      args->type = float_type_node;
+      typename = "float";
     }
+
+  errno = 0;
+  if (args->base == 16)
+    args->value = REAL_VALUE_HTOF (args->str, TYPE_MODE (args->type));
+  else
+    args->value = REAL_VALUE_ATOF (args->str, TYPE_MODE (args->type));
+
+  args->conversion_errno = errno;
+  /* A diagnostic is required here by some ISO C testsuites.
+     This is not pedwarn, because some people don't want
+     an error for this.  */
+  if (REAL_VALUE_ISINF (args->value) && pedantic)
+    warning ("floating point number exceeds range of '%s'", typename);
 }
  
-/* Get the next character, staying within the current token if possible.
-   If we're lexing a token, we don't want to look beyond the end of the
-   token cpplib has prepared for us; otherwise, we end up reading in the
-   next token, which screws up feed_input.  So just return a null
-   character.  */
-
-static inline int token_getch PARAMS ((void));
-
-static inline int
-token_getch ()
-{
-#if USE_CPPLIB
-  if (yy_cur == yy_lim)
-    return '\0';
-#endif
-  return GETC ();
-}
-
-static inline void token_put_back PARAMS ((int));
-
-static inline void
-token_put_back (ch)
-     int ch;
-{
-#if USE_CPPLIB
-  if (ch == '\0')
-    return;
-#endif
-  UNGETC (ch);
-}
-
-/* Read a single token from the input stream, and assign it lexical
-   semantics.  */
-
 int
-yylex ()
+c_lex (value)
+     tree *value;
 {
-  register int c;
-  register char *p;
-  register int value;
+#if USE_CPPLIB
+  const cpp_token *tok;
+  enum cpp_ttype type;
+
+  retry:
+  timevar_push (TV_CPP);
+  tok = cpp_get_token (&parse_in);
+  timevar_pop (TV_CPP);
+
+  /* The C++ front end does horrible things with the current line
+     number.  To ensure an accurate line number, we must reset it
+     every time we return a token.  If we reset it from tok->line
+     every time, we'll get line numbers inside macros referring to the
+     macro definition; this is nice, but we don't want to change the
+     behavior until integrated mode is the only option.  So we keep our
+     own idea of the line number, and reset it from tok->line at each
+     new line (which never happens inside a macro).  */
+  if (tok->flags & BOL)
+    lex_lineno = tok->line;
+
+  *value = NULL_TREE;
+  lineno = lex_lineno;
+  type = tok->type;
+  switch (type)
+    {
+    case CPP_OPEN_BRACE:  indent_level++;  break;
+    case CPP_CLOSE_BRACE: indent_level--;  break;
+
+    /* Issue this error here, where we can get at tok->val.aux.  */
+    case CPP_OTHER:
+      if (ISGRAPH (tok->val.aux))
+	error ("stray '%c' in program", tok->val.aux);
+      else
+	error ("stray '\\%#o' in program", tok->val.aux);
+      goto retry;
+      
+    case CPP_DEFINED:
+      type = CPP_NAME;
+    case CPP_NAME:
+      *value = get_identifier ((const char *)tok->val.node->name);
+      break;
+
+    case CPP_INT:
+    case CPP_FLOAT:
+    case CPP_NUMBER:
+      *value = lex_number ((const char *)tok->val.str.text, tok->val.str.len);
+      break;
+
+    case CPP_CHAR:
+    case CPP_WCHAR:
+      *value = lex_charconst ((const char *)tok->val.str.text,
+			      tok->val.str.len, tok->type == CPP_WCHAR);
+      break;
+
+    case CPP_STRING:
+    case CPP_WSTRING:
+    case CPP_OSTRING:
+      *value = lex_string ((const char *)tok->val.str.text,
+			   tok->val.str.len, tok->type == CPP_WSTRING);
+      break;
+
+      /* These tokens should not be visible outside cpplib.  */
+    case CPP_HEADER_NAME:
+    case CPP_COMMENT:
+    case CPP_MACRO_ARG:
+    case CPP_PLACEMARKER:
+      abort ();
+
+    default: break;
+    }
+
+  return type;
+  
+#else
+  int c;
+  char *p;
   int wide_flag = 0;
   int objc_flag = 0;
+  int charconst = 0;
 
-  c = GETC();
+  *value = NULL_TREE;
+
+ retry:
+  c = getch ();
 
   /* Effectively do c = skip_white_space (c)
      but do it faster in the usual cases.  */
@@ -1244,81 +1491,54 @@ yylex ()
       case '\t':
       case '\f':
       case '\v':
-      case '\b':
-#if USE_CPPLIB
-	if (cpp_token == CPP_HSPACE)
-	  c = yy_get_token ();
-	else
-#endif
-	  c = GETC();
+	  c = getch ();
 	break;
 
-      case '\r':
-	/* Call skip_white_space so we can warn if appropriate.  */
-
       case '\n':
-      case '/':
-      case '\\':
 	c = skip_white_space (c);
       default:
 	goto found_nonwhite;
       }
  found_nonwhite:
 
-  token_buffer[0] = c;
-  token_buffer[1] = 0;
-
-/*  yylloc.first_line = lineno; */
+  lineno = lex_lineno;
 
   switch (c)
     {
     case EOF:
-      end_of_file = 1;
-      token_buffer[0] = 0;
-      if (linemode)
-	value = END_OF_LINE;
-      else
-	value = ENDFILE;
-      break;
+      return CPP_EOF;
 
     case 'L':
-#if USE_CPPLIB
-      if (cpp_token == CPP_NAME)
-	goto letter;
-#endif
       /* Capital L may start a wide-string or wide-character constant.  */
       {
-	register int c = token_getch();
-	if (c == '\'')
+	register int c1 = getch();
+	if (c1 == '\'')
 	  {
 	    wide_flag = 1;
 	    goto char_constant;
 	  }
-	if (c == '"')
+	if (c1 == '"')
 	  {
 	    wide_flag = 1;
 	    goto string_constant;
 	  }
-	token_put_back (c);
+	put_back (c1);
       }
       goto letter;
 
     case '@':
       if (!doing_objc_thang)
-	{
-	  value = c;
-	  break;
-	}
+	goto straychar;
       else
 	{
 	  /* '@' may start a constant string object.  */
-	  register int c = token_getch ();
-	  if (c == '"')
+	  register int c1 = getch ();
+	  if (c1 == '"')
 	    {
 	      objc_flag = 1;
 	      goto string_constant;
 	    }
-	  token_put_back (c);
+	  put_back (c1);
 	  /* Fall through to treat '@' as the start of an identifier.  */
 	}
 
@@ -1337,854 +1557,121 @@ yylex ()
     case '_':
     case '$':
     letter:
-#if USE_CPPLIB
-      if (cpp_token == CPP_NAME)
+      p = token_buffer;
+      while (ISALNUM (c) || c == '_' || c == '$' || c == '@')
 	{
-	  /* Note that one character has already been read from
-	     yy_cur into token_buffer.  Also, cpplib complains about
-	     $ in identifiers, so we don't have to.  */
-
-	  int len = yy_lim - yy_cur + 1;
-	  if (len >= maxtoken)
-	    extend_token_buffer_to (len + 1);
-	  memcpy (token_buffer + 1, yy_cur, len);
-	  p = token_buffer + len;
-	  yy_cur = yy_lim;
-	}
-      else
-#endif
-	{
-	  p = token_buffer;
-	  while (ISALNUM (c) || c == '_' || c == '$' || c == '@')
+	  /* Make sure this char really belongs in an identifier.  */
+	  if (c == '$')
 	    {
-	      /* Make sure this char really belongs in an identifier.  */
-	      if (c == '$')
-		{
-		  if (! dollars_in_ident)
-		    error ("`$' in identifier");
-		  else if (pedantic)
-		    pedwarn ("`$' in identifier");
-		}
-
-	      if (p >= token_buffer + maxtoken)
-		p = extend_token_buffer (p);
-
-	      *p++ = c;
-	      c = token_getch();
+	      if (! dollars_in_ident)
+		error ("'$' in identifier");
+	      else if (pedantic)
+		pedwarn ("'$' in identifier");
 	    }
 
-	  *p = 0;
-	  token_put_back (c);
+	  if (p >= token_buffer + maxtoken)
+	    p = extend_token_buffer (p);
+
+	  *p++ = c;
+	  c = getch();
 	}
 
-      value = IDENTIFIER;
-      yylval.itype = 0;
+      put_back (c);
 
-      /* Try to recognize a keyword.  Uses minimum-perfect hash function */
+      if (p >= token_buffer + maxtoken)
+	p = extend_token_buffer (p);
+      *p = 0;
 
-      {
-	register struct resword *ptr;
-
-	if ((ptr = is_reserved_word (token_buffer, p - token_buffer)))
-	  {
-	    if (ptr->rid)
-	      yylval.ttype = ridpointers[(int) ptr->rid];
-	    value = (int) ptr->token;
-
-	    /* Only return OBJECTNAME if it is a typedef.  */
-	    if (doing_objc_thang && value == OBJECTNAME)
-	      {
-		tree decl = lookup_name(yylval.ttype);
-
-		if (decl == NULL_TREE
-		    || TREE_CODE (decl) != TYPE_DECL)
-		  value = IDENTIFIER;
-	      }
-
-	    /* Even if we decided to recognize asm, still perhaps warn.  */
-	    if (pedantic
-		&& (value == ASM_KEYWORD || value == TYPEOF
-		    || (ptr->rid == RID_INLINE && ! flag_isoc99))
-		&& token_buffer[0] != '_')
-	      pedwarn ("ANSI does not permit the keyword `%s'",
-		       token_buffer);
-	  }
-      }
-
-      /* If we did not find a keyword, look for an identifier
-	 (or a typename).  */
-
-      if (value == IDENTIFIER)
-	{
-	  tree decl;
-
- 	  if (token_buffer[0] == '@')
-	    error("invalid identifier `%s'", token_buffer);
-
-          yylval.ttype = get_identifier (token_buffer);
-	  decl = lookup_name (yylval.ttype);
-
-	  if (decl != 0 && TREE_CODE (decl) == TYPE_DECL)
-	    value = TYPENAME;
-	  /* A user-invisible read-only initialized variable
-	     should be replaced by its value.
-	     We handle only strings since that's the only case used in C.  */
-	  else if (decl != 0 && TREE_CODE (decl) == VAR_DECL
-		   && DECL_IGNORED_P (decl)
-		   && TREE_READONLY (decl)
-		   && DECL_INITIAL (decl) != 0
-		   && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST)
-	    {
-	      tree stringval = DECL_INITIAL (decl);
-
-	      /* Copy the string value so that we won't clobber anything
-		 if we put something in the TREE_CHAIN of this one.  */
-	      yylval.ttype = build_string (TREE_STRING_LENGTH (stringval),
-					   TREE_STRING_POINTER (stringval));
-	      value = STRING;
-	    }
-          else if (doing_objc_thang)
-            {
-	      tree objc_interface_decl = is_class_name (yylval.ttype);
-
-	      if (objc_interface_decl)
-		{
-		  value = CLASSNAME;
-		  yylval.ttype = objc_interface_decl;
-		}
-	    }
-	}
-
-      break;
+      *value = get_identifier (token_buffer);
+      return CPP_NAME;
 
     case '.':
-#if USE_CPPLIB
-      if (yy_cur < yy_lim)
-#endif
 	{
 	  /* It's hard to preserve tokenization on '.' because
 	     it could be a symbol by itself, or it could be the
 	     start of a floating point number and cpp won't tell us.  */
-	  register int c1 = token_getch ();
-	  token_buffer[1] = c1;
+	  int c1 = getch ();
 	  if (c1 == '.')
 	    {
-	      c1 = token_getch ();
-	      if (c1 == '.')
-		{
-		  token_buffer[2] = c1;
-		  token_buffer[3] = 0;
-		  value = ELLIPSIS;
-		  goto done;
-		}
-	      error ("parse error at `..'");
+	      int c2 = getch ();
+	      if (c2 == '.')
+		return CPP_ELLIPSIS;
+
+	      put_back (c2);
+	      error ("parse error at '..'");
 	    }
+	  else if (c1 == '*' && c_language == clk_cplusplus)
+	    return CPP_DOT_STAR;
+
+	  put_back (c1);
 	  if (ISDIGIT (c1))
-	    {
-	      token_put_back (c1);
-	      goto number;
-	    }
-	  token_put_back (c1);
+	    goto number;
 	}
-      value = '.';
-      token_buffer[1] = 0;
-      break;
+	return CPP_DOT;
 
-    case '0':  case '1':
-      /* Optimize for most frequent case.  */
-      {
-	register int cond;
-
-#if USE_CPPLIB
-	cond = (yy_cur == yy_lim);
-#else
-	register int c1 = token_getch ();
-	token_put_back (c1);
-	cond = (! ISALNUM (c1) && c1 != '.');
-#endif
-	if (cond)
-	  {
-	    yylval.ttype = (c == '0') ? integer_zero_node : integer_one_node;
-	    value = CONSTANT;
-	    break;
-	  }
-	/*FALLTHRU*/
-      }
-    case '2':  case '3':  case '4':
+    case '0':  case '1':  case '2':  case '3':  case '4':
     case '5':  case '6':  case '7':  case '8':  case '9':
     number:
-      {
-	int base = 10;
-	int count = 0;
-	int largest_digit = 0;
-	int numdigits = 0;
-	int overflow = 0;
+      p = token_buffer;
+      /* Scan the next preprocessing number.  All C numeric constants
+	 are preprocessing numbers, but not all preprocessing numbers
+	 are valid numeric constants.  Preprocessing numbers fit the
+	 regular expression \.?[0-9]([0-9a-zA-Z_.]|[eEpP][+-])*
+	 See C99 section 6.4.8. */
+      for (;;)
+	{
+	  if (p >= token_buffer + maxtoken)
+	    p = extend_token_buffer (p);
 
-	/* We actually store only HOST_BITS_PER_CHAR bits in each part.
-	   The code below which fills the parts array assumes that a host
-	   int is at least twice as wide as a host char, and that 
-	   HOST_BITS_PER_WIDE_INT is an even multiple of HOST_BITS_PER_CHAR.
-	   Two HOST_WIDE_INTs is the largest int literal we can store.
-	   In order to detect overflow below, the number of parts (TOTAL_PARTS)
-	   must be exactly the number of parts needed to hold the bits
-	   of two HOST_WIDE_INTs. */
-#define TOTAL_PARTS ((HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR) * 2)
-	unsigned int parts[TOTAL_PARTS];
+	  *p++ = c;
+	  c = getch();
 
-	enum anon1 { NOT_FLOAT, AFTER_POINT, TOO_MANY_POINTS, AFTER_EXPON}
-	  floatflag = NOT_FLOAT;
+	  if (c == '+' || c == '-')
+	    {
+	      int d = p[-1];
+	      if (d == 'e' || d == 'E' || d == 'p' || d == 'P')
+		continue;
+	    }
+	  if (ISALNUM (c) || c == '_' || c == '.')
+	    continue;
+	  break;
+	}
+      put_back (c);
 
-	for (count = 0; count < TOTAL_PARTS; count++)
-	  parts[count] = 0;
-
-	p = token_buffer;
-	*p++ = c;
-
-	if (c == '0')
-	  {
-	    *p++ = (c = token_getch());
-	    if ((c == 'x') || (c == 'X'))
-	      {
-		base = 16;
-		*p++ = (c = token_getch());
-	      }
-	    /* Leading 0 forces octal unless the 0 is the only digit.  */
-	    else if (c >= '0' && c <= '9')
-	      {
-		base = 8;
-		numdigits++;
-	      }
-	    else
-	      numdigits++;
-	  }
-
-	/* Read all the digits-and-decimal-points.  */
-
-	while (c == '.'
-	       || (ISALNUM (c) && c != 'l' && c != 'L'
-		   && c != 'u' && c != 'U'
-		   && c != 'i' && c != 'I' && c != 'j' && c != 'J'
-		   && (floatflag == NOT_FLOAT
-		       || ((base != 16) && (c != 'f') && (c != 'F'))
-		       || base == 16)))   
-	  {
-	    if (c == '.')
-	      {
-		if (base == 16 && pedantic && !flag_isoc99)
-		  pedwarn ("floating constant may not be in radix 16");
-		if (floatflag == TOO_MANY_POINTS)
-		  /* We have already emitted an error.  Don't need another.  */
-		  ;
-		else if (floatflag == AFTER_POINT || floatflag == AFTER_EXPON)
-		  {
-		    error ("malformed floating constant");
-		    floatflag = TOO_MANY_POINTS;
-		    /* Avoid another error from atof by forcing all characters
-		       from here on to be ignored.  */
-		    p[-1] = '\0';
-		  }
-		else
-		  floatflag = AFTER_POINT;
-
-		if (base == 8)
-		  base = 10;
-		*p++ = c = token_getch();
-		/* Accept '.' as the start of a floating-point number
-		   only when it is followed by a digit.  */
-		if (p == token_buffer + 2 && !ISDIGIT (c))
-		  abort ();
-	      }
-	    else
-	      {
-		/* It is not a decimal point.
-		   It should be a digit (perhaps a hex digit).  */
-
-		if (ISDIGIT (c))
-		  {
-		    c = c - '0';
-		  }
-		else if (base <= 10)
-		  {
-		    if (c == 'e' || c == 'E')
-		      {
-			base = 10;
-			floatflag = AFTER_EXPON;
-			break;   /* start of exponent */
-		      }
-		    error ("nondigits in number and not hexadecimal");
-		    c = 0;
-		  }
-		else if (base == 16 && (c == 'p' || c == 'P'))
-		  {
-		    floatflag = AFTER_EXPON;
-		    break;   /* start of exponent */
-		  }
-		else if (c >= 'a' && c <= 'f')
-		  {
-		    c = c - 'a' + 10;
-		  }
-		else
-		  {
-		    c = c - 'A' + 10;
-		  }
-		if (c >= largest_digit)
-		  largest_digit = c;
-		numdigits++;
-
-		for (count = 0; count < TOTAL_PARTS; count++)
-		  {
-		    parts[count] *= base;
-		    if (count)
-		      {
-			parts[count]
-			  += (parts[count-1] >> HOST_BITS_PER_CHAR);
-			parts[count-1]
-			  &= (1 << HOST_BITS_PER_CHAR) - 1;
-		      }
-		    else
-		      parts[0] += c;
-		  }
-
-		/* If the highest-order part overflows (gets larger than
-		   a host char will hold) then the whole number has 
-		   overflowed.  Record this and truncate the highest-order
-		   part. */
-		if (parts[TOTAL_PARTS - 1] >> HOST_BITS_PER_CHAR)
-		  {
-		    overflow = 1;
-		    parts[TOTAL_PARTS - 1] &= (1 << HOST_BITS_PER_CHAR) - 1;
-		  }
-
-		if (p >= token_buffer + maxtoken - 3)
-		  p = extend_token_buffer (p);
-		*p++ = (c = token_getch());
-	      }
-	  }
-
-	/* This can happen on input like `int i = 0x;' */
-	if (numdigits == 0)
-	  error ("numeric constant with no digits");
-
-	if (largest_digit >= base)
-	  error ("numeric constant contains digits beyond the radix");
-
-	/* Remove terminating char from the token buffer and delimit the
-           string.  */
-	*--p = 0;
-
-	if (floatflag != NOT_FLOAT)
-	  {
-	    tree type;
-	    int imag, conversion_errno;
-	    REAL_VALUE_TYPE value;
-	    struct pf_args args;
-
-	    /* Read explicit exponent if any, and put it in tokenbuf.  */
-
-	    if ((base == 10 && ((c == 'e') || (c == 'E')))
-		|| (base == 16 && (c == 'p' || c == 'P')))
-	      {
-		if (p >= token_buffer + maxtoken - 3)
-		  p = extend_token_buffer (p);
-		*p++ = c;
-		c = token_getch();
-		if ((c == '+') || (c == '-'))
-		  {
-		    *p++ = c;
-		    c = token_getch();
-		  }
-		/* Exponent is decimal, even if string is a hex float.  */
-		if (! ISDIGIT (c))
-		  error ("floating constant exponent has no digits");
-		while (ISDIGIT (c))
-		  {
-		    if (p >= token_buffer + maxtoken - 3)
-		      p = extend_token_buffer (p);
-		    *p++ = c;
-		    c = token_getch ();
-		  }
-	      }
-	    if (base == 16 && floatflag != AFTER_EXPON)
-	      error ("hexadecimal floating constant has no exponent");
-
-	    *p = 0;
-
-	    /* Setup input for parse_float() */
-	    args.base = base;
-	    args.p = p;
-	    args.c = c;
-
-	    /* Convert string to a double, checking for overflow.  */
-	    if (do_float_handler (parse_float, (PTR) &args))
-	      {
-		/* Receive output from parse_float() */
-		value = args.value;
-	      }
-	    else
-	      {
-		/* We got an exception from parse_float() */
-		error ("floating constant out of range");
-		value = dconst0;
-	      }
-
-	    /* Receive output from parse_float() */
-	    c = args.c;
-	    imag = args.imag;
-	    type = args.type;
-	    conversion_errno = args.conversion_errno;
-	    
-#ifdef ERANGE
-	    /* ERANGE is also reported for underflow,
-	       so test the value to distinguish overflow from that.  */
-	    if (conversion_errno == ERANGE && !flag_traditional && pedantic
-		&& (REAL_VALUES_LESS (dconst1, value)
-		    || REAL_VALUES_LESS (value, dconstm1)))
-	      warning ("floating point number exceeds range of `double'");
-#endif
-
-	    /* If the result is not a number, assume it must have been
-	       due to some error message above, so silently convert
-	       it to a zero.  */
-	    if (REAL_VALUE_ISNAN (value))
-	      value = dconst0;
-
-	    /* Create a node with determined type and value.  */
-	    if (imag)
-	      yylval.ttype = build_complex (NULL_TREE,
-					    convert (type, integer_zero_node),
-					    build_real (type, value));
-	    else
-	      yylval.ttype = build_real (type, value);
-	  }
-	else
-	  {
-	    tree traditional_type, ansi_type, type;
-	    HOST_WIDE_INT high, low;
-	    int spec_unsigned = 0;
-	    int spec_long = 0;
-	    int spec_long_long = 0;
-	    int suffix_lu = 0;
-	    int spec_imag = 0;
-	    int warn = 0, i;
-
-	    traditional_type = ansi_type = type = NULL_TREE;
-	    while (1)
-	      {
-		if (c == 'u' || c == 'U')
-		  {
-		    if (spec_unsigned)
-		      error ("two `u's in integer constant");
- 		    else if (warn_traditional && !in_system_header)
- 		      warning ("traditional C rejects the `%c' suffix", c);
-		    spec_unsigned = 1;
-		    if (spec_long)
-		      suffix_lu = 1;
-		  }
-		else if (c == 'l' || c == 'L')
-		  {
-		    if (spec_long)
-		      {
-			if (spec_long_long)
-			  error ("three `l's in integer constant");
-			else if (suffix_lu)
-			  error ("`LUL' is not a valid integer suffix");
-			else if (c != spec_long)
-			  error ("`Ll' and `lL' are not valid integer suffixes");
-			else if (pedantic && ! flag_isoc99
-				 && ! in_system_header && warn_long_long)
-			  pedwarn ("ISO C89 forbids long long integer constants");
-			spec_long_long = 1;
-		      }
-		    spec_long = c;
-		  }
-		else if (c == 'i' || c == 'j' || c == 'I' || c == 'J')
-		  {
-		    if (spec_imag)
-		      error ("more than one `i' or `j' in numeric constant");
-		    else if (pedantic)
-		      pedwarn ("ISO C forbids imaginary numeric constants");
-		    spec_imag = 1;
-		  }
-		else
-		  break;
-		if (p >= token_buffer + maxtoken - 3)
-		  p = extend_token_buffer (p);
-		*p++ = c;
-		c = token_getch();
-	      }
-
-	    /* If the literal overflowed, pedwarn about it now. */
-	    if (overflow)
-	      {
-		warn = 1;
-		pedwarn ("integer constant is too large for this configuration of the compiler - truncated to %d bits", HOST_BITS_PER_WIDE_INT * 2);
-	      }
-
-	    /* This is simplified by the fact that our constant
-	       is always positive.  */
-
-	    high = low = 0;
-
-	    for (i = 0; i < HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR; i++)
-	      {
-		high |= ((HOST_WIDE_INT) parts[i + (HOST_BITS_PER_WIDE_INT
-						    / HOST_BITS_PER_CHAR)]
-			 << (i * HOST_BITS_PER_CHAR));
-		low |= (HOST_WIDE_INT) parts[i] << (i * HOST_BITS_PER_CHAR);
-	      }
-
-	    yylval.ttype = build_int_2 (low, high);
-	    TREE_TYPE (yylval.ttype) = long_long_unsigned_type_node;
-
-	    /* If warn_traditional, calculate both the ANSI type and the
-	       traditional type, then see if they disagree.
-	       Otherwise, calculate only the type for the dialect in use.  */
-	    if (warn_traditional || flag_traditional)
-	      {
-		/* Calculate the traditional type.  */
-		/* Traditionally, any constant is signed;
-		   but if unsigned is specified explicitly, obey that.
-		   Use the smallest size with the right number of bits,
-		   except for one special case with decimal constants.  */
-		if (! spec_long && base != 10
-		    && int_fits_type_p (yylval.ttype, unsigned_type_node))
-		  traditional_type = (spec_unsigned ? unsigned_type_node
-				      : integer_type_node);
-		/* A decimal constant must be long
-		   if it does not fit in type int.
-		   I think this is independent of whether
-		   the constant is signed.  */
-		else if (! spec_long && base == 10
-			 && int_fits_type_p (yylval.ttype, integer_type_node))
-		  traditional_type = (spec_unsigned ? unsigned_type_node
-				      : integer_type_node);
-		else if (! spec_long_long)
-		  traditional_type = (spec_unsigned ? long_unsigned_type_node
-				      : long_integer_type_node);
-		else if (int_fits_type_p (yylval.ttype,
-					  spec_unsigned 
-					  ? long_long_unsigned_type_node
-					  : long_long_integer_type_node)) 
-		  traditional_type = (spec_unsigned
-				      ? long_long_unsigned_type_node
-				      : long_long_integer_type_node);
-		else
-		  traditional_type = (spec_unsigned
-				      ? widest_unsigned_literal_type_node
-				      : widest_integer_literal_type_node);
-	      }
-	    if (warn_traditional || ! flag_traditional)
-	      {
-		/* Calculate the ANSI type.  */
-		if (! spec_long && ! spec_unsigned
-		    && int_fits_type_p (yylval.ttype, integer_type_node))
-		  ansi_type = integer_type_node;
-		else if (! spec_long && (base != 10 || spec_unsigned)
-			 && int_fits_type_p (yylval.ttype, unsigned_type_node))
-		  ansi_type = unsigned_type_node;
-		else if (! spec_unsigned && !spec_long_long
-			 && int_fits_type_p (yylval.ttype, long_integer_type_node))
-		  ansi_type = long_integer_type_node;
-		else if (! spec_long_long
-			 && int_fits_type_p (yylval.ttype,
-					     long_unsigned_type_node))
-		  ansi_type = long_unsigned_type_node;
-		else if (! spec_unsigned
-			 && int_fits_type_p (yylval.ttype,
-					     long_long_integer_type_node))
-		  ansi_type = long_long_integer_type_node;
-		else if (int_fits_type_p (yylval.ttype,
-					  long_long_unsigned_type_node))
-		  ansi_type = long_long_unsigned_type_node;
-		else if (! spec_unsigned
-			 && int_fits_type_p (yylval.ttype,
-					     widest_integer_literal_type_node))
-		  ansi_type = widest_integer_literal_type_node;
-		else
-		  ansi_type = widest_unsigned_literal_type_node;
-	      }
-
-	    type = flag_traditional ? traditional_type : ansi_type;
-
-	    /* We assume that constants specified in a non-decimal
-	       base are bit patterns, and that the programmer really
-	       meant what they wrote.  */
-	    if (warn_traditional && !in_system_header && base == 10
-		&& traditional_type != ansi_type)
-	      {
-		if (TYPE_PRECISION (traditional_type)
-		    != TYPE_PRECISION (ansi_type))
-		  warning ("width of integer constant changes with -traditional");
-		else if (TREE_UNSIGNED (traditional_type)
-			 != TREE_UNSIGNED (ansi_type))
-		  warning ("integer constant is unsigned in ISO C, signed with -traditional");
-		else
-		  warning ("width of integer constant may change on other systems with -traditional");
-	      }
-
-	    if (pedantic && !flag_traditional && !spec_long_long && !warn
-		&& (TYPE_PRECISION (long_integer_type_node)
-		    < TYPE_PRECISION (type)))
-	      {
-		warn = 1;
-		pedwarn ("integer constant larger than the maximum value of an unsigned long int");
-	      }
-
-	    if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
-	      warning ("decimal constant is so large that it is unsigned");
-
-	    if (spec_imag)
-	      {
-		if (TYPE_PRECISION (type)
-		    <= TYPE_PRECISION (integer_type_node))
-		  yylval.ttype
-		    = build_complex (NULL_TREE, integer_zero_node,
-				     convert (integer_type_node,
-					      yylval.ttype));
-		else
-		  error ("complex integer constant is too wide for `complex int'");
-	      }
-	    else if (flag_traditional && !int_fits_type_p (yylval.ttype, type))
-	      /* The traditional constant 0x80000000 is signed
-		 but doesn't fit in the range of int.
-		 This will change it to -0x80000000, which does fit.  */
-	      {
-		TREE_TYPE (yylval.ttype) = unsigned_type (type);
-		yylval.ttype = convert (type, yylval.ttype);
-		TREE_OVERFLOW (yylval.ttype)
-		  = TREE_CONSTANT_OVERFLOW (yylval.ttype) = 0;
-	      }
-	    else
-	      TREE_TYPE (yylval.ttype) = type;
-
-
-	    /* If it's still an integer (not a complex), and it doesn't
-	       fit in the type we choose for it, then pedwarn. */
-
-	    if (! warn
-		&& TREE_CODE (TREE_TYPE (yylval.ttype)) == INTEGER_TYPE
-		&& ! int_fits_type_p (yylval.ttype, TREE_TYPE (yylval.ttype)))
-	      pedwarn ("integer constant is larger than the maximum value for its type");
-	  }
-
-	token_put_back (c);
-	*p = 0;
-
-	if (ISALNUM (c) || c == '.' || c == '_' || c == '$'
-	    || (!flag_traditional && (c == '-' || c == '+')
-		&& (p[-1] == 'e' || p[-1] == 'E')))
-	  error ("missing white space after number `%s'", token_buffer);
-
-	value = CONSTANT; break;
-      }
+      *value = lex_number (token_buffer, p - token_buffer);
+      return CPP_NUMBER;
 
     case '\'':
     char_constant:
-      {
-	register int result = 0;
-	register int num_chars = 0;
-	int chars_seen = 0;
-	unsigned width = TYPE_PRECISION (char_type_node);
-	int max_chars;
-#ifdef MULTIBYTE_CHARS
-	int longest_char = local_mb_cur_max ();
-	(void) local_mbtowc (NULL_PTR, NULL_PTR, 0);
-#endif
-
-	max_chars = TYPE_PRECISION (integer_type_node) / width;
-	if (wide_flag)
-	  width = WCHAR_TYPE_SIZE;
-
-	while (1)
-	  {
-	  tryagain:
-	    c = token_getch();
-
-	    if (c == '\'' || c == EOF)
-	      break;
-
-	    ++chars_seen;
-	    if (c == '\\')
-	      {
-		int ignore = 0;
-		c = readescape (&ignore);
-		if (ignore)
-		  goto tryagain;
-		if (width < HOST_BITS_PER_INT
-		    && (unsigned) c >= ((unsigned)1 << width))
-		  pedwarn ("escape sequence out of range for character");
-#ifdef MAP_CHARACTER
-		if (ISPRINT (c))
-		  c = MAP_CHARACTER (c);
-#endif
-	      }
-	    else if (c == '\n')
-	      {
-		if (pedantic)
-		  pedwarn ("ISO C forbids newline in character constant");
-		lineno++;
-	      }
-	    else
-	      {
-#ifdef MULTIBYTE_CHARS
-		wchar_t wc;
-		int i;
-		int char_len = -1;
-		for (i = 1; i <= longest_char; ++i)
-		  {
-		    if (i > maxtoken - 4)
-		      extend_token_buffer (token_buffer);
-
-		    token_buffer[i] = c;
-		    char_len = local_mbtowc (& wc,
-					     token_buffer + 1,
-					     i);
-		    if (char_len != -1)
-		      break;
-		    c = token_getch ();
-		  }
-		if (char_len > 1)
-		  {
-		    /* mbtowc sometimes needs an extra char before accepting */
-		    if (char_len < i)
-		      token_put_back (c);
-		    if (! wide_flag)
-		      {
-			/* Merge character into result; ignore excess chars.  */
-			for (i = 1; i <= char_len; ++i)
-			  {
-			    if (i > max_chars)
-			      break;
-			    if (width < HOST_BITS_PER_INT)
-			      result = (result << width)
-				| (token_buffer[i]
-				   & ((1 << width) - 1));
-			    else
-			      result = token_buffer[i];
-			  }
-			num_chars += char_len;
-			goto tryagain;
-		      }
-		    c = wc;
-		  }
-		else
-		  {
-		    if (char_len == -1)
-		      {
-			warning ("Ignoring invalid multibyte character");
-			/* Replace all but the first byte.  */
-			for (--i; i > 1; --i)
-			  token_put_back (token_buffer[i]);
-			wc = token_buffer[1];
-		      }
-#ifdef MAP_CHARACTER
-		      c = MAP_CHARACTER (wc);
-#else
-		      c = wc;
-#endif
-		  }
-#else /* ! MULTIBYTE_CHARS */
-#ifdef MAP_CHARACTER
-		c = MAP_CHARACTER (c);
-#endif
-#endif /* ! MULTIBYTE_CHARS */
-	      }
-
-	    if (wide_flag)
-	      {
-		if (chars_seen == 1) /* only keep the first one */
-		  result = c;
-		goto tryagain;
-	      }
-
-	    /* Merge character into result; ignore excess chars.  */
-	    num_chars += (width / TYPE_PRECISION (char_type_node));
-	    if (num_chars < max_chars + 1)
-	      {
-		if (width < HOST_BITS_PER_INT)
-		  result = (result << width) | (c & ((1 << width) - 1));
-		else
-		  result = c;
-	      }
-	  }
-
-	if (c != '\'')
-	  error ("malformed character constant");
-	else if (chars_seen == 0)
-	  error ("empty character constant");
-	else if (num_chars > max_chars)
-	  {
-	    num_chars = max_chars;
-	    error ("character constant too long");
-	  }
-	else if (chars_seen != 1 && ! flag_traditional && warn_multichar)
-	  warning ("multi-character character constant");
-
-	/* If char type is signed, sign-extend the constant.  */
-	if (! wide_flag)
-	  {
-	    int num_bits = num_chars * width;
-	    if (num_bits == 0)
-	      /* We already got an error; avoid invalid shift.  */
-	      yylval.ttype = build_int_2 (0, 0);
-	    else if (TREE_UNSIGNED (char_type_node)
-		     || ((result >> (num_bits - 1)) & 1) == 0)
-	      yylval.ttype
-		= build_int_2 (result & (~(unsigned HOST_WIDE_INT) 0
-					 >> (HOST_BITS_PER_WIDE_INT - num_bits)),
-			       0);
-	    else
-	      yylval.ttype
-		= build_int_2 (result | ~(~(unsigned HOST_WIDE_INT) 0
-					  >> (HOST_BITS_PER_WIDE_INT - num_bits)),
-			       -1);
-	    TREE_TYPE (yylval.ttype) = integer_type_node;
-	  }
-	else
-	  {
-	    yylval.ttype = build_int_2 (result, 0);
-	    TREE_TYPE (yylval.ttype) = wchar_type_node;
-	  }
-
-	value = CONSTANT;
-	break;
-      }
+    charconst = 1;
 
     case '"':
     string_constant:
       {
-	unsigned width = wide_flag ? WCHAR_TYPE_SIZE
-	                           : TYPE_PRECISION (char_type_node);
+	int delimiter = charconst ? '\'' : '"';
 #ifdef MULTIBYTE_CHARS
 	int longest_char = local_mb_cur_max ();
 	(void) local_mbtowc (NULL_PTR, NULL_PTR, 0);
 #endif
-	c = token_getch ();
+	c = getch ();
 	p = token_buffer + 1;
 
-	while (c != '"' && c != EOF)
+	while (c != delimiter && c != EOF)
 	  {
+	    if (p + 2 > token_buffer + maxtoken)
+	      p = extend_token_buffer (p);
+
 	    /* ignore_escape_flag is set for reading the filename in #line.  */
 	    if (!ignore_escape_flag && c == '\\')
 	      {
-		int ignore = 0;
-		c = readescape (&ignore);
-		if (ignore)
-		  goto skipnewline;
-		if (width < HOST_BITS_PER_INT
-		    && (unsigned) c >= ((unsigned)1 << width))
-		  pedwarn ("escape sequence out of range for character");
-	      }
-	    else if (c == '\n')
-	      {
-		if (pedantic)
-		  pedwarn ("ISO C forbids newline in string constant");
-		lineno++;
+		*p++ = c;
+		*p++ = getch ();  /* escaped character */
+		c = getch ();
+		continue;
 	      }
 	    else
 	      {
 #ifdef MULTIBYTE_CHARS
-		wchar_t wc;
 		int i;
 		int char_len = -1;
 		for (i = 0; i < longest_char; ++i)
@@ -2193,110 +1680,44 @@ yylex ()
 		      p = extend_token_buffer (p);
 		    p[i] = c;
 
-		    char_len = local_mbtowc (& wc, p, i + 1);
+		    char_len = local_mblen (p, i + 1);
 		    if (char_len != -1)
 		      break;
-		    c = token_getch ();
+		    c = getch ();
 		  }
 		if (char_len == -1)
 		  {
-		    warning ("Ignoring invalid multibyte character");
 		    /* Replace all except the first byte.  */
-		    token_put_back (c);
+		    put_back (c);
 		    for (--i; i > 0; --i)
-		      token_put_back (p[i]);
+		      put_back (p[i]);
 		    char_len = 1;
 		  }
 		/* mbtowc sometimes needs an extra char before accepting */
-		if (char_len <= i)
-		  token_put_back (c);
-		if (! wide_flag)
-		  {
-		    p += (i + 1);
-		    c = token_getch ();
-		    continue;
-		  }
-		c = wc;
-#endif /* MULTIBYTE_CHARS */
-	      }
+		else if (char_len <= i)
+		  put_back (c);
 
-	    /* Add this single character into the buffer either as a wchar_t
-	       or as a single byte.  */
-	    if (wide_flag)
-	      {
-		unsigned width = TYPE_PRECISION (char_type_node);
-		unsigned bytemask = (1 << width) - 1;
-		int byte;
-
-		if (p + WCHAR_BYTES > token_buffer + maxtoken)
-		  p = extend_token_buffer (p);
-
-		for (byte = 0; byte < WCHAR_BYTES; ++byte)
-		  {
-		    int value;
-		    if (byte >= (int) sizeof (c))
-		      value = 0;
-		    else
-		      value = (c >> (byte * width)) & bytemask;
-		    if (BYTES_BIG_ENDIAN)
-		      p[WCHAR_BYTES - byte - 1] = value;
-		    else
-		      p[byte] = value;
-		  }
-		p += WCHAR_BYTES;
-	      }
-	    else
-	      {
-		if (p >= token_buffer + maxtoken)
-		  p = extend_token_buffer (p);
+		p += char_len;
+#else
 		*p++ = c;
+#endif
+		c = getch ();
 	      }
-
-	  skipnewline:
-	    c = token_getch ();
 	  }
-
-	/* Terminate the string value, either with a single byte zero
-	   or with a wide zero.  */
-	if (wide_flag)
-	  {
-	    if (p + WCHAR_BYTES > token_buffer + maxtoken)
-	      p = extend_token_buffer (p);
-	    bzero (p, WCHAR_BYTES);
-	    p += WCHAR_BYTES;
-	  }
-	else
-	  {
-	    if (p >= token_buffer + maxtoken)
-	      p = extend_token_buffer (p);
-	    *p++ = 0;
-	  }
-
-	if (c == EOF)
-	  error ("Unterminated string constant");
-
-	/* We have read the entire constant.
-	   Construct a STRING_CST for the result.  */
-
-	yylval.ttype = build_string (p - (token_buffer + 1), token_buffer + 1);
-	if (wide_flag)
-	  {
-	    TREE_TYPE (yylval.ttype) = wchar_array_type_node;
-	    value = STRING;
-	  }
-	else if (objc_flag)
-	  {
-	    TREE_TYPE (yylval.ttype) = char_array_type_node;
-	    value = OBJC_STRING;
-	  }
-	else
-	  {
-	    TREE_TYPE (yylval.ttype) = char_array_type_node;
-	    value = STRING;
-	  }
-
-	break;
       }
+
+      if (charconst)
+	{
+	  *value =  lex_charconst (token_buffer + 1, p - (token_buffer + 1),
+				   wide_flag);
+	  return wide_flag ? CPP_WCHAR : CPP_CHAR;
+	}
+      else
+	{
+	  *value = lex_string (token_buffer + 1, p - (token_buffer + 1),
+			       wide_flag);
+	  return wide_flag ? CPP_WSTRING : objc_flag ? CPP_OSTRING : CPP_STRING;
+	}
 
     case '+':
     case '-':
@@ -2312,147 +1733,795 @@ yylex ()
     case '!':
     case '=':
       {
-	register int c1;
-
-      combine:
+	int c1;
+	enum cpp_ttype type = CPP_EOF;
 
 	switch (c)
 	  {
-	  case '+':
-	    yylval.code = PLUS_EXPR; break;
-	  case '-':
-	    yylval.code = MINUS_EXPR; break;
-	  case '&':
-	    yylval.code = BIT_AND_EXPR; break;
-	  case '|':
-	    yylval.code = BIT_IOR_EXPR; break;
-	  case '*':
-	    yylval.code = MULT_EXPR; break;
-	  case '/':
-	    yylval.code = TRUNC_DIV_EXPR; break;
-	  case '%':
-	    yylval.code = TRUNC_MOD_EXPR; break;
-	  case '^':
-	    yylval.code = BIT_XOR_EXPR; break;
-	  case LSHIFT:
-	    yylval.code = LSHIFT_EXPR; break;
-	  case RSHIFT:
-	    yylval.code = RSHIFT_EXPR; break;
-	  case '<':
-	    yylval.code = LT_EXPR; break;
-	  case '>':
-	    yylval.code = GT_EXPR; break;
+	  case '+': type = CPP_PLUS;	break;
+	  case '-': type = CPP_MINUS;	break;
+	  case '&': type = CPP_AND;	break;
+	  case '|': type = CPP_OR;	break;
+	  case ':': type = CPP_COLON;	break;
+	  case '<': type = CPP_LESS;	break;
+	  case '>': type = CPP_GREATER;	break;
+	  case '*': type = CPP_MULT;	break;
+	  case '/': type = CPP_DIV;	break;
+	  case '%': type = CPP_MOD;	break;
+	  case '^': type = CPP_XOR;	break;
+	  case '!': type = CPP_NOT;	break;
+	  case '=': type = CPP_EQ;	break;
 	  }
 
-	token_buffer[1] = c1 = token_getch();
-	token_buffer[2] = 0;
+	c1 = getch ();
 
-	if (c1 == '=')
-	  {
-	    switch (c)
-	      {
-	      case '<':
-		value = ARITHCOMPARE; yylval.code = LE_EXPR; goto done;
-	      case '>':
-		value = ARITHCOMPARE; yylval.code = GE_EXPR; goto done;
-	      case '!':
-		value = EQCOMPARE; yylval.code = NE_EXPR; goto done;
-	      case '=':
-		value = EQCOMPARE; yylval.code = EQ_EXPR; goto done;
-	      }
-	    value = ASSIGN; goto done;
-	  }
+	if (c1 == '=' && type < CPP_LAST_EQ)
+	  return type + (CPP_EQ_EQ - CPP_EQ);
 	else if (c == c1)
 	  switch (c)
 	    {
-	    case '+':
-	      value = PLUSPLUS; goto done;
-	    case '-':
-	      value = MINUSMINUS; goto done;
-	    case '&':
-	      value = ANDAND; goto done;
-	    case '|':
-	      value = OROR; goto done;
-	    case '<':
-	      c = LSHIFT;
-	      goto combine;
-	    case '>':
-	      c = RSHIFT;
-	      goto combine;
+	    case '+':	return CPP_PLUS_PLUS;
+	    case '-':	return CPP_MINUS_MINUS;
+	    case '&':	return CPP_AND_AND;
+	    case '|':	return CPP_OR_OR;
+	    case ':':
+	      if (c_language == clk_cplusplus)
+		return CPP_SCOPE;
+	      break;
+
+	    case '<':	type = CPP_LSHIFT;	goto do_triad;
+	    case '>':	type = CPP_RSHIFT;	goto do_triad;
 	    }
 	else
 	  switch (c)
 	    {
 	    case '-':
 	      if (c1 == '>')
-		{ value = POINTSAT; goto done; }
+		{
+		  if (c_language == clk_cplusplus)
+		    {
+		      c1 = getch ();
+		      if (c1 == '*')
+			return CPP_DEREF_STAR;
+		      put_back (c1);
+		    }
+		  return CPP_DEREF;
+		}
 	      break;
 
-	      /* digraphs */
+	    case '>':
+	      if (c1 == '?' && c_language == clk_cplusplus)
+		{ type = CPP_MAX; goto do_triad; }
+	      break;
+
+	    case '<':
+	      if (c1 == ':' && flag_digraphs)
+		return CPP_OPEN_SQUARE;
+	      if (c1 == '%' && flag_digraphs)
+		{ indent_level++; return CPP_OPEN_BRACE; }
+	      if (c1 == '?' && c_language == clk_cplusplus)
+		{ type = CPP_MIN; goto do_triad; }
+	      break;
+
 	    case ':':
 	      if (c1 == '>' && flag_digraphs)
-		{ value = ']'; goto done; }
-	      break;
-	    case '<':
-	      if (flag_digraphs)
-		{
-		  if (c1 == '%')
-		    { value = '{'; indent_level++; goto done; }
-		  if (c1 == ':')
-		    { value = '['; goto done; }
-		}
+		return CPP_CLOSE_SQUARE;
 	      break;
 	    case '%':
 	      if (c1 == '>' && flag_digraphs)
-		{ value = '}'; indent_level--; goto done; }
+		{ indent_level--; return CPP_CLOSE_BRACE; }
 	      break;
 	    }
 
-	token_put_back (c1);
-	token_buffer[1] = 0;
+	put_back (c1);
+	return type;
 
-	if ((c == '<') || (c == '>'))
-	  value = ARITHCOMPARE;
-	else value = c;
-	break;
+      do_triad:
+	c1 = getch ();
+	if (c1 == '=')
+	  type += (CPP_EQ_EQ - CPP_EQ);
+	else
+	  put_back (c1);
+	return type;
       }
 
-    case 0:
-      /* Don't make yyparse think this is eof.  */
-      value = 1;
-      break;
+    case '~':			return CPP_COMPL;
+    case '?':			return CPP_QUERY;
+    case ',':			return CPP_COMMA;
+    case '(':			return CPP_OPEN_PAREN;
+    case ')':			return CPP_CLOSE_PAREN;
+    case '[':			return CPP_OPEN_SQUARE;
+    case ']':			return CPP_CLOSE_SQUARE;
+    case '{': indent_level++;	return CPP_OPEN_BRACE;
+    case '}': indent_level--;	return CPP_CLOSE_BRACE;
+    case ';':			return CPP_SEMICOLON;
 
-    case '{':
-      indent_level++;
-      value = c;
-      break;
-
-    case '}':
-      indent_level--;
-      value = c;
-      break;
-
+    straychar:
     default:
-      value = c;
+      if (ISGRAPH (c))
+	error ("stray '%c' in program", c);
+      else
+	error ("stray '\\%#o' in program", c);
+      goto retry;
+    }
+  /* NOTREACHED */
+#endif
+}
+
+
+#define ERROR(msgid) do { error(msgid); goto syntax_error; } while(0)
+
+static tree
+lex_number (str, len)
+     const char *str;
+     unsigned int len;
+{
+  int base = 10;
+  int count = 0;
+  int largest_digit = 0;
+  int numdigits = 0;
+  int overflow = 0;
+  int c;
+  tree value;
+  const char *p;
+  enum anon1 { NOT_FLOAT = 0, AFTER_POINT, AFTER_EXPON } floatflag = NOT_FLOAT;
+  
+  /* We actually store only HOST_BITS_PER_CHAR bits in each part.
+     The code below which fills the parts array assumes that a host
+     int is at least twice as wide as a host char, and that 
+     HOST_BITS_PER_WIDE_INT is an even multiple of HOST_BITS_PER_CHAR.
+     Two HOST_WIDE_INTs is the largest int literal we can store.
+     In order to detect overflow below, the number of parts (TOTAL_PARTS)
+     must be exactly the number of parts needed to hold the bits
+     of two HOST_WIDE_INTs. */
+#define TOTAL_PARTS ((HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR) * 2)
+  unsigned int parts[TOTAL_PARTS];
+  
+  /* Optimize for most frequent case.  */
+  if (len == 1)
+    {
+      if (*str == '0')
+	return integer_zero_node;
+      else if (*str == '1')
+	return integer_one_node;
+      else
+	return build_int_2 (*str - '0', 0);
     }
 
-done:
-/*  yylloc.last_line = lineno; */
+  for (count = 0; count < TOTAL_PARTS; count++)
+    parts[count] = 0;
 
+  /* len is known to be >1 at this point.  */
+  p = str;
+
+  if (len > 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+    {
+      base = 16;
+      p = str + 2;
+    }
+  /* The ISDIGIT check is so we are not confused by a suffix on 0.  */
+  else if (str[0] == '0' && ISDIGIT (str[1]))
+    {
+      base = 8;
+      p = str + 1;
+    }
+
+  do
+    {
+      c = *p++;
+
+      if (c == '.')
+	{
+	  if (base == 16 && pedantic && !flag_isoc99)
+	    pedwarn ("floating constant may not be in radix 16");
+	  else if (floatflag == AFTER_POINT)
+	    ERROR ("too many decimal points in floating constant");
+	  else if (floatflag == AFTER_EXPON)
+	    ERROR ("decimal point in exponent - impossible!");
+	  else
+	    floatflag = AFTER_POINT;
+
+	  if (base == 8)
+	    base = 10;
+	}
+      else if (c == '_')
+	/* Possible future extension: silently ignore _ in numbers,
+	   permitting cosmetic grouping - e.g. 0x8000_0000 == 0x80000000
+	   but somewhat easier to read.  Ada has this?  */
+	ERROR ("underscore in number");
+      else
+	{
+	  int n;
+	  /* It is not a decimal point.
+	     It should be a digit (perhaps a hex digit).  */
+
+	  if (ISDIGIT (c))
+	    {
+	      n = c - '0';
+	    }
+	  else if (base <= 10 && (c == 'e' || c == 'E'))
+	    {
+	      base = 10;
+	      floatflag = AFTER_EXPON;
+	      break;
+	    }
+	  else if (base == 16 && (c == 'p' || c == 'P'))
+	    {
+	      floatflag = AFTER_EXPON;
+	      break;   /* start of exponent */
+	    }
+	  else if (base == 16 && c >= 'a' && c <= 'f')
+	    {
+	      n = c - 'a' + 10;
+	    }
+	  else if (base == 16 && c >= 'A' && c <= 'F')
+	    {
+	      n = c - 'A' + 10;
+	    }
+	  else
+	    {
+	      p--;
+	      break;  /* start of suffix */
+	    }
+
+	  if (n >= largest_digit)
+	    largest_digit = n;
+	  numdigits++;
+
+	  for (count = 0; count < TOTAL_PARTS; count++)
+	    {
+	      parts[count] *= base;
+	      if (count)
+		{
+		  parts[count]
+		    += (parts[count-1] >> HOST_BITS_PER_CHAR);
+		  parts[count-1]
+		    &= (1 << HOST_BITS_PER_CHAR) - 1;
+		}
+	      else
+		parts[0] += n;
+	    }
+
+	  /* If the highest-order part overflows (gets larger than
+	     a host char will hold) then the whole number has 
+	     overflowed.  Record this and truncate the highest-order
+	     part. */
+	  if (parts[TOTAL_PARTS - 1] >> HOST_BITS_PER_CHAR)
+	    {
+	      overflow = 1;
+	      parts[TOTAL_PARTS - 1] &= (1 << HOST_BITS_PER_CHAR) - 1;
+	    }
+	}
+    }
+  while (p < str + len);
+
+  /* This can happen on input like `int i = 0x;' */
+  if (numdigits == 0)
+    ERROR ("numeric constant with no digits");
+
+  if (largest_digit >= base)
+    ERROR ("numeric constant contains digits beyond the radix");
+
+  if (floatflag != NOT_FLOAT)
+    {
+      tree type;
+      int imag, fflag, lflag, conversion_errno;
+      REAL_VALUE_TYPE real;
+      struct pf_args args;
+      char *copy;
+
+      if (base == 16 && floatflag != AFTER_EXPON)
+	ERROR ("hexadecimal floating constant has no exponent");
+
+      /* Read explicit exponent if any, and put it in tokenbuf.  */
+      if ((base == 10 && ((c == 'e') || (c == 'E')))
+	  || (base == 16 && (c == 'p' || c == 'P')))
+	{
+	  if (p < str + len)
+	    c = *p++;
+	  if (p < str + len && (c == '+' || c == '-'))
+	    c = *p++;
+	  /* Exponent is decimal, even if string is a hex float.  */
+	  if (! ISDIGIT (c))
+	    ERROR ("floating constant exponent has no digits");
+	  while (p < str + len && ISDIGIT (c))
+	    c = *p++;
+	  if (! ISDIGIT (c))
+	    p--;
+	}
+
+      /* Copy the float constant now; we don't want any suffixes in the
+	 string passed to parse_float.  */
+      copy = alloca (p - str + 1);
+      memcpy (copy, str, p - str);
+      copy[p - str] = '\0';
+
+      /* Now parse suffixes.  */
+      fflag = lflag = imag = 0;
+      while (p < str + len)
+	switch (*p++)
+	  {
+	  case 'f': case 'F':
+	    if (fflag)
+	      ERROR ("more than one 'f' suffix on floating constant");
+	    else if (warn_traditional && !in_system_header)
+	      warning ("traditional C rejects the 'f' suffix");
+
+	    fflag = 1;
+	    break;
+
+	  case 'l': case 'L':
+	    if (lflag)
+	      ERROR ("more than one 'l' suffix on floating constant");
+	    else if (warn_traditional && !in_system_header)
+	      warning ("traditional C rejects the 'l' suffix");
+
+	    lflag = 1;
+	    break;
+
+	  case 'i': case 'I':
+	  case 'j': case 'J':
+	    if (imag)
+	      ERROR ("more than one 'i' or 'j' suffix on floating constant");
+	    else if (pedantic)
+	      pedwarn ("ISO C forbids imaginary numeric constants");
+	    imag = 1;
+	    break;
+
+	  default:
+	    ERROR ("invalid suffix on floating constant");
+	  }
+
+      /* Setup input for parse_float() */
+      args.str = copy;
+      args.fflag = fflag;
+      args.lflag = lflag;
+      args.base = base;
+
+      /* Convert string to a double, checking for overflow.  */
+      if (do_float_handler (parse_float, (PTR) &args))
+	{
+	  /* Receive output from parse_float() */
+	  real = args.value;
+	}
+      else
+	  /* We got an exception from parse_float() */
+	  ERROR ("floating constant out of range");
+
+      /* Receive output from parse_float() */
+      conversion_errno = args.conversion_errno;
+      type = args.type;
+	    
+#ifdef ERANGE
+      /* ERANGE is also reported for underflow,
+	 so test the value to distinguish overflow from that.  */
+      if (conversion_errno == ERANGE && !flag_traditional && pedantic
+	  && (REAL_VALUES_LESS (dconst1, real)
+	      || REAL_VALUES_LESS (real, dconstm1)))
+	warning ("floating point number exceeds range of 'double'");
+#endif
+
+      /* Create a node with determined type and value.  */
+      if (imag)
+	value = build_complex (NULL_TREE, convert (type, integer_zero_node),
+			       build_real (type, real));
+      else
+	value = build_real (type, real);
+    }
+  else
+    {
+      tree trad_type, ansi_type, type;
+      HOST_WIDE_INT high, low;
+      int spec_unsigned = 0;
+      int spec_long = 0;
+      int spec_long_long = 0;
+      int spec_imag = 0;
+      int suffix_lu = 0;
+      int warn = 0, i;
+
+      trad_type = ansi_type = type = NULL_TREE;
+      while (p < str + len)
+	{
+	  c = *p++;
+	  switch (c)
+	    {
+	    case 'u': case 'U':
+	      if (spec_unsigned)
+		error ("two 'u' suffixes on integer constant");
+	      else if (warn_traditional && !in_system_header)
+		warning ("traditional C rejects the 'u' suffix");
+
+	      spec_unsigned = 1;
+	      if (spec_long)
+		suffix_lu = 1;
+	      break;
+
+	    case 'l': case 'L':
+	      if (spec_long)
+		{
+		  if (spec_long_long)
+		    error ("three 'l' suffixes on integer constant");
+		  else if (suffix_lu)
+		    error ("'lul' is not a valid integer suffix");
+		  else if (c != spec_long)
+		    error ("'Ll' and 'lL' are not valid integer suffixes");
+		  else if (pedantic && ! flag_isoc99
+			   && ! in_system_header && warn_long_long)
+		    pedwarn ("ISO C89 forbids long long integer constants");
+		  spec_long_long = 1;
+		}
+	      spec_long = c;
+	      break;
+
+	    case 'i': case 'I': case 'j': case 'J':
+	      if (spec_imag)
+		error ("more than one 'i' or 'j' suffix on integer constant");
+	      else if (pedantic)
+		pedwarn ("ISO C forbids imaginary numeric constants");
+	      spec_imag = 1;
+	      break;
+
+	    default:
+	      ERROR ("invalid suffix on integer constant");
+	    }
+	}
+
+      /* If the literal overflowed, pedwarn about it now. */
+      if (overflow)
+	{
+	  warn = 1;
+	  pedwarn ("integer constant is too large for this configuration of the compiler - truncated to %d bits", HOST_BITS_PER_WIDE_INT * 2);
+	}
+
+      /* This is simplified by the fact that our constant
+	 is always positive.  */
+
+      high = low = 0;
+
+      for (i = 0; i < HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR; i++)
+	{
+	  high |= ((HOST_WIDE_INT) parts[i + (HOST_BITS_PER_WIDE_INT
+					      / HOST_BITS_PER_CHAR)]
+		   << (i * HOST_BITS_PER_CHAR));
+	  low |= (HOST_WIDE_INT) parts[i] << (i * HOST_BITS_PER_CHAR);
+	}
+
+      value = build_int_2 (low, high);
+      TREE_TYPE (value) = long_long_unsigned_type_node;
+
+      /* If warn_traditional, calculate both the ISO type and the
+	 traditional type, then see if they disagree.
+	 Otherwise, calculate only the type for the dialect in use.  */
+      if (warn_traditional || flag_traditional)
+	{
+	  /* Calculate the traditional type.  */
+	  /* Traditionally, any constant is signed; but if unsigned is
+	     specified explicitly, obey that.  Use the smallest size
+	     with the right number of bits, except for one special
+	     case with decimal constants.  */
+	  if (! spec_long && base != 10
+	      && int_fits_type_p (value, unsigned_type_node))
+	    trad_type = spec_unsigned ? unsigned_type_node : integer_type_node;
+	  /* A decimal constant must be long if it does not fit in
+	     type int.  I think this is independent of whether the
+	     constant is signed.  */
+	  else if (! spec_long && base == 10
+		   && int_fits_type_p (value, integer_type_node))
+	    trad_type = spec_unsigned ? unsigned_type_node : integer_type_node;
+	  else if (! spec_long_long)
+	    trad_type = (spec_unsigned
+			 ? long_unsigned_type_node
+			 : long_integer_type_node);
+	  else if (int_fits_type_p (value,
+				    spec_unsigned 
+				    ? long_long_unsigned_type_node
+				    : long_long_integer_type_node)) 
+	    trad_type = (spec_unsigned
+			 ? long_long_unsigned_type_node
+			 : long_long_integer_type_node);
+	  else
+	    trad_type = (spec_unsigned
+			 ? widest_unsigned_literal_type_node
+			 : widest_integer_literal_type_node);
+	}
+      if (warn_traditional || ! flag_traditional)
+	{
+	  /* Calculate the ISO type.  */
+	  if (! spec_long && ! spec_unsigned
+	      && int_fits_type_p (value, integer_type_node))
+	    ansi_type = integer_type_node;
+	  else if (! spec_long && (base != 10 || spec_unsigned)
+		   && int_fits_type_p (value, unsigned_type_node))
+	    ansi_type = unsigned_type_node;
+	  else if (! spec_unsigned && !spec_long_long
+		   && int_fits_type_p (value, long_integer_type_node))
+	    ansi_type = long_integer_type_node;
+	  else if (! spec_long_long
+		   && int_fits_type_p (value, long_unsigned_type_node))
+	    ansi_type = long_unsigned_type_node;
+	  else if (! spec_unsigned
+		   && int_fits_type_p (value, long_long_integer_type_node))
+	    ansi_type = long_long_integer_type_node;
+	  else if (int_fits_type_p (value, long_long_unsigned_type_node))
+	    ansi_type = long_long_unsigned_type_node;
+	  else if (! spec_unsigned
+		   && int_fits_type_p (value, widest_integer_literal_type_node))
+	    ansi_type = widest_integer_literal_type_node;
+	  else
+	    ansi_type = widest_unsigned_literal_type_node;
+	}
+
+      type = flag_traditional ? trad_type : ansi_type;
+
+      /* We assume that constants specified in a non-decimal
+	 base are bit patterns, and that the programmer really
+	 meant what they wrote.  */
+      if (warn_traditional && !in_system_header
+	  && base == 10 && trad_type != ansi_type)
+	{
+	  if (TYPE_PRECISION (trad_type) != TYPE_PRECISION (ansi_type))
+	    warning ("width of integer constant changes with -traditional");
+	  else if (TREE_UNSIGNED (trad_type) != TREE_UNSIGNED (ansi_type))
+	    warning ("integer constant is unsigned in ISO C, signed with -traditional");
+	  else
+	    warning ("width of integer constant may change on other systems with -traditional");
+	}
+
+      if (pedantic && !flag_traditional && !spec_long_long && !warn
+	  && (TYPE_PRECISION (long_integer_type_node) < TYPE_PRECISION (type)))
+	{
+	  warn = 1;
+	  pedwarn ("integer constant larger than the maximum value of an unsigned long int");
+	}
+
+      if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
+	warning ("decimal constant is so large that it is unsigned");
+
+      if (spec_imag)
+	{
+	  if (TYPE_PRECISION (type)
+	      <= TYPE_PRECISION (integer_type_node))
+	    value = build_complex (NULL_TREE, integer_zero_node,
+				   convert (integer_type_node, value));
+	  else
+	    ERROR ("complex integer constant is too wide for 'complex int'");
+	}
+      else if (flag_traditional && !int_fits_type_p (value, type))
+	/* The traditional constant 0x80000000 is signed
+	   but doesn't fit in the range of int.
+	   This will change it to -0x80000000, which does fit.  */
+	{
+	  TREE_TYPE (value) = unsigned_type (type);
+	  value = convert (type, value);
+	  TREE_OVERFLOW (value) = TREE_CONSTANT_OVERFLOW (value) = 0;
+	}
+      else
+	TREE_TYPE (value) = type;
+
+      /* If it's still an integer (not a complex), and it doesn't
+	 fit in the type we choose for it, then pedwarn. */
+
+      if (! warn
+	  && TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
+	  && ! int_fits_type_p (value, TREE_TYPE (value)))
+	pedwarn ("integer constant is larger than the maximum value for its type");
+    }
+
+  if (p < str + len)
+    error ("missing white space after number '%.*s'", (int) (p - str), str);
+
+  return value;
+
+ syntax_error:
+  return integer_zero_node;
+}
+
+static tree
+lex_string (str, len, wide)
+     const char *str;
+     unsigned int len;
+     int wide;
+{
+  tree value;
+  char *buf = alloca ((len + 1) * (wide ? WCHAR_BYTES : 1));
+  char *q = buf;
+  const char *p = str, *limit = str + len;
+  unsigned int c;
+  unsigned width = wide ? WCHAR_TYPE_SIZE
+			: TYPE_PRECISION (char_type_node);
+
+#ifdef MULTIBYTE_CHARS
+  /* Reset multibyte conversion state.  */
+  (void) local_mbtowc (NULL_PTR, NULL_PTR, 0);
+#endif
+
+  while (p < limit)
+    {
+#ifdef MULTIBYTE_CHARS
+      wchar_t wc;
+      int char_len;
+
+      char_len = local_mbtowc (&wc, p, limit - p);
+      if (char_len == -1)
+	{
+	  warning ("Ignoring invalid multibyte character");
+	  char_len = 1;
+	  c = *p++;
+	}
+      else
+	{
+	  p += char_len;
+	  c = wc;
+	}
+#else
+      c = *p++;
+#endif
+
+      if (c == '\\' && !ignore_escape_flag)
+	{
+	  p = readescape (p, limit, &c);
+	  if (width < HOST_BITS_PER_INT
+	      && (unsigned) c >= ((unsigned)1 << width))
+	    pedwarn ("escape sequence out of range for character");
+	}
+	
+      /* Add this single character into the buffer either as a wchar_t
+	 or as a single byte.  */
+      if (wide)
+	{
+	  unsigned charwidth = TYPE_PRECISION (char_type_node);
+	  unsigned bytemask = (1 << width) - 1;
+	  int byte;
+
+	  for (byte = 0; byte < WCHAR_BYTES; ++byte)
+	    {
+	      int n;
+	      if (byte >= (int) sizeof (c))
+		n = 0;
+	      else
+		n = (c >> (byte * charwidth)) & bytemask;
+	      if (BYTES_BIG_ENDIAN)
+		q[WCHAR_BYTES - byte - 1] = n;
+	      else
+		q[byte] = n;
+	    }
+	  q += WCHAR_BYTES;
+	}
+      else
+	{
+	  *q++ = c;
+	}
+    }
+
+  /* Terminate the string value, either with a single byte zero
+     or with a wide zero.  */
+
+  if (wide)
+    {
+      memset (q, 0, WCHAR_BYTES);
+      q += WCHAR_BYTES;
+    }
+  else
+    {
+      *q++ = '\0';
+    }
+
+  value = build_string (q - buf, buf);
+
+  if (wide)
+    TREE_TYPE (value) = wchar_array_type_node;
+  else
+    TREE_TYPE (value) = char_array_type_node;
   return value;
 }
 
-/* Sets the value of the 'yydebug' variable to VALUE.
-   This is a function so we don't have to have YYDEBUG defined
-   in order to build the compiler.  */
-
-void
-set_yydebug (value)
-     int value;
+static tree
+lex_charconst (str, len, wide)
+     const char *str;
+     unsigned int len;
+     int wide;
 {
-#if YYDEBUG != 0
-  yydebug = value;
-#else
-  warning ("YYDEBUG not defined.");
+  const char *limit = str + len;
+  int result = 0;
+  int num_chars = 0;
+  int chars_seen = 0;
+  unsigned width = TYPE_PRECISION (char_type_node);
+  int max_chars;
+  unsigned int c;
+  tree value;
+
+#ifdef MULTIBYTE_CHARS
+  int longest_char = local_mb_cur_max ();
+  (void) local_mbtowc (NULL_PTR, NULL_PTR, 0);
 #endif
+
+  max_chars = TYPE_PRECISION (integer_type_node) / width;
+  if (wide)
+    width = WCHAR_TYPE_SIZE;
+
+  while (str < limit)
+    {
+#ifdef MULTIBYTE_CHARS
+      wchar_t wc;
+      int char_len;
+
+      char_len = local_mbtowc (&wc, str, limit - str);
+      if (char_len == -1)
+	{
+	  warning ("Ignoring invalid multibyte character");
+	  char_len = 1;
+	  c = *str++;
+	}
+      else
+	{
+	  p += char_len;
+	  c = wc;
+	}
+#else
+      c = *str++;
+#endif
+
+      ++chars_seen;
+      if (c == '\\')
+	{
+	  str = readescape (str, limit, &c);
+	  if (width < HOST_BITS_PER_INT
+	      && (unsigned) c >= ((unsigned)1 << width))
+	    pedwarn ("escape sequence out of range for character");
+	}
+#ifdef MAP_CHARACTER
+      if (ISPRINT (c))
+	c = MAP_CHARACTER (c);
+#endif
+      
+      /* Merge character into result; ignore excess chars.  */
+      num_chars += (width / TYPE_PRECISION (char_type_node));
+      if (num_chars < max_chars + 1)
+	{
+	  if (width < HOST_BITS_PER_INT)
+	    result = (result << width) | (c & ((1 << width) - 1));
+	  else
+	    result = c;
+	}
+    }
+
+  if (chars_seen == 0)
+    error ("empty character constant");
+  else if (num_chars > max_chars)
+    {
+      num_chars = max_chars;
+      error ("character constant too long");
+    }
+  else if (chars_seen != 1 && ! flag_traditional && warn_multichar)
+    warning ("multi-character character constant");
+
+  /* If char type is signed, sign-extend the constant.  */
+  if (! wide)
+    {
+      int num_bits = num_chars * width;
+      if (num_bits == 0)
+	/* We already got an error; avoid invalid shift.  */
+	value = build_int_2 (0, 0);
+      else if (TREE_UNSIGNED (char_type_node)
+	       || ((result >> (num_bits - 1)) & 1) == 0)
+	value = build_int_2 (result & (~(unsigned HOST_WIDE_INT) 0
+				       >> (HOST_BITS_PER_WIDE_INT - num_bits)),
+			     0);
+      else
+	value = build_int_2 (result | ~(~(unsigned HOST_WIDE_INT) 0
+					>> (HOST_BITS_PER_WIDE_INT - num_bits)),
+			     -1);
+      /* In C, a character constant has type 'int'; in C++, 'char'.  */
+      if (chars_seen <= 1 && c_language == clk_cplusplus)
+	TREE_TYPE (value) = char_type_node;
+      else
+	TREE_TYPE (value) = integer_type_node;
+    }
+  else
+    {
+      value = build_int_2 (result, 0);
+      TREE_TYPE (value) = wchar_type_node;
+    }
+
+  return value;
 }

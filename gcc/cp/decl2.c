@@ -368,10 +368,6 @@ int flag_labels_ok;
 
 int flag_ms_extensions;
 
-/* Non-zero means to collect statistics which might be expensive
-   and to print them when we are done.  */
-int flag_detailed_statistics;
-
 /* C++ specific flags.  */   
 /* Zero means that `this' is a *const.  This gives nice behavior in the
    2.0 world.  1 gives 1.2-compatible behavior.  2 gives Spring behavior.
@@ -601,6 +597,8 @@ lang_decode_option (argc, argv)
 
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
     /* ignore */;
+  else if (!strcmp (p, "-lang-c++"))
+    /* ignore - cpplib needs to see this */;
   else if (p[0] == '-' && p[1] == 'f')
     {
       /* Some kind of -f option.
@@ -922,7 +920,6 @@ void
 grok_x_components (specs)
      tree specs;
 {
-  struct pending_inline **p;
   tree t;
 
   specs = strip_attrs (specs);
@@ -937,13 +934,6 @@ grok_x_components (specs)
 
   fixup_anonymous_aggr (t);
   finish_member_declaration (build_decl (FIELD_DECL, NULL_TREE, t)); 
-
-  /* Ignore any inline function definitions in the anonymous union
-     since an anonymous union may not have function members.  */
-  p = &pending_inlines;
-  for (; *p; *p = (*p)->next)
-    if (DECL_CONTEXT ((*p)->fndecl) != t)
-      break;
 }
 
 /* Returns a PARM_DECL for a parameter of the indicated TYPE, with the

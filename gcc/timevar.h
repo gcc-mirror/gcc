@@ -19,6 +19,9 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
+#ifndef GCC_TIMEVAR_H
+#define GCC_TIMEVAR_H
+
 /* Timing variables are used to measure elapsed time in various
    portions of the compiler.  Each measures elapsed user, system, and
    wall-clock time, as appropriate to and supported by the host
@@ -84,3 +87,5 @@ extern void timevar_print PARAMS ((FILE *));
 /* Provided for backward compatibility.  */
 extern long get_run_time PARAMS ((void));
 extern void print_time PARAMS ((const char *, long));
+
+#endif

@@ -12,14 +12,14 @@ testfunc (void)
 
   i = 1L;
   i = 1l;
-  i = 1U; /* { dg-warning "traditional C rejects the `U' suffix" "numeric constant suffix" } */
-  i = 1u; /* { dg-warning "traditional C rejects the `u' suffix" "numeric constant suffix" } */
+  i = 1U; /* { dg-warning "traditional C rejects the 'u' suffix" "numeric constant suffix" } */
+  i = 1u; /* { dg-warning "traditional C rejects the 'u' suffix" "numeric constant suffix" } */
   f = 1.0;
-  f = 1.0F; /* { dg-warning "traditional C rejects the `F' suffix" "numeric constant suffix" } */
-  f = 1.0f; /* { dg-warning "traditional C rejects the `f' suffix" "numeric constant suffix" } */
-  f = 1.0L; /* { dg-warning "traditional C rejects the `L' suffix" "numeric constant suffix" } */
-  f = 1.0l; /* { dg-warning "traditional C rejects the `l' suffix" "numeric constant suffix" } */
-  
+  f = 1.0F; /* { dg-warning "traditional C rejects the 'f' suffix" "numeric constant suffix" } */
+  f = 1.0f; /* { dg-warning "traditional C rejects the 'f' suffix" "numeric constant suffix" } */
+  f = 1.0L; /* { dg-warning "traditional C rejects the 'l' suffix" "numeric constant suffix" } */
+  f = 1.0l; /* { dg-warning "traditional C rejects the 'l' suffix" "numeric constant suffix" } */
+ 
 #line 24 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 

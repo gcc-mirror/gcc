@@ -477,6 +477,10 @@ int time_report = 0;
 
 int mem_report = 0;
 
+/* Non-zero means to collect statistics which might be expensive
+   and to print them when we are done.  */
+int flag_detailed_statistics = 0;
+
 
 /* -f flags.  */
 

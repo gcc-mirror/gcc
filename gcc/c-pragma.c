@@ -28,8 +28,27 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "c-lex.h"
+#include "cpplib.h"
 
 #ifdef HANDLE_GENERIC_PRAGMAS
+
+#if USE_CPPLIB
+extern cpp_reader parse_in;
+#else
+struct pragma_entry;
+static struct pragma_entry *pragmas;
+
+void cpp_register_pragma PARAMS ((cpp_reader *, const char *, const char *,
+				  void (*) PARAMS ((cpp_reader *)) ));
+void cpp_register_pragma_space PARAMS ((cpp_reader *, const char *));
+#endif
+
+#define BAD(msgid) do { warning (msgid); return; } while (0)
+#define BAD2(msgid, arg) do { warning (msgid, arg); return; } while (0)
+
+#ifdef HANDLE_PRAGMA_PACK
+static void handle_pragma_pack PARAMS ((cpp_reader *));
 
 #ifdef HANDLE_PRAGMA_PACK_PUSH_POP
 typedef struct align_stack
@@ -48,34 +67,19 @@ static struct align_stack * alignment_stack = NULL;
    happens, we restore the value to this, not to a value of 0 for
    maximum_field_alignment.  Value is in bits. */
 static int  default_alignment;
+#define SET_GLOBAL_ALIGNMENT(ALIGN) \
+(default_alignment = maximum_field_alignment = (ALIGN))
 
-static int  push_alignment PARAMS ((int, tree));
-static int  pop_alignment  PARAMS ((tree));
-#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
+static void push_alignment PARAMS ((int, tree));
+static void pop_alignment  PARAMS ((tree));
 static void mark_align_stack PARAMS ((void *));
-#endif
 
 /* Push an alignment value onto the stack.  */
-static int
+static void
 push_alignment (alignment, id)
      int alignment;
      tree id;
 {
-  switch (alignment)
-    {
-    case 0:
-    case 1:
-    case 2:
-    case 4:
-    case 8:
-    case 16:
-      break;
-    default:
-      warning ("\
-Alignment must be a small power of two, not %d, in #pragma pack",
-	       alignment);
-      return 0;
-    }
   
   if (alignment_stack == NULL
       || alignment_stack->alignment != alignment
@@ -98,16 +102,14 @@ Alignment must be a small power of two, not %d, in #pragma pack",
       
       alignment_stack = entry;
 
-      maximum_field_alignment = alignment * BITS_PER_UNIT;
+      maximum_field_alignment = alignment;
     }
   else
     alignment_stack->num_pushes ++;
-
-  return 1;
 }
 
 /* Undo a push of an alignment onto the stack.  */
-static int
+static void
 pop_alignment (id)
      tree id;
 {
@@ -118,7 +120,7 @@ pop_alignment (id)
       warning ("\
 #pragma pack (pop) encountered without matching #pragma pack (push, <n>)"
 	       );
-      return 0;
+      return;
     }
 
   /* If we got an identifier, strip away everything above the target
@@ -145,301 +147,14 @@ pop_alignment (id)
       if (entry == NULL)
 	maximum_field_alignment = default_alignment;
       else
-	maximum_field_alignment = entry->alignment * BITS_PER_UNIT;
+	maximum_field_alignment = entry->alignment;
 
       free (alignment_stack);
 
       alignment_stack = entry;
     }
-
-  return 1;
 }
-#endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
-
-/* Handle one token of a pragma directive.  TOKEN is the current token, and
-   STRING is its printable form.  Some front ends do not support generating
-   tokens, and will only pass in a STRING.  Also some front ends will reuse
-   the buffer containing STRING, so it must be copied to a local buffer if
-   it needs to be preserved.
 
-   If STRING is non-NULL, then the return value will be ignored, and there
-   will be futher calls to handle_pragma_token in order to handle the rest of
-   the line containing the #pragma directive.  If STRING is NULL, the entire
-   line has now been presented to handle_pragma_token and the return value
-   should be zero if the pragma flawed in some way, or if the pragma was not
-   recognised, and non-zero if it was successfully handled.  */
-
-int
-handle_pragma_token (string, token)
-     const char *string;
-     tree token;
-{
-  static enum pragma_state state = ps_start;
-  static enum pragma_state type;
-#ifdef HANDLE_PRAGMA_WEAK
-  static char *name;
-  static char *value;
-#endif
-#if defined(HANDLE_PRAGMA_PACK) || defined(HANDLE_PRAGMA_PACK_PUSH_POP)
-  static unsigned int align;
-#endif
-  static tree id;
-
-  /* If we have reached the end of the #pragma directive then
-     determine what value we should return.  */
-  
-  if (string == NULL)
-    {
-      int ret_val = 0;
-
-      switch (type)
-	{
-	default:
-	  abort ();
-	  break;
-
-	case ps_done:
-	  /* The pragma was not recognised.  */
-	  break;
-	  
-#ifdef HANDLE_PRAGMA_PACK	  
-	case ps_pack:
-	  if (state == ps_right)
-	    {
-	      maximum_field_alignment = align * BITS_PER_UNIT;
-#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
-	      default_alignment = maximum_field_alignment;
-#endif
-	      ret_val = 1;
-	    }
-	  else
-	    warning ("malformed `#pragma pack'");
-	  break;
-#endif /* HANDLE_PRAGMA_PACK */
-	  
-#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
-	case ps_push:
-	  if (state == ps_right)
-	    ret_val = push_alignment (align, id);
-	  else
-	    warning ("malformed '#pragma pack(push[,id],<n>)'");
-	  break;
-	  
-	case ps_pop:
-	  if (state == ps_right)
-	    ret_val = pop_alignment (id);
-	  else
-	    warning ("malformed '#pragma pack(pop[,id])'");
-	  break;
-#endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
-	  
-#ifdef HANDLE_PRAGMA_WEAK
-	case ps_weak:
-	  if (HANDLE_PRAGMA_WEAK)
-	    {
-	      if (state == ps_name)
-		ret_val = add_weak (name, NULL);
-	      else if (state == ps_value)
-		ret_val = add_weak (name, value);
-	      else
-		warning ("malformed `#pragma weak'");
-	    }
-	  else
-	    ret_val = 1; /* Ignore the pragma.  */
-	  break;
-#endif /* HANDLE_PRAGMA_WEAK */
-
-	case ps_poison:
-	  ret_val = 1;
-	  break;
-	}
-
-      type = state = ps_start;
-      id = NULL_TREE;
-      
-      return ret_val;
-    }
-
-  /* If we have been given a token, but it is not an identifier,
-     or a small constant, then something has gone wrong.  */
-  if (token)
-    {
-      switch (TREE_CODE (token))
-	{
-	case IDENTIFIER_NODE:
-	  break;
-	  
-	case INTEGER_CST:
-	  if (TREE_INT_CST_HIGH (token) != 0)
-	    return 0;
-	  break;
-	  
-	default:
-	  return 0;
-	}
-    }
-      
-  switch (state)
-    {
-    case ps_start:
-      type = state = ps_done;
-#ifdef HANDLE_PRAGMA_PACK
-      if (strcmp (string, "pack") == 0)
-	type = state = ps_pack;
-#endif
-#ifdef HANDLE_PRAGMA_WEAK
-      if (strcmp (string, "weak") == 0)
-	type = state = ps_weak;
-#endif
-      if (strcmp (string, "poison") == 0)
-	type = state = ps_poison;
-      break;
-
-#ifdef HANDLE_PRAGMA_WEAK
-    case ps_weak:
-      name = xstrdup (string);
-      state = ps_name;
-      break;
-      
-    case ps_name:
-      state = (strcmp (string, "=") ? ps_bad : ps_equals);
-      break;
-
-    case ps_equals:
-      value = xstrdup (string);
-      state = ps_value;
-      break;
-
-    case ps_value:
-      state = ps_bad;
-      break;
-#endif /* HANDLE_PRAGMA_WEAK */
-      
-#ifdef HANDLE_PRAGMA_PACK
-    case ps_pack:
-      state = (strcmp (string, "(") ? ps_bad : ps_left);
-      break;
-
-    case ps_left:
-
-      if (token == NULL_TREE)
-	{
-	  /* #pragma pack () resets packing rules to their
-	     defaults.  */
-	  if (strcmp (string, ")") == 0)
-	    {
-	      align = 0;
-	      state = ps_right;
-	    }
-	  else
-	    state = ps_bad;
-	}
-      else if (TREE_CODE (token) == INTEGER_CST)
-	goto handle_align;
-
-#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
-      else if (TREE_CODE (token) == IDENTIFIER_NODE)
-	{
-	  if (strcmp (string, "push") == 0)
-	    type = state = ps_push;
-	  else if (strcmp (string, "pop") == 0)
-	    type = state = ps_pop;
-	  else
-	    state = ps_bad;
-	}
-#endif
-      else
-	state = ps_bad;
-      break;
-
-    handle_align:
-      switch (tree_log2 (token))
-	{
-	case 0:
-	case 1:
-	case 2:
-	case 3:
-	case 4:
-	  state = ps_align;
-	  align = 1 << tree_log2 (token);
-	  break;
-
-	default:
-	  state = ps_bad;
-	  break;
-	}
-      break;
-
-    case ps_align:
-      state = (strcmp (string, ")") ? ps_bad : ps_right);
-      break;
-
-    case ps_right:
-      state = ps_bad;
-      break;
-#endif /* HANDLE_PRAGMA_PACK */
-
-#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
-    case ps_push:
-      state = (strcmp (string, ",") ? ps_bad : ps_pushcomma);
-      break;
-
-    case ps_pushid:
-      state = (strcmp (string, ",") ? ps_bad : ps_pushcomma2);
-      break;
-
-    case ps_pushcomma:
-      if (token && TREE_CODE (token) == IDENTIFIER_NODE)
-	{
-	  id = token;
-	  state = ps_pushid;
-	  break;
-	}
-
-      /* else fall through */
-    case ps_pushcomma2:
-      if (token && TREE_CODE (token) == INTEGER_CST)
-	goto handle_align;
-      else
-	state = ps_bad;
-      break;
-
-    case ps_pop:
-      if (strcmp (string, ",") == 0)
-	state = ps_popcomma;
-      else
-	state = (strcmp (string, ")") ? ps_bad : ps_right);
-      break;
-
-    case ps_popcomma:
-      if (token && TREE_CODE (token) == IDENTIFIER_NODE)
-	{
-	  id = token;
-	  state = ps_align;
-	}
-      else
-	state = ps_bad;
-      break;
-#endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
-
-    case ps_poison:
-      if (token && TREE_CODE (token) != IDENTIFIER_NODE)
-	state = ps_bad;
-      break;
-
-    case ps_bad:
-    case ps_done:
-      break;
-
-    default:
-      abort ();
-    }
-
-  return 1;
-}
-#endif /* HANDLE_GENERIC_PRAGMAS */
-
-#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
 static void
 mark_align_stack (p)
     void *p;
@@ -452,13 +167,287 @@ mark_align_stack (p)
       a = a->prev;
     }
 }
+#else  /* not HANDLE_PRAGMA_PACK_PUSH_POP */
+#define SET_GLOBAL_ALIGNMENT(ALIGN) (maximum_field_alignment = (ALIGN))
+#define push_alignment(ID, N) \
+    BAD("#pragma pack(push[, id], <n>) is not supported on this target")
+#define pop_alignment(ID) \
+    BAD("#pragma pack(pop[, id], <n>) is not supported on this target")
+#endif /* HANDLE_PRAGMA_PACK_PUSH_POP */
+
+/* #pragma pack ()
+   #pragma pack (N)
+   
+   #pragma pack (push, N)
+   #pragma pack (push, ID, N)
+   #pragma pack (pop)
+   #pragma pack (pop, ID) */
+static void
+handle_pragma_pack (dummy)
+     cpp_reader *dummy ATTRIBUTE_UNUSED;
+{
+  tree x, id = 0;
+  int align;
+  enum cpp_ttype token;
+  enum { set, reset, push, pop } action;
+
+  if (c_lex (&x) != CPP_OPEN_PAREN)
+    BAD ("missing '(' after '#pragma pack' - ignored");
+
+  token = c_lex (&x);
+  if (token == CPP_CLOSE_PAREN)
+    action = reset;
+  else if (token == CPP_NUMBER)
+    {
+      align = TREE_INT_CST_LOW (x);
+      action = set;
+    }
+  else if (token == CPP_NAME)
+    {
+      if (!strcmp (IDENTIFIER_POINTER (x), "push"))
+	action = push;
+      else if (!strcmp (IDENTIFIER_POINTER (x), "pop"))
+	action = pop;
+      else
+	BAD2 ("unknown action '%s' for '#pragma pack' - ignored",
+	      IDENTIFIER_POINTER (x));
+    }
+  else
+    BAD ("malformed '#pragma pack' - ignored");
+
+  token = c_lex (&x);
+  if ((action == set || action == reset) && token != CPP_CLOSE_PAREN)
+    BAD ("malformed '#pragma pack' - ignored");
+  if ((action == push || action == pop) && token != CPP_COMMA)
+    BAD2 ("malformed '#pragma pack(%s[, id], <n>)' - ignored",
+	  action == push ? "push" : "pop");
+
+  if (action == push || action == pop)
+    {
+      token = c_lex (&x);
+      if (token == CPP_NAME)
+	{
+	  id = x;
+	  if (c_lex (&x) != CPP_COMMA)
+	    BAD2 ("malformed '#pragma pack(%s[, id], <n>)' - ignored",
+		  action == push ? "push" : "pop");
+	  token = c_lex (&x);
+	}
+      if (token == CPP_NUMBER)
+	align = TREE_INT_CST_LOW (x);
+      else
+	BAD2 ("malformed '#pragma pack(%s[, id], <n>)' - ignored",
+	      action == push ? "push" : "pop");
+
+      if (c_lex (&x) != CPP_CLOSE_PAREN)
+	BAD ("malformed '#pragma pack' - ignored");
+    }
+  if (c_lex (&x) != CPP_EOF)
+    warning ("junk at end of '#pragma pack'");
+
+  switch (align)
+    {
+    case 0:
+    case 1:
+    case 2:
+    case 4:
+    case 8:
+    case 16:
+      align *= BITS_PER_UNIT;
+      break;
+    default:
+      BAD2 ("alignment must be a small power of two, not %d", align);
+    }
+
+  switch (action)
+    {
+    case set:   SET_GLOBAL_ALIGNMENT (align);  break;
+    case reset: SET_GLOBAL_ALIGNMENT (0);      break;
+    case push:  push_alignment (align, id);    break;
+    case pop:   pop_alignment (id);            break;
+    }
+}
+#endif  /* HANDLE_PRAGMA_PACK */
+
+#ifdef HANDLE_PRAGMA_WEAK
+static void handle_pragma_weak PARAMS ((cpp_reader *));
+
+/* #pragma weak name [= value] */
+static void
+handle_pragma_weak (dummy)
+     cpp_reader *dummy ATTRIBUTE_UNUSED;
+{
+  tree name, value, x;
+  enum cpp_ttype t;
+
+  value = 0;
+
+  if (c_lex (&name) != CPP_NAME)
+    BAD ("malformed #pragma weak, ignored");
+  t = c_lex (&x);
+  if (t == CPP_EQ)
+    {
+      if (c_lex (&value) != CPP_NAME)
+	BAD ("malformed #pragma weak, ignored");
+      t = c_lex (&x);
+    }
+  if (t != CPP_EOF)
+    warning ("junk at end of #pragma weak");
+
+  add_weak (IDENTIFIER_POINTER (name), value ? IDENTIFIER_POINTER (value) : 0);
+}
+#endif
+
+#if !USE_CPPLIB
+/* Glue version of cpplib's pragma registration and dispatch system.  */
+struct pragma_entry
+{
+  struct pragma_entry *next;
+  const char *name;
+  size_t len;
+  int isnspace;
+  union {
+    void (*handler) PARAMS ((cpp_reader *));
+    struct pragma_entry *space;
+  } u;
+};
+
+void
+cpp_register_pragma_space (pfile, space)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     const char *space;
+{
+  struct pragma_entry *new;
+  const struct pragma_entry *p = pragmas;
+  size_t len = strlen (space);
+
+  while (p)
+    {
+      if (p->isnspace && p->len == len && !memcmp (p->name, space, len))
+	return;
+      p = p->next;
+    }
+
+  new = (struct pragma_entry *) xmalloc (sizeof (struct pragma_entry));
+  new->name = space;
+  new->len = len;
+  new->isnspace = 1;
+  new->u.space = 0;
+
+  new->next = pragmas;
+  pragmas = new;
+}
+
+void
+cpp_register_pragma (pfile, space, name, handler)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     const char *space;
+     const char *name;
+     void (*handler) PARAMS ((cpp_reader *));
+{
+  struct pragma_entry **x, *new;
+  size_t len;
+
+  x = &pragmas;
+  if (space)
+    {
+      struct pragma_entry *p = pragmas;
+      len = strlen (space);
+      while (p)
+	{
+	  if (p->isnspace && p->len == len && !memcmp (p->name, space, len))
+	    {
+	      x = &p->u.space;
+	      goto found;
+	    }
+	  p = p->next;
+	}
+      abort ();
+    }
+
+ found:
+  new = (struct pragma_entry *) xmalloc (sizeof (struct pragma_entry));
+  new->name = name;
+  new->len = strlen (name);
+  new->isnspace = 0;
+  new->u.handler = handler;
+
+  new->next = *x;
+  *x = new;
+}
+
+/* Called from process_directive() for #pragma lines.  */
+void
+dispatch_pragma ()
+{
+  enum cpp_ttype t;
+  tree x;
+  const struct pragma_entry *p;
+  const char *name;
+  size_t len;
+
+  p = pragmas;
+
+ new_space:
+  t = c_lex (&x);
+  if (t == CPP_EOF)
+    return;
+
+  if (t != CPP_NAME)
+    {
+      warning ("malformed #pragma directive");
+      return;
+    }
+
+  name = IDENTIFIER_POINTER (x);
+  len = IDENTIFIER_LENGTH (x);
+  while (p)
+    {
+      if (strlen (p->name) == len && !memcmp (p->name, name, len))
+	{
+	  if (p->isnspace)
+	    {
+	      p = p->u.space;
+	      goto new_space;
+	    }
+	  else
+	    {
+	      (*p->u.handler) (0);
+	      return;
+	    }
+	}
+      p = p->next;
+    }
+
+  /* Issue a warning message if we have been asked to do so.  Ignore
+     unknown pragmas in system header file unless an explcit
+     -Wunknown-pragmas has been given. */
+  if (warn_unknown_pragmas > in_system_header)
+    warning ("ignoring pragma %s", name);
+}
+
 #endif
 
 void
 init_pragma ()
 {
+#if !USE_CPPLIB
+  cpp_reader *pfile = 0;
+#else
+  cpp_reader *pfile = &parse_in;
+#endif
+
+#ifdef HANDLE_PRAGMA_PACK
+  cpp_register_pragma (pfile, 0, "pack", handle_pragma_pack);
+#endif
+#ifdef HANDLE_PRAGMA_WEAK
+  cpp_register_pragma (pfile, 0, "weak", handle_pragma_weak);
+#endif
+
 #ifdef HANDLE_PRAGMA_PACK_PUSH_POP
   ggc_add_root (&alignment_stack, 1, sizeof(alignment_stack),
 		mark_align_stack);
 #endif
 }
+
+#endif /* HANDLE_GENERIC_PRAGMAS */

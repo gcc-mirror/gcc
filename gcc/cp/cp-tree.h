@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Usage of TREE_LANG_FLAG_?:
    0: BINFO_MARKED (BINFO nodes).
+      IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       NEW_EXPR_USE_GLOBAL (in NEW_EXPR).
       DELETE_EXPR_USE_GLOBAL (in DELETE_EXPR).
       LOOKUP_EXPR_GLOBAL (in LOOKUP_EXPR).
@@ -71,7 +72,7 @@ Boston, MA 02111-1307, USA.  */
           or FIELD_DECL).
       NEED_TEMPORARY_P (in REF_BIND, BASE_CONV)
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
-   5: Unused.
+   5: C_IS_RESERVED_WORD (in IDENTIFIER_NODE)
    6: BINFO_ACCESS (in BINFO)
 
    Usage of TYPE_LANG_FLAG_?:
@@ -282,7 +283,20 @@ struct lang_identifier
   tree class_value;
   tree class_template_info;
   struct lang_id2 *x;
+  enum rid rid_code;
 };
+
+/* In an IDENTIFIER_NODE, nonzero if this identifier is actually a
+   keyword.  C_RID_CODE (node) is then the RID_* value of the keyword,
+   and C_RID_YYCODE is the token number wanted by Yacc.  */
+
+#define C_IS_RESERVED_WORD(id) TREE_LANG_FLAG_5 (id)
+#define C_RID_CODE(id) \
+  (((struct lang_identifier *) (id))->rid_code)
+
+extern const short rid_to_yy[RID_MAX];
+#define C_RID_YYCODE(id) \
+  rid_to_yy[((struct lang_identifier *) (id))->rid_code]
 
 #define LANG_IDENTIFIER_CAST(NODE) \
 	((struct lang_identifier*)IDENTIFIER_NODE_CHECK (NODE))
@@ -467,15 +481,6 @@ struct tree_srcloc
    IDENTIFIER_BINDING.  */
 #define IDENTIFIER_CLASS_VALUE(NODE) \
   (LANG_IDENTIFIER_CAST (NODE)->class_value)
-
-/* The amount of time used by the file whose special "time identifier"
-   is NODE, represented as an INTEGER_CST.  See get_time_identifier.  */
-#define TIME_IDENTIFIER_TIME(NODE) IDENTIFIER_BINDING(NODE)
-
-/* For a "time identifier" this is a INTEGER_CST.  The
-   TREE_INT_CST_LOW is 1 if the corresponding file is "interface only".
-   The TRE_INT_CST_HIGH is 1 if it is "interface unknown".  */
-#define TIME_IDENTIFIER_FILEINFO(NODE) IDENTIFIER_CLASS_VALUE (NODE)
 
 /* TREE_TYPE only indicates on local and class scope the current
    type. For namespace scope, the presence of a type in any namespace
@@ -1038,6 +1043,14 @@ extern int flag_cond_mismatch;
 /* Nonzero means don't recognize the keyword `asm'.  */
 
 extern int flag_no_asm;
+
+/* Nonzero means don't recognize any extended keywords.  */
+
+extern int flag_no_gnu_keywords;
+
+/* Nonzero means recognize the named operators from C++98.  */
+
+extern int flag_operator_names;
 
 /* For cross referencing.  */
 
@@ -1896,6 +1909,8 @@ struct lang_decl_flags
   } u2;
 };
 
+struct unparsed_text;
+
 struct lang_decl
 {
   struct lang_decl_flags decl_flags;
@@ -1911,7 +1926,7 @@ struct lang_decl
   union
   {
     tree sorted_fields;
-    struct pending_inline *pending_inline_info;
+    struct unparsed_text *pending_inline_info;
     struct language_function *saved_language_function;
   } u;
 
@@ -1925,8 +1940,6 @@ struct lang_decl
   } u2;
 };
 
-/* An un-parsed default argument looks like an identifier.  */
-#define DEFARG_LENGTH(NODE)  (DEFAULT_ARG_CHECK(NODE)->identifier.length)
 #define DEFARG_POINTER(NODE) (DEFAULT_ARG_CHECK(NODE)->identifier.pointer)
 
 /* Non-zero if NODE is a _DECL with TREE_READONLY set.  */
@@ -3212,10 +3225,6 @@ extern int flag_labels_ok;
 /* Nonzero means allow Microsoft extensions without a pedwarn.  */
 extern int flag_ms_extensions;
 
-/* Non-zero means to collect statistics which might be expensive
-   and to print them when we are done.  */
-extern int flag_detailed_statistics;
-
 /* Non-zero means warn in function declared in derived class has the
    same name as a virtual in the base class, but fails to match the
    type signature of any virtual function in the base class.  */
@@ -3502,25 +3511,6 @@ extern varray_type local_classes;
 
 
 /* Things for handling inline functions.  */
-
-struct pending_inline
-{
-  struct pending_inline *next;	/* pointer to next in chain */
-  int lineno;			/* line number we got the text from */
-  const char *filename;		/* name of file we were processing */
-  tree fndecl;			/* FUNCTION_DECL that brought us here */
-  int token;			/* token we were scanning */
-  int token_value;		/* value of token we were scanning (YYSTYPE) */
-
-  char *buf;			/* pointer to character stream */
-  int len;			/* length of stream */
-  unsigned int can_free : 1;	/* free this after we're done with it? */
-  unsigned int deja_vu : 1;	/* set iff we don't want to see it again.  */
-  unsigned int interface : 2;	/* 0=interface 1=unknown 2=implementation */
-};
-
-/* in method.c */
-extern struct pending_inline *pending_inlines;
 
 /* Negative values means we know `this' to be of static type.  */
 
@@ -4148,41 +4138,33 @@ extern void set_quals_and_spec			PARAMS ((tree, tree, tree));
 extern void lang_init				PARAMS ((void));
 extern void lang_finish				PARAMS ((void));
 extern void print_parse_statistics		PARAMS ((void));
-extern void extract_interface_info		PARAMS ((void));
 extern void do_pending_inlines			PARAMS ((void));
-extern void process_next_inline			PARAMS ((struct pending_inline *));
-extern struct pending_input *save_pending_input PARAMS ((void));
-extern void restore_pending_input		PARAMS ((struct pending_input *));
+extern void process_next_inline			PARAMS ((struct unparsed_text *));
+
 extern void yyungetc				PARAMS ((int, int));
-extern void reinit_parse_for_method		PARAMS ((int, tree));
-extern void reinit_parse_for_block		PARAMS ((int, struct obstack *));
+extern void snarf_method			PARAMS ((tree));
+
 extern void check_for_missing_semicolon		PARAMS ((tree));
 extern void note_got_semicolon			PARAMS ((tree));
 extern void note_list_got_semicolon		PARAMS ((tree));
 extern void do_pending_lang_change		PARAMS ((void));
-extern int identifier_type			PARAMS ((tree));
 extern void see_typename			PARAMS ((void));
 extern tree do_identifier			PARAMS ((tree, int, tree));
 extern tree do_scoped_id			PARAMS ((tree, int));
 extern tree identifier_typedecl_value		PARAMS ((tree));
-extern int real_yylex				PARAMS ((void));
-extern int is_rid				PARAMS ((tree));
 extern tree build_lang_decl			PARAMS ((enum tree_code, tree, tree));
 extern void retrofit_lang_decl			PARAMS ((tree));
 extern tree copy_decl                           PARAMS ((tree));
 extern void copy_lang_decl			PARAMS ((tree));
 extern tree cp_make_lang_type			PARAMS ((enum tree_code));
 extern tree make_aggr_type			PARAMS ((enum tree_code));
-extern void dump_time_statistics		PARAMS ((void));
 extern void compiler_error			PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1;
 extern void yyerror				PARAMS ((const char *));
 extern void clear_inline_text_obstack		PARAMS ((void));
 extern void maybe_snarf_defarg			PARAMS ((void));
-extern tree snarf_defarg			PARAMS ((void));
 extern void add_defarg_fn			PARAMS ((tree));
 extern void do_pending_defargs			PARAMS ((void));
-extern int identifier_type			PARAMS ((tree));
 extern void yyhook				PARAMS ((int));
 extern int cp_type_qual_from_rid                PARAMS ((tree));
 

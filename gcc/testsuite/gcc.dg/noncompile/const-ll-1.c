@@ -20,5 +20,5 @@
 
 */
 
-unsigned long long a = 1LUL; /* { dg-error "LUL" "error for LUL suffix" } */
+unsigned long long a = 1LUL; /* { dg-error "lul|LUL" "error for LUL suffix" } */
 long long b = 1Ll; /* { dg-error "Ll" "error for Ll suffix" } */

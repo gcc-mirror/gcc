@@ -1,4 +1,5 @@
 /* Tests for un-terminated conditionals: 1.  */
+/* { dg-do preprocess } */
 
 #if 1  /* { dg-error "unterminated" "unterminated #if" } */
 

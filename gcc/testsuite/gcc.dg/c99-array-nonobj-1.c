@@ -21,7 +21,7 @@ void g (struct s []); /* { dg-bogus "warning" "warning in place of error" } */
 /* { dg-error "array" "struct \[\] arg" { xfail *-*-* } 20 } */
 
 extern func c[]; /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "array" "func \[\] var" { xfail *-*-* } 23 } */
+/* { dg-error "array" "func \[\] var" { target *-*-* } 23 } */
 
 void h (func []); /* { dg-bogus "warning" "warning in place of error" } */
-/* { dg-error "array" "func \[\] arg" { xfail *-*-* } 26 } */
+/* { dg-error "array" "func \[\] arg" { target *-*-* } 26 } */

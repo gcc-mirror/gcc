@@ -567,7 +567,7 @@ static const char *cpp_options =
  %{fshort-wchar:-U__WCHAR_TYPE__ -D__WCHAR_TYPE__=short\\ unsigned\\ int}\
  %{fshow-column} %{fno-show-column}\
  %{fleading-underscore} %{fno-leading-underscore}\
- %{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z %i\
+ %{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{U*} %{D*} %{i*} %Z %i\
  %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}";
 
 static const char *cc1_options =
@@ -693,7 +693,7 @@ static struct compiler default_compilers[] =
   {".c", "@c"},
   {"@c",
 #if USE_CPPLIB
-     "%{E|M|MM:cpp0 -lang-c %{ansi:-std=c89} %(cpp_options)}\
+     "%{E|M|MM:%(trad_capable_cpp) -lang-c %{ansi:-std=c89} %(cpp_options)}\
       %{!E:%{!M:%{!MM:cc1 -lang-c %{ansi:-std=c89} %(cpp_options)\
 			  %(cc1_options) %{!fsyntax-only:%{!S:-o %{|!pipe:%g.s} |\n\
       as %(asm_options) %{!pipe:%g.s} %A }}}}}"

@@ -18,16 +18,20 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-extern char *token_buffer;	/* Pointer to token buffer.  */
+#ifndef _C_LEX_H
+#define _C_LEX_H
 
 extern tree make_pointer_declarator PARAMS ((tree, tree));
-extern void reinit_parse_for_function PARAMS ((void));
 extern void position_after_white_space PARAMS ((void));
 extern int check_newline PARAMS ((void));
 
-extern int yylex PARAMS ((void));
-extern void yyerror PARAMS ((const char *));
+extern int c_lex PARAMS ((tree *));
+extern const char *init_c_lex PARAMS ((const char *));
 
 extern void forget_protocol_qualifiers PARAMS ((void));
 extern void remember_protocol_qualifiers PARAMS ((void));
 extern tree is_class_name PARAMS ((tree));
+
+extern int indent_level;
+
+#endif

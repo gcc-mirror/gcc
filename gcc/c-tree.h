@@ -28,13 +28,18 @@ Boston, MA 02111-1307, USA.  */
 
 /* The limbo_value is used for block level extern declarations, which need
    to be type checked against subsequent extern declarations.  They can't
-   be referenced after they fall out of scope, so they can't be global.  */
+   be referenced after they fall out of scope, so they can't be global.
+
+   The rid_code field is used for keywords.  It is in all
+   lang_identifier nodes, because some keywords are only special in a
+   particular context.  */
 
 struct lang_identifier
 {
   struct tree_identifier ignore;
   tree global_value, local_value, label_value, implicit_decl;
   tree error_locus, limbo_value;
+  enum rid rid_code;
 };
 
 /* Macros for access to language-specific slots in an identifier.  */
@@ -82,6 +87,14 @@ extern int pedantic;
 /* In a RECORD_TYPE or UNION_TYPE or ENUMERAL_TYPE
    nonzero if the definition of the type has already started.  */
 #define C_TYPE_BEING_DEFINED(type) TYPE_LANG_FLAG_0 (type)
+
+/* In an IDENTIFIER_NODE, nonzero if this identifier is actually a
+   keyword.  C_RID_CODE (node) is then the RID_* value of the keyword,
+   and C_RID_YYCODE is the token number wanted by Yacc.  */
+
+#define C_IS_RESERVED_WORD(id) TREE_LANG_FLAG_0 (id)
+#define C_RID_CODE(id) \
+  (((struct lang_identifier *) (id))->rid_code)
 
 /* In a RECORD_TYPE, a sorted array of the fields of the type.  */
 struct lang_type

@@ -1,3 +1,81 @@
+2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
+
+	Integrated preprocessor.
+
+	* Makefile.in: Remove all references to c-parse.gperf,
+	c-gperf.h, and c-parse.h.  Remove -d from yacc command line
+	generating c-parse.c.  Update dependencies.
+	* c-parse.gperf, c-gperf.h: Delete.
+
+	* c-common.c: Don't define parse_options, cpp_token, yy_cur,
+	yy_lim, or yy_get_token.  Don't define get_directive_line if
+	USE_CPPLIB.
+	* c-common.h: Add multiple include guard.  Define RID values
+	for every keyword in C, C++, and Objective C.  Put all the
+	modifiers first.
+	(struct c_fileinfo, get_fileinfo, dump_time_statistics): New.
+	* c-decl.c (c_decode_option): Handle -lang-objc here.
+	(print_lang_identifier): Handle C_IS_RESERVED_WORD case.
+	(grokdeclarator): Adjust for new RID scheme.
+	(extract_interface_info): New stub.
+	* c-lang.c: Don't declare yy_cur or parse_options.
+	(lang_init_options): Call cpp_init.  Don't call
+	cpp_options_init.
+	(lang_init): Don't call check_newline if USE_CPPLIB.
+
+	* c-lex.c: Don't include c-parse.h.  Do include timevar.h.
+	Elide lots of unnecessary code if USE_CPPLIB.  Delete code
+	rendered unnecessary by new architecture.  Move routines not
+	shared with C++ to c-parse.in.  Maintain a local idea of the
+	line number.    Handle C++ as well as C.
+	[USE_CPPLIB]: Declare and register callbacks for #ident and
+	for entering/leaving files.
+	(init_c_lex, c_lex): Are now the entry points to this file.
+	(check_newline): Break out directive handling to
+	process_directive.
+	(read_ucs, is_extended_char, utf8_extend_token): Moved here
+	from C++ front end.
+	(readescape, parse_float): Overhaul.
+	(lex_number, lex_string, lex_charconst): Break out of c_lex
+	(n'ee yylex).
+	(get_fileinfo, update_header_times, dump_one_header,
+	dump_time_statistics): New and/or moved here from C++.
+	Support per-file data needed by C++ and per-header timing
+	statistics (C++ only, at the moment).
+	* c-lex.h: Update prototypes.  Add multiple include guard.
+	* c-tree.h (struct lang_identifier): Add rid_code field.
+	(C_IS_RESERVED_WORD, C_RID_CODE): New.
+
+	* c-parse.in: Include c-pragma.h. Remove unnecesary calls to
+	reinit_parse_for_function and/or position_after_white_space.
+	(save_filename, save_lineno): Look ahead before saving.
+	(label -> identifier ':'): Save file and line before shifting ':'.
+	(reservedwords): No need to call get_identifier.
+	(init_parse, finish_parse, yyerror, yylex, yyprint,
+	make_pointer_declarator): Are now here for C/ObjC.
+	(rid_to_yy): Conversion table from RID constants to Yacc codes.
+
+	* c-pragma.c: Rewrite parsing logic to fit with cpplib's
+	#pragma registry.  Provide dummy implementation of that
+	interface if !USE_CPPLIB.
+	* c-pragma.h: Update to match.
+
+	* flags.h: Add multiple include guard.
+	(flag_detailed_statistics): Moved here from C++.
+	* toplev.c: Define flag_detailed_statistics.
+
+	* gcc.c (C specs): Use %(trad_capable_cpp) for -E|-M|-MM case
+	#if USE_CPPLIB.
+	* timevar.def (TV_CPP, TV_LEX): New.
+	* timevar.h: Add multiple include guard.
+
+	* objc/lang-specs.h: Use %(trad_capable_cpp) for -E|-M|-MM case
+	#if USE_CPPLIB.
+	* objc/objc-act.c: Don't mention yy_cur or parse_options.
+	Initialize cpplib properly.  Force lineno to 0 after first
+	call to check_newline.  Don't handle -lang-objc here.
+	Move forget_protocol_qualifiers and remember_protocol_qualifiers here.
+
 2000-09-06  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md: Correct function unit definitions for cr_logical and
@@ -171,8 +249,8 @@
 
 2000-09-05  Bruce Korb  <bkorb@gnu.org>
 
-        * fixinc/fixincl.c (load_file): always read header files
-        with sizes that are a multiple of the page size.
+	* fixinc/fixincl.c (load_file): always read header files
+	with sizes that are a multiple of the page size.
 	& use libiberty's getpagesize for determining that.
 
 2000-09-05  Alexandre Oliva  <aoliva@redhat.com>
@@ -202,7 +280,7 @@ Wed Jan  1 00:23:59 MET 1997  Jan Hubicka  <jh@suse.cz>
 
 Wed Jan  1 00:17:32 MET 1997  Jan Hubicka  <jh@suse.cz>
 
-	* i386.md (pushsi2, pushhi2, pophi2, swapsf, swapdf, 
+	* i386.md (pushsi2, pushhi2, pophi2, swapsf, swapdf,
 	umulsi3_highpart, smulsi3_highpart, testqi_ccno_1, xorqi_ext_1):
 	Add '*' to insn pattern name.
 
@@ -222,7 +300,7 @@ Wed Jan  1 00:17:32 MET 1997  Jan Hubicka  <jh@suse.cz>
 
 2000-09-03  Richard Earnshaw  <rearnsha@arm.com>
 
-	* arm.c (final_prescan_insn): If the form of a jump insn isn't 
+	* arm.c (final_prescan_insn): If the form of a jump insn isn't
 	recognized, don't try to conditionally execute it.
 
 Sun Sep  3 13:10:56 2000  Denis Chertykov  <denisc@overta.ru>
@@ -316,7 +394,7 @@ Sat Sep  2 13:58:23 2000  Marek Michalkiewicz <marekm@linux.org.pl>
 	(prepare_move_operands): Call emit_pic_move or
 	emit_pic_const_move if appropriate.
 	(output_far_jump): For PIC, use braf and output long offset.
-	(machine_dependent_reorg): 
+	(machine_dependent_reorg):
 	(sh_expand_prologue): Save and initialize the PIC register.
 	(sh_expand_epilogue): Restore it.
 	(initial_elimination_offset): Account for it.
@@ -349,7 +427,7 @@ Sat Sep  2 13:58:23 2000  Marek Michalkiewicz <marekm@linux.org.pl>
 
 	* fix-header.c (write_rbrac): Add putc and getc to list of
 	functions to protect against prior definition as a macro.
- 
+
 2000-09-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.h (enum c_tree_index): Add CTI_C_SIZE_TYPE.
@@ -414,18 +492,18 @@ Fri Sep  1 10:59:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-09-01  Andrew Haley  <aph@redhat.com>
 
-        * dwarf2out.c (stack_adjust_offset): New function.
-        (dwarf2out_stack_adjust): Break out stack adjust logic into
-        new stack_adjust_offset function.  Look inside parallels and
-        sequences for stack adjustments.
+	* dwarf2out.c (stack_adjust_offset): New function.
+	(dwarf2out_stack_adjust): Break out stack adjust logic into
+	new stack_adjust_offset function.  Look inside parallels and
+	sequences for stack adjustments.
 
 2000-08-31  Jeff Law <law@cygnus.com>
 
 	* arm.md: Use no_new_pseudos to determine when it is safe
 	to create new pseudo registers.
 
-        * arm.c (legitimize_pic_address): Use no_new_pseudos to determine
-        when we can safely allocate new registers.
+	* arm.c (legitimize_pic_address): Use no_new_pseudos to determine
+	when we can safely allocate new registers.
 
 2000-08-31  Geoffrey Keating  <geoffk@cygnus.com>
 
@@ -441,7 +519,7 @@ Fri Sep  1 10:59:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* toplev.c (rest_of_compilation): No CONCATs after RTL generation.
 
 2000-08-22  Philipp Thomas  <pthomas@suse.de>
-            Masanobu Yuhara <yuhara@flab.fujitsu.co.jp>
+	    Masanobu Yuhara <yuhara@flab.fujitsu.co.jp>
 
 	* gmicro.h (TARGET_SWITCHES): Add descriptions and mark them
 	for translation.
@@ -496,7 +574,7 @@ Tue Aug 29 22:09:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-common.c (declare_function_name): Use func_id_node,
 	function_id_node, and pretty_function_id_node.  Do not make
-	__func__ visible at file scope.   
+	__func__ visible at file scope.
 	* c-common.h (c_tree_index): Add CTI_FUNCTION_ID,
 	CTI_PRETTY_FUNCTION_ID, and CTI_FUNC_ID.
 	(function_id_node, pretty_function_id_node, func_id_node): New
@@ -509,7 +587,7 @@ Tue Aug 29 22:09:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-decl.c (pushdecl, implicit_decl_warning): Constify a char *.
 	* c-pragma.h (struct weak_syms): Constify name and value members.
-	(add_weak): Constify arguments.   
+	(add_weak): Constify arguments.
 
 	* calls.c (special_function_p): Constify a char *.
 	(expand_call): Remove variable which is initialized and then
@@ -590,7 +668,7 @@ Tue Aug 29 22:29:58 2000  Denis Chertykov  <denisc@overta.ru> & Marek Michalkiew
 	(output_movqi): New prototype.
 	(output_movhi): New prototype.
 	(call_insn_operand): Likewise.
-	(final_prescan_insn): Likewise.	
+	(final_prescan_insn): Likewise.
 	(avr_simplify_comparision_p): Likewise.
 	(avr_normalize_condition): Likewise.
 	(compare_eq_p): Likewise.
@@ -800,7 +878,7 @@ Tue Aug 29 15:17:54 EDT 2000  John Wehle  (john@feith.com)
 	(gen_internal_sym, output_die_symbol, output_symbolic_ref): New fns.
 	(output_die): Call output_die_symbol and AT_ref_external.
 	(output_comdat_comp_unit): New fn, split out from...
-	(dwarf2out_finish): ...here.  Also call add_sibling_attributes for 
+	(dwarf2out_finish): ...here.  Also call add_sibling_attributes for
 	secondary CUs.
 	(output_pubnames, output_aranges): Abort if we see entries from
 	secondary CUs.
@@ -928,9 +1006,9 @@ Fri Aug 25 12:52:49 EDT 2000  John Wehle  (john@feith.com)
 	(flow_loops_find): Call flow_loop_entry_edges_find.
 	(flow_loop_dump): Dump entry_edges list.
 	(flow_loops_free): Free entry_edges.
-	
+
 2000-08-26  Michael Hayes  <mhayes@cygnus.com>
-	
+
 	* loop.c (loop_dump_aux, debug_loop): New functions.
 	(LOOP_BLOCK_NUM_1, LOOP_BLOCK_NUM, LOOP_INSN_UID): New macros.
 
@@ -943,14 +1021,14 @@ Fri Aug 25 12:52:49 EDT 2000  John Wehle  (john@feith.com)
 
 	* toplev.c (rest_of_compilation): Add NULL callback function pointer
 	to call to flow_loops_dump.
-	
+
 2000-08-26  Michael Hayes  <mhayes@cygnus.com>
 
 	* loop.c (count_loop_regs_set): Replace start and end arguments
 	with loop argument.  All callers udated.
-	
+
 2000-08-26  Michael Hayes  <mhayes@cygnus.com>
-	
+
 	* loop.c (constant_high_bytes): Delete.
 
 2000-08-26  Michael Hayes  <mhayes@cygnus.com>
@@ -1000,7 +1078,7 @@ Fri 25-Aug-2000 08:03:27 BST  Neil Booth  <NeilB@earthling.net>
 	* gcc/c-typeck.c (decl_constant_value): Don't check ITERATOR_P.
 	(readonly_warning): Likewise.
 	* gcc/tree.h (ITERATOR_BOUND_P): Don't mention it.
-		
+
 2000-08-24  Jim Wilson  <wilson@cygnus.com>
 
 	* c-common.c (decl_attributes, case A_ALIGN): Revert last change.
@@ -1012,7 +1090,7 @@ Fri 25-Aug-2000 08:03:27 BST  Neil Booth  <NeilB@earthling.net>
 
 2000-08-24  Zack Weinberg  <zack@wolery.cumb.org>
 
-	* ggc-page.c (alloc_page): If HAVE_MMAP_ANYWHERE and we're  
+	* ggc-page.c (alloc_page): If HAVE_MMAP_ANYWHERE and we're
 	asked for one page, allocate GGC_QUIRE_SIZE of them and put
 	the extras on the free list.
 	(release_pages): Clean up.
@@ -1032,7 +1110,7 @@ Fri 25-Aug-2000 08:03:27 BST  Neil Booth  <NeilB@earthling.net>
 	(fr_register_operand, grfr_register_operand): New.
 	(gr_nonimmediate_operand, grfr_nonimmediate_operand): New.
 	(grfr_reg_or_8bit_operand): New.
-	(gr_reg_or_0_operand): Rename from reg_or_0_operand and 
+	(gr_reg_or_0_operand): Rename from reg_or_0_operand and
 	use gr_register_operand.
 	(gr_reg_or_5bit_operand, gr_reg_or_6bit_operand): Likewise.
 	(gr_reg_or_8bit_operand, gr_reg_or_8bit_adjusted_operand): Likewise.
@@ -1059,7 +1137,7 @@ Fri 25-Aug-2000 08:03:27 BST  Neil Booth  <NeilB@earthling.net>
 	* config/ia64/ia64.md (*): Use gr_register_operand and co.
 	(mf): Indicate that we set memory as well as use it.
 	(fetchadd_acq_si): Show memory being modified as well.
-	(fetchadd_acq_di, cmpxchg_acq_si, cmpxchg_acq_di): Likewise. 
+	(fetchadd_acq_di, cmpxchg_acq_si, cmpxchg_acq_di): Likewise.
 	(val_compare_and_swap_si, val_compare_and_swap_di): Remove.
 	(lock_test_and_set_si, lock_test_and_set_di): Remove.
 	(fetch_and_add_si, fetch_and_sub_si, fetch_and_or_si): Remove.
@@ -1082,7 +1160,7 @@ Fri 25-Aug-2000 08:03:27 BST  Neil Booth  <NeilB@earthling.net>
 
 	* dwarf2out.c (AT_flag, AT_int, AT_unsigned, AT_string, AT_ref,
 	AT_loc, AT_addr, AT_lbl): Abort on unsuitable input.
-	(get_AT_low_pc, get_AT_hi_pc, get_AT_string, get_AT_flag, 
+	(get_AT_low_pc, get_AT_hi_pc, get_AT_string, get_AT_flag,
 	get_AT_unsigned, get_AT_ref): Don't call them if get_AT fails.
 
 2000-08-24  Greg McGary  <greg@mcgary.org>
@@ -1286,7 +1364,7 @@ Tue Aug 22 21:21:05 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(THUMB_FUNCTION_START): New macro:  Common code at the start of
 	Thumb functions.
 	(__divsi3, __udivsi3, __modsi3, __umodsi3): Use new macros.
-	
+
 Tue Aug 22 20:34:52 2000  Kaz Kojima <kkojima@rr.iij4u.or.jp>
 
 	* config/sh/sh.md (cmpeqdi_t splitter): Fix a reverse testing.
@@ -1327,7 +1405,7 @@ Tue Aug 22 20:34:52 2000  Kaz Kojima <kkojima@rr.iij4u.or.jp>
 
 	* Makefile.in (OBJS): Add dependence.o.
 	* dependence.c: New file.
-	
+
 2000-08-22  Alexandre Oliva  <aoliva@redhat.com>, John David Anglin  <dave.anglin@nrc.ca>
 
 	* calls.c (check_sibcall_argument_overlap_1): Adjust for
@@ -1459,10 +1537,10 @@ Tue Aug 22 02:31:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* mips/linux.h (LINK_SPEC): Use %(endian_spec).
 
 	* mips/mips.h: Change LINKER_ENDIAN_SPEC to ENDIAN_SPEC
-	and linker_endian_spec to endian_spec. 
+	and linker_endian_spec to endian_spec.
 	(ENDIAN_SPEC): Add %{EB} and %{EL}.
 	(LINK_SPEC): Remove %{EB} and %{EL}.
-	(ASM_SPEC): Likewise.  Use %(endian_spec). 
+	(ASM_SPEC): Likewise.  Use %(endian_spec).
 
 2000-08-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -1676,7 +1754,7 @@ Fri Aug 18 14:23:18 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(fixup_match_1): Likewise.
 	(fixup_match_1, combine_stack_adjustments_for_block): Add casts to
 	avoid signed/unsigned warnings.
-	
+
 	* function.c (fixup_var_refs_1, case MEM): Update CODE after
 	updating X.
 
@@ -1869,7 +1947,7 @@ Tue Aug 15 17:33:05 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	expands.
 	(arm_buneq, arm_bltgt, arm_buneq_reversed, arm_bltgt_reveresed): New
 	patterns.
-	
+
 Tue Aug 15 00:36:36 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* gthr-posix.h: Conditionally include <sched.h>; include
@@ -1939,7 +2017,7 @@ Tue Aug 15 00:36:36 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 2000-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cse.c (fold_rtx): Avoid empty body in an if-statement.
-	
+
 	* doloop.c (doloop_iterations_max, doloop_modify): Avoid using the
 	`U' integer constant suffix.
 
@@ -1977,7 +2055,7 @@ Tue Aug 15 00:36:36 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* configure.in: Accept *-*-linux* not just *-*-linux-gnu*.
 	* fixinc/inclhack.def: Likewise.
-	* fixinc/mkfixinc.sh: Likewise. 
+	* fixinc/mkfixinc.sh: Likewise.
 	* configure: Regenerate.
 	* fixinc/fixincl.x: Regenerate.
 	* install.texi: Document equivalence of linux and linux-gnu.
@@ -2067,7 +2145,7 @@ Mon Aug 14 18:51:44 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	(do_restore): Likewise.
 	(gen_movdi_x, gen_fr_spill_x, gen_fr_restore_x): New.
 	(ia64_expand_prologue, ia64_expand_epilogue): Use them.
-	(rtx_needs_barrier): Track actual bit manipulation for 
+	(rtx_needs_barrier): Track actual bit manipulation for
 	ar.unat moves, gr_spill, and gr_restore.
 	(emit_insn_group_barriers): Special case gr_spill/gr_restore.
 	(process_set): Don't handle varargs spills.
@@ -2080,7 +2158,7 @@ Mon Aug 14 18:51:44 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* config/ia64/ia64.h (PROMOTE_MODE): Only extend to SImode.
 
 2000-08-11  Mark Elbrecht  <snowball3@bigfoot.com>
- 
+
 	* gcc.texi (The Configuration File): Document
 	COLLECT2_HOST_INITIALIZATION, GCC_DRIVER_HOST_INITIALIZATION, and
 	UPDATE_PATH_HOST_CANONICALIZATION.
@@ -2281,7 +2359,7 @@ Thu Aug 10 00:11:04 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 2000-08-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (optimization_options): Decorate 'level' as
-	ATTRIBUTE_UNUSED. 
+	ATTRIBUTE_UNUSED.
 	(mask64_operand): Remove sign-extend thinko.
 	(rldic_operand): New function.
 	(load_multiple_operation): regno's are unsigned ints.
@@ -2346,7 +2424,7 @@ Thu Aug 10 00:11:04 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 	(ia64_encode_section_info): Silence signed/unsigned warnings.
 	(spill_offset, sp_offset, spill_offset_emitted): Remove.
 	(tmp_reg, tmp_saved): Remove.
-	(process_set): Rewrite to expect complicated bits via 
+	(process_set): Rewrite to expect complicated bits via
 	REG_FRAME_RELATED_EXPR.
 	(ia64_expand_fetch_and_op): Use emit_move_insn; be explicit
 	in the use of ar.ccv; never set RTX_UNCHANGING_P.
@@ -2436,7 +2514,7 @@ Thu Aug 10 00:11:04 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* mn10300.md: Use nonimmediate_operand instead of general_operand
 	on output operands.
-	
+
 	* mn10300.h (PREFERRED_RELOAD_CLASS): Limit memory reloads.
 
 2000-08-07  Alexandre Oliva  <aoliva@redhat.com>
@@ -2578,7 +2656,7 @@ Sun Aug  6 00:54:42 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* tree.c (tree_expr_nonnegative_p): Move to...
 	* fold-const.c: ... here.  Also handle BIND_EXPR and RTL_EXPR.
-	(rtl_expr_nonnegative_p): New.                                
+	(rtl_expr_nonnegative_p): New.
 	* tree.h: Add prototype for rtl_expr_nonnegative_p.
 
 	* real.h (CONST_DOUBLE_LOW, CONST_DOUBLE_HIGH, CONST_DOUBLE_MEM,
@@ -2880,9 +2958,9 @@ Fri Aug  4 11:43:49 2000  John Wehle  (john@feith.com)
 
 Fri Aug  4 06:53:46 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
-	* (mips_legitimate_address_p): Don't allow register+offset              
-	if the offset is large and negative, and we are compiling               
-	for 64 bit registers.                                                   
+	* (mips_legitimate_address_p): Don't allow register+offset
+	if the offset is large and negative, and we are compiling
+	for 64 bit registers.
 
 2000-08-04 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 

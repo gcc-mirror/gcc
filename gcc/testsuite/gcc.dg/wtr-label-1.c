@@ -18,12 +18,12 @@ testfunc1 (int foo6)
  foo1:
  foo2:
  foo3:
- foo4: /* { dg-warning "traditional C lacks.*`foo4' conflicts" "label conflicts with identifier" } */
- foo5: /* { dg-warning "traditional C lacks.*`foo5' conflicts" "label conflicts with identifier" } */
- foo6: /* { dg-warning "traditional C lacks.*`foo6' conflicts" "label conflicts with identifier" } */
- foo7: /* { dg-warning "traditional C lacks.*`foo7' conflicts" "label conflicts with identifier" } */
- testfunc1: /* { dg-warning "traditional C lacks.*`testfunc1' conflicts" "label conflicts with identifier" } */
- a: /* { dg-warning "traditional C lacks.*`a' conflicts" "label conflicts with identifier" } */
+ foo4: /* { dg-warning "traditional C lacks" "label conflicts with identifier" } */
+ foo5: /* { dg-warning "traditional C lacks" "label conflicts with identifier" } */
+ foo6: /* { dg-warning "traditional C lacks" "label conflicts with identifier" } */
+ foo7: /* { dg-warning "traditional C lacks" "label conflicts with identifier" } */
+ testfunc1: /* { dg-warning "traditional C lacks" "label conflicts with identifier" } */
+ a: /* { dg-warning "traditional C lacks" "label conflicts with identifier" } */
  i:
  j:
 }

@@ -37,9 +37,7 @@ static int c_tree_printer PARAMS ((output_buffer *));
 
 #if USE_CPPLIB
 #include "cpplib.h"
-extern char *yy_cur;
 extern cpp_reader  parse_in;
-extern cpp_options parse_options;
 #endif
 
 /* Each of the functions defined here
@@ -57,9 +55,8 @@ void
 lang_init_options ()
 {
 #if USE_CPPLIB
+  cpp_init ();
   cpp_reader_init (&parse_in);
-  parse_in.opts = &parse_options;
-  cpp_options_init (&parse_options);
 #endif
   /* Mark as "unspecified".  */
   flag_bounds_check = -1;
@@ -86,10 +83,7 @@ lang_init ()
      and put it in input_filename.  */
 #if !USE_CPPLIB
   ungetc (check_newline (), finput);
-#else
-  check_newline ();
-  yy_cur--;
-#endif 
+#endif
 
   save_lang_status = &push_c_function_context;
   restore_lang_status = &pop_c_function_context;

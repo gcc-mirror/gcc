@@ -51,8 +51,6 @@ const char * const language_string = "GNU C++";
 
 extern struct obstack permanent_obstack;
 
-extern int end_of_file;
-
 /* Like YYERROR but do call yyerror.  */
 #define YYERROR1 { yyerror ("syntax error"); YYERROR; }
 
@@ -220,8 +218,8 @@ cp_parse_init ()
   tree ttype; 
   char *strtype; 
   enum tree_code code; 
-  flagged_type_tree ftype; 
-  struct pending_inline *pi;
+  flagged_type_tree ftype;
+  struct unparsed_text *pi;
 }
 
 /* All identifiers that are not reserved words
@@ -275,7 +273,7 @@ cp_parse_init ()
 %token NAMESPACE TYPENAME_KEYWORD USING
 %token LEFT_RIGHT TEMPLATE
 %token TYPEID DYNAMIC_CAST STATIC_CAST REINTERPRET_CAST CONST_CAST
-%token <itype> SCOPE
+%token SCOPE
 
 /* Define the operator tokens and their precedences.
    The value is an integer because, if used, it is the tree code
@@ -372,7 +370,6 @@ cp_parse_init ()
 %token <pi> PRE_PARSED_FUNCTION_DECL 
 %type <ttype> component_constructor_declarator
 %type <ttype> fn.def2 return_id constructor_declarator
-%type <pi> fn.defpen 
 %type <itype> ctor_initializer_opt function_try_block
 %type <ttype> named_class_head_sans_basetype
 %type <ftype> class_head named_class_head 
@@ -480,22 +477,20 @@ lang_extdef:
 
 extdef:
 	  fndef eat_saved_input
-		{ if (pending_inlines) do_pending_inlines (); }
+		{ do_pending_inlines (); }
 	| datadef
-		{ if (pending_inlines) do_pending_inlines (); }
+		{ do_pending_inlines (); }
 	| template_def
-		{ if (pending_inlines) do_pending_inlines (); }
+		{ do_pending_inlines (); }
 	| asm_keyword '(' string ')' ';'
 		{ if (TREE_CHAIN ($3)) $3 = combine_strings ($3);
 		  assemble_asm ($3); }
 	| extern_lang_string '{' extdefs_opt '}'
 		{ pop_lang_context (); }
 	| extern_lang_string .hush_warning fndef .warning_ok eat_saved_input
-		{ if (pending_inlines) do_pending_inlines ();
-		  pop_lang_context (); }
+		{ do_pending_inlines (); pop_lang_context (); }
 	| extern_lang_string .hush_warning datadef .warning_ok
-		{ if (pending_inlines) do_pending_inlines ();
-		  pop_lang_context (); }
+		{ do_pending_inlines (); pop_lang_context (); }
 	| NAMESPACE identifier '{'
 		{ push_namespace ($2); }
 	  extdefs_opt '}'
@@ -665,16 +660,16 @@ template_def:
 
 template_extdef:
 	  fndef eat_saved_input
-		{ if (pending_inlines) do_pending_inlines (); }
+		{ do_pending_inlines (); }
 	| template_datadef
-		{ if (pending_inlines) do_pending_inlines (); }
+		{ do_pending_inlines (); }
 	| template_def
-		{ if (pending_inlines) do_pending_inlines (); }
+		{ do_pending_inlines (); }
 	| extern_lang_string .hush_warning fndef .warning_ok eat_saved_input
-		{ if (pending_inlines) do_pending_inlines ();
+		{ do_pending_inlines ();
 		  pop_lang_context (); }
 	| extern_lang_string .hush_warning template_datadef .warning_ok
-		{ if (pending_inlines) do_pending_inlines ();
+		{ do_pending_inlines ();
 		  pop_lang_context (); }
 	| extension template_extdef
 		{ pedantic = $1; }
@@ -814,7 +809,7 @@ fn.def2:
 		    YYERROR1;
 		  if (yychar == YYEMPTY)
 		    yychar = YYLEX;
-		  reinit_parse_for_method (yychar, $$); }
+		  snarf_method ($$); }
 	| component_constructor_declarator
 		{ $$ = parse_method ($1, NULL_TREE, NULL_TREE); 
 		  goto rest_of_mdef; }
@@ -2163,24 +2158,18 @@ initlist:
 		{ $$ = tree_cons ($3, $5, $$); }
 	;
 
-fn.defpen:
-	PRE_PARSED_FUNCTION_DECL
-		{ start_function (NULL_TREE, $1->fndecl, NULL_TREE, 
-				  (SF_DEFAULT | SF_PRE_PARSED 
-				   | SF_INCLASS_INLINE)); }
-
 pending_inline:
-	  fn.defpen maybe_return_init ctor_initializer_opt compstmt_or_error
+	  PRE_PARSED_FUNCTION_DECL maybe_return_init ctor_initializer_opt compstmt_or_error
 		{
 		  expand_body (finish_function ((int)$3 | 2));
 		  process_next_inline ($1);
 		}
-	| fn.defpen maybe_return_init function_try_block
+	| PRE_PARSED_FUNCTION_DECL maybe_return_init function_try_block
 		{ 
 		  expand_body (finish_function ((int)$3 | 2)); 
                   process_next_inline ($1);
 		}
-	| fn.defpen maybe_return_init error
+	| PRE_PARSED_FUNCTION_DECL maybe_return_init error
 		{ 
 		  finish_function (2); 
 		  process_next_inline ($1); }
