@@ -198,13 +198,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"m88k, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.3 $"
+#define VERSION_INFO2   "$Revision: 1.4 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.3 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.4 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */
@@ -2212,9 +2212,8 @@ do {									 \
 /* On the m88100, align the text address to half a cache boundary when it
    can only be reached by jumping.  Pack code tightly when compiling
    crtstuff.c.  */
-#define ASM_OUTPUT_ALIGN_CODE(FILE) \
-  ASM_OUTPUT_ALIGN (FILE, \
-		    (TARGET_88100 && !flag_inhibit_size_directive ? 3 : 2))
+#define LABEL_ALIGN_AFTER_BARRIER(LABEL) \
+  (TARGET_88100 && !flag_inhibit_size_directive ? 3 : 2)
 
 /* Override svr[34].h.  */
 #undef	ASM_OUTPUT_SKIP

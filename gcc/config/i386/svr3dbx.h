@@ -46,16 +46,13 @@ Boston, MA 02111-1307, USA.  */
 /* Align labels, etc. at 4-byte boundaries.
    For the 486, align to 16-byte boundary for sake of cache.  */
 
-#undef ASM_OUTPUT_ALIGN_CODE
-#define ASM_OUTPUT_ALIGN_CODE(FILE)			\
-     fprintf ((FILE), "\t.align %d,0x90\n",		\
-	      1 << i386_align_jumps)
+#undef LABEL_ALIGN_AFTER_BARRIER
+#define LABEL_ALIGN_AFTER_BARRIER(LABEL) (i386_align_jumps)
 
 /* Align start of loop at 4-byte boundary.  */
 
-#undef ASM_OUTPUT_LOOP_ALIGN
-#define ASM_OUTPUT_LOOP_ALIGN(FILE) \
-     fprintf ((FILE), "\t.align %d,0x90\n", 1 << i386_align_loops);
+#undef LOOP_ALIGN
+#define LOOP_ALIGN(LABEL) (i386_align_loops)
 
 
 /* Additional overrides needed for dbx-in-coff gas, mostly taken from pbb.h */

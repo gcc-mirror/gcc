@@ -1,3 +1,32 @@
+Mon Mar  2 19:51:27 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* final.c (insn_last_address, insn_current_align, uid_align):
+	New variables.
+	(in_align_chain, align_fuzz, align_shrink_fuzz): New functions.
+	(insn_current_reference_address): Likewise.
+	(shorten_branches, final_scan_insn): Implement LABEL_ALIGN,
+	LABEL_ALIGN_AFTER_BARRIER and LOOP_ALIGN target macros.
+	(label_to_alignment): New function.
+	* genattrtab.c (write_test_expr): If one of LABEL_ALIGN,
+	LABEL_ALIGN_AFTER_BARRIER or LOOP_ALIGN is defined, call
+	insn_current_reference_address instead of insn_current_address.
+	(or_attr_value, write_length_unit_log): New functions.
+	(main): Call write_length_unit_log.
+	(write_const_num_delay_slots): Output extra '\n'.
+	* alpha.h (ASM_OUTPUT_LOOP_ALIGN, ASM_OUTPUT_ALIGN_CODE):
+	replace with:
+	(LOOP_ALIGN, ALIGN_LABEL_AFTER_BARRIER).
+	* i386.h, i386/osfrose.h, i386/svr3dbx.h, m68k.h, sparc.h: Likewise.
+	* arc.h, m32r.h (ASM_OUTPUT_LOOP_ALIGN): replace with:
+	(LOOP_ALIGN).
+	* i960.h, m88k.h: (ASM_OUTPUT_ALIGN_CODE): Replace with:
+	(LABEL_ALIGN_AFTER_BARRIER).
+	* ns32k/encore.h, ns32k/merlin.h, ns32k.h, ns32k/sequent.h: Likewise.
+	* ns32k/tek6000.h: Likewise.
+	* i386/gas.h (ASM_OUTPUT_LOOP_ALIGN, ASM_OUTPUT_ALIGN_CODE): Delete.
+	* i386.md (casesi+1): Use ASM_OUTPUT_ALIGN instead of
+	ASM_OUTPUT_ALIGN_CODE.
+
 Mon Mar 2 01:05:50 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

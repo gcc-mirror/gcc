@@ -446,12 +446,12 @@ extern int ix86_arch;
 #define MAX_CODE_ALIGN	6			/* 64 byte alignment */
 
 /* Align loop starts for optimal branching.  */
-#define ASM_OUTPUT_LOOP_ALIGN(FILE) ASM_OUTPUT_ALIGN (FILE, i386_align_loops)
+#define LOOP_ALIGN(LABEL) (i386_align_loops)
 
 /* This is how to align an instruction for optimal branching.
    On i486 we'll get better performance by aligning on a
    cache line (i.e. 16 byte) boundary.  */
-#define ASM_OUTPUT_ALIGN_CODE(FILE) ASM_OUTPUT_ALIGN ((FILE), i386_align_jumps)
+#define LABEL_ALIGN_AFTER_BARRIER(LABEL) (i386_align_jumps)
 
 
 /* Standard register usage.  */

@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
 /* This is how to align the code that follows an unconditional branch.
    Don't define it, since it confuses the assembler (we hear).  */
 
-#undef ASM_OUTPUT_ALIGN_CODE
+#undef LABEL_ALIGN_AFTER_BARRIER
 
 /* Assembler pseudo-op for shared data segment. */
 #define SHARED_SECTION_ASM_OP ".shdata"

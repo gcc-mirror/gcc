@@ -85,20 +85,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_ALIGN(FILE,LOG) \
   if ((LOG)!=0) fprintf ((FILE), "\t.balign %d\n", 1<<(LOG))
 #endif
-
-/* Align labels, etc. at 4-byte boundaries.
-   For the 486, align to 16-byte boundary for sake of cache.  */
-
-#undef ASM_OUTPUT_ALIGN_CODE
-#define ASM_OUTPUT_ALIGN_CODE(FILE) \
-  fprintf ((FILE), "\t.align %d,0x90\n", i386_align_jumps)
-
-/* Align start of loop at 4-byte boundary.  */
-
-#undef ASM_OUTPUT_LOOP_ALIGN
-#define ASM_OUTPUT_LOOP_ALIGN(FILE) \
-  fprintf ((FILE), "\t.align %d,0x90\n", i386_align_loops)
-
 
 /* A C statement or statements which output an assembler instruction
    opcode to the stdio stream STREAM.  The macro-operand PTR is a

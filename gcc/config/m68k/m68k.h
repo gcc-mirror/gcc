@@ -294,10 +294,10 @@ extern int target_flags;
 #define MAX_CODE_ALIGN	2			/* 4 byte alignment */
 
 /* Align loop starts for optimal branching.  */
-#define ASM_OUTPUT_LOOP_ALIGN(FILE) ASM_OUTPUT_ALIGN ((FILE), m68k_align_loops)
+#define LOOP_ALIGN(LABEL) (m68k_align_loops)
 
 /* This is how to align an instruction for optimal branching. */
-#define ASM_OUTPUT_ALIGN_CODE(FILE) ASM_OUTPUT_ALIGN ((FILE), m68k_align_jumps)
+#define LABEL_ALIGN_AFTER_BARRIER(LABEL) (m68k_align_jumps)
 
 #define SELECT_RTX_SECTION(MODE, X)					\
 {									\

@@ -404,10 +404,9 @@ while (0)
    alignment to be done at such a time.  Most machine descriptions do
    not currently define the macro.  */
 
-#undef	ASM_OUTPUT_ALIGN_CODE
-#define ASM_OUTPUT_ALIGN_CODE(STREAM)					\
-  fprintf (STREAM, "\t.align\t%d\n",					\
-	   (!TARGET_LARGE_ALIGN && i386_align_jumps > 2) ? 2 : i386_align_jumps)
+#undef	LABEL_ALIGN_AFTER_BARRIER
+#define LABEL_ALIGN_AFTER_BARRIER(LABEL) \
+  ((!TARGET_LARGE_ALIGN && i386_align_jumps > 2) ? 2 : i386_align_jumps)
 
 /* A C expression to output text to align the location counter in the
    way that is desirable at the beginning of a loop.
@@ -416,9 +415,8 @@ while (0)
    alignment to be done at such a time.  Most machine descriptions do
    not currently define the macro.  */
 
-#undef	ASM_OUTPUT_LOOP_ALIGN
-#define ASM_OUTPUT_LOOP_ALIGN(STREAM) \
-  fprintf (STREAM, "\t.align\t%d\n", i386_align_loops)
+#undef	LOOP_ALIGN
+#define LOOP_ALIGN(LABEL) (i386_align_loops)
 
 /* A C statement to output to the stdio stream STREAM an assembler
    command to advance the location counter to a multiple of 2 to the

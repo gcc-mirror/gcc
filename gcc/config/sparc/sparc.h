@@ -2991,11 +2991,9 @@ do {									\
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (1<<(LOG)))
 
-#define ASM_OUTPUT_ALIGN_CODE(FILE) \
-  ASM_OUTPUT_ALIGN (FILE, sparc_align_jumps)
+#define LABEL_ALIGN_AFTER_BARRIER(LABEL) (sparc_align_jumps)
 
-#define ASM_OUTPUT_LOOP_ALIGN(FILE) \
-  ASM_OUTPUT_ALIGN (FILE, sparc_align_loops)
+#define LOOP_ALIGN(LABEL) (sparc_align_loops)
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.skip %u\n", (SIZE))
