@@ -1906,7 +1906,7 @@ pexecute (search_flag, program, argv, not_last)
   FILE *argfile;
   int i, el = search_flag ? 0 : 4;
 
-  scmd = (char *)malloc (strlen (program) + strlen (temp_filename) + 6 + el);
+  scmd = (char *) xmalloc (strlen (program) + strlen (temp_filename) + 6 + el);
   rf = scmd + strlen(program) + 2 + el;
   sprintf (scmd, "%s%s @%s.gp", program,
 	   (search_flag ? "" : ".exe"), temp_filename);
