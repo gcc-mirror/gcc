@@ -1,3 +1,8 @@
+2004-07-05  Richard Henderson  <rth@redhat.com>
+
+	* function.c (assign_parm_setup_reg): Properly rename variables in
+	FUNCTION_ARG_CALLEE_COPIES section.
+
 2004-07-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* tree-mudflap.c: Include cgraph.h.

@@ -2860,40 +2860,41 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
   /* ??? Later add code to handle the case that if the argument isn't
      modified, don't do the copy.  */
 
-  else if (data->passed_pointer
-	   && FUNCTION_ARG_CALLEE_COPIES (all->args_so_far,
-					  TYPE_MODE (TREE_TYPE (passed_type)),
-					  TREE_TYPE (passed_type),
-					  data->named_arg)
-	   && ! TREE_ADDRESSABLE (TREE_TYPE (passed_type)))
+  else if (data->passed_pointer)
     {
-      rtx copy;
-      tree type = TREE_TYPE (passed_type);
-
-      /* This sequence may involve a library call perhaps clobbering
-	 registers that haven't been copied to pseudos yet.  */
-
-      push_to_sequence (all->conversion_insns);
-
-      if (!COMPLETE_TYPE_P (type)
-	  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+      tree type = TREE_TYPE (data->passed_type);
+    
+      if (FUNCTION_ARG_CALLEE_COPIES (all->args_so_far, TYPE_MODE (type),
+				      type, data->named_arg)
+	   && !TREE_ADDRESSABLE (type))
 	{
-	  /* This is a variable sized object.  */
-	  copy = allocate_dynamic_stack_space (expr_size (parm), NULL_RTX,
-					       TYPE_ALIGN (type));
-	  copy = gen_rtx_MEM (BLKmode, copy);
+	  rtx copy;
+
+	  /* This sequence may involve a library call perhaps clobbering
+	     registers that haven't been copied to pseudos yet.  */
+
+	  push_to_sequence (all->conversion_insns);
+
+	  if (!COMPLETE_TYPE_P (type)
+	      || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+	    {
+	      /* This is a variable sized object.  */
+	      copy = allocate_dynamic_stack_space (expr_size (parm), NULL_RTX,
+						   TYPE_ALIGN (type));
+	      copy = gen_rtx_MEM (BLKmode, copy);
+	    }
+	  else
+	    copy = assign_stack_temp (TYPE_MODE (type),
+				      int_size_in_bytes (type), 1);
+	  set_mem_attributes (copy, parm, 1);
+
+	  store_expr (parm, copy, 0);
+	  emit_move_insn (parmreg, XEXP (copy, 0));
+	  all->conversion_insns = get_insns ();
+	  end_sequence ();
+
+	  did_conversion = true;
 	}
-      else
-	copy = assign_stack_temp (TYPE_MODE (type),
-				  int_size_in_bytes (type), 1);
-      set_mem_attributes (copy, parm, 1);
-
-      store_expr (parm, copy, 0);
-      emit_move_insn (parmreg, XEXP (copy, 0));
-      all->conversion_insns = get_insns ();
-      end_sequence ();
-
-      did_conversion = true;
     }
 #endif /* FUNCTION_ARG_CALLEE_COPIES */
 
