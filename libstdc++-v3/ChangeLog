@@ -1,3 +1,9 @@
+2004-02-01  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_bvector.h: Wrap overlong lines, constify
+	a few variables, reformat according to the coding standards.
+	* include/bits/stl_tree.h: Likewise.
+
 2004-01-31  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_algo.h: Minor additional reformat, add
