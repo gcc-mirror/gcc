@@ -165,6 +165,16 @@ void test06()
     cerr << "i == " << i << endl;
 }
 
+// libstdc++/6548
+void test07()
+{
+  bool test = true;
+  std::cout << "Please, enter 'test':";
+  std::string s;
+  std::getline(std::cin, s, '\n');
+  VERIFY( s == "test" );
+}
+
 int 
 main()
 {
@@ -175,5 +185,6 @@ main()
   // test04();
   // test05();
   // test06();
+  // test07();
   return 0;
 }
