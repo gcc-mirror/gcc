@@ -359,6 +359,7 @@ BASE_FLAGS_TO_PASS = \
 	"tooldir=$(tooldir)" \
 	"gxx_include_dir=$(gxx_include_dir)" \
 	"gcc_version=$(gcc_version)" \
+	"gcc_version_trigger=$(gcc_version_trigger)" \
 	"target_alias=$(target_alias)" \
 	"libsubdir=$(libsubdir)"
 
@@ -1532,7 +1533,7 @@ TAGS: do-TAGS
 
 # with the gnu make, this is done automatically.
 
-Makefile: Makefile.in configure.in $(host_makefile_frag) $(target_makefile_frag)
+Makefile: Makefile.in configure.in $(host_makefile_frag) $(target_makefile_frag) $(gcc_version_trigger)
 	$(SHELL) ./config.status
 
 #
