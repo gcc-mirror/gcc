@@ -95,7 +95,7 @@ maintainer-clean-multi:
 	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean
 
 # All the machinations with string instantiations messes up the
-# automake-genrated TAGS rule. Make a simple one here.
+# automake-generated TAGS rule. Make a simple one here.
 TAGS: tags-recursive $(LISP)
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
