@@ -7266,6 +7266,9 @@ sparc_issue_rate ()
       return 2;
     case PROCESSOR_SUPERSPARC:                                        
       return 3;                                                      
+    case PROCESSOR_HYPERSPARC:
+    case PROCESSOR_SPARCLITE86X:
+      return 2;
     case PROCESSOR_ULTRASPARC:                                            
       return 4;                                                    
     }
