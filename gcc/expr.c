@@ -4472,12 +4472,13 @@ store_constructor_field (target, bitsize, bitpos,
 	 generate unnecessary clear instructions anyways.  */
       && (bitpos == 0 || GET_CODE (target) == MEM))
     {
-      target
-	= adjust_address (target,
-			  GET_MODE (target) == BLKmode
-			  || 0 != (bitpos
-				   % GET_MODE_ALIGNMENT (GET_MODE (target)))
-			  ? BLKmode : VOIDmode, bitpos / BITS_PER_UNIT);
+      if (GET_CODE (target) == MEM)
+	target
+	  = adjust_address (target,
+			    GET_MODE (target) == BLKmode
+			    || 0 != (bitpos
+				     % GET_MODE_ALIGNMENT (GET_MODE (target)))
+			    ? BLKmode : VOIDmode, bitpos / BITS_PER_UNIT);
 
 
       /* Show the alignment may no longer be what it was and update the alias
