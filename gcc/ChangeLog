@@ -1,3 +1,14 @@
+2004-01-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR optimization/12508.
+	* combine.c (try_combine): Remove a dead set in a parallel
+	even if its destination is a subreg.
+
+	Revert:
+	2003-06-03  Kazu Hirata  <kazu@cs.umass.edu>
+	* combine.c (simplify_set): Don't move a subreg in SET_SRC to
+	SET_DEST if WORD_REGISTER_OPERATIONS is not defined.
+
 2004-01-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* real.c: Update copyright date.
