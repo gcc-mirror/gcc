@@ -1,3 +1,7 @@
+1999-08-19 18:43 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* tree.c (expr_check): Fix typo in last change.
+
 1999-08-19 14:44 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* rtl.def (NOTE): Change format to "iuu0n".
