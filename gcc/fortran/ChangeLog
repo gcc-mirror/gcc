@@ -1,3 +1,7 @@
+2004-06-20  Steven G. Kargl  <kargls@comcast.net>
+
+	* arith.c (gfc_range_check): correct complex underflow.
+
 2004-06-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/15962
