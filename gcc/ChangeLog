@@ -1,3 +1,7 @@
+2003-06-26  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/power4.md (power4-veccomplex): Correct latency.
+
 2003-06-25  Loren James Rittle  <ljrittle@acm.org>
 
 	* configure.in (ld_vers): Portability [sed].
