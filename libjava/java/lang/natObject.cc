@@ -305,9 +305,9 @@ _Jv_MonitorExit (jobject obj)
 #include <assert.h>
 #include <limits.h>
 #include <unistd.h>	// for usleep, sysconf.
-#include <sched.h>	// for sched_yield.
 #include <gcj/javaprims.h>
 #include <sysdep/locks.h>
+#include <java/lang/Thread.h>
 
 // Try to determine whether we are on a multiprocessor, i.e. whether
 // spinning may be profitable.
@@ -525,14 +525,14 @@ spin(unsigned n)
     }
   else if (n < yield_limit)
     {
-      sched_yield();
+      _Jv_ThreadYield();
     }
   else
     {
       unsigned duration = MIN_SLEEP_USECS << (n - yield_limit);
       if (n >= 15 + yield_limit || duration > MAX_SLEEP_USECS)
-	duration = MAX_SLEEP_USECS;
-      usleep(duration);
+        duration = MAX_SLEEP_USECS;
+      java::lang::Thread::sleep(0, duration);
     }
 }
 
@@ -574,7 +574,15 @@ static void
 heavy_lock_obj_finalization_proc (void *obj, void *cd)
 {
   heavy_lock *hl = (heavy_lock *)cd;
+
+// This only addresses misalignment of statics, not heap objects.  It
+// works only because registering statics for finalization is a noop,
+// no matter what the least significant bits are.
+#ifdef JV_LINKER_CANNOT_8BYTE_ALIGN_STATICS
+  obj_addr_t addr = (obj_addr_t)obj & ~((obj_addr_t)0x7);
+#else
   obj_addr_t addr = (obj_addr_t)obj;
+#endif
   hash_entry *he = light_locks + JV_SYNC_HASH(addr);
   obj_addr_t he_address = (he -> address & ~LOCKED);
 
@@ -753,7 +761,11 @@ get_heavy(obj_addr_t addr, hash_entry *he)
 void
 _Jv_MonitorEnter (jobject obj)
 {
+#ifdef JV_LINKER_CANNOT_8BYTE_ALIGN_STATICS
+  obj_addr_t addr = (obj_addr_t)obj & ~((obj_addr_t)FLAGS);
+#else
   obj_addr_t addr = (obj_addr_t)obj;
+#endif
   obj_addr_t address;
   unsigned hash = JV_SYNC_HASH(addr);
   hash_entry * he = light_locks + hash;
@@ -898,7 +910,11 @@ retry:
 void
 _Jv_MonitorExit (jobject obj)
 {
+#ifdef JV_LINKER_CANNOT_8BYTE_ALIGN_STATICS
+  obj_addr_t addr = (obj_addr_t)obj & ~((obj_addr_t)FLAGS);
+#else
   obj_addr_t addr = (obj_addr_t)obj;
+#endif
   _Jv_ThreadId_t self = _Jv_ThreadSelf();
   unsigned hash = JV_SYNC_HASH(addr);
   hash_entry * he = light_locks + hash;
@@ -1078,7 +1094,11 @@ retry:
 void
 java::lang::Object::wait (jlong timeout, jint nanos)
 {
+#ifdef JV_LINKER_CANNOT_8BYTE_ALIGN_STATICS
+  obj_addr_t addr = (obj_addr_t)this & ~((obj_addr_t)FLAGS);
+#else
   obj_addr_t addr = (obj_addr_t)this;
+#endif
   _Jv_ThreadId_t self = _Jv_ThreadSelf();
   unsigned hash = JV_SYNC_HASH(addr);
   hash_entry * he = light_locks + hash;
@@ -1155,7 +1175,11 @@ retry:
 void
 java::lang::Object::notify (void)
 {
+#ifdef JV_LINKER_CANNOT_8BYTE_ALIGN_STATICS
+  obj_addr_t addr = (obj_addr_t)this & ~((obj_addr_t)FLAGS);
+#else
   obj_addr_t addr = (obj_addr_t)this;
+#endif
   _Jv_ThreadId_t self = _Jv_ThreadSelf();
   unsigned hash = JV_SYNC_HASH(addr);
   hash_entry * he = light_locks + hash;
@@ -1200,7 +1224,11 @@ retry:
 void
 java::lang::Object::notifyAll (void)
 {
+#ifdef JV_LINKER_CANNOT_8BYTE_ALIGN_STATICS
+  obj_addr_t addr = (obj_addr_t)this & ~((obj_addr_t)FLAGS);
+#else
   obj_addr_t addr = (obj_addr_t)this;
+#endif
   _Jv_ThreadId_t self = _Jv_ThreadSelf();
   unsigned hash = JV_SYNC_HASH(addr);
   hash_entry * he = light_locks + hash;

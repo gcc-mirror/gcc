@@ -1,3 +1,14 @@
+2002-10-20  Adam Megacz <adam@xwt.org>
+
+	* aclocal.m4 (CHECK_FOR_BROKEN_MINGW_LD): added
+	* configure.in: enabled hash sync on Win32
+        * include/win32-threads.h (_Jv_ThreadId_t): added.
+        * java/lang/natObject.cc (_Jv_MonitorEnter, _Jv_MonitorExit,
+	heavy_lock_obj_finalization_proc, wait, notify, notifyAll):
+	removed some posix-isms, use Thread::sleep() instead of usleep,
+	added code to clear bottom three bits if platform has a broken
+	linker.  * include/win32-threads.h (_Jv_ThreadId_t): added.
+
 2002-10-19  Ranjit Mathew <rmathew@hotmail.com>
 
 	* java/lang/natRuntime.cc (insertSystemProperties): Added GCJ
