@@ -1,3 +1,9 @@
+2003-03-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/9414
+	* config/sparc/sparc.md (widening peepholes): Use
+	widen_memory_access instead of change_address.
+
 2003-03-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7086
