@@ -1,5 +1,10 @@
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	Based on a patch from Geoff Keating <geoffk@redhat.com>:
+	* loop.c (basic_induction_var): If a REG is set from something
+	that is not a biv, then the REG is not a biv.  Even if it is
+	earlier set from something that is a biv.
+
 	2000-09-01  Jim Wilson  <wilson@cygnus.com>
 	* loop.c (check_final_value): Check for biv use before checking for
 	giv use.  Check for both biv and giv uses.  Always set last_giv_use
