@@ -833,7 +833,9 @@ convert_move (to, from, unsignedp)
       return;
     }
 
-  if (GET_MODE_BITSIZE (from_mode) > BITS_PER_WORD)
+  /* Truncating multi-word to a word or less.  */
+  if (GET_MODE_BITSIZE (from_mode) > BITS_PER_WORD
+      && GET_MODE_BITSIZE (to_mode) <= BITS_PER_WORD)
     {
       convert_move (to, gen_lowpart (word_mode, from), 0);
       return;
@@ -881,19 +883,20 @@ convert_move (to, from, unsignedp)
   /* For truncation, usually we can just refer to FROM in a narrower mode.  */
   if (GET_MODE_BITSIZE (to_mode) < GET_MODE_BITSIZE (from_mode)
       && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (to_mode),
-				GET_MODE_BITSIZE (from_mode))
-      && ((GET_CODE (from) == MEM
-	   && ! MEM_VOLATILE_P (from)
-	   && direct_load[(int) to_mode]
-	   && ! mode_dependent_address_p (XEXP (from, 0)))
-	  || GET_CODE (from) == REG
-	  || GET_CODE (from) == SUBREG))
+				GET_MODE_BITSIZE (from_mode)))
     {
+      if (!((GET_CODE (from) == MEM
+	     && ! MEM_VOLATILE_P (from)
+	     && direct_load[(int) to_mode]
+	     && ! mode_dependent_address_p (XEXP (from, 0)))
+	    || GET_CODE (from) == REG
+	    || GET_CODE (from) == SUBREG))
+	from = force_reg (from_mode, from);
       emit_move_insn (to, gen_lowpart (to_mode, from));
       return;
     }
 
-  /* For truncation, usually we can just refer to FROM in a narrower mode.  */
+  /* Handle extension.  */
   if (GET_MODE_BITSIZE (to_mode) > GET_MODE_BITSIZE (from_mode))
     {
       /* Convert directly if that works.  */
