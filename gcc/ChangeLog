@@ -1,3 +1,7 @@
+2001-01-24  Roger Collins <roger@ProProject.com>
+	  
+        * config/i386/xm-i386.h: Make __i386__ a boolean macro.
+
 2001-01-24  Will Cohen  <wcohen@redhat.com>
 
 	* config/mips/abi64.h (RETURN_IN_MEMORY): Always take into account
