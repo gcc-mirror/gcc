@@ -3975,6 +3975,23 @@ EOF
 fi
 AC_MSG_RESULT($gcc_cv_as_subsections)
 
+AC_MSG_CHECKING(assembler instructions)
+gcc_cv_as_instructions=
+if test x$gcc_cv_as != x; then
+	set "filds fists" "filds mem; fists mem"
+	while test $# -gt 0
+  	do
+		echo "$2" > conftest.s
+		if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
+			gcc_cv_as_instructions=${gcc_cv_as_instructions}$1" "
+			AC_DEFINE_UNQUOTED(HAVE_GAS_`echo "$1" | tr '[a-z ]' '[A-Z_]'`)
+		fi
+		shift 2
+	done
+	rm -f conftest.s conftest.o
+fi
+AC_MSG_RESULT($gcc_cv_as_instructions)
+
 # Figure out what language subdirectories are present.
 # Look if the user specified --enable-languages="..."; if not, use
 # the environment variable $LANGUAGES if defined. $LANGUAGES might

@@ -3382,12 +3382,10 @@ print_operand (file, x, code)
 	  /* this is the size of op from size of operand */
 	  switch (GET_MODE_SIZE (GET_MODE (x)))
 	    {
-	    case 1:
-	      PUT_OP_SIZE ('B', 'b', file);
-	      return;
-
 	    case 2:
-	      PUT_OP_SIZE ('W', 'w', file);
+#ifdef HAVE_GAS_FILDS_FISTS
+	      PUT_OP_SIZE ('W', 's', file);
+#endif
 	      return;
 
 	    case 4:
@@ -3417,6 +3415,9 @@ print_operand (file, x, code)
 
 	      PUT_OP_SIZE ('Q', 'l', file);
 	      return;
+
+	    default:
+	      abort ();
 	    }
 
 	case 'b':
