@@ -954,7 +954,7 @@ special things you must know:
 `m68000-hp-bsd'
      HP 9000 series 200 running BSD.  Note that the C compiler that
      comes with this system cannot compile GNU CC; contact
-     `law@cs.utah.edu' to get binaries of GNU CC for bootstrapping.
+     `law@cygnus.com' to get binaries of GNU CC for bootstrapping.
 
 `m68k-altos'
      Altos 3068.  You must use the GNU assembler, linker and debugger.
