@@ -3419,17 +3419,8 @@ asm_fprintf (FILE *file, const char *p, ...)
 	       'o' cases, but we do not check for those cases.  It
 	       means that the value is a HOST_WIDE_INT, which may be
 	       either `long' or `long long'.  */
-
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-#else
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-	    *q++ = 'l';
-#else
-	    *q++ = 'l';
-	    *q++ = 'l';
-#endif
-#endif
-
+	    memcpy (q, HOST_WIDE_INT_PRINT, strlen (HOST_WIDE_INT_PRINT));
+	    q += strlen (HOST_WIDE_INT_PRINT);
 	    *q++ = *p++;
 	    *q = 0;
 	    fprintf (file, buf, va_arg (argptr, HOST_WIDE_INT));

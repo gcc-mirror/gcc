@@ -985,21 +985,16 @@ dump_static_insn_cost (file, message, prefix)
   if (!prefix)
     prefix = "";
   fprintf (file, "static insn cost %s\n", message ? message : "");
-  fprintf (file, "  %soverall:\tnum=%6d\tcost="
-	   HOST_WIDE_INT_PRINT_DEC_SPACE "\n",
-	   prefix, overall.count, 8, overall.cost);
-  fprintf (file, "  %sloads:\tnum=%6d\tcost="
-	   HOST_WIDE_INT_PRINT_DEC_SPACE "\n",
-	   prefix, load.count, 8, load.cost);
-  fprintf (file, "  %sstores:\tnum=%6d\tcost="
-	   HOST_WIDE_INT_PRINT_DEC_SPACE "\n",
-	   prefix, store.count, 8, store.cost);
-  fprintf (file, "  %sregcopy:\tnum=%6d\tcost="
-	   HOST_WIDE_INT_PRINT_DEC_SPACE "\n",
-	   prefix, regcopy.count, 8, regcopy.cost);
-  fprintf (file, "  %sselfcpy:\tnum=%6d\tcost="
-	   HOST_WIDE_INT_PRINT_DEC_SPACE "\n",
-	   prefix, selfcopy.count, 8, selfcopy.cost);
+  fprintf (file, "  %soverall:\tnum=%6d\tcost=% 8" HOST_WIDE_INT_PRINT "d\n",
+	   prefix, overall.count, overall.cost);
+  fprintf (file, "  %sloads:\tnum=%6d\tcost=% 8" HOST_WIDE_INT_PRINT "d\n",
+	   prefix, load.count, load.cost);
+  fprintf (file, "  %sstores:\tnum=%6d\tcost=% 8" HOST_WIDE_INT_PRINT "d\n",
+	   prefix, store.count, store.cost);
+  fprintf (file, "  %sregcopy:\tnum=%6d\tcost=% 8" HOST_WIDE_INT_PRINT "d\n",
+	   prefix, regcopy.count, regcopy.cost);
+  fprintf (file, "  %sselfcpy:\tnum=%6d\tcost=% 8" HOST_WIDE_INT_PRINT "d\n",
+	   prefix, selfcopy.count, selfcopy.cost);
 }
 
 /* Returns nonzero, if WEB1 and WEB2 have some possible
