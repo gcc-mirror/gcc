@@ -1314,6 +1314,9 @@ internal_error VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
+  if (diagnostic_lock)
+    error_recursion ();
+
   if (errorcount > 0 || sorrycount > 0)
     {
       fnotice (stderr, "%s:%d: confused by earlier errors, bailing out\n",
