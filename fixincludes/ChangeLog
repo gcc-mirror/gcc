@@ -1,3 +1,9 @@
+2004-11-12  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* inclhack.def (sco_math): Bypass on __GNUG__.
+	(sysz_stdlib_for_sun): Bypass on _CLASSIC_ANSI_TYPES.
+	* fixincl.x: Regenerate.
+
 2004-11-09  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* inclhack.def (hpux8_bogus_inlines): Bypass on __GNUG__.
