@@ -1,5 +1,18 @@
 2004-08-01  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/16224
+	* name-lookup.c (decl_namespace): Remove.
+	(current_decl_namespace): Use decl_namespace_context instead of
+	decl_namespace.
+	(push_decl_namespace): Likewise.
+	(arg_assoc_class): Likewise.
+	(arg_assoc_type): Likewise.
+	* pt.c (check_specialization_namespace): New function.
+	(maybe_process_partial_specialization): Use it.
+	(register_specialization): Likewise.
+
+2004-08-01  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/16489
 	* cp-tree.h (DECL_INTEGRAL_CONSTANT_VAR_P): New macro.
 	* call.c (null_ptr_cst_p): Handle variables with constant
