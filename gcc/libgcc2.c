@@ -1254,7 +1254,7 @@ struct bb
   struct bb *next;
 
   /* Older GCC's did not emit these fields.  */
-  long nwords;
+  long sizeof_bb;
   struct bb_function_info *function_infos;
 };
 
