@@ -2174,9 +2174,14 @@ staticp (arg)
     case STRING_CST:
       return 1;
 
+      /* If we are referencing a bitfield, we can't evaluate an
+	 ADDR_EXPR at compile time and so it isn't a constant.  */
     case COMPONENT_REF:
+      return (! DECL_BIT_FIELD (TREE_OPERAND (arg, 1))
+	      && staticp (TREE_OPERAND (arg, 0)));
+
     case BIT_FIELD_REF:
-      return staticp (TREE_OPERAND (arg, 0));
+      return 0;
 
 #if 0
        /* This case is technically correct, but results in setting
