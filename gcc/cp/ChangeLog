@@ -1,3 +1,8 @@
+2000-03-16  Steven Grady <grady@digitaldeck.com>
+	    Jason Merrill  <jason@casey.cygnus.com>
+
+	* rtti.c (build_dynamic_cast_1): Improve diagnostics.
+
 2000-03-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl2.c (grokfield): Bail out if type is error_mark_node.
