@@ -1,3 +1,12 @@
+2004-06-06  Steven Bosscher  <stevenb@suse.de>
+
+	* hooks.c (hook_int_void_1): New generic hook.
+	* hooks.h (hook_int_void_1): Add prototype.
+	* config/c4x/c4x.c (TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE):
+	Define to hook_int_void_1.
+	* config/c4x/c4x.md: Replace dummies for the old pipeline model
+	with dummies for the new one.
+
 2004-06-06  Roger Sayle  <roger@eyesopen.com>
 
 	* tree.h (lvalue_or_else): Delete function prototype.
