@@ -110,7 +110,10 @@ extern void *__deregister_frame_info (void *)
    an additional check that you are doing everything right.  But if you do
    use the `-z text' option when building a shared library, you will get
    errors unless the .ctors and .dtors sections are marked as writable
-   via the SHF_WRITE attribute.)  */
+   via the SHF_WRITE attribute.)
+
+   These defaults do not include leading spacing, as they will only be
+   used in asm:s here.  */
 
 #ifndef CTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP	".section\t.ctors,\"aw\""

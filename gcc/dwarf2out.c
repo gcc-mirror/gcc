@@ -242,18 +242,18 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 
 #ifdef OBJECT_FORMAT_ELF
 #ifndef UNALIGNED_SHORT_ASM_OP
-#define UNALIGNED_SHORT_ASM_OP	".2byte"
+#define UNALIGNED_SHORT_ASM_OP	"\t.2byte\t"
 #endif
 #ifndef UNALIGNED_INT_ASM_OP
-#define UNALIGNED_INT_ASM_OP	".4byte"
+#define UNALIGNED_INT_ASM_OP	"\t.4byte\t"
 #endif
 #ifndef UNALIGNED_DOUBLE_INT_ASM_OP
-#define UNALIGNED_DOUBLE_INT_ASM_OP	".8byte"
+#define UNALIGNED_DOUBLE_INT_ASM_OP	"\t.8byte\t"
 #endif
 #endif /* OBJECT_FORMAT_ELF */
 
 #ifndef ASM_BYTE_OP
-#define ASM_BYTE_OP		".byte"
+#define ASM_BYTE_OP		"\t.byte\t"
 #endif
 
 /* Data and reference forms for relocatable data.  */
@@ -262,7 +262,7 @@ static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 
 /* Pseudo-op for defining a new section.  */
 #ifndef SECTION_ASM_OP
-#define SECTION_ASM_OP	".section"
+#define SECTION_ASM_OP	"\t.section\t"
 #endif
 
 /* The default format used by the ASM_OUTPUT_SECTION macro (see below) to

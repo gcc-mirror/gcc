@@ -57,7 +57,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef ASM_STABS_OP
-#define ASM_STABS_OP ".stabs"
+#define ASM_STABS_OP "\t.stabs\t"
 #endif
 
 /* Define the prefix to use when check_memory_usage_flag is enable.  */

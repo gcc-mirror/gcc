@@ -387,22 +387,22 @@ static void retry_incomplete_types	PARAMS ((void));
    what is expected by "standard" AT&T System V.4 assemblers.  */
 
 #ifndef FILE_ASM_OP
-#define FILE_ASM_OP		".file"
+#define FILE_ASM_OP		"\t.file\t"
 #endif
 #ifndef VERSION_ASM_OP
-#define VERSION_ASM_OP		".version"
+#define VERSION_ASM_OP		"\t.version\t"
 #endif
 #ifndef UNALIGNED_SHORT_ASM_OP
-#define UNALIGNED_SHORT_ASM_OP	".2byte"
+#define UNALIGNED_SHORT_ASM_OP	"\t.2byte\t"
 #endif
 #ifndef UNALIGNED_INT_ASM_OP
-#define UNALIGNED_INT_ASM_OP	".4byte"
+#define UNALIGNED_INT_ASM_OP	"\t.4byte\t"
 #endif
 #ifndef ASM_BYTE_OP
-#define ASM_BYTE_OP		".byte"
+#define ASM_BYTE_OP		"\t.byte\t"
 #endif
 #ifndef SET_ASM_OP
-#define SET_ASM_OP		".set"
+#define SET_ASM_OP		"\t.set\t"
 #endif
 
 /* Pseudo-ops for pushing the current section onto the section stack (and
@@ -414,10 +414,10 @@ static void retry_incomplete_types	PARAMS ((void));
    OK because we only use at most one level of the section stack herein.  */
 
 #ifndef PUSHSECTION_ASM_OP
-#define PUSHSECTION_ASM_OP	".section"
+#define PUSHSECTION_ASM_OP	"\t.section\t"
 #endif
 #ifndef POPSECTION_ASM_OP
-#define POPSECTION_ASM_OP	".previous"
+#define POPSECTION_ASM_OP	"\t.previous"
 #endif
 
 /* The default format used by the ASM_OUTPUT_PUSH_SECTION macro (see below)

@@ -89,11 +89,11 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef ASM_STABS_OP
-#define ASM_STABS_OP ".stabs"
+#define ASM_STABS_OP "\t.stabs\t"
 #endif
 
 #ifndef ASM_STABN_OP
-#define ASM_STABN_OP ".stabn"
+#define ASM_STABN_OP "\t.stabn\t"
 #endif
 
 #ifndef DBX_TYPE_DECL_STABS_CODE
