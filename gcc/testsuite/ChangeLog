@@ -1,3 +1,12 @@
+2005-02-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/19895
+	* g++.dg/parse/ptrmem3.C: New.
+
+	PR c++/19884
+	* g++.old-deja/g++.oliva/template6.C: Add another case.
+	* g++.dg/template/explicit6.C: New.
+
 2005-02-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	PR c++/17816

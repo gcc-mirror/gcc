@@ -1883,6 +1883,11 @@ check_explicit_specialization (tree declarator,
 	      /* Find the namespace binding, using the declaration
                  context.  */
 	      fns = namespace_binding (dname, CP_DECL_CONTEXT (decl));
+	      if (!fns || !is_overloaded_fn (fns))
+		{
+		  error ("%qD is not a template function", dname);
+		  fns = error_mark_node;
+		}
 	    }
 
 	  declarator = lookup_template_function (fns, NULL_TREE);
@@ -4196,17 +4201,8 @@ lookup_template_function (tree fns, tree arglist)
     return error_mark_node;
 
   gcc_assert (!arglist || TREE_CODE (arglist) == TREE_VEC);
-  if (fns == NULL_TREE 
-      || TREE_CODE (fns) == FUNCTION_DECL)
-    {
-      error ("non-template used as template");
-      return error_mark_node;
-    }
-
-  gcc_assert (TREE_CODE (fns) == TEMPLATE_DECL
-	      || TREE_CODE (fns) == OVERLOAD
-	      || BASELINK_P (fns)
-	      || TREE_CODE (fns) == IDENTIFIER_NODE);
+  gcc_assert (fns && (is_overloaded_fn (fns)
+		      || TREE_CODE (fns) == IDENTIFIER_NODE));
 
   if (BASELINK_P (fns))
     {
