@@ -1,3 +1,12 @@
+2003-10-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_output_epilogue): When using a frame pointer, don't emit
+	an extra stack adjustment insn if the stack pointer is already 
+	pointing at the right place.
+	(use_return_insn): Allow a return insn to be used when we have a
+	frame pointer if the stack pointer is in the right place.
+	(output_return_instruction): Handle it.
+
 2003-10-28  Andreas Jaeger  <aj@suse.de>
 
 	* ggc-zone.c (check_cookies): Add missing variable.

@@ -1015,10 +1015,6 @@ use_return_insn (int iscond)
   if (!reload_completed)
     return 0;
 
-  /* We need two instructions when there's a frame pointer. */
-  if (frame_pointer_needed)
-    return 0;
-  
   func_type = arm_current_func_type ();
 
   /* Naked functions and volatile functions need special
@@ -1033,11 +1029,12 @@ use_return_insn (int iscond)
   /* As do variadic functions.  */
   if (current_function_pretend_args_size
       || cfun->machine->uses_anonymous_args
-      /* Of if the function calls __builtin_eh_return () */
+      /* Or if the function calls __builtin_eh_return () */
       || ARM_FUNC_TYPE (func_type) == ARM_FT_EXCEPTION_HANDLER
-      /* Or if there is no frame pointer and there is a stack adjustment.  */
-      || ((arm_get_frame_size () + current_function_outgoing_args_size != 0)
-	  && !frame_pointer_needed))
+      /* Or if the function calls alloca */
+      || current_function_calls_alloca
+      /* Or if there is a stack adjustment.  */
+      || (arm_get_frame_size () + current_function_outgoing_args_size != 0))
     return 0;
 
   saved_int_regs = arm_compute_save_reg_mask ();
@@ -8098,7 +8095,7 @@ arm_compute_save_reg_mask (void)
   return save_reg_mask;
 }
 
-/* Generate a function exit sequence.  If REALLY_RETURN is true, then do
+/* Generate a function exit sequence.  If REALLY_RETURN is false, then do
    everything bar the final return instruction.  */
 const char *
 output_return_instruction (rtx operand, int really_return, int reverse)
@@ -8116,8 +8113,9 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 
   if (IS_VOLATILE (func_type) && TARGET_ABORT_NORETURN)
     {
-      /* If this function was declared non-returning, and we have found a tail 
-	 call, then we have to trust that the called function won't return.  */
+      /* If this function was declared non-returning, and we have
+	 found a tail call, then we have to trust that the called
+	 function won't return.  */
       if (really_return)
 	{
 	  rtx ops[2];
@@ -8189,10 +8187,11 @@ output_return_instruction (rtx operand, int really_return, int reverse)
 	  char *p;
 	  int first = 1;
 
-	  /* Generate the load multiple instruction to restore the registers.  */
-	  if (frame_pointer_needed)
-	    sprintf (instr, "ldm%sea\t%%|fp, {", conditional);
-	  else if (live_regs_mask & (1 << SP_REGNUM))
+	  /* Generate the load multiple instruction to restore the
+	     registers.  Note we can get here, even if
+	     frame_pointer_needed is true, but only if sp already
+	     points to the base of the saved core registers.  */
+	  if (live_regs_mask & (1 << SP_REGNUM))
 	    sprintf (instr, "ldm%sfd\t%%|sp, {", conditional);
 	  else
 	    sprintf (instr, "ldm%sfd\t%%|sp!, {", conditional);
@@ -8552,9 +8551,13 @@ arm_output_epilogue (int really_return)
          longer indicate the safe area of stack, and we can get stack
          corruption.  Using SP as the base register means that it will
          be reset correctly to the original value, should an interrupt
-         occur.  */
-      asm_fprintf (f, "\tsub\t%r,%r,#%d\n", SP_REGNUM, FP_REGNUM,
-		   4 * bit_count (saved_regs_mask));
+         occur.  If the stack pointer already points at the right
+         place, then omit the subtraction.  */
+      if (((frame_size + current_function_outgoing_args_size + floats_offset)
+	   != 4 * (1 + (int) bit_count (saved_regs_mask)))
+	  || current_function_calls_alloca)
+	asm_fprintf (f, "\tsub\t%r, %r, #%d\n", SP_REGNUM, FP_REGNUM,
+		     4 * bit_count (saved_regs_mask));
       print_multi_reg (f, "ldmfd\t%r", SP_REGNUM, saved_regs_mask);
 
       if (IS_INTERRUPT (func_type))
