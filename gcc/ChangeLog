@@ -1,3 +1,9 @@
+Wed Jun  4 18:39:33 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (min_insn_size, k8_avoid_jump_misspredicts): New functions
+	(ix86_reorg): Use it.
+	* i386.md (align): New insn pattern.
+
 2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* toplev.c (rest_of_type_compilation): Fix typo.
