@@ -1,3 +1,7 @@
+Tue May  5 18:24:13 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* method.c: Add a call to build_type_variant to get the right type.
+
 Tue May  5 01:25:03 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Makefile.in: Add .SUFFIXES.
