@@ -720,6 +720,59 @@
 				      (const_int 1)
 				      (const_int 2)))])
 
+;; Branch on bit patterns
+
+(define_insn ""
+  [(set (pc)
+	(if_then_else
+	 (ne (zero_extract:SI (match_operand:SI 0 "register_operand" "r")
+			      (const_int 1)
+			      (match_operand:SI 1 "uint5_operand" ""))
+	     (const_int 0))
+	 (match_operand 2 "pc_or_label_operand" "")
+	 (match_operand 3 "pc_or_label_operand" "")))]
+  ""
+  "*
+{
+  if (operands[3] == pc_rtx)
+    return (get_attr_length (insn) == 1
+	    ? \"bb,< %0,%1,%2%#\" : \"extrs,>= %0,%1,1,0\;bl %2,0%#\");
+  else
+    return (get_attr_length (insn) == 1
+	    ? \"bb,>= %0,%1,%3%#\" : \"extrs,< %0,%1,1,0\;bl %3,0%#\");
+}"
+  [(set_attr "type" "cbranch")
+   (set (attr "length") (if_then_else (lt (abs (minus (match_dup 0)
+						      (plus (pc) (const_int 2))))
+					  (const_int 1023))
+				      (const_int 1)
+				      (const_int 2)))])
+
+(define_insn ""
+  [(set (pc)
+	(if_then_else
+	 (eq (zero_extract:SI (match_operand:SI 0 "register_operand" "r")
+			      (const_int 1)
+			      (match_operand:SI 1 "uint5_operand" ""))
+	     (const_int 0))
+	 (match_operand 2 "pc_or_label_operand" "")
+	 (match_operand 3 "pc_or_label_operand" "")))]
+  ""
+  "*
+{
+  if (operands[3] == pc_rtx)
+    return (get_attr_length (insn) == 1
+	    ? \"bb,>= %0,%1,%2%#\" : \"extrs,< %0,%1,1,0\;bl %2,0%#\");
+  else
+    return (get_attr_length (insn) == 1
+	    ? \"bb,< %0,%1,%3%#\" : \"extrs,>= %0,%1,1,0\;bl %3,0%#\");
+}"
+  [(set_attr "type" "cbranch")
+   (set (attr "length") (if_then_else (lt (abs (minus (match_dup 0)
+						      (plus (pc) (const_int 2))))
+					  (const_int 1023))
+				      (const_int 1)
+				      (const_int 2)))])
 ;; Floating point branches
 
 (define_insn ""
