@@ -518,6 +518,10 @@ combine_instructions (f, nregs)
 
   label_tick = 1;
 
+  /* We need to initialize it here, because record_dead_and_set_regs may call
+     get_last_value.  */
+  subst_prev_insn = NULL_RTX;
+
   setup_incoming_promotions ();
 
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
@@ -2337,6 +2341,10 @@ try_combine (i3, i2, i1)
 
   combine_successes++;
 
+  /* Clear this here, so that subsequent get_last_value calls are not
+     affected.  */
+  subst_prev_insn = NULL_RTX;
+
   if (added_links_insn
       && (newi2pat == 0 || INSN_CUID (added_links_insn) < INSN_CUID (i2))
       && INSN_CUID (added_links_insn) < INSN_CUID (i3))
@@ -2364,6 +2372,10 @@ undo_all ()
 
   obfree (undobuf.storage);
   undobuf.num_undo = 0;
+
+  /* Clear this here, so that subsequent get_last_value calls are not
+     affected.  */
+  subst_prev_insn = NULL_RTX;
 }
 
 /* Find the innermost point within the rtx at LOC, possibly LOC itself,
@@ -9965,9 +9977,14 @@ get_last_value (x)
      This does not work if there exists an instruction which is temporarily
      not on the insn chain.  */
 
-  if (INSN_CUID (reg_last_set[regno]) >= subst_low_cuid && ! subst_prev_insn)
+  if (INSN_CUID (reg_last_set[regno]) >= subst_low_cuid)
     {
       rtx insn, set;
+
+      /* We can not do anything useful in this case, because there is
+	 an instruction which is not on the insn chain.  */
+      if (subst_prev_insn)
+	return 0;
 
       /* Skip over USE insns.  They are not useful here, and they may have
 	 been made by combine, in which case they do not have a INSN_CUID
