@@ -2373,7 +2373,9 @@ static char *dwarf_tag_name		PROTO((unsigned));
 static char *dwarf_attr_name		PROTO((unsigned));
 static char *dwarf_form_name		PROTO((unsigned));
 static char *dwarf_stack_op_name	PROTO((unsigned));
+#if 0
 static char *dwarf_type_encoding_name	PROTO((unsigned));
+#endif
 static tree decl_ultimate_origin	PROTO((tree));
 static tree block_ultimate_origin	PROTO((tree));
 static tree decl_class_context		PROTO((tree));
@@ -2504,7 +2506,9 @@ static void add_type_attribute		PROTO((dw_die_ref, tree, int, int,
 					       dw_die_ref));
 static char *type_tag			PROTO((tree));
 static tree member_declared_type	PROTO((tree));
+#if 0
 static char *decl_start_label		PROTO((tree));
+#endif
 static void gen_array_type_die		PROTO((tree, dw_die_ref));
 static void gen_set_type_die		PROTO((tree, dw_die_ref));
 #if 0
@@ -3472,6 +3476,7 @@ dwarf_stack_op_name (op)
 
 /* Convert a DWARF type code into its string name.  */
 
+#if 0
 static char *
 dwarf_type_encoding_name (enc)
      register unsigned enc;
@@ -3498,6 +3503,7 @@ dwarf_type_encoding_name (enc)
       return "DW_ATE_<unknown>";
     }
 }
+#endif
 
 /* Determine the "ultimate origin" of a decl.  The decl may be an inlined
    instance of an inlined instance of a decl which is local to an inline
@@ -7728,6 +7734,7 @@ member_declared_type (member)
 /* Get the decl's label, as described by its RTL. This may be different
    from the DECL_NAME name used in the source file.  */
 
+#if 0
 static char *
 decl_start_label (decl)
      register tree decl;
@@ -7745,6 +7752,7 @@ decl_start_label (decl)
   fnname = XSTR (x, 0);
   return fnname;
 }
+#endif
 
 /* These routines generate the internal representation of the DIE's for
    the compilation unit.  Debugging information is collected by walking
@@ -8049,8 +8057,7 @@ gen_unspecified_parameters_die (decl_or_type, context_die)
      register tree decl_or_type;
      register dw_die_ref context_die;
 {
-  register dw_die_ref parm_die = new_die (DW_TAG_unspecified_parameters,
-					  context_die);
+  new_die (DW_TAG_unspecified_parameters, context_die);
 }
 
 /* Generate a list of nameless DW_TAG_formal_parameter DIEs (and perhaps a
@@ -9674,7 +9681,7 @@ dwarf2out_line (filename, line)
 
 void
 dwarf2out_start_source_file (filename)
-     register char *filename;
+     register char *filename ATTRIBUTE_UNUSED;
 {
 }
 
@@ -9709,8 +9716,8 @@ dwarf2out_define (lineno, buffer)
 
 void
 dwarf2out_undef (lineno, buffer)
-     register unsigned lineno;
-     register char *buffer;
+     register unsigned lineno ATTRIBUTE_UNUSED;
+     register char *buffer ATTRIBUTE_UNUSED;
 {
 }
 

@@ -87,4 +87,22 @@ cplus_mangle_opname PARAMS ((const char *opname, int options));
 extern void
 set_cplus_marker_for_demangling PARAMS ((int ch));
 
+extern void
+do_tlink PARAMS ((char **, char **));
+
+extern void
+collect_execute PARAMS ((char *, char **, char *));
+
+extern void
+collect_exit PARAMS ((int));
+
+extern int
+collect_wait PARAMS ((char *));
+
+extern void
+dump_file PARAMS ((char *));
+
+extern int
+file_exists PARAMS ((char *));
+
 #endif	/* DEMANGLE_H */

@@ -439,12 +439,14 @@ static void pad_to_arg_alignment PROTO((struct args_size *, int));
 static void pad_below		PROTO((struct args_size *, enum  machine_mode,
 				       tree));
 #endif
+#ifdef ARGS_GROW_DOWNWARD
 static tree round_down		PROTO((tree, int));
+#endif
 static rtx round_trampoline_addr PROTO((rtx));
 static tree blocks_nreverse	PROTO((tree));
 static int all_blocks		PROTO((tree, tree *));
-static int *record_insns	PROTO((rtx));
 #if defined (HAVE_prologue) || defined (HAVE_epilogue)
+static int *record_insns	PROTO((rtx));
 static int contains		PROTO((rtx, int *));
 #endif /* HAVE_prologue || HAVE_epilogue */
 static void put_addressof_into_stack PROTO((rtx));
@@ -4747,6 +4749,7 @@ pad_below (offset_ptr, passed_mode, sizetree)
 }
 #endif
 
+#ifdef ARGS_GROW_DOWNWARD
 static tree
 round_down (value, divisor)
      tree value;
@@ -4756,6 +4759,7 @@ round_down (value, divisor)
 		     size_binop (FLOOR_DIV_EXPR, value, size_int (divisor)),
 		     size_int (divisor));
 }
+#endif
 
 /* Walk the tree of blocks describing the binding levels within a function
    and warn about uninitialized variables.
@@ -5944,6 +5948,7 @@ static int *epilogue;
 /* Create an array that records the INSN_UIDs of INSNS (either a sequence
    or a single insn).  */
 
+#if defined (HAVE_prologue) || defined (HAVE_epilogue)
 static int *
 record_insns (insns)
      rtx insns;
@@ -5969,7 +5974,6 @@ record_insns (insns)
 
 /* Determine how many INSN_UIDs in VEC are part of INSN.  */
 
-#if defined (HAVE_prologue) || defined (HAVE_epilogue)
 static int
 contains (insn, vec)
      rtx insn;

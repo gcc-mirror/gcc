@@ -952,12 +952,12 @@ check_attr_test (exp, is_const)
 		  return exp;
 		}
 	      else
-		fatal ("Unknown attribute `%s' in EQ_ATTR", XEXP (exp, 0));
+		fatal ("Unknown attribute `%s' in EQ_ATTR", XSTR (exp, 0));
 	    }
 
 	  if (is_const && ! attr->is_const)
 	    fatal ("Constant expression uses insn attribute `%s' in EQ_ATTR",
-		   XEXP (exp, 0));
+		   XSTR (exp, 0));
 
 	  /* Copy this just to make it permanent,
 	     so expressions using it can be permanent too.  */
@@ -974,7 +974,7 @@ check_attr_test (exp, is_const)
 	      for (p = XSTR (exp, 1); *p; p++)
 		if (*p < '0' || *p > '9')
 		   fatal ("Attribute `%s' takes only numeric values", 
-			  XEXP (exp, 0));
+			  XSTR (exp, 0));
 	    }
 	  else
 	    {
@@ -985,7 +985,7 @@ check_attr_test (exp, is_const)
 
 	      if (av == NULL)
 		fatal ("Unknown value `%s' for `%s' attribute",
-		       XEXP (exp, 1), XEXP (exp, 0));
+		       XSTR (exp, 1), XSTR (exp, 0));
 	    }
 	}
       else

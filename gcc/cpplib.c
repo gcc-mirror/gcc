@@ -19,6 +19,11 @@ along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
+#ifdef __STDC__
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
 #include "system.h"
 
 #ifndef STDC_VALUE
@@ -35,15 +40,15 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 # include <sys/resource.h>
 #endif
 
+#include "gansidecl.h"
 #include "cpplib.h"
 #include "cpphash.h"
-#include "gansidecl.h"
 
 #ifndef GET_ENVIRONMENT
 #define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ENV_VALUE = getenv (ENV_NAME)
 #endif
 
-extern char *update_path ();
+extern char *update_path PARAMS ((char *, char *));
 
 #undef MIN
 #undef MAX
@@ -196,52 +201,56 @@ struct cpp_pending {
 /* Forward declarations.  */
 
 char *xmalloc ();
-void cpp_fatal ();
-void cpp_file_line_for_message PARAMS ((char *, int, int));
-void cpp_hash_cleanup PARAMS ((cpp_reader *));
-void cpp_message ();
-void cpp_print_containing_files PARAMS ((cpp_reader *));
+extern void cpp_hash_cleanup PARAMS ((cpp_reader *));
+extern void v_cpp_message PROTO ((cpp_reader *, int, const char *, va_list));
 
-static void add_import ();
-static void append_include_chain ();
-static void make_assertion ();
-static void path_include ();
-static void initialize_builtins ();
-static void initialize_char_syntax ();
-extern void delete_macro ();
+static void add_import			PROTO ((cpp_reader *, int, char *));
+static void append_include_chain	PROTO ((cpp_reader *,
+						struct file_name_list *,
+						struct file_name_list *));
+static void make_assertion		PROTO ((cpp_reader *, char *, U_CHAR *));
+static void path_include		PROTO ((cpp_reader *, char *));
+static void initialize_builtins		PROTO ((cpp_reader *));
+static void initialize_char_syntax	PROTO ((struct cpp_options *));
 #if 0
 static void trigraph_pcp ();
 #endif
-static int finclude ();
-static void validate_else ();
-static int comp_def_part ();
+static int finclude			PROTO ((cpp_reader *, int, char *,
+						int, struct file_name_list *));
+static void validate_else		PROTO ((cpp_reader *, char *));
+static int comp_def_part		PROTO ((int, U_CHAR *, int, U_CHAR *,
+						int, int));
 #ifdef abort
 extern void fancy_abort ();
 #endif
-static int lookup_import ();
-static int redundant_include_p ();
-static int is_system_include ();
-static struct file_name_map *read_name_map ();
-static char *read_filename_string ();
-static int open_include_file ();
-static int check_macro_name ();
-static int compare_defs ();
-static int compare_token_lists ();
-static HOST_WIDE_INT eval_if_expression ();
-static int change_newlines ();
-extern int hashf ();
-static struct arglist *read_token_list ();
-static void free_token_list ();
-static int safe_read ();
+static int lookup_import		PROTO ((cpp_reader *, char *,
+						struct file_name_list *));
+static int redundant_include_p		PROTO ((cpp_reader *, char *));
+static int is_system_include		PROTO ((cpp_reader *, char *));
+static struct file_name_map *read_name_map	PROTO ((cpp_reader *, char *));
+static char *read_filename_string	PROTO ((int, FILE *));
+static int open_include_file		PROTO ((cpp_reader *, char *,
+						struct file_name_list *));
+static int check_macro_name		PROTO ((cpp_reader *, U_CHAR *, char *));
+static int compare_defs			PROTO ((cpp_reader *,
+						DEFINITION *, DEFINITION *));
+static int compare_token_lists		PROTO ((struct arglist *,
+						struct arglist *));
+static HOST_WIDE_INT eval_if_expression	PROTO ((cpp_reader *, U_CHAR *, int));
+static int change_newlines		PROTO ((U_CHAR *, int));
+static struct arglist *read_token_list	PROTO ((cpp_reader *, int *));
+static void free_token_list		PROTO ((struct arglist *));
+static int safe_read			PROTO ((int, char *, int));
 static void push_macro_expansion PARAMS ((cpp_reader *,
 					  U_CHAR *, int, HASHNODE *));
 static struct cpp_pending *nreverse_pending PARAMS ((struct cpp_pending *));
 extern char *xrealloc ();
-static char *xcalloc ();
-static char *savestring ();
+static char *xcalloc			PROTO ((unsigned, unsigned));
+static char *savestring			PROTO ((char *));
 
-static void conditional_skip ();
-static void skip_if_group ();
+static void conditional_skip		PROTO ((cpp_reader *, int,
+					       enum node_type, U_CHAR *));
+static void skip_if_group		PROTO ((cpp_reader *, int));
 static int parse_name PARAMS ((cpp_reader *, int));
 
 /* Last arg to output_line_command.  */
@@ -251,33 +260,8 @@ enum file_change_code {same_file, enter_file, leave_file};
 
 extern HOST_WIDE_INT cpp_parse_expr PARAMS ((cpp_reader *));
 
-extern FILE *fdopen ();
 extern char *version_string;
 extern struct tm *localtime ();
-
-/* These functions are declared to return int instead of void since they
-   are going to be placed in a table and some old compilers have trouble with
-   pointers to functions returning void.  */
-
-static int do_define ();
-static int do_line ();
-static int do_include ();
-static int do_undef ();
-static int do_error ();
-static int do_pragma ();
-static int do_ident ();
-static int do_if ();
-static int do_xifdef ();
-static int do_else ();
-static int do_elif ();
-static int do_endif ();
-#ifdef SCCS_DIRECTIVE
-static int do_sccs ();
-#endif
-static int do_once ();
-static int do_assert ();
-static int do_unassert ();
-static int do_warning ();
 
 struct file_name_list
   {
@@ -360,11 +344,36 @@ static struct default_include {
 
 struct directive {
   int length;			/* Length of name */
-  int (*func)();		/* Function to handle directive */
+  int (*func)			/* Function to handle directive */
+    PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
   char *name;			/* Name of directive */
   enum node_type type;		/* Code which describes which directive.  */
   char command_reads_line;      /* One if rest of line is read by func.  */
 };
+
+/* These functions are declared to return int instead of void since they
+   are going to be placed in a table and some old compilers have trouble with
+   pointers to functions returning void.  */
+
+static int do_define PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_line PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_include PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_undef PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_error PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_pragma PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_ident PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_if PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_xifdef PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_else PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_elif PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_endif PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+#ifdef SCCS_DIRECTIVE
+static int do_sccs PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+#endif
+static int do_once PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_assert PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_unassert PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
+static int do_warning PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHAR *));
 
 #define IS_INCLUDE_DIRECTIVE_TYPE(t) \
 ((int) T_INCLUDE <= (int) (t) && (int) (t) <= (int) T_IMPORT)
@@ -993,7 +1002,7 @@ handle_directive (pfile)
       /* Handle # followed by a line number.  */
       if (CPP_PEDANTIC (pfile))
 	cpp_pedwarn (pfile, "`#' followed by integer");
-      do_line (pfile, NULL);
+      do_line (pfile, NULL, NULL, NULL);
       goto done_a_directive;
     }
 
@@ -3050,7 +3059,7 @@ static int
 do_include (pfile, keyword, unused1, unused2)
      cpp_reader *pfile;
      struct directive *keyword;
-     U_CHAR *unused1, *unused2;
+     U_CHAR *unused1 ATTRIBUTE_UNUSED, *unused2 ATTRIBUTE_UNUSED;
 {
   int importing = (keyword->type == T_IMPORT);
   int skip_dirs = (keyword->type == T_INCLUDE_NEXT);
@@ -3671,9 +3680,10 @@ convert_string (pfile, result, in, limit, handle_escapes)
 #define FNAME_HASHSIZE 37
 
 static int
-do_line (pfile, keyword)
+do_line (pfile, keyword, unused1, unused2)
      cpp_reader *pfile;
-     struct directive *keyword;
+     struct directive *keyword ATTRIBUTE_UNUSED;
+     U_CHAR *unused1 ATTRIBUTE_UNUSED, *unused2 ATTRIBUTE_UNUSED;
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
   int new_lineno;
@@ -3848,7 +3858,7 @@ do_undef (pfile, keyword, buf, limit)
 static int
 do_error (pfile, keyword, buf, limit)
      cpp_reader *pfile;
-     struct directive *keyword;
+     struct directive *keyword ATTRIBUTE_UNUSED;
      U_CHAR *buf, *limit;
 {
   int length = limit - buf;
@@ -3869,7 +3879,7 @@ do_error (pfile, keyword, buf, limit)
 static int
 do_warning (pfile, keyword, buf, limit)
      cpp_reader *pfile;
-     struct directive *keyword;
+     struct directive *keyword ATTRIBUTE_UNUSED;
      U_CHAR *buf, *limit;
 {
   int length = limit - buf;
@@ -3879,7 +3889,7 @@ do_warning (pfile, keyword, buf, limit)
   SKIP_WHITE_SPACE (copy);
 
   if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
-    cpp_pedwarn ("ANSI C does not allow `#warning'");
+    cpp_pedwarn (pfile, "ANSI C does not allow `#warning'");
 
   /* Use `pedwarn' not `warning', because #warning isn't in the C Standard;
      if -pedantic-errors is given, #warning should cause an error.  */
@@ -3891,8 +3901,10 @@ do_warning (pfile, keyword, buf, limit)
    avoid ever including it again.  */
 
 static int
-do_once (pfile)
+do_once (pfile, keyword, unused1, unused2)
      cpp_reader *pfile;
+     struct directive *keyword ATTRIBUTE_UNUSED;
+     U_CHAR *unused1 ATTRIBUTE_UNUSED, *unused2 ATTRIBUTE_UNUSED;
 {
   cpp_buffer *ip = NULL;
   struct file_name_list *new;
@@ -3922,8 +3934,8 @@ do_once (pfile)
 static int
 do_ident (pfile, keyword, buf, limit)
      cpp_reader *pfile;
-     struct directive *keyword;
-     U_CHAR *buf, *limit;
+     struct directive *keyword ATTRIBUTE_UNUSED;
+     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
 /*  long old_written = CPP_WRITTEN (pfile);*/
 
@@ -3942,8 +3954,8 @@ do_ident (pfile, keyword, buf, limit)
 static int
 do_pragma (pfile, keyword, buf, limit)
      cpp_reader *pfile;
-     struct directive *keyword;
-     U_CHAR *buf, *limit;
+     struct directive *keyword ATTRIBUTE_UNUSED;
+     U_CHAR *buf, *limit ATTRIBUTE_UNUSED;
 {
   while (*buf == ' ' || *buf == '\t')
     buf++;
@@ -3952,7 +3964,7 @@ do_pragma (pfile, keyword, buf, limit)
        fault.  */
     if (!CPP_BUFFER (pfile)->system_header_p)
       cpp_warning (pfile, "`#pragma once' is obsolete");
-    do_once (pfile);
+    do_once (pfile, NULL, NULL, NULL);
   }
 
   if (!strncmp (buf, "implementation", 14)) {
@@ -4015,8 +4027,8 @@ nope:
 static int
 do_sccs (pfile, keyword, buf, limit)
      cpp_reader *pfile;
-     struct directive *keyword;
-     U_CHAR *buf, *limit;
+     struct directive *keyword ATTRIBUTE_UNUSED;
+     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
   if (CPP_PEDANTIC (pfile))
     cpp_pedwarn (pfile, "ANSI C does not allow `#sccs'");
@@ -4040,7 +4052,7 @@ do_sccs (pfile, keyword, buf, limit)
 static int
 do_if (pfile, keyword, buf, limit)
      cpp_reader *pfile;
-     struct directive *keyword;
+     struct directive *keyword ATTRIBUTE_UNUSED;
      U_CHAR *buf, *limit;
 {
   HOST_WIDE_INT value = eval_if_expression (pfile, buf, limit - buf);
@@ -4056,7 +4068,7 @@ do_if (pfile, keyword, buf, limit)
 static int
 do_elif (pfile, keyword, buf, limit)
      cpp_reader *pfile;
-     struct directive *keyword;
+     struct directive *keyword ATTRIBUTE_UNUSED;
      U_CHAR *buf, *limit;
 {
   if (pfile->if_stack == CPP_BUFFER (pfile)->if_stack) {
@@ -4099,8 +4111,8 @@ do_elif (pfile, keyword, buf, limit)
 static HOST_WIDE_INT
 eval_if_expression (pfile, buf, length)
      cpp_reader *pfile;
-     U_CHAR *buf;
-     int length;
+     U_CHAR *buf ATTRIBUTE_UNUSED;
+     int length ATTRIBUTE_UNUSED;
 {
   HASHNODE *save_defined;
   HOST_WIDE_INT value;
@@ -4128,7 +4140,7 @@ static int
 do_xifdef (pfile, keyword, unused1, unused2)
      cpp_reader *pfile;
      struct directive *keyword;
-     U_CHAR *unused1, *unused2;
+     U_CHAR *unused1 ATTRIBUTE_UNUSED, *unused2 ATTRIBUTE_UNUSED;
 {
   int skip;
   cpp_buffer *ip = CPP_BUFFER (pfile);
@@ -4408,8 +4420,8 @@ skip_if_group (pfile, any)
 static int
 do_else (pfile, keyword, buf, limit)
      cpp_reader *pfile;
-     struct directive *keyword;
-     U_CHAR *buf, *limit;
+     struct directive *keyword ATTRIBUTE_UNUSED;
+     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
 
@@ -4451,8 +4463,8 @@ do_else (pfile, keyword, buf, limit)
 static int
 do_endif (pfile, keyword, buf, limit)
      cpp_reader *pfile;
-     struct directive *keyword;
-     U_CHAR *buf, *limit;
+     struct directive *keyword ATTRIBUTE_UNUSED;
+     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
   if (CPP_PEDANTIC (pfile))
     validate_else (pfile, "#endif");
@@ -5219,7 +5231,7 @@ parse_name (pfile, c)
       }
 
       if (c == '$' && CPP_PEDANTIC (pfile))
-	cpp_pedwarn ("`$' in identifier");
+	cpp_pedwarn (pfile, "`$' in identifier");
 
       CPP_RESERVE(pfile, 2); /* One more for final NUL.  */
       CPP_PUTC_Q (pfile, c);
@@ -6635,7 +6647,7 @@ cpp_handle_options (pfile, argc, argv)
 	  push_pending (pfile, "-U", argv[i] + 2);
 	else if (i + 1 == argc)
 	  {
-	    cpp_fatal (pfile, "Macro name missing after -U option", NULL);
+	    cpp_fatal (pfile, "Macro name missing after -U option");
 	    return argc;
 	  }
 	else
@@ -6829,8 +6841,8 @@ cpp_cleanup (pfile)
 static int
 do_assert (pfile, keyword, buf, limit)
      cpp_reader *pfile;
-     struct directive *keyword;
-     U_CHAR *buf, *limit;
+     struct directive *keyword ATTRIBUTE_UNUSED;
+     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
   long symstart;		/* remember where symbol name starts */
   int c;
@@ -6902,8 +6914,8 @@ do_assert (pfile, keyword, buf, limit)
 static int
 do_unassert (pfile, keyword, buf, limit)
      cpp_reader *pfile;
-     struct directive *keyword;
-     U_CHAR *buf, *limit;
+     struct directive *keyword ATTRIBUTE_UNUSED;
+     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
 {
   long symstart;		/* remember where symbol name starts */
   int sym_length;	/* and how long it is */
@@ -7316,29 +7328,49 @@ cpp_print_file_and_line (pfile)
     {
       long line, col;
       cpp_buf_line_and_col (ip, &line, &col);
-      cpp_file_line_for_message (ip->nominal_fname,
+      cpp_file_line_for_message (pfile, ip->nominal_fname,
 				 line, pfile->show_column ? col : -1);
     }
 }
 
-void
-cpp_error (pfile, msg, arg1, arg2, arg3)
-     cpp_reader *pfile;
-     char *msg;
-     char *arg1, *arg2, *arg3;
+static void
+v_cpp_error (pfile, msg, ap)
+  cpp_reader *pfile;
+  const char *msg;
+  va_list ap;
 {
   cpp_print_containing_files (pfile);
   cpp_print_file_and_line (pfile);
-  cpp_message (pfile, 1, msg, arg1, arg2, arg3);
+  v_cpp_message (pfile, 1, msg, ap);
+}
+
+void
+cpp_error VPROTO ((cpp_reader * pfile, const char *msg, ...))
+{
+#ifndef __STDC__
+  cpp_reader *pfile;
+  const char *msg;
+#endif
+  va_list ap;
+
+  VA_START(ap, msg);
+  
+#ifndef __STDC__
+  pfile = va_arg (ap, cpp_reader *);
+  msg = va_arg (ap, const char *);
+#endif
+
+  v_cpp_error (pfile, msg, ap);
+  va_end(ap);
 }
 
 /* Print error message but don't count it.  */
 
-void
-cpp_warning (pfile, msg, arg1, arg2, arg3)
-     cpp_reader *pfile;
-     char *msg;
-     char *arg1, *arg2, *arg3;
+static void
+v_cpp_warning (pfile, msg, ap)
+  cpp_reader *pfile;
+  const char *msg;
+  va_list ap;
 {
   if (CPP_OPTIONS (pfile)->inhibit_warnings)
     return;
@@ -7348,46 +7380,103 @@ cpp_warning (pfile, msg, arg1, arg2, arg3)
 
   cpp_print_containing_files (pfile);
   cpp_print_file_and_line (pfile);
-  cpp_message (pfile, 0, msg, arg1, arg2, arg3);
+  v_cpp_message (pfile, 0, msg, ap);
+}
+
+void
+cpp_warning VPROTO ((cpp_reader * pfile, const char *msg, ...))
+{
+#ifndef __STDC__
+  cpp_reader *pfile;
+  const char *msg;
+#endif
+  va_list ap;
+  
+  VA_START (ap, msg);
+  
+#ifndef __STDC__
+  pfile = va_arg (ap, cpp_reader *);
+  msg = va_arg (ap, const char *);
+#endif
+
+  v_cpp_warning (pfile, msg, ap);
+  va_end(ap);
 }
 
 /* Print an error message and maybe count it.  */
 
 void
-cpp_pedwarn (pfile, msg, arg1, arg2, arg3)
-     cpp_reader *pfile;
-     char *msg;
-     char *arg1, *arg2, *arg3;
+cpp_pedwarn VPROTO ((cpp_reader * pfile, const char *msg, ...))
 {
+#ifndef __STDC__
+  cpp_reader *pfile;
+  const char *msg;
+#endif
+  va_list ap;
+  
+  VA_START (ap, msg);
+  
+#ifndef __STDC__
+  pfile = va_arg (ap, cpp_reader *);
+  msg = va_arg (ap, const char *);
+#endif
+
   if (CPP_OPTIONS (pfile)->pedantic_errors)
-    cpp_error (pfile, msg, arg1, arg2, arg3);
+    v_cpp_error (pfile, msg, ap);
   else
-    cpp_warning (pfile, msg, arg1, arg2, arg3);
+    v_cpp_warning (pfile, msg, ap);
+  va_end(ap);
 }
 
-void
-cpp_error_with_line (pfile, line, column, msg, arg1, arg2, arg3)
-     cpp_reader *pfile;
-     int line, column;
-     char *msg;
-     char *arg1, *arg2, *arg3;
+static void
+v_cpp_error_with_line (pfile, line, column, msg, ap)
+  cpp_reader * pfile;
+  int line;
+  int column;
+  const char * msg;
+  va_list ap;
 {
   cpp_buffer *ip = cpp_file_buffer (pfile);
 
   cpp_print_containing_files (pfile);
 
   if (ip != NULL)
-    cpp_file_line_for_message (ip->nominal_fname, line, column);
+    cpp_file_line_for_message (pfile, ip->nominal_fname, line, column);
 
-  cpp_message (pfile, 1, msg, arg1, arg2, arg3);
+  v_cpp_message (pfile, 1, msg, ap);
+}
+
+void
+cpp_error_with_line VPROTO ((cpp_reader * pfile, int line, int column, const char *msg, ...))
+{
+#ifndef __STDC__
+  cpp_reader *pfile;
+  int line;
+  int column;
+  const char *msg;
+#endif
+  va_list ap;
+  
+  VA_START (ap, msg);
+  
+#ifndef __STDC__
+  pfile = va_arg (ap, cpp_reader *);
+  line = va_arg (ap, int);
+  column = va_arg (ap, int);
+  msg = va_arg (ap, const char *);
+#endif
+
+  v_cpp_error_with_line(pfile, line, column, msg, ap);
+  va_end(ap);
 }
 
 static void
-cpp_warning_with_line (pfile, line, column, msg, arg1, arg2, arg3)
-     cpp_reader *pfile;
-     int line, column;
-     char *msg;
-     char *arg1, *arg2, *arg3;
+v_cpp_warning_with_line (pfile, line, column, msg, ap)
+  cpp_reader * pfile;
+  int line;
+  int column;
+  const char *msg;
+  va_list ap;
 {
   cpp_buffer *ip;
 
@@ -7402,49 +7491,95 @@ cpp_warning_with_line (pfile, line, column, msg, arg1, arg2, arg3)
   ip = cpp_file_buffer (pfile);
 
   if (ip != NULL)
-    cpp_file_line_for_message (ip->nominal_fname, line, column);
+    cpp_file_line_for_message (pfile, ip->nominal_fname, line, column);
 
-  cpp_message (pfile, 0, msg, arg1, arg2, arg3);
+  v_cpp_message (pfile, 0, msg, ap);
+}  
+
+#if 0
+static void
+cpp_warning_with_line VPROTO ((cpp_reader * pfile, int line, int column, const char *msg, ...))
+{
+#ifndef __STDC__
+  cpp_reader *pfile;
+  int line;
+  int column;
+  const char *msg;
+#endif
+  va_list ap;
+  
+  VA_START (ap, msg);
+  
+#ifndef __STDC__
+  pfile = va_arg (ap, cpp_reader *);
+  line = va_arg (ap, int);
+  column = va_arg (ap, int);
+  msg = va_arg (ap, const char *);
+#endif
+
+  v_cpp_warning_with_line (pfile, line, column, msg, ap);
+  va_end(ap);
 }
+#endif
 
 void
-cpp_pedwarn_with_line (pfile, line, column, msg, arg1, arg2, arg3)
-     cpp_reader *pfile;
-     int line, column;
-     char *msg;
-     char *arg1, *arg2, *arg3;
+cpp_pedwarn_with_line VPROTO ((cpp_reader * pfile, int line, int column, const char *msg, ...))
 {
+#ifndef __STDC__
+  cpp_reader *pfile;
+  int line;
+  int column;
+  const char *msg;
+#endif
+  va_list ap;
+  
+  VA_START (ap, msg);
+  
+#ifndef __STDC__
+  pfile = va_arg (ap, cpp_reader *);
+  line = va_arg (ap, int);
+  column = va_arg (ap, int);
+  msg = va_arg (ap, const char *);
+#endif
+
   if (CPP_OPTIONS (pfile)->pedantic_errors)
-    cpp_error_with_line (pfile, column, line, msg, arg1, arg2, arg3);
+    v_cpp_error_with_line (pfile, column, line, msg, ap);
   else
-    cpp_warning_with_line (pfile, line, column, msg, arg1, arg2, arg3);
+    v_cpp_warning_with_line (pfile, line, column, msg, ap);
+  va_end(ap);
 }
 
 /* Report a warning (or an error if pedantic_errors)
    giving specified file name and line number, not current.  */
 
 void
-cpp_pedwarn_with_file_and_line (pfile, file, line, msg, arg1, arg2, arg3)
-     cpp_reader *pfile;
-     char *file;
-     int line;
-     char *msg;
-     char *arg1, *arg2, *arg3;
+cpp_pedwarn_with_file_and_line VPROTO ((cpp_reader *pfile, char *file, int line, const char *msg, ...))
 {
+#ifndef __STDC__
+  cpp_reader *pfile;
+  char *file;
+  int line;
+  const char *msg;
+#endif
+  va_list ap;
+  
+  VA_START (ap, msg);
+
+#ifndef __STDC__
+  pfile = va_arg (ap, cpp_reader *);
+  file = va_arg (ap, char *);
+  line = va_arg (ap, int);
+  msg = va_arg (ap, const char *);
+#endif
+
   if (!CPP_OPTIONS (pfile)->pedantic_errors
       && CPP_OPTIONS (pfile)->inhibit_warnings)
     return;
   if (file != NULL)
-    cpp_file_line_for_message (file, line, -1);
-  cpp_message (pfile, CPP_OPTIONS (pfile)->pedantic_errors,
-	       msg, arg1, arg2, arg3);
+    cpp_file_line_for_message (pfile, file, line, -1);
+  v_cpp_message (pfile, CPP_OPTIONS (pfile)->pedantic_errors, msg, ap);
+  va_end(ap);
 }
-
-/* This defines "errno" properly for VMS, and gives us EACCES.  */
-#include <errno.h>
-#ifndef errno
-extern int errno;
-#endif
 
 #ifndef VMS
 #ifndef HAVE_STRERROR
@@ -7494,7 +7629,7 @@ my_strerror (errnum)
 void
 cpp_error_from_errno (pfile, name)
      cpp_reader *pfile;
-     char *name;
+     const char *name;
 {
   int e = errno;
   cpp_buffer *ip = cpp_file_buffer (pfile);
@@ -7502,7 +7637,7 @@ cpp_error_from_errno (pfile, name)
   cpp_print_containing_files (pfile);
 
   if (ip != NULL)
-    cpp_file_line_for_message (ip->nominal_fname, ip->lineno, -1);
+    cpp_file_line_for_message (pfile, ip->nominal_fname, ip->lineno, -1);
 
   cpp_message (pfile, 1, "%s: %s", name, my_strerror (e));
 }
@@ -7510,7 +7645,7 @@ cpp_error_from_errno (pfile, name)
 void
 cpp_perror_with_name (pfile, name)
      cpp_reader *pfile;
-     char *name;
+     const char *name;
 {
   cpp_message (pfile, 1, "%s: %s: %s", progname, name, my_strerror (errno));
 }

@@ -184,6 +184,7 @@ extern void free_int_list               PROTO ((int_list_block **));
 #define EXIT_BLOCK (-2)
 
 /* from flow.c */
+extern void free_regset_vector PROTO ((regset *, int nelts));
 extern int *uid_block_number;
 #define BLOCK_NUM(INSN)    uid_block_number[INSN_UID (INSN)]
 

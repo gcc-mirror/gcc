@@ -17,6 +17,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "hconfig.h"
 #include "system.h"
+#include "gansidecl.h"
 #include "scan.h"
 #include "cpplib.h"
 #include "cpphash.h"
@@ -28,9 +29,9 @@ char *progname;
 int hash_tab[HASH_SIZE];
 int next_index;
 
-static int
+int
 hashf (name, len, hashsize)
-     register U_CHAR *name;
+     register const U_CHAR *name;
      register int len;
      int hashsize;
 {

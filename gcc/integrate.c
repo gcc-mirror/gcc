@@ -1018,7 +1018,7 @@ save_constants (px)
 static void
 note_modified_parmregs (reg, x)
      rtx reg;
-     rtx x;
+     rtx x ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (reg) == REG && in_nonparm_insns
       && REGNO (reg) < max_parm_reg
@@ -3096,7 +3096,7 @@ subst_constants (loc, insn, map)
 void
 mark_stores (dest, x)
      rtx dest;
-     rtx x;
+     rtx x ATTRIBUTE_UNUSED;
 {
   int regno = -1;
   enum machine_mode mode;

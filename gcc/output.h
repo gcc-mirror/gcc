@@ -83,6 +83,11 @@ extern void output_operand_lossage  PROTO((char *));
    Defined in final.c.  */
 extern void output_asm_insn	PROTO((char *, rtx *));
 
+/* Compute a worst-case reference address of a branch so that it
+   can be safely used in the presence of aligned labels.
+   Defined in final.c.  */
+extern int insn_current_reference_address	PROTO((rtx));
+
 /* Output a LABEL_REF, or a bare CODE_LABEL, as an assembler symbol.  */
 extern void output_asm_label	PROTO((rtx));
 
@@ -139,6 +144,10 @@ extern void readonly_data_section	PROTO((void));
 
 /* Determine if we're in the text section. */
 extern int in_text_section		PROTO((void));
+
+#ifdef EH_FRAME_SECTION_ASM_OP
+extern void eh_frame_section		PROTO ((void));
+#endif
 
 #ifdef TREE_CODE
 /* Tell assembler to change to section NAME for DECL.

@@ -1378,6 +1378,7 @@ extern int num_validated_changes	PROTO ((void));
 extern int recog			PROTO ((rtx, rtx, int *));
 
 /* In stmt.c */
+extern void expand_null_return		PROTO((void));
 extern void emit_jump			PROTO ((rtx));
 extern int preserve_subexpressions_p	PROTO ((void));
 
@@ -1404,13 +1405,14 @@ extern rtx expand_mult_highpart		PROTO ((enum machine_mode, rtx,
 						int, int));
 
 /* In global.c */
-extern void mark_elimiation		PROTO ((int, int));
+extern void mark_elimination		PROTO ((int, int));
 #ifdef BUFSIZ
 extern int global_alloc			PROTO ((FILE *));
 extern void dump_global_regs		PROTO ((FILE *));
 #endif
 
 /* In regclass.c */
+extern int reg_classes_intersect_p	PROTO ((enum reg_class, enum reg_class));
 extern int reg_class_subset_p		PROTO ((enum reg_class, enum reg_class));
 extern void globalize_reg		PROTO ((int));
 extern void init_regs			PROTO ((void));

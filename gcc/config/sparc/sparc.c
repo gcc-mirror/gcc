@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "expr.h"
 #include "recog.h"
+#include "toplev.h"
 
 /* 1 if the caller has placed an "unimp" insn immediately after the call.
    This is used in v8 code when calling a function that returns a structure.
@@ -400,7 +401,7 @@ fp_zero_operand (op)
 int
 intreg_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (register_operand (op, SImode)
 	  || (TARGET_ARCH64 && register_operand (op, DImode)));
@@ -520,7 +521,7 @@ symbolic_operand (op, mode)
 int
 symbolic_memory_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
@@ -551,7 +552,7 @@ label_ref_operand (op, mode)
 int
 sp64_medium_pic_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   /* Check for (const (minus (symbol_ref:GOT)
                              (const (minus (label) (pc))))).  */
@@ -578,7 +579,7 @@ sp64_medium_pic_operand (op, mode)
 int
 data_segment_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -600,7 +601,7 @@ data_segment_operand (op, mode)
 int
 text_segment_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -686,7 +687,7 @@ move_operand (op, mode)
 int
 splittable_symbolic_memory_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != MEM)
     return 0;
@@ -698,7 +699,7 @@ splittable_symbolic_memory_operand (op, mode)
 int
 splittable_immediate_memory_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != MEM)
     return 0;
@@ -712,7 +713,7 @@ splittable_immediate_memory_operand (op, mode)
 int
 eq_or_neq (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == EQ || GET_CODE (op) == NE);
 }
@@ -723,7 +724,7 @@ eq_or_neq (op, mode)
 int
 normal_comp_operator (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (op);
 
@@ -743,7 +744,7 @@ normal_comp_operator (op, mode)
 int
 noov_compare_op (op, mode)
     register rtx op;
-    enum machine_mode mode;
+    enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (op);
 
@@ -762,7 +763,7 @@ noov_compare_op (op, mode)
 int
 v9_regcmp_op (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (op);
 
@@ -775,7 +776,7 @@ v9_regcmp_op (op, mode)
 int
 v8plus_regcmp_op (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (op);
 
@@ -787,7 +788,7 @@ v8plus_regcmp_op (op, mode)
 int
 extend_op (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return GET_CODE (op) == SIGN_EXTEND || GET_CODE (op) == ZERO_EXTEND;
 }
@@ -799,7 +800,7 @@ extend_op (op, mode)
 int
 cc_arithop (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == AND
       || GET_CODE (op) == IOR
@@ -815,7 +816,7 @@ cc_arithop (op, mode)
 int
 cc_arithopn (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   /* XOR is not here because combine canonicalizes (xor (not ...) ...)
      and (xor ... (not ...)) to (not (xor ...)).   */
@@ -947,7 +948,7 @@ arith10_double_operand (op, mode)
 int
 small_int (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT && SMALL_INT (op));
 }
@@ -959,7 +960,7 @@ small_int (op, mode)
 int
 uns_small_int (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
 #if HOST_BITS_PER_WIDE_INT > 32
   /* All allowed constants will fit a CONST_INT.  */
@@ -986,7 +987,7 @@ uns_arith_operand (op, mode)
 int
 clobbered_register (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == REG && call_used_regs[REGNO (op)]);
 }
@@ -1433,7 +1434,7 @@ pic_address_needs_scratch (x)
 rtx
 legitimize_pic_address (orig, mode, reg)
      rtx orig;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      rtx reg;
 {
   if (GET_CODE (orig) == SYMBOL_REF)
@@ -4669,9 +4670,6 @@ sparc_builtin_saveregs (arglist)
      tree arglist;
 {
   tree fntype = TREE_TYPE (current_function_decl);
-  int stdarg = (TYPE_ARG_TYPES (fntype) != 0
-		&& (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		    != void_type_node));
   int first_reg = current_function_args_info.words;
   rtx address;
   int regno;
@@ -6801,7 +6799,7 @@ sparc_return_peephole_ok (dest, src)
 int
 delay_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {

@@ -5194,7 +5194,7 @@ static char *
 check_precompiled (pcf, st, fname, limit)
      int pcf;
      struct stat *st;
-     char *fname;
+     char *fname ATTRIBUTE_UNUSED;
      char **limit;
 {
   int length = 0;
@@ -6190,8 +6190,8 @@ collect_expansion (buf, end, nargs, arglist)
 static int
 do_assert (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
-     FILE_BUF *op;
-     struct directive *keyword;
+     FILE_BUF *op ATTRIBUTE_UNUSED;
+     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   U_CHAR *bp;			/* temp ptr into input buffer */
   U_CHAR *symname;		/* remember where symbol name starts */
@@ -6267,8 +6267,8 @@ do_assert (buf, limit, op, keyword)
 static int
 do_unassert (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
-     FILE_BUF *op;
-     struct directive *keyword;
+     FILE_BUF *op ATTRIBUTE_UNUSED;
+     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   U_CHAR *bp;			/* temp ptr into input buffer */
   U_CHAR *symname;		/* remember where symbol name starts */
@@ -6599,7 +6599,7 @@ static int
 do_line (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
-     struct directive *keyword;
+     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   register U_CHAR *bp;
   FILE_BUF *ip = &instack[indepth];
@@ -6788,8 +6788,8 @@ do_undef (buf, limit, op, keyword)
 static int
 do_error (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
-     FILE_BUF *op;
-     struct directive *keyword;
+     FILE_BUF *op ATTRIBUTE_UNUSED;
+     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   int length = limit - buf;
   U_CHAR *copy = (U_CHAR *) alloca (length + 1);
@@ -6807,8 +6807,8 @@ do_error (buf, limit, op, keyword)
 static int
 do_warning (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
-     FILE_BUF *op;
-     struct directive *keyword;
+     FILE_BUF *op ATTRIBUTE_UNUSED;
+     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   int length = limit - buf;
   U_CHAR *copy = (U_CHAR *) alloca (length + 1);
@@ -6846,7 +6846,7 @@ static int
 do_ident (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
-     struct directive *keyword;
+     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   FILE_BUF trybuf;
   int len;
@@ -6875,9 +6875,9 @@ do_ident (buf, limit, op, keyword)
 
 static int
 do_pragma (buf, limit, op, keyword)
-     U_CHAR *buf, *limit;
-     FILE_BUF *op;
-     struct directive *keyword;
+     U_CHAR *buf, *limit ATTRIBUTE_UNUSED;
+     FILE_BUF *op ATTRIBUTE_UNUSED;
+     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   SKIP_WHITE_SPACE (buf);
   if (!strncmp ((char *) buf, "once", 4)) {
@@ -6946,9 +6946,9 @@ nope:
 
 static int
 do_sccs (buf, limit, op, keyword)
-     U_CHAR *buf, *limit;
-     FILE_BUF *op;
-     struct directive *keyword;
+     U_CHAR *buf ATTRIBUTE_UNUSED, *limit ATTRIBUTE_UNUSED;
+     FILE_BUF *op ATTRIBUTE_UNUSED;
+     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   if (pedantic)
     pedwarn ("ANSI C does not allow `#sccs'");
@@ -6972,7 +6972,7 @@ static int
 do_if (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
-     struct directive *keyword;
+     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   HOST_WIDE_INT value;
   FILE_BUF *ip = &instack[indepth];
@@ -6989,7 +6989,7 @@ static int
 do_elif (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
-     struct directive *keyword;
+     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   HOST_WIDE_INT value;
   FILE_BUF *ip = &instack[indepth];
@@ -7522,7 +7522,7 @@ static int
 do_else (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
-     struct directive *keyword;
+     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   FILE_BUF *ip = &instack[indepth];
 
@@ -7569,7 +7569,7 @@ static int
 do_endif (buf, limit, op, keyword)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
-     struct directive *keyword;
+     struct directive *keyword ATTRIBUTE_UNUSED;
 {
   if (pedantic) {
     SKIP_WHITE_SPACE (buf);

@@ -245,7 +245,6 @@ char * temporary_firstobj;
 /* Defined in the automatically-generated underscore.c.  */
 extern int prepends_underscore;
 
-extern char *getenv ();
 extern char *mktemp ();
 extern FILE *fdopen ();
 
@@ -279,9 +278,6 @@ static struct path_prefix *libpaths[3] = {&cmdline_lib_dirs,
 static char *libexts[3] = {"a", "so", NULL};  /* possible library extentions */
 #endif
 
-void collect_exit		PROTO((int));
-void collect_execute		PROTO((char *, char **, char *));
-void dump_file			PROTO((char *));
 static void handler		PROTO((int));
 static int is_ctor_dtor		PROTO((char *));
 static char *find_a_file	PROTO((struct path_prefix *, char *));
@@ -293,8 +289,12 @@ static void fork_execute	PROTO((char *, char **));
 static void maybe_unlink	PROTO((char *));
 static void add_to_list		PROTO((struct head *, char *));
 static void write_list		PROTO((FILE *, char *, struct id *));
+#ifdef COLLECT_EXPORT_LIST
 static void dump_list		PROTO((FILE *, char *, struct id *));
+#endif
+#if 0
 static void dump_prefix_list	PROTO((FILE *, char *, struct prefix_list *));
+#endif
 static void write_list_with_asm PROTO((FILE *, char *, struct id *));
 static void write_c_file	PROTO((FILE *, char *));
 static void scan_prog_file	PROTO((char *, enum pass));
@@ -1775,6 +1775,7 @@ is_in_list (prefix, list)
 #endif
 
 /* Added for debugging purpose.  */
+#ifdef COLLECT_EXPORT_LIST
 static void
 dump_list (stream, prefix, list)
      FILE *stream;
@@ -1787,7 +1788,9 @@ dump_list (stream, prefix, list)
       list = list->next;
     }
 }
+#endif
 
+#if 0
 static void
 dump_prefix_list (stream, prefix, list)
      FILE *stream;
@@ -1800,6 +1803,7 @@ dump_prefix_list (stream, prefix, list)
       list = list->next;
     }
 }
+#endif
 
 static void
 write_list_with_asm (stream, prefix, list)
