@@ -209,10 +209,6 @@ is built with the --enable-threads configure-time option.}		\
 #undef  HANDLE_SYSV_PRAGMA
 #define HANDLE_SYSV_PRAGMA
 
-/* Use more efficient ``thunks'' to implement C++ vtables.  */
-#undef DEFAULT_VTABLE_THUNKS
-#define DEFAULT_VTABLE_THUNKS 1
-
 /************************[  Assembler stuff  ]********************************/
 
 #undef  IDENT_ASM_OP

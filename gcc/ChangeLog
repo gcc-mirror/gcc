@@ -1,3 +1,7 @@
+2001-11-19  Loren J. Rittle  <ljrittle@acm.org>
+
+	* config/freebsd.h: Remove DEFAULT_VTABLE_THUNKS (again).
+
 2001-11-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* 1750a.md: Don't use hex format for a const_int.
