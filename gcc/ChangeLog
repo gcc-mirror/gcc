@@ -1,3 +1,14 @@
+Wed Jan  6 16:08:54 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* calls.c (special_function_p): New function broken out of
+	expand_call.
+	(precompute_register_parameters): Likewise.
+	(store_one_arg): Likewise.
+	(store_unaligned_argumetns_into_pseudos): Likewise.
+	(save_fixed_argument_area): Likewise.
+	(restore_fixed_argument_area): Likewise.
+	(expand_call): Corresponding changes.
+	
 Wed Jan  6 10:43:29 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* config/m68k/m68k.c (const_uint32_operand): Remove CONSTANT_P_RTX

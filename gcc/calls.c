@@ -124,13 +124,24 @@ static int highest_outgoing_arg_in_use;
 int stack_arg_under_construction;
 #endif
 
-static int calls_function	PROTO((tree, int));
-static int calls_function_1	PROTO((tree, int));
-static void emit_call_1		PROTO((rtx, tree, tree, HOST_WIDE_INT,
-				       HOST_WIDE_INT, rtx, rtx,
-				       int, rtx, int));
+static int calls_function	PROTO ((tree, int));
+static int calls_function_1	PROTO ((tree, int));
+static void emit_call_1		PROTO ((rtx, tree, tree, HOST_WIDE_INT,
+				        HOST_WIDE_INT, rtx, rtx,
+				        int, rtx, int));
+static void special_function_p	PROTO ((char *, tree, int *, int *,
+					int *, int *));
+static void precompute_register_parameters	PROTO ((int, struct arg_data *,
+							int *));
 static void store_one_arg	PROTO ((struct arg_data *, rtx, int, int,
 					int));
+static void store_unaligned_arguments_into_pseudos PROTO ((struct arg_data *,
+							   int));
+
+#if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
+static rtx save_fixed_argument_area	PROTO ((int, rtx, int *, int *));
+static void restore_fixed_argument_area	PROTO ((rtx, rtx, int, int));
+#endif
 
 /* If WHICH is 1, return 1 if EXP contains a call to the built-in function
    `alloca'.
@@ -473,6 +484,338 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, struct_value_size,
 	adjust_stack (stack_size_rtx);
     }
 #endif
+}
+
+/* Determine if the function identified by NAME and FNDECL is one with
+   special properties we wish to know about.
+
+   For example, if the function might return more than one time (setjmp), then
+   set RETURNS_TWICE to a nonzero value.
+
+   Similarly set IS_LONGJMP for if the function is in the longjmp family.
+
+   Set IS_MALLOC for any of the standard memory allocation functions which
+   allocate from the heap.
+
+   Set MAY_BE_ALLOCA for any memory allocation function that might allocate
+   space from the stack such as alloca.  */
+
+static void
+special_function_p (name, fndecl, returns_twice, is_longjmp,
+		    is_malloc, may_be_alloca)
+     char *name;
+     tree fndecl;
+     int *returns_twice;
+     int *is_longjmp;
+     int *is_malloc;
+     int *may_be_alloca;
+{
+  *returns_twice = 0;
+  *is_longjmp = 0;
+  *is_malloc = 0;
+  *may_be_alloca = 0;
+
+  /* We assume that alloca will always be called by name.  It
+     makes no sense to pass it as a pointer-to-function to
+     anything that does not understand its behavior.  */
+  *may_be_alloca
+    = (name && ((IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 6
+		 && name[0] == 'a'
+		 && ! strcmp (name, "alloca"))
+		|| (IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 16
+		    && name[0] == '_'
+		    && ! strcmp (name, "__builtin_alloca"))));
+
+  if (name != 0 && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) <= 17
+      /* Exclude functions not at the file scope, or not `extern',
+	 since they are not the magic functions we would otherwise
+	 think they are.  */
+      && DECL_CONTEXT (fndecl) == NULL_TREE && TREE_PUBLIC (fndecl))
+    {
+      char *tname = name;
+
+      /* Disregard prefix _, __ or __x.  */
+      if (name[0] == '_')
+	{
+	  if (name[1] == '_' && name[2] == 'x')
+	    tname += 3;
+	  else if (name[1] == '_')
+	    tname += 2;
+	  else
+	    tname += 1;
+	}
+
+      if (tname[0] == 's')
+	{
+	  *returns_twice
+	     = ((tname[1] == 'e'
+		 && (! strcmp (tname, "setjmp")
+		     || ! strcmp (tname, "setjmp_syscall")))
+	        || (tname[1] == 'i'
+		    && ! strcmp (tname, "sigsetjmp"))
+	        || (tname[1] == 'a'
+		    && ! strcmp (tname, "savectx")));
+	  if (tname[1] == 'i'
+	      && ! strcmp (tname, "siglongjmp"))
+	    *is_longjmp = 1;
+	}
+      else if ((tname[0] == 'q' && tname[1] == 's'
+		&& ! strcmp (tname, "qsetjmp"))
+	       || (tname[0] == 'v' && tname[1] == 'f'
+		   && ! strcmp (tname, "vfork")))
+	*returns_twice = 1;
+
+      else if (tname[0] == 'l' && tname[1] == 'o'
+	       && ! strcmp (tname, "longjmp"))
+	*is_longjmp = 1;
+      /* XXX should have "malloc" attribute on functions instead
+	 of recognizing them by name.  */
+      else if (! strcmp (tname, "malloc")
+	       || ! strcmp (tname, "calloc")
+	       || ! strcmp (tname, "realloc")
+	       /* Note use of NAME rather than TNAME here.  These functions
+		  are only reserved when preceded with __.  */
+	       || ! strcmp (name, "__vn")	/* mangled __builtin_vec_new */
+	       || ! strcmp (name, "__nw")	/* mangled __builtin_new */
+	       || ! strcmp (name, "__builtin_new")
+	       || ! strcmp (name, "__builtin_vec_new"))
+	*is_malloc = 1;
+    }
+}
+
+/* Precompute all register parameters as described by ARGS, storing values
+   into fields within the ARGS array.
+
+   NUM_ACTUALS indicates the total number elements in the ARGS array.
+
+   Set REG_PARM_SEEN if we encounter a register parameter.  */
+
+static void
+precompute_register_parameters (num_actuals, args, reg_parm_seen)
+     int num_actuals;
+     struct arg_data *args;
+     int *reg_parm_seen;
+{
+  int i;
+
+  *reg_parm_seen = 0;
+
+  for (i = 0; i < num_actuals; i++)
+    if (args[i].reg != 0 && ! args[i].pass_on_stack)
+      {
+	*reg_parm_seen = 1;
+
+	if (args[i].value == 0)
+	  {
+	    push_temp_slots ();
+	    args[i].value = expand_expr (args[i].tree_value, NULL_RTX,
+					 VOIDmode, 0);
+	    preserve_temp_slots (args[i].value);
+	    pop_temp_slots ();
+
+	    /* ANSI doesn't require a sequence point here,
+	       but PCC has one, so this will avoid some problems.  */
+	    emit_queue ();
+	  }
+
+	/* If we are to promote the function arg to a wider mode,
+	   do it now.  */
+
+	if (args[i].mode != TYPE_MODE (TREE_TYPE (args[i].tree_value)))
+	  args[i].value
+	    = convert_modes (args[i].mode,
+			     TYPE_MODE (TREE_TYPE (args[i].tree_value)),
+			     args[i].value, args[i].unsignedp);
+
+	/* If the value is expensive, and we are inside an appropriately 
+	   short loop, put the value into a pseudo and then put the pseudo
+	   into the hard reg.
+
+	   For small register classes, also do this if this call uses
+	   register parameters.  This is to avoid reload conflicts while
+	   loading the parameters registers.  */
+
+	if ((! (GET_CODE (args[i].value) == REG
+		|| (GET_CODE (args[i].value) == SUBREG
+		    && GET_CODE (SUBREG_REG (args[i].value)) == REG)))
+	    && args[i].mode != BLKmode
+	    && rtx_cost (args[i].value, SET) > 2
+	    && ((SMALL_REGISTER_CLASSES && *reg_parm_seen)
+		|| preserve_subexpressions_p ()))
+	  args[i].value = copy_to_mode_reg (args[i].mode, args[i].value);
+      }
+}
+
+#if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
+
+  /* The argument list is the property of the called routine and it
+     may clobber it.  If the fixed area has been used for previous
+     parameters, we must save and restore it.  */
+static rtx
+save_fixed_argument_area (reg_parm_stack_space, argblock,
+			  low_to_save, high_to_save)
+     int reg_parm_stack_space;
+     rtx argblock;
+     int *low_to_save;
+     int *high_to_save;
+{
+  int i;
+  rtx save_area = NULL_RTX;
+
+  /* Compute the boundary of the that needs to be saved, if any.  */
+#ifdef ARGS_GROW_DOWNWARD
+  for (i = 0; i < reg_parm_stack_space + 1; i++)
+#else
+  for (i = 0; i < reg_parm_stack_space; i++)
+#endif
+    {
+      if (i >= highest_outgoing_arg_in_use
+	  || stack_usage_map[i] == 0)
+	continue;
+
+      if (*low_to_save == -1)
+	*low_to_save = i;
+
+      *high_to_save = i;
+    }
+
+  if (*low_to_save >= 0)
+    {
+      int num_to_save = *high_to_save - *low_to_save + 1;
+      enum machine_mode save_mode
+	= mode_for_size (num_to_save * BITS_PER_UNIT, MODE_INT, 1);
+      rtx stack_area;
+
+      /* If we don't have the required alignment, must do this in BLKmode.  */
+      if ((*low_to_save & (MIN (GET_MODE_SIZE (save_mode),
+			        BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
+	save_mode = BLKmode;
+
+#ifdef ARGS_GROW_DOWNWARD
+      stack_area = gen_rtx_MEM (save_mode,
+				memory_address (save_mode,
+						plus_constant (argblock,
+							       - *high_to_save)));
+#else
+      stack_area = gen_rtx_MEM (save_mode,
+				memory_address (save_mode,
+						plus_constant (argblock,
+							       *low_to_save)));
+#endif
+      if (save_mode == BLKmode)
+	{
+	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
+	  MEM_IN_STRUCT_P (save_area) = 0;
+	  emit_block_move (validize_mem (save_area), stack_area,
+			   GEN_INT (num_to_save),
+			   PARM_BOUNDARY / BITS_PER_UNIT);
+	}
+      else
+	{
+	  save_area = gen_reg_rtx (save_mode);
+	  emit_move_insn (save_area, stack_area);
+	}
+    }
+  return save_area;
+}
+
+static void
+restore_fixed_argument_area (save_area, argblock, high_to_save, low_to_save)
+     rtx save_area;
+     rtx argblock;
+     int high_to_save;
+     int low_to_save;
+{
+  enum machine_mode save_mode = GET_MODE (save_area);
+#ifdef ARGS_GROW_DOWNWARD
+  rtx stack_area
+    = gen_rtx_MEM (save_mode,
+		   memory_address (save_mode,
+				   plus_constant (argblock,
+						  - high_to_save)));
+#else
+  rtx stack_area
+    = gen_rtx_MEM (save_mode,
+		   memory_address (save_mode,
+				   plus_constant (argblock,
+						  low_to_save)));
+#endif
+
+  if (save_mode != BLKmode)
+    emit_move_insn (stack_area, save_area);
+  else
+    emit_block_move (stack_area, validize_mem (save_area),
+		     GEN_INT (high_to_save - low_to_save + 1),
+		     PARM_BOUNDARY / BITS_PER_UNIT);
+}
+#endif
+	  
+/* If any elements in ARGS refer to parameters that are to be passed in
+   registers, but not in memory, and whose alignment does not permit a
+   direct copy into registers.  Copy the values into a group of pseudos
+   which we will later copy into the appropriate hard registers.  */
+static void
+store_unaligned_arguments_into_pseudos (args, num_actuals)
+     struct arg_data *args;
+     int num_actuals;
+{
+  int i, j;
+     
+  for (i = 0; i < num_actuals; i++)
+    if (args[i].reg != 0 && ! args[i].pass_on_stack
+	&& args[i].mode == BLKmode
+	&& (TYPE_ALIGN (TREE_TYPE (args[i].tree_value))
+	    < (unsigned int) MIN (BIGGEST_ALIGNMENT, BITS_PER_WORD)))
+      {
+	int bytes = int_size_in_bytes (TREE_TYPE (args[i].tree_value));
+	int big_endian_correction = 0;
+
+	args[i].n_aligned_regs
+	  = args[i].partial ? args[i].partial
+	    : (bytes + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
+
+	args[i].aligned_regs = (rtx *) alloca (sizeof (rtx)
+					       * args[i].n_aligned_regs);
+
+	/* Structures smaller than a word are aligned to the least
+	   significant byte (to the right).  On a BYTES_BIG_ENDIAN machine,
+	   this means we must skip the empty high order bytes when
+	   calculating the bit offset.  */
+	if (BYTES_BIG_ENDIAN && bytes < UNITS_PER_WORD)
+	  big_endian_correction = (BITS_PER_WORD  - (bytes * BITS_PER_UNIT));
+
+	for (j = 0; j < args[i].n_aligned_regs; j++)
+	  {
+	    rtx reg = gen_reg_rtx (word_mode);
+	    rtx word = operand_subword_force (args[i].value, j, BLKmode);
+	    int bitsize = MIN (bytes * BITS_PER_UNIT, BITS_PER_WORD);
+	    int bitalign = TYPE_ALIGN (TREE_TYPE (args[i].tree_value));
+
+	    args[i].aligned_regs[j] = reg;
+
+	    /* There is no need to restrict this code to loading items
+	       in TYPE_ALIGN sized hunks.  The bitfield instructions can
+	       load up entire word sized registers efficiently.
+
+	       ??? This may not be needed anymore.
+	       We use to emit a clobber here but that doesn't let later
+	       passes optimize the instructions we emit.  By storing 0 into
+	       the register later passes know the first AND to zero out the
+	       bitfield being set in the register is unnecessary.  The store
+	       of 0 will be deleted as will at least the first AND.  */
+
+	    emit_move_insn (reg, const0_rtx);
+
+	    bytes -= bitsize / BITS_PER_UNIT;
+	    store_bit_field (reg, bitsize, big_endian_correction, word_mode,
+			     extract_bit_field (word, bitsize, 0, 1,
+						NULL_RTX, word_mode,
+						word_mode,
+						bitalign / BITS_PER_UNIT,
+						BITS_PER_WORD),
+			     bitalign / BITS_PER_UNIT, BITS_PER_WORD);
+	  }
+      }
 }
 
 /* Generate all the code for a function call
@@ -827,89 +1170,10 @@ expand_call (exp, target, ignore)
   if (fndecl && DECL_NAME (fndecl))
     name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
 
-#if 0
-  /* Unless it's a call to a specific function that isn't alloca,
-     if it has one argument, we must assume it might be alloca.  */
-
-  may_be_alloca
-    = (!(fndecl != 0 && strcmp (name, "alloca"))
-       && actparms != 0
-       && TREE_CHAIN (actparms) == 0);
-#else
-  /* We assume that alloca will always be called by name.  It
-     makes no sense to pass it as a pointer-to-function to
-     anything that does not understand its behavior.  */
-  may_be_alloca
-    = (name && ((IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 6
-		 && name[0] == 'a'
-		 && ! strcmp (name, "alloca"))
-		|| (IDENTIFIER_LENGTH (DECL_NAME (fndecl)) == 16
-		    && name[0] == '_'
-		    && ! strcmp (name, "__builtin_alloca"))));
-#endif
-
   /* See if this is a call to a function that can return more than once
-     or a call to longjmp.  */
-
-  returns_twice = 0;
-  is_longjmp = 0;
-  is_malloc = 0;
-
-  if (name != 0 && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) <= 17
-      /* Exclude functions not at the file scope, or not `extern',
-	 since they are not the magic functions we would otherwise
-	 think they are.  */
-      && DECL_CONTEXT (fndecl) == NULL_TREE && TREE_PUBLIC (fndecl))
-    {
-      char *tname = name;
-
-      /* Disregard prefix _, __ or __x.  */
-      if (name[0] == '_')
-	{
-	  if (name[1] == '_' && name[2] == 'x')
-	    tname += 3;
-	  else if (name[1] == '_')
-	    tname += 2;
-	  else
-	    tname += 1;
-	}
-
-      if (tname[0] == 's')
-	{
-	  returns_twice
-	    = ((tname[1] == 'e'
-		&& (! strcmp (tname, "setjmp")
-		    || ! strcmp (tname, "setjmp_syscall")))
-	       || (tname[1] == 'i'
-		   && ! strcmp (tname, "sigsetjmp"))
-	       || (tname[1] == 'a'
-		   && ! strcmp (tname, "savectx")));
-	  if (tname[1] == 'i'
-	      && ! strcmp (tname, "siglongjmp"))
-	    is_longjmp = 1;
-	}
-      else if ((tname[0] == 'q' && tname[1] == 's'
-		&& ! strcmp (tname, "qsetjmp"))
-	       || (tname[0] == 'v' && tname[1] == 'f'
-		   && ! strcmp (tname, "vfork")))
-	returns_twice = 1;
-
-      else if (tname[0] == 'l' && tname[1] == 'o'
-	       && ! strcmp (tname, "longjmp"))
-	is_longjmp = 1;
-      /* XXX should have "malloc" attribute on functions instead
-	 of recognizing them by name.  */
-      else if (! strcmp (tname, "malloc")
-	       || ! strcmp (tname, "calloc")
-	       || ! strcmp (tname, "realloc")
-	       /* Note use of NAME rather than TNAME here.  These functions
-		  are only reserved when preceded with __.  */
-	       || ! strcmp (name, "__vn")	/* mangled __builtin_vec_new */
-	       || ! strcmp (name, "__nw")	/* mangled __builtin_new */
-	       || ! strcmp (name, "__builtin_new")
-	       || ! strcmp (name, "__builtin_vec_new"))
-	is_malloc = 1;
-    }
+     or a call to longjmp or malloc.  */
+  special_function_p (name, fndecl, &returns_twice, &is_longjmp,
+		      &is_malloc, &may_be_alloca);
 
   if (may_be_alloca)
     current_function_calls_alloca = 1;
@@ -1650,115 +1914,16 @@ expand_call (exp, target, ignore)
 
   /* Precompute all register parameters.  It isn't safe to compute anything
      once we have started filling any specific hard regs.  */
-  reg_parm_seen = 0;
-  for (i = 0; i < num_actuals; i++)
-    if (args[i].reg != 0 && ! args[i].pass_on_stack)
-      {
-	reg_parm_seen = 1;
-
-	if (args[i].value == 0)
-	  {
-	    push_temp_slots ();
-	    args[i].value = expand_expr (args[i].tree_value, NULL_RTX,
-					 VOIDmode, 0);
-	    preserve_temp_slots (args[i].value);
-	    pop_temp_slots ();
-
-	    /* ANSI doesn't require a sequence point here,
-	       but PCC has one, so this will avoid some problems.  */
-	    emit_queue ();
-	  }
-
-	/* If we are to promote the function arg to a wider mode,
-	   do it now.  */
-
-	if (args[i].mode != TYPE_MODE (TREE_TYPE (args[i].tree_value)))
-	  args[i].value
-	    = convert_modes (args[i].mode,
-			     TYPE_MODE (TREE_TYPE (args[i].tree_value)),
-			     args[i].value, args[i].unsignedp);
-
-	/* If the value is expensive, and we are inside an appropriately 
-	   short loop, put the value into a pseudo and then put the pseudo
-	   into the hard reg.
-
-	   For small register classes, also do this if this call uses
-	   register parameters.  This is to avoid reload conflicts while
-	   loading the parameters registers.  */
-
-	if ((! (GET_CODE (args[i].value) == REG
-		|| (GET_CODE (args[i].value) == SUBREG
-		    && GET_CODE (SUBREG_REG (args[i].value)) == REG)))
-	    && args[i].mode != BLKmode
-	    && rtx_cost (args[i].value, SET) > 2
-	    && ((SMALL_REGISTER_CLASSES && reg_parm_seen)
-		|| preserve_subexpressions_p ()))
-	  args[i].value = copy_to_mode_reg (args[i].mode, args[i].value);
-      }
+  precompute_register_parameters (num_actuals, args, &reg_parm_seen);
 
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
 
-  /* The argument list is the property of the called routine and it
-     may clobber it.  If the fixed area has been used for previous
-     parameters, we must save and restore it.
-
-     Here we compute the boundary of the that needs to be saved, if any.  */
-
-#ifdef ARGS_GROW_DOWNWARD
-  for (i = 0; i < reg_parm_stack_space + 1; i++)
-#else
-  for (i = 0; i < reg_parm_stack_space; i++)
+  /* Save the fixed argument area if it's part of the caller's frame and
+     is clobbered by argument setup for this call.  */
+  save_area = save_fixed_argument_area (reg_parm_stack_space, argblock,
+					&low_to_save, &high_to_save);
 #endif
-    {
-      if (i >=  highest_outgoing_arg_in_use
-	  || stack_usage_map[i] == 0)
-	continue;
-
-      if (low_to_save == -1)
-	low_to_save = i;
-
-      high_to_save = i;
-    }
-
-  if (low_to_save >= 0)
-    {
-      int num_to_save = high_to_save - low_to_save + 1;
-      enum machine_mode save_mode
-	= mode_for_size (num_to_save * BITS_PER_UNIT, MODE_INT, 1);
-      rtx stack_area;
-
-      /* If we don't have the required alignment, must do this in BLKmode.  */
-      if ((low_to_save & (MIN (GET_MODE_SIZE (save_mode),
-			       BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
-	save_mode = BLKmode;
-
-#ifdef ARGS_GROW_DOWNWARD
-      stack_area = gen_rtx_MEM (save_mode,
-				memory_address (save_mode,
-						plus_constant (argblock,
-							       - high_to_save)));
-#else
-      stack_area = gen_rtx_MEM (save_mode,
-				memory_address (save_mode,
-						plus_constant (argblock,
-							       low_to_save)));
-#endif
-      if (save_mode == BLKmode)
-	{
-	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
-	  MEM_IN_STRUCT_P (save_area) = 0;
-	  emit_block_move (validize_mem (save_area), stack_area,
-			   GEN_INT (num_to_save),
-			   PARM_BOUNDARY / BITS_PER_UNIT);
-	}
-      else
-	{
-	  save_area = gen_reg_rtx (save_mode);
-	  emit_move_insn (save_area, stack_area);
-	}
-    }
-#endif
-	  
+			
 
   /* Now store (and compute if necessary) all non-register parms.
      These come before register parms, since they can require block-moves,
@@ -1775,63 +1940,8 @@ expand_call (exp, target, ignore)
      and whose alignment does not permit a direct copy into registers,
      make a group of pseudos that correspond to each register that we
      will later fill.  */
-
   if (STRICT_ALIGNMENT)
-    for (i = 0; i < num_actuals; i++)
-      if (args[i].reg != 0 && ! args[i].pass_on_stack
-	&& args[i].mode == BLKmode
-	  && (TYPE_ALIGN (TREE_TYPE (args[i].tree_value))
-	      < (unsigned int) MIN (BIGGEST_ALIGNMENT, BITS_PER_WORD)))
-	{
-	  int bytes = int_size_in_bytes (TREE_TYPE (args[i].tree_value));
-	  int big_endian_correction = 0;
-
-	  args[i].n_aligned_regs
-	    = args[i].partial ? args[i].partial
-	      : (bytes + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
-
-	  args[i].aligned_regs = (rtx *) alloca (sizeof (rtx)
-						 * args[i].n_aligned_regs);
-
-	  /* Structures smaller than a word are aligned to the least
-	     significant byte (to the right).  On a BYTES_BIG_ENDIAN machine,
-	     this means we must skip the empty high order bytes when
-	     calculating the bit offset.  */
-	  if (BYTES_BIG_ENDIAN && bytes < UNITS_PER_WORD)
-	    big_endian_correction = (BITS_PER_WORD  - (bytes * BITS_PER_UNIT));
-
-	  for (j = 0; j < args[i].n_aligned_regs; j++)
-	    {
-	      rtx reg = gen_reg_rtx (word_mode);
-	      rtx word = operand_subword_force (args[i].value, j, BLKmode);
-	      int bitsize = MIN (bytes * BITS_PER_UNIT, BITS_PER_WORD);
-	      int bitalign = TYPE_ALIGN (TREE_TYPE (args[i].tree_value));
-
-	      args[i].aligned_regs[j] = reg;
-
-	      /* There is no need to restrict this code to loading items
-		 in TYPE_ALIGN sized hunks.  The bitfield instructions can
-		 load up entire word sized registers efficiently.
-
-		 ??? This may not be needed anymore.
-		 We use to emit a clobber here but that doesn't let later
-		 passes optimize the instructions we emit.  By storing 0 into
-		 the register later passes know the first AND to zero out the
-		 bitfield being set in the register is unnecessary.  The store
-		 of 0 will be deleted as will at least the first AND.  */
-
-	      emit_move_insn (reg, const0_rtx);
-
-	      bytes -= bitsize / BITS_PER_UNIT;
-	      store_bit_field (reg, bitsize, big_endian_correction, word_mode,
-			       extract_bit_field (word, bitsize, 0, 1,
-						  NULL_RTX, word_mode,
-						  word_mode,
-						  bitalign / BITS_PER_UNIT,
-						  BITS_PER_WORD),
-			       bitalign / BITS_PER_UNIT, BITS_PER_WORD);
-	    }
-	}
+    store_unaligned_arguments_into_pseudos (args, num_actuals);
 
   /* Now store any partially-in-registers parm.
      This is the last place a block-move can happen.  */
@@ -2152,31 +2262,10 @@ expand_call (exp, target, ignore)
     {
 #ifdef REG_PARM_STACK_SPACE
       if (save_area)
-	{
-	  enum machine_mode save_mode = GET_MODE (save_area);
-#ifdef ARGS_GROW_DOWNWARD
-	  rtx stack_area
-	    = gen_rtx_MEM (save_mode,
-			   memory_address (save_mode,
-					   plus_constant (argblock,
-							  - high_to_save)));
-#else
-	  rtx stack_area
-	    = gen_rtx_MEM (save_mode,
-			   memory_address (save_mode,
-					   plus_constant (argblock,
-							  low_to_save)));
+	restore_fixed_argument_area (save_area, argblock,
+				     high_to_save, low_to_save);
 #endif
 
-	  if (save_mode != BLKmode)
-	    emit_move_insn (stack_area, save_area);
-	  else
-	    emit_block_move (stack_area, validize_mem (save_area),
-			     GEN_INT (high_to_save - low_to_save + 1),
-			     PARM_BOUNDARY / BITS_PER_UNIT);
-	}
-#endif
-	  
       /* If we saved any argument areas, restore them.  */
       for (i = 0; i < num_actuals; i++)
 	if (args[i].save_area)
