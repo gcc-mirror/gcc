@@ -1,3 +1,8 @@
+2004-03-17  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* Makefile.in: Clean up REQUIRED_OFILES and CONFIGURED_OFILES for
+	an 80 column screen.  Run maint-deps.
+
 2004-03-09  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.ac: Bump version to 2.59.  Apply suggested autoupdates.
