@@ -1,3 +1,9 @@
+2004-09-11  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/17411
+	* tree-sra.c (generate_element_zero): Revert recent build_int_cst
+	change. elt->type may be a floating point type, so use fold_convert.
+
 2004-09-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.c (machopic_validate_stub_or_non_lazy_ptr): Mark
