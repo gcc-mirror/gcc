@@ -673,28 +673,47 @@ num_insns_constant (op, mode)
       return num_insns_constant_wide ((HOST_WIDE_INT)l);
     }
 
-  else if (GET_CODE (op) == CONST_DOUBLE && TARGET_32BIT)
-    return (num_insns_constant_wide (CONST_DOUBLE_LOW (op))
-	    + num_insns_constant_wide (CONST_DOUBLE_HIGH (op)));
-
-  else if (GET_CODE (op) == CONST_DOUBLE && TARGET_64BIT)
+  else if (GET_CODE (op) == CONST_DOUBLE)
     {
-      HOST_WIDE_INT low  = CONST_DOUBLE_LOW (op);
-      HOST_WIDE_INT high = CONST_DOUBLE_HIGH (op);
+      HOST_WIDE_INT low;
+      HOST_WIDE_INT high;
+      long l[2];
+      REAL_VALUE_TYPE rv;
+      int endian = (WORDS_BIG_ENDIAN == 0);
 
-      if (high == 0 && (low & 0x80000000) == 0)
-	return num_insns_constant_wide (low);
+      if (mode == VOIDmode || mode == DImode)
+	{
+	  high = CONST_DOUBLE_HIGH (op);
+	  low  = CONST_DOUBLE_LOW (op);
+	}
+      else
+	{
+	  REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
+	  REAL_VALUE_TO_TARGET_DOUBLE (rv, l);
+	  high = l[endian];
+	  low  = l[1 - endian];
+	}
 
-      else if (((high & 0xffffffff) == 0xffffffff)
-	       && ((low & 0x80000000) != 0))
-	return num_insns_constant_wide (low);
-
-      else if (low == 0)
-	return num_insns_constant_wide (high) + 1;
+      if (TARGET_32BIT)
+	return (num_insns_constant_wide (low)
+		+ num_insns_constant_wide (high));
 
       else
-	return (num_insns_constant_wide (high)
-		+ num_insns_constant_wide (low) + 1);
+	{
+	  if (high == 0 && (low & 0x80000000) == 0)
+	    return num_insns_constant_wide (low);
+
+	  else if (((high & 0xffffffff) == 0xffffffff)
+		   && ((low & 0x80000000) != 0))
+	    return num_insns_constant_wide (low);
+
+	  else if (low == 0)
+	    return num_insns_constant_wide (high) + 1;
+
+	  else
+	    return (num_insns_constant_wide (high)
+		    + num_insns_constant_wide (low) + 1);
+	}
     }
 
   else
