@@ -437,7 +437,15 @@ validate_replace_rtx_1 (loc, from, to, object)
 
       validate_replace_rtx_1 (&XEXP (x, 0), from, to, object);
       validate_replace_rtx_1 (&XEXP (x, 1), from, to, object);
-      if (prev_changes != num_changes && CONSTANT_P (XEXP (x, 0)))
+      /* If nothing changed, we can exit now.  In fact, continuing on
+	 into the switch statement below can be wrong, eg. turning
+	 (plus (symbol_ref) (const_int)) into
+	 (const (plus (symbol_ref) (const_int))).  This might not seem
+	 so bad, but the first rtx is already enclosed in `const', so
+	 we get a string of (const (const (const...))).  */
+      if (prev_changes == num_changes)
+	return;
+      if (CONSTANT_P (XEXP (x, 0)))
 	{
 	  validate_change (object, loc,
 			   gen_rtx_fmt_ee (GET_RTX_CLASS (code) == 'c' ? code
