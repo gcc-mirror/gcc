@@ -1652,28 +1652,6 @@ namespace std
       return std::copy(__first, __middle, copy(__middle, __last, __result));
     }
 
-
-  /**
-   *  @if maint
-   *  Return a random number in the range [0, __n).  This function encapsulates
-   *  whether we're using rand (part of the standard C library) or lrand48
-   *  (not standard, but a much better choice whenever it's available).
-   *
-   *  XXX There is no corresponding encapsulation fn to seed the generator.
-   *  @endif
-  */
-  template<typename _Distance>
-    inline _Distance
-    __random_number(_Distance __n)
-    {
-  #ifdef _GLIBCXX_HAVE_LRAND48
-      return lrand48() % __n;
-  #else
-      return rand() % __n;
-  #endif
-    }
-
-
   /**
    *  @brief Randomly shuffle the elements of a sequence.
    *  @param  first   A forward iterator.
@@ -1693,9 +1671,9 @@ namespace std
 	    _RandomAccessIterator>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      if (__first == __last) return;
-      for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
-	std::iter_swap(__i, __first + std::__random_number((__i - __first) + 1));
+      if (__first != __last) 
+	for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
+	  std::iter_swap(__i, __first + (std::rand() % ((__i - __first) + 1)));
     }
 
   /**
