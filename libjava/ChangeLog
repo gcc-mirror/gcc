@@ -1,3 +1,8 @@
+2004-10-18  Sven de Marothy  <sven@physto.se>
+
+	* java/nio/ByteBufferHelper.java
+	(putDouble): Use Double.toRawLongBits instead.
+
 2004-10-18  Mark Wielaard  <mark@klomp.org>
 	Andrew Haley  <aph@redhat.com>
 
