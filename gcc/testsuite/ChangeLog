@@ -1,5 +1,10 @@
 2001-04-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.old-deja/g++.other/comdat2.C: New test.
+	* g++.old-deja/g++.other/comdat2-aux.cc: Auxiliary source for it.
+
+2001-04-20  Jakub Jelinek  <jakub@redhat.com>
+
 	* g++.old-deja/g++.other/overload14.C: New test.
 
 2001-04-20  Jakub Jelinek  <jakub@redhat.com>
