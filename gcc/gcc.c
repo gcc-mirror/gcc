@@ -94,6 +94,10 @@ extern char *choose_temp_base PROTO((void));
 
 #define MIN_FATAL_STATUS 1
 
+/* Flag saying to pass the greatest exit code returned by a sub-process
+   to the calling program.  */
+static int pass_exit_codes;
+
 /* Flag saying to print the directories gcc will search through looking for
    programs, libraries, etc.  */
 
@@ -156,6 +160,10 @@ static char *cross_compile = "0";
 /* The number of errors that have occurred; the link phase will not be
    run if this is non-zero.  */
 static int error_count = 0;
+
+/* Greatest exit code of sub-processes that has been encountered up to
+   now.  */
+static int greatest_status = 1;
 
 /* This is the obstack which we use to allocate many strings.  */
 
@@ -764,6 +772,7 @@ struct option_map option_map[] =
    {"--no-warnings", "-w", 0},
    {"--optimize", "-O", "oj"},
    {"--output", "-o", "a"},
+   {"--pass-exit-codes", "-pass-exit-codes", 0},
    {"--pedantic", "-pedantic", 0},
    {"--pedantic-errors", "-pedantic-errors", 0},
    {"--pipe", "-pipe", 0},
@@ -2217,7 +2226,11 @@ execute ()
 		    }
 		  else if (WIFEXITED (status)
 			   && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
-		    ret_code = -1;
+		    {
+		      if (WEXITSTATUS (status) > greatest_status)
+			greatest_status = WEXITSTATUS (status);
+		      ret_code = -1;
+		    }
 		}
 	      break;
 	    }
@@ -2349,6 +2362,7 @@ display_help ()
   printf ("  -Xlinker <arg>           Pass <arg> on to the linker\n");
   printf ("  -save-temps              Do not delete intermediate files\n");
   printf ("  -pipe                    Use pipes rather than intermediate files\n");
+  printf ("  -pass-exit-codes         Exit with highest error code from a phase\n");
   printf ("  -specs=<file>            Override builtin specs with the contents of <file>\n");
   printf ("  -B <directory>           Add <directory> to the compiler's search paths\n");
   printf ("  -b <machine>             Run gcc for target <machine>, if installed\n");
@@ -2611,6 +2625,11 @@ process_command (argc, argv)
 	  add_preprocessor_option ("--help", 6);
 	  add_assembler_option ("--help", 6);
 	  add_linker_option ("--help", 6);
+	}
+      else if (! strcmp (argv[i], "-pass-exit-codes"))
+	{
+	  pass_exit_codes = 1;
+	  n_switches++;
 	}
       else if (! strcmp (argv[i], "-print-search-dirs"))
 	print_search_dirs = 1;
@@ -2944,6 +2963,8 @@ process_command (argc, argv)
       if (! strncmp (argv[i], "-Wa,", 4))
 	;
       else if (! strncmp (argv[i], "-Wp,", 4))
+	;
+      else if (! strcmp (argv[i], "-pass-exit-codes"))
 	;
       else if (! strcmp (argv[i], "-print-search-dirs"))
 	;
@@ -4898,7 +4919,10 @@ main (argc, argv)
       printf ("Please see the file BUGS (included with the sources) first.\n");
     }
   
-  exit (error_count > 0 ? (signal_count ? 2 : 1) : 0);
+  exit (signal_count != 0 ? 2
+	: error_count > 0 ? (pass_exit_codes ? greatest_status : 1)
+	: 0);
+
   /* NOTREACHED */
   return 0;
 }
