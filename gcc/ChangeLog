@@ -1,3 +1,23 @@
+Thu Mar 22 21:41:16 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (pushsi, pushsi2_prologue): Disable.
+	(pushsi2_rex64): New.
+	(movabs?i_1_rex64, movabs?i_2_rex64): New.
+	(movqi_ext_1): Disable for 64bit.
+	(movqi_ext_1_rex64): New.
+	(pushdi2_rex64): New pattern, peep2s and splitter.
+	(pushdi2_prologue_rex64): New pattern.
+	(popdi1_epilogue_rex64, popdi1, movdi_xor_rex64, movdi_or_rex64):
+	Likewise.
+	(movdi splitters): Disable for 64bit.
+	(movdi_1_rex64): New pattern, peep2s and splitters.
+	(swapdi): New pattern.
+	(pushsf): Disable for 64bit.
+	(pushsf_rex64): New pattern and splitter.
+	(pushdf_nointeger): Disable for 64bit.
+	(pushdf_integer): Handle the 64bit case.
+	(pushtf): Likewise; update splitters.
+
 2001-03-22  Richard Henderson  <rth@redhat.com>
 
 	* mkconfig.sh: Include insn-flags.h.
