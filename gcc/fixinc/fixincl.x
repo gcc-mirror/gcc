@@ -1692,7 +1692,8 @@ tTestDesc aIo_Use_QuotesTests[] = {
 /*
  *  Fix Command Arguments for Io_Use_Quotes
  */
-const char* apzIo_Use_QuotesPatch[] = {"IO_use",
+const char* apzIo_Use_QuotesPatch[] = {
+    "IO_use",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1725,7 +1726,8 @@ tTestDesc aIo_Def_QuotesTests[] = {
 /*
  *  Fix Command Arguments for Io_Def_Quotes
  */
-const char* apzIo_Def_QuotesPatch[] = {"IO_defn",
+const char* apzIo_Def_QuotesPatch[] = {
+    "IO_defn",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1758,7 +1760,8 @@ tTestDesc aCtrl_Use_QuotesTests[] = {
 /*
  *  Fix Command Arguments for Ctrl_Use_Quotes
  */
-const char* apzCtrl_Use_QuotesPatch[] = {"CTRL_use",
+const char* apzCtrl_Use_QuotesPatch[] = {
+    "CTRL_use",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1791,7 +1794,8 @@ tTestDesc aCtrl_Def_QuotesTests[] = {
 /*
  *  Fix Command Arguments for Ctrl_Def_Quotes
  */
-const char* apzCtrl_Def_QuotesPatch[] = {"CTRL_defn",
+const char* apzCtrl_Def_QuotesPatch[] = {
+    "CTRL_defn",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -2421,7 +2425,8 @@ tTestDesc aMachine_NameTests[] = {
 /*
  *  Fix Command Arguments for Machine_Name
  */
-const char* apzMachine_NamePatch[] = {"machine_name",
+const char* apzMachine_NamePatch[] = {
+    "machine_name",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -4689,592 +4694,592 @@ extern char *\tsprintf();\\\n\
 
 tFixDesc fixDescList[ FIX_COUNT ] = {
   {  zAaa_Ki_IfaceName,    zAaa_Ki_IfaceList,
-     apzAaa_Ki_IfaceMachs, (regex_t*)NULL,
+     apzAaa_Ki_IfaceMachs,
      AAA_KI_IFACE_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAaa_Ki_IfaceTests,   apzAaa_Ki_IfacePatch },
 
   {  zAaa_KiName,    zAaa_KiList,
-     apzAaa_KiMachs, (regex_t*)NULL,
+     apzAaa_KiMachs,
      AAA_KI_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAaa_KiTests,   apzAaa_KiPatch },
 
   {  zAaa_Ki_CallsName,    zAaa_Ki_CallsList,
-     apzAaa_Ki_CallsMachs, (regex_t*)NULL,
+     apzAaa_Ki_CallsMachs,
      AAA_KI_CALLS_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAaa_Ki_CallsTests,   apzAaa_Ki_CallsPatch },
 
   {  zAaa_Ki_DefsName,    zAaa_Ki_DefsList,
-     apzAaa_Ki_DefsMachs, (regex_t*)NULL,
+     apzAaa_Ki_DefsMachs,
      AAA_KI_DEFS_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAaa_Ki_DefsTests,   apzAaa_Ki_DefsPatch },
 
   {  zAaa_Bad_FixesName,    zAaa_Bad_FixesList,
-     apzAaa_Bad_FixesMachs, (regex_t*)NULL,
+     apzAaa_Bad_FixesMachs,
      AAA_BAD_FIXES_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAaa_Bad_FixesTests,   apzAaa_Bad_FixesPatch },
 
   {  zAaa_TimeName,    zAaa_TimeList,
-     apzAaa_TimeMachs, (regex_t*)NULL,
+     apzAaa_TimeMachs,
      AAA_TIME_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAaa_TimeTests,   apzAaa_TimePatch },
 
   {  zAab_Dgux_Int_VarargsName,    zAab_Dgux_Int_VarargsList,
-     apzAab_Dgux_Int_VarargsMachs, (regex_t*)NULL,
+     apzAab_Dgux_Int_VarargsMachs,
      AAB_DGUX_INT_VARARGS_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAab_Dgux_Int_VarargsTests,   apzAab_Dgux_Int_VarargsPatch },
 
   {  zAab_Fd_Zero_Asm_Posix_Types_HName,    zAab_Fd_Zero_Asm_Posix_Types_HList,
-     apzAab_Fd_Zero_Asm_Posix_Types_HMachs, (regex_t*)NULL,
+     apzAab_Fd_Zero_Asm_Posix_Types_HMachs,
      AAB_FD_ZERO_ASM_POSIX_TYPES_H_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAab_Fd_Zero_Asm_Posix_Types_HTests,   apzAab_Fd_Zero_Asm_Posix_Types_HPatch },
 
   {  zAab_Fd_Zero_Gnu_Types_HName,    zAab_Fd_Zero_Gnu_Types_HList,
-     apzAab_Fd_Zero_Gnu_Types_HMachs, (regex_t*)NULL,
+     apzAab_Fd_Zero_Gnu_Types_HMachs,
      AAB_FD_ZERO_GNU_TYPES_H_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAab_Fd_Zero_Gnu_Types_HTests,   apzAab_Fd_Zero_Gnu_Types_HPatch },
 
   {  zAab_Fd_Zero_Selectbits_HName,    zAab_Fd_Zero_Selectbits_HList,
-     apzAab_Fd_Zero_Selectbits_HMachs, (regex_t*)NULL,
+     apzAab_Fd_Zero_Selectbits_HMachs,
      AAB_FD_ZERO_SELECTBITS_H_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAab_Fd_Zero_Selectbits_HTests,   apzAab_Fd_Zero_Selectbits_HPatch },
 
   {  zAab_Sun_MemcpyName,    zAab_Sun_MemcpyList,
-     apzAab_Sun_MemcpyMachs, (regex_t*)NULL,
+     apzAab_Sun_MemcpyMachs,
      AAB_SUN_MEMCPY_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAab_Sun_MemcpyTests,   apzAab_Sun_MemcpyPatch },
 
   {  zAab_Svr4_Replace_ByteorderName,    zAab_Svr4_Replace_ByteorderList,
-     apzAab_Svr4_Replace_ByteorderMachs, (regex_t*)NULL,
+     apzAab_Svr4_Replace_ByteorderMachs,
      AAB_SVR4_REPLACE_BYTEORDER_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAab_Svr4_Replace_ByteorderTests,   apzAab_Svr4_Replace_ByteorderPatch },
 
   {  zAab_Ultrix_Ansi_CompatName,    zAab_Ultrix_Ansi_CompatList,
-     apzAab_Ultrix_Ansi_CompatMachs, (regex_t*)NULL,
+     apzAab_Ultrix_Ansi_CompatMachs,
      AAB_ULTRIX_ANSI_COMPAT_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAab_Ultrix_Ansi_CompatTests,   apzAab_Ultrix_Ansi_CompatPatch },
 
   {  zAix_SyswaitName,    zAix_SyswaitList,
-     apzAix_SyswaitMachs, (regex_t*)NULL,
+     apzAix_SyswaitMachs,
      AIX_SYSWAIT_TEST_CT, FD_MACH_ONLY,
      aAix_SyswaitTests,   apzAix_SyswaitPatch },
 
   {  zAix_VolatileName,    zAix_VolatileList,
-     apzAix_VolatileMachs, (regex_t*)NULL,
+     apzAix_VolatileMachs,
      AIX_VOLATILE_TEST_CT, FD_MACH_ONLY,
      aAix_VolatileTests,   apzAix_VolatilePatch },
 
   {  zAlpha_GetoptName,    zAlpha_GetoptList,
-     apzAlpha_GetoptMachs, (regex_t*)NULL,
+     apzAlpha_GetoptMachs,
      ALPHA_GETOPT_TEST_CT, FD_MACH_ONLY,
      aAlpha_GetoptTests,   apzAlpha_GetoptPatch },
 
   {  zAlpha_ParensName,    zAlpha_ParensList,
-     apzAlpha_ParensMachs, (regex_t*)NULL,
+     apzAlpha_ParensMachs,
      ALPHA_PARENS_TEST_CT, FD_MACH_ONLY,
      aAlpha_ParensTests,   apzAlpha_ParensPatch },
 
   {  zAlpha_SbrkName,    zAlpha_SbrkList,
-     apzAlpha_SbrkMachs, (regex_t*)NULL,
+     apzAlpha_SbrkMachs,
      ALPHA_SBRK_TEST_CT, FD_MACH_ONLY,
      aAlpha_SbrkTests,   apzAlpha_SbrkPatch },
 
   {  zArm_Norcroft_HintName,    zArm_Norcroft_HintList,
-     apzArm_Norcroft_HintMachs, (regex_t*)NULL,
+     apzArm_Norcroft_HintMachs,
      ARM_NORCROFT_HINT_TEST_CT, FD_MACH_ONLY,
      aArm_Norcroft_HintTests,   apzArm_Norcroft_HintPatch },
 
   {  zArm_WcharName,    zArm_WcharList,
-     apzArm_WcharMachs, (regex_t*)NULL,
+     apzArm_WcharMachs,
      ARM_WCHAR_TEST_CT, FD_MACH_ONLY,
      aArm_WcharTests,   apzArm_WcharPatch },
 
   {  zAux_AsmName,    zAux_AsmList,
-     apzAux_AsmMachs, (regex_t*)NULL,
+     apzAux_AsmMachs,
      AUX_ASM_TEST_CT, FD_MACH_ONLY,
      aAux_AsmTests,   apzAux_AsmPatch },
 
   {  zAvoid_BoolName,    zAvoid_BoolList,
-     apzAvoid_BoolMachs, (regex_t*)NULL,
+     apzAvoid_BoolMachs,
      AVOID_BOOL_TEST_CT, FD_MACH_ONLY,
      aAvoid_BoolTests,   apzAvoid_BoolPatch },
 
   {  zBad_Struct_TermName,    zBad_Struct_TermList,
-     apzBad_Struct_TermMachs, (regex_t*)NULL,
+     apzBad_Struct_TermMachs,
      BAD_STRUCT_TERM_TEST_CT, FD_MACH_ONLY,
      aBad_Struct_TermTests,   apzBad_Struct_TermPatch },
 
   {  zBadquoteName,    zBadquoteList,
-     apzBadquoteMachs, (regex_t*)NULL,
+     apzBadquoteMachs,
      BADQUOTE_TEST_CT, FD_MACH_ONLY,
      aBadquoteTests,   apzBadquotePatch },
 
   {  zBad_LvalName,    zBad_LvalList,
-     apzBad_LvalMachs, (regex_t*)NULL,
+     apzBad_LvalMachs,
      BAD_LVAL_TEST_CT, FD_MACH_ONLY,
      aBad_LvalTests,   apzBad_LvalPatch },
 
   {  zBroken_Assert_StdioName,    zBroken_Assert_StdioList,
-     apzBroken_Assert_StdioMachs, (regex_t*)NULL,
+     apzBroken_Assert_StdioMachs,
      BROKEN_ASSERT_STDIO_TEST_CT, FD_MACH_ONLY,
      aBroken_Assert_StdioTests,   apzBroken_Assert_StdioPatch },
 
   {  zBroken_Assert_StdlibName,    zBroken_Assert_StdlibList,
-     apzBroken_Assert_StdlibMachs, (regex_t*)NULL,
+     apzBroken_Assert_StdlibMachs,
      BROKEN_ASSERT_STDLIB_TEST_CT, FD_MACH_ONLY,
      aBroken_Assert_StdlibTests,   apzBroken_Assert_StdlibPatch },
 
   {  zBroken_CabsName,    zBroken_CabsList,
-     apzBroken_CabsMachs, (regex_t*)NULL,
+     apzBroken_CabsMachs,
      BROKEN_CABS_TEST_CT, FD_MACH_ONLY,
      aBroken_CabsTests,   apzBroken_CabsPatch },
 
   {  zDec_Intern_AsmName,    zDec_Intern_AsmList,
-     apzDec_Intern_AsmMachs, (regex_t*)NULL,
+     apzDec_Intern_AsmMachs,
      DEC_INTERN_ASM_TEST_CT, FD_MACH_ONLY,
      aDec_Intern_AsmTests,   apzDec_Intern_AsmPatch },
 
   {  zEcd_CursorName,    zEcd_CursorList,
-     apzEcd_CursorMachs, (regex_t*)NULL,
+     apzEcd_CursorMachs,
      ECD_CURSOR_TEST_CT, FD_MACH_ONLY,
      aEcd_CursorTests,   apzEcd_CursorPatch },
 
   {  zHp_InlineName,    zHp_InlineList,
-     apzHp_InlineMachs, (regex_t*)NULL,
+     apzHp_InlineMachs,
      HP_INLINE_TEST_CT, FD_MACH_ONLY,
      aHp_InlineTests,   apzHp_InlinePatch },
 
   {  zHp_SysfileName,    zHp_SysfileList,
-     apzHp_SysfileMachs, (regex_t*)NULL,
+     apzHp_SysfileMachs,
      HP_SYSFILE_TEST_CT, FD_MACH_ONLY,
      aHp_SysfileTests,   apzHp_SysfilePatch },
 
   {  zCxx_UnreadyName,    zCxx_UnreadyList,
-     apzCxx_UnreadyMachs, (regex_t*)NULL,
+     apzCxx_UnreadyMachs,
      CXX_UNREADY_TEST_CT, FD_MACH_ONLY,
      aCxx_UnreadyTests,   apzCxx_UnreadyPatch },
 
   {  zHpux_MaxintName,    zHpux_MaxintList,
-     apzHpux_MaxintMachs, (regex_t*)NULL,
+     apzHpux_MaxintMachs,
      HPUX_MAXINT_TEST_CT, FD_MACH_ONLY,
      aHpux_MaxintTests,   apzHpux_MaxintPatch },
 
   {  zHpux_SystimeName,    zHpux_SystimeList,
-     apzHpux_SystimeMachs, (regex_t*)NULL,
+     apzHpux_SystimeMachs,
      HPUX_SYSTIME_TEST_CT, FD_MACH_ONLY,
      aHpux_SystimeTests,   apzHpux_SystimePatch },
 
   {  zHpux8_Bogus_InlinesName,    zHpux8_Bogus_InlinesList,
-     apzHpux8_Bogus_InlinesMachs, (regex_t*)NULL,
+     apzHpux8_Bogus_InlinesMachs,
      HPUX8_BOGUS_INLINES_TEST_CT, FD_MACH_ONLY,
      aHpux8_Bogus_InlinesTests,   apzHpux8_Bogus_InlinesPatch },
 
   {  zHpux11_Uint32_CName,    zHpux11_Uint32_CList,
-     apzHpux11_Uint32_CMachs, (regex_t*)NULL,
+     apzHpux11_Uint32_CMachs,
      HPUX11_UINT32_C_TEST_CT, FD_MACH_ONLY,
      aHpux11_Uint32_CTests,   apzHpux11_Uint32_CPatch },
 
   {  zIsc_Omits_With_StdcName,    zIsc_Omits_With_StdcList,
-     apzIsc_Omits_With_StdcMachs, (regex_t*)NULL,
+     apzIsc_Omits_With_StdcMachs,
      ISC_OMITS_WITH_STDC_TEST_CT, FD_MACH_ONLY,
      aIsc_Omits_With_StdcTests,   apzIsc_Omits_With_StdcPatch },
 
   {  zIo_Use_QuotesName,    zIo_Use_QuotesList,
-     apzIo_Use_QuotesMachs, (regex_t*)NULL,
+     apzIo_Use_QuotesMachs,
      IO_USE_QUOTES_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aIo_Use_QuotesTests,   apzIo_Use_QuotesPatch },
 
   {  zIo_Def_QuotesName,    zIo_Def_QuotesList,
-     apzIo_Def_QuotesMachs, (regex_t*)NULL,
+     apzIo_Def_QuotesMachs,
      IO_DEF_QUOTES_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aIo_Def_QuotesTests,   apzIo_Def_QuotesPatch },
 
   {  zCtrl_Use_QuotesName,    zCtrl_Use_QuotesList,
-     apzCtrl_Use_QuotesMachs, (regex_t*)NULL,
+     apzCtrl_Use_QuotesMachs,
      CTRL_USE_QUOTES_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aCtrl_Use_QuotesTests,   apzCtrl_Use_QuotesPatch },
 
   {  zCtrl_Def_QuotesName,    zCtrl_Def_QuotesList,
-     apzCtrl_Def_QuotesMachs, (regex_t*)NULL,
+     apzCtrl_Def_QuotesMachs,
      CTRL_DEF_QUOTES_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aCtrl_Def_QuotesTests,   apzCtrl_Def_QuotesPatch },
 
   {  zIp_Missing_SemiName,    zIp_Missing_SemiList,
-     apzIp_Missing_SemiMachs, (regex_t*)NULL,
+     apzIp_Missing_SemiMachs,
      IP_MISSING_SEMI_TEST_CT, FD_MACH_ONLY,
      aIp_Missing_SemiTests,   apzIp_Missing_SemiPatch },
 
   {  zIrix_Multiline_CmntName,    zIrix_Multiline_CmntList,
-     apzIrix_Multiline_CmntMachs, (regex_t*)NULL,
+     apzIrix_Multiline_CmntMachs,
      IRIX_MULTILINE_CMNT_TEST_CT, FD_MACH_ONLY,
      aIrix_Multiline_CmntTests,   apzIrix_Multiline_CmntPatch },
 
   {  zIrix_SockaddrName,    zIrix_SockaddrList,
-     apzIrix_SockaddrMachs, (regex_t*)NULL,
+     apzIrix_SockaddrMachs,
      IRIX_SOCKADDR_TEST_CT, FD_MACH_ONLY,
      aIrix_SockaddrTests,   apzIrix_SockaddrPatch },
 
   {  zIrix_Struct__FileName,    zIrix_Struct__FileList,
-     apzIrix_Struct__FileMachs, (regex_t*)NULL,
+     apzIrix_Struct__FileMachs,
      IRIX_STRUCT__FILE_TEST_CT, FD_MACH_ONLY,
      aIrix_Struct__FileTests,   apzIrix_Struct__FilePatch },
 
   {  zIrix_Asm_ApostropheName,    zIrix_Asm_ApostropheList,
-     apzIrix_Asm_ApostropheMachs, (regex_t*)NULL,
+     apzIrix_Asm_ApostropheMachs,
      IRIX_ASM_APOSTROPHE_TEST_CT, FD_MACH_ONLY,
      aIrix_Asm_ApostropheTests,   apzIrix_Asm_ApostrophePatch },
 
   {  zIsc_FmodName,    zIsc_FmodList,
-     apzIsc_FmodMachs, (regex_t*)NULL,
+     apzIsc_FmodMachs,
      ISC_FMOD_TEST_CT, FD_MACH_ONLY,
      aIsc_FmodTests,   apzIsc_FmodPatch },
 
   {  zMotorola_NestedName,    zMotorola_NestedList,
-     apzMotorola_NestedMachs, (regex_t*)NULL,
+     apzMotorola_NestedMachs,
      MOTOROLA_NESTED_TEST_CT, FD_MACH_ONLY,
      aMotorola_NestedTests,   apzMotorola_NestedPatch },
 
   {  zIsc_Sys_LimitsName,    zIsc_Sys_LimitsList,
-     apzIsc_Sys_LimitsMachs, (regex_t*)NULL,
+     apzIsc_Sys_LimitsMachs,
      ISC_SYS_LIMITS_TEST_CT, FD_MACH_ONLY,
      aIsc_Sys_LimitsTests,   apzIsc_Sys_LimitsPatch },
 
   {  zKandr_ConcatName,    zKandr_ConcatList,
-     apzKandr_ConcatMachs, (regex_t*)NULL,
+     apzKandr_ConcatMachs,
      KANDR_CONCAT_TEST_CT, FD_MACH_ONLY,
      aKandr_ConcatTests,   apzKandr_ConcatPatch },
 
   {  zLimits_IfndefsName,    zLimits_IfndefsList,
-     apzLimits_IfndefsMachs, (regex_t*)NULL,
+     apzLimits_IfndefsMachs,
      LIMITS_IFNDEFS_TEST_CT, FD_MACH_ONLY,
      aLimits_IfndefsTests,   apzLimits_IfndefsPatch },
 
   {  zLynx_Void_IntName,    zLynx_Void_IntList,
-     apzLynx_Void_IntMachs, (regex_t*)NULL,
+     apzLynx_Void_IntMachs,
      LYNX_VOID_INT_TEST_CT, FD_MACH_ONLY,
      aLynx_Void_IntTests,   apzLynx_Void_IntPatch },
 
   {  zLynxos_Fcntl_ProtoName,    zLynxos_Fcntl_ProtoList,
-     apzLynxos_Fcntl_ProtoMachs, (regex_t*)NULL,
+     apzLynxos_Fcntl_ProtoMachs,
      LYNXOS_FCNTL_PROTO_TEST_CT, FD_MACH_ONLY,
      aLynxos_Fcntl_ProtoTests,   apzLynxos_Fcntl_ProtoPatch },
 
   {  zM88k_Bad_Hypot_OptName,    zM88k_Bad_Hypot_OptList,
-     apzM88k_Bad_Hypot_OptMachs, (regex_t*)NULL,
+     apzM88k_Bad_Hypot_OptMachs,
      M88K_BAD_HYPOT_OPT_TEST_CT, FD_MACH_ONLY,
      aM88k_Bad_Hypot_OptTests,   apzM88k_Bad_Hypot_OptPatch },
 
   {  zM88k_Bad_S_IfName,    zM88k_Bad_S_IfList,
-     apzM88k_Bad_S_IfMachs, (regex_t*)NULL,
+     apzM88k_Bad_S_IfMachs,
      M88K_BAD_S_IF_TEST_CT, FD_MACH_ONLY,
      aM88k_Bad_S_IfTests,   apzM88k_Bad_S_IfPatch },
 
   {  zM88k_Multi_InclName,    zM88k_Multi_InclList,
-     apzM88k_Multi_InclMachs, (regex_t*)NULL,
+     apzM88k_Multi_InclMachs,
      M88K_MULTI_INCL_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aM88k_Multi_InclTests,   apzM88k_Multi_InclPatch },
 
   {  zMachine_Ansi_H_Va_ListName,    zMachine_Ansi_H_Va_ListList,
-     apzMachine_Ansi_H_Va_ListMachs, (regex_t*)NULL,
+     apzMachine_Ansi_H_Va_ListMachs,
      MACHINE_ANSI_H_VA_LIST_TEST_CT, FD_MACH_ONLY,
      aMachine_Ansi_H_Va_ListTests,   apzMachine_Ansi_H_Va_ListPatch },
 
   {  zMachine_NameName,    zMachine_NameList,
-     apzMachine_NameMachs, (regex_t*)NULL,
+     apzMachine_NameMachs,
      MACHINE_NAME_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aMachine_NameTests,   apzMachine_NamePatch },
 
   {  zMath_ExceptionName,    zMath_ExceptionList,
-     apzMath_ExceptionMachs, (regex_t*)NULL,
+     apzMath_ExceptionMachs,
      MATH_EXCEPTION_TEST_CT, FD_MACH_ONLY,
      aMath_ExceptionTests,   apzMath_ExceptionPatch },
 
   {  zMath_Huge_Val_From_Dbl_MaxName,    zMath_Huge_Val_From_Dbl_MaxList,
-     apzMath_Huge_Val_From_Dbl_MaxMachs, (regex_t*)NULL,
+     apzMath_Huge_Val_From_Dbl_MaxMachs,
      MATH_HUGE_VAL_FROM_DBL_MAX_TEST_CT, FD_MACH_ONLY | FD_SHELL_SCRIPT,
      aMath_Huge_Val_From_Dbl_MaxTests,   apzMath_Huge_Val_From_Dbl_MaxPatch },
 
   {  zMath_Huge_Val_IfndefName,    zMath_Huge_Val_IfndefList,
-     apzMath_Huge_Val_IfndefMachs, (regex_t*)NULL,
+     apzMath_Huge_Val_IfndefMachs,
      MATH_HUGE_VAL_IFNDEF_TEST_CT, FD_MACH_ONLY,
      aMath_Huge_Val_IfndefTests,   apzMath_Huge_Val_IfndefPatch },
 
   {  zNested_CommentName,    zNested_CommentList,
-     apzNested_CommentMachs, (regex_t*)NULL,
+     apzNested_CommentMachs,
      NESTED_COMMENT_TEST_CT, FD_MACH_ONLY,
      aNested_CommentTests,   apzNested_CommentPatch },
 
   {  zNews_Os_RecursionName,    zNews_Os_RecursionList,
-     apzNews_Os_RecursionMachs, (regex_t*)NULL,
+     apzNews_Os_RecursionMachs,
      NEWS_OS_RECURSION_TEST_CT, FD_MACH_ONLY,
      aNews_Os_RecursionTests,   apzNews_Os_RecursionPatch },
 
   {  zNext_Math_PrefixName,    zNext_Math_PrefixList,
-     apzNext_Math_PrefixMachs, (regex_t*)NULL,
+     apzNext_Math_PrefixMachs,
      NEXT_MATH_PREFIX_TEST_CT, FD_MACH_ONLY,
      aNext_Math_PrefixTests,   apzNext_Math_PrefixPatch },
 
   {  zNext_TemplateName,    zNext_TemplateList,
-     apzNext_TemplateMachs, (regex_t*)NULL,
+     apzNext_TemplateMachs,
      NEXT_TEMPLATE_TEST_CT, FD_MACH_ONLY,
      aNext_TemplateTests,   apzNext_TemplatePatch },
 
   {  zNext_VolitileName,    zNext_VolitileList,
-     apzNext_VolitileMachs, (regex_t*)NULL,
+     apzNext_VolitileMachs,
      NEXT_VOLITILE_TEST_CT, FD_MACH_ONLY,
      aNext_VolitileTests,   apzNext_VolitilePatch },
 
   {  zNext_Wait_UnionName,    zNext_Wait_UnionList,
-     apzNext_Wait_UnionMachs, (regex_t*)NULL,
+     apzNext_Wait_UnionMachs,
      NEXT_WAIT_UNION_TEST_CT, FD_MACH_ONLY,
      aNext_Wait_UnionTests,   apzNext_Wait_UnionPatch },
 
   {  zNodeent_SyntaxName,    zNodeent_SyntaxList,
-     apzNodeent_SyntaxMachs, (regex_t*)NULL,
+     apzNodeent_SyntaxMachs,
      NODEENT_SYNTAX_TEST_CT, FD_MACH_ONLY,
      aNodeent_SyntaxTests,   apzNodeent_SyntaxPatch },
 
   {  zOsf_Namespace_AName,    zOsf_Namespace_AList,
-     apzOsf_Namespace_AMachs, (regex_t*)NULL,
+     apzOsf_Namespace_AMachs,
      OSF_NAMESPACE_A_TEST_CT, FD_MACH_ONLY,
      aOsf_Namespace_ATests,   apzOsf_Namespace_APatch },
 
   {  zOsf_Namespace_BName,    zOsf_Namespace_BList,
-     apzOsf_Namespace_BMachs, (regex_t*)NULL,
+     apzOsf_Namespace_BMachs,
      OSF_NAMESPACE_B_TEST_CT, FD_MACH_ONLY,
      aOsf_Namespace_BTests,   apzOsf_Namespace_BPatch },
 
   {  zPthread_Page_SizeName,    zPthread_Page_SizeList,
-     apzPthread_Page_SizeMachs, (regex_t*)NULL,
+     apzPthread_Page_SizeMachs,
      PTHREAD_PAGE_SIZE_TEST_CT, FD_MACH_ONLY,
      aPthread_Page_SizeTests,   apzPthread_Page_SizePatch },
 
   {  zRead_Ret_TypeName,    zRead_Ret_TypeList,
-     apzRead_Ret_TypeMachs, (regex_t*)NULL,
+     apzRead_Ret_TypeMachs,
      READ_RET_TYPE_TEST_CT, FD_MACH_ONLY,
      aRead_Ret_TypeTests,   apzRead_Ret_TypePatch },
 
   {  zRs6000_DoubleName,    zRs6000_DoubleList,
-     apzRs6000_DoubleMachs, (regex_t*)NULL,
+     apzRs6000_DoubleMachs,
      RS6000_DOUBLE_TEST_CT, FD_MACH_ONLY,
      aRs6000_DoubleTests,   apzRs6000_DoublePatch },
 
   {  zRs6000_FchmodName,    zRs6000_FchmodList,
-     apzRs6000_FchmodMachs, (regex_t*)NULL,
+     apzRs6000_FchmodMachs,
      RS6000_FCHMOD_TEST_CT, FD_MACH_ONLY,
      aRs6000_FchmodTests,   apzRs6000_FchmodPatch },
 
   {  zRs6000_ParamName,    zRs6000_ParamList,
-     apzRs6000_ParamMachs, (regex_t*)NULL,
+     apzRs6000_ParamMachs,
      RS6000_PARAM_TEST_CT, FD_MACH_ONLY,
      aRs6000_ParamTests,   apzRs6000_ParamPatch },
 
   {  zSco_Strict_AnsiName,    zSco_Strict_AnsiList,
-     apzSco_Strict_AnsiMachs, (regex_t*)NULL,
+     apzSco_Strict_AnsiMachs,
      SCO_STRICT_ANSI_TEST_CT, FD_MACH_ONLY,
      aSco_Strict_AnsiTests,   apzSco_Strict_AnsiPatch },
 
   {  zSco_Static_FuncName,    zSco_Static_FuncList,
-     apzSco_Static_FuncMachs, (regex_t*)NULL,
+     apzSco_Static_FuncMachs,
      SCO_STATIC_FUNC_TEST_CT, FD_MACH_ONLY,
      aSco_Static_FuncTests,   apzSco_Static_FuncPatch },
 
   {  zSco_UtimeName,    zSco_UtimeList,
-     apzSco_UtimeMachs, (regex_t*)NULL,
+     apzSco_UtimeMachs,
      SCO_UTIME_TEST_CT, FD_MACH_ONLY,
      aSco_UtimeTests,   apzSco_UtimePatch },
 
   {  zSony_IncludeName,    zSony_IncludeList,
-     apzSony_IncludeMachs, (regex_t*)NULL,
+     apzSony_IncludeMachs,
      SONY_INCLUDE_TEST_CT, FD_MACH_ONLY,
      aSony_IncludeTests,   apzSony_IncludePatch },
 
   {  zStatsswtchName,    zStatsswtchList,
-     apzStatsswtchMachs, (regex_t*)NULL,
+     apzStatsswtchMachs,
      STATSSWTCH_TEST_CT, FD_MACH_ONLY,
      aStatsswtchTests,   apzStatsswtchPatch },
 
   {  zStdio_Stdarg_HName,    zStdio_Stdarg_HList,
-     apzStdio_Stdarg_HMachs, (regex_t*)NULL,
+     apzStdio_Stdarg_HMachs,
      STDIO_STDARG_H_TEST_CT, FD_MACH_ONLY,
      aStdio_Stdarg_HTests,   apzStdio_Stdarg_HPatch },
 
   {  zStdio_Va_ListName,    zStdio_Va_ListList,
-     apzStdio_Va_ListMachs, (regex_t*)NULL,
+     apzStdio_Va_ListMachs,
      STDIO_VA_LIST_TEST_CT, FD_MACH_ONLY,
      aStdio_Va_ListTests,   apzStdio_Va_ListPatch },
 
   {  zSun_Auth_ProtoName,    zSun_Auth_ProtoList,
-     apzSun_Auth_ProtoMachs, (regex_t*)NULL,
+     apzSun_Auth_ProtoMachs,
      SUN_AUTH_PROTO_TEST_CT, FD_MACH_ONLY,
      aSun_Auth_ProtoTests,   apzSun_Auth_ProtoPatch },
 
   {  zSun_Bogus_IfdefName,    zSun_Bogus_IfdefList,
-     apzSun_Bogus_IfdefMachs, (regex_t*)NULL,
+     apzSun_Bogus_IfdefMachs,
      SUN_BOGUS_IFDEF_TEST_CT, FD_MACH_ONLY,
      aSun_Bogus_IfdefTests,   apzSun_Bogus_IfdefPatch },
 
   {  zSun_Bogus_Ifdef_Sun4cName,    zSun_Bogus_Ifdef_Sun4cList,
-     apzSun_Bogus_Ifdef_Sun4cMachs, (regex_t*)NULL,
+     apzSun_Bogus_Ifdef_Sun4cMachs,
      SUN_BOGUS_IFDEF_SUN4C_TEST_CT, FD_MACH_ONLY,
      aSun_Bogus_Ifdef_Sun4cTests,   apzSun_Bogus_Ifdef_Sun4cPatch },
 
   {  zSun_CatmacroName,    zSun_CatmacroList,
-     apzSun_CatmacroMachs, (regex_t*)NULL,
+     apzSun_CatmacroMachs,
      SUN_CATMACRO_TEST_CT, FD_MACH_ONLY,
      aSun_CatmacroTests,   apzSun_CatmacroPatch },
 
   {  zSun_MallocName,    zSun_MallocList,
-     apzSun_MallocMachs, (regex_t*)NULL,
+     apzSun_MallocMachs,
      SUN_MALLOC_TEST_CT, FD_MACH_ONLY,
      aSun_MallocTests,   apzSun_MallocPatch },
 
   {  zSun_Rusers_SemiName,    zSun_Rusers_SemiList,
-     apzSun_Rusers_SemiMachs, (regex_t*)NULL,
+     apzSun_Rusers_SemiMachs,
      SUN_RUSERS_SEMI_TEST_CT, FD_MACH_ONLY,
      aSun_Rusers_SemiTests,   apzSun_Rusers_SemiPatch },
 
   {  zSun_SignalName,    zSun_SignalList,
-     apzSun_SignalMachs, (regex_t*)NULL,
+     apzSun_SignalMachs,
      SUN_SIGNAL_TEST_CT, FD_MACH_ONLY,
      aSun_SignalTests,   apzSun_SignalPatch },
 
   {  zSunos_Matherr_DeclName,    zSunos_Matherr_DeclList,
-     apzSunos_Matherr_DeclMachs, (regex_t*)NULL,
+     apzSunos_Matherr_DeclMachs,
      SUNOS_MATHERR_DECL_TEST_CT, FD_MACH_ONLY,
      aSunos_Matherr_DeclTests,   apzSunos_Matherr_DeclPatch },
 
   {  zSunos_StrlenName,    zSunos_StrlenList,
-     apzSunos_StrlenMachs, (regex_t*)NULL,
+     apzSunos_StrlenMachs,
      SUNOS_STRLEN_TEST_CT, FD_MACH_ONLY,
      aSunos_StrlenTests,   apzSunos_StrlenPatch },
 
   {  zSvr4_GetcwdName,    zSvr4_GetcwdList,
-     apzSvr4_GetcwdMachs, (regex_t*)NULL,
+     apzSvr4_GetcwdMachs,
      SVR4_GETCWD_TEST_CT, FD_MACH_ONLY,
      aSvr4_GetcwdTests,   apzSvr4_GetcwdPatch },
 
   {  zSvr4_ProfilName,    zSvr4_ProfilList,
-     apzSvr4_ProfilMachs, (regex_t*)NULL,
+     apzSvr4_ProfilMachs,
      SVR4_PROFIL_TEST_CT, FD_MACH_ONLY,
      aSvr4_ProfilTests,   apzSvr4_ProfilPatch },
 
   {  zSystypesName,    zSystypesList,
-     apzSystypesMachs, (regex_t*)NULL,
+     apzSystypesMachs,
      SYSTYPES_TEST_CT, FD_MACH_ONLY,
      aSystypesTests,   apzSystypesPatch },
 
   {  zSystypes_Stdlib_Size_TName,    zSystypes_Stdlib_Size_TList,
-     apzSystypes_Stdlib_Size_TMachs, (regex_t*)NULL,
+     apzSystypes_Stdlib_Size_TMachs,
      SYSTYPES_STDLIB_SIZE_T_TEST_CT, FD_MACH_ONLY,
      aSystypes_Stdlib_Size_TTests,   apzSystypes_Stdlib_Size_TPatch },
 
   {  zSysv68_StringName,    zSysv68_StringList,
-     apzSysv68_StringMachs, (regex_t*)NULL,
+     apzSysv68_StringMachs,
      SYSV68_STRING_TEST_CT, FD_MACH_ONLY,
      aSysv68_StringTests,   apzSysv68_StringPatch },
 
   {  zSysz_Stdlib_For_SunName,    zSysz_Stdlib_For_SunList,
-     apzSysz_Stdlib_For_SunMachs, (regex_t*)NULL,
+     apzSysz_Stdlib_For_SunMachs,
      SYSZ_STDLIB_FOR_SUN_TEST_CT, FD_MACH_ONLY,
      aSysz_Stdlib_For_SunTests,   apzSysz_Stdlib_For_SunPatch },
 
   {  zSysz_Stdtypes_For_SunName,    zSysz_Stdtypes_For_SunList,
-     apzSysz_Stdtypes_For_SunMachs, (regex_t*)NULL,
+     apzSysz_Stdtypes_For_SunMachs,
      SYSZ_STDTYPES_FOR_SUN_TEST_CT, FD_MACH_ONLY,
      aSysz_Stdtypes_For_SunTests,   apzSysz_Stdtypes_For_SunPatch },
 
   {  zTinfo_CplusplusName,    zTinfo_CplusplusList,
-     apzTinfo_CplusplusMachs, (regex_t*)NULL,
+     apzTinfo_CplusplusMachs,
      TINFO_CPLUSPLUS_TEST_CT, FD_MACH_ONLY,
      aTinfo_CplusplusTests,   apzTinfo_CplusplusPatch },
 
   {  zUltrix_Fix_FixprotoName,    zUltrix_Fix_FixprotoList,
-     apzUltrix_Fix_FixprotoMachs, (regex_t*)NULL,
+     apzUltrix_Fix_FixprotoMachs,
      ULTRIX_FIX_FIXPROTO_TEST_CT, FD_MACH_ONLY,
      aUltrix_Fix_FixprotoTests,   apzUltrix_Fix_FixprotoPatch },
 
   {  zUltrix_Atof_ParamName,    zUltrix_Atof_ParamList,
-     apzUltrix_Atof_ParamMachs, (regex_t*)NULL,
+     apzUltrix_Atof_ParamMachs,
      ULTRIX_ATOF_PARAM_TEST_CT, FD_MACH_ONLY,
      aUltrix_Atof_ParamTests,   apzUltrix_Atof_ParamPatch },
 
   {  zUltrix_ConstName,    zUltrix_ConstList,
-     apzUltrix_ConstMachs, (regex_t*)NULL,
+     apzUltrix_ConstMachs,
      ULTRIX_CONST_TEST_CT, FD_MACH_ONLY,
      aUltrix_ConstTests,   apzUltrix_ConstPatch },
 
   {  zUltrix_IfdefName,    zUltrix_IfdefList,
-     apzUltrix_IfdefMachs, (regex_t*)NULL,
+     apzUltrix_IfdefMachs,
      ULTRIX_IFDEF_TEST_CT, FD_MACH_ONLY,
      aUltrix_IfdefTests,   apzUltrix_IfdefPatch },
 
   {  zUltrix_Nested_CmntName,    zUltrix_Nested_CmntList,
-     apzUltrix_Nested_CmntMachs, (regex_t*)NULL,
+     apzUltrix_Nested_CmntMachs,
      ULTRIX_NESTED_CMNT_TEST_CT, FD_MACH_ONLY,
      aUltrix_Nested_CmntTests,   apzUltrix_Nested_CmntPatch },
 
   {  zUltrix_StaticName,    zUltrix_StaticList,
-     apzUltrix_StaticMachs, (regex_t*)NULL,
+     apzUltrix_StaticMachs,
      ULTRIX_STATIC_TEST_CT, FD_MACH_ONLY,
      aUltrix_StaticTests,   apzUltrix_StaticPatch },
 
   {  zUndefine_NullName,    zUndefine_NullList,
-     apzUndefine_NullMachs, (regex_t*)NULL,
+     apzUndefine_NullMachs,
      UNDEFINE_NULL_TEST_CT, FD_MACH_ONLY,
      aUndefine_NullTests,   apzUndefine_NullPatch },
 
   {  zUnixware7_Byteorder_FixName,    zUnixware7_Byteorder_FixList,
-     apzUnixware7_Byteorder_FixMachs, (regex_t*)NULL,
+     apzUnixware7_Byteorder_FixMachs,
      UNIXWARE7_BYTEORDER_FIX_TEST_CT, FD_MACH_ONLY,
      aUnixware7_Byteorder_FixTests,   apzUnixware7_Byteorder_FixPatch },
 
   {  zVa_I960_MacroName,    zVa_I960_MacroList,
-     apzVa_I960_MacroMachs, (regex_t*)NULL,
+     apzVa_I960_MacroMachs,
      VA_I960_MACRO_TEST_CT, FD_MACH_ONLY,
      aVa_I960_MacroTests,   apzVa_I960_MacroPatch },
 
   {  zVoid_NullName,    zVoid_NullList,
-     apzVoid_NullMachs, (regex_t*)NULL,
+     apzVoid_NullMachs,
      VOID_NULL_TEST_CT, FD_MACH_ONLY,
      aVoid_NullTests,   apzVoid_NullPatch },
 
   {  zVxworks_Gcc_ProblemName,    zVxworks_Gcc_ProblemList,
-     apzVxworks_Gcc_ProblemMachs, (regex_t*)NULL,
+     apzVxworks_Gcc_ProblemMachs,
      VXWORKS_GCC_PROBLEM_TEST_CT, FD_MACH_ONLY,
      aVxworks_Gcc_ProblemTests,   apzVxworks_Gcc_ProblemPatch },
 
   {  zVxworks_Needs_VxtypesName,    zVxworks_Needs_VxtypesList,
-     apzVxworks_Needs_VxtypesMachs, (regex_t*)NULL,
+     apzVxworks_Needs_VxtypesMachs,
      VXWORKS_NEEDS_VXTYPES_TEST_CT, FD_MACH_ONLY,
      aVxworks_Needs_VxtypesTests,   apzVxworks_Needs_VxtypesPatch },
 
   {  zVxworks_Needs_VxworksName,    zVxworks_Needs_VxworksList,
-     apzVxworks_Needs_VxworksMachs, (regex_t*)NULL,
+     apzVxworks_Needs_VxworksMachs,
      VXWORKS_NEEDS_VXWORKS_TEST_CT, FD_MACH_ONLY,
      aVxworks_Needs_VxworksTests,   apzVxworks_Needs_VxworksPatch },
 
   {  zVxworks_TimeName,    zVxworks_TimeList,
-     apzVxworks_TimeMachs, (regex_t*)NULL,
+     apzVxworks_TimeMachs,
      VXWORKS_TIME_TEST_CT, FD_MACH_ONLY,
      aVxworks_TimeTests,   apzVxworks_TimePatch },
 
   {  zX11_ClassName,    zX11_ClassList,
-     apzX11_ClassMachs, (regex_t*)NULL,
+     apzX11_ClassMachs,
      X11_CLASS_TEST_CT, FD_MACH_ONLY,
      aX11_ClassTests,   apzX11_ClassPatch },
 
   {  zX11_Class_UsageName,    zX11_Class_UsageList,
-     apzX11_Class_UsageMachs, (regex_t*)NULL,
+     apzX11_Class_UsageMachs,
      X11_CLASS_USAGE_TEST_CT, FD_MACH_ONLY,
      aX11_Class_UsageTests,   apzX11_Class_UsagePatch },
 
   {  zX11_NewName,    zX11_NewList,
-     apzX11_NewMachs, (regex_t*)NULL,
+     apzX11_NewMachs,
      X11_NEW_TEST_CT, FD_MACH_ONLY,
      aX11_NewTests,   apzX11_NewPatch },
 
   {  zX11_SprintfName,    zX11_SprintfList,
-     apzX11_SprintfMachs, (regex_t*)NULL,
+     apzX11_SprintfMachs,
      X11_SPRINTF_TEST_CT, FD_MACH_ONLY,
      aX11_SprintfTests,   apzX11_SprintfPatch }
 };
