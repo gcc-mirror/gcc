@@ -1,3 +1,9 @@
+2000-07-17  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* flow.c (libcall_dead_p): Use single_set to verify the insn
+	has only one set and get for analysis.
+	(propagate_one_insn): Don't pass the PATTERN of the insn.
+
 2000-07-17  Mark Klein <mklein@dis.com>
 
          * pa.c (emit_hpdiv_const): Update to match new pattern for udivsi3.
