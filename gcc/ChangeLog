@@ -1,3 +1,8 @@
+Fri Dec 21 17:30:15 2001  Jeffrey A Law  (law@redhat.com)
+
+	* pa.h (CPP_SPEC): If not in ANSI mode, define _INCLUDE_LONGLONG.
+	(CPLUSPLUS_CPP_SPEC): Define _INCLUDE_LONGLONG.
+
 2001-12-21  Robert Lipe  <robertlipe@usa.net>
 
 	 * system.h (PREFETCH): Explictly undefine.
