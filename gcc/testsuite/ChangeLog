@@ -1,3 +1,7 @@
+1999-08-04  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.eh/spec6.C: Add more tests. Remove XFAILS.
+
 Wed Aug  4 01:17:17 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990804-1.c: New test.
