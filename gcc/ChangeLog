@@ -1,3 +1,10 @@
+2000-11-27  Neil Booth  <neilb@earthling.net>
+
+        * tradcpp.c (enum pending_dir_t, struct pending_dir): New.
+        (main): Allocate a pending directive set of these.  Use it.
+        Merge handling of -D and -U.  Update handling of pending
+        directives.  Free the memory after use.
+
 2000-11-27  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* flow.c (entry_exit_blocks): Add entry for cond_local_set.

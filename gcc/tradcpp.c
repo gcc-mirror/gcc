@@ -443,6 +443,16 @@ int deps_column;
    so don't look for #include "foo" the source-file directory.  */
 int ignore_srcdir;
 
+/* Pending directives.  */
+enum pending_dir_t {PD_NONE = 0, PD_DEFINE, PD_UNDEF, PD_ASSERTION, PD_FILE};
+
+typedef struct pending_dir pending_dir;
+struct pending_dir
+{
+  const char *arg;
+  enum pending_dir_t type;
+};
+
 int
 main (argc, argv)
      int argc;
@@ -453,9 +463,7 @@ main (argc, argv)
   const char *in_fname, *out_fname;
   int f, i;
   FILE_BUF *fp;
-  const char **pend_files = (const char **) xmalloc (argc * sizeof (char *));
-  const char **pend_defs = (const char **) xmalloc (argc * sizeof (char *));
-  const char **pend_undefs = (const char **) xmalloc (argc * sizeof (char *));
+  pending_dir *pend = (pending_dir *) xcalloc (argc, sizeof (pending_dir));
   int no_standard_includes = 0;
 
   /* Non-0 means don't output the preprocessed program.  */
@@ -493,10 +501,6 @@ main (argc, argv)
 
   max_include_len = cpp_GCC_INCLUDE_DIR_len + 7;  /* ??? */
 
-  memset (pend_files, 0, argc * sizeof (char *));
-  memset (pend_defs, 0, argc * sizeof (char *));
-  memset (pend_undefs, 0, argc * sizeof (char *));
-
   /* Process switches and find input file name.  */
 
   for (i = 1; i < argc; i++) {
@@ -508,7 +512,9 @@ main (argc, argv)
       else
 	in_fname = argv[i];
     } else {
-      switch (argv[i][1]) {
+      int c = argv[i][1];
+
+      switch (c) {
       case 'A':
       case 'E':
       case '$':
@@ -522,11 +528,11 @@ main (argc, argv)
 	else if (!strcmp (argv[i], "-lang-c89"))
 	  fatal ("-traditional and -ansi are mutually exclusive");
 	else if (!strcmp (argv[i], "-lang-objc"))
-	  pend_defs[i] = "__OBJC__";
+	  pend[i].type = PD_DEFINE, pend[i].arg = "__OBJC__";
 	else if (!strcmp (argv[i], "-lang-asm"))
-	  pend_defs[i] = "__ASSEMBLER__";
+	  pend[i].type = PD_DEFINE, pend[i].arg = "__ASSEMBLER__";
 	else if (!strcmp (argv[i], "-lang-fortran"))
-	  pend_defs[i] = "_LANGUAGE_FORTRAN";
+	  pend[i].type = PD_DEFINE, pend[i].arg = "_LANGUAGE_FORTRAN";
 	/* All other possibilities ignored.  */
 	break;
 
@@ -536,7 +542,7 @@ main (argc, argv)
 	    if (i + 1 == argc)
 	      fatal ("Filename missing after -i option");
 	    else
-	      pend_files[i] = argv[i+1], i++;
+	      pend[i].type = PD_FILE, pend[i].arg = argv[i + 1], i++;
 	  }
 	else if (!strcmp (argv[i], "-iprefix"))
 	  i++; /* Ignore for compatibility */
@@ -597,27 +603,20 @@ main (argc, argv)
 	break;
 
       case 'D':
+      case 'U':
 	{
 	  char *p;
 
 	  if (argv[i][2] != 0)
 	    p = argv[i] + 2;
 	  else if (i + 1 == argc)
-	    fatal ("Macro name missing after -D option");
+	    fatal ("Macro name missing after -%c option", c);
 	  else
 	    p = argv[++i];
 
-	  pend_defs[i] = p;
+	  pend[i].type = c == 'D' ? PD_DEFINE: PD_UNDEF;
+	  pend[i].arg = p;
 	}
-	break;
-
-      case 'U':		/* JF #undef something */
-	if (argv[i][2] != 0)
-	  pend_undefs[i] = argv[i] + 2;
-	else if (i + 1 == argc)
-	  fatal ("Macro name missing after -U option");
-	else
-	  pend_undefs[i] = argv[i+1], i++;
 	break;
 
       case 'C':
@@ -701,10 +700,10 @@ main (argc, argv)
 
   /* Do defines specified with -D and undefines specified with -U.  */
   for (i = 1; i < argc; i++)
-    if (pend_defs[i])
-      make_definition ((const U_CHAR *)pend_defs[i]);
-    else if (pend_undefs[i])
-      make_undef ((U_CHAR *)pend_undefs[i]);
+    if (pend[i].type == PD_DEFINE)
+      make_definition ((const U_CHAR *) pend[i].arg);
+    else if (pend[i].type == PD_UNDEF)
+      make_undef ((U_CHAR *) pend[i].arg);
 
   /* Unless -fnostdinc,
      tack on the standard include file dirs to the specified list */
@@ -744,15 +743,20 @@ main (argc, argv)
 
   no_output++;
   for (i = 1; i < argc; i++)
-    if (pend_files[i]) {
-      int fd = open (pend_files[i], O_RDONLY, 0666);
-      if (fd < 0) {
-	perror_with_name (pend_files[i]);
-	return FATAL_EXIT_CODE;
+    if (pend[i].type == PD_FILE)
+      {
+	int fd = open (pend[i].arg, O_RDONLY, 0666);
+	if (fd < 0)
+	  {
+	    perror_with_name (pend[i].arg);
+	    return FATAL_EXIT_CODE;
+	  }
+	finclude (fd, pend[i].arg, &outbuf);
       }
-      finclude (fd, pend_files[i], &outbuf);
-    }
   no_output--;
+
+  /* Pending directives no longer needed.  */
+  free ((PTR) pend);
 
   /* Create an input stack level for the main input file
      and copy the entire contents of the file into it.  */
