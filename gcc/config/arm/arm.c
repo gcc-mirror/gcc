@@ -1476,6 +1476,181 @@ arm_return_in_memory (type)
   return 1;
 }
 
+/* Initialize a variable CUM of type CUMULATIVE_ARGS
+   for a call to a function whose data type is FNTYPE.
+   For a library call, FNTYPE is NULL.  */
+void
+arm_init_cumulative_args (pcum, fntype, libname, indirect)
+     CUMULATIVE_ARGS * pcum;
+     tree fntype;
+     rtx libname  ATTRIBUTE_UNUSED;
+     int indirect ATTRIBUTE_UNUSED;
+{
+  /* On the ARM, the offset starts at 0.  */
+  pcum->nregs = ((fntype && aggregate_value_p (TREE_TYPE (fntype)))
+		 ? 1 : 0);
+
+  pcum->call_cookie = CALL_NORMAL;
+
+  if (TARGET_LONG_CALLS)
+    pcum->call_cookie = CALL_LONG;
+    
+  /* Check for long call/short call attributes.  The attributes
+     override any command line option.  */
+  if (fntype)
+    {
+      if (lookup_attribute ("short_call", TYPE_ATTRIBUTES (fntype)))
+	pcum->call_cookie = CALL_SHORT;
+      else if (lookup_attribute ("long_call", TYPE_ATTRIBUTES (fntype)))
+	pcum->call_cookie = CALL_LONG;
+    }
+}
+
+/* Determine where to put an argument to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).  */
+rtx
+arm_function_arg (pcum, mode, type, named)
+     CUMULATIVE_ARGS * pcum;
+     enum machine_mode mode;
+     tree type ATTRIBUTE_UNUSED;
+     int named;
+{
+  if (mode == VOIDmode)
+    /* Compute operand 2 of the call insn.  */
+    return GEN_INT (pcum->call_cookie);
+  
+  if (! named || pcum->nregs >= NUM_ARG_REGS)
+    return NULL_RTX;
+  
+  return gen_rtx_REG (mode, pcum->nregs);
+}
+
+
+/* Return 1 if the operand is a SYMBOL_REF for a function known to be in
+   this file.  */
+static int
+current_file_function_operand (sym_ref)
+  rtx sym_ref;
+{
+  return (SYMBOL_REF_FLAG (sym_ref)
+	  || sym_ref == XEXP (DECL_RTL (current_function_decl), 0));
+}
+
+/* Return non-zero if a 32 bit "long call" should be generated for this
+   call.
+
+   We generate a long call if the function is not declared
+   __attribute__ ((short_call),
+
+   AND:
+   
+     (1)  the function is declared __attribute__ ((long_call))
+
+   OR
+
+     (2) -mlong-calls is enabled and we don't know whether the target
+         function is declared in this file.
+	 
+   This function will typically be called by C fragments in the machine
+   description file.  CALL_REF is the matched rtl operand.  CALL_COOKIE
+   describes the value of the long_call and short_call attributes for
+   the called functiion.  CALL_SYMBOL is used to distinguish between
+   two different callers of the function.  It is set to 1 in the "call_symbol"
+   and "call_symbol_value" patterns in arm.md and to 0 in the "call" and
+   "call_value" patterns.  This is because of the difference of SYM_REFs passed
+   from "call_symbol" and "call"  patterns.  */
+int
+arm_is_longcall_p (sym_ref, call_cookie, call_symbol)
+  rtx sym_ref;
+  int call_cookie;
+  int call_symbol;
+{
+  if (! call_symbol)
+    {
+      if (GET_CODE (sym_ref) != MEM)
+	return 0;
+
+      sym_ref = XEXP (sym_ref, 0);
+    }
+
+  if (GET_CODE (sym_ref) != SYMBOL_REF)
+    return 0;
+
+  if (call_cookie & CALL_SHORT)
+    return 0;
+
+  if (TARGET_LONG_CALLS && flag_function_sections)
+    return 1;
+  
+  if (current_file_function_operand (sym_ref, VOIDmode))
+    return 0;
+  
+  return (call_cookie & CALL_LONG) || TARGET_LONG_CALLS;
+}
+
+/* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
+   attribute for TYPE.  The attributes in ATTRIBUTES have previously been
+   assigned to TYPE.  */
+int
+arm_valid_type_attribute_p (type, attributes, identifier, args)
+     tree type;
+     tree attributes ATTRIBUTE_UNUSED;
+     tree identifier;
+     tree args;
+{
+  if (   TREE_CODE (type) != FUNCTION_TYPE
+      && TREE_CODE (type) != METHOD_TYPE
+      && TREE_CODE (type) != FIELD_DECL
+      && TREE_CODE (type) != TYPE_DECL)
+    return 0;
+
+  /* Function calls made to this symbol must be done indirectly, because
+     it may lie outside of the 26 bit addressing range of a normal function
+     call.  */
+  if (is_attribute_p ("long_call", identifier))
+    return (args == NULL_TREE);
+
+  /* Whereas these functions are always known to reside within the 26 bit
+     addressing range.  */
+  if (is_attribute_p ("short_call", identifier))
+    return (args == NULL_TREE);
+  
+  return 0;
+}
+
+/* Return 0 if the attributes for two types are incompatible, 1 if they
+   are compatible, and 2 if they are nearly compatible (which causes a
+   warning to be generated).  */
+int
+arm_comp_type_attributes (type1, type2)
+     tree type1;
+     tree type2;
+{
+  int l1, l2, s1, s2;
+  /* Check for mismatch of non-default calling convention.  */
+  if (TREE_CODE (type1) != FUNCTION_TYPE)
+    return 1;
+
+  /* Check for mismatched call attributes.  */
+  l1 = ! lookup_attribute ("long_call", TYPE_ATTRIBUTES (type1));
+  l2 = ! lookup_attribute ("long_call", TYPE_ATTRIBUTES (type2));
+  s1 = ! lookup_attribute ("short_call", TYPE_ATTRIBUTES (type1));
+  s2 = ! lookup_attribute ("short_call", TYPE_ATTRIBUTES (type2));
+
+  return ! ((l1 ^ l2) || (s1 ^s2) || (l1 | s2) || (s1 | l2));
+}
+
+
 int
 legitimate_pic_operand_p (x)
      rtx x;
@@ -1590,7 +1765,20 @@ legitimize_pic_address (orig, mode, reg)
       return gen_rtx_PLUS (Pmode, base, offset);
     }
   else if (GET_CODE (orig) == LABEL_REF)
-    current_function_uses_pic_offset_table = 1;
+    {
+      current_function_uses_pic_offset_table = 1;
+      
+      if (NEED_GOT_RELOC)
+        {
+          rtx pic_ref, address = gen_reg_rtx (Pmode);
+          
+          emit_insn (gen_pic_load_addr (address, orig));
+          pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, address);
+          
+          emit_move_insn (address, pic_ref);
+          return address;
+        }
+    }
 
   return orig;
 }

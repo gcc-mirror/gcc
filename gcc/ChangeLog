@@ -1,3 +1,12 @@
+2000-02-09  Philip Blundell  <pb@futuretv.com>
+
+        * config/arm/arm.c (legitimize_pic_address): Handle LABEL_REF
+        correctly.
+
+        * config/arm/arm.h (LEGITIMATE_CONSTANT_P): Allow anything when
+        generating PIC.
+        (LEGITIMATE_PIC_OPERAND): Disallow references to labels.
+
 2000-02-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.c (cpp_define, cpp_undef): Make sure the stacked buffer
