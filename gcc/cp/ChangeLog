@@ -1,3 +1,8 @@
+1999-05-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (start_static_storage_duration_function): Fix comment.
+	(finish_file): Create static storage duration functions lazily.
+
 Wed May 19 02:50:53 1999  Arvind Sankar <arvinds@mit.edu>
 
 	* gxxint.texi: Fix typo.

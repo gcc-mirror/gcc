@@ -3087,7 +3087,7 @@ start_static_storage_duration_function ()
   /* Start the function itself.  This is equivalent to declarating the
      function as:
 
-       static inline void __ssdf (int __initialize_p, init __priority_p);
+       static void __ssdf (int __initialize_p, init __priority_p);
        
      It is static because we only need to call this function from the
      various constructor and destructor functions for this module.  */
@@ -3572,15 +3572,9 @@ finish_file ()
 
   do 
     {
-      /* We need to start a new initialization function each time
-	 through the loop.  That's because we need to know which
-	 vtables have been referenced, and TREE_SYMBOL_REFERENCED
-	 isn't computed until a function is finished, and written out.
-	 That's a deficiency in the back-end.  When this is fixed,
-	 these initialization functions could all become inline, with
-	 resulting performance improvements.  */
-      start_static_storage_duration_function ();
-      push_to_top_level ();
+      /* Non-zero if we need a static storage duration function on
+	 this iteration through the loop.  */
+      int need_ssdf_p = 0;
 
       reconsider = 0;
 
@@ -3601,10 +3595,6 @@ finish_file ()
 			/*data=*/0))
 	reconsider = 1;
       
-      /* Come back to the static storage duration function; we're
-	 about to emit instructions there for static initializations
-	 and such.  */
-      pop_from_top_level ();
       /* The list of objects with static storage duration is built up
 	 in reverse order, so we reverse it here.  We also clear
 	 STATIC_AGGREGATES so that any new aggregates added during the
@@ -3616,6 +3606,20 @@ finish_file ()
 	{
 	  if (! TREE_ASM_WRITTEN (TREE_VALUE (vars)))
 	    rest_of_decl_compilation (TREE_VALUE (vars), 0, 1, 1);
+	  if (!need_ssdf_p)
+	    {
+	      /* We need to start a new initialization function each
+		 time through the loop.  That's because we need to
+		 know which vtables have been referenced, and
+		 TREE_SYMBOL_REFERENCED isn't computed until a
+		 function is finished, and written out.  That's a
+		 deficiency in the back-end.  When this is fixed,
+		 these initialization functions could all become
+		 inline, with resulting performance improvements.  */
+	      start_static_storage_duration_function ();
+	      need_ssdf_p = 1;
+	    }
+
 	  do_static_initialization_and_destruction (TREE_VALUE (vars), 
 						    TREE_PURPOSE (vars));
 	  reconsider = 1;
@@ -3624,7 +3628,8 @@ finish_file ()
       
       /* Finish up the static storage duration function for this
          round.  */
-      finish_static_storage_duration_function ();
+      if (need_ssdf_p)
+	finish_static_storage_duration_function ();
 
       /* Go through the various inline functions, and see if any need
 	 synthesizing.  */
