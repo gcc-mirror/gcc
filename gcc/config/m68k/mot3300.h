@@ -108,7 +108,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   { extern int current_function_returns_pointer;			\
     if ((current_function_returns_pointer) &&				\
       ! find_equiv_reg (0, get_last_insn (), 0, 0, 0, 8, Pmode))        \
-      asm_fprintf (FILE, "\tmov.l %Rd0,%Ra0\n"); } 
+      asm_fprintf (FILE, "\tmov.l %Ra0,%Rd0\n"); } 
 
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABEL_NO)	\
