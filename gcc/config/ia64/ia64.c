@@ -2313,6 +2313,8 @@ rws_access_reg (regno, flags, pred)
 
   if (flags.is_write)
     {
+      int write_count;
+
       /* One insn writes same reg multiple times?  */
       if (rws_insn[regno].write_count > 0)
 	abort ();
@@ -2328,7 +2330,12 @@ rws_access_reg (regno, flags, pred)
       if (is_predicate_reg)
 	rws_update (rws_insn, regno + 1, flags, pred);
 
-      switch (rws_sum[regno].write_count)
+      /* ??? Likewise.  */
+      write_count = rws_sum[regno].write_count;
+      if (is_predicate_reg)
+	write_count = MAX (write_count, rws_sum[regno + 1].write_count);
+
+      switch (write_count)
 	{
 	case 0:
 	  /* The register has not been written yet.  */

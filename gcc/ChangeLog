@@ -1,3 +1,8 @@
+2000-07-07  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.c (rws_access_reg): New local write_count.  If
+	is_predicate_reg, then take max write_count of register pair.
+
 2000-07-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tradcpp.c (main): Rename label `include' to `add_include' to
