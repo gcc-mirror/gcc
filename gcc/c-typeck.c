@@ -52,39 +52,38 @@ static int missing_braces_mentioned;
 /* 1 if we explained undeclared var errors.  */
 static int undeclared_variable_notice;
 
-static tree qualify_type		PARAMS ((tree, tree));
-static int comp_target_types		PARAMS ((tree, tree, int));
-static int function_types_compatible_p	PARAMS ((tree, tree));
-static int type_lists_compatible_p	PARAMS ((tree, tree));
-static tree decl_constant_value_for_broken_optimization PARAMS ((tree));
-static tree default_function_array_conversion	PARAMS ((tree));
-static tree lookup_field		PARAMS ((tree, tree));
-static void undeclared_variable		PARAMS ((tree));
-static tree convert_arguments		PARAMS ((tree, tree, tree, tree));
-static tree pointer_diff		PARAMS ((tree, tree));
-static tree unary_complex_lvalue	PARAMS ((enum tree_code, tree, int));
-static void pedantic_lvalue_warning	PARAMS ((enum tree_code));
-static tree internal_build_compound_expr PARAMS ((tree, int));
-static tree convert_for_assignment	PARAMS ((tree, tree, const char *,
-						 tree, tree, int));
-static void warn_for_assignment		PARAMS ((const char *, const char *,
-						 tree, int));
-static tree valid_compound_expr_initializer PARAMS ((tree, tree));
-static void push_string			PARAMS ((const char *));
-static void push_member_name		PARAMS ((tree));
-static void push_array_bounds		PARAMS ((int));
-static int spelling_length		PARAMS ((void));
-static char *print_spelling		PARAMS ((char *));
-static void warning_init		PARAMS ((const char *));
-static tree digest_init			PARAMS ((tree, tree, int));
-static void output_init_element		PARAMS ((tree, tree, tree, int));
-static void output_pending_init_elements PARAMS ((int));
-static int set_designator		PARAMS ((int));
-static void push_range_stack		PARAMS ((tree));
-static void add_pending_init		PARAMS ((tree, tree));
-static void set_nonincremental_init	PARAMS ((void));
-static void set_nonincremental_init_from_string	PARAMS ((tree));
-static tree find_init_member		PARAMS ((tree));
+static tree qualify_type (tree, tree);
+static int comp_target_types (tree, tree, int);
+static int function_types_compatible_p (tree, tree);
+static int type_lists_compatible_p (tree, tree);
+static tree decl_constant_value_for_broken_optimization (tree);
+static tree default_function_array_conversion (tree);
+static tree lookup_field (tree, tree);
+static void undeclared_variable (tree);
+static tree convert_arguments (tree, tree, tree, tree);
+static tree pointer_diff (tree, tree);
+static tree unary_complex_lvalue (enum tree_code, tree, int);
+static void pedantic_lvalue_warning (enum tree_code);
+static tree internal_build_compound_expr (tree, int);
+static tree convert_for_assignment (tree, tree, const char *, tree, tree,
+				    int);
+static void warn_for_assignment (const char *, const char *, tree, int);
+static tree valid_compound_expr_initializer (tree, tree);
+static void push_string (const char *);
+static void push_member_name (tree);
+static void push_array_bounds (int);
+static int spelling_length (void);
+static char *print_spelling (char *);
+static void warning_init (const char *);
+static tree digest_init (tree, tree, int);
+static void output_init_element (tree, tree, tree, int);
+static void output_pending_init_elements (int);
+static int set_designator (int);
+static void push_range_stack (tree);
+static void add_pending_init (tree, tree);
+static void set_nonincremental_init (void);
+static void set_nonincremental_init_from_string (tree);
+static tree find_init_member (tree);
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)  */
@@ -1859,7 +1858,8 @@ parser_build_binary_op (enum tree_code code, tree arg1, tree arg2)
    the arithmetic is to be done.  */
 
 tree
-build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1, int convert_p)
+build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
+		 int convert_p)
 {
   tree type0, type1;
   enum tree_code code0, code1;
@@ -3872,7 +3872,8 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
    PARMNUM is the number of the argument, for printing in error messages.  */
 
 static tree
-convert_for_assignment (tree type, tree rhs, const char *errtype, tree fundecl, tree funname, int parmnum)
+convert_for_assignment (tree type, tree rhs, const char *errtype,
+			tree fundecl, tree funname, int parmnum)
 {
   enum tree_code codel = TREE_CODE (type);
   tree rhstype;
@@ -4194,7 +4195,8 @@ c_convert_parm_for_inlining (tree parm, tree value, tree fn)
    Objective-C selector.  */
 
 static void
-warn_for_assignment (const char *msgid, const char *opname, tree function, int argnum)
+warn_for_assignment (const char *msgid, const char *opname, tree function,
+		     int argnum)
 {
   if (opname == 0)
     {
@@ -6703,7 +6705,8 @@ simple_asm_stmt (tree expr)
    STRING, some OUTPUTS, some INPUTS, and some CLOBBERS.  */
 
 tree
-build_asm_stmt (tree cv_qualifier, tree string, tree outputs, tree inputs, tree clobbers)
+build_asm_stmt (tree cv_qualifier, tree string, tree outputs, tree inputs,
+		tree clobbers)
 {
   tree tail;
 
