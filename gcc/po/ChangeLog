@@ -1,3 +1,8 @@
+2004-11-07  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* be.po, ca.po, da.po, de.po, el.po, es.po, fr.po, ja.po, nl.po,
+	sv.po, tr.po: Update.
+
 2004-11-04  Release Manager
 
 	* GCC 3.4.3 released.
