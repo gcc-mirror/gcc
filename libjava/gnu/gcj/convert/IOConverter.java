@@ -63,7 +63,9 @@ public abstract class IOConverter
     hash.put ("extended_unix_code_packed_format_for_japanese", "EUCJIS");
     hash.put ("cseucpkdfmtjapanese", "EUCJIS");
     hash.put ("euc-jp", "EUCJIS");
-
+    hash.put ("euc-jp", "EUCJIS");
+    hash.put ("utf-16le", "UnicodeLittle");
+    hash.put ("utf-16be", "UnicodeBig");
     iconv_byte_swap = iconv_init ();
   }
 
