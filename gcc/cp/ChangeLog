@@ -1,3 +1,9 @@
+Thu Mar 12 09:12:15 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* call.c (default_parm_conversions): Remove prototype definition.
+	(build_method_call): Remove unused variable result.
+	(build_over_call): Add default case in enumeration switch.
+
 Thu Mar 12 08:39:13 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* decl2.c (lang_decode_option): Change j's type to size_t.
