@@ -1333,7 +1333,7 @@ free_value_expr (temp_expr_table_p table, value_expr_p p)
 }
 
 
-/* Find VALUE if its in LIST.  Return a pointer to the list object if found,  
+/* Find VALUE if it's in LIST.  Return a pointer to the list object if found,  
    else return NULL.  If LAST_PTR is provided, it will point to the previous 
    item upon return, or NULL if this is the first item in the list.  */
 

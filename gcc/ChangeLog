@@ -1,3 +1,7 @@
+2004-11-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-outof-ssa.c: Fix a comment typo.
+
 2004-11-19  Ben Elliston  <bje@au.ibm.com>
 
 	* predict.h (predict_insn): Remove extern declaration.
