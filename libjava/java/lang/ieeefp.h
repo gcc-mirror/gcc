@@ -42,6 +42,7 @@
 #else
 #define __IEEE_BIG_ENDIAN
 #endif
+
 #ifdef __SH3E__
 #define _DOUBLE_IS_32BITS
 #endif
@@ -62,6 +63,7 @@
 #ifdef __MIPSEL__
 #define __IEEE_LITTLE_ENDIAN
 #endif
+
 #ifdef __MIPSEB__
 #define __IEEE_BIG_ENDIAN
 #endif
@@ -101,6 +103,23 @@
 #if (defined(_LITTLE_ENDIAN) && _LITTLE_ENDIAN) || (defined(__sun__) && __sun__) || (defined(__WIN32__) && __WIN32__)
 #define __IEEE_LITTLE_ENDIAN
 #endif
+#endif
+#endif
+
+#ifdef __fr30__
+#define __IEEE_BIG_ENDIAN
+#endif
+
+#ifdef __mcore__
+#define __IEEE_BIG_ENDIAN
+#endif
+
+
+#ifdef __ia64__
+#ifdef __BIG_ENDIAN__
+#define __IEEE_BIG_ENDIAN
+#else
+#define __IEEE_LITTLE_ENDIAN
 #endif
 #endif
 
