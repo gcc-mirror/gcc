@@ -1,3 +1,9 @@
+Tue May 19 15:16:22 1998  Brendan Kehoe  <brendan@cygnus.com>
+
+	* class.c (is_empty_class): Return 0 if TYPE is an error_mark_node.
+
+	* error.c (dump_expr): Handle an ARROW_EXPR.
+
 Tue May 19 15:13:39 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* decl.c (saveable_obstack): Declare.
