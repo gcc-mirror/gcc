@@ -1,3 +1,9 @@
+2003-06-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/11084
+	* config/mips/mips.c (mips_expand_prologue): Fix setting of regno
+	for the end of a variable argument list.
+
 2003-06-25  Josef Zlomek  <zlomekj@suse.cz>
 
 	* dwarf2out.c (gen_field_die): Return if type of decl is error mark.

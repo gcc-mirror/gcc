@@ -7455,20 +7455,7 @@ mips_expand_prologue ()
 	      break;
 	    }
 	  else
-	    {
-	      int words;
-
-	      if (GET_CODE (entry_parm) != REG)
-	        abort ();
-
-	      /* passed in a register, so will get homed automatically */
-	      if (GET_MODE (entry_parm) == BLKmode)
-		words = (int_size_in_bytes (passed_type) + 3) / 4;
-	      else
-		words = (GET_MODE_SIZE (GET_MODE (entry_parm)) + 3) / 4;
-
-	      regno = REGNO (entry_parm) + words - 1;
-	    }
+	    regno = GP_ARG_FIRST + args_so_far.num_gprs;
 	}
       else
 	{
