@@ -1033,8 +1033,8 @@ __floatdisf (DItype u)
       && DF_SIZE > (DI_SIZE - DF_SIZE + SF_SIZE))
     {
 #define REP_BIT ((USItype) 1 << (DI_SIZE - DF_SIZE))
-      if (! (- ((UDItype) 1 << DF_SIZE) < u
-	     && u < ((UDItype) 1 << DF_SIZE)))
+      if (! (- ((DItype) 1 << DF_SIZE) < u
+	     && u < ((DItype) 1 << DF_SIZE)))
 	{
 	  if ((USItype) u & (REP_BIT - 1))
 	    u |= REP_BIT;
