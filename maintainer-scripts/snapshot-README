@@ -23,8 +23,6 @@ You'll find:
 
   gcc-java-@DATE@.tar.gz             The Java front end.
 
-  gcc-chill-@DATE@.tar.gz            The Chill front end and runtime.
-
 Diffs from @LAST_DATE@ are available.
 
 Note at times you may find newer directories on the server with limited
