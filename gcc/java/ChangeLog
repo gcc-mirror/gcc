@@ -4,7 +4,7 @@ Wed May 17 17:27:44 2000  Andrew Cagney  <cagney@b1.cygnus.com>
  	set_Wunused.
 	* decl.c (poplevel): Replace warn_unused with warn_unused_label.
 
-2000-04-19  Tom Tromey  &lt;tromey@cygnus.com&gt;
+2000-05-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* check_init.c (check_init): Constify local char *.
 	* class.c (push_class): Constify local char *.
