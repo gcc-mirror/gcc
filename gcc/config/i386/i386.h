@@ -163,6 +163,8 @@ extern const int x86_use_loop, x86_use_fiop, x86_use_mov0;
 extern const int x86_use_cltd, x86_read_modify_write;
 extern const int x86_read_modify, x86_split_long_moves;
 extern const int x86_promote_QImode, x86_single_stringop;
+extern const int x86_himode_math, x86_qimode_math, x86_promote_qi_regs;
+extern const int x86_promote_hi_regs;
 
 #define TARGET_USE_LEAVE (x86_use_leave & CPUMASK)
 #define TARGET_PUSH_MEMORY (x86_push_memory & CPUMASK)
@@ -186,6 +188,10 @@ extern const int x86_promote_QImode, x86_single_stringop;
 #define TARGET_READ_MODIFY (x86_read_modify & CPUMASK)
 #define TARGET_PROMOTE_QImode (x86_promote_QImode & CPUMASK)
 #define TARGET_SINGLE_STRINGOP (x86_single_stringop & CPUMASK)
+#define TARGET_QIMODE_MATH (x86_qimode_math & CPUMASK)
+#define TARGET_HIMODE_MATH (x86_himode_math & CPUMASK)
+#define TARGET_PROMOTE_QI_REGS (x86_promote_qi_regs & CPUMASK)
+#define TARGET_PROMOTE_HI_REGS (x86_promote_hi_regs & CPUMASK)
 
 #define TARGET_STACK_PROBE (target_flags & MASK_STACK_PROBE)
 
@@ -1739,6 +1745,19 @@ while (0)
    (The 386 can't easily push less than an int.)  */
 
 #define PROMOTE_PROTOTYPES 1
+
+/* A macro to update M and UNSIGNEDP when an object whose type is
+   TYPE and which has the specified mode and signedness is to be
+   stored in a register.  This macro is only called when TYPE is a
+   scalar type.
+
+   On i386 it is sometimes usefull to promote HImode and QImode
+   quantities to SImode.  The choice depends on target type.  */
+
+#define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE) 		\
+  if (((MODE) == HImode && TARGET_PROMOTE_HI_REGS)	\
+      || ((MODE) == QImode && TARGET_PROMOTE_QI_REGS))	\
+    (MODE) = SImode;
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction

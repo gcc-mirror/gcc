@@ -1,3 +1,15 @@
+Thu Mar 16 17:03:10 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (all HI and QI mode non-move patterns):  Conditionize
+	by TARGET_[HQ]IMODE_MATH.
+	* i386.h (x86_himode_math, x86_qimode_math, x86_promote_hi_regs,
+	x86_promote_qi_regs): Declare.
+	(TARGET_HIMODE_MATH, TARGET_QIMODE_MATH, TARGET_PROMOTE_HI_REGS,
+	TARGET_PROMOTE_QI_REGS): New macros.
+	(PROMOTE_MODE): New macro.
+	* i386.c (x86_himode_math, x86_qimode_math, x86_promote_hi_regs,
+	x86_promote_qi_regs): New global variables.
+
 Thu Mar 16 16:50:44 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (emit_library_call_value_1): Break out from ...; handle
