@@ -6,10 +6,10 @@
 	.type	_init,@function
 _init:
 #ifdef __mips64
-	dsubu   $sp,$sp,48
+	daddu   $sp,$sp,-48
 	sd      $31,40($sp)
 #else
-	subu	$sp,$sp,32
+	addu	$sp,$sp,-32
 	sw	$31,20($sp)
 #endif
 
@@ -18,9 +18,9 @@ _init:
 	.type	_fini,@function
 _fini:
 #ifdef __mips64
-	dsubu   $sp,$sp,48
+	daddu   $sp,$sp,-48
 	sd      $31,40($sp)
 #else
-	subu	$sp,$sp,32
+	addu	$sp,$sp,-32
 	sw	$31,20($sp)
 #endif
