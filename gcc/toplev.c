@@ -176,8 +176,7 @@ static void decode_d_option PARAMS ((const char *));
 static int decode_f_option PARAMS ((const char *));
 static int decode_W_option PARAMS ((const char *));
 static int decode_g_option PARAMS ((const char *));
-static unsigned int independent_decode_option PARAMS ((int, char **,
-						       unsigned int));
+static unsigned int independent_decode_option PARAMS ((int, char **));
 
 static void print_version PARAMS ((FILE *, const char *));
 static int print_single_switch PARAMS ((FILE *, int, int, const char *,
@@ -4230,15 +4229,12 @@ ignoring option `%s' due to invalid debug level specification",
 }
 
 /* Decode the first argument in the argv as a language-independent option.
-   Return the number of strings consumed.  'strings_processed' is the
-   number of strings that have already been decoded in a language
-   specific fashion before this function was invoked.  */
+   Return the number of strings consumed.  */
 
 static unsigned int
-independent_decode_option (argc, argv, strings_processed)
+independent_decode_option (argc, argv)
      int argc;
      char **argv;
-     unsigned int strings_processed;
 {
   char *arg = argv[0];
 
@@ -4280,10 +4276,7 @@ independent_decode_option (argc, argv, strings_processed)
       return decode_f_option (arg + 1);
 
     case 'g':
-      if (strings_processed == 0)
-	return decode_g_option (arg + 1);
-      else
-	return strings_processed;
+      return decode_g_option (arg + 1);
 
     case 'd':
       if (!strcmp (arg, "dumpbase"))
@@ -4609,12 +4602,8 @@ main (argc, argv)
 
       /* Now see if the option also has a language independent meaning.
 	 Some options are both language specific and language independent,
-	 eg --help.  It is possible that there might be options that should
-	 only be decoded in a language independent way if they were not
-	 decoded in a language specific way, which is why 'lang_processed'
-	 is passed in.  */
-      indep_processed = independent_decode_option (argc - i, argv + i,
-						   lang_processed);
+	 eg --help.  */
+      indep_processed = independent_decode_option (argc - i, argv + i);
 
       if (lang_processed || indep_processed)
 	i += (lang_processed > indep_processed
