@@ -1,3 +1,31 @@
+Mon Oct 28 12:45:05 1996  Jeffrey A Law  (law@cygnus.com)
+
+	* typeck.c (signed_or_unsigned_type): If the given type already
+	as the correct signedness, then just return it.
+
+        * typeck.c ({un,}signed_type): If can't do anything, call
+        signed_or_unsigned_type.
+
+Thu Oct 24 14:21:59 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* decl2.c (copy_assignment_arg_p): Don't buy the farm if
+	current_class_type is NULL.
+
+Wed Oct 23 00:43:10 1996  Jason Merrill  <jason@gerbil.cygnus.com>
+
+	* class.c (finish_struct_1): Avoid empty structs by adding a field
+ 	so layout_type gets the mode right.
+
+	* typeck.c (c_expand_return): Drastically simplify.
+
+Mon Oct 21 22:34:02 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (decay_conversion): Handle overloaded methods.
+
+Fri Oct 18 16:03:48 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_over_call): A TARGET_EXPR has side-effects.
+
 Thu Oct 17 11:31:59 1996  Mike Stump  <mrs@cygnus.com>
 
 	* cvt.c (convert_to_pointer_force): Add code to support pointer to

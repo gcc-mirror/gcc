@@ -5099,7 +5099,9 @@ build_over_call (fn, convs, args, flags)
 	    {
 	      val = build (VAR_DECL, DECL_CONTEXT (fn));
 	      layout_decl (val, 0);
-	      return build (TARGET_EXPR, DECL_CONTEXT (fn), val, arg, 0, 0);
+	      val = build (TARGET_EXPR, DECL_CONTEXT (fn), val, arg, 0, 0);
+	      TREE_SIDE_EFFECTS (val) = 1;
+	      return val;
 	    }
 	}
       else if (! real_lvalue_p (arg)

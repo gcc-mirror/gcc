@@ -1672,6 +1672,9 @@ copy_assignment_arg_p (parmtype, virtualp)
      tree parmtype;
      int virtualp;
 {
+  if (current_class_type == NULL_TREE)
+    return 0;
+
   if (TREE_CODE (parmtype) == REFERENCE_TYPE)
     parmtype = TREE_TYPE (parmtype);
 
