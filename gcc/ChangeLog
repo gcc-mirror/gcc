@@ -1,5 +1,18 @@
 2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/v850/v850.c (TARGET_PROMOTE_PROTOTYPES): New.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(TARGET_RETURN_IN_MEMORY): Likewise.
+	(TARGET_SETUP_INCOMING_VARARGS): Likewise.
+	(v850_return_in_memory): Likewise.
+	(v850_setup_incoming_varargs): Likewise.
+	* config/v850/v850.h (PROMOTE_PROTOTYPES): Remove.
+	(SETUP_INCOMING_VARARGS): Likewise.
+	(RETURN_IN_MEMORY): Likewise.
+	(STRUCT_VALUE): Likewise.
+
+2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/fr30/fr30.c (TARGET_PROMOTE_PROTOTYPES): New.
 	(fr30_setup_incoming_varargs): Don't use
 	STRICT_ARGUMENT_NAMING.
