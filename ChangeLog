@@ -1,3 +1,8 @@
+2001-08-14  Zack Weinberg  <zackw@panix.com>
+
+	* config.sub: Merge from master sources, rev 1.218.
+	* config.guess: Merge from master sources, rev 1.209.
+
 2001-08-11  Graham Stott  <grahams@redhat.com>
 
 	* Makefile.in (check-c++): Add missing semicolon.
