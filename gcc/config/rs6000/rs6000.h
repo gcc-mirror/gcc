@@ -221,6 +221,7 @@ extern int target_flags;
   {"no-multiple",	MASK_MULTIPLE_SET},				\
   {"string",		MASK_STRING | MASK_STRING_SET},			\
   {"no-string",		- MASK_STRING},					\
+  {"no-string",		MASK_STRING_SET},				\
   SUBTARGET_SWITCHES							\
   {"",			TARGET_DEFAULT}}
 
