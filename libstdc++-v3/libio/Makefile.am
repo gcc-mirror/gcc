@@ -71,21 +71,21 @@ libio_headers = \
 
 if GLIBCPP_NEED_LIBIO
 LIBIO_SRCS = \
-	filedoalloc.c genops.c fileops.c stdfiles.c cleanup.c
+	filedoalloc.c genops.c fileops.c stdfiles.c cleanup.c c_codecvt.c
 else
 LIBIO_SRCS =
 endif
 
 if GLIBCPP_NEED_WLIBIO
 LIBIO_WSRCS = \
-	iofwide.c wfiledoalloc.c wfileops.c wgenops.c
+	wfiledoalloc.c wfileops.c wgenops.c
 else
 LIBIO_WSRCS =
 endif
 
 if GLIBCPP_NEED_XTRA_LIBIO
 LIBIO_XTRASRCS = \
-	iofclose.c iofopen.c stdio.c
+	iofwide.c iofclose.c iofopen.c stdio.c
 else
 LIBIO_XTRASRCS =
 endif

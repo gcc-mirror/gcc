@@ -783,7 +783,9 @@ _IO_unbuffer_write ()
   for (fp = (_IO_FILE *) _IO_list_all; fp; fp = fp->_chain)
     if (! (fp->_flags & _IO_UNBUFFERED)
 	&& (! (fp->_flags & _IO_NO_WRITES)
-	    || (fp->_flags & _IO_IS_APPENDING)))
+	    || (fp->_flags & _IO_IS_APPENDING))
+	/* Iff stream is un-orientated, it wasn't used. */
+	&& fp->_mode != 0)
       _IO_SETBUF (fp, NULL, 0);
 }
 

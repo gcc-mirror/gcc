@@ -1280,6 +1280,12 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   esac
   AC_LINK_FILES($CSTDIO_H, bits/c++io.h)
   AC_LINK_FILES($CSTDIO_CC, src/c++io.cc)
+
+  # 2000-08-04 bkoz hack
+  CCODECVT_C=config/c_io_libio_codecvt.c
+  AC_LINK_FILES($CCODECVT_C, libio/c_codecvt.c)
+  # 2000-08-04 bkoz hack
+	
   AM_CONDITIONAL(GLIBCPP_NEED_LIBIO, test "$need_libio" = yes)
   AM_CONDITIONAL(GLIBCPP_NEED_XTRA_LIBIO, test "$need_xtra_libio" = yes)
   AM_CONDITIONAL(GLIBCPP_NEED_WLIBIO, test "$need_wlibio" = yes)

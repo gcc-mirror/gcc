@@ -105,7 +105,7 @@ test03(void)
   double tf_size = BUFSIZ * 2.5;
   ofstream testfile(TEST_IN);
 
-  for ( int i=0; i < tf_size; ++i )
+  for (int i = 0; i < tf_size; ++i)
     testfile.put('.');
   testfile.close();
 

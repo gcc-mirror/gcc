@@ -36,7 +36,12 @@
 #include <fcntl.h> 		// Solaris needs for O_* macros
 
 namespace std {
-  
+
+  // Need to instantiate base class here for type-info bits, etc
+  template struct __basic_file_base<char>;
+  template struct __basic_file_base<wchar_t>;
+
+  // Generic definitions for __basic_file
   template<typename _CharT>
     int 
     __basic_file<_CharT>::get_fileno(void)
@@ -104,17 +109,17 @@ namespace std {
       int __rw_mode = _IO_NO_READS + _IO_NO_WRITES; 
       
       _M_open_mode(__mode, __p_mode, __rw_mode);
-      // _IO_file_attach 
-      //  sets _IO_DELETE_DONT_CLOSE
-      //  clears _IO_NO_READS + _IO_NO_WRITES
-      if (_IO_file_attach(this, __fd) != NULL)
+
+      if (!_IO_file_is_open(this))
 	{
-	  // Set flags appropriately for openmode...
+	  _fileno = __fd;
+	  _flags &= ~(_IO_NO_READS+_IO_NO_WRITES);
+	  _flags |= _IO_DELETE_DONT_CLOSE;
+	  _offset = _IO_pos_BAD;
 	  int __mask = _IO_NO_READS + _IO_NO_WRITES + _IO_IS_APPENDING;
 	  _IO_mask_flags(this, __rw_mode, __mask);
 	}
-      else
-	_IO_un_link((_IO_FILE_plus*) this);
+
       return __ret;
     }
   
@@ -147,34 +152,22 @@ namespace std {
     { 
       return _IO_file_close_it(this) ? static_cast<__basic_file*>(NULL) : this;
     }
-
-  // NB: Unused.
-  template<typename _CharT>
-    int 
-    __basic_file<_CharT>::uflow()  
-    { return _IO_default_uflow(this); }
-  
-  // NB: Unused.
-  template<typename _CharT>
-    int 
-    __basic_file<_CharT>::pbackfail(int __c) 
-    { return _IO_default_pbackfail(this, __c); }
-  
+ 
   template<typename _CharT>
     streamsize 
-    __basic_file<_CharT>::xsgetn(char* __s, streamsize __n)
+    __basic_file<_CharT>::xsgetn(_CharT* __s, streamsize __n)
     { return _IO_file_xsgetn(this, __s, __n); }
 
   // NB: Unused.
   template<typename _CharT>
     streamsize 
-    __basic_file<_CharT>::sys_read(char* __s, streamsize __n) 
+    __basic_file<_CharT>::sys_read(_CharT* __s, streamsize __n) 
     { return _IO_file_read(this, __s, __n); }
 
   // NB: Unused.    
   template<typename _CharT>
     streamsize 
-    __basic_file<_CharT>::sys_write(const char* __s, streamsize __n) 
+    __basic_file<_CharT>::sys_write(const _CharT* __s, streamsize __n) 
     { return _IO_file_write(this, __s, __n); }
 
   // NB: Unused.
@@ -211,7 +204,8 @@ namespace std {
 #ifdef _IO_MTSAFE_IO
     _lock = __lock;
 #endif
-    _IO_no_init(this, 0 /* ??? */, -1, 0, 0);
+    // Don't set the orientation of the stream when initializing.
+    _IO_no_init(this, 0, 0, &_M_wfile, 0);
     _IO_JUMPS(this) = &_IO_file_jumps;
     _IO_file_init((_IO_FILE_plus*)this);
   }
@@ -226,6 +220,16 @@ namespace std {
   __basic_file<char>::underflow()  
   { return _IO_file_underflow(this); }
 
+  // NB: Unused.
+  int 
+  __basic_file<char>::uflow()  
+  { return _IO_default_uflow(this); }
+
+  // NB: Unused.
+  int 
+  __basic_file<char>::pbackfail(int __c) 
+  { return _IO_default_pbackfail(this, __c); }
+ 
   streamsize 
   __basic_file<char>::xsputn(const char* __s, streamsize __n)
   { return _IO_file_xsputn(this, __s, __n); }
@@ -262,11 +266,32 @@ namespace std {
 #ifdef _IO_MTSAFE_IO
     _lock = __lock;
 #endif
-    // bkoz this should be -1
-    //    _IO_no_init(this, 0 /* ??? */, 1, 0, 0);
-    _IO_no_init(this, 0 /* ??? */, -1, 0, 0);
-    _IO_JUMPS(this) = &_IO_file_jumps;
+    // Don't set the orientation of the stream when initializing.
+    _IO_no_init(this, 0, 0, &_M_wfile, &_IO_wfile_jumps);
+    _IO_JUMPS(this) = &_IO_wfile_jumps;
     _IO_file_init((_IO_FILE_plus*)this);
+
+    // In addition, need to allocate the buffer...
+    _IO_wdoallocbuf(this);
+    // Setup initial positions for this buffer...
+    //    if (!(_flags & _IO_NO_READS))
+    _IO_wsetg(this, _wide_data->_IO_buf_base, _wide_data->_IO_buf_base,
+	      _wide_data->_IO_buf_base);
+    //    if (!(_flags & _IO_NO_WRITES))
+    _IO_wsetp(this, _wide_data->_IO_buf_base, _wide_data->_IO_buf_base);
+    
+    // Setup codecvt bits...
+    _wide_data->_codecvt = __c_libio_codecvt;
+    
+    // Do the same for narrow bits...
+    if (_IO_write_base == NULL)
+      {
+	_IO_doallocbuf(this);
+	//      if (!(_flags & _IO_NO_READS))
+	_IO_setg(this, _IO_buf_base, _IO_buf_base, _IO_buf_base);
+	//    if (!(_flags & _IO_NO_WRITES))
+	_IO_setp(this, _IO_buf_base, _IO_buf_base);
+      }
   }
 
  int 
@@ -277,8 +302,18 @@ namespace std {
   __basic_file<wchar_t>::underflow()  
   { return _IO_wfile_underflow(this); }
 
+  // NB: Unused.
+  int 
+  __basic_file<wchar_t>::uflow()  
+  { return _IO_wdefault_uflow(this); }
+
+  // NB: Unused.
+  int 
+  __basic_file<wchar_t>::pbackfail(int __c) 
+  { return _IO_wdefault_pbackfail(this, __c); }
+
   streamsize 
-  __basic_file<wchar_t>::xsputn(const char* __s, streamsize __n)
+  __basic_file<wchar_t>::xsputn(const wchar_t* __s, streamsize __n)
   { return _IO_wfile_xsputn(this, __s, __n); }
   
   streamoff

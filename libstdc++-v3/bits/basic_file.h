@@ -38,13 +38,82 @@
 #include <bits/std_ios.h>
 
 namespace std {
-  
+
+  // Ulrich is going to make some detailed comment here, explaining
+  // all this unpleasantness, providing detailed performance analysis
+  // as to why we have to do all this lame vtable hacking instead of a
+  // sane, function-based approach. This verbage will provide a clear
+  // and detailed description of the whole object-layout,
+  // vtable-swapping, sordid history of this hack.
+  template<typename _CharT>
+  struct __basic_file_base: public __c_file_type
+  {
+    virtual 
+    ~__basic_file_base() { };
+
+    virtual int 
+    overflow(int __c = EOF) = 0;
+
+    virtual int 
+    underflow() = 0;
+
+    virtual int 
+    uflow() = 0;
+
+    virtual int 
+    pbackfail(int __c) = 0;
+
+    virtual streamsize 
+    xsputn(const _CharT* __s, streamsize __n) = 0;
+
+    virtual streamsize 
+    xsgetn(_CharT* __s, streamsize __n) = 0;
+
+    virtual streamoff
+    seekoff(streamoff __off, ios_base::seekdir __way,
+	    ios_base::openmode __mode = ios_base::in | ios_base::out) = 0;
+
+    virtual streamoff
+    seekpos(streamoff __pos, 
+	    ios_base::openmode __mode = ios_base::in | ios_base::out) = 0;
+
+    virtual streambuf* 
+    setbuf(_CharT* __b, int __len) = 0;
+
+    virtual int 
+    sync() = 0;
+
+    virtual int 
+    doallocate() = 0;
+
+    virtual streamsize 
+    sys_read(_CharT* __s, streamsize __n) = 0;
+
+    virtual streamsize 
+    sys_write(const _CharT* __s, streamsize __n) = 0;
+
+    virtual streamoff
+    sys_seek(streamoff __off, ios_base::seekdir __way) = 0;
+
+    virtual int 
+    sys_close() = 0;
+
+    virtual int 
+    sys_stat(void* __v) = 0;
+
+    virtual int 
+    showmanyc() = 0;
+
+    virtual void 
+    imbue(void* __v) = 0;
+  };
+
   // Some of these member functions are based on libio/filebuf.cc.
   // Also note that the order and number of virtual functions has to precisely
   // match the order and number in the _IO_jump_t struct defined in libioP.h.
   template<typename _CharT>
 #if _GLIBCPP_BASIC_FILE_INHERITANCE
-    class __basic_file: public __c_file_type
+    class __basic_file: public __basic_file_base<_CharT>
 #else
     class __basic_file
 #endif
@@ -53,6 +122,7 @@ namespace std {
       int 		_M_fileno;
       __c_file_type* 	_M_cfile;
 #endif
+      __c_wfile_type	_M_wfile;
 
     public:
       __basic_file(__c_lock* __lock = 0);
@@ -104,13 +174,13 @@ namespace std {
       // ponters and associated data members correctly and manages it's
       // relation to the external byte sequence.
       virtual streamsize 
-      xsputn(const char* __s, streamsize __n);
+      xsputn(const _CharT* __s, streamsize __n);
 
       // A complex "read" function that sets all of __c_file_type's
       // ponters and associated data members correctly and manages it's
       // relation to the external byte sequence.
       virtual streamsize 
-      xsgetn(char* __s, streamsize __n);
+      xsgetn(_CharT* __s, streamsize __n);
 
       // A complex "seekoff" function that sets all of __c_file_type's
       // ponters and associated data members correctly and manages it's
@@ -139,13 +209,13 @@ namespace std {
       // does no mucking around with or setting of the pointers or flags
       // in __c_file_type.
       virtual streamsize 
-      sys_read(char* __s, streamsize __n);
+      sys_read(_CharT* __s, streamsize __n);
 
       // A simple write function for the external byte sequence, that
       // does no mucking around with or setting of the pointers or flags
       // in __c_file_type.
       virtual streamsize 
-      sys_write(const char* __s, streamsize __n);
+      sys_write(const _CharT* __s, streamsize __n);
 
       // A simple seek function for the external byte sequence, that
       // does no mucking around with or setting of the pointers or flags
@@ -177,6 +247,14 @@ namespace std {
   template<>
     int 
     __basic_file<char>::underflow();
+
+  template<>
+    int 
+    __basic_file<char>::uflow();
+
+  template<>
+    int 
+    __basic_file<char>::pbackfail(int __c);
 
   template<>
     streamsize 
@@ -217,8 +295,16 @@ namespace std {
     __basic_file<wchar_t>::underflow();
 
   template<>
+    int 
+    __basic_file<wchar_t>::uflow();
+
+  template<>
+    int 
+    __basic_file<wchar_t>::pbackfail(int __c);
+
+  template<>
     streamsize 
-    __basic_file<wchar_t>::xsputn(const char* __s, streamsize __n);
+    __basic_file<wchar_t>::xsputn(const wchar_t* __s, streamsize __n);
 
   template<>
     streamoff

@@ -1,14 +1,23 @@
-2000-07-12  benjamin kosnik  <bkoz@haight.constant.com>
+2000-08-04  benjamin kosnik  <bkoz@haight.constant.com>
+
+	* genops.c (_IO_unbuffer_write): Don't call _IO_SETBUF if the
+	stream is not orientated.
+
+2000-08-04  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* Makefile.am (LIBIO_SRCS): Add c_codecvt.c
+
+2000-07-12  benjamin kosnik  <bkoz@gnu.org>
 
 	* _G_config.h: Smoke less crack, don't define _G_HAVE_ST_BLKSIZE.
 
-2000-04-25  Benjamin Kosnik  <bkoz@haight.constant.com>
+2000-04-25  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* libio.h: Change decls for seekoff/seekpos.
 	* Makefile.am: Add bits to not generate _G_config.h on linux.
 	* gen-params: Remove sigset_t declaration.
 
-2000-02-29  Benjamin Kosnik  <bkoz@haight.constant.com>
+2000-02-29  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* Makefile.am (libio_headers): Strip out deadweight.
 

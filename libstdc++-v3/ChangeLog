@@ -1,3 +1,45 @@
+2000-08-09  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	Preliminary wchar_t implementation, with trivial encodings.
+	* docs/configopts.html: Add bits about canonical configure option
+	checking.
+
+	* testsuite/27_io/iostream_objects.cc: Replace this file (which
+	has newly-declared-illegal mixing of wide/narrow stdstreams) with...
+	* testsuite/27_io/narrow_stream_objects.cc: New file.
+	* testsuite/27_io/wide_stream_objects.cc: New file.
+
+	* bits/fstream.tcc (underflow): Temporarily hack a solution
+	together that writes from the external file to the internal
+	buffers. This removes codecvt from the loop, and is incorrect.
+	(_M_really_overflow): Same here.
+
+	* testsuite/21_strings/inserters_extractors.cc (test05): Tweaks.
+	
+2000-08-08  Benjamin Kosnik  <bkoz@cygnus.com>
+	    Ulrich Drepper  <drepper@cygnus.com>
+
+	* config/c_io_libio.h: Tweak.
+	* config/c_io_libio_codecvt.c: New file.
+	* libio/Makefile.am: Add c_codecvt.c.
+	* libio/Makefile.in: Regenerate.
+	* libio/genops.c (_IO_unbuffer_write): Don't call _IO_SETBUF if the
+	stream is not orientated.
+
+	* acinclude.m4: Add config/c_io_libio_codecvt.c dummy file, until
+	encoding gets fleshed out.
+
+	* bits/basic_file.h: Add specialization declarations.
+	* config/c_io_libio.cc: Add specializations for pbackfail, uflow.
+
+	* config/c_io_libio.h: Add __c_wfile_type.
+	* bits/basic_file.h: Add _M_wfile.
+
+	* config/c_io_libio.cc (__basic_file<char>): Initialize the
+	streams without setting the orientation of the underlying FILE to
+	either wide or narrow.
+	(__basic_file<wchar_t>)): Enable tricky wchar_t io bits.
+
 2000-08-07  Felix Natter  <fnatter@gmx.net>
 
 	* docs/17_intro/porting-howto.html:  New version.
