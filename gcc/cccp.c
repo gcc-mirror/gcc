@@ -7895,7 +7895,9 @@ macroexpand (hp, op)
 
     ip2->fname = 0;
     ip2->nominal_fname = 0;
-    ip2->lineno = 0;
+    /* This may not be exactly correct, but will give much better error
+       messages for nested macro calls than using a line number of zero.  */
+    ip2->lineno = start_line;
     ip2->buf = xbuf;
     ip2->length = xbuf_len;
     ip2->bufp = xbuf;
