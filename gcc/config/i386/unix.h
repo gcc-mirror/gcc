@@ -47,7 +47,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Output the size-letter for an opcode.
    CODE is the letter used in an operand spec (L, B, W, S or Q).
    CH is the corresponding lower case letter
-     (except if CODE is L then CH is `l').  */
+     (except if CODE is `Q' then CH is `l', unless GAS_MNEMONICS).  */
 #define PUT_OP_SIZE(CODE,CH,FILE) putc (CH,(FILE))
 
 /* Opcode suffix for fullword insn.  */
