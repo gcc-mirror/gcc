@@ -1,3 +1,8 @@
+2004-12-15  Kazuhiro Inaoka <inaoka.kazuhiro@reneasas.com>
+
+	* config/m32r/m32r.h (PREFERRED_DEBUGGING_TYPE):
+	Use DWARF2_DEBUG.
+
 2004-12-15  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_arg_info): Use FUNCTION_ARG_BOUNDARY to

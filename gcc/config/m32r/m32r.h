@@ -1696,9 +1696,9 @@ extern char m32r_punct_chars[256];
 #define DBX_DEBUGGING_INFO    1
 #define DWARF2_DEBUGGING_INFO 1
 
-/* Prefer STABS (for now).  */
+/* Use DWARF2 debugging info by default.  */
 #undef  PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* Turn off splitting of long stabs.  */
 #define DBX_CONTIN_LENGTH 0
