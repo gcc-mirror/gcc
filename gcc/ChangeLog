@@ -1,3 +1,7 @@
+2002-09-23  Dale Johannesen  <dalej@apple.com>
+	* dbxout.c (dbxout_parms):  Set current_sym_code for params
+	passed on stack by invisible reference.
+
 2002-09-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/unknown-elf.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Always allocate
