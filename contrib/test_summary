@@ -1,6 +1,7 @@
 #! /bin/sh
 
-# (C) 1998 Alexandre Oliva <oliva@dcc.unicamp.br>
+# (C) 1998 Free Software Foundation
+# Originally by Alexandre Oliva <oliva@dcc.unicamp.br>
 
 # This script is Free Software, and it can be copied, distributed and
 # modified as defined in the GNU General Public License.  A copy of
