@@ -1,5 +1,8 @@
 Sat Mar 28 14:37:20 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* genpeep.c (main): Remove unused variable 'i' from the generated
+	file.
+
 	* genemit.c (gen_expand): Do not emit "_done" or "_fail" labels.
 	(gen_split): Likewise.
 	(main): Rework generated definitions of DONE and FAIL so that they
