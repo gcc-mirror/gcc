@@ -75,7 +75,12 @@ extern int target_flags;
    that Alpha implementations without FP operations are required to
    provide the FP registers.  */
 
-#define TARGET_FPREGS (target_flags & 2)
+#define TARGET_FPREGS	(target_flags & 2)
+
+/* This means that gas is used to process the assembler file.  */
+
+#define MASK_GAS 4
+#define TARGET_GAS	(target_flags & MASK_GAS)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -88,6 +93,8 @@ extern int target_flags;
     {"soft-float", -1},			\
     {"fp-regs", 2},			\
     {"no-fp-regs", -3},			\
+    {"alpha-as", -MASK_GAS},		\
+    {"gas", MASK_GAS},			\
     {"", TARGET_DEFAULT} }
 
 #define TARGET_DEFAULT 3
@@ -838,18 +845,12 @@ extern struct rtx_def *alpha_compare_op0, *alpha_compare_op1;
 extern int alpha_compare_fp_p;
 
 /* This macro produces the initial definition of a function name.  On the
-   Alpha, we need to save the function name for the epilogue.  */
+   Alpha, we need to save the function name for the prologue and epilogue.  */
 
 extern char *alpha_function_name;
 
 #define ASM_DECLARE_FUNCTION_NAME(FILE,NAME,DECL)	\
- { int _level;						\
-   tree _context;					\
-   for (_level = -1, _context = (DECL); _context;	\
-	_context = DECL_CONTEXT (_context), _level++) \
-     ;							\
-   fprintf (FILE, "\t.ent %s %d\n", NAME, _level);	\
-   ASM_OUTPUT_LABEL (FILE, NAME);			\
+{							\
    alpha_function_name = NAME;				\
 }
    
@@ -1241,17 +1242,6 @@ extern char *current_function_name;
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND
 
-/* We aren't doing ANYTHING about debugging for now.  */
-/* #define SDB_DEBUGGING_INFO */
-
-/* Do not break .stabs pseudos into continuations.  */
-#define DBX_CONTIN_LENGTH 0
-
-/* Don't try to use the `x' type-cross-reference character in DBX data.
-   Also has the consequence of putting each struct, union or enum
-   into a separate .stabs, containing only cross-refs to the others.  */
-#define DBX_NO_XREFS
-
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
@@ -1354,17 +1344,11 @@ extern char *current_function_name;
 /* Output at beginning of assembler file.  */
 
 #define ASM_FILE_START(FILE)					\
-{ char *p, *after_dir = main_input_filename;			\
-								\
+{								\
   alpha_write_verstamp (FILE);					\
   fprintf (FILE, "\t.set noreorder\n");				\
   fprintf (FILE, "\t.set noat\n");				\
-  for (p = main_input_filename; *p; p++)			\
-    if (*p == '/')						\
-      after_dir = p + 1;					\
-  fprintf (FILE, "\n\t.file 2 ");			        \
-  output_quoted_string (FILE, after_dir);		        \
-  fprintf (FILE, "\n");					        \
+  ASM_OUTPUT_SOURCE_FILENAME (FILE, main_input_filename);	\
 }
 
 /* Output to assembler file text saying following lines
@@ -1730,3 +1714,160 @@ literal_section ()						\
   {"aligned_memory_operand", {MEM}},			\
   {"unaligned_memory_operand", {MEM}},			\
   {"any_memory_operand", {MEM}},
+
+/* Definitions for debugging.  */
+
+#define SDB_DEBUGGING_INFO		/* generate info for mips-tfile */
+#define DBX_DEBUGGING_INFO		/* generate embedded stabs */
+#define MIPS_DEBUGGING_INFO		/* MIPS specific debugging info */
+
+#ifndef PREFERRED_DEBUGGING_TYPE	/* assume SDB_DEBUGGING_INFO */
+#define PREFERRED_DEBUGGING_TYPE ((len > 1 && !strncmp (str, "ggdb", len)) ? DBX_DEBUG : SDB_DEBUG)
+#endif
+
+
+/* Correct the offset of automatic variables and arguments.  Note that
+   the Alpha debug format wants all automatic variables and arguments
+   to be in terms of two different offsets from the virtual frame pointer,
+   which is the stack pointer before any adjustment in the function.
+   The offset for the argument pointer is fixed for the native compiler,
+   it is either zero (for the no arguments case) or large enough to hold
+   all argument registers.
+   The offset for the auto pointer is the fourth argument to the .frame
+   directive (local_offset).
+   To stay compatible with the native tools we use the same offsets
+   from the virtual frame pointer and adjust the debugger arg/auto offsets
+   accordingly. These debugger offsets are set up in output_prolog.  */
+
+long alpha_arg_offset;
+long alpha_auto_offset;
+#define DEBUGGER_AUTO_OFFSET(X) \
+  ((GET_CODE (X) == PLUS ? INTVAL (XEXP (X, 1)) : 0) + alpha_auto_offset)
+#define DEBUGGER_ARG_OFFSET(OFFSET, X) (OFFSET + alpha_arg_offset)
+
+
+#define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE)				\
+  alpha_output_lineno (STREAM, LINE)
+extern void alpha_output_lineno ();
+
+#define ASM_OUTPUT_SOURCE_FILENAME(STREAM, NAME)			\
+  alpha_output_filename (STREAM, NAME)
+extern void alpha_output_filename ();
+
+
+/* Do not break .stabs pseudos into continuations.  */
+#define DBX_CONTIN_LENGTH 0
+
+/* By default, turn on GDB extensions.  */
+#define DEFAULT_GDB_EXTENSIONS 1
+
+/* If we are smuggling stabs through the ALPHA ECOFF object
+   format, put a comment in front of the .stab<x> operation so
+   that the ALPHA assembler does not choke.  The mips-tfile program
+   will correctly put the stab into the object file.  */
+
+#define ASM_STABS_OP	((TARGET_GAS) ? ".stabs" : " #.stabs")
+#define ASM_STABN_OP	((TARGET_GAS) ? ".stabn" : " #.stabn")
+#define ASM_STABD_OP	((TARGET_GAS) ? ".stabd" : " #.stabd")
+
+/* Forward references to tags are allowed.  */
+#define SDB_ALLOW_FORWARD_REFERENCES
+
+/* Unknown tags are also allowed.  */
+#define SDB_ALLOW_UNKNOWN_REFERENCES
+
+#define PUT_SDB_DEF(a)					\
+do {							\
+  fprintf (asm_out_file, "\t%s.def\t",			\
+	   (TARGET_GAS) ? "" : "#");			\
+  ASM_OUTPUT_LABELREF (asm_out_file, a); 		\
+  fputc (';', asm_out_file);				\
+} while (0)
+
+#define PUT_SDB_PLAIN_DEF(a)				\
+do {							\
+  fprintf (asm_out_file, "\t%s.def\t.%s;",		\
+	   (TARGET_GAS) ? "" : "#", (a));		\
+} while (0)
+
+#define PUT_SDB_TYPE(a)					\
+do {							\
+  fprintf (asm_out_file, "\t.type\t0x%x;", (a));	\
+} while (0)
+
+/* For block start and end, we create labels, so that
+   later we can figure out where the correct offset is.
+   The normal .ent/.end serve well enough for functions,
+   so those are just commented out.  */
+
+extern int sdb_label_count;		/* block start/end next label # */
+
+#define PUT_SDB_BLOCK_START(LINE)			\
+do {							\
+  fprintf (asm_out_file,				\
+	   "$Lb%d:\n\t%s.begin\t$Lb%d\t%d\n",		\
+	   sdb_label_count,				\
+	   (TARGET_GAS) ? "" : "#",			\
+	   sdb_label_count,				\
+	   (LINE));					\
+  sdb_label_count++;					\
+} while (0)
+
+#define PUT_SDB_BLOCK_END(LINE)				\
+do {							\
+  fprintf (asm_out_file,				\
+	   "$Le%d:\n\t%s.bend\t$Le%d\t%d\n",		\
+	   sdb_label_count,				\
+	   (TARGET_GAS) ? "" : "#",			\
+	   sdb_label_count,				\
+	   (LINE));					\
+  sdb_label_count++;					\
+} while (0)
+
+#define PUT_SDB_FUNCTION_START(LINE)
+
+#define PUT_SDB_FUNCTION_END(LINE)
+
+#define PUT_SDB_EPILOGUE_END(NAME)
+
+/* Specify to run a post-processor, mips-tfile after the assembler
+   has run to stuff the ecoff debug information into the object file.
+   This is needed because the Alpha assembler provides no way
+   of specifying such information in the assembly file.  */
+
+#if (TARGET_DEFAULT & MASK_GAS) != 0
+
+#define ASM_FINAL_SPEC "\
+%{malpha-as: %{!mno-mips-tfile: \
+	\n mips-tfile %{v*: -v} \
+		%{K: -I %b.o~} \
+		%{!K: %{save-temps: -I %b.o~}} \
+		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
+		%{.s:%i} %{!.s:%g.s}}}"
+
+#else
+#define ASM_FINAL_SPEC "\
+%{!mgas: %{!mno-mips-tfile: \
+	\n mips-tfile %{v*: -v} \
+		%{K: -I %b.o~} \
+		%{!K: %{save-temps: -I %b.o~}} \
+		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
+		%{.s:%i} %{!.s:%g.s}}}"
+
+#endif
+
+/* Macros for mips-tfile.c to encapsulate stabs in ECOFF, and for
+   mips-tdump.c to print them out.
+
+   These must match the corresponding definitions in gdb/mipsread.c.
+   Unfortunately, gcc and gdb do not currently share any directories. */
+
+#define CODE_MASK 0x8F300
+#define MIPS_IS_STAB(sym) (((sym)->index & 0xFFF00) == CODE_MASK)
+#define MIPS_MARK_STAB(code) ((code)+CODE_MASK)
+#define MIPS_UNMARK_STAB(code) ((code)-CODE_MASK)
+
+/* Override some mips-tfile definitions.  */
+
+#define SHASH_SIZE 511
+#define THASH_SIZE 55
