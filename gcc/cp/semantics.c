@@ -936,10 +936,14 @@ begin_compound_stmt (has_no_scope)
      variables __FUNCTION__, __PRETTY_FUNCTION__, and so forth.  */
   if (current_function
       && !current_function_name_declared 
-      && !processing_template_decl
       && !has_no_scope)
     {
+      /* When we get callbacks from the middle-end, we need to know
+	 we're in the midst of declaring these variables.  */
+      current_function_name_declared = 2;
+      /* Actually insert the declarations.  */
       declare_function_name ();
+      /* And now just remember that we're all done.  */
       current_function_name_declared = 1;
     }
 
@@ -1187,6 +1191,7 @@ setup_vtbl_ptr ()
       tree binfo = TYPE_BINFO (current_class_type);
       tree if_stmt;
       tree compound_stmt;
+      int saved_cfnd;
 
       /* If the dtor is empty, and we know there is not possible way we
 	 could use any vtable entries, before they are possibly set by
@@ -1202,11 +1207,17 @@ setup_vtbl_ptr ()
       /* If it is not safe to avoid setting up the vtables, then
 	 someone will change the condition to be boolean_true_node.  
          (Actually, for now, we do not have code to set the condition
-	 appropriate, so we just assume that we always need to
+	 appropriately, so we just assume that we always need to
 	 initialize the vtables.)  */
       finish_if_stmt_cond (boolean_true_node, if_stmt);
       current_vcalls_possible_p = &IF_COND (if_stmt);
+
+      /* Don't declare __PRETTY_FUNCTION__ and friends here when we
+	 open the block for the if-body.  */
+      saved_cfnd = current_function_name_declared;
+      current_function_name_declared = 1;
       compound_stmt = begin_compound_stmt (/*has_no_scope=*/0);
+      current_function_name_declared = saved_cfnd;
 
       /* Make all virtual function table pointers in non-virtual base
 	 classes point to CURRENT_CLASS_TYPE's virtual function

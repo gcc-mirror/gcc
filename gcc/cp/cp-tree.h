@@ -789,8 +789,9 @@ struct language_function
 #define current_function_parms_stored \
   cp_function_chain->parms_stored
 
-/* Non-zero if we have already declared __FUNCTION__ (and related
-   variables) in the current function.  */
+/* One if we have already declared __FUNCTION__ (and related
+   variables) in the current function.  Two if we are in the process
+   of doing so.  */
 
 #define current_function_name_declared \
   cp_function_chain->name_declared
@@ -1607,7 +1608,8 @@ struct lang_decl_flags
   unsigned pending_inline_p : 1;
   unsigned global_ctor_p : 1;
   unsigned global_dtor_p : 1;
-  unsigned dummy : 3;
+  unsigned pretty_function_p : 1;
+  unsigned dummy : 2;
 
   tree context;
 
@@ -1765,6 +1767,11 @@ struct lang_decl
 /* Nonzero for FUNCTION_DECL means that this member function
    must be overridden by derived classes.  */
 #define DECL_NEEDS_FINAL_OVERRIDER_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.needs_final_overrider)
+
+/* Nonzero if this DECL is the __PRETTY_FUNCTION__ variable in a
+   template function.  */
+#define DECL_PRETTY_FUNCTION_P(NODE) \
+  (DECL_LANG_SPECIFIC(NODE)->decl_flags.pretty_function_p)
 
 /* The _TYPE context in which this _DECL appears.  This field holds the
    class where a virtual function instance is actually defined, and the

@@ -1112,7 +1112,7 @@ dump_function_decl (t, flags)
     t = DECL_TEMPLATE_RESULT (t);
 
   /* Pretty print template instantiations only.  */
-  if (DECL_TEMPLATE_INSTANTIATION (t))
+  if (DECL_USE_TEMPLATE (t) && DECL_TEMPLATE_INFO (t))
     {
       template_args = DECL_TI_ARGS (t);
       t = most_general_template (t);
