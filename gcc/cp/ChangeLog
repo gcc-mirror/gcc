@@ -1,3 +1,8 @@
+2001-07-31  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (dfs_ctor_vtable_bases_queue_p): Always walk into
+	the shared virtual base, so preserving inheritance graph order.
+
 2001-07-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (mark_primary_virtual_base): Don't adjust base

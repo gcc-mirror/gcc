@@ -7487,24 +7487,19 @@ dfs_build_secondary_vptr_vtt_inits (binfo, data)
 }
 
 /* dfs_walk_real predicate for building vtables. DATA is a TREE_LIST,
-   TREE_UNSIGNED indicates that a constructor vtable is being built.
-   TREE_USED indicates whether marked or unmarked bases should be walked.
-   TREE_PURPOSE is the TREE_TYPE that dominates the hierarchy.  */
+   VTT_MARKED_BINFO_P indicates whether marked or unmarked bases
+   should be walked.  TREE_PURPOSE is the TREE_TYPE that dominates the
+   hierarchy.  */
 
 static tree
 dfs_ctor_vtable_bases_queue_p (binfo, data)
      tree binfo;
      void *data;
 {
-  if (TREE_VIA_VIRTUAL (binfo) && !BINFO_PRIMARY_P (binfo))
-    {
-      tree type = TREE_PURPOSE ((tree) data);
+  if (TREE_VIA_VIRTUAL (binfo))
+     /* Get the shared version.  */
+    binfo = binfo_for_vbase (BINFO_TYPE (binfo), TREE_PURPOSE ((tree) data));
 
-      /* This is a non-primary virtual base, get the shared version.  */
-      binfo = binfo_for_vbase (BINFO_TYPE (binfo), type);
-      if (VTT_TOP_LEVEL_P ((tree) data) && BINFO_PRIMARY_P (binfo))
-        return NULL_TREE;
-    }
   if (!BINFO_MARKED (binfo) == VTT_MARKED_BINFO_P ((tree) data))
     return NULL_TREE;
   return binfo;
