@@ -1,3 +1,7 @@
+Wed Mar 15 14:28:54 2000  Jason Eckhardt  <jle@cygnus.com>
+
+	* flow.c (verify_flow_info): Check for unconditional return.
+
 Wed Mar 15 11:34:27 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.md (restore_stack_nonlocal): New.
