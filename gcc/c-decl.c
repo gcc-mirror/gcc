@@ -5154,9 +5154,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	    if (! strcmp (IDENTIFIER_POINTER (declarator), "main"))
 	      warning ("cannot inline function `main'");
-	    else if (last && (TYPE_MAIN_VARIANT (TREE_VALUE (last))
-			      != void_type_node))
-	      warning ("inline declaration ignored for function with `...'");
 	    else
 	      /* Assume that otherwise the function can be inlined.  */
 	      DECL_INLINE (decl) = 1;
