@@ -2340,7 +2340,8 @@ $(docdir)/gcov.1: $(docdir)/gcov.texi
 		(rm -f $(docdir)/gcov.1.T$$$$ && exit 1)
 	-rm -f gcov.pod
 
-$(docdir)/cpp.1: $(docdir)/cpp.texi
+$(docdir)/cpp.1: $(docdir)/cpp.texi $(docdir)/cppenv.texi \
+  $(docdir)/cppopts.texi
 	$(STAMP) $(docdir)/cpp.1
 	-$(TEXI2POD) < $(docdir)/cpp.texi > cpp.pod
 	-($(POD2MAN) --section=1 cpp.pod > $(docdir)/cpp.1.T$$$$ && \
@@ -2348,7 +2349,8 @@ $(docdir)/cpp.1: $(docdir)/cpp.texi
 		(rm -f $(docdir)/cpp.1.T$$$$ && exit 1)
 	-rm -f cpp.pod
 
-$(docdir)/gcc.1: $(docdir)/invoke.texi
+$(docdir)/gcc.1: $(docdir)/invoke.texi $(docdir)/cppenv.texi \
+  $(docdir)/cppopts.texi
 	$(STAMP) $(docdir)/gcc.1
 	-$(TEXI2POD) < $(docdir)/invoke.texi > gcc.pod
 	-($(POD2MAN) --section=1 gcc.pod > $(docdir)/gcc.1.T$$$$ && \
