@@ -708,7 +708,7 @@ namespace std
     {
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (__cerb) 
+      if (__cerb && __n > 0) 
 	{
 	  try 
 	    {

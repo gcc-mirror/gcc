@@ -1,5 +1,12 @@
 2002-07-25  Benjamin Kosnik  <bkoz@redhat.com>
 
+	PR libstdc++/7220
+	* include/bits/istream.tcc (istream::ignore): Don't extract on
+	zero.
+	* testsuite/27_io/istream_unformatted.cc (test10): Add.
+	
+2002-07-25  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* testsuite/27_io/ios_base_type.cc: Move to...
 	* testsuite/27_io/ios_base_types.cc: ...here.
 	
