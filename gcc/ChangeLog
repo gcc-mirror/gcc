@@ -1,3 +1,8 @@
+Sun Feb 13 12:57:52 2000  Neil Booth <NeilB@earthling.net>
+
+	* prefix.c (concat, lookup_key): Use xmalloc and xrealloc
+	consistently.
+
 2000-02-13  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* flow.c (flow_loop_tree_node_add): Use better algorithm by passing
