@@ -494,7 +494,7 @@ toc_section ()								\
     }									\
 }									\
 									\
-extern int in_toc_section PARAMS ((void));				\
+extern int in_toc_section (void);					\
 int in_toc_section ()							\
 {									\
   return in_section == in_toc;						\
