@@ -584,7 +584,7 @@ Here are the possible CPU types:
 @quotation
 @c gmicro, alliant, spur and tahoe omitted since they don't work.
 1750a, a29k, alpha, arm, c@var{n}, clipper, dsp16xx, elxsi, h8300,
-hppa1.0, hppa1.1, i370, i386, i486, i586, i860, i960, m68000, m68k,
+hppa1.0, hppa1.1, i370, i386, i486, i586, i860, i960, m32r, m68000, m68k,
 m88k, mips, mipsel, mips64, mips64el, ns32k, powerpc, powerpcle,
 pyramid, romp, rs6000, sh, sparc, sparclite, sparc64, vax, we32k.
 @end quotation
@@ -1019,6 +1019,9 @@ You can tell GNU CC to use the GNU assembler and linker, by specifying
 COFF format object files and executables;  otherwise GNU CC will use the
 installed tools, which produce a.out format executables.
 
+@item m32r-*-elf
+Embedded M32R system.
+
 @item m68000-hp-bsd
 HP 9000 series 200 running BSD.  Note that the C compiler that comes
 with this system cannot compile GNU CC; contact @code{law@@cs.utah.edu}
@@ -1444,7 +1447,6 @@ problem, compile just the GNU C compiler first, and use it to recompile
 building all the languages that you want to run.
 
 @item sparc-sun-*
-@item sparc64-sun-*
 See @ref{Sun Install}, for information on installing GNU CC on Sun
 systems.
 
