@@ -1,10 +1,9 @@
 # ??? If no mabi=X option given, but a mipsX option is, then should deal
 # with that.
-# ??? mabi=32 is deliberately left off the list because it doesn't work yet.
-MULTILIB_OPTIONS=mabi=n32/mabi=64
+MULTILIB_OPTIONS=mabi=32/mabi=n32/mabi=64
 MULTILIB_DIRNAMES=
 MULTILIB_MATCHES=
-MULTILIB_OSDIRNAMES=. mabi=64
+MULTILIB_OSDIRNAMES=mabi=32 . mabi=64
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
