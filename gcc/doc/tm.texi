@@ -801,7 +801,7 @@ extern char *m88k_short_data;
      N_("Specify the size of the short data section"), 0 @} @}
 @end smallexample
 
-Here is an variant of the above that allows the user to also specify
+Here is a variant of the above that allows the user to also specify
 just @option{-mshort-data} where a default of @code{"64"} is used.
 
 @smallexample

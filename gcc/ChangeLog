@@ -1,5 +1,11 @@
 2003-06-23  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/extend.texi: Fix typos.
+	* doc/md.texi: Likewise.
+	* doc/tm.texi: Likewise.
+
+2003-06-23  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* basic-block.h: Fix comment formatting.
 	* bt-load.c: Likewise.
 	* builtins.c: Likewise.
