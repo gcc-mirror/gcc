@@ -392,6 +392,8 @@ extern enum processor_type rs6000_cpu;
    {"tune=", &rs6000_select[2].string,					\
     N_("Schedule code for given CPU") },				\
    {"debug=", &rs6000_debug_name, N_("Enable debug output") },		\
+   {"traceback=", &rs6000_traceback_name,				\
+    N_("Select full, part, or no traceback table") },			\
    {"abi=", &rs6000_abi_string, N_("Specify ABI to use") },		\
    {"long-double-", &rs6000_long_double_size_string,			\
     N_("Specify size of long double (64 or 128 bits)") },		\
@@ -424,6 +426,8 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 
 #define	TARGET_DEBUG_STACK	rs6000_debug_stack
 #define	TARGET_DEBUG_ARG	rs6000_debug_arg
+
+extern const char *rs6000_traceback_name; /* Type of traceback table.  */
 
 /* These are separate from target_flags because we've run out of bits
    there.  */
