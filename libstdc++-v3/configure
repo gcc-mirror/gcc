@@ -19349,10 +19349,42 @@ glibcpp_min_gnu_ld_version=21200
 # above.  
 if test $enable_symvers = yes ; then
   if test $with_gnu_ld = yes &&
-    test $glibcpp_gnu_ld_version -ge $glibcpp_min_gnu_ld_version &&
     test $glibcpp_shared_libgcc = yes ;
   then
-    enable_symvers=gnu
+    if test $glibcpp_gnu_ld_version -ge $glibcpp_min_gnu_ld_version ; then
+        enable_symvers=gnu
+    else
+      ac_test_CFLAGS="${CFLAGS+set}"
+      ac_save_CFLAGS="$CFLAGS"
+      CFLAGS='-shared -Wl,--version-script,conftest.map'
+      enable_symvers=no
+      
+      echo 'FOO { global: f[a-z]o; local: *; };' > conftest.map
+      
+      cat > conftest.$ac_ext <<EOF
+#line 19344 "configure"
+#include "confdefs.h"
+int foo;
+int main() {
+
+; return 0; }
+EOF
+if { (eval echo configure:19351: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  enable_symvers=gnu
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+fi
+rm -f conftest*
+      if test "$ac_test_CFLAGS" = set; then
+	CFLAGS="$ac_save_CFLAGS"
+      else
+	# this is the suspicious part
+	CFLAGS=''
+      fi
+      rm -f conftest.map
+    fi
   else
     # just fail for now
     enable_symvers=no
