@@ -1,5 +1,10 @@
 2004-02-03  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/14002
+	* g++.dg/parse/template13.C: New test.
+
+2004-02-03  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/13978
 	* g++.dg/template/koenig4.C: New test.
 
