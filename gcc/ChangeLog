@@ -1,3 +1,8 @@
+2005-01-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_generate_compare): Replace
+	flag_finite_math_only with flag_unsafe_math_optimizations.
+
 2005-01-14  J. D. Johnston  <jjohnst@us.ibm.com>
 
 	* config/s390/tpf-unwind.h (s390_fallback_frame_state): Correct
