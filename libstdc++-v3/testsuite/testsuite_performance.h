@@ -170,7 +170,7 @@ namespace __gnu_cxx_test
   {
     const char space = ' ';
     const char tab = '\t';
-    const char* name = "libstdc++-v3.performance";
+    const char* name = "libstdc++-v3-performance.sum";
     std::string::const_iterator i = file.begin() + file.find_last_of('/') + 1;
     std::string testname(i, file.end());
 
