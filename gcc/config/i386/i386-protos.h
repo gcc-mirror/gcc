@@ -73,6 +73,7 @@ extern void print_operand PROTO((FILE*, rtx, int));
 extern void print_operand_address PROTO((FILE*, rtx));
 
 extern void split_di PROTO((rtx[], int, rtx[], rtx[]));
+extern void split_xf PROTO((rtx, rtx[3]));
 
 extern char *output_387_binary_op PROTO((rtx, rtx*));
 extern char *output_fix_trunc PROTO((rtx, rtx*));

@@ -2995,6 +2995,26 @@ split_di (operands, num, lo_half, hi_half)
 	abort();
     }
 }
+
+void
+split_xf (orig, out)
+     rtx orig;
+     rtx out[3];
+{
+  if (REG_P (orig))
+    {
+      int regno = REGNO (orig);
+      out[0] = gen_rtx_REG (SImode, regno);
+      out[1] = gen_rtx_REG (SImode, regno + 1);
+      out[2] = gen_rtx_REG (SImode, regno + 2);
+    }
+  else
+    {
+      out[0] = change_address (orig, SImode, NULL_RTX);
+      out[1] = adj_offsettable_operand (out[0], 4);
+      out[2] = adj_offsettable_operand (out[0], 8);
+    }
+}
 
 /* Output code to perform a 387 binary operation in INSN, one of PLUS,
    MINUS, MULT or DIV.  OPERANDS are the insn operands, where operands[3]

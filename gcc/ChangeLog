@@ -1,3 +1,10 @@
+Fri Nov  5 10:18:11 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386.c (split_xf): New.
+	* i386-protos.h: Declare it.
+	* i386.md (movxf_1): Add general regs alternatives.
+	(movxf_1+1): New splitter for same.
+
 Fri Nov  5 12:05:52 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* function.c (purge_addressof_1): Add missing return values.
