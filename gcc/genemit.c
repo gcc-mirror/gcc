@@ -301,12 +301,13 @@ gen_insn (insn)
 		  rtx new = XEXP (XVECEXP (insn, 1, j), 0);
 
 		  /* OLD and NEW are the same if both are to be a SCRATCH
+		     of the same mode, 
 		     or if both are registers of the same mode and number.  */
-		  if (! ((GET_CODE (old) == MATCH_SCRATCH
-			  && GET_CODE (new) == MATCH_SCRATCH)
-			 || (GET_CODE (old) == REG && GET_CODE (new) == REG
-			     && GET_MODE (old) == GET_MODE (new)
-			     && REGNO (old) == REGNO (new))))
+		  if (! (GET_MODE (old) == GET_MODE (new)
+			 && ((GET_CODE (old) == MATCH_SCRATCH
+			      && GET_CODE (new) == MATCH_SCRATCH)
+			     || (GET_CODE (old) == REG && GET_CODE (new) == REG
+				 && REGNO (old) == REGNO (new)))))
 		    break;
 		}
       
