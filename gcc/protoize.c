@@ -3983,7 +3983,7 @@ scan_for_missed_items (file_p)
 		  {
 		    char *func_name = (char *) alloca (id_length + 1);
 		    static const char * const stmt_keywords[]
-		      = { "if", "while", "for", "switch", "return", 0 };
+		      = { "if", "else", "do", "while", "for", "switch", "case", "return", 0 };
 		    const char * const *stmt_keyword;
 
 		    strncpy (func_name, id_start, id_length);
