@@ -80,7 +80,7 @@ struct htab
   htab_del del_f;
 
   /* Table itself.  */
-  void **entries;
+  PTR *entries;
 
   /* Current size (in entries) of the hash table */
   size_t size;
@@ -112,12 +112,12 @@ extern htab_t	htab_create	PARAMS ((size_t, htab_hash,
 extern void	htab_delete	PARAMS ((htab_t));
 extern void	htab_empty	PARAMS ((htab_t));
 
-extern void    *htab_find	PARAMS ((htab_t, const void *));
-extern void   **htab_find_slot	PARAMS ((htab_t, const void *,
+extern PTR	htab_find	PARAMS ((htab_t, const void *));
+extern PTR     *htab_find_slot	PARAMS ((htab_t, const void *,
 					 enum insert_option));
-extern void    *htab_find_with_hash	  PARAMS ((htab_t, const void *,
+extern PTR	htab_find_with_hash	  PARAMS ((htab_t, const void *,
 						   hashval_t));
-extern void   **htab_find_slot_with_hash  PARAMS ((htab_t, const void *,
+extern PTR     *htab_find_slot_with_hash  PARAMS ((htab_t, const void *,
 						   hashval_t,
 						   enum insert_option));
 extern void	htab_clear_slot	PARAMS ((htab_t, void **));

@@ -1,3 +1,7 @@
+2000-11-03  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* hashtab.h: Change void * to PTR where necessary.
+
 2000-09-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.h (splay_tree_predecessor): Declare.
