@@ -937,16 +937,19 @@ OBJS-onestep = libbackend.o $(OBJS-archive)
 
 BACKEND = main.o @TREEBROWSER@ libbackend.a $(CPPLIB)
 
-# Files to be copied away after each stage in building.
-STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
+# Files to be copied after each stage in building.
+STAGECOPYSTUFF = insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attrtab.c insn-opinit.c insn-preds.c insn-constants.h \
  tm-preds.h \
  tree-check.h insn-conditions.c min-insn-modes.c insn-modes.c insn-modes.h \
- s-flags s-config s-codes s-mlib s-genrtl s-modes s-gtype gtyp-gen.h \
+ genrtl.c genrtl.h gt-*.h gtype-*.h gtype-desc.c gtyp-gen.h
+
+# Files to be moved away after each stage in building.
+STAGEMOVESTUFF = *$(objext) \
+ s-flags s-config s-codes s-mlib s-genrtl s-modes s-gtype \
  s-gtyp-gen s-output s-recog s-emit s-extract s-peep s-check s-conditions \
  s-attr s-attrtab s-opinit s-preds s-constants s-crt0 \
- genrtl.c genrtl.h gt-*.h gtype-*.h gtype-desc.c \
  xgcc$(exeext) cpp$(exeext) cc1$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  protoize$(exeext) unprotoize$(exeext) \
@@ -3031,7 +3034,7 @@ fsf-funding.pod: funding.texi
 # (less duplicated code).
 
 mostlyclean: lang.mostlyclean
-	-rm -f $(STAGESTUFF)
+	-rm -f $(STAGECOPYSTUFF) $(STAGEMOVESTUFF)
 	-rm -f *$(coverageexts)
 	-rm -rf libgcc
 # Delete build programs
@@ -3895,7 +3898,8 @@ stage1-start:
 	 done
 # If SPECS is overridden, make sure it is `installed' as specs.
 	-mv $(SPECS) stage1/specs
-	-mv $(STAGESTUFF) stage1
+	-mv $(STAGEMOVESTUFF) stage1
+	-cp -p $(STAGECOPYSTUFF) stage1
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then (cd stage1 && $(LN_S) ../as$(exeext) .) ; else true ; fi
@@ -3932,7 +3936,8 @@ stage2-start:
 	 done
 # If SPECS is overridden, make sure it is `installed' as specs.
 	-mv $(SPECS) stage2/specs
-	-mv $(STAGESTUFF) stage2
+	-mv $(STAGEMOVESTUFF) stage2
+	-cp -p $(STAGECOPYSTUFF) stage2
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then (cd stage2 && $(LN_S) ../as$(exeext) .) ; else true ; fi
@@ -3965,7 +3970,8 @@ stage3-start:
 	 done
 # If SPECS is overridden, make sure it is `installed' as specs.
 	-mv $(SPECS) stage3/specs
-	-mv $(STAGESTUFF) stage3
+	-mv $(STAGEMOVESTUFF) stage3
+	-cp -p $(STAGECOPYSTUFF) stage3
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then (cd stage3 && $(LN_S) ../as$(exeext) .) ; else true ; fi
@@ -3998,7 +4004,8 @@ stage4-start:
 	 done
 # If SPECS is overridden, make sure it is `installed' as specs.
 	-mv $(SPECS) stage4/specs
-	-mv $(STAGESTUFF) stage4
+	-mv $(STAGEMOVESTUFF) stage4
+	-cp -p $(STAGECOPYSTUFF) stage4
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then (cd stage4 && $(LN_S) ../as$(exeext) .) ; else true ; fi
@@ -4029,7 +4036,8 @@ stageprofile-start:
 	 do \
 	   if [ -d stageprofile/$$dir ] ; then true ; else mkdir stageprofile/$$dir ; fi ; \
 	 done
-	-mv $(STAGESTUFF) stageprofile
+	-mv $(STAGEMOVESTUFF) stageprofile
+	-cp -p $(STAGECOPYSTUFF) stageprofile
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then (cd stageprofile && $(LN_S) ../as$(exeext) .) ; else true ; fi
@@ -4060,7 +4068,8 @@ stagefeedback-start:
 	 do \
 	   if [ -d stagefeedback/$$dir ] ; then true ; else mkdir stagefeedback/$$dir ; fi ; \
 	 done
-	-mv $(STAGESTUFF) stagefeedback
+	-mv $(STAGEMOVESTUFF) stagefeedback
+	-cp -p $(STAGECOPYSTUFF) stagefeedback
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then (cd stagefeedback && $(LN_S) ../as$(exeext) .) ; else true ; fi
