@@ -1,3 +1,7 @@
+2004-03-10  Anthony Green  <green@redhat.com>
+
+	* doc/invoke.texi (ARM Options): Fix -mpfu typo.
+
 2004-03-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix.h (TARGET_OS_CPP_BUILTINS): Rename to ...

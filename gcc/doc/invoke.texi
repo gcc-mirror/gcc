@@ -6617,7 +6617,7 @@ of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 This specifies what floating point hardware (or hardware emulation) is
 available on the target.  Permissible names are: @samp{fpa}, @samp{fpe2},
 @samp{fpe3}, @samp{maverick}, @samp{vfp}.  @option{-mfp} and @option{-mfpe}
-are synonyms for @option{-mpfu}=@samp{fpe}@var{number}, for compatibility
+are synonyms for @option{-mfpu}=@samp{fpe}@var{number}, for compatibility
 with older versions of GCC@.
 
 If @option{-msoft-float} is specified this specifies the format of
