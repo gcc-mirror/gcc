@@ -1,3 +1,8 @@
+2002-05-31  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* longlong.h (count_trailing_zeros): Add missing \, and clean up
+	whitespace in __ns32000__ case.
+
 2002-05-31  Aldy Hernandez  <aldyh@redhat.com>
 
         * expr.c (expand_expr): Output partially zeroed out vectors with
