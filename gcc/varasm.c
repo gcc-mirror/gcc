@@ -394,6 +394,18 @@ make_decl_rtl (decl, asmspec, top_level)
 	}
     }
 }
+
+/* Make the rtl for variable VAR be volatile.
+   Use this only for static variables.  */
+
+make_var_volatile (var)
+     tree var;
+{
+  if (GET_CODE (DECL_RTL (var)) != MEM)
+    abort ();
+
+  MEM_VOLATILE_P (DECL_RTL (var)) = 1;
+}
 
 /* Output a string of literal assembler code
    for an `asm' keyword used between functions.  */
