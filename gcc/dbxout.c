@@ -164,8 +164,10 @@ static int source_label_number = 1;
 #endif
 
 /* If there is a system stab.h, use it.  Otherwise, use our own.  */
-
-#if defined (USG) || !defined (HAVE_STAB_H)
+/* ??? This is supposed to describe the target's stab format, so using
+   the host HAVE_STAB_H appears to be wrong.  For now, we use our own file
+   when cross compiling.  */
+#if defined (USG) || !defined (HAVE_STAB_H) || defined (CROSS_COMPILE)
 #include "gstab.h" /* If doing DBX on sysV, use our own stab.h.  */
 #else
 #include <stab.h>
