@@ -2126,7 +2126,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  break;
 
 	case NOTE_INSN_EH_REGION_BEG:
-	  if (! exceptions_via_longjmp)
+	  if (! USING_SJLJ_EXCEPTIONS)
 	    {
 	      ASM_OUTPUT_INTERNAL_LABEL (file, "LEHB", NOTE_EH_HANDLER (insn));
 	      if (! flag_new_exceptions)
@@ -2138,7 +2138,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  break;
 
 	case NOTE_INSN_EH_REGION_END:
-	  if (! exceptions_via_longjmp)
+	  if (! USING_SJLJ_EXCEPTIONS)
 	    {
 	      ASM_OUTPUT_INTERNAL_LABEL (file, "LEHE", NOTE_EH_HANDLER (insn));
 	      if (flag_new_exceptions)

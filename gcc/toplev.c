@@ -1081,8 +1081,6 @@ lang_independent_options f_options[] =
    "Use the new model for exception handling" },
   {"unwind-tables", &flag_unwind_tables, 1,
     "Just generate unwind tables for exception handling" },
-  {"sjlj-exceptions", &exceptions_via_longjmp, 1,
-   "Use setjmp/longjmp to handle exceptions" },
   {"non-call-exceptions", &flag_non_call_exceptions, 1,
    "Support synchronous non-call exceptions" },
   {"profile-arcs", &profile_arc_flag, 1,
@@ -4876,19 +4874,6 @@ toplev_main (argc, argv)
   /* Some machines may reject certain combinations of options.  */
   OVERRIDE_OPTIONS;
 #endif
-
-  if (exceptions_via_longjmp == 2)
-    {
-#ifdef DWARF2_UNWIND_INFO
-      exceptions_via_longjmp = ! DWARF2_UNWIND_INFO;
-#else
-#ifdef IA64_UNWIND_INFO
-      exceptions_via_longjmp = ! IA64_UNWIND_INFO;
-#else
-      exceptions_via_longjmp = 1;
-#endif
-#endif
-    }
 
   /* Since each function gets its own handler data, we can't support the
      new model currently, since it depend on a specific rethrow label

@@ -1,3 +1,8 @@
+2001-03-27  Richard Henderson  <rth@redhat.com>
+
+	* except.c: Use USING_SJLJ_EXCEPTIONS instead of
+	exceptions_via_longjmp.
+
 2001-03-27  Phil Edwards  <pme@sources.redhat.com>
 
 	* pt.c (check_default_tmpl_args):  Make error messages clearer.

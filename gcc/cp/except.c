@@ -788,13 +788,13 @@ expand_exception_blocks ()
       /* We cannot protect n regions this way if we must flow into the
 	 EH region through the top of the region, as we have to with
 	 the setjmp/longjmp approach.  */
-      if (exceptions_via_longjmp == 0)
+      if (USING_SJLJ_EXCEPTIONS == 0)
 	expand_eh_region_start ();
 
       emit_insns (catch_clauses);
       catch_clauses = catch_clauses_last = NULL_RTX;
 
-      if (exceptions_via_longjmp == 0)
+      if (USING_SJLJ_EXCEPTIONS == 0)
 	expand_eh_region_end (build_terminate_handler ());
 
       emit_insns (catch_clauses);
@@ -852,7 +852,7 @@ expand_throw (exp)
       /* A Java `throw' statement.  */
       tree args = tree_cons (NULL_TREE, exp, NULL);
 
-      fn = get_identifier (exceptions_via_longjmp
+      fn = get_identifier (USING_SJLJ_EXCEPTIONS
 			   ? "_Jv_Sjlj_Throw"
 			   : "_Jv_Throw");
       if (IDENTIFIER_GLOBAL_VALUE (fn))

@@ -7,6 +7,16 @@
 	* gthr-single.h (UNUSED): New.  Distinguish between how C 
 	and C++ mark unused function arguments.  Use throughout.
 
+	* Makefile.in (cs-tconfig.h): Copy USING_SJLJ_EXCEPTIONS
+	value to target configuration header.
+	* configure.in (CONFIG_SJLJ_EXCEPTIONS): New.
+	* config.in, configure: Rebuild.
+	* except.h (USING_SJLJ_EXCEPTIONS): New.  Define based on
+	configuration and target defines.
+	(exceptions_via_longjmp): Remove.
+	* dwarf2out.c, except.c, final.c, toplev.c, config/ia64/ia64.c:
+	Use USING_SJLJ_EXCEPTIONS instead of exceptions_via_longjmp.
+
 2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Don't check for bcopy.

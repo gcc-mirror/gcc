@@ -467,6 +467,9 @@
 /* Define to 1 if you want to enable namespaces (-fhonor-std) by default. */
 #undef ENABLE_STD_NAMESPACE
 
+/* Define 0/1 to force the choice for exception handling model. */
+#undef CONFIG_SJLJ_EXCEPTIONS
+
 
 /* Bison unconditionally undefines `const' if neither `__STDC__' nor
    __cplusplus are defined.  That's a problem since we use `const' in

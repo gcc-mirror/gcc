@@ -1666,6 +1666,13 @@ else
 fi
 AC_SUBST(MAINT)dnl
 
+# With Setjmp/Longjmp based exception handling.
+AC_ARG_ENABLE(sjlj-exceptions,
+[  --enable-sjlj-exceptions arrange to use setjmp/longjmp exception handling.],
+[sjlj=`if test $enableval = yes; then echo 1; else echo 0; fi`
+AC_DEFINE_UNQUOTED(CONFIG_SJLJ_EXCEPTIONS, $sjlj,
+  [Define 0/1 to force the choice for exception handling model.])])
+
 # Make empty files to contain the specs and options for each language.
 # Then add #include lines to for a compiler that has specs and/or options.
 
