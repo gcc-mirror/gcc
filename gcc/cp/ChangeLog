@@ -1,3 +1,7 @@
+Thu Aug 21 18:48:44 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (real_yylex): Refer to __complex instead of complex.
+
 Thu Aug 21 22:25:46 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* lex.c (real_yylex): Don't use getc directly.
@@ -199,11 +203,6 @@ Wed Jul 16 23:47:08 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* lex.c (do_scoped_id): convert_from_reference.
 	* init.c (build_offset_ref): Likewise.
-
-Wed Jul 16 15:57:42 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
-
-	* parse.y (empty_parms): Only use VOID_LIST_NODE for the PARMS if
-	we're in a C++ struct/class, not if we're doing `extern "C"'.
 
 Wed Jul 16 12:34:29 1997  Benjamin Kosnik  <bkoz@lisa.cygnus.com>
 
@@ -526,8 +525,7 @@ Tue May 20 13:55:57 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
 	* hash.h: Regenerate.
 	* lex.h (rid): Add RID_COMPLEX.
 	(RID_LAST_MODIFIER): Set to RID_COMPLEX.
-	* lex.c (init_lex): Add building of RID_COMPLEX.  Unset reserved
-	word "complex" if -fno-gnu-keywords.
+	* lex.c (init_lex): Add building of RID_COMPLEX.
 	(real_yylex): General cleanup in line with what c-lex.c also has,
 	sans the cruft for traditional; add handling of SPEC_IMAG, complex
 	types, and imaginary numeric constants.

@@ -88,10 +88,7 @@ empty_parms ()
   tree parms;
 
   if (strict_prototype
-      /* Only go ahead with using the void list node if we're actually
-	 parsing a class in C++, not a struct in extern "C" mode.  */
-      || (current_class_type != NULL
-	  && current_lang_name == lang_name_cplusplus))
+      || current_class_type != NULL)
     parms = void_list_node;
   else
     parms = NULL_TREE;

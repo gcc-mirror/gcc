@@ -663,7 +663,7 @@ init_lex ()
   ridpointers[(int) RID_REGISTER] = get_identifier ("register");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_REGISTER],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_REGISTER]));
-  ridpointers[(int) RID_COMPLEX] = get_identifier ("complex");
+  ridpointers[(int) RID_COMPLEX] = get_identifier ("__complex");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_COMPLEX],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_COMPLEX]));
 
@@ -833,8 +833,6 @@ init_lex ()
       UNSET_RESERVED_WORD ("signature");
       UNSET_RESERVED_WORD ("sigof");
     }
-  if (flag_no_gnu_keywords)
-    UNSET_RESERVED_WORD ("complex");
   if (flag_no_asm || flag_no_gnu_keywords)
     UNSET_RESERVED_WORD ("typeof");
   if (! flag_operator_names)
@@ -3843,7 +3841,7 @@ real_yylex ()
 					 cp_convert (integer_type_node,
 						     yylval.ttype));
 		    else
-		      error ("complex integer constant is too wide for `complex int'");
+		      error ("complex integer constant is too wide for `__complex int'");
 		  }
 	      }
 
