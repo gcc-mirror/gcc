@@ -1347,7 +1347,8 @@ start_dynamic_handler ()
   buf = plus_constant (XEXP (arg, 0), GET_MODE_SIZE (Pmode)*2);
 
 #ifdef DONT_USE_BUILTIN_SETJMP
-  x = emit_library_call_value (setjmp_libfunc, NULL_RTX, 1, SImode, 1,
+  x = emit_library_call_value (setjmp_libfunc, NULL_RTX, 1,
+			       TYPE_MODE (integer_type_node), 1,
 			       buf, Pmode);
   /* If we come back here for a catch, transfer control to the handler.  */
   jumpif_rtx (x, ehstack.top->entry->exception_handler_label);
@@ -1754,7 +1755,8 @@ start_catch_handler (rtime)
 
       /* Now issue the call, and branch around handler if needed */
       call_rtx = emit_library_call_value (eh_rtime_match_libfunc, NULL_RTX, 
-                                          0, SImode, 1, rtime_address, Pmode);
+                                          0, TYPE_MODE (integer_type_node),
+				          1, rtime_address, Pmode);
 
       /* Did the function return true? */
       emit_cmp_and_jump_insns (call_rtx, const0_rtx, EQ, NULL_RTX,
