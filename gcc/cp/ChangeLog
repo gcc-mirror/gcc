@@ -1,3 +1,9 @@
+2003-06-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/11039
+	* decl2.c (handle_class_head): Remove implicitness in typename
+	appeared as elaborated type specifier in declaration.
+
 2003-06-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10940

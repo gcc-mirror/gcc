@@ -5006,6 +5006,22 @@ handle_class_head (tag_kind, scope, id, attributes, defn_p, new_type_p)
       if (!xrefd_p && PROCESSING_REAL_TEMPLATE_DECL_P ())
 	decl = push_template_decl (decl);
     }
+  else
+    {
+      /* For elaborated type specifier in declaration like
+
+	   class A::B *a;
+
+         we get an implicit typename here.  Let's remove its
+         implicitness so that we don't issue any implicit
+         typename warning later.  Note that when defn_p is true,
+         implicitness is still required by begin_class_definition.  */
+      if (IMPLICIT_TYPENAME_P (type))
+	decl = TYPE_STUB_DECL (build_typename_type (TYPE_CONTEXT (type),
+						    TYPE_IDENTIFIER (type),
+						    TYPENAME_TYPE_FULLNAME (type),
+						    NULL_TREE));
+    }
 
   return decl;
 }
