@@ -1,3 +1,8 @@
+2004-09-12  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* tree-ssa-loop-manip.c (split_loop_exit_edge): Handle non-ssaname
+	arguments of the phi nodes correctly.
+
 2004-09-12  Jan Hubicka  <jh@suse.cz>
 
 	* ggc-common.c (cmp_statistics): Fix sorting.

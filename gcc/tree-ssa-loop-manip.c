@@ -395,17 +395,26 @@ split_loop_exit_edge (edge exit)
 {
   basic_block dest = exit->dest;
   basic_block bb = loop_split_edge_with (exit, NULL);
-  tree phi, new_phi, new_name;
+  tree phi, new_phi, new_name, name;
   use_operand_p op_p;
 
   for (phi = phi_nodes (dest); phi; phi = TREE_CHAIN (phi))
     {
       op_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, bb->succ);
 
-      new_name = duplicate_ssa_name (USE_FROM_PTR (op_p), NULL);
+      name = USE_FROM_PTR (op_p);
+
+      /* If the argument of the phi node is a constant, we do not need
+	 to keep it inside loop.  */
+      if (TREE_CODE (name) != SSA_NAME)
+	continue;
+
+      /* Otherwise create an auxiliary phi node that will copy the value
+	 of the ssa name out of the loop.  */
+      new_name = duplicate_ssa_name (name, NULL);
       new_phi = create_phi_node (new_name, bb);
       SSA_NAME_DEF_STMT (new_name) = new_phi;
-      add_phi_arg (&new_phi, USE_FROM_PTR (op_p), exit);
+      add_phi_arg (&new_phi, name, exit);
       SET_USE (op_p, new_name);
     }
 }
