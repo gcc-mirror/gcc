@@ -1,3 +1,10 @@
+2005-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/19946
+	* testsuite/demangle/abi_examples/01.cc (main): Adjust for 2005-02-13
+	demangler change.
+	* testsuite/demangle/abi_examples/02.cc (main): Likewise.
+
 2005-02-13  Richard Guenther  <rguenth@gcc.gnu.org>
 	    Paolo Carlini  <pcarlini@suse.de>
 
