@@ -1,9 +1,6 @@
 /* Output Dwarf format symbol table information from the GNU C compiler.
    Copyright (C) 1992, 1993, 1995, 1996 Free Software Foundation, Inc.
-
-   Written by Ron Guilmette (rfg@netcom.com) for
-   Network Computing Devices, August, September, October, November 1990.
-   Generously contributed by NCD to the Free Software Foundation.
+   Contributed by Ron Guilmette (rfg@monkeys.com) of Network Computing Devices.
 
 This file is part of GNU CC.
 
@@ -72,10 +69,8 @@ extern char *rindex ();
 /* Note that the implementation of C++ support herein is (as yet) unfinished.
    If you want to try to complete it, more power to you.  */
 
-#if defined(__GNUC__) && (NDEBUG == 1)
-#define inline static inline
-#else
-#define inline static
+#if !defined(__GNUC__) || (NDEBUG != 1)
+#define inline
 #endif
 
 /* How to start an assembler comment.  */
@@ -295,11 +290,118 @@ static tree dwarf_last_decl;
 
 /* Forward declarations for functions defined in this file.  */
 
-static void output_type ();
-static void type_attribute ();
-static void output_decls_for_scope ();
-static void output_decl ();
-static unsigned lookup_filename ();
+static char *dwarf_tag_name		PROTO((unsigned));
+static char *dwarf_attr_name		PROTO((unsigned));
+static char *dwarf_stack_op_name	PROTO((unsigned));
+static char *dwarf_typemod_name		PROTO((unsigned));
+static char *dwarf_fmt_byte_name	PROTO((unsigned));
+static char *dwarf_fund_type_name	PROTO((unsigned));
+static tree decl_ultimate_origin	PROTO((tree));
+static tree block_ultimate_origin	PROTO((tree));
+static void output_unsigned_leb128	PROTO((unsigned long));
+static void output_signed_leb128	PROTO((long));
+static inline int is_body_block		PROTO((tree));
+static int fundamental_type_code	PROTO((tree));
+static tree root_type			PROTO((tree));
+static void write_modifier_bytes	PROTO((tree, int, int));
+static inline int type_is_fundamental	PROTO((tree));
+static void equate_decl_number_to_die_number PROTO((tree));
+static inline void equate_type_number_to_die_number PROTO((tree));
+static void output_reg_number		PROTO((rtx));
+static void output_mem_loc_descriptor	PROTO((rtx));
+static void output_loc_descriptor	PROTO((rtx));
+static void output_bound_representation	PROTO((tree, unsigned, char));
+static void output_enumeral_list	PROTO((tree));
+static inline unsigned ceiling		PROTO((unsigned, unsigned));
+static inline tree field_type		PROTO((tree));
+static inline unsigned simple_type_align_in_bits PROTO((tree));
+static inline unsigned simple_type_size_in_bits  PROTO((tree));
+static unsigned field_byte_offset	PROTO((tree));
+static inline void sibling_attribute	PROTO((void));
+static void location_attribute		PROTO((rtx));
+static void data_member_location_attribute PROTO((tree));
+static void const_value_attribute	PROTO((rtx));
+static void location_or_const_value_attribute PROTO((tree));
+static inline void name_attribute	PROTO((char *));
+static inline void fund_type_attribute	PROTO((unsigned));
+static void mod_fund_type_attribute	PROTO((tree, int, int));
+static inline void user_def_type_attribute PROTO((tree));
+static void mod_u_d_type_attribute	PROTO((tree, int, int));
+static inline void ordering_attribute	PROTO((unsigned));
+static void subscript_data_attribute	PROTO((tree));
+static void byte_size_attribute		PROTO((tree));
+static inline void bit_offset_attribute	PROTO((tree));
+static inline void bit_size_attribute	PROTO((tree));
+static inline void element_list_attribute PROTO((tree));
+static inline void stmt_list_attribute	PROTO((char *));
+static inline void low_pc_attribute	PROTO((char *));
+static inline void high_pc_attribute	PROTO((char *));
+static inline void body_begin_attribute	PROTO((char *));
+static inline void body_end_attribute	PROTO((char *));
+static inline void langauge_attribute	PROTO((unsigned));
+static inline void member_attribute	PROTO((tree));
+static inline void string_length_attribute PROTO((tree));
+static inline void comp_dir_attribute	PROTO((char *));
+static inline void sf_names_attribute	PROTO((char *));
+static inline void src_info_attribute	PROTO((char *));
+static inline void mac_info_attribute	PROTO((char *));
+static inline void prototyped_attribute	PROTO((tree));
+static inline void producer_attribute	PROTO((char *));
+static inline void inline_attribute	PROTO((tree));
+static inline void containing_type_attribute PROTO((tree));
+static inline void abstract_origin_attribute PROTO((tree));
+static inline void src_coords_attribute PROTO((unsigned, unsigned));
+static inline void pure_or_virtual_attribute PROTO((tree));
+static void name_and_src_coords_attributes PROTO((tree));
+static void type_attribute		PROTO((tree, int, int));
+static char *type_tag			PROTO((tree));
+static inline void dienum_push		PROTO((void));
+static inline void dienum_pop		PROTO((void));
+static inline tree member_declared_type PROTO((tree));
+static char *function_start_label	PROTO((tree));
+static void output_array_type_die	PROTO((void *));
+static void output_set_type_die		PROTO((void *));
+static void output_entry_point_die	PROTO((void *));
+static void output_inlined_enumeration_type_die PROTO((void *));
+static void output_inlined_structure_type_die PROTO((void *));
+static void output_inlined_union_type_die PROTO((void *));
+static void output_enumeration_type_die	PROTO((void *));
+static void output_formal_parameter_die	PROTO((void *));
+static void output_global_subroutine_die PROTO((void *));
+static void output_global_variable_die	PROTO((void *));
+static void output_label_die		PROTO((void *));
+static void output_lexical_block_die	PROTO((void *));
+static void output_inlined_subroutine_die PROTO((void *));
+static void output_local_variable_die	PROTO((void *));
+static void output_member_die		PROTO((void *));
+static void output_pointer_type_die	PROTO((void *));
+static void output_reference_type_die	PROTO((void *));
+static void output_ptr_to_mbr_type_die	PROTO((void *));
+static void output_compile_unit_die	PROTO((void *));
+static void output_string_type_die	PROTO((void *));
+static void output_structure_type_die	PROTO((void *));
+static void output_local_subroutine_die PROTO((void *));
+static void output_subroutine_type_die	PROTO((void *));
+static void output_typedef_die		PROTO((void *));
+static void output_union_type_die	PROTO((void *));
+static void output_unspecified_parameters_die PROTO((void *));
+static void output_padded_null_die	PROTO((void *));
+static void output_die			PROTO((void (*) (), void *));
+static void end_sibling_chain		PROTO((void));
+static void output_formal_types		PROTO((tree));
+static void pend_type			PROTO((tree));
+static inline int type_of_for_scope	PROTO((tree, tree));
+static void output_pending_types_for_scope PROTO((tree));
+static void output_type			PROTO((tree, tree));
+static void output_tagged_type_instantiation PROTO((tree));
+static void output_block		PROTO((tree));
+static void output_decls_for_scope	PROTO((tree));
+static void output_decl			PROTO((tree, tree));
+static void shuffle_filename_entry	PROTO((filename_entry *));
+static void geneate_new_sfname_entry	PROTO((void));
+static unsigned lookup_filename		PROTO((char *));
+static void generate_srcinfo_entry	PROTO((unsigned, unsigned));
+static void generate_macinfo_entry	PROTO((char *, char *));
 
 /* Definitions of defaults for assembler-dependent names of various
    pseudo-ops and section names.
@@ -953,6 +1055,7 @@ dwarf_fmt_byte_name (fmt)
     default:		return "FMT_<unknown>";
     }
 }
+
 static char *
 dwarf_fund_type_name (ft)
      register unsigned ft;
@@ -1138,7 +1241,7 @@ output_signed_leb128 (value)
    FUNCTION_DECL node.
 */
 
-inline int
+static inline int
 is_body_block (stmt)
      register tree stmt;
 {
@@ -1363,7 +1466,7 @@ write_modifier_bytes (type, decl_const, decl_volatile)
 /* Given a pointer to an arbitrary ..._TYPE tree node, return non-zero if the
    given input type is a Dwarf "fundamental" type.  Otherwise return zero.  */
 
-inline int
+static inline int
 type_is_fundamental (type)
      register tree type;
 {
@@ -1444,7 +1547,7 @@ equate_decl_number_to_die_number (decl)
    simply by re-generating the alternative name from the ..._TYPE node's
    UID number.	*/
 
-inline void
+static inline void
 equate_type_number_to_die_number (type)
      register tree type;
 {
@@ -1715,7 +1818,7 @@ output_enumeral_list (link)
 /* Given an unsigned value, round it up to the lowest multiple of `boundary'
    which is not less than the value itself.  */
 
-inline unsigned
+static inline unsigned
 ceiling (value, boundary)
      register unsigned value;
      register unsigned boundary;
@@ -1727,7 +1830,7 @@ ceiling (value, boundary)
    pointer to the declared type for the relevant field variable, or return
    `integer_type_node' if the given node turns out to be an ERROR_MARK node.  */
 
-inline tree
+static inline tree
 field_type (decl)
      register tree decl;
 {
@@ -1746,7 +1849,7 @@ field_type (decl)
    node, return the alignment in bits for the type, or else return
    BITS_PER_WORD if the node actually turns out to be an ERROR_MARK node.  */
 
-inline unsigned
+static inline unsigned
 simple_type_align_in_bits (type)
      register tree type;
 {
@@ -1759,7 +1862,7 @@ simple_type_align_in_bits (type)
    constant, or else return BITS_PER_WORD if the type actually turns out
    to be an ERROR_MARK node.  */
 
-inline unsigned
+static inline unsigned
 simple_type_size_in_bits (type)
      register tree type;
 {
@@ -1903,7 +2006,7 @@ field_byte_offset (decl)
 
 /* Generate an AT_sibling attribute.  */
 
-inline void
+static inline void
 sibling_attribute ()
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -2230,7 +2333,7 @@ location_or_const_value_attribute (decl)
 /* Generate an AT_name attribute given some string value to be included as
    the value of the attribute.	*/
 
-inline void
+static inline void
 name_attribute (name_string)
      register char *name_string;
 {
@@ -2241,7 +2344,7 @@ name_attribute (name_string)
     }
 }
 
-inline void
+static inline void
 fund_type_attribute (ft_code)
      register unsigned ft_code;
 {
@@ -2269,7 +2372,7 @@ mod_fund_type_attribute (type, decl_const, decl_volatile)
   ASM_OUTPUT_LABEL (asm_out_file, end_label);
 }
 
-inline void
+static inline void
 user_def_type_attribute (type)
      register tree type;
 {
@@ -2302,7 +2405,7 @@ mod_u_d_type_attribute (type, decl_const, decl_volatile)
 }
 
 #ifdef USE_ORDERING_ATTRIBUTE
-inline void
+static inline void
 ordering_attribute (ordering)
      register unsigned ordering;
 {
@@ -2473,10 +2576,9 @@ byte_size_attribute (tree_node)
 
    Note that it is the size (in bytes) of the hypothetical "containing
    object" which will be given in the AT_byte_size attribute for this
-   bit-field.  (See `byte_size_attribute' above.)
-*/
+   bit-field.  (See `byte_size_attribute' above.) */
 
-inline void
+static inline void
 bit_offset_attribute (decl)
     register tree decl;
 {
@@ -2528,7 +2630,7 @@ bit_offset_attribute (decl)
 /* For a FIELD_DECL node which represents a bit field, output an attribute
    which specifies the length in bits of the given field.  */
 
-inline void
+static inline void
 bit_size_attribute (decl)
     register tree decl;
 {
@@ -2545,7 +2647,7 @@ bit_size_attribute (decl)
    all of the enumeration constants associated with the given enumeration
    type.  */
 
-inline void
+static inline void
 element_list_attribute (element)
      register tree element;
 {
@@ -2571,7 +2673,7 @@ element_list_attribute (element)
 /* Generate an AT_stmt_list attribute.	These are normally present only in
    DIEs with a TAG_compile_unit tag.  */
 
-inline void
+static inline void
 stmt_list_attribute (label)
     register char *label;
 {
@@ -2583,7 +2685,7 @@ stmt_list_attribute (label)
 /* Generate an AT_low_pc attribute for a label DIE, a lexical_block DIE or
    for a subroutine DIE.  */
 
-inline void
+static inline void
 low_pc_attribute (asm_low_label)
      register char *asm_low_label;
 {
@@ -2594,7 +2696,7 @@ low_pc_attribute (asm_low_label)
 /* Generate an AT_high_pc attribute for a lexical_block DIE or for a
    subroutine DIE.  */
 
-inline void
+static inline void
 high_pc_attribute (asm_high_label)
     register char *asm_high_label;
 {
@@ -2604,7 +2706,7 @@ high_pc_attribute (asm_high_label)
 
 /* Generate an AT_body_begin attribute for a subroutine DIE.  */
 
-inline void
+static inline void
 body_begin_attribute (asm_begin_label)
      register char *asm_begin_label;
 {
@@ -2614,7 +2716,7 @@ body_begin_attribute (asm_begin_label)
 
 /* Generate an AT_body_end attribute for a subroutine DIE.  */
 
-inline void
+static inline void
 body_end_attribute (asm_end_label)
      register char *asm_end_label;
 {
@@ -2625,7 +2727,7 @@ body_end_attribute (asm_end_label)
 /* Generate an AT_language attribute given a LANG value.  These attributes
    are used only within TAG_compile_unit DIEs.  */
 
-inline void
+static inline void
 language_attribute (language_code)
      register unsigned language_code;
 {
@@ -2633,7 +2735,7 @@ language_attribute (language_code)
   ASM_OUTPUT_DWARF_DATA4 (asm_out_file, language_code);
 }
 
-inline void
+static inline void
 member_attribute (context)
     register tree context;
 {
@@ -2649,7 +2751,7 @@ member_attribute (context)
     }
 }
 
-inline void
+static inline void
 string_length_attribute (upper_bound)
      register tree upper_bound;
 {
@@ -2665,7 +2767,7 @@ string_length_attribute (upper_bound)
   ASM_OUTPUT_LABEL (asm_out_file, end_label);
 }
 
-inline void
+static inline void
 comp_dir_attribute (dirname)
      register char *dirname;
 {
@@ -2673,7 +2775,7 @@ comp_dir_attribute (dirname)
   ASM_OUTPUT_DWARF_STRING (asm_out_file, dirname);
 }
 
-inline void
+static inline void
 sf_names_attribute (sf_names_start_label)
      register char *sf_names_start_label;
 {
@@ -2682,7 +2784,7 @@ sf_names_attribute (sf_names_start_label)
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, sf_names_start_label);
 }
 
-inline void
+static inline void
 src_info_attribute (src_info_start_label)
      register char *src_info_start_label;
 {
@@ -2691,7 +2793,7 @@ src_info_attribute (src_info_start_label)
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, src_info_start_label);
 }
 
-inline void
+static inline void
 mac_info_attribute (mac_info_start_label)
      register char *mac_info_start_label;
 {
@@ -2700,7 +2802,7 @@ mac_info_attribute (mac_info_start_label)
   ASM_OUTPUT_DWARF_ADDR (asm_out_file, mac_info_start_label);
 }
 
-inline void
+static inline void
 prototyped_attribute (func_type)
      register tree func_type;
 {
@@ -2712,7 +2814,7 @@ prototyped_attribute (func_type)
     }
 }
 
-inline void
+static inline void
 producer_attribute (producer)
      register char *producer;
 {
@@ -2720,7 +2822,7 @@ producer_attribute (producer)
   ASM_OUTPUT_DWARF_STRING (asm_out_file, producer);
 }
 
-inline void
+static inline void
 inline_attribute (decl)
      register tree decl;
 {
@@ -2731,7 +2833,7 @@ inline_attribute (decl)
     }
 }
 
-inline void
+static inline void
 containing_type_attribute (containing_type)
      register tree containing_type;
 {
@@ -2742,7 +2844,7 @@ containing_type_attribute (containing_type)
   ASM_OUTPUT_DWARF_REF (asm_out_file, label);
 }
 
-inline void
+static inline void
 abstract_origin_attribute (origin)
      register tree origin;
 {
@@ -2767,7 +2869,7 @@ abstract_origin_attribute (origin)
 }
 
 #ifdef DWARF_DECL_COORDINATES
-inline void
+static inline void
 src_coords_attribute (src_fileno, src_lineno)
      register unsigned src_fileno;
      register unsigned src_lineno;
@@ -2778,7 +2880,7 @@ src_coords_attribute (src_fileno, src_lineno)
 }
 #endif /* defined(DWARF_DECL_COORDINATES) */
 
-inline void
+static inline void
 pure_or_virtual_attribute (func_decl)
      register tree func_decl;
 {
@@ -2925,7 +3027,7 @@ type_tag (type)
   return (name == 0 || *name == '\0') ? 0 : name;
 }
 
-inline void
+static inline void
 dienum_push ()
 {
   /* Start by checking if the pending_sibling_stack needs to be expanded.
@@ -2946,13 +3048,13 @@ dienum_push ()
 /* Pop the sibling stack so that the most recently pushed DIEnum becomes the
    NEXT_DIE_NUM.  */
 
-inline void
+static inline void
 dienum_pop ()
 {
   pending_siblings--;
 }
 
-inline tree
+static inline tree
 member_declared_type (member)
      register tree member;
 {
@@ -3849,10 +3951,9 @@ pend_type (type)
    been output are instead placed onto the pending_types_list.  Later on,
    we force these (temporarily pended) types to be output simply by calling
    `output_pending_types_for_scope' with an actual argument equal to the
-   true scope of the types we temporarily pended.
-*/
+   true scope of the types we temporarily pended.  */
 
-inline int
+static inline int
 type_ok_for_scope (type, scope)
     register tree type;
     register tree scope;
@@ -3882,8 +3983,7 @@ type_ok_for_scope (type, scope)
    Note that we have to process the list in beginning-to-end order,
    because the call made here to output_type may cause yet more types
    to be added to the end of the list, and we may have to output some
-   of them too.
-*/
+   of them too. */
 
 static void
 output_pending_types_for_scope (containing_scope)
@@ -5078,8 +5178,7 @@ generate_new_sfname_entry ()
    calculated, and where at least one of the two symbol references is a
    forward reference.  (This bug could be tickled by our .debug_srcinfo
    entries if we don't output their corresponding .debug_sfnames entries
-   before them.)
-*/
+   before them.) */
 
 static unsigned
 lookup_filename (file_name)
