@@ -1,3 +1,7 @@
+Sat Feb  9 18:28:02 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movdi_2): Add missing '!'.
+
 2002-02-09  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.h: Fix formatting.  Remove commented-out
