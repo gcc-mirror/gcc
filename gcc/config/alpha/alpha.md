@@ -4382,6 +4382,11 @@
     }
 }")
 
+(define_insn "exception_receiver"
+  [(unspec_volatile [(const_int 0)] 2)]
+  "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
+  ".long 0xc3a00000\;ldgp $29,0($29)")
+
 (define_expand "nonlocal_goto_receiver"
   [(unspec_volatile [(const_int 0)] 1)
    (set (reg:DI 27) (mem:DI (reg:DI 29)))
