@@ -1,3 +1,12 @@
+Thu Oct 28 10:00:48 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c: Initialise arm_structure_size_boundary to
+	DEFAULT_STRUCTURE_SIZE_BOUNDARY.
+	* config/arm/arm.h (DEFAULT_STRUCTURE_SIZE_BOUNDARY): Define
+	to the value 32 if it has not already been defined.
+	* config/arm/netbsd.h (DEFAULT_STRUCTURE_SIZE_BOUNDARY):
+	Override definition in arm.h with a value of 8.
+
 Thu Oct 28 03:12:02 1999  David Starner  <dstarner98@aasaa.ofe.org>
 
 	* c-pragma.c (push_alignment): Don't check the return value
