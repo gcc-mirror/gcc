@@ -1,4 +1,9 @@
+2003-02-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*iorsi2_and_1_lshiftrt_1): New.
+
 2003-02-13  Adam Nemet  <anemet@lnxw.com>
+
         PR opt/2391 
         * combine.c: Fix spelling in comment.
         (cached_nonzero_bits): New function.
