@@ -105,13 +105,13 @@ ARM_CORE("xscale",        xscale,	5TE,	                         FL_LDSCHED | FL_
 ARM_CORE("iwmmxt",        iwmmxt,	5TE,	                         FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_IWMMXT, xscale)
 
 /* V5TEJ Architecture Processors */
-ARM_CORE("arm926ej-s",    arm926ejs,	5TEJ,	                         0, 9e)
-ARM_CORE("arm1026ej-s",   arm1026ejs,	5TEJ,	                         0, 9e)
+ARM_CORE("arm926ej-s",    arm926ejs,	5TEJ,	                         FL_LDSCHED, 9e)
+ARM_CORE("arm1026ej-s",   arm1026ejs,	5TEJ,	                         FL_LDSCHED, 9e)
 
 /* V6 Architecture Processors */
-ARM_CORE("arm1136j-s",    arm1136js,	6J,	                         0, 9e)
-ARM_CORE("arm1136jf-s",   arm1136jfs,	6J,	                         FL_VFPV2, 9e)
-ARM_CORE("arm1176jz-s",	  arm1176jzs,	6ZK,				 0, 9e)
-ARM_CORE("arm1176jzf-s",  arm1176jzfs,	6ZK,				 FL_VFPV2, 9e)
-ARM_CORE("mpcorenovfp",	  mpcorenovfp,	6K,				 0, 9e)
-ARM_CORE("mpcore",	  mpcore,	6K,				 FL_VFPV2, 9e)
+ARM_CORE("arm1136j-s",    arm1136js,	6J,	                         FL_LDSCHED, 9e)
+ARM_CORE("arm1136jf-s",   arm1136jfs,	6J,	                         FL_LDSCHED | FL_VFPV2, 9e)
+ARM_CORE("arm1176jz-s",	  arm1176jzs,	6ZK,				 FL_LDSCHED, 9e)
+ARM_CORE("arm1176jzf-s",  arm1176jzfs,	6ZK,				 FL_LDSCHED | FL_VFPV2, 9e)
+ARM_CORE("mpcorenovfp",	  mpcorenovfp,	6K,				 FL_LDSCHED, 9e)
+ARM_CORE("mpcore",	  mpcore,	6K,				 FL_LDSCHED | FL_VFPV2, 9e)

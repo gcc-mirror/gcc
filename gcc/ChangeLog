@@ -1,3 +1,10 @@
+2004-12-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/18973
+	arm-cores.def (arm926ej-s, arm1026ej-s, arm1136j-s, arm1136-jfs)
+	(arm1176jz-s, arm1176jzf-s, mpcorenovfp, mpcore): Add load-scheduling
+	property to flags.
+
 2004-12-14  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-gimple.c (get_base_address): Update documentation.
