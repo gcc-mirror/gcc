@@ -81,10 +81,6 @@
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, NA)	\
   do { fprintf ((FILE), "\t.file\t'%s'\n", (NA)); } while (0)
 
-/* This may not matter anymore, now that svr3.h overrides
-   ASM_GENERATE_INTERNAL_LABEL and ASM_OUTPUT_INTERNAL_LABEL.  */
-#undef LOCAL_LABEL_PREFIX
-#define LOCAL_LABEL_PREFIX "."
 /* 
  * we don't seem to support any of:
  * .globl
