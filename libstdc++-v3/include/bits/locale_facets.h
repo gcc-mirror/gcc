@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -690,7 +690,7 @@ namespace std
       mutable char		_M_widen[1 + static_cast<unsigned char>(-1)];
       mutable char		_M_narrow[1 + static_cast<unsigned char>(-1)];
       mutable char		_M_narrow_ok;	// 0 uninitialized, 1 init,
-						// 2 non-consecutive
+						// 2 memcpy can't be used
 
     public:
       /// The facet id for ctype<char>
@@ -865,7 +865,8 @@ namespace std
       char_type
       widen(char __c) const
       {
-	if (_M_widen_ok) return _M_widen[static_cast<unsigned char>(__c)];
+	if (_M_widen_ok)
+	  return _M_widen[static_cast<unsigned char>(__c)];
 	this->_M_widen_init();
 	return this->do_widen(__c);
       }
@@ -896,7 +897,8 @@ namespace std
 	    memcpy(__to, __lo, __hi - __lo);
 	    return __hi;
 	  }
-	if (!_M_widen_ok) _M_widen_init();
+	if (!_M_widen_ok)
+	  _M_widen_init();
 	return this->do_widen(__lo, __hi, __to);
       }
 
@@ -924,7 +926,8 @@ namespace std
 	if (_M_narrow[static_cast<unsigned char>(__c)])
 	  return _M_narrow[static_cast<unsigned char>(__c)];
 	const char __t = do_narrow(__c, __dfault);
-	if (__t != __dfault) _M_narrow[static_cast<unsigned char>(__c)] = __t;
+	if (__t != __dfault)
+	  _M_narrow[static_cast<unsigned char>(__c)] = __t;
 	return __t;
       }
 
@@ -954,7 +957,7 @@ namespace std
       narrow(const char_type* __lo, const char_type* __hi,
 	     char __dfault, char *__to) const
       {
-	if (__builtin_expect(_M_narrow_ok == 1,true))
+	if (__builtin_expect(_M_narrow_ok == 1, true))
 	  {
 	    memcpy(__to, __lo, __hi - __lo);
 	    return __hi;
@@ -1161,17 +1164,13 @@ namespace std
 
 	_M_widen_ok = 1;
 	// Set _M_widen_ok to 2 if memcpy can't be used.
-	for (size_t __j = 0; __j < sizeof(_M_widen); ++__j)
-	  if (__tmp[__j] != _M_widen[__j])
-	    {
-	      _M_widen_ok = 2;
-	      break;
-	    }
+	if (memcmp(__tmp, _M_widen, sizeof(_M_widen)))
+	  _M_widen_ok = 2;
       }
 
       // Fill in the narrowing cache and flag whether all values are
-      // valid or not.  _M_narrow_ok is set to 1 if the whole table is
-      // narrowed, 2 if only some values could be narrowed.
+      // valid or not.  _M_narrow_ok is set to 2 if memcpy can't
+      // be used.
       void _M_narrow_init() const
       {
 	char __tmp[sizeof(_M_narrow)];
@@ -1179,21 +1178,18 @@ namespace std
 	  __tmp[__i] = __i;
 	do_narrow(__tmp, __tmp + sizeof(__tmp), 0, _M_narrow);
 
-	// Check if any default values were created.  Do this by
-	// renarrowing with a different default value and comparing.
-	bool __consecutive = true;
-	for (size_t __j = 0; __j < sizeof(_M_narrow); ++__j)
-	  if (!_M_narrow[__j])
-	    {
-	      char __c;
-	      do_narrow(__tmp + __j, __tmp + __j + 1, 1, &__c);
-	      if (__c == 1)
-		{
-		  __consecutive = false;
-		  break;
-		}
-	    }
-	_M_narrow_ok = __consecutive ? 1 : 2;
+	_M_narrow_ok = 1;
+	if (memcmp(__tmp, _M_narrow, sizeof(_M_narrow)))
+	  _M_narrow_ok = 2;
+	else
+	  {
+	    // Deal with the special case of zero: renarrow with a
+	    // different default and compare.
+	    char __c;
+	    do_narrow(__tmp, __tmp + 1, 1, &__c);
+	    if (__c == 1)
+	      _M_narrow_ok = 2;
+	  }
       }
     };
 
