@@ -295,6 +295,7 @@ static void validate_switches	PROTO((char *));
 static void validate_all_switches PROTO((void));
 static void give_switch		PROTO((int, int));
 static int used_arg		PROTO((char *, int));
+static int default_arg		PROTO((char *, int));
 static void set_multilib_dir	PROTO((void));
 static void print_multilib_info	PROTO((void));
 static void pfatal_with_name	PROTO((char *));
@@ -5028,6 +5029,31 @@ used_arg (p, len)
   return 0;
 }
 
+/* Check whether a particular argument is a default argument.  */
+
+#ifndef MULTILIB_DEFAULTS
+#define MULTILIB_DEFAULTS { NULL }
+#endif
+
+static char *multilib_defaults[] = MULTILIB_DEFAULTS;
+
+static int
+default_arg (p, len)
+     char *p;
+     int len;
+{
+  int count = sizeof multilib_defaults / sizeof multilib_defaults[0];
+  int i;
+
+  for (i = 0; i < count; i++)
+    if (multilib_defaults[i] != NULL
+	&& strncmp (multilib_defaults[i], p, len) == 0
+	&& multilib_defaults[i][len] == '\0')
+      return 1;
+
+  return 0;
+}
+
 /* Work out the subdirectory to use based on the
    options.  The format of multilib_select is a list of elements.
    Each element is a subdirectory name followed by a list of options
@@ -5042,7 +5068,8 @@ set_multilib_dir ()
   char *p = multilib_select;
   int this_path_len;
   char *this_path, *this_arg;
-  int failed;
+  int not_arg;
+  int ok;
 
   while (*p != '\0')
     {
@@ -5064,14 +5091,14 @@ set_multilib_dir ()
       this_path_len = p - this_path;
 
       /* Check the arguments.  */
-      failed = 0;
+      ok = 1;
       ++p;
       while (*p != ';')
 	{
 	  if (*p == '\0')
 	    abort ();
 
-	  if (failed)
+	  if (! ok)
 	    {
 	      ++p;
 	      continue;
@@ -5085,16 +5112,33 @@ set_multilib_dir ()
 	      ++p;
 	    }
 
-	  if (*this_arg == '!')
-	    failed = used_arg (this_arg + 1, p - (this_arg + 1));
+	  if (*this_arg != '!')
+	    not_arg = 0;
 	  else
-	    failed = ! used_arg (this_arg, p - this_arg);
+	    {
+	      not_arg = 1;
+	      ++this_arg;
+	    }
+
+	  /* If this is a default argument, we can just ignore it.
+	     This is true even if this_arg begins with '!'.  Beginning
+	     with '!' does not mean that this argument is necessarily
+	     inappropriate for this library: it merely means that
+	     there is a more specific library which uses this
+	     argument.  If this argument is a default, we need not
+	     consider that more specific library.  */
+	  if (! default_arg (this_arg, p - this_arg))
+	    {
+	      ok = used_arg (this_arg, p - this_arg);
+	      if (not_arg)
+		ok = ! ok;
+	    }
 
 	  if (*p == ' ')
 	    ++p;
 	}
 
-      if (! failed)
+      if (ok)
 	{
 	  if (this_path_len != 1
 	      || this_path[0] != '.')
@@ -5124,7 +5168,7 @@ print_multilib_info ()
 {
   char *p = multilib_select;
   char *last_path = 0, *this_path;
-  int skip, use_arg;
+  int skip;
   int last_path_len = 0;
 
   while (*p != '\0')
@@ -5151,6 +5195,45 @@ print_multilib_info ()
 
       last_path = this_path;
       last_path_len = p - this_path;
+
+      /* If this directory requires any default arguments, we can skip
+	 it.  We will already have printed a directory identical to
+	 this one which does not require that default argument.  */
+      if (! skip)
+	{
+	  char *q;
+
+	  q = p + 1;
+	  while (*q != ';')
+	    {
+	      char *arg;
+
+	      if (*q == '\0')
+		abort ();
+
+	      if (*q == '!')
+		arg = NULL;
+	      else
+		arg = q;
+
+	      while (*q != ' ' && *q != ';')
+		{
+		  if (*q == '\0')
+		    abort ();
+		  ++q;
+		}
+
+	      if (arg != NULL
+		  && default_arg (arg, q - arg))
+		{
+		  skip = 1;
+		  break;
+		}
+
+	      if (*q == ' ')
+		++q;
+	    }
+	}
 
       if (! skip)
 	{
