@@ -1,3 +1,8 @@
+2000-07-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* tradcpp.c (main): Update max_include_len for cpp_include_defaults
+	as well.
+
 2000-07-24  Michael Meissner  <meissner@redhat.com>
 
 	* invoke.texi (D30V Options): Add d30v options.
