@@ -1,3 +1,9 @@
+2001-07-10  James Smaby  <jsmaby@virgo.umeche.maine.edu>
+
+	* intdoc.in: Fix the definition of COMPLEX ABS.
+	Remove `the' where inappropriate.
+	* intdoc.texi: Rebuilt.
+
 2001-07-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g77.texi: Use gpl.texi and funding.texi.  Remove Look and Feel
