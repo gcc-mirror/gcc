@@ -1,3 +1,8 @@
+2004-08-16  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-decl.c (grokdeclarator): Allow for function definition where
+	innermost declarator has attributes.
+
 2004-08-16  Fariborz Jahanian <fjahanian@apple.com>
 
 	* except.c (get_exception_filter, build_post_landing_pads,
