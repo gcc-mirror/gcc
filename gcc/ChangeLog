@@ -1,3 +1,9 @@
+2003-03-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (h8300_and_costs): Return the number of
+	assembly instructions needed.
+	(h8300_shift_costs): Likewise.
+
 2003-03-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/cris/aout.h (ENDFILE_SPEC): Undef.

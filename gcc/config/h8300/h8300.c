@@ -1158,7 +1158,7 @@ h8300_and_costs (x)
   operands[1] = NULL;
   operands[2] = XEXP (x, 1);
   operands[3] = x;
-  return compute_logical_op_length (GET_MODE (x), operands);
+  return compute_logical_op_length (GET_MODE (x), operands) / 2;
 }
 
 static int
@@ -1176,7 +1176,7 @@ h8300_shift_costs (x)
   operands[1] = NULL;
   operands[2] = XEXP (x, 1);
   operands[3] = x;
-  return compute_a_shift_length (NULL, operands);
+  return compute_a_shift_length (NULL, operands) / 2;
 }
 
 static bool
