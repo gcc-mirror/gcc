@@ -1,3 +1,7 @@
+2003-10-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/opt/float1.C: New test.
+
 2003-10-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/c90-array-lval-6.c: New test.
