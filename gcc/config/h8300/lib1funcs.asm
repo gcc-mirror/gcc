@@ -698,7 +698,6 @@ ___mulhi3:
 ___mulsi3:
 	PUSHP	S0P
 	PUSHP	S1P
-	PUSHP	S2P
 
 	sub.w	S0,S0
 	sub.w	S1,S1
@@ -731,7 +730,6 @@ _nobit:
 _done:
 	mov.w	S0,A0
 	mov.w	S1,A1
-	POPP	S2P
 	POPP	S1P
 	POPP	S0P
 	rts
