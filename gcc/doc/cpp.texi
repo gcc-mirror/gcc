@@ -1927,16 +1927,16 @@ These macros are defined by all GNU compilers that use the C
 preprocessor: C, C++, and Objective-C@.  Their values are the major
 version, minor version, and patch level of the compiler, as integer
 constants.  For example, GCC 3.2.1 will define @code{__GNUC__} to 3,
-@code{__GNUC_MINOR__} to 2, and @code{__GNUC_PATCHLEVEL__} to 1.  They
-are defined only when the entire compiler is in use; if you invoke the
-preprocessor directly, they are not defined.
+@code{__GNUC_MINOR__} to 2, and @code{__GNUC_PATCHLEVEL__} to 1.  These
+macros are also defined if you invoke the preprocessor directly.
 
 @code{__GNUC_PATCHLEVEL__} is new to GCC 3.0; it is also present in the
 widely-used development snapshots leading up to 3.0 (which identify
 themselves as GCC 2.96 or 2.97, depending on which snapshot you have).
 
 If all you need to know is whether or not your program is being compiled
-by GCC, you can simply test @code{__GNUC__}.  If you need to write code
+by GCC, or a non-GCC compiler that claims to accept the GNU C dialects,
+you can simply test @code{__GNUC__}.  If you need to write code
 which depends on a specific version, you must be more careful.  Each
 time the minor version is increased, the patch level is reset to zero;
 each time the major version is increased (which happens rarely), the
