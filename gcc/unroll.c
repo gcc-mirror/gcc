@@ -3352,7 +3352,7 @@ final_giv_value (loop, v)
   return 0;
 }
 
-/* Look back before LOOP->START for then insn that sets REG and return
+/* Look back before LOOP->START for the insn that sets REG and return
    the equivalent constant if there is a REG_EQUAL note otherwise just
    the SET_SRC of REG.  */
 

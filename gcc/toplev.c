@@ -2827,7 +2827,7 @@ rest_of_compilation (decl)
   unshare_all_rtl (current_function_decl, insns);
 
 #ifdef SETJMP_VIA_SAVE_AREA
-  /* This must be performed before virutal register instantiation.  */
+  /* This must be performed before virtual register instantiation.  */
   if (current_function_calls_alloca)
     optimize_save_area_alloca (insns);
 #endif
