@@ -1,3 +1,7 @@
+1999-10-25 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* prefix.c (translate_name) Check for empty prefix string.
+
 Mon Oct 25 23:10:45 1999  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (CPP_CROSS_NAME): New variable.
