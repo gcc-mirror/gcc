@@ -1,3 +1,11 @@
+Wed Feb 24 02:39:08 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Mon Dec  7 16:15:51 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+	* sh.c (output_far_jump): Emit braf only for TARGET_SH2.
+
+	Mon Nov 23 16:46:46 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+	* va-sh.h (__va_arg_sh1): Use __asm instead of asm.
+
 Tue Feb 23 00:38:17 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Thu Sep  3 00:23:21 1998  Richard Henderson  <rth@cygnus.com>

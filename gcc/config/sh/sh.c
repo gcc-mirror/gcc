@@ -552,7 +552,9 @@ output_far_jump (insn, op)
 
   this.lab = gen_label_rtx ();
 
-  if (offset >= -32764 && offset - get_attr_length (insn) <= 32766)
+  if (TARGET_SH2
+      && offset >= -32764
+      && offset - get_attr_length (insn) <= 32766)
     {
       far = 0;
       jump = "mov.w	%O0,%1;braf	%1";

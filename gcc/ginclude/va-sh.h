@@ -140,13 +140,13 @@ enum __va_type_classes {
 __extension__								\
 ({(sizeof (TYPE) == 1							\
    ? ({union {TYPE t; char c;} __t;					\
-       asm(""								\
+       __asm(""								\
 	   : "=r" (__t.c)						\
 	   : "0" ((((union { int i, j; } *) (AP))++)->i));		\
        __t.t;})								\
    : sizeof (TYPE) == 2							\
    ? ({union {TYPE t; short s;} __t;					\
-       asm(""								\
+       __asm(""								\
 	   : "=r" (__t.s)						\
 	   : "0" ((((union { int i, j; } *) (AP))++)->i));		\
        __t.t;})								\
