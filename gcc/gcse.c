@@ -4146,12 +4146,18 @@ compute_pre_ppinout ()
   int bb, i, changed, size, passes;
 
   sbitmap_vector_ones (pre_ppin, n_basic_blocks);
-  /* ??? Inefficient as we set pre_ppin[0] twice, but simple.  */
   sbitmap_zero (pre_ppin[0]);
 
+  /* Placement Possible out is initially set on all except exit blocks.
+     That is, either blocks whose sole successor is exit, or who have no
+     successors at all, such as would be created by a function that does
+     not return.  */
   sbitmap_vector_ones (pre_ppout, n_basic_blocks);
-  /* ??? Inefficient as we set pre_ppout[n_basic_blocks-1] twice, but simple.  */
-  sbitmap_zero (pre_ppout[n_basic_blocks - 1]);
+  for (bb = 0; bb < n_basic_blocks; bb++)
+    if (s_succs[bb] == NULL
+	|| (s_succs[bb]->next == NULL
+	    && s_succs[bb]->val == EXIT_BLOCK))
+      sbitmap_zero (pre_ppout[bb]);
 
   size = pre_ppin[0]->size;
   passes = 0;
@@ -4171,8 +4177,9 @@ compute_pre_ppinout ()
 	  for (i = 0; i < size; i++)
 	    {
 	      int_list_ptr pred;
-	      SBITMAP_ELT_TYPE tmp = *antin & *pavin & (*antloc | (*transp & *ppout));
-	      SBITMAP_ELT_TYPE pred_val = -1L;
+	      SBITMAP_ELT_TYPE tmp, pred_val = -1L;
+
+	      tmp = *antin & *pavin & (*antloc | (*transp & *ppout));
 
 	      for (pred = s_preds[bb]; pred != NULL; pred = pred->next)
 		{
@@ -4206,13 +4213,18 @@ compute_pre_ppinout ()
 	    }
 	}
 
-      for (bb = 0; bb < n_basic_blocks - 1; bb++)
+      for (bb = 0; bb < n_basic_blocks; bb++)
 	{
 	  sbitmap_ptr ppout = pre_ppout[bb]->elms;
 
-	  for (i = 0; i < size; i++)
+	  if (s_succs[bb] == NULL
+	      || (s_succs[bb]->next == NULL
+		  && s_succs[bb]->val == EXIT_BLOCK))
+	    continue;
+
+	  for (i = 0; i < size; i++, ppout++)
 	    {
-	      int_list_ptr succ;
+	      int_list_ptr succ = s_succs[bb];
 	      SBITMAP_ELT_TYPE tmp = -1L;
 
 	      for (succ = s_succs[bb]; succ != NULL; succ = succ->next)
@@ -4229,10 +4241,8 @@ compute_pre_ppinout ()
 	      if (*ppout != tmp)
 		{
 		  changed = 1;
-		  *ppout++ = tmp;
+		  *ppout = tmp;
 		}
-	      else
-		ppout++;
 	    }
 	}
 

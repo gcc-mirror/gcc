@@ -1,3 +1,10 @@
+Fri May 14 00:31:26 1999  Richard Henderson  <rth@cygnus.com>
+
+	* gcse.c (compute_pre_ppinout): Zero initial ppout for all
+	exit blocks, and don't forward propogate into them either.
+
+	* flow.c (add_pred_succ): Don't add duplicate edges.
+
 Sun Mar 14 02:38:07 PST 1999 Jeff Law  (law@cygnus.com)
 
 	* egcs-1.1.2 Released.

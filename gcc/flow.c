@@ -3282,15 +3282,28 @@ add_pred_succ (pred_bb, succ_bb, s_preds, s_succs, num_preds, num_succs)
      int *num_preds;
      int *num_succs;
 {
+  int_list_ptr tmp;
   if (succ_bb != EXIT_BLOCK)
     {
-      add_int_list_node (&pred_int_list_blocks, &s_preds[succ_bb], pred_bb);
-      num_preds[succ_bb]++;
+      for (tmp = s_preds[succ_bb]; tmp; tmp = tmp->next)
+	if (tmp->val == pred_bb)
+	  break;
+      if (tmp == NULL)
+	{
+	  add_int_list_node (&pred_int_list_blocks, &s_preds[succ_bb], pred_bb);
+	  num_preds[succ_bb]++;
+	}
     }
   if (pred_bb != ENTRY_BLOCK)
     {
-      add_int_list_node (&pred_int_list_blocks, &s_succs[pred_bb], succ_bb);
-      num_succs[pred_bb]++;
+      for (tmp = s_succs[pred_bb]; tmp; tmp = tmp->next)
+	if (tmp->val == succ_bb)
+	  break;
+      if (tmp == NULL)
+	{
+	  add_int_list_node (&pred_int_list_blocks, &s_succs[pred_bb], succ_bb);
+	  num_succs[pred_bb]++;
+	}
     }
 }
 
