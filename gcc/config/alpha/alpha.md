@@ -7185,7 +7185,7 @@
 
 (define_expand "builtin_insbl"
   [(match_operand:DI 0 "register_operand" "")
-   (match_operand:DI 1 "reg_or_0_operand" "")
+   (match_operand:DI 1 "register_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
@@ -7201,7 +7201,7 @@
 
 (define_expand "builtin_inswl"
   [(match_operand:DI 0 "register_operand" "")
-   (match_operand:DI 1 "reg_or_0_operand" "")
+   (match_operand:DI 1 "register_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
@@ -7217,7 +7217,7 @@
 
 (define_expand "builtin_insll"
   [(match_operand:DI 0 "register_operand" "")
-   (match_operand:DI 1 "reg_or_0_operand" "")
+   (match_operand:DI 1 "register_operand" "")
    (match_operand:DI 2 "reg_or_8bit_operand" "")]
   ""
 {
