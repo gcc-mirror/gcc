@@ -1,5 +1,9 @@
 2003-04-22  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10446
+	* search.c (lookup_fnfields_1): Handle empty slots in the method
+	vector.
+	
 	PR c++/10428
 	* decl.c (check_elaborated_type_specifier): New function, split
 	out from ...

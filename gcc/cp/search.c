@@ -1400,9 +1400,14 @@ lookup_fnfields_1 (tree type, tree name)
 		  n_outer_fields_searched++;
 #endif /* GATHER_STATISTICS */
 
-		  tmp = DECL_NAME (OVL_CURRENT (methods[i]));
-
-		  if (tmp > name)
+		  tmp = methods[i];
+		  /* This slot may be empty; we allocate more slots
+		     than we need.  In that case, the entry we're
+		     looking for is closer to the beginning of the
+		     list. */
+		  if (tmp)
+		    tmp = DECL_NAME (OVL_CURRENT (tmp));
+		  if (!tmp || tmp > name)
 		    hi = i;
 		  else if (tmp < name)
 		    lo = i + 1;
