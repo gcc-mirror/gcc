@@ -1,3 +1,8 @@
+Sun May 10 23:43:13 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* typeck.c (build_c_cast): Don't decay arrays and functions to
+	pointer type when converting to a class type.
+
 Sun May 10 22:53:56 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (DECL_NAMESPACE_SCOPE): New macro.
