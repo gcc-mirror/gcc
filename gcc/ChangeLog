@@ -1,3 +1,9 @@
+2002-04-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_va_arg): When using the struct version
+	of the EABI va_list, allow arguments in the register save area to
+	take up less room than a stack argument.
+
 2002-04-10  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (expand_expr) [INTEGER_CST]: Don't force into registers
