@@ -1651,13 +1651,54 @@ verify_flow_info ()
       basic_block bb = BASIC_BLOCK (i);
       int has_fallthru = 0;
       edge e;
+      rtx note;
 
+      if (INSN_P (bb->end)
+	  && (note = find_reg_note (bb->end, REG_BR_PROB, NULL_RTX)))
+	{
+	  if (!any_condjump_p (bb->end))
+	    {
+	      error ("verify_flow_info: REG_BR_PROB on non-condjump",
+		     bb->index);
+	      err = 1;
+	    }
+	  if (INTVAL (XEXP (note, 0)) != BRANCH_EDGE (bb)->probability)
+	    {
+	      error ("verify_flow_info: REG_BR_PROB does not match cfg %i %i",
+		     INTVAL (XEXP (note, 0)), BRANCH_EDGE (bb)->probability);
+	      err = 1;
+	    }
+	}
+      if (bb->count < 0)
+        {
+          error ("verify_flow_info: Wrong count of block %i %i",
+	         bb->index, (int)bb->count);
+          err = 1;
+        }
+      if (bb->frequency < 0)
+        {
+          error ("verify_flow_info: Wrong frequency of block %i %i",
+	         bb->index, bb->frequency);
+          err = 1;
+        }
       for (e = bb->succ; e; e = e->succ_next)
 	{
 	  if (last_visited [e->dest->index + 2] == bb)
 	    {
 	      error ("verify_flow_info: Duplicate edge %i->%i",
 		     e->src->index, e->dest->index);
+	      err = 1;
+	    }
+	  if (e->probability < 0 || e->probability > REG_BR_PROB_BASE)
+	    {
+	      error ("verify_flow_info: Wrong probability of edge %i->%i %i",
+		     e->src->index, e->dest->index, e->probability);
+	      err = 1;
+	    }
+	  if (e->count < 0)
+	    {
+	      error ("verify_flow_info: Wrong count of edge %i->%i %i",
+		     e->src->index, e->dest->index, (int)e->count);
 	      err = 1;
 	    }
 
@@ -1934,6 +1975,17 @@ purge_dead_edges (bb)
 	  && !returnjump_p (insn)
 	  && !simplejump_p (insn))
 	return false;
+
+      /* Branch probability/prediction notes are defined only for
+	 condjumps.  We've possibly turned condjump into simplejump.  */
+      if (simplejump_p (insn))
+	{
+	  note = find_reg_note (insn, REG_BR_PROB, NULL);
+	  if (note)
+	    remove_note (insn, note);
+	  while ((note = find_reg_note (insn, REG_BR_PRED, NULL)))
+	    remove_note (insn, note);
+	}
 
       for (e = bb->succ; e; e = next)
 	{
