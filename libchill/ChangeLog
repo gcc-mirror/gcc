@@ -1,3 +1,8 @@
+Wed Sep  9 21:32:46 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Add library exception clause to the copyright notice for all
+	 .c and .h files.
+
 Tue Sep  8 10:41:38 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* rts.h: Update with missing code.
