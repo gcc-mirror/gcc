@@ -1,4 +1,10 @@
 2003-07-14  Paolo Carlini  <pcarlini@unitus.it>
+
+	* config/locale/gnu/c_locale.h (__convert_from_v): Include
+	<cstdio>. Qualify names.
+	* config/locale/generic/c_locale.h (__convert_from_v): Ditto.
+
+2003-07-14  Paolo Carlini  <pcarlini@unitus.it>
 	    Nathan C. Myers  <ncm-nospam@cantrip.org>
 
 	PR libstdc++/11378
