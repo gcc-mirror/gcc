@@ -1973,8 +1973,11 @@ output_function_profiler (file, labelno)
 
   /* Set up a TOC entry for the profiler label.  */
   toc_section ();
-  fprintf (file, "LPC..%d:\n\t.tc\tLP..%d[TC],LP..%d\n",
-	   labelno, labelno, labelno);
+  if (TARGET_MINIMAL_TOC)
+    fprintf (file, "LPC..%d:\n\t.long LP..%d\n", labelno, labelno);
+  else
+    fprintf (file, "LPC..%d:\n\t.tc\tLP..%d[TC],LP..%d\n",
+	     labelno, labelno, labelno);
   text_section ();
 
   /* Figure out last used parameter register.  The proper thing to do is
