@@ -22,8 +22,9 @@ Boston, MA 02111-1307, USA.  */
    after mips.h.  */
 
 #undef SUBTARGET_TARGET_OPTIONS
-#define SUBTARGET_TARGET_OPTIONS\
-  { "abi=", &mips_abi_string	},
+#define SUBTARGET_TARGET_OPTIONS \
+  { "abi=", &mips_abi_string,						\
+      "Speciy ABI to use"},
 
 #undef STACK_BOUNDARY
 #define STACK_BOUNDARY \

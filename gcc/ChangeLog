@@ -1,3 +1,9 @@
+Mon Mar 22 18:06:59 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* mips/mips.h (TARGET_SWITCHES, TARGET_OPTIONS): Add option doc
+	strings.
+	* mips/abi64.h (SUBTARGET_TARGET_OPTIONS): Likewise.
+
 Mon Mar 22 16:18:27 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/elf.h (VALID_MACHINE_DECL_ATTRIBUTE): Do not bother

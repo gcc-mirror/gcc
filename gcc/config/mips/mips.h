@@ -452,69 +452,129 @@ extern void		mips_select_section ();
 
 #define TARGET_SWITCHES							\
 {									\
-  {"int64",		  MASK_INT64 | MASK_LONG64},			\
-  {"long64",		  MASK_LONG64},					\
-  {"long32",		 -(MASK_LONG64 | MASK_INT64)},			\
-  {"split-addresses",	  MASK_SPLIT_ADDR},				\
-  {"no-split-addresses", -MASK_SPLIT_ADDR},				\
-  {"mips-as",		 -MASK_GAS},					\
-  {"gas",		  MASK_GAS},					\
-  {"rnames",		  MASK_NAME_REGS},				\
-  {"no-rnames",		 -MASK_NAME_REGS},				\
-  {"gpOPT",		  MASK_GPOPT},					\
-  {"gpopt",		  MASK_GPOPT},					\
-  {"no-gpOPT",		 -MASK_GPOPT},					\
-  {"no-gpopt",		 -MASK_GPOPT},					\
-  {"stats",		  MASK_STATS},					\
-  {"no-stats",		 -MASK_STATS},					\
-  {"memcpy",		  MASK_MEMCPY},					\
-  {"no-memcpy",		 -MASK_MEMCPY},					\
-  {"mips-tfile",	  MASK_MIPS_TFILE},				\
-  {"no-mips-tfile",	 -MASK_MIPS_TFILE},				\
-  {"soft-float",	  MASK_SOFT_FLOAT},				\
-  {"hard-float",	 -MASK_SOFT_FLOAT},				\
-  {"fp64",		  MASK_FLOAT64},				\
-  {"fp32",		 -MASK_FLOAT64},				\
-  {"gp64",		  MASK_64BIT},					\
-  {"gp32",		 -MASK_64BIT},					\
-  {"abicalls",		  MASK_ABICALLS},				\
-  {"no-abicalls",	 -MASK_ABICALLS},				\
-  {"half-pic",		  MASK_HALF_PIC},				\
-  {"no-half-pic",	 -MASK_HALF_PIC},				\
-  {"long-calls",	  MASK_LONG_CALLS},				\
-  {"no-long-calls",	 -MASK_LONG_CALLS},				\
-  {"embedded-pic",	  MASK_EMBEDDED_PIC},				\
-  {"no-embedded-pic",	 -MASK_EMBEDDED_PIC},				\
-  {"embedded-data",	  MASK_EMBEDDED_DATA},				\
-  {"no-embedded-data",	 -MASK_EMBEDDED_DATA},				\
-  {"eb",		  MASK_BIG_ENDIAN},				\
-  {"el",		 -MASK_BIG_ENDIAN},				\
-  {"single-float",	  MASK_SINGLE_FLOAT},				\
-  {"double-float",	 -MASK_SINGLE_FLOAT},				\
-  {"mad",		  MASK_MAD},					\
-  {"no-mad",		 -MASK_MAD},					\
-  {"fix4300",             MASK_4300_MUL_FIX},				\
-  {"no-fix4300",         -MASK_4300_MUL_FIX},				\
-  {"4650",		  MASK_MAD | MASK_SINGLE_FLOAT},		\
-  {"3900",		  MASK_MIPS3900},                               \
-  {"check-zero-division",-MASK_NO_CHECK_ZERO_DIV},			\
-  {"no-check-zero-division", MASK_NO_CHECK_ZERO_DIV},			\
-  {"check-range-division",MASK_CHECK_RANGE_DIV},			\
-  {"no-check-range-division",-MASK_CHECK_RANGE_DIV},			\
-  {"debug",		  MASK_DEBUG},					\
-  {"debuga",		  MASK_DEBUG_A},				\
-  {"debugb",		  MASK_DEBUG_B},				\
-  {"debugc",		  MASK_DEBUG_C},				\
-  {"debugd",		  MASK_DEBUG_D},				\
-  {"debuge",		  MASK_DEBUG_E},				\
-  {"debugf",		  MASK_DEBUG_F},				\
-  {"debugg",		  MASK_DEBUG_G},				\
-  {"debugh",		  MASK_DEBUG_H},				\
-  {"debugi",		  MASK_DEBUG_I},				\
+  {"int64",		  MASK_INT64 | MASK_LONG64,			\
+     "Use 64-bit int type"},						\
+  {"long64",		  MASK_LONG64,					\
+     "Use 64-bit long type"},						\
+  {"long32",		 -(MASK_LONG64 | MASK_INT64),			\
+     "Use 32-bit long type"},						\
+  {"split-addresses",	  MASK_SPLIT_ADDR,				\
+     "Optimize lui/addiu address loads"},				\
+  {"no-split-addresses", -MASK_SPLIT_ADDR,				\
+     "Don't optimize lui/addiu address loads"},				\
+  {"mips-as",		 -MASK_GAS,					\
+     "Use MIPS as"},							\
+  {"gas",		  MASK_GAS,					\
+     "Use GNU as"},							\
+  {"rnames",		  MASK_NAME_REGS,				\
+     "Use symbolic register names"},					\
+  {"no-rnames",		 -MASK_NAME_REGS,				\
+     "Don't use symbolic register names"},				\
+  {"gpOPT",		  MASK_GPOPT,					\
+     "Use GP relative sdata/sbss sections"},				\
+  {"gpopt",		  MASK_GPOPT,					\
+     "Use GP relative sdata/sbss sections"},				\
+  {"no-gpOPT",		 -MASK_GPOPT,					\
+     "Don't use GP relative sdata/sbss sections"},			\
+  {"no-gpopt",		 -MASK_GPOPT,					\
+     "Don't use GP relative sdata/sbss sections"},			\
+  {"stats",		  MASK_STATS,					\
+     "Output compiler statistics"},					\
+  {"no-stats",		 -MASK_STATS,					\
+     "Don't output compiler statistics"},				\
+  {"memcpy",		  MASK_MEMCPY,					\
+     "Don't optimize block moves"},					\
+  {"no-memcpy",		 -MASK_MEMCPY,					\
+     "Optimize block moves"},						\
+  {"mips-tfile",	  MASK_MIPS_TFILE,				\
+     "Use mips-tfile asm postpass"},					\
+  {"no-mips-tfile",	 -MASK_MIPS_TFILE,				\
+     "Don't use mips-tfile asm postpass"},				\
+  {"soft-float",	  MASK_SOFT_FLOAT,				\
+     "Use software floating point"},					\
+  {"hard-float",	 -MASK_SOFT_FLOAT,				\
+     "Use hardware floating point"},					\
+  {"fp64",		  MASK_FLOAT64,					\
+     "Use 64-bit FP registers"},					\
+  {"fp32",		 -MASK_FLOAT64,					\
+     "Use 32-bit FP registers"},					\
+  {"gp64",		  MASK_64BIT,					\
+     "Use 64-bit general registers"},					\
+  {"gp32",		 -MASK_64BIT,					\
+     "Use 32-bit general registers"},					\
+  {"abicalls",		  MASK_ABICALLS,				\
+     "Use Irix PIC"},							\
+  {"no-abicalls",	 -MASK_ABICALLS,				\
+     "Don't use Irix PIC"},						\
+  {"half-pic",		  MASK_HALF_PIC,				\
+     "Use OSF PIC"},							\
+  {"no-half-pic",	 -MASK_HALF_PIC,				\
+     "Don't use OSF PIC"},						\
+  {"long-calls",	  MASK_LONG_CALLS,				\
+     "Use indirect calls"},						\
+  {"no-long-calls",	 -MASK_LONG_CALLS,				\
+     "Don't use indirect calls"},					\
+  {"embedded-pic",	  MASK_EMBEDDED_PIC,				\
+     "Use embedded PIC"},						\
+  {"no-embedded-pic",	 -MASK_EMBEDDED_PIC,				\
+     "Don't use embedded PIC"},						\
+  {"embedded-data",	  MASK_EMBEDDED_DATA,				\
+     "Use ROM instead of RAM"},						\
+  {"no-embedded-data",	 -MASK_EMBEDDED_DATA,				\
+     "Don't use ROM instead of RAM"},					\
+  {"eb",		  MASK_BIG_ENDIAN,				\
+     "Use big-endian byte order"},					\
+  {"el",		 -MASK_BIG_ENDIAN,				\
+     "Use little-endian byte order"},					\
+  {"single-float",	  MASK_SINGLE_FLOAT,				\
+     "Use single (32-bit) FP only"},					\
+  {"double-float",	 -MASK_SINGLE_FLOAT,				\
+     "Don't use single (32-bit) FP only"},				\
+  {"mad",		  MASK_MAD,					\
+     "Use multiply accumulate"},					\
+  {"no-mad",		 -MASK_MAD,					\
+     "Don't use multiply accumulate"},					\
+  {"fix4300",             MASK_4300_MUL_FIX,				\
+     "Work around early 4300 hardware bug"},				\
+  {"no-fix4300",         -MASK_4300_MUL_FIX,				\
+     "Don't work around early 4300 hardware bug"},			\
+  {"4650",		  MASK_MAD | MASK_SINGLE_FLOAT,			\
+     "Optimize for 4650"},						\
+  {"3900",		  MASK_MIPS3900,				\
+     "Optimize for 3900"},						\
+  {"check-zero-division",-MASK_NO_CHECK_ZERO_DIV,			\
+     "Trap on integer divide by zero"},					\
+  {"no-check-zero-division", MASK_NO_CHECK_ZERO_DIV,			\
+     "Don't trap on integer divide by zero"},				\
+  {"check-range-division",MASK_CHECK_RANGE_DIV,				\
+     "Trap on integer divide overflow"},				\
+  {"no-check-range-division",-MASK_CHECK_RANGE_DIV,			\
+     "Don't trap on integer divide overflow"},				\
+  {"debug",		  MASK_DEBUG,					\
+     NULL},								\
+  {"debuga",		  MASK_DEBUG_A,					\
+     NULL},								\
+  {"debugb",		  MASK_DEBUG_B,					\
+     NULL},								\
+  {"debugc",		  MASK_DEBUG_C,					\
+     NULL},								\
+  {"debugd",		  MASK_DEBUG_D,					\
+     NULL},								\
+  {"debuge",		  MASK_DEBUG_E,					\
+     NULL},								\
+  {"debugf",		  MASK_DEBUG_F,					\
+     NULL},								\
+  {"debugg",		  MASK_DEBUG_G,					\
+     NULL},								\
+  {"debugh",		  MASK_DEBUG_H,					\
+     NULL},								\
+  {"debugi",		  MASK_DEBUG_I,					\
+     NULL},								\
   {"",			  (TARGET_DEFAULT				\
 			   | TARGET_CPU_DEFAULT				\
-			   | TARGET_ENDIAN_DEFAULT)}			\
-}
+			   | TARGET_ENDIAN_DEFAULT),			\
+     NULL},								\
+}     
 
 /* Default target_flags if no switches are specified  */
 
@@ -575,11 +635,16 @@ extern void		mips_select_section ();
 #define TARGET_OPTIONS							\
 {									\
   SUBTARGET_TARGET_OPTIONS						\
-  { "cpu=",	&mips_cpu_string	},				\
-  { "ips",	&mips_isa_string	},				\
-  { "entry",	&mips_entry_string	},				\
-  { "no-mips16", &mips_no_mips16_string	},                              \
-  { "explicit-type-size", &mips_explicit_type_size_string }		\
+  { "cpu=",	&mips_cpu_string,					\
+      "Specify CPU for scheduling purposes"},				\
+  { "ips",	&mips_isa_string,					\
+      "Specify MIPS ISA"},						\
+  { "entry",	&mips_entry_string,					\
+      "Use mips16 entry/exit psuedo ops"},				\
+  { "no-mips16", &mips_no_mips16_string,				\
+      "Don't use MIPS16 instructions"},					\
+  { "explicit-type-size", &mips_explicit_type_size_string,		\
+      NULL},								\
 }
 
 /* This is meant to be redefined in the host dependent files.  */
