@@ -1,3 +1,9 @@
+Sun Dec 17 18:45:41 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* print-tree.c (print_node): Print DECL_USER_ALIGN and TYPE_USER_ALIGN.
+	Print TYPE_MIN_VALUE and TYPE_MAX_VALUE for REAL_TYPE.
+	Use print_node_brief to print bounds.
+
 2000-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cpplib.h (struct cpp_reader): Remove references to string_pool

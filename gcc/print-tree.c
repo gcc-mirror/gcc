@@ -95,7 +95,8 @@ print_node_brief (file, prefix, node, indent)
     }
   if (TREE_CODE (node) == IDENTIFIER_NODE)
     fprintf (file, " %s", IDENTIFIER_POINTER (node));
-  /* We might as well always print the value of an integer.  */
+
+  /* We might as well always print the value of an integer or real.  */
   if (TREE_CODE (node) == INTEGER_CST)
     {
       if (TREE_CONSTANT_OVERFLOW (node))
@@ -376,7 +377,6 @@ print_node (file, prefix, node, indent)
 	fputs (" decl_7", file);
 
       fprintf (file, " %s", GET_MODE_NAME(mode));
-
       fprintf (file, " file %s line %d",
 	       DECL_SOURCE_FILE (node), DECL_SOURCE_LINE (node));
 
@@ -389,6 +389,9 @@ print_node (file, prefix, node, indent)
 
       if (TREE_CODE (node) != FUNCTION_DECL)
 	{
+	  if (DECL_USER_ALIGN (node))
+	    fprintf (file, " user");
+
 	  fprintf (file, " align %d", DECL_ALIGN (node));
 	  if (TREE_CODE (node) == FIELD_DECL)
 	    {
@@ -521,6 +524,9 @@ print_node (file, prefix, node, indent)
       print_node (file, "unit size", TYPE_SIZE_UNIT (node), indent + 4);
       indent_to (file, indent + 3);
 
+      if (TYPE_USER_ALIGN (node))
+	fprintf (file, " user");
+
       fprintf (file, " align %d", TYPE_ALIGN (node));
       fprintf (file, " symtab %d", TYPE_SYMTAB_ADDRESS (node));
       fprintf (file, " alias set ");
@@ -528,25 +534,17 @@ print_node (file, prefix, node, indent)
 
       print_node (file, "attributes", TYPE_ATTRIBUTES (node), indent + 4);
 
-      if (TREE_CODE (node) == ARRAY_TYPE || TREE_CODE (node) == SET_TYPE)
+      if (INTEGRAL_TYPE_P (node) || TREE_CODE (node) == REAL_TYPE)
+	{
+	  fprintf (file, " precision %d", TYPE_PRECISION (node));
+	  print_node_brief (file, "min", TYPE_MIN_VALUE (node), indent + 4);
+	  print_node_brief (file, "max", TYPE_MAX_VALUE (node), indent + 4);
+	}
+
+      if (TREE_CODE (node) == ENUMERAL_TYPE)
+	print_node (file, "values", TYPE_VALUES (node), indent + 4);
+      else if (TREE_CODE (node) == ARRAY_TYPE || TREE_CODE (node) == SET_TYPE)
 	print_node (file, "domain", TYPE_DOMAIN (node), indent + 4);
-      else if (TREE_CODE (node) == INTEGER_TYPE
-	       || TREE_CODE (node) == BOOLEAN_TYPE
-	       || TREE_CODE (node) == CHAR_TYPE)
-	{
-	  fprintf (file, " precision %d", TYPE_PRECISION (node));
-	  print_node (file, "min", TYPE_MIN_VALUE (node), indent + 4);
-	  print_node (file, "max", TYPE_MAX_VALUE (node), indent + 4);
-	}
-      else if (TREE_CODE (node) == ENUMERAL_TYPE)
-	{
-	  fprintf (file, " precision %d", TYPE_PRECISION (node));
-	  print_node (file, "min", TYPE_MIN_VALUE (node), indent + 4);
-	  print_node (file, "max", TYPE_MAX_VALUE (node), indent + 4);
-	  print_node (file, "values", TYPE_VALUES (node), indent + 4);
-	}
-      else if (TREE_CODE (node) == REAL_TYPE)
-	fprintf (file, " precision %d", TYPE_PRECISION (node));
       else if (TREE_CODE (node) == RECORD_TYPE
 	       || TREE_CODE (node) == UNION_TYPE
 	       || TREE_CODE (node) == QUAL_UNION_TYPE)
@@ -562,6 +560,7 @@ print_node (file, prefix, node, indent)
       else if (TREE_CODE (node) == OFFSET_TYPE)
 	print_node_brief (file, "basetype", TYPE_OFFSET_BASETYPE (node),
 			  indent + 4);
+
       if (TYPE_CONTEXT (node))
 	print_node_brief (file, "context", TYPE_CONTEXT (node), indent + 4);
 
@@ -569,8 +568,11 @@ print_node (file, prefix, node, indent)
 
       if (TYPE_POINTER_TO (node) || TREE_CHAIN (node))
 	indent_to (file, indent + 3);
-      print_node_brief (file, "pointer_to_this", TYPE_POINTER_TO (node), indent + 4);
-      print_node_brief (file, "reference_to_this", TYPE_REFERENCE_TO (node), indent + 4);
+
+      print_node_brief (file, "pointer_to_this", TYPE_POINTER_TO (node),
+			indent + 4);
+      print_node_brief (file, "reference_to_this", TYPE_REFERENCE_TO (node),
+			indent + 4);
       print_node_brief (file, "chain", TREE_CHAIN (node), indent + 4);
       break;
 
