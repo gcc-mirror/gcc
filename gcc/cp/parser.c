@@ -3846,6 +3846,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		    && (type_dependent_expression_p (instance)
 			|| (!BASELINK_P (fn)
 			    && TREE_CODE (fn) != FIELD_DECL)
+			|| type_dependent_expression_p (fn)
 			|| any_type_dependent_arguments_p (args)))
 		  {
 		    postfix_expression
