@@ -85,8 +85,3 @@
 /* Until they use ELF or something that handles dwarf2 unwinds
    and initialization stuff better.  */
 #define DWARF2_UNWIND_INFO 0
-
-/* This is the pseudo-op used to generate a 32-bit word of data with a
-   specific value in some section.  */
-
-#define INT_ASM_OP "\t.long\t"

@@ -77,8 +77,6 @@ dtors_section ()							\
     }									\
 }
 
-#define INT_ASM_OP "\t.long\t"
-
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\

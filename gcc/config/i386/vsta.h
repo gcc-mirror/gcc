@@ -61,7 +61,7 @@ dtor_section ()							\
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
   do {						\
     ctor_section ();				\
-    fprintf (FILE, "%s\t", ASM_LONG);		\
+    fputs (ASM_LONG, FILE);			\
     assemble_name (FILE, NAME);			\
     fprintf (FILE, "\n");			\
   } while (0)
@@ -69,7 +69,7 @@ dtor_section ()							\
 #define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       	\
   do {						\
     dtor_section ();                   		\
-    fprintf (FILE, "%s\t", ASM_LONG);		\
+    fputs (ASM_LONG, FILE);			\
     assemble_name (FILE, NAME);              	\
     fprintf (FILE, "\n");			\
   } while (0)

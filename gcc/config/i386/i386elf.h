@@ -56,9 +56,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 do { long value;							\
      REAL_VALUE_TO_TARGET_SINGLE ((VALUE), value);			\
      if (sizeof (int) == sizeof (long))					\
-         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value);		\
+         fprintf((FILE), "%s0x%x\n", ASM_LONG, value);			\
      else								\
-         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value);		\
+         fprintf((FILE), "%s0x%lx\n", ASM_LONG, value);			\
    } while (0)
 
 /* This is how to output assembly code to define a `double' constant.
@@ -72,13 +72,13 @@ do { long value[2];							\
      REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), value);			\
      if (sizeof (int) == sizeof (long))					\
        {								\
-         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[0]);		\
-         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[1]);		\
+         fprintf((FILE), "%s0x%x\n", ASM_LONG, value[0]);		\
+         fprintf((FILE), "%s0x%x\n", ASM_LONG, value[1]);		\
        }								\
      else								\
        {								\
-         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value[0]);		\
-         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value[1]);		\
+         fprintf((FILE), "%s0x%lx\n", ASM_LONG, value[0]);		\
+         fprintf((FILE), "%s0x%lx\n", ASM_LONG, value[1]);		\
        }								\
    } while (0)
 
@@ -89,15 +89,15 @@ do { long value[3];							\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), value);			\
      if (sizeof (int) == sizeof (long))					\
        {								\
-         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[0]);		\
-         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[1]);		\
-         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[2]);		\
+         fprintf((FILE), "%s0x%x\n", ASM_LONG, value[0]);		\
+         fprintf((FILE), "%s0x%x\n", ASM_LONG, value[1]);		\
+         fprintf((FILE), "%s0x%x\n", ASM_LONG, value[2]);		\
        }								\
      else								\
        {								\
-         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value[0]);		\
-         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value[1]);		\
-         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value[2]);		\
+         fprintf((FILE), "%s0x%lx\n", ASM_LONG, value[0]);		\
+         fprintf((FILE), "%s0x%lx\n", ASM_LONG, value[1]);		\
+         fprintf((FILE), "%s0x%lx\n", ASM_LONG, value[2]);		\
        }								\
    } while (0)
 

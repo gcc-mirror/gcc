@@ -133,8 +133,3 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Note that we pick up ASM_OUTPUT_MI_THUNK from unix.h.  */
-
-/* This is the pseudo-op used to generate a 32-bit word of data with a
-   specific value in some section.  */
-
-#define INT_ASM_OP "\t.long\t"

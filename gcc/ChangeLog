@@ -1,3 +1,25 @@
+2001-05-20  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/att.h (ASM_SHORT, ASM_LONG): Add trailing \t.
+	(ASM_DOUBLE): Remove.
+	* config/i386/bsd.h, config/i386/sco5.h: Likewise.
+	* config/i386/sun386.h: Likewise.
+
+	* config/i386/i386.h (UNALIGNED_SHORT_ASM_OP): New.
+	(UNALIGNED_INT_ASM_OP, INT_ASM_OP): New.
+
+	* config/i386/cygwin.h (INT_ASM_OP): Remove.
+	* config/i386/freebsd-aout.h, config/i386/i386-aout.h: Likewise.
+	* config/i386/i386-coff.h, config/i386/i386-interix.h: Likewise.
+	* config/i386/netbsd.h, config/i386/openbsd.h: Likewise.
+
+	* config/i386/cygwin.h: Adjust uses of ASM_LONG for trailing \t.
+	* config/i386/djgpp.h, config/i386/i386.h: Likewise.
+	* config/i386/i386elf.h, config/i386/ptx4-i.h: Likewise.
+	* config/i386/sco5.h, config/i386/svr3gas.h: Likewise.
+	* config/i386/sysv4.h, config/i386/vsta.h: Likewise.
+	* config/i386/win-nt.h, config/i386/win32.h: Likewise.
+
 2001-05-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* invoke.texi: Add more options to summary list.

@@ -31,6 +31,4 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES ""
 
-#define INT_ASM_OP "\t.long\t"
-
 /* end of i386-aout.h */
