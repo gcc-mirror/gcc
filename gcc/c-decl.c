@@ -577,6 +577,10 @@ int warn_unknown_pragmas = 0; /* Tri state variable.  */
 
 int warn_sign_compare = -1;
 
+/* Nonzero means warn about use of multicharacter literals.  */
+
+int warn_multichar = 1;
+
 /* Nonzero means `$' can be in an identifier.  */
 
 #ifndef DOLLARS_IN_IDENTIFIERS
@@ -792,6 +796,10 @@ c_decode_option (argc, argv)
     warn_sign_compare = 1;
   else if (!strcmp (p, "-Wno-sign-compare"))
     warn_sign_compare = 0;
+  else if (!strcmp (p, "-Wmultichar"))
+    warn_multichar = 1;
+  else if (!strcmp (p, "-Wno-multichar"))
+    warn_multichar = 0;
   else if (!strcmp (p, "-Wunknown-pragmas"))
     /* Set to greater than 1, so that even unknown pragmas in system
        headers will be warned about.  */

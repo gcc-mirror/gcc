@@ -122,7 +122,7 @@ in the following sections.
 -Wimplicit-function-declaration  -Wimport
 -Werror-implicit-function-declaration  -Winline
 -Wlarger-than-@var{len}  -Wmain  -Wmissing-declarations
--Wmissing-prototypes  -Wnested-externs  -Wno-import  
+-Wmissing-prototypes  -Wmultichar  -Wnested-externs  -Wno-import  
 -Wold-style-cast  -Woverloaded-virtual  -Wparentheses
 -Wpointer-arith  -Wredundant-decls  -Wreorder  -Wreturn-type
 -Wshadow  -Wsign-compare  -Wstrict-prototypes  -Wswitch
@@ -1287,6 +1287,11 @@ Same as @samp{-Wimplicit-int} and @samp{-Wimplicit-function-}@*
 Warn if the type of @samp{main} is suspicious.  @samp{main} should be a
 function with external linkage, returning int, taking either zero
 arguments, two, or three arguments of appropriate types.
+
+@item -Wmultichar
+Warn if a multicharacter constant (@samp{'FOOF'}) is used.  Usually they
+indicate a typo in the user's code, as they have implementation-defined
+values, and should not be used in portable code.
   
 @item -Wparentheses
 Warn if parentheses are omitted in certain contexts, such
