@@ -649,7 +649,7 @@
 	     "r" ((unsigned long int)(al)),				\
 	     "rI" ((unsigned long int)(bl))				\
 	   __CLOBBER_CC)
-#if defined (__sparc8__)	/* How do we recog. version 8 SPARC?  */
+#if defined (__sparcv8__)
 #define umul_ppmm(w1, w0, u, v) \
   __asm__ ("umul %2,%3,%1;rd %%y,%0"					\
 	   : "=r" ((unsigned long int)(w1)),				\
