@@ -1,3 +1,10 @@
+2003-02-15  Jan Hubicka  <jh@suse.cz>
+
+	PR optimization/9258, PR fortran/7681
+	* global.c (struct allocno): Add no_stack_reg.
+	(global_conflicts): Set it.
+	(find_reg): Use it.
+
 2003-02-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mn10300/mn10300.c (mn10300_wide_const_load_uses_clr): New
