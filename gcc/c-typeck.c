@@ -958,9 +958,9 @@ function_types_compatible_p (tree f1, tree f2)
   ret1 = TREE_TYPE (f1);
   ret2 = TREE_TYPE (f2);
 
-  /* 'volatile' qualifiers on a function's return type mean the function
-     is noreturn.  */
-  if (pedantic && TYPE_VOLATILE (ret1) != TYPE_VOLATILE (ret2))
+  /* 'volatile' qualifiers on a function's return type used to mean
+     the function is noreturn.  */
+  if (TYPE_VOLATILE (ret1) != TYPE_VOLATILE (ret2))
     pedwarn ("function return types not compatible due to `volatile'");
   if (TYPE_VOLATILE (ret1))
     ret1 = build_qualified_type (TYPE_MAIN_VARIANT (ret1),

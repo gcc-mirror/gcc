@@ -1,5 +1,15 @@
 2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	PR c/15052
+	* gcc.dg/noreturn-5.c: Test qualifiers on function type instead of
+	on return type.
+	* gcc.dg/qual-return-1.c: Use -Wreturn-type.  Update expected
+	messages.
+	* gcc.dg/qual-return-2.c: Update expected messages.
+	* gcc.dg/qual-return-3.c, gcc.dg/qual-return-4.c: New tests.
+
+2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* gcc.dg/c99-init-3.c, gcc.dg/gnu99-init-2.c: New tests.
 	* gcc.dg/noncompile/921102-1.c: Update expected error message.
 

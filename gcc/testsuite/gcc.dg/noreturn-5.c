@@ -4,4 +4,5 @@
    The testsuite uses -ansi -pedantic-errors by default, so this has
    to override.  */
 extern void xxx (int) __attribute__((noreturn));
-__volatile extern void xxx (int);
+typedef void voidfn (int);
+__volatile extern voidfn xxx;
