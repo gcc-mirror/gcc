@@ -546,19 +546,10 @@ copy_body_r (tp, walk_subtrees, data)
      knows not to copy VAR_DECLs, etc., so this is safe.  */
   else
     {
-      copy_tree_r (tp, walk_subtrees, NULL);
-
-      /* The copied TARGET_EXPR has never been expanded, even if the
-	 original node was expanded already.  */
-      if (TREE_CODE (*tp) == TARGET_EXPR && TREE_OPERAND (*tp, 3))
-	{
-	  TREE_OPERAND (*tp, 1) = TREE_OPERAND (*tp, 3);
-	  TREE_OPERAND (*tp, 3) = NULL_TREE;
-	}
-      else if (TREE_CODE (*tp) == MODIFY_EXPR
-	       && TREE_OPERAND (*tp, 0) == TREE_OPERAND (*tp, 1)
-	       && ((*lang_hooks.tree_inlining.auto_var_in_fn_p)
-		   (TREE_OPERAND (*tp, 0), fn)))
+      if (TREE_CODE (*tp) == MODIFY_EXPR
+	  && TREE_OPERAND (*tp, 0) == TREE_OPERAND (*tp, 1)
+	  && ((*lang_hooks.tree_inlining.auto_var_in_fn_p)
+	      (TREE_OPERAND (*tp, 0), fn)))
 	{
 	  /* Some assignments VAR = VAR; don't generate any rtl code
 	     and thus don't count as variable modification.  Avoid
@@ -572,8 +563,42 @@ copy_body_r (tp, walk_subtrees, data)
 	      value = (tree) n->value;
 	      STRIP_TYPE_NOPS (value);
 	      if (TREE_CONSTANT (value) || TREE_READONLY_DECL_P (value))
-		*tp = value;
+		{
+		  *tp = value;
+		  return copy_body_r (tp, walk_subtrees, data);
+		}
 	    }
+	}
+      else if (TREE_CODE (*tp) == ADDR_EXPR
+	       && ((*lang_hooks.tree_inlining.auto_var_in_fn_p)
+		   (TREE_OPERAND (*tp, 0), fn)))
+	{
+	  /* Get rid of &* from inline substitutions.  It can occur when
+	     someone takes the address of a parm or return slot passed by
+	     invisible reference.  */
+	  tree decl = TREE_OPERAND (*tp, 0), value;
+	  splay_tree_node n;
+
+	  n = splay_tree_lookup (id->decl_map, (splay_tree_key) decl);
+	  if (n)
+	    {
+	      value = (tree) n->value;
+	      if (TREE_CODE (value) == INDIRECT_REF)
+		{
+		  *tp = convert (TREE_TYPE (*tp), TREE_OPERAND (value, 0));
+		  return copy_body_r (tp, walk_subtrees, data);
+		}
+	    }
+	}
+
+      copy_tree_r (tp, walk_subtrees, NULL);
+
+      /* The copied TARGET_EXPR has never been expanded, even if the
+	 original node was expanded already.  */
+      if (TREE_CODE (*tp) == TARGET_EXPR && TREE_OPERAND (*tp, 3))
+	{
+	  TREE_OPERAND (*tp, 1) = TREE_OPERAND (*tp, 3);
+	  TREE_OPERAND (*tp, 3) = NULL_TREE;
 	}
     }
 

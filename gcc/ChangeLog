@@ -1,3 +1,8 @@
+2003-05-19  Jason Merrill  <jason@redhat.com>
+
+	* tree-inline.c (copy_body_r): Avoid generating &* during inline
+	substitution.
+
 2003-05-19  Andrew Macleod  <amacleod@redhat.com>
 
 	* config/stormy16/stormy16.c (xstormy16_expand_prologue): Do
