@@ -1,5 +1,5 @@
 /* Generic implementation of the CSHIFT intrinsic
-   Copyright 2003 Free Software Foundation, Inc.
+   Copyright 2003, 2005 Free Software Foundation, Inc.
    Contributed by Feng Wang <wf_cs@yahoo.com>
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -72,6 +72,8 @@ DEF_COPY_LOOP(int, int)
 DEF_COPY_LOOP(long, long)
 DEF_COPY_LOOP(double, double)
 DEF_COPY_LOOP(ldouble, long double)
+DEF_COPY_LOOP(cfloat, _Complex float)
+DEF_COPY_LOOP(cdouble, _Complex double)
 
 
 static void
@@ -96,11 +98,10 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
   index_type size;
   index_type len;
   index_type n;
+  int whichloop;
 
   if (which < 1 || which > GFC_DESCRIPTOR_RANK (array))
     runtime_error ("Argument 'DIM' is out of range in call to 'CSHIFT'");
-
-  size = GFC_DESCRIPTOR_SIZE (ret);
 
   which = which - 1;
 
@@ -108,6 +109,34 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
   count[0] = 0;
   size = GFC_DESCRIPTOR_SIZE (array);
   n = 0;
+
+  /* The values assigned here must match the cases in the inner loop.  */
+  whichloop = 0;
+  switch (GFC_DESCRIPTOR_TYPE (array))
+    {
+    case GFC_DTYPE_LOGICAL:
+    case GFC_DTYPE_INTEGER:
+    case GFC_DTYPE_REAL:
+      if (size == sizeof (int))
+	whichloop = 1;
+      else if (size == sizeof (long))
+	whichloop = 2;
+      else if (size == sizeof (double))
+	whichloop = 3;
+      else if (size == sizeof (long double))
+	whichloop = 4;
+      break;
+
+    case GFC_DTYPE_COMPLEX:
+      if (size == sizeof (_Complex float))
+	whichloop = 5;
+      else if (size == sizeof (_Complex double))
+	whichloop = 6;
+      break;
+
+    default:
+      break;
+    }
 
   /* Initialized for avoiding compiler warnings.  */
   roffset = size;
@@ -187,31 +216,54 @@ cshift0 (gfc_array_char * ret, const gfc_array_char * array,
 	  /* Otherwise, we'll have to perform the copy one element at
 	     a time.  We can speed this up a tad for common cases of 
 	     fundamental types.  */
-	  if (size == sizeof(int))
-	    copy_loop_int (rptr, sptr, roffset, soffset, len, shift);
-	  else if (size == sizeof(long))
-	    copy_loop_long (rptr, sptr, roffset, soffset, len, shift);
-	  else if (size == sizeof(double))
-	    copy_loop_double (rptr, sptr, roffset, soffset, len, shift);
-	  else if (size == sizeof(long double))
-	    copy_loop_ldouble (rptr, sptr, roffset, soffset, len, shift);
-	  else
+	  switch (whichloop)
 	    {
-	      char *dest = rptr;
-	      const char *src = &sptr[shift * soffset];
+	    case 0:
+	      {
+		char *dest = rptr;
+		const char *src = &sptr[shift * soffset];
 
-	      for (n = 0; n < len - shift; n++)
-		{
-		  memcpy (dest, src, size);
-		  dest += roffset;
-		  src += soffset;
-		}
-	      for (src = sptr, n = 0; n < shift; n++)
-		{
-		  memcpy (dest, src, size);
-		  dest += roffset;
-		  src += soffset;
-		}
+		for (n = 0; n < len - shift; n++)
+		  {
+		    memcpy (dest, src, size);
+		    dest += roffset;
+		    src += soffset;
+		  }
+		for (src = sptr, n = 0; n < shift; n++)
+		  {
+		    memcpy (dest, src, size);
+		    dest += roffset;
+		    src += soffset;
+		  }
+	      }
+	      break;
+
+	    case 1:
+	      copy_loop_int (rptr, sptr, roffset, soffset, len, shift);
+	      break;
+
+	    case 2:
+	      copy_loop_long (rptr, sptr, roffset, soffset, len, shift);
+	      break;
+
+	    case 3:
+	      copy_loop_double (rptr, sptr, roffset, soffset, len, shift);
+	      break;
+
+	    case 4:
+	      copy_loop_ldouble (rptr, sptr, roffset, soffset, len, shift);
+	      break;
+
+	    case 5:
+	      copy_loop_cfloat (rptr, sptr, roffset, soffset, len, shift);
+	      break;
+	      
+	    case 6:
+	      copy_loop_cdouble (rptr, sptr, roffset, soffset, len, shift);
+	      break;
+
+	    default:
+	      abort ();
 	    }
 	}
 

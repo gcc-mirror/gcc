@@ -1340,31 +1340,32 @@ gfc_resolve_transpose (gfc_expr * f, gfc_expr * matrix)
       mpz_init_set (f->shape[1], matrix->shape[0]);
     }
 
-  switch (matrix->ts.type)
-    {
-    case BT_COMPLEX:
-      kind = matrix->ts.kind * 2;
-      break;
-
-    case BT_REAL:
-    case BT_INTEGER:
-    case BT_LOGICAL:
-      kind = matrix->ts.kind;
-      break;
-
-    default:
-      kind = 0;
-      break;
-
-    }
+  kind = matrix->ts.kind;
 
   switch (kind)
     {
     case 4:
     case 8:
-    /* case 16: */
-      f->value.function.name =
-        gfc_get_string (PREFIX("transpose_%d"), kind);
+      switch (matrix->ts.type)
+        {
+        case BT_COMPLEX:
+          f->value.function.name =
+            gfc_get_string (PREFIX("transpose_c%d"), kind);
+          break;
+
+        case BT_INTEGER:
+        case BT_REAL:
+        case BT_LOGICAL:
+	  /* Use the integer routines for real and logical cases.  This
+	     assumes they all have the same alignment requirements.  */
+          f->value.function.name =
+            gfc_get_string (PREFIX("transpose_i%d"), kind);
+          break;
+
+        default:
+          f->value.function.name = PREFIX("transpose");
+          break;
+        }
       break;
 
     default:
