@@ -90,10 +90,6 @@
 #include "output.h"
 #include "cfglayout.h"
 
-#ifndef HAVE_epilogue
-#define HAVE_epilogue 0
-#endif
-
 /* Local function prototypes.  */
 static void make_reorder_chain		PARAMS ((void));
 static basic_block make_reorder_chain_1	PARAMS ((basic_block, basic_block));
@@ -104,21 +100,9 @@ static basic_block make_reorder_chain_1	PARAMS ((basic_block, basic_block));
 static void
 make_reorder_chain ()
 {
-  basic_block last_block = NULL;
   basic_block prev = NULL;
   int nbb_m1 = n_basic_blocks - 1;
   basic_block next;
-
-  /* If we've not got epilogue in RTL, we must fallthru to the exit.
-     Force the last block to be at the end.  */
-  /* ??? Some ABIs (e.g. MIPS) require the return insn to be at the
-     end of the function for stack unwinding purposes.  */
-  if (! HAVE_epilogue)
-    {
-      last_block = BASIC_BLOCK (nbb_m1);
-      RBI (last_block)->visited = 1;
-      nbb_m1 -= 1;
-    }
 
   /* Loop until we've placed every block.  */
   do
@@ -144,13 +128,6 @@ make_reorder_chain ()
         prev = make_reorder_chain_1 (next, prev);
     }
   while (next);
-
-  /* Terminate the chain.  */
-  if (! HAVE_epilogue)
-    {
-      RBI (prev)->next = last_block;
-      prev = last_block;
-    }
   RBI (prev)->next = NULL;
 }
 

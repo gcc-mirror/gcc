@@ -1,3 +1,17 @@
+Wed Nov 14 19:46:08 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* cfglayout.c (fixup_fallthru_exit_predecesor): New static function.
+	(cfg_layout_finalize): Use it.
+	* bb-reorder.c (HAVE_epilogue): Remove.
+	(make_reorder_chain): Do not care special placement of 
+	last basic block.
+
+	* predict.c (expected_value_to_br_prob): Delete the note
+	once transformed.
+
+	* c-decl.c (c_expand_body): Fix TV_EXPAND nesting problem;
+	measure integration time separately.
+
 Wed Nov 14 12:30:57 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (struct temp_slot): ALIGN now unsigned.

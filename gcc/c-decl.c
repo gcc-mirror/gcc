@@ -6783,13 +6783,12 @@ c_expand_body (fndecl, nested_p, can_defer_p)
   if (flag_syntax_only)
     return;
 
-  timevar_push (TV_EXPAND);
-
   if (flag_inline_trees)
     {
       /* First, cache whether the current function is inlinable.  Some
          predicates depend on cfun and current_function_decl to
          function completely.  */
+      timevar_push (TV_INTEGRATION);
       uninlinable = ! tree_inlinable_function_p (fndecl);
       
       if (! uninlinable && can_defer_p
@@ -6800,12 +6799,16 @@ c_expand_body (fndecl, nested_p, can_defer_p)
 	{
 	  /* Let the back-end know that this funtion exists.  */
 	  (*debug_hooks->deferred_inline_function) (fndecl);
+          timevar_pop (TV_INTEGRATION);
 	  return;
 	}
       
       /* Then, inline any functions called in it.  */
       optimize_inline_calls (fndecl);
+      timevar_pop (TV_INTEGRATION);
     }
+
+  timevar_push (TV_EXPAND);
 
   if (nested_p)
     {
