@@ -203,7 +203,6 @@ GLIBCXX_3.4 {
     sqrtf;
     sqrtl;
     copysignf;
-    nan;
     __signbit;
     __signbitf;
     __signbitl;
