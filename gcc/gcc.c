@@ -1276,7 +1276,7 @@ static int argbuf_index;
 
 #ifdef MKTEMP_EACH_FILE
 
-extern char *make_temp_file PROTO((void));
+extern char *make_temp_file PROTO((char *));
 
 /* This is the list of suffixes and codes (%g/%u/%U) and the associated
    temp file.  */
@@ -3524,7 +3524,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		    t->length = p - suffix;
 		    t->suffix = save_string (suffix, p - suffix);
 		    t->unique = (c != 'g');
-		    temp_filename = make_temp_file ();
+		    temp_filename = make_temp_file (suffix);
 		    temp_filename_length = strlen (temp_filename);
 		    t->filename = temp_filename;
 		    t->filename_length = temp_filename_length;

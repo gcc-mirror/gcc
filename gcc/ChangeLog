@@ -1,3 +1,16 @@
+Tue Jun 30 02:34:02 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* choose-temp.c (make_temp_file): Accept new argument for the
+	file suffix to use.  Allocate space for it and add it to the
+	template.
+	* mkstemp.c (mkstemps): Renamed from mkstemp.  Accept new argument
+	for the length of the suffix.  Update template struture checks
+	to handle optinal suffix.
+	* collect2.c (make_temp_file): Update prototype.
+	(main): Put proper suffixes on temporary files.
+	* gcc.c (make_temp_file): Update prototype.
+	(do_spec_1): Put proper suffixes on temporary files.
+
 Tue Jun 30 00:56:19 1998  Bruno Haible <haible@ilog.fr>
 
 	* invoke.texi: Document new implicit structure initialization

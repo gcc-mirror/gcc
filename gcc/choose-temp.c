@@ -152,11 +152,12 @@ choose_temp_base ()
    one.  */
 
 char *
-make_temp_file ()
+make_temp_file (suffix)
+     char *suffix;
 {
   char *base = 0;
   char *temp_filename;
-  int len;
+  int base_len, suffix_len;
   int fd;
   static char tmp[] = { DIR_SEPARATOR, 't', 'm', 'p', 0 };
   static char usrtmp[] = { DIR_SEPARATOR, 'u', 's', 'r', DIR_SEPARATOR, 't', 'm', 'p', 0 };
@@ -177,19 +178,29 @@ make_temp_file ()
   if (base == 0)
     base = ".";
 
-  len = strlen (base);
-  temp_filename = xmalloc (len + 1 /*DIR_SEPARATOR*/
-			   + strlen (TEMP_FILE) + 1);
+  base_len = strlen (base);
+
+  if (suffix)
+    suffix_len = strlen (suffix);
+  else
+    suffix_len = 0;
+
+  temp_filename = xmalloc (base_len + 1 /*DIR_SEPARATOR*/
+			   + strlen (TEMP_FILE)
+			   + suffix_len + 1);
   strcpy (temp_filename, base);
 
-  if (len != 0
-      && temp_filename[len-1] != '/'
-      && temp_filename[len-1] != DIR_SEPARATOR)
-    temp_filename[len++] = DIR_SEPARATOR;
-  strcpy (temp_filename + len, TEMP_FILE);
+  if (base_len != 0
+      && temp_filename[base_len-1] != '/'
+      && temp_filename[base_len-1] != DIR_SEPARATOR)
+    temp_filename[base_len++] = DIR_SEPARATOR;
+  strcpy (temp_filename + base_len, TEMP_FILE);
 
-  fd = mkstemp (temp_filename);
-  /* If mkstemp failed, then something bad is happening.  Maybe we should
+  if (suffix)
+    strcat (temp_filename, suffix);
+
+  fd = mkstemps (temp_filename, suffix_len);
+  /* If mkstemps failed, then something bad is happening.  Maybe we should
      issue a message about a possible security attack in progress?  */
   if (fd == -1)
     abort ();

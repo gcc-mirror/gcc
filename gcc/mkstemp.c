@@ -1,5 +1,5 @@
 /* Copyright (C) 1991, 1992, 1996, 1998 Free Software Foundation, Inc.
-   This file is part of the GNU C Library.
+   This file is derived from mkstemp.c from the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Library General Public License as
@@ -43,12 +43,21 @@ typedef unsigned long gcc_uint64_t;
 #endif
 
 /* Generate a unique temporary file name from TEMPLATE.
-   The last six characters of TEMPLATE must be "XXXXXX";
+
+   TEMPLATE has the form:
+
+   <path>/ccXXXXXX<suffix>
+
+   SUFFIX_LEN tells us how long <suffix> is (it can be zero length).
+
+   The last six characters of TEMPLATE before <suffix> must be "XXXXXX";
    they are replaced with a string that makes the filename unique.
+
    Returns a file descriptor open on the file for reading and writing.  */
 int
-mkstemp (template)
+mkstemps (template, suffix_len)
      char *template;
+     int suffix_len;
 {
   static const char letters[]
     = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -61,13 +70,14 @@ mkstemp (template)
   int count;
 
   len = strlen (template);
-  if (len < 6 || strcmp (&template[len - 6], "XXXXXX"))
+
+  if (len < 6 + suffix_len
+      || strncmp (&template[len - 6 - suffix_len], "XXXXXX", 6))
     {
       return -1;
     }
 
-  /* This is where the Xs start.  */
-  XXXXXX = &template[len - 6];
+  XXXXXX = &template[len - 6 - suffix_len];
 
 #ifdef HAVE_GETTIMEOFDAY
   /* Get some more or less random data.  */

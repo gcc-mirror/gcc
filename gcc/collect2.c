@@ -60,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
 #define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
 #endif
 
-extern char *make_temp_file ();
+extern char *make_temp_file PROTO ((char *));
 
 /* On certain systems, we have code that works by scanning the object file
    directly.  But this code uses system-specific header files and library
@@ -1129,13 +1129,13 @@ main (argc, argv)
   *ld1++ = *ld2++ = ld_file_name;
 
   /* Make temp file names.  */
-  c_file = make_temp_file ();
-  o_file = make_temp_file ();
+  c_file = make_temp_file (".c");
+  o_file = make_temp_file (".o");
 #ifdef COLLECT_EXPORT_LIST
-  export_file = make_temp_file ();
-  import_file = make_temp_file ();
+  export_file = make_temp_file (".x");
+  import_file = make_temp_file (".p");
 #endif
-  ldout = make_temp_file ();
+  ldout = make_temp_file (".ld");
   *c_ptr++ = c_file_name;
   *c_ptr++ = "-lang-c";
   *c_ptr++ = "-c";
