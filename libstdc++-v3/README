@@ -82,7 +82,7 @@ Currently these are:
   config/locale
   config/os
 
-In addition, three subdirectories are convenience libraries:
+In addition, two subdirectories are convenience libraries:
 
   libmath
     Support routines needed for C++ math. Only needed if the

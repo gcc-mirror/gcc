@@ -1,5 +1,9 @@
 2003-07-28  Phil Edwards  <pme@gcc.gnu.org>
 
+	* README:  Update.
+
+2003-07-28  Phil Edwards  <pme@gcc.gnu.org>
+
 	* testsuite/22_locale/messages/members/char/1.cc,
 	testsuite/22_locale/messages/members/char/2.cc,
 	testsuite/22_locale/messages/members/char/3.cc,
