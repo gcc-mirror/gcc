@@ -319,8 +319,9 @@ gcc_obstack_init (obstack)
    This is used before starting a nested function.  */
 
 void
-save_tree_status (p)
+save_tree_status (p, toplevel)
      struct function *p;
+     int toplevel;
 {
   p->all_types_permanent = all_types_permanent;
   p->momentary_stack = momentary_stack;
@@ -334,10 +335,15 @@ save_tree_status (p)
   p->saveable_obstack = saveable_obstack;
   p->rtl_obstack = rtl_obstack;
 
-  /* Objects that need to be saved in this function can be in the nonsaved
-     obstack of the enclosing function since they can't possibly be needed
-     once it has returned.  */
-  function_maybepermanent_obstack = function_obstack;
+  if (! toplevel)
+    {
+      /* Objects that need to be saved in this function can be in the nonsaved
+	 obstack of the enclosing function since they can't possibly be needed
+	 once it has returned.  */
+      function_maybepermanent_obstack = function_obstack;
+      maybepermanent_firstobj
+	= (char *) obstack_finish (function_maybepermanent_obstack);
+    }
 
   function_obstack = (struct obstack *) xmalloc (sizeof (struct obstack));
   gcc_obstack_init (function_obstack);
@@ -348,30 +354,32 @@ save_tree_status (p)
 
   momentary_firstobj = (char *) obstack_finish (&momentary_obstack);
   momentary_function_firstobj = momentary_firstobj;
-  maybepermanent_firstobj
-    = (char *) obstack_finish (function_maybepermanent_obstack);
 }
 
 /* Restore all variables describing the current status from the structure *P.
    This is used after a nested function.  */
 
 void
-restore_tree_status (p)
+restore_tree_status (p, toplevel)
      struct function *p;
+     int toplevel;
 {
   all_types_permanent = p->all_types_permanent;
   momentary_stack = p->momentary_stack;
 
   obstack_free (&momentary_obstack, momentary_function_firstobj);
 
-  /* Free saveable storage used by the function just compiled and not
-     saved.
+  if (! toplevel)
+    {
+      /* Free saveable storage used by the function just compiled and not
+	 saved.
 
-     CAUTION: This is in function_obstack of the containing function.  So
-     we must be sure that we never allocate from that obstack during
-     the compilation of a nested function if we expect it to survive past the
-     nested function's end.  */
-  obstack_free (function_maybepermanent_obstack, maybepermanent_firstobj);
+	 CAUTION: This is in function_obstack of the containing function.
+	 So we must be sure that we never allocate from that obstack during
+	 the compilation of a nested function if we expect it to survive
+	 past the nested function's end.  */
+      obstack_free (function_maybepermanent_obstack, maybepermanent_firstobj);
+    }
 
   obstack_free (function_obstack, 0);
   free (function_obstack);
