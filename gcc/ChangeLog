@@ -1,3 +1,8 @@
+2002-01-14  Richard Henderson  <rth@redhat.com>
+
+	* config/mips/mips.h (HI_AND_FP_REGS): New register class.
+	(CLASS_CANNOT_CHANGE_MODE): Disallow HI in little-endian mode.
+
 2002-01-14  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* reload1.c (reload_combine): Pass reg_sum replacement through

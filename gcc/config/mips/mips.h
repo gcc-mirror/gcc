@@ -1942,6 +1942,7 @@ enum reg_class
   HI_AND_GR_REGS,		/* union classes */
   LO_AND_GR_REGS,
   HILO_AND_GR_REGS,
+  HI_AND_FP_REGS,
   ST_REGS,			/* status registers (fp status) */
   ALL_REGS,			/* all registers */
   LIM_REG_CLASSES		/* max value + 1 */
@@ -1971,6 +1972,7 @@ enum reg_class
   "HI_AND_GR_REGS",							\
   "LO_AND_GR_REGS",							\
   "HILO_AND_GR_REGS",							\
+  "HI_AND_FP_REGS",							\
   "ST_REGS",								\
   "ALL_REGS"								\
 }
@@ -2002,6 +2004,7 @@ enum reg_class
   { 0xffffffff, 0x00000000, 0x00000001 },	/* union classes */     \
   { 0xffffffff, 0x00000000, 0x00000002 },				\
   { 0xffffffff, 0x00000000, 0x00000004 },				\
+  { 0x00000000, 0xffffffff, 0x00000001 },				\
   { 0x00000000, 0x00000000, 0x000007f8 },	/* status registers */	\
   { 0xffffffff, 0xffffffff, 0x000007ff }	/* all registers */	\
 }
@@ -2229,10 +2232,19 @@ extern enum reg_class mips_char_to_class[256];
    : CLASS_UNITS (MODE, UNITS_PER_WORD))
 
 /* If defined, gives a class of registers that cannot be used as the
-   operand of a SUBREG that changes the mode of the object illegally.  */
+   operand of a SUBREG that changes the mode of the object illegally.
 
-#define CLASS_CANNOT_CHANGE_MODE \
-  (TARGET_FLOAT64 && ! TARGET_64BIT ? FP_REGS : NO_REGS)
+   When FP regs are larger than integer regs... Er, anyone remember what
+   goes wrong?
+
+   In little-endian mode, the hi-lo registers are numbered backwards,
+   so (subreg:SI (reg:DI hi) 0) gets the high word instead of the low
+   word as intended.  */
+
+#define CLASS_CANNOT_CHANGE_MODE					\
+  (TARGET_BIG_ENDIAN							\
+   ? (TARGET_FLOAT64 && ! TARGET_64BIT ? FP_REGS : NO_REGS)		\
+   : (TARGET_FLOAT64 && ! TARGET_64BIT ? HI_AND_FP_REGS : HI_REG))
 
 /* Defines illegal mode changes for CLASS_CANNOT_CHANGE_MODE.  */
 
