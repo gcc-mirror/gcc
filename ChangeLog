@@ -1,3 +1,12 @@
+2001-03-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	Re-installed:
+	2001-01-02  Laurynas Biveinis  <lauras@softhome.net>
+	* ltcf-c.sh: Clear ac_cv_prog_cc_pic for DJGPP.  Do not add
+	'-DPIC' to ac_cv_prog_cc_pic for DJGPP.
+	* ltcf-cxx.sh: Likewise.
+	* ltcf-gcj.sh: Likewise.
+
 2001-03-22  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* MAINTAINERS: Add myself as "documentation co-maintainer".
@@ -213,13 +222,13 @@
 	* Makefile.in (CONFIGURE_TARGET_MODULES): Pass back configuration
 	failures of subdirectories.
 
-2001-01-02  Laurynas Biveinis  &lt;lauras@softhome.net&gt;
+2001-01-02  Laurynas Biveinis  <lauras@softhome.net>
 
-	* ltcf-c.sh: clear ac_cv_prog_cc_pic for DJGPP. Do not add
+	* ltcf-c.sh: Clear ac_cv_prog_cc_pic for DJGPP.  Do not add
 	'-DPIC' to ac_cv_prog_cc_pic for DJGPP.
-	* ltcf-cxx.sh: likewise.
-	* ltcf-gcj.sh: likewise.
-	* ltconfig.sh: fix typo.
+	* ltcf-cxx.sh: Likewise.
+	* ltcf-gcj.sh: Likewise.
+	* ltconfig.sh: Fix typo.
 
 2001-01-02  Laurynas Biveinis  <lauras@softhome.net>
 
