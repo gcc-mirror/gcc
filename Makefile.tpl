@@ -29,29 +29,29 @@ in
 NOTPARALLEL = .NOTPARALLEL
 $(NOTPARALLEL):
 
-srcdir = .
+srcdir = @srcdir@
 
-prefix = /usr/local
-exec_prefix = $(prefix)
+prefix = @prefix@
+exec_prefix = @exec_prefix@
 
-bindir=${exec_prefix}/bin
-sbindir=${exec_prefix}/sbin
-libexecdir=${exec_prefix}/libexec
-datadir=${prefix}/share
-sysconfdir=${prefix}/etc
-sharedstatedir=${prefix}/com
-localstatedir=${prefix}/var
-libdir=${exec_prefix}/lib
-includedir=${prefix}/include
-oldincludedir=/usr/include
-infodir=${prefix}/info
-mandir=${prefix}/man
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+includedir = @includedir@
+oldincludedir = @oldincludedir@
+infodir = @infodir@
+mandir = @mandir@
 gxx_include_dir=@gxx_include_dir@
 
-tooldir = $(exec_prefix)/$(target_alias)
-build_tooldir = $(exec_prefix)/$(target_alias)
+tooldir = @tooldir@
+build_tooldir = @build_tooldir@
 
-program_transform_name =
+program_transform_name = @program_transform_name@
 
 man1dir = $(mandir)/man1
 man2dir = $(mandir)/man2
@@ -62,13 +62,11 @@ man6dir = $(mandir)/man6
 man7dir = $(mandir)/man7
 man8dir = $(mandir)/man8
 man9dir = $(mandir)/man9
-infodir = $(prefix)/info
-includedir = $(prefix)/include
 # Directory in which the compiler finds executables, libraries, etc.
 libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(gcc_version)
 GDB_NLM_DEPS = 
 
-SHELL = /bin/sh
+SHELL = @config_shell@
 
 # pwd command to use.  Allow user to override default by setting PWDCMD in
 # the environment to account for automounters.  The make variable must not
@@ -133,9 +131,9 @@ BZIPPROG = bzip2
 MD5PROG = md5sum
 
 # These values are substituted by configure.
-DEFAULT_YACC = yacc
-DEFAULT_LEX = lex
-DEFAULT_M4 = m4
+DEFAULT_YACC = @DEFAULT_YACC@
+DEFAULT_LEX = @DEFAULT_LEX@
+DEFAULT_M4 = @DEFAULT_M4@
 
 BISON = `if [ -f $$r/bison/bison ] ; then \
 	    echo $$r/bison/bison -L $$s/bison/ ; \
@@ -519,7 +517,7 @@ GCC_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_GCC_FLAGS)
 # macro for build!=host builds.
 ALL_BUILD_MODULES_LIST = \
 	all-build-libiberty
-ALL_BUILD_MODULES = 
+ALL_BUILD_MODULES = @all_build_modules@
 
 # This is a list of the configure targets for all of the modules which
 # are compiled using the native tools.
@@ -1390,7 +1388,7 @@ all-gas: all-libiberty all-opcodes all-bfd all-intl
 all-gawk:
 all-gcc: all-bison all-byacc all-binutils all-gas all-ld all-zlib
 all-bootstrap: all-libiberty all-texinfo all-bison all-byacc all-binutils all-gas all-ld all-zlib
-GDB_TK = all-tk all-tcl all-itcl all-tix all-libgui
+GDB_TK = @GDB_TK@
 all-gdb: all-libiberty all-opcodes all-bfd all-mmalloc all-readline all-bison all-byacc all-sim $(gdbnlmrequirements) $(GDB_TK)
 all-gettext:
 all-gnuserv:
