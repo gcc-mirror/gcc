@@ -2536,6 +2536,54 @@
   "fabs	%0"
   [(set_attr "type" "fp")])
 
+;; Bit field extract patterns.  These give better code for packed bitfields,
+;; because they allow auto-increment addresses to be generated.
+
+(define_expand "insv"
+  [(set (zero_extract:SI (match_operand:QI 0 "memory_operand" "")
+			 (match_operand:SI 1 "immediate_operand" "")
+			 (match_operand:SI 2 "immediate_operand" ""))
+	(match_operand:SI 3 "general_operand" ""))]
+  "! TARGET_LITTLE_ENDIAN"
+  "
+{
+  rtx addr_target, orig_address, shift_reg;
+  HOST_WIDE_INT size;
+
+  /* ??? expmed doesn't care for non-register predicates.  */
+  if (! memory_operand (operands[0], VOIDmode)
+      || ! immediate_operand (operands[1], VOIDmode)
+      || ! immediate_operand (operands[2], VOIDmode)
+      || ! general_operand (operands[3], VOIDmode))
+    FAIL;
+  /* If this isn't a 16 / 24 / 32 bit field, or if
+     it doesn't start on a byte boundary, then fail.  */
+  size = INTVAL (operands[1]);
+  if (size < 16 || size > 32 || size % 8 != 0
+      || (INTVAL (operands[2]) % 8) != 0)
+    FAIL;
+
+  size /= 8;
+  orig_address = XEXP (operands[0], 0);
+  addr_target = gen_reg_rtx (SImode);
+  shift_reg = gen_reg_rtx (SImode);
+  emit_insn (gen_movsi (shift_reg, operands[3]));
+  emit_insn (gen_addsi3 (addr_target, orig_address, GEN_INT (size - 1)));
+
+  operands[0] = change_address (operands[0], QImode, addr_target);
+  emit_insn (gen_movqi (operands[0], gen_rtx (SUBREG, QImode, shift_reg, 0)));
+
+  while (size -= 1)
+    {
+      emit_insn (gen_lshrsi3_k (shift_reg, shift_reg, GEN_INT (8)));
+      emit_insn (gen_addsi3 (addr_target, addr_target, GEN_INT (-1)));
+      emit_insn (gen_movqi (operands[0],
+			    gen_rtx (SUBREG, QImode, shift_reg, 0)));
+    }
+
+  DONE;
+}")
+
 ;; -------------------------------------------------------------------------
 ;; Peepholes
 ;; -------------------------------------------------------------------------
