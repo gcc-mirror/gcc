@@ -2561,6 +2561,7 @@ const_hash (exp)
 	}
 
     case ADDR_EXPR:
+    case FDESC_EXPR:
       {
 	struct addr_const value;
 
@@ -2802,6 +2803,7 @@ compare_constant_1 (exp, p)
 	}
 
     case ADDR_EXPR:
+    case FDESC_EXPR:
       {
 	struct addr_const value;
 
@@ -4248,6 +4250,7 @@ output_addressed_constants (exp)
   switch (TREE_CODE (exp))
     {
     case ADDR_EXPR:
+    case FDESC_EXPR:
       /* Go inside any operations that get_inner_reference can handle and see
 	 if what's inside is a constant: no need to do anything here for
 	 addresses of variables or functions.  */
