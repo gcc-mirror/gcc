@@ -86,6 +86,12 @@ extern int target_flags;
    of condition flags when returning from a branch & link (ie. a function) */
 #define TARGET_6        (target_flags & 8)
 
+/* Leave some bits for new processor variants */
+
+/* Nonzero if shorts must be loaded byte at a time.  This is not necessary
+   for the arm processor chip, but it is needed for some MMU chips.  */
+#define TARGET_SHORT_BY_BYTES	(target_flags & 0x200)
+
 /* ARM_EXTRA_TARGET_SWITCHES is used in riscix.h to define some options which
    are passed to the preprocessor and the assembler post-processor.  They
    aren't needed in the main pass of the compiler, but if we don't define
@@ -96,16 +102,20 @@ extern int target_flags;
 #define ARM_EXTRA_TARGET_SWITCHES
 #endif
 
-#define TARGET_SWITCHES  \
-{                         			\
-  {"apcs",		 1},			\
-  {"poke-function-name", 2},			\
-  {"fpe",		 4},			\
-  {"6",			 8},			\
-  {"2",			-8},			\
-  {"3",			-8},			\
-  ARM_EXTRA_TARGET_SWITCHES			\
-  {"",   		 TARGET_DEFAULT }	\
+#define TARGET_SWITCHES  				\
+{                         				\
+  {"apcs",		 	 1},			\
+  {"poke-function-name", 	 2},			\
+  {"fpe",		 	 4},			\
+  {"6",				 8},			\
+  {"2",				-8},			\
+  {"3",				-8},			\
+  {"short-load-bytes",		 (0x200)},		\
+  {"no-short-load-bytes",	-(0x200)},		\
+  {"short-load-words", 		-(0x200)},		\
+  {"no-short-load-words",	 (0x200)},		\
+  ARM_EXTRA_TARGET_SWITCHES				\
+  {"",   		 	 TARGET_DEFAULT }	\
 }
 
 /* Which processor we are running on.  Currently this is only used to
@@ -138,7 +148,9 @@ enum floating_point_type
 
 extern enum floating_point_type arm_fpu;
 
+#ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT  0
+#endif
 
 #define TARGET_MEM_FUNCTIONS 1
 
@@ -172,14 +184,14 @@ extern enum floating_point_type arm_fpu;
 /* It is far faster to zero extend chars than to sign extend them */
 
 #define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)  \
-  if (GET_MODE_CLASS (MODE) == MODE_INT \
-      && GET_MODE_SIZE (MODE) < 4)      \
-    {					\
-      if (MODE == QImode)		\
-	UNSIGNEDP = 1;			\
-      else if (MODE == HImode)		\
-	UNSIGNEDP = 0;			\
-      (MODE) = SImode;			\
+  if (GET_MODE_CLASS (MODE) == MODE_INT		\
+      && GET_MODE_SIZE (MODE) < 4)      	\
+    {						\
+      if (MODE == QImode)			\
+	UNSIGNEDP = 1;				\
+      else if (MODE == HImode)			\
+	UNSIGNEDP = TARGET_SHORT_BY_BYTES != 0;	\
+      (MODE) = SImode;				\
     }
 
 /* Define for XFmode extended real floating point support.
@@ -546,6 +558,11 @@ enum reg_class
   (((MODE) == DFmode && (CLASS) == GENERAL_REGS		\
     && true_regnum (X) == -1) ? GENERAL_REGS		\
    : ((MODE) == HImode && true_regnum (X) == -1) ? GENERAL_REGS : NO_REGS)
+
+/* If we need to load shorts byte-at-a-time, then we need a scratch. */
+#define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,X)			\
+  (((MODE) == HImode && TARGET_SHORT_BY_BYTES && true_regnum (X) == -1)	\
+   ? GENERAL_REGS : NO_REGS)
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
