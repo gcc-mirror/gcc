@@ -1,6 +1,6 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989, 92-97, 1998 Free Software Foundation, Inc.
+/* Copyright (C) 1989, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3759,22 +3759,24 @@ throw_helper (eh, pc, my_udata, udata_p)
          for cleanups, we save the state, and keep looking. This allows
          us to call a debug hook if there are nothing but cleanups left. */
       if (handler)
-	if (cleanup)
-	  {
-	    if (!saved_state)
-	      {
-		saved_ustruct = *udata;
-		handler_p = handler;
-		pc_p = pc;
-		saved_state = 1;
-		only_cleanup = 1;
-	      }
-	  }
-	else
-	  {
-	    only_cleanup = 0;
-	    break;
-	  }
+	{
+	  if (cleanup)
+	    {
+	      if (!saved_state)
+		{
+		  saved_ustruct = *udata;
+		  handler_p = handler;
+		  pc_p = pc;
+		  saved_state = 1;
+		  only_cleanup = 1;
+		}
+	    }
+	  else
+	    {
+	      only_cleanup = 0;
+	      break;
+	    }
+	}
 
       /* Otherwise, we continue searching.  We subtract 1 from PC to avoid
 	 hitting the beginning of the next region.  */
