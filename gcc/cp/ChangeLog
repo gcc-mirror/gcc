@@ -1,5 +1,9 @@
 2002-04-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/525
+	* init.c (build_member_call): Convert to intermediate base even
+	with -pedantic.
+
 	PR c++/5104
 	* typeck.c (comptypes) [FUNCTION_TYPE]: Don't compare exception
 	specifiers.
