@@ -4941,6 +4941,8 @@ layout_class_type (tree t, tree *virtuals_p)
 	    DECL_FIELD_OFFSET (*next_field) = DECL_FIELD_OFFSET (field);
 	    DECL_FIELD_BIT_OFFSET (*next_field)
 	      = DECL_FIELD_BIT_OFFSET (field);
+	    DECL_SIZE (*next_field) = DECL_SIZE (field);
+	    DECL_MODE (*next_field) = DECL_MODE (field);
 	    next_field = &TREE_CHAIN (*next_field);
 	  }
 
