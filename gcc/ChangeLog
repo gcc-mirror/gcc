@@ -1,3 +1,13 @@
+Wed Sep 22 07:07:44 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* config/i386/sol2.h (PREFERRED_DEBUGGING_TYPE): Use stabs.
+	(ASM_SPEC): Moved from sol2dbg.h.  Added work-around for gas.
+	* config/i386/sol2dbg.h: Removed.
+	* config/i386/sol2gas.h: New file, to enable gas work-around.
+	* configure.in: Use i386/sol2gas.h on Solaris/x86 --with-gas.
+	Don't use sol2dbg.h.
+	* configure: Rebuilt.
+
 Wed Sep 15 21:20:38 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-typeck.c (qualify_type): Merge qualifiers from both types.

@@ -1399,9 +1399,9 @@ changequote(,)dnl
 changequote([,])dnl
 		xm_file="xm-siglist.h xm-alloca.h ${xm_file}"
 		xm_defines="USG POSIX SMALL_ARG_MAX"
-		if test x$stabs = xyes
-		then
-			tm_file=i386/sol2dbg.h
+		if test x$gas = xyes; then
+			# Only needed if gas does not support -s
+			tm_file=i386/sol2gas.h
 		else
 			tm_file=i386/sol2.h
 		fi

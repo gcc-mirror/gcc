@@ -1310,7 +1310,7 @@ else
 fi
 
 # Find some useful tools
-for ac_prog in gawk mawk nawk awk
+for ac_prog in mawk gawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -3750,9 +3750,9 @@ for machine in $build $host $target; do
 	i[34567]86-*-solaris2*)
 		xm_file="xm-siglist.h xm-alloca.h ${xm_file}"
 		xm_defines="USG POSIX SMALL_ARG_MAX"
-		if test x$stabs = xyes
-		then
-			tm_file=i386/sol2dbg.h
+		if test x$gas = xyes; then
+			# Only needed if gas does not support -s
+			tm_file=i386/sol2gas.h
 		else
 			tm_file=i386/sol2.h
 		fi
