@@ -13394,18 +13394,19 @@ ffecom_push_tempvar (tree type, ffetargetCharacterSize size, int elements,
 		  ffecom_get_invented_identifier ("__g77_expr_%d", NULL,
 						  mynumber++),
 		  type);
-  {	/* ~~~~ kludge alert here!!! else temp gets reused outside
-	   a compound-statement sequence.... */
-    extern tree sequence_rtl_expr;
-    tree back_end_bug = sequence_rtl_expr;
 
-    sequence_rtl_expr = NULL_TREE;
+  /* This temp must be put in the same scope as the containing BLOCK
+     (aka function), but for reasons that should be explained elsewhere,
+     the GBE normally decides it should be in a "phantom BLOCK" associated
+     with the expand_start_stmt_expr() call.  So push the topmost
+     sequence back onto the GBE's internal stack before telling it
+     about the decl, then restore it afterwards.  */
+  push_topmost_sequence ();
 
-    t = start_decl (t, FALSE);
-    finish_decl (t, NULL_TREE, FALSE);
+  t = start_decl (t, FALSE);
+  finish_decl (t, NULL_TREE, FALSE);
 
-    sequence_rtl_expr = back_end_bug;
-  }
+  pop_topmost_sequence ();
 
   resume_momentary (yes);
 
