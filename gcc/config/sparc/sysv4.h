@@ -56,6 +56,24 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CPP_PREDEFINES \
   "-Dsparc -Dunix -D__svr4__ -Asystem(unix) -Acpu(sparc) -Amachine(sparc)"
 
+/* The specialized code which needs to appear in the .init section prior
+   to the prologue code for `__do_global_ctors' (see crtstuff.c).
+
+   On Sparcs running svr4, the /usr/ccs/lib/crti.o file (with gets linked
+   in prior to the crtbegin.o file) has a single `save' instruction in its
+   .init section.  That `save' instruction tries to setup a stack frame for
+   the sake of any subsequent code in the .init section.  Unfortunately,
+   the size it uses for the stack frame is only a guess, and is not really
+   adequate for our purposes.  More importantly, we independently put our
+   own standard function prologue (for __do_global_ctors) into the .init
+   section and that function prologue includes its own `save' instruction!
+   Thus, unless we do something to correct the situation, we'll get *two*
+   stack frames allocated when crt0.o calls the code in the .init section,
+   and havoc will ensue.  The following macro definition prevents such woes.
+*/
+
+#define INIT_SECTION_PREAMBLE	asm ("restore")
+
 /* This is the string used to begin an assembly language comment for the
    Sparc/svr4 assembler.  */
 
@@ -83,7 +101,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This is the format used to print a .pushsection pseudo-op (and its operand)
    for the Sparc/svr4 assembler.  */
 
-#define PUSHSECTION_FORMAT	"%s\t\"%s\"\n"
+#define PUSHSECTION_FORMAT	"\t%s\t\"%s\"\n"
 
 /* This is how to equate one symbol to another symbol.  The syntax used is
    `SYM1=SYM2'.  Note that this is different from the way equates are done
@@ -181,3 +199,32 @@ do {									\
 #define INIT_SECTION_ASM_OP	".section\t\".init\",#alloc"
 #define CTORS_SECTION_ASM_OP    ".section\t\".ctors\",#alloc"
 #define DTORS_SECTION_ASM_OP    ".section\t\".dtors\",#alloc"
+
+/* Code to handle #pragma directives.  The interface is a bit messy,
+   but there's no simpler way to do this while still using yylex.  */
+#define HANDLE_PRAGMA(FILE)					\
+  do {								\
+    while (c == ' ' || c == '\t')				\
+      c = getc (FILE);						\
+    if (c == '\n' || c == EOF)					\
+      {								\
+	handle_pragma_token (0, 0);				\
+	return c;						\
+      }								\
+    ungetc (c, FILE);						\
+    switch (yylex ())						\
+      {								\
+      case IDENTIFIER:						\
+      case TYPENAME:						\
+      case STRING:						\
+      case CONSTANT:						\
+	handle_pragma_token (token_buffer, yylval.ttype);	\
+	break;							\
+      default:							\
+	handle_pragma_token (token_buffer, 0);			\
+      }								\
+    if (nextchar >= 0)						\
+      c = nextchar, nextchar = -1;				\
+    else							\
+      c = getc (FILE);						\
+  } while (1)

@@ -135,14 +135,12 @@
 ;; FiTOs/d	9/5
 
 ;; The CY7C602 can only support 2 fp isnsn simultaneously.
-;; More insns cause the chip to stall.  Until we handle this
-;; better in the scheduler, we use excess cycle times to
-;; more evenly spread out fp insns.
+;; More insns cause the chip to stall.
 
-(define_function_unit "fp_alu" 1 2 (eq_attr "type" "fp") 8 0)
-(define_function_unit "fp_mul" 1 2 (eq_attr "type" "fpmul") 10 0)
-(define_function_unit "fp_div" 1 2 (eq_attr "type" "fpdiv") 23 0)
-(define_function_unit "fp_sqrt" 1 2 (eq_attr "type" "fpsqrt") 34 0)
+(define_function_unit "fp_alu" 1 2 (eq_attr "type" "fp") 5 0)
+(define_function_unit "fp_mul" 1 2 (eq_attr "type" "fpmul") 7 0)
+(define_function_unit "fp_div" 1 2 (eq_attr "type" "fpdiv") 37 0)
+(define_function_unit "fp_sqrt" 1 2 (eq_attr "type" "fpsqrt") 63 0)
 
 ;; Compare instructions.
 ;; This controls RTL generation and register allocation.
