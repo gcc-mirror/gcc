@@ -122,7 +122,7 @@ main (argc, argv)
 	}
       hash_tab[i] = next_index;
 
-      fprintf (outf, "  {\"%s\", \"%s\", \"%s\" }, /* ix: %d, i0: %d */\n",
+      fprintf (outf, "  {\"%s\", \"%s\", \"%s\" },\n",
 	       name_start, decl_start, param_start, i, i0);
 
       next_index++;
