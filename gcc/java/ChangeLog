@@ -1,3 +1,8 @@
+2000-02-23  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (print_name): In JNI case, correctly quote string.
+	(print_method_info): Don't handle overrides in JNI mode.
+
 2000-02-22  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (init_decl_processing): `_Jv_IsInstanceOf' returned

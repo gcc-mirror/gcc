@@ -235,17 +235,6 @@ java_double_finite (d)
   return (u.l & D_NAN_MASK) != D_NAN_MASK;
 }
 
-static void
-DEFUN(print_name, (stream, jcf, name_index),
-      FILE* stream AND JCF* jcf AND int name_index)
-{
-  if (JPOOL_TAG (jcf, name_index) != CONSTANT_Utf8)
-    fprintf (stream, "<not a UTF8 constant>");
-  else
-    jcf_print_utf8 (stream, JPOOL_UTF_DATA (jcf, name_index),
-		    JPOOL_UTF_LENGTH (jcf, name_index));
-}
-
 /* Print a character, appropriately mangled for JNI.  */
 
 static void
@@ -275,6 +264,40 @@ jni_print_char (stream, ch)
     {
       /* "Unicode" character.  */
       fprintf (stream, "_0%04x", ch);
+    }
+}
+
+/* Print a name from the class data.  If the index does not point to a
+   string, an error results.  */
+
+static void
+DEFUN(print_name, (stream, jcf, name_index),
+      FILE* stream AND JCF* jcf AND int name_index)
+{
+  if (JPOOL_TAG (jcf, name_index) != CONSTANT_Utf8)
+    {
+      fprintf (stream, "<not a UTF8 constant>");
+      found_error = 1;
+    }
+  else if (! flag_jni)
+    jcf_print_utf8 (stream, JPOOL_UTF_DATA (jcf, name_index),
+		    JPOOL_UTF_LENGTH (jcf, name_index));
+  else
+    {
+      /* For JNI we must correctly quote each character.  */
+      const unsigned char *str = JPOOL_UTF_DATA (jcf, name_index);
+      int length = JPOOL_UTF_LENGTH (jcf, name_index);
+      const unsigned char *limit = str + length;
+      while (str < limit)
+	{
+	  int ch = UTF8_GET (str, limit);
+	  if (ch < 0)
+	    {
+	      fprintf (stream, "\\<invalid>");
+	      return;
+	    }
+	  jni_print_char (stream, ch);
+	}
     }
 }
 
@@ -648,20 +671,24 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
   if (! stream)
     return;
 
-  /* We can't generate a method whose name is a C++ reserved word.  We
-     can't just ignore the function, because that will cause incorrect
-     code to be generated if the function is virtual (not only for
-     calls to this function for for other functions after it in the
-     vtbl).  So we give it a dummy name instead.  */
-  override = cxx_keyword_subst (str, length);
-  if (override)
+  /* We don't worry about overrides in JNI mode.  */
+  if (! flag_jni)
     {
-      /* If the method is static or final, we can safely skip it.  If
-	 we don't skip it then we'll have problems since the mangling
-	 will be wrong.  FIXME.  */
-      if (METHOD_IS_FINAL (jcf->access_flags, flags)
-	  || (flags & ACC_STATIC))
-	return;
+      /* We can't generate a method whose name is a C++ reserved word.
+	 We can't just ignore the function, because that will cause
+	 incorrect code to be generated if the function is virtual
+	 (not only for calls to this function for for other functions
+	 after it in the vtbl).  So we give it a dummy name instead.  */
+      override = cxx_keyword_subst (str, length);
+      if (override)
+	{
+	  /* If the method is static or final, we can safely skip it.
+	     If we don't skip it then we'll have problems since the
+	     mangling will be wrong.  FIXME.  */
+	  if (METHOD_IS_FINAL (jcf->access_flags, flags)
+	      || (flags & ACC_STATIC))
+	    return;
+	}
     }
 
   if (! stubs && ! flag_jni)
