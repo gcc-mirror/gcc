@@ -46,6 +46,7 @@ namespace std
     basic_istream<_CharT, _Traits>::sentry::
     sentry(basic_istream<_CharT, _Traits>& __in, bool __noskipws)
     {
+      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
       if (__in.good()) 
 	{
 	  if (__in.tie())
@@ -66,17 +67,18 @@ namespace std
 	      // 195. Should basic_istream::sentry's constructor ever
 	      // set eofbit?
 	      if (traits_type::eq_int_type(__c, __eof))
-		__in.setstate(ios_base::eofbit);
+		__err |= ios_base::eofbit;
 	    }
 	}
 
-      if (__in.good())
+      if (__in.good() && __err == ios_base::goodbit)
 	_M_ok = true;
       else
 	{
 	  _M_ok = false;
-	  __in.setstate(ios_base::failbit);
+	  __err |= ios_base::failbit;
 	}
+      __in.setstate(__err);
     }
 
   template<typename _CharT, typename _Traits>
