@@ -1,3 +1,8 @@
+2004-10-29  Geoffrey Keating  <geoffk@apple.com>
+
+	* testsuite/22_locale/locale/cons/12658_thread-1.cc: Only xfail
+	on Linux.
+
 2004-10-29  Chris Jefferson  <chris@bubblescope.net>
 
 	* include/bit/stl_algo.h (find_first_of(,,,,pred)):
