@@ -990,6 +990,8 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    insns and emitted.  */
 extern struct rtx_def *alpha_emit_set_const ();
 
+extern struct rtx_def *alpha_emit_conditional_move ();
+
 /* Generate necessary RTL for __builtin_saveregs().
    ARGLIST is the argument list; see expr.c.  */
 extern struct rtx_def *alpha_builtin_saveregs ();
