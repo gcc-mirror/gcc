@@ -1981,9 +1981,11 @@ copy_rtx_and_substitute (orig, map)
     case USE:
     case CLOBBER:
       /* USE and CLOBBER are ordinary, but we convert (use (subreg foo))
-	 to (use foo).  */
+	 to (use foo) if the original insn didn't have a subreg.
+	 Removing the subreg distorts the VAX movstrhi pattern
+	 by changing the mode of an operand.  */
       copy = copy_rtx_and_substitute (XEXP (orig, 0), map);
-      if (GET_CODE (copy) == SUBREG)
+      if (GET_CODE (copy) == SUBREG && GET_CODE (XEXP (orig, 0)) != SUBREG)
 	copy = SUBREG_REG (copy);
       return gen_rtx (code, VOIDmode, copy);
 
