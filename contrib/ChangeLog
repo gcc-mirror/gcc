@@ -1,3 +1,7 @@
+1998-07-28  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* test_summary: assigned copyright to FSF
+
 Mon Jul 27 20:33:02 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* test_summary: Corrected script name in comments providing
