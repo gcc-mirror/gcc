@@ -3957,8 +3957,11 @@ lookup_template_class (tree d1,
 {
   tree template = NULL_TREE, parmlist;
   tree t;
-
+  
   timevar_push (TV_NAME_LOOKUP);
+  my_friendly_assert ((!arglist || TREE_CODE (arglist) == TREE_LIST)
+		      == ((complain & tf_user) != 0), 20030724);
+  
   if (TREE_CODE (d1) == IDENTIFIER_NODE)
     {
       if (IDENTIFIER_VALUE (d1) 
@@ -4018,11 +4021,10 @@ lookup_template_class (tree d1,
     }
 
   if (TREE_CODE (template) != TEMPLATE_DECL
-         /* If we're called from the parser, make sure it's a user visible
-            template.  */
-      || ((!arglist || TREE_CODE (arglist) == TREE_LIST)
-          && !DECL_TEMPLATE_PARM_P (template)
-          && !PRIMARY_TEMPLATE_P (template)))
+         /* Make sure it's a user visible template, if it was named by
+	    the user.  */
+      || ((complain & tf_user) && !DECL_TEMPLATE_PARM_P (template)
+	  && !PRIMARY_TEMPLATE_P (template)))
     {
       if (complain & tf_error)
         {
@@ -4033,6 +4035,8 @@ lookup_template_class (tree d1,
       POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, error_mark_node);
     }
 
+  complain &= ~tf_user;
+  
   if (DECL_TEMPLATE_TEMPLATE_PARM_P (template))
     {
       /* Create a new TEMPLATE_DECL and TEMPLATE_TEMPLATE_PARM node to store
@@ -11795,8 +11799,7 @@ resolve_typename_type (tree type, bool only_current_p)
       args = TREE_OPERAND (TYPENAME_TYPE_FULLNAME (type), 1);
       /* Instantiate the template.  */
       type = lookup_template_class (tmpl, args, NULL_TREE, NULL_TREE,
-				    /*entering_scope=*/0, 
-				    tf_error);
+				    /*entering_scope=*/0, tf_error | tf_user);
     }
   else
     type = error_mark_node;

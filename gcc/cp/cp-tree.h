@@ -3054,8 +3054,10 @@ typedef enum tsubst_flags_t {
   tf_ignore_bad_quals = 1 << 2, /* ignore bad cvr qualifiers */
   tf_keep_type_decl = 1 << 3,	/* retain typedef type decls
 				   (make_typename_type use) */
-  tf_ptrmem_ok = 1 << 4      /* pointers to member ok (internal
-				instantiate_type use) */
+  tf_ptrmem_ok = 1 << 4,        /* pointers to member ok (internal
+				   instantiate_type use) */
+  tf_user = 1 << 5		/* Found template must be a user template
+				   (lookup_template_class use) */
 } tsubst_flags_t;
 
 /* The kind of checking we can do looking in a class hierarchy.  */

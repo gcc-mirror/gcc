@@ -5523,7 +5523,7 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
 					TREE_OPERAND (fullname, 1),
 					NULL_TREE, context,
 					/*entering_scope=*/0,
-	                                tf_error | tf_warning);
+	                                tf_error | tf_warning | tf_user);
 	}
       else
 	{
