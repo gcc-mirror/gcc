@@ -98,6 +98,7 @@ dnl Unfortunately, the message implies we're just checking for -lm...
 AC_CHECK_LIB(m,drem,AC_DEFINE(IEEE_drem))
 
 AC_DEFINE(Skip_f2c_Undefs)
+AC_DEFINE(IEEE_COMPLEX_DIVIDE)
 
 AC_OUTPUT(Makefile)
 

@@ -18,8 +18,18 @@ void c_div(complex *c, complex *a, complex *b)
 		abi = - abi;
 	if( abr <= abi )
 		{
-		if(abi == 0)
+		if(abi == 0) {
+#ifdef IEEE_COMPLEX_DIVIDE
+			float af, bf;
+			af = bf = abr;
+			if (a->i != 0 || a->r != 0)
+				af = 1.;
+			c->i = c->r = af / bf;
+			return;
+#else
 			sig_die("complex division by zero", 1);
+#endif
+			}
 		ratio = (double)b->r / b->i ;
 		den = b->i * (1 + ratio*ratio);
 		cr = (a->r*ratio + a->i) / den;
