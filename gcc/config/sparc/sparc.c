@@ -2824,7 +2824,7 @@ print_operand (file, x, code)
 
     default:
       /* Undocumented flag.  */
-      abort ();
+      output_operand_lossage ("invalid operand output code");
     }
 
   if (GET_CODE (x) == REG)
