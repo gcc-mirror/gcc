@@ -1898,14 +1898,6 @@ end_java_method (void)
       DECL_STRUCT_FUNCTION (fndecl) = NULL;
       DECL_INITIAL (fndecl) = NULL_TREE;
     }
-  if (! flag_unit_at_a_time)
-    {
-      /* Nulling these fields when we no longer need them saves
-	 memory.  */
-      DECL_SAVED_TREE (fndecl) = NULL;
-      DECL_STRUCT_FUNCTION (fndecl) = NULL;
-      DECL_INITIAL (fndecl) = NULL_TREE;
-    }
   current_function_decl = NULL_TREE;
 }
 
