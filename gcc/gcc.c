@@ -6778,7 +6778,7 @@ next_member:
 
   atom = p;
   while (ISIDNUM (*p) || *p == '-' || *p == '+' || *p == '='
-	 || *p == ',' || *p == '.')
+	 || *p == ',' || *p == '.' || *p == '@')
     p++;
   len = p - atom;
 
