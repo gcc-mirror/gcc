@@ -256,7 +256,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
   rtx last_loop_insn;
   rtx loop_start = loop->start;
   rtx loop_end = loop->end;
-  struct loop_info *loop_info = loop->info;
+  struct loop_info *loop_info = LOOP_INFO (loop);
 
   /* Don't bother unrolling huge loops.  Since the minimum factor is
      two, loops greater than one half of MAX_UNROLLED_INSNS will never
@@ -3635,7 +3635,7 @@ loop_iterations (loop)
   int unsigned_p, compare_dir, final_larger;
   rtx last_loop_insn;
   rtx reg_term;
-  struct loop_info *loop_info = loop->info;
+  struct loop_info *loop_info = LOOP_INFO (loop);
 
   loop_info->n_iterations = 0;
   loop_info->initial_value = 0;

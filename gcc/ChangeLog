@@ -1,3 +1,11 @@
+2000-01-25  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* loop.h (LOOP_INFO): New accessor macro.
+	* basic-block.h (struct loop): Rename field `info' to `aux'.
+	* loop.c (scan_loop): Replace loop->info with LOOP_INFO (loop).
+	(prescan_loop, strength_reduce, check_dbra_loop, insert_bct): Likewise.
+	* unroll.c (loop_iterations, unroll_loop): Likewise.
+
 2000-01-24  Christopher Faylor <cgf@cygnus.com>
 
 	* config/i386/t-cygwin: Accomodate new winsup directory layout

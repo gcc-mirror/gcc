@@ -21,6 +21,9 @@ Boston, MA 02111-1307, USA.  */
 #include "varray.h"
 #include "basic-block.h"
 
+/* Get the loop info pointer of a loop.  */
+#define LOOP_INFO(LOOP) ((struct loop_info *) (LOOP)->aux) 
+
 /* Get the luid of an insn.  Catch the error of trying to reference the LUID
    of an insn added during loop, since these don't have LUIDs.  */
 
