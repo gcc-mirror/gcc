@@ -1,8 +1,6 @@
 // Based on a testcase by Bryan Weston <bryanw@bluemoon.sps.mot.com>
 // egcs 1.1 fails to increment count
 
-// execution test - XFAIL *-*-*
-
 #include <cstdlib>
 
 struct Base { Base() {} }; // removing the constructor fixes the problem
