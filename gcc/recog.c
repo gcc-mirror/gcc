@@ -1718,9 +1718,9 @@ constrain_operands (insn_code_num, strict)
 
 	      case 'p':
 		/* p is used for address_operands.  When we are called by
-		   gen_input_reload, no one will have checked that the
-		   address is strictly valid, i.e., that all pseudos
-		   requiring hard regs have gotten them.  */
+		   gen_reload, no one will have checked that the address is
+		   strictly valid, i.e., that all pseudos requiring hard regs
+		   have gotten them.  */
 		if (strict <= 0
 		    || (strict_memory_address_p
 			(insn_operand_mode[insn_code_num][opno], op)))
