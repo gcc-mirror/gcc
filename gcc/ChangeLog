@@ -1,3 +1,7 @@
+Wed Feb 21 19:16:26 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (mmx_lshrdi3, mmx_ashldi3): Guard by unspec.
+
 2001-02-21  Jason Merrill  <jason@redhat.com>
 
 	* tree.h (DECL_UNINLINABLE): Move from C++ frontend.
