@@ -103,6 +103,8 @@ static const cpp_token *parse_include PARAMS ((cpp_reader *));
 static void push_conditional	PARAMS ((cpp_reader *, int, int,
 					 const cpp_hashnode *));
 static unsigned int read_flag	PARAMS ((cpp_reader *, unsigned int));
+static U_CHAR *dequote_string	PARAMS ((cpp_reader *, const U_CHAR *,
+					 unsigned int));
 static int  strtoul_for_line	PARAMS ((const U_CHAR *, unsigned int,
 					 unsigned long *));
 static void do_diagnostic	PARAMS ((cpp_reader *, enum error_type, int));
@@ -117,6 +119,7 @@ static void do_pragma_once	PARAMS ((cpp_reader *));
 static void do_pragma_poison	PARAMS ((cpp_reader *));
 static void do_pragma_system_header	PARAMS ((cpp_reader *));
 static void do_pragma_dependency	PARAMS ((cpp_reader *));
+static void do_linemarker		PARAMS ((cpp_reader *));
 static const cpp_token *get_token_no_padding PARAMS ((cpp_reader *));
 static const cpp_token *get__Pragma_string PARAMS ((cpp_reader *));
 static void destringize_and_run PARAMS ((cpp_reader *, const cpp_string *));
@@ -145,7 +148,7 @@ D(if,		T_IF,		KANDR,     COND | IF_COND) /*  18162 */ \
 D(else,		T_ELSE,		KANDR,     COND)	   /*   9863 */ \
 D(ifndef,	T_IFNDEF,	KANDR,     COND | IF_COND) /*   9675 */ \
 D(undef,	T_UNDEF,	KANDR,     IN_I)	   /*   4837 */ \
-D(line,		T_LINE,		KANDR,     IN_I)	   /*   2465 */ \
+D(line,		T_LINE,		KANDR,     0)		   /*   2465 */ \
 D(elif,		T_ELIF,		STDC89,    COND)	   /*    610 */ \
 D(error,	T_ERROR,	STDC89,    0)		   /*    475 */ \
 D(pragma,	T_PRAGMA,	STDC89,    IN_I)	   /*    195 */ \
@@ -166,10 +169,6 @@ SCCS_ENTRY						   /* 0 SVR4? */
 
 /* Use the table to generate a series of prototypes, an enum for the
    directive names, and an array of directive handlers.  */
-
-/* The directive-processing functions are declared to return int
-   instead of void, because some old compilers have trouble with
-   pointers to functions returning void.  */
 
 /* Don't invoke CONCAT2 with any whitespace or K&R cc will fail.  */
 #define D(name, t, o, f) static void CONCAT2(do_,name) PARAMS ((cpp_reader *));
@@ -194,6 +193,14 @@ DIRECTIVE_TABLE
 };
 #undef D
 #undef DIRECTIVE_TABLE
+
+/* Wrapper struct directive for linemarkers.
+   The origin is more or less true - the original K+R cpp
+   did use this notation in its preprocessed output.  */
+static const directive linemarker_dir =
+{
+  do_linemarker, U"#", 1, KANDR, IN_I
+};
 
 #define SEEN_EOL() (pfile->cur_token[-1].type == CPP_EOF)
 
@@ -256,7 +263,6 @@ end_directive (pfile, skip_line)
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
   pfile->state.in_directive = 0;
   pfile->state.angled_headers = 0;
-  pfile->state.line_extension = 0;
   pfile->directive = 0;
 }
 
@@ -268,39 +274,30 @@ directive_diagnostics (pfile, dir, indented)
      const directive *dir;
      int indented;
 {
-  if (pfile->state.line_extension)
-    {
-      if (CPP_PEDANTIC (pfile)
-	  && ! pfile->state.skipping)
-	cpp_pedwarn (pfile, "style of line directive is a GCC extension");
-    }
-  else
-    {
-      /* Issue -pedantic warnings for extensions.  */
-      if (CPP_PEDANTIC (pfile)
-	  && ! pfile->state.skipping
-	  && dir->origin == EXTENSION)
-	cpp_pedwarn (pfile, "#%s is a GCC extension", dir->name);
+  /* Issue -pedantic warnings for extensions.  */
+  if (CPP_PEDANTIC (pfile)
+      && ! pfile->state.skipping
+      && dir->origin == EXTENSION)
+    cpp_pedwarn (pfile, "#%s is a GCC extension", dir->name);
 
-      /* Traditionally, a directive is ignored unless its # is in
-	 column 1.  Therefore in code intended to work with K+R
-	 compilers, directives added by C89 must have their #
-	 indented, and directives present in traditional C must not.
-	 This is true even of directives in skipped conditional
-	 blocks.  */
-      if (CPP_WTRADITIONAL (pfile))
-	{
-	  if (dir == &dtable[T_ELIF])
-	    cpp_warning (pfile, "suggest not using #elif in traditional C");
-	  else if (indented && dir->origin == KANDR)
-	    cpp_warning (pfile,
-			 "traditional C ignores #%s with the # indented",
-			 dir->name);
-	  else if (!indented && dir->origin != KANDR)
-	    cpp_warning (pfile,
-		 "suggest hiding #%s from traditional C with an indented #",
-			 dir->name);
-	}
+  /* Traditionally, a directive is ignored unless its # is in
+     column 1.  Therefore in code intended to work with K+R
+     compilers, directives added by C89 must have their #
+     indented, and directives present in traditional C must not.
+     This is true even of directives in skipped conditional
+     blocks.  #elif cannot be used at all.  */
+  if (CPP_WTRADITIONAL (pfile))
+    {
+      if (dir == &dtable[T_ELIF])
+	cpp_warning (pfile, "suggest not using #elif in traditional C");
+      else if (indented && dir->origin == KANDR)
+	cpp_warning (pfile,
+		     "traditional C ignores #%s with the # indented",
+		     dir->name);
+      else if (!indented && dir->origin != KANDR)
+	cpp_warning (pfile,
+		     "suggest hiding #%s from traditional C with an indented #",
+		     dir->name);
     }
 }
 
@@ -330,8 +327,10 @@ _cpp_handle_directive (pfile, indented)
      assembler code.  */
   else if (dname->type == CPP_NUMBER && CPP_OPTION (pfile, lang) != CLK_ASM)
     {
-      dir = &dtable[T_LINE];
-      pfile->state.line_extension = 1;
+      dir = &linemarker_dir;
+      if (CPP_PEDANTIC (pfile) && ! CPP_OPTION (pfile, preprocessed)
+	  && ! pfile->state.skipping)
+	cpp_pedwarn (pfile, "style of line directive is a GCC extension");
     }
 
   if (dir)
@@ -653,9 +652,10 @@ do_include_next (pfile)
   do_include_common (pfile, IT_INCLUDE_NEXT);
 }
 
-/* Subroutine of do_line.  Read possible flags after file name.  LAST
-   is the last flag seen; 0 if this is the first flag. Return the flag
-   if it is valid, 0 at the end of the directive. Otherwise complain.  */
+/* Subroutine of do_linemarker.  Read possible flags after file name.
+   LAST is the last flag seen; 0 if this is the first flag. Return the
+   flag if it is valid, 0 at the end of the directive. Otherwise
+   complain.  */
 static unsigned int
 read_flag (pfile, last)
      cpp_reader *pfile;
@@ -679,9 +679,43 @@ read_flag (pfile, last)
   return 0;
 }
 
-/* Another subroutine of do_line.  Convert a number in STR, of length
-   LEN, to binary; store it in NUMP, and return 0 if the number was
-   well-formed, 1 if not.  Temporary, hopefully.  */
+/* Subroutine of do_line and do_linemarker.  Returns a version of STR
+   which has a NUL terminator and all escape sequences converted to
+   their equivalents.  Temporary, hopefully.  */
+static U_CHAR *
+dequote_string (pfile, str, len)
+     cpp_reader *pfile;
+     const U_CHAR *str;
+     unsigned int len;
+{
+  U_CHAR *result = _cpp_unaligned_alloc (pfile, len + 1);
+  U_CHAR *dst = result;
+  const U_CHAR *limit = str + len;
+  unsigned int c;
+  unsigned HOST_WIDE_INT mask;
+
+  /* We need the mask to match the host's 'unsigned char', not the
+     target's.  */
+  if (CHAR_BIT < HOST_BITS_PER_WIDE_INT)
+    mask = ((unsigned HOST_WIDE_INT) 1 << CHAR_BIT) - 1;
+  else
+    mask = ~(unsigned HOST_WIDE_INT)0;
+  
+  while (str < limit)
+    {
+      c = *str++;
+      if (c != '\\')
+	*dst++ = c;
+      else
+	*dst++ = cpp_parse_escape (pfile, (const U_CHAR **)&str, limit, mask, 0);
+    }
+  *dst++ = '\0';
+  return result;
+}
+
+/* Subroutine of do_line and do_linemarker.  Convert a number in STR,
+   of length LEN, to binary; store it in NUMP, and return 0 if the
+   number was well-formed, 1 if not.  Temporary, hopefully.  */
 static int
 strtoul_for_line (str, len, nump)
      const U_CHAR *str;
@@ -703,8 +737,8 @@ strtoul_for_line (str, len, nump)
 }
 
 /* Interpret #line command.
-   Note that the filename string (if any) is treated as if it were an
-   include filename.  That means no escape handling.  */
+   Note that the filename string (if any) is a true string constant
+   (escapes are interpreted), unlike in #line.  */
 static void
 do_line (pfile)
      cpp_reader *pfile;
@@ -712,16 +746,9 @@ do_line (pfile)
   const cpp_token *token;
   const char *new_file = pfile->map->to_file;
   unsigned long new_lineno;
-  unsigned int cap, new_sysp = pfile->map->sysp;
-  enum lc_reason reason = LC_RENAME;
 
   /* C99 raised the minimum limit on #line numbers.  */
-  cap = CPP_OPTION (pfile, c99) ? 2147483647 : 32767;
-
-  /* Putting this in _cpp_handle_directive risks two calls to
-     _cpp_backup_tokens in some circumstances, which can segfault.  */
-  if (pfile->state.line_extension)
-    _cpp_backup_tokens (pfile, 1);
+  unsigned int cap = CPP_OPTION (pfile, c99) ? 2147483647 : 32767;
 
   /* #line commands expand macros.  */
   token = cpp_get_token (pfile);
@@ -734,42 +761,85 @@ do_line (pfile)
       return;
     }      
 
-  if (CPP_PEDANTIC (pfile) && ! pfile->state.line_extension
-      && (new_lineno == 0 || new_lineno > cap))
+  if (CPP_PEDANTIC (pfile) && (new_lineno == 0 || new_lineno > cap))
     cpp_pedwarn (pfile, "line number out of range");
 
   token = cpp_get_token (pfile);
   if (token->type == CPP_STRING)
     {
-      new_file = (const char *) token->val.str.text;
+      new_file = (const char *) dequote_string (pfile, token->val.str.text,
+						token->val.str.len);
+      check_eol (pfile);
+    }
+  else if (token->type != CPP_EOF)
+    {
+      cpp_error (pfile, "\"%s\" is not a valid filename",
+		 cpp_token_as_text (pfile, token));
+      return;
+    }
 
-      /* Only accept flags for the # 55 form.  */
-      if (pfile->state.line_extension)
+  skip_rest_of_line (pfile);
+  _cpp_do_file_change (pfile, LC_RENAME, new_file, new_lineno,
+		       pfile->map->sysp);
+}
+
+/* Interpret the # 44 "file" [flags] notation, which has slightly
+   different syntax and semantics from #line:  Flags are allowed,
+   and we never complain about the line number being too big.  */
+static void
+do_linemarker (pfile)
+     cpp_reader *pfile;
+{
+  const cpp_token *token;
+  const char *new_file = pfile->map->to_file;
+  unsigned long new_lineno;
+  unsigned int new_sysp = pfile->map->sysp;
+  enum lc_reason reason = LC_RENAME;
+  int flag;
+
+  /* Back up so we can get the number again.  Putting this in
+     _cpp_handle_directive risks two calls to _cpp_backup_tokens in
+     some circumstances, which can segfault.  */
+  _cpp_backup_tokens (pfile, 1);
+
+  /* #line commands expand macros.  */
+  token = cpp_get_token (pfile);
+  if (token->type != CPP_NUMBER
+      || strtoul_for_line (token->val.str.text, token->val.str.len,
+			   &new_lineno))
+    {
+      cpp_error (pfile, "\"%s\" after # is not a positive integer",
+		 cpp_token_as_text (pfile, token));
+      return;
+    }      
+
+  token = cpp_get_token (pfile);
+  if (token->type == CPP_STRING)
+    {
+      new_file = (const char *) dequote_string (pfile, token->val.str.text,
+						token->val.str.len);
+      new_sysp = 0;
+      flag = read_flag (pfile, 0);
+      if (flag == 1)
 	{
-	  int flag;
-
-	  new_sysp = 0;
-	  flag = read_flag (pfile, 0);
-	  if (flag == 1)
-	    {
-	      reason = LC_ENTER;
-	      /* Fake an include for cpp_included ().  */
-	      _cpp_fake_include (pfile, new_file);
-	      flag = read_flag (pfile, flag);
-	    }
-	  else if (flag == 2)
-	    {
-	      reason = LC_LEAVE;
-	      flag = read_flag (pfile, flag);
-	    }
-	  if (flag == 3)
-	    {
-	      new_sysp = 1;
-	      flag = read_flag (pfile, flag);
-	      if (flag == 4)
-		new_sysp = 2;
-	    }
+	  reason = LC_ENTER;
+	  /* Fake an include for cpp_included ().  */
+	  _cpp_fake_include (pfile, new_file);
+	  flag = read_flag (pfile, flag);
 	}
+      else if (flag == 2)
+	{
+	  reason = LC_LEAVE;
+	  flag = read_flag (pfile, flag);
+	}
+      if (flag == 3)
+	{
+	  new_sysp = 1;
+	  flag = read_flag (pfile, flag);
+	  if (flag == 4)
+	    new_sysp = 2;
+	}
+
       check_eol (pfile);
     }
   else if (token->type != CPP_EOF)

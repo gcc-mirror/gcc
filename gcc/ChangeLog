@@ -1,3 +1,31 @@
+2002-03-14  Zack Weinberg  <zack@codesourcery.com>
+
+	* cpphash.h (struct lexer_state): Remove line_extension member.
+	* cpplib.c (dequote_string, do_linemarker): New functions.
+	(linemarker_dir): New data object.
+	(DIRECTIVE_TABLE): No longer need to interpret #line in
+	preprocessed source.  Delete obsolete comment about return
+	values of handlers.
+	(end_directive, directive_diagnostics, _cpp_handle_directive):
+	Don't muck with line_extension.
+	(directive_diagnostics): No need to issue warnings for
+	linemarkers here.
+	(_cpp_handle_directive): Issue warnings for linemarkers here,
+	when appropriate.  Dispatch linemarkers to do_linemarker, not
+	do_line.
+	(do_line): Code to handle linemarkers split out to do_linemarker.
+	Convert escape sequences in filename argument, both places.
+
+	* cppmacro.c (quote_string): Rename cpp_quote_string and
+	export.  All callers changed.
+	* cpplib.h (cpp_quote_string): Prototype.
+	* cppmain.c (print_line): Call cpp_quote_string on to_file
+	before printing it.
+
+	* doc/cpp.texi: Document that escapes are now interpreted in
+	#line and in linemarkers, and that non-printing characters are
+	converted to octal escapes when linemarkers are generated.
+
 2002-03-14  Richard Earnshaw  <rearnsha@arm.com>
 	    Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
 

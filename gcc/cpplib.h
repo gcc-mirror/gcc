@@ -592,6 +592,9 @@ extern void cpp_forall_identifiers	PARAMS ((cpp_reader *,
 /* In cppmacro.c */
 extern void cpp_scan_nooutput		PARAMS ((cpp_reader *));
 extern int  cpp_sys_macro_p		PARAMS ((cpp_reader *));
+extern unsigned char *cpp_quote_string	PARAMS ((unsigned char *,
+						 const unsigned char *,
+						 unsigned int));
 
 /* In cppfiles.c */
 extern int cpp_included	PARAMS ((cpp_reader *, const char *));
