@@ -5733,8 +5733,9 @@ cse_insn (insn, libcall_insn)
 	 does not yet have an elt, and if so set the elt of the set source
 	 to src_eqv_elt.  */
       for (i = 0; i < n_sets; i++)
-	if (sets[i].rtl && sets[i].src_elt == 0
-	    && rtx_equal_p (SET_SRC (sets[i].rtl), src_eqv))
+	if (n_sets == 1
+	    || (sets[i].rtl && sets[i].src_elt == 0
+		&& rtx_equal_p (SET_SRC (sets[i].rtl), src_eqv)))
 	  sets[i].src_elt = src_eqv_elt;
     }
 
