@@ -2100,18 +2100,6 @@ process_command (argc, argv)
 
   add_prefix (&startfile_prefix, standard_exec_prefix, 0, 1, NULL_PTR);
   add_prefix (&startfile_prefix, standard_exec_prefix_1, 0, 1, NULL_PTR);
-      else if (argv[i][0] == '+' && argv[i][1] == 'e')
-	{
-	  /* Compensate for the +e options to the C++ front-end;
-	     they're there simply for cfront call-compatability.  We do
-	     some magic in default_compilers to pass them down properly.
-	     Note we deliberately start at the `+' here, to avoid passing
-	     -e0 or -e1 down into the linker.  */
-	  switches[n_switches].part1 = &argv[i][0];
-	  switches[n_switches].args = 0;
-	  switches[n_switches].valid = 0;
-	  n_switches++;
-	}
 
   /* More prefixes are enabled in main, after we read the specs file
      and determine whether this is cross-compilation or not.  */
@@ -2141,6 +2129,18 @@ process_command (argc, argv)
 	;
       else if (! strcmp (argv[i], "-print-libgcc-file-name"))
 	;
+      else if (argv[i][0] == '+' && argv[i][1] == 'e')
+	{
+	  /* Compensate for the +e options to the C++ front-end;
+	     they're there simply for cfront call-compatability.  We do
+	     some magic in default_compilers to pass them down properly.
+	     Note we deliberately start at the `+' here, to avoid passing
+	     -e0 or -e1 down into the linker.  */
+	  switches[n_switches].part1 = &argv[i][0];
+	  switches[n_switches].args = 0;
+	  switches[n_switches].valid = 0;
+	  n_switches++;
+	}
       else if (argv[i][0] == '-' && argv[i][1] != 0 && argv[i][1] != 'l')
 	{
 	  register char *p = &argv[i][1];
