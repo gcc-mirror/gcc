@@ -1,3 +1,8 @@
+2001-08-02  Martin Kahlert  <martin.kahlert@infineon.com>
+
+	* jni.cc (JNI_CreateJavaVM): Call _Jv_JNI_Init in order
+	to initialize global_ref_table/local_ref_table.
+
 2001-08-02  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.

@@ -2032,6 +2032,9 @@ JNI_CreateJavaVM (JavaVM **vm, void **penv, void *args)
 
   the_vm = nvm;
   *vm = the_vm;
+
+  _Jv_JNI_Init();
+
   return 0;
 }
 
