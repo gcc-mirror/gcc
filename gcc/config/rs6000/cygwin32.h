@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA. */
 
 #define	CPP_PREDEFINES "-DWIN32 -D__WIN32__ -D__WINNT__ \
   -D__CYGWIN32__ -DPOSIX \
-  -D_POWER -DPPC -Asystem(winnt) -Acpu(powerpc) -Amachine(powerpc)"
+  -D_POWER -D_ARCH_PPC -D__PPC__ -Asystem(winnt) -Acpu(powerpc) -Amachine(powerpc)"
 
 /* We have to dynamic link to get to the system dlls,
    and I've put all of libc and libm and the unix stuff into
@@ -49,10 +49,6 @@ Boston, MA 02111-1307, USA. */
 #define	LINK_SPEC "%{v:-V}"
 
 
-/* No need for libgcc, it's in the shared library. */
-#undef LIBGCC_SPEC
-#define LIBGCC_SPEC ""
-
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!:crt0%O%s}"
 
@@ -62,3 +58,7 @@ Boston, MA 02111-1307, USA. */
 #define WCHAR_TYPE "short unsigned int"
 
 /* XXX set up stack probing */
+
+#define DBX_DEBUGGING_INFO 
+#undef SDB_DEBUGGING_INFO 
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG

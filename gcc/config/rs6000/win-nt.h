@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #undef	CPP_PREDEFINES
 #define	CPP_PREDEFINES "-DWIN32 -D_WIN32 \
   -DWINNT -D__STDC__=0 -DALMOST_STDC \
-  -D_POWER -DPPC -Asystem(winnt) -Acpu(powerpc) -Amachine(powerpc)"
+  -D_POWER -D_ARCH_PPC -D__PPC__ -Asystem(winnt) -Acpu(powerpc) -Amachine(powerpc)"
 
 #if 0
 #include "winnt/win-nt.h"

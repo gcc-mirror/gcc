@@ -2899,6 +2899,8 @@ output_prolog (file, size)
   int reg_size = info->reg_size;
   char *store_reg;
   char *load_reg;
+  int sp_reg = 1;
+  int sp_offset = 0;
 
   if (TARGET_32BIT)
     {
@@ -2941,12 +2943,36 @@ output_prolog (file, size)
       common_mode_defined = 1;
     }
 
+  /* For V.4, update stack before we do any saving and set back pointer.  */
+  if (info->push_p && DEFAULT_ABI == ABI_V4)
+    {
+      if (info->total_size < 32767)
+	{
+	  asm_fprintf (file,
+		       (TARGET_32BIT) ? "\t{stu|stwu} %s,%d(%s)\n" : "\tstdu %s,%d(%s)\n",
+		       reg_names[1], - info->total_size, reg_names[1]);
+	  sp_offset = info->total_size;
+	}
+      else
+	{
+	  int neg_size = - info->total_size;
+	  sp_reg = 12;
+	  asm_fprintf (file, "\tmr %s,%s\n", reg_names[12], reg_names[1]);
+	  asm_fprintf (file, "\t{liu|lis} %s,%d\n\t{oril|ori} %s,%s,%d\n",
+		       reg_names[0], (neg_size >> 16) & 0xffff,
+		       reg_names[0], reg_names[0], neg_size & 0xffff);
+	  asm_fprintf (file,
+		       (TARGET_32BIT) ? "\t{stux|stwux} %s,%s,%s\n" : "\tstdux %s,%s,%s\n",
+		       reg_names[1], reg_names[1], reg_names[0]);
+	}
+    }
+
   /* If we use the link register, get it into r0.  */
   if (info->lr_save_p)
     asm_fprintf (file, "\tmflr %s\n", reg_names[0]);
 
   /* If we need to save CR, put it into r12.  */
-  if (info->cr_save_p)
+  if (info->cr_save_p && sp_reg != 12)
     asm_fprintf (file, "\tmfcr %s\n", reg_names[12]);
 
   /* Do any required saving of fpr's.  If only one or two to save, do it
@@ -2955,10 +2981,10 @@ output_prolog (file, size)
   if (FP_SAVE_INLINE (info->first_fp_reg_save))
     {
       int regno = info->first_fp_reg_save;
-      int loc   = info->fp_save_offset;
+      int loc   = info->fp_save_offset + sp_offset;
 
       for ( ; regno < 64; regno++, loc += 8)
-	asm_fprintf (file, "\tstfd %s,%d(%s)\n", reg_names[regno], loc, reg_names[1]);
+	asm_fprintf (file, "\tstfd %s,%d(%s)\n", reg_names[regno], loc, reg_names[sp_reg]);
     }
   else if (info->first_fp_reg_save != 64)
     asm_fprintf (file, "\tbl %s%d%s\n", SAVE_FP_PREFIX,
@@ -2968,17 +2994,17 @@ output_prolog (file, size)
   if (! TARGET_MULTIPLE || info->first_gp_reg_save == 31 || TARGET_64BIT)
     {
       int regno    = info->first_gp_reg_save;
-      int loc      = info->gp_save_offset;
+      int loc      = info->gp_save_offset + sp_offset;
 
       for ( ; regno < 32; regno++, loc += reg_size)
-	asm_fprintf (file, store_reg, reg_names[regno], loc, reg_names[1]);
+	asm_fprintf (file, store_reg, reg_names[regno], loc, reg_names[sp_reg]);
     }
 
   else if (info->first_gp_reg_save != 32)
     asm_fprintf (file, "\t{stm|stmw} %s,%d(%s)\n",
 		 reg_names[info->first_gp_reg_save],
-		 info->gp_save_offset,
-		 reg_names[1]);
+		 info->gp_save_offset + sp_offset,
+		 reg_names[sp_reg]);
 
   /* Save main's arguments if we need to call a function */
 #ifdef NAME__MAIN
@@ -2989,23 +3015,75 @@ output_prolog (file, size)
       int size = info->main_size;
 
       for (regno = 3; size > 0; regno++, loc -= reg_size, size -= reg_size)
-	asm_fprintf (file, store_reg, reg_names[regno], loc, reg_names[1]);
+	asm_fprintf (file, store_reg, reg_names[regno], loc, reg_names[sp_reg]);
     }
 #endif
 
   /* Save lr if we used it.  */
   if (info->lr_save_p)
-    asm_fprintf (file, store_reg, reg_names[0], info->lr_save_offset, reg_names[1]);
+    asm_fprintf (file, store_reg, reg_names[0], info->lr_save_offset + sp_offset,
+		 reg_names[sp_reg]);
 
   /* Save CR if we use any that must be preserved.  */
   if (info->cr_save_p)
-    asm_fprintf (file, store_reg, reg_names[12], info->cr_save_offset, reg_names[1]);
+    {
+      if (sp_reg == 12)	/* If r12 is used to hold the original sp, copy cr now */
+	{
+	  asm_fprintf (file, "\tmfcr %s\n", reg_names[0]);
+	  asm_fprintf (file, store_reg, reg_names[0],
+		       info->cr_save_offset + sp_offset,
+		       reg_names[sp_reg]);
+	}
+      else
+	asm_fprintf (file, store_reg, reg_names[12], info->cr_save_offset + sp_offset,
+		     reg_names[sp_reg]);
+    }
 
   if (info->toc_save_p)
-    asm_fprintf (file, store_reg, reg_names[2], info->toc_save_offset, reg_names[1]);
+    asm_fprintf (file, store_reg, reg_names[2], info->toc_save_offset + sp_offset,
+		 reg_names[sp_reg]);
 
-  /* Update stack and set back pointer.  */
-  if (info->push_p)
+  /* NT needs us to probe the stack frame every 4k pages for large frames, so
+     do it here.  */
+  if (DEFAULT_ABI == ABI_NT && info->total_size > 4096)
+    {
+      if (info->total_size < 32768)
+	{
+	  int probe_offset = 4096;
+	  while (probe_offset < info->total_size)
+	    {
+	      asm_fprintf (file, "\t{l|lwz} %s,%d(%s)\n", reg_names[0], -probe_offset, reg_names[1]);
+	      probe_offset += 4096;
+	    }
+	}
+      else
+	{
+	  int probe_iterations = info->total_size / 4096;
+	  static int probe_labelno = 0;
+	  char buf[256];
+
+	  if (probe_iterations < 32768)
+	    asm_fprintf (file, "\tli %s,%d\n", reg_names[12], probe_iterations);
+	  else
+	    {
+	      asm_fprintf (file, "\tlis %s,%d\n", reg_names[12], probe_iterations >> 16);
+	      if (probe_iterations & 0xffff)
+		asm_fprintf (file, "\tori %s,%s,%d\n", reg_names[12], reg_names[12],
+			     probe_iterations & 0xffff);
+	    }
+	  asm_fprintf (file, "\tmtctr %s\n", reg_names[12]);
+	  asm_fprintf (file, "\tmr %s,%s\n", reg_names[12], reg_names[1]);
+	  ASM_OUTPUT_INTERNAL_LABEL (file, "LCprobe", probe_labelno);
+	  asm_fprintf (file, "\t{lu|lwzu} %s,-4096(%s)\n", reg_names[0], reg_names[12]);
+	  ASM_GENERATE_INTERNAL_LABEL (buf, "LCprobe", probe_labelno);
+	  fputs ("\tbdnz ", file);
+	  assemble_name (file, buf);
+	  fputs ("\n", file);
+	}
+    }
+
+  /* Update stack and set back pointer and we have already done so for V.4.  */
+  if (info->push_p && DEFAULT_ABI != ABI_V4)
     {
       if (info->total_size < 32767)
 	asm_fprintf (file,
@@ -3063,8 +3141,17 @@ output_prolog (file, size)
 		asm_fprintf (file, load_reg, reg_names[regno], loc, reg_names[1]);
 	    }
 	  else
-	    {			/* for large frames, reg 0 above contains -frame size */
+	    {			/* for large AIX/NT frames, reg 0 above contains -frame size */
+				/* for V.4, we need to reload -frame size */
 	      loc = info->main_save_offset;
+	      if (DEFAULT_ABI == ABI_V4 && info->total_size > 32767)
+		{
+		  int neg_size = - info->total_size;
+		  asm_fprintf (file, "\t{liu|lis} %s,%d\n\t{oril|ori} %s,%s,%d\n",
+			       reg_names[0], (neg_size >> 16) & 0xffff,
+			       reg_names[0], reg_names[0], neg_size & 0xffff);
+		}
+
 	      asm_fprintf (file, "\t{sf|subf} %s,%s,%s\n", reg_names[0], reg_names[0],
 			   reg_names[1]);
 
@@ -3163,6 +3250,8 @@ output_epilog (file, size)
   rs6000_stack_t *info = rs6000_stack_info ();
   char *load_reg = (TARGET_32BIT) ? "\t{l|lwz} %s,%d(%s)\n" : "\tld %s,%d(%s)\n";
   rtx insn = get_last_insn ();
+  int sp_reg = 1;
+  int sp_offset = 0;
   int i;
 
   /* Forget about any temporaries created */
@@ -3180,10 +3269,19 @@ output_epilog (file, size)
 	 we know what size to update it with.  */
       if (frame_pointer_needed || current_function_calls_alloca
 	  || info->total_size > 32767)
-	asm_fprintf (file, load_reg, reg_names[1], 0, reg_names[1]);
+	{
+	  /* Under V.4, don't reset the stack pointer until after we're done
+	     loading the saved registers.  */
+	  if (DEFAULT_ABI == ABI_V4)
+	    sp_reg = 11;
+
+	  asm_fprintf (file, load_reg, reg_names[sp_reg], 0, reg_names[1]);
+	}
       else if (info->push_p)
 	{
-	  if (TARGET_NEW_MNEMONICS)
+	  if (DEFAULT_ABI == ABI_V4)
+	    sp_offset = info->total_size;
+	  else if (TARGET_NEW_MNEMONICS)
 	    asm_fprintf (file, "\taddi %s,%s,%d\n", reg_names[1], reg_names[1], info->total_size);
 	  else
 	    asm_fprintf (file, "\tcal %s,%d(%s)\n", reg_names[1], info->total_size, reg_names[1]);
@@ -3191,11 +3289,11 @@ output_epilog (file, size)
 
       /* Get the old lr if we saved it.  */
       if (info->lr_save_p)
-	asm_fprintf (file, load_reg, reg_names[0], info->lr_save_offset, reg_names[1]);
+	asm_fprintf (file, load_reg, reg_names[0], info->lr_save_offset + sp_offset, reg_names[sp_reg]);
 
       /* Get the old cr if we saved it.  */
       if (info->cr_save_p)
-	asm_fprintf (file, load_reg, reg_names[12], info->cr_save_offset, reg_names[1]);
+	asm_fprintf (file, load_reg, reg_names[12], info->cr_save_offset + sp_offset, reg_names[sp_reg]);
 
       /* Set LR here to try to overlap restores below.  */
       if (info->lr_save_p)
@@ -3205,27 +3303,27 @@ output_epilog (file, size)
       if (! TARGET_MULTIPLE || info->first_gp_reg_save == 31 || TARGET_64BIT)
 	{
 	  int regno    = info->first_gp_reg_save;
-	  int loc      = info->gp_save_offset;
+	  int loc      = info->gp_save_offset + sp_offset;
 	  int reg_size = (TARGET_32BIT) ? 4 : 8;
 
 	  for ( ; regno < 32; regno++, loc += reg_size)
-	    asm_fprintf (file, load_reg, reg_names[regno], loc, reg_names[1]);
+	    asm_fprintf (file, load_reg, reg_names[regno], loc, reg_names[sp_reg]);
 	}
 
       else if (info->first_gp_reg_save != 32)
 	asm_fprintf (file, "\t{lm|lmw} %s,%d(%s)\n",
 		     reg_names[info->first_gp_reg_save],
-		     info->gp_save_offset,
-		     reg_names[1]);
+		     info->gp_save_offset + sp_offset,
+		     reg_names[sp_reg]);
 
       /* Restore fpr's if we can do it without calling a function.  */
       if (FP_SAVE_INLINE (info->first_fp_reg_save))
 	{
 	  int regno = info->first_fp_reg_save;
-	  int loc   = info->fp_save_offset;
+	  int loc   = info->fp_save_offset + sp_offset;
 
 	  for ( ; regno < 64; regno++, loc += 8)
-	    asm_fprintf (file, "\tlfd %s,%d(%s)\n", reg_names[regno], loc, reg_names[1]);
+	    asm_fprintf (file, "\tlfd %s,%d(%s)\n", reg_names[regno], loc, reg_names[sp_reg]);
 	}
 
       /* If we saved cr, restore it here.  Just those of cr2, cr3, and cr4
@@ -3235,6 +3333,17 @@ output_epilog (file, size)
 		     (regs_ever_live[70] != 0) * 0x20
 		     + (regs_ever_live[71] != 0) * 0x10
 		     + (regs_ever_live[72] != 0) * 0x8, reg_names[12]);
+
+      /* If this is V.4, unwind the stack pointer after all of the loads have been done */
+      if (sp_offset)
+	{
+	  if (TARGET_NEW_MNEMONICS)
+	    asm_fprintf (file, "\taddi %s,%s,%d\n", reg_names[1], reg_names[1], sp_offset);
+	  else
+	    asm_fprintf (file, "\tcal %s,%d(%s)\n", reg_names[1], sp_offset, reg_names[1]);
+	}
+      else if (sp_reg != 1)
+	asm_fprintf (file, "\tmr %s,%s\n", reg_names[1], reg_names[sp_reg]);
 
       /* If we have to restore more than two FP registers, branch to the
 	 restore function.  It will return to our caller.  */
