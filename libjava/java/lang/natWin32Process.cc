@@ -29,23 +29,29 @@ details.  */
 void
 java::lang::ConcreteProcess::cleanup (void)
 {
-  if (inputStream != NULL)
-    {
-      inputStream->close ();
-      inputStream = NULL;
-    }
-
-  if (outputStream != NULL)
-    {
-      outputStream->close ();
-      outputStream = NULL;
-    }
-
-  if (errorStream != NULL)
-    {
-      errorStream->close ();
-      errorStream = NULL;
-    }
+  // FIXME:
+  // We used to close the input, output and
+  // error streams here, but we can't do that
+  // because the caller also has the right
+  // to close these and FileInputStream and FileOutputStream
+  // scream if you attempt to close() them twice. Presently,
+  // we use _Jv_platform_close_on_exec, which is similar
+  // to the POSIX approach.
+  //
+  // What I wanted to do is have private nested
+  // classes in ConcreteProcess which extend FileInputStream
+  // and FileOutputStream, respectively, but override
+  // close() to permit multiple calls to close(). This
+  // led to class header and platform configury issues
+  // that I didn't feel like dealing with. However,
+  // this approach could conceivably be a good multiplatform
+  // one since delaying the pipe close until process
+  // termination could be wasteful if many child processes
+  // are spawned within the parent process' lifetime.
+  inputStream = NULL;
+  outputStream = NULL;
+  errorStream = NULL;
+  
   if (procHandle)
     {
       CloseHandle((HANDLE) procHandle);
@@ -129,6 +135,76 @@ java::lang::ConcreteProcess::waitFor (void)
   return exitCode;
 }
 
+
+// Helper class for creating and managing the pipes
+// used for I/O redirection for child processes.
+class ChildProcessPipe
+{
+public:
+  // Indicates from the child process' point of view
+  // whether the pipe is for reading or writing.
+  enum EType {INPUT, OUTPUT};
+
+  ChildProcessPipe(EType eType);
+  ~ChildProcessPipe();
+  
+  // Returns a pipe handle suitable for use by the parent process
+  HANDLE getParentHandle();
+  
+  // Returns a pipe handle suitable for use by the child process.
+  HANDLE getChildHandle();
+  
+private:
+  EType m_eType;
+  HANDLE m_hRead, m_hWrite;
+};
+
+ChildProcessPipe::ChildProcessPipe(EType eType):
+  m_eType(eType)
+{
+  SECURITY_ATTRIBUTES sAttrs;
+
+  // Explicitly allow the handles to the pipes to be inherited.
+  sAttrs.nLength = sizeof (SECURITY_ATTRIBUTES);
+  sAttrs.bInheritHandle = 1;
+  sAttrs.lpSecurityDescriptor = NULL;
+
+  if (CreatePipe (&m_hRead, &m_hWrite, &sAttrs, 0) == 0)
+    {
+      DWORD dwErrorCode = GetLastError ();
+      throw new java::io::IOException (
+        _Jv_WinStrError ("Error creating pipe", dwErrorCode));
+    }
+
+  // If this is the read end of the child, we need
+  // to make the parent write end non-inheritable. Similarly,
+  // if this is the write end of the child, we need to make
+  // the parent read end non-inheritable. If we didn't
+  // do this, the child would inherit these ends and we wouldn't
+  // be able to close them from our end. For full details,
+  // do a Google search on "Q190351".
+  HANDLE& rhStd = m_eType==INPUT ? m_hWrite : m_hRead;
+  _Jv_platform_close_on_exec (rhStd);
+}
+
+ChildProcessPipe::~ChildProcessPipe()
+{
+  // Close the parent end of the pipe. This
+  // destructor is called after the child process
+  // has been spawned.
+  CloseHandle(getChildHandle());
+}
+
+HANDLE ChildProcessPipe::getParentHandle()
+{
+  return m_eType==INPUT ? m_hWrite : m_hRead;
+}
+
+HANDLE ChildProcessPipe::getChildHandle()
+{
+  return m_eType==INPUT ? m_hRead : m_hWrite;
+}
+
 void
 java::lang::ConcreteProcess::startProcess (jstringArray progarray,
                                            jstringArray envp,
@@ -197,46 +273,16 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
     {
       // We create anonymous pipes to communicate with the child
       // on each of standard streams.
+      ChildProcessPipe aChildStdIn(ChildProcessPipe::INPUT);
+      ChildProcessPipe aChildStdOut(ChildProcessPipe::OUTPUT);
+      ChildProcessPipe aChildStdErr(ChildProcessPipe::OUTPUT);
 
-      HANDLE cldStdInRd, cldStdInWr;
-      HANDLE cldStdOutRd, cldStdOutWr;
-      HANDLE cldStdErrRd, cldStdErrWr;
-
-      SECURITY_ATTRIBUTES sAttrs;
-
-      // Explicitly allow the handles to the pipes to be inherited.
-      sAttrs.nLength = sizeof (SECURITY_ATTRIBUTES);
-      sAttrs.bInheritHandle = 1;
-      sAttrs.lpSecurityDescriptor = NULL;
-
-
-      if (CreatePipe (&cldStdInRd, &cldStdInWr, &sAttrs, 0) == 0)
-        {
-          DWORD dwErrorCode = GetLastError ();
-          throw new IOException (_Jv_WinStrError ("Error creating stdin pipe",
-            dwErrorCode));
-        }
-
-      if (CreatePipe (&cldStdOutRd, &cldStdOutWr, &sAttrs, 0) == 0)
-        {
-          DWORD dwErrorCode = GetLastError ();
-          throw new IOException (_Jv_WinStrError ("Error creating stdout pipe",
-            dwErrorCode));
-        }
-
-      if (CreatePipe (&cldStdErrRd, &cldStdErrWr, &sAttrs, 0) == 0)
-        {
-          DWORD dwErrorCode = GetLastError ();
-          throw new IOException (_Jv_WinStrError ("Error creating stderr pipe",
-            dwErrorCode));
-        }
-
-      outputStream = new FileOutputStream
-                         (new FileDescriptor ((jint) cldStdInWr));
-      inputStream = new FileInputStream
-                        (new FileDescriptor ((jint) cldStdOutRd));
-      errorStream = new FileInputStream
-                        (new FileDescriptor ((jint) cldStdErrRd));
+      outputStream = new FileOutputStream (new FileDescriptor (
+                           (jint) aChildStdIn.getParentHandle ()));
+      inputStream = new FileInputStream (new FileDescriptor (
+                           (jint) aChildStdOut.getParentHandle ()));
+      errorStream = new FileInputStream (new FileDescriptor (
+                           (jint) aChildStdErr.getParentHandle ()));
 
       // Now create the child process.
       PROCESS_INFORMATION pi;
@@ -250,16 +296,20 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
       // Explicitly specify the handles to the standard streams.
       si.dwFlags |= STARTF_USESTDHANDLES;
 
-      si.hStdInput = cldStdInRd;
-      si.hStdOutput = cldStdOutWr;
-      si.hStdError = cldStdErrWr;
+      si.hStdInput = aChildStdIn.getChildHandle();
+      si.hStdOutput = aChildStdOut.getChildHandle();
+      si.hStdError = aChildStdErr.getChildHandle();
 
+      // Spawn the process. CREATE_NO_WINDOW only applies when
+      // starting a console application; it suppresses the
+      // creation of a console window. This flag is ignored on
+      // Win9X.
       if (CreateProcess (NULL,
                          cmdLine,
                          NULL,
                          NULL,
                          1,
-                         0,
+                         CREATE_NO_WINDOW,
                          env,
                          wdir,
                          &si,
@@ -271,11 +321,6 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
         }
 
       procHandle = (jint ) pi.hProcess;
-
-      // Close the wrong ends (for the parent) of the pipes.
-      CloseHandle (cldStdInRd);
-      CloseHandle (cldStdOutWr);
-      CloseHandle (cldStdErrWr);
 
       _Jv_Free (cmdLine);
       if (env != NULL)

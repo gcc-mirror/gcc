@@ -1,5 +1,18 @@
 2003-11-06  Mohan Embar  <gnustuff@thisiscool.com>
 
+	PR libgcj/12231
+	* java/lang/Win32Process.java (hasExited) Changed from
+	public to private.
+	(startProcess): Likewise.
+	(cleanup): Likewise.
+	* java/lang/natWin32Process.cc (cleanup) Don't close
+	input, output and error streams.
+	(ChildProcessPipe): New helper class.
+	(startProcess): Refactored to use ChildProcessPipe.
+	Use CREATE_NO_WINDOW when launching child process.
+
+2003-11-06  Mohan Embar  <gnustuff@thisiscool.com>
+
 	* include/win32.h (_Jv_platform_close_on_exec): Changed
 	signature and declared extern.
 	* win32.cc (_Jv_platform_close_on_exec): Implemented.
