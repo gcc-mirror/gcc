@@ -960,7 +960,7 @@ struct tree_block
 /* In a FUNCTION_TYPE, indicates that the function returns with the stack
    pointer depressed.  */
 #define TYPE_RETURNS_STACK_DEPRESSED(NODE) \
-  (FUNCTION_TYPE_CHECK(NODE)->type.no_force_blk_flag)
+  (FUNCTION_TYPE_CHECK (NODE)->type.no_force_blk_flag)
 
 /* Nonzero in a type considered volatile as a whole.  */
 #define TYPE_VOLATILE(NODE) ((NODE)->common.volatile_flag)
