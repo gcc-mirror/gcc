@@ -1,3 +1,20 @@
+2001-01-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h (lang_printable_name_wls): New prototype.
+	* lang.c (put_decl_name): Removed dead code. Use DECL_CONTEXT
+	rather than `current_class' to print type name. Don't prepend type
+	names when printing constructor names.
+	(lang_printable_name_wls): New function.
+	* jcf-parse.c (jcf_parse_source): Pass NULL `file' argument to
+	`build_expr_wfl', alway set EXPR_WFL_FILENAME_NODE.
+	* parse.y (patch_method_invocation): Message tuned for constructors.
+	(not_accessible_p): Grant `private' access from within
+	enclosing contexts.
+	
+2001-01-05  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (patch_binop): Compute missing type in error situations.
+
 2001-01-05  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* class.c (make_class_data): Push initial value for "arrayclass".

@@ -9701,11 +9701,16 @@ not_accessible_p (reference, member, from_super)
     }
 
   /* Check access on private members. Access is granted only if it
-     occurs from within the class in which it is declared. Exceptions
-     are accesses from inner-classes. */
+     occurs from within the class in which it is declared -- that does
+     it for innerclasses too. */
   if (access_flag & ACC_PRIVATE)
-    return (current_class == DECL_CONTEXT (member) ? 0 : 
-	    (INNER_CLASS_TYPE_P (current_class) ? 0 : 1));
+    {
+      if (reference == DECL_CONTEXT (member))
+	return 0;
+      if (enclosing_context_p (reference, DECL_CONTEXT (member)))
+	return 0;
+      return 1;
+    }
 
   /* Default access are permitted only when occuring within the
      package in which the type (REFERENCE) is declared. In other words,
@@ -10054,10 +10059,13 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
   if (not_accessible_p (DECL_CONTEXT (current_function_decl), list, 0))
     {
       char *fct_name = xstrdup (lang_printable_name (list, 0));
+      int ctor_p = DECL_CONSTRUCTOR_P (list);
       parse_error_context 
-	(wfl, "Can't access %s method `%s %s.%s' from `%s'",
+	(wfl, "Can't access %s %s `%s%s.%s' from `%s'",
 	 java_accstring_lookup (get_access_flags_from_decl (list)),
-	 lang_printable_name (TREE_TYPE (TREE_TYPE (list)), 0), 
+	 (ctor_p ? "constructor" : "method"),
+	 (ctor_p ? 
+	  "" : lang_printable_name_wls (TREE_TYPE (TREE_TYPE (list)), 0)), 
 	 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (DECL_CONTEXT (list)))), 
 	 fct_name, IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))));
       free (fct_name);
@@ -13116,6 +13124,26 @@ patch_binop (node, wfl_op1, wfl_op2)
   int error_found = 0;
 
   EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
+
+  /* If either op<n>_type are NULL, this might be early signs of an
+     error situation, unless it's too early to tell (in case we're
+     handling a `+', `==', `!=' or `instanceof'.) We want to set op<n>_type
+     correctly so the error can be later on reported accurately. */
+  if (! (code == PLUS_EXPR || code == NE_EXPR 
+	 || code == EQ_EXPR || code == INSTANCEOF_EXPR))
+    {
+      tree n;
+      if (! op1_type)
+	{
+	  n = java_complete_tree (op1);
+	  op1_type = TREE_TYPE (n);
+	}
+      if (! op2_type)
+	{
+	  n = java_complete_tree (op2);
+	  op2_type = TREE_TYPE (n);
+	}
+    }
 
   switch (code)
     {

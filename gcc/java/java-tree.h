@@ -1111,6 +1111,7 @@ extern boolean java_hash_compare_tree_node PARAMS ((hash_table_key,
 						    hash_table_key));
 extern void java_check_methods PARAMS ((tree));
 extern void init_jcf_parse PARAMS((void));
+extern const char *lang_printable_name_wls PARAMS ((tree, int));
 
 /* We use ARGS_SIZE_RTX to indicate that gcc/expr.h has been included
    to declare `enum expand_modifier'. */
