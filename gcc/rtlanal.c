@@ -1,5 +1,5 @@
 /* Analyze RTL for C-Compiler
-   Copyright (C) 1987, 1988, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 92, 93, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1406,14 +1406,14 @@ volatile_insn_p (x)
       {
 	if (fmt[i] == 'e')
 	  {
-	    if (volatile_refs_p (XEXP (x, i)))
+	    if (volatile_insn_p (XEXP (x, i)))
 	      return 1;
 	  }
 	if (fmt[i] == 'E')
 	  {
 	    register int j;
 	    for (j = 0; j < XVECLEN (x, i); j++)
-	      if (volatile_refs_p (XVECEXP (x, i, j)))
+	      if (volatile_insn_p (XVECEXP (x, i, j)))
 		return 1;
 	  }
       }
