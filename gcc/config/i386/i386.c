@@ -9031,7 +9031,7 @@ ix86_expand_int_movcc (operands)
 	  /* To simplify rest of code, restrict to the GEU case.  */
 	  if (compare_code == LTU)
 	    {
-	      int tmp = ct;
+	      HOST_WIDE_INT tmp = ct;
 	      ct = cf;
 	      cf = tmp;
 	      compare_code = reverse_condition (compare_code);
