@@ -1,3 +1,11 @@
+2004-07-01  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (reg_save): Use INVALID_REGNUM.
+	(dwarf2out_reg_save, dwarf2out_return_save): Likewise.
+	(initial_return_save): Likewise.
+	(flush_queued_reg_saves): Remap register numbers.
+	(dwarf2out_return_reg): Likewise.
+
 2004-07-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gimplify.c (gimplify_one_sizepos): Don't do anything if any VAR_DECL.
