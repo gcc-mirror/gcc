@@ -44,8 +44,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* No point in running CPP on our assembler output.  */
 #define ASM_SPEC "-nocpp"
 
-/* Right now Alpha OSF/1 doesn't seem to have debugging or profiled 
-   libraries.  */
+/* Right now Alpha OSF/1 doesn't seem to have debugging libraries.  */
 
 #define LIB_SPEC "%{p:-lprof1} -lc"
 
