@@ -1979,6 +1979,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    && (GET_CODE (SET_DEST (x)) == REG
 		|| (GET_CODE (SET_DEST (x)) == SUBREG
 		    && GET_CODE (SUBREG_REG (SET_DEST (x))) == REG))
+	    && GET_MODE (var) == promoted_mode
 	    && x == single_set (insn))
 	  {
 	    rtx pat;
@@ -2024,6 +2025,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    && (GET_CODE (SET_SRC (x)) == REG
 		|| (GET_CODE (SET_SRC (x)) == SUBREG
 		    && GET_CODE (SUBREG_REG (SET_SRC (x))) == REG))
+	    && GET_MODE (var) == promoted_mode
 	    && x == single_set (insn))
 	  {
 	    rtx pat;
