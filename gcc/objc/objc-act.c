@@ -334,6 +334,7 @@ static char* TAG_EXECCLASS;
 #define TREE_STATIC_TEMPLATE(record_type) (TREE_PUBLIC (record_type))
 #define TYPED_OBJECT(type) \
        (TREE_CODE (type) == RECORD_TYPE && TREE_STATIC_TEMPLATE (type))
+
 /* Some commonly used instances of "identifier_node".  */
 
 static tree self_id, ucmd_id;
@@ -343,6 +344,15 @@ static tree objc_get_class_decl, objc_get_meta_class_decl;
 
 static tree super_type, selector_type, id_type, objc_class_type;
 static tree instance_type, protocol_type;
+
+/* Type checking macros.  */
+
+#define IS_ID(TYPE) \
+  (TYPE_MAIN_VARIANT (TYPE) == TYPE_MAIN_VARIANT (id_type))
+#define IS_PROTOCOL_QUALIFIED_ID(TYPE) \
+  (IS_ID (TYPE) && TYPE_PROTOCOL_LIST (TYPE))
+#define IS_SUPER(TYPE) \
+  (super_type && TYPE_MAIN_VARIANT (TYPE) == TYPE_MAIN_VARIANT (super_type))
 
 static tree class_chain = NULLT;
 static tree alias_chain = NULLT;
@@ -665,10 +675,8 @@ objc_comptypes (lhs, rhs, reflexive)
       && TREE_CODE (rhs) == POINTER_TYPE
       && TREE_CODE (TREE_TYPE (rhs)) == RECORD_TYPE)
     {
-      int lhs_is_proto = (TYPE_MAIN_VARIANT (lhs) == TYPE_MAIN_VARIANT (id_type)
-			  && TYPE_PROTOCOL_LIST (lhs));
-      int rhs_is_proto = (TYPE_MAIN_VARIANT (rhs) == TYPE_MAIN_VARIANT (id_type)
-			  && TYPE_PROTOCOL_LIST (rhs));
+      int lhs_is_proto = IS_PROTOCOL_QUALIFIED_ID (lhs);
+      int rhs_is_proto = IS_PROTOCOL_QUALIFIED_ID (rhs);
 
       if (lhs_is_proto)
         {
@@ -1112,7 +1120,7 @@ build_objc_string (len, str)
 {
   tree s = build_string (len, str);
 
-  TREE_CODE (s) = OBJC_STRING_CST;
+  TREE_SET_CODE (s, OBJC_STRING_CST);
   return s;
 }
 
@@ -1144,7 +1152,7 @@ build_objc_string_object (strings)
 
   /* combine_strings will work for OBJC_STRING_CST's too.  */
   string = combine_strings (strings);
-  TREE_CODE (string) = STRING_CST;
+  TREE_SET_CODE (string, STRING_CST);
   length = TREE_STRING_LENGTH (string) - 1;
 
   /* & ((NXConstantString) {0, string, length})  */
@@ -1855,7 +1863,7 @@ get_class_reference (ident)
     {
       tree params;
 
-      add_class_reference (CLASS_NAME (ident));
+      add_class_reference (ident);
 
       params = build_tree_list (NULLT,
 				my_build_string (IDENTIFIER_LENGTH (ident) + 1,
@@ -2535,9 +2543,9 @@ hack_method_prototype (nst_methods, tmp_decl)
   tree parms;
 
   /* Hack to avoid problem with static typing of self arg. */
-  TREE_CODE (nst_methods) = CLASS_METHOD_DECL;
+  TREE_SET_CODE (nst_methods, CLASS_METHOD_DECL);
   start_method_def (nst_methods);
-  TREE_CODE (nst_methods) = INSTANCE_METHOD_DECL;
+  TREE_SET_CODE (nst_methods, INSTANCE_METHOD_DECL);
 
   if (METHOD_ADD_ARGS (nst_methods) == (tree) 1)
     parms = get_parm_info (0); /* we have a `, ...' */
@@ -4106,16 +4114,11 @@ get_arg_type_list (meth, context, superflag)
 
   /* receiver type */
   if (flag_next_runtime && superflag)
-    {
-      arglist = build_tree_list (NULLT, super_type);
-    }
+    arglist = build_tree_list (NULLT, super_type);
+  else if (context == METHOD_DEF)
+    arglist = build_tree_list (NULLT, TREE_TYPE (self_decl));
   else
-    {
-      if (context == METHOD_DEF)
-	arglist = build_tree_list (NULLT, TREE_TYPE (self_decl));
-      else
-	arglist = build_tree_list (NULLT, id_type);
-    }
+    arglist = build_tree_list (NULLT, id_type);
 
   /* selector type - will eventually change to `int' */
   chainon (arglist, build_tree_list (NULLT, selector_type));
@@ -4171,27 +4174,29 @@ check_duplicates (hsh)
   return meth;
 }
 
+/* If RECEIVER is a class reference, return the identifier node for the
+   referenced class.  RECEIVER is created by get_class_reference, so we
+   check the exact form created depending on which runtimes are used.  */
+
 static tree
 receiver_is_class_object (receiver)
       tree receiver;
 {
+  tree chain, exp, arg;
   if (flag_next_runtime)
     {
-      tree chain;
+      /* The receiver is a variable created by build_class_reference_decl.  */
       if (TREE_CODE (receiver) == VAR_DECL
 	  && TREE_TYPE (receiver) == objc_class_type)
-	/* Look up the identifier corresponding to this string decl. */
-	for (chain = class_names_chain; chain; chain = TREE_CHAIN (chain))
+	/* Look up the identifier. */
+	for (chain = cls_ref_chain; chain; chain = TREE_CHAIN (chain))
 	  if (TREE_PURPOSE (chain) == receiver)
 	    return TREE_VALUE (chain);
     }
   else
     {
-      /* The receiver is a function call that returns an id...
-	 ...check if it is a call to objc_getClass, if so, give it
-	 special treatment.  */
-      tree exp, arg;
-
+      /* The receiver is a function call that returns an id.  Check if
+	 it is a call to objc_getClass, if so, pick up the class name.  */
       if ((exp = TREE_OPERAND (receiver, 0))
 	  && TREE_CODE (exp) == ADDR_EXPR
 	  && (exp = TREE_OPERAND (exp, 0))
@@ -4200,14 +4205,15 @@ receiver_is_class_object (receiver)
 	  /* we have a call to objc_getClass! */
 	  && (arg = TREE_OPERAND (receiver, 1))
 	  && TREE_CODE (arg) == TREE_LIST
-	  && (arg = TREE_VALUE (arg))
-	  && TREE_CODE (arg) == NOP_EXPR
-	  && (arg = TREE_OPERAND (arg, 0))
-	  && TREE_CODE (arg) == ADDR_EXPR
-	  && (arg = TREE_OPERAND (arg, 0))
-	  && TREE_CODE (arg) == STRING_CST)
-	/* finally, we have the class name */
-	return get_identifier (TREE_STRING_POINTER (arg));
+	  && (arg = TREE_VALUE (arg)))
+	{
+	  STRIP_NOPS (arg);
+	  if (TREE_CODE (arg) == ADDR_EXPR
+	      && (arg = TREE_OPERAND (arg, 0))
+	      && TREE_CODE (arg) == STRING_CST)
+	    /* finally, we have the class name */
+	    return get_identifier (TREE_STRING_POINTER (arg));
+	}
     }
   return 0;
 }
@@ -4256,7 +4262,7 @@ build_message_expr (mess)
 
   /* determine receiver type */
   rtype = TREE_TYPE (receiver);
-  super = (TREE_TYPE (receiver) == super_type);
+  super = IS_SUPER (rtype);
 
   if (! super)
     {
@@ -4265,14 +4271,13 @@ build_message_expr (mess)
       else if (TREE_CODE (rtype) == POINTER_TYPE
 	       && TREE_STATIC_TEMPLATE (TREE_TYPE (rtype)))
 	statically_typed = 1;
-      /* classfix -smn */
       else if ((flag_next_runtime
-		|| (TREE_CODE (receiver) == CALL_EXPR
-		    && TYPE_MAIN_VARIANT (rtype) == TYPE_MAIN_VARIANT (id_type)))
+		|| (TREE_CODE (receiver) == CALL_EXPR && IS_ID (rtype)))
 	       && (class_ident = receiver_is_class_object (receiver)))
 	;
-      else if (TYPE_MAIN_VARIANT (rtype) != TYPE_MAIN_VARIANT (id_type)
-	       && TYPE_MAIN_VARIANT (rtype) != TYPE_MAIN_VARIANT (objc_class_type))
+      else if (! IS_ID (rtype)
+	       /* Allow any type that matches objc_class_type.  */
+	       && ! comptypes (rtype, objc_class_type))
 	{
 	  bzero (errbuf, BUFSIZE);
 	  warning ("invalid receiver type `%s'",
@@ -4330,8 +4335,7 @@ build_message_expr (mess)
 
   /* Determine operation return type.  */
 
-  if (super_type != 0
-      && TYPE_MAIN_VARIANT (rtype) == TYPE_MAIN_VARIANT (super_type))
+  if (IS_SUPER (rtype))
     {
       tree iface;
 
@@ -4451,8 +4455,7 @@ build_message_expr (mess)
 		   IDENTIFIER_POINTER (sel_name));
 	}
     }
-  else if (TYPE_MAIN_VARIANT (rtype) == TYPE_MAIN_VARIANT (id_type)
-	   && TYPE_PROTOCOL_LIST (rtype))
+  else if (IS_PROTOCOL_QUALIFIED_ID (rtype))
     {
       /* An anonymous object that has been qualified with a protocol.  */
 
@@ -6606,8 +6609,7 @@ is_complex_decl (type)
 {
   return (TREE_CODE (type) == ARRAY_TYPE
 	  || TREE_CODE (type) == FUNCTION_TYPE
-	  || (TREE_CODE (type) == POINTER_TYPE
-	      && TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (id_type)));
+	  || (TREE_CODE (type) == POINTER_TYPE && ! IS_ID (type)));
 }
 
 
@@ -6752,7 +6754,8 @@ gen_declarator (decl, buf, name)
 	case ARRAY_TYPE:
 	case FUNCTION_TYPE:
 	case POINTER_TYPE:
-	  str = strcpy (buf, name);
+	  strcpy (buf, name);
+	  str = buf;
 
 	  /* this clause is done iteratively...rather than recursively */
 	  do
@@ -6782,13 +6785,17 @@ gen_declarator (decl, buf, name)
 
 	case IDENTIFIER_NODE:
 	  /* will only happen if we are processing a "raw" expr-decl. */
-	  return strcpy (buf, IDENTIFIER_POINTER (decl));
+	  strcpy (buf, IDENTIFIER_POINTER (decl));
+	  return buf;
 	}
 
       return str;
     }
   else			/* we have an abstract declarator or a _DECL node */
-    return strcpy (buf, name);
+    {
+      strcpy (buf, name);
+      return buf;
+    }
 }
 
 static void
@@ -6864,8 +6871,7 @@ gen_declspecs (declspecs, buf, raw)
 	      strcat (buf, IDENTIFIER_POINTER (DECL_NAME (aspec)));
 	    }
 	  /* NEW!!! */
-	  else if (TREE_CODE (aspec) == POINTER_TYPE
-		   && TYPE_MAIN_VARIANT (aspec) == TYPE_MAIN_VARIANT (id_type))
+	  else if (IS_ID (aspec))
 	    {
 	      tree protocol_list = TYPE_PROTOCOL_LIST (aspec);
 
