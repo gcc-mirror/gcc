@@ -524,6 +524,8 @@ expand_start_catch_block (declspecs, declarator)
 	{
 	  decl = grokdeclarator (declarator, declspecs, CATCHPARM,
 				 1, NULL_TREE);
+	  if (processing_template_decl)
+	    decl = push_template_decl (decl);
 	  pushdecl (decl);
 	  add_decl_stmt (decl);
 	}
