@@ -1,3 +1,7 @@
+2003-06-05  Bert Deknuydt  <Bert.Deknuydt@esat.kuleuven.ac.be>
+
+	* include/posix-threads.h: Include <machine/pal.h> on OSF.
+
 2003-06-03  Andrew Haley  <aph@redhat.com>
 
         * include/x86_64-signal.h (MAKE_THROW_FRAME): Mark sigcontext on
