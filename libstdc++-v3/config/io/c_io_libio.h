@@ -1,6 +1,6 @@
 // underlying io library  -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -55,8 +55,8 @@ namespace std
 #endif
 
 // from basic_file.h
-  typedef _IO_FILE 	__c_file_type;
-  typedef _IO_wide_data __c_wfile_type;
+  typedef _IO_FILE 	__c_file;
+  typedef _IO_wide_data __c_wfile;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   extern "C" _IO_codecvt __c_libio_codecvt;

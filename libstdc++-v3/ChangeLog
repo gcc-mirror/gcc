@@ -1,3 +1,10 @@
+2003-02-06  Peter Soetens  <peter.soetens@mech.kuleuven.ac.be>
+
+	* config/io/basic_file_libio.h: Fixups.
+	* config/io/c_io_libio.h: Same.
+	* libio/Makefile.am: Same.
+	* libio/Makefile.in: Regenerated.
+	
 2003-02-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/22_locale/codecvt/encoding/wchar_t/1.cc (test01):
