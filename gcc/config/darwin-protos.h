@@ -74,6 +74,7 @@ extern void machopic_select_section PARAMS ((tree, int,
 extern void machopic_select_rtx_section PARAMS ((enum machine_mode, rtx,
 						 unsigned HOST_WIDE_INT));
 
+struct cpp_reader;
 extern void darwin_pragma_ignore PARAMS ((struct cpp_reader *));
 extern void darwin_pragma_options PARAMS ((struct cpp_reader *));
 extern void darwin_pragma_unused PARAMS ((struct cpp_reader *));
