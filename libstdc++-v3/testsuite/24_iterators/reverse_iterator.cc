@@ -1,4 +1,4 @@
-// 2001-06-18  Benjamin Kosnik  <bkoz@redhat.com>
+// 2001-06-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 //
@@ -18,9 +18,9 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 20.4.2 raw storage iterator
+// 24.4.1.2 Reverse iterators
 
-#include <memory>
+#include <iterator>
 
 void test01()
 {
@@ -28,10 +28,15 @@ void test01()
 
   // Check for required base class.
   long l;
-  typedef raw_storage_iterator<long*, long> test_iterator;
-  typedef iterator<output_iterator_tag, void, void, void, void> base_iterator;
-  test_iterator rs_it(&l);
-  base_iterator* base = &rs_it;
+  typedef reverse_iterator<long*> test_iterator;
+  typedef iterator<iterator_traits<long*>::iterator_category,
+		   iterator_traits<long*>::value_type,
+		   iterator_traits<long*>::difference_type,
+		   iterator_traits<long*>::pointer,
+                   iterator_traits<long*>::reference>
+    base_iterator;
+  test_iterator  r_it(&l);
+  base_iterator* base = &r_it;
 
   // Check for required typedefs
   typedef test_iterator::value_type value_type;

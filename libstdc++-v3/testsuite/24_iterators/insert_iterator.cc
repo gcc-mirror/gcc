@@ -1,4 +1,4 @@
-// 2001-06-18  Benjamin Kosnik  <bkoz@redhat.com>
+// 2001-06-21  Benjamin Kosnik  <bkoz@redhat.com>
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 //
@@ -18,20 +18,23 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 20.4.2 raw storage iterator
+// 24.4.2.5 Template class insert_iterator
 
-#include <memory>
+#include <iterator>
+#include <list>
 
 void test01()
 {
   using namespace std;
 
   // Check for required base class.
-  long l;
-  typedef raw_storage_iterator<long*, long> test_iterator;
+  list<int> l;
+  list<int>::iterator li;
+
+  typedef insert_iterator<list<int> > test_iterator;
   typedef iterator<output_iterator_tag, void, void, void, void> base_iterator;
-  test_iterator rs_it(&l);
-  base_iterator* base = &rs_it;
+  test_iterator  r_it(l, li);
+  base_iterator* base = &r_it;
 
   // Check for required typedefs
   typedef test_iterator::value_type value_type;
@@ -39,6 +42,7 @@ void test01()
   typedef test_iterator::pointer pointer;
   typedef test_iterator::reference reference;
   typedef test_iterator::iterator_category iteratory_category;
+  typedef test_iterator::container_type container_type;
 }
 
 int main() 
