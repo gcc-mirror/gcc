@@ -1,3 +1,12 @@
+Wed Mar 18 09:52:56 1998  Richard Henderson  <rth@cygnus.com>
+
+	* rtl.c (read_rtx): Fall back on homebrew atoll if HOST_WIDE_INT
+	is large, and the system doesn't provide atoll or atoq.
+	(atoll): New.  
+
+	* alpha/xm-vms.h (HAVE_ATOLL): Define.
+	Reported by Klaus Kaempf <kkaempf@progis.de>.
+	
 Wed Mar 18 09:56:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-lang.c (finish_file): Wrap variable `void_list_node' with macro
