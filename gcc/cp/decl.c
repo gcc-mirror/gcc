@@ -10593,7 +10593,11 @@ finish_function (int flags)
 	  /* Hack.  We don't want the middle-end to warn that this
 	     return is unreachable, so put the statement on the
 	     special line 0.  */
+#ifdef USE_MAPPED_LOCATION
+	  SET_EXPR_LOCATION (stmt, UNKNOWN_LOCATION);
+#else
 	  annotate_with_file_line (stmt, input_filename, 0);
+#endif
 	}
 
       /* Finish dealing with exception specifiers.  */
