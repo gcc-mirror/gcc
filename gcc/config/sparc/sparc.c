@@ -1538,8 +1538,6 @@ pic_setup_code ()
 			       gen_rtx (REG, Pmode, 15))));
 
   /* emit_insn (gen_rtx (ASM_INPUT, VOIDmode, "!#PROLOGUE# 1")); */
-  LABEL_PRESERVE_P (l1) = 1;
-  LABEL_PRESERVE_P (l2) = 1;
 
   seq = gen_sequence ();
   end_sequence ();
