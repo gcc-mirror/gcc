@@ -2573,6 +2573,7 @@ contains_placeholder_p (exp)
     default:
       return 0;
     }
+  return 0;
 }
 
 /* Return 1 if EXP contains any expressions that produce cleanups for an

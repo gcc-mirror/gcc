@@ -2246,6 +2246,8 @@
       return \"ldd %1,%0\";
     case 6:
       return \"std %1,%0\";
+    default:
+      abort ();
     }
 }"
   [(set_attr "type" "move,move,load,store,fp,fpload,fpstore")
@@ -2327,6 +2329,8 @@
       return \"st %%g0,%0\";
     case 3:
       return \"fzeros %0\";
+    default:
+      abort ();
     }
 }"
   [(set_attr "type" "load,fpload,store,fpmove")
@@ -2414,6 +2418,8 @@
 	}
     case 3:
       return \"fzero %0\";
+    default:
+      abort ();
     }
 }"
   [(set_attr "type" "load,fpload,store,fpmove")
@@ -2539,6 +2545,8 @@
 	  operands[3] = adj_offsettable_operand (operands[0], 12);
 	  return \"st %%g0,%0\;st %%g0,%1\;st %%g0,%2\;st %%g0,%3\";
 	}
+    default:
+      abort ();
     }
 }"
   [(set_attr "type" "load,fpload,store")
