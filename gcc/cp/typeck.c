@@ -2894,6 +2894,11 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 
       e3 = PFN_FROM_PTRMEMFUNC (function);
 
+      vtbl = convert_pointer_to (ptr_type_node, instance);
+      delta = cp_convert (ptrdiff_type_node,
+			  build_component_ref (function, delta_identifier,
+					       NULL_TREE, 0));
+
       /* This used to avoid checking for virtual functions if basetype
 	 has no virtual functions, according to an earlier ANSI draft.
 	 With the final ISO C++ rules, such an optimization is
@@ -2906,14 +2911,31 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 	 load-with-sign-extend, while the second used normal load then
 	 shift to sign-extend.  An optimizer flaw, perhaps, but it's
 	 easier to make this change.  */
-      idx = cp_build_binary_op (TRUNC_DIV_EXPR, 
-				build1 (NOP_EXPR, vtable_index_type, e3),
-				TYPE_SIZE_UNIT (vtable_entry_type));
-      e1 = cp_build_binary_op (BIT_AND_EXPR,
-			       build1 (NOP_EXPR, vtable_index_type, e3),
-			       integer_one_node);
+      switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
+	{
+	case ptrmemfunc_vbit_in_pfn:
+	  idx = cp_build_binary_op (TRUNC_DIV_EXPR, 
+				    build1 (NOP_EXPR, vtable_index_type, e3),
+				    TYPE_SIZE_UNIT (vtable_entry_type));
+	  e1 = cp_build_binary_op (BIT_AND_EXPR,
+				   build1 (NOP_EXPR, vtable_index_type, e3),
+				   integer_one_node);
+	  break;
 
-      vtbl = convert_pointer_to (ptr_type_node, instance);
+	case ptrmemfunc_vbit_in_delta:
+	  idx = build1 (NOP_EXPR, vtable_index_type, e3);
+	  e1 = cp_build_binary_op (BIT_AND_EXPR,
+				   delta, integer_one_node);
+	  delta = cp_build_binary_op (RSHIFT_EXPR,
+				      build1 (NOP_EXPR, vtable_index_type,
+					      delta),
+				      integer_one_node);
+	  break;
+
+	default:
+	  abort ();
+	}
+
       delta = cp_convert (ptrdiff_type_node,
 			  build_component_ref (function, delta_identifier,
 					       NULL_TREE, 0));
@@ -6085,6 +6107,8 @@ build_ptrmemfunc (type, pfn, force)
       /* Under the new ABI, the conversion is easy.  Just adjust
 	 the DELTA field.  */
       delta = cp_convert (ptrdiff_type_node, delta);
+      if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_delta)
+	n = cp_build_binary_op (LSHIFT_EXPR, n, integer_one_node);
       delta = cp_build_binary_op (PLUS_EXPR, delta, n);
       return build_ptrmemfunc1 (to_type, delta, npfn);
     }
@@ -6146,13 +6170,32 @@ expand_ptrmemfunc_cst (cst, delta, pfn)
       *delta = fold (build (PLUS_EXPR, TREE_TYPE (*delta),
 			    *delta, BINFO_OFFSET (binfo)));
 
-      /* Under the new ABI, we set PFN to the vtable offset, plus
-	 one, at which the function can be found.  */
-      *pfn = fold (build (MULT_EXPR, integer_type_node,
-			  DECL_VINDEX (fn), 
-			  TYPE_SIZE_UNIT (vtable_entry_type)));
-      *pfn = fold (build (PLUS_EXPR, integer_type_node, *pfn,
-			  integer_one_node));
+      /* Under the new ABI, we set PFN to the vtable offset at
+	 which the function can be found, plus one (unless
+	 ptrmemfunc_vbit_in_delta, in which case delta is shifted
+	 left, and then incremented).  */
+      *pfn = DECL_VINDEX (fn);
+
+      switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
+	{
+	case ptrmemfunc_vbit_in_pfn:
+	  *pfn = fold (build (MULT_EXPR, integer_type_node, *pfn,
+			      TYPE_SIZE_UNIT (vtable_entry_type)));
+	  *pfn = fold (build (PLUS_EXPR, integer_type_node, *pfn,
+			      integer_one_node));
+	  break;
+
+	case ptrmemfunc_vbit_in_delta:
+	  *delta = fold (build (LSHIFT_EXPR, TREE_TYPE (*delta),
+				*delta, integer_one_node));
+	  *delta = fold (build (PLUS_EXPR, TREE_TYPE (*delta),
+				*delta, integer_one_node));
+	  break;
+
+	default:
+	  abort ();
+	}
+
       *pfn = fold (build1 (NOP_EXPR, TYPE_PTRMEMFUNC_FN_TYPE (type),
 			   *pfn));
     }
