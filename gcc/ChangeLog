@@ -1,3 +1,25 @@
+Sun Aug 16 17:37:06 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (ultra_code_from_mask,
+	ultra_cmove_results_ready_p, ultra_fpmode_conflict_exists,
+	ultra_find_type, ultra_schedule_insn, ultra_flush_pipeline,
+	ultrasparc_sched_init, ultrasparc_variable_issue,
+	ultra_rescan_pipeline_state, ultrasparc_sched_reorder): New
+	functions to describe UltraSPARC pipeline exactly to Haifa.
+	(ultrasparc_adjust_cost): Indicate IMUL type insns have zero cost,
+	as there is nothing the scheduler can do about it.  Indicate that
+	REG_DEP_OUTPUT's collide.  Fixup formatting.
+	* config/sparc/sparc.h (RTX_COSTS): Fixup integer multiply and
+	divide costs on Ultra for DImode.
+	(MD_SCHED_INIT, MD_SCHED_REORDER, MD_SCHED_VARIABLE_ISSUE):
+	Define.
+	* config/sparc/sparc.md (ieu_unnamed function unit): Rename to
+	ieuN and add call_no_delay_slot to type list.
+	(cti function unit): New unit for branches on UltraSPARC.
+	(subx/addx insns): Set type to misc.
+	(sidi zero/sign extension insns on arch64): Set type to shift.
+	(sign_extendhidi2_insn): Set type to sload.
+
 Sun Aug 16 13:52:00 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.c (rs6000_stack_info): Use if == 0 for sizes.

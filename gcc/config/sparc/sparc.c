@@ -6102,8 +6102,8 @@ supersparc_adjust_cost (insn, link, dep_insn, cost)
 	 cycles later.  */
 
       /* if a load, then the dependence must be on the memory address;
-	 add an extra 'cycle'.  Note that the cost could be two cycles
-	 if the reg was written late in an instruction group; we can't tell
+	 add an extra "cycle".  Note that the cost could be two cycles
+	 if the reg was written late in an instruction group; we ca not tell
 	 here.  */
       if (insn_type == TYPE_LOAD || insn_type == TYPE_FPLOAD)
 	return cost + 3;
@@ -6115,7 +6115,7 @@ supersparc_adjust_cost (insn, link, dep_insn, cost)
 	  rtx dep_pat = PATTERN (dep_insn);
 
 	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
-	    return cost;  /* This shouldn't happen!  */
+	    return cost;  /* This should not happen!  */
 
 	  /* The dependency between the two instructions was on the data that
 	     is being stored.  Assume that this implies that the address of the
@@ -6147,67 +6147,765 @@ supersparc_adjust_cost (insn, link, dep_insn, cost)
   return cost;
 }
 
+/* This describes the state of the UltraSPARC pipeline during
+   instruction scheduling.  */
+
+#define TMASK(__x)	(1U << ((int)(__x)))
+#define UMASK(__x)	(1U << ((int)(__x)))
+
+enum ultra_code { NONE=0, /* no insn at all				*/
+		  IEU0,   /* shifts and conditional moves		*/
+		  IEU1,   /* condition code setting insns, calls+jumps	*/
+		  IEUN,   /* all other single cycle ieu insns		*/
+		  LSU,    /* loads and stores				*/
+		  CTI,    /* branches					*/
+		  FPM,    /* FPU pipeline 1, multiplies and divides	*/
+		  FPA,    /* FPU pipeline 2, all other operations	*/
+		  SINGLE, /* single issue instructions			*/
+		  NUM_ULTRA_CODES };
+
+static char *ultra_code_names[NUM_ULTRA_CODES] = {
+  "NONE", "IEU0", "IEU1", "IEUN", "LSU", "CTI",
+  "FPM", "FPA", "SINGLE" };
+
+struct ultrasparc_pipeline_state {
+  /* The insns in this group.  */
+  rtx group[4];
+
+  /* The code for each insn.  */
+  enum ultra_code codes[4];
+
+  /* Which insns in this group have been committed by the
+     scheduler.  This is how we determine how many more
+     can issue this cycle.  */
+  char commit[4];
+
+  /* How many insns in this group.  */
+  char group_size;
+
+  /* Mask of free slots still in this group.  */
+  char free_slot_mask;
+
+  /* The slotter uses the following to determine what other
+     insn types can still make their way into this group.  */
+  char contents [NUM_ULTRA_CODES];
+  char num_ieu_insns;
+};
+
+#define ULTRA_NUM_HIST	8
+static struct ultrasparc_pipeline_state ultra_pipe_hist[ULTRA_NUM_HIST];
+static int ultra_cur_hist;
+static int ultra_cycles_elapsed;
+
+#define ultra_pipe	(ultra_pipe_hist[ultra_cur_hist])
+
+/* Given TYPE_MASK compute the ultra_code it has.  */
+static enum ultra_code
+ultra_code_from_mask (type_mask)
+     int type_mask;
+{
+  int mask;
+
+  if (type_mask & (TMASK (TYPE_SHIFT) | TMASK (TYPE_CMOVE)))
+    return IEU0;
+  else if (type_mask & (TMASK (TYPE_COMPARE) |
+			TMASK (TYPE_CALL) |
+			TMASK (TYPE_UNCOND_BRANCH)))
+    return IEU1;
+  else if (type_mask & (TMASK (TYPE_IALU) | TMASK (TYPE_BINARY) |
+			TMASK (TYPE_MOVE) | TMASK (TYPE_UNARY)))
+    return IEUN;
+  else if (type_mask & (TMASK (TYPE_LOAD) | TMASK (TYPE_SLOAD) |
+			TMASK (TYPE_STORE) | TMASK (TYPE_FPLOAD) |
+			TMASK (TYPE_FPSTORE)))
+    return LSU;
+  else if (type_mask & (TMASK (TYPE_FPMUL) | TMASK (TYPE_FPDIVS) |
+			TMASK (TYPE_FPDIVD) | TMASK (TYPE_FPSQRT)))
+    return FPM;
+  else if (type_mask & (TMASK (TYPE_FPMOVE) | TMASK (TYPE_FPCMOVE) |
+			TMASK (TYPE_FP) | TMASK (TYPE_FPCMP)))
+    return FPA;
+  else if (type_mask & TMASK (TYPE_BRANCH))
+    return CTI;
+
+  return SINGLE;
+}
+
+/* Check INSN (a conditional move) and make sure that it's
+   results are available at this cycle.  Return 1 if the
+   results are in fact ready.  */
+static int
+ultra_cmove_results_ready_p (insn)
+     rtx insn;
+{
+  struct ultrasparc_pipeline_state *up;
+  int entry, slot;
+
+  /* If this got dispatched in the previous
+     group, the results are not ready.  */
+  entry = (ultra_cur_hist - 1) % ULTRA_NUM_HIST;
+  up = &ultra_pipe_hist[entry];
+  slot = 4;
+  while (--slot >= 0)
+    if (up->group[slot] == insn)
+      return 1;
+
+  return 0;
+}
+
+/* Walk backwards in pipeline history looking for FPU
+   operations which use a mode different than FPMODE and
+   will create a stall if an insn using FPMODE were to be
+   dispatched this cycle.  */
+static int
+ultra_fpmode_conflict_exists (fpmode)
+     enum machine_mode fpmode;
+{
+  int hist_ent;
+  int hist_lim;
+
+  hist_ent = (ultra_cur_hist - 1) % ULTRA_NUM_HIST;
+  if (ultra_cycles_elapsed < 4)
+    hist_lim = ultra_cycles_elapsed;
+  else
+    hist_lim = 4;
+  while (hist_lim > 0)
+    {
+      struct ultrasparc_pipeline_state *up = &ultra_pipe_hist[hist_ent];
+      int slot = 4;
+
+      while (--slot >= 0)
+	{
+	  rtx insn = up->group[slot];
+	  enum machine_mode this_mode;
+	  enum attr_type this_type;
+	  rtx pat;
+
+	  if (! insn
+	      || GET_CODE (insn) != INSN
+	      || (pat = PATTERN (insn)) == 0
+	      || GET_CODE (pat) != SET)
+	    continue;
+
+	  this_mode = GET_MODE (SET_DEST (pat));
+	  if ((this_mode != SFmode
+	       && this_mode != DFmode)
+	      || this_mode == fpmode)
+	    continue;
+
+	  /* If it is not FMOV, FABS, FNEG, FDIV, or FSQRT then
+	     we will get a stall.  */
+	  if (GET_CODE (SET_SRC (pat)) != ABS
+	      && GET_CODE (SET_SRC (pat)) != NEG
+	      && ((TMASK (get_attr_type (insn)) &
+		   (TMASK (TYPE_FPDIVS) | TMASK (TYPE_FPDIVD) |
+		    TMASK (TYPE_FPMOVE) | TMASK (TYPE_FPSQRT))) == 0))
+	    return 1;
+	}
+      hist_lim--;
+      hist_ent = (hist_ent - 1) % ULTRA_NUM_HIST;
+    }
+
+  /* No conflicts, safe to dispatch.  */
+  return 0;
+}
+
+/* Find an instruction in LIST which has one of the
+   type attributes enumerated in TYPE_MASK.  START
+   says where to begin the search.
+
+   NOTE: This scheme depends upon the fact that we
+         have less than 32 distinct type attributes.  */
+static rtx *
+ultra_find_type (type_mask, list, start)
+     int type_mask;
+     rtx *list;
+     int start;
+{
+  int i;
+
+  for (i = start; i >= 0; i--)
+    {
+      rtx insn = list[i];
+
+      if (recog_memoized (insn) >= 0
+	  && (TMASK(get_attr_type (insn)) & type_mask))
+	{
+	  enum machine_mode fpmode;
+	  rtx pat = 0;
+	  int slot;
+	  int check_depend = 0;
+	  int check_fpmode_conflict = 0;
+
+	  if (GET_CODE (insn) == INSN
+	      && (pat = PATTERN(insn)) != 0
+	      && GET_CODE (pat) == SET
+	      && !(type_mask & (TMASK (TYPE_STORE) |
+				TMASK (TYPE_FPSTORE))))
+	    {
+	      check_depend = 1;
+	      if (GET_MODE (SET_DEST (pat)) == SFmode
+		  || GET_MODE (SET_DEST (pat)) == DFmode)
+		{
+		  fpmode = GET_MODE (SET_DEST (pat));
+		  check_fpmode_conflict = 1;
+		}
+	    }
+
+	  slot = 4;
+	  while(--slot >= 0)
+	    {
+	      rtx slot_insn = ultra_pipe.group[slot];
+	      rtx slot_pat;
+
+	      /* Already issued, bad dependency, or FPU
+		 mode conflict.  */
+	      if (slot_insn != 0
+		  && (slot_pat = PATTERN (slot_insn)) != 0
+		  && ((insn == slot_insn)
+		      || (check_depend == 1
+			  && GET_CODE (slot_insn) == INSN
+			  && GET_CODE (slot_pat) == SET
+			  && rtx_equal_p (SET_DEST (slot_pat),
+					  SET_SRC (pat)))
+		      || (check_fpmode_conflict == 1
+			  && GET_CODE (slot_insn) == INSN
+			  && GET_CODE (slot_pat) == SET
+			  && ((GET_MODE (SET_DEST (slot_pat)) == SFmode
+			       || GET_MODE (SET_DEST (slot_pat)) == DFmode)
+			      && GET_MODE (SET_DEST (slot_pat)) != fpmode))))
+		goto next;
+	    }
+
+	  /* Check for peculiar result availability and dispatch
+	     interference situations.  */
+	  if (pat != 0
+	      && ultra_cycles_elapsed > 0)
+	    {
+	      rtx link;
+
+	      for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
+		{
+		  rtx link_insn = XEXP (link, 0);
+		  if (GET_CODE (link_insn) == INSN
+		      && recog_memoized (link_insn) >= 0
+		      && (TMASK (get_attr_type (link_insn)) &
+			  (TMASK (TYPE_CMOVE) | TMASK (TYPE_FPCMOVE)))
+		      && ! ultra_cmove_results_ready_p (link_insn))
+		    goto next;
+		}
+
+	      if (check_fpmode_conflict
+		  && ultra_fpmode_conflict_exists (fpmode))
+		goto next;
+	    }
+
+	  return &list[i];
+	}
+    next:
+    }
+  return 0;
+}
+
+/* Place insn pointed to my IP into the pipeline.
+   Make element THIS of READY be that insn if it
+   is not already.  TYPE indicates the pipeline class
+   this insn falls into.  */
+static void
+ultra_schedule_insn (ip, ready, this, type)
+     rtx *ip;
+     rtx *ready;
+     int this;
+     enum ultra_code type;
+{
+  int pipe_slot;
+  char mask = ultra_pipe.free_slot_mask;
+
+  /* Obtain free slot.  */
+  for (pipe_slot = 0; pipe_slot < 4; pipe_slot++)
+    if ((mask & (1 << pipe_slot)) != 0)
+      break;
+  if (pipe_slot == 4)
+    abort ();
+
+  /* In it goes, and it hasn't been committed yet.  */
+  ultra_pipe.group[pipe_slot] = *ip;
+  ultra_pipe.codes[pipe_slot] = type;
+  ultra_pipe.contents[type] = 1;
+  if (UMASK (type) &
+      (UMASK (IEUN) | UMASK (IEU0) | UMASK (IEU1)))
+    ultra_pipe.num_ieu_insns += 1;
+
+  ultra_pipe.free_slot_mask = (mask & ~(1 << pipe_slot));
+  ultra_pipe.group_size += 1;
+  ultra_pipe.commit[pipe_slot] = 0;
+
+  /* Update ready list.  */
+  if (ip != &ready[this])
+    {
+      rtx temp = *ip;
+
+      *ip = ready[this];
+      ready[this] = temp;
+    }
+}
+
+/* Advance to the next pipeline group.  */
+static void
+ultra_flush_pipeline ()
+{
+  ultra_cur_hist = (ultra_cur_hist + 1) % ULTRA_NUM_HIST;
+  ultra_cycles_elapsed += 1;
+  bzero ((char *) &ultra_pipe, sizeof ultra_pipe);
+  ultra_pipe.free_slot_mask = 0xf;
+}
+
+static int ultra_reorder_called_this_block;
+
+/* Init our data structures for this current block.  */
+void
+ultrasparc_sched_init (dump, sched_verbose)
+     FILE *dump;
+     int sched_verbose;
+{
+  bzero ((char *) &ultra_pipe_hist, sizeof ultra_pipe_hist);
+  ultra_pipe.free_slot_mask = 0xf;
+  ultra_cur_hist = 0;
+  ultra_cycles_elapsed = 0;
+  ultra_reorder_called_this_block = 0;
+}
+
+/* INSN has been scheduled, update pipeline commit state
+   and return how many instructions are still to be
+   scheduled in this group.  */
 int
-ultrasparc_adjust_cost (insn, link, dep_insn, cost)
-     rtx insn;                                     
-     rtx link;                                     
-     rtx dep_insn;                                     
-     int cost;                                     
+ultrasparc_variable_issue (insn)
+     rtx insn;
+{
+  struct ultrasparc_pipeline_state *up = &ultra_pipe;
+  int i, left_to_fire;
+
+  left_to_fire = 0;
+  for (i = 0; i < 4; i++)
+    {
+      if (up->group[i] == 0)
+	continue;
+
+      if (up->group[i] == insn)
+	{
+	  up->commit[i] = 1;
+	}
+      else if (! up->commit[i])
+	left_to_fire++;
+    }
+
+  return left_to_fire;
+}
+
+/* In actual_hazard_this_instance, we may have yanked some
+   instructions from the ready list due to conflict cost
+   adjustments.  If so, and such an insn was in our pipeline
+   group, remove it and update state.  */
+static void
+ultra_rescan_pipeline_state (ready, n_ready)
+     rtx *ready;
+     int n_ready;
+{
+  struct ultrasparc_pipeline_state *up = &ultra_pipe;
+  int i;
+
+  for (i = 0; i < 4; i++)
+    {
+      rtx insn = up->group[i];
+      enum ultra_code ucode;
+      int j;
+
+      if (! insn)
+	continue;
+
+      /* If it has been committed, then it was removed from
+	 the ready list because it was actually scheduled,
+	 and that is not the case we are searching for here.  */
+      if (up->commit[i] != 0)
+	continue;
+
+      for (j = n_ready - 1; j >= 0; j--)
+	if (ready[j] == insn)
+	  break;
+
+      /* If we didn't find it, toss it.  */
+      if (j < 0)
+	{
+	  enum ultra_code ucode = up->codes[i];
+
+	  up->group[i] = 0;
+	  up->codes[i] = NONE;
+	  up->contents[ucode] = 0;
+	  if (UMASK (ucode) &
+	      (UMASK (IEUN) | UMASK (IEU0) | UMASK (IEU1)))
+	    up->num_ieu_insns -= 1;
+
+	  up->free_slot_mask |= (1 << i);
+	  up->group_size -= 1;
+	  up->commit[i] = 0;
+	}
+    }
+}
+
+void
+ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
+     FILE *dump;
+     int sched_verbose;
+     rtx *ready;
+     int n_ready;
+{
+  struct ultrasparc_pipeline_state *up = &ultra_pipe;
+  int i, this_insn;
+
+  /* We get called once unnecessarily per block of insns
+     scheduled.  */
+  if (ultra_reorder_called_this_block == 0)
+    {
+      ultra_reorder_called_this_block = 1;
+      return;
+    }
+
+  if (sched_verbose)
+    {
+      int n;
+
+      fprintf (dump, "\n;;\tUltraSPARC Looking at [");
+      for (n = n_ready - 1; n >= 0; n--)
+	{
+	  rtx insn = ready[n];
+	  enum ultra_code ucode;
+
+	  if (recog_memoized (insn) < 0)
+	    continue;
+	  ucode = ultra_code_from_mask (TMASK (get_attr_type (insn)));
+	  if (n != 0)
+	    fprintf (dump, "%s(%d) ",
+		     ultra_code_names[ucode],
+		     INSN_UID (insn));
+	  else
+	    fprintf (dump, "%s(%d)",
+		     ultra_code_names[ucode],
+		     INSN_UID (insn));
+	}
+      fprintf (dump, "]\n");
+    }
+
+  this_insn = n_ready - 1;
+
+  /* Skip over junk we don't understand.  */
+  while ((this_insn >= 0)
+	 && recog_memoized (ready[this_insn]) < 0)
+    this_insn--;
+
+  while (this_insn >= 0) {
+    int old_group_size = up->group_size;
+
+    if (up->group_size != 0)
+      {
+	int num_committed;
+
+	num_committed = (up->commit[0] + up->commit[1] +
+			 up->commit[2] + up->commit[3]);
+	/* If nothing has been commited from our group, or all of
+	   them have.  Clear out the (current cycle's) pipeline
+	   state and start afresh.  */
+	if (num_committed == 0
+	    || num_committed == up->group_size)
+	  {
+	    bzero ((char *) &ultra_pipe, sizeof ultra_pipe);
+	    ultra_pipe.free_slot_mask = 0xf;
+	    old_group_size = 0;
+	  }
+	else
+	  {
+	    /* OK, some ready list insns got requeued and thus removed
+	       from the ready list.  Account for this fact.  */
+	    ultra_rescan_pipeline_state (ready, n_ready);
+
+	    /* Something "changed", make this look like a newly
+	       formed group so the code at the end of the loop
+	       knows that progress was in fact made.  */
+	    if (up->group_size != old_group_size)
+	      old_group_size == 0;
+	  }
+      }
+
+    if (up->group_size == 0)
+      {
+	/* If the pipeline is (still) empty and we have any single
+	   group insns, get them out now as this is a good time.  */
+	rtx *ip = ultra_find_type ((TMASK (TYPE_RETURN) | TMASK (TYPE_ADDRESS) |
+				    TMASK (TYPE_IMUL) | TMASK (TYPE_CMOVE) |
+				    TMASK (TYPE_MULTI) | TMASK (TYPE_MISC)),
+				   ready, this_insn);
+	if (ip)
+	  {
+	    ultra_schedule_insn (ip, ready, this_insn, SINGLE);
+	    break;
+	  }
+
+	/* If we are not in the process of emptying out the pipe, try to
+	   obtain an instruction which must be the first in it's group.  */
+	ip = ultra_find_type ((TMASK (TYPE_CALL) |
+			       TMASK (TYPE_CALL_NO_DELAY_SLOT) |
+			       TMASK (TYPE_UNCOND_BRANCH)),
+			      ready, this_insn);
+	if (ip)
+	  {
+	    ultra_schedule_insn (ip, ready, this_insn, IEU1);
+	    this_insn--;
+	  }
+	else if ((ip = ultra_find_type ((TMASK (TYPE_FPDIVS) |
+					 TMASK (TYPE_FPDIVD) |
+					 TMASK (TYPE_FPSQRT)),
+					ready, this_insn)) != 0)
+	  {
+	    ultra_schedule_insn (ip, ready, this_insn, FPM);
+	    this_insn--;
+	  }
+      }
+
+    /* Try to fill the integer pipeline.  First, look for an IEU0 specific
+       operation.  We can't do more IEU operations if the first 3 slots are
+       all full or we have dispatched two IEU insns already.  */
+    if ((up->free_slot_mask & 0x7) != 0
+	&& up->num_ieu_insns < 2
+	&& up->contents[IEU0] == 0
+	&& up->contents[IEUN] == 0)
+      {
+	rtx *ip = ultra_find_type (TMASK(TYPE_SHIFT), ready, this_insn);
+	if (ip)
+	  {
+	    ultra_schedule_insn (ip, ready, this_insn, IEU0);
+	    this_insn--;
+	  }
+      }
+
+    /* If we can, try to find an IEU1 specific or an unnamed
+       IEU instruction.  */
+    if ((up->free_slot_mask & 0x7) != 0
+	&& up->num_ieu_insns < 2)
+      {
+	rtx *ip = ultra_find_type ((TMASK (TYPE_IALU) | TMASK (TYPE_BINARY) |
+				    TMASK (TYPE_MOVE) | TMASK (TYPE_UNARY) |
+				    (up->contents[IEU1] == 0 ? TMASK (TYPE_COMPARE) : 0)),
+				   ready, this_insn);
+	if (ip)
+	  {
+	    rtx insn = *ip;
+
+	    ultra_schedule_insn (ip, ready, this_insn,
+				 (!up->contents[IEU1]
+				  && get_attr_type (insn) == TYPE_COMPARE)
+				 ? IEU1 : IEUN);
+	    this_insn--;
+	  }
+      }
+
+    /* If only one IEU insn has been found, try to find another unnamed
+       IEU operation or an IEU1 specific one.  */
+    if ((up->free_slot_mask & 0x7) != 0
+	&& up->num_ieu_insns < 2)
+      {
+	rtx *ip;
+	int tmask = (TMASK (TYPE_IALU) | TMASK (TYPE_BINARY) |
+		     TMASK (TYPE_MOVE) | TMASK (TYPE_UNARY));
+
+	if (!up->contents[IEU1])
+	  tmask |= TMASK (TYPE_COMPARE);
+	ip = ultra_find_type (tmask, ready, this_insn);
+	if (ip)
+	  {
+	    rtx insn = *ip;
+
+	    ultra_schedule_insn (ip, ready, this_insn,
+				 (!up->contents[IEU1]
+				  && get_attr_type (insn) == TYPE_COMPARE)
+				 ? IEU1 : IEUN);
+	    this_insn--;
+	  }
+      }
+
+    /* Try for a load or store, but such an insn can only be issued
+       if it is within' one of the first 3 slots.  */
+    if ((up->free_slot_mask & 0x7) != 0
+        && up->contents[LSU] == 0)
+      {
+	rtx *ip = ultra_find_type ((TMASK (TYPE_LOAD) | TMASK (TYPE_SLOAD) |
+				   TMASK (TYPE_STORE) | TMASK (TYPE_FPLOAD) |
+				   TMASK (TYPE_FPSTORE)), ready, this_insn);
+	if (ip)
+	  {
+	    ultra_schedule_insn (ip, ready, this_insn, LSU);
+	    this_insn--;
+	  }
+      }
+
+    /* Now find FPU operations, first FPM class.  But not divisions or
+       square-roots because those will break the group up.  Unlike all
+       the previous types, these can go in any slot.  */
+    if (up->free_slot_mask != 0
+	&& up->contents[FPM] == 0)
+      {
+	rtx *ip = ultra_find_type (TMASK (TYPE_FPMUL), ready, this_insn);
+	if (ip)
+	  {
+	    ultra_schedule_insn (ip, ready, this_insn, FPM);
+	    this_insn--;
+	  }
+      }
+    
+    /* Continue on with FPA class if we have not filled the group already.  */
+    if (up->free_slot_mask != 0
+	&& up->contents[FPA] == 0)
+      {
+	rtx *ip = ultra_find_type ((TMASK (TYPE_FPMOVE) | TMASK (TYPE_FPCMOVE) |
+				    TMASK (TYPE_FP) | TMASK (TYPE_FPCMP)),
+				   ready, this_insn);
+	if (ip)
+	  {
+	    ultra_schedule_insn (ip, ready, this_insn, FPA);
+	    this_insn--;
+	  }
+      }
+
+    /* Finally, maybe stick a branch in here.  */
+    if (up->free_slot_mask != 0
+	&& up->contents[CTI] == 0)
+      {
+	rtx *ip = ultra_find_type (TMASK (TYPE_BRANCH), ready, this_insn);
+
+	/* Try to slip in a branch only if it is one of the
+	   next 2 in the ready list.  */
+	if (ip && ((&ready[this_insn] - ip) < 2))
+	  {
+	    ultra_schedule_insn (ip, ready, this_insn, CTI);
+	    this_insn--;
+	  }
+      }
+
+    up->group_size = 0;
+    for (i = 0; i < 4; i++)
+      if ((up->free_slot_mask & (1 << i)) == 0)
+	up->group_size++;
+
+    /* See if we made any progress...  */
+    if (old_group_size != up->group_size)
+      break;
+
+    /* Clean out the (current cycle's) pipeline state
+       and try once more.  */
+    bzero ((char *) &ultra_pipe, sizeof ultra_pipe);
+    ultra_pipe.free_slot_mask = 0xf;
+  }
+
+  if (sched_verbose)
+    {
+      int n, gsize;
+
+      fprintf (dump, ";;\tUltraSPARC Launched   [");
+      gsize = up->group_size;
+      for (n = 0; n < 4; n++)
+	{
+	  rtx insn = up->group[n];
+
+	  if (! insn)
+	    continue;
+
+	  gsize -= 1;
+	  if (gsize != 0)
+	    fprintf (dump, "%s(%d) ",
+		     ultra_code_names[up->codes[n]],
+		     INSN_UID (insn));
+	  else
+	    fprintf (dump, "%s(%d)",
+		     ultra_code_names[up->codes[n]],
+		     INSN_UID (insn));
+	}
+      fprintf (dump, "]\n");
+    }
+}
+
+int
+ultrasparc_adjust_cost (insn, link, dep_insn, previous, cost)
+     rtx insn;
+     rtx link;
+     rtx dep_insn;
+     rtx previous;
+     int cost;
 {
   enum attr_type insn_type, dep_type;
-  rtx pat = PATTERN(insn);                                                    
-  rtx dep_pat = PATTERN (dep_insn);                                           
+  rtx pat = PATTERN(insn);
+  rtx dep_pat = PATTERN (dep_insn);
 
-  if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)        
-    return cost;                                     
+  if (recog_memoized (insn) < 0 || recog_memoized (dep_insn) < 0)
+    return cost;
 
-  insn_type = get_attr_type (insn);                     
-  dep_type = get_attr_type (dep_insn);                  
+  insn_type = get_attr_type (insn);
+  dep_type = get_attr_type (dep_insn);
+
+  /* Nothing issues in parallel with integer multiplies, so
+     mark as zero cost since the scheduler can not do anything
+     about it.  */
+  if (insn_type == TYPE_IMUL)
+    return 0;
 
 #define SLOW_FP(dep_type) \
 (dep_type == TYPE_FPSQRT || dep_type == TYPE_FPDIVS || dep_type == TYPE_FPDIVD)
 
   switch (REG_NOTE_KIND (link))
-    {                                              
-    case 0:                                        
+    {
+    case 0:
       /* Data dependency; DEP_INSN writes a register that INSN reads some
-	 cycles later.  */                               
+	 cycles later.  */
+
+      if (dep_type == TYPE_CMOVE)
+	{
+	  /* Instructions that read the result of conditional moves cannot
+	     be in the same group or the following group.  */
+	  return cost + 1;
+	}
 
       switch (insn_type)
-	{                              
-	  /* UltraSPARC can dual issue a store and an instruction setting       
-	     the value stored, except for divide and square root.  */           
+	{
+	  /* UltraSPARC can dual issue a store and an instruction setting
+	     the value stored, except for divide and square root.  */
 	case TYPE_FPSTORE:
-	  if (! SLOW_FP (dep_type))        
-	    return 0;                                     
+	  if (! SLOW_FP (dep_type))
+	    return 0;
 	  return cost;
 
-	case TYPE_STORE:                                  
+	case TYPE_STORE:
 	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
-	    return cost;     
+	    return cost;
 
 	  if (rtx_equal_p (SET_DEST (dep_pat), SET_SRC (pat)))
-	  /* The dependency between the two instructions is on the data
-	     that is being stored.  Assume that the address of the store
-	     is not also dependent.  */
-	    return 0;                                
-	  return cost;                                   
+	    /* The dependency between the two instructions is on the data
+	       that is being stored.  Assume that the address of the store
+	       is not also dependent.  */
+	    return 0;
+	  return cost;
 
-	case TYPE_LOAD:   
-	case TYPE_SLOAD:               
-	case TYPE_FPLOAD:                                                       
-	  /* A load does not return data until at least 11 cycles after         
+	case TYPE_LOAD:
+	case TYPE_SLOAD:
+	case TYPE_FPLOAD:
+	  /* A load does not return data until at least 11 cycles after
 	     a store to the same location.  3 cycles are accounted for
 	     in the load latency; add the other 8 here.  */
 	  if (dep_type == TYPE_STORE || dep_type == TYPE_FPSTORE)
-	    {   
+	    {
 	      /* If the addresses are not equal this may be a false
 		 dependency because pointer aliasing could not be
 		 determined.  Add only 2 cycles in that case.  2 is
 		 an arbitrary compromise between 8, which would cause
 		 the scheduler to generate worse code elsewhere to
-		 compensate for a dependency which might not really    
-		 exist, and 0.  */                                      
+		 compensate for a dependency which might not really
+		 exist, and 0.  */
 	      if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET
 		  || GET_CODE (SET_SRC (pat)) != MEM
 		  || GET_CODE (SET_DEST (dep_pat)) != MEM
@@ -6215,72 +6913,73 @@ ultrasparc_adjust_cost (insn, link, dep_insn, cost)
 				    XEXP (SET_DEST (dep_pat), 0)))
 		return cost + 2;
 
-	      return cost + 8;         
-	    }                                                                   
+	      return cost + 8;
+	    }
 	  return cost;
 
-	case TYPE_BRANCH:                                  
+	case TYPE_BRANCH:
 	  /* Compare to branch latency is 0.  There is no benefit from
 	     separating compare and branch.  */
-	  if (dep_type == TYPE_COMPARE)                            
-	    return 0;                                            
-	  /* Floating point compare to branch latency is less than 
-	     compare to conditional move.  */                        
-	  if (dep_type == TYPE_FPCMP)                             
-	    return cost - 1;                                           
+	  if (dep_type == TYPE_COMPARE)
+	    return 0;
+	  /* Floating point compare to branch latency is less than
+	     compare to conditional move.  */
+	  if (dep_type == TYPE_FPCMP)
+	    return cost - 1;
 	  return cost;
 
-	case TYPE_FPCMOVE:                                    
+	case TYPE_FPCMOVE:
 	  /* FMOVR class instructions can not issue in the same cycle
 	     or the cycle after an instruction which writes any
 	     integer register.  Model this as cost 2 for dependent
-	     instructions.  */  
+	     instructions.  */
 	  if ((dep_type == TYPE_IALU || dep_type == TYPE_UNARY
 	       || dep_type == TYPE_BINARY)
-	      && cost < 2)                                                      
+	      && cost < 2)
 	    return 2;
 	  /* Otherwise check as for integer conditional moves. */
 
-	case TYPE_CMOVE:                       
+	case TYPE_CMOVE:
 	  /* Conditional moves involving integer registers wait until
 	     3 cycles after loads return data.  The interlock applies
 	     to all loads, not just dependent loads, but that is hard
-	     to model.  */                        
-	  if (dep_type == TYPE_LOAD || dep_type == TYPE_SLOAD)                  
-	    return cost + 3;                                           
+	     to model.  */
+	  if (dep_type == TYPE_LOAD || dep_type == TYPE_SLOAD)
+	    return cost + 3;
 	  return cost;
 
 	default:
 	  break;
 	}
-	break;                                                
+      break;
 
-    case REG_DEP_ANTI:                                       
+    case REG_DEP_ANTI:
       /* Divide and square root lock destination registers for full latency. */
-      if (! SLOW_FP (dep_type))             
-	return 0;                                               
-      break;                                                                  
+      if (! SLOW_FP (dep_type))
+	return 0;
+      break;
+
+    case REG_DEP_OUTPUT:
+      /* IEU and FPU instruction that have the same destination
+	 register cannot be grouped together.  */
+      return cost + 1;
 
     default:
       break;
     }
 
-  /* Other costs not accounted for:                            
-     - Multiply should be modeled as having no latency because there is
-       nothing the scheduler can do about it.  
-     - Single precision floating point loads lock the other half of  
-       the even/odd register pair.                                   
+  /* Other costs not accounted for:
+     - Single precision floating point loads lock the other half of
+       the even/odd register pair.
      - Several hazards associated with ldd/std are ignored because these
-       instructions are rarely generated for V9.  
-     - A shift following an integer instruction which does not set the
-       condition codes can not issue in the same cycle.
+       instructions are rarely generated for V9.
      - The floating point pipeline can not have both a single and double
        precision operation active at the same time.  Format conversions
        and graphics instructions are given honorary double precision status.
      - call and jmpl are always the first instruction in a group.  */
 
-  return cost;                                                              
-}  
+  return cost;
+}
 
 int                                                           
 sparc_issue_rate ()
