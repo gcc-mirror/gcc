@@ -2,6 +2,23 @@
 
 	Various cleanups to help compile server.
 
+	* cppinit.c (cpp_create_reader):  Take extra hash_table* argument,
+	and pass that to _cpp_init_hashtable.
+	(cpp_read_main_file):  Drop hash_table* argument; don't call
+	_cpp_init_hashtable.
+	* cpplib.h:  Update declarations to match.
+	* c-opts.c (c_common_init_options):  Pass ident_hash to
+	cpp_create_reader.
+	(c_common_post_options):  Don't pass ident_hash to cpp_read_main_file.
+	* fix-header.c (read_scan_file):  Likewise pass NULL table to
+	cpp_create_reader rather than cpp_read_main_file.
+
+	* cppfiles.c (cpp_rename_file):  Generalized and renamed
+	to cpp_change_file.
+	* cpplib.h:  Update declaration to match.
+	* c-opts.c (push_command_line_line, finish_options):  Change
+	cpp_rename_file calls to cpp_change_file.
+	
 	* line-map.c (add_line_map):  Allow leaving the outermost file.
 	Allowing entering an outermost-file after the initial time. 
 
