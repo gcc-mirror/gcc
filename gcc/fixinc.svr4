@@ -951,10 +951,9 @@ if [ \! -z "$file_to_fix" ]; then
   else
     sed -e '/#	ifdef	__STDC__/i\
 #   if !defined (__GNUC__) && !defined (__GNUG__)' \
-    -e '		unsigned long	ntohl(), htonl();\
-#	endif/a\
-#   endif /* !defined (__GNUC__) && !defined (__GNUG__) */\
-#   include	<sys/byteorder.h>' \
+    -e '/#		include	<sys\/byteorder.h>/s/		/   /'\
+    -e '/#   include	<sys\/byteorder.h>/i\
+#   endif /* !defined (__GNUC__) && !defined (__GNUG__) */'\
     $file_to_fix > ${LIB}/${file}.sed
     rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
     echo Fixed $file_to_fix
