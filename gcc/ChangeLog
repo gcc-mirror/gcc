@@ -1,3 +1,8 @@
+2002-05-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (form_the_same_automaton_unit_lists_from_regexp):
+	Fix typo in usage of allof instead of unit.
+
 2002-05-06  Richard Henderson  <rth@redhat.com>
 
 	* recog.c (if_test_bypass_p): Accept multiple set insns for OUT,
