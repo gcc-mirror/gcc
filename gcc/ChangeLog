@@ -1,3 +1,14 @@
+Mon Mar 15 08:24:17 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * fold-const.c (exact_real_inverse): Move variable `float_error'
+	into the scope where it is used.
+	(const_binop_1): New static function.
+	(cb_args): New struct.
+	(const_binop): Use them in call to `do_float_handler'.
+	(fold_convert_1): New static function.
+	(fc_args): New struct.
+	(fold_convert): Use them in call to `do_float_handler'.
+
 Mon Mar 15 22:50:18 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* rtlanal.c (auto_inc_p): New function.
