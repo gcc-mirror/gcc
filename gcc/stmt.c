@@ -629,6 +629,7 @@ expand_goto (label)
       rtx temp;
 
       p->has_nonlocal_label = 1;
+      current_function_has_nonlocal_goto = 1;
       LABEL_REF_NONLOCAL_P (label_ref) = 1;
 
       /* Copy the rtl for the slots so that they won't be shared in
