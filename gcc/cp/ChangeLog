@@ -1,3 +1,14 @@
+2001-07-11  Ben Elliston  <bje@redhat.com>
+
+	PR c++/80
+	* decl.c (finish_enum): New "attributes" argument; pass it to
+	cplus_decl_attributes.  Use a narrower type if the enum is packed.
+	* cp-tree.h (finish_enum): Adjust prototype.
+	* parse.y (enum_head): New non-terminal.
+	(structsp): Use it. Enums now may be preceded or followed by
+	optional attributes -- pass their chained tree to finish_enum().
+	* pt.c (tsubst_enum): Pass NULL_TREE for the new argument.
+
 2001-07-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (tsubst_decl): Set DECL_CONTEXT for namespace-scope

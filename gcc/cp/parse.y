@@ -340,7 +340,7 @@ cp_parse_init ()
 %type <ttype> init initlist maybeasm maybe_init defarg defarg1
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
-%type <ttype> any_word
+%type <ttype> any_word enum_head
 
 %type <itype> save_lineno
 %type <ttype> simple_stmt simple_if
@@ -2240,22 +2240,29 @@ pending_defargs:
 		{ do_pending_defargs (); }
 	;
 
+enum_head:
+	  ENUM
+		{ $$ = NULL_TREE; }
+	| ENUM attributes
+		{ $$ = $2; }
+	;
+
 structsp:
-	  ENUM identifier '{'
+	  enum_head identifier '{'
 		{ $<ttype>$ = current_enum_type;
 		  current_enum_type = start_enum ($2); }
-	  enumlist_opt '}'
+	  enumlist_opt '}' maybe_attribute 
 		{ $$.t = current_enum_type;
-		  finish_enum (current_enum_type);
+		  finish_enum (current_enum_type, chainon ($1, $7));
 		  $$.new_type_flag = 1;
 		  current_enum_type = $<ttype>4;
 		  check_for_missing_semicolon ($$.t); }
-	| ENUM '{'
+	| enum_head '{'
 		{ $<ttype>$ = current_enum_type;
 		  current_enum_type = start_enum (make_anon_name ()); }
-	  enumlist_opt '}'
+	  enumlist_opt '}' maybe_attribute 
                 { $$.t = current_enum_type;
-		  finish_enum (current_enum_type);
+		  finish_enum (current_enum_type, chainon ($1, $6));
 		  $$.new_type_flag = 1;
 		  current_enum_type = $<ttype>3;
 		  check_for_missing_semicolon ($$.t); }
