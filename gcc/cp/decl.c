@@ -9082,7 +9082,6 @@ check_elaborated_type_specifier (enum tag_types tag_code,
 	   void f(class C);		// No template header here
 
 	 then the required template argument is missing.  */
-
       error ("template argument required for %<%s %T%>",
 	     tag_name (tag_code),
 	     DECL_NAME (CLASSTYPE_TI_TEMPLATE (type)));
@@ -9104,7 +9103,19 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
   tree t;
   tree decl;
   if (scope == ts_global)
-    decl = lookup_name (name, 2);
+    {
+      /* First try ordinary name lookup, ignoring hidden class name
+	 injected via friend declaration.  */
+      decl = lookup_name (name, 2);
+      /* If that fails, the name will be placed in the smallest
+	 non-class, non-function-prototype scope according to 3.3.1/5.
+	 We may already have a hidden name declared as friend in this
+	 scope.  So lookup again but not ignoring hidden name.
+	 If we find one, that name will be made visible rather than
+	 creating a new tag.  */
+      if (!decl)
+	decl = lookup_type_scope (name, ts_within_enclosing_non_class);
+    }
   else
     decl = lookup_type_scope (name, scope);
 
@@ -9264,8 +9275,7 @@ xref_tag (enum tag_types tag_code, tree name,
 	{
 	  t = make_aggr_type (code);
 	  TYPE_CONTEXT (t) = context;
-	  /* pushtag only cares whether SCOPE is zero or not.  */
-	  t = pushtag (name, t, scope != ts_current);
+	  t = pushtag (name, t, scope);
 	}
     }
   else
@@ -9279,6 +9289,20 @@ xref_tag (enum tag_types tag_code, tree name,
 	  error ("redeclaration of %qT as a non-template", t);
 	  t = error_mark_node;
 	}
+
+      /* Make injected friend class visible.  */
+      if (scope != ts_within_enclosing_non_class
+	  && hidden_name_p (TYPE_NAME (t)))
+	{
+	  DECL_ANTICIPATED (TYPE_NAME (t)) = 0;
+	  DECL_FRIEND_P (TYPE_NAME (t)) = 0;
+
+	  if (TYPE_TEMPLATE_INFO (t))
+	    {
+	      DECL_ANTICIPATED (TYPE_TI_TEMPLATE (t)) = 0;
+	      DECL_FRIEND_P (TYPE_TI_TEMPLATE (t)) = 0;
+	    }
+     	}
     }
 
   POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, t);
@@ -9520,7 +9544,7 @@ start_enum (tree name)
 	name = make_anon_name ();
 
       enumtype = make_node (ENUMERAL_TYPE);
-      enumtype = pushtag (name, enumtype, 0);
+      enumtype = pushtag (name, enumtype, /*tag_scope=*/ts_current);
     }
 
   return enumtype;
