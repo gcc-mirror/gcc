@@ -1,3 +1,9 @@
+2001-03-14  DJ Delorie  <dj@redhat.com>
+	    Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/i960/i960.c (i960_function_prologue): Compute size of
+	frame according to number of registers actually saved there.
+
 2001-03-14  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (emit_move_insn_1): Fix else if around #endif.
