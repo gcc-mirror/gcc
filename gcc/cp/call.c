@@ -176,6 +176,9 @@ convert_harshness (type, parmtype, parm)
       if (type == parmtype)
 	return ZERO_RETURN (h);
 
+      if (pedantic)
+	return EVIL_RETURN (h);
+
       /* Compare return types.  */
       p1 = TREE_TYPE (type);
       p2 = TREE_TYPE (parmtype);
@@ -207,14 +210,16 @@ convert_harshness (type, parmtype, parm)
 
 	  if (! BINFO_OFFSET_ZEROP (binfo))
 	    {
+#if 0
 	      static int explained = 0;
 	      if (h2.distance < 0)
-		message_2_types (sorry, "cannot cast `%d' to `%d' at function call site", p2, p1);
+		message_2_types (sorry, "cannot cast `%s' to `%s' at function call site", p2, p1);
 	      else
-		message_2_types (sorry, "cannot cast `%d' to `%d' at function call site", p1, p2);
+		message_2_types (sorry, "cannot cast `%s' to `%s' at function call site", p1, p2);
 
 	      if (! explained++)
 		sorry ("(because pointer values change during conversion)");
+#endif
 	      return EVIL_RETURN (h);
 	    }
 	}
@@ -877,34 +882,21 @@ compute_conversion_costs (function, tta_in, cp, arglen)
 
 		      inhibit_warnings = 1;
 		      conv = build_type_conversion
-			(CALL_EXPR, TREE_VALUE (ttf), TREE_VALUE (tta), 0);
+			(CALL_EXPR, formal_type, TREE_VALUE (tta), 0);
 		      inhibit_warnings = old_inhibit_warnings;
 
 		      if (conv)
 			{
-			  if (conv == error_mark_node)
+			  if (conv == error_mark_node
+			      || (TREE_CODE (TREE_VALUE (ttf)) == REFERENCE_TYPE
+				  && ! TYPE_READONLY (TREE_VALUE (TREE_VALUE (ttf)))
+				  && ! lvalue_p (conv)))
 			    win += 2;
 			  else
 			    {
 			      win++;
 			      if (TREE_CODE (conv) != CALL_EXPR)
 				extra_conversions = 1;
-			    }
-			}
-		      else if (TREE_CODE (TREE_VALUE (ttf)) == REFERENCE_TYPE)
-			{
-			  conv = build_type_conversion (CALL_EXPR, formal_type,
-							TREE_VALUE (tta), 0);
-			  if (conv)
-			    {
-			      if (conv == error_mark_node)
-				win += 2;
-			      else
-				{
-				  win++;
-				  if (TREE_CODE (conv) != CALL_EXPR)
-				    extra_conversions = 1;
-				}
 			    }
 			}
 		    }
@@ -2035,24 +2027,13 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	      tree parm = instance_ptr;
 
 	      if (TREE_CODE (TREE_TYPE (parm)) == REFERENCE_TYPE)
-		{
-		  /* TREE_VALUE (parms) may have been modified by now;
-                     restore it to its original value. */
-		  TREE_VALUE (parms) = parm;
-		  friend_parms = parms;
-		}
+		parm = convert_from_reference (parm);
 	      else if (TREE_CODE (TREE_TYPE (parm)) == POINTER_TYPE)
-		{
-		  tree new_type;
-		  parm = build_indirect_ref (parm, "friendifying parms (compiler error)");
-		  new_type = cp_build_type_variant (TREE_TYPE (parm), constp,
-						   volatilep);
-		  new_type = build_reference_type (new_type);
-		  parm = convert (new_type, parm);
-		  friend_parms = tree_cons (NULL_TREE, parm, TREE_CHAIN (parms));
-		}
+		parm = build_indirect_ref (parm, "friendifying parms (compiler error)");
 	      else
 		my_friendly_abort (167);
+
+	      friend_parms = tree_cons (NULL_TREE, parm, TREE_CHAIN (parms));
 
 	      cp->h_len = len;
 	      cp->harshness = (struct harshness_code *)
@@ -2602,6 +2583,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
     TREE_TYPE (result) = value_type;
     TREE_SIDE_EFFECTS (result) = 1;
     TREE_HAS_CONSTRUCTOR (result) = is_constructor;
+    result = convert_from_reference (result);
     return result;
   }
 }

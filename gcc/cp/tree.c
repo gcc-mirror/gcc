@@ -32,6 +32,79 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    Lvalues can have their address taken, unless they have DECL_REGISTER.  */
 
 int
+real_lvalue_p (ref)
+     tree ref;
+{
+  if (! language_lvalue_valid (ref))
+    return 0;
+  
+  if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
+    return 1;
+
+  if (ref == current_class_decl && flag_this_is_variable <= 0)
+    return 0;
+
+  switch (TREE_CODE (ref))
+    {
+      /* preincrements and predecrements are valid lvals, provided
+	 what they refer to are valid lvals. */
+    case PREINCREMENT_EXPR:
+    case PREDECREMENT_EXPR:
+    case COMPONENT_REF:
+    case SAVE_EXPR:
+      return real_lvalue_p (TREE_OPERAND (ref, 0));
+
+    case STRING_CST:
+      return 1;
+
+    case VAR_DECL:
+      if (TREE_READONLY (ref) && ! TREE_STATIC (ref)
+	  && DECL_LANG_SPECIFIC (ref)
+	  && DECL_IN_AGGR_P (ref))
+	return 0;
+    case INDIRECT_REF:
+    case ARRAY_REF:
+    case PARM_DECL:
+    case RESULT_DECL:
+    case ERROR_MARK:
+      if (TREE_CODE (TREE_TYPE (ref)) != FUNCTION_TYPE
+	  && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE)
+	return 1;
+      break;
+
+    case WITH_CLEANUP_EXPR:
+      return real_lvalue_p (TREE_OPERAND (ref, 0));
+
+      /* A currently unresolved scope ref.  */
+    case SCOPE_REF:
+      my_friendly_abort (103);
+    case OFFSET_REF:
+      if (TREE_CODE (TREE_OPERAND (ref, 1)) == FUNCTION_DECL)
+	return 1;
+      return real_lvalue_p (TREE_OPERAND (ref, 0))
+	&& real_lvalue_p (TREE_OPERAND (ref, 1));
+      break;
+
+    case COND_EXPR:
+      return (real_lvalue_p (TREE_OPERAND (ref, 1))
+	      && real_lvalue_p (TREE_OPERAND (ref, 2)));
+
+    case MODIFY_EXPR:
+      return 1;
+
+    case COMPOUND_EXPR:
+      return real_lvalue_p (TREE_OPERAND (ref, 1));
+
+    case MAX_EXPR:
+    case MIN_EXPR:
+      return (real_lvalue_p (TREE_OPERAND (ref, 0))
+	      && real_lvalue_p (TREE_OPERAND (ref, 1)));
+    }
+
+  return 0;
+}
+
+int
 lvalue_p (ref)
      tree ref;
 {
@@ -496,6 +569,7 @@ propagate_binfo_offsets (binfo, offset)
 		  chain = TREE_VEC_ELT (base_binfos, k);
 		  TREE_VIA_PUBLIC (chain) = TREE_VIA_PUBLIC (base_base_binfo);
 		  TREE_VIA_PROTECTED (chain) = TREE_VIA_PROTECTED (base_base_binfo);
+		  BINFO_INHERITANCE_CHAIN (chain) = base_binfo;
 		}
 	      /* Now propagate the offset to the base types.  */
 	      propagate_binfo_offsets (base_binfo, offset);
@@ -616,6 +690,8 @@ layout_vbasetypes (rec, max)
     {
       tree base_binfos = BINFO_BASETYPES (vbase_types);
 
+      BINFO_INHERITANCE_CHAIN (vbase_types) = TYPE_BINFO (rec);
+
       if (base_binfos)
 	{
 	  tree chain = NULL_TREE;
@@ -636,6 +712,7 @@ layout_vbasetypes (rec, max)
 	      chain = TREE_VEC_ELT (base_binfos, j);
 	      TREE_VIA_PUBLIC (chain) = TREE_VIA_PUBLIC (base_base_binfo);
 	      TREE_VIA_PROTECTED (chain) = TREE_VIA_PROTECTED (base_base_binfo);
+	      BINFO_INHERITANCE_CHAIN (chain) = vbase_types;
 	    }
 
 	  propagate_binfo_offsets (vbase_types, BINFO_OFFSET (vbase_types));
@@ -1167,22 +1244,6 @@ make_binfo (offset, binfo, vtable, virtuals, chain)
   if (binfo && BINFO_BASETYPES (binfo) != NULL_TREE)
     BINFO_BASETYPES (new_binfo) = copy_node (BINFO_BASETYPES (binfo));      
   return new_binfo;
-}
-
-tree
-copy_binfo (list)
-     tree list;
-{
-  tree binfo = copy_list (list);
-  tree rval = binfo;
-  while (binfo)
-    {
-      TREE_USED (binfo) = 0;
-      if (BINFO_BASETYPES (binfo))
-	BINFO_BASETYPES (binfo) = copy_node (BINFO_BASETYPES (binfo));
-      binfo = TREE_CHAIN (binfo);
-    }
-  return rval;
 }
 
 /* Return the binfo value for ELEM in TYPE.  */

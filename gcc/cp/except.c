@@ -48,7 +48,12 @@ tree builtin_return_address_fndecl;
 #define __rs6000
 #endif
 #endif
-#if defined(__i386) || defined(__rs6000) || defined(__hppa) || defined(__mc68000) || defined (__mips) || defined (__arm)
+#ifdef mips
+#ifndef __mips
+#define __mips
+#endif
+#endif
+#if defined(__i386) || defined(__rs6000) || defined(__hppa) || defined(__mc68000) || defined (__mips) || defined (__arm) || defined (__alpha)
 #define TRY_NEW_EH
 #endif
 #endif
@@ -390,44 +395,45 @@ static tree TerminateFunctionCall;
 /* =================================================================== */
 
 struct labelNode {
-    rtx label;
-	struct labelNode *chain;
- };
+  rtx label;
+  struct labelNode *chain;
+};
 
 
 /* this is the most important structure here.  Basically this is how I store
    an exception table entry internally. */
 struct ehEntry {
-    rtx start_label;
-	rtx end_label;
-	rtx exception_handler_label;
+  rtx start_label;
+  rtx end_label;
+  rtx exception_handler_label;
 
-	tree finalization;
- };
+  tree finalization;
+  tree context;
+};
 
 struct ehNode {
-    struct ehEntry *entry;
-	struct ehNode *chain;
- };
+  struct ehEntry *entry;
+  struct ehNode *chain;
+};
 
 struct ehStack {
-    struct ehNode *top;
- };
+  struct ehNode *top;
+};
 
 struct ehQueue {
-    struct ehNode *head;
-	struct ehNode *tail;
- };
+  struct ehNode *head;
+  struct ehNode *tail;
+};
 
 struct exceptNode {
-    rtx catchstart;
-	rtx catchend;
+  rtx catchstart;
+  rtx catchend;
 
-	struct exceptNode *chain;
- };
+  struct exceptNode *chain;
+};
 
 struct exceptStack {
-	struct exceptNode *top;
+  struct exceptNode *top;
  };
 /* ========================================================================= */
 
@@ -603,6 +609,7 @@ push_eh_entry (stack)
   LABEL_PRESERVE_P (entry->exception_handler_label) = 1;
 
   entry->finalization = NULL_TREE;
+  entry->context = current_function_decl;
 
   node->entry = entry;
   node->chain = stack->top;
@@ -715,6 +722,8 @@ lang_interim_eh (finalization)
     start_protect ();
 }
 
+extern tree auto_function PROTO((tree, tree, enum built_in_function));
+
 /* sets up all the global eh stuff that needs to be initialized at the
    start of compilation.
 
@@ -735,44 +744,34 @@ init_exception_processing ()
   tree catch_match_fndecl;
   tree find_first_exception_match_fndecl;
   tree unwind_fndecl;
-  tree temp, PFV;
-
-  interim_eh_hook = lang_interim_eh;
 
   /* void (*)() */
-  PFV = build_pointer_type (build_function_type (void_type_node, void_list_node));
+  tree PFV = build_pointer_type (build_function_type
+				 (void_type_node, void_list_node));
 
   /* arg list for the build_function_type call for set_terminate () and
      set_unexpected () */
-  temp = tree_cons (NULL_TREE, PFV, void_list_node);
+  tree pfvlist = tree_cons (NULL_TREE, PFV, void_list_node);
+
+  /* void (*pfvtype (void (*) ()))() */
+  tree pfvtype = build_function_type (PFV, pfvlist);
+
+  /* void vtype () */
+  tree vtype = build_function_type (void_type_node, void_list_node);
+  
+  set_terminate_fndecl = auto_function (get_identifier ("set_terminate"),
+					pfvtype, NOT_BUILT_IN);
+  set_unexpected_fndecl = auto_function (get_identifier ("set_unexpected"),
+					 pfvtype, NOT_BUILT_IN);
+  unexpected_fndecl = auto_function (get_identifier ("unexpected"),
+				     vtype, NOT_BUILT_IN);
+  terminate_fndecl = auto_function (get_identifier ("terminate"),
+				    vtype, NOT_BUILT_IN);
+
+  interim_eh_hook = lang_interim_eh;
 
   push_lang_context (lang_name_c);
 
-  set_terminate_fndecl =
-    define_function ("set_terminate",
-		     build_function_type (PFV, temp),
-		     NOT_BUILT_IN,
-		     pushdecl,
-		     0);
-  set_unexpected_fndecl =
-    define_function ("set_unexpected",
-		     build_function_type (PFV, temp),
-		     NOT_BUILT_IN,
-		     pushdecl,
-		     0);
-
-  unexpected_fndecl =
-    define_function ("unexpected",
-		     build_function_type (void_type_node, void_list_node),
-		     NOT_BUILT_IN,
-		     pushdecl,
-		     0);
-  terminate_fndecl =
-    define_function ("terminate",
-		     build_function_type (void_type_node, void_list_node),
-		     NOT_BUILT_IN,
-		     pushdecl,
-		     0);
   catch_match_fndecl =
     define_function ("__throw_type_match",
 		     build_function_type (integer_type_node,
@@ -843,6 +842,11 @@ init_exception_processing ()
   saved_pc = gen_rtx (REG, Pmode, 7);
   saved_throw_type = gen_rtx (REG, Pmode, 8);
   saved_throw_value = gen_rtx (REG, Pmode, 9);
+#endif
+#ifdef __alpha
+  saved_pc = gen_rtx (REG, Pmode, 9);
+  saved_throw_type = gen_rtx (REG, Pmode, 10);
+  saved_throw_value = gen_rtx (REG, Pmode, 11);
 #endif
   new_eh_queue (&ehqueue);
   new_eh_queue (&eh_table_output_queue);
@@ -989,6 +993,7 @@ expand_start_all_catch ()
   entry->end_label = gen_label_rtx ();
   entry->exception_handler_label = gen_label_rtx ();
   entry->finalization = TerminateFunctionCall;
+  entry->context = current_function_decl;
   assemble_external (TREE_OPERAND (Terminate, 0));
   pop_rtl_from_perm ();
 
@@ -1091,6 +1096,7 @@ expand_leftover_cleanups ()
       entry.end_label = label;
       entry.exception_handler_label = gen_label_rtx ();
       entry.finalization = TerminateFunctionCall;
+      entry.context = current_function_decl;
       assemble_external (TREE_OPERAND (Terminate, 0));
       pop_rtl_from_perm ();
 
@@ -1243,13 +1249,15 @@ void expand_end_catch_block ()
       emit_jump (throw_label);
       /* No associated finalization.  */
       entry.finalization = NULL_TREE;
+      entry.context = current_function_decl;
 
       /* Because we are reordered out of line, we have to protect this. */
       /* label for the start of the protection region.  */
       start_protect_label_rtx = pop_label_entry (&false_label_stack);
 
       /* Cleanup the EH paramater.  */
-      expand_end_bindings (decls = getdecls (), decls != NULL_TREE, 0);
+      decls = getdecls ();
+      expand_end_bindings (decls, decls != NULL_TREE, 0);
       
       /* label we emit to jump to if this catch block didn't match. */
       emit_label (end_protect_label_rtx = pop_label_entry (&false_label_stack));
@@ -1309,7 +1317,7 @@ do_unwind (throw_label)
   easy_expand_asm ("restore");
   emit_barrier ();
 #endif
-#if defined(__i386) || defined(__rs6000) || defined(__hppa) || defined(__mc68000) || defined (__mips)
+#if defined(__i386) || defined(__rs6000) || defined(__hppa) || defined(__mc68000) || defined (__mips) || defined(__alpha)
   extern FILE *asm_out_file;
   tree fcall;
   tree params;
@@ -1449,7 +1457,7 @@ expand_builtin_throw ()
 #ifndef sparc
   /* On the SPARC, __builtin_return_address is already -8, no need to
      subtract any more from it. */
-  emit_insn (gen_add2_insn (return_val_rtx, GEN_INT (-1)));
+  return_val_rtx = plus_constant (return_val_rtx, -1);
 #endif
 #endif
 
@@ -1542,10 +1550,8 @@ expand_throw (exp)
 	rtx throw_type_rtx = expand_expr (throw_type, NULL_RTX, VOIDmode, 0);
 	rtx throw_value_rtx;
 
-	exp = convert_to_reference (build_reference_type (build_type_variant (TREE_TYPE (exp), 1, 0)), exp, CONV_STATIC, LOOKUP_COMPLAIN, error_mark_node);
-
 	/* Make a copy of the thrown object.  WP 15.1.5  */
-	exp = build_new (NULL_TREE, TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (exp))), exp, 0);
+	exp = build_new (NULL_TREE, type, build_tree_list (NULL_TREE, exp), 0);
 
 	if (exp == error_mark_node)
 	  error ("  in thrown expression");
@@ -1557,7 +1563,7 @@ expand_throw (exp)
   else
     {
       /* rethrow current exception */
-      /* This part is easy, as we dont' have to do anything else.  */
+      /* This part is easy, as we don't have to do anything else.  */
     }
 
   emit_move_insn (saved_pc, gen_rtx (LABEL_REF, Pmode, label));
@@ -1585,6 +1591,11 @@ build_exception_table ()
 
  while (entry = dequeue_eh_entry (&eh_table_output_queue))
    {
+     tree context = entry->context;
+
+     if (context && ! TREE_ASM_WRITTEN (context))
+       continue;
+
      if (count == 0)
        {
 	 exception_section ();

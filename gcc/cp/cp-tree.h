@@ -666,7 +666,9 @@ struct lang_type
    searched with TREE_CHAIN), or the first non-constructor function if
    there are no type conversion operators.  */
 #define CLASSTYPE_FIRST_CONVERSION(NODE) \
-  TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (NODE), 1)
+  TREE_VEC_LENGTH (CLASSTYPE_METHOD_VEC (NODE)) > 1 \
+    ? TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (NODE), 1) \
+    : NULL_TREE;
 
 /* Pointer from any member function to the head of the list of
    member functions of the type that member function belongs to.  */
@@ -842,6 +844,9 @@ struct lang_type
 
 /* Nonzero if a _DECL node requires us to output debug info for this class.  */
 #define CLASSTYPE_DEBUG_REQUESTED(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.debug_requested)
+
+#define TYPE_INCOMPLETE(NODE) \
+  (TYPE_SIZE (NODE) == NULL_TREE && TREE_CODE (NODE) != TEMPLATE_TYPE_PARM)
 
 /* Additional macros for inheritance information.  */
 
@@ -1816,7 +1821,9 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
    CONV_CONST      :  Perform the explicit conversions for const_cast.
    CONV_REINTERPRET:  Perform the explicit conversions for reinterpret_cast.
    CONV_PRIVATE    :  Perform upcasts to private bases.
-   CONV_NONCONVERTING : Allow non-converting constructors to be used.  */
+   CONV_NONCONVERTING : Allow non-converting constructors to be used.
+   CONV_FORCE_TEMP :  Require a new temporary when converting to the same
+   		      aggregate type.  */
 
 #define CONV_IMPLICIT    1
 #define CONV_STATIC      2
@@ -1824,11 +1831,12 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 #define CONV_REINTERPRET 8
 #define CONV_PRIVATE	 16
 #define CONV_NONCONVERTING 32
-#define CONV_STATIC_CAST (CONV_IMPLICIT | CONV_STATIC)
+#define CONV_FORCE_TEMP  64
+#define CONV_STATIC_CAST (CONV_IMPLICIT | CONV_STATIC | CONV_FORCE_TEMP)
 #define CONV_OLD_CONVERT (CONV_IMPLICIT | CONV_STATIC | CONV_CONST \
 			  | CONV_REINTERPRET)
 #define CONV_C_CAST      (CONV_IMPLICIT | CONV_STATIC | CONV_CONST \
-			  | CONV_REINTERPRET | CONV_PRIVATE)
+			  | CONV_REINTERPRET | CONV_PRIVATE | CONV_FORCE_TEMP)
 
 /* Anatomy of a DECL_FRIENDLIST (which is a TREE_LIST):
    purpose = friend name (IDENTIFIER_NODE);
@@ -1946,6 +1954,7 @@ extern tree pushdecl_top_level			PROTO((tree));
 extern void push_class_level_binding		PROTO((tree, tree));
 extern void push_overloaded_decl_top_level	PROTO((tree, int));
 extern tree pushdecl_class_level		PROTO((tree));
+extern tree pushdecl_nonclass_level		PROTO((tree));
 extern int overloaded_globals_p			PROTO((tree));
 extern tree push_overloaded_decl		PROTO((tree, int));
 extern tree implicitly_declare			PROTO((tree));
@@ -1971,8 +1980,8 @@ extern int complete_array_type			PROTO((tree, tree, int));
 extern tree build_ptrmemfunc_type		PROTO((tree));
 extern tree grokdeclarator			(); /* PROTO((tree, tree, enum decl_context, int, tree)); */
 extern int parmlist_is_exprlist			PROTO((tree));
-extern tree xref_defn_tag			PROTO((tree, tree, tree));
 extern tree xref_tag				PROTO((tree, tree, tree, int));
+extern void xref_basetypes			PROTO((tree, tree, tree, tree));
 extern tree start_enum				PROTO((tree));
 extern tree finish_enum				PROTO((tree, tree));
 extern tree build_enumerator			PROTO((tree, tree));
@@ -2019,7 +2028,7 @@ extern tree coerce_delete_type			PROTO((tree));
 extern void walk_vtables			PROTO((void (*)(), void (*)()));
 extern void walk_sigtables			PROTO((void (*)(), void (*)()));
 extern void finish_file				PROTO((void));
-extern void warn_if_unknown_interface		PROTO((void));
+extern void warn_if_unknown_interface		PROTO((tree));
 extern tree grok_x_components			PROTO((tree, tree));
 extern tree reparse_absdcl_as_expr		PROTO((tree, tree));
 extern tree reparse_absdcl_as_casts		PROTO((tree, tree));
@@ -2286,7 +2295,6 @@ extern tree hash_chainon			PROTO((tree, tree));
 extern tree get_decl_list			PROTO((tree));
 extern tree list_hash_lookup_or_cons		PROTO((tree));
 extern tree make_binfo				PROTO((tree, tree, tree, tree, tree));
-extern tree copy_binfo				PROTO((tree));
 extern tree binfo_value				PROTO((tree, tree));
 extern tree reverse_path			PROTO((tree));
 extern tree virtual_member			PROTO((tree, tree));
@@ -2311,7 +2319,7 @@ extern tree array_type_nelts_total		PROTO((tree));
 extern tree array_type_nelts_top		PROTO((tree));
 
 /* in typeck.c */
-extern tree bool_truthvalue_conversion		PROTO((tree));
+extern tree condition_conversion		PROTO((tree));
 extern tree target_type				PROTO((tree));
 extern tree require_complete_type		PROTO((tree));
 extern int type_unknown_p			PROTO((tree));

@@ -574,6 +574,12 @@ emit_base_init (t, immediately)
       tree base = current_class_decl;
       tree base_binfo = TREE_VEC_ELT (binfos, i);
 
+#if 0 /* Once unsharing happens soon enough.  */
+      my_friendly_assert (BINFO_INHERITANCE_CHAIN (base_binfo) == t_binfo);
+#else
+      BINFO_INHERITANCE_CHAIN (base_binfo) = t_binfo;
+#endif
+
       if (TYPE_NEEDS_CONSTRUCTING (BINFO_TYPE (base_binfo)))
 	{
 	  if (! TREE_VIA_VIRTUAL (base_binfo)
@@ -1210,7 +1216,8 @@ expand_default_init (binfo, true_exp, exp, type, init, alias_this, flags)
       if (parms)
 	init = TREE_VALUE (parms);
     }
-  else if (TREE_CODE (init) == INDIRECT_REF && TREE_HAS_CONSTRUCTOR (init))
+  else if (TREE_CODE (init) == INDIRECT_REF && TREE_HAS_CONSTRUCTOR (init)
+	   && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (init)))
     {
       rval = convert_for_initialization (exp, type, init, 0, 0, 0, 0);
       TREE_USED (rval) = 1;
@@ -2932,11 +2939,8 @@ build_new (placement, decl, init, use_global_new)
     }
 
   if (TYPE_READONLY (type) || TYPE_VOLATILE (type))
-    {
-      pedwarn ("const and volatile types cannot be created with operator new");
-      type = true_type = TYPE_MAIN_VARIANT (type);
-    }
-  
+    type = TYPE_MAIN_VARIANT (type);
+
   /* If our base type is an array, then make sure we know how many elements
      it has.  */
   while (TREE_CODE (true_type) == ARRAY_TYPE)
@@ -3000,7 +3004,7 @@ build_new (placement, decl, init, use_global_new)
       rval = convert (TYPE_POINTER_TO (true_type), rval);
     }
   else if (! has_array && flag_this_is_variable > 0
-	   && TYPE_HAS_CONSTRUCTOR (true_type) && init != void_type_node)
+	   && TYPE_NEEDS_CONSTRUCTING (true_type) && init != void_type_node)
     {
       if (init == NULL_TREE || TREE_CODE (init) == TREE_LIST)
 	rval = NULL_TREE;
@@ -3061,57 +3065,8 @@ build_new (placement, decl, init, use_global_new)
 					     build_tree_list (NULL_TREE, rval)));
     }
 
-  /* We've figured out where the allocation is to go.
-     If we're not eliding constructors, then if a constructor
-     is defined, we must go through it.  */
-  if (!has_array && (rval == NULL_TREE || !flag_elide_constructors)
-      && TYPE_HAS_CONSTRUCTOR (true_type) && init != void_type_node)
-    {
-      tree newrval;
-      /* Constructors are never virtual. If it has an initialization, we
-	 need to complain if we aren't allowed to use the ctor that took
-	 that argument.  */
-      int flags = LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_COMPLAIN;
-
-      /* If a copy constructor might work, set things up so that we can
-	 try that after this.  We deliberately don't clear LOOKUP_COMPLAIN
-	 any more, since that would make it impossible to rationally use
-	 the access of a constructor that matches perfectly.  */
-#if 0
-      if (rval != NULL_TREE)
-	flags |= LOOKUP_SPECULATIVELY;
-#endif
-
-      if (rval && TYPE_USES_VIRTUAL_BASECLASSES (true_type))
-	{
-	  init = tree_cons (NULL_TREE, integer_one_node, init);
-	  flags |= LOOKUP_HAS_IN_CHARGE;
-	}
-
-      {
-	tree tmp = rval;
-	
-	if (tmp && TREE_CODE (TREE_TYPE (tmp)) == POINTER_TYPE)
-	  tmp = build_indirect_ref (tmp, NULL_PTR);
-      
-	newrval = build_method_call (tmp, constructor_name_full (true_type),
-				     init, NULL_TREE, flags);
-      }
-      
-      if (newrval)
-	{
-	  rval = newrval;
-	  TREE_HAS_CONSTRUCTOR (rval) = 1;
-	}
-      else
-	rval = error_mark_node;
-      goto done;
-    }
-
   if (rval == error_mark_node)
     return error_mark_node;
-  rval = save_expr (rval);
-  TREE_HAS_CONSTRUCTOR (rval) = 1;
 
   /* Don't call any constructors or do any initialization.  */
   if (init == void_type_node)
@@ -3123,20 +3078,60 @@ build_new (placement, decl, init, use_global_new)
 	{
 	  /* New 2.0 interpretation: `new int (10)' means
 	     allocate an int, and initialize it with 10.  */
+	  tree deref;
 
-	  init = build_c_cast (type, init, 1);
+	  rval = save_expr (rval);
+	  deref = build_indirect_ref (rval, NULL_PTR);
+	  TREE_READONLY (deref) = 0;
+
+	  if (TREE_CHAIN (init) != NULL_TREE)
+	    pedwarn ("initializer list being treated as compound expression");
+	  init = build_compound_expr (init);
+
+	  init = convert_for_initialization (deref, type, init, LOOKUP_NORMAL,
+					     "new", NULL_TREE, 0);
 	  rval = build (COMPOUND_EXPR, TREE_TYPE (rval),
-			build_modify_expr (build_indirect_ref (rval, NULL_PTR),
-					   NOP_EXPR, init),
+			build_modify_expr (deref, NOP_EXPR, init),
 			rval);
 	  TREE_SIDE_EFFECTS (rval) = 1;
 	  TREE_CALLS_NEW (rval) = 1;
+	}
+      else if (! has_array)
+	{
+	  tree newrval;
+	  /* Constructors are never virtual. If it has an initialization, we
+	     need to complain if we aren't allowed to use the ctor that took
+	     that argument.  */
+	  int flags = LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_COMPLAIN;
+
+	  if (rval && TYPE_USES_VIRTUAL_BASECLASSES (true_type))
+	    {
+	      init = tree_cons (NULL_TREE, integer_one_node, init);
+	      flags |= LOOKUP_HAS_IN_CHARGE;
+	    }
+
+	  newrval = rval;
+
+	  if (newrval && TREE_CODE (TREE_TYPE (newrval)) == POINTER_TYPE)
+	    newrval = build_indirect_ref (newrval, NULL_PTR);
+
+	  newrval = build_method_call (newrval, constructor_name_full (true_type),
+				       init, NULL_TREE, flags);
+
+	  if (newrval)
+	    {
+	      rval = newrval;
+	      TREE_HAS_CONSTRUCTOR (rval) = 1;
+	    }
+	  else
+	    rval = error_mark_node;
 	}
       else if (current_function_decl == NULL_TREE)
 	{
 	  extern tree static_aggregates;
 
 	  /* In case of static initialization, SAVE_EXPR is good enough.  */
+	  rval = save_expr (rval);
 	  init = copy_to_permanent (init);
 	  rval = copy_to_permanent (rval);
 	  static_aggregates = perm_tree_cons (init, rval, static_aggregates);
@@ -3156,12 +3151,11 @@ build_new (placement, decl, init, use_global_new)
 	  /* As a matter of principle, `start_sequence' should do this.  */
 	  emit_note (0, -1);
 
-	  if (has_array)
-	    rval = expand_vec_init (decl, rval,
-				    build_binary_op (MINUS_EXPR, nelts, integer_one_node, 1),
-				    init, 0);
-	  else
-	    expand_aggr_init (build_indirect_ref (rval, NULL_PTR), init, 0, 0);
+	  rval = save_expr (rval);
+	  rval = expand_vec_init (decl, rval,
+				  build_binary_op (MINUS_EXPR, nelts,
+						   integer_one_node, 1),
+				  init, 0);
 
 	  do_pending_stack_adjust ();
 
@@ -3185,13 +3179,15 @@ build_new (placement, decl, init, use_global_new)
 	  rval = xval;
 	}
     }
+  else if (TYPE_READONLY (true_type))
+    cp_error ("uninitialized const in `new' of `%#T'", true_type);
+
  done:
 
   if (flag_check_new && alloc_expr && rval != alloc_expr)
     {
       tree ifexp = build_binary_op (NE_EXPR, alloc_expr, integer_zero_node, 1);
-      rval = build_conditional_expr (ifexp, rval, convert (TREE_TYPE (rval),
-							   integer_zero_node));
+      rval = build_conditional_expr (ifexp, rval, alloc_expr);
     }
 
   if (rval && TREE_TYPE (rval) != build_pointer_type (type))

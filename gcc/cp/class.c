@@ -1453,6 +1453,7 @@ finish_base_struct (t, b, t_binfo)
 	      chain = TREE_VEC_ELT (base_binfos, j);
 	      TREE_VIA_PUBLIC (chain) = TREE_VIA_PUBLIC (base_base_binfo);
 	      TREE_VIA_PROTECTED (chain) = TREE_VIA_PROTECTED (base_base_binfo);
+	      BINFO_INHERITANCE_CHAIN (chain) = base_binfo;
 	    }
 
 	  /* Completely unshare potentially shared data, and
@@ -1711,8 +1712,9 @@ finish_struct_bits (t, max_has_virtual)
 /* Add FN to the method_vec growing on the class_obstack.  Used by
    finish_struct_methods.  */
 static void
-grow_method (fn)
+grow_method (fn, method_vec_ptr)
      tree fn;
+     tree *method_vec_ptr;
 {
   tree method_vec = (tree)obstack_base (&class_obstack);
   tree *testp = &TREE_VEC_ELT (method_vec, 0);
@@ -1756,7 +1758,10 @@ grow_method (fn)
 	}
     }
   else
-    obstack_ptr_grow (&class_obstack, fn);
+    {
+      obstack_ptr_grow (&class_obstack, fn);
+      *method_vec_ptr = (tree)obstack_base (&class_obstack);
+    }
 }
 
 /* Warn about duplicate methods in fn_fields.  Also compact method
@@ -1855,7 +1860,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	  else if (typecode_p (return_type, REAL_TYPE))
 	    TYPE_HAS_REAL_CONVERSION (t) = 1;
 
-	  grow_method (fn_fields);
+	  grow_method (fn_fields, &method_vec);
 	}
       else
 	{
@@ -1891,12 +1896,10 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	    }
 	}
 
-      grow_method (fn_fields);
+      grow_method (fn_fields, &method_vec);
       fn_fields = nextp;
     }
 
-  /* Update in case method_vec has moved.  */
-  method_vec = (tree)obstack_base (&class_obstack);
   TREE_VEC_LENGTH (method_vec) = (tree *)obstack_next_free (&class_obstack)
     - (&TREE_VEC_ELT (method_vec, 0));
   obstack_finish (&class_obstack);
@@ -2289,13 +2292,9 @@ modify_one_vtable (binfo, t, fndecl, pfn)
 	  this_offset = size_binop (MINUS_EXPR, offset, base_offset);
 
 	  /* Make sure we can modify the derived association with immunity.  */
-	  if (TREE_USED (binfo)) {
+	  if (TREE_USED (binfo))
 	    my_friendly_assert (0, 999);
-#if 0
-	    my_friendly_assert (*binfo2_ptr == binfo, 999);
-	    *binfo2_ptr = copy_binfo (binfo);
-#endif
-	  }
+
 	  if (binfo == TYPE_BINFO (t))
 	    {
 	      /* In this case, it is *type*'s vtable we are modifying.
@@ -3160,8 +3159,11 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 		    {
 		      cp_warning_at ("width of `%D' exceeds its type", x);
 		    }
-		  else if (width < TYPE_PRECISION (TREE_TYPE (x))
-			   && TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE)
+		  else if (TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
+	       && ((min_precision (TYPE_MIN_VALUE (TREE_TYPE (x)),
+				   TREE_UNSIGNED (TREE_TYPE (x))) > width)
+		   || (min_precision (TYPE_MAX_VALUE (TREE_TYPE (x)),
+				      TREE_UNSIGNED (TREE_TYPE (x))) > width)))
 		    {
 		      cp_warning_at ("`%D' is too small to hold all values of `%#T'",
 				     x, TREE_TYPE (x));

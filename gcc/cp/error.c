@@ -599,6 +599,7 @@ dump_decl (t, v)
 	{
 	  dump_type_prefix (TREE_TYPE (t), v);
 	  OB_PUTC (' ');
+	  dump_readonly_or_volatile (t, after);
 	}
       /* DECL_CLASS_CONTEXT isn't being set in some cases.  Hmm...  */
       if (DECL_CONTEXT (t)

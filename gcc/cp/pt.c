@@ -128,6 +128,7 @@ process_template_parm (list, next)
 	    defval = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (defval));
 	}
     }
+  SET_DECL_ARTIFICIAL (decl);
   pushdecl (decl);
   parm = build_tree_list (defval, parm);
   return chainon (list, parm);
@@ -238,8 +239,10 @@ end_template_decl (d1, d2, is_class, defn)
 	  DECL_CLASS_CONTEXT (decl) = DECL_CLASS_CONTEXT (d2);
 	  DECL_NAME (decl) = DECL_NAME (d2);
 	  TREE_TYPE (decl) = TREE_TYPE (d2);
-	  if (interface_unknown && flag_external_templates && ! DECL_IN_SYSTEM_HEADER (decl))
-	    warn_if_unknown_interface ();
+	  if (interface_unknown && flag_external_templates
+	      && ! flag_alt_external_templates
+	      && ! DECL_IN_SYSTEM_HEADER (decl))
+	    warn_if_unknown_interface (decl);
 	  TREE_PUBLIC (decl) = TREE_PUBLIC (d2) = flag_external_templates && !interface_unknown;
 	  DECL_EXTERNAL (decl) = (DECL_EXTERNAL (d2)
 				  && !(DECL_CLASS_CONTEXT (d2)
@@ -690,6 +693,7 @@ push_template_decls (parmlist, arglist, class_level)
 	}
       if (decl != 0)
 	{
+	  SET_DECL_ARTIFICIAL (decl);
 	  layout_decl (decl, 0);
 	  if (class_level)
 	    pushdecl_class_level (decl);
@@ -1755,7 +1759,7 @@ instantiate_template (tmpl, targ_ptr)
 		  = CLASSTYPE_INTERFACE_ONLY (DECL_CLASS_CONTEXT (fndecl));
 	      }
 	    else if (! DECL_IN_SYSTEM_HEADER (tmpl))
-	      warn_if_unknown_interface ();
+	      warn_if_unknown_interface (tmpl);
 	  }
 
 	if (interface_unknown || ! flag_external_templates)
@@ -1850,7 +1854,7 @@ overload_template_name (id, classlevel)
     }
 #endif
 
-  t = xref_tag (tinfo->aggr, id, NULL_TREE, 0);
+  t = xref_tag (tinfo->aggr, id, NULL_TREE, 1);
   my_friendly_assert (TREE_CODE (t) == RECORD_TYPE
 		      || TREE_CODE (t) == UNION_TYPE
 		      || TREE_CODE (t) == UNINSTANTIATED_P_TYPE, 286);

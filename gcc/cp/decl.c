@@ -121,17 +121,6 @@ static struct stack_level *decl_stack;
 #define WCHAR_TYPE "int"
 #endif
 
-#define builtin_function(NAME, TYPE, CODE, LIBNAME) \
-  define_function (NAME, TYPE, CODE, (void (*)())pushdecl, LIBNAME)
-#define auto_function(NAME, TYPE, CODE) \
-  do {					\
-    tree __name = NAME;		\
-    tree __type = TYPE;			\
-    define_function (IDENTIFIER_POINTER (__name), __type, CODE,	\
-		     (void (*)())push_overloaded_decl_1,	\
-		     IDENTIFIER_POINTER (build_decl_overload (__name, TYPE_ARG_TYPES (__type), 0)));\
-  } while (0)
-
 static tree grokparms				PROTO((tree, int));
 static tree lookup_nested_type			PROTO((tree, tree));
 static char *redeclaration_error_message	PROTO((tree, tree));
@@ -1647,6 +1636,14 @@ set_nested_typename (decl, classname, name, type)
 {
   char *buf;
   my_friendly_assert (TREE_CODE (decl) == TYPE_DECL, 136);
+
+  /* No need to do this for anonymous names, since they're unique.  */
+  if (ANON_AGGRNAME_P (name))
+    {
+      DECL_NESTED_TYPENAME (decl) = name;
+      return;
+    }
+
   if (classname == NULL_TREE)
     classname = get_identifier ("");
 
@@ -1659,11 +1656,27 @@ set_nested_typename (decl, classname, name, type)
   DECL_NESTED_TYPENAME (decl) = get_identifier (buf);
   TREE_MANGLED (DECL_NESTED_TYPENAME (decl)) = 1;
 
-  /* This is a special usage of IDENTIFIER_TYPE_VALUE which have no
-     correspondence in any binding_level.  This is ok since the
-     DECL_NESTED_TYPENAME is just a convenience identifier whose
-     IDENTIFIER_TYPE_VALUE will remain constant from now on.  */
-  SET_IDENTIFIER_TYPE_VALUE (DECL_NESTED_TYPENAME (decl), type);
+  /* Create an extra decl so that the nested name will have a type value
+     where appropriate.  */
+  {
+    tree nested, type_decl;
+    nested = DECL_NESTED_TYPENAME (decl);
+    type_decl = build_decl (TYPE_DECL, nested, type);
+    DECL_NESTED_TYPENAME (type_decl) = nested;
+    SET_DECL_ARTIFICIAL (type_decl);
+#ifdef DWARF_DEBUGGING_INFO
+    /* Mark the TYPE_DECL node created just above as a
+       gratuitous one so that dwarfout.c will know not to
+       generate a TAG_typedef DIE for it.  */
+    if (write_symbols == DWARF_DEBUG)
+      DECL_IGNORED_P (type_decl) = 1;
+#endif /* DWARF_DEBUGGING_INFO */
+
+    /* Remove this when local classes are fixed.  */
+    SET_IDENTIFIER_TYPE_VALUE (nested, type);
+
+    pushdecl_nonclass_level (type_decl);
+  }
 }
 
 /* Pop off extraneous binding levels left over due to syntax errors.  */
@@ -1820,7 +1833,7 @@ pushtag (name, type, globalize)
 		}
 #endif /* DWARF_DEBUGGING_INFO */
 
-	      TYPE_NAME (type) = d;
+	      TYPE_MAIN_DECL (type) = d;
 
 	      /* Make sure we're in this type's scope when we push the
 		 decl for a template, otherwise class_binding_level will
@@ -1832,37 +1845,31 @@ pushtag (name, type, globalize)
 	      if (TREE_CODE (type) == UNINSTANTIATED_P_TYPE)
 		popclass (0);
 	    }
-	  if (write_symbols != DWARF_DEBUG)
-	    {
-	      if (ANON_AGGRNAME_P (name))
-		DECL_IGNORED_P (d) = 1;
-	    }
-
-	  if (context == NULL_TREE)
-	    /* Non-nested class.  */
-	    set_nested_typename (d, NULL_TREE, name, type);
-	  else if (context && TREE_CODE (context) == FUNCTION_DECL)
-	    {
-	      /* Function-nested class.  */
-	      set_nested_typename (d, DECL_ASSEMBLER_NAME (c_decl),
-				   name, type);
-	      /* This builds the links for classes nested in fn scope.  */
-	      DECL_CONTEXT (d) = context;
-	    }
-/*        else if (TYPE_SIZE (current_class_type) == NULL_TREE)
-*/
-	  else if (context && IS_AGGR_TYPE (context))
-	    {
-	      /* Class-nested class.  */
-	      set_nested_typename (d, DECL_NESTED_TYPENAME (c_decl),
-				   name, type);
-	      /* This builds the links for classes nested in type scope.  */
-	      DECL_CONTEXT (d) = context;
-	    }
-	  TYPE_CONTEXT (type) = DECL_CONTEXT (d);
 	  if (newdecl)
-	    DECL_ASSEMBLER_NAME (d)
-	      = get_identifier (build_overload_name (type, 1, 1));
+	    {
+	      if (write_symbols != DWARF_DEBUG)
+		{
+		  if (ANON_AGGRNAME_P (name))
+		    DECL_IGNORED_P (d) = 1;
+		}
+
+	      if (context == NULL_TREE)
+		/* Non-nested class.  */
+		set_nested_typename (d, NULL_TREE, name, type);
+	      else if (context && TREE_CODE (context) == FUNCTION_DECL)
+		/* Function-nested class.  */
+		set_nested_typename (d, DECL_ASSEMBLER_NAME (c_decl),
+				     name, type);
+	      else /* if (context && IS_AGGR_TYPE (context)) */
+		/* Class-nested class.  */
+		set_nested_typename (d, DECL_NESTED_TYPENAME (c_decl),
+				     name, type);
+
+	      DECL_CONTEXT (d) = context;
+	      TYPE_CONTEXT (type) = DECL_CONTEXT (d);
+	      DECL_ASSEMBLER_NAME (d)
+		= get_identifier (build_overload_name (type, 1, 1));
+	    }
         }
       if (b->parm_flag == 2)
 	{
@@ -2042,9 +2049,7 @@ decls_match (newdecl, olddecl)
       else if (TREE_TYPE (newdecl) == NULL_TREE)
 	types_match = 0;
       else
-	types_match = (comptypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl), 1)
-		       && TREE_READONLY (newdecl) == TREE_READONLY (olddecl)
-		       && TREE_THIS_VOLATILE (newdecl) == TREE_THIS_VOLATILE (olddecl));
+	types_match = comptypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl), 1);
     }
 
   return types_match;
@@ -2312,6 +2317,13 @@ duplicate_decls (newdecl, olddecl)
 		  }
 	      }
 	}
+      /* These bits are logically part of the type for non-functions.  */
+      else if (TREE_READONLY (newdecl) != TREE_READONLY (olddecl)
+	       || TREE_THIS_VOLATILE (newdecl) != TREE_THIS_VOLATILE (olddecl))
+	{
+	  cp_pedwarn ("type qualifiers for `%#D'", newdecl);
+	  cp_pedwarn_at ("conflict with previous decl `%#D'", olddecl);
+	}
     }
 
   /* If new decl is `static' and an `extern' was seen previously,
@@ -2346,6 +2358,8 @@ duplicate_decls (newdecl, olddecl)
     {
       register tree newtype = TREE_TYPE (newdecl);
       register tree oldtype = TREE_TYPE (olddecl);
+
+      DECL_NESTED_TYPENAME (newdecl) = DECL_NESTED_TYPENAME (olddecl);
 
       if (newtype != error_mark_node && oldtype != error_mark_node
 	  && TYPE_LANG_SPECIFIC (newtype) && TYPE_LANG_SPECIFIC (oldtype))
@@ -2826,6 +2840,7 @@ pushdecl (x)
 	    {
 	      tree tname = DECL_NAME (name);
 
+	      /* This is a disgusting kludge for dealing with UPTs.  */
 	      if (global_bindings_p () && ANON_AGGRNAME_P (tname))
 		{
   		  /* do gratuitous C++ typedefing, and make sure that
@@ -2837,7 +2852,10 @@ pushdecl (x)
 	    }
 	  my_friendly_assert (TREE_CODE (name) == TYPE_DECL, 140);
 
-	  if (! DECL_NESTED_TYPENAME (x))
+	  /* Don't set nested_typename on template type parms, for instance.
+	     Any artificial decls that need DECL_NESTED_TYPENAME will have it
+	     set in pushtag.  */
+	  if (! DECL_NESTED_TYPENAME (x) && ! DECL_ARTIFICIAL (x))
 	    set_nested_typename (x, current_class_name, DECL_NAME (x), type);
 
 	  if (type != error_mark_node
@@ -3056,16 +3074,6 @@ pushdecl (x)
 	}
     }
 
-  if (TREE_CODE (x) == TYPE_DECL && name != NULL_TREE)
-    {
-      if (current_class_name)
-	{
-	  if (! TREE_MANGLED (name))
-	    set_nested_typename (x, current_class_name, DECL_NAME (x),
-				 TREE_TYPE (x));
-	}
-    }
-
   /* Put decls on list in reverse order.
      We will reverse them later if necessary.  */
   TREE_CHAIN (x) = b->names;
@@ -3190,7 +3198,11 @@ pushdecl_class_level (x)
       if (TREE_CODE (x) == TYPE_DECL)
 	{
 	  set_identifier_type_value (name, TREE_TYPE (x));
-	  if (!DECL_NESTED_TYPENAME (x))
+
+	  /* Don't set nested_typename on template type parms, for instance.
+	     Any artificial decls that need DECL_NESTED_TYPENAME will have it
+	     set in pushtag.  */
+	  if (! DECL_NESTED_TYPENAME (x) && ! DECL_ARTIFICIAL (x))
 	    set_nested_typename (x, current_class_name, name, TREE_TYPE (x));
 	}
     }
@@ -4257,6 +4269,22 @@ push_overloaded_decl_1 (x)
      tree x;
 {
   push_overloaded_decl (x, 0);
+}
+
+#define builtin_function(NAME, TYPE, CODE, LIBNAME) \
+  define_function (NAME, TYPE, CODE, (void (*)())pushdecl, LIBNAME)
+
+#ifdef __GNUC__
+__inline
+#endif
+tree auto_function (name, type, code)
+     tree name, type;
+     enum built_in_function code;
+{
+  return define_function
+    (IDENTIFIER_POINTER (name), type, code, (void (*)())push_overloaded_decl_1,
+     IDENTIFIER_POINTER (build_decl_overload (name, TYPE_ARG_TYPES (type),
+					      0)));
 }
 
 /* Create the predefined scalar types of C,
@@ -5732,6 +5760,9 @@ grok_reference_init (decl, type, init, cleanupp)
 
   if (TREE_CODE (init) == TREE_LIST)
     init = build_compound_expr (init);
+
+  if (TREE_CODE (TREE_TYPE (init)) == REFERENCE_TYPE)
+    init = convert_from_reference (init);
 
   if (TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE
       && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE)
@@ -7442,7 +7473,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	      || id == ridpointers[(int) RID_WCHAR])
 	    {
 	      if (type)
-		error ("extraneous `%T' ignored", id);
+		{
+		  if (id == ridpointers[(int) RID_BOOL])
+		    error ("`bool' is now a keyword");
+		  else
+		    cp_error ("extraneous `%T' ignored", id);
+		}
 	      else
 		{
 		  if (id == ridpointers[(int) RID_INT])
@@ -9558,17 +9594,7 @@ grokparms (first_parm, funcdef_flag)
 			}
 		      else
 			init = require_instantiated_type (type, init, integer_zero_node);
-
-		      /* Don't actually try to build up a reference here.  */
-		      {
-			tree t = type;
-			if (TREE_CODE (t) == REFERENCE_TYPE)
-			  t = TREE_TYPE (t);
-			init = convert_for_initialization
-			  (NULL_TREE, t, init, LOOKUP_NORMAL,
-			   "argument passing", 0, 0);
-		      }
-		    }
+	    }
 #if 0 /* This is too early to check; trailing parms might be merged in by
 	 duplicate_decls.  */
 		  else if (any_init)
@@ -9961,73 +9987,6 @@ grok_op_properties (decl, virtualp, friendp)
    the current frame for the name (since C++ allows new names in any
    scope.)  */
 
-/* avoid rewriting all callers of xref_tag */
-static int xref_next_defn = 0;
-
-tree
-xref_defn_tag (code_type_node, name, binfo)
-     tree code_type_node;
-     tree name, binfo;
-{
-  tree rv, ncp;
-  xref_next_defn = 1;
-
-  if (class_binding_level)
-    {
-      tree n1;
-      char *buf;
-      /* we need to build a new IDENTIFIER_NODE for name which nukes
-       * the pieces... */
-/*
-      n1 = IDENTIFIER_LOCAL_VALUE (current_class_name);
-      if (n1)
-	n1 = DECL_NAME (n1);
-      else
-	n1 = current_class_name;
-*/
-      n1 = TYPE_NAME (current_class_type);
-      if (n1)
-	n1 = DECL_NESTED_TYPENAME(n1);
-      else
-	n1 = current_class_name;
-      
-      buf = (char *) alloca (4 + IDENTIFIER_LENGTH (n1)
-			     + IDENTIFIER_LENGTH (name));
-      
-      sprintf (buf, "%s::%s", IDENTIFIER_POINTER (n1),
-	       IDENTIFIER_POINTER (name));
-      ncp = get_identifier (buf);
-#ifdef SPEW_DEBUG
-      if (spew_debug)
-	printf("*** %s ***\n", IDENTIFIER_POINTER (ncp));
-#endif
-#if 0
-      IDENTIFIER_LOCAL_VALUE (name) =
-	build_decl (TYPE_DECL, ncp, NULL_TREE);
-#endif
-      rv = xref_tag (code_type_node, name, binfo, 0);
-      if (! ANON_AGGRNAME_P (name))
-      {
-	register tree type_decl = build_decl (TYPE_DECL, ncp, rv);
-	SET_DECL_ARTIFICIAL (type_decl);
-#ifdef DWARF_DEBUGGING_INFO
-	/* Mark the TYPE_DECL node created just above as a gratuitous one
-	   so that dwarfout.c will know not to generate a TAG_typedef DIE
-	   for it.  */
-	if (write_symbols == DWARF_DEBUG)
-	  DECL_IGNORED_P (type_decl) = 1;
-#endif /* DWARF_DEBUGGING_INFO */
-	pushdecl_nonclass_level (type_decl);
-      }
-    }
-  else
-    {
-      rv = xref_tag (code_type_node, name, binfo, 0);
-    }
-  xref_next_defn = 0;
-  return rv;
-}
-
 tree
 xref_tag (code_type_node, name, binfo, globalize)
      tree code_type_node;
@@ -10037,7 +9996,7 @@ xref_tag (code_type_node, name, binfo, globalize)
   enum tag_types tag_code;
   enum tree_code code;
   int temp = 0;
-  int i, len;
+  int i;
   register tree ref, t;
   struct binding_level *b = inner_binding_level;
 
@@ -10048,16 +10007,9 @@ xref_tag (code_type_node, name, binfo, globalize)
     case class_type:
     case signature_type:
       code = RECORD_TYPE;
-      len = list_length (binfo);
       break;
     case union_type:
       code = UNION_TYPE;
-      if (binfo)
-	{
-	  cp_error ("derived union `%T' invalid", name);
-	  binfo = NULL_TREE;
-	}
-      len = 0;
       break;
     case enum_type:
       code = ENUMERAL_TYPE;
@@ -10072,18 +10024,12 @@ xref_tag (code_type_node, name, binfo, globalize)
   if (t && TREE_CODE (t) != code)
     t = NULL_TREE;
 
-  if (xref_next_defn)
+  if (! globalize)
     {
       /* If we know we are defining this tag, only look it up in this scope
        * and don't try to find it as a type. */
-      xref_next_defn = 0;
-      if (t && TYPE_CONTEXT(t))
-	{
-	  if (TREE_MANGLED (name))
-	    ref = t;
-	  else
-      	    ref = lookup_tag (code, name, b, 1);
-	}
+      if (t && TYPE_CONTEXT(t) && TREE_MANGLED (name))
+	ref = t;
       else
       	ref = lookup_tag (code, name, b, 1);
     }
@@ -10180,6 +10126,7 @@ xref_tag (code_type_node, name, binfo, globalize)
 	  && IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE)
 	IDENTIFIER_GLOBAL_VALUE (name) = TYPE_NAME (ref);
 
+#if 0
       if (binfo)
 	{
 	  tree tt1 = binfo;
@@ -10202,128 +10149,11 @@ xref_tag (code_type_node, name, binfo, globalize)
 	     build them on the permanent obstack.  */
 	  end_temporary_allocation ();
 	}
+#endif
     }
 
   if (binfo)
-    {
-      /* In the declaration `A : X, Y, ... Z' we mark all the types
-	 (A, X, Y, ..., Z) so we can check for duplicates.  */
-      tree binfos;
-
-      SET_CLASSTYPE_MARKED (ref);
-      BINFO_BASETYPES (TYPE_BINFO (ref)) = binfos = make_tree_vec (len);
-
-      for (i = 0; binfo; binfo = TREE_CHAIN (binfo))
-	{
-	  /* The base of a derived struct is public by default.  */
-	  int via_public
-	    = (TREE_PURPOSE (binfo) == (tree)access_public
-	       || TREE_PURPOSE (binfo) == (tree)access_public_virtual
-	       || (tag_code != class_type
-		   && (TREE_PURPOSE (binfo) == (tree)access_default
-		       || TREE_PURPOSE (binfo) == (tree)access_default_virtual)));
-	  int via_protected = TREE_PURPOSE (binfo) == (tree)access_protected;
-	  int via_virtual
-	    = (TREE_PURPOSE (binfo) == (tree)access_private_virtual
-	       || TREE_PURPOSE (binfo) == (tree)access_public_virtual
-	       || TREE_PURPOSE (binfo) == (tree)access_default_virtual);
-	  tree basetype = TREE_TYPE (TREE_VALUE (binfo));
-	  tree base_binfo;
-
-	  GNU_xref_hier (IDENTIFIER_POINTER (name),
-			 IDENTIFIER_POINTER (TREE_VALUE (binfo)),
-			 via_public, via_virtual, 0);
-
-	  if (basetype && TREE_CODE (basetype) == TYPE_DECL)
-	    basetype = TREE_TYPE (basetype);
-	  if (!basetype || TREE_CODE (basetype) != RECORD_TYPE)
-	    {
-	      error ("base type `%s' fails to be a struct or class type",
-		     IDENTIFIER_POINTER (TREE_VALUE (binfo)));
-	      continue;
-	    }
-#if 1
-	  /* This code replaces similar code in layout_basetypes.  */
-	  else if (TYPE_SIZE (basetype) == NULL_TREE)
-	    {
-	      cp_error ("base class `%T' has incomplete type", basetype);
-	      continue;
-	    }
-#endif
-	  else
-	    {
-	      if (CLASSTYPE_MARKED (basetype))
-		{
-		  if (basetype == ref)
-		    cp_error ("recursive type `%T' undefined", basetype);
-		  else
-		    cp_error ("duplicate base type `%T' invalid", basetype);
-		  continue;
-		}
-
- 	      /* Note that the BINFO records which describe individual
- 		 inheritances are *not* shared in the lattice!  They
- 		 cannot be shared because a given baseclass may be
- 		 inherited with different `accessibility' by different
- 		 derived classes.  (Each BINFO record describing an
- 		 individual inheritance contains flags which say what
- 		 the `accessibility' of that particular inheritance is.)  */
-  
-	      base_binfo = make_binfo (integer_zero_node, basetype,
-				  TYPE_BINFO_VTABLE (basetype),
- 				  TYPE_BINFO_VIRTUALS (basetype), NULL_TREE);
- 
-	      TREE_VEC_ELT (binfos, i) = base_binfo;
-	      TREE_VIA_PUBLIC (base_binfo) = via_public;
- 	      TREE_VIA_PROTECTED (base_binfo) = via_protected;
-	      TREE_VIA_VIRTUAL (base_binfo) = via_virtual;
-	      BINFO_INHERITANCE_CHAIN (base_binfo) = TYPE_BINFO (ref);
-
-	      SET_CLASSTYPE_MARKED (basetype);
-#if 0
-/* XYZZY TEST VIRTUAL BASECLASSES */
-if (CLASSTYPE_N_BASECLASSES (basetype) == NULL_TREE
-    && TYPE_HAS_DEFAULT_CONSTRUCTOR (basetype)
-    && via_virtual == 0)
-  {
-    warning ("making type `%s' a virtual baseclass",
-	     TYPE_NAME_STRING (basetype));
-    via_virtual = 1;
-  }
-#endif
-	      /* We are free to modify these bits because they are meaningless
-		 at top level, and BASETYPE is a top-level type.  */
-	      if (via_virtual || TYPE_USES_VIRTUAL_BASECLASSES (basetype))
-		{
-		  TYPE_USES_VIRTUAL_BASECLASSES (ref) = 1;
-		  TYPE_USES_COMPLEX_INHERITANCE (ref) = 1;
-		}
-
-	      TYPE_OVERLOADS_METHOD_CALL_EXPR (ref) |= TYPE_OVERLOADS_METHOD_CALL_EXPR (basetype);
-	      TYPE_GETS_NEW (ref) |= TYPE_GETS_NEW (basetype);
-	      TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
-	      CLASSTYPE_LOCAL_TYPEDECLS (ref) |= CLASSTYPE_LOCAL_TYPEDECLS (basetype);
-	      i += 1;
-	    }
-	}
-      if (i)
-	TREE_VEC_LENGTH (binfos) = i;
-      else
-	BINFO_BASETYPES (TYPE_BINFO (ref)) = NULL_TREE;
-
-      if (i > 1)
-	TYPE_USES_MULTIPLE_INHERITANCE (ref) = 1;
-      else if (i == 1)
-	TYPE_USES_MULTIPLE_INHERITANCE (ref)
-	  = TYPE_USES_MULTIPLE_INHERITANCE (BINFO_TYPE (TREE_VEC_ELT (binfos, 0)));
-      if (TYPE_USES_MULTIPLE_INHERITANCE (ref))
-	TYPE_USES_COMPLEX_INHERITANCE (ref) = 1;
-
-      /* Unmark all the types.  */
-      while (--i >= 0)
-	CLEAR_CLASSTYPE_MARKED (BINFO_TYPE (TREE_VEC_ELT (binfos, i)));
-      CLEAR_CLASSTYPE_MARKED (ref);
-    }
+    xref_basetypes (code_type_node, name, ref, binfo);
 
  just_return:
 
@@ -10344,6 +10174,145 @@ if (CLASSTYPE_N_BASECLASSES (basetype) == NULL_TREE
 
   return ref;
 }
+
+void
+xref_basetypes (code_type_node, name, ref, binfo)
+     tree code_type_node;
+     tree name, ref;
+     tree binfo;
+{
+  /* In the declaration `A : X, Y, ... Z' we mark all the types
+     (A, X, Y, ..., Z) so we can check for duplicates.  */
+  tree binfos;
+  int i, len;
+  enum tag_types tag_code = (enum tag_types) TREE_INT_CST_LOW (code_type_node);
+
+  if (tag_code == union_type)
+    {
+      cp_error ("derived union `%T' invalid", ref);
+      return;
+    }
+
+  len = list_length (binfo);
+  push_obstacks (TYPE_OBSTACK (ref), TYPE_OBSTACK (ref));
+
+  SET_CLASSTYPE_MARKED (ref);
+  BINFO_BASETYPES (TYPE_BINFO (ref)) = binfos = make_tree_vec (len);
+
+  for (i = 0; binfo; binfo = TREE_CHAIN (binfo))
+    {
+      /* The base of a derived struct is public by default.  */
+      int via_public
+	= (TREE_PURPOSE (binfo) == (tree)access_public
+	   || TREE_PURPOSE (binfo) == (tree)access_public_virtual
+	   || (tag_code != class_type
+	       && (TREE_PURPOSE (binfo) == (tree)access_default
+		   || TREE_PURPOSE (binfo) == (tree)access_default_virtual)));
+      int via_protected = TREE_PURPOSE (binfo) == (tree)access_protected;
+      int via_virtual
+	= (TREE_PURPOSE (binfo) == (tree)access_private_virtual
+	   || TREE_PURPOSE (binfo) == (tree)access_public_virtual
+	   || TREE_PURPOSE (binfo) == (tree)access_default_virtual);
+      tree basetype = TREE_TYPE (TREE_VALUE (binfo));
+      tree base_binfo;
+
+      GNU_xref_hier (IDENTIFIER_POINTER (name),
+		     IDENTIFIER_POINTER (TREE_VALUE (binfo)),
+		     via_public, via_virtual, 0);
+
+      if (basetype && TREE_CODE (basetype) == TYPE_DECL)
+	basetype = TREE_TYPE (basetype);
+      if (!basetype || TREE_CODE (basetype) != RECORD_TYPE)
+	{
+	  cp_error ("base type `%T' fails to be a struct or class type",
+		    TREE_VALUE (binfo));
+	  continue;
+	}
+#if 1
+      /* This code replaces similar code in layout_basetypes.  */
+      else if (TYPE_INCOMPLETE (basetype))
+	{
+	  cp_error ("base class `%T' has incomplete type", basetype);
+	  continue;
+	}
+#endif
+      else
+	{
+	  if (CLASSTYPE_MARKED (basetype))
+	    {
+	      if (basetype == ref)
+		cp_error ("recursive type `%T' undefined", basetype);
+	      else
+		cp_error ("duplicate base type `%T' invalid", basetype);
+	      continue;
+	    }
+
+	  /* Note that the BINFO records which describe individual
+	     inheritances are *not* shared in the lattice!  They
+	     cannot be shared because a given baseclass may be
+	     inherited with different `accessibility' by different
+	     derived classes.  (Each BINFO record describing an
+	     individual inheritance contains flags which say what
+	     the `accessibility' of that particular inheritance is.)  */
+  
+	  base_binfo = make_binfo (integer_zero_node, basetype,
+				   TYPE_BINFO_VTABLE (basetype),
+				   TYPE_BINFO_VIRTUALS (basetype), NULL_TREE);
+ 
+	  TREE_VEC_ELT (binfos, i) = base_binfo;
+	  TREE_VIA_PUBLIC (base_binfo) = via_public;
+	  TREE_VIA_PROTECTED (base_binfo) = via_protected;
+	  TREE_VIA_VIRTUAL (base_binfo) = via_virtual;
+	  BINFO_INHERITANCE_CHAIN (base_binfo) = TYPE_BINFO (ref);
+
+	  SET_CLASSTYPE_MARKED (basetype);
+#if 0
+	  /* XYZZY TEST VIRTUAL BASECLASSES */
+	  if (CLASSTYPE_N_BASECLASSES (basetype) == NULL_TREE
+	      && TYPE_HAS_DEFAULT_CONSTRUCTOR (basetype)
+	      && via_virtual == 0)
+	    {
+	      warning ("making type `%s' a virtual baseclass",
+		       TYPE_NAME_STRING (basetype));
+	      via_virtual = 1;
+	    }
+#endif
+	  /* We are free to modify these bits because they are meaningless
+	     at top level, and BASETYPE is a top-level type.  */
+	  if (via_virtual || TYPE_USES_VIRTUAL_BASECLASSES (basetype))
+	    {
+	      TYPE_USES_VIRTUAL_BASECLASSES (ref) = 1;
+	      TYPE_USES_COMPLEX_INHERITANCE (ref) = 1;
+	    }
+
+	  TYPE_OVERLOADS_METHOD_CALL_EXPR (ref) |= TYPE_OVERLOADS_METHOD_CALL_EXPR (basetype);
+	  TYPE_GETS_NEW (ref) |= TYPE_GETS_NEW (basetype);
+	  TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
+	  CLASSTYPE_LOCAL_TYPEDECLS (ref) |= CLASSTYPE_LOCAL_TYPEDECLS (basetype);
+	  i += 1;
+	}
+    }
+  if (i)
+    TREE_VEC_LENGTH (binfos) = i;
+  else
+    BINFO_BASETYPES (TYPE_BINFO (ref)) = NULL_TREE;
+
+  if (i > 1)
+    TYPE_USES_MULTIPLE_INHERITANCE (ref) = 1;
+  else if (i == 1)
+    TYPE_USES_MULTIPLE_INHERITANCE (ref)
+      = TYPE_USES_MULTIPLE_INHERITANCE (BINFO_TYPE (TREE_VEC_ELT (binfos, 0)));
+  if (TYPE_USES_MULTIPLE_INHERITANCE (ref))
+    TYPE_USES_COMPLEX_INHERITANCE (ref) = 1;
+
+  /* Unmark all the types.  */
+  while (--i >= 0)
+    CLEAR_CLASSTYPE_MARKED (BINFO_TYPE (TREE_VEC_ELT (binfos, i)));
+  CLEAR_CLASSTYPE_MARKED (ref);
+
+  pop_obstacks ();
+}
+  
 
 static tree current_local_enum = NULL_TREE;
 
@@ -10452,19 +10421,23 @@ finish_enum (enumtype, values)
 
     TYPE_SIZE (enumtype) = NULL_TREE;
 
-    /* Lay out the type as though it were an integer.  */
-    if (! flag_short_enums && precision < TYPE_PRECISION (integer_type_node))
-      {
-	TYPE_MIN_VALUE (enumtype) = minnode;
-	TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
-	layout_type (enumtype);
-      }
+    /* Set TYPE_MIN_VALUE and TYPE_MAX_VALUE according to `precision'.  */
 
     TYPE_PRECISION (enumtype) = precision;
     if (unsignedp)
       fixup_unsigned_type (enumtype);
     else
       fixup_signed_type (enumtype);
+
+    if (flag_short_enums || precision > TYPE_PRECISION (integer_type_node))
+      /* Use the width of the narrowest normal C type which is wide enough.  */
+      TYPE_PRECISION (enumtype) = TYPE_PRECISION (type_for_size
+						  (precision, 1));
+    else
+      TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
+
+    TYPE_SIZE (enumtype) = 0;
+    layout_type (enumtype);
   }
 
   if (flag_cadillac)
@@ -11530,7 +11503,8 @@ finish_function (lineno, call_poplevel, nested)
 
       if (call_poplevel)
 	{
-	  expand_end_bindings (decls = getdecls (), decls != NULL_TREE, 0);
+	  decls = getdecls ();
+	  expand_end_bindings (decls, decls != NULL_TREE, 0);
 	  poplevel (decls != NULL_TREE, 1, 0);
 	}
 
@@ -12001,11 +11975,6 @@ maybe_build_cleanup (decl)
       if (! TYPE_USES_VIRTUAL_BASECLASSES (type)
 	  || flag_expensive_optimizations)
 	flags |= LOOKUP_NONVIRTUAL;
-
-      /* Use TYPE_MAIN_VARIANT so we don't get a warning about
-	 calling delete on a `const' variable.  */
-      if (TYPE_READONLY (TREE_TYPE (TREE_TYPE (rval))))
-	rval = build1 (NOP_EXPR, TYPE_POINTER_TO (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (rval)))), rval);
 
       rval = build_delete (TREE_TYPE (rval), rval, integer_two_node, flags, 0);
 
