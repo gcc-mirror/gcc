@@ -4039,7 +4039,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	       %[...] modifies -D options the way %P does;
 	       %(...) uses the spec unmodified.  */
 	  case '[':
-	    warning ("use of obsolete %%[ operator in specs");
+	    error ("Warning: use of obsolete %%[ operator in specs");
 	  case '(':
 	    {
 	      char *name = p;
