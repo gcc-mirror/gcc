@@ -1,4 +1,37 @@
-2003-07-10  James E Wilson  <wilson@tuliptree.org>
+2003-07-11  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	Backport from mainline.
+
+	2003-05-13  Richard Henderson  <rth@redhat.com>
+
+	* c-decl.c (duplicate_decls): Re-invoke make_decl_rtl if
+	the old decl had instantiated DECL_RTL.
+
+	2003-05-21  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR c++/9738
+	* config/i386/winnt.c (i386_pe_encode_section_info): Enable
+	even if not first.
+
+	2003-07-04  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR c++/5287, PR c++/7910, PR c++/11021
+	* config/i386/winnt.c (ix86_handle_dll_attribute): Don't add
+	dllimport attribute if function is defined at declaration, but
+	report error instead. Likewise for dllimport'd variable
+	definitions.  Set implicit TREE_PUBLIC for dllimport'd variables
+	declared within functions, Report error if dllimport or dllexport
+	symbol is not global.
+	(i386_pe_dllimport_p): Ignore dllimport attribute of functions
+	if defined after declaration or if inlined. Don't allow definition
+	of static data members of C++ classes. Don't dllimport virtual
+	methods.
+	(i386_pe_mark_dllexport): Warn about inconsistent dll attributes.
+	(i386_pe_mark_dllimport): Remove unnecessary checks.
+	(i386_pe_encode_section_info): Warn if the dllimport attribute
+	and symbol prefix have been instantiated and then overridden.
+
+	* doc/extend.texi: Document dllimport and dllexport attributes.2003-07-10  James E Wilson  <wilson@tuliptree.org>
 
 	PR optimization/9745
 	* loop.c (loop_iv_add_mult_emit_before): Call loop_regs_update before
