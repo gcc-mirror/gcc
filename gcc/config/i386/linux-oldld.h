@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Dlinux -Asystem(posix)"
+#define CPP_PREDEFINES "-Di386 -Dunix -Dlinux -Asystem(posix)"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"

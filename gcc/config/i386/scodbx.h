@@ -50,7 +50,7 @@ Boston, MA 02111-1307, USA.  */
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -DM_UNIX -DM_I386 -DM_COFF -DM_WORDSWAP -Asystem(svr3)"
+#define CPP_PREDEFINES "-Di386 -Dunix -DM_UNIX -DM_I386 -DM_COFF -DM_WORDSWAP -Asystem(svr3)"
 
 #undef CPP_SPEC
 #define CPP_SPEC " -Acpu(i386) -Amachine(i386) %{scointl:-DM_INTERNAT}"

@@ -90,7 +90,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Change default predefines.  */
 #undef	CPP_PREDEFINES
-#define CPP_PREDEFINES "-DOSF -DOSF1 -Dunix -Asystem(xpg4)"
+#define CPP_PREDEFINES "-Di386 -DOSF -DOSF1 -Dunix -Asystem(xpg4)"
 
 #undef  CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] \

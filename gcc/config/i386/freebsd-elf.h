@@ -140,7 +140,7 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
     
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -D__ELF__ -D__FreeBSD__=2 -Asystem(FreeBSD)"
+#define CPP_PREDEFINES "-Di386 -Dunix -D__ELF__ -D__FreeBSD__=2 -Asystem(FreeBSD)"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{posix:-D_POSIX_SOURCE}"

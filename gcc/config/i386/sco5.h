@@ -839,7 +839,7 @@ dtors_section ()							\
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
- "-Asystem(svr3)"
+ "-Di386 -Asystem(svr3)"
 
 /* You are in a maze of GCC specs ... all alike */
 

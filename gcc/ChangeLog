@@ -1,3 +1,21 @@
+Sat Mar  7 01:12:46 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* i386/aix386ng.h (CPP_PREDEFINES): Put back -Di386.
+	* i386/freebsd-elf.h: Likewise.
+	* i386/gas.h: Likewise.
+	* i386/linux-aout.h: Likewise.
+	* i386/linux-oldld.h: Likewise.
+	* i386/linux.h: Likewise.
+	* i386/osfelf.h: Likewise.
+	* i386/osfrose.h: Likewise.
+	* i386/sco.h: Likewise.
+	* i386/sco4.h: Likewise.
+	* i386/sco4dbx.h: Likewise.
+	* i386/sco5.h: Likewise.
+	* i386/scodbx.h: Likewise.
+	* i386/sol2.h: Likewise.
+	* i386/sysv3.h: Likewise.
+
 Wed Mar  4 22:03:38 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
 
 	* rs6000/linux.h: don't define DEFAULT_VTABLE_THUNKS to 1 if 

@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Specify predefined symbols in preprocessor.  */
 
-#define CPP_PREDEFINES "-Dps2 -Dunix -Asystem(aix)"
+#define CPP_PREDEFINES "-Di386 -Dps2 -Dunix -Asystem(aix)"
 
 #define CPP_SPEC "%(cpp_cpu) %[cpp_cpu] \
   "%{posix:-D_POSIX_SOURCE}%{!posix:-DAIX} -D_I386 -D_AIX -D_MBCS"
