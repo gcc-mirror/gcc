@@ -3369,7 +3369,22 @@ is used when GCC itself is being built.)  @xref{Spec Files}.
 @cindex optimize options
 @cindex options, optimization
 
-These options control various sorts of optimizations:
+These options control various sorts of optimizations.
+
+Without any optimization option, the compiler's goal is to reduce the
+cost of compilation and to make debugging produce the expected
+results.  Statements are independent: if you stop the program with a
+breakpoint between statements, you can then assign a new value to any
+variable or change the program counter to any other statement in the
+function and get exactly the results you would expect from the source
+code.
+
+Turning on optimization flags makes the compiler attempt to improve
+the performance and/or code size at the expense of compilation time
+and possibly the ability to debug the program.
+
+Not all optimizations are controlled directly by a flag.  Only
+optimizations that have a flag are listed.
 
 @table @gcctabopt
 @item -O
@@ -3378,13 +3393,6 @@ These options control various sorts of optimizations:
 @opindex O1
 Optimize.  Optimizing compilation takes somewhat more time, and a lot
 more memory for a large function.
-
-Without @option{-O}, the compiler's goal is to reduce the cost of
-compilation and to make debugging produce the expected results.
-Statements are independent: if you stop the program with a breakpoint
-between statements, you can then assign a new value to any variable or
-change the program counter to any other statement in the function and
-get exactly the results you would expect from the source code.
 
 With @option{-O}, the compiler tries to reduce code size and execution
 time, without performing any optimizations that take a great deal of
@@ -3462,10 +3470,15 @@ the last such option is the one that is effective.
 
 Options of the form @option{-f@var{flag}} specify machine-independent
 flags.  Most flags have both positive and negative forms; the negative
-form of @option{-ffoo} would be @option{-fno-foo}.  In the table below,
-only one of the forms is listed---the one which is not the default.
-You can figure out the other form by either removing @samp{no-} or
-adding it.
+form of @option{-ffoo} would be @option{-fno-foo}.  In the table
+below, only one of the forms is listed---the one you typically will
+use.  You can figure out the other form by either removing @samp{no-}
+or adding it.
+
+The following options control specific optimizations.  They are either
+activated by @option{-O} options or are related to ones that are.  You
+can use the following flags in the rare cases when ``fine-tuning'' of
+optimizations to be performed is desired.
 
 @table @gcctabopt
 @item -ffloat-store
@@ -3731,21 +3744,6 @@ indices used to access arrays are within the declared range.  This is
 currently only supported by the Java and Fortran 77 front-ends, where
 this option defaults to true and false respectively.
 
-@end table
-
-The following options control specific optimizations.  The @option{-O2}
-option turns on all of these optimizations except @option{-funroll-loops}
-and @option{-funroll-all-loops}.  On most machines, the @option{-O} option
-turns on the @option{-fthread-jumps} and @option{-fdelayed-branch} options,
-but specific machines may handle it differently.
-
-You can use the following flags in the rare cases when ``fine-tuning''
-of optimizations to be performed is desired.
-
-Not all of the optimizations performed by GCC have @option{-f} options
-to control them.
-
-@table @gcctabopt
 @item -fstrength-reduce
 @opindex fstrength-reduce
 Perform the optimizations of loop strength reduction and
