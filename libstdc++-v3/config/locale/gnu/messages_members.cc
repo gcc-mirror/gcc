@@ -42,11 +42,10 @@ namespace std
     string
     messages<char>::do_get(catalog, int, int, const string& __dfault) const
     {
-#if 0
-      // Requires glibc 2.3
-      __c_locale __old = uselocale(_M_c_locale_messages);
+#if __GLIBC__ >= 2 && __GLIBC_MINOR__ > 2
+      __c_locale __old = __uselocale(_M_c_locale_messages);
       const char* __msg = const_cast<const char*>(gettext(__dfault.c_str()));
-      uselocale(__old);
+      __uselocale(__old);
       return string(__msg);
 #else
       const char* __old = setlocale(LC_ALL, _M_name_messages);
