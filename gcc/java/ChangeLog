@@ -1,3 +1,9 @@
+Fri Oct 29 14:23:32 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (expression_statement:): Call function to report
+ 	improper invocation of a constructor.
+	(parse_ctor_invocation_error): New function.
+
 1999-10-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (poplevel): Don't set BLOCK_TYPE_TAGS or call

@@ -93,6 +93,7 @@ static tree method_declarator PROTO ((tree, tree));
 static void parse_warning_context PVPROTO ((tree cl, const char *msg, ...))
   ATTRIBUTE_PRINTF_2;
 static void issue_warning_error_from_context PROTO ((tree, const char *msg, va_list));
+static void parse_ctor_invocation_error PROTO ((void));
 static tree parse_jdk1_1_error PROTO ((const char *));
 static void complete_class_report_errors PROTO ((jdep *));
 static int process_imports PROTO ((void));
@@ -1343,16 +1344,14 @@ expression_statement:
 		{yyerror ("')' expected"); RECOVER;}
 |       this_or_super OP_TK CP_TK error
 		{
-		  yyerror ("Constructor invocation must be first "
-			   "thing in a constructor"); 
+		  parse_ctor_invocation_error ();
 		  RECOVER;
 		}
 |       this_or_super OP_TK argument_list error
 		{yyerror ("')' expected"); RECOVER;}
 |       this_or_super OP_TK argument_list CP_TK error
 		{
-		  yyerror ("Constructor invocation must be first "
-			   "thing in a constructor"); 
+		  parse_ctor_invocation_error ();
 		  RECOVER;
 		}
 |	name DOT_TK SUPER_TK error
@@ -2434,7 +2433,17 @@ java_pop_parser_context (generate)
     free (toFree);
 }
 
-/* Reporting JDK1.1 features not implemented */
+/* Reporting an constructor invocation error.  */
+static void
+parse_ctor_invocation_error ()
+{
+  if (DECL_CONSTRUCTOR_P (current_function_decl))
+    yyerror ("Constructor invocation must be first thing in a constructor"); 
+  else
+    yyerror ("Only constructors can invoke constructors");
+}
+
+/* Reporting JDK1.1 features not implemented.  */
 
 static tree
 parse_jdk1_1_error (msg)
