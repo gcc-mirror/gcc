@@ -40,6 +40,7 @@ package java.io;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import gnu.classpath.Configuration;
 import gnu.gcj.runtime.FileDeleter;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
@@ -111,7 +112,6 @@ public class File implements Serializable, Comparable
    */
   public static final char pathSeparatorChar = pathSeparator.charAt(0);
   
-
   static final String tmpdir = System.getProperty("java.io.tmpdir");
   static int maxPathLen;
   static boolean caseSensitive;
@@ -119,7 +119,12 @@ public class File implements Serializable, Comparable
   
   static
   {
-    init_native();
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary ("javaio");
+      }
+    
+    init_native ();
   }
   
   // Native function called at class initialization. This should should
@@ -345,7 +350,7 @@ public class File implements Serializable, Comparable
    * name.  If the directory path name ends in the separator string, another
    * separator string will still be appended.
    *
-   * @param dirname The path to the directory the file resides in
+   * @param dirPath The path to the directory the file resides in
    * @param name The name of the file
    */
   public File (String dirPath, String name)
@@ -711,7 +716,6 @@ public class File implements Serializable, Comparable
    * This native function actually produces the list of file in this
    * directory
    */
-    
   private final native Object[] performList (FilenameFilter filter,
 					     FileFilter fileFilter,
 					     Class result_type);
@@ -984,21 +988,21 @@ public class File implements Serializable, Comparable
     // Grab the system temp directory if necessary
     if (directory == null)
       {
-	String dirname = tmpdir;
-	if (dirname == null)
-	  throw 
-	    new IOException ("Cannot determine system temporary directory"); 
+        String dirname = tmpdir;
+        if (dirname == null)
+          throw new IOException ("Cannot determine system temporary directory"); 
 	
-	directory = new File (dirname);
-	if (!directory.exists ())
-	  throw new IOException ("System temporary directory " 
-				 + directory.getName() + " does not exist.");
-	if (!directory.isDirectory())
-	  throw new IOException ("System temporary directory " 
-				 + directory.getName() 
-				 + " is not really a directory.");
+        directory = new File (dirname);
+        if (!directory.exists ())
+          throw new IOException ("System temporary directory "
+                                 + directory.getName () + " does not exist.");
+        if (!directory.isDirectory ())
+          throw new IOException ("System temporary directory "
+                                 + directory.getName ()
+                                 + " is not really a directory.");
       }
 
+    // Now process the prefix and suffix.
     if (prefix.length () < 3)
       throw new IllegalArgumentException ("Prefix too short: " + prefix);
 
@@ -1162,7 +1166,7 @@ public class File implements Serializable, Comparable
    *
    * @since 1.2
    */
-  public int compareTo(File other)
+  public int compareTo (File other)
   {
     if (caseSensitive)
       return path.compareTo (other.path);
@@ -1191,10 +1195,9 @@ public class File implements Serializable, Comparable
    *
    * @since 1.2
    */
-  public int compareTo(Object o)
+  public int compareTo (Object obj)
   {
-    File other = (File) o;
-    return compareTo (other);
+    return compareTo ((File) obj);
   }
 
   /*
@@ -1250,6 +1253,9 @@ public class File implements Serializable, Comparable
    */
   public boolean setLastModified (long time) 
   {
+    if (time < 0)
+      throw new IllegalArgumentException("Negative modification time: " + time);
+
     checkWrite ();
     return performSetLastModified(time);
   }
@@ -1275,6 +1281,8 @@ public class File implements Serializable, Comparable
   /** 
    * Add this File to the set of files to be deleted upon normal
    * termination.
+   *
+   * @exception SecurityException If deleting of the file is not allowed
    *
    * @since 1.2 
    */
