@@ -367,6 +367,7 @@ case $machine in
 	case x${enable_threads} in
 	xyes | xposix)
 		thread_file='posix'
+		tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
 		;;
 	esac
 	;;

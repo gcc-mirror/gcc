@@ -1,3 +1,10 @@
+2002-10-28  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (*-*-netbsd*): Add NETBSD_ENABLE_PTHREADS to
+	tm_defines if pthreads are enabled.
+	* config/netbsd.h (LIB_SPEC): Only support the -pthread option
+	if NETBSD_ENABLE_PTHREADS is defined.
+
 2002-10-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ChangeLog.1: Fix typos.
