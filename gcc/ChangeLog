@@ -1,3 +1,14 @@
+2004-12-15  Richard Henderson  <rth@redhat.com>
+
+	PR target/19005
+	* config/i386/i386.md (swaphi_1): Swap with swaphi_2, allow with
+	optimize_size.
+	(swapqi_1): Rename from swapqi.  Enable only for no partial reg
+	stall and optimize_size.
+	(swapqi_2): New.
+	(swaphi_1, swaphi_2, swapqi_1): Add athlon_decode.
+	(swapsi, swaphi_1, swaphi_2, swapqi_1, swapdi): Remove modrm override.
+
 2004-12-16  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.md (*floathisf2_i387, *floathidf2_i387):
@@ -57,13 +68,13 @@
 	on the STMT_EXPR wrapping up the inlined body.
 
 2004-12-15  Vladimir Makarov  <vmakarov@redhat.com>
-            Steven Bosscher  <stevenb@suse.de>
+	    Steven Bosscher  <stevenb@suse.de>
 	PR middle end/17340
 
 	* global.c: Update comments in a few places.
 	(check_earlyclobber): Return true if there are early clobber
 	classes.
-        (calculate_local_reg_bb_info): Do not try to mark earlyclobber
+	(calculate_local_reg_bb_info): Do not try to mark earlyclobber
 	regs if there are none.
 	(bb_info, allocate_bb_info, free_bb_info, modify_reg_pav,
 	make_accurate_live_analysis): Rename pavin, pavout to live_pavin,
