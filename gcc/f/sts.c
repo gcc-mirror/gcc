@@ -252,19 +252,21 @@ ffests_puttext (ffests s, char *text, ffestsLength length)
 
   newlen = s->len_ + length;
   if (newlen > s->max_)
-    if (s->text_ == NULL)
-      {
-	s->max_ = 40;
-	s->text_ = malloc_new_ksr (s->pool_, "ffests", s->max_);
-      }
-    else
-      {
-	newmax = s->max_ << 1;
-	while (newmax < newlen)
-	  newmax <<= 1;
-	s->text_ = malloc_resize_ksr (s->pool_, s->text_, newmax, s->max_);
-	s->max_ = newmax;
-      }
+    {
+      if (s->text_ == NULL)
+	{
+	  s->max_ = 40;
+	  s->text_ = malloc_new_ksr (s->pool_, "ffests", s->max_);
+	}
+      else
+	{
+	  newmax = s->max_ << 1;
+	  while (newmax < newlen)
+	    newmax <<= 1;
+	  s->text_ = malloc_resize_ksr (s->pool_, s->text_, newmax, s->max_);
+	  s->max_ = newmax;
+	}
+    }
 
   memcpy (s->text_ + s->len_, text, length);
   s->len_ = newlen;

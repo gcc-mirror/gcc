@@ -3773,10 +3773,12 @@ ffestb_halt1_ (ffelexToken ft, ffebld expr, ffelexToken t)
     case FFELEX_typeSEMICOLON:
       ffesta_confirmed ();
       if (!ffesta_is_inhibited ())
-	if (ffesta_first_kw == FFESTR_firstSTOP)
-	  ffestc_R842 (expr, ft);
-	else
-	  ffestc_R843 (expr, ft);
+	{
+	  if (ffesta_first_kw == FFESTR_firstSTOP)
+	    ffestc_R842 (expr, ft);
+	  else
+	    ffestc_R843 (expr, ft);
+	}
       return (ffelexHandler) ffesta_zero (t);
 
     default:
@@ -15553,11 +15555,13 @@ ffestb_R90910_ (ffelexToken ft, ffebld expr, ffelexToken t)
     case FFELEX_typeCOMMA:
     case FFELEX_typeCLOSE_PAREN:
       if (expr == NULL)
-	if (ffestb_local_.read.context == FFEEXPR_contextFILEFORMAT)
-	  ffestp_file.read.read_spec[ffestb_local_.read.ix]
-	    .value_is_label = TRUE;
-	else
-	  break;
+	{
+	  if (ffestb_local_.read.context == FFEEXPR_contextFILEFORMAT)
+	    ffestp_file.read.read_spec[ffestb_local_.read.ix]
+	      .value_is_label = TRUE;
+	  else
+	    break;
+	}
       ffestp_file.read.read_spec[ffestb_local_.read.ix].value_present
 	= TRUE;
       ffestp_file.read.read_spec[ffestb_local_.read.ix].value
@@ -16169,11 +16173,13 @@ ffestb_R9109_ (ffelexToken ft, ffebld expr, ffelexToken t)
     case FFELEX_typeCOMMA:
     case FFELEX_typeCLOSE_PAREN:
       if (expr == NULL)
-	if (ffestb_local_.write.context == FFEEXPR_contextFILEFORMAT)
-	  ffestp_file.write.write_spec[ffestb_local_.write.ix]
-	    .value_is_label = TRUE;
-	else
-	  break;
+	{
+	  if (ffestb_local_.write.context == FFEEXPR_contextFILEFORMAT)
+	    ffestp_file.write.write_spec[ffestb_local_.write.ix]
+	      .value_is_label = TRUE;
+	  else
+	    break;
+	}
       ffestp_file.write.write_spec[ffestb_local_.write.ix].value_present
 	= TRUE;
       ffestp_file.write.write_spec[ffestb_local_.write.ix].value

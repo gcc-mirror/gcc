@@ -8238,16 +8238,18 @@ ffestc_R544_equiv_ (ffebld expr, ffelexToken t)
   /* See if symbol has an equivalence object already. */
 
   if (ffesymbol_equiv (s) != NULL)
-    if (ffestc_local_.equiv.eq == NULL)
-      ffestc_local_.equiv.eq = ffesymbol_equiv (s);	/* New equiv obj. */
-    else if (ffestc_local_.equiv.eq != ffesymbol_equiv (s))
-      {
-	ffestc_local_.equiv.eq = ffeequiv_merge (ffesymbol_equiv (s),
-						 ffestc_local_.equiv.eq,
-						 t);
-	if (ffestc_local_.equiv.eq == NULL)
-	  ffestc_local_.equiv.ok = FALSE;	/* Couldn't merge. */
-      }
+    {
+      if (ffestc_local_.equiv.eq == NULL)
+	ffestc_local_.equiv.eq = ffesymbol_equiv (s);	/* New equiv obj. */
+      else if (ffestc_local_.equiv.eq != ffesymbol_equiv (s))
+	{
+	  ffestc_local_.equiv.eq = ffeequiv_merge (ffesymbol_equiv (s),
+						   ffestc_local_.equiv.eq,
+						   t);
+	  if (ffestc_local_.equiv.eq == NULL)
+	    ffestc_local_.equiv.ok = FALSE;	/* Couldn't merge. */
+	}
+    }
 
   if (ffesymbol_is_save (s))
     ffestc_local_.equiv.save = TRUE;
