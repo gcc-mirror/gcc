@@ -539,6 +539,7 @@ dump_type (t, flags)
 	 reduces code size.  */
     case ARRAY_TYPE:
     case POINTER_TYPE:
+    case VECTOR_TYPE:
     case REFERENCE_TYPE:
     case OFFSET_TYPE:
     offset_type:
@@ -697,6 +698,15 @@ dump_type_prefix (t, flags)
 
   switch (TREE_CODE (t))
     {
+    case VECTOR_TYPE:
+      padding = dump_type_prefix (TREE_TYPE (t), flags);
+      if (padding != none)
+	output_add_space (scratch_buffer);
+      output_add_string (scratch_buffer, "vector");
+      dump_qualifiers (t, before);
+      padding = before;
+      break;
+
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       {
@@ -803,6 +813,7 @@ dump_type_suffix (t, flags)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case OFFSET_TYPE:
+    case VECTOR_TYPE:
       if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 	print_right_paren (scratch_buffer);
       dump_type_suffix (TREE_TYPE (t), flags);
