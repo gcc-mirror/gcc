@@ -2097,6 +2097,7 @@ extern rtx stack_limit_rtx;
 
 /* In regrename.c */
 extern void regrename_optimize		PARAMS ((void));
+extern void copyprop_hardreg_forward	PARAMS ((void));
 
 /* In ifcvt.c */
 extern void if_convert			PARAMS ((int));

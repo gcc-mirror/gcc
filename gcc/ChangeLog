@@ -1,3 +1,18 @@
+2001-12-12  Richard Henderson  <rth@redhat.com>
+
+	* regrename.c (copyprop_hardreg_forward): New optimization.
+	(kill_value_regno, kill_value, init_value_data, kill_clobbered_value,
+	kill_set_value, kill_autoinc_value, copy_value, find_oldest_value_reg,
+	replace_oldest_value_reg, replace_oldest_value_addr,
+	replace_oldest_value_mem, copyprop_hardreg_forward_1,
+	debug_value_data, validate_value_data): New.
+	* rtl.h (copyprop_hardreg_forward): Declare.
+	* toplev.c (flag_cprop_registers): New.
+	(f_options): Add -fcprop-registers
+	(rest_of_compilation): Invoke it.
+	(parse_options_and_default_flags): Set it at -O1.
+	* doc/invoke.texi: Document it.
+
 2001-12-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (dw_val_class): Add dw_val_class_range_list.

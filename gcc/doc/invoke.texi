@@ -259,7 +259,7 @@ in the following sections.
 @gccoptlist{
 -falign-functions=@var{n}  -falign-jumps=@var{n} @gol
 -falign-labels=@var{n}  -falign-loops=@var{n}  @gol
--fbranch-probabilities  -fcaller-saves @gol
+-fbranch-probabilities  -fcaller-saves -fcprop-registers @gol
 -fcse-follow-jumps  -fcse-skip-blocks  -fdata-sections @gol
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
@@ -3773,6 +3773,12 @@ of registers left over after register allocation.  This optimization
 will most benefit processors with lots of registers.  It can, however,
 make debugging impossible, since variables will no longer stay in
 a ``home register''.
+
+@item -fno-cprop-registers
+@opindex fno-cprop-registers
+After register allocation and post-register allocation instruction splitting,
+we perform a copy-propagation pass to try to reduce scheduling dependencies
+and occasionally eliminate the copy.
 
 @item --param @var{name}=@var{value}
 @opindex param

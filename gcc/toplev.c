@@ -427,6 +427,7 @@ int flag_reorder_blocks = 0;
 /* Nonzero if registers should be renamed.  */
 
 int flag_rename_registers = 0;
+int flag_cprop_registers = 0;
 
 /* Nonzero for -pedantic switch: warn about anything
    that standard spec forbids.  */
@@ -1083,6 +1084,8 @@ lang_independent_options f_options[] =
    N_("Reorder basic blocks to improve code placement") },
   {"rename-registers", &flag_rename_registers, 1,
    N_("Do the register renaming optimization pass") },
+  {"cprop-registers", &flag_cprop_registers, 1,
+   N_("Do the register copy-propagation optimization pass") },
   {"common", &flag_no_common, 0,
    N_("Do not put uninitialized globals in the common section") },
   {"inhibit-size-directive", &flag_inhibit_size_directive, 1,
@@ -3280,12 +3283,15 @@ rest_of_compilation (decl)
     }
 #endif
 
-  if (optimize > 0 && flag_rename_registers)
+  if (flag_rename_registers || flag_cprop_registers)
     {
       timevar_push (TV_RENAME_REGISTERS);
       open_dump_file (DFI_rnreg, decl);
 
-      regrename_optimize ();
+      if (flag_rename_registers)
+        regrename_optimize ();
+      if (flag_cprop_registers)
+        copyprop_hardreg_forward ();
 
       close_dump_file (DFI_rnreg, print_rtl_with_bb, insns);
       timevar_pop (TV_RENAME_REGISTERS);
@@ -4620,6 +4626,7 @@ parse_options_and_default_flags (argc, argv)
       flag_omit_frame_pointer = 1;
 #endif
       flag_guess_branch_prob = 1;
+      flag_cprop_registers = 1;
     }
 
   if (optimize >= 2)
