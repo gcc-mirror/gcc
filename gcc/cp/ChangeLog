@@ -1,3 +1,7 @@
+2000-05-30  Jason Merrill  <jason@decepticon.cygnus.com>
+
+	* decl.c (grok_reference_init): Pass LOOKUP_ONLYCONVERTING.
+
 2000-05-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (add_template_candidate_real): Handle member template
