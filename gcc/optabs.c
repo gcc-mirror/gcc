@@ -5049,6 +5049,8 @@ init_optabs (void)
   vec_realign_load_optab = init_optab (UNKNOWN);
   movmisalign_optab = init_optab (UNKNOWN);
 
+  powi_optab = init_optab (UNKNOWN);
+
   /* Conversions.  */
   sext_optab = init_convert_optab (SIGN_EXTEND);
   zext_optab = init_convert_optab (ZERO_EXTEND);
@@ -5134,6 +5136,8 @@ init_optabs (void)
   init_floating_libfuncs (lt_optab, "lt", '2');
   init_floating_libfuncs (le_optab, "le", '2');
   init_floating_libfuncs (unord_optab, "unord", '2');
+
+  init_floating_libfuncs (powi_optab, "powi", '2');
 
   /* Conversions.  */
   init_interclass_conv_libfuncs (sfloat_optab, "float",

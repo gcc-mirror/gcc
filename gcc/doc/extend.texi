@@ -4507,6 +4507,9 @@ identifier, or a sequence of member accesses and array references.
 @findex __builtin_islessequal
 @findex __builtin_islessgreater
 @findex __builtin_isunordered
+@findex __builtin_powi
+@findex __builtin_powif
+@findex __builtin_powil
 @findex _Exit
 @findex _exit
 @findex abort
@@ -5366,6 +5369,21 @@ Similar to @code{__builtin_popcount}, except the argument type is
 @deftypefn {Built-in Function} int __builtin_parityll (unsigned long long)
 Similar to @code{__builtin_parity}, except the argument type is
 @code{unsigned long long}.
+@end deftypefn
+
+@deftypefn {Built-in Function} double __builtin_powi (double, int)
+Returns the first argument raised to the power of the second.  Unlike the
+@code{pow} function no guarantees about precision and rounding are made.
+@end deftypefn
+
+@deftypefn {Built-in Function} float __builtin_powif (float, int)
+Similar to @code{__builtin_powi}, except the argument and return types
+are @code{float}.
+@end deftypefn
+
+@deftypefn {Built-in Function} {long double} __builtin_powil (long double, int)
+Similar to @code{__builtin_powi}, except the argument and return types
+are @code{long double}.
 @end deftypefn
 
 

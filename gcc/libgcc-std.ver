@@ -233,3 +233,12 @@ GCC_3.4.4 {
   __negvti2
   __subvti3
 }
+
+%inherit GCC_4.0.0 GCC_3.4.4
+GCC_4.0.0 {
+  # libgcc2 __builtin_powi helpers.
+  __powisf2
+  __powidf2
+  __powixf2
+  __powitf2
+}
