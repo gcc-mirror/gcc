@@ -82,19 +82,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.m:	-D__LANGUAGE_OBJECTIVE_C} \
 %{!.S:	-D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
 
-/* Turn on -mpic-extern by default.  */
+/* Turn on -pic-extern by default.  */
 #undef  CC1_SPEC
 #define CC1_SPEC "\
 %{!melf: %{!mrose: %{!mno-elf: -mrose }}} \
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{pic-none:   -mno-half-pic} \
-%{fpic:	      -mno-half-pic} \
-%{fPIC:	      -mno-half-pic} \
-%{pic-lib:    -mhalf-pic} \
-%{pic-extern: -mhalf-pic} \
-%{pic-calls:  -mhalf-pic} \
-%{pic-names*: -mhalf-pic} \
-%{!pic-*: %{!fpic: %{!fPIC: -mhalf-pic}}}"
+%{pic-none: -mno-half-pic} \
+%{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
+%{!pic-none: \
+	%{melf: -mno-half-pic} \
+	%{mno-rose: %{!melf: -mno-half-pic}} \
+	%{!melf: %{!mno-rose: %{!fPIC: %{!fpic: -mhalf-pic}}}}}"
 
 #undef	ASM_SPEC
 #define ASM_SPEC       "%{v*: -v}"
@@ -451,8 +449,21 @@ do									\
 									\
     if (TARGET_IDENT)							\
       {									\
-	fprintf ((STREAM), "\t%s\t\"GCC: (GNU) %s -O%d",		\
-		 IDENT_ASM_OP, version_string, optimize);		\
+	char *fstart = main_input_filename;				\
+	char *fname;							\
+									\
+	if (!fstart)							\
+	  fstart = "<no file>";						\
+									\
+	fname = fstart + strlen (fstart) - 1;				\
+	while (fname > fstart && *fname != '/')				\
+	  fname--;							\
+									\
+	if (*fname == '/')						\
+	  fname++;							\
+									\
+	fprintf ((STREAM), "\t%s\t\"GCC: (GNU) %s %s -O%d",		\
+		 IDENT_ASM_OP, version_string, fname, optimize);	\
 									\
 	if (write_symbols == PREFERRED_DEBUGGING_TYPE)			\
 	  fprintf ((STREAM), " -g%d", (int)debug_info_level);		\
