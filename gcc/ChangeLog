@@ -1,3 +1,8 @@
+2001-12-06  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_unique_section): Simplify and
+	correct code selecting section.
+
 Thu Dec  6 12:45:33 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* final.c (count_basic_block, add_bb, add_bb_string):
