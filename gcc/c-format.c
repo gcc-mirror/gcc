@@ -44,6 +44,10 @@ int warn_format_y2k;
 
 int warn_format_extra_args;
 
+/* Warn about zero-length formats.  */
+
+int warn_format_zero_length;
+
 /* Warn about non-literal format arguments.  */
 
 int warn_format_nonliteral;
@@ -61,6 +65,7 @@ set_Wformat (setting)
   warn_format = setting;
   warn_format_y2k = setting;
   warn_format_extra_args = setting;
+  warn_format_zero_length = setting;
   if (setting != 1)
     {
       warn_format_nonliteral = setting;
@@ -1361,8 +1366,9 @@ check_format_info (status, info, params)
       && res.number_other == 0 && warn_format_extra_args)
     status_warning (status, "unused arguments in $-style format");
   if (res.number_empty > 0 && res.number_non_literal == 0
-      && res.number_other == 0)
-    status_warning (status, "zero-length format string");
+      && res.number_other == 0 && warn_format_zero_length)
+    status_warning (status, "zero-length %s format string",
+		    format_types[info->format_type].name);
 
   if (res.number_wide > 0)
     status_warning (status, "format is a wide character string");

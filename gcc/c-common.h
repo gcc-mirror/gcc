@@ -414,6 +414,10 @@ extern int warn_format_y2k;
 
 extern int warn_format_extra_args;
 
+/* Warn about zero-length formats.  */
+
+extern int warn_format_zero_length;
+
 /* Warn about non-literal format arguments.  */
 
 extern int warn_format_nonliteral;
