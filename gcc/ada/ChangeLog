@@ -1,3 +1,8 @@
+2001-10-30  Geert Bosch <bosch@gnat.com>
+
+	* (Associated_Node, Set_Associated_Node): Do not check for 
+	Freeze_Entity.
+
 2001-10-30  Robert Dewar <dewar@gnat.com>
 
 	* a-reatim.ads: Minor reformatting
