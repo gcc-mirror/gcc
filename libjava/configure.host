@@ -64,7 +64,7 @@ case "${host}" in
 	libgcj_cflags="-D__NO_MATH_INLINES"
 	DIVIDESPEC=-fno-use-divide-subroutine
 	;;
-  alphaev6-*)
+  alpha*-*)
 	libgcj_interpreter=yes
 	;;
   sparc-*)
