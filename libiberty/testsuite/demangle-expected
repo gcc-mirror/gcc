@@ -2476,15 +2476,15 @@ fn__FPQ21n1cPMQ21n1cFPQ21n1c_i
 fn(n::c *, int (n::c::*)(n::c *))
 #
 --format=gnu
-f__FGt3Bar1i21i
+f__FGt3Bar1i2G1i
 f(Bar<2>, i)
 #
 --format=gnu
-f__FGt3Bar1i_21_i
+f__FGt3Bar1i21i
 f(Bar<21>, int)
 #
 --format=gnu
-f__FGt3Bar1i24XY_t
+f__FGt3Bar1i2G4XY_t
 f(Bar<2>, XY_t)
 #
 --format=gnu
@@ -2492,11 +2492,11 @@ foo__H1Zt2TA2ZRCiZt2NA1Ui9_X01_i
 int foo<TA<int const &, NA<9> > >(TA<int const &, NA<9> >)
 #
 --format=gnu
-foo__H1Zt2TA2ZcZt2NA1Ui_20__X01_i
+foo__H1Zt2TA2ZcZt2NA1Ui20_X01_i
 int foo<TA<char, NA<20> > >(TA<char, NA<20> >)
 #
 --format=gnu
-foo__H1Zt2TA2ZiZt8N___A___1Ui_99__X01_i
+foo__H1Zt2TA2ZiZt8N___A___1Ui99_X01_i
 int foo<TA<int, N___A___<99> > >(TA<int, N___A___<99> >)
 #
 --format=gnu
@@ -2532,7 +2532,7 @@ __opi__t2TA2ZiZt8N___A___1i_m99_
 TA<int, N___A___<-99> >::operator int(void)
 #
 --format=gnu
-foo___bar__baz_____H1Zt2TA2ZiZt8N___A___1i_99__X01_i
+foo___bar__baz_____H1Zt2TA2ZiZt8N___A___1i99_X01_i
 int foo___bar__baz___<TA<int, N___A___<99> > >(TA<int, N___A___<99> >)
 #
 --format=gnu
