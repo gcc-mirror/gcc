@@ -139,7 +139,10 @@ cpp_error VPARAMS ((cpp_reader * pfile, int level, const char *msgid, ...))
     {
       if (CPP_OPTION (pfile, traditional))
 	{
-	  line = pfile->line;
+	  if (pfile->state.in_directive)
+	    line = pfile->directive_line;
+	  else
+	    line = pfile->line;
 	  column = 0;
 	}
       else

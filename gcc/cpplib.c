@@ -303,9 +303,6 @@ prepare_directive_trad (pfile)
 			   pfile->out.cur - pfile->out.base);
     }
 
-  /* Report diagnostics on the line of the directive.  */
-  pfile->line = pfile->directive_line;
-
   /* Stop ISO C from expanding anything.  */
   pfile->state.prevent_expansion++;
 }
@@ -689,10 +686,6 @@ do_include_common (pfile, type)
 	  if (pfile->cb.include)
 	    (*pfile->cb.include) (pfile, pfile->directive_line,
 				  pfile->directive->name, header);
-
-	  /* Revert to the correct line if traditional.  */
-	  if (CPP_OPTION (pfile, traditional))
-	    pfile->line = pfile->saved_line;
 	  _cpp_execute_include (pfile, header, type);
 	}
     }

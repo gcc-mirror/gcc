@@ -1,3 +1,15 @@
+2002-07-09  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpperror.c (cpp_error): Default to directive_line within
+	directives here.
+	* cppexp.c (cpp_interpret_integer): Only use traditional
+	number semantics in directives.
+	* cpplib.c (prepare_directive_trad): Don't reset pfile->line.
+	(do_include_common): Similarly.
+	* cpptrad.c (scan_out_logical_line): Implement accurate
+	quoting of <> in #include.
+	* doc/cpp.texi: Update.
+
 Tue Jul  9 22:37:44 2002  Stephen Clarke <stephen.clarke@superh.com>
                           J"orn Rennecke <joern.rennecke@superh.com>
 

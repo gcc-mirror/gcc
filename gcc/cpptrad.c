@@ -437,11 +437,13 @@ scan_out_logical_line (pfile, macro)
   struct fun_macro fmacro;
   unsigned int c, paren_depth = 0, quote;
   enum ls lex_state = ls_none;
+  bool header_ok;
 
   fmacro.buff = NULL;
 
  start_logical_line:
   quote = 0;
+  header_ok = pfile->state.angled_headers;
   CUR (pfile->context) = pfile->buffer->cur;
   RLIMIT (pfile->context) = pfile->buffer->rlimit;
   pfile->out.cur = pfile->out.base;
@@ -500,15 +502,12 @@ scan_out_logical_line (pfile, macro)
 	  goto done;
 
 	case '<':
-	  if (pfile->state.angled_headers && !quote)
+	  if (header_ok)
 	    quote = '>';
 	  break;
 	case '>':
 	  if (c == quote)
-	    {
-	      pfile->state.angled_headers = false;
-	      quote = 0;
-	    }
+	    quote = 0;
 	  break;
 
 	case '"':
@@ -736,7 +735,9 @@ scan_out_logical_line (pfile, macro)
 	  break;
 	}
 
-      /* Non-whitespace disables MI optimization.  */
+      /* Non-whitespace disables MI optimization and stops treating
+	 '<' as a quote in #include.  */
+      header_ok = false;
       if (!pfile->state.in_directive)
 	pfile->mi_valid = false;
 

@@ -224,6 +224,16 @@ of a program which does not expect them.  To get strict ISO Standard C,
 you should use the @option{-std=c89} or @option{-std=c99} options, depending
 on which version of the standard you want.  To get all the mandatory
 diagnostics, you must also use @option{-pedantic}.  @xref{Invocation}.
+
+This manual describes the behavior of the ISO preprocessor.  To
+minimize gratuitous differences, where the ISO preprocessor's
+behavior does not conflict with traditional semantics, the
+traditional preprocessor should behave the same way.  The various
+differences that do exist are detailed in the section @ref{Traditional
+Mode}.
+
+For clarity, unless noted otherwise, references to @samp{CPP} in this
+manual refer to GNU CPP.
 @c man end
 
 @menu
@@ -238,7 +248,7 @@ diagnostics, you must also use @option{-pedantic}.  @xref{Invocation}.
 The preprocessor performs a series of textual transformations on its
 input.  These happen before all other processing.  Conceptually, they
 happen in a rigid order, and the entire file is run through each
-transformation before the next one begins.  GNU CPP actually does them
+transformation before the next one begins.  CPP actually does them
 all at once, for performance reasons.  These transformations correspond
 roughly to the first three ``phases of translation'' described in the C
 standard.
@@ -249,7 +259,7 @@ standard.
 @cindex line endings
 The input file is read into memory and broken into lines.
 
-GNU CPP expects its input to be a text file, that is, an unstructured
+CPP expects its input to be a text file, that is, an unstructured
 stream of ASCII characters, with some characters indicating the end of a
 line of text.  Extended ASCII character sets, such as ISO Latin-1 or
 Unicode encoded in UTF-8, are also acceptable.  Character sets that are
@@ -276,15 +286,16 @@ warning message.
 @item
 @cindex trigraphs
 @anchor{trigraphs}If trigraphs are enabled, they are replaced by their
-corresponding single characters.
+corresponding single characters.  By default GCC ignores trigraphs,
+but if you request a strictly conforming mode with the @option{-std}
+option, or you specify the @option{-trigraphs} option, then it
+converts them.
 
 These are nine three-character sequences, all starting with @samp{??},
 that are defined by ISO C to stand for single characters.  They permit
 obsolete systems that lack some of C's punctuation to use C@.  For
 example, @samp{??/} stands for @samp{\}, so @t{'??/n'} is a character
-constant for a newline.  By default, GCC ignores trigraphs, but if you
-request a strictly conforming mode with the @option{-std} option, then
-it converts them.
+constant for a newline.
 
 Trigraphs are not popular and many compilers implement them incorrectly.
 Portable code should not rely on trigraphs being either converted or
@@ -886,7 +897,7 @@ because @code{FILE_FOO_SEEN} is defined.  The preprocessor will skip
 over the entire contents of the file, and the compiler will not see it
 twice.
 
-GNU CPP optimizes even further.  It remembers when a header file has a
+CPP optimizes even further.  It remembers when a header file has a
 wrapper @samp{#ifndef}.  If a subsequent @samp{#include} specifies that
 header, and the macro in the @samp{#ifndef} is still defined, it does
 not bother to rescan the file at all.
@@ -1599,7 +1610,7 @@ or to paste its leading or trailing token with another token.  (But see
 below for an important special case for @samp{##}.)
 
 If your macro is complicated, you may want a more descriptive name for
-the variable argument than @code{@w{__VA_ARGS__}}.  GNU CPP permits
+the variable argument than @code{@w{__VA_ARGS__}}.  CPP permits
 this, as an extension.  You may write an argument name immediately
 before the @samp{@dots{}}; that name is used for the variable argument.
 The @code{eprintf} macro above could be written
@@ -1674,7 +1685,7 @@ only named variable arguments.  On the other hand, if you are concerned
 with portability to other conforming implementations of C99, you should
 use only @code{@w{__VA_ARGS__}}.
 
-Previous versions of GNU CPP implemented the comma-deletion extension
+Previous versions of CPP implemented the comma-deletion extension
 much more generally.  We have restricted it in this release to minimize
 the differences from C99.  To get the same effect with both this and
 previous versions of GCC, the token preceding the special @samp{##} must
@@ -1778,14 +1789,14 @@ eight characters and looks like @code{"23:59:01"}.
 In normal operation, this macro expands to the constant 1, to signify
 that this compiler conforms to ISO Standard C@.  If GNU CPP is used with
 a compiler other than GCC, this is not necessarily true; however, the
-preprocessor always conforms to the standard, unless the
+preprocessor always conforms to the standard unless the
 @option{-traditional-cpp} option is used.
 
 This macro is not defined if the @option{-traditional-cpp} option is used.
 
 On some hosts, the system compiler uses a different convention, where
 @code{__STDC__} is normally 0, but is 1 if the user specifies strict
-conformance to the C Standard.  GNU CPP follows the host convention when
+conformance to the C Standard.  CPP follows the host convention when
 processing system header files, but when processing user files
 @code{__STDC__} is always 1.  This has been reported to cause problems;
 for instance, some versions of Solaris provide X Windows headers that
@@ -2115,7 +2126,7 @@ Occasionally it is convenient to use preprocessor directives within
 the arguments of a macro.  The C and C++ standards declare that
 behavior in these cases is undefined.
 
-Versions of GNU CPP prior to 3.2 would reject such constructs with an
+Versions of CPP prior to 3.2 would reject such constructs with an
 error message.  This was the only syntactic difference between normal
 functions and function-like macros, so it seemed attractive to remove
 this limitation, and people would often be surprised that they could
@@ -2738,7 +2749,7 @@ good practice if there is a lot of @var{controlled text}, because it
 helps people match the @samp{#endif} to the corresponding @samp{#ifdef}.
 Older programs sometimes put @var{MACRO} directly after the
 @samp{#endif} without enclosing it in a comment.  This is invalid code
-according to the C standard.  GNU CPP accepts it with a warning.  It
+according to the C standard.  CPP accepts it with a warning.  It
 never affects which @samp{#ifndef} the @samp{#endif} matches.
 
 @findex #ifndef
@@ -3074,7 +3085,7 @@ file it specifies, until something else happens to change that.
 constant: backslash escapes are interpreted.  This is different from
 @samp{#include}.
 
-Previous versions of GNU CPP did not interpret escapes in @samp{#line};
+Previous versions of CPP did not interpret escapes in @samp{#line};
 we have changed it because the standard requires they be interpreted,
 and most other compilers do.
 
@@ -3340,9 +3351,8 @@ the preprocessing specified by the standard.  When GCC is given the
 preprocessor.
 
 GCC versions 3.2 and later only support traditional mode semantics in
-the preprocessor, and not in the compiler.  This chapter outlines the
-semantics we implemented in the traditional preprocessor that is
-integrated into the compiler front end.
+the preprocessor, and not in the compiler front ends.  This chapter
+outlines the traditional preprocessor semantics we implemented.
 
 The implementation does not correspond precisely to the behavior of
 earlier versions of GCC, nor to any true traditional preprocessor.
@@ -3363,10 +3373,10 @@ that actually matter.
 
 The traditional preprocessor does not decompose its input into tokens
 the same way a standards-conforming preprocessor does.  The input is
-simply treated as a stream of text with minimal form imposed on it.
+simply treated as a stream of text with minimal internal form.
 
 This implementation does not treat trigraphs (@pxref{trigraphs})
-specially since they were created later during standardization.  It
+specially since they were an invention of the standards committee.  It
 handles arbitrarily-positioned escaped newlines properly and splices
 the lines as you would expect; many traditional preprocessors did not
 do this.
@@ -3378,13 +3388,15 @@ useful if, for example, you are preprocessing a Makefile.
 Traditional CPP only recognizes C-style block comments, and treats the
 @samp{/*} sequence as introducing a comment only if it lies outside
 quoted text.  Quoted text is introduced by the usual single and double
-quotes, and also by @samp{<} in a @code{#include} directive.
+quotes, and also by an initial @samp{<} in a @code{#include}
+directive.
 
 Traditionally, comments are completely removed and are not replaced
 with a space.  Since a traditional compiler does its own tokenization
-of the output of the preprocessor, comments can effectively be used as
-token paste operators.  However, comments behave like separators for
-text handled by the preprocessor itself.  For example, in
+of the output of the preprocessor, this means that comments can
+effectively be used as token paste operators.  However, comments
+behave like separators for text handled by the preprocessor itself,
+since it doesn't re-lex its input.  For example, in
 
 @smallexample
 #if foo/**/bar
@@ -3476,9 +3488,9 @@ behavior to their ISO counterparts.  Their arguments are contained
 within parentheses, are comma-separated, and can cross physical lines.
 Commas within nested parentheses are not treated as argument
 separators.  Similarly, a quote in an argument cannot be left
-unclosed; in other words a comma or parenthesis in quotes is treated
-like any other character.  There is no facility for handling variadic
-macros.
+unclosed; a following comma or parenthesis that comes before the
+closing quote is treated like any other character.  There is no
+facility for handling variadic macros.
 
 This implementation removes all comments from macro arguments, unless
 the @option{-C} option is given.  The form of all other horizontal
@@ -3506,12 +3518,12 @@ example
 
 @smallexample
 #define str(x) "x"
-str(/* A comment */ some text)
-     @expansion{} " some text"
+str(/* A comment */some text )
+     @expansion{} "some text "
 @end smallexample
 
 @noindent
-Note that the comment is removed, but that the leading space is
+Note that the comment is removed, but that the trailing space is
 preserved.  Here is an example of using a comment to effect token
 pasting.
 
@@ -3546,6 +3558,10 @@ __STDC__ is not defined.
 
 @item
 If you use digraphs the behaviour is undefined.
+
+@item
+If a line that looks like a directive appears within macro arguments,
+the behaviour is undefined.
 
 @end itemize
 
@@ -3607,7 +3623,7 @@ reliance on behavior described here, as it is possible that it will
 change subtly in future implementations.
 
 Also documented here are obsolete features and changes from previous
-versions of GNU CPP@.
+versions of CPP@.
 
 @menu
 * Implementation-defined behavior::
@@ -3620,7 +3636,7 @@ versions of GNU CPP@.
 @section Implementation-defined behavior
 @cindex implementation-defined behavior
 
-This is how GNU CPP behaves in all the cases which the C standard
+This is how CPP behaves in all the cases which the C standard
 describes as @dfn{implementation-defined}.  This term means that the
 implementation is free to do what it likes, but must document its choice
 and stick to it.
@@ -3688,7 +3704,7 @@ pragmas.
 @section Implementation limits
 @cindex implementation limits
 
-GNU CPP has a small number of internal limits.  This section lists the
+CPP has a small number of internal limits.  This section lists the
 limits which the C standard requires to be no lower than some minimum,
 and all the others we are aware of.  We intend there to be as few limits
 as possible.  If you encounter an undocumented or inconvenient limit,
@@ -3711,7 +3727,7 @@ The standard requires at least 15 levels.
 
 @item Nesting levels of conditional inclusion.
 
-The C standard mandates this be at least 63.  GNU CPP is limited only by
+The C standard mandates this be at least 63.  CPP is limited only by
 available memory.
 
 @item Levels of parenthesised expressions within a full expression.
@@ -3726,7 +3742,7 @@ requires only that the first 63 be significant.
 
 @item Number of macros simultaneously defined in a single translation unit.
 
-The standard requires at least 4095 be possible.  GNU CPP is limited only
+The standard requires at least 4095 be possible.  CPP is limited only
 by available memory.
 
 @item Number of parameters in a macro definition and arguments in a macro call.
@@ -3736,7 +3752,7 @@ required by the standard is 127.
 
 @item Number of characters on a logical source line.
 
-The C standard requires a minimum of 4096 be permitted.  GNU CPP places
+The C standard requires a minimum of 4096 be permitted.  CPP places
 no limits on this, but you may get incorrect column numbers reported in
 diagnostics for lines longer than 65,535 characters.
 
@@ -3753,7 +3769,7 @@ may not be a limitation.
 @node Obsolete Features
 @section Obsolete Features
 
-GNU CPP has a number of features which are present mainly for
+CPP has a number of features which are present mainly for
 compatibility with older programs.  We discourage their use in new code.
 In some cases, we plan to remove the feature in a future version of GCC@.
 
@@ -3849,7 +3865,7 @@ You can also make or cancel assertions using command line options.
 @node Obsolete once-only headers
 @subsection Obsolete once-only headers
 
-GNU CPP supports two more ways of indicating that a header file should be
+CPP supports two more ways of indicating that a header file should be
 read only once.  Neither one is as portable as a wrapper @samp{#ifndef},
 and we recommend you do not use them in new programs.
 
@@ -3887,7 +3903,7 @@ in a portable program.
 @cindex differences from previous versions
 
 This section details behavior which has changed from previous versions
-of GNU CPP@.  We do not plan to change it again in the near future, but
+of CPP@.  We do not plan to change it again in the near future, but
 we do not promise not to, either.
 
 The ``previous versions'' discussed here are 2.95 and before.  The
@@ -3936,7 +3952,7 @@ versions accepted it silently.
 
 Formerly, in a macro expansion, if @samp{##} appeared before a variable
 arguments parameter, and the set of tokens specified for that argument
-in the macro invocation was empty, previous versions of GNU CPP would
+in the macro invocation was empty, previous versions of CPP would
 back up and remove the preceding sequence of non-whitespace characters
 (@strong{not} the preceding token).  This extension is in direct
 conflict with the 1999 C standard and has been drastically pared back.
