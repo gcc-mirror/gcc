@@ -1,3 +1,25 @@
+2001-02-08  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* Make-lang.in (JAVA_OBJS): Added java/mangle_name.o
+	(JVGENMAIN_OBJS): Likewise.
+	* java-tree.h (append_gpp_mangled_name): New prototype.	
+	* jcf-parse.c (ggc_mark_jcf): Argument now `void *.'
+	Removed cast calling `gcc_add_root.'
+	* jvgenmain.c (mangle_obstack): New global, initialized.
+	(main): Use it.
+	(do_mangle_class): Constify local `ptr.'
+	Removed macro `MANGLE_NAME.' Removed cast in `for.' Call
+	append_gpp_mangle_name and update `count' if necessary.
+	Use `mangle_obstack.'
+	* mangle.c (append_unicode_mangled_name): Removed.
+	(append_gpp_mangled_name): Likewise.
+	(unicode_mangling_length): Likewise.
+	(mangle_member_name): Return type set to `void.'
+	(mangle_field_decl): Don't append `U' in escaped names.
+	(mangle_method_decl): Likewise.
+	(mangle_member_name): Just use `append_gpp_mangled_name.'
+	* mangle_name.c: New file.
+
 2001-02-07  Per Bothner  <per@bothner.com>
 
 	* check-init.c (check_init):  Fix TRY_FINALLY_EXPR logic.
