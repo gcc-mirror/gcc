@@ -1,3 +1,27 @@
+2001-02-24  Zack Weinberg  <zackw@stanford.edu>
+
+	* config.gcc: Expunge references to alpha/t-pe, pa/t-openbsd,
+	x-linux-aout, i386/t-go32, t-osf, m68k/x-m68kv,
+	ns32k/xm-netbsd.h, rs6000/t-openbsd, rs6000/t-xnewas,
+	rs6000/x-aix41-gld.  These are nonexistent, empty, or obsolete.
+
+	(i750a-*-*): Error here if hosting on i750a.
+	(alpha*-*-winnt*, ix86-*-winnt3*): Remove stanzas entirely.
+
+	* x-linux-aout, xm-freebsd.h, i386/beos-pe.h, ns32k/xm-netbsd.h:
+	Remove (empty modulo comments).
+
+	* 1750a/xm-1750a.h, alpha/config-nt.sed, alpha/win-nt.h,
+	alpha/xm-winnt.h, i386/config-nt.sed, i386/os2.h,
+	i386/t-winnt, i386/win-nt.h, i386/xm-freebsd.h, i386/xm-os2.h,
+	i386/xm-winnt.h, m68k/x-alloca-c, m88k/x-dguxbcs,
+	mips/x-netbsd, mips/x-nws3250v4, rs6000/t-xnewas,
+	rs6000/t-xrs6000, rs6000/xm-cygwin.h: Remove (obsolete)
+
+	* i386/crtdll.h, i386/cygwin.h, i386/mingw32.h:
+	Remove reference to winnt.h in comment.
+	* rs6000/t-newas, rs6000/t-rs6000: Override LIBGCC1_TEST to null.
+
 2001-02-24  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* loop.c (check_dbra_loop): A biv has uses besides counting if it is
@@ -165,7 +189,7 @@ Wed Feb 21 18:57:28 CET 2001  Catherine Moore  <clm@redhat.com>
 			      Bernd Schmidt  <bernds@redhat.com>
 			      Jan Hubicka  <jh@suse.cz>
 
-        * i386.c (function_arg_advance):  Pass SSE arguments in registers.
+	* i386.c (function_arg_advance):  Pass SSE arguments in registers.
 	(function_arg): Likewise.
 
 Wed Feb 21 18:12:41 CET 2001  Jan Hubicka  <jh@suse.cz>
@@ -198,10 +222,10 @@ Wed Feb 21 17:35:24 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-02-20  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tm.texi (REVERSE_CONDEXEC_PREDICATES_P): New macro documentation.
+	* tm.texi (REVERSE_CONDEXEC_PREDICATES_P): New macro documentation.
 
-        * flow.c (ior_reg_cond): Use REVERSE_CONDEXEC_PREDICATES_P macro.
-        (REVERSE_CONDEXEC_PREDICATES_P): Define macro.
+	* flow.c (ior_reg_cond): Use REVERSE_CONDEXEC_PREDICATES_P macro.
+	(REVERSE_CONDEXEC_PREDICATES_P): Define macro.
 
 2001-02-21  Jason Merrill  <jason@redhat.com>
 
@@ -233,17 +257,17 @@ Wed Feb 21 17:35:24 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-02-21  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppfiles.c: Update comments.
-        (_cpp_read_file): Don't check for NULL filenames any more.
-        * cppinit.c (cpp_start_read): Don't do canonicalization of
-        in_fname and out_fname.  Use the passed file name exclusively.
-        (_cpp_handle_options): Don't treat "-" as a command line option,
-        but as a normal filename.
-        (_cpp_post_options): Canonicalize in_fname and out_fname.
-        * cppmain.c (printer_init): Don't check out_fname for NULL.
-        * c-lex.c (orig_filename): Rename cpp_filename for clarity.
-        (init_c_lex): Update, and use "" to represent stdin to CPP.
-        (yyparse): Update.
+	* cppfiles.c: Update comments.
+	(_cpp_read_file): Don't check for NULL filenames any more.
+	* cppinit.c (cpp_start_read): Don't do canonicalization of
+	in_fname and out_fname.  Use the passed file name exclusively.
+	(_cpp_handle_options): Don't treat "-" as a command line option,
+	but as a normal filename.
+	(_cpp_post_options): Canonicalize in_fname and out_fname.
+	* cppmain.c (printer_init): Don't check out_fname for NULL.
+	* c-lex.c (orig_filename): Rename cpp_filename for clarity.
+	(init_c_lex): Update, and use "" to represent stdin to CPP.
+	(yyparse): Update.
 
 2001-02-20  Will Cohen  <wcohen@redhat.com>
 
@@ -259,7 +283,7 @@ Wed Feb 21 17:35:24 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-02-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppinit.c (set_lang):  Move builtin handling to...
+	* cppinit.c (set_lang):  Move builtin handling to...
 	(init_builtins): ...here.
 	(_cpp_create_reader): Move call to set_lang.
 
@@ -297,14 +321,14 @@ Mon Feb 19 20:30:16 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-02-19  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppfiles.c (stack_include_file): Generate dependencies
-        here, and manage include_count here too.
-        (PRINT_THIS_DEP): Delete.
-        (_cpp_execute_include): Do not generate dependencies here,
-        apart from the case of a missing header.  Do not manage
-        include_count.
-        (_cpp_read_file): Leave dependency generation to
-        stack_include_file.
+	* cppfiles.c (stack_include_file): Generate dependencies
+	here, and manage include_count here too.
+	(PRINT_THIS_DEP): Delete.
+	(_cpp_execute_include): Do not generate dependencies here,
+	apart from the case of a missing header.  Do not manage
+	include_count.
+	(_cpp_read_file): Leave dependency generation to
+	stack_include_file.
 
 Mon Feb 19 10:17:47 2001  Jeffrey A Law  (law@cygnus.com)
 
@@ -492,7 +516,7 @@ Sat Feb 17 10:52:34 CET 2001  Jan Hubicka  <jh@suse.cz>
 	shladd_operand() call.
 
 2001-02-16  Bruce Korb  <bkorb@gnu.org>
-            Rodney Brown  <RodneyBrown@mynd.com>
+	    Rodney Brown  <RodneyBrown@mynd.com>
 
 	* fixinc/mkfixinc.sh: Use C fixincludes for UnixWare 7.
 	* fixinc/inclhack.def: Add fixinc.svr4 patterns with matching
@@ -559,8 +583,8 @@ Fri Feb 16 12:41:30 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-02-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppfiles.c (_cpp_make_system_header): Generate a file
-        change callback.
+	* cppfiles.c (_cpp_make_system_header): Generate a file
+	change callback.
 
 2001-02-15  Jim Meyering  <meyering@lucent.com>
 
