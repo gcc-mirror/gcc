@@ -1,3 +1,8 @@
+2003-03-03  Jason Merrill  <jason@redhat.com>
+
+	* calls.c (compute_argument_addresses): Give the new MEMs a
+	minimum alignment of PARM_BOUNDARY.
+
 2003-03-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/install.texi (Specific): Update entry for powerpc-darwin.
