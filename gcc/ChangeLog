@@ -1,3 +1,8 @@
+2004-02-21  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.c (standard_80387_constant_p): Also prefer
+	the x87's load constant instructions when optimizing for size.
+
 2004-02-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (SHIFT_COUNT_TRUNCATED): Remove.
