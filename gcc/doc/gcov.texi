@@ -207,7 +207,7 @@ option is not supplied, it defaults to the current directory.
 
 @item -u
 @itemx --unconditional-branches
-When branch counts are given, include those of unconditional branches.
+When branch probabilities are given, include those of unconditional branches.
 Unconditional branches are normally not interesting.
 
 @end table
@@ -232,9 +232,27 @@ program source code.  The format is
 
 Additional block information may succeed each line, when requested by
 command line option.  The @var{execution_count} is @samp{-} for lines
-containing no code and @samp{#####} for lines which were never
-executed.  Some lines of information at the start have @var{line_number}
-of zero.
+containing no code and @samp{#####} for lines which were never executed.
+Some lines of information at the start have @var{line_number} of zero.
+
+The preamble lines are of the form
+
+@smallexample
+-:0:@var{tag}:@var{value}
+@end smallexample
+
+The ordering and number of these preamble lines will be augmented as
+@command{gcov} development progresses --- do not rely on them remaining
+unchanged.  Use @var{tag} to locate a particular preamble line.
+
+The additional block information is of the form
+
+@smallexample
+@var{tag} @var{information}
+@end smallexample
+
+The @var{information} is human readable, but designed to be simple
+enough for machine parsing too.
 
 When printing percentages, 0% and 100% are only printed when the values
 are @emph{exactly} 0% and 100% respectively.  Other values which would
@@ -278,7 +296,6 @@ Here is a sample:
         -:    1:#include <stdio.h>
         -:    2:
         -:    3:int main (void)
-function main called 1 returned 1 blocks executed 75%
         1:    4:@{
         1:    5:  int i, total;
         -:    6:
@@ -307,7 +324,6 @@ counts, and the output looks like this:
         -:    1:#include <stdio.h>
         -:    2:
         -:    3:int main (void)
-function main called 1 returned 1 blocks executed 75%
         1:    4:@{
         1:    4-block  0
         1:    5:  int i, total;
@@ -389,6 +405,10 @@ call    0 called 1 returned 100%
         1:   16:  return 0;
         -:   17:@}
 @end smallexample
+
+For each function, a line is printed showing how many times the function
+is called, how many times it returns and what percentage of the
+function's blocks were executed.
 
 For each basic block, a line is printed after the last line of the basic
 block describing the branch or call that ends the basic block.  There can

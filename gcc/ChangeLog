@@ -1,3 +1,11 @@
+2005-03-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR other/20564
+	* gcov.c (output_lines): Only output function block summary when
+	outputting branch information.
+	* doc/gcov.texi: Document format of preamble and additional block
+	information lines.
+
 2005-03-21  Richard Sandiford  <rsandifo@redhat.com>
 
 	* libgcc2.h (LIBGCC2_HAS_SF_MODE): New macro.
@@ -240,7 +248,6 @@
 	scale_bbs_frequencies_int.
 	* tree-ssa-loop-ch.c (copy_loop_headers): Fix profiling info.
 
->>>>>>> 2.7929
 2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r-protos.h: Remove the prototypes for
@@ -488,6 +495,7 @@
 	(arc_rodata_string, TARGET_OPTIONS): Delete.
 	* config/arc/arc.opt: New file.
 
+>>>>>>> 2.7930
 2005-03-17  Richard Henderson  <rth@redhat.com>
 
 	* doc/extend.texi (Weak Pragmas): New section.
