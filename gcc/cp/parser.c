@@ -9012,10 +9012,14 @@ cp_parser_elaborated_type_specifier (parser, is_friend, is_declaration)
 			      /*current_scope_valid_p=*/false);
   /* Look for the nested-name-specifier.  */
   if (tag_type == typename_type)
-    cp_parser_nested_name_specifier (parser,
-				     /*typename_keyword_p=*/true,
-				     /*check_dependency_p=*/true,
-				     /*type_p=*/true);
+    {
+      if (cp_parser_nested_name_specifier (parser,
+					   /*typename_keyword_p=*/true,
+					   /*check_dependency_p=*/true,
+					   /*type_p=*/true) 
+	  == error_mark_node)
+	return error_mark_node;
+    }
   else
     /* Even though `typename' is not present, the proposed resolution
        to Core Issue 180 says that in `class A<T>::B', `B' should be

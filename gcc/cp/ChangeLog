@@ -1,3 +1,11 @@
+2003-01-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (get_arglist_len_in_bytes): Remove.
+
+	PR c++/9264
+	* parser.c (cp_parser_elaborated_type_specifier): Handle erroneous
+	typeame types more robustly.
+
 2003-01-11  Phil Edwards  <pme@gcc.gnu.org>
 
 	* parser.c:  Fix comment typos.
