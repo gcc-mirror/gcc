@@ -1,3 +1,7 @@
+2001-11-04  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c (tsubst_copy): Call tsubst for TYPEOF_EXPR.
+
 2001-11-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* lex.c (copy_lang_type): Add static prototype.

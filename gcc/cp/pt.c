@@ -7174,6 +7174,7 @@ tsubst_copy (t, args, complain, in_decl)
     case ARRAY_TYPE:
     case TYPENAME_TYPE:
     case UNBOUND_CLASS_TEMPLATE:
+    case TYPEOF_TYPE:
     case TYPE_DECL:
       return tsubst (t, args, complain, in_decl);
 
