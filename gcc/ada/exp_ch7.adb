@@ -1050,77 +1050,13 @@ package body Exp_Ch7 is
       if No (Wrap_Node) then
          null;
 
+      --  If the node to wrap is an iteration_scheme, the expression is
+      --  one of the bounds, and the expansion will make an explicit
+      --  declaration for it (see Analyze_Iteration_Scheme, sem_ch5.adb),
+      --  so do not apply any transformations here.
+
       elsif Nkind (Wrap_Node) = N_Iteration_Scheme then
-
-         --  Create a declaration followed by an assignment, so that
-         --  the assignment can have its own transient scope.
-         --  We generate the equivalent of:
-
-         --  type Ptr is access all expr_type;
-         --  Var : Ptr;
-         --  begin
-         --     Var := Expr'reference;
-         --  end;
-
-         --  This closely resembles what is done in Remove_Side_Effect,
-         --  but it has to be done here, before the analysis of the call
-         --  is completed.
-
-         declare
-            Ptr_Typ : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc,
-                          Chars => New_Internal_Name ('A'));
-            Ptr     : constant Entity_Id :=
-                        Make_Defining_Identifier (Loc,
-                          Chars => New_Internal_Name ('T'));
-
-            Expr_Type    : constant Entity_Id := Etype (N);
-            New_Expr     : constant Node_Id := Relocate_Node (N);
-            Decl         : Node_Id;
-            Ptr_Typ_Decl : Node_Id;
-            Stmt         : Node_Id;
-
-         begin
-            Ptr_Typ_Decl :=
-              Make_Full_Type_Declaration (Loc,
-                Defining_Identifier => Ptr_Typ,
-                Type_Definition =>
-                  Make_Access_To_Object_Definition (Loc,
-                    All_Present => True,
-                    Subtype_Indication =>
-                      New_Reference_To (Expr_Type, Loc)));
-
-            Decl :=
-              Make_Object_Declaration (Loc,
-                 Defining_Identifier => Ptr,
-                 Object_Definition => New_Occurrence_Of (Ptr_Typ, Loc));
-
-            Set_Etype (Ptr, Ptr_Typ);
-            Stmt :=
-               Make_Assignment_Statement (Loc,
-                  Name => New_Occurrence_Of (Ptr, Loc),
-                  Expression => Make_Reference (Loc, New_Expr));
-
-            Set_Analyzed (New_Expr, False);
-
-            Insert_List_Before_And_Analyze
-              (Parent (Wrap_Node),
-                 New_List (
-                   Ptr_Typ_Decl,
-                   Decl,
-                   Make_Block_Statement (Loc,
-                     Handled_Statement_Sequence =>
-                       Make_Handled_Sequence_Of_Statements (Loc,
-                         New_List (Stmt)))));
-
-            Rewrite (N,
-              Make_Explicit_Dereference (Loc,
-                Prefix => New_Reference_To (Ptr, Loc)));
-            Analyze_And_Resolve (N, Expr_Type);
-
-         end;
-
-      --  Transient scope is required
+         null;
 
       else
          New_Scope (New_Internal_Entity (E_Block, Current_Scope, Loc, 'B'));

@@ -93,7 +93,6 @@ package Restrict is
      (No_IO,                       "text_io "),
      (No_IO,                       "a-witeio"),
      (No_Task_Attributes_Package,  "a-tasatt"),
-     (No_Streams,                  "a-stream"),
      (No_Unchecked_Conversion,     "a-unccon"),
      (No_Unchecked_Conversion,     "unchconv"),
      (No_Unchecked_Deallocation,   "a-uncdea"),
