@@ -269,6 +269,18 @@ lhd_tree_inlining_end_inlining (fn)
 {
 }
 
+/* lang_hooks.tree_inlining.convert_parm_for_inlining performs any
+   language-specific conversion before assigning VALUE to PARM.  */
+
+tree
+lhd_tree_inlining_convert_parm_for_inlining (parm, value, fndecl)
+     tree parm ATTRIBUTE_UNUSED;
+     tree value;
+     tree fndecl ATTRIBUTE_UNUSED;
+{
+  return value;
+}
+
 /* lang_hooks.tree_dump.dump_tree:  Dump language-specific parts of tree 
    nodes.  Returns non-zero if it does not want the usual dumping of the 
    second argument.  */

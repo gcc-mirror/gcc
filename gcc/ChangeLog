@@ -1,3 +1,19 @@
+2002-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/5656
+	* langhooks.h (struct lang_hooks_for_tree_inlining): Add
+	convert_parm_for_inlining.
+	* c-lang.c (LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING):
+	Define.
+	* langhooks-def.h: Likewise.
+	* objc/objc-lang.c: Likewise.
+	* langhooks.c (lhd_tree_inlining_convert_parm_for_inlining): New
+	function.
+	* tree-inline.c (initialize_inlined_parameters):
+	Call convert_parm_for_inlining lang hook if needed.
+	* c-typeck.c (c_convert_parm_for_inlining): New function.
+	* c-tree.h (c_convert_parm_for_inlining): Add prototype.
+
 2002-03-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcse.c (insert_insn_end_bb): Fix typo in last change.

@@ -65,6 +65,9 @@ static void c_post_options PARAMS ((void));
 #undef LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P
 #define LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P \
   anon_aggr_type_p
+#undef LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING
+#define LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING \
+  c_convert_parm_for_inlining
 
 /* ### When changing hooks, consider if ObjC needs changing too!! ### */
 

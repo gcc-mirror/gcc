@@ -270,6 +270,7 @@ extern void c_finish_case                       PARAMS ((void));
 extern tree simple_asm_stmt			PARAMS ((tree));
 extern tree build_asm_stmt			PARAMS ((tree, tree, tree,
 							 tree, tree));
+extern tree c_convert_parm_for_inlining		PARAMS ((tree, tree, tree));
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */

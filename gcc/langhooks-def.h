@@ -62,6 +62,7 @@ tree lhd_tree_inlining_copy_res_decl_for_inlining PARAMS ((tree, tree,
 int lhd_tree_inlining_anon_aggr_type_p		PARAMS ((tree));
 int lhd_tree_inlining_start_inlining		PARAMS ((tree));
 void lhd_tree_inlining_end_inlining		PARAMS ((tree));
+tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
 
 #define LANG_HOOKS_NAME			"GNU unknown"
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
@@ -103,6 +104,8 @@ void lhd_tree_inlining_end_inlining		PARAMS ((tree));
   lhd_tree_inlining_start_inlining
 #define LANG_HOOKS_TREE_INLINING_END_INLINING \
   lhd_tree_inlining_end_inlining
+#define LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING \
+  lhd_tree_inlining_convert_parm_for_inlining
 
 #define LANG_HOOKS_TREE_INLINING_INITIALIZER { \
   LANG_HOOKS_TREE_INLINING_WALK_SUBTREES, \
@@ -114,7 +117,8 @@ void lhd_tree_inlining_end_inlining		PARAMS ((tree));
   LANG_HOOKS_TREE_INLINING_COPY_RES_DECL_FOR_INLINING, \
   LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P, \
   LANG_HOOKS_TREE_INLINING_START_INLINING, \
-  LANG_HOOKS_TREE_INLINING_END_INLINING \
+  LANG_HOOKS_TREE_INLINING_END_INLINING, \
+  LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING \
 } \
 
 /* Tree dump hooks.  */

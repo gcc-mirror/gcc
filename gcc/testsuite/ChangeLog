@@ -1,3 +1,7 @@
+2002-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20020318-1.c: New test.
+
 2002-03-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/wchar-1.c: Fix test.
