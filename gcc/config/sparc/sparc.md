@@ -6337,7 +6337,7 @@
 			 (match_operand 2 "" "")))
 	      (clobber (reg:SI 15))])
    (set (pc) (label_ref (match_operand 3 "" "")))]
-  "short_branch (INSN_UID (insn), INSN_UID (operands[3]))"
+  "short_branch (INSN_UID (insn), INSN_UID (operands[3])) && in_same_eh_region (insn, operands[3]) && in_same_eh_region (insn, ins1)"
   "call %a1,%2\;add %%o7,(%l3-.-4),%%o7")
 
 (define_peephole
@@ -6345,7 +6345,7 @@
 		    (match_operand 1 "" ""))
 	      (clobber (reg:SI 15))])
    (set (pc) (label_ref (match_operand 2 "" "")))]
-  "short_branch (INSN_UID (insn), INSN_UID (operands[2]))"
+  "short_branch (INSN_UID (insn), INSN_UID (operands[2])) && in_same_eh_region (insn, operands[2]) && in_same_eh_region (insn, ins1)"
   "call %a0,%1\;add %%o7,(%l2-.-4),%%o7")
 
 (define_peephole
@@ -6354,7 +6354,7 @@
 			 (match_operand 2 "" "")))
 	      (clobber (reg:DI 15))])
    (set (pc) (label_ref (match_operand 3 "" "")))]
-  "TARGET_ARCH64 && short_branch (INSN_UID (insn), INSN_UID (operands[3]))"
+  "TARGET_ARCH64 && short_branch (INSN_UID (insn), INSN_UID (operands[3])) && in_same_eh_region (insn, operands[3]) && in_same_eh_region (insn, ins1)"
   "call %a1,%2\;add %%o7,(%l3-.-4),%%o7")
 
 (define_peephole
@@ -6362,7 +6362,7 @@
 		    (match_operand 1 "" ""))
 	      (clobber (reg:DI 15))])
    (set (pc) (label_ref (match_operand 2 "" "")))]
-  "TARGET_ARCH64 && short_branch (INSN_UID (insn), INSN_UID (operands[2]))"
+  "TARGET_ARCH64 && short_branch (INSN_UID (insn), INSN_UID (operands[2])) && in_same_eh_region (insn, operands[2]) && in_same_eh_region (insn, ins1)"
   "call %a0,%1\;add %%o7,(%l2-.-4),%%o7")
 
 ;; Other miscellaneous peepholes.
