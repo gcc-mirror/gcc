@@ -4509,11 +4509,9 @@ reloads_conflict (r1, r2)
   int r1_opnum = reload_opnum[r1];
   int r2_opnum = reload_opnum[r2];
 
-  /* RELOAD_OTHER conflicts with everything except
-     RELOAD_FOR_OTHER_ADDRESS.  */
+  /* RELOAD_OTHER conflicts with everything except RELOAD_FOR_OTHER_ADDRESS. */
   
-  if ((r1_type == RELOAD_OTHER && r2_type != RELOAD_FOR_OTHER_ADDRESS)
-      || (r2_type == RELOAD_OTHER && r1_type != RELOAD_FOR_OTHER_ADDRESS))
+  if (r2_type == RELOAD_OTHER && r1_type != RELOAD_FOR_OTHER_ADDRESS)
     return 1;
 
   /* Otherwise, check conflicts differently for each type.  */
@@ -4555,6 +4553,9 @@ reloads_conflict (r1, r2)
 
     case RELOAD_FOR_OTHER_ADDRESS:
       return r2_type == RELOAD_FOR_OTHER_ADDRESS;
+
+    case RELOAD_OTHER:
+      return r2_type != RELOAD_FOR_OTHER_ADDRESS;
 
     default:
       abort ();
