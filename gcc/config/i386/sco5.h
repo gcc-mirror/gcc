@@ -119,7 +119,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef FINI_SECTION_ASM_OP
 #define FINI_SECTION_ASM_OP_ELF		"\t.section\t.fini"
-#define FINI_SECTION_ASM_OP_COFF	"\t.section\t.fini, \"x\""
+#define FINI_SECTION_ASM_OP_COFF	"\t.section\t.dtor, \"x\""
 #define FINI_SECTION_ASM_OP	\
  ((TARGET_ELF) ? FINI_SECTION_ASM_OP_ELF : FINI_SECTION_ASM_OP_COFF)
 
