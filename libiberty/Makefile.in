@@ -286,6 +286,7 @@ spaces.o: $(INCDIR)/libiberty.h
 splay-tree.o: config.h $(INCDIR)/libiberty.h $(INCDIR)/splay-tree.h $(INCDIR)/ansidecl.h
 strerror.o: config.h $(INCDIR)/libiberty.h
 strsignal.o: config.h $(INCDIR)/libiberty.h
+vasprintf.o: config.h
 xatexit.o: $(INCDIR)/libiberty.h
 xexit.o: config.h $(INCDIR)/libiberty.h
 xmalloc.o: config.h $(INCDIR)/libiberty.h
