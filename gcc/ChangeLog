@@ -1,3 +1,7 @@
+Sun Nov 30 19:59:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* stmt.c (expand_decl_cleanup): Update thisblock after eh_region_start.
+
 Sat Nov 29 12:44:57 1997  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.c (function_arg_partial_nregs): Undo Nov. 26 patch.
