@@ -491,14 +491,14 @@ override_options ()
 	       ix86_align_funcs, MAX_CODE_ALIGN);
     }
 
-  /* Validate -mpreferred_stack_boundary= value, or provide default.
+  /* Validate -mpreferred-stack-boundary= value, or provide default.
      The default of 128 bits is for Pentium III's SSE __m128.  */
   ix86_preferred_stack_boundary = 128;
   if (ix86_preferred_stack_boundary_string)
     {
       int i = atoi (ix86_preferred_stack_boundary_string);
       if (i < 2 || i > 31)
-	fatal ("-mpreferred_stack_boundary=%d is not between 2 and 31", i);
+	fatal ("-mpreferred-stack-boundary=%d is not between 2 and 31", i);
       ix86_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
     }
 
