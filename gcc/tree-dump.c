@@ -65,7 +65,7 @@ queue (di, t, flags)
   dni = (dump_node_info_p) xmalloc (sizeof (struct dump_node_info));
   dni->index = index;
   dni->binfo_p = ((flags & DUMP_BINFO) != 0);
-  dq->node = splay_tree_insert (di->nodes, (splay_tree_key) t, 
+  dq->node = splay_tree_insert (di->nodes, (splay_tree_key) t,
 				(splay_tree_value) dni);
 
   /* Add it to the end of the queue.  */
@@ -156,7 +156,7 @@ dump_maybe_newline (di)
      dump_info_p di;
 {
   int extra;
-  
+
   /* See if we need a new line.  */
   if (di->column > EOL_COLUMN)
     dump_new_line (di);
@@ -247,7 +247,7 @@ dump_next_stmt (di, t)
 
 /* Dump the next node in the queue.  */
 
-static void 
+static void
 dequeue_and_dump (di)
      dump_info_p di;
 {
@@ -300,7 +300,7 @@ dequeue_and_dump (di)
 	dump_string (di, "priv");
       if (TREE_VIA_VIRTUAL (t))
 	dump_string (di, "virt");
-	    
+
       dump_child ("type", BINFO_TYPE (t));
       dump_child ("base", BINFO_BASETYPES (t));
 
@@ -319,17 +319,17 @@ dequeue_and_dump (di)
 	case '1':
 	  dump_child ("op 0", TREE_OPERAND (t, 0));
 	  break;
-	      
+
 	case '2':
 	case '<':
 	  dump_child ("op 0", TREE_OPERAND (t, 0));
 	  dump_child ("op 1", TREE_OPERAND (t, 1));
 	  break;
-	      
+
 	case 'e':
 	  /* These nodes are handled explicitly below.  */
 	  break;
-	      
+
 	default:
 	  abort ();
 	}
@@ -339,7 +339,7 @@ dequeue_and_dump (di)
       /* All declarations have names.  */
       if (DECL_NAME (t))
 	dump_child ("name", DECL_NAME (t));
-      if (DECL_ASSEMBLER_NAME_SET_P (t) 
+      if (DECL_ASSEMBLER_NAME_SET_P (t)
 	  && DECL_ASSEMBLER_NAME (t) != DECL_NAME (t))
 	dump_child ("mngl", DECL_ASSEMBLER_NAME (t));
       /* And types.  */
@@ -356,7 +356,7 @@ dequeue_and_dump (di)
 	    ++filename;
 
 	  dump_maybe_newline (di);
-	  fprintf (di->stream, "srcp: %s:%-6d ", filename, 
+	  fprintf (di->stream, "srcp: %s:%-6d ", filename,
 		   DECL_SOURCE_LINE (t));
 	  di->column += 6 + strlen (filename) + 8;
 	}
@@ -370,7 +370,7 @@ dequeue_and_dump (di)
     {
       /* All types have qualifiers.  */
       int quals = (*lang_hooks.tree_dump.type_quals) (t);
-      
+
       if (quals != TYPE_UNQUALIFIED)
 	{
 	  fprintf (di->stream, "qual: %c%c%c     ",
@@ -386,7 +386,7 @@ dequeue_and_dump (di)
       /* All types have a main variant.  */
       if (TYPE_MAIN_VARIANT (t) != t)
 	dump_child ("unql", TYPE_MAIN_VARIANT (t));
-      
+
       /* And sizes.  */
       dump_child ("size", TYPE_SIZE (t));
 
@@ -473,10 +473,10 @@ dequeue_and_dump (di)
 	dump_string (di, "struct");
       else
 	dump_string (di, "union");
-      
+
       dump_child ("flds", TYPE_FIELDS (t));
       dump_child ("fncs", TYPE_METHODS (t));
-      queue_and_dump_index (di, "binf", TYPE_BINFO (t), 
+      queue_and_dump_index (di, "binf", TYPE_BINFO (t),
 			    DUMP_BINFO);
       break;
 
@@ -502,7 +502,7 @@ dequeue_and_dump (di)
 	  if (DECL_FIELD_OFFSET (t))
 	    dump_child ("bpos", bit_position (t));
 	}
-      else if (TREE_CODE (t) == VAR_DECL 
+      else if (TREE_CODE (t) == VAR_DECL
 	       || TREE_CODE (t) == PARM_DECL)
 	{
 	  dump_int (di, "used", TREE_USED (t));
@@ -566,7 +566,7 @@ dequeue_and_dump (di)
       dump_child ("decl", DECL_STMT_DECL (t));
       dump_next_stmt (di, t);
       break;
-      
+
     case DO_STMT:
       dump_stmt (di, t);
       dump_child ("body", DO_BODY (t));
@@ -720,7 +720,7 @@ dequeue_and_dump (di)
 	 becomes NULL.  */
       dump_child ("init", TREE_OPERAND (t, 3));
       break;
-      
+
     case EXPR_WITH_FILE_LOCATION:
       dump_child ("expr", EXPR_WFL_NODE (t));
       break;
@@ -733,7 +733,7 @@ dequeue_and_dump (di)
  done:
   if (dump_flag (di, TDF_ADDRESS, NULL))
     dump_pointer (di, "addr", (void *)t);
-  
+
   /* Terminate the line.  */
   fprintf (di->stream, "\n");
 }
@@ -770,7 +770,7 @@ dump_node (t, flags, stream)
   di.free_list = 0;
   di.flags = flags;
   di.node = t;
-  di.nodes = splay_tree_new (splay_tree_compare_pointers, 0, 
+  di.nodes = splay_tree_new (splay_tree_compare_pointers, 0,
 			     (splay_tree_delete_value_fn) &free);
 
   /* Queue up the first node.  */
@@ -838,10 +838,10 @@ dump_begin (phase, flag_ptr)
 {
   FILE *stream;
   char *name;
-  
+
   if (!dump_files[phase].state)
     return NULL;
-  
+
   name = concat (dump_base_name, dump_files[phase].suffix, NULL);
   stream = fopen (name, dump_files[phase].state < 0 ? "w" : "a");
   if (!stream)
@@ -851,7 +851,7 @@ dump_begin (phase, flag_ptr)
   free (name);
   if (flag_ptr)
     *flag_ptr = dump_files[phase].flags;
-  
+
   return stream;
 }
 
@@ -893,26 +893,26 @@ dump_switch_p (arg)
 {
   unsigned ix;
   const char *option_value;
-  
+
   for (ix = 0; ix != TDI_end; ix++)
     if ((option_value = skip_leading_substring (arg, dump_files[ix].swtch)))
       {
 	const char *ptr = option_value;
 	int flags = 0;
-	
+
 	while (*ptr)
 	  {
 	    const struct dump_option_value_info *option_ptr;
 	    const char *end_ptr;
 	    unsigned length;
-	    
+
 	    while (*ptr == '-')
 	      ptr++;
 	    end_ptr = strchr (ptr, '-');
 	    if (!end_ptr)
 	      end_ptr = ptr + strlen (ptr);
 	    length = end_ptr - ptr;
-	    
+
 	    for (option_ptr = dump_options; option_ptr->name;
 		 option_ptr++)
 	      if (strlen (option_ptr->name) == length
@@ -926,10 +926,10 @@ dump_switch_p (arg)
 	  found:;
 	    ptr = end_ptr;
 	  }
-	
+
 	dump_files[ix].state = -1;
 	dump_files[ix].flags = flags;
-	
+
 	return 1;
       }
   return 0;

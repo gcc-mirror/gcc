@@ -132,7 +132,7 @@ symbol_hash_lookup (string, create)
      int create;
 {
   return ((struct symbol_hash_entry *)
-	  hash_lookup (&symbol_table, (const hash_table_key) string, 
+	  hash_lookup (&symbol_table, (const hash_table_key) string,
 		       create, string_copy));
 }
 
@@ -169,7 +169,7 @@ file_hash_lookup (string)
      const char *string;
 {
   return ((struct file_hash_entry *)
-	  hash_lookup (&file_table, (const hash_table_key) string, true, 
+	  hash_lookup (&file_table, (const hash_table_key) string, true,
 		       string_copy));
 }
 
@@ -204,7 +204,7 @@ demangled_hash_lookup (string, create)
      int create;
 {
   return ((struct demangled_hash_entry *)
-	  hash_lookup (&demangled_table, (const hash_table_key) string, 
+	  hash_lookup (&demangled_table, (const hash_table_key) string,
 		       create, string_copy));
 }
 
@@ -292,7 +292,7 @@ tlink_init ()
 
   hash_table_init (&symbol_table, symbol_hash_newfunc, string_hash,
 		   string_compare);
-  hash_table_init (&file_table, file_hash_newfunc, string_hash, 
+  hash_table_init (&file_table, file_hash_newfunc, string_hash,
 		   string_compare);
   hash_table_init (&demangled_table, demangled_hash_newfunc,
 		   string_hash, string_compare);
@@ -320,7 +320,7 @@ tlink_execute (prog, argv, redir)
 {
   collect_execute (prog, argv, redir);
   return collect_wait (prog);
-} 
+}
 
 static char *
 frob_extension (s, ext)
@@ -425,7 +425,7 @@ read_repo_file (f)
   FILE *stream = fopen ((char*) f->root.key, "r");
 
   if (tlink_verbose >= 2)
-    fprintf (stderr, _("collect: reading %s\n"), 
+    fprintf (stderr, _("collect: reading %s\n"),
 	     (char*) f->root.key);
 
   while (fscanf (stream, "%c ", &c) == 1)
@@ -497,7 +497,7 @@ recompile_files ()
 
   putenv (xstrdup ("COMPILER_PATH"));
   putenv (xstrdup ("LIBRARY_PATH"));
-  
+
   while ((f = file_pop ()) != NULL)
     {
       char *line, *command;
@@ -587,7 +587,7 @@ demangle_new_symbols ()
   while ((sym = symbol_pop ()) != NULL)
     {
       demangled *dem;
-      const char *p = cplus_demangle ((char*) sym->root.key, 
+      const char *p = cplus_demangle ((char*) sym->root.key,
 				DMGL_PARAMS | DMGL_ANSI);
 
       if (! p)
@@ -613,7 +613,7 @@ scan_linker_output (fname)
       char *p = line, *q;
       symbol *sym;
       int end;
-      
+
       while (*p && ISSPACE ((unsigned char)*p))
 	++p;
 
@@ -679,8 +679,8 @@ scan_linker_output (fname)
 	      if (dem)
 		sym = symbol_hash_lookup (dem->mangled, false);
 	      else
-	        {
-	          if (*p == '_' && prepends_underscore)
+		{
+		  if (*p == '_' && prepends_underscore)
 		    ++p;
 		  sym = symbol_hash_lookup (p, false);
 		}
@@ -700,7 +700,7 @@ scan_linker_output (fname)
 	  sym->tweaking = 1;
 	  file_push (sym->file);
 	}
-	
+
       obstack_free (&temporary_obstack, temporary_firstobj);
     }
 

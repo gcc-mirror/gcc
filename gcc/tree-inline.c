@@ -38,11 +38,11 @@ Boston, MA 02111-1307, USA.  */
 
 /* This should be eventually be generalized to other languages, but
    this would require a shared function-as-trees infrastructure.  */
-#include "c-common.h" 
+#include "c-common.h"
 
 /* 0 if we should not perform inlining.
-   1 if we should expand functions calls inline at the tree level.  
-   2 if we should consider *all* functions to be inline 
+   1 if we should expand functions calls inline at the tree level.
+   2 if we should consider *all* functions to be inline
    candidates.  */
 
 int flag_inline_trees = 0;
@@ -166,7 +166,7 @@ remap_decl (decl, id)
 	     DECL_ANON_UNION_ELEMS.  */
 	  tree members = NULL;
 	  tree src;
-	  
+
 	  for (src = DECL_ANON_UNION_ELEMS (t); src;
 	       src = TREE_CHAIN (src))
 	    {
@@ -178,7 +178,7 @@ remap_decl (decl, id)
 	    }
 	  DECL_ANON_UNION_ELEMS (t) = nreverse (members);
 	}
-      
+
       /* Remember it, so that if we encounter this local entity
 	 again we can reuse this copy.  */
       n = splay_tree_insert (id->decl_map,
@@ -563,7 +563,7 @@ initialize_inlined_parameters (id, args, fn)
 
       /* See if we need to clean up the declaration.  */
       cleanup = (*lang_hooks.maybe_build_cleanup) (var);
-      if (cleanup) 
+      if (cleanup)
 	{
 	  tree cleanup_stmt;
 	  /* Build the cleanup statement.  */
@@ -677,7 +677,7 @@ inlinable_function_p (fn, id)
 
   /* Assume it is not inlinable.  */
   inlinable = 0;
-       
+
   /* The number of instructions (estimated) of current function.  */
   currfn_insns = DECL_NUM_STMTS (fn) * INSNS_PER_STMT;
 
@@ -693,7 +693,7 @@ inlinable_function_p (fn, id)
   else if (! DECL_INLINE (fn))
     ;
   /* We can't inline functions that are too big.  Only allow a single
-     function to be of MAX_INLINE_INSNS_SINGLE size.  Make special 
+     function to be of MAX_INLINE_INSNS_SINGLE size.  Make special
      allowance for extern inline functions, though.  */
   else if (! (*lang_hooks.tree_inlining.disregard_inline_limits) (fn)
 	   && currfn_insns > MAX_INLINE_INSNS_SINGLE)
@@ -712,7 +712,7 @@ inlinable_function_p (fn, id)
      can inline this function, investigate further.  */
   if (! (*lang_hooks.tree_inlining.disregard_inline_limits) (fn)
       && inlinable)
-    { 
+    {
       int sum_insns = (id ? id->inlined_stmts : 0) * INSNS_PER_STMT
 		     + currfn_insns;
       /* In the extreme case that we have exceeded the recursive inlining
@@ -726,7 +726,7 @@ inlinable_function_p (fn, id)
          though.  */
       else if ((sum_insns > MAX_INLINE_INSNS)
 	       && (currfn_insns > MIN_INLINE_INSNS))
-        {
+	{
 	  int max_curr = MAX_INLINE_INSNS_SINGLE
 			- (sum_insns - MAX_INLINE_INSNS) / MAX_INLINE_SLOPE;
 	  if (currfn_insns > max_curr)
@@ -736,7 +736,7 @@ inlinable_function_p (fn, id)
 
   if (inlinable && (*lang_hooks.tree_inlining.cannot_inline_tree_fn) (&fn))
     inlinable = 0;
-  
+
   /* If we don't have the function body available, we can't inline
      it.  */
   if (! DECL_SAVED_TREE (fn))
@@ -1034,7 +1034,7 @@ optimize_inline_calls (fn)
 {
   inline_data id;
   tree prev_fn;
-  
+
   /* Clear out ID.  */
   memset (&id, 0, sizeof (id));
 
@@ -1051,7 +1051,7 @@ optimize_inline_calls (fn)
 
   prev_fn = ((*lang_hooks.tree_inlining.add_pending_fn_decls)
 	     (&id.fns, prev_fn));
-  
+
   /* Create the stack of TARGET_EXPRs.  */
   VARRAY_TREE_INIT (id.target_exprs, 32, "target_exprs");
 
@@ -1075,7 +1075,7 @@ optimize_inline_calls (fn)
   if (DECL_LANG_SPECIFIC (fn))
     {
       tree ifn = make_tree_vec (VARRAY_ACTIVE_SIZE (id.inlined_fns));
-      
+
       memcpy (&TREE_VEC_ELT (ifn, 0), &VARRAY_TREE (id.inlined_fns, 0),
 	      VARRAY_ACTIVE_SIZE (id.inlined_fns) * sizeof (tree));
       DECL_INLINED_FNS (fn) = ifn;
@@ -1122,7 +1122,7 @@ clone_body (clone, fn, arg_map)
    to record the nodes visited, and to avoid visiting a node more than
    once.  */
 
-tree 
+tree
 walk_tree (tp, func, data, htab_)
      tree *tp;
      walk_tree_fn func;
@@ -1133,7 +1133,7 @@ walk_tree (tp, func, data, htab_)
   enum tree_code code;
   int walk_subtrees;
   tree result;
-  
+
 #define WALK_SUBTREE(NODE)				\
   do							\
     {							\
@@ -1159,7 +1159,7 @@ walk_tree (tp, func, data, htab_)
   if (htab)
     {
       void **slot;
-      
+
       /* Don't walk the same tree twice, if the user has requested
          that we avoid doing so.  */
       if (htab_find (htab, *tp))
@@ -1219,8 +1219,8 @@ walk_tree (tp, func, data, htab_)
 	 entire statement tree.  */
       if (statement_code_p (code))
 	{
-	  if (code == DECL_STMT 
-	      && DECL_STMT_DECL (*tp) 
+	  if (code == DECL_STMT
+	      && DECL_STMT_DECL (*tp)
 	      && DECL_P (DECL_STMT_DECL (*tp)))
 	    {
 	      /* Walk the DECL_INITIAL and DECL_SIZE.  We don't want to walk
@@ -1342,10 +1342,10 @@ walk_tree (tp, func, data, htab_)
 #undef WALK_SUBTREE
 }
 
-/* Like walk_tree, but does not walk duplicate nodes more than 
+/* Like walk_tree, but does not walk duplicate nodes more than
    once.  */
 
-tree 
+tree
 walk_tree_without_duplicates (tp, func, data)
      tree *tp;
      walk_tree_fn func;
@@ -1422,7 +1422,7 @@ remap_save_expr (tp, st_, fn, walk_subtrees)
 
   /* See if we already encountered this SAVE_EXPR.  */
   n = splay_tree_lookup (st, (splay_tree_key) *tp);
-      
+
   /* If we didn't already remap this SAVE_EXPR, do so now.  */
   if (!n)
     {

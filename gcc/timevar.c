@@ -171,7 +171,7 @@ static struct timevar_time_def start_time;
 static void get_time
   PARAMS ((struct timevar_time_def *));
 static void timevar_accumulate
-  PARAMS ((struct timevar_time_def *, struct timevar_time_def *, 
+  PARAMS ((struct timevar_time_def *, struct timevar_time_def *,
 	   struct timevar_time_def *));
 
 /* Fill the current times into TIME.  The definition of this function
@@ -210,11 +210,11 @@ get_time (now)
 
 /* Add the difference between STOP_TIME and START_TIME to TIMER.  */
 
-static void 
+static void
 timevar_accumulate (timer, start_time, stop_time)
-  struct timevar_time_def *timer;
-  struct timevar_time_def *start_time;
-  struct timevar_time_def *stop_time;
+     struct timevar_time_def *timer;
+     struct timevar_time_def *start_time;
+     struct timevar_time_def *stop_time;
 {
   timer->user += stop_time->user - start_time->user;
   timer->sys += stop_time->sys - start_time->sys;
@@ -249,7 +249,7 @@ init_timevar ()
 /* Push TIMEVAR onto the timing stack.  No further elapsed time is
    attributed to the previous topmost timing variable on the stack;
    subsequent elapsed time is attributed to TIMEVAR, until it is
-   popped or another element is pushed on top. 
+   popped or another element is pushed on top.
 
    TIMEVAR cannot be running as a standalone timer.  */
 
@@ -285,13 +285,13 @@ timevar_push (timevar)
 
   /* See if we have a previously-allocated stack instance.  If so,
      take it off the list.  If not, malloc a new one.  */
-  if (unused_stack_instances != NULL) 
+  if (unused_stack_instances != NULL)
     {
       context = unused_stack_instances;
       unused_stack_instances = unused_stack_instances->next;
     }
   else
-    context = (struct timevar_stack_def *) 
+    context = (struct timevar_stack_def *)
       xmalloc (sizeof (struct timevar_stack_def));
 
   /* Fill it in and put it on the stack.  */
@@ -396,7 +396,7 @@ timevar_get (timevar, elapsed)
   struct timevar_time_def now;
 
   *elapsed = tv->elapsed;
-  
+
   /* Is TIMEVAR currently running as a standalone timer?  */
   if (tv->standalone)
     {
@@ -472,21 +472,21 @@ timevar_print (fp)
 
 #ifdef HAVE_USER_TIME
       /* Print user-mode time for this process.  */
-      fprintf (fp, "%7.2f (%2.0f%%) usr", 
+      fprintf (fp, "%7.2f (%2.0f%%) usr",
 	       tv->elapsed.user,
 	       (total->user == 0 ? 0 : tv->elapsed.user / total->user) * 100);
 #endif /* HAVE_USER_TIME */
 
 #ifdef HAVE_SYS_TIME
       /* Print system-mode time for this process.  */
-      fprintf (fp, "%7.2f (%2.0f%%) sys", 
+      fprintf (fp, "%7.2f (%2.0f%%) sys",
 	       tv->elapsed.sys,
 	       (total->sys == 0 ? 0 : tv->elapsed.sys / total->sys) * 100);
 #endif /* HAVE_SYS_TIME */
 
 #ifdef HAVE_WALL_TIME
       /* Print wall clock time elapsed.  */
-      fprintf (fp, "%7.2f (%2.0f%%) wall", 
+      fprintf (fp, "%7.2f (%2.0f%%) wall",
 	       tv->elapsed.wall,
 	       (total->wall == 0 ? 0 : tv->elapsed.wall / total->wall) * 100);
 #endif /* HAVE_WALL_TIME */
@@ -498,15 +498,15 @@ timevar_print (fp)
   fputs (_(" TOTAL                 :"), fp);
 #ifdef HAVE_USER_TIME
   fprintf (fp, "%7.2f          ", total->user);
-#endif 
+#endif
 #ifdef HAVE_SYS_TIME
   fprintf (fp, "%7.2f          ", total->sys);
 #endif
 #ifdef HAVE_WALL_TIME
   fprintf (fp, "%7.2f\n", total->wall);
 #endif
-  
-#endif /* defined (HAVE_USER_TIME) || defined (HAVE_SYS_TIME) 
+
+#endif /* defined (HAVE_USER_TIME) || defined (HAVE_SYS_TIME)
 	  || defined (HAVE_WALL_TIME) */
 }
 
@@ -533,6 +533,6 @@ print_time (str, total)
   fprintf (stderr,
 	   _("time in %s: %ld.%06ld (%ld%%)\n"),
 	   str, total / 1000000, total % 1000000,
- 	   all_time == 0 ? 0
- 	   : (long) (((100.0 * (double) total) / (double) all_time) + .5));
+	   all_time == 0 ? 0
+	   : (long) (((100.0 * (double) total) / (double) all_time) + .5));
 }

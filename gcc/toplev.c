@@ -2512,7 +2512,7 @@ rest_of_compilation (decl)
   rebuild_jump_labels (insns);
   find_exception_handler_labels ();
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
-  
+
   delete_unreachable_blocks ();
 
   /* Turn NOTE_INSN_PREDICTIONs into branch predictions.  */
@@ -2528,7 +2528,7 @@ rest_of_compilation (decl)
       /* There is pass ordering problem - we must lower NOTE_INSN_PREDICTION
          notes before simplifying cfg and we must do lowering after sibcall
          that unhides parts of RTL chain and cleans up the CFG.
-        
+
          Until sibcall is replaced by tree-level optimizer, lets just
          sweep away the NOTE_INSN_PREDICTION notes that leaked out.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -3868,7 +3868,7 @@ decode_f_option (arg)
       stack_limit_rtx = gen_rtx_SYMBOL_REF (Pmode, nm);
     }
   else if ((option_value
-            = skip_leading_substring (arg, "message-length=")))
+	    = skip_leading_substring (arg, "message-length=")))
     output_set_maximum_length
       (&global_dc->buffer, read_integral_parameter
        (option_value, arg - 2, diagnostic_line_cutoff (global_dc)));
