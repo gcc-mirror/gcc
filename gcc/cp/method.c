@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Handle method declarations.  */
 #include "config.h"
-#include "system.h
+#include "system.h"
 #include "tree.h"
 #include "cp-tree.h"
 #include "obstack.h"
