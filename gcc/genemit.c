@@ -530,7 +530,7 @@ gen_split (split)
   /* Declare all local variables.  */
   for (i = 0; i < operands; i++)
     printf ("  rtx operand%d;\n", i);
-  printf ("  rtx _val;\n");
+  printf ("  rtx _val = 0;\n");
   printf ("  start_sequence ();\n");
 
   /* The fourth operand of DEFINE_SPLIT is some code to be executed
