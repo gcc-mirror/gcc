@@ -1,3 +1,7 @@
+2000-06-06  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* c-typeck.c (build_conditional_expr): Handle complex data types.
+
 2000-06-05  Jason Merrill  <jason@casey.soma.redhat.com>
 
 	* explow.c (maybe_set_unchanging): New function, broken out from...
