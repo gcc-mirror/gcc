@@ -1672,13 +1672,11 @@ set_mem_attributes (ref, t, objectp)
      front-end routine).  */
   set_mem_alias_set (ref, get_alias_set (t));
 
-  /* It is incorrect to set RTX_UNCHANGING_P from TREE_READONLY (type)
-     here, because, in C and C++, the fact that a location is accessed
-     through a const expression does not mean that the value there can
-     never change.  */
-
   MEM_VOLATILE_P (ref) = TYPE_VOLATILE (type);
   MEM_IN_STRUCT_P (ref) = AGGREGATE_TYPE_P (type);
+  RTX_UNCHANGING_P (ref)
+    |= (lang_hooks.honor_readonly
+	&& (TYPE_READONLY (type) || TREE_READONLY (t)));
 
   /* If we are making an object of this type, we know that it is a scalar if
      the type is not an aggregate.  */
@@ -1716,6 +1714,10 @@ set_mem_attributes (ref, t, objectp)
 	  && host_integerp (TYPE_SIZE_UNIT (TREE_TYPE (t)), 1))
 	 ? GEN_INT (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (t)), 1))
 	 : 0, DECL_ALIGN (t) / BITS_PER_UNIT);
+
+  /* If this is an INDIRECT_REF, we know its alignment.  */
+  if (TREE_CODE (t) == INDIRECT_REF)
+    set_mem_align (ref, TYPE_ALIGN (type) / BITS_PER_UNIT);
 
   /* Now see if we can say more about whether it's an aggregate or
      scalar.  If we already know it's an aggregate, don't bother.  */
@@ -1860,14 +1862,11 @@ adjust_address_1 (memref, mode, offset, validate)
   if (memoffset)
     memoffset = GEN_INT (offset + INTVAL (memoffset));
 
-  /* If the offset is negative, don't try to update the alignment.  If it's
-     zero, the alignment hasn't changed.  Otherwise, the known alignment may
-     be less strict.  */
-  if (offset < 0)
-    memalign = 1;
-
-  while (offset > 0 && (offset % memalign) != 0)
-    memalign >>= 1;
+  /* Compute the new alignment by taking the MIN of the alignment and the
+     lowest-order set bit in OFFSET, but don't change the alignment if OFFSET
+     if zero.  */
+  if (offset != 0)
+    memalign = MIN (memalign, offset & -offset);
 
   MEM_ATTRS (new)
     = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_DECL (memref), memoffset,
@@ -1893,15 +1892,11 @@ offset_address (memref, offset, pow2)
   rtx new = change_address_1 (memref, VOIDmode,
 			      gen_rtx_PLUS (Pmode, XEXP (memref, 0),
 					    force_reg (Pmode, offset)), 1);
-  unsigned int memalign = MEM_ALIGN (memref);
 
   /* Update the alignment to reflect the offset.  Reset the offset, which
      we don't know.  */
-  while (pow2 % memalign != 0)
-    memalign >>= 1;
-
   MEM_ATTRS (new) = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_DECL (memref),
-				   0, 0, memalign);
+				   0, 0, MIN (MEM_ALIGN (memref), pow2));
   return new;
 }
   

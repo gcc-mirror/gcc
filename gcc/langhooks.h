@@ -39,6 +39,9 @@ Boston, MA 02111-1307, USA.  */
 #ifndef LANG_HOOKS_POST_OPTIONS
 #define LANG_HOOKS_POST_OPTIONS NULL
 #endif
+#ifndef LANG_HOOKS_HONOR_READONLY
+#define LANG_HOOKS_HONOR_READONLY 0
+#endif
 
 /* Declarations of default tree inlining hooks.  */
 tree tree_inlining_default_hook_walk_subtrees PARAMS ((tree*, int *,
@@ -108,6 +111,7 @@ int tree_inlining_default_hook_anon_aggr_type_p PARAMS ((tree));
   LANG_HOOKS_INIT_OPTIONS, \
   LANG_HOOKS_DECODE_OPTION, \
   LANG_HOOKS_POST_OPTIONS, \
+  LANG_HOOKS_HONOR_READONLY, \
   LANG_HOOKS_TREE_INLINING_INITIALIZER \
 }
 

@@ -6812,13 +6812,6 @@ expand_expr (exp, target, tmode, modifier)
 	temp = gen_rtx_MEM (mode, op0);
 	set_mem_attributes (temp, exp, 0);
 
-	/* It is incorrect to set RTX_UNCHANGING_P from TREE_READONLY
-	   here, because, in C and C++, the fact that a location is accessed
-	   through a pointer to const does not mean that the value there can
-	   never change.  Languages where it can never change should
-	   also set TREE_STATIC.  */
-	RTX_UNCHANGING_P (temp) = TREE_READONLY (exp) & TREE_STATIC (exp);
-
 	/* If we are writing to this object and its type is a record with
 	   readonly fields, we must mark it as readonly so it will
 	   conflict with readonly references to those fields.  */
