@@ -66,8 +66,6 @@ do {								\
     }								\
 } while (0)
 
-extern void output_file_directive ();
-
 /* Attach a special .ident directive to the end of the file to identify
    the version of GCC which compiled this code.  The format of the
    .ident string is patterned after the ones produced by native svr4
@@ -265,6 +263,11 @@ do {									\
   SECTION_FUNCTION_TEMPLATE(sbss_section, in_sbss, SBSS_SECTION_ASM_OP)	\
   SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP)
 
+extern void ctors_section		PARAMS ((void));
+extern void dtors_section		PARAMS ((void));
+extern void sbss_section		PARAMS ((void));
+extern void sdata_section		PARAMS ((void));
+
 #undef READONLY_DATA_SECTION
 #define READONLY_DATA_SECTION() const_section ()
 
@@ -282,7 +285,6 @@ const_section ()						\
 }
 
 #define SECTION_FUNCTION_TEMPLATE(FN, ENUM, OP)	\
-void FN PARAMS ((void));				\
 void FN ()					\
 {						\
   if (in_section != ENUM)			\

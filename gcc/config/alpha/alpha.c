@@ -3722,9 +3722,12 @@ function_arg (cum, mode, type, named)
      int named ATTRIBUTE_UNUSED;
 {
   int basereg;
+  int num_args;
 
+#ifndef OPEN_VMS
   if (cum >= 6)
     return NULL_RTX;
+  num_args = cum;
 
   /* VOID is passed as a special flag for "last argument".  */
   if (type == void_type_node)
@@ -3733,6 +3736,14 @@ function_arg (cum, mode, type, named)
     return NULL_RTX;
   else if (FUNCTION_ARG_PASS_BY_REFERENCE (cum, mode, type, named))
     basereg = 16;
+#else
+  if (mode == VOIDmode)
+    return alpha_arg_info_reg_val (cum);
+
+  num_args = cum.num_args;
+  if (num_args >= 6 || MUST_PASS_IN_STACK (mode, type))
+    return NULL_RTX;
+#endif /* OPEN_VMS */
   else if (TARGET_FPREGS
 	   && (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
 	       || GET_MODE_CLASS (mode) == MODE_FLOAT))
@@ -3740,7 +3751,7 @@ function_arg (cum, mode, type, named)
   else
     basereg = 16;
 
-  return gen_rtx_REG (mode, cum + basereg);
+  return gen_rtx_REG (mode, num_args + basereg);
 }
 
 tree
@@ -5866,109 +5877,165 @@ alpha_arg_info_reg_val (cum)
   return GEN_INT (regval);
 }
 
+#include <splay-tree.h>
+
 /* Structure to collect function names for final output
    in link section.  */
 
 enum links_kind {KIND_UNUSED, KIND_LOCAL, KIND_EXTERN};
 
-
-struct alpha_links {
-  struct alpha_links *next;
-  char *name;
+struct alpha_links
+{
+  rtx linkage;
   enum links_kind kind;
 };
 
-static struct alpha_links *alpha_links_base = 0;
+static splay_tree alpha_links;
+
+static int mark_alpha_links_node	PARAMS ((splay_tree_node, void *));
+static void mark_alpha_links		PARAMS ((void *));
+static int alpha_write_one_linkage	PARAMS ((splay_tree_node, void *));
+
+/* Protect alpha_links from garbage collection.  */
+
+static int
+mark_alpha_links_node (node, data)
+     splay_tree_node node;
+     void *data ATTRIBUTE_UNUSED;
+{
+  struct alpha_links *links = (struct alpha_links *) node->value;
+  ggc_mark_rtx (links->linkage);
+  return 0;
+}
+
+static void
+mark_alpha_links (ptr)
+     void *ptr;
+{
+  splay_tree tree = *(splay_tree *) ptr;
+  splay_tree_foreach (tree, mark_alpha_links_node, NULL);
+}
 
 /* Make (or fake) .linkage entry for function call.
 
-   IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.  */
+   IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.
 
-void
+   Return an SYMBOL_REF rtx for the linkage.  */
+
+rtx
 alpha_need_linkage (name, is_local)
     const char *name;
     int is_local;
 {
-  rtx x;
-  struct alpha_links *lptr, *nptr;
+  splay_tree_node node;
+  struct alpha_links *al;
 
   if (name[0] == '*')
     name++;
 
-  /* Is this name already defined ?  */
+  if (alpha_links)
+    {
+      /* Is this name already defined?  */
 
-  for (lptr = alpha_links_base; lptr; lptr = lptr->next)
-    if (strcmp (lptr->name, name) == 0)
-      {
-	if (is_local)
-	  {
-	    /* Defined here but external assumed.  */
-	    if (lptr->kind == KIND_EXTERN)
-	      lptr->kind = KIND_LOCAL;
-	  }
-	else
-	  {
-	    /* Used here but unused assumed.  */
-	    if (lptr->kind == KIND_UNUSED)
-	      lptr->kind = KIND_LOCAL;
-	  }
-	return;
-      }
+      node = splay_tree_lookup (alpha_links, (splay_tree_key) name);
+      if (node)
+	{
+	  al = (struct alpha_links *) node->value;
+	  if (is_local)
+	    {
+	      /* Defined here but external assumed.  */
+	      if (al->kind == KIND_EXTERN)
+		al->kind = KIND_LOCAL;
+	    }
+	  else
+	    {
+	      /* Used here but unused assumed.  */
+	      if (al->kind == KIND_UNUSED)
+		al->kind = KIND_LOCAL;
+	    }
+	  return al->linkage;
+	}
+    }
+  else
+    {
+      alpha_links = splay_tree_new ((splay_tree_compare_fn) strcmp, 
+				    (splay_tree_delete_key_fn) free,
+				    (splay_tree_delete_key_fn) free);
+      ggc_add_root (&alpha_links, 1, 1, mark_alpha_links);
+    }
 
-  nptr = (struct alpha_links *) xmalloc (sizeof (struct alpha_links));
-  nptr->next = alpha_links_base;
-  nptr->name = xstrdup (name);
+  al = (struct alpha_links *) xmalloc (sizeof (struct alpha_links));
+  name = xstrdup (name);
 
   /* Assume external if no definition.  */
-  nptr->kind = (is_local ? KIND_UNUSED : KIND_EXTERN);
+  al->kind = (is_local ? KIND_UNUSED : KIND_EXTERN);
 
-  /* Ensure we have an IDENTIFIER so assemble_name can mark is used.  */
+  /* Ensure we have an IDENTIFIER so assemble_name can mark it used.  */
   get_identifier (name);
 
-  alpha_links_base = nptr;
+  /* Construct a SYMBOL_REF for us to call.  */
+  {
+    size_t name_len = strlen (name);
+    char *linksym = ggc_alloc_string (NULL, name_len + 6);
 
-  return;
+    linksym[0] = '$';
+    memcpy (linksym + 1, name, name_len);
+    memcpy (linksym + 1 + name_len, "..lk", 5);
+    al->linkage = gen_rtx_SYMBOL_REF (Pmode, linksym);
+  }
+
+  splay_tree_insert (alpha_links, (splay_tree_key) name,
+		     (splay_tree_value) al);
+
+  return al->linkage;
 }
 
+static int
+alpha_write_one_linkage (node, data)
+     splay_tree_node node;
+     void *data;
+{
+  const char *name = (const char *) node->key;
+  struct alpha_links *links = (struct alpha_links *) node->value;
+  FILE *stream = (FILE *) data;
+
+  if (links->kind == KIND_UNUSED
+      || ! TREE_SYMBOL_REFERENCED (get_identifier (name)))
+    return 0;
+
+  fprintf (stream, "$%s..lk:\n", name);
+  if (links->kind == KIND_LOCAL)
+    {
+      /* Local and used, build linkage pair.  */
+      fprintf (stream, "\t.quad %s..en\n", name);
+      fprintf (stream, "\t.quad %s\n", name);
+    }
+  else
+    {
+      /* External and used, request linkage pair.  */
+      fprintf (stream, "\t.linkage %s\n", name);
+    }
+
+  return 0;
+}
 
 void
 alpha_write_linkage (stream)
     FILE *stream;
 {
-  struct alpha_links *lptr, *nptr;
-
   readonly_section ();
-
   fprintf (stream, "\t.align 3\n");
-
-  for (lptr = alpha_links_base; lptr; lptr = nptr)
-    {
-      nptr = lptr->next;
-
-      if (lptr->kind == KIND_UNUSED
-	  || ! TREE_SYMBOL_REFERENCED (get_identifier (lptr->name)))
-	continue;
-
-      fprintf (stream, "$%s..lk:\n", lptr->name);
-      if (lptr->kind == KIND_LOCAL)   
-	{
-	  /*  Local and used, build linkage pair.  */
-	  fprintf (stream, "\t.quad %s..en\n", lptr->name);
-	  fprintf (stream, "\t.quad %s\n", lptr->name);
-	}
-      else
-	/* External and used, request linkage pair.  */
-	fprintf (stream, "\t.linkage %s\n", lptr->name);
-    }
+  splay_tree_foreach (alpha_links, alpha_write_one_linkage, stream);
 }
 
 #else
 
-void
+rtx
 alpha_need_linkage (name, is_local)
      const char *name ATTRIBUTE_UNUSED;
      int is_local ATTRIBUTE_UNUSED;
 {
+  return NULL_RTX;
 }
 
 #endif /* OPEN_VMS */
