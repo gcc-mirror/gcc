@@ -67,13 +67,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    to keep the Sparc/svr4 assembler somewhat compatible with the Sparc/SunOS
    assembler.  */
 
-#define STRING_ASM_OP		"\t.asciz"
-#define COMMON_ASM_OP		"\t.common"
-#define SKIP_ASM_OP		"\t.skip"
-#define UNALIGNED_INT_ASM_OP	"\t.uaword"
-#define UNALIGNED_SHORT_ASM_OP	"\t.uahalf"
-#define PUSHSECTION_ASM_OP	"\t.pushsection"
-#define POPSECTION_ASM_OP	"\t.popsection"
+#define STRING_ASM_OP		".asciz"
+#define COMMON_ASM_OP		".common"
+#define SKIP_ASM_OP		".skip"
+#define UNALIGNED_INT_ASM_OP	".uaword"
+#define UNALIGNED_SHORT_ASM_OP	".uahalf"
+#define PUSHSECTION_ASM_OP	".pushsection"
+#define POPSECTION_ASM_OP	".popsection"
 
 /* This is the format used to print the second operand of a .type pseudo-op
    for the Sparc/svr4 assembler.  */
@@ -174,10 +174,10 @@ do {									\
    *not* to push the previous section name onto the assembler's
    section names stack (as we do often in dwarfout.c).  */
 
-#define TEXT_SECTION_ASM_OP	"\t.section\t\".text\""
-#define DATA_SECTION_ASM_OP	"\t.section\t\".data\""
-#define BSS_SECTION_ASM_OP	"\t.section\t\".bss\""
-#define CONST_SECTION_ASM_OP	"\t.section\t\".rodata\""
-#define INIT_SECTION_ASM_OP	"\t.section\t\".init\",#alloc"
-#define CTORS_SECTION_ASM_OP    "\t.section\t\".ctors\",#alloc"
-#define DTORS_SECTION_ASM_OP    "\t.section\t\".dtors\",#alloc"
+#define TEXT_SECTION_ASM_OP	".section\t\".text\""
+#define DATA_SECTION_ASM_OP	".section\t\".data\""
+#define BSS_SECTION_ASM_OP	".section\t\".bss\""
+#define CONST_SECTION_ASM_OP	".section\t\".rodata\""
+#define INIT_SECTION_ASM_OP	".section\t\".init\",#alloc"
+#define CTORS_SECTION_ASM_OP    ".section\t\".ctors\",#alloc"
+#define DTORS_SECTION_ASM_OP    ".section\t\".dtors\",#alloc"

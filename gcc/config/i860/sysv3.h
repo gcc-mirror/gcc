@@ -24,7 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Provide a set of pre-definitions and pre-assertions appropriate for
    the i860 running svr3.  */
-#define CPP_PREDEFINES "-Di860 -Dunix -DSVR3"
+#define CPP_PREDEFINES "-Di860 -Dunix -DSVR3 -D__SVR3__"
 
 /* Use crt1.o as a startup file and crtn.o as a closing file.  */
 
@@ -103,7 +103,7 @@ extern char *current_function_original_name;
 	          fprintf ((FILE), "\"\n");				\
 	          bytes_in_chunk = 0;					\
 	        }							\
-	      fprintf ((FILE), "%s\t%d\n", ASM_BYTE_OP, ch);		\
+	      fprintf ((FILE), "\t%s\t%d\n", ASM_BYTE_OP, ch);		\
 	    }								\
           else								\
 	    {								\
