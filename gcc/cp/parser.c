@@ -1343,6 +1343,10 @@ typedef struct cp_parser GTY(())
   /* The number of template parameter lists that apply directly to the
      current declaration.  */
   unsigned num_template_parameter_lists;
+
+  /* List of access checks lists, used to prevent GC collection while
+     they are in use.  */
+  tree access_checks_lists;
 } cp_parser;
 
 /* The type of a function that parses some kind of expression  */
@@ -6741,6 +6745,10 @@ cp_parser_simple_declaration (parser, function_definition_allowed_p)
   /* We no longer need to defer access checks.  */
   access_checks = cp_parser_stop_deferring_access_checks (parser);
 
+  /* Prevent access checks from being reclaimed by GC.  */
+  parser->access_checks_lists = tree_cons (NULL_TREE, access_checks,
+					   parser->access_checks_lists);
+
   /* Keep going until we hit the `;' at the end of the simple
      declaration.  */
   saw_declarator = false;
@@ -6770,7 +6778,12 @@ cp_parser_simple_declaration (parser, function_definition_allowed_p)
 	    error ("mixing declarations and function-definitions is forbidden");
 	  /* Otherwise, we're done with the list of declarators.  */
 	  else
-	    return;
+	    {
+	      /* Discard access checks no longer in use. */
+	      parser->access_checks_lists
+		= TREE_CHAIN (parser->access_checks_lists);
+	      return;
+	    }
 	}
       /* The next token should be either a `,' or a `;'.  */
       token = cp_lexer_peek_token (parser->lexer);
@@ -6786,6 +6799,9 @@ cp_parser_simple_declaration (parser, function_definition_allowed_p)
 	  cp_parser_error (parser, "expected `,' or `;'");
 	  /* Skip tokens until we reach the end of the statement.  */
 	  cp_parser_skip_to_end_of_statement (parser);
+	  /* Discard access checks no longer in use.  */
+          parser->access_checks_lists
+	    = TREE_CHAIN (parser->access_checks_lists);
 	  return;
 	}
       /* After the first time around, a function-definition is not
@@ -6814,6 +6830,9 @@ cp_parser_simple_declaration (parser, function_definition_allowed_p)
   /* Mark all the classes that appeared in the decl-specifier-seq as
      having received a `;'.  */
   note_list_got_semicolon (decl_specifiers);
+
+  /* Discard access checks no longer in use.  */
+  parser->access_checks_lists = TREE_CHAIN (parser->access_checks_lists);
 }
 
 /* Parse a decl-specifier-seq.
@@ -9709,10 +9728,20 @@ cp_parser_init_declarator (parser,
   declarator_access_checks 
     = cp_parser_stop_deferring_access_checks (parser);
 
+  /* Prevent the access checks from being reclaimed by GC.  */
+  parser->access_checks_lists
+    = tree_cons (NULL_TREE, declarator_access_checks,
+		 parser->access_checks_lists);
+
   /* If the DECLARATOR was erroneous, there's no need to go
      further.  */
   if (declarator == error_mark_node)
-    return error_mark_node;
+    {
+      /* Discard access checks no longer in use.  */
+      parser->access_checks_lists
+	= TREE_CHAIN (parser->access_checks_lists);
+      return error_mark_node;
+    }
 
   /* Figure out what scope the entity declared by the DECLARATOR is
      located in.  `grokdeclarator' sometimes changes the scope, so
@@ -9746,6 +9775,9 @@ cp_parser_init_declarator (parser,
 	     error message.  */
 	  cp_parser_error (parser,
 			   "a function-definition is not allowed here");
+	  /* Discard access checks no longer in use.  */
+	  parser->access_checks_lists
+	    = TREE_CHAIN (parser->access_checks_lists);
 	  return error_mark_node;
 	}
       else
@@ -9775,6 +9807,10 @@ cp_parser_init_declarator (parser,
 	  /* Pull the access-checks apart again.  */
 	  *ac = NULL_TREE;
 
+	  /* Discard access checks no longer in use.  */
+          parser->access_checks_lists
+	     = TREE_CHAIN (parser->access_checks_lists);
+
 	  return decl;
 	}
     }
@@ -9791,6 +9827,9 @@ cp_parser_init_declarator (parser,
     {
       cp_parser_error (parser, 
 		       "expected constructor, destructor, or type conversion");
+      /* Discard access checks no longer in use.  */
+      parser->access_checks_lists
+	= TREE_CHAIN (parser->access_checks_lists);
       return error_mark_node;
     }
 
@@ -9804,6 +9843,9 @@ cp_parser_init_declarator (parser,
       && token->type != CPP_SEMICOLON)
     {
       cp_parser_error (parser, "expected init-declarator");
+      /* Discard access checks no longer in use.  */
+      parser->access_checks_lists
+	 = TREE_CHAIN (parser->access_checks_lists);
       return error_mark_node;
     }
 
@@ -9818,7 +9860,12 @@ cp_parser_init_declarator (parser,
   /* Check that the number of template-parameter-lists is OK.  */
   if (!cp_parser_check_declarator_template_parameters (parser, 
 						       declarator))
-    return error_mark_node;
+    {
+      /* Discard access checks no longer in use.  */
+      parser->access_checks_lists
+	 = TREE_CHAIN (parser->access_checks_lists);
+      return error_mark_node;
+    }
 
   /* Enter the newly declared entry in the symbol table.  If we're
      processing a declaration in a class-specifier, we wait until
@@ -9913,6 +9960,10 @@ cp_parser_init_declarator (parser,
 		       `explicit' constructor cannot be used.  */
 		    ((is_parenthesized_init || !is_initialized)
 		     ? 0 : LOOKUP_ONLYCONVERTING));
+
+  /* Discard access checks no longer in use.  */
+  parser->access_checks_lists
+    = TREE_CHAIN (parser->access_checks_lists);
 
   return decl;
 }

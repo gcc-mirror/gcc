@@ -1,3 +1,9 @@
+2003-01-03  Graham Stott  <graham.stott@btinternet.com>
+
+	* parser.c (struct cp_parser): Add access_checks_lists field
+	(cp_parser_simple_declaration): Use.
+	(cp_parser_init_declarator): Likewise. 
+
 2003-01-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* parser.c (cp_parser_declaration): Accept the __extension__
