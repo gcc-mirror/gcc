@@ -1,3 +1,8 @@
+Wed Jan 28 10:26:37 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (BASE_FLAGS_TO_PASS): Remove passing $(local_prefix)
+	here as it is not defined in the toplevel Makefile.
+
 Tue Jan 27 23:25:06 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure (package_makefile_rules_frag): New variable, which names
