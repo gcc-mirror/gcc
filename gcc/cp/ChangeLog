@@ -1,3 +1,8 @@
+2000-06-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* init.c (resolve_offset_ref): Remove check for TREE_ADDRESSABLE
+	on FIELD_DECLs.
+
 Wed May 31 14:09:00 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cp-tree.h (c_get_alias_set): Deleted.
