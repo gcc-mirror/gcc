@@ -62,8 +62,7 @@ DEFTREECODE (DELETE_EXPR, "dl_expr", 'e', 2)
 DEFTREECODE (VEC_DELETE_EXPR, "vec_dl_expr", 'e', 2)
 
 /* Value is reference to particular overloaded class method.
-   Operand 0 is the class name (an IDENTIFIER_NODE);
-   operand 1 is the field (also an IDENTIFIER_NODE).
+   Operand 0 is the class, operand 1 is the field
    The COMPLEXITY field holds the class level (usually 0).  */
 DEFTREECODE (SCOPE_REF, "scope_ref", 'r', 2)
 

@@ -1,3 +1,30 @@
+2003-06-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (COMPARE_RELAXED): Rename to ...
+	(COMPARE_DERIVED): ... here. Adjust comment.
+	(resolve_typename_type_in_current_instantiation): Remove.
+	(cp_tree_equal, comptypes): Return a bool.
+	* cvt.c (convert_to_reference): Adjust comptypes call.
+	* pt.c (template_args_equal, unify,): Adjust cp_tree_equal call.
+	(resolve_typename_type_in_current_instantiation): Remove.
+	* tree.c (cp_tree_equal): Return bool. Cope with TEMPLATE_DECLs and
+	IDENTIFIER_NODEs. Abort if undeciderable. Adjust recursive
+	calls. Refactor code.
+	* typeck.c (comp_array_types): Return bool. Lose callback.
+	parameter. Adjust cp_tree_equal calls.
+	(comptypes): Return bool. Adjust strict handling. Remove relaxed
+	enumeration and java type handling. Deal with typename types here.
+	Adjust recursive and cp_tree_equals calls. Adjust base and derived
+	checking.
+	(comp_target_types): Remove unreachable code. Adjust
+	same_or_base_type_p calls.
+	(ptr_reasonably_similar): Adjust base and derived check.
+	
+	* typeck.c (maybe_warn_about_returning_address_of_local): Remove
+	unused calculation.
+	(check_return_expr): Adjust error messages.
+	* cp-tree.def (SCOPE_REF): Correct comment.
+
 2003-06-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* mangle.c (mangle_conv_op_name_for_type): Correct sprintf format
