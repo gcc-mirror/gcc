@@ -7380,7 +7380,7 @@ grokvardecl (type, declarator, specbits, initialized, constp)
   else if (toplevel_bindings_p ())
     {
       TREE_PUBLIC (decl) = (RIDBIT_NOTSETP (RID_STATIC, specbits)
-			    && (DECL_EXTERNAL (decl) || ! constp));
+			    && (DECL_THIS_EXTERN (decl) || ! constp));
       TREE_STATIC (decl) = ! DECL_EXTERNAL (decl);
     }
   /* Not at top level, only `static' makes a static definition.  */
@@ -11137,6 +11137,14 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 
       /* In a fcn definition, arg types must be complete.  */
       require_complete_types_for_parms (last_function_parms);
+
+      /* In case some arg types were completed since the declaration was
+         parsed, fix up the decls.  */
+      {
+	tree t = last_function_parms;
+	for (; t; t = TREE_CHAIN (t))
+	  layout_decl (t, 0);
+      }
     }
   else
     {
