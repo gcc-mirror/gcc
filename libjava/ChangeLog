@@ -1,5 +1,17 @@
 2000-01-05  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/Class.h (_getMethods): Declare.
+	* java/lang/Class.java (_getMethods): Declare.
+	* java/lang/natClass.cc (getDeclaringClass): Always return NULL.
+	(getDeclaredClasses): Always return empty array.
+	(_getMethods): New method.
+	(getMethods): Wrote.
+	(getDeclaredMethod): Return `rmethod'.
+	(finit_name): New global.
+	(getDeclaredMethods): Check for finit_name.
+	(_getMethods): Likewise.
+	(getMethod): Only return public methods.
+
 	* java/lang/reflect/natMethod.cc (get_ffi_type): Test size of
 	jboolean and select correct ffi type on that basis.
 	(_Jv_CallNonvirtualMethodA): Handle `void' return type.
