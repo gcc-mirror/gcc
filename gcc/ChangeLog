@@ -1,3 +1,8 @@
+2002-02-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* mklibgcc.in: Don't use \n in a line subject to
+	interpretation by echo.
+
 2002-02-27  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_chunkify_pool): Do not confuse
