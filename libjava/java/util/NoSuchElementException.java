@@ -30,20 +30,32 @@ package java.util;
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
  */
 
 /**
  * Exception thrown when an attempt is made to access an element that does not
- * exist. This exception is thrown by the Enumeration, Iterator and ListIterator
- * classes if the nextElement, next or previous method goes beyond the end of
- * the list of elements that are being accessed.
+ * exist. This exception is thrown by the Enumeration, Iterator and
+ * ListIterator classes if the nextElement, next or previous method goes
+ * beyond the end of the list of elements that are being accessed. It is also
+ * thrown by Vector and Stack when attempting to access the first or last
+ * element of an empty collection.
  *
  * @author Warren Levy <warrenl@cygnus.com>
- * @date September 2, 1998.
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Enumeration
+ * @see Iterator
+ * @see ListIterator
+ * @see Enumeration#nextElement()
+ * @see Iterator#next()
+ * @see ListIterator#previous()
+ * @since 1.0
+ * @status updated to 1.4
  */
 public class NoSuchElementException extends RuntimeException
 {
+  /**
+   * Compatible with JDK 1.0.
+   */
   private static final long serialVersionUID = 6769829250639411880L;
 
   /**
@@ -51,7 +63,6 @@ public class NoSuchElementException extends RuntimeException
    */
   public NoSuchElementException()
   {
-    super();
   }
 
   /**

@@ -30,7 +30,6 @@ package java.util;
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Believed complete and correct.
  */
 
 /**
@@ -38,15 +37,29 @@ package java.util;
  * a modification has been made to a data structure when this is not allowed,
  * such as when a collection is structurally modified while an Iterator is
  * operating over it. In cases where this can be detected, a
- * ConcurrentModificationException will be thrown. An Iterator that detects this
- * condition is referred to as fail-fast.
+ * ConcurrentModificationException will be thrown. An Iterator that detects
+ * this condition is referred to as fail-fast. Notice that this can occur
+ * even in single-threaded designs, if you call methods out of order.
  *
  * @author Warren Levy <warrenl@cygnus.com>
- * @date September 2, 1998.
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Collection
+ * @see Iterator
+ * @see ListIterator
+ * @see Vector
+ * @see LinkedList
+ * @see HashSet
+ * @see Hashtable
+ * @see TreeMap
+ * @see AbstractList
  * @since 1.2
+ * @status updated to 1.4
  */
 public class ConcurrentModificationException extends RuntimeException
 {
+  /**
+   * Compatible with JDK 1.2.
+   */
   private static final long serialVersionUID = -3666751008965953603L;
 
   /**
@@ -54,7 +67,6 @@ public class ConcurrentModificationException extends RuntimeException
    */
   public ConcurrentModificationException()
   {
-    super();
   }
 
   /**

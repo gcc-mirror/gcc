@@ -1,3 +1,18 @@
+2001-11-14  Tom Tromey  <tromey@redhat.com>
+
+	Re-merges with Classpath, from various people:
+	* java/lang/Double.java (parseDouble): Fixed ordering of
+	modifiers.
+	* java/lang/reflect/AccessibleObject.java: Javadoc, reindented.
+	* java/lang/reflect/Member.java: Reindented.
+	* java/lang/reflect/Modifier.java: Reindented.
+	(toString): Only trim trailing space if text was added to
+	StringBuffer.
+	* java/util/ConcurrentModificationException.java: Javadoc
+	updates.
+	* java/util/EmptyStackException.java: Likewise.
+	* java/util/NoSuchElementException.java: Likewise.
+
 2001-11-13  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/4859:
