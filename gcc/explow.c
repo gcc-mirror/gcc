@@ -1,5 +1,5 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987, 91, 94-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 94-97, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
