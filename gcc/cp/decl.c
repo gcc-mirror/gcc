@@ -7177,7 +7177,8 @@ start_decl (tree declarator,
      wrong semantics.  If we say -fno-conserve-space, we want this to
      produce errors about redefs; to do this we force variables into the
      data segment.  */
-  DECL_COMMON (tem) = (!DECL_THREAD_LOCAL (tem)
+  DECL_COMMON (tem) = ((TREE_CODE (tem) != VAR_DECL
+			|| !DECL_THREAD_LOCAL (tem))
 		       && (flag_conserve_space || ! TREE_PUBLIC (tem)));
 #endif
 
