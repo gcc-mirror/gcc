@@ -1,3 +1,11 @@
+2003-11-14  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* config/frv/frv-protos.h: Update for C90.
+	* config/frv/frv.h: Likewise.
+	* config/frv/frvbegin.c: Likewise.
+	* config/frv/frv.c: Likewise. 
+	(frv_adjust_field_align): Delete unused variable.
+
 2003-11-14  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.md: Add 'DEFAULT_ABI == ABI_DARWIN'
