@@ -379,7 +379,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    returned.  */
 
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,IN) \
-  ((CLASS) == FP_REGS && GET_CODE (IN) == CONST_INT ? GENERAL_REGS : NO_REGS)
+  ((CLASS) == FP_REGS && CONSTANT_P (IN) ? GENERAL_REGS : NO_REGS)
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
