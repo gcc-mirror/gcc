@@ -2722,7 +2722,6 @@ do {							\
    For float regs, the stack top is sometimes referred to as "%st(0)"
    instead of just "%st".  PRINT_REG handles this with the "y" code.  */
 
-#undef  HI_REGISTER_NAMES
 #define HI_REGISTER_NAMES						\
 {"ax","dx","cx","bx","si","di","bp","sp",				\
  "st","st(1)","st(2)","st(3)","st(4)","st(5)","st(6)","st(7)",		\
