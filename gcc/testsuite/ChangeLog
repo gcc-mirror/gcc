@@ -1,4 +1,9 @@
-004-10-15  Jakub Jelinek  <jakub@redhat.com>
+2004-10-15  Steve Ellcey  <sje@cup.hp.com>
+
+	* gcc.dg/compat/struct-layout-1_generate.c (switchfiles):  Use
+	-fno-common when on HPPA HP-UX platforms.
+
+2004-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/16820
 	* gcc.dg/compat/struct-layout-1.h: Don't include complex.h nor
