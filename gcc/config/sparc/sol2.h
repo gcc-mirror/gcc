@@ -20,7 +20,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Supposedly the same as vanilla sparc svr4, except for the stuff below: */
-#include "sparc/sparcv4.h"
+#include "sparc/sysv4.h"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
@@ -60,7 +60,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef CTORS_SECTION_ASM_OP
 #undef DTORS_SECTION_ASM_OP
 
-#if 0 /* These seems unnecessary; the ones in sparcv4.h look right.  */
+#if 0 /* These seems unnecessary; the ones in sparc/sysv4.h look right.  */
 #undef TEXT_SECTION_ASM_OP
 #undef DATA_SECTION_ASM_OP
 #undef BSS_SECTION_ASM_OP
