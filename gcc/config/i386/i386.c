@@ -1075,6 +1075,7 @@ override_options ()
       {"winchip-c6", PROCESSOR_I486, PTA_MMX},
       {"winchip2", PROCESSOR_I486, PTA_MMX | PTA_3DNOW},
       {"c3", PROCESSOR_I486, PTA_MMX | PTA_3DNOW},
+      {"c3-2", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_PREFETCH_SSE | PTA_SSE},
       {"i686", PROCESSOR_PENTIUMPRO, 0},
       {"pentiumpro", PROCESSOR_PENTIUMPRO, 0},
       {"pentium2", PROCESSOR_PENTIUMPRO, PTA_MMX},

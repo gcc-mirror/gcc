@@ -1,3 +1,8 @@
+2003-02-11  Dave Jones <davej@codemonkey.org.uk>
+
+	* config/i386/i386.c (override_options): Define c3-2 as a 686 with SSE.
+	* doc/invoke.texi: Extra alias.
+
 2003-02-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/host-darwin.c: Fix comment.
