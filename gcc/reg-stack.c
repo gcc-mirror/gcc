@@ -1124,7 +1124,7 @@ move_for_stack_reg (rtx insn, stack regstack, rtx pat)
 	  regstack->top--;
 	  CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (src));
 	}
-      else if ((GET_MODE (src) == XFmode || GET_MODE (src) == TFmode)
+      else if ((GET_MODE (src) == XFmode)
 	       && regstack->top < REG_STACK_SIZE - 1)
 	{
 	  /* A 387 cannot write an XFmode value to a MEM without
@@ -1137,10 +1137,7 @@ move_for_stack_reg (rtx insn, stack regstack, rtx pat)
 	  rtx push_rtx, push_insn;
 	  rtx top_stack_reg = FP_MODE_REG (FIRST_STACK_REG, GET_MODE (src));
 
-	  if (GET_MODE (src) == TFmode)
-	    push_rtx = gen_movtf (top_stack_reg, top_stack_reg);
-	  else
-	    push_rtx = gen_movxf (top_stack_reg, top_stack_reg);
+	  push_rtx = gen_movxf (top_stack_reg, top_stack_reg);
 	  push_insn = emit_insn_before (push_rtx, insn);
 	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_DEAD, top_stack_reg,
 						REG_NOTES (insn));

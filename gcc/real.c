@@ -3032,6 +3032,11 @@ encode_ieee_extended (const struct real_format *fmt, long *buf,
     buf[0] = image_hi << 16, buf[1] = sig_hi, buf[2] = sig_lo;
   else
     buf[0] = sig_lo, buf[1] = sig_hi, buf[2] = image_hi;
+
+  /* Avoid uninitialized data to be output by compiler when XFmode is extended
+     to 128 bits.  */
+  if (GET_MODE_SIZE (XFmode) == 16)
+    buf[3] = 0;
 }
 
 static void

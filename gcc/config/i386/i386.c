@@ -1374,6 +1374,7 @@ override_options (void)
   if (TARGET_SSE2)
     target_flags |= MASK_SSE;
 
+      target_flags |= (MASK_128BIT_LONG_DOUBLE);
   if (TARGET_64BIT)
     {
       if (TARGET_ALIGN_DOUBLE)
@@ -2182,6 +2183,7 @@ classify_argument (enum machine_mode mode, tree type,
       return 1;
     case CDImode:
     case TImode:
+    case TCmode:
       classes[0] = classes[1] = X86_64_INTEGER_CLASS;
       return 2;
     case CTImode:
@@ -2197,11 +2199,15 @@ classify_argument (enum machine_mode mode, tree type,
     case DFmode:
       classes[0] = X86_64_SSEDF_CLASS;
       return 1;
-    case TFmode:
+    case XFmode:
       classes[0] = X86_64_X87_CLASS;
       classes[1] = X86_64_X87UP_CLASS;
       return 2;
-    case TCmode:
+    case TFmode:
+      classes[0] = X86_64_INTEGER_CLASS;
+      classes[1] = X86_64_INTEGER_CLASS;
+      return 2;
+    case XCmode:
       classes[0] = X86_64_X87_CLASS;
       classes[1] = X86_64_X87UP_CLASS;
       classes[2] = X86_64_X87_CLASS;
@@ -2338,16 +2344,16 @@ construct_container (enum machine_mode mode, tree type, int in_return,
     return gen_rtx_REG (mode, SSE_REGNO (sse_regno));
   if (n == 2
       && class[0] == X86_64_X87_CLASS && class[1] == X86_64_X87UP_CLASS)
-    return gen_rtx_REG (TFmode, FIRST_STACK_REG);
+    return gen_rtx_REG (XFmode, FIRST_STACK_REG);
   if (n == 2 && class[0] == X86_64_INTEGER_CLASS
       && class[1] == X86_64_INTEGER_CLASS
-      && (mode == CDImode || mode == TImode)
+      && (mode == CDImode || mode == TImode || mode == TFmode)
       && intreg[0] + 1 == intreg[1])
     return gen_rtx_REG (mode, intreg[0]);
   if (n == 4
       && class[0] == X86_64_X87_CLASS && class[1] == X86_64_X87UP_CLASS
       && class[2] == X86_64_X87_CLASS && class[3] == X86_64_X87UP_CLASS)
-    return gen_rtx_REG (TCmode, FIRST_STACK_REG);
+    return gen_rtx_REG (XCmode, FIRST_STACK_REG);
 
   /* Otherwise figure out the entries of the PARALLEL.  */
   for (i = 0; i < n; i++)
@@ -2779,8 +2785,9 @@ ix86_return_in_memory (tree type)
 	}
     }
 
-  if (mode == TFmode)
+  if (mode == TFmode || mode == XFmode)
     return 0;
+
   if (size > 12)
     return 1;
   return 0;
@@ -2795,20 +2802,35 @@ ix86_libcall_value (enum machine_mode mode)
     {
       switch (mode)
 	{
-	  case SFmode:
-	  case SCmode:
-	  case DFmode:
-	  case DCmode:
-	    return gen_rtx_REG (mode, FIRST_SSE_REG);
-	  case TFmode:
-	  case TCmode:
-	    return gen_rtx_REG (mode, FIRST_FLOAT_REG);
-	  default:
-	    return gen_rtx_REG (mode, 0);
+	case SFmode:
+	case SCmode:
+	case DFmode:
+	case DCmode:
+	  return gen_rtx_REG (mode, FIRST_SSE_REG);
+	case XFmode:
+	case XCmode:
+	  return gen_rtx_REG (mode, FIRST_FLOAT_REG);
+	case TFmode:
+	  {
+	    rtx ret = gen_rtx_PARALLEL (mode, rtvec_alloc (2));
+	    XVECEXP (ret, 0, 0) = gen_rtx_EXPR_LIST
+	       (VOIDmode,
+		gen_rtx_REG (DImode, x86_64_int_parameter_registers [0]),
+			     const0_rtx);
+	    XVECEXP (ret, 0, 1) = gen_rtx_EXPR_LIST
+	       (VOIDmode,
+		gen_rtx_REG (DImode, x86_64_int_parameter_registers [1]),
+			     GEN_INT (64));
+	    return ret;
+	  }
+	case TCmode:
+	  return NULL;
+	default:
+	  return gen_rtx_REG (mode, 0);
 	}
     }
   else
-   return gen_rtx_REG (mode, ix86_value_regno (mode));
+    return gen_rtx_REG (mode, ix86_value_regno (mode));
 }
 
 /* Given a mode, return the register to use for a return value.  */
@@ -4257,8 +4279,7 @@ init_ext_80387_constants (void)
       real_from_string (&ext_80387_constants_table[i], cst[i]);
       /* Ensure each constant is rounded to XFmode precision.  */
       real_convert (&ext_80387_constants_table[i],
-		    TARGET_128BIT_LONG_DOUBLE ? TFmode : XFmode,
-		    &ext_80387_constants_table[i]);
+		    XFmode, &ext_80387_constants_table[i]);
     }
 
   ext_80387_constants_init = 1;
@@ -4280,7 +4301,7 @@ standard_80387_constant_p (rtx x)
 
   /* For XFmode constants, try to find a special 80387 instruction on
      those CPUs that benefit from them.  */
-  if ((GET_MODE (x) == XFmode || GET_MODE (x) == TFmode)
+  if (GET_MODE (x) == XFmode
       && x86_ext_80387_constants & TUNEMASK)
     {
       REAL_VALUE_TYPE r;
@@ -4351,7 +4372,7 @@ standard_80387_constant_rtx (int idx)
     }
 
   return CONST_DOUBLE_FROM_REAL_VALUE (ext_80387_constants_table[i],
-				       TARGET_128BIT_LONG_DOUBLE ? TFmode : XFmode);
+				       XFmode);
 }
 
 /* Return 1 if X is FP constant we can load to SSE register w/o using memory.
@@ -7450,7 +7471,7 @@ print_operand (FILE *file, rtx x, int code)
     }
 
   else if (GET_CODE (x) == CONST_DOUBLE
-	   && (GET_MODE (x) == XFmode || GET_MODE (x) == TFmode))
+	   && GET_MODE (x) == XFmode)
     {
       char dstr[30];
 
@@ -8690,7 +8711,6 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
   if (!is_sse
       && (fpcmp_mode == CCFPUmode
 	  || op_mode == XFmode
-	  || op_mode == TFmode
 	  || ix86_use_fcomi_compare (code)))
     {
       op0 = force_reg (op_mode, op0);
@@ -9165,7 +9185,6 @@ ix86_expand_branch (enum rtx_code code, rtx label)
     case SFmode:
     case DFmode:
     case XFmode:
-    case TFmode:
       {
 	rtvec vec;
 	int use_fcomi;
@@ -10356,7 +10375,7 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
   int size;
 
   if (!TARGET_64BIT)
-    size = mode == TFmode ? 3 : (GET_MODE_SIZE (mode) / 4);
+    size = mode==XFmode ? 3 : GET_MODE_SIZE (mode) / 4;
   else
     size = (GET_MODE_SIZE (mode) + 4) / 8;
 
@@ -10416,7 +10435,6 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
 	      switch (mode)
 		{
 		case XFmode:
-		case TFmode:
 		  REAL_VALUE_TO_TARGET_LONG_DOUBLE (r, l);
 		  parts[2] = gen_int_mode (l[2], SImode);
 		  break;
@@ -10439,18 +10457,19 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
 	split_ti (&operand, 1, &parts[0], &parts[1]);
       if (mode == XFmode || mode == TFmode)
 	{
+	  enum machine_mode upper_mode = mode==XFmode ? SImode : DImode;
 	  if (REG_P (operand))
 	    {
 	      if (!reload_completed)
 		abort ();
 	      parts[0] = gen_rtx_REG (DImode, REGNO (operand) + 0);
-	      parts[1] = gen_rtx_REG (SImode, REGNO (operand) + 1);
+	      parts[1] = gen_rtx_REG (upper_mode, REGNO (operand) + 1);
 	    }
 	  else if (offsettable_memref_p (operand))
 	    {
 	      operand = adjust_address (operand, DImode, 0);
 	      parts[0] = operand;
-	      parts[1] = adjust_address (operand, SImode, 8);
+	      parts[1] = adjust_address (operand, upper_mode, 8);
 	    }
 	  else if (GET_CODE (operand) == CONST_DOUBLE)
 	    {
@@ -10468,7 +10487,16 @@ ix86_split_to_parts (rtx operand, rtx *parts, enum machine_mode mode)
 		       DImode);
 	      else
 	        parts[0] = immed_double_const (l[0], l[1], DImode);
-	      parts[1] = gen_int_mode (l[2], SImode);
+	      if (upper_mode == SImode)
+	        parts[1] = gen_int_mode (l[2], SImode);
+	      else if (HOST_BITS_PER_WIDE_INT >= 64)
+	        parts[1]
+		  = gen_int_mode
+		      ((l[2] & (((HOST_WIDE_INT) 2 << 31) - 1))
+		       + ((((HOST_WIDE_INT) l[3]) << 31) << 1),
+		       DImode);
+	      else
+	        parts[1] = immed_double_const (l[2], l[3], DImode);
 	    }
 	  else
 	    abort ();
@@ -10589,12 +10617,8 @@ ix86_split_long_move (rtx operands[])
 	{
 	  if (nparts == 3)
 	    {
-	      /* We use only first 12 bytes of TFmode value, but for pushing we
-		 are required to adjust stack as if we were pushing real 16byte
-		 value.  */
-	      if (mode == TFmode && !TARGET_64BIT)
-		emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-				       GEN_INT (-4)));
+	      if (TARGET_128BIT_LONG_DOUBLE && mode == XFmode)
+                emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, GEN_INT (-4)));
 	      emit_move_insn (part[0][2], part[1][2]);
 	    }
 	}
@@ -13305,6 +13329,27 @@ ix86_init_mmx_sse_builtins (void)
   tree v2di_ftype_v2di
     = build_function_type_list (V2DI_type_node, V2DI_type_node, NULL_TREE);
 
+  tree float80_type;
+  tree float128_type;
+
+  /* The __float80 type.  */
+  if (TYPE_MODE (long_double_type_node) == XFmode)
+    (*lang_hooks.types.register_builtin_type) (long_double_type_node,
+					       "__float80");
+  else
+    {
+      /* The __float80 type.  */
+      float80_type = make_node (REAL_TYPE);
+      TYPE_PRECISION (float80_type) = 96;
+      layout_type (float80_type);
+      (*lang_hooks.types.register_builtin_type) (float80_type, "__float80");
+    }
+
+  float128_type = make_node (REAL_TYPE);
+  TYPE_PRECISION (float128_type) = 128;
+  layout_type (float128_type);
+  (*lang_hooks.types.register_builtin_type) (float128_type, "__float128");
+
   /* Add all builtins that are more or less simple operations on two
      operands.  */
   for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
@@ -14745,7 +14790,6 @@ ix86_memory_move_cost (enum machine_mode mode, enum reg_class class, int in)
 	    index = 1;
 	    break;
 	  case XFmode:
-	  case TFmode:
 	    index = 2;
 	    break;
 	  default:
