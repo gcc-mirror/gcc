@@ -82,7 +82,7 @@ fixincl: $(OBJ)
 
 gnu-regex.o: gnu-regex.c
 	-$(CC) $(CFLAGS) $(FIXINC_DEFS) $(INCLUDES) -DREGEX_MALLOC \
-		-DSTDC_HEADERS=1 -c $(srcdir)/gnu-regex.c
+		-c $(srcdir)/gnu-regex.c
 
 fixincl.o : fixincl.x fixincl.c
 server.o : server.c server.h
