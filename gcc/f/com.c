@@ -275,6 +275,7 @@ static tree ldouble_ftype_ldouble;
    inventions should be renamed to be canonical.  Note that only
    the ones currently required to be global are so.  */
 
+static tree ssizetype;
 static tree ffecom_tree_fun_type_void;
 static tree ffecom_tree_ptr_to_fun_type_void;
 
@@ -433,9 +434,8 @@ static ffecomConcatList_ ffecom_concat_list_new_ (ffebld expr,
 static void ffecom_debug_kludge_ (tree aggr, char *aggr_type, ffesymbol member,
 				  tree member_type, ffetargetOffset offset);
 static void ffecom_do_entry_ (ffesymbol fn, int entrynum);
-static tree ffecom_expr_ (ffebld expr, tree type_tree, tree dest_tree,
-			  ffebld dest, bool *dest_used,
-			  bool assignp);
+static tree ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
+			  bool *dest_used, bool assignp, bool widenp);
 static tree ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 				    ffebld dest, bool *dest_used);
 static tree ffecom_expr_power_integer_ (ffebld left, ffebld right);
@@ -635,14 +635,6 @@ static char *ffecom_gfrt_argstring_[FFECOM_gfrt]
 
 /* NOTE: g77 currently doesn't use these; see setting of sizetype and
    change that if you need to.	-- jcb 09/01/91. */
-
-#ifndef SIZE_TYPE
-#define SIZE_TYPE "long unsigned int"
-#endif
-
-#ifndef WCHAR_TYPE
-#define WCHAR_TYPE "int"
-#endif
 
 #define ffecom_concat_list_count_(catlist) ((catlist).count)
 #define ffecom_concat_list_expr_(catlist,i) ((catlist).exprs[(i)])
@@ -2666,17 +2658,12 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
    Recursive descent on expr while making corresponding tree nodes and
    attaching type info and such.  If destination supplied and compatible
    with temporary that would be made in certain cases, temporary isn't
-   made, destination used instead, and dest_used flag set TRUE.
-
-   If TREE_TYPE is non-null, it overrides the type that the expression
-   would normally be computed in.  This is most useful for array indices
-   which should be done in sizetype for efficiency.  */
+   made, destination used instead, and dest_used flag set TRUE.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
-ffecom_expr_ (ffebld expr, tree tree_type_x, tree dest_tree,
-	      ffebld dest, bool *dest_used,
-	      bool assignp)
+ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
+	      bool *dest_used, bool assignp, bool widenp)
 {
   tree item;
   tree list;
@@ -2685,7 +2672,7 @@ ffecom_expr_ (ffebld expr, tree tree_type_x, tree dest_tree,
   ffeinfoKindtype kt;
   tree t;
   tree dt;			/* decl_tree for an ffesymbol. */
-  tree tree_type;
+  tree tree_type, tree_type_x;
   tree left, right;
   ffesymbol s;
   enum tree_code code;
@@ -2698,6 +2685,13 @@ ffecom_expr_ (ffebld expr, tree tree_type_x, tree dest_tree,
   bt = ffeinfo_basictype (ffebld_info (expr));
   kt = ffeinfo_kindtype (ffebld_info (expr));
   tree_type = ffecom_tree_type[bt][kt];
+
+  /* Widen integral arithmetic as desired while preserving signedness.  */
+  tree_type_x = NULL_TREE;
+  if (widenp && tree_type
+      && GET_MODE_CLASS (TYPE_MODE (tree_type)) == MODE_INT
+      && TYPE_PRECISION (tree_type) < TYPE_PRECISION (sizetype))
+    tree_type_x = (TREE_UNSIGNED (tree_type) ? sizetype : ssizetype);
 
   switch (ffebld_op (expr))
     {
@@ -2933,26 +2927,22 @@ ffecom_expr_ (ffebld expr, tree tree_type_x, tree dest_tree,
 	  t = ffecom_2 (ARRAY_REF,
 			TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (t))),
 			t,
-			ffecom_expr_ (dims[--i], sizetype, NULL, NULL,
-				      NULL, FALSE));
+			ffecom_expr_ (dims[--i], NULL, NULL, NULL, FALSE, TRUE));
 #endif
 
 	return t;
       }
 
     case FFEBLD_opUPLUS:
-      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
-			   NULL, FALSE);
+      left = ffecom_expr_ (ffebld_left (expr), NULL, NULL, NULL, FALSE, widenp);
       return ffecom_1 (NOP_EXPR, tree_type, left);
 
     case FFEBLD_opPAREN:	/* ~~~Make sure Fortran rules respected here */
-      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
-			   NULL, FALSE);
+      left = ffecom_expr_ (ffebld_left (expr), NULL, NULL, NULL, FALSE, widenp);
       return ffecom_1 (NOP_EXPR, tree_type, left);
 
     case FFEBLD_opUMINUS:
-      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
-			   NULL, FALSE);
+      left = ffecom_expr_ (ffebld_left (expr), NULL, NULL, NULL, FALSE, widenp);
       if (tree_type_x) 
 	{
 	  tree_type = tree_type_x;
@@ -2961,10 +2951,8 @@ ffecom_expr_ (ffebld expr, tree tree_type_x, tree dest_tree,
       return ffecom_1 (NEGATE_EXPR, tree_type, left);
 
     case FFEBLD_opADD:
-      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
-			   NULL, FALSE);
-      right = ffecom_expr_ (ffebld_right (expr), tree_type_x, NULL, NULL,
-			    NULL, FALSE);
+      left = ffecom_expr_ (ffebld_left (expr), NULL, NULL, NULL, FALSE, widenp);
+      right = ffecom_expr_ (ffebld_right (expr), NULL, NULL, NULL, FALSE, widenp);
       if (tree_type_x) 
 	{
 	  tree_type = tree_type_x;
@@ -2974,10 +2962,8 @@ ffecom_expr_ (ffebld expr, tree tree_type_x, tree dest_tree,
       return ffecom_2 (PLUS_EXPR, tree_type, left, right);
 
     case FFEBLD_opSUBTRACT:
-      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
-			   NULL, FALSE);
-      right = ffecom_expr_ (ffebld_right (expr), tree_type_x, NULL, NULL,
-			    NULL, FALSE);
+      left = ffecom_expr_ (ffebld_left (expr), NULL, NULL, NULL, FALSE, widenp);
+      right = ffecom_expr_ (ffebld_right (expr), NULL, NULL, NULL, FALSE, widenp);
       if (tree_type_x) 
 	{
 	  tree_type = tree_type_x;
@@ -2987,10 +2973,8 @@ ffecom_expr_ (ffebld expr, tree tree_type_x, tree dest_tree,
       return ffecom_2 (MINUS_EXPR, tree_type, left, right);
 
     case FFEBLD_opMULTIPLY:
-      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
-			   NULL, FALSE);
-      right = ffecom_expr_ (ffebld_right (expr), tree_type_x, NULL, NULL,
-			    NULL, FALSE);
+      left = ffecom_expr_ (ffebld_left (expr), NULL, NULL, NULL, FALSE, widenp);
+      right = ffecom_expr_ (ffebld_right (expr), NULL, NULL, NULL, FALSE, widenp);
       if (tree_type_x) 
 	{
 	  tree_type = tree_type_x;
@@ -3000,10 +2984,8 @@ ffecom_expr_ (ffebld expr, tree tree_type_x, tree dest_tree,
       return ffecom_2 (MULT_EXPR, tree_type, left, right);
 
     case FFEBLD_opDIVIDE:
-      left = ffecom_expr_ (ffebld_left (expr), tree_type_x, NULL, NULL,
-			   NULL, FALSE);
-      right = ffecom_expr_ (ffebld_right (expr), tree_type_x, NULL, NULL,
-			    NULL, FALSE);
+      left = ffecom_expr_ (ffebld_left (expr), NULL, NULL, NULL, FALSE, widenp);
+      right = ffecom_expr_ (ffebld_right (expr), NULL, NULL, NULL, FALSE, widenp);
       if (tree_type_x) 
 	{
 	  tree_type = tree_type_x;
@@ -11461,8 +11443,8 @@ ffecom_expand_let_stmt (ffebld dest, ffebld source)
 
       if ((TREE_CODE (dest_tree) != VAR_DECL)
 	  || TREE_ADDRESSABLE (dest_tree))
-	source_tree = ffecom_expr_ (source, NULL_TREE, dest_tree, dest,
-				    &dest_used, FALSE);
+	source_tree = ffecom_expr_ (source, dest_tree, dest, &dest_used,
+				    FALSE, FALSE);
       else
 	{
 	  source_tree = ffecom_expr (source);
@@ -11503,8 +11485,7 @@ ffecom_expand_let_stmt (ffebld dest, ffebld source)
 tree
 ffecom_expr (ffebld expr)
 {
-  return ffecom_expr_ (expr, NULL_TREE, NULL_TREE, NULL, NULL,
-		       FALSE);
+  return ffecom_expr_ (expr, NULL_TREE, NULL, NULL, FALSE, FALSE);
 }
 
 #endif
@@ -11514,8 +11495,7 @@ ffecom_expr (ffebld expr)
 tree
 ffecom_expr_assign (ffebld expr)
 {
-  return ffecom_expr_ (expr, NULL_TREE, NULL_TREE, NULL, NULL,
-		       TRUE);
+  return ffecom_expr_ (expr, NULL_TREE, NULL, NULL, TRUE, FALSE);
 }
 
 #endif
@@ -11525,8 +11505,7 @@ ffecom_expr_assign (ffebld expr)
 tree
 ffecom_expr_assign_w (ffebld expr)
 {
-  return ffecom_expr_ (expr, NULL_TREE, NULL_TREE, NULL, NULL,
-		       TRUE);
+  return ffecom_expr_ (expr, NULL_TREE, NULL, NULL, TRUE, FALSE);
 }
 
 #endif
@@ -11762,6 +11741,11 @@ ffecom_init_0 ()
 	}
     }
 
+  /* Set the sizetype before we do anything else.  */
+
+  sizetype =  make_unsigned_type (POINTER_SIZE);
+  ssizetype =  make_signed_type (POINTER_SIZE);
+
 #if FFECOM_GCC_INCLUDE
   ffecom_initialize_char_syntax_ ();
 #endif
@@ -11804,9 +11788,6 @@ ffecom_init_0 ()
   long_long_unsigned_type_node = make_unsigned_type (LONG_LONG_TYPE_SIZE);
   pushdecl (build_decl (TYPE_DECL, get_identifier ("long long unsigned int"),
 			long_long_unsigned_type_node));
-
-  sizetype
-    = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (SIZE_TYPE)));
 
   TREE_TYPE (TYPE_SIZE (integer_type_node)) = sizetype;
   TREE_TYPE (TYPE_SIZE (char_type_node)) = sizetype;

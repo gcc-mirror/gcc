@@ -1,3 +1,10 @@
+Thu Mar 12 09:53:14 1998  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (ffecom_expr_): Revert Oct 22 change.  Instead take a WIDENP
+	argument so that we can respect the signedness of the original type.
+	(ffecom_init_0): Do sizetype initialization first.  Init new
+	ssizetype.
+
 Thu Feb 19 00:54:20 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
 	* Make-lang.in (f77.all.build): Add exeext.
