@@ -4905,7 +4905,7 @@ free_for_value_p (regno, mode, opnum, type, value, out, reloadnum,
 {
   int nregs = HARD_REGNO_NREGS (regno, mode);
   while (nregs-- > 0)
-    if (! reload_reg_free_for_value_p (regno, opnum, type, value, out,
+    if (! reload_reg_free_for_value_p (regno + nregs, opnum, type, value, out,
 				       reloadnum, ignore_address_reloads))
       return 0;
   return 1;
