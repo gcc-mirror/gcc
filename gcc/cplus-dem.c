@@ -1,5 +1,5 @@
 /* Demangler for GNU C++ 
-   Copyright 1989, 1991, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright 1989, 91, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
    
@@ -3115,7 +3115,7 @@ Usage: %s [-_] [-n] [-s {gnu,lucid,arm}] [--strip-underscores]\n\
   exit (status);
 }
 
-#define MBUF_SIZE 512
+#define MBUF_SIZE 32767
 char mbuffer[MBUF_SIZE];
 
 /* Defined in the automatically-generated underscore.c.  */
