@@ -816,7 +816,7 @@ output_short_branch_defs (stream)
 	(low, "L", CODE_LABEL_NUMBER (XEXP (sb_low, 0)));
       /* This will change as the assembler requirements become known.  */
       fprintf (stream, "\t%s\t %s,%s-%s\n",
-	       DEF_ASM_OP, &name[1], &high[1], &low[1]);
+	       SET_ASM_OP, &name[1], &high[1], &low[1]);
     }
   if (sb_name || sb_high || sb_low)
     abort ();
@@ -1503,7 +1503,7 @@ m88k_handle_pragma_token (string, token)
 	      fputc ('\n', asm_out_file);
 	      if (state == ps_value)
 		{
-		  fprintf (asm_out_file, "\t%s\t ", DEF_ASM_OP);
+		  fprintf (asm_out_file, "\t%s\t ", SET_ASM_OP);
 		  ASM_OUTPUT_LABELREF (asm_out_file, name);
 		  fputc (',', asm_out_file);
 		  ASM_OUTPUT_LABELREF (asm_out_file, value);
