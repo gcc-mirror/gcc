@@ -4,12 +4,11 @@ New users may wish to point their web browsers to the file documentation.html
 in the 'docs/html' subdirectory.  It contains brief building instructions and
 notes on how to configure the library in interesting ways.
 
+Instructions for configuring and building appear in
+docs/html/install.html.
 
-Instructions for configuring and building this snapshot appear
-in docs/html/install.html.
-
-This directory contains the files needed to create [a still broken
-subset of] an ISO Standard C++ Library.
+This directory contains the files needed to create an ISO Standard C++
+Library.
 
 It has subdirectories:
 
@@ -17,22 +16,9 @@ It has subdirectories:
      Files in HTML and text format that document usage, quirks of the
      implementation, and contributor checklists.
 
-  include/bits
-     Files included by standard headers and by other files in
-     the bits directory.  Includes a set of files bits/std_xxxx.h
-     that implement the standard headers <xxxx>.
-
   include/std
      Files meant to be found by #include <name> directives in
      standard-conforming user programs.  
-
-  include/ext
-     Headers that define extensions to the standard library.  No
-     standard header refers to any of them.
-
-  include/backward
-     Headers provided for backward compatibility, such as <iostream.h>.
-     They are not used in this library.
 
   include/c
      Headers intended to directly include standard C headers. 
@@ -49,6 +35,19 @@ It has subdirectories:
      by C++ headers (e.g. unistd.h).  These are meant to wrap the names
      defined there into the _C_legacy namespace.
      [NB: this can be enabled via --enable-cheaders=c_shadow]
+
+  include/bits
+     Files included by standard headers and by other files in
+     the bits directory.  Includes a set of files bits/std_xxxx.h
+     that implement the standard headers <xxxx>.
+
+  include/backward
+     Headers provided for backward compatibility, such as <iostream.h>.
+     They are not used in this library.
+
+  include/ext
+     Headers that define extensions to the standard library.  No
+     standard header refers to any of them.
 
   src
      Files that are used in constructing the library, but are not
@@ -73,10 +72,20 @@ Currently these are:
   config/io
   config/locale
 
-Files needed only to construct the library, but not installed,
-are in src/.  Files to be copied as part of an installation are
-all found in the subdirectories mentioned above.  (A configure
-script may link files from another directory into one of these.)
+In addition, three subdirectories are convenience libraries:
+
+  libio
+     Contains the subset of the GNU libio library needed for
+     C++. Currently not used.
+
+  libmath
+     Support routines needed for C++ math. Only needed if the
+     underlying "C" implementation is weak or looses.
+
+  libsupc++
+     Contains the runtime library for C++, including exception
+     handling and memory allocation and deallocation, RTTI, terminate
+     handlers, etc.
 
 Note that glibc also has a bits/ subdirectory.  We will either
 need to be careful not to collide with names in its bits/
