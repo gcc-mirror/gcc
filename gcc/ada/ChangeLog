@@ -1,3 +1,9 @@
+2001-10-25  Robert Dewar <dewar@gnat.com>
+
+	* sem_util.adb 
+        (Defining_Entity): Deal with Error.
+	(Process_End_Label): Deal with bad end label for.
+
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
 	* sem_elab.adb (Check_A_Call): refine message when call is in an 
