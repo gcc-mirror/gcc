@@ -1,5 +1,8 @@
 Sun Sep 23 18:19:48 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* fold-const.c (extract_muldiv, case PLUS_EXPR): Only adjust
+	code for division, not modulus.
+
 	* rtl.def (MEM): Remove obsolete part of comment.
 
 2001-09-22  Joseph S. Myers  <jsm28@cam.ac.uk>
