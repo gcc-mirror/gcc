@@ -37,7 +37,7 @@ details.  */
 #include <java/lang/reflect/Method.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/lang/OutOfMemoryError.h>
-#include <java/util/Hashtable.h>
+#include <java/util/IdentityHashMap.h>
 #include <java/lang/Integer.h>
 #include <java/lang/ThreadGroup.h>
 #include <java/lang/Thread.h>
@@ -91,9 +91,9 @@ struct _Jv_JNI_LocalFrame
 };
 
 // This holds a reference count for all local references.
-static java::util::Hashtable *local_ref_table;
+static java::util::IdentityHashMap *local_ref_table;
 // This holds a reference count for all global references.
-static java::util::Hashtable *global_ref_table;
+static java::util::IdentityHashMap *global_ref_table;
 
 // The only VM.
 static JavaVM *the_vm;
@@ -148,8 +148,8 @@ jvmpiDisableEvent (jint event_type, void *)
 void
 _Jv_JNI_Init (void)
 {
-  local_ref_table = new java::util::Hashtable;
-  global_ref_table = new java::util::Hashtable;
+  local_ref_table = new java::util::IdentityHashMap;
+  global_ref_table = new java::util::IdentityHashMap;
 
 #ifdef ENABLE_JVMPI
   _Jv_JVMPI_Interface.version = 1;
@@ -163,7 +163,7 @@ _Jv_JNI_Init (void)
 
 // Tell the GC that a certain pointer is live.
 static void
-mark_for_gc (jobject obj, java::util::Hashtable *ref_table)
+mark_for_gc (jobject obj, java::util::IdentityHashMap *ref_table)
 {
   JvSynchronize sync (ref_table);
 
@@ -176,7 +176,7 @@ mark_for_gc (jobject obj, java::util::Hashtable *ref_table)
 
 // Unmark a pointer.
 static void
-unmark_for_gc (jobject obj, java::util::Hashtable *ref_table)
+unmark_for_gc (jobject obj, java::util::IdentityHashMap *ref_table)
 {
   JvSynchronize sync (ref_table);
 

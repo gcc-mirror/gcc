@@ -717,6 +717,7 @@ java/util/GregorianCalendar.java \
 java/util/HashMap.java \
 java/util/HashSet.java \
 java/util/Hashtable.java \
+java/util/IdentityHashMap.java \
 java/util/Iterator.java	\
 java/util/LinkedList.java \
 java/util/List.java \
@@ -1859,10 +1860,11 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/EventListener.P .deps/java/util/EventObject.P \
 .deps/java/util/GregorianCalendar.P .deps/java/util/HashMap.P \
 .deps/java/util/HashSet.P .deps/java/util/Hashtable.P \
-.deps/java/util/Iterator.P .deps/java/util/LinkedList.P \
-.deps/java/util/List.P .deps/java/util/ListIterator.P \
-.deps/java/util/ListResourceBundle.P .deps/java/util/Locale.P \
-.deps/java/util/Map.P .deps/java/util/MissingResourceException.P \
+.deps/java/util/IdentityHashMap.P .deps/java/util/Iterator.P \
+.deps/java/util/LinkedList.P .deps/java/util/List.P \
+.deps/java/util/ListIterator.P .deps/java/util/ListResourceBundle.P \
+.deps/java/util/Locale.P .deps/java/util/Map.P \
+.deps/java/util/MissingResourceException.P \
 .deps/java/util/NoSuchElementException.P .deps/java/util/Observable.P \
 .deps/java/util/Observer.P .deps/java/util/Properties.P \
 .deps/java/util/PropertyPermission.P \

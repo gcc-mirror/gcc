@@ -1,5 +1,15 @@
 2001-08-15  Tom Tromey  <tromey@redhat.com>
 
+	* jni.cc: Include IdentityHashMap.h, not Hashtable.h.
+	(local_ref_table, global_ref_table): Now IdentityHashMap.
+	(_Jv_JNI_Init): Updated for new types.
+	(mark_for_gc): Likewise.
+	(unmark_for_gc): Likewise.
+	* gcj/javaprims.h: Rebuilt class list.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (core_java_source_files): Added new file.
+	* java/util/IdentityHashMap.java: New file.
+
 	* gnu/gcj/convert/natIconv.cc (read): Handle EINVAL and E2BIG
 	correctly.
 
