@@ -244,6 +244,7 @@ static int add_bb_string	PARAMS ((const char *, int));
 static void notice_source_line	PARAMS ((rtx));
 static rtx walk_alter_subreg	PARAMS ((rtx));
 static void output_asm_name	PARAMS ((void));
+static tree get_decl_from_op	PARAMS ((rtx, int *));
 static void output_operand	PARAMS ((rtx, int));
 #ifdef LEAF_REGISTERS
 static void leaf_renumber_regs	PARAMS ((rtx));
@@ -3288,6 +3289,49 @@ output_asm_name ()
     }
 }
 
+/* If OP is a REG or MEM and we can find a decl corresponding to it or
+   its address, return that decl.  Set *PADDRESSP to 1 if the decl
+   corresponds to the address of the object and 0 if to the object.  */
+
+static tree
+get_decl_from_op (op, paddressp)
+     rtx op;
+     int *paddressp;
+{
+  tree decl;
+  int inner_addressp;
+
+  *paddressp = 0;
+
+  if (GET_CODE (op) == REG)
+    return REGNO_DECL (ORIGINAL_REGNO (op));
+  else if (GET_CODE (op) != MEM)
+    return 0;
+
+  if (MEM_DECL (op) != 0)
+    return MEM_DECL (op);
+
+  /* Otherwise we have an address, so indicate it and look at the address.  */
+  *paddressp = 1;
+  op = XEXP (op, 0);
+
+  /* First check if we have a decl for the address, then look at the right side
+     if it is a PLUS.  Otherwise, strip off arithmetic and keep looking.
+     But don't allow the address to itself be indirect.  */
+  if ((decl = get_decl_from_op (op, &inner_addressp)) && ! inner_addressp)
+    return decl;
+  else if (GET_CODE (op) == PLUS
+	   && (decl = get_decl_from_op (XEXP (op, 1), &inner_addressp)))
+    return decl;
+
+  while (GET_RTX_CLASS (GET_CODE (op)) == '1'
+	 || GET_RTX_CLASS (GET_CODE (op)) == '2')
+    op = XEXP (op, 0);
+
+  decl = get_decl_from_op (op, &inner_addressp);
+  return inner_addressp ? 0 : decl;
+}
+  
 /* Output text from TEMPLATE to the assembler output file,
    obeying %-directions to substitute operands taken from
    the vector OPERANDS.
@@ -3497,14 +3541,14 @@ output_asm_insn (template, operands)
 
       for (i = 0; i < ops; i++)
 	{
-	  rtx op = operands[oporder[i]];
-	  tree decl = (GET_CODE (op) == REG ? REGNO_DECL (ORIGINAL_REGNO (op))
-		       : GET_CODE (op) == MEM ? MEM_DECL (op)
-		       : 0);
+	  int addressp;
+	  tree decl = get_decl_from_op (operands[oporder[i]], &addressp);
 
 	  if (decl && DECL_NAME (decl))
 	    {
-	      fprintf (asm_out_file, "%s %s", wrote ? "," : ASM_COMMENT_START,
+	      fprintf (asm_out_file, "%s %s%s",
+		       wrote ? "," : ASM_COMMENT_START,
+		       addressp ? "*" : "",
 		       IDENTIFIER_POINTER (DECL_NAME (decl)));
 	      wrote = 1;
 	    }

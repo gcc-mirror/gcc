@@ -1,3 +1,8 @@
+Fri Oct 19 15:24:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* final.c (get_decl_from_op): New function.
+	(output_asm_insn): Call it; write "*" when item with decl is address.
+
 2001-10-19  Janis Johnson  <janis187@us.ibm.com>
 
 	* doc/install.texi (Specific, sparc-sun-solaris2*) Copy documentation
