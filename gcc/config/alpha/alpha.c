@@ -116,6 +116,10 @@ int alpha_this_gpdisp_sequence_number;
 /* Declarations of static functions.  */
 static bool decl_in_text_section
   PARAMS ((tree));
+static int some_small_symbolic_mem_operand_1
+  PARAMS ((rtx *, void *));
+static int split_small_symbolic_mem_operand_1
+  PARAMS ((rtx *, void *));
 static bool local_symbol_p
   PARAMS ((rtx));
 static void alpha_set_memflags_1
@@ -1874,51 +1878,57 @@ some_small_symbolic_mem_operand (x, mode)
      rtx x;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  /* Get rid of SIGN_EXTEND, etc.  */
-  while (GET_RTX_CLASS (GET_CODE (x)) == '1')
-    x = XEXP (x, 0);
+  return for_each_rtx (&x, some_small_symbolic_mem_operand_1, NULL);
+}
+
+static int
+some_small_symbolic_mem_operand_1 (px, data)
+     rtx *px;
+     void *data ATTRIBUTE_UNUSED;
+{
+  rtx x = *px;
 
   if (GET_CODE (x) != MEM)
     return 0;
-
   x = XEXP (x, 0);
+
   /* If this is an ldq_u type address, discard the outer AND.  */
-  if (GET_CODE (x) == AND && GET_MODE (x) == DImode
-      && GET_CODE (XEXP (x, 1)) == CONST_INT
-      && INTVAL (XEXP (x, 1)) == -8)
+  if (GET_CODE (x) == AND)
     x = XEXP (x, 0);
-  return small_symbolic_operand (x, Pmode);
+
+  return small_symbolic_operand (x, Pmode) ? 1 : -1;
 }
 
 rtx
 split_small_symbolic_mem_operand (x)
      rtx x;
 {
-  rtx *p;
+  x = copy_rtx (x);
+  for_each_rtx (&x, split_small_symbolic_mem_operand_1, NULL);
+  return x;
+}
 
-  if (GET_CODE (x) == MEM)
+static int
+split_small_symbolic_mem_operand_1 (px, data)
+     rtx *px;
+     void *data ATTRIBUTE_UNUSED;
+{
+  rtx x = *px;
+
+  if (GET_CODE (x) != MEM)
+    return 0;
+
+  px = &XEXP (x, 0), x = *px;
+  if (GET_CODE (x) == AND)
+    px = &XEXP (x, 0), x = *px;
+
+  if (small_symbolic_operand (x, Pmode))
     {
-      rtx tmp = XEXP (x, 0);
-
-      if (GET_CODE (tmp) == AND && GET_MODE (tmp) == DImode
-	  && GET_CODE (XEXP (tmp, 1)) == CONST_INT
-	  && INTVAL (XEXP (tmp, 1)) == -8)
-	{
-	  tmp = gen_rtx_LO_SUM (DImode, pic_offset_table_rtx, XEXP (tmp, 0));
-	  tmp = gen_rtx_AND (DImode, tmp, GEN_INT (-8));
-	}
-      else
-	tmp = gen_rtx_LO_SUM (DImode, pic_offset_table_rtx, tmp);
-      return replace_equiv_address (x, tmp);
+      x = gen_rtx_LO_SUM (Pmode, pic_offset_table_rtx, x);
+      *px = x;
     }
 
-  x = copy_rtx (x);
-  p = &x;
-  while (GET_RTX_CLASS (GET_CODE (*p)) == '1')
-    p = &XEXP (*p, 0);
-
-  *p = split_small_symbolic_mem_operand (*p);
-  return x;
+  return -1;
 }
 
 /* Try a machine-dependent way of reloading an illegitimate address
