@@ -171,7 +171,7 @@ extern const char *cris_elinux_stacksize_str;
    %{!melinux:%{!maout|melf:%{!fno-vtable-gc:-fvtable-gc}}}}}".  */
 #define CC1PLUS_SPEC ""
 
-#ifdef HAVE_AS_MUL_BUG_ABORT_OPTION
+#ifdef HAVE_AS_NO_MUL_BUG_ABORT_OPTION
 #define MAYBE_AS_NO_MUL_BUG_ABORT \
  "%{mno-mul-bug-workaround:-no-mul-bug-abort} "
 #else
