@@ -538,3 +538,19 @@ proc is-effective-target { arg } {
     verbose "is-effective-target: $arg $selected" 2
     return $selected
 }
+
+# Return 1 if the argument is an effective-target keyword, 0 otherwise.
+
+proc is-effective-target-keyword { arg } {
+    if { [info procs check_effective_target_${arg}] != [list] } {
+	return 1
+    } else {
+	# These have different names for their check_* procs.
+	switch $arg {
+	  "vmx_hw"         { return 1 }
+	  "named_sections" { return 1 }
+	  "gc_sections"    { return 1 }
+	  default          { return 0 }
+	}
+    }
+}

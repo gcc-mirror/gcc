@@ -1,3 +1,11 @@
+2004-12-01  Janis Johnson  <janis187@us.ibm.com>
+
+	* lib/gcc-dg.exp (dg-process-target): Wrapper for dg function to
+	handle effective-target-keyword.
+	(dg-skip-if): Support effective-target keyword as target list.
+	(dg-xfail-if): Ditto.
+	* lib/target-supports.exp (is-effective-target-keyword): New proc.
+
 2004-12-01  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/18291

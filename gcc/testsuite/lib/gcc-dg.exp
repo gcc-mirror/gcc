@@ -429,9 +429,16 @@ proc dg-require-effective-target { args } {
 
 proc dg-skip-if { args } {
     set args [lreplace $args 0 0]
-    if [check_conditional_xfail $args] {
-	upvar dg-do-what dg-do-what
-	skip_test_and_clear_xfail
+
+    # The target list might be an effective-target keyword, so replace
+    # the original list with "*-*-*" if it is matched.
+    set selector "target [join [lindex $args 1]]"
+    if { [dg-process-target $selector] == "S" } {
+	# The target list matched; now check the flags.
+	if [check_conditional_xfail [lreplace $args 1 1 "*-*-*"]] {
+	    upvar dg-do-what dg-do-what
+	    skip_test_and_clear_xfail
+	}
     }
 }
 
@@ -460,7 +467,7 @@ proc dg-xfail-if { args } {
     set selector "target [join [lindex $args 1]]"
     if { [dg-process-target $selector] == "S" } {
 	global compiler_conditional_xfail_data
-	set compiler_conditional_xfail_data $args
+	set compiler_conditional_xfail_data [lreplace $args 1 1 "*-*-*"]
     }
 }
 
@@ -493,4 +500,53 @@ if { [info procs saved-dg-test] == [list] } {
 	set additional_prunes ""
     }
 }
+
+# Intercept the call to the DejaGnu version of dg-process-target to
+# support use of an effective-target keyword in place of a list of
+# target triplets to xfail or skip a test.
+#
+# selector is one of:
+#    xfail target-triplet-1 ...
+#    xfail effective-target-keyword
+#    target target-triplet-1 ...
+#    target effective-target-keyword
+#
+# For a target list the result is "S" if the target is selected, "N" otherwise.
+# For an xfail list the result is "F" if the target is affected, "P" otherwise.
+
+if { [info procs saved-dg-process-target] == [list] } {
+    rename dg-process-target saved-dg-process-target
+
+    proc dg-process-target { args } {
+        verbose "replacement dg-process-target" 2
+	
+	# Extract the 'what' keyword from the argument list.
+	set selector [string trim [lindex $args 0]]
+	if [regexp "^xfail " $selector] {
+	    set what "xfail"
+	} elseif [regexp "^target " $selector] {
+	    set what "target"
+	} else {
+	    error "syntax error in target selector \"$selector\""
+	}
+
+	# Extract the rest of the list, which might be a keyword.
+	regsub "^${what}" $selector "" rest
+	set rest [string trim $rest]
+
+	if [is-effective-target-keyword $rest] {
+	    # The selector is an effective target keyword.
+	    if [is-effective-target $rest] {
+		return [expr { $what == "xfail" ? "F" : "S" }]
+	    } else {
+		return [expr { $what == "xfail" ? "P" : "N" }]
+	    }
+	}
+
+	# The selector is not an effective-target keyword, so process
+	# the list of target triplets.
+	return [saved-dg-process-target $selector]
+    }
+}
+
 set additional_prunes ""
