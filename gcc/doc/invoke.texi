@@ -2908,6 +2908,9 @@ Dump after sibling call optimizations, to @file{@var{file}.01.sibling}.
 @item j
 @opindex dj
 Dump after the first jump optimization, to @file{@var{file}.03.jump}.
+@item J
+@opindex dJ
+Dump after the last jump optimization, to @file{@var{file}.29.jump2}.
 @item k
 @opindex dk
 Dump after conversion from registers to stack, to @file{@var{file}.32.stack}.

@@ -282,10 +282,11 @@ enum dump_file_index
   DFI_rnreg,
   DFI_ce2,
   DFI_sched2,
-  DFI_stack,
   DFI_bbro,
+  DFI_jump2,
   DFI_mach,
   DFI_dbr,
+  DFI_stack,
   DFI_MAX
 };
 
@@ -295,7 +296,7 @@ enum dump_file_index
    Remaining -d letters:
 
 	"              o q   u     "
-	"       H JK   OPQ  TUV  YZ"
+	"       H  K   OPQ  TUV  YZ"
 */
 
 struct dump_file_info dump_file[DFI_MAX] =
@@ -329,6 +330,7 @@ struct dump_file_info dump_file[DFI_MAX] =
   { "ce2",	'E', 1, 0, 0 },
   { "sched2",	'R', 1, 0, 0 },
   { "bbro",	'B', 1, 0, 0 },
+  { "jump2",	'J', 1, 0, 0 },
   { "mach",	'M', 1, 0, 0 },
   { "dbr",	'd', 0, 0, 0 },
   { "stack",	'k', 1, 0, 0 },
@@ -2837,7 +2839,8 @@ rest_of_compilation (decl)
 
 	      optimize = 0;
 	      find_exception_handler_labels ();
-	      jump_optimize (insns, !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
+	      jump_optimize (insns, !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
+			     !JUMP_AFTER_REGSCAN);
 	      optimize = saved_optimize;
 	    }
 
@@ -2944,7 +2947,8 @@ rest_of_compilation (decl)
   expected_value_to_br_prob ();
 
   reg_scan (insns, max_reg_num (), 0);
-  jump_optimize (insns, !JUMP_NOOP_MOVES, JUMP_AFTER_REGSCAN);
+  jump_optimize (insns, !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
+		 JUMP_AFTER_REGSCAN);
 
   timevar_pop (TV_JUMP);
 
@@ -3086,7 +3090,8 @@ rest_of_compilation (decl)
       if (tem || optimize > 1)
 	{
 	  timevar_push (TV_JUMP);
-	  jump_optimize (insns, !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
+	  jump_optimize (insns, !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
+			 !JUMP_AFTER_REGSCAN);
 	  timevar_pop (TV_JUMP);
 	}
 
@@ -3158,7 +3163,8 @@ rest_of_compilation (decl)
 	{
 	  tem = tem2 = 0;
 	  timevar_push (TV_JUMP);
-	  jump_optimize (insns, !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
+	  jump_optimize (insns, !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
+			 !JUMP_AFTER_REGSCAN);
 	  timevar_pop (TV_JUMP);
 
 	  if (flag_expensive_optimizations)
@@ -3231,7 +3237,8 @@ rest_of_compilation (decl)
 	  delete_trivially_dead_insns (insns, max_reg_num ());
 
 	  reg_scan (insns, max_reg_num (), 0);
-	  jump_optimize (insns, !JUMP_NOOP_MOVES, JUMP_AFTER_REGSCAN);
+	  jump_optimize (insns, !JUMP_CROSS_JUMP,
+			 !JUMP_NOOP_MOVES, JUMP_AFTER_REGSCAN);
 
 	  timevar_push (TV_IFCVT);
 
@@ -3249,7 +3256,8 @@ rest_of_compilation (decl)
 	  if (tem)
 	    {
 	      timevar_push (TV_JUMP);
-	      jump_optimize (insns, !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
+	      jump_optimize (insns, !JUMP_CROSS_JUMP,
+			     !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
 	      timevar_pop (TV_JUMP);
 	    }
 	}
@@ -3563,7 +3571,8 @@ rest_of_compilation (decl)
   timevar_push (TV_FLOW2);
   open_dump_file (DFI_flow2, decl);
 
-  jump_optimize (insns, JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
+  jump_optimize (insns, !JUMP_CROSS_JUMP,
+		 JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
   find_basic_blocks (insns, max_reg_num (), rtl_dump_file);
 
   /* On some machines, the prologue and epilogue code, or parts thereof,
@@ -3628,10 +3637,6 @@ rest_of_compilation (decl)
       close_dump_file (DFI_ce2, print_rtl_with_bb, insns);
       timevar_pop (TV_IFCVT2);
     }
-#ifdef STACK_REGS
-  if (optimize)
-    split_all_insns (1);
-#endif
 
 #ifdef INSN_SCHEDULING
   if (optimize > 0 && flag_schedule_insns_after_reload)
@@ -3658,17 +3663,6 @@ rest_of_compilation (decl)
     = optimize > 0 && only_leaf_regs_used () && leaf_function_p ();
 #endif
 
-#ifdef STACK_REGS
-  timevar_push (TV_REG_STACK);
-  open_dump_file (DFI_stack, decl);
-
-  reg_to_stack (insns, rtl_dump_file);
-
-  close_dump_file (DFI_stack, print_rtl, insns);
-  timevar_pop (TV_REG_STACK);
-
-  ggc_collect ();
-#endif
   if (optimize > 0 && flag_reorder_blocks)
     {
       timevar_push (TV_REORDER_BLOCKS);
@@ -3677,8 +3671,24 @@ rest_of_compilation (decl)
       reorder_basic_blocks ();
 
       close_dump_file (DFI_bbro, print_rtl_with_bb, insns);
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
       timevar_pop (TV_REORDER_BLOCKS);
+    }
+
+  /* One more attempt to remove jumps to .+1 left by dead-store elimination.
+     Also do cross-jumping this time and delete no-op move insns.  */
+
+  if (optimize > 0)
+    {
+      timevar_push (TV_JUMP);
+      open_dump_file (DFI_jump2, decl);
+
+      jump_optimize (insns, JUMP_CROSS_JUMP, JUMP_NOOP_MOVES,
+		     !JUMP_AFTER_REGSCAN);
+
+      /* CFG no longer kept up to date.  */
+
+      close_dump_file (DFI_jump2, print_rtl, insns);
+      timevar_pop (TV_JUMP);
     }
 
   /* If a machine dependent reorganization is needed, call it.  */
@@ -3691,8 +3701,6 @@ rest_of_compilation (decl)
 
   ggc_collect ();
 #endif
-
-  /* CFG no longer kept up to date.  */
 
   /* If a scheduling pass for delayed branches is to be done,
      call the scheduling code.  */
@@ -3712,10 +3720,28 @@ rest_of_compilation (decl)
     }
 #endif
 
-#if defined (HAVE_ATTR_length) && !defined (STACK_REGS)
   timevar_push (TV_SHORTEN_BRANCH);
-  split_all_insns (0);
+  if (0
+#ifdef HAVE_ATTR_length
+      || 1
+#endif
+#ifdef STACK_REGS
+      || 1
+#endif
+      )
+    split_all_insns (0);
   timevar_pop (TV_SHORTEN_BRANCH);
+
+#ifdef STACK_REGS
+  timevar_push (TV_REG_STACK);
+  open_dump_file (DFI_stack, decl);
+
+  reg_to_stack (insns, rtl_dump_file);
+
+  close_dump_file (DFI_stack, print_rtl, insns);
+  timevar_pop (TV_REG_STACK);
+
+  ggc_collect ();
 #endif
 
   convert_to_eh_region_ranges ();
