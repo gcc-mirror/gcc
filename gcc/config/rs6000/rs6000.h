@@ -87,6 +87,7 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=821: -mppc} \
 %{mcpu=823: -mppc} \
 %{mcpu=860: -mppc} \
+%{mcpu=8540: -me500} \
 %{maltivec: -maltivec}"
 
 #define CPP_DEFAULT_SPEC ""
@@ -358,6 +359,7 @@ enum processor_type
    PROCESSOR_PPC750,
    PROCESSOR_PPC7400,
    PROCESSOR_PPC7450,
+   PROCESSOR_PPC8540,
    PROCESSOR_POWER4
 };
 
@@ -393,6 +395,8 @@ extern enum processor_type rs6000_cpu;
    {"abi=", &rs6000_abi_string, N_("Specify ABI to use") },		\
    {"long-double-", &rs6000_long_double_size_string,			\
     N_("Specify size of long double (64 or 128 bits)") },		\
+   {"isel=", &rs6000_isel_string,                                       \
+    N_("Specify yes/no if isel instructions should be generated") },    \
    {"vrsave=", &rs6000_altivec_vrsave_string,                         \
     N_("Specify yes/no if VRSAVE instructions should be generated for AltiVec") }, \
    {"longcall", &rs6000_longcall_switch,				\
@@ -426,6 +430,10 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 extern const char *rs6000_long_double_size_string;
 extern int rs6000_long_double_type_size;
 extern int rs6000_altivec_abi;
+extern int rs6000_spe_abi;
+extern int rs6000_isel;
+extern int rs6000_fprs;
+extern const char *rs6000_isel_string;
 extern const char *rs6000_altivec_vrsave_string;
 extern int rs6000_altivec_vrsave;
 extern const char *rs6000_longcall_switch;
@@ -434,6 +442,11 @@ extern int rs6000_default_long_calls;
 #define TARGET_LONG_DOUBLE_128 (rs6000_long_double_type_size == 128)
 #define TARGET_ALTIVEC_ABI rs6000_altivec_abi
 #define TARGET_ALTIVEC_VRSAVE rs6000_altivec_vrsave
+
+#define TARGET_SPE_ABI 0
+#define TARGET_SPE 0
+#define TARGET_ISEL 0
+#define TARGET_FPRS 1
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
@@ -508,6 +521,7 @@ extern int rs6000_default_long_calls;
 #define MIN_UNITS_PER_WORD 4
 #define UNITS_PER_FP_WORD 8
 #define UNITS_PER_ALTIVEC_WORD 16
+#define UNITS_PER_SPE_WORD 8
 
 /* Type used for ptrdiff_t, as a string used in a declaration.  */
 #define PTRDIFF_TYPE "int"
@@ -589,13 +603,26 @@ extern int rs6000_default_long_calls;
    local store.  TYPE is the data type, and ALIGN is the alignment
    that the object would ordinarily have.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)				\
-  ((TARGET_ALTIVEC && TREE_CODE (TYPE) == VECTOR_TYPE) ? 128 : ALIGN)
+  ((TARGET_ALTIVEC && TREE_CODE (TYPE) == VECTOR_TYPE) ? 128 :	\
+    (TARGET_SPE && TREE_CODE (TYPE) == VECTOR_TYPE) ? 64 : ALIGN)
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
 
 /* Every structure's size must be a multiple of this.  */
 #define STRUCTURE_SIZE_BOUNDARY 8
+
+/* Return 1 if a structure or array containing FIELD should be
+   accessed using `BLKMODE'.
+
+   For the SPE, simd types are V2SI, and gcc can be tempted to put the
+   entire thing in a DI and use subregs to access the internals.
+   store_bit_field() will force (subreg:DI (reg:V2SI x))'s to the
+   back-end.  Because a single GPR can hold a V2SI, but not a DI, the
+   best thing to do is set structs to BLKmode and avoid Severe Tire
+   Damage.  */
+#define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) \
+  (TARGET_SPE && TREE_CODE (TREE_TYPE (FIELD)) == VECTOR_TYPE)
 
 /* A bitfield declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
@@ -611,7 +638,7 @@ extern int rs6000_default_long_calls;
 /* Make arrays of chars word-aligned for the same reasons.
    Align vectors to 128 bits.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
-  (TREE_CODE (TYPE) == VECTOR_TYPE ? 128	\
+  (TREE_CODE (TYPE) == VECTOR_TYPE ? (TARGET_SPE_ABI ? 64 : 128)	\
    : TREE_CODE (TYPE) == ARRAY_TYPE		\
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
@@ -650,7 +677,7 @@ extern int rs6000_default_long_calls;
    a register, in order to work around problems in allocating stack storage
    in inline functions.  */
 
-#define FIRST_PSEUDO_REGISTER 111
+#define FIRST_PSEUDO_REGISTER 113
 
 /* This must be included for pre gcc 3.0 glibc compatibility.  */
 #define PRE_GCC3_DWARF_FRAME_REGISTERS 77
@@ -675,6 +702,7 @@ extern int rs6000_default_long_calls;
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    1, 1						   \
+   , 1, 1                                          \
 }
 
 /* 1 for registers not available across function calls.
@@ -694,6 +722,7 @@ extern int rs6000_default_long_calls;
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    1, 1						   \
+   , 1, 1                                          \
 }
 
 /* Like `CALL_USED_REGISTERS' except this macro doesn't require that
@@ -712,6 +741,7 @@ extern int rs6000_default_long_calls;
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
    0, 0						   \
+   , 0, 0                                          \
 }
 
 #define MQ_REGNO     64
@@ -727,6 +757,8 @@ extern int rs6000_default_long_calls;
 #define TOTAL_ALTIVEC_REGS	(LAST_ALTIVEC_REGNO - FIRST_ALTIVEC_REGNO + 1)
 #define VRSAVE_REGNO		109
 #define VSCR_REGNO		110
+#define SPE_ACC_REGNO		111
+#define SPEFSCR_REGNO		112
 
 /* List the order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.
@@ -750,6 +782,7 @@ extern int rs6000_default_long_calls;
 	ctr		(not saved; when we have the choice ctr is better)
 	lr		(saved)
         cr5, r1, r2, ap, xer, vrsave, vscr (fixed)
+	spe_acc, spefscr (fixed)
 
 	AltiVec registers:
 	v0 - v1         (not saved or used for anything)
@@ -781,6 +814,7 @@ extern int rs6000_default_long_calls;
    96, 95, 94, 93, 92, 91,				\
    108, 107, 106, 105, 104, 103, 102, 101, 100, 99, 98,	\
    97, 109, 110						\
+   , 111, 112                                              \
 }
 
 /* True if register is floating-point.  */
@@ -795,6 +829,9 @@ extern int rs6000_default_long_calls;
 /* True if register is an integer register.  */
 #define INT_REGNO_P(N) ((N) <= 31 || (N) == ARG_POINTER_REGNUM)
 
+/* SPE SIMD registers are just the GPRs.  */
+#define SPE_SIMD_REGNO_P(N) ((N) <= 31)
+
 /* True if register is the XER register.  */
 #define XER_REGNO_P(N) ((N) == XER_REGNO)
 
@@ -806,12 +843,18 @@ extern int rs6000_default_long_calls;
    This is ordinarily the length in words of a value of mode MODE
    but can be less for certain modes in special long registers.
 
+   For the SPE, GPRs are 64 bits but only 32 bits are visible in
+   scalar instructions.  The upper 32 bits are only available to the
+   SIMD instructions.
+
    POWER and PowerPC GPRs hold 32 bits worth;
    PowerPC64 GPRs and FPRs point register holds 64 bits worth.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
   (FP_REGNO_P (REGNO)							\
    ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FP_WORD - 1) / UNITS_PER_FP_WORD) \
+   : (SPE_SIMD_REGNO_P (REGNO) && TARGET_SPE && SPE_VECTOR_MODE (MODE))   \
+   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_SPE_WORD - 1) / UNITS_PER_SPE_WORD) \
    : ALTIVEC_REGNO_P (REGNO)						\
    ? ((GET_MODE_SIZE (MODE) + UNITS_PER_ALTIVEC_WORD - 1) / UNITS_PER_ALTIVEC_WORD) \
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
@@ -822,12 +865,18 @@ extern int rs6000_default_long_calls;
 	  || (MODE) == V4SFmode		\
 	  || (MODE) == V4SImode)
 
+#define SPE_VECTOR_MODE(MODE)		\
+	((MODE) == V4HImode          	\
+         || (MODE) == V2SFmode          \
+         || (MODE) == V2SImode)
+
 /* Define this macro to be nonzero if the port is prepared to handle
    insns involving vector mode MODE.  At the very least, it must have
    move patterns for this mode.  */
 
-#define VECTOR_MODE_SUPPORTED_P(MODE)	\
-	(TARGET_ALTIVEC && ALTIVEC_VECTOR_MODE (MODE))
+#define VECTOR_MODE_SUPPORTED_P(MODE)			\
+        ((TARGET_SPE && SPE_VECTOR_MODE (MODE))		\
+	 || (TARGET_ALTIVEC && ALTIVEC_VECTOR_MODE (MODE)))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    For POWER and PowerPC, the GPRs can hold any mode, but the float
@@ -841,6 +890,7 @@ extern int rs6000_default_long_calls;
     || (GET_MODE_CLASS (MODE) == MODE_INT				\
 	&& GET_MODE_SIZE (MODE) == UNITS_PER_FP_WORD))			\
    : ALTIVEC_REGNO_P (REGNO) ? ALTIVEC_VECTOR_MODE (MODE)		\
+   : SPE_SIMD_REGNO_P (REGNO) && TARGET_SPE && SPE_VECTOR_MODE (MODE) ? 1 \
    : CR_REGNO_P (REGNO) ? GET_MODE_CLASS (MODE) == MODE_CC		\
    : XER_REGNO_P (REGNO) ? (MODE) == PSImode				\
    : ! INT_REGNO_P (REGNO) ? (GET_MODE_CLASS (MODE) == MODE_INT		\
@@ -905,6 +955,20 @@ extern int rs6000_default_long_calls;
 
 #define BRANCH_COST 3
 
+
+/* A fixed register used at prologue and epilogue generation to fix
+   addressing modes.  The SPE needs heavy addressing fixes at the last
+   minute, and it's best to save a register for it.
+
+   AltiVec also needs fixes, but we've gotten around using r11, which
+   is actually wrong because when use_backchain_to_restore_sp is true,
+   we end up clobbering r11.
+
+   The AltiVec case needs to be fixed.  Dunno if we should break ABI
+   compatability and reserve a register for it as well..  */
+
+#define FIXED_SCRATCH (TARGET_SPE ? 14 : 11)
+
 /* Define this macro to change register usage conditional on target flags.
    Set MQ register fixed (already call_used) if not POWER architecture
    (RIOS1, RIOS2, RSC, and PPC601) so that it will not be allocated.
@@ -919,7 +983,7 @@ extern int rs6000_default_long_calls;
   if (TARGET_64BIT)							\
     fixed_regs[13] = call_used_regs[13]					\
       = call_really_used_regs[13] = 1; 					\
-  if (TARGET_SOFT_FLOAT)						\
+  if (TARGET_SOFT_FLOAT || !TARGET_FPRS)				\
     for (i = 32; i < 64; i++)						\
       fixed_regs[i] = call_used_regs[i]					\
         = call_really_used_regs[i] = 1;					\
@@ -937,6 +1001,13 @@ extern int rs6000_default_long_calls;
       = call_really_used_regs[RS6000_PIC_OFFSET_TABLE_REGNUM] = 1;	\
   if (TARGET_ALTIVEC)                                                   \
     global_regs[VSCR_REGNO] = 1;                                        \
+  if (TARGET_SPE)							\
+    {                                                                   \
+      global_regs[SPEFSCR_REGNO] = 1;					\
+      fixed_regs[FIXED_SCRATCH]						\
+        = call_used_regs[FIXED_SCRATCH]					\
+	= call_really_used_regs[FIXED_SCRATCH] = 1; 			\
+    }                                                                   \
   if (! TARGET_ALTIVEC)							\
     {									\
       for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)	\
@@ -1022,6 +1093,8 @@ enum reg_class
   ALTIVEC_REGS,
   VRSAVE_REGS,
   VSCR_REGS,
+  SPE_ACC_REGS,
+  SPEFSCR_REGS,
   NON_SPECIAL_REGS,
   MQ_REGS,
   LINK_REGS,
@@ -1050,6 +1123,8 @@ enum reg_class
   "ALTIVEC_REGS",							\
   "VRSAVE_REGS",							\
   "VSCR_REGS",								\
+  "SPE_ACC_REGS",                                                       \
+  "SPEFSCR_REGS",                                                       \
   "NON_SPECIAL_REGS",							\
   "MQ_REGS",								\
   "LINK_REGS",								\
@@ -1077,6 +1152,8 @@ enum reg_class
   { 0x00000000, 0x00000000, 0xffffe000, 0x00001fff }, /* ALTIVEC_REGS */     \
   { 0x00000000, 0x00000000, 0x00000000, 0x00002000 }, /* VRSAVE_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000000, 0x00004000 }, /* VSCR_REGS */	     \
+  { 0x00000000, 0x00000000, 0x00000000, 0x00008000 }, /* SPE_ACC_REGS */     \
+  { 0x00000000, 0x00000000, 0x00000000, 0x00010000 }, /* SPEFSCR_REGS */     \
   { 0xffffffff, 0xffffffff, 0x00000008, 0x00000000 }, /* NON_SPECIAL_REGS */ \
   { 0x00000000, 0x00000000, 0x00000001, 0x00000000 }, /* MQ_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000002, 0x00000000 }, /* LINK_REGS */	     \
@@ -1110,6 +1187,8 @@ enum reg_class
   : (REGNO) == XER_REGNO ? XER_REGS		\
   : (REGNO) == VRSAVE_REGNO ? VRSAVE_REGS	\
   : (REGNO) == VSCR_REGNO ? VRSAVE_REGS	\
+  : (REGNO) == SPE_ACC_REGNO ? SPE_ACC_REGS	\
+  : (REGNO) == SPEFSCR_REGNO ? SPEFSCR_REGS	\
   : NO_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
@@ -1289,6 +1368,7 @@ typedef struct rs6000_stack {
   int lr_save_offset;		/* offset to save LR from initial SP */
   int cr_save_offset;		/* offset to save CR from initial SP */
   int vrsave_save_offset;	/* offset to save VRSAVE from initial SP */
+  int spe_gp_save_offset;	/* offset to save spe 64-bit gprs  */
   int toc_save_offset;		/* offset to save the TOC pointer */
   int varargs_save_offset;	/* offset to save the varargs registers */
   int ehrd_offset;		/* offset to EH return data */
@@ -1306,6 +1386,8 @@ typedef struct rs6000_stack {
   int vrsave_size;		/* size to hold VRSAVE if not in save_size */
   int altivec_padding_size;	/* size of altivec alignment padding if
 				   not in save_size */
+  int spe_gp_size;		/* size of 64-bit GPR save size for SPE */
+  int spe_padding_size;
   int toc_size;			/* size to hold TOC if not in save_size */
   int total_size;		/* total bytes allocated for stack */
 } rs6000_stack_t;
@@ -1424,6 +1506,8 @@ typedef struct rs6000_stack {
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.
 
+   On the SPE, both FPs and vectors are returned in r3.
+
    On RS/6000 an integer value is in r3 and a floating-point value is in
    fp1, unless -msoft-float.  */
 
@@ -1434,7 +1518,11 @@ typedef struct rs6000_stack {
 	       ? word_mode : TYPE_MODE (VALTYPE),		\
 	       TREE_CODE (VALTYPE) == VECTOR_TYPE		\
 	       && TARGET_ALTIVEC ? ALTIVEC_ARG_RETURN		\
-	       : TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_HARD_FLOAT \
+	       : TREE_CODE (VALTYPE) == REAL_TYPE		\
+	         && TARGET_SPE_ABI && !TARGET_FPRS		\
+	       ? GP_ARG_RETURN					\
+	       : TREE_CODE (VALTYPE) == REAL_TYPE		\
+		 && TARGET_HARD_FLOAT && TARGET_FPRS	        \
                ? FP_ARG_RETURN : GP_ARG_RETURN)
 
 /* Define how to find the value returned by a library function
@@ -1443,7 +1531,7 @@ typedef struct rs6000_stack {
 #define LIBCALL_VALUE(MODE)						\
   gen_rtx_REG (MODE, ALTIVEC_VECTOR_MODE (MODE) ? ALTIVEC_ARG_RETURN	\
 		     : GET_MODE_CLASS (MODE) == MODE_FLOAT		\
-		     && TARGET_HARD_FLOAT				\
+		     && TARGET_HARD_FLOAT && TARGET_FPRS		\
 		     ? FP_ARG_RETURN : GP_ARG_RETURN)
 
 /* The AIX ABI for the RS/6000 specifies that all structures are
@@ -1601,7 +1689,7 @@ typedef struct rs6000_args
 #define USE_FP_FOR_ARG_P(CUM,MODE,TYPE) \
   (GET_MODE_CLASS (MODE) == MODE_FLOAT  \
    && (CUM).fregno <= FP_ARG_MAX_REG    \
-   && TARGET_HARD_FLOAT)
+   && TARGET_HARD_FLOAT && TARGET_FPRS)
 
 /* Non-zero if we can use an AltiVec register to pass this arg.  */
 #define USE_ALTIVEC_FOR_ARG_P(CUM,MODE,TYPE)	\
@@ -1937,6 +2025,9 @@ typedef struct rs6000_args
 
 #define TOC_RELATIVE_EXPR_P(X) (toc_relative_expr_p (X))
 
+/* SPE offset addressing is limited to 5-bits.  */
+#define SPE_CONST_OFFSET_OK(x) (((x) & ~0x1f) == 0)
+
 #define LEGITIMATE_CONSTANT_POOL_ADDRESS_P(X)				\
   (TARGET_TOC								\
   && GET_CODE (X) == PLUS						\
@@ -1961,6 +2052,9 @@ typedef struct rs6000_args
   && LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 0)		\
   && (! ALTIVEC_VECTOR_MODE (MODE)                            \
       || (GET_CODE (XEXP (X,1)) == CONST_INT && INTVAL (XEXP (X,1)) == 0)) \
+  && (! SPE_VECTOR_MODE (MODE)					\
+      || (GET_CODE (XEXP (X, 1)) == CONST_INT			\
+	  && SPE_CONST_OFFSET_OK (INTVAL (XEXP (X, 1)))))	\
   && (((MODE) != DFmode && (MODE) != DImode)			\
       || (TARGET_32BIT						\
 	  ? LEGITIMATE_ADDRESS_INTEGER_P (XEXP (X, 1), 4) 	\
@@ -1988,7 +2082,7 @@ typedef struct rs6000_args
    && ! flag_pic && ! TARGET_TOC			\
    && GET_MODE_NUNITS (MODE) == 1			\
    && (GET_MODE_BITSIZE (MODE) <= 32 			\
-       || (TARGET_HARD_FLOAT && (MODE) == DFmode))	\
+       || (TARGET_HARD_FLOAT && TARGET_FPRS && (MODE) == DFmode))	\
    && GET_CODE (X) == LO_SUM				\
    && GET_CODE (XEXP (X, 0)) == REG			\
    && INT_REG_OK_FOR_BASE_P (XEXP (X, 0), (STRICT))	\
@@ -2315,6 +2409,7 @@ do {									     \
 		? COSTS_N_INSNS (21)					\
 		: COSTS_N_INSNS (37));					\
       case PROCESSOR_PPC750:						\
+      case PROCESSOR_PPC8540:						\
       case PROCESSOR_PPC7400:						\
         return COSTS_N_INSNS (19);					\
       case PROCESSOR_PPC7450:						\
@@ -2600,6 +2695,8 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   &rs6000_reg_names[108][0],	/* v31  */				\
   &rs6000_reg_names[109][0],	/* vrsave  */				\
   &rs6000_reg_names[110][0],	/* vscr  */				\
+  &rs6000_reg_names[111][0],	/* spe_acc */				\
+  &rs6000_reg_names[112][0],	/* spefscr */				\
 }
 
 /* print-rtl can't handle the above REGISTER_NAMES, so define the
@@ -2624,6 +2721,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
     "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23",             \
     "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31",             \
     "vrsave", "vscr"							\
+    , "spe_acc", "spefscr"                                              \
 }
 
 /* Table of additional register names to use in user input.  */
@@ -2654,6 +2752,7 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
   {"v24",  101},{"v25",  102},{"v26",  103},{"v27",  104},      \
   {"v28",  105},{"v29",  106},{"v30",  107},{"v31",  108},      \
   {"vrsave", 109}, {"vscr", 110},				\
+  {"spe_acc", 111}, {"spefscr", 112},				\
   /* no additional names for: mq, lr, ctr, ap */		\
   {"cr0",  68}, {"cr1",  69}, {"cr2",  70}, {"cr3",  71},	\
   {"cr4",  72}, {"cr5",  73}, {"cr6",  74}, {"cr7",  75},	\
@@ -3003,4 +3102,246 @@ enum rs6000_builtins
   ALTIVEC_BUILTIN_ABS_V4SF,
   ALTIVEC_BUILTIN_ABS_V8HI,
   ALTIVEC_BUILTIN_ABS_V16QI
+  /* SPE builtins.  */
+  , SPE_BUILTIN_EVADDW,
+  SPE_BUILTIN_EVAND,
+  SPE_BUILTIN_EVANDC,
+  SPE_BUILTIN_EVDIVWS,
+  SPE_BUILTIN_EVDIVWU,
+  SPE_BUILTIN_EVEQV,
+  SPE_BUILTIN_EVFSADD,
+  SPE_BUILTIN_EVFSDIV,
+  SPE_BUILTIN_EVFSMUL,
+  SPE_BUILTIN_EVFSSUB,
+  SPE_BUILTIN_EVLDDX,
+  SPE_BUILTIN_EVLDHX,
+  SPE_BUILTIN_EVLDWX,
+  SPE_BUILTIN_EVLHHESPLATX,
+  SPE_BUILTIN_EVLHHOSSPLATX,
+  SPE_BUILTIN_EVLHHOUSPLATX,
+  SPE_BUILTIN_EVLWHEX,
+  SPE_BUILTIN_EVLWHOSX,
+  SPE_BUILTIN_EVLWHOUX,
+  SPE_BUILTIN_EVLWHSPLATX,
+  SPE_BUILTIN_EVLWWSPLATX,
+  SPE_BUILTIN_EVMERGEHI,
+  SPE_BUILTIN_EVMERGEHILO,
+  SPE_BUILTIN_EVMERGELO,
+  SPE_BUILTIN_EVMERGELOHI,
+  SPE_BUILTIN_EVMHEGSMFAA,
+  SPE_BUILTIN_EVMHEGSMFAN,
+  SPE_BUILTIN_EVMHEGSMIAA,
+  SPE_BUILTIN_EVMHEGSMIAN,
+  SPE_BUILTIN_EVMHEGUMIAA,
+  SPE_BUILTIN_EVMHEGUMIAN,
+  SPE_BUILTIN_EVMHESMF,
+  SPE_BUILTIN_EVMHESMFA,
+  SPE_BUILTIN_EVMHESMFAAW,
+  SPE_BUILTIN_EVMHESMFANW,
+  SPE_BUILTIN_EVMHESMI,
+  SPE_BUILTIN_EVMHESMIA,
+  SPE_BUILTIN_EVMHESMIAAW,
+  SPE_BUILTIN_EVMHESMIANW,
+  SPE_BUILTIN_EVMHESSF,
+  SPE_BUILTIN_EVMHESSFA,
+  SPE_BUILTIN_EVMHESSFAAW,
+  SPE_BUILTIN_EVMHESSFANW,
+  SPE_BUILTIN_EVMHESSIAAW,
+  SPE_BUILTIN_EVMHESSIANW,
+  SPE_BUILTIN_EVMHEUMI,
+  SPE_BUILTIN_EVMHEUMIA,
+  SPE_BUILTIN_EVMHEUMIAAW,
+  SPE_BUILTIN_EVMHEUMIANW,
+  SPE_BUILTIN_EVMHEUSIAAW,
+  SPE_BUILTIN_EVMHEUSIANW,
+  SPE_BUILTIN_EVMHOGSMFAA,
+  SPE_BUILTIN_EVMHOGSMFAN,
+  SPE_BUILTIN_EVMHOGSMIAA,
+  SPE_BUILTIN_EVMHOGSMIAN,
+  SPE_BUILTIN_EVMHOGUMIAA,
+  SPE_BUILTIN_EVMHOGUMIAN,
+  SPE_BUILTIN_EVMHOSMF,
+  SPE_BUILTIN_EVMHOSMFA,
+  SPE_BUILTIN_EVMHOSMFAAW,
+  SPE_BUILTIN_EVMHOSMFANW,
+  SPE_BUILTIN_EVMHOSMI,
+  SPE_BUILTIN_EVMHOSMIA,
+  SPE_BUILTIN_EVMHOSMIAAW,
+  SPE_BUILTIN_EVMHOSMIANW,
+  SPE_BUILTIN_EVMHOSSF,
+  SPE_BUILTIN_EVMHOSSFA,
+  SPE_BUILTIN_EVMHOSSFAAW,
+  SPE_BUILTIN_EVMHOSSFANW,
+  SPE_BUILTIN_EVMHOSSIAAW,
+  SPE_BUILTIN_EVMHOSSIANW,
+  SPE_BUILTIN_EVMHOUMI,
+  SPE_BUILTIN_EVMHOUMIA,
+  SPE_BUILTIN_EVMHOUMIAAW,
+  SPE_BUILTIN_EVMHOUMIANW,
+  SPE_BUILTIN_EVMHOUSIAAW,
+  SPE_BUILTIN_EVMHOUSIANW,
+  SPE_BUILTIN_EVMWHSMF,
+  SPE_BUILTIN_EVMWHSMFA,
+  SPE_BUILTIN_EVMWHSMI,
+  SPE_BUILTIN_EVMWHSMIA,
+  SPE_BUILTIN_EVMWHSSF,
+  SPE_BUILTIN_EVMWHSSFA,
+  SPE_BUILTIN_EVMWHUMI,
+  SPE_BUILTIN_EVMWHUMIA,
+  SPE_BUILTIN_EVMWLSMF,
+  SPE_BUILTIN_EVMWLSMFA,
+  SPE_BUILTIN_EVMWLSMFAAW,
+  SPE_BUILTIN_EVMWLSMFANW,
+  SPE_BUILTIN_EVMWLSMIAAW,
+  SPE_BUILTIN_EVMWLSMIANW,
+  SPE_BUILTIN_EVMWLSSF,
+  SPE_BUILTIN_EVMWLSSFA,
+  SPE_BUILTIN_EVMWLSSFAAW,
+  SPE_BUILTIN_EVMWLSSFANW,
+  SPE_BUILTIN_EVMWLSSIAAW,
+  SPE_BUILTIN_EVMWLSSIANW,
+  SPE_BUILTIN_EVMWLUMI,
+  SPE_BUILTIN_EVMWLUMIA,
+  SPE_BUILTIN_EVMWLUMIAAW,
+  SPE_BUILTIN_EVMWLUMIANW,
+  SPE_BUILTIN_EVMWLUSIAAW,
+  SPE_BUILTIN_EVMWLUSIANW,
+  SPE_BUILTIN_EVMWSMF,
+  SPE_BUILTIN_EVMWSMFA,
+  SPE_BUILTIN_EVMWSMFAA,
+  SPE_BUILTIN_EVMWSMFAN,
+  SPE_BUILTIN_EVMWSMI,
+  SPE_BUILTIN_EVMWSMIA,
+  SPE_BUILTIN_EVMWSMIAA,
+  SPE_BUILTIN_EVMWSMIAN,
+  SPE_BUILTIN_EVMWHSSFAA,
+  SPE_BUILTIN_EVMWSSF,
+  SPE_BUILTIN_EVMWSSFA,
+  SPE_BUILTIN_EVMWSSFAA,
+  SPE_BUILTIN_EVMWSSFAN,
+  SPE_BUILTIN_EVMWUMI,
+  SPE_BUILTIN_EVMWUMIA,
+  SPE_BUILTIN_EVMWUMIAA,
+  SPE_BUILTIN_EVMWUMIAN,
+  SPE_BUILTIN_EVNAND,
+  SPE_BUILTIN_EVNOR,
+  SPE_BUILTIN_EVOR,
+  SPE_BUILTIN_EVORC,
+  SPE_BUILTIN_EVRLW,
+  SPE_BUILTIN_EVSLW,
+  SPE_BUILTIN_EVSRWS,
+  SPE_BUILTIN_EVSRWU,
+  SPE_BUILTIN_EVSTDDX,
+  SPE_BUILTIN_EVSTDHX,
+  SPE_BUILTIN_EVSTDWX,
+  SPE_BUILTIN_EVSTWHEX,
+  SPE_BUILTIN_EVSTWHOX,
+  SPE_BUILTIN_EVSTWWEX,
+  SPE_BUILTIN_EVSTWWOX,
+  SPE_BUILTIN_EVSUBFW,
+  SPE_BUILTIN_EVXOR,
+  SPE_BUILTIN_EVABS,
+  SPE_BUILTIN_EVADDSMIAAW,
+  SPE_BUILTIN_EVADDSSIAAW,
+  SPE_BUILTIN_EVADDUMIAAW,
+  SPE_BUILTIN_EVADDUSIAAW,
+  SPE_BUILTIN_EVCNTLSW,
+  SPE_BUILTIN_EVCNTLZW,
+  SPE_BUILTIN_EVEXTSB,
+  SPE_BUILTIN_EVEXTSH,
+  SPE_BUILTIN_EVFSABS,
+  SPE_BUILTIN_EVFSCFSF,
+  SPE_BUILTIN_EVFSCFSI,
+  SPE_BUILTIN_EVFSCFUF,
+  SPE_BUILTIN_EVFSCFUI,
+  SPE_BUILTIN_EVFSCTSF,
+  SPE_BUILTIN_EVFSCTSI,
+  SPE_BUILTIN_EVFSCTSIZ,
+  SPE_BUILTIN_EVFSCTUF,
+  SPE_BUILTIN_EVFSCTUI,
+  SPE_BUILTIN_EVFSCTUIZ,
+  SPE_BUILTIN_EVFSNABS,
+  SPE_BUILTIN_EVFSNEG,
+  SPE_BUILTIN_EVMRA,
+  SPE_BUILTIN_EVNEG,
+  SPE_BUILTIN_EVRNDW,
+  SPE_BUILTIN_EVSUBFSMIAAW,
+  SPE_BUILTIN_EVSUBFSSIAAW,
+  SPE_BUILTIN_EVSUBFUMIAAW,
+  SPE_BUILTIN_EVSUBFUSIAAW,
+  SPE_BUILTIN_EVADDIW,
+  SPE_BUILTIN_EVLDD,
+  SPE_BUILTIN_EVLDH,
+  SPE_BUILTIN_EVLDW,
+  SPE_BUILTIN_EVLHHESPLAT,
+  SPE_BUILTIN_EVLHHOSSPLAT,
+  SPE_BUILTIN_EVLHHOUSPLAT,
+  SPE_BUILTIN_EVLWHE,
+  SPE_BUILTIN_EVLWHOS,
+  SPE_BUILTIN_EVLWHOU,
+  SPE_BUILTIN_EVLWHSPLAT,
+  SPE_BUILTIN_EVLWWSPLAT,
+  SPE_BUILTIN_EVRLWI,
+  SPE_BUILTIN_EVSLWI,
+  SPE_BUILTIN_EVSRWIS,
+  SPE_BUILTIN_EVSRWIU,
+  SPE_BUILTIN_EVSTDD,
+  SPE_BUILTIN_EVSTDH,
+  SPE_BUILTIN_EVSTDW,
+  SPE_BUILTIN_EVSTWHE,
+  SPE_BUILTIN_EVSTWHO,
+  SPE_BUILTIN_EVSTWWE,
+  SPE_BUILTIN_EVSTWWO,
+  SPE_BUILTIN_EVSUBIFW,
+
+  /* Compares.  */
+  SPE_BUILTIN_EVCMPEQ,
+  SPE_BUILTIN_EVCMPGTS,
+  SPE_BUILTIN_EVCMPGTU,
+  SPE_BUILTIN_EVCMPLTS,
+  SPE_BUILTIN_EVCMPLTU,
+  SPE_BUILTIN_EVFSCMPEQ,
+  SPE_BUILTIN_EVFSCMPGT,
+  SPE_BUILTIN_EVFSCMPLT,
+  SPE_BUILTIN_EVFSTSTEQ,
+  SPE_BUILTIN_EVFSTSTGT,
+  SPE_BUILTIN_EVFSTSTLT,
+
+  /* EVSEL compares.  */
+  SPE_BUILTIN_EVSEL_CMPEQ,
+  SPE_BUILTIN_EVSEL_CMPGTS,
+  SPE_BUILTIN_EVSEL_CMPGTU,
+  SPE_BUILTIN_EVSEL_CMPLTS,
+  SPE_BUILTIN_EVSEL_CMPLTU,
+  SPE_BUILTIN_EVSEL_FSCMPEQ,
+  SPE_BUILTIN_EVSEL_FSCMPGT,
+  SPE_BUILTIN_EVSEL_FSCMPLT,
+  SPE_BUILTIN_EVSEL_FSTSTEQ,
+  SPE_BUILTIN_EVSEL_FSTSTGT,
+  SPE_BUILTIN_EVSEL_FSTSTLT,
+
+  SPE_BUILTIN_EVSPLATFI,
+  SPE_BUILTIN_EVSPLATI,
+  SPE_BUILTIN_EVMWHSSMAA,
+  SPE_BUILTIN_EVMWHSMFAA,
+  SPE_BUILTIN_EVMWHSMIAA,
+  SPE_BUILTIN_EVMWHUSIAA,
+  SPE_BUILTIN_EVMWHUMIAA,
+  SPE_BUILTIN_EVMWHSSFAN,
+  SPE_BUILTIN_EVMWHSSIAN,
+  SPE_BUILTIN_EVMWHSMFAN,
+  SPE_BUILTIN_EVMWHSMIAN,
+  SPE_BUILTIN_EVMWHUSIAN,
+  SPE_BUILTIN_EVMWHUMIAN,
+  SPE_BUILTIN_EVMWHGSSFAA,
+  SPE_BUILTIN_EVMWHGSMFAA,
+  SPE_BUILTIN_EVMWHGSMIAA,
+  SPE_BUILTIN_EVMWHGUMIAA,
+  SPE_BUILTIN_EVMWHGSSFAN,
+  SPE_BUILTIN_EVMWHGSMFAN,
+  SPE_BUILTIN_EVMWHGSMIAN,
+  SPE_BUILTIN_EVMWHGUMIAN,
+  SPE_BUILTIN_MTSPEFSCR,
+  SPE_BUILTIN_MFSPEFSCR,
+  SPE_BUILTIN_BRINC
 };

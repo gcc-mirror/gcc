@@ -93,6 +93,8 @@ rs6000_cpu_cpp_builtins (pfile)
     builtin_define ("_ARCH_COM");
   if (TARGET_ALTIVEC)
     builtin_define ("__ALTIVEC__");
+  if (TARGET_SPE)
+    builtin_define ("__SPE__");
   if (TARGET_SOFT_FLOAT)
     builtin_define ("_SOFT_FLOAT");
   if (BYTES_BIG_ENDIAN)
