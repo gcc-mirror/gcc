@@ -1,3 +1,8 @@
+Fri Aug 14 16:42:27 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* Makefile.in: Rename BBISON to BISON so that it can be properly
+	inherited from the parent makefile.
+
 1998-08-13  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* lang-options.h: Add -finit-priority.

@@ -55,7 +55,7 @@ X_CPPFLAGS =
 T_CPPFLAGS =
 
 CC = @CC@
-BBISON = `if [ -f ../../bison/bison ] ; then echo ../../bison/bison -L $(srcdir)/../../bison/ ;  else echo bison ; fi`
+BISON = `if [ -f ../../bison/bison ] ; then echo ../../bison/bison -L $(srcdir)/../../bison/ ;  else echo bison ; fi`
 BISONFLAGS =
 LEX = `if [ -f ../../flex/flex ] ; then echo ../../flex/flex ;  else echo flex ; fi`
 LEXFLAGS =
