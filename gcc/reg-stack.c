@@ -746,7 +746,7 @@ check_asm_stack_operands (insn)
       malformed_asm = 1;
     }
 
-  /* Enfore rule #3: If any input operand uses the "f" constraint, all
+  /* Enforce rule #3: If any input operand uses the "f" constraint, all
      output constraints must use the "&" earlyclobber.
 
      ??? Detect this more deterministically by having constrain_asm_operands
