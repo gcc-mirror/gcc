@@ -66,6 +66,12 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE "int"
 #endif
 
+/* The string value for __WINT_TYPE__.  */
+
+#ifndef WINT_TYPE
+#define WINT_TYPE "unsigned int"
+#endif
+
 /* The string value for __USER_LABEL_PREFIX__ */
 
 #ifndef USER_LABEL_PREFIX

@@ -1,3 +1,10 @@
+2000-08-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* cppdefault.h (WINT_TYPE): Define.
+	* cppinit.c (builtin_array): Define __WINT_TYPE__.
+	* tradcpp.c (initialize_builtins): Define __WINT_TYPE__.
+	* tm.texi (NO_BUILTIN_WINT_TYPE, WINT_TYPE): Document.
+
 Fri Aug  4 06:53:46 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* (mips_legitimate_address_p): Don't allow register+offset              
