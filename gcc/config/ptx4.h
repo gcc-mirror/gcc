@@ -1,7 +1,7 @@
-/* Operating system specific defines to be used when targeting GCC for some
-   generic System V Release 4 system.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
-   Contributed by Ron Guilmette (rfg@monkeys.com).
+/* Operating system specific defines to be used when targeting GCC for
+   Sequent's Dynix/ptx v4 and later.
+   Copyright 1996, 1997, 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+   Generic SysV4 file Contributed by Ron Guilmette (rfg@monkeys.com).
    Renamed and changed to suit Dynix/ptx v4 and later.
    Modified by Tim Wright (timw@sequent.com).
    Modified by Janis Johnson (janis@us.ibm.com).
@@ -28,11 +28,13 @@ Boston, MA 02111-1307, USA.
 /* Define a symbol indicating that we are using svr4.h.  */
 #define USING_SVR4_H
 
-/* Use DWARF debugging info by default.  */
+/* Use DWARF 2 debugging info by default.  */
 
 #undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
+#undef DWARF_DEBUGGING_INFO
+#define DWARF2_DEBUGGING_INFO 1
 
 /* Cpp, assembler, linker, library, and startfile spec's.  */
 
@@ -231,3 +233,4 @@ do {									\
   assemble_name ((FILE), (NAME));					\
   fprintf ((FILE), ",%lu\n", (unsigned long)(SIZE)); \
 } while (0)
+

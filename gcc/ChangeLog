@@ -1,3 +1,7 @@
+2003-10-17  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config/ptx4.h: Switch to DWARF 2; update comments.
+
 2003-10-17  Segher Boessenkool  <boessen@de.ibm.com>
 	    Hartmut Penner  <hpenner@de.ibm.com>
 
