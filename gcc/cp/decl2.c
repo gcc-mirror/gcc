@@ -2874,6 +2874,7 @@ get_guard (decl)
     {
       guard = get_temp_name (integer_type_node);
       rest_of_decl_compilation (guard, NULL_PTR, 0, 0);
+      return guard;
     }
 
   if (!flag_new_abi)

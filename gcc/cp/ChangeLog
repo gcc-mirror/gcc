@@ -1,5 +1,15 @@
 2000-07-09  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (pushtag): Don't put local classes in template functions
+	on the local_classes list.
+
+2000-07-04  Scott Snyder  <snyder@fnal.gov>
+
+	* decl2.c (get_guard): Add missing return for old ABI local
+	variable case.
+
+2000-07-09  Mark Mitchell  <mark@codesourcery.com>
+
 	* cp-tree.h (char_type_p): New function.
 	* decl.c (init_decl_processing): Don't initialize
 	signed_wchar_type_node or unsigned_wchar_type_node.

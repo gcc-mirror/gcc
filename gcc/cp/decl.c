@@ -2899,7 +2899,8 @@ pushtag (name, type, globalize)
 	     way.  (It's otherwise tricky to find a member function definition
 	     it's only pointed to from within a local class.)  */
 	  if (TYPE_CONTEXT (type) 
-	      && TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL)
+	      && TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL
+	      && !processing_template_decl)
 	    VARRAY_PUSH_TREE (local_classes, type);
 
 	  if (!uses_template_parms (type)) 
