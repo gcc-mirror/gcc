@@ -255,7 +255,7 @@ translate_name (name)
        keylen++)
     ;
 
-  key = alloca (keylen + 1);
+  key = (char *) alloca (keylen + 1);
   strncpy (key, &name[1], keylen);
   key[keylen] = 0;
 

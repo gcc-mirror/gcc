@@ -4066,8 +4066,6 @@ count_reg_references (x)
      rtx x;
 {
   register RTX_CODE code;
-  register int regno;
-  int i;
 
  retry:
   code = GET_CODE (x);

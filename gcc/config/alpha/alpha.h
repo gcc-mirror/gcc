@@ -1291,6 +1291,7 @@ do {						\
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
   alpha_initialize_trampoline (TRAMP, FNADDR, CXT, 16, 24, 8)
+extern void alpha_initialize_trampoline ();
 
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.

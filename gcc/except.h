@@ -149,8 +149,8 @@ extern int doing_eh				       PROTO ((int));
 
 /* Toplevel initialization for EH.  */
 
-void set_exception_lang_code                    PROTO((short));
-void set_exception_version_code                 PROTO((short));
+void set_exception_lang_code                    PROTO((int));
+void set_exception_version_code                 PROTO((int));
 
 /* A list of handlers asocciated with an exception region. HANDLER_LABEL
    is the the label that control should be transfered to if the data
