@@ -102,7 +102,7 @@ static tree
 dfs_initialize_vtbl_ptrs (tree binfo, void *data)
 {
   if ((!BINFO_PRIMARY_P (binfo) || BINFO_VIRTUAL_P (binfo))
-      && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
+      && TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo)))
     {
       tree base_ptr = TREE_VALUE ((tree) data);
 

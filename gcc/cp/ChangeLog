@@ -1,5 +1,16 @@
 2004-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (struct lang_type_class): Remove vfields field.
+	(CLASSTYPE_VFIELDS): Remove.
+	(SET_BINFO_NEW_VTABLE_MARKED): Adjust.
+	* class.c (determine_primary_base): Remove CLASSTYPE_VFIELDS
+	handling.
+	(dfs_modify_vtables): Use TYPE_CONTAINS_VPTR_P.
+	(finish_struct_1): Remove CLASSTYPE_VFIELDS handling.
+	* init.c (dfs_initialize_vtbl_ptrs): Use TYPE_CONTAINS_VPTR_P.
+
+2004-07-20  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.h (DEF_VEC_P(tree)): Remove here.
 	(BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX, BINFO_PRIMARY_BASE_OF):
 	Moved to common.
