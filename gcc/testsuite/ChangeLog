@@ -1,3 +1,18 @@
+2004-02-15  Roger Sayle  <roger@eyesopen.com>
+
+	Backport from mainline:
+
+	2004-02-07  Roger Sayle  <roger@eyesopen.com>
+	PR middle-end/13696
+	* g++.dg/opt/fold1.C: New test case.
+
+	2004-02-09  Roger Sayle  <roger@eyesopen.com>
+	* gcc.c-torture/compile/20040209-1.c: New test case.
+
+	2004-02-10  Paolo Bonzini  <bonzini@gnu.org>
+	PR c/14092
+	* gcc.dg/pr14092-1.c: New testcase.
+
 2004-02-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13971

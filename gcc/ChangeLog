@@ -1,3 +1,30 @@
+2004-02-15  Roger Sayle  <roger@eyesopen.com>
+
+	Backport from mainline:
+
+	2004-02-07  Roger Sayle  <roger@eyesopen.com>
+	PR middle-end/13696
+	* fold-const.c (fold_convert): New function to provide type
+	conversion to the middle-end without using convert.
+	(negate_expr, associate_trees, size_diffop, omit_one_operand,
+	operand_equal_for_comparison_p, pedantic_omit_one_operand,
+	invert_truthvalue, optimize_bit_field_compare, range_binop,
+	decode_field_reference, make_range, build_range_check, unextend,
+	fold_truthop, extract_muldiv_1, fold_mathfn_compare,
+	fold_binary_op_with_conditional_arg, fold_inf_compare,
+	fold_single_bit_test, fold, multiple_of_p): Replace all calls to
+	convert with calls to fold_convert.
+
+	2004-02-09  Roger Sayle  <roger@eyesopen.com>
+	* fold-const.c (fold) <NOP_EXPR>: Use the original type conversion
+	tree code rather than call fold_convert, which doesn't specify a
+	default floating point to integer conversion.
+
+	2004-02-10  Paolo Bonzini  <bonzini@gnu.org>
+	PR c/14092
+	* fold-const.c (fold) <NEGATE_EXPR>: Convert result of
+	negate_expr back to the original type.
+
 2004-02-15  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
 
 	Backport from mainline:
