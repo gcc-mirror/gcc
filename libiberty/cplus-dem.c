@@ -450,12 +450,6 @@ static void
 recursively_demangle PARAMS ((struct work_stuff *, const char **, string *,
 			      int));
 
-static const char *
-standard_symbol_characters PARAMS ((void));
-
-static const char *
-hp_symbol_characters PARAMS ((void));
-
 /* Translate count to integer, consuming tokens in the process.
    Conversion terminates on the first non-digit character.
 
@@ -4467,6 +4461,12 @@ fancy_abort ()
   fatal ("Internal gcc abort.");
 }
 
+
+static const char *
+standard_symbol_characters PARAMS ((void));
+
+static const char *
+hp_symbol_characters PARAMS ((void));
 
 /* Return the string of non-alnum characters that may occur 
    as a valid symbol component, in the standard assembler symbol
