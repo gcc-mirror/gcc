@@ -1,3 +1,8 @@
+2003-11-01  Fariborz Jahanian  <fjahanian@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_mixed_function_arg): Correct
+	no_units calculation.
+
 2003-11-01  Andreas Jaeger  <aj@suse.de>
 
 	* unwind-dw2.c (_Unwind_FrameState): Remove commas at end of

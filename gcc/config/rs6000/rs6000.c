@@ -4017,7 +4017,7 @@ rs6000_mixed_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     {
       int k;
       int size = int_size_in_bytes (type);
-      int no_units = size / 4;
+      int no_units = ((size - 1) / 4) + 1;
       int max_no_words = GP_ARG_NUM_REG - align_words;
       int rtlvec_len = no_units < max_no_words ? no_units : max_no_words;
       rtx *rtlvec = (rtx *) alloca (rtlvec_len * sizeof (rtx));
