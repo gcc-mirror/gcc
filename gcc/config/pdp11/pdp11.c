@@ -400,10 +400,11 @@ output_move_double (operands)
 
   if (REG_P (operands[1]))
     optype1 = REGOP;
-  else if (CONSTANT_P (operands[1]))
+  else if (CONSTANT_P (operands[1])
 #if 0
-	   || GET_CODE (operands[1]) == CONST_DOUBLE)
+	   || GET_CODE (operands[1]) == CONST_DOUBLE
 #endif
+	   )
     optype1 = CNSTOP;
   else if (offsettable_memref_p (operands[1]))
     optype1 = OFFSOP;
@@ -620,11 +621,10 @@ output_move_quad (operands)
       {
 	  if (GET_CODE(operands[1]) == CONST_DOUBLE)
 	  {
-	      union { double d; int i[2]; } u;
-	      u.i[0] = CONST_DOUBLE_LOW (operands[1]); 
-	      u.i[1] = CONST_DOUBLE_HIGH (operands[1]); 
-	      
-	      if (u.d == 0.0)
+	      REAL_VALUE_TYPE r;
+	      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+
+	      if (REAL_VALUES_EQUAL (r, dconst0))
 		  return "{clrd|clrf} %0";
 	  }
 	      

@@ -515,12 +515,12 @@ expand_movstr_call (operands)
 		     TYPE_MODE (sizetype));
 }
 
-#if _IEEE_FLOAT_
-#define MAX_FLOAT 3.4028234663852886e+38
-#define MIN_FLOAT 1.1754943508222875e-38
+#if TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
+#define MAX_FLOAT "3.4028234663852886e+38"
+#define MIN_FLOAT "1.1754943508222875e-38"
 #else
-#define MAX_FLOAT 1.7014117331926443e+38
-#define MIN_FLOAT 2.9387358770557188e-39
+#define MAX_FLOAT "1.7014117331926443e+38"
+#define MIN_FLOAT "2.9387358770557188e-39"
 #endif
 
 int
@@ -530,28 +530,35 @@ check_float_value (mode, dp, overflow)
      int overflow;
 {
   REAL_VALUE_TYPE d = *dp;
+  REAL_VALUE_TYPE maxfloat = REAL_VALUE_ATOF (MAX_FLOAT, mode);
+  REAL_VALUE_TYPE minfloat = REAL_VALUE_ATOF (MIN_FLOAT, mode);
+  REAL_VALUE_TYPE neg_maxfloat = REAL_VALUE_NEGATE (maxfloat);
+  REAL_VALUE_TYPE neg_minfloat = REAL_VALUE_NEGATE (minfloat);
 
   if (overflow)
     {
-      *dp = MAX_FLOAT;
+      *dp = maxfloat;
       return 1;
     }
 
   if (mode == SFmode)
     {
-      if (d > MAX_FLOAT)
+      if (REAL_VALUES_LESS (maxfloat, d))
 	{
-	  *dp = MAX_FLOAT;
+	  *dp = maxfloat;
 	  return 1;
 	}
-      else if (d < -MAX_FLOAT)
+      else if (REAL_VALUES_LESS (d, neg_maxfloat))
 	{
-	  *dp = -MAX_FLOAT;
+	  *dp = neg_maxfloat;
 	  return 1;
 	}	
-      else if ((d > 0 && d < MIN_FLOAT) || (d < 0 && d > -MIN_FLOAT))
+      else if ((REAL_VALUES_LESS (dconst0, d)
+		&& REAL_VALUES_LESS (d, minfloat))
+	       || (REAL_VALUES_LESS (d, dconst0)
+		   && REAL_VALUES_LESS (neg_minfloat, d)))
 	{
-	  *dp = 0.0;
+	  *dp = dconst0;
 	  return 1;
 	}
     }
@@ -628,16 +635,7 @@ print_operand (file, x, code)
       REAL_VALUE_FROM_CONST_DOUBLE (d, x);
       switch (GET_MODE (x)) {
       case DFmode:
-#if 0 /* doesn't work, produces dfloats */
 	REAL_VALUE_TO_TARGET_DOUBLE (d, u); 
-#else
-	{
-	  union { double d; int i[2]; } t;
-	  t.d = d;
-	  u[0] = t.i[0];
-	  u[1] = t.i[1];
-	}
-#endif
 	if (code == 'u')
 	  fprintf (file, "#%#lx", u[0]);
 	else if (code == 'v')

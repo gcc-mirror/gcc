@@ -847,13 +847,12 @@ do {							\
     output_address (XEXP (X, 0));					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == SFmode)	\
          {								\
-         union { double d; long l[2]; } dtem;				\
-         union { float f; long l; } ftem;				\
+	   REAL_VALUE_TYPE r;						\
+	   long l;							\
 									\
-         dtem.l[0] = CONST_DOUBLE_LOW (X);				\
-         dtem.l[1] = CONST_DOUBLE_HIGH (X);				\
-         ftem.f = dtem.d;						\
-         fprintf(FILE, "&0x%lx", ftem.l);				\
+	   REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+	   REAL_VALUE_TO_TARGET_SINGLE (r, l);				\
+	   fprintf (FILE, "&0x%lx", l);					\
          }								\
   else { putc ('&', FILE); output_addr_const (FILE, X); }}
 

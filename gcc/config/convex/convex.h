@@ -1073,9 +1073,8 @@ enum reg_class {
 
 #define BRANCH_COST 0
 
-/* Convex uses VAX or IEEE floats.
-   Follow the host format.  */
-#define TARGET_FLOAT_FORMAT HOST_FLOAT_FORMAT
+/* Convex uses VAX or IEEE floats.  Default to IEEE.  */
+#define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
 /* Check a `double' value for validity for a particular machine mode.  */
 #define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW) \

@@ -26,7 +26,6 @@ extern struct rtx_def *function_arg PARAMS ((int, enum machine_mode, tree, int))
 extern const char *movcnt_regno_adjust PARAMS ((rtx *));
 extern const char *mod_regno_adjust PARAMS ((const char *, rtx *));
 extern void notice_update_cc PARAMS ((rtx));
-extern double get_double PARAMS ((rtx));
 extern int memop_valid PARAMS ((rtx));
 extern int mov_memory_operand PARAMS ((rtx, enum machine_mode));
 extern int small_nonneg_const PARAMS ((rtx, enum machine_mode));
@@ -38,7 +37,6 @@ extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 #endif /* RTX_CODE */
 
-extern char *float_label PARAMS ((int, double));
 extern const char *branch_or_jump PARAMS ((const char *, int));
 extern int find_jmplbl PARAMS ((int));
 extern int one_bit_set_p PARAMS ((int));

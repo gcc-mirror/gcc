@@ -1,3 +1,69 @@
+2002-03-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* real.h: Don't define REAL_INFINITY or REAL_IS_NOT_DOUBLE.
+	Always make REAL_VALUE_TYPE a struct containing an array of
+	HOST_WIDE_INT, not a double.  Tidy up the code deciding how
+	big it is.  Don't declare or use union real_extract.
+
+	* emit-rtl.c (init_emit_once), varasm.c (immed_real_const_1,
+	decode_rtx_const, output_constant_pool), config/a29k/a29k.c
+	(print_operand), config/arm/arm.c (output_move_double),
+	config/arm/arm.md (consttable_4, consttable_8),
+	config/romp/romp.c (output_fpops), config/s390/s390.h
+	(ASM_OUTPUT_SPECIAL_POOL_ENTRY), config/xtensa/xtensa.c
+	(xtensa_output_literal): Don't use union real_extract.
+
+	* config/dsp16xx/dsp16xx.c (print_operand), config/i860/i860.c
+	(sfmode_constant_to_ulong), config/ns32k/merlin.h
+	(PRINT_OPERAND), config/ns32k/ns32k.c (print_operand),
+	config/pdp11/pdp11.h (PRINT_OPERAND), config/we32k/we32k.h
+	(PRINT_OPERAND): Don't use local version of union
+	real_extract.
+
+	* config/convex/convex.c (check_float_value), config/vax/vax.c
+	(vax_float_literal), config/m88k/m88k.md (divdf3),
+	config/dsp16xx/dsp16xx.md (fixuns_trunchfhi2),
+	config/pdp11/pdp11.c (output_move_quad): Don't do host
+	arithmetic on target floating point quantities.
+
+	* config/a29k/a29k.md, config/dsp16xx/dsp16xx.c
+	(output_dsp16xx_float_const): Don't test HOST_FLOAT_FORMAT.
+
+	* fold-const.c (fold), simplify-rtx.c (simplify_binary_real):
+	Use MODE_HAS_INFINITIES rather than #ifdef REAL_INFINITY.
+
+	* real.c (earith): Test INFINITY rather than REAL_INFINITY;
+	NANS implies INFINITY, so can drop #ifdef NANS inside #ifndef
+	INFINITY.
+	* print-rtl.c (print_rtx): Disable code which needs
+	floating-point emulator.
+	* libgcc2.c: Include float.h and use DBL_MANT_DIG,
+	FLT_MANT_DIG, to define DF_SIZE and SF_SIZE, rather than
+	depending on HOST_FLOAT_FORMAT to be defined properly.
+
+	* config/1750a/1750a.c (get_double, float_label): Delete.
+	(print_operand): Delete huge commented-out chunk.  Use
+	REAL_VALUE_TO_DECIMAL.
+	* config/1750a/1750a-protos.h: Delete prototypes of deleted
+	functions.
+	* config/convex/convex.h: Always set TARGET_FLOAT_FORMAT to
+	IEEE_FLOAT_FORMAT.
+	* config/i370/i370.h (PRINT_OPERAND [TARGET_HLASM version]):
+	Use REAL_VALUE_TO_DECIMAL as ELF version does.
+	* config/m88k/m88k.c (real_power_of_2_operand,
+	legitimize_operand): Take the REAL_VALUE_TYPE and/or union
+	real_extract out of the union; run the input through
+	REAL_VALUE_TO_TARGET_DOUBLE, then plug the pair of longwords
+	from that into the union.
+	* config/pdp11/pdp11.c (output_move_double): Rearrange
+	parentheses to make automatic indenter happy.
+
+	* doc/tm.texi (Cross-compilation): Rename node to "Floating
+	Point" and rewrite to describe current situation.  Also adjust
+	documentation of REAL_VALUE_TO_TARGET_SINGLE and friends to
+	match code.
+	* doc/rtl.texi: Adjust cross reference.
+
 2002-03-22  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa-protos.h (non_acc_reg_operand): Remove.
@@ -14,13 +80,13 @@
 
 2002-03-22  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cpphash.h (struct cpp_reader): Remove mls_line and mls_col.
-        * cpplex.c (unterminated): Delete.
-        (parse_string): No string literal may extend over multiple
-        lines.  Suppress the error when preprocessing assembly.
+	* cpphash.h (struct cpp_reader): Remove mls_line and mls_col.
+	* cpplex.c (unterminated): Delete.
+	(parse_string): No string literal may extend over multiple
+	lines.  Suppress the error when preprocessing assembly.
 	* cppmain.c (scan_translation_unit): Strings are single-line.
 
-        * doc/cpp.texi: Update to match.
+	* doc/cpp.texi: Update to match.
 
 2002-03-22  Jakub Jelinek  <jakub@redhat.com>
 
@@ -495,7 +561,7 @@ Tue Mar 19 14:12:32 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-03-18  Mark Mitchell  <mark@codesourcery.com>
 
-	* calls.c (precompute_arguments): Do not assume that temporaries 
+	* calls.c (precompute_arguments): Do not assume that temporaries
 	can be destroyed after expanding the argument.
 	(expand_call): Likewise.
 

@@ -1962,10 +1962,9 @@ output_fpops (file)
 	      size_so_far += 4;
 	      if (GET_CODE (immed[i]) == CONST_DOUBLE)
 		{
-		  union real_extract u;
-
-		  memcpy (&u, &CONST_DOUBLE_LOW (immed[i]), sizeof u);
-		  assemble_real (u.d, GET_MODE (immed[i]),
+		  REAL_VALUE_TYPE r;
+		  REAL_VALUE_FROM_CONST_DOUBLE (r, immed[i]);
+		  assemble_real (r, GET_MODE (immed[i]),
 				 GET_MODE_ALIGNMENT (GET_MODE (immed[i])));
 		}
 	      else

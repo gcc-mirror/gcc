@@ -1119,40 +1119,36 @@ print_operand (file, x, code)
     }
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != VOIDmode)
     {
+      REAL_VALUE_TYPE r;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+      PUT_IMMEDIATE_PREFIX (file);
       if (GET_MODE (x) == DFmode)
 	{ 
-	  union { double d; int i[2]; } u;
-	  u.i[0] = CONST_DOUBLE_LOW (x); u.i[1] = CONST_DOUBLE_HIGH (x);
-	  PUT_IMMEDIATE_PREFIX (file);
 #ifdef SEQUENT_ASM
 	  /* Sequent likes its floating point constants as integers */
-	  fprintf (file, "0Dx%08x%08x", u.i[1], u.i[0]);
+	  fprintf (file, "0Dx%08x%08x",
+		   CONST_DOUBLE_HIGH (x), CONST_DOUBLE_LOW (x));
 #else
+	  char s[30];
+	  REAL_VALUE_TO_DECIMAL (r, "%.20e", s);
 #ifdef ENCORE_ASM
-	  fprintf (file, "0f%.20e", u.d); 
+	  fprintf (file, "0f%s", s);
 #else
-	  fprintf (file, "0d%.20e", u.d); 
+	  fprintf (file, "0d%s", s);
 #endif
 #endif
 	}
       else
-	{ 
-	  union { double d; int i[2]; } u;
-	  u.i[0] = CONST_DOUBLE_LOW (x); u.i[1] = CONST_DOUBLE_HIGH (x);
-	  PUT_IMMEDIATE_PREFIX (file);
+	{
 #ifdef SEQUENT_ASM
-	  /* We have no way of winning if we can't get the bits
-	     for a sequent floating point number.  */
-#if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-	  abort ();
-#endif
-	  {
-	    union { float f; long l; } uu;
-	    uu.f = u.d;
-	    fprintf (file, "0Fx%08lx", uu.l);
-	  }
+	  long l;
+	  REAL_VALUE_TO_TARGET_SINGLE (r, l);
+	  fprintf (file, "0Fx%08lx", l);
 #else
-	  fprintf (file, "0f%.20e", u.d); 
+	  char s[30];
+	  REAL_VALUE_TO_DECIMAL (r, "%.20e", s);
+	  fprintf (file, "0f%s", s);
 #endif
 	}
     }

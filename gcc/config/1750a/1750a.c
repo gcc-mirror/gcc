@@ -239,44 +239,6 @@ function_arg (cum, mode, type, named)
     return (rtx) 0;
 }
 
-
-double
-get_double (x)
-     rtx x;
-{
-  union
-    {
-      double d;
-      long i[2];
-    }
-  du;
-
-  du.i[0] = CONST_DOUBLE_LOW (x);
-  du.i[1] = CONST_DOUBLE_HIGH (x);
-  return du.d;
-}
-
-char *
-float_label (code, value)
-     int code;
-     double value;
-{
-  static char label[32];
-  char *p;
-
-  label[0] = code;
-  p = label + 1;
-  sprintf (p, "%f", value);
-  while (*p)
-    {
-      *p = (*p == '+') ? 'p' :
-	(*p == '-') ? 'm' : *p;
-      p++;
-    }
-  return xstrdup (label);
-}
-
-
 const char *
 movcnt_regno_adjust (op)
      rtx *op;
@@ -588,59 +550,15 @@ print_operand (file, x, letter)
       break;
 
     case CONST_DOUBLE:
-/*    {
-	double value = get_double (x);
-	char fltstr[32];
-	sprintf (fltstr, "%f", value);
+      {
+	REAL_VALUE_TYPE r;
+	char buf[30];
 
-	if (letter == 'D' || letter == 'E')
-	  {
-	    int i, found = 0;
-	    for (i = 0; i <= datalbl_ndx; i++)
-	      if (strcmp (fltstr, datalbl[i].value) == 0)
-		{
-		  found = 1;
-		  break;
-		}
-	    if (!found)
-	      {
-		strcpy (datalbl[i = ++datalbl_ndx].value, fltstr);
-		datalbl[i].name = float_label (letter, value);
-		datalbl[i].size = (letter == 'E') ? 3 : 2;
-		check_section (Konst);
-		fprintf (file, "K%s \tdata%s %s ;p_o\n", datalbl[i].name,
-			(letter == 'E' ? "ef" : "f"), fltstr);
-		check_section (Normal);
-	      }
-	  }
-	else if (letter == 'F' || letter == 'G')
-	  {
-	    int i, found = 0;
-	    for (i = 0; i <= datalbl_ndx; i++)
-	      if (strcmp (fltstr, datalbl[i].value) == 0)
-		{
-		  found = 1;
-		  break;
-		}
-	    if (!found)
-	      {
-		fprintf (stderr,
-		   "float value %f not found upon label reference\n", value);
-		strcpy (datalbl[i = ++datalbl_ndx].value, fltstr);
-		datalbl[i].name = float_label (letter, value);
-		datalbl[i].size = (letter == 'G') ? 3 : 2;
-		check_section (Konst);
-		fprintf (file, "K%s \tdata%s %s ;p_o\n", datalbl[i].name,
-			(letter == 'G' ? "ef" : "f"), fltstr);
-		check_section (Normal);
-	      }
-	    fprintf (file, "%s ;P_O 'F'", datalbl[i].name);
-	  }
-	else
-	  fprintf (file, " %s  ;P_O cst_dbl ", fltstr);
+	REAL_VALUE_FROM_CONST_DOUBLE (r, x);
+	REAL_VALUE_TO_DECIMAL (r, "%f", buf);
+
+	fputs (buf, file);
       }
- */
-      fprintf (file, "%f", get_double (x));
       break;
 
     case CONST_INT:

@@ -1204,7 +1204,7 @@ If @var{m} is @code{VOIDmode}, the bits of the value are stored in
 
 If the constant is floating point (regardless of its precision), then
 the number of integers used to store the value depends on the size of
-@code{REAL_VALUE_TYPE} (@pxref{Cross-compilation}).  The integers
+@code{REAL_VALUE_TYPE} (@pxref{Floating Point}).  The integers
 represent a floating point number, but not precisely in the target
 machine's or host machine's floating point format.  To convert them to
 the precise bit pattern used by the target machine, use the macro

@@ -1507,9 +1507,6 @@ dump_expr (t, flags)
       break;
 
     case REAL_CST:
-#ifndef REAL_IS_NOT_DOUBLE
-      sprintf (digit_buffer, "%g", TREE_REAL_CST (t));
-#else
       {
 	const unsigned char *p = (const unsigned char *) &TREE_REAL_CST (t);
 	size_t i;
@@ -1517,7 +1514,6 @@ dump_expr (t, flags)
 	for (i = 0; i < sizeof TREE_REAL_CST (t); i++)
 	  sprintf (digit_buffer + 2 + 2*i, "%02x", *p++);
       }
-#endif
       output_add_string (scratch_buffer, digit_buffer);
       break;
 

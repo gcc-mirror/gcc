@@ -46,7 +46,7 @@ through the macros defined in the @file{.h} file.
 * PIC::			Macros for position independent code.
 * Assembler Format::    Defining how to write insns and pseudo-ops to output.
 * Debugging Info::      Defining the format of debugging output.
-* Cross-compilation::   Handling floating point for cross-compilers.
+* Floating Point::      Handling floating point for cross-compilers.
 * Mode Switching::      Insertion of mode-switching instructions.
 * Target Attributes::   Defining target-specific uses of @code{__attribute__}.
 * Misc::                Everything else.
@@ -6051,12 +6051,14 @@ of @code{ASM_OUTPUT_DOUBLE} and the like:
 @findex REAL_VALUE_TO_TARGET_DOUBLE
 @findex REAL_VALUE_TO_TARGET_LONG_DOUBLE
 These translate @var{x}, of type @code{REAL_VALUE_TYPE}, to the target's
-floating point representation, and store its bit pattern in the array of
-@code{long int} whose address is @var{l}.  The number of elements in the
-output array is determined by the size of the desired target floating
-point data type: 32 bits of it go in each @code{long int} array
-element.  Each array element holds 32 bits of the result, even if
-@code{long int} is wider than 32 bits on the host machine.
+floating point representation, and store its bit pattern in the variable
+@var{l}.  For @code{REAL_VALUE_TO_TARGET_SINGLE}, this variable should
+be a simple @code{long int}.  For the others, it should be an array of
+@code{long int}.  The number of elements in this array is determined by
+the size of the desired target floating point data type: 32 bits of it
+go in each @code{long int} array element.  Each array element holds 32
+bits of the result, even if @code{long int} is wider than 32 bits on the
+host machine.
 
 The array element values are designed so that you can print them out
 using @code{fprintf} in the order they should appear in the target
@@ -7753,167 +7755,126 @@ behavior is controlled by @code{OPTIMIZATION_OPTIONS} and
 @code{OVERRIDE_OPTIONS}.
 @end table
 
-@node Cross-compilation
+@node Floating Point
 @section Cross Compilation and Floating Point
 @cindex cross compilation and floating point
 @cindex floating point and cross compilation
 
-While all modern machines use 2's complement representation for integers,
+While all modern machines use twos-complement representation for integers,
 there are a variety of representations for floating point numbers.  This
 means that in a cross-compiler the representation of floating point numbers
 in the compiled program may be different from that used in the machine
 doing the compilation.
 
-@findex atof
 Because different representation systems may offer different amounts of
-range and precision, the cross compiler cannot safely use the host
-machine's floating point arithmetic.  Therefore, floating point constants
-must be represented in the target machine's format.  This means that the
-cross compiler cannot use @code{atof} to parse a floating point constant;
-it must have its own special routine to use instead.  Also, constant
-folding must emulate the target machine's arithmetic (or must not be done
-at all).
+range and precision, all floating point constants must be represented in
+the target machine's format.  Therefore, the cross compiler cannot
+safely use the host machine's floating point arithmetic; it must emulate
+the target's arithmetic.  To ensure consistency, GCC always uses
+emulation to work with floating point values, even when the host and
+target floating point formats are identical.
 
-The macros in the following table are provided by @file{real.h} for the
-compiler to use.  All parts of the compiler which generate or optimize
+The following macros are provided by @file{real.h} for the compiler to
+use.  All parts of the compiler which generate or optimize
 floating-point calculations must use these macros.  They may evaluate
 their operands more than once, so operands must not have side effects.
 
-@table @code
-@findex REAL_VALUE_TYPE
-@item REAL_VALUE_TYPE
-A macro for the C data type to be used to hold a floating point value
-in the target machine's format.  Typically this would be a
-@code{struct} containing an array of @code{int}.
+@defmac REAL_VALUE_TYPE
+The C data type to be used to hold a floating point value in the target
+machine's format.  Typically this is a @code{struct} containing an
+array of @code{HOST_WIDE_INT}, but all code should treat it as an opaque
+quantity.
+@end defmac
 
-@findex REAL_VALUES_EQUAL
-@item REAL_VALUES_EQUAL (@var{x}, @var{y})
-A macro for a C expression which compares for equality the two values,
-@var{x} and @var{y}, both of type @code{REAL_VALUE_TYPE}.
+@deftypefn Macro int REAL_VALUES_EQUAL (REAL_VALUE_TYPE @var{x}, REAL_VALUE_TYPE @var{y})
+Compares for equality the two values, @var{x} and @var{y}.  If the target
+floating point format supports negative zeroes and/or NaNs,
+@samp{REAL_VALUES_EQUAL (-0.0, 0.0)} is true, and
+@samp{REAL_VALUES_EQUAL (NaN, NaN)} is false.
+@end deftypefn
 
-@findex REAL_VALUES_LESS
-@item REAL_VALUES_LESS (@var{x}, @var{y})
-A macro for a C expression which tests whether @var{x} is less than
-@var{y}, both values being of type @code{REAL_VALUE_TYPE} and
-interpreted as floating point numbers in the target machine's
-representation.
+@deftypefn Macro int REAL_VALUES_LESS (REAL_VALUE_TYPE @var{x}, REAL_VALUE_TYPE @var{y})
+Tests whether @var{x} is less than @var{y}.
+@end deftypefn
 
-@findex REAL_VALUE_LDEXP
 @findex ldexp
-@item REAL_VALUE_LDEXP (@var{x}, @var{scale})
-A macro for a C expression which performs the standard library
-function @code{ldexp}, but using the target machine's floating point
-representation.  Both @var{x} and the value of the expression have
-type @code{REAL_VALUE_TYPE}.  The second argument, @var{scale}, is an
-integer.
+@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_LDEXP (REAL_VALUE_TYPE @var{x}, int @var{scale})
+Multiplies @var{x} by 2 raised to the power @var{scale}.
+@end deftypefn
 
-@findex REAL_VALUE_FIX
-@item REAL_VALUE_FIX (@var{x})
-A macro whose definition is a C expression to convert the target-machine
-floating point value @var{x} to a signed integer.  @var{x} has type
-@code{REAL_VALUE_TYPE}.
+@deftypefn Macro HOST_WIDE_INT REAL_VALUE_FIX (REAL_VALUE_TYPE @var{x})
+Truncates @var{x} to a signed integer, rounding toward zero.
+@end deftypefn
 
-@findex REAL_VALUE_UNSIGNED_FIX
-@item REAL_VALUE_UNSIGNED_FIX (@var{x})
-A macro whose definition is a C expression to convert the target-machine
-floating point value @var{x} to an unsigned integer.  @var{x} has type
-@code{REAL_VALUE_TYPE}.
+@deftypefn Macro {unsigned HOST_WIDE_INT} REAL_VALUE_UNSIGNED_FIX (REAL_VALUE_TYPE @var{x})
+Truncates @var{x} to an unsigned integer, rounding toward zero.  If
+@var{x} is negative, returns zero.
+@end deftypefn
 
-@findex REAL_VALUE_RNDZINT
-@item REAL_VALUE_RNDZINT (@var{x})
-A macro whose definition is a C expression to round the target-machine
-floating point value @var{x} towards zero to an integer value (but still
-as a floating point number).  @var{x} has type @code{REAL_VALUE_TYPE},
-and so does the value.
+@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_RNDZINT (REAL_VALUE_TYPE @var{x})
+Rounds the target-machine floating point value @var{x} towards zero to an
+integer value, but leaves it represented as a floating point number.
+@end deftypefn
 
-@findex REAL_VALUE_UNSIGNED_RNDZINT
-@item REAL_VALUE_UNSIGNED_RNDZINT (@var{x})
-A macro whose definition is a C expression to round the target-machine
-floating point value @var{x} towards zero to an unsigned integer value
-(but still represented as a floating point number).  @var{x} has type
-@code{REAL_VALUE_TYPE}, and so does the value.
+@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_UNSIGNED_RNDZINT (REAL_VALUE_TYPE @var{x})
+Rounds the target-machine floating point value @var{x} towards zero to an
+unsigned integer value, but leaves it represented as a floating point
+number.  If @var{x} is negative, returns (positive) zero.
+@end deftypefn
 
-@findex REAL_VALUE_ATOF
-@item REAL_VALUE_ATOF (@var{string}, @var{mode})
-A macro for a C expression which converts @var{string}, an expression of
-type @code{char *}, into a floating point number in the target machine's
-representation for mode @var{mode}.  The value has type
-@code{REAL_VALUE_TYPE}.
+@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_ATOF (const char *@var{string}, enum machine_mode @var{mode})
+Converts @var{string} into a floating point number in the target machine's
+representation for mode @var{mode}.  This routine can handle both
+decimal and hexadecimal floating point constants, using the syntax
+defined by the C language for both.
+@end deftypefn
 
-@findex REAL_INFINITY
-@item REAL_INFINITY
-Define this macro if infinity is a possible floating point value, and
-therefore division by 0 is legitimate.
+@deftypefn Macro int REAL_VALUE_ISINF (REAL_VALUE_TYPE @var{x})
+Determines whether @var{x} represents infinity (positive or negative).
+@end deftypefn
 
-@findex REAL_VALUE_ISINF
-@findex isinf
-@item REAL_VALUE_ISINF (@var{x})
-A macro for a C expression which determines whether @var{x}, a floating
-point value, is infinity.  The value has type @code{int}.
-By default, this is defined to call @code{isinf}.
+@deftypefn Macro int REAL_VALUE_ISNAN (REAL_VALUE_TYPE @var{x})
+Determines whether @var{x} represents a ``NaN'' (not-a-number).
+@end deftypefn
 
-@findex REAL_VALUE_ISNAN
-@findex isnan
-@item REAL_VALUE_ISNAN (@var{x})
-A macro for a C expression which determines whether @var{x}, a floating
-point value, is a ``nan'' (not-a-number).  The value has type
-@code{int}.  By default, this is defined to call @code{isnan}.
+@deftypefn Macro void REAL_ARITHMETIC (REAL_VALUE_TYPE @var{output}, enum tree_code @var{code}, REAL_VALUE_TYPE @var{x}, REAL_VALUE_TYPE @var{y})
+Calculates an arithmetic operation on the two floating point values
+@var{x} and @var{y}, storing the result in @var{output} (which must be a
+variable).
 
-@findex REAL_ARITHMETIC
-@item REAL_ARITHMETIC (@var{output}, @var{code}, @var{x}, @var{y})
-A macro for a C statement which calculates an arithmetic operation of
-the two floating point values @var{x} and @var{y}, both of type
-@code{REAL_VALUE_TYPE} in the target machine's representation, to
-produce a result of the same type and representation which is stored
-in @var{output} (which will be a variable).
+The operation to be performed is specified by @var{code}.  Only the
+following codes are supported: @code{PLUS_EXPR}, @code{MINUS_EXPR},
+@code{MULT_EXPR}, @code{RDIV_EXPR}, @code{MAX_EXPR}, @code{MIN_EXPR}.
 
-The operation to be performed is specified by @var{code}, a tree code
-which will always be one of the following: @code{PLUS_EXPR},
-@code{MINUS_EXPR}, @code{MULT_EXPR}, @code{RDIV_EXPR},
-@code{MAX_EXPR}, @code{MIN_EXPR}.
+If @code{REAL_ARITHMETIC} is asked to evaluate division by zero and the
+target's floating point format cannot represent infinity, it will call
+@code{abort}.  Callers should check for this situation first, using
+@code{MODE_HAS_INFINITIES}.  @xref{Storage Layout}.
+@end deftypefn
 
-@cindex overflow while constant folding
-If overflow happens, the macro expansion executes the statement
-@code{return 0;}, which indicates the inability to perform the
-arithmetic operation requested.
+@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_NEGATE (REAL_VALUE_TYPE @var{x})
+Returns the negative of the floating point value @var{x}.
+@end deftypefn
 
-@findex REAL_VALUE_NEGATE
-@item REAL_VALUE_NEGATE (@var{x})
-A macro for a C expression which returns the negative of the floating
-point value @var{x}.  Both @var{x} and the value of the expression
-have type @code{REAL_VALUE_TYPE} and are in the target machine's
-floating point representation.
+@deftypefn Macro REAL_VALUE_TYPE REAL_VALUE_TRUNCATE (REAL_VALUE_TYPE @var{mode}, enum machine_mode @var{x})
+Truncates the floating point value @var{x} to fit in @var{mode}.  The
+return value is still a full-size @code{REAL_VALUE_TYPE}, but it has an
+appropriate bit pattern to be output asa floating constant whose
+precision accords with mode @var{mode}.
+@end deftypefn
 
-There is no way for this macro to report overflow, since overflow
-can't happen in the negation operation.
+@deftypefn Macro void REAL_VALUE_TO_INT (HOST_WIDE_INT @var{low}, HOST_WIDE_INT @var{high}, REAL_VALUE_TYPE @var{x})
+Converts a floating point value @var{x} into a double-precision integer
+which is then stored into @var{low} and @var{high}.  If the value is not
+integral, it is truncated.
+@end deftypefn
 
-@findex REAL_VALUE_TRUNCATE
-@item REAL_VALUE_TRUNCATE (@var{mode}, @var{x})
-A macro for a C expression which converts the floating point value
-@var{x} to mode @var{mode}.
-
-Both @var{x} and the value of the expression are in the target machine's
-floating point representation and have type @code{REAL_VALUE_TYPE}.
-However, the value should have an appropriate bit pattern to be output
-properly as a floating constant whose precision accords with mode
-@var{mode}.
-
-There is no way for this macro to report overflow.
-
-@findex REAL_VALUE_TO_INT
-@item REAL_VALUE_TO_INT (@var{low}, @var{high}, @var{x})
-A macro for a C expression which converts a floating point value
-@var{x} into a double-precision integer which is then stored into
-@var{low} and @var{high}, two variables of type @var{int}.
-
-@item REAL_VALUE_FROM_INT (@var{x}, @var{low}, @var{high}, @var{mode})
+@deftypefn Macro void REAL_VALUE_FROM_INT (REAL_VALUE_TYPE @var{x}, HOST_WIDE_INT @var{low}, HOST_WIDE_INT @var{high}, enum machine_mode @var{mode})
 @findex REAL_VALUE_FROM_INT
-A macro for a C expression which converts a double-precision integer
-found in @var{low} and @var{high}, two variables of type @var{int},
-into a floating point value which is then stored into @var{x}.
-The value is in the target machine's representation for mode @var{mode}
-and has the type @code{REAL_VALUE_TYPE}.
-@end table
+Converts a double-precision integer found in @var{low} and @var{high},
+into a floating point value which is then stored into @var{x}.  The
+value is truncated to fit in mode @var{mode}.
+@end deftypefn
 
 @node Mode Switching
 @section Mode Switching Instructions

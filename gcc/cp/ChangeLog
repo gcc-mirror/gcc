@@ -1,3 +1,8 @@
+2002-03-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* error.c: Always use REAL_VALUE_TO_DECIMAL; don't test
+	REAL_IS_NOT_DOUBLE.
+
 2002-03-22  Jeff Knaggs  <jknaggs@redhat.com>
 
 	* typeck.c (expand_ptrmemfunc_cst): Scale idx down to an index

@@ -1851,11 +1851,7 @@ decode_constant (init)
       return result;
 
     case REAL_CST:
-#ifndef REAL_IS_NOT_DOUBLE
-      sprintf (wrk, "%.20g", TREE_REAL_CST (val));
-#else
       REAL_VALUE_TO_DECIMAL (TREE_REAL_CST (val), "%.20g", wrk);
-#endif
       APPEND (result, wrk);
       return result;
 

@@ -1140,9 +1140,11 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
   else if (GET_CODE (X) == MEM)						\
     output_address (XEXP (X, 0));					\
   else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != SImode)	\
-    { union { double d; int i[2]; } u;					\
-      u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
-      fprintf (FILE, "#%.20e", u.d); }					\
+    { REAL_VALUE_TYPE r;						\
+      char buf[30];							\
+      REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
+      REAL_VALUE_TO_DECIMAL (r, "%.20e", buf);				\
+      fprintf (FILE, "#%s", buf); }					\
   else { putc ('$', FILE); output_addr_const_pdp11 (FILE, X); }}
 
 /* Print a memory address as an operand to reference that memory location.  */

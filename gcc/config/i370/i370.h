@@ -1374,21 +1374,26 @@ enum reg_class
 	  }								\
 	else								\
 	  { 								\
-            /* hack alert -- this prints wildly incorrect values */	\
-            /* when run in cross-compiler mode. See ELF section  */	\
-            /* for suggested fix */					\
-	    union { double d; int i[2]; } u;				\
-	    u.i[0] = CONST_DOUBLE_LOW (XV);				\
-	    u.i[1] = CONST_DOUBLE_HIGH (XV);				\
+            char buf[50];						\
+            REAL_VALUE_TYPE rval;					\
+            REAL_VALUE_FROM_CONST_DOUBLE(rval, XV);			\
+            REAL_VALUE_TO_DECIMAL (rval, HOST_WIDE_INT_PRINT_DEC, buf);	\
 	    if (GET_MODE (XV) == SFmode)				\
 	      {								\
 		mvs_page_lit += 4;					\
-		fprintf (FILE, "=E'%.9G'", u.d);			\
+		fprintf (FILE, "=E'%s'", buf);				\
 	      }								\
 	    else							\
+	    if (GET_MODE (XV) == DFmode)				\
 	      {								\
 		mvs_page_lit += 8;					\
-		fprintf (FILE, "=D'%.18G'", u.d);			\
+		fprintf (FILE, "=D'%s'", buf);				\
+	      }								\
+	    else /* VOIDmode !?!? strange but true ...  */		\
+	      {								\
+		mvs_page_lit += 8;					\
+		fprintf (FILE, "=XL8'%08X%08X'", 			\
+			CONST_DOUBLE_HIGH (XV), CONST_DOUBLE_LOW (XV));	\
 	      }								\
 	  }								\
 	break;								\

@@ -4920,23 +4920,17 @@ init_emit_once (line_numbers)
 
   for (i = 0; i <= 2; i++)
     {
+      REAL_VALUE_TYPE *r =
+	(i == 0 ? &dconst0 : i == 1 ? &dconst1 : &dconst2);
+
       for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
 	   mode = GET_MODE_WIDER_MODE (mode))
 	{
 	  rtx tem = rtx_alloc (CONST_DOUBLE);
-	  union real_extract u;
-
-	  /* Zero any holes in a structure.  */
-	  memset ((char *) &u, 0, sizeof u);
-	  u.d = i == 0 ? dconst0 : i == 1 ? dconst1 : dconst2;
-
-	  /* Avoid trailing garbage in the rtx.  */
-	  if (sizeof (u) < sizeof (HOST_WIDE_INT))
-	    CONST_DOUBLE_LOW (tem) = 0;
-	  if (sizeof (u) < 2 * sizeof (HOST_WIDE_INT))
-	    CONST_DOUBLE_HIGH (tem) = 0;
-
-	  memcpy (&CONST_DOUBLE_LOW (tem), &u, sizeof u);
+ 
+	  /* Can't use CONST_DOUBLE_FROM_REAL_VALUE here; that uses the
+	     tables we're setting up right now.  */
+	  memcpy (&CONST_DOUBLE_LOW (tem), r, sizeof (REAL_VALUE_TYPE));
 	  CONST_DOUBLE_CHAIN (tem) = NULL_RTX;
 	  PUT_MODE (tem, mode);
 

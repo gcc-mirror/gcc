@@ -6534,11 +6534,11 @@ output_move_double (operands)
 	{
 	  if (GET_MODE (operands[1]) == DFmode)
 	    {
+	      REAL_VALUE_TYPE r;
 	      long l[2];
-	      union real_extract u;
 
-	      memcpy (&u, &CONST_DOUBLE_LOW (operands[1]), sizeof (u));
-	      REAL_VALUE_TO_TARGET_DOUBLE (u.d, l);
+	      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+	      REAL_VALUE_TO_TARGET_DOUBLE (r, l);
 	      otherops[1] = GEN_INT (l[1]);
 	      operands[1] = GEN_INT (l[0]);
 	    }

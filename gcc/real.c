@@ -607,16 +607,9 @@ earith (value, icode, r1, r2)
       break;
 
     case RDIV_EXPR:
-#ifndef REAL_INFINITY
+#ifndef INFINITY
       if (ecmp (d2, ezero) == 0)
-	{
-#ifdef NANS
-	enan (v, eisneg (d1) ^ eisneg (d2));
-	break;
-#else
 	abort ();
-#endif
-	}
 #endif
       ediv (d2, d1, v);	/* d1/d2 */
       break;
