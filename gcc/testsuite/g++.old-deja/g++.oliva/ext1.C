@@ -4,7 +4,6 @@
 // simplified from bug report by Michael Rosenbruch <Rosenbruch@bfw-online.de>
 
 // Special g++ Options: 
-// execution test - XFAIL *-*-*
 
 extern "C" void abort();
 
