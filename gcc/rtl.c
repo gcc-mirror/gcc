@@ -35,8 +35,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern struct obstack *rtl_obstack;
 
-extern long ftell();
-
 #if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
 extern long atol();
 #endif
