@@ -48,6 +48,12 @@ Boston, MA 02111-1307, USA.  */
    UNSPEC_INT_LABELs.  */
 int mn10300_unspec_int_label_counter;
 
+/* This is used in the am33_2.0-linux-gnu port, in which global symbol
+   names are not prefixed by underscores, to tell whether to prefix a
+   label with a plus sign or not, so that the assembler can tell
+   symbol names from register names.  */
+int mn10300_protect_label;
+
 /* The size of the callee register save area.  Right now we save everything
    on entry since it costs us nothing in code size.  It does cost us from a
    speed standpoint, so we want to optimize this sooner or later.  */

@@ -1,3 +1,31 @@
+2003-07-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	2001-12-13  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/linux.h (LINK_SPEC): Rename the dynamic linker
+	from ld-linux.so.2 to ld.so.1.
+	2001-11-18  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/linux.h (LINK_SPEC): -lpthread, not -lthread.
+	* config/mn10300/linux.h (LINK_SPEC): Don't handle -Wl,-rpath
+	nor -Wl,-rpath-link.
+	(LIB_SPEC): Add -rpath-link if !static.
+	2001-08-22  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/mn10300.c (mn10300_protect_label): New
+	variable.
+	* config/mn10300/linux.h (PRINT_OPERAND,
+	PRINT_OPERAND_ADDRESS): Set it during their execution.
+	(ASM_OUTPUT_LABELREF): Output `+' before symbol name if
+	mn10300_protect_label is set.
+	* config/mn10300/linux.h (LINK_SPEC): Recognize -Wl,-rpath and
+	-Wl,-rpath-link.
+	(LIB_SPEC, STARTFILE_SPEC): Define.
+	2001-05-11  Alexandre Oliva  <aoliva@redhat.com>
+	* config/mn10300/t-linux (dp-bit.c, fp-bit.c): Don't define
+	FLOAT_BIT_ORDER_MISMATCH.
+	2001-05-09  Alexandre Oliva  <aoliva@redhat.com>
+	* config.gcc (am33_2.0-*-linux*): Added.
+	* config/mn10300/linux.h: New.
+	* config/mn10300/t-linux: New.
+
 2003-07-10  Andreas Jaeger  <aj@suse.de>
 
 	* fold-const.c: Properly wrap prototypes.

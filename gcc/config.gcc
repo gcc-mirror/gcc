@@ -276,6 +276,9 @@ alpha*-*-*)
 	cpu_type=alpha
 	need_64bit_hwint=yes
 	;;
+am33_2.0-*-linux*)
+	cpu_type=mn10300
+	;;
 strongarm*-*-*)
 	cpu_type=arm
 	;;
@@ -2150,6 +2153,16 @@ xtensa-*-elf*)
 xtensa-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h linux.h xtensa/linux.h"
 	tmake_file="t-slibgcc-elf-ver t-linux xtensa/t-xtensa xtensa/t-linux"
+	;;
+am33_2.0-*-linux*)
+	tm_file="mn10300/mn10300.h dbxelf.h elfos.h linux.h mn10300/linux.h"
+	tmake_file="t-linux mn10300/t-linux"
+	gas=yes gnu_ld=yes
+	if test x$enable_threads = xyes; then
+		thread_file='posix'
+	fi
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+	use_collect2=no
 	;;
 *)
 	echo "*** Configuration $machine not supported" 1>&2
