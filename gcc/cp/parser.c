@@ -380,8 +380,8 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer ATTRIBUTE_UNUSED ,
   static int is_extern_c = 0;
 
    /* Get a new token from the preprocessor.  */
-  token->type = c_lex_with_flags (&token->value, &token->flags);
-  token->location = input_location;
+  token->type
+    = c_lex_with_flags (&token->value, &token->location, &token->flags);
   token->in_system_header = in_system_header;
 
   /* On some systems, some header files are surrounded by an 
@@ -11188,6 +11188,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 	  declarator = make_id_declarator (qualifying_scope, 
 					   unqualified_name);
+	  declarator->id_loc = token->location;
 	  if (unqualified_name)
 	    {
 	      tree class_type;
