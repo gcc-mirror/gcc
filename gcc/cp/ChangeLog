@@ -1,3 +1,8 @@
+Wed Nov 26 15:13:48 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* lex.c (lang_init): Enable flag_exceptions by default if no
+	command line switch was specified.
+
 Mon Nov 24 12:15:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* exception.cc (struct cp_eh_info): Add handlers field.
