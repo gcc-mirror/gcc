@@ -1558,7 +1558,8 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
      for PTR's alias set here, not its pointed-to type.  We also can't
      do this check with relaxed aliasing enabled.  */
   if (POINTER_TYPE_P (TREE_TYPE (var))
-      && var_alias_set != 0)
+      && var_alias_set != 0
+      && mem_alias_set != 0)
     {
       HOST_WIDE_INT ptr_alias_set = get_alias_set (ptr);
       if (ptr_alias_set == var_alias_set)
