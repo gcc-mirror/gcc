@@ -284,9 +284,9 @@ static void
 cb_line_change (pfile, token, parsing_args)
      cpp_reader *pfile;
      const cpp_token *token;
-     int parsing_args ATTRIBUTE_UNUSED;
+     int parsing_args;
 {
-  if (token->type == CPP_EOF)
+  if (token->type == CPP_EOF || parsing_args)
     return;
 
   maybe_print_line (pfile, pfile->print.map, token->line);
