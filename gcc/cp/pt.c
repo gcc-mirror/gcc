@@ -57,10 +57,7 @@ extern struct obstack permanent_obstack;
    (for a function or static data member), or a TYPE (for a class)
    indicating what we are hoping to instantiate.  */
 static tree pending_templates;
-static tree *template_tail = &pending_templates;
-
-static tree maybe_templates;
-static tree *maybe_template_tail = &maybe_templates;
+static tree last_pending_template;
 
 int processing_template_parmlist;
 static int template_header_count;
@@ -176,7 +173,6 @@ void
 init_pt ()
 {
   ggc_add_tree_root (&pending_templates, 1);
-  ggc_add_tree_root (&maybe_templates, 1);
   ggc_add_tree_root (&saved_trees, 1);
   ggc_add_tree_root (&current_tinst_level, 1);
 }
@@ -3719,6 +3715,7 @@ add_pending_template (d)
   tree ti = (TYPE_P (d)
 	     ? CLASSTYPE_TEMPLATE_INFO (d)
 	     : DECL_TEMPLATE_INFO (d));
+  tree pt;
   int level;
 
   if (TI_PENDING_TEMPLATE_FLAG (ti))
@@ -3732,8 +3729,14 @@ add_pending_template (d)
   if (level)
     push_tinst_level (d);
 
-  *template_tail = tree_cons (current_tinst_level, d, NULL_TREE);
-  template_tail = &TREE_CHAIN (*template_tail);
+  pt = tree_cons (current_tinst_level, d, NULL_TREE);
+  if (last_pending_template)
+    TREE_CHAIN (last_pending_template) = pt;
+  else
+    pending_templates = pt;
+
+  last_pending_template = pt;
+
   TI_PENDING_TEMPLATE_FLAG (ti) = 1;
 
   if (level)
@@ -4962,24 +4965,17 @@ instantiate_class_template (type)
 	{
 	  CLASSTYPE_INTERFACE_ONLY (type) = interface_only;
 	  SET_CLASSTYPE_INTERFACE_UNKNOWN_X (type, interface_unknown);
-	  CLASSTYPE_VTABLE_NEEDS_WRITING (type)
-	    = (! CLASSTYPE_INTERFACE_ONLY (type)
-	       && CLASSTYPE_INTERFACE_KNOWN (type));
 	}
       else
 	{
 	  CLASSTYPE_INTERFACE_ONLY (type) = CLASSTYPE_INTERFACE_ONLY (pattern);
 	  SET_CLASSTYPE_INTERFACE_UNKNOWN_X
 	    (type, CLASSTYPE_INTERFACE_UNKNOWN (pattern));
-	  CLASSTYPE_VTABLE_NEEDS_WRITING (type)
-	    = (! CLASSTYPE_INTERFACE_ONLY (type)
-	       && CLASSTYPE_INTERFACE_KNOWN (type));
 	}
     }
   else
     {
       SET_CLASSTYPE_INTERFACE_UNKNOWN (type);
-      CLASSTYPE_VTABLE_NEEDS_WRITING (type) = 1;
     }
 
   TYPE_HAS_CONSTRUCTOR (type) = TYPE_HAS_CONSTRUCTOR (pattern);
@@ -9471,7 +9467,6 @@ mark_class_instantiated (t, extern_p)
   SET_CLASSTYPE_EXPLICIT_INSTANTIATION (t);
   SET_CLASSTYPE_INTERFACE_KNOWN (t);
   CLASSTYPE_INTERFACE_ONLY (t) = extern_p;
-  CLASSTYPE_VTABLE_NEEDS_WRITING (t) = ! extern_p;
   TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (t)) = extern_p;
   if (! extern_p)
     {
@@ -9859,10 +9854,10 @@ instantiate_decl (d, defer_ok)
 	import_export_decl (d);
     }
 
-  /* We need to set up DECL_INITIAL regardless, if
-     the variable is initialized in the class body.  */
-  if (TREE_CODE (d) == VAR_DECL && DECL_INITIALIZED_IN_CLASS_P (d))
-    ;
+  if (TREE_CODE (d) == VAR_DECL && DECL_INITIALIZED_IN_CLASS_P (d)
+      && DECL_INITIAL (d) == NULL_TREE)
+    /* We should have set up DECL_INITIAL in instantiate_class_template.  */
+    abort ();
   /* Reject all external templates except inline functions.  */
   else if (DECL_INTERFACE_KNOWN (d)
 	   && ! DECL_NOT_REALLY_EXTERN (d)
@@ -9885,8 +9880,8 @@ instantiate_decl (d, defer_ok)
 	   member function or static data member of a class template
 	   shall be present in every translation unit in which it is
 	   explicitly instantiated.  */
-	cp_error ("explicit instantiation of `%D' but no definition available",
-		  d);
+	cp_pedwarn
+	  ("explicit instantiation of `%D' but no definition available", d);
 
       add_pending_template (d);
       goto out;
@@ -9979,6 +9974,7 @@ int
 instantiate_pending_templates ()
 {
   tree *t;
+  tree last = NULL_TREE;
   int instantiated_something = 0;
   int reconsider;
   
@@ -10017,8 +10013,11 @@ instantiate_pending_templates ()
 		/* If INSTANTIATION has been instantiated, then we don't
 		   need to consider it again in the future.  */
 		*t = TREE_CHAIN (*t);
-	      else 
-		t = &TREE_CHAIN (*t);
+	      else
+		{
+		  last = *t;
+		  t = &TREE_CHAIN (*t);
+		}
 	    }
 	  else
 	    {
@@ -10039,43 +10038,16 @@ instantiate_pending_templates ()
 		/* If INSTANTIATION has been instantiated, then we don't
 		   need to consider it again in the future.  */
 		*t = TREE_CHAIN (*t);
-	      else 
-		t = &TREE_CHAIN (*t);
+	      else
+		{
+		  last = *t;
+		  t = &TREE_CHAIN (*t);
+		}
 	    }
 	  tinst_depth = 0;
 	  current_tinst_level = NULL_TREE;
 	}
-      template_tail = t;
-
-      /* Go through the things that are template instantiations if we are
-	 using guiding declarations.  */
-      t = &maybe_templates;
-      while (*t)
-	{
-	  tree template;
-	  tree fn;
-	  tree args;
-
-	  fn = TREE_VALUE (*t);
-
-	  if (DECL_INITIAL (fn))
-	    /* If the FN is already defined, then it was either already
-	       instantiated or, even though guiding declarations were
-	       allowed, a non-template definition was provided.  */
-	    ;
-	  else
-	    {
-	      template = TREE_PURPOSE (*t);
-	      args = get_bindings (template, fn, NULL_TREE);
-	      fn = instantiate_template (template, args);
-	      instantiate_decl (fn, /*defer_ok=*/0);
-	      reconsider = 1;
-	    }
-	
-	  /* Remove this entry from the chain.  */
-	  *t = TREE_CHAIN (*t);
-	}
-      maybe_template_tail = t;
+      last_pending_template = last;
     } 
   while (reconsider);
 

@@ -787,7 +787,6 @@ struct saved_scope {
   tree access_specifier;
   tree function_decl;
   varray_type lang_base;
-  tree *lang_stack;
   tree lang_name;
   tree template_parms;
   tree x_previous_class_type;
@@ -830,7 +829,6 @@ struct saved_scope {
 
 /* Pointer to the top of the language name stack.  */
 
-#define current_lang_stack scope_chain->lang_stack
 #define current_lang_base scope_chain->lang_base
 #define current_lang_name scope_chain->lang_name
 
@@ -1296,7 +1294,7 @@ struct lang_type
   unsigned com_interface : 1;
   unsigned non_pod_class : 1;
   unsigned nearly_empty_p : 1;
-  unsigned vtable_needs_writing : 1;
+  unsigned user_align : 1;
   unsigned has_assign_ref : 1;
   unsigned has_new : 1;
   unsigned has_array_new : 1;
@@ -1328,7 +1326,6 @@ struct lang_type
   unsigned has_abstract_assign_ref : 1;
   unsigned non_aggregate : 1;
   unsigned is_partial_instantiation : 1;
-  unsigned user_align : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1337,7 +1334,7 @@ struct lang_type
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 8;
+  unsigned dummy : 9;
 
   int vsize;
 
@@ -1572,10 +1569,6 @@ struct lang_type
    If this is zero, it means that they placed the right value there,
    and there is no need to change it.  */
 #define CLASSTYPE_NEEDS_VIRTUAL_REINIT(NODE) (TYPE_LANG_SPECIFIC(NODE)->needs_virtual_reinit)
-
-/* Nonzero means that if this type has virtual functions, that
-   the virtual function table will be written out.  */
-#define CLASSTYPE_VTABLE_NEEDS_WRITING(NODE) (TYPE_LANG_SPECIFIC(NODE)->vtable_needs_writing)
 
 /* Nonzero means that this type has an X() constructor.  */
 #define TYPE_HAS_DEFAULT_CONSTRUCTOR(NODE) (TYPE_LANG_SPECIFIC(NODE)->has_default_ctor)
@@ -1824,11 +1817,10 @@ struct lang_decl_flags
   unsigned pending_inline_p : 1;
   unsigned global_ctor_p : 1;
   unsigned global_dtor_p : 1;
-  unsigned tinfo_fn_p : 1;
   unsigned assignment_operator_p : 1;
   unsigned anticipated_p : 1;
   unsigned generate_with_vtable_p : 1;
-  /* One unused bit.  */
+  /* Two unused bits.  */
 
   union {
     /* In a FUNCTION_DECL, VAR_DECL, TYPE_DECL, or TEMPLATE_DECL, this
@@ -2031,17 +2023,6 @@ struct lang_decl
    control whether or not virtual bases are constructed.  */
 #define DECL_HAS_IN_CHARGE_PARM_P(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.has_in_charge_parm_p)
-
-/* Non-zero for a FUNCTION_DECL that declares a type-info function.
-   This only happens in the old abi.  */
-#define DECL_TINFO_FN_P(NODE)					\
-  (TREE_CODE (NODE) == FUNCTION_DECL				\
-   && DECL_ARTIFICIAL (NODE)					\
-   && DECL_LANG_SPECIFIC(NODE)->decl_flags.tinfo_fn_p)
-
-/* Mark NODE as a type-info function.  */
-#define SET_DECL_TINFO_FN_P(NODE) \
-  (DECL_LANG_SPECIFIC((NODE))->decl_flags.tinfo_fn_p = 1)
 
 /* Nonzero if NODE is an overloaded `operator delete[]' function.  */
 #define DECL_ARRAY_DELETE_OPERATOR_P(NODE) \
@@ -3190,9 +3171,6 @@ extern int warn_nontemplate_friend;
 /* A node that is a list (length 1) of error_mark_nodes.  */
 extern tree error_mark_list;
 
-/* A list of virtual function tables we must make sure to write out.  */
-extern tree pending_vtables;
-
 /* Node for "pointer to (virtual) function".
    This may be distinct from ptr_type_node so gdb can distinguish them.  */
 #define vfunc_ptr_type_node \
@@ -3727,6 +3705,7 @@ extern void pushclass				PARAMS ((tree, int));
 extern void popclass				PARAMS ((void));
 extern void push_nested_class			PARAMS ((tree, int));
 extern void pop_nested_class			PARAMS ((void));
+extern int current_lang_depth			PARAMS ((void));
 extern void push_lang_context			PARAMS ((tree));
 extern void pop_lang_context			PARAMS ((void));
 extern tree instantiate_type			PARAMS ((tree, tree, enum instantiate_type_flags));

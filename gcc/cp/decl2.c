@@ -94,9 +94,6 @@ static tree get_guard_bits PARAMS ((tree));
 
 extern int current_class_depth;
 
-/* A list of virtual function tables we must make sure to write out.  */
-tree pending_vtables;
-
 /* A list of static class variables.  This is needed, because a
    static class variable can be declared inside the class without
    an initializer, and then initialized, staticly, outside the class.  */
@@ -1514,7 +1511,7 @@ finish_static_data_member_decl (decl, init, asmspec_tree, flags)
   DECL_CONTEXT (decl) = current_class_type;
 
   /* We cannot call pushdecl here, because that would fill in the
-     decl of our TREE_CHAIN.  Instead, we modify cp_finish_decl to do
+     TREE_CHAIN of our decl.  Instead, we modify cp_finish_decl to do
      the right thing, namely, to put this decl out straight away.  */
   /* current_class_type can be NULL_TREE in case of error.  */
   if (!asmspec_tree && current_class_type)
@@ -2297,7 +2294,7 @@ mark_vtable_entries (decl)
 
       if (TREE_CODE (fnaddr) != ADDR_EXPR)
 	/* This entry is an offset: a virtual base class offset, a
-	   virtual call offset, and RTTI offset, etc.  */
+	   virtual call offset, an RTTI offset, etc.  */
 	continue;
 
       fn = TREE_OPERAND (fnaddr, 0);
@@ -2411,7 +2408,7 @@ key_method (type)
        method = TREE_CHAIN (method))
     if (DECL_VINDEX (method) != NULL_TREE
 	&& ! DECL_THIS_INLINE (method)
-	&& ! DECL_PURE_VIRTUAL_P (method))
+	&& (! DECL_PURE_VIRTUAL_P (method) || DECL_DESTRUCTOR_P (method)))
       return method;
 
   return NULL_TREE;
@@ -2440,7 +2437,7 @@ import_export_vtable (decl, type, final)
   else if (CLASSTYPE_INTERFACE_KNOWN (type))
     {
       TREE_PUBLIC (decl) = 1;
-      DECL_EXTERNAL (decl) = ! CLASSTYPE_VTABLE_NEEDS_WRITING (type);
+      DECL_EXTERNAL (decl) = CLASSTYPE_INTERFACE_ONLY (type);
       DECL_INTERFACE_KNOWN (decl) = 1;
     }
   else
@@ -2525,7 +2522,6 @@ import_export_class (ctype)
   if (import_export)
     {
       SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
-      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype) = (import_export > 0);
       CLASSTYPE_INTERFACE_ONLY (ctype) = (import_export < 0);
     }
 }
@@ -2695,7 +2691,7 @@ import_export_decl (decl)
       else
 	comdat_linkage (decl);
     }
-  else if (DECL_TINFO_FN_P (decl))
+  else if (tinfo_decl_p (decl, 0))
     {
       tree ctype = TREE_TYPE (DECL_NAME (decl));
 
@@ -5387,5 +5383,4 @@ init_decl2 ()
   ggc_add_tree_root (&ssdf_decl, 1);
   ggc_add_tree_root (&priority_decl, 1);
   ggc_add_tree_root (&initialize_p_decl, 1);
-  ggc_add_tree_root (&pending_vtables, 1);
 }

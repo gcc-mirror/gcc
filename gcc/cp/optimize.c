@@ -686,7 +686,7 @@ expand_call_inline (tp, walk_subtrees, data)
       return NULL_TREE;
     }
 
-  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
+  if (TYPE_P (t))
     /* Because types were not copied in copy_body, CALL_EXPRs beneath
        them should not be expanded.  This can happen if the type is a
        dynamic array type, for example.  */

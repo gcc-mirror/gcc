@@ -1825,12 +1825,6 @@ begin_class_definition (t)
 	SET_CLASSTYPE_INTERFACE_UNKNOWN_X
 	  (t, interface_unknown);
       }
-    
-    /* Only leave this bit clear if we know this
-       class is part of an interface-only specification.  */
-    if (! CLASSTYPE_INTERFACE_KNOWN (t)
-	|| ! CLASSTYPE_INTERFACE_ONLY (t))
-      CLASSTYPE_VTABLE_NEEDS_WRITING (t) = 1;
   }
   reset_specialization();
   

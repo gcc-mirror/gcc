@@ -1078,12 +1078,8 @@ static void
 handle_pragma_vtable (dfile)
      cpp_reader *dfile ATTRIBUTE_UNUSED;
 {
-  tree vtbl = parse_strconst_pragma ("vtable", 0);
-
-  if (vtbl && vtbl != (tree)-1)
-    pending_vtables = tree_cons (NULL_TREE,
-				 get_identifier (TREE_STRING_POINTER (vtbl)),
-				 pending_vtables);
+  parse_strconst_pragma ("vtable", 0);
+  sorry ("#pragma vtable no longer supported");
 }
 
 static void

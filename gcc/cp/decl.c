@@ -2531,7 +2531,6 @@ maybe_push_to_top_level (pseudo)
   scope_chain = s;
   current_function_decl = NULL_TREE;
   VARRAY_TREE_INIT (current_lang_base, 10, "current_lang_base");
-  current_lang_stack = &VARRAY_TREE (current_lang_base, 0);
   current_lang_name = lang_name_cplusplus;
   current_namespace = global_namespace;
 }
@@ -3313,8 +3312,7 @@ duplicate_decls (newdecl, olddecl)
 	  /* extern "C" int foo ();
 	     int foo () { bar (); }
 	     is OK.  */
-	  if (current_lang_stack
-	      == &VARRAY_TREE (current_lang_base, 0))
+	  if (current_lang_depth () == 0)
 	    DECL_LANGUAGE (newdecl) = DECL_LANGUAGE (olddecl);
 	  else
 	    {
@@ -12723,8 +12721,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	    }
 
 	  if (TYPE_FOR_JAVA (basetype)
-	      && (current_lang_stack
-		  == &VARRAY_TREE (current_lang_base, 0)))
+	      && (current_lang_depth () == 0))
 	    TYPE_FOR_JAVA (ref) = 1;
 
 	  /* Note that the BINFO records which describe individual

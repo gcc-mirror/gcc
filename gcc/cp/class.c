@@ -5757,6 +5757,14 @@ pop_nested_class ()
     pop_nested_class ();
 }
 
+/* Returns the number of extern "LANG" blocks we are nested within.  */
+
+int
+current_lang_depth ()
+{
+  return VARRAY_ACTIVE_SIZE (current_lang_base);
+}
+
 /* Set global variables CURRENT_LANG_NAME to appropriate value
    so that behavior of name-mangling machinery is correct.  */
 
@@ -5764,15 +5772,7 @@ void
 push_lang_context (name)
      tree name;
 {
-  *current_lang_stack++ = current_lang_name;
-  if (current_lang_stack - &VARRAY_TREE (current_lang_base, 0)
-      >= (ptrdiff_t) VARRAY_SIZE (current_lang_base))
-    {
-      size_t old_size = VARRAY_SIZE (current_lang_base);
-
-      VARRAY_GROW (current_lang_base, old_size + 10);
-      current_lang_stack = &VARRAY_TREE (current_lang_base, old_size);
-    }
+  VARRAY_PUSH_TREE (current_lang_base, current_lang_name);
 
   if (name == lang_name_cplusplus)
     {
@@ -5807,10 +5807,8 @@ push_lang_context (name)
 void
 pop_lang_context ()
 {
-  /* Clear the current entry so that garbage collector won't hold on
-     to it.  */
-  *current_lang_stack = NULL_TREE;
-  current_lang_name = *--current_lang_stack;
+  current_lang_name = VARRAY_TOP_TREE (current_lang_base);
+  VARRAY_POP (current_lang_base);
 }
 
 /* Type instantiation routines.  */
@@ -7847,8 +7845,7 @@ build_vtable_entry (delta, vcall_index, entry, generate_with_vtable_p)
 
       fn = TREE_OPERAND (entry, 0);
       if ((!integer_zerop (delta) || vcall_index != NULL_TREE)
-	  && fn != abort_fndecl
-	  && !DECL_TINFO_FN_P (fn))
+	  && fn != abort_fndecl)
 	{
 	  entry = make_thunk (entry, delta, vcall_index,
 			      generate_with_vtable_p);
