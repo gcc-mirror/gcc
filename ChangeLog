@@ -1,3 +1,8 @@
+Mon Mar  1 23:37:06 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Fri Dec  4 01:33:05 1998  Niall Smart <nialls@euristix.ie>
+	* config.guess: Recognize FreeBSD using ELF automatically.
+
 Thu Feb 25 02:19:26 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Thu Feb 18 19:55:09 1999  Marc Espie <espie@cvs.openbsd.org>
