@@ -267,6 +267,8 @@ _Jv_MonitorExit (jobject obj)
 bool
 _Jv_ObjectCheckMonitor (jobject obj)
 {
+  if (__builtin_expect (INIT_NEEDED (obj), false))
+    obj->sync_init ();
   _Jv_SyncInfo *si = (_Jv_SyncInfo *) obj->sync_info;
   return _Jv_MutexCheckMonitor (&si->mutex);
 }
