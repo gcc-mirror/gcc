@@ -1,3 +1,9 @@
+2000-12-06  Mark Kettenis  <kettenis@gnu.org>
+
+	* config.gcc: Reorganize handling of *-*-gnu*, to share target
+	specific make details with Linux.  Update comments to clarify
+        the distinction between GNU/Linux and GNU/Hurd.
+
 Wed Dec  6 19:22:02 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* contrib.texi: Fix my email address.  Update Per's
@@ -823,9 +829,6 @@ Tue Dec  5 20:09:14 2000  Jeffrey A Law  (law@cygnus.com)
 
 2000-11-30  Mark Kettenis  <kettenis@gnu.org>
 
-	* configure.in: Reorganize handling of *-*-gnu*, to share target
-	specific make details with Linux.  Update comments to clarify
-        the distinction between GNU/Linux and GNU/Hurd.
 	* config/t-gnu (LIBGCC1, CROSS_LIBGCC1, CRTSTUFF_T_CFLAGS,
 	TARGET_LIBGCC2_CFLAGS): Remove.  We now use the settings from
 	config/t-linux for the Hurd.
