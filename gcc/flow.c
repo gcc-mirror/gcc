@@ -3050,6 +3050,10 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	  IOR_REG_SET (new_live_at_end, sb->global_live_at_start);
 	}
 
+      /* Force the stack pointer to be live -- which might not already be 
+	 the case for blocks within infinite loops.  */
+      SET_REGNO_REG_SET (new_live_at_end, STACK_POINTER_REGNUM);
+
       /* Regs used in phi nodes are not included in
 	 global_live_at_start, since they are live only along a
 	 particular edge.  Set those regs that are live because of a

@@ -3,6 +3,9 @@
 	* flow.c (allocate_reg_life_data): Set max_regno here ...
 	(life_analysis): ... not here.
 
+	* flow.c (calculate_global_regs_live): Force stack pointer
+	live at end.
+
 2000-04-26  Richard Henderson  <rth@cygnus.com>
 
 	* jump.c (redirect_exp_1): Rework from old redirect_exp.  Never
