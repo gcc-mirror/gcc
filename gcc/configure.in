@@ -865,7 +865,7 @@ for machine in $build $host $target; do
 		;;
 	i[[3456]]86-*-gnu*)
 		;;
-	i[[3456]]86-go32-msdos | i[[3456]]86-*-go32*)
+	i[[3456]]86-go32-msdos | i[[3456]]86-*-go32* | i[[3456]]86-*-msdosdjgpp*)
 		xm_file=i386/xm-go32.h
 		tm_file=i386/go32.h
 		tmake_file=i386/t-go32
