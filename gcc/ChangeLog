@@ -1,3 +1,8 @@
+2004-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/darwin.h (REAL_LIBGCC_SPEC): Define to use shared
+	libgcc for shared libraries.
+
 2004-11-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_split_access_reg): Add prototype.
