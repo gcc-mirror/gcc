@@ -136,8 +136,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
-char *getpwd ();
-
 /* Typical USG systems don't have stab.h, and they also have
    no use for DBX-format debugging info.  */
 
