@@ -5,7 +5,7 @@
 
 2005-01-26  Jan Hubicka  <jh@suse.cz>
 
-	PR tree-optimization/19421
+	PR tree-optimization/19241
 	* tree-inline.c (copy_body_r): Do not walk subtrees after substituting.
 
 2005-01-26  Hans-Peter Nilsson  <hp@axis.com>
@@ -204,9 +204,9 @@
 	* sh.c: Fix 1996 Copyright.
 
 2005-01-24  Richard Henderson  <rth@redhat.com>
-            Aldy Hernandez  <aldyh@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
 
-        * regrename.c (note_sets): Handle subregs.
+	* regrename.c (note_sets): Handle subregs.
 
 2005-01-24  Joseph S. Myers  <joseph@codesourcery.com>
 
