@@ -1,3 +1,9 @@
+1998-10-05  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/execute/u77-test.f: Add regression test for RAND.
+
+	* g77.f-torture/execute/io1.f: New test.
+
 1998-10-04  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.pt/overload5.C: New test; initialize variable
