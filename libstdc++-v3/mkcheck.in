@@ -53,8 +53,17 @@ esac
 saved_ifs=$IFS
 IFS=':'
 set `./tests_flags ${query} $*` || exit 1
-BUILD_DIR=$1; SRC_DIR=$2; PREFIX_DIR=$3; LTCXX=$4; LIBS=$5; LTEXE=$6; CXX=$7; CXXFLAGS=$8;
+BUILD_DIR=$1; SRC_DIR=$2; PREFIX_DIR=$3; CXX=$4; CXXFLAGS=$5; INCLUDES=$6; LIBS=$7;
 IFS=$saved_ifs
+
+# Build libtoolized surrogates to compile and run testcases.  Also,
+# adjust CXX so that the newly built compiler can find headers.
+if [ x$WHICH = x0 ] ; then
+    CXX="$CXX -B`dirname $CXX`/"
+fi
+LIBTOOL="$BUILD_DIR/libtool"
+LTEXE="$LIBTOOL --mode=execute"
+LTCXX="$LIBTOOL --tag=CXX --mode=link $CXX $CXXFLAGS $INCLUDES $LIBS"
 
 # specific libtool flag(s) to force the use of shared libraries, if any
 SH_FLAG=
@@ -310,7 +319,7 @@ test_file()
     # and harder as we try compiling at, say, top of the hour; we would
     # eventually have to calculate time_t anyhow.  Or 3) just grab two
     # time_t's (no more overhead than grabbing two date(1)'s).
-    compiler_invocation="$LTCXX $S_FLAG $SRC_NAME -o $EXENAME $LIBS"
+    compiler_invocation="$LTCXX $S_FLAG $SRC_NAME -o $EXENAME"
     COMP_TIME_START=$($TIMER_COMMAND)
     $compiler_invocation >> compile.out 2>&1
     COMP_TIME_END=$($TIMER_COMMAND)
