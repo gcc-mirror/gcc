@@ -920,15 +920,13 @@ hppa*-*-mpeix*)
 	use_collect2=yes 
 	;; 
 i370-*-opened*)			 # IBM 360/370/390 Architecture
-	xm_defines=USG
-	xm_file=i370/xm-mvs.h	 # close enough
+	xm_defines='USG FATAL_EXIT_CODE=12'
 	tm_file=i370/oe.h
 	xmake_file=i370/x-oe
 	tmake_file=i370/t-oe
 	;;
 i370-*-mvs*)
-	xm_defines=USG
-	xm_file=i370/xm-mvs.h
+	xm_defines='USG FATAL_EXIT_CODE=12'
 	tm_file=i370/mvs.h
 	tmake_file=i370/t-mvs
 	;;
@@ -2648,8 +2646,7 @@ ns32k-pc532-mach*)
 	;;
 ns32k-pc532-minix*)
 	tm_file=ns32k/pc532-min.h
-	xm_file="ns32k/xm-pc532-min.h ${xm-file}"
-	xm_defines=USG
+	xm_defines='USG HZ=60'
 	use_collect2=yes
 	;;
 ns32k-*-netbsd*)

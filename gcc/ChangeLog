@@ -1,3 +1,14 @@
+2001-03-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mkconfig.sh (DEFINES): Handle entries with '='.
+
+	* config.gcc: Don't use i370/xm-mvs.h or ns32k/xm-pc532-min.h.
+	Set xm_defines to MACRO=value instead.
+
+	* i370/xm-mvs.h: Delete.
+	
+	* ns32k/xm-pc532-min.h: Likewise.
+
 Sun Mar 25 15:01:40 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (ashldi3, ashrdi3, lshrdi3): Change predicates to

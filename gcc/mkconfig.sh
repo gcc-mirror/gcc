@@ -44,8 +44,8 @@ if [ -n "$HEADERS" ]; then
 fi
 
 for def in $DEFINES; do
-    echo "#ifndef $def"
-    echo "# define $def"
+    echo "#ifndef $def" | sed 's/=.*//'
+    echo "# define $def" | sed 's/=/ /'
     echo "#endif"
 done
 
