@@ -1,3 +1,7 @@
+2003-07-30  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* unwind-sjlj.c: Fix typo in file description.
+
 2003-07-30  Alan Modra  <amodra@bigpond.net.au>
 
 	* calls.c (load_register_parameters): When shifting reg sized values
