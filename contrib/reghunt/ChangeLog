@@ -1,5 +1,10 @@
-2003-03-27  Janis Johnson  <janis187@us.ibm.com>
+2003-06-24  Janis Johnson  <janis187@us.ibm.com>
 
+	* reg_search: Replace existing uses of DATE with MADE_DATE and
+	use DATE for the date command.
+	* reg_periodic: Ditto.
+
+2003-03-27  Janis Johnson  <janis187@us.ibm.com> 
 	* README: New file.
 	* reg_search: New file.
 	* reg_periodic: New file.
