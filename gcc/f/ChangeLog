@@ -1,3 +1,8 @@
+2002-04-13  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Deprecate frontend version number;
+	update list of fixed bugs.
+
 2002-04-01  Phil Edwards  <pme@gcc.gnu.org>
 
 	* version.c:  Fix misplaced leading blanks on first line.
