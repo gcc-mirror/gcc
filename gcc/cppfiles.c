@@ -741,7 +741,7 @@ _cpp_execute_include (cpp_reader *pfile, const char *fname, int angle_brackets,
 }
 
 /* Locate HEADER, and determine whether it is newer than the current
-   file.  If it cannot be located or dated, return -1, if it is newer
+   file.  If it cannot be located or dated, return -1, if it is
    newer, return 1, otherwise 0.  */
 int
 _cpp_compare_file_date (cpp_reader *pfile, const char *fname,

@@ -1,3 +1,11 @@
+2003-06-25 Martin Schaffner <schaffner@gmx.li>
+
+	* cppfiles.c: Clarify comments.
+	* cpphash.h: Likewise.
+	* cpplib.h: Likewise.
+	* cppmacro.c: Likewise.
+	* mkdeps.h: Likewise.
+
 2003-06-25  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (complain_wrong_lang, write_langs): Remove.

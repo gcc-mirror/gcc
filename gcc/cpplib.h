@@ -371,7 +371,7 @@ struct cpp_options
   unsigned char stdc_0_in_system_headers;
 };
 
-/* Call backs.  */
+/* Call backs to cpplib client.  */
 struct cpp_callbacks
 {
   /* Called when a new line of preprocessed output is started.  */
