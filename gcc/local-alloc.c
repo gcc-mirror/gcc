@@ -1048,6 +1048,22 @@ update_equiv_regs ()
 
       note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 
+#ifdef DONT_RECORD_EQUIVALENCE
+      /* Allow the target to reject promotions of some REG_EQUAL notes to
+	 REG_EQUIV notes.
+
+	 In some cases this can improve register allocation if the existence
+	 of the REG_EQUIV note is likely to increase the lifetime of a register
+	 that is likely to be spilled.
+
+	 It may also be necessary if the target can't handle certain constant
+	 expressions appearing randomly in insns, but for whatever reason
+	 those expressions must be considered legitimate constant expressions
+	 to prevent them from being forced into memory.  */
+      if (note && DONT_RECORD_EQUIVALENCE (note))
+        note = NULL;
+#endif
+
       /* Record this insn as initializing this register.  */
       reg_equiv_init_insn[regno] = insn;
 

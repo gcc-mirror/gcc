@@ -4195,6 +4195,15 @@ secondary_reload_class (class, mode, in)
   else
     regno = -1;
 
+  /* If we have something like (mem (mem (...)), we can safely assume the
+     inner MEM will end up in a general register after reloading, so there's
+     no need for a secondary reload.  */
+  if (GET_CODE (in) == MEM
+      && GET_CODE (XEXP (in, 0)) == MEM)
+    return NO_REGS;
+
+  /* Handle out of range displacement for integer mode loads/stores of
+     FP registers.  */
   if (((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
        && GET_MODE_CLASS (mode) == MODE_INT
        && FP_REG_CLASS_P (class))
@@ -4223,6 +4232,7 @@ secondary_reload_class (class, mode, in)
 			|| GET_CODE (XEXP (tmp, 0)) == LABEL_REF)
 		       && GET_CODE (XEXP (tmp, 1)) == CONST_INT);
         break;
+
       default:
         is_symbolic = 0;
         break;
@@ -4290,6 +4300,17 @@ hppa_builtin_saveregs (arglist)
   dest = gen_rtx (MEM, BLKmode,
 		  plus_constant (current_function_internal_arg_pointer, -16));
   move_block_from_reg (23, dest, 4, 4 * UNITS_PER_WORD);
+
+  /* move_block_from_reg will emit code to store the argument registers
+     individually as scalar stores.
+
+     However, other insns may later load from the same addresses for
+     a struture load (passing a struct to a varargs routine).
+
+     The alias code assumes that such aliasing can never happen, so we
+     have to keep memory referencing insns from moving up beyond the
+     last argument register store.  So we emit a blockage insn here.  */
+  emit_insn (gen_blockage ());
 
   if (flag_check_memory_usage)
     emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
