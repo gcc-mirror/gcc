@@ -1,3 +1,11 @@
+2003-03-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c/9936
+	* c-decl.c (grokdeclarator): Clear SAVE_EXPR_CONTEXT for
+	variably-sized arrays in parameters.
+	(set_save_expr_context): New function.
+	(c_expand_body): Use it, via walk_tree.
+
 2003-03-31  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.c (hard_reg_operand): Check the mode.
