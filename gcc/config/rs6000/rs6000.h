@@ -284,6 +284,9 @@ do {				\
 
 /* target machine storage layout */
 
+/* Define to support cross compilation to an RS6000 target.  */
+#define REAL_ARITHMETIC
+
 /* Define this macro if it is advisable to hold scalars in registers
    in a wider mode than that declared by the program.  In such cases, 
    the value is constrained to be within the bounds of the declared
