@@ -7,7 +7,7 @@ $set default 'f$parse(flnm,,,"DEVICE")''f$parse(flnm,,,"DIRECTORY")'
 $!
 $set symbol/scope=(nolocal,noglobal)
 $!
-$! First, build the preprocesor.
+$! First, build the preprocessor.
 $!
 $ @make-cccp
 $!
