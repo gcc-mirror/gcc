@@ -1,3 +1,35 @@
+2004-11-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md (attribute "op_type"): Default to "NN".
+	(attribute "atype"): Default to "agen".
+	(attribute "length"): Default to 6.
+	(define_asm_attibutes): Remove.
+	("movti", "*movdi_64", "*movdi_31", "*movsi_zarch", "*movsi_esa",
+	"*movhi", "*movqi", "*movdf_64", "*movdf_31", "movsf",
+	"*clc", "*mvc", "*nc", "*oc", "*xc", "*xc_zero"):
+	Do not set type attribute to "cs" where already default.
+	("*cmpint_si", "*cmpint_di", "fix_truncdfsi2_ibm", "floatsidf2_ibm",
+	"*negdi2_31"):
+	Do not set type attribute to "other" where already default.
+	("movti", "*movdi_64", "*movdi_31", "*movdf_31", 
+	"*strlendi", "*strlensi",
+	"*movmem_long_64", "*movmem_long_31",
+	"*clrmem_long_64", "*clrmem_long_31",
+	"*cmpmem_long_64", "*cmpmem_long_31",
+	"*cmpint_si", "*cmpint_di", 
+	"addti3", "*adddi3_31z", "*adddi3_31", 
+	"subti3", "*subdi3_31z", "*subdi3_31", "*negdi2_31",
+	"*sconddi", "*scondsi", "*sconddi_neg", "*scondsi_neg",
+	"fix_truncdfsi2_ibm", "floatsidf2_ibm", "extendsfdf2_ibm",
+	"*pool_entry", "pool_align", "pool_section_start",
+	"pool_section_end", "main_pool", "reload_base_31", "pool"):
+	Do not set op_type attribute to "NN" where already default.
+	("*extractqi", "*extracthi", "*zero_extendhisi2_31", 
+	"*zero_extendqisi2_31", "*zero_extendqihi2_31",
+	"fix_truncdfsi2_ibm", "floatsidf2_ibm"): 
+	Do not set atype attribute to "agen" where already default.
+	("*movmem_short", "*clrmem_short", "*cmpmem_short"): Don't set op_type.
+
 2004-11-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/t-iris6 (tp-bit.c): Fix target filename.
