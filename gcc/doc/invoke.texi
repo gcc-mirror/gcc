@@ -10528,11 +10528,14 @@ option are incompatible.
 @itemx -malign-power
 @opindex malign-natural
 @opindex malign-power
-On AIX, Darwin, and 64-bit PowerPC GNU/Linux, the option
+On AIX, 32-bit Darwin, and 64-bit PowerPC GNU/Linux, the option
 @option{-malign-natural} overrides the ABI-defined alignment of larger
 types, such as floating-point doubles, on their natural size-based boundary.
 The option @option{-malign-power} instructs GCC to follow the ABI-specified
 alignment rules.  GCC defaults to the standard alignment defined in the ABI@.
+
+On 64-bit Darwin, natural alignment is the default, and @option{-malign-power}
+is not supported.
 
 @item -msoft-float
 @itemx -mhard-float

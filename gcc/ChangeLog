@@ -1,3 +1,11 @@
+2005-02-22  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Default to
+	natural alignment for 64-bit Darwin.
+	(rs6000_parse_alignment_option): Warn about uses of -malign-power
+	on 64-bit Darwin.
+	* doc/invoke.texi: Document this.
+
 2005-02-22  DJ Delorie  <dj@redhat.com>
 
 	* c-common.c (c_common_type_for_mode): Pass the mode's precision
