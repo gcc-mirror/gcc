@@ -1,5 +1,10 @@
 2003-06-10  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Disable serial configure by default.
+	* configure: Regenerate.
+	* Makefile.tpl: Abolish .NOTPARALLEL.
+	* Makefile.in: Regenerate.
+
 	* Makefile.tpl: Replace {build,host,target}_canonical by
 	{build,host,target}.
 	* Makefile.in: Regenerate.

@@ -731,7 +731,7 @@ clean-target-libgcc:
 
 .PHONY: check do-check
 check:
-	$(MAKE) do-check NOTPARALLEL=parallel-ok
+	$(MAKE) do-check
 
 # Only include modules actually being configured and built.
 do-check: maybe-check-gcc [+
@@ -1298,7 +1298,7 @@ check-gcc-c++:
 
 .PHONY: check-c++
 check-c++:
-	$(MAKE) check-target-libstdc++-v3 check-gcc-c++ NOTPARALLEL=parallel-ok
+	$(MAKE) check-target-libstdc++-v3 check-gcc-c++
 
 .PHONY: install-gcc maybe-install-gcc
 maybe-install-gcc:
@@ -1494,12 +1494,6 @@ $(srcdir)/configure: @MAINT@ $(srcdir)/configure.in $(srcdir)/config/acx.m4
 # ------------------------------
 # Special directives to GNU Make
 # ------------------------------
-
-# Tell GNU make 3.79 not to run the top level in parallel.  This 
-# prevents contention for $builddir/$target/config.cache, as well
-# as minimizing scatter in file system caches.
-NOTPARALLEL = .NOTPARALLEL
-$(NOTPARALLEL):
 
 # Don't pass command-line variables to submakes.
 .NOEXPORT:

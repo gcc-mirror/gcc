@@ -1698,18 +1698,25 @@ AC_SUBST_FILE(maybe_dependencies)
 # Create the serialization dependencies.  This uses a temporary file.
 
 AC_ARG_ENABLE([serial-configure],
-[  --disable-serial-[{host,target,build}-]configure
-                          Don't force sequential configuration of
+[  --enable-serial-[{host,target,build}-]configure
+                          Force sequential configuration of
                           sub-packages for the host, target or build
-			  machine, or of any sub-packages at all])
+			  machine, or all sub-packages])
+
+case ${enable_serial_configure} in
+  yes)
+    enable_serial_build_configure=yes
+    enable_serial_host_configure=yes
+    enable_serial_target_configure=yes
+    ;;
+esac
 
 # These force 'configure's to be done one at a time, to avoid problems
 # with contention over a shared config.cache.
 rm -f serdep.tmp
 echo '# serdep.tmp' > serdep.tmp
 olditem=
-test "x${enable_serial_configure}" = xno ||
-test "x${enable_serial_build_configure}" = xno ||
+test "x${enable_serial_build_configure}" = xyes &&
 for item in ${build_configdirs} ; do
   case ${olditem} in
     "") ;;
@@ -1718,8 +1725,7 @@ for item in ${build_configdirs} ; do
   olditem=${item}
 done
 olditem=
-test "x${enable_serial_configure}" = xno ||
-test "x${enable_serial_host_configure}" = xno ||
+test "x${enable_serial_host_configure}" = xyes &&
 for item in ${configdirs} ; do
   case ${olditem} in
     "") ;;
@@ -1728,8 +1734,7 @@ for item in ${configdirs} ; do
   olditem=${item}
 done
 olditem=
-test "x${enable_serial_configure}" = xno ||
-test "x${enable_serial_target_configure}" = xno ||
+test "x${enable_serial_target_configure}" = xyes &&
 for item in ${target_configdirs} ; do
   case ${olditem} in
     "") ;;
