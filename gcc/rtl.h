@@ -1407,6 +1407,7 @@ extern void stupid_life_analysis	PROTO ((rtx, int, FILE *));
 
 /* In flow.c */
 extern void allocate_for_life_analysis	PROTO ((void));
+extern int recompute_reg_usage		PROTO ((rtx));
 #ifdef BUFSIZ
 extern void dump_flow_info		PROTO ((FILE *));
 #endif
@@ -1543,4 +1544,5 @@ extern void init_alias_analysis		PROTO ((void));
 extern void end_alias_analysis		PROTO ((void));
 
 extern void record_base_value		PROTO ((int, rtx, int));
+
 #endif /* _RTL_H */

@@ -3481,6 +3481,7 @@ rest_of_compilation (decl)
   if (!obey_regdecls)
     TIMEVAR (local_alloc_time,
 	     {
+	       recompute_reg_usage (insns);
 	       regclass (insns, max_reg_num ());
 	       local_alloc ();
 	     });

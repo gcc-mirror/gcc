@@ -1,3 +1,12 @@
+Sat Jun 27 16:45:42 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (count_reg_sets): New function.
+	(count_reg_sets_1, count_ref_references): Likewise.
+	(recompute_reg_usage): Likewise.
+	* rtl.h (recompute_reg_usage): Add prototype.
+	* toplev.c (rest_of_compilation): Call recompute_reg_usage just
+	before local register allocation.
+
 Sat Jun 27 13:15:30 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (negsf, negdf): Revert Jan 22 change.
