@@ -1,3 +1,14 @@
+2002-04-16  Adam King <aking@dreammechanics.com>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* java/io/natFileWin32.cc (performList): Return the correct array
+	type.  Don't duplicate the creation of a File since it's already
+	done earlier in the method and the existing code would cause a
+	ArrayStoreException.  Don't use fixed-size array.
+	(_access, _stat, attr, getCanonicalPath, performMkdir,
+	performRenameTo): Don't use fixed-size array.
+	(getCanonicalPath): Use throw, not _Jv_Throw.
+	
 2002-04-15  Mark Wielaard <mark@klomp.org>
 
 	* java/lang/Integer.java (getInteger(String,Integer): Return def when
