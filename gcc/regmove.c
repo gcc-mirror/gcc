@@ -431,6 +431,16 @@ optimize_reg_copy_1 (insn, dest, src)
 	continue;
 
       if (reg_set_p (src, p) || reg_set_p (dest, p)
+	  /* If SRC is an asm-declared register, it must not be replaced
+	     in any asm.  Unfortunately, the REG_EXPR tree for the asm
+	     variable may be absent in the SRC rtx, so we can't check the
+	     actual register declaration easily (the asm operand will have
+	     it, though).  To avoid complicating the test for a rare case,
+	     we just don't perform register replacement for a hard reg
+	     mentioned in an asm.  */
+	  || (sregno < FIRST_PSEUDO_REGISTER
+	      && asm_noperands (PATTERN (p)) >= 0
+	      && reg_overlap_mentioned_p (src, PATTERN (p)))
 	  /* Don't change a USE of a register.  */
 	  || (GET_CODE (PATTERN (p)) == USE
 	      && reg_overlap_mentioned_p (src, XEXP (PATTERN (p), 0))))

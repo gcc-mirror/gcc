@@ -1,3 +1,8 @@
+2003-02-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* regmove.c (optimize_reg_copy_1): Do not replace a hard register
+	in an asm.
+
 Sat Feb 22 03:24:06 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (builtin_description): Add __builtin_ia32_paddq and
