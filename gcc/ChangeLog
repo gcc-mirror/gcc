@@ -1,3 +1,8 @@
+Wed Jan  6 09:44:51 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* toplev.h: In addition to checking _JBLEN, also check if `setjmp'
+ 	is a macro when deciding if we can use `jmp_buf' in prototypes.
+
 Thu Jan  7 00:12:24 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (addqi3): If the destination operand is
