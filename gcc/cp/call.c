@@ -2238,6 +2238,36 @@ add_template_candidate_real (candidates, tmpl, ctype, explicit_targs,
   if (fn == error_mark_node)
     return candidates;
 
+  /* In [class.copy]:
+
+       A member function template is never instantiated to perform the
+       copy of a class object to an object of its class type.  
+
+     It's a little unclear what this means; the standard explicitly
+     does allow a template to be used to copy a class.  For example,
+     in:
+
+       struct A {
+         A(A&);
+	 template <class T> A(const T&);
+       };
+       const A f ();
+       void g () { A a (f ()); }
+       
+     the member template will be used to make the copy.  The section
+     quoted above appears in the paragraph that forbids constructors
+     whose only parameter is (a possibly cv-qualified variant of) the
+     class type, and a logical interpretation is that the intent was
+     to forbid the instantiation of member templates which would then
+     have that form.  */
+  if (DECL_CONSTRUCTOR_P (fn) && list_length (arglist) == 2) 
+    {
+      tree arg_types = FUNCTION_FIRST_USER_PARMTYPE (fn);
+      if (arg_types && same_type_p (TYPE_MAIN_VARIANT (TREE_VALUE (arg_types)),
+				    ctype))
+	return candidates;
+    }
+
   if (obj != NULL_TREE)
     /* Aha, this is a conversion function.  */
     cand = add_conv_candidate (candidates, fn, obj, arglist);
