@@ -1340,7 +1340,7 @@ In order to get a warning about an unused function parameter, you must
 specify both @samp{-W} and @samp{-Wunused}.
 
 To suppress this warning for an expression, simply cast it to void.  For
-unused variables and parameters, use the @samp{unused} attribute
+unused variables, parameters and labels, use the @samp{unused} attribute
 (@pxref{Variable Attributes}).
 
 @item -Wuninitialized

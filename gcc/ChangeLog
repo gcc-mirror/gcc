@@ -1,3 +1,18 @@
+Mon Jan  4 10:30:33 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (decl_attributes): Allow applying attribute `unused'
+	on a LABEL_DECL.
+
+	* c-parse.in (label): Parse attributes after a label, and call
+ 	`decl_attributes' to handle them.
+
+	* gansidecl.h (ATTRIBUTE_UNUSED_LABEL): Define.
+
+	* genrecog.c (OUTPUT_LABEL, write_tree_1, write_tree): When
+	generating labels, mark them with ATTRIBUTE_UNUSED_LABEL.
+
+	* invoke.texi: Note that labels can be marked `unused'.
+
 Sun Jan 3 23:32:18 PST 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
