@@ -141,8 +141,8 @@ coverageexts = .{da,bbg}
 # with other compilers.  This is partially controlled by configure in
 # stage1, as not all versions of gcc understand -Wno-long-long.
 LOOSE_WARN = -W -Wall -Wwrite-strings -Wstrict-prototypes -Wmissing-prototypes
-STRICT_WARN = -Wtraditional @strict1_warn@
-STRICT2_WARN = -Wtraditional -pedantic -Wno-long-long @WERROR@
+STRICT_WARN = @strict1_warn@
+STRICT2_WARN = -pedantic -Wno-long-long @WERROR@
 
 # This is set by --enable-checking.  The idea is to catch forgotten
 # "extern" tags in header files.
