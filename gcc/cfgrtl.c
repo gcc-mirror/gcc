@@ -662,10 +662,8 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 {
   basic_block src = e->src;
   rtx insn = BB_END (src), kill_from;
-  edge tmp;
   rtx set;
   int fallthru = 0;
-  edge_iterator ei;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
      mess up unconditional or indirect jumps that cross between hot
@@ -682,12 +680,17 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 	  || BB_PARTITION (src) != BB_PARTITION (target)))
     return NULL;
 
-  /* Verify that all targets will be TARGET.  */
-  FOR_EACH_EDGE (tmp, ei, src->succs)
-    if (tmp->dest != target && tmp != e)
-      break;
+  /* We can replace or remove a complex jump only when we have exactly
+     two edges.  Also, if we have exactly one outgoing edge, we can
+     redirect that.  */
+  if (EDGE_COUNT (src->succs) >= 3
+      /* Verify that all targets will be TARGET.  Specifically, the
+	 edge that is not E must also go to TARGET.  */
+      || (EDGE_COUNT (src->succs) == 2
+	  && EDGE_SUCC (src, EDGE_SUCC (src, 0) == e)->dest != target))
+    return NULL;
 
-  if (tmp || !onlyjump_p (insn))
+  if (!onlyjump_p (insn))
     return NULL;
   if ((!optimize || reload_completed) && tablejump_p (insn, NULL, NULL))
     return NULL;
