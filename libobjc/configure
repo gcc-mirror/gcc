@@ -1255,7 +1255,7 @@ if test $version_specific_libs = yes; then
   # Need the gcc compiler version to know where to install libraries
   # and header files if --enable-version-specific-runtime-libs option
   # is selected.
-    glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_alias)'
+    glibcpp_toolexecdir='$(libdir)/gcc/$(target_alias)'
   glibcpp_toolexeclibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
   fi
 
