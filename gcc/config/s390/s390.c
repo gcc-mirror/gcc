@@ -4711,6 +4711,12 @@ s390_fixup_clobbered_return_reg (return_reg)
   bool replacement_done = 0;
   rtx insn;
 
+  /* If we never called __builtin_return_address, register 14
+     might have been used as temp during the prolog; we do
+     not want to touch those uses.  */
+  if (!has_hard_reg_initial_val (Pmode, REGNO (return_reg)))
+    return false;
+
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       rtx reg, off, new_insn;
