@@ -1,3 +1,7 @@
+2002-10-29  Geert bosch  <bosch@gnat.com>
+        PR ada/6558
+        * misc.c: Unrevert misc.c (1.13)
+
 2002-10-28  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* a-chlat9.ads a-cwila9.ads a-dynpri.adb a-retide.adb: Update
