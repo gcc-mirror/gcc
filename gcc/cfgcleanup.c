@@ -43,6 +43,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "toplev.h"
 #include "cselib.h"
+#include "tm_p.h"
 
 #include "obstack.h"
 
@@ -192,21 +193,43 @@ mark_effect (exp, nonequal)
   rtx exp;
   regset nonequal;
 {
+  int regno;
+  rtx dest;
   switch (GET_CODE (exp))
     {
       /* In case we do clobber the register, mark it as equal, as we know the
          value is dead so it don't have to match.  */
       case CLOBBER:
 	if (REG_P (XEXP (exp, 0)))
-	  CLEAR_REGNO_REG_SET (nonequal, REGNO (XEXP (exp, 0)));
+	  {
+	    dest = XEXP (exp, 0);
+	    regno = REGNO (dest);
+	    CLEAR_REGNO_REG_SET (nonequal, regno);
+	    if (regno < FIRST_PSEUDO_REGISTER)
+	      {
+		int n = HARD_REGNO_NREGS (regno, GET_MODE (dest));
+		while (--n > 0)
+		  CLEAR_REGNO_REG_SET (nonequal, regno + n);
+	      }
+	  }
 	return false;
 
       case SET:
 	if (rtx_equal_for_cselib_p (SET_DEST (exp), SET_SRC (exp)))
 	  return false;
-	if (GET_CODE (SET_SRC (exp)) != REG)
+	dest = SET_DEST (exp);
+	if (dest == pc_rtx)
+	  return false;
+	if (!REG_P (dest))
 	  return true;
-	SET_REGNO_REG_SET (nonequal, REGNO (SET_SRC (exp)));
+	regno = REGNO (dest);
+	SET_REGNO_REG_SET (nonequal, regno);
+	if (regno < FIRST_PSEUDO_REGISTER)
+	  {
+	    int n = HARD_REGNO_NREGS (regno, GET_MODE (dest));
+	    while (--n > 0)
+	      SET_REGNO_REG_SET (nonequal, regno + n);
+	  }
 	return false;
 
       default:
@@ -292,7 +315,7 @@ thread_jump (mode, e, b)
      processing as if it were same basic block.
      Our goal is to prove that whole block is an NOOP.  */
 
-  for (insn = NEXT_INSN (b->head); insn != b->end && !failed;
+  for (insn = NEXT_INSN (b->head); insn != NEXT_INSN (b->end) && !failed;
        insn = NEXT_INSN (insn))
   {
     if (INSN_P (insn))
