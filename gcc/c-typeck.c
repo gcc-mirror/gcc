@@ -6538,7 +6538,7 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	     || TREE_CODE (output) == FIX_FLOOR_EXPR
 	     || TREE_CODE (output) == FIX_ROUND_EXPR
 	     || TREE_CODE (output) == FIX_CEIL_EXPR)
-	output = TREE_OPERAND (output, 1);
+	output = TREE_OPERAND (output, 0);
 
       lvalue_or_else (o[i], "invalid lvalue in asm statement");
     }
