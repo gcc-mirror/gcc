@@ -1,4 +1,4 @@
->\input texinfo  @c -*-texinfo-*-
+\input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gcc.info
 @c @setfilename usegcc.info
@@ -96,7 +96,7 @@ Published by the Free Software Foundation
 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -144,16 +144,16 @@ original English.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 26 November 1995
+@center Last updated 8 February 1998
 @sp 1
-@c The version number appears twice more in this file.
+@c The version number appears three times more in this file.
 
-@center for version 2.7.2
+@center for version 2.8.1
 @page
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1988, 89, 92, 93, 94, 95, 96 Free Software Foundation, Inc.
 @sp 2
-For GCC Version 2.7.2@*
+For GCC Version 2.8.1@*
 @sp 1
 Published by the Free Software Foundation @*
 59 Temple Place - Suite 330@*
@@ -194,19 +194,19 @@ original English.
 @ifset USING
 This manual documents how to run, install and port the GNU
 compiler, as well as its new features and incompatibilities, and how to
-report bugs.  It corresponds to GNU CC version 2.7.2.
+report bugs.  It corresponds to GNU CC version 2.8.1.
 @end ifset
 @end ifset
 
 @ifclear INTERNALS
 This manual documents how to run and install the GNU compiler,
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to GNU CC version 2.7.2.
+bugs.  It corresponds to GNU CC version 2.8.1.
 @end ifclear
 @ifclear USING
 This manual documents how to port the GNU compiler,
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to GNU CC version 2.7.1.
+bugs.  It corresponds to GNU CC version 2.8.1.
 @end ifclear
 
 @end ifinfo
@@ -437,7 +437,7 @@ GNU CC.  The fix is to get rid of the file @code{real-ld} which purify
 installs---so that GNU CC won't try to use it.
 
 @item
-On Linux SLS 1.01, there is a problem with @file{libc.a}: it does not
+On GNU/Linux SLS 1.01, there is a problem with @file{libc.a}: it does not
 contain the obstack functions.  However, GNU CC assumes that the obstack
 functions are in @file{libc.a} when it is the GNU C library.  To work
 around this problem, change the @code{__GNU_LIBRARY__} conditional
@@ -1122,7 +1122,7 @@ the ordinary C compiler.  If you do so, you must specify the following
 options:
 
 @smallexample
--L/usr/local/lib/gcc-lib/we32k-att-sysv/2.7.1 -lgcc -lc_s
+-L/usr/local/lib/gcc-lib/we32k-att-sysv/2.8.1 -lgcc -lc_s
 @end smallexample
 
 The first specifies where to find the library @file{libgcc.a}
@@ -1974,6 +1974,14 @@ that claim to support ANSI C, such as @samp{gcc -ansi}---not for other
 compilers such as plain @samp{gcc}.  Whatever the ANSI C standard says
 is relevant to the design of plain @samp{gcc} without @samp{-ansi} only
 for pragmatic reasons, not as a requirement.
+
+GNU CC normally defines @code{__STDC__} to be 1, and in addition
+defines @code{__STRICT_ANSI__} if you specify the @samp{-ansi} option.
+On some hosts, system include files use a different convention, where
+@code{__STDC__} is normally 0, but is 1 if the user specifies strict
+conformance to the C Standard.  GNU CC follows the host convention when
+processing system include files, but when processing user files it follows
+the usual GNU C convention.
 
 @item
 Undefining @code{__STDC__} in C++.
@@ -3684,12 +3692,6 @@ Define this macro to indicate that the host compiler does not properly
 handle converting a function value to a pointer-to-function when it is
 used in an expression.
 
-@findex HAVE_VPRINTF
-@findex vprintf
-@item HAVE_VPRINTF
-Define this if the library function @code{vprintf} is available on your
-system.
-
 @findex MULTIBYTE_CHARS
 @item MULTIBYTE_CHARS
 Define this macro to enable support for multibyte characters in the
@@ -3697,31 +3699,27 @@ input to GNU CC.  This requires that the host system support the ANSI C
 library functions for converting multibyte characters to wide
 characters.
 
-@findex HAVE_PUTENV
-@findex putenv
-@item HAVE_PUTENV
-Define this if the library function @code{putenv} is available on your
-system.
-
 @findex POSIX
 @item POSIX
 Define this if your system is POSIX.1 compliant.
-
-@findex HAVE_POPEN
-@findex popen
-@item HAVE_POPEN
-Define this if the library function @code{popen} is available on your
-system.
 
 @findex NO_SYS_SIGLIST
 @item NO_SYS_SIGLIST
 Define this if your system @emph{does not} provide the variable
 @code{sys_siglist}.
 
-@findex DONT_DECLARE_SYS_SIGLIST
-@item DONT_DECLARE_SYS_SIGLIST
-Define this if your system has the variable @code{sys_siglist}, and
-there is already a declaration of it in the system header files.
+@vindex sys_siglist
+Some systems do provide this variable, but with a different name such
+as @code{_sys_siglist}.  On these systems, you can define
+@code{sys_siglist} as a macro which expands into the name actually
+provided.
+
+Autoconf normally defines @code{SYS_SIGLIST_DECLARED} when it finds a
+declaration of @code{sys_siglist} in the system header files.
+However, when you define @code{sys_siglist} to a different name
+autoconf will not automatically define @code{SYS_SIGLIST_DECLARED}.
+Therefore, if you define @code{sys_siglist}, you should also define
+@code{SYS_SIGLIST_DECLARED}.
 
 @findex USE_PROTOTYPES
 @item USE_PROTOTYPES
@@ -3751,12 +3749,6 @@ no effect.  As soon as all of the machine descriptions are
 modified to have the appropriate number of arguments, this macro
 will be removed.
 
-@vindex sys_siglist
-Some systems do provide this variable, but with a different name such
-as @code{_sys_siglist}.  On these systems, you can define
-@code{sys_siglist} as a macro which expands into the name actually
-provided.
-
 @findex NO_STAB_H
 @item NO_STAB_H
 Define this if your system does not have the include file
@@ -3766,7 +3758,7 @@ assumed.
 @findex PATH_SEPARATOR
 @item PATH_SEPARATOR
 Define this macro to be a C character constant representing the
-character used to separate components in paths.  The default value is.
+character used to separate components in paths.  The default value is
 the colon character
 
 @findex DIR_SEPARATOR
