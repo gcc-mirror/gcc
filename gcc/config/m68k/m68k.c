@@ -2301,7 +2301,7 @@ strict_low_part_peephole_ok (mode, first_insn, target)
 }
 
 /* Trampoline code for the function entry.  */
-struct bc_seg *trampoline;
+extern struct bc_seg *trampoline;
 
 /* Emit the machine-code interface trampoline at the beginning of a byte
    coded function.  The argument is a label name of the interpreter
