@@ -1,3 +1,7 @@
+2004-10-24  Geoffrey Keating  <geoffk@geoffk.org>
+
+	* config/rs6000/darwin.h (BLOCK_REG_PADDING): Define.
+
 2004-10-25  Ben Elliston  <bje@au.ibm.com>
 
 	* cfgcleanup.c (outgoing_edges_match): Fix typo in dump output.
