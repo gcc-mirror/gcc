@@ -1,3 +1,7 @@
+2000-05-28  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* expr2.C: New test.
+
 2000-04-19  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* stkalign.C: New test.
