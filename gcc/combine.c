@@ -3447,6 +3447,13 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	}
       break;
 
+    case TRUNCATE:
+      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+	SUBST (XEXP (x, 0),
+	       force_to_mode (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
+			      GET_MODE_MASK (mode), NULL_RTX, 0));
+      break;
+
     case FLOAT_TRUNCATE:
       /* (float_truncate:SF (float_extend:DF foo:SF)) = foo:SF.  */
       if (GET_CODE (XEXP (x, 0)) == FLOAT_EXTEND
@@ -5765,8 +5772,7 @@ force_to_mode (x, mode, mask, reg, just_select)
 	 whose constant is the AND of that constant with MASK.  If it
 	 remains an AND of MASK, delete it since it is redundant.  */
 
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	  && GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT)
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
 	  x = simplify_and_const_int (x, op_mode, XEXP (x, 0),
 				      mask & INTVAL (XEXP (x, 1)));
@@ -5785,7 +5791,8 @@ force_to_mode (x, mode, mask, reg, just_select)
 	     cheaper constant.  */
 
 	  if (GET_CODE (x) == AND && GET_CODE (XEXP (x, 1)) == CONST_INT
-	      && GET_MODE_MASK (GET_MODE (x)) != mask)
+	      && GET_MODE_MASK (GET_MODE (x)) != mask
+	      && GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT)
 	    {
 	      HOST_WIDE_INT cval = (INTVAL (XEXP (x, 1))
 				    | (GET_MODE_MASK (GET_MODE (x)) & ~ mask));
