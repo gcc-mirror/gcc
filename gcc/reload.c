@@ -3590,25 +3590,12 @@ find_reloads_address (mode, memrefloc, ad, loc, operand, ind_levels)
 	  return 1;
 	}
 
-      else if (reg_equiv_mem[regno] != 0)
-	{
-	  tem = XEXP (reg_equiv_mem[regno], 0);
+      /* We can avoid a reload if the register's equivalent memory expression
+	 is valid as an indirect memory address. */
 
-	  /* If we can't indirect any more, a pseudo must be reloaded.
-	     If the pseudo's address in its MEM is a SYMBOL_REF, it
-	     must be reloaded unless indirect_symref_ok.  Otherwise, it
-	     can be reloaded if the address is REG or REG + CONST_INT.  */
-
-	  if (ind_levels > 0
-	      && ! (GET_CODE (tem) == SYMBOL_REF && ! indirect_symref_ok)
-	      && ((GET_CODE (tem) == REG
-		   && REGNO (tem) < FIRST_PSEUDO_REGISTER)
-		  || (GET_CODE (tem) == PLUS
-		      && GET_CODE (XEXP (tem, 0)) == REG
-		      && REGNO (XEXP (tem, 0)) < FIRST_PSEUDO_REGISTER
-		      && GET_CODE (XEXP (tem, 1)) == CONST_INT)))
-	    return 0;
-	}
+      else if (reg_equiv_mem[regno] != 0 && ind_levels > 0
+	       && strict_memory_address_p (mode, reg_equiv_mem[regno]))
+	return 0;
 
       /* The only remaining case where we can avoid a reload is if this is a
 	 hard register that is valid as a base register and which is not the
