@@ -1,5 +1,10 @@
 2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (addsi3, adddi3): Remove special handling
+	of $sp adds.  Remove REGNO checks from mips16 patterns.
+
+2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md: Delete outdated comment.
 
 2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
