@@ -151,26 +151,6 @@ static htab_t mem_attrs_htab;
 /* A hash table storing all CONST_DOUBLEs.  */
 static htab_t const_double_htab;
 
-/* start_sequence and gen_sequence can make a lot of rtx expressions which are
-   shortly thrown away.  We use two mechanisms to prevent this waste:
-
-   For sizes up to 5 elements, we keep a SEQUENCE and its associated
-   rtvec for use by gen_sequence.  One entry for each size is
-   sufficient because most cases are calls to gen_sequence followed by
-   immediately emitting the SEQUENCE.  Reuse is safe since emitting a
-   sequence is destructive on the insn in it anyway and hence can't be
-   redone.
-
-   We do not bother to save this cached data over nested function calls.
-   Instead, we just reinitialize them.  */
-
-#define SEQUENCE_RESULT_SIZE 5
-
-static rtx sequence_result[SEQUENCE_RESULT_SIZE];
-
-/* During RTL generation, we also keep a list of free INSN rtl codes.  */
-static rtx free_insn;
-
 #define first_insn (cfun->emit->x_first_insn)
 #define last_insn (cfun->emit->x_last_insn)
 #define cur_insn_uid (cfun->emit->x_cur_insn_uid)
@@ -2256,7 +2236,6 @@ restore_emit_status (p)
      struct function *p ATTRIBUTE_UNUSED;
 {
   last_label_num = 0;
-  clear_emit_caches ();
 }
 
 /* Clear out all parts of the state in F that can safely be discarded
@@ -4656,16 +4635,6 @@ init_virtual_regs (es)
   ptr[VIRTUAL_CFA_REGNUM] = virtual_cfa_rtx;
 }
 
-void
-clear_emit_caches ()
-{
-  int i;
-
-  /* Clear the start_sequence/gen_sequence cache.  */
-  for (i = 0; i < SEQUENCE_RESULT_SIZE; i++)
-    sequence_result[i] = 0;
-  free_insn = 0;
-}
 
 /* Used by copy_insn_1 to avoid copying SCRATCHes more than once.  */
 static rtx copy_insn_scratch_in[MAX_RECOG_OPERANDS];
@@ -4859,8 +4828,6 @@ init_emit ()
   first_label_num = label_num;
   last_label_num = 0;
   seq_stack = NULL;
-
-  clear_emit_caches ();
 
   /* Init the tables that describe all the pseudo regs.  */
 
