@@ -682,13 +682,16 @@ scan_loop (loop_start, end, nregs)
 	    ;
 	  /* In order to move a register, we need to have one of three cases:
 	     (1) it is used only in the same basic block as the set
-	     (2) it is not a user variable.
+	     (2) it is not a user variable and it is not used in the
+	         exit test (this can cause the variable to be used
+		 before it is set just like a user-variable).
 	     (3) the set is guaranteed to be executed once the loop starts,
 	         and the reg is not used until after that.  */
 	  else if (! ((! maybe_never
 		       && ! loop_reg_used_before_p (set, p, loop_start,
 						    scan_start, end))
-		      || ! REG_USERVAR_P (SET_DEST (PATTERN (p)))
+		      || (! REG_USERVAR_P (SET_DEST (PATTERN (p)))
+			  && ! REG_LOOP_TEST_P (SET_DEST (PATTERN (p))))
 		      || reg_in_basic_block_p (p, SET_DEST (PATTERN (p)))))
 	    ;
 	  else if ((tem = invariant_p (src))
