@@ -1958,7 +1958,7 @@ find_case_label_for_value (tree switch_expr, tree val)
       else if (CASE_HIGH (t) == NULL)
 	{
 	  /* A `normal' case label.  */
-	  if (simple_cst_equal (CASE_LOW (t), val) == 1)
+	  if (tree_int_cst_equal (CASE_LOW (t), val))
 	    return t;
 	}
       else

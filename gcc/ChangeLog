@@ -1,3 +1,8 @@
+2004-05-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-cfg.c (find_case_label_for_value): Replace call to
+	simple_cst_equal with tree_int_cst_equal.
+
 2004-05-19  Jeff Law <law@redhat.com>
 
 	* tree-ssa-phiopt.c (value_replacement): Handle the case where
