@@ -1748,6 +1748,30 @@ try_redirect_by_replacing_jump (e, target)
   return true;
 }
 
+/* Return last loop_beg note appearing after INSN, before start of next
+   basic block.  Return INSN if there are no such notes.
+
+   When emmiting jump to redirect an fallthru edge, it should always
+   appear after the LOOP_BEG notes, as loop optimizer expect loop to
+   eighter start by fallthru edge or jump following the LOOP_BEG note
+   jumping to the loop exit test.
+ */
+rtx
+last_loop_beg_note (insn)
+     rtx insn;
+{
+  rtx last = insn;
+  insn = NEXT_INSN (insn);
+  while (GET_CODE (insn) == NOTE
+	 && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK)
+    {
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+	last = insn;
+      insn = NEXT_INSN (insn);
+    }
+  return last;
+}
+
 /* Attempt to change code to redirect edge E to TARGET.
    Don't do that on expense of adding new instructions or reordering
    basic blocks.
@@ -1877,7 +1901,8 @@ redirect_edge_and_branch_force (e, target)
   /* Case of the fallthru block.  */
   if (!e->src->succ->succ_next)
     {
-      e->src->end = emit_jump_insn_after (gen_jump (label), e->src->end);
+      e->src->end = emit_jump_insn_after (gen_jump (label),
+					  last_loop_beg_note (e->src->end));
       JUMP_LABEL (e->src->end) = label;
       LABEL_NUSES (label)++;
       if (basic_block_for_insn)
@@ -1906,7 +1931,7 @@ redirect_edge_and_branch_force (e, target)
 
   memset (new_bb, 0, sizeof (*new_bb));
 
-  new_bb->end = new_bb->head = e->src->end;
+  new_bb->end = new_bb->head = last_loop_beg_note (e->src->end);
   new_bb->succ = NULL;
   new_bb->pred = new_edge;
   new_bb->count = e->count;
@@ -1976,7 +2001,7 @@ back_edge_of_syntactic_loop_p (bb1, bb2)
 	basic_block bb1, bb2;
 {
   rtx insn;
-  int count;
+  int count = 0;
   if (bb1->index > bb2->index)
     return false;
   if (bb1->index == bb2->index)
@@ -2088,7 +2113,7 @@ split_edge (edge_in)
 
 	  /* Now add the jump insn ...  */
 	  pos = emit_jump_insn_after (gen_jump (old_succ->head),
-				      jump_block->end);
+				      last_loop_beg_note (jump_block->end));
 	  jump_block->end = pos;
 	  if (basic_block_for_insn)
 	    set_block_for_new_insns (pos, jump_block);
@@ -3159,29 +3184,38 @@ try_forward_edges (b)
 	}
       else if (target == first)
 	; /* We didn't do anything.  */
-      else if (redirect_edge_and_branch (e, target))
-	{
-	  /* We successfully forwarded the edge.  Now update profile
-	     data: for each edge we traversed in the chain, remove
-	     the original edge's execution count.  */
-	  do
-	    {
-	      first->count -= e->count;
-	      first->succ->count -= e->count;
-	      first->frequency -= ((e->probability * b->frequency
-				    + REG_BR_PROB_BASE / 2)
-				   / REG_BR_PROB_BASE);
-	      first = first->succ->dest;
-	    }
-	  while (first != target);
-
-	  changed = true;
-	}
       else
 	{
-	  if (rtl_dump_file)
-	    fprintf (rtl_dump_file, "Forwarding edge %i->%i to %i failed.\n",
-		     b->index, e->dest->index, target->index);
+	  /* Save the values now, as the edge may get removed.  */
+	  gcov_type edge_count = e->count;
+	  int edge_probability = e->probability;
+
+	  if (redirect_edge_and_branch (e, target))
+	    {
+	      /* We successfully forwarded the edge.  Now update profile
+		 data: for each edge we traversed in the chain, remove
+		 the original edge's execution count.  */
+	      int edge_frequency = ((edge_probability * b->frequency
+				     + REG_BR_PROB_BASE / 2)
+				    / REG_BR_PROB_BASE);
+
+	      do
+		{
+		  first->count -= edge_count;
+		  first->succ->count -= edge_count;
+		  first->frequency -= edge_frequency;
+		  first = first->succ->dest;
+		}
+	      while (first != target);
+
+	      changed = true;
+	    }
+	  else
+	    {
+	      if (rtl_dump_file)
+		fprintf (rtl_dump_file, "Forwarding edge %i->%i to %i failed.\n",
+			 b->index, e->dest->index, target->index);
+	    }
 	}
     }
 
