@@ -1,3 +1,8 @@
+Sun Jul 23 14:49:12 2000  Jason Eckhardt  <jle@cygnus.com> 
+
+        * config/i860/i860.md (untyped_call expander): Use GEN_CALL 
+        instead of gen_call.
+
 Sun Jul 23 11:52:03 2000  George Helffrich (george@gly.bris.ac.uk)
 
 	* dbxout.c (dbxout_type, case COMPLEX_TYPE): Fix length field in stab.
