@@ -1,6 +1,6 @@
 /* Handle verification of bytecoded methods for the GNU compiler for 
    the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -89,23 +89,23 @@ check_pending_block (tree target_label)
 
   if (current_subr == NULL_TREE)
     {
-/*       if (LABEL_IN_SUBR (target_label)) */
-/* 	return "might transfer control into subroutine"; */
+      if (LABEL_IN_SUBR (target_label))
+	return "might transfer control into subroutine";
     }
   else
     {
       if (LABEL_IN_SUBR (target_label))
 	{
-/* 	  if (LABEL_SUBR_START (target_label) != current_subr) */
-/* 	    return "transfer out of subroutine"; */
+	  if (LABEL_SUBR_START (target_label) != current_subr)
+	    return "transfer out of subroutine";
 	}
       else if (! LABEL_VERIFIED (target_label))
 	{
 	  LABEL_IN_SUBR (target_label) = 1;
 	  LABEL_SUBR_START (target_label) = current_subr;
 	}
-/*       else */
-/* 	return "transfer out of subroutine"; */
+      else
+	return "transfer out of subroutine";
     }
   return NULL;
 }
@@ -126,54 +126,6 @@ subroutine_nesting (tree label)
   return nesting;
 }
 
-static tree
-defer_merging (tree type1, tree type2)
-{
-  /* FIXME: This is just a placeholder until we replace the verifier
-     altogether.  We really need to ouput a type assertion for all of
-     the types, every time they are used.  */
-  return object_ptr_type_node;
-
-  if (TREE_CODE (type1) == POINTER_TYPE)
-    type1 = TREE_TYPE (type1);
-  if (TREE_CODE (type2) == POINTER_TYPE)
-    type2 = TREE_TYPE (type2);
-
-  if (TREE_CODE (type1) == RECORD_TYPE && TREE_CODE (type2) == RECORD_TYPE)
-    {
-      tree list = build_tree_list (type1, NULL_TREE);
-      list = tree_cons (type2, NULL_TREE, list);
-      return list;
-    }
-
-  if (TREE_CODE (type1) == TREE_LIST && TREE_CODE (type2) == TREE_LIST)
-    {
-      return chainon (copy_list (type1), copy_list (type2));
-    }
-
-  if (TREE_CODE (type1) == TREE_LIST && TREE_CODE (type2) == RECORD_TYPE)
-    {
-      tree tmp = type1;
-      do
-	{
-	  if (TREE_PURPOSE (tmp) == type2)
-	    return type1;
-	  tmp = TREE_CHAIN (tmp);
-	}
-      while (tmp);
-
-      return tree_cons (type2, NULL_TREE, copy_list (type1));
-    }
-
-  if (TREE_CODE (type2) == TREE_LIST && TREE_CODE (type1) == RECORD_TYPE)
-    {
-      return defer_merging (type2, type1);
-    }
-
-  abort ();
-}
-
-
 /* Return the "merged" types of TYPE1 and TYPE2.
    If either is primitive, the other must match (after promotion to int).
    For reference types, return the common super-class.
@@ -186,11 +138,7 @@ merge_types (tree type1, tree type2)
     return type1;
   if (type1 == TYPE_UNKNOWN || type2 == TYPE_UNKNOWN
       || type1 == TYPE_RETURN_ADDR || type2 == TYPE_RETURN_ADDR)
-    return TYPE_UNKNOWN;  
-
-  if (TREE_CODE (type1) == TREE_LIST || TREE_CODE (type2) == TREE_LIST)
-    return defer_merging (type1, type2);
-
+    return TYPE_UNKNOWN;
   if (TREE_CODE (type1) == POINTER_TYPE && TREE_CODE (type2) == POINTER_TYPE)
     {
       int depth1, depth2;
@@ -205,9 +153,6 @@ merge_types (tree type1, tree type2)
       tt1 = TREE_TYPE (type1);
       tt2 = TREE_TYPE (type2);
 
-      if (TYPE_DUMMY (tt1) || TYPE_DUMMY (tt2))
-	return defer_merging (tt1, tt2);
-      
       /* If tt{1,2} haven't been properly loaded, now is a good time
          to do it. */
       if (!TYPE_SIZE (tt1))
@@ -248,10 +193,31 @@ merge_types (tree type1, tree type2)
 	  return object_ptr_type_node;
 	}
 
-      if (CLASS_INTERFACE (TYPE_NAME (tt1))
-	  || (CLASS_INTERFACE (TYPE_NAME (tt2))))
+      if (CLASS_INTERFACE (TYPE_NAME (tt1)))
 	{
-	  return object_ptr_type_node;
+	  /* FIXME: should see if two interfaces have a common
+	     superinterface.  */
+	  if (CLASS_INTERFACE (TYPE_NAME (tt2)))
+	    {
+	      /* This is a kludge, but matches what Sun's verifier does.
+		 It can be tricked, but is safe as long as type errors
+		 (i.e. interface method calls) are caught at run-time. */
+	      return object_ptr_type_node;
+	    }
+	  else
+	    {
+	      if (can_widen_reference_to (tt2, tt1))
+		return type1;
+	      else
+		return object_ptr_type_node;
+	    }
+	}
+      else if (CLASS_INTERFACE (TYPE_NAME (tt2)))
+	{
+	  if (can_widen_reference_to (tt1, tt2))
+	    return type2;
+	  else
+	    return object_ptr_type_node;
 	}
 
       type1 = tt1;
@@ -709,8 +675,6 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	  VERIFICATION_ERROR_WITH_INDEX
 	    ("invalid local variable index %d in load");
 	tmp = type_map[index];
-	if (TREE_CODE (tmp) != TREE_LIST)
-	  {
 	if (tmp == TYPE_UNKNOWN)
 	  VERIFICATION_ERROR_WITH_INDEX
 	    ("loading local variable %d which has unknown type");
@@ -724,7 +688,6 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 		: type != tmp))
 	  VERIFICATION_ERROR_WITH_INDEX
 	    ("loading local variable %d which has invalid type");
-	  }
 	PUSH_TYPE (tmp);
 	goto note_used;
 	case OPCODE_istore:  type = int_type_node;  goto general_store;
@@ -773,7 +736,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	prev_eh_ranges = NULL_EH_RANGE;
 
 	/* Allocate decl for this variable now, so we get a temporary
-	   that survives the whole method. */
+! 	   that survives the whole method. */
 	find_local_variable (index, type, oldpc);
 
         if (TYPE_IS_WIDE (type))
@@ -1129,10 +1092,6 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 	    if (! CLASS_LOADED_P (self_type))
 	      load_class (self_type, 1);
 
-	    if (TYPE_DUMMY (self_type) && op_code == OPCODE_invokeinterface)
-	      /* Assume we are an interface.  */
-	      CLASS_INTERFACE (TYPE_NAME (self_type)) = 1;
-
 	    self_is_interface = CLASS_INTERFACE (TYPE_NAME (self_type));
 	    method_name = COMPONENT_REF_NAME (&current_jcf->cpool, index);
 	    method_type = parse_signature_string ((const unsigned char *) IDENTIFIER_POINTER (sig),
@@ -1170,6 +1129,7 @@ verify_jvm_instructions (JCF* jcf, const unsigned char *byte_ops, long length)
 		  if (!nargs || notZero)
 		      VERIFICATION_ERROR 
 		        ("invalid argument number in invokeinterface");
+
 		  /* If we verify/resolve the constant pool, as we should,
 		     this test (and the one just following) are redundant.  */
 		  if (! self_is_interface)
