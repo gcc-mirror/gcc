@@ -630,7 +630,7 @@ extern int rs6000_pic_labelno;
 #undef	ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
-    const char *init_ptr = (TARGET_64BIT) ? ".quad" : ".long";		\
+    const char *const init_ptr = (TARGET_64BIT) ? ".quad" : ".long";	\
 									\
     if (TARGET_RELOCATABLE && (get_pool_size () != 0 || profile_flag)	\
 	&& uses_TOC())							\

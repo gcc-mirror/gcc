@@ -1124,7 +1124,7 @@ ix86_comp_type_attributes (type1, type2)
      tree type2;
 {
   /* Check for mismatch of non-default calling convention.  */
-  const char *rtdstr = TARGET_RTD ? "cdecl" : "stdcall";
+  const char *const rtdstr = TARGET_RTD ? "cdecl" : "stdcall";
 
   if (TREE_CODE (type1) != FUNCTION_TYPE)
     return 1;

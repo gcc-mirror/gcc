@@ -4222,7 +4222,7 @@ decode_g_option (arg)
      -gdwarf -g3 is equivalent to -gdwarf3.  */
   static int type_explicitly_set_p = 0;
   /* Indexed by enum debug_info_type.  */
-  static const char *debug_type_names[] =
+  static const char *const debug_type_names[] =
   {
     "none", "stabs", "coff", "dwarf-1", "dwarf-2", "xcoff"
   };

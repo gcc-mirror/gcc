@@ -77,7 +77,7 @@ rtx zero_reg_rtx;
 rtx ldi_reg_rtx;
 
 /* AVR register names {"r0", "r1", ..., "r31"} */
-const char * avr_regnames[] = REGISTER_NAMES;
+static const char *const avr_regnames[] = REGISTER_NAMES;
 
 /* This holds the last insn address.  */
 static int last_insn_address = 0;
@@ -4756,7 +4756,7 @@ encode_section_info (decl)
 	   && TREE_CODE (decl) == VAR_DECL
 	   && avr_progmem_p (decl))
     {
-      const char *dsec = ".progmem.data";
+      const char *const dsec = ".progmem.data";
       DECL_SECTION_NAME (decl) = build_string (strlen (dsec), dsec);
       TREE_READONLY (decl) = 1;
     }

@@ -31,7 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "graph.h"
 
-static const char *graph_ext[] =
+static const char *const graph_ext[] =
 {
   /* no_graph */ "",
   /* vcg */      ".vcg",

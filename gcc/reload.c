@@ -6743,7 +6743,7 @@ regno_clobbered_p (regno, insn, mode, sets)
   return 0;
 }
 
-static const char *reload_when_needed_name[] =
+static const char *const reload_when_needed_name[] =
 {
   "RELOAD_FOR_INPUT",
   "RELOAD_FOR_OUTPUT",

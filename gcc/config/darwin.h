@@ -669,7 +669,7 @@ void alias_section (name, alias)			\
 
 #undef ASM_GLOBALIZE_LABEL
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
- do { const char* _x = (NAME); if (!!strncmp (_x, "_OBJC_", 6)) { \
+ do { const char *const _x = (NAME); if (!!strncmp (_x, "_OBJC_", 6)) { \
   (fputs (".globl ", FILE), assemble_name (FILE, _x), fputs ("\n", FILE)); \
  }} while (0)
 

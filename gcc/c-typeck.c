@@ -4319,7 +4319,7 @@ warn_for_assignment (msgid, opname, function, argnum)
       if (function)
 	{
 	  /* Function name is known; supply it.  */
-	  const char *argstring = _("passing arg %d of `%s'");
+	  const char *const argstring = _("passing arg %d of `%s'");
 	  new_opname = (char *) alloca (IDENTIFIER_LENGTH (function)
 					+ strlen (argstring) + 1 + 25
 					/*%d*/ + 1);
@@ -4329,7 +4329,7 @@ warn_for_assignment (msgid, opname, function, argnum)
       else
 	{
 	  /* Function name unknown (call through ptr); just give arg number.*/
-	  const char *argnofun = _("passing arg %d of pointer to function");
+	  const char *const argnofun = _("passing arg %d of pointer to function");
 	  new_opname = (char *) alloca (strlen (argnofun) + 1 + 25 /*%d*/ + 1);
 	  sprintf (new_opname, argnofun, argnum);
 	}

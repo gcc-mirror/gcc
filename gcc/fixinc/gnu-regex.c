@@ -947,7 +947,7 @@ weak_alias (__re_set_syntax, re_set_syntax)
    POSIX doesn't require that we do anything for REG_NOERROR,
    but why not be nice?  */
 
-static const char *re_error_msgid[] =
+static const char *const re_error_msgid[] =
   {
     gettext_noop ("Success"),	/* REG_NOERROR */
     gettext_noop ("No match"),	/* REG_NOMATCH */

@@ -205,8 +205,8 @@ static const int hash_mask = (HASH_TABLE_SIZE - 1);
 #define LOCAL_INCLUDE_DIR "/usr/local/include"
 #endif
 
-struct default_include { const char *fname; 
-			 const char *component;
+struct default_include { const char *const fname; 
+			 const char *const component;
 			 int x1, x2; } include_defaults[]
 #ifdef INCLUDE_DEFAULTS
   = INCLUDE_DEFAULTS;

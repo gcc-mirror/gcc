@@ -1038,7 +1038,7 @@ output_deps ()
 {
   /* Stream on which to print the dependency information.  */
   FILE *deps_stream = 0;
-  const char *deps_mode = deps_append ? "a" : "w";
+  const char *const deps_mode = deps_append ? "a" : "w";
 
   if (deps_file == 0)
     deps_stream = stdout;

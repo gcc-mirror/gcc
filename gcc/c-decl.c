@@ -490,7 +490,7 @@ c_decode_option (argc, argv)
 	 -std=gnu89		default, iso9899:1990 + gnu extensions
 	 -std=gnu99		iso9899:1999 + gnu extensions
       */
-      const char *argstart = &p[5];
+      const char *const argstart = &p[5];
 
       if (!strcmp (argstart, "iso9899:1990")
 	  || !strcmp (argstart, "c89"))

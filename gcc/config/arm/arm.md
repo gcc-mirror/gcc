@@ -7371,7 +7371,7 @@
   "TARGET_ARM"
   "*
   {
-    const char * opcodes[4][2] =
+    static const char *const opcodes[4][2] =
     {
       {\"cmp\\t%2, %3\;cmp%d5\\t%0, %1\",
        \"cmp\\t%0, %1\;cmp%d4\\t%2, %3\"},
@@ -7406,7 +7406,7 @@
   "TARGET_ARM"
   "*
 {
-  const char * opcodes[4][2] =
+  static const char *const opcodes[4][2] =
   {
     {\"cmp\\t%0, %1\;cmp%D4\\t%2, %3\",
      \"cmp\\t%2, %3\;cmp%D5\\t%0, %1\"},

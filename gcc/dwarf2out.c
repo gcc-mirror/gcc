@@ -6508,7 +6508,7 @@ static void
 output_ranges ()
 {
   register unsigned i;
-  const char *start_fmt = "Offset 0x%x";
+  const char *const start_fmt = "Offset 0x%x";
   const char *fmt = start_fmt;
 
   for (i = 0; i < ranges_table_in_use; ++i)

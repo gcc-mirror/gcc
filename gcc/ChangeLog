@@ -1,3 +1,52 @@
+2001-09-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.c (c_tree_code_name): Const-ification.
+	* c-decl.c (c_decode_option): Likewise.
+	* c-typeck.c (warn_for_assignment): Likewise.
+	* collect2.c (libexts, is_ctor_dtor, main, ignore_library):
+	Likewise.
+	* cppinit.c (output_deps): Likewise.
+	* dependence.c (dependence_string, direction_string): Likewise.
+	* dwarf2out.c (output_ranges): Likewise.
+	* fixinc/fixfixes.c (emit_gnu_type): Likewise.
+	* fixinc/gnu-regex.c (re_error_msgid): Likewise.
+	* gcc.c (standard_exec_prefix, standard_exec_prefix_1,
+	standard_startfile_prefix, standard_startfile_prefix_1,
+	standard_startfile_prefix_2, tooldir_base_prefix,
+	standard_bindir_prefix, find_a_file): Likewise.
+	* genattrtab.c (make_length_attrs): Likewise.
+	* gencheck.c (tree_codes): Likewise.
+	* genemit.c (gen_split): Likewise.
+	* genrecog.c (special_mode_pred_table): Likewise.
+	* graph.c (graph_ext): Likewise.
+	* protoize (default_include): Likewise.
+	* reload.c (reload_when_needed_name): Likewise.
+	* sched-vis.c (visualize_stall_cycles): Likewise.
+	* tlink.c (recompile_files): Likewise.
+	* toplev.c (decode_g_option): Likewise.
+	* tradcpp.c (output_deps): Likewise.
+	* varasm.c (decode_reg_name): Likewise.
+	
+	* arm.c (arm_condition_codes, strings_fpa, thumb_condition_code):
+	Const-ification.
+	* arm.md: Likewise.
+	* avr.c (avr_regnames, encode_section_info): Likewise.
+	* c4x.c (float_reg_names): Likewise.
+	* darwin.h (ASM_GLOBALIZE_LABEL): Likewise.
+	* elfos.h (const_section): Likewise.
+	* i386.c (ix86_comp_type_attributes): Likewise.
+	* i386/win32.h (STRIP_NAME_ENCODING): Likewise.
+	* ia64/aix.h (UNIQUE_SECTION): Likewise.
+	* ia64.c (type_names): Likewise.
+	* m68hc11.c (reg_class_names): Likewise.
+	* m88k.c (m_options): Likewise.
+	* mips.c (mips_output_conditional_branch, mips_unique_section):
+	Likewise.
+	* rs6000/sysv4.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+	* sparc.c (sparc_flat_function_prologue, sparc_flat_function_epilogue,
+	ultra_code_names): Likewise.
+	* sparc.h (OVERRIDE_OPTIONS): Likewise.
+
 2001-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in (gcc_cv_as_shf_merge): Fix a typo.

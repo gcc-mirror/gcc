@@ -301,7 +301,7 @@ m68hc11_conditional_register_usage ()
 
 /* Reload and register operations. */
 
-static const char *reg_class_names[] = REG_CLASS_NAMES;
+static const char *const reg_class_names[] = REG_CLASS_NAMES;
 
 
 void

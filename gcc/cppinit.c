@@ -1032,7 +1032,8 @@ output_deps (pfile)
 {
   /* Stream on which to print the dependency information.  */
   FILE *deps_stream = 0;
-  const char *deps_mode = CPP_OPTION (pfile, print_deps_append) ? "a" : "w";
+  const char *const deps_mode =
+    CPP_OPTION (pfile, print_deps_append) ? "a" : "w";
 
   if (CPP_OPTION (pfile, deps_file) == 0)
     deps_stream = stdout;

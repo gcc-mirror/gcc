@@ -23,7 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define DEFTREECODE(SYM, NAME, TYPE, LEN)   STRINGX(SYM),
 
-const char *tree_codes[] = {
+static const char *const tree_codes[] = {
 #include "tree.def"
 #include "c-common.def"
 #include "gencheck.h"

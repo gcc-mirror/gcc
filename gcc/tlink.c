@@ -502,7 +502,7 @@ recompile_files ()
     {
       char *line, *command;
       FILE *stream = fopen ((char*) f->root.key, "r");
-      const char *outname = frob_extension ((char*) f->root.key, ".rnw");
+      const char *const outname = frob_extension ((char*) f->root.key, ".rnw");
       FILE *output = fopen (outname, "w");
 
       while ((line = tfgets (stream)) != NULL)

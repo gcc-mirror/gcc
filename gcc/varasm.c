@@ -747,7 +747,7 @@ decode_reg_name (asmspec)
 
 #ifdef ADDITIONAL_REGISTER_NAMES
       {
-	static struct { const char *name; int number; } table[]
+	static struct { const char *const name; int number; } table[]
 	  = ADDITIONAL_REGISTER_NAMES;
 
 	for (i = 0; i < (int) ARRAY_SIZE (table); i++)

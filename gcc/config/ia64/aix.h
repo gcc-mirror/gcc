@@ -204,7 +204,7 @@ extern unsigned int ia64_section_threshold;
       const char *name;						\
       char *string;						\
       const char *prefix;					\
-      static const char *prefixes[/*4*/3][2] =			\
+      static const char *const prefixes[/*4*/3][2] =		\
       {								\
 	{ ".text.",   ".gnu.linkonce.t." },			\
 	{ ".rodata.", ".gnu.linkonce.r." },			\

@@ -264,7 +264,7 @@ static struct path_prefix cmdline_lib_dirs; /* directories specified with -L */
 static struct path_prefix libpath_lib_dirs; /* directories in LIBPATH */
 static struct path_prefix *libpaths[3] = {&cmdline_lib_dirs,
 					  &libpath_lib_dirs, NULL};
-static const char *libexts[3] = {"a", "so", NULL};  /* possible library extentions */
+static const char *const libexts[3] = {"a", "so", NULL};  /* possible library extentions */
 #endif
 
 static void handler		PARAMS ((int));
@@ -557,7 +557,7 @@ static int
 is_ctor_dtor (s)
      const char *s;
 {
-  struct names { const char *name; int len; int ret; int two_underscores; };
+  struct names { const char *const name; int len; int ret; int two_underscores; };
 
   register struct names *p;
   register int ch;
@@ -796,21 +796,21 @@ main (argc, argv)
      int argc;
      char *argv[];
 {
-  const char *ld_suffix	= "ld";
+  const char *const ld_suffix	= "ld";
   const char *full_ld_suffix	= ld_suffix;
-  const char *real_ld_suffix	= "real-ld";
-  const char *collect_ld_suffix = "collect-ld";
-  const char *nm_suffix	= "nm";
+  const char *const real_ld_suffix = "real-ld";
+  const char *const collect_ld_suffix = "collect-ld";
+  const char *const nm_suffix	= "nm";
   const char *full_nm_suffix	= nm_suffix;
-  const char *gnm_suffix	= "gnm";
+  const char *const gnm_suffix	= "gnm";
   const char *full_gnm_suffix	= gnm_suffix;
 #ifdef LDD_SUFFIX
-  const char *ldd_suffix	= LDD_SUFFIX;
+  const char *const ldd_suffix	= LDD_SUFFIX;
   const char *full_ldd_suffix	= ldd_suffix;
 #endif
-  const char *strip_suffix	= "strip";
+  const char *const strip_suffix = "strip";
   const char *full_strip_suffix = strip_suffix;
-  const char *gstrip_suffix	= "gstrip";
+  const char *const gstrip_suffix = "gstrip";
   const char *full_gstrip_suffix = gstrip_suffix;
   const char *arg;
   FILE *outf;
@@ -2907,7 +2907,7 @@ if (debug) fprintf (stderr, "found: %s\n", lib_buf);
 
 /* Array of standard AIX libraries which should not
    be scanned for ctors/dtors.  */
-static const char *aix_std_libs[] = {
+static const char *const aix_std_libs[] = {
   "/unix",
   "/lib/libc.a",
   "/lib/libm.a",
@@ -2931,7 +2931,7 @@ static int
 ignore_library (name)
      const char *name;
 {
-  const char **p = &aix_std_libs[0];
+  const char *const *p = &aix_std_libs[0];
   while (*p++ != NULL)
     if (! strcmp (name, *p)) return 1;
   return 0;
