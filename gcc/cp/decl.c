@@ -14091,26 +14091,6 @@ maybe_build_cleanup_1 (decl, auto_delete)
   return 0;
 }
 
-/* Build a TARGET_EXPR, initializing the DECL with the VALUE.  */
-
-tree
-build_target_expr (decl, value)
-     tree decl;
-     tree value;
-{
-  tree t;
-
-  t = build (TARGET_EXPR, TREE_TYPE (decl), decl, value, 
-	     maybe_build_cleanup (decl), NULL_TREE);
-  /* We always set TREE_SIDE_EFFECTS so that expand_expr does not
-     ignore the TARGET_EXPR.  If there really turn out to be no
-     side-effects, then the optimizer should be able to get rid of
-     whatever code is generated anyhow.  */
-  TREE_SIDE_EFFECTS (t) = 1;
-
-  return t;
-}
-
 /* If DECL is of a type which needs a cleanup, build that cleanup
    here.  The cleanup does free the storage with a call to delete.  */
 

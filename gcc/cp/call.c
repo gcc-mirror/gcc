@@ -3074,11 +3074,7 @@ build_conditional_expr (arg1, arg2, arg3)
      ?: expression.  We used to check for TARGET_EXPRs here, but now we
      sometimes wrap them in NOP_EXPRs so the test would fail.  */
   if (!lvalue_p && IS_AGGR_TYPE (result_type))
-    {
-      tree slot = build (VAR_DECL, result_type);
-      layout_decl (slot, 0);
-      result = build_target_expr (slot, result);
-    }
+    result = build_target_expr_with_type (result, result_type);
   
   /* If this expression is an rvalue, but might be mistaken for an
      lvalue, we must add a NON_LVALUE_EXPR.  */
@@ -3743,10 +3739,7 @@ convert_like (convs, expr)
 	if (NEED_TEMPORARY_P (convs))
 	  {
 	    tree type = TREE_TYPE (TREE_OPERAND (convs, 0));
-	    tree slot = build_decl (VAR_DECL, NULL_TREE, type);
-	    DECL_ARTIFICIAL (slot) = 1;
-	    expr = build_target_expr (slot, expr);
-	    TREE_SIDE_EFFECTS (expr) = 1;
+	    expr = build_target_expr_with_type (expr, type);
 	  }
 
 	/* Take the address of the thing to which we will bind the
@@ -4074,11 +4067,7 @@ build_over_call (cand, args, flags)
 	  if (! real_lvalue_p (arg))
 	    return arg;
 	  else if (TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))
-	    {
-	      val = build_decl (VAR_DECL, NULL_TREE, DECL_CONTEXT (fn));
-	      val = build_target_expr (val, arg);
-	      return val;
-	    }
+	    return build_target_expr_with_type (arg, DECL_CONTEXT (fn));
 	}
       else if (! real_lvalue_p (arg)
 	       || TYPE_HAS_TRIVIAL_INIT_REF (DECL_CONTEXT (fn)))

@@ -1,3 +1,17 @@
+1999-11-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_conditional_expr): Use build_target_expr_with_type.
+	(convert_like): Likewise.
+	(build_over_call): Likewise.
+	* cp-tree.h (build_target_expr): Remove.
+	(build_target_expr_with_type): New function.
+	* cvt.c (build_up_reference): Use get_target_expr.
+	* decl.c (build_target_expr): Move to ...
+	* tree.c (build_target_expr): Here.  Make it static.
+	(build_target_expr_with_type): New function.  Set DECL_CONTEXT on
+	the temporary VAR_DECLs.
+	(get_target_expr): Use it.
+
 1999-11-13  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (duplicate_decls): Propagate DECL_DEFER_OUTPUT.

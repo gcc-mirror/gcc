@@ -43,6 +43,7 @@ static tree no_linkage_helper PROTO((tree *, int *, void *));
 static tree build_srcloc PROTO((char *, int));
 static void mark_list_hash PROTO ((void *));
 static tree copy_tree_r PROTO ((tree *, int *, void *));
+static tree build_target_expr PROTO((tree, tree));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
@@ -213,6 +214,26 @@ lvalue_or_else (ref, string)
   return win;
 }
 
+/* Build a TARGET_EXPR, initializing the DECL with the VALUE.  */
+
+static tree
+build_target_expr (decl, value)
+     tree decl;
+     tree value;
+{
+  tree t;
+
+  t = build (TARGET_EXPR, TREE_TYPE (decl), decl, value, 
+	     maybe_build_cleanup (decl), NULL_TREE);
+  /* We always set TREE_SIDE_EFFECTS so that expand_expr does not
+     ignore the TARGET_EXPR.  If there really turn out to be no
+     side-effects, then the optimizer should be able to get rid of
+     whatever code is generated anyhow.  */
+  TREE_SIDE_EFFECTS (t) = 1;
+
+  return t;
+}
+
 /* INIT is a CALL_EXPR which needs info about its target.
    TYPE is the type that this initialization should appear to have.
 
@@ -260,21 +281,33 @@ build_cplus_new (type, init)
   return rval;
 }
 
-/* Encapsulate the expression INIT in a TARGET_EXPR.  */
+/* Buidl a TARGET_EXPR using INIT to initialize a new temporary of the
+   indicated TYPE.  */
+
+tree
+build_target_expr_with_type (init, type)
+     tree init;
+     tree type;
+{
+  tree slot;
+  tree rval;
+
+  slot = build (VAR_DECL, type);
+  DECL_ARTIFICIAL (slot) = 1;
+  DECL_CONTEXT (slot) = current_function_decl;
+  layout_decl (slot, 0);
+  rval = build_target_expr (slot, init);
+
+  return rval;
+}
+
+/* Like build_target_expr_with_type, but use the type of INIT.  */
 
 tree
 get_target_expr (init)
      tree init;
 {
-  tree slot;
-  tree rval;
-
-  slot = build (VAR_DECL, TREE_TYPE (init));
-  DECL_ARTIFICIAL (slot) = 1;
-  layout_decl (slot, 0);
-  rval = build_target_expr (slot, init);
-
-  return rval;
+  return build_target_expr_with_type (init, TREE_TYPE (init));
 }
 
 /* Recursively search EXP for CALL_EXPRs that need cleanups and replace
