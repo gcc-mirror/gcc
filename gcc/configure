@@ -7798,13 +7798,95 @@ elif test x$gcc_cv_ld != x; then
 		gcc_cv_ld_eh_frame_hdr=yes
 	fi
 fi
+echo "$ac_t""$gcc_cv_ld_eh_frame_hdr" 1>&6
 if test x"$gcc_cv_ld_eh_frame_hdr" = xyes; then
+  echo $ac_n "checking whether linker eh_frame optimizations work properly""... $ac_c" 1>&6
+echo "configure:7805: checking whether linker eh_frame optimizations work properly" >&5
+  gcc_cv_ld_eh_frame_hdr_works=no
+  if test x$gcc_cv_gld_major_version != x -a x$gcc_cv_gld_minor_version != x; then
+    if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 13 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
+      gcc_cv_ld_eh_frame_hdr_works=yes
+    fi
+  elif test x$gcc_cv_ld != x; then
+    for gcc_WS in 4 8; do
+      cat > conftest.s <<EOF
+	.text
+.LFB1:	.skip	64
+.LFE1:
+.LFB2:	.skip	64
+.LFE2:
+.LFB3:	.skip	64
+.LFE3:
+	.section .eh_frame,"aw",@progbits
+.Lframe1:
+	.4byte	.LECIE1-.LSCIE1
+.LSCIE1:
+	.4byte	0x0
+	.byte	0x1
+	.ascii "zR\0"
+	.uleb128 0x1
+	.sleb128 -4
+	.byte	0x8
+	.uleb128 0x1
+	.byte	0x50
+	.byte	0xc
+	.uleb128 0x4
+	.uleb128 0x4
+	.byte	0x88
+	.uleb128 0x1
+	.balign	${gcc_WS}
+.LECIE1:
+.LSFDE1:
+	.4byte	.LEFDE1-.LASFDE1
+.LASFDE1:
+	.4byte	.LASFDE1-.Lframe1
+	.${gcc_WS}byte	.LFB1
+	.${gcc_WS}byte	.LFE1-.LFB1
+	.uleb128 0x0
+	.balign	${gcc_WS}
+.LEFDE1:
+.LSFDE2:
+	.4byte	.LEFDE2-.LASFDE2
+.LASFDE2:
+	.4byte	.LASFDE2-.Lframe1
+	.${gcc_WS}byte	.LFB2
+	.${gcc_WS}byte	.LFE2-.LFB2
+	.uleb128 0x0
+	.balign	${gcc_WS}
+.LEFDE2:
+.LSFDE3:
+	.4byte	.LEFDE3-.LASFDE3
+.LASFDE3:
+	.4byte	.LASFDE3-.Lframe1
+	.${gcc_WS}byte	.LFB3
+	.${gcc_WS}byte	.LFE3-.LFB3
+	.uleb128 0x0
+	.balign	${gcc_WS}
+.LEFDE3:
+	.4byte	0
+EOF
+      if $gcc_cv_as -o conftest.o conftest.s 1>&5 2>&1; then
+        if $gcc_cv_ld --eh-frame-hdr -shared -o conftest.so conftest.o 1>&5 2>&1; then
+	  if $gcc_cv_objdump -h conftest.so 2>&5 \
+	     | grep 'eh_frame_hdr[ 	]*0*[01][048cC][ 	]' 1>&5 2>&1; then
+	    gcc_cv_ld_eh_frame_hdr_works=yes; break
+	  else
+	    $gcc_cv_objdump -h conftest.so 2>/dev/null | grep eh_frame_hdr 1>&5 2>&1
+	  fi
+	fi
+      fi
+      rm -f conftest.*
+    done
+  fi
+  echo "$ac_t""$gcc_cv_ld_eh_frame_hdr_works" 1>&6
+fi
+if test x"$gcc_cv_ld_eh_frame_hdr" = xyes \
+   && test x"$gcc_cv_ld_eh_frame_hdr_works" = xyes; then
 	cat >> confdefs.h <<\EOF
 #define HAVE_LD_EH_FRAME_HDR 1
 EOF
 
 fi
-echo "$ac_t""$gcc_cv_ld_eh_frame_hdr" 1>&6
 
 if test "$prefix" != "/usr" && test "$prefix" != "/usr/local" ; then
   cat >> confdefs.h <<EOF
@@ -7949,7 +8031,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:7953: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:8035: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"

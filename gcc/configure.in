@@ -2065,11 +2065,94 @@ elif test x$gcc_cv_ld != x; then
 		gcc_cv_ld_eh_frame_hdr=yes
 	fi
 fi
+AC_MSG_RESULT($gcc_cv_ld_eh_frame_hdr)
 if test x"$gcc_cv_ld_eh_frame_hdr" = xyes; then
+  AC_MSG_CHECKING(whether linker eh_frame optimizations work properly)
+  gcc_cv_ld_eh_frame_hdr_works=no
+  if test x$gcc_cv_gld_major_version != x -a x$gcc_cv_gld_minor_version != x; then
+    if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 13 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
+      gcc_cv_ld_eh_frame_hdr_works=yes
+    fi
+  elif test x$gcc_cv_ld != x; then
+    for gcc_WS in 4 8; do
+      cat > conftest.s <<EOF
+	.text
+.LFB1:	.skip	64
+.LFE1:
+.LFB2:	.skip	64
+.LFE2:
+.LFB3:	.skip	64
+.LFE3:
+	.section .eh_frame,"aw",@progbits
+.Lframe1:
+	.4byte	.LECIE1-.LSCIE1
+.LSCIE1:
+	.4byte	0x0
+	.byte	0x1
+	.ascii "zR\0"
+	.uleb128 0x1
+	.sleb128 -4
+	.byte	0x8
+	.uleb128 0x1
+	.byte	0x50
+	.byte	0xc
+	.uleb128 0x4
+	.uleb128 0x4
+	.byte	0x88
+	.uleb128 0x1
+	.balign	${gcc_WS}
+.LECIE1:
+.LSFDE1:
+	.4byte	.LEFDE1-.LASFDE1
+.LASFDE1:
+	.4byte	.LASFDE1-.Lframe1
+	.${gcc_WS}byte	.LFB1
+	.${gcc_WS}byte	.LFE1-.LFB1
+	.uleb128 0x0
+	.balign	${gcc_WS}
+.LEFDE1:
+.LSFDE2:
+	.4byte	.LEFDE2-.LASFDE2
+.LASFDE2:
+	.4byte	.LASFDE2-.Lframe1
+	.${gcc_WS}byte	.LFB2
+	.${gcc_WS}byte	.LFE2-.LFB2
+	.uleb128 0x0
+	.balign	${gcc_WS}
+.LEFDE2:
+.LSFDE3:
+	.4byte	.LEFDE3-.LASFDE3
+.LASFDE3:
+	.4byte	.LASFDE3-.Lframe1
+	.${gcc_WS}byte	.LFB3
+	.${gcc_WS}byte	.LFE3-.LFB3
+	.uleb128 0x0
+	.balign	${gcc_WS}
+.LEFDE3:
+	.4byte	0
+EOF
+      if $gcc_cv_as -o conftest.o conftest.s 1>&AC_FD_CC 2>&1; then
+        if $gcc_cv_ld --eh-frame-hdr -shared -o conftest.so conftest.o 1>&AC_FD_CC 2>&1; then
+changequote(,)dnl
+	  if $gcc_cv_objdump -h conftest.so 2>&AC_FD_CC \
+	     | grep 'eh_frame_hdr[ 	]*0*[01][048cC][ 	]' 1>&AC_FD_CC 2>&1; then
+	    gcc_cv_ld_eh_frame_hdr_works=yes; break
+	  else
+	    $gcc_cv_objdump -h conftest.so 2>/dev/null | grep eh_frame_hdr 1>&AC_FD_CC 2>&1
+	  fi
+changequote([,])dnl
+	fi
+      fi
+      rm -f conftest.*
+    done
+  fi
+  AC_MSG_RESULT($gcc_cv_ld_eh_frame_hdr_works)
+fi
+if test x"$gcc_cv_ld_eh_frame_hdr" = xyes \
+   && test x"$gcc_cv_ld_eh_frame_hdr_works" = xyes; then
 	AC_DEFINE(HAVE_LD_EH_FRAME_HDR, 1,
 [Define if your linker supports --eh-frame-hdr option.])
 fi
-AC_MSG_RESULT($gcc_cv_ld_eh_frame_hdr)
 
 if test "$prefix" != "/usr" && test "$prefix" != "/usr/local" ; then
   AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include")
