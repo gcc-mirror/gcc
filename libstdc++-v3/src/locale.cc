@@ -68,6 +68,14 @@ namespace std
   __gthread_once_t 		locale::_S_once = __GTHREAD_ONCE_INIT;
 #endif
 
+  size_t
+  locale::id::_M_id() const
+  {
+    if (!_M_index)
+      _M_index = 1 + __exchange_and_add(&_S_highwater, 1);
+    return _M_index - 1;
+  }
+
   // Definitions for static const data members of locale::id
   _Atomic_word locale::id::_S_highwater;  // init'd to 0 by linker
 
