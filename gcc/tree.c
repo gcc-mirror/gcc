@@ -1165,6 +1165,14 @@ copy_node (node)
     {
       TYPE_UID (t) = next_type_uid++;
       TYPE_OBSTACK (t) = current_obstack;
+
+      /* The following is so that the debug code for
+	 the copy is different from the original type.
+	 The two statements usually duplicate each other
+	 (because they clear fields of the same union),
+	 but the optimizer should catch that. */
+      TYPE_SYMTAB_POINTER (t) = 0;
+      TYPE_SYMTAB_ADDRESS (t) = 0;
     }
 
   TREE_PERMANENT (t) = (current_obstack == &permanent_obstack);
