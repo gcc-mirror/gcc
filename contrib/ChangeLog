@@ -1,3 +1,8 @@
+2003-12-08  Arnaud Charlet  <charlet@act-europe.fr
+
+	* gcc_update: Remove handling of sinfo.h, einfo.h, nmake.ads,
+	treeprs.ads.
+
 2003-10-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* gennews (files): Add GCC 3.3 files.
