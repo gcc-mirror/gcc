@@ -1,3 +1,9 @@
+2004-10-20  Ben Elliston  <bje@au.ibm.com>
+	    Devang Patel  <dpatel@apple.com>
+
+	* gcc.dg/tree-ssa/ifc-20040816-2.c: Use integer arithmetic instead
+	of floating point arithmetic, which could trap.
+
 2004-10-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14035
