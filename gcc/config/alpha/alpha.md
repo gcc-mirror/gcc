@@ -2133,6 +2133,18 @@
   "TARGET_HAS_XFLOATING_LIBS"
   "alpha_emit_xfloating_cvt (FLOAT, operands); DONE;")
 
+(define_expand "floatunsdisf2"
+  [(use (match_operand:SF 0 "register_operand" ""))
+   (use (match_operand:DI 1 "register_operand" ""))]
+  ""
+  "alpha_emit_floatuns (operands); DONE;")
+
+(define_expand "floatunsdidf2"
+  [(use (match_operand:DF 0 "register_operand" ""))
+   (use (match_operand:DI 1 "register_operand" ""))]
+  ""
+  "alpha_emit_floatuns (operands); DONE;")
+
 (define_expand "floatunsditf2"
   [(use (match_operand:TF 0 "register_operand" ""))
    (use (match_operand:DI 1 "general_operand" ""))]
@@ -2140,21 +2152,16 @@
   "alpha_emit_xfloating_cvt (UNSIGNED_FLOAT, operands); DONE;")
 
 (define_expand "extendsfdf2"
-  [(use (match_operand:DF 0 "register_operand" ""))
-   (use (match_operand:SF 1 "nonimmediate_operand" ""))]
+  [(set (match_operand:DF 0 "register_operand" "")
+	(float_extend:DF (match_operand:SF 1 "nonimmediate_operand" "")))]
   "TARGET_FP"
-"
+  "
 {
   if (alpha_fptm >= ALPHA_FPTM_SU)
-    emit_insn (gen_extendsfdf2_tp (operands[0],
-				   force_reg (SFmode, operands[1])));
-  else
-    emit_insn (gen_extendsfdf2_no_tp (operands[0], operands[1]));
-
-  DONE;
+    operands[1] = force_reg (SFmode, operands[1]);
 }")
-;; FIXME
-(define_insn "extendsfdf2_tp"
+
+(define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=&f")
 	(float_extend:DF (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_FP && alpha_fptm >= ALPHA_FPTM_SU"
@@ -2162,7 +2169,7 @@
   [(set_attr "type" "fadd")
    (set_attr "trap" "yes")])
 
-(define_insn "extendsfdf2_no_tp"
+(define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f,f,m")
 	(float_extend:DF (match_operand:SF 1 "nonimmediate_operand" "f,m,f")))]
   "TARGET_FP && alpha_fptm < ALPHA_FPTM_SU"
@@ -2170,8 +2177,7 @@
    fmov %1,%0
    ld%, %0,%1
    st%- %1,%0"
-  [(set_attr "type" "fcpys,fld,fst")
-   (set_attr "trap" "yes")])
+  [(set_attr "type" "fcpys,fld,fst")])
 
 (define_expand "extenddftf2"
   [(use (match_operand:TF 0 "register_operand" ""))
