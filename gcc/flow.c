@@ -1529,6 +1529,7 @@ allocate_reg_life_data ()
       REG_N_DEATHS (i) = 0;
       REG_N_CALLS_CROSSED (i) = 0;
       REG_LIVE_LENGTH (i) = 0;
+      REG_FREQ (i) = 0;
       REG_BASIC_BLOCK (i) = REG_BLOCK_UNKNOWN;
     }
 }
