@@ -38,9 +38,11 @@
         .type    ffi_call_SYSV,@function
 
 ffi_call_SYSV:
+.LFB1:
         pushl %ebp
+.LCFI0:
         movl  %esp,%ebp
-
+.LCFI1:
 	# Make room for all of the new args.
 	movl  16(%ebp),%ecx
 	subl  %ecx,%esp
@@ -124,6 +126,43 @@ epilogue:
         movl %ebp,%esp
         popl %ebp
         ret
+.LFE1:
 .ffi_call_SYSV_end:
         .size    ffi_call_SYSV,.ffi_call_SYSV_end-ffi_call_SYSV
 
+.section	.eh_frame,"aw",@progbits
+__FRAME_BEGIN__:
+	.4byte	.LLCIE1
+.LSCIE1:
+	.4byte	0x0
+	.byte	0x1
+	.byte	0x0
+	.byte	0x1
+	.byte	0x7c
+	.byte	0x8
+	.byte	0xc
+	.byte	0x4
+	.byte	0x4
+	.byte	0x88
+	.byte	0x1
+	.align 4
+.LECIE1:
+	.set	.LLCIE1,.LECIE1-.LSCIE1
+	.4byte	.LLFDE1
+.LSFDE1:
+	.4byte	.LSFDE1-__FRAME_BEGIN__
+	.4byte	.LFB1
+	.4byte	.LFE1-.LFB1
+	.byte	0x4
+	.4byte	.LCFI0-.LFB1
+	.byte	0xe
+	.byte	0x8
+	.byte	0x85
+	.byte	0x2
+	.byte	0x4
+	.4byte	.LCFI1-.LCFI0
+	.byte	0xd
+	.byte	0x5
+	.align 4
+.LEFDE1:
+	.set	.LLFDE1,.LEFDE1-.LSFDE1
