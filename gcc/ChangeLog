@@ -544,7 +544,7 @@ Fri May 31 13:37:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(sh-*-netbsdelf*)
 	(shl*-*-netbsdelf*): New targets.
 	* config/sh/netbsd-elf.h: New file.
-	* config/sh/t-netbsd.h: New file.
+	* config/sh/t-netbsd: New file.
 
 2002-05-30  Richard Henderson  <rth@redhat.com>
 	    Eric Botcazou  <ebotcazou@multimania.com>
