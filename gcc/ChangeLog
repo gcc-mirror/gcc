@@ -1,4 +1,8 @@
-2002-09-03  <graham.stott@btinternet.com>
+2002-09-03  Graham Stott  <graham.stott@btinternet.com>
+
+	* config/i386/i386.md ("femms"): Add "memory" attr "none".
+
+2002-09-03  Graham Stott  <graham.stott@btinternet.com>
 
 	* expr.c (expand_expr): Remove extraneous comment and code.
 
