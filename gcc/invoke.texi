@@ -5234,14 +5234,17 @@ it.
 
 @table @code
 @item -fexceptions
-Enable exception handling, and generate extra code needed to propagate
-exceptions.  If you do not specify this option, GNU CC enables it by
-default for languages like C++ that normally require exception handling,
-and disabled for languages like C that do not normally require it.
-However, when compiling C code that needs to interoperate properly with
-exception handlers written in C++, you may need to enable this option.
-You may also wish to disable this option is you are compiling older C++
-programs that don't use exception handling.
+Enable exception handling. Generates extra code needed to propagate
+exceptions.  For some targets, this implies GNU CC will generate frame
+unwind information for all functions, which can produce significant data
+size overhead, although it does not affect execution.  If you do not
+specify this option, GNU CC will enable it by default for languages like
+C++ which normally require exception handling, and disable itfor
+languages like C that do not normally require it.  However, you may need
+to enable this option when compiling C code that needs to interoperate
+properly with exception handlers written in C++.  You may also wish to
+disable this option if you are compiling older C++ programs that don't
+use exception handling.
 
 @item -fpcc-struct-return
 Return ``short'' @code{struct} and @code{union} values in memory like
