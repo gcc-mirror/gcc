@@ -3749,8 +3749,8 @@ int
 standard_sse_constant_p (x)
      rtx x;
 {
-  if (GET_CODE (x) != CONST_DOUBLE)
-    return -1;
+  if (x == const0_rtx)
+    return 1;
   return (x == CONST0_RTX (GET_MODE (x)));
 }
 

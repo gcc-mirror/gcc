@@ -1425,9 +1425,10 @@ enum reg_class
    the constraint letter C.  If C is not defined as an extra
    constraint, the value returned should be 0 regardless of VALUE.  */
 
-#define EXTRA_CONSTRAINT(VALUE, C)				\
-  ((C) == 'e' ? x86_64_sign_extended_value (VALUE, 0)		\
-   : (C) == 'Z' ? x86_64_zero_extended_value (VALUE)		\
+#define EXTRA_CONSTRAINT(VALUE, D)				\
+  ((D) == 'e' ? x86_64_sign_extended_value (VALUE, 0)		\
+   : (D) == 'Z' ? x86_64_zero_extended_value (VALUE)		\
+   : (D) == 'C' ? standard_sse_constant_p (VALUE)		\
    : 0)
 
 /* Place additional restrictions on the register class to use when it

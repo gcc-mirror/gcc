@@ -1,3 +1,11 @@
+Wed Oct 23 00:33:11 CEST 2002  Jan Hubicka  <jh@suse,cz>
+
+	* i386.c (standard_sse_constant_p): Accept vector and integer zeros too.
+	* i386.h (EXTRA_CONSTRAINT): Recognize 'C'
+	* i386.md (movti_internal): Use 'C'
+
+	* xmmintrin.h (_mm_cmplt_epi*): New.
+
 2002-10-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("*movdi_64"): Fix op_type attribute.

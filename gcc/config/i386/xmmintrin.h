@@ -2308,6 +2308,24 @@ _mm_cmpeq_epi32 (__m128i __A, __m128i __B)
 }
 
 static __inline __m128i
+_mm_cmplt_epi8 (__m128i __A, __m128i __B)
+{
+  return (__m128i)__builtin_ia32_pcmpgtb128 ((__v16qi)__B, (__v16qi)__A);
+}
+
+static __inline __m128i
+_mm_cmplt_epi16 (__m128i __A, __m128i __B)
+{
+  return (__m128i)__builtin_ia32_pcmpgtw128 ((__v8hi)__B, (__v8hi)__A);
+}
+
+static __inline __m128i
+_mm_cmplt_epi32 (__m128i __A, __m128i __B)
+{
+  return (__m128i)__builtin_ia32_pcmpgtd128 ((__v4si)__B, (__v4si)__A);
+}
+
+static __inline __m128i
 _mm_cmpgt_epi8 (__m128i __A, __m128i __B)
 {
   return (__m128i)__builtin_ia32_pcmpgtb128 ((__v16qi)__A, (__v16qi)__B);
