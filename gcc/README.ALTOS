@@ -1,0 +1,55 @@
+Since COFF-encapsulation is obsolete, this may not be needed anymore.
+
+Return-Path: <jkp@sauna.hut.fi>
+Date: Mon, 10 Apr 89 10:13:45 +0300
+From: Jyrki Kuoppala <jkp@sauna.hut.fi>
+Sender: jkp@sauna.hut.fi
+To: info-gcc@prep.ai.mit.edu
+Subject: Kernel fix needed for Altos 3068 to get coff-encapsulation working right
+Organization: Helsinki University of Technology, Finland.
+
+Here's a description how to fix a kernel bug in Altos 3068 and get
+gcc-compiled programs working.
+
+Author: Jyrki Kuoppala (jkp@cs.hut.fi)
+Last modified: Mon Apr 10 09:28:40 1989
+
+There's a bug in the Altos 3068 kernel that causes gcc-compiled
+programs to fail in certain situations when the machine has a heavy
+load and also in some other situations.  The bug exists at least in
+SVR 2.2 1.0gT1 and SVR 2.2 1.0e.
+
+If you have source code to your system, apply the following change to
+os/exec.c (function gethead):
+
+Change the lines containing
+
+		u.u_exdata.ux_tstart = sizeof(struct naout) +
+			sizeof(struct filhd) + (ep->ef.nscns * sizeof(struct scnhdr));
+
+to
+
+		u.u_exdata.ux_tstart = u.u_exdata.ux_txtorg;
+
+If you only have binary, use sdb to find out the address of the
+previous lines (on our system it's gethead+0x140) and use your
+favourite binary editor to change the bytes '3036 0162 fffc 0002 0280
+0000' to '23f9 01fb f4ca 01fb f4c2 6016'.  This may or may not work in
+your case, depending on the version of the operating system and the
+phase of the moon.
+
+Here's what is just before gethead+0x140 to ease finding out the right place:
+
+0x9224 (gethead+0x122):         23f9 01fb f4ca 01fb f4ce mov.l &0x1fbf4ca.L,&0
+x1fbf4ce.L      []
+0x922e (gethead+0x12c):         23f9 01fb f4c6 01fb f4ca mov.l &0x1fbf4c6.L,&0
+x1fbf4ca.L      []
+0x9238 (gethead+0x136):         23f9 01fb f4c2 01fb f4c6 mov.l &0x1fbf4c2.L,&0
+x1fbf4c6.L      []
+
+Good luck !
+
+//Jyrki
+
+jkp@cs.hut.fi
+
