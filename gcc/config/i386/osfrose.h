@@ -77,12 +77,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef  CC1_SPEC
 #endif
 
-#ifdef HAVE_HALF_PIC
+#ifndef NO_HALF_PIC
 /* Turn on -mpic-extern and -fno-builtin by default.  */
 #define CC1_SPEC "\
-%{O*: %{!mno-gpOPT:%{!mno-gpopt: -mgpopt}}} \
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{G*} \
 %{pic-none:   -mno-half-pic} \
 %{pic-lib:    -mhalf-pic} \
 %{pic-extern: -mhalf-pic} \
@@ -94,9 +92,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #else
 /* Turn on -fno-builtin by default.  */
 #define CC1_SPEC "\
-%{O*: %{!mno-gpOPT:%{!mno-gpopt: -mgpopt}}} \
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{G*} \
 %{!fbuiltin: %{!fno-builtin: -fno-builtin}} \
 %{save-temps: }"
 #endif
