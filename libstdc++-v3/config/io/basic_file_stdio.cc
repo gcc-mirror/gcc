@@ -240,7 +240,11 @@ namespace std
   
   int 
   __basic_file<char>::fd() 
-  { return fileno(_M_cfile) ; }
+  { return fileno(_M_cfile); }
+  
+  __c_file*
+  __basic_file<char>::file() 
+  { return _M_cfile; }
   
   __basic_file<char>* 
   __basic_file<char>::close()
