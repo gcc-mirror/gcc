@@ -645,7 +645,7 @@ expand_builtin_setjmp (tree arglist, rtx target)
   if (!validate_arglist (arglist, POINTER_TYPE, VOID_TYPE))
     return NULL_RTX;
 
-  if (target == 0 || GET_CODE (target) != REG
+  if (target == 0 || !REG_P (target)
       || REGNO (target) < FIRST_PSEUDO_REGISTER)
     target = gen_reg_rtx (TYPE_MODE (integer_type_node));
 
@@ -1336,7 +1336,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
       rtx value = gen_reg_rtx (Pmode);
       emit_move_insn (value, adjust_address (arguments, Pmode, size));
       emit_move_insn (struct_value, value);
-      if (GET_CODE (struct_value) == REG)
+      if (REG_P (struct_value))
 	use_reg (&call_fusage, struct_value);
       size += GET_MODE_SIZE (Pmode);
     }
@@ -1831,7 +1831,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
 		  rtx operand = XEXP (XEXP (XEXP (note, 0), 1), 0);
 		  /* Check operand is a register with expected mode.  */
 		  if (operand
-		      && GET_CODE (operand) == REG
+		      && REG_P (operand)
 		      && GET_MODE (operand) == mode)
 		    {
 		      /* Replace the REG_EQUAL note with a SQRT rtx.  */
@@ -2404,7 +2404,7 @@ expand_builtin_strlen (tree arglist, rtx target,
       /* Make a place to write the result of the instruction.  */
       result = target;
       if (! (result != 0
-	     && GET_CODE (result) == REG
+	     && REG_P (result)
 	     && GET_MODE (result) == insn_mode
 	     && REGNO (result) >= FIRST_PSEUDO_REGISTER))
 	result = gen_reg_rtx (insn_mode);
@@ -3415,7 +3415,7 @@ expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
     /* Make a place to write the result of the instruction.  */
     result = target;
     if (! (result != 0
-	   && GET_CODE (result) == REG && GET_MODE (result) == insn_mode
+	   && REG_P (result) && GET_MODE (result) == insn_mode
 	   && REGNO (result) >= FIRST_PSEUDO_REGISTER))
       result = gen_reg_rtx (insn_mode);
 
@@ -3570,7 +3570,7 @@ expand_builtin_strcmp (tree exp, rtx target, enum machine_mode mode)
     /* Make a place to write the result of the instruction.  */
     result = target;
     if (! (result != 0
-	   && GET_CODE (result) == REG && GET_MODE (result) == insn_mode
+	   && REG_P (result) && GET_MODE (result) == insn_mode
 	   && REGNO (result) >= FIRST_PSEUDO_REGISTER))
       result = gen_reg_rtx (insn_mode);
 
@@ -3741,7 +3741,7 @@ expand_builtin_strncmp (tree exp, rtx target, enum machine_mode mode)
     /* Make a place to write the result of the instruction.  */
     result = target;
     if (! (result != 0
-	   && GET_CODE (result) == REG && GET_MODE (result) == insn_mode
+	   && REG_P (result) && GET_MODE (result) == insn_mode
 	   && REGNO (result) >= FIRST_PSEUDO_REGISTER))
       result = gen_reg_rtx (insn_mode);
 
@@ -4654,7 +4654,7 @@ expand_builtin_frame_address (tree fndecl, tree arglist)
       if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
 	return tem;
 
-      if (GET_CODE (tem) != REG
+      if (!REG_P (tem)
 	  && ! CONSTANT_P (tem))
 	tem = copy_to_mode_reg (Pmode, tem);
       return tem;

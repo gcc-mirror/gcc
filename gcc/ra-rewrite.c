@@ -562,7 +562,7 @@ slots_overlap_p (rtx s1, rtx s2)
   if (GET_CODE (s1) != GET_CODE (s2))
     return 0;
 
-  if (GET_CODE (s1) == REG && GET_CODE (s2) == REG)
+  if (REG_P (s1) && REG_P (s2))
     {
       if (REGNO (s1) != REGNO (s2))
 	return 0;
@@ -574,10 +574,10 @@ slots_overlap_p (rtx s1, rtx s2)
     abort ();
   s1 = XEXP (s1, 0);
   s2 = XEXP (s2, 0);
-  if (GET_CODE (s1) != PLUS || GET_CODE (XEXP (s1, 0)) != REG
+  if (GET_CODE (s1) != PLUS || !REG_P (XEXP (s1, 0))
       || GET_CODE (XEXP (s1, 1)) != CONST_INT)
     return 1;
-  if (GET_CODE (s2) != PLUS || GET_CODE (XEXP (s2, 0)) != REG
+  if (GET_CODE (s2) != PLUS || !REG_P (XEXP (s2, 0))
       || GET_CODE (XEXP (s2, 1)) != CONST_INT)
     return 1;
   base1 = XEXP (s1, 0);
@@ -1877,7 +1877,7 @@ remove_suspicious_death_notes (void)
 	    rtx note = *pnote;
 	    if ((REG_NOTE_KIND (note) == REG_DEAD
 		 || REG_NOTE_KIND (note) == REG_UNUSED)
-		&& (GET_CODE (XEXP (note, 0)) == REG
+		&& (REG_P (XEXP (note, 0))
 		    && bitmap_bit_p (regnos_coalesced_to_hardregs,
 				     REGNO (XEXP (note, 0)))))
 	      *pnote = XEXP (note, 1);

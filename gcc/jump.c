@@ -1237,7 +1237,7 @@ delete_prior_computation (rtx note, rtx insn)
 		delete_computation (our_prev);
 	    }
 	  else if (GET_CODE (pat) == SET
-		   && GET_CODE (SET_DEST (pat)) == REG)
+		   && REG_P (SET_DEST (pat)))
 	    {
 	      int dest_regno = REGNO (SET_DEST (pat));
 	      int dest_endregno
@@ -1340,7 +1340,7 @@ delete_computation (rtx insn)
 
       if (REG_NOTE_KIND (note) != REG_DEAD
 	  /* Verify that the REG_NOTE is legitimate.  */
-	  || GET_CODE (XEXP (note, 0)) != REG)
+	  || !REG_P (XEXP (note, 0)))
 	continue;
 
       delete_prior_computation (note, insn);
@@ -1815,9 +1815,9 @@ rtx_renumbered_equal_p (rtx x, rtx y)
   if (x == y)
     return 1;
 
-  if ((code == REG || (code == SUBREG && GET_CODE (SUBREG_REG (x)) == REG))
-      && (GET_CODE (y) == REG || (GET_CODE (y) == SUBREG
-				  && GET_CODE (SUBREG_REG (y)) == REG)))
+  if ((code == REG || (code == SUBREG && REG_P (SUBREG_REG (x))))
+      && (REG_P (y) || (GET_CODE (y) == SUBREG
+				  && REG_P (SUBREG_REG (y)))))
     {
       int reg_x = -1, reg_y = -1;
       int byte_x = 0, byte_y = 0;
@@ -1994,7 +1994,7 @@ rtx_renumbered_equal_p (rtx x, rtx y)
 int
 true_regnum (rtx x)
 {
-  if (GET_CODE (x) == REG)
+  if (REG_P (x))
     {
       if (REGNO (x) >= FIRST_PSEUDO_REGISTER && reg_renumber[REGNO (x)] >= 0)
 	return reg_renumber[REGNO (x)];

@@ -2446,14 +2446,14 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
 
       while (GET_CODE (value) == SUBREG)
 	value = SUBREG_REG (value);
-      if (GET_CODE (value) == REG)
+      if (REG_P (value))
 	{
 	  if (REGNO (value) >= FIRST_PSEUDO_REGISTER)
 	    return 0;
 	}
       home = alter_subreg (&home);
     }
-  if (GET_CODE (home) == REG)
+  if (REG_P (home))
     {
       regno = REGNO (home);
       if (regno >= FIRST_PSEUDO_REGISTER)
@@ -2548,7 +2548,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
     }
   else if (GET_CODE (home) == MEM
 	   && (GET_CODE (XEXP (home, 0)) == MEM
-	       || (GET_CODE (XEXP (home, 0)) == REG
+	       || (REG_P (XEXP (home, 0))
 		   && REGNO (XEXP (home, 0)) != HARD_FRAME_POINTER_REGNUM
 		   && REGNO (XEXP (home, 0)) != STACK_POINTER_REGNUM
 #if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
@@ -2562,7 +2562,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
        so all we can do is output the variable as a pointer.
        If it's not a parameter, ignore it.  */
     {
-      if (GET_CODE (XEXP (home, 0)) == REG)
+      if (REG_P (XEXP (home, 0)))
 	{
 	  letter = 'r';
 	  current_sym_code = N_RSYM;
@@ -2587,7 +2587,7 @@ dbxout_symbol_location (tree decl, tree type, const char *suffix, rtx home)
       TREE_TYPE (type) = TREE_TYPE (decl);
     }
   else if (GET_CODE (home) == MEM
-	   && GET_CODE (XEXP (home, 0)) == REG)
+	   && REG_P (XEXP (home, 0)))
     {
       current_sym_code = N_LSYM;
       current_sym_value = DEBUGGER_AUTO_OFFSET (XEXP (home, 0));
@@ -2842,7 +2842,7 @@ dbxout_parms (tree parms)
 	    current_sym_value = DEBUGGER_ARG_OFFSET (current_sym_value, addr);
 	    dbxout_finish_symbol (parms);
 	  }
-	else if (GET_CODE (DECL_RTL (parms)) == REG)
+	else if (REG_P (DECL_RTL (parms)))
 	  {
 	    rtx best_rtl;
 	    char regparm_letter;
@@ -2893,7 +2893,7 @@ dbxout_parms (tree parms)
 	    dbxout_finish_symbol (parms);
 	  }
 	else if (GET_CODE (DECL_RTL (parms)) == MEM
-		 && GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG
+		 && REG_P (XEXP (DECL_RTL (parms), 0))
 		 && REGNO (XEXP (DECL_RTL (parms), 0)) != HARD_FRAME_POINTER_REGNUM
 		 && REGNO (XEXP (DECL_RTL (parms), 0)) != STACK_POINTER_REGNUM
 #if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
@@ -2956,7 +2956,7 @@ dbxout_parms (tree parms)
 	    const char *const decl_name = (DECL_NAME (parms)
 				     ? IDENTIFIER_POINTER (DECL_NAME (parms))
 				     : "(anon)");
-	    if (GET_CODE (XEXP (XEXP (DECL_RTL (parms), 0), 0)) == REG)
+	    if (REG_P (XEXP (XEXP (DECL_RTL (parms), 0), 0)))
 	      current_sym_value = 0;
 	    else
 	      current_sym_value
@@ -2987,7 +2987,7 @@ dbxout_parms (tree parms)
 	       in which case we want the value of that CONST_INT,
 	       or (MEM (REG ...)),
 	       in which case we use a value of zero.  */
-	    if (GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG)
+	    if (REG_P (XEXP (DECL_RTL (parms), 0)))
 	      current_sym_value = 0;
 	    else
 		current_sym_value
@@ -3056,7 +3056,7 @@ dbxout_reg_parms (tree parms)
 
 	/* Report parms that live in registers during the function
 	   but were passed in memory.  */
-	if (GET_CODE (DECL_RTL (parms)) == REG
+	if (REG_P (DECL_RTL (parms))
 	    && REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER)
 	  dbxout_symbol_location (parms, TREE_TYPE (parms),
 				  0, DECL_RTL (parms));

@@ -628,7 +628,7 @@ check_asm_stack_operands (rtx insn)
   /* Strip SUBREGs here to make the following code simpler.  */
   for (i = 0; i < recog_data.n_operands; i++)
     if (GET_CODE (recog_data.operand[i]) == SUBREG
-	&& GET_CODE (SUBREG_REG (recog_data.operand[i])) == REG)
+	&& REG_P (SUBREG_REG (recog_data.operand[i])))
       recog_data.operand[i] = SUBREG_REG (recog_data.operand[i]);
 
   /* Set up CLOBBER_REG.  */
@@ -645,7 +645,7 @@ check_asm_stack_operands (rtx insn)
 	    rtx clobber = XVECEXP (body, 0, i);
 	    rtx reg = XEXP (clobber, 0);
 
-	    if (GET_CODE (reg) == SUBREG && GET_CODE (SUBREG_REG (reg)) == REG)
+	    if (GET_CODE (reg) == SUBREG && REG_P (SUBREG_REG (reg)))
 	      reg = SUBREG_REG (reg);
 
 	    if (STACK_REG_P (reg))
@@ -1008,8 +1008,8 @@ emit_swap_insn (rtx insn, stack regstack, rtx reg)
       /* If the previous register stack push was from the reg we are to
 	 swap with, omit the swap.  */
 
-      if (GET_CODE (i1dest) == REG && REGNO (i1dest) == FIRST_STACK_REG
-	  && GET_CODE (i1src) == REG
+      if (REG_P (i1dest) && REGNO (i1dest) == FIRST_STACK_REG
+	  && REG_P (i1src)
 	  && REGNO (i1src) == (unsigned) hard_regno - 1
 	  && find_regno_note (i1, REG_DEAD, FIRST_STACK_REG) == NULL_RTX)
 	return;
@@ -1017,8 +1017,8 @@ emit_swap_insn (rtx insn, stack regstack, rtx reg)
       /* If the previous insn wrote to the reg we are to swap with,
 	 omit the swap.  */
 
-      if (GET_CODE (i1dest) == REG && REGNO (i1dest) == (unsigned) hard_regno
-	  && GET_CODE (i1src) == REG && REGNO (i1src) == FIRST_STACK_REG
+      if (REG_P (i1dest) && REGNO (i1dest) == (unsigned) hard_regno
+	  && REG_P (i1src) && REGNO (i1src) == FIRST_STACK_REG
 	  && find_regno_note (i1, REG_DEAD, FIRST_STACK_REG) == NULL_RTX)
 	return;
     }
@@ -1266,7 +1266,7 @@ swap_rtx_condition (rtx insn)
   /* We're looking for a single set to cc0 or an HImode temporary.  */
 
   if (GET_CODE (pat) == SET
-      && GET_CODE (SET_DEST (pat)) == REG
+      && REG_P (SET_DEST (pat))
       && REGNO (SET_DEST (pat)) == FLAGS_REG)
     {
       insn = next_flags_user (insn);
@@ -1530,7 +1530,7 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 	/* See if this is a `movM' pattern, and handle elsewhere if so.  */
 	if (STACK_REG_P (*src)
 	    || (STACK_REG_P (*dest)
-		&& (GET_CODE (*src) == REG || GET_CODE (*src) == MEM
+		&& (REG_P (*src) || GET_CODE (*src) == MEM
 		    || GET_CODE (*src) == CONST_DOUBLE)))
 	  {
 	    control_flow_insn_deleted |= move_for_stack_reg (insn, regstack, pat);
@@ -2072,7 +2072,7 @@ subst_asm_stack_regs (rtx insn, stack regstack)
   /* Strip SUBREGs here to make the following code simpler.  */
   for (i = 0; i < recog_data.n_operands; i++)
     if (GET_CODE (recog_data.operand[i]) == SUBREG
-	&& GET_CODE (SUBREG_REG (recog_data.operand[i])) == REG)
+	&& REG_P (SUBREG_REG (recog_data.operand[i])))
       {
 	recog_data.operand_loc[i] = & SUBREG_REG (recog_data.operand[i]);
 	recog_data.operand[i] = SUBREG_REG (recog_data.operand[i]);
@@ -2093,7 +2093,7 @@ subst_asm_stack_regs (rtx insn, stack regstack)
       rtx reg = XEXP (note, 0);
       rtx *loc = & XEXP (note, 0);
 
-      if (GET_CODE (reg) == SUBREG && GET_CODE (SUBREG_REG (reg)) == REG)
+      if (GET_CODE (reg) == SUBREG && REG_P (SUBREG_REG (reg)))
 	{
 	  loc = & SUBREG_REG (reg);
 	  reg = SUBREG_REG (reg);
@@ -2126,7 +2126,7 @@ subst_asm_stack_regs (rtx insn, stack regstack)
 	    rtx reg = XEXP (clobber, 0);
 	    rtx *loc = & XEXP (clobber, 0);
 
-	    if (GET_CODE (reg) == SUBREG && GET_CODE (SUBREG_REG (reg)) == REG)
+	    if (GET_CODE (reg) == SUBREG && REG_P (SUBREG_REG (reg)))
 	      {
 		loc = & SUBREG_REG (reg);
 		reg = SUBREG_REG (reg);

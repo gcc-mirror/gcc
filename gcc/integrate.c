@@ -558,7 +558,7 @@ copy_rtx_and_substitute (rtx orig, struct inline_remap *map, int for_lhs)
 	  equiv_loc = VARRAY_CONST_EQUIV (map->const_equiv_varray,
 					  REGNO (equiv_reg)).rtx;
 	  loc_offset
-	    = GET_CODE (equiv_loc) == REG ? 0 : INTVAL (XEXP (equiv_loc, 1));
+	    = REG_P (equiv_loc) ? 0 : INTVAL (XEXP (equiv_loc, 1));
 
 	  return gen_rtx_SET (VOIDmode, SET_DEST (orig),
 			      force_operand
@@ -691,7 +691,7 @@ try_constants (rtx insn, struct inline_remap *map)
   /* Set up any constant equivalences made in this insn.  */
   for (i = 0; i < map->num_sets; i++)
     {
-      if (GET_CODE (map->equiv_sets[i].dest) == REG)
+      if (REG_P (map->equiv_sets[i].dest))
 	{
 	  int regno = REGNO (map->equiv_sets[i].dest);
 
@@ -792,7 +792,7 @@ subst_constants (rtx *loc, rtx insn, struct inline_remap *map, int memonly)
 	 be a special hack and we don't know how to treat it specially.
 	 Consider for example mulsidi3 in m68k.md.
 	 Ordinary SUBREG of a REG needs this special treatment.  */
-      if (! memonly && GET_CODE (SUBREG_REG (x)) == REG)
+      if (! memonly && REG_P (SUBREG_REG (x)))
 	{
 	  rtx inner = SUBREG_REG (x);
 	  rtx new = 0;
@@ -885,11 +885,11 @@ subst_constants (rtx *loc, rtx insn, struct inline_remap *map, int memonly)
 	/* If storing a recognizable value save it for later recording.  */
 	if ((map->num_sets < MAX_RECOG_OPERANDS)
 	    && (CONSTANT_P (src)
-		|| (GET_CODE (src) == REG
+		|| (REG_P (src)
 		    && (REGNO (src) == VIRTUAL_INCOMING_ARGS_REGNUM
 			|| REGNO (src) == VIRTUAL_STACK_VARS_REGNUM))
 		|| (GET_CODE (src) == PLUS
-		    && GET_CODE (XEXP (src, 0)) == REG
+		    && REG_P (XEXP (src, 0))
 		    && (REGNO (XEXP (src, 0)) == VIRTUAL_INCOMING_ARGS_REGNUM
 			|| REGNO (XEXP (src, 0)) == VIRTUAL_STACK_VARS_REGNUM)
 		    && CONSTANT_P (XEXP (src, 1)))
@@ -1062,9 +1062,9 @@ mark_stores (rtx dest, rtx x ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED)
   /* DEST is always the innermost thing set, except in the case of
      SUBREGs of hard registers.  */
 
-  if (GET_CODE (dest) == REG)
+  if (REG_P (dest))
     regno = REGNO (dest), mode = GET_MODE (dest);
-  else if (GET_CODE (dest) == SUBREG && GET_CODE (SUBREG_REG (dest)) == REG)
+  else if (GET_CODE (dest) == SUBREG && REG_P (SUBREG_REG (dest)))
     {
       regno = REGNO (SUBREG_REG (dest));
       if (regno < FIRST_PSEUDO_REGISTER)
@@ -1324,7 +1324,7 @@ allocate_initial_values (rtx *reg_equiv_memory_loc ATTRIBUTE_UNUSED)
 	; /* Do nothing.  */
       else if (GET_CODE (x) == MEM)
 	reg_equiv_memory_loc[regno] = x;
-      else if (GET_CODE (x) == REG)
+      else if (REG_P (x))
 	{
 	  reg_renumber[regno] = REGNO (x);
 	  /* Poke the regno right into regno_reg_rtx

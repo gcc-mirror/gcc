@@ -504,12 +504,12 @@ mark_set_regs (rtx reg, rtx setter ATTRIBUTE_UNUSED,
   if (GET_CODE (reg) == SUBREG)
     {
       rtx inner = SUBREG_REG (reg);
-      if (GET_CODE (inner) != REG || REGNO (inner) >= FIRST_PSEUDO_REGISTER)
+      if (!REG_P (inner) || REGNO (inner) >= FIRST_PSEUDO_REGISTER)
 	return;
 
       regno = subreg_hard_regno (reg, 1);
     }
-  else if (GET_CODE (reg) == REG
+  else if (REG_P (reg)
 	   && REGNO (reg) < FIRST_PSEUDO_REGISTER)
     regno = REGNO (reg);
   else
@@ -535,7 +535,7 @@ add_stored_regs (rtx reg, rtx setter, void *data)
   if (GET_CODE (setter) == CLOBBER)
     return;
 
-  if (GET_CODE (reg) == SUBREG && GET_CODE (SUBREG_REG (reg)) == REG)
+  if (GET_CODE (reg) == SUBREG && REG_P (SUBREG_REG (reg)))
     {
       offset = subreg_regno_offset (REGNO (SUBREG_REG (reg)),
 				    GET_MODE (SUBREG_REG (reg)),
@@ -544,7 +544,7 @@ add_stored_regs (rtx reg, rtx setter, void *data)
       reg = SUBREG_REG (reg);
     }
 
-  if (GET_CODE (reg) != REG || REGNO (reg) >= FIRST_PSEUDO_REGISTER)
+  if (!REG_P (reg) || REGNO (reg) >= FIRST_PSEUDO_REGISTER)
     return;
 
   regno = REGNO (reg) + offset;
@@ -570,7 +570,7 @@ mark_referenced_regs (rtx x)
       code = GET_CODE (x);
       if ((code == REG && REGNO (x) < FIRST_PSEUDO_REGISTER)
 	  || code == PC || code == CC0
-	  || (code == SUBREG && GET_CODE (SUBREG_REG (x)) == REG
+	  || (code == SUBREG && REG_P (SUBREG_REG (x))
 	      && REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
 	      /* If we're setting only part of a multi-word register,
 		 we shall mark it as referenced, because the words
@@ -824,7 +824,7 @@ insert_one_insn (struct insn_chain *chain, int before_p, int code, rtx pat)
 	      rtx reg = XEXP (link, 0);
 	      int regno, i;
 
-	      if (GET_CODE (reg) != REG)
+	      if (!REG_P (reg))
 		abort ();
 
 	      regno = REGNO (reg);

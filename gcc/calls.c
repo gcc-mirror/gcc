@@ -305,7 +305,7 @@ prepare_call_address (rtx funexp, rtx static_chain_value,
     {
       emit_move_insn (static_chain_rtx, static_chain_value);
 
-      if (GET_CODE (static_chain_rtx) == REG)
+      if (REG_P (static_chain_rtx))
 	use_reg (call_fusage, static_chain_rtx);
     }
 
@@ -811,9 +811,9 @@ precompute_register_parameters (int num_actuals, struct arg_data *args, int *reg
 	   register parameters.  This is to avoid reload conflicts while
 	   loading the parameters registers.  */
 
-	if ((! (GET_CODE (args[i].value) == REG
+	if ((! (REG_P (args[i].value)
 		|| (GET_CODE (args[i].value) == SUBREG
-		    && GET_CODE (SUBREG_REG (args[i].value)) == REG)))
+		    && REG_P (SUBREG_REG (args[i].value)))))
 	    && args[i].mode != BLKmode
 	    && rtx_cost (args[i].value, SET) > COSTS_N_INSNS (1)
 	    && ((SMALL_REGISTER_CLASSES && *reg_parm_seen)
@@ -1412,7 +1412,7 @@ precompute_arguments (int flags, int num_actuals, struct arg_data *args)
 	    /* CSE will replace this only if it contains args[i].value
 	       pseudo, so convert it down to the declared mode using
 	       a SUBREG.  */
-	    if (GET_CODE (args[i].value) == REG
+	    if (REG_P (args[i].value)
 		&& GET_MODE_CLASS (args[i].mode) == MODE_INT)
 	      {
 		args[i].initial_value
@@ -2254,7 +2254,7 @@ expand_call (tree exp, rtx target, int ignore)
 	 is not a REG, we must always copy it into a register.
 	 If it is virtual_outgoing_args_rtx, we must copy it to another
 	 register in some cases.  */
-      rtx temp = (GET_CODE (structure_value_addr) != REG
+      rtx temp = (!REG_P (structure_value_addr)
 		  || (ACCUMULATE_OUTGOING_ARGS
 		      && stack_arg_under_construction
 		      && structure_value_addr == virtual_outgoing_args_rtx)
@@ -2904,7 +2904,7 @@ expand_call (tree exp, rtx target, int ignore)
 				     force_operand (structure_value_addr,
 						    NULL_RTX)));
 
-	  if (GET_CODE (struct_value) == REG)
+	  if (REG_P (struct_value))
 	    use_reg (&call_fusage, struct_value);
 	}
 
@@ -3162,7 +3162,7 @@ expand_call (tree exp, rtx target, int ignore)
 	{
       /* If we promoted this return value, make the proper SUBREG.  TARGET
 	 might be const0_rtx here, so be careful.  */
-      if (GET_CODE (target) == REG
+      if (REG_P (target)
 	  && TYPE_MODE (TREE_TYPE (exp)) != BLKmode
 	  && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
 	{
@@ -3643,7 +3643,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       nargs++;
 
       /* Make sure it is a reasonable operand for a move or push insn.  */
-      if (GET_CODE (addr) != REG && GET_CODE (addr) != MEM
+      if (!REG_P (addr) && GET_CODE (addr) != MEM
 	  && ! (CONSTANT_P (addr) && LEGITIMATE_CONSTANT_P (addr)))
 	addr = force_operand (addr, NULL_RTX);
 
@@ -3689,7 +3689,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	 either emit_move_insn or emit_push_insn will do that.  */
 
       /* Make sure it is a reasonable operand for a move or push insn.  */
-      if (GET_CODE (val) != REG && GET_CODE (val) != MEM
+      if (!REG_P (val) && GET_CODE (val) != MEM
 	  && ! (CONSTANT_P (val) && LEGITIMATE_CONSTANT_P (val)))
 	val = force_operand (val, NULL_RTX);
 
@@ -4030,7 +4030,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 		      force_reg (Pmode,
 				 force_operand (XEXP (mem_value, 0),
 						NULL_RTX)));
-      if (GET_CODE (struct_value) == REG)
+      if (REG_P (struct_value))
 	use_reg (&call_fusage, struct_value);
     }
 

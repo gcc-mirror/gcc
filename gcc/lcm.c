@@ -927,7 +927,7 @@ reg_dies (rtx reg, HARD_REG_SET live)
 {
   int regno, nregs;
 
-  if (GET_CODE (reg) != REG)
+  if (!REG_P (reg))
     return;
 
   regno = REGNO (reg);
@@ -948,7 +948,7 @@ reg_becomes_live (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *live)
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
 
-  if (GET_CODE (reg) != REG)
+  if (!REG_P (reg))
     return;
 
   regno = REGNO (reg);

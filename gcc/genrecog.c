@@ -2522,7 +2522,7 @@ make_insn_sequence (rtx insn, enum routine_type type)
 	    {
 	      rtx y = XVECEXP (x, 0, i - 1);
 	      if (GET_CODE (y) != CLOBBER
-		  || (GET_CODE (XEXP (y, 0)) != REG
+		  || (!REG_P (XEXP (y, 0))
 		      && GET_CODE (XEXP (y, 0)) != MATCH_SCRATCH))
 		break;
 	    }

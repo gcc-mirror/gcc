@@ -376,7 +376,7 @@ mark_reg (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *data)
     reg = SUBREG_REG (reg);
 
   /* We're only interested in regs.  */
-  if (GET_CODE (reg) != REG)
+  if (!REG_P (reg))
     return;
 
   SET_REGNO_REG_SET (set, REGNO (reg));

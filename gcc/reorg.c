@@ -1924,7 +1924,7 @@ update_reg_dead_notes (rtx insn, rtx delayed_insn)
 	next = XEXP (link, 1);
 
 	if (REG_NOTE_KIND (link) != REG_DEAD
-	    || GET_CODE (XEXP (link, 0)) != REG)
+	    || !REG_P (XEXP (link, 0)))
 	  continue;
 
 	if (reg_referenced_p (XEXP (link, 0), PATTERN (insn)))
@@ -1957,7 +1957,7 @@ fix_reg_dead_note (rtx start_insn, rtx stop_insn)
 	next = XEXP (link, 1);
 
 	if (REG_NOTE_KIND (link) != REG_DEAD
-	    || GET_CODE (XEXP (link, 0)) != REG)
+	    || !REG_P (XEXP (link, 0)))
 	  continue;
 
 	if (reg_set_p (XEXP (link, 0), PATTERN (start_insn)))
@@ -1985,7 +1985,7 @@ update_reg_unused_notes (rtx insn, rtx redundant_insn)
       next = XEXP (link, 1);
 
       if (REG_NOTE_KIND (link) != REG_UNUSED
-	  || GET_CODE (XEXP (link, 0)) != REG)
+	  || !REG_P (XEXP (link, 0)))
 	continue;
 
       if (! find_regno_note (redundant_insn, REG_UNUSED,
@@ -2764,8 +2764,8 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
 	 destination.  Overlap may happen for larger-than-register-size modes.  */
 
       if (GET_CODE (trial) == INSN && GET_CODE (pat) == SET
-	  && GET_CODE (SET_SRC (pat)) == REG
-	  && GET_CODE (SET_DEST (pat)) == REG
+	  && REG_P (SET_SRC (pat))
+	  && REG_P (SET_DEST (pat))
 	  && !reg_overlap_mentioned_p (SET_DEST (pat), SET_SRC (pat)))
 	{
 	  rtx next = next_nonnote_insn (trial);

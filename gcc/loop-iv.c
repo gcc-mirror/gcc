@@ -1321,7 +1321,7 @@ simplify_using_assignment (rtx insn, rtx *expr, regset altered)
   if (set)
     {
       lhs = SET_DEST (set);
-      if (GET_CODE (lhs) != REG
+      if (!REG_P (lhs)
 	  || altered_reg_used (&lhs, altered))
 	ret = true;
     }

@@ -321,7 +321,7 @@ gen_insn (rtx insn, int lineno)
 	  if (GET_CODE (XVECEXP (insn, 1, i)) != CLOBBER)
 	    break;
 
-	  if (GET_CODE (XEXP (XVECEXP (insn, 1, i), 0)) == REG)
+	  if (REG_P (XEXP (XVECEXP (insn, 1, i), 0)))
 	    has_hard_reg = 1;
 	  else if (GET_CODE (XEXP (XVECEXP (insn, 1, i), 0)) != MATCH_SCRATCH)
 	    break;
@@ -355,7 +355,7 @@ gen_insn (rtx insn, int lineno)
 		  if (! (GET_MODE (old) == GET_MODE (new)
 			 && ((GET_CODE (old) == MATCH_SCRATCH
 			      && GET_CODE (new) == MATCH_SCRATCH)
-			     || (GET_CODE (old) == REG && GET_CODE (new) == REG
+			     || (REG_P (old) && REG_P (new)
 				 && REGNO (old) == REGNO (new)))))
 		    break;
 		}

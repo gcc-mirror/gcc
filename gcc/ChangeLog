@@ -1,3 +1,189 @@
+2004-06-15  Jerry Quinn  <jlquinn@optonline.net>
+
+	* alias.c (record_set, record_base_value, canon_rtx, get_addr,
+	nonlocal_mentioned_p_1, init_alias_analysis): Use REG_P.
+	* bt-load.c (find_btr_reference, insn_sets_btr_p, note_btr_set):
+	Likewise.
+	* builtins.c (expand_builtin_setjmp, expand_builtin_apply,
+	expand_builtin_mathfn, expand_builtin_strlen, expand_builtin_memcmp,
+	expand_builtin_strcmp, expand_builtin_strncmp,
+	expand_builtin_frame_address): Likewise.
+	* caller-save.c (mark_set_regs, add_stored_regs, mark_referenced_regs,
+	insert_one_insn): Likewise.
+	* calls.c (prepare_call_address, precompute_register_parameters,
+	precompute_arguments, expand_call, emit_library_call_value_1): Likewise.
+	* cfganal.c (flow_active_insn_p): Likewise.
+	* combine.c (set_nonzero_bits_and_sign_copies, can_combine_p,
+	combinable_i3pat, try_combine, find_split_point, COMBINE_RTX_EQUAL_P,
+	subst, combine_simplify_rtx, simplify_if_then_else, simplify_set,
+	make_extraction, recog_for_combine, gen_lowpart_for_combine,
+	simplify_comparison, record_dead_and_set_regs_1,
+	record_dead_and_set_regs, record_promoted_value,
+	check_promoted_subreg, get_last_value_validate, get_last_value,
+	reg_dead_at_p_1, reg_bitfield_target_p, distribute_notes,
+	unmentioned_reg_p_1): Likewise.
+	* conflict.c (mark_reg): Likewise.
+	* cse.c (HASH, COST, COST_IN, approx_reg_cost_1, notreg_cost,
+	mention_regs, insert_regs, lookup, lookup_for_remove, insert,
+	merge_equiv_classes, flush_hash_table, invalidate,
+	remove_invalid_refs, remove_invalid_subreg_refs, rehash_using_reg,
+	invalidate_for_call, use_related_value, canon_hash, exp_equiv_p,
+	cse_rtx_varies_p, canon_reg, find_best_addr, fold_rtx, equiv_constant,
+	record_jump_cond, cse_insn, addr_affects_sp_p,
+	invalidate_from_clobbers, cse_process_notes, cse_around_loop,
+	cse_set_around_loop, count_reg_usage, set_live_p, cse_change_cc_mode,
+	cse_cc_succs, cse_condition_code_reg): Likewise.
+	* cselib.c (cselib_reg_set_mode, rtx_equal_for_cselib_p,
+	cselib_lookup, cselib_invalidate_regno, cselib_invalidate_rtx,
+	cselib_record_set, cselib_record_sets): Likewise.
+	* dbxout.c (dbxout_symbol_location, dbxout_parms, dbxout_reg_parms,
+	dbxout_block): Likewise.
+	* df.c (df_ref_record, df_def_record_1, df_uses_record): Likewise.
+	* dojump.c (do_jump): Likewise.
+	* dwarf2out.c (dwarf2out_frame_debug_expr, is_pseudo_reg,
+	is_based_loc, rtl_for_decl_location): Likewise.
+	* emit-rtl.c (set_reg_attrs_for_parm, set_decl_rtl,
+	set_decl_incoming_rtl, mark_user_reg): Likewise.
+	* explow.c (copy_all_regs, copy_all_regs, memory_address, force_reg,
+	copy_to_suggested_reg, allocate_dynamic_stack_space,
+	probe_stack_range, hard_function_value): Likewise.
+	* expmed.c (store_bit_field, store_fixed_bit_field,
+	store_split_bit_field, extract_bit_field, extract_fixed_bit_field,
+	extract_split_bit_field, expand_divmod, emit_store_flag_force):
+	Likewise.
+	* expr.c (convert_move, convert_modes,
+	block_move_libcall_safe_for_call_parm, emit_group_load, use_reg,
+	use_group_regs, emit_move_insn, emit_move_insn_1,
+	compress_float_constant, push_block, emit_single_push_insn,
+	emit_push_insn, get_subtarget, expand_assignment, store_expr,
+	store_constructor, store_field, force_operand, safe_from_p,
+	expand_expr_real_1, expand_increment, do_store_flag, do_tablejump):
+	Likewise.
+	* final.c (profile_function, final_scan_insn, alter_subreg,
+	get_mem_expr_from_op, output_asm_operand_names, output_operand,
+	only_leaf_regs_used, leaf_renumber_regs_insn): Likewise.
+	* flow.c (verify_wide_reg_1, mark_regs_live_at_end,
+	find_regno_partial, propagate_one_insn, init_propagate_block_info,
+	insn_dead_p, libcall_dead_p, mark_set_1, not_reg_cond,
+	attempt_auto_inc, find_auto_inc, mark_used_regs,
+	count_or_remove_death_notes_bb): Likewise.
+	* function.c (find_temp_slot_from_address, update_temp_slot_address,
+	preserve_temp_slots, put_var_into_stack, fixup_var_refs_insn,
+	fixup_var_refs_1, fixup_stack_1, optimize_bit_field, flush_addressof,
+	put_addressof_into_stack, purge_addressof_1, insns_for_mem_walk,
+	purge_single_hard_subreg_set, instantiate_decl,
+	instantiate_virtual_regs_1, aggregate_value_p, assign_parms,
+	promoted_input_arg, setjmp_vars_warning, setjmp_args_warning,
+	setjmp_protect, setjmp_protect_args, fix_lexical_addr,
+	expand_function_start, diddle_return_value, clobber_return_register,
+	expand_function_end, keep_stack_depressed, handle_epilogue_set,
+	update_epilogue_consts): Likewise.
+	* genemit.c (gen_exp, gen_insn): Likewise.
+	* genrecog.c (make_insn_sequence): Likewise.
+	* global.c (global_conflicts, expand_preferences, mark_reg_store,
+	mark_reg_conflicts, set_preference, reg_becomes_live,
+	build_insn_chain, mark_reg_change): Likewise.
+	* haifa_sched.c (CONST_BASED_ADDRESS_P, find_set_reg_weight):
+	Likewise.
+	* ifcvt.c (noce_try_abs, noce_get_condition, noce_process_if_block):
+	Likewise.
+	* integrate.c (copy_rtx_and_substitute, try_constants,
+	subst_constants, mark_stores, allocate_initial_values): Likewise.
+	* jump.c (reversed_comparison_code_parts, delete_prior_computation,
+	delete_computation, rtx_renumbered_equal_p, true_regnum,
+	reg_or_subregno): Likewise.
+	* lcm.c (reg_dies, reg_becomes_live): Likewise.
+	* local-alloc.c (validate_equiv_mem_from_store, validate_equiv_mem,
+	update_equiv_regs, no_equiv, block_alloc, combine_regs, reg_is_set,
+	wipe_dead_reg, no_conflict_p): Likewise.
+	* loop-iv.c (simple_reg_p, simple_set_p, kill_sets,
+	iv_get_reaching_def, iv_analyze_biv, altered_reg_used, mark_altered,
+	simple_rhs_p, simplify_using_assignment, implies_p): Likewise.
+	* loop.c (scan_loop, combine_movables, rtx_equal_for_loop_p,
+	move_movables, note_set_pseudo_multiple_uses, consec_sets_invariant_p,
+	find_single_use_in_loop, count_one_set, loop_bivs_init_find,
+	loop_givs_rescan, check_insn_for_bivs, check_insn_for_givs,
+	valid_initial_value_p, simplify_giv_expr, consec_sets_giv,
+	loop_regs_update, check_dbra_loop, maybe_eliminate_biv,
+	maybe_eliminate_biv_1, record_initial, update_reg_last_use,
+	canonicalize_condition, loop_regs_scan, load_mems, try_copy_prop,
+	try_swap_copy_prop): Likewise.
+	* optabs.c (expand_binop, expand_vector_binop, expand_vector_unop,
+	expand_abs, emit_no_conflict_block, emit_libcall_block, expand_float):
+	Likewise.
+	* postreload.c (reload_cse_simplify, reload_cse_simplify_set,
+	reload_cse_simplify_operands, reload_combine,
+	reload_combine_note_store, reload_combine_note_use,
+	reload_cse_move2add, move2add_note_store): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+	* ra-build.c (copy_insn_p, remember_move, init_one_web_common,
+	contains_pseudo, handle_asm_insn): Likewise.
+	* ra-debug.c (ra_print_rtx_object, dump_constraints,
+	dump_static_insn_cost): Likewise.
+	* ra-rewrite.c (slots_overlap_p, emit_colors,
+	remove_suspicious_death_notes): Likewise.
+	* recog.c (validate_replace_rtx_1, find_single_use_1, find_single_use,
+	register_operand, scratch_operand, nonmemory_operand,
+	constrain_operands): Likewise.
+	* reg-stack (check_asm_stack_operands, remove_regno_note,
+	emit_swap_insn, swap_rtx_condition, subst_stack_regs_pat,
+	subst_asm_stack_regs): Likewise.
+	* regclass.c (scan_one_insn, record_reg_classes, copy_cost,
+	record_address_regs, reg_scan_mark_refs): Likewise.
+	* regmove.c (discover_flags_reg, replacement_quality,
+	copy_src_to_dest, reg_is_remote_constant_p, regmove_optimize,
+	fixup_match_1): Likewise.
+	* regrename.c (note_sets, clear_dead_regs, build_def_use, kill_value,
+	kill_set_value, copyprop_hardreg_forward_1): Likewise.
+	* reload.c (MATCHES, push_secondary_reload, find_reusable_reload,
+	reload_inner_reg_of_subreg, can_reload_into, push_reload,
+	combine_reloads, find_dummy_reload, hard_reg_set_here_p,
+	operands_match_p, decompose, find_reloads, find_reloads_toplev,
+	find_reloads_address, subst_indexed_address, find_reloads_address_1,
+	find_reloads_subreg_address, find_replacement,
+	refers_to_regno_for_reload_p, reg_overlap_mentioned_for_reload_p,
+	refers_to_mem_for_reload_p, find_equiv_reg, regno_clobbered_p): Likewise.
+	* reload1.c (replace_pseudos_in, reload, calculate_needs_all_insns,
+	find_reg, delete_dead_insn, alter_reg, eliminate_regs,
+	elimination_effects, eliminate_regs_in_insn, scan_paradoxical_subregs,
+	forget_old_reloads_1, reload_reg_free_for_value_p, choose_reload_regs,
+	emit_input_reload_insns, emit_output_reload_insns, do_input_reload,
+	do_output_reload, emit_reload_insns, gen_reload,
+	delete_address_reloads_1, inc_for_reload): Likewise.
+	* reorg.c (update_reg_dead_notes, fix_reg_dead_note,
+	update_reg_unused_notes, fill_slots_from_thread): Likewise.
+	* resource.c (update_live_status, mark_referenced_resources,
+	mark_set_resources, mark_target_live_regs): Likewise.
+	* rtlanal.c (nonzero_address_p, get_jump_table_offset,
+	global_reg_mentioned_p_1, reg_mentioned_p, reg_referenced_p,
+	reg_set_p, set_noop_p, find_last_value, refers_to_regno_p,
+	note_stores, dead_or_set_p, dead_or_set_regno_p, find_regno_note,
+	find_reg_fusage, find_regno_fusage, replace_regs, regno_use_in,
+	parms_set, find_first_parameter_load, keep_with_call_p,
+	hoist_test_store, hoist_update_store, address_cost, nonzero_bits1,
+	num_sign_bit_copies1): Likewise.
+	* rtlhooks.c (gen_lowpart_general): Likewise.
+	* sched-deps.c (deps_may_trap_p, sched_analyze_1, sched_analyze_insn,
+	sched_analyze): Likewise.
+	* sched-rgn.c (check_live_1, update_live_1, sets_likely_spilled_1):
+	Likewise.
+	* sdbout.c (sdbout_symbol, sdbout_parms, sdbout_reg_parms): Likewise.
+	* simplify-rtx.c (simplify_replace_rtx, simplify_unary_operation,
+	simplify_binary_operation, simplify_const_relational_operation,
+	simplify_subreg): Likewise.
+	* stmt.c (decl_conflicts_with_clobbers_p, expand_asm_operands,
+	expand_end_stmt_expr, expand_return, expand_decl,
+	expand_anon_union_decl): Likewise.
+	* unroll.c (precondition_loop_p, calculate_giv_inc, copy_loop_body,
+	find_splittable_regs, find_splittable_givs, find_common_reg_term,
+	loop_iterations): Likewise.
+	* var-tracking.c (variable_union, variable_part_different_p,
+	variable_different_p, count_uses, add_uses, add_stores,
+	compute_bb_dataflow, set_variable_part, delete_variable_part,
+	emit_notes_in_bb, vt_get_decl_and_offset, vt_add_function_parameters):
+	Likewise.
+	* varasm.c (assemble_variable): Likewise.
+
 2004-06-15  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/linux.h (ASM_PREFERRED_EH_DATA_FORMAT): Remove

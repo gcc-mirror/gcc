@@ -271,7 +271,7 @@ ra_print_rtx_object (FILE *file, rtx x)
 	       {
 		 rtx sub = SUBREG_REG (x);
 		 int ofs = SUBREG_BYTE (x);
-		 if (GET_CODE (sub) == REG
+		 if (REG_P (sub)
 		     && REGNO (sub) < FIRST_PSEUDO_REGISTER)
 		   {
 		     int regno = REGNO (sub);
@@ -802,7 +802,7 @@ dump_constraints (void)
   if (!dump_file || (debug_new_regalloc & DUMP_CONSTRAINTS) == 0)
     return;
   for (i = FIRST_PSEUDO_REGISTER; i < ra_max_regno; i++)
-    if (regno_reg_rtx[i] && GET_CODE (regno_reg_rtx[i]) == REG)
+    if (regno_reg_rtx[i] && REG_P (regno_reg_rtx[i]))
       REGNO (regno_reg_rtx[i])
 	  = ra_reg_renumber[i] >= 0 ? ra_reg_renumber[i] : i;
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -840,7 +840,7 @@ dump_constraints (void)
 	ra_debug_msg (DUMP_CONSTRAINTS, "\n");
       }
   for (i = FIRST_PSEUDO_REGISTER; i < ra_max_regno; i++)
-    if (regno_reg_rtx[i] && GET_CODE (regno_reg_rtx[i]) == REG)
+    if (regno_reg_rtx[i] && REG_P (regno_reg_rtx[i]))
       REGNO (regno_reg_rtx[i]) = i;
 }
 
@@ -941,10 +941,11 @@ dump_static_insn_cost (FILE *file, const char *message, const char *prefix)
 	      if (rtx_equal_p (src, dest))
 		pcost = &selfcopy;
 	      else if (GET_CODE (src) == GET_CODE (dest)
-		       && ((GET_CODE (src) == REG)
+		       && ((REG_P (src))
 			   || (GET_CODE (src) == SUBREG
-			       && GET_CODE (SUBREG_REG (src)) == REG
-			       && GET_CODE (SUBREG_REG (dest)) == REG)))
+			       && REG_P (SUBREG_REG (src))
+			       && REG_P (SUBREG_REG (dest)))))
+		/* XXX is dest guaranteed to be a subreg? */
 		pcost = &regcopy;
 	      else
 		{

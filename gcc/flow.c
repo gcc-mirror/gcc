@@ -455,7 +455,7 @@ verify_wide_reg_1 (rtx *px, void *pregno)
   rtx x = *px;
   unsigned int regno = *(int *) pregno;
 
-  if (GET_CODE (x) == REG && REGNO (x) == regno)
+  if (REG_P (x) && REGNO (x) == regno)
     {
       if (GET_MODE_BITSIZE (GET_MODE (x)) <= BITS_PER_WORD)
 	return 2;
@@ -1330,7 +1330,7 @@ find_regno_partial (rtx *ptr, void *data)
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
     case STRICT_LOW_PART:
-      if (GET_CODE (XEXP (*ptr, 0)) == REG && REGNO (XEXP (*ptr, 0)) == reg)
+      if (REG_P (XEXP (*ptr, 0)) && REGNO (XEXP (*ptr, 0)) == reg)
 	{
 	  param->retval = XEXP (*ptr, 0);
 	  return 1;
@@ -1338,7 +1338,7 @@ find_regno_partial (rtx *ptr, void *data)
       break;
 
     case SUBREG:
-      if (GET_CODE (SUBREG_REG (*ptr)) == REG
+      if (REG_P (SUBREG_REG (*ptr))
 	  && REGNO (SUBREG_REG (*ptr)) == reg)
 	{
 	  param->retval = SUBREG_REG (*ptr);
@@ -1623,7 +1623,7 @@ propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
     /* Does this instruction increment or decrement a register?  */
     if ((flags & PROP_AUTOINC)
 	&& x != 0
-	&& GET_CODE (SET_DEST (x)) == REG
+	&& REG_P (SET_DEST (x))
 	&& (GET_CODE (SET_SRC (x)) == PLUS
 	    || GET_CODE (SET_SRC (x)) == MINUS)
 	&& XEXP (SET_SRC (x), 0) == SET_DEST (x)
@@ -1873,7 +1873,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
 	     in the form of a comparison of a register against zero.  
 	     If the condition is more complex than that, then it is safe
 	     not to record any information.  */
-	  if (GET_CODE (reg) == REG
+	  if (REG_P (reg)
 	      && XEXP (cond_true, 1) == const0_rtx)
 	    {
 	      rtx cond_false
@@ -2149,7 +2149,7 @@ insn_dead_p (struct propagate_block_info *pbi, rtx x, int call_ok,
 		 || GET_CODE (r) == ZERO_EXTRACT)
 	    r = XEXP (r, 0);
 
-	  if (GET_CODE (r) == REG)
+	  if (REG_P (r))
 	    {
 	      int regno = REGNO (r);
 
@@ -2225,7 +2225,7 @@ insn_dead_p (struct propagate_block_info *pbi, rtx x, int call_ok,
      is not necessarily true for hard registers until after reload.  */
   else if (code == CLOBBER)
     {
-      if (GET_CODE (XEXP (x, 0)) == REG
+      if (REG_P (XEXP (x, 0))
 	  && (REGNO (XEXP (x, 0)) >= FIRST_PSEUDO_REGISTER
 	      || reload_completed)
 	  && ! REGNO_REG_SET_P (pbi->reg_live, REGNO (XEXP (x, 0))))
@@ -2265,7 +2265,7 @@ libcall_dead_p (struct propagate_block_info *pbi, rtx note, rtx insn)
     {
       rtx r = SET_SRC (x);
 
-      if (GET_CODE (r) == REG)
+      if (REG_P (r))
 	{
 	  rtx call = XEXP (note, 0);
 	  rtx call_pat;
@@ -2552,7 +2552,7 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
       break;
 
     case SUBREG:
-      if (GET_CODE (SUBREG_REG (reg)) == REG)
+      if (REG_P (SUBREG_REG (reg)))
 	{
 	  enum machine_mode outer_mode = GET_MODE (reg);
 	  enum machine_mode inner_mode = GET_MODE (SUBREG_REG (reg));
@@ -2605,7 +2605,7 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
      If this set is a REG, then it kills any MEMs which use the reg.  */
   if (optimize && (flags & PROP_SCAN_DEAD_STORES))
     {
-      if (GET_CODE (reg) == REG)
+      if (REG_P (reg))
 	invalidate_mems_from_set (pbi, reg);
 
       /* If the memory reference had embedded side effects (autoincrement
@@ -2620,7 +2620,7 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 	add_to_mem_set_list (pbi, canon_rtx (reg));
     }
 
-  if (GET_CODE (reg) == REG
+  if (REG_P (reg)
       && ! (regno_first == FRAME_POINTER_REGNUM
 	    && (! reload_completed || frame_pointer_needed))
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
@@ -2810,7 +2810,7 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 	      }
 	}
     }
-  else if (GET_CODE (reg) == REG)
+  else if (REG_P (reg))
     {
       if (flags & (PROP_LOG_LINKS | PROP_AUTOINC))
 	pbi->reg_next_use[regno_first] = 0;
@@ -3086,7 +3086,7 @@ not_reg_cond (rtx x)
   if (x_code == NOT)
     return XEXP (x, 0);
   if (COMPARISON_P (x)
-      && GET_CODE (XEXP (x, 0)) == REG)
+      && REG_P (XEXP (x, 0)))
     {
       if (XEXP (x, 1) != const0_rtx)
 	abort ();
@@ -3279,7 +3279,7 @@ attempt_auto_inc (struct propagate_block_info *pbi, rtx inc, rtx insn,
       if (! validate_change (insn, &XEXP (mem, 0), inc, 0))
 	return;
     }
-  else if (GET_CODE (q) == REG
+  else if (REG_P (q)
 	   /* PREV_INSN used here to check the semi-open interval
 	      [insn,incr).  */
 	   && ! reg_used_between_p (q,  PREV_INSN (insn), incr)
@@ -3429,7 +3429,7 @@ find_auto_inc (struct propagate_block_info *pbi, rtx x, rtx insn)
   if (GET_CODE (addr) == PLUS && GET_CODE (XEXP (addr, 1)) == CONST_INT)
     offset = INTVAL (XEXP (addr, 1)), addr = XEXP (addr, 0);
 
-  if (GET_CODE (addr) != REG)
+  if (!REG_P (addr))
     return;
 
   regno = REGNO (addr);
@@ -3484,7 +3484,7 @@ find_auto_inc (struct propagate_block_info *pbi, rtx x, rtx insn)
 								  inc_val)),
 			  insn, x, incr, addr);
     }
-  else if (GET_CODE (inc_val) == REG
+  else if (REG_P (inc_val)
 	   && ! reg_set_between_p (inc_val, PREV_INSN (insn),
 				   NEXT_INSN (incr)))
 
@@ -3787,7 +3787,7 @@ mark_used_regs (struct propagate_block_info *pbi, rtx x, rtx cond, rtx insn)
     case SUBREG:
 #ifdef CANNOT_CHANGE_MODE_CLASS
       if ((flags & PROP_REG_INFO)
-	  && GET_CODE (SUBREG_REG (x)) == REG
+	  && REG_P (SUBREG_REG (x))
 	  && REGNO (SUBREG_REG (x)) >= FIRST_PSEUDO_REGISTER)
 	bitmap_set_bit (&subregs_of_mode, REGNO (SUBREG_REG (x))
 					  * MAX_MACHINE_MODE
@@ -3796,7 +3796,7 @@ mark_used_regs (struct propagate_block_info *pbi, rtx x, rtx cond, rtx insn)
 
       /* While we're here, optimize this case.  */
       x = SUBREG_REG (x);
-      if (GET_CODE (x) != REG)
+      if (!REG_P (x))
 	goto retry;
       /* Fall through.  */
 
@@ -3838,7 +3838,7 @@ mark_used_regs (struct propagate_block_info *pbi, rtx x, rtx cond, rtx insn)
 #ifdef CANNOT_CHANGE_MODE_CLASS
 	    if ((flags & PROP_REG_INFO)
 		&& GET_CODE (testreg) == SUBREG
-		&& GET_CODE (SUBREG_REG (testreg)) == REG
+		&& REG_P (SUBREG_REG (testreg))
 		&& REGNO (SUBREG_REG (testreg)) >= FIRST_PSEUDO_REGISTER)
 	      bitmap_set_bit (&subregs_of_mode, REGNO (SUBREG_REG (testreg))
 						* MAX_MACHINE_MODE
@@ -3865,7 +3865,7 @@ mark_used_regs (struct propagate_block_info *pbi, rtx x, rtx cond, rtx insn)
 
 	if ((GET_CODE (testreg) == PARALLEL
 	     && GET_MODE (testreg) == BLKmode)
-	    || (GET_CODE (testreg) == REG
+	    || (REG_P (testreg)
 		&& (regno = REGNO (testreg),
 		    ! (regno == FRAME_POINTER_REGNUM
 		       && (! reload_completed || frame_pointer_needed)))
@@ -4268,7 +4268,7 @@ count_or_remove_death_notes_bb (basic_block bb, int kill)
 	      switch (REG_NOTE_KIND (link))
 		{
 		case REG_DEAD:
-		  if (GET_CODE (XEXP (link, 0)) == REG)
+		  if (REG_P (XEXP (link, 0)))
 		    {
 		      rtx reg = XEXP (link, 0);
 		      int n;

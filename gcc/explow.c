@@ -405,7 +405,7 @@ convert_memory_address (enum machine_mode to_mode ATTRIBUTE_UNUSED,
 rtx
 copy_all_regs (rtx x)
 {
-  if (GET_CODE (x) == REG)
+  if (REG_P (x))
     {
       if (REGNO (x) != FRAME_POINTER_REGNUM
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
@@ -451,7 +451,7 @@ memory_address (enum machine_mode mode, rtx x)
      On attempting to put this in an insn we will call protect_from_queue
      which will turn it into a REG, which is valid.  */
   else if (GET_CODE (x) == QUEUED
-      && GET_CODE (QUEUED_VAR (x)) == REG)
+      && REG_P (QUEUED_VAR (x)))
     ;
 
   /* We get better cse by rejecting indirect addressing at this stage.
@@ -460,7 +460,7 @@ memory_address (enum machine_mode mode, rtx x)
      are visible.  But not if cse won't be done!  */
   else
     {
-      if (! cse_not_expected && GET_CODE (x) != REG)
+      if (! cse_not_expected && !REG_P (x))
 	x = break_out_memory_refs (x);
 
       /* At this point, any valid address is accepted.  */
@@ -508,7 +508,7 @@ memory_address (enum machine_mode mode, rtx x)
 
       /* If we have a register that's an invalid address,
 	 it must be a hard reg of the wrong class.  Copy it to a pseudo.  */
-      else if (GET_CODE (x) == REG)
+      else if (REG_P (x))
 	x = copy_to_reg (x);
 
       /* Last resort: copy the value to a register, since
@@ -521,7 +521,7 @@ memory_address (enum machine_mode mode, rtx x)
     win2:
       x = oldx;
     win:
-      if (flag_force_addr && ! cse_not_expected && GET_CODE (x) != REG
+      if (flag_force_addr && ! cse_not_expected && !REG_P (x)
 	  /* Don't copy an addr via a reg if it is one of our stack slots.  */
 	  && ! (GET_CODE (x) == PLUS
 		&& (XEXP (x, 0) == virtual_stack_vars_rtx
@@ -540,10 +540,10 @@ memory_address (enum machine_mode mode, rtx x)
      a reg as a pointer if we have REG or REG + CONST_INT.  */
   if (oldx == x)
     return x;
-  else if (GET_CODE (x) == REG)
+  else if (REG_P (x))
     mark_reg_pointer (x, BITS_PER_UNIT);
   else if (GET_CODE (x) == PLUS
-	   && GET_CODE (XEXP (x, 0)) == REG
+	   && REG_P (XEXP (x, 0))
 	   && GET_CODE (XEXP (x, 1)) == CONST_INT)
     mark_reg_pointer (XEXP (x, 0), BITS_PER_UNIT);
 
@@ -688,7 +688,7 @@ force_reg (enum machine_mode mode, rtx x)
 {
   rtx temp, insn, set;
 
-  if (GET_CODE (x) == REG)
+  if (REG_P (x))
     return x;
 
   if (general_operand (x, mode))
@@ -699,7 +699,7 @@ force_reg (enum machine_mode mode, rtx x)
   else
     {
       temp = force_operand (x, NULL_RTX);
-      if (GET_CODE (temp) == REG)
+      if (REG_P (temp))
 	insn = get_last_insn ();
       else
 	{
@@ -784,7 +784,7 @@ copy_to_suggested_reg (rtx x, rtx target, enum machine_mode mode)
 {
   rtx temp;
 
-  if (target && GET_CODE (target) == REG)
+  if (target && REG_P (target))
     temp = target;
   else
     temp = gen_reg_rtx (mode);
@@ -1333,7 +1333,7 @@ allocate_dynamic_stack_space (rtx size, rtx target, int known_align)
     probe_stack_range (STACK_CHECK_MAX_FRAME_SIZE + STACK_CHECK_PROTECT, size);
 
   /* Don't use a TARGET that isn't a pseudo or is the wrong mode.  */
-  if (target == 0 || GET_CODE (target) != REG
+  if (target == 0 || !REG_P (target)
       || REGNO (target) < FIRST_PSEUDO_REGISTER
       || GET_MODE (target) != Pmode)
     target = gen_reg_rtx (Pmode);
@@ -1557,7 +1557,7 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
       rtx end_lab = gen_label_rtx ();
       rtx temp;
 
-      if (GET_CODE (test_addr) != REG
+      if (!REG_P (test_addr)
 	  || REGNO (test_addr) < FIRST_PSEUDO_REGISTER)
 	test_addr = force_reg (Pmode, test_addr);
 
@@ -1611,7 +1611,7 @@ hard_function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
 #endif
     val = FUNCTION_VALUE (valtype, func);
 
-  if (GET_CODE (val) == REG
+  if (REG_P (val)
       && GET_MODE (val) == BLKmode)
     {
       unsigned HOST_WIDE_INT bytes = int_size_in_bytes (valtype);

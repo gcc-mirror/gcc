@@ -942,7 +942,7 @@ record_set (rtx dest, rtx set, void *data ATTRIBUTE_UNUSED)
   rtx src;
   int n;
 
-  if (GET_CODE (dest) != REG)
+  if (!REG_P (dest))
     return;
 
   regno = REGNO (dest);
@@ -1063,7 +1063,7 @@ record_base_value (unsigned int regno, rtx val, int invariant)
   if (regno >= VARRAY_SIZE (reg_base_value))
     VARRAY_GROW (reg_base_value, max_reg_num ());
 
-  if (GET_CODE (val) == REG)
+  if (REG_P (val))
     {
       VARRAY_RTX (reg_base_value, regno)
 	 = REG_BASE_VALUE (val);
@@ -1156,7 +1156,7 @@ rtx
 canon_rtx (rtx x)
 {
   /* Recursively look for equivalences.  */
-  if (GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER)
+  if (REG_P (x) && REGNO (x) >= FIRST_PSEUDO_REGISTER)
     {
       rtx t = get_reg_known_value (REGNO (x));
       if (t == x)
@@ -1595,7 +1595,7 @@ get_addr (rtx x)
 	if (CONSTANT_P (l->loc))
 	  return l->loc;
       for (l = v->locs; l; l = l->next)
-	if (GET_CODE (l->loc) != REG && GET_CODE (l->loc) != MEM)
+	if (!REG_P (l->loc) && GET_CODE (l->loc) != MEM)
 	  return l->loc;
       if (v->locs)
 	return v->locs->loc;
@@ -2411,7 +2411,7 @@ nonlocal_mentioned_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
   switch (GET_CODE (x))
     {
     case SUBREG:
-      if (GET_CODE (SUBREG_REG (x)) == REG)
+      if (REG_P (SUBREG_REG (x)))
 	{
 	  /* Global registers are not local.  */
 	  if (REGNO (SUBREG_REG (x)) < FIRST_PSEUDO_REGISTER
@@ -2552,9 +2552,9 @@ nonlocal_referenced_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
 	 mentioned in the destination.  */
       if (GET_CODE (SET_DEST (x)) != CC0
 	  && GET_CODE (SET_DEST (x)) != PC
-	  && GET_CODE (SET_DEST (x)) != REG
+	  && !REG_P (SET_DEST (x))
 	  && ! (GET_CODE (SET_DEST (x)) == SUBREG
-		&& GET_CODE (SUBREG_REG (SET_DEST (x))) == REG
+		&& REG_P (SUBREG_REG (SET_DEST (x)))
 		&& (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (x))))
 		      + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
 		    == ((GET_MODE_SIZE (GET_MODE (SET_DEST (x)))
@@ -2921,7 +2921,7 @@ init_alias_analysis (void)
 	      set = single_set (insn);
 
 	      if (set != 0
-		  && GET_CODE (SET_DEST (set)) == REG
+		  && REG_P (SET_DEST (set))
 		  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER)
 		{
 		  unsigned int regno = REGNO (SET_DEST (set));
@@ -2943,7 +2943,7 @@ init_alias_analysis (void)
 		    }
 		  else if (REG_N_SETS (regno) == 1
 			   && GET_CODE (src) == PLUS
-			   && GET_CODE (XEXP (src, 0)) == REG
+			   && REG_P (XEXP (src, 0))
 			   && (t = get_reg_known_value (REGNO (XEXP (src, 0))))
 			   && GET_CODE (XEXP (src, 1)) == CONST_INT)
 		    {
@@ -3004,7 +3004,7 @@ init_alias_analysis (void)
       for (ui = 0; ui < maxreg; ui++)
 	{
 	  rtx base = VARRAY_RTX (reg_base_value, ui);
-	  if (base && GET_CODE (base) == REG)
+	  if (base && REG_P (base))
 	    {
 	      unsigned int base_regno = REGNO (base);
 	      if (base_regno == ui)		/* register set from itself */

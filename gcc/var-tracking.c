@@ -1099,8 +1099,8 @@ variable_union (void **slot, void *data)
 		   node2 = dst->var_part[j].loc_chain; node && node2;
 		   node = node->next, node2 = node2->next)
 		{
-		  if (!((GET_CODE (node2->loc) == REG
-			 && GET_CODE (node->loc) == REG
+		  if (!((REG_P (node2->loc)
+			 && REG_P (node->loc)
 			 && REGNO (node2->loc) == REGNO (node->loc))
 			|| rtx_equal_p (node2->loc, node->loc)))
 		    break;
@@ -1136,8 +1136,8 @@ variable_union (void **slot, void *data)
 	      /* Find location from NODE.  */
 	      for (jj = 0; jj < dst_l; jj++)
 		{
-		  if ((GET_CODE (vui[jj].lc->loc) == REG
-		       && GET_CODE (node->loc) == REG
+		  if ((REG_P (vui[jj].lc->loc)
+		       && REG_P (node->loc)
 		       && REGNO (vui[jj].lc->loc) == REGNO (node->loc))
 		      || rtx_equal_p (vui[jj].lc->loc, node->loc))
 		    {
@@ -1246,7 +1246,7 @@ variable_part_different_p (variable_part *vp1, variable_part *vp2)
     {
       for (lc2 = vp2->loc_chain; lc2; lc2 = lc2->next)
 	{
-	  if (GET_CODE (lc1->loc) == REG && GET_CODE (lc2->loc) == REG)
+	  if (REG_P (lc1->loc) && REG_P (lc2->loc))
 	    {
 	      if (REGNO (lc1->loc) == REGNO (lc2->loc))
 		break;
@@ -1282,8 +1282,8 @@ variable_different_p (variable var1, variable var2,
 	return true;
       if (compare_current_location)
 	{
-	  if (!((GET_CODE (var1->var_part[i].cur_loc) == REG
-		 && GET_CODE (var2->var_part[i].cur_loc) == REG
+	  if (!((REG_P (var1->var_part[i].cur_loc)
+		 && REG_P (var2->var_part[i].cur_loc)
 		 && (REGNO (var1->var_part[i].cur_loc)
 		     == REGNO (var2->var_part[i].cur_loc)))
 		|| rtx_equal_p (var1->var_part[i].cur_loc,
@@ -1493,7 +1493,7 @@ count_uses (rtx *loc, void *insn)
 {
   basic_block bb = BLOCK_FOR_INSN ((rtx) insn);
 
-  if (GET_CODE (*loc) == REG)
+  if (REG_P (*loc))
     {
 #ifdef ENABLE_CHECKING
 	if (REGNO (*loc) >= FIRST_PSEUDO_REGISTER)
@@ -1534,7 +1534,7 @@ count_stores (rtx loc, rtx expr ATTRIBUTE_UNUSED, void *insn)
 static int
 add_uses (rtx *loc, void *insn)
 {
-  if (GET_CODE (*loc) == REG)
+  if (REG_P (*loc))
     {
       basic_block bb = BLOCK_FOR_INSN ((rtx) insn);
       micro_operation *mo = VTI (bb)->mos + VTI (bb)->n_mos++;
@@ -1574,7 +1574,7 @@ add_uses_1 (rtx *x, void *insn)
 static void
 add_stores (rtx loc, rtx expr, void *insn)
 {
-  if (GET_CODE (loc) == REG)
+  if (REG_P (loc))
     {
       basic_block bb = BLOCK_FOR_INSN ((rtx) insn);
       micro_operation *mo = VTI (bb)->mos + VTI (bb)->n_mos++;
@@ -1629,7 +1629,7 @@ compute_bb_dataflow (basic_block bb)
 	    {
 	      rtx loc = VTI (bb)->mos[i].u.loc;
 
-	      if (GET_CODE (loc) == REG)
+	      if (REG_P (loc))
 		var_reg_delete_and_set (out, loc);
 	      else if (GET_CODE (loc) == MEM)
 		var_mem_delete_and_set (out, loc);
@@ -1641,7 +1641,7 @@ compute_bb_dataflow (basic_block bb)
 	    {
 	      rtx loc = VTI (bb)->mos[i].u.loc;
 
-	      if (GET_CODE (loc) == REG)
+	      if (REG_P (loc))
 		var_reg_delete (out, loc);
 	      else if (GET_CODE (loc) == MEM)
 		var_mem_delete (out, loc);
@@ -1999,7 +1999,7 @@ set_variable_part (dataflow_set *set, rtx loc, tree decl, HOST_WIDE_INT offset)
 	  node = var->var_part[pos].loc_chain;
 
 	  if (node
-	      && ((GET_CODE (node->loc) == REG && GET_CODE (loc) == REG
+	      && ((REG_P (node->loc) && REG_P (loc)
 		   && REGNO (node->loc) == REGNO (loc))
 		  || rtx_equal_p (node->loc, loc)))
 	    {
@@ -2046,7 +2046,7 @@ set_variable_part (dataflow_set *set, rtx loc, tree decl, HOST_WIDE_INT offset)
   for (node = var->var_part[pos].loc_chain; node; node = next)
     {
       next = node->next;
-      if ((GET_CODE (node->loc) == REG && GET_CODE (loc) == REG
+      if ((REG_P (node->loc) && REG_P (loc)
 	   && REGNO (node->loc) == REGNO (loc))
 	  || rtx_equal_p (node->loc, loc))
 	{
@@ -2115,7 +2115,7 @@ delete_variable_part (dataflow_set *set, rtx loc, tree decl,
 	      for (node = var->var_part[pos].loc_chain; node;
 		   node = node->next)
 		{
-		  if ((GET_CODE (node->loc) == REG && GET_CODE (loc) == REG
+		  if ((REG_P (node->loc) && REG_P (loc)
 		       && REGNO (node->loc) == REGNO (loc))
 		      || rtx_equal_p (node->loc, loc))
 		    {
@@ -2130,7 +2130,7 @@ delete_variable_part (dataflow_set *set, rtx loc, tree decl,
 	  for (node = *nextp; node; node = next)
 	    {
 	      next = node->next;
-	      if ((GET_CODE (node->loc) == REG && GET_CODE (loc) == REG
+	      if ((REG_P (node->loc) && REG_P (loc)
 		   && REGNO (node->loc) == REGNO (loc))
 		  || rtx_equal_p (node->loc, loc))
 		{
@@ -2146,8 +2146,8 @@ delete_variable_part (dataflow_set *set, rtx loc, tree decl,
 	     we have to emit new location so add the variable to set
 	     of changed variables.  */
 	  if (var->var_part[pos].cur_loc
-	      && ((GET_CODE (loc) == REG
-		   && GET_CODE (var->var_part[pos].cur_loc) == REG
+	      && ((REG_P (loc)
+		   && REG_P (var->var_part[pos].cur_loc)
 		   && REGNO (loc) == REGNO (var->var_part[pos].cur_loc))
 		  || rtx_equal_p (loc, var->var_part[pos].cur_loc)))
 	    {
@@ -2375,7 +2375,7 @@ emit_notes_in_bb (basic_block bb)
 	    {
 	      rtx loc = VTI (bb)->mos[i].u.loc;
 
-	      if (GET_CODE (loc) == REG)
+	      if (REG_P (loc))
 		var_reg_delete_and_set (&set, loc);
 	      else
 		var_mem_delete_and_set (&set, loc);
@@ -2392,7 +2392,7 @@ emit_notes_in_bb (basic_block bb)
 	    {
 	      rtx loc = VTI (bb)->mos[i].u.loc;
 
-	      if (GET_CODE (loc) == REG)
+	      if (REG_P (loc))
 		var_reg_delete (&set, loc);
 	      else
 		var_mem_delete (&set, loc);
@@ -2463,7 +2463,7 @@ vt_emit_notes (void)
 static bool
 vt_get_decl_and_offset (rtx rtl, tree *declp, HOST_WIDE_INT *offsetp)
 {
-  if (GET_CODE (rtl) == REG)
+  if (REG_P (rtl))
     {
       if (REG_ATTRS (rtl))
 	{
@@ -2533,7 +2533,7 @@ vt_add_function_parameters (void)
 	incoming = adjust_stack_reference (incoming, -stack_adjust);
       out = &VTI (ENTRY_BLOCK_PTR)->out;
 
-      if (GET_CODE (incoming) == REG)
+      if (REG_P (incoming))
 	{
 #ifdef ENABLE_CHECKING
 	  if (REGNO (incoming) >= FIRST_PSEUDO_REGISTER)
