@@ -380,6 +380,12 @@ do {									\
 /* Real stack boundary as mandated by the appropriate ABI.  */
 #define ABI_STACK_BOUNDARY ((TARGET_EABI && !TARGET_ALTIVEC_ABI) ? 64 : 128)
 
+/* An expression for the alignment of a structure field FIELD if the
+   alignment computed in the usual way is COMPUTED.  */
+#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED)				      \
+	((TARGET_ALTIVEC && TREE_CODE (TREE_TYPE (FIELD)) == VECTOR_TYPE)     \
+	 ? 128 : COMPUTED)
+
 /* Define this macro as an expression for the alignment of a type
    (given by TYPE as a tree node) if the alignment computed in the
    usual way is COMPUTED and the alignment explicitly specified was
