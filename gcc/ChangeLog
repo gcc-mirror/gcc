@@ -1,3 +1,7 @@
+2000-11-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* fixinc/gnu-regex.c: Rename EGCS LOCAL markers to GCC LOCAL.
+
 2000-11-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* calls.c (expand_call, emit_library_call_value_1), collect2.c
@@ -79,8 +83,9 @@ Wed Nov  8 21:53:41 MET 2000  Jan Hubicka  <jh@suse.cz>
 	* expr.c (expand_expr) [ADDR_EXPR]: Handle when op0 is RETURN_DECL
 	passed in multiple non-contiguous locations.
 
+>>>>>>> 1.8198
 2000-11-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-
+	
 	* README.gnat: Remove file.
 
 2000-11-08  Alexandre Oliva  <aoliva@redhat.com>
