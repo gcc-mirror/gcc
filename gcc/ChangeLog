@@ -1,3 +1,8 @@
+2000-11-09  Matthew Hiller <hiller@redhat.com>
+
+	* reload1.c (reload_combine): Fixed calculation of
+	first_index_reg, last_index_reg.
+
 2000-11-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-dump.c (dequeue_and_dump): Dump function bodies.

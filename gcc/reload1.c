@@ -8363,7 +8363,7 @@ static void
 reload_combine ()
 {
   rtx insn, set;
-  int first_index_reg = 1, last_index_reg = 0;
+  int first_index_reg = -1, last_index_reg;
   int i;
   unsigned int r;
   int last_label_ruid;
@@ -8381,14 +8381,14 @@ reload_combine ()
   for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
     if (TEST_HARD_REG_BIT (reg_class_contents[INDEX_REG_CLASS], r))
       {
-	if (! first_index_reg)
+	if (first_index_reg == -1)
 	  first_index_reg = r;
 
 	last_index_reg = r;
       }
 
   /* If no index register is available, we can quit now.  */
-  if (first_index_reg > last_index_reg)
+  if (first_index_reg == -1)
     return;
 
   /* Set up LABEL_LIVE and EVER_LIVE_AT_START.  The register lifetime
