@@ -125,6 +125,9 @@
 (define_attr "current_function_calls_alloca" "false,true"
   (symbol_ref "current_function_calls_alloca != 0"))
 
+(define_attr "delayed_branch" "false,true"
+  (symbol_ref "flag_delayed_branch != 0"))
+
 ;; Length (in # of insns).
 (define_attr "length" ""
   (cond [(eq_attr "type" "uncond_branch,call,sibcall")
@@ -1674,9 +1677,17 @@
 		 (match_operand 2 "call_operand_address" "")] UNSPEC_LOAD_PCREL_SYM))
    (clobber (reg:SI 15))]
   ""
-  "sethi\t%%hi(%a1-4), %0\n\tcall\t%a2\n\tadd\t%0, %%lo(%a1+4), %0"
-  [(set_attr "type" "multi")
-   (set_attr "length" "3")])
+{
+  if (flag_delayed_branch)
+    return "sethi\t%%hi(%a1-4), %0\n\tcall\t%a2\n\t add\t%0, %%lo(%a1+4), %0";
+  else
+    return "sethi\t%%hi(%a1-8), %0\n\tadd\t%0, %%lo(%a1-4), %0\n\tcall\t%a2\n\t nop";
+}
+  [(set (attr "type") (const_string "multi"))
+   (set (attr "length")
+	(if_then_else (eq_attr "delayed_branch" "true")
+		      (const_int 3)
+		      (const_int 4)))])
 
 ;; Move instructions
 
@@ -7824,9 +7835,17 @@
 (define_insn "goto_handler_and_restore"
   [(unspec_volatile [(match_operand 0 "register_operand" "=r")] UNSPECV_GOTO)]
   "GET_MODE (operands[0]) == Pmode"
-  "jmp\t%0+0\n\trestore"
-  [(set_attr "type" "multi")
-   (set_attr "length" "2")])
+{
+  if (flag_delayed_branch)
+    return "jmp\t%0\n\t restore";
+  else
+    return "mov\t%0,%%g1\n\trestore\n\tjmp\t%%g1\n\t nop";
+}
+  [(set (attr "type") (const_string "multi"))
+   (set (attr "length")
+	(if_then_else (eq_attr "delayed_branch" "true")
+		      (const_int 2)
+		      (const_int 4)))])
 
 ;; For __builtin_setjmp we need to flush register windows iff the function
 ;; calls alloca as well, because otherwise the register window might be
