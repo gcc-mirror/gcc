@@ -1,3 +1,7 @@
+2005-02-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* intrinsic.h, st.c: Update copyright.
+
 2005-02-20  Steven G. Kargl  <kargls@comcast.net>
 
 	* symbol.c: Typos in comments.

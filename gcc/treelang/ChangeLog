@@ -1,3 +1,7 @@
+2005-02-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* parse.y: Update copyright.
+
 2005-02-13  James A. Morrison  <phython@gcc.gnu.org>
 
 	* treetree.c (tree_lang_type_for_mode): Return NULL_TREE for all non
