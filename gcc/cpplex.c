@@ -1651,7 +1651,7 @@ _cpp_read_and_prescan (pfile, fp, desc, len)
 	    {
 	      size_t delta_op;
 	      size_t delta_line_base;
-	      len *= 2;
+	      len = offset * 2;
 	      if (offset > len)
 		/* len overflowed.
 		   This could happen if the file is larger than half the
