@@ -1,7 +1,7 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   2001 Free Software Foundation, Inc.
+/* Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000, 2001  Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1145,8 +1145,8 @@ __floatdisf (DWtype u)
 UWtype
 __fixunsxfSI (XFtype a)
 {
-  if (a >= - (DFtype) LONG_MIN)
-    return (Wtype) (a + LONG_MIN) - LONG_MIN;
+  if (a >= - (DFtype) Wtype_MIN)
+    return (Wtype) (a + Wtype_MIN) - Wtype_MIN;
   return (Wtype) a;
 }
 #endif
@@ -1167,8 +1167,8 @@ __fixunsxfSI (XFtype a)
 UWtype
 __fixunsdfSI (DFtype a)
 {
-  if (a >= - (DFtype) LONG_MIN)
-    return (Wtype) (a + LONG_MIN) - LONG_MIN;
+  if (a >= - (DFtype) Wtype_MIN)
+    return (Wtype) (a + Wtype_MIN) - Wtype_MIN;
   return (Wtype) a;
 }
 #endif
@@ -1189,8 +1189,8 @@ __fixunsdfSI (DFtype a)
 UWtype
 __fixunssfSI (SFtype a)
 {
-  if (a >= - (SFtype) LONG_MIN)
-    return (Wtype) (a + LONG_MIN) - LONG_MIN;
+  if (a >= - (SFtype) Wtype_MIN)
+    return (Wtype) (a + Wtype_MIN) - Wtype_MIN;
   return (Wtype) a;
 }
 #endif
