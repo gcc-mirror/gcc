@@ -546,7 +546,7 @@
 ;; There is no way to model this with gcc's function units.  This problem is
 ;; actually mentioned in md.texi.  Tackling this problem requires first that
 ;; it is possible to speak about the target in an open discussion.
-;; 
+;;
 ;; However, simple double-precision operations always conflict.
 
 (define_function_unit "fp"    1 0
@@ -1048,7 +1048,7 @@
   "@
 	addz.l	%1, %2, %0
 	addz.l	%1, r63, %0")
-		 
+
 (define_insn "adddi3_compact"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r")
 	(plus:DI (match_operand:DI 1 "arith_reg_operand" "%0")
@@ -1122,7 +1122,7 @@
   "@
 	add.l	%1, %2, %0
 	addi.l	%1, %2, %0")
-  
+
 (define_insn "*addsi3_compact"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(plus:SI (match_operand:SI 1 "arith_operand" "%0")
@@ -1138,25 +1138,26 @@
 
 (define_expand "subdi3"
   [(set (match_operand:DI 0 "arith_reg_operand" "")
-	(minus:DI (match_operand:DI 1 "arith_reg_operand" "")
+	(minus:DI (match_operand:DI 1 "arith_reg_or_0_operand" "")
 		  (match_operand:DI 2 "arith_reg_operand" "")))]
   ""
   "
 {
   if (TARGET_SH1)
     {
+      operands[1] = force_reg (DImode, operands[1]);
       emit_insn (gen_subdi3_compact (operands[0], operands[1], operands[2]));
       DONE;
     }
 }")
-  
+
 (define_insn "*subdi3_media"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r")
-	(minus:DI (match_operand:DI 1 "arith_reg_operand" "r")
+	(minus:DI (match_operand:DI 1 "arith_reg_or_0_operand" "rN")
 		  (match_operand:DI 2 "arith_reg_operand" "r")))]
   "TARGET_SHMEDIA"
-  "sub	%1, %2, %0")
-  
+  "sub	%N1, %2, %0")
+
 (define_insn "subdi3_compact"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r")
 	(minus:DI (match_operand:DI 1 "arith_reg_operand" "0")
@@ -1558,7 +1559,7 @@
 					   : \"__sdivsi3\")));
 
       if (TARGET_SHMEDIA)
-	last = gen_divsi3_i1_media (operands[0], 
+	last = gen_divsi3_i1_media (operands[0],
 				    Pmode == DImode
 				    ? operands[3]
 				    : gen_rtx_SUBREG (DImode, operands[3],
@@ -1771,7 +1772,7 @@
 		 (sign_extend:DI (match_operand:SI 2 "arith_reg_operand" "r"))))]
   "TARGET_SHMEDIA"
   "muls.l	%1, %2, %0")
-  
+
 (define_insn "mulsidi3_compact"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r")
 	(mult:DI
@@ -1841,7 +1842,7 @@
 		 (zero_extend:DI (match_operand:SI 2 "arith_reg_operand" "r"))))]
   "TARGET_SHMEDIA"
   "mulu.l	%1, %2, %0")
-  
+
 (define_insn "umulsidi3_compact"
   [(set (match_operand:DI 0 "arith_reg_operand" "=r")
 	(mult:DI
@@ -3440,7 +3441,7 @@
    (set_attr "type" "pcload,move,load,store,move,pcload,move,move")])
 
 ;; If the output is a register and the input is memory or a register, we have
-;; to be careful and see which word needs to be loaded first.  
+;; to be careful and see which word needs to be loaded first.
 
 (define_split
   [(set (match_operand:DI 0 "general_movdst_operand" "")
@@ -4195,7 +4196,7 @@
 }")
 
 ;; If the output is a register and the input is memory or a register, we have
-;; to be careful and see which word needs to be loaded first.  
+;; to be careful and see which word needs to be loaded first.
 
 (define_split
   [(set (match_operand:DF 0 "general_movdst_operand" "")
@@ -4392,7 +4393,7 @@
   DONE;
 }"
   [(set_attr "length" "8")])
-  
+
 (define_expand "movv4sf"
   [(set (match_operand:V4SF 0 "nonimmediate_operand" "=f,f,m")
 	(match_operand:V4SF 1 "nonimmediate_operand" "f,m,f"))]
@@ -4444,7 +4445,7 @@
   DONE;
 }"
   [(set_attr "length" "32")])
-  
+
 (define_expand "movv16sf"
   [(set (match_operand:V16SF 0 "nonimmediate_operand" "=f,f,m")
 	(match_operand:V16SF 1 "nonimmediate_operand" "f,m,f"))]
@@ -4499,7 +4500,7 @@
   REAL_VALUE_FROM_CONST_DOUBLE (value, operands[1]);
   REAL_VALUE_TO_TARGET_SINGLE (value, values);
   operands[2] = GEN_INT (values);
-  
+
   operands[3] = gen_rtx_REG (DImode, true_regnum (operands[0]));
 }")
 
@@ -5410,7 +5411,7 @@
 	  if (! SYMBOL_REF_FLAG (operands[0]))
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
-	      
+
 	      emit_insn (gen_symGOTPLT2reg (reg, operands[0]));
 	      operands[0] = reg;
 	    }
@@ -5634,7 +5635,7 @@
 	  if (! SYMBOL_REF_FLAG (operands[1]))
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
-	      
+
 	      emit_insn (gen_symGOTPLT2reg (reg, operands[1]));
 	      operands[1] = reg;
 	    }
@@ -5841,7 +5842,7 @@
 	  if (! SYMBOL_REF_FLAG (operands[0]))
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
-	      
+
 	      /* We must not use GOTPLT for sibcalls, because PIC_REG
 		 must be restored before the PLT code gets to run.  */
 	      emit_insn (gen_symGOT2reg (reg, operands[0]));
@@ -6167,7 +6168,7 @@
    (use (label_ref (match_operand 1 "" "")))]
   "TARGET_SHMEDIA"
   "blink	%0, r63")
-  
+
 ;; Call subroutine returning any type.
 ;; ??? This probably doesn't work.
 
@@ -6284,7 +6285,7 @@
 	tr = gen_rtx_SUBREG (GET_MODE (operands[0]), tr, 0);
 
       insn = emit_move_insn (operands[0], tr);
-      
+
       REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, equiv,
 					    REG_NOTES (insn));
 
@@ -6370,10 +6371,10 @@
   if (TARGET_SHMEDIA)
     {
       rtx reg = operands[2];
-      
+
       if (GET_MODE (reg) != DImode)
 	reg = gen_rtx_SUBREG (DImode, reg, 0);
-      
+
       if (flag_pic > 1)
 	emit_insn (gen_movdi_const_32bit (reg, operands[1]));
       else
@@ -6391,7 +6392,7 @@
   REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, XVECEXP (XEXP (operands[1],
 								  0), 0, 0),
 					REG_NOTES (insn));
-  
+
   DONE;
 }")
 
@@ -7231,7 +7232,7 @@
 				    (match_dup 2))))
 	      (set (reg:SI T_REG)
 		   (ne:SI (ior:SI (match_dup 1) (match_dup 2))
-			  (const_int 0)))])]  
+			  (const_int 0)))])]
   ""
   "
 {
@@ -7282,7 +7283,7 @@
 				    (match_dup 2))))
 	      (set (reg:SI T_REG)
 		   (ne:SI (ior:SI (match_operand 1 "" "") (match_dup 2))
-			  (const_int 0)))])]  
+			  (const_int 0)))])]
   "TARGET_SH1"
   "operands[2] = gen_reg_rtx (SImode);")
 
@@ -8279,7 +8280,7 @@
 ;;   "#"
 ;;   [(set_attr "length" "4")
 ;;    (set_attr "fp_mode" "double")])
-;; 
+;;
 ;; (define_split
 ;;   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 ;; 	(fix:SI (match_operand:DF 1 "arith_reg_operand" "f")))
@@ -8320,7 +8321,7 @@
   "* return output_ieee_ccmpeq (insn, operands);"
   [(set_attr "length" "4")
    (set_attr "fp_mode" "double")])
-   
+
 (define_insn "cmpeqdf_media"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(eq:DI (match_operand:DF 1 "fp_arith_reg_operand" "f")
@@ -8806,10 +8807,7 @@
   "TARGET_SHMEDIA && reload_completed
    && GET_MODE (operands[0]) == GET_MODE (operands[1])
    && VECTOR_MODE_SUPPORTED_P (GET_MODE (operands[0]))
-   && XVECEXP (operands[1], 0, 0) != const0_rtx
-   && (HOST_BITS_PER_WIDE_INT >= 64
-       || HOST_BITS_PER_WIDE_INT >= GET_MODE_BITSIZE (GET_MODE (operands[0]))
-       || sh_1el_vec (operands[1], VOIDmode))"
+   && ! zero_vec_operand (operands[1], VOIDmode)"
   [(set (match_dup 0) (match_dup 1))]
   "
 {
@@ -8819,7 +8817,7 @@
 
   operands[0] = gen_rtx_REG (new_mode, true_regnum (operands[0]));
   operands[1]
-    = simplify_subreg (new_mode, operands[1], GET_MODE (operands[0]), 0);
+    = simplify_subreg (new_mode, operands[1], GET_MODE (operands[1]), 0);
 }")
 
 (define_expand "movv2hi"
@@ -8878,7 +8876,7 @@
        || register_operand (operands[1], V2SImode))"
   "@
 	add	%1, r63, %0
-	movi	%1, %0
+	#
 	#
 	ld%M1.q	%m1, %0
 	st%M0.q	%m0, %1"
@@ -9641,7 +9639,7 @@
 /* These are useful to expand ANDs and as combiner patterns.  */
 (define_insn "mshfhi_l_di"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r")
-	(ior:DI (lshiftrt:DI (match_operand:DI 1 "arith_reg_or_0_operand" "rU") 
+	(ior:DI (lshiftrt:DI (match_operand:DI 1 "arith_reg_or_0_operand" "rU")
                              (const_int 32))
 		(and:DI (match_operand:DI 2 "arith_reg_or_0_operand" "rU")
 			(const_int -4294967296))))]
@@ -9653,11 +9651,30 @@
   [(set (match_operand:DI 0 "arith_reg_dest" "=r")
 	(ior:DI (and:DI (match_operand:DI 1 "arith_reg_or_0_operand" "rU")
 			(const_int -4294967296))
-		(lshiftrt:DI (match_operand:DI 2 "arith_reg_or_0_operand" "rU") 
+		(lshiftrt:DI (match_operand:DI 2 "arith_reg_or_0_operand" "rU")
                              (const_int 32))))]
   "TARGET_SHMEDIA"
   "mshfhi.l	%N2, %N1, %0"
   [(set_attr "type" "arith_media")])
+
+(define_split
+  [(set (match_operand:DI 0 "arith_reg_dest" "")
+	(ior:DI (zero_extend:DI (match_operand:SI 1
+					      "extend_reg_or_0_operand" ""))
+		(and:DI (match_operand:DI 2 "arith_reg_or_0_operand" "")
+			(const_int -4294967296))))
+   (clobber (match_operand:DI 3 "arith_reg_dest" ""))]
+  "TARGET_SHMEDIA"
+  [(const_int 0)]
+  "
+{
+  emit_insn (gen_ashldi3_media (operands[3],
+				simplify_gen_subreg (DImode, operands[1],
+						     SImode, 0),
+				GEN_INT (32)));
+  emit_insn (gen_mshfhi_l_di (operands[0], operands[3], operands[2]));
+  DONE;
+}")
 
 (define_insn "mshflo_l_di"
   [(set (match_operand:DI 0 "arith_reg_dest" "=r")

@@ -1,3 +1,18 @@
+Tue Jul  2 18:45:45 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (print_operand, case 'N'): Allow zero vector.
+	(arith_reg_or_0_operand): Likewise.
+	(zero_vec_operand): Check for CONST_VECTOR, not PARALLEL.
+	* sh.h (CONST_COSTS): 0 has 0 cost.  Check OUTER_CODE for 
+	IOR, XOR, PLUS and SET and take their respective constant
+	ranges into account.
+	(PREDICATE_CODES, arith_reg_or_0_operand): Can be CONST_VECTOR.
+	* sh.md (subdi3, subdi3_media): Allow zero operand.
+	(movv8qi_i+3): Only vector that is not split is the zero vector.
+	Fix operand 3 to simplify_subreg.
+	(movv2si_i): Split alternative 1.
+	(mshfhi_l_di_rev+1): New splitter.
+
 2002-07-02  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppinit.c (cpp_handle_option):  Suppress warnings with an
