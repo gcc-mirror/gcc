@@ -1,3 +1,9 @@
+2004-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/16276
+	* g++.old-deja/g++.other/comdat4.C: New test.
+	* g++.old-deja/g++.other/comdat4-aux.cc: New.
+
 2004-08-12  Ben Elliston  <bje@au.ibm.com>
 
 	PR target/16286

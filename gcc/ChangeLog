@@ -1,3 +1,30 @@
+2004-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/16276
+	* output.h (default_function_rodata_section,
+	default_no_function_rodata_section): New prototypes.
+	* target.h (struct gcc_target): Add asm_out.function_rodata_section.
+	* target-def.h (TARGET_ASM_FUNCTION_RODATA_SECTION): Define.
+	(TARGET_ASM_OUT): Add it.
+	* varasm.c (default_function_rodata_section,
+	default_no_function_rodata_section): New functions.
+	* final.c (final_scan_insn): Call
+	targetm.asm_out.function_rodata_section instead of
+	readonly_data_section.
+	* config/darwin.h (TARGET_ASM_FUNCTION_RODATA_SECTION): Define.
+	* config/mcore/mcore.c (TARGET_ASM_FUNCTION_RODATA_SECTION): Likewise.
+	* config/ip2k/ip2k.c (TARGET_ASM_FUNCTION_RODATA_SECTION): Likewise.
+	* config/rs6000/xcoff.h (TARGET_ASM_FUNCTION_RODATA_SECTION):
+	Likewise.
+	* config/alpha/alpha.c (TARGET_ASM_FUNCTION_RODATA_SECTION): Likewise.
+	* config/i386/cygming.h (TARGET_ASM_FUNCTION_RODATA_SECTION):
+	Likewise.
+	* config/i386/i386-interix.h (TARGET_ASM_FUNCTION_RODATA_SECTION):
+	Likewise.
+	* config/arm/pe.h (TARGET_ASM_FUNCTION_RODATA_SECTION): Likewise.
+	* config/avr/avr.c (TARGET_ASM_FUNCTION_RODATA_SECTION): Likewise.
+	* doc/tm.texi (TARGET_ASM_FUNCTION_RODATA_SECTION): Document.
+
 2004-08-12  Paul Brook  <paul@codesourcery.com>
 
 	* dwarf2out.h (dwarf2out_frame_finish): Conditionalize outputting eh

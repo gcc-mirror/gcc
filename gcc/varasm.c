@@ -547,6 +547,53 @@ function_section (tree decl)
     }
 }
 
+/* Switch to read-only data section associated with function DECL.  */
+
+void
+default_function_rodata_section (tree decl)
+{
+  if (decl != NULL_TREE && DECL_SECTION_NAME (decl))
+    {
+      const char *name = TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
+
+      /* For .gnu.linkonce.t.foo we want to use .gnu.linkonce.r.foo.  */
+      if (DECL_ONE_ONLY (decl) && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
+	{
+	  size_t len = strlen (name) + 1;
+	  char *rname = alloca (len);
+
+	  memcpy (rname, name, len);
+	  rname[14] = 'r';
+	  named_section_flags (rname, SECTION_LINKONCE);
+	  return;
+	}
+      /* For .text.foo we want to use .rodata.foo.  */
+      else if (flag_function_sections && flag_data_sections
+	       && strncmp (name, ".text.", 6) == 0)
+	{
+	  size_t len = strlen (name) + 1;
+	  char *rname = alloca (len + 2);
+
+	  memcpy (rname, ".rodata", 7);
+	  memcpy (rname + 7, name + 5, len - 5);
+	  named_section_flags (rname, 0);
+	  return;
+	}
+    }
+
+  readonly_data_section ();
+}
+
+/* Switch to read-only data section associated with function DECL
+   for targets where that section should be always the single
+   readonly data section.  */
+
+void
+default_no_function_rodata_section (tree decl ATTRIBUTE_UNUSED)
+{
+  readonly_data_section ();
+}
+
 /* Switch to section for variable DECL.  RELOC is the same as the
    argument to SELECT_SECTION.  */
 

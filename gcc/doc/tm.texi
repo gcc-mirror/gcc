@@ -5933,6 +5933,15 @@ example, the function @code{foo} would be placed in @code{.text.foo}.
 Whatever the actual target object format, this is often good enough.
 @end deftypefn
 
+@deftypefn {Target Hook} void TARGET_ASM_FUNCTION_RODATA_SECTION (tree @var{decl})
+Switches to a readonly data section associated with
+@samp{DECL_SECTION_NAME (@var{decl})}.
+The default version of this function switches to @code{.gnu.linkonce.r.name}
+section if function's section is @code{.gnu.linkonce.t.name}, to
+@code{.rodata.name} if function is in @code{.text.name} section
+and otherwise switches to the normal readonly data section.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_ASM_SELECT_RTX_SECTION (enum machine_mode @var{mode}, rtx @var{x}, unsigned HOST_WIDE_INT @var{align})
 Switches to the appropriate section for output of constant pool entry
 @var{x} in @var{mode}.  You can assume that @var{x} is some kind of
