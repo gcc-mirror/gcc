@@ -2135,7 +2135,7 @@ compstmt_start: '{' { compstmt_count++;
 compstmt_nostart: '}'
 		{ $$ = convert (void_type_node, integer_zero_node); }
 	| pushlevel maybe_label_decls compstmt_contents_nonempty '}' poplevel
-		{ $$ = poplevel (KEEP_MAYBE, 1, 0);
+		{ $$ = poplevel (KEEP_MAYBE, 0, 0);
 		  SCOPE_STMT_BLOCK (TREE_PURPOSE ($5))
 		    = SCOPE_STMT_BLOCK (TREE_VALUE ($5))
 		    = $$; }

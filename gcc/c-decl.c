@@ -97,7 +97,7 @@ static tree last_function_parm_tags;
 /* ... and a chain of all non-parameter declarations (such as
    CONST_DECLs from enumerations) here.  */
 
-static tree last_function_parm_vars;
+static tree last_function_parm_others;
 
 /* After parsing the declarator that starts a function definition,
    `start_function' puts the list of parameter names or chain of decls here
@@ -109,9 +109,9 @@ static tree current_function_parms;
 
 static tree current_function_parm_tags;
 
-/* And for last_function_parm_vars.  */
+/* And for last_function_parm_others.  */
 
-static tree current_function_parm_vars;
+static tree current_function_parm_others;
 
 /* Similar, for the file and line that the prototype came from if this is
    an old-style definition.  */
@@ -162,18 +162,30 @@ static int warn_about_return_type;
 
 static int current_extern_inline;
 
-/* For each binding contour we allocate a c_scope structure
- * which records the names defined in that contour.
- * Contours include:
- *  0) the global one
- *  1) one for each function definition,
- *     where internal declarations of the parameters appear.
- *  2) one for each compound statement,
- *     to record its declarations.
- *
- * The current meaning of a name can be found by searching the nested
- * scopes from the current one out to the global one.
- */
+/* Each c_scope structure describes the complete contents of one scope.
+   Three scopes are distinguished specially: the innermost or current
+   scope, the innermost function scope, and the outermost or file scope.
+
+   Most declarations are recorded in the current scope.
+
+   All normal label declarations are recorded in the innermost
+   function scope, as are bindings of undeclared identifiers to
+   error_mark_node.  (GCC permits nested functions as an extension,
+   hence the 'innermost' qualifier.)  Explicitly declared labels
+   (using the __label__ extension) appear in the current scope.
+
+   Being in the global scope (current_scope == global_scope) causes
+   special behavior in several places below.  Also, under some
+   conditions the Objective-C front end records declarations in the
+   global scope even though that isn't the current scope.
+
+   The order of the names, parms, and blocks lists matters, and they
+   are frequently appended to.  To avoid having to walk all the way to
+   the end of the list on each insertion, or reverse the lists later,
+   we maintain a pointer to the last list entry for each of the lists.
+
+   The order of the tags, shadowed, shadowed_tags, and incomplete
+   lists does not matter, so we just prepend to these lists.  */
 
 struct c_scope GTY(())
 {
@@ -183,13 +195,14 @@ struct c_scope GTY(())
   /* The next outermost function scope.  */
   struct c_scope *outer_function;
 
-  /* All variables, constants, functions, labels, and typedef names.
-     They are in the reverse of the order supplied.  */
+  /* All variables, constants, functions, labels, and typedef names.  */
   tree names;
+  tree names_last;
 
   /* All parameter declarations.  Used only in the outermost scope of
-     a function.  Again, in the reverse of the order supplied.  */
+     a function.  */
   tree parms;
+  tree parms_last;
 
   /* All structure, union, and enum type tags.  */
   tree tags;
@@ -209,9 +222,10 @@ struct c_scope GTY(())
   /* For each scope (except the global one), a chain of BLOCK nodes
      for all the scopes that were entered and exited one level down.  */
   tree blocks;
+  tree blocks_last;
 
   /* Variable declarations with incomplete type in this scope.  */
-  tree incomplete_list;
+  tree incomplete;
 
   /* True if we are currently filling this scope with parameter
      declarations.  */
@@ -251,6 +265,28 @@ static GTY(()) struct c_scope *current_function_scope;
 
 static GTY(()) struct c_scope *global_scope;
 
+/* Append VAR to LIST in scope SCOPE.  */		\
+#define SCOPE_LIST_APPEND(scope, list, decl) do {	\
+  struct c_scope *s_ = (scope);				\
+  tree d_ = (decl);					\
+  if (s_->list##_last)					\
+    TREE_CHAIN (s_->list##_last) = d_;			\
+  else							\
+    s_->list = d_;					\
+  s_->list##_last = d_;					\
+} while (0)
+
+/* Concatenate FROM in scope FSCOPE onto TO in scope TSCOPE.  */
+#define SCOPE_LIST_CONCAT(tscope, to, fscope, from) do {	\
+  struct c_scope *t_ = (tscope);				\
+  struct c_scope *f_ = (fscope);				\
+  if (t_->to##_last)						\
+    TREE_CHAIN (t_->to##_last) = f_->from;			\
+  else								\
+    t_->to = f_->from;						\
+  t_->to##_last = f_->from##_last;				\
+} while (0)
+
 /* True means unconditionally make a BLOCK for the next scope pushed.  */
 
 static bool keep_next_level_flag;
@@ -288,7 +324,6 @@ static tree any_external_decl (tree);
 static void record_external_decl (tree);
 static void warn_if_shadowing (tree, tree);
 static void clone_underlying_type (tree);
-static void pushdecl_function_level (tree, tree);
 static bool flexible_array_type_p (tree);
 static hashval_t link_hash_hash	(const void *);
 static int link_hash_eq (const void *, const void *);
@@ -454,8 +489,8 @@ pushlevel (int dummy ATTRIBUTE_UNUSED)
    debugging output.  If KEEP is KEEP_MAYBE, do so only if the names
    or tags lists are nonempty.
 
-   If REVERSE is nonzero, reverse the order of decls before putting
-   them into the BLOCK.
+   The second parameter is ignored; it is present only for
+   signature compatibility with lang_hooks.decls.poplevel.
 
    If FUNCTIONBODY is nonzero, this level is the body of a function,
    even if current_scope->function_body is not set.  This is used
@@ -465,185 +500,164 @@ pushlevel (int dummy ATTRIBUTE_UNUSED)
    FIXME: Eliminate the need for all arguments.  */
 
 tree
-poplevel (int keep, int reverse, int functionbody)
+poplevel (int keep, int dummy ATTRIBUTE_UNUSED, int functionbody)
 {
-  tree link;
+  struct c_scope *scope = current_scope;
   tree block;
   tree decl;
-  tree decls = current_scope->names;
-  tree tags = current_scope->tags;
-  tree subblocks = current_scope->blocks;
+  tree p;
 
-  functionbody |= current_scope->function_body;
+  scope->function_body |= functionbody;
 
   if (keep == KEEP_MAYBE)
-    keep = (current_scope->names || current_scope->tags);
+    keep = (scope->names || scope->tags);
 
-  keep |= current_scope->keep;
-  keep |= functionbody;
-
-  /* We used to warn about unused variables in expand_end_bindings,
-     i.e. while generating RTL.  But in function-at-a-time mode we may
-     choose to never expand a function at all (e.g. auto inlining), so
-     we do this explicitly now.
-     No warnings when the global scope is popped because the global
-     scope isn't popped for the last translation unit, so the warnings
-     are done in c_write_global_declaration.  */
-  if (current_scope != global_scope)
-    warn_about_unused_variables (decls);
-
-  /* Clear out the name-meanings declared in this scope.
-     Propagate TREE_ADDRESSABLE from nested functions to their
-     containing functions.  */
-  for (link = decls; link; link = TREE_CHAIN (link))
-    {
-      if (TREE_CODE (link) == LABEL_DECL)
-	{
-	  if (TREE_USED (link) && DECL_INITIAL (link) == 0)
-	    {
-	      error ("%Hlabel `%D' used but not defined",
-		     &DECL_SOURCE_LOCATION (link), link);
-	      /* Avoid crashing later.  */
-	      DECL_INITIAL (link) = error_mark_node;
-	    }
-	  else if (!TREE_USED (link) && warn_unused_label)
-	    {
-	      if (DECL_INITIAL (link) != 0)
-		warning ("%Hlabel `%D' defined but not used",
-			 &DECL_SOURCE_LOCATION (link), link);
-	      else
-		warning ("%Hlabel `%D' declared but not defined",
-			 &DECL_SOURCE_LOCATION (link), link);
-	    }
-	  IDENTIFIER_LABEL_VALUE (DECL_NAME (link)) = 0;
-	}
-      else if (DECL_NAME (link) != 0)
-	{
-	  if (DECL_EXTERNAL (link) 
-	      && current_scope != global_scope)
-	    /* External decls stay in the symbol-value slot but are
-	       inaccessible.  */
-	    C_DECL_INVISIBLE (link) = 1;
-	  else
-	    IDENTIFIER_SYMBOL_VALUE (DECL_NAME (link)) = 0;
-	}
-
-      if (TREE_CODE (link) == FUNCTION_DECL
-	  && ! TREE_ASM_WRITTEN (link)
-	  && DECL_INITIAL (link) != 0
-	  && TREE_ADDRESSABLE (link)
-	  && DECL_ABSTRACT_ORIGIN (link) != 0
-	  && DECL_ABSTRACT_ORIGIN (link) != link)
-	TREE_ADDRESSABLE (DECL_ABSTRACT_ORIGIN (link)) = 1;
-    }
-
-  /* Clear out the parameter bindings declared in this scope.
-     Unused-parameter warnings are handled by function.c.  */
-  for (link = current_scope->parms; link; link = TREE_CHAIN (link))
-    if (DECL_NAME (link))
-      IDENTIFIER_SYMBOL_VALUE (DECL_NAME (link)) = 0;
-
-  /* Clear out the tag-meanings declared in this scope.  */
-  for (link = tags; link; link = TREE_CHAIN (link))
-    if (TREE_PURPOSE (link))
-      IDENTIFIER_TAG_VALUE (TREE_PURPOSE (link)) = 0;
-
-  /* Restore all name- and label-meanings from outer scopes that were
-     shadowed by this scope.  */
-
-  for (link = current_scope->shadowed; link; link = TREE_CHAIN (link))
-    if (TREE_VALUE (link) && TREE_CODE (TREE_VALUE (link)) == LABEL_DECL)
-      IDENTIFIER_LABEL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
-    else
-      IDENTIFIER_SYMBOL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
-
-  /* Restore all tag-meanings from outer scopes that were shadowed by
-     this scope.  */
-
-  for (link = current_scope->shadowed_tags; link;
-       link = TREE_CHAIN (link))
-    IDENTIFIER_TAG_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
-
-  /* If this is the outermost block of a function, remove all
-     PARM_DECLs from current_scope->names; they are already
-     stored in DECL_ARGUMENTS of cfun->decl in proper order, should
-     not be put in BLOCK_VARS, and furthermore reversing them will
-     cause trouble later.  They are all together at the end of the
-     list.  */
-  if (functionbody && decls)
-    {
-      if (TREE_CODE (decls) == PARM_DECL)
-	decls = 0;
-      else
-	{
-	  link = decls;
-	  while (TREE_CHAIN (link)
-		 && TREE_CODE (TREE_CHAIN (link)) != PARM_DECL)
-	    link = TREE_CHAIN (link);
-
-	  TREE_CHAIN (link) = 0;
-	}
-    }
-
-  /* Get the decls in the order they were written.
-     Usually current_scope->names is in reverse order.
-     But parameter decls were previously put in forward order.  */
-
-  if (reverse)
-    decls = nreverse (decls);
+  keep |= scope->keep;
+  keep |= scope->function_body;
 
   /* If appropriate, create a BLOCK to record the decls for the life
      of this function.  */
-
   block = 0;
   if (keep)
     {
       block = make_node (BLOCK);
-      BLOCK_VARS (block) = decls;
-      BLOCK_SUBBLOCKS (block) = subblocks;
+      BLOCK_VARS (block) = scope->names;
+      BLOCK_SUBBLOCKS (block) = scope->blocks;
       TREE_USED (block) = 1;
     }
 
   /* In each subblock, record that this is its superior.  */
+  for (p = scope->blocks; p; p = TREE_CHAIN (p))
+    BLOCK_SUPERCONTEXT (p) = block;
 
-  for (link = subblocks; link; link = TREE_CHAIN (link))
-    BLOCK_SUPERCONTEXT (link) = block;
+  /* Clear out the variable bindings in this scope.
 
-  /* Set the TYPE_CONTEXTs for all of the tagged types belonging to this
-     binding contour so that they point to the appropriate construct, i.e.
-     either to the current FUNCTION_DECL node, or else to the BLOCK node
-     we just constructed.
+     Propagate TREE_ADDRESSABLE from nested functions to their
+     containing functions.
 
-     Note that for tagged types whose scope is just the formal parameter
-     list for some function type specification, we can't properly set
-     their TYPE_CONTEXTs here, because we don't have a pointer to the
-     appropriate FUNCTION_TYPE node readily available to us.  For those
-     cases, the TYPE_CONTEXTs of the relevant tagged type nodes get set
-     in `grokdeclarator' as soon as we have created the FUNCTION_TYPE
-     node which will represent the "scope" for these "parameter list local"
-     tagged types.  */
+     Issue warnings for unused variables and labels, and errors for
+     undefined labels, if there are any.  */
 
-  decl = functionbody ? current_function_decl : block;
-  if (decl)
-    for (link = tags; link; link = TREE_CHAIN (link))
-      TYPE_CONTEXT (TREE_VALUE (link)) = decl;
+  for (p = scope->names; p; p = TREE_CHAIN (p))
+    {
+      const location_t *locus = &DECL_SOURCE_LOCATION (p);
+
+      switch (TREE_CODE (p))
+	{
+	case LABEL_DECL:
+	  if (TREE_USED (p) && !DECL_INITIAL (p))
+	    {
+	      error ("%Hlabel `%D' used but not defined", locus, p);
+	      DECL_INITIAL (p) = error_mark_node;
+	    }
+	  else if (!TREE_USED (p) && warn_unused_label)
+	    {
+	      if (DECL_INITIAL (p))
+		warning ("%Hlabel `%D' defined but not used", locus, p);
+	      else
+		warning ("%Hlabel `%D' declared but not defined", locus, p);
+	    }
+
+	  IDENTIFIER_LABEL_VALUE (DECL_NAME (p)) = 0;
+	  break;
+
+	case FUNCTION_DECL:
+	  if (! TREE_ASM_WRITTEN (p)
+	      && DECL_INITIAL (p) != 0
+	      && TREE_ADDRESSABLE (p)
+	      && DECL_ABSTRACT_ORIGIN (p) != 0
+	      && DECL_ABSTRACT_ORIGIN (p) != p)
+	    TREE_ADDRESSABLE (DECL_ABSTRACT_ORIGIN (p)) = 1;
+	  goto normal;
+
+	case VAR_DECL:
+	  /* keep this in sync with stmt.c:warn_about_unused_variables.
+	     No warnings when the global scope is popped because the
+	     global scope isn't popped for the last translation unit,
+	     so the warnings are done in c_write_global_declaration.  */
+	  if (warn_unused_variable && scope != global_scope
+	      && !TREE_USED (p)
+	      && !DECL_IN_SYSTEM_HEADER (p)
+	      && DECL_NAME (p)
+	      && !DECL_ARTIFICIAL (p))
+	    warning ("%Hunused variable `%D'", locus, p);
+	  /* fall through */
+
+	default:
+	normal:
+	  if (DECL_NAME (p))
+	    {
+	      if (DECL_EXTERNAL (p) && scope != global_scope)
+		/* External decls stay in the symbol-value slot but are
+		   inaccessible.  */
+		C_DECL_INVISIBLE (p) = 1;
+	      else
+		IDENTIFIER_SYMBOL_VALUE (DECL_NAME (p)) = 0;
+	    }
+	  break;
+	}
+    }
+
+  /* Clear out the parameter bindings in this scope, if any.
+     Unused-parameter warnings are handled by function.c.  */
+  for (p = scope->parms; p; p = TREE_CHAIN (p))
+    if (DECL_NAME (p))
+      IDENTIFIER_SYMBOL_VALUE (DECL_NAME (p)) = 0;
+
+  /* Clear out the tag-meanings declared in this scope.
+
+     Set the TYPE_CONTEXTs for all of the tagged types belonging to
+     this scope so that they point to the appropriate construct, i.e.
+     either to the current FUNCTION_DECL node, or else to the BLOCK
+     node we just constructed.
+
+     Note that for tagged types whose scope is just the formal
+     parameter list for some function type specification, we can't
+     properly set their TYPE_CONTEXTs here, because we don't have a
+     pointer to the appropriate FUNCTION_TYPE node readily available
+     to us.  For those cases, the TYPE_CONTEXTs of the relevant tagged
+     type nodes get set in `grokdeclarator' as soon as we have created
+     the FUNCTION_TYPE node which will represent the "scope" for these
+     "parameter list local" tagged types.  */
+
+  decl = scope->function_body ? current_function_decl : block;
+  for (p = scope->tags; p; p = TREE_CHAIN (p))
+    {
+      if (TREE_PURPOSE (p))
+	IDENTIFIER_TAG_VALUE (TREE_PURPOSE (p)) = 0;
+      if (decl)
+	TYPE_CONTEXT (TREE_VALUE (p)) = decl;
+    }
+
+  /* Restore all name- and label-meanings from outer scopes that were
+     shadowed by this scope.  */
+  for (p = scope->shadowed; p; p = TREE_CHAIN (p))
+    if (TREE_VALUE (p) && TREE_CODE (TREE_VALUE (p)) == LABEL_DECL)
+      IDENTIFIER_LABEL_VALUE (TREE_PURPOSE (p)) = TREE_VALUE (p);
+    else
+      IDENTIFIER_SYMBOL_VALUE (TREE_PURPOSE (p)) = TREE_VALUE (p);
+
+  /* Restore all tag-meanings from outer scopes that were shadowed by
+     this scope.  */
+  for (p = scope->shadowed_tags; p; p = TREE_CHAIN (p))
+    IDENTIFIER_TAG_VALUE (TREE_PURPOSE (p)) = TREE_VALUE (p);
+
+  /* Dispose of the block that we just made inside some higher level.  */
+  if (scope->function_body)
+    DECL_INITIAL (current_function_decl) = block;
+  else if (scope->outer)
+    {
+      if (block)
+	SCOPE_LIST_APPEND (scope->outer, blocks, block);
+      /* If we did not make a block for the scope just exited, any
+	 blocks made for inner scopes must be carried forward so they
+	 will later become subblocks of something else.  */
+      else if (scope->blocks)
+	SCOPE_LIST_CONCAT (scope->outer, blocks, scope, blocks);
+    }
 
   /* Pop the current scope, and free the structure for reuse.  */
   pop_scope ();
-
-  /* Dispose of the block that we just made inside some higher level.  */
-  if (functionbody)
-    DECL_INITIAL (current_function_decl) = block;
-  else if (block && current_scope)
-    current_scope->blocks
-      = chainon (current_scope->blocks, block);
-  /* If we did not make a block for the scope just exited, any blocks
-     made for inner scopes (since they cannot be recorded as subblocks
-     here) must be carried forward so they will later become subblocks
-     of something else.  */
-  else if (! block && subblocks)
-    current_scope->blocks
-      = chainon (current_scope->blocks, subblocks);
 
   return block;
 }
@@ -656,8 +670,7 @@ void
 insert_block (tree block)
 {
   TREE_USED (block) = 1;
-  current_scope->blocks
-    = chainon (current_scope->blocks, block);
+  SCOPE_LIST_APPEND (current_scope, blocks, block);
 }
 
 /* Set the BLOCK node for the innermost scope (the one we are
@@ -1687,8 +1700,8 @@ pushdecl (tree x)
 		if (*p == old)
 		  {
 		    *p = TREE_CHAIN (old);
-		    TREE_CHAIN (old) = scope->parms;
-		    scope->parms = old;
+		    SCOPE_LIST_APPEND (scope, parms, old);
+		    break;
 		  }
 	    }
 	  return old;
@@ -1748,88 +1761,41 @@ pushdecl (tree x)
 	    element = TREE_TYPE (element);
 	  if (TREE_CODE (element) == RECORD_TYPE
 	      || TREE_CODE (element) == UNION_TYPE)
-	    scope->incomplete_list = tree_cons (NULL_TREE, x,
-						scope->incomplete_list);
+	    scope->incomplete = tree_cons (NULL_TREE, x, scope->incomplete);
 	}
     }
 
-  /* Put decls on list in reverse order.
-     We will reverse them later if necessary.  */
   if (TREE_CODE (x) == PARM_DECL)
-    {
-      TREE_CHAIN (x) = scope->parms;
-      scope->parms = x;
-    }
+    SCOPE_LIST_APPEND (scope, parms, x);
   else
-    {
-      TREE_CHAIN (x) = scope->names;
-      scope->names = x;
-    }
+    SCOPE_LIST_APPEND (scope, names, x);
 
   return x;
 }
 
 /* Record X as belonging to the global scope (C99 "file scope").
    This is used only internally by the Objective-C front end,
-   and is limited to its needs.  It will hork if there is _any_
-   visible binding for X (not just a global one).  */
+   and is limited to its needs.  duplicate_decls is not called;
+   if there is any preexisting decl for this identifier, it is an ICE.  */
+
 tree
 pushdecl_top_level (tree x)
 {
-  tree name, old;
+  tree name;
 
   if (TREE_CODE (x) != VAR_DECL)
     abort ();
 
   name = DECL_NAME (x);
-  old = IDENTIFIER_SYMBOL_VALUE (name);
 
-  if (old)
-    {
-      if (DECL_CONTEXT (old))
-	abort ();
-
-      if (!duplicate_decls (x, old, 0, false))
-	abort ();
-
-      return old;
-    }
+  if (IDENTIFIER_SYMBOL_VALUE (name))
+    abort ();
 
   DECL_CONTEXT (x) = current_file_decl;
   IDENTIFIER_SYMBOL_VALUE (name) = x;
-  TREE_CHAIN (x) = global_scope->names;
-  global_scope->names = x;
+
+  SCOPE_LIST_APPEND (global_scope, names, x);
   return x;
-}
-
-/* Record X as belonging to the outermost scope of the current
-   function.  This is used only internally, by c_make_fname_decl and
-   undeclared_variable, and is limited to their needs.  The NAME is
-   provided as a separate argument because undeclared_variable wants to
-   use error_mark_node for X.  For VAR_DECLs, duplicate_decls is not
-   called; if there is any preexisting decl for this identifier, it is
-   an ICE.  */
-static void
-pushdecl_function_level (tree x, tree name)
-{
-  struct c_scope *scope = current_function_scope;
-
-  if (x == error_mark_node)
-    scope->shadowed = tree_cons (name, IDENTIFIER_SYMBOL_VALUE (name),
-				 scope->shadowed);
-  else if (TREE_CODE (x) == VAR_DECL)
-    {
-      if (name != DECL_NAME (x))
-	abort ();
-      if (IDENTIFIER_SYMBOL_VALUE (name))
-	abort ();
-
-      DECL_CONTEXT (x) = current_function_decl;
-      TREE_CHAIN (x) = scope->names;
-      scope->names = x;
-    }
-
-  IDENTIFIER_SYMBOL_VALUE (name) = x;
 }
 
 /* Generate an implicit declaration for identifier FUNCTIONID as a
@@ -1840,7 +1806,7 @@ implicitly_declare (tree functionid)
 {
   tree decl = any_external_decl (functionid);
 
-  if (decl && decl != error_mark_node)
+  if (decl)
     {
       /* Implicit declaration of a function already declared
 	 (somehow) in a different scope, or as a built-in.
@@ -1969,12 +1935,13 @@ void
 undeclared_variable (tree id)
 {
   static bool already = false;
+  struct c_scope *scope;
 
   if (current_function_decl == 0)
     {
       error ("`%s' undeclared here (not in a function)",
 	     IDENTIFIER_POINTER (id));
-      IDENTIFIER_SYMBOL_VALUE (id) = error_mark_node;
+      scope = current_scope;
     }
   else
     {
@@ -1988,8 +1955,12 @@ undeclared_variable (tree id)
 	  already = true;
 	}
 
-      pushdecl_function_level (error_mark_node, id);
+      scope = current_function_scope;
     }
+
+  scope->shadowed = tree_cons (id, IDENTIFIER_SYMBOL_VALUE (id),
+			       scope->shadowed);
+  IDENTIFIER_SYMBOL_VALUE (id) = error_mark_node;
 }
 
 /* Subroutine of lookup_label, declare_label, define_label: construct a
@@ -2018,8 +1989,7 @@ bind_label (tree name, tree label, struct c_scope *scope)
 				 scope->shadowed);
   IDENTIFIER_LABEL_VALUE (name) = label;
 
-  TREE_CHAIN (label) = scope->names;
-  scope->names = label;
+  SCOPE_LIST_APPEND (scope, names, label);
 }
 
 /* Get the LABEL_DECL corresponding to identifier NAME as a label.
@@ -2152,8 +2122,7 @@ define_label (location_t location, tree name)
   return label;
 }
 
-/* Return the list of declarations of the current scope.
-   Note that this list is in reverse order.  */
+/* Return the list of declarations of the current scope.  */
 
 tree
 getdecls (void)
@@ -2161,13 +2130,6 @@ getdecls (void)
   return current_scope->names;
 }
 
-/* Return the list of type-tags (for structs, etc) of the current scope.  */
-
-tree
-gettags (void)
-{
-  return current_scope->tags;
-}
 
 /* Given NAME, an IDENTIFIER_NODE,
    return the structure (or union or enum) definition for that name.
@@ -2334,8 +2296,7 @@ c_init_decl_processing (void)
    NAME depended on the type of the function.  As we don't yet implement
    delayed emission of static data, we mark the decl as emitted
    so it is not placed in the output.  Anything using it must therefore pull
-   out the STRING_CST initializer directly.  This does mean that these names
-   are string merging candidates, which is wrong for C99's __func__.  FIXME.  */
+   out the STRING_CST initializer directly.  FIXME.  */
 
 static tree
 c_make_fname_decl (tree id, int type_dep)
@@ -2361,7 +2322,11 @@ c_make_fname_decl (tree id, int type_dep)
   TREE_USED (decl) = 1;
 
   if (current_function_decl)
-    pushdecl_function_level (decl, DECL_NAME (decl));
+    {
+      DECL_CONTEXT (decl) = current_function_decl;
+      IDENTIFIER_SYMBOL_VALUE (id) = decl;
+      SCOPE_LIST_APPEND (current_function_scope, names, decl);
+    }
 
   finish_decl (decl, init, NULL_TREE);
 
@@ -3041,14 +3006,14 @@ push_parm_decl (tree parm)
   immediate_size_expand = save_immediate_size_expand;
 }
 
-/* Shift all the existing parameter decls to the variables list,
-   and reset the parameters list.  Used when a ; terminating
-   forward parameter decls is encountered.  */
+/* Mark all the parameter declarations to date as forward decls,
+   shift them to the variables list, and reset the parameters list.
+   Also diagnose use of this extension.  */
 
 void
 mark_forward_parm_decls (void)
 {
-  tree parm, last;
+  tree parm;
 
   if (pedantic && !current_scope->warned_forward_parm_decls)
     {
@@ -3056,14 +3021,12 @@ mark_forward_parm_decls (void)
       current_scope->warned_forward_parm_decls = true;
     }
 
-  for (last = 0, parm = current_scope->parms;
-       parm;
-       last = parm, parm = TREE_CHAIN (parm))
+  for (parm = current_scope->parms; parm; parm = TREE_CHAIN (parm))
     TREE_ASM_WRITTEN (parm) = 1;
 
-  TREE_CHAIN (last)    = current_scope->names;
-  current_scope->names = current_scope->parms;
+  SCOPE_LIST_CONCAT (current_scope, names, current_scope, parms);
   current_scope->parms = 0;
+  current_scope->parms_last = 0;
 }
 
 static GTY(()) int compound_literal_number;
@@ -4516,7 +4479,7 @@ grokparms (tree parms_info, int funcdef_flag)
 
   last_function_parms = TREE_PURPOSE (parms_info);
   last_function_parm_tags = TREE_VALUE (parms_info);
-  last_function_parm_vars = TREE_TYPE (parms_info);
+  last_function_parm_others = TREE_TYPE (parms_info);
 
   if (warn_strict_prototypes && first_parm == 0 && !funcdef_flag
       && !in_system_header)
@@ -4610,9 +4573,6 @@ get_parm_info (int void_at_end)
 
       return tree_cons (0, 0, tree_cons (0, void_type_node, 0));
     }
-
-  if (parms)
-    current_scope->parms = parms = nreverse (parms);
 
   /* Sanity check all of the parameter declarations.  */
   for (decl = parms; decl; decl = TREE_CHAIN (decl))
@@ -5196,11 +5156,11 @@ finish_struct (tree t, tree fieldlist, tree attributes)
   /* If this structure or union completes the type of any previous
      variable declaration, lay it out and output its rtl.  */
 
-  if (current_scope->incomplete_list != NULL_TREE)
+  if (current_scope->incomplete != NULL_TREE)
     {
       tree prev = NULL_TREE;
 
-      for (x = current_scope->incomplete_list; x; x = TREE_CHAIN (x))
+      for (x = current_scope->incomplete; x; x = TREE_CHAIN (x))
         {
 	  tree decl = TREE_VALUE (x);
 
@@ -5218,7 +5178,7 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	      if (prev)
 		TREE_CHAIN (prev) = TREE_CHAIN (x);
 	      else
-	        current_scope->incomplete_list = TREE_CHAIN (x);
+	        current_scope->incomplete = TREE_CHAIN (x);
 	    }
 	  else if (!COMPLETE_TYPE_P (TREE_TYPE (decl))
 		   && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
@@ -5242,7 +5202,7 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 		  if (prev)
 		    TREE_CHAIN (prev) = TREE_CHAIN (x);
 		  else
-		    current_scope->incomplete_list = TREE_CHAIN (x);
+		    current_scope->incomplete = TREE_CHAIN (x);
 		}
 	    }
 	}
@@ -5567,7 +5527,7 @@ start_function (tree declspecs, tree declarator, tree attributes)
      where store_parm_decls will find them.  */
   current_function_parms = last_function_parms;
   current_function_parm_tags = last_function_parm_tags;
-  current_function_parm_vars = last_function_parm_vars;
+  current_function_parm_others = last_function_parm_others;
 
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
      error_mark_node is replaced below (in poplevel) with the BLOCK.  */
@@ -5749,11 +5709,11 @@ start_function (tree declspecs, tree declarator, tree attributes)
 static void
 store_parm_decls_newstyle (void)
 {
-  tree decl;
+  tree decl, last;
   tree fndecl = current_function_decl;
   tree parms = current_function_parms;
   tree tags = current_function_parm_tags;
-  tree vars = current_function_parm_vars;
+  tree others = current_function_parm_others;
 
   if (current_scope->parms || current_scope->names || current_scope->tags)
     {
@@ -5767,10 +5727,9 @@ store_parm_decls_newstyle (void)
 
   /* Now make all the parameter declarations visible in the function body.
      We can bypass most of the grunt work of pushdecl.  */
-  for (decl = parms; decl; decl = TREE_CHAIN (decl))
+  for (last = 0, decl = parms; decl; last = decl, decl = TREE_CHAIN (decl))
     {
       DECL_CONTEXT (decl) = current_function_decl;
-
       if (DECL_NAME (decl) == 0)
 	error ("%Hparameter name omitted", &DECL_SOURCE_LOCATION (decl));
       else
@@ -5784,12 +5743,13 @@ store_parm_decls_newstyle (void)
 	}
     }
   current_scope->parms = parms;
+  current_scope->parms_last = last;
 
   /* Record the parameter list in the function declaration.  */
   DECL_ARGUMENTS (fndecl) = parms;
 
   /* Now make all the ancillary declarations visible, likewise.  */
-  for (decl = vars; decl; decl = TREE_CHAIN (decl))
+  for (last = 0, decl = others; decl; last = decl, decl = TREE_CHAIN (decl))
     {
       DECL_CONTEXT (decl) = current_function_decl;
       if (DECL_NAME (decl)
@@ -5803,7 +5763,8 @@ store_parm_decls_newstyle (void)
 	  IDENTIFIER_SYMBOL_VALUE (DECL_NAME (decl)) = decl;
 	}
     }
-  current_scope->names = vars;
+  current_scope->names = others;
+  current_scope->names_last = last;
 
   /* And all the tag declarations.  */
   for (decl = tags; decl; decl = TREE_CHAIN (decl))
@@ -5832,9 +5793,12 @@ store_parm_decls_oldstyle (void)
   tree parmids = current_function_parms;
 
   /* We use DECL_WEAK as a flag to show which parameters have been
-     seen already, since it is not used on PARM_DECL or CONST_DECL.  */
+     seen already, since it is not used on PARM_DECL.  */
+#ifdef ENABLE_CHECKING
   for (parm = current_scope->parms; parm; parm = TREE_CHAIN (parm))
-    DECL_WEAK (parm) = 0;
+    if (DECL_WEAK (parm))
+      abort ();
+#endif
 
   /* Match each formal parameter name with its declaration.  Save each
      decl in the appropriate TREE_PURPOSE slot of the parmids chain.  */
@@ -5939,6 +5903,7 @@ store_parm_decls_oldstyle (void)
 	    last = TREE_PURPOSE (parm);
 	    DECL_WEAK (last) = 0;
 	  }
+      current_scope->parms_last = last;
       TREE_CHAIN (last) = 0;
     }
 
@@ -6472,7 +6437,7 @@ check_for_loop_decls (void)
       /* If we get here, declarations have been used in a for loop without
 	 the C99 for loop scope.  This doesn't make much sense, so don't
 	 allow it.  */
-      error ("`for' loop initial declaration used outside C99 mode");
+      error ("'for' loop initial declaration used outside C99 mode");
       return;
     }
   /* C99 subclause 6.8.5 paragraph 3:
@@ -6489,20 +6454,20 @@ check_for_loop_decls (void)
      interpretation, to avoid creating an extension which later causes
      problems.  */
 
-  for (t = gettags (); t; t = TREE_CHAIN (t))
+  for (t = current_scope->tags; t; t = TREE_CHAIN (t))
     {
       if (TREE_PURPOSE (t) != 0)
         {
           enum tree_code code = TREE_CODE (TREE_VALUE (t));
 
           if (code == RECORD_TYPE)
-            error ("`struct %s' declared in `for' loop initial declaration",
+            error ("'struct %s' declared in 'for' loop initial declaration",
                    IDENTIFIER_POINTER (TREE_PURPOSE (t)));
           else if (code == UNION_TYPE)
-            error ("`union %s' declared in `for' loop initial declaration",
+            error ("'union %s' declared in 'for' loop initial declaration",
                    IDENTIFIER_POINTER (TREE_PURPOSE (t)));
           else
-            error ("`enum %s' declared in `for' loop initial declaration",
+            error ("'enum %s' declared in 'for' loop initial declaration",
                    IDENTIFIER_POINTER (TREE_PURPOSE (t)));
         }
     }
@@ -6515,7 +6480,7 @@ check_for_loop_decls (void)
                "initial declaration", locus, t);
       else if (TREE_STATIC (t))
 	error ("%Hdeclaration of static variable '%D' in 'for' loop "
-               "initial declaration", locus, t);
+	       "initial declaration", locus, t);
       else if (DECL_EXTERNAL (t))
 	error ("%Hdeclaration of 'extern' variable '%D' in 'for' loop "
                "initial declaration", locus, t);
@@ -6885,11 +6850,10 @@ c_write_global_declarations(void)
       int i;
       tree decl;
       
-      /* Process the decls in reverse order--earliest first.
-	 Put them into VEC from back to front, then take out from front.  */
-      
+      /* Process the decls in the order they were written.  */
+
       for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
-	vec[len - i - 1] = decl;
+	vec[i] = decl;
       
       wrapup_global_declarations (vec, len);
       
