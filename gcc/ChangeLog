@@ -1,3 +1,7 @@
+Thu Feb 26 15:12:03 1998  Christopher Taylor <cit@ckshq.com>
+
+	* fixincludes: Avoid using '0-~' in egrep.
+
 Thu Feb 26 08:04:05 1998  Tristan Gingold  <gingold@messiaen.enst.fr>
 
 	* function.c (assign_parms): Call 'chkr_set_right' when DECL_RTL
