@@ -1,3 +1,11 @@
+2003-06-10  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/PrintStream.java:
+	Merged version from classpath.
+	(close): Removed sychronized keyword. This class is not garantied to
+	be thread-safe.
+	(write): Likewise.
+
 2003-06-09  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/xlib/natFont.cc (getAscent): Correctly access "ascent"
