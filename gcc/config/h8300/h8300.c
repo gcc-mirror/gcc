@@ -2347,34 +2347,67 @@ get_shift_alg (shift_type, shift_mode, count, info)
   else
     cpu = 2;
 
-  /* In case we end up with SHIFT_SPECIAL, initialize REMAINDER to 0.  */
-  info->remainder = 0;
-
-  /* Assume either SHIFT_LOOP or SHIFT_INLINE.
-     It is up to the caller to know that looping clobbers cc.  */
-  info->shift1 = shift_one[cpu_type][shift_type][shift_mode].assembler;
-  info->shift2 = shift_two[shift_type][shift_mode].assembler;
-  info->cc_valid_p = shift_one[cpu_type][shift_type][shift_mode].cc_valid;
-
-  /* Now look for cases we want to optimize.  */
+  /* Find the shift algorithm.  */
   switch (shift_mode)
     {
     case QIshift:
       if (GET_MODE_BITSIZE (QImode) <= count)
-	goto return_shift_loop;
+	info->alg = SHIFT_LOOP;
+      else
+	info->alg = shift_alg_qi[cpu][shift_type][count];
+      break;
 
-      switch (shift_alg_qi[cpu][shift_type][count])
-	{
-	case SHIFT_INLINE:
-	  goto return_shift_inline;
-	case SHIFT_LOOP:
-	  goto return_shift_loop;
-	case SHIFT_ROT_AND:
-	  goto return_shift_rot_and;
-	case SHIFT_SPECIAL:
-	  ;
-	}
+    case HIshift:
+      if (GET_MODE_BITSIZE (HImode) <= count)
+	info->alg = SHIFT_LOOP;
+      else
+	info->alg = shift_alg_hi[cpu][shift_type][count];
+      break;
 
+    case SIshift:
+      if (GET_MODE_BITSIZE (SImode) <= count)
+	info->alg = SHIFT_LOOP;
+      else
+	info->alg = shift_alg_si[cpu][shift_type][count];
+      break;
+
+    default:
+      abort ();
+    }
+
+  /* Fill in INFO.  Return unless we have SHIFT_SPECIAL.  */
+  switch (info->alg)
+    {
+    case SHIFT_INLINE:
+      info->remainder = count;
+      /* Fall through.  */
+
+    case SHIFT_LOOP:
+      /* It is up to the caller to know that looping clobbers cc.  */
+      info->shift1 = shift_one[cpu_type][shift_type][shift_mode].assembler;
+      info->shift2 = shift_two[shift_type][shift_mode].assembler;
+      info->cc_valid_p = shift_one[cpu_type][shift_type][shift_mode].cc_valid;
+      goto end;
+
+    case SHIFT_ROT_AND:
+      info->shift1 = rotate_one[cpu_type][shift_type][shift_mode];
+      info->shift2 = rotate_two[shift_type][shift_mode];
+      info->cc_valid_p = 0;
+      goto end;
+
+    case SHIFT_SPECIAL:
+      /* REMAINDER is 0 for most cases, so initialize it to 0.  */
+      info->remainder = 0;
+      info->shift1 = shift_one[cpu_type][shift_type][shift_mode].assembler;
+      info->shift2 = shift_two[shift_type][shift_mode].assembler;
+      info->cc_valid_p = 0;
+      break;
+    }
+
+  /* Here we only deal with SHIFT_SPECIAL.  */
+  switch (shift_mode)
+    {
+    case QIshift:
       /* For ASHIFTRT by 7 bits, the sign bit is simply replicated
 	 through the entire value.  */
       if (shift_type == SHIFT_ASHIFTRT && count == 7)
@@ -2385,21 +2418,6 @@ get_shift_alg (shift_type, shift_mode, count, info)
       abort ();
 
     case HIshift:
-      if (GET_MODE_BITSIZE (HImode) <= count)
-	goto return_shift_loop;
-
-      switch (shift_alg_hi[cpu][shift_type][count])
-	{
-	case SHIFT_INLINE:
-	  goto return_shift_inline;
-	case SHIFT_LOOP:
-	  goto return_shift_loop;
-	case SHIFT_ROT_AND:
-	  goto return_shift_rot_and;
-	case SHIFT_SPECIAL:
-	  ;
-	}
-
       if (count == 7)
 	{
 	  if (shift_type == SHIFT_ASHIFT && TARGET_H8300)
@@ -2466,22 +2484,6 @@ get_shift_alg (shift_type, shift_mode, count, info)
       abort ();
 
     case SIshift:
-      if (GET_MODE_BITSIZE (SImode) <= count)
-	goto return_shift_loop;
-
-      info->alg = shift_alg_si[cpu][shift_type][count];
-      switch (info->alg)
-	{
-	case SHIFT_INLINE:
-	  goto return_shift_inline;
-	case SHIFT_LOOP:
-	  goto return_shift_loop;
-	case SHIFT_ROT_AND:
-	  goto return_shift_rot_and;
-	case SHIFT_SPECIAL:
-	  ;
-	}
-
       if (count == 8 && TARGET_H8300)
 	{
 	  switch (shift_type)
@@ -2583,28 +2585,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
       abort ();
     }
 
- return_shift_loop:
-  /* No fancy method is available.  Just loop.  */
-  info->alg = SHIFT_LOOP;
-  goto end;
-
- return_shift_inline:
-  info->remainder = count;
-  info->alg = SHIFT_INLINE;
-  goto end;
-
  return_shift_special:
-  info->cc_valid_p = 0;
-  info->alg = SHIFT_SPECIAL;
-  goto end;
-
- return_shift_rot_and:
-  info->shift1 = rotate_one[cpu_type][shift_type][shift_mode];
-  info->shift2 = rotate_two[shift_type][shift_mode];
-  info->cc_valid_p = 0;
-  info->alg = SHIFT_ROT_AND;
-  goto end;
-
  end:
   if (!TARGET_H8300S)
     info->shift2 = NULL;
