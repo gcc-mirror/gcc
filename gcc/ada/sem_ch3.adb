@@ -1605,7 +1605,9 @@ package body Sem_Ch3 is
             null;
 
          elsif Nkind (E) = N_Raise_Constraint_Error then
-            --  Aggregate is statically illegal. Place back in declaration.
+
+            --  Aggregate is statically illegal. Place back in declaration
+
             Set_Expression (N, E);
             Set_No_Initialization (N, False);
 

@@ -1,3 +1,15 @@
+2001-12-14  Geert Bosch <bosch@gnat.com>
+
+	* config-lang.in: Update copyright notice
+
+	* layout.adb: Remove commented out code.
+
+	* mdllfile.ads: Update copyright notice. Fix header format.
+
+	* sem_case.ads: Likewise.
+
+	* sem_ch3.adb: Minor reformatting.
+
 2001-12-12  Geert Bosch <bosch@gnat.com>
 
 	* freeze.ads: Update copyright date.
