@@ -1,3 +1,8 @@
+2005-03-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (stmt_starts_bb_p): Clean up by replacing code
+	with LABEL_EXPR.
+
 2005-03-03  Roger Sayle  <roger@eyesopen.com>
 	    Andrew Pinski  <pinskia@physics.uc.edu>
 
