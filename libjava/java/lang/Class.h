@@ -205,8 +205,6 @@ public:
   // finalization
   void finalize ();
 
-  Class () {};
-
   // This constructor is used to create Class object for the primitive
   // types. See prims.cc.
   Class (jobject cname, jbyte sig, jint len, jobject array_vtable)
@@ -235,6 +233,8 @@ public:
   static java::lang::Class class$;
 
 private:   
+
+  Class ();
 
   void checkMemberAccess (jint flags);
 
