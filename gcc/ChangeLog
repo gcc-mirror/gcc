@@ -1,3 +1,14 @@
+Wed Mar 31 12:10:00 1999  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* inclhack.def (several): added spaces in tests to ensure
+	correct shell syntax.  Added c_asm.h fix from fixincludes.
+
+	* inclhack.tpl: changed method of traversing symlink trees
+	so that file name matching will work correctly.
+
+	* fixincl.c, hackshell.tpl:  fallout from above
+	* fixincl.x, inclhack.sh, fixincl.sh: Rebuilt.
+
 Tue Mar 30 10:43:49 1999  Philip Blundell  <pb@nexus.co.uk>
 
 	* config/arm/aout.h (DBX_DEBUGGING_INFO): Avoid redefinition if
