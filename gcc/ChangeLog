@@ -1,3 +1,11 @@
+2004-01-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/13666
+	* config/sparc/sparc.c (function_arg_union_value): New function.
+	(function_arg): Use it to deal with unions.
+	(function_value): Likewise.  Define 'regbase' only for ARCH64.
+	Replace a conditional statement by a simpler one.
+
 2004-01-26  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips16_optimize_gp): Delete.
