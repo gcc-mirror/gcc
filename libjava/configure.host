@@ -66,6 +66,7 @@ case "${host}" in
 	AM_RUNTESTFLAGS="--target_board=jmr3904-sim"	
 	# Use "Ecos" processes since they are a no-op.
 	PROCESS=Ecos
+	FILE=Posix
  	enable_java_net_default=no
  	enable_getenv_properties_default=no
 	;;
@@ -106,6 +107,7 @@ case "${host}" in
   xscale*-elf)
 	with_libffi_default=no
 	PROCESS=Ecos
+	FILE=Posix
 	enable_java_net_default=no
 	enable_getenv_properties_default=no
 	enable_main_args_default=no

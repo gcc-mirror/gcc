@@ -1,3 +1,10 @@
+2002-03-15  Anthony Green  <green@redhat.com>
+
+	* configure.host (FILE): New macro for specifing File
+	implementation.
+	* configure: Rebuilt.
+	* configure.in: Use FILE.  Define HAVE_TIME for newlib targets.
+
 2002-03-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.am (jv_convert_LDADD): Don't list libraries that are
