@@ -1763,7 +1763,13 @@ extern void c4x_encode_section_info ();
    Some small integers are effectively free for the C40.  We should
    also consider if we are using the small memory model.  With
    the big memory model we require an extra insn for a constant
-   loaded from memory.  */
+   loaded from memory.  
+
+   This is used by expand_binop to decide whether to force a constant
+   into a register.  If the cost is greater than 2 and the constant
+   is used within a short loop, it gets forced into a register.  
+   Ideally, there should be some weighting as to how mnay times it is used
+   within the loop.  */
 
 #define SHIFT_CODE_P(C) ((C) == ASHIFT || (C) == ASHIFTRT || (C) == LSHIFTRT)
 
@@ -1775,6 +1781,16 @@ extern void c4x_encode_section_info ();
 #define CONST_COSTS(RTX,CODE,OUTER_CODE)			\
 	case CONST_INT:						\
            if (c4x_J_constant (RTX))				\
+	     return 0;						\
+	   if (! TARGET_C3X					\
+	       && OUTER_CODE == AND				\
+               && GET_CODE (RTX) == CONST_INT			\
+	       && (INTVAL (RTX) == 255 || INTVAL (RTX) == 65535))	\
+	     return 0;						\
+	   if (! TARGET_C3X					\
+	       && (OUTER_CODE == ASHIFTRT || OUTER_CODE == LSHIFTRT)	\
+               && GET_CODE (RTX) == CONST_INT			\
+	       && (INTVAL (RTX) == 16 || INTVAL (RTX) == 24))	\
 	     return 0;						\
            if (TARGET_C3X && SHIFT_CODE_P (OUTER_CODE))		\
 	     return 3;						\

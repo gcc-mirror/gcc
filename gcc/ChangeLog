@@ -1,3 +1,11 @@
+Sun Apr 18 17:24:10 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (legitimize_operands): Use rtx_cost
+	to determine if it is worthwhile forcing a constant into a register.
+	* config/c4x/c4x.h (CONST_COSTS): An integer value of 255 or 65535
+	used with a logical and or an integer value of 16 or 24 used with
+	a right shift has zero cost on the C40.
+
 Sat Apr 17 21:30:11 1999  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* gcse.c (compute_local_properties): If setp is nonzero, clear
