@@ -189,10 +189,17 @@ namespace std
     __basic_file* __ret = NULL;
     if (!this->is_open() && __file)
       {
- 	_M_cfile = __file;
- 	_M_cfile_created = false;
-	this->sync();
-  	__ret = this;
+	int __err;
+	errno = 0;	
+	do
+	  __err = this->sync();
+	while (__err && errno == EINTR);
+	if (!__err)
+	  {
+	    _M_cfile = __file;
+	    _M_cfile_created = false;
+	    __ret = this;
+	  }
       }
     return __ret;
   }
@@ -252,12 +259,21 @@ namespace std
     __basic_file* __ret = static_cast<__basic_file*>(NULL);
     if (this->is_open())
       {
+	int __err = 0;
 	if (_M_cfile_created)
-	  fclose(_M_cfile);
-	else
-	  this->sync();
+	  {
+	    // In general, no need to zero errno in advance if checking
+	    // for error first. However, C89/C99 (at variance with IEEE
+	    // 1003.1, f.i.) do not mandate that fclose must set errno
+	    // upon error.
+	    errno = 0;
+	    do
+	      __err = fclose(_M_cfile);
+	    while (__err && errno == EINTR);
+	  }
 	_M_cfile = 0;
-	__ret = this;
+	if (!__err)
+	  __ret = this;
       }
     return __ret;
   }
