@@ -6406,6 +6406,10 @@ expand_expr (exp, target, tmode, modifier)
 	    /* ??? deprecated, use sequences instead.  */
 	    reorder_insns (NEXT_INSN (last), get_last_insn (), dest_right_flag);
 
+	    /* All cleanups must be on the function_obstack.  */
+	    push_obstacks_nochange ();
+	    resume_temporary_allocation ();
+
 	    /* convert flag, which is an rtx, into a tree. */
 	    cond = make_node (RTL_EXPR);
 	    TREE_TYPE (cond) = integer_type_node;
@@ -6421,6 +6425,8 @@ expand_expr (exp, target, tmode, modifier)
 				  truthvalue_conversion (cond),
 				  left_cleanups, right_cleanups);
 	    new_cleanups = fold (new_cleanups);
+
+	    pop_obstacks ();
 
 	    /* Now add in the conditionalized cleanups. */
 	    cleanups_this_call
@@ -9156,6 +9162,10 @@ defer_cleanups_to (old_cleanups)
       /* reverse them so that we can build them in the right order.  */
       cleanups = nreverse (cleanups);
 
+      /* All cleanups must be on the function_obstack.  */
+      push_obstacks_nochange ();
+      resume_temporary_allocation ();
+
       while (cleanups)
 	{
 	  if (new_cleanups)
@@ -9166,6 +9176,8 @@ defer_cleanups_to (old_cleanups)
 
 	  cleanups = TREE_CHAIN (cleanups);
 	}
+
+      pop_obstacks ();
     }
 
   return new_cleanups;
@@ -9361,6 +9373,10 @@ do_jump (exp, if_false_label, if_true_label)
 	    emit_move_insn (flag, const1_rtx);
 	    emit_insns (seq2);
 
+	    /* All cleanups must be on the function_obstack.  */
+	    push_obstacks_nochange ();
+	    resume_temporary_allocation ();
+
 	    /* convert flag, which is an rtx, into a tree. */
 	    cond = make_node (RTL_EXPR);
 	    TREE_TYPE (cond) = integer_type_node;
@@ -9372,6 +9388,8 @@ do_jump (exp, if_false_label, if_true_label)
 				  truthvalue_conversion (cond),
 				  cleanups, integer_zero_node);
 	    new_cleanups = fold (new_cleanups);
+
+	    pop_obstacks ();
 
 	    /* Now add in the conditionalized cleanups. */
 	    cleanups_this_call
@@ -9419,6 +9437,10 @@ do_jump (exp, if_false_label, if_true_label)
 	    emit_move_insn (flag, const1_rtx);
 	    emit_insns (seq2);
 
+	    /* All cleanups must be on the function_obstack.  */
+	    push_obstacks_nochange ();
+	    resume_temporary_allocation ();
+
 	    /* convert flag, which is an rtx, into a tree. */
 	    cond = make_node (RTL_EXPR);
 	    TREE_TYPE (cond) = integer_type_node;
@@ -9430,6 +9452,8 @@ do_jump (exp, if_false_label, if_true_label)
 				  truthvalue_conversion (cond),
 				  cleanups, integer_zero_node);
 	    new_cleanups = fold (new_cleanups);
+
+	    pop_obstacks ();
 
 	    /* Now add in the conditionalized cleanups. */
 	    cleanups_this_call
