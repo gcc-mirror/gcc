@@ -5,7 +5,7 @@
    which left a reference to the deleted ADDR_VEC.  */
 
 /* { dg-do compile } */
-/* { do-options "-O2 -frename-registers -fpic" } */
+/* { dg-options "-O2 -frename-registers -fpic" } */
 
 typedef unsigned long XID;
 typedef XID Window;
