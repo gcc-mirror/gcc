@@ -838,3 +838,4 @@ void GC_notify_or_invoke_finalizers GC_PROTO((void))
 #   endif
     return(result);
 }
+

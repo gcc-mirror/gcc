@@ -20,7 +20,7 @@
 
 # undef GC_BUILD
 
-#ifdef DBG_HDRS_ALL
+#if defined(DBG_HDRS_ALL) || defined(MAKE_BACK_GRAPH)
 #  define GC_DEBUG
 #endif
 
@@ -1340,7 +1340,7 @@ void SetMinimumStack(long minSize)
 #   endif
     GC_INIT();	/* Only needed if gc is dynamic library.	*/
     (void) GC_set_warn_proc(warn_proc);
-#   if defined(MPROTECT_VDB) || defined(PROC_VDB)
+#   if (defined(MPROTECT_VDB) || defined(PROC_VDB)) && !defined(MAKE_BACK_GRAPH)
       GC_enable_incremental();
       (void) GC_printf0("Switched to incremental mode\n");
 #     if defined(MPROTECT_VDB)
@@ -1571,7 +1571,9 @@ main()
 
     n_tests = 0;
     GC_INIT();	/* Only needed if gc is dynamic library.	*/
-    GC_enable_incremental();
+#   ifndef MAKE_BACK_GRAPH
+      GC_enable_incremental();
+#   endif
     (void) GC_set_warn_proc(warn_proc);
     if (thr_keycreate(&fl_key, GC_free) != 0) {
         (void)GC_printf1("Key creation failed %lu\n", (unsigned long)code);
@@ -1628,7 +1630,7 @@ main()
     	pthread_attr_setstacksize(&attr, 1000000);
 #   endif
     n_tests = 0;
-#   if  defined(MPROTECT_VDB) && !defined(PARALLEL_MARK) &&!defined(REDIRECT_MALLOC)
+#   if  defined(MPROTECT_VDB) && !defined(PARALLEL_MARK) &&!defined(REDIRECT_MALLOC) && !defined(MAKE_BACK_GRAPH)
     	GC_enable_incremental();
         (void) GC_printf0("Switched to incremental mode\n");
 	(void) GC_printf0("Emulating dirty bits with mprotect/signals\n");

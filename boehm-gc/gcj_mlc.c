@@ -54,6 +54,7 @@ ptr_t * GC_gcjdebugobjfreelist;
 void GC_init_gcj_malloc(int mp_index, void * /* really GC_mark_proc */mp)
 {
     register int i;
+    GC_bool ignore_gcj_info;
     DCL_LOCK_STATE;
 
     GC_init();	/* In case it's not already done.	*/
@@ -65,6 +66,12 @@ void GC_init_gcj_malloc(int mp_index, void * /* really GC_mark_proc */mp)
       return;
     }
     GC_gcj_malloc_initialized = TRUE;
+    ignore_gcj_info = (0 != GETENV("GC_IGNORE_GCJ_INFO"));
+#   ifdef CONDPRINT
+      if (GC_print_stats && ignore_gcj_info) {
+        GC_printf0("Gcj-style type information is disabled!\n");
+      }
+#   endif
     GC_mark_procs[mp_index] = (GC_mark_proc)mp;
     if (mp_index >= GC_n_mark_procs) ABORT("GC_init_gcj_malloc: bad index");
     /* Set up object kind gcj-style indirect descriptor. */
@@ -75,9 +82,17 @@ void GC_init_gcj_malloc(int mp_index, void * /* really GC_mark_proc */mp)
       GC_gcj_kind = GC_n_kinds++;
       GC_obj_kinds[GC_gcj_kind].ok_freelist = GC_gcjobjfreelist;
       GC_obj_kinds[GC_gcj_kind].ok_reclaim_list = 0;
-      GC_obj_kinds[GC_gcj_kind].ok_descriptor =
-    	(((word)(-MARK_DESCR_OFFSET - GC_INDIR_PER_OBJ_BIAS)) | GC_DS_PER_OBJECT);
-      GC_obj_kinds[GC_gcj_kind].ok_relocate_descr = FALSE;
+      if (ignore_gcj_info) {
+	/* Use a simple length-based descriptor, thus forcing a fully	*/
+	/* conservative scan.						*/
+        GC_obj_kinds[GC_gcj_kind].ok_descriptor = (0 | GC_DS_LENGTH);
+        GC_obj_kinds[GC_gcj_kind].ok_relocate_descr = TRUE;
+      } else {
+	GC_obj_kinds[GC_gcj_kind].ok_descriptor =
+    	  (((word)(-MARK_DESCR_OFFSET - GC_INDIR_PER_OBJ_BIAS))
+	   | GC_DS_PER_OBJECT);
+        GC_obj_kinds[GC_gcj_kind].ok_relocate_descr = FALSE;
+      }
       GC_obj_kinds[GC_gcj_kind].ok_init = TRUE;
     /* Set up object kind for objects that require mark proc call.	*/
       GC_gcjdebugobjfreelist = (ptr_t *)
@@ -88,9 +103,14 @@ void GC_init_gcj_malloc(int mp_index, void * /* really GC_mark_proc */mp)
       GC_gcj_debug_kind = GC_n_kinds++;
       GC_obj_kinds[GC_gcj_debug_kind].ok_freelist = GC_gcjdebugobjfreelist;
       GC_obj_kinds[GC_gcj_debug_kind].ok_reclaim_list = 0;
-      GC_obj_kinds[GC_gcj_debug_kind].ok_descriptor =
-    	GC_MAKE_PROC(mp_index, 1 /* allocated with debug info */);
-      GC_obj_kinds[GC_gcj_debug_kind].ok_relocate_descr = FALSE;
+      if (ignore_gcj_info) {
+        GC_obj_kinds[GC_gcj_kind].ok_descriptor = (0 | GC_DS_LENGTH);
+        GC_obj_kinds[GC_gcj_kind].ok_relocate_descr = TRUE;
+      } else {
+        GC_obj_kinds[GC_gcj_debug_kind].ok_descriptor =
+    	  GC_MAKE_PROC(mp_index, 1 /* allocated with debug info */);
+        GC_obj_kinds[GC_gcj_debug_kind].ok_relocate_descr = FALSE;
+      }
       GC_obj_kinds[GC_gcj_debug_kind].ok_init = TRUE;
     UNLOCK();
     ENABLE_SIGNALS();

@@ -252,7 +252,7 @@ GC_bool tmp;
     n_root_sets++;
 }
 
-static roots_were_cleared = FALSE;
+static GC_bool roots_were_cleared = FALSE;
 
 void GC_clear_roots GC_PROTO((void))
 {
@@ -522,16 +522,6 @@ ptr_t cold_gc_frame;
     register int i;
 
     /*
-     * push registers - i.e., call GC_push_one(r) for each
-     * register contents r.
-     */
-#   ifdef USE_GENERIC_PUSH_REGS
-	GC_generic_push_regs(cold_gc_frame);
-#   else
-        GC_push_regs(); /* usually defined in machine_dep.c */
-#   endif
-        
-    /*
      * Next push static data.  This must happen early on, since it's
      * not robust against mark stack overflow.
      */
@@ -564,19 +554,30 @@ ptr_t cold_gc_frame;
 #      endif
 
     /*
-     * Now traverse stacks.
+     * Now traverse stacks, and mark from register contents.
+     * These must be done last, since they can legitimately overflow
+     * the mark stack.
      */
-#   if !defined(USE_GENERIC_PUSH_REGS)
+#   ifdef USE_GENERIC_PUSH_REGS
+	GC_generic_push_regs(cold_gc_frame);
+	/* Also pushes stack, so that we catch callee-save registers	*/
+	/* saved inside the GC_push_regs frame.				*/
+#   else
+       /*
+        * push registers - i.e., call GC_push_one(r) for each
+        * register contents r.
+        */
+        GC_push_regs(); /* usually defined in machine_dep.c */
 	GC_push_current_stack(cold_gc_frame);
 	/* In the threads case, this only pushes collector frames.      */
-	/* In the USE_GENERIC_PUSH_REGS case, this is done inside	*/
-	/* GC_push_regs, so that we catch callee-save registers saved	*/
-	/* inside the GC_push_regs frame.				*/
 	/* In the case of linux threads on IA64, the hot section of	*/
 	/* the main stack is marked here, but the register stack	*/
 	/* backing store is handled in the threads-specific code.	*/
 #   endif
     if (GC_push_other_roots != 0) (*GC_push_other_roots)();
     	/* In the threads case, this also pushes thread stacks.	*/
+        /* Note that without interior pointer recognition lots	*/
+    	/* of stuff may have been pushed already, and this	*/
+    	/* should be careful about mark stack overflows.	*/
 }
 

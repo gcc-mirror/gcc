@@ -1,6 +1,7 @@
 /* 
  * Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
  * Copyright (c) 1991-1994 by Xerox Corporation.  All rights reserved.
+ * Copyright (c) 1999-2001 by Hewlett-Packard Company. All rights reserved.
  *
  * THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
  * OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
@@ -96,6 +97,8 @@ GC_bool GC_dont_precollect = 0;
 GC_bool GC_quiet = 0;
 
 GC_bool GC_print_stats = 0;
+
+GC_bool GC_print_back_height = 0;
 
 #ifdef FIND_LEAK
   int GC_find_leak = 1;
@@ -479,6 +482,12 @@ int sig;
 }
 #endif
 
+#ifdef MSWIN32
+  extern GC_bool GC_is_win32s();
+#else
+# define GC_is_win32s() FALSE
+#endif
+
 void GC_init_inner()
 {
 #   if !defined(THREADS) && defined(GC_ASSERTIONS)
@@ -501,6 +510,22 @@ void GC_init_inner()
     }
     if (0 != GETENV("GC_DONT_GC")) {
       GC_dont_gc = 1;
+    }
+    if (0 != GETENV("GC_PRINT_BACK_HEIGHT")) {
+      GC_print_back_height = 1;
+    }
+    {
+      char * time_limit_string = GETENV("GC_PAUSE_TIME_TARGET");
+      if (0 != time_limit_string) {
+        long time_limit;
+        if (time_limit_string != 0) time_limit = atol(time_limit_string);
+        if (time_limit < 5) {
+	  WARN("GC_PAUSE_TIME_TARGET environment variable value too small "
+	       "or bad syntax: Ignoring\n", 0);
+        } else {
+	  GC_time_limit = time_limit;
+        }
+      }
     }
 #   ifdef UNIX_LIKE
       if (0 != GETENV("GC_LOOP_ON_ABORT")) {
@@ -611,8 +636,19 @@ void GC_init_inner()
       PCR_IL_Unlock();
       GC_pcr_install();
 #   endif
-    /* Get black list set up */
-      if (!GC_dont_precollect) GC_gcollect_inner();
+#   if !defined(SMALL_CONFIG)
+      if (!GC_is_win32s() && 0 != GETENV("GC_ENABLE_INCREMENTAL")) {
+	GC_ASSERT(!GC_incremental);
+        GC_setpagesize();
+#       ifndef GC_SOLARIS_THREADS
+          GC_dirty_init();
+#       endif
+        GC_ASSERT(GC_words_allocd == 0)
+    	GC_incremental = TRUE;
+      }
+#   endif /* !SMALL_CONFIG */
+    /* Get black list set up and/or incrmental GC started */
+      if (!GC_dont_precollect || GC_incremental) GC_gcollect_inner();
     GC_is_initialized = TRUE;
 #   ifdef STUBBORN_ALLOC
     	GC_stubborn_init();
@@ -645,20 +681,14 @@ void GC_enable_incremental GC_PROTO(())
     LOCK();
     if (GC_incremental) goto out;
     GC_setpagesize();
-#   ifdef MSWIN32
-      {
-        extern GC_bool GC_is_win32s();
-
-	/* VirtualProtect is not functional under win32s.	*/
-	if (GC_is_win32s()) goto out;
-      }
-#   endif /* MSWIN32 */
+    if (GC_is_win32s()) goto out;
 #   ifndef GC_SOLARIS_THREADS
         GC_dirty_init();
 #   endif
     if (!GC_is_initialized) {
         GC_init_inner();
     }
+    if (GC_incremental) goto out;
     if (GC_dont_gc) {
         /* Can't easily do it. */
         UNLOCK();
@@ -900,6 +930,13 @@ GC_CONST char * msg;
 
 #ifdef NEED_CALLINFO
 
+#ifdef HAVE_BUILTIN_BACKTRACE
+# include <execinfo.h>
+# ifdef LINUX
+#   include <unistd.h>
+# endif
+#endif
+
 void GC_print_callers (info)
 struct callinfo info[NFRAMES];
 {
@@ -925,7 +962,73 @@ struct callinfo info[NFRAMES];
 	  GC_err_printf0("\n");
 	}
 # 	endif
-     	GC_err_printf1("\t\t##PC##= 0x%X\n", info[i].ci_pc);
+#	if defined(HAVE_BUILTIN_BACKTRACE) && !defined(REDIRECT_MALLOC)
+	  /* Unfortunately backtrace_symbols calls malloc, which makes  */
+	  /* it dangersous if that has been redirected.			*/
+	  {
+	    char **sym_name =
+	      backtrace_symbols((void **)(&(info[i].ci_pc)), 1);
+	    char *name = sym_name[0];
+	    GC_bool found_it = (strchr(name, '(') != 0);
+	    FILE *pipe;
+#	    ifdef LINUX
+	      if (!found_it) {
+#	        define EXE_SZ 100
+		static char exe_name[EXE_SZ];
+#		define CMD_SZ 200
+		char cmd_buf[CMD_SZ];
+#		define RESULT_SZ 200
+		static char result_buf[RESULT_SZ];
+		size_t result_len;
+		static GC_bool found_exe_name = FALSE;
+		static GC_bool will_fail = FALSE;
+		int ret_code;
+		/* Unfortunately, this is the common case for the 	*/
+		/* main executable.					*/
+		/* Try to get it via a hairy and expensive scheme.	*/
+		/* First we get the name of the executable:		*/
+		if (will_fail) goto out;
+		if (!found_exe_name) { 
+		  ret_code = readlink("/proc/self/exe", exe_name, EXE_SZ);
+		  if (ret_code < 0 || ret_code >= EXE_SZ || exe_name[0] != '/') {
+		    will_fail = TRUE;	/* Dont try again. */
+		    goto out;
+		  }
+		  exe_name[ret_code] = '\0';
+		  found_exe_name = TRUE;
+		}
+		/* Then we use popen to start addr2line -e <exe> <addr>	*/
+		/* There are faster ways to do this, but hopefully this	*/
+		/* isn't time critical.					*/
+		sprintf(cmd_buf, "/usr/bin/addr2line -e %s 0x%lx", exe_name,
+				 (unsigned long)info[i].ci_pc);
+		pipe = popen(cmd_buf, "r");
+		if (pipe < 0 || fgets(result_buf, RESULT_SZ, pipe) == 0) {
+		  will_fail = TRUE;
+		  goto out;
+		}
+		result_len = strlen(result_buf);
+		if (result_buf[result_len - 1] == '\n') --result_len;
+		if (result_buf[0] == '?'
+		    || result_buf[result_len-2] == ':' 
+		       && result_buf[result_len-1] == '0')
+		    goto out;
+		if (result_len < RESULT_SZ - 25) {
+		  /* Add in hex address	*/
+		    sprintf(result_buf + result_len, " [0x%lx]",
+			  (unsigned long)info[i].ci_pc);
+		}
+		name = result_buf;
+		pclose(pipe);
+		out:
+	      }
+#	    endif
+	    GC_err_printf1("\t\t%s\n", name);
+	    free(sym_name);
+	  }
+#	else
+     	  GC_err_printf1("\t\t##PC##= 0x%lx\n", info[i].ci_pc);
+#	endif
     }
 }
 

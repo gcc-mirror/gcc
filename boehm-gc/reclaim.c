@@ -631,47 +631,41 @@ COUNT_DECL
     ptr_t result = list;
 
     GC_ASSERT(GC_find_header((ptr_t)hbp) == hhdr);
+    GC_remove_protection(hbp, 1, (hhdr)->hb_descr == 0 /* Pointer-free? */);
     if (init) {
       switch(sz) {
 #      if !defined(SMALL_CONFIG) && !defined(USE_MARK_BYTES)
         case 1:
 	    /* We now issue the hint even if GC_nearly_full returned	*/
 	    /* DONT_KNOW.						*/
-	    GC_write_hint(hbp);
             result = GC_reclaim1(hbp, hhdr, list COUNT_ARG);
             break;
         case 2:
-	    GC_write_hint(hbp);
             result = GC_reclaim_clear2(hbp, hhdr, list COUNT_ARG);
             break;
         case 4:
-	    GC_write_hint(hbp);
             result = GC_reclaim_clear4(hbp, hhdr, list COUNT_ARG);
             break;
 #      endif /* !SMALL_CONFIG && !USE_MARK_BYTES */
         default:
-	    GC_write_hint(hbp);
             result = GC_reclaim_clear(hbp, hhdr, sz, list COUNT_ARG);
             break;
       }
     } else {
+      GC_ASSERT((hhdr)->hb_descr == 0 /* Pointer-free block */);
       switch(sz) {
 #      if !defined(SMALL_CONFIG) && !defined(USE_MARK_BYTES)
         case 1:
-	    GC_write_hint(hbp);
             result = GC_reclaim1(hbp, hhdr, list COUNT_ARG);
             break;
         case 2:
-	    GC_write_hint(hbp);
             result = GC_reclaim_uninit2(hbp, hhdr, list COUNT_ARG);
             break;
         case 4:
-	    GC_write_hint(hbp);
             result = GC_reclaim_uninit4(hbp, hhdr, list COUNT_ARG);
             break;
 #      endif /* !SMALL_CONFIG && !USE_MARK_BYTES */
         default:
-	    GC_write_hint(hbp);
             result = GC_reclaim_uninit(hbp, hhdr, sz, list COUNT_ARG);
             break;
       }

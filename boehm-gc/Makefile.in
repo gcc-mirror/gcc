@@ -96,8 +96,6 @@ target_all = @target_all@
 
 AUTOMAKE_OPTIONS = cygnus
 
-SUBDIRS = include
-
 # Multilib support variables.
 MULTISRCTOP = 
 MULTIBUILDTOP = 
@@ -105,13 +103,18 @@ MULTIDIRS =
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
-@USE_LIBDIR_TRUE@toolexeclibdir = $(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = $(exec_prefix)/$(target_alias)
+@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
 toolexeclib_LTLIBRARIES = $(target_all)
 EXTRA_LTLIBRARIES = libgcjgc.la
-libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c irix_threads.c linux_threads.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c
+libgcjgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
+dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c irix_threads.c \
+linux_threads.c malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
+obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
+solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c \
+backgraph.c
 
 
 # Include THREADLIBS here to ensure that the correct versions of
@@ -120,7 +123,10 @@ libgcjgc_la_LIBADD = @addobjs@ $(THREADLIBS)
 libgcjgc_la_DEPENDENCIES = @addobjs@
 libgcjgc_la_LDFLAGS = -version-info 1:1:0 -rpath $(toolexeclibdir)
 
-EXTRA_libgcjgc_la_SOURCES = alpha_mach_dep.s mips_sgi_mach_dep.s mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s rs6000_mach_dep.s sparc_mach_dep.s sparc_netbsd_mach_dep.s sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
+EXTRA_libgcjgc_la_SOURCES = alpha_mach_dep.s \
+mips_sgi_mach_dep.s mips_ultrix_mach_dep.s powerpc_macosx_mach_dep.s \
+rs6000_mach_dep.s sparc_mach_dep.s sparc_netbsd_mach_dep.s \
+sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
 
 
 AM_CXXFLAGS = @GC_CFLAGS@
@@ -138,14 +144,52 @@ TESTS = gctest
 
 all_objs = @addobjs@ $(libgcjgc_la_OBJECTS)
 
-LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) 	$(AM_CPPFLAGS) $(CPPFLAGS) 	$(AM_CFLAGS) $(MY_CFLAGS) $(GC_CFLAGS) 
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(MY_CFLAGS) $(GC_CFLAGS) 
 
 LINK = $(LIBTOOL) --mode=link $(CC) $(AM_CFLAGS) $(MY_CFLAGS) $(LDFLAGS) -o $@
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
-AM_MAKEFLAGS =  	"AR_FLAGS=$(AR_FLAGS)" 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" 	"CFLAGS=$(CFLAGS)" 	"CXXFLAGS=$(CXXFLAGS)" 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" 	"INSTALL=$(INSTALL)" 	"INSTALL_DATA=$(INSTALL_DATA)" 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" 	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" 	"LDFLAGS=$(LDFLAGS)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" 	"MAKE=$(MAKE)" 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" 	"PICFLAG=$(PICFLAG)" 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" 	"SHELL=$(SHELL)" 	"EXPECT=$(EXPECT)" 	"RUNTEST=$(RUNTEST)" 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" 	"exec_prefix=$(exec_prefix)" 	"infodir=$(infodir)" 	"libdir=$(libdir)" 	"prefix=$(prefix)" 	"tooldir=$(tooldir)" 	"AR=$(AR)" 	"AS=$(AS)" 	"CC=$(CC)" 	"CXX=$(CXX)" 	"LD=$(LD)" 	"LIBCFLAGS=$(LIBCFLAGS)" 	"NM=$(NM)" 	"PICFLAG=$(PICFLAG)" 	"RANLIB=$(RANLIB)" 	"DESTDIR=$(DESTDIR)"
+AM_MAKEFLAGS = \
+	"AR_FLAGS=$(AR_FLAGS)" \
+	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
+	"CFLAGS=$(CFLAGS)" \
+	"CXXFLAGS=$(CXXFLAGS)" \
+	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
+	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
+	"INSTALL=$(INSTALL)" \
+	"INSTALL_DATA=$(INSTALL_DATA)" \
+	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
+	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
+	"LDFLAGS=$(LDFLAGS)" \
+	"LIBCFLAGS=$(LIBCFLAGS)" \
+	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
+	"MAKE=$(MAKE)" \
+	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
+	"PICFLAG=$(PICFLAG)" \
+	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
+	"SHELL=$(SHELL)" \
+	"EXPECT=$(EXPECT)" \
+	"RUNTEST=$(RUNTEST)" \
+	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
+	"exec_prefix=$(exec_prefix)" \
+	"infodir=$(infodir)" \
+	"libdir=$(libdir)" \
+	"prefix=$(prefix)" \
+	"tooldir=$(tooldir)" \
+	"AR=$(AR)" \
+	"AS=$(AS)" \
+	"CC=$(CC)" \
+	"CXX=$(CXX)" \
+	"LD=$(LD)" \
+	"LIBCFLAGS=$(LIBCFLAGS)" \
+	"NM=$(NM)" \
+	"PICFLAG=$(PICFLAG)" \
+	"RANLIB=$(RANLIB)" \
+	"DESTDIR=$(DESTDIR)"
 
 
 CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
@@ -165,7 +209,7 @@ dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo headers.lo \
 irix_threads.lo linux_threads.lo malloc.lo mallocx.lo mark.lo \
 mark_rts.lo misc.lo new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo \
 ptr_chck.lo real_malloc.lo reclaim.lo solaris_pthreads.lo \
-solaris_threads.lo specific.lo stubborn.lo typd_mlc.lo
+solaris_threads.lo specific.lo stubborn.lo typd_mlc.lo backgraph.lo
 check_PROGRAMS =  gctest$(EXEEXT)
 gctest_DEPENDENCIES =  ./libgcjgc.la
 CFLAGS = @CFLAGS@
@@ -283,61 +327,6 @@ gctest$(EXEEXT): $(gctest_OBJECTS) $(gctest_DEPENDENCIES)
 	@rm -f gctest$(EXEEXT)
 	$(LINK) $(gctest_LDFLAGS) $(gctest_OBJECTS) $(gctest_LDADD) $(LIBS)
 
-# This directory's subdirectories are mostly independent; you can cd
-# into them and run `make' without going through this Makefile.
-# To change the values of `make' variables: instead of editing Makefiles,
-# (1) if the variable is set in `config.status', edit `config.status'
-#     (which will cause the Makefiles to be regenerated when you run `make');
-# (2) otherwise, pass the desired values on the `make' command line.
-
-@SET_MAKE@
-
-all-recursive install-data-recursive install-exec-recursive \
-installdirs-recursive install-recursive uninstall-recursive install-info-recursive \
-check-recursive installcheck-recursive info-recursive dvi-recursive:
-	@set fnord $(MAKEFLAGS); amf=$$2; \
-	dot_seen=no; \
-	target=`echo $@ | sed s/-recursive//`; \
-	list='$(SUBDIRS)'; for subdir in $$list; do \
-	  echo "Making $$target in $$subdir"; \
-	  if test "$$subdir" = "."; then \
-	    dot_seen=yes; \
-	    local_target="$$target-am"; \
-	  else \
-	    local_target="$$target"; \
-	  fi; \
-	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
-	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
-	done; \
-	if test "$$dot_seen" = "no"; then \
-	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
-	fi; test -z "$$fail"
-
-mostlyclean-recursive clean-recursive distclean-recursive \
-maintainer-clean-recursive:
-	@set fnord $(MAKEFLAGS); amf=$$2; \
-	dot_seen=no; \
-	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
-	  rev="$$subdir $$rev"; \
-	  test "$$subdir" = "." && dot_seen=yes; \
-	done; \
-	test "$$dot_seen" = "no" && rev=". $$rev"; \
-	target=`echo $@ | sed s/-recursive//`; \
-	for subdir in $$rev; do \
-	  echo "Making $$target in $$subdir"; \
-	  if test "$$subdir" = "."; then \
-	    local_target="$$target-am"; \
-	  else \
-	    local_target="$$target"; \
-	  fi; \
-	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
-	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
-	done && test -z "$$fail"
-tags-recursive:
-	list='$(SUBDIRS)'; for subdir in $$list; do \
-	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) tags); \
-	done
-
 tags: TAGS
 
 ID: $(HEADERS) $(SOURCES) $(LISP)
@@ -348,14 +337,9 @@ ID: $(HEADERS) $(SOURCES) $(LISP)
 	here=`pwd` && cd $(srcdir) \
 	  && mkid -f$$here/ID $$unique $(LISP)
 
-TAGS: tags-recursive $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	tags=; \
 	here=`pwd`; \
-	list='$(SUBDIRS)'; for subdir in $$list; do \
-   if test "$$subdir" = .; then :; else \
-	    test -f $$subdir/TAGS && tags="$$tags -i $$here/$$subdir/TAGS"; \
-   fi; \
-	done; \
 	list='$(SOURCES) $(HEADERS)'; \
 	unique=`for i in $$list; do echo $$i; done | \
 	  awk '    { files[$$0] = 1; } \
@@ -420,16 +404,6 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
-	for subdir in $(SUBDIRS); do \
-	  if test "$$subdir" = .; then :; else \
-	    test -d $(distdir)/$$subdir \
-	    || mkdir $(distdir)/$$subdir \
-	    || exit 1; \
-	    chmod 777 $(distdir)/$$subdir; \
-	    (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) top_distdir=../$(distdir) distdir=../$(distdir)/$$subdir distdir) \
-	      || exit 1; \
-	  fi; \
-	done
 check-TESTS: $(TESTS)
 	@failed=0; all=0; \
 	srcdir=$(srcdir); export srcdir; \
@@ -456,33 +430,32 @@ check-TESTS: $(TESTS)
 	echo "$$dashes"; \
 	test "$$failed" -eq 0
 info-am:
-info: info-recursive
+info: info-am
 dvi-am:
-dvi: dvi-recursive
+dvi: dvi-am
 check-am: $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
-check: check-recursive
+check: check-am
 installcheck-am:
-installcheck: installcheck-recursive
+installcheck: installcheck-am
 install-info-am: 
-install-info: install-info-recursive
+install-info: install-info-am
 install-exec-am: install-toolexeclibLTLIBRARIES
-install-exec: install-exec-recursive
+install-exec: install-exec-am
 
 install-data-am:
-install-data: install-data-recursive
+install-data: install-data-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
-install: install-recursive
+install: install-am
 uninstall-am: uninstall-toolexeclibLTLIBRARIES
-uninstall: uninstall-recursive
+uninstall: uninstall-am
 all-am: Makefile $(LTLIBRARIES)
-all-redirect: all-recursive
+all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
-installdirs: installdirs-recursive
-installdirs-am:
+installdirs:
 	$(mkinstalldirs)  $(DESTDIR)$(toolexeclibdir)
 
 
@@ -499,20 +472,20 @@ mostlyclean-am:  mostlyclean-toolexeclibLTLIBRARIES mostlyclean-compile \
 		mostlyclean-libtool mostlyclean-checkPROGRAMS \
 		mostlyclean-tags mostlyclean-generic
 
-mostlyclean: mostlyclean-recursive
+mostlyclean: mostlyclean-am
 
 clean-am:  clean-toolexeclibLTLIBRARIES clean-compile clean-libtool \
 		clean-checkPROGRAMS clean-tags clean-generic \
 		mostlyclean-am
 
-clean: clean-recursive
+clean: clean-am
 
 distclean-am:  distclean-toolexeclibLTLIBRARIES distclean-compile \
 		distclean-libtool distclean-checkPROGRAMS \
 		distclean-tags distclean-generic clean-am
 	-rm -f libtool
 
-distclean: distclean-recursive
+distclean: distclean-am
 	-rm -f config.status
 
 maintainer-clean-am:  maintainer-clean-toolexeclibLTLIBRARIES \
@@ -522,7 +495,7 @@ maintainer-clean-am:  maintainer-clean-toolexeclibLTLIBRARIES \
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
-maintainer-clean: maintainer-clean-recursive
+maintainer-clean: maintainer-clean-am
 	-rm -f config.status
 
 .PHONY: mostlyclean-toolexeclibLTLIBRARIES \
@@ -533,19 +506,13 @@ mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
 clean-libtool maintainer-clean-libtool mostlyclean-checkPROGRAMS \
 distclean-checkPROGRAMS clean-checkPROGRAMS \
-maintainer-clean-checkPROGRAMS install-data-recursive \
-uninstall-data-recursive install-exec-recursive \
-uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
-all-recursive check-recursive installcheck-recursive info-recursive \
-dvi-recursive mostlyclean-recursive distclean-recursive clean-recursive \
-maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
-distclean-tags clean-tags maintainer-clean-tags distdir check-TESTS \
-info-am info dvi-am dvi check check-am installcheck-am installcheck \
-install-info-am install-info install-exec-am install-exec \
-install-data-am install-data install-am install uninstall-am uninstall \
-all-redirect all-am all installdirs-am installdirs mostlyclean-generic \
-distclean-generic clean-generic maintainer-clean-generic clean \
-mostlyclean distclean maintainer-clean
+maintainer-clean-checkPROGRAMS tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir check-TESTS info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-info-am \
+install-info install-exec-am install-exec install-data-am install-data \
+install-am install uninstall-am uninstall all-redirect all-am all \
+installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 # The following hack produces a warning from automake, but we need it in order 
 # to build a file from a subdirectory. FIXME.

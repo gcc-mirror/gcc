@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p1 from Makefile.am
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -96,7 +96,8 @@ target_all = @target_all@
 
 AUTOMAKE_OPTIONS = foreign
 
-include_HEADERS = gc.h gc_backptr.h gc_local_alloc.h   gc_pthread_redirects.h gc_cpp.h
+include_HEADERS = gc.h gc_backptr.h gc_local_alloc.h \
+  gc_pthread_redirects.h gc_cpp.h
 
 CONFIG_CLEAN_FILES = 
 HEADERS =  $(include_HEADERS)

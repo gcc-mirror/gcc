@@ -1413,6 +1413,61 @@ Since 6.0:
    less common thread implementations, since some of the original code
    didn't stand up to close scrutiny.  Support for the next pthreads
    implementation should be easier to add.
+
+Since 6.1alpha1:
+ - No longer wrap read by default in multithreaded applications.  It was
+   pointed out on the libgcj list that this holds the allocation lock for
+   way too long if the read blocks.  For now, reads into the heap are
+   broken with incremental collection.  It's possible to turn this back on
+   if you make sure that read calls don't block (e.g. by calling select
+   first).
+ - Fix ifdef in Solaris_threads.h to refer to GC_SOLARIS_THREADS.
+ - Added check for environment variable GC_IGNORE_GCJ_INFO.
+ - Added printing of stop-the-world GC times if GC_PRINT_STATS environment
+   variable is set.
+ - The calloc definition in leak_detector.h was missing parentheses, and
+   realloc was missing a second argument to GC_REALLOC.
+   (Thanks to Elrond (elrond<at>samba-tng.org).)
+ - Added GC_PRINT_BACK_HEIGHT environment variable and associated
+   code, mostly in the new file backgraph.c.  See doc/README.environment.
+ - Added -DUSE_GLOBAL_ALLOC to work around a Windows NT issue.  (Thanks to
+   Jonathan Clark.)
+ - Integrated port to NEC EWS4800 (MIPS-based workstation, with somewhat
+   different address-space layout). This may help for other machines with
+   holes in the data segment.  (Thanks to Hironori Sakamoto.)
+ - Changed the order in which GC_push_roots and friends push things onto
+   the mark stack.  GC_push_all calls need to come first, since we can't
+   necessarily recovere if those overflow the mark stack.  (Thanks to
+   Matthew Flatt for tracking down the problem.)
+ - Some minor cleanups to mostly support the Intel compiler on Linux/IA64.
+
+Since 6.1 alpha2:
+ - Minor cleanup on the gcconfig.h section for SPARC.
+ - Minor fix to support Intel compiler for I386/Linux. (Thanks to Sven
+   Hartrumpf.)
+ - Added SPARC V9 (64-bit) support.  (Thanks to Jeff Sturm.)
+ - Restructured the way in which we determine whether or not to keep
+   call stacks for debug allocation.  By default SAVE_CALL_COUNT is
+   now zero on all platforms.  Added SAVE_CALL_NARGS parameters.
+   If possible, use execinfo.h to capture call stack.  (This should
+   add support for a number of new platforms, though often at
+   considerable runtime expense.)
+ - Try to print symbolic information for call stacks.  On Linux, we
+   do this with a combination of execinfo.h and running addr2line in
+   a separate process.  This is both much more expensive and much more
+   useful.  Amazingly, it seems to be fast enough for most purposes.
+ - Redefined strdup if -DREDIRECT_MALLOC is given.
+ - Changed incremental collector and MPROTECT_VDB implementation so that,
+   under favorable conditions, pointerfree objects are not protected.
+   Added GC_incremental_protection_needs() to determine ahead of time whether
+   pointerfree objects may be protected.  Replaced GC_write_hint() with
+   GC_remove_protection().
+ - Added test for GC_ENABLE_INCREMENTAL environment variable.
+ - Made GC_time_limit runtime configurable.  Added GC_PAUSE_TIME_TARGET
+   environment variable.
+ - Eliminated GC_page_sz, a duplicate of GC_page_size.
+ - Caused the Solaris and Irix thread creation primitives to call
+   GC_init_inner().
  
 
 To do:

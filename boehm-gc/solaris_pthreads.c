@@ -88,8 +88,8 @@ GC_pthread_create(pthread_t *new_thread,
     }
 
     LOCK();
-    if (!GC_thr_initialized) {
-	    GC_thr_init();
+    if (!GC_is_initialized) {
+	    GC_init_inner();
     }
     GC_multithreaded++;
 	    

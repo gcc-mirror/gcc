@@ -429,7 +429,7 @@ ptr_t cold_gc_frame;
 		    *i = 0;
 		}
 #	      if defined(POWERPC) || defined(MSWIN32) || defined(MSWINCE) \
-	         || defined(UTS4) || defined(LINUX)
+                || defined(UTS4) || defined(LINUX) || defined(EWS4800)
 		  (void) setjmp(regs);
 #	      else
 	          (void) _setjmp(regs);
@@ -492,8 +492,10 @@ ptr_t cold_gc_frame;
 /* On IA64, we also need to flush register windows.  But they end	*/
 /* up on the other side of the stack segment.				*/
 /* Returns the backing store pointer for the register stack.		*/
-/* We implement this as a separate file in HP/UX.			*/
-# ifdef IA64
+/* We now implement this as a separate assembly file, since inline	*/
+/* assembly code here doesn't work with either the Intel or HP 		*/
+/* compilers.								*/
+# if 0
 #   ifdef LINUX
 	asm("        .text");
 	asm("        .psr abi64");
