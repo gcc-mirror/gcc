@@ -2685,6 +2685,7 @@ do								\
 								\
 	SYMBOL_REF_FLAG (XEXP (rtl, 0)) =			\
 	  (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
+	   || MODULE_LOCAL_P (DECL)				\
 	   || ! TREE_PUBLIC (DECL));				\
       }								\
     if (TARGET_SH5)						\
