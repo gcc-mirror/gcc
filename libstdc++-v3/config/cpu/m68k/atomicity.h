@@ -47,9 +47,8 @@ __exchange_and_add(volatile _Atomic_word* __mem, int __val)
 			"add%.l %3,%1\n\t"
 			"cas%.l %0,%1,%2\n\t"
 			"jne 1b"
-			: "=d" (__result), "=&d" (__temp), "+m" (*__mem)
-			: "d" (__val), "0" (__result)
-			: "memory");
+			: "=d" (__result), "=&d" (__temp), "=m" (*__mem)
+			: "d" (__val), "0" (__result), "m" (*__mem));
   return __result;
 }
 

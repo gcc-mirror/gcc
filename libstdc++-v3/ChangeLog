@@ -1,3 +1,14 @@
+2003-12-19  Jason Merrill  <jason@redhat.com>
+
+	* config/cpu/cris/atomicity.h: Remove memory clobbers.
+	* config/cpu/mips/atomicity.h: Likewise.
+	* config/cpu/i486/atomicity.h: Remove memory clobbers.
+	Split up read-write memory operand.
+	* config/cpu/m68k/atomicity.h: Likewise.
+	* config/cpu/powerpc/atomicity.h: Make memory I/O explicit.
+	* config/cpu/s390/atomicity.h: Likewise.
+	* config/cpu/sparc/atomicity.h: Likewise.
+
 2003-12-20  Carlo Wood  <carlo@alinoe.com>
 
 	* bits/demangle.h

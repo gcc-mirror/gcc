@@ -38,13 +38,13 @@ __exchange_and_add(volatile _Atomic_word* __mem, int __val)
 {
   register _Atomic_word __old_val, __new_val;
 
-  __asm__ __volatile__ ("   l     %0,0(%2)\n"
+  __asm__ __volatile__ ("   l     %0,0(%3)\n"
                         "0: lr    %1,%0\n"
-                        "   ar    %1,%3\n"
-                        "   cs    %0,%1,0(%2)\n"
+                        "   ar    %1,%4\n"
+                        "   cs    %0,%1,0(%3)\n"
                         "   jl    0b"
-                        : "=&d" (__old_val), "=&d" (__new_val)
-                        : "a" (__mem), "d" (__val) : "cc", "memory" );
+                        : "=&d" (__old_val), "=&d" (__new_val), "=m" (*__mem)
+                        : "a" (__mem), "d" (__val), "m" (*__mem) : "cc");
   return __old_val;
 }
 

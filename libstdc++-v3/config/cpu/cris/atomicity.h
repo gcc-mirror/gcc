@@ -51,8 +51,7 @@ __exchange_and_add(_Atomic_word* __mem, int __val)
 			" bwf 0b		\n"
 			" clearf		\n"
 			:  "=&r" (__result), "=m" (*__mem), "=&r" (__tmp)
-			: "r" (__mem), "g" (__val), "m" (*__mem)
-			: "memory");
+			: "r" (__mem), "g" (__val), "m" (*__mem));
 #else
   __asm__ __volatile__ (" move $ccr,$r9		\n"
 			" di			\n"
@@ -63,7 +62,7 @@ __exchange_and_add(_Atomic_word* __mem, int __val)
 			" move $r9,$ccr		\n"
 			:  "=&r" (__result), "=m" (*__mem), "=&r" (__tmp)
 			: "r" (__mem), "g" (__val), "m" (*__mem)
-			: "memory", "r9");
+			: "r9");
 #endif
 
   return __result;
