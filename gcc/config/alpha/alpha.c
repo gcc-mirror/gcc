@@ -1383,19 +1383,15 @@ output_prolog (file, size)
       if (frame_size > 4096)
 	{
 	  int probed = 4096;
-	  int regnum = 2;	/* $1 is static chain, so start with $2.  */
 
-	  fprintf (file, "\tldq $%d,-%d($30)\n", regnum++, probed);
+	  fprintf (file, "\tstq $31,-%d($30)\n", probed);
 
 	  while (probed + 8192 < frame_size)
-	    fprintf (file, "\tldq $%d,-%d($30)\n", regnum++, probed += 8192);
+	    fprintf (file, "\tstq $31,-%d($30)\n", probed += 8192);
 
 	  /* We only have to do this probe if we aren't saving registers.  */
 	  if (sa_size == 0 && probed + 4096 < frame_size)
-	    fprintf (file, "\tldq $%d,-%d($30)\n", regnum++, probed += 4096);
-
-	  if (regnum > 9)
-	    abort ();
+	    fprintf (file, "\tstq $31,-%d($30)\n", frame_size);
 	}
 
       if (frame_size != 0)
@@ -1419,7 +1415,7 @@ output_prolog (file, size)
       assemble_name (file, alpha_function_name);
       fprintf (file, "..sc:\n");
 
-      fprintf (file, "\tldq $6,-8192($4)\n");
+      fprintf (file, "\tstq $31,-8192($4)\n");
       fprintf (file, "\tsubq $5,1,$5\n");
       fprintf (file, "\tlda $4,-8192($4)\n");
 
@@ -1427,10 +1423,10 @@ output_prolog (file, size)
       assemble_name (file, alpha_function_name);
       fprintf (file, "..sc\n");
 
-      fprintf (file, "\tlda $30,-%d($4)\n", leftover);
-
       if (leftover > 4096 && sa_size == 0)
-	fprintf (file, "\tldq $2,%d($30)\n", leftover - 4096);
+	fprintf (file, "\tstq $31,-%d($4)\n", leftover);
+
+      fprintf (file, "\tlda $30,-%d($4)\n", leftover);
     }
 
   /* Describe our frame.  */
