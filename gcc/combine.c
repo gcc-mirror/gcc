@@ -5107,7 +5107,7 @@ simplify_set (rtx x)
       if (GET_CODE (src) == COMPARE)
 	op0 = XEXP (src, 0), op1 = XEXP (src, 1);
       else
-	op0 = src, op1 = const0_rtx;
+	op0 = src, op1 = CONST0_RTX (GET_MODE (src));
 
       tmp = simplify_relational_operation (old_code, compare_mode, VOIDmode,
 					   op0, op1);
