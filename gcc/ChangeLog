@@ -1,3 +1,10 @@
+2000-11-01  Neil Booth  <neilb@earthling.net>
+
+        * cpplib.c (run_directive): Use correct line number for output
+        of _Pragma.  Remember any in-progress directive. 
+  
+        * gcc.dg/cpp/vararg2.c, gcc.dg/cpp/_Pragm1.c: New tests.
+
 2000-11-01  Richard Henderson  <rth@redhat.com>
 
 	* stmt.c (expand_start_null_loop): Set continue_label.
