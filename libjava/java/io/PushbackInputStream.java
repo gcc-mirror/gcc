@@ -1,5 +1,5 @@
 /* PushbackInputStream.java -- An input stream that can unread bytes
-   Copyright (C) 1998, 1999, 2001, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -116,7 +116,7 @@ public class PushbackInputStream extends FilterInputStream
    */
   public int available() throws IOException
   {
-    return pos + super.available();
+    return (buf.length - pos) + super.available();
   }
 
   /**
@@ -200,18 +200,23 @@ public class PushbackInputStream extends FilterInputStream
    */
   public synchronized int read(byte[] b, int off, int len) throws IOException
   {
-    if (off < 0 || len < 0 || off + len > b.length)
-      throw new ArrayIndexOutOfBoundsException();
-
     int numBytes = Math.min(buf.length - pos, len);
     if (numBytes > 0)
       {
 	System.arraycopy (buf, pos, b, off, numBytes);
 	pos += numBytes;
-	return numBytes;
+	len -= numBytes;
+	off += numBytes;
       }
 
-    return super.read(b, off, len);
+    if (len > 0)
+      {
+        len = super.read(b, off, len);
+	if (len == -1) // EOF
+	  return numBytes > 0 ? numBytes : -1;
+	numBytes += len;
+      }
+    return numBytes;
   }
 
   /**
