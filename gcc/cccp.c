@@ -4503,7 +4503,12 @@ pass_thru_directive (buf, limit, op, keyword)
     *op->bufp++ = ' ';
   bcopy (buf, op->bufp, limit - buf);
   op->bufp += (limit - buf);
+#if 0
   *op->bufp++ = '\n';
+  /* Count the line we have just made in the output,
+     to get in sync properly.  */
+  op->lineno++;
+#endif
 }
 
 /* The arglist structure is built by do_define to tell
@@ -8012,38 +8017,38 @@ initialize_builtins (inp, outp)
       char directive[2048];
       register struct directive *dp = &directive_table[0];
 
-      sprintf (directive, " __BASE_FILE__ \"%s\"",
+      sprintf (directive, " __BASE_FILE__ \"%s\"\n",
 	       instack[0].nominal_fname);
       output_line_command (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
-      sprintf (directive, " __VERSION__ \"%s\"", version_string);
+      sprintf (directive, " __VERSION__ \"%s\"\n", version_string);
       output_line_command (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
-      sprintf (directive, " __SIZE_TYPE__ %s", SIZE_TYPE);
+      sprintf (directive, " __SIZE_TYPE__ %s\n", SIZE_TYPE);
       output_line_command (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
-      sprintf (directive, " __PTRDIFF_TYPE__ %s", PTRDIFF_TYPE);
+      sprintf (directive, " __PTRDIFF_TYPE__ %s\n", PTRDIFF_TYPE);
       output_line_command (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
-      sprintf (directive, " __WCHAR_TYPE__ %s", WCHAR_TYPE);
+      sprintf (directive, " __WCHAR_TYPE__ %s\n", WCHAR_TYPE);
       output_line_command (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
-      sprintf (directive, " __WCHAR_TYPE__ %s", WCHAR_TYPE);
+      sprintf (directive, " __WCHAR_TYPE__ %s\n", WCHAR_TYPE);
       output_line_command (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
-      sprintf (directive, " __DATE__ \"%s %2d %4d\"",
+      sprintf (directive, " __DATE__ \"%s %2d %4d\"\n",
 	       monthnames[timebuf->tm_mon],
 	       timebuf->tm_mday, timebuf->tm_year + 1900);
       output_line_command (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
 
-      sprintf (directive, " __TIME__ \"%02d:%02d:%02d\"",
+      sprintf (directive, " __TIME__ \"%02d:%02d:%02d\"\n",
 	       timebuf->tm_hour, timebuf->tm_min, timebuf->tm_sec);
       output_line_command (inp, outp, 0, same_file);
       pass_thru_directive (directive, &directive[strlen (directive)], outp, dp);
