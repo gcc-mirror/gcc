@@ -1,5 +1,5 @@
 /* ZipEntry.java --
-   Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,7 +60,7 @@ public class ZipEntry implements ZipConstants, Cloneable
 
   private String name;
   private int size;
-  private int compressedSize;
+  private long compressedSize = -1;
   private int crc;
   private int dostime;
   private short known = 0;
@@ -242,14 +242,10 @@ public class ZipEntry implements ZipConstants, Cloneable
 
   /**
    * Sets the size of the compressed data.
-   * @exception IllegalArgumentException if size is not in 0..0xffffffffL
    */
   public void setCompressedSize(long csize)
   {
-    if ((csize & 0xffffffff00000000L) != 0)
-	throw new IllegalArgumentException();
-    this.compressedSize = (int) csize;
-    this.known |= KNOWN_CSIZE;
+    this.compressedSize = csize;
   }
 
   /**
@@ -258,7 +254,7 @@ public class ZipEntry implements ZipConstants, Cloneable
    */
   public long getCompressedSize()
   {
-    return (known & KNOWN_CSIZE) != 0 ? compressedSize & 0xffffffffL : -1L;
+    return compressedSize;
   }
 
   /**

@@ -1,5 +1,14 @@
 2005-01-05  Tom Tromey  <tromey@redhat.com>
 
+	* java/util/zip/ZipEntry.java (setCompressedSize): Allow any
+	argument.
+	(compressedSize): Now 'long'.  Default to -1.
+	(getCompressedSize): Rewrote.
+	* java/util/zip/DeflaterOutputStream.java (deflate): Don't
+	deflate at all if we need input.
+
+2005-01-05  Tom Tromey  <tromey@redhat.com>
+
 	PR libgcj/15719:
 	* interpret.cc (run) <insn_dcmpl, insn_dcmpg>: Set tmpval
 	correctly.

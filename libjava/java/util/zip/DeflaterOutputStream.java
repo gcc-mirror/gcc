@@ -79,13 +79,12 @@ public class DeflaterOutputStream extends FilterOutputStream
    */
   protected void deflate() throws IOException
   {
-    do
+    while (! def.needsInput())
       {
 	int len = def.deflate(buf, 0, buf.length);
 	if (len > 0)
 	  out.write(buf, 0, len);
        }
-    while (! def.needsInput());
   }
 
   /** 
