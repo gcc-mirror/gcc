@@ -1,5 +1,5 @@
 /* Definitions for AMD x86-64 running Linux-based GNU systems with ELF format.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Jan Hubicka <jh@suse.cz>, based on linux.h.
 
 This file is part of GNU CC.
@@ -35,6 +35,11 @@ Boston, MA 02111-1307, USA.  */
 	  {							\
 	    builtin_define ("__PIC__");				\
 	    builtin_define ("__pic__");				\
+	  }							\
+	if (TARGET_64BIT)					\
+	  {							\
+	    builtin_define ("__LP64__");			\
+	    builtin_define ("_LP64");				\
 	  }							\
     }								\
   while (0)

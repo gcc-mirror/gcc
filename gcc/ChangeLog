@@ -1,3 +1,9 @@
+2003-03-14  Andreas Jaeger  <aj@suse.de>
+            Gwenole Beauchesne  <gbeauchesne@mandrakesoft.com>
+
+	* linux64.h (TARGET_OS_CPP_BUILTINS): Define _LP64 and __LP64__ in
+	64-bit mode.
+
 2003-03-13  Mike Stump  <mrs@apple.com>
 
 	* ggc-page.c (struct page_entry): Remove varray.h header.
@@ -27,7 +33,7 @@
 2003-03-12  Richard Henderson  <rth@redhat.com>
 
 	PR opt/8178
-	* config/i386/i386.md (ffssi2): Tighten op1 predicate to 
+	* config/i386/i386.md (ffssi2): Tighten op1 predicate to
 	the requirements of the output insns.
 
 2003-03-12  Steve Ellcey  <sje@cup.hp.com>
@@ -173,7 +179,7 @@ Wed Mar 12 19:14:34 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(DEFAULT_WORD_SWITCH_TAKES_ARG): Add.
 	* cppspec.c (DEFAULT_SWTICH_TAKES_ARG): Remove.
 	(DEFAULT_WORD_SWITCH_TAKES_ARG): Remove.
-	
+
 2003-03-10  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.h (HARD_REGNO_RENAME_OK): Define.
@@ -254,7 +260,7 @@ Thu Mar  6 16:35:27 CET 2003  Jan Hubicka  <jh@suse.cz>
 	a separate limit for the RTL inliner.
 	* params.h: Likewise.
 	* integrate.c (function_cannot_inline_p): Use it.
-	* toplev.c (decode_f_option): Set multiple parameters 
+	* toplev.c (decode_f_option): Set multiple parameters
 	controlling inlining with -finline-limit.
 	* params.def: Fix orthographic and typographic errors.
 	* doc/invoke.texi: Document parameters controlling inlining
@@ -414,7 +420,7 @@ Fri Feb 28 11:13:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/m68hc11/m68hc11.c (m68hc11_shift_operator): New function.
 	* config/m68hc11/m68hc11-protos.h (m68hc11_shift_operator): Declare.
 	* config/m68hc11/m68hc11.h (PREDICATE_CODES): Register.
-	* config/m68hc11/m68hc11.md ("rotrhi3", "rotlhi3"): New patterns for 
+	* config/m68hc11/m68hc11.md ("rotrhi3", "rotlhi3"): New patterns for
 	rotatert and rotate.
 	("rotrhi3_const", "rotlhi3_const"): Rename of old 'rotrhi3' insns.
 	("*rotrhi3", "*rotlhi3"): New insn pattern for non-const rotatert.
@@ -439,7 +445,7 @@ Fri Feb 28 11:13:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-03-01  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (*-*-netbsd[2-9]*, *-*-netbsdelf[2-9]*): Enable
-	POSIX thread support by default.  
+	POSIX thread support by default.
 
 2003-03-01  Roger Sayle  <roger@eyesopen.com>
 
@@ -462,7 +468,7 @@ Fri Feb 28 11:13:57 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-02-27  Joel Sherrill <joel@OARcorp.com>
 
 	PR 9638/other
-	* config/i386/i386.c (DEFAULT_PCC_STRUCT_RETURN): Ensure the 
+	* config/i386/i386.c (DEFAULT_PCC_STRUCT_RETURN): Ensure the
 	this constant defaults to 1.
 
 2003-02-28  Richard Sandiford  <rsandifo@redhat.com>
@@ -530,7 +536,7 @@ Wed Feb 26 20:17:56 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-02-25  Richard Henderson  <rth@redhat.com>
 
-	* real.c (real_to_integer2): Force overflow result only for 
+	* real.c (real_to_integer2): Force overflow result only for
 	unsigned overflow.
 
 Tue Feb 25 12:39:33 CET 2003  Jan Hubicka  <jh@suse.cz>
@@ -568,12 +574,12 @@ Tue Feb 25 12:39:33 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* doc/extend.texi (Tru64 Pragmas): Reflect this.
 
 	* fixinc/inclhack.def (alpha___extern_prefix): Indicate #pragma
-	extern_prefix support for Tru64 UNIX V5 <sys/stat.h>. 
+	extern_prefix support for Tru64 UNIX V5 <sys/stat.h>.
 	* fixinc/fixincl.x: Regenerate.
 	* fixinc/tests/base/sys/stat.h [ALPHA___EXTERN_PREFIX_CHECK]: New
 	testcase.
 	Fixes PR c/5059, c/6126, other/9671.
-	
+
 2003-02-24  Alan Modra  <amodra@bigpond.net.au>
 
 	PR 9297, PR 9722
@@ -14285,4 +14291,3 @@ Mon Jul  1 19:55:17 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* mips.h (FUNCTION_ARG_REGNO_P): Fix parentheses.
 
 See ChangeLog.7 for earlier changes.
-
