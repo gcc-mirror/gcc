@@ -1,5 +1,7 @@
 2003-07-26  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cfns.h: Rebuilt.
+
 	* cp-tree.h (begin_init_stmts, finish_init_stmts): Remove.
 	(begin_global_stmt_expr, finish_global_stmt_expr): Remove.
 	* init.c (begin_init_stmts): Make static. Return is_global

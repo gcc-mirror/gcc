@@ -1,5 +1,35 @@
-/* ANSI-C code produced by gperf version 2.7.2 */
-/* Command-line: gperf -o -L ANSI-C -C -E -k '1-6,$' -j1 -D -N libc_name_p -L ANSI-C cp/cfns.gperf  */
+/* ANSI-C code produced by gperf version 3.0.1 */
+/* Command-line: gperf -o -C -E -k '1-6,$' -j1 -D -N libc_name_p -L ANSI-C ../../gcc/gcc/cp/cfns.gperf  */
+
+#if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
+      && ('%' == 37) && ('&' == 38) && ('\'' == 39) && ('(' == 40) \
+      && (')' == 41) && ('*' == 42) && ('+' == 43) && (',' == 44) \
+      && ('-' == 45) && ('.' == 46) && ('/' == 47) && ('0' == 48) \
+      && ('1' == 49) && ('2' == 50) && ('3' == 51) && ('4' == 52) \
+      && ('5' == 53) && ('6' == 54) && ('7' == 55) && ('8' == 56) \
+      && ('9' == 57) && (':' == 58) && (';' == 59) && ('<' == 60) \
+      && ('=' == 61) && ('>' == 62) && ('?' == 63) && ('A' == 65) \
+      && ('B' == 66) && ('C' == 67) && ('D' == 68) && ('E' == 69) \
+      && ('F' == 70) && ('G' == 71) && ('H' == 72) && ('I' == 73) \
+      && ('J' == 74) && ('K' == 75) && ('L' == 76) && ('M' == 77) \
+      && ('N' == 78) && ('O' == 79) && ('P' == 80) && ('Q' == 81) \
+      && ('R' == 82) && ('S' == 83) && ('T' == 84) && ('U' == 85) \
+      && ('V' == 86) && ('W' == 87) && ('X' == 88) && ('Y' == 89) \
+      && ('Z' == 90) && ('[' == 91) && ('\\' == 92) && (']' == 93) \
+      && ('^' == 94) && ('_' == 95) && ('a' == 97) && ('b' == 98) \
+      && ('c' == 99) && ('d' == 100) && ('e' == 101) && ('f' == 102) \
+      && ('g' == 103) && ('h' == 104) && ('i' == 105) && ('j' == 106) \
+      && ('k' == 107) && ('l' == 108) && ('m' == 109) && ('n' == 110) \
+      && ('o' == 111) && ('p' == 112) && ('q' == 113) && ('r' == 114) \
+      && ('s' == 115) && ('t' == 116) && ('u' == 117) && ('v' == 118) \
+      && ('w' == 119) && ('x' == 120) && ('y' == 121) && ('z' == 122) \
+      && ('{' == 123) && ('|' == 124) && ('}' == 125) && ('~' == 126))
+/* The character set is not based on ISO-646.  */
+#error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
+#endif
+
+#line 1 "../../gcc/gcc/cp/cfns.gperf"
+
 #ifdef __GNUC__
 __inline
 #endif
@@ -8,7 +38,7 @@ static unsigned int hash (const char *, unsigned int);
 __inline
 #endif
 const char * libc_name_p (const char *, unsigned int);
-/* maximum key range = 480, duplicates = 1 */
+/* maximum key range = 391, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -22,48 +52,52 @@ hash (register const char *str, register unsigned int len)
 {
   static const unsigned short asso_values[] =
     {
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483,   0,   0,
-        1, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 106,  76,   0,
-       21,   0,   0,  11,  43,  26,   0,  66, 106,  17,
-      121,   0,  17,   0,   7,   0,   3,  19,  49,   1,
-        3,  41, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483, 483, 483, 483, 483,
-      483, 483, 483, 483, 483, 483
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400,   0,   0,
+        1, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400,  28,  90,   0,
+       95,   0,  51,  93, 114,  26, 109, 124,   5,   1,
+        6,  13,  37, 128,   3,   0,   0,  49,  38,   0,
+      104,  45,   0, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400, 400, 400, 400,
+      400, 400, 400, 400, 400, 400, 400
     };
   register int hval = len;
 
   switch (hval)
     {
       default:
-      case 6:
-        hval += asso_values[(unsigned char)str[5]];
+        hval += asso_values[(unsigned char)str[5]+1];
+      /*FALLTHROUGH*/
       case 5:
         hval += asso_values[(unsigned char)str[4]];
+      /*FALLTHROUGH*/
       case 4:
         hval += asso_values[(unsigned char)str[3]];
+      /*FALLTHROUGH*/
       case 3:
         hval += asso_values[(unsigned char)str[2]];
+      /*FALLTHROUGH*/
       case 2:
         hval += asso_values[(unsigned char)str[1]];
+      /*FALLTHROUGH*/
       case 1:
         hval += asso_values[(unsigned char)str[0]];
         break;
@@ -82,233 +116,212 @@ libc_name_p (register const char *str, register unsigned int len)
       TOTAL_KEYWORDS = 156,
       MIN_WORD_LENGTH = 3,
       MAX_WORD_LENGTH = 10,
-      MIN_HASH_VALUE = 3,
-      MAX_HASH_VALUE = 482
+      MIN_HASH_VALUE = 9,
+      MAX_HASH_VALUE = 399
     };
 
   static const char * const wordlist[] =
     {
-      "cos",
-      "feof",
-      "free",
-      "sqrt",
-      "wcsrtombs",
-      "pow",
-      "towctrans",
       "wcsstr",
-      "wcstombs",
       "strstr",
-      "ferror",
-      "wcsxfrm",
-      "wcsftime",
-      "exit",
-      "exp",
-      "modf",
-      "strxfrm",
-      "wmemset",
-      "memset",
-      "strftime",
-      "frexp",
+      "cos",
+      "towctrans",
+      "memmove",
+      "wcstol",
+      "wcscoll",
+      "wcstombs",
+      "strtol",
+      "strcoll",
+      "wcslen",
       "time",
       "ctime",
-      "wcstod",
-      "fwide",
-      "wcscmp",
-      "wmemmove",
-      "strtod",
-      "fmod",
-      "wcschr",
-      "wcsrchr",
-      "strcmp",
-      "wctype",
-      "toupper",
-      "towupper",
-      "strchr",
-      "strrchr",
-      "wmemcmp",
+      "strlen",
       "iswctype",
-      "gmtime",
-      "difftime",
-      "btowc",
-      "iswprint",
-      "iswxdigit",
-      "cosh",
-      "memcmp",
       "wmemchr",
-      "isupper",
-      "iswupper",
-      "iswdigit",
-      "memchr",
-      "isxdigit",
-      "wmemcpy",
-      "mbtowc",
-      "setbuf",
-      "mbstowcs",
-      "wcscpy",
-      "memmove",
-      "vswprintf",
+      "wcsrchr",
+      "ceil",
+      "sin",
+      "strrchr",
+      "tan",
+      "iscntrl",
       "acos",
-      "mbrtowc",
-      "wcrtomb",
-      "mbsrtowcs",
-      "atof",
-      "strcpy",
-      "setlocale",
+      "wmemmove",
+      "wcsrtombs",
+      "wctrans",
+      "wmemcmp",
+      "pow",
+      "atol",
+      "wcsncmp",
+      "memset",
+      "free",
+      "strncmp",
+      "wmemset",
+      "wcsspn",
+      "wcstoul",
+      "strspn",
+      "strtoul",
+      "asctime",
+      "atan2",
+      "asin",
+      "atan",
+      "ferror",
+      "iswalnum",
       "wcscat",
-      "isdigit",
-      "log10",
+      "realloc",
+      "strcat",
+      "wcscpy",
+      "memcpy",
+      "strcpy",
       "tolower",
       "floor",
-      "towlower",
-      "strcat",
-      "log",
-      "mktime",
-      "wcstoul",
-      "fseek",
-      "memcpy",
-      "wcstok",
-      "strtoul",
-      "wcscspn",
-      "islower",
-      "div",
-      "iswlower",
-      "atexit",
-      "strtok",
-      "setvbuf",
-      "strcspn",
-      "isspace",
-      "iswspace",
-      "asctime",
-      "wctob",
-      "wcsncmp",
+      "iswcntrl",
       "atoi",
-      "ldexp",
-      "strncmp",
-      "wcspbrk",
-      "wctomb",
-      "swprintf",
-      "sprintf",
-      "strpbrk",
-      "abs",
-      "fabs",
-      "wcsncpy",
-      "ispunct",
-      "iswpunct",
-      "strncpy",
-      "iswgraph",
-      "isprint",
-      "isgraph",
-      "wcscoll",
-      "wcstol",
-      "vsprintf",
-      "strcoll",
-      "strtol",
-      "sscanf",
       "clearerr",
       "swscanf",
-      "sinh",
       "wcsncat",
-      "getenv",
-      "ceil",
-      "clock",
-      "wctrans",
+      "islower",
       "strncat",
+      "btowc",
+      "localtime",
+      "wctomb",
+      "isalnum",
+      "isprint",
+      "mblen",
+      "wcstod",
+      "log10",
+      "strtod",
+      "wcrtomb",
+      "abs",
+      "setlocale",
+      "wcschr",
+      "mbrlen",
+      "memchr",
+      "strchr",
+      "labs",
+      "iswpunct",
+      "exit",
+      "sqrt",
+      "swprintf",
+      "wctype",
+      "mbsrtowcs",
+      "wcscspn",
+      "getenv",
+      "strcspn",
+      "towlower",
+      "atof",
+      "wcstok",
+      "localeconv",
+      "strtok",
+      "calloc",
+      "malloc",
+      "isalpha",
+      "iswlower",
+      "iswspace",
+      "wcsxfrm",
+      "signal",
+      "strxfrm",
+      "wcsftime",
+      "feof",
+      "strftime",
+      "wcscmp",
+      "fabs",
+      "memcmp",
+      "strcmp",
+      "vsprintf",
+      "fwide",
+      "gmtime",
+      "sprintf",
+      "exp",
+      "wmemcpy",
+      "iswprint",
+      "sscanf",
+      "wcsncpy",
+      "strncpy",
+      "isspace",
+      "toupper",
+      "wctob",
+      "div",
+      "mbtowc",
       "ldiv",
-      "iswcntrl",
-      "wcsspn",
-      "iscntrl",
-      "sin",
-      "strspn",
-      "mbsinit",
-      "longjmp",
+      "log",
+      "mktime",
+      "isupper",
+      "atexit",
+      "modf",
+      "mbstowcs",
+      "mbrtowc",
+      "ispunct",
+      "iswalpha",
+      "setvbuf",
       "rand",
       "srand",
-      "labs",
+      "frexp",
+      "towupper",
+      "mbsinit",
+      "cosh",
+      "vswprintf",
+      "iswupper",
+      "wcspbrk",
+      "fmod",
+      "strpbrk",
+      "sinh",
       "tanh",
-      "calloc",
-      "atol",
-      "localtime",
-      "realloc",
-      "malloc",
-      "atan2",
-      "tan",
-      "wcslen",
-      "strlen",
-      "iswalpha",
-      "localeconv",
-      "asin",
-      "iswalnum",
-      "isalnum",
-      "isalpha",
-      "mblen",
-      "mbrlen",
-      "atan",
-      "signal"
+      "iswdigit",
+      "clock",
+      "longjmp",
+      "ldexp",
+      "setbuf",
+      "fseek",
+      "iswgraph",
+      "difftime",
+      "iswxdigit",
+      "isdigit",
+      "isxdigit",
+      "isgraph"
     };
 
   static const short lookup[] =
     {
-        -1,   -1,   -1,    0,    1,   -1,   -1,   -1,
-        -1,   -1,   -1,    2,   -1,   -1,   -1,   -1,
-        -1,    3,   -1,   -1,    4,   -1,    5,    6,
-         7,   -1,   -1,   -1,   -1,    8,   -1,   -1,
-        -1,    9,   10,   11,   -1,   -1,   12,   13,
-        14,   -1,   15,   -1,   16,   17,   18,   19,
-        -1,   20,   21,   22,   23,   24,   -1,   -1,
-        -1,   -1,   25,   -1,   26,   27,   -1,   28,
-        29,   30,   -1,   31,   32,   -1,   33,   -1,
-        34,   35,   36,   -1,   37,   -1,   -1,   38,
-        39,   -1,   -1,   -1,   40,   41,   -1,   -1,
-        42,   43,   44,   45,   46,   47,   -1,   48,
-        49,   50,   51,   -1,   52,   -1,   -1,   53,
-        54,   55,   56,   57,   -1,   58,   59, -273,
-        62,   63,   -1,   64,  -96,   -2,   65,   66,
-        67,   -1,   68,   -1,   69,   70,   71,   -1,
-        72,   -1,   -1,   73,   -1,   -1,   -1,   74,
-        75,   76,   -1,   77,   -1,   -1,   78,   -1,
-        -1,   79,   80,   81,   82,   83,   84,   85,
-        -1,   -1,   86,   87,   88,   -1,   89,   90,
-        -1,   91,   -1,   92,   -1,   93,   -1,   -1,
-        -1,   94,   -1,   -1,   95,   -1,   96,   -1,
-        -1,   -1,   -1,   97,   98,   99,   -1,  100,
-        -1,  101,  102,  103,   -1,   -1,   -1,   -1,
-        -1,  104,   -1,  105,  106,   -1,   -1,   -1,
-        -1,   -1,  107,   -1,   -1,   -1,   -1,  108,
-        -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-        -1,  109,   -1,   -1,  110,   -1,  111,   -1,
-        -1,   -1,   -1,   -1,  112,  113,   -1,  114,
-        -1,  115,  116,  117,   -1,  118,  119,  120,
-        -1,   -1,  121,  122,   -1,  123,   -1,  124,
-        -1,   -1,   -1,   -1,   -1,   -1,   -1,  125,
-        -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-        -1,  126,  127,   -1,   -1,   -1,  128,  129,
-        -1,   -1,   -1,  130,  131,   -1,   -1,  132,
-       133,  134,   -1,   -1,   -1,   -1,   -1,   -1,
-        -1,   -1,   -1,   -1,  135,   -1,   -1,   -1,
-        -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-        -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-        -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-       136,   -1,   -1,   -1,  137,  138,   -1,   -1,
-        -1,   -1,  139,   -1,  140,   -1,   -1,   -1,
-        -1,   -1,   -1,   -1,   -1,  141,   -1,  142,
-        -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-        -1,   -1,  143,  144,   -1,   -1,   -1,   -1,
-        -1,   -1,   -1,   -1,  145,   -1,   -1,   -1,
-        -1,   -1,  146,   -1,   -1,   -1,   -1,   -1,
-        -1,  147,  148,   -1,   -1,   -1,   -1,   -1,
-        -1,  149,   -1,   -1,   -1,   -1,   -1,   -1,
-        -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-        -1,   -1,  150,   -1,   -1,   -1,   -1,   -1,
-        -1,   -1,   -1,  151,   -1,   -1,   -1,   -1,
-        -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-        -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-        -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-        -1,   -1,   -1,   -1,   -1,   -1,  152,   -1,
-        -1,   -1,   -1,   -1,   -1,   -1,  153,   -1,
-        -1,   -1,   -1,   -1,   -1,  154,   -1,   -1,
-        -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-        -1,   -1,   -1,   -1,   -1,   -1,   -1,   -1,
-        -1,   -1,  155
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,   0,
+       -1,  -1,   1,  -1,  -1,  -1,   2,  -1,  -1,  -1,
+       -1,  -1,   3,   4,  -1,   5,   6,   7,   8,   9,
+       10,  11,  12,  13,  14,  -1,  -1,  -1,  15,  16,
+       17,  18,  19,  20,  21,  22,  -1,  -1,  23,  24,
+       -1,  25,  26,  27,  -1,  28,  29,  30,  31,  32,
+       33,  -1,  34,  35,  -1,  36,  37,  38,  -1,  39,
+       40,  -1,  41,  -1,  -1,  -1,  -1,  -1,  -1,  42,
+       -1,  43,  -1,  44,  -1,  45,  46,  -1,  47,  -1,
+       48,  49,  50,  51,  52,  -1,  -1,  53,  54,  55,
+       -1,  -1,  -1,  56,  -1,  57,  58,  -1,  59,  60,
+       61,  62,  63,  64,  65,  -1,  66,  67,  -1,  68,
+       -1,  69,  70,  71,  72,  73,  74,  75,  -1,  -1,
+       -1,  -1,  -1,  76,  77,  78,  -1,  -1,  79,  80,
+       81,  82,  -1,  83,  84,  -1,  85,  86,  87,  -1,
+       88,  89,  90,  91,  -1,  -1,  -1,  92,  -1,  93,
+       -1,  94,  -1,  95,  -1,  96,  97,  -1,  98,  -1,
+       99, 100, 101, 102, 103, 104, 105, 106, 107, 108,
+       -1, 109, 110, 111, 112,  -1, 113,  -1,  -1, 114,
+       -1,  -1,  -1, 115,  -1,  -1,  -1, 116, 117,  -1,
+      118,  -1,  -1,  -1,  -1, 119, 120, 121,  -1, 122,
+      123,  -1,  -1, 124,  -1, 125, 126,  -1, 127,  -1,
+      128,  -1,  -1, 129, 130,  -1,  -1,  -1,  -1,  -1,
+       -1, 131, 132,  -1,  -1,  -1,  -1, 133, 134, 135,
+       -1,  -1,  -1,  -1,  -1, 136,  -1, 137,  -1,  -1,
+       -1, 138,  -1,  -1,  -1,  -1,  -1,  -1, 139, 140,
+       -1, 141,  -1,  -1, 142,  -1, 143,  -1,  -1, 144,
+       -1, 145,  -1,  -1,  -1,  -1, 146,  -1,  -1,  -1,
+       -1,  -1,  -1, 147,  -1,  -1,  -1,  -1,  -1, 148,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1, 149,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1, 150,  -1,  -1,  -1,  -1,  -1,
+      151,  -1,  -1, 152,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1, 153,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1, 154,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,
+       -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1,  -1, 155
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
@@ -325,21 +338,6 @@ libc_name_p (register const char *str, register unsigned int len)
 
               if (*str == *s && !strcmp (str + 1, s + 1))
                 return s;
-            }
-          else if (index < -TOTAL_KEYWORDS)
-            {
-              register int offset = - 1 - TOTAL_KEYWORDS - index;
-              register const char * const *wordptr = &wordlist[TOTAL_KEYWORDS + lookup[offset]];
-              register const char * const *wordendptr = wordptr + -lookup[offset + 1];
-
-              while (wordptr < wordendptr)
-                {
-                  register const char *s = *wordptr;
-
-                  if (*str == *s && !strcmp (str + 1, s + 1))
-                    return s;
-                  wordptr++;
-                }
             }
         }
     }
