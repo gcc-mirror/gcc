@@ -2098,16 +2098,10 @@ void
 dwarf2out_frame_finish ()
 {
   /* Output call frame information.  */
-#ifdef MIPS_DEBUGGING_INFO
   if (write_symbols == DWARF2_DEBUG)
     output_call_frame_info (0);
-  if (flag_unwind_tables || (flag_exceptions && ! USING_SJLJ_EXCEPTIONS))
+  if (! USING_SJLJ_EXCEPTIONS && (flag_unwind_tables || flag_exceptions))
     output_call_frame_info (1);
-#else
-  if (write_symbols == DWARF2_DEBUG
-      || flag_unwind_tables || (flag_exceptions && ! USING_SJLJ_EXCEPTIONS))
-    output_call_frame_info (1);
-#endif
 }
 
 /* And now, the subset of the debugging information support code necessary
