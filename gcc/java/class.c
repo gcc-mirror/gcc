@@ -1210,7 +1210,7 @@ make_local_function_alias (tree method)
 #ifdef ASM_OUTPUT_DEF
   tree alias;
   const char *method_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (method));
-  char *name = alloca (strlen (method_name) + 1);
+  char *name = alloca (strlen (method_name) + 2);
   char *buf = alloca (strlen (method_name) + 128);
   
   /* Prefix method_name with 'L' for the alias label.  */
