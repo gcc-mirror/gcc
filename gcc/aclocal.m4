@@ -1593,24 +1593,16 @@ changequote([,])dnl
       INTLBISON=:
     fi
 
-    dnl These rules are solely for the distribution goal.  While doing this
-    dnl we only have to keep exactly one list of the available catalogs
-    dnl in configure.in.
-    for lang in $ALL_LINGUAS; do
-      GMOFILES="$GMOFILES $lang.gmo"
-      POFILES="$POFILES $lang.po"
-    done
+    dnl GCC LOCAL: GMOFILES/POFILES removed as unnecessary.
 
     dnl Make all variables we use known to autoconf.
     AC_SUBST(BUILD_INCLUDED_LIBINTL)
     AC_SUBST(USE_INCLUDED_LIBINTL)
     AC_SUBST(CATALOGS)
     AC_SUBST(CATOBJEXT)
-    AC_SUBST(GMOFILES)
     AC_SUBST(INTLLIBS)
     AC_SUBST(INTLDEPS)
     AC_SUBST(INTLOBJS)
-    AC_SUBST(POFILES)
     AC_SUBST(POSUB)
 dnl GCC LOCAL: Make USE_INCLUDED_LIBINTL visible to C code.
     if test $USE_INCLUDED_LIBINTL = yes; then
@@ -1664,37 +1656,42 @@ strdup strtoul tsearch __argz_count __argz_stringify __argz_next])
    AM_LC_MESSAGES
    AM_WITH_NLS([$1],[$2],[$3])
 
-   if test "x$CATOBJEXT" != "x"; then
-     if test "x$ALL_LINGUAS" = "x"; then
-       LINGUAS=
-     else
-       AC_MSG_CHECKING(for catalogs to be installed)
-       NEW_LINGUAS=
-       for presentlang in $ALL_LINGUAS; do
-         useit=no
-         for desiredlang in ${LINGUAS-$ALL_LINGUAS}; do
-           # Use the presentlang catalog if desiredlang is
-           #   a. equal to presentlang, or
-           #   b. a variant of presentlang (because in this case,
-           #      presentlang can be used as a fallback for messages
-           #      which are not translated in the desiredlang catalog).
-           case "$desiredlang" in
-             "$presentlang"*) useit=yes;;
-           esac
-         done
-         if test $useit = yes; then
-           NEW_LINGUAS="$NEW_LINGUAS $presentlang"
-         fi
-       done
-       LINGUAS=$NEW_LINGUAS
-       AC_MSG_RESULT($LINGUAS)
-     fi
-
-     dnl Construct list of names of catalog files to be constructed.
-     dnl GCC LOCAL: Tweak for non-recursive po directory build.
-     if test -n "$LINGUAS"; then
-       for lang in $LINGUAS; do CATALOGS="$CATALOGS po/$lang$CATOBJEXT"; done
-     fi
+   dnl GCC LOCAL: The LINGUAS/ALL_LINGUAS/CATALOGS mess that was here
+   dnl has been torn out and replaced with this more sensible scheme.
+   if test "x$CATOBJEXT" != x; then
+     AC_MSG_CHECKING(for catalogs to be installed)
+     # Look for .po and .gmo files in the source directory.
+     CATALOGS=
+     XLINGUAS=
+     for cat in $srcdir/po/*$CATOBJEXT $srcdir/po/*.po; do
+	# If there aren't any .gmo files the shell will give us the
+	# literal string "../path/to/srcdir/po/*.gmo" which has to be
+	# weeded out.
+	case "$cat" in *\**)
+	    continue;;
+	esac
+	# The quadruple backslash is collapsed to a double backslash
+	# by the backticks, then collapsed again by the double quotes,
+	# leaving us with one backslash in the sed expression (right
+	# before the dot that mustn't act as a wildcard).  The dot to
+	# be escaped in the second expression is hiding inside CATOBJEXT.
+	cat=`echo $cat | sed -e "s!$srcdir/!!" -e "s!\\\\.po!$CATOBJEXT!"`
+	lang=`echo $cat | sed -e 's!po/!!' -e "s!\\\\$CATOBJEXT!!"`
+	# The user is allowed to set LINGUAS to a list of languages to
+	# install catalogs for.  If it's empty that means "all of them."
+	if test "x$LINGUAS" = x; then
+	    CATALOGS="$CATALOGS $cat"
+	    XLINGUAS="$XLINGUAS $lang"
+	else
+	  case "$LINGUAS" in *$lang*)
+	    CATALOGS="$CATALOGS $cat"
+	    XLINGUAS="$XLINGUAS $lang"
+	    ;;
+	  esac
+	fi
+     done
+     LINGUAS="$XLINGUAS"
+     AC_MSG_RESULT($LINGUAS)
    fi
 
    dnl If the AC_CONFIG_AUX_DIR macro for autoconf is used we possibly

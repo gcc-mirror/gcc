@@ -1,3 +1,19 @@
+2001-11-05  Zack Weinberg  <zack@codesourcery.com>
+
+	* aclocal.m4: (AM_WITH_NLS): Don't look at ALL_LINGUAS.
+	(AM_GNU_GETTEXT): Set CATALOGS to a list of .gmo files
+	corresponding to the complete set of .po and .gmo files in
+	the source directory's po subdir, modified by LINGUAS.  Don't
+	look at ALL_LINGUAS.
+	* configure.in: Don't set ALL_LINGUAS.  
+	* configure: Regenerate.
+
+	* Makefile.in (.po.gmo): Don't move into source directory.
+	(.po.pox): Clarify comments.
+	(install-po): Look for .gmo files in both srcdir and objdir;
+	don't fail if a file is totally missing.		    
+	(distclean): rmdir ada subdirectory too.
+
 2001-11-05  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_select_section): Handle
@@ -63,11 +79,11 @@ Mon Nov  5 16:15:25 CET 2001  Jan Hubicka  <jh@suse.cz>
 	* m68k/apollo68.h (ASM_RETURN_CASE_JUMP): Add missing semi-colon.
 	* m88k/dgux.h (SELECT_RTX_SECTION): Add missing argument in call
 	to symbolic_operand.
-	
+
 	* config.gcc (m680[02]0-*-*): Rename case from m68000-*-*.
 	(i960-*-*): Set tmake_file.
 	(sparc86x-*-elf*): Fix typo in header name.
-	
+
 	* sched-rgn.c (schedule_insns): Delete unused variable.
 
 2001-11-04  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
@@ -237,8 +253,8 @@ Sun Nov  4 11:53:31 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-11-03  Aldy Hernandez  <aldyh@redhat.com>
 
-        * machmode.def: Add documentation for the seventh argument in
-        vector modes.
+	* machmode.def: Add documentation for the seventh argument in
+	vector modes.
 
 2001-11-04  Hans-Peter Nilsson  <hp@bitrange.com>
 
@@ -348,10 +364,10 @@ Sat Nov  3 10:37:56 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-11-02  Aldy Hernandez  <aldyh@redhat.com>
 
-        * expmed.c (store_bit_field): Use simplify_gen_subreg to make
-        SUBREG so we avoid SUBREGing memory.
+	* expmed.c (store_bit_field): Use simplify_gen_subreg to make
+	SUBREG so we avoid SUBREGing memory.
 
-        * expmed.c (store_bit_field): Same.
+	* expmed.c (store_bit_field): Same.
 
 2001-11-02  DJ Delorie  <dj@redhat.com>
 
@@ -363,7 +379,7 @@ Sat Nov  3 10:37:56 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* builtins.c (apply_args_size): Handle vector arguments.
 	(apply_result_size): Same.
 
-        * machmode.def: Set WIDER mode field for all vector entries.
+	* machmode.def: Set WIDER mode field for all vector entries.
 
 2001-11-02  Graham Stott  <grahams@redhat.com>
 
@@ -371,10 +387,10 @@ Sat Nov  3 10:37:56 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-11-01  Eric Christopher  <echristo@redhat.com>
 
-        * config.gcc: Revert part of earlier patch.
-        * config/mips/linux.h: Ditto.
+	* config.gcc: Revert part of earlier patch.
+	* config/mips/linux.h: Ditto.
 	* df.c: Include tm_p.h to avoid warnings.
-        * config/mips/mips.h (ABI_GAS_ASM_SPEC): Add defaults.  Adjust
+	* config/mips/mips.h (ABI_GAS_ASM_SPEC): Add defaults.  Adjust
 	#if/#endif.
 	* config/mips/mips.c: Define mips_abi regardless.
 	(mips_output_function_prologues): Add long casts for .frame

@@ -907,8 +907,6 @@ AC_DEFINE_UNQUOTED(VERSION, "$VERSION",
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)
 
-ALL_LINGUAS="sv"
-
 # Enable NLS support by default
 AC_ARG_ENABLE(nls,
   [  --enable-nls            use Native Language Support (default)],
