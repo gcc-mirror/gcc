@@ -1684,7 +1684,7 @@ c_alignof (type)
 /* Perform the array-to-pointer and function-to-pointer conversions
    for EXP.  
 
-   In addition, references are converted to rvalues and manifest
+   In addition, references are converted to lvalues and manifest
    constants are replaced by their values.  */
 
 tree
