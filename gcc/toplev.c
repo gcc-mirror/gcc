@@ -4647,8 +4647,6 @@ print_version (file, indent)
      FILE *file;
      const char *indent;
 {
-  fnotice (file, "GGC heuristics: --param ggc-min-expand=%d --param ggc-min-heapsize=%d\n",
-	   PARAM_VALUE (GGC_MIN_EXPAND), PARAM_VALUE (GGC_MIN_HEAPSIZE));
 #ifndef __VERSION__
 #define __VERSION__ "[?]"
 #endif
@@ -4661,6 +4659,9 @@ print_version (file, indent)
 	   , indent, *indent != 0 ? " " : "",
 	   lang_hooks.name, version_string, TARGET_NAME,
 	   indent, __VERSION__);
+  fnotice (file, "%s%sGGC heuristics: --param ggc-min-expand=%d --param ggc-min-heapsize=%d\n",
+	   indent, *indent != 0 ? " " : "",
+	   PARAM_VALUE (GGC_MIN_EXPAND), PARAM_VALUE (GGC_MIN_HEAPSIZE));
 }
 
 /* Print an option value and return the adjusted position in the line.
