@@ -358,7 +358,10 @@ other than the default.  The toplevel installation directory defaults to
 @file{/usr/local}.
 
 We @strong{highly} recommend against @var{dirname} being the same or a
-subdirectory of @var{objdir} or vice versa.
+subdirectory of @var{objdir} or vice versa.  If specifying a directory
+beneath a user's home directory tree, some shells will not expand
+@var{dirname} correctly if it contains the @samp{~} metacharacter; use
+@env{$HOME} instead.
 
 These additional options control where certain parts of the distribution
 are installed.  Normally you should not need to use these options.

@@ -1,3 +1,9 @@
+2003-02-21  Ben Elliston  <bje@redhat.com>
+
+	PR other/5634
+	* doc/install.texi (Configuration): Explain using $HOME instead of
+	the ~ metacharacter when referring to home directories.
+
 2003-02-20  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (TARGET_SYSTEM_ROOT): Set default to
