@@ -720,10 +720,12 @@ java/lang/ThreadLocal.java \
 java/lang/Throwable.java \
 java/lang/UnknownError.java \
 java/lang/UnsatisfiedLinkError.java \
+java/lang/UnsupportedClassVersionError.java \
 java/lang/UnsupportedOperationException.java \
 java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
 java/lang/VMClassLoader.java \
+java/lang/VMSecurityManager.java \
 java/lang/Void.java \
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
@@ -1798,10 +1800,11 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/ThreadDeath.P .deps/java/lang/ThreadGroup.P \
 .deps/java/lang/ThreadLocal.P .deps/java/lang/Throwable.P \
 .deps/java/lang/UnknownError.P .deps/java/lang/UnsatisfiedLinkError.P \
+.deps/java/lang/UnsupportedClassVersionError.P \
 .deps/java/lang/UnsupportedOperationException.P \
-.deps/java/lang/VMClassLoader.P .deps/java/lang/VerifyError.P \
-.deps/java/lang/VirtualMachineError.P .deps/java/lang/Void.P \
-.deps/java/lang/dtoa.P .deps/java/lang/e_acos.P \
+.deps/java/lang/VMClassLoader.P .deps/java/lang/VMSecurityManager.P \
+.deps/java/lang/VerifyError.P .deps/java/lang/VirtualMachineError.P \
+.deps/java/lang/Void.P .deps/java/lang/dtoa.P .deps/java/lang/e_acos.P \
 .deps/java/lang/e_asin.P .deps/java/lang/e_atan2.P \
 .deps/java/lang/e_exp.P .deps/java/lang/e_fmod.P \
 .deps/java/lang/e_log.P .deps/java/lang/e_pow.P \

@@ -1,85 +1,144 @@
-// ExceptionInInitializerError.java
+/* ExceptionInInitializerError.java 
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+This file is part of GNU Classpath.
 
-   This file is part of libgcj.
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+ 
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
+
 
 package java.lang;
+
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
-/**
- * @author Tom Tromey <tromey@cygnus.com>
- * @date October 1, 1998 
- */
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
  * Status:  Believed complete and correct.
  */
 
+/**
+ * An <code>ExceptionInInitializerError</code> is thrown when an 
+ * unexpected exception has occurred in a static initializer or the
+ * initializer for a static variable.
+ *
+ * @since JDK 1.1
+ * 
+ * @author Brian Jones
+ * @author Tom Tromey <tromey@cygnus.com>
+ * @date October 1, 1998 
+ */
 public class ExceptionInInitializerError extends LinkageError
 {
-  public ExceptionInInitializerError ()
-  {
-    super ();
-    exception = null;
-  }
+  static final long serialVersionUID = 1521711792217232256L;
 
-  public ExceptionInInitializerError (String msg)
-  {
-    super (msg);
-    exception = null;
-  }
+  private Throwable exception = null;
 
-  public ExceptionInInitializerError (Throwable e)
-  {
-    super (e.toString());
-    exception = e;
-  }
+  /**
+   * Create an error without a message.
+   */
+  public ExceptionInInitializerError()
+    {
+      super();
+    }
 
-  public Throwable getException ()
-  {
-    return exception;
-  }
+  /**
+   * Create an error with a message.
+   */
+  public ExceptionInInitializerError(String s)
+    {
+      super(s);
+    }
 
-  public void printStackTrace ()
-  {
-    if (exception != null)
-      {
-	System.err.print (this.getClass().getName() + ": ");
-	exception.printStackTrace ();
-      }
-    else
-      super.printStackTrace ();
-  }
+  /**
+   * Creates an error an saves a reference to the <code>Throwable</code>
+   * object.
+   *
+   * @param t the exception thrown
+   */
+  public ExceptionInInitializerError(Throwable t)
+    {
+      super(t.toString());
+      exception = t;
+    }
 
-  public void printStackTrace (PrintStream ps)
-  {
-    if (exception != null)
-      {
-	ps.print (this.getClass().getName() + ": ");
-	exception.printStackTrace (ps);
-      }
-    else
-      super.printStackTrace (ps);
-  }
+  /** 
+   * Return the exception that caused this error to be created.
+   * @return the stored <code>Throwable</code> object or <code>null</code>
+   * if this <code>ExceptionInInitializerError</code> has no stored
+   * <code>Throwable</code> object.
+   */
+  public Throwable getException()
+    {
+      return exception;
+    }
 
-  public void printStackTrace (PrintWriter pw)
-  {
-    if (exception != null)
-      {
-	pw.print (this.getClass().getName() + ": ");
-	exception.printStackTrace (pw);
-      }
-    else
-      super.printStackTrace (pw);
-  }
+  /**
+   * Print a stack trace of the exception that occurred.
+   */
+  public void printStackTrace()
+    {
+      if (exception == null)
+	{
+	  super.printStackTrace();
+	}
+      else
+	{
+	  System.err.print(this.getClass() + ": ");
+	  exception.printStackTrace();
+	}
+    }
 
-  // The exception that caused this error.
-  private Throwable exception;
+  /**
+   * Print a stack trace of the exception that occurred to 
+   * the specified <code>PrintStream</code>.
+   */
+  public void printStackTrace(PrintStream ps)
+    {
+      if (exception == null)
+	{
+	  super.printStackTrace(ps);
+	}
+      else
+	{
+	  ps.print(this.getClass() + ": ");
+	  exception.printStackTrace(ps);
+	}
+    }
+
+  /**
+   * Print a stack trace of the exception that occurred to 
+   * the specified <code>PrintWriter</code>.
+   */
+  public void printStackTrace(PrintWriter pw)
+    {
+      if (exception == null)
+	{
+	  super.printStackTrace(pw);
+	}
+      else
+	{
+	  pw.print(this.getClass() + ": ");
+	  exception.printStackTrace(pw);
+	}
+    }
 }

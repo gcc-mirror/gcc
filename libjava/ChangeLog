@@ -1,3 +1,75 @@
+2001-09-01  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (core_java_source_files): Added
+	UnsupportedClassVersionError.
+	* java/lang/UnsupportedClassVersionError.java: New file from
+	Classpath.
+
+	* java/io/CharConversionException.java, java/io/EOFException.java,
+	java/io/FileNotFoundException.java, java/io/IOException.java,
+	java/io/InterruptedIOException.java,
+	java/io/ObjectStreamException.java,
+	java/io/OptionalDataException.java,
+	java/io/StreamCorruptedException.java,
+	java/io/SyncFailedException.java,
+	java/io/UTFDataFormatException.java,
+	java/io/UnsupportedEncodingException.java,
+	java/lang/AbstractMethodError.java,
+	java/lang/ArithmeticException.java,
+	java/lang/ArrayIndexOutOfBoundsException.java,
+	java/lang/ArrayStoreException.java,
+	java/lang/ClassCastException.java,
+	java/lang/ClassCircularityError.java,
+	java/lang/ClassFormatError.java,
+	java/lang/CloneNotSupportedException.java, java/lang/Error.java,
+	java/lang/Exception.java,
+	java/lang/ExceptionInInitializerError.java,
+	java/lang/IllegalAccessError.java,
+	java/lang/IllegalAccessException.java,
+	java/lang/IllegalArgumentException.java,
+	java/lang/IllegalMonitorStateException.java,
+	java/lang/IllegalStateException.java,
+	java/lang/IllegalThreadStateException.java,
+	java/lang/IncompatibleClassChangeError.java,
+	java/lang/IndexOutOfBoundsException.java,
+	java/lang/InstantiationError.java,
+	java/lang/InstantiationException.java,
+	java/lang/InternalError.java, java/lang/InterruptedException.java,
+	java/lang/LinkageError.java,
+	java/lang/NegativeArraySizeException.java,
+	java/lang/NoClassDefFoundError.java,
+	java/lang/NoSuchFieldError.java,
+	java/lang/NoSuchFieldException.java,
+	java/lang/NoSuchMethodError.java,
+	java/lang/NoSuchMethodException.java,
+	java/lang/NullPointerException.java,
+	java/lang/NumberFormatException.java,
+	java/lang/OutOfMemoryError.java, java/lang/RuntimeException.java,
+	java/lang/SecurityException.java,
+	java/lang/StackOverflowError.java,
+	java/lang/StringIndexOutOfBoundsException.java,
+	java/lang/ThreadDeath.java, java/lang/UnknownError.java,
+	java/lang/UnsatisfiedLinkError.java,
+	java/lang/UnsupportedOperationException.java,
+	java/lang/VerifyError.java, java/lang/VirtualMachineError.java,
+	java/lang/reflect/InvocationTargetException.java,
+	java/net/BindException.java, java/net/ConnectException.java,
+	java/net/MalformedURLException.java,
+	java/net/NoRouteToHostException.java,
+	java/net/ProtocolException.java, java/net/SocketException.java,
+	java/net/UnknownHostException.java,
+	java/net/UnknownServiceException.java,
+	java/text/ParseException.java: Copied from Classpath, thanks to
+	Mark Wielaard who did the merge.
+
+	* java/lang/System.java (getProperty): Use single argument form of
+	SecurityManager.checkPropertyAccess.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (core_java_source_files): Added VMSecurityManager.
+	* java/lang/VMSecurityManager.java: New file.
+	* java/lang/SecurityManager.java: Merged with Classpath.
+
 2001-08-31  Per Bothner  <per@bothner.com>
 
 	* gcj/javaprims.h (_Jv_RegisterClassHook):  New extern declaration.

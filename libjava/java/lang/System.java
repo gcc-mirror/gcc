@@ -158,7 +158,7 @@ public final class System
   public static String getProperty (String property, String defval)
   {
     if (secman != null)
-      secman.checkPropertyAccess(property, defval);
+      secman.checkPropertyAccess(property);
     if (properties == null)
       init_properties ();
     return properties.getProperty(property, defval);
