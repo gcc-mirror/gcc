@@ -1077,12 +1077,16 @@ static void
 write_special_name_constructor (ctor)
      tree ctor;
 {
-  if (DECL_COMPLETE_CONSTRUCTOR_P (ctor))
+  if (DECL_COMPLETE_CONSTRUCTOR_P (ctor)
+      /* Even though we don't ever emit a definition of the
+	 old-style destructor, we still have to consider entities
+	 (like static variables) nested inside it.  */
+      || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (ctor))
     write_string ("C1");
   else if (DECL_BASE_CONSTRUCTOR_P (ctor))
     write_string ("C2");
   else
-    write_string ("C*INTERNAL*");
+    my_friendly_abort (20001115);
 }
 
 /* Handle destructor productions of non-terminal <special-name>.
@@ -1102,13 +1106,16 @@ write_special_name_destructor (dtor)
 {
   if (DECL_DELETING_DESTRUCTOR_P (dtor))
     write_string ("D0");
-  else if (DECL_COMPLETE_DESTRUCTOR_P (dtor))
+  else if (DECL_COMPLETE_DESTRUCTOR_P (dtor)
+	   /* Even though we don't ever emit a definition of the
+	      old-style destructor, we still have to consider entities
+	      (like static variables) nested inside it.  */
+	   || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (dtor))
     write_string ("D1");
   else if (DECL_BASE_DESTRUCTOR_P (dtor))
     write_string ("D2");
   else
-    /* Old-ABI destructor.   */
-    write_string ("D*INTERNAL*");
+    my_friendly_abort (20001115);
 }
 
 /* Return the discriminator for ENTITY appearing inside
@@ -2002,7 +2009,16 @@ mangle_decl_string (decl)
   if (TREE_CODE (decl) == TYPE_DECL)
     write_type (TREE_TYPE (decl));
   else
-    write_mangled_name (decl);
+    {
+      write_mangled_name (decl);
+      if (DECL_LANG_SPECIFIC (decl)
+	  && (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl)
+	      || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)))
+	/* We need a distinct mangled name for these entities, but
+	   we should never actually output it.  So, we append some
+	   characters the assembler won't like.  */
+	write_string (" *INTERNAL* ");
+    }
 
   result = finish_mangling ();
   if (DEBUG_MANGLE)
