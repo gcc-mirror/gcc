@@ -3539,6 +3539,55 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	SUBST (XEXP (x, 0),
 	       force_to_mode (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
 			      GET_MODE_MASK (mode), NULL_RTX, 0));
+
+      /* (truncate:SI ({sign,zero}_extend:DI foo:SI)) == foo:SI.  */
+      if ((GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
+	   || GET_CODE (XEXP (x, 0)) == ZERO_EXTEND)
+	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == mode)
+	return XEXP (XEXP (x, 0), 0);
+
+      /* (truncate:SI (OP:DI ({sign,zero}_extend:DI foo:SI))) is
+	 (OP:SI foo:SI) if OP is NEG or ABS.  */
+      if ((GET_CODE (XEXP (x, 0)) == ABS
+	   || GET_CODE (XEXP (x, 0)) == NEG)
+	  && (GET_CODE (XEXP (XEXP (x, 0), 0)) == SIGN_EXTEND
+	      || GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTEND)
+	  && GET_MODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == mode)
+	return gen_unary (GET_CODE (XEXP (x, 0)), mode, mode,
+			  XEXP (XEXP (XEXP (x, 0), 0), 0));
+
+      /* (truncate:SI (subreg:DI (truncate:SI X) 0)) is
+	 (truncate:SI x).  */
+      if (GET_CODE (XEXP (x, 0)) == SUBREG
+	  && GET_CODE (SUBREG_REG (XEXP (x, 0))) == TRUNCATE
+	  && subreg_lowpart_p (XEXP (x, 0)))
+	return SUBREG_REG (XEXP (x, 0));
+
+      /* If we know that the value is already truncated, we can
+         replace the TRUNCATE with a SUBREG.  */
+      if (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0))) <= HOST_BITS_PER_WIDE_INT
+	  && (nonzero_bits (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
+	      &~ GET_MODE_MASK (mode)) == 0)
+	return gen_lowpart_for_combine (mode, XEXP (x, 0));
+
+      /* A truncate of a comparison can be replaced with a subreg if
+         STORE_FLAG_VALUE permits.  This is like the previous test,
+         but it works even if the comparison is done in a mode larger
+         than HOST_BITS_PER_WIDE_INT.  */
+      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+	  && ((HOST_WIDE_INT) STORE_FLAG_VALUE &~ GET_MODE_MASK (mode)) == 0)
+	return gen_lowpart_for_combine (mode, XEXP (x, 0));
+
+      /* Similarly, a truncate of a register whose value is a
+         comparison can be replaced with a subreg if STORE_FLAG_VALUE
+         permits.  */
+      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	  && ((HOST_WIDE_INT) STORE_FLAG_VALUE &~ GET_MODE_MASK (mode)) == 0
+	  && (temp = get_last_value (XEXP (x, 0)))
+	  && GET_RTX_CLASS (GET_CODE (temp)) == '<')
+	return gen_lowpart_for_combine (mode, XEXP (x, 0));
+
       break;
 
     case FLOAT_TRUNCATE:
@@ -4913,6 +4962,78 @@ expand_compound_operation (x)
 
     default:
       return x;
+    }
+
+  /* We can optimize some special cases of ZERO_EXTEND.  */
+  if (GET_CODE (x) == ZERO_EXTEND)
+    {
+      /* (zero_extend:DI (truncate:SI foo:DI)) is just foo:DI if we
+         know that the last value didn't have any inappropriate bits
+         set.  */
+      if (GET_CODE (XEXP (x, 0)) == TRUNCATE
+	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == GET_MODE (x)
+	  && GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT
+	  && (nonzero_bits (XEXP (XEXP (x, 0), 0), GET_MODE (x))
+	      & ~ GET_MODE_MASK (GET_MODE (XEXP (x, 0)))) == 0)
+	return XEXP (XEXP (x, 0), 0);
+
+      /* Likewise for (zero_extend:DI (subreg:SI foo:DI 0)).  */
+      if (GET_CODE (XEXP (x, 0)) == SUBREG
+	  && GET_MODE (SUBREG_REG (XEXP (x, 0))) == GET_MODE (x)
+	  && subreg_lowpart_p (XEXP (x, 0))
+	  && GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT
+	  && (nonzero_bits (SUBREG_REG (XEXP (x, 0)), GET_MODE (x))
+	      & ~ GET_MODE_MASK (GET_MODE (SUBREG_REG (x)))) == 0)
+	return SUBREG_REG (XEXP (x, 0));
+
+      /* (zero_extend:DI (truncate:SI foo:DI)) is just foo:DI when foo
+         is a comparison and STORE_FLAG_VALUE permits.  This is like
+         the first case, but it works even when GET_MODE (x) is larger
+         than HOST_WIDE_INT.  */
+      if (GET_CODE (XEXP (x, 0)) == TRUNCATE
+	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == GET_MODE (x)
+	  && GET_RTX_CLASS (GET_CODE (XEXP (XEXP (x, 0), 0))) == '<'
+	  && (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))
+	      <= HOST_BITS_PER_WIDE_INT)
+ 	  && ((HOST_WIDE_INT) STORE_FLAG_VALUE
+	      & ~ GET_MODE_MASK (GET_MODE (XEXP (x, 0)))) == 0)
+	return XEXP (XEXP (x, 0), 0);
+
+      /* Likewise for (zero_extend:DI (subreg:SI foo:DI 0)).  */
+      if (GET_CODE (XEXP (x, 0)) == SUBREG
+	  && GET_MODE (SUBREG_REG (XEXP (x, 0))) == GET_MODE (x)
+	  && subreg_lowpart_p (XEXP (x, 0))
+	  && GET_RTX_CLASS (GET_CODE (SUBREG_REG (XEXP (x, 0)))) == '<'
+	  && (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))
+	      <= HOST_BITS_PER_WIDE_INT)
+	  && ((HOST_WIDE_INT) STORE_FLAG_VALUE
+	      & ~ GET_MODE_MASK (GET_MODE (XEXP (x, 0)))) == 0)
+	return SUBREG_REG (XEXP (x, 0));
+
+      /* If sign extension is cheaper than zero extension, then use it
+	 if we know that no extraneous bits are set, and that the high
+	 bit is not set.  */
+      if (flag_expensive_optimizations
+	  && ((GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT
+	       && ((nonzero_bits (XEXP (x, 0), GET_MODE (x))
+		    & ~ (((unsigned HOST_WIDE_INT)
+			  GET_MODE_MASK (GET_MODE (XEXP (x, 0))))
+			 >> 1))
+		   == 0))
+	      || (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
+		  && (GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))
+		      <= HOST_BITS_PER_WIDE_INT)
+		  && (((HOST_WIDE_INT) STORE_FLAG_VALUE
+		       & ~ (((unsigned HOST_WIDE_INT)
+			     GET_MODE_MASK (GET_MODE (XEXP (x, 0))))
+			    >> 1))
+		      == 0))))
+	{
+	  rtx temp = gen_rtx (SIGN_EXTEND, GET_MODE (x), XEXP (x, 0));
+
+	  if (rtx_cost (temp, SET) < rtx_cost (x, SET))
+	    return expand_compound_operation (temp);
+	}
     }
 
   /* If we reach here, we want to return a pair of shifts.  The inner
