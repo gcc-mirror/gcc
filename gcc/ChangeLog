@@ -1,5 +1,12 @@
 2003-07-22  Geoffrey Keating  <geoffk@apple.com>
 
+	* c-decl.c (start_decl): Don't call maybe_apply_pragma_weak here.
+	(finish_decl): Call maybe_apply_pragma_weak here.
+	(grokdeclarator): Check that DECL_ASSEMBLER_NAME isn't set before
+	TREE_PUBLIC and TREE_STATIC are decided.
+	(start_function): Move call to maybe_apply_pragma_weak.  Check that
+	DECL_ASSEMBLER_NAME isn't set too early.
+
 	* cpplex.c (_cpp_process_line_notes): Mention option name in
 	trigraphs warning.
 
