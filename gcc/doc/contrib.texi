@@ -624,6 +624,9 @@ Alexandre Oliva for various build infrastructure improvements, scripts and
 amazing testing work, including keeping libtool issues sane and happy.
 
 @item
+Stefan Olsson for work on mt_alloc.
+
+@item
 Melissa O'Neill for various NeXT fixes.
 
 @item
@@ -685,6 +688,9 @@ as well as keeping GCC properly working on FreeBSD and continuous testing.
 
 @item
 Craig Rodrigues for processing tons of bug reports.
+
+@item
+Ola R@"onnerup for work on mt_alloc.
 
 @item
 Gavin Romig-Koch for lots of behind the scenes MIPS work.
