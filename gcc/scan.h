@@ -60,6 +60,7 @@ extern int read_upto _PARAMS((FILE *, sstring *, int));
 extern unsigned long hash _PARAMS((const char *));
 extern void recognized_function _PARAMS((const char *, int, int, const char *, int, int, const char *, int));
 extern void recognized_extern _PARAMS((const char *, int, const char *, int));
+extern unsigned int hashstr _PARAMS((const char *, unsigned int));
 
 /* get_token is a simple C lexer. */
 #define IDENTIFIER_TOKEN 300

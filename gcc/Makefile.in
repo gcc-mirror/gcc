@@ -2246,12 +2246,12 @@ deduced.h: $(GCC_PASSES) $(srcdir)/scan-types.sh stmp-int-hdrs
 	  touch deduced.h; \
 	fi
 
-GEN_PROTOS_OBJS = gen-protos.o scan.o libcpp.a
+GEN_PROTOS_OBJS = gen-protos.o scan.o
 gen-protos: $(GEN_PROTOS_OBJS) $(HOST_LIBDEPS)
 	${HOST_CC} $(HOST_CFLAGS) $(HOST_LDFLAGS) -o gen-protos \
 	  $(GEN_PROTOS_OBJS) $(HOST_LIBS)
 
-gen-protos.o: gen-protos.c scan.h $(build_xm_file) system.h cpplib.h cpphash.h
+gen-protos.o: gen-protos.c scan.h $(build_xm_file) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gen-protos.c
 
 scan.o: scan.c scan.h $(build_xm_file) system.h
@@ -2272,7 +2272,7 @@ fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS) \
 	   scan-decls.o scan.o libcpp.a $(HOST_LIBS)
 
 fix-header.o: fix-header.c $(srcdir)/../include/obstack.h scan.h \
-	xsys-protos.h $(build_xm_file) system.h cpplib.h cpphash.h
+	xsys-protos.h $(build_xm_file) system.h cpplib.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/fix-header.c
 
 scan-decls.o: scan-decls.c scan.h cpplib.h $(build_xm_file) system.h
