@@ -1903,6 +1903,17 @@ set_mem_offset (mem, offset)
 				   offset, MEM_SIZE (mem), MEM_ALIGN (mem),
 				   GET_MODE (mem));
 }
+
+/* Set the size of MEM to SIZE.  */
+
+void
+set_mem_size (mem, size)
+     rtx mem, size;
+{
+  MEM_ATTRS (mem) = get_mem_attrs (MEM_ALIAS_SET (mem), MEM_EXPR (mem),
+				   MEM_OFFSET (mem), size, MEM_ALIGN (mem),
+				   GET_MODE (mem));
+}
 
 /* Return a memory reference like MEMREF, but with its mode changed to MODE
    and its address changed to ADDR.  (VOIDmode means don't change the mode.

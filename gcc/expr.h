@@ -612,6 +612,9 @@ extern void set_mem_expr PARAMS ((rtx, tree));
 /* Set the offset for MEM to OFFSET.  */
 extern void set_mem_offset PARAMS ((rtx, rtx));
 
+/* Set the size for MEM to SIZE.  */
+extern void set_mem_size PARAMS ((rtx, rtx));
+
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address changed to ADDR.
    (VOIDmode means don't change the mode.
