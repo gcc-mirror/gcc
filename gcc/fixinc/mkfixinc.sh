@@ -40,8 +40,7 @@ case $machine in
 
 	*-*-netbsd* | \
 	alpha*-*-linux-gnulibc1* | \
-	i[34567]86-*-freebsd* | \
-	i[34567]86-*-netbsd* | i[34567]86-*-openbsd* | \
+	i[34567]86-*-openbsd* | \
 	i[34567]86-*-solaris2* | \
 	sparcv9-*-solaris2* | \
 	powerpcle-*-solaris2*  | \
