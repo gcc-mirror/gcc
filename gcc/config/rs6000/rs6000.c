@@ -840,6 +840,13 @@ rs6000_override_options (const char *default_cpu)
 	rs6000_long_double_type_size = size;
     }
 
+  /* Set Altivec ABI as default for powerpc64 linux.  */
+  if (TARGET_ELF && TARGET_64BIT)
+    {
+      rs6000_altivec_abi = 1;
+      rs6000_altivec_vrsave = 1;
+    }
+
   /* Handle -mabi= options.  */
   rs6000_parse_abi_options ();
 
@@ -3847,6 +3854,16 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
       fprintf (stderr, " proto = %d, nargs = %d\n",
 	       cum->prototype, cum->nargs_prototype);
     }
+  
+    if (fntype 
+	&& !TARGET_ALTIVEC 
+	&& TARGET_ALTIVEC_ABI
+        && ALTIVEC_VECTOR_MODE (TYPE_MODE (TREE_TYPE (fntype))))
+      {
+	error ("Cannot return value in vector register because"
+	       " altivec instructions are disabled, use -maltivec"
+	       " to enable them.");
+      }
 }
 
 /* If defined, a C expression which determines whether, and in which
@@ -3939,8 +3956,13 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
     {
       if (USE_ALTIVEC_FOR_ARG_P (cum, mode, type, named))
-	cum->vregno++;
-      
+        {
+	  cum->vregno++;
+	  if (!TARGET_ALTIVEC)
+	    error ("Cannot pass argument in vector register because"
+		   " altivec instructions are disabled, use -maltivec"
+		   " to enable them.");
+	}
       /* PowerPC64 Linux and AIX allocates GPRs for a vector argument
 	 even if it is going to be passed in a vector register.  
 	 Darwin does the same for variable-argument functions.  */
