@@ -740,7 +740,7 @@ If a target needs per-function specific data it should define the type
 @code{INIT_EXPANDERS}.  This macro should be used to initialise some or
 all of the function pointers @code{init_machine_status},
 @code{free_machine_status} and @code{mark_machine_status}.  These
-pointers are explained below. 
+pointers are explained below.
 
 One typical use of per-function, target specific data is to create an
 RTX to hold the register containing the function's return address.  This
@@ -752,7 +752,7 @@ all of the per-function information.  Thus when processing of a nested
 function began the old per-function data had to be pushed onto a
 stack, and when the processing was finished, it had to be popped off the
 stack.  GCC used to provide function pointers called
-@code{save_machine_status} and @code{restore_machine_status} to handle 
+@code{save_machine_status} and @code{restore_machine_status} to handle
 the saving and restoring of the target specific information.  Since the
 single data area approach is no longer used, these pointers are no
 longer supported.
@@ -1250,7 +1250,7 @@ If @code{DEFAULT_VTABLE_THUNKS} is 0, GCC uses the traditional
 implementation by default.  The ``thunk'' implementation is more efficient
 (especially if you have provided an implementation of
 @code{ASM_OUTPUT_MI_THUNK}, see @ref{Function Entry}), but is not binary
-compatible with code compiled using the traditional implementation.  
+compatible with code compiled using the traditional implementation.
 If you are writing a new port, define @code{DEFAULT_VTABLE_THUNKS} to 1.
 
 If you do not define this macro, the default for @samp{-fvtable-thunk} is 0.
@@ -1569,7 +1569,7 @@ Zero or more C statements that may conditionally modify five variables
 Before the macro is called @code{fixed_regs}, @code{call_used_regs}
 @code{reg_class_contents} and @code{reg_names} have been initialized
 from @code{FIXED_REGISTERS}, @code{CALL_USED_REGISTERS},
-@code{REG_CLASS_CONTENTS} and @code{REGISTER_NAMES}, respectively, 
+@code{REG_CLASS_CONTENTS} and @code{REGISTER_NAMES}, respectively,
 @code{global_regs} has been cleared, and any @samp{-ffixed-@var{reg}},
 @samp{-fcall-used-@var{reg}} and @samp{-fcall-saved-@var{reg}} command
 options have been applied.
@@ -1788,7 +1788,7 @@ This macro takes 4 parameters:
 @code{XMODE}  - The mode of xregno.
 @code{OFFSET} - The byte offset.
 @code{YMODE} - The mode of a top level SUBREG (or what may become one).
-The default function can be found in rtlanal.c, function 
+The default function can be found in rtlanal.c, function
 @code{subreg_regno_offset}. Normally this does not need to be defined.
 @end table
 
@@ -2491,7 +2491,7 @@ debugging information like that provided by DWARF 2.
 @item ARG_POINTER_CFA_OFFSET (@var{fundecl})
 A C expression whose value is an integer giving the offset, in bytes,
 from the argument pointer to the canonical frame address (cfa).  The
-final value should coincide with that calculated by 
+final value should coincide with that calculated by
 @code{INCOMING_FRAME_SP_OFFSET}.  Which is unfortunately not usable
 during virtual register instantiation.
 
@@ -2527,7 +2527,7 @@ to store a stack adjustment to be applied before function return.
 This is used to unwind the stack to an exception handler's call frame.
 It will be assigned zero on code paths that return normally.
 
-Typically this is a call-clobbered hard register that is otherwise 
+Typically this is a call-clobbered hard register that is otherwise
 untouched by the epilogue, but could also be a stack slot.
 
 You must define this macro if you want to support call frame exception
@@ -2536,12 +2536,12 @@ handling like that provided by DWARF 2.
 @findex EH_RETURN_HANDLER_RTX
 @item EH_RETURN_HANDLER_RTX
 A C expression whose value is RTL representing a location in which
-to store the address of an exception handler to which we should 
+to store the address of an exception handler to which we should
 return.  It will not be assigned on code paths that return normally.
 
 Typically this is the location in the call frame at which the normal
-return address is stored.  For targets that return by popping an 
-address off the stack, this might be a memory address just below 
+return address is stored.  For targets that return by popping an
+address off the stack, this might be a memory address just below
 the @emph{target} call frame rather than inside the current call
 frame.  @code{EH_RETURN_STACKADJ_RTX} will have already been assigned,
 so it may be used to calculate the location of the target call frame.
@@ -2592,8 +2592,8 @@ will use the third approach.
 @findex STACK_CHECK_BUILTIN
 @item STACK_CHECK_BUILTIN
 A nonzero value if stack checking is done by the configuration files in a
-machine-dependent manner.  You should define this macro if stack checking 
-is require by the ABI of your machine or if you would like to have to stack 
+machine-dependent manner.  You should define this macro if stack checking
+is require by the ABI of your machine or if you would like to have to stack
 checking in some more efficient way than GCC's portable approach.
 The default value of this macro is zero.
 
@@ -2606,7 +2606,7 @@ default value of 4096 is suitable for most systems.
 
 @findex STACK_CHECK_PROBE_LOAD
 @item STACK_CHECK_PROBE_LOAD
-A integer which is nonzero if GCC should perform the stack probe 
+A integer which is nonzero if GCC should perform the stack probe
 as a load instruction and zero if GCC should use a store instruction.
 The default is zero, which is the most efficient choice on most systems.
 
@@ -3047,7 +3047,7 @@ register in which to pass this part of the argument, and the mode of the
 register RTX indicates how large this part of the argument is.  The
 second operand of the @code{expr_list} is a @code{const_int} which gives
 the offset in bytes into the entire argument of where this part starts.
-As a special exception the first @code{expr_list} in the @code{parallel} 
+As a special exception the first @code{expr_list} in the @code{parallel}
 RTX may have a first operand of zero.  This indicates that the entire
 argument is also stored on the stack.
 
@@ -3222,8 +3222,8 @@ constant size shorter than an @code{int}, and upward otherwise.
 
 @findex PAD_VARARGS_DOWN
 @item PAD_VARARGS_DOWN
-If defined, a C expression which determines whether the default 
-implementation of va_arg will attempt to pad down before reading the 
+If defined, a C expression which determines whether the default
+implementation of va_arg will attempt to pad down before reading the
 next argument, if that argument is smaller than its aligned space as
 controlled by @code{PARM_BOUNDARY}.  If this macro is not defined, all such
 arguments are padded down if @code{BYTES_BIG_ENDIAN} is true.
@@ -3246,7 +3246,7 @@ stack.
 @findex LOAD_ARGS_REVERSED
 @item LOAD_ARGS_REVERSED
 If defined, the order in which arguments are loaded into their
-respective argument registers is reversed so that the last 
+respective argument registers is reversed so that the last
 argument is loaded first.  This macro only affects arguments
 passed in registers.
 
@@ -3459,7 +3459,7 @@ must live across calls.
 @item DEFAULT_CALLER_SAVES
 Define this macro if function calls on the target machine do not preserve
 any registers; in other words, if @code{CALL_USED_REGISTERS} has 1
-for all registers.  When defined, this macro enables @samp{-fcaller-saves} 
+for all registers.  When defined, this macro enables @samp{-fcaller-saves}
 by default for all optimization levels.  It has no effect for optimization
 levels 2 and higher, where @samp{-fcaller-saves} is the default.
 
@@ -3938,12 +3938,12 @@ return 0.
 @findex FUNCTION_OK_FOR_SIBCALL
 @item FUNCTION_OK_FOR_SIBCALL (@var{decl})
 A C expression that evaluates to true if it is ok to perform a sibling
-call to @var{decl}.  
+call to @var{decl}.
 
 It is not uncommon for limitations of calling conventions to prevent
 tail calls to functions outside the current unit of translation, or
 during PIC compilation.  Use this macro to enforce these restrictions,
-as the @code{sibcall} md pattern can not fail, or fall over to a 
+as the @code{sibcall} md pattern can not fail, or fall over to a
 ``normal'' call.
 @end table
 
@@ -4700,7 +4700,7 @@ A C compound statement that attempts to replace @var{x}, which is an address
 that needs reloading, with a valid memory address for an operand of mode
 @var{mode}.  @var{win} will be a C statement label elsewhere in the code.
 It is not necessary to define this macro, but it might be useful for
-performance reasons. 
+performance reasons.
 
 For example, on the i386, it is sometimes possible to use a single
 reload register instead of two by reloading a sum of two pseudo
@@ -4841,7 +4841,7 @@ two places, the @file{md} file and in @code{NOTICE_UPDATE_CC}.
 
 @findex EXTRA_CC_MODES
 @item EXTRA_CC_MODES
-A list of additional modes for condition code values in registers 
+A list of additional modes for condition code values in registers
 (@pxref{Jump Patterns}).  This macro should expand to a sequence of
 calls of the macro @code{CC} separated by white space.  @code{CC} takes
 two arguments.  The first is the enumeration name of the mode, which
@@ -4994,7 +4994,7 @@ calculation is used for any RTL for which this macro does not return a
 value.
 
 This macro is optional; do not define it if the default cost assumptions
-are adequate for the target machine.  
+are adequate for the target machine.
 
 @findex ADDRESS_COST
 @item ADDRESS_COST (@var{address})
@@ -5379,7 +5379,7 @@ data section.
 
 @findex JUMP_TABLES_IN_TEXT_SECTION
 @item JUMP_TABLES_IN_TEXT_SECTION
-Define this macro to be an expression with a non-zero value if jump 
+Define this macro to be an expression with a non-zero value if jump
 tables (for @code{tablejump} insns) should be output in the text
 section, along with the assembler instructions.  Otherwise, the
 readonly data section is used.
@@ -5697,8 +5697,8 @@ default is @code{"\t.byte\t"}.
 @item UNALIGNED_SHORT_ASM_OP
 @itemx UNALIGNED_INT_ASM_OP
 @itemx UNALIGNED_DOUBLE_INT_ASM_OP
-A C string constant, including spacing, giving the pseudo-op to use 
-to assemble 16, 32, and 64 bit integers respectively @emph{without}
+A C string constant, including spacing, giving the pseudo-op to use
+to assemble 16-, 32-, and 64-bit integers respectively @emph{without}
 adding implicit padding or alignment.  These macros are required if
 DWARF 2 frame unwind is used.  On ELF systems, these will default
 to @code{.2byte}, @code{.4byte}, and @code{.8byte}.@refill
@@ -6819,7 +6819,7 @@ If this macro is not defined, nothing special is output at the end of
 the jump-table.
 @end table
 
-@node Exception Region Output 
+@node Exception Region Output
 @subsection Assembler Commands for Exception Regions
 
 @c prevent bad page break with this line
@@ -6936,7 +6936,7 @@ implementation.
 
 @findex LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
 @item LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
-The maximum number of bytes to skip when applying 
+The maximum number of bytes to skip when applying
 @code{LABEL_ALIGN_AFTER_BARRIER}.  This works only if
 @code{ASM_OUTPUT_MAX_SKIP_ALIGN} is defined.
 
@@ -7693,7 +7693,7 @@ return an integer value not larger than the corresponding element in
 NUM_MODES_FOR_MODE_SWITCHING, to denote the mode that @var{entity} must
 be switched into prior to the execution of INSN.
 
-@findex NORMAL_MODE 
+@findex NORMAL_MODE
 @item NORMAL_MODE (@var{entity})
 If this macro is defined, it is evaluated for every @var{entity} that needs
 mode switching.  It should evaluate to an integer, which is a mode that
@@ -7753,9 +7753,9 @@ declaration will be generated in @file{insn-codes.h}.
 @item SPECIAL_MODE_PREDICATES
 @findex SPECIAL_MODE_PREDICATES
 Define this if you have special predicates that know special things
-about modes.  Genrecog will warn about certain forms of 
+about modes.  Genrecog will warn about certain forms of
 @code{match_operand} without a mode; if the operand predicate is
-listed in @code{SPECIAL_MODE_PREDICATES}, the warning will be 
+listed in @code{SPECIAL_MODE_PREDICATES}, the warning will be
 suppressed.
 
 Here is an example from the IA-32 port (@code{ext_register_operand}
@@ -7777,7 +7777,7 @@ elements of a jump-table should have.
 Optional: return the preferred mode for an @code{addr_diff_vec}
 when the minimum and maximum offset are known.  If you define this,
 it enables extra code in branch shortening to deal with @code{addr_diff_vec}.
-To make this work, you also have to define INSN_ALIGN and 
+To make this work, you also have to define INSN_ALIGN and
 make the alignment for @code{addr_diff_vec} explicit.
 The @var{body} argument is provided so that the offset_unsigned and scale
 flags can be updated.

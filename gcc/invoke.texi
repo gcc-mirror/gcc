@@ -116,7 +116,7 @@ only one of these two forms, whichever one is not the default.
 * C Dialect Options::   Controlling the variant of C language compiled.
 * C++ Dialect Options:: Variations on C++.
 * Language Independent Options:: Controlling how diagnostics should be
-                        formatted. 
+                        formatted.
 * Warning Options::     How picky should the compiler be?
 * Debugging Options::   Symbol tables, measurements, and debugging dumps.
 * Optimize Options::    How much optimization?
@@ -597,7 +597,7 @@ in the following sections.
 * C Dialect Options::   Controlling the variant of C language compiled.
 * C++ Dialect Options:: Variations on C++.
 * Language Independent Options:: Controlling how diagnostics should be
-                        formatted. 
+                        formatted.
 * Warning Options::     How picky should the compiler be?
 * Debugging Options::   Symbol tables, measurements, and debugging dumps.
 * Optimize Options::    How much optimization?
@@ -863,7 +863,7 @@ C (when compiling C code), or of standard C++ (when compiling C++ code),
 such as the @code{asm} and @code{typeof} keywords, and
 predefined macros such as @code{unix} and @code{vax} that identify the
 type of system you are using.  It also enables the undesirable and
-rarely used ISO trigraph feature.  For the C compiler, 
+rarely used ISO trigraph feature.  For the C compiler,
 it disables recognition of C++ style @samp{//} comments as well as
 the @code{inline} keyword.
 
@@ -893,7 +893,7 @@ affected.
 
 @item -std=
 Determine the language standard.  A value for this option must be provided;
-possible values are 
+possible values are
 
 @table @samp
 @item iso9899:1990
@@ -1232,7 +1232,7 @@ two definitions were merged.
 This option is no longer useful on most targets, now that support has
 been added for putting variables into BSS without making them common.
 
-@item -fno-const-strings 
+@item -fno-const-strings
 Give string constants type @code{char *} instead of type @code{const
 char *}.  By default, G++ uses type @code{const char *} as required by
 the standard.  Even if you use @samp{-fno-const-strings}, you cannot
@@ -1293,7 +1293,7 @@ otherwise be invalid, or have different behavior.
 
 @item -fno-gnu-keywords
 Do not recognize @code{typeof} as a keyword, so that code can use this
-word as an identifier. You can use the keyword @code{__typeof__} instead.  
+word as an identifier. You can use the keyword @code{__typeof__} instead.
 @samp{-ansi} implies @samp{-fno-gnu-keywords}.
 
 @item -fhonor-std
@@ -1399,7 +1399,7 @@ those.
 Like all options that change the ABI, all C++ code, @emph{including
 libgcc.a} must be built with the same setting of this option.
 
-@item -fno-weak 
+@item -fno-weak
 Do not use weak symbol support, even if it is provied by the linker.
 By default, G++ will use weak symbols if they are available.  This
 option exists only for testing, and should not be used by end-users;
@@ -1553,14 +1553,14 @@ below can be used to control the diagnostic messages formatting
 algorithm, e.g. how many characters per line, how often source location
 information should be reported.  Right now, only the C++ front-end can
 honor these options.  However it is expected, in the near future, that
-the remaining front-ends would be able to digest them correctly. 
+the remaining front-ends would be able to digest them correctly.
 
 @table @gcctabopt
 @item -fmessage-length=@var{n}
 Try to format error messages so that they fit on lines of about @var{n}
 characters.  The default is 72 characters for g++ and 0 for the rest of
 the front-ends supported by GCC.  If @var{n} is zero, then no
-line-wrapping will be done; each error message will appear on a single 
+line-wrapping will be done; each error message will appear on a single
 line.
 
 @item -fdiagnostics-show-location=once
@@ -1569,7 +1569,7 @@ reporter to emit @emph{once} source location information; that is, in
 case the message is too long to fit on a single physical line and has to
 be wrapped, the source location won't be emitted (as prefix) again,
 over and over, in subsequent continuation lines.  This is the default
-behaviour. 
+behaviour.
 
 @item -fdiagnostics-show-location=every-line
 Only meaningful in line-wrapping mode.  Instructs the diagnostic
@@ -1835,7 +1835,7 @@ D. Hugh Redelmeier
 @item -Wreturn-type
 Warn whenever a function is defined with a return-type that defaults to
 @code{int}.  Also warn about any @code{return} statement with no
-return-value in a function whose return-type is not @code{void}. 
+return-value in a function whose return-type is not @code{void}.
 
 For C++, a function without return type always produces a diagnostic
 message, even when @samp{-Wno-return-type} is specified. The only
@@ -2279,7 +2279,7 @@ appropriate may not be detected.  This option has no effect unless
 
 @item -Wpacked
 Warn if a structure is given the packed attribute, but the packed
-attribute has no effect on the layout or size of the structure.  
+attribute has no effect on the layout or size of the structure.
 Such structures may be mis-aligned for little benefit.  For
 instance, in this code, the variable @code{f.x} in @code{struct bar}
 will be misaligned even though @code{struct bar} does not itself
@@ -2324,7 +2324,7 @@ are circumstances under which part of the affected line can be executed,
 so care should be taken when removing apparently-unreachable code.
 
 For instance, when a function is inlined, a warning may mean that the
-line is unreachable in only one inlined copy of the function.  
+line is unreachable in only one inlined copy of the function.
 
 This option is not made part of @samp{-Wall} because in a debugging
 version of a program there is often substantial code which checks
@@ -2623,7 +2623,7 @@ block and arc execution counts from the information in the
 Says to make debugging dumps during compilation at times specified by
 @var{letters}.  This is used for debugging the compiler.  The file names
 for most of the dumps are made by appending a pass number and a word to
-the source file name (e.g.  @file{foo.c.00.rtl} or @file{foo.c.01.sibling}). 
+the source file name (e.g.  @file{foo.c.00.rtl} or @file{foo.c.01.sibling}).
 Here are the possible letters for use in @var{letters}, and their meanings:
 
 @table @samp
@@ -2655,7 +2655,7 @@ Dump after purging @code{ADDRESSOF} codes, to @file{@var{file}.04.addressof}.
 Dump after global register allocation, to @file{@var{file}.19.greg}.
 @item o
 Dump after post-reload CSE and other optimizations, to @file{@var{file}.20.postreload}.
-@item G      
+@item G
 Dump after GCSE, to @file{@var{file}.08.gcse}.
 @item i
 Dump after sibling call optimizations, to @file{@var{file}.01.sibling}.
@@ -2671,7 +2671,7 @@ Dump after local register allocation, to @file{@var{file}.18.lreg}.
 Dump after loop optimization, to @file{@var{file}.09.loop}.
 @item M
 Dump after performing the machine dependent reorganisation pass, to
-@file{@var{file}.28.mach}. 
+@file{@var{file}.28.mach}.
 @item n
 Dump after register renumbering, to @file{@var{file}.23.rnreg}.
 @item N
@@ -2683,7 +2683,7 @@ Dump after the second instruction scheduling pass, to
 @file{@var{file}.25.sched2}.
 @item s
 Dump after CSE (including the jump optimization that sometimes follows
-CSE), to @file{@var{file}.03.cse}. 
+CSE), to @file{@var{file}.03.cse}.
 @item S
 Dump after the first instruction scheduling pass, to
 @file{@var{file}.17.sched}.
@@ -2965,13 +2965,13 @@ assembler code in its own right.
 @item -finline-limit=@var{n}
 By default, gcc limits the size of functions that can be inlined.  This flag
 allows the control of this limit for functions that are explicitly marked as
-inline (ie marked with the inline keyword or defined within the class 
-definition in c++).  @var{n} is the size of functions that can be inlined in 
+inline (ie marked with the inline keyword or defined within the class
+definition in c++).  @var{n} is the size of functions that can be inlined in
 number of pseudo instructions (not counting parameter handling).  The default
 value of n is 10000.  Increasing this value can result in more inlined code at
 the cost of compilation time and memory consumption.  Decreasing usually makes
-the compilation faster and less code will be inlined (which presumably 
-means slower programs).  This option is particularly useful for programs that 
+the compilation faster and less code will be inlined (which presumably
+means slower programs).  This option is particularly useful for programs that
 use inlining heavily such as those based on recursive templates with c++.
 
 @emph{Note:} pseudo instruction represents, in this particular context, an
@@ -3029,7 +3029,7 @@ sets @samp{-fno-math-errno}.
 @item -funsafe-math-optimizations
 Allow optimizations for floating-point arithmetic that (a) assume
 that arguments and results are valid and (b) may violate IEEE or
-ANSI standards.  
+ANSI standards.
 
 This option should never be turned on by any @samp{-O} option since
 it can result in incorrect output for programs which depend on
@@ -3105,10 +3105,10 @@ This pass also performs global constant and copy propagation.
 When -fgcse-lm is enabled, global common subexpression elimination will
 attempt to move loads which are only killed by stores into themselves. This
 allows a loop containing a load/store sequence to be changed to a load outside
-the loop, and a copy/store within the loop. 
+the loop, and a copy/store within the loop.
 
 @item -fgcse-sm
-When -fgcse-sm is enabled, A store motion pass is run after global common 
+When -fgcse-sm is enabled, A store motion pass is run after global common
 subexpression elimination. This pass will attempt to move stores out of loops.
 When used in conjunction with -fgcse-lm, loops containing a load/store sequence
 can be changed to a load before the loop and a store after the loop.
@@ -3257,11 +3257,11 @@ object of one type is assumed never to reside at the same address as an
 object of a different type, unless the types are almost the same.  For
 example, an @code{unsigned int} can alias an @code{int}, but not a
 @code{void*} or a @code{double}.  A character type may alias any other
-type.  
+type.
 
 Pay special attention to code like this:
 @example
-union a_union @{ 
+union a_union @{
   int i;
   double d;
 @};
@@ -3278,7 +3278,7 @@ recently written to (called ``type-punning'') is common.  Even with
 is accessed through the union type.  So, the code above will work as
 expected.  However, this code might not:
 @example
-int f() @{ 
+int f() @{
   a_union t;
   int* ip;
   t.d = 3.0;
@@ -3368,7 +3368,7 @@ In some places, GCC uses various constants to control the amount of
 optimization that is done.  For example, GCC will not inline functions
 that contain more that a certain number of instructions.  You can
 control some of these constants on the command-line using the
-@samp{--param} option.  
+@samp{--param} option.
 
 In each case, the @var{value} is a integer.  The allowable choices for
 @var{name} are given in the following table:
@@ -3811,7 +3811,7 @@ libraries.  On other systems, this option has no effect.
 @item -shared
 Produce a shared object which can then be linked with other objects to
 form an executable.  Not all systems support this option.  For predictable
-results, you must also specify the same set of options that were used to 
+results, you must also specify the same set of options that were used to
 generate code (@samp{-fpic}, @samp{-fPIC}, or model suboptions)
 when you specify this option.@footnote{On some systems, @samp{gcc -shared}
 needs to build supplementary stub code for constructors to work. On
@@ -3984,7 +3984,7 @@ character on the line and it can be one of the following:
 @table @code
 @item %@var{command}
 Issues a @var{command} to the spec file processor.  The commands that can
-appear here are: 
+appear here are:
 
 @table @code
 @item %include <@var{file}>
@@ -4017,7 +4017,7 @@ character, in which case the text will be appended to the spec.
 @item [@var{suffix}]:
 Creates a new @samp{[@var{suffix}] spec} pair.  All lines after this directive
 and up to the next directive or blank line are considered to make up the
-spec string for the indicated suffix.  When the compiler encounters an 
+spec string for the indicated suffix.  When the compiler encounters an
 input file with the named suffix, it will processes the spec string in
 order to work out how to compile that file.  For example:
 
@@ -4064,7 +4064,7 @@ possible to override earlier entries using this technique.
 
 GCC has the following spec strings built into it.  Spec files can
 override these strings or create their own.  Note that individual
-targets can also add their own spec strings to this list. 
+targets can also add their own spec strings to this list.
 
 @smallexample
 asm          Options to pass to the assembler
@@ -4105,7 +4105,7 @@ it is possible to generate quite complex command lines.
 Here is a table of all defined @samp{%}-sequences for spec
 strings.  Note that spaces are not generated automatically around the
 results of expanding these sequences.  Therefore you can concatenate them
-together or combine them with constant text in a single argument. 
+together or combine them with constant text in a single argument.
 
 @table @code
 @item %%
@@ -4127,13 +4127,13 @@ the last period).
 Marks the argument containing or following the @samp{%d} as a
 temporary file name, so that that file will be deleted if GCC exits
 successfully.  Unlike @samp{%g}, this contributes no text to the
-argument. 
+argument.
 
 @item %g@var{suffix}
 Substitute a file name that has suffix @var{suffix} and is chosen
 once per compilation, and mark the argument in the same way as
 @samp{%d}.  To reduce exposure to denial-of-service attacks, the file
-name is now chosen in a way that is hard to predict even when previously 
+name is now chosen in a way that is hard to predict even when previously
 chosen file names are known.  For example, @samp{%g.s ... %g.o ... %g.s}
 might turn into @samp{ccUVUUAU.s ccXYAXZ12.o ccUVUUAU.s}.  @var{suffix} matches
 the regexp @samp{[.A-Za-z]*} or the special string @samp{%O}, which is
@@ -4157,7 +4157,7 @@ simply substituted with a file name chosen for the previous @samp{%u},
 without regard to any appended suffix.
 
 @item %j@var{SUFFIX}
-Substitutes the name of the HOST_BIT_BUCKET, if any, and if it is 
+Substitutes the name of the HOST_BIT_BUCKET, if any, and if it is
 writable, and if save-temps is off; otherwise, substitute the name
 of a temporary file, just like @samp{%u}.  This temporary file is not
 meant for communication between processes, but rather as a junk
@@ -4199,7 +4199,7 @@ current target machine.  Use this when running @code{cpp}.
 Like @samp{%p}, but puts @samp{__} before and after the name of each
 predefined macro, except for macros that start with @samp{__} or with
 @samp{_@var{L}}, where @var{L} is an uppercase letter.  This is for ISO
-C.  
+C.
 
 @item %I
 Substitute a @samp{-iprefix} option made from GCC_EXEC_PREFIX.
@@ -4207,7 +4207,7 @@ Substitute a @samp{-iprefix} option made from GCC_EXEC_PREFIX.
 @item %s
 Current argument is the name of a library or startup file of some sort.
 Search for that file in a standard list of directories and substitute
-the full name found. 
+the full name found.
 
 @item %e@var{str}
 Print @var{str} as an error message.  @var{str} is terminated by a newline.
@@ -4264,7 +4264,7 @@ command line passed to the linker.  Typically it will make use of the
 @item %D
 Dump out a @samp{-L} option for each directory that GCC believes might
 contain startup files.  If the target supports multilibs then the
-current multilib directory will be prepended to each of these paths. 
+current multilib directory will be prepended to each of these paths.
 
 @item %M
 Output the multilib directory with directory seperators replaced with
@@ -4273,20 +4273,20 @@ Output the multilib directory with directory seperators replaced with
 
 @item %L
 Process the @code{lib} spec.  This is a spec string for deciding which
-libraries should be included on the command line to the linker. 
+libraries should be included on the command line to the linker.
 
 @item %G
 Process the @code{libgcc} spec.  This is a spec string for deciding
-which GCC support library should be included on the command line to the linker. 
+which GCC support library should be included on the command line to the linker.
 
 @item %S
 Process the @code{startfile} spec.  This is a spec for deciding which
 object files should be the first ones passed to the linker.  Typically
-this might be a file named @file{crt0.o}. 
+this might be a file named @file{crt0.o}.
 
 @item %E
 Process the @code{endfile} spec.  This is a spec string that specifies
-the last object files that will be passed to the linker.  
+the last object files that will be passed to the linker.
 
 @item %C
 Process the @code{cpp} spec.  This is used to construct the arguments
@@ -4294,7 +4294,7 @@ to be passed to the C preprocessor.
 
 @item %c
 Process the @code{signed_char} spec.  This is intended to be used
-to tell cpp whether a char is signed.  It typically has the definition: 
+to tell cpp whether a char is signed.  It typically has the definition:
 @smallexample
 %@{funsigned-char:-D__CHAR_UNSIGNED__@}
 @end smallexample
@@ -4322,14 +4322,14 @@ and would output the command line option @samp{-foo}.
 
 @item %W@{@code{S}@}
 Like %@{@code{S}@} but mark last argument supplied within as a file to be
-deleted on failure. 
+deleted on failure.
 
 @item %@{@code{S}*@}
 Substitutes all the switches specified to GCC whose names start
 with @code{-S}, but which also take an argument.  This is used for
 switches like @samp{-o, -D, -I}, etc.  GCC considers @samp{-o foo} as being
 one switch whose names starts with @samp{o}.  %@{o*@} would substitute this
-text, including the space.  Thus two arguments would be generated. 
+text, including the space.  Thus two arguments would be generated.
 
 @item %@{^@code{S}*@}
 Like %@{@code{S}*@}, but don't put a blank between a switch and its
@@ -4351,7 +4351,7 @@ string after this option will not.
 Substitutes @code{X} if one or more switches whose names start with
 @code{-S} are specified to GCC.  Note that the tail part of the
 @code{-S} option (i.e. the part matched by the @samp{*}) will be substituted
-for each occurrence of @samp{%*} within @code{X}. 
+for each occurrence of @samp{%*} within @code{X}.
 
 @item %@{@code{S}:@code{X}@}
 Substitutes @code{X}, but only if the @samp{-S} switch was given to GCC.
@@ -4396,7 +4396,7 @@ jim.d         -bar -boggle
 The conditional text @code{X} in a %@{@code{S}:@code{X}@} or
 %@{!@code{S}:@code{X}@} construct may contain other nested @samp{%} constructs
 or spaces, or even newlines.  They are processed as usual, as described
-above. 
+above.
 
 The @samp{-O, -f, -m, and -W} switches are handled specifically in these
 constructs.  If another value of @samp{-O} or the negated form of a @samp{-f, -m, or
@@ -4414,7 +4414,7 @@ compiler's spec to say which switches take arguments.  But this cannot
 be done in a consistent fashion.  GCC cannot even decide which input
 files have been specified without knowing which switches take arguments,
 and it must know which input files to compile in order to tell which
-compilers to run). 
+compilers to run).
 
 GCC also knows implicitly that arguments starting in @samp{-l} are to be
 treated as compiler output files, and passed to the linker in their
@@ -4630,7 +4630,7 @@ CPU32 or CPU32+ core, including the 68330, 68331, 68332, 68333, 68334,
 Generate output for a 520X "coldfire" family cpu.  This is the default
 when the compiler is configured for 520X-based systems.
 
-Use this option for microcontroller with a 5200 core, including 
+Use this option for microcontroller with a 5200 core, including
 the MCF5202, MCF5203, MCF5204 and MCF5202.
 
 
@@ -4695,7 +4695,7 @@ The @code{rtd} instruction is supported by the 68010, 68020, 68030,
 
 @item -malign-int
 @itemx -mno-align-int
-Control whether GCC aligns @code{int}, @code{long}, @code{long long}, 
+Control whether GCC aligns @code{int}, @code{long}, @code{long long},
 @code{float}, @code{double}, and @code{long double} variables on a 32-bit
 boundary (@samp{-malign-int}) or a 16-bit boundary (@samp{-mno-align-int}).
 Aligning variables on 32-bit boundaries produces code that runs somewhat
@@ -4725,7 +4725,7 @@ the system.
 @cindex M68hc1x options
 
 These are the @samp{-m} options defined for the 68hc11 and 68hc12
-microcontrollers.  The default values for these options depends on 
+microcontrollers.  The default values for these options depends on
 which style of microcontroller was selected when the compiler was configured;
 the defaults for the most common choices are given below.
 
@@ -4965,7 +4965,7 @@ handlers.
 @end table
 
 These @samp{-m} switches are supported in addition to the above
-on SPARC V9 processors in 64 bit environments.
+on SPARC V9 processors in 64-bit environments.
 
 @table @gcctabopt
 @item -mlittle-endian
@@ -4973,9 +4973,9 @@ Generate code for a processor running in little-endian mode.
 
 @item -m32
 @itemx -m64
-Generate code for a 32 bit or 64 bit environment.
-The 32 bit environment sets int, long and pointer to 32 bits.
-The 64 bit environment sets int to 32 bits and long and pointer
+Generate code for a 32-bit or 64-bit environment.
+The 32-bit environment sets int, long and pointer to 32 bits.
+The 64-bit environment sets int to 32 bits and long and pointer
 to 64 bits.
 
 @item -mcmodel=medlow
@@ -4997,9 +4997,9 @@ Pointers are 64 bits.
 
 @item -mcmodel=embmedany
 Generate code for the Medium/Anywhere code model for embedded systems:
-assume a 32 bit text and a 32 bit data segment, both starting anywhere
+assume a 32-bit text and a 32-bit data segment, both starting anywhere
 (determined at link time).  Register %g4 points to the base of the
-data segment.  Pointers still 64 bits.
+data segment.  Pointers are still 64 bits.
 Programs are statically linked, PIC is not supported.
 
 @item -mstack-bias
@@ -5314,22 +5314,22 @@ address is aligned to a word boundary.
 
 This option is ignored when compiling for ARM architecture 4 or later,
 since these processors have instructions to directly access half-word
-objects in memory. 
-        
+objects in memory.
+
 @item -mno-alignment-traps
 @kindex -mno-alignment-traps
 Generate code that assumes that the MMU will not trap unaligned
 accesses.  This produces better code when the target instruction set
 does not have half-word memory operations (implementations prior to
-ARMv4). 
+ARMv4).
 
 Note that you cannot use this option to access unaligned word objects,
 since the processor will only fetch one 32-bit aligned object from
-memory. 
+memory.
 
 The default setting for most targets is -mno-alignment-traps, since
 this produces better code when there are no half-word memory
-instructions available. 
+instructions available.
 
 @item -mshort-load-bytes
 @kindex -mshort-load-bytes
@@ -5428,7 +5428,7 @@ Tells the compiler to perform function calls by first loading the
 address of the function into a register and then performing a subroutine
 call on this register.  This switch is needed if the target function
 will lie outside of the 64 megabyte addressing range of the offset based
-version of subroutine call instruction. 
+version of subroutine call instruction.
 
 Even if this switch is enabled, not all function calls will be turned
 into long calls.  The heuristic is that static functions, functions
@@ -5446,7 +5446,7 @@ This feature is not enabled by default.  Specifying
 placing the function calls within the scope of a @samp{#pragma
 long_calls_off} directive.  Note these switches have no effect on how
 the compiler generates code to handle function calls via function
-pointers.  
+pointers.
 
 @item -mnop-fun-dllimport
 @kindex -mnop-fun-dllimport
@@ -5486,14 +5486,14 @@ with this option.
 @kindex -mno-tpcs-frame
 Generate a stack frame that is compliant with the Thumb Procedure Call
 Standard for all non-leaf functions.  (A leaf function is one that does
-not call any other functions).  The default is @samp{-mno-apcs-frame}. 
+not call any other functions).  The default is @samp{-mno-apcs-frame}.
 
 @item -mtpcs-leaf-frame
 @kindex -mtpcs-leaf-frame
 @kindex -mno-tpcs-leaf-frame
 Generate a stack frame that is compliant with the Thumb Procedure Call
 Standard for all leaf functions.  (A leaf function is one that does
-not call any other functions).  The default is @samp{-mno-apcs-leaf-frame}. 
+not call any other functions).  The default is @samp{-mno-apcs-leaf-frame}.
 
 @item -mlittle-endian
 @kindex -mlittle-endian
@@ -5559,7 +5559,7 @@ Indicate to the linker that it should perform a relaxation optimization pass
 to shorten branches, calls and absolute memory addresses.  This option only
 has an effect when used on the command line for the final link step.
 
-This option makes symbolic debugging impossible. 
+This option makes symbolic debugging impossible.
 @end table
 
 @node MN10300 Options
@@ -5588,7 +5588,7 @@ Indicate to the linker that it should perform a relaxation optimization pass
 to shorten branches, calls and absolute memory addresses.  This option only
 has an effect when used on the command line for the final link step.
 
-This option makes symbolic debugging impossible. 
+This option makes symbolic debugging impossible.
 @end table
 
 
@@ -5609,12 +5609,12 @@ The addressability of a particular object can be set with the
 @code{model} attribute.
 
 @item -mcode-model=medium
-Assume objects may be anywhere in the 32 bit address space (the compiler
+Assume objects may be anywhere in the 32-bit address space (the compiler
 will generate @code{seth/add3} instructions to load their addresses), and
 assume all subroutines are reachable with the @code{bl} instruction.
 
 @item -mcode-model=large
-Assume objects may be anywhere in the 32 bit address space (the compiler
+Assume objects may be anywhere in the 32-bit address space (the compiler
 will generate @code{seth/add3} instructions to load their addresses), and
 assume subroutines may not be reachable with the @code{bl} instruction
 (the compiler will generate the much slower @code{seth/add3/jl}
@@ -5982,19 +5982,19 @@ specify generic POWER, POWER2, pure 32-bit PowerPC (i.e., not MPC601),
 and 64-bit PowerPC architecture machine types, with an appropriate,
 generic processor model assumed for scheduling purposes.@refill
 
-Specifying any of the following options: 
+Specifying any of the following options:
 @samp{-mcpu=rios1}, @samp{-mcpu=rios2}, @samp{-mcpu=rsc},
-@samp{-mcpu=power}, or @samp{-mcpu=power2}  
-enables the @samp{-mpower} option and disables the @samp{-mpowerpc} option; 
+@samp{-mcpu=power}, or @samp{-mcpu=power2}
+enables the @samp{-mpower} option and disables the @samp{-mpowerpc} option;
 @samp{-mcpu=601} enables both the @samp{-mpower} and @samp{-mpowerpc} options.
 All of @samp{-mcpu=rs64a}, @samp{-mcpu=602}, @samp{-mcpu=603},
 @samp{-mcpu=603e}, @samp{-mcpu=604}, @samp{-mcpu=620}, @samp{-mcpu=630},
 @samp{-mcpu=740}, and @samp{-mcpu=750}
-enable the @samp{-mpowerpc} option and disable the @samp{-mpower} option.  
-Exactly similarly, all of @samp{-mcpu=403},
-@samp{-mcpu=505}, @samp{-mcpu=821}, @samp{-mcpu=860} and @samp{-mcpu=powerpc} 
 enable the @samp{-mpowerpc} option and disable the @samp{-mpower} option.
-@samp{-mcpu=common} disables both the 
+Exactly similarly, all of @samp{-mcpu=403},
+@samp{-mcpu=505}, @samp{-mcpu=821}, @samp{-mcpu=860} and @samp{-mcpu=powerpc}
+enable the @samp{-mpowerpc} option and disable the @samp{-mpower} option.
+@samp{-mcpu=common} disables both the
 @samp{-mpower} and @samp{-mpowerpc} options.@refill
 
 AIX versions 4 or greater selects @samp{-mcpu=common} by default, so
@@ -6408,7 +6408,7 @@ root instructions).  @samp{r6000} is the default @var{cpu type} at this
 ISA level.
 
 @item -mips3
-Issue instructions from level 3 of the MIPS ISA (64 bit instructions).
+Issue instructions from level 3 of the MIPS ISA (64-bit instructions).
 @samp{r4000} is the default @var{cpu type} at this ISA level.
 
 @item -mips4
@@ -6575,7 +6575,7 @@ when executing, and thus may be preferred for some embedded systems.
 @itemx -mno-uninit-const-in-rodata
 When used together with -membedded-data, it will always store uninitialized
 const variables in the read-only data section.
-  
+
 @item -msingle-float
 @itemx -mdouble-float
 The @samp{-msingle-float} switch tells gcc to assume that the floating
@@ -6664,7 +6664,7 @@ AMD chips as opposed to the Intel ones.
 
 @item -march=@var{cpu type}
 Generate instructions for the machine type @var{cpu type}.  The choices
-for @var{cpu type} are the same as for @samp{-mcpu}.  Moreover, 
+for @var{cpu type} are the same as for @samp{-mcpu}.  Moreover,
 specifying @samp{-march=@var{cpu type}} implies @samp{-mcpu=@var{cpu type}}.
 
 @item -m386
@@ -6731,7 +6731,7 @@ impossible to reach with 12 byte long doubles in the array accesses.
 @strong{Warning:} if you use the @samp{-m128bit-long-double} switch, the
 structures and arrays containing @code{long double} will change their size as
 well as function calling convention for function taking @code{long double}
-will be modified. 
+will be modified.
 
 @item -m96bit-long-double
 @itemx -m96bit-long-double
@@ -6747,7 +6747,7 @@ These options are meaningful only on System V Release 3.
 @item -mno-wide-multiply
 @itemx -mwide-multiply
 Control whether GCC uses the @code{mul} and @code{imul} that produce
-64 bit results in @code{eax:edx} from 32 bit operands to do @code{long
+64-bit results in @code{eax:edx} from 32-bit operands to do @code{long
 long} multiplies and 32-bit division by constants.
 
 @item -mrtd
@@ -6820,7 +6820,7 @@ Streaming SIMD Extension (SSE) data type @code{__m128} suffers similar
 penalties if it is not 16 byte aligned.
 
 To ensure proper alignment of this values on the stack, the stack boundary
-must be as aligned as that required by any value stored on the stack. 
+must be as aligned as that required by any value stored on the stack.
 Further, every function must be generated such that it keeps the stack
 aligned.  Thus calling a function compiled with a higher preferred
 stack boundary from a function compiled with a lower preferred stack
@@ -6849,10 +6849,10 @@ increase in code size. This switch implies -mno-push-args.
 
 @item -mthreads
 @kindex -mthreads
-Support thread-safe exception handling on @samp{Mingw32}. Code that relies 
-on thread-safe exception handling must compile and link all code with the 
-@samp{-mthreads} option. When compiling, @samp{-mthreads} defines 
-@samp{-D_MT}; when linking, it links in a special thread helper library 
+Support thread-safe exception handling on @samp{Mingw32}. Code that relies
+on thread-safe exception handling must compile and link all code with the
+@samp{-mthreads} option. When compiling, @samp{-mthreads} defines
+@samp{-D_MT}; when linking, it links in a special thread helper library
 @samp{-lmingwthrd} which cleans up per thread exception handling data.
 
 @item -mno-align-stringops
@@ -6887,7 +6887,7 @@ other way around.
 
 PA 2.0 support currently requires gas snapshot 19990413 or later.  The
 next release of binutils (current is 2.9.1) will probably contain PA 2.0
-support.  
+support.
 
 @item -mpa-risc-1-0
 @itemx -mpa-risc-1-1
@@ -6940,8 +6940,8 @@ Enable the use of assembler directives only GAS understands.
 
 @item -mschedule=@var{cpu type}
 Schedule code according to the constraints for the machine type
-@var{cpu type}.  The choices for @var{cpu type} are @samp{700} 
-@samp{7100}, @samp{7100LC}, @samp{7200}, and @samp{8000}.  Refer to 
+@var{cpu type}.  The choices for @var{cpu type} are @samp{700}
+@samp{7100}, @samp{7100LC}, @samp{7200}, and @samp{8000}.  Refer to
 @file{/usr/lib/sched.models} on an HP-UX system to determine the
 proper scheduling option for your machine.
 
@@ -7120,8 +7120,8 @@ IEEE @var{inexact flag}.  Turning on this option causes the generated
 code to implement fully-compliant IEEE math.  The option is a shorthand
 for @samp{-D_IEEE_FP -D_IEEE_FP_INEXACT} plus the three following:
 @samp{-mieee-conformant},
-@samp{-mfp-trap-mode=sui}, 
-and @samp{-mtrap-precision=i}.  
+@samp{-mfp-trap-mode=sui},
+and @samp{-mtrap-precision=i}.
 On some Alpha implementations the resulting code may execute
 significantly slower than the code generated by default.  Since there
 is very little code that depends on the @var{inexact flag}, you should
@@ -7383,7 +7383,7 @@ Compile code for the processor in big endian mode.
 Compile code for the processor in little endian mode.
 
 @item -mdalign
-Align doubles at 64 bit boundaries.  Note that this changes the calling
+Align doubles at 64-bit boundaries.  Note that this changes the calling
 conventions, and thus some functions from the standard C library will
 not work unless you recompile it first with -mdalign.
 
@@ -7485,7 +7485,7 @@ memory access.
 @item -mbk
 @itemx -mno-bk
 Allow (disallow) allocation of general integer operands into the block
-count register BK. 
+count register BK.
 
 @item -mdb
 @itemx -mno-db
@@ -7625,7 +7625,7 @@ area can hold up to 64 kilobytes.
 @item -mzda=@var{n}
 Put static or global variables whose size is @var{n} bytes or less into
 the first 32 kilobytes of memory.
- 
+
 @item -mv850
 Specify that the target processor is the V850.
 
@@ -7840,7 +7840,7 @@ Change only the low 8 bits of the stack pointer.
 @cindex MCore options
 
 These are the @samp{-m} options defined for the Motorola M*Core
-processors.  
+processors.
 
 @table @gcctabopt
 
@@ -8582,7 +8582,7 @@ with @samp{-q}.
 
 The output from @code{protoize} or @code{unprotoize} replaces the
 original source file.  The original file is renamed to a name ending
-with @samp{.save} (for DOS, the saved filename ends in @samp{.sav} 
+with @samp{.save} (for DOS, the saved filename ends in @samp{.sav}
 without the original @samp{.c} suffix).  If the @samp{.save} (@samp{.sav}
 for DOS) file already exists, then the source file is simply discarded.
 
@@ -8618,7 +8618,7 @@ the @var{compilation-options}, they are ignored.
 
 @item -C
 Rename files to end in @samp{.C} (@samp{.cc} for DOS-based file
-systems) instead of @samp{.c}.  This is convenient if you are converting 
+systems) instead of @samp{.c}.  This is convenient if you are converting
 a C program to C++.  This option applies only to @code{protoize}.
 
 @item -g
@@ -8687,4 +8687,3 @@ exist, because otherwise they won't get converted.
 
 @xref{Protoize Caveats}, for more information on how to use
 @code{protoize} successfully.
-
