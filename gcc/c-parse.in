@@ -3604,6 +3604,7 @@ end ifobjc
 	    const char *name = fname_string (rid_code);
 	  
 	    yylval.ttype = build_string (strlen (name) + 1, name);
+	    C_ARTIFICIAL_STRING_P (yylval.ttype) = 1;
 	    last_token = CPP_STRING;  /* so yyerror won't choke */
 	    return STRING;
 	  }

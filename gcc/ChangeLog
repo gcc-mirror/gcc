@@ -1,3 +1,12 @@
+2001-12-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (combine_strings): Complain if concatenating
+	__FUNCTION__.
+	* c-parse.in (yylexname): Flag artificial strings.
+	* tree.h (TREE_ARTIFICIAL_STRING_P): New.
+doc:
+	* extend.texi: Update.
+
 2001-12-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	* c-common.c (type_for_mode): Handle unsigned vectors.
