@@ -1414,7 +1414,7 @@ const248_operand (op, mode)
 int
 incdec_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   /* On Pentium4, the inc and dec operations causes extra dependancy on flag
      registers, since carry flag is not set.  */

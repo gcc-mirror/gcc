@@ -3472,7 +3472,7 @@ handle_avail_expr (insn, expr)
      rtx insn;
      struct expr *expr;
 {
-  rtx pat, insn_computes_expr;
+  rtx pat, insn_computes_expr, expr_set;
   rtx to;
   struct reg_set *this_reg;
   int found_setting, use_src;
@@ -3483,6 +3483,9 @@ handle_avail_expr (insn, expr)
   insn_computes_expr = computing_insn (expr, insn);
   if (insn_computes_expr == NULL)
     return 0;
+  expr_set = single_set (insn_computes_expr);
+  if (!expr_set)
+    abort ();
 
   found_setting = 0;
   use_src = 0;
@@ -3490,12 +3493,12 @@ handle_avail_expr (insn, expr)
   /* At this point we know only one computation of EXPR outside of this
      block reaches this insn.  Now try to find a register that the
      expression is computed into.  */
-  if (GET_CODE (SET_SRC (PATTERN (insn_computes_expr))) == REG)
+  if (GET_CODE (SET_SRC (expr_set)) == REG)
     {
       /* This is the case when the available expression that reaches
 	 here has already been handled as an available expression.  */
       unsigned int regnum_for_replacing
-	= REGNO (SET_SRC (PATTERN (insn_computes_expr)));
+	= REGNO (SET_SRC (expr_set));
 
       /* If the register was created by GCSE we can't use `reg_set_table',
 	 however we know it's set only once.  */
@@ -3514,7 +3517,7 @@ handle_avail_expr (insn, expr)
   if (!found_setting)
     {
       unsigned int regnum_for_replacing
-	= REGNO (SET_DEST (PATTERN (insn_computes_expr)));
+	= REGNO (SET_DEST (expr_set));
 
       /* This shouldn't happen.  */
       if (regnum_for_replacing >= max_gcse_regno)
@@ -3533,9 +3536,9 @@ handle_avail_expr (insn, expr)
     {
       pat = PATTERN (insn);
       if (use_src)
-	to = SET_SRC (PATTERN (insn_computes_expr));
+	to = SET_SRC (expr_set);
       else
-	to = SET_DEST (PATTERN (insn_computes_expr));
+	to = SET_DEST (expr_set);
       changed = validate_change (insn, &SET_SRC (pat), to, 0);
 
       /* We should be able to ignore the return code from validate_change but
@@ -3563,15 +3566,14 @@ handle_avail_expr (insn, expr)
 	 replace all uses of REGB with REGN.  */
       rtx new_insn;
 
-      to = gen_reg_rtx (GET_MODE (SET_DEST (PATTERN (insn_computes_expr))));
+      to = gen_reg_rtx (GET_MODE (SET_DEST (expr_set)));
 
       /* Generate the new insn.  */
       /* ??? If the change fails, we return 0, even though we created
 	 an insn.  I think this is ok.  */
       new_insn
 	= emit_insn_after (gen_rtx_SET (VOIDmode, to,
-					SET_DEST (PATTERN
-						  (insn_computes_expr))),
+					SET_DEST (expr_set)),
 			   insn_computes_expr);
 
       /* Keep block number table up to date.  */
