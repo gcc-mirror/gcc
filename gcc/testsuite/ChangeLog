@@ -1,5 +1,13 @@
 2005-02-11  Janis Johnson  <janis187@us.ibm.com>
 
+	* lib/gcc-dg.exp: (dg-require-weak, dg-require-visibility,
+	dg-require-alias, dg-require-gc-sections, dg-require-profiling,
+	dg-require-dll, dg-require-iconv, dg-require-named-sections,
+	dg-require-effective-target, dg-skip-if, dg-xfail-if, selector_opd,
+	selector_list, selector_expression, dg-process-target): Move to new
+	file target-supports-dg.exp.
+	* lib/target-supports-dg.exp: New.
+
 	* lib/target-supports.exp (check_effective_target_broken_cplxf_arg):
 	New.
 
