@@ -106,17 +106,17 @@ CHILL.all.build: chill
 CHILL.all.cross: chill-cross
 CHILL.start.encap: chill
 CHILL.rest.encap:
-CHILL.dvi: chill.dvi
+CHILL.dvi: ch/chill.dvi
 
 CHILL.info: $(srcdir)/ch/chill.info
 
 $(srcdir)/ch/chill.info: $(srcdir)/ch/chill.texi
 	cd $(srcdir)/ch && $(MAKEINFO) -o chill.info chill.texi
 
-chill.dvi: $(srcdir)/ch/chill.texi
-	TEXINPUTS=${texidir}:$(srcdir)/ch:$(srcdir):$$TEXINPUTS tex $(srcdir)/ch/chill.texi ; \
-	texindex chill.?? ; \
-	TEXINPUTS=${texidir}:$(srcdir)/ch:$(srcdir)$$TEXINPUTS tex $(srcdir)/ch/chill.texi
+ch/chill.dvi: $(srcdir)/ch/chill.texi
+	s=`cd $(srcdir); pwd`; export s; \
+	cd ch && $(TEXI2DVI) $$s/ch/chill.texi
+
 #
 # Install hooks:
 # cc1chill is installed elsewhere as part of $(COMPILERS).
