@@ -205,12 +205,22 @@ c++.install-common:
 	    chmod a+x $(bindir)/$(GXX_CROSS_NAME)$(exeext); \
 	    rm -f $(bindir)/$(CXX_CROSS_NAME)$(exeext); \
 	    $(LN) $(bindir)/$(GXX_CROSS_NAME)$(exeext) $(bindir)/$(CXX_CROSS_NAME)$(exeext); \
+	    if [ -d $(gcc_tooldir)/bin/. ] ; then \
+	      rm -f $(gcc_tooldir)/bin/g++$(exeext); \
+	      $(INSTALL_PROGRAM) g++-cross$(exeext) $(gcc_tooldir)/bin/g++$(exeext); \
+	      rm -f $(gcc_tooldir)/bin/c++$(exeext); \
+	      $(LN) $(gcc_tooldir)/bin/g++$(exeext) $(gcc_tooldir)/bin/c++$(exeext); \
+	    else true; fi; \
 	  else \
 	    rm -f $(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
 	    $(INSTALL_PROGRAM) g++$(exeext) $(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
 	    chmod a+x $(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
 	    rm -f $(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
 	    $(LN) $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
+	    rm -f $(bindir)/$(target_alias)-g++$(exeext); \
+	    $(LN) $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-g++$(exeext); \
+	    rm -f $(bindir)/$(target_alias)-c++$(exeext); \
+	    $(LN) $(bindir)/$(CXX_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-c++$(exeext); \
 	  fi ; \
 	  if [ x$(DEMANGLER_PROG) != x ] && [ -x "$(DEMANGLER_PROG)" ]; then \
 	    if [ -f g++-cross$(exeext) ] ; then \
