@@ -1,3 +1,11 @@
+2003-03-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.1: Remove.
+	* Make-lang.in (c++.generated-manpages): Build cp/g++.1.
+	(cp/g++.1): Build it from scratch in the build tree.
+	(c++.install-man): Depend on it.  Install it from the build tree.
+	(c++.mostlyclean): Clean it.
+
 2003-03-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9924
