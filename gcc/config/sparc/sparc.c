@@ -3898,6 +3898,7 @@ output_double_int (file, value)
 	   || GET_CODE (value) == PLUS
 	   || (TARGET_V9 &&
 	       (GET_CODE (value) == LABEL_REF
+		|| GET_CODE (value) == CODE_LABEL
 		|| GET_CODE (value) == MINUS)))
     {
       if (!TARGET_V9 || TARGET_ENV32)
