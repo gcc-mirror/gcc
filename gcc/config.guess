@@ -350,6 +350,8 @@ EOF
 	  echo "${UNAME_MACHINE}-unknown-linuxaout" ; exit 0
 	elif test "${UNAME_MACHINE}" = "alpha" ; then
 	  echo alpha-unknown-linux ; exit 0
+	elif test "${UNAME_MACHINE}" = "sparc" ; then
+	  echo sparc-unknown-linux ; exit 0
 	else
 	  # Either a pre-BFD a.out linker (linuxoldld) or one that does not give us
 	  # useful --help.  Gcc wants to distinguish between linuxoldld and linuxaout.
