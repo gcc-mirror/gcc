@@ -1,8 +1,9 @@
-/* Definitions of target machine for GNU compiler for Intel 80386
-   running FreeBSD.
-   Copyright (C) 1988, 1992, 1994, 1996, 1997, 1999, 2000 Free Software
-   Foundation, Inc.
-   Contributed by Poul-Henning Kamp <phk@login.dkuug.dk>
+/* Definitions for Intel 386 running FreeBSD with ELF format
+   Copyright (C) 1996, 2000 Free Software Foundation, Inc.
+   Contributed by Eric Youngdale.
+   Modified for stabs-in-ELF by H.J. Lu.
+   Adapted from GNU/Linux version by John Polstra.
+   Continued development by David O'Brien <obrien@freebsd.org>
 
 This file is part of GNU CC.
 
@@ -21,42 +22,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This is tested by i386gas.h.  */
-#define YES_UNDERSCORES
-
-/* Don't assume anything about the header files. */
-#define NO_IMPLICIT_EXTERN_C
-
-#include "i386/gstabs.h"
-
-/* This goes away when the math-emulator is fixed */
-#undef TARGET_DEFAULT
-#define TARGET_DEFAULT \
-  (MASK_80387 | MASK_IEEE_FP | MASK_FLOAT_RETURNS | MASK_NO_FANCY_MATH_387)
-
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -D__FreeBSD__\
- -Asystem(unix) -Asystem(bsd) -Asystem(FreeBSD)"
-
-/* Like the default, except no -lg.  */
-#define LIB_SPEC "%{!shared:%{!pg:-lc}%{pg:-lc_p}}"
-
-#undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
-
-#undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
-
-#undef WCHAR_TYPE
-#define WCHAR_TYPE "int"
-
-#define WCHAR_UNSIGNED 0
-
-#undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE BITS_PER_WORD
+#undef TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (i386 FreeBSD/ELF)");
 
 /* Override the default comment-starter of "/".  */
-
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START "#"
 
@@ -66,187 +35,109 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-/* FreeBSD using a.out does not support DWARF2 unwinding mechanisms.  */
-#define DWARF2_UNWIND_INFO 0
-
-/* The following macros are stolen from i386v4.h */
-/* These have to be defined to get PIC code correct */
+#undef SET_ASM_OP
+#define SET_ASM_OP	"\t.set\t"
 
 /* This is how to output an element of a case-vector that is relative.
    This is only used for PIC code.  See comments by the `casesi' insn in
    i386.md for an explanation of the expression this outputs. */
-
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-  fprintf (FILE, "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
+  fprintf ((FILE), "\t.long _GLOBAL_OFFSET_TABLE_+[.-%s%d]\n", LPREFIX, VALUE)
 
 /* Indicate that jump tables go in the text section.  This is
    necessary when compiling PIC code.  */
+#define JUMP_TABLES_IN_TEXT_SECTION (flag_pic)
 
-#define JUMP_TABLES_IN_TEXT_SECTION 1
+#undef DBX_REGISTER_NUMBER
+#define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]
 
-/* Don't default to pcc-struct-return, because in FreeBSD we prefer the
-   superior nature of the older gcc way.  */
-#define DEFAULT_PCC_STRUCT_RETURN 0
+/* Tell final.c that we don't need a label passed to mcount.  */
 
-/* Ensure we the configuration knows our system correctly so we can link with
-   libraries compiled with the native cc. */
-#undef NO_DOLLAR_IN_LABEL
-
-/* i386 freebsd still uses old binutils that don't insert nops by default
-   when the .align directive demands to insert extra space in the text
-   segment.  */
-#undef ASM_OUTPUT_ALIGN
-#define ASM_OUTPUT_ALIGN(FILE,LOG) \
-  if ((LOG)!=0) fprintf ((FILE), "\t.align %d,0x90\n", (LOG))
-
-/* Profiling routines, partially copied from i386/osfrose.h.  */
-
-/* Redefine this to use %eax instead of %edx.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)  \
 {									\
   if (flag_pic)								\
-    {									\
-      fprintf (FILE, "\tleal %sP%d@GOTOFF(%%ebx),%%eax\n",		\
-	       LPREFIX, (LABELNO));					\
-      fprintf (FILE, "\tcall *mcount@GOT(%%ebx)\n");			\
-    }									\
+      fprintf ((FILE), "\tcall *.mcount@GOT(%%ebx)\n");			\
   else									\
-    {									\
-      fprintf (FILE, "\tmovl $%sP%d,%%eax\n", LPREFIX, (LABELNO));	\
-      fprintf (FILE, "\tcall mcount\n");				\
-    }									\
+      fprintf ((FILE), "\tcall .mcount\n");				\
 }
 
-/*
- * Some imports from svr4.h in support of shared libraries.
- * Currently, we need the DECLARE_OBJECT_SIZE stuff.
- */
+/* Make gcc agree with <machine/ansi.h>.  */
 
-/* Define the strings used for the special svr4 .type and .size directives.
-   These strings generally do not vary from one system running svr4 to
-   another, but if a given system (e.g. m88k running svr) needs to use
-   different pseudo-op names for these, they may be overridden in the
-   file which includes this one.  */
+#undef SIZE_TYPE
+#define SIZE_TYPE "unsigned int"
+ 
+#undef PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+  
+#undef WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE BITS_PER_WORD
+    
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES "-Dunix -D__ELF__ -D__FreeBSD__\
+ -Asystem(unix) -Asystem(bsd) -Asystem(FreeBSD)"
 
-#define TYPE_ASM_OP	"\t.type\t"
-#define SIZE_ASM_OP	"\t.size\t"
+/* Provide a STARTFILE_SPEC appropriate for FreeBSD.  Here we add
+   the magical crtbegin.o file (see crtstuff.c) which provides part 
+	of the support for getting C++ file-scope static object constructed 
+	before entering `main'. */
+   
+#undef	STARTFILE_SPEC
+#define STARTFILE_SPEC \
+  "%{!shared: \
+     %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} \
+		       %{!p:%{profile:gcrt1.o%s} \
+			 %{!profile:crt1.o%s}}}} \
+   crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
 
-/* The following macro defines the format used to output the second
-   operand of the .type assembler directive.  Different svr4 assemblers
-   expect various different forms for this operand.  The one given here
-   is just a default.  You may need to override it in your machine-
-   specific tm.h file (depending upon the particulars of your assembler).  */
+/* Provide a ENDFILE_SPEC appropriate for FreeBSD.  Here we tack on
+   the magical crtend.o file (see crtstuff.c) which provides part of 
+	the support for getting C++ file-scope static object constructed 
+	before entering `main', followed by a normal "finalizer" file, 
+	`crtn.o'.  */
 
-#define TYPE_OPERAND_FMT	"@%s"
+#undef	ENDFILE_SPEC
+#define ENDFILE_SPEC \
+  "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
 
-/* Write the extra assembler code needed to declare a function's result.
-   Most svr4 assemblers don't require any special declaration of the
-   result value, but there are exceptions.  */
+/* Provide a LINK_SPEC appropriate for FreeBSD.  Here we provide support
+   for the special GCC options -static and -shared, which allow us to
+   link things in one of these three modes by applying the appropriate
+   combinations of options at link-time. We like to support here for
+   as many of the other GNU linker options as possible. But I don't
+   have the time to search for those flags. I am sure how to add
+   support for -soname shared_object_name. H.J.
 
-#ifndef ASM_DECLARE_RESULT
-#define ASM_DECLARE_RESULT(FILE, RESULT)
+   I took out %{v:%{!V:-V}}. It is too much :-(. They can use
+   -Wl,-V.
+
+   When the -shared link option is used a final link is not being
+   done.  */
+
+#undef	LINK_SPEC
+#define LINK_SPEC "-m elf_i386 \
+  %{Wl,*:%*} \
+  %{v:-V} \
+  %{assert*} %{R*} %{rpath*} %{defsym*} \
+  %{shared:-Bshareable %{h*} %{soname*}} \
+    %{!shared: \
+      %{!static: \
+        %{rdynamic:-export-dynamic} \
+	%{!dynamic-linker:-dynamic-linker /usr/libexec/ld-elf.so.1}} \
+    %{static:-Bstatic}} \
+  %{symbolic:-Bsymbolic}"
+
+/* A C statement to output to the stdio stream FILE an assembler
+   command to advance the location counter to a multiple of 1<<LOG
+   bytes if it is within MAX_SKIP bytes.
+
+   This is used to align code labels according to Intel recommendations.  */
+
+#ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
+#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE, LOG, MAX_SKIP)					\
+  if ((LOG) != 0) {														\
+    if ((MAX_SKIP) == 0) fprintf ((FILE), "\t.p2align %d\n", (LOG));	\
+    else fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
+  }
 #endif
-
-/* These macros generate the special .type and .size directives which
-   are used to set the corresponding fields of the linker symbol table
-   entries in an ELF object file under SVR4.  These macros also output
-   the starting labels for the relevant functions/objects.  */
-
-/* Write the extra assembler code needed to declare a function properly.
-   Some svr4 assemblers need to also have something extra said about the
-   function's return value.  We allow for that here.  */
-
-#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
-  do {									\
-    fprintf (FILE, "%s", TYPE_ASM_OP);					\
-    assemble_name (FILE, NAME);						\
-    putc (',', FILE);							\
-    fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
-    putc ('\n', FILE);							\
-    ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
-    ASM_OUTPUT_LABEL(FILE, NAME);					\
-  } while (0)
-
-/* Write the extra assembler code needed to declare an object properly.  */
-
-#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
-  do {									\
-    fprintf (FILE, "%s", TYPE_ASM_OP);					\
-    assemble_name (FILE, NAME);						\
-    putc (',', FILE);							\
-    fprintf (FILE, TYPE_OPERAND_FMT, "object");				\
-    putc ('\n', FILE);							\
-    size_directive_output = 0;						\
-    if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		\
-      {									\
-        size_directive_output = 1;					\
-	fprintf (FILE, "%s", SIZE_ASM_OP);				\
-	assemble_name (FILE, NAME);					\
-	fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL)));	\
-      }									\
-    ASM_OUTPUT_LABEL(FILE, NAME);					\
-  } while (0)
-
-/* Output the size directive for a decl in rest_of_decl_compilation
-   in the case where we did not do so before the initializer.
-   Once we find the error_mark_node, we know that the value of
-   size_directive_output was set
-   by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
-
-#define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)        \
-do {                                                                    \
-     const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);            \
-     if (!flag_inhibit_size_directive && DECL_SIZE (DECL)	        \
-         && ! AT_END && TOP_LEVEL                                       \
-         && DECL_INITIAL (DECL) == error_mark_node                      \
-         && !size_directive_output)                                     \
-       {                                                                \
-         fprintf (FILE, "%s", SIZE_ASM_OP);                             \
-	 assemble_name (FILE, name);                                    \
-	 fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL)));\
-	}								\
-   } while (0)
-
-
-/* This is how to declare the size of a function.  */
-
-#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)			\
-  do {									\
-    if (!flag_inhibit_size_directive)					\
-      {									\
-        char label[256];						\
-	static int labelno;						\
-	labelno++;							\
-	ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);		\
-	ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);		\
-	fprintf (FILE, "%s", SIZE_ASM_OP);				\
-	assemble_name (FILE, (FNAME));					\
-        fprintf (FILE, ",");						\
-	assemble_name (FILE, label);					\
-        fprintf (FILE, "-");						\
-	assemble_name (FILE, (FNAME));					\
-	putc ('\n', FILE);						\
-      }									\
-  } while (0)
-
-#define ASM_SPEC   " %| %{fpic:-k} %{fPIC:-k}"
-#define LINK_SPEC \
-  "%{p:%e`-p' not supported; use `-pg' and gprof(1)} \
-   %{shared:-Bshareable} \
-   %{!shared:%{!nostdlib:%{!r:%{!e*:-e start}}} -dc -dp %{static:-Bstatic} \
-   %{pg:-Bstatic} %{Z}} \
-   %{assert*} %{R*}"
-
-#define STARTFILE_SPEC  \
-  "%{shared:c++rt0.o%s} \
-   %{!shared:%{pg:gcrt0.o%s}%{!pg:%{static:scrt0.o%s}%{!static:crt0.o%s}}}"
-
-/* Define this so we can compile MS code for use with WINE.  */
-#define HANDLE_PRAGMA_PACK_PUSH_POP
-
-/* This is the pseudo-op used to generate a 32-bit word of data with a
-   specific value in some section.  */
-
-#define INT_ASM_OP "\t.long\t"

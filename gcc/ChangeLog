@@ -1,3 +1,17 @@
+2000-09-28  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/i386/freebsd-aout.h: New, FreeBSD a.out config file.
+	Contains the old contents of config/i386/freebsd.h
+	* config/i386/freebsd.h: Now the ELF rather than a.out config file.
+	Contains the old contents of config/i386/freebsd-elf.h
+	* config/i386/freebsd-elf.h: Retire this file -- contents moved to
+	config/i386/freebsd.h.
+	* configure.in: Adjust for above changes.
+	* po/POTFILES.in: Likewise.
+	* po/en_GB.po: Likewise.
+	* po/gcc.pot: Likewise.
+	* configure: Rebuilt.
+
 2000-09-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 	* doloop.c (doloop_modify): Prevent delete_insn() from
 	deleting too much.  Prefer loop->top over loop->start as

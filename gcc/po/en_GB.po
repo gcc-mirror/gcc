@@ -4320,7 +4320,7 @@ msgstr ""
 msgid "A -ifile option requires a -map option"
 msgstr ""
 
-#: config/i386/freebsd.h:236
+#: config/i386/freebsd-aout.h:236
 msgid "`-p' not supported; use `-pg' and gprof(1)"
 msgstr ""
 

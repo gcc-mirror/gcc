@@ -166,7 +166,7 @@ config/i386/crtdll.h
 config/i386/cygwin.h
 config/i386/dgux.c
 config/i386/dgux.h
-config/i386/freebsd-elf.h
+config/i386/freebsd-aout.h
 config/i386/freebsd.h
 config/i386/gas.h
 config/i386/gmon-sol2.c
