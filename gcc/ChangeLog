@@ -1,6 +1,6 @@
 2004-01-23  Zack Weinberg  <zack@codesourcery.com>
 
-	PR 18314
+	PR c/13814
 	* c-decl.c (diagnose_mismatched_decls): Also discard a
 	built-in if we encounter an old-style definition with the
 	same name.
