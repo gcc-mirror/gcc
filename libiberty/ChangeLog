@@ -1,3 +1,17 @@
+Sat Jan 17 22:32:38 1998  Mumit Khan  <khan@xraylith.wisc.edu>
+                          J.J. VanderHeijden <J.J.vanderHeijden@student.utwente.nl>
+
+        Add mingw32 support.
+        * pexecute.c (pexecute): New function for mingw32. Supports pipes.
+        (pwait): New function for mingw32.
+
+        * config.table (i[3456]86-*-mingw32*): Support for i386-mingw32.
+        * config/mt-mingw32: New file.
+        * xmalloc.c (first_break): Not used for mingw32.
+        (xmalloc_set_program_name): Don't use sbrk on mingw32.
+        (xmalloc): Likewise.
+        (xrealloc): Likewise.
+
 Sat Jan 17 22:25:53 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* choose-temp.c: Sync with gcc version.
