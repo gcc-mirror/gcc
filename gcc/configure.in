@@ -93,7 +93,7 @@ gnu_ld_flag=no)
 
 # With pre-defined ld
 AC_ARG_WITH(ld,
-[  --with-ld               arrange to use the specified ld (full pathname).],
+[  --with-ld               arrange to use the specified ld (full pathname)],
 DEFAULT_LINKER="$with_ld")
 if test x"${DEFAULT_LINKER+set}" = x"set"; then
   if test ! -x "$DEFAULT_LINKER"; then
@@ -107,12 +107,12 @@ fi
 
 # With GNU as
 AC_ARG_WITH(gnu-as,
-[  --with-gnu-as           arrange to work with GNU as.],
+[  --with-gnu-as           arrange to work with GNU as],
 gas_flag="$with_gnu_as",
 gas_flag=no)
 
 AC_ARG_WITH(as,
-[  --with-as               arrange to use the specified as (full pathname).],
+[  --with-as               arrange to use the specified as (full pathname)],
 DEFAULT_ASSEMBLER="$with_as")
 if test x"${DEFAULT_ASSEMBLER+set}" = x"set"; then
   if test ! -x "$DEFAULT_ASSEMBLER"; then
@@ -126,20 +126,20 @@ fi
 
 # With stabs
 AC_ARG_WITH(stabs,
-[  --with-stabs            arrange to use stabs instead of host debug format.],
+[  --with-stabs            arrange to use stabs instead of host debug format],
 stabs="$with_stabs",
 stabs=no)
 
 # With ELF
 AC_ARG_WITH(elf,
-[  --with-elf              arrange to use ELF instead of host debug format.],
+[  --with-elf              arrange to use ELF instead of host debug format],
 elf="$with_elf",
 elf=no)
 
 # Specify the local prefix
 local_prefix=
 AC_ARG_WITH(local-prefix,
-[  --with-local-prefix=DIR specifies directory to put local include.],
+[  --with-local-prefix=DIR specifies directory to put local include],
 [case "${withval}" in
 yes)	AC_MSG_ERROR(bad value ${withval} given for local include directory prefix) ;;
 no)	;;
@@ -158,7 +158,7 @@ gcc_gxx_include_dir=
 # Specify the g++ header file directory
 AC_ARG_WITH(gxx-include-dir,
 [  --with-gxx-include-dir=DIR
-                          specifies directory to put g++ header files.],
+                          specifies directory to put g++ header files],
 [case "${withval}" in
 yes)	AC_MSG_ERROR(bad value ${withval} given for g++ include directory) ;;
 no)	;;
@@ -178,7 +178,7 @@ fi
 
 # Determine whether or not multilibs are enabled.
 AC_ARG_ENABLE(multilib,
-[  --enable-multilib      enable library support for multiple ABIs],
+[  --enable-multilib       enable library support for multiple ABIs],
 [], [enable_multilib=yes])
 AC_SUBST(enable_multilib)
 
@@ -247,13 +247,13 @@ fi
 
 
 AC_ARG_ENABLE(cpp,
-[  --disable-cpp           don't provide a user-visible C preprocessor.],
+[  --disable-cpp           don't provide a user-visible C preprocessor],
 [], [enable_cpp=yes])
 
 AC_ARG_WITH(cpp_install_dir,
 [  --with-cpp-install-dir=DIR
                           install the user visible C preprocessor in DIR
-                          (relative to PREFIX) as well as PREFIX/bin.],
+                          (relative to PREFIX) as well as PREFIX/bin],
 [if test x$withval = xyes; then
   AC_MSG_ERROR([option --with-cpp-install-dir requires an argument])
 elif test x$withval != xno; then
@@ -262,7 +262,7 @@ fi])
 
 # Enable Multibyte Characters for C/C++
 AC_ARG_ENABLE(c-mbchar,
-[  --enable-c-mbchar       Enable multibyte characters for C and C++.],
+[  --enable-c-mbchar       enable multibyte characters for C and C++],
 if test x$enable_c_mbchar != xno; then
   AC_DEFINE(MULTIBYTE_CHARS, 1,
   [Define if you want the C and C++ compilers to support multibyte
@@ -273,8 +273,8 @@ fi)
 # Pass with no value to take the default
 # Pass with a value to specify a thread package
 AC_ARG_ENABLE(threads,
-[  --enable-threads        enable thread usage for target GCC.
-  --enable-threads=LIB    use LIB thread package for target GCC.],,
+[  --enable-threads        enable thread usage for target GCC
+  --enable-threads=LIB    use LIB thread package for target GCC],,
 enable_threads='')
 
 enable_threads_flag=$enable_threads
@@ -300,7 +300,7 @@ esac
 
 AC_ARG_ENABLE(objc-gc,
 [  --enable-objc-gc	  enable the use of Boehm's garbage collector with
-			  the GNU Objective-C runtime.],
+			  the GNU Objective-C runtime],
 if test x$enable_objc_gc = xno; then
 	objc_boehm_gc=''
 else
@@ -309,12 +309,12 @@ fi,
 objc_boehm_gc='')
 
 AC_ARG_WITH(dwarf2,
-[  --with-dwarf2	  force the default debug format to be DWARF2.],
+[  --with-dwarf2           force the default debug format to be DWARF 2],
 dwarf2="$with_dwarf2",
 dwarf2=no)
 
 AC_ARG_ENABLE(shared,
-[  --disable-shared       don't provide a shared libgcc.],
+[  --disable-shared        don't provide a shared libgcc],
 [
   case $enable_shared in
   yes | no) ;;
@@ -930,12 +930,12 @@ XGETTEXT="AWK='$AWK' \$(SHELL) \$(top_srcdir)/exgettext $XGETTEXT"
 # Windows32 Registry support for specifying GCC installation paths.
 AC_ARG_ENABLE(win32-registry,
 [  --disable-win32-registry
-                          Disable lookup of installation paths in the
-                         Registry on Windows hosts.
-  --enable-win32-registry Enable registry lookup (default).
+                          disable lookup of installation paths in the
+                          Registry on Windows hosts
+  --enable-win32-registry enable registry lookup (default)
   --enable-win32-registry=KEY
-                          Use KEY instead of GCC version as the last portion
-                         of the registry key.],,)
+                          use KEY instead of GCC version as the last portion
+                          of the registry key],,)
 case $host_os in
 	win32 | pe | cygwin* | mingw32* | uwin*)
 AC_MSG_CHECKING(whether windows registry support is requested)
@@ -1808,8 +1808,8 @@ AC_SUBST(gthread_flags)
 
 # Find out what GC implementation we want, or may, use.
 AC_ARG_WITH(gc,
-[  --with-gc={simple,page} Choose the garbage collection mechanism to use
-                           with the compiler.],
+[  --with-gc={simple,page} choose the garbage collection mechanism to use
+                          with the compiler],
 [case "$withval" in
   simple | page)
     GGC=ggc-$withval
@@ -1838,7 +1838,8 @@ dnl Very limited version of automake's enable-maintainer-mode
 AC_MSG_CHECKING([whether to enable maintainer-specific portions of Makefiles])
   dnl maintainer-mode is disabled by default
   AC_ARG_ENABLE(maintainer-mode,
-[  --enable-maintainer-mode enable make rules and dependencies not useful
+[  --enable-maintainer-mode
+                          enable make rules and dependencies not useful
                           (and sometimes confusing) to the casual installer],
       maintainer_mode=$enableval,
       maintainer_mode=no)
@@ -1854,7 +1855,8 @@ AC_SUBST(MAINT)dnl
 
 # With Setjmp/Longjmp based exception handling.
 AC_ARG_ENABLE(sjlj-exceptions,
-[  --enable-sjlj-exceptions arrange to use setjmp/longjmp exception handling.],
+[  --enable-sjlj-exceptions
+                          arrange to use setjmp/longjmp exception handling],
 [sjlj=`if test $enableval = yes; then echo 1; else echo 0; fi`
 AC_DEFINE_UNQUOTED(CONFIG_SJLJ_EXCEPTIONS, $sjlj,
   [Define 0/1 to force the choice for exception handling model.])])
@@ -2044,8 +2046,9 @@ AC_SUBST(dollar)
 # Find a directory in which to install a shared libgcc.
 
 AC_ARG_ENABLE(version-specific-runtime-libs,
-[  --enable-version-specific-runtime-libs    Specify that runtime libraries shou
-ld be installed in a compiler-specific directory ])
+[  --enable-version-specific-runtime-libs
+                          specify that runtime libraries should be
+                          installed in a compiler-specific directory])
 
 AC_ARG_WITH(slibdir,
 [  --with-slibdir=DIR      shared libraries in DIR [LIBDIR]],
