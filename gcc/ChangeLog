@@ -1,4 +1,10 @@
+2002-12-10  Janis Johnson  <janis187@us.ibm.com>
+
+	PR other/8882
+	* doc/tm.texi (PUSH_ARGS): Remove misplaced line.
+
 2002-12-10  Devang Patel  <dpatel@appple.com>
+
 	* config/darwin.h(LINK_SPEC): Add darwin specific linker options.
 	* doc/invoke.texi: Add new "Darwin Options" section.
 	
