@@ -1263,8 +1263,10 @@ ifeq ($(strip $(filter-out alpha% dec vms% openvms% alphavms%,$(targ))),)
 endif
   EXTRA_GNATRTL_TASKING_OBJS=s-tpopde.o
   EXTRA_GNATTOOLS = \
-     ../../gnatlbr$(exeext) \
-     ../../gnatsym$(exeext)
+     ../../gnatlbr$(exeext)  \
+     ../../gnatsym$(exeext)  \
+     ../../vms_help$(exeext) \
+     ../../gnat.hlp
   # This command transforms (YYYYMMDD) into YY,MMDD
   GSMATCH_VERSION := $(shell grep "^ *Gnat_Static_Version_String" $(fsrcpfx)gnatvsn.ads | sed -e 's/.*(\(.*\)).*/\1/' -e 's/\(..\)\(..\)\(....\)/\2,\3/')
   TOOLS_LIBS_LO := --for-linker=sys\\$$\$$library:trace.exe
@@ -2034,9 +2036,18 @@ tracebak.o  : tracebak.c tb-alvms.c tb-alvxw.c
 
 force:
 
-# Gnatlbr is only used on VMS
+# Gnatlbr, Vms_help, and Gnat.hlp are only used on VMS
 
 ../../gnatlbr$(exeext): ../../prefix.o
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatlbr --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatlbr
 	$(GNATLINK) -v gnatlbr -o $@ --GCC=$(GCC_LINK) $(TOOLS_LIBS)
+
+../../vms_help$(exeext):
+	$(GNATMAKE) -c $(ADA_INCLUDES) vms_help --GCC="$(CC) $(ALL_ADAFLAGS)"
+	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) vms_help
+	$(GNATLINK) -v vms_help -o $@ --GCC=$(GCC_LINK)	$(TOOLS_LIBS)
+
+../../gnat.hlp: ../../vms_help$(exeext)
+	../../vms_help$(exeext) $(fsrcdir)/gnat.help_in \
+	                        $(fsrcdir)/vms_data.ads ../../gnat.hlp
