@@ -8,6 +8,11 @@ details.  */
 
 package java.util.zip;
 
-public interface ZipConstants
+interface ZipConstants
 {
+  // Size in bytes of local file header, including signature.
+  public static final int LOCAL_FILE_HEADER_SIZE = 30;
+
+  // Size in bytes of the "end of central directory" record, with signature.
+  public static final int END_CENTRAL_DIR_SIZE = 22;
 }
