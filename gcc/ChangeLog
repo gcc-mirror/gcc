@@ -1,3 +1,11 @@
+2004-07-26  Daniel Jacobowitz  <dan@debian.org>
+
+	PR bootstrap/12804
+	* ggc-zone.c (struct alloc_chunk): Remove attribute packed.
+	(MAX_FREE_BIN_SIZE): Increase on 64-bit targets.
+	(ggc_free): Remove incorrect freeing.
+	(sweep_pages): Advance PP for large pages.  Fix indentation.
+
 2004-07-26  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR rtl-optimization/16643
