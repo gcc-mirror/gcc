@@ -87,7 +87,7 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_SPEC
 #define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   -imacros %s../include/sys/version.h"
-+
+
 /* We need to override link_command_spec in gcc.c so support -Tdjgpp.djl.
    This cannot be done in LINK_SPECS as that LINK_SPECS is processed
    before library search directories are known by the linker.
