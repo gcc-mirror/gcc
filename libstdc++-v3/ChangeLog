@@ -1,3 +1,7 @@
+2000-05-16  Nathan C. Myers  <ncm@cantrip.org>
+       
+       * mkcshadow: fix typo s/_C_Swamp_/_C_Swamp/.
+
 2000-05-16  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* acinclude.m4:  Fix typo, switch to decaf...
