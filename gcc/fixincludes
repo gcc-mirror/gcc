@@ -66,6 +66,9 @@ echo Building fixed headers in ${LIB}
 if ln -s X $LIB/ShouldNotExist 2>/dev/null; then
   rm -f $LIB/ShouldNotExist
   LINKS=true
+elif ln -s X /tmp/ShouldNotExist 2>/dev/null; then
+  rm -f /tmp/ShouldNotExist
+  LINKS=true
 else
   LINKS=false
 fi
