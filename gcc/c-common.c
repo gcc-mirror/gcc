@@ -730,7 +730,7 @@ decl_attributes (node, attributes, prefix_attributes)
 		  format_type = strftime_format_type;
 		else
 		  {
-		    error ("`%s' is an unrecognized format function type", p);
+		    warning ("`%s' is an unrecognized format function type", p);
 		    continue;
 		  }
 	      }

@@ -54,7 +54,8 @@ static void hack_vms_include_specification PROTO ((char *));
    VMS has non-numeric inodes. */
 #ifdef VMS
 #define INO_T_EQ(a, b) (!bcmp((char *) &(a), (char *) &(b), sizeof (a)))
-#elif (defined _WIN32 && !defined CYGWIN) || defined __MSDOS__
+#elif (defined _WIN32 && !defined CYGWIN && ! defined (_UWIN)) \
+       || defined __MSDOS__
 #define INO_T_EQ(a, b) 0
 #else
 #define INO_T_EQ(a, b) ((a) == (b))
