@@ -1,3 +1,9 @@
+2002-11-18  Jesse Rosenstock <jmr@ugcs.caltech.edu>
+
+        * java/nio/charset/CoderResult.java (Cache.get): Fix a bug
+        that was causing CoderResults to be cached, not WeakReferences
+        to CoderResults.
+	
 2002-11-18  Joerg Brunsmann  <joerg_brunsmann@yahoo.de>
 
 	* java/security/KeyStore.java (getInstance): Fix
