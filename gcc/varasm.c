@@ -52,6 +52,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include <ctype.h>
 
+#ifndef TRAMPOLINE_ALIGNMENT
+#define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
+#endif
+
 #ifndef ASM_STABS_OP
 #define ASM_STABS_OP ".stabs"
 #endif
@@ -1825,7 +1829,7 @@ assemble_trampoline_template ()
 #endif
 
   /* Write the assembler code to define one.  */
-  align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
+  align = floor_log2 (TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT);
   if (align > 0)
     ASM_OUTPUT_ALIGN (asm_out_file, align);
 
