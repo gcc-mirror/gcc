@@ -443,18 +443,24 @@ private:
 // _Iterator parameter is the same.
 template<typename _Iterator, typename _Container>
 class __normal_iterator
-  : public iterator<iterator_traits<_Iterator>::iterator_category,
-                    iterator_traits<_Iterator>::value_type,
-                    iterator_traits<_Iterator>::difference_type,
-                    iterator_traits<_Iterator>::pointer,
-                    iterator_traits<_Iterator>::reference>
+  : public iterator<typename iterator_traits<_Iterator>::iterator_category,
+                    typename iterator_traits<_Iterator>::value_type,
+                    typename iterator_traits<_Iterator>::difference_type,
+                    typename iterator_traits<_Iterator>::pointer,
+                    typename iterator_traits<_Iterator>::reference>
 {
-
+  typedef iterator_traits<_Iterator> _Traits;
+  
 protected:
   _Iterator _M_current;
 
 public:
   typedef __normal_iterator<_Iterator, _Container> normal_iterator_type;
+  typedef typename _Traits::iterator_category iterator_category;
+  typedef typename _Traits::value_type value_type;
+  typedef typename _Traits::difference_type difference_type;
+  typedef typename _Traits::pointer pointer;
+  typedef typename _Traits::reference reference;
 
   __normal_iterator() : _M_current(_Iterator()) { }
 
