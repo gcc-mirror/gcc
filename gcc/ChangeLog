@@ -1,3 +1,8 @@
+Tue May 25 14:06:06 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (mark_set_1): Do not record BLKmode stores as dead
+	store elimination candidates.
+
 Mon May 24 14:34:31 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (strength_reduce): Do not clear NOT_EVERY_ITERATION at the
