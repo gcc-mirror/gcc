@@ -208,6 +208,10 @@ public final class FileDescriptor
   native long getLength() throws IOException;
   native void setLength(long pos) throws IOException;
 
+  native void lock(long pos, int len, boolean shared) throws IOException;
+  native boolean tryLock(long pos, int lent, boolean shared) throws IOException;
+  native void unlock(long pos, int len) throws IOException;
+
   // When collected, close.
   protected void finalize() throws Throwable
   {

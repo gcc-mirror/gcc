@@ -136,3 +136,24 @@ java::io::FileDescriptor::available (void)
 {
   return 0;
 }
+
+void
+java::io::FileDescriptor::lock (jlong pos, jint len, jboolean shared)
+{
+  throw new IOException (JvNewStringLatin1
+    ("java.io.FileDescriptor.lock() not implemented"));
+}
+
+jboolean
+java::io::FileDescriptor::tryLock (jlong pos, jint len, jboolean shared)
+{
+  throw new IOException (JvNewStringLatin1
+    ("java.io.FileDescriptor.tryLock() not implemented"));
+}
+
+void
+java::io::FileDescriptor::unlock (jlong pos, jint len)
+{
+  throw new IOException (JvNewStringLatin1
+    ("java.io.FileDescriptor.unlock() not implemented"));
+}

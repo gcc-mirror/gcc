@@ -1,6 +1,25 @@
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/FileDescriptor.java
+	(lock): New method.
+	(tryLock): New method.
+	(unlock): New method.
+	* java/io/natFileDescriptorEcos.cc
+	(lock): New method.
+	(tryLock): New method.
+	(unlock): New method.
+	* java/io/natFileDescriptorPosix.cc
+	(lock): New method.
+	(tryLock): New method.
+	(unlock): New method.
+	* java/io/natFileDescriptorWin32.cc
+	(lock): New method.
+	(tryLock): New method.
+	(unlock): New method.
+
+2004-01-23  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/FileDescriptor.java
 	(sync): Moved around, added javadoc.
 	(valid): Likewise.
 	(open): Likewise.
