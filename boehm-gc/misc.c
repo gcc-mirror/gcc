@@ -444,7 +444,7 @@ void GC_init_inner()
  	GC_init_win32();
 #   endif
 #   if defined(LINUX) && \
-	(defined(POWERPC) || defined(ALPHA) || defined(SPARC) || defined(IA64))
+	(defined(ALPHA) || defined(SPARC) || defined(IA64))
 	GC_init_linux_data_start();
 #   endif
 #   ifdef SOLARIS_THREADS
