@@ -2,11 +2,11 @@
 /* { dg-options "-Winline -O2" } */
 
 void big (void);
-inline int q(void)
+inline void *q (void)
 {				/* { dg-warning "(function not inlinable|alloca)" } */
-	return (int)alloca(10);
+	return alloca (10);
 }
-inline int t (void)
+inline void *t (void)
 {
 	return q ();		 /* { dg-warning "called from here" } */
 }
