@@ -1412,6 +1412,17 @@ duplicate_decls (newdecl, olddecl)
 	}
     }
 
+  /* Optionally warn about more than one declaration for the same name.  */
+  if (warn_redundant_decls && DECL_SOURCE_LINE (olddecl) != 0
+      /* Dont warn about a function declaration
+	 followed by a definition.  */
+      && !(TREE_CODE (newdecl) == FUNCTION_DECL && DECL_INITIAL (newdecl) != 0
+	   && DECL_INITIAL (olddecl) == 0))
+    {
+      warning_with_decl (newdecl, "redundant redeclaration of `%s' in same scope");
+      warning_with_decl (olddecl, "previous declaration of `%s'");
+    }
+
   /* Copy all the DECL_... slots specified in the new decl
      except for any that we copy here from the old type.
 
@@ -1622,14 +1633,7 @@ pushdecl (x)
 					  "previous declaration of `%s'",
 					  IDENTIFIER_POINTER (name));
 	    }
-	  if (warn_redundant_decls && line != 0)
-	    {
-	      warning ("redundant redeclaration of `%s' in same scope",
-		       IDENTIFIER_POINTER (name));
-	      warning_with_file_and_line (file, line,
-					  "previous declaration of `%s'",
-					  IDENTIFIER_POINTER (name));
-	    }
+
 	  return t;
 	}
 
@@ -4279,7 +4283,8 @@ grokparms (parms_info, funcdef_flag)
   last_function_parms = TREE_PURPOSE (parms_info);
   last_function_parm_tags = TREE_VALUE (parms_info);
 
-  if (warn_strict_prototypes && first_parm == 0 && !funcdef_flag)
+  if (warn_strict_prototypes && first_parm == 0 && !funcdef_flag
+      && !in_system_header)
     warning ("function declaration isn't a prototype");
 
   if (first_parm != 0
