@@ -136,11 +136,15 @@ typedef __gnuc_va_list va_list;
 #if !defined (_VA_LIST_) || defined (__BSD_NET2__) || defined (____386BSD____)
 /* The macro _VA_LIST is used in SCO Unix 3.2.  */
 #ifndef _VA_LIST
+/* The macro _VA_LIST_T_H is used in the Bull dpx2  */
+#ifndef _VA_LIST_T_H
+#define _VA_LIST_T_H
 #if !(defined (__BSD_NET2__) || defined (____386BSD____))
 #define _VA_LIST_
 #endif
 #define _VA_LIST
 typedef __gnuc_va_list va_list;
+#endif /* not _VA_LIST_T_H */
 #endif /* not _VA_LIST */
 #endif /* not _VA_LIST_ */
 
