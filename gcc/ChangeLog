@@ -1,3 +1,8 @@
+Mon Jun  8 23:24:58 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.md (mulsidi3): Add !TARGET_POWERPC64 constraint.
+	(mulsidi3_ppc64): Delete.
+
 Mon Jun  8 20:57:40 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (varasm.o): Depend on dbxout.h.
