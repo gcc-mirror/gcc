@@ -189,6 +189,8 @@ scan_tokens (n)
     }
 }
 
+/* Like _obstack_allocated_p, but stop after checking NLEVELS chunks.  */
+
 static int
 probe_obstack (h, obj, nlevels)
      struct obstack *h;
