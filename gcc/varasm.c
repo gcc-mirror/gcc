@@ -142,7 +142,8 @@ static unsigned int const_hash		PARAMS ((tree));
 static unsigned int const_hash_1	PARAMS ((tree));
 static int compare_constant		PARAMS ((tree, tree));
 static tree copy_constant		PARAMS ((tree));
-static void output_constant_def_contents  PARAMS ((tree, int, int));
+static void maybe_output_constant_def_contents PARAMS ((tree, rtx, int));
+static void output_constant_def_contents  PARAMS ((tree, const char *));
 static void decode_rtx_const		PARAMS ((enum machine_mode, rtx,
 					       struct rtx_const *));
 static unsigned int const_hash_rtx	PARAMS ((enum machine_mode, rtx));
@@ -2164,6 +2165,8 @@ struct constant_descriptor_tree GTY(())
 static GTY(()) struct constant_descriptor_tree *
   const_hash_table[MAX_HASH_TABLE];
 
+static struct constant_descriptor_tree * build_constant_desc PARAMS ((tree));
+
 /* We maintain a hash table of STRING_CST values.  Unless we are asked to force
    out a string constant, we defer output of the constants until we know
    they are actually used.  This will be if something takes its address or if
@@ -2175,7 +2178,6 @@ struct deferred_string GTY(())
 {
   const char *label;
   tree exp;
-  int labelno;
 };
 
 static GTY ((param_is (struct deferred_string))) htab_t const_str_htab;
@@ -2533,6 +2535,51 @@ copy_constant (exp)
     }
 }
 
+/* Subroutine of output_constant_def:
+   No constant equal to EXP is known to have been output.
+   Make a constant descriptor to enter EXP in the hash table.
+   Assign the label number and construct RTL to refer to the
+   constant's location in memory.
+   Caller is responsible for updating the hash table.  */
+
+static struct constant_descriptor_tree *
+build_constant_desc (exp)
+     tree exp;
+{
+  rtx symbol;
+  rtx rtl;
+  char label[256];
+  int labelno;
+  struct constant_descriptor_tree *desc;
+
+  desc = ggc_alloc (sizeof (*desc));
+  desc->value = copy_constant (exp);
+
+  /* Create a string containing the label name, in LABEL.  */
+  labelno = const_labelno++;
+  ASM_GENERATE_INTERNAL_LABEL (label, "LC", labelno);
+
+  /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
+  symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
+  SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
+
+  rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)), symbol);
+  set_mem_attributes (rtl, exp, 1);
+  set_mem_alias_set (rtl, 0);
+  set_mem_alias_set (rtl, const_alias_set);
+
+  /* Set flags or add text to the name to record information, such as
+     that it is a local symbol.  If the name is changed, the macro
+     ASM_OUTPUT_LABELREF will have to know how to strip this
+     information.  */
+  (*targetm.encode_section_info) (exp, rtl, true);
+
+  desc->rtl = rtl;
+  desc->label = XSTR (XEXP (desc->rtl, 0), 0);
+
+  return desc;
+}
+
 /* Return an rtx representing a reference to constant data in memory
    for the constant expression EXP.
 
@@ -2554,12 +2601,6 @@ output_constant_def (exp, defer)
 {
   int hash;
   struct constant_descriptor_tree *desc;
-  struct deferred_string **defstr;
-  char label[256];
-  int reloc;
-  int found = 1;
-  int labelno = -1;
-  rtx rtl;
 
   /* We can't just use the saved RTL if this is a deferred string constant
      and we are not to defer anymore.  */
@@ -2567,133 +2608,102 @@ output_constant_def (exp, defer)
       && (defer || !STRING_POOL_ADDRESS_P (XEXP (TREE_CST_RTL (exp), 0))))
     return TREE_CST_RTL (exp);
 
-  /* Make sure any other constants whose addresses appear in EXP
-     are assigned label numbers.  */
-
-  reloc = output_addressed_constants (exp);
-
   /* Compute hash code of EXP.  Search the descriptors for that hash code
      to see if any of them describes EXP.  If yes, the descriptor records
      the label number already assigned.  */
 
   hash = const_hash (exp);
-
   for (desc = const_hash_table[hash]; desc; desc = desc->next)
     if (compare_constant (exp, desc->value))
       break;
 
   if (desc == 0)
     {
-      rtx symbol;
-
-      /* No constant equal to EXP is known to have been output.
-	 Make a constant descriptor to enter EXP in the hash table.
-	 Assign the label number and record it in the descriptor for
-	 future calls to this function to find.  */
-
-      /* Create a string containing the label name, in LABEL.  */
-      labelno = const_labelno++;
-      ASM_GENERATE_INTERNAL_LABEL (label, "LC", labelno);
-
-      desc = ggc_alloc (sizeof (*desc));
+      desc = build_constant_desc (exp);
       desc->next = const_hash_table[hash];
-      desc->label = ggc_strdup (label);
-      desc->value = copy_constant (exp);
       const_hash_table[hash] = desc;
 
-      /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
-      symbol = gen_rtx_SYMBOL_REF (Pmode, desc->label);
-      SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
-
-      rtl = desc->rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)), symbol);
-
-      set_mem_attributes (rtl, exp, 1);
-      set_mem_alias_set (rtl, 0);
-      set_mem_alias_set (rtl, const_alias_set);
-
-      found = 0;
+      maybe_output_constant_def_contents (exp, desc->rtl, defer);
     }
-  else
-    rtl = desc->rtl;
-
-  if (TREE_CODE (exp) != INTEGER_CST)
-    TREE_CST_RTL (exp) = rtl;
-
-  /* Optionally set flags or add text to the name to record information
-     such as that it is a function name.  If the name is changed, the macro
-     ASM_OUTPUT_LABELREF will have to know how to strip this information.  */
-  /* A previously-processed constant would already have section info
-     encoded in it.  */
-  if (! found)
+  else if (!defer && STRING_POOL_ADDRESS_P (XEXP (desc->rtl, 0)))
     {
-      (*targetm.encode_section_info) (exp, rtl, true);
+      /* If the string is currently deferred but we need to output it
+	 now, remove it from the deferred string hash table.  */
+      struct deferred_string **defstr;
 
-      desc->rtl = rtl;
-      desc->label = XSTR (XEXP (desc->rtl, 0), 0);
-    }
-
-  if (found && !defer && STRING_POOL_ADDRESS_P (XEXP (rtl, 0)))
-    {
       defstr = (struct deferred_string **)
 	htab_find_slot_with_hash (const_str_htab, desc->label,
 				  STRHASH (desc->label), NO_INSERT);
+#ifdef ENABLE_CHECKING
+      if (!defstr)
+	abort ();
+#endif
+
+      STRING_POOL_ADDRESS_P (XEXP (desc->rtl, 0)) = 0;
+      htab_clear_slot (const_str_htab, (void **) defstr);
+      maybe_output_constant_def_contents (exp, desc->rtl, 0);
+    }
+
+  TREE_CST_RTL (exp) = desc->rtl;
+  return desc->rtl;
+}
+
+/* Subroutine of output_constant_def:
+   Decide whether or not to defer the output of EXP, which can be
+   accesed through rtl RTL, and either do the output or record EXP in
+   the table of deferred strings.  */
+static void
+maybe_output_constant_def_contents (exp, rtl, defer)
+     tree exp;
+     rtx rtl;
+     int defer;
+{
+  const char *label;
+
+  if (flag_syntax_only)
+    return;
+
+  label = XSTR (XEXP (rtl, 0), 0);
+
+  if (defer && TREE_CODE (exp) == STRING_CST && !flag_writable_strings)
+    {
+      struct deferred_string **defstr;
+      defstr = (struct deferred_string **)
+	htab_find_slot_with_hash (const_str_htab, label,
+				  STRHASH (label), INSERT);
       if (defstr)
 	{
-	  /* If the string is currently deferred but we need to output it now,
-	     remove it from deferred string hash table.  */
-	  found = 0;
-	  labelno = (*defstr)->labelno;
-	  STRING_POOL_ADDRESS_P (XEXP (rtl, 0)) = 0;
-	  htab_clear_slot (const_str_htab, (void **) defstr);
+	  struct deferred_string *p;
+
+	  p = (struct deferred_string *)
+	    ggc_alloc (sizeof (struct deferred_string));
+
+	  p->exp = exp;
+	  p->label = label;
+
+	  *defstr = p;
+	  STRING_POOL_ADDRESS_P (XEXP (rtl, 0)) = 1;
+	  return;
 	}
     }
 
-  /* If this is the first time we've seen this particular constant,
-     output it.  Do no output if -fsyntax-only.  */
-  if (! found && ! flag_syntax_only)
-    {
-      if (!defer || TREE_CODE (exp) != STRING_CST
-	  || flag_writable_strings)
-	output_constant_def_contents (exp, reloc, labelno);
-      else
-	{
-	  defstr = (struct deferred_string **)
-	    htab_find_slot_with_hash (const_str_htab, desc->label,
-				      STRHASH (desc->label), INSERT);
-	  if (!defstr)
-	    output_constant_def_contents (exp, reloc, labelno);
-	  else
-	    {
-	      struct deferred_string *p;
-
-	      p = (struct deferred_string *)
-		ggc_alloc (sizeof (struct deferred_string));
-
-	      p->exp = desc->value;
-	      p->label = desc->label;
-	      p->labelno = labelno;
-	      *defstr = p;
-	      STRING_POOL_ADDRESS_P (XEXP (rtl, 0)) = 1;
-	    }
-	}
-    }
-
-  return rtl;
+  output_constant_def_contents (exp, label);
 }
 
 /* Now output assembler code to define the label for EXP,
    and follow it with the data of EXP.  */
 
 static void
-output_constant_def_contents (exp, reloc, labelno)
+output_constant_def_contents (exp, label)
      tree exp;
-     int reloc;
-     int labelno;
+     const char *label;
 {
-  int align;
+  /* Make sure any other constants whose addresses appear in EXP
+     are assigned label numbers.  */
+  int reloc = output_addressed_constants (exp);
 
   /* Align the location counter as required by EXP's data type.  */
-  align = TYPE_ALIGN (TREE_TYPE (exp));
+  int align = TYPE_ALIGN (TREE_TYPE (exp));
 #ifdef CONSTANT_ALIGNMENT
   align = CONSTANT_ALIGNMENT (exp, align);
 #endif
@@ -2709,7 +2719,7 @@ output_constant_def_contents (exp, reloc, labelno)
     }
 
   /* Output the label itself.  */
-  (*targetm.asm_out.internal_label) (asm_out_file, "LC", labelno);
+  ASM_OUTPUT_LABEL (asm_out_file, label);
 
   /* Output the value of EXP.  */
   output_constant (exp,
@@ -3521,19 +3531,20 @@ mark_constant (current_rtx, data)
 	}
       else if (STRING_POOL_ADDRESS_P (x))
 	{
-	  struct deferred_string **defstr;
+	  struct deferred_string *p, **defstr;
 
 	  defstr = (struct deferred_string **)
 	    htab_find_slot_with_hash (const_str_htab, XSTR (x, 0),
 				      STRHASH (XSTR (x, 0)), NO_INSERT);
-	  if (defstr)
-	    {
-	      struct deferred_string *p = *defstr;
+#ifdef ENABLE_CHECKING
+	  if (!defstr)
+	    abort ();
+#endif
 
-	      STRING_POOL_ADDRESS_P (x) = 0;
-	      output_constant_def_contents (p->exp, 0, p->labelno);
-	      htab_clear_slot (const_str_htab, (void **) defstr);
-	    }
+	  p = *defstr;
+	  STRING_POOL_ADDRESS_P (x) = 0;
+	  output_constant_def_contents (p->exp, p->label);
+	  htab_clear_slot (const_str_htab, (void **) defstr);
 	}
     }
   return 0;
