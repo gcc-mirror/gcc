@@ -1,3 +1,7 @@
+2003-06-12  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/install.texi (m32r-*-elf): Change company to Renesas.
+
 Thu Jun 12 20:00:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (flow_delete_block_noexpunge): Kill.

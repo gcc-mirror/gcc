@@ -2736,7 +2736,7 @@ Use @samp{configure --target=ip2k-elf --enable-languages=c} to configure GCC@.
 <hr />
 @end html
 @heading @anchor{m32r-*-elf}m32r-*-elf
-Mitsubishi M32R processor.
+Renesas M32R processor.
 This configuration is intended for embedded systems.
 
 @html
