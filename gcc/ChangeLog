@@ -1,3 +1,11 @@
+2001-05-11  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c (group_barrier_needed_p): Don't allow
+	calls and jumps to be bundled together.
+	(ia64_reorg): Emit a break after a noreturn call that ends
+	a function.
+	* config/ia64/ia64.md (break_f): New.
+
 2001-05-12  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-lex.c (lex_charconst): Convert into a simple wrapper
