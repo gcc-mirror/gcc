@@ -10,6 +10,10 @@ details.  */
 
 #include <config.h>
 
+#if GETHOSTBYNAME_R_NEEDS_REENTRANT && !defined(_REENTRANT)
+# define _REENTRANT 1
+#endif
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
@@ -97,6 +101,9 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
   struct hostent *hptr = NULL;
 #if defined (HAVE_GETHOSTBYNAME_R) || defined (HAVE_GETHOSTBYADDR_R)
   struct hostent hent_r;
+#if HAVE_STRUCT_HOSTENT_DATA
+  struct hostent_data fixed_buffer, *buffer_r = &fixed_buffer;
+#else
 #if defined (__GLIBC__) 
   // FIXME: in glibc, gethostbyname_r returns NETDB_INTERNAL to herr and
   // ERANGE to errno if the buffer size is too small, rather than what is 
@@ -108,6 +115,7 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
 #endif
   char *buffer_r = fixed_buffer;
   int size_r = sizeof (fixed_buffer);
+#endif
 #endif
 
   if (host != NULL)
@@ -122,10 +130,13 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
       JvGetStringUTFRegion (host, 0, host->length(), hostname);
       buf[len] = '\0';
 #ifdef HAVE_GETHOSTBYNAME_R
-      int herr = 0;
       while (true)
 	{
 	  int ok;
+#if HAVE_STRUCT_HOSTENT_DATA
+	  ok = ! gethostbyname_r (hostname, &hent_r, buffer_r);
+#else
+	  int herr = 0;
 #ifdef GETHOSTBYNAME_R_RETURNS_INT
 	  ok = ! gethostbyname_r (hostname, &hent_r, buffer_r, size_r,
 				  &hptr, &herr);
@@ -139,6 +150,7 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
 	      buffer_r = (char *) _Jv_AllocBytesChecked (size_r);
 	    }
 	  else
+#endif /* HAVE_STRUCT_HOSTENT_DATA */
 	    break;
 	}
 #else
@@ -171,10 +183,13 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
 	JvFail ("unrecognized size");
 
 #ifdef HAVE_GETHOSTBYADDR_R
-      int herr = 0;
       while (true)
 	{
 	  int ok;
+#if HAVE_STRUCT_HOSTENT_DATA
+	  ok = ! gethostbyaddr_r (val, len, type, &hent_r, buffer_r);
+#else
+	  int herr = 0;
 #ifdef GETHOSTBYADDR_R_RETURNS_INT
 	  ok = ! gethostbyaddr_r (val, len, type, &hent_r,
 				  buffer_r, size_r, &hptr, &herr);
@@ -189,6 +204,7 @@ java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
 	      buffer_r = (char *) _Jv_AllocBytesChecked (size_r);
 	    }
 	  else 
+#endif /* HAVE_STRUCT_HOSTENT_DATA */
 	    break;
 	}
 #else /* HAVE_GETHOSTBYADDR_R */

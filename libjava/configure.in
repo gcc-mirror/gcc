@@ -309,7 +309,48 @@ else
      # We look for the one that returns `int'.
      # Hopefully this check is robust enough.
      AC_EGREP_HEADER(int.*gethostbyname_r, netdb.h, [
-       AC_DEFINE(GETHOSTBYNAME_R_RETURNS_INT)])])
+       AC_DEFINE(GETHOSTBYNAME_R_RETURNS_INT)])
+
+     case " $GCINCS " in
+     *" -D_REENTRANT "*) ;;
+     *)
+	dnl On DU4.0, gethostbyname_r is only declared with -D_REENTRANT
+	AC_CACHE_CHECK([whether gethostbyname_r declaration requires -D_REENTRANT],
+	[libjava_cv_gethostbyname_r_needs_reentrant],
+	[ AC_LANG_SAVE
+	  AC_LANG_CPLUSPLUS
+	  AC_TRY_COMPILE([#include <netdb.h>],
+	    [gethostbyname_r("", 0, 0);],
+	    [libjava_cv_gethostbyname_r_needs_reentrant=no], [dnl
+		CPPFLAGS_SAVE="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS -D_REENTRANT"
+		AC_TRY_COMPILE([#include <netdb.h>], [gethostbyname_r("", 0, 0);],
+		    [libjava_cv_gethostbyname_r_needs_reentrant=yes],
+		    [libjava_cv_gethostbyname_r_needs_reentrant=fail])
+		CPPFLAGS="$CPPFLAGS_SAVE"
+	  ])
+	  AC_LANG_RESTORE
+	])
+	if test "x$libjava_cv_gethostbyname_r_needs_reentrant" = xyes; then
+	  AC_DEFINE(GETHOSTBYNAME_R_NEEDS_REENTRANT, 1, [Define if gethostbyname_r is only declared if _REENTRANT is defined])
+	fi
+     ;;
+     esac
+
+     AC_CACHE_CHECK([for struct hostent_data],
+	[libjava_cv_struct_hostent_data], [dnl
+	AC_TRY_COMPILE([
+#if GETHOSTBYNAME_R_NEEDS_REENTRANT && !defined(_REENTRANT)
+# define _REENTRANT 1
+#endif
+#include <netdb.h>], [struct hostent_data data;],
+	  [libjava_cv_struct_hostent_data=yes],
+	  [libjava_cv_struct_hostent_data=no])])
+     if test "x$libjava_cv_struct_hostent_data" = xyes; then
+       AC_DEFINE(HAVE_STRUCT_HOSTENT_DATA, 1,
+         [Define if struct hostent_data is defined in netdb.h])
+     fi
+   ])
 
    AC_CHECK_FUNCS(gethostbyaddr_r, [
      AC_DEFINE(HAVE_GETHOSTBYADDR_R)
