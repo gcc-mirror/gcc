@@ -137,15 +137,18 @@ case "$host" in
  alpha*-*-*)
     machdep="alpha_mach_dep.lo"
     ;;
- mips-*-*)
-    machdep="mips_sgi_mach_dep.lo"
-    AC_DEFINE(NO_EXECUTE_PERMISSION)
     ;;
  mipstx39-*-elf*)
     machdep="mips_ultrix_mach_dep.lo"
     AC_DEFINE(STACKBASE, __stackbase)
     AC_DEFINE(DATASTART_IS_ETEXT)
     ;;
+ mips-dec-ultrix*)
+    machdep="mips_ultrix_mach-dep.lo"
+    ;;
+ mips-*-*)
+    machdep="mips_sgi_mach_dep.lo"
+    AC_DEFINE(NO_EXECUTE_PERMISSION)
  sparc-sun-solaris2.3*)
     AC_DEFINE(SUNOS53_SHARED_LIB)
     ;;
