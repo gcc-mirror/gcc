@@ -4580,13 +4580,10 @@ extract_muldiv (t, c, code, wide_type)
 	{
 	  if (code == CEIL_DIV_EXPR)
 	    code = FLOOR_DIV_EXPR;
-	  else if (code == CEIL_MOD_EXPR)
-	    code = FLOOR_MOD_EXPR;
 	  else if (code == FLOOR_DIV_EXPR)
 	    code = CEIL_DIV_EXPR;
-	  else if (code == FLOOR_MOD_EXPR)
-	    code = CEIL_MOD_EXPR;
-	  else if (code != MULT_EXPR)
+	  else if (code != MULT_EXPR
+		   && code != CEIL_MOD_EXPR && code != FLOOR_MOD_EXPR)
 	    break;
 	}
 
