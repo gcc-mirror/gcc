@@ -1,3 +1,8 @@
+Tue Sep 25 15:09:03 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, sparc-sun-solaris2*): Document
+	64-bit support.
+
 2001-09-25  Janis Johnson  <janis187@us.ibm.com>
 	    Jim Wilson  <wilson@redhat.com>
 
