@@ -14,6 +14,10 @@
 	unloop): Make them static.
 	* cfgloop.h: Remove the corresponding prototypes.
 
+	* c-typeck.c (c_size_in_bytes, record_maybe_used_decl):
+	Make them static.
+	* c-tree.h: Remove the corresponding prototypes.
+
 2004-11-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* function.c (expand_function_end): Remove an "if" statement
