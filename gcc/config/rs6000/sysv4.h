@@ -893,7 +893,7 @@ do {						\
     } \
 }}"
 
-#define	CC1_ENDIAN_DEFAULT_SPEC "%(cc1_endian_big_spec)"
+#define	CC1_ENDIAN_DEFAULT_SPEC "%(cc1_endian_big)"
 
 /* Pass -G xxx to the compiler and set correct endian mode.  */
 #define	CC1_SPEC "%{G*} \
@@ -1197,10 +1197,18 @@ do {						\
 %{profile:-lc_p} %{!profile:-lc}}}"
 #endif
 
+#ifdef USE_GNULIBC_1
 #define	STARTFILE_LINUX_SPEC "\
 %{!shared: %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}} \
 %{mnewlib: ecrti.o%s} %{!mnewlib: crti.o%s} \
 %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+#else
+#define	STARTFILE_LINUX_SPEC "\
+%{!shared: %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}} \
+%{mnewlib: ecrti.o%s} %{!mnewlib: crti.o%s} \
+%{static:crtbeginT.o%s} \
+%{!static:%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}}"
+#endif
 
 #define	ENDFILE_LINUX_SPEC "%{!shared:crtend.o%s} %{shared:crtendS.o%s} \
 %{mnewlib: ecrtn.o%s} %{!mnewlib: crtn.o%s}"
@@ -1210,6 +1218,10 @@ do {						\
 #define LINK_OS_LINUX_SPEC "-m elf32ppclinux %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
   %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
+
+#if !defined(USE_GNULIBC_1) && defined(HAVE_LD_EH_FRAME_HDR)
+# define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
+#endif
 
 #ifdef USE_GNULIBC_1
 #define CPP_OS_LINUX_SPEC "-D__unix__ -D__linux__		\
