@@ -3543,10 +3543,8 @@ error_with_ivar (message, decl, rawdecl)
 
   diagnostic_report_current_function (global_dc);
 
-  error_with_file_and_line (DECL_SOURCE_FILE (decl),
-			    DECL_SOURCE_LINE (decl),
-			    "%s `%s'",
-			    message, gen_declaration (rawdecl, errbuf));
+  error ("%H%s `%s'", &DECL_SOURCE_LOCATION (decl),
+         message, gen_declaration (rawdecl, errbuf));
 
 }
 
@@ -7116,11 +7114,8 @@ warn_with_method (message, mtype, method)
   diagnostic_report_current_function (global_dc);
 
   /* Add a readable method name to the warning.  */
-  warning_with_file_and_line (DECL_SOURCE_FILE (method),
-			      DECL_SOURCE_LINE (method),
-			      "%s `%c%s'",
-			      message, mtype,
-			      gen_method_decl (method, errbuf));
+  warning ("%H%s `%c%s'", &DECL_SOURCE_LOCATION (method),
+           message, mtype, gen_method_decl (method, errbuf));
 }
 
 /* Return 1 if METHOD is consistent with PROTO.  */
