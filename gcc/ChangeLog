@@ -1,3 +1,7 @@
+2001-05-30  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.c (alloc_node): Cast allocated pointer.
+
 2001-05-30  Gordon Sadler <gbsadler1@lcisp.com>
 
 	* invoke.texi (Option Summary): Remove -isystem-c++ from options.
