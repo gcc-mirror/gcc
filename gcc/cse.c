@@ -5160,6 +5160,12 @@ fold_rtx (x, insn)
 
 	return x;
       }
+
+    case ASM_OPERANDS:
+      for (i = XVECLEN (x, 3) - 1; i >= 0; i--)
+	validate_change (insn, &XVECEXP (x, 3, i),
+			 fold_rtx (XVECEXP (x, 3, i), insn), 0);
+      break;
     }
 
   const_arg0 = 0;
