@@ -22,6 +22,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_C_COMMON_H
 #define GCC_C_COMMON_H
 
+#include "splay-tree.h"
+
 /* Usage of TREE_LANG_FLAG_?:
    0: COMPOUND_STMT_NO_SCOPE (in COMPOUND_STMT).
       TREE_NEGATED_INT (in INTEGER_CST).
@@ -194,6 +196,10 @@ enum c_tree_index
 
 extern tree c_global_trees[CTI_MAX];
 
+/* Mark which labels are explicitly declared.
+   These may be shadowed, and may be referenced from nested functions.  */
+#define C_DECLARED_LABEL_FLAG(label) TREE_LANG_FLAG_1 (label)
+
 typedef enum c_language_kind
 {
   clk_c,           /* A dialect of C: K&R C, ANSI/ISO C89, C2000,
@@ -237,6 +243,11 @@ struct language_function {
   /* While we are parsing the function, this contains information
      about the statement-tree that we are building.  */
   struct stmt_tree_s x_stmt_tree;
+  /* The stack of SCOPE_STMTs for the current function.  */
+  tree x_scope_stmt_stack;
+  /* Nonzero if __FUNCTION__ and its ilk have been declared in this
+     function.  */
+  int x_function_name_declared_p;
 };
 
 /* When building a statement-tree, this is the last statement added to
@@ -247,26 +258,6 @@ struct language_function {
 /* The type of the last expression-statement we have seen.  */
 
 #define last_expr_type (current_stmt_tree ()->x_last_expr_type)
-
-/* The type of a function that walks over tree structure.  */
-
-typedef tree (*walk_tree_fn)                    PARAMS ((tree *, 
-							 int *, 
-							 void *));
-
-extern stmt_tree current_stmt_tree              PARAMS ((void));
-extern void begin_stmt_tree                     PARAMS ((tree *));
-extern tree add_stmt				PARAMS ((tree));
-extern void finish_stmt_tree                    PARAMS ((tree *));
-
-extern int statement_code_p                     PARAMS ((enum tree_code));
-extern int (*lang_statement_code_p)             PARAMS ((enum tree_code));
-extern tree walk_stmt_tree			PARAMS ((tree *,
-							 walk_tree_fn,
-							 void *));
-extern void prep_stmt                           PARAMS ((tree));
-extern void (*lang_expand_stmt)                 PARAMS ((tree));
-extern void expand_stmt                         PARAMS ((tree));
 
 /* LAST_TREE contains the last statement parsed.  These are chained
    together through the TREE_CHAIN field, but often need to be
@@ -279,6 +270,54 @@ extern void expand_stmt                         PARAMS ((tree));
     TREE_CHAIN (stmt) = NULL_TREE;		\
     last_tree = stmt;				\
   } while (0)
+
+/* Language-specific hooks.  */
+
+extern int (*lang_statement_code_p)             PARAMS ((enum tree_code));
+extern void (*lang_expand_stmt)                 PARAMS ((tree));
+extern void (*lang_expand_decl_stmt)            PARAMS ((tree));
+extern void (*lang_expand_function_end)         PARAMS ((void));
+
+/* The type of a function that walks over tree structure.  */
+
+typedef tree (*walk_tree_fn)                    PARAMS ((tree *, 
+							 int *, 
+							 void *));
+
+extern stmt_tree current_stmt_tree              PARAMS ((void));
+extern tree *current_scope_stmt_stack           PARAMS ((void));
+extern void begin_stmt_tree                     PARAMS ((tree *));
+extern tree add_stmt				PARAMS ((tree));
+extern void add_decl_stmt                       PARAMS ((tree));
+extern tree add_scope_stmt                      PARAMS ((int, int));
+extern void finish_stmt_tree                    PARAMS ((tree *));
+
+extern int statement_code_p                     PARAMS ((enum tree_code));
+extern tree walk_stmt_tree			PARAMS ((tree *,
+							 walk_tree_fn,
+							 void *));
+extern void prep_stmt                           PARAMS ((tree));
+extern void expand_stmt                         PARAMS ((tree));
+extern void mark_stmt_tree                      PARAMS ((void *));
+
+/* Extra information associated with a DECL.  Other C dialects extend
+   this structure in various ways.  The C front-end only uses this
+   structure for FUNCTION_DECLs; all other DECLs have a NULL
+   DECL_LANG_SPECIFIC field.  */
+
+struct c_lang_decl {
+  /* In a FUNCTION_DECL, this is DECL_SAVED_TREE.  */
+  tree saved_tree;
+};
+
+/* In a FUNCTION_DECL, the saved representation of the body of the
+   entire function.  Usually a COMPOUND_STMT, but in C++ this may also
+   be a RETURN_INIT, CTOR_INITIALIZER, or TRY_BLOCK.  */
+#define DECL_SAVED_TREE(NODE)						    \
+  (((struct c_lang_decl *) DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))) \
+   ->saved_tree)
+
+extern void c_mark_lang_decl                    PARAMS ((struct c_lang_decl *));
 
 /* The variant of the C language being processed.  Each C language
    front-end defines this variable.  */
@@ -363,8 +402,10 @@ extern void c_apply_type_quals_to_decl		PARAMS ((int, tree));
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error			PARAMS ((enum tree_code));
 extern void c_expand_expr_stmt			PARAMS ((tree));
-extern void c_expand_start_cond			PARAMS ((tree, int, int));
+extern void c_expand_start_cond			PARAMS ((tree, int));
+extern void c_finish_then                       PARAMS ((void));
 extern void c_expand_start_else			PARAMS ((void));
+extern void c_finish_else                   PARAMS ((void));
 extern void c_expand_end_cond			PARAMS ((void));
 /* Validate the expression after `case' and apply default promotions.  */
 extern tree check_case_value			PARAMS ((tree));
@@ -589,8 +630,6 @@ extern void genrtl_asm_stmt                     PARAMS ((tree, tree,
 							 tree));
 extern void genrtl_decl_cleanup                 PARAMS ((tree, tree));
 extern int stmts_are_full_exprs_p               PARAMS ((void));
-typedef void (*expand_expr_stmt_fn)             PARAMS ((tree));
-extern expand_expr_stmt_fn lang_expand_expr_stmt;
 extern int anon_aggr_type_p                     PARAMS ((tree));
 
 /* For a VAR_DECL that is an anonymous union, these are the various
@@ -611,8 +650,6 @@ extern tree build_return_stmt                   PARAMS ((tree));
 #define COMPOUND_STMT_NO_SCOPE(NODE)	TREE_LANG_FLAG_0 (NODE)
 
 extern void c_expand_asm_operands		PARAMS ((tree, tree, tree, tree, int, const char *, int));
-extern int current_function_name_declared       PARAMS ((void));
-extern void set_current_function_name_declared  PARAMS ((int));
 
 /* These functions must be defined by each front-end which implements
    a variant of the C language.  They are used in c-common.c.  */
@@ -636,6 +673,25 @@ extern tree decl_constant_value		PARAMS ((tree));
 /* Hook currently used only by the C++ front end to reset internal state
    after entering or leaving a header file.  */
 extern void extract_interface_info		PARAMS ((void));
+
+extern void mark_c_language_function            PARAMS ((struct language_function *));
+
+extern int case_compare                         PARAMS ((splay_tree_key, 
+							 splay_tree_key));
+
+extern tree c_add_case_label                    PARAMS ((splay_tree,
+							 tree, tree,
+							 tree));
+
+#ifdef RTX_CODE
+
+extern struct rtx_def *c_expand_expr            PARAMS ((tree, rtx,
+							 enum machine_mode,
+							 enum expand_modifier));
+
+extern int c_safe_from_p                        PARAMS ((rtx, tree));
+
+#endif
 
 /* Information recorded about each file examined during compilation.  */
 

@@ -2794,11 +2794,15 @@ int
 contains_placeholder_p (exp)
      tree exp;
 {
-  register enum tree_code code = TREE_CODE (exp);
+  register enum tree_code code;
   int result;
+
+  if (!exp)
+    return 0;
 
   /* If we have a WITH_RECORD_EXPR, it "cancels" any PLACEHOLDER_EXPR
      in it since it is supplying a value for it.  */
+  code = TREE_CODE (exp);
   if (code == WITH_RECORD_EXPR)
     return 0;
   else if (code == PLACEHOLDER_EXPR)

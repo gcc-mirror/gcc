@@ -34,11 +34,11 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "tree.h"
 #include "rtl.h"
+#include "expr.h"
 #include "cp-tree.h"
 #include "tm_p.h"
 #include "flags.h"
 #include "output.h"
-#include "expr.h"
 #include "toplev.h"
 #include "defaults.h"
 
@@ -54,9 +54,6 @@ static int comp_except_types PARAMS ((tree, tree, int));
 static int comp_array_types PARAMS ((int (*) (tree, tree, int), tree,
 				   tree, int));
 static tree common_base_type PARAMS ((tree, tree));
-#if 0
-static tree convert_sequence PARAMS ((tree, tree));
-#endif
 static tree lookup_anon_field PARAMS ((tree, tree));
 static tree pointer_diff PARAMS ((tree, tree, tree));
 static tree build_component_addr PARAMS ((tree, tree));
@@ -4744,35 +4741,6 @@ build_unary_op (code, xarg, noconvert)
   error ("%s", errstring);
   return error_mark_node;
 }
-
-#if 0
-/* If CONVERSIONS is a conversion expression or a nested sequence of such,
-   convert ARG with the same conversions in the same order
-   and return the result.  */
-
-static tree
-convert_sequence (conversions, arg)
-     tree conversions;
-     tree arg;
-{
-  switch (TREE_CODE (conversions))
-    {
-    case NOP_EXPR:
-    case CONVERT_EXPR:
-    case FLOAT_EXPR:
-    case FIX_TRUNC_EXPR:
-    case FIX_FLOOR_EXPR:
-    case FIX_ROUND_EXPR:
-    case FIX_CEIL_EXPR:
-      return cp_convert (TREE_TYPE (conversions),
-			 convert_sequence (TREE_OPERAND (conversions, 0),
-					   arg));
-
-    default:
-      return arg;
-    }
-}
-#endif
 
 /* Apply unary lvalue-demanding operator CODE to the expression ARG
    for certain kinds of expressions which are not really lvalues

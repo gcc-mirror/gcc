@@ -4999,7 +4999,8 @@ start_init (decl, asmspec_tree, top_level)
 	       || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
 	       || TREE_CODE (TREE_TYPE (decl)) == QUAL_UNION_TYPE));
       locus = IDENTIFIER_POINTER (DECL_NAME (decl));
-      constructor_incremental |= TREE_STATIC (decl);
+      constructor_incremental 
+	|= (TREE_STATIC (decl) && !DECL_CONTEXT (decl));
     }
   else
     {
@@ -6541,7 +6542,7 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
   if (TREE_CODE (string) == ADDR_EXPR)
     string = TREE_OPERAND (string, 0);
-  if (TREE_CODE (string) != STRING_CST)
+  if (last_tree && TREE_CODE (string) != STRING_CST)
     {
       error ("asm template is not a string constant");
       return;
@@ -6567,7 +6568,8 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	     || TREE_CODE (output) == FIX_CEIL_EXPR)
 	output = TREE_OPERAND (output, 0);
 
-      lvalue_or_else (o[i], "invalid lvalue in asm statement");
+      if (last_tree)
+	lvalue_or_else (o[i], "invalid lvalue in asm statement");
     }
 
   /* Perform default conversions on array and function inputs.  */
@@ -6577,6 +6579,14 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
     if (TREE_CODE (TREE_TYPE (TREE_VALUE (tail))) == ARRAY_TYPE
 	|| TREE_CODE (TREE_TYPE (TREE_VALUE (tail))) == FUNCTION_TYPE)
       TREE_VALUE (tail) = default_conversion (TREE_VALUE (tail));
+
+  if (last_tree)
+    {
+      add_stmt (build_stmt (ASM_STMT, 
+			    vol ? ridpointers[(int) RID_VOLATILE] : NULL_TREE,
+			    string, outputs, inputs, clobbers));
+      return;
+    }
 
   /* Generate the ASM_OPERANDS insn;
      store into the TREE_VALUEs of OUTPUTS some trees for
@@ -6703,53 +6713,115 @@ c_expand_return (retval)
       current_function_returns_value = 1;
     }
 
-  genrtl_return_stmt (build_return_stmt (retval));
+ add_stmt (build_return_stmt (retval));
 }
 
-/* Start a C switch statement, testing expression EXP.
-   Return EXP if it is valid, an error node otherwise.  */
+struct c_switch {
+  /* The SWITCH_STMT being built.  */
+  tree switch_stmt;
+  /* A splay-tree mapping the low element of a case range to the high
+     element, or NULL_TREE if there is no high element.  Used to
+     determine whether or not a new case label duplicates an old case
+     label.  We need a tree, rather than simply a hash table, because
+     of the GNU case range extension.  */
+  splay_tree cases;
+  /* The next node on the stack.  */
+  struct c_switch *next;
+};
+
+/* A stack of the currently active switch statements.  The innermost
+   switch statement is on the top of the stack.  There is no need to
+   mark the stack for garbage collection because it is only active
+   during the processing of the body of a function, and we never
+   collect at that point.  */
+
+static struct c_switch *switch_stack;
+
+/* Start a C switch statement, testing expression EXP.  Return the new
+   SWITCH_STMT.  */
 
 tree
-c_expand_start_case (exp)
+c_start_case (exp)
      tree exp;
 {
   register enum tree_code code;
   tree type;
+  struct c_switch *cs;
 
-  if (TREE_CODE (exp) == ERROR_MARK)
-    return exp;
-
-  code = TREE_CODE (TREE_TYPE (exp));
-  type = TREE_TYPE (exp);
-
-  if (code != INTEGER_TYPE && code != ENUMERAL_TYPE && code != ERROR_MARK)
+  if (exp != error_mark_node)
     {
-      error ("switch quantity not an integer");
-      exp = error_mark_node;
-    }
-  else
-    {
-      tree index;
-      type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
-
-      if (warn_traditional && !in_system_header
-	  && (type == long_integer_type_node
-	      || type == long_unsigned_type_node))
-	warning ("`long' switch expression not converted to `int' in ISO C");
-
-      exp = default_conversion (exp);
+      code = TREE_CODE (TREE_TYPE (exp));
       type = TREE_TYPE (exp);
-      index = get_unwidened (exp, NULL_TREE);
-      /* We can't strip a conversion from a signed type to an unsigned,
-	 because if we did, int_fits_type_p would do the wrong thing
-	 when checking case values for being in range,
-	 and it's too hard to do the right thing.  */
-      if (TREE_UNSIGNED (TREE_TYPE (exp))
-	  == TREE_UNSIGNED (TREE_TYPE (index)))
-	exp = index;
+
+      if (code != INTEGER_TYPE 
+	  && code != ENUMERAL_TYPE 
+	  && code != ERROR_MARK)
+	{
+	  error ("switch quantity not an integer");
+	  exp = integer_zero_node;
+	}
+      else
+	{
+	  tree index;
+	  type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
+
+	  if (warn_traditional && !in_system_header
+	      && (type == long_integer_type_node
+		  || type == long_unsigned_type_node))
+	    warning ("`long' switch expression not converted to `int' in ISO C");
+
+	  exp = default_conversion (exp);
+	  type = TREE_TYPE (exp);
+	  index = get_unwidened (exp, NULL_TREE);
+	  /* We can't strip a conversion from a signed type to an
+	     unsigned, because if we did, int_fits_type_p would do the
+	     wrong thing when checking case values for being in range,
+	     and it's too hard to do the right thing.  */
+	  if (TREE_UNSIGNED (TREE_TYPE (exp))
+	      == TREE_UNSIGNED (TREE_TYPE (index)))
+	    exp = index;
+	}
     }
 
-  expand_start_case (1, exp, type, "switch statement");
+  /* Add this new SWITCH_STMT to the stack.  */
+  cs = (struct c_switch *) xmalloc (sizeof (cs));
+  cs->switch_stmt = build_stmt (SWITCH_STMT, exp, NULL_TREE, NULL_TREE);
+  cs->cases = splay_tree_new (case_compare, NULL, NULL);
+  cs->next = switch_stack;
+  switch_stack = cs;
 
-  return exp;
+  return add_stmt (switch_stack->switch_stmt);
+}
+
+/* Process a case label.  */
+
+void
+do_case (low_value, high_value)
+     tree low_value;
+     tree high_value;
+{
+  if (switch_stack)
+    c_add_case_label (switch_stack->cases, 
+		      SWITCH_COND (switch_stack->switch_stmt), 
+		      low_value, 
+		      high_value);
+  else if (low_value)
+    error ("case label not within a switch statement");
+  else
+    error ("`default' label not within a switch statement");
+}
+
+/* Finish the switch statement.  */
+
+void
+c_finish_case ()
+{
+  struct c_switch *cs = switch_stack;
+
+  RECHAIN_STMTS (cs->switch_stmt, SWITCH_BODY (cs->switch_stmt)); 
+
+  /* Pop the stack.  */
+  switch_stack = switch_stack->next;
+  splay_tree_delete (cs->cases);
+  free (cs);
 }

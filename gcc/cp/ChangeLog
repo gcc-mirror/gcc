@@ -1,3 +1,54 @@
+2000-09-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (struct cp_language_function): Remove
+	x_scope_stmt_stack and name_declared.
+	(current_scope_stmt_stack): Remove.
+	(function_name_declared_p): New macro.
+	(struct lang_decl_flags): Use c_lang_decl as a base class.
+	(context): Remove.
+	(struct lang_decl): Replace saved_tree with context.
+	(DECL_FRIEND_CONTEXT): Adjust accordingly.
+	(SET_DECL_FRIEND_CONTEXT): Likewise.
+	(DECL_VIRTUAL_CONTEXT): Likewise.
+	(DECL_SAVED_TREE): Remove.
+	(C_DECLARED_LABEL_FLAG): Likewise.
+	(cplus_expand_expr_stmt): Don't declare.
+	(add_decl_stmt): Likewise.
+	(add_scope_stmt): Likewise.
+	* decl.c (mark_stmt_tree): Remove.
+	(case_compare): Likewise.
+	(finish_case_label): Use c_add_case_label.
+	(init_decl_processing): Set more language-specific hooks.
+	(build_enumerator): Fix typo in comment.
+	(cplus_expand_expr_stmt): Remove.
+	(mark_lang_function): Use mark_c_language_function.
+	(lang_mark_tree): Use c_mark_lang_decl.
+	* decl2.c: Change order of inclusion.
+	* except.c: Likewise.
+	* expr.c (cplus_expand_expr): Remove handling of STMT_EXPR.  Fall
+	back on c_expand_expr.
+	* friend.c: Include expr.h.
+	* init.c: Change order of inclusion.
+	* Makefile.in: Update dependencies.
+	* lex.h (free_lang_decl_chain): Remove.
+	* optimize.c (maybe_clone_body): Use function_name_declared_p.
+	* pt.c (build_template_decl): Don't copy DECL_VIRTUAL_CONTEXT if
+	it doesn't exist.
+	(instantiate_decl): Use function_name_declared_p.
+	* semantics.c (lang_expand_expr_stmt): Remove.
+	(set_current_function_name_declared): Likewise.
+	(current_function_name_declared): Likewise.
+	(begin_compound_stmt): Use function_name_declared_p.
+	(add_decl_stmt): Remove.
+	(setup_vtbl_ptr): Use function_name_declared_p.
+	(add_scope_stmt): Remove.
+	(current_scope_stmt_stack): New function.
+	(cp_expand_stmt): Don't handle SCOPE_STMTs.
+	(expand_body): Use function_name_declared_p.
+	* tree.c (cp_statement_code_p): Don't include SCOPE_STMT.
+	* typeck.c: Change order of includes.
+	(convert_sequence): Remove.
+	
 2000-09-14  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* lex.c (reswords): Add _Complex.

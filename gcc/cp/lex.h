@@ -88,6 +88,4 @@ extern int pending_lang_change;
 
 extern int yylex PARAMS ((void));
 
-extern struct lang_decl *free_lang_decl_chain;
-
 #endif /* _CP_LEX_H */

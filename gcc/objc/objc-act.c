@@ -42,8 +42,11 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "tree.h"
+#include "rtl.h"
+#include "expr.h"
 #include "c-tree.h"
 #include "c-lex.h"
+#include "c-common.h"
 #include "flags.h"
 #include "objc-act.h"
 #include "input.h"
@@ -198,6 +201,7 @@ static void encode_aggregate_within		PARAMS ((tree, int, int,
 					               int, int));
 static const char *objc_demangle		PARAMS ((const char *));
 static const char *objc_printable_name		PARAMS ((tree, int));
+static void objc_expand_function_end            PARAMS ((void));
 
 /* Misc. bookkeeping */
 
@@ -7410,12 +7414,18 @@ encode_method_def (func_decl)
   return result;
 }
 
+static void
+objc_expand_function_end ()
+{
+  METHOD_ENCODING (method_context) = encode_method_def (current_function_decl);
+}
+
 void
 finish_method_def ()
 {
-  METHOD_ENCODING (method_context) = encode_method_def (current_function_decl);
-
+  lang_expand_function_end = objc_expand_function_end;
   finish_function (0);
+  lang_expand_function_end = NULL;
 
   /* Required to implement _msgSuper. This must be done AFTER finish_function,
      since the optimizer may find "may be used before set" errors.  */
@@ -8172,7 +8182,7 @@ init_objc ()
 {
   /* Add the special tree codes of Objective C to the tables.  */
 
-#define LAST_CODE LAST_AND_UNUSED_TREE_CODE
+#define LAST_CODE LAST_C_TREE_CODE
 
   gcc_obstack_init (&util_obstack);
   util_firstobj = (char *) obstack_finish (&util_obstack);
@@ -8193,6 +8203,8 @@ init_objc ()
 
   /* Change the default error function */
   decl_printable_name = objc_printable_name;
+  lang_expand_expr = c_expand_expr;
+  lang_expand_decl_stmt = c_expand_decl_stmt;
 }
 
 static void

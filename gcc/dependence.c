@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 
 #include "rtl.h"
+#include "expr.h"
 #include "tree.h"
 #include "c-common.h"
 #include "flags.h"
@@ -58,7 +59,7 @@ Boston, MA 02111-1307, USA.  */
    dependence to the dep_chain
 */
 
-enum dependence_type {flow, anti, output, none};
+enum dependence_type {dt_flow, dt_anti, dt_output, dt_none};
 #if 0
 static const char * dependence_string [] = {"flow", "anti", "output", "none"};
 #endif
@@ -756,23 +757,23 @@ check_node_dependence (du)
 	  dep_ptr->next = 0;
 	  
 	  if (def_ptr < use_ptr && use_ptr->type == use) 
-	    dep_ptr->dependence = flow;
+	    dep_ptr->dependence = dt_flow;
 	  else if (def_ptr > use_ptr && use_ptr->type == use)
-	    dep_ptr->dependence = anti;
-	  else dep_ptr->dependence = output;
+	    dep_ptr->dependence = dt_anti;
+	  else dep_ptr->dependence = dt_output;
 
 	  for (j = 1 ; j <= i - 1 ; j++)
 	    {
 	      if (direction[j][0] == gt)
 		{
-		  dep_ptr->dependence = anti;
+		  dep_ptr->dependence = dt_anti;
 		  direction[j][0] = lt;
 		  distance[j][0] = -distance[j][0];
 		  break;
 		}
 	      else if (direction[j][0] == lt)
 		{
-		  dep_ptr->dependence = flow;
+		  dep_ptr->dependence = dt_flow;
 		  break;
 		}
 	    }
@@ -796,7 +797,7 @@ check_node_dependence (du)
 	      dep_root_ptr = VARRAY_TOP (dep_chain, generic);
 	      dep_root_ptr->source = 0;
 	      dep_root_ptr->destination = def_ptr->expression;
-	      dep_root_ptr->dependence = none;
+	      dep_root_ptr->dependence = dt_none;
 	      dep_root_ptr->next = dep_ptr;
 	      def_ptr->dep = dep_ptr;
 	    }

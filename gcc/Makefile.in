@@ -782,6 +782,9 @@ GCC_H = gcc.h version.h
 GGC_H = ggc.h varray.h
 TIMEVAR_H = timevar.h timevar.def
 INSN_ATTR_H = insn-attr.h $(srcdir)/insn-addr.h $(srcdir)/varray.h
+C_COMMON_H = c-common.h $(SPLAY_TREE_H)
+C_TREE_H = c-tree.h $(C_COMMON_H)
+
 #
 # Language makefile fragments.
 
@@ -1077,10 +1080,10 @@ s-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 
 # C language specific files.
 
-c-errors.o: c-errors.c $(CONFIG_H) system.h $(TREE_H) c-tree.h flags.h \
+c-errors.o: c-errors.c $(CONFIG_H) system.h $(TREE_H) $(C_TREE_H) flags.h \
     diagnostic.h
 c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h $(GGC_H) intl.h \
-    c-tree.h c-common.h input.h flags.h system.h toplev.h output.h cpplib.h
+    $(C_TREE_H) input.h flags.h system.h toplev.h output.h cpplib.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
 
 $(srcdir)/c-parse.c: $(srcdir)/c-parse.y
@@ -1092,18 +1095,19 @@ $(srcdir)/c-parse.y: c-parse.in
 	  $(srcdir)/c-parse.in >>tmp-c-parse.y
 	$(SHELL) $(srcdir)/move-if-change tmp-c-parse.y $(srcdir)/c-parse.y
 
-c-decl.o : c-decl.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-tree.h \
-    c-common.h $(GGC_H) c-lex.h flags.h function.h output.h $(EXPR_H) \
+c-decl.o : c-decl.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) $(C_TREE_H) \
+    $(GGC_H) c-lex.h flags.h function.h output.h $(EXPR_H) \
     toplev.h defaults.h intl.h
-c-typeck.o : c-typeck.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
+c-typeck.o : c-typeck.c $(CONFIG_H) system.h $(TREE_H) $(C_TREE_H) \
     flags.h intl.h output.h $(EXPR_H) $(RTL_H) toplev.h
-c-lang.o : c-lang.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
-    $(GGC_H)  c-lex.h toplev.h diagnostic.h output.h function.h
-c-lex.o : c-lex.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-lex.h c-tree.h \
-    c-common.h c-pragma.h input.h intl.h flags.h toplev.h output.h \
-    mbchar.h $(GGC_H) cpplib.h $(SPLAY_TREE_H)
-c-aux-info.o : c-aux-info.c  $(CONFIG_H) system.h $(TREE_H) c-tree.h \
-    c-common.h flags.h toplev.h
+c-lang.o : c-lang.c $(CONFIG_H) system.h $(TREE_H) $(C_TREE_H) \
+    $(GGC_H)  c-lex.h toplev.h diagnostic.h output.h function.h \
+    $(RTL_H) $(EXPR_H)
+c-lex.o : c-lex.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-lex.h $(C_TREE_H) \
+    c-pragma.h input.h intl.h flags.h toplev.h output.h \
+    mbchar.h $(GGC_H) cpplib.h $(EXPR_H)
+c-aux-info.o : c-aux-info.c  $(CONFIG_H) system.h $(TREE_H) $(C_TREE_H) \
+    flags.h toplev.h
 c-convert.o : c-convert.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h
 c-pragma.o: c-pragma.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) function.h \
     defaults.h c-pragma.h toplev.h $(GGC_H)
@@ -1157,11 +1161,11 @@ s-under: $(GCC_PASSES)
 # A file used by all variants of C.
 
 c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) \
-	c-common.h flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
+	$(C_COMMON_H) flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
 	$(EXPR_H)
 
-c-semantics.o : c-semantics.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h \
-	c-common.h flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
+c-semantics.o : c-semantics.c $(CONFIG_H) system.h $(TREE_H) $(C_TREE_H) \
+	c-lex.h flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
 	$(EXPR_H)
 
 # Language-independent files.
@@ -1406,8 +1410,8 @@ regrename.o : regrename.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
 ifcvt.o : ifcvt.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) \
    flags.h insn-config.h function.h $(RECOG_H) $(BASIC_BLOCK_H) $(EXPR_H) \
    output.h
-dependence.o : dependence.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) c-common.h \
-   flags.h varray.h
+dependence.o : dependence.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) \
+   $(C_COMMON_H) flags.h varray.h $(EXPR_H)
 
 $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) $(GGC_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h real.h insn-config.h conditions.h \

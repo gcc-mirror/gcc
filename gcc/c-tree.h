@@ -42,6 +42,14 @@ struct lang_identifier
   enum rid rid_code;
 };
 
+/* Wrapping c_lang_decl in another struct is an unfortunate
+   necessity.  */
+
+struct lang_decl
+{
+  struct c_lang_decl base;
+};
+
 /* Macros for access to language-specific slots in an identifier.  */
 /* Each of these slots contains a DECL node or null.  */
 
@@ -102,10 +110,6 @@ struct lang_type
   int len;
   tree elts[1];
 };
-
-/* Mark which labels are explicitly declared.
-   These may be shadowed, and may be referenced from nested functions.  */
-#define C_DECLARED_LABEL_FLAG(label) TREE_LANG_FLAG_1 (label)
 
 /* Record whether a type or decl was written with nonconstant size.
    Note that TYPE_SIZE may have simplified to a constant.  */
@@ -230,6 +234,8 @@ extern tree start_decl                          PARAMS ((tree, tree, int,
 extern tree start_struct                        PARAMS ((enum tree_code, tree));
 extern void store_parm_decls                    PARAMS ((void));
 extern tree xref_tag                            PARAMS ((enum tree_code, tree));
+extern tree c_begin_compound_stmt               PARAMS ((void));
+extern void c_expand_decl_stmt                  PARAMS ((tree));
 
 /* in c-typeck.c */
 extern tree require_complete_type		PARAMS ((tree));
@@ -268,7 +274,8 @@ extern void set_init_label			PARAMS ((tree));
 extern void process_init_element		PARAMS ((tree));
 extern void pedwarn_c99				PARAMS ((const char *, ...))
 							ATTRIBUTE_PRINTF_1;
-extern tree c_expand_start_case                 PARAMS ((tree));
+extern tree c_start_case                        PARAMS ((tree));
+extern void c_finish_case                       PARAMS ((void));
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */

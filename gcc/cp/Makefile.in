@@ -265,7 +265,7 @@ class.o : class.c $(CXX_TREE_H) $(srcdir)/../flags.h \
 call.o : call.c $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../toplev.h $(RTL_H) $(EXPR_H) $(GGC_H)
 friend.o : friend.c $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
-  $(srcdir)/../toplev.h
+  $(srcdir)/../toplev.h $(EXPR_H)
 init.o : init.c $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
   $(EXPR_H) $(srcdir)/../toplev.h $(GGC_H) \
   $(srcdir)/../except.h

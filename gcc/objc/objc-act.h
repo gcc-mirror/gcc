@@ -110,7 +110,7 @@ enum objc_tree_code {
 #ifdef OBJCPLUS
   dummy_tree_code = LAST_CPLUS_TREE_CODE,
 #else
-  dummy_tree_code = LAST_AND_UNUSED_TREE_CODE,
+  dummy_tree_code = LAST_C_TREE_CODE,
 #endif
 #include "objc-tree.def"
   LAST_OBJC_TREE_CODE

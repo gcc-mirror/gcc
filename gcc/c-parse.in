@@ -173,7 +173,8 @@ end ifc
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
 %type <ttype> any_word extension
 
-%type <ttype> compstmt compstmt_nostart compstmt_primary_start
+%type <ttype> compstmt compstmt_start compstmt_nostart compstmt_primary_start
+%type <ttype> do_stmt_start poplevel
 
 %type <ttype> declarator
 %type <ttype> notype_declarator after_type_declarator
@@ -661,33 +662,26 @@ primary:
 	| '(' error ')'
 		{ $$ = error_mark_node; }
 	| compstmt_primary_start compstmt_nostart ')'
-		{ tree rtl_exp;
-		  if (pedantic)
-		    pedwarn ("ISO C forbids braced-groups within expressions");
-		  pop_label_level ();
-		  rtl_exp = expand_end_stmt_expr ($1);
-		  /* The statements have side effects, so the group does.  */
-		  TREE_SIDE_EFFECTS (rtl_exp) = 1;
+                 { tree saved_last_tree;
 
-		  if (TREE_CODE ($2) == BLOCK)
-		    {
-		      /* Make a BIND_EXPR for the BLOCK already made.  */
-		      $$ = build (BIND_EXPR, TREE_TYPE (rtl_exp),
-				  NULL_TREE, rtl_exp, $2);
-		      /* Remove the block from the tree at this point.
-			 It gets put back at the proper place
-			 when the BIND_EXPR is expanded.  */
-		      delete_block ($2);
-		    }
-		  else
-		    $$ = $2;
+		   if (pedantic)
+		     pedwarn ("ISO C forbids braced-groups within expressions");
+		  pop_label_level ();
+
+		  saved_last_tree = COMPOUND_BODY ($1);
+		  RECHAIN_STMTS ($1, COMPOUND_BODY ($1));
+		  last_tree = saved_last_tree;
+		  TREE_CHAIN (last_tree) = NULL_TREE;
+		  if (!last_expr_type)
+		    last_expr_type = void_type_node;
+		  $$ = build1 (STMT_EXPR, last_expr_type, $1);
+		  TREE_SIDE_EFFECTS ($$) = 1;
 		}
 	| compstmt_primary_start error ')'
 		{
-		  /* Make sure we call expand_end_stmt_expr.  Otherwise
-		     we are likely to lose sequences and crash later.  */
 		  pop_label_level ();
-		  expand_end_stmt_expr ($1);
+		  last_tree = COMPOUND_BODY ($1);
+		  TREE_CHAIN (last_tree) = NULL_TREE;
 		  $$ = error_mark_node;
 		}
 	| primary '(' exprlist ')'   %prec '.'
@@ -1196,8 +1190,10 @@ nested_function:
    There followed a repeated execution of that same rule,
    which called YYERROR1 again, and so on.  */
 	  compstmt
-		{ finish_function (1);
-		  pop_function_context (); }
+		{ tree decl = current_function_decl;
+		  finish_function (1);
+		  pop_function_context (); 
+		  add_decl_stmt (decl); }
 	;
 
 notype_nested_function:
@@ -1222,8 +1218,10 @@ notype_nested_function:
    There followed a repeated execution of that same rule,
    which called YYERROR1 again, and so on.  */
 	  compstmt
-		{ finish_function (1);
-		  pop_function_context (); }
+		{ tree decl = current_function_decl;
+		  finish_function (1);
+		  pop_function_context (); 
+		  add_decl_stmt (decl); }
 	;
 
 /* Any kind of declarator (thus, all declarators allowed
@@ -1604,16 +1602,18 @@ errstmt:  error ';'
 	;
 
 pushlevel:  /* empty */
-		{ emit_line_note (input_filename, lineno);
-		  pushlevel (0);
+		{ pushlevel (0);
 		  clear_last_expr ();
-		  expand_start_bindings (0);
+		  add_scope_stmt (/*begin_p=*/1, /*partial_p=*/0);
 ifobjc
 		  if (objc_method_context)
 		    add_objc_decls ();
 end ifobjc
 		}
 	;
+
+poplevel:  /* empty */
+                { $$ = add_scope_stmt (/*begin_p=*/0, /*partial_p=*/0); }
 
 /* Read zero or more forward-declarations for labels
    that nested functions can jump to.  */
@@ -1636,7 +1636,7 @@ label_decl:
 		    {
 		      tree label = shadow_label (TREE_VALUE (link));
 		      C_DECLARED_LABEL_FLAG (label) = 1;
-		      declare_nonlocal_label (label);
+		      add_decl_stmt (label);
 		    }
 		}
 	;
@@ -1649,22 +1649,26 @@ compstmt_or_error:
 	| error compstmt
 	;
 
-compstmt_start: '{' { compstmt_count++; }
+compstmt_start: '{' { compstmt_count++;
+                      $$ = c_begin_compound_stmt (); } 
 
 compstmt_nostart: '}'
 		{ $$ = convert (void_type_node, integer_zero_node); }
-	| pushlevel maybe_label_decls decls xstmts '}'
-		{ emit_line_note (input_filename, lineno);
-		  expand_end_bindings (getdecls (), 1, 0);
-		  $$ = poplevel (1, 1, 0); }
-	| pushlevel maybe_label_decls error '}'
-		{ emit_line_note (input_filename, lineno);
-		  expand_end_bindings (getdecls (), kept_level_p (), 0);
-		  $$ = poplevel (kept_level_p (), 0, 0); }
-	| pushlevel maybe_label_decls stmts '}'
-		{ emit_line_note (input_filename, lineno);
-		  expand_end_bindings (getdecls (), kept_level_p (), 0);
-		  $$ = poplevel (kept_level_p (), 0, 0); }
+	| pushlevel maybe_label_decls decls xstmts '}' poplevel
+		{ $$ = poplevel (1, 1, 0); 
+		  SCOPE_STMT_BLOCK (TREE_PURPOSE ($6)) 
+		    = SCOPE_STMT_BLOCK (TREE_VALUE ($6))
+		    = $$; }
+	| pushlevel maybe_label_decls error '}' poplevel
+		{ $$ = poplevel (kept_level_p (), 0, 0); 
+		  SCOPE_STMT_BLOCK (TREE_PURPOSE ($5)) 
+		    = SCOPE_STMT_BLOCK (TREE_VALUE ($5))
+		    = $$; }
+	| pushlevel maybe_label_decls stmts '}' poplevel
+		{ $$ = poplevel (kept_level_p (), 0, 0); 
+		  SCOPE_STMT_BLOCK (TREE_PURPOSE ($5)) 
+		    = SCOPE_STMT_BLOCK (TREE_VALUE ($5))
+		    = $$; }
 	;
 
 compstmt_primary_start:
@@ -1680,17 +1684,19 @@ compstmt_primary_start:
 		     that are contained in it.  */
 		  keep_next_level ();
 		  push_label_level ();
-		  $$ = expand_start_stmt_expr ();
 		  compstmt_count++;
+		  $$ = add_stmt (build_stmt (COMPOUND_STMT, last_tree));
 		}
 
 compstmt: compstmt_start compstmt_nostart
-		{ $$ = $2; }
+		{ RECHAIN_STMTS ($1, COMPOUND_BODY ($1)); 
+                  $$ = $2; }
 	;
 
 /* Value is number of statements counted as of the closeparen.  */
 simple_if:
 	  if_prefix lineno_labeled_stmt
+                { c_finish_then (); }
 /* Make sure c_expand_end_cond is run once
    for each call to c_expand_start_cond.
    Otherwise a crash is likely.  */
@@ -1699,8 +1705,7 @@ simple_if:
 
 if_prefix:
 	  IF '(' expr ')'
-		{ emit_line_note ($<filename>-1, $<lineno>0);
-		  c_expand_start_cond (truthvalue_conversion ($3), 0, 
+		{ c_expand_start_cond (truthvalue_conversion ($3), 
 				       compstmt_count);
 		  $<itype>$ = stmt_count;
 		  if_stmt_file = $<filename>-1;
@@ -1714,12 +1719,17 @@ do_stmt_start:
 	  DO
 		{ stmt_count++;
 		  compstmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
-		  /* See comment in `while' alternative, above.  */
-		  emit_nop ();
-		  expand_start_loop_continue_elsewhere (1); }
+		  $<ttype>$ 
+		    = add_stmt (build_stmt (DO_STMT, NULL_TREE,
+					    NULL_TREE));
+		  /* In the event that a parse error prevents
+		     parsing the complete do-statement, set the
+		     condition now.  Otherwise, we can get crashes at
+		     RTL-generation time.  */
+		  DO_COND ($<ttype>$) = error_mark_node; }
 	  lineno_labeled_stmt WHILE
-		{ expand_loop_continue_here (); }
+		{ $$ = $<ttype>2;
+		  RECHAIN_STMTS ($$, DO_BODY ($$)); }
 	;
 
 /* The forced readahead in here is because we might be at the end of a
@@ -1765,25 +1775,13 @@ stmt:
 		{ stmt_count++; }
 	| expr ';'
 		{ stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
-/* It appears that this should not be done--that a non-lvalue array
-   shouldn't get an error if the value isn't used.
-   Section 3.2.2.1 says that an array lvalue gets converted to a pointer
-   if it appears as a top-level expression,
-   but says nothing about non-lvalue arrays.  */
-#if 0
-		  /* Call default_conversion to get an error
-		     on referring to a register array if pedantic.  */
-		  if (TREE_CODE (TREE_TYPE ($1)) == ARRAY_TYPE
-		      || TREE_CODE (TREE_TYPE ($1)) == FUNCTION_TYPE)
-		    $1 = default_conversion ($1);
-#endif
-		  expand_expr_stmt ($1); }
+		  c_expand_expr_stmt ($1); }
 	| simple_if ELSE
 		{ c_expand_start_else ();
 		  $<itype>1 = stmt_count; }
 	  lineno_labeled_stmt
-		{ c_expand_end_cond ();
+                { c_finish_else ();
+		  c_expand_end_cond ();
 		  if (extra_warnings && stmt_count == $<itype>1)
 		    warning ("empty body in an else-statement"); }
 	| simple_if %prec IF
@@ -1801,83 +1799,43 @@ stmt:
 	| simple_if ELSE error
 		{ c_expand_end_cond (); }
 	| WHILE
-		{ stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
-		  /* The emit_nop used to come before emit_line_note,
-		     but that made the nop seem like part of the preceding line.
-		     And that was confusing when the preceding line was
-		     inside of an if statement and was not really executed.
-		     I think it ought to work to put the nop after the line number.
-		     We will see.  --rms, July 15, 1991.  */
-		  emit_nop (); }
+                { stmt_count++; }
 	  '(' expr ')'
-		{ /* Don't start the loop till we have succeeded
-		     in parsing the end test.  This is to make sure
-		     that we end every loop we start.  */
-		  expand_start_loop (1);
-		  emit_line_note (input_filename, lineno);
-		  expand_exit_loop_if_false (NULL_PTR,
-					     truthvalue_conversion ($4)); }
+                { $4 = truthvalue_conversion ($4);
+		  $<ttype>$ 
+		    = add_stmt (build_stmt (WHILE_STMT, $4, NULL_TREE)); }
 	  lineno_labeled_stmt
-		{ expand_end_loop (); }
+		{ RECHAIN_STMTS ($<ttype>6, WHILE_BODY ($<ttype>6)); }
 	| do_stmt_start
 	  '(' expr ')' ';'
-		{ emit_line_note (input_filename, lineno);
-		  expand_exit_loop_if_false (NULL_PTR,
-					     truthvalue_conversion ($3));
-		  expand_end_loop (); }
-/* This rule is needed to make sure we end every loop we start.  */
+                { DO_COND ($1) = truthvalue_conversion ($3); }
 	| do_stmt_start error
-		{ expand_end_loop (); }
+ 		{ }
 	| FOR
 	  '(' xexpr ';'
 		{ stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
-		  /* See comment in `while' alternative, above.  */
-		  emit_nop ();
-		  if ($3) c_expand_expr_stmt ($3);
-		  /* Next step is to call expand_start_loop_continue_elsewhere,
-		     but wait till after we parse the entire for (...).
-		     Otherwise, invalid input might cause us to call that
-		     fn without calling expand_end_loop.  */
+		  $3 = build_stmt (EXPR_STMT, $3); 
+		  $<ttype>$ = build_stmt (FOR_STMT, $3, NULL_TREE,
+					  NULL_TREE, NULL_TREE);
+		  add_stmt ($<ttype>$);
 		}
 	  xexpr ';'
-		/* Can't emit now; wait till after expand_start_loop...  */
-		{ $<lineno>7 = lineno;
-		  $<filename>$ = input_filename; }
+                { FOR_COND ($<ttype>5) = $6; }
 	  xexpr ')'
-		{ 
-		  /* Start the loop.  Doing this after parsing
-		     all the expressions ensures we will end the loop.  */
-		  expand_start_loop_continue_elsewhere (1);
-		  /* Emit the end-test, with a line number.  */
-		  emit_line_note ($<filename>8, $<lineno>7);
-		  if ($6)
-		    expand_exit_loop_if_false (NULL_PTR,
-					       truthvalue_conversion ($6));
-		  $<lineno>7 = lineno;
-		  $<filename>8 = input_filename; }
+		{ FOR_EXPR ($<ttype>5) = $9; }
 	  lineno_labeled_stmt
-		{ /* Emit the increment expression, with a line number.  */
-		  emit_line_note ($<filename>8, $<lineno>7);
-		  expand_loop_continue_here ();
-		  if ($9)
-		    c_expand_expr_stmt ($9);
-		  expand_end_loop (); }
+                { RECHAIN_STMTS ($<ttype>5, FOR_BODY ($<ttype>5)); }
 	| SWITCH '(' expr ')'
 		{ stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
-		  c_expand_start_case ($3); }
+		  $<ttype>$ = c_start_case ($3); }
 	  lineno_labeled_stmt
-		{ expand_end_case ($3); }
+                { c_finish_case (); }
 	| BREAK ';'
-	        { build_break_stmt ();
-		  stmt_count++;
-		  genrtl_break_stmt (); }
+	        { stmt_count++;
+		  add_stmt (build_break_stmt ()); }
 	| CONTINUE ';'
-                { build_continue_stmt ();
-                  stmt_count++;
-		  genrtl_continue_stmt (); }
+                { stmt_count++;
+		  add_stmt (build_continue_stmt ()); }
 	| RETURN ';'
                 { stmt_count++;
 		  c_expand_return (NULL_TREE); }
@@ -1886,25 +1844,29 @@ stmt:
 		  c_expand_return ($2); }
 	| ASM_KEYWORD maybe_type_qual '(' expr ')' ';'
 		{ stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
 		  STRIP_NOPS ($4);
 		  if ((TREE_CODE ($4) == ADDR_EXPR
 		       && TREE_CODE (TREE_OPERAND ($4, 0)) == STRING_CST)
 		      || TREE_CODE ($4) == STRING_CST)
-		    expand_asm ($4);
+		    {
+		      if (TREE_CODE ($4) == ADDR_EXPR)
+			$4 = TREE_OPERAND ($4, 0);
+		      if (TREE_CHAIN ($4))
+			$4 = combine_strings ($4);
+		      add_stmt (build_stmt (ASM_STMT, NULL_TREE, $4,
+					    NULL_TREE, NULL_TREE, NULL_TREE));
+		    }
 		  else
 		    error ("argument of `asm' is not a constant string"); }
 	/* This is the case with just output operands.  */
 	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ')' ';'
 		{ stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
 		  c_expand_asm_operands ($4, $6, NULL_TREE, NULL_TREE,
 					 $2 == ridpointers[(int)RID_VOLATILE],
 					 input_filename, lineno); }
 	/* This is the case with input operands as well.  */
 	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ':' asm_operands ')' ';'
 		{ stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
 		  c_expand_asm_operands ($4, $6, $8, NULL_TREE,
 					 $2 == ridpointers[(int)RID_VOLATILE],
 					 input_filename, lineno); }
@@ -1912,27 +1874,25 @@ stmt:
 	| ASM_KEYWORD maybe_type_qual '(' expr ':' asm_operands ':'
   	  asm_operands ':' asm_clobbers ')' ';'
 		{ stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
 		  c_expand_asm_operands ($4, $6, $8, $10,
 					 $2 == ridpointers[(int)RID_VOLATILE],
 					 input_filename, lineno); }
 	| GOTO identifier ';'
 		{ tree decl;
 		  stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
 		  decl = lookup_label ($2);
 		  if (decl != 0)
 		    {
 		      TREE_USED (decl) = 1;
-		      expand_goto (decl);
+		      add_stmt (build_stmt (GOTO_STMT, decl));
 		    }
 		}
 	| GOTO '*' expr ';'
 		{ if (pedantic)
 		    pedwarn ("ISO C forbids `goto *expr;'");
 		  stmt_count++;
-		  emit_line_note ($<filename>-1, $<lineno>0);
-		  expand_computed_goto (convert (ptr_type_node, $3)); }
+		  $3 = convert (ptr_type_node, $3);
+		  add_stmt (build_stmt (GOTO_STMT, $3)); }
 	| ';'
 	;
 
@@ -1952,11 +1912,10 @@ label:	  CASE expr_no_commas ':'
 	| identifier save_filename save_lineno ':' maybe_attribute
 		{ tree label = define_label ($2, $3, $1);
 		  stmt_count++;
-		  emit_nop ();
 		  if (label)
 		    {
-		      expand_label (label);
 		      decl_attributes (label, $5, NULL_TREE);
+		      add_stmt (build_stmt (LABEL_STMT, label));
 		    }
 		}
 	;

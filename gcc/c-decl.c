@@ -125,6 +125,19 @@ static tree current_function_parm_tags;
 static const char *current_function_prototype_file;
 static int current_function_prototype_line;
 
+/* The current statement tree.  */
+
+static struct stmt_tree_s c_stmt_tree;
+
+/* The current scope statement stack.  */
+
+static tree c_scope_stmt_stack;
+
+/* Nonzero if __FUNCTION__ and its ilk have been declared in this
+   function.  */
+
+static int c_function_name_declared_p;
+
 /* A list (chain of TREE_LIST nodes) of all LABEL_DECLs in the function
    that have names.  Here so we can clear out their names' definitions
    at the end of the function.  */
@@ -296,6 +309,7 @@ static tree grokdeclarator		PARAMS ((tree, tree, enum decl_context,
 static tree grokparms			PARAMS ((tree, int));
 static void layout_array_type		PARAMS ((tree));
 static tree c_make_fname_decl           PARAMS ((tree, const char *, int));
+static void c_expand_body               PARAMS ((tree, int));
 
 /* C-specific option variables.  */
 
@@ -470,10 +484,6 @@ int warn_float_equal = 0;
 /* Nonzero means warn about use of multicharacter literals.  */
 
 int warn_multichar = 1;
-
-/* Wrapper since C and C++ expand_expr_stmt are different.  */
-
-expand_expr_stmt_fn lang_expand_expr_stmt = c_expand_expr_stmt;
 
 /* The variant of the C language being processed.  */
 
@@ -1088,12 +1098,6 @@ poplevel (keep, reverse, functionbody)
 	if (DECL_ABSTRACT_ORIGIN (decl) != 0
 	    && DECL_ABSTRACT_ORIGIN (decl) != decl)
 	  TREE_ADDRESSABLE (DECL_ABSTRACT_ORIGIN (decl)) = 1;
-	else if (DECL_SAVED_INSNS (decl) != 0)
-	  {
-	    push_function_context ();
-	    output_inline_function (decl);
-	    pop_function_context ();
-	  }
       }
 
   /* If there were any declarations or structure tags in that level,
@@ -1235,6 +1239,7 @@ poplevel (keep, reverse, functionbody)
 
   if (block)
     TREE_USED (block) = 1;
+
   return block;
 }
 
@@ -2063,8 +2068,8 @@ pushdecl (x)
   /* A local extern declaration for a function doesn't constitute nesting.
      A local auto declaration does, since it's a forward decl
      for a nested function coming later.  */
-  if (TREE_CODE (x) == FUNCTION_DECL && DECL_INITIAL (x) == 0
-      && DECL_EXTERNAL (x))
+  if ((TREE_CODE (x) == FUNCTION_DECL || TREE_CODE (x) == VAR_DECL)
+      && DECL_INITIAL (x) == 0 && DECL_EXTERNAL (x))
     DECL_CONTEXT (x) = 0;
 
   if (warn_nested_externs && DECL_EXTERNAL (x) && b != global_binding_level
@@ -2618,7 +2623,7 @@ redeclaration_error_message (newdecl, olddecl)
 	return 1;
       return 0;
     }
-  else if (current_binding_level == global_binding_level)
+  else if (DECL_CONTEXT (newdecl) == NULL_TREE)
     {
       /* Objects declared at top level:  */
       /* If at least one is a reference, it's ok.  */
@@ -2677,9 +2682,6 @@ lookup_label (id)
     }
 
   decl = build_decl (LABEL_DECL, id, void_type_node);
-
-  /* Make sure every label has an rtx.  */
-  label_rtx (decl);
 
   /* A label not explicitly declared must be local to where it's ref'd.  */
   DECL_CONTEXT (decl) = current_function_decl;
@@ -3217,6 +3219,8 @@ init_decl_processing ()
   /* Record our roots.  */
 
   ggc_add_tree_root (c_global_trees, CTI_MAX);
+  ggc_add_root (&c_stmt_tree, 1, sizeof c_stmt_tree, mark_stmt_tree);
+  ggc_add_tree_root (&c_scope_stmt_stack, 1);
   ggc_add_tree_root (&named_labels, 1);
   ggc_add_tree_root (&shadowed_labels, 1);
   ggc_add_root (&current_binding_level, 1, sizeof current_binding_level,
@@ -3553,7 +3557,8 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
       /* But not if this is a duplicate decl
 	 and we preserved the rtl from the previous one
 	 (which may or may not happen).  */
-      && DECL_RTL (tem) == 0)
+      && DECL_RTL (tem) == 0
+      && !DECL_CONTEXT (tem))
     {
       if (COMPLETE_TYPE_P (TREE_TYPE (tem)))
 	expand_decl (tem);
@@ -3703,9 +3708,17 @@ finish_decl (decl, init, asmspec_tree)
     {
       /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
       maybe_objc_check_decl (decl);
-      rest_of_decl_compilation (decl, asmspec,
-				(DECL_CONTEXT (decl) == 0
-				 || TREE_ASM_WRITTEN (decl)), 0);
+
+      if (!DECL_CONTEXT (decl))
+	rest_of_decl_compilation (decl, asmspec,
+				  (DECL_CONTEXT (decl) == 0
+				   || TREE_ASM_WRITTEN (decl)), 0);
+      else
+	{
+	  if (asmspec)
+	    DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
+	  add_decl_stmt (decl);
+	}
 
       if (DECL_CONTEXT (decl) != 0)
 	{
@@ -3719,11 +3732,7 @@ finish_decl (decl, init, asmspec_tree)
 	      /* If it's still incomplete now, no init will save it.  */
 	      if (DECL_SIZE (decl) == 0)
 		DECL_INITIAL (decl) = 0;
-	      expand_decl (decl);
 	    }
-	  /* Compute and store the initial value.  */
-	  if (TREE_CODE (decl) != FUNCTION_DECL)
-	    expand_decl_init (decl);
 	}
     }
 
@@ -5784,6 +5793,7 @@ build_enumerator (name, value)
 
   return tree_cons (decl, value, NULL_TREE);
 }
+
 
 /* Create the FUNCTION_DECL for a function definition.
    DECLSPECS, DECLARATOR, PREFIX_ATTRIBUTES and ATTRIBUTES are the parts of
@@ -6432,25 +6442,20 @@ store_parm_decls ()
 
   init_function_start (fndecl, input_filename, lineno);
 
-  /* If this is a varargs function, inform function.c.  */
+  /* Begin the statement tree for this function.  */
+  DECL_LANG_SPECIFIC (current_function_decl) 
+    =((struct lang_decl *) ggc_alloc (sizeof (struct lang_decl)));
+  begin_stmt_tree (&DECL_SAVED_TREE (current_function_decl));
 
-  if (c_function_varargs)
-    mark_varargs ();
+  /* This function is being processed in whole-function mode.  */
+  cfun->x_whole_function_mode_p = 1;
 
-  /* Declare __FUNCTION__ and __PRETTY_FUNCTION__ for this function.  */
-
-  declare_function_name ();
-
-  /* Set up parameters and prepare for return, for the function.  */
-
-  expand_function_start (fndecl, 0);
-
-  /* If this function is `main', emit a call to `__main'
-     to run global initializers, etc.  */
-  if (DECL_NAME (fndecl)
-      && MAIN_NAME_P (DECL_NAME (fndecl))
-      && DECL_CONTEXT (fndecl) == NULL_TREE)
-    expand_main_function ();
+  /* Even though we're inside a function body, we still don't want to
+     call expand_expr to calculate the size of a variable-sized array.
+     We haven't necessarily assigned RTL to all variables yet, so it's
+     not safe to try to expand expressions involving them.  */
+  immediate_size_expand = 0;
+  cfun->x_dont_save_pending_sizes_p = 1;
 }
 
 /* SPECPARMS is an identifier list--a chain of TREE_LIST nodes
@@ -6650,6 +6655,82 @@ finish_function (nested)
 	}
     }
 
+  /* Tie off the statement tree for this function.  */
+  finish_stmt_tree (&DECL_SAVED_TREE (fndecl));
+  /* Clear out memory we no longer need.  */
+  free_after_parsing (cfun);
+  /* Since we never call rest_of_compilation, we never clear
+     CFUN.  Do so explicitly.  */
+  free_after_compilation (cfun);
+  cfun = NULL;
+
+  if (! nested)
+    {
+      /* Generate RTL for the body of this function.  */
+      c_expand_body (fndecl, nested);
+      /* Let the error reporting routines know that we're outside a
+	 function.  For a nested function, this value is used in
+	 pop_c_function_context and then reset via pop_function_context.  */
+      current_function_decl = NULL;
+    }
+}
+
+/* Generate the RTL for the body of FNDECL.  If NESTED_P is non-zero,
+   then we are already in the process of generating RTL for another
+   function.  */
+
+static void
+c_expand_body (fndecl, nested_p)
+     tree fndecl;
+     int nested_p;
+{
+  /* Squirrel away our current state.  */
+  if (nested_p)
+    push_function_context ();
+
+  /* Initialize the RTL code for the function.  */
+  current_function_decl = fndecl;
+  init_function_start (fndecl, input_filename, lineno);
+
+  /* This function is being processed in whole-function mode.  */
+  cfun->x_whole_function_mode_p = 1;
+
+  /* Even though we're inside a function body, we still don't want to
+     call expand_expr to calculate the size of a variable-sized array.
+     We haven't necessarily assigned RTL to all variables yet, so it's
+     not safe to try to expand expressions involving them.  */
+  immediate_size_expand = 0;
+  cfun->x_dont_save_pending_sizes_p = 1;
+
+  /* Set up parameters and prepare for return, for the function.  */
+  expand_function_start (fndecl, 0);
+
+  /* If this function is `main', emit a call to `__main'
+     to run global initializers, etc.  */
+  if (DECL_NAME (fndecl)
+      && MAIN_NAME_P (DECL_NAME (fndecl))
+      && DECL_CONTEXT (fndecl) == NULL_TREE)
+    expand_main_function ();
+
+  /* If this is a varargs function, inform function.c.  */
+  if (c_function_varargs)
+    mark_varargs ();
+
+  /* Generate the RTL for this function.  */
+  expand_stmt (DECL_SAVED_TREE (fndecl));
+  /* Allow the body of the function to be garbage collected.  */
+  DECL_SAVED_TREE (fndecl) = NULL_TREE;
+
+  /* We hard-wired immediate_size_expand to zero in start_function.
+     expand_function_end will decrement this variable.  So, we set the
+     variable to one here, so that after the decrement it will remain
+     zero.  */
+  immediate_size_expand = 1;
+
+  /* Allow language dialects to perform special processing.  */
+  if (lang_expand_function_end)
+    (*lang_expand_function_end) ();
+
   /* Generate rtl for function exit.  */
   expand_function_end (input_filename, lineno, 0);
 
@@ -6658,14 +6739,14 @@ finish_function (nested)
 
   /* If this is a nested function, protect the local variables in the stack
      above us from being collected while we're compiling this function.  */
-  if (nested)
+  if (nested_p)
     ggc_push_context ();
 
   /* Run the optimizers and output the assembler code for this function.  */
   rest_of_compilation (fndecl);
 
   /* Undo the GC context switch.  */
-  if (nested)
+  if (nested_p)
     ggc_pop_context ();
 
   current_function_returns_null |= can_reach_end;
@@ -6715,7 +6796,7 @@ finish_function (nested)
 	}
     }
 
-  if (DECL_SAVED_INSNS (fndecl) == 0 && ! nested)
+  if (DECL_SAVED_INSNS (fndecl) == 0 && ! nested_p)
     {
       /* Stop pointing to the local nodes about to be freed.
 	 But DECL_INITIAL must remain nonzero so we know this
@@ -6748,13 +6829,20 @@ finish_function (nested)
 	assemble_destructor (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl)));
     }
 
-  if (! nested)
+  if (nested_p)
     {
-      /* Let the error reporting routines know that we're outside a
-	 function.  For a nested function, this value is used in
-	 pop_c_function_context and then reset via pop_function_context.  */
-      current_function_decl = NULL;
+      /* Return to the enclosing function.  */
+      pop_function_context ();
+      /* If the nested function was inline, write it out if that is
+	 necessary.  */
+      if (!TREE_ASM_WRITTEN (fndecl) && TREE_ADDRESSABLE (fndecl))
+	{
+	  push_function_context ();
+	  output_inline_function (fndecl);
+	  pop_function_context ();
+	}
     }
+      
 }
 
 /* Save and restore the variables in this file and elsewhere
@@ -6785,6 +6873,9 @@ push_c_function_context (f)
        xmalloc (sizeof (struct c_language_function)));
   f->language = (struct language_function *) p;
 
+  p->base.x_stmt_tree = c_stmt_tree;
+  p->base.x_scope_stmt_stack = c_scope_stmt_stack;
+  p->base.x_function_name_declared_p = c_function_name_declared_p;
   p->named_labels = named_labels;
   p->shadowed_labels = shadowed_labels;
   p->returns_value = current_function_returns_value;
@@ -6810,7 +6901,8 @@ pop_c_function_context (f)
       IDENTIFIER_LABEL_VALUE (DECL_NAME (TREE_VALUE (link)))
 	= TREE_VALUE (link);
 
-  if (DECL_SAVED_INSNS (current_function_decl) == 0)
+  if (DECL_SAVED_INSNS (current_function_decl) == 0
+      && DECL_SAVED_TREE (current_function_decl) == NULL_TREE)
     {
       /* Stop pointing to the local nodes about to be freed.  */
       /* But DECL_INITIAL must remain nonzero so we know this
@@ -6819,6 +6911,9 @@ pop_c_function_context (f)
       DECL_ARGUMENTS (current_function_decl) = 0;
     }
 
+  c_stmt_tree = p->base.x_stmt_tree;
+  c_scope_stmt_stack = p->base.x_scope_stmt_stack;
+  c_function_name_declared_p = p->base.x_function_name_declared_p;
   named_labels = p->named_labels;
   shadowed_labels = p->shadowed_labels;
   current_function_returns_value = p->returns_value;
@@ -6843,18 +6938,27 @@ mark_c_function_context (f)
   if (p == 0)
     return;
 
+  mark_c_language_function (&p->base);
   ggc_mark_tree (p->shadowed_labels);
   ggc_mark_tree (p->named_labels);
   mark_binding_level (&p->binding_level);
 }
 
-/* integrate_decl_tree calls this function, but since we don't use the
-   DECL_LANG_SPECIFIC field, this is a no-op.  */
+/* Copy the DECL_LANG_SEPECIFIC data associated with NODE.  */
 
 void
-copy_lang_decl (node)
-     tree node ATTRIBUTE_UNUSED;
+copy_lang_decl (decl)
+     tree decl;
 {
+  struct lang_decl *ld;
+
+  if (!DECL_LANG_SPECIFIC (decl))
+    return;
+
+  ld = (struct lang_decl *) ggc_alloc (sizeof (struct lang_decl));
+  bcopy ((char *)DECL_LANG_SPECIFIC (decl), (char *)ld, 
+	 sizeof (struct lang_decl));
+  DECL_LANG_SPECIFIC (decl) = ld;
 }
 
 /* Mark ARG for GC.  */
@@ -6886,6 +6990,11 @@ lang_mark_tree (t)
     }
   else if (TYPE_P (t) && TYPE_LANG_SPECIFIC (t))
     ggc_mark (TYPE_LANG_SPECIFIC (t));
+  else if (DECL_P (t) && DECL_LANG_SPECIFIC (t))
+    {
+      ggc_mark (DECL_LANG_SPECIFIC (t));
+      c_mark_lang_decl (&DECL_LANG_SPECIFIC (t)->base);
+    }
 }
 
 /* The functions below are required for functionality of doing
@@ -6910,7 +7019,15 @@ stmts_are_full_exprs_p ()
 stmt_tree
 current_stmt_tree ()
 {
-  return cfun ? &cfun->language->x_stmt_tree : NULL;
+  return &c_stmt_tree;
+}
+
+/* Returns the stack of SCOPE_STMTs for the current function.  */
+
+tree *
+current_scope_stmt_stack ()
+{
+  return &c_scope_stmt_stack;
 }
 
 /* Nonzero if TYPE is an anonymous union or struct type.  Always 0 in
@@ -6923,94 +7040,46 @@ anon_aggr_type_p (node)
   return 0;
 }
 
-/* One if we have already declared __FUNCTION__ (and related
-   variables) in the current function.  Two if we are in the process
-   of doing so.  */
-
-int
-current_function_name_declared ()
-{
-  abort ();
-  return 0;
-}
-
-/* Code to generate the RTL for a case label in C.  */
-
-void
-do_case (low_value, high_value)
-     tree low_value;
-     tree high_value;
-{
-  tree value1 = NULL_TREE, value2 = NULL_TREE, label;
-
-  if (low_value != NULL_TREE)
-    value1 = check_case_value (low_value);
-  if (high_value != NULL_TREE)
-    value2 = check_case_value (high_value);
-
-  label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-
-  if (pedantic && (high_value != NULL_TREE))
-    pedwarn ("ISO C forbids case ranges");
-
-  if (value1 != error_mark_node && value2 != error_mark_node)
-    {
-      tree duplicate;
-      int success;
-
-      if (high_value == NULL_TREE && value1 != NULL_TREE &&
-	  pedantic && ! INTEGRAL_TYPE_P (TREE_TYPE (value1)))
-	pedwarn ("label must have integral type in ISO C");
-
-      if (low_value == NULL_TREE)
-	success = pushcase (NULL_TREE, 0, label, &duplicate);
-      else if (high_value == NULL_TREE)
-	success = pushcase (value1, convert_and_check, label, &duplicate);
-      else
-	success = pushcase_range (value1, value2, convert_and_check,
-				  label, &duplicate);
-
-      if (success == 1)
-	{
-	  if (low_value == NULL_TREE)
-	    error ("default label not within a switch statement");
-	  else
-	    error ("case label not within a switch statement");
-	}
-      else if (success == 2)
-	{
-	  if (low_value == NULL_TREE)
-	    {
-	      error ("multiple default labels in one switch");
-	      error_with_decl (duplicate, "this is the first default label");
-	    }
-	  else
-	    error ("duplicate case value");
-	  if (high_value != NULL_TREE)
-	    error_with_decl (duplicate,
-			     "this is the first entry for that value");
-	}
-      else if (low_value != NULL_TREE)
-	{
-	  if (success == 3)
-	    warning ("case value out of range");
-	  else if (success == 5)
-	    error ("case label within scope of cleanup or variable array");
-	}
-    }
-}
-
-/* Accessor to set the 'current_function_name_declared' flag.  */
-
-void
-set_current_function_name_declared (i)
-     int i ATTRIBUTE_UNUSED;
-{
-  abort ();
-}
-
 /* Dummy function in place of callback used by C++.  */
+
 void
 extract_interface_info ()
 {
+}
+
+/* Return a new COMPOUND_STMT, after adding it to the current
+   statement tree.  */
+
+tree
+c_begin_compound_stmt ()
+{
+  tree stmt;
+
+  /* Create the COMPOUND_STMT.  */
+  stmt = add_stmt (build_stmt (COMPOUND_STMT, NULL_TREE));
+  /* If we haven't already declared __FUNCTION__ and its ilk then this
+     is the opening curly brace of the function.  Declare them now.  */
+  if (!c_function_name_declared_p) 
+    {
+      c_function_name_declared_p = 1;
+      declare_function_name ();
+    }
+  
+  return stmt;
+}
+
+/* Expand T (a DECL_STMT) if it declares an entity not handled by the
+   common code.  */
+
+void
+c_expand_decl_stmt (t)
+     tree t;
+{
+  tree decl = DECL_STMT_DECL (t);
+  
+  /* Expand nested functions.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_CONTEXT (decl) == current_function_decl
+      && DECL_SAVED_TREE (decl))
+    c_expand_body (decl, /*nested_p=*/1);
 }

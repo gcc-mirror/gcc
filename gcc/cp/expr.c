@@ -133,28 +133,8 @@ cplus_expand_expr (exp, target, tmode, modifier)
       /* We don't need to generate any code for an empty class.  */
       return const0_rtx;
 
-    case STMT_EXPR:
-      {
-	tree rtl_expr;
-	rtx result;
-
-	/* Since expand_expr_stmt calls free_temp_slots after every
-	   expression statement, we must call push_temp_slots here.
-	   Otherwise, any temporaries in use now would be considered
-	   out-of-scope after the first EXPR_STMT from within the
-	   STMT_EXPR.  */
-	push_temp_slots ();
-	rtl_expr = expand_start_stmt_expr ();
-	expand_stmt (STMT_EXPR_STMT (exp));
-	expand_end_stmt_expr (rtl_expr);
-	result = expand_expr (rtl_expr, target, tmode, modifier);
-	pop_temp_slots ();
-	return result;
-      }
-      break;
-
     default:
-      break;
+      return c_expand_expr (exp, target, tmode, modifier);
     }
   my_friendly_abort (40);
   /* NOTREACHED */

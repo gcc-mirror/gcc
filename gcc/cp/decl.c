@@ -159,7 +159,6 @@ static void mark_named_label_lists PARAMS ((void *, void *));
 static void mark_cp_function_context PARAMS ((struct function *));
 static void mark_saved_scope PARAMS ((void *));
 static void mark_lang_function PARAMS ((struct cp_language_function *));
-static void mark_stmt_tree PARAMS ((stmt_tree));
 static void save_function_data PARAMS ((tree));
 static void check_function_type PARAMS ((tree, tree));
 static void destroy_local_var PARAMS ((tree));
@@ -176,7 +175,6 @@ static tree check_special_function_return_type
   PARAMS ((special_function_kind, tree, tree, tree));
 static tree push_cp_library_fn PARAMS ((enum tree_code, tree));
 static tree build_cp_library_fn PARAMS ((tree, enum tree_code, tree));
-static int case_compare PARAMS ((splay_tree_key, splay_tree_key));
 static void store_parm_decls PARAMS ((tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
@@ -2410,16 +2408,6 @@ pop_nested_namespace (ns)
    are at all visible.  Simply setting current_binding_level to the global
    scope isn't enough, because more binding levels may be pushed.  */
 struct saved_scope *scope_chain;
-
-/* Mark ST for GC.  */
-
-static void
-mark_stmt_tree (st)
-     stmt_tree st;
-{
-  ggc_mark_tree (st->x_last_stmt);
-  ggc_mark_tree (st->x_last_expr_type);
-}
 
 /* Mark ARG (which is really a struct saved_scope **) for GC.  */
 
@@ -5156,21 +5144,6 @@ struct cp_switch
    
 static struct cp_switch *switch_stack;
 
-static int
-case_compare (k1, k2)
-     splay_tree_key k1;
-     splay_tree_key k2;
-{
-  /* Consider a NULL key (such as arises with a `default' label) to be
-     smaller than anything else.  */
-  if (!k1)
-    return k2 ? -1 : 0;
-  else if (!k2)
-    return k1 ? 1 : 0;
-
-  return tree_int_cst_compare ((tree) k1, (tree) k2);
-}
-
 /* Called right after a switch-statement condition is parsed.
    SWITCH_STMT is the switch statement being parsed.  */
 
@@ -5206,12 +5179,7 @@ finish_case_label (low_value, high_value)
      tree low_value;
      tree high_value;
 {
-  tree label;
-  tree cleanup;
-  tree type;
   tree cond;
-  tree case_label;
-  splay_tree_node node;
 
   if (! switch_stack)
     {
@@ -5225,13 +5193,13 @@ finish_case_label (low_value, high_value)
       return;
     }
 
-  label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-  DECL_CONTEXT (label) = current_function_decl;
-
   if (processing_template_decl)
     {
+      tree label;
+
       /* For templates, just add the case label; we'll do semantic
 	 analysis at instantiation-time.  */
+      label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
       add_stmt (build_case_label (low_value, high_value, label));
       return;
     }
@@ -5240,124 +5208,8 @@ finish_case_label (low_value, high_value)
   cond = SWITCH_COND (switch_stack->switch_stmt);
   if (cond && TREE_CODE (cond) == TREE_LIST)
     cond = TREE_VALUE (cond);
-  /* If there was an error processing the switch condition, bail now
-     before we get more confused.  */
-  if (!cond || cond == error_mark_node)
-    return;
-  type = TREE_TYPE (cond);
 
-  if ((low_value && TREE_TYPE (low_value) 
-       && POINTER_TYPE_P (TREE_TYPE (low_value))) 
-      || (high_value && TREE_TYPE (high_value)
-	  && POINTER_TYPE_P (TREE_TYPE (high_value))))
-    error ("pointers are not permitted as case values");
-
-  /* Case ranges are a GNU extension.  */
-  if (high_value && pedantic)
-    pedwarn ("ISO C++ forbids range expressions in switch statement");
-
-  if (low_value)
-    {
-      low_value = check_case_value (low_value);
-      low_value = convert_and_check (type, low_value);
-    }
-  if (high_value)
-    {
-      high_value = check_case_value (high_value);
-      high_value = convert_and_check (type, high_value);
-    }
-
-  /* If an error has occurred, bail out now.  */
-  if (low_value == error_mark_node || high_value == error_mark_node)
-    return;
-
-  /* If the LOW_VALUE and HIGH_VALUE are the same, then this isn't
-     really a case range, even though it was written that way.  Remove
-     the HIGH_VALUE to simplify later processing.  */
-  if (tree_int_cst_equal (low_value, high_value))
-    high_value = NULL_TREE;
-  if (low_value && high_value 
-      && !tree_int_cst_lt (low_value, high_value)) 
-    warning ("empty range specified");
-
-  /* Look up the LOW_VALUE in the table of case labels we already
-     have.  */
-  node = splay_tree_lookup (switch_stack->cases, (splay_tree_key) low_value);
-  /* If there was not an exact match, check for overlapping ranges.
-     There's no need to do this if there's no LOW_VALUE or HIGH_VALUE;
-     that's a `default' label and the only overlap is an exact match.  */
-  if (!node && (low_value || high_value))
-    {
-      splay_tree_node low_bound;
-      splay_tree_node high_bound;
-
-      /* Even though there wasn't an exact match, there might be an
-	 overlap between this case range and another case range.
-	 Since we've (inductively) not allowed any overlapping case
-	 ranges, we simply need to find the greatest low case label
-	 that is smaller that LOW_VALUE, and the smallest low case
-	 label that is greater than LOW_VALUE.  If there is an overlap
-	 it will occur in one of these two ranges.  */
-      low_bound = splay_tree_predecessor (switch_stack->cases,
-					  (splay_tree_key) low_value);
-      high_bound = splay_tree_successor (switch_stack->cases,
-					 (splay_tree_key) low_value);
-
-      /* Check to see if the LOW_BOUND overlaps.  It is smaller than
-	 the LOW_VALUE, so there is no need to check unless the
-	 LOW_BOUND is in fact itself a case range.  */
-      if (low_bound
-	  && CASE_HIGH ((tree) low_bound->value)
-	  && tree_int_cst_compare (CASE_HIGH ((tree) low_bound->value),
-				    low_value) >= 0)
-	node = low_bound;
-      /* Check to see if the HIGH_BOUND overlaps.  The low end of that
-	 range is bigger than the low end of the current range, so we
-	 are only interested if the current range is a real range, and
-	 not an ordinary case label.  */
-      else if (high_bound 
-	       && high_value
-	       && (tree_int_cst_compare ((tree) high_bound->key,
-					 high_value)
-		   <= 0))
-	node = high_bound;
-    }
-  /* If there was an overlap, issue an error.  */
-  if (node)
-    {
-      tree duplicate = CASE_LABEL_DECL ((tree) node->value);
-
-      if (high_value)
-	{
-	  error ("duplicate (or overlapping) case value");
-	  cp_error_at ("this is the first entry overlapping that value",
-		       duplicate);
-	}
-      else if (low_value)
-	{
-	  cp_error ("duplicate case value `%E'", low_value) ;
-	  cp_error_at ("previously used here", duplicate);
-	}
-      else
-	{
-	  error ("multiple default labels in one switch");
-	  cp_error_at ("this is the first default label", duplicate);
-	}
-      return;
-    }
-
-  cleanup = last_cleanup_this_contour ();
-  if (cleanup)
-    {
-      static int explained = 0;
-      cp_warning_at ("destructor needed for `%#D'", TREE_PURPOSE (cleanup));
-      warning ("where case label appears here");
-      if (!explained)
-	{
-	  warning ("(enclose actions of previous case statements requiring destructors in their own scope.)");
-	  explained = 1;
-	}
-    }
+  c_add_case_label (switch_stack->cases, cond, low_value, high_value);
 
   check_switch_goto (switch_stack->level);
 
@@ -5365,16 +5217,6 @@ finish_case_label (low_value, high_value)
      own new (temporary) binding contour.  */
   current_binding_level->more_cleanups_ok = 0;
   current_function_return_value = NULL_TREE;
-
-  /* Add a representation for the case label to the statement
-     tree.  */
-  case_label = build_case_label (low_value, high_value, label);
-  add_stmt (case_label);
-
-  /* Register this case label in the splay tree.  */
-  splay_tree_insert (switch_stack->cases, 
-		     (splay_tree_key) low_value,
-		     (splay_tree_value) case_label);
 }
 
 /* Return the list of declarations of the current level.
@@ -6462,11 +6304,11 @@ init_decl_processing ()
   /* Create all the identifiers we need.  */
   initialize_predefined_identifiers ();
 
-  /* Let the back-end now how to save and restore language-specific
-     per-function globals.  */
+  /* Fill in back-end hooks.  */
   init_lang_status = &push_cp_function_context;
   free_lang_status = &pop_cp_function_context;
   mark_lang_status = &mark_cp_function_context;
+  lang_safe_from_p = &c_safe_from_p;
 
   cp_parse_init ();
   init_decl2 ();
@@ -13557,7 +13399,7 @@ build_enumerator (name, value, enumtype)
 
   if (context && context == current_class_type)
     /* This enum declaration is local to the class.  We need the full
-      lang_decl so that we can record DECL_CLASS_CONTEXT, for example.  */
+       lang_decl so that we can record DECL_CLASS_CONTEXT, for example.  */
     decl = build_lang_decl (CONST_DECL, name, type);
   else
     /* It's a global enum, or it's local to a function.  (Note local to
@@ -14696,31 +14538,6 @@ maybe_build_cleanup (decl)
   return 0;
 }
 
-/* Expand a C++ expression at the statement level.
-   This is needed to ferret out nodes which have UNKNOWN_TYPE.
-   The C++ type checker should get all of these out when
-   expressions are combined with other, type-providing, expressions,
-   leaving only orphan expressions, such as:
-
-   &class::bar;		/ / takes its address, but does nothing with it.  */
-
-void
-cplus_expand_expr_stmt (exp)
-     tree exp;
-{
-#if 0
-  /* We should do this eventually, but right now this causes regex.o from
-     libg++ to miscompile, and tString to core dump.  */
-  exp = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp);
-#endif
-
-  /* If we don't do this, we end up down inside expand_expr
-     trying to do TYPE_MODE on the ERROR_MARK, and really
-     go outside the bounds of the type.  */
-  if (exp != error_mark_node)
-    expand_expr_stmt (exp);
-}
-
 /* When a stmt has been parsed, this function is called.  */
 
 void
@@ -14801,17 +14618,17 @@ mark_lang_function (p)
   if (!p)
     return;
 
+  mark_c_language_function (&p->base);
+
   ggc_mark_tree (p->x_ctor_label);
   ggc_mark_tree (p->x_dtor_label);
   ggc_mark_tree (p->x_current_class_ptr);
   ggc_mark_tree (p->x_current_class_ref);
   ggc_mark_tree (p->x_eh_spec_try_block);
-  ggc_mark_tree (p->x_scope_stmt_stack);
 
   ggc_mark_rtx (p->x_result_rtx);
 
   mark_named_label_lists (&p->x_named_labels, &p->x_named_label_uses);
-  mark_stmt_tree (&p->base.x_stmt_tree);
   mark_binding_level (&p->bindings);
 }
 
@@ -14872,13 +14689,13 @@ lang_mark_tree (t)
       if (ld)
 	{
 	  ggc_mark (ld);
+	  c_mark_lang_decl (&ld->decl_flags.base);
 	  if (!DECL_GLOBAL_CTOR_P (t) 
 	      && !DECL_GLOBAL_DTOR_P (t)
 	      && !DECL_THUNK_P (t))
 	    ggc_mark_tree (ld->decl_flags.u2.access);
 	  else if (DECL_THUNK_P (t))
 	    ggc_mark_tree (ld->decl_flags.u2.vcall_offset);
-	  ggc_mark_tree (ld->decl_flags.context);
 	  if (TREE_CODE (t) != NAMESPACE_DECL)
 	    ggc_mark_tree (ld->decl_flags.u.template_info);
 	  else
@@ -14886,7 +14703,7 @@ lang_mark_tree (t)
 	  if (CAN_HAVE_FULL_LANG_DECL_P (t))
 	    {
 	      ggc_mark_tree (ld->befriending_classes);
-	      ggc_mark_tree (ld->saved_tree);
+	      ggc_mark_tree (ld->context);
 	      ggc_mark_tree (ld->cloned_function);
 	      if (!DECL_OVERLOADED_OPERATOR_P (t))
 		ggc_mark_tree (ld->u2.vtt_parm);
