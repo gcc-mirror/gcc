@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  NS32000 version.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
 
 This file is part of GNU CC.
@@ -1310,7 +1310,7 @@ do {									\
 /* This is how to output an element of a case-vector that is relative.  */
 /* ** Notice that the second element is LI format! */
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
-  fprintf (FILE, "\t.double L%d-LI%d\n", VALUE, REL)
+  fprintf (FILE, "\t.long L%d-LI%d\n", VALUE, REL)
 
 /* This is how to output an assembler line
    that says to advance the location counter
