@@ -1,5 +1,7 @@
 2003-03-08  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* gcc.c-torture/execute/20020720-1.x: Add xfail for cris-*-*.
+
 	* gcc.dg/old-style-asm-1.c: Tweak to match mmix-knuth-mmixware.
 
 2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
