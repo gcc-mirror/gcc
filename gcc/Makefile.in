@@ -233,6 +233,11 @@ GCC_PASSES=xgcc cc1 cpp $(EXTRA_PASSES)
 # to link anything.
 GCC_PARTS=$(GCC_PASSES) libgcc.a $(EXTRA_PROGRAMS) $(USE_COLLECT2) $(EXTRA_PARTS)
 
+# Name of `ld' to link into the binary directory for a cross-compiler.
+# If we are using collect2, this will be `gld', since `ld' is collect2.
+# Otherwise it is `ld'.
+REAL_LD_NAME=`if [ x$(USE_COLLECT2) = xld ]; then echo "gld"; else echo "ld"; fi` 
+
 # Directory to link to, when using the target `maketest'.
 DIR = ../gcc
 
@@ -781,12 +786,9 @@ collect2 : collect2.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o collect2 collect2.o version.o $(LIBS)
 
 collect2.o : collect2.c $(CONFIG_H) gstab.h
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-  -DSTANDARD_STARTFILE_PREFIX=\"$(libdir)/\" \
-  -DSTANDARD_BIN_PREFIX=\"$(bindir)/\" \
-  -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
-  -DDEFAULT_TARGET_MACHINE=\"$(target)\" \
-  -c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
+	-DTARGET_MACHINE=\"$(target)\" \
+	-c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
 
 # Objectionable C language specific files.
 
@@ -1385,7 +1387,7 @@ install-cross-tools: install-dir
 	then \
 	  if [ -d $(tooldir)/. ] ; \
 	  then \
-	    for file in as ld ar nm ranlib; do \
+	    for file in as $(REAL_LD_NAME) ar nm ranlib; do \
 	      if [ -f $(libsubdir)/$$file ] ; \
 	      then true; \
 	      else  \
