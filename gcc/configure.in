@@ -2716,6 +2716,7 @@ for machine in $build $host $target; do
 		xm_file=arm/xm-thumb.h
 		md_file=arm/thumb.md
 		tmake_file=arm/t-thumb
+		fixincludes=Makefile.in # There is nothing to fix
 		;;
 # This hasn't been upgraded to GCC 2.
 #	tron-*-*)
