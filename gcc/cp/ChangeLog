@@ -1,3 +1,11 @@
+2002-01-16  Jason Merrill  <jason@redhat.com>
+
+	* error.c (dump_type_suffix): Print the exception specs before
+	recursing.
+	(dump_function_decl): Here, too.
+
+	* cp-tree.h (TMPL_PARMS_DEPTH): Cast to signed HOST_WIDE_INT.
+
 2002-01-10  Ira Ruben	<ira@apple.com>
 
 	* decl.c (start_method): Handle attrlist.

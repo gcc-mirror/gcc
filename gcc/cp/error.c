@@ -737,8 +737,8 @@ dump_type_suffix (t, flags)
 	if (TREE_CODE (t) == METHOD_TYPE)
 	  dump_qualifiers
 	    (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t))), before);
-	dump_type_suffix (TREE_TYPE (t), flags);
 	dump_exception_spec (TYPE_RAISES_EXCEPTIONS (t), flags);
+	dump_type_suffix (TREE_TYPE (t), flags);
 	break;
       }
 
@@ -1141,15 +1141,15 @@ dump_function_decl (t, flags)
     {
       dump_parameters (parmtypes, flags);
 
-      if (show_return)
-	dump_type_suffix (TREE_TYPE (fntype), flags);
-
       if (TREE_CODE (fntype) == METHOD_TYPE)
 	dump_qualifiers (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fntype))),
 			 before);
 
       if (flags & TFF_EXCEPTION_SPECIFICATION)
 	dump_exception_spec (TYPE_RAISES_EXCEPTIONS (fntype), flags);
+
+      if (show_return)
+	dump_type_suffix (TREE_TYPE (fntype), flags);
     }
 
   /* If T is a template instantiation, dump the parameter binding.  */
