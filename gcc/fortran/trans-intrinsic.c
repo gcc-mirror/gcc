@@ -138,8 +138,8 @@ typedef struct
   tree smask;   /* Constant tree of sign's mask.  */
   tree emask;   /* Constant tree of exponent's mask.  */
   tree fmask;   /* Constant tree of fraction's mask.  */
-  tree edigits; /* Constant tree of bit numbers of exponent.  */
-  tree fdigits; /* Constant tree of bit numbers of fraction.  */
+  tree edigits; /* Constant tree of the number of exponent bits.  */
+  tree fdigits; /* Constant tree of the number of fraction bits.  */
   tree f1;      /* Constant tree of the f1 defined in the real model.  */
   tree bias;    /* Constant tree of the bias of exponent in the memory.  */
   tree type;    /* Type tree of arg1.  */
@@ -2409,13 +2409,17 @@ call_builtin_clz (tree result_type, tree op0)
   return convert (result_type, call);
 }
 
-/* Generate code for SPACING (X) intrinsic function. We generate:
 
-    t = expn - (BITS_OF_FRACTION)
-    res = t << (BITS_OF_FRACTION)
-    if (t < 0)
+/* Generate code for SPACING (X) intrinsic function.
+   SPACING (X) = POW (2, e-p)
+
+   We generate:
+                                                                                
+    t = expn - fdigits // e - p.
+    res = t << fdigits // Form the exponent. Fraction is zero.
+    if (t < 0) // The result is out of range. Denormalized case.
       res = tiny(X)
-*/
+ */
 
 static void
 gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
@@ -2444,21 +2448,34 @@ gfc_conv_intrinsic_spacing (gfc_se * se, gfc_expr * expr)
    se->expr = tmp;
 }
 
-/* Generate code for RRSPACING (X) intrinsic function. We generate:
+/* Generate code for RRSPACING (X) intrinsic function.
+   RRSPACING (X) = |X * POW (2, -e)| * POW (2, p) = |FRACTION (X)| * POW (2, p)
+
+   So the result's exponenet is p. And if X is normalized, X's fraction part
+   is the result's fraction. If X is denormalized, to get the X's fraction we
+   shift X's fraction part to left until the first '1' is removed.
+   
+   We generate:
 
     if (expn == 0 && frac == 0)
        res = 0;
     else
     {
+       // edigits is the number of exponent bits. Add the sign bit.
        sedigits = edigits + 1;
-       if (expn == 0)
+
+       if (expn == 0) // Denormalized case.
        {
          t1 = leadzero (frac);
-         frac = frac << (t1 + sedigits);
-         frac = frac >> (sedigits);
+         frac = frac << (t1 + 1); //Remove the first '1'.
+         frac = frac >> (sedigits); //Form the fraction.
        }
-       t = bias + BITS_OF_FRACTION_OF;
-       res = (t << BITS_OF_FRACTION_OF) | frac;
+
+       //fdigits is the number of fraction bits. Form the exponent.
+       t = bias + fdigits;
+
+       res = (t << fdigits) | frac;
+    }
 */
 
 static void
@@ -2476,7 +2493,7 @@ gfc_conv_intrinsic_rrspacing (gfc_se * se, gfc_expr * expr)
    fraction = rcs.frac;
    one = gfc_build_const (masktype, integer_one_node);
    zero = gfc_build_const (masktype, integer_zero_node);
-   t2 = build2 (PLUS_EXPR, masktype, rcs.edigits, one);
+   t2 = fold (build2 (PLUS_EXPR, masktype, rcs.edigits, one));
 
    t1 = call_builtin_clz (masktype, fraction);
    tmp = build2 (PLUS_EXPR, masktype, t1, one);
@@ -2485,8 +2502,8 @@ gfc_conv_intrinsic_rrspacing (gfc_se * se, gfc_expr * expr)
    cond = build2 (EQ_EXPR, boolean_type_node, rcs.expn, zero);
    fraction = build3 (COND_EXPR, masktype, cond, tmp, fraction);
 
-   tmp = build2 (PLUS_EXPR, masktype, rcs.bias, fdigits);
-   tmp = build2 (LSHIFT_EXPR, masktype, tmp, fdigits);
+   tmp = fold (build2 (PLUS_EXPR, masktype, rcs.bias, fdigits));
+   tmp = fold (build2 (LSHIFT_EXPR, masktype, tmp, fdigits));
    tmp = build2 (BIT_IOR_EXPR, masktype, tmp, fraction);
 
    cond2 = build2 (EQ_EXPR, boolean_type_node, rcs.frac, zero);
