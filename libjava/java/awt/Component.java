@@ -1962,9 +1962,6 @@ public abstract class Component
    */
   public boolean prepareImage(Image image, ImageObserver observer)
   {
-    if (image == null)
-      throw new NullPointerException ();
-
     return prepareImage(image, image.getWidth(observer),
                         image.getHeight(observer), observer);
   }

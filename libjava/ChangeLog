@@ -1,5 +1,10 @@
 2003-11-12  Tom Fitzsimmons  <fitzsim@redhat.com>
 
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java (prepareImage): Remove
+	null check.
+	* gnu/java/awt/peer/gtk/GtkToolkit.java (prepareImage): Likewise.
+	* java/awt/Component.java (prepareImage): Likewise.
+
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c (setAlignment):
 	Rename to nativeSetAlignment.
 

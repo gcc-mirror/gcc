@@ -169,9 +169,6 @@ public class GtkToolkit extends Toolkit
   public boolean prepareImage (Image image, int width, int height, 
 			       ImageObserver observer) 
   {
-    if (image == null)
-      throw new NullPointerException ();
-
     GtkImage i = (GtkImage) image;
 
     if (i.isLoaded ()) return true;
