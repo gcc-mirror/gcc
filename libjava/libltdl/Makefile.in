@@ -80,16 +80,21 @@ PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 STRIP = @STRIP@
 VERSION = @VERSION@
+mkinstalldirs = @mkinstalldirs@
 
 AUTOMAKE_OPTIONS = no-dependencies foreign
 
 INCLUDES = $(GCINCS)
 
-@INSTALL_LTDL_TRUE@include_HEADERS = ltdl.h
-@INSTALL_LTDL_TRUE@lib_LTLIBRARIES = libltdl.la
-@INSTALL_LTDL_FALSE@noinst_HEADERS = ltdl.h
+@INSTALL_LTDL_TRUE@include_HEADERS = \
+@INSTALL_LTDL_TRUE@ltdl.h
+@INSTALL_LTDL_TRUE@lib_LTLIBRARIES = \
+@INSTALL_LTDL_TRUE@libltdl.la
+@INSTALL_LTDL_FALSE@noinst_HEADERS = \
+@INSTALL_LTDL_FALSE@ltdl.h
 
-@CONVENIENCE_LTDL_TRUE@noinst_LTLIBRARIES = libltdlc.la
+@CONVENIENCE_LTDL_TRUE@noinst_LTLIBRARIES = \
+@CONVENIENCE_LTDL_TRUE@libltdlc.la
 
 libltdl_la_SOURCES = ltdl.c
 libltdl_la_LDFLAGS = -no-undefined -version-info 2:0:2
@@ -98,7 +103,6 @@ libltdl_la_LIBADD = $(LIBADD_DL)
 libltdlc_la_SOURCES = ltdl.c
 libltdlc_la_LIBADD = $(LIBADD_DL)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-mkinstalldirs = $(SHELL) $(top_srcdir)/../../mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = 
 LTLIBRARIES =  $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES)
@@ -127,7 +131,7 @@ configure.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 SOURCES = $(libltdl_la_SOURCES) $(libltdlc_la_SOURCES)
 OBJECTS = $(libltdl_la_OBJECTS) $(libltdlc_la_OBJECTS)
@@ -347,7 +351,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$d/$$file $(distdir)/$$file; \
+	    cp -pr $$/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
