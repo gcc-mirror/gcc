@@ -1,3 +1,23 @@
+2002-08-07  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	* stor-layout.c (place_union_field): Apply ADJUST_FIELD_ALIGN
+	to type_align when PCC_BITFIELD_TYPE_MATTERS.  Only apply
+	ADJUST_FIELD_ALIGN if not DECL_USER_ALIGN resp. TYPE_USER_ALIGN.
+	(place_field): Likewise.
+	* config/i386/i386.c (x86_field_alignment): Don't check
+	TARGET_ALIGN_DOUBLE for the second time.
+	Apply min for all MODE_INT and MODE_CLASS_INT modes.
+	* config/rs6000/rs6000.c (rs6000_field_alignment): New.
+	* config/rs6000/rs6000-protos.h (rs6000_field_alignment): New
+	prototype.
+	* config/rs6000/rs6000.h (ADJUST_FIELD_ALIGN): Define.
+	* config/rs6000/aix.h (ADJUST_FIELD_ALIGN): Remove.
+	* config/rs6000/darwin.h (ADJUST_FIELD_ALIGN): Remove.
+	* config/rs6000/linux64.h (ADJUST_FIELD_ALIGN): Remove.
+	* config/rs6000/sysv4.h (ADJUST_FIELD_ALIGN): Remove.
+	* doc/tm.texi (ADJUST_FIELD_ALIGN): Update description.
+
 2002-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/mmintrin.h (__m64): Make the type 64-bit aligned.

@@ -147,6 +147,7 @@ extern void output_mi_thunk PARAMS ((FILE *, tree, int, tree));
 extern void rs6000_encode_section_info PARAMS ((tree));
 extern void rs6000_select_section PARAMS ((tree, int));
 extern void rs6000_unique_section PARAMS ((tree, int));
+extern int rs6000_field_alignment PARAMS ((tree, int));
 #ifdef ARGS_SIZE_RTX
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */
 extern enum direction function_arg_padding PARAMS ((enum machine_mode, tree));
