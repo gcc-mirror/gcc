@@ -3465,6 +3465,34 @@ tsrc_operand (op, mode)
 }
 
 
+/* Check src operand of two operand non immedidate instructions.  */
+
+int
+nonimmediate_src_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE)
+    return 0;
+
+  return src_operand (op, mode);
+}
+
+
+/* Check logical src operand of two operand non immedidate instructions.  */
+
+int
+nonimmediate_lsrc_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE)
+    return 0;
+
+  return lsrc_operand (op, mode);
+}
+
+
 int
 reg_or_const_operand (op, mode)
      rtx op;
