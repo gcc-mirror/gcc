@@ -102,6 +102,7 @@ static SPEW_INLINE int identifier_type PARAMS ((tree));
 static void scan_tokens PARAMS ((int));
 static void feed_defarg PARAMS ((tree));
 static void finish_defarg PARAMS ((void));
+static void yylexstring PARAMS ((struct token *));
 static int read_token PARAMS ((struct token *));
 
 static SPEW_INLINE int num_tokens PARAMS ((void));
@@ -242,6 +243,43 @@ read_process_identifier (pyylval)
   return IDENTIFIER;
 }
 
+/* Concatenate strings before returning them to the parser.  This isn't quite
+   as good as having it done in the lexer, but it's better than nothing.  */
+
+static void
+yylexstring (t)
+     struct token *t;
+{
+  enum cpp_ttype next_type;
+  tree next;
+
+  next_type = c_lex (&next);
+  if (next_type == CPP_STRING || next_type == CPP_WSTRING)
+    {
+      varray_type strings;
+
+      VARRAY_TREE_INIT (strings, 32, "strings");
+      VARRAY_PUSH_TREE (strings, t->yylval.ttype);
+
+      do
+	{
+	  VARRAY_PUSH_TREE (strings, next);
+	  next_type = c_lex (&next);
+	}
+      while (next_type == CPP_STRING || next_type == CPP_WSTRING);
+
+      t->yylval.ttype = combine_strings (strings);
+      last_token_id = t->yylval.ttype;
+
+      VARRAY_FREE (strings);
+    }
+
+  /* We will have always read one token too many.  */
+  _cpp_backup_tokens (parse_in, 1);
+
+  t->yychar = STRING;
+}
+
 /* Read the next token from the input file.  The token is written into
    T, and its type number is returned.  */
 static int
@@ -336,7 +374,7 @@ read_token (t)
 
     case CPP_STRING:
     case CPP_WSTRING:
-      t->yychar = STRING;
+      yylexstring (t);
       break;
 
     default:

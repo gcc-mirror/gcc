@@ -683,105 +683,17 @@ fname_decl (rid, id)
   return decl;
 }
 
-/* Given a chain of STRING_CST nodes,
-   concatenate them into one STRING_CST
-   and give it a suitable array-of-chars data type.  */
+/* Given a STRING_CST, give it a suitable array-of-chars data type.  */
 
 tree
-combine_strings (strings)
-     tree strings;
+fix_string_type (value)
+      tree value;
 {
-  tree value, t;
-  int length = 1;
-  int wide_length = 0;
-  int wide_flag = 0;
-  int wchar_bytes = TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT;
-  int nchars;
+  const int wchar_bytes = TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT;
+  const int wide_flag = TREE_TYPE (value) == wchar_array_type_node;
   const int nchars_max = flag_isoc99 ? 4095 : 509;
-
-  if (TREE_CHAIN (strings))
-    {
-      /* More than one in the chain, so concatenate.  */
-      char *p, *q;
-
-      /* Don't include the \0 at the end of each substring,
-	 except for the last one.
-	 Count wide strings and ordinary strings separately.  */
-      for (t = strings; t; t = TREE_CHAIN (t))
-	{
-	  if (TREE_TYPE (t) == wchar_array_type_node)
-	    {
-	      wide_length += (TREE_STRING_LENGTH (t) - wchar_bytes);
-	      wide_flag = 1;
-	    }
-	  else
-	    {
-	      length += (TREE_STRING_LENGTH (t) - 1);
-	      if (C_ARTIFICIAL_STRING_P (t) && !in_system_header)
-		warning ("concatenation of string literals with __FUNCTION__ is deprecated.  This feature will be removed in future"); 
-	    }
-	}
-
-      /* If anything is wide, the non-wides will be converted,
-	 which makes them take more space.  */
-      if (wide_flag)
-	length = length * wchar_bytes + wide_length;
-
-      p = alloca (length);
-
-      /* Copy the individual strings into the new combined string.
-	 If the combined string is wide, convert the chars to ints
-	 for any individual strings that are not wide.  */
-
-      q = p;
-      for (t = strings; t; t = TREE_CHAIN (t))
-	{
-	  int len = (TREE_STRING_LENGTH (t)
-		     - ((TREE_TYPE (t) == wchar_array_type_node)
-			? wchar_bytes : 1));
-	  if ((TREE_TYPE (t) == wchar_array_type_node) == wide_flag)
-	    {
-	      memcpy (q, TREE_STRING_POINTER (t), len);
-	      q += len;
-	    }
-	  else
-	    {
-	      int i, j;
-	      for (i = 0; i < len; i++)
-		{
-		  if (BYTES_BIG_ENDIAN)
-		    {
-		      for (j=0; j<(WCHAR_TYPE_SIZE / BITS_PER_UNIT)-1; j++)
-			*q++ = 0;
-		      *q++ = TREE_STRING_POINTER (t)[i];
-		    }
-		  else
-		    {
-		      *q++ = TREE_STRING_POINTER (t)[i];
-		      for (j=0; j<(WCHAR_TYPE_SIZE / BITS_PER_UNIT)-1; j++)
-			*q++ = 0;
-		    }
-		}
-	    }
-	}
-      if (wide_flag)
-	{
-	  int i;
-	  for (i = 0; i < wchar_bytes; i++)
-	    *q++ = 0;
-	}
-      else
-	*q = 0;
-
-      value = build_string (length, p);
-    }
-  else
-    {
-      value = strings;
-      length = TREE_STRING_LENGTH (value);
-      if (TREE_TYPE (value) == wchar_array_type_node)
-	wide_flag = 1;
-    }
+  int length = TREE_STRING_LENGTH (value);
+  int nchars;
 
   /* Compute the number of elements, for the array type.  */
   nchars = wide_flag ? length / wchar_bytes : length;
@@ -811,6 +723,111 @@ combine_strings (strings)
   TREE_CONSTANT (value) = 1;
   TREE_READONLY (value) = ! flag_writable_strings;
   TREE_STATIC (value) = 1;
+  return value;
+}
+
+/* Given a VARRAY of STRING_CST nodes, concatenate them into one
+   STRING_CST.  */
+
+tree
+combine_strings (strings)
+     varray_type strings;
+{
+  const int wchar_bytes = TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT;
+  const int nstrings = VARRAY_ACTIVE_SIZE (strings);
+  tree value, t;
+  int length = 1;
+  int wide_length = 0;
+  int wide_flag = 0;
+  int i;
+  char *p, *q;
+
+  /* Don't include the \0 at the end of each substring.  Count wide
+     strings and ordinary strings separately.  */
+  for (i = 0; i < nstrings; ++i)
+    {
+      t = VARRAY_TREE (strings, i);
+
+      if (TREE_TYPE (t) == wchar_array_type_node)
+	{
+	  wide_length += TREE_STRING_LENGTH (t) - wchar_bytes;
+	  wide_flag = 1;
+	}
+      else
+	{
+	  length += (TREE_STRING_LENGTH (t) - 1);
+	  if (C_ARTIFICIAL_STRING_P (t) && !in_system_header)
+	    warning ("concatenation of string literals with __FUNCTION__ is deprecated"); 
+	}
+    }
+
+  /* If anything is wide, the non-wides will be converted,
+     which makes them take more space.  */
+  if (wide_flag)
+    length = length * wchar_bytes + wide_length;
+
+  p = xmalloc (length);
+
+  /* Copy the individual strings into the new combined string.
+     If the combined string is wide, convert the chars to ints
+     for any individual strings that are not wide.  */
+
+  q = p;
+  for (i = 0; i < nstrings; ++i)
+    {
+      int len, this_wide;
+
+      t = VARRAY_TREE (strings, i);
+      this_wide = TREE_TYPE (t) == wchar_array_type_node;
+      len = TREE_STRING_LENGTH (t) - (this_wide ? wchar_bytes : 1);
+      if (this_wide == wide_flag)
+	{
+	  memcpy (q, TREE_STRING_POINTER (t), len);
+	  q += len;
+	}
+      else
+	{
+	  const int nzeros = (WCHAR_TYPE_SIZE / BITS_PER_UNIT) - 1;
+	  int j, k;
+
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      for (k = 0; k < len; k++)
+		{
+		  for (j = 0; j < nzeros; j++)
+		    *q++ = 0;
+		  *q++ = TREE_STRING_POINTER (t)[k];
+		}
+	    }
+	  else
+	    {
+	      for (k = 0; k < len; k++)
+		{
+		  *q++ = TREE_STRING_POINTER (t)[k];
+		  for (j = 0; j < nzeros; j++)
+		    *q++ = 0;
+		}
+	    }
+	}
+    }
+
+  /* Nul terminate the string.  */
+  if (wide_flag)
+    {
+      for (i = 0; i < wchar_bytes; i++)
+	*q++ = 0;
+    }
+  else
+    *q = 0;
+
+  value = build_string (length, p);
+  free (p);
+
+  if (wide_flag)
+    TREE_TYPE (value) = wchar_array_type_node;
+  else
+    TREE_TYPE (value) = char_array_type_node;
+
   return value;
 }
 
@@ -4058,7 +4075,7 @@ c_expand_builtin_printf (arglist, target, tmode, modifier, ignore, unlocked)
 	  memcpy (newstr, TREE_STRING_POINTER (stripped_string), newlen - 1);
 	  newstr[newlen - 1] = 0;
 	  
-	  arglist = combine_strings (build_string (newlen, newstr));
+	  arglist = fix_string_type (build_string (newlen, newstr));
 	  arglist = build_tree_list (NULL_TREE, arglist);
 	  fn = fn_puts;
 	}

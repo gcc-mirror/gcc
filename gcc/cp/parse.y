@@ -378,7 +378,7 @@ cp_parse_init ()
 %type <ttype> PFUNCNAME maybe_identifier
 %type <ttype> paren_expr_or_null nontrivial_exprlist SELFNAME
 %type <ttype> expr_no_commas expr_no_comma_rangle
-%type <ttype> cast_expr unary_expr primary string STRING
+%type <ttype> cast_expr unary_expr primary STRING
 %type <ttype> reserved_declspecs boolean.literal
 %type <ttype> reserved_typespecquals
 %type <ttype> SCSPEC TYPESPEC CV_QUALIFIER maybe_cv_qualifier
@@ -543,9 +543,8 @@ extdef:
 		{ do_pending_inlines (); }
 	| template_def
 		{ do_pending_inlines (); }
-	| asm_keyword '(' string ')' ';'
-		{ if (TREE_CHAIN ($3)) $3 = combine_strings ($3);
-		  assemble_asm ($3); }
+	| asm_keyword '(' STRING ')' ';'
+		{ assemble_asm ($3); }
 	| extern_lang_string '{' extdefs_opt '}'
 		{ pop_lang_context (); }
 	| extern_lang_string .hush_warning fndef .warning_ok eat_saved_input
@@ -1608,10 +1607,10 @@ primary:
 		}		
 	| CONSTANT
 	| boolean.literal
-	| string
+	| STRING
 		{
-		  $$ = combine_strings ($$);
-		  /* combine_strings doesn't set up TYPE_MAIN_VARIANT of
+		  $$ = fix_string_type ($$);
+		  /* fix_string_type doesn't set up TYPE_MAIN_VARIANT of
 		     a const array the way we want, so fix it.  */
 		  if (flag_const_strings)
 		    TREE_TYPE ($$) = build_cplus_array_type
@@ -1810,13 +1809,6 @@ boolean.literal:
 		{ $$ = boolean_true_node; }
 	| CXX_FALSE
 		{ $$ = boolean_false_node; }
-	;
-
-/* Produces a STRING_CST with perhaps more STRING_CSTs chained onto it.  */
-string:
-	  STRING
-	| string STRING
-		{ $$ = chainon ($$, $2); }
 	;
 
 nodecls:
@@ -2098,8 +2090,8 @@ nomods_initdecls:
 maybeasm:
 	  /* empty */
 		{ $$ = NULL_TREE; }
-	| asm_keyword '(' string ')'
-		{ if (TREE_CHAIN ($3)) $3 = combine_strings ($3); $$ = $3; }
+	| asm_keyword '(' STRING ')'
+		{ $$ = $3; }
 	;
 
 initdcl:
@@ -3494,27 +3486,27 @@ simple_stmt:
                 { $$ = finish_return_stmt (NULL_TREE); }
 	| RETURN_KEYWORD expr ';'
                 { $$ = finish_return_stmt ($2); }
-	| asm_keyword maybe_cv_qualifier '(' string ')' ';'
+	| asm_keyword maybe_cv_qualifier '(' STRING ')' ';'
 		{ $$ = finish_asm_stmt ($2, $4, NULL_TREE, NULL_TREE,
 					NULL_TREE);
 		  ASM_INPUT_P ($$) = 1; }
 	/* This is the case with just output operands.  */
-	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands ')' ';'
+	| asm_keyword maybe_cv_qualifier '(' STRING ':' asm_operands ')' ';'
 		{ $$ = finish_asm_stmt ($2, $4, $6, NULL_TREE, NULL_TREE); }
 	/* This is the case with input operands as well.  */
-	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands ':'
+	| asm_keyword maybe_cv_qualifier '(' STRING ':' asm_operands ':'
 	  asm_operands ')' ';'
 		{ $$ = finish_asm_stmt ($2, $4, $6, $8, NULL_TREE); }
-	| asm_keyword maybe_cv_qualifier '(' string SCOPE asm_operands ')' ';'
+	| asm_keyword maybe_cv_qualifier '(' STRING SCOPE asm_operands ')' ';'
 		{ $$ = finish_asm_stmt ($2, $4, NULL_TREE, $6, NULL_TREE); }
 	/* This is the case with clobbered registers as well.  */
-	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands ':'
+	| asm_keyword maybe_cv_qualifier '(' STRING ':' asm_operands ':'
 	  asm_operands ':' asm_clobbers ')' ';'
 		{ $$ = finish_asm_stmt ($2, $4, $6, $8, $10); }
-	| asm_keyword maybe_cv_qualifier '(' string SCOPE asm_operands ':'
+	| asm_keyword maybe_cv_qualifier '(' STRING SCOPE asm_operands ':'
 	  asm_clobbers ')' ';'
 		{ $$ = finish_asm_stmt ($2, $4, NULL_TREE, $6, $8); }
-	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands SCOPE
+	| asm_keyword maybe_cv_qualifier '(' STRING ':' asm_operands SCOPE
 	  asm_clobbers ')' ';'
 		{ $$ = finish_asm_stmt ($2, $4, $6, NULL_TREE, $8); }
 	| GOTO '*' expr ';'
@@ -3677,10 +3669,10 @@ asm_operand:
 	;
 
 asm_clobbers:
-	  string
-		{ $$ = tree_cons (NULL_TREE, combine_strings ($1), NULL_TREE);}
-	| asm_clobbers ',' string
-		{ $$ = tree_cons (NULL_TREE, combine_strings ($3), $1); }
+	  STRING
+		{ $$ = tree_cons (NULL_TREE, $1, NULL_TREE);}
+	| asm_clobbers ',' STRING
+		{ $$ = tree_cons (NULL_TREE, $3, $1); }
 	;
 
 /* This is what appears inside the parens in a function declarator.

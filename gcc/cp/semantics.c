@@ -863,9 +863,6 @@ finish_asm_stmt (cv_qualifier, string, output_operands,
   tree r;
   tree t;
 
-  if (TREE_CHAIN (string))
-    string = combine_strings (string);
-
   if (cv_qualifier != NULL_TREE
       && cv_qualifier != ridpointers[(int) RID_VOLATILE])
     {

@@ -1201,21 +1201,7 @@ my_build_string (len, str)
      int len;
      const char *str;
 {
-  int wide_flag = 0;
-  tree a_string = build_string (len, str);
-
-  /* Some code from combine_strings, which is local to c-parse.y.  */
-  if (TREE_TYPE (a_string) == int_array_type_node)
-    wide_flag = 1;
-
-  TREE_TYPE (a_string)
-    = build_array_type (wide_flag ? integer_type_node : char_type_node,
-			build_index_type (build_int_2 (len - 1, 0)));
-
-  TREE_CONSTANT (a_string) = 1;	/* Puts string in the readonly segment */
-  TREE_STATIC (a_string) = 1;
-
-  return a_string;
+  return fix_string_type (build_string (len, str));
 }
 
 /* Given a chain of STRING_CST's, build a static instance of
@@ -1241,7 +1227,23 @@ build_objc_string_object (strings)
 
   add_class_reference (constant_string_id);
 
-  string = combine_strings (strings);
+  if (TREE_CHAIN (strings))
+    {
+      varray_type vstrings;
+      VARRAY_TREE_INIT (vstrings, 32, "strings");
+
+      for (; strings ; strings = TREE_CHAIN (strings))
+	VARRAY_PUSH_TREE (vstrings, strings);
+
+      string = combine_strings (vstrings);
+
+      VARRAY_FREE (vstrings);
+    }
+  else
+    string = strings;
+
+  string = fix_string_type (string);
+
   TREE_SET_CODE (string, STRING_CST);
   length = TREE_STRING_LENGTH (string) - 1;
 
