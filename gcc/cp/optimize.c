@@ -39,11 +39,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
      are not needed.
      
    o Provide heuristics to clamp inlining of recursive template
-     calls?  
+     calls?  */
 
-   o It looks like the return label is not being placed in the optimal
-     place.  Shouldn't it come before the returned value?  */
-   
 /* Data required for function inlining.  */
 
 typedef struct inline_data
@@ -644,6 +641,13 @@ expand_call_inline (tp, walk_subtrees, data)
   STMT_EXPR_STMT (expr)
     = chainon (STMT_EXPR_STMT (expr), scope_stmt);
 
+  /* After the body of the function comes the RET_LABEL.  This must come
+     before we evaluate the returned value below, because that evalulation
+     may cause RTL to be generated.  */
+  STMT_EXPR_STMT (expr)
+    = chainon (STMT_EXPR_STMT (expr), 
+	       build_min_nt (LABEL_STMT, id->ret_label));
+
   /* Finally, mention the returned value so that the value of the
      statement-expression is the returned value of the function.  */
   STMT_EXPR_STMT (expr) = chainon (STMT_EXPR_STMT (expr), use_stmt);
@@ -651,11 +655,6 @@ expand_call_inline (tp, walk_subtrees, data)
   /* Clean up.  */
   splay_tree_delete (id->decl_map);
   id->decl_map = st;
-
-  /* After the body of the function comes the RET_LABEL.  */
-  STMT_EXPR_STMT (expr)
-    = chainon (STMT_EXPR_STMT (expr), 
-	       build_min_nt (LABEL_STMT, id->ret_label));
 
   /* The new expression has side-effects if the old one did.  */
   TREE_SIDE_EFFECTS (expr) = TREE_SIDE_EFFECTS (t);

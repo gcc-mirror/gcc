@@ -1,3 +1,8 @@
+Fri Feb 25 14:52:33 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* optimize.c (expand_call_inline): Emit the return label before
+	evaluating the return value.
+
 2000-02-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* lex.c (check_newline): Use push_srcloc and pop_srcloc, rather
