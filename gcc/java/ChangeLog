@@ -1,3 +1,8 @@
+2000-04-03  Matt Welsh  <mdw@cs.berkeley.edu>
+
+	* jcf-depend.c (add_entry): Fixed bug where list was always replaced
+	with latest entry.
+
 2000-04-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* boehm.c (mark_reference_fields, set_bit): Prototype.
