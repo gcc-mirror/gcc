@@ -1,5 +1,7 @@
 Wed Aug 19 13:51:35 1998  Hans-Peter Nilsson  <hp@axis.se>
 
+	* tm.texi (Misc): Fix typo "teh".
+
 	* tm.texi (PIC): Fix typo "PPIC".
 
 	* tm.texi (Caller Saves): Say that DEFAULT_CALLER_SAVES has no

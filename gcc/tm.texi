@@ -7031,7 +7031,7 @@ when the minimum and maximum offset are known.  If you define this,
 it enables extra code in branch shortening to deal with @code{addr_diff_vec}.
 To make this work, you also have to define INSN_ALIGN and 
 make the alignment for @code{addr_diff_vec} explicit.
-The @var{body} argument is provided so that teh offset_unsigned and scale
+The @var{body} argument is provided so that the offset_unsigned and scale
 flags can be updated.
 
 @findex CASE_VECTOR_PC_RELATIVE
