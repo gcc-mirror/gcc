@@ -62,20 +62,20 @@ GFORTRAN_CROSS_NAME = `echo gfortran|sed '$(program_transform_cross_name)'`
 # from the parse tree to GENERIC, and F95_ADDITIONAL_OBJS are the files
 # from the middle end we depend on.
 
-F95_PARSER_OBJS = fortran/arith.o fortran/array.o fortran/bbt.o fortran/check.o\
-    fortran/decl.o fortran/error.o fortran/expr.o fortran/interface.o \
-    fortran/intrinsic.o fortran/io.o fortran/iresolve.o fortran/match.o \
-    fortran/matchexp.o fortran/misc.o fortran/module.o fortran/parse.o \
-    fortran/primary.o fortran/options.o fortran/resolve.o \
-    fortran/scanner.o fortran/simplify.o fortran/st.o fortran/symbol.o \
-    fortran/dump-parse-tree.o
+F95_PARSER_OBJS = fortran/arith.o fortran/array.o fortran/bbt.o \
+    fortran/check.o fortran/data.o fortran/decl.o fortran/dump-parse-tree.o \
+    fortran/error.o fortran/expr.o fortran/interface.o \
+    fortran/intrinsic.o fortran/io.o fortran/iresolve.o \
+    fortran/match.o fortran/matchexp.o fortran/misc.o fortran/module.o \
+    fortran/options.o fortran/parse.o fortran/primary.o fortran/resolve.o \
+    fortran/scanner.o fortran/simplify.o fortran/st.o fortran/symbol.o
 
 F95_OBJS = $(F95_PARSER_OBJS) \
-    fortran/f95-lang.o fortran/convert.o fortran/trans.o fortran/trans-decl.o \
-    fortran/trans-types.o fortran/trans-const.o fortran/trans-expr.o \
-    fortran/trans-stmt.o fortran/trans-io.o fortran/trans-array.o \
-    fortran/trans-intrinsic.o fortran/dependency.o fortran/trans-common.o \
-    fortran/data.o
+    fortran/convert.o fortran/dependency.o fortran/f95-lang.o \
+    fortran/trans.o fortran/trans-array.o fortran/trans-common.o \
+    fortran/trans-const.o fortran/trans-decl.o fortran/trans-expr.o \
+    fortran/trans-intrinsic.o fortran/trans-io.o fortran/trans-stmt.o \
+    fortran/trans-types.o
 
 # FIXME:
 # We rely on c-semantics to expand from GIMPLE to RTL.
@@ -278,5 +278,4 @@ fortran/trans-intrinsic.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
   gt-fortran-trans-intrinsic.h
 fortran/dependency.o: fortran/gfortran.h fortran/dependency.h
 fortran/trans-common.o: $(GFORTRAN_TRANS_DEPS)
-fortran/data.o: $(GFORTRAN_TRANS_DEPS)
 

@@ -34,12 +34,8 @@ Software Foundation, 59 Temple Place - Suite 330,Boston, MA
    trans-array.c.  */
 
 #include "config.h"
-#include "system.h"
-#include "coretypes.h"
-#include "toplev.h"
 #include "gfortran.h"
 #include "assert.h"
-#include "trans.h"
 
 static void formalize_init_expr (gfc_expr *);
 
@@ -527,7 +523,7 @@ gfc_get_section_index (gfc_array_ref *ar, mpz_t *section_index, mpz_t *offset)
 	  break;
 
 	case DIMEN_VECTOR:
-	  gfc_todo_error ("Vectors sections in data statements");
+	  gfc_internal_error ("TODO: Vector sections in data statements");
 
 	default:
 	  abort ();
