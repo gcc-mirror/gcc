@@ -379,7 +379,6 @@ static void store_parm_decls (int is_main_program);
 static tree start_decl (tree decl, bool is_top_level);
 static void start_function (tree name, tree type, int nested, int public);
 static void ffecom_file_ (const char *name);
-static void ffecom_initialize_char_syntax_ (void);
 static void ffecom_close_include_ (FILE *f);
 static int ffecom_decode_include_option_ (char *spec);
 static FILE *ffecom_open_include_ (char *name, ffewhereLine l,
@@ -11195,8 +11194,6 @@ ffecom_init_0 ()
 	}
     }
 
-  ffecom_initialize_char_syntax_ ();
-
   ffecom_outer_function_decl_ = NULL_TREE;
   current_function_decl = NULL_TREE;
   named_labels = NULL_TREE;
@@ -15271,20 +15268,6 @@ static int indepth = -1;
 
 typedef struct file_buf FILE_BUF;
 
-typedef unsigned char U_CHAR;
-
-/* table to tell if char can be part of a C identifier. */
-U_CHAR is_idchar[256];
-/* table to tell if char can be first char of a c identifier. */
-U_CHAR is_idstart[256];
-/* table to tell if c is horizontal space.  */
-U_CHAR is_hor_space[256];
-/* table to tell if c is horizontal or vertical space.  */
-static U_CHAR is_space[256];
-
-#define SKIP_WHITE_SPACE(p) do { while (is_hor_space[*p]) p++; } while (0)
-#define SKIP_ALL_WHITE_SPACE(p) do { while (is_space[*p]) p++; } while (0)
-
 /* Nonzero means -I- has been seen,
    so don't look for #include "foo" the source-file directory.  */
 static int ignore_srcdir;
@@ -15484,10 +15467,10 @@ read_filename_string (ch, f)
 
   len = 20;
   set = alloc = xmalloc (len + 1);
-  if (! is_space[ch])
+  if (! ISSPACE (ch))
     {
       *set++ = ch;
-      while ((ch = getc (f)) != EOF && ! is_space[ch])
+      while ((ch = getc (f)) != EOF && ! ISSPACE (ch))
 	{
 	  if (set - alloc == len)
 	    {
@@ -15555,10 +15538,10 @@ read_name_map (dirname)
 	  char *from, *to;
 	  struct file_name_map *ptr;
 
-	  if (is_space[ch])
+	  if (ISSPACE (ch))
 	    continue;
 	  from = read_filename_string (ch, f);
-	  while ((ch = getc (f)) != EOF && is_hor_space[ch])
+	  while ((ch = getc (f)) != EOF && ISSPACE (ch) && ch != '\n')
 	    ;
 	  to = read_filename_string (ch, f);
 
@@ -15607,45 +15590,6 @@ ffecom_file_ (const char *name)
   if (name == NULL)
     name = "";
   fp->nominal_fname = fp->fname = name;
-}
-
-/* Initialize syntactic classifications of characters.  */
-
-static void
-ffecom_initialize_char_syntax_ ()
-{
-  register int i;
-
-  /*
-   * Set up is_idchar and is_idstart tables.  These should be
-   * faster than saying (is_alpha (c) || c == '_'), etc.
-   * Set up these things before calling any routines tthat
-   * refer to them.
-   */
-  for (i = 'a'; i <= 'z'; i++) {
-    is_idchar[i - 'a' + 'A'] = 1;
-    is_idchar[i] = 1;
-    is_idstart[i - 'a' + 'A'] = 1;
-    is_idstart[i] = 1;
-  }
-  for (i = '0'; i <= '9'; i++)
-    is_idchar[i] = 1;
-  is_idchar['_'] = 1;
-  is_idstart['_'] = 1;
-
-  /* horizontal space table */
-  is_hor_space[' '] = 1;
-  is_hor_space['\t'] = 1;
-  is_hor_space['\v'] = 1;
-  is_hor_space['\f'] = 1;
-  is_hor_space['\r'] = 1;
-
-  is_space[' '] = 1;
-  is_space['\t'] = 1;
-  is_space['\v'] = 1;
-  is_space['\f'] = 1;
-  is_space['\n'] = 1;
-  is_space['\r'] = 1;
 }
 
 static void
