@@ -169,41 +169,42 @@ namespace std
   template<typename _Tp>
     inline void
     slice_array<_Tp>::operator=(const valarray<_Tp>& __v) const
-    { __valarray_copy (_Array<_Tp> (__v), _M_array, _M_sz, _M_stride); }
+    { __valarray_copy(_Array<_Tp>(__v), _M_array, _M_sz, _M_stride); }
     
   template<typename _Tp>
   template<class _Dom>
     inline void
     slice_array<_Tp>::operator=(const _Expr<_Dom,_Tp>& __e) const
-    { __valarray_copy (__e, _M_sz, _M_array, _M_stride); }
+    { __valarray_copy(__e, _M_sz, _M_array, _M_stride); }
 
 #undef _DEFINE_VALARRAY_OPERATOR
 #define _DEFINE_VALARRAY_OPERATOR(_Op,_Name)				\
-template<typename _Tp>							\
-inline void								\
-slice_array<_Tp>::operator _Op##= (const valarray<_Tp>& __v) const	\
-{									\
-  _Array_augmented_##_Name (_M_array, _M_sz, _M_stride, _Array<_Tp> (__v));\
-}									\
+  template<typename _Tp>						\
+    inline void								\
+    slice_array<_Tp>::operator _Op##=(const valarray<_Tp>& __v) const	\
+    {									\
+      _Array_augmented_##_Name(_M_array, _M_sz, _M_stride, _Array<_Tp>(__v));\
+    }									\
 									\
-template<typename _Tp> template<class _Dom>				\
-inline void								\
-slice_array<_Tp>::operator _Op##= (const _Expr<_Dom,_Tp>& __e) const	\
-{									\
-    _Array_augmented_##_Name (_M_array, _M_stride, __e, _M_sz);		\
-}
+  template<typename _Tp>                                                \
+    template<class _Dom>				                \
+      inline void							\
+      slice_array<_Tp>::operator _Op##=(const _Expr<_Dom,_Tp>& __e) const\
+      {									\
+	  _Array_augmented_##_Name(_M_array, _M_stride, __e, _M_sz);	\
+      }
         
 
-_DEFINE_VALARRAY_OPERATOR(*, multiplies)
-_DEFINE_VALARRAY_OPERATOR(/, divides)
-_DEFINE_VALARRAY_OPERATOR(%, modulus)
-_DEFINE_VALARRAY_OPERATOR(+, plus)
-_DEFINE_VALARRAY_OPERATOR(-, minus)
-_DEFINE_VALARRAY_OPERATOR(^, xor)
-_DEFINE_VALARRAY_OPERATOR(&, and)
-_DEFINE_VALARRAY_OPERATOR(|, or)
-_DEFINE_VALARRAY_OPERATOR(<<, shift_left)
-_DEFINE_VALARRAY_OPERATOR(>>, shift_right)
+_DEFINE_VALARRAY_OPERATOR(*, __multiplies)
+_DEFINE_VALARRAY_OPERATOR(/, __divides)
+_DEFINE_VALARRAY_OPERATOR(%, __modulus)
+_DEFINE_VALARRAY_OPERATOR(+, __plus)
+_DEFINE_VALARRAY_OPERATOR(-, __minus)
+_DEFINE_VALARRAY_OPERATOR(^, __bitwise_xor)
+_DEFINE_VALARRAY_OPERATOR(&, __bitwise_and)
+_DEFINE_VALARRAY_OPERATOR(|, __bitwise_or)
+_DEFINE_VALARRAY_OPERATOR(<<, __shift_left)
+_DEFINE_VALARRAY_OPERATOR(>>, __shift_right)
 
 #undef _DEFINE_VALARRAY_OPERATOR
 

@@ -1,6 +1,7 @@
 // The template and inlines for the -*- C++ -*- indirect_array class.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+//  Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,70 +49,70 @@ namespace std
        typedef _Tp value_type;
 
        // XXX: This is a proposed resolution for DR-253.
-       indirect_array& operator= (const indirect_array&);
-
-       void operator=  (const valarray<_Tp>&) const;
-       void operator*= (const valarray<_Tp>&) const;
-       void operator/= (const valarray<_Tp>&) const;
-       void operator%= (const valarray<_Tp>&) const; 
-       void operator+= (const valarray<_Tp>&) const;
-       void operator-= (const valarray<_Tp>&) const;  
-       void operator^= (const valarray<_Tp>&) const;
-       void operator&= (const valarray<_Tp>&) const;
-       void operator|= (const valarray<_Tp>&) const;
-       void operator<<= (const valarray<_Tp>&) const;
-       void operator>>= (const valarray<_Tp>&) const; 
+       indirect_array& operator=(const indirect_array&);
+       
+       void operator=(const valarray<_Tp>&) const;
+       void operator*=(const valarray<_Tp>&) const;
+       void operator/=(const valarray<_Tp>&) const;
+       void operator%=(const valarray<_Tp>&) const; 
+       void operator+=(const valarray<_Tp>&) const;
+       void operator-=(const valarray<_Tp>&) const;  
+       void operator^=(const valarray<_Tp>&) const;
+       void operator&=(const valarray<_Tp>&) const;
+       void operator|=(const valarray<_Tp>&) const;
+       void operator<<=(const valarray<_Tp>&) const;
+       void operator>>=(const valarray<_Tp>&) const; 
        void operator= (const _Tp&) const;
        //    ~indirect_array();
-
+       
        template<class _Dom>
-       void operator=  (const _Expr<_Dom, _Tp>&) const;
+         void operator=(const _Expr<_Dom, _Tp>&) const;
        template<class _Dom>
-       void operator*= (const _Expr<_Dom, _Tp>&) const;
+         void operator*=(const _Expr<_Dom, _Tp>&) const;
        template<class _Dom>
-       void operator/= (const _Expr<_Dom, _Tp>&) const;
+         void operator/=(const _Expr<_Dom, _Tp>&) const;
        template<class _Dom>
-       void operator%= (const _Expr<_Dom, _Tp>&) const;
+         void operator%=(const _Expr<_Dom, _Tp>&) const;
        template<class _Dom>
-       void operator+= (const _Expr<_Dom, _Tp>&) const;
+         void operator+=(const _Expr<_Dom, _Tp>&) const;
        template<class _Dom>
-       void operator-= (const _Expr<_Dom, _Tp>&) const;
+         void operator-=(const _Expr<_Dom, _Tp>&) const;
        template<class _Dom>
-       void operator^= (const _Expr<_Dom, _Tp>&) const;
+         void operator^=(const _Expr<_Dom, _Tp>&) const;
        template<class _Dom>
-       void operator&= (const _Expr<_Dom, _Tp>&) const;
+         void operator&=(const _Expr<_Dom, _Tp>&) const;
        template<class _Dom>
-       void operator|= (const _Expr<_Dom, _Tp>&) const;
+         void operator|=(const _Expr<_Dom, _Tp>&) const;
        template<class _Dom>
-       void operator<<= (const _Expr<_Dom, _Tp>&) const;
+         void operator<<=(const _Expr<_Dom, _Tp>&) const;
        template<class _Dom>
-       void operator>>= (const _Expr<_Dom, _Tp>&) const; 
+         void operator>>=(const _Expr<_Dom, _Tp>&) const; 
 
      private:
-       indirect_array (const indirect_array&);
-       indirect_array (_Array<_Tp>, size_t, _Array<size_t>);
+       indirect_array(const indirect_array&);
+       indirect_array(_Array<_Tp>, size_t, _Array<size_t>);
 
        friend class valarray<_Tp>;
        friend class gslice_array<_Tp>;
-
+       
        const size_t 	 _M_sz;
        const _Array<size_t> _M_index;
        const _Array<_Tp> 	 _M_array;
-
+       
        // not implemented
-       indirect_array ();
+       indirect_array();
      };
 
   template<typename _Tp>
-  inline indirect_array<_Tp>::indirect_array(const indirect_array<_Tp>& __a)
-          : _M_sz (__a._M_sz), _M_index (__a._M_index),
-            _M_array (__a._M_array) {}
+    inline 
+    indirect_array<_Tp>::indirect_array(const indirect_array<_Tp>& __a)
+      : _M_sz(__a._M_sz), _M_index(__a._M_index), _M_array(__a._M_array) {}
 
   template<typename _Tp>
      inline
-     indirect_array<_Tp>::indirect_array (_Array<_Tp> __a, size_t __s, 
-                                          _Array<size_t> __i)
-             : _M_sz (__s), _M_index (__i), _M_array (__a) {}
+     indirect_array<_Tp>::indirect_array(_Array<_Tp> __a, size_t __s, 
+					 _Array<size_t> __i)
+       : _M_sz(__s), _M_index(__i), _M_array(__a) {}
 
   template<typename _Tp>
      inline indirect_array<_Tp>&
@@ -124,46 +125,47 @@ namespace std
 
   template<typename _Tp>
      inline void
-     indirect_array<_Tp>::operator= (const _Tp& __t) const
+     indirect_array<_Tp>::operator=(const _Tp& __t) const
      { __valarray_fill(_M_array, _M_index, _M_sz, __t); }
 
   template<typename _Tp>
      inline void
-     indirect_array<_Tp>::operator= (const valarray<_Tp>& __v) const
-     { __valarray_copy (_Array<_Tp> (__v), _M_sz, _M_array, _M_index); }
+     indirect_array<_Tp>::operator=(const valarray<_Tp>& __v) const
+     { __valarray_copy(_Array<_Tp>(__v), _M_sz, _M_array, _M_index); }
 
   template<typename _Tp>
      template<class _Dom>
-     inline void
-     indirect_array<_Tp>::operator= (const _Expr<_Dom,_Tp>& __e) const
-     { __valarray_copy (__e, _M_sz, _M_array, _M_index); }
+       inline void
+       indirect_array<_Tp>::operator=(const _Expr<_Dom,_Tp>& __e) const
+       { __valarray_copy(__e, _M_sz, _M_array, _M_index); }
 
 #undef _DEFINE_VALARRAY_OPERATOR
-#define _DEFINE_VALARRAY_OPERATOR(op, name)				\
-template<typename _Tp>							\
-inline void								\
-indirect_array<_Tp>::operator op##= (const valarray<_Tp>& __v) const	\
-{									\
-  _Array_augmented_##name (_M_array, _M_index, _Array<_Tp> (__v), _M_sz); \
-}									\
+#define _DEFINE_VALARRAY_OPERATOR(_Op, _Name)				\
+  template<typename _Tp>						\
+    inline void								\
+    indirect_array<_Tp>::operator _Op##=(const valarray<_Tp>& __v) const\
+    {									\
+      _Array_augmented_##_Name(_M_array, _M_index, _Array<_Tp>(__v), _M_sz); \
+    }									\
 									\
-template<typename _Tp> template<class _Dom>				\
-inline void								\
-indirect_array<_Tp>::operator op##= (const _Expr<_Dom,_Tp>& __e) const \
-{									\
-  _Array_augmented_##name (_M_array, _M_index, __e, _M_sz);		\
-}
+  template<typename _Tp>                                                \
+    template<class _Dom>				                \
+      inline void							\
+      indirect_array<_Tp>::operator _Op##=(const _Expr<_Dom,_Tp>& __e) const\
+      {									\
+	_Array_augmented_##_Name(_M_array, _M_index, __e, _M_sz);	\
+      }
 
-_DEFINE_VALARRAY_OPERATOR(*, multiplies)
-_DEFINE_VALARRAY_OPERATOR(/, divides)
-_DEFINE_VALARRAY_OPERATOR(%, modulus)
-_DEFINE_VALARRAY_OPERATOR(+, plus)
-_DEFINE_VALARRAY_OPERATOR(-, minus)
-_DEFINE_VALARRAY_OPERATOR(^, xor)
-_DEFINE_VALARRAY_OPERATOR(&, and)
-_DEFINE_VALARRAY_OPERATOR(|, or)
-_DEFINE_VALARRAY_OPERATOR(<<, shift_left)
-_DEFINE_VALARRAY_OPERATOR(>>, shift_right)
+_DEFINE_VALARRAY_OPERATOR(*, __multiplies)
+_DEFINE_VALARRAY_OPERATOR(/, __divides)
+_DEFINE_VALARRAY_OPERATOR(%, __modulus)
+_DEFINE_VALARRAY_OPERATOR(+, __plus)
+_DEFINE_VALARRAY_OPERATOR(-, __minus)
+_DEFINE_VALARRAY_OPERATOR(^, __bitwise_xor)
+_DEFINE_VALARRAY_OPERATOR(&, __bitwise_and)
+_DEFINE_VALARRAY_OPERATOR(|, __bitwise_or)
+_DEFINE_VALARRAY_OPERATOR(<<, __shift_left)
+_DEFINE_VALARRAY_OPERATOR(>>, __shift_right)
 
 #undef _DEFINE_VALARRAY_OPERATOR
 
