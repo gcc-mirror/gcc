@@ -4159,7 +4159,7 @@ compilation time.
 -ftree-dom @gol
 -ftree-dse @gol
 -ftree-ter @gol
--ftree-live_range_split @gol
+-ftree-lrs @gol
 -ftree-sra @gol
 -ftree-copyrename @gol
 -ftree-fre @gol
