@@ -1,8 +1,38 @@
-*** Changes since EGCS 1.1:
+*** Changes in GCC 2.95:
 
 * Messages about non-conformant code that we can still handle ("pedwarns")
   are now errors by default, rather than warnings.  This can be reverted
   with -fpermissive, and is overridden by -pedantic or -pedantic-errors.
+
+* String constants are now of type `const char[n]', rather than `char[n]'.
+  This can be reverted with -fno-const-strings.
+
+* References to functions are now supported.
+
+* Lookup of class members during class definition now works in all cases.
+
+* In overload resolution, type conversion operators are now properly
+  treated as always coming from the most derived class.
+
+* C9x-style restricted pointers are supported, using the `__restrict'
+  keyword.
+
+* You can now use -fno-implicit-inline-templates to suppress writing out
+  implicit instantiations of inline templates.  Normally we do write them
+  out, even with -fno-implicit-templates, so that optimization doesn't
+  affect which instantiations are needed.
+
+* -fstrict-prototype now also suppresses implicit declarations.
+
+* Many obsolete options have been removed: -fall-virtual, -fmemoize-lookups,
+  -fsave-memoized, +e?, -fenum-int-equivalence, -fno-nonnull-objects.
+
+* Unused virtual functions can be discarded on some targets by specifying
+  -ffunction-sections -fvtable-gc to the compiler and --gc-sections to the
+  linker.  Unfortunately, this only works on Linux if you're linking
+  statically.
+
+* Lots of bugs stomped.
 
 *** Changes in EGCS 1.1:
 
