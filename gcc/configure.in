@@ -438,7 +438,7 @@ for machine in $build $host $target; do
 		xm_file="xm-siglist.h ${xm_file}"
 		tmake_file="t-netbsd arm/t-netbsd"
 		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.math
+		fixincludes=fixinc.wrap
 		;;
 	arm-*-linux-gnuaout*)		# ARM GNU/Linux
 		cpu_type=arm
@@ -776,7 +776,7 @@ for machine in $build $host $target; do
 	i[[34567]]86-*-freebsdelf*)
 		tm_file="i386/i386.h i386/att.h linux.h i386/freebsd-elf.h i386/perform.h"
 		# On FreeBSD, the headers are already ok, except for math.h.
-		fixincludes=fixinc.math
+		fixincludes=fixinc.wrap
 		tmake_file=i386/t-freebsd
 		gas=yes
 		gnu_ld=yes
@@ -785,13 +785,13 @@ for machine in $build $host $target; do
 	i[[34567]]86-*-freebsd*)
 		tm_file=i386/freebsd.h
 		# On FreeBSD, the headers are already ok, except for math.h.
-		fixincludes=fixinc.math
+		fixincludes=fixinc.wrap
 		tmake_file=i386/t-freebsd
 		;;
 	i[[34567]]86-*-netbsd*)
 		tm_file=i386/netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.math
+		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		;;
 	i[[34567]]86-*-coff*)
@@ -999,7 +999,7 @@ for machine in $build $host $target; do
 		*-*-solaris2.[[0-4]])
 			fixincludes=fixinc.svr4;;
 		*)
-			fixincludes=fixinc.math;;
+			fixincludes=fixinc.wrap;;
 		esac
 		broken_install=yes
  		if [[ x$enable_threads = xyes ]]; then
@@ -1524,7 +1524,7 @@ for machine in $build $host $target; do
 	m68k-*-netbsd*)
 		tm_file=m68k/netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.math
+		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		;;
 	m68k-*-sysv3*)			# Motorola m68k's running system V.3
@@ -1834,7 +1834,7 @@ for machine in $build $host $target; do
 	mips-dec-netbsd*)                  # Decstation running NetBSD
 		tm_file=mips/netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.math
+		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		if [[ x$prefix = xNONE ]]; then
 			prefix=$native_prefix
@@ -2179,7 +2179,7 @@ for machine in $build $host $target; do
 	ns32k-pc532-netbsd*)
 		tm_file=ns32k/netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.math
+		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		;;
         pdp11-*-bsd)
@@ -2342,7 +2342,7 @@ for machine in $build $host $target; do
 		*-*-solaris2.[[0-4]])
 			fixincludes=fixinc.svr4;;
 		*)
-			fixincludes=fixinc.math;;
+			fixincludes=fixinc.wrap;;
 		esac
 		extra_headers=ppc-asm.h
 		;;
@@ -2420,7 +2420,7 @@ for machine in $build $host $target; do
 	sparc-*-netbsd*)
 		tm_file=sparc/netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.math
+		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		;;
 	sparc-*-bsd*)
@@ -2495,7 +2495,7 @@ for machine in $build $host $target; do
 		*-*-solaris2.[[0-4]])
 			fixincludes=fixinc.svr4;;
 		*)
-			fixincludes=fixinc.math;;
+			fixincludes=fixinc.wrap;;
 		esac
 		float_format=i128
 		broken_install=yes
@@ -2597,7 +2597,7 @@ for machine in $build $host $target; do
 	vax-*-netbsd*)
 		tm_file="${tm_file} netbsd.h vax/netbsd.h"
 		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.math
+		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		float_format=vax
 		;;
