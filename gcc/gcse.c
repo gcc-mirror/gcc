@@ -4274,6 +4274,9 @@ do_local_cprop (x, insn, alter_jumps, libcall_sp)
 	  rtx this_rtx = l->loc;
 	  rtx note;
 
+	  if (l->in_libcall)
+	    continue;
+
 	  if (CONSTANT_P (this_rtx))
 	    newcnst = this_rtx;
 	  if (REG_P (this_rtx) && REGNO (this_rtx) >= FIRST_PSEUDO_REGISTER

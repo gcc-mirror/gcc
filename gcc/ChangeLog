@@ -1,3 +1,12 @@
+Tue Jan  7 22:29:56 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cselib.c (cselib_current_insn_in_libcall): New static variable.
+	(new_elt_loc_list, cselib_process_insn, cselib_init): Keep track on whether
+	we are inside libcall.
+	* cselib.h (elt_loc_list): Add in_libcall.
+	* gcse.c (do_local_cprop): Do not copy propagate using insns
+	in libcalls.
+
 2003-01-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/tm.texi (TARGET_SCHED_VARIABLE_ISSUE): CLOBBER and USE do
