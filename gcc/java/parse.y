@@ -3492,7 +3492,18 @@ find_as_inner_class (enclosing, name, cl)
   else
     qual = build_tree_list (build_expr_wfl (name, NULL, 0, 0), NULL_TREE);
 
-  return find_as_inner_class_do (qual, enclosing);
+  if (!(to_return = find_as_inner_class_do (qual, enclosing)))
+    {
+      /* It might be the case that the enclosing class was loaded as
+	 bytecode, in which case it will be missing the
+	 DECL_INNER_CLASS_LIST. We build a fully qualified internal
+	 innerclass name and we try to load it. */
+      tree fqin = identifier_subst (name, "", '.', '$', "");
+      tree ptr;
+      BUILD_PTR_FROM_NAME (ptr, fqin);
+      to_return = resolve_class (NULL_TREE, ptr, NULL_TREE, cl);
+    }
+  return to_return;
 }
 
 /* We go inside the list of sub classes and try to find a way
@@ -4290,7 +4301,7 @@ method_header (flags, type, mdecl, throws)
 	  && !CLASS_INTERFACE (TYPE_NAME (this_class)))
 	parse_error_context 
 	  (id, "Class `%s' must be declared abstract to define abstract method `%s'", 
-	   IDENTIFIER_POINTER (DECL_NAME (ctxp->current_parsed_class)),
+	   IDENTIFIER_POINTER (DECL_NAME (GET_CPC ())),
 	   IDENTIFIER_POINTER (EXPR_WFL_NODE (id)));
     }
 
@@ -10984,7 +10995,7 @@ java_complete_lhs (node)
       else
 	node = patch_switch_statement (node);
 
-      if (TREE_OPERAND (node, 0) == error_mark_node)
+      if (node == error_mark_node || TREE_OPERAND (node, 0) == error_mark_node)
 	nn = error_mark_node;
       else
 	{
