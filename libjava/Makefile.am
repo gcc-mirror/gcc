@@ -1232,6 +1232,7 @@ javax/swing/JCheckBox.java \
 javax/swing/JComponent.java \
 javax/swing/JDialog.java \
 javax/swing/JEditorPane.java \
+javax/swing/JFormattedTextField.java \
 javax/swing/JFrame.java \
 javax/swing/JLabel.java \
 javax/swing/JLayeredPane.java \
@@ -1316,6 +1317,7 @@ javax/swing/text/ComponentView.java \
 javax/swing/text/DefaultCaret.java \
 javax/swing/text/DefaultEditorKit.java \
 javax/swing/text/Document.java \
+javax/swing/text/DocumentFilter.java \
 javax/swing/text/EditorKit.java \
 javax/swing/text/Element.java \
 javax/swing/text/GapContent.java \
@@ -1329,6 +1331,7 @@ javax/swing/text/Style.java \
 javax/swing/text/View.java \
 javax/swing/text/ViewFactory.java \
 javax/swing/text/MutableAttributeSet.java \
+javax/swing/text/NavigationFilter.java \
 javax/swing/text/StyledDocument.java \
 javax/swing/text/StyledEditorKit.java \
 javax/swing/text/TextAction.java \
