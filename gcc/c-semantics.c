@@ -777,10 +777,10 @@ genrtl_asm_stmt (cv_qualifier, string, output_operands,
 			   input_filename, lineno);
 }
 
-/* Generate the RTL for a DECL_CLEANUP.  */
+/* Generate the RTL for a CLEANUP_STMT.  */
 
 void 
-genrtl_decl_cleanup (t)
+genrtl_cleanup_stmt (t)
      tree t;
 {
   tree decl = CLEANUP_DECL (t);
@@ -904,7 +904,7 @@ expand_stmt (t)
 	  break;
 
 	case CLEANUP_STMT:
-	  genrtl_decl_cleanup (t);
+	  genrtl_cleanup_stmt (t);
 	  break;
 
 	default:

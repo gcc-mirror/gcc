@@ -1,3 +1,17 @@
+2003-04-20  Chris Lattner  <sabre@nondot.org>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* c-common.h, c-semantics.c: Rename genrtl_decl_cleanup to
+	genrtl_cleanup_stmt.  Correct comment at head of
+	genrtl_cleanup_stmt (no such thing as a DECL_CLEANUP).
+
+	* stmt.c (struct nesting): Kill n_function_calls.
+	(expand_start_bindings): Don't set
+	thisblock->data.block.n_function_calls.
+	(expand_end_bindings): Compare function_call_count against 0.
+	(expand_cleanups): Kill DONT_DO argument; all callers passed
+	NULL_TREE. All callers updated to match.
+
 2003-04-20  Zack Weinberg  <zack@codesourcery.com>
 
 	* varasm.c (struct deferred_constant, defer_addressed_constants_flag)

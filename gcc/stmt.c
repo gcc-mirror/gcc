@@ -204,8 +204,6 @@ struct nesting GTY(())
 	  /* Chain of labels defined inside this binding contour.
 	     For contours that have stack levels or cleanups.  */
 	  struct label_chain *label_chain;
-	  /* Number of function calls seen, as of start of this block.  */
-	  int n_function_calls;
 	  /* Nonzero if this is associated with an EH region.  */
 	  int exception_region;
 	  /* The saved target_temp_slot_level from our outer block.
@@ -415,7 +413,7 @@ static void expand_null_return_1	PARAMS ((rtx));
 static enum br_predictor return_prediction PARAMS ((rtx));
 static void expand_value_return		PARAMS ((rtx));
 static int tail_recursion_args		PARAMS ((tree, tree));
-static void expand_cleanups		PARAMS ((tree, tree, int, int));
+static void expand_cleanups		PARAMS ((tree, int, int));
 static void check_seenlabel		PARAMS ((void));
 static void do_jump_if_equal		PARAMS ((rtx, rtx, rtx, int));
 static int estimate_case_costs		PARAMS ((case_node_ptr));
@@ -735,7 +733,7 @@ expand_goto_internal (body, label, last_insn)
 	  /* Execute the cleanups for blocks we are exiting.  */
 	  if (block->data.block.cleanups != 0)
 	    {
-	      expand_cleanups (block->data.block.cleanups, NULL_TREE, 1, 1);
+	      expand_cleanups (block->data.block.cleanups, 1, 1);
 	      do_pending_stack_adjust ();
 	    }
 	}
@@ -1026,7 +1024,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 		if (TREE_ADDRESSABLE (lists)
 		    && TREE_VALUE (lists) != 0)
 		  {
-		    expand_cleanups (TREE_VALUE (lists), NULL_TREE, 1, 1);
+		    expand_cleanups (TREE_VALUE (lists), 1, 1);
 		    /* Pop any pushes done in the cleanups,
 		       in case function is about to return.  */
 		    do_pending_stack_adjust ();
@@ -1089,7 +1087,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	      start_sequence ();
 	      (*lang_hooks.decls.pushlevel) (0);
 	      (*lang_hooks.decls.set_block) (f->context);
-	      expand_cleanups (TREE_VALUE (lists), NULL_TREE, 1, 1);
+	      expand_cleanups (TREE_VALUE (lists), 1, 1);
 	      do_pending_stack_adjust ();
 	      cleanup_insns = get_insns ();
 	      (*lang_hooks.decls.poplevel) (1, 0, 0);
@@ -3418,7 +3416,6 @@ expand_start_bindings_and_block (flags, block)
   thisblock->depth = ++nesting_depth;
   thisblock->data.block.stack_level = 0;
   thisblock->data.block.cleanups = 0;
-  thisblock->data.block.n_function_calls = 0;
   thisblock->data.block.exception_region = 0;
   thisblock->data.block.block_target_temp_slot_level = target_temp_slot_level;
 
@@ -3740,8 +3737,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 
   /* If necessary, make handlers for nonlocal gotos taking
      place in the function calls in this block.  */
-  if (function_call_count != thisblock->data.block.n_function_calls
-      && nonlocal_labels
+  if (function_call_count != 0 && nonlocal_labels
       /* Make handler for outermost block
 	 if there were any nonlocal gotos to this function.  */
       && (thisblock->next == 0 ? current_function_has_nonlocal_label
@@ -3795,7 +3791,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
       reachable = (! insn || GET_CODE (insn) != BARRIER);
 
       /* Do the cleanups.  */
-      expand_cleanups (thisblock->data.block.cleanups, NULL_TREE, 0, reachable);
+      expand_cleanups (thisblock->data.block.cleanups, 0, reachable);
       if (reachable)
 	do_pending_stack_adjust ();
 
@@ -4272,11 +4268,6 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
 /* Expand a list of cleanups LIST.
    Elements may be expressions or may be nested lists.
 
-   If DONT_DO is nonnull, then any list-element
-   whose TREE_PURPOSE matches DONT_DO is omitted.
-   This is sometimes used to avoid a cleanup associated with
-   a value that is being returned out of the scope.
-
    If IN_FIXUP is nonzero, we are generating this cleanup for a fixup
    goto and handle protection regions specially in that case.
 
@@ -4284,48 +4275,44 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
    code about this finalization.  */
 
 static void
-expand_cleanups (list, dont_do, in_fixup, reachable)
+expand_cleanups (list, in_fixup, reachable)
      tree list;
-     tree dont_do;
      int in_fixup;
      int reachable;
 {
   tree tail;
   for (tail = list; tail; tail = TREE_CHAIN (tail))
-    if (dont_do == 0 || TREE_PURPOSE (tail) != dont_do)
+    if (TREE_CODE (TREE_VALUE (tail)) == TREE_LIST)
+      expand_cleanups (TREE_VALUE (tail), in_fixup, reachable);
+    else
       {
-	if (TREE_CODE (TREE_VALUE (tail)) == TREE_LIST)
-	  expand_cleanups (TREE_VALUE (tail), dont_do, in_fixup, reachable);
-	else
+	if (! in_fixup && using_eh_for_cleanups_p)
+	  expand_eh_region_end_cleanup (TREE_VALUE (tail));
+
+	if (reachable && !CLEANUP_EH_ONLY (tail))
 	  {
-	    if (! in_fixup && using_eh_for_cleanups_p)
-	      expand_eh_region_end_cleanup (TREE_VALUE (tail));
+	    /* Cleanups may be run multiple times.  For example,
+	       when exiting a binding contour, we expand the
+	       cleanups associated with that contour.  When a goto
+	       within that binding contour has a target outside that
+	       contour, it will expand all cleanups from its scope to
+	       the target.  Though the cleanups are expanded multiple
+	       times, the control paths are non-overlapping so the
+	       cleanups will not be executed twice.  */
 
-	    if (reachable && !CLEANUP_EH_ONLY (tail))
+	    /* We may need to protect from outer cleanups.  */
+	    if (in_fixup && using_eh_for_cleanups_p)
 	      {
-		/* Cleanups may be run multiple times.  For example,
-		   when exiting a binding contour, we expand the
-		   cleanups associated with that contour.  When a goto
-		   within that binding contour has a target outside that
-		   contour, it will expand all cleanups from its scope to
-		   the target.  Though the cleanups are expanded multiple
-		   times, the control paths are non-overlapping so the
-		   cleanups will not be executed twice.  */
+		expand_eh_region_start ();
 
-		/* We may need to protect from outer cleanups.  */
-		if (in_fixup && using_eh_for_cleanups_p)
-		  {
-		    expand_eh_region_start ();
+		expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
 
-		    expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
-
-		    expand_eh_region_end_fixup (TREE_VALUE (tail));
-		  }
-		else
-		  expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
-
-		free_temp_slots ();
+		expand_eh_region_end_fixup (TREE_VALUE (tail));
 	      }
+	    else
+	      expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
+
+	    free_temp_slots ();
 	  }
       }
 }
