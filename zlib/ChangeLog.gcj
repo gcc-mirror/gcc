@@ -1,3 +1,9 @@
+2004-04-10  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure.in: Rename file to ...
+	* configure.ac: ...this.
+	* Makefile.in: Regenerate.
+
 2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Update to autoconf 2.59; clean up slightly.
