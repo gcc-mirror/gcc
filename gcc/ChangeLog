@@ -1,3 +1,8 @@
+Tue Dec 11 23:54:27 EST 2001  John Wehle  (john@feith.com)
+
+	* cfganal.c (flow_depth_first_order_compute): Always
+	increment dfsnum.
+
 2001-11-30 Alan Matsuoka <alanm@redhat.com>
 
 	* combine.c (combine_simplify_rtx) : Can't simplify 
