@@ -958,12 +958,12 @@ expand_inline_function (tree fndecl, tree parms, rtx target, int ignore,
 	}
       else if (GET_CODE (loc) == REG)
 	process_reg_param (map, loc, copy);
-      else if (GET_CODE (loc) == CONCAT && GET_CODE (copy) == CONCAT)
+      else if (GET_CODE (loc) == CONCAT)
 	{
 	  rtx locreal = XEXP (loc, 0);
 	  rtx locimag = XEXP (loc, 1);
-	  rtx copyreal = XEXP (copy, 0);
-	  rtx copyimag = XEXP (copy, 1);
+	  rtx copyreal = read_complex_part (copy, false);
+	  rtx copyimag = read_complex_part (copy, true);
 
 	  process_reg_param (map, locreal, copyreal);
 	  process_reg_param (map, locimag, copyimag);

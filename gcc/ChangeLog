@@ -1,3 +1,8 @@
+2004-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* integrate.c (expand_inline_function): Accept non-CONCAT arguments
+	for CONCAT parameters and invoke read_complex_part on them.
+
 2004-12-02  Richard Henderson  <rth@redhat.com>
 
         * expr.c (write_complex_part): Use simplify_gen_subreg when the
