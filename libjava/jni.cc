@@ -281,16 +281,23 @@ _Jv_JNI_NewLocalRef (JNIEnv *env, jobject obj)
   // Try to find an open slot somewhere in the topmost frame.
   _Jv_JNI_LocalFrame *frame = env->locals;
   bool done = false, set = false;
-  while (frame != NULL && ! done)
+  for (; frame != NULL && ! done; frame = frame->next)
     {
       for (int i = 0; i < frame->size; ++i)
-	if (frame->vec[i] == NULL)
-	  {
-	    set = true;
-	    done = true;
-	    frame->vec[i] = obj;
-	    break;
-	  }
+	{
+	  if (frame->vec[i] == NULL)
+	    {
+	      set = true;
+	      done = true;
+	      frame->vec[i] = obj;
+	      break;
+	    }
+	}
+
+      // If we found a slot, or if the frame we just searched is the
+      // mark frame, then we are done.
+      if (done || frame->marker != MARK_NONE)
+	break;
     }
 
   if (! set)

@@ -1,3 +1,18 @@
+2001-08-17  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/convert/IOConverter.java: Add `646' alias.
+
+2001-06-15  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (_Jv_JNI_NewLocalRef): Search other frames.
+
+2001-05-03  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natRuntime.cc (init): Call add_library on the program
+	itself.
+	(_Jv_FindSymbolInExecutable): Return NULL if no library on the
+	list has the symbol.
+
 2001-09-21  Richard Henderson  <rth@redhat.com>
 
 	* include/jvm.h (_Jv_VTable): Handle function descriptors for ia64;

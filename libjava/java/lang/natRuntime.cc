@@ -69,7 +69,7 @@ _Jv_FindSymbolInExecutable (const char *symname)
 	return r;
     }
 
-  return lt_dlsym (NULL, symname);
+  return NULL;
 }
 
 #endif /* USE_LTDL */
@@ -191,6 +191,9 @@ java::lang::Runtime::init (void)
   finalize_on_exit = false;
 #ifdef USE_LTDL
   lt_dlinit ();
+  lt_dlhandle self = lt_dlopen (NULL);
+  if (self != NULL)
+    add_library (self);
 #endif
 }
 
