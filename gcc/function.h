@@ -290,6 +290,10 @@ struct function
   /* Nonzero if memory access checking be enabled in the current function.  */
   int check_memory_usage;
 
+  /* Nonzero if stack limit checking should be enabled in the current
+     function.  */
+  int limit_stack;
+
   /* Number of function calls seen so far in current function.  */
   int x_function_call_count;
 
@@ -490,6 +494,7 @@ extern struct function *all_functions;
 #define current_function_return_rtx (current_function->return_rtx)
 #define current_function_instrument_entry_exit (current_function->instrument_entry_exit)
 #define current_function_check_memory_usage (current_function->check_memory_usage)
+#define current_function_limit_stack (current_function->limit_stack)
 #define current_function_uses_pic_offset_table (current_function->uses_pic_offset_table)
 #define current_function_uses_const_pool (current_function->uses_const_pool)
 #define current_function_cannot_inline (current_function->cannot_inline)

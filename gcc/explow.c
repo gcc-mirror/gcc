@@ -1333,6 +1333,33 @@ allocate_dynamic_stack_space (size, target, known_align)
       emit_move_insn (target, virtual_stack_dynamic_rtx);
 #endif
       size = convert_modes (Pmode, ptr_mode, size, 1);
+
+      /* Check stack bounds if necessary.  */
+      if (current_function_limit_stack)
+	{
+	  rtx available;
+	  rtx space_available = gen_label_rtx ();
+#ifdef STACK_GROWS_DOWNWARD
+	  available = expand_binop (Pmode, sub_optab, 
+				    stack_pointer_rtx, stack_limit_rtx,
+				    NULL_RTX, 1, OPTAB_WIDEN);
+#else
+	  available = expand_binop (Pmode, sub_optab, 
+				    stack_limit_rtx, stack_pointer_rtx,
+				    NULL_RTX, 1, OPTAB_WIDEN);
+#endif
+	  emit_cmp_and_jump_insns (available, size, GEU, NULL_RTX, Pmode, 1,
+				   0, space_available);
+#ifdef HAVE_trap
+	  if (HAVE_trap)
+	    emit_insn (gen_trap ());
+	  else
+#endif
+	    error ("stack limits not supported on this target");
+	  emit_barrier ();
+	  emit_label (space_available);
+	}
+
       anti_adjust_stack (size);
 #ifdef SETJMP_VIA_SAVE_AREA
       if (setjmpless_size != NULL_RTX)

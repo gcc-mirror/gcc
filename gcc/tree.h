@@ -1307,6 +1307,10 @@ struct tree_type
    disabled in this function.  */
 #define DECL_NO_CHECK_MEMORY_USAGE(NODE) ((NODE)->decl.no_check_memory_usage)
 
+/* Used in FUNCTION_DECLs to indicate that limit-stack-* should be
+   disabled in this function.  */
+#define DECL_NO_LIMIT_STACK(NODE) ((NODE)->decl.no_limit_stack)
+
 /* Additional flags for language-specific uses.  */
 #define DECL_LANG_FLAG_0(NODE) (DECL_CHECK (NODE)->decl.lang_flag_0)
 #define DECL_LANG_FLAG_1(NODE) (DECL_CHECK (NODE)->decl.lang_flag_1)
@@ -1376,6 +1380,7 @@ struct tree_decl
   unsigned no_check_memory_usage : 1;
   unsigned comdat_flag : 1;
   unsigned malloc_flag : 1;
+  unsigned no_limit_stack : 1;
 
   /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
      If built-in, this is the code for which built-in function.

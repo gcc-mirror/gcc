@@ -3364,6 +3364,16 @@ duplicate_decls (newdecl, olddecl)
 
       /* Keep the old rtl since we can safely use it.  */
       DECL_RTL (newdecl) = DECL_RTL (olddecl);
+
+      if (TREE_CODE (newdecl) == FUNCTION_DECL)
+	{
+	  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (newdecl)
+	    |= DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (olddecl);
+	  DECL_NO_CHECK_MEMORY_USAGE (newdecl)
+	    |= DECL_NO_CHECK_MEMORY_USAGE (olddecl);
+	  DECL_NO_LIMIT_STACK (newdecl)
+	    |= DECL_NO_LIMIT_STACK (olddecl);
+	}
     }
   /* If cannot merge, then use the new type and qualifiers,
      and don't preserve the old rtl.  */

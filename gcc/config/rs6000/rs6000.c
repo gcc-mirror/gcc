@@ -4176,6 +4176,53 @@ rs6000_allocate_stack_space (file, size, copy_r12)
      int copy_r12;
 {
   int neg_size = -size;
+
+  if (current_function_limit_stack)
+    {
+      if (REG_P (stack_limit_rtx)
+	  && REGNO (stack_limit_rtx) > 1 
+	  && REGNO (stack_limit_rtx) <= 31)
+	{
+	  if (size <= 32767)
+	    asm_fprintf (file, "\t{cal %s,%d(%s)|addi %s,%s,%d}\n",
+			 reg_names[0], reg_names[REGNO (stack_limit_rtx)], 
+			 size);
+	  else
+	    {
+	      asm_fprintf (file, "\t{cau|addis} %s,%s,0x%x\n",
+			   reg_names[0], reg_names[REGNO (stack_limit_rtx)], 
+			   ((size + 0x8000) >> 16) & 0xffff);
+	      asm_fprintf (file, "\t{ai|addic} %s,%s,%d\n",
+			   reg_names[0], reg_names[0], 
+			   (size & 0x7fff) | -(size & 0x8000));
+	    }
+	  if (TARGET_32BIT)
+	    asm_fprintf (file, "\t{t|tw}llt %s,%s\n", 
+			 reg_names[1], reg_names[0]);
+	  else
+	    asm_fprintf (file, "\ttdllt %s,%s\n", reg_names[1], reg_names[0]);
+	}
+      else if (GET_CODE (stack_limit_rtx) == SYMBOL_REF
+	       && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))
+	{
+	  char * l_name = XSTR (stack_limit_rtx, 0);
+	  const char * stripped_name;
+
+	  STRIP_NAME_ENCODING (stripped_name, l_name);
+	  asm_fprintf (file, "\t{liu|lis} %s,%s@ha+%d\n",
+		       reg_names[0], stripped_name, size);
+	  asm_fprintf (file, "\t{ai|addic} %s,%s,%s@l+%d\n",
+		       reg_names[0], reg_names[0], stripped_name, size);
+	  if (TARGET_32BIT)
+	    asm_fprintf (file, "\t{t|tw}llt %s,%s\n", 
+			 reg_names[1], reg_names[0]);
+	  else
+	    asm_fprintf (file, "\ttdllt %s,%s\n", reg_names[1], reg_names[0]);
+	}
+      else
+	warning ("stack limit expression is not supported");
+    }
+
   if (TARGET_UPDATE)
     {
       if (size < 32767)

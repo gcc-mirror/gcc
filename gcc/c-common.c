@@ -140,7 +140,8 @@ int skip_evaluation;
 enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
 	    A_NO_CHECK_MEMORY_USAGE, A_NO_INSTRUMENT_FUNCTION,
 	    A_CONSTRUCTOR, A_DESTRUCTOR, A_MODE, A_SECTION, A_ALIGNED,
-	    A_UNUSED, A_FORMAT, A_FORMAT_ARG, A_WEAK, A_ALIAS, A_MALLOC};
+	    A_UNUSED, A_FORMAT, A_FORMAT_ARG, A_WEAK, A_ALIAS, A_MALLOC,
+	    A_NO_LIMIT_STACK};
 
 enum format_type { printf_format_type, scanf_format_type,
 		   strftime_format_type };
@@ -482,6 +483,7 @@ init_attributes ()
   add_attribute (A_NO_INSTRUMENT_FUNCTION, "no_instrument_function", 0, 0, 1);
   add_attribute (A_NO_CHECK_MEMORY_USAGE, "no_check_memory_usage", 0, 0, 1);
   add_attribute (A_MALLOC, "malloc", 0, 0, 1);
+  add_attribute (A_NO_LIMIT_STACK, "no_stack_limit", 0, 0, 1);
 }
 
 /* Default implementation of valid_lang_attribute, below.  By default, there
@@ -1037,6 +1039,23 @@ decl_attributes (node, attributes, prefix_attributes)
 	    }
 	  else
 	    DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl) = 1;
+	  break;
+
+        case A_NO_LIMIT_STACK:
+	  if (TREE_CODE (decl) != FUNCTION_DECL)
+	    {
+	      error_with_decl (decl,
+			       "`%s' attribute applies only to functions",
+			       IDENTIFIER_POINTER (name));
+	    }
+	  else if (DECL_INITIAL (decl))
+	    {
+	      error_with_decl (decl,
+			       "can't set `%s' attribute after definition",
+			       IDENTIFIER_POINTER (name));
+	    }
+	  else
+	    DECL_NO_LIMIT_STACK (decl) = 1;
 	  break;
 	}
     }

@@ -151,6 +151,19 @@ output_function_prologue (stream, size)
   int fsize = (size + 3) & -4;
   int cfa_offset = INCOMING_FRAME_SP_OFFSET, cfa_store_offset = cfa_offset;
   
+  /* If the stack limit is a symbol, we can check it here,
+     before actually allocating the space.  */
+  if (current_function_limit_stack
+      && GET_CODE (stack_limit_rtx) == SYMBOL_REF)
+    {
+#if defined (MOTOROLA)
+      asm_fprintf (stream, "\tcmp.l %0I%s+%d,%Rsp\n\ttrapcs\n",
+		   XSTR (stack_limit_rtx, 0), fsize + 4);
+#else
+      asm_fprintf (stream, "\tcmpl %0I%s+%d,%Rsp\n\ttrapcs\n",
+		   XSTR (stack_limit_rtx, 0), fsize + 4);
+#endif
+    }
 
   if (frame_pointer_needed)
     {
@@ -374,6 +387,24 @@ output_function_prologue (stream, size)
 #endif
 #endif
 
+  /* If the stack limit is not a symbol, check it here.  
+     This has the disadvantage that it may be too late...  */
+  if (current_function_limit_stack)
+    {
+      if (REG_P (stack_limit_rtx))
+	{
+#if defined (MOTOROLA)
+	  asm_fprintf (stream, "\tcmp.l %s,%Rsp\n\ttrapcs\n",
+		       reg_names[REGNO (stack_limit_rtx)]);
+#else
+	  asm_fprintf (stream, "\tcmpl %s,%Rsp\n\ttrapcs\n",
+		       reg_names[REGNO (stack_limit_rtx)]);
+#endif
+	}
+      else if (GET_CODE (stack_limit_rtx) != SYMBOL_REF)
+	warning ("stack limit expression is not supported");
+    }
+  
   if (num_saved_regs <= 2)
     {
       /* Store each separately in the same order moveml uses.

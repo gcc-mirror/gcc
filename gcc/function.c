@@ -5946,6 +5946,9 @@ expand_function_start (subr, parms_have_cleanups)
     = (flag_instrument_function_entry_exit
        && ! DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (subr));
 
+  current_function_limit_stack
+    = (stack_limit_rtx != NULL_RTX && ! DECL_NO_LIMIT_STACK (subr));
+
   /* If function gets a static chain arg, store it in the stack frame.
      Do this first, so it gets the first stack slot offset.  */
   if (current_function_needs_context)

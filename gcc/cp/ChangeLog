@@ -1,3 +1,10 @@
+1999-11-24  Geoffrey Keating  <geoffk@cygnus.com>
+            Greg McGary  <gkm@gnu.org>
+
+	* decl.c (duplicate_decls): Merge
+ 	DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT,
+ 	DECL_NO_CHECK_MEMORY_USAGE, DECL_NO_LIMIT_STACK.
+
 1999-12-02  Mike Stump  <mrs@wrs.com>
 
 	* init.c (perform_member_init): Handle parse errors better.

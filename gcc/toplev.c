@@ -720,6 +720,15 @@ int flag_pack_struct = 0;
    to be allocated dynamically.  */
 int flag_stack_check;
 
+/* When non-NULL, indicates that whenever space is allocated on the
+   stack, the resulting stack pointer must not pass this
+   address---that is, for stacks that grow downward, the stack pointer
+   must always be greater than or equal to this address; for stacks
+   that grow upward, the stack pointer must be less than this address.
+   At present, the rtx may be either a REG or a SYMBOL_REF, although
+   the support provided depends on the backend.  */
+rtx stack_limit_rtx;
+
 /* -fcheck-memory-usage causes extra code to be generated in order to check
    memory accesses.  This is used by a detector of bad memory accesses such
    as Checker.  */
@@ -4889,6 +4898,25 @@ decode_f_option (arg)
     align_jumps = read_integral_parameter (arg + 12, arg - 2, align_jumps);
   else if (!strncmp (arg, "align-labels=", 13))
     align_labels = read_integral_parameter (arg + 13, arg - 2, align_labels);
+  else if (!strncmp (arg, "stack-limit-register=", 21))
+    {
+      int reg = decode_reg_name (arg + 21);
+      if (reg < 0)
+	error ("unrecognized register name `%s'", arg + 21);
+      else
+	stack_limit_rtx = gen_rtx_REG (Pmode, reg);
+    }
+  else if (!strncmp (arg, "stack-limit-symbol=", 19))
+    {
+      char *nm;
+      if (ggc_p)
+	nm = ggc_alloc_string (arg + 19, strlen (arg + 19));
+      else
+	nm = xstrdup (arg + 19);
+      stack_limit_rtx = gen_rtx_SYMBOL_REF (Pmode, nm);
+    }
+  else if (!strcmp (arg, "no-stack-limit"))
+    stack_limit_rtx = NULL_RTX;
   else if (!strcmp (arg, "preprocessed"))
     /* Recognise this switch but do nothing.  This prevents warnings
        about an unrecognised switch if cpplib has not been linked in.  */
@@ -5323,6 +5351,7 @@ main (argc, argv)
   init_ggc ();
   ggc_add_root (&input_file_stack, 1, sizeof input_file_stack,
 		&mark_file_stack);
+  ggc_add_rtx_root (&stack_limit_rtx, 1);
 
   /* Perform language-specific options intialization.  */
   lang_init_options ();

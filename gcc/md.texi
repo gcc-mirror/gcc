@@ -2549,6 +2549,29 @@ sibling call (aka tail call) sites.
 The @code{sibcall_epilogue} pattern must not clobber any arguments used for
 parameter passing or any stack slots for arguments passed to the current
 function.  
+
+@cindex @code{trap} instruction pattern
+@item @samp{trap}
+This pattern, if defined, signals an error, typically by causing some
+kind of signal to be raised.  Among other places, it is used by the Java
+frontend to signal `invalid array index' exceptions.
+
+@cindex @code{conditional_trap} instruction pattern
+@item @samp{conditional_trap}
+Conditional trap instruction.  Operand 0 is a piece of RTL which
+performs a comparison.  Operand 1 is the trap code, an integer.
+
+A typical @code{conditional_trap} pattern looks like
+
+@smallexample
+(define_insn "conditional_trap"
+  [(trap_if (match_operator 0 "trap_operator" 
+             [(cc0) (const_int 0)])
+            (match_operand 1 "const_int_operand" "i"))]
+  ""
+  "@dots{}")
+@end smallexample
+
 @end table
 
 @node Pattern Ordering
