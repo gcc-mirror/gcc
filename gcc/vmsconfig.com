@@ -118,6 +118,7 @@ $edit/tpu/nojournal/nosection/nodisplay/command=sys$input
 !
 ! Now fix up a few things in the output buffer
 !
+	pat_replace ("bytecode "," ");
 	pat_replace (".o ",",");
 	pat_replace (".o","");  !appear at end of lines.
 !
@@ -274,6 +275,10 @@ $edit/tpu/nojournal/nosection/nodisplay/command=sys$input
 			"independent.opt");
    generate_option_file(LINE_BEGIN & "LIB2FUNCS" & ((SPAN(" ") & "=") | "="),
 			"libgcc2.list");
+   generate_option_file(LINE_BEGIN & "BC_ALL" & ((SPAN(" ") & "=") | "="),
+			"bc_all.opt");
+   generate_option_file(LINE_BEGIN & "BI_OBJ" & ((SPAN(" ") & "=") | "="),
+			"bi_all.opt");
 !
 ! Now change OBJS in the Makefile, so each language specific options file 
 ! does not pick up all of the language independent files.
