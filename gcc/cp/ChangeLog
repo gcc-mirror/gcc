@@ -1,3 +1,10 @@
+2000-12-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* error.c (dump_function_decl): Use DECL_VIRTUAL_P, not
+	TYPE_POLYMORPHIC_P.
+	
+	* typeck.c (build_static_cast): Remove unused variable.
+
 2000-12-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c: Fix typo in comment.

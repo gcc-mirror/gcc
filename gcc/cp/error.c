@@ -1219,7 +1219,7 @@ dump_function_decl (t, flags)
     /* OK */;
   else if (DECL_STATIC_FUNCTION_P (t))
     print_identifier (scratch_buffer, "static ");
-  else if (TYPE_POLYMORPHIC_P (t))
+  else if (DECL_VIRTUAL_P (t))
     print_identifier (scratch_buffer, "virtual ");
 
   /* Print the return type?  */

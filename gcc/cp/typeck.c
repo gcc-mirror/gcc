@@ -5046,7 +5046,7 @@ tree
 build_static_cast (type, expr)
    tree type, expr;
 {
-  tree intype, binfo;
+  tree intype;
   int ok;
 
   if (type == error_mark_node || expr == error_mark_node)
