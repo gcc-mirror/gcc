@@ -249,7 +249,9 @@ __objc_init_protocols (struct objc_protocol_list* protos)
       return;
     }
 
+#if 0
   assert (protos->next == 0);	/* only single ones allowed */
+#endif
 
   for(i = 0; i < protos->count; i++)
     {
