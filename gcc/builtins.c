@@ -169,8 +169,7 @@ static tree fold_builtin_toascii (tree);
 static tree fold_builtin_isdigit (tree);
 static tree fold_builtin_fabs (tree, tree);
 static tree fold_builtin_abs (tree, tree);
-static tree fold_builtin_unordered_cmp (tree, tree, enum tree_code,
-					enum tree_code);
+static tree fold_builtin_unordered_cmp (tree, enum tree_code, enum tree_code);
 
 static tree simplify_builtin_memcmp (tree);
 static tree simplify_builtin_strcmp (tree);
@@ -7626,18 +7625,75 @@ fold_builtin_abs (tree arglist, tree type)
    hold NaNs and ORDERED_CODE is used for the rest.  */
 
 static tree
-fold_builtin_unordered_cmp (tree arglist, tree type,
+fold_builtin_unordered_cmp (tree exp,
 			    enum tree_code unordered_code,
 			    enum tree_code ordered_code)
 {
+  tree fndecl = get_callee_fndecl (exp);
+  tree arglist = TREE_OPERAND (exp, 1);
+  tree type = TREE_TYPE (TREE_TYPE (fndecl));
   enum tree_code code;
   tree arg0, arg1;
 
   if (!validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
-    return 0;
+    {
+      enum tree_code code0, code1;
+      tree type0, type1;
+      tree cmp_type = 0;
 
-  arg0 = TREE_VALUE (arglist);
-  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+      /* Check that we have exactly two arguments.  */
+      if (arglist == 0 || TREE_CHAIN (arglist) == 0)
+	{
+	  error ("too few arguments to function `%s'",
+		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	  return error_mark_node;
+	}
+      else if (TREE_CHAIN (TREE_CHAIN (arglist)) != 0)
+	{
+	  error ("too many arguments to function `%s'",
+		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	  return error_mark_node;
+	}
+
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+
+      type0 = TREE_TYPE (arg0);
+      type1 = TREE_TYPE (arg1);
+
+      code0 = TREE_CODE (type0);
+      code1 = TREE_CODE (type1);
+
+      if (code0 == REAL_TYPE && code1 == REAL_TYPE)
+	/* Choose the wider of two real types.  */
+        cmp_type = TYPE_PRECISION (type0) >= TYPE_PRECISION (type1)
+		   ? type0 : type1;
+      else if (code0 == REAL_TYPE && code1 == INTEGER_TYPE)
+	cmp_type = type0;
+      else if (code0 == INTEGER_TYPE && code1 == REAL_TYPE)
+	cmp_type = type1;
+      else
+	{
+	  error ("non-floating-point argument to function `%s'",
+		 IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+	  return error_mark_node;
+	}
+
+      arg0 = fold_convert (cmp_type, arg0);
+      arg1 = fold_convert (cmp_type, arg1);
+    }
+  else
+    {
+      arg0 = TREE_VALUE (arglist);
+      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
+    }
+
+  if (unordered_code == UNORDERED_EXPR)
+    {
+      if (!MODE_HAS_NANS (TYPE_MODE (TREE_TYPE (arg0))))
+	return omit_two_operands (type, integer_zero_node, arg0, arg1);
+      return fold (build2 (UNORDERED_EXPR, type, arg0, arg1));
+    }
 
   code = MODE_HAS_NANS (TYPE_MODE (TREE_TYPE (arg0))) ? unordered_code
 						      : ordered_code;
@@ -8198,26 +8254,17 @@ fold_builtin_1 (tree exp)
       return fold_builtin_copysign (arglist, type);
 
     case BUILT_IN_ISGREATER:
-      return fold_builtin_unordered_cmp (arglist, type, UNLE_EXPR, LE_EXPR);
+      return fold_builtin_unordered_cmp (exp, UNLE_EXPR, LE_EXPR);
     case BUILT_IN_ISGREATEREQUAL:
-      return fold_builtin_unordered_cmp (arglist, type, UNLT_EXPR, LT_EXPR);
+      return fold_builtin_unordered_cmp (exp, UNLT_EXPR, LT_EXPR);
     case BUILT_IN_ISLESS:
-      return fold_builtin_unordered_cmp (arglist, type, UNGE_EXPR, GE_EXPR);
+      return fold_builtin_unordered_cmp (exp, UNGE_EXPR, GE_EXPR);
     case BUILT_IN_ISLESSEQUAL:
-      return fold_builtin_unordered_cmp (arglist, type, UNGT_EXPR, GT_EXPR);
+      return fold_builtin_unordered_cmp (exp, UNGT_EXPR, GT_EXPR);
     case BUILT_IN_ISLESSGREATER:
-      return fold_builtin_unordered_cmp (arglist, type, UNEQ_EXPR, EQ_EXPR);
-
+      return fold_builtin_unordered_cmp (exp, UNEQ_EXPR, EQ_EXPR);
     case BUILT_IN_ISUNORDERED:
-      if (validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
-	{
-	  tree arg0 = TREE_VALUE (arglist);
-	  tree arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-	  if (!MODE_HAS_NANS (TYPE_MODE (TREE_TYPE (arg0))))
-	    return omit_two_operands (type, integer_zero_node, arg0, arg1);
-	  return fold (build2 (UNORDERED_EXPR, type, arg0, arg1));
-	}
-      break;
+      return fold_builtin_unordered_cmp (exp, UNORDERED_EXPR, NOP_EXPR);
 
     default:
       break;
