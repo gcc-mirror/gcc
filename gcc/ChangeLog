@@ -196,7 +196,6 @@ Fri Sep 14 13:54:50 EDT 2001  John Wehle  (john@feith.com)
 	* crti.asm: New file.
 	* crtn.asm: New file.
 
->>>>>>> 1.11331
 2001-09-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-parse.in (_yylex): Use _cpp_backup_tokens.
