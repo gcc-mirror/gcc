@@ -25,9 +25,9 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __GCC_ERRORS_H__
 #define __GCC_ERRORS_H__
 
-void warning PVPROTO ((const char *format, ...)) ATTRIBUTE_PRINTF_1;
-void error   PVPROTO ((const char *format, ...)) ATTRIBUTE_PRINTF_1;
-void fatal   PVPROTO ((const char *format, ...))
+extern void warning PVPROTO ((const char *format, ...)) ATTRIBUTE_PRINTF_1;
+extern void error   PVPROTO ((const char *format, ...)) ATTRIBUTE_PRINTF_1;
+extern void fatal   PVPROTO ((const char *format, ...))
     ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
 extern int have_error;
