@@ -679,7 +679,7 @@ update_equiv_regs ()
 
   init_alias_analysis ();
 
-  loop_depth = 1;
+  loop_depth = 0;
 
   /* Scan the insns and find which registers have equivalences.  Do this
      in a separate scan of the insns because (due to -fcse-follow-jumps)

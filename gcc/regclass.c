@@ -1100,13 +1100,13 @@ regclass (f, nregs, dump)
 	    basic_block bb = BASIC_BLOCK (index);
 
 	    /* Show that an insn inside a loop is likely to be executed three
-	       times more than insns outside a loop.  This is much more aggressive
-	       than the assumptions made elsewhere and is being tried as an
-	       experiment.  */
+	       times more than insns outside a loop.  This is much more
+	       aggressive than the assumptions made elsewhere and is being
+	       tried as an experiment.  */
 	    if (optimize_size)
 	      loop_cost = 1;
 	    else
-	      loop_cost = 1 << (2 * MIN (bb->loop_depth - 1, 5));
+	      loop_cost = 1 << (2 * MIN (bb->loop_depth, 5));
 	    for (insn = bb->head; ; insn = NEXT_INSN (insn))
 	      {
 		insn = scan_one_insn (insn, pass);

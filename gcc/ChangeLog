@@ -1,3 +1,13 @@
+2000-01-06  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (mark_set_1): Use loop_depth+1 as reference weight.
+	(find_auto_inc, mark_used_regs, try_pre_increment_1): Likewise.
+	(count_reg_sets_1, count_reg_references): Likewise.
+	(flow_loops_level_compute): Start counting actual loop depth at 1.
+	(flow_loops_find): Likewise.
+	* local-alloc.c (update_equiv_regs): Likewise.
+	* regclass.c (regclass): Re-instate Jan 4 0-based loop_depth change.
+
 2000-01-06  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
  
        * defaults.h (DWARF_FRAME_REGISTERS): if not defined, default to
