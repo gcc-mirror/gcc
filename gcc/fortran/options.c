@@ -57,6 +57,9 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.warn_surprising = 0;
   gfc_option.warn_unused_labels = 0;
 
+  gfc_option.flag_default_double = 0;
+  gfc_option.flag_default_integer = 0;
+  gfc_option.flag_default_real = 0;
   gfc_option.flag_dollar_ok = 0;
   gfc_option.flag_underscoring = 1;
   gfc_option.flag_second_underscore = 1;
@@ -68,9 +71,6 @@ gfc_init_options (unsigned int argc ATTRIBUTE_UNUSED,
   gfc_option.flag_repack_arrays = 0;
 
   gfc_option.q_kind = gfc_default_double_kind;
-  gfc_option.i8 = 0;
-  gfc_option.r8 = 0;
-  gfc_option.d8 = 0;
 
   flag_argument_noalias = 2;
   flag_errno_math = 0;
@@ -285,16 +285,16 @@ gfc_handle_option (size_t scode, const char *arg, int value)
       gfc_option.q_kind = value;
       break;
 
-    case OPT_i8:
-      gfc_option.i8 = value;
+    case OPT_fdefault_integer_8:
+      gfc_option.flag_default_integer = value;
       break;
 
-    case OPT_r8:
-      gfc_option.r8 = value;
+    case OPT_fdefault_real_8:
+      gfc_option.flag_default_real = value;
       break;
 
-    case OPT_d8:
-      gfc_option.d8 = value;
+    case OPT_fdefault_double_8:
+      gfc_option.flag_default_double = value;
       break;
 
     case OPT_I:

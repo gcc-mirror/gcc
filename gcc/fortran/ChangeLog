@@ -1,3 +1,14 @@
+2005-03-29  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.h (option_t): Change d8, i8, r8 to flag_default_double,
+	flag_default_integer, flag_default_real
+	* invoke.texi: Update documentation
+	* lang.opt: Remove d8, i8, r8 definitions; Add fdefault-double-8   
+	fdefault-integer-8, and fdefault-real-8 definitions.
+	* options.c (gfc_init_options): Set option defaults
+	(gfc_handle_option): Handle command line options.
+	* trans-types.c (gfc_init_kinds): Use options.
+
 2005-03-27  Steven G. Kargl  <kargls@comcast.net>
 
 	* intrinsic.texi: Document AIMAG, AINT, ALL

@@ -1402,6 +1402,9 @@ typedef struct
   int warn_surprising;
   int warn_unused_labels;
 
+  int flag_default_double;
+  int flag_default_integer;
+  int flag_default_real;
   int flag_dollar_ok;
   int flag_underscoring;
   int flag_second_underscore;
@@ -1413,9 +1416,7 @@ typedef struct
   int flag_repack_arrays;
 
   int q_kind;
-  int r8;
-  int i8;
-  int d8;
+
   int warn_std;
   int allow_std;
   int warn_nonstd_intrinsics;
