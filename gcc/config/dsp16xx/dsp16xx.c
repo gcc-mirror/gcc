@@ -2392,7 +2392,7 @@ dsp16xx_address_cost (addr)
 
    On the dsp1610 the first four words of args are normally in registers
    and the rest are pushed. If we a long or on float mode, the argument
-   must begin on a even register boundary
+   must begin on an even register boundary
 
    Note that FUNCTION_ARG and FUNCTION_INCOMING_ARG were different.
    For structures that are passed in memory, but could have been

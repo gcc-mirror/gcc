@@ -9008,7 +9008,7 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
   if (GET_CODE (align_exp) == CONST_INT)
     align = INTVAL (align_exp);
 
-  /* This simple hack avoids all inlining code and simplifies code bellow.  */
+  /* This simple hack avoids all inlining code and simplifies code below.  */
   if (!TARGET_ALIGN_STRINGOPS)
     align = 64;
 
@@ -9229,7 +9229,7 @@ ix86_expand_clrstr (src, count_exp, align_exp)
   if (GET_CODE (align_exp) == CONST_INT)
     align = INTVAL (align_exp);
 
-  /* This simple hack avoids all inlining code and simplifies code bellow.  */
+  /* This simple hack avoids all inlining code and simplifies code below.  */
   if (!TARGET_ALIGN_STRINGOPS)
     align = 32;
 

@@ -2461,7 +2461,7 @@ d30v_output_function_epilogue (stream, size)
 
 
 /* Called after register allocation to add any instructions needed for
-   the epilogue.  Using a epilogue insn is favored compared to putting
+   the epilogue.  Using an epilogue insn is favored compared to putting
    all of the instructions in output_function_prologue(), since it
    allows the scheduler to intermix instructions with the saves of the
    caller saved registers.  In some cases, it might be necessary to

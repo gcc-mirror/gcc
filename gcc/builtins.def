@@ -72,7 +72,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* A library builtin (like __builtin_strchr) is a builtin equivalent
    of an ANSI/ISO standard library function.  In addition to the
-   `__builtin' version, we will create a an ordinary version (e.g,
+   `__builtin' version, we will create an ordinary version (e.g,
    `strchr') as well.  If we cannot compute the answer using the
    builtin function, we will fall back to the standard library
    version. */
