@@ -9063,7 +9063,7 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'Q':
       if (TARGET_MFCRF)
-	fputc (',',file);
+	fputc (',', file);
         /* FALLTHRU */
       else
 	return;
@@ -13682,7 +13682,8 @@ output_function_profiler (FILE *file, int labelno)
 	}
 
       /* ABI_V4 saves the static chain reg with ASM_OUTPUT_REG_PUSH.  */
-      fprintf (file, "\tbl %s\n", RS6000_MCOUNT);
+      fprintf (file, "\tbl %s%s\n",
+	       RS6000_MCOUNT, flag_pic ? "@plt" : "");
       break;
 
     case ABI_AIX:
