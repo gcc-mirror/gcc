@@ -4332,10 +4332,15 @@ sparc_va_arg (valist, type)
       if (TYPE_ALIGN (type) >= 2 * BITS_PER_WORD)
 	align = 2 * UNITS_PER_WORD;
 
-      if (AGGREGATE_TYPE_P (type) && size > 16)
+      if (AGGREGATE_TYPE_P (type))
 	{
-	  indirect = 1;
-	  size = rsize = UNITS_PER_WORD;
+	  if (size > 16)
+	    {
+	      indirect = 1;
+	      size = rsize = UNITS_PER_WORD;
+	    }
+	  else
+	    size = rsize;
 	}
     }
   else
