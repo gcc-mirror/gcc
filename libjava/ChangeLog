@@ -1,3 +1,8 @@
+2004-09-21  Casey Marshall  <csm@gnu.org>
+
+	* javax/crypto/MacSpi.java (clone): Provide meaningful
+	implementation.
+
 2004-09-21  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/16869:

@@ -83,7 +83,7 @@ public abstract class MacSpi
    */
   public Object clone() throws CloneNotSupportedException
   {
-    throw new CloneNotSupportedException();
+    return super.clone();
   }
 
   // Abstract instance methods.
