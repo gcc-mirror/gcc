@@ -1,3 +1,9 @@
+2002-10-08  Roger Sayle  <roger@eyesopen.com>
+
+	PR target/8087
+	* simplify-rtx.c (avoid_constant_pool_reference):  Allow constant
+	pool references that are constructed using LO_SUM.
+
 2002-10-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-opts.c (c_common_decode_option): Add warn_strict_aliasing to
