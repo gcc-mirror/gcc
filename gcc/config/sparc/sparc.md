@@ -4687,7 +4687,7 @@
   [(set_attr "type" "call")])
 
 (define_insn ""
-  [(call (mem:SI (match_operand:SI 0 "immediate_operand" "i"))
+  [(call (mem:SI (match_operand:SI 0 "symbolic_operand" "s"))
 	 (match_operand 1 "" ""))
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
@@ -4711,7 +4711,7 @@
   [(set_attr "type" "call")])
 
 (define_insn ""
-  [(call (mem:SI (match_operand:DI 0 "immediate_operand" "i"))
+  [(call (mem:SI (match_operand:DI 0 "symbolic_operand" "s"))
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 15))]
   ;;- Do not use operand 1 for most machines.
@@ -4740,7 +4740,7 @@
 ;; This is a call that wants a structure value.
 ;; There is no such critter for v9 (??? we may need one anyway).
 (define_insn ""
-  [(call (mem:SI (match_operand:SI 0 "immediate_operand" "i"))
+  [(call (mem:SI (match_operand:SI 0 "symbolic_operand" "s"))
 	 (match_operand 1 "" ""))
    (match_operand 2 "immediate_operand" "")
    (clobber (reg:SI 15))]
@@ -4805,7 +4805,7 @@
 
 (define_insn ""
   [(set (match_operand 0 "" "=rf")
-	(call (mem:SI (match_operand:SI 1 "immediate_operand" "i"))
+	(call (mem:SI (match_operand:SI 1 "symbolic_operand" "s"))
 	      (match_operand 2 "" "")))
    (clobber (reg:SI 15))]
   ;;- Do not use operand 2 for most machines.
@@ -4831,7 +4831,7 @@
 
 (define_insn ""
   [(set (match_operand 0 "" "=rf")
-	(call (mem:SI (match_operand:DI 1 "immediate_operand" "i"))
+	(call (mem:SI (match_operand:DI 1 "symbolic_operand" "s"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 15))]
   ;;- Do not use operand 2 for most machines.
@@ -4876,7 +4876,7 @@
 ;; returns a structure value and expects to skip an unimp instruction.
 
 (define_insn ""
-  [(call (mem:SI (match_operand:SI 0 "immediate_operand" "i"))
+  [(call (mem:SI (match_operand:SI 0 "symbolic_operand" "s"))
 	 (const_int 0))
    (match_operand:DI 1 "memory_operand" "o")
    (match_operand 2 "" "")
@@ -4907,7 +4907,7 @@
   [(set_attr "type" "multi")])
 
 (define_insn ""
-  [(call (mem:SI (match_operand:DI 0 "immediate_operand" "i"))
+  [(call (mem:SI (match_operand:DI 0 "symbolic_operand" "s"))
 	 (const_int 0))
    (match_operand:DI 1 "memory_operand" "o")
    (match_operand 2 "" "")
@@ -5622,7 +5622,7 @@
 
 (define_peephole
   [(parallel [(set (match_operand 0 "" "")
-		   (call (mem:SI (match_operand:SI 1 "call_operand_address" "pi"))
+		   (call (mem:SI (match_operand:SI 1 "call_operand_address" "ps"))
 			 (match_operand 2 "" "")))
 	      (clobber (reg:SI 15))])
    (set (pc) (label_ref (match_operand 3 "" "")))]
@@ -5633,7 +5633,7 @@
 }")
 
 (define_peephole
-  [(parallel [(call (mem:SI (match_operand:SI 0 "call_operand_address" "pi"))
+  [(parallel [(call (mem:SI (match_operand:SI 0 "call_operand_address" "ps"))
 		    (match_operand 1 "" ""))
 	      (clobber (reg:SI 15))])
    (set (pc) (label_ref (match_operand 2 "" "")))]
@@ -5645,7 +5645,7 @@
 
 (define_peephole
   [(parallel [(set (match_operand 0 "" "")
-		   (call (mem:SI (match_operand:DI 1 "call_operand_address" "pi"))
+		   (call (mem:SI (match_operand:DI 1 "call_operand_address" "ps"))
 			 (match_operand 2 "" "")))
 	      (clobber (reg:DI 15))])
    (set (pc) (label_ref (match_operand 3 "" "")))]
@@ -5656,7 +5656,7 @@
 }")
 
 (define_peephole
-  [(parallel [(call (mem:SI (match_operand:DI 0 "call_operand_address" "pi"))
+  [(parallel [(call (mem:SI (match_operand:DI 0 "call_operand_address" "ps"))
 		    (match_operand 1 "" ""))
 	      (clobber (reg:DI 15))])
    (set (pc) (label_ref (match_operand 2 "" "")))]
