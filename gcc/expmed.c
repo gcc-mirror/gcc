@@ -75,6 +75,20 @@ static int sdiv_pow2_cheap, smod_pow2_cheap;
 #define MAX_BITS_PER_WORD BITS_PER_WORD
 #endif
 
+/* Reduce conditional compilation elsewhere.  */
+#ifndef HAVE_insv
+#define CODE_FOR_insv	CODE_FOR_nothing
+#define gen_insv(a,b,c,d) NULL_RTX
+#endif
+#ifndef HAVE_extv
+#define CODE_FOR_extv	CODE_FOR_nothing
+#define gen_extv(a,b,c,d) NULL_RTX
+#endif
+#ifndef HAVE_extzv
+#define CODE_FOR_extzv	CODE_FOR_nothing
+#define gen_extzv(a,b,c,d) NULL_RTX
+#endif
+
 /* Cost of various pieces of RTL.  Note that some of these are indexed by
    shift count and some by mode.  */
 static int add_cost, negate_cost, zero_cost;
@@ -541,12 +555,8 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       rtx xop0 = op0;
       rtx last = get_last_insn ();
       rtx pat;
-      enum machine_mode maxmode;
+      enum machine_mode maxmode = mode_for_extraction (EP_insv, 3);
       int save_volatile_ok = volatile_ok;
-
-      maxmode = insn_data[(int) CODE_FOR_insv].operand[3].mode;
-      if (maxmode == VOIDmode)
-	maxmode = word_mode;
 
       volatile_ok = 1;
 
@@ -1290,11 +1300,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  rtx xspec_target = spec_target;
 	  rtx xspec_target_subreg = spec_target_subreg;
 	  rtx pat;
-	  enum machine_mode maxmode;
-
-	  maxmode = insn_data[(int) CODE_FOR_extzv].operand[0].mode;
-	  if (maxmode == VOIDmode)
-	    maxmode = word_mode;
+	  enum machine_mode maxmode = mode_for_extraction (EP_extzv, 0);
 
 	  if (GET_CODE (xop0) == MEM)
 	    {
@@ -1426,11 +1432,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  rtx xspec_target = spec_target;
 	  rtx xspec_target_subreg = spec_target_subreg;
 	  rtx pat;
-	  enum machine_mode maxmode;
-
-	  maxmode = insn_data[(int) CODE_FOR_extv].operand[0].mode;
-	  if (maxmode == VOIDmode)
-	    maxmode = word_mode;
+	  enum machine_mode maxmode = mode_for_extraction (EP_extv, 0);
 
 	  if (GET_CODE (xop0) == MEM)
 	    {
