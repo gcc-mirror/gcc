@@ -24,6 +24,11 @@ Sun Nov  2 15:04:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 1997-11-01  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
+	* except.c (expand_builtin_throw) [!DWARF2_UNWIND_INFO]: Replace
+	remaining use of saved_throw_type with a call to get_eh_type.
+
+1997-10-31  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
 	* lex.c (FILE_NAME_NONDIRECTORY): Delete macro.
 	(file_name_nondirectory): New function, doing the same as the macro.
 	(set_typedecl_interface_info): Use it instead of the macro.
@@ -34,11 +39,6 @@ Sun Nov  2 15:04:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	(open_repo_file): Likewise.
 	* xref.c (open_xref_file): Likewise.
 	* error.c (dump_char): Make its arg int, not char.
-
-	* except.c (expand_builtin_throw) [!DWARF2_UNWIND_INFO]: Replace
-	remaining use of saved_throw_type with a call to get_eh_type.
-
-1997-10-31  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* except.c (push_eh_info): Pass the number of fields - 1 down, not
 	the exact number of fields.
