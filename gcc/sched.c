@@ -2278,9 +2278,14 @@ sched_analyze (head, tail)
 	}
       else if (GET_CODE (insn) == NOTE
 	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
-		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END))
-	loop_notes = gen_rtx (EXPR_LIST, REG_DEAD,
-			      GEN_INT (NOTE_LINE_NUMBER (insn)), loop_notes);
+		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
+		   || (NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP
+		       && GET_CODE (PREV_INSN (insn)) != CALL_INSN)))
+	{
+	  loop_notes = gen_rtx (EXPR_LIST, REG_DEAD,
+				GEN_INT (NOTE_LINE_NUMBER (insn)), loop_notes);
+	  CONST_CALL_P (loop_notes) = CONST_CALL_P (insn);
+	}
 
       if (insn == tail)
 	return n_insns;
@@ -3147,7 +3152,8 @@ reemit_notes (insn, last)
 	  && GET_CODE (XEXP (note, 0)) == CONST_INT)
 	{
 	  if (INTVAL (XEXP (note, 0)) == NOTE_INSN_SETJMP)
-	    emit_note_after (INTVAL (XEXP (note, 0)), insn);
+	    CONST_CALL_P (emit_note_after (INTVAL (XEXP (note, 0)), insn))
+	      = CONST_CALL_P (note);
 	  else
 	    last = emit_note_before (INTVAL (XEXP (note, 0)), last);
 	  remove_note (insn, note);
