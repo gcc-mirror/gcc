@@ -3101,10 +3101,6 @@ try_split (pat, trial, last)
 
   if (seq)
     {
-      /* SEQ can only be a list of insns.  */
-      if (! INSN_P (seq))
-	abort ();
-
       /* Sometimes there will be only one insn in that list, this case will
 	 normally arise only when we want it in turn to be split (SFmode on
 	 the 29k is an example).  */
@@ -3118,7 +3114,8 @@ try_split (pat, trial, last)
 	  insn_last = seq;
 	  while (1)
 	    {
-	      if (rtx_equal_p (PATTERN (insn_last), pat))
+	      if (INSN_P (insn_last)
+		  && rtx_equal_p (PATTERN (insn_last), pat))
 		return trial;
 	      if (NEXT_INSN (insn_last) == NULL_RTX)
 		break;
