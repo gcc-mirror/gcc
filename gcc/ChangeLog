@@ -1,3 +1,7 @@
+2002-02-19  Gaute B Strokkenes <gs234@cam.ac.uk>
+
+	* doc/rtl.texi (Flags, MEM_SCALAR_P): Fix typo.
+
 2002-02-19  Ryan T. Sammartino <ryants@shaw.ca>
 
 	* doc/invoke.texi: explicitly list the style guidelines that

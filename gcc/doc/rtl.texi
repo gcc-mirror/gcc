@@ -501,9 +501,9 @@ Stored in the @code{jump} field and printed as @samp{/j}.
 In @code{mem} expressions, nonzero for reference to a scalar known not
 to be a member of a structure, union, or array.  Zero for such
 references and for indirections through pointers, even pointers pointing
-to scalar types.  If both this flag and @code{MEM_STRUCT_P} are clear, then we
-don't know whether this @code{mem} is in a structure or not.  Both flags should
-never be simultaneously set.
+to scalar types.  If both this flag and @code{MEM_IN_STRUCT_P} are clear,
+then we don't know whether this @code{mem} is in a structure or not.
+Both flags should never be simultaneously set.
 Stored in the @code{frame_related} field and printed as @samp{/f}.
 
 @findex MEM_VOLATILE_P
