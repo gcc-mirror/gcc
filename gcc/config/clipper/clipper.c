@@ -42,6 +42,8 @@ Boston, MA 02111-1307, USA.  */
 
 static void clipper_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void clipper_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void clix_asm_out_constructor PARAMS ((rtx, int));
+static void clix_asm_out_destructor PARAMS ((rtx, int));
 
 extern char regs_ever_live[];
 
@@ -691,3 +693,23 @@ fp_reg_operand (op, mode)
 	   GET_MODE_CLASS (GET_MODE (SUBREG_REG (op))) == MODE_FLOAT));
 }
 
+static void
+clix_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  init_section ();
+  fputs ("\tloada  ", asm_out_file);
+  assemble_name (asm_out_file, XSTR (symbol, 0));
+  fputs (",r0\n\tsubq   $8,sp\n\tstorw   r0,(sp)\n", asm_out_file);
+}
+
+static void
+clix_asm_out_destructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  fini_section ();
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+  assemble_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
+}

@@ -1107,3 +1107,33 @@ update_stubs (name)
 	}
     }
 }
+
+void
+machopic_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  if (flag_pic)
+    mod_init_section ();
+  else
+    constructor_section ();
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+
+  if (!flag_pic)
+    fprintf (asm_out_file, ".reference .constructors_used\n");
+}
+
+void
+machopic_asm_out_destructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  if (flag_pic)
+    mod_term_section ();
+  else
+    destructor_section ();
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+
+  if (!flag_pic)
+    fprintf (asm_out_file, ".reference .destructors_used\n");
+}

@@ -6785,15 +6785,10 @@ if test x$use_collect2 = xno; then
 fi
 
 # Add a definition of USE_COLLECT2 if system wants one.
-# Also tell toplev.c what to do.
-# This substitutes for lots of t-* files.
-if test x$use_collect2 = x
+if test x$use_collect2 != x
 then
-	will_use_collect2=
-	maybe_use_collect2=
-else
-	will_use_collect2="collect2"
-	maybe_use_collect2="-DUSE_COLLECT2"
+	host_xm_defines="${host_xm_defines} USE_COLLECT2"
+	xm_defines="${xm_defines} USE_COLLECT2"
 fi
 
 # If we have gas in the build tree, make a link to it.
@@ -6808,16 +6803,12 @@ fi
 
 # If we have ld in the build tree, make a link to it.
 if test -f ../ld/Makefile; then
-#	if test x$use_collect2 = x; then
-#		rm -f ld; $symbolic_link ../ld/ld-new$host_exeext ld$host_exeext 2>/dev/null
-#	else
-		rm -f collect-ld; $symbolic_link ../ld/ld-new$host_exeext collect-ld$host_exeext 2>/dev/null
-#	fi
+	rm -f collect-ld; $symbolic_link ../ld/ld-new$host_exeext collect-ld$host_exeext 2>/dev/null
 fi
 
 # Figure out what assembler we will be using.
 echo $ac_n "checking what assembler to use""... $ac_c" 1>&6
-echo "configure:6821: checking what assembler to use" >&5
+echo "configure:6812: checking what assembler to use" >&5
 gcc_cv_as=
 gcc_cv_gas_major_version=
 gcc_cv_gas_minor_version=
@@ -6902,7 +6893,7 @@ fi
 
 # Figure out what nm we will be using.
 echo $ac_n "checking what nm to use""... $ac_c" 1>&6
-echo "configure:6906: checking what nm to use" >&5
+echo "configure:6897: checking what nm to use" >&5
 if test -x nm$host_exeext; then
 	gcc_cv_nm=./nm$host_exeext
 elif test x$host = x$target; then
@@ -6913,7 +6904,7 @@ echo "$ac_t""$gcc_cv_nm" 1>&6
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:6917: checking assembler alignment features" >&5
+echo "configure:6908: checking assembler alignment features" >&5
 gcc_cv_as_alignment_features=none
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
 	# Gas version 2.6 and later support for .balign and .p2align.
@@ -6961,7 +6952,7 @@ fi
 echo "$ac_t""$gcc_cv_as_alignment_features" 1>&6
 
 echo $ac_n "checking assembler subsection support""... $ac_c" 1>&6
-echo "configure:6965: checking assembler subsection support" >&5
+echo "configure:6956: checking assembler subsection support" >&5
 gcc_cv_as_subsections=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -7001,7 +6992,7 @@ fi
 echo "$ac_t""$gcc_cv_as_subsections" 1>&6
 
 echo $ac_n "checking assembler weak support""... $ac_c" 1>&6
-echo "configure:7005: checking assembler weak support" >&5
+echo "configure:6996: checking assembler weak support" >&5
 gcc_cv_as_weak=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 2 -o "$gcc_cv_gas_major_version" -gt 2; then
@@ -7024,7 +7015,7 @@ fi
 echo "$ac_t""$gcc_cv_as_weak" 1>&6
 
 echo $ac_n "checking assembler hidden support""... $ac_c" 1>&6
-echo "configure:7028: checking assembler hidden support" >&5
+echo "configure:7019: checking assembler hidden support" >&5
 gcc_cv_as_hidden=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 10 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -7048,7 +7039,7 @@ fi
 echo "$ac_t""$gcc_cv_as_hidden" 1>&6
 
 echo $ac_n "checking assembler leb128 support""... $ac_c" 1>&6
-echo "configure:7052: checking assembler leb128 support" >&5
+echo "configure:7043: checking assembler leb128 support" >&5
 gcc_cv_as_leb128=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 11 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -7093,7 +7084,7 @@ fi
 echo "$ac_t""$gcc_cv_as_leb128" 1>&6
 
 echo $ac_n "checking assembler eh_frame optimization""... $ac_c" 1>&6
-echo "configure:7097: checking assembler eh_frame optimization" >&5
+echo "configure:7088: checking assembler eh_frame optimization" >&5
 gcc_cv_as_eh_frame=no
 if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
   if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 12 -o "$gcc_cv_gas_major_version" -gt 2 && grep 'obj_format = elf' ../gas/Makefile > /dev/null; then
@@ -7176,7 +7167,7 @@ echo "$ac_t""$gcc_cv_as_eh_frame" 1>&6
 case "$target" in 
   sparc*-*-*)
     echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
-echo "configure:7180: checking assembler .register pseudo-op support" >&5
+echo "configure:7171: checking assembler .register pseudo-op support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_register_pseudo_op'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7204,7 +7195,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler supports -relax""... $ac_c" 1>&6
-echo "configure:7208: checking assembler supports -relax" >&5
+echo "configure:7199: checking assembler supports -relax" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_relax_opt'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7234,7 +7225,7 @@ EOF
     case "$tm_file" in
     *64*)
 	echo $ac_n "checking for 64 bit support in assembler ($gcc_cv_as)""... $ac_c" 1>&6
-echo "configure:7238: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
+echo "configure:7229: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_flags64'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7279,7 +7270,7 @@ EOF
 
     if test "x$gcc_cv_as_flags64" != xno; then
 	echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
-echo "configure:7283: checking for assembler offsetable %lo() support" >&5
+echo "configure:7274: checking for assembler offsetable %lo() support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_offsetable_lo10'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7319,7 +7310,7 @@ EOF
 
   i[34567]86-*-*)
     echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
-echo "configure:7323: checking assembler instructions" >&5
+echo "configure:7314: checking assembler instructions" >&5
     gcc_cv_as_instructions=
     if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
       if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2; then
@@ -7348,7 +7339,7 @@ EOF
 esac
 
 echo $ac_n "checking assembler dwarf2 debug_line support""... $ac_c" 1>&6
-echo "configure:7352: checking assembler dwarf2 debug_line support" >&5
+echo "configure:7343: checking assembler dwarf2 debug_line support" >&5
 gcc_cv_as_dwarf2_debug_line=no
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
@@ -7533,7 +7524,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:7537: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:7528: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
@@ -7776,8 +7767,6 @@ objdir=`pwd`
 ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xmake_file" "$dep_tmake_file"
 
 # Substitute configuration variables
-
-
 
 
 
@@ -8142,7 +8131,6 @@ s%@lang_options_files@%$lang_options_files%g
 s%@lang_specs_files@%$lang_specs_files%g
 s%@lang_tree_files@%$lang_tree_files%g
 s%@local_prefix@%$local_prefix%g
-s%@maybe_use_collect2@%$maybe_use_collect2%g
 s%@md_file@%$md_file%g
 s%@objc_boehm_gc@%$objc_boehm_gc%g
 s%@out_file@%$out_file%g
@@ -8156,7 +8144,6 @@ s%@tm_p_file_list@%$tm_p_file_list%g
 s%@tm_p_file@%$tm_p_file%g
 s%@xm_file@%$xm_file%g
 s%@xm_defines@%$xm_defines%g
-s%@will_use_collect2@%$will_use_collect2%g
 s%@c_target_objs@%$c_target_objs%g
 s%@cxx_target_objs@%$cxx_target_objs%g
 s%@target_cpu_default@%$target_cpu_default%g

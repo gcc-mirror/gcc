@@ -74,6 +74,8 @@ static void m68hc11_add_gc_roots PARAMS ((void));
 
 static void asm_print_register PARAMS ((FILE *, int));
 static void m68hc11_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static void m68hc11_asm_out_constructor PARAMS ((rtx, int));
+static void m68hc11_asm_out_destructor PARAMS ((rtx, int));
 
 rtx m68hc11_soft_tmp_reg;
 
@@ -5253,4 +5255,22 @@ m68hc11_add_gc_roots ()
   ggc_add_rtx_root (&z_reg_qi, 1);
   ggc_add_rtx_root (&stack_push_word, 1);
   ggc_add_rtx_root (&stack_pop_word, 1);
+}
+
+static void
+m68hc11_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority;
+{
+  default_ctor_section_asm_out_constructor (symbol, priority);
+  fprintf (asm_out_file, "\t.globl\t__do_global_ctors\n");
+}
+
+static void
+m68hc11_asm_out_destructor (symbol, priority)
+     rtx symbol;
+     int priority;
+{
+  default_dtor_section_asm_out_destructor (symbol, priority);
+  fprintf (asm_out_file, "\t.globl\t__do_global_dtors\n");
 }

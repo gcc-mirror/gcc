@@ -152,6 +152,8 @@ static int vms_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
 static unsigned int vms_section_type_flags PARAMS ((tree, const char *, int));
 static void vms_asm_named_section PARAMS ((const char *, unsigned int,
 					   unsigned int));
+static void vms_asm_out_constructor PARAMS ((rtx, int));
+static void vms_asm_out_destructor PARAMS ((rtx, int));
 # undef TARGET_VALID_DECL_ATTRIBUTE
 # define TARGET_VALID_DECL_ATTRIBUTE vms_valid_decl_attribute_p
 # undef TARGET_SECTION_TYPE_FLAGS
@@ -6585,6 +6587,31 @@ vms_asm_named_section (name, flags, align)
     ASM_OUTPUT_ALIGN (asm_out_file, 0);
 }
 
+/* Record an element in the table of global constructors.  SYMBOL is
+   a SYMBOL_REF of the function to be called; PRIORITY is a number
+   between 0 and MAX_INIT_PRIORITY.  
+
+   Differs from default_ctors_section_asm_out_constructor in that the
+   width of the .ctors entry is always 64 bits, rather than the 32 bits
+   used by a normal pointer.  */
+
+static void
+vms_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  ctors_section ();
+  assemble_integer (symbol, UNITS_PER_WORD, 1);
+}
+
+static void
+vms_asm_out_destructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  dtors_section ();
+  assemble_integer (symbol, UNITS_PER_WORD, 1);
+}
 #else
 
 rtx

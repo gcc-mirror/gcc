@@ -101,24 +101,6 @@ do {  \
 
 #define CONST_SECTION_ASM_OP	"\t.section\t.rodata"
 
-/* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
-
-   Note that we want to give these sections the SHF_WRITE attribute
-   because these sections will actually contain data (i.e. tables of
-   addresses of functions in the current root executable or shared library
-   file) and, in the case of a shared library, the relocatable addresses
-   will have to be properly resolved/relocated (and then written into) by
-   the dynamic linker when it actually attaches the given shared library
-   to the executing process.  (Note that on SVR4, you may wish to use the
-   `-z text' option to the ELF linker, when building a shared library, as
-   an additional check that you are doing everything right.  But if you do
-   use the `-z text' option when building a shared library, you will get
-   errors unless the .ctors and .dtors sections are marked as writable
-   via the SHF_WRITE attribute.)  */
-
-#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"aw\""
-#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"aw\""
-
 /* On svr4, we *do* have support for the .init and .fini sections, and we
    can put stuff in there to be executed before and after `main'.  We let
    crtstuff.c and other files know this by defining the following symbols.
@@ -137,7 +119,7 @@ do {  \
    includes this file.  */
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_ctors, in_dtors
+#define EXTRA_SECTIONS in_const
 
 /* A default list of extra section function definitions.  For targets
    that use additional sections (e.g. .tdesc) you should override this
@@ -145,9 +127,8 @@ do {  \
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
-  CONST_SECTION_FUNCTION						\
-  CTORS_SECTION_FUNCTION						\
-  DTORS_SECTION_FUNCTION
+  CONST_SECTION_FUNCTION
+
 
 #define READONLY_DATA_SECTION() const_section ()
 
@@ -161,28 +142,6 @@ const_section ()							\
     {									\
       fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP);		\
       in_section = in_const;						\
-    }									\
-}
-
-#define CTORS_SECTION_FUNCTION						\
-void									\
-ctors_section ()							\
-{									\
-  if (in_section != in_ctors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
-      in_section = in_ctors;						\
-    }									\
-}
-
-#define DTORS_SECTION_FUNCTION						\
-void									\
-dtors_section ()							\
-{									\
-  if (in_section != in_dtors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
-      in_section = in_dtors;						\
     }									\
 }
 
@@ -222,29 +181,6 @@ do {								\
 } while (0)
 
 #define INT_ASM_OP "\t.dword\t"
-/* A C statement (sans semicolon) to output an element in the table of
-   global constructors.  */
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
-  do {									\
-    ctors_section ();							\
-    fprintf (FILE, "%sP%%", INT_ASM_OP);				\
-    assemble_name (FILE, NAME);						\
-    fprintf (FILE, "\n");						\
-  } while (0)
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  */
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
-  do {									\
-    dtors_section ();                   				\
-    fprintf (FILE, "%sP%%", INT_ASM_OP);				\
-    assemble_name (FILE, NAME);              				\
-    fprintf (FILE, "\n");						\
-  } while (0)
-
-/* ??? For the time being, we aren't using .ctors/.dtors sections. */
-#undef ASM_OUTPUT_DESTRUCTOR
-#undef ASM_OUTPUT_CONSTRUCTOR
 
 /* Define the strings used for the special svr4 .type and .size directives.
    These strings generally do not vary from one system running svr4 to

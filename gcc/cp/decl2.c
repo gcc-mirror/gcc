@@ -2806,11 +2806,9 @@ start_objects (method_type, initp)
 					NULL_TREE),
 		  NULL_TREE, SF_DEFAULT);
 
-#if defined(ASM_OUTPUT_CONSTRUCTOR) && defined(ASM_OUTPUT_DESTRUCTOR)
   /* It can be a static function as long as collect2 does not have
      to scan the object file to find its ctor/dtor routine.  */
-  TREE_PUBLIC (current_function_decl) = 0;
-#endif
+  TREE_PUBLIC (current_function_decl) = ! targetm.have_ctors_dtors;
 
   /* Mark this declaration as used to avoid spurious warnings.  */
   TREE_USED (current_function_decl) = 1;
@@ -2843,7 +2841,6 @@ finish_objects (method_type, initp, body)
      tree body;
 {
   tree fn;
-  rtx fnsym;
 
   /* Finish up.  */
   finish_compound_stmt (/*has_no_scope=*/0, body);
@@ -2856,11 +2853,14 @@ finish_objects (method_type, initp, body)
   if (flag_syntax_only)
     return;
 
-  fnsym = XEXP (DECL_RTL (fn), 0);
-  if (method_type == 'I')
-    assemble_constructor (fnsym, initp);
-  else
-    assemble_destructor (fnsym, initp);
+  if (targetm.have_ctors_dtors)
+    {
+      rtx fnsym = XEXP (DECL_RTL (fn), 0);
+      if (method_type == 'I')
+	(* targetm.asm_out.constructor) (fnsym, initp);
+      else
+	(* targetm.asm_out.destructor) (fnsym, initp);
+    }
 }
 
 /* The names of the parameters to the function created to handle

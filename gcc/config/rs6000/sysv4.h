@@ -444,14 +444,12 @@ do {									\
 /* Besides the usual ELF sections, we need a toc section.  */
 /* Override elfos.h definition.  */
 #undef	EXTRA_SECTIONS
-#define	EXTRA_SECTIONS in_const, in_ctors, in_dtors, in_toc, in_sdata, in_sdata2, in_sbss, in_init, in_fini
+#define	EXTRA_SECTIONS in_const, in_toc, in_sdata, in_sdata2, in_sbss, in_init, in_fini
 
 /* Override elfos.h definition.  */
 #undef	EXTRA_SECTION_FUNCTIONS
 #define	EXTRA_SECTION_FUNCTIONS						\
   CONST_SECTION_FUNCTION						\
-  CTORS_SECTION_FUNCTION						\
-  DTORS_SECTION_FUNCTION						\
   TOC_SECTION_FUNCTION							\
   SDATA_SECTION_FUNCTION						\
   SDATA2_SECTION_FUNCTION						\
@@ -556,6 +554,13 @@ fini_section ()								\
       fprintf (asm_out_file, "%s\n", FINI_SECTION_ASM_OP);		\
     }									\
 }
+
+/* Ordinarily, we wouldn't need to define these, since generic code would
+   do the right thing based on knowing that we have named sections.
+   However, -mrelocatable needs to know when we're in [cd]tors sections,
+   and the easiest way to do that is rely on varasm.c defining in_[cd]tors.  */
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"aw\""
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"aw\""
 
 /* A C statement or statements to switch to the appropriate section
    for output of RTX in mode MODE.  You can assume that RTX is some
@@ -918,46 +923,6 @@ do {						\
   else						\
     asm_fprintf (FILE, "%U%s", _name);		\
 } while (0)
-
-/* Override elfos.h definition.  */
-#undef	ASM_OUTPUT_CONSTRUCTOR
-#define	ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
-  do {									\
-    if (DEFAULT_ABI != ABI_SOLARIS)					\
-      {									\
-	ctors_section ();						\
-	fprintf (FILE, "%s", INT_ASM_OP);				\
-	assemble_name (FILE, NAME);					\
-      }									\
-    else								\
-      {									\
-	init_section ();						\
-	fputs ("\tbl ", FILE);						\
-	assemble_name (FILE, NAME);					\
-      }									\
-    fputs ("\n", FILE);							\
-  } while (0)
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  */
-/* Override elfos.h definition.  */
-#undef	ASM_OUTPUT_DESTRUCTOR
-#define	ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
-  do {									\
-    if (DEFAULT_ABI != ABI_SOLARIS)					\
-      {									\
-	dtors_section ();						\
-	fprintf (FILE, "%s", INT_ASM_OP);				\
-	assemble_name (FILE, NAME);					\
-      }									\
-    else								\
-      {									\
-	fini_section ();						\
-	fputs ("\tbl ", FILE);						\
-	assemble_name (FILE, NAME);					\
-      }									\
-    fputs ("\n", FILE);							\
-  } while (0)
 
 /* But, to make this work, we have to output the stabs for the function
    name *first*...  */

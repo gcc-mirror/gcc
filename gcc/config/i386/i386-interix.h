@@ -253,10 +253,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LD_FINI_SWITCH
 
 
-/* The following are needed for C++, but also needed for profiling */
-
-/* Support const sections and the ctors and dtors sections for g++.
-   Note that there appears to be two different ways to support const
+/* Note that there appears to be two different ways to support const
    sections at the moment.  You can either #define the symbol
    READONLY_DATA_SECTION (giving it some code which switches to the
    readonly data section) or else you can #define the symbols
@@ -267,31 +264,13 @@ Boston, MA 02111-1307, USA.  */
 
 #define CONST_SECTION_ASM_OP	"\t.section\t.rdata,\"r\""
 
-/* Define the pseudo-ops used to switch to the .ctors and .dtors sections.
-
-   Note that we want to give these sections the SHF_WRITE attribute
-   because these sections will actually contain data (i.e. tables of
-   addresses of functions in the current root executable or shared library
-   file) and, in the case of a shared library, the relocatable addresses
-   will have to be properly resolved/relocated (and then written into) by
-   the dynamic linker when it actually attaches the given shared library
-   to the executing process.  (Note that on SVR4, you may wish to use the
-   `-z text' option to the ELF linker, when building a shared library, as
-   an additional check that you are doing everything right.  But if you do
-   use the `-z text' option when building a shared library, you will get
-   errors unless the .ctors and .dtors sections are marked as writable
-   via the SHF_WRITE attribute.)  */
-
-#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"x\""
-#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"x\""
-
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
    should override this definition in the target-specific file which
    includes this file.  */
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_ctors, in_dtors
+#define EXTRA_SECTIONS in_const
 
 /* A default list of extra section function definitions.  For targets
    that use additional sections (e.g. .tdesc) you should override this
@@ -299,9 +278,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
-  CONST_SECTION_FUNCTION						\
-  CTORS_SECTION_FUNCTION						\
-  DTORS_SECTION_FUNCTION
+  CONST_SECTION_FUNCTION
 
 #undef READONLY_DATA_SECTION
 #define READONLY_DATA_SECTION() const_section ()
@@ -319,52 +296,10 @@ const_section ()							\
     }									\
 }
 
-#define CTORS_SECTION_FUNCTION						\
-void									\
-ctors_section ()							\
-{									\
-  if (in_section != in_ctors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
-      in_section = in_ctors;						\
-    }									\
-}
-
-#define DTORS_SECTION_FUNCTION						\
-void									\
-dtors_section ()							\
-{									\
-  if (in_section != in_dtors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
-      in_section = in_dtors;						\
-    }									\
-}
-
 /* The MS compilers take alignment as a number of bytes, so we do as well */
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG) \
   if ((LOG)!=0) fprintf ((FILE), "\t.balign %d\n", 1<<(LOG))
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global constructors.  */
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
-  do {									\
-    ctors_section ();							\
-    fprintf (FILE, "%s", INT_ASM_OP);					\
-    assemble_name (FILE, NAME);						\
-    fprintf (FILE, "\n");						\
-  } while (0)
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  */
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
-  do {									\
-    dtors_section ();                   				\
-    fprintf (FILE, "%s", INT_ASM_OP);					\
-    assemble_name (FILE, NAME);              				\
-    fprintf (FILE, "\n");						\
-  } while (0)
 
 /* The linker will take care of this, and having them causes problems with
    ld -r (specifically -rU). */

@@ -60,12 +60,10 @@ char *aof_text_section ();
 char *aof_data_section ();
 #define DATA_SECTION_ASM_OP aof_data_section ()
 
-#define EXTRA_SECTIONS in_zero_init, in_ctor, in_dtor, in_common
+#define EXTRA_SECTIONS in_zero_init, in_common
 
 #define EXTRA_SECTION_FUNCTIONS	\
 ZERO_INIT_SECTION		\
-CTOR_SECTION			\
-DTOR_SECTION			\
 COMMON_SECTION
 
 #define ZERO_INIT_SECTION					\
@@ -79,44 +77,6 @@ zero_init_section ()						\
 	       zero_init_count++);				\
       in_section = in_zero_init;				\
     }								\
-}
-
-#define CTOR_SECTION							\
-void									\
-ctor_section ()								\
-{									\
-  static int ctors_once = 0;						\
-  if (in_section != in_ctor)						\
-    {									\
-      if (ctors_once)							\
-	{								\
-	  fprintf (stderr,						\
-		   "Attempt to output more than one ctor section\n");	\
-	  abort ();							\
-	}								\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
-      in_section = in_ctor;						\
-      ctors_once = 1;							\
-    }									\
-}
-
-#define DTOR_SECTION							\
-void									\
-dtor_section ()								\
-{									\
-  static int dtors_once = 0;						\
-  if (in_section != in_dtor)						\
-    {									\
-      if (dtors_once)							\
-	{								\
-	  fprintf (stderr,						\
-		   "Attempt to output more than one dtor section\n");	\
-	  abort ();							\
-	}								\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
-      in_section = in_dtor;						\
-      dtors_once = 1;							\
-    }									\
 }
 
 /* Used by ASM_OUTPUT_COMMON (below) to tell varasm.c that we've
@@ -363,22 +323,6 @@ do {					\
 
 #define CTORS_SECTION_ASM_OP "\tAREA\t|C$$gnu_ctorsvec|, DATA, READONLY"
 #define DTORS_SECTION_ASM_OP "\tAREA\t|C$$gnu_dtorsvec|, DATA, READONLY"
-
-#define ASM_OUTPUT_CONSTRUCTOR(STREAM,NAME)	\
-do {						\
-  ctor_section ();				\
-  fprintf ((STREAM), "\tDCD\t");		\
-  assemble_name ((STREAM), (NAME));		\
-  fputc ('\n', (STREAM));			\
-} while (0);
-
-#define ASM_OUTPUT_DESTRUCTOR(STREAM,NAME)	\
-do {						\
-  dtor_section ();				\
-  fprintf ((STREAM), "\tDCD\t");		\
-  assemble_name ((STREAM), (NAME));		\
-  fputc ('\n', (STREAM));			\
-} while (0);
 
 /* Output of Assembler Instructions */
 

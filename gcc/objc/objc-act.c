@@ -57,6 +57,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "cpplib.h"
 #include "debug.h"
+#include "target.h"
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -1913,60 +1914,51 @@ build_module_descriptor ()
     return NULL_RTX;
 
   {
-    tree parms, function_decl, decelerator, void_list_node_1;
-    tree function_type;
-    tree init_function_name = get_file_function_name ('I');
+    tree parms, execclass_decl, decelerator, void_list_node_1;
+    tree init_function_name, init_function_decl;
 
     /* Declare void __objc_execClass (void *); */
 
     void_list_node_1 = build_tree_list (NULL_TREE, void_type_node);
-    function_type
-      = build_function_type (void_type_node,
-			     tree_cons (NULL_TREE, ptr_type_node,
-					void_list_node_1));
-    function_decl = build_decl (FUNCTION_DECL,
-				get_identifier (TAG_EXECCLASS),
-				function_type);
-    DECL_EXTERNAL (function_decl) = 1;
-    DECL_ARTIFICIAL (function_decl) = 1;
-    TREE_PUBLIC (function_decl) = 1;
-
-    pushdecl (function_decl);
-    rest_of_decl_compilation (function_decl, 0, 0, 0);
-
-    parms
-      = build_tree_list (NULL_TREE,
-			 build_unary_op (ADDR_EXPR, UOBJC_MODULES_decl, 0));
-    decelerator = build_function_call (function_decl, parms);
+    execclass_decl = build_decl (FUNCTION_DECL,
+				 get_identifier (TAG_EXECCLASS),
+				 build_function_type (void_type_node,
+					tree_cons (NULL_TREE, ptr_type_node,
+						   void_list_node_1)));
+    DECL_EXTERNAL (execclass_decl) = 1;
+    DECL_ARTIFICIAL (execclass_decl) = 1;
+    TREE_PUBLIC (execclass_decl) = 1;
+    pushdecl (execclass_decl);
+    rest_of_decl_compilation (execclass_decl, 0, 0, 0);
+    assemble_external (execclass_decl);
 
     /* void _GLOBAL_$I$<gnyf> () {objc_execClass (&L_OBJC_MODULES);}  */
 
+    init_function_name = get_file_function_name ('I');
     start_function (void_list_node_1,
 		    build_nt (CALL_EXPR, init_function_name,
-			      /* This has the format of the output
-				 of get_parm_info.  */
 			      tree_cons (NULL_TREE, NULL_TREE,
 					 void_list_node_1),
 			      NULL_TREE),
 		    NULL_TREE);
-#if 0 /* This should be turned back on later
-	 for the systems where collect is not needed.  */
-    /* Make these functions nonglobal
-       so each file can use the same name.  */
-    TREE_PUBLIC (current_function_decl) = 0;
-#endif
-    TREE_USED (current_function_decl) = 1;
     store_parm_decls ();
 
-    assemble_external (function_decl);
+    init_function_decl = current_function_decl;
+    TREE_PUBLIC (init_function_decl) = ! targetm.have_ctors_dtors;
+    TREE_USED (init_function_decl) = 1;
+    current_function_cannot_inline
+      = "static constructors and destructors cannot be inlined";
+
+    parms
+      = build_tree_list (NULL_TREE,
+			 build_unary_op (ADDR_EXPR, UOBJC_MODULES_decl, 0));
+    decelerator = build_function_call (execclass_decl, parms);
+
     c_expand_expr_stmt (decelerator);
 
-    TREE_PUBLIC (current_function_decl) = 1;
-
-    function_decl = current_function_decl;
     finish_function (0);
 
-    return XEXP (DECL_RTL (function_decl), 0);
+    return XEXP (DECL_RTL (init_function_decl), 0);
   }
 }
 
@@ -8360,8 +8352,8 @@ finish_objc ()
     {
       /* Arrange for Objc data structures to be initialized at run time.  */
       rtx init_sym = build_module_descriptor ();
-      if (init_sym)
-	assemble_constructor (init_sym, DEFAULT_INIT_PRIORITY);
+      if (init_sym && targetm.have_ctors_dtors)
+	(* targetm.asm_out.constructor) (init_sym, DEFAULT_INIT_PRIORITY);
     }
 
   /* Dump the class references.  This forces the appropriate classes

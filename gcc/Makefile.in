@@ -409,12 +409,6 @@ EXTRA_GCC_OBJS =@host_extra_gcc_objs@
 # Often this is edited directly by `configure'.
 EXTRA_HEADERS =@extra_headers_list@
 
-# Set this to `collect2' to enable use of collect2.
-USE_COLLECT2 = @will_use_collect2@
-# If we might be using collect2, then this variable will be set to
-# -DUSE_COLLECT2.  toplev.c, collect2.c and libgcc2.c all need to
-# know if we may be using collect2.
-MAYBE_USE_COLLECT2 = @maybe_use_collect2@
 # It is convenient for configure to add the assignment at the beginning,
 # so don't override it here.
 USE_COLLECT2 = collect2$(exeext)
@@ -1058,7 +1052,7 @@ libgcc.a: $(LIBGCC_DEPS)
 	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
 	  NM_FOR_TARGET="$(NM_FOR_TARGET)" AWK="$(AWK)" \
 	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
-	  INCLUDES="$(INCLUDES)" MAYBE_USE_COLLECT2="$(MAYBE_USE_COLLECT2)" \
+	  INCLUDES="$(INCLUDES)" \
 	  CONFIG_H="$(TCONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
 	  LIB1ASMSRC='$(LIB1ASMSRC)' \
 	  MAKEOVERRIDES= \
@@ -1092,7 +1086,7 @@ stmp-multilib: $(LIBGCC_DEPS)
 	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
 	  NM_FOR_TARGET="$(NM_FOR_TARGET)" AWK="$(AWK)" \
 	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
-	  INCLUDES="$(INCLUDES)" MAYBE_USE_COLLECT2="$(MAYBE_USE_COLLECT2)" \
+	  INCLUDES="$(INCLUDES)" \
 	  CONFIG_H="$(CONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
 	  LIB1ASMSRC='$(LIB1ASMSRC)' \
 	  MAKEOVERRIDES= \
@@ -1203,7 +1197,7 @@ collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 collect2.o : collect2.c $(CONFIG_H) $(SYSTEM_H) gstab.h intl.h \
 	$(OBSTACK_H) $(DEMANGLE_H) collect2.h version.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
-	-DTARGET_MACHINE=\"$(target_alias)\" $(MAYBE_USE_COLLECT2) \
+	-DTARGET_MACHINE=\"$(target_alias)\" \
 	-c $(srcdir)/collect2.c
 
 tlink.o: tlink.c $(DEMANGLE_H) hash.h $(CONFIG_H) $(SYSTEM_H) collect2.h intl.h
@@ -1361,7 +1355,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) function.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
    graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) $(lang_options_files) \
    ssa.h $(PARAMS_H) $(TM_P_H) reload.h dwarf2asm.h $(TARGET_H)
-	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c $(srcdir)/toplev.c
 main.o : main.c toplev.h
@@ -1476,7 +1470,7 @@ conflict.o : conflict.c $(CONFIG_H) $(SYSTEM_H) $(OBSTACK_H) $(HASHTAB_H) \
    $(RTL_H) hard-reg-set.h $(BASIC_BLOCK_H)
 profile.o : profile.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    insn-config.h output.h $(REGS_H) $(EXPR_H) function.h \
-   gcov-io.h toplev.h $(GGC_H) hard-reg-set.h $(BASIC_BLOCK_H)
+   gcov-io.h toplev.h $(GGC_H) hard-reg-set.h $(BASIC_BLOCK_H) $(TARGET_H)
 loop.o : loop.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h $(LOOP_H) insn-config.h \
    $(REGS_H) hard-reg-set.h $(RECOG_H) $(EXPR_H) real.h $(PREDICT_H) \
    $(BASIC_BLOCK_H) function.h toplev.h varray.h except.h cselib.h $(TM_P_H)
@@ -2679,7 +2673,7 @@ install-libgcc: libgcc.mk libgcc.a installdirs
 	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
 	  NM_FOR_TARGET="$(NM_FOR_TARGET)" AWK="$(AWK)" \
 	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
-	  INCLUDES="$(INCLUDES)" MAYBE_USE_COLLECT2="$(MAYBE_USE_COLLECT2)" \
+	  INCLUDES="$(INCLUDES)" \
 	  CONFIG_H="$(TCONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
 	  LIB1ASMSRC='$(LIB1ASMSRC)' \
 	  MAKEOVERRIDES= \
@@ -2705,7 +2699,7 @@ install-multilib: stmp-multilib installdirs
 	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
 	  NM_FOR_TARGET="$(NM_FOR_TARGET)" AWK="$(AWK)" \
 	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
-	  INCLUDES="$(INCLUDES)" MAYBE_USE_COLLECT2="$(MAYBE_USE_COLLECT2)" \
+	  INCLUDES="$(INCLUDES)" \
 	  CONFIG_H="$(CONFIG_H)" MACHMODE_H="$(MACHMODE_H)" \
 	  LIB1ASMSRC='$(LIB1ASMSRC)' \
 	  MAKEOVERRIDES= \

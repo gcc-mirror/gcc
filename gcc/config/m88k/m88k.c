@@ -67,6 +67,10 @@ static void m88k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m88k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m88k_output_function_end_prologue PARAMS ((FILE *));
 static void m88k_output_function_begin_epilogue PARAMS ((FILE *));
+#ifdef INIT_SECTION_ASM_OP
+static void m88k_svr3_asm_out_constructor PARAMS ((rtx, int));
+static void m88k_svr3_asm_out_destructor PARAMS ((rtx, int));
+#endif
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_FUNCTION_PROLOGUE
@@ -1891,15 +1895,10 @@ m88k_layout_frame ()
     int need
       = ((m88k_stack_size ? STACK_UNIT_BOUNDARY - STARTING_FRAME_OFFSET : 0)
 	 - (frame_size % STACK_UNIT_BOUNDARY));
-    if (need)
-      {
-	if (need < 0)
-	  need += STACK_UNIT_BOUNDARY;
-	(void) assign_stack_local (BLKmode, need, BITS_PER_UNIT);
-	frame_size = get_frame_size ();
-      }
+    if (need < 0)
+      need += STACK_UNIT_BOUNDARY;
     m88k_stack_size
-      = ROUND_CALL_BLOCK_SIZE (m88k_stack_size + frame_size
+      = ROUND_CALL_BLOCK_SIZE (m88k_stack_size + frame_size + need
 			       + current_function_pretend_args_size);
   }
 }
@@ -3285,3 +3284,34 @@ symbolic_operand (op, mode)
       return 0;
     }
 }
+
+#ifdef INIT_SECTION_ASM_OP
+static void
+m88k_svr3_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  const char *name = XSTR (symbol, 0);
+
+  init_section ();
+  fprintf (asm_out_file, "\tor.u\t r13,r0,hi16(");
+  assemble_name (asm_out_file, name);
+  fprintf (asm_out_file, ")\n\tor\t r13,r13,lo16(");
+  assemble_name (asm_out_file, name);
+  fprintf (asm_out_file, ")\n\tsubu\t r31,r31,%d\n\tst\t r13,r31,%d\n",
+	   STACK_BOUNDARY / BITS_PER_UNIT, REG_PARM_STACK_SPACE (0));
+}
+
+static void
+m88k_svr3_asm_out_destructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  int i;
+
+  fini_section ();
+  assemble_integer (symbol, UNITS_PER_WORD, 1);
+  for (i = 1; i < 4; i++)
+    assemble_integer (constm1_rtx, UNITS_PER_WORD, 1);
+}
+#endif

@@ -1312,19 +1312,6 @@ do {							\
 #define OBJECT_FORMAT_COFF	/* Object file looks like COFF */
 #define EXTENDED_COFF		/* ECOFF, not normal coff */
 #endif
-
-#if 0 /* These definitions normally have no effect because
-	 MIPS systems define USE_COLLECT2, so
-	 assemble_constructor does nothing anyway.  */
-
-/* Don't use the default definitions, because we don't have gld.
-   Also, we don't want stabs when generating ECOFF output.
-   Instead we depend on collect to handle these.  */
-
-#define ASM_OUTPUT_CONSTRUCTOR(file, name)
-#define ASM_OUTPUT_DESTRUCTOR(file, name)
-
-#endif /* 0 */
 
 /* Target machine storage layout */
 

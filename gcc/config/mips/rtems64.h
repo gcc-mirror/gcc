@@ -30,13 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_MEM_FUNCTIONS
 #endif
 
-/* Undefine the following which were defined in elf64.h.  This will cause the rtems64
-   port to continue to use collect2 for constructors/destructors.  These may be removed
-   when .ctor/.dtor section support is desired. */
-
-#undef CTORS_SECTION_ASM_OP
-#undef DTORS_SECTION_ASM_OP
-
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_sdata, in_rdata
 
@@ -48,14 +41,6 @@ Boston, MA 02111-1307, USA.  */
 #define EXTRA_SECTION_FUNCTIONS                                         \
   SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP) \
   SECTION_FUNCTION_TEMPLATE(rdata_section, in_rdata, RDATA_SECTION_ASM_OP)
-
-#undef ASM_OUTPUT_CONSTRUCTOR
-#undef ASM_OUTPUT_DESTRUCTOR
-
-#undef CTOR_LIST_BEGIN
-#undef CTOR_LIST_END
-#undef DTOR_LIST_BEGIN
-#undef DTOR_LIST_END
 
 #undef STARTFILE_SPEC
 #undef ENDFILE_SPEC

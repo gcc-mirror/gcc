@@ -42,6 +42,8 @@ extern rtx machopic_indirect_data_reference PARAMS ((rtx, rtx));
 extern rtx machopic_indirect_call_target PARAMS ((rtx));
 extern rtx machopic_legitimize_pic_address PARAMS ((rtx, enum machine_mode, rtx));
 
+extern void machopic_asm_out_constructor PARAMS ((rtx, int));
+extern void machopic_asm_out_destructor PARAMS ((rtx, int));
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE

@@ -6776,24 +6776,20 @@ c_expand_body (fndecl, nested_p)
 
   if (DECL_STATIC_CONSTRUCTOR (fndecl))
     {
-#ifndef ASM_OUTPUT_CONSTRUCTOR
-      if (! flag_gnu_linker)
-	static_ctors = tree_cons (NULL_TREE, fndecl, static_ctors);
+      if (targetm.have_ctors_dtors)
+	(* targetm.asm_out.constructor) (XEXP (DECL_RTL (fndecl), 0),
+				         DEFAULT_INIT_PRIORITY);
       else
-#endif
-	assemble_constructor (XEXP (DECL_RTL (fndecl), 0),
-			      DEFAULT_INIT_PRIORITY);
+	static_ctors = tree_cons (NULL_TREE, fndecl, static_ctors);
     }
 
   if (DECL_STATIC_DESTRUCTOR (fndecl))
     {
-#ifndef ASM_OUTPUT_DESTRUCTOR
-      if (! flag_gnu_linker)
-	static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
+      if (targetm.have_ctors_dtors)
+	(* targetm.asm_out.destructor) (XEXP (DECL_RTL (fndecl), 0),
+				        DEFAULT_INIT_PRIORITY);
       else
-#endif
-	assemble_destructor (XEXP (DECL_RTL (fndecl), 0),
-			     DEFAULT_INIT_PRIORITY);
+	static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
     }
 
   if (nested_p)

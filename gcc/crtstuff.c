@@ -100,32 +100,6 @@ extern void *__deregister_frame_info_bases (void *)
 
 #ifndef OBJECT_FORMAT_MACHO
 
-/* Provide default definitions for the pseudo-ops used to switch to the
-   .ctors and .dtors sections.
- 
-   Note that we want to give these sections the SHF_WRITE attribute
-   because these sections will actually contain data (i.e. tables of
-   addresses of functions in the current root executable or shared library
-   file) and, in the case of a shared library, the relocatable addresses
-   will have to be properly resolved/relocated (and then written into) by
-   the dynamic linker when it actually attaches the given shared library
-   to the executing process.  (Note that on SVR4, you may wish to use the
-   `-z text' option to the ELF linker, when building a shared library, as
-   an additional check that you are doing everything right.  But if you do
-   use the `-z text' option when building a shared library, you will get
-   errors unless the .ctors and .dtors sections are marked as writable
-   via the SHF_WRITE attribute.)
-
-   These defaults do not include leading spacing, as they will only be
-   used in asm:s here.  */
-
-#ifndef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"aw\""
-#endif
-#ifndef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"aw\""
-#endif
-
 #ifdef OBJECT_FORMAT_ELF
 
 /*  Declare a pointer to void function type.  */
@@ -372,9 +346,6 @@ __frame_dummy (void)
 
 #endif /* defined(INIT_SECTION_ASM_OP) */
 
-/* Force cc1 to switch to .data section.  */
-static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
-
 /* NOTE:  In order to be able to support SVR4 shared libraries, we arrange
    to have one set of symbols { __CTOR_LIST__, __DTOR_LIST__, __CTOR_END__,
    __DTOR_END__ } per root executable and also one set of these symbols
@@ -387,21 +358,36 @@ static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
    refer to only the __CTOR_END__ symbol in crtend.o and the __DTOR_LIST__
    symbol in crtbegin.o, where they are defined.  */
 
-/* The -1 is a flag to __do_global_[cd]tors
-   indicating that this table does not start with a count of elements.  */
+/* The -1 is a flag to __do_global_[cd]tors indicating that this table
+   does not start with a count of elements.  */
 #ifdef CTOR_LIST_BEGIN
 CTOR_LIST_BEGIN;
-#else
-asm (CTORS_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
-STATIC func_ptr __CTOR_LIST__[1] __attribute__ ((__unused__))
+
+#elif defined(CTORS_SECTION_ASM_OP)
+/* Hack: force cc1 to switch to .data section early, so that assembling
+   __CTOR_LIST__ does not undo our behind-the-back change to .ctors.  */
+static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
+asm (CTORS_SECTION_ASM_OP);
+STATIC func_ptr __CTOR_LIST__[1]
+  __attribute__ ((__unused__))
   = { (func_ptr) (-1) };
+
+#else
+STATIC func_ptr __CTOR_LIST__[1]
+  __attribute__ ((__unused__, section(".ctors")))
+  = { (func_ptr) (-1) };
+
 #endif
 
 #ifdef DTOR_LIST_BEGIN
 DTOR_LIST_BEGIN;
-#else
-asm (DTORS_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
+#elif defined(DTORS_SECTION_ASM_OP)
+asm (DTORS_SECTION_ASM_OP);
 STATIC func_ptr __DTOR_LIST__[1] = { (func_ptr) (-1) };
+#else
+STATIC func_ptr __DTOR_LIST__[1]
+  __attribute__((section(".dtors")))
+  = { (func_ptr) (-1) };
 #endif
 
 #ifdef EH_FRAME_SECTION_NAME
@@ -533,9 +519,6 @@ __do_global_ctors (void)
 
 #endif /* defined(INIT_SECTION_ASM_OP) */
 
-/* Force cc1 to switch to .data section.  */
-static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
-
 /* Put a word containing zero at the end of each of our two lists of function
    addresses.  Note that the words defined here go into the .ctors and .dtors
    sections of the crtend.o file, and since that file is always linked in
@@ -544,16 +527,29 @@ static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
 
 #ifdef CTOR_LIST_END
 CTOR_LIST_END;
-#else
-asm (CTORS_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
+
+#elif defined(CTORS_SECTION_ASM_OP)
+/* Hack: force cc1 to switch to .data section early, so that assembling
+   __CTOR_LIST__ does not undo our behind-the-back change to .ctors.  */
+static func_ptr force_to_data[1] __attribute__ ((__unused__)) = { };
+asm (CTORS_SECTION_ASM_OP);
 STATIC func_ptr __CTOR_END__[1] = { (func_ptr) 0 };
+
+#else
+STATIC func_ptr __CTOR_END__[1]
+  __attribute__((section(".ctors")))
+  = { (func_ptr) 0 };
 #endif
 
 #ifdef DTOR_LIST_END
 DTOR_LIST_END;
+#elif defined(DTORS_SECTION_ASM_OP)
+asm (DTORS_SECTION_ASM_OP);
+STATIC func_ptr __DTOR_END__[1] __attribute__ ((unused))
+  = { (func_ptr) 0 };
 #else
-asm (DTORS_SECTION_ASM_OP);	/* cc1 doesn't know that we are switching! */
-STATIC func_ptr __DTOR_END__[1] __attribute__ ((__unused__))
+STATIC func_ptr __DTOR_END__[1]
+  __attribute__((unused, section(".dtors")))
   = { (func_ptr) 0 };
 #endif
 
@@ -636,4 +632,3 @@ STATIC int __FRAME_END__[]
 #endif /* CRT_END */
 
 #endif /* OBJECT_FORMAT_MACHO */
-

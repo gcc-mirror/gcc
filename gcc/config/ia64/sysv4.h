@@ -83,46 +83,6 @@ do {									\
 #define INIT_SECTION_ASM_OP	"\t.section\t.init,\"ax\",\"progbits\""
 #undef FINI_SECTION_ASM_OP
 #define FINI_SECTION_ASM_OP	"\t.section\t.fini,\"ax\",\"progbits\""
-#undef CTORS_SECTION_ASM_OP
-#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"aw\",\"progbits\""
-#undef DTORS_SECTION_ASM_OP
-#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"aw\",\"progbits\""
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global constructors.  */
-/* Must override this to get @fptr relocation.  */
-#undef ASM_OUTPUT_CONSTRUCTOR
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
-  do {									\
-    ctors_section ();							\
-    if (TARGET_NO_PIC || TARGET_AUTO_PIC)				\
-      fputs ("\tdata8\t ", FILE);					\
-    else								\
-      fputs ("\tdata8\t @fptr(", FILE);					\
-    assemble_name (FILE, NAME);						\
-    if (TARGET_NO_PIC || TARGET_AUTO_PIC)				\
-      fputs ("\n", FILE);						\
-    else								\
-      fputs (")\n", FILE);						\
-  } while (0)
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  */
-/* Must override this to get @fptr relocation.  */
-#undef ASM_OUTPUT_DESTRUCTOR
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
-  do {									\
-    dtors_section ();                   				\
-    if (TARGET_NO_PIC || TARGET_AUTO_PIC)				\
-      fputs ("\tdata8\t ", FILE);					\
-    else								\
-      fputs ("\tdata8\t @fptr(", FILE);					\
-    assemble_name (FILE, NAME);              				\
-    if (TARGET_NO_PIC || TARGET_AUTO_PIC)				\
-      fputs ("\n", FILE);						\
-    else								\
-      fputs (")\n", FILE);						\
-  } while (0)
 
 /* svr4.h undefines this, so we need to define it here.  */
 #define DBX_REGISTER_NUMBER(REGNO) \
@@ -238,13 +198,11 @@ extern unsigned int ia64_section_threshold;
 }
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_ctors, in_dtors, in_sdata, in_sbss
+#define EXTRA_SECTIONS in_const, in_sdata, in_sbss
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
   CONST_SECTION_FUNCTION						\
-  CTORS_SECTION_FUNCTION						\
-  DTORS_SECTION_FUNCTION						\
   SDATA_SECTION_FUNCTION						\
   SBSS_SECTION_FUNCTION
 

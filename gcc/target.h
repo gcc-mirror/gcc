@@ -72,6 +72,12 @@ struct gcc_target
        the section; 0 if the default should be used.  */
     void (* named_section) PARAMS ((const char *, unsigned int,
 				    unsigned int));
+
+    /* Output a constructor for a symbol with a given priority.  */
+    void (* constructor) PARAMS ((struct rtx_def *, int));
+
+    /* Output a destructor for a symbol with a given priority.  */
+    void (* destructor) PARAMS ((struct rtx_def *, int));
   } asm_out;
 
   /* Given two decls, merge their attributes and return the result.  */
@@ -120,6 +126,10 @@ struct gcc_target
 
   /* True if arbitrary sections are supported.  */
   bool have_named_sections;
+
+  /* True if "native" constructors and destructors are supported,
+     false if we're using collect2 for the job.  */
+  bool have_ctors_dtors;
 };
 
 extern struct gcc_target targetm;

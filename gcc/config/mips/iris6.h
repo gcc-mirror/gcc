@@ -242,8 +242,6 @@ Boston, MA 02111-1307, USA.  */
 #undef SUBTARGET_ASM_OPTIMIZING_SPEC
 #define SUBTARGET_ASM_OPTIMIZING_SPEC "-O0"
 
-/* Stuff for constructors.  Start here.  */
-
 /* The assembler now accepts .section pseudo-ops, but it does not allow
    one to change the section in the middle of a function, so we can't use
    the INIT_SECTION_ASM_OP code in crtstuff.  But we can build up the ctor
@@ -254,38 +252,13 @@ Boston, MA 02111-1307, USA.  */
 #define CONST_SECTION_ASM_OP_32	"\t.rdata"
 #define CONST_SECTION_ASM_OP_64	"\t.section\t.rodata"
 
-/* The IRIX 6 assembler .section directive takes four additional args:
-   section type, flags, entry size, and alignment.  The alignment of the
-   .ctors and .dtors sections needs to be the same as the size of a pointer
-   so that the linker doesn't add padding between elements.  */
-#if defined (CRT_BEGIN) || defined (CRT_END)
-
-/* If we are included from crtstuff.c, these need to be plain strings.
-   _MIPS_SZPTR is defined in SUBTARGET_CPP_SPEC above.  */
-#if _MIPS_SZPTR == 64
-#define CTORS_SECTION_ASM_OP "\t.section\t.ctors,1,2,0,8"
-#define DTORS_SECTION_ASM_OP "\t.section\t.dtors,1,2,0,8"
-#else /* _MIPS_SZPTR != 64 */
-#define CTORS_SECTION_ASM_OP "\t.section\t.ctors,1,2,0,4"
-#define DTORS_SECTION_ASM_OP "\t.section\t.dtors,1,2,0,4"
-#endif /* _MIPS_SZPTR == 64 */
-
-#else /* ! (defined (CRT_BEGIN) || defined (CRT_END)) */
-
-/* If we are included from varasm.c, these need to depend on -mabi.  */
-#define CTORS_SECTION_ASM_OP \
-  (Pmode == DImode ? "\t.section\t.ctors,1,2,0,8" : "\t.section\t.ctors,1,2,0,4")
-#define DTORS_SECTION_ASM_OP \
-  (Pmode == DImode ? "\t.section\t.dtors,1,2,0,8" : "\t.section\t.dtors,1,2,0,4")
-#endif /* defined (CRT_BEGIN) || defined (CRT_END) */
-
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
    should override this definition in the target-specific file which
    includes this file.  */
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_rdata, in_const, in_ctors, in_dtors
+#define EXTRA_SECTIONS in_sdata, in_rdata, in_const
 
 /* A default list of extra section function definitions.  For targets
    that use additional sections (e.g. .tdesc) you should override this
@@ -316,59 +289,11 @@ rdata_section ()							\
 	fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP_32);	\
       in_section = in_rdata;						\
     }									\
-}									\
-  CTORS_SECTION_FUNCTION						\
-  DTORS_SECTION_FUNCTION
-
-#define CTORS_SECTION_FUNCTION						\
-void									\
-ctors_section ()							\
-{									\
-  if (in_section != in_ctors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
-      in_section = in_ctors;						\
-    }									\
 }
-
-#define DTORS_SECTION_FUNCTION						\
-void									\
-dtors_section ()							\
-{									\
-  if (in_section != in_dtors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
-      in_section = in_dtors;						\
-    }									\
-}
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global constructors.  */
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
-  do {									\
-    ctors_section ();							\
-    fprintf (FILE, "\t%s\t ",						\
-	     (Pmode == DImode) ? ".dword" : ".word");			\
-    assemble_name (FILE, NAME);						\
-    fprintf (FILE, "\n");						\
-  } while (0)
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  */
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
-  do {									\
-    dtors_section ();                   				\
-    fprintf (FILE, "\t%s\t ",						\
-	     (Pmode == DImode) ? ".dword" : ".word");			\
-    assemble_name (FILE, NAME);              				\
-    fprintf (FILE, "\n");						\
-  } while (0)
 
 /* Switch into a generic section.  */
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  iris6_asm_named_section
-
-/* Stuff for constructors.  End here.  */
 
 /* ??? Perhaps just include svr4.h in this file?  */
 

@@ -158,33 +158,8 @@ do { text_section ();							\
 
 #undef	INVOKE__main
 
-#undef	ASM_OUTPUT_CONSTRUCTOR
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)                       \
-  do { if (flag_pic)                                            \
-	 mod_init_section ();                                   \
-       else							\
-	 constructor_section ();				\
-       ASM_OUTPUT_ALIGN (FILE, 1);                              \
-       fprintf (FILE, "\t.long ");                              \
-       assemble_name (FILE, NAME);                              \
-       fprintf (FILE, "\n");                                    \
-       if (!flag_pic)                                    	\
-	 fprintf (FILE, ".reference .constructors_used\n");     \
-      } while (0)
-
-#undef	ASM_OUTPUT_DESTRUCTOR
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)                        \
-  do { if (flag_pic)                                            \
-	 mod_term_section ();                                   \
-       else							\
-	 destructor_section ();					\
-       ASM_OUTPUT_ALIGN (FILE, 1);				\
-       fprintf (FILE, "\t.long ");				\
-       assemble_name (FILE, NAME);				\
-       fprintf (FILE, "\n");					\
-       if (!flag_pic)                                    	\
-       	fprintf (FILE, ".reference .destructors_used\n");	\
-     } while (0)
+#define TARGET_ASM_CONSTRUCTOR  machopic_asm_out_constructor
+#define TARGET_ASM_DESTRUCTOR   machopic_asm_out_destructor
 
 
 /* Don't output a .file directive.  That is only used by the assembler for

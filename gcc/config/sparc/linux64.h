@@ -387,31 +387,3 @@ do {									\
 	       : /* no outputs */			\
 	       : "r" (ms_flags), "r" (ms_saveret));
 #endif /* sparc32 */
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global constructors.  */
-#undef ASM_OUTPUT_CONSTRUCTOR
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
-  do {									\
-    ctors_section ();							\
-    if (TARGET_ARCH64)							\
-      fprintf (FILE, "\t%s\t ", ASM_LONGLONG);				\
-    else								\
-      fprintf (FILE, "%s", INT_ASM_OP);					\
-    assemble_name (FILE, NAME);						\
-    fprintf (FILE, "\n");						\
-  } while (0)
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  */
-#undef ASM_OUTPUT_DESTRUCTOR
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
-  do {									\
-    dtors_section ();                   				\
-    if (TARGET_ARCH64)							\
-      fprintf (FILE, "\t%s\t ", ASM_LONGLONG);				\
-    else								\
-      fprintf (FILE, "%s", INT_ASM_OP);					\
-    assemble_name (FILE, NAME);              				\
-    fprintf (FILE, "\n");						\
-  } while (0)

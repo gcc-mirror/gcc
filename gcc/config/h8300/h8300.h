@@ -1088,34 +1088,11 @@ struct cum_arg
 #define DATA_SECTION_ASM_OP "\t.section .data"
 #define BSS_SECTION_ASM_OP "\t.section .bss"
 #define INIT_SECTION_ASM_OP "\t.section .init"
-#define CTORS_SECTION_ASM_OP "\t.section .ctors"
-#define DTORS_SECTION_ASM_OP "\t.section .dtors"
 #define READONLY_DATA_SECTION_ASM_OP "\t.section .rodata"
 
-#define EXTRA_SECTIONS in_ctors, in_dtors, in_readonly_data
+#define EXTRA_SECTIONS in_readonly_data
 
 #define EXTRA_SECTION_FUNCTIONS						\
-									\
-void									\
-ctors_section ()							\
-{									\
-  if (in_section != in_ctors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
-      in_section = in_ctors;						\
-    }									\
-}									\
-									\
-void									\
-dtors_section ()							\
-{									\
-  if (in_section != in_dtors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
-      in_section = in_dtors;						\
-    }									\
-}									\
-									\
 void									\
 readonly_data ()							\
 {									\
@@ -1125,22 +1102,6 @@ readonly_data ()							\
       in_section = in_readonly_data;					\
     }									\
 }
-
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)		\
-  do							\
-    {							\
-      ctors_section ();					\
-      fprintf (FILE, "%s_%s\n", ASM_WORD_OP, NAME);	\
-    }							\
-  while (0)
-
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)		\
-  do							\
-    {							\
-      dtors_section ();			       		\
-      fprintf (FILE, "%s_%s\n", ASM_WORD_OP, NAME);	\
-    }							\
-  while (0)
 
 #undef DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY			\
@@ -1156,7 +1117,7 @@ readonly_data ()							\
 }
 
 #undef DO_GLOBAL_DTORS_BODY
-#define DO_GLOBAL_DTORS_BODY                    \
+#define DO_GLOBAL_DTORS_BODY			\
 {						\
   typedef (*pfunc)();				\
   extern pfunc __dtors[];			\

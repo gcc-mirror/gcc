@@ -17,13 +17,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Undefine the following which were defined in elf.h.  Thise will cause the mips-vxworks
-   port to continue to use collect2 for constructors/destructors.  This entire file may
-   be removed when .ctor/.dtor section support is desired. */
-
-#undef CTORS_SECTION_ASM_OP
-#undef DTORS_SECTION_ASM_OP
-
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_sdata, in_rdata, in_sbss
 
@@ -37,15 +30,5 @@ Boston, MA 02111-1307, USA.  */
   SECTION_FUNCTION_TEMPLATE(sbss_section, in_sbss, SBSS_SECTION_ASM_OP) \
   SECTION_FUNCTION_TEMPLATE(rdata_section, in_rdata, RDATA_SECTION_ASM_OP)
 
-#undef ASM_OUTPUT_CONSTRUCTOR
-#undef ASM_OUTPUT_DESTRUCTOR
-
-#undef CTOR_LIST_BEGIN
-#undef CTOR_LIST_END
-#undef DTOR_LIST_BEGIN
-#undef DTOR_LIST_END
-
 #undef STARTFILE_SPEC
 #undef ENDFILE_SPEC
-
-/*  End of undefines to turn off .ctor/.dtor section support */

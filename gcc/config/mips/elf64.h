@@ -243,29 +243,6 @@ do {									   \
   DECL_SECTION_NAME (DECL) = build_string (len, string);		   \
 } while (0)
 
-/* Support the ctors/dtors and other sections.  */
- 
-/* Define the names of and pseudo-ops used to switch to the .ctors and
-   .dtors sections.
- 
-   Note that we want to give these sections the SHF_WRITE attribute
-   because these sections will actually contain data (i.e. tables of
-   addresses of functions in the current root executable or shared library
-   file) and, in the case of a shared library, the relocatable addresses
-   will have to be properly resolved/relocated (and then written into) by
-   the dynamic linker when it actually attaches the given shared library
-   to the executing process.  (Note that on SVR4, you may wish to use the
-   `-z text' option to the ELF linker, when building a shared library, as
-   an additional check that you are doing everything right.  But if you do
-   use the `-z text' option when building a shared library, you will get
-   errors unless the .ctors and .dtors sections are marked as writable
-   via the SHF_WRITE attribute.)  */
-
-#define CTORS_SECTION_NAME      ".ctors"
-#define CTORS_SECTION_ASM_OP    "\t.section\t.ctors,\"aw\""
-#define DTORS_SECTION_NAME      ".dtors"
-#define DTORS_SECTION_ASM_OP    "\t.section\t.dtors,\"aw\""
- 
 /* There's no point providing a default definition of __CTOR_LIST__
    since people are expected either to use crtbegin.o, or an equivalent,
    or provide their own definition.  */
@@ -274,16 +251,14 @@ do {									   \
 /* A list of other sections which the compiler might be "in" at any
    given time.  */
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_rdata, in_ctors, in_dtors
+#define EXTRA_SECTIONS in_sdata, in_rdata
  
 #define INVOKE__main
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS                                         \
   SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP) \
-  SECTION_FUNCTION_TEMPLATE(rdata_section, in_rdata, RDATA_SECTION_ASM_OP) \
-  SECTION_FUNCTION_TEMPLATE(ctors_section, in_ctors, CTORS_SECTION_ASM_OP) \
-  SECTION_FUNCTION_TEMPLATE(dtors_section, in_dtors, DTORS_SECTION_ASM_OP)
+  SECTION_FUNCTION_TEMPLATE(rdata_section, in_rdata, RDATA_SECTION_ASM_OP)
 
 #define SECTION_FUNCTION_TEMPLATE(FN, ENUM, OP)                               \
 void FN ()                                                            \
@@ -294,47 +269,6 @@ void FN ()                                                            \
       in_section = ENUM;                                              \
     }                                                                 \
 }
-
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global constructors.  */
-#undef ASM_OUTPUT_CONSTRUCTOR
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)                             \
-  do {                                                                \
-    ctors_section ();                                                 \
-    fprintf (FILE, "\t%s\t", (Pmode == SImode) ? ".word" : ".dword"); \
-    assemble_name (FILE, NAME);                                       \
-    fprintf (FILE, "\n");                                             \
-  } while (0)
-
-
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  */
-#undef ASM_OUTPUT_DESTRUCTOR
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)                              \
-  do {                                                                \
-    dtors_section ();                                                 \
-    fprintf (FILE, "\t%s\t", (Pmode == SImode) ? ".word" : ".dword"); \
-    assemble_name (FILE, NAME);                                       \
-    fprintf (FILE, "\n");                                             \
-  } while (0)
-
-#define CTOR_LIST_BEGIN                                               \
-func_ptr __CTOR_LIST__ __attribute__((section(CTORS_SECTION_NAME))) = \
-  (func_ptr) (-1)
- 
-#define CTOR_LIST_END                                                 \
-func_ptr __CTOR_END__ __attribute__((section(CTORS_SECTION_NAME))) =  \
-  (func_ptr) 0
- 
-#define DTOR_LIST_BEGIN                                               \
-func_ptr __DTOR_LIST__ __attribute__((section(DTORS_SECTION_NAME))) = \
-  (func_ptr) (-1)
-
-#define DTOR_LIST_END                                                 \
-func_ptr __DTOR_END__ __attribute__((section(DTORS_SECTION_NAME))) =  \
-  (func_ptr) 0
-
 /* Don't set the target flags, this is done by the linker script */
 #undef LIB_SPEC
 #define LIB_SPEC ""

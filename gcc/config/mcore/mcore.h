@@ -1080,38 +1080,12 @@ extern enum reg_class reg_class_from_letter[];
 #define DATA_SECTION_ASM_OP  "\t.data"
 
 #undef  EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_ctors, in_dtors, SUBTARGET_EXTRA_SECTIONS
+#define EXTRA_SECTIONS SUBTARGET_EXTRA_SECTIONS
 
 #undef  EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS			\
-  CTORS_SECTION_FUNCTION			\
-  DTORS_SECTION_FUNCTION			\
   SUBTARGET_EXTRA_SECTION_FUNCTIONS		\
   SWITCH_SECTION_FUNCTION
-
-#ifndef CTORS_SECTION_FUNCTION
-#define CTORS_SECTION_FUNCTION						\
-void									\
-ctors_section ()							\
-{									\
-  if (in_section != in_ctors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
-      in_section = in_ctors;						\
-    }									\
-}
-
-#define DTORS_SECTION_FUNCTION						\
-void									\
-dtors_section ()							\
-{									\
-  if (in_section != in_dtors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
-      in_section = in_dtors;						\
-    }									\
-}
-#endif
 
 /* Switch to SECTION (an `enum in_section').
 
@@ -1130,8 +1104,6 @@ switch_to_section (section, decl)				\
       case in_text: text_section (); break;			\
       case in_data: data_section (); break;			\
       case in_named: named_section (decl, NULL, 0); break;	\
-      case in_ctors: ctors_section (); break;			\
-      case in_dtors: dtors_section (); break;			\
       SUBTARGET_SWITCH_SECTIONS      				\
       default: abort (); break;					\
     }								\

@@ -89,3 +89,24 @@ handle_pragma (p_getc, p_ungetc, pname)
 
   return retval;
 }
+
+void
+nextstep_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  constructor_section ();
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+  fprintf (asm_out_file, ".reference .constructors_used\n");
+}
+
+void
+nextstep_asm_out_destructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  destructor_section ();
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+  fprintf (asm_out_file, ".reference .destructors_used\n");
+}
+

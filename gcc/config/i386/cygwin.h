@@ -199,38 +199,12 @@ union tree_node;
 
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_ctor, in_dtor, in_drectve
+#define EXTRA_SECTIONS in_drectve
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS					\
-  CTOR_SECTION_FUNCTION						\
-  DTOR_SECTION_FUNCTION						\
   DRECTVE_SECTION_FUNCTION					\
   SWITCH_TO_SECTION_FUNCTION
-
-#define CTOR_SECTION_FUNCTION					\
-void								\
-ctor_section ()							\
-{								\
-  if (in_section != in_ctor)					\
-    {								\
-      fprintf (asm_out_file, "\t.section .ctor\n");		\
-      in_section = in_ctor;					\
-    }								\
-}
-void ctor_section PARAMS ((void));
-
-#define DTOR_SECTION_FUNCTION					\
-void								\
-dtor_section ()							\
-{								\
-  if (in_section != in_dtor)					\
-    {								\
-      fprintf (asm_out_file, "\t.section .dtor\n");		\
-      in_section = in_dtor;					\
-    }								\
-}
-void dtor_section PARAMS ((void));
 
 #define DRECTVE_SECTION_FUNCTION \
 void									\
@@ -262,28 +236,10 @@ switch_to_section (section, decl) 				\
       case in_text: text_section (); break; 			\
       case in_data: data_section (); break; 			\
       case in_named: named_section (decl, NULL, 0); break; 	\
-      case in_ctor: ctor_section (); break; 			\
-      case in_dtor: dtor_section (); break; 			\
       case in_drectve: drectve_section (); break; 		\
       default: abort (); break; 				\
     } 								\
 }
-
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
-  do {						\
-    ctor_section ();				\
-    fputs (ASM_LONG, FILE);			\
-    assemble_name (FILE, NAME);			\
-    fprintf (FILE, "\n");			\
-  } while (0)
-
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       	\
-  do {						\
-    dtor_section ();                   		\
-    fputs (ASM_LONG, FILE);			\
-    assemble_name (FILE, NAME);			\
-    fprintf (FILE, "\n");			\
-  } while (0)
 
 /* Don't allow flag_pic to propagate since gas may produce invalid code
    otherwise. */

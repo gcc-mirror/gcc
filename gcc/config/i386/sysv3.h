@@ -102,10 +102,7 @@ Boston, MA 02111-1307, USA.  */
 
    The __CTORS_LIST__ goes in the .init section.  Define CTOR_LIST_BEGIN
    and CTOR_LIST_END to contribute to the .init section an instruction to
-   push a word containing 0 (or some equivalent of that).
-
-   ASM_OUTPUT_CONSTRUCTOR should be defined to push the address of the
-   constructor.  */
+   push a word containing 0 (or some equivalent of that).  */
 
 #undef INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP     "\t.section .init,\"x\""
@@ -115,10 +112,4 @@ Boston, MA 02111-1307, USA.  */
   asm ("pushl $0")
 #define CTOR_LIST_END CTOR_LIST_BEGIN
 
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
-  do {						\
-    init_section ();				\
-    fprintf (FILE, "\tpushl $");		\
-    assemble_name (FILE, NAME);			\
-    fprintf (FILE, "\n");			\
-  } while (0)
+#define TARGET_ASM_CONSTRUCTOR  ix86_svr3_asm_out_constructor

@@ -33,6 +33,38 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_ASM_FUNCTION_END_PROLOGUE no_asm_to_stream
 #define TARGET_ASM_FUNCTION_BEGIN_EPILOGUE no_asm_to_stream
 
+#if !defined(TARGET_ASM_CONSTRUCTOR) && !defined(USE_COLLECT2)
+# ifdef CTORS_SECTION_ASM_OP
+#  define TARGET_ASM_CONSTRUCTOR default_ctor_section_asm_out_constructor
+# else
+#  ifdef TARGET_ASM_NAMED_SECTION
+#   define TARGET_ASM_CONSTRUCTOR default_named_section_asm_out_constructor
+#  else
+#   define TARGET_ASM_CONSTRUCTOR default_stabs_asm_out_constructor
+#  endif
+# endif
+#endif
+
+#if !defined(TARGET_ASM_DESTRUCTOR) && !defined(USE_COLLECT2)
+# ifdef DTORS_SECTION_ASM_OP
+#  define TARGET_ASM_DESTRUCTOR default_dtor_section_asm_out_destructor
+# else
+#  ifdef TARGET_ASM_NAMED_SECTION
+#   define TARGET_ASM_DESTRUCTOR default_named_section_asm_out_destructor
+#  else
+#   define TARGET_ASM_DESTRUCTOR default_stabs_asm_out_destructor
+#  endif
+# endif
+#endif
+
+#if defined(TARGET_ASM_CONSTRUCTOR) && defined(TARGET_ASM_DESTRUCTOR)
+#define TARGET_HAVE_CTORS_DTORS true
+#else
+#define TARGET_HAVE_CTORS_DTORS false
+#define TARGET_ASM_CONSTRUCTOR NULL
+#define TARGET_ASM_DESTRUCTOR NULL
+#endif
+
 #ifdef TARGET_ASM_NAMED_SECTION
 #define TARGET_HAVE_NAMED_SECTIONS true
 #else
@@ -46,7 +78,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 			TARGET_ASM_FUNCTION_END_PROLOGUE,	\
 			TARGET_ASM_FUNCTION_BEGIN_EPILOGUE,	\
 			TARGET_ASM_FUNCTION_EPILOGUE,		\
-			TARGET_ASM_NAMED_SECTION}
+			TARGET_ASM_NAMED_SECTION,		\
+			TARGET_ASM_CONSTRUCTOR,			\
+			TARGET_ASM_DESTRUCTOR}
 
 /* All in tree.c.  */
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_decl_attributes
@@ -80,5 +114,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_INIT_BUILTINS,				\
   TARGET_EXPAND_BUILTIN,			\
   TARGET_SECTION_TYPE_FLAGS,			\
-  TARGET_HAVE_NAMED_SECTIONS			\
+  TARGET_HAVE_NAMED_SECTIONS,			\
+  TARGET_HAVE_CTORS_DTORS			\
 }

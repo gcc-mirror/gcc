@@ -608,9 +608,13 @@ static int ix86_save_reg PARAMS ((int, int));
 static void ix86_compute_frame_layout PARAMS ((struct ix86_frame *));
 static int ix86_comp_type_attributes PARAMS ((tree, tree));
 
+#ifdef DO_GLOBAL_CTORS_BODY
+static void ix86_svr3_asm_out_constructor PARAMS ((rtx, int));
+#endif
 #if defined(TARGET_ELF) && defined(TARGET_COFF)
 static void sco_asm_named_section PARAMS ((const char *, unsigned int,
 					   unsigned int));
+static void sco_asm_out_constructor PARAMS ((rtx, int));
 #endif
 
 /* Initialize the GCC target structure.  */
@@ -10783,6 +10787,19 @@ ix86_memory_move_cost (mode, class, in)
     }
 }
 
+#ifdef DO_GLOBAL_CTORS_BODY
+static void
+ix86_svr3_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  init_section ();
+  fputs ("\tpushl $", asm_out_file);
+  assemble_name (asm_out_file, XSTR (symbol, 0));
+  fputc ('\n', asm_out_file);
+}
+#endif
+
 #if defined(TARGET_ELF) && defined(TARGET_COFF)
 static void
 sco_asm_named_section (name, flags, align)
@@ -10794,5 +10811,16 @@ sco_asm_named_section (name, flags, align)
     default_elf_asm_named_section (name, flags, align);
   else
     default_coff_asm_named_section (name, flags, align);
+}
+
+static void
+sco_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority;
+{
+  if (TARGET_ELF)
+    default_named_section_asm_out_constrctor (symbol, priority);
+  else
+    ix86_svr3_asm_out_constructor (symbol, priority);
 }
 #endif

@@ -396,7 +396,7 @@ the effect you need.
 
 @findex LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
 @item LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
-A nonzero value causes collect2 to remove duplicate @option{-L@var{directory}} search
+A nonzero value causes @command{collect2} to remove duplicate @option{-L@var{directory}} search
 directories from linking commands.  Do not give it a nonzero value if
 removing duplicate search directories changes the linker's semantics.
 
@@ -6318,7 +6318,7 @@ systems.  This macro is used in @code{assemble_name}.
 @ignore @c Seems not to exist anymore.
 @findex ASM_OUTPUT_LABELREF_AS_INT
 @item ASM_OUTPUT_LABELREF_AS_INT (@var{file}, @var{label})
-Define this macro for systems that use the program @code{collect2}.
+Define this macro for systems that use the program @command{collect2}.
 The definition should be a C statement to output a word containing
 a reference to the label @var{label}.
 @end ignore
@@ -6546,49 +6546,56 @@ the constructor section to point to that function.  The linker
 accumulates all these words into one contiguous @samp{.ctors} section.
 Termination functions are handled similarly.
 
-To use this method, you need appropriate definitions of the macros
-@code{ASM_OUTPUT_CONSTRUCTOR} and @code{ASM_OUTPUT_DESTRUCTOR}.  Usually
-you can get them by including @file{svr4.h}.
+This method will be chosen as the default by @file{target-def.h} if
+@code{TARGET_ASM_NAMED_SECTION} is defined.  A target that does not
+support arbitrary sections, but does support special designated 
+constructor and destructor sections may define @code{CTORS_SECTION_ASM_OP}
+and @code{DTORS_SECTION_ASM_OP} to achieve the same effect.
 
 When arbitrary sections are available, there are two variants, depending
 upon how the code in @file{crtstuff.c} is called.  On systems that
-support an @dfn{init} section which is executed at program startup,
+support a @dfn{.init} section which is executed at program startup,
 parts of @file{crtstuff.c} are compiled into that section.  The
 program is linked by the @code{gcc} driver like this:
 
 @example
-ld -o @var{output_file} crtbegin.o @dots{} crtend.o -lgcc
+ld -o @var{output_file} crti.o crtbegin.o @dots{} -lgcc crtend.o crtn.o
 @end example
 
-The head of a function (@code{__do_global_ctors}) appears in the init
-section of @file{crtbegin.o}; the remainder of the function appears in
-the init section of @file{crtend.o}.  The linker will pull these two
-parts of the section together, making a whole function.  If any of the
-user's object files linked into the middle of it contribute code, then that
-code will be executed as part of the body of @code{__do_global_ctors}.
+The prologue of a function (@code{__init}) appears in the @code{.init}
+section of @file{crti.o}; the epilogue appears in @file{crtn.o}.  Likewise
+for the function @code{__fini} in the @dfn{.fini} section.  Normally these
+files are provided by the operating system or by the GNU C library, but
+are provided by GCC for a few targets.
+
+The objects @file{crtbegin.o} and @file{crtend.o} are (for most targets)
+compiled from @file{crtstuff.c}.  They contain, among other things, code
+fragments within the @code{.init} and @code{.fini} sections that branch
+to routines in the @code{.text} section.  The linker will pull all parts
+of a section together, which results in a complete @code{__init} function
+that invokes the routines we need at startup.
 
 To use this variant, you must define the @code{INIT_SECTION_ASM_OP}
 macro properly.
 
-If no init section is available, do not define
-@code{INIT_SECTION_ASM_OP}.  Then @code{__do_global_ctors} is built into
-the text section like all other functions, and resides in
-@file{libgcc.a}.  When GCC compiles any function called @code{main}, it
-inserts a procedure call to @code{__main} as the first executable code
-after the function prologue.  The @code{__main} function, also defined
-in @file{libgcc2.c}, simply calls @file{__do_global_ctors}.
+If no init section is available, when GCC compiles any function called
+@code{main} (or more accurately, any function designated as a program
+entry point by the language front end calling @code{expand_main_function}),
+it inserts a procedure call to @code{__main} as the first executable code
+after the function prologue.  The @code{__main} function is defined
+in @file{libgcc2.c} and runs the global constructors.
 
 In file formats that don't support arbitrary sections, there are again
 two variants.  In the simplest variant, the GNU linker (GNU @code{ld})
 and an `a.out' format must be used.  In this case,
-@code{ASM_OUTPUT_CONSTRUCTOR} is defined to produce a @code{.stabs}
+@code{TARGET_ASM_CONSTRUCTOR} is defined to produce a @code{.stabs}
 entry of type @samp{N_SETT}, referencing the name @code{__CTOR_LIST__},
 and with the address of the void function containing the initialization
 code as its value.  The GNU linker recognizes this as a request to add
-the value to a ``set''; the values are accumulated, and are eventually
+the value to a @dfn{set}; the values are accumulated, and are eventually
 placed in the executable as a vector in the format described above, with
 a leading (ignored) count and a trailing zero element.
-@code{ASM_OUTPUT_DESTRUCTOR} is handled similarly.  Since no init
+@code{TARGET_ASM_DESTRUCTOR} is handled similarly.  Since no init
 section is available, the absence of @code{INIT_SECTION_ASM_OP} causes
 the compilation of @code{main} to call @code{__main} as above, starting
 the initialization process.
@@ -6596,37 +6603,14 @@ the initialization process.
 The last variant uses neither arbitrary sections nor the GNU linker.
 This is preferable when you want to do dynamic linking and when using
 file formats which the GNU linker does not support, such as `ECOFF'@.  In
-this case, @code{ASM_OUTPUT_CONSTRUCTOR} does not produce an
-@code{N_SETT} symbol; initialization and termination functions are
-recognized simply by their names.  This requires an extra program in the
-linkage step, called @code{collect2}.  This program pretends to be the
-linker, for use with GCC; it does its job by running the ordinary
-linker, but also arranges to include the vectors of initialization and
-termination functions.  These functions are called via @code{__main} as
-described above.
-
-Choosing among these configuration options has been simplified by a set
-of operating-system-dependent files in the @file{config} subdirectory.
-These files define all of the relevant parameters.  Usually it is
-sufficient to include one into your specific machine-dependent
-configuration file.  These files are:
-
-@table @file
-@item aoutos.h
-For operating systems using the `a.out' format.
-
-@item next.h
-For operating systems using the `MachO' format.
-
-@item svr3.h
-For System V Release 3 and similar systems using `COFF' format.
-
-@item svr4.h
-For System V Release 4 and similar systems using `ELF' format.
-
-@item vms.h
-For the VMS operating system.
-@end table
+this case, @code{TARGET_HAVE_CTORS_DTORS} is false, initialization and
+termination functions are recognized simply by their names.  This requires
+an extra program in the linkage step, called @command{collect2}.  This program
+pretends to be the linker, for use with GCC; it does its job by running
+the ordinary linker, but also arranges to include the vectors of
+initialization and termination functions.  These functions are called
+via @code{__main} as described above.  In order to use this method,
+@code{use_collect2} must be defined in the target in @file{config.gcc}.
 
 @ifinfo
 The following section describes the specific macros that control and
@@ -6652,10 +6636,9 @@ run the initialization functions.
 @item HAS_INIT_SECTION
 @findex HAS_INIT_SECTION
 If defined, @code{main} will not call @code{__main} as described above.
-This macro should be defined for systems that control the contents of the
-init section on a symbol-by-symbol basis, such as OSF/1, and should not
-be defined explicitly for systems that support
-@code{INIT_SECTION_ASM_OP}.
+This macro should be defined for systems that control start-up code
+on a symbol-by-symbol basis, such as OSF/1, and should not
+be defined explicitly for systems that support @code{INIT_SECTION_ASM_OP}.
 
 @item LD_INIT_SWITCH
 @findex LD_INIT_SWITCH
@@ -6680,65 +6663,65 @@ If nonzero, the C++ @code{init_priority} attribute is supported and the
 compiler should emit instructions to control the order of initialization
 of objects.  If zero, the compiler will issue an error message upon
 encountering an @code{init_priority} attribute.
-
-@item ASM_OUTPUT_CONSTRUCTOR (@var{stream}, @var{name})
-@findex ASM_OUTPUT_CONSTRUCTOR
-Define this macro as a C statement to output on the stream @var{stream}
-the assembler code to arrange to call the function named @var{name} at
-initialization time.
-
-Assume that @var{name} is the name of a C function generated
-automatically by the compiler.  This function takes no arguments.  Use
-the function @code{assemble_name} to output the name @var{name}; this
-performs any system-specific syntactic transformations such as adding an
-underscore.
-
-If you don't define this macro, nothing special is output to arrange to
-call the function.  This is correct when the function will be called in
-some other manner---for example, by means of the @code{collect2} program,
-which looks through the symbol table to find these functions by their
-names.
-
-@item ASM_OUTPUT_DESTRUCTOR (@var{stream}, @var{name})
-@findex ASM_OUTPUT_DESTRUCTOR
-This is like @code{ASM_OUTPUT_CONSTRUCTOR} but used for termination
-functions rather than initialization functions.
-
-When @code{ASM_OUTPUT_CONSTRUCTOR} and @code{ASM_OUTPUT_DESTRUCTOR} are
-defined, the initialization routine generated for the generated object
-file will have static linkage.
 @end table
 
-If your system uses @code{collect2} as the means of processing
-constructors, then that program normally uses @code{nm} to scan an
-object file for constructor functions to be called.  On such systems you
-must not define @code{ASM_OUTPUT_CONSTRUCTOR} and @code{ASM_OUTPUT_DESTRUCTOR}
-as the object file's initialization routine must have global scope.
+@deftypefn {Target Hook} bool TARGET_HAVE_CTORS_DTORS
+This value is true if the target supports some ``native'' method of
+collecting constructors and destructors to be run at startup and exit.
+It is false if we must use @command{collect2}.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_ASM_CONSTRUCTOR (rtx @var{symbol}, int @var{priority})
+If defined, a function that outputs assembler code to arrange to call
+the function referenced by @var{symbol} at initialization time.
+
+Assume that @var{symbol} is a @code{SYMBOL_REF} for a function taking
+no arguments and with no return value.  If the target supports initialization
+priorities, @var{priority} is a value between 0 and @code{MAX_INIT_PRIORITY};
+otherwise it must be @code{DEFAULT_INIT_PRIORITY}.
+
+If this macro is is not defined by the target, a suitable default will
+be chosen if (1) the target supports arbitrary section names, (2) the
+target defines @code{CTORS_SECTION_ASM_OP}, or (3) @code{USE_COLLECT2}
+is not defined.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_ASM_DESTRUCTOR (rtx @var{symbol}, int @var{priority})
+This is like @code{TARGET_ASM_CONSTRUCTOR} but used for termination
+functions rather than initialization functions.
+@end deftypefn
+
+If @code{TARGET_HAVE_CTORS_DTORS} is true, the initialization routine
+generated for the generated object file will have static linkage.
+
+If your system uses @command{collect2} as the means of processing
+constructors, then that program normally uses @command{nm} to scan
+an object file for constructor functions to be called.
 
 On certain kinds of systems, you can define these macros to make
-@code{collect2} work faster (and, in some cases, make it work at all):
+@command{collect2} work faster (and, in some cases, make it work at all):
 
 @table @code
 @findex OBJECT_FORMAT_COFF
 @item OBJECT_FORMAT_COFF
 Define this macro if the system uses COFF (Common Object File Format)
-object files, so that @code{collect2} can assume this format and scan
+object files, so that @command{collect2} can assume this format and scan
 object files directly for dynamic constructor/destructor functions.
 
 @findex OBJECT_FORMAT_ROSE
 @item OBJECT_FORMAT_ROSE
 Define this macro if the system uses ROSE format object files, so that
-@code{collect2} can assume this format and scan object files directly
+@command{collect2} can assume this format and scan object files directly
 for dynamic constructor/destructor functions.
 
-These macros are effective only in a native compiler; @code{collect2} as
-part of a cross compiler always uses @code{nm} for the target machine.
+These macros are effective only in a native compiler; @command{collect2} as
+part of a cross compiler always uses @command{nm} for the target machine.
 
 @findex REAL_NM_FILE_NAME
 @item REAL_NM_FILE_NAME
 Define this macro as a C string constant containing the file name to use
-to execute @code{nm}.  The default is to search the path normally for
-@code{nm}.
+to execute @command{nm}.  The default is to search the path normally for
+@command{nm}.
 
 If your system supports shared libraries and has a program to list the
 dynamic dependencies of a given library or executable, you can define
@@ -6747,8 +6730,8 @@ termination functions in shared libraries:
 
 @findex LDD_SUFFIX
 @item LDD_SUFFIX
-Define this macro to a C string constant containing the name of the
-program which lists dynamic dependencies, like @code{"ldd"} under SunOS 4.
+Define this macro to a C string constant containing the name of the program
+which lists dynamic dependencies, like @command{"ldd"} under SunOS 4.
 
 @findex PARSE_LDD_OUTPUT
 @item PARSE_LDD_OUTPUT (@var{ptr})
@@ -6758,7 +6741,6 @@ of type @code{char *} that points to the beginning of a line of output
 from @code{LDD_SUFFIX}.  If the line lists a dynamic dependency, the
 code must advance @var{ptr} to the beginning of the filename on that
 line.  Otherwise, it must set @var{ptr} to @code{NULL}.
-
 @end table
 
 @node Instruction Output

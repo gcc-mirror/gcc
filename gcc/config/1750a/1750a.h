@@ -1220,14 +1220,6 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
-#define ASM_OUTPUT_CONSTRUCTOR(FILE, NAME)  do {	\
-	fprintf(FILE, "\tinit\n\t"); assemble_name(FILE, NAME); \
-        fprintf(FILE,"  ;constructor\n"); } while (0)
-
-#define ASM_OUTPUT_DESTRUCTOR(FILE, NAME)  do {	\
-	fprintf(FILE, "\tinit\n\t"); assemble_name(FILE, NAME); \
-        fprintf(FILE,"  ;destructor\n"); } while (0)
-
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
    For `%' followed by punctuation, CODE is the punctuation and X is null.

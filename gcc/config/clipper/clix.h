@@ -96,33 +96,16 @@ do {							\
 
 #undef CTOR_LIST_END
 
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
-  do {						\
-    init_section ();				\
-    fputs ("\tloada  ", FILE);			\
-    assemble_name (FILE, NAME);			\
-    fputs (",r0\n\tsubq   $8,sp\n\tstorw   r0,(sp)\n", FILE);	\
-  } while (0)
-
-
 /* fini psect is 8 aligned */
 
 #define DTOR_LIST_BEGIN	\
   asm (DTORS_SECTION_ASM_OP);				\
   func_ptr __DTOR_LIST__[2] = { (func_ptr) (-1), 0 };
 
-/* A C statement (sans semicolon) to output an element in the table of
-   global destructors.  */
-
-#undef ASM_OUTPUT_DESTRUCTOR
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
-  do {									\
-    fini_section ();                   					\
-    fprintf (FILE, "%s\t ", ASM_LONG);					\
-    assemble_name (FILE, NAME);              				\
-    fprintf (FILE, ",0\n");						\
-  } while (0)
-
+#undef TARGET_ASM_CONSTRUCTOR
+#define TARGET_ASM_CONSTRUCTOR  clix_asm_out_constructor
+#undef TARGET_ASM_DESTRUCTOR
+#define TARGET_ASM_DESTRUCTOR   clix_asm_out_destructor
 
 /* On clix crt1.o first calls init code and then sets environ and a valid
    chrclass. Unfortunately stdio routines bomb with unset chrclass.

@@ -209,9 +209,9 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 #define DWARF2_UNWIND_INFO 1
 #endif
 
-/* If we have named section, and we're using crtstuff to run ctors,
-   then use named sections for registering eh frame information.  */
-#if defined (TARGET_ASM_NAMED_SECTION) && defined (ASM_OUTPUT_CONSTRUCTOR)
+/* If we have named sections, and we're using crtstuff to run ctors,
+   use them for registering eh frame information.  */
+#if defined (TARGET_ASM_NAMED_SECTION)
 #ifndef EH_FRAME_SECTION_NAME
 #define EH_FRAME_SECTION_NAME ".eh_frame"
 #endif

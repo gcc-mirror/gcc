@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
+#include "debug.h"
 
 /* Needed for use_return_insn.  */
 #include "flags.h"
@@ -62,6 +63,9 @@ static void m68k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m68k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void m68k_coff_asm_named_section PARAMS ((const char *, unsigned int,
 						 unsigned int));
+#ifdef INIT_SECTION_ASM_OP
+static void m68k_svr3_asm_out_constructor PARAMS ((rtx, int));
+#endif
 
 
 /* Alignment to use for loops and jumps */
@@ -4228,3 +4232,19 @@ m68k_coff_asm_named_section (name, flags, align)
 
   fprintf (asm_out_file, "\t.section\t%s,\"%c\"\n", name, flagchar);
 }
+
+#ifdef INIT_SECTION_ASM_OP
+static void
+m68k_svr3_asm_out_constructor (symbol, priority)
+     rtx symbol;
+     int priority ATTRIBUTE_UNUSED;
+{
+  rtx xop[2];
+
+  xop[1] = symbol;
+  xop[0] = gen_rtx_MEM (SImode, gen_rtx_PRE_DEC (SImode, stack_pointer_rtx));
+
+  init_section ();
+  output_asm_insn (output_move_simode (xop), xop);
+}
+#endif

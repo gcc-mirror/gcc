@@ -257,15 +257,6 @@ extern void assemble_variable		PARAMS ((tree, int, int, int));
 extern void assemble_external		PARAMS ((tree));
 #endif /* TREE_CODE */
 
-#ifdef RTX_CODE
-/* Record an element in the table of global destructors.  The argument
-   should be a SYMBOL_REF of the function to be called.  */
-extern void assemble_destructor		PARAMS ((rtx, int));
-
-/* Likewise for global constructors.  */
-extern void assemble_constructor	PARAMS ((rtx, int));
-#endif
-
 /* Assemble code to leave SIZE bytes of zeros.  */
 extern void assemble_zeros		PARAMS ((int));
 
@@ -476,3 +467,13 @@ extern void default_coff_asm_named_section PARAMS ((const char *, unsigned int,
 extern void default_pe_asm_named_section PARAMS ((const char *, unsigned int,
 					      unsigned int));
 
+extern void default_stabs_asm_out_destructor PARAMS ((struct rtx_def *, int));
+extern void default_named_section_asm_out_destructor PARAMS ((struct rtx_def *,
+							      int));
+extern void default_dtor_section_asm_out_destructor PARAMS ((struct rtx_def *,
+							     int));
+extern void default_stabs_asm_out_constructor PARAMS ((struct rtx_def *, int));
+extern void default_named_section_asm_out_constructor PARAMS ((struct rtx_def *,
+							       int));
+extern void default_ctor_section_asm_out_constructor PARAMS ((struct rtx_def *,
+							      int));
