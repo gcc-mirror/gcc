@@ -4247,15 +4247,26 @@ extern struct obstack *saveable_obstack;
 /* In HPUX 8.0's shared library scheme, special relocations are needed
    for function labels if they might be passed to a function
    in a shared library (because shared libraries don't live in code
-   space), and special magic is needed to construct their address. */
+   space), and special magic is needed to construct their address.
+
+   For reasons too disgusting to describe storage for the new name
+   is allocated either on the saveable_obstack (released at function
+   exit) or via malloc for things that can never change (libcall names
+   for example). */
 
 void
-hppa_encode_label (sym)
+hppa_encode_label (sym, permanent)
      rtx sym;
+     int permanent;
 {
   char *str = XSTR (sym, 0);
   int len = strlen (str);
-  char *newstr = obstack_alloc (saveable_obstack, len + 2) ;
+  char *newstr;
+
+  if (permanent)
+    newstr = malloc (len + 2);
+  else
+    newstr = obstack_alloc (saveable_obstack, len + 2);
 
   if (str[0] == '*')
     *newstr++ = *str++;
