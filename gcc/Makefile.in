@@ -2976,7 +2976,7 @@ install-common: native $(EXTRA_PARTS) lang.install-common
 	$(INSTALL_SCRIPT) gccbug $(DESTDIR)$(bindir)/$(GCCBUG_INSTALL_NAME)
 
 # Install the driver program as $(target_alias)-gcc, 
-# $(target-alias)-gcc-$(version)
+# $(target_alias)-gcc-$(version)
 # and also as either gcc (if native) or $(gcc_tooldir)/bin/gcc.
 install-driver: installdirs xgcc$(exeext)
 	-if [ -f gcc-cross$(exeext) ] ; then \
