@@ -1,3 +1,11 @@
+2002-11-09  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/List.java (processEvent): Added missing `else's.
+
+	* java/awt/Window.java (show): validate() before showing.  Make
+	parent displayable.
+	(isDisplayable): New method.
+
 2002-11-07  Mark Wielaard  <mark@klomp.org>
 
         Merge Orp RMI patches from Wu Gansha <gansha.wu@intel.com>
