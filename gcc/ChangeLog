@@ -1,5 +1,11 @@
 2002-09-27  Richard Henderson  <rth@redhat.com>
 
+	PR optimization/7520
+	* cfganal.c (flow_active_insn_p): New.
+	(forwarder_block_p): Use it.
+
+2002-09-27  Richard Henderson  <rth@redhat.com>
+
 	* emit-rtl.c (active_insn_p): Revert last change.
 
 2002-09-27  Jakub Jelinek  <jakub@redhat.com>
