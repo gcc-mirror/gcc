@@ -953,7 +953,6 @@ java/util/AbstractSequentialList.java \
 java/util/AbstractSet.java \
 java/util/ArrayList.java \
 java/util/Arrays.java \
-java/util/BasicMapEntry.java \
 java/util/BitSet.java \
 java/util/Calendar.java	\
 java/util/Collection.java \
@@ -2532,10 +2531,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/AbstractCollection.P .deps/java/util/AbstractList.P \
 .deps/java/util/AbstractMap.P .deps/java/util/AbstractSequentialList.P \
 .deps/java/util/AbstractSet.P .deps/java/util/ArrayList.P \
-.deps/java/util/Arrays.P .deps/java/util/BasicMapEntry.P \
-.deps/java/util/BitSet.P .deps/java/util/Calendar.P \
-.deps/java/util/Collection.P .deps/java/util/Collections.P \
-.deps/java/util/Comparator.P \
+.deps/java/util/Arrays.P .deps/java/util/BitSet.P \
+.deps/java/util/Calendar.P .deps/java/util/Collection.P \
+.deps/java/util/Collections.P .deps/java/util/Comparator.P \
 .deps/java/util/ConcurrentModificationException.P \
 .deps/java/util/Date.P .deps/java/util/Dictionary.P \
 .deps/java/util/EmptyStackException.P .deps/java/util/Enumeration.P \
