@@ -1,3 +1,8 @@
+2004-05-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md: Disable the peephole2 patterns that generate indexed
+	floating-point stores when indexing is disabled.
+
 2004-05-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-pretty-print.c (pp_c_left_bracket): Make a function.
