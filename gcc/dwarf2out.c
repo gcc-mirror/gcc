@@ -5682,8 +5682,14 @@ output_aranges ()
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 4);
-  if (PTR_SIZE == 8)
+  /* We need to align to twice the pointer size here.
+     If DWARF_OFFSET_SIZE == 4, then we have emitted 12 bytes, and need 4
+     bytes of padding to align for either 4 or 8 byte pointers.  */
+  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
+  /* If DWARF_OFFSET_SIZE == 8, then we have emitted 20 bytes, and need 12
+     bytes of padding to align for 8 byte pointers.  We have already emitted
+     4 bytes of padding, so emit 8 more here.  */
+  if (DWARF_OFFSET_SIZE == 8)
     fprintf (asm_out_file, ",0,0");
 
   if (flag_debug_asm)
