@@ -130,6 +130,9 @@ Boston, MA 02111-1307, USA.  */
 /* Must pass -show instead of -v.  */
 /* Must pass -G 0 to the assembler, otherwise we may get warnings about
    GOT overflow.  */
+/* ??? We pass -w to disable all assembler warnings.  The `label should be
+   inside .ent/.end block' warning that we get for DWARF II debug info labels
+   is particularly annoying.  */
 #define ASM_SPEC "\
 %{!mgas: \
 	%{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
@@ -138,7 +141,7 @@ Boston, MA 02111-1307, USA.  */
 %{G*} %{EB} %{EL} %{v:-show} \
 %{mips1} %{mips2} %{mips3} %{mips4} \
 %{noasmopt:-O0} %{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
--g0 -G 0 %{membedded-pic} \
+-g0 -G 0 -w %{membedded-pic} \
 %{mabi=32:-32}%{mabi=o32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
 %{!mabi*:-n32}"
 
@@ -295,9 +298,9 @@ while (0)
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC \
   "%{mabi=32:%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}} \
-   %{mabi=n32:%{pg:/usr/lib32/gcrt1.o%s}%{!pg:%{p:/usr/lib32/mcrt1.o%s /usr/lib32/libprof1.a%s}%{!p:/usr/lib32/crt1.o%s}}} \
+   %{mabi=n32:%{pg:/usr/lib32/mips3/gcrt1.o%s}%{!pg:%{p:/usr/lib32/mips3/mcrt1.o%s /usr/lib32/mips3/libprof1.a%s}%{!p:/usr/lib32/mips3/crt1.o%s}} -L/usr/lib32/mips3} \
    %{mabi=64:%{pg:/usr/lib64/gcrt1.o}%{!pg:%{p:/usr/lib64/mcrt1.o /usr/lib64/libprof1.a}%{!p:/usr/lib64/crt1.o}}} \
-   %{!mabi=32:%{!mabi=n32:%{!mabi=64:%{pg:/usr/lib32/gcrt1.o%s}%{!pg:%{p:/usr/lib32/mcrt1.o%s /usr/lib32/libprof1.a%s}%{!p:/usr/lib32/crt1.o%s}}}}}"
+   %{!mabi=32:%{!mabi=n32:%{!mabi=64:%{pg:/usr/lib32/mips3/gcrt1.o%s}%{!pg:%{p:/usr/lib32/mips3/mcrt1.o%s /usr/lib32/mips3/libprof1.a%s}%{!p:/usr/lib32/mips3/crt1.o%s}} -L/usr/lib32/mips3}}}"
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{p:libprof1.a%s}%{pg:libprof1.a%s} -lc"
@@ -306,9 +309,9 @@ while (0)
    on the mipsX option.  */
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{mabi=32:crtn.o%s}%{mabi=n32:/usr/lib32/crtn.o%s}\
+  "%{mabi=32:crtn.o%s}%{mabi=n32:/usr/lib32/mips3/crtn.o%s}\
    %{mabi=64:/usr/lib64/crtn.o}\
-   %{!mabi=32:%{!mabi=n32:%{!mabi=64:/usr/lib32/crtn.o%s}}}"
+   %{!mabi=32:%{!mabi=n32:%{!mabi=64:/usr/lib32/mips3/crtn.o%s}}}"
 
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend
    on the mipsX option.  */
