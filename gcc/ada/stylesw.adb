@@ -50,7 +50,7 @@ package body Stylesw is
       Style_Check_References        := False;
       Style_Check_Specs             := False;
       Style_Check_Standard          := False;
-      Style_Check_Subprogram_Order  := False;
+      Style_Check_Order_Subprograms := False;
       Style_Check_Tokens            := False;
    end Reset_Style_Check_Options;
 
@@ -113,7 +113,7 @@ package body Stylesw is
       Add ('k', Style_Check_Keyword_Casing);
       Add ('l', Style_Check_Layout);
       Add ('n', Style_Check_Standard);
-      Add ('o', Style_Check_Subprogram_Order);
+      Add ('o', Style_Check_Order_Subprograms);
       Add ('p', Style_Check_Pragma_Casing);
       Add ('r', Style_Check_References);
       Add ('s', Style_Check_Specs);
@@ -279,19 +279,19 @@ package body Stylesw is
                Style_Check_Max_Line_Length := Style_Max_Line_Length /= 0;
 
             when 'o' =>
-               Style_Check_Subprogram_Order := True;
+               Style_Check_Order_Subprograms := True;
 
             when 'p' =>
-               Style_Check_Pragma_Casing    := True;
+               Style_Check_Pragma_Casing     := True;
 
             when 'r' =>
-               Style_Check_References       := True;
+               Style_Check_References        := True;
 
             when 's' =>
-               Style_Check_Specs            := True;
+               Style_Check_Specs             := True;
 
             when 't' =>
-               Style_Check_Tokens           := True;
+               Style_Check_Tokens            := True;
 
             when ' ' =>
                null;
