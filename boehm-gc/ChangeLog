@@ -1,5 +1,10 @@
 2004-02-19  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* acinclude.m4: Move certain code to configure.in.
+	* configure.in: Receive code from acinclude.m4.
+	* aclocal.m4: Rebuild.
+	* configure: Regenerate.
+
 	* Makefile.direct, alloc.c: Resync to upstream 6.3 alpha 1.
 
 2004-01-20  Andrew Haley  <aph@redhat.com>
