@@ -1,3 +1,7 @@
+2001-06-05  Phil Edwards  <pme@sources.redhat.com>
+
+	* gccbug.in:  Remove high priority.
+
 2001-06-05  scott snyder  <snyder@fnal.gov>
 
 	* gccbug.in:  Fix typo.
