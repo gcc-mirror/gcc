@@ -175,9 +175,9 @@ __gnat_full_name (char *nam, char *buffer)
 #elif defined (MSDOS)
   _fixpath (nam, buffer);
 
-#elif defined (sgi)
+#elif defined (sgi) || defined (__FreeBSD__)
 
-  /* Use realpath function which resolves links and references to .. and ..
+  /* Use realpath function which resolves links and references to . and ..
      on those Unix systems that support it. Note that GNU/Linux provides it but
      cannot handle more than 5 symbolic links in a full name, so we use the
      getcwd approach instead. */

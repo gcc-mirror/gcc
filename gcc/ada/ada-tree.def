@@ -37,7 +37,7 @@ DEFTREECODE (TRANSFORM_EXPR, "transform_expr", 'e', 0)
    by operand 0 at the alignment given by operand 1 and return the
    address of the resulting memory.  */
 
-DEFTREECODE (ALLOCATE_EXPR, "allocate_expr", 's', 2)
+DEFTREECODE (ALLOCATE_EXPR, "allocate_expr", '2', 2)
 
 /* A type that is an unconstrained array itself.  This node is never passed
    to GCC. TREE_TYPE is the type of the fat pointer and TYPE_OBJECT_RECORD_TYPE

@@ -291,7 +291,7 @@ __gnat_ttyname (int filedes)
   || (defined (__osf__) && ! defined (__alpha_vxworks)) || defined (WINNT) \
   || defined (__MACHTEN__) || defined (hpux) || defined (_AIX) \
   || (defined (__svr4__) && defined (i386)) || defined (__Lynx__) \
-  || defined (__CYGWIN__)
+  || defined (__CYGWIN__) || defined (__FreeBSD__)
 
 #ifdef __MINGW32__
 #if OLD_MINGW
@@ -348,7 +348,7 @@ getc_immediate_common (FILE *stream,
     || (defined (__osf__) && ! defined (__alpha_vxworks)) \
     || defined (__CYGWIN32__) || defined (__MACHTEN__) || defined (hpux) \
     || defined (_AIX) || (defined (__svr4__) && defined (i386)) \
-    || defined (__Lynx__)
+    || defined (__Lynx__) || defined (__FreeBSD__)
   char c;
   int nread;
   int good_one = 0;
@@ -367,7 +367,7 @@ getc_immediate_common (FILE *stream,
 #if defined(linux) || defined (sun) || defined (sgi) || defined (__EMX__) \
     || defined (__osf__) || defined (__MACHTEN__) || defined (hpux) \
     || defined (_AIX) || (defined (__svr4__) && defined (i386)) \
-    || defined (__Lynx__)
+    || defined (__Lynx__) || defined (__FreeBSD__)
       eof_ch = termios_rec.c_cc[VEOF];
 
       /* If waiting (i.e. Get_Immediate (Char)), set MIN = 1 and wait for
