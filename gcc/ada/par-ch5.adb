@@ -1004,7 +1004,7 @@ package body Ch5 is
    begin
       Label_Node := New_Node (N_Label, Token_Ptr);
       Scan; -- past <<
-      Set_Identifier (Label_Node, P_Identifier);
+      Set_Identifier (Label_Node, P_Identifier (C_Greater_Greater));
       T_Greater_Greater;
       Append_Elmt (Label_Node, Label_List);
       return Label_Node;
@@ -1621,7 +1621,7 @@ package body Ch5 is
         New_Node (N_Loop_Parameter_Specification, Token_Ptr);
 
       Save_Scan_State (Scan_State);
-      ID_Node := P_Defining_Identifier;
+      ID_Node := P_Defining_Identifier (C_In);
       Set_Defining_Identifier (Loop_Param_Specification_Node, ID_Node);
 
       if Token = Tok_Left_Paren then

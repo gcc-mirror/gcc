@@ -26,7 +26,6 @@
 
 with Atree;    use Atree;
 with Casing;   use Casing;
-with Csets;    use Csets;
 with Debug;    use Debug;
 with Elists;   use Elists;
 with Errout;   use Errout;
@@ -188,6 +187,73 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    --   a BEGIN first. In this situation we simply reset the entry. We know
    --   that there is a missing body, but it seems more reasonable to let the
    --   later semantic checking discover this.
+
+   ----------------------------------------------------
+   -- Handling of Reserved Words Used as Identifiers --
+   ----------------------------------------------------
+
+   --  Note: throughout the parser, the terms reserved word and keyword
+   --  are used interchangably to refer to the same set of reserved
+   --  keywords (including until, protected, etc).
+
+   --  If a reserved word is used in place of an identifier, the parser
+   --  where possible tries to recover gracefully. In particular, if the
+   --  keyword is clearly spelled using identifier casing, e.g. Until in
+   --  a source program using mixed case identifiers and lower case keywords,
+   --  then the keyword is treated as an identifier if it appears in a place
+   --  where an identifier is required.
+
+   --  The situation is more complex if the keyword is spelled with normal
+   --  keyword casing. In this case, the parser is more reluctant to
+   --  consider it to be intended as an identifier, unless it has some
+   --  further confirmation.
+
+   --  In the case of an identifier appearing in the identifier list of a
+   --  declaration, the appearence of a comma or colon right after the
+   --  keyword on the same line is taken as confirmation. For an enumeration
+   --  literal, a comma or right paren right after the identifier is also
+   --  treated as adequate confirmation.
+
+   --  The following type is used in calls to Is_Reserved_Identifier and
+   --  also to P_Defining_Identifier and P_Identifier. The default for all
+   --  these functins is that reserved words in reserved word case are not
+   --  considered to be reserved identifiers. The Id_Check value indicates
+   --  tokens, which if they appear immediately after the identifier, are
+   --  taken as confirming that the use of an identifier was expected
+
+   type Id_Check is
+     (None,
+      --  Default, no special token test
+
+      C_Comma_Right_Paren,
+      --  Consider as identifier if followed by comma or right paren
+
+      C_Comma_Colon,
+      --  Consider as identifier if followed by comma or colon
+
+      C_Do,
+      --  Consider as identifier if followed by DO
+
+      C_Dot,
+      --  Consider as identifier if followed by period
+
+      C_Greater_Greater,
+      --  Consider as identifier if followed by >>
+
+      C_In,
+      --  Consider as identifier if followed by IN
+
+      C_Is,
+      --  Consider as identifier if followed by IS
+
+      C_Left_Paren_Semicolon,
+      --  Consider as identifier if followed by left paren or semicolon
+
+      C_Use,
+      --  Consider as identifier if followed by USE
+
+      C_Vertical_Bar_Arrow);
+      --  Consider as identifier if followed by | or =>
 
    --------------------------------------------
    -- Handling IS Used in Place of Semicolon --
@@ -450,8 +516,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    --  List that is created.
 
    package Ch2 is
-      function P_Identifier                           return Node_Id;
       function P_Pragma                               return Node_Id;
+
+      function P_Identifier (C : Id_Check := None) return Node_Id;
+      --  Scans out an identifier. The parameter C determines the treatment
+      --  of reserved identifiers. See declaration of Id_Check for details.
 
       function P_Pragmas_Opt return List_Id;
       --  This function scans for a sequence of pragmas in other than a
@@ -482,7 +551,6 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Basic_Declarative_Items              return List_Id;
       function P_Constraint_Opt                       return Node_Id;
       function P_Declarative_Part                     return List_Id;
-      function P_Defining_Identifier                  return Node_Id;
       function P_Discrete_Choice_List                 return List_Id;
       function P_Discrete_Range                       return Node_Id;
       function P_Discrete_Subtype_Definition          return Node_Id;
@@ -502,6 +570,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  given list. Only scans out more than one declaration in the
       --  case where the source has a single declaration with multiple
       --  defining identifiers.
+
+      function P_Defining_Identifier (C : Id_Check := None) return Node_Id;
+      --  Scan out a defining identifier. The parameter C controls the
+      --  treatment of errors in case a reserved word is scanned. See the
+      --  declaration of this type for details.
 
       function Init_Expr_Opt (P : Boolean := False) return Node_Id;
       --  If an initialization expression is present (:= expression), then
@@ -908,10 +981,12 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  past it, otherwise the call has no effect at all. T may be any
       --  reserved word token, or comma, left or right paren, or semicolon.
 
-      function Is_Reserved_Identifier return Boolean;
+      function Is_Reserved_Identifier (C : Id_Check := None) return Boolean;
       --  Test if current token is a reserved identifier. This test is based
       --  on the token being a keyword and being spelled in typical identifier
-      --  style (i.e. starting with an upper case letter).
+      --  style (i.e. starting with an upper case letter). The parameter C
+      --  determines the special treatment if a reserved word is encountered
+      --  that has the normal casing of a reserved word.
 
       procedure Merge_Identifier (Prev : Node_Id; Nxt : Token_Type);
       --  Called when the previous token is an identifier (whose Token_Node

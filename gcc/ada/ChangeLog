@@ -1,3 +1,29 @@
+2003-10-30  Vasiliy Fofanov  <fofanov@act-europe.fr>
+
+	* 3vtrasym.adb: 
+	Demangle Ada symbols returned by TBK$SYMBOLIZE. Correctly align line
+	numbers when symbol name is too long.
+
+2003-10-30  Ed Falis  <falis@gnat.com>
+
+	* g-signal.ads, g-signal.adb: New files
+
+	* impunit.adb: (Non_Imp_File_Names): Added "g-signal"
+
+	* Makefile.rtl: Introduce GNAT.Signals
+
+2003-10-30  Robert Dewar  <dewar@gnat.com>
+
+	* freeze.adb: Minor reformatting
+
+	* lib-writ.adb (Write_ALI): Never write ali file if -gnats is specified
+
+	* par.adb, par-ch12.adb, par-ch13.adb, par-ch2.adb, par-ch3.adb, 
+	par-ch5.adb, par-ch6.adb, par-ch9.adb, par-util.adb: 
+	New handling of Id_Check parameter to improve recognition of keywords
+	used as identifiers.
+	Update copyright notice to include 2003
+
 2003-10-29  Robert Dewar  <dewar@gnat.com>
 
 	* 3vtrasym.adb, 5vtraent.ads, sprint.adb,
@@ -8,10 +34,7 @@
 
 2003-10-29  Vasiliy Fofanov  <fofanov@act-europe.fr>
 
-	* 3vtrasym.adb: 
-	* 5vtraent.adb: 
-	* 5vtraent.ads: 
-	* tb-alvms.c: 
+	* 3vtrasym.adb, 5vtraent.adb, 5vtraent.ads, tb-alvms.c: 
 	Support for TBK$SYMBOLIZE-based symbolic traceback.
 
 2003-10-29  Jose Ruiz  <ruiz@act-europe.fr>

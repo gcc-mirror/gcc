@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1999-2003 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2003 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,8 @@
 -- however invalidate  any other reasons why  the executable file  might be --
 -- covered by the  GNU Public License.                                      --
 --                                                                          --
--- GNAT is maintained by Ada Core Technologies Inc (http://www.gnat.com).   --
+-- GNAT was originally developed  by the GNAT team at  New York University. --
+-- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
 
@@ -96,12 +97,83 @@ package body GNAT.Traceback.Symbolic is
        Value, Value),
        User_Act_Proc);
 
+   function Demangle_Ada (Mangled : String) return String;
+   --  Demangles an Ada symbol. Removes leading "_ada_" and trailing
+   --  __{DIGIT}+ or ${DIGIT}+, converts other "__" to '.'
+
+
+   ------------------
+   -- Demangle_Ada --
+   ------------------
+
+   function Demangle_Ada (Mangled : String) return String is
+      Demangled : String (1 .. Mangled'Length);
+      Pos  : Integer := Mangled'First;
+      Last : Integer := Mangled'Last;
+      DPos : Integer := 1;
+   begin
+
+      if Pos > Last then
+         return "";
+      end if;
+
+      --  Skip leading _ada_
+
+      if Mangled'Length > 4 and then Mangled (Pos .. Pos + 4) = "_ada_" then
+         Pos := Pos + 5;
+      end if;
+
+      --  Skip trailing __{DIGIT}+ or ${DIGIT}+
+
+      if Mangled (Last) in '0' .. '9' then
+
+         for J in reverse Pos + 2 .. Last - 1 loop
+
+            case Mangled (J) is
+               when '0' .. '9' =>
+                  null;
+               when '$' =>
+                  Last := J - 1;
+                  exit;
+               when '_' =>
+                  if Mangled (J - 1) = '_' then
+                     Last := J - 2;
+                  end if;
+                  exit;
+               when others =>
+                  exit;
+            end case;
+
+         end loop;
+
+      end if;
+
+      --  Now just copy Mangled to Demangled, converting "__" to '.' on the fly
+
+      while Pos <= Last loop
+
+         if Mangled (Pos) = '_' and then Mangled (Pos + 1) = '_'
+           and then Pos /= Mangled'First then
+            Demangled (DPos) := '.';
+            Pos := Pos + 2;
+         else
+            Demangled (DPos) := Mangled (Pos);
+            Pos := Pos + 1;
+         end if;
+
+         DPos := DPos + 1;
+
+      end loop;
+
+      return Demangled (1 .. DPos - 1);
+   end Demangle_Ada;
+
    ------------------------
    -- Symbolic_Traceback --
    ------------------------
 
    function Symbolic_Traceback (Traceback : Tracebacks_Array) return String is
-      Status       : Cond_Value_Type;
+      Status            : Cond_Value_Type;
       Image_Name        : ASCIC;
       Image_Name_Addr   : Address;
       Module_Name       : ASCIC;
@@ -152,6 +224,11 @@ package body GNAT.Traceback.Symbolic is
             declare
                First : Integer := Len + 1;
                Last  : Integer := First + 80 - 1;
+               Pos   : Integer;
+               Routine_Name_D : String := Demangle_Ada
+                 (To_Ada
+                    (Routine_Name.Data (1 .. size_t (Routine_Name.Count)),
+                     False));
 
             begin
                Res (First .. Last) := (others => ' ');
@@ -168,13 +245,23 @@ package body GNAT.Traceback.Symbolic is
                    False);
 
                Res (First + 30 ..
-                    First + 30 + Integer (Routine_Name.Count) - 1) :=
-                 To_Ada
-                  (Routine_Name.Data (1 .. size_t (Routine_Name.Count)),
-                   False);
+                    First + 30 + Routine_Name_D'Length - 1) :=
+                 Routine_Name_D;
 
-               Res (First + 50 ..
-                    First + 50 + Integer'Image (Line_Number)'Length - 1) :=
+               --  If routine name doesn't fit 20 characters, output
+               --  the line number on next line at 50th position
+
+               if Routine_Name_D'Length > 20 then
+                  Pos := First + 30 + Routine_Name_D'Length;
+                  Res (Pos) := ASCII.LF;
+                  Last := Pos + 80;
+                  Res (Pos + 1 .. Last) := (others => ' ');
+                  Pos := Pos + 51;
+               else
+                  Pos := First + 50;
+               end if;
+
+               Res (Pos .. Pos + Integer'Image (Line_Number)'Length - 1) :=
                  Integer'Image (Line_Number);
 
                Res (Last) := ASCII.LF;

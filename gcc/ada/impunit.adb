@@ -229,6 +229,7 @@ package body Impunit is
      "g-regist",    -- GNAT.Registry
      "g-regpat",    -- GNAT.Regpat
      "g-semaph",    -- GNAT.Semaphores
+     "g-signal",    -- GNAT.Signals
      "g-socket",    -- GNAT.Sockets
      "g-souinf",    -- GNAT.Source_Info
      "g-speche",    -- GNAT.Spell_Checker

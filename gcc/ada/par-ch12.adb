@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -367,12 +367,12 @@ package body Ch12 is
       --  bother to check for it being exceeded.
 
    begin
-      Idents (1) := P_Defining_Identifier;
+      Idents (1) := P_Defining_Identifier (C_Comma_Colon);
       Num_Idents := 1;
 
       while Comma_Present loop
          Num_Idents := Num_Idents + 1;
-         Idents (Num_Idents) := P_Defining_Identifier;
+         Idents (Num_Idents) := P_Defining_Identifier (C_Comma_Colon);
       end loop;
 
       T_Colon;
@@ -873,7 +873,7 @@ package body Ch12 is
    begin
       Def_Node := New_Node (N_Formal_Package_Declaration, Prev_Token_Ptr);
       Scan; -- past PACKAGE
-      Set_Defining_Identifier (Def_Node, P_Defining_Identifier);
+      Set_Defining_Identifier (Def_Node, P_Defining_Identifier (C_Is));
       T_Is;
       T_New;
       Set_Name (Def_Node, P_Qualified_Simple_Name);

@@ -680,6 +680,13 @@ package body Lib.Writ is
    --  Start of processing for Writ_ALI
 
    begin
+      --  We never write an ALI file if the original operating mode was
+      --  syntax-only (-gnats switch used in compiler invocation line)
+
+      if Original_Operating_Mode = Check_Syntax then
+         return;
+      end if;
+
       --  Build sorted source dependency table. We do this right away,
       --  because it is referenced by Up_To_Date_ALI_File_Exists.
 
