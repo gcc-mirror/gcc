@@ -3849,6 +3849,11 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		   being dependent.  */
 		if (!scope)
 		  scope = error_mark_node;
+		/* If the SCOPE was erroneous, make the various
+		   semantic analysis functions exit quickly -- and
+		   without issuing additional error messages.  */
+		if (scope == error_mark_node)
+		  postfix_expression = error_mark_node;
 	      }
 
 	    /* Consume the `.' or `->' operator.  */
