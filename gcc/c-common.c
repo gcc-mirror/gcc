@@ -828,7 +828,7 @@ fname_decl (unsigned int rid, tree id)
       input_location = saved_location;
     }
   if (!ix && !current_function_decl)
-    pedwarn ("%J%qD is not defined outside of function scope", decl, decl);
+    pedwarn ("%qD is not defined outside of function scope", decl);
 
   return decl;
 }
