@@ -1,3 +1,8 @@
+1999-06-30  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* Makefile.am (.s.lo): Renamed from `.s.o'.
+	* Makefile.in: Rebuilt.
+
 1999-06-21  Tom Tromey  <tromey@cygnus.com>
 
 	Alpha patch from Jeff Sturm:
