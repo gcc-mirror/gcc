@@ -1149,12 +1149,21 @@ reload (first, global, dumpfile)
 		  size = CLASS_MAX_NREGS (class, mode);
 
 		  /* If this class doesn't want a group determine if
-		     we have a nongroup need or a regular need. */
+		     we have a nongroup need or a regular need.  We have
+		     a nongroup need if this reload conflicts with a
+		     group reload whose class intersects with this reload's
+		     class.  */
 
 		  nongroup_need = 0;
 		  if (size == 1)
-		    for (j = i + 1; j < n_reloads; j++)
-		      if (reloads_conflict (i, j)
+		    for (j = 0; j < n_reloads; j++)
+		      if ((CLASS_MAX_NREGS (reload_reg_class[j],
+					    (GET_MODE_SIZE (reload_outmode[i])
+					     > GET_MODE_SIZE (reload_inmode[i]))
+					    ? reload_outmode[i]
+					    : reload_inmode[i])
+			   > 1)
+			  && reloads_conflict (i, j)
 			  && reg_classes_intersect_p (class,
 						      reload_reg_class[j]))
 			{
