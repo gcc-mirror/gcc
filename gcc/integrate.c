@@ -60,22 +60,15 @@ extern struct obstack *function_maybepermanent_obstack;
    : (8 * (8 + list_length (DECL_ARGUMENTS (DECL)))))
 #endif
 
-static rtvec initialize_for_inline	PROTO((tree, int));
+static rtvec initialize_for_inline	PROTO((tree));
 static void adjust_copied_decl_tree	PROTO((tree));
-static tree copy_decl_list		PROTO((tree));
-static tree copy_decl_tree		PROTO((tree));
-static void copy_decl_rtls		PROTO((tree));
-static void save_constants		PROTO((rtx *));
 static void note_modified_parmregs	PROTO((rtx, rtx));
-static rtx copy_for_inline		PROTO((rtx));
 static void integrate_parm_decls	PROTO((tree, struct inline_remap *,
 					       rtvec));
 static void integrate_decl_tree		PROTO((tree, int,
 					       struct inline_remap *));
-static void save_constants_in_decl_trees PROTO ((tree));
 static void subst_constants		PROTO((rtx *, rtx,
 					       struct inline_remap *));
-static void restore_constants		PROTO((rtx *));
 static void set_block_origin_self	PROTO((tree));
 static void set_decl_origin_self	PROTO((tree));
 static void set_block_abstract_flags	PROTO((tree, int));
@@ -95,6 +88,11 @@ static tree copy_and_set_decl_abstract_origin PROTO((tree));
 
 int inline_max_insns = 10000;
 
+/* Used by copy_rtx_and_substitute; this indicates whether the function is
+   called for the purpose of inlining or some other purpose (i.e. loop
+   unrolling).  This affects how constant pool references are handled.
+   This variable contains the FUNCTION_DECL for the inlined function.  */
+static struct function *inlining = 0;
 
 /* Returns the Ith entry in the label_map contained in MAP.  If the
    Ith entry has not yet been set, return a fresh label.  This function
@@ -231,63 +229,20 @@ function_cannot_inline_p (fndecl)
   return 0;
 }
 
-/* Variables used within save_for_inline.  */
-
-/* Mapping from old pseudo-register to new pseudo-registers.
-   The first element of this map is reg_map[FIRST_PSEUDO_REGISTER].
-   It is allocated in `save_for_inline' and `expand_inline_function',
-   and deallocated on exit from each of those routines.  */
-static rtx *reg_map;
-
-/* Mapping from old code-labels to new code-labels.
-   The first element of this map is label_map[min_labelno].
-   It is allocated in `save_for_inline' and `expand_inline_function',
-   and deallocated on exit from each of those routines.  */
-static rtx *label_map;
-
-/* Mapping from old insn uid's to copied insns.
-   It is allocated in `save_for_inline' and `expand_inline_function',
-   and deallocated on exit from each of those routines.  */
-static rtx *insn_map;
-
 /* Map pseudo reg number into the PARM_DECL for the parm living in the reg.
    Zero for a reg that isn't a parm's home.
    Only reg numbers less than max_parm_reg are mapped here.  */
 static tree *parmdecl_map;
 
-/* When an insn is being copied by copy_for_inline,
-   this is nonzero if we have copied an ASM_OPERANDS.
-   In that case, it is the original input-operand vector.  */
-static rtvec orig_asm_operands_vector;
-
-/* When an insn is being copied by copy_for_inline,
-   this is nonzero if we have copied an ASM_OPERANDS.
-   In that case, it is the copied input-operand vector.  */
-static rtvec copy_asm_operands_vector;
-
-/* Likewise, this is the copied constraints vector.  */
-static rtvec copy_asm_constraints_vector;
-
 /* In save_for_inline, nonzero if past the parm-initialization insns.  */
 static int in_nonparm_insns;
 
-/* subroutines passed to duplicate_eh_handlers to map exception labels */
-
-static rtx 
-save_for_inline_eh_labelmap (label)
-     rtx label;
-{
-  int index = CODE_LABEL_NUMBER (label);
-  return label_map[index];
-}
-
-/* Subroutine for `save_for_inline{copying,nocopy}'.  Performs initialization
+/* Subroutine for `save_for_inline_nocopy'.  Performs initialization
    needed to save FNDECL's insns and info for future inline expansion.  */
-   
+
 static rtvec
-initialize_for_inline (fndecl, copy)
+initialize_for_inline (fndecl)
      tree fndecl;
-     int copy;
 {
   int i;
   rtvec arg_vector;
@@ -302,7 +257,6 @@ initialize_for_inline (fndecl, copy)
        parms = TREE_CHAIN (parms), i++)
     {
       rtx p = DECL_RTL (parms);
-      int copied_incoming = 0;
 
       /* If we have (mem (addressof (mem ...))), use the inner MEM since
 	 otherwise the copy_rtx call below will not unshare the MEM since
@@ -310,25 +264,6 @@ initialize_for_inline (fndecl, copy)
       if (GET_CODE (p) == MEM && GET_CODE (XEXP (p, 0)) == ADDRESSOF
 	  && GET_CODE (XEXP (XEXP (p, 0), 0)) == MEM)
 	p = XEXP (XEXP (p, 0), 0);
-
-      if (GET_CODE (p) == MEM && copy)
-	{
-	  /* Copy the rtl so that modifications of the addresses
-	     later in compilation won't affect this arg_vector.
-	     Virtual register instantiation can screw the address
-	     of the rtl.  */
-	  rtx new = copy_rtx (p);
-
-	  /* Don't leave the old copy anywhere in this decl.  */
-	  if (DECL_RTL (parms) == DECL_INCOMING_RTL (parms)
-	      || (GET_CODE (DECL_RTL (parms)) == MEM
-		  && GET_CODE (DECL_INCOMING_RTL (parms)) == MEM
-		  && (XEXP (DECL_RTL (parms), 0)
-		      == XEXP (DECL_INCOMING_RTL (parms), 0))))
-	    DECL_INCOMING_RTL (parms) = new, copied_incoming = 1;
-
-	  DECL_RTL (parms) = new;
-	}
 
       RTVEC_ELT (arg_vector, i) = p;
 
@@ -348,23 +283,6 @@ initialize_for_inline (fndecl, copy)
       /* This flag is cleared later
 	 if the function ever modifies the value of the parm.  */
       TREE_READONLY (parms) = 1;
-
-      /* Copy DECL_INCOMING_RTL if not done already.  This can
-	 happen if DECL_RTL is a reg.  */
-      if (copy && ! copied_incoming)
-	{
-	  p = DECL_INCOMING_RTL (parms);
-
-	  /* If we have (mem (addressof (mem ...))), use the inner MEM since
-	     otherwise the copy_rtx call below will not unshare the MEM since
-	     it shares ADDRESSOF.  */
-	  if (GET_CODE (p) == MEM && GET_CODE (XEXP (p, 0)) == ADDRESSOF
-	      && GET_CODE (XEXP (XEXP (p, 0), 0)) == MEM)
-	    p = XEXP (XEXP (p, 0), 0);
-
-	  if (GET_CODE (p) == MEM)
-	    DECL_INCOMING_RTL (parms) = copy_rtx (p);
-	}
     }
 
   return arg_vector;
@@ -394,314 +312,6 @@ adjust_copied_decl_tree (block)
     adjust_copied_decl_tree (subblock);
 }
 
-/* Make the insns and PARM_DECLs of the current function permanent
-   and record other information in DECL_SAVED_INSNS to allow inlining
-   of this function in subsequent calls.
-
-   This function is called when we are going to immediately compile
-   the insns for FNDECL.  The insns in maybepermanent_obstack cannot be
-   modified by the compilation process, so we copy all of them to
-   new storage and consider the new insns to be the insn chain to be
-   compiled.  Our caller (rest_of_compilation) saves the original
-   DECL_INITIAL and DECL_ARGUMENTS; here we copy them.  */
-
-/* ??? The nonlocal_label list should be adjusted also.  However, since
-   a function that contains a nested function never gets inlined currently,
-   the nonlocal_label list will always be empty, so we don't worry about
-   it for now.  */
-
-void
-save_for_inline_copying (fndecl)
-     tree fndecl;
-{
-  rtvec argvec;
-  rtx new_first_insn, new_last_insn, insn;
-  int max_labelno, min_labelno, i, len;
-  int max_reg;
-  int max_uid;
-  rtx first_nonparm_insn;
-  char *new, *new1;
-  rtx *new_parm_reg_stack_loc;
-  rtx *new2;
-  struct emit_status *es
-    = (struct emit_status *) xmalloc (sizeof (struct emit_status));
-
-  /* Make and emit a return-label if we have not already done so. 
-     Do this before recording the bounds on label numbers.  */
-
-  if (return_label == 0)
-    {
-      return_label = gen_label_rtx ();
-      emit_label (return_label);
-    }
-
-  *es = *current_function->emit;
-
-  /* Get some bounds on the labels and registers used.  */
-
-  max_labelno = max_label_num ();
-  min_labelno = get_first_label_num ();
-  max_reg = max_reg_num ();
-
-  /* Set up PARMDECL_MAP which maps pseudo-reg number to its PARM_DECL.
-     Later we set TREE_READONLY to 0 if the parm is modified inside the fn.
-     Also set up ARG_VECTOR, which holds the unmodified DECL_RTX values
-     for the parms, prior to elimination of virtual registers.
-     These values are needed for substituting parms properly.  */
-
-  parmdecl_map = (tree *) alloca (max_parm_reg * sizeof (tree));
-
-  argvec = initialize_for_inline (fndecl, 1);
-
-  if (current_function_uses_const_pool)
-    {
-      /* Replace any constant pool references with the actual constant.  We
-	 will put the constants back in the copy made below.  */
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	  {
-	    save_constants (&PATTERN (insn));
-	    if (REG_NOTES (insn))
-	      save_constants (&REG_NOTES (insn));
-	  }
-
-      /* Also scan all decls, and replace any constant pool references with the
-	 actual constant.  */
-      save_constants_in_decl_trees (DECL_INITIAL (fndecl));
-
-      /* Clear out the constant pool so that we can recreate it with the
-	 copied constants below.  */
-      init_const_rtx_hash_table ();
-      clear_const_double_mem ();
-    }
-
-  max_uid = get_max_uid ();
-
-  /* We have now allocated all that needs to be allocated permanently
-     on the rtx obstack.  Set our high-water mark, so that we
-     can free the rest of this when the time comes.  */
-
-  preserve_data ();
-
-  /* Copy the chain insns of this function.
-     Install the copied chain as the insns of this function,
-     for continued compilation;
-     the original chain is recorded as the DECL_SAVED_INSNS
-     for inlining future calls.  */
-
-  /* If there are insns that copy parms from the stack into pseudo registers,
-     those insns are not copied.  `expand_inline_function' must
-     emit the correct code to handle such things.  */
-
-  insn = get_insns ();
-  if (GET_CODE (insn) != NOTE)
-    abort ();
-  new_first_insn = rtx_alloc (NOTE);
-  NOTE_SOURCE_FILE (new_first_insn) = NOTE_SOURCE_FILE (insn);
-  NOTE_LINE_NUMBER (new_first_insn) = NOTE_LINE_NUMBER (insn);
-  INSN_UID (new_first_insn) = INSN_UID (insn);
-  PREV_INSN (new_first_insn) = NULL;
-  NEXT_INSN (new_first_insn) = NULL;
-  new_last_insn = new_first_insn;
-
-  /* Each pseudo-reg in the old insn chain must have a unique rtx in the copy.
-     Make these new rtx's now, and install them in regno_reg_rtx, so they
-     will be the official pseudo-reg rtx's for the rest of compilation.  */
-
-  reg_map = (rtx *) savealloc (es->regno_pointer_flag_length * sizeof (rtx));
-
-  len = sizeof (struct rtx_def) + (GET_RTX_LENGTH (REG) - 1) * sizeof (rtunion);
-  for (i = max_reg - 1; i > LAST_VIRTUAL_REGISTER; i--)
-    reg_map[i] = (rtx)obstack_copy (function_maybepermanent_obstack,
-				    regno_reg_rtx[i], len);
-
-  es->x_regno_reg_rtx = reg_map;
-
-  /* Put copies of all the virtual register rtx into the new regno_reg_rtx.  */
-  init_virtual_regs (es);
-
-  /* Likewise each label rtx must have a unique rtx as its copy.  */
-
-  /* We used to use alloca here, but the size of what it would try to
-     allocate would occasionally cause it to exceed the stack limit and
-     cause unpredictable core dumps.  Some examples were > 2Mb in size.  */
-  label_map = (rtx *) xmalloc ((max_labelno) * sizeof (rtx));
-
-  for (i = min_labelno; i < max_labelno; i++)
-    label_map[i] = gen_label_rtx ();
-
-  /* Likewise for parm_reg_stack_slot.  */
-  new_parm_reg_stack_loc = (rtx *) savealloc (max_parm_reg * sizeof (rtx));
-  for (i = 0; i < max_parm_reg; i++)
-    new_parm_reg_stack_loc[i] = copy_for_inline (parm_reg_stack_loc[i]);
-
-  parm_reg_stack_loc = new_parm_reg_stack_loc;
-
-  /* Record the mapping of old insns to copied insns.  */
-
-  insn_map = (rtx *) alloca (max_uid * sizeof (rtx));
-  bzero ((char *) insn_map, max_uid * sizeof (rtx));
-
-  /* Get the insn which signals the end of parameter setup code.  */
-  first_nonparm_insn = get_first_nonparm_insn ();
-
-  /* Copy any entries in regno_reg_rtx or DECL_RTLs that reference MEM
-     (the former occurs when a variable has its address taken)
-     since these may be shared and can be changed by virtual
-     register instantiation.  DECL_RTL values for our arguments
-     have already been copied by initialize_for_inline.  */
-  for (i = LAST_VIRTUAL_REGISTER + 1; i < max_reg; i++)
-    if (GET_CODE (regno_reg_rtx[i]) == MEM)
-      XEXP (regno_reg_rtx[i], 0)
-	= copy_for_inline (XEXP (regno_reg_rtx[i], 0));
-
-  /* Copy the parm_reg_stack_loc array, and substitute for all of the rtx
-     contained in it.  */
-  new2 = (rtx *) savealloc (max_parm_reg * sizeof (rtx));
-  bcopy ((char *) parm_reg_stack_loc, (char *) new2,
-	 max_parm_reg * sizeof (rtx));
-  parm_reg_stack_loc = new2;
-  for (i = LAST_VIRTUAL_REGISTER + 1; i < max_parm_reg; ++i)
-    if (parm_reg_stack_loc[i])
-      parm_reg_stack_loc[i] = copy_for_inline (parm_reg_stack_loc[i]);
-
-  /* Copy the tree of subblocks of the function, and the decls in them.
-     We will use the copy for compiling this function, then restore the original
-     subblocks and decls for use when inlining this function.
-
-     Several parts of the compiler modify BLOCK trees.  In particular,
-     instantiate_virtual_regs will instantiate any virtual regs
-     mentioned in the DECL_RTLs of the decls, and loop
-     unrolling will replicate any BLOCK trees inside an unrolled loop.
-
-     The modified subblocks or DECL_RTLs would be incorrect for the original rtl
-     which we will use for inlining.  The rtl might even contain pseudoregs
-     whose space has been freed.  */
-
-  DECL_INITIAL (fndecl) = copy_decl_tree (DECL_INITIAL (fndecl));
-  DECL_ARGUMENTS (fndecl) = copy_decl_list (DECL_ARGUMENTS (fndecl));
-
-  /* Now copy each DECL_RTL which is a MEM,
-     so it is safe to modify their addresses.  */
-  copy_decl_rtls (DECL_INITIAL (fndecl));
-
-  /* The fndecl node acts as its own progenitor, so mark it as such.  */
-  DECL_ABSTRACT_ORIGIN (fndecl) = fndecl;
-
-  /* Now copy the chain of insns.  Do this twice.  The first copy the insn
-     itself and its body.  The second time copy of REG_NOTES.  This is because
-     a REG_NOTE may have a forward pointer to another insn.  */
-
-  for (insn = NEXT_INSN (insn); insn; insn = NEXT_INSN (insn))
-    {
-      rtx copy;
-      orig_asm_operands_vector = 0;
-
-      if (insn == first_nonparm_insn)
-	in_nonparm_insns = 1;
-
-      switch (GET_CODE (insn))
-	{
-	case NOTE:
-	  /* No need to keep these.  */
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
-	    continue;
-
-	  copy = rtx_alloc (NOTE);
-	  NOTE_LINE_NUMBER (copy) = NOTE_LINE_NUMBER (insn);
-	  if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_BLOCK_END)
-	    NOTE_SOURCE_FILE (copy) = NOTE_SOURCE_FILE (insn);
-	  else
-	    {
-	      NOTE_SOURCE_FILE (insn) = (char *) copy;
-	      NOTE_SOURCE_FILE (copy) = 0;
-	    }
-	  if (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG
-	      || NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_END)
-	    {
-              int new_region = CODE_LABEL_NUMBER 
-                                        (label_map[NOTE_BLOCK_NUMBER (copy)]);
-
-              /* we have to duplicate the handlers for the original */
-              if (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG) 
-                duplicate_eh_handlers (NOTE_BLOCK_NUMBER (copy), new_region,
-                                       save_for_inline_eh_labelmap);
-                
-	      /* We have to forward these both to match the new exception
-		 region.  */
-	      NOTE_BLOCK_NUMBER (copy) = new_region;
-	      
-	    }
-	  RTX_INTEGRATED_P (copy) = RTX_INTEGRATED_P (insn);
-	  break;
-
-	case INSN:
-	case JUMP_INSN:
-	case CALL_INSN:
-	  copy = rtx_alloc (GET_CODE (insn));
-
-	  if (GET_CODE (insn) == CALL_INSN)
-	    CALL_INSN_FUNCTION_USAGE (copy)
-	      = copy_for_inline (CALL_INSN_FUNCTION_USAGE (insn));
-
-	  PATTERN (copy) = copy_for_inline (PATTERN (insn));
-	  INSN_CODE (copy) = -1;
-	  LOG_LINKS (copy) = NULL_RTX;
-	  RTX_INTEGRATED_P (copy) = RTX_INTEGRATED_P (insn);
-	  break;
-
-	case CODE_LABEL:
-	  copy = label_map[CODE_LABEL_NUMBER (insn)];
-	  LABEL_NAME (copy) = LABEL_NAME (insn);
-	  break;
-
-	case BARRIER:
-	  copy = rtx_alloc (BARRIER);
-	  break;
-
-	default:
-	  abort ();
-	}
-      INSN_UID (copy) = INSN_UID (insn);
-      insn_map[INSN_UID (insn)] = copy;
-      NEXT_INSN (new_last_insn) = copy;
-      PREV_INSN (copy) = new_last_insn;
-      new_last_insn = copy;
-    }
-
-  adjust_copied_decl_tree (DECL_INITIAL (fndecl));
-
-  /* Now copy the REG_NOTES.  */
-  for (insn = NEXT_INSN (get_insns ()); insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	&& insn_map[INSN_UID(insn)])
-      REG_NOTES (insn_map[INSN_UID (insn)])
-	= copy_for_inline (REG_NOTES (insn));
-
-  NEXT_INSN (new_last_insn) = NULL;
-
-  /* Make new versions of the register tables.  */
-  new = (char *) savealloc (es->regno_pointer_flag_length);
-  memcpy (new, es->regno_pointer_flag, es->regno_pointer_flag_length);
-  new1 = (char *) savealloc (es->regno_pointer_flag_length);
-  memcpy (new1, es->regno_pointer_align, es->regno_pointer_flag_length);
-  es->regno_pointer_flag = new;
-  es->regno_pointer_align = new1;
-
-  free (label_map);
-
-  current_function->inl_max_label_num = max_label_num ();
-  current_function->inl_last_parm_insn = current_function->x_last_parm_insn;
-  current_function->original_arg_vector = argvec;
-  current_function->original_decl_initial = DECL_INITIAL (fndecl);
-  /* Use the copy we made for compiling the function now, and
-     use the original values for inlining.  */
-  current_function->inl_emit = current_function->emit;
-  current_function->emit = es;
-  set_new_first_and_last_insn (new_first_insn, new_last_insn);
-  DECL_SAVED_INSNS (fndecl) = current_function;
-}
-
 /* Copy NODE (as with copy_node).  NODE must be a DECL.  Set the
    DECL_ABSTRACT_ORIGIN for the new accordinly.  */
 
@@ -721,81 +331,6 @@ copy_and_set_decl_abstract_origin (node)
     DECL_ABSTRACT_ORIGIN (copy) = node;
 
   return copy;
-}
-
-/* Return a copy of a chain of nodes, chained through the TREE_CHAIN field.
-   For example, this can copy a list made of TREE_LIST nodes.  While copying,
-   set DECL_ABSTRACT_ORIGIN appropriately.  */
-
-static tree
-copy_decl_list (list)
-     tree list;
-{
-  tree head;
-  register tree prev, next;
-
-  if (list == 0)
-    return 0;
-
-  head = prev = copy_and_set_decl_abstract_origin (list);
-  next = TREE_CHAIN (list);
-  while (next)
-    {
-      register tree copy;
-
-      copy = copy_and_set_decl_abstract_origin (next);
-      TREE_CHAIN (prev) = copy;
-      prev = copy;
-      next = TREE_CHAIN (next);
-    }
-  return head;
-}
-
-/* Make a copy of the entire tree of blocks BLOCK, and return it.  */
-
-static tree
-copy_decl_tree (block)
-     tree block;
-{
-  tree t, vars, subblocks;
-
-  vars = copy_decl_list (BLOCK_VARS (block));
-  subblocks = 0;
-
-  /* Process all subblocks.  */
-  for (t = BLOCK_SUBBLOCKS (block); t; t = TREE_CHAIN (t))
-    {
-      tree copy = copy_decl_tree (t);
-      TREE_CHAIN (copy) = subblocks;
-      subblocks = copy;
-    }
-
-  t = copy_node (block);
-  BLOCK_VARS (t) = vars;
-  BLOCK_SUBBLOCKS (t) = nreverse (subblocks);
-  /* If the BLOCK being cloned is already marked as having been instantiated
-     from something else, then leave that `origin' marking alone.  Otherwise,
-     mark the clone as having originated from the BLOCK we are cloning.  */
-  if (BLOCK_ABSTRACT_ORIGIN (t) == NULL_TREE)
-    BLOCK_ABSTRACT_ORIGIN (t) = block;
-  return t;
-}
-
-/* Copy DECL_RTLs in all decls in the given BLOCK node.  */
-
-static void
-copy_decl_rtls (block)
-     tree block;
-{
-  tree t;
-
-  for (t = BLOCK_VARS (block); t; t = TREE_CHAIN (t))
-    if (DECL_RTL (t) && GET_CODE (DECL_RTL (t)) == MEM)
-      DECL_RTL (t) = copy_for_inline (DECL_RTL (t));
-
-  /* Process all subblocks.  */
-  for (t = BLOCK_SUBBLOCKS (block); t; t = TREE_CHAIN (t))
-    copy_decl_rtls (t);
 }
 
 /* Make the insns and PARM_DECLs of the current function permanent
@@ -841,7 +376,7 @@ save_for_inline_nocopy (fndecl)
       emit_label (return_label);
     }
 
-  argvec = initialize_for_inline (fndecl, 0);
+  argvec = initialize_for_inline (fndecl);
 
   /* If there are insns that copy parms from the stack into pseudo registers,
      those insns are not copied.  `expand_inline_function' must
@@ -867,25 +402,9 @@ save_for_inline_nocopy (fndecl)
 	in_nonparm_insns = 1;
 
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	{
-	  if (current_function_uses_const_pool)
-	    {
-	      /* Replace any constant pool references with the actual constant.
-		 We will put the constant back if we need to write the
-		 function out after all.  */
-	      save_constants (&PATTERN (insn));
-	      if (REG_NOTES (insn))
-		save_constants (&REG_NOTES (insn));
-	    }
-
-	  /* Record what interesting things happen to our parameters.  */
-	  note_stores (PATTERN (insn), note_modified_parmregs);
-	}
+	/* Record what interesting things happen to our parameters.  */
+	note_stores (PATTERN (insn), note_modified_parmregs);
     }
-
-  /* Also scan all decls, and replace any constant pool references with the
-     actual constant.  */
-  save_constants_in_decl_trees (DECL_INITIAL (fndecl));
 
   /* We have now allocated all that needs to be allocated permanently
      on the rtx obstack.  Set our high-water mark, so that we
@@ -893,93 +412,11 @@ save_for_inline_nocopy (fndecl)
 
   preserve_data ();
 
-  current_function->inl_emit = current_function->emit;
   current_function->inl_max_label_num = max_label_num ();
   current_function->inl_last_parm_insn = current_function->x_last_parm_insn;
   current_function->original_arg_vector = argvec;
   current_function->original_decl_initial = DECL_INITIAL (fndecl);
   DECL_SAVED_INSNS (fndecl) = current_function;
-}
-
-/* Given PX, a pointer into an insn, search for references to the constant
-   pool.  Replace each with a CONST that has the mode of the original
-   constant, contains the constant, and has RTX_INTEGRATED_P set.
-   Similarly, constant pool addresses not enclosed in a MEM are replaced
-   with an ADDRESS and CONST rtx which also gives the constant, its
-   mode, the mode of the address, and has RTX_INTEGRATED_P set.  */
-
-static void
-save_constants (px)
-     rtx *px;
-{
-  rtx x;
-  int i, j;
-
- again:
-  x = *px;
-
-  /* If this is a CONST_DOUBLE, don't try to fix things up in 
-     CONST_DOUBLE_MEM, because this is an infinite recursion.  */
-  if (GET_CODE (x) == CONST_DOUBLE)
-    return;
-  else if (GET_CODE (x) == MEM && GET_CODE (XEXP (x, 0)) == SYMBOL_REF
-	   && CONSTANT_POOL_ADDRESS_P (XEXP (x,0)))
-    {
-      enum machine_mode const_mode = get_pool_mode (XEXP (x, 0));
-      rtx new = gen_rtx_CONST (const_mode, get_pool_constant (XEXP (x, 0)));
-      RTX_INTEGRATED_P (new) = 1;
-
-      /* If the MEM was in a different mode than the constant (perhaps we
-	 were only looking at the low-order part), surround it with a 
-	 SUBREG so we can save both modes.  */
-
-      if (GET_MODE (x) != const_mode)
-	{
-	  new = gen_rtx_SUBREG (GET_MODE (x), new, 0);
-	  RTX_INTEGRATED_P (new) = 1;
-	}
-
-      *px = new;
-      save_constants (&XEXP (*px, 0));
-    }
-  else if (GET_CODE (x) == SYMBOL_REF
-	   && CONSTANT_POOL_ADDRESS_P (x))
-    {
-      *px = gen_rtx_ADDRESS (GET_MODE (x),
-			     gen_rtx_CONST (get_pool_mode (x),
-					    get_pool_constant (x)));
-      save_constants (&XEXP (*px, 0));
-      RTX_INTEGRATED_P (*px) = 1;
-    }
-
-  else
-    {
-      const char *fmt = GET_RTX_FORMAT (GET_CODE (x));
-      int len = GET_RTX_LENGTH (GET_CODE (x));
-
-      for (i = len-1; i >= 0; i--)
-	{
-	  switch (fmt[i])
-	    {
-	    case 'E':
-	      for (j = 0; j < XVECLEN (x, i); j++)
-		save_constants (&XVECEXP (x, i, j));
-	      break;
-
-	    case 'e':
-	      if (XEXP (x, i) == 0)
-		continue;
-	      if (i == 0)
-		{
-		  /* Hack tail-recursion here.  */
-		  px = &XEXP (x, 0);
-		  goto again;
-		}
-	      save_constants (&XEXP (x, i));
-	      break;
-	    }
-	}
-    }
 }
 
 /* Note whether a parameter is modified or not.  */
@@ -994,262 +431,6 @@ note_modified_parmregs (reg, x)
       && REGNO (reg) >= FIRST_PSEUDO_REGISTER
       && parmdecl_map[REGNO (reg)] != 0)
     TREE_READONLY (parmdecl_map[REGNO (reg)]) = 0;
-}
-
-/* Copy the rtx ORIG recursively, replacing pseudo-regs and labels
-   according to `reg_map' and `label_map'.  The original rtl insns
-   will be saved for inlining; this is used to make a copy
-   which is used to finish compiling the inline function itself.
-
-   If we find a "saved" constant pool entry, one which was replaced with
-   the value of the constant, convert it back to a constant pool entry.
-   Since the pool wasn't touched, this should simply restore the old
-   address.
-
-   All other kinds of rtx are copied except those that can never be
-   changed during compilation.  */
-
-static rtx
-copy_for_inline (orig)
-     rtx orig;
-{
-  register rtx x = orig;
-  register rtx new;
-  register int i;
-  register enum rtx_code code;
-  register const char *format_ptr;
-
-  if (x == 0)
-    return x;
-
-  code = GET_CODE (x);
-
-  /* These types may be freely shared.  */
-
-  switch (code)
-    {
-    case QUEUED:
-    case CONST_INT:
-    case PC:
-    case CC0:
-      return x;
-
-    case SYMBOL_REF:
-      if (! SYMBOL_REF_NEED_ADJUST (x))
-        return x;
-      return rethrow_symbol_map (x, save_for_inline_eh_labelmap);
-
-    case CONST_DOUBLE:
-      /* We have to make a new CONST_DOUBLE to ensure that we account for
-	 it correctly.  Using the old CONST_DOUBLE_MEM data is wrong.  */
-      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-	{
-	  REAL_VALUE_TYPE d;
-
-	  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-	  return CONST_DOUBLE_FROM_REAL_VALUE (d, GET_MODE (x));
-	}
-      else
-	return immed_double_const (CONST_DOUBLE_LOW (x), CONST_DOUBLE_HIGH (x),
-				   VOIDmode);
-
-    case CONST:
-      /* Get constant pool entry for constant in the pool.  */
-      if (RTX_INTEGRATED_P (x))
-	return validize_mem (force_const_mem (GET_MODE (x),
-					      copy_for_inline (XEXP (x, 0))));
-      break;
-
-    case SUBREG:
-      /* Get constant pool entry, but access in different mode.  */
-      if (RTX_INTEGRATED_P (x))
-	{
-	  new = force_const_mem (GET_MODE (SUBREG_REG (x)),
-				 copy_for_inline (XEXP (SUBREG_REG (x), 0)));
-
-	  PUT_MODE (new, GET_MODE (x));
-	  return validize_mem (new);
-	}
-      break;
-
-    case ADDRESS:
-      /* If not special for constant pool error.  Else get constant pool
-	 address.  */
-      if (! RTX_INTEGRATED_P (x))
-	abort ();
-
-      new = force_const_mem (GET_MODE (XEXP (x, 0)),
-			     copy_for_inline (XEXP (XEXP (x, 0), 0)));
-      new = XEXP (new, 0);
-
-#ifdef POINTERS_EXTEND_UNSIGNED
-      if (GET_MODE (new) != GET_MODE (x))
-	new = convert_memory_address (GET_MODE (x), new);
-#endif
-
-      return new;
-
-    case ASM_OPERANDS:
-      /* If a single asm insn contains multiple output operands
-	 then it contains multiple ASM_OPERANDS rtx's that share operand 3.
-	 We must make sure that the copied insn continues to share it.  */
-      if (orig_asm_operands_vector == XVEC (orig, 3))
-	{
-	  x = rtx_alloc (ASM_OPERANDS);
-	  x->volatil = orig->volatil;
-	  XSTR (x, 0) = XSTR (orig, 0);
-	  XSTR (x, 1) = XSTR (orig, 1);
-	  XINT (x, 2) = XINT (orig, 2);
-	  XVEC (x, 3) = copy_asm_operands_vector;
-	  XVEC (x, 4) = copy_asm_constraints_vector;
-	  XSTR (x, 5) = XSTR (orig, 5);
-	  XINT (x, 6) = XINT (orig, 6);
-	  return x;
-	}
-      break;
-
-    case MEM:
-      /* A MEM is usually allowed to be shared if its address is constant
-	 or is a constant plus one of the special registers.
-
-	 We do not allow sharing of addresses that are either a special
-	 register or the sum of a constant and a special register because
-	 it is possible for unshare_all_rtl to copy the address, into memory
-	 that won't be saved.  Although the MEM can safely be shared, and
-	 won't be copied there, the address itself cannot be shared, and may
-	 need to be copied. 
-
-	 There are also two exceptions with constants: The first is if the
-	 constant is a LABEL_REF or the sum of the LABEL_REF
-	 and an integer.  This case can happen if we have an inline
-	 function that supplies a constant operand to the call of another
-	 inline function that uses it in a switch statement.  In this case,
-	 we will be replacing the LABEL_REF, so we have to replace this MEM
-	 as well.
-
-	 The second case is if we have a (const (plus (address ..) ...)).
-	 In that case we need to put back the address of the constant pool
-	 entry.  */
-
-      if (CONSTANT_ADDRESS_P (XEXP (x, 0))
-	  && GET_CODE (XEXP (x, 0)) != LABEL_REF
-	  && ! (GET_CODE (XEXP (x, 0)) == CONST
-		&& (GET_CODE (XEXP (XEXP (x, 0), 0)) == PLUS
-		    && ((GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0))
-			== LABEL_REF)
-			|| (GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0))
-			    == ADDRESS)))))
-	return x;
-      break;
-
-    case LABEL_REF:
-      /* If this is a non-local label, just make a new LABEL_REF.
-	 Otherwise, use the new label as well.  */
-      x = gen_rtx_LABEL_REF (GET_MODE (orig),
-			     LABEL_REF_NONLOCAL_P (orig) ? XEXP (orig, 0)
-			     : label_map[CODE_LABEL_NUMBER (XEXP (orig, 0))]);
-      LABEL_REF_NONLOCAL_P (x) = LABEL_REF_NONLOCAL_P (orig);
-      LABEL_OUTSIDE_LOOP_P (x) = LABEL_OUTSIDE_LOOP_P (orig);
-      return x;
-
-    case REG:
-      if (REGNO (x) > LAST_VIRTUAL_REGISTER)
-	return reg_map [REGNO (x)];
-      else
-	return x;
-
-    case SET:
-      /* If a parm that gets modified lives in a pseudo-reg,
-	 clear its TREE_READONLY to prevent certain optimizations.  */
-      {
-	rtx dest = SET_DEST (x);
-
-	while (GET_CODE (dest) == STRICT_LOW_PART
-	       || GET_CODE (dest) == ZERO_EXTRACT
-	       || GET_CODE (dest) == SUBREG)
-	  dest = XEXP (dest, 0);
-
-	if (GET_CODE (dest) == REG
-	    && REGNO (dest) < max_parm_reg
-	    && REGNO (dest) >= FIRST_PSEUDO_REGISTER
-	    && parmdecl_map[REGNO (dest)] != 0
-	    /* The insn to load an arg pseudo from a stack slot
-	       does not count as modifying it.  */
-	    && in_nonparm_insns)
-	  TREE_READONLY (parmdecl_map[REGNO (dest)]) = 0;
-      }
-      break;
-
-#if 0 /* This is a good idea, but here is the wrong place for it.  */
-      /* Arrange that CONST_INTs always appear as the second operand
-	 if they appear, and that `frame_pointer_rtx' or `arg_pointer_rtx'
-	 always appear as the first.  */
-    case PLUS:
-      if (GET_CODE (XEXP (x, 0)) == CONST_INT
-	  || (XEXP (x, 1) == frame_pointer_rtx
-	      || (ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
-		  && XEXP (x, 1) == arg_pointer_rtx)))
-	{
-	  rtx t = XEXP (x, 0);
-	  XEXP (x, 0) = XEXP (x, 1);
-	  XEXP (x, 1) = t;
-	}
-      break;
-#endif
-    default:
-      break;
-    }
-
-  /* Replace this rtx with a copy of itself.  */
-
-  x = rtx_alloc (code);
-  bcopy ((char *) orig, (char *) x,
-	 (sizeof (*x) - sizeof (x->fld)
-	  + sizeof (x->fld[0]) * GET_RTX_LENGTH (code)));
-
-  /* Now scan the subexpressions recursively.
-     We can store any replaced subexpressions directly into X
-     since we know X is not shared!  Any vectors in X
-     must be copied if X was copied.  */
-
-  format_ptr = GET_RTX_FORMAT (code);
-
-  for (i = 0; i < GET_RTX_LENGTH (code); i++)
-    {
-      switch (*format_ptr++)
-	{
-	case 'e':
-	  XEXP (x, i) = copy_for_inline (XEXP (x, i));
-	  break;
-
-	case 'u':
-	  /* Change any references to old-insns to point to the
-	     corresponding copied insns.  */
-	  XEXP (x, i) = insn_map[INSN_UID (XEXP (x, i))];
-	  break;
-
-	case 'E':
-	  if (XVEC (x, i) != NULL && XVECLEN (x, i) != 0)
-	    {
-	      register int j;
-
-	      XVEC (x, i) = gen_rtvec_v (XVECLEN (x, i), XVEC (x, i)->elem);
-	      for (j = 0; j < XVECLEN (x, i); j++)
-		XVECEXP (x, i, j)
-		  = copy_for_inline (XVECEXP (x, i, j));
-	    }
-	  break;
-	}
-    }
-
-  if (code == ASM_OPERANDS && orig_asm_operands_vector == 0)
-    {
-      orig_asm_operands_vector = XVEC (orig, 3);
-      copy_asm_operands_vector = XVEC (x, 3);
-      copy_asm_constraints_vector = XVEC (x, 4);
-    }
-
-  return x;
 }
 
 /* Unfortunately, we need a global copy of const_equiv map for communication
@@ -1326,9 +507,10 @@ expand_inline_function (fndecl, parms, target, ignore, type,
      tree type;
      rtx structure_value_addr;
 {
+  struct function *inlining_previous;
   struct function *inl_f = DECL_SAVED_INSNS (fndecl);
   tree formal, actual, block;
-  rtx parm_insns = inl_f->inl_emit->x_first_insn;
+  rtx parm_insns = inl_f->emit->x_first_insn;
   rtx insns = (inl_f->inl_last_parm_insn
 	       ? NEXT_INSN (inl_f->inl_last_parm_insn)
 	       : parm_insns);
@@ -1337,7 +519,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   rtx insn;
   int max_regno;
   register int i;
-  int min_labelno = inl_f->inl_emit->x_first_label_num;
+  int min_labelno = inl_f->emit->x_first_label_num;
   int max_labelno = inl_f->inl_max_label_num;
   int nargs;
   rtx local_return_label = 0;
@@ -1357,7 +539,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   rtx *real_label_map = 0;
 
   /* Allow for equivalences of the pseudos we make for virtual fp and ap.  */
-  max_regno = inl_f->inl_emit->x_reg_rtx_no + 3;
+  max_regno = inl_f->emit->x_reg_rtx_no + 3;
   if (max_regno < FIRST_PSEUDO_REGISTER)
     abort ();
 
@@ -1500,7 +682,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
     = (rtx *) xmalloc ((max_labelno) * sizeof (rtx));
   map->label_map = real_label_map;
 
-  inl_max_uid = (inl_f->inl_emit->x_cur_insn_uid + 1);
+  inl_max_uid = (inl_f->emit->x_cur_insn_uid + 1);
   map->insn_map = (rtx *) alloca (inl_max_uid * sizeof (rtx));
   bzero ((char *) map->insn_map, inl_max_uid * sizeof (rtx));
   map->min_insnno = 0;
@@ -1536,8 +718,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   if (map->insns_at_start == 0)
     map->insns_at_start = emit_note (NULL_PTR, NOTE_INSN_DELETED);
 
-  map->regno_pointer_flag = inl_f->inl_emit->regno_pointer_flag;
-  map->regno_pointer_align = inl_f->inl_emit->regno_pointer_align;
+  map->regno_pointer_flag = inl_f->emit->regno_pointer_flag;
+  map->regno_pointer_align = inl_f->emit->regno_pointer_align;
 
   /* Update the outgoing argument size to allow for those in the inlined
      function.  */
@@ -1624,6 +806,12 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       else
 	abort ();
     }
+
+  /* Tell copy_rtx_and_substitute to handle constant pool SYMBOL_REFs
+     specially.  This function can be called recursively, so we need to
+     save the previous value.  */
+  inlining_previous = inlining;
+  inlining = inl_f;
 
   /* Now do the parameters that will be placed in memory.  */
 
@@ -2132,6 +1320,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
     free (real_label_map);
   if (map)
     VARRAY_FREE (map->const_equiv_varray);
+  inlining = inlining_previous;
 
   return target;
 }
@@ -2235,23 +1424,6 @@ integrate_decl_tree (let, level, map)
 	  BLOCK_ABSTRACT_ORIGIN (node) = let;
 	}
     }
-}
-
-/* Given a BLOCK node LET, search for all DECL_RTL fields, and pass them
-   through save_constants.  */
-
-static void
-save_constants_in_decl_trees (let)
-     tree let;
-{
-  tree t;
-
-  for (t = BLOCK_VARS (let); t; t = TREE_CHAIN (t))
-    if (DECL_RTL (t) != 0)
-      save_constants (&DECL_RTL (t));
-
-  for (t = BLOCK_SUBBLOCKS (let); t; t = TREE_CHAIN (t))
-    save_constants_in_decl_trees (t);
 }
 
 /* Create a new copy of an rtx.
@@ -2506,8 +1678,38 @@ copy_rtx_and_substitute (orig, map)
 	 remapped label.  Otherwise, symbols are returned unchanged.  */
       if (CONSTANT_POOL_ADDRESS_P (orig))
 	{
-	  rtx constant = get_pool_constant (orig);
-	  if (GET_CODE (constant) == LABEL_REF)
+	  struct function *f = inlining ? inlining : current_function;
+	  rtx constant = get_pool_constant_for_function (f, orig);
+	  enum machine_mode const_mode = get_pool_mode_for_function (f, orig);
+	  if (inlining)
+	    {
+	      rtx temp = force_const_mem (const_mode,
+					  copy_rtx_and_substitute (constant, map));
+#if 0
+	      /* Legitimizing the address here is incorrect.
+
+		 Since we had a SYMBOL_REF before, we can assume it is valid
+		 to have one in this position in the insn.
+
+		 Also, change_address may create new registers.  These
+		 registers will not have valid reg_map entries.  This can
+		 cause try_constants() to fail because assumes that all
+		 registers in the rtx have valid reg_map entries, and it may
+		 end up replacing one of these new registers with junk.  */
+
+	      if (! memory_address_p (GET_MODE (temp), XEXP (temp, 0)))
+		temp = change_address (temp, GET_MODE (temp), XEXP (temp, 0));
+#endif
+
+	      temp = XEXP (temp, 0);
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+	      if (GET_MODE (temp) != GET_MODE (orig))
+		temp = convert_memory_address (GET_MODE (orig), temp);
+#endif
+	      return temp;
+	    }
+	  else if (GET_CODE (constant) == LABEL_REF)
 	    return XEXP (force_const_mem (GET_MODE (orig),
 					  copy_rtx_and_substitute (constant,
 								   map)),
@@ -2542,62 +1744,8 @@ copy_rtx_and_substitute (orig, map)
       /* Make new constant pool entry for a constant
 	 that was in the pool of the inline function.  */
       if (RTX_INTEGRATED_P (orig))
-	{
-	  /* If this was an address of a constant pool entry that itself
-	     had to be placed in the constant pool, it might not be a
-	     valid address.  So the recursive call below might turn it
-	     into a register.  In that case, it isn't a constant any
-	     more, so return it.  This has the potential of changing a
-	     MEM into a REG, but we'll assume that it safe.  */
-	  temp = copy_rtx_and_substitute (XEXP (orig, 0), map);
-	  if (! CONSTANT_P (temp))
-	    return temp;
-	  return validize_mem (force_const_mem (GET_MODE (orig), temp));
-	}
-      break;
-
-    case ADDRESS:
-      /* If from constant pool address, make new constant pool entry and
-	 return its address.  */
-      if (! RTX_INTEGRATED_P (orig))
 	abort ();
-
-      temp
-	= force_const_mem (GET_MODE (XEXP (orig, 0)),
-			   copy_rtx_and_substitute (XEXP (XEXP (orig, 0), 0),
-						    map));
-
-#if 0
-      /* Legitimizing the address here is incorrect.
-
-	 The only ADDRESS rtx's that can reach here are ones created by
-	 save_constants.  Hence the operand of the ADDRESS is always valid
-	 in this position of the instruction, since the original rtx without
-	 the ADDRESS was valid.
-
-	 The reason we don't legitimize the address here is that on the
-	 Sparc, the caller may have a (high ...) surrounding this ADDRESS.
-	 This code forces the operand of the address to a register, which
-	 fails because we can not take the HIGH part of a register.
-
-	 Also, change_address may create new registers.  These registers
-	 will not have valid reg_map entries.  This can cause try_constants()
-	 to fail because assumes that all registers in the rtx have valid
-	 reg_map entries, and it may end up replacing one of these new
-	 registers with junk.  */
-
-      if (! memory_address_p (GET_MODE (temp), XEXP (temp, 0)))
-	temp = change_address (temp, GET_MODE (temp), XEXP (temp, 0));
-#endif
-
-      temp = XEXP (temp, 0);
-
-#ifdef POINTERS_EXTEND_UNSIGNED
-      if (GET_MODE (temp) != GET_MODE (orig))
-	temp = convert_memory_address (GET_MODE (orig), temp);
-#endif
-
-      return temp;
+      break;
 
     case ASM_OPERANDS:
       /* If a single asm insn contains multiple output operands
@@ -2666,6 +1814,23 @@ copy_rtx_and_substitute (orig, map)
       break;
 
     case MEM:
+      if (inlining
+	  && GET_CODE (XEXP (orig, 0)) == SYMBOL_REF
+	  && CONSTANT_POOL_ADDRESS_P (XEXP (orig, 0)))
+	{
+	  enum machine_mode const_mode = get_pool_mode_for_function (inlining, XEXP (orig, 0));
+	  rtx constant = get_pool_constant_for_function (inlining, XEXP (orig, 0));
+	  constant = copy_rtx_and_substitute (constant, map);
+	  /* If this was an address of a constant pool entry that itself
+	     had to be placed in the constant pool, it might not be a
+	     valid address.  So the recursive call might have turned it
+	     into a register.  In that case, it isn't a constant any
+	     more, so return it.  This has the potential of changing a
+	     MEM into a REG, but we'll assume that it safe.  */
+	  if (! CONSTANT_P (constant))
+	    return constant;
+	  return validize_mem (force_const_mem (const_mode, constant));
+	}
       copy = rtx_alloc (MEM);
       PUT_MODE (copy, mode);
       XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (orig, 0), map);
@@ -3122,88 +2287,6 @@ mark_stores (dest, x)
     }
 }
 
-/* If any CONST expressions with RTX_INTEGRATED_P are present in the rtx
-   pointed to by PX, they represent constants in the constant pool.
-   Replace these with a new memory reference obtained from force_const_mem.
-   Similarly, ADDRESS expressions with RTX_INTEGRATED_P represent the
-   address of a constant pool entry.  Replace them with the address of
-   a new constant pool entry obtained from force_const_mem.  */
-
-static void
-restore_constants (px)
-     rtx *px;
-{
-  rtx x = *px;
-  int i, j;
-  const char *fmt;
-
-  if (x == 0)
-    return;
-
-  if (GET_CODE (x) == CONST_DOUBLE)
-    {
-      /* We have to make a new CONST_DOUBLE to ensure that we account for
-	 it correctly.  Using the old CONST_DOUBLE_MEM data is wrong.  */
-      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-	{
-	  REAL_VALUE_TYPE d;
-
-	  REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-	  *px = CONST_DOUBLE_FROM_REAL_VALUE (d, GET_MODE (x));
-	}
-      else
-	*px = immed_double_const (CONST_DOUBLE_LOW (x), CONST_DOUBLE_HIGH (x),
-				  VOIDmode);
-    }
-
-  else if (RTX_INTEGRATED_P (x) && GET_CODE (x) == CONST)
-    {
-      restore_constants (&XEXP (x, 0));
-      *px = validize_mem (force_const_mem (GET_MODE (x), XEXP (x, 0)));
-    }
-  else if (RTX_INTEGRATED_P (x) && GET_CODE (x) == SUBREG)
-    {
-      /* This must be (subreg/i:M1 (const/i:M2 ...) 0).  */
-      rtx new = XEXP (SUBREG_REG (x), 0);
-
-      restore_constants (&new);
-      new = force_const_mem (GET_MODE (SUBREG_REG (x)), new);
-      PUT_MODE (new, GET_MODE (x));
-      *px = validize_mem (new);
-    }
-  else if (RTX_INTEGRATED_P (x) && GET_CODE (x) == ADDRESS)
-    {
-      rtx new = XEXP (force_const_mem (GET_MODE (XEXP (x, 0)),
-				       XEXP (XEXP (x, 0), 0)),
-		      0);
-
-#ifdef POINTERS_EXTEND_UNSIGNED
-      if (GET_MODE (new) != GET_MODE (x))
-	new = convert_memory_address (GET_MODE (x), new);
-#endif
-
-      *px = new;
-    }
-  else
-    {
-      fmt = GET_RTX_FORMAT (GET_CODE (x));
-      for (i = 0; i < GET_RTX_LENGTH (GET_CODE (x)); i++)
-	{
-	  switch (*fmt++)
-	    {
-	    case 'E':
-	      for (j = 0; j < XVECLEN (x, i); j++)
-		restore_constants (&XVECEXP (x, i, j));
-	      break;
-
-	    case 'e':
-	      restore_constants (&XEXP (x, i));
-	      break;
-	    }
-	}
-    }
-}
-
 /* Given a pointer to some BLOCK node, if the BLOCK_ABSTRACT_ORIGIN for the
    given BLOCK node is NULL, set the BLOCK_ABSTRACT_ORIGIN for the node so
    that it points to the node itself, thus indicating that the node is its
@@ -3331,26 +2414,16 @@ void
 output_inline_function (fndecl)
      tree fndecl;
 {
+  struct function *curf = current_function;
   struct function *f = DECL_SAVED_INSNS (fndecl);
-  rtx last;
 
-  /* Things we allocate from here on are part of this function, not
-     permanent.  */
-  temporary_allocation ();
   current_function = f;
   current_function_decl = fndecl;
   clear_emit_caches ();
 
-  /* Find last insn and rebuild the constant pool.  */
-  init_const_rtx_hash_table ();
-  for (last = get_insns (); NEXT_INSN (last); last = NEXT_INSN (last))
-    {
-      if (GET_RTX_CLASS (GET_CODE (last)) == 'i')
-	{
-	  restore_constants (&PATTERN (last));
-	  restore_constants (&REG_NOTES (last));
-	}
-    }
+  /* Things we allocate from here on are part of this function, not
+     permanent.  */
+  temporary_allocation ();
 
   set_new_last_label_num (f->inl_max_label_num);
 
@@ -3375,6 +2448,6 @@ output_inline_function (fndecl)
   /* Compile this function all the way down to assembly code.  */
   rest_of_compilation (fndecl);
 
-  current_function = 0;
-  current_function_decl = 0;
+  current_function = curf;
+  current_function_decl = curf ? curf->decl : 0;
 }

@@ -64,21 +64,6 @@ struct obstack *function_maybepermanent_obstack;
 
 struct obstack maybepermanent_obstack;
 
-/* This is a list of function_maybepermanent_obstacks for top-level inline
-   functions that are compiled in the middle of compiling other functions.  */
-
-struct simple_obstack_stack *toplev_inline_obstacks;
-
-/* Former elements of toplev_inline_obstacks that have been recycled.  */
-
-struct simple_obstack_stack *extra_inline_obstacks;
-
-/* This is a list of function_maybepermanent_obstacks for inline functions
-   nested in the current function that were compiled in the middle of
-   compiling other functions.  */
-
-struct simple_obstack_stack *inline_obstacks;
-
 /* The contents of the current function definition are allocated
    in this obstack, and all are freed at the end of the function.
    For top-level functions, this is temporary_obstack.
@@ -331,9 +316,8 @@ gcc_obstack_init (obstack)
    compile; if it isn't current_function_decl, we have to play some games.  */
 
 void
-save_tree_status (p, context)
+save_tree_status (p)
      struct function *p;
-     tree context;
 {
   p->all_types_permanent = all_types_permanent;
   p->momentary_stack = momentary_stack;
@@ -347,50 +331,10 @@ save_tree_status (p, context)
   p->expression_obstack = expression_obstack;
   p->saveable_obstack = saveable_obstack;
   p->rtl_obstack = rtl_obstack;
-  p->inline_obstacks = inline_obstacks;
 
-  if (current_function_decl && context == current_function_decl)
-    /* Objects that need to be saved in this function can be in the nonsaved
-       obstack of the enclosing function since they can't possibly be needed
-       once it has returned.  */
-    function_maybepermanent_obstack = function_obstack;
-  else
-    {
-      /* We're compiling a function which isn't nested in the current
-         function.  We need to create a new maybepermanent_obstack for this
-         function, since it can't go onto any of the existing obstacks.  */
-      struct simple_obstack_stack **head;
-      struct simple_obstack_stack *current;
-
-      if (context == NULL_TREE)
-	head = &toplev_inline_obstacks;
-      else
-	{
-	  struct function *f = find_function_data (context);
-	  head = &f->inline_obstacks;
-	}
-
-      if (context == NULL_TREE && extra_inline_obstacks)
-	{
-	  current = extra_inline_obstacks;
-	  extra_inline_obstacks = current->next;
-	}
-      else
-	{
-	  current = ((struct simple_obstack_stack *)
-		     xmalloc (sizeof (struct simple_obstack_stack)));
-
-	  current->obstack
-	    = (struct obstack *) xmalloc (sizeof (struct obstack));
-	  gcc_obstack_init (current->obstack);
-	}
-
-      function_maybepermanent_obstack = current->obstack;
-
-      current->next = *head;
-      *head = current;
-    }      
-
+  function_maybepermanent_obstack
+    = (struct obstack *) xmalloc (sizeof (struct obstack));
+  gcc_obstack_init (function_maybepermanent_obstack);
   maybepermanent_firstobj
     = (char *) obstack_finish (function_maybepermanent_obstack);
 
@@ -410,9 +354,8 @@ save_tree_status (p, context)
    This is used after a nested function.  */
 
 void
-restore_tree_status (p, context)
+restore_tree_status (p)
      struct function *p;
-     tree context;
 {
   all_types_permanent = p->all_types_permanent;
   momentary_stack = p->momentary_stack;
@@ -420,41 +363,16 @@ restore_tree_status (p, context)
   obstack_free (&momentary_obstack, momentary_function_firstobj);
 
   /* Free saveable storage used by the function just compiled and not
-     saved.
-
-     CAUTION: This is in function_obstack of the containing function.
-     So we must be sure that we never allocate from that obstack during
-     the compilation of a nested function if we expect it to survive
-     past the nested function's end.  */
+     saved.  */
   obstack_free (function_maybepermanent_obstack, maybepermanent_firstobj);
 
-  /* If we were compiling a toplevel function, we can free this space now.  */
-  if (context == NULL_TREE)
-    {
-      obstack_free (&temporary_obstack, temporary_firstobj);
-      obstack_free (&momentary_obstack, momentary_function_firstobj);
-    }
-
-  /* If we were compiling a toplevel function that we don't actually want
-     to save anything from, return the obstack to the pool.  */
-  if (context == NULL_TREE
-      && obstack_empty_p (function_maybepermanent_obstack))
-    {
-      struct simple_obstack_stack *current, **p = &toplev_inline_obstacks;
-
-      if ((*p) != NULL)
-	{
-	  while ((*p)->obstack != function_maybepermanent_obstack)
-	    p = &((*p)->next);
-	  current = *p;
-	  *p = current->next;
-
-	  current->next = extra_inline_obstacks;
-	  extra_inline_obstacks = current;
-	}
-    }
+  obstack_free (&temporary_obstack, temporary_firstobj);
+  obstack_free (&momentary_obstack, momentary_function_firstobj);
 
   obstack_free (function_obstack, 0);
+
+  if (obstack_empty_p (function_maybepermanent_obstack))
+    free (function_maybepermanent_obstack);
   free (function_obstack);
 
   temporary_firstobj = p->temporary_firstobj;
@@ -467,7 +385,6 @@ restore_tree_status (p, context)
   expression_obstack = p->expression_obstack;
   saveable_obstack = p->saveable_obstack;
   rtl_obstack = p->rtl_obstack;
-  inline_obstacks = p->inline_obstacks;
 }
 
 /* Start allocating on the temporary (per function) obstack.
@@ -484,7 +401,6 @@ temporary_allocation ()
   expression_obstack = function_obstack;
   rtl_obstack = saveable_obstack = function_maybepermanent_obstack;
   momentary_stack = 0;
-  inline_obstacks = 0;
 }
 
 /* Start allocating on the permanent obstack but don't
@@ -611,17 +527,6 @@ permanent_allocation (function_end)
     obstack_free (&momentary_obstack, momentary_firstobj);
   obstack_free (function_maybepermanent_obstack, maybepermanent_firstobj);
   obstack_free (&temp_decl_obstack, temp_decl_firstobj);
-
-  /* Free up the maybepermanent_obstacks for any of our nested functions
-     which were compiled at a lower level.  */
-  while (inline_obstacks)
-    {
-      struct simple_obstack_stack *current = inline_obstacks;
-      inline_obstacks = current->next;
-      obstack_free (current->obstack, 0);
-      free (current->obstack);
-      free (current);
-    }
 
   current_obstack = &permanent_obstack;
   expression_obstack = &permanent_obstack;
@@ -4751,32 +4656,6 @@ decl_type_context (decl)
   return NULL_TREE;
 }
 
-/* Print debugging information about the size of the
-   toplev_inline_obstacks.  */
-
-void
-print_inline_obstack_statistics ()
-{
-  struct simple_obstack_stack *current = toplev_inline_obstacks;
-  int n_obstacks = 0;
-  int n_alloc = 0;
-  int n_chunks = 0;
-
-  for (; current; current = current->next, ++n_obstacks)
-    {
-      struct obstack *o = current->obstack;
-      struct _obstack_chunk *chunk = o->chunk;
-
-      n_alloc += o->next_free - chunk->contents;
-      chunk = chunk->prev;
-      ++n_chunks;
-      for (; chunk; chunk = chunk->prev, ++n_chunks)
-	n_alloc += chunk->limit - &chunk->contents[0];
-    }
-  fprintf (stderr, "inline obstacks: %d obstacks, %d bytes, %d chunks\n",
-	   n_obstacks, n_alloc, n_chunks);
-}
-
 /* Print debugging information about the obstack O, named STR.  */
 
 void
@@ -4835,7 +4714,6 @@ dump_tree_statistics ()
   print_obstack_statistics ("temporary_obstack", &temporary_obstack);
   print_obstack_statistics ("momentary_obstack", &momentary_obstack);
   print_obstack_statistics ("temp_decl_obstack", &temp_decl_obstack);
-  print_inline_obstack_statistics ();
   print_lang_statistics ();
 }
 

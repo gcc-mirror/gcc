@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef _RTL_H
 #define _RTL_H
 
+struct function;
+
 #include "machmode.h"
 
 #undef FFS  /* Some systems predefine this symbol; don't let it interfere.  */
@@ -1001,6 +1003,8 @@ extern rtx force_const_mem		PROTO((enum machine_mode, rtx));
 extern rtx force_reg			PROTO((enum machine_mode, rtx));
 extern rtx get_pool_constant		PROTO((rtx));
 extern enum machine_mode get_pool_mode	PROTO((rtx));
+extern rtx get_pool_constant_for_function	PROTO((struct function *, rtx));
+extern enum machine_mode get_pool_mode_for_function	PROTO((struct function *, rtx));
 extern int get_pool_offset		PROTO((rtx));
 extern rtx simplify_subtraction		PROTO((rtx));
 extern rtx assign_stack_local		PROTO((enum machine_mode,

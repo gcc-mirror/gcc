@@ -182,6 +182,7 @@ struct function
   struct stmt_status *stmt;
   struct expr_status *expr;
   struct emit_status *emit;
+  struct varasm_status *varasm;
 
   /* For function.c.  */
 
@@ -415,12 +416,9 @@ struct function
   struct obstack *expression_obstack;
   struct obstack *saveable_obstack;
   struct obstack *rtl_obstack;
-  struct simple_obstack_stack *inline_obstacks;
 
-  /* For integrate.c.  We duplicate some of the fields so that
-     save_for_inline_copying can keep two versions.  */
+  /* For integrate.c.  */
   int inlinable;
-  struct emit_status *inl_emit;
   /* This is in fact an rtvec.  */
   void *original_arg_vector;
   tree original_decl_initial;
@@ -448,13 +446,6 @@ struct function
   /* If some insns can be deferred to the delay slots of the epilogue, the
      delay list for them is recorded here.  */
   rtx epilogue_delay_list;
-
-  /* For varasm.  */
-  struct constant_descriptor **const_rtx_hash_table;
-  struct pool_sym **const_rtx_sym_hash_table;
-  struct pool_constant *first_pool, *last_pool;
-  int pool_offset;
-  rtx const_double_chain;
 };
 
 extern struct function *current_function;
@@ -534,25 +525,24 @@ extern tree *identify_blocks PROTO((tree, rtx));
 /* Return size needed for stack frame based on slots so far allocated.
    This size counts from zero.  It is not rounded to STACK_BOUNDARY;
    the caller may have to do that.  */
-extern HOST_WIDE_INT get_frame_size PROTO((void));
+extern HOST_WIDE_INT get_frame_size	PROTO((void));
 /* Likewise, but for a different than the current function.  */
-extern HOST_WIDE_INT get_func_frame_size PROTO((struct function *));
+extern HOST_WIDE_INT get_func_frame_size	PROTO((struct function *));
 
 /* These variables hold pointers to functions to
    save and restore machine-specific data,
    in push_function_context and pop_function_context.  */
-extern void (*save_machine_status) PROTO((struct function *));
-extern void (*restore_machine_status) PROTO((struct function *));
+extern void (*init_machine_status)	PROTO((struct function *));
+extern void (*save_machine_status)	PROTO((struct function *));
+extern void (*restore_machine_status)	PROTO((struct function *));
 
 /* Likewise, but for language-specific data.  */
 extern void (*save_lang_status)		PROTO((struct function *));
 extern void (*restore_lang_status)	PROTO((struct function *));
 
 /* Save and restore status information for a nested function.  */
-extern void save_tree_status		PROTO((struct function *, tree));
-extern void restore_tree_status		PROTO((struct function *, tree));
-extern void save_varasm_status		PROTO((struct function *, tree));
-extern void restore_varasm_status	PROTO((struct function *));
+extern void save_tree_status		PROTO((struct function *));
+extern void restore_tree_status		PROTO((struct function *));
 extern void restore_emit_status		PROTO((struct function *));
 
 extern rtx get_first_block_beg		PROTO((void));

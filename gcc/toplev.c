@@ -3648,30 +3648,16 @@ rest_of_compilation (decl)
 	 compile it by itself, defer decision till end of compilation.
 	 finish_compilation will call rest_of_compilation again
 	 for those functions that need to be output.  Also defer those
-	 functions that we are supposed to defer.  We cannot defer
-	 functions containing nested functions since the nested function
-	 data is in our non-saved obstack.  We cannot defer nested
-	 functions for the same reason.  */
+	 functions that we are supposed to defer.  */
 
-      /* If this is a nested inline, remove ADDRESSOF now so we can
-	 finish compiling ourselves.  Otherwise, wait until EOF.
-	 We have to do this because the purge_addressof transformation
-	 changes the DECL_RTL for many variables, which confuses integrate.
-	 Also, save_for_inline_copying can be very expensive.  */
       if (inlinable)
-	{
-	  if (decl_function_context (decl))
-	    purge_addressof (insns);
-	  else
-	    DECL_DEFER_OUTPUT (decl) = 1;
-	}
+	DECL_DEFER_OUTPUT (decl) = 1;
 
-      if (! current_function_contains_functions
-	  && (DECL_DEFER_OUTPUT (decl)
-	      || (DECL_INLINE (decl)
-		  && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
-		       && ! flag_keep_inline_functions)
-		      || DECL_EXTERNAL (decl)))))
+      if (DECL_DEFER_OUTPUT (decl)
+	  || (DECL_INLINE (decl)
+	      && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
+		   && ! flag_keep_inline_functions)
+		  || DECL_EXTERNAL (decl))))
 	{
 	  DECL_DEFER_OUTPUT (decl) = 1;
 
@@ -3718,40 +3704,6 @@ rest_of_compilation (decl)
 	  TIMEVAR (integration_time, save_for_inline_nocopy (decl));
 	  DECL_SAVED_INSNS (decl)->inlinable = inlinable;
 	  goto exit_rest_of_compilation;
-	}
-
-      /* If we have to compile the function now, save its rtl and subdecls
-	 so that its compilation will not affect what others get.  */
-      if (inlinable || DECL_DEFER_OUTPUT (decl))
-	{
-#ifdef DWARF_DEBUGGING_INFO
-	  /* Generate the DWARF info for the "abstract" instance of
-	     a function which we will generate an out-of-line instance
-	     of almost immediately (and which we may also later generate
-	     various inlined instances of).  */
-	  if (write_symbols == DWARF_DEBUG)
-	    {
-	      set_decl_abstract_flags (decl, 1);
-	      TIMEVAR (symout_time, dwarfout_file_scope_decl (decl, 0));
-	      set_decl_abstract_flags (decl, 0);
-	    }
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-	  /* Generate the DWARF2 info for the "abstract" instance of
-	     a function which we will generate an out-of-line instance
-	     of almost immediately (and which we may also later generate
-	     various inlined instances of).  */
-	  if (write_symbols == DWARF2_DEBUG)
-	    {
-	      set_decl_abstract_flags (decl, 1);
-	      TIMEVAR (symout_time, dwarf2out_decl (decl));
-	      set_decl_abstract_flags (decl, 0);
-	    }
-#endif
-	  saved_block_tree = DECL_INITIAL (decl);
-	  saved_arguments = DECL_ARGUMENTS (decl);
-	  TIMEVAR (integration_time, save_for_inline_copying (decl));
-	  DECL_SAVED_INSNS (decl)->inlinable = inlinable;
 	}
 
       /* If specified extern inline but we aren't inlining it, we are

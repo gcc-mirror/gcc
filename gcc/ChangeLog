@@ -1,3 +1,92 @@
+Sat Sep  4 13:11:01 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	Change obstack memory management and varasm constant pool handling so
+ 	that nested functions are treated like any other functions.
+	* function.c (init_machine_status): New variable.
+	(push_function_context_to): Set contains_functions for the outer
+	function.  Don't call save_varasm_status.
+	(pop_function_context_from): Don't call restore_varasm_status.  Don't
+	set current_function_contains_functions.
+	(prepare_function_start): Call init_varasm_status rather than
+	init_const_rtx_hash_table.  Call (*init_machine_status) if the pointer
+	is non-null.
+	* function.h (struct function) Add field varasm.  Delete fields
+	inline_obstacks, inl_emit, const_rtx_hash_table, first_pool,
+	last_pool, const_rtx_sym_hash_table, pool_offset, const_double_chain.
+	(init_machine_status): Declare.
+	(save_varasm_status, restore_varasm_status): Delete declarations.
+	(save_tree_status, restore_tree_status): Delete last argument.
+	* integrate.c (initialize_for_inline): Lose arg COPY.  Delete copying
+	code.  All callers changed.
+	(copy_decl_list, copy_decl_tree, copy_decl_rtls, copy_for_inline,
+	save_constants_in_decl_trees, restore_constants, save_constants,
+	save_for_inline_eh_labelmap, save_for_inline_copying): Delete
+	functions.
+	(inlining): New variable.
+	(reg_map, label_map, insn_map, orig_asm_operands_vector,
+	copy_asm_operands_vector, copy_asm_constraints_vector): Delete
+	variables.
+	(save_for_inline_nocopy): Don't save constants.
+	Don't set inl_emit field in current_function.
+	(expand_inline_function): Use emit field, not inl_emit, of the inlined
+	function.  Set new variable inlining before
+	calling copy_rtx_and_substitute.
+	(copy_rtx_and_substitute): In MEM and SYMBOL_REF cases, handle
+	constant pool references if inlining is nonzero.
+	Delete ADDRESS and (most of the) CONST cases.
+	(output_inline_function): Save and restore current_function/
+	current_function_decl.  Delete restore_constants code.  Don't call
+	init_const_rtx_hash_table.
+	* output.h (init_const_rtx_hash_table): Don't declare.
+	* rtl.h (struct function): Declare.
+	(get_pool_constant_for_function, get_pool_mode_for_function): Declare.
+	* toplev.c (rest_of_compilation): Don't treat nested functions or
+	functions containing them specially.  Delete all code to deal with
+	save_for_inline_copying.
+	* tree.c (toplev_inline_obstacks, extra_inline_obstacks,
+	inline_obstacks): Delete variables.
+	(save_tree_status): Lose arg CONTEXT.  All callers changed.
+	Simply allocate a new function_maybepermanent_obstack for the new
+	function, delete all the special cases.
+	Don't save inline_obstacks.
+	(restore_tree_status): Lose arg CONTEXT.  All callers changed.
+	Delete special handling for function_maybepermanent_obstack; simply
+	free it if empty.
+	Don't restore inline_obstacks.
+	(permanent_allocation):  Delete code that frees inline_obstacks.
+	(print_inline_obstack_statistics): Delete function.
+	(dump_tree_statistics): Don't call it.
+	* varasm.c (struct varasm_status): New.
+	(const_rtx_hash_table, const_rtx_sym_hash_table, first_pool,
+	last_pool, pool_offset, const_double_chain): Delete global
+	variables, replace with accessor macros.
+	(immed_double_const): Don't walk const_double_chain outside a
+	function, but don't treat nested functions specially anymore.
+	(immed_real_const_1): Likewise.
+	(clear_const_double_mem): Don't treat nested functions specially.
+	(init_const_rtx_hash_table): Deleted, code moved to init_varasm_status.
+	(save_varasm_status, restore_varasm_status): Delete functions.
+	(init_varasm_status): New function.
+	(force_const_mem): Don't treat nested functions specially.
+	(find_pool_constant): Accept new arg F, search for constants in
+	that function's pool rather than the current one.  All callers
+	changed.
+	(get_pool_constant_for_function, get_pool_mode_for_function): New
+	functions.
+
+	* i386.c (init_386_machine_status): New function, mostly from
+	clear_386_stack_locals.
+	(struct machine_functions): Rename element names to avoid name
+	clashes.
+	(pic_label_rtx, pic_label_name, i386_stack_locals): New accessor
+	macros, replacing global variables.
+	(clear_386_stack_locals, save_386_machine_status,
+	restore_386_machine_status): Delete functions.
+	(override_options): Initialize init_machine_status.
+	* i386.h (INIT_EXPANDERS): Delete macro.
+	(save_386_machine_status, restore_386_machine_status,
+	clear_386_stack_locals): Delete declarations.
+
 Sat Sep  4 16:56:28 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (rptb_init): Renamed from *rptb_init.
