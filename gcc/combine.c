@@ -131,12 +131,6 @@ static int combine_successes;
 
 static int total_attempts, total_merges, total_extras, total_successes;
 
-/* Define a default value for REVERSIBLE_CC_MODE.
-   We can never assume that a condition code mode is safe to reverse unless
-   the md tells us so.  */
-#ifndef REVERSIBLE_CC_MODE
-#define REVERSIBLE_CC_MODE(MODE) 0
-#endif
 
 /* Vector mapping INSN_UIDs to cuids.
    The cuids are like uids but increase monotonically always.
@@ -414,7 +408,6 @@ static rtx gen_binary		PARAMS ((enum rtx_code, enum machine_mode,
 static rtx gen_unary		PARAMS ((enum rtx_code, enum machine_mode,
 					 enum machine_mode, rtx));
 static enum rtx_code simplify_comparison  PARAMS ((enum rtx_code, rtx *, rtx *));
-static int reversible_comparison_p  PARAMS ((rtx));
 static void update_table_tick	PARAMS ((rtx));
 static void record_value_for_reg  PARAMS ((rtx, rtx, rtx));
 static void check_promoted_subreg PARAMS ((rtx, rtx));
@@ -432,6 +425,8 @@ static void distribute_links	PARAMS ((rtx));
 static void mark_used_regs_combine PARAMS ((rtx));
 static int insn_cuid		PARAMS ((rtx));
 static void record_promoted_value PARAMS ((rtx, rtx));
+static rtx reversed_comparison  PARAMS ((rtx, enum machine_mode, rtx, rtx));
+static enum rtx_code combine_reversed_comparison_code PARAMS ((rtx));
 
 /* Substitute NEWVAL, an rtx expression, into INTO, a place in some
    insn.  The substitution can be undone by undo_all.  If INTO is already
@@ -3501,6 +3496,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
   rtx temp;
+  rtx reversed;
   int i;
 
   /* If this is a commutative operation, put a constant last and a complex
@@ -3922,10 +3918,9 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	 reversing the comparison code if valid.  */
       if (STORE_FLAG_VALUE == -1
 	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
-	  && reversible_comparison_p (XEXP (x, 0)))
-	return gen_rtx_combine (reverse_condition (GET_CODE (XEXP (x, 0))),
-				mode, XEXP (XEXP (x, 0), 0),
-				XEXP (XEXP (x, 0), 1));
+	  && (reversed = reversed_comparison (x, mode, XEXP (XEXP (x, 0), 0),
+					      XEXP (XEXP (x, 0), 1))))
+	return reversed;
 
       /* (ashiftrt foo C) where C is the number of bits in FOO minus 1
 	 is (lt foo (const_int 0)) if STORE_FLAG_VALUE is -1, so we can
@@ -4218,14 +4213,13 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	 is 1.  This produces better code than the alternative immediately
 	 below.  */
       if (GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
-	  && reversible_comparison_p (XEXP (x, 0))
 	  && ((STORE_FLAG_VALUE == -1 && XEXP (x, 1) == const1_rtx)
-	      || (STORE_FLAG_VALUE == 1 && XEXP (x, 1) == constm1_rtx)))
+	      || (STORE_FLAG_VALUE == 1 && XEXP (x, 1) == constm1_rtx))
+	  && (reversed = reversed_comparison (XEXP (x, 0), mode,
+					      XEXP (XEXP (x, 0), 0),
+					      XEXP (XEXP (x, 0), 1))))
 	return
-	  gen_unary (NEG, mode, mode,
-		     gen_binary (reverse_condition (GET_CODE (XEXP (x, 0))),
-				 mode, XEXP (XEXP (x, 0), 0),
-				 XEXP (XEXP (x, 0), 1)));
+	  gen_unary (NEG, mode, mode, reversed);
 
       /* If only the low-order bit of X is possibly nonzero, (plus x -1)
 	 can become (ashiftrt (ashift (xor x 1) C) C) where C is
@@ -4270,10 +4264,10 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
       if (STORE_FLAG_VALUE == 1
 	  && XEXP (x, 0) == const1_rtx
 	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 1))) == '<'
-	  && reversible_comparison_p (XEXP (x, 1)))
-	return gen_binary (reverse_condition (GET_CODE (XEXP (x, 1))), mode,
-			   XEXP (XEXP (x, 1), 0),
-			   XEXP (XEXP (x, 1), 1));
+	  && (reversed = reversed_comparison (XEXP (x, 1), mode,
+					      XEXP (XEXP (x, 1), 0),
+					      XEXP (XEXP (x, 1), 1))))
+	return reversed;
 
       /* (minus <foo> (and <foo> (const_int -pow2))) becomes
 	 (and <foo> (const_int pow2-1))  */
@@ -4626,27 +4620,31 @@ simplify_if_then_else (x)
   int comparison_p = GET_RTX_CLASS (true_code) == '<';
   rtx temp;
   int i;
+  enum rtx_code false_code;
+  rtx reversed;
 
   /* Simplify storing of the truth value.  */
   if (comparison_p && true == const_true_rtx && false == const0_rtx)
     return gen_binary (true_code, mode, XEXP (cond, 0), XEXP (cond, 1));
 
   /* Also when the truth value has to be reversed.  */
-  if (comparison_p && reversible_comparison_p (cond)
-      && true == const0_rtx && false == const_true_rtx)
-    return gen_binary (reverse_condition (true_code),
-		       mode, XEXP (cond, 0), XEXP (cond, 1));
+  if (comparison_p
+      && true == const0_rtx && false == const_true_rtx
+      && (reversed = reversed_comparison (cond, mode, XEXP (cond, 0),
+					  XEXP (cond, 1))))
+    return reversed;
 
   /* Sometimes we can simplify the arm of an IF_THEN_ELSE if a register used
      in it is being compared against certain values.  Get the true and false
      comparisons and see if that says anything about the value of each arm.  */
 
-  if (comparison_p && reversible_comparison_p (cond)
+  if (comparison_p
+      && ((false_code = combine_reversed_comparison_code (cond))
+	  != UNKNOWN)
       && GET_CODE (XEXP (cond, 0)) == REG)
     {
       HOST_WIDE_INT nzb;
       rtx from = XEXP (cond, 0);
-      enum rtx_code false_code = reverse_condition (true_code);
       rtx true_val = XEXP (cond, 1);
       rtx false_val = true_val;
       int swapped = 0;
@@ -4695,7 +4693,8 @@ simplify_if_then_else (x)
      arm, the false arm is the same as the first operand of the comparison, or
      the false arm is more complicated than the true arm.  */
 
-  if (comparison_p && reversible_comparison_p (cond)
+  if (comparison_p
+      && combine_reversed_comparison_code (cond) != UNKNOWN
       && (true == pc_rtx
 	  || (CONSTANT_P (true)
 	      && GET_CODE (false) != CONST_INT && false != pc_rtx)
@@ -4708,10 +4707,10 @@ simplify_if_then_else (x)
 	  || reg_mentioned_p (true, false)
 	  || rtx_equal_p (false, XEXP (cond, 0))))
     {
-      true_code = reverse_condition (true_code);
+      true_code = reversed_comparison_code (cond, NULL);
       SUBST (XEXP (x, 0),
-	     gen_binary (true_code, GET_MODE (cond), XEXP (cond, 0),
-			 XEXP (cond, 1)));
+	     reversed_comparison (cond, GET_MODE (cond), XEXP (cond, 0),
+				  XEXP (cond, 1)));
 
       SUBST (XEXP (x, 1), false);
       SUBST (XEXP (x, 2), true);
@@ -5211,6 +5210,7 @@ simplify_set (x)
       rtx cond = XEXP (src, 0);
       rtx true_val = const1_rtx;
       rtx false_arm, true_arm;
+      rtx reversed;
 
       if (GET_CODE (cond) == MULT)
 	{
@@ -5236,16 +5236,16 @@ simplify_set (x)
       /* Canonicalize if true_arm is the simpler one.  */
       if (GET_RTX_CLASS (GET_CODE (true_arm)) == 'o'
 	  && GET_RTX_CLASS (GET_CODE (false_arm)) != 'o'
-	  && reversible_comparison_p (cond))
+	  && (reversed = reversed_comparison_code (cond, GET_MODE (cond),
+						   XEXP (cond, 0),
+						   XEXP (cond, 1))))
 	{
 	  rtx temp = true_arm;
 
 	  true_arm = false_arm;
 	  false_arm = temp;
 
-	  cond = gen_rtx_combine (reverse_condition (GET_CODE (cond)),
-				  GET_MODE (cond), XEXP (cond, 0),
-				  XEXP (cond, 1));
+	  cond = reversed;
 	}
 
       src = gen_rtx_combine (IF_THEN_ELSE, GET_MODE (src),
@@ -5279,6 +5279,7 @@ simplify_logical (x, last)
   enum machine_mode mode = GET_MODE (x);
   rtx op0 = XEXP (x, 0);
   rtx op1 = XEXP (x, 1);
+  rtx reversed;
 
   switch (GET_CODE (x))
     {
@@ -5530,9 +5531,9 @@ simplify_logical (x, last)
       if (STORE_FLAG_VALUE == 1
 	  && op1 == const1_rtx
 	  && GET_RTX_CLASS (GET_CODE (op0)) == '<'
-	  && reversible_comparison_p (op0))
-	return gen_rtx_combine (reverse_condition (GET_CODE (op0)),
-				mode, XEXP (op0, 0), XEXP (op0, 1));
+	  && (reversed = reversed_comparison (op0, mode, XEXP (op0, 0),
+					      XEXP (op0, 1))))
+	return reversed;
 
       /* (lshiftrt foo C) where C is the number of bits in FOO minus 1
 	 is (lt foo (const_int 0)), so we can perform the above
@@ -5552,9 +5553,9 @@ simplify_logical (x, last)
 	      == (unsigned HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1))
 	  && op1 == const_true_rtx
 	  && GET_RTX_CLASS (GET_CODE (op0)) == '<'
-	  && reversible_comparison_p (op0))
-	return gen_rtx_combine (reverse_condition (GET_CODE (op0)),
-				mode, XEXP (op0, 0), XEXP (op0, 1));
+	  && (reversed = reversed_comparison (op0, mode, XEXP (op0, 0),
+					      XEXP (op0, 1))))
+	return reversed;
 
       break;
 
@@ -7344,12 +7345,11 @@ if_then_else_cond (x, ptrue, pfalse)
 
 	  if (GET_RTX_CLASS (GET_CODE (cond0)) == '<'
 	      && GET_RTX_CLASS (GET_CODE (cond1)) == '<'
-	      && reversible_comparison_p (cond1)
-	      && ((GET_CODE (cond0) == reverse_condition (GET_CODE (cond1))
+	      && ((GET_CODE (cond0) == combine_reversed_comparison_code (cond1)
 		   && rtx_equal_p (XEXP (cond0, 0), XEXP (cond1, 0))
 		   && rtx_equal_p (XEXP (cond0, 1), XEXP (cond1, 1)))
 		  || ((swap_condition (GET_CODE (cond0))
-		       == reverse_condition (GET_CODE (cond1)))
+		       == combine_reversed_comparison_code (cond1))
 		      && rtx_equal_p (XEXP (cond0, 0), XEXP (cond1, 1))
 		      && rtx_equal_p (XEXP (cond0, 1), XEXP (cond1, 0))))
 	      && ! side_effects_p (x))
@@ -7374,12 +7374,11 @@ if_then_else_cond (x, ptrue, pfalse)
 
 	  if (GET_RTX_CLASS (GET_CODE (cond0)) == '<'
 	      && GET_RTX_CLASS (GET_CODE (cond1)) == '<'
-	      && reversible_comparison_p (cond1)
-	      && ((GET_CODE (cond0) == reverse_condition (GET_CODE (cond1))
+	      && ((GET_CODE (cond0) == combine_reversed_comparison_code (cond1)
 		   && rtx_equal_p (XEXP (cond0, 0), XEXP (cond1, 0))
 		   && rtx_equal_p (XEXP (cond0, 1), XEXP (cond1, 1)))
 		  || ((swap_condition (GET_CODE (cond0))
-		       == reverse_condition (GET_CODE (cond1)))
+		       == combine_reversed_comparison_code (cond1))
 		      && rtx_equal_p (XEXP (cond0, 0), XEXP (cond1, 1))
 		      && rtx_equal_p (XEXP (cond0, 1), XEXP (cond1, 0))))
 	      && ! side_effects_p (x))
@@ -7527,7 +7526,7 @@ known_cond (x, cond, reg, val)
 	      if (comparison_dominates_p (cond, code))
 		return const_true_rtx;
 
-	      code = reverse_condition (code);
+	      code = combine_reversed_comparison_code (x);
 	      if (code != UNKNOWN
 		  && comparison_dominates_p (cond, code))
 		return const0_rtx;
@@ -10705,20 +10704,21 @@ simplify_comparison (code, pop0, pop1)
 
 	  /* Check for the cases where we simply want the result of the
 	     earlier test or the opposite of that result.  */
-	  if (code == NE
-	      || (code == EQ && reversible_comparison_p (op0))
+	  if (code == NE || code == EQ
 	      || (GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT
 		  && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT
 		  && (STORE_FLAG_VALUE
 		      & (((HOST_WIDE_INT) 1
 			  << (GET_MODE_BITSIZE (GET_MODE (op0)) - 1))))
-		  && (code == LT
-		      || (code == GE && reversible_comparison_p (op0)))))
+		  && (code == LT || (code == GE))))
 	    {
 	      code = (code == LT || code == NE
-		      ? GET_CODE (op0) : reverse_condition (GET_CODE (op0)));
-	      op0 = tem, op1 = tem1;
-	      continue;
+		      ? GET_CODE (op0) : combine_reversed_comparison_code (op0));
+	      if (code != UNKNOWN)
+		{
+		  op0 = tem, op1 = tem1;
+		  continue;
+		}
 	    }
 	  break;
 
@@ -11121,42 +11121,38 @@ simplify_comparison (code, pop0, pop1)
   return code;
 }
 
-/* Return 1 if we know that X, a comparison operation, is not operating
-   on a floating-point value or is EQ or NE, meaning that we can safely
-   reverse it.  */
-
-static int
-reversible_comparison_p (x)
-     rtx x;
+/* Like jump.c' reversed_comparison_code, but use combine infrastructure for
+   searching backward.  */
+enum rtx_code
+combine_reversed_comparison_code (exp)
+     rtx exp;
 {
-  if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-      || flag_fast_math
-      || GET_CODE (x) == NE || GET_CODE (x) == EQ
-      || GET_CODE (x) == UNORDERED || GET_CODE (x) == ORDERED)
-    return 1;
+   enum rtx_code code1 = reversed_comparison_code (exp, NULL);
+   rtx x;
 
-  switch (GET_MODE_CLASS (GET_MODE (XEXP (x, 0))))
-    {
-    case MODE_INT:
-    case MODE_PARTIAL_INT:
-    case MODE_COMPLEX_INT:
-      return 1;
-
-    case MODE_CC:
-      /* If the mode of the condition codes tells us that this is safe,
-	 we need look no further.  */
-      if (REVERSIBLE_CC_MODE (GET_MODE (XEXP (x, 0))))
-	return 1;
-
-      /* Otherwise try and find where the condition codes were last set and
-	 use that.  */
-      x = get_last_value (XEXP (x, 0));
-      return (x && GET_CODE (x) == COMPARE
-	      && ! FLOAT_MODE_P (GET_MODE (XEXP (x, 0))));
-
-    default:
-      return 0;
-    }
+   if (code1 != UNKNOWN
+       || GET_MODE_CLASS (GET_MODE (XEXP (exp, 0))) != MODE_CC)
+     return code1;
+   /* Otherwise try and find where the condition codes were last set and
+      use that.  */
+   x = get_last_value (XEXP (x, 0));
+   if (GET_CODE (x) != COMPARE)
+     return UNKNOWN;
+   return reversed_comparison_code_parts (GET_CODE (exp),
+					  XEXP (x, 0), XEXP (x, 1), NULL);
+}
+/* Return comparison with reversed code of EXP and operands OP0 and OP1.
+   Return NULL_RTX in case we fail to do the reversal.  */
+static rtx
+reversed_comparison (exp, mode, op0, op1)
+     rtx exp, op0, op1;
+     enum machine_mode mode;
+{
+  enum rtx_code reversed_code = combine_reversed_comparison_code (exp);
+  if (reversed_code == UNKNOWN)
+    return NULL_RTX;
+  else
+    return gen_binary (reversed_code, mode, op0, op1);
 }
 
 /* Utility function for following routine.  Called when X is part of a value
