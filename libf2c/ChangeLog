@@ -2,7 +2,7 @@
 
 	* libU77/datetime_.c (G77_date_and_time_0): Return milliseconds as
 	such, not as microseconds.
-	(scopy): Declare.
+	(s_copy): Declare.
 
 1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
 
