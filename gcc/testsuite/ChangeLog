@@ -1,3 +1,7 @@
+2002-09-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* lib/target-supports.exp (check_weak_available): Handle solaris2.
+
 2002-09-27  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcc.c-torture/execute/loop-15.c: New.
