@@ -48,7 +48,11 @@
 	.type	_init,#function
 	.align	4
 _init:
+#ifdef __sparcv9
+	save	%sp, -176, %sp
+#else
 	save	%sp, -96, %sp
+#endif
 
 
 	.section	".fini"
@@ -57,4 +61,8 @@ _init:
 	.type	_fini,#function
 	.align	4
 _fini:
+#ifdef __sparcv9
+	save	%sp, -176, %sp
+#else
 	save	%sp, -96, %sp
+#endif

@@ -1,3 +1,17 @@
+Wed Sep  9 01:32:01 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	Add preliminary native sparcv9 Solaris support.
+	* configure.in: Recognize sparv9-*-solaris2*
+	* configure: rebuilt
+	* config.sub: Recognize sparcv9 just like sparc64.
+	* config/sparc/sol2-c1.asm config/sparc/sol2-ci.asm
+	config/sparc/sol2-cn.asm: Macroize so it can be shared between
+	32-bit and 64-bit Solaris systems.
+	* config/sparc/t-sol2: Assemble those with cpp.
+	* config/sparc/sparc.h (TARGET_CPU_sparcv9): New alias for v9.
+	(*TF*_LIBCALL): If ARCH64 use V9 names.
+	* config/sparc/{xm-sysv4-64,sol2-sld-64}.h: New	files.
+
 Wed Sep  9 01:07:30 1998  Jakub Jelinek  <jj@sunsite.ms.mff.cuni.cz>
 
 	* config/sparc/sparc.h (TARGET_CM_MEDMID): Fix documentation.
