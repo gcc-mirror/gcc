@@ -5164,7 +5164,7 @@ gnu/regexp/MessagesBundle_fr.properties \
 org/ietf/jgss/MessagesBundle.properties
 
 propertyo_files = $(property_files:.properties=.properties.lo) 
-CLEANFILES = libgcj-@gcc_version@.jar
+CLEANFILES = libgcj-@gcc_version@.jar classes.stamp
 SUFFIXES = .class .java .h .properties
 ordinary_nat_headers = \
     $(ordinary_java_source_files:.java=.h) \
@@ -25828,60 +25828,44 @@ $(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDEN
 
 # Compile all classfiles in one go.
 
-@ONESTEP_TRUE@libgcj-@gcc_version@.jar: $(all_java_source_files)
-@ONESTEP_TRUE@	-@rm -f libgcj-@gcc_version@.jar
+@ONESTEP_TRUE@classes.stamp: $(all_java_source_files)
 @ONESTEP_TRUE@	@echo Compiling Java sourcefiles...
 @ONESTEP_TRUE@	@: $(call write_entries_to_file,$?,libgcj.sourcelist)
 @ONESTEP_TRUE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(BOOTCLASSPATH) -d $(here) @libgcj.sourcelist
-@ONESTEP_TRUE@	(find java gnu javax org -type d -o -type f -name '*.class'; \
-@ONESTEP_TRUE@	for file in $(all_property_files); do \
-@ONESTEP_TRUE@	  echo "x-C" | sed -e 's/^.//'; \
-@ONESTEP_TRUE@	  echo $(srcdir); \
-@ONESTEP_TRUE@	  echo $$file; \
-@ONESTEP_TRUE@	done) | \
-@ONESTEP_TRUE@	  sed -e '/\/xlib/d' -e '/\/\.libs/d' -e '/\/\.deps/d' | \
-@ONESTEP_TRUE@	  $(ZIP) -cfM0E@ $@
-@ONESTEP_TRUE@	for dir in sax w3c_dom; do \
-@ONESTEP_TRUE@	  (cd external/$$dir; \
-@ONESTEP_TRUE@	  find org -type f -name '*.class' -print | while read file; do \
-@ONESTEP_TRUE@	    echo "x-C" | sed -e 's/^.//'; \
-@ONESTEP_TRUE@	    echo external/$$dir; \
-@ONESTEP_TRUE@	    echo $$file; \
-@ONESTEP_TRUE@          done) | \
-@ONESTEP_TRUE@	  $(ZIP) -ufM0E@ $@; \
-@ONESTEP_TRUE@	done
 
-# This next rule seems backward, but reflects the fact
-# that 1) all classfiles are compiled in one go when the
-# libgcj jarfile is built and 2) anything which depends
-# on a particular .class file must wait until the jarfile
-# is built.
-@ONESTEP_TRUE@$(all_java_class_files): libgcj-@gcc_version@.jar
+# This next rule seems backward, but reflects the fact that 1) all
+# classfiles are compiled in one go when classes.stamp is built and 2)
+# anything which depends on a particular .class file must wait until
+# this file is built.
+@ONESTEP_TRUE@$(all_java_class_files): classes.stamp
 
 # Compile each classfile individually.
 
 @ONESTEP_FALSE@.java.class:
 @ONESTEP_FALSE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(BOOTCLASSPATH) -d $(here) $<
 
-@ONESTEP_FALSE@libgcj-@gcc_version@.jar: $(all_java_class_files) $(all_property_files)
-@ONESTEP_FALSE@	-@rm -f libgcj-@gcc_version@.jar
-@ONESTEP_FALSE@	(find java gnu javax org -type d -o -type f -name '*.class'; \
-@ONESTEP_FALSE@	for file in $(all_property_files); do \
-@ONESTEP_FALSE@	  echo "x-C" | sed -e 's/^.//'; \
-@ONESTEP_FALSE@	  echo $(srcdir); \
-@ONESTEP_FALSE@	  echo $$file; \
-@ONESTEP_FALSE@	done) | \
-@ONESTEP_FALSE@	  sed -e '/\/xlib/d' -e '/\/\.libs/d' -e '/\/\.deps/d' | \
-@ONESTEP_FALSE@	  $(ZIP) -cfM0E@ $@
-@ONESTEP_FALSE@	for dir in sax w3c_dom; do \
-@ONESTEP_FALSE@	  (cd external/$$dir; \
-@ONESTEP_FALSE@	  find org -type f -name '*.class' -print | while read file; do \
-@ONESTEP_FALSE@	    echo "x-C" | sed -e 's/^.//'; \
-@ONESTEP_FALSE@	    echo external/$$dir; \
-@ONESTEP_FALSE@	    echo $$file; \
-@ONESTEP_FALSE@          done) | \
-@ONESTEP_FALSE@	  $(ZIP) -ufM0E@ $@; \
-@ONESTEP_FALSE@	done
+@ONESTEP_FALSE@classes.stamp: $(all_java_class_files) $(all_property_files)
+@ONESTEP_FALSE@	echo > classes.stamp
+
+libgcj-@gcc_version@.jar: classes.stamp
+	-@rm -f libgcj-@gcc_version@.jar
+	(find java gnu javax org -type d -o -type f -name '*.class'; \
+	for file in $(all_property_files); do \
+	  echo "x-C" | sed -e 's/^.//'; \
+	  echo $(srcdir); \
+	  echo $$file; \
+	done) | \
+	  sed -e '/\/xlib/d' -e '/\/\.libs/d' -e '/\/\.deps/d' | \
+	  $(ZIP) -cfM0E@ $@
+	for dir in sax w3c_dom; do \
+	  (cd external/$$dir; \
+	  find org -type f -name '*.class' -print | while read file; do \
+	    echo "x-C" | sed -e 's/^.//'; \
+	    echo external/$$dir; \
+	    echo $$file; \
+          done) | \
+	  $(ZIP) -ufM0E@ $@; \
+	done
 
 mostlyclean-local:
 	find . -name '*.lo' -print | xargs $(LIBTOOL) rm -f
@@ -26185,7 +26169,7 @@ texinfo: TexinfoDoclet.class
 	javadoc -outfile $(srcdir)/doc/java-util-jar.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/util/jar/*.java
 	javadoc -outfile $(srcdir)/doc/java-util-zip.texi -doclet TexinfoDoclet -sourcepath .'$(CLASSPATH_SEPARATOR)'$(srcdir) $(srcdir)/java/util/zip/*.java
 
-all-recursive: libgcj-@gcc_version@.jar $(nat_headers) $(xlib_nat_headers)
+all-recursive: classes.stamp $(nat_headers) $(xlib_nat_headers)
 
 # Multilib support.
 .PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \
