@@ -79,7 +79,7 @@ extern int __objc_runtime_threads_alive;
 
 BOOL __objc_responds_to (id object, SEL sel); /* for internal use only! */
 SEL  __sel_register_typed_name (const char*, const char*, 
-				struct objc_selector*);
+				struct objc_selector*, BOOL is_const);
 
 #endif /* not __objc_runtime_INCLUDE_GNU */
 
