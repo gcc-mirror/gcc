@@ -935,7 +935,8 @@ __gnat_set_file_time_name (name, time_stamp)
      char *name;
      time_t time_stamp;
 {
-#if defined (__EMX__) || defined (MSDOS) || defined (_WIN32)
+#if defined (__EMX__) || defined (MSDOS) || defined (_WIN32) \
+    || defined (__vxworks)
 #elif defined (VMS)
   struct FAB fab;
   struct NAM nam;
