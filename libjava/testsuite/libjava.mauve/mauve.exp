@@ -49,7 +49,8 @@ proc mauve_compute_uses {aName} {
       # Now add all inner classes
       foreach inner [glob -nocomplain [file rootname $file]$*.class] {
 	# Prevent excessive escaping by replacing $ with a ^ in the .o name
-	set inner [string map {$ ^} [file rootname $inner]].o
+	set inner [file rootname $inner].o
+	regsub -all "\\$" $inner "\^" inner
 	lappend uses($item) $inner
       }
     }
@@ -186,7 +187,8 @@ proc test_mauve {} {
       if {! [file exists $obj]} then {
 	verbose "compiling $obj for test of $class"
 	# The .class file does contain a $, but we can quote it between "'"s.
-	set srcfile [string map {^ $} [file rootname $obj]].class
+	set srcfile [file rootname $obj].class
+	regsub -all "\\^" $srcfile "\$" srcfile
 	set x [libjava_prune_warnings \
 		 [libjava_tcompile '[pwd]/$srcfile' $obj object $compile_args]]
 	if {$x != ""} then {
