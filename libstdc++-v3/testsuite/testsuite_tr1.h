@@ -121,18 +121,18 @@ namespace __gnu_test
   { operator int() const; };
 
   class AbstractClass
-  { 
+  {
     virtual void rotate(int) = 0;
     virtual ~AbstractClass();
   };
 
   class PolymorphicClass
-  { 
+  {
     virtual void rotate(int);
     virtual ~PolymorphicClass();
   };
 
-  class DerivedPolymorphic : public PolymorphicClass { }; 
+  class DerivedPolymorphic : public PolymorphicClass { };
 
   union UnionType { };
 
@@ -151,14 +151,14 @@ namespace __gnu_test
     {
       ++live_objects;
     }
-    
+
     ~do_truncate_float_t()
     {
       --live_objects;
     }
 
     int operator()(float x) { return (int)x; }
-    
+
     static int live_objects;
   };
 
@@ -182,21 +182,21 @@ namespace __gnu_test
     }
 
     long operator()(double x) { return (long)x; }
-    
+
     static int live_objects;
   };
-  
+
   int do_truncate_double_t::live_objects = 0;
-  
+
   struct X
   {
     int bar;
-    
+
     int foo()                   { return 1; }
     int foo_c() const           { return 2; }
     int foo_v()  volatile       { return 3; }
     int foo_cv() const volatile { return 4; }
   };
-}; // namespace __gnu_test
+} // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_TR1_H

@@ -1,3 +1,51 @@
+2005-03-31  Chris Jefferson  <chris@bubblescope.net>
+
+        * include/tr1/tuple: Support iteration via tuple_iterate.h.
+        * include/tr1/tuple_iterate.h: Iteration file for tuple.
+
+2005-03-31  Douglas Gregor  <doug.gregor@gmail.com>
+
+        * include/Makefile.am (tr1_headers): Add bind and mu repetition
+        headers and reference_wrapper<> forwarding header.
+        * include/Makefile.in: Regenerate.
+        * include/tr1/bind_iterate.h: Implementation of function call
+        operators for the function object returned from tr1::bind().
+        * include/tr1/bind_repeat.h: Bind-specific repetition header,
+        akin to include/tr1/repeat.h.
+        * include/tr1/functional (_Mem_fn): Bug fix: declare result member
+        template for use with result_of.
+        (is_bind_expression): New.
+        (is_placeholder): New.
+        (_Placeholder): New. Placeholder type for bind.
+        (_Mu): New. Implementation detail of bind.
+        (_Bind, _Bind_result): New. Function objects returned by bind.
+        (_GLIBCXX_JOIN): New. Required to create bind placeholders.
+        * include/tr1/functional_iterate.h (_Bind, _Bind_result, bind):
+        New. Implementation of tr1::bind.
+        * include/tr1/mu_iterate.h (_Mu): result template and operator()
+        for the _Mu helper to bind.
+        * include/tr1/ref_fwd.h (reference_wrapper): Forward declaration
+        used by tuple header.
+        (ref): Ditto.
+        (cref): Ditto.
+        * include/tr1/repeat.h: Add bind-specific repetition macros.
+        * include/tr1/tuple: Use reference_wrapper forwarding header for
+        initial definitions, then include <tr1/functional> at the end, to
+        make the circular dependencies work.
+        (tie): Support zero-argument tie() function.
+        * testsuite/tr1/3_function_objects/bind/all_bound.cc: New test of
+        bind() functionality with parameters bound.
+        * testsuite/tr1/3_function_objects/bind/nested.cc: New test of
+        nested bind() expressions.
+        * testsuite/tr1/3_function_objects/bind/placeholders.cc: New test
+        of bind() placeholders.
+        * testsuite/tr1/3_function_objects/bind/ref.cc: New test of bind()
+        with arguments bound via reference_wrapper<>.
+        * scripts/gen_includers.pl: Generate the repetitive part of
+	include/tr1/repeat.h.
+	* scripts/gen_bind_includers.pl: Generate the repetitive part of
+	include/tr1/bind_repeat.h. 
+	
 2005-03-30  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* testsuite/Makefile.am (CXX): Use ${SHELL}.
