@@ -1,6 +1,15 @@
 2003-09-25  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/SelectorImpl.java
+	(implSelect): Renamed from java_do_select.
+	(select): Call native implSelect() and add support for Thread
+	interruption.
+	* gnu/java/nio/natSelectorImpl.cc
+	(implSelect): Renamed from java_do_select.
+
+2003-09-25  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/SelectorImpl.java
 	(selectNow): Made final, throws IOException.
 	(select): Likewise.
 	(getFDsAsArray): Made final.

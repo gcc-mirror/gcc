@@ -42,8 +42,8 @@ helper_get_filedescriptors (jintArray& fdArray, fd_set fds)
 }
 
 jint
-gnu::java::nio::SelectorImpl::java_do_select (jintArray read, jintArray write,
-                                              jintArray except, jlong timeout)
+gnu::java::nio::SelectorImpl::implSelect (jintArray read, jintArray write,
+                                          jintArray except, jlong timeout)
 {
   jint result;
   int max_fd = 0;

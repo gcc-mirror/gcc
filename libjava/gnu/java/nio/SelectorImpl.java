@@ -93,8 +93,8 @@ public class SelectorImpl extends AbstractSelector
   }
 
   // A timeout value of -1 means block forever.
-  private static native int java_do_select (int[] read, int[] write,
-                                            int[] except, long timeout);
+  private static native int implSelect (int[] read, int[] write,
+                                        int[] except, long timeout);
 
   private final int[] getFDsAsArray (int ops)
   {
@@ -143,18 +143,18 @@ public class SelectorImpl extends AbstractSelector
         return 0;
 	    }
 
-    int ret = 0;
-
     deregisterCancelledKeys();
 
     // Set only keys with the needed interest ops into the arrays.
     int[] read = getFDsAsArray (SelectionKey.OP_READ | SelectionKey.OP_ACCEPT);
     int[] write = getFDsAsArray (SelectionKey.OP_WRITE | SelectionKey.OP_CONNECT);
     int[] except = new int [0]; // FIXME: We dont need to check this yet
-
-    // Call the native select () on all file descriptors.
     int anzahl = read.length + write.length + except.length;
-    ret = java_do_select (read, write, except, timeout);
+
+    // Call the native select() on all file descriptors.
+    begin();
+    int result = implSelect (read, write, except, timeout);
+    end();
 
     Iterator it = keys.iterator ();
 
@@ -216,7 +216,7 @@ public class SelectorImpl extends AbstractSelector
       }
 
     deregisterCancelledKeys();
-    return ret;
+    return result;
   }
     
   public final Set selectedKeys()
