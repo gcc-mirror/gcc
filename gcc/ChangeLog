@@ -1,3 +1,9 @@
+2004-11-11  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vectorizer.c (update_phi_nodes_for_guard): Call reverse_phis.
+	(vect_update_ivs_after_vectorizer): Update function documentation.
+	Avoid quadratic behavior and direct write to PHI_ARG_DEF.
+
 2004-11-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/arm/arm.c: Fix a comment typo.
