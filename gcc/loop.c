@@ -510,15 +510,21 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
      this prevents low overhead loop instructions from being used.  */
   indirect_jump_in_function = indirect_jump_in_function_p (f);
 
-  /* Now scan the loops, last ones first, since this means inner ones are done
-     before outer ones.  */
+  /* Allocate and initialize auxiliary loop information.  */
   for (i = max_loop_num - 1; i >= 0; i--)
     {
       struct loop *loop = &loops->array[i];
 
       loop->info = (struct loop_info *) alloca (sizeof (struct loop_info));
       memset (loop->info, 0, sizeof (struct loop_info));
-      
+    }
+
+  /* Now scan the loops, last ones first, since this means inner ones are done
+     before outer ones.  */
+  for (i = max_loop_num - 1; i >= 0; i--)
+    {
+      struct loop *loop = &loops->array[i];
+
       if (! loop->invalid && loop->end)
 	scan_loop (loop, unroll_p, bct_p);
     }
