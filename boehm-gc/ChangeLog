@@ -1,3 +1,8 @@
+2003-09-20    <green@redhat.com>
+
+	* include/private/gcconfig.h: Don't check for __XSCALE__.  Instead
+	check for __arm__ or __thumb__.
+
 2003-09-09  Alan Modra  <amodra@bigpond.net.au>
 
 	* configure: Regenerate.
