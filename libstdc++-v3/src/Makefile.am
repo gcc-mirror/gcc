@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.26 2000/08/15 07:42:36 aoliva Exp $
+## $Id: Makefile.am,v 1.27 2000/08/16 04:11:29 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -314,14 +314,14 @@ wstring-inst.o: string-inst.cc
 wstring-inst.lo: string-inst.cc
 	$(LTCXXCOMPILE) -fimplicit-templates -c -DC=wchar_t $< -o $@
 
-all: INCLUDES
-INCLUDES: Makefile
+all: libstdc++.INC
+libstdc++.INC: Makefile
 	$(MAKE) \
 	  top_builddir=`CDPATH=:. && cd $(top_builddir) && pwd` \
 	  top_srcdir=`CDPATH=:. && cd $(top_srcdir) && pwd` \
-	  tmp-INCLUDES
-	-rm -f INCLUDES
-	mv tmp-INCLUDES INCLUDES
+	  tmp-$@
+	-rm -f $@
+	mv tmp-$@ $@
 
-tmp-INCLUDES: Makefile
+tmp-libstdc++.INC: Makefile
 	echo -I$(top_builddir) $(INCLUDES) > $@
