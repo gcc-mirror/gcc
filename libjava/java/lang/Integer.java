@@ -58,7 +58,7 @@ public final class Integer extends Number implements Comparable
    * The primitive type <code>int</code> is represented by this 
    * <code>Class</code> object.
    */
-  public static final Class TYPE = VMClassLoader.getPrimitiveClass ("int");
+  public static final Class TYPE = VMClassLoader.getPrimitiveClass ('I');
 
   /**
    * The immutable value of this Integer.

@@ -56,7 +56,7 @@ public final class Short extends Number implements Comparable
    * The primitive type <code>short</code> is represented by this 
    * <code>Class</code> object.
    */
-  public static final Class TYPE = VMClassLoader.getPrimitiveClass("short");
+  public static final Class TYPE = VMClassLoader.getPrimitiveClass('S');
 
   /**
    * The immutable value of this Short.

@@ -80,7 +80,7 @@ public final class Double extends Number implements Comparable
    * The primitive type <code>double</code> is represented by this
    * <code>Class</code> object.
    */
-  public static final Class TYPE = VMClassLoader.getPrimitiveClass ("double");
+  public static final Class TYPE = VMClassLoader.getPrimitiveClass('D');
 
   /**
    * The immutable value of this Double.

@@ -1,3 +1,19 @@
+2001-10-25  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/lang/VMClassLoader.java (getPrimitiveClass): Now native. Now 
+	takes a jchar type-code argument, not a string. 
+	* java/lang/natClassLoader.cc (VMClassLoader::getPrimitiveClass):
+	New method. Just call _Jv_FindClassFromSignature.
+	* java/lang/Boolean.java (TYPE): Initialize from 
+	VMClassLoader.getPrimitiveClass using type-code.
+	* java/lang/Character.java (TYPE): Likewise.
+	* java/lang/Double.java (TYPE): Likewise.
+	* java/lang/Float.java (TYPE): Likewise.
+	* java/lang/Integer.java (TYPE): Likewise.
+	* java/lang/Long.java (TYPE): Likewise.
+	* java/lang/Short.java (TYPE): Likewise.
+	* java/lang/Void.java (TYPE): Likewise.
+
 2001-10-25  Hans Boehm <Hans_Boehm@hp.com>
 
 	* include/boehm-gc.h: Call thread local allocation functions
