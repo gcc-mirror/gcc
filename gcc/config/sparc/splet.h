@@ -21,5 +21,11 @@ Boston, MA 02111-1307, USA.  */
 
 #include "sparc/aout.h"
 
+/* The sparclet doesn't have an fpu.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_APP_REGS + MASK_EPILOGUE)
+
+/* -mlive-g0 is only supported on the sparclet.  */
+#undef SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES \
+{"live-g0", MASK_LIVE_G0},
