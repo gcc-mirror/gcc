@@ -2089,11 +2089,12 @@ set_label_offsets (x, insn, initial_p)
 	  set_label_offsets (XEXP (tem, 0), insn, 1);
       return;
 
+    case PARALLEL:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
-      /* Each of the labels in the address vector must be at their initial
-	 offsets.  We want the first field for ADDR_VEC and the second
-	 field for ADDR_DIFF_VEC.  */
+      /* Each of the labels in the parallel or address vector must be
+	 at their initial offsets.  We want the first field for PARALLEL
+	 and ADDR_VEC and the second field for ADDR_DIFF_VEC.  */
 
       for (i = 0; i < (unsigned) XVECLEN (x, code == ADDR_DIFF_VEC); i++)
 	set_label_offsets (XVECEXP (x, code == ADDR_DIFF_VEC, i),
