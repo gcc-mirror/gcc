@@ -110,6 +110,10 @@ typedef struct rtx_def
   /* The kind of expression this is.  */
   enum rtx_code code : 15;
 #endif
+
+  /* Used by the garbage collector.  */
+  unsigned gc_mark : 1;
+
   /* The kind of value the expression has.  */
 #ifdef ONLY_INT_FIELDS
   int mode : 8;
@@ -171,9 +175,6 @@ typedef struct rtx_def
      1 in a MEM if the MEM refers to a scalar, rather than a member of
      an aggregate.  */
   unsigned frame_related : 1;
-
-  /* Used by the garbage collector.  */
-  unsigned gc_mark : 1;
 
   /* The first element of the operands of this rtx.
      The number of operands and their types are controlled
