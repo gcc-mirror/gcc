@@ -1219,12 +1219,12 @@ emit_block_move (x, y, size, align)
 	}
 
 #ifdef TARGET_MEM_FUNCTIONS
-      emit_library_call (memcpy_libfunc, 1,
+      emit_library_call (memcpy_libfunc, 0,
 			 VOIDmode, 3, XEXP (x, 0), Pmode,
 			 XEXP (y, 0), Pmode,
 			 convert_to_mode (Pmode, size, 1), Pmode);
 #else
-      emit_library_call (bcopy_libfunc, 1,
+      emit_library_call (bcopy_libfunc, 0,
 			 VOIDmode, 3, XEXP (y, 0), Pmode,
 			 XEXP (x, 0), Pmode,
 			 convert_to_mode (Pmode, size, 1), Pmode);
@@ -1328,12 +1328,12 @@ clear_storage (object, size)
   if (GET_MODE (object) == BLKmode)
     {
 #ifdef TARGET_MEM_FUNCTIONS
-      emit_library_call (memset_libfunc, 1,
+      emit_library_call (memset_libfunc, 0,
 			 VOIDmode, 3,
 			 XEXP (object, 0), Pmode, const0_rtx, Pmode,
 			 GEN_INT (size), Pmode);
 #else
-      emit_library_call (bzero_libfunc, 1,
+      emit_library_call (bzero_libfunc, 0,
 			 VOIDmode, 2,
 			 XEXP (object, 0), Pmode,
 			 GEN_INT (size), Pmode);
@@ -1696,11 +1696,11 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	     to force it to pop the bcopy-arguments right away.  */
 	  NO_DEFER_POP;
 #ifdef TARGET_MEM_FUNCTIONS
-	  emit_library_call (memcpy_libfunc, 1,
+	  emit_library_call (memcpy_libfunc, 0,
 			     VOIDmode, 3, temp, Pmode, XEXP (xinner, 0), Pmode,
 			     size, Pmode);
 #else
-	  emit_library_call (bcopy_libfunc, 1,
+	  emit_library_call (bcopy_libfunc, 0,
 			     VOIDmode, 3, XEXP (xinner, 0), Pmode, temp, Pmode,
 			     size, Pmode);
 #endif
@@ -1818,7 +1818,16 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 
    NO_QUEUE will be true if and only if the library call is a `const' call
    which will be enclosed in REG_LIBCALL/REG_RETVAL notes; it is equivalent
-   to the variable is_const in expand_call.  */
+   to the variable is_const in expand_call.
+
+   NO_QUEUE must be true for const calls, because if it isn't, then
+   any pending increment will be emitted between REG_LIBCALL/REG_RETVAL notes,
+   and will be lost if the libcall sequence is optimized away.
+
+   NO_QUEUE must be false for non-const calls, because if it isn't, the
+   call insn will have its CONST_CALL_P bit set, and it will be incorrectly
+   optimized.  For instance, the instruction scheduler may incorrectly
+   move memory references across the non-const call.  */
 
 void
 emit_library_call (va_alist)
@@ -2148,12 +2157,12 @@ expand_assignment (to, from, want_value, suggest_reg)
       rtx size = expr_size (from);
 
 #ifdef TARGET_MEM_FUNCTIONS
-      emit_library_call (memcpy_libfunc, 1,
+      emit_library_call (memcpy_libfunc, 0,
 			 VOIDmode, 3, XEXP (to_rtx, 0), Pmode,
 			 XEXP (from_rtx, 0), Pmode,
 			 size, Pmode);
 #else
-      emit_library_call (bcopy_libfunc, 1,
+      emit_library_call (bcopy_libfunc, 0,
 			 VOIDmode, 3, XEXP (from_rtx, 0), Pmode,
 			 XEXP (to_rtx, 0), Pmode,
 			 size, Pmode);
@@ -2350,10 +2359,10 @@ store_expr (exp, target, suggest_reg)
 	      if (size != const0_rtx)
 		{
 #ifdef TARGET_MEM_FUNCTIONS
-		  emit_library_call (memset_libfunc, 1, VOIDmode, 3,
+		  emit_library_call (memset_libfunc, 0, VOIDmode, 3,
 				     temp, Pmode, const0_rtx, Pmode, size, Pmode);
 #else
-		  emit_library_call (bzero_libfunc, 1, VOIDmode, 2,
+		  emit_library_call (bzero_libfunc, 0, VOIDmode, 2,
 				     temp, Pmode, size, Pmode);
 #endif
 		}

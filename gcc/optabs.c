@@ -1708,12 +1708,12 @@ emit_cmp_insn (x, y, comparison, size, mode, unsignedp, align)
 #endif
 	{
 #ifdef TARGET_MEM_FUNCTIONS
-	  emit_library_call (memcmp_libfunc, 1,
+	  emit_library_call (memcmp_libfunc, 0,
 			     TYPE_MODE (integer_type_node), 3,
 			     XEXP (x, 0), Pmode, XEXP (y, 0), Pmode,
 			     size, Pmode);
 #else
-	  emit_library_call (bcmp_libfunc, 1,
+	  emit_library_call (bcmp_libfunc, 0,
 			     TYPE_MODE (integer_type_node), 3,
 			     XEXP (x, 0), Pmode, XEXP (y, 0), Pmode,
 			     size, Pmode);
