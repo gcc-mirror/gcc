@@ -100,6 +100,10 @@ static void path_include		PARAMS ((cpp_reader *,
 static void initialize_builtins		PARAMS ((cpp_reader *));
 static void append_include_chain	PARAMS ((cpp_reader *,
 						 char *, int, int));
+struct file_name_list * remove_dup_dir	PARAMS ((cpp_reader *,
+						 struct file_name_list *));
+struct file_name_list * remove_dup_dirs PARAMS ((cpp_reader *,
+						 struct file_name_list *));
 static void merge_include_chains	PARAMS ((cpp_reader *));
 
 static void initialize_dependency_output PARAMS ((cpp_reader *));
@@ -267,6 +271,51 @@ append_include_chain (pfile, dir, path, cxx_aware)
     }
 }
 
+/* Handle a duplicated include path.  PREV is the link in the chain
+   before the duplicate.  The duplicate is removed from the chain and
+   freed.  Returns PREV.  */
+struct file_name_list *
+remove_dup_dir (pfile, prev)
+     cpp_reader *pfile;
+     struct file_name_list *prev;
+{
+  struct file_name_list *cur = prev->next;
+
+  if (CPP_OPTION (pfile, verbose))
+    fprintf (stderr, _("ignoring duplicate directory \"%s\"\n"), cur->name);
+
+  prev->next = cur->next;
+  free (cur->name);
+  free (cur);
+
+  return prev;
+}
+
+/* Remove duplicate directories from a chain.  Returns the tail of the
+   chain, or NULL if the chain is empty.  This algorithm is quadratic
+   in the number of -I switches, which is acceptable since there
+   aren't usually that many of them.  */
+struct file_name_list *
+remove_dup_dirs (pfile, head)
+     cpp_reader *pfile;
+     struct file_name_list *head;
+{
+  struct file_name_list *prev = NULL, *cur, *other;
+
+  for (cur = head; cur; cur = cur->next)
+    {
+      for (other = head; other != cur; other = other->next)
+        if (INO_T_EQ (cur->ino, other->ino) && cur->dev == other->dev)
+	  {
+	    cur = remove_dup_dir (pfile, prev);
+	    break;
+	  }
+      prev = cur;
+    }
+
+  return prev;
+}
+
 /* Merge the four include chains together in the order quote, bracket,
    system, after.  Remove duplicate dirs (as determined by
    INO_T_EQ()).  The system_include and after_include chains are never
@@ -280,116 +329,47 @@ static void
 merge_include_chains (pfile)
      cpp_reader *pfile;
 {
-  struct file_name_list *prev, *cur, *other;
-  struct file_name_list *quote, *brack, *systm, *after;
-  struct file_name_list *qtail, *btail, *stail, *atail;
+  struct file_name_list *quote, *brack, *systm, *qtail;
 
   struct cpp_pending *pend = CPP_OPTION (pfile, pending);
-
-  qtail = pend->quote_tail;
-  btail = pend->brack_tail;
-  stail = pend->systm_tail;
-  atail = pend->after_tail;
 
   quote = pend->quote_head;
   brack = pend->brack_head;
   systm = pend->systm_head;
-  after = pend->after_head;
+  qtail = pend->quote_tail;
 
-  /* Paste together bracket, system, and after include chains. */
-  if (stail)
-    stail->next = after;
+  /* Paste together bracket, system, and after include chains.  */
+  if (systm)
+    pend->systm_tail->next = pend->after_head;
   else
-    systm = after;
-  if (btail)
-    btail->next = systm;
+    systm = pend->after_head;
+
+  if (brack)
+    pend->brack_tail->next = systm;
   else
     brack = systm;
 
-  /* This is a bit tricky.
-     First we drop dupes from the quote-include list.
-     Then we drop dupes from the bracket-include list.
-     Finally, if qtail and brack are the same directory,
-     we cut out qtail.
+  /* This is a bit tricky.  First we drop dupes from the quote-include
+     list.  Then we drop dupes from the bracket-include list.
+     Finally, if qtail and brack are the same directory, we cut out
+     brack.
 
      We can't just merge the lists and then uniquify them because
      then we may lose directories from the <> search path that should
      be there; consider -Ifoo -Ibar -I- -Ifoo -Iquux. It is however
      safe to treat -Ibar -Ifoo -I- -Ifoo -Iquux as if written
-     -Ibar -I- -Ifoo -Iquux.
+     -Ibar -I- -Ifoo -Iquux.  */
 
-     Note that this algorithm is quadratic in the number of -I switches,
-     which is acceptable since there aren't usually that many of them.  */
-
-  for (cur = quote, prev = NULL; cur; cur = cur->next)
-    {
-      for (other = quote; other != cur; other = other->next)
-        if (INO_T_EQ (cur->ino, other->ino)
-	    && cur->dev == other->dev)
-          {
-	    if (CPP_OPTION (pfile, verbose))
-	      fprintf (stderr, _("ignoring duplicate directory \"%s\"\n"),
-		       cur->name);
-
-	    prev->next = cur->next;
-	    free (cur->name);
-	    free (cur);
-	    cur = prev;
-	    break;
-	  }
-      prev = cur;
-    }
-  qtail = prev;
-
-  for (cur = brack; cur; cur = cur->next)
-    {
-      for (other = brack; other != cur; other = other->next)
-        if (INO_T_EQ (cur->ino, other->ino)
-	    && cur->dev == other->dev)
-          {
-	    if (CPP_OPTION (pfile, verbose))
-	      fprintf (stderr, _("ignoring duplicate directory \"%s\"\n"),
-		       cur->name);
-
-	    prev->next = cur->next;
-	    free (cur->name);
-	    free (cur);
-	    cur = prev;
-	    break;
-	  }
-      prev = cur;
-    }
+  remove_dup_dirs (pfile, brack);
+  qtail = remove_dup_dirs (pfile, quote);
 
   if (quote)
     {
+      qtail->next = brack;
+
+      /* If brack == qtail, remove brack as it's simpler.  */
       if (INO_T_EQ (qtail->ino, brack->ino) && qtail->dev == brack->dev)
-        {
-	  if (quote == qtail)
-	    {
-	      if (CPP_OPTION (pfile, verbose))
-		fprintf (stderr, _("ignoring duplicate directory \"%s\"\n"),
-			 quote->name);
-
-	      free (quote->name);
-	      free (quote);
-	      quote = brack;
-	    }
-	  else
-	    {
-	      cur = quote;
-	      while (cur->next != qtail)
-		  cur = cur->next;
-	      cur->next = brack;
-	      if (CPP_OPTION (pfile, verbose))
-		fprintf (stderr, _("ignoring duplicate directory \"%s\"\n"),
-			 qtail->name);
-
-	      free (qtail->name);
-	      free (qtail);
-	    }
-	}
-      else
-	  qtail->next = brack;
+	brack = remove_dup_dir (pfile, qtail);
     }
   else
       quote = brack;
