@@ -1,3 +1,8 @@
+Fri Apr  9 21:02:57 1999  Krister Walfridsson (cato@df.lth.se)
+
+        * i386/gas.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Fix typo.
+	* i386/freebsd-elf.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+
 1999-04-09 22:58 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cpphash.c (special_symbol): When expanding __LINE__, use the
