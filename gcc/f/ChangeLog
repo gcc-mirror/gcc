@@ -1,3 +1,10 @@
+2001-05-22  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.texi: Update maintenance information for
+	GNU Fortran.
+	* news.texi: Make more news in 0.5.26 `user visible
+	changes'. Acknowledge work by important contributors.
+
 2001-05-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Make-lang.in (f/g77.dvi): Include $(srcdir) in TEXINPUTS.

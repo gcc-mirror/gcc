@@ -820,10 +820,13 @@ without royalty; alteration is not permitted.
 @cindex funding improvements
 @cindex improvements, funding
 
-Work on GNU Fortran is still being done mostly by its author,
-James Craig Burley (@email{@value{email-burley}}), who is a volunteer
-for, not an employee of, the Free Software Foundation (FSF).
+James Craig Burley (@email{@value{email-burley}}), the original author
+of g77, stopped working on it in September 1999
 (He has a web page at @uref{@value{www-burley}}.)
+
+GNU Fortran is currently maintained by Toon Moene
+(@email{toon@@moene.indiv.nluug.nl}), with the help of countless other
+volunteers.
 
 As with other GNU software, funding is important because it can pay for
 needed equipment, personnel, and so on.
@@ -834,36 +837,6 @@ The FSF provides information on the best way to fund ongoing
 development of GNU software (such as GNU Fortran) in documents
 such as the ``GNUS Bulletin''.
 Email @email{gnu@@gnu.org} for information on funding the FSF.
-
-To fund specific GNU Fortran work in particular, the FSF might
-provide a means for that, but the FSF does not provide direct funding
-to the author of GNU Fortran to continue his work.  The FSF has
-employee salary restrictions that can be incompatible with the
-financial needs of some volunteers, who therefore choose to
-remain volunteers and thus be able to be free to do contract work
-and otherwise make their own schedules for doing GNU work.
-
-Still, funding the FSF at least indirectly benefits work
-on specific projects like GNU Fortran because it ensures the
-continuing operation of the FSF offices, their workstations, their
-network connections, and so on, which are invaluable to volunteers.
-(Similarly, hiring Cygnus Support can help a project like GNU
-Fortran---Cygnus has been a long-time donor of equipment usage to the author
-of GNU Fortran, and this too has been invaluable---see @ref{Contributors}.)
-
-Currently, the only way to directly fund the author of GNU Fortran
-in his work on that project is to hire him for the work you want
-him to do, or donate money to him.
-Several people have done this
-already, with the result that he has not needed to immediately find
-contract work on a few occasions.
-If more people did this, he
-would be able to plan on not doing contract work for many months and
-could thus devote that time to work on projects (such as the planned
-changes for 0.6) that require longer timeframes to complete.
-For the latest information on the status of the author, do
-@kbd{finger -l burley@@gnu.org} on a UNIX system
-(or any system with a command like UNIX @code{finger}).
 
 Another important way to support work on GNU Fortran is to volunteer
 to help out.
