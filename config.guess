@@ -2,7 +2,9 @@
 # Attempt to guess a canonical system name.
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
 #   Free Software Foundation, Inc.
-#
+
+version='2000-05-30'
+
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
@@ -35,6 +37,46 @@
 # Only a few systems have been added to this list; please add others
 # (but try to keep the structure clean).
 #
+
+me=`echo "$0" | sed -e 's,.*/,,'`
+
+usage="\
+Usage: $0 [OPTION]
+
+Output the configuration name of this system.
+
+Operation modes:
+  -h, --help               print this help, then exit
+  -V, --version            print version number, then exit"
+
+help="
+Try \`$me --help' for more information."
+
+# Parse command line
+while test $# -gt 0 ; do
+  case "$1" in
+    --version | --vers* | -V )
+       echo "$version" ; exit 0 ;;
+    --help | --h* | -h )
+       echo "$usage"; exit 0 ;;
+    -- )     # Stop option processing
+       shift; break ;;
+    - )	# Use stdin as input.
+       break ;;
+    -* )
+       exec >&2
+       echo "$me: invalid option $1"
+       echo "$help"
+       exit 1 ;;
+    * )
+       break ;;
+  esac
+done
+
+if test $# != 0; then
+  echo "$me: too many arguments$help" >&2
+  exit 1
+fi
 
 # Use $HOST_CC if defined. $CC may point to a cross-compiler
 if test x"$CC_FOR_BUILD" = x; then
@@ -266,7 +308,7 @@ EOF
 	exit 0 ;;
     # The situation for MiNT is a little confusing.  The machine name
     # can be virtually everything (everything which is not
-    # "atarist" or "atariste" at least should have a processor 
+    # "atarist" or "atariste" at least should have a processor
     # > m68000).  The system name ranges from "MiNT" over "FreeMiNT"
     # to the lowercase version "mint" (or "freemint").  Finally
     # the system name "TOS" denotes a system which is actually not
@@ -360,7 +402,7 @@ EOF
     AViiON:dgux:*:*)
         # DG/UX returns AViiON for all architectures
         UNAME_PROCESSOR=`/usr/bin/uname -p`
-	if [ $UNAME_PROCESSOR = mc88100 ] || [ $UNAME_PROCESSOR = mc88110]
+	if [ $UNAME_PROCESSOR = mc88100 ] || [ $UNAME_PROCESSOR = mc88110 ]
 	then
 	    if [ ${TARGET_BINARY_INTERFACE}x = m88kdguxelfx ] || \
 	       [ ${TARGET_BINARY_INTERFACE}x = x ]
@@ -458,6 +500,8 @@ EOF
 	    9000/[34]?? )         HP_ARCH=m68k ;;
 	    9000/[678][0-9][0-9])
               sed 's/^              //' << EOF >$dummy.c
+
+              #define _HPUX_SOURCE
               #include <stdlib.h>
               #include <unistd.h>
 
@@ -588,7 +632,7 @@ EOF
 	echo alpha-cray-unicosmk${UNAME_RELEASE} | sed -e 's/\.[^.]*$/.X/'
 	exit 0 ;;
     CRAY*SV1:*:*:*)
-	echo sv1-cray-unicos${UNAME_RELEASE} | sed -e 's/\.[^.]*$/.X/'    
+	echo sv1-cray-unicos${UNAME_RELEASE} | sed -e 's/\.[^.]*$/.X/'
 	exit 0 ;;
     CRAY-2:*:*:*)
 	echo cray2-cray-unicos
@@ -604,7 +648,7 @@ EOF
     hp300:OpenBSD:*:*)
 	echo m68k-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
-    i?86:BSD/386:*:* | i?86:BSD/OS:*:*)
+    i?86:BSD/386:*:* | i?86:BSD/OS:*:* | *:Ascend\ Embedded/OS:*:*)
 	echo ${UNAME_MACHINE}-pc-bsdi${UNAME_RELEASE}
 	exit 0 ;;
     sparc*:BSD/OS:*:*)
@@ -614,12 +658,6 @@ EOF
 	echo ${UNAME_MACHINE}-unknown-bsdi${UNAME_RELEASE}
 	exit 0 ;;
     *:FreeBSD:*:*)
-	if test -x /usr/bin/objformat; then
-	    if test "elf" = "`/usr/bin/objformat`"; then
-		echo ${UNAME_MACHINE}-unknown-freebsdelf`echo ${UNAME_RELEASE}|sed -e 's/[-_].*//'`
-		exit 0
-	    fi
-	fi
 	echo ${UNAME_MACHINE}-unknown-freebsd`echo ${UNAME_RELEASE}|sed -e 's/[-(].*//'`
 	exit 0 ;;
     *:OpenBSD:*:*)
@@ -668,6 +706,10 @@ EOF
 		;;
 	  i?86linux)
 		echo "${UNAME_MACHINE}-pc-linux-gnuaout"
+		exit 0
+		;;
+	  elf_i?86)
+		echo "${UNAME_MACHINE}-pc-linux"
 		exit 0
 		;;
 	  i?86coff)
@@ -721,9 +763,13 @@ EOF
 			if test "$?" = 0 ; then
 				LIBC="libc1"
 			fi
-		fi	
+		fi
 		rm -f $dummy.c $dummy
 		echo powerpc-unknown-linux-gnu${LIBC}
+		exit 0
+		;;
+	  shelf_linux)
+		echo "${UNAME_MACHINE}-unknown-linux-gnu"
 		exit 0
 		;;
 	esac
@@ -1018,14 +1064,26 @@ EOF
     *:Rhapsody:*:*)
 	echo ${UNAME_MACHINE}-apple-rhapsody${UNAME_RELEASE}
 	exit 0 ;;
-    Power*:Mac*OS:*:*)
-	echo powerpc-apple-macos${UNAME_RELEASE}
+    *:Darwin:*:*)
+	echo `uname -p`-apple-darwin${UNAME_RELEASE}
 	exit 0 ;;
-    *:Mac*OS:*:*)
-	echo ${UNAME_MACHINE}-apple-macos${UNAME_RELEASE}
+    *:procnto*:*:* | *:QNX:[0123456789]*:*)
+	if test "${UNAME_MACHINE}" = "x86pc"; then
+		UNAME_MACHINE=pc
+	fi
+	echo `uname -p`-${UNAME_MACHINE}-nto-qnx
 	exit 0 ;;
     *:QNX:*:4*)
-	echo i386-qnx-qnx${UNAME_VERSION}
+	echo i386-pc-qnx
+	exit 0 ;;
+    NSR-W:NONSTOP_KERNEL:*:*)
+	echo nsr-tandem-nsk${UNAME_RELEASE}
+	exit 0 ;;
+    BS2000:POSIX*:*:*)
+	echo bs2000-siemens-sysv
+	exit 0 ;;
+    DS/*:UNIX_System_V:*:*)
+	echo ${UNAME_MACHINE}-${UNAME_SYSTEM}-${UNAME_RELEASE}
 	exit 0 ;;
 esac
 
@@ -1166,6 +1224,47 @@ then
     esac
 fi
 
-#echo '(Unable to guess system type)' 1>&2
+cat >&2 <<EOF
+$0: unable to guess system type
+
+The $version version of this script cannot recognize your system type.
+Please download the most up to date version of the config scripts:
+
+    ftp://ftp.gnu.org/pub/gnu/config/
+
+If the version you run ($0) is already up to date, please
+send the following data and any information you think might be
+pertinent to <config-patches@gnu.org> in order to provide the needed
+information to handle your system.
+
+config.guess version = $version
+
+uname -m = `(uname -m) 2>/dev/null || echo unknown`
+uname -r = `(uname -r) 2>/dev/null || echo unknown`
+uname -s = `(uname -s) 2>/dev/null || echo unknown`
+uname -v = `(uname -v) 2>/dev/null || echo unknown`
+
+/usr/bin/uname -p = `(/usr/bin/uname -p) 2>/dev/null`
+/bin/uname -X     = `(/bin/uname -X) 2>/dev/null`
+
+hostinfo               = `(hostinfo) 2>/dev/null`
+/bin/universe          = `(/bin/universe) 2>/dev/null`
+/usr/bin/arch -k       = `(/usr/bin/arch -k) 2>/dev/null`
+/bin/arch              = `(/bin/arch) 2>/dev/null`
+/usr/bin/oslevel       = `(/usr/bin/oslevel) 2>/dev/null`
+/usr/convex/getsysinfo = `(/usr/convex/getsysinfo) 2>/dev/null`
+
+UNAME_MACHINE = ${UNAME_MACHINE}
+UNAME_RELEASE = ${UNAME_RELEASE}
+UNAME_SYSTEM  = ${UNAME_SYSTEM}
+UNAME_VERSION = ${UNAME_VERSION}
+EOF
 
 exit 1
+
+# Local variables:
+# eval: (add-hook 'write-file-hooks 'time-stamp)
+# time-stamp-start: "version='"
+# time-stamp-format: "%:y-%02m-%02d"
+# time-stamp-end: "'"
+# End:

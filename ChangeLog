@@ -1,3 +1,8 @@
+Thu Jun 6 01:20:00 MET 2000  Philipp Thomas  <pthomas@suse.de>
+
+	* config.guess: Updated to latest version.
+	* config.sub: Likewise.
+
 Mon May 29 21:15:00 MET 2000  Philipp Thomas  <pthomas@suse.de>
 
 	* MAINTAINERS: Add self as i18n maintainer
