@@ -67,6 +67,24 @@
 #undef tan
 #undef tanh
 
+// These are possible macros imported from C99-land.  They tend to break
+// well-formed C++ programs.  Just pretend we don't know about them.
+// At some point, we should provide extensions in std:: -- Gaby
+
+#undef fpclassify
+#undef isfinite
+#undef isinf
+#undef isnan
+#undef isnormal
+#undef signbit
+
+#undef isgreater
+#undef isgreaterequal
+#undef isless
+#undef islessequal
+#undef islessgreater
+#undef isunordered
+
 namespace std 
 {
   // Forward declaration of a helper function.  This really should be

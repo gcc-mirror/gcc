@@ -1,3 +1,7 @@
+2001-04-06  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* include/c_std/bits/std_cmath.h: Get rid of C99 math macros.
+
 2001-04-03  Andreas Schwab  <schwab@suse.de>
 
 	* include/backward/fstream.h: Define filebuf and wfilebuf.
