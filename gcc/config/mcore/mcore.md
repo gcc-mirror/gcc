@@ -1896,7 +1896,7 @@
  ""
  "
 {
-  emit_insn (gen_jump_real (operand0));
+  emit_jump_insn (gen_jump_real (operand0));
   DONE;
 }
 ")
@@ -3462,7 +3462,7 @@
 
   /* for small constant growth, we unroll the code */
   if (GET_CODE (operands[1]) == CONST_INT
-      && INTVAL (operands[1]) < 8*STACK_UNITS_MAXSTEP)
+      && INTVAL (operands[1]) < 8 * STACK_UNITS_MAXSTEP)
     {
       int left = INTVAL(operands[1]);
 
@@ -3470,18 +3470,20 @@
       if (left >= STACK_UNITS_MAXSTEP)
 	{
 	  rtx tmp = gen_reg_rtx (Pmode);
-	  emit_insn (gen_movsi (tmp, GEN_INT(STACK_UNITS_MAXSTEP)));
+	  emit_insn (gen_movsi (tmp, GEN_INT (STACK_UNITS_MAXSTEP)));
 	  do
 	    {
-	    rtx memref = gen_rtx (MEM, SImode, stack_pointer_rtx);
-	    MEM_VOLATILE_P (memref) = 1;
-	    emit_insn(gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx, tmp));
-	    emit_insn(gen_movsi (memref, stack_pointer_rtx));
-	    left -= STACK_UNITS_MAXSTEP;
-	  } while (left > STACK_UNITS_MAXSTEP);
+	      rtx memref = gen_rtx (MEM, SImode, stack_pointer_rtx);
+
+              MEM_VOLATILE_P (memref) = 1;
+	      emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx, tmp));
+	      emit_insn (gen_movsi (memref, stack_pointer_rtx));
+	      left -= STACK_UNITS_MAXSTEP;
+	    }
+	  while (left > STACK_UNITS_MAXSTEP);
 	}
       /* performs the final adjustment */
-      emit_insn(gen_addsi3(stack_pointer_rtx,stack_pointer_rtx,GEN_INT(-left)));
+      emit_insn (gen_addsi3 (stack_pointer_rtx,stack_pointer_rtx,GEN_INT(-left)));
 ;;      emit_move_insn (operands[0], virtual_stack_dynamic_rtx);
       DONE;
     }
@@ -3494,8 +3496,8 @@
       rtx memref;
 
 #if 1
-      emit_insn(gen_movsi(tmp, operands[1]));
-      emit_insn(gen_movsi(step, GEN_INT(STACK_UNITS_MAXSTEP)));
+      emit_insn (gen_movsi (tmp, operands[1]));
+      emit_insn (gen_movsi (step, GEN_INT(STACK_UNITS_MAXSTEP)));
 
       if (GET_CODE (operands[1]) != CONST_INT)
 	{
@@ -3522,14 +3524,14 @@
 	emit_label (out_label);
 
       /* bump the residual */
-      emit_insn(gen_subsi3(stack_pointer_rtx, stack_pointer_rtx, tmp));
+      emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx, tmp));
 ;;      emit_move_insn (operands[0], virtual_stack_dynamic_rtx);
       DONE;
 #else
       /* simple one-shot -- ensure register and do a subtract.
        * this does NOT comply with the ABI. */
-      emit_insn(gen_movsi(tmp, operands[1]));
-      emit_insn(gen_subsi3(stack_pointer_rtx, stack_pointer_rtx, tmp));
+      emit_insn (gen_movsi (tmp, operands[1]));
+      emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx, tmp));
 ;;      emit_move_insn (operands[0], virtual_stack_dynamic_rtx);
       DONE;
 #endif

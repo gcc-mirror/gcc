@@ -1,3 +1,7 @@
+2003-05-13  Nick Clifton  <nickc@redhat.com>
+
+	* config/mcore/mcore.md (jump): Use emit_jump_insn.
+
 2003-05-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY): Second
