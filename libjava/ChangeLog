@@ -1,3 +1,10 @@
+2003-03-26  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natRuntime.cc (insertSystemProperties): Set
+	gnu.classpath.home.url.
+	* Makefile.in: Rebuilt.
+	* Makefile.am: Define LIBDIR.
+
 2003-03-25  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/FileInputStream.java
