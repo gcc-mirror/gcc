@@ -1,3 +1,16 @@
+2004-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/18444
+	* configure.ac (threading): Accept 'posix95'.
+	* configure: Regenerate.
+	* config.gcc (i[34567]86-*-solaris2*): On Solaris up to 2.6,
+	include sol26.h and default to posix95 threads if have_pthread_h.
+	(sparc-*-solaris2*): Likewise.
+	* gthr.h: Include gthr-posix95.h if _PTHREADS95 is defined.
+	* gthr-posix95.h: New file.
+	* config/sol26.h: New file.
+	* doc/install.texi (--enable-threads): Document 'posix95'.
+
 2004-11-23  Ben Elliston  <bje@au.ibm.com>
 
 	* pointer-set.h (pointer_set_contains): Remove.
