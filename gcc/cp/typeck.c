@@ -6077,7 +6077,7 @@ tree
 build_ptrmemfunc1 (type, delta, idx, pfn, delta2)
      tree type, delta, idx, pfn, delta2;
 {
-  tree u;
+  tree u = NULL_TREE;
   tree delta_field;
   tree idx_field;
   tree pfn_or_delta2_field;

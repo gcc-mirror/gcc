@@ -1,3 +1,9 @@
+2000-03-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (cp_finish_decl): Remove obsolete comment.
+	
+	* typeck.c (build_ptrmemfunc1): Kill uninitialized warning.
+
 2000-03-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h: Tweak documentation.
