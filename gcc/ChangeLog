@@ -1,3 +1,9 @@
+2004-03-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md ("*doloop_si"): Change predicate for operand 2
+	to nonimmediate_operand.
+	("*doloop_di"): Likewise.
+
 2004-03-21  Alexandre Oliva  <aoliva@redhat.com>
 
 	* real.h (struct real_value): Use the same type for all
