@@ -1,3 +1,13 @@
+2002-12-26  Jose Renau <renau@cs.uiuc.edu>
+
+	* ssa-dce.c (EXECUTE_IF_UNNECESSARY): Verify INSN is an
+	INSN_P before checking to see if it is dead.
+	(mark_all_insn_unnecessary): Similarly.
+	(ssa_eliminate_dead_code): Similarly.
+	* rtl.h (struct rtx_def): Update comments for in_struct usage
+	in dead code elimination pass.
+	(INSN_DEAD_CODE_P): Allow JUMP_INSN and CALL_INSN as well.
+
 2002-12-26  Andreas Schwab  <schwab@suse.de>
 
 	* config.gcc (powerpc*-*-*, rs6000-*-*): Fix assignment syntax. 
