@@ -2,6 +2,7 @@
 
 	* libmath/stubs.c: New file.
 	(tanhf): Fix typo.
+	(powf): Likewise.
 
 	* libmath/Makefile.am (libmath_la_SOURCES): Add.
 	* libmath/Makefile.in.  Regenerate.
