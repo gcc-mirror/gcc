@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -1154,7 +1154,7 @@ check_attr_value (exp, attr)
       /* Otherwise, fall through... */
 
     default:
-      fatal ("Illegal operation `%s' for attribute value",
+      fatal ("Invalid operation `%s' for attribute value",
 	     GET_RTX_NAME (GET_CODE (exp)));
     }
 
@@ -3085,7 +3085,7 @@ simplify_test_exp (exp, insn_code, insn_index)
 	{
 	  i = compute_alternative_mask (exp, AND);
 	  if (i & ~insn_alternatives[insn_code])
-	    fatal ("Illegal alternative specified for pattern number %d",
+	    fatal ("Invalid alternative specified for pattern number %d",
 		   insn_index);
 
 	  /* If all alternatives are excluded, this is false. */
@@ -3178,7 +3178,7 @@ simplify_test_exp (exp, insn_code, insn_index)
 	{
 	  i = compute_alternative_mask (exp, IOR);
 	  if (i & ~insn_alternatives[insn_code])
-	    fatal ("Illegal alternative specified for pattern number %d",
+	    fatal ("Invalid alternative specified for pattern number %d",
 		   insn_index);
 
 	  /* If all alternatives are included, this is true. */
