@@ -1,3 +1,8 @@
+2003-03-14  Chris Demetriou  <cgd@broadcom.com>, Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.h (FUNCTION_PROFILER): _mcount() doesn't pop 2
+	words in new abis.
+
 2003-03-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/8396
