@@ -2146,7 +2146,7 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand"
-			  "=f,*r,Q,?o,?Q,f,*&r,*&r")
+			  "=f,*r,Q,?o,?Q,f,*r,*r")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
 			  "fG,*rG,f,*r,*r,Q,o,Q"))]
   "(register_operand (operands[0], DFmode)
@@ -2164,7 +2164,7 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand"
-			  "=r,?o,?Q,&r,&r")
+			  "=r,?o,?Q,r,r")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
 			  "rG,r,r,o,Q"))]
   "(register_operand (operands[0], DFmode)
@@ -2375,7 +2375,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
-			  "=r,o,Q,&r,&r,&r,f,f,*T")
+			  "=r,o,Q,r,r,r,f,f,*T")
 	(match_operand:DI 1 "general_operand"
 			  "rM,r,r,o,Q,i,fM,*T,f"))]
   "(register_operand (operands[0], DImode)
@@ -2393,7 +2393,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
-			  "=r,o,Q,&r,&r,&r")
+			  "=r,o,Q,r,r,r")
 	(match_operand:DI 1 "general_operand"
 			  "rM,r,r,o,Q,i"))]
   "(register_operand (operands[0], DImode)
