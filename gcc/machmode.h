@@ -81,17 +81,6 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
 extern CONST_MODE_SIZE unsigned char mode_size[NUM_MACHINE_MODES];
 #define GET_MODE_SIZE(MODE)   mode_size[MODE]
 
-/* Get the size in bytes of the basic parts of an object of mode MODE.  */
-
-extern const unsigned char mode_unit_size[NUM_MACHINE_MODES];
-#define GET_MODE_UNIT_SIZE(MODE)  mode_unit_size[MODE]
-
-/* Get the number of units in the object.  */
-
-#define GET_MODE_NUNITS(MODE)  \
-  ((GET_MODE_UNIT_SIZE ((MODE)) == 0) ? 0 \
-   : (GET_MODE_SIZE ((MODE)) / GET_MODE_UNIT_SIZE ((MODE))))
-
 /* Get the size in bits of an object of mode MODE.  */
 
 extern const unsigned short mode_bitsize[NUM_MACHINE_MODES];
@@ -104,11 +93,22 @@ extern const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES];
 
 #define GET_MODE_MASK(MODE) mode_mask_array[MODE]
 
-extern const unsigned char mode_inner[NUM_MACHINE_MODES];
-
 /* Return the mode of the inner elements in a vector.  */
 
+extern const unsigned char mode_inner[NUM_MACHINE_MODES];
 #define GET_MODE_INNER(MODE) mode_inner[MODE]
+
+/* Get the size in bytes of the basic parts of an object of mode MODE.  */
+
+#define GET_MODE_UNIT_SIZE(MODE)		\
+  (GET_MODE_INNER (MODE) == VOIDmode		\
+   ? GET_MODE_SIZE (MODE)			\
+   : GET_MODE_SIZE (GET_MODE_INNER (MODE)))
+
+/* Get the number of units in the object.  */
+
+extern const unsigned char mode_nunits[NUM_MACHINE_MODES];
+#define GET_MODE_NUNITS(MODE)  mode_nunits[MODE]
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 

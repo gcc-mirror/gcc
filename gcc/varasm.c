@@ -1905,15 +1905,20 @@ assemble_real (REAL_VALUE_TYPE d, enum machine_mode mode, unsigned int align)
   int i;
   int bitsize, nelts, nunits, units_per;
 
-  /* This is hairy.  We have a quantity of known bitsize.  real_to_target
+  /* This is hairy.  We have a quantity of known size.  real_to_target
      will put it into an array of *host* longs, 32 bits per element
      (even if long is more than 32 bits).  We need to determine the
      number of array elements that are occupied (nelts) and the number
      of *target* min-addressable units that will be occupied in the
-     object file (nunits).  We can assume that BITS_PER_UNIT divides
-     the mode's bitsize evenly, but we can not assume that 32 does.  */
-  bitsize = GET_MODE_BITSIZE (mode);
-  nunits = bitsize / BITS_PER_UNIT;
+     object file (nunits).  We cannot assume that 32 divides the
+     mode's bitsize (size * BITS_PER_UNIT) evenly.
+
+     size * BITS_PER_UNIT is used here to make sure that padding bits
+     (which might appear at either end of the value; real_to_target
+     will include the padding bits in its output array) are included.  */
+
+  nunits = GET_MODE_SIZE (mode);
+  bitsize = nunits * BITS_PER_UNIT;
   nelts = CEIL (bitsize, 32);
   units_per = 32 / BITS_PER_UNIT;
 
@@ -3756,9 +3761,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
       if (TREE_CODE (exp) != REAL_CST)
 	error ("initializer for floating value is not a floating constant");
 
-      assemble_real (TREE_REAL_CST (exp),
-		     mode_for_size (size * BITS_PER_UNIT, MODE_FLOAT, 0),
-		     align);
+      assemble_real (TREE_REAL_CST (exp), TYPE_MODE (TREE_TYPE (exp)), align);
       break;
 
     case COMPLEX_TYPE:

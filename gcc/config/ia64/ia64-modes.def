@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA-64 version.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
@@ -20,8 +20,41 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* hpux will override this in ia64_override_options.  */
-FLOAT_MODE (TF, 16, ieee_extended_intel_128_format);
+/* IA64 requires both XF and TF modes.
+   XFmode is __float80 is IEEE extended; TFmode is __float128
+   is IEEE quad.
+
+   IEEE extended is 128 bits wide, except in ILP32 mode, but we
+   have to say it's 12 bytes so that the bitsize and wider_mode
+   tables are correctly set up.  We correct its size below.  */
+
+FLOAT_MODE (XF, 12, ieee_extended_intel_128_format);
+FLOAT_MODE (TF, 16, ieee_quad_format);
+
+/* The above produces:
+
+   mode	  ILP32 size/align	LP64 size/align
+   XF	  12/4			12/4
+   TF	  16/16			16/16
+
+   psABI expectations:
+
+   mode   ILP32 size/align	LP64 size/align
+   XF	  -			16/16
+   TF	  -			-
+
+   HPUX expectations:
+
+   mode	  ILP32 size/align	LP64 size/align
+   XF	  16/16			16/16
+   TF	  16/8			-
+
+   We fix this up here.  */
+
+ADJUST_BYTESIZE  (XF, (TARGET_ILP32 && !TARGET_HPUX) ? 12 : 16);
+ADJUST_ALIGNMENT (XF, (TARGET_ILP32 && !TARGET_HPUX) ?  4 : 16);
+
+ADJUST_ALIGNMENT (TF, (TARGET_ILP32 &&  TARGET_HPUX) ?  8 : 16);
 
 /* 256-bit integer mode is needed for STACK_SAVEAREA_MODE.  */
 INT_MODE (OI, 32);

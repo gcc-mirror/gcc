@@ -25,6 +25,10 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_VERSION fprintf (stderr, " (IA-64) HP-UX");
 
+/* Enable HPUX ABI quirks.  */
+#undef  TARGET_HPUX
+#define TARGET_HPUX 1
+
 /* Target OS builtins.  */
 #define TARGET_OS_CPP_BUILTINS()			\
 do {							\
@@ -106,7 +110,8 @@ do {							\
    returned just like a char variable and that is wrong on HP-UX
    IA64.  */
 
-#define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) (TREE_CODE (TREE_TYPE (FIELD)) != REAL_TYPE || (MODE == TFmode && !INTEL_EXTENDED_IEEE_FORMAT))
+#define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) \
+  (TREE_CODE (TREE_TYPE (FIELD)) != REAL_TYPE || MODE == TFmode)
 
 /* ASM_OUTPUT_EXTERNAL_LIBCALL defaults to just a globalize_label call,
    but that doesn't put out the @function type information which causes
@@ -186,10 +191,6 @@ do {								\
 /* ia64 HPUX has the float and long double forms of math functions.  */
 #undef TARGET_C99_FUNCTIONS
 #define TARGET_C99_FUNCTIONS  1
-
-/* We are using IEEE quad precision, not a double-extended with padding.  */
-#undef INTEL_EXTENDED_IEEE_FORMAT
-#define INTEL_EXTENDED_IEEE_FORMAT 0
 
 #define TARGET_INIT_LIBFUNCS ia64_hpux_init_libfuncs
 
