@@ -2131,7 +2131,7 @@ preprocess_constraints ()
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
 		  op_alt[j].matches = c - '0';
-		  op_alt[op_alt[j].matches].matched = i;
+		  recog_op_alt[op_alt[j].matches][j].matched = i;
 		  break;
 
 		case 'm':
