@@ -23,6 +23,7 @@ details.  */
 #include <java/lang/VerifyError.h>
 #include <java/lang/Throwable.h>
 #include <java/lang/reflect/Modifier.h>
+#include <java/lang/StringBuffer.h>
 
 
 // TO DO
@@ -36,7 +37,8 @@ details.  */
 
 // This is global because __attribute__ doesn't seem to work on static
 // methods.
-static void verify_fail (char *s) __attribute__ ((__noreturn__));
+static void verify_fail (char *msg, jint pc = -1)
+  __attribute__ ((__noreturn__));
 
 class _Jv_BytecodeVerifier
 {
@@ -903,14 +905,14 @@ private:
   {
     int depth = t.depth ();
     if (index > current_method->max_locals - depth)
-      verify_fail ("invalid local variable");
+      verify_fail ("invalid local variable", start_PC);
     if (! t.compatible (current_state->locals[index]))
-      verify_fail ("incompatible type in local variable");
+      verify_fail ("incompatible type in local variable", start_PC);
     if (depth == 2)
       {
 	type t (continuation_type);
 	if (! current_state->locals[index + 1].compatible (t))
-	  verify_fail ("invalid local variable");
+	  verify_fail ("invalid local variable", start_PC);
       }
     current_state->note_variable (index);
     return current_state->locals[index];
@@ -1407,7 +1409,7 @@ private:
 	      jint low = get_int ();
 	      jint hi = get_int ();
 	      if (low > hi)
-		verify_fail ("invalid tableswitch");
+		verify_fail ("invalid tableswitch", start_PC);
 	      for (int i = low; i <= hi; ++i)
 		note_branch_target (compute_jump (get_int ()));
 	    }
@@ -1419,7 +1421,7 @@ private:
 	      note_branch_target (compute_jump (get_int ()));
 	      int npairs = get_int ();
 	      if (npairs < 0)
-		verify_fail ("too few pairs in lookupswitch");
+		verify_fail ("too few pairs in lookupswitch", start_PC);
 	      while (npairs-- > 0)
 		{
 		  get_int ();
@@ -1451,7 +1453,8 @@ private:
 	    break;
 
 	  default:
-	    verify_fail ("unrecognized instruction in branch_prepass");
+	    verify_fail ("unrecognized instruction in branch_prepass",
+			 start_PC);
 	  }
 
 	// See if any previous branch tried to branch to the middle of
@@ -1459,7 +1462,7 @@ private:
 	for (int pc = start_PC + 1; pc < PC; ++pc)
 	  {
 	    if ((flags[pc] & FLAG_BRANCH_TARGET))
-	      verify_fail ("branch not to instruction start");
+	      verify_fail ("branch to middle of instruction", pc);
 	  }
       }
 
@@ -1467,12 +1470,16 @@ private:
     for (int i = 0; i < current_method->exc_count; ++i)
       {
 	if (! (flags[exception[i].handler_pc] & FLAG_INSN_START))
-	  verify_fail ("exception handler not at instruction start");
+	  verify_fail ("exception handler not at instruction start",
+		       exception[i].handler_pc);
 	if (exception[i].start_pc > exception[i].end_pc)
 	  verify_fail ("exception range inverted");
-	if (! (flags[exception[i].start_pc] & FLAG_INSN_START)
-	    || ! (flags[exception[i].start_pc] & FLAG_INSN_START))
-	  verify_fail ("exception endpoint not at instruction start");
+	if (! (flags[exception[i].start_pc] & FLAG_INSN_START))
+	  verify_fail ("exception start not at instruction start",
+		       exception[i].start_pc);
+	else if (! (flags[exception[i].end_pc] & FLAG_INSN_START))
+	  verify_fail ("exception end not at instruction start",
+		       exception[i].end_pc);
 
 	flags[exception[i].handler_pc] |= FLAG_BRANCH_TARGET;
       }
@@ -1481,7 +1488,7 @@ private:
   void check_pool_index (int index)
   {
     if (index < 0 || index >= current_class->constants.size)
-      verify_fail ("constant pool index out of range");
+      verify_fail ("constant pool index out of range", start_PC);
   }
 
   type check_class_constant (int index)
@@ -1492,7 +1499,7 @@ private:
       return type (pool->data[index].clazz);
     else if (pool->tags[index] == JV_CONSTANT_Class)
       return type (pool->data[index].utf8);
-    verify_fail ("expected class constant");
+    verify_fail ("expected class constant", start_PC);
   }
 
   type check_constant (int index)
@@ -1506,7 +1513,18 @@ private:
       return type (int_type);
     else if (pool->tags[index] == JV_CONSTANT_Float)
       return type (float_type);
-    verify_fail ("String, int, or float constant expected");
+    verify_fail ("String, int, or float constant expected", start_PC);
+  }
+
+  type check_wide_constant (int index)
+  {
+    check_pool_index (index);
+    _Jv_Constants *pool = &current_class->constants;
+    if (pool->tags[index] == JV_CONSTANT_Long)
+      return type (long_type);
+    else if (pool->tags[index] == JV_CONSTANT_Double)
+      return type (double_type);
+    verify_fail ("long or double constant expected", start_PC);
   }
 
   // Helper for both field and method.  These are laid out the same in
@@ -1518,7 +1536,7 @@ private:
     check_pool_index (index);
     _Jv_Constants *pool = &current_class->constants;
     if (pool->tags[index] != expected)
-      verify_fail ("didn't see expected constant");
+      verify_fail ("didn't see expected constant", start_PC);
     // Once we know we have a Fieldref or Methodref we assume that it
     // is correctly laid out in the constant pool.  I think the code
     // in defineclass.cc guarantees this.
@@ -1626,7 +1644,7 @@ private:
   {
     type rt = compute_return_type (current_method->self->signature);
     if (! expected.compatible (rt))
-      verify_fail ("incompatible return type");
+      verify_fail ("incompatible return type", start_PC);
   }
 
   void verify_instructions_0 ()
@@ -1635,6 +1653,7 @@ private:
 			       current_method->max_locals);
 
     PC = 0;
+    start_PC = 0;
 
     {
       int var = 0;
@@ -1649,11 +1668,17 @@ private:
 	  ++var;
 	}
 
-      if (var + _Jv_count_arguments (current_method->self->signature)
-	  > current_method->max_locals)
-	verify_fail ("too many arguments");
-      compute_argument_types (current_method->self->signature,
-			      &current_state->locals[var]);
+      // We have to handle wide arguments specially here.
+      int arg_count = _Jv_count_arguments (current_method->self->signature);
+      type arg_types[arg_count];
+      compute_argument_types (current_method->self->signature, arg_types);
+      for (int i = 0; i < arg_count; ++i)
+	{
+	  set_variable (var, arg_types[i]);
+	  ++var;
+	  if (arg_types[i].iswide ())
+	    ++var;
+	}
     }
 
     states = (state **) _Jv_Malloc (sizeof (state *)
@@ -1670,7 +1695,7 @@ private:
 	  {
 	    PC = pop_jump ();
 	    if (PC == state::INVALID)
-	      verify_fail ("saw state::INVALID");
+	      verify_fail ("saw state::INVALID", start_PC);
 	    if (PC == state::NO_NEXT)
 	      break;
 	    // Set up the current state.
@@ -1771,7 +1796,7 @@ private:
 	    push_type (check_constant (get_ushort ()));
 	    break;
 	  case op_ldc2_w:
-	    push_type (check_constant (get_ushort ()));
+	    push_type (check_wide_constant (get_ushort ()));
 	    break;
 
 	  case op_iload:
@@ -2253,7 +2278,7 @@ private:
 		{
 		  jint key = get_int ();
 		  if (i > 0 && key <= lastkey)
-		    verify_fail ("lookupswitch pairs unsorted");
+		    verify_fail ("lookupswitch pairs unsorted", start_PC);
 		  lastkey = key;
 		  push_jump (get_int ());
 		}
@@ -2323,11 +2348,14 @@ private:
 		{
 		  int nargs = get_byte ();
 		  if (nargs == 0)
-		    verify_fail ("too few arguments to invokeinterface");
+		    verify_fail ("too few arguments to invokeinterface",
+				 start_PC);
 		  if (get_byte () != 0)
-		    verify_fail ("invokeinterface dummy byte is wrong");
+		    verify_fail ("invokeinterface dummy byte is wrong",
+				 start_PC);
 		  if (nargs - 1 != arg_count)
-		    verify_fail ("wrong argument count for invokeinterface");
+		    verify_fail ("wrong argument count for invokeinterface",
+				 start_PC);
 		}
 
 	      bool is_init = false;
@@ -2335,10 +2363,11 @@ private:
 		{
 		  is_init = true;
 		  if (opcode != (unsigned char) op_invokespecial)
-		    verify_fail ("can't invoke <init>");
+		    verify_fail ("can't invoke <init>", start_PC);
 		}
 	      else if (method_name->data[0] == '<')
-		verify_fail ("can't invoke method starting with `<'");
+		verify_fail ("can't invoke method starting with `<'",
+			     start_PC);
 
 	      // Pop arguments and check types.
 	      type arg_types[arg_count];
@@ -2370,7 +2399,8 @@ private:
 	    {
 	      type t = check_class_constant (get_ushort ());
 	      if (t.isarray () || t.isinterface () || t.isabstract ())
-		verify_fail ("type is array, interface, or abstract");
+		verify_fail ("type is array, interface, or abstract",
+			     start_PC);
 	      t.set_uninitialized (start_PC);
 	      push_type (t);
 	    }
@@ -2382,7 +2412,7 @@ private:
 	      // We intentionally have chosen constants to make this
 	      // valid.
 	      if (atype < boolean_type || atype > long_type)
-		verify_fail ("type not primitive");
+		verify_fail ("type not primitive", start_PC);
 	      pop_type (int_type);
 	      push_type (construct_primitive_array_type (type_val (atype)));
 	    }
@@ -2395,7 +2425,7 @@ private:
 	    {
 	      type t = pop_type (reference_type);
 	      if (! t.isarray ())
-		verify_fail ("array type expected");
+		verify_fail ("array type expected", start_PC);
 	      push_type (int_type);
 	    }
 	    break;
@@ -2460,7 +2490,7 @@ private:
 		  get_short ();
 		  break;
 		default:
-		  verify_fail ("unrecognized wide instruction");
+		  verify_fail ("unrecognized wide instruction", start_PC);
 		}
 	    }
 	    break;
@@ -2469,7 +2499,7 @@ private:
 	      type atype = check_class_constant (get_ushort ());
 	      int dim = get_byte ();
 	      if (dim < 1)
-		verify_fail ("too few dimensions to multianewarray");
+		verify_fail ("too few dimensions to multianewarray", start_PC);
 	      atype.verify_dimensions (dim);
 	      for (int i = 0; i < dim; ++i)
 		pop_type (int_type);
@@ -2491,7 +2521,8 @@ private:
 
 	  default:
 	    // Unrecognized opcode.
-	    verify_fail ("unrecognized instruction in verify_instructions_0");
+	    verify_fail ("unrecognized instruction in verify_instructions_0",
+			 start_PC);
 	  }
       }
   }
@@ -2536,12 +2567,20 @@ _Jv_VerifyMethod (_Jv_InterpMethod *meth)
 
 // FIXME: add more info, like PC, when required.
 static void
-verify_fail (char *s)
+verify_fail (char *s, jint pc)
 {
-  char buf[1024];
-  strcpy (buf, "verification failed: ");
-  strcat (buf, s);
-  throw new java::lang::VerifyError (JvNewStringLatin1 (buf));
+  using namespace java::lang;
+  StringBuffer *buf = new StringBuffer ();
+
+  buf->append (JvNewStringLatin1 ("verification failed"));
+  if (pc != -1)
+    {
+      buf->append (JvNewStringLatin1 (" at PC "));
+      buf->append (pc);
+    }
+  buf->append (JvNewStringLatin1 (": "));
+  buf->append (JvNewStringLatin1 (s));
+  throw new java::lang::VerifyError (buf->toString ());
 }
 
 #endif	/* INTERPRETER */
