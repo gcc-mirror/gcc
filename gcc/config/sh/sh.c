@@ -1444,10 +1444,10 @@ gen_shl_sext (dest, left_rtx, size_rtx, source)
      rtx dest, left_rtx, size_rtx, source;
 {
   int kind;
-  int left, size, insize;
+  int left, size, insize, cost;
   rtx operands[3];
 
-  kind = shl_sext_kind (left_rtx, size_rtx);
+  kind = shl_sext_kind (left_rtx, size_rtx, &cost);
   left = INTVAL (left_rtx);
   size = INTVAL (size_rtx);
   insize = size - left;
