@@ -83,37 +83,16 @@ static tree enum_next_value;
 
 static int enum_overflow;
 
-/* Parsing a function declarator leaves a list of parameter names
-   or a chain of parameter decls here.  */
+/* These #defines are for clarity in working with the information block
+   returned by get_parm_info.  */
+#define ARG_INFO_PARMS(args)  TREE_PURPOSE(args)
+#define ARG_INFO_TAGS(args)   TREE_VALUE(args)
+#define ARG_INFO_TYPES(args)  TREE_CHAIN(args)
+#define ARG_INFO_OTHERS(args) TREE_TYPE(args)
 
-static tree last_function_parms;
-
-/* ... and a chain of structure and enum types declared in the
-   parmlist here.  */
-
-static tree last_function_parm_tags;
-
-/* ... and a chain of all non-parameter declarations (such as
-   CONST_DECLs from enumerations) here.  */
-
-static tree last_function_parm_others;
-
-/* After parsing the declarator that starts a function definition,
-   `start_function' puts the list of parameter names or chain of decls here
-   for `store_parm_decls' to find.  */
-
-static tree current_function_parms;
-
-/* Similar, for last_function_parm_tags.  */
-
-static tree current_function_parm_tags;
-
-/* And for last_function_parm_others.  */
-
-static tree current_function_parm_others;
-
-/* Similar, for the file and line that the prototype came from if this is
-   an old-style definition.  */
+/* The file and line that the prototype came from if this is an
+   old-style definition; used for diagnostics in
+   store_parm_decls_oldstyle.  */
 
 static location_t current_function_prototype_locus;
 
@@ -314,8 +293,6 @@ static tree lookup_name_current_level (tree);
 static tree grokdeclarator (tree, tree, enum decl_context, int, tree *);
 static tree grokparms (tree, int);
 static void layout_array_type (tree);
-static void store_parm_decls_newstyle (void);
-static void store_parm_decls_oldstyle (void);
 static tree c_make_fname_decl (tree, int);
 static void c_expand_body_1 (tree, int);
 static tree any_external_decl (tree);
@@ -1723,7 +1700,26 @@ pushdecl (tree x)
 	  if (ext)
 	    {
 	      if (duplicate_decls (x, ext))
-		x = copy_node (ext);
+		{
+		  /* XXX This copy_node call violates the basic
+		     assumption that there is only one DECL for any
+		     given object.  This causes all sorts of problems
+		     elsewhere.  To correct it we must stop chaining
+		     DECLs directly within the scope structure (work
+		     in progress).  -zw 2004-03-05  */
+		  x = copy_node (ext);
+
+		  /* Kludge around one of the worst consequences of
+		     the above copy_node call, viz. that the arg_info
+		     block created by get_parm_info can survive in a
+		     copied FUNCTION_DECL after store_parm_decls is
+		     done with it, and confuse the debug info
+		     generators.  */
+		  if (TREE_CODE (ext) == FUNCTION_DECL
+		      && DECL_ARGUMENTS (ext)
+		      && TREE_CODE (DECL_ARGUMENTS (ext)) == TREE_LIST)
+		    DECL_ARGUMENTS (ext) = 0;
+		}
 	    }
 	  else
 	    record_external_decl (x);
@@ -3273,6 +3269,7 @@ grokdeclarator (tree declarator, tree declspecs,
   tree returned_attrs = NULL_TREE;
   bool bitfield = width != NULL;
   tree element_type;
+  tree arg_info = NULL_TREE;
 
   if (decl_context == FUNCDEF)
     funcdef_flag = 1, decl_context = NORMAL;
@@ -3970,10 +3967,14 @@ grokdeclarator (tree declarator, tree declspecs,
 	}
       else if (TREE_CODE (declarator) == CALL_EXPR)
 	{
+	  /* Declaring a function type.  Say it's a definition only
+	   for the CALL_EXPR closest to the identifier.  */
+	  bool really_funcdef = (funcdef_flag
+				 && (TREE_CODE (TREE_OPERAND (declarator, 0))
+				     == IDENTIFIER_NODE));
 	  tree arg_types;
 
-	  /* Declaring a function type.
-	     Make sure we have a valid type for the function to return.  */
+	  /* Make sure we have a valid type for the function to return.  */
 	  if (type == error_mark_node)
 	    continue;
 
@@ -3994,13 +3995,9 @@ grokdeclarator (tree declarator, tree declspecs,
 
 	  /* Construct the function type and go to the next
 	     inner layer of declarator.  */
+	  arg_info = TREE_OPERAND (declarator, 1);
+	  arg_types = grokparms (arg_info, really_funcdef);
 
-	  arg_types = grokparms (TREE_OPERAND (declarator, 1),
-				 funcdef_flag
-				 /* Say it's a definition
-				    only for the CALL_EXPR
-				    closest to the identifier.  */
-				 && TREE_CODE (TREE_OPERAND (declarator, 0)) == IDENTIFIER_NODE);
 	  /* Type qualifiers before the return type of the function
 	     qualify the return type, not the function type.  */
 	  if (type_quals)
@@ -4036,7 +4033,7 @@ grokdeclarator (tree declarator, tree declspecs,
 	  {
 	    tree link;
 
-	    for (link = last_function_parm_tags;
+	    for (link = ARG_INFO_TAGS (arg_info);
 		 link;
 		 link = TREE_CHAIN (link))
 	      TYPE_CONTEXT (TREE_VALUE (link)) = type;
@@ -4356,6 +4353,12 @@ grokdeclarator (tree declarator, tree declspecs,
 	TREE_PUBLIC (decl)
 	  = !(specbits & ((1 << (int) RID_STATIC) | (1 << (int) RID_AUTO)));
 
+	/* For a function definition, record the argument information
+	   block in DECL_ARGUMENTS where store_parm_decls will look
+	   for it.  */
+	if (funcdef_flag)
+	  DECL_ARGUMENTS (decl) = arg_info;
+
 	if (defaulted_int)
 	  C_FUNCTION_IMPLICIT_INT (decl) = 1;
 
@@ -4493,10 +4496,6 @@ grokdeclarator (tree declarator, tree declspecs,
    of calls is different.  The last call to `grokparms' is always the one
    that contains the formal parameter names of a function definition.
 
-   Store in `last_function_parms' a chain of the decls of parms.
-   Also store in `last_function_parm_tags' a chain of the struct, union,
-   and enum tags declared among the parms.
-
    Return a list of arg types to use in the FUNCTION_TYPE for this function.
 
    FUNCDEF_FLAG is nonzero for a function definition, 0 for
@@ -4504,74 +4503,80 @@ grokdeclarator (tree declarator, tree declspecs,
    when FUNCDEF_FLAG is zero.  */
 
 static tree
-grokparms (tree parms_info, int funcdef_flag)
+grokparms (tree arg_info, int funcdef_flag)
 {
-  tree first_parm = TREE_CHAIN (parms_info);
+  tree arg_types = ARG_INFO_TYPES (arg_info);
 
-  last_function_parms = TREE_PURPOSE (parms_info);
-  last_function_parm_tags = TREE_VALUE (parms_info);
-  last_function_parm_others = TREE_TYPE (parms_info);
-
-  if (warn_strict_prototypes && first_parm == 0 && !funcdef_flag
+  if (warn_strict_prototypes && arg_types == 0 && !funcdef_flag
       && !in_system_header)
     warning ("function declaration isn't a prototype");
 
-  if (first_parm != 0
-      && TREE_CODE (TREE_VALUE (first_parm)) == IDENTIFIER_NODE)
+  if (arg_types && TREE_CODE (TREE_VALUE (arg_types)) == IDENTIFIER_NODE)
     {
       if (! funcdef_flag)
 	pedwarn ("parameter names (without types) in function declaration");
 
-      last_function_parms = first_parm;
+      ARG_INFO_PARMS (arg_info) = ARG_INFO_TYPES (arg_info);
+      ARG_INFO_TYPES (arg_info) = 0;
       return 0;
     }
   else
     {
-      tree parm;
-      tree typelt;
-      /* If the arg types are incomplete in a declaration,
-	 they must include undefined tags.
-	 These tags can never be defined in the scope of the declaration,
-	 so the types can never be completed,
-	 and no call can be compiled successfully.  */
+      tree parm, type, typelt;
+      unsigned int parmno;
 
-      for (parm = last_function_parms, typelt = first_parm;
+      /* If the arg types are incomplete in a declaration, they must
+	 include undefined tags.  These tags can never be defined in
+	 the scope of the declaration, so the types can never be
+	 completed, and no call can be compiled successfully.  */
+
+      for (parm = ARG_INFO_PARMS (arg_info), typelt = arg_types, parmno = 1;
 	   parm;
-	   parm = TREE_CHAIN (parm))
-	/* Skip over any enumeration constants declared here.  */
-	if (TREE_CODE (parm) == PARM_DECL)
-	  {
-	    /* Barf if the parameter itself has an incomplete type.  */
-	    tree type = TREE_VALUE (typelt);
-	    if (type == error_mark_node)
-	      continue;
-	    if (!COMPLETE_TYPE_P (type))
-	      {
-		if (funcdef_flag && DECL_NAME (parm) != 0)
-		  error ("parameter `%s' has incomplete type",
-			 IDENTIFIER_POINTER (DECL_NAME (parm)));
-		else
-		  warning ("parameter has incomplete type");
-		if (funcdef_flag)
-		  {
-		    TREE_VALUE (typelt) = error_mark_node;
-		    TREE_TYPE (parm) = error_mark_node;
-		  }
-	      }
-	    typelt = TREE_CHAIN (typelt);
-	  }
+	   parm = TREE_CHAIN (parm), typelt = TREE_CHAIN (typelt), parmno++)
+	{
+	  type = TREE_VALUE (typelt);
+	  if (type == error_mark_node)
+	    continue;
 
-      return first_parm;
+	  if (!COMPLETE_TYPE_P (type))
+	    {
+	      if (funcdef_flag)
+		{
+		  if (DECL_NAME (parm))
+		    error ("%Jparameter %u ('%D') has incomplete type",
+			   parm, parmno, parm);
+		  else
+		    error ("%Jparameter %u has incomplete type",
+			   parm, parmno);
+
+		  TREE_VALUE (typelt) = error_mark_node;
+		  TREE_TYPE (parm) = error_mark_node;
+		}
+	      else
+		{
+		  if (DECL_NAME (parm))
+		    warning ("%Jparameter %u ('%D') has incomplete type",
+			     parm, parmno, parm);
+		  else
+		    warning ("%Jparameter %u has incomplete type",
+			     parm, parmno);
+		}
+	    }
+	}
+      return arg_types;
     }
 }
 
 /* Return a tree_list node with info on a parameter list just parsed.
-   The TREE_PURPOSE is a list of decls of those parms.
-   The TREE_VALUE is a list of structure, union and enum tags defined.
-   The TREE_CHAIN is a list of argument types to go in the FUNCTION_TYPE.
-   The TREE_TYPE is a list of non-parameter decls which appeared with the
-   parameters.
-   This tree_list node is later fed to `grokparms'.
+   This tree_list node should be examined using the ARG_INFO_* macros,
+   defined above:
+     ARG_INFO_PARMS:  a list of parameter decls.
+     ARG_INFO_TAGS:   a list of structure, union and enum tags defined.
+     ARG_INFO_TYPES:  a list of argument types to go in the FUNCTION_TYPE.
+     ARG_INFO_OTHERS: a list of non-parameter decls (notably enumeration
+		      constants) defined with the parameters.
+
+   This tree_list node is later fed to 'grokparms' and 'store_parm_decls'.
 
    VOID_AT_END nonzero means append `void' to the end of the type-list.
    Zero means the parmlist ended with an ellipsis so don't append `void'.  */
@@ -4588,10 +4593,10 @@ get_parm_info (int void_at_end)
   static bool explained_incomplete_types = false;
   bool gave_void_only_once_err = false;
 
-  /* Just "void" (and no ellipsis) is special.  There are really no parms.
-     But if the "void" is qualified (by "const" or "volatile"), or has a
-     storage class specifier ("register"), then the behavior is undefined;
-     issue an error.  Typedefs for "void" are OK (see DR#157).  */
+  /* Just 'void' (and no ellipsis) is special.  There are really no parms.
+     But if the 'void' is qualified (by 'const' or 'volatile'), or has a
+     storage class specifier ('register'), then the behavior is undefined;
+     issue an error.  Typedefs for 'void' are OK (see DR#157).  */
   if (void_at_end && parms != 0
       && TREE_CHAIN (parms) == 0
       && VOID_TYPE_P (TREE_TYPE (parms))
@@ -4600,18 +4605,22 @@ get_parm_info (int void_at_end)
       if (TREE_THIS_VOLATILE (parms)
 	  || TREE_READONLY (parms)
 	  || DECL_REGISTER (parms))
-	error ("\"void\" as only parameter may not be qualified");
+	error ("'void' as only parameter may not be qualified");
 
-      return tree_cons (0, 0, tree_cons (0, void_type_node, 0));
+      list = make_node (TREE_LIST);
+      ARG_INFO_TYPES (list) = build_tree_list (0, void_type_node);
+      return list;
     }
 
   /* Sanity check all of the parameter declarations.  */
   for (decl = parms; decl; decl = TREE_CHAIN (decl))
     {
+#ifdef ENABLE_CHECKING
       if (TREE_CODE (decl) != PARM_DECL)
 	abort ();
       if (TREE_ASM_WRITTEN (decl))
 	abort ();
+#endif
 
       /* Since there is a prototype, args are passed in their
 	 declared types.  The back end may override this.  */
@@ -4621,7 +4630,7 @@ get_parm_info (int void_at_end)
       /* Check for (..., void, ...) and issue an error.  */
       if (VOID_TYPE_P (type) && !DECL_NAME (decl) && !gave_void_only_once_err)
 	{
-	  error ("\"void\" must be the only parameter");
+	  error ("'void' must be the only parameter");
 	  gave_void_only_once_err = true;
 	}
 
@@ -4638,7 +4647,7 @@ get_parm_info (int void_at_end)
 	if (!TREE_ASM_WRITTEN (decl))
 	  abort ();
 
-	  error ("%Jparameter \"%D\" has just a forward declaration",
+	  error ("%Jparameter '%D' has just a forward declaration",
 		 decl, decl);
       }
 
@@ -4665,9 +4674,9 @@ get_parm_info (int void_at_end)
 	}
 
       if (TREE_PURPOSE (decl))
-	/* The first %s will be one of 'struct', 'union', or 'enum'.  */
-	warning ("\"%s %s\" declared inside parameter list",
-		 keyword, IDENTIFIER_POINTER (TREE_PURPOSE (decl)));
+	/* The %s will be one of 'struct', 'union', or 'enum'.  */
+	warning ("'%s %E' declared inside parameter list",
+		 keyword, TREE_PURPOSE (decl));
       else
 	/* The %s will be one of 'struct', 'union', or 'enum'.  */
 	warning ("anonymous %s declared inside parameter list", keyword);
@@ -4687,8 +4696,11 @@ get_parm_info (int void_at_end)
       *last_type = type;
     }
 
-  list = tree_cons (parms, tags, types);
-  TREE_TYPE (list) = others;
+  list = make_node (TREE_LIST);
+  ARG_INFO_PARMS  (list) = parms;
+  ARG_INFO_TAGS   (list) = tags;
+  ARG_INFO_TYPES  (list) = types;
+  ARG_INFO_OTHERS (list) = others;
   return list;
 }
 
@@ -5443,12 +5455,6 @@ start_function (tree declspecs, tree declarator, tree attributes)
   if (warn_about_return_type)
     pedwarn_c99 ("return type defaults to `int'");
 
-  /* Save the parm names or decls from this function's declarator
-     where store_parm_decls will find them.  */
-  current_function_parms = last_function_parms;
-  current_function_parm_tags = last_function_parm_tags;
-  current_function_parm_others = last_function_parm_others;
-
   /* Make the init_value nonzero so pushdecl knows this is not tentative.
      error_mark_node is replaced below (in poplevel) with the BLOCK.  */
   DECL_INITIAL (decl1) = error_mark_node;
@@ -5624,13 +5630,13 @@ start_function (tree declspecs, tree declarator, tree attributes)
    need only record them as in effect and complain if any redundant
    old-style parm decls were written.  */
 static void
-store_parm_decls_newstyle (void)
+store_parm_decls_newstyle (tree fndecl, tree arg_info)
 {
   tree decl, last;
-  tree fndecl = current_function_decl;
-  tree parms = current_function_parms;
-  tree tags = current_function_parm_tags;
-  tree others = current_function_parm_others;
+
+  tree parms = ARG_INFO_PARMS (arg_info);
+  tree tags = ARG_INFO_TAGS (arg_info);
+  tree others = ARG_INFO_OTHERS (arg_info);
 
   if (current_scope->parms || current_scope->names || current_scope->tags)
     {
@@ -5701,13 +5707,12 @@ store_parm_decls_newstyle (void)
    definitions (separate parameter list and declarations).  */
 
 static void
-store_parm_decls_oldstyle (void)
+store_parm_decls_oldstyle (tree fndecl, tree arg_info)
 {
   tree parm, decl, last;
-  tree fndecl = current_function_decl;
 
   /* This is the identifier list from the function declarator.  */
-  tree parmids = current_function_parms;
+  tree parmids = ARG_INFO_PARMS (arg_info);
 
   /* We use DECL_WEAK as a flag to show which parameters have been
      seen already, since it is not used on PARM_DECL.  */
@@ -5932,14 +5937,20 @@ store_parm_decls (void)
   /* The function containing FNDECL, if any.  */
   tree context = decl_function_context (fndecl);
 
-  /* True if this definition is written with a prototype.  */
-  bool prototype = (current_function_parms
-		    && TREE_CODE (current_function_parms) != TREE_LIST);
+  /* The argument information block for FNDECL.  */
+  tree arg_info = DECL_ARGUMENTS (fndecl);
+
+  /* True if this definition is written with a prototype.  Since this
+     is a function definition, we can treat a null parameter list
+     (i.e. "foo()") as prototyped (C99 6.7.5.3p14) - this reduces
+     overhead.  */
+  bool prototype = (!ARG_INFO_PARMS (arg_info)
+		    || TREE_CODE (ARG_INFO_PARMS (arg_info)) != TREE_LIST);
 
   if (prototype)
-    store_parm_decls_newstyle ();
+    store_parm_decls_newstyle (fndecl, arg_info);
   else
-    store_parm_decls_oldstyle ();
+    store_parm_decls_oldstyle (fndecl, arg_info);
 
   /* The next call to pushlevel will be a function body.  */
 
