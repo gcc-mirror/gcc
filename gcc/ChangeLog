@@ -1,3 +1,8 @@
+Tue Jan 19 21:08:20 1999  Richard Henderson  <rth@cygnus.com>
+
+	* expr.c (emit_move_insn_1): Revert 17 Dec change.  Don't emit
+	clobber during or after reload.
+
 Tue Jan 19 16:56:03 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genoutput.c (name_for_index): New function.
