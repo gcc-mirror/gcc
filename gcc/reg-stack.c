@@ -1775,6 +1775,12 @@ subst_stack_regs_pat (insn, regstack, pat)
 	  case IF_THEN_ELSE:
 	    /* This insn requires the top of stack to be the destination.  */
 
+	    src1 = get_true_reg (&XEXP (pat_src, 1));
+	    src2 = get_true_reg (&XEXP (pat_src, 2));
+
+	    src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
+	    src2_note = find_regno_note (insn, REG_DEAD, REGNO (*src2));
+
 	    /* If the comparison operator is an FP comparison operator,
 	       it is handled correctly by compare_for_stack_reg () who
 	       will move the destination to the top of stack. But if the
@@ -1782,13 +1788,35 @@ subst_stack_regs_pat (insn, regstack, pat)
 	       have to handle it here.  */
 	    if (get_hard_regnum (regstack, *dest) >= FIRST_STACK_REG
 		&& REGNO (*dest) != regstack->reg[regstack->top])
-	      emit_swap_insn (insn, regstack, *dest);	
+	      {
+		/* In case one of operands is the top of stack and the operands
+		   dies, it is safe to make it the destination operand by reversing
+		   the direction of cmove and avoid fxch.  */
+		if ((REGNO (*src1) == regstack->reg[regstack->top]
+		     && src1_note)
+		    || (REGNO (*src2) == regstack->reg[regstack->top]
+			&& src2_note))
+		  {
 
-	    src1 = get_true_reg (&XEXP (pat_src, 1));
-	    src2 = get_true_reg (&XEXP (pat_src, 2));
+		    /* We know that both sources "dies", as one dies and other
+		       is overwriten by the destination.  Claim both sources
+		       to be dead, as the code bellow will properly pop the
+		       non-top-of-stack note and replace top-of-stack by the
+		       result by popping source first and then pushing result. */
+		    if (!src1_note)
+		      src1_note = REG_NOTES (insn)
+			= gen_rtx_EXPR_LIST (REG_DEAD, *src1, REG_NOTES (insn));
+		    if (!src2_note)
+		      src2_note = REG_NOTES (insn)
+			= gen_rtx_EXPR_LIST (REG_DEAD, *src2, REG_NOTES (insn));
 
-	    src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
-	    src2_note = find_regno_note (insn, REG_DEAD, REGNO (*src2));
+		    /* i386 do have comparison always reversible.  */
+		    PUT_CODE (XEXP (pat_src, 0),
+			      reversed_comparison_code (XEXP (pat_src, 0), insn));
+		  }
+		else
+	          emit_swap_insn (insn, regstack, *dest);	
+	      }
 
 	    {
 	      rtx src_note [3];

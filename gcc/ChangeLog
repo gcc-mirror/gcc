@@ -1,3 +1,18 @@
+Wed Sep  5 17:28:49 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (size_cost): New static variable.
+	(override_function): Use size_cost when -Os is specified.
+
+	* i386.c (ix86_expand_prologue): Set use_fast_prologue_epilogue
+	properly;  Use current_function_calls_eh_return.
+	(ix86_expand_epilogue): Avoid dummy optimize_size tests;
+	use leave to avoid depdendancy chain.
+
+	* local-alloc.c (update_equiv_regs): Use CFG to iterate over INSN stream;
+	get BB loop_depth instead of computing it from LOOP notes.
+
+	* reg-stack.c (subst_stack_reg_pat): Handle reversal of conditional moves.
+
 2001-09-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* som.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.
