@@ -35,6 +35,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "toplev.h"
 #include "parse.h"
 
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
+
 #ifdef HAVE_NL_LANGINFO
 #include <langinfo.h>
 #endif

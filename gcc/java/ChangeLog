@@ -1,3 +1,8 @@
+2000-09-13  Tom Tromey  <tromey@cygnus.com>
+
+	* jcf-parse.c: Include <locale.h>.
+	* jv-scan.c: Include <locale.h>.
+
 2000-09-12  Tom Tromey  <tromey@cygnus.com>
 
 	* expr.c (pop_type_0): Return `Object' if trying to merge two
