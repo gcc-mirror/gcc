@@ -1,5 +1,15 @@
 2000-02-01  Richard Henderson  <rth@cygnus.com>
 
+	* i386.c (general_no_elim_operand): New.
+	(nonmemory_no_elim_operand): New.
+	(ix86_expand_move): Copy eliminable operands before a push.
+	* i386-protos.h: Declare new functions.
+	* i386.h (CAN_ELIMINATE): Simplify.
+	(PREDICATE_CODES): Update.
+	* i386.md (push insns): Don't allow eliminable register operands.
+
+2000-02-01  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (mark_regs_live_at_end): Follow expand_function_end and
 	replace BLKmode with DECL_RTL's mode.
 

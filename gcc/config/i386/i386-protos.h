@@ -50,6 +50,8 @@ extern int const1_operand PARAMS ((rtx, enum machine_mode));
 extern int const248_operand PARAMS ((rtx, enum machine_mode));
 extern int incdec_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_no_sp_operand PARAMS ((rtx, enum machine_mode));
+extern int general_no_elim_operand PARAMS ((rtx, enum machine_mode));
+extern int nonmemory_no_elim_operand PARAMS ((rtx, enum machine_mode));
 extern int q_regs_operand PARAMS ((rtx, enum machine_mode));
 extern int non_q_regs_operand PARAMS ((rtx, enum machine_mode));
 extern int no_comparison_operator PARAMS ((rtx, enum machine_mode));
