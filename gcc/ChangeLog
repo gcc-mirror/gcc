@@ -1,3 +1,8 @@
+Fri Apr  9 11:18:55 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* c-common.c (decl_attributes, A_INIT_PRIORITY): Allow arrays
+	of classes, too.
+
 Fri Apr  9 10:40:10 1999  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
 
 	* rs6000.c (rs6000_override_options, ptt, rs6000_file_start,
