@@ -511,14 +511,14 @@ inline istream& WS(istream& str) { return ws(str); }
 class Y {
 public:
     Y() {}
-    virtual const char *stringify() = 0;
+  virtual const char *stringify() = 0;
     virtual char *stringify2() const = 0; // { dg-error "overriding" } 
 };
 
 class X: public Y {
 public:
     X(): Y() {}
-    char *stringify();		// { dg-error "candidate" }
+    const char *stringify();		// { dg-error "candidate" }
     const char *stringify2() const;  // { dg-error "candidate|conflicting return type" }
 };
 
