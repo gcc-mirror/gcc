@@ -1,3 +1,11 @@
+2005-02-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR regression/19898.
+	* config/cris/cris.c (cris_notice_update_cc): When testing if insn
+	changes cc_status, use apply modified_in_p to part of cc_status
+	and insn, not cris_reg_overlap_mentioned_p on SET_DEST of insn
+	body.
+
 2005-02-11  Richard Henderson  <rth@redhat.com>
 
 	* tree-complex.c (expand_complex_libcall): New.

@@ -1834,13 +1834,11 @@ cris_notice_update_cc (rtx exp, rtx insn)
       if (GET_CODE (exp) == SET)
 	{
 	  if (cc_status.value1
-	      && cris_reg_overlap_mentioned_p (SET_DEST (exp),
-					     cc_status.value1))
+	      && modified_in_p (cc_status.value1, insn))
 	    cc_status.value1 = 0;
 
 	  if (cc_status.value2
-	      && cris_reg_overlap_mentioned_p (SET_DEST (exp),
-					     cc_status.value2))
+	      && modified_in_p (cc_status.value2, insn))
 	    cc_status.value2 = 0;
 	}
       return;
@@ -1970,14 +1968,12 @@ cris_notice_update_cc (rtx exp, rtx insn)
 		{
 		  /* There's no CC0 change when clearing a register or
 		     memory.  Just check for overlap.  */
-		  if ((cc_status.value1
-		       && cris_reg_overlap_mentioned_p (SET_DEST (exp),
-							cc_status.value1)))
+		  if (cc_status.value1
+		      && modified_in_p (cc_status.value1, insn))
 		    cc_status.value1 = 0;
 
-		  if ((cc_status.value2
-		       && cris_reg_overlap_mentioned_p (SET_DEST (exp),
-							cc_status.value2)))
+		  if (cc_status.value2
+		      && modified_in_p (cc_status.value2, insn))
 		    cc_status.value2 = 0;
 
 		  return;
@@ -2009,14 +2005,12 @@ cris_notice_update_cc (rtx exp, rtx insn)
 	    {
 	      /* When SET to MEM, then CC is not changed (except for
 		 overlap).  */
-	      if ((cc_status.value1
-		   && cris_reg_overlap_mentioned_p (SET_DEST (exp),
-						    cc_status.value1)))
+	      if (cc_status.value1
+		  && modified_in_p (cc_status.value1, insn))
 		cc_status.value1 = 0;
 
-	      if ((cc_status.value2
-		   && cris_reg_overlap_mentioned_p (SET_DEST (exp),
-						    cc_status.value2)))
+	      if (cc_status.value2
+		  && modified_in_p (cc_status.value2, insn))
 		cc_status.value2 = 0;
 
 	      return;
@@ -2053,31 +2047,11 @@ cris_notice_update_cc (rtx exp, rtx insn)
 		  /* For "move.S rz,[rx=ry+o]" and "clear.S [rx=ry+o]",
 		     say flags are not changed, except for overlap.  */
 		  if (cc_status.value1
-		      && cris_reg_overlap_mentioned_p (XEXP
-						       (XVECEXP
-							(exp, 0, 0), 0),
-						       cc_status.value1))
-		    cc_status.value1 = 0;
-
-		  if (cc_status.value1
-		      && cris_reg_overlap_mentioned_p (XEXP
-						       (XVECEXP
-							(exp, 0, 1), 0),
-						       cc_status.value1))
+		      && modified_in_p (cc_status.value1, insn))
 		    cc_status.value1 = 0;
 
 		  if (cc_status.value2
-		      && cris_reg_overlap_mentioned_p (XEXP
-						       (XVECEXP
-							(exp, 0, 0), 0),
-						       cc_status.value2))
-		    cc_status.value2 = 0;
-
-		  if (cc_status.value2
-		      && cris_reg_overlap_mentioned_p (XEXP
-						       (XVECEXP
-							(exp, 0, 1), 0),
-						       cc_status.value2))
+		      && modified_in_p (cc_status.value2, insn))
 		    cc_status.value2 = 0;
 
 		  return;
