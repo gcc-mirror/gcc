@@ -1,3 +1,10 @@
+2001-05-18  Bernd Schmidt  <bernds@redhat.com>
+
+	Revert
+	2001-02-09  Nick Clifton  <nickc@redhat.com>
+	* config/arm/arm.md: Change output constraint on post inc
+	load/store multiple patterns to be a read/write constraint.
+
 2001-05-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* function.c (expand_function_start): Avoid creating BLKmode
