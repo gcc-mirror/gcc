@@ -3888,7 +3888,7 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest)
 	 force a reload in that case.  So we should not do anything here.  */
 
       else if (regno >= FIRST_PSEUDO_REGISTER
-#if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
+#ifdef LOAD_EXTEND_OP
 	       && (GET_MODE_SIZE (GET_MODE (x))
 		   <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
 #endif
