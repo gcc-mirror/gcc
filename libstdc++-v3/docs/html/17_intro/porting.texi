@@ -142,18 +142,11 @@ need to define.  You will need to add them to the
 target.  It will not work to simply define these macros in
 @file{os_defines.h}.
 
-At this time, there are two libstdc++-v3-specific macros which may be
+At this time, there is one libstdc++-v3-specific macro which may be
 defined.  @code{_G_USING_THUNKS} may be defined to 0 to express that the
 port doesn't use thunks (although it is unclear that this is still
 useful since libio support isn't currently working and the g++ v3 ABI
 invalidates the assumption that some ports don't use thunks).
-@code{_GLIBCPP_AVOID_FSEEK} may be defined if seeking on an interactive
-stream (or one hooked to a pipe) is not allowed by the OS.  In this
-case, getc()/ungetc() will be used at some key locations in the library
-implementation instead of fseek().  Currently, the code path to avoid
-fseek() is only enabled when the seek size is 1 character away from the
-current stream position.  This is known to improve *-unknown-freebsd*,
-sparc-sun-solaris2.* and *-*-mingw32*.
 
 Finally, you should bracket the entire file in an include-guard, like
 this:
