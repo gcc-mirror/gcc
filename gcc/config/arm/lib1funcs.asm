@@ -267,6 +267,14 @@ Ldiv_zero:
 	ret
 */
 
+#ifdef __APCS_26__
+#define RET	movs
+#define RETCOND ^
+#else
+#define RET	mov
+#define RETCOND
+#endif
+
 #ifdef L_udivsi3
 
 ip	.req	r12
@@ -583,14 +591,14 @@ Lend_regular_divide:
 Lgot_result:
 
 	mov r0, r2
-	ldmia	sp!, {r4, r5, pc}
+	ldmia	sp!, {r4, r5, pc}RETCOND
 
 Ldiv_zero:
 	@ Divide by zero trap.  If it returns, return 0 (about as
 	@ wrong as possible, but that is what SunOS does...).
 	bl	___div0
 	mov	r0, #0
-	ldmia	sp!, {r4, r5, pc}
+	ldmia	sp!, {r4, r5, pc}RETCOND
 
 #endif /* L_udivsi3 */
 
@@ -917,14 +925,14 @@ Lgot_result:
 	rsbmi r2, r2, #0
 
 	mov r0, r2
-	ldmia	sp!, {r4, r5, r6, pc}
+	ldmia	sp!, {r4, r5, r6, pc}RETCOND
 
 Ldiv_zero:
 	@ Divide by zero trap.  If it returns, return 0 (about as
 	@ wrong as possible, but that is what SunOS does...).
 	bl	___div0
 	mov	r0, #0
-	ldmia	sp!, {r4, r5, r6, pc}
+	ldmia	sp!, {r4, r5, r6, pc}RETCOND
 
 #endif /* L_divsi3 */
 
@@ -1244,14 +1252,14 @@ Lend_regular_divide:
 Lgot_result:
 
 	mov r0, r3
-	ldmia	sp!, {r4, r5, pc}
+	ldmia	sp!, {r4, r5, pc}RETCOND
 
 Ldiv_zero:
 	@ Divide by zero trap.  If it returns, return 0 (about as
 	@ wrong as possible, but that is what SunOS does...).
 	bl	___div0
 	mov	r0, #0
-	ldmia	sp!, {r4, r5, pc}
+	ldmia	sp!, {r4, r5, pc}RETCOND
 
 #endif /* L_umodsi3 */
 
@@ -1578,14 +1586,14 @@ Lgot_result:
 	rsbmi r3, r3, #0
 
 	mov r0, r3
-	ldmia	sp!, {r4, r5, r6, pc}
+	ldmia	sp!, {r4, r5, r6, pc}RETCOND
 
 Ldiv_zero:
 	@ Divide by zero trap.  If it returns, return 0 (about as
 	@ wrong as possible, but that is what SunOS does...).
 	bl	___div0
 	mov	r0, #0
-	ldmia	sp!, {r4, r5, r6, pc}
+	ldmia	sp!, {r4, r5, r6, pc}RETCOND
 
 #endif /* L_modsi3 */
 
@@ -1594,6 +1602,6 @@ Ldiv_zero:
 	.globl ___div0
 	.align 0
 ___div0:
-	mov	pc, lr
+	RET	pc, lr
 
 #endif /* L_divmodsi_tools */
