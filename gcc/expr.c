@@ -1292,7 +1292,20 @@ convert_modes (mode, oldmode, x, unsignedp)
   if (unsignedp && GET_MODE_CLASS (mode) == MODE_INT
       && GET_MODE_BITSIZE (mode) == 2 * HOST_BITS_PER_WIDE_INT
       && GET_CODE (x) == CONST_INT && INTVAL (x) < 0)
-    return immed_double_const (INTVAL (x), (HOST_WIDE_INT) 0, mode);
+    {
+      HOST_WIDE_INT val = INTVAL (x);
+
+      if (oldmode != VOIDmode
+	  && HOST_BITS_PER_WIDE_INT > GET_MODE_BITSIZE (oldmode))
+	{
+	  int width = GET_MODE_BITSIZE (oldmode);
+
+	  /* We need to zero extend VAL.  */
+	  val &= ((HOST_WIDE_INT) 1 << width) - 1;
+	}
+
+      return immed_double_const (val, (HOST_WIDE_INT) 0, mode);
+    }
 
   /* We can do this with a gen_lowpart if both desired and current modes
      are integer, and this is either a constant integer, a register, or a
