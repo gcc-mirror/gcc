@@ -7565,7 +7565,12 @@ modified_type_die (type, is_const_type, is_volatile_type, context_die)
 	     copy was created to help us keep track of typedef names) and
 	     that copy might have a different TYPE_UID from the original
 	     ..._TYPE node.  */
-	  mod_type_die = lookup_type_die (type_main_variant (type));
+	  if (TREE_CODE (type) != VECTOR_TYPE)
+	    mod_type_die = lookup_type_die (type_main_variant (type));
+	  else
+	    /* Vectors have the debugging information in the type,
+	       not the main variant.  */
+	    mod_type_die = lookup_type_die (type);
 	  if (mod_type_die == NULL)
 	    abort ();
 	}
@@ -10976,10 +10981,13 @@ gen_type_die (type, context_die)
   if (type == NULL_TREE || type == error_mark_node)
     return;
 
-  /* We are going to output a DIE to represent the unqualified version of
-     this type (i.e. without any const or volatile qualifiers) so get the
-     main variant (i.e. the unqualified version) of this type now.  */
-  type = type_main_variant (type);
+  /* We are going to output a DIE to represent the unqualified version
+     of this type (i.e. without any const or volatile qualifiers) so
+     get the main variant (i.e. the unqualified version) of this type
+     now.  (Vectors are special because the debugging info is in the
+     cloned type itself).  */
+  if (TREE_CODE (type) != VECTOR_TYPE)
+    type = type_main_variant (type);
 
   if (TREE_ASM_WRITTEN (type))
     return;
