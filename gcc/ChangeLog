@@ -1,3 +1,7 @@
+Tue Nov 25 10:00:42 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* crtstuff.c (do_global_dtors_aux): Handle multiple calls better.
+
 Tue Nov 25 01:26:55 1997  Bruno Haible <haible@ilog.fr>:
 
 	* dwarf2out.c (ASM_OUTPUT_DWARF_DELTA1): Implement.
