@@ -1102,6 +1102,13 @@ AC_SUBST(ZIP)
 # Create it, so that compile/link tests don't fail
 test -f libgcj.spec || touch libgcj.spec
 
+# Use a semicolon as CLASSPATH separator for MinGW, otherwise a colon.
+case $build in
+    *-mingw32) CLASSPATH_SEPARATOR=';' ;;
+    *)         CLASSPATH_SEPARATOR=':' ;;
+esac
+AC_SUBST(CLASSPATH_SEPARATOR)
+
 # We must search the source tree for java.lang, since we still don't
 # have libgcj.jar nor java/lang/*.class
 GCJ_SAVE_CPPFLAGS=$CPPFLAGS
