@@ -1,5 +1,9 @@
 2003-11-21  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/invoke.texi: Mention dV and dZ.
+
+2003-11-21  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* doc/invoke.texi: Update dump file names.
 	Remove de, dW, and dX.
 
