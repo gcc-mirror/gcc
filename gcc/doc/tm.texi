@@ -6663,6 +6663,12 @@ you want to control one-only symbol support with a compiler flag, or if
 setting the @code{DECL_ONE_ONLY} flag is enough to mark a declaration to
 be emitted as one-only.
 
+@deftypefn {Target Hook} void TARGET_ASM_ASSEMBLE_VISIBILITY (tree @var{decl}, const char *@var{visibility})
+This target hook is a function to output to @var{asm_out_file} some
+commands that will make the symbol(s) associated with @var{decl} have
+hidden, protected or internal visibility as specified by @var{visibility}.
+@end deftypefn
+
 @findex ASM_OUTPUT_EXTERNAL
 @item ASM_OUTPUT_EXTERNAL (@var{stream}, @var{decl}, @var{name})
 A C statement (sans semicolon) to output to the stdio stream

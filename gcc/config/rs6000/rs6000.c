@@ -186,6 +186,7 @@ static void toc_hash_mark_table PARAMS ((void *));
 static int constant_pool_expr_1 PARAMS ((rtx, int *, int *));
 static struct machine_function * rs6000_init_machine_status PARAMS ((void));
 static bool rs6000_assemble_integer PARAMS ((rtx, unsigned int, int));
+static void rs6000_assemble_visibility PARAMS ((tree, const char *));
 static int rs6000_ra_ever_killed PARAMS ((void));
 static tree rs6000_handle_longcall_attribute PARAMS ((tree *, tree, tree, int, bool *));
 const struct attribute_spec rs6000_attribute_table[];
@@ -343,6 +344,11 @@ static const char alt_reg_names[][8] =
    in 64-bit code.  */
 #undef TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER rs6000_assemble_integer
+
+#ifdef HAVE_GAS_HIDDEN
+#undef TARGET_ASM_ASSEMBLE_VISIBILITY
+#define TARGET_ASM_ASSEMBLE_VISIBILITY rs6000_assemble_visibility
+#endif
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE rs6000_output_function_prologue
@@ -2249,7 +2255,7 @@ rs6000_legitimize_reload_address (x, mode, opnum, type, ind_levels, win)
       && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
       && REG_MODE_OK_FOR_BASE_P (XEXP (x, 0), mode)
       && GET_CODE (XEXP (x, 1)) == CONST_INT
-       && !SPE_VECTOR_MODE (mode)
+      && !SPE_VECTOR_MODE (mode)
       && !ALTIVEC_VECTOR_MODE (mode))
     {
       HOST_WIDE_INT val = INTVAL (XEXP (x, 1));
@@ -8152,6 +8158,31 @@ rs6000_assemble_integer (x, size, aligned_p)
 #endif /* RELOCATABLE_NEEDS_FIXUP */
   return default_assemble_integer (x, size, aligned_p);
 }
+
+#ifdef HAVE_GAS_HIDDEN
+/* Emit an assembler directive to set symbol visibility for DECL to
+   VISIBILITY_TYPE.  */
+
+void
+rs6000_assemble_visibility (decl, visibility_type)
+     tree decl;
+     const char *visibility_type;
+{
+  assemble_visibility (decl, visibility_type);
+
+  /* Functions need to have their entry point symbol visibility set as
+     well as their descriptor symbol visibility.  */
+  if (DEFAULT_ABI == ABI_AIX && TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      const char *name;
+
+      name = ((* targetm.strip_name_encoding)
+	      (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl))));
+
+      fprintf (asm_out_file, "\t.%s\t.%s\n", visibility_type, name);
+    }
+}
+#endif
 
 enum rtx_code
 rs6000_reverse_condition (mode, code)
@@ -8787,8 +8818,9 @@ first_reg_to_save ()
       break;
 
 #if TARGET_MACHO
-  if (flag_pic && current_function_uses_pic_offset_table &&
-      (first_reg > RS6000_PIC_OFFSET_TABLE_REGNUM))
+  if (flag_pic
+      && current_function_uses_pic_offset_table
+      && first_reg > RS6000_PIC_OFFSET_TABLE_REGNUM)
     return RS6000_PIC_OFFSET_TABLE_REGNUM;
 #endif
 
