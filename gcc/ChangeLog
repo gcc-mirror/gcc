@@ -1,3 +1,7 @@
+Sun Nov 22 16:07:57 PST 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Nov 22 13:40:02 1998  Bernd Schmidt  <crux@pool.informatik.rwth-aachen.de>
 
 	* regmove.c (regmove_profitable_p): Use return value of find_matches
