@@ -1,3 +1,13 @@
+1999-04-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (maybe_fixup_vptrs): Remove declaration.
+	(build_class_init_list): Likewise.
+	* decl.c (pushdecl_class_level): Call check_template_shadow here
+	... 
+	(push_class_level_binding): ... not here.
+	* search.c (dfs_push_type_decls): Only avoid
+	template-self-reference TYPE_DECLs if they are from base classes.
+
 1999-04-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (check_template_shadow): Don't treat OVERLOADs as _DECL

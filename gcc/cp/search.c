@@ -2943,7 +2943,8 @@ dfs_push_type_decls (binfo, data)
   type = BINFO_TYPE (binfo);
   for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
     if (DECL_NAME (fields) && TREE_CODE (fields) == TYPE_DECL
-	&& !template_self_reference_p (type, fields))
+	&& !(!same_type_p (type, current_class_type)
+	     && template_self_reference_p (type, fields)))
       setup_class_bindings (DECL_NAME (fields), /*type_binding_p=*/1);
 
   /* We can't just use BINFO_MARKED because envelope_add_decl uses

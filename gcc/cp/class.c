@@ -121,7 +121,6 @@ static void merge_overrides PROTO((tree, tree, int, tree));
 static void override_one_vtable PROTO((tree, tree, tree));
 static void mark_overriders PROTO((tree, tree));
 static void check_for_override PROTO((tree, tree));
-static tree maybe_fixup_vptrs PROTO((tree, tree, tree));
 static tree get_class_offset_1 PROTO((tree, tree, tree, tree, tree));
 static tree get_class_offset PROTO((tree, tree, tree, tree));
 static void modify_one_vtable PROTO((tree, tree, tree, tree));
@@ -130,7 +129,6 @@ static void modify_all_direct_vtables PROTO((tree, int, tree, tree,
 					     tree));
 static void modify_all_indirect_vtables PROTO((tree, int, int, tree,
 					       tree, tree));
-static void build_class_init_list PROTO((tree));
 static int finish_base_struct PROTO((tree, struct base_info *));
 static void finish_struct_methods PROTO((tree));
 static void maybe_warn_about_overly_private_class PROTO ((tree));
