@@ -221,6 +221,7 @@ enum node_type {
  T_ELSE,	/* `#else' */
  T_ELIF,	/* `#elif' */
  T_UNDEF,	/* `#undef' */
+ T_ERROR,	/* `#error' */
  T_LINE,	/* `#line' */
  T_ENDIF,	/* `#endif' */
  T_ASSERT,	/* `#assert' */
@@ -327,6 +328,7 @@ struct arglist {
 /* Function prototypes.  */
 
 static void do_define	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_error	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void do_line	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void do_include	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void do_undef	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
@@ -416,6 +418,7 @@ struct directive directive_table[] = {
   {  4, do_else,    "else",    T_ELSE    },
   {  6, do_ifndef,  "ifndef",  T_IFNDEF  },
   {  5, do_undef,   "undef",   T_UNDEF   },
+  {  5, do_error,   "error",   T_ERROR   },
   {  4, do_line,    "line",    T_LINE    },
   {  4, do_elif,    "elif",    T_ELIF    },
   {  6, do_assert,  "assert",  T_ASSERT  },
@@ -3172,6 +3175,16 @@ test_assertion (pbuf)
     }
 
   return result;
+}
+
+/* Handle a #error directive.  */
+static void
+do_error (buf, limit, op)
+     U_CHAR *buf;
+     U_CHAR *limit;
+     FILE_BUF *op ATTRIBUTE_UNUSED;
+{
+  error ("#error%.*s", limit - buf, buf);
 }
 
 /* Handle a #assert directive.  */
