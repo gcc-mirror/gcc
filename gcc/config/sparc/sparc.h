@@ -2642,14 +2642,14 @@ do {                                                                    \
 
    On v9 and later, which have branch prediction facilities, we set
    it to the depth of the pipeline as that is the cost of a
-   mispredicted branch.
-
-   ??? Set to 9 when PROCESSOR_ULTRASPARC3 is added  */
+   mispredicted branch.  */
 
 #define BRANCH_COST \
 	((sparc_cpu == PROCESSOR_V9 \
 	  || sparc_cpu == PROCESSOR_ULTRASPARC) \
-	 ? 7 : 3)
+	 ? 7 \
+         : (sparc_cpu == PROCESSOR_ULTRASPARC3 \
+            ? 9 : 3))
 
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE.  The purpose for the cost of MULT is to encourage
@@ -2684,11 +2684,15 @@ do {                                                                    \
     return 19;
 
 #define PREFETCH_BLOCK \
-	((sparc_cpu == PROCESSOR_ULTRASPARC) ? 64 : 32)
+	((sparc_cpu == PROCESSOR_ULTRASPARC \
+          || sparc_cpu == PROCESSOR_ULTRASPARC3) \
+         ? 64 : 32)
 
-/* ??? UltraSPARC-III note: Can set this to 8 for ultra3.  */
 #define SIMULTANEOUS_PREFETCHES \
-	((sparc_cpu == PROCESSOR_ULTRASPARC) ? 2 : 3)
+	((sparc_cpu == PROCESSOR_ULTRASPARC) \
+         ? 2 \
+         : (sparc_cpu == PROCESSOR_ULTRASPARC3 \
+            ? 8 : 3))
 
 /* Control the assembler format that we output.  */
 

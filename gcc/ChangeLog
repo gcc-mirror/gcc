@@ -1,3 +1,10 @@
+2002-04-29  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.h (BRANCH_COST, PREFETCH_BLOCK,
+	SIMULTANEOUS_PREFETCHES): Tune for UltraSPARC-III.
+	* config/sparc/sparc.md (call + jmp 32-bit peepholes): Likewise.
+	* config/sparc/sparc.c (sparc_initialize_trampoline): Likewise.
+
 2002-04-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* combine.c (find_split_point): Use gen_int_mode.
