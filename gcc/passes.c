@@ -624,7 +624,8 @@ rest_of_handle_old_regalloc (tree decl, rtx insns)
   allocate_reg_info (max_regno, FALSE, TRUE);
 
   /* And the reg_equiv_memory_loc array.  */
-  reg_equiv_memory_loc = xcalloc (max_regno, sizeof (rtx));
+  VARRAY_GROW (reg_equiv_memory_loc_varray, max_regno);
+  reg_equiv_memory_loc = &VARRAY_RTX (reg_equiv_memory_loc_varray, 0);
 
   allocate_initial_values (reg_equiv_memory_loc);
 

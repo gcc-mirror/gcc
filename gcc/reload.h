@@ -164,6 +164,7 @@ extern struct reload rld[MAX_RELOADS];
 extern int n_reloads;
 #endif
 
+extern GTY (()) struct varray_head_tag *reg_equiv_memory_loc_varray;
 extern rtx *reg_equiv_constant;
 extern rtx *reg_equiv_memory_loc;
 extern rtx *reg_equiv_address;

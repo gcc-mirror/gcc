@@ -887,7 +887,8 @@ reg_alloc (void)
 			 "after allocation/spilling, before reload", NULL);
 
   /* Allocate the reg_equiv_memory_loc array for reload.  */
-  reg_equiv_memory_loc = xcalloc (max_regno, sizeof (rtx));
+  VARRAY_GROW (reg_equiv_memory_loc_varray, max_regno);
+  reg_equiv_memory_loc = &VARRAY_RTX (reg_equiv_memory_loc_varray, 0);
   /* And possibly initialize it.  */
   allocate_initial_values (reg_equiv_memory_loc);
   /* And one last regclass pass just before reload.  */

@@ -27,6 +27,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    ought to be used instead.
 
    Before processing the first insn of the function, call `init_reload'.
+   init_reload actually has to be called earlier anyway.
 
    To scan an insn, call `find_reloads'.  This does two things:
    1. sets up tables describing which values must be reloaded
