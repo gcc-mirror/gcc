@@ -1,3 +1,8 @@
+2003-03-14  Jason Merrill  <jason@redhat.com>
+
+	PR optimization/6871
+	* varasm.c (assemble_variable): Leave constant zeroes in .rodata.
+
 2003-03-14  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-opts.c (finish_options): New.
