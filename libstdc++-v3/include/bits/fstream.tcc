@@ -103,7 +103,11 @@ namespace std
 	      
 	      if ((__mode & ios_base::ate)
 		  && this->seekoff(0, ios_base::end, __mode) < 0)
-		this->close();
+		{
+		  // 27.8.1.3,4
+		  this->close();
+		  return __ret;
+		}
 
 	      __ret = this;
 	    }
