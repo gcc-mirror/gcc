@@ -1,5 +1,9 @@
 2005-01-05  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* c-parse.in (asm_string): Add trailing semicolon.
+
+2005-01-05  Joseph S. Myers  <joseph@codesourcery.com>
+
 	* c-parse.in (asm_string): New.  Don't allow wide strings in
 	'asm'.
 	(simple_asm_expr, asm_argument, asm_operand, asm_clobbers): Use
