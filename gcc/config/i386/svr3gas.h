@@ -17,9 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "gas.h"
+#include "i386/gas.h"
 
-/* Add stuff that normally comes from i386v.h */
+/* Add stuff that normally comes from i386/sysv3.h */
 
 /* longjmp may fail to restore the registers if called from the same
    function that called setjmp.  To compensate, the compiler avoids
@@ -61,7 +61,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
       }							\
   } while (0)
 
-/* Add stuff that normally comes from i386v.h via svr3.h */
+/* Add stuff that normally comes from i386/sysv3.h via svr3.h */
 
 /* Define the actual types of some ANSI-mandated types.  These
    definitions should work for most SVR3 systems.  */
