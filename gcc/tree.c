@@ -1801,7 +1801,7 @@ unsafe_for_reeval (expr)
 {
   int unsafeness = 0;
   enum tree_code code;
-  int i, tmp;
+  int i, tmp, tmp2;
   tree exp;
   int first_rtl;
 
@@ -1827,8 +1827,9 @@ unsafe_for_reeval (expr)
       return unsafeness;
 
     case CALL_EXPR:
+      tmp2 = unsafe_for_reeval (TREE_OPERAND (expr, 0));
       tmp = unsafe_for_reeval (TREE_OPERAND (expr, 1));
-      return MAX (tmp, 1);
+      return MAX (MAX (tmp, 1), tmp2);
 
     case TARGET_EXPR:
       unsafeness = 1;

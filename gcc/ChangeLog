@@ -1,3 +1,7 @@
+2002-12-05  Dale Johannesen  <dalej@apple.com>
+
+	* tree.c (unsafe_for_reeval):  Consider callee child of CALL_EXPR.
+
 2002-12-05  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygwin.h (SUBTARGET_PROLOGUE): Replace with
