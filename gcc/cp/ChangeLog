@@ -1,5 +1,15 @@
 1998-08-13  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* lang-options.h: Add -finit-priority.
+	* decl2.c: Likewise.  Check flag_init_priority instead of
+	USE_INIT_PRIORITY.
+
+	* decl2.c (setup_initp): New fn.
+	(start_objects, finish_objects, do_ctors): Handle init_priority.
+	(do_dtors, finish_file): Likewise.
+
+1998-08-13  Jason Merrill  <jason@yorick.cygnus.com>
+
 	* pt.c (tsubst_copy): Hush warning.
 
 	* rtti.c (get_tinfo_fn): Also set DECL_IGNORED_P.

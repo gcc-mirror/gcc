@@ -716,7 +716,7 @@ while (0)
 
 /* Tell collect what flags to pass to nm.  */
 #ifndef NM_FLAGS
-#define NM_FLAGS "-Bp"
+#define NM_FLAGS "-Bn"
 #endif
 
 

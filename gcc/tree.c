@@ -4806,24 +4806,24 @@ dump_tree_statistics ()
 #define FILE_FUNCTION_PREFIX_LEN 9
 
 #ifndef NO_DOLLAR_IN_LABEL
-#define FILE_FUNCTION_FORMAT "_GLOBAL_$D$%s"
+#define FILE_FUNCTION_FORMAT "_GLOBAL_$%s$%s"
 #else /* NO_DOLLAR_IN_LABEL */
 #ifndef NO_DOT_IN_LABEL
-#define FILE_FUNCTION_FORMAT "_GLOBAL_.D.%s"
+#define FILE_FUNCTION_FORMAT "_GLOBAL_.%s.%s"
 #else /* NO_DOT_IN_LABEL */
-#define FILE_FUNCTION_FORMAT "_GLOBAL__D_%s"
+#define FILE_FUNCTION_FORMAT "_GLOBAL__%s_%s"
 #endif	/* NO_DOT_IN_LABEL */
 #endif	/* NO_DOLLAR_IN_LABEL */
 
 extern char * first_global_object_name;
 extern char * weak_global_object_name;
 
-/* If KIND=='I', return a suitable global initializer (constructor) name.
-   If KIND=='D', return a suitable global clean-up (destructor) name.  */
+/* TYPE is some string to identify this function to the linker or
+   collect2.  */
 
 tree
-get_file_function_name (kind)
-     int kind;
+get_file_function_name_long (type)
+     char *type;
 {
   char *buf;
   register char *p;
@@ -4837,13 +4837,14 @@ get_file_function_name (kind)
   else
     p = input_filename;
 
-  buf = (char *) alloca (sizeof (FILE_FUNCTION_FORMAT) + strlen (p));
+  buf = (char *) alloca (sizeof (FILE_FUNCTION_FORMAT) + strlen (p)
+			 + strlen (type));
 
   /* Set up the name of the file-level functions we may need.  */
   /* Use a global object (which is already required to be unique over
      the program) rather than the file name (which imposes extra
      constraints).  -- Raeburn@MIT.EDU, 10 Jan 1990.  */
-  sprintf (buf, FILE_FUNCTION_FORMAT, p);
+  sprintf (buf, FILE_FUNCTION_FORMAT, type, p);
 
   /* Don't need to pull weird characters out of global names.  */
   if (p != first_global_object_name)
@@ -4866,10 +4867,23 @@ get_file_function_name (kind)
 	  *p = '_';
     }
 
-  buf[FILE_FUNCTION_PREFIX_LEN] = kind;
-
   return get_identifier (buf);
 }
+
+/* If KIND=='I', return a suitable global initializer (constructor) name.
+   If KIND=='D', return a suitable global clean-up (destructor) name.  */
+
+tree
+get_file_function_name (kind)
+     int kind;
+{
+  char p[2];
+  p[0] = kind;
+  p[1] = 0;
+
+  return get_file_function_name_long (p);
+}
+
 
 /* Expand (the constant part of) a SET_TYPE CONSTRUCTOR node.
    The result is placed in BUFFER (which has length BIT_SIZE),

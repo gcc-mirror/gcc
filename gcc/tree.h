@@ -1124,6 +1124,11 @@ struct tree_type
    do not allocate storage, and refer to a definition elsewhere.  */
 #define DECL_EXTERNAL(NODE) (DECL_CHECK (NODE)->decl.external_flag)
 
+/* In a VAR_DECL for a RECORD_TYPE, sets number for non-init_priority
+   initializatons. */
+#define DEFAULT_INIT_PRIORITY 65535
+#define MAX_INIT_PRIORITY 65535
+
 /* In a TYPE_DECL
    nonzero means the detail info about this type is not dumped into stabs.
    Instead it will generate cross reference ('x') of names. 
@@ -1843,6 +1848,7 @@ extern void (*incomplete_decl_finalize_hook)	PROTO((tree));
 /* In tree.c */
 extern char *perm_calloc			PROTO((int, long));
 extern tree get_file_function_name		PROTO((int));
+extern tree get_file_function_name_long 	PROTO((char *));
 extern tree get_set_constructor_bits		PROTO((tree, char *, int));
 extern tree get_set_constructor_bytes		PROTO((tree,
 						       unsigned char *, int));

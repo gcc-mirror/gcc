@@ -66,6 +66,8 @@ DEFINE_LANG_NAME ("C++")
   { "-fno-implement-inlines", "Export functions even if they can be inlined" },
   { "-fimplicit-templates", "Emit implicit instatiations if needed" },
   { "-fno-implicit-templates", "" },
+  { "-finit-priority", "Handle the init_priority attribute" },
+  { "-fno-init-priority", "" },
   { "-flabels-ok", "Labels can be used as first class objects" },
   { "-fno-labels-ok", "" },
   { "-fmemoize-lookups", "Enable caching of member function resolutions" },

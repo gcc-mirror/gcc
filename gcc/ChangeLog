@@ -1,3 +1,25 @@
+Thu Aug 13 17:08:11 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.h: De-conditionalize init_priority code.
+
+	* mips.h (NM_FLAGS): Change from -Bp to -Bn.
+	* collect2.c (NM_FLAGS): Change from -p to -n.
+
+	* configure.in: Turn on collect2 for mipstx39-elf.
+	Handle use_collect2=no properly.
+
+	* c-common.c: De-conditionalize init_priority code.
+	* collect2.c (extract_init_priority, sort_ids): New fns.
+	(main): Call sort_ids.
+	Move sequence_number to file scope.
+
+	* configure.in: Handle --enable-init-priority.
+	* c-common.c (attrs): Add A_INIT_PRIORITY.
+	(init_attributes, decl_attributes): Likewise.
+	* tree.h (DEFAULT_INIT_PRIORITY, MAX_INIT_PRIORITY): New macros.
+	* tree.c (get_file_function_name_long): Split out...
+	(get_file_function_name): ...from here.
+
 Thu Aug 13 16:09:53 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* expr.c (safe_from_p): Change code to ERROR_MARK only when not
