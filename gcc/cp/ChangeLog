@@ -1,3 +1,7 @@
+2001-04-12  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* method.c (make_thunk): Clear DECL_CLONED_FUNCTION.
+
 2001-04-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* optimize.c (maybe_clone_body): Copy DECL_NUM_STMTS from the
