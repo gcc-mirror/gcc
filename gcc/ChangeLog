@@ -1,3 +1,9 @@
+2003-10-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (note_invalid_constants): Try to extract the constant
+	pool value using avoid_constant_pool_reference; only use
+	get_pool_constant if that returns the original reference.
+
 2003-10-24  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/12624

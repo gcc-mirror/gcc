@@ -6894,9 +6894,23 @@ note_invalid_constants (rtx insn, HOST_WIDE_INT address, int do_pushes)
 		   && CONSTANT_POOL_ADDRESS_P (XEXP (op, 0)))
 	    {
 	      if (do_pushes)
-		push_minipool_fix (insn, address, recog_data.operand_loc[opno],
-				   recog_data.operand_mode[opno],
-				   get_pool_constant (XEXP (op, 0)));
+		{
+		  rtx cop = avoid_constant_pool_reference (op);
+
+		  /* Casting the address of something to a mode narrower
+		     than a word can cause avoid_constant_pool_reference()
+		     to return the pool reference itself.  That's no good to
+		     us here.  Lets just hope that we can use the 
+		     constant pool value directly.  */
+		  if (op == cop)
+		    op = get_pool_constant (XEXP (op, 0));
+		  else
+		    op = cop;
+
+		  push_minipool_fix (insn, address,
+				     recog_data.operand_loc[opno],
+				     recog_data.operand_mode[opno], op);
+		}
 
 	      result = true;
 	    }
