@@ -1,3 +1,8 @@
+2003-06-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* flow.c (initialize_uninitialized_subregs): Use
+	emit_move_insn instead of emitting a hardcoded move.
+
 2003-06-19  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (init_cumulative_args): Limit CALL_LIBCALL
