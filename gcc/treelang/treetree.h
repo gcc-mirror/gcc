@@ -31,15 +31,6 @@
 
  */
 
-/* Parameter list passed to back end.  */
-struct tree_parameter_list 
-{
-  struct tree_parameter_list* next; /* Next entry.  */
-  int   type; /* See numeric types below.  */
-  unsigned char* variable_name; /* Name. */
-  tree* where_to_put_var_tree; /* Where to save decl.  */
-};
-
 tree tree_code_init_parameters (void);
 tree tree_code_add_parameter (tree list, tree proto_exp, tree exp);
 tree tree_code_get_integer_value (unsigned char *chars, unsigned int length);
@@ -49,12 +40,12 @@ tree tree_code_get_expression (unsigned int exp_type, tree type, tree op1, tree 
 tree tree_code_get_numeric_type (unsigned int size1, unsigned int sign1);
 void tree_code_create_function_initial (tree prev_saved,
                                        unsigned char* filename, int lineno,
-                                       struct tree_parameter_list* parms);
+                                       struct prod_token_parm_item* parms);
 void tree_code_create_function_wrapup (unsigned char* filename, int lineno);
 tree tree_code_create_function_prototype (unsigned char* chars,
                                          unsigned int storage_class,
                                          unsigned int ret_type,
-                                         struct tree_parameter_list* parms,                                 
+                                         struct prod_token_parm_item* parms,                                 
                                          unsigned char* filename,
                                          int lineno);
 tree tree_code_create_variable (unsigned int storage_class,
@@ -78,24 +69,5 @@ void treelang_parse_file (int debug_flag);
 void push_var_level (void);
 void pop_var_level (void);
 
-/* Storage modes.  */
-#define STATIC_STORAGE 0
-#define AUTOMATIC_STORAGE 1
-#define EXTERNAL_REFERENCE_STORAGE 2
-#define EXTERNAL_DEFINITION_STORAGE 3
 
 
-/* Numeric types.  */
-#define SIGNED_CHAR 1
-#define UNSIGNED_CHAR 2
-#define SIGNED_INT 3 
-#define UNSIGNED_INT 4
-#define VOID_TYPE 5
-
-
-#define EXP_PLUS 0 /* Addition expression.  */
-#define EXP_REFERENCE 1 /* Variable reference.  */
-#define EXP_ASSIGN 2 /* Assignment.  */
-#define EXP_FUNCTION_INVOCATION 3  /* Call function.  */
-#define EXP_MINUS 4  /* Subtraction.  */
-#define EXP_EQUALS 5  /* Equality test.  */

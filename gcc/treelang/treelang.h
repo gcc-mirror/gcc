@@ -35,64 +35,57 @@ enum category_enum
 { /* These values less likely to be there by chance unlike 0/1,
       make checks more meaningful */
   token_category = 111,
-  production_category = 222
+  production_category = 222,
+  parameter_category = 333
 };
 
 /* Input file name and FILE.  */
 extern unsigned char* in_fname;
 extern FILE* yyin;
 
-#if 0
-extern int errorcount; /* In toplev.c.  */
-#endif
+/* Forward references to satisfy mutually recursive definitions.  */
+struct token_part;
+struct production_part;
+struct prod_token_parm_item;
+typedef struct GTY(()) prod_token_parm_item item;
 
-struct token
+/* A token from the input file.  */
+
+struct token_part GTY(())
 {
-  enum category_enum category; /* Token or production. */
-  unsigned int type; /* Token type.  */
-  /* Prior to this point, production must match token.  */
   unsigned int lineno;
   unsigned int charno;
   unsigned int length; /* The value.  */
   unsigned char* chars;
 };
 
-struct production
+/* Definitions for fields in production.  */
+#define NESTING_LEVEL(a) a->tp.pro.info[0]  /* Level used for variable definitions.  */
+#define NUMERIC_TYPE(a)  a->tp.pro.info[1]  /* Numeric type used in type definitions and expressions.  */
+#define SUB_COUNT 5
+#define SYMBOL_TABLE_NAME(a) (a->tp.pro.sub[0]) /* Name token.  */
+#define EXPRESSION_TYPE(a) (a->tp.pro.sub[1]) /* Type identifier.  */
+#define OP1(a) (a->tp.pro.sub[2]) /* Exp operand1.  */
+#define PARAMETERS(a) (a->tp.pro.sub[2]) /* Function parameters.  */
+#define VARIABLE(a) (a->tp.pro.sub[2]) /* Parameter variable ptr.  */
+#define VAR_INIT(a) (a->tp.pro.sub[2]) /* Variable init.  */
+#define OP2(a) (a->tp.pro.sub[3]) /* Exp operand2.  */
+#define FIRST_PARMS(a) (a->tp.pro.sub[3]) /* Function parameters linked via struct tree_parameter_list.  */
+#define OP3(a) (a->tp.pro.sub[4]) /* Exp operand3.  */
+#define STORAGE_CLASS_TOKEN(a) (a->tp.pro.sub[4]) /* Storage class token.  */
+#define STORAGE_CLASS(a) a->tp.pro.flag1 /* Values in treetree.h.  */
+
+struct production_part GTY(())
 {
-  enum category_enum category; /* Token or Production. */
-  unsigned int type; /* Production type - a fake token name.  */
-  /* Prior to this point, production must match token.  */
-  struct token* main_token; /* Main token for error msgs; variable name token.  */
+  struct prod_token_parm_item *main_token; /* Main token for error msgs; variable name token.  */
 
   unsigned int info[2]; /* Extra information.  */
-#define NESTING_LEVEL(a) a->info[0]  /* Level used for variable definitions.  */
-#define NUMERIC_TYPE(a)  a->info[1]  /* Numeric type used in type definitions and expressions.  */
 
-
-#define SUB_COUNT 5
-  void *sub[SUB_COUNT]; /* Sub productions or tokens.  */
-
-#define SYMBOL_TABLE_NAME(a) (a->sub[0]) /* Name token.  */
-
-#define EXPRESSION_TYPE(a) (a->sub[1]) /* Type identifier.  */
-
-#define OP1(a) (a->sub[2]) /* Exp operand1.  */
-#define PARAMETERS(a) (a->sub[2]) /* Function parameters.  */
-#define VARIABLE(a) (a->sub[2]) /* Parameter variable ptr.  */
-#define VAR_INIT(a) (a->sub[2]) /* Variable init.  */
-
-#define OP2(a) (a->sub[3]) /* Exp operand2.  */
-#define FIRST_PARMS(a) (a->sub[3]) /* Function parameters linked via struct tree_parameter_list.  */
-
-#define OP3(a) (a->sub[4]) /* Exp operand3.  */
-#define STORAGE_CLASS_TOKEN(a) (a->sub[4]) /* Storage class token.  */
-
-  void *code; /* Back end hook for this item.  */
-  struct production *next; /* Next in chains of various types.  */
+  struct prod_token_parm_item *sub[SUB_COUNT]; /* Sub productions or tokens.  */
+  tree code; /* Back end hook for this item.  */
+  struct prod_token_parm_item *next; /* Next in chains of various types.  */
 
   unsigned int flag1:2;
-#define STORAGE_CLASS(a) a->flag1 /* Values in treetree.h.  */
-
   unsigned int flag2:1;
   unsigned int flag3:1;
   unsigned int flag4:1;
@@ -102,15 +95,58 @@ struct production
 
 };
 
+/* Storage modes.  */
+#define STATIC_STORAGE 0
+#define AUTOMATIC_STORAGE 1
+#define EXTERNAL_REFERENCE_STORAGE 2
+#define EXTERNAL_DEFINITION_STORAGE 3
+
+/* Numeric types.  */
+#define SIGNED_CHAR 1
+#define UNSIGNED_CHAR 2
+#define SIGNED_INT 3 
+#define UNSIGNED_INT 4
+#define VOID_TYPE 5
+
+/* Expression types.  */
+#define EXP_PLUS 0 /* Addition expression.  */
+#define EXP_REFERENCE 1 /* Variable reference.  */
+#define EXP_ASSIGN 2 /* Assignment.  */
+#define EXP_FUNCTION_INVOCATION 3  /* Call function.  */
+#define EXP_MINUS 4  /* Subtraction.  */
+#define EXP_EQUALS 5  /* Equality test.  */
+
+/* Parameter list passed to back end.  */
+struct parameter_part GTY(())
+{
+  struct prod_token_parm_item *next; /* Next entry.  */
+  unsigned char* variable_name; /* Name. */
+  tree * GTY ((length ("1"))) where_to_put_var_tree; /* Where to save decl.  */
+};
+
+/* A production or a token.  */
+struct prod_token_parm_item GTY(())
+{
+  enum category_enum category; /* Token or production. */
+  unsigned int type; /* Token or production type.  */
+  union t_or_p
+  {
+    struct token_part GTY((tag ("token_category"))) tok;
+    struct production_part GTY((tag ("production_category"))) pro;
+    struct parameter_part GTY((tag ("parameter_category"))) par;
+  } GTY((desc ("((item *)&%1)->category"))) tp;
+};
+
+
 /* For parser. Alternatively you can define it using %union (bison) or
    union. */
 #define YYSTYPE void *
 
 void *my_malloc (size_t size);
-int insert_tree_name (struct production *prod);
-struct production *lookup_tree_name (struct production *prod);
-struct production *make_production (int type, struct token* main_tok);
-void mark_production_used (struct production * pp);
-void mark_token_used (struct token* tt);
+int insert_tree_name (struct prod_token_parm_item *prod);
+struct prod_token_parm_item *lookup_tree_name (struct prod_token_parm_item *prod);
+struct prod_token_parm_item *make_production (int type, struct prod_token_parm_item *main_tok);
+void mark_production_used (struct prod_token_parm_item *pp);
+void mark_token_used (struct prod_token_parm_item *tt);
 void treelang_debug (void);
 

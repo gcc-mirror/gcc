@@ -33,22 +33,18 @@
  
 */
 
-/* Avoid poisoned malloc problem.  */
-#undef IN_GCC
-
-#if 0
-/* tree is defined as void* here to avoid any knowledge of tree stuff in this file.  */
-typedef void *tree;
-#endif
 #include <stdio.h>
-#if 0
-#include <ctype.h>
-#endif
 #include <memory.h>
 #include "ansidecl.h"
 #include "config.h"
 #include "system.h"
+
+/* Avoid poisoned malloc problem.  */
+#undef IN_GCC
+
+#include "config.h"
 #include "diagnostic.h"
+#include "tree.h"
 
 /* Token defs.  */
 #include "treelang.h"
@@ -81,9 +77,10 @@ static void dump_lex_value (int lexret);
 %%
 
  { 
-   yylval = my_malloc (sizeof (struct token));
-   ((struct token*)yylval)->lineno = next_tree_lineno;
-   ((struct token*)yylval)->charno = next_tree_charno;
+   /* Should really allocate only what we need. lll;.  */
+   yylval = my_malloc (sizeof (struct prod_token_parm_item));
+   ((struct prod_token_parm_item *)yylval)->tp.tok.lineno = next_tree_lineno;
+   ((struct prod_token_parm_item *)yylval)->tp.tok.charno = next_tree_charno;
  }
 
 [ \n]+ {
@@ -221,8 +218,8 @@ static void dump_lex_value (int lexret);
 [^\n]  {
   update_lineno_charno ();
   fprintf (stderr, "%s:%i:%i: Unrecognized character %c\n", in_fname, 
-           ((struct token*)yylval)->lineno, 
-           ((struct token*)yylval)->charno, yytext[0]);
+           ((struct prod_token_parm_item *)yylval)->tp.tok.lineno, 
+           ((struct prod_token_parm_item *)yylval)->tp.tok.charno, yytext[0]);
   errorcount++;
 }
 
@@ -238,8 +235,8 @@ update_lineno_charno (void)
    /* Update the values we send to caller in case we sometimes don't
       tell them about all the 'tokens' eg comments etc.  */
    int yyl;
-   ((struct token*)yylval)->lineno = next_tree_lineno;
-   ((struct token*)yylval)->charno = next_tree_charno;
+   ((struct prod_token_parm_item *)yylval)->tp.tok.lineno = next_tree_lineno;
+   ((struct prod_token_parm_item *)yylval)->tp.tok.charno = next_tree_charno;
    for ( yyl = 0; yyl < yyleng; ++yyl ) 
       {
          if ( yytext[yyl] == '\n' ) 
@@ -257,16 +254,16 @@ update_lineno_charno (void)
 void 
 update_yylval (int a)
 {
-  struct token* tok;
+  struct prod_token_parm_item * tok;
   tok=yylval;
   
   tok->category = token_category;
   tok->type = a;
-  tok->length = yyleng;
+  tok->tp.tok.length = yyleng;
   /* Have to copy yytext as it is just a ptr into the buffer at the
      moment.  */
-  tok->chars = my_malloc (yyleng + 1);
-  memcpy (tok->chars, yytext, yyleng);
+  tok->tp.tok.chars = my_malloc (yyleng + 1);
+  memcpy (tok->tp.tok.chars, yytext, yyleng);
 }
 
 /* Trace the value LEXRET and the position and token details being
@@ -277,9 +274,9 @@ dump_lex_value (int lexret)
 {
   int ix;
   fprintf (stderr, " %d l:%d c:%d ln:%d text=", lexret,
-         ((struct token*) yylval)->lineno,
-         ((struct token*) yylval)->charno,
-         ((struct token*) yylval)->length);
+         ((struct prod_token_parm_item *) yylval)->tp.tok.lineno,
+         ((struct prod_token_parm_item *) yylval)->tp.tok.charno,
+         ((struct prod_token_parm_item *) yylval)->tp.tok.length);
   for (ix = 0; ix < yyleng; ix++) 
     {
       fprintf (stderr, "%c", yytext[ix]);

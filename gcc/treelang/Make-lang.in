@@ -90,7 +90,8 @@ tree1$(exeext): treelang/tree1.o treelang/treetree.o treelang/lex.o treelang/par
 
 # object file makes
 
-treelang/tree1.o: $(srcdir)/treelang/tree1.c $(srcdir)/treelang/treelang.h $(srcdir)/treelang/parse.h
+treelang/tree1.o: $(srcdir)/treelang/tree1.c $(srcdir)/treelang/treelang.h $(srcdir)/treelang/parse.h\
+	gt-treelang-tree1.h gt-treelang-treelang.h gtype-treelang.h
 	$(CC) -o $@ -c $(ALL_CFLAGS) $(INCLUDES) $< 
 
 treelang/treetree.o: $(srcdir)/treelang/treetree.c $(srcdir)/treelang/treetree.h
@@ -113,6 +114,8 @@ $(srcdir)/treelang/parse.c $(srcdir)/treelang/parse.h: $(srcdir)/treelang/parse.
 	$(BISON) $(BISONFLAGS) -v $(srcdir)/treelang/parse.y\
 	--output=$(srcdir)/treelang/parse.c --defines
 # -v
+
+gt-treelang-tree1.h gt-treelang-treelang.h gtype-treelang.h : s-gtype; @true
 
 #
 # Build hooks:
@@ -246,7 +249,7 @@ treelang.distdir:
 # test hook
 # the other languages are hard coded in the main makefile.in - that seems to be wrong 
 
-check: treelang.check
+check-treelang: treelang.check
 
 TESTSUITEDIR = testsuite
 

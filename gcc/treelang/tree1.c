@@ -35,7 +35,6 @@
 #include "system.h"
 #include "ansidecl.h"
 #include "flags.h"
-#include "output.h"
 #include "toplev.h"
 
 #include "ggc.h"
@@ -55,7 +54,7 @@
 extern int yyparse (void);
 /* Linked list of symbols - all must be unique in treelang.  */
 
-struct production *symbol_table = NULL;
+static GTY(()) struct prod_token_parm_item *symbol_table = NULL;
 
 /* Language for usage for messages.  */
 
@@ -64,9 +63,6 @@ const char *const language_string = "TREELANG - sample front end for GCC ";
 /* Local prototypes.  */
 
 void version (void);
-
-/* GC routine for symbol table.  */
-static void symbol_table_ggc (void *m);
 
 /* Global variables.  */
 
@@ -191,18 +187,6 @@ treelang_decode_option (num_options_left, first_option_left)
 const char*
 treelang_init (const char* filename)
 {
-
-  /* Define my garbage collection routines.  */
-  ggc_add_root (&symbol_table, 1, 
-                /* Unused size.  */ sizeof (void*), symbol_table_ggc);
-  /* Note: only storage that has to be kept across functions needs to
-     be protected from GC.  */
-  /* Define my garbage collection routines.  */
-  ggc_add_root (&symbol_table, 1, 
-                /* Unused size.  */ sizeof (void*), symbol_table_ggc);
-  /* Note: only storage that has to be kept across functions needs to
-     be protected from GC.  */
-
   /* Set up the declarations needed for this front end.  */
 
   input_filename = "";
@@ -250,58 +234,6 @@ treelang_parse_file (int debug_flag ATTRIBUTE_UNUSED)
   yyparse ();
 }
 
-
-/* Scan the symbol table* M, marking storage used.  */
-
-static void
-symbol_table_ggc (void *m)
-{
-  struct production *pp;
-  pp = * (struct production**)m;
-  /* Actually it is a pointer to a pointer, to allow reallocation and
-     relinking.  */
-  mark_production_used (pp);
-}
-
-/* Mark a production PP as used so it wont be garbage collected.  */
-
-void
-mark_production_used (struct production *pp)
-{
-  int sub_ix;
- loop:
-  if (!pp)
-    return;
-  ggc_mark (pp);
-  
-  if (pp->category == token_category)
-    {
-      mark_token_used ((struct token*)pp);
-      return;
-    }
-  if (pp->category != production_category)
-    abort ();
-  mark_token_used (pp->main_token);
-  for (sub_ix = 0; sub_ix < SUB_COUNT; sub_ix++)
-    mark_production_used (pp->sub[sub_ix]);
-  /* The macro tests for NULL so I don't need to.  */
-  ggc_mark_tree (pp->code);
-  pp = pp->next;
-  goto loop;
-}
-
-/* Mark a token TT as used so it wont be garbage collected.  */
-
-void
-mark_token_used (struct token* tt)
-{
-  if (!tt) 
-    return;
-  ggc_mark (tt);
-  if (tt->chars)
-    ggc_mark (tt->chars);
-}
-
 /* Allocate SIZE bytes and clear them.  */
 
 void *
@@ -322,45 +254,46 @@ my_malloc (size_t size)
    return the symbol table entry from the symbol table if found there,
    else 0.  */
 
-struct production*
-lookup_tree_name (struct production *prod)
+struct prod_token_parm_item*
+lookup_tree_name (struct prod_token_parm_item *prod)
 {
-  struct production *this;
-  struct token* this_tok;
-  struct token* tok;
+  struct prod_token_parm_item *this;
+  struct prod_token_parm_item *this_tok;
+  struct prod_token_parm_item *tok;
   tok = SYMBOL_TABLE_NAME (prod);
-  for (this = symbol_table; this; this = this->next)
+  for (this = symbol_table; this; this = this->tp.pro.next)
     {
-      this_tok = this->main_token;
-      if (tok->length != this_tok->length) 
+      this_tok = this->tp.pro.main_token;
+      if (tok->tp.tok.length != this_tok->tp.tok.length) 
         continue;
-      if (memcmp (tok->chars, this_tok->chars, this_tok->length))
+      if (memcmp (tok->tp.tok.chars, this_tok->tp.tok.chars, this_tok->tp.tok.length))
         continue;
       if (option_parser_trace)
-        fprintf (stderr, "Found symbol %s (%i:%i) as %i \n", tok->chars, 
-                tok->lineno, tok->charno, NUMERIC_TYPE (this));
+        fprintf (stderr, "Found symbol %s (%i:%i) as %i \n", tok->tp.tok.chars, 
+                tok->tp.tok.lineno, tok->tp.tok.charno, NUMERIC_TYPE (this));
       return this;
     }
   if (option_parser_trace)
-    fprintf (stderr, "Not found symbol %s (%i:%i) as %i \n", tok->chars, 
-            tok->lineno, tok->charno, tok->type);
+    fprintf (stderr, "Not found symbol %s (%i:%i) as %i \n", tok->tp.tok.chars, 
+            tok->tp.tok.lineno, tok->tp.tok.charno, tok->type);
   return NULL;
 }
 
 /* Insert name PROD into the symbol table.  Return 1 if duplicate, 0 if OK.  */
 
 int
-insert_tree_name (struct production *prod)
+insert_tree_name (struct prod_token_parm_item *prod)
 {
-  struct token* tok;
+  struct prod_token_parm_item *tok;
   tok = SYMBOL_TABLE_NAME (prod);
   if (lookup_tree_name (prod))
     {
-      fprintf (stderr, "%s:%i:%i duplicate name %s\n", in_fname, tok->lineno, tok->charno, tok->chars);
+      fprintf (stderr, "%s:%i:%i duplicate name %s\n", in_fname, tok->tp.tok.lineno, 
+               tok->tp.tok.charno, tok->tp.tok.chars);
       errorcount++;
       return 1;
     }
-  prod->next = symbol_table;
+  prod->tp.pro.next = symbol_table;
   NESTING_LEVEL (prod) = work_nesting_level;
   symbol_table = prod;
   return 0;
@@ -368,15 +301,19 @@ insert_tree_name (struct production *prod)
 
 /* Create a struct productions of type TYPE, main token MAIN_TOK.  */
 
-struct production *
-make_production (int type, struct token* main_tok)
+struct prod_token_parm_item *
+make_production (int type, struct prod_token_parm_item *main_tok)
 {
-  struct production *prod;
-  prod = my_malloc (sizeof (struct production));
+  struct prod_token_parm_item *prod;
+  prod = my_malloc (sizeof (struct prod_token_parm_item));
   prod->category = production_category;
   prod->type = type;
-  prod->main_token = main_tok;
+  prod->tp.pro.main_token = main_tok;
   return prod;
 } 
 
 
+/* New garbage collection regime see gty.texi.  */
+#include "gt-treelang-tree1.h"
+/*#include "gt-treelang-treelang.h"*/
+#include "gtype-treelang.h"

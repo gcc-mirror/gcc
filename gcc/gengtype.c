@@ -500,10 +500,13 @@ FILE * header_file;
 enum {
   BASE_FILE_C,
   BASE_FILE_OBJC,
-  BASE_FILE_CPLUSPLUS
+  BASE_FILE_CPLUSPLUS,
+  BASE_FILE_TREELANG,
+  BASE_FILE_COBOL
 };
+
 static const char *lang_names[] = {
-  "c", "objc", "cp", "f", "ada", "java"
+  "c", "objc", "cp", "treelang", "cobol", "f", "ada", "java"
 };
 #define NUM_BASE_FILES (sizeof (lang_names) / sizeof (lang_names[0]))
 FILE *base_files[NUM_BASE_FILES];
@@ -608,6 +611,10 @@ get_file_basename (f)
     basename -= 5;
   else if (startswith (basename - f, basename-5, "objc/"))
     basename -= 5;
+  else if (startswith (basename - f, basename-9, "treelang/"))
+    basename -= 9;
+  else if (startswith (basename - f, basename-6, "cobol/"))
+    basename -= 6;
 
   return basename;
 }
@@ -643,6 +650,9 @@ get_base_file_bitmap (input_file)
 	   || strcmp (basename, "c-decl.c") == 0
 	   || strcmp (basename, "c-objc-common.c") == 0)
     return 1 << BASE_FILE_C | 1 << BASE_FILE_OBJC;
+  else if (startswith (len, basename, "c-common.c"))
+    return 1 << BASE_FILE_C | 1 << BASE_FILE_OBJC| 1 << BASE_FILE_CPLUSPLUS
+      |  1 << BASE_FILE_TREELANG | 1 << BASE_FILE_COBOL;
   else if (startswith (len, basename, "c-"))
     return 1 << BASE_FILE_C | 1 << BASE_FILE_OBJC | 1 << BASE_FILE_CPLUSPLUS;
   else
