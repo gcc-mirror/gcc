@@ -118,12 +118,18 @@ namespace __gnu_cxx
       // assigned and explained in detail below.
       struct _Tune
       {
+	// Alignment needed.
+	// NB: In any case must be >= sizeof(_Block_record), that
+	// is 4 on 32 bit machines and 8 on 64 bit machines.
+	size_t  _M_align;
+
 	// Allocation requests (after round-up to power of 2) below
 	// this value will be handled by the allocator. A raw new/
 	// call will be used for requests larger than this value.
 	size_t	_M_max_bytes; 
 
-	// Size in bytes of the smallest bin (must be a power of 2).
+	// Size in bytes of the smallest bin.
+	// NB: Must be a power of 2 and >= _M_align.
 	size_t  _M_min_bin;
 
 	// In order to avoid fragmenting and minimize the number of
@@ -150,18 +156,19 @@ namespace __gnu_cxx
      
 	explicit
 	_Tune()
-	: _M_max_bytes(128), _M_min_bin(8),
+	: _M_align(8), _M_max_bytes(128), _M_min_bin(8),
 	  _M_chunk_size(4096 - 4 * sizeof(void*)), 
 	  _M_max_threads(4096), _M_freelist_headroom(10), 
 	  _M_force_new(getenv("GLIBCXX_FORCE_NEW") ? true : false)
 	{ }
 
 	explicit
-	_Tune(size_t __maxb, size_t __minbin, size_t __chunk,
-	      size_t __maxthreads, size_t __headroom, bool __force) 
-	: _M_max_bytes(__maxb), _M_min_bin(__minbin), _M_chunk_size(__chunk), 
-	  _M_max_threads(__maxthreads), _M_freelist_headroom(__headroom), 
-	  _M_force_new(__force)
+	_Tune(size_t __align, size_t __maxb, size_t __minbin,
+	      size_t __chunk, size_t __maxthreads, size_t __headroom,
+	      bool __force) 
+	: _M_align(__align), _M_max_bytes(__maxb), _M_min_bin(__minbin),
+	  _M_chunk_size(__chunk), _M_max_threads(__maxthreads),
+	  _M_freelist_headroom(__headroom), _M_force_new(__force)
 	{ }
       };
 
@@ -306,8 +313,10 @@ namespace __gnu_cxx
       _Block_record* __block = NULL;
       if (__bin._M_first[__thread_id] == NULL)
 	{
+	  // NB: For alignment reasons, we can't use the first _M_align
+	  // bytes, even when sizeof(_Block_record) < _M_align.
 	  const size_t __bin_size = ((_S_options._M_min_bin << __which)
-				     + sizeof(_Block_record));
+				     + _S_options._M_align);
 	  size_t __block_count = _S_options._M_chunk_size / __bin_size;	  
 
 	  // Are we using threads?
@@ -399,7 +408,7 @@ namespace __gnu_cxx
 	}
 #endif
 
-      char* __c = reinterpret_cast<char*>(__block) + sizeof(_Block_record);
+      char* __c = reinterpret_cast<char*>(__block) + _S_options._M_align;
       return static_cast<_Tp*>(static_cast<void*>(__c));
     }
   
@@ -421,7 +430,7 @@ namespace __gnu_cxx
       const size_t __which = _S_binmap[__bytes];
       const _Bin_record& __bin = _S_bin[__which];
 
-      char* __c = reinterpret_cast<char*>(__p) - sizeof(_Block_record);
+      char* __c = reinterpret_cast<char*>(__p) - _S_options._M_align;
       _Block_record* __block = reinterpret_cast<_Block_record*>(__c);
       
 #ifdef __GTHREADS
