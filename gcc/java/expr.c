@@ -48,7 +48,7 @@ static tree pop_value PARAMS ((tree));
 static void java_stack_swap PARAMS ((void));
 static void java_stack_dup PARAMS ((int, int));
 static void build_java_athrow PARAMS ((tree));
-static void build_java_jsr PARAMS ((tree, tree));
+static void build_java_jsr PARAMS ((int, int));
 static void build_java_ret PARAMS ((tree));
 static void expand_java_multianewarray PARAMS ((tree, int));
 static void expand_java_arraystore PARAMS ((tree));
@@ -607,15 +607,18 @@ build_java_athrow (node)
 /* Implementation for jsr/ret */
 
 static void
-build_java_jsr (where, ret)
-    tree where;
-    tree ret;
+build_java_jsr (target_pc, return_pc)
+     int target_pc, return_pc;
 {
+  tree where =  lookup_label (target_pc);
+  tree ret = lookup_label (return_pc);
   tree ret_label = fold (build1 (ADDR_EXPR, return_address_type_node, ret));
   push_value (ret_label);
   flush_quick_stack ();
   emit_jump (label_rtx (where));
   expand_label (ret);
+  if (instruction_bits [return_pc] & BCODE_VERIFIED)
+    load_type_state (ret);
 }
 
 static void
@@ -2972,13 +2975,8 @@ process_jvm_instruction (PC, byte_ops, length)
     build_java_ret (find_local_variable (index, ptr_type_node, oldpc));	\
   }
 
-#define JSR(OPERAND_TYPE, OPERAND_VALUE)		\
-  {							\
-    tree where = lookup_label (oldpc+OPERAND_VALUE);	\
-    tree ret   = lookup_label (PC);			\
-    build_java_jsr (where, ret);			\
-    load_type_state (ret);				\
-  }
+#define JSR(OPERAND_TYPE, OPERAND_VALUE) \
+  build_java_jsr (oldpc+OPERAND_VALUE, PC);
 
 /* Push a constant onto the stack. */
 #define PUSHC(OPERAND_TYPE, OPERAND_VALUE) \

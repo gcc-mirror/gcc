@@ -1,3 +1,11 @@
+2002-03-08  Per Bothner  <per@bothner.com>
+
+	Fix for PR java/5812.
+	* expr.c (build_java_jsr):  Take pc arguments, and do lookup_label
+	gere instead of in JSR macro.  Likewise with load_type_state call.
+	Do the latter on if the return_pc has been verified (the jsr returns).
+	(JSR):  No just call build_java_jsr.
+
 2002-03-05  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* builtins.c(cos_builtin): method_return_type ATTRIBUTE_UNUSED
