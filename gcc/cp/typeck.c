@@ -529,8 +529,8 @@ common_type (t1, t2)
 
     case RECORD_TYPE:
     case UNION_TYPE:
-      my_friendly_assert (TYPE_MAIN_VARIANT (t1) == t1
-			  && TYPE_MAIN_VARIANT (t2) == t2, 306);
+      t1 = TYPE_MAIN_VARIANT (t1);
+      t2 = TYPE_MAIN_VARIANT (t2);
 
       if (DERIVED_FROM_P (t1, t2) && binfo_or_else (t1, t2))
 	return build_type_attribute_variant (t1, attributes);

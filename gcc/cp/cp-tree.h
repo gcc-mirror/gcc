@@ -358,7 +358,7 @@ enum cplus_tree_code {
 };
 #undef DEFTREECODE
 
-enum languages { lang_c, lang_cplusplus };
+enum languages { lang_c, lang_cplusplus, lang_java };
 
 /* Macros to make error reporting functions' lives easier.  */
 #define TYPE_IDENTIFIER(NODE) (DECL_NAME (TYPE_NAME (NODE)))
@@ -1646,7 +1646,8 @@ extern tree previous_class_type;
 extern tree current_class_ref;
 extern int current_class_depth;
 
-extern tree current_lang_name, lang_name_cplusplus, lang_name_c;
+extern tree current_lang_name;
+extern tree lang_name_cplusplus, lang_name_c, lang_name_java;
 
 /* Points to the name of that function. May not be the DECL_NAME
    of CURRENT_FUNCTION_DECL due to overloading */
@@ -2162,7 +2163,7 @@ extern tree define_function
 	       void (*) (tree), char *));
 extern void shadow_tag				PROTO((tree));
 extern tree groktypename			PROTO((tree));
-extern tree start_decl				PROTO((tree, tree, int));
+extern tree start_decl				PROTO((tree, tree, int, tree, tree));
 extern void start_decl_1			PROTO((tree));
 extern void cp_finish_decl			PROTO((tree, tree, tree, int, int));
 extern void finish_decl				PROTO((tree, tree, tree));
