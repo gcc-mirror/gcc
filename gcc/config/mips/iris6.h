@@ -86,8 +86,8 @@ Boston, MA 02111-1307, USA.  */
 %{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
 %{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3} \
 %{membedded-pic} \
-%{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64} \
-%{!mabi=32:%{!mabi=n32:%{!mabi=64: -n32}}}"
+%{mabi=32:-32}{%mabi=o32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
+%{!mabi:-n32}"
 
 #else
 /* not GAS */
@@ -105,8 +105,8 @@ Boston, MA 02111-1307, USA.  */
 %{mips1} %{mips2} %{mips3} %{mips4} \
 %{noasmopt:-O0} %{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
 -g0 -G 0 %{membedded-pic} \
-%{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64} \
-%{!mabi=32:%{!mabi=n32:%{!mabi=64: -n32}}}"
+%{mabi=32:-32}%{mabi=o32:-32}%{mabi=n32:-n32}%{mabi=64:-64}%{mabi=n64:-64} \
+%{!mabi:-n32}"
 
 #endif
 
