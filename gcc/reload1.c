@@ -1,5 +1,5 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
-   Copyright (C) 1987, 88, 89, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -6649,6 +6649,20 @@ gen_reload (out, in, opnum, type)
      enum reload_type type;
 {
   rtx last = get_last_insn ();
+  rtx tem;
+
+  /* If IN is a paradoxical SUBREG, remove it and try to put the
+     opposite SUBREG on OUT.  Likewise for a paradoxical SUBREG on OUT.  */
+  if (GET_CODE (in) == SUBREG
+      && (GET_MODE_SIZE (GET_MODE (in))
+	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
+      && (tem = gen_lowpart_common (GET_MODE (SUBREG_REG (in)), out)) != 0)
+    in = SUBREG_REG (in), out = tem;
+  else if (GET_CODE (out) == SUBREG
+      && (GET_MODE_SIZE (GET_MODE (out))
+	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
+      && (tem = gen_lowpart_common (GET_MODE (SUBREG_REG (out)), in)) != 0)
+    out = SUBREG_REG (out), in = tem;
 
   /* How to do this reload can get quite tricky.  Normally, we are being
      asked to reload a simple operand, such as a MEM, a constant, or a pseudo
