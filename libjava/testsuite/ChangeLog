@@ -1,3 +1,9 @@
+2000-02-16  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.jni/throwit.java: New file.
+	* libjava.jni/throwit.c: New file.
+	* libjava.jni/throwit.out: New file.
+
 2000-02-15  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.jni/findclass.java: New file
