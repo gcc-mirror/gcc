@@ -40,6 +40,7 @@ main (int argc)
 /* When optimizing, most of the above cases should be transformed into
    something else.  So any remaining calls to the original function
    for short lengths should abort.  */
+__attribute__ ((noinline))
 static void *
 memset (void *dst, int c, size_t len)
 {

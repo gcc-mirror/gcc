@@ -1,3 +1,4 @@
+
 /* Origin: Kaveh Ghazi <ghazi@caip.rutgers.edu> 2002-05-27.  */
 
 /* Use a different function for each test so the link failures

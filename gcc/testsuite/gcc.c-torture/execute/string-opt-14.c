@@ -25,12 +25,14 @@ main ()
    something else.  So any remaining calls to the original function
    should abort.  */
 
+__attribute__ ((noinline))
 static void *
 memset (void *s, int c, size_t n)
 {
   abort ();
 }
 
+__attribute__ ((noinline))
 static void *
 memcpy (void *dest, const void *src, size_t n)
 {
