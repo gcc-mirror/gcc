@@ -8237,11 +8237,7 @@ output_return_instruction (operand, really_return, reverse)
 		 character off in this case however, since the actual return
 		 instruction will be a MOVS which will restore the CPSR.  */
 	      if ((TARGET_APCS_32 && IS_INTERRUPT (func_type))
-		  || (really_return
-		      && ! frame_pointer_needed
-		      && ((live_regs_mask & (1 << SP_REGNUM)) == 0)
-		      && ((live_regs_mask & (1 << PC_REGNUM)) == 0))
-		  )
+		  || (! TARGET_APCS_32 && really_return))
 		strcat (p, "^");
 	    }
 	  else
