@@ -1,3 +1,7 @@
+2001-05-11  Ira Ruben	<ira@apple.com>
+
+	* cp/cp-tree.h (C_EXP_ORIGINAL_CODE): Delete; declared in c-common.h.
+
 2001-05-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cp-tree.h (finish_label_expr, lookup_label): Delete.
