@@ -1,3 +1,10 @@
+2003-09-25  Richard Sandiford  <rsandifo@redhat.com>
+
+	* cgraph.h (cgraph_remove_edge): Declare.
+	* cgraph.c (cgraph_remove_edge): Make extern.
+	* cgraphunit.c (cgraph_finalize_function): Call cgraph_remove_edge
+	instead of cgraph_remove_call.
+
 2003-09-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* objc/objc-act.c (gen_declaration_1): Fix printf format.
