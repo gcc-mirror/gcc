@@ -82,6 +82,7 @@ void set_decl_abstract_flags	PROTO((tree, int));
    Essentially, we use this function to perform a lazy initialization
    of label_map, thereby avoiding huge memory explosions when the
    label_map gets very large.  */
+
 rtx
 get_label_from_map (map, i)
      struct inline_remap* map;
@@ -1968,9 +1969,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  break;
 
 	case CODE_LABEL:
-	  copy = 
-	    emit_label (get_label_from_map(map,
-					   CODE_LABEL_NUMBER (insn)));
+	  copy = emit_label (get_label_from_map (map,
+						 CODE_LABEL_NUMBER (insn)));
 	  LABEL_NAME (copy) = LABEL_NAME (insn);
 	  map->const_age++;
 	  break;
@@ -1989,12 +1989,14 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_BEG
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED)
 	    {
-	      copy = emit_note (NOTE_SOURCE_FILE (insn), NOTE_LINE_NUMBER (insn));
-	      if (copy && (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG
-			   || NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_END))
+	      copy = emit_note (NOTE_SOURCE_FILE (insn),
+				NOTE_LINE_NUMBER (insn));
+	      if (copy
+		  && (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG
+		      || NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_END))
 		{
-		  rtx label =
-		    get_label_from_map (map, NOTE_BLOCK_NUMBER (copy));
+		  rtx label
+		    = get_label_from_map (map, NOTE_BLOCK_NUMBER (copy));
 
 		  /* We have to forward these both to match the new exception
 		     region.  */
