@@ -771,7 +771,7 @@ make_decl_rtl (decl, asmspec, top_level)
 	     of a local class (which will already be unambiguous).
 	     Concatenate a distinguishing number.  */
 	  if (!top_level && !TREE_PUBLIC (decl)
-	      && ! TYPE_P (DECL_CONTEXT (decl))
+	      && ! (DECL_CONTEXT (decl) && TYPE_P (DECL_CONTEXT (decl)))
 	      && asmspec == 0)
 	    {
 	      char *label;
