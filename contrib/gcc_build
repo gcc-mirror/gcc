@@ -110,7 +110,7 @@ checkout_gcc() {
     changedir ${DESTINATION_PARENT}
 
     # Checkout the tree
-    cvs -z 9 co -d `basename ${DESTINATION}` gcc || \
+    $GCC_CVS -z 9 co -d `basename ${DESTINATION}` gcc || \
 	error "Could not check out GCC"
 }
 
@@ -209,6 +209,8 @@ install_gcc() {
 # Initialization
 ########################################################################
 
+# CVS command
+GCC_CVS=${GCC_CVS-${CVS-cvs}}
 # The CVS server containing the GCC repository.
 CVS_SERVER="gcc.gnu.org"
 # The path to the repository on that server.

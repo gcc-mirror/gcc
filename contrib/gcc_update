@@ -37,6 +37,8 @@
 # its license can be downloaded from http://www.gnu.org/copyleft/gpl.html
 
 
+# CVS command
+GCC_CVS=${GCC_CVS-${CVS-cvs}}
 # Default options used when updating via CVS.
 UPDATE_OPTIONS=-Pd
 # Use -P to prune empty directories.
@@ -221,7 +223,7 @@ else
 fi
 
 echo "Updating CVS tree"
-cvs -q update ${1+"$@"}
+$GCC_CVS -q update ${1+"$@"}
 if [ $? -ne 0 ]; then
     (touch_files_reexec)
     echo "CVS update of full tree failed." >&2
