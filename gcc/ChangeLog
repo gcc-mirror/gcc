@@ -1,5 +1,10 @@
 2004-06-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree-sra.c (is_sra_candidate_ref): Remove second arg; all callers
+	changed.
+	(is_sra_candidate_complex_ref): New function.
+	(scalarize_modify_expr): Call it and check for LHS also.
+
 	* tree-pretty-print.c (dump_function_declaration): New.
 	(dump_generic_node, case FUNCTION_TYPE): Call it.
 	(dump_generic_node, case RECORD_TYPE): Don't output dup semicolon.
