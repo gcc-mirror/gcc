@@ -1140,6 +1140,9 @@ __gnat_Unwind_ForcedUnwind (_Unwind_Exception *e,
    be using the GCC eh mechanism for the compiler, however, so expect these
    functions never to be called.  */
 
+/* We don't want fancy_abort here.  */
+#undef abort
+
 _Unwind_Reason_Code
 __gnat_Unwind_RaiseException (_Unwind_Exception *e ATTRIBUTE_UNUSED)
 {
