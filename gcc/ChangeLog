@@ -1,3 +1,8 @@
+2004-11-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/rs6000/darwin.md, config/sh/sh4a.md: Replace GNU CC
+	with GCC.
+
 2004-11-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (scc patterns): Replace subfc with subf
