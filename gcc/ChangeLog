@@ -1,3 +1,8 @@
+Thu Aug 19 15:02:01 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/rs6000/rs6000.c (rs6000_override_options): Fix test for
+	unrecognisable switches.
+
 Wed Aug 18 23:31:57 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (recombine_givs): Set ix field after sorting.
