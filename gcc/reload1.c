@@ -4033,7 +4033,7 @@ allocate_reload_reg (r, insn, last_reload, noerror)
     {
       if (noerror)
 	return 0;
-      abort ();
+      goto failure;
     }
 
   last_spill_reg = i;
@@ -4076,6 +4076,7 @@ allocate_reload_reg (r, insn, last_reload, noerror)
   if (noerror)
     return 0;
 
+ failure:
   if (asm_noperands (PATTERN (insn)) < 0)
     /* It's the compiler's fault.  */
     abort ();
