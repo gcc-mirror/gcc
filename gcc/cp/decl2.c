@@ -1034,6 +1034,10 @@ grokclassfn (ctype, function, flags, quals)
   tree fn_name = DECL_NAME (function);
   int this_quals = TYPE_UNQUALIFIED;
 
+  /* Even within an `extern "C"' block, members get C++ linkage.  See
+     [dcl.link] for details.  */
+  DECL_LANGUAGE (function) = lang_cplusplus;
+
   if (fn_name == NULL_TREE)
     {
       error ("name missing for member function");
