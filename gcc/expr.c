@@ -5739,6 +5739,14 @@ expand_expr (exp, target, tmode, modifier)
 
 	    if (GET_CODE (op0) != MEM)
 	      abort ();
+
+	    if (GET_MODE (offset_rtx) != ptr_mode)
+#ifdef POINTERS_EXTEND_UNSIGNED
+	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 1);
+#else
+	      offset_rtx = convert_to_mode (ptr_mode, offset_rtx, 0);
+#endif
+
 	    op0 = change_address (op0, VOIDmode,
 				  gen_rtx (PLUS, ptr_mode, XEXP (op0, 0),
 					   force_reg (ptr_mode, offset_rtx)));
