@@ -1,5 +1,10 @@
 2004-03-19  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* loop-doloop.c (add_test): Replace GEN_INT (0) with
+	const0_rtx.
+
+2004-03-19  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* fold-const.c (fold) <ABS_EXPR>: Move the handling of constants
 	...
 	(fold_abs_const): ... here.

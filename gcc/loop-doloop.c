@@ -237,7 +237,7 @@ add_test (rtx cond, basic_block bb, basic_block dest)
   /* The jump is supposed to handle an unlikely special case.  */
   REG_NOTES (jump)
 	  = gen_rtx_EXPR_LIST (REG_BR_PROB,
-			       GEN_INT (0), REG_NOTES (jump));
+			       const0_rtx, REG_NOTES (jump));
 
   LABEL_NUSES (label)++;
 
