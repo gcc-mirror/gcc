@@ -1,3 +1,8 @@
+2003-06-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in: Update.
+	* misc.c: Include opts.h. Define cl_options_count and cl_options.
+
 2003-06-07  Neil Booth  <neil@daikokuya.co.uk>
 
 	* misc.c (gnat_init_options): Update.
