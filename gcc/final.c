@@ -2919,7 +2919,6 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	   since `reload' should have changed them so that they do.  */
 
 	insn_code_number = recog_memoized (insn);
-	extract_insn (insn);
 	cleanup_subreg_operands (insn);
 
        /* Dump the insn in the assembly for debugging.  */
@@ -2930,7 +2929,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
            print_rtx_head = "";
          }
        
-	if (! constrain_operands (1))
+	if (! constrain_operands_cached (1))
 	  fatal_insn_not_found (insn);
 
 	/* Some target machines need to prescan each insn before
@@ -3138,8 +3137,7 @@ cleanup_subreg_operands (insn)
      rtx insn;
 {
   int i;
-
-  extract_insn (insn);
+  extract_insn_cached (insn);
   for (i = 0; i < recog_data.n_operands; i++)
     {
       if (GET_CODE (recog_data.operand[i]) == SUBREG)

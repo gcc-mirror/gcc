@@ -6272,7 +6272,7 @@ ix86_attr_length_immediate_default (insn, shortform)
 {
   int len = 0;
   int i;
-  extract_insn (insn);
+  extract_insn_cached (insn);
   for (i = recog_data.n_operands - 1; i >= 0; --i)
     if (CONSTANT_P (recog_data.operand[i]))
       {
@@ -6308,7 +6308,7 @@ ix86_attr_length_address_default (insn)
      rtx insn;
 {
   int i;
-  extract_insn (insn);
+  extract_insn_cached (insn);
   for (i = recog_data.n_operands - 1; i >= 0; --i)
     if (GET_CODE (recog_data.operand[i]) == MEM)
       {
@@ -6409,7 +6409,7 @@ ix86_agi_dependant (insn, dep_insn, insn_type)
   else
     {
       int i;
-      extract_insn (insn);
+      extract_insn_cached (insn);
       for (i = recog_data.n_operands - 1; i >= 0; --i)
 	if (GET_CODE (recog_data.operand[i]) == MEM)
 	  {
