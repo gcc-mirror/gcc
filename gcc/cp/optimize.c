@@ -488,7 +488,7 @@ inlinable_function_p (fn, id)
 	  inlinable = 0;
     }
 
-  /* We can inline a template instantiation only if its fully
+  /* We can inline a template instantiation only if it's fully
      instantiated.  */
   if (inlinable
       && DECL_TEMPLATE_INFO (fn) 
@@ -502,7 +502,7 @@ inlinable_function_p (fn, id)
   return inlinable;
 }
 
-/* If *TP is CALL_EXPR, replace it with its inline expansion.  */
+/* If *TP is a CALL_EXPR, replace it with its inline expansion.  */
 
 static tree
 expand_call_inline (tp, walk_subtrees, data)
