@@ -2307,7 +2307,7 @@ Not all target machines support this attribute.
 @item visibility ("@var{visibility_type}")
 @cindex @code{visibility} attribute
 The @code{visibility} attribute on ELF targets causes the declaration
-to be emitted with hidden, protected or internal visibility.
+to be emitted with default, hidden, protected or internal visibility.
 
 @smallexample
 void __attribute__ ((visibility ("protected")))
@@ -2318,6 +2318,11 @@ int i __attribute__ ((visibility ("hidden")));
 See the ELF gABI for complete details, but the short story is
 
 @table @dfn
+@item default
+Default visibility is the normal case for ELF.  This value is 
+available for the visibiliy attribute to override other options
+that may change the assumed visibility of symbols.
+
 @item hidden
 Hidden visibility indicates that the symbol will not be placed into
 the dynamic symbol table, so no other @dfn{module} (executable or
