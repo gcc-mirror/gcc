@@ -74,6 +74,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "toplev.h"
 #include "except.h"
+#include "integrate.h"
 
 /* Next quantity number available for allocation.  */
 
@@ -1216,7 +1217,7 @@ block_alloc (b)
 {
   int i, q;
   rtx insn;
-  rtx note;
+  rtx note, hard_reg;
   int insn_number = 0;
   int insn_count = 0;
   int max_uid = get_max_uid ();
@@ -1339,6 +1340,18 @@ block_alloc (b)
 		  if (recog_data.constraints[i][0] == 'p')
 		    while (GET_CODE (r1) == PLUS || GET_CODE (r1) == MULT)
 		      r1 = XEXP (r1, 0);
+
+		  /* Avoid making a call-saved register unnecessarily
+                     clobbered.  */
+		  hard_reg = get_hard_reg_initial_reg (cfun, r1);
+		  if (hard_reg != NULL_RTX)
+		    {
+		      if (GET_CODE (hard_reg) == REG
+			  && REGNO (hard_reg) >= 0
+			  && REGNO (hard_reg) < FIRST_PSEUDO_REGISTER
+			  && ! call_used_regs[REGNO (hard_reg)])
+			continue;
+		    }
 
 		  if (GET_CODE (r0) == REG || GET_CODE (r0) == SUBREG)
 		    {
