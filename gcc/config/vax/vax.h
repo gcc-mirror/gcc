@@ -1238,7 +1238,7 @@ VAX operand formatting codes:
     { union { double d; int i[2]; } u;					\
       u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
       fprintf (FILE, "$0f%.20e", u.d); }				\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != DImode)	\
+  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
     { union { double d; int i[2]; } u;					\
       u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
       fprintf (FILE, "$0%c%.20e", ASM_DOUBLE_CHAR, u.d); }		\
