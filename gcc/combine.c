@@ -2107,11 +2107,17 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 				 i3);
 	}
 
-      if (m_split && GET_CODE (m_split) == SEQUENCE
-	  && XVECLEN (m_split, 0) == 2
-	  && (next_real_insn (i2) == i3
-	      || ! use_crosses_set_p (PATTERN (XVECEXP (m_split, 0, 0)),
-				      INSN_CUID (i2))))
+      if (m_split && GET_CODE (m_split) != SEQUENCE)
+	{
+	  insn_code_number = recog_for_combine (&m_split, i3, &new_i3_notes);
+	  if (insn_code_number >= 0)
+	    newpat = m_split;
+	} 
+      else if (m_split && GET_CODE (m_split) == SEQUENCE
+	       && XVECLEN (m_split, 0) == 2
+	       && (next_real_insn (i2) == i3
+		   || ! use_crosses_set_p (PATTERN (XVECEXP (m_split, 0, 0)),
+					   INSN_CUID (i2))))
 	{
 	  rtx i2set, i3set;
 	  rtx newi3pat = PATTERN (XVECEXP (m_split, 0, 1));
