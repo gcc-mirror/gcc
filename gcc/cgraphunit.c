@@ -1080,7 +1080,7 @@ cgraph_decide_inlining (void)
     xcalloc (cgraph_n_nodes, sizeof (struct cgraph_node *));
   int ninlined;
   int ninlined_callees;
-  int old_insns;
+  int old_insns = 0;
   int i, y;
 
   for (node = cgraph_nodes; node; node = node->next)
