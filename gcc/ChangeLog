@@ -1,3 +1,9 @@
+2004-10-20  Ben Elliston  <bje@au.ibm.com>
+
+	* config/rs6000/rs6000.c
+	(rs6000_va_start): Use build_va_arg_indirect_ref.
+	(rs6000_gimplify_va_arg): Likewise.
+
 2004-10-20  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR java/15575
