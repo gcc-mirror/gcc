@@ -1,3 +1,20 @@
+2000-01-07  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (processor_target_table): Add power3 as alias for 630.
+	* aix43.h: Revert Aug 2 change.
+	(HAS_INIT_SECTION): Define, not visible yet.
+	(LD_INIT_SWITCH): Define, not visible yet.
+	* t-aix43 (MULTILIB_OPTIONS): Revert Aug 2 change.
+
+	* glimits.h (__LONG_MAX__): Recognize 64-bit AIX too.
+
+	* collect2.c (main): Expand ld2 size further.
+	(export_object_lst): Cast assignment to avoid warning.
+	(main, LD_INIT_SWITCH): Add AIX 4.2+ -binitfini support.
+	(scan_prog_file, COFF): Do not collect initialization or
+	finalization functions generated for entire shared object if
+	init/fini support present.
+
 2000-01-07  Nick Clifton  <nickc@cygnus.com>
 
 	* config/elfos.h: Tidy up formatting of marcos.  Make sure
@@ -6,7 +23,7 @@
 	* config/svr4.h: Add #include "elfos.h" and remove duplicate
 	definitions.
 
-2000-01-07  Matt Austern <austern@sgi.com>
+2000-01-07  Matt Austern  <austern@sgi.com>
 
 	* fold-const.c (real_hex_to_f): Remove duplicate declaration of
 	expon.
