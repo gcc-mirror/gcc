@@ -792,8 +792,7 @@ arith_operand (op, mode)
      enum machine_mode mode;
 {
   int val;
-  if (register_operand (op, mode)
-      || GET_CODE (op) == CONSTANT_P_RTX)
+  if (register_operand (op, mode))
     return 1;
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -842,7 +841,7 @@ const64_operand (op, mode)
 		  ((CONST_DOUBLE_LOW (op) & 0x80000000) != 0 ?
 		   (HOST_WIDE_INT)0xffffffff : 0)))
 #endif
-	  || GET_CODE (op) == CONSTANT_P_RTX);
+	  );
 }
 
 /* The same, but only for sethi instructions.  */
@@ -864,8 +863,7 @@ const64_high_operand (op, mode)
 	  || (GET_CODE (op) == CONST_DOUBLE
 	      && CONST_DOUBLE_HIGH (op) == 0
 	      && (CONST_DOUBLE_LOW (op) & 0xfffffc00) != 0
-	      && SPARC_SETHI_P (CONST_DOUBLE_LOW (op)))
-	  || GET_CODE (op) == CONSTANT_P_RTX);
+	      && SPARC_SETHI_P (CONST_DOUBLE_LOW (op))));
 }
 
 /* Return true if OP is a register, or is a CONST_INT that can fit in a
@@ -878,7 +876,6 @@ arith11_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || (GET_CODE (op) == CONST_INT && SPARC_SIMM11_P (INTVAL (op))));
 }
 
@@ -892,7 +889,6 @@ arith10_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || (GET_CODE (op) == CONST_INT && SPARC_SIMM10_P (INTVAL (op))));
 }
 
@@ -909,7 +905,6 @@ arith_double_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || (GET_CODE (op) == CONST_INT && SMALL_INT (op))
 	  || (! TARGET_ARCH64
 	      && GET_CODE (op) == CONST_DOUBLE
@@ -959,7 +954,6 @@ arith11_double_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || (GET_CODE (op) == CONST_DOUBLE
 	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
 	      && (unsigned HOST_WIDE_INT) (CONST_DOUBLE_LOW (op) + 0x400) < 0x800
@@ -983,7 +977,6 @@ arith10_double_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
-	  || GET_CODE (op) == CONSTANT_P_RTX
 	  || (GET_CODE (op) == CONST_DOUBLE
 	      && (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
 	      && (unsigned) (CONST_DOUBLE_LOW (op) + 0x200) < 0x400
@@ -1005,8 +998,7 @@ small_int (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return ((GET_CODE (op) == CONST_INT && SMALL_INT (op))
-	  || GET_CODE (op) == CONSTANT_P_RTX);
+  return (GET_CODE (op) == CONST_INT && SMALL_INT (op));
 }
 
 int
@@ -1017,8 +1009,7 @@ small_int_or_double (op, mode)
   return ((GET_CODE (op) == CONST_INT && SMALL_INT (op))
 	  || (GET_CODE (op) == CONST_DOUBLE
 	      && CONST_DOUBLE_HIGH (op) == 0
-	      && SPARC_SIMM13_P (CONST_DOUBLE_LOW (op)))
-	  || GET_CODE (op) == CONSTANT_P_RTX);
+	      && SPARC_SIMM13_P (CONST_DOUBLE_LOW (op))));
 }
 
 /* Recognize operand values for the umul instruction.  That instruction sign
@@ -1032,17 +1023,15 @@ uns_small_int (op, mode)
 {
 #if HOST_BITS_PER_WIDE_INT > 32
   /* All allowed constants will fit a CONST_INT.  */
-  return ((GET_CODE (op) == CONST_INT
-	   && ((INTVAL (op) >= 0 && INTVAL (op) < 0x1000)
-	       || (INTVAL (op) >= 0xFFFFF000
-                   && INTVAL (op) < 0x100000000)))
-	  || GET_CODE (op) == CONSTANT_P_RTX);
+  return (GET_CODE (op) == CONST_INT
+	  && ((INTVAL (op) >= 0 && INTVAL (op) < 0x1000)
+	      || (INTVAL (op) >= 0xFFFFF000
+                  && INTVAL (op) < 0x100000000)));
 #else
-  return (((GET_CODE (op) == CONST_INT && (unsigned) INTVAL (op) < 0x1000)
-	   || (GET_CODE (op) == CONST_DOUBLE
-	       && CONST_DOUBLE_HIGH (op) == 0
-	       && (unsigned) CONST_DOUBLE_LOW (op) - 0xFFFFF000 < 0x1000))
-	  || GET_CODE (op) == CONSTANT_P_RTX);
+  return ((GET_CODE (op) == CONST_INT && (unsigned) INTVAL (op) < 0x1000)
+	  || (GET_CODE (op) == CONST_DOUBLE
+	      && CONST_DOUBLE_HIGH (op) == 0
+	      && (unsigned) CONST_DOUBLE_LOW (op) - 0xFFFFF000 < 0x1000));
 #endif
 }
 
@@ -1070,7 +1059,7 @@ zero_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return (op == const0_rtx || GET_CODE (op) == CONSTANT_P_RTX);
+  return op == const0_rtx;
 }
 
 /* Return 1 if OP is a valid operand for the source of a move insn.  */
@@ -1083,6 +1072,10 @@ input_operand (op, mode)
   /* If both modes are non-void they must be the same.  */
   if (mode != VOIDmode && GET_MODE (op) != VOIDmode && mode != GET_MODE (op))
     return 0;
+
+  /* Only a tiny bit of handling for CONSTANT_P_RTX is necessary.  */
+  if (GET_CODE (op) == CONST && GET_CODE (XEXP (op, 0)) == CONSTANT_P_RTX)
+    return 1;
 
   /* Allow any one instruction integer constant, and all CONST_INT
      variants when we are working in DImode and !arch64.  */
@@ -1110,10 +1103,6 @@ input_operand (op, mode)
 		       || (CONST_DOUBLE_HIGH (op) == -1)))
 #endif
 		  ))))
-    return 1;
-
-  /* Always match this.  */
-  if (GET_CODE (op) == CONSTANT_P_RTX)
     return 1;
 
   /* If !arch64 and this is a DImode const, allow it so that

@@ -1,3 +1,13 @@
+Tue Dec 29 11:58:53 1998  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.c (input_operand): Recognize (const (constant_p_rtx)).
+	(arith_operand): Remove constant_p_rtx handling.
+	(const64_operand, const64_high_operand): Likewise.
+	(arith11_operand, arith10_operand, arith_double_operand): Likewise.
+	(arith11_double_operand, arith10_double_operand, small_int): Likewise.
+	(small_int_or_double, uns_small_int, zero_operand): Likewise.
+	* sparc.h (PREDICATE_CODES): Likewise.
+
 Tue Dec 29 11:32:54 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>:
 
 	* rtl.def (CONSTANT_P_RTX): Clarify commentary.
