@@ -328,25 +328,25 @@
 (define_insn "mulsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(mult:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:SI 2 "reg_or_8bit_operand" "rI")))]
+		 (match_operand:SI 2 "reg_or_0_operand" "rJ")))]
   ""
-  "mull %r1,%2,%0"
+  "mull %r1,%r2,%0"
   [(set_attr "type" "imull")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (mult:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ")
-				 (match_operand:SI 2 "reg_or_8bit_operand" "rI"))))]
+				 (match_operand:SI 2 "reg_or_0_operand" "rJ"))))]
   ""
-  "mull %r1,%2,%0"
+  "mull %r1,%r2,%0"
   [(set_attr "type" "imull")])
 
 (define_insn "muldi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ")
-		 (match_operand:DI 2 "reg_or_8bit_operand" "rI")))]
+		 (match_operand:DI 2 "reg_or_0_operand" "rJ")))]
   ""
-  "mulq %r1,%2,%0"
+  "mulq %r1,%r2,%0"
   [(set_attr "type" "imulq")])
 
 ;; The divide and remainder operations always take their inputs from
