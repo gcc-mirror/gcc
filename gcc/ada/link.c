@@ -4,7 +4,7 @@
  *                                                                          *
  *                                 L I N K                                  *
  *                                                                          *
- *                            $Revision: 1.1 $
+ *                            $Revision: 1.1.16.1 $
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
@@ -133,7 +133,7 @@ const char *object_library_extension = ".a";
 const char *object_file_option = "-Wl,-f,";
 const char *run_path_option = "";
 int link_max = 15000;
-cnonst unsigned char objlist_file_supported = 1;
+const unsigned char objlist_file_supported = 1;
 char shared_libgnat_default = STATIC;
 unsigned char using_gnu_linker = 0;
 const char *object_library_extension = ".a";

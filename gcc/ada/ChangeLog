@@ -1,3 +1,7 @@
+2003-03-31   Geert Bosch <bosch@gnat.com>
+
+	* link.c : Fix misspelled "const" keyword
+
 2003-02-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* gnatvsn.ads: Bump version.
