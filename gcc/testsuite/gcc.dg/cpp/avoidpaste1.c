@@ -15,19 +15,19 @@
 /* This should preprocess as
 
 :: : : : : :^: 1.0e- 1
-: : : .. . 0
+: : : .. . 0 0 .
 
 It relies on the fact that even when preprocessing C we bother to separate
 the colons of C++'s :: operator.  If we confine this behaviour to C++
 in future, this test needs to change.  */
 
 :: :g: :f(): :f(^): tricky
-:f(:): .. .__INCLUDE_LEVEL__	/* Check builtins, too.  */
+:f(:): .. .__INCLUDE_LEVEL__ __INCLUDE_LEVEL__. /* Check builtins, too.  */
 
 /*
    { dg-final { if ![file exists avoidpaste1.i] { return }                } }
    { dg-final { if { [grep avoidpaste1.i ":: : : : : :\\^: 1.0e- 1"] != "" } \{   } }
-   { dg-final { if { [grep avoidpaste1.i ": : : \\\.\\\. \\\. 0"] != "" } \{  } }
+   { dg-final { if { [grep avoidpaste1.i ": : : \\\.\\\. \\\. 0 0 \\\."] != "" } \{  } }
    { dg-final { return \} \}                                              } }
    { dg-final { fail "avoidpaste1.c: paste avoidance"                     } }
 */

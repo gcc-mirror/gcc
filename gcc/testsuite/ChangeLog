@@ -1,3 +1,7 @@
+2001-02-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * gcc.dg/cpp/avoidpaste1.c: Update.
+
 Tue Feb  5 8:53:33 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* objc/execute/bycopy-1.m, bycopy-2.m: Added new tests from Nicola
