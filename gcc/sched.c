@@ -4629,6 +4629,10 @@ update_flow_info (notes, first, last, orig_insn)
 	dest = XEXP (dest, 0);
 
       if (GET_CODE (dest) == REG
+	  /* Global registers are always live, so the code below does not
+	     apply to them.  */
+	  && (REGNO (dest) >= FIRST_PSEUDO_REGISTER
+	      || ! global_regs[REGNO (dest)])
 	  && ! reg_overlap_mentioned_p (dest, SET_SRC (set)))
 	{
 	  for (insn = PREV_INSN (last); ; insn = PREV_INSN (insn))
