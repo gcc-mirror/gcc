@@ -119,6 +119,12 @@ struct expr_hash_elt
    propagation).  */
 static varray_type const_and_copies;
 
+/* Stack of dest,src pairs that need to be restored during finalization.
+
+   A NULL entry is used to mark the end of pairs which need to be
+   restored during finalization of this block.  */
+static varray_type const_and_copies_stack;
+
 /* Bitmap of SSA_NAMEs known to have a nonzero value, even if we do not
    know their exact value.  */
 static bitmap nonzero_vars;
@@ -201,10 +207,6 @@ static varray_type vrp_data;
 
 struct dom_walk_block_data
 {
-  /* Array of dest, src pairs that need to be restored during finalization
-     into the global const/copies table during finalization.  */
-  varray_type const_and_copies;
-
   /* Similarly for the nonzero state of variables that needs to be
      restored during finalization.  */
   varray_type nonzero_vars;
@@ -236,8 +238,8 @@ static int avail_expr_eq (const void *, const void *);
 static void htab_statistics (FILE *, htab_t);
 static void record_cond (tree, tree);
 static void record_dominating_conditions (tree);
-static void record_const_or_copy (tree, tree, varray_type *);
-static void record_equality (tree, tree, varray_type *);
+static void record_const_or_copy (tree, tree);
+static void record_equality (tree, tree);
 static tree update_rhs_and_lookup_avail_expr (tree, tree, bool);
 static tree simplify_rhs_and_lookup_avail_expr (struct dom_walk_data *,
 						tree, int);
@@ -260,9 +262,7 @@ static void dom_opt_initialize_block_local_data (struct dom_walk_data *,
 static void dom_opt_initialize_block (struct dom_walk_data *, basic_block);
 static void cprop_into_phis (struct dom_walk_data *, basic_block);
 static void remove_local_expressions_from_table (void);
-static void restore_vars_to_original_value (varray_type locals,
-					    unsigned limit, 
-					    varray_type table);
+static void restore_vars_to_original_value (void);
 static void restore_currdefs_to_original_value (void);
 static void register_definitions_for_stmt (tree);
 static edge single_incoming_edge_ignoring_loop_edges (basic_block);
@@ -323,6 +323,7 @@ tree_ssa_dominator_optimize (void)
   VARRAY_TREE_INIT (avail_exprs_stack, 20, "Available expression stack");
   VARRAY_TREE_INIT (block_defs_stack, 20, "Block DEFS stack");
   VARRAY_TREE_INIT (const_and_copies, num_ssa_names, "const_and_copies");
+  VARRAY_TREE_INIT (const_and_copies_stack, 20, "Block const_and_copies stack");
   nonzero_vars = BITMAP_XMALLOC ();
   VARRAY_GENERIC_PTR_INIT (vrp_data, num_ssa_names, "vrp_data");
   need_eh_cleanup = BITMAP_XMALLOC ();
@@ -457,8 +458,6 @@ struct tree_opt_pass pass_dominator =
 static void
 thread_across_edge (struct dom_walk_data *walk_data, edge e)
 {
-  struct dom_walk_block_data *bd
-    = VARRAY_TOP_GENERIC_PTR (walk_data->block_data_stack);
   block_stmt_iterator bsi;
   tree stmt = NULL;
   tree phi;
@@ -468,7 +467,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
     {
       tree src = PHI_ARG_DEF_FROM_EDGE (phi, e);
       tree dst = PHI_RESULT (phi);
-      record_const_or_copy (dst, src, &bd->const_and_copies);
+      record_const_or_copy (dst, src);
       register_new_def (dst, &block_defs_stack);
     }
 
@@ -583,7 +582,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	 We want to record an equivalence lhs = cache_lhs so that if
 	 the result of this statement is used later we can copy propagate
 	 suitably.  */
-      record_const_or_copy (lhs, cached_lhs, &bd->const_and_copies);
+      record_const_or_copy (lhs, cached_lhs);
       register_new_def (lhs, &block_defs_stack);
     }
 
@@ -737,8 +736,6 @@ dom_opt_initialize_block_local_data (struct dom_walk_data *walk_data ATTRIBUTE_U
      make sure we clear them before using them!  */
   if (recycled)
     {
-      gcc_assert (!bd->const_and_copies
-		  || VARRAY_ACTIVE_SIZE (bd->const_and_copies) == 0);
       gcc_assert (!bd->nonzero_vars
 		  || VARRAY_ACTIVE_SIZE (bd->nonzero_vars) == 0);
       gcc_assert (!bd->vrp_variables
@@ -760,6 +757,7 @@ dom_opt_initialize_block (struct dom_walk_data *walk_data, basic_block bb)
      far to unwind when we finalize this block.  */
   VARRAY_PUSH_TREE (avail_exprs_stack, NULL_TREE);
   VARRAY_PUSH_TREE (block_defs_stack, NULL_TREE);
+  VARRAY_PUSH_TREE (const_and_copies_stack, NULL_TREE);
 
   record_equivalences_from_incoming_edge (walk_data, bb);
 
@@ -849,27 +847,27 @@ restore_nonzero_vars_to_original_value (varray_type locals,
     }
 }
 
-/* Use the source/dest pairs in LOCALS to restore TABLE to its original
-   state, stopping when there are LIMIT entries left in LOCALs.  */
+/* Use the source/dest pairs in CONST_AND_COPIES_STACK to restore
+   CONST_AND_COPIES to its original state, stopping when we hit a
+   NULL marker.  */
 
 static void
-restore_vars_to_original_value (varray_type locals,
-				unsigned limit,
-				varray_type table)
+restore_vars_to_original_value (void)
 {
-  if (! locals)
-    return;
-
-  while (VARRAY_ACTIVE_SIZE (locals) > limit)
+  while (VARRAY_ACTIVE_SIZE (const_and_copies_stack) > 0)
     {
       tree prev_value, dest;
 
-      prev_value = VARRAY_TOP_TREE (locals);
-      VARRAY_POP (locals);
-      dest = VARRAY_TOP_TREE (locals);
-      VARRAY_POP (locals);
+      dest = VARRAY_TOP_TREE (const_and_copies_stack);
+      VARRAY_POP (const_and_copies_stack);
 
-      set_value_for (dest, prev_value, table);
+      if (dest == NULL)
+	break;
+
+      prev_value = VARRAY_TOP_TREE (const_and_copies_stack);
+      VARRAY_POP (const_and_copies_stack);
+
+      set_value_for (dest, prev_value, const_and_copies);
     }
 }
 
@@ -959,16 +957,12 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
       if (get_immediate_dominator (CDI_DOMINATORS, true_edge->dest) != bb
 	  || phi_nodes (true_edge->dest))
 	{
-	  unsigned const_and_copies_limit;
-
-	  const_and_copies_limit
-	    = bd->const_and_copies ? VARRAY_ACTIVE_SIZE (bd->const_and_copies)
-				   : 0;
 	  /* Push a marker onto the available expression stack so that we
 	     unwind any expressions related to the TRUE arm before processing
 	     the false arm below.  */
 	  VARRAY_PUSH_TREE (avail_exprs_stack, NULL_TREE);
 	  VARRAY_PUSH_TREE (block_defs_stack, NULL_TREE);
+	  VARRAY_PUSH_TREE (const_and_copies_stack, NULL_TREE);
 
 	  /* Record any equivalences created by following this edge.  */
 	  if (TREE_CODE_CLASS (cond_code) == '<')
@@ -978,8 +972,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	      record_cond (inverted, boolean_false_node);
 	    }
 	  else if (cond_code == SSA_NAME)
-	    record_const_or_copy (cond, boolean_true_node,
-				  &bd->const_and_copies);
+	    record_const_or_copy (cond, boolean_true_node);
 
 	  /* Now thread the edge.  */
 	  thread_across_edge (walk_data, true_edge);
@@ -987,9 +980,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	  /* And restore the various tables to their state before
 	     we threaded this edge.  */
 	  remove_local_expressions_from_table ();
-	  restore_vars_to_original_value (bd->const_and_copies,
-					  const_and_copies_limit,
-					  const_and_copies);
+	  restore_vars_to_original_value ();
 	  restore_currdefs_to_original_value ();
 	}
 
@@ -1005,8 +996,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 	      record_dominating_conditions (inverted);
 	    }
 	  else if (cond_code == SSA_NAME)
-	    record_const_or_copy (cond, boolean_false_node,
-				  &bd->const_and_copies);
+	    record_const_or_copy (cond, boolean_false_node);
 
 	  thread_across_edge (walk_data, false_edge);
 
@@ -1018,7 +1008,7 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
 
   remove_local_expressions_from_table ();
   restore_nonzero_vars_to_original_value (bd->nonzero_vars, 0, nonzero_vars);
-  restore_vars_to_original_value (bd->const_and_copies, 0, const_and_copies);
+  restore_vars_to_original_value ();
   restore_currdefs_to_original_value ();
 
   /* Remove VRP records associated with this basic block.  They are no
@@ -1282,8 +1272,7 @@ record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data,
      new value for VAR, so that occurrences of VAR can be replaced with
      VALUE while re-writing the THEN arm of a COND_EXPR.  */
   if (eq_expr_value.src && eq_expr_value.dst)
-    record_equality (eq_expr_value.dst, eq_expr_value.src,
-		     &bd->const_and_copies);
+    record_equality (eq_expr_value.dst, eq_expr_value.src);
 }
 
 /* Dump SSA statistics on FILE.  */
@@ -1527,22 +1516,19 @@ record_dominating_conditions (tree cond)
    Do the work of recording the value and undo info.  */
 
 static void
-record_const_or_copy_1 (tree x, tree y, tree prev_x,
-			varray_type *block_const_and_copies_p)
+record_const_or_copy_1 (tree x, tree y, tree prev_x)
 {
   set_value_for (x, y, const_and_copies);
 
-  if (!*block_const_and_copies_p)
-    VARRAY_TREE_INIT (*block_const_and_copies_p, 2, "block_const_and_copies");
-  VARRAY_PUSH_TREE (*block_const_and_copies_p, x);
-  VARRAY_PUSH_TREE (*block_const_and_copies_p, prev_x);
+  VARRAY_PUSH_TREE (const_and_copies_stack, prev_x);
+  VARRAY_PUSH_TREE (const_and_copies_stack, x);
 }
 
 /* Record that X is equal to Y in const_and_copies.  Record undo
    information in the block-local varray.  */
 
 static void
-record_const_or_copy (tree x, tree y, varray_type *block_const_and_copies_p)
+record_const_or_copy (tree x, tree y)
 {
   tree prev_x = get_value_for (x, const_and_copies);
 
@@ -1553,14 +1539,14 @@ record_const_or_copy (tree x, tree y, varray_type *block_const_and_copies_p)
 	y = tmp;
     }
 
-  record_const_or_copy_1 (x, y, prev_x, block_const_and_copies_p);
+  record_const_or_copy_1 (x, y, prev_x);
 }
 
 /* Similarly, but assume that X and Y are the two operands of an EQ_EXPR.
    This constrains the cases in which we may treat this as assignment.  */
 
 static void
-record_equality (tree x, tree y, varray_type *block_const_and_copies_p)
+record_equality (tree x, tree y)
 {
   tree prev_x = NULL, prev_y = NULL;
 
@@ -1594,7 +1580,7 @@ record_equality (tree x, tree y, varray_type *block_const_and_copies_p)
 	  || REAL_VALUES_EQUAL (dconst0, TREE_REAL_CST (y))))
     return;
 
-  record_const_or_copy_1 (x, y, prev_x, block_const_and_copies_p);
+  record_const_or_copy_1 (x, y, prev_x);
 }
 
 /* STMT is a MODIFY_EXPR for which we were unable to find RHS in the

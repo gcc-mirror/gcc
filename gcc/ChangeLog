@@ -1,3 +1,19 @@
+2004-09-17 Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (const_and_copies_stack): New.
+	(dom_walk_block_data): Remove const_and_copies field.
+	(record_const_or_copy): No longer need to pass in varray_type *.
+	Use CONST_AND_COPIES_STACK rather than passed in block local stack.
+	Callers updated.
+	(record_equality): Similarly.
+	(restore_vars_to_original_value): Similarly.  Revamp to use new
+	single global stack rather than per-block stacks.
+	(tree_ssa_dominator_optimize): Initialize the CONST_AND_COPIES_STACK.
+	(thread_across_edge): Remove now unused parameters.
+	(dom_opt_initialize_block_local_data): No longer test the block
+	local CONST_AND_COPIES.
+	(dom_opt_initialize_block): Push a marker on CONST_AND_COPIES_STACK.
+
 2004-09-17  Jan Hubicka  <jh@suse.cz>
 
 	PR tree-optimization/17509
