@@ -131,7 +131,7 @@ case $basic_machine in
 	tahoe | i[345]86 | i860 | m68k | m68000 | m88k | ns32k | arm | pyramid \
 		| tron | a29k | 580 | i960 | h8300 | hppa1.0 | hppa1.1 \
 		| alpha | we32k | ns16k | clipper | sparclite | i370 | sh \
-		| powerpc | sparc64 | 1750a | dsp16xx | mips64 | mipsel \
+		| powerpc | powerpcle | sparc64 | 1750a | dsp16xx | mips64 | mipsel \
 		| pdp11 | mips64el | mips64orion | mips64orionel \
 		| sparc)
 		basic_machine=$basic_machine-unknown
@@ -144,11 +144,11 @@ case $basic_machine in
 	# Recognize the basic CPU types with company name.
 	vax-* | tahoe-* | i[345]86-* | i860-* | m68k-* | m68000-* | m88k-* \
 	      | sparc-* | ns32k-* | fx80-* | arm-* | c[123]* \
-	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
+	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* | power-* \
 	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
 	      | hppa1.0-* | hppa1.1-* | alpha-* | we32k-* | cydra-* | ns16k-* \
 	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* \
-	      | pdp11-* | sh-* | powerpc-* | sparc64-* | mips64-* | mipsel-* \
+	      | pdp11-* | sh-* | powerpc-* | powerpcle-* | sparc64-* | mips64-* | mipsel-* \
 	      | mips64el-* | mips64orion-* | mips64orionel-*)
 		;;
 	# Recognize the various machine names and aliases which stand
@@ -417,13 +417,36 @@ case $basic_machine in
         pc532 | pc532-*)
 		basic_machine=ns32k-pc532
 		;;
-	pentium-*)
-		# We will change tis to say i586 once there has been
-		# time for various packages to start to recognize that.
-		basic_machine=i486-`echo $basic_machine | sed 's/^[^-]*-//'`
+	pentium | p5 | p6)
+		# We don't have specific support for the Intel Pentium (p6) followon yet, so just call it a Pentium
+		basic_machine=i586-intel
+		;;
+	pentium-* | p5-* | p6-*)
+		# We don't have specific support for the Intel Pentium (p6) followon yet, so just call it a Pentium
+		basic_machine=i586-`echo $basic_machine | sed 's/^[^-]*-//'`
+		;;
+	k5)
+		# We don't have specific support for AMD's K5 yet, so just call it a Pentium
+		basic_machine=i586-amd
+		;;
+	nexen)
+		# We don't have specific support for Nexgen yet, so just call it a Pentium
+		basic_machine=i586-nexgen
 		;;
 	pn)
 		basic_machine=pn-gould
+		;;
+	power)	basic_machine=rs6000-ibm
+		;;
+	ppc)	basic_machine=powerpc-unknown
+	        ;;
+	ppc-*)	basic_machine=powerpc-`echo $basic_machine | sed 's/^[^-]*-//'`
+		;;
+	ppcle | powerpclittle | ppc-le | powerpc-little)
+		basic_machine=powerpcle-unknown
+	        ;;
+	ppcle-* | powerpclittle-*)
+		basic_machine=powerpcle-`echo $basic_machine | sed 's/^[^-]*-//'`
 		;;
 	ps2)
 		basic_machine=i386-ibm
