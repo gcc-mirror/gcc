@@ -1,3 +1,10 @@
+2003-01-08  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.h (CASE_VECTOR_MODE): Use SImode for a
+	non-optimizing compile.
+	(ASM_OUTPUT_ADDR_VEC_ELT): Use .long for a non-optimizing
+	compile.
+
 2003-01-08  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/i386/i386.c (ix86_attribute_table): Add new attributes
