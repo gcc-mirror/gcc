@@ -2069,6 +2069,8 @@ results on FreeBSD 3.0, 3.4, 4.0, 4.2, 4.3 and 5-CURRENT@.
 At this time, @option{--enable-threads} is not compatible with
 @option{--enable-libgcj} on FreeBSD@.
 
+Shared @file{libgcc_s.so} is now built and installed by default.
+
 @html
 </p>
 <hr>
@@ -2076,8 +2078,6 @@ At this time, @option{--enable-threads} is not compatible with
 @heading @anchor{elxsi-elxsi-bsd}elxsi-elxsi-bsd
 The Elxsi's C compiler has known limitations that prevent it from
 compiling GCC@.  Please contact @email{mrs@@wrs.com} for more details.
-
-Shared @file{libgcc_s.so} is now built and installed by default.
 
 @html
 </p>
