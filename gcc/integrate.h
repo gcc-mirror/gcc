@@ -63,6 +63,8 @@ struct inline_remap
      this inline instance.  These pseudos are then marked as being equivalent
      to the appropriate address and substituted if valid.  */
   rtx *const_equiv_map;
+  /* Number of entries in const_equiv_map and const_arg_map.  */
+  int const_equiv_map_size;
   /* This is incremented for each new basic block.
      It is used to store in const_age_map to record the domain of validity
      of each entry in const_equiv_map.
