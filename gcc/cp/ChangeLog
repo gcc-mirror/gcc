@@ -1,3 +1,9 @@
+2001-06-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (dfs_accumulate_vtbl_inits): For case 2 & 3, make sure
+	we've not emerged from the hierarchy of RTTI_BINFO on reaching
+	a non-virtual base.
+
 2001-06-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* NEWS: Update release number.
