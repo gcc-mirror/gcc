@@ -4711,6 +4711,9 @@ build_reinterpret_cast (tree type, tree expr)
 
   intype = TREE_TYPE (expr);
 
+  if (intype == error_mark_node)
+    return error_mark_node;
+
   if (TREE_CODE (type) == REFERENCE_TYPE)
     {
       if (! real_lvalue_p (expr))
