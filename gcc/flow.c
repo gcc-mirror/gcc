@@ -2524,6 +2524,9 @@ life_analysis (f, nregs, file, remove_dead_code)
   /* "Update" life info from zero.  It'd be nice to begin the
      relaxation with just the exit and noreturn blocks, but that set
      is not immediately handy.  */
+
+  if (flags & PROP_REG_INFO)
+    memset (regs_ever_live, 0, sizeof(regs_ever_live));
   update_life_info (all_blocks, UPDATE_LIFE_GLOBAL, flags);
 
   /* Clean up.  */
