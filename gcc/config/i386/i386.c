@@ -1973,7 +1973,7 @@ ix86_expand_prologue ()
     ;
   else if (! TARGET_STACK_PROBE || tsize < CHECK_STACK_LIMIT)
     {
-      insn = emit_insn (gen_subsi3 (xops[0], xops[0], xops[2]));
+      insn = emit_insn (gen_prologue_set_stack_ptr (xops[2]));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else 

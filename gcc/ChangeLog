@@ -1,3 +1,10 @@
+Wed Aug 27 00:30:00 1997  Bernd Schmidt  <crux@pool.informatik.rwth-aachen.de>
+
+	* i386.md (pop): pop increments the stack pointer.
+	(prologue_set_stack_ptr): New pattern.
+	* i386.c (ix86_expand_prologue): Use prologue_set_stack_ptr
+	instead of subsi3.
+
 Tue Aug 26 18:50:32 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* reload.c (find_reloads, case '0'): Reject matching a non-offsettable
