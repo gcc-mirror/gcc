@@ -295,6 +295,7 @@ static void count_reg_sets_1		PROTO ((rtx));
 static void count_reg_sets		PROTO ((rtx));
 static void count_reg_references	PROTO ((rtx));
 static void notice_stack_pointer_modification PROTO ((rtx, rtx));
+static void invalidate_mems_from_autoinc	PROTO ((rtx));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register numbers
@@ -2225,6 +2226,39 @@ regno_clobbered_at_setjmp (regno)
 	  && REGNO_REG_SET_P (regs_live_at_setjmp, regno));
 }
 
+/* INSN references memory, possibly using autoincrement addressing modes.
+   Find any entries on the mem_set_list that need to be invalidated due
+   to an address change.  */
+static void
+invalidate_mems_from_autoinc (insn)
+     rtx insn;
+{
+  rtx note = REG_NOTES (insn);
+  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
+    {
+      if (REG_NOTE_KIND (note) == REG_INC)
+        {
+          rtx temp = mem_set_list;
+          rtx prev = NULL_RTX;
+
+          while (temp)
+	    {
+	      if (reg_overlap_mentioned_p (XEXP (note, 0), XEXP (temp, 0)))
+	        {
+	          /* Splice temp out of list.  */
+	          if (prev)
+	            XEXP (prev, 1) = XEXP (temp, 1);
+	          else
+	            mem_set_list = XEXP (temp, 1);
+	        }
+	      else
+	        prev = temp;
+              temp = XEXP (temp, 1);
+	    }
+	}
+    }
+}
+
 /* Process the registers that are set within X.
    Their bits are set to 1 in the regset DEAD,
    because they are dead prior to this insn.
@@ -2327,7 +2361,13 @@ mark_set_1 (needed, dead, x, insn, significant)
 	  temp = XEXP (temp, 1);
 	}
     }
-    
+
+  /* If the memory reference had embedded side effects (autoincrement
+     address modes.  Then we may need to kill some entries on the
+     memory set list.  */
+  if (insn && GET_CODE (reg) == MEM)
+    invalidate_mems_from_autoinc (insn);
+
   if (GET_CODE (reg) == MEM && ! side_effects_p (reg)
       /* There are no REG_INC notes for SP, so we can't assume we'll see 
 	 everything that invalidates it.  To be safe, don't eliminate any
@@ -2749,6 +2789,12 @@ mark_used_regs (needed, live, x, final, insn)
 	      temp = XEXP (temp, 1);
 	    }
 	}
+
+      /* If the memory reference had embedded side effects (autoincrement
+	 address modes.  Then we may need to kill some entries on the
+	 memory set list.  */
+      if (insn)
+	invalidate_mems_from_autoinc (insn);
 
 #ifdef AUTO_INC_DEC
       if (final)
