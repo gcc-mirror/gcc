@@ -2701,7 +2701,7 @@ convert_nontype_argument (type, expr)
      enumerators.  Simplify things by folding them to their values,
      unless we're about to bind the declaration to a reference
      parameter.  */
-  if (INTEGRAL_TYPE_P (expr_type) && TREE_READONLY_DECL_P (expr)
+  if (INTEGRAL_TYPE_P (expr_type)
       && TREE_CODE (type) != REFERENCE_TYPE)
     expr = decl_constant_value (expr);
 
@@ -6200,7 +6200,7 @@ tsubst (t, args, complain, in_decl)
 
 	/* See if we can reduce this expression to something simpler.  */
 	max = maybe_fold_nontype_arg (max);
-	if (!processing_template_decl && TREE_READONLY_DECL_P (max))
+	if (!processing_template_decl)
 	  max = decl_constant_value (max);
 
 	if (processing_template_decl 

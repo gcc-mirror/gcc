@@ -673,8 +673,7 @@ ocp_convert (type, expr, convtype, flags)
   complete_type (type);
   complete_type (TREE_TYPE (expr));
 
-  if (TREE_READONLY_DECL_P (e))
-    e = decl_constant_value (e);
+  e = decl_constant_value (e);
 
   if (IS_AGGR_TYPE (type) && (convtype & CONV_FORCE_TEMP)
       /* Some internal structures (vtable_entry_type, sigtbl_ptr_type)
@@ -1003,8 +1002,7 @@ convert (type, expr)
 
   if (POINTER_TYPE_P (type) && POINTER_TYPE_P (intype))
     {
-      if (TREE_READONLY_DECL_P (expr))
-	expr = decl_constant_value (expr);
+      expr = decl_constant_value (expr);
       return fold (build1 (NOP_EXPR, type, expr));
     }
 

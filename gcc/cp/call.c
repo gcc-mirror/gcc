@@ -3720,7 +3720,7 @@ convert_like_real (convs, expr, fn, argnum, inner)
   /* Convert a non-array constant variable to its underlying value, unless we
      are about to bind it to a reference, in which case we need to
      leave it as an lvalue.  */
-  if (TREE_READONLY_DECL_P (expr) && TREE_CODE (convs) != REF_BIND
+  if (TREE_CODE (convs) != REF_BIND
       && TREE_CODE (TREE_TYPE (expr)) != ARRAY_TYPE)
     expr = decl_constant_value (expr);
 

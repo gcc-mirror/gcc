@@ -1922,7 +1922,7 @@ struct lang_decl
 
 /* Non-zero if NODE is a _DECL with TREE_READONLY set.  */
 #define TREE_READONLY_DECL_P(NODE) \
-  (TREE_READONLY (NODE) && TREE_CODE_CLASS (TREE_CODE (NODE)) == 'd')
+  (TREE_READONLY (NODE) && DECL_P (NODE))
 
 /* Non-zero iff DECL is memory-based.  The DECL_RTL of
    certain const variables might be a CONST_INT, or a REG

@@ -3061,7 +3061,7 @@ check_bitfield_decl (field)
       /* detect invalid field size.  */
       if (TREE_CODE (w) == CONST_DECL)
 	w = DECL_INITIAL (w);
-      else if (TREE_READONLY_DECL_P (w))
+      else
 	w = decl_constant_value (w);
 
       if (TREE_CODE (w) != INTEGER_CST)
