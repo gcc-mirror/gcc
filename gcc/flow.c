@@ -6410,14 +6410,12 @@ flow_loops_dump (loops, file, verbose)
     {
       struct loop *loop = &loops->array[i];
 
-      fprintf (file, ";; loop %d (%d to %d):\n"
-	       ";;   header %d, latch %d, pre-header %d,"
-	       " depth %d, level %d, outer %d\n",
+      fprintf (file, ";; loop %d (%d to %d):\n;;   header %d, latch %d, pre-header %d, depth %d, level %d, outer %ld\n",
 	       i, INSN_UID (loop->header->head), INSN_UID (loop->latch->end),
 	       loop->header->index, loop->latch->index,
 	       loop->pre_header ? loop->pre_header->index : -1, 
 	       loop->depth, loop->level,
-	       loop->outer ? (loop->outer - loops->array) : -1);
+	       (long) (loop->outer ? (loop->outer - loops->array) : -1));
       fprintf (file, ";;   %d", loop->num_nodes);
       flow_nodes_print (" nodes", loop->nodes, file);
       fprintf (file, ";;   %d", loop->num_exits);
@@ -6443,8 +6441,7 @@ flow_loops_dump (loops, file, verbose)
 		     must be disjoint.  */
 		  disjoint = ! flow_loop_nested_p (smaller ? loop : oloop,
 						   smaller ? oloop : loop);
-		  fprintf (file, ";; loop header %d shared by loops %d, %d"
-			   " %s\n",
+		  fprintf (file, ";; loop header %d shared by loops %d, %d %s\n",
 			   loop->header->index, i, j,
 			   disjoint ? "disjoint" : "nested");
 		}

@@ -1,3 +1,8 @@
+1999-12-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* flow.c (flow_loops_dump): Avoid ANSI string concatenation.
+	Cast a ptrdiff_t to long and pass it to printf with %ld.
+
 1999-12-10  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/m68k/m68k.h (CONDITIONAL_REGISTER_USAGE): If we have no
