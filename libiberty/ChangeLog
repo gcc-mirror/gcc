@@ -1,5 +1,7 @@
 2004-02-24  Ian Lance Taylor  <ian@wasabisystems.com>
 
+	* cp-demangle.c (__cxa_demangle): Pass DMGL_PARAMS to d_demangle.
+
 	* cp-demangle.c (d_print_comp) [RESTRICT, VOLATILE, CONST]: Don't
 	push more than one of the same CV-qualifier on the top of the
 	stack.
