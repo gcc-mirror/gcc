@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2001-2004 Ada Core Technologies, Inc.            *
+ *           Copyright (C) 2001-2005 Ada Core Technologies, Inc.            *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -152,10 +152,10 @@ __gnat_expect_poll (int *fd, int num_fd, int timeout, int *is_set)
 #include <unixio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <descrip.h>
+#include <vms/descrip.h>
 #include <stdio.h>
-#include <stsdef.h>
-#include <iodef.h>
+#include <vms/stsdef.h>
+#include <vms/iodef.h>
 
 int
 __gnat_pipe (int *fd)
