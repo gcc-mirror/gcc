@@ -1,3 +1,10 @@
+Thu May  6 20:34:42 1999  Fred Fish  <fnf@be.com>
+
+	* configure.in (sys/resource.h): Add to AC_CHECK_HEADERS list.
+	* getruntime.c: Only attempt to include sys/resource.h and
+	use getrusage if both HAVE_GETRUSAGE and HAVE_SYS_RESOURCE_H
+	are defined.
+
 Mon Apr 26 01:36:06 1999  Donn Terry (donn@interix.com)
 
 	* configure.in (alloca detection): Handle alloca directly for interix.
