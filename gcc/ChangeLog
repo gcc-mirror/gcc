@@ -1,3 +1,8 @@
+2000-10-24  Andrew Haley  <aph@cygnus.co.uk>
+
+	* expr.c (do_store_flag): Don't crash if either side of a
+	comparison is error_mark_node.
+
 2000-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* sibcall.c (purge_mem_unchanging_flag): New function.
