@@ -340,14 +340,28 @@ void FN ()					\
       else								\
 	data_section ();						\
     }									\
-  else if (TREE_CODE (DECL) == VAR_DECL					\
-	   || TREE_CODE (DECL) == CONSTRUCTOR)				\
+  else if (TREE_CODE (DECL) == VAR_DECL)				\
     {									\
       if ((flag_pic && RELOC)						\
-	  || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
-	  || !DECL_INITIAL (DECL)					\
+	  || ! TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
+	  || ! DECL_INITIAL (DECL)					\
 	  || (DECL_INITIAL (DECL) != error_mark_node			\
 	      && !TREE_CONSTANT (DECL_INITIAL (DECL))))			\
+	{								\
+	  int size = int_size_in_bytes (TREE_TYPE (DECL));		\
+	  if (size >= 0 && size <= g_switch_value)			\
+	    sdata_section ();						\
+	  else								\
+	    data_section ();						\
+	}								\
+      else								\
+	const_section ();						\
+    }									\
+  else if (TREE_CODE (DECL) == CONSTRUCTOR)				\
+    {									\
+      if ((flag_pic && RELOC)						\
+	  || ! TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
+	  || ! TREE_CONSTANT (DECL))					\
 	{								\
 	  int size = int_size_in_bytes (TREE_TYPE (DECL));		\
 	  if (size >= 0 && size <= g_switch_value)			\
