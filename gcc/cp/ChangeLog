@@ -1,3 +1,10 @@
+2004-01-23  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/13701
+	* decl.c (finish_function): Move the call to
+	finish_fname_decls below the call to
+	finish_eh_spec_block.
+
 2004-01-21  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* parser.c (cp_parser_class_specifier): Prevent garbage collection.
