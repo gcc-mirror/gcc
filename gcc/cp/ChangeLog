@@ -1,3 +1,8 @@
+2005-01-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* typeck.c (more_qualified_p): Remove.
+	* cp-tree.h: Remove the corresponding prototype.
+
 2005-01-19  Matt Austern  <austern@apple.com>
 
 	* typeck.c (comptypes): Handle return code from objc_comptypes
