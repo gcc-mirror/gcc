@@ -1,3 +1,7 @@
+2003-12-17  Michael Koch  <konqueror@gmx.de>
+
+	* libltdl/stamp-h.in: Removed, not used anymore.
+
 2003-12-16  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* gnu/java/net/natPlainDatagramSocketImplWin32.cc:
