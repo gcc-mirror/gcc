@@ -227,6 +227,7 @@ output_function_prologue (stream, size)
 		}
 	      else
 		{
+		  /* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
 		  asm_fprintf (stream, "\tsubq.l %OI%d,%Rsp\n", fsize + 4);
 #else
@@ -261,7 +262,6 @@ output_function_prologue (stream, size)
 	    }
 	  else
 	    {
-	      /* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
 	      asm_fprintf (stream, "\tlea (%d,%Rsp),%Rsp\n", - (fsize + 4));
 #else
@@ -320,7 +320,15 @@ output_function_prologue (stream, size)
     }
 
 #if NEED_PROBE
+#ifdef MOTOROLA
+#ifdef CRDS
+  asm_fprintf (stream, "\ttstl %d(%Rsp)\n", NEED_PROBE - num_saved_regs * 4);
+#else
+  asm_fprintf (stream, "\ttst.l %d(%Rsp)\n", NEED_PROBE - num_saved_regs * 4);
+#endif
+#else
   asm_fprintf (stream, "\ttstl %Rsp@(%d)\n", NEED_PROBE - num_saved_regs * 4);
+#endif
 #endif
 
   if (num_saved_regs <= 2)
@@ -701,6 +709,7 @@ output_function_epilogue (stream, size)
 	{
 	  /* On the CPU32 it is faster to use two addqw instructions to
 	     add a small integer (8 < N <= 16) to a register. */
+	  /* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
 	  asm_fprintf (stream, "\taddq.w %OI8,%Rsp\n\taddq.w %OI%d,%Rsp\n",
 		       fsize + 4);
@@ -724,7 +733,6 @@ output_function_epilogue (stream, size)
 	    }
 	  else
 	    {
-	      /* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
 	      asm_fprintf (stream, "\tlea (%d,%Rsp),%Rsp\n", fsize + 4);
 #else
@@ -2302,7 +2310,7 @@ standard_sun_fpa_constant_p (x)
    '@' for a reference to the top word on the stack:
        sp@, (sp) or (%sp) depending on the style of syntax.
    '#' for an immediate operand prefix (# in MIT and Motorola syntax
-       but & in SGS syntax).
+       but & in SGS syntax, $ in CRDS/UNOS syntax).
    '!' for the cc register (used in an `and to cc' insn).
    '$' for the letter `s' in an op code, but only on the 68040.
    '&' for the letter `d' in an op code, but only on the 68040.
@@ -2331,7 +2339,7 @@ print_operand (file, op, letter)
 
   if (letter == '.')
     {
-#ifdef MOTOROLA
+#if defined (MOTOROLA) && !defined (CRDS)
       asm_fprintf (file, ".");
 #endif
     }
