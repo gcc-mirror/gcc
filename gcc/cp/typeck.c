@@ -5345,14 +5345,14 @@ get_delta_difference (tree from, tree to, int force)
 		   BINFO_TYPE (virt_binfo));
 	  goto error;
         }
-      return convert_to_integer (ptrdiff_type_node, 
-				 size_diffop (size_zero_node,
-					      BINFO_OFFSET (binfo)));
+      return fold (convert_to_integer (ptrdiff_type_node, 
+				       size_diffop (size_zero_node,
+						    BINFO_OFFSET (binfo))));
     }
 
   virt_binfo = binfo_from_vbase (binfo);
   if (!virt_binfo)
-    return convert_to_integer (ptrdiff_type_node, BINFO_OFFSET (binfo));
+    return fold (convert_to_integer (ptrdiff_type_node, BINFO_OFFSET (binfo)));
 
   /* This is a reinterpret cast, we choose to do nothing.  */
   if (force)
@@ -5363,7 +5363,7 @@ get_delta_difference (tree from, tree to, int force)
 	   BINFO_TYPE (virt_binfo));
 
  error:
-  return convert_to_integer(ptrdiff_type_node, integer_zero_node);
+  return fold (convert_to_integer(ptrdiff_type_node, integer_zero_node));
 }
 
 /* Return a constructor for the pointer-to-member-function TYPE using
