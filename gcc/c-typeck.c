@@ -6957,7 +6957,11 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
   /* Record the contents of OUTPUTS before it is modified.  */
   for (i = 0, tail = outputs; tail; tail = TREE_CHAIN (tail), i++)
-    o[i] = TREE_VALUE (tail);
+    {
+      o[i] = TREE_VALUE (tail);
+      if (o[i] == error_mark_node)
+	return;
+    }
 
   /* Generate the ASM_OPERANDS insn; store into the TREE_VALUEs of
      OUTPUTS some trees for where the values were actually stored.  */
