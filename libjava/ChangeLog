@@ -1,5 +1,9 @@
 2004-10-18  Michael Koch  <konqueror@gmx.de>
 
+	* java/lang/System.java: Revert accidential change.
+
+2004-10-18  Michael Koch  <konqueror@gmx.de>
+
 	* java/lang/Math.java,
 	java/lang/Package.java,
 	java/lang/Runtime.java,
