@@ -37,10 +37,18 @@ exception statement from your version. */
 
 
 #include "gtkpeer.h"
+#include "gnu_java_awt_peer_gtk_GtkComponentPeer.h"
 #include "gnu_java_awt_peer_gtk_GtkListPeer.h"
 
-static void
-connect_selectable_hook (JNIEnv *env, jobject peer_obj, GtkCList *list);
+static void item_select (GtkCList *list __attribute__((unused)),
+	                 int row, int col __attribute__((unused)),
+	                 GdkEventButton *event __attribute__((unused)), 
+	                 jobject peer_obj);
+static void item_unselect (GtkCList *list __attribute__((unused)),
+	                   int row,
+	                   int col __attribute__((unused)),
+	                   GdkEventButton *event __attribute__((unused)),
+	                   jobject peer_obj);
 
 #define CLIST_FROM_SW(obj) (GTK_CLIST(GTK_SCROLLED_WINDOW (obj)->container.child))
 
@@ -64,7 +72,7 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_create
 }
 
 JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkListPeer_connectHooks
+Java_gnu_java_awt_peer_gtk_GtkListPeer_connectJObject
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
@@ -72,9 +80,44 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_connectHooks
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
+
   gtk_widget_realize (GTK_WIDGET (ptr));
-  connect_selectable_hook (env, obj, CLIST_FROM_SW (ptr));
+
   connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkListPeer_connectSignals
+  (JNIEnv *env, jobject peer_obj)
+{
+  GtkCList *list;
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, peer_obj);
+
+  gdk_threads_enter ();
+
+  gtk_widget_realize (GTK_WIDGET (ptr));
+
+  /* connect selectable hook */
+  
+  list = CLIST_FROM_SW (ptr);
+
+  g_signal_connect (G_OBJECT (list), "select_row", 
+		      GTK_SIGNAL_FUNC (item_select), peer_obj);
+
+  g_signal_connect (G_OBJECT (list), "unselect_row", 
+		      GTK_SIGNAL_FUNC (item_unselect), peer_obj);
+
+  /* Connect the superclass signals.  */
+  /* FIXME: Cannot do that here or it will get the sw and not the list.
+     We must a generic way of doing this. */
+  /* Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals (env, peer_obj); */
+  g_signal_connect (GTK_OBJECT (list), "event", 
+                    G_CALLBACK (pre_event_handler), peer_obj);
+
   gdk_threads_leave ();
 }
 
@@ -106,58 +149,6 @@ Java_gnu_java_awt_peer_gtk_GtkListPeer_append
 
   gtk_clist_columns_autosize (list);
   gdk_threads_leave ();
-}
-
-
-JNIEXPORT void JNICALL 
-Java_gnu_java_awt_peer_gtk_GtkListPeer_old_create
-  (JNIEnv *env, jobject obj, jobject parent_obj,
-   jobjectArray items, jboolean mode)
-{
-  GtkWidget *list, *sw, *parent;
-  jsize count, i;
-
-  parent = NSA_GET_PTR (env, parent_obj);
-
-  count = (*env)->GetArrayLength (env, items);
-
-  gdk_threads_enter ();
-
-  list = gtk_clist_new (1);
-  gtk_widget_show (list);
-
-  sw = gtk_scrolled_window_new (NULL, NULL);
-  set_parent (sw, GTK_CONTAINER (parent));
-  gtk_widget_realize (sw);
-
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (sw), 
-				  GTK_POLICY_AUTOMATIC,
-				  GTK_POLICY_AUTOMATIC);
-  gtk_container_add (GTK_CONTAINER (sw), list);
-
-  connect_selectable_hook (env, obj, GTK_CLIST (list));
-  connect_awt_hook (env, obj, 1, list->window);
-
-  gtk_clist_set_selection_mode (GTK_CLIST (list),
-				mode ? GTK_SELECTION_MULTIPLE : 
-				       GTK_SELECTION_SINGLE);
-  
-  for (i = 0; i < count; i++) 
-    {
-      const char *text;
-      jobject item;
-
-      item = (*env)->GetObjectArrayElement (env, items, i);
-
-      text = (*env)->GetStringUTFChars (env, item, NULL);
-      gtk_clist_append (GTK_CLIST (list), (char **)&text);
-      (*env)->ReleaseStringUTFChars (env, item, text);
-    }
-
-  gtk_clist_columns_autosize (GTK_CLIST (list));
-  gdk_threads_leave ();
-
-  NSA_SET_PTR (env, obj, sw);
 }
 
 JNIEXPORT void JNICALL
@@ -326,9 +317,9 @@ static void
 item_select (GtkCList *list __attribute__((unused)),
 	     int row, int col __attribute__((unused)),
 	     GdkEventButton *event __attribute__((unused)), 
-	     jobject *peer_obj)
+	     jobject peer_obj)
 {
-  (*gdk_env)->CallVoidMethod (gdk_env, *peer_obj,
+  (*gdk_env)->CallVoidMethod (gdk_env, peer_obj,
 			      postListItemEventID,
 			      row,
 			      (jint) AWT_ITEM_SELECTED);
@@ -339,25 +330,11 @@ item_unselect (GtkCList *list __attribute__((unused)),
 	       int row,
 	       int col __attribute__((unused)),
 	       GdkEventButton *event __attribute__((unused)),
-	       jobject *peer_obj)
+	       jobject peer_obj)
 {
-  (*gdk_env)->CallVoidMethod (gdk_env, *peer_obj,
+  (*gdk_env)->CallVoidMethod (gdk_env, peer_obj,
 			      postListItemEventID,
 			      row,
 	   		      (jint) AWT_ITEM_DESELECTED);
 }
 
-static void
-connect_selectable_hook (JNIEnv *env, jobject peer_obj, GtkCList *list)
-{
-  jobject *obj;
-
-  obj = (jobject *) malloc (sizeof (jobject));
-  *obj = (*env)->NewGlobalRef (env, peer_obj);
-
-  gtk_signal_connect (GTK_OBJECT (list), "select_row", 
-		      GTK_SIGNAL_FUNC (item_select), obj);
-
-  gtk_signal_connect (GTK_OBJECT (list), "unselect_row", 
-		      GTK_SIGNAL_FUNC (item_unselect), obj);
-}

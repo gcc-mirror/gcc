@@ -1,3 +1,85 @@
+2003-12-08  Fernando Nasser  <fnasser@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c (awt_event_handler):
+	Most coded moved to pre_event_handler, with the modifications
+	mentioned below.
+	(pre_event_handler): New function.  Called on the Gtk "event" signal.
+	Do not retrieve the jobject from the window property as it is already
+	available as user data in the signal.
+	Do not try and find the grab widget as it is already done by Gtk at
+	this point.
+	Do not search for Window ancestor as Gtk already sends the signal to it.
+	Do not meddle with the activation state of peer widgets on each
+	key press or release.
+	Add CList to the special handling when looking for the focused widget.
+	* jni/gtk-peer/gtkpeer.h: Add declaration for pre_event_handler.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c (connectJObject):
+	New function.
+	(connectSignals): New function.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkCheckboxPeer.c (connectHooks):
+	Rename to...
+	(connectSignals): New name.  Get rid of NewGlobalRef call.
+	Use g_signal_connect instead of deprecated gtk_signal_connect.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkChoicePeer.c
+	(connect_choice_item_selectable_hook): Use g_signal_connect instead of
+	deprecated gtk_signal_connect.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkClipboard.c
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.c
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkClipboard_initNativeState): Ditto.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks): Remove
+	function.
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectJObject): New
+	function.
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals): New
+	function.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks): Remove
+	function.
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectJObject): New
+	function.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks): Remove
+	function.
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectJObject): New
+	function.
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals): New
+	function.
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_old_create): Remove dead
+	code.
+	(item_select): Remove indirection.
+	(item_unselect): Ditto.
+	(connect_selectable_hook): Folded into connectSignals.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks): Remove
+	function.
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectJObject): New
+	function.
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals): New
+	function.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.c: Ditto.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks): Remove
+	function.
+	(Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals): New
+	function.
+	* gnu/java/awt/peer/gtk/GtkComponentPeer.java: Declare  and call
+	connectJObject and connectSignals instead of connectHooks.
+	* gnu/java/awt/peer/gtk/GtkButtonPeer.java: Declare connectJObject and
+	connectSignals.
+	* gnu/java/awt/peer/gtk/GtkCheckboxPeer.java: Declare connectSignals
+	and not connectHooks.
+	* gnu/java/awt/peer/gtk/GtkTextComponentPeer.java: Ditto.
+	* gnu/java/awt/peer/gtk/GtkFileDialogPeer.java: Declare connectJObject
+	and not connectHooks.
+	* gnu/java/awt/peer/gtk/GtkListPeer.java: Declare connectJObject and
+	connectSignals instead of connectHooks.
+	* gnu/java/awt/peer/gtk/GtkPanelPeer.java: Ditto.
+	* gnu/java/awt/peer/gtk/GtkScrollbarPeer.java: Ditto.
+	* gnu/java/awt/peer/gtk/GtkWindowPeer.java: Ditto. 
+
 2003-12-09  Michael Koch  <konqueror@gmx.de>
 
 	* Makefile.am (nat_headers_install): New variable with header files to

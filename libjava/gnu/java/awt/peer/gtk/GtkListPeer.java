@@ -51,7 +51,8 @@ public class GtkListPeer extends GtkComponentPeer
 //    native void create (ComponentPeer parent, String [] items, boolean mode);
 
   native void create ();
-  native void connectHooks ();
+  native void connectJObject ();
+  native void connectSignals ();
 
   native void getSize (int rows, int dims[]);
 

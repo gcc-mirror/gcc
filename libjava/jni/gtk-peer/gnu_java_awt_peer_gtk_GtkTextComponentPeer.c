@@ -48,7 +48,7 @@ static void textcomponent_changed_cb (GtkEditable *editable,
                                   jobject peer);
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_connectHooks
+Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
@@ -66,6 +66,11 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_connectHooks
 
       g_signal_connect (GTK_EDITABLE (ptr), "changed",
                         G_CALLBACK (textcomponent_changed_cb), obj);
+
+      gdk_threads_leave ();
+
+      /* Connect the superclass signals.  */
+      Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals (env, obj);
     }
   else
     {
@@ -87,13 +92,18 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_connectHooks
           if (buf)
             g_signal_connect (buf, "changed",
                               G_CALLBACK (textcomponent_changed_cb), obj);
+
+          /* Connect the superclass signals.  */
+          /* FIXME: Cannot do that here or it will get the sw and not the list.
+             We must a generic way of doing this. */
+          /* Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals (env,
+	                                                                 peer_obj); */
+          g_signal_connect (GTK_OBJECT (text), "event", 
+                    G_CALLBACK (pre_event_handler), obj);
+
+          gdk_threads_leave ();
 	}
     }
-
-  gdk_threads_leave ();
-
-  /* Connect the superclass hooks.  */
-  Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks (env, obj);
 }
 
 JNIEXPORT jint JNICALL 

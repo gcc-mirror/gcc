@@ -104,25 +104,20 @@ Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_nativeCreate
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_connectHooks
+Java_gnu_java_awt_peer_gtk_GtkCheckboxPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
   void *ptr = NSA_GET_PTR (env, obj);
-  jobject peer;
 
   gdk_threads_enter ();
 
-  peer = (*env)->NewGlobalRef (env, obj);
-
-  /* FIXME: when the widget goes away, we should get rid of the global
-     reference.  */
-  gtk_signal_connect (GTK_OBJECT (ptr), "toggled",
-		      GTK_SIGNAL_FUNC (item_toggled), peer);
+  g_signal_connect (G_OBJECT (ptr), "toggled",
+		      GTK_SIGNAL_FUNC (item_toggled), obj);
 
   gdk_threads_leave ();
 
-  /* Connect the superclass hooks.  */
-  Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks (env, obj);
+  /* Connect the superclass signals.  */
+  Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals (env, obj);
 }
 
 JNIEXPORT void JNICALL 

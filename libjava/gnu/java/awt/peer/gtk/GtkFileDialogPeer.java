@@ -58,7 +58,7 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
   }
 
   public native void setFile (String file);
-  public native void connectHooks ();
+  public native void connectJObject ();
 
   public void setFilenameFilter (FilenameFilter filter)
   {

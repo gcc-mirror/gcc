@@ -531,7 +531,7 @@ Java_gnu_java_awt_peer_gtk_GtkComponentPeer_set__Ljava_lang_String_2Ljava_lang_O
   (*env)->ReleaseStringUTFChars (env, jname, name);
 }
 
-JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectJObject
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
@@ -539,12 +539,36 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectHooks
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
+
   gtk_widget_realize (GTK_WIDGET (ptr));
 
-  if(GTK_IS_BUTTON(ptr))
-    connect_awt_hook (env, obj, 1, GTK_BUTTON(ptr)->event_window);
-  else
-    connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
+  connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkComponentPeer_connectSignals
+  (JNIEnv *env, jobject peer_obj)
+{
+  void *ptr;
+
+  ptr = NSA_GET_PTR (env, peer_obj);
+
+  gdk_threads_enter ();
+
+  gtk_widget_realize (GTK_WIDGET (ptr));
+  
+  /* FIXME: We could check here if this is a scrolled window with a
+     single child that does not have an associated jobject.  This
+     means that it is one of our wrapped widgets like List or TextArea
+     and thus we could connect the signal to the child without having
+     to specialize this method. */
+
+  /* Connect EVENT signal, which happens _before_ any specific signal. */
+
+  g_signal_connect (GTK_OBJECT (ptr), "event", 
+                    G_CALLBACK (pre_event_handler), peer_obj);
+
   gdk_threads_leave ();
 }
 

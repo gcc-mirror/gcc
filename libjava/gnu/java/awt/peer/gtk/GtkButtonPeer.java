@@ -50,6 +50,8 @@ public class GtkButtonPeer extends GtkComponentPeer
     implements ButtonPeer
 {
   native void create ();
+  public native void connectJObject ();
+  public native void connectSignals ();
 
   native void gtkSetFont(String name, int style, int size);
   native void gtkWidgetSetForeground (int red, int green, int blue);

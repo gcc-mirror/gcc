@@ -200,6 +200,6 @@ connect_choice_item_selectable_hook (JNIEnv *env, jobject peer_obj,
   ie->peer_obj = (*env)->NewGlobalRef (env, peer_obj);
   ie->item_obj = (*env)->NewGlobalRef (env, item_obj);
 
-  gtk_signal_connect (GTK_OBJECT (item), "activate", 
+  g_signal_connect (G_OBJECT (item), "activate", 
 		      GTK_SIGNAL_FUNC (item_activate), ie);
 }
