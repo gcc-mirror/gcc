@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 running AIX version 3.1.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by David Reese (Dave.Reese@East.Sun.COM)
 
 This file is part of GNU CC.
@@ -45,6 +45,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef	LINK_START_DEFAULT_SPEC
 #define LINK_START_DEFAULT_SPEC "%(link_start_solaris)"
+
+#undef CPP_SPEC
+#define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
+%(cpp_sysv) %(cpp_endian) %(cpp_cpu) \
+%{mmvme: %(cpp_os_mvme) } \
+%{msim: %(cpp_os_sim) } \
+%{mcall-linux: %(cpp_os_linux) } \
+%{mcall-solaris: %(cpp_os_solaris) } \
+%{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(cpp_os_default) }}}}"
 
 #undef	CPP_OS_DEFAULT_SPEC
 #define	CPP_OS_DEFAULT_SPEC "%(cpp_os_solaris)"
@@ -165,3 +174,5 @@ while (0)
 
 #undef	MULTILIB_DEFAULTS
 #define	MULTILIB_DEFAULTS { "mlittle", "mcall-solaris" }
+
+#define STDC_0_IN_SYSTEM_HEADERS

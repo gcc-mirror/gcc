@@ -1,8 +1,6 @@
-/* CYGNUS LOCAL -- waiting for FSF sources to be restored/meissner */
-/*
- * special support for trampolines
+/*  Special support for trampolines
  *
- *   Copyright (C) 1996 Free Software Foundation, Inc.
+ *   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
  *   Written By Michael Meissner
  * 
  * This file is free software; you can redistribute it and/or modify it
@@ -82,7 +80,7 @@ FUNC_START(__trampoline_setup)
         mflr	r11
         lwz	r12,(.LCL0-.LCF0)(r11)
         add	r11,r12,r11
-        lwz	r7,.Ltramp(r11)		/* trampoline addres -4 */
+        lwz	r7,.Ltramp(r11)		/* trampoline address -4 */
 
 	li	r8,__trampoline_size	/* verify that the trampoline is big enough */
 	cmpw	cr1,r8,r4

@@ -3,5 +3,3 @@
 
 #define SUBTARGET_MIPS_AS_ASM_SPEC "-O0 %{v}"
 #define SUBTARGET_ASM_OPTIMIZING_SPEC ""
-
-#include "mips/iris4.h"

@@ -41,7 +41,7 @@
 ! information obtained by single stepping executables on other i386 SVR4
 ! implementations.  This file is the first thing linked into any executable.
 
-! This is a modified crt1.s by J.W.Hawtin <J.W.Hawtin@lboro.ac.uk> 15/8/96, 
+! This is a modified crt1.s by J.W.Hawtin <oolon@ankh.org> 15/8/96, 
 ! to allow program profiling, by calling monstartup on entry and _mcleanup 
 ! on exit
 

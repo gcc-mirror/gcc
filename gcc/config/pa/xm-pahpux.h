@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for PA-RISC.
-   Copyright (C) 1988, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1995, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
 
 This file is part of GNU CC.
@@ -24,13 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #define USG
 
 /* Use System V memory functions.  */
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define bcmp(a,b,c) memcmp (a,b,c)
-
-#define rindex strrchr
-#define index strchr
-
 /* #defines that need visibility everywhere.  */
 #define FALSE 0
 #define TRUE 1

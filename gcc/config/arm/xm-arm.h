@@ -44,12 +44,6 @@ Boston, MA 02111-1307, USA.  */
 #define USE_C_ALLOCA
 #endif
 
-/* Define this if the library function putenv is available on your machine */
-#define HAVE_PUTENV 1
-
-/* Define this if the library function vprintf is available on your machine */
-#define HAVE_VPRINTF 1
-
 /* Define this to be 1 if you know the host compiler supports prototypes, even
    if it doesn't define __STDC__, or define it to be 0 if you do not want any
    prototypes when compiling GNU CC. */

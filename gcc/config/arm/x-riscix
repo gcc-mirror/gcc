@@ -6,4 +6,3 @@ X_CFLAGS= -DPOSIX -Dopterr=gcc_opterr -Doptind=gcc_optind \
 OLDCC=/usr/ucb/cc
 CC=$(OLDCC)
 FIXPROTO_DEFINES= -D_POSIX_SOURCE -D_XOPEN_C -D_BSD_C -D_XOPEN_SOURCE
-INSTALL=$(srcdir)/install.sh -c

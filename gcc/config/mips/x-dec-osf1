@@ -11,7 +11,6 @@
 CC		= $(OLDCC)
 OPT		= -O1
 OLDCC		= cc -Wf,-XNg1500 -Olimit 3000 $(OPT)
-INSTALL		= installbsd -c
 
 # The bison output files are machine-indep,
 # so different flags for a particular machine are not useful.

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    DECstation (OSF/1 reference port with OSF/rose) version.
-   Copyright (C) 1991, 1992, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1995, 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -147,5 +147,3 @@ Boston, MA 02111-1307, USA.  */
   if (strcmp (lang_identify (), "c") != 0)				\
     output_lang_identify (STREAM);					\
 }
-
-#include "mips/mips.h"

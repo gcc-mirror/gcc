@@ -1,6 +1,6 @@
 /* Target definitions for GNU compiler for Alliant FX/2800
    running Concentrix 2.2
-   Copyright (C) 1991, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1996, 1998 Free Software Foundation, Inc.
    Contributed by Howard Chu (hyc@hanauma.jpl.nasa.gov).
 
 This file is part of GNU CC.
@@ -252,7 +252,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define DATA_ALIGNMENT(dummy,align)	\
 	((TREE_PUBLIC (decl) &&	\
-	 (TREE_CODE (TREE_TYPE (decl))==POINTER_TYPE)) ? 64:align)
+	 (POINTER_TYPE_P (TREE_TYPE (decl)))) ? 64: align)
 
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)	\
