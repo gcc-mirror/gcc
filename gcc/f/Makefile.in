@@ -134,12 +134,11 @@ ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS) -W 
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
-# f771 is so big, need to tell linker on m68k-next-nextstep* to make enough
-# room for it.  On AIX, linking f771 overflows the linker TOC;
-# `-bbigtoc' is appropriate for the linker on AIX 4.1 and above.
-F771_LDFLAGS = `case "${target}" in\
- m68k-next-nextstep*) echo -segaddr __DATA 6000000;;\
- *-*-aix[4-9]*) \`$(CC) --print-prog-name=ld\` -v 2>&1 | grep BFD >/dev/null || echo -Wl,-bbigtoc;; esac`
+# We should be compiling with the built compiler, for which
+# BOOT_LDFLAGS is appropriate.  (Formerly we had a separate
+# F771_LDFLAGS, but the ld flags can be taken care of by the target
+# configuration files in egcs.)
+LDFLAGS=$(BOOT_LDFLAGS)
 
 # Even if ALLOCA is set, don't use it if compiling with GCC.
 
@@ -213,8 +212,7 @@ OBJDEPS = ../stamp-objlist
 compiler: ../f771$(exeext)
 ../f771$(exeext): $(P) $(F77_OBJS) $(OBJDEPS) $(LIBDEPS)
 	rm -f f771$(exeext)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(F771_LDFLAGS) -o $@ \
-	      $(F77_OBJS) $(OBJS) $(LIBS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(F77_OBJS) $(OBJS) $(LIBS)
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
