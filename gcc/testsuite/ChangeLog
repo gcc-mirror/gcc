@@ -1,3 +1,8 @@
+2001-12-11  Jason Merrill  <jason@redhat.com>
+
+	* lib/prune.exp (prune_gcc_output): Also handle "In member
+	function".  So many permutations...
+
 2001-12-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/template/typedef1.C: New test.
