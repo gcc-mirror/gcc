@@ -1,3 +1,8 @@
+Fri Feb 12 11:04:35 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/990106-2.c: Update to work on targets with 16bit
+	ints.
+
 1999-02-11  Nick Clifton  <nickc@cygnus.com>
 
 	* lib/chill.exp: Fix typo: doesn'timeout -> doesn't
