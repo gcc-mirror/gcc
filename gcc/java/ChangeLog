@@ -1,3 +1,9 @@
+2002-04-24  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/6425:
+	* parse.y (qualify_ambiguous_name) [case CALL_EXPR]: Always choose
+	EXPR_WFL_QUALIFICATION of qual_wfl.
+
 2002-04-23  Per Bothner  <per@bothner.com>
 
 	* expr.c (PRE_JSR):  Call NOTE_LABEL for return address.

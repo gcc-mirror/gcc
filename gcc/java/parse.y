@@ -11219,7 +11219,9 @@ qualify_ambiguous_name (id)
       {
       case CALL_EXPR:
 	qual_wfl = TREE_OPERAND (qual_wfl, 0);
-	if (TREE_CODE (qual_wfl) != EXPR_WITH_FILE_LOCATION)
+	if (TREE_CODE (qual_wfl) != EXPR_WITH_FILE_LOCATION
+	    || (EXPR_WFL_QUALIFICATION (qual_wfl)
+		&& TREE_CODE (EXPR_WFL_QUALIFICATION (qual_wfl)) == TREE_LIST))
 	  {
 	    qual = EXPR_WFL_QUALIFICATION (qual_wfl);
 	    qual_wfl = QUAL_WFL (qual);
