@@ -1,5 +1,9 @@
 2000-11-10  Gabriel Dos Reis  <gdr@codesourcery.com>
 
+	* include/bits/cpp_type_traits.h: Fix typos.  Adjust formatting.
+
+2000-11-10  Gabriel Dos Reis  <gdr@codesourcery.com>
+
 	* include/bits/localefwd.h (_Count_ones<>::_S_halfcount,
 	_Count_ones<>::_S_count): Turn into enumerators.
 
