@@ -1,11 +1,73 @@
+2004-09-09  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* Makefile.in (gengtype): Use $(BUILD_ERRORS).
+	(gengtype.o): Depend on errors.h.
+	* genattrtab.c (strcmp_check): Use gcc_assert and gcc_unreachable.
+	(attr_rtx_1, attr_printf, attr_copy_rtx, evaluate_eq_attr,
+	attr_alt_subset_p, attr_alt_subset_of_compl_p,
+	attr_alt_intersection, attr_alt_union, optimize_attrs, gen_insn,
+	write_test_expr, write_attr_value, write_eligible_delay,
+	make_internal_attr, make_numeric_value): Likewise.
+	* genautomata.c (regexp_name, get_str_vect,
+	gen_presence_absence_set, automaton_decl_hash,
+	automaton_decl_eq_p, insn_decl_hash, insn_decl_eq_p, decl_hash,
+	decl_eq_p, process_regexp, loop_in_regexp, check_loops_in_regexps,
+	process_regexp_cycles, reserv_sets_cmp, set_unit_reserv,
+	test_unit_reserv, it_is_empty_reserv_sets,
+	reserv_sets_are_intersected, reserv_sets_shift, reserv_sets_or,
+	reserv_sets_and, output_cycle_reservs, get_free_state,
+	intersected_state_reservs_p, states_union, remove_arc,
+	copy_insn_regexp, transform_1, transform_2, transform_3,
+	regexp_transform_func, store_alt_unit_usage,
+	check_regexp_units_distribution, process_seq_for_forming_states,
+	process_alts_for_forming_states, make_automaton,
+	form_arcs_marked_by_insn, create_composed_state,
+	set_out_arc_insns_equiv_num, partition_equiv_class,
+	process_insn_equiv_class, set_insn_equiv_classes,
+	units_to_automata_heuristic_distr, form_regexp,
+	longest_path_length, output_dfa_max_issue_rate, add_vect,
+	out_state_arcs_num, add_vect_el, output_trans_table,
+	output_state_alts_table, output_dead_lock_vect,
+	output_max_insn_queue_index_def,
+	output_min_insn_conflict_delay_func,
+	output_internal_insn_latency_func, output_print_reservation_func,
+	output_cpu_unit_reservation_p, output_state_arcs,
+	make_insn_alts_attr, make_internal_dfa_insn_code_attr,
+	make_default_insn_latency_attr,
+	form_important_insn_automata_lists): Likewise.
+	* genemit.c (gen_exp, output_add_clobbers,
+	output_added_clobbers_hard_reg_p): Likewise.
+	* genextract.c (print_path, main): Likewise.
+	* genflags.c (gen_macro): Likewise.
+	* gengenrtl.c: Include errors.h
+	(type_from_format, accessor_from_format): Likewise.
+	* gengtype.c (get_file_basename, output_mangled_typename,
+	walk_type, write_types_process_field,
+	write_types_local_process_field): Likewise.
+	* genmodes.c (complete_mode): Likewise.
+	* genopinit.c (gen_insn): Likewise.
+	* genoutput.c (output_insn_data, check_constraint_len,
+	constraint_len): Likewise.
+	* genpreds.c (add_mode_tests):Likewise.
+	* gen-protos.c (add_hash): Likewise.
+	* genrecog.c (find_operand, find_matching_operand,
+	validate_pattern, add_to_sequence, maybe_both_true,
+	nodes_identical_1, merge_trees, write_switch, write_cond,
+	write_action, is_unconditional, make_insn_sequence,
+	debug_decision_2): Likewise.
+	* gensupport.c (is_predicable, collect_insn_data,
+	alter_predicate_for_insn, maybe_eval_c_test): Likewise.
+
 2004-09-09  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (guess_outgoing_edge_probabilities): Declare.
-	* cfgbuild.c (compute_outgoing_frequencies): When probability is missing,
-	guess it.
-	(find_many_sub_basic_blocks): Do update profile only when it is present.
+	* cfgbuild.c (compute_outgoing_frequencies): When probability is
+	missing, guess it.
+	(find_many_sub_basic_blocks): Do update profile only when it is
+	present.
 	* predict.c (set_even_probabilities): Break out from ...
-	(combine_predictions_for_insn): ... here; deal with !can_predict_insn_p insns.
+	(combine_predictions_for_insn): ... here; deal with
+	!can_predict_insn_p insns.
 	(combine_predictions_for_bb): Use set_even_probabilities.
 	(bb_estimate_probability_locally): Break out from ....
 	(estimate_probability): ... here.
@@ -6720,7 +6782,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√  <tfautre@pandora.be>
+	    Tanguy Fautr√É  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 

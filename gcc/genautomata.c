@@ -1451,25 +1451,25 @@ static void regexp_mode_check_failed (enum regexp_mode, const char *,
 static const char *
 regexp_name (enum regexp_mode mode)
 {
-  static char str [100];
-
-  if (mode == rm_unit)
-    return "rm_unit";
-  else if (mode == rm_reserv)
-    return "rm_reserv";
-  else if (mode == rm_nothing)
-    return "rm_nothing";
-  else if (mode == rm_sequence)
-    return "rm_sequence";
-  else if (mode == rm_repeat)
-    return "rm_repeat";
-  else if (mode == rm_allof)
-    return "rm_allof";
-  else if (mode == rm_oneof)
-    return "rm_oneof";
-  else
-    sprintf (str, "unknown (%d)", (int) mode);
-  return str;
+  switch (mode)
+    {
+    case rm_unit:
+      return "rm_unit";
+    case rm_reserv:
+      return "rm_reserv";
+    case rm_nothing:
+      return "rm_nothing";
+    case rm_sequence:
+      return "rm_sequence";
+    case rm_repeat:
+      return "rm_repeat";
+    case rm_allof:
+      return "rm_allof";
+    case rm_oneof:
+      return "rm_oneof";
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* The function prints message about unexpected regexp and finish the
@@ -1629,6 +1629,7 @@ get_str_vect (char *str, int *els_num, int sep, int paren_p)
   int i;
   char **vect;
   char **pstr;
+  char *trail;
 
   *els_num = n_sep_els (str, sep, paren_p);
   if (*els_num <= 0)
@@ -1639,8 +1640,8 @@ get_str_vect (char *str, int *els_num, int sep, int paren_p)
   pstr = &str;
   for (i = 0; i < *els_num; i++)
     vect [i] = next_sep_el (pstr, sep, paren_p);
-  if (next_sep_el (pstr, sep, paren_p) != NULL)
-    abort ();
+  trail = next_sep_el (pstr, sep, paren_p);
+  gcc_assert (!trail);
   vect [i] = NULL;
   return vect;
 }
@@ -1822,8 +1823,7 @@ gen_presence_absence_set (rtx def, int presence_p, int final_p)
     {
       str_patterns [i] = get_str_vect ((char *) str_patterns [i], &length, ' ',
 				       FALSE);
-      if (str_patterns [i] == NULL)
-	abort ();
+      gcc_assert (str_patterns [i]);
     }
   decl = create_node (sizeof (struct decl));
   decl->pos = 0;
@@ -2167,8 +2167,8 @@ automaton_decl_hash (const void *automaton_decl)
 {
   const decl_t decl = (decl_t) automaton_decl;
 
-  if (decl->mode == dm_automaton && DECL_AUTOMATON (decl)->name == NULL)
-    abort ();
+  gcc_assert (decl->mode != dm_automaton
+	      || DECL_AUTOMATON (decl)->name);
   return string_hash (DECL_AUTOMATON (decl)->name);
 }
 
@@ -2183,9 +2183,10 @@ automaton_decl_eq_p (const void* automaton_decl_1,
   const decl_t decl1 = (decl_t) automaton_decl_1;
   const decl_t decl2 = (decl_t) automaton_decl_2;
 
-  if (decl1->mode != dm_automaton || DECL_AUTOMATON (decl1)->name == NULL
-      || decl2->mode != dm_automaton || DECL_AUTOMATON (decl2)->name == NULL)
-    abort ();
+  gcc_assert (decl1->mode == dm_automaton
+	      && DECL_AUTOMATON (decl1)->name
+	      && decl2->mode == dm_automaton
+	      && DECL_AUTOMATON (decl2)->name);
   return strcmp (DECL_AUTOMATON (decl1)->name,
 		 DECL_AUTOMATON (decl2)->name) == 0;
 }
@@ -2267,8 +2268,8 @@ insn_decl_hash (const void *insn_decl)
 {
   const decl_t decl = (decl_t) insn_decl;
 
-  if (decl->mode != dm_insn_reserv || DECL_INSN_RESERV (decl)->name == NULL)
-    abort ();
+  gcc_assert (decl->mode == dm_insn_reserv
+	      && DECL_INSN_RESERV (decl)->name);
   return string_hash (DECL_INSN_RESERV (decl)->name);
 }
 
@@ -2281,10 +2282,10 @@ insn_decl_eq_p (const void *insn_decl_1, const void *insn_decl_2)
   const decl_t decl1 = (decl_t) insn_decl_1;
   const decl_t decl2 = (decl_t) insn_decl_2;
 
-  if (decl1->mode != dm_insn_reserv || DECL_INSN_RESERV (decl1)->name == NULL
-      || decl2->mode != dm_insn_reserv
-      || DECL_INSN_RESERV (decl2)->name == NULL)
-    abort ();
+  gcc_assert (decl1->mode == dm_insn_reserv
+	      && DECL_INSN_RESERV (decl1)->name
+	      && decl2->mode == dm_insn_reserv
+	      && DECL_INSN_RESERV (decl2)->name);
   return strcmp (DECL_INSN_RESERV (decl1)->name,
                  DECL_INSN_RESERV (decl2)->name) == 0;
 }
@@ -2365,15 +2366,14 @@ decl_hash (const void *decl)
 {
   const decl_t d = (const decl_t) decl;
 
-  if ((d->mode != dm_unit || DECL_UNIT (d)->name == NULL)
-      && (d->mode != dm_reserv || DECL_RESERV (d)->name == NULL))
-    abort ();
+  gcc_assert ((d->mode == dm_unit && DECL_UNIT (d)->name)
+	      || (d->mode == dm_reserv && DECL_RESERV (d)->name));
   return string_hash (d->mode == dm_unit
 		      ? DECL_UNIT (d)->name : DECL_RESERV (d)->name);
 }
 
 /* The function tests declarations on equality of their keys.  The
-   function is used by abstract data `hashtab'.  The function
+   function is used by abstract data 'hashtab'.  The function
    returns 1 if the declarations have the same key, 0 otherwise.  */
 static int
 decl_eq_p (const void *decl_1, const void *decl_2)
@@ -2381,11 +2381,10 @@ decl_eq_p (const void *decl_1, const void *decl_2)
   const decl_t d1 = (const decl_t) decl_1;
   const decl_t d2 = (const decl_t) decl_2;
 
-  if (((d1->mode != dm_unit || DECL_UNIT (d1)->name == NULL)
-       && (d1->mode != dm_reserv || DECL_RESERV (d1)->name == NULL))
-      || ((d2->mode != dm_unit || DECL_UNIT (d2)->name == NULL)
-	  && (d2->mode != dm_reserv || DECL_RESERV (d2)->name == NULL)))
-    abort ();
+  gcc_assert ((d1->mode == dm_unit && DECL_UNIT (d1)->name)
+	      || (d1->mode == dm_reserv && DECL_RESERV (d1)->name));
+  gcc_assert ((d2->mode == dm_unit && DECL_UNIT (d2)->name)
+	      || (d2->mode == dm_reserv && DECL_RESERV (d2)->name));
   return strcmp ((d1->mode == dm_unit
                   ? DECL_UNIT (d1)->name : DECL_RESERV (d1)->name),
                  (d2->mode == dm_unit
@@ -3074,48 +3073,60 @@ process_regexp (regexp_t regexp)
   regexp_t new_regexp;
   int i;
 
-  if (regexp->mode == rm_unit)
+  switch (regexp->mode)
     {
+    case rm_unit:
       decl_in_table = find_decl (REGEXP_UNIT (regexp)->name);
       if (decl_in_table == NULL)
         error ("undeclared unit or reservation `%s'",
 	       REGEXP_UNIT (regexp)->name);
-      else if (decl_in_table->mode == dm_unit)
-	{
-	  DECL_UNIT (decl_in_table)->unit_is_used = 1;
-	  REGEXP_UNIT (regexp)->unit_decl = DECL_UNIT (decl_in_table);
-	}
-      else if (decl_in_table->mode == dm_reserv)
-	{
-	  DECL_RESERV (decl_in_table)->reserv_is_used = 1;
-	  new_regexp = create_node (sizeof (struct regexp));
-	  new_regexp->mode = rm_reserv;
-	  new_regexp->pos = regexp->pos;
-	  REGEXP_RESERV (new_regexp)->name = REGEXP_UNIT (regexp)->name;
-	  REGEXP_RESERV (new_regexp)->reserv_decl
-	    = DECL_RESERV (decl_in_table);
-	  regexp = new_regexp;
-	}
       else
-	abort ();
+	switch (decl_in_table->mode)
+	  {
+	  case dm_unit:
+	    DECL_UNIT (decl_in_table)->unit_is_used = 1;
+	    REGEXP_UNIT (regexp)->unit_decl = DECL_UNIT (decl_in_table);
+	    break;
+
+	  case dm_reserv:
+	    DECL_RESERV (decl_in_table)->reserv_is_used = 1;
+	    new_regexp = create_node (sizeof (struct regexp));
+	    new_regexp->mode = rm_reserv;
+	    new_regexp->pos = regexp->pos;
+	    REGEXP_RESERV (new_regexp)->name = REGEXP_UNIT (regexp)->name;
+	    REGEXP_RESERV (new_regexp)->reserv_decl
+	      = DECL_RESERV (decl_in_table);
+	    regexp = new_regexp;
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	}
+      break;
+    case rm_sequence:
+      for (i = 0; i <REGEXP_SEQUENCE (regexp)->regexps_num; i++)
+	REGEXP_SEQUENCE (regexp)->regexps [i]
+	  = process_regexp (REGEXP_SEQUENCE (regexp)->regexps [i]);
+      break;
+    case rm_allof:
+      for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
+	REGEXP_ALLOF (regexp)->regexps [i]
+	  = process_regexp (REGEXP_ALLOF (regexp)->regexps [i]);
+      break;
+    case rm_oneof:
+      for (i = 0; i < REGEXP_ONEOF (regexp)->regexps_num; i++)
+	REGEXP_ONEOF (regexp)->regexps [i]
+	  = process_regexp (REGEXP_ONEOF (regexp)->regexps [i]);
+      break;
+    case rm_repeat:
+      REGEXP_REPEAT (regexp)->regexp
+	= process_regexp (REGEXP_REPEAT (regexp)->regexp);
+      break;
+    case rm_nothing:
+      break;
+    default:
+      gcc_unreachable ();
     }
-  else if (regexp->mode == rm_sequence)
-    for (i = 0; i <REGEXP_SEQUENCE (regexp)->regexps_num; i++)
-     REGEXP_SEQUENCE (regexp)->regexps [i]
-	= process_regexp (REGEXP_SEQUENCE (regexp)->regexps [i]);
-  else if (regexp->mode == rm_allof)
-    for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
-      REGEXP_ALLOF (regexp)->regexps [i]
-        = process_regexp (REGEXP_ALLOF (regexp)->regexps [i]);
-  else if (regexp->mode == rm_oneof)
-    for (i = 0; i < REGEXP_ONEOF (regexp)->regexps_num; i++)
-      REGEXP_ONEOF (regexp)->regexps [i]
-	= process_regexp (REGEXP_ONEOF (regexp)->regexps [i]);
-  else if (regexp->mode == rm_repeat)
-    REGEXP_REPEAT (regexp)->regexp
-      = process_regexp (REGEXP_REPEAT (regexp)->regexp);
-  else if (regexp->mode != rm_nothing)
-    abort ();
   return regexp;
 }
 
@@ -3184,10 +3195,12 @@ loop_in_regexp (regexp_t regexp, decl_t start_decl)
 
   if (regexp == NULL)
     return 0;
-  if (regexp->mode == rm_unit)
-    return 0;
-  else if (regexp->mode == rm_reserv)
+  switch (regexp->mode)
     {
+      case rm_unit:
+	return 0;
+
+    case rm_reserv:
       if (start_decl->mode == dm_reserv
           && REGEXP_RESERV (regexp)->reserv_decl == DECL_RESERV (start_decl))
         return 1;
@@ -3202,35 +3215,33 @@ loop_in_regexp (regexp_t regexp, decl_t start_decl)
           return loop_in_regexp (REGEXP_RESERV (regexp)->reserv_decl->regexp,
                                  start_decl);
         }
-    }
-  else if (regexp->mode == rm_sequence)
-    {
+
+    case rm_sequence:
       for (i = 0; i <REGEXP_SEQUENCE (regexp)->regexps_num; i++)
 	if (loop_in_regexp (REGEXP_SEQUENCE (regexp)->regexps [i], start_decl))
 	  return 1;
       return 0;
-    }
-  else if (regexp->mode == rm_allof)
-    {
+
+    case rm_allof:
       for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
 	if (loop_in_regexp (REGEXP_ALLOF (regexp)->regexps [i], start_decl))
 	  return 1;
       return 0;
-    }
-  else if (regexp->mode == rm_oneof)
-    {
+
+    case rm_oneof:
       for (i = 0; i < REGEXP_ONEOF (regexp)->regexps_num; i++)
 	if (loop_in_regexp (REGEXP_ONEOF (regexp)->regexps [i], start_decl))
 	  return 1;
       return 0;
-    }
-  else if (regexp->mode == rm_repeat)
-    return loop_in_regexp (REGEXP_REPEAT (regexp)->regexp, start_decl);
-  else
-    {
-      if (regexp->mode != rm_nothing)
-	abort ();
+
+    case rm_repeat:
+      return loop_in_regexp (REGEXP_REPEAT (regexp)->regexp, start_decl);
+
+    case rm_nothing:
       return 0;
+
+    default:
+      gcc_unreachable ();
     }
 }
 
@@ -3258,8 +3269,7 @@ check_loops_in_regexps (void)
 	    DECL_RESERV (decl)->loop_pass_num = curr_loop_pass_num;
 	    if (loop_in_regexp (DECL_RESERV (decl)->regexp, decl))
 	      {
-		if (DECL_RESERV (decl)->regexp == NULL)
-		  abort ();
+		gcc_assert (DECL_RESERV (decl)->regexp);
 		error ("cycle in definition of reservation `%s'",
 		       DECL_RESERV (decl)->name);
 	      }
@@ -3276,8 +3286,9 @@ process_regexp_cycles (regexp_t regexp, int max_start_cycle,
 {
   int i;
 
-  if (regexp->mode == rm_unit)
+  switch (regexp->mode)
     {
+    case rm_unit:
       if (REGEXP_UNIT (regexp)->unit_decl->max_occ_cycle_num < max_start_cycle)
 	REGEXP_UNIT (regexp)->unit_decl->max_occ_cycle_num = max_start_cycle;
       if (REGEXP_UNIT (regexp)->unit_decl->min_occ_cycle_num > min_start_cycle
@@ -3285,13 +3296,15 @@ process_regexp_cycles (regexp_t regexp, int max_start_cycle,
 	REGEXP_UNIT (regexp)->unit_decl->min_occ_cycle_num = min_start_cycle;
       *max_finish_cycle = max_start_cycle;
       *min_finish_cycle = min_start_cycle;
-    }
-  else if (regexp->mode == rm_reserv)
-   process_regexp_cycles (REGEXP_RESERV (regexp)->reserv_decl->regexp,
-			  max_start_cycle, min_start_cycle,
-			  max_finish_cycle, min_finish_cycle);
-  else if (regexp->mode == rm_repeat)
-    {
+      break;
+
+    case rm_reserv:
+      process_regexp_cycles (REGEXP_RESERV (regexp)->reserv_decl->regexp,
+			     max_start_cycle, min_start_cycle,
+			     max_finish_cycle, min_finish_cycle);
+      break;
+
+    case rm_repeat:
       for (i = 0; i < REGEXP_REPEAT (regexp)->repeat_num; i++)
 	{
 	  process_regexp_cycles (REGEXP_REPEAT (regexp)->regexp,
@@ -3300,9 +3313,9 @@ process_regexp_cycles (regexp_t regexp, int max_start_cycle,
 	  max_start_cycle = *max_finish_cycle + 1;
 	  min_start_cycle = *min_finish_cycle + 1;
 	}
-    }
-  else if (regexp->mode == rm_sequence)
-    {
+      break;
+
+    case rm_sequence:
       for (i = 0; i <REGEXP_SEQUENCE (regexp)->regexps_num; i++)
 	{
 	  process_regexp_cycles (REGEXP_SEQUENCE (regexp)->regexps [i],
@@ -3311,49 +3324,55 @@ process_regexp_cycles (regexp_t regexp, int max_start_cycle,
 	  max_start_cycle = *max_finish_cycle + 1;
 	  min_start_cycle = *min_finish_cycle + 1;
 	}
-    }
-  else if (regexp->mode == rm_allof)
-    {
-      int max_cycle = 0;
-      int min_cycle = 0;
+      break;
 
-      for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
-	{
-	  process_regexp_cycles (REGEXP_ALLOF (regexp)->regexps [i],
-				 max_start_cycle, min_start_cycle,
-				 max_finish_cycle, min_finish_cycle);
-	  if (max_cycle < *max_finish_cycle)
-	    max_cycle = *max_finish_cycle;
-	  if (i == 0 || min_cycle > *min_finish_cycle)
-	    min_cycle = *min_finish_cycle;
-	}
-      *max_finish_cycle = max_cycle;
-      *min_finish_cycle = min_cycle;
-    }
-  else if (regexp->mode == rm_oneof)
-    {
-      int max_cycle = 0;
-      int min_cycle = 0;
+    case rm_allof:
+      {
+	int max_cycle = 0;
+	int min_cycle = 0;
+	
+	for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
+	  {
+	    process_regexp_cycles (REGEXP_ALLOF (regexp)->regexps [i],
+				   max_start_cycle, min_start_cycle,
+				   max_finish_cycle, min_finish_cycle);
+	    if (max_cycle < *max_finish_cycle)
+	      max_cycle = *max_finish_cycle;
+	    if (i == 0 || min_cycle > *min_finish_cycle)
+	      min_cycle = *min_finish_cycle;
+	  }
+	*max_finish_cycle = max_cycle;
+	*min_finish_cycle = min_cycle;
+      }
+      break;
 
-      for (i = 0; i < REGEXP_ONEOF (regexp)->regexps_num; i++)
-	{
-	  process_regexp_cycles (REGEXP_ONEOF (regexp)->regexps [i],
-				 max_start_cycle, min_start_cycle,
-				 max_finish_cycle, min_finish_cycle);
-	  if (max_cycle < *max_finish_cycle)
-	    max_cycle = *max_finish_cycle;
-	  if (i == 0 || min_cycle > *min_finish_cycle)
-	    min_cycle = *min_finish_cycle;
-	}
-      *max_finish_cycle = max_cycle;
-      *min_finish_cycle = min_cycle;
-    }
-  else
-    {
-      if (regexp->mode != rm_nothing)
-	abort ();
+    case rm_oneof:
+      {
+	int max_cycle = 0;
+	int min_cycle = 0;
+	
+	for (i = 0; i < REGEXP_ONEOF (regexp)->regexps_num; i++)
+	  {
+	    process_regexp_cycles (REGEXP_ONEOF (regexp)->regexps [i],
+				   max_start_cycle, min_start_cycle,
+				   max_finish_cycle, min_finish_cycle);
+	    if (max_cycle < *max_finish_cycle)
+	      max_cycle = *max_finish_cycle;
+	    if (i == 0 || min_cycle > *min_finish_cycle)
+	      min_cycle = *min_finish_cycle;
+	  }
+	*max_finish_cycle = max_cycle;
+	*min_finish_cycle = min_cycle;
+      }
+      break;
+
+    case rm_nothing:
       *max_finish_cycle = max_start_cycle;
       *min_finish_cycle = min_start_cycle;
+      break;
+
+    default:
+      gcc_unreachable ();
     }
 }
 
@@ -3795,8 +3814,7 @@ reserv_sets_cmp (reserv_sets_t reservs_1, reserv_sets_t reservs_2)
   set_el_t *reserv_ptr_1;
   set_el_t *reserv_ptr_2;
 
-  if (reservs_1 == NULL || reservs_2 == NULL)
-    abort ();
+  gcc_assert (reservs_1 && reservs_2);
   reservs_num = els_in_reservs;
   reserv_ptr_1 = reservs_1;
   reserv_ptr_2 = reservs_2;
@@ -3826,8 +3844,7 @@ reserv_sets_eq (reserv_sets_t reservs_1, reserv_sets_t reservs_2)
 static void
 set_unit_reserv (reserv_sets_t reservs, int cycle_num, int unit_num)
 {
-  if (cycle_num >= max_cycles_num)
-    abort ();
+  gcc_assert (cycle_num < max_cycles_num);
   SET_BIT (reservs, cycle_num * els_in_cycle_reserv
            * sizeof (set_el_t) * CHAR_BIT + unit_num);
 }
@@ -3837,8 +3854,7 @@ set_unit_reserv (reserv_sets_t reservs, int cycle_num, int unit_num)
 static int
 test_unit_reserv (reserv_sets_t reservs, int cycle_num, int unit_num)
 {
-  if (cycle_num >= max_cycles_num)
-    abort ();
+  gcc_assert (cycle_num < max_cycles_num);
   return TEST_BIT (reservs, cycle_num * els_in_cycle_reserv
 		   * sizeof (set_el_t) * CHAR_BIT + unit_num);
 }
@@ -3851,8 +3867,7 @@ it_is_empty_reserv_sets (reserv_sets_t operand)
   set_el_t *reserv_ptr;
   int reservs_num;
 
-  if (operand == NULL)
-    abort ();
+  gcc_assert (operand);
   for (reservs_num = els_in_reservs, reserv_ptr = operand;
        reservs_num != 0;
        reserv_ptr++, reservs_num--)
@@ -3873,8 +3888,7 @@ reserv_sets_are_intersected (reserv_sets_t operand_1,
   set_el_t *cycle_ptr_1;
   set_el_t *cycle_ptr_2;
 
-  if (operand_1 == NULL || operand_2 == NULL)
-    abort ();
+  gcc_assert (operand_1 && operand_2);
   for (el_ptr_1 = operand_1, el_ptr_2 = operand_2;
        el_ptr_1 < operand_1 + els_in_reservs;
        el_ptr_1++, el_ptr_2++)
@@ -3913,8 +3927,7 @@ reserv_sets_shift (reserv_sets_t result, reserv_sets_t operand)
 {
   int i;
 
-  if (result == NULL || operand == NULL || result == operand)
-    abort ();
+  gcc_assert (result && operand && result != operand);
   for (i = els_in_cycle_reserv; i < els_in_reservs; i++)
     result [i - els_in_cycle_reserv] = operand [i];
 }
@@ -3928,8 +3941,7 @@ reserv_sets_or (reserv_sets_t result, reserv_sets_t operand_1,
   set_el_t *el_ptr_2;
   set_el_t *result_set_el_ptr;
 
-  if (result == NULL || operand_1 == NULL || operand_2 == NULL)
-    abort ();
+  gcc_assert (result && operand_1 && operand_2);
   for (el_ptr_1 = operand_1, el_ptr_2 = operand_2, result_set_el_ptr = result;
        el_ptr_1 < operand_1 + els_in_reservs;
        el_ptr_1++, el_ptr_2++, result_set_el_ptr++)
@@ -3945,8 +3957,7 @@ reserv_sets_and (reserv_sets_t result, reserv_sets_t operand_1,
   set_el_t *el_ptr_2;
   set_el_t *result_set_el_ptr;
 
-  if (result == NULL || operand_1 == NULL || operand_2 == NULL)
-    abort ();
+  gcc_assert (result && operand_1 && operand_2);
   for (el_ptr_1 = operand_1, el_ptr_2 = operand_2, result_set_el_ptr = result;
        el_ptr_1 < operand_1 + els_in_reservs;
        el_ptr_1++, el_ptr_2++, result_set_el_ptr++)
@@ -3968,8 +3979,7 @@ output_cycle_reservs (FILE *f, reserv_sets_t reservs, int start_cycle,
     if (TEST_BIT (reservs, start_cycle * els_in_cycle_reserv
                   * sizeof (set_el_t) * CHAR_BIT + unit_num))
       reserved_units_num++;
-  if (repetition_num <= 0)
-    abort ();
+  gcc_assert (repetition_num > 0);
   if (repetition_num != 1 && reserved_units_num > 1)
     fprintf (f, "(");
   reserved_units_num = 0;
@@ -3986,8 +3996,7 @@ output_cycle_reservs (FILE *f, reserv_sets_t reservs, int start_cycle,
       }
   if (reserved_units_num == 0)
     fprintf (f, NOTHING_NAME);
-  if (repetition_num <= 0)
-    abort ();
+  gcc_assert (repetition_num > 0);
   if (repetition_num != 1 && reserved_units_num > 1)
     fprintf (f, ")");
   if (repetition_num != 1)
@@ -4041,8 +4050,7 @@ get_free_state (int with_reservs, automaton_t automaton)
 {
   state_t result;
 
-  if (max_cycles_num <= 0 || automaton == NULL)
-    abort ();
+  gcc_assert (max_cycles_num > 0 && automaton);
   if (VLA_PTR_LENGTH (free_states) != 0)
     {
       result = VLA_PTR (free_states, VLA_PTR_LENGTH (free_states) - 1);
@@ -4168,8 +4176,7 @@ set_state_reserv (state_t state, int cycle_num, int unit_num)
 static int
 intersected_state_reservs_p (state_t state1, state_t state2)
 {
-  if (state1->automaton != state2->automaton)
-    abort ();
+  gcc_assert (state1->automaton == state2->automaton);
   return reserv_sets_are_intersected (state1->reservs, state2->reservs);
 }
 
@@ -4182,8 +4189,7 @@ states_union (state_t state1, state_t state2, reserv_sets_t reservs)
   state_t result;
   state_t state_in_table;
 
-  if (state1->automaton != state2->automaton)
-    abort ();
+  gcc_assert (state1->automaton == state2->automaton);
   result = get_free_state (1, state1->automaton);
   reserv_sets_or (result->reservs, state1->reservs, state2->reservs);
   reserv_sets_and (result->reservs, result->reservs, reservs);
@@ -4284,15 +4290,13 @@ remove_arc (state_t from_state, arc_t arc)
   arc_t prev_arc;
   arc_t curr_arc;
 
-  if (arc == NULL)
-    abort ();
+  gcc_assert (arc);
   for (prev_arc = NULL, curr_arc = from_state->first_out_arc;
        curr_arc != NULL;
        prev_arc = curr_arc, curr_arc = curr_arc->next_out_arc)
     if (curr_arc == arc)
       break;
-  if (curr_arc == NULL)
-    abort ();
+  gcc_assert (curr_arc);
   if (prev_arc == NULL)
     from_state->first_out_arc = arc->next_out_arc;
   else
@@ -4795,48 +4799,55 @@ copy_insn_regexp (regexp_t regexp)
   regexp_t  result;
   int i;
 
-  if (regexp->mode == rm_reserv)
-    result = copy_insn_regexp (REGEXP_RESERV (regexp)->reserv_decl->regexp);
-  else if (regexp->mode == rm_unit)
-    result = copy_node (regexp, sizeof (struct regexp));
-  else if (regexp->mode == rm_repeat)
+  switch (regexp->mode)
     {
+    case rm_reserv:
+      result = copy_insn_regexp (REGEXP_RESERV (regexp)->reserv_decl->regexp);
+      break;
+
+    case rm_unit:
+      result = copy_node (regexp, sizeof (struct regexp));
+      break;
+
+    case rm_repeat:
       result = copy_node (regexp, sizeof (struct regexp));
       REGEXP_REPEAT (result)->regexp
         = copy_insn_regexp (REGEXP_REPEAT (regexp)->regexp);
-    }
-  else if (regexp->mode == rm_sequence)
-    {
+      break;
+
+    case rm_sequence:
       result = copy_node (regexp,
                           sizeof (struct regexp) + sizeof (regexp_t)
 			  * (REGEXP_SEQUENCE (regexp)->regexps_num - 1));
       for (i = 0; i <REGEXP_SEQUENCE (regexp)->regexps_num; i++)
 	REGEXP_SEQUENCE (result)->regexps [i]
 	  = copy_insn_regexp (REGEXP_SEQUENCE (regexp)->regexps [i]);
-    }
-  else if (regexp->mode == rm_allof)
-    {
+      break;
+
+    case rm_allof:
       result = copy_node (regexp,
                           sizeof (struct regexp) + sizeof (regexp_t)
 			  * (REGEXP_ALLOF (regexp)->regexps_num - 1));
       for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
 	REGEXP_ALLOF (result)->regexps [i]
 	  = copy_insn_regexp (REGEXP_ALLOF (regexp)->regexps [i]);
-    }
-  else if (regexp->mode == rm_oneof)
-    {
+      break;
+
+    case rm_oneof:
       result = copy_node (regexp,
                           sizeof (struct regexp) + sizeof (regexp_t)
 			  * (REGEXP_ONEOF (regexp)->regexps_num - 1));
       for (i = 0; i < REGEXP_ONEOF (regexp)->regexps_num; i++)
 	REGEXP_ONEOF (result)->regexps [i]
 	  = copy_insn_regexp (REGEXP_ONEOF (regexp)->regexps [i]);
-    }
-  else
-    {
-      if (regexp->mode != rm_nothing)
-	abort ();
+      break;
+
+    case rm_nothing:
       result = copy_node (regexp, sizeof (struct regexp));
+      break;
+
+    default:
+      gcc_unreachable ();
     }
   return result;
 }
@@ -4858,8 +4869,7 @@ transform_1 (regexp_t regexp)
   if (regexp->mode == rm_repeat)
     {
       repeat_num = REGEXP_REPEAT (regexp)->repeat_num;
-      if (repeat_num <= 1)
-	abort ();
+      gcc_assert (repeat_num > 1);
       operand = REGEXP_REPEAT (regexp)->regexp;
       pos = regexp->mode;
       regexp = create_node (sizeof (struct regexp) + sizeof (regexp_t)
@@ -4897,9 +4907,8 @@ transform_2 (regexp_t regexp)
 	  }
       if (i < REGEXP_SEQUENCE (regexp)->regexps_num)
 	{
-	  if ( REGEXP_SEQUENCE (sequence)->regexps_num <= 1
-	      || REGEXP_SEQUENCE (regexp)->regexps_num <= 1)
-	    abort ();
+	  gcc_assert (REGEXP_SEQUENCE (sequence)->regexps_num > 1
+		      && REGEXP_SEQUENCE (regexp)->regexps_num > 1);
 	  result = create_node (sizeof (struct regexp)
                                 + sizeof (regexp_t)
 				* (REGEXP_SEQUENCE (regexp)->regexps_num
@@ -4942,9 +4951,8 @@ transform_2 (regexp_t regexp)
 	  }
       if (i < REGEXP_ALLOF (regexp)->regexps_num)
 	{
-	  if (REGEXP_ALLOF (allof)->regexps_num <= 1
-	      || REGEXP_ALLOF (regexp)->regexps_num <= 1)
-	    abort ();
+	  gcc_assert (REGEXP_ALLOF (allof)->regexps_num > 1
+		      && REGEXP_ALLOF (regexp)->regexps_num > 1);
 	  result = create_node (sizeof (struct regexp)
                                 + sizeof (regexp_t)
 				* (REGEXP_ALLOF (regexp)->regexps_num
@@ -4986,9 +4994,8 @@ transform_2 (regexp_t regexp)
 	  }
       if (i < REGEXP_ONEOF (regexp)->regexps_num)
 	{
-	  if (REGEXP_ONEOF (oneof)->regexps_num <= 1
-	      || REGEXP_ONEOF (regexp)->regexps_num <= 1)
-	    abort ();
+	  gcc_assert (REGEXP_ONEOF (oneof)->regexps_num > 1
+		      && REGEXP_ONEOF (regexp)->regexps_num > 1);
 	  result = create_node (sizeof (struct regexp)
 				+ sizeof (regexp_t)
 				* (REGEXP_ONEOF (regexp)->regexps_num
@@ -5042,9 +5049,8 @@ transform_3 (regexp_t regexp)
 	  }
       if (i < REGEXP_SEQUENCE (regexp)->regexps_num)
 	{
-	  if (REGEXP_ONEOF (oneof)->regexps_num <= 1
-	      || REGEXP_SEQUENCE (regexp)->regexps_num <= 1)
-	    abort ();
+	  gcc_assert (REGEXP_ONEOF (oneof)->regexps_num > 1
+		      && REGEXP_SEQUENCE (regexp)->regexps_num > 1);
 	  result = create_node (sizeof (struct regexp)
 				+ sizeof (regexp_t)
 				* (REGEXP_ONEOF (oneof)->regexps_num - 1));
@@ -5095,9 +5101,8 @@ transform_3 (regexp_t regexp)
 	  }
       if (i < REGEXP_ALLOF (regexp)->regexps_num)
 	{
-	  if (REGEXP_ONEOF (oneof)->regexps_num <= 1
-	      || REGEXP_ALLOF (regexp)->regexps_num <= 1)
-	    abort ();
+	  gcc_assert (REGEXP_ONEOF (oneof)->regexps_num > 1
+		      && REGEXP_ALLOF (regexp)->regexps_num > 1);
 	  result = create_node (sizeof (struct regexp)
 				+ sizeof (regexp_t)
 				* (REGEXP_ONEOF (oneof)->regexps_num - 1));
@@ -5131,23 +5136,28 @@ transform_3 (regexp_t regexp)
       if (regexp->mode == rm_allof)
 	for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
 	  {
-	    if (REGEXP_ALLOF (regexp)->regexps [i]->mode == rm_sequence)
+	    switch (REGEXP_ALLOF (regexp)->regexps [i]->mode)
 	      {
+	      case rm_sequence:
 		seq = REGEXP_ALLOF (regexp)->regexps [i];
 		if (max_seq_length < REGEXP_SEQUENCE (seq)->regexps_num)
 		  max_seq_length = REGEXP_SEQUENCE (seq)->regexps_num;
-	      }
-	    else if (REGEXP_ALLOF (regexp)->regexps [i]->mode != rm_unit
-		     && REGEXP_ALLOF (regexp)->regexps [i]->mode != rm_nothing)
-	      {
-		max_seq_length = 0;
 		break;
+
+	      case rm_unit:
+	      case rm_nothing:
+		break;
+
+	      default:
+		max_seq_length = 0;
+		goto break_for;
 	      }
 	  }
+    break_for:
       if (max_seq_length != 0)
 	{
-	  if (max_seq_length == 1 || REGEXP_ALLOF (regexp)->regexps_num <= 1)
-	    abort ();
+	  gcc_assert (max_seq_length != 1
+		      && REGEXP_ALLOF (regexp)->regexps_num > 1);
 	  result = create_node (sizeof (struct regexp)
 				+ sizeof (regexp_t) * (max_seq_length - 1));
 	  result->mode = rm_sequence;
@@ -5157,24 +5167,31 @@ transform_3 (regexp_t regexp)
 	    {
 	      allof_length = 0;
 	      for (j = 0; j < REGEXP_ALLOF (regexp)->regexps_num; j++)
-		if (REGEXP_ALLOF (regexp)->regexps [j]->mode == rm_sequence
-		    && (i < (REGEXP_SEQUENCE (REGEXP_ALLOF (regexp)
-					      ->regexps [j])->regexps_num)))
+		switch (REGEXP_ALLOF (regexp)->regexps [j]->mode)
 		  {
-		    allof_op
-		      = (REGEXP_SEQUENCE (REGEXP_ALLOF (regexp)->regexps [j])
-			 ->regexps [i]);
-		    allof_length++;
+		  case rm_sequence:
+		    if (i < (REGEXP_SEQUENCE (REGEXP_ALLOF (regexp)
+					      ->regexps [j])->regexps_num))
+		      {
+			allof_op
+			  = (REGEXP_SEQUENCE (REGEXP_ALLOF (regexp)
+					      ->regexps [j])
+			     ->regexps [i]);
+			allof_length++;
+		      }
+		    break;
+		  case rm_unit:
+		  case rm_nothing:
+		    if (i == 0)
+		      {
+			allof_op = REGEXP_ALLOF (regexp)->regexps [j];
+			allof_length++;
+		      }
+		    break;
+		  default:
+		    break;
 		  }
-		else if (i == 0
-			 && (REGEXP_ALLOF (regexp)->regexps [j]->mode
-			     == rm_unit
-			     || (REGEXP_ALLOF (regexp)->regexps [j]->mode
-				 == rm_nothing)))
-		  {
-		    allof_op = REGEXP_ALLOF (regexp)->regexps [j];
-		    allof_length++;
-		  }
+	      
 	      if (allof_length == 1)
 		REGEXP_SEQUENCE (result)->regexps [i] = allof_op;
 	      else
@@ -5227,23 +5244,39 @@ regexp_transform_func (regexp_t regexp, regexp_t (*func) (regexp_t regexp))
 {
   int i;
 
-  if (regexp->mode == rm_sequence)
-    for (i = 0; i < REGEXP_SEQUENCE (regexp)->regexps_num; i++)
-      REGEXP_SEQUENCE (regexp)->regexps [i]
-	= regexp_transform_func (REGEXP_SEQUENCE (regexp)->regexps [i], func);
-  else if (regexp->mode == rm_allof)
-    for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
-      REGEXP_ALLOF (regexp)->regexps [i]
-	= regexp_transform_func (REGEXP_ALLOF (regexp)->regexps [i], func);
-  else if (regexp->mode == rm_oneof)
-    for (i = 0; i < REGEXP_ONEOF (regexp)->regexps_num; i++)
-      REGEXP_ONEOF (regexp)->regexps [i]
-	= regexp_transform_func (REGEXP_ONEOF (regexp)->regexps [i], func);
-  else if (regexp->mode == rm_repeat)
-    REGEXP_REPEAT (regexp)->regexp
-      = regexp_transform_func (REGEXP_REPEAT (regexp)->regexp, func);
-  else if (regexp->mode != rm_nothing && regexp->mode != rm_unit)
-    abort ();
+  switch (regexp->mode)
+    {
+    case rm_sequence:
+      for (i = 0; i < REGEXP_SEQUENCE (regexp)->regexps_num; i++)
+	REGEXP_SEQUENCE (regexp)->regexps [i]
+	  = regexp_transform_func (REGEXP_SEQUENCE (regexp)->regexps [i],
+				   func);
+      break;
+
+    case rm_allof:
+      for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
+	REGEXP_ALLOF (regexp)->regexps [i]
+	  = regexp_transform_func (REGEXP_ALLOF (regexp)->regexps [i], func);
+      break;
+
+    case rm_oneof:
+      for (i = 0; i < REGEXP_ONEOF (regexp)->regexps_num; i++)
+	REGEXP_ONEOF (regexp)->regexps [i]
+	  = regexp_transform_func (REGEXP_ONEOF (regexp)->regexps [i], func);
+      break;
+
+    case rm_repeat:
+      REGEXP_REPEAT (regexp)->regexp
+	= regexp_transform_func (REGEXP_REPEAT (regexp)->regexp, func);
+      break;
+
+    case rm_nothing:
+    case rm_unit:
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
   return (*func) (regexp);
 }
 
@@ -5326,9 +5359,8 @@ store_alt_unit_usage (regexp_t regexp, regexp_t unit, int cycle,
   struct unit_usage *unit_usage_ptr;
   int index;
 
-  if (regexp == NULL || regexp->mode != rm_oneof
-      || alt_num >= REGEXP_ONEOF (regexp)->regexps_num)
-    abort ();
+  gcc_assert (regexp && regexp->mode == rm_oneof
+	      && alt_num < REGEXP_ONEOF (regexp)->regexps_num);
   unit_decl = REGEXP_UNIT (unit)->unit_decl;
   old_length = VLA_PTR_LENGTH (cycle_alt_unit_usages);
   length = (cycle + 1) * REGEXP_ONEOF (regexp)->regexps_num;
@@ -5366,37 +5398,67 @@ check_regexp_units_distribution (const char *insn_reserv_name,
   for (i = REGEXP_ONEOF (regexp)->regexps_num - 1; i >= 0; i--)
     {
       seq = REGEXP_ONEOF (regexp)->regexps [i];
-      if (seq->mode == rm_sequence)
-	for (j = 0; j < REGEXP_SEQUENCE (seq)->regexps_num; j++)
-	  {
-	    allof = REGEXP_SEQUENCE (seq)->regexps [j];
-	    if (allof->mode == rm_allof)
-	      for (k = 0; k < REGEXP_ALLOF (allof)->regexps_num; k++)
+      switch (seq->mode)
+	{
+	case rm_sequence:
+	  for (j = 0; j < REGEXP_SEQUENCE (seq)->regexps_num; j++)
+	    {
+	      allof = REGEXP_SEQUENCE (seq)->regexps [j];
+	      switch (allof->mode)
 		{
-		  unit = REGEXP_ALLOF (allof)->regexps [k];
-		  if (unit->mode == rm_unit)
-		    store_alt_unit_usage (regexp, unit, j, i);
-		  else if (unit->mode != rm_nothing)
-		    abort ();
+		case rm_allof:
+		  for (k = 0; k < REGEXP_ALLOF (allof)->regexps_num; k++)
+		    {
+		      unit = REGEXP_ALLOF (allof)->regexps [k];
+		      if (unit->mode == rm_unit)
+			store_alt_unit_usage (regexp, unit, j, i);
+		      else
+			gcc_assert (unit->mode == rm_nothing);
+		    }
+		  break;
+		  
+		case rm_unit:
+		  store_alt_unit_usage (regexp, allof, j, i);
+		  break;
+		  
+		case rm_nothing:
+		  break;
+		  
+		default:
+		  gcc_unreachable ();
 		}
-	    else if (allof->mode == rm_unit)
-	      store_alt_unit_usage (regexp, allof, j, i);
-	    else if (allof->mode != rm_nothing)
-	      abort ();
-	  }
-      else if (seq->mode == rm_allof)
-	for (k = 0; k < REGEXP_ALLOF (seq)->regexps_num; k++)
-	  {
-	    unit = REGEXP_ALLOF (seq)->regexps [k];
-	    if (unit->mode == rm_unit)
-	      store_alt_unit_usage (regexp, unit, 0, i);
-	    else if (unit->mode != rm_nothing)
-	      abort ();
-	  }
-      else if (seq->mode == rm_unit)
-	store_alt_unit_usage (regexp, seq, 0, i);
-      else if (seq->mode != rm_nothing)
-	abort ();
+	    }
+	  break;
+
+	case rm_allof:
+	  for (k = 0; k < REGEXP_ALLOF (seq)->regexps_num; k++)
+	    {
+	      unit = REGEXP_ALLOF (seq)->regexps [k];
+	      switch (unit->mode)
+		{
+		case rm_unit:
+		  store_alt_unit_usage (regexp, unit, 0, i);
+		  break;
+		  
+		case rm_nothing:
+		  break;
+		  
+		default:
+		  gcc_unreachable ();
+		}
+	    }
+	  break;
+
+	case rm_unit:
+	  store_alt_unit_usage (regexp, seq, 0, i);
+	  break;
+
+	case rm_nothing:
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
     }
   /* Check distribution:  */
   for (i = 0; i < (int) VLA_PTR_LENGTH (cycle_alt_unit_usages); i++)
@@ -5489,42 +5551,44 @@ process_seq_for_forming_states (regexp_t regexp, automaton_t automaton,
 
   if (regexp == NULL)
     return curr_cycle;
-  else if (regexp->mode == rm_unit)
+
+  switch (regexp->mode)
     {
+    case rm_unit:
       if (REGEXP_UNIT (regexp)->unit_decl->corresponding_automaton_num
           == automaton->automaton_order_num)
         set_state_reserv (state_being_formed, curr_cycle,
                           REGEXP_UNIT (regexp)->unit_decl->unit_num);
       return curr_cycle;
-    }
-  else if (regexp->mode == rm_sequence)
-    {
+      
+    case rm_sequence:
       for (i = 0; i < REGEXP_SEQUENCE (regexp)->regexps_num; i++)
 	curr_cycle
 	  = process_seq_for_forming_states
 	    (REGEXP_SEQUENCE (regexp)->regexps [i], automaton, curr_cycle) + 1;
       return curr_cycle;
-    }
-  else if (regexp->mode == rm_allof)
-    {
-      int finish_cycle = 0;
-      int cycle;
 
-      for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
-	{
-	  cycle = process_seq_for_forming_states (REGEXP_ALLOF (regexp)
-						  ->regexps [i],
-						  automaton, curr_cycle);
-	  if (finish_cycle < cycle)
-	    finish_cycle = cycle;
-	}
-      return finish_cycle;
-    }
-  else
-    {
-      if (regexp->mode != rm_nothing)
-	abort ();
+    case rm_allof:
+      {
+	int finish_cycle = 0;
+	int cycle;
+	
+	for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
+	  {
+	    cycle = process_seq_for_forming_states (REGEXP_ALLOF (regexp)
+						    ->regexps [i],
+						    automaton, curr_cycle);
+	    if (finish_cycle < cycle)
+	      finish_cycle = cycle;
+	  }
+	return finish_cycle;
+      }
+
+    case rm_nothing:
       return curr_cycle;
+
+    default:
+      gcc_unreachable ();
     }
 }
 
@@ -5574,8 +5638,7 @@ process_alts_for_forming_states (regexp_t regexp, automaton_t automaton,
     }
   else
     {
-      if (inside_oneof_p)
-	abort ();
+      gcc_assert (!inside_oneof_p);
       /* We processes it in reverse order to get list with the same
 	 order as in the description.  See also the previous
 	 commentary.  */
@@ -5776,8 +5839,7 @@ make_automaton (automaton_t automaton)
 	  if (progress_flag && states_n % 100 == 0)
 	    fprintf (stderr, ".");
         }
-      if (advance_cycle_ainsn == NULL)
-	abort ();
+      gcc_assert (advance_cycle_ainsn);
       add_arc (state, state2, advance_cycle_ainsn, 1);
     }
   VLA_PTR_DELETE (state_stack);
@@ -5799,8 +5861,7 @@ form_arcs_marked_by_insn (state_t state)
     }
   for (arc = first_out_arc (state); arc != NULL; arc = next_out_arc (arc))
     {
-      if (arc->insn == NULL)
-	abort ();
+      gcc_assert (arc->insn);
       arc->next_arc_marked_by_insn
 	= arc->insn->insn_reserv_decl->arcs_marked_by_insn;
       arc->insn->insn_reserv_decl->arcs_marked_by_insn = arc;
@@ -5832,8 +5893,7 @@ create_composed_state (state_t original_state, arc_t arcs_marked_by_insn,
     state = arcs_marked_by_insn->to_state;
   else
     {
-      if (!ndfa_flag)
-	abort ();
+      gcc_assert (ndfa_flag);
       /* Create composed state.  */
       state = get_free_state (0, arcs_marked_by_insn->to_state->automaton);
       curr_alt_state = NULL;
@@ -5855,8 +5915,7 @@ create_composed_state (state_t original_state, arc_t arcs_marked_by_insn,
 	      new_alt_state = get_free_alt_state ();
 	      new_alt_state->next_alt_state = curr_alt_state;
 	      new_alt_state->state = alt_state->state;
-	      if (alt_state->state->component_states != NULL)
-		abort ();
+	      gcc_assert (!alt_state->state->component_states);
 	      curr_alt_state = new_alt_state;
 	    }
       /* There are not identical sets in the alt state list.  */
@@ -5873,15 +5932,14 @@ create_composed_state (state_t original_state, arc_t arcs_marked_by_insn,
           state_in_table = insert_state (state);
           if (state_in_table != state)
             {
-              if (!state_in_table->it_was_placed_in_stack_for_DFA_forming)
-		abort ();
+              gcc_assert
+		(state_in_table->it_was_placed_in_stack_for_DFA_forming);
               free_state (state);
               state = state_in_table;
             }
           else
             {
-              if (state->it_was_placed_in_stack_for_DFA_forming)
-		abort ();
+              gcc_assert (!state->it_was_placed_in_stack_for_DFA_forming);
 	      new_state_p = 1;
               for (curr_alt_state = state->component_states;
                    curr_alt_state != NULL;
@@ -6014,18 +6072,16 @@ set_out_arc_insns_equiv_num (state_t state, int odd_iteration_flag)
   state_out_arcs_num = 0;
   for (arc = first_out_arc (state); arc != NULL; arc = next_out_arc (arc))
     {
-      if (arc->insn->insn_reserv_decl->equiv_class_num != 0
-	  || arc->insn->insn_reserv_decl->state_alts != 0)
-	abort ();
+      gcc_assert (!arc->insn->insn_reserv_decl->equiv_class_num
+		  && !arc->insn->insn_reserv_decl->state_alts);
       state_out_arcs_num++;
       arc->insn->insn_reserv_decl->equiv_class_num
 	= (odd_iteration_flag
            ? arc->to_state->equiv_class_num_1
 	   : arc->to_state->equiv_class_num_2);
       arc->insn->insn_reserv_decl->state_alts = arc->state_alts;
-      if (arc->insn->insn_reserv_decl->equiv_class_num == 0
-	  || arc->insn->insn_reserv_decl->state_alts <= 0)
-	abort ();
+      gcc_assert (arc->insn->insn_reserv_decl->equiv_class_num
+		  && arc->insn->insn_reserv_decl->state_alts > 0);
     }
   return state_out_arcs_num;
 }
@@ -6152,8 +6208,7 @@ partition_equiv_class (state_t *equiv_class_ptr, int odd_iteration_flag,
   int out_arcs_num;
 
   partition_p = 0;
-  if (*equiv_class_ptr == NULL)
-    abort ();
+  gcc_assert (*equiv_class_ptr);
   for (first_state = *equiv_class_ptr;
        first_state != NULL;
        first_state = new_equiv_class)
@@ -6536,8 +6591,7 @@ process_insn_equiv_class (ainsn_t ainsn, arc_t *insn_arcs_array)
   ainsn_t cyclic_insn_list;
   arc_t arc;
 
-  if (insn_arcs_array [ainsn->insn_reserv_decl->insn_num] == NULL)
-    abort ();
+  gcc_assert (insn_arcs_array [ainsn->insn_reserv_decl->insn_num]);
   curr_insn = ainsn;
   /* New class of ainsns which are not equivalent to given ainsn.  */
   cyclic_insn_list = NULL;
@@ -6608,8 +6662,7 @@ set_insn_equiv_classes (automaton_t automaton)
     if (ainsn->insn_equiv_class_num < 0)
       {
         first_insn = ainsn;
-        if (!first_insn->first_insn_with_same_reservs)
-	  abort ();
+        gcc_assert (first_insn->first_insn_with_same_reservs);
         first_insn->first_ainsn_with_given_equivalence_num = 1;
         curr_insn = first_insn;
         do
@@ -6720,8 +6773,7 @@ units_to_automata_heuristic_distr (void)
     {
       rest_units_num
 	= ((decl_t *) VLA_PTR_LAST (unit_decls) - unit_decl_ptr + 1);
-      if (automata_num - automaton_num - 1 > rest_units_num)
-	abort ();
+      gcc_assert (automata_num - automaton_num - 1 <= rest_units_num);
       if (automaton_num < automata_num - 1
           && ((automata_num - automaton_num - 1 == rest_units_num)
               || (bound_value
@@ -6735,8 +6787,7 @@ units_to_automata_heuristic_distr (void)
         bound_value *= DECL_UNIT (*unit_decl_ptr)->max_occ_cycle_num;
       DECL_UNIT (*unit_decl_ptr)->corresponding_automaton_num = automaton_num;
     }
-  if (automaton_num != automata_num - 1)
-    abort ();
+  gcc_assert (automaton_num == automata_num - 1);
   VLA_PTR_DELETE (unit_decls);
 }
 
@@ -6909,23 +6960,28 @@ form_regexp (regexp_t regexp)
 {
   int i;
 
-  if (regexp->mode == rm_unit || regexp->mode == rm_reserv)
+  switch (regexp->mode)
     {
-      const char *name = (regexp->mode == rm_unit
-                          ? REGEXP_UNIT (regexp)->name
-			  : REGEXP_RESERV (regexp)->name);
-
-      obstack_grow (&irp, name, strlen (name));
-    }
-  else if (regexp->mode == rm_sequence)
-    for (i = 0; i < REGEXP_SEQUENCE (regexp)->regexps_num; i++)
+    case rm_unit: case rm_reserv:
       {
-	if (i != 0)
-          obstack_1grow (&irp, ',');
-	form_regexp (REGEXP_SEQUENCE (regexp)->regexps [i]);
+	const char *name = (regexp->mode == rm_unit
+			    ? REGEXP_UNIT (regexp)->name
+			    : REGEXP_RESERV (regexp)->name);
+	
+	obstack_grow (&irp, name, strlen (name));
+	break;
       }
-  else if (regexp->mode == rm_allof)
-    {
+      
+    case rm_sequence:
+      for (i = 0; i < REGEXP_SEQUENCE (regexp)->regexps_num; i++)
+	{
+	  if (i != 0)
+	    obstack_1grow (&irp, ',');
+	  form_regexp (REGEXP_SEQUENCE (regexp)->regexps [i]);
+	}
+      break;
+
+    case rm_allof:
       obstack_1grow (&irp, '(');
       for (i = 0; i < REGEXP_ALLOF (regexp)->regexps_num; i++)
 	{
@@ -6940,38 +6996,46 @@ form_regexp (regexp_t regexp)
             obstack_1grow (&irp, ')');
         }
       obstack_1grow (&irp, ')');
-    }
-  else if (regexp->mode == rm_oneof)
-    for (i = 0; i < REGEXP_ONEOF (regexp)->regexps_num; i++)
-      {
-	if (i != 0)
-          obstack_1grow (&irp, '|');
-	if (REGEXP_ONEOF (regexp)->regexps[i]->mode == rm_sequence)
-          obstack_1grow (&irp, '(');
-        form_regexp (REGEXP_ONEOF (regexp)->regexps [i]);
-	if (REGEXP_ONEOF (regexp)->regexps[i]->mode == rm_sequence)
+      break;
+      
+    case rm_oneof:
+      for (i = 0; i < REGEXP_ONEOF (regexp)->regexps_num; i++)
+	{
+	  if (i != 0)
+	    obstack_1grow (&irp, '|');
+	  if (REGEXP_ONEOF (regexp)->regexps[i]->mode == rm_sequence)
+	    obstack_1grow (&irp, '(');
+	  form_regexp (REGEXP_ONEOF (regexp)->regexps [i]);
+	  if (REGEXP_ONEOF (regexp)->regexps[i]->mode == rm_sequence)
           obstack_1grow (&irp, ')');
+	}
+      break;
+      
+    case rm_repeat:
+      {
+	char digits [30];
+	
+	if (REGEXP_REPEAT (regexp)->regexp->mode == rm_sequence
+	    || REGEXP_REPEAT (regexp)->regexp->mode == rm_allof
+	    || REGEXP_REPEAT (regexp)->regexp->mode == rm_oneof)
+	  obstack_1grow (&irp, '(');
+	form_regexp (REGEXP_REPEAT (regexp)->regexp);
+	if (REGEXP_REPEAT (regexp)->regexp->mode == rm_sequence
+	    || REGEXP_REPEAT (regexp)->regexp->mode == rm_allof
+	    || REGEXP_REPEAT (regexp)->regexp->mode == rm_oneof)
+	  obstack_1grow (&irp, ')');
+	sprintf (digits, "*%d", REGEXP_REPEAT (regexp)->repeat_num);
+	obstack_grow (&irp, digits, strlen (digits));
+	break;
       }
-  else if (regexp->mode == rm_repeat)
-    {
-      char digits [30];
 
-      if (REGEXP_REPEAT (regexp)->regexp->mode == rm_sequence
-	  || REGEXP_REPEAT (regexp)->regexp->mode == rm_allof
-	  || REGEXP_REPEAT (regexp)->regexp->mode == rm_oneof)
-        obstack_1grow (&irp, '(');
-      form_regexp (REGEXP_REPEAT (regexp)->regexp);
-      if (REGEXP_REPEAT (regexp)->regexp->mode == rm_sequence
-	  || REGEXP_REPEAT (regexp)->regexp->mode == rm_allof
-	  || REGEXP_REPEAT (regexp)->regexp->mode == rm_oneof)
-        obstack_1grow (&irp, ')');
-      sprintf (digits, "*%d", REGEXP_REPEAT (regexp)->repeat_num);
-      obstack_grow (&irp, digits, strlen (digits));
+    case rm_nothing:
+      obstack_grow (&irp, NOTHING_NAME, strlen (NOTHING_NAME));
+      break;
+
+    default:
+      gcc_unreachable ();
     }
-  else if (regexp->mode == rm_nothing)
-    obstack_grow (&irp, NOTHING_NAME, strlen (NOTHING_NAME));
-  else
-    abort ();
 }
 
 /* The function returns string representation of REGEXP on IR
@@ -7037,14 +7101,16 @@ longest_path_length (state_t state)
   arc_t arc;
   int length, result;
 
-  if (state->longest_path_length == ON_THE_PATH)
-    /* We don't expect the path cycle here.  Our graph may contain
-       only cycles with one state on the path not containing `cycle
-       advance' arcs -- see comment below.  */
-    abort ();
-  else if (state->longest_path_length != UNDEFINED_LONGEST_PATH_LENGTH)
-    /* We already visited the state.  */
-    return state->longest_path_length;
+  if (state->longest_path_length != UNDEFINED_LONGEST_PATH_LENGTH)
+    {
+      /* We don't expect the path cycle here.  Our graph may contain
+      	 only cycles with one state on the path not containing `cycle
+      	 advance' arcs -- see comment below.  */
+      gcc_assert (state->longest_path_length != ON_THE_PATH);
+      
+      /* We already visited the state.  */
+      return state->longest_path_length;
+    }
 
   result = 0;
   for (arc = first_out_arc (state); arc != NULL; arc = next_out_arc (arc))
@@ -7092,8 +7158,7 @@ output_dfa_max_issue_rate (void)
 {
   automaton_t automaton;
 
-  if (UNDEFINED_LONGEST_PATH_LENGTH == ON_THE_PATH || ON_THE_PATH >= 0)
-    abort ();
+  gcc_assert (UNDEFINED_LONGEST_PATH_LENGTH != ON_THE_PATH && ON_THE_PATH < 0);
   max_dfa_issue_rate = 0;
   for (automaton = description->first_automaton;
        automaton != NULL;
@@ -7580,19 +7645,17 @@ add_vect (state_ainsn_table_t tab, int vect_num, vect_el_t *vect,
   int i;
   unsigned long vect_mask, comb_vect_mask;
 
-  if (vect_length == 0)
-    abort ();
+  gcc_assert (vect_length);
   real_vect_length = tab->automaton->insn_equiv_classes_num;
-  if (vect [vect_length - 1] == undefined_vect_el_value)
-    abort ();
+  gcc_assert (vect [vect_length - 1] != undefined_vect_el_value);
   /* Form full vector in the table: */
   for (i = 0; i < vect_length; i++)
     VLA_HWINT (tab->full_vect,
                i + tab->automaton->insn_equiv_classes_num * vect_num)
       = vect [i];
   /* Form comb vector in the table: */
-  if (VLA_HWINT_LENGTH (tab->comb_vect) != VLA_HWINT_LENGTH (tab->check_vect))
-    abort ();
+  gcc_assert (VLA_HWINT_LENGTH (tab->comb_vect)
+	      == VLA_HWINT_LENGTH (tab->check_vect));
   comb_vect_start = VLA_HWINT_BEGIN (tab->comb_vect);
   comb_vect_els_num = VLA_HWINT_LENGTH (tab->comb_vect);
   for (first_unempty_vect_index = 0;
@@ -7670,7 +7733,7 @@ add_vect (state_ainsn_table_t tab, int vect_num, vect_el_t *vect,
 	goto found;
     }
 
-found:
+ found:
   /* Slot was found.  */
   additional_els_num = comb_vect_index + real_vect_length - comb_vect_els_num;
   if (additional_els_num < 0)
@@ -7686,19 +7749,16 @@ found:
     }
   comb_vect_start = VLA_HWINT_BEGIN (tab->comb_vect);
   check_vect_start = VLA_HWINT_BEGIN (tab->check_vect);
-  if (VLA_HWINT_LENGTH (tab->comb_vect)
-      < (size_t) (comb_vect_index + real_vect_length))
-    abort ();
+  gcc_assert (VLA_HWINT_LENGTH (tab->comb_vect)
+	      >= (size_t) (comb_vect_index + real_vect_length));
   /* Fill comb and check vectors.  */
   for (vect_index = 0; vect_index < vect_length; vect_index++)
     if (vect [vect_index] != undefined_vect_el_value)
       {
-        if (comb_vect_start [comb_vect_index + vect_index]
-	    != undefined_vect_el_value)
-	  abort ();
+        gcc_assert (comb_vect_start [comb_vect_index + vect_index]
+		    == undefined_vect_el_value);
         comb_vect_start [comb_vect_index + vect_index] = vect [vect_index];
-        if (vect [vect_index] < 0)
-	  abort ();
+        gcc_assert (vect [vect_index] >= 0);
         if (tab->max_comb_vect_el_value < vect [vect_index])
           tab->max_comb_vect_el_value = vect [vect_index];
         if (tab->min_comb_vect_el_value > vect [vect_index])
@@ -7726,8 +7786,7 @@ out_state_arcs_num (state_t state)
   result = 0;
   for (arc = first_out_arc (state); arc != NULL; arc = next_out_arc (arc))
     {
-      if (arc->insn == NULL)
-	abort ();
+      gcc_assert (arc->insn);
       if (arc->insn->first_ainsn_with_given_equivalence_num)
         result++;
     }
@@ -7760,8 +7819,7 @@ add_vect_el (vla_hwint_t *vect, ainsn_t ainsn, int el_value)
   int equiv_class_num;
   int vect_index;
 
-  if (ainsn == NULL)
-    abort ();
+  gcc_assert (ainsn);
   equiv_class_num = ainsn->insn_equiv_class_num;
   for (vect_index = VLA_HWINT_LENGTH (*vect);
        vect_index <= equiv_class_num;
@@ -7809,8 +7867,7 @@ output_trans_table (automaton_t automaton)
 	   arc != NULL;
 	   arc = next_out_arc (arc))
         {
-          if (arc->insn == NULL)
-	    abort ();
+          gcc_assert (arc->insn);
           if (arc->insn->first_ainsn_with_given_equivalence_num)
             add_vect_el (&transition_vect, arc->insn,
                          arc->to_state->order_state_num);
@@ -7858,8 +7915,7 @@ output_state_alts_table (automaton_t automaton)
 	   arc != NULL;
 	   arc = next_out_arc (arc))
         {
-          if (arc->insn == NULL)
-	    abort ();
+          gcc_assert (arc->insn);
           if (arc->insn->first_ainsn_with_given_equivalence_num)
             add_vect_el (&state_alts_vect, arc->insn, arc->state_alts);
         }
@@ -8056,8 +8112,7 @@ output_dead_lock_vect (automaton_t automaton)
        state_ptr++)
     {
       arc = first_out_arc (*state_ptr);
-      if (arc == NULL)
-	abort ();
+      gcc_assert (arc);
       VLA_HWINT (dead_lock_vect, (*state_ptr)->order_state_num)
         = (next_out_arc (arc) == NULL
            && (arc->insn->insn_reserv_decl
@@ -8187,8 +8242,7 @@ output_max_insn_queue_index_def (void)
     }
   for (i = 0; (1 << i) <= max; i++)
     ;
-  if (i < 0)
-    abort ();
+  gcc_assert (i >= 0);
   fprintf (output_file, "\nint max_insn_queue_index = %d;\n\n", (1 << i) - 1);
 }
 
@@ -8687,7 +8741,7 @@ output_min_insn_conflict_delay_func (void)
 	   "int\n%s (%s %s, rtx %s, rtx %s)\n",
 	   MIN_INSN_CONFLICT_DELAY_FUNC_NAME, STATE_TYPE_NAME,
 	   STATE_NAME, INSN_PARAMETER_NAME, INSN2_PARAMETER_NAME);
-  fprintf (output_file, "{\n  struct %s %s;\n  int %s, %s;\n",
+  fprintf (output_file, "{\n  struct %s %s;\n  int %s, %s, transition;\n",
 	   CHIP_NAME, CHIP_NAME, INTERNAL_INSN_CODE_NAME,
 	   INTERNAL_INSN2_CODE_NAME);
   output_internal_insn_code_evaluation (INSN_PARAMETER_NAME,
@@ -8697,8 +8751,9 @@ output_min_insn_conflict_delay_func (void)
   fprintf (output_file, "  memcpy (&%s, %s, sizeof (%s));\n",
 	   CHIP_NAME, STATE_NAME, CHIP_NAME);
   fprintf (output_file, "  %s (&%s);\n", INTERNAL_RESET_FUNC_NAME, CHIP_NAME);
-  fprintf (output_file, "  if (%s (%s, &%s) > 0)\n    abort ();\n",
+  fprintf (output_file, "  transition = %s (%s, &%s);\n",
 	   INTERNAL_TRANSITION_FUNC_NAME, INTERNAL_INSN_CODE_NAME, CHIP_NAME);
+  fprintf (output_file, "  gcc_assert (transition <= 0);\n");
   fprintf (output_file, "  return %s (%s, &%s);\n",
 	   INTERNAL_MIN_ISSUE_DELAY_FUNC_NAME, INTERNAL_INSN2_CODE_NAME,
 	   CHIP_NAME);
@@ -8749,13 +8804,11 @@ output_internal_insn_latency_func (void)
 	if ((col = (col+1) % 8) == 0)
 	  fputs ("\n     ", output_file);
 	decl = description->decls[i];
-	if (j++ != DECL_INSN_RESERV (decl)->insn_num)
-	  abort ();
+	gcc_assert (j++ == DECL_INSN_RESERV (decl)->insn_num);
 	fprintf (output_file, "% 4d,",
 		 DECL_INSN_RESERV (decl)->default_latency);
       }
-  if (j != DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num)
-    abort ();
+  gcc_assert (j == DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num);
   fputs ("\n    };\n", output_file);
 
   fprintf (output_file, "  if (%s >= %s || %s >= %s)\n    return 0;\n",
@@ -8776,9 +8829,9 @@ output_internal_insn_latency_func (void)
 	     bypass != NULL;
 	     bypass = bypass->next)
 	  {
-	    if (bypass->in_insn_reserv->insn_num
-		== DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num)
-	      abort ();
+	    gcc_assert (bypass->in_insn_reserv->insn_num
+			!= (DECL_INSN_RESERV
+			    (advance_cycle_insn_decl)->insn_num));
 	    fprintf (output_file, "        case %d:\n",
 		     bypass->in_insn_reserv->insn_num);
 	    if (bypass->bypass_guard_name == NULL)
@@ -8848,15 +8901,15 @@ output_print_reservation_func (void)
       decl = description->decls [i];
       if (decl->mode == dm_insn_reserv && decl != advance_cycle_insn_decl)
 	{
-	  if (j++ != DECL_INSN_RESERV (decl)->insn_num)
-	    abort ();
+	  gcc_assert (j == DECL_INSN_RESERV (decl)->insn_num);
+	  j++;
+	  
 	  fprintf (output_file, "\n      \"%s\",",
 		   regexp_representation (DECL_INSN_RESERV (decl)->regexp));
 	  finish_regexp_representation ();
 	}
     }
-  if (j != DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num)
-    abort ();
+  gcc_assert (j == DECL_INSN_RESERV (advance_cycle_insn_decl)->insn_num);
 
   fprintf (output_file, "\n      \"%s\"\n    };\n  int %s;\n\n",
 	   NOTHING_NAME, INTERNAL_INSN_CODE_NAME);
@@ -8969,7 +9022,7 @@ output_cpu_unit_reservation_p (void)
 	   CPU_UNIT_RESERVATION_P_FUNC_NAME, STATE_NAME,
 	   CPU_CODE_PARAMETER_NAME, STATE_TYPE_NAME, STATE_NAME,
 	   CPU_CODE_PARAMETER_NAME);
-  fprintf (output_file, "{\n  if (%s < 0 || %s >= %d)\n    abort ();\n",
+  fprintf (output_file, "{\n  gcc_assert (%s >= 0 && %s < %d);\n",
 	   CPU_CODE_PARAMETER_NAME, CPU_CODE_PARAMETER_NAME,
 	   description->query_units_num);
   for (automaton = description->first_automaton;
@@ -9239,8 +9292,7 @@ output_state_arcs (state_t state)
   for (arc = first_out_arc (state); arc != NULL; arc = next_out_arc (arc))
     {
       ainsn = arc->insn;
-      if (!ainsn->first_insn_with_same_reservs)
-	abort ();
+      gcc_assert (ainsn->first_insn_with_same_reservs);
       fprintf (output_description_file, "    ");
       curr_line_length = 7;
       fprintf (output_description_file, "%2d: ", ainsn->insn_equiv_class_num);
@@ -9514,8 +9566,7 @@ make_insn_alts_attr (void)
           insn_num++;
         }
     }
-  if (description->insns_num != insn_num + 1)
-    abort ();
+  gcc_assert (description->insns_num == insn_num + 1);
   make_internal_attr (attr_printf (sizeof ("*")
 				   + strlen (INSN_ALTS_FUNC_NAME) + 1,
 				   "*%s", INSN_ALTS_FUNC_NAME),
@@ -9550,8 +9601,7 @@ make_internal_dfa_insn_code_attr (void)
           insn_num++;
         }
     }
-  if (description->insns_num != insn_num + 1)
-    abort ();
+  gcc_assert (description->insns_num == insn_num + 1);
   make_internal_attr
     (attr_printf (sizeof ("*")
 		  + strlen (INTERNAL_DFA_INSN_CODE_FUNC_NAME) + 1,
@@ -9585,8 +9635,7 @@ make_default_insn_latency_attr (void)
           insn_num++;
         }
     }
-  if (description->insns_num != insn_num + 1)
-    abort ();
+  gcc_assert (description->insns_num == insn_num + 1);
   make_internal_attr (attr_printf (sizeof ("*")
 				   + strlen (INSN_DEFAULT_LATENCY_FUNC_NAME)
 				   + 1, "*%s", INSN_DEFAULT_LATENCY_FUNC_NAME),
@@ -9824,8 +9873,7 @@ form_important_insn_automata_lists (void)
 	       arc = next_out_arc (arc))
 	    if (arc->to_state != *state_ptr)
 	      {
-		if (!arc->insn->first_insn_with_same_reservs)
-		  abort ();
+		gcc_assert (arc->insn->first_insn_with_same_reservs);
 		for (ainsn = arc->insn;
 		     ainsn != NULL;
 		     ainsn = ainsn->next_same_reservs_insn)

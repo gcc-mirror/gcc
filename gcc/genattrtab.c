@@ -102,9 +102,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #if 0
 #define strcmp_check(S1, S2) ((S1) == (S2)		\
 			      ? 0			\
-			      : (strcmp ((S1), (S2))	\
-				 ? 1			\
-				 : (abort (), 0)))
+			      : (gcc_assert (strcmp ((S1), (S2))), 1))
 #else
 #define strcmp_check(S1, S2) ((S1) != (S2))
 #endif
@@ -596,7 +594,7 @@ attr_rtx_1 (enum rtx_code code, va_list p)
 	      break;
 
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	}
       return rt_val;
@@ -633,8 +631,7 @@ attr_printf (unsigned int len, const char *fmt, ...)
 
   va_start (p, fmt);
 
-  if (len > sizeof str - 1) /* Leave room for \0.  */
-    abort ();
+  gcc_assert (len < sizeof str); /* Leave room for \0.  */
 
   vsprintf (str, fmt, p);
   va_end (p);
@@ -777,7 +774,7 @@ attr_copy_rtx (rtx orig)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   return copy;
@@ -2002,45 +1999,46 @@ evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
   rtx newexp;
   int i;
 
-  if (GET_CODE (value) == CONST_STRING)
+  switch (GET_CODE (value))
     {
+    case CONST_STRING:
       if (! strcmp_check (XSTR (value, 0), XSTR (exp, 1)))
 	newexp = true_rtx;
       else
 	newexp = false_rtx;
-    }
-  else if (GET_CODE (value) == SYMBOL_REF)
-    {
-      char *p;
-      char string[256];
+      break;
+      
+    case SYMBOL_REF:
+      {
+	char *p;
+	char string[256];
+	
+	gcc_assert (GET_CODE (exp) == EQ_ATTR);
+	gcc_assert (strlen (XSTR (exp, 0)) + strlen (XSTR (exp, 1)) + 2
+		    <= 256);
+	
+	strcpy (string, XSTR (exp, 0));
+	strcat (string, "_");
+	strcat (string, XSTR (exp, 1));
+	for (p = string; *p; p++)
+	  *p = TOUPPER (*p);
+	
+	newexp = attr_rtx (EQ, value,
+			   attr_rtx (SYMBOL_REF,
+				     DEF_ATTR_STRING (string)));
+	break;
+      }
 
-      if (GET_CODE (exp) != EQ_ATTR)
-	abort ();
-
-      if (strlen (XSTR (exp, 0)) + strlen (XSTR (exp, 1)) + 2 > 256)
-	abort ();
-
-      strcpy (string, XSTR (exp, 0));
-      strcat (string, "_");
-      strcat (string, XSTR (exp, 1));
-      for (p = string; *p; p++)
-	*p = TOUPPER (*p);
-
-      newexp = attr_rtx (EQ, value,
-			 attr_rtx (SYMBOL_REF,
-				   DEF_ATTR_STRING (string)));
-    }
-  else if (GET_CODE (value) == COND)
-    {
-      /* We construct an IOR of all the cases for which the requested attribute
-	 value is present.  Since we start with FALSE, if it is not present,
-	 FALSE will be returned.
-
+    case COND:
+      /* We construct an IOR of all the cases for which the
+	 requested attribute value is present.  Since we start with
+	 FALSE, if it is not present, FALSE will be returned.
+	  
 	 Each case is the AND of the NOT's of the previous conditions with the
 	 current condition; in the default case the current condition is TRUE.
-
+	  
 	 For each possible COND value, call ourselves recursively.
-
+	  
 	 The extra TRUE and FALSE expressions will be eliminated by another
 	 call to the simplification routine.  */
 
@@ -2080,9 +2078,11 @@ evaluate_eq_attr (rtx exp, rtx value, int insn_code, int insn_index)
 						   insn_code, insn_index),
 				 insn_code, insn_index);
       newexp = insert_right_side (IOR, orexp, right, insn_code, insn_index);
+      break;
+
+    default:
+      gcc_unreachable ();
     }
-  else
-    abort ();
 
   /* If uses an address, must return original expression.  But set the
      ATTR_IND_SIMPLIFIED_P bit so we don't try to simplify it again.  */
@@ -2401,13 +2401,14 @@ attr_alt_subset_p (rtx s1, rtx s2)
       return !(XINT (s2, 0) &~ XINT (s1, 0));
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
 /* Returns true if S1 is a subset of complement of S2.  */
 
-static bool attr_alt_subset_of_compl_p (rtx s1, rtx s2)
+static bool
+attr_alt_subset_of_compl_p (rtx s1, rtx s2)
 {
   switch ((XINT (s1, 1) << 1) | XINT (s2, 1))
     {
@@ -2424,7 +2425,7 @@ static bool attr_alt_subset_of_compl_p (rtx s1, rtx s2)
       return false;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -2450,7 +2451,7 @@ attr_alt_intersection (rtx s1, rtx s2)
       XINT (result, 0) = XINT (s1, 0) | XINT (s2, 0);
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   XINT (result, 1) = XINT (s1, 1) & XINT (s2, 1);
 
@@ -2479,7 +2480,7 @@ attr_alt_union (rtx s1, rtx s2)
       XINT (result, 0) = XINT (s1, 0) & XINT (s2, 0);
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   XINT (result, 1) = XINT (s1, 1) | XINT (s2, 1);
@@ -2898,8 +2899,7 @@ optimize_attrs (void)
 	  }
 
   /* Sanity check on num_insn_ents.  */
-  if (iv != ivbuf + num_insn_ents)
-    abort ();
+  gcc_assert (iv == ivbuf + num_insn_ents);
 
   /* Process one insn code at a time.  */
   for (i = -2; i < insn_code_number; i++)
@@ -3210,7 +3210,7 @@ gen_insn (rtx exp, int lineno)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -3354,7 +3354,7 @@ write_test_expr (rtx exp, int flags)
 	  printf (" >> ");
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       write_test_expr (XEXP (exp, 1), flags | comparison_operator);
@@ -3388,7 +3388,7 @@ write_test_expr (rtx exp, int flags)
 	  printf ("-");
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       write_test_expr (XEXP (exp, 0), flags);
@@ -3454,8 +3454,7 @@ write_test_expr (rtx exp, int flags)
 	}
 
       attr = find_attr (&XSTR (exp, 0), 0);
-      if (! attr)
-	abort ();
+      gcc_assert (attr);
 
       /* Now is the time to expand the value of a constant attribute.  */
       if (attr->is_const)
@@ -4062,7 +4061,7 @@ write_attr_value (struct attr_desc *attr, rtx value)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -4126,8 +4125,7 @@ write_eligible_delay (const char *kind)
   printf ("{\n");
   printf ("  rtx insn;\n");
   printf ("\n");
-  printf ("  if (slot >= %d)\n", max_slots);
-  printf ("    abort ();\n");
+  printf ("  gcc_assert (slot < %d)\n", max_slots);
   printf ("\n");
   /* Allow dbr_schedule to pass labels, etc.  This can happen if try_split
      converts a compound instruction into a loop.  */
@@ -4140,8 +4138,7 @@ write_eligible_delay (const char *kind)
   if (num_delays > 1)
     {
       attr = find_attr (&delay_type_str, 0);
-      if (! attr)
-	abort ();
+      gcc_assert (attr);
       common_av = find_most_used (attr);
 
       printf ("  insn = delay_insn;\n");
@@ -4157,8 +4154,7 @@ write_eligible_delay (const char *kind)
       printf ("    }\n\n");
 
       /* Ensure matched.  Otherwise, shouldn't have been called.  */
-      printf ("  if (slot < %d)\n", max_slots);
-      printf ("    abort ();\n\n");
+      printf ("  gcc_assert (slot >= %d);\n\n", max_slots);
     }
 
   /* If just one type of delay slot, write simple switch.  */
@@ -4169,8 +4165,7 @@ write_eligible_delay (const char *kind)
       printf ("    {\n");
 
       attr = find_attr (&delay_1_0_str, 0);
-      if (! attr)
-	abort ();
+      gcc_assert (attr);
       common_av = find_most_used (attr);
 
       for (av = attr->first_value; av; av = av->next)
@@ -4200,8 +4195,7 @@ write_eligible_delay (const char *kind)
 	    sprintf (str, "*%s_%d_%d", kind, delay->num, i / 3);
 	    pstr = str;
 	    attr = find_attr (&pstr, 0);
-	    if (! attr)
-	      abort ();
+	    gcc_assert (attr);
 	    common_av = find_most_used (attr);
 
 	    for (av = attr->first_value; av; av = av->next)
@@ -4213,7 +4207,7 @@ write_eligible_delay (const char *kind)
 	  }
 
       printf ("    default:\n");
-      printf ("      abort ();\n");
+      printf ("      gcc_unreachable ();\n");
       printf ("    }\n");
     }
 
@@ -4292,8 +4286,7 @@ make_internal_attr (const char *name, rtx value, int special)
   struct attr_desc *attr;
 
   attr = find_attr (&name, 1);
-  if (attr->default_val)
-    abort ();
+  gcc_assert (!attr->default_val);
 
   attr->is_numeric = 1;
   attr->is_const = 0;
@@ -4332,8 +4325,7 @@ make_numeric_value (int n)
   rtx exp;
   char *p;
 
-  if (n < 0)
-    abort ();
+  gcc_assert (n >= 0);
 
   if (n < 20 && int_values[n])
     return int_values[n];

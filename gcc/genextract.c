@@ -326,7 +326,7 @@ print_path (const char *path)
       else if (ISDIGIT(path[i]))
 	printf ("XEXP (");
       else
-	abort ();
+	gcc_unreachable ();
     }
 
   printf ("pat");
@@ -338,7 +338,7 @@ print_path (const char *path)
       else if (ISDIGIT(path[i]))
 	printf (", %d)", path[i] - '0');
       else
-	abort ();
+	gcc_unreachable ();
     }
 }
 
@@ -478,7 +478,7 @@ from the machine description file `md'.  */\n\n");
   /* This should never be reached.  Note that we would also reach this abort
    if we tried to extract something whose INSN_CODE was a DEFINE_EXPAND or
    DEFINE_SPLIT, but that is correct.  */
-  printf ("    default:\n      abort ();\n");
+  printf ("    default:\n      gcc_unreachable ();\n");
 
   printf ("    }\n}\n");
 

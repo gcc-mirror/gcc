@@ -260,7 +260,7 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
     case CONST_DOUBLE:
       /* These shouldn't be written in MD files.  Instead, the appropriate
 	 routines in varasm.c should be called.  */
-      abort ();
+      gcc_unreachable ();
 
     default:
       break;
@@ -277,25 +277,36 @@ gen_exp (rtx x, enum rtx_code subroutine_type, char *used)
       if (fmt[i] == '0')
 	break;
       printf (",\n\t");
-      if (fmt[i] == 'e' || fmt[i] == 'u')
-	gen_exp (XEXP (x, i), subroutine_type, used);
-      else if (fmt[i] == 'i')
-	printf ("%u", XINT (x, i));
-      else if (fmt[i] == 's')
-	printf ("\"%s\"", XSTR (x, i));
-      else if (fmt[i] == 'E')
+      switch (fmt[i])
 	{
-	  int j;
-	  printf ("gen_rtvec (%d", XVECLEN (x, i));
-	  for (j = 0; j < XVECLEN (x, i); j++)
-	    {
-	      printf (",\n\t\t");
-	      gen_exp (XVECEXP (x, i, j), subroutine_type, used);
-	    }
-	  printf (")");
+	case 'e': case 'u':
+	  gen_exp (XEXP (x, i), subroutine_type, used);
+	  break;
+
+	case 'i':
+	  printf ("%u", XINT (x, i));
+	  break;
+
+	case 's':
+	  printf ("\"%s\"", XSTR (x, i));
+	  break;
+
+	case 'E':
+	  {
+	    int j;
+	    printf ("gen_rtvec (%d", XVECLEN (x, i));
+	    for (j = 0; j < XVECLEN (x, i); j++)
+	      {
+		printf (",\n\t\t");
+		gen_exp (XVECEXP (x, i, j), subroutine_type, used);
+	      }
+	    printf (")");
+	    break;
+	  }
+
+	default:
+	  gcc_unreachable ();
 	}
-      else
-	abort ();
     }
   printf (")");
 }
@@ -707,7 +718,7 @@ output_add_clobbers (void)
     }
 
   printf ("    default:\n");
-  printf ("      abort ();\n");
+  printf ("      gcc_unreachable ();\n");
   printf ("    }\n");
   printf ("}\n");
 }
@@ -745,7 +756,7 @@ output_added_clobbers_hard_reg_p (void)
     }
 
   printf ("    default:\n");
-  printf ("      abort ();\n");
+  printf ("      gcc_unreachable ();\n");
   printf ("    }\n");
   printf ("}\n");
 }

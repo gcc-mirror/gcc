@@ -281,7 +281,7 @@ gen_insn (rtx insn)
 		break;
 
 	      default:
-		abort ();
+		gcc_unreachable ();
 	      }
 	}
 

@@ -21,7 +21,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "coretypes.h"
 #include "tm.h"
 #include "scan.h"
-#undef abort
 
 int verbose = 0;
 const char *progname;
@@ -48,8 +47,7 @@ add_hash (const char *fname)
       for (;;)
 	{
 	  i = (i+1) % HASH_SIZE;
-	  if (i == i0)
-	    abort ();
+	  gcc_assert (i != i0);
 	  if (hash_tab[i] == 0)
 	    break;
 	}

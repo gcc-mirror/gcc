@@ -379,7 +379,7 @@ output_insn_data (void)
 	  printf ("#endif\n");
 	  break;
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       if (d->name && d->name[0] != '*')
@@ -1076,8 +1076,7 @@ check_constraint_len (void)
 
   for (p = ",#*+=&%!1234567890"; *p; p++)
     for (d = -9; d < 9; d++)
-      if (constraint_len (p, d) != d)
-	abort ();
+      gcc_assert (constraint_len (p, d) == d);
 }
 
 static int
@@ -1085,8 +1084,7 @@ constraint_len (const char *p, int genoutput_default_constraint_len)
 {
   /* Check that we still match defaults.h .  First we do a generation-time
      check that fails if the value is not the expected one...  */
-  if (DEFAULT_CONSTRAINT_LEN (*p, p) != 1)
-    abort ();
+  gcc_assert (DEFAULT_CONSTRAINT_LEN (*p, p) == 1);
   /* And now a compile-time check that should give a diagnostic if the
      definition doesn't exactly match.  */
 #define DEFAULT_CONSTRAINT_LEN(C,STR) 1
