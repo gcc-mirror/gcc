@@ -54,9 +54,11 @@ namespace std
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
       __strftime_l(__s, __maxlen, _M_c_locale_timepunct, __format, __tm);
 #else
-      const char* __old = setlocale(LC_ALL, _M_name_timepunct);
+      char* __old = strdup(setlocale(LC_ALL, NULL));
+      setlocale(LC_ALL, _M_name_timepunct);
       strftime(__s, __maxlen, __format, __tm);
       setlocale(LC_ALL, __old);
+      free(__old);
 #endif
     }
 
@@ -202,9 +204,11 @@ namespace std
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
       __wcsftime_l(__s, __maxlen, _M_c_locale_timepunct, __format, __tm);
 #else
-      const char* __old = setlocale(LC_ALL, _M_name_timepunct);
+      char* __old = strdup(setlocale(LC_ALL, NULL));
+      setlocale(LC_ALL, _M_name_timepunct);
       wcsftime(__s, __maxlen, __format, __tm);
       setlocale(LC_ALL, __old);
+      free(__old);
 #endif
     }
 

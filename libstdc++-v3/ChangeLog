@@ -1,3 +1,26 @@
+2002-05-04  Benjamin Kosnik  <bkoz@redhat.com>
+	    Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/22_locale/num_put_members_char.cc: Add test04(),
+	testing for the locale_facets.tcc entry of the previous commit.
+	* testsuite/22_locale/num_put_members_wchar_t.cc: Likewise.
+
+2002-05-04  Takeshi Kobayakawa  <tskoba@mte.biglobe.ne.jp>
+
+	* config/locale/generic/c_locale.cc
+	(__convert_to_v(float, double, long double)):
+	Fix the temporary switch to the "C" locale, saving and
+	restoring in the proper way the current locale.
+	* config/locale/generic/time_members.cc
+	(__timepunct<char, wchar_t>::_M_put): Likewise.
+	* config/locale/gnu/messages_members.cc
+	(messages<char>::do_get): Likewise.
+	* config/locale/gnu/messages_members.h
+	(messages<_CharT>::do_get): Likewise.
+	* config/locale/gnu/time_members.cc
+	(__timepunct<char, wchar_t>::_M_put): Likewise.
+	* include/bits/locale_facets.tcc (__convert_from_v): Likewise.
+
 2002-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (AC_CHECK_HEADERS): Check for string.h & stdlib.h.

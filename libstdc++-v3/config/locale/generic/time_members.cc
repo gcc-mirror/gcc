@@ -51,9 +51,11 @@ namespace std
     _M_put(char* __s, size_t __maxlen, const char* __format, 
 	   const tm* __tm) const
     {
-      const char* __old = setlocale(LC_ALL, _M_name_timepunct);
+      char* __old = strdup(setlocale(LC_ALL, NULL));
+      setlocale(LC_ALL, _M_name_timepunct);
       strftime(__s, __maxlen, __format, __tm);
       setlocale(LC_ALL, __old);
+      free(__old);
     }
 
   template<> 
@@ -132,9 +134,11 @@ namespace std
     _M_put(wchar_t* __s, size_t __maxlen, const wchar_t* __format, 
 	   const tm* __tm) const
     {
-      const char* __old = setlocale(LC_ALL, _M_name_timepunct);
+      char* __old = strdup(setlocale(LC_ALL, NULL));
+      setlocale(LC_ALL, _M_name_timepunct);
       wcsftime(__s, __maxlen, __format, __tm);
       setlocale(LC_ALL, __old);
+      free(__old);
     }
 
   template<> 

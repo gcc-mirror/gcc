@@ -1959,12 +1959,14 @@ namespace std
 		     _Tv __v, const __c_locale&, int __prec = -1)
     {
       int __ret;
-      const char* __old = setlocale(LC_ALL, "C");
+      char* __old = strdup(setlocale(LC_ALL, NULL));
+      setlocale(LC_ALL, "C");
       if (__prec >= 0)
         __ret = snprintf(__out, __size, __fmt, __prec, __v);
       else
         __ret = snprintf(__out, __size, __fmt, __v);
       setlocale(LC_ALL, __old);
+      free(__old);
       return __ret;
     }
 #else
@@ -1974,12 +1976,14 @@ namespace std
 		     const __c_locale&, int __prec = -1)
     {
       int __ret;
-      const char* __old = setlocale(LC_ALL, "C");
+      char* __old = strdup(setlocale(LC_ALL, NULL));
+      setlocale(LC_ALL, "C");
       if (__prec >= 0)
         __ret = sprintf(__out, __fmt, __prec, __v);
       else
         __ret = sprintf(__out, __fmt, __v);
       setlocale(LC_ALL, __old);
+      free(__old);
       return __ret;
     }
 #endif
