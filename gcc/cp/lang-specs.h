@@ -33,15 +33,19 @@ Boston, MA 02111-1307, USA.  */
       the external preprocessor if -save-temps is given.  */
     "%{E|M|MM:cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
        %{fnew-abi:-D__GXX_ABI_VERSION=100}\
-       %{ansi:-trigraphs -$ -D__STRICT_ANSI__} %(cpp_options)}\
+       %{ansi:-D__STRICT_ANSI__ -trigraphs -$} %(cpp_options)}\
      %{!E:%{!M:%{!MM:\
-       %{save-temps:cpp0 -lang-c++ %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
+       %{save-temps:cpp0 -lang-c++ \
+		    %{!no-gcc:-D__GNUG__=%v1}\
+		    %{fnew-abi:-D__GXX_ABI_VERSION=100}\
+		    %{ansi:-D__STRICT_ANSI__ -trigraphs -$}\
 		    %(cpp_options) %b.ii \n}\
       cc1plus %{save-temps:-fpreprocessed %b.ii}\
-              %{!save-temps:%(cpp_options)}\
-       %{!no-gcc:-D__GNUG__=%v1}\
-       %{fnew-abi:-D__GXX_ABI_VERSION=100}\
-       %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
+              %{!save-temps:%(cpp_options)\
+			    %{!no-gcc:-D__GNUG__=%v1}\
+			    %{fnew-abi:-D__GXX_ABI_VERSION=100}\
+			    %{ansi:-D__STRICT_ANSI__}}\
+       %{ansi:-trigraphs -$}\
        %(cc1_options) %2 %{+e*}\
        %{!fsyntax-only:%(invoke_as)}}}}"},
   {".ii", "@c++-cpp-output"},
