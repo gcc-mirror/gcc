@@ -3,4 +3,4 @@
 static union {
   union {
   };
-}; // ERROR - anonymous union with no members
+}; // WARNING - anonymous union with no members
