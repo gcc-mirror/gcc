@@ -2811,6 +2811,25 @@ gnu_special (work, mangled, declp)
 	      success = 0;
 	      break;
 	    }
+
+	  if (n > 10 && strncmp (*mangled, "_GLOBAL_", 8) == 0
+	      && (*mangled)[9] == 'N'
+	      && (*mangled)[8] == (*mangled)[10]
+	      && strchr (cplus_markers, (*mangled)[8]))
+	    {
+	      /* A member of the anonymous namespace.  There's information
+		 about what identifier or filename it was keyed to, but
+		 it's just there to make the mangled name unique; we just
+		 step over it.  */
+	      string_append (declp, "{anonymous}");
+	      (*mangled) += n;
+
+	      /* Now p points to the marker before the N, so we need to
+		 update it to the first marker after what we consumed.  */
+	      p = strpbrk (*mangled, cplus_markers);
+	      break;
+	    }
+
 	  string_appendn (declp, *mangled, n);
 	  (*mangled) += n;
 	}

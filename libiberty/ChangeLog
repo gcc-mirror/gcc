@@ -1,3 +1,9 @@
+2000-09-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* testsuite/demangle-expected: Add two tests for anonymous
+	namespaces.
+	* cplus-dem.c (gnu_special): Handle anonymous namespaces.
+
 2000-09-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* splay-tree.c (splay_tree_predecessor): New function.
@@ -7,7 +13,6 @@
 
 	* testsuite/demangle-expected: Add four tests for type_info
 	mangling.
-
 	* cplus-dem.c (gnu_special): Use do_type, not demangle_fund_type,
 	for a non-template non-qualified type_info function or node.
 
