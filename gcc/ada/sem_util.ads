@@ -333,6 +333,10 @@ package Sem_Util is
    --  The third argument supplies a source location for constructed
    --  nodes returned by this function.
 
+   procedure Get_Library_Unit_Name_String (Decl_Node : Node_Id);
+   --  Retrieve the fully expanded name of the library unit declared by
+   --  Decl_Node into the name buffer.
+
    function Get_Name_Entity_Id (Id : Name_Id) return Entity_Id;
    --  An entity value is associated with each name in the name table. The
    --  Get_Name_Entity_Id function fetches the Entity_Id of this entity,
@@ -373,6 +377,14 @@ package Sem_Util is
    function Has_Private_Component (Type_Id : Entity_Id) return Boolean;
    --  Check if a type has a (sub)component of a private type that has not
    --  yet received a full declaration.
+
+   function Has_Stream (T : Entity_Id) return Boolean;
+   --  Tests if type T is derived from Ada.Streams.Root_Stream_Type, or
+   --  in the case of a composite type, has a component for which this
+   --  predicate is True, and if so returns True. Otherwise a result of
+   --  False means that there is no Stream type in sight. For a private
+   --  type, the test is applied to the underlying type (or returns False
+   --  if there is no underlying type).
 
    function Has_Tagged_Component (Typ : Entity_Id) return Boolean;
    --  Typ must be a composite type (array or record). This function is used

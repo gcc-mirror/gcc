@@ -43,7 +43,6 @@ with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
-with Uname;    use Uname;
 
 package body Sem_Dist is
 
@@ -290,18 +289,10 @@ package body Sem_Dist is
       end if;
 
       --  Get and store the String_Id corresponding to the name of the
-      --  library unit whose Partition_Id is needed
+      --  library unit whose Partition_Id is needed.
 
-      Get_Unit_Name_String (Get_Unit_Name (Unit_Declaration_Node (Ety)));
-
-      --  Remove seven last character ("(spec)" or " (body)").
-      --  (this is a bit nasty, should have interface for this ???)
-
-      Name_Len := Name_Len - 7;
-
-      Start_String;
-      Store_String_Chars (Name_Buffer (1 .. Name_Len));
-      Prefix_String := End_String;
+      Get_Library_Unit_Name_String (Unit_Declaration_Node (Ety));
+      Prefix_String := String_From_Name_Buffer;
 
       --  Build the function call which will replace the attribute
 
@@ -510,9 +501,6 @@ package body Sem_Dist is
                     Name_Class))));
       Set_Is_Remote_Call_Interface (RACW_Type, Is_RCI);
       Set_Is_Remote_Types (RACW_Type, Is_RT);
-      --  ??? Object RPC receiver generation should be bypassed for this
-      --  RACW type, since actually calls will be received by the package
-      --  RPC receiver for the designated RCI subprogram.
 
       Subpkg_Decl :=
         Make_Package_Declaration (Loc,
