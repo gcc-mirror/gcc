@@ -173,8 +173,9 @@ extern const int x86_use_cltd, x86_read_modify_write;
 extern const int x86_read_modify, x86_split_long_moves;
 extern const int x86_promote_QImode, x86_single_stringop;
 extern const int x86_himode_math, x86_qimode_math, x86_promote_qi_regs;
-extern const int x86_promote_hi_regs;
+extern const int x86_promote_hi_regs, x86_integer_DFmode_moves;
 extern const int x86_add_esp_4, x86_add_esp_8, x86_sub_esp_4, x86_sub_esp_8;
+extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
 
 #define TARGET_USE_LEAVE (x86_use_leave & CPUMASK)
 #define TARGET_PUSH_MEMORY (x86_push_memory & CPUMASK)
@@ -206,6 +207,9 @@ extern const int x86_add_esp_4, x86_add_esp_8, x86_sub_esp_4, x86_sub_esp_8;
 #define TARGET_ADD_ESP_8 (x86_add_esp_8 & CPUMASK)
 #define TARGET_SUB_ESP_4 (x86_sub_esp_4 & CPUMASK)
 #define TARGET_SUB_ESP_8 (x86_sub_esp_8 & CPUMASK)
+#define TARGET_INTEGER_DFMODE_MOVES (x86_integer_DFmode_moves & CPUMASK)
+#define TARGET_PARTIAL_REG_DEPENDENCY (x86_partial_reg_dependency & CPUMASK)
+#define TARGET_MEMORY_MISMATCH_STALL (x86_memory_mismatch_stall & CPUMASK)
 
 #define TARGET_STACK_PROBE (target_flags & MASK_STACK_PROBE)
 

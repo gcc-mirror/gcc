@@ -1,3 +1,28 @@
+Mon Apr 17 23:35:29 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (athlon_cost): Fix lea, divide and XFmode move costs.
+	(x86_integer_DFmode_moves, x86_partial_reg_dependency,
+	 x86_memory_mismatch_stall): New global variables.
+	(ix86_adjust_cost): Handle MEMORY_BOTH on places MEMORY_STORE was only
+	alloved; fix load penalties for Athlon.
+	* i386.h (x86_integer_DFmode_moves, x86_partial_reg_dependency,
+	x86_memory_mismatch_stall): Declare.
+	(TARGET_INTEGER_DFMODE_MOVES, TARGET_PARTIAL_REG_DEPENDENCY,
+	 TARGET_MEMORY_MISMATCH_STALL): New.
+	* i386.md (athlon scheduling parameters): Fix latencies according to
+	Athlon Optimization Manual.
+	(sahf, xchg, fldcw, leave instruction patterns): Set athlon_decode to
+	vector.
+	(fsqrt instruction patterns): Set athlon_decode to direct.
+	(movhi_1): Promote for TARGET_PARTIAL_REG_DEPENDENCY and for
+	PARTIAL_REGISTER_STALL with !TARGET_HIMODE_MATH machines.
+	(movqi_1): Handle promoting correctly for TARGET_PARTIAL_REG_DEPENDENCY
+	and TARGET_PARTIAL_REGISTER_STALL machines.
+	(pushdf_nointeger): New pattern.
+	(pushdf_integer): Rename from pushdf.
+	(movdf_nointger): Enable for !TARGET_INTEGER_DFMODE_MOVES machines.
+	(movdf_intger): Disable for !TARGET_INTEGER_DFMODE_MOVES machines.
+
 2000-04-17  Richard Henderson  <rth@cygnus.com>
 
 	* loop.c (canonicalize_condition): Add WANT_REG argument.

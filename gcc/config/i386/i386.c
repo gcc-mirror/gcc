@@ -163,12 +163,12 @@ struct processor_costs k6_cost = {
 
 struct processor_costs athlon_cost = {
   1,					/* cost of an add instruction */
-  1,					/* cost of a lea instruction */
+  2,					/* cost of a lea instruction */
   1,					/* variable shift costs */
   1,					/* constant shift costs */
   5,					/* cost of starting a multiply */
   0,					/* cost of multiply per each bit set */
-  19,					/* cost of a divide/mod */
+  42,					/* cost of a divide/mod */
   8,					/* "large" insn */
   9,					/* MOVE_RATIO */
   4,					/* cost for loading QImode using movzbl */
@@ -177,9 +177,9 @@ struct processor_costs athlon_cost = {
 					   Relative to reg-reg move (2). */
   {2, 3, 2},				/* cost of storing integer registers */
   4,					/* cost of reg,reg fld/fst */
-  {6, 6, 6},				/* cost of loading fp registers
+  {6, 6, 20},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {4, 4, 4}				/* cost of loading integer registers */
+  {4, 4, 16}				/* cost of loading integer registers */
 };
 
 struct processor_costs *ix86_cost = &pentium_cost;
@@ -222,6 +222,9 @@ const int x86_sub_esp_4 = m_ATHLON | m_PPRO;
 const int x86_sub_esp_8 = m_ATHLON | m_PPRO | m_386 | m_486;
 const int x86_add_esp_4 = m_ATHLON | m_K6;
 const int x86_add_esp_8 = m_ATHLON | m_PPRO | m_K6 | m_386 | m_486;
+const int x86_integer_DFmode_moves = ~m_ATHLON;
+const int x86_partial_reg_dependency = m_ATHLON;
+const int x86_memory_mismatch_stall = m_ATHLON;
 
 #define AT_BP(mode) (gen_rtx_MEM ((mode), hard_frame_pointer_rtx))
 
@@ -6287,6 +6290,7 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
      int cost;
 {
   enum attr_type insn_type, dep_insn_type;
+  enum attr_memory memory;
   rtx set, set2;
   int dep_insn_code_number;
 
@@ -6334,7 +6338,8 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
 	 increase the cost here for non-imov insns.  */
       if (dep_insn_type != TYPE_IMOV
 	  && dep_insn_type != TYPE_FMOV
-	  && get_attr_memory (dep_insn) == MEMORY_LOAD)
+	  && ((memory = get_attr_memory (dep_insn) == MEMORY_LOAD)
+              || memory == MEMORY_BOTH))
 	cost += 1;
 
       /* INT->FP conversion is expensive.  */
@@ -6359,7 +6364,8 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
 
       /* Since we can't represent delayed latencies of load+operation, 
 	 increase the cost here for non-imov insns.  */
-      if (get_attr_memory (dep_insn) == MEMORY_LOAD)
+      if ((memory = get_attr_memory (dep_insn) == MEMORY_LOAD)
+          || memory == MEMORY_BOTH)
 	cost += (dep_insn_type != TYPE_IMOV) ? 2 : 1;
 
       /* INT->FP conversion is expensive.  */
@@ -6368,19 +6374,15 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
       break;
 
     case PROCESSOR_ATHLON:
-      /* Address Generation Interlock cause problems on the Athlon CPU because
-         the loads and stores are done in order so once one load or store has
-	 to wait, others must too, so penalize the AGIs slightly by one cycle.
-	 We might experiment with this value later.  */
-      if (ix86_agi_dependant (insn, dep_insn, insn_type))
-	cost += 1;
+      if ((memory = get_attr_memory (dep_insn)) == MEMORY_LOAD
+           || memory == MEMORY_BOTH)
+	{
+	  if (dep_insn_type == TYPE_IMOV || dep_insn_type == TYPE_FMOV)
+	    cost += 2;
+	  else
+	    cost += 3;
+        }
 
-      /* Since we can't represent delayed latencies of load+operation, 
-	 increase the cost here for non-imov insns.  */
-      if (dep_insn_type != TYPE_IMOV
-	  && dep_insn_type != TYPE_FMOV
-	  && get_attr_memory (dep_insn) == MEMORY_LOAD)
-	cost += 2;
     default:
       break;
     }
