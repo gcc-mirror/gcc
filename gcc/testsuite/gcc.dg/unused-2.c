@@ -3,7 +3,7 @@
    by Alexandre Oliva  <oliva@lsd.ic.unicamp.br>  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -finline-functions -Wall" } */
+/* { dg-options "-O2 -finline-functions -Wreturn-type" } */
 
 static void
 foo ()
