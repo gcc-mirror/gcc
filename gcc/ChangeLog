@@ -1,3 +1,8 @@
+2004-11-23  Ben Elliston  <bje@au.ibm.com>
+
+	* pointer-set.h (pointer_set_contains): Remove.
+	* pointer-set.c (pointer_set_contains): Likewise.
+
 2004-11-22  Dale Johannesen  <dalej@apple.com>
 
 	* calls.c (expand_call): Do not call preserve_temp_slots.
