@@ -2109,7 +2109,7 @@ install-cross-rest: install-float-h-cross
 
 # Install float.h for cross compiler.
 # Run this on the target machine!
-install-float-h-cross: install-dir
+install-float-h-cross: installdirs
 #	if [ -f enquire ] ; then true; else false; fi
 # Note: don't use -.  We should fail right away if enquire was not made.
 	./enquire -f > $(tmpdir)/float.h
@@ -2118,8 +2118,10 @@ install-float-h-cross: install-dir
 	-rm -f $(tmpdir)/float.h
 	chmod a-x $(libsubdir)/include/float.h
 
-# Create the installation directory.
-install-dir:
+# Create the installation directories.
+installdirs:
+	-if [ -d $(prefix) ] ; then true ; else mkdir $(prefix) ; chmod a+rx $(prefix) ; fi
+	-if [ -d $(exec_prefix) ] ; then true ; else mkdir $(exec_prefix) ; chmod a+rx $(exec_prefix) ; fi
 	-if [ -d $(libdir) ] ; then true ; else mkdir $(libdir) ; chmod a+rx $(libdir) ; fi
 	-if [ -d $(libdir)/gcc-lib ] ; then true ; else mkdir $(libdir)/gcc-lib ; chmod a+rx $(libdir)/gcc-lib ; fi
 # This dir isn't currently searched by cpp.
@@ -2140,7 +2142,7 @@ install-dir:
 	-if [ -d $(mandir) ] ; then true ; else mkdir $(mandir) ; chmod a+rx $(mandir) ; fi
 
 # Install the compiler executables built during cross compilation.
-install-common: native install-dir $(EXTRA_PARTS) lang.install-common
+install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 	for file in $(COMPILERS); do \
 	  if [ -f $$file ] ; then \
 	    rm -f $(libsubdir)/$$file; \
@@ -2200,14 +2202,14 @@ install-driver: xgcc
 	fi
 
 # Install the info files.
-install-info: doc install-dir lang.install-info
+install-info: doc installdirs lang.install-info
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
 	cd $(srcdir); for f in cpp.info* gcc.info*; \
 	do $(INSTALL_DATA) $$f $(infodir)/$$f; done
 	-chmod a-x $(infodir)/cpp.info* $(infodir)/gcc.info*
 
 # Install the man pages.
-install-man: install-dir $(srcdir)/gcc.1 $(srcdir)/cccp.1 lang.install-man
+install-man: installdirs $(srcdir)/gcc.1 $(srcdir)/cccp.1 lang.install-man
 	-if [ -f gcc-cross ] ; then \
 	  rm -f $(mandir)/$(GCC_CROSS_NAME)$(manext); \
 	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/$(GCC_CROSS_NAME)$(manext); \
@@ -2222,7 +2224,7 @@ install-man: install-dir $(srcdir)/gcc.1 $(srcdir)/cccp.1 lang.install-man
 	-chmod a-x $(mandir)/cccp$(manext)
 
 # Install the library.
-install-libgcc: libgcc.a install-dir
+install-libgcc: libgcc.a installdirs
 	-if [ -f libgcc.a ] ; then \
 	  rm -f $(libsubdir)/libgcc.a; \
 	  $(INSTALL_DATA) libgcc.a $(libsubdir)/libgcc.a; \
@@ -2232,7 +2234,7 @@ install-libgcc: libgcc.a install-dir
 	else true; fi
 
 # Install multiple versions of libgcc.a.
-install-multilib: stmp-multilib install-dir
+install-multilib: stmp-multilib installdirs
 	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
 	  if [ -d $(libsubdir)/$${dir} ]; then true; else mkdir $(libsubdir)/$${dir}; fi; \
@@ -2244,7 +2246,7 @@ install-multilib: stmp-multilib install-dir
 	done
 
 # Install the objc run time library.
-install-libobjc: install-dir
+install-libobjc: installdirs
 	-if [ -f libobjc.a ] ; then \
 	  rm -f $(libsubdir)/libobjc.a; \
 	  $(INSTALL_DATA) libobjc.a $(libsubdir)/libobjc.a; \
@@ -2270,7 +2272,7 @@ install-headers: install-include-dir $(INSTALL_HEADERS_DIR) $(INSTALL_ASSERT_H)
 	fi
 
 # Create or recreate the gcc private include file directory.
-install-include-dir: install-dir
+install-include-dir: installdirs
 	-rm -rf $(libsubdir)/include
 	mkdir $(libsubdir)/include
 	-chmod a+rx $(libsubdir)/include
@@ -2294,7 +2296,7 @@ install-headers-cpio: stmp-headers $(STMP_FIXPROTO) install-include-dir
 ## Don't replace the assert.h already there if it is not from GCC.
 ## This code would be simpler if it tested for -f ... && ! grep ...
 ## but supposedly the ! operator is missing in sh on some systems.
-install-assert-h: assert.h install-dir
+install-assert-h: assert.h installdirs
 	if [ -f $(assertdir)/assert.h ]; \
 	then \
 	  if grep "__eprintf" $(assertdir)/assert.h >/dev/null; \
@@ -2311,7 +2313,7 @@ install-assert-h: assert.h install-dir
 	fi
 
 # Use this target to install the program `collect2' under the name `ld'.
-install-collect2: collect2 install-dir
+install-collect2: collect2 installdirs
 	$(INSTALL_PROGRAM) collect2$(exeext) $(libsubdir)/ld$(exeext)
 # Install the driver program as $(libsubdir)/gcc for collect2.
 	$(INSTALL_PROGRAM) xgcc$(exeext) $(libsubdir)/gcc$(exeext)
