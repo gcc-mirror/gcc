@@ -1,3 +1,8 @@
+2002-01-26  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/cpp.1, doc/fsf-funding.7, doc/gcc.1, doc/gcov.1, doc/gfdl.7,
+	doc/gpl.7: Regenerate.
+
 2002-01-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sparc/sparc.md (fix_trunctfdi2): Correct typo in mode.
