@@ -1,3 +1,7 @@
+Tue Dec 22 23:56:31 1998  Rodney Brown  (rodneybrown@pmsc.com)
+
+	* config.guess: Use C code to identify more HP machines.
+
 Thu Dec 17 01:22:30 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* config.sub: Handle hppa2.0.
