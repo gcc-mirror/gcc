@@ -1,3 +1,8 @@
+2004-02-17  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* doc/install.texi: Update description of --gxx-include-dir to
+	give correct default value. (merged from mainline)
+
 2004-02-16  Matthias Klose  <doko@debian.org>
 
         * config/t-slibgcc-elf-ver: Define SHLIB_NAME and SHLIB_SONAME
