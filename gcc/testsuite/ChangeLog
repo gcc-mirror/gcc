@@ -1,3 +1,8 @@
+2005-01-29  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/19589
+	* gfortran.dg/logical_data_1.f90: New test.
+
 2005-01-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19253

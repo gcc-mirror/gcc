@@ -1820,6 +1820,9 @@ gfc_check_assign (gfc_expr * lvalue, gfc_expr * rvalue, int conform)
       if (gfc_numeric_ts (&lvalue->ts) && gfc_numeric_ts (&rvalue->ts))
 	return SUCCESS;
 
+      if (lvalue->ts.type == BT_LOGICAL && rvalue->ts.type == BT_LOGICAL)
+	return SUCCESS;
+
       gfc_error ("Incompatible types in assignment at %L, %s to %s",
 		 &rvalue->where, gfc_typename (&rvalue->ts),
 		 gfc_typename (&lvalue->ts));
