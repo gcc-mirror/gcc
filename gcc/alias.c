@@ -840,6 +840,8 @@ base_alias_check (x, y, x_mode, y_mode)
 	  && (GET_CODE (XEXP (y, 1)) != CONST_INT
 	      || GET_MODE_UNIT_SIZE (x_mode) < -INTVAL (XEXP (y, 1))))
 	return 1;
+      /* Differing symbols never alias.  */
+      return 0;
     }
 
   /* If one address is a stack reference there can be no alias:
