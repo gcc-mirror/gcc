@@ -1,3 +1,8 @@
+2001-01-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c (check_explicit_specialization): Clone constructors and
+	destructors.
+
 2001-01-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (grokdeclarator): Don't presume DECL_LANG_SPECIFIC

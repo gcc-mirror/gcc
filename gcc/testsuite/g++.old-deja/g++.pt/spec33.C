@@ -1,4 +1,4 @@
-// Build don't link:
+// Build don't run:
 // Origin: James McKelvey <mckelvey@fafnir.com>
 
 class A
