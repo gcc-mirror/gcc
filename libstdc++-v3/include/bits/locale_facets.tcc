@@ -816,25 +816,23 @@ namespace std
 	__cs += __ilen - __len;
 	
 	// Add grouping, if necessary. 
-	_CharT* __cs2;
 	if (__lc->_M_use_grouping)
 	  {
 	    // Grouping can add (almost) as many separators as the
 	    // number of digits, but no more.
-	    __cs2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
-							  * __len * 2));
+	    _CharT* __cs2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
+								  * __len * 2));
 	    _M_group_int(__lc->_M_grouping, __lc->_M_thousands_sep, __io, 
 			 __cs2, __cs, __len);
 	    __cs = __cs2;
 	  }
 	
 	// Pad.
-	_CharT* __cs3;
 	const streamsize __w = __io.width();
 	if (__w > static_cast<streamsize>(__len))
 	  {
-	    __cs3 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
-							  * __w));
+	    _CharT* __cs3 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
+								  * __w));
 	    _M_pad(__fill, __w, __io, __cs3, __cs, __len);
 	    __cs = __cs3;
 	  }
@@ -967,24 +965,23 @@ namespace std
 	__ws[__p - __ws] = __dec;
 
       // Add grouping, if necessary. 
-      _CharT* __ws2;
       if (__lc->_M_use_grouping)
 	{
 	  // Grouping can add (almost) as many separators as the
 	  // number of digits, but no more.
-	  __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
-							* __len * 2));
+	  _CharT* __ws2 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
+								* __len * 2));
 	  _M_group_float(__lc->_M_grouping, __lc->_M_thousands_sep, __p,
 			 __ws2, __ws, __len);
 	  __ws = __ws2;
 	}
 
       // Pad.
-      _CharT* __ws3;
       const streamsize __w = __io.width();
       if (__w > static_cast<streamsize>(__len))
 	{
-	  __ws3 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __w));
+	  _CharT* __ws3 = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+								* __w));
 	  _M_pad(__fill, __w, __io, __ws3, __ws, __len);
 	  __ws = __ws3;
 	}
