@@ -520,7 +520,7 @@ build_overload_value (type, value, in_template)
 	      }
 	    else
 	      {
-		ereal_to_decimal (val, bufp);
+		REAL_VALUE_TO_DECIMAL (val, "%.20e", bufp);
 		bufp = (char *) index (bufp, 'e');
 		if (!bufp)
 		  strcat (digit_buffer, "e0");
