@@ -2256,11 +2256,11 @@ for improvement of GCC are welcome in any case.
 @node Bug Lists
 @section Where to Report Bugs
 @cindex bug report mailing lists
-@kindex gcc-bugs@@gcc.gnu.org
+@kindex gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
 Send bug reports for the GNU Compiler Collection to
-@samp{gcc-bugs@@gcc.gnu.org}.
+@samp{gcc-bugs@@gcc.gnu.org} or @samp{bug-gcc@gnu.org}.
 
-Please read @samp{<URL:http://gcc.gnu.org/faq.html#bugreport>} for
+Please read @samp{<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>} for
 bug reporting instructions before you post a bug report.
 
 Often people think of posting bug reports to the newsgroup instead of
@@ -2284,7 +2284,7 @@ Boston, MA 02111-1307, USA
 @cindex compiler bugs, reporting
 
 You may find additional and/or more up-to-date instructions at
-@samp{<URL:http://gcc.gnu.org/faq.html#bugreport>}.
+@samp{<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>}.
 
 The fundamental principle of reporting bugs usefully is this:
 @strong{report all the facts}.  If you are not sure whether to state a
@@ -2664,8 +2664,8 @@ ways to find it:
 @itemize @bullet
 @item
 Send a message to a suitable network mailing list.  First try
-@code{gcc-bugs@@gcc.gnu.org}, and if that brings no response, try
-@code{gcc@@gcc.gnu.org}.
+@code{gcc-bugs@@gcc.gnu.org} or @code{bug-gcc@gnu.org}, and if that
+brings no response, try @code{gcc@@gcc.gnu.org}.
 
 @item
 Look in the service directory for someone who might help you for a fee.
