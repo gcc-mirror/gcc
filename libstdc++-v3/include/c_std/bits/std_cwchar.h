@@ -127,9 +127,12 @@ namespace std
 
   using ::btowc;
   using ::wctob;
+#if _GLIBCPP_HAVE_FGETWC
   using ::fgetwc;
-  using ::fgetwc;
+#endif
+#if _GLIBCPP_HAVE_FGETWS
   using ::fgetws;
+#endif
   using ::fputwc;
   using ::fputws;
   using ::fwide;

@@ -31,8 +31,6 @@
 // ISO C++ 14882: 27.8  File-based streams
 //
 
-#include <unistd.h>
-
 namespace std 
 {
   // Generic definitions for __basic_file

@@ -144,8 +144,8 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =  mkcheck testsuite_flags
 DIST_COMMON =  README ./stamp-h.in ChangeLog Makefile.am Makefile.in \
-acconfig.h acinclude.m4 aclocal.m4 configure configure.in mkcheck.in \
-testsuite_flags.in
+acconfig.h acinclude.m4 aclocal.m4 config.h.in configure configure.in \
+mkcheck.in testsuite_flags.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
