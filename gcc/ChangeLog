@@ -1,3 +1,7 @@
+Fri May  5 10:27:06 2000  Philippe De Muyter  <phdm@macqel.be>
+
+	* system.h (S_ISBLK): Provide fallback definition.
+
 2000-05-05  Geoff Berry  <geoffb@bops.com>
 
 	* extend.texi (Extended Asm): Document inability to give asm

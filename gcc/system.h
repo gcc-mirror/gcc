@@ -478,6 +478,11 @@ extern void abort PARAMS ((void));
 #define S_ISCHR(m) (((m) & S_IFMT) == S_IFCHR)
 #endif
 
+/* Test if something is a block special file.  */
+#ifndef S_ISBLK
+#define S_ISBLK(m) (((m) & S_IFMT) == S_IFBLK)
+#endif
+
 /* Test if something is a socket.  */
 #ifndef S_ISSOCK
 # ifdef S_IFSOCK
