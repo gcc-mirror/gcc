@@ -181,3 +181,52 @@ do {									\
 	
 #undef BIGGEST_ALIGNMENT
 #define BIGGEST_ALIGNMENT 64
+
+/* SVR4 m68k assembler is bitching on the `comm i,1,1' which askes for 
+   1 byte alignment. Don't generate alignment for COMMON seems to be
+   safer until we the assembler is fixed. */
+#undef ASM_OUTPUT_ALIGNED_COMMON
+#undef ASM_OUTPUT_ALIGNED_LOCAL
+
+/* The `string' directive on m68k svr4 does not handle string with
+   escape char (ie., `\') right. Use normal way to output ASCII bytes
+   seems to be safer. */
+#undef ASM_OUTPUT_ASCII
+#define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
+{								\
+  register int sp = 0, lp = 0, ch;				\
+  fprintf ((FILE), "\t%s ", BYTE_ASM_OP);			\
+  do {								\
+    ch = (PTR)[sp];						\
+    if (ch > ' ' && ! (ch & 0x80) && ch != '\\')		\
+      {								\
+	fprintf ((FILE), "'%c", ch);				\
+      }								\
+    else							\
+      {								\
+	fprintf ((FILE), "0x%x", ch);				\
+      }								\
+    if (++sp < (LEN))						\
+      {								\
+	if ((sp % 10) == 0)					\
+	  {							\
+	    fprintf ((FILE), "\n\t%s ", BYTE_ASM_OP);		\
+	  }							\
+	else							\
+	  {							\
+	    putc (',', (FILE));					\
+	  }							\
+      }								\
+  } while (sp < (LEN));						\
+  putc ('\n', (FILE));						\
+}
+
+/* SVR4 m68k assembler is bitching on the syntax `2.b'. Change
+   it back to use the "LLDnnn-LLnnn" format. */
+
+#undef ASM_OUTPUT_CASE_END
+#define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)             \
+  if (RTX_INTEGRATED_P (TABLE))                         \
+    asm_fprintf (FILE, "\t%s %LLD%d,%LL%d\n",\
+                 SET_ASM_OP, (NUM), (NUM))
+
