@@ -228,7 +228,8 @@ build_fixbound_expr (stmtblock_t * pblock, tree arg, tree type, int up)
   tmp = convert (argtype, intval);
   cond = build (up ? GE_EXPR : LE_EXPR, boolean_type_node, tmp, arg);
 
-  tmp = build (up ? PLUS_EXPR : MINUS_EXPR, type, intval, integer_one_node);
+  tmp = build (up ? PLUS_EXPR : MINUS_EXPR, type, intval,
+	       convert (type, integer_one_node));
   tmp = build (COND_EXPR, type, cond, intval, tmp);
   return tmp;
 }
@@ -651,7 +652,7 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
       bound = argse.expr;
       /* Convert from one based to zero based.  */
       bound = fold (build (MINUS_EXPR, gfc_array_index_type, bound,
-                    integer_one_node));
+			   gfc_index_one_node));
     }
 
   /* TODO: don't re-evaluate the descriptor on each iteration.  */
@@ -677,7 +678,7 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, int upper)
         {
           bound = gfc_evaluate_now (bound, &se->pre);
           cond = fold (build (LT_EXPR, boolean_type_node, bound,
-                              integer_zero_node));
+                              convert (TREE_TYPE (bound), integer_zero_node)));
           tmp = gfc_rank_cst[GFC_TYPE_ARRAY_RANK (TREE_TYPE (desc))];
           tmp = fold (build (GE_EXPR, boolean_type_node, bound, tmp));
           cond = fold(build (TRUTH_ORIF_EXPR, boolean_type_node, cond, tmp));
@@ -1172,7 +1173,9 @@ gfc_conv_intrinsic_anyall (gfc_se * se, gfc_expr * expr, int op)
   gfc_conv_expr_val (&arrayse, actual->expr);
 
   gfc_add_block_to_block (&body, &arrayse.pre);
-  tmp = build (op, boolean_type_node, arrayse.expr, integer_zero_node);
+  tmp = build (op, boolean_type_node, arrayse.expr,
+	       fold_convert (TREE_TYPE (arrayse.expr),
+			     integer_zero_node));
   tmp = build_v (COND_EXPR, tmp, found, build_empty_stmt ());
   gfc_add_expr_to_block (&body, tmp);
   gfc_add_block_to_block (&body, &arrayse.post);
@@ -1214,7 +1217,7 @@ gfc_conv_intrinsic_count (gfc_se * se, gfc_expr * expr)
   type = gfc_typenode_for_spec (&expr->ts);
   /* Initialize the result.  */
   resvar = gfc_create_var (type, "count");
-  gfc_add_modify_expr (&se->pre, resvar, integer_zero_node);
+  gfc_add_modify_expr (&se->pre, resvar, convert (type, integer_zero_node));
 
   /* Walk the arguments.  */
   arrayss = gfc_walk_expr (actual->expr);
@@ -1232,7 +1235,8 @@ gfc_conv_intrinsic_count (gfc_se * se, gfc_expr * expr)
   /* Generate the loop body.  */
   gfc_start_scalarized_body (&loop, &body);
 
-  tmp = build (PLUS_EXPR, TREE_TYPE (resvar), resvar, integer_one_node);
+  tmp = build (PLUS_EXPR, TREE_TYPE (resvar), resvar,
+	       convert (TREE_TYPE (resvar), integer_one_node));
   tmp = build_v (MODIFY_EXPR, resvar, tmp);
 
   gfc_init_se (&arrayse, NULL);
@@ -1453,7 +1457,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
      array, in case all elements are equal to the limit.
      ie. pos = (ubound >= lbound) ? lbound, lbound - 1;  */
   tmp = fold (build (MINUS_EXPR, gfc_array_index_type,
-	             loop.from[0], integer_one_node));
+	             loop.from[0], gfc_index_one_node));
   cond = fold (build (GE_EXPR, boolean_type_node,
 		      loop.to[0], loop.from[0]));
   tmp = fold (build (COND_EXPR, gfc_array_index_type, cond,
@@ -1522,7 +1526,7 @@ gfc_conv_intrinsic_minmaxloc (gfc_se * se, gfc_expr * expr, int op)
 
   /* Return a value in the range 1..SIZE(array).  */
   tmp = fold (build (MINUS_EXPR, gfc_array_index_type, loop.from[0],
-		     integer_one_node));
+		     gfc_index_one_node));
   tmp = fold (build (MINUS_EXPR, gfc_array_index_type, pos, tmp));
   /* And convert to the required type.  */
   se->expr = convert (type, tmp);
@@ -1670,9 +1674,10 @@ gfc_conv_intrinsic_btest (gfc_se * se, gfc_expr * expr)
   arg = TREE_VALUE (arg);
   type = TREE_TYPE (arg);
 
-  tmp = build (LSHIFT_EXPR, type, integer_one_node, arg2);
+  tmp = build (LSHIFT_EXPR, type, convert (type, integer_one_node), arg2);
   tmp = build (BIT_AND_EXPR, type, arg, tmp);
-  tmp = fold (build (NE_EXPR, boolean_type_node, tmp, integer_zero_node));
+  tmp = fold (build (NE_EXPR, boolean_type_node, tmp,
+		     convert (type, integer_zero_node)));
   type = gfc_typenode_for_spec (&expr->ts);
   se->expr = convert (type, tmp);
 }
@@ -1720,7 +1725,8 @@ gfc_conv_intrinsic_singlebitop (gfc_se * se, gfc_expr * expr, int set)
   arg = TREE_VALUE (arg);
   type = TREE_TYPE (arg);
 
-  tmp = fold (build (LSHIFT_EXPR, type, integer_one_node, arg2));
+  tmp = fold (build (LSHIFT_EXPR, type,
+		     convert (type, integer_one_node), arg2));
   if (set)
     op = BIT_IOR_EXPR;
   else
@@ -1783,11 +1789,13 @@ gfc_conv_intrinsic_ishft (gfc_se * se, gfc_expr * expr)
   tmp = build1 (NEGATE_EXPR, TREE_TYPE (arg2), arg2);
   rshift = build (RSHIFT_EXPR, type, arg, tmp);
 
-  tmp = build (GT_EXPR, boolean_type_node, arg2, integer_zero_node);
+  tmp = build (GT_EXPR, boolean_type_node, arg2,
+	       convert (TREE_TYPE (arg2), integer_zero_node));
   rshift = build (COND_EXPR, type, tmp, lshift, rshift);
 
   /* Do nothing if shift == 0.  */
-  tmp = build (EQ_EXPR, boolean_type_node, arg2, integer_zero_node);
+  tmp = build (EQ_EXPR, boolean_type_node, arg2,
+	       convert (TREE_TYPE (arg2), integer_zero_node));
   se->expr = build (COND_EXPR, type, tmp, arg, rshift);
 }
 
@@ -1843,11 +1851,13 @@ gfc_conv_intrinsic_ishftc (gfc_se * se, gfc_expr * expr)
   tmp = build1 (NEGATE_EXPR, TREE_TYPE (arg2), arg2);
   rrot = build (RROTATE_EXPR, type, arg, tmp);
 
-  tmp = build (GT_EXPR, boolean_type_node, arg2, integer_zero_node);
+  tmp = build (GT_EXPR, boolean_type_node, arg2,
+	       convert (TREE_TYPE (arg2), integer_zero_node));
   rrot = build (COND_EXPR, type, tmp, lrot, rrot);
 
   /* Do nothing if shift == 0.  */
-  tmp = build (EQ_EXPR, boolean_type_node, arg2, integer_zero_node);
+  tmp = build (EQ_EXPR, boolean_type_node, arg2,
+	       convert (TREE_TYPE (arg2), integer_zero_node));
   se->expr = build (COND_EXPR, type, tmp, arg, rrot);
 }
 
@@ -2040,7 +2050,8 @@ gfc_conv_intrinsic_strcmp (gfc_se * se, gfc_expr * expr, int op)
   se->expr = gfc_build_function_call (gfor_fndecl_compare_string, args);
 
   type = gfc_typenode_for_spec (&expr->ts);
-  se->expr = build (op, type, se->expr, integer_zero_node);
+  se->expr = build (op, type, se->expr,
+		    convert (TREE_TYPE (se->expr), integer_zero_node));
 }
 
 /* Generate a call to the adjustl/adjustr library function.  */
@@ -2130,7 +2141,8 @@ gfc_conv_allocated (gfc_se *se, gfc_expr *expr)
   gfc_conv_expr_descriptor (&arg1se, arg1->expr, ss1);
 
   tmp = gfc_conv_descriptor_data (arg1se.expr);
-  tmp = build (NE_EXPR, boolean_type_node, tmp, null_pointer_node);
+  tmp = build (NE_EXPR, boolean_type_node, tmp,
+	       fold_convert (TREE_TYPE (tmp), null_pointer_node));
   se->expr = convert (gfc_typenode_for_spec (&expr->ts), tmp);
 }
 
@@ -2176,7 +2188,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
           gfc_conv_expr_lhs (&arg1se, arg1->expr);
           tmp2 = gfc_conv_descriptor_data (arg1se.expr);
         }
-      tmp = build (NE_EXPR, boolean_type_node, tmp2, null_pointer_node);
+      tmp = build (NE_EXPR, boolean_type_node, tmp2,
+		   fold_convert (TREE_TYPE (tmp2), null_pointer_node));
       se->expr = tmp;
     }
   else
@@ -2450,7 +2463,8 @@ gfc_conv_intrinsic_rrspacing (gfc_se * se, gfc_expr * expr)
 
    cond2 = build (EQ_EXPR, boolean_type_node, rcs.frac, zero);
    cond = build (TRUTH_ANDIF_EXPR, boolean_type_node, cond, cond2);
-   tmp = build (COND_EXPR, masktype, cond, integer_zero_node, tmp);
+   tmp = build (COND_EXPR, masktype, cond,
+		convert (masktype, integer_zero_node), tmp);
 
    tmp = build1 (VIEW_CONVERT_EXPR, rcs.type, tmp);
    se->expr = tmp;
@@ -2527,7 +2541,8 @@ gfc_conv_intrinsic_trim (gfc_se * se, gfc_expr * expr)
   gfc_add_expr_to_block (&se->pre, tmp);
 
   /* Free the temporary afterwards, if necessary.  */
-  cond = build (GT_EXPR, boolean_type_node, len, integer_zero_node);
+  cond = build (GT_EXPR, boolean_type_node, len,
+		convert (TREE_TYPE (len), integer_zero_node));
   arglist = gfc_chainon_list (NULL_TREE, var);
   tmp = gfc_build_function_call (gfor_fndecl_internal_free, arglist);
   tmp = build_v (COND_EXPR, cond, tmp, build_empty_stmt ());

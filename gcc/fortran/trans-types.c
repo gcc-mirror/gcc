@@ -290,7 +290,7 @@ gfc_get_character_type (int kind, gfc_charlen * cl)
 
   len = (cl == 0) ? NULL_TREE : cl->backend_decl;
 
-  bounds = build_range_type (gfc_array_index_type, integer_one_node, len);
+  bounds = build_range_type (gfc_array_index_type, gfc_index_one_node, len);
   type = build_array_type (base, bounds);
   TYPE_STRING_FLAG (type) = 1;
 
@@ -493,7 +493,7 @@ gfc_build_array_type (tree type, gfc_array_spec * as)
     {
       /* Create expressions for the known bounds of the array.  */
       if (as->type == AS_ASSUMED_SHAPE && as->lower[n] == NULL)
-        lbound[n] = integer_one_node;
+        lbound[n] = gfc_index_one_node;
       else
         lbound[n] = gfc_conv_array_bound (as->lower[n]);
       ubound[n] = gfc_conv_array_bound (as->upper[n]);
@@ -727,7 +727,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, int packed)
 
   GFC_TYPE_ARRAY_DTYPE (type) = gfc_get_dtype (etype, as->rank);
   GFC_TYPE_ARRAY_RANK (type) = as->rank;
-  range = build_range_type (gfc_array_index_type, integer_zero_node,
+  range = build_range_type (gfc_array_index_type, gfc_index_zero_node,
 			    NULL_TREE);
   /* TODO: use main type if it is unbounded.  */
   GFC_TYPE_ARRAY_DATAPTR_TYPE (type) =
@@ -741,7 +741,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, int packed)
   else
     range = NULL_TREE;
 
-  range = build_range_type (gfc_array_index_type, integer_zero_node, range);
+  range = build_range_type (gfc_array_index_type, gfc_index_zero_node, range);
   TYPE_DOMAIN (type) = range;
 
   build_pointer_type (etype);
@@ -806,7 +806,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
 
   /* Build an array descriptor record type.  */
   if (packed != 0)
-    stride = integer_one_node;
+    stride = gfc_index_one_node;
   else
     stride = NULL_TREE;
 
@@ -840,7 +840,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
 	{
 	  tmp = fold (build (MINUS_EXPR, gfc_array_index_type, upper, lower));
 	  tmp = fold (build (PLUS_EXPR, gfc_array_index_type, tmp,
-			     integer_one_node));
+			     gfc_index_one_node));
 	  stride =
 	    fold (build (MULT_EXPR, gfc_array_index_type, tmp, stride));
 	  /* Check the folding worked.  */
@@ -858,7 +858,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
   arraytype =
     build_array_type (etype,
 		      build_range_type (gfc_array_index_type,
-					integer_zero_node, NULL_TREE));
+					gfc_index_zero_node, NULL_TREE));
   arraytype = build_pointer_type (arraytype);
   GFC_TYPE_ARRAY_DATAPTR_TYPE (fat_type) = arraytype;
 
@@ -885,7 +885,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, tree * lbound,
   arraytype =
     build_array_type (gfc_get_desc_dim_type (),
 		      build_range_type (gfc_array_index_type,
-					integer_zero_node,
+					gfc_index_zero_node,
 					gfc_rank_cst[dimen - 1]));
 
   decl = build_decl (FIELD_DECL, get_identifier ("dim"), arraytype);
