@@ -1,3 +1,8 @@
+2004-01-14  Jan Hubicka  <jh@suse.cz>
+
+	* alias.c (get_alias_set):  Initialize alias set to 0 when subset is
+	impossible.
+
 2004-01-14  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in: Define MAINT from --enable-maintainer-mode.
