@@ -1,3 +1,8 @@
+Thu Sep  2 01:17:51 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* gcc.dg/980414-1.c: Fix assembler syntax to work with old
+	assemblers too.
+
 Tue Aug 31 17:57:49 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/c-torture.exp: Avoid the "compare executables" optimization
