@@ -4252,6 +4252,14 @@ initializer_constant_valid_p (value, endtype)
 	     Then the value is absolute.  */
 	  if (valid0 == valid1 && valid0 != 0)
 	    return null_pointer_node;
+
+	  /* Since GCC guarantees that string constants are unique in the
+	     generated code, a subtraction between two copies of the same
+	     constant string is absolute.  */
+	  if (valid0 && TREE_CODE (valid0) == STRING_CST &&
+	      valid1 && TREE_CODE (valid1) == STRING_CST &&
+	      TREE_STRING_POINTER (valid0) == TREE_STRING_POINTER (valid1))
+	    return null_pointer_node;
 	}
 
       /* Support differences between labels.  */
