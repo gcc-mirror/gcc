@@ -1,5 +1,8 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* mcore.c (mcore_print_operand_address, mcore_print_operand): Fix
+	format specifier warnings.
+
 	* ip2k.c (function_prologue, function_epilogue, print_operand):
 	Fix format specifier warnings.
 	* ip2k.md: Likewise.
