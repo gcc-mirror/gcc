@@ -1809,20 +1809,20 @@
   [(set_attr "type" "*,pcload_si,move,load_si,move,move,store,store,pstore,move,load,pload,pcload_si")
    (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
-;; t/r is first, so that it will be preferred over r/r when reloading a move
-;; of a pseudo-reg into the T reg
+;; t/r must come after r/r, lest reload will try to reload stuff like
+;; (subreg:SI (reg:SF 38 fr14) 0) into T (compiling stdlib/strtod.c -m3e -O2)
 ;; ??? This allows moves from macl to fpul to be recognized, but these moves
 ;; will require a reload.
 (define_insn "movsi_ie"
-  [(set (match_operand:SI 0 "general_movdst_operand" "=t,r,r,r,r,r,m,<,<,xl,x,l,r,y,r,y")
-	(match_operand:SI 1 "general_movsrc_operand" "r,Q,rI,m,xl,t,r,x,l,r,>,>,i,r,y,y"))]
+  [(set (match_operand:SI 0 "general_movdst_operand" "=r,r,t,r,r,r,m,<,<,xl,x,l,r,y,r,y")
+	(match_operand:SI 1 "general_movsrc_operand" "Q,rI,r,m,xl,t,r,x,l,r,>,>,i,r,y,y"))]
   "TARGET_SH3E
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
-	cmp/pl	%1
 	mov.l	%1,%0
 	mov	%1,%0
+	cmp/pl	%1
 	mov.l	%1,%0
 	sts	%1,%0
 	movt	%0
@@ -1836,7 +1836,7 @@
 	lds	%1,%0
 	sts	%1,%0
 	! move optimized away"
-  [(set_attr "type" "*,pcload_si,move,load_si,move,move,store,store,pstore,move,load,pload,pcload_si,gp_fpul,gp_fpul,other")
+  [(set_attr "type" "pcload_si,move,*,load_si,move,move,store,store,pstore,move,load,pload,pcload_si,gp_fpul,gp_fpul,other")
    (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,0")])
 
 (define_insn "movsi_i_lowpart"
