@@ -4173,6 +4173,45 @@ strength_reduce (loop, insn_count, flags)
 	    v->new_reg = replace_rtx (v->new_reg,
 				      v->same->dest_reg, v->same->new_reg);
 
+	  /* See if this register is known to be a pointer to something.  If
+	     so, see if we can find the alignment.  First see if there is a
+	     destination register that is a pointer.  If so, this shares the
+	     alignment too.  Next see if we can deduce anything from the
+	     computational information.  If not, and this is a DEST_ADDR
+	     giv, at least we know that it's a pointer, though we don't know
+	     the alignment.  */
+	  if (GET_CODE (v->new_reg) == REG
+	      && v->giv_type == DEST_REG
+	      && REGNO_POINTER_FLAG (REGNO (v->dest_reg)))
+	    mark_reg_pointer (v->new_reg,
+			      REGNO_POINTER_ALIGN (REGNO (v->dest_reg)));
+	  else if (GET_CODE (v->new_reg) == REG
+		   && REGNO_POINTER_FLAG (REGNO (v->src_reg)))
+	    {
+	      unsigned int align = REGNO_POINTER_ALIGN (REGNO (v->src_reg));
+
+	      if (align == 0
+		  || GET_CODE (v->add_val) != CONST_INT
+		  || INTVAL (v->add_val) % (align / BITS_PER_UNIT) != 0)
+		align = 0;
+
+	      mark_reg_pointer (v->new_reg, align);
+	    }
+	  else if (GET_CODE (v->new_reg) == REG
+		   && GET_CODE (v->add_val) == REG
+		   && REGNO_POINTER_FLAG (REGNO (v->add_val)))
+	    {
+	      unsigned int align = REGNO_POINTER_ALIGN (REGNO (v->add_val));
+
+	      if (align == 0
+		  || INTVAL (v->mult_val) % (align / BITS_PER_UNIT) != 0)
+		align = 0;
+
+	      mark_reg_pointer (v->new_reg, align);
+	    }
+	  else if (GET_CODE (v->new_reg) == REG && v->giv_type == DEST_ADDR)
+	    mark_reg_pointer (v->new_reg, 0);
+
 	  if (v->giv_type == DEST_ADDR)
 	    /* Store reduced reg as the address in the memref where we found
 	       this giv.  */
@@ -9302,7 +9341,7 @@ static void
 loop_dump_aux (loop, file, verbose)
      const struct loop *loop;
      FILE *file;
-     int verbose;
+     int verbose ATTRIBUTE_UNUSED;
 {
   rtx label;
 
