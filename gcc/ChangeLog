@@ -1,3 +1,9 @@
+2003-06-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (output_call_mem): If the address references the link-register
+	use an instruction sequence that avoids early-clobbering IP.
+	(eliminate_lr2ip): Delete.
+
 2003-06-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-format.c (format_types_orig): Disallow '*' width/precision in
