@@ -840,6 +840,7 @@ parse_class_file ()
 
       if (DECL_CODE_OFFSET (method) == 0)
 	{
+	  current_function_decl = method;
 	  error ("missing Code attribute");
 	  continue;
 	}
