@@ -1,5 +1,5 @@
 /* lang-specs.h file for Fortran
-   Copyright (C) 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1999, 2000 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -29,19 +29,19 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   {".FPP", "@f77-cpp-input"},
   {"@f77-cpp-input",
    "tradcpp0 -lang-fortran %(cpp_options) %{!M:%{!MM:%{!E:%{!pipe:%g.f |\n\
-    f771 %{!pipe:%g.f} %(cc1_options) %{!S:-o %{|!pipe:%g.s} |\n\
+    f771 %{!pipe:%g.f} %(cc1_options) %{I*} %{!S:-o %{|!pipe:%g.s} |\n\
     as %(asm_options) %{!pipe:%g.s} %A }}}}}\n"},
   {".r", "@ratfor"},
   {"@ratfor",
    "%{C:%{!E:%eGNU C does not support -C without using -E}}\
     ratfor %{C} %{v} %i %{E:%W{o*}} %{!E: %{!pipe:-o %g.f} |\n\
-    f771 %{!pipe:%g.f} %(cc1_options) %{!S:-o %{|!pipe:%g.s} |\n\
+    f771 %{!pipe:%g.f} %(cc1_options) %{I*} %{!S:-o %{|!pipe:%g.s} |\n\
     as %(asm_options) %{!pipe:%g.s} %A }}\n"},
   {".f",   "@f77"},
   {".for", "@f77"},
   {".FOR", "@f77"},
   {"@f77",
-   "%{!M:%{!MM:%{!E:f771 %i %(cc1_options) %{!S:-o %{|!pipe:%g.s} |\n\
+   "%{!M:%{!MM:%{!E:f771 %i %(cc1_options) %{I*} %{!S:-o %{|!pipe:%g.s} |\n\
      as %(asm_options) %{!pipe:%g.s} %A }}}}\n"},
   /* XXX This is perverse and should not be necessary.  */
   {"@f77-version",
