@@ -2860,8 +2860,22 @@ do
 	done
 done
 
-# Get the version number from the toplevel
-version=`sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/' < ${srcdir}/version.c`
+# If we have a CVS directory, set up a rule so verion.c will be made
+# from CVS tag information and use a dummy version number here if we
+# don't have version.c.
+
+version_dep=
+if [[ -d $srcdir/CVS ]]; then
+	version_dep=ChangeLog
+fi
+
+if [[ ! -f $srcdir/version.c -a -d $srcdir/CVS ]]
+then
+	version=unknown
+else
+	# Get the version number from the toplevel
+	version=`sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/' < ${srcdir}/version.c`
+fi
 
 # Are we using gcc as the native compiler?
 case $host in
@@ -3193,6 +3207,7 @@ AC_SUBST(maybe_use_collect2)
 AC_SUBST(cc_set_by_configure)
 AC_SUBST(stage_prefix_set_by_configure)
 AC_SUBST(symbolic_link)
+AC_SUBST(version_dep)
 
 AC_SUBST_FILE(target_overrides)
 AC_SUBST_FILE(host_overrides)
@@ -3275,6 +3290,7 @@ srcdir='${srcdir}'
 subdirs='${subdirs}'
 oldstyle_subdirs='${oldstyle_subdirs}'
 symbolic_link='${symbolic_link}'
+version_dep='${version_dep}'
 program_transform_set='${program_transform_set}'
 program_transform_name='${program_transform_name}'
 dep_host_xmake_file='${dep_host_xmake_file}'
