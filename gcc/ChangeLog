@@ -1,3 +1,7 @@
+2003-04-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcov.c (accumulate_line_counts): Fix span tree merge bug.
+
 Fri Apr  4 15:58:52 2003  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (ACTUAL_NORMAL_MODE): New macro, broken out of
