@@ -1,5 +1,7 @@
 Sun Nov 29 16:36:59 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expmed.c (emit_store_flag): Don't try to negate STORE_FLAG_VALUE.
+
 	* configure.in: Remove inadvertently added duplicate tests.
 
 	* reload1.c (emit_reload_insns): Fix typos in preserve death note code.
