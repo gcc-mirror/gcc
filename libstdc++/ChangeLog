@@ -1,3 +1,8 @@
+2000-04-24  Magnus Fromreide  <magfr@lysator.liu.se>
+
+	* sstream: New file.
+	* Makefile.in (HEADERS): Add it.
+
 2000-03-12  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
 
 	* std/bastring.h (basic_string<>::push_back): Define.
