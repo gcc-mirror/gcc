@@ -1,3 +1,9 @@
+2005-02-01  Paul Thomas <paulthomas2@wanadoo.fr>
+
+	PR libgfortran/19363
+	PR libgfortran/19691
+	* libgfortran.h (isfinite): Work around broken isfinite(x) in Cygwin.
+
 2005-01-30  Bud Davis  <bdavis@gfortran.org>
 
 	PR fortran/19647
