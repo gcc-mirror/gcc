@@ -3056,6 +3056,17 @@ store_expr (exp, target, want_value)
 	 For non-BLKmode, it is more efficient not to do this.  */
 
       rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
+      rtx flag = NULL_RTX;
+      tree left_cleanups = NULL_TREE;
+      tree right_cleanups = NULL_TREE;
+      tree old_cleanups = cleanups_this_call;
+
+      /* Used to save a pointer to the place to put the setting of
+	 the flag that indicates if this side of the conditional was
+	 taken.  We backpatch the code, if we find out later that we
+	 have any conditional cleanups that need to be performed.  */
+      rtx dest_right_flag = NULL_RTX;
+      rtx dest_left_flag = NULL_RTX;
 
       emit_queue ();
       target = protect_from_queue (target, 1);
@@ -3064,14 +3075,74 @@ store_expr (exp, target, want_value)
       NO_DEFER_POP;
       jumpifnot (TREE_OPERAND (exp, 0), lab1);
       store_expr (TREE_OPERAND (exp, 1), target, 0);
+      dest_left_flag = get_last_insn ();
+      /* Handle conditional cleanups, if any.  */
+      left_cleanups = defer_cleanups_to (old_cleanups);
       emit_queue ();
       emit_jump_insn (gen_jump (lab2));
       emit_barrier ();
       emit_label (lab1);
       store_expr (TREE_OPERAND (exp, 2), target, 0);
+      dest_right_flag = get_last_insn ();
+      /* Handle conditional cleanups, if any.  */
+      right_cleanups = defer_cleanups_to (old_cleanups);
       emit_queue ();
       emit_label (lab2);
       OK_DEFER_POP;
+
+      /* Add back in any conditional cleanups.  */
+      if (left_cleanups || right_cleanups)
+	{
+	  tree new_cleanups;
+	  tree cond;
+	  rtx last;
+
+	  /* Now that we know that a flag is needed, go back and add in the
+	     setting of the flag.  */
+
+	  flag = gen_reg_rtx (word_mode);
+
+	  /* Do the left side flag.  */
+	  last = get_last_insn ();
+	  /* Flag left cleanups as needed.  */
+	  emit_move_insn (flag, const1_rtx);
+	  /* ??? deprecated, use sequences instead.  */
+	  reorder_insns (NEXT_INSN (last), get_last_insn (), dest_left_flag);
+
+	  /* Do the right side flag.  */
+	  last = get_last_insn ();
+	  /* Flag left cleanups as needed.  */
+	  emit_move_insn (flag, const0_rtx);
+	  /* ??? deprecated, use sequences instead.  */
+	  reorder_insns (NEXT_INSN (last), get_last_insn (), dest_right_flag);
+
+	  /* All cleanups must be on the function_obstack.  */
+	  push_obstacks_nochange ();
+	  resume_temporary_allocation ();
+
+	  /* convert flag, which is an rtx, into a tree.  */
+	  cond = make_node (RTL_EXPR);
+	  TREE_TYPE (cond) = integer_type_node;
+	  RTL_EXPR_RTL (cond) = flag;
+	  RTL_EXPR_SEQUENCE (cond) = NULL_RTX;
+	  cond = save_expr (cond);
+
+	  if (! left_cleanups)
+	    left_cleanups = integer_zero_node;
+	  if (! right_cleanups)
+	    right_cleanups = integer_zero_node;
+	  new_cleanups = build (COND_EXPR, void_type_node,
+				truthvalue_conversion (cond),
+				left_cleanups, right_cleanups);
+	  new_cleanups = fold (new_cleanups);
+
+	  pop_obstacks ();
+
+	  /* Now add in the conditionalized cleanups.  */
+	  cleanups_this_call
+	    = tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
+	  expand_eh_region_start ();
+	}
       return want_value ? target : NULL_RTX;
     }
   else if (want_value && GET_CODE (target) == MEM && ! MEM_VOLATILE_P (target)
@@ -6444,6 +6515,8 @@ expand_expr (exp, target, tmode, modifier)
 		 && ! (GET_CODE (original_target) == MEM
 		       && MEM_VOLATILE_P (original_target)))
 	  temp = original_target;
+	else if (TREE_ADDRESSABLE (type))
+	  abort ();
 	else
 	  temp = assign_temp (type, 0, 0, 1);
 
