@@ -1,3 +1,10 @@
+Tue Sep 14 01:38:52 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* regmove.c (fixup_match_1): Don't change an unchanging register.
+	(stable_but_for_p): Renamed to:
+	(stable_and_no_regs_but_for_p).  Reject unchanging registers too.
+	Changed all callers.
+
 Tue Sep 14 01:33:15 1999  Andreas Schwab  <schwab@suse.de>
 
 	* loop.c (strength_reduce): Don't call reg_used_between_p if the
