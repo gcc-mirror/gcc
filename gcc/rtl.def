@@ -1111,24 +1111,24 @@ DEF_RTL_EXPR(CALL_PLACEHOLDER, "call_placeholder", "uuuu", 'x')
    that specifies where the parts of the result are taken from.  Set bits
    indicate operand 0, clear bits indicate operand 1.  The parts are defined
    by the mode of the vectors.  */
-DEF_RTL_EXPR(VEC_MERGE, "vec_merge", "eee", 'x')
+DEF_RTL_EXPR(VEC_MERGE, "vec_merge", "eee", '3')
 
 /* Describes an operation that selects parts of a vector.
    Operands 0 is the source vector, operand 1 is a PARALLEL that contains
    a CONST_INT for each of the subparts of the result vector, giving the
    number of the source subpart that should be stored into it.  */
-DEF_RTL_EXPR(VEC_SELECT, "vec_select", "ee", 'x')
+DEF_RTL_EXPR(VEC_SELECT, "vec_select", "ee", '2')
 
 /* Describes a vector concat operation.  Operands 0 and 1 are the source
    vectors, the result is a vector that is as long as operands 0 and 1
    combined and is the concatenation of the two source vectors.  */
-DEF_RTL_EXPR(VEC_CONCAT, "vec_concat", "ee", 'x')
+DEF_RTL_EXPR(VEC_CONCAT, "vec_concat", "ee", '2')
 
 /* Describes an operation that converts a small vector into a larger one by
    duplicating the input values.  The output vector mode must have the same
    submodes as the input vector mode, and the number of output parts must be
    an integer multiple of the number of input parts.  */
-DEF_RTL_EXPR(VEC_DUPLICATE, "vec_duplicate", "e", 'x')
+DEF_RTL_EXPR(VEC_DUPLICATE, "vec_duplicate", "e", '1')
      
 /* Addition with signed saturation */
 DEF_RTL_EXPR(SS_PLUS, "ss_plus", "ee", 'c')
