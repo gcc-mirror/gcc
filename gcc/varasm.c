@@ -3771,8 +3771,9 @@ output_constructor (exp, size)
 
 #ifdef HANDLE_SYSV_PRAGMA
 
-/* Support #pragma weak by default if WEAK_ASM_OP is defined.  */
-#if defined (HANDLE_PRAGMA_WEAK) || (defined (WEAK_ASM_OP) && defined (SET_ASM_OP))
+/* Support #pragma weak by default if WEAK_ASM_OP and ASM_OUTPUT_DEF
+   are defined.  */
+#if defined (WEAK_ASM_OP) && defined (ASM_OUTPUT_DEF)
 
 /* See c-pragma.c for an identical definition.  */
 enum pragma_state
@@ -3808,21 +3809,7 @@ handle_pragma_weak (what, asm_out_file, name, value)
 
       fputc ('\n', asm_out_file);
       if (what == ps_value)
-	{
-	  fprintf (asm_out_file, "\t%s\t", SET_ASM_OP);
-	  if (output_bytecode)
-	    BC_OUTPUT_LABELREF (asm_out_file, name);
-	  else
-	    ASM_OUTPUT_LABELREF (asm_out_file, name);
-
-	  fputc (',', asm_out_file);
-	  if (output_bytecode)
-	    BC_OUTPUT_LABELREF (asm_out_file, value);
-	  else
-	    ASM_OUTPUT_LABELREF (asm_out_file, value);
-
-	  fputc ('\n', asm_out_file);
-	}
+	ASM_OUTPUT_DEF (asm_out_file, name, value);
     }
   else if (! (what == ps_done || what == ps_start))
     warning ("malformed `#pragma weak'");
@@ -3830,4 +3817,4 @@ handle_pragma_weak (what, asm_out_file, name, value)
 
 #endif /* HANDLE_PRAGMA_WEAK or (WEAK_ASM_OP and SET_ASM_OP) */
 
-#endif /* HANDLE_SYSV_PRAGMA */
+#endif /* WEAK_ASM_OP && ASM_OUTPUT_DEF */
