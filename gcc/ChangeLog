@@ -1,3 +1,8 @@
+2002-12-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*extzv_8_8): New.
+	(*extzv_8_16): Likewise.
+
 2002-12-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/8461, c++/8625
