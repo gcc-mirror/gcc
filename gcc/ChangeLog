@@ -1,3 +1,13 @@
+2004-07-06  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* tree-ssa-pre.c (reference_node_pool): New pool.
+	(find_or_generate_expression): Class 'r' is okay too.
+	(create_value_expr_from): Ditto.
+	(add_to_sets): LHS should not include vuses.
+	(eliminate): Ditto.
+	(compute_avail): Reverse ordering of tests.
+	Valuize INDIRECT_REF as well.
+	
 2004-07-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR rtl-optimization/16380
