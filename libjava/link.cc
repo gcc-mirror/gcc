@@ -1073,7 +1073,7 @@ _Jv_Linker::link_symbol_table (jclass klass)
       if (found)
 	{
 	  klass->itable->addresses[index * 2] = cls;
-	  klass->itable->addresses[index * 2 + 1] = (void *)(intptr_t) i;
+	  klass->itable->addresses[index * 2 + 1] = (void *)(unsigned long) i;
 	  if (debug_link)
 	    {
 	      fprintf (stderr, "  interfaces[%d] = %p (interface %s@%p : %s(%s))\n",
@@ -1085,7 +1085,7 @@ _Jv_Linker::link_symbol_table (jclass klass)
 		       (const char*)signature->chars());
 	      fprintf (stderr, "            [%d] = offset %d\n",
 		       index + 1,
-		       (int)(intptr_t)klass->itable->addresses[index * 2 + 1]);
+		       (int)(unsigned long)klass->itable->addresses[index * 2 + 1]);
 	    }
 
 	}
