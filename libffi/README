@@ -1,9 +1,13 @@
-README for libffi-2.00
+This directory contains the libffi package, which is not part of GCC but
+shipped with GCC as convenience.
+
+Status
+======
 
 libffi-2.00 has not been released yet! This is a development snapshot!
 
-libffi-1.20 was released on [SOME FUTURE DAY]. Check the libffi web
-page for updates: <URL:http://sourceware.cygnus.com/libffi/>.
+libffi-1.20 was released on October 5, 1998. Check the libffi web
+page for updates: <URL:http://sources.redhat.com/libffi/>.
 
 
 What is libffi?
