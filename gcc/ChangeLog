@@ -1,3 +1,13 @@
+Mon Nov 16 21:02:52 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_reg_free_before_p): Delete.
+	Changed all callers to use reload_reg_free_for_value_p instead.
+	(reload_reg_free_for_value_p): Handle more reload types.
+	A RELOAD_FOR_INPUT doesn't conflict with its
+	RELOAD_FOR_INPUT_ADDRESS / RELOAD_FOR_INPADDR_ADDRESS.
+	Add special case for OUT == const0_rtx.
+	Added ignore_address_reloads argument.  Changed all callers.
+
 Mon Nov 16 02:22:29 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* toplev.c (compile_file): Don't pedwarn about undefined static
