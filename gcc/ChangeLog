@@ -1,3 +1,9 @@
+Tue Aug 25 19:35:24 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* configure.in (powerpc-ibm-aix4.[12]*): Change from 4.[12].*.
+	(rs6000-ibm-aix4.[12]*): Likewise.
+	* configure: Regnerate.
+
 Thu Aug 27 23:44:49 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reload1.c (forget_old_reloads_1): Keep track of the largest mode
