@@ -741,6 +741,9 @@ enum reg_class
 #define Y_REGNO_P(REGNO)        ((REGNO) == HARD_Y_REGNUM)
 #define Y_REG_P(X)              (REG_P (X) && Y_REGNO_P (REGNO (X)))
 
+#define Z_REGNO_P(REGNO)        ((REGNO) == HARD_Z_REGNUM)
+#define Z_REG_P(X)              (REG_P (X) && Z_REGNO_P (REGNO (X)))
+
 #define SP_REGNO_P(REGNO)       ((REGNO) == HARD_SP_REGNUM)
 #define SP_REG_P(X)             (REG_P (X) && SP_REGNO_P (REGNO (X)))
 
@@ -959,7 +962,7 @@ extern int m68hc11_sp_correction;
 #define ARG_POINTER_REGNUM		SOFT_AP_REGNUM
 
 /* Register in which static-chain is passed to a function.  */
-#define STATIC_CHAIN_REGNUM	        SOFT_REG_FIRST
+#define STATIC_CHAIN_REGNUM	        SOFT_Z_REGNUM
 
 
 /* Definitions for register eliminations.
@@ -1001,8 +1004,6 @@ extern int m68hc11_sp_correction;
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
     { OFFSET = m68hc11_initial_elimination_offset (FROM, TO); }
-
-/* LONGJMP_RESTORE_FROM_STACK */
 
 
 /* Passing Function Arguments on the Stack.  */
@@ -1210,21 +1211,17 @@ typedef struct m68hc11_args
     asm ("puly");	       \
   }
 
-/* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.  */
-#define TRAMPOLINE_TEMPLATE(FILE) { \
-  fprintf (FILE, "\t.bogus\t\t; TRAMPOLINE_TEMPLATE unimplemented\n"); }
-
 /* Length in units of the trampoline for entering a nested function.  */
-#define TRAMPOLINE_SIZE		0
+#define TRAMPOLINE_SIZE		(TARGET_M6811 ? 11 : 9)
 
 /* A C statement to initialize the variable parts of a trampoline.
    ADDR is an RTX for the address of the trampoline; FNADDR is an
    RTX for the address of the nested function; STATIC_CHAIN is an
    RTX for the static chain value that should be passed to the
    function when it is called.  */
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) { \
-	}
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
+  m68hc11_initialize_trampoline ((TRAMP), (FNADDR), (CXT))
+
 
 
 /* If defined, a C expression whose value is nonzero if IDENTIFIER

@@ -39,6 +39,8 @@ extern int m68hc11_block_profiler PARAMS((FILE*,int));
 extern void m68hc11_asm_file_start PARAMS((FILE*, char*));
 
 #ifdef TREE_CODE
+extern void m68hc11_initialize_trampoline PARAMS((rtx, rtx, rtx));
+
 extern void m68hc11_function_arg_advance PARAMS((CUMULATIVE_ARGS*,
                                                  enum machine_mode,
                                                  tree,
