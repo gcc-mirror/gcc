@@ -24,6 +24,7 @@
 #include "tm_p.h"
 #include "insn-config.h"
 #include "recog.h"
+#include "reload.h"
 #include "function.h"
 #include "regs.h"
 #include "hard-reg-set.h"
