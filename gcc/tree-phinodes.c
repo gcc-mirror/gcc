@@ -321,42 +321,41 @@ add_phi_arg (tree *phi, tree def, edge e)
   if (i >= PHI_ARG_CAPACITY (*phi))
     {
       tree old_phi = *phi;
+      basic_block bb;
 
-      /* Resize the phi.  Unfortunately, this may also relocate it.  */
+      /* Resize the phi.  Unfortunately, this will relocate it.  */
       resize_phi_node (phi, ideal_phi_node_len (i + 4));
+
+      /* resize_phi_node will necessarily relocate the phi.  */
+      gcc_assert (*phi != old_phi);
 
       /* The result of the phi is defined by this phi node.  */
       SSA_NAME_DEF_STMT (PHI_RESULT (*phi)) = *phi;
 
-      /* If the PHI was relocated, update the PHI chains appropriately and
-	 release the old PHI node.  */
-      if (*phi != old_phi)
+      /* Extract the basic block for the PHI from the PHI's annotation
+	 rather than the edge.  This works better as the edge's
+	 destination may not currently be the block with the PHI node
+	 if we are in the process of threading the edge to a new
+	 destination.  */
+      bb = bb_for_stmt (*phi);
+
+      release_phi_node (old_phi);
+
+      /* Update the list head if replacing the first listed phi.  */
+      if (phi_nodes (bb) == old_phi)
+	bb_ann (bb)->phi_nodes = *phi;
+      else
 	{
-	  /* Extract the basic block for the PHI from the PHI's annotation
-	     rather than the edge.  This works better as the edge's
-	     destination may not currently be the block with the PHI
-	     node if we are in the process of threading the edge to
-	     a new destination.  */
-	  basic_block bb = bb_for_stmt (*phi);
+	  /* Traverse the list looking for the phi node to chain to.  */
+	  tree p;
 
-	  release_phi_node (old_phi);
+	  for (p = phi_nodes (bb);
+	       p && PHI_CHAIN (p) != old_phi;
+	       p = PHI_CHAIN (p))
+	    ;
 
-	  /* Update the list head if replacing the first listed phi.  */
-	  if (phi_nodes (bb) == old_phi)
-	    bb_ann (bb)->phi_nodes = *phi;
-	  else
-	    {
-	      /* Traverse the list looking for the phi node to chain to.  */
-	      tree p;
-
-	      for (p = phi_nodes (bb);
-		   p && PHI_CHAIN (p) != old_phi;
-		   p = PHI_CHAIN (p))
-		;
-
-	      gcc_assert (p);
-	      PHI_CHAIN (p) = *phi;
-	    }
+	  gcc_assert (p);
+	  PHI_CHAIN (p) = *phi;
 	}
     }
 

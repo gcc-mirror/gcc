@@ -1,3 +1,8 @@
+2004-10-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-phinodes.c (add_phi_arg): Turn an "if" that always
+	triggers into gcc_assert.
+
 2004-10-28  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/16728
