@@ -589,9 +589,17 @@ reload (first, global, dumpfile)
      as homes for pseudo registers.
      This is done here rather than (eg) in global_alloc
      because this point is reached even if not optimizing.  */
-
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
     mark_home_live (i);
+
+  /* A function that receives a nonlocal goto must save all call-saved
+     registers.  */
+  if (current_function_has_nonlocal_label)
+    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+      {
+	if (! call_used_regs[i] && ! fixed_regs[i])
+	  regs_ever_live[i] = 1;
+      }
 
   for (i = 0; i < scratch_list_length; i++)
     if (scratch_list[i])
