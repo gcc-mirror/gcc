@@ -6,7 +6,7 @@ LIB1ASMFUNCS = _divqf3 _divqi3 _udivqi3 _umodqi3 _modqi3 _mulqi3 \
 	_fix_truncqfhi2 _ufix_truncqfhi2 _floathiqf2 _ufloathiqf2 \
 	_floathihf2 _ufloathihf2 _fix_trunchfhi2 _ufix_trunchfhi2 _ffs
 
-TARGET_LIBGCC2_CFLAGS = -Dexit=unused_exit -DDF=HF -DDI=HI -DSF=QF -DSI=QI -Dinhibit_libc
+TARGET_LIBGCC2_CFLAGS = -Dexit=unused_exit
 
 MULTILIB_OPTIONS = m30 msmall mmemparm
 MULTILIB_DIRNAMES = c3x small mem
