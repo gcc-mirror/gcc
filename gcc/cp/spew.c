@@ -1240,7 +1240,7 @@ snarf_defarg ()
   /* Unget the last token.  */
   push_token ((struct token *) (obstack_base (&inline_text_obstack) + point));
   /* This is the documented way to shrink a growing obstack block.  */
-  obstack_blank (&inline_text_obstack, - sizeof (struct token));
+  obstack_blank (&inline_text_obstack, - (int) sizeof (struct token));
 
  done:
   len = obstack_object_size (&inline_text_obstack);
