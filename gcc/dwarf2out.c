@@ -11922,5 +11922,19 @@ dwarf2out_finish ()
       ASM_OUTPUT_SECTION (asm_out_file, ARANGES_SECTION);
       output_aranges ();
     }
+
+  /* At this point, we've switched sections like mad, but we've done
+     so behind the back of varasm.c.  Unfortunately, used
+     named_section to switch sections doesn't work either; GAS 2.9.5
+     is not pleased by:
+
+       .section debug_aranges,"a",@progbits
+
+     on i686-pc-linux-gnu.  
+
+     By calling force_data_section, we get varasm.c synched back up
+     with reality.  That makes subsequent calls to text_section and
+     such make sense.  */
+  force_data_section ();
 }
 #endif /* DWARF2_DEBUGGING_INFO */

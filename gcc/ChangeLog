@@ -1,3 +1,8 @@
+2001-04-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* dwarf2out.c (dwarf2out_finish): Forcibly return to the data
+	section after emitting information.
+
 2001-04-24  Zack Weinberg  <zackw@stanford.edu>
 
 	* Makefile.in (LIB2FUNCS): Remove _varargs and __dummy.
