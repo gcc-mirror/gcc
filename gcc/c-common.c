@@ -31,7 +31,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "expr.h"
 #include "c-common.h"
-#include "tree-inline.h"
 #include "diagnostic.h"
 #include "tm_p.h"
 #include "obstack.h"
@@ -4669,73 +4668,6 @@ boolean_increment (code, arg)
   return val;
 }
 
-/* Common initialization before parsing options.  */
-void
-c_common_init_options (lang)
-     enum c_language_kind lang;
-{
-  c_language = lang;
-  parse_in = cpp_create_reader (lang == clk_c || lang == clk_objective_c
-				? CLK_GNUC89 : CLK_GNUCXX);
-  if (lang == clk_objective_c)
-    cpp_get_options (parse_in)->objc = 1;
-
-  flag_const_strings = (lang == clk_cplusplus);
-  warn_pointer_arith = (lang == clk_cplusplus);
-  if (lang == clk_c)
-    warn_sign_compare = -1;
-
-  /* Mark as "unspecified" (see c_common_post_options).  */
-  flag_bounds_check = -1;
-}
-
-/* Post-switch processing.  */
-bool
-c_common_post_options ()
-{
-  cpp_post_options (parse_in);
-
-  flag_inline_trees = 1;
-
-  /* Use tree inlining if possible.  Function instrumentation is only
-     done in the RTL level, so we disable tree inlining.  */
-  if (! flag_instrument_function_entry_exit)
-    {
-      if (!flag_no_inline)
-	flag_no_inline = 1;
-      if (flag_inline_functions)
-	{
-	  flag_inline_trees = 2;
-	  flag_inline_functions = 0;
-	}
-    }
-
-  /* If still "unspecified", make it match -fbounded-pointers.  */
-  if (flag_bounds_check == -1)
-    flag_bounds_check = flag_bounded_pointers;
-
-  /* Special format checking options don't work without -Wformat; warn if
-     they are used.  */
-  if (warn_format_y2k && !warn_format)
-    warning ("-Wformat-y2k ignored without -Wformat");
-  if (warn_format_extra_args && !warn_format)
-    warning ("-Wformat-extra-args ignored without -Wformat");
-  if (warn_format_zero_length && !warn_format)
-    warning ("-Wformat-zero-length ignored without -Wformat");
-  if (warn_format_nonliteral && !warn_format)
-    warning ("-Wformat-nonliteral ignored without -Wformat");
-  if (warn_format_security && !warn_format)
-    warning ("-Wformat-security ignored without -Wformat");
-  if (warn_missing_format_attribute && !warn_format)
-    warning ("-Wmissing-format-attribute ignored without -Wformat");
-
-  /* If an error has occurred in cpplib, note it so we fail
-     immediately.  */
-  errorcount += cpp_errors (parse_in);
-
-  return flag_preprocess_only;
-}
-
 /* Hook that registers front end and target-specific built-ins.  */
 static void
 cb_register_builtins (pfile)

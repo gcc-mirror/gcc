@@ -109,6 +109,7 @@ The files
 @file{c-common.c},
 @file{c-common.def},
 @file{c-format.c},
+@file{c-opts.c},
 @file{c-pragma.c},
 @file{c-semantics.c},
 and
