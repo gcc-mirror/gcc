@@ -40,10 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #define REGISTER_MOVE_COST(x, y) 2
 #endif
 
-#ifndef MEMORY_MOVE_COST
-#define MEMORY_MOVE_COST(x) 4
-#endif
-
 /* If we have auto-increment or auto-decrement and we can have secondary
    reloads, we are not allowed to use classes requiring secondary
    reloads for pseudos auto-incremented since reload can't handle it.  */
@@ -187,6 +183,14 @@ static int forbidden_inc_dec_class[N_REG_CLASSES];
 static char *in_inc_dec;
 
 #endif /* FORBIDDEN_INC_DEC_CLASSES */
+
+#ifdef HAVE_SECONDARY_RELOADS
+
+/* Sample MEM values for use by memory_move_secondary_cost.  */
+
+static rtx top_of_stack[MAX_MACHINE_MODE];
+
+#endif /* HAVE_SECONDARY_RELOADS */
 
 /* Function called only once to initialize the above data on reg usage.
    Once this is done, various switches may override.  */
@@ -429,7 +433,61 @@ init_regs ()
     init_reg_sets_1 ();
 
   init_reg_modes ();
+
+#ifdef HAVE_SECONDARY_RELOADS
+  {
+    /* Make some fake stack-frame MEM references for use in
+       memory_move_secondary_cost.  */
+    int i;
+    for (i = 0; i < MAX_MACHINE_MODE; i++)
+      top_of_stack[i] = gen_rtx (MEM, i, stack_pointer_rtx);
+  }
+#endif
 }
+
+#ifdef HAVE_SECONDARY_RELOADS
+
+/* Compute extra cost of moving registers to/from memory due to reloads.
+   Only needed if secondary reloads are required for memory moves.  */
+
+int
+memory_move_secondary_cost (mode, class, in)
+     enum machine_mode mode;
+     enum reg_class class;
+     int in;
+{
+  enum reg_class altclass;
+  int partial_cost = 0;
+  /* We need a memory reference to feed to SECONDARY... macros.  */
+  rtx mem = top_of_stack[(int) mode];
+
+  if (in)
+    altclass = SECONDARY_INPUT_RELOAD_CLASS (class, mode, mem);
+  else
+    altclass = SECONDARY_OUTPUT_RELOAD_CLASS (class, mode, mem);
+  if (altclass == NO_REGS)
+    return 0;
+
+  if (in)
+    partial_cost = REGISTER_MOVE_COST (altclass, class);
+  else
+    partial_cost = REGISTER_MOVE_COST (class, altclass);
+
+  if (class == altclass)
+    /* This isn't simply a copy-to-temporary situation.  Can't guess
+       what it is, so MEMORY_MOVE_COST really ought not to be calling
+       here in that case.
+
+       I'm tempted to put in an abort here, but returning this will
+       probably only give poor estimates, which is what we would've
+       had before this code anyways.  */
+    return partial_cost;
+
+  /* Check if the secondary reload register will also need a
+     secondary reload.  */
+  return memory_move_secondary_cost (mode, altclass, in) + partial_cost;
+}
+#endif
 
 /* Return a machine mode that is legitimate for hard reg REGNO and large
    enough to save nregs.  If we can't find one, return VOIDmode.  */
@@ -777,7 +835,8 @@ regclass (f, nregs)
 		      && GET_CODE (XEXP (note, 0)) == MEM)
 		    {
 		      costs[REGNO (SET_DEST (set))].mem_cost
-			-= (MEMORY_MOVE_COST (GET_MODE (SET_DEST (set)))
+			-= (MEMORY_MOVE_COST (GET_MODE (SET_DEST (set)),
+					      GENERAL_REGS, 1)
 			    * loop_cost);
 		      record_address_regs (XEXP (SET_SRC (set), 0),
 					   BASE_REG_CLASS, loop_cost * 2);
@@ -1294,7 +1353,8 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 		     a bit cheaper since we won't need an extra insn to
 		     load it.  */
 
-		  pp->mem_cost = MEMORY_MOVE_COST (mode) - allows_mem;
+		  pp->mem_cost = (MEMORY_MOVE_COST (mode, classes[i], 1)
+				  - allows_mem);
 
 		  /* If we have assigned a class to this register in our
 		     first pass, add a cost to this alternative corresponding
@@ -1332,7 +1392,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	     constant that could be placed into memory.  */
 
 	  else if (CONSTANT_P (op) && allows_mem)
-	    alt_cost += MEMORY_MOVE_COST (mode);
+	    alt_cost += MEMORY_MOVE_COST (mode, classes[i], 1);
 	  else
 	    alt_fail = 1;
 	}
@@ -1449,7 +1509,7 @@ copy_cost (x, mode, class, to_p)
      else (constants).  */
 
   if (GET_CODE (x) == MEM || class == NO_REGS)
-    return MEMORY_MOVE_COST (mode);
+    return MEMORY_MOVE_COST (mode, class, to_p);
 
   else if (GET_CODE (x) == REG)
     return move_cost[(int) REGNO_REG_CLASS (REGNO (x))][(int) class];
@@ -1613,7 +1673,7 @@ record_address_regs (x, class, scale)
 	register struct costs *pp = &costs[REGNO (x)];
 	register int i;
 
-	pp->mem_cost += (MEMORY_MOVE_COST (Pmode) * scale) / 2;
+	pp->mem_cost += (MEMORY_MOVE_COST (Pmode, class, 1) * scale) / 2;
 
 	for (i = 0; i < N_REG_CLASSES; i++)
 	  pp->cost[i] += (may_move_cost[i][(int) class] * scale) / 2;
