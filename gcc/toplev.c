@@ -3547,12 +3547,16 @@ rest_of_compilation (decl)
 
   if (optimize)
     {
-      TIMEVAR
-	(flow2_time,
-	 {
-	   cleanup_cfg (insns);
-	   life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
-	 });
+      TIMEVAR (flow2_time, { cleanup_cfg (insns); });
+
+#ifndef ACCUMULATE_OUTGOING_ARGS
+      TIMEVAR (flow2_time, { combine_stack_adjustments (); });
+#endif
+
+      TIMEVAR (flow2_time, 
+	       {
+		 life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
+	       });
 
       if (ggc_p)
 	ggc_collect ();

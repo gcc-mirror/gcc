@@ -1,3 +1,15 @@
+2000-03-14  Richard Henderson  <rth@cygnus.com>
+
+	* regmove.c (combine_stack_adjustments): New.
+	(stack_memref_p, single_set_for_csa): New.
+	(free_csa_memlist, record_one_stack_memref): New.
+	(try_apply_stack_adjustment): New.
+	(combine_stack_adjustments_for_block): New.
+	* rtl.h (combine_stack_adjustments): Declare.
+	* toplev.c (rest_of_compilation): Call it.
+
+	* i386.md: Revert 2000-01-16 change.
+
 2000-03-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* gccbug.in: Add web category, gcc specific classes.
@@ -370,8 +382,8 @@ Thu Mar  9 20:01:38 2000  Jim Wilson  <wilson@cygnus.com>
 
 Thu Mar  9 18:10:02 2000  Jeffrey A Law  (law@cygnus.com)
 
-        * config/pa/pa-hpux10.h (LIB_SPEC): Correct typo in !p case.
-        (MD_STARTFILE_PREFIX_1): New macro.
+	* config/pa/pa-hpux10.h (LIB_SPEC): Correct typo in !p case.
+	(MD_STARTFILE_PREFIX_1): New macro.
 
 2000-03-09  Robert Lipe  <robertl@sco.com>
 
@@ -1483,7 +1495,7 @@ Mon Feb 28 21:07:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(SET_DEFAULT_TYPE_ATTRIBUTES): Define.
 
 	* config/arm/arm.md (call): Call arm_is_longcall_p to decide
-        if a long call is needed.
+	if a long call is needed.
 	(call_value): Ditto.
 	(call_symbol): Ditto.
 
