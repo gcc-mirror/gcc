@@ -130,8 +130,8 @@ Boston, MA 02111-1307, USA.  */
    different pseudo-op names for these, they may be overridden in the
    file which includes this one.  */
 
-#define TYPE_ASM_OP	".type"
-#define SIZE_ASM_OP	".size"
+#define TYPE_ASM_OP	"\t.type\t"
+#define SIZE_ASM_OP	"\t.size\t"
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  Different svr4 assemblers
@@ -249,4 +249,4 @@ do {                                                                    \
 /* This is the pseudo-op used to generate a 32-bit word of data with a
    specific value in some section.  */
 
-#define INT_ASM_OP ".long"
+#define INT_ASM_OP "\t.long\t"

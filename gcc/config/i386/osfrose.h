@@ -615,9 +615,9 @@ while (0)
    different pseudo-op names for these, they may be overridden in the
    file which includes this one.  */
 
-#define TYPE_ASM_OP	".type"
-#define SIZE_ASM_OP	".size"
-#define SET_ASM_OP	".set"
+#define TYPE_ASM_OP	"\t.type\t"
+#define SIZE_ASM_OP	"\t.size\t"
+#define SET_ASM_OP	"\t.set\t"
 
 /* This is how we tell the assembler that a symbol is weak.  */
 
@@ -745,7 +745,7 @@ while (0)
    .ident string is patterned after the ones produced by native svr4
    C compilers.  */
 
-#define IDENT_ASM_OP ".ident"
+#define IDENT_ASM_OP "\t.ident\t"
 
 /* Allow #sccs in preprocessor.  */
 

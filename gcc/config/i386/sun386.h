@@ -1,5 +1,5 @@
 /* Definitions for Sun assembler syntax for the Intel 80386.
-   Copyright (C) 1988, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Assembler pseudos to introduce constants of various size.  */
 
-#define ASM_BYTE_OP "\t.byte"
+#define ASM_BYTE_OP "\t.byte\t"
 #define ASM_SHORT "\t.value"
 #define ASM_LONG "\t.long"
 #define ASM_DOUBLE "\t.double"
@@ -97,12 +97,12 @@ do								\
 /* Output before read-only data.  */
 
 #undef TEXT_SECTION_ASM_OP
-#define TEXT_SECTION_ASM_OP ".text"
+#define TEXT_SECTION_ASM_OP "\t.text"
 
 /* Output before writable data.  */
 
 #undef DATA_SECTION_ASM_OP
-#define DATA_SECTION_ASM_OP ".data"
+#define DATA_SECTION_ASM_OP "\t.data"
 
 /* Define the syntax of labels and symbol definitions/declarations.  */
 

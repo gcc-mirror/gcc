@@ -137,4 +137,4 @@ Boston, MA 02111-1307, USA.  */
 /* This is the pseudo-op used to generate a 32-bit word of data with a
    specific value in some section.  */
 
-#define INT_ASM_OP ".long"
+#define INT_ASM_OP "\t.long\t"

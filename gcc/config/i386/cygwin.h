@@ -532,10 +532,10 @@ extern void i386_pe_asm_file_end STDIO_PARAMS ((FILE *));
 
 /* Enable alias attribute support.  */
 #ifndef SET_ASM_OP
-#define SET_ASM_OP "\t.set"
+#define SET_ASM_OP "\t.set\t"
 #endif
 
 #ifndef INT_ASM_OP
-#define INT_ASM_OP ".long"
+#define INT_ASM_OP "\t.long\t"
 #endif
 

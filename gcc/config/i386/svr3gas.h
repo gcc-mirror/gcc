@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running system V, using gas.
-   Copyright (C) 1992, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1996, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -105,9 +105,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define USE_CONST_SECTION	0
 
-#define INIT_SECTION_ASM_OP     ".section\t.init"
-#define FINI_SECTION_ASM_OP     ".section .fini,\"x\""
-#define CONST_SECTION_ASM_OP	".section\t.rodata, \"x\""
+#define INIT_SECTION_ASM_OP     "\t.section\t.init"
+#define FINI_SECTION_ASM_OP     "\t.section .fini,\"x\""
+#define CONST_SECTION_ASM_OP	"\t.section\t.rodata, \"x\""
 #define CTORS_SECTION_ASM_OP	INIT_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP    FINI_SECTION_ASM_OP
 
@@ -276,7 +276,7 @@ dtors_section ()							\
    constructor.  */
 
 #undef INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP     ".section .init,\"x\""
+#define INIT_SECTION_ASM_OP     "\t.section .init,\"x\""
 
 #define CTOR_LIST_BEGIN				\
   asm (INIT_SECTION_ASM_OP);			\

@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "i386/sysv4.h"
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.10 $"
+#define VERSION_INFO2   "$Revision: 1.11 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -251,4 +251,4 @@ Boston, MA 02111-1307, USA.  */
 
 /* Add .align 1 to avoid .backalign bug in assembler */
 #undef CONST_SECTION_ASM_OP
-#define CONST_SECTION_ASM_OP    ".section\t.rodata\n\t.align 1"
+#define CONST_SECTION_ASM_OP    "\t.section\t.rodata\n\t.align 1"

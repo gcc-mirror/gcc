@@ -30,28 +30,28 @@ Boston, MA 02111-1307, USA.  */
 #define LPREFIX				".L"
 
 #undef ALIGN_ASM_OP
-#define ALIGN_ASM_OP			"\t.align"
+#define ALIGN_ASM_OP			"\t.align\t"
 
 #undef ASCII_DATA_ASM_OP
-#define ASCII_DATA_ASM_OP		"\t.ascii"
+#define ASCII_DATA_ASM_OP		"\t.ascii\t"
 
 #undef ASM_BYTE_OP
-#define ASM_BYTE_OP			"\t.byte"
+#define ASM_BYTE_OP			"\t.byte\t"
 
 #undef IDENT_ASM_OP
-#define IDENT_ASM_OP			"\t.ident"
+#define IDENT_ASM_OP			"\t.ident\t"
 
 #undef COMMON_ASM_OP
-#define COMMON_ASM_OP			"\t.comm"
+#define COMMON_ASM_OP			"\t.comm\t"
 
 #undef SET_ASM_OP
-#define SET_ASM_OP			"\t.set"
+#define SET_ASM_OP			"\t.set\t"
 
 #undef LOCAL_ASM_OP
-#define LOCAL_ASM_OP			"\t.local"
+#define LOCAL_ASM_OP			"\t.local\t"
 
 #undef INT_ASM_OP
-#define INT_ASM_OP			"\t.long"
+#define INT_ASM_OP			"\t.long\t"
 
 #undef ASM_SHORT
 #define ASM_SHORT			"\t.value"
@@ -63,19 +63,19 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_DOUBLE			"\t.double"
 
 #undef TYPE_ASM_OP
-#define TYPE_ASM_OP			"\t.type"
+#define TYPE_ASM_OP			"\t.type\t"
 
 #undef SIZE_ASM_OP
-#define SIZE_ASM_OP			"\t.size"
+#define SIZE_ASM_OP			"\t.size\t"
 
 #undef STRING_ASM_OP
-#define STRING_ASM_OP			"\t.string"
+#define STRING_ASM_OP			"\t.string\t"
 
 #undef SKIP_ASM_OP
-#define SKIP_ASM_OP			"\t.zero"
+#define SKIP_ASM_OP			"\t.zero\t"
 
 #undef GLOBAL_ASM_OP
-#define GLOBAL_ASM_OP			"\t.globl"
+#define GLOBAL_ASM_OP			"\t.globl\t"
 
 #undef EH_FRAME_SECTION_ASM_OP
 #define EH_FRAME_SECTION_ASM_OP_COFF	"\t.section\t.ehfram, \"x\""

@@ -1,7 +1,7 @@
 /* Definitions for "naked" Intel 386 using coff object format files
    and coff debugging info.
 
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -39,8 +39,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* Support the ctors and dtors sections for g++.  */
 
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,\"x\""
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,\"x\""
+#define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"x\""
+#define DTORS_SECTION_ASM_OP	"\t.section\t.dtors,\"x\""
 
 /* A list of other sections which the compiler might be "in" at any
    given time.  */
@@ -77,7 +77,7 @@ dtors_section ()							\
     }									\
 }
 
-#define INT_ASM_OP ".long"
+#define INT_ASM_OP "\t.long\t"
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */

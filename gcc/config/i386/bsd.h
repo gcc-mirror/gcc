@@ -1,7 +1,7 @@
 /* Definitions for BSD assembler syntax for Intel 386
    (actually AT&T syntax for insns and operands,
    adapted to BSD conventions for symbol names and debugging.)
-   Copyright (C) 1988, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Assembler pseudos to introduce constants of various size.  */
 
-#define ASM_BYTE_OP "\t.byte"
+#define ASM_BYTE_OP "\t.byte\t"
 #define ASM_SHORT "\t.word"
 #define ASM_LONG "\t.long"
 #define ASM_DOUBLE "\t.double"
