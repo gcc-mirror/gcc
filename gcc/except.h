@@ -191,6 +191,13 @@ int new_eh_region_entry                         PROTO((int));
 
 void add_new_handler                       PROTO((int, struct handler_info *));
 
+/* Remove a handler label. The handler label is being deleted, so all
+   regions which reference this handler should have it removed from their
+   list of possible handlers. Any region which has the final handler
+   removed can be deleted. */
+
+void remove_handler                        PROTO((rtx));
+
 /* Create a new handler structure initialized with the handler label and
    typeinfo fields passed in. */
 

@@ -754,6 +754,34 @@ add_new_handler (region, newhandler)
     }
 }
 
+/* Remove a handler label. The handler label is being deleted, so all
+   regions which reference this handler should have it removed from their
+   list of possible handlers. Any region which has the final handler
+   removed can be deleted. */
+
+void remove_handler (removing_label)
+     rtx removing_label;
+{
+  struct handler_info *handler, *last;
+  int x;
+  for (x = 0 ; x < current_func_eh_entry; ++x)
+    {
+      last = NULL;
+      handler = function_eh_regions[x].handlers;
+      for ( ; handler; last = handler, handler = handler->next)
+        if (handler->handler_label == removing_label)
+          {
+            if (last)
+              {
+                last->next = handler->next;
+                handler = last;
+              }
+            else
+              function_eh_regions[x].handlers = handler->next;
+          }
+    }
+}
+
 /* Create a new handler structure initialized with the handler label and
    typeinfo fields passed in. */
 

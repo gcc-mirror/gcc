@@ -1,3 +1,11 @@
+Thu May 28 10:22:22 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* except.h (remove_handler): Add new prototype.
+	* except.c (remove_handler): New function to remove handlers
+	from an exception region.
+	* flow.c (find_basic_blocks_1): Remove handlers from regions when
+	handler label is deleted; remove exception regions with no handlers.
+
 Thu May 28 09:36:39 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* except.h (rtx): Define rtx type correctly if needed.
