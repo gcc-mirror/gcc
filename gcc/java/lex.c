@@ -850,11 +850,13 @@ java_lex (java_lval)
 	  /* 2147483648 is valid if operand of a '-'. Otherwise,
 	     2147483647 is the biggest `int' literal that can be
 	     expressed using a 10 radix. For other radixes, everything
-	     that fits within 32 bits is OK. */
+	     that fits within 32 bits is OK.  As all literals are
+	     signed, we sign extend here. */
 	  int hb = (low >> 31) & 0x1;
 	  if (overflow || high || (hb && low & 0x7fffffff && radix == 10) ||
 	      (hb && !(low & 0x7fffffff) && !ctxp->minus_seen && radix == 10))
 	    JAVA_INTEGRAL_RANGE_ERROR ("Numeric overflow for `int' literal");
+	  high = -hb;
 	}
       ctxp->minus_seen = 0;
       SET_LVAL_NODE_TYPE (build_int_2 (low, high),
