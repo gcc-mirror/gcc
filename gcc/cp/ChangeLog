@@ -1,5 +1,19 @@
 2003-06-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* cp-tree.h (language_to_string): Adjust declaration.
+	* dump.c (cp_dump_tree): Adjust usage.
+	* error.c (dump_char): Use output_formatted_scalar. Tidy.
+	(parm_to_string): Lose unused parameter.  Tidy.
+	(expr_to_string): Likewise.
+	(code_to_string): Likewise.
+	(language_to_string): Likewise.
+	(op_to_string): Likewise.
+	(assop_to_string): Likewise.
+	(digit_buffer): Remove.
+	(dump_type): Format builtin vector type as __vector__.
+
+2003-06-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* error.c (print_integer): Remove.
 	(dump_type_suffix): Adjust.
 	(dump_expr): Likewise.

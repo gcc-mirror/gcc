@@ -3820,7 +3820,7 @@ extern const char *decl_as_string		(tree, int);
 extern const char *expr_as_string		(tree, int);
 extern const char *context_as_string            (tree, int);
 extern const char *lang_decl_name		(tree, int);
-extern const char *language_to_string           (enum languages, int);
+extern const char *language_to_string           (enum languages);
 extern void print_instantiation_context         (void);
 
 /* in except.c */

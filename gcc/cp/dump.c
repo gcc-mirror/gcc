@@ -214,7 +214,7 @@ cp_dump_tree (void* dump_info, tree t)
   if (DECL_P (t))
     {
       if (DECL_LANG_SPECIFIC (t) && DECL_LANGUAGE (t) != lang_cplusplus)
-	dump_string (di, language_to_string (DECL_LANGUAGE (t), 0));
+	dump_string (di, language_to_string (DECL_LANGUAGE (t)));
     }
 
   switch (code)
