@@ -967,7 +967,8 @@ merge_memattrs (rtx x, rtx y)
 	      set_mem_offset (y, 0);
 	    }
 	  
-	  set_mem_size (x, MAX (MEM_SIZE (x), MEM_SIZE (y)));
+	  set_mem_size (x, GEN_INT (MAX (INTVAL (MEM_SIZE (x)),
+					 INTVAL (MEM_SIZE (y)))));
 	  set_mem_size (y, MEM_SIZE (x));
 
 	  set_mem_align (x, MIN (MEM_ALIGN (x), MEM_ALIGN (y)));

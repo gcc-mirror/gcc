@@ -1,3 +1,8 @@
+2004-08-30  Steven Bosscher  <stevenb@suse.de>
+
+	* cfgcleanup.c (merge_memattrs): Look at the value of MEM_SIZE,
+	not the pointers.
+
 2004-08-30  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 12738
