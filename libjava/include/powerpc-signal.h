@@ -11,17 +11,15 @@ details.  */
 
 
 #ifndef JAVA_SIGNAL_H
-# define JAVA_SIGNAL_H 1
+#define JAVA_SIGNAL_H 1
 
-# ifndef __powerpc64__
+#include <signal.h>
+#include <sys/syscall.h>
 
-#  include <signal.h>
-#  include <sys/syscall.h>
+#define HANDLE_SEGV 1
+#undef HANDLE_FPE
 
-#  define HANDLE_SEGV 1
-#  undef HANDLE_FPE
-
-#  define SIGNAL_HANDLER(_name)						\
+#define SIGNAL_HANDLER(_name)						\
   static void _name (int /* _signal */, struct sigcontext *_sc)
 
 /* PPC either leaves PC pointing at a faulting instruction or the
@@ -29,7 +27,7 @@ details.  */
    the former, so we adjust the saved PC to point to the following
    instruction. This is what the handler in libgcc expects.  */
 
-#  define MAKE_THROW_FRAME(_exception)					\
+#define MAKE_THROW_FRAME(_exception)					\
 do									\
   {									\
     _sc->regs->nip += 4;						\
@@ -53,6 +51,7 @@ while (0)
    compatibility hacks in MAKE_THROW_FRAME, as the ucontext layout
    on PPC changed during the 2.5 kernel series.  */
 
+#ifndef __powerpc64__
 struct kernel_old_sigaction {
   void (*k_sa_handler) (int, struct sigcontext *);
   unsigned long k_sa_mask;
@@ -60,35 +59,61 @@ struct kernel_old_sigaction {
   void (*k_sa_restorer) (void);
 };
 
-#  define INIT_SEGV							\
+#define INIT_SEGV							\
 do									\
   {									\
     struct kernel_old_sigaction kact;					\
     kact.k_sa_handler = catch_segv;					\
     kact.k_sa_mask = 0;							\
     kact.k_sa_flags = 0;						\
-    syscall (SYS_sigaction, SIGSEGV, &kact, NULL);			\
+    if (syscall (SYS_sigaction, SIGSEGV, &kact, NULL) != 0)		\
+      __asm__ __volatile__ (".long 0");					\
   }									\
 while (0)  
 
-#  define INIT_FPE							\
+#define INIT_FPE							\
 do									\
   {									\
     struct kernel_old_sigaction kact;					\
     kact.k_sa_handler = catch_fpe;					\
     kact.k_sa_mask = 0;							\
     kact.k_sa_flags = 0;						\
-    syscall (SYS_sigaction, SIGFPE, &kact, NULL);			\
+    if (syscall (SYS_sigaction, SIGFPE, &kact, NULL) != 0)		\
+      __asm__ __volatile__ (".long 0");					\
   }									\
 while (0)
 
-# else
+#else /* powerpc64 */
 
-#  undef HANDLE_SEGV
-#  undef HANDLE_FPE
+struct kernel_sigaction
+{
+  void (*k_sa_handler) (int, struct sigcontext *);
+  unsigned long k_sa_flags;
+  void (*k_sa_restorer)(void);
+  unsigned long k_sa_mask;
+};
 
-#  define INIT_SEGV   do {} while (0)
-#  define INIT_FPE   do {} while (0)
-# endif
+#define INIT_SEGV							\
+do									\
+  {									\
+    struct kernel_sigaction kact;					\
+    memset (&kact, 0, sizeof (kact));					\
+    kact.k_sa_handler = catch_segv;					\
+    if (syscall (SYS_rt_sigaction, SIGSEGV, &kact, NULL, 8) != 0)	\
+      __asm__ __volatile__ (".long 0");					\
+  }									\
+while (0)  
+
+#define INIT_FPE							\
+do									\
+  {									\
+    struct kernel_sigaction kact;					\
+    memset (&kact, 0, sizeof (kact));					\
+    kact.k_sa_handler = catch_fpe;					\
+    if (syscall (SYS_rt_sigaction, SIGFPE, &kact, NULL, 8) != 0)	\
+      __asm__ __volatile__ (".long 0");					\
+  }									\
+while (0)
+#endif
 
 #endif /* JAVA_SIGNAL_H */
