@@ -1,5 +1,16 @@
 2004-08-26  Richard Henderson  <rth@redhat.com>
 
+	* c-typeck.c (build_offsetof): Remove.
+	* c-tree.h (build_offsetof): Remove.
+	* c-common.c (fold_offsetof_1, fold_offsetof): New.
+	* c-common.h (fold_offsetof): Declare.
+	* c-parse.in (offsetof_base): New.
+	(offsetof_member_designator): Use it.  Build references, not just
+	a tree list.
+	(primary): Use fold_offsetof, not build_offsetof.
+
+2004-08-26  Richard Henderson  <rth@redhat.com>
+
 	* tree.c (staticp): Return the static object.
 	* tree.h (staticp): Update decl.
 	* langhooks.h (struct lang_hooks): Change staticp return type to tree.

@@ -275,6 +275,9 @@ static GTY(()) tree all_prefix_attributes;
    all_prefix_attributes.  */
 static GTY(()) tree declspec_stack;
 
+/* INDIRECT_REF with a TREE_TYPE of the type being queried for offsetof.  */
+static tree offsetof_base;
+
 /* PUSH_DECLSPEC_STACK is called from setspecs; POP_DECLSPEC_STACK
    should be called from the productions making use of setspecs.  */
 #define PUSH_DECLSPEC_STACK						 \
@@ -681,8 +684,15 @@ primary:
 		{ $$.value = build_va_arg ($3.value, groktypename ($5));
 		  $$.original_code = ERROR_MARK; }
 
-	| OFFSETOF '(' typename ',' offsetof_member_designator ')'
-		{ $$.value = build_offsetof (groktypename ($3), $5);
+	| OFFSETOF '(' typename ','
+		{ tree type = groktypename ($3);
+		  if (type == error_mark_node)
+		    offsetof_base = error_mark_node;
+		  else
+		    offsetof_base = build1 (INDIRECT_REF, type, NULL);
+		}
+	  offsetof_member_designator ')'
+		{ $$.value = fold_offsetof ($6);
 		  $$.original_code = ERROR_MARK; }
 	| OFFSETOF '(' error ')'
 		{ $$.value = error_mark_node; $$.original_code = ERROR_MARK; }
@@ -753,17 +763,15 @@ primary:
 
 /* This is the second argument to __builtin_offsetof.  We must have one
    identifier, and beyond that we want to accept sub structure and sub
-   array references.  We return tree list where each element has
-   PURPOSE set for component refs or VALUE set for array refs.  We'll
-   turn this into something real inside build_offsetof.  */
+   array references.  */
 
 offsetof_member_designator:
 	  identifier
-		{ $$ = tree_cons ($1, NULL_TREE, NULL_TREE); }
+		{ $$ = build_component_ref (offsetof_base, $1); }
 	| offsetof_member_designator '.' identifier
-		{ $$ = tree_cons ($3, NULL_TREE, $1); }
+		{ $$ = build_component_ref ($1, $3); }
 	| offsetof_member_designator '[' expr ']'
-		{ $$ = tree_cons (NULL_TREE, $3.value, $1); }
+		{ $$ = build_array_ref ($1, $3.value); }
 	;
 
 old_style_parm_decls:

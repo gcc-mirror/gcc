@@ -277,7 +277,6 @@ extern tree c_finish_return (tree);
 extern tree c_finish_bc_stmt (tree *, bool);
 extern tree c_finish_goto_label (tree);
 extern tree c_finish_goto_ptr (tree);
-extern tree build_offsetof (tree, tree);
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
