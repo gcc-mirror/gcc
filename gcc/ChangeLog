@@ -1,3 +1,10 @@
+2003-06-22  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* diagnostic.h (output_host_wide_integer): Declare.
+	* diagnostic.c (output_long_long_decicaml): New function.
+	(output_host_wide_integer): Likewise.
+	(output_format): Use them.  Handle "%ll" and "%w".
+
 2003-06-21  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (*-*-netbsd*): Add t-libgcc-pic to tmake_file.

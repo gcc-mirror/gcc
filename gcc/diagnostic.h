@@ -315,6 +315,7 @@ extern int output_space_left (const output_buffer *);
 extern void output_append (output_buffer *, const char *, const char *);
 extern void output_add_character (output_buffer *, int);
 extern void output_decimal (output_buffer *, int);
+extern void output_host_wide_integer (output_buffer *, HOST_WIDE_INT);
 extern void output_add_string (output_buffer *, const char *);
 extern void output_add_identifier (output_buffer *, tree);
 extern const char *output_finalize_message (output_buffer *);
