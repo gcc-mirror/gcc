@@ -101,9 +101,8 @@ static rtx expand_builtin_next_arg	PARAMS ((tree));
 static rtx expand_builtin_va_start	PARAMS ((int, tree));
 static rtx expand_builtin_va_end	PARAMS ((tree));
 static rtx expand_builtin_va_copy	PARAMS ((tree));
-#ifdef HAVE_cmpstrsi
-static rtx expand_builtin_memcmp	PARAMS ((tree, tree, rtx));
-#endif
+static rtx expand_builtin_memcmp	PARAMS ((tree, tree, rtx,
+                                                 enum machine_mode));
 static rtx expand_builtin_strcmp	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_strncmp	PARAMS ((tree, rtx,
@@ -118,15 +117,18 @@ static rtx expand_builtin_strspn	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_strcspn	PARAMS ((tree, rtx,
 						 enum machine_mode));
-static rtx expand_builtin_memcpy	PARAMS ((tree));
-static rtx expand_builtin_strcpy	PARAMS ((tree));
+static rtx expand_builtin_memcpy	PARAMS ((tree, rtx,
+                                                 enum machine_mode));
+static rtx expand_builtin_strcpy	PARAMS ((tree, rtx,
+                                                 enum machine_mode));
 static rtx builtin_strncpy_read_str	PARAMS ((PTR, HOST_WIDE_INT,
 						 enum machine_mode));
 static rtx expand_builtin_strncpy	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx builtin_memset_read_str	PARAMS ((PTR, HOST_WIDE_INT,
 						 enum machine_mode));
-static rtx expand_builtin_memset	PARAMS ((tree));
+static rtx expand_builtin_memset	PARAMS ((tree, rtx,
+                                                 enum machine_mode));
 static rtx expand_builtin_bzero		PARAMS ((tree));
 static rtx expand_builtin_strlen	PARAMS ((tree, rtx));
 static rtx expand_builtin_strstr	PARAMS ((tree, rtx,
@@ -1910,11 +1912,16 @@ builtin_memcpy_read_str (data, offset, mode)
   return c_readstr (str + offset, mode);
 }
 
-/* Expand a call to the memcpy builtin, with arguments in ARGLIST.  */
+/* Expand a call to the memcpy builtin, with arguments in ARGLIST.
+   Return 0 if we failed, the caller should emit a normal call, otherwise
+   try to get the result in TARGET, if convenient (and in mode MODE if
+   that's convenient).  */
 
 static rtx
-expand_builtin_memcpy (arglist)
+expand_builtin_memcpy (arglist, target, mode)
      tree arglist;
+     rtx target;
+     enum machine_mode mode;
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -1931,10 +1938,22 @@ expand_builtin_memcpy (arglist)
 	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
       rtx dest_mem, src_mem, dest_addr, len_rtx;
 
-      /* If either SRC or DEST is not a pointer type, don't do
-	 this operation in-line.  */
-      if (src_align == 0 || dest_align == 0)
-	return 0;
+      /* If DEST is not a pointer type, call the normal function.  */
+      if (dest_align == 0)
+        return 0;
+
+      /* If the LEN parameter is zero, return DEST.  */
+      if (host_integerp (len, 1) && tree_low_cst (len, 1) == 0)
+        {
+          /* Evaluate and ignore SRC in case it has side-effects.  */
+          expand_expr (src, const0_rtx, VOIDmode, EXPAND_NORMAL);
+          return expand_expr (dest, target, mode, EXPAND_NORMAL);
+        }
+
+      /* If either SRC is not a pointer type, don't do this
+         operation in-line.  */
+      if (src_align == 0)
+        return 0;
 
       dest_mem = get_memory_rtx (dest);
       set_mem_align (dest_mem, dest_align);
@@ -1970,33 +1989,34 @@ expand_builtin_memcpy (arglist)
 }
 
 /* Expand expression EXP, which is a call to the strcpy builtin.  Return 0
-   if we failed the caller should emit a normal call.  */
+   if we failed the caller should emit a normal call, otherwise try to get
+   the result in TARGET, if convenient (and in mode MODE if that's
+   convenient).  */
 
 static rtx
-expand_builtin_strcpy (exp)
+expand_builtin_strcpy (exp, target, mode)
      tree exp;
+     rtx target;
+     enum machine_mode mode;
 {
   tree arglist = TREE_OPERAND (exp, 1);
-  rtx result;
+  tree fn, len;
 
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     return 0;
-  else
-    {
-      tree len = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)));
 
-      if (len == 0)
-	return 0;
+  fn = built_in_decls[BUILT_IN_MEMCPY];
+  if (!fn)
+    return 0;
 
-      len = size_binop (PLUS_EXPR, len, ssize_int (1));
-      chainon (arglist, build_tree_list (NULL_TREE, len));
-    }
+  len = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)));
+  if (len == 0)
+    return 0;
 
-  result = expand_builtin_memcpy (arglist);
-
-  if (! result)
-    TREE_CHAIN (TREE_CHAIN (arglist)) = 0;
-  return result;
+  len = size_binop (PLUS_EXPR, len, ssize_int (1));
+  chainon (arglist, build_tree_list (NULL_TREE, len));
+  return expand_expr (build_function_call_expr (fn, arglist),
+                      target, mode, EXPAND_NORMAL);
 }
 
 /* Callback routine for store_by_pieces.  Read GET_MODE_BITSIZE (MODE)
@@ -2033,6 +2053,7 @@ expand_builtin_strncpy (arglist, target, mode)
     {
       tree slen = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)));
       tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      tree fn;
 
       /* We must be passed a constant len parameter.  */
       if (TREE_CODE (len) != INTEGER_CST)
@@ -2081,7 +2102,11 @@ expand_builtin_strncpy (arglist, target, mode)
 	}
 
       /* OK transform into builtin memcpy.  */
-      return expand_builtin_memcpy (arglist);
+      fn = built_in_decls[BUILT_IN_MEMCPY];
+      if (!fn)
+        return 0;
+      return expand_expr (build_function_call_expr (fn, arglist),
+                          target, mode, EXPAND_NORMAL);
     }
 }
 
@@ -2104,11 +2129,15 @@ builtin_memset_read_str (data, offset, mode)
 }
 
 /* Expand expression EXP, which is a call to the memset builtin.  Return 0
-   if we failed the caller should emit a normal call.  */
+   if we failed the caller should emit a normal call, otherwise try to get
+   the result in TARGET, if convenient (and in mode MODE if that's
+   convenient).  */
 
 static rtx
-expand_builtin_memset (exp)
+expand_builtin_memset (exp, target, mode)
      tree exp;
+     rtx target;
+     enum machine_mode mode;
 {
   tree arglist = TREE_OPERAND (exp, 1);
 
@@ -2130,6 +2159,14 @@ expand_builtin_memset (exp)
 	 operation in-line.  */
       if (dest_align == 0)
 	return 0;
+
+      /* If the LEN parameter is zero, return DEST.  */
+      if (host_integerp (len, 1) && tree_low_cst (len, 1) == 0)
+        {
+          /* Evaluate and ignore VAL in case it has side-effects.  */
+          expand_expr (val, const0_rtx, VOIDmode, EXPAND_NORMAL);
+          return expand_expr (dest, target, mode, EXPAND_NORMAL);
+        }
 
       if (TREE_CODE (val) != INTEGER_CST)
 	return 0;
@@ -2184,14 +2221,16 @@ expand_builtin_bzero (exp)
   size = TREE_VALUE (TREE_CHAIN (arglist));
 
   /* New argument list transforming bzero(ptr x, int y) to
-     memset(ptr x, int 0, size_t y).  */
+     memset(ptr x, int 0, size_t y).   This is done this way
+     so that if it isn't expanded inline, we fallback to
+     calling bzero instead of memset.  */
 
   newarglist = build_tree_list (NULL_TREE, convert (sizetype, size));
   newarglist = tree_cons (NULL_TREE, integer_zero_node, newarglist);
   newarglist = tree_cons (NULL_TREE, dest, newarglist);
 
   TREE_OPERAND (exp, 1) = newarglist;
-  result = expand_builtin_memset(exp);
+  result = expand_builtin_memset (exp, const0_rtx, VOIDmode);
 
   /* Always restore the original arguments.  */
   TREE_OPERAND (exp, 1) = arglist;
@@ -2199,28 +2238,58 @@ expand_builtin_bzero (exp)
   return result;
 }
 
-#ifdef HAVE_cmpstrsi
-
 /* Expand expression EXP, which is a call to the memcmp or the strcmp builtin.
    ARGLIST is the argument list for this call.  Return 0 if we failed and the
    caller should emit a normal call, otherwise try to get the result in
-   TARGET, if convenient.  */
+   TARGET, if convenient (and in mode MODE, if that's convenient).  */
 
 static rtx
-expand_builtin_memcmp (exp, arglist, target)
+expand_builtin_memcmp (exp, arglist, target, mode)
      tree exp;
      tree arglist;
      rtx target;
+     enum machine_mode mode;
 {
+  tree arg1, arg2, len;
+
   if (!validate_arglist (arglist,
 		      POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
 
+  arg1 = TREE_VALUE (arglist);
+  arg2 = TREE_VALUE (TREE_CHAIN (arglist));
+  len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+  /* If the len parameter is zero, return zero.  */
+  if (host_integerp (len, 1) && tree_low_cst (len, 1) == 0)
+    {
+      /* Evaluate and ignore arg1 and arg2 in case they have
+         side-effects.  */
+      expand_expr (arg1, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      expand_expr (arg2, const0_rtx, VOIDmode, EXPAND_NORMAL);
+      return const0_rtx;
+    }
+
+  /* If len parameter is one, return an expression corresponding to
+     (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
+  if (host_integerp (len, 1) && tree_low_cst (len, 1) == 1)
+    {
+      tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
+      tree cst_uchar_ptr_node = build_pointer_type (cst_uchar_node);
+      tree ind1 =
+      fold (build1 (CONVERT_EXPR, integer_type_node,
+                    build1 (INDIRECT_REF, cst_uchar_node,
+                            build1 (NOP_EXPR, cst_uchar_ptr_node, arg1))));
+      tree ind2 =
+      fold (build1 (CONVERT_EXPR, integer_type_node,
+                    build1 (INDIRECT_REF, cst_uchar_node,
+                            build1 (NOP_EXPR, cst_uchar_ptr_node, arg2))));
+      tree result = fold (build (MINUS_EXPR, integer_type_node, ind1, ind2));
+      return expand_expr (result, target, mode, EXPAND_NORMAL);
+    }
+
+#ifdef HAVE_cmpstrsi
   {
-    enum machine_mode mode;
-    tree arg1 = TREE_VALUE (arglist);
-    tree arg2 = TREE_VALUE (TREE_CHAIN (arglist));
-    tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
     rtx arg1_rtx, arg2_rtx, arg3_rtx;
     rtx result;
     rtx insn;
@@ -2275,8 +2344,10 @@ expand_builtin_memcmp (exp, arglist, target)
     else
       return convert_to_mode (mode, result, 0);
   }
-}
 #endif
+
+  return 0;
+}
 
 /* Expand expression EXP, which is a call to the strcmp builtin.  Return 0
    if we failed the caller should emit a normal call, otherwise try to get
@@ -2289,7 +2360,7 @@ expand_builtin_strcmp (exp, target, mode)
      enum machine_mode mode;
 {
   tree arglist = TREE_OPERAND (exp, 1);
-  tree arg1, arg2;
+  tree arg1, arg2, len, len2, fn;
   const char *p1, *p2;
 
   if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
@@ -2325,58 +2396,49 @@ expand_builtin_strcmp (exp, target, mode)
       return expand_expr (result, target, mode, EXPAND_NORMAL);
     }
 
-#ifdef HAVE_cmpstrsi
-  if (! HAVE_cmpstrsi)
+  len = c_strlen (arg1);
+  len2 = c_strlen (arg2);
+
+  if (len)
+    len = size_binop (PLUS_EXPR, ssize_int (1), len);
+
+  if (len2)
+    len2 = size_binop (PLUS_EXPR, ssize_int (1), len2);
+
+  /* If we don't have a constant length for the first, use the length
+     of the second, if we know it.  We don't require a constant for
+     this case; some cost analysis could be done if both are available
+     but neither is constant.  For now, assume they're equally cheap
+     unless one has side effects.
+
+     If both strings have constant lengths, use the smaller.  This
+     could arise if optimization results in strcpy being called with
+     two fixed strings, or if the code was machine-generated.  We should
+     add some code to the `memcmp' handler below to deal with such
+     situations, someday.  */
+
+  if (!len || TREE_CODE (len) != INTEGER_CST)
+    {
+      if (len2 && !TREE_SIDE_EFFECTS (len2))
+        len = len2;
+      else if (len == 0)
+        return 0;
+    }
+  else if (len2 && TREE_CODE (len2) == INTEGER_CST
+           && tree_int_cst_lt (len2, len))
+    len = len2;
+
+  /* If both arguments have side effects, we cannot optimize.  */
+  if (TREE_SIDE_EFFECTS (len))
     return 0;
 
-  {
-    tree len = c_strlen (arg1);
-    tree len2 = c_strlen (arg2);
-    rtx result;
+  fn = built_in_decls[BUILT_IN_MEMCMP];
+  if (!fn)
+    return 0;
 
-    if (len)
-      len = size_binop (PLUS_EXPR, ssize_int (1), len);
-
-    if (len2)
-      len2 = size_binop (PLUS_EXPR, ssize_int (1), len2);
-
-    /* If we don't have a constant length for the first, use the length
-       of the second, if we know it.  We don't require a constant for
-       this case; some cost analysis could be done if both are available
-       but neither is constant.  For now, assume they're equally cheap
-       unless one has side effects.
-
-       If both strings have constant lengths, use the smaller.  This
-       could arise if optimization results in strcpy being called with
-       two fixed strings, or if the code was machine-generated.  We should
-       add some code to the `memcmp' handler below to deal with such
-       situations, someday.  */
-
-    if (!len || TREE_CODE (len) != INTEGER_CST)
-      {
-	if (len2 && !TREE_SIDE_EFFECTS (len2))
-	  len = len2;
-	else if (len == 0)
-	  return 0;
-      }
-    else if (len2 && TREE_CODE (len2) == INTEGER_CST
-	     && tree_int_cst_lt (len2, len))
-      len = len2;
-
-    /* If both arguments have side effects, we cannot optimize.  */
-    if (TREE_SIDE_EFFECTS (len))
-      return 0;
-
-    chainon (arglist, build_tree_list (NULL_TREE, len));
-    result = expand_builtin_memcmp (exp, arglist, target);
-    if (! result)
-      TREE_CHAIN (TREE_CHAIN (arglist)) = 0;
-
-    return result;
-  }
-#else
-  return 0;
-#endif
+  chainon (arglist, build_tree_list (NULL_TREE, len));
+  return expand_expr (build_function_call_expr (fn, arglist),
+                      target, mode, EXPAND_NORMAL);
 }
 
 /* Expand expression EXP, which is a call to the strncmp builtin.  Return 0
@@ -2390,6 +2452,7 @@ expand_builtin_strncmp (exp, target, mode)
      enum machine_mode mode;
 {
   tree arglist = TREE_OPERAND (exp, 1);
+  tree fn, newarglist, len = 0;
   tree arg1, arg2, arg3;
   const char *p1, *p2;
 
@@ -2442,45 +2505,42 @@ expand_builtin_strncmp (exp, target, mode)
       return expand_expr (result, target, mode, EXPAND_NORMAL);
     }
 
-#ifdef HAVE_cmpstrsi
   /* If c_strlen can determine an expression for one of the string
      lengths, and it doesn't have side effects, then call
      expand_builtin_memcmp() using length MIN(strlen(string)+1, arg3).  */
-  if (HAVE_cmpstrsi)
-    {
-      tree newarglist, len = 0;
 
-      /* Perhaps one of the strings is really constant, if so prefer
-         that constant length over the other string's length.  */
-      if (p1)
-	len = c_strlen (arg1);
-      else if (p2)
-	len = c_strlen (arg2);
+  /* Perhaps one of the strings is really constant, if so prefer
+     that constant length over the other string's length.  */
+  if (p1)
+    len = c_strlen (arg1);
+  else if (p2)
+    len = c_strlen (arg2);
 
-      /* If we still don't have a len, try either string arg as long
-	 as they don't have side effects.  */
-      if (!len && !TREE_SIDE_EFFECTS (arg1))
-	len = c_strlen (arg1);
-      if (!len && !TREE_SIDE_EFFECTS (arg2))
-	len = c_strlen (arg2);
-      /* If we still don't have a length, punt.  */
-      if (!len)
-	return 0;
+  /* If we still don't have a len, try either string arg as long
+     as they don't have side effects.  */
+  if (!len && !TREE_SIDE_EFFECTS (arg1))
+    len = c_strlen (arg1);
+  if (!len && !TREE_SIDE_EFFECTS (arg2))
+    len = c_strlen (arg2);
+  /* If we still don't have a length, punt.  */
+  if (!len)
+    return 0;
 
-      /* Add one to the string length.  */
-      len = fold (size_binop (PLUS_EXPR, len, ssize_int (1)));
+  fn = built_in_decls[BUILT_IN_MEMCMP];
+  if (!fn)
+    return 0;
 
-      /* The actual new length parameter is MIN(len,arg3).  */
-      len = fold (build (MIN_EXPR, TREE_TYPE (len), len, arg3));
+  /* Add one to the string length.  */
+  len = fold (size_binop (PLUS_EXPR, len, ssize_int (1)));
 
-      newarglist = build_tree_list (NULL_TREE, len);
-      newarglist = tree_cons (NULL_TREE, arg2, newarglist);
-      newarglist = tree_cons (NULL_TREE, arg1, newarglist);
-      return expand_builtin_memcmp (exp, newarglist, target);
-    }
-#endif
+  /* The actual new length parameter is MIN(len,arg3).  */
+  len = fold (build (MIN_EXPR, TREE_TYPE (len), len, arg3));
 
-  return 0;
+  newarglist = build_tree_list (NULL_TREE, len);
+  newarglist = tree_cons (NULL_TREE, arg2, newarglist);
+  newarglist = tree_cons (NULL_TREE, arg1, newarglist);
+  return expand_expr (build_function_call_expr (fn, newarglist),
+                      target, mode, EXPAND_NORMAL);
 }
 
 /* Expand expression EXP, which is a call to the strcat builtin.
@@ -3661,7 +3721,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       break;
 
     case BUILT_IN_STRCPY:
-      target = expand_builtin_strcpy (exp);
+      target = expand_builtin_strcpy (exp, target, mode);
       if (target)
 	return target;
       break;
@@ -3723,13 +3783,13 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       break;
 
     case BUILT_IN_MEMCPY:
-      target = expand_builtin_memcpy (arglist);
+      target = expand_builtin_memcpy (arglist, target, mode);
       if (target)
 	return target;
       break;
 
     case BUILT_IN_MEMSET:
-      target = expand_builtin_memset (exp);
+      target = expand_builtin_memset (exp, target, mode);
       if (target)
 	return target;
       break;
@@ -3752,21 +3812,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	return target;
       break;
 
-/* These comparison functions need an instruction that returns an actual
-   index.  An ordinary compare that just sets the condition codes
-   is not enough.  */
-#ifdef HAVE_cmpstrsi
     case BUILT_IN_BCMP:
     case BUILT_IN_MEMCMP:
-      target = expand_builtin_memcmp (exp, arglist, target);
+      target = expand_builtin_memcmp (exp, arglist, target, mode);
       if (target)
 	return target;
       break;
-#else
-    case BUILT_IN_BCMP:
-    case BUILT_IN_MEMCMP:
-      break;
-#endif
 
     case BUILT_IN_SETJMP:
       target = expand_builtin_setjmp (arglist, target);
