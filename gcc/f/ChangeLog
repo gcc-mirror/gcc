@@ -1,3 +1,7 @@
+1999-02-25  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
+
+	* f/intdoc.in: Add missing `,' after cross references.
+
 1999-02-20  Craig Burley  <craig@jcb-sc.com>
 
 	* Make-lang.in (f77.install-common, f77.install-info,
