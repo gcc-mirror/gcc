@@ -1,3 +1,9 @@
+2000-12-03  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added new file.
+	* java/awt/GridLayout.java: New file.
+
 2000-12-02  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
