@@ -167,7 +167,7 @@ build_headers =  	bits/std_limits.h 	bits/c++config.h bits/c++io.h bits/c++local
 
 sources =  	limitsMEMBERS.cc 	stdexcept.cc functexcept.cc bitset.cc 	globals.cc 	basic_file.cc ios.cc complex_io.cc strstream.cc 	c++locale.cc locale.cc localename.cc codecvt.cc 	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc 	string-inst.cc wstring-inst.cc 
 
-VPATH =  $(top_srcdir) $(top_srcdir)/src $(GLIBCPP_INCLUDE_DIR)  $(GLIBCPP_INCLUDE_DIR)/std $(C_INCLUDE_DIR)
+VPATH =  $(top_srcdir):$(top_srcdir)/src:$(GLIBCPP_INCLUDE_DIR):$(GLIBCPP_INCLUDE_DIR)/std:$(C_INCLUDE_DIR)
 
 libstdc___la_SOURCES = $(sources)
 

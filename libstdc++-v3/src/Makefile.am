@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.84 2001/04/18 01:06:04 bkoz Exp $
+## $Id: Makefile.am,v 1.85 2001/05/19 03:42:53 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -173,9 +173,7 @@ sources = \
 	string-inst.cc wstring-inst.cc 
 
 
-VPATH += $(top_srcdir) $(top_srcdir)/src
-VPATH += $(GLIBCPP_INCLUDE_DIR) 
-VPATH += $(GLIBCPP_INCLUDE_DIR)/std $(C_INCLUDE_DIR)
+VPATH = $(top_srcdir):$(top_srcdir)/src:$(GLIBCPP_INCLUDE_DIR):$(GLIBCPP_INCLUDE_DIR)/std:$(C_INCLUDE_DIR)
 
 libstdc___la_SOURCES = $(sources)
 
