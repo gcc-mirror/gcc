@@ -5721,21 +5721,21 @@ initial_elimination_offset (from, to)
 
 void
 sh_pr_interrupt (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     struct cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
   pragma_interrupt = 1;
 }
 
 void
 sh_pr_trapa (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     struct cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
   pragma_interrupt = pragma_trapa = 1;
 }
 
 void
 sh_pr_nosave_low_regs (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     struct cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
   pragma_nosave_low_regs = 1;
 }

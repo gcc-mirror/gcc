@@ -2004,21 +2004,21 @@ static arm_pragma_enum arm_pragma_long_calls = OFF;
 
 void
 arm_pr_long_calls (pfile)
-     cpp_reader * pfile ATTRIBUTE_UNUSED;
+     struct cpp_reader * pfile ATTRIBUTE_UNUSED;
 {
   arm_pragma_long_calls = LONG;
 }
 
 void
 arm_pr_no_long_calls (pfile)
-     cpp_reader * pfile ATTRIBUTE_UNUSED;
+     struct cpp_reader * pfile ATTRIBUTE_UNUSED;
 {
   arm_pragma_long_calls = SHORT;
 }
 
 void
 arm_pr_long_calls_off (pfile)
-     cpp_reader * pfile ATTRIBUTE_UNUSED;
+     struct cpp_reader * pfile ATTRIBUTE_UNUSED;
 {
   arm_pragma_long_calls = OFF;
 }
