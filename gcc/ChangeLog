@@ -1,5 +1,13 @@
 2004-09-24  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	PR c/12802
+	* doc/extend.texi (Unnamed Fields): Remove "." from end of long
+	title.  Document interaction with -fms-extensions.
+	* doc/invoke.texi (-fms-extensions): Refer to Unnamed Fields
+	section.
+
+2004-09-24  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	PR c/12713
 	* doc/extend.texi: Document interaction of attribute noreturn and
 	longjmp.
