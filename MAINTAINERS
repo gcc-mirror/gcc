@@ -62,6 +62,7 @@ mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10200 port		Jeff Law		law@redhat.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
+ns32k port		Ian Dall		ian@beware.dropbear.id.au
 rs6000 port		Geoff Keating		geoffk@geoffk.org
 rs6000 port		David Edelsohn		dje@watson.ibm.com
 rs6000 vector extns	Aldy Hernandez		aldyh@redhat.com
