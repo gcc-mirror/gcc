@@ -1,3 +1,8 @@
+2005-02-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* passes.c (rest_of_handle_loop_optimize): Remove calls to
+	delete_dead_jumptables and cleanup_cfg.
+
 2005-02-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload.c (find_reloads): Swap address_reloaded flags when

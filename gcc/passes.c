@@ -1075,8 +1075,6 @@ rest_of_handle_loop_optimize (void)
   int do_prefetch;
 
   timevar_push (TV_LOOP);
-  delete_dead_jumptables ();
-  cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_PRE_LOOP);
   open_dump_file (DFI_loop, current_function_decl);
 
   /* CFG is no longer maintained up-to-date.  */
