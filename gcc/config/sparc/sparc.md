@@ -2949,15 +2949,13 @@
   [(set_attr "type" "move")
    (set_attr "length" "1,2,2")])
 
-;; ?? This and split disabled on sparc64... When I change the destination
-;; ?? reg to be DImode to emit the constant formation code, the instruction
-;; ?? scheduler does not want to believe that it is the same as the DFmode
-;; ?? subreg we started with...  See the SFmode version of this above to
-;; ?? see how it can be handled.
+;; Now that we redo life analysis with a clean slate after
+;; instruction splitting for sched2 this can work.
 (define_insn "*movdf_const_intreg_sp64"
   [(set (match_operand:DF 0 "general_operand" "=e,e,r")
         (match_operand:DF 1 ""                 "m,o,F"))]
-  "0 && TARGET_FPU && TARGET_ARCH64
+  "TARGET_FPU
+   && TARGET_ARCH64
    && GET_CODE (operands[1]) == CONST_DOUBLE
    && GET_CODE (operands[0]) == REG"
   "*
@@ -2973,8 +2971,7 @@
 (define_split
   [(set (match_operand:DF 0 "register_operand" "")
         (match_operand:DF 1 "const_double_operand" ""))]
-  "! TARGET_ARCH64
-   && TARGET_FPU
+  "TARGET_FPU
    && GET_CODE (operands[1]) == CONST_DOUBLE
    && (GET_CODE (operands[0]) == REG
        && REGNO (operands[0]) < 32)
