@@ -1,3 +1,8 @@
+2003-07-07  Andreas Jaeger  <aj@suse.de>
+
+	* config/i386/i386-protos.h: Convert prototypes to ISO C90.
+	* config/i386/i386.c: Likewise.
+
 2003-07-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md: Use gen_int_mode instead of
