@@ -128,8 +128,7 @@ namespace std {
       __basic_file(__c_lock* __lock = 0);
       
       void 
-      __basic_file::_M_open_mode(ios_base::openmode __mode, int& __p_mode, 
-				 int& __rw_mode);
+      _M_open_mode(ios_base::openmode __mode, int& __p_mode, int& __rw_mode);
       
       // Eqivalent to the normal fopen function.
       __basic_file* 
