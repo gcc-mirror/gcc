@@ -1,3 +1,9 @@
+2000-06-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jcf-write.c (CHECK_PUT): Add static prototype.  Make pointer
+	types the same in comparison.
+	(CHECK_OP): Add static prototype.
+
 2000-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* typeck.c (build_java_array_type): Set TYPE_USER_ALIGN.
