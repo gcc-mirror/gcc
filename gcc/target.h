@@ -68,6 +68,12 @@ struct gcc_target
        specified by FLAGS.  */
     void (* named_section) PARAMS ((const char *, unsigned int));
 
+    /* Switch to the section that holds the exception table.  */
+    void (* exception_section) PARAMS ((void));
+
+    /* Switch to the section that holds the exception frames.  */
+    void (* eh_frame_section) PARAMS ((void));
+
     /* Output a constructor for a symbol with a given priority.  */
     void (* constructor) PARAMS ((rtx, int));
 

@@ -209,7 +209,10 @@ extern void named_section		PARAMS ((tree, const char *, int));
 extern void function_section		PARAMS ((tree));
 
 /* Tell assembler to switch to the section for the exception table.  */
-extern void exception_section		PARAMS ((void));
+extern void default_exception_section	PARAMS ((void));
+
+/* Tell assembler to switch to the section for the EH frames.  */
+extern void default_eh_frame_section	PARAMS ((void));
 
 /* Tell assembler to switch to the section for string merging.  */
 extern void mergeable_string_section	PARAMS ((tree, unsigned HOST_WIDE_INT,

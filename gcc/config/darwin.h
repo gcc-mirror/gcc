@@ -352,7 +352,7 @@ do { if (!strcmp (alias_name, name))					\
   in_machopic_lazy_symbol_ptr,				\
   in_machopic_symbol_stub,				\
   in_machopic_picsymbol_stub,				\
-  in_darwin_exception, \
+  in_darwin_exception, in_darwin_eh_frame,		\
   num_sections
 
 #undef	EXTRA_SECTION_FUNCTIONS
@@ -460,6 +460,9 @@ SECTION_FUNCTION (machopic_picsymbol_stub_section,	\
 SECTION_FUNCTION (darwin_exception_section,		\
 		in_darwin_exception,			\
 		".section __TEXT,__gcc_except_tab", 0)	\
+SECTION_FUNCTION (darwin_eh_frame_section,		\
+		in_darwin_eh_frame,			\
+		".section __TEXT,__eh_frame", 0)	\
 							\
 void						\
 objc_section_init ()				\
@@ -781,8 +784,10 @@ enum machopic_addr_class {
       }								\
   } while (0)
 
-#define EXCEPTION_SECTION() darwin_exception_section ()
+#define TARGET_ASM_EXCEPTION_SECTION darwin_exception_section
 
+#define TARGET_ASM_EH_FRAME_SECTION darwin_eh_frame_section
+  
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)  \
   (((CODE) == 1 || (GLOBAL) == 0) ? DW_EH_PE_pcrel : DW_EH_PE_absptr)
 

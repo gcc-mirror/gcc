@@ -1,3 +1,41 @@
+2001-10-22  Stan Shebs  <shebs@apple.com>
+
+	* target.h (struct gcc_target): Add asm_out.exception_section,
+	asm_out.eh_frame_section.
+	* target-def.h (TARGET_ASM_EXCEPTION_SECTION): New macro.
+	(TARGET_ASM_EH_FRAME_SECTION): New.
+	(TARGET_INITIALIZER): Update.
+	* output.h (default_exception_section): Declare.
+	(default_eh_frame_section): Declare.
+	* dwarf2out.c: Include target.h.
+	(output_call_frame_info): Call target hook for eh frames.
+	(default_eh_frame_section): New function.
+	* except.c: Include target.h.
+	(output_function_exception_table): Call target hook for exception
+	section.
+	* varasm.c (default_exception_section): Rename from
+	exception_section, remove EXCEPTION_SECTION macro.
+
+	* config/darwin.h (darwin_eh_frame_section): New function.
+	(EXCEPTION_SECTION): Remove.
+	(TARGET_ASM_EXCEPTION_SECTION): Define.
+	* config/nextstep.h (EH_FRAME_SECTION_ASM_OP): Remove.
+	(nextstep_exception_section): New function.
+	(nextstep_eh_frame_section): New function.
+	(TARGET_ASM_EXCEPTION_SECTION): Define.
+	(TARGET_ASM_EH_FRAME_SECTION): Define.
+
+	* config/pa/som.h (EXCEPTION_SECTION): Remove.
+	(TARGET_ASM_EXCEPTION_SECTION): Define.
+	* config/rs6000/sysv4.h, config/rs6000/xcoff.h
+	(EXCEPTION_SECTION): Remove.
+	(TARGET_ASM_EXCEPTION_SECTION): Define.
+	* config/stormy16/stormy16.h: Remove comments referencing
+	EXCEPTION_SECTION and EH_FRAME_SECTION_ASM_OP.
+
+	* doc/tm.texi: Document TARGET_ASM_EXCEPTION_SECTION and
+	TARGET_ASM_EH_FRAME_SECTION.
+
 2001-10-22  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/mips/mips.md (mul_acc_si): Fix precedence of conditional

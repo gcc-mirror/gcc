@@ -59,6 +59,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm_p.h"
 #include "diagnostic.h"
 #include "debug.h"
+#include "target.h"
 
 #ifdef DWARF2_DEBUGGING_INFO
 static void dwarf2out_source_line	PARAMS ((unsigned int, const char *));
@@ -1738,18 +1739,7 @@ output_call_frame_info (for_eh)
     app_enable ();
 
   if (for_eh)
-    {
-#ifdef EH_FRAME_SECTION_NAME
-      named_section_flags (EH_FRAME_SECTION_NAME, SECTION_WRITE);
-#else
-      tree label = get_file_function_name ('F');
-
-      data_section ();
-      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
-      ASM_GLOBALIZE_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
-      ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
-#endif
-    }
+    (*targetm.asm_out.eh_frame_section) ();
   else
     named_section_flags (DEBUG_FRAME_SECTION, SECTION_DEBUG);
 
@@ -1976,6 +1966,21 @@ output_call_frame_info (for_eh)
   /* Turn off app to make assembly quicker.  */
   if (flag_debug_asm)
     app_disable ();
+}
+
+void
+default_eh_frame_section ()
+{
+#ifdef EH_FRAME_SECTION_NAME
+  named_section_flags (EH_FRAME_SECTION_NAME, SECTION_WRITE);
+#else
+  tree label = get_file_function_name ('F');
+
+  data_section ();
+  ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
+  ASM_GLOBALIZE_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
+  ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
+#endif
 }
 
 /* Output a marker (i.e. a label) for the beginning of a function, before
