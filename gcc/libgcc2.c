@@ -1329,10 +1329,13 @@ asm ("___builtin_saveregs:");
   asm ("	j	$31");
   asm ("	.end __builtin_saveregs");
 #else /* not __mips__, etc. */
+
+void *
 __builtin_saveregs ()
 {
   abort ();
 }
+
 #endif /* not __mips__ */
 #endif /* not __sparc__ */
 #endif /* not __i860__ */
