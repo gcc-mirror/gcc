@@ -1,3 +1,7 @@
+Mon Mar 16 10:47:22 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* parse.y: Deal with CONSTRUCTORS in new_initializers.
+
 Mon Mar 16 10:54:21 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* pt.c (tsubst_copy): Deal with BIND_EXPR in a way that more
