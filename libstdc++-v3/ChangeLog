@@ -1,3 +1,16 @@
+2004-02-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/ext/malloc_allocator.h: Add operators ==, !=.
+	* include/ext/new_allocator.h: Add operators ==, !=.
+	* include/ext/mt_allocator.h (__mt_alloc::tune): New.
+	(__mt_alloc::_S_get_options): New.
+	(__mt_alloc::_S_set_options): New.	
+	(__mt_alloc::_S_thread_key_destr): To _S_destroy_thread_key.
+	(__mt_alloc::_S_no_of_bins): To _S_bin_size.
+	Move functions out of line, simplify, format.
+	* src/allocator.cc: Simplify explicit instantiations.
+	* include/bits/allocator.h: Tweak.
+	
 2004-02-22  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (money_put<>::_M_insert):

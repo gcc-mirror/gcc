@@ -40,19 +40,7 @@
 // allocator.
 namespace __gnu_cxx
 {
-  // Static data members and member functions of __mt_alloc.
-  static template class __mt_alloc<char>;
-
-  template
-    void __mt_alloc<char>::_S_init();
-
-#ifdef __GTHREADS
-   template
-    size_t __mt_alloc<char>::_S_get_thread_id();
-
-   template
-    void __mt_alloc<char>::_S_thread_key_destr(void*);
-#endif
+  template class __mt_alloc<char>;
 
   // Static members of __pool_alloc.
   template class __pool_alloc<true, 0>;

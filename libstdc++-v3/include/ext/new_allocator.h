@@ -98,6 +98,16 @@ namespace __gnu_cxx
       void 
       destroy(pointer __p) { __p->~_Tp(); }
     };
+
+  template<typename _Tp>
+    inline bool
+    operator==(const new_allocator<_Tp>&, const new_allocator<_Tp>&)
+    { return true; }
+  
+  template<typename _Tp>
+    inline bool
+    operator!=(const new_allocator<_Tp>&, const new_allocator<_Tp>&)
+    { return false; }
 } // namespace __gnu_cxx
 
 #endif
