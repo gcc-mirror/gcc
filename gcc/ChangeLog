@@ -1,5 +1,11 @@
 2002-03-09  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/mips/mips.c (function_arg_pass_by_reference): Force to 0
+	in o32 and o64 ABIs.
+	* config/mips/abi64.h (MUST_PASS_IN_STACK): Define as in expr.h,
+	but getting fixed-size structs passed in registers regardless of
+	padding in o32 and o64 ABIs.
+
 	* config/mips/mips.c (mips_va_arg): Apply big-endianness address
 	offset before loading address of argument passed by transparent
 	reference.
