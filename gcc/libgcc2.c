@@ -764,13 +764,17 @@ __fixunssfsi (float a)
 
 #ifdef L_varargs
 #ifdef __i860__
-#ifdef SVR4
+#if defined(SVR4) || defined(__alliant__)
 	asm ("	.text");
 	asm ("	.align	4");
 
+/* The Alliant needs the added underscore.  */
 	asm (".globl	__builtin_saveregs");
 asm ("__builtin_saveregs:");
-	asm ("	andnot	0x0f,%sp,%sp");	/* round down to 16-byte boundary */
+	asm (".globl	___builtin_saveregs");
+asm ("___builtin_saveregs:");
+
+        asm ("	andnot	0x0f,%sp,%sp");	/* round down to 16-byte boundary */
 	asm ("	adds	-96,%sp,%sp");  /* allocate stack space for reg save
 					   area and also for a new va_list
 					   structure */

@@ -31,7 +31,7 @@ typedef union {
 } __f_regs;
 
 typedef struct {
-#ifdef __SVR4__
+#if defined(__SVR4__) || defined(__alliant__)
   __f_regs __float_regs; long __ireg[12];
 #else /* pre-SVR4 */
   long __ireg[12]; __f_regs __float_regs;
@@ -43,7 +43,7 @@ typedef struct {
 #define __GNU_VA_LIST	/* Field names were properly prefixed with `__'.  */
 
 typedef struct {
-#ifdef __SVR4__
+#if defined(__SVR4__) || defined(__alliant__)
   unsigned	__ireg_used;	/* How many int regs consumed 'til now? */
   unsigned	__freg_used;	/* How many flt regs consumed 'til now? */
   long		*__reg_base;	/* Address of where we stored the regs. */
