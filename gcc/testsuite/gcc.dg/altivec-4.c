@@ -49,4 +49,16 @@ b()
 
   uc = (vector unsigned char) __builtin_altivec_lvsl (int1 + 69, pi);
   uc = (vector unsigned char) __builtin_altivec_lvsr (int1 + 69, pi);
+
+  c = __builtin_altivec_lvebx (int1, pi);
+  s = __builtin_altivec_lvehx (int1, pi);
+  i = __builtin_altivec_lvewx (int1, pi);
+  i = __builtin_altivec_lvxl (int1, pi);
+  i = __builtin_altivec_lvx (int1, pi);
+
+  __builtin_altivec_stvx (i, int2, pi);
+  __builtin_altivec_stvebx (c, int2, pi);
+  __builtin_altivec_stvehx (s, int2, pi);
+  __builtin_altivec_stvewx (i, int2, pi);
+  __builtin_altivec_stvxl (i, int2, pi);
 }
