@@ -7896,8 +7896,13 @@ nonzero_bits (x, mode)
 #endif
 
       /* Include declared information about alignment of pointers.  */
-
-      if (REG_POINTER (x) && REGNO_POINTER_ALIGN (REGNO (x)))
+      /* ??? We don't properly preserve REG_POINTER changes across
+	 pointer-to-integer casts, so we can't trust it except for
+	 things that we know must be pointers.  See execute/960116-1.c.  */
+      if ((x == stack_pointer_rtx
+	   || x == frame_pointer_rtx
+	   || x == arg_pointer_rtx)
+	  && REGNO_POINTER_ALIGN (REGNO (x)))
 	{
 	  unsigned HOST_WIDE_INT alignment
 	    = REGNO_POINTER_ALIGN (REGNO (x)) / BITS_PER_UNIT;
