@@ -1,3 +1,7 @@
+2003-06-29  Aaron W. LaFramboise  <awlaframboise@aol.com>
+
+	* config/i386/mingw32.h (__GTHREAD_HIDE_WIN32API): Define to 1.
+
 2003-06-29  Dara Hazeghi  <dhazeghi@yahoo.com>
 
 	* doc/install.texi: Remove install documentation for obsoleted targets
