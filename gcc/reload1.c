@@ -948,18 +948,13 @@ reload (first, global, dumpfile)
 	    }
       }
 
-      /* No point in trying to select reload registers if we know we're
-	 going to re-run everything again.  */
-      if (! something_changed)
-	{
-	  select_reload_regs (dumpfile);
+      select_reload_regs (dumpfile);
+      if (failure)
+	goto failed;
 
-	  if (failure)
-	    goto failed;
+      if (insns_need_reload != 0 || did_spill)
+	something_changed |= finish_spills (global, dumpfile);
 
-	  if (insns_need_reload != 0 || did_spill)
-	    something_changed |= finish_spills (global, dumpfile);
-	}
       if (! something_changed)
 	break;
 
