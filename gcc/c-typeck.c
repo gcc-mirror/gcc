@@ -3606,6 +3606,11 @@ build_c_cast (type, expr)
 	  && !TREE_CONSTANT (value))
 	warning ("cast from pointer to integer of different size");
 
+      if (warn_bad_function_cast
+	  && TREE_CODE (value) == CALL_EXPR
+	  && TREE_CODE (type) != TREE_CODE (otype))
+	warning ("cast does not match function type");
+
       if (TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == INTEGER_TYPE
 	  && TYPE_PRECISION (type) != TYPE_PRECISION (otype)
