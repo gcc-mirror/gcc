@@ -12642,7 +12642,10 @@ start_enum (name)
     enumtype = lookup_tag (ENUMERAL_TYPE, name, b, 1);
 
   if (enumtype != NULL_TREE && TREE_CODE (enumtype) == ENUMERAL_TYPE)
-    cp_error ("multiple definition of `%#T'", enumtype);
+    {
+      cp_error ("multiple definition of `%#T'", enumtype);
+      cp_error_at ("previous definition here", enumtype);
+    }
   else
     {
       enumtype = make_node (ENUMERAL_TYPE);
