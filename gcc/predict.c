@@ -1177,6 +1177,7 @@ estimate_bb_frequencies (loops)
 
       if (!real_values_initialized)
         {
+	  real_values_initialized = 1;
 	  sreal_init (&real_zero, 0, 0);
 	  sreal_init (&real_one, 1, 0);
 	  sreal_init (&real_br_prob_base, REG_BR_PROB_BASE, 0);

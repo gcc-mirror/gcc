@@ -1,3 +1,8 @@
+2003-03-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	* predict.c (estimate_bb_frequencies): Correctly set
+	real_values_initialized after initialization.
+
 2003-03-01  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in (C_AND_OBJC_OBJS, c-incpath.o, c-lex.o, LIBCPP_OBJS,
