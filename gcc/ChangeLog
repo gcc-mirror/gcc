@@ -1,3 +1,32 @@
+2001-06-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-common.h (flag_dump_translation_unit): Remove.
+	(enum tree_dump_index): Define.
+	(TDF_ADDRESS, TDF_SLIM): New #defines.
+	(dump_node_to_file): Remove.
+	(dump_node): Make extern. Add flags.
+	(dump_flag, dump_enabled_p, dump_begin, dump_end,
+	dump_switch_p): Prototype.
+	* c-common.c (flag_dump_translation_unit): Remove.
+	* c-decl.c (c_decode_option): Remove -fdump-translation-unit
+	logic. Use dump_switch_p.
+	* c-dump.h (struct dump_info): Add node and user fields.
+	(dump_pointer): Declare.
+	* c-dump.c (dump_node): Make extern. Add flags.
+	(SOL_COLUMN, EOL_COLUMN, COLUMN_ALIGNMENT): New #defines.
+	(dump_new_line, dump_maybe_newline): Use them.
+	(dump_pointer): New function.
+	(dequeue_and_dump): Check TDF_SLIM before dumping a _DECL's
+	chain or function's body. Dump address, if TDF_ADDRESS set.
+	(dump_flag): Define.
+	(dump_node_to_file): Remove.
+	(struct dump_file_info): New struct.
+	(dump_files): New array.
+	(dump_begin, dump_end, dump_enabled_p, dump_switch_p): Define.
+	* c-lang.c (finish_file): Adjust dumping.
+	* toplev.h (dump_base_name): Make extern.
+	* invoke.texi: Document new flags.
+
 2001-06-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-tree.h (lang_decl): Add pending_sizes fields.

@@ -255,9 +255,17 @@ finish_file ()
 
   if (back_end_hook)
     (*back_end_hook) (getdecls ());
+  
+  {
+    int flags;
+    FILE *stream = dump_begin (TDI_all, &flags);
 
-  if (flag_dump_translation_unit)
-    dump_node_to_file (getdecls (), flag_dump_translation_unit);
+    if (stream)
+      {
+	dump_node (getdecls (), flags & ~TDF_SLIM, stream);
+	dump_end (TDI_all, stream);
+      }
+  }
 }
 
 /* Called during diagnostic message formatting process to print a

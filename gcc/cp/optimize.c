@@ -100,6 +100,7 @@ static void remap_block PARAMS ((tree, tree, inline_data *));
 static void copy_scope_stmt PARAMS ((tree *, int *, inline_data *));
 static tree calls_setjmp_r PARAMS ((tree *, int *, void *));
 static void update_cloned_parm PARAMS ((tree, tree));
+static void dump_function PARAMS ((enum tree_dump_index, tree));
 
 /* The approximate number of instructions per statement.  This number
    need not be particularly accurate; it is used only to make
@@ -933,12 +934,14 @@ expand_calls_inline (tp, id)
   walk_tree (tp, expand_call_inline, id, id->tree_pruner);
 }
 
-/* Optimize the body of FN.  */
+/* Optimize the body of FN. */
 
 void
 optimize_function (fn)
      tree fn;
 {
+  dump_function (TDI_original, fn);
+
   /* While in this function, we may choose to go off and compile
      another function.  For example, we might instantiate a function
      in the hopes of inlining it.  Normally, that wouldn't trigger any
@@ -1010,6 +1013,8 @@ optimize_function (fn)
 
   /* Undo the call to ggc_push_context above.  */
   --function_depth;
+  
+  dump_function (TDI_optimized, fn);
 }
 
 /* Called from calls_setjmp_p via walk_tree.  */
@@ -1226,4 +1231,27 @@ maybe_clone_body (fn)
 
   /* We don't need to process the original function any further.  */
   return 1;
+}
+
+/* Dump FUNCTION_DECL FN as tree dump PHASE. */
+
+static void
+dump_function (phase, fn)
+     enum tree_dump_index phase;
+     tree fn;
+{
+  FILE *stream;
+  int flags;
+
+  stream = dump_begin (phase, &flags);
+  if (stream)
+    {
+      fprintf (stream, "\n;; Function %s",
+	       decl_as_string (fn, TFF_DECL_SPECIFIERS));
+      fprintf (stream, " (%s)", decl_as_string (DECL_ASSEMBLER_NAME (fn), 0));
+      fprintf (stream, "\n\n");
+      
+      dump_node (fn, TDF_SLIM | flags, stream);
+      dump_end (phase, stream);
+    }
 }

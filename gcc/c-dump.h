@@ -50,6 +50,10 @@ struct dump_info
 {
   /* The stream on which to dump the information.  */
   FILE *stream;
+  /* The original node. */
+  tree node;
+  /* User flags. */
+  int flags;
   /* The next unused node index.  */
   unsigned int index;
   /* The next column.  */
@@ -70,6 +74,8 @@ struct dump_info
 #define dump_child(field, child) \
   queue_and_dump_index (di, field, child, DUMP_NONE)
 
+extern void dump_pointer
+  PARAMS ((dump_info_p, const char *, void *));
 extern void dump_int 
   PARAMS ((dump_info_p, const char *, int));
 extern void dump_string 
