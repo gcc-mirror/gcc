@@ -1,3 +1,9 @@
+2003-07-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11546
+	* pt.c (lookup_template_class): Treat TYPE_DECLs as TEMPLATE_DECLs
+	where appropriate.
+
 2003-07-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7053

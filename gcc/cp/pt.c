@@ -4087,10 +4087,20 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
 	}
       if (template)
 	context = DECL_CONTEXT (template);
+      if (template
+	  && TREE_CODE (template) == TYPE_DECL
+	  && IS_AGGR_TYPE (TREE_TYPE (template))
+	  && TREE_CODE (TREE_TYPE (template)) != TEMPLATE_TYPE_PARM)
+	{
+	  d1 = template;
+	  goto type_decl;
+	}
     }
   else if (TREE_CODE (d1) == TYPE_DECL && IS_AGGR_TYPE (TREE_TYPE (d1)))
     {
-      tree type = TREE_TYPE (d1);
+      tree type;
+    type_decl:
+      type = TREE_TYPE (d1);
 
       /* If we are declaring a constructor, say A<T>::A<T>, we will get
 	 an implicit typename for the second A.  Deal with it.  */
