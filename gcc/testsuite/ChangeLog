@@ -1,3 +1,7 @@
+2001-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20010206-1.c: New test.
+
 2001-02-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * gcc.dg/cpp/avoidpaste1.c: Update.
