@@ -1,3 +1,8 @@
+2003-11-04  DJ Delorie  <dj@redhat.com>
+
+	* config/v850/v850.md (mulhisi3): Expand the const_int case
+	separately to avoid trying to sign extend the const.
+
 2003-11-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* emit-rtl.c (copy_rtx_if_shared): Don't allow MEMs with constant
