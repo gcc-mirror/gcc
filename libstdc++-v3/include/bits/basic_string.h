@@ -993,7 +993,6 @@ namespace std
        *  @param c  The character to insert.
        *  @return  Iterator referencing newly inserted char.
        *  @throw  std::length_error  If new length exceeds @c max_size().
-       *  @throw  std::out_of_range  If @a p is beyond the end of this string.
        *
        *  Inserts character @a c at position referenced by @a p.  If adding
        *  character causes the length to exceed max_size(), length_error is
@@ -1016,7 +1015,6 @@ namespace std
        *  @param p  Iterator referencing position in string to insert at.
        *  @return  Iterator referencing newly inserted char.
        *  @throw  std::length_error  If new length exceeds @c max_size().
-       *  @throw  std::out_of_range  If @a p is beyond the end of this string.
        *
        *  Inserts a default-constructed character at position
        *  referenced by @a p.  If adding character causes the length
@@ -1045,18 +1043,15 @@ namespace std
       */
       basic_string&
       erase(size_type __pos = 0, size_type __n = npos)
-      { return _M_replace_aux(_M_check(__pos, "basic_string::erase"),
-			      _M_limit(__pos, __n), size_type(0), _CharT()); }
+      { return _M_replace_safe(_M_check(__pos, "basic_string::erase"),
+			       _M_limit(__pos, __n), NULL, size_type(0)); }
 
       /**
        *  @brief  Remove one character.
        *  @param position  Iterator referencing the character to remove.
        *  @return  iterator referencing same location after removal.
-       *  @throw  std::out_of_range  If @a position is beyond the end of this
-       *  string. 
        *
-       *  Removes the character at @a position from this string.  If @a
-       *  position is beyond end of string, out_of_range is thrown.  The value
+       *  Removes the character at @a position from this string. The value
        *  of the string doesn't change if an error is thrown.
       */
       iterator
@@ -1065,7 +1060,7 @@ namespace std
 	_GLIBCXX_DEBUG_PEDASSERT(__position >= _M_ibegin() 
 				 && __position < _M_iend());
 	const size_type __pos = __position - _M_ibegin();
-	_M_replace_aux(__pos, size_type(1), size_type(0), _CharT());
+	_M_replace_safe(__pos, size_type(1), NULL, size_type(0));
 	_M_rep()->_M_set_leaked();
 	return _M_ibegin() + __pos;
       }
@@ -1075,12 +1070,9 @@ namespace std
        *  @param first  Iterator referencing the first character to remove.
        *  @param last  Iterator referencing the end of the range.
        *  @return  Iterator referencing location of first after removal.
-       *  @throw  std::out_of_range  If @a first is beyond the end of this
-       *  string. 
        *
        *  Removes the characters in the range [first,last) from this string.
-       *  If @a first is beyond end of string, out_of_range is thrown.  The
-       *  value of the string doesn't change if an error is thrown.
+       *  The value of the string doesn't change if an error is thrown.
       */
       iterator
       erase(iterator __first, iterator __last)
@@ -1088,7 +1080,7 @@ namespace std
 	_GLIBCXX_DEBUG_PEDASSERT(__first >= _M_ibegin() && __first <= __last
 				 && __last <= _M_iend());
         const size_type __pos = __first - _M_ibegin();
-	_M_replace_aux(__pos, __last - __first, size_type(0), _CharT());
+	_M_replace_safe(__pos, __last - __first, NULL, size_type(0));
 	_M_rep()->_M_set_leaked();
 	return _M_ibegin() + __pos;
       }
