@@ -1,3 +1,9 @@
+1999-10-04  Tom Tromey  <tromey@cygnus.com>
+
+	* configure: Rebuilt.
+	* configure.in: Call AC_EXEEXT after LIB_AC_PROG_CC, but don't
+	actually let AC_EXEEXT run.
+
 1999-09-28  Tom Tromey  <tromey@cygnus.com>
 
 	* aclocal.m4, configure: Rebuilt.
