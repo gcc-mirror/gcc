@@ -80,7 +80,7 @@ static void save_comment PARAMS ((cpp_reader *, cpp_token *, const uchar *,
 				  cppchar_t));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
 static int maybe_read_ucs PARAMS ((cpp_reader *, const unsigned char **,
-				   const unsigned char *, unsigned int *));
+				   const unsigned char *, cppchar_t *));
 static tokenrun *next_tokenrun PARAMS ((tokenrun *));
 
 static unsigned int hex_digit_value PARAMS ((unsigned int));
@@ -695,7 +695,7 @@ parse_string (pfile, token, terminator)
 	unterminated:
 	  if (CPP_OPTION (pfile, lang) != CLK_ASM || terminator == '>')
 	    cpp_error (pfile, DL_ERROR, "missing terminating %c character",
-		       terminator);
+		       (int) terminator);
 	  buffer->cur--;
 	  break;
 	}
@@ -1648,7 +1648,7 @@ maybe_read_ucs (pfile, pstr, limit, pc)
      cpp_reader *pfile;
      const unsigned char **pstr;
      const unsigned char *limit;
-     unsigned int *pc;
+     cppchar_t *pc;
 {
   const unsigned char *p = *pstr;
   unsigned int code = 0;
@@ -1763,7 +1763,7 @@ cpp_parse_escape (pfile, pstr, limit, wide)
     case 'e': case 'E':
       if (CPP_PEDANTIC (pfile))
 	cpp_error (pfile, DL_PEDWARN,
-		   "non-ISO-standard escape sequence, '\\%c'", c);
+		   "non-ISO-standard escape sequence, '\\%c'", (int) c);
       c = TARGET_ESC;
       break;
       
@@ -1838,9 +1838,11 @@ cpp_parse_escape (pfile, pstr, limit, wide)
   if (unknown)
     {
       if (ISGRAPH (c))
-	cpp_error (pfile, DL_PEDWARN, "unknown escape sequence '\\%c'", c);
+	cpp_error (pfile, DL_PEDWARN,
+		   "unknown escape sequence '\\%c'", (int) c);
       else
-	cpp_error (pfile, DL_PEDWARN, "unknown escape sequence: '\\%03o'", c);
+	cpp_error (pfile, DL_PEDWARN,
+		   "unknown escape sequence: '\\%03o'", (int) c);
     }
 
   if (c > mask)
