@@ -1,3 +1,9 @@
+2005-02-28  Ben Elliston  <bje@au.ibm.com>
+
+	* README: Update the DejaGnu bug reporting address.
+	* lib/c-torture.exp: Remove the DejaGnu bug reporting address.
+	* lib/objc-torture.exp: Likewise.
+
 2005-02-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/boz_1.f90: New test.
@@ -7,8 +13,7 @@
 2005-02-27  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	* gfortran.dg/ishft.f90:  Remove kind suffix from BOZ constant
-	* gfortran.fortran-torture/execute/intrinsic_mvbits.f90: ditto
-
+	* gfortran.fortran-torture/execute/intrinsic_mvbits.f90: Ditto.
 
 2005-02-27  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
