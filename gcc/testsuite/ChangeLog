@@ -1,3 +1,12 @@
+2005-02-07  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	PR middle-end/19775
+	* gcc.dg/torture/builtin-power-1.c: Disable test for
+	invalid transformation.
+	* gcc.dg/builtins-10.c: Likewise.  Disable one test we
+	no longer optimize.
+	* gcc.dg/builtins-47.c: New testcase.
+
 2005-02-07  Leehod Baruch  <leehod@il.ibm.com> 
 	    Dorit Naishlos  <dorit@il.ibm.com>
 	
