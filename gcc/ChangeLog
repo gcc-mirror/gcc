@@ -1,5 +1,11 @@
 Mon Aug 21 07:41:12 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* reload.c (reload_inner_reg_of_subreg): New function broken out of
+	push_reload.
+	(push_reload): Use reload_inner_reg_of_subreg.
+	(combine_reloads): Do not combine reloads if the input reload
+	is a SUBREG in which the inner part will need reloading.
+
 	* global.c (global_alloc): Avoid passing dumpfile argument to
 	reload routines.
 	* toplev.c (rest_of_compilation): Likewise.

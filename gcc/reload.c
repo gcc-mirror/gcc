@@ -243,6 +243,7 @@ static int push_secondary_reload PARAMS ((int, rtx, int, int, enum reg_class,
 					enum insn_code *));
 #endif
 static enum reg_class find_valid_class PARAMS ((enum machine_mode, int));
+static int reload_inner_reg_of_subreg PARAMS ((rtx, enum machine_mode));
 static int push_reload		PARAMS ((rtx, rtx, rtx *, rtx *, enum reg_class,
 				       enum machine_mode, enum machine_mode,
 				       int, int, int, enum reload_type));
@@ -767,6 +768,45 @@ find_reusable_reload (p_in, out, class, type, opnum, dont_share)
   return n_reloads;
 }
 
+/* Return nonzero if X is a SUBREG which will require reloading of its
+   SUBREG_REG expression.  */
+
+static int
+reload_inner_reg_of_subreg (x, mode)
+     rtx x;
+     enum machine_mode mode;
+{
+  rtx inner;
+
+  /* Only SUBREGs are problematical.  */
+  if (GET_CODE (x) != SUBREG)
+    return 0;
+
+  inner = SUBREG_REG (x);
+
+  /* If INNER is a constant, then INNER must be reloaded.  */
+  if (CONSTANT_P (inner))
+    return 1;
+
+  /* If INNER is not a hard register, then INNER will not need to
+     be reloaded.  */
+  if (GET_CODE (inner) != REG
+      || REGNO (inner) >= FIRST_PSEUDO_REGISTER)
+    return 0;
+
+  /* If INNER is not ok for MODE, then INNER will need reloading.  */
+  if (! HARD_REGNO_MODE_OK (REGNO (inner) + SUBREG_WORD (x), mode))
+    return 1;
+
+  /* If the outer part is a word or smaller, INNER larger than a
+     word and the number of regs for INNER is not the same as the
+     number of words in INNER, then INNER will need reloading.  */
+  return (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
+	  && GET_MODE_SIZE (GET_MODE (inner)) > UNITS_PER_WORD
+	  && ((GET_MODE_SIZE (GET_MODE (inner)) / UNITS_PER_WORD)
+	      != HARD_REGNO_NREGS (REGNO (inner), GET_MODE (inner))));
+}
+
 /* Record one reload that needs to be performed.
    IN is an rtx saying where the data are to be found before this instruction.
    OUT says where they must be stored after the instruction.
@@ -993,20 +1033,7 @@ push_reload (in, out, inloc, outloc, class,
   /* Similar issue for (SUBREG constant ...) if it was not handled by the
      code above.  This can happen if SUBREG_WORD != 0.  */
 
-  if (in != 0 && GET_CODE (in) == SUBREG
-      && (CONSTANT_P (SUBREG_REG (in))
-	  || (GET_CODE (SUBREG_REG (in)) == REG
-	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
-	      && (! HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (in))
-					+ SUBREG_WORD (in),
-					inmode)
-		  || (GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
-		      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
-			  > UNITS_PER_WORD)
-		      && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
-			   / UNITS_PER_WORD)
-			  != HARD_REGNO_NREGS (REGNO (SUBREG_REG (in)),
-					       GET_MODE (SUBREG_REG (in)))))))))
+  if (in != 0 && reload_inner_reg_of_subreg (in, inmode))
     {
       /* This relies on the fact that emit_reload_insns outputs the
 	 instructions for input reloads of type RELOAD_OTHER in the same
@@ -1093,18 +1120,7 @@ push_reload (in, out, inloc, outloc, class,
      However, we must reload the inner reg *as well as* the subreg in
      that case.  In this case, the inner reg is an in-out reload.  */
 
-  if (out != 0 && GET_CODE (out) == SUBREG
-      && GET_CODE (SUBREG_REG (out)) == REG
-      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
-      && (! HARD_REGNO_MODE_OK (REGNO (SUBREG_REG (out)) + SUBREG_WORD (out),
-				outmode)
-	  || (GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
-	      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
-		  > UNITS_PER_WORD)
-	      && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
-		   / UNITS_PER_WORD)
-		  != HARD_REGNO_NREGS (REGNO (SUBREG_REG (out)),
-				       GET_MODE (SUBREG_REG (out)))))))
+  if (out != 0 && reload_inner_reg_of_subreg (out, outmode))
     {
       /* This relies on the fact that emit_reload_insns outputs the
 	 instructions for output reloads of type RELOAD_OTHER in reverse
@@ -1655,6 +1671,7 @@ combine_reloads ()
 		&& ! (GET_CODE (rld[i].in) == REG
 		      && reg_overlap_mentioned_for_reload_p (rld[i].in,
 							     rld[output_reload].out))))
+	&& ! reload_inner_reg_of_subreg (rld[i].in, rld[i].inmode)
 	&& (reg_class_size[(int) rld[i].class]
 	    || SMALL_REGISTER_CLASSES)
 	/* We will allow making things slightly worse by combining an
