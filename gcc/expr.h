@@ -414,7 +414,7 @@ extern void move_block_to_reg PARAMS ((int, rtx, int, enum machine_mode));
 
 /* Copy all or part of a BLKmode value X out of registers starting at REGNO.
    The number of registers to be filled is NREGS.  */
-extern void move_block_from_reg PARAMS ((int, rtx, int, int));
+extern void move_block_from_reg PARAMS ((int, rtx, int));
 
 /* Generate a non-consecutive group of registers represented by a PARALLEL.  */
 extern rtx gen_group_rtx PARAMS ((rtx));
@@ -433,7 +433,7 @@ extern void emit_group_store PARAMS ((rtx, rtx, int));
 
 #ifdef TREE_CODE
 /* Copy BLKmode object from a set of registers.  */
-extern rtx copy_blkmode_from_reg PARAMS ((rtx,rtx,tree));
+extern rtx copy_blkmode_from_reg PARAMS ((rtx, rtx, tree));
 #endif
 
 /* Mark REG as holding a parameter for the next CALL_INSN.  */

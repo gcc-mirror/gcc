@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -1405,8 +1405,7 @@ m32r_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 			      plus_constant (arg_pointer_rtx,
 					     FIRST_PARM_OFFSET (0)));
       set_mem_alias_set (regblock, get_varargs_alias_set ());
-      move_block_from_reg (first_reg_offset, regblock,
-			   size, size * UNITS_PER_WORD);
+      move_block_from_reg (first_reg_offset, regblock, size);
 
       *pretend_size = (size * UNITS_PER_WORD);
     }

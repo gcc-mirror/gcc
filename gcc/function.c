@@ -48,6 +48,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "except.h"
 #include "function.h"
 #include "expr.h"
+#include "optabs.h"
 #include "libfuncs.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -4659,7 +4660,7 @@ assign_parms (fndecl)
 
 	  else
 	    move_block_from_reg (REGNO (entry_parm), validize_mem (stack_parm),
-				 partial, int_size_in_bytes (TREE_TYPE (parm)));
+				 partial);
 
 	  entry_parm = stack_parm;
 	}
@@ -4769,9 +4770,9 @@ assign_parms (fndecl)
 	  if (GET_CODE (entry_parm) == REG
 	      || GET_CODE (entry_parm) == PARALLEL)
 	    {
-	      int size_stored
-		= CEIL_ROUND (int_size_in_bytes (TREE_TYPE (parm)),
-			      UNITS_PER_WORD);
+	      int size = int_size_in_bytes (TREE_TYPE (parm));
+	      int size_stored = CEIL_ROUND (size, UNITS_PER_WORD);
+	      rtx mem;
 
 	      /* Note that we will be storing an integral number of words.
 		 So we have to be careful to ensure that we allocate an
@@ -4792,16 +4793,49 @@ assign_parms (fndecl)
 	      else if (PARM_BOUNDARY % BITS_PER_WORD != 0)
 		abort ();
 
+	      mem = validize_mem (stack_parm);
+
 	      /* Handle calls that pass values in multiple non-contiguous
 		 locations.  The Irix 6 ABI has examples of this.  */
 	      if (GET_CODE (entry_parm) == PARALLEL)
-		emit_group_store (validize_mem (stack_parm), entry_parm,
-				  int_size_in_bytes (TREE_TYPE (parm)));
+		emit_group_store (mem, entry_parm, size);
+
+	      /* If SIZE is that of a mode no bigger than a word, just use
+		 that mode's store operation.  */
+	      else if (size <= UNITS_PER_WORD)
+		{
+		  enum machine_mode mode
+		    = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
+
+		  if (mode != BLKmode)
+		    {
+		      rtx reg = gen_rtx_REG (mode, REGNO (entry_parm));
+		      emit_move_insn (change_address (mem, mode, 0), reg);
+		    }
+
+		  /* Blocks smaller than a word on a BYTES_BIG_ENDIAN
+		     machine must be aligned to the left before storing
+		     to memory.  Note that the previous test doesn't
+		     handle all cases (e.g. SIZE == 3).  */
+		  else if (size != UNITS_PER_WORD
+			   && BYTES_BIG_ENDIAN)
+		    {
+		      rtx tem, x;
+		      int by = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
+		      rtx reg = gen_rtx_REG (word_mode, REGNO (entry_parm));
+
+		      x = expand_binop (word_mode, ashl_optab, reg,
+					GEN_INT (by), 0, 1, OPTAB_WIDEN);
+		      tem = change_address (mem, word_mode, 0);
+		      emit_move_insn (tem, x);
+		    }
+		  else
+		    move_block_from_reg (REGNO (entry_parm), mem,
+					 size_stored / UNITS_PER_WORD);
+		}
 	      else
-		move_block_from_reg (REGNO (entry_parm),
-				     validize_mem (stack_parm),
-				     size_stored / UNITS_PER_WORD,
-				     int_size_in_bytes (TREE_TYPE (parm)));
+		move_block_from_reg (REGNO (entry_parm), mem,
+				     size_stored / UNITS_PER_WORD);
 	    }
 	  SET_DECL_RTL (parm, stack_parm);
 	}

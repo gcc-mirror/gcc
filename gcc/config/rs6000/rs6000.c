@@ -3805,10 +3805,8 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       set_mem_alias_set (mem, set);
       set_mem_align (mem, BITS_PER_WORD);
 
-      move_block_from_reg
-	(GP_ARG_MIN_REG + first_reg_offset, mem,
-	 GP_ARG_NUM_REG - first_reg_offset,
-	 (GP_ARG_NUM_REG - first_reg_offset) * UNITS_PER_WORD);
+      move_block_from_reg (GP_ARG_MIN_REG + first_reg_offset, mem,
+			   GP_ARG_NUM_REG - first_reg_offset);
     }
 
   /* Save FP registers if needed.  */

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on intel 80960.
-   Copyright (C) 1992, 1995, 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1992, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Steven McGeady, Intel Corp.
    Additional Work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
@@ -2592,8 +2592,7 @@ i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       set_mem_alias_set (regblock, get_varargs_alias_set ());
       set_mem_align (regblock, BITS_PER_WORD);
       move_block_from_reg (first_reg, regblock,
-			   NPARM_REGS - first_reg,
-			   (NPARM_REGS - first_reg) * UNITS_PER_WORD);
+			   NPARM_REGS - first_reg);
     }
 }
 

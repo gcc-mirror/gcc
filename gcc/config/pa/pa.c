@@ -5403,7 +5403,7 @@ hppa_builtin_saveregs ()
 				     -16));
   set_mem_alias_set (dest, get_varargs_alias_set ());
   set_mem_align (dest, BITS_PER_WORD);
-  move_block_from_reg (23, dest, 4, 4 * UNITS_PER_WORD);
+  move_block_from_reg (23, dest, 4);
 
   /* move_block_from_reg will emit code to store the argument registers
      individually as scalar stores.
