@@ -30,9 +30,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 typedef enum
 {
   /* Ask for an qualified-id.  */
-  pp_cxx_flag_qualified_id = 1 << pp_c_flag_last_bit,
-  pp_cxx_flag_global_scope = 1 << (pp_c_flag_last_bit + 1),
-  pp_cxx_flag_default_argument = 1 << (pp_c_flag_last_bit + 2)
+  pp_cxx_flag_default_argument = 1 << pp_c_flag_last_bit
   
 } cxx_pretty_printer_flags;
 

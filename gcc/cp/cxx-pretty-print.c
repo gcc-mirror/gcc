@@ -268,9 +268,7 @@ pp_cxx_id_expression (cxx_pretty_printer *pp, tree t)
 {
   if (TREE_CODE (t) == OVERLOAD)
     t = OVL_CURRENT (t);
-  if ((TREE_CODE (t) == FUNCTION_DECL && DECL_FUNCTION_MEMBER_P (t))
-      || (pp_c_base (pp)->flags
-          & (pp_cxx_flag_qualified_id | pp_cxx_flag_global_scope)))
+  if (DECL_P (t) && DECL_CONTEXT (t))
     pp_cxx_qualified_id (pp, t);
   else
     pp_cxx_unqualified_id (pp, t);

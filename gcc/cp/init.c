@@ -2276,7 +2276,13 @@ build_new_1 (tree exp)
     }
 
   /* Convert to the final type.  */
-  return build_nop (pointer_type, rval);
+  rval = build_nop (pointer_type, rval);
+
+  /* A new-expression is never an lvalue.  */
+  if (real_lvalue_p (rval))
+    rval = build1 (NON_LVALUE_EXPR, TREE_TYPE (rval), rval);
+
+  return rval;
 }
 
 static tree

@@ -1,5 +1,22 @@
 2003-10-06  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10147
+	* call.c (initialize_reference): Tweak error message.
+	* cxx-pretty-print.h (cxx_pretty_printer_flags): Remove
+	pp_cxx_flag_qualified_id and pp_cxx_flag_global_scope.
+	* cxx-pretty-print.c (pp_cxx_id_expression): Always display
+	qualified entities using qualified names.
+	
+	PR c++/12337
+	* init.c (build_new_1): Make sure that the expression returned is
+	not an lvalue.
+
+	PR c++/12344, c++/12236, c++/8656
+	* decl.c (start_function): Do not ignore attributes embedded in a
+	function declarator.
+
+2003-10-06  Mark Mitchell  <mark@codesourcery.com>
+
 	* Make-lang.in (c++.info): Remove.
 	(c++.dvi): Remove.
 	(c++.generated-manpages): Replace with ...
