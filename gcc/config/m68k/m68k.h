@@ -1850,10 +1850,7 @@ __transfer_from_trampoline ()					\
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
 do { long l[3];								\
      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     if (sizeof (int) == sizeof (long))					\
-       fprintf (FILE, "\t.long 0x%x,0x%x,0x%x\n", l[0], l[1], l[2]);	\
-     else								\
-       fprintf (FILE, "\t.long 0x%lx,0x%lx,0x%lx\n", l[0], l[1], l[2]);	\
+     fprintf (FILE, "\t.long 0x%lx,0x%lx,0x%lx\n", l[0], l[1], l[2]);	\
    } while (0)
   
 /* This is how to output an assembler line defining a `double' constant.  */
@@ -1869,10 +1866,7 @@ do { long l[3];								\
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
 do { long l;						\
      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
-     if (sizeof (int) == sizeof (long))			\
-       fprintf (FILE, "\t.long 0x%x\n", l);		\
-     else						\
-       fprintf (FILE, "\t.long 0x%lx\n", l);		\
+     fprintf (FILE, "\t.long 0x%lx\n", l);		\
    } while (0)
 
 /* This is how to output an assembler line defining an `int' constant.  */
@@ -1990,10 +1984,7 @@ do { long l;						\
         {							\
           long l;						\
           REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
-          if (sizeof (int) == sizeof (long))			\
-            asm_fprintf ((FILE), "%I0x%x", l);			\
-          else							\
-            asm_fprintf ((FILE), "%I0x%lx", l);			\
+          asm_fprintf ((FILE), "%I0x%lx", l);			\
         }							\
      } while (0)
 
@@ -2101,6 +2092,15 @@ extern char *output_addsi3 ();
 extern char *output_andsi3 ();
 extern char *output_iorsi3 ();
 extern char *output_xorsi3 ();
+extern void output_dbcc_and_branch ();
+extern int const_uint32_operand ();
+extern int const_sint32_operand ();
+extern int floating_exact_log2 ();
+extern int not_sp_operand ();
+extern int valid_dbcc_comparison_p ();
+extern int extend_operator ();
+extern int flags_in_68881 ();
+extern int strict_low_part_peephole_ok ();
 
 /* Variables in m68k.c */
 extern char *m68k_align_loops_string;
@@ -2110,6 +2110,17 @@ extern int m68k_align_loops;
 extern int m68k_align_jumps;
 extern int m68k_align_funcs;
 extern int m68k_last_compare_had_fp_operands;
+
+/* Functions from m68k.c used in macros.  */
+extern int symbolic_operand ();
+extern int const_int_cost ();
+extern int standard_68881_constant_p ();
+extern int standard_sun_fpa_constant_p ();
+extern void output_function_prologue ();
+extern int use_return_insn ();
+extern void print_operand_address ();
+extern void print_operand ();
+extern void notice_update_cc ();
 
 
 /*
