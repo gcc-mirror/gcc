@@ -1,5 +1,21 @@
 2003-12-16  Mohan Embar  <gnustuff@thisiscool.com>
 
+	* win32.cc (WSAEventWrapper): Implemented default
+	constructor and init() methods.
+	(_Jv_select): Removed.
+	* gnu/java/nio/natSelectorImplWin32.cc
+	(helper_put_filedescriptors): Removed.
+	(helper_get_filedescriptors): Removed.
+	(implSelect): Implemented in terms of WSAEventWrapper
+	and WSAWaitForMultipleEvents instead of _Jv_select().
+	Added support for thread interruption.
+	* include/win32.h (WSAEventWrapper): Minor formatting
+	changes; added default constructor declaration, init(),
+	getFD() and getEventHandle() methods.
+	(_Jv_select): Removed.
+
+2003-12-16  Mohan Embar  <gnustuff@thisiscool.com>
+
 	* gnu/java/net/natPlainDatagramSocketImplPosix.cc
 	(peekData): Throw SocketTimeoutException instead of
 	InterruptedIOException on timeout.
