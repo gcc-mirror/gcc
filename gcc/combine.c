@@ -5968,13 +5968,18 @@ simplify_and_const_int (x, mode, varop, constop)
 	case XOR:
 	  /* If VAROP is (ior (lshiftrt FOO C1) C2), try to commute the IOR and
 	     LSHIFT so we end up with an (and (lshiftrt (ior ...) ...) ...)
-	     operation which may be a bitfield extraction.  */
+	     operation which may be a bitfield extraction.  Ensure
+	     that the constant we form is not wider than the mode of
+	     VAROP.  */
 
 	  if (GET_CODE (XEXP (varop, 0)) == LSHIFTRT
 	      && GET_CODE (XEXP (XEXP (varop, 0), 1)) == CONST_INT
 	      && INTVAL (XEXP (XEXP (varop, 0), 1)) >= 0
 	      && INTVAL (XEXP (XEXP (varop, 0), 1)) < HOST_BITS_PER_WIDE_INT
 	      && GET_CODE (XEXP (varop, 1)) == CONST_INT
+	      && ((INTVAL (XEXP (XEXP (varop, 0), 1))
+		  + floor_log2 (INTVAL (XEXP (varop, 1))))
+		  < GET_MODE_BITSIZE (GET_MODE (varop)))
 	      && (INTVAL (XEXP (varop, 1))
 		  & ~ nonzero_bits (XEXP (varop, 0), GET_MODE (varop)) == 0))
 	    {
@@ -6003,12 +6008,15 @@ simplify_and_const_int (x, mode, varop, constop)
 					 XEXP (varop, 1), constop))));
 
 	case NOT:
-	  /* (and (not FOO)) is (and (xor FOO CONST_OP)) so if FOO is an
-	     LSHIFTRT we can do the same as above.  */
+	  /* (and (not FOO)) is (and (xor FOO CONST)), so if FOO is an
+	     LSHIFTRT, we can do the same as above.  Ensure that the constant
+	     we form is not wider than the mode of VAROP.  */
 
 	  if (GET_CODE (XEXP (varop, 0)) == LSHIFTRT
 	      && GET_CODE (XEXP (XEXP (varop, 0), 1)) == CONST_INT
 	      && INTVAL (XEXP (XEXP (varop, 0), 1)) >= 0
+	      && (INTVAL (XEXP (XEXP (varop, 0), 1)) + floor_log2 (constop)
+		  < GET_MODE_BITSIZE (GET_MODE (varop)))
 	      && INTVAL (XEXP (XEXP (varop, 0), 1)) < HOST_BITS_PER_WIDE_INT)
 	    {
 	      temp = GEN_INT (constop << INTVAL (XEXP (XEXP (varop, 0), 1)));
