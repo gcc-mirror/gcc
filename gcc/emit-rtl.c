@@ -365,6 +365,8 @@ gen_rtx VPROTO((enum rtx_code code, enum machine_mode mode, ...))
     rt_val = gen_rtx_CONST_INT (mode, va_arg (p, HOST_WIDE_INT));
   else if (code == REG)
     rt_val = gen_rtx_REG (mode, va_arg (p, int));
+  else if (code == MEM)
+    rt_val = gen_rtx_MEM (mode, va_arg (p, rtx));
   else
     {
       rt_val = rtx_alloc (code);	/* Allocate the storage space.  */

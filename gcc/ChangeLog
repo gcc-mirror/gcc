@@ -1,3 +1,8 @@
+Mon Jun 29 09:44:24 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* rtl.h: Update comment about special gen_rtx variants.
+	* emit-rtl.c (gen_rtx): Handle MEMs using gen_rtx_MEM.
+
 Sun Jun 28 20:58:51 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* choose-temp.c (choose_temp_base): Restore original variant of
