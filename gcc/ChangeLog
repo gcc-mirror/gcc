@@ -1,3 +1,14 @@
+Sat Jan 17 23:41:36 1998  David S. Miller  <davem@tanya.rutgers.edu>
+
+	* explow.c (optimize_save_area_alloca): New function for targets
+	where SETJMP_VIA_SAVE_AREA is true.
+	(allocate_dynamic_stack_space): On SETJMP_VIA_SAVE_AREA targets,
+	compute the amount of stack space needed should we find later that
+	setjmp is never called by this function, stuff rtl for this inside
+	a REG_NOTE of the final SET of stack_pointer_rtx.
+	* toplev.c (rest_of_compilation): If SETJMP_VIA_SAVE_AREA and
+	current_function_calls_alloca, call optimize_save_area_alloca.
+
 Sat Jan 17 23:22:59 1998  John Wehle  (john@feith.com)
 
 	* i386.md: Remove redundant integer push patterns.
