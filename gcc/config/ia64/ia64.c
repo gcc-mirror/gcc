@@ -3353,7 +3353,7 @@ ia64_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 }
 
 /* Arguments with alignment larger than 8 bytes start at the next even
-   boundary.  On ILP32 HPUX, TFmode arguments start on next even boundery
+   boundary.  On ILP32 HPUX, TFmode arguments start on next even boundary
    even though their normal alignment is 8 bytes.  See ia64_function_arg.  */
 
 int
