@@ -1,3 +1,7 @@
+1998-16-19  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in ($(srcdir)/f/intdoc.texi): Add $(INCLUDES).
+
 Mon Jun 15 22:21:57 1998  Craig Burley  <burley@gnu.org>
 
 	Cutover to system.h:
