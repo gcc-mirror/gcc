@@ -1057,170 +1057,41 @@ then the target library, then build with \`LANGUAGES=f77'." 1>&2; exit 1; }
 fi
 
 
-# We have to firkle with the info in hconfig.h to figure out suitable types
-# (via com.h).  proj.h and com.h are in gcc/f/, config.h which they need
-# is in gcc/ and the config files are in gcc/config/.
-echo $ac_n "checking f2c integer type""... $ac_c" 1>&6
-echo "configure:1065: checking f2c integer type" >&5
-# Set this back later below!
-late_ac_cpp=$ac_cpp
-late_cflags=$CFLAGS
-extra_includes="-I$topsrcdir/gcc/f -I$topsrcdir/gcc -I$topsrcdir/include -I$topsrcdir/gcc/config -I$r/gcc"
-ac_cpp="$late_ac_cpp -DIN_GCC -DHAVE_CONFIG_H $extra_includes"
-
-# The AC_EGREP_CPPs below have been known to fail when the header
-# path is wrong after things have been moved about; the cpp error status
-# counts for nothing.  First check that there aren't any errors from
-# the headers.
-CFLAGS="$CFLAGS -DHAVE_CONFIG_H -DIN_GCC $extra_includes"
-cat > conftest.$ac_ext <<EOF
-#line 1078 "configure"
+echo $ac_n "checking for built-in g77 integer types""... $ac_c" 1>&6
+echo "configure:1062: checking for built-in g77 integer types" >&5
+if eval "test \"`echo '$''{'libf2c_cv_has_g77_builtin_types'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1067 "configure"
 #include "confdefs.h"
-#include "proj.h"
-#define FFECOM_DETERMINE_TYPES 1
-#include "com.h"
-int main() {
 
+int main() {
+__g77_integer g77i;
+__g77_uinteger g77ui;
+__g77_longint g77l;
+__g77_ulongint g77ul;
 ; return 0; }
 EOF
-if { (eval echo configure:1087: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
-  :
+if { (eval echo configure:1077: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  libf2c_cv_has_g77_builtin_types=yes
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -rf conftest*
-  { echo "configure: error: Can't run check for integer sizes -- see config.log" 1>&2; exit 1; }
+  libf2c_cv_has_g77_builtin_types=no
 fi
 rm -f conftest*
-CFLAGS=$late_cflags
-
-if eval "test \"`echo '$''{'g77_cv_sys_f2cinteger'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  echo "configure:1101: using $ac_cpp" >&5
-cat > conftest.$ac_ext <<EOF
-#line 1103 "configure"
-#include "confdefs.h"
-#include "proj.h"
-#define FFECOM_DETERMINE_TYPES 1
-#include "com.h"
-#if FFECOM_f2cINTEGER == FFECOM_f2ccodeLONG
-F2C_INTEGER=long int
-#elif FFECOM_f2cINTEGER == FFECOM_f2ccodeINT
-F2C_INTEGER=int
-#else
-#  error "Cannot find a suitable type for F2C_INTEGER"
-#endif
-
-EOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  egrep "F2C_INTEGER=long int" >/dev/null 2>&1; then
-  rm -rf conftest*
-  g77_cv_sys_f2cinteger="long int"
-fi
-rm -f conftest*
-
-if test "$g77_cv_sys_f2cinteger" = ""; then
-echo "configure:1125: using $ac_cpp" >&5
-  cat > conftest.$ac_ext <<EOF
-#line 1127 "configure"
-#include "confdefs.h"
-#include "proj.h"
-#define FFECOM_DETERMINE_TYPES 1
-#include "com.h"
-#if FFECOM_f2cINTEGER == FFECOM_f2ccodeLONG
-F2C_INTEGER=long int
-#elif FFECOM_f2cINTEGER == FFECOM_f2ccodeINT
-F2C_INTEGER=int
-#else
-#  error "Cannot find a suitable type for F2C_INTEGER"
-#endif
-
-EOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  egrep "F2C_INTEGER=int" >/dev/null 2>&1; then
-  rm -rf conftest*
-  g77_cv_sys_f2cinteger=int
-fi
-rm -f conftest*
-
-fi
-if test "$g77_cv_sys_f2cinteger" = ""; then
-  echo "$ac_t""""" 1>&6
-  { echo "configure: error: Can't determine type for f2c integer; config.log may help." 1>&2; exit 1; }
 fi
 
+echo "$ac_t""$libf2c_cv_has_g77_builtin_types" 1>&6
+if test $libf2c_cv_has_g77_builtin_types = no; then
+  { echo "configure: error: gcc doesn't define all of the built in types __g77_integer,
+__g77_uinteger, __g77_longint, and __g77_ulongint.  You may not be using
+a new enough version of gcc, or your target may not have type sizes which
+accommodate those types." 1>&2; exit 1; }
 fi
-
-echo "$ac_t""$g77_cv_sys_f2cinteger" 1>&6
-F2C_INTEGER=$g77_cv_sys_f2cinteger
-
-
-echo $ac_n "checking f2c long int type""... $ac_c" 1>&6
-echo "configure:1161: checking f2c long int type" >&5
-if eval "test \"`echo '$''{'g77_cv_sys_f2clongint'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  echo "configure:1165: using $ac_cpp" >&5
-cat > conftest.$ac_ext <<EOF
-#line 1167 "configure"
-#include "confdefs.h"
-#include "proj.h"
-#define FFECOM_DETERMINE_TYPES 1
-#include "com.h"
-#if FFECOM_f2cLONGINT == FFECOM_f2ccodeLONG
-F2C_LONGINT=long int
-#elif FFECOM_f2cLONGINT == FFECOM_f2ccodeLONGLONG
-F2C_LONGINT=long long int
-#else
-#  error "Cannot find a suitable type for F2C_LONGINT"
-#endif
-
-EOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  egrep "F2C_LONGINT=long int" >/dev/null 2>&1; then
-  rm -rf conftest*
-  g77_cv_sys_f2clongint="long int"
-fi
-rm -f conftest*
-
-
-if test "$g77_cv_sys_f2clongint" = ""; then
-echo "configure:1190: using $ac_cpp" >&5
-  cat > conftest.$ac_ext <<EOF
-#line 1192 "configure"
-#include "confdefs.h"
-#include "proj.h"
-#define FFECOM_DETERMINE_TYPES 1
-#include "com.h"
-#if FFECOM_f2cLONGINT == FFECOM_f2ccodeLONG
-F2C_LONGINT=long int
-#elif FFECOM_f2cLONGINT == FFECOM_f2ccodeLONGLONG
-F2C_LONGINT=long long int
-#else
-#  error "Cannot find a suitable type for F2C_LONGINT"
-#endif
-
-EOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  egrep "F2C_LONGINT=long long int" >/dev/null 2>&1; then
-  rm -rf conftest*
-  g77_cv_sys_f2clongint="long long int"
-fi
-rm -f conftest*
-
-fi
-if test "$g77_cv_sys_f2clongint" = ""; then
-  echo "$ac_t""""" 1>&6
-  { echo "configure: error: Can't determine type for f2c long int; config.log may help." 1>&2; exit 1; }
-fi
-
-fi
-
-echo "$ac_t""$g77_cv_sys_f2clongint" 1>&6
-F2C_LONGINT=$g77_cv_sys_f2clongint
-
-ac_cpp=$late_ac_cpp
 
 # avoid confusion in case the `makefile's from the f2c distribution have
 # got put here
@@ -1267,7 +1138,7 @@ else { echo "configure: error: can not run $ac_config_sub" 1>&2; exit 1; }
 fi
 
 echo $ac_n "checking host system type""... $ac_c" 1>&6
-echo "configure:1271: checking host system type" >&5
+echo "configure:1142: checking host system type" >&5
 
 host_alias=$host
 case "$host_alias" in
@@ -1288,7 +1159,7 @@ host_os=`echo $host | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$host" 1>&6
 
 echo $ac_n "checking target system type""... $ac_c" 1>&6
-echo "configure:1292: checking target system type" >&5
+echo "configure:1163: checking target system type" >&5
 
 target_alias=$target
 case "$target_alias" in
@@ -1306,7 +1177,7 @@ target_os=`echo $target | sed 's/^\([^-]*\)-\([^-]*\)-\(.*\)$/\3/'`
 echo "$ac_t""$target" 1>&6
 
 echo $ac_n "checking build system type""... $ac_c" 1>&6
-echo "configure:1310: checking build system type" >&5
+echo "configure:1181: checking build system type" >&5
 
 build_alias=$build
 case "$build_alias" in
@@ -1487,8 +1358,6 @@ s%@INSTALL_SCRIPT@%$INSTALL_SCRIPT%g
 s%@INSTALL_DATA@%$INSTALL_DATA%g
 s%@SET_MAKE@%$SET_MAKE%g
 s%@CPP@%$CPP%g
-s%@F2C_INTEGER@%$F2C_INTEGER%g
-s%@F2C_LONGINT@%$F2C_LONGINT%g
 s%@gcc_version@%$gcc_version%g
 s%@gcc_version_trigger@%$gcc_version_trigger%g
 s%@host@%$host%g

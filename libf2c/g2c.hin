@@ -18,20 +18,20 @@
 
 /* F2C_INTEGER will normally be `int' but would be `long' on 16-bit systems */
 /* we assume short, float are OK */
-typedef @F2C_INTEGER@ /* long int */ integer;
-typedef unsigned @F2C_INTEGER@ /* long */ uinteger;
+typedef __g77_integer integer;
+typedef __g77_uinteger uinteger;
 typedef char *address;
 typedef short int shortint;
 typedef float real;
 typedef double doublereal;
 typedef struct { real r, i; } complex;
 typedef struct { doublereal r, i; } doublecomplex;
-typedef @F2C_INTEGER@ /* long int */ logical;
+typedef __g77_integer logical;
 typedef short int shortlogical;
 typedef char logical1;
 typedef char integer1;
-typedef @F2C_LONGINT@ /* long long */ longint;		/* system-dependent */
-typedef unsigned @F2C_LONGINT@ /* long long */ ulongint;	/* system-dependent */
+typedef __g77_longint longint;			/* system-dependent */
+typedef __g77_ulongint ulongint;		/* system-dependent */
 #define qbit_clear(a,b)	((a) & ~((ulongint)1 << (b)))
 #define qbit_set(a,b)	((a) |  ((ulongint)1 << (b)))
 
@@ -52,9 +52,9 @@ typedef short flag;
 typedef short ftnlen;
 typedef short ftnint;
 #else
-typedef @F2C_INTEGER@ /* long int */ flag;
-typedef @F2C_INTEGER@ /* long int */ ftnlen;
-typedef @F2C_INTEGER@ /* long int */ ftnint;
+typedef __g77_integer flag;
+typedef __g77_integer ftnlen;
+typedef __g77_integer ftnint;
 #endif
 
 /*external read, write*/

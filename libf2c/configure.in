@@ -89,109 +89,23 @@ including headers and, preferably, the library, before you can configure
 the G77 runtime system.  If necessary, install gcc now with \`LANGUAGES=c',
 then the target library, then build with \`LANGUAGES=f77'.])])
 
-# We have to firkle with the info in hconfig.h to figure out suitable types
-# (via com.h).  proj.h and com.h are in gcc/f/, config.h which they need
-# is in gcc/ and the config files are in gcc/config/.
-AC_MSG_CHECKING(f2c integer type)
-# Set this back later below!
-late_ac_cpp=$ac_cpp
-late_cflags=$CFLAGS
-extra_includes="-I$topsrcdir/gcc/f -I$topsrcdir/gcc -I$topsrcdir/include -I$topsrcdir/gcc/config -I$r/gcc"
-ac_cpp="$late_ac_cpp -DIN_GCC -DHAVE_CONFIG_H $extra_includes"
-
-# The AC_EGREP_CPPs below have been known to fail when the header
-# path is wrong after things have been moved about; the cpp error status
-# counts for nothing.  First check that there aren't any errors from
-# the headers.
-CFLAGS="$CFLAGS -DHAVE_CONFIG_H -DIN_GCC $extra_includes"
-AC_TRY_COMPILE([#include "proj.h"
-#define FFECOM_DETERMINE_TYPES 1
-#include "com.h"],,,
-AC_MSG_ERROR([Can't run check for integer sizes -- see config.log]))
-CFLAGS=$late_cflags
-
-AC_CACHE_VAL(g77_cv_sys_f2cinteger,
-echo "configure:__oline__: using $ac_cpp" >&AC_FD_CC
-AC_EGREP_CPP(F2C_INTEGER=long int,
-[#include "proj.h"
-#define FFECOM_DETERMINE_TYPES 1
-#include "com.h"
-#if FFECOM_f2cINTEGER == FFECOM_f2ccodeLONG
-F2C_INTEGER=long int
-#elif FFECOM_f2cINTEGER == FFECOM_f2ccodeINT
-F2C_INTEGER=int
-#else
-#  error "Cannot find a suitable type for F2C_INTEGER"
-#endif
-],
- g77_cv_sys_f2cinteger="long int",)
-if test "$g77_cv_sys_f2cinteger" = ""; then
-echo "configure:__oline__: using $ac_cpp" >&AC_FD_CC
-  AC_EGREP_CPP(F2C_INTEGER=int,
-[#include "proj.h"
-#define FFECOM_DETERMINE_TYPES 1
-#include "com.h"
-#if FFECOM_f2cINTEGER == FFECOM_f2ccodeLONG
-F2C_INTEGER=long int
-#elif FFECOM_f2cINTEGER == FFECOM_f2ccodeINT
-F2C_INTEGER=int
-#else
-#  error "Cannot find a suitable type for F2C_INTEGER"
-#endif
-],
-   g77_cv_sys_f2cinteger=int,)
+dnl Checks for g77 integer types built into gcc's C front end.
+AC_MSG_CHECKING(for built-in g77 integer types)
+AC_CACHE_VAL(libf2c_cv_has_g77_builtin_types,
+[AC_TRY_COMPILE(,
+  [__g77_integer g77i;
+__g77_uinteger g77ui;
+__g77_longint g77l;
+__g77_ulongint g77ul;],
+  libf2c_cv_has_g77_builtin_types=yes,
+  libf2c_cv_has_g77_builtin_types=no)])
+AC_MSG_RESULT($libf2c_cv_has_g77_builtin_types)
+if test $libf2c_cv_has_g77_builtin_types = no; then
+  AC_MSG_ERROR([gcc doesn't define all of the built in types __g77_integer,
+__g77_uinteger, __g77_longint, and __g77_ulongint.  You may not be using
+a new enough version of gcc, or your target may not have type sizes which
+accommodate those types.])
 fi
-if test "$g77_cv_sys_f2cinteger" = ""; then
-  AC_MSG_RESULT("")
-  AC_MSG_ERROR([Can't determine type for f2c integer; config.log may help.])
-fi
-)
-AC_MSG_RESULT($g77_cv_sys_f2cinteger)
-F2C_INTEGER=$g77_cv_sys_f2cinteger
-AC_SUBST(F2C_INTEGER)
-
-AC_MSG_CHECKING(f2c long int type)
-AC_CACHE_VAL(g77_cv_sys_f2clongint,
-echo "configure:__oline__: using $ac_cpp" >&AC_FD_CC
-AC_EGREP_CPP(F2C_LONGINT=long int,
-[#include "proj.h"
-#define FFECOM_DETERMINE_TYPES 1
-#include "com.h"
-#if FFECOM_f2cLONGINT == FFECOM_f2ccodeLONG
-F2C_LONGINT=long int
-#elif FFECOM_f2cLONGINT == FFECOM_f2ccodeLONGLONG
-F2C_LONGINT=long long int
-#else
-#  error "Cannot find a suitable type for F2C_LONGINT"
-#endif
-],
- g77_cv_sys_f2clongint="long int",)
-
-if test "$g77_cv_sys_f2clongint" = ""; then
-echo "configure:__oline__: using $ac_cpp" >&AC_FD_CC
-  AC_EGREP_CPP(F2C_LONGINT=long long int,
-[#include "proj.h"
-#define FFECOM_DETERMINE_TYPES 1
-#include "com.h"
-#if FFECOM_f2cLONGINT == FFECOM_f2ccodeLONG
-F2C_LONGINT=long int
-#elif FFECOM_f2cLONGINT == FFECOM_f2ccodeLONGLONG
-F2C_LONGINT=long long int
-#else
-#  error "Cannot find a suitable type for F2C_LONGINT"
-#endif
-],
-   g77_cv_sys_f2clongint="long long int",)
-fi
-if test "$g77_cv_sys_f2clongint" = ""; then
-  AC_MSG_RESULT("")
-  AC_MSG_ERROR([Can't determine type for f2c long int; config.log may help.])
-fi
-)
-AC_MSG_RESULT($g77_cv_sys_f2clongint)
-F2C_LONGINT=$g77_cv_sys_f2clongint
-AC_SUBST(F2C_LONGINT)
-ac_cpp=$late_ac_cpp
 
 # avoid confusion in case the `makefile's from the f2c distribution have
 # got put here

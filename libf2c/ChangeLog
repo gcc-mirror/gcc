@@ -1,3 +1,15 @@
+2000-05-18  Chris Demetriou  <cgd@sibyte.com>
+
+	* configure.in: Test for __g77_integer, __g77_uinteger,
+	__g77_longint, and __g77_ulongint builtin types, rather
+	than mucking around with compiler headers.
+	* configure: Regenerate.
+	* g2c.hin (integer, logical, flag, ftnlen, ftnint): Use
+	__g77_integer rather than autoconfigured value.
+	(uinteger): Use __g77_uinteger rather than autoconfigured value.
+	(longint): Use __g77_longint rather than autoconfigured value.
+	(ulongint): Use __g77_ulongint rather than autoconfigured value.
+
 Sun Mar 12 20:12;30 2000  Toon Moene  <toon@moene.indiv.nluug.nl>
 	Based on work done by David M. Gay (Bell Labs)
 
@@ -185,9 +197,9 @@ Sat Apr 24 11:02:48 1999  Craig Burley  <craig@jcb-sc.com>
 Sat Apr 17 17:33:30 1999  Craig Burley  <craig@jcb-sc.com>
 
 	From H.J. Lu <hjl@gnu.org>:
-        * Makefile.in (s-libi77): Depend on i77.
-        (s-libf77): Depend on i77.
-        (s-libu77): Depend on u77.
+	* Makefile.in (s-libi77): Depend on i77.
+	(s-libf77): Depend on i77.
+	(s-libu77): Depend on u77.
 
 Mon Apr 12 21:38:14 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	
@@ -216,11 +228,11 @@ Wed Mar 31 13:50:24 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure: Rebuilt.
 
-        * configure.in: Fix integer size tests: sanity check first; search
-        toplevel include dir (from Rainer Orth); only mess with ac_cpp
-        once; use -DIN_GCC -DHAVE_CONFIG_H.
+	* configure.in: Fix integer size tests: sanity check first; search
+	toplevel include dir (from Rainer Orth); only mess with ac_cpp
+	once; use -DIN_GCC -DHAVE_CONFIG_H.
 
-        * configure.in: Use `g77_cv_...', not `f77_cv_...'.
+	* configure.in: Use `g77_cv_...', not `f77_cv_...'.
 
 Wed Mar 24 22:41:28 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
