@@ -1,5 +1,8 @@
 1999-04-21  Tom Tromey  <tromey@cygnus.com>
 
+	* java/lang/String.java: Don't throw
+	UnsupportedEncodingException.
+
 	* java/lang/natString.cc (getBytes): Correctly size result
 	buffer.  From Bryce McKinlay <bryce@albatross.co.nz>.
 

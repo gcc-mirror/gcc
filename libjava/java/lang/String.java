@@ -132,9 +132,27 @@ public final class String
   public native void getChars (int srcBegin, int srcEnd,
 			       char[] dst, int dstBegin);
 
-  public byte[] getBytes () throws UnsupportedEncodingException
+  public byte[] getBytes ()
   {
-    return getBytes (System.getProperty("file.encoding", "8859_1"));
+    try
+      {
+	return getBytes (System.getProperty("file.encoding", "8859_1"));
+      }
+    catch (UnsupportedEncodingException x)
+      {
+	// This probably shouldn't happen, but could if file.encoding
+	// is somehow changed to a value we don't understand.
+	try
+	  {
+	    return getBytes ("8859_1");
+	  }
+	catch (UnsupportedEncodingException x2)
+	  {
+	    // This really shouldn't happen, because the 8859_1
+	    // encoding should always be available.
+	    throw new InternalError ("couldn't find 8859_1 encoder");
+	  }
+      }
   }
 
   public native byte[] getBytes (String enc)
