@@ -62,8 +62,8 @@ static int m32r_sched_odd_word_p;
 static void  init_reg_tables			PARAMS ((void));
 static void  block_move_call			PARAMS ((rtx, rtx, rtx));
 static int   m32r_is_insn			PARAMS ((rtx));
-static int   m32r_valid_decl_attribute		PARAMS ((tree, tree,
-							 tree, tree));
+const struct attribute_spec m32r_attribute_table[];
+static tree  m32r_handle_model_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static void  m32r_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void  m32r_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 
@@ -76,8 +76,8 @@ static int    m32r_issue_rate	   PARAMS ((void));
 
 
 /* Initialize the GCC target structure.  */
-#undef TARGET_VALID_DECL_ATTRIBUTE
-#define TARGET_VALID_DECL_ATTRIBUTE m32r_valid_decl_attribute
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE m32r_attribute_table
 
 #undef TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE m32r_output_function_prologue
@@ -250,10 +250,6 @@ init_reg_tables ()
 	Grep for MODEL in m32r.h for more info.
 */
 
-static tree interrupt_ident1;
-static tree interrupt_ident2;
-static tree model_ident1;
-static tree model_ident2;
 static tree small_ident1;
 static tree small_ident2;
 static tree medium_ident1;
@@ -264,12 +260,8 @@ static tree large_ident2;
 static void
 init_idents PARAMS ((void))
 {
-  if (interrupt_ident1 == 0)
+  if (small_ident1 == 0)
     {
-      interrupt_ident1 = get_identifier ("interrupt");
-      interrupt_ident2 = get_identifier ("__interrupt__");
-      model_ident1 = get_identifier ("model");
-      model_ident2 = get_identifier ("__model__");
       small_ident1 = get_identifier ("small");
       small_ident2 = get_identifier ("__small__");
       medium_ident1 = get_identifier ("medium");
@@ -279,34 +271,43 @@ init_idents PARAMS ((void))
     }
 }
 
-/* Return nonzero if IDENTIFIER is a valid decl attribute.  */
-
-static int
-m32r_valid_decl_attribute (type, attributes, identifier, args)
-     tree type ATTRIBUTE_UNUSED;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier;
-     tree args;
+const struct attribute_spec m32r_attribute_table[] =
 {
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "interrupt", 0, 0, true,  false, false, NULL },
+  { "model",     1, 1, true,  false, false, m32r_handle_model_attribute },
+  { NULL,        0, 0, false, false, false, NULL }
+};
+
+
+/* Handle an "model" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+m32r_handle_model_attribute (node, name, args, flags, no_add_attrs)
+     tree *node ATTRIBUTE_UNUSED;
+     tree name;
+     tree args;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  tree arg;
+
   init_idents ();
+  arg = TREE_VALUE (args);
 
-  if ((identifier == interrupt_ident1
-       || identifier == interrupt_ident2)
-      && list_length (args) == 0)
-    return 1;
+  if (arg != small_ident1
+      && arg != small_ident2
+      && arg != medium_ident1
+      && arg != medium_ident2
+      && arg != large_ident1
+      && arg != large_ident2)
+    {
+      warning ("invalid argument of `%s' attribute",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
 
-  if ((identifier == model_ident1
-       || identifier == model_ident2)
-      && list_length (args) == 1
-      && (TREE_VALUE (args) == small_ident1
-	  || TREE_VALUE (args) == small_ident2
-	  || TREE_VALUE (args) == medium_ident1
-	  || TREE_VALUE (args) == medium_ident2
-	  || TREE_VALUE (args) == large_ident1
-	  || TREE_VALUE (args) == large_ident2))
-    return 1;
-
-  return 0;
+  return NULL_TREE;
 }
 
 /* A C statement or statements to switch to the appropriate
@@ -370,7 +371,7 @@ m32r_encode_section_info (decl)
     {
     case VAR_DECL :
     case FUNCTION_DECL :
-      model = lookup_attribute ("model", DECL_MACHINE_ATTRIBUTES (decl));
+      model = lookup_attribute ("model", DECL_ATTRIBUTES (decl));
       break;
     case STRING_CST :
     case CONSTRUCTOR :
@@ -1747,7 +1748,7 @@ m32r_compute_function_type (decl)
     return fn_type;
 
   /* Compute function type.  */
-  fn_type = (lookup_attribute ("interrupt", DECL_MACHINE_ATTRIBUTES (current_function_decl)) != NULL_TREE
+  fn_type = (lookup_attribute ("interrupt", DECL_ATTRIBUTES (current_function_decl)) != NULL_TREE
 	     ? M32R_FUNCTION_INTERRUPT
 	     : M32R_FUNCTION_NORMAL);
 

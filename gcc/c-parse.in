@@ -173,7 +173,7 @@ end ifc
 %type <ttype> declspecs_ts declspecs_nots
 %type <ttype> declspecs_ts_nosa declspecs_nots_nosa
 %type <ttype> declspecs_nosc_ts declspecs_nosc_nots declspecs_nosc declspecs
-%type <ttype> maybe_type_quals_setattrs typespec_nonattr typespec_attr
+%type <ttype> maybe_type_quals_attrs typespec_nonattr typespec_attr
 %type <ttype> typespec_reserved_nonattr typespec_reserved_attr
 %type <ttype> typespec_nonreserved_nonattr
 
@@ -182,7 +182,6 @@ end ifc
 %type <ttype> init maybeasm
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
-%type <ttype> maybe_setattrs
 %type <ttype> any_word extension
 
 %type <ttype> compstmt compstmt_start compstmt_nostart compstmt_primary_start
@@ -847,29 +846,11 @@ setspecs: /* empty */
 		  all_prefix_attributes = prefix_attributes; }
 	;
 
-/* ??? Yuck.  See maybe_setattrs.  */
-setattrs: /* empty */
-		{ all_prefix_attributes = chainon ($<ttype>0, all_prefix_attributes); }
-	;
-
-maybe_setattrs:
-	/* ??? Yuck.  setattrs is a quick hack.  We can't use
-	   prefix_attributes because $1 only applies to this
-	   declarator.  We assume setspecs has already been done.
-	   setattrs also avoids 5 reduce/reduce conflicts (otherwise multiple
-	   attributes could be recognized here or in `attributes').
-	   Properly attributes ought to be able to apply to any level of
-	   nested declarator, but the necessary compiler support isn't
-	   present, so the attributes apply to a declaration (which may be
-	   nested).  */
-	  maybe_attribute setattrs
-	;
-
 /* Possibly attributes after a comma, which should reset all_prefix_attributes
    to prefix_attributes with these ones chained on the front.  */
 maybe_resetattrs:
-		{ all_prefix_attributes = prefix_attributes; }
-	  maybe_setattrs
+	  maybe_attribute
+		{ all_prefix_attributes = chainon ($1, prefix_attributes); }
 	;
 
 decl:
@@ -1347,18 +1328,12 @@ declspecs:
 	| declspecs_sc_ts_sa_ea
 	;
 
-/* A (possibly empty) sequence of type qualifiers and attributes, to be
-   followed by the effect of setattrs if any attributes were present.  */
-maybe_type_quals_setattrs:
+/* A (possibly empty) sequence of type qualifiers and attributes.  */
+maybe_type_quals_attrs:
 	  /* empty */
 		{ $$ = NULL_TREE; }
 	| declspecs_nosc_nots
-		{ tree specs, attrs;
-		  split_specs_attrs ($1, &specs, &attrs);
-		  /* ??? Yuck.  See maybe_setattrs.  */
-		  if (attrs != NULL_TREE)
-		    all_prefix_attributes = chainon (attrs, all_prefix_attributes);
-		  $$ = specs; }
+		{ $$ = $1; }
 	;
 
 /* A type specifier (but not a type qualifier).
@@ -1669,8 +1644,8 @@ declarator:
 /* A declarator that is allowed only after an explicit typespec.  */
 
 after_type_declarator:
-	  '(' maybe_setattrs after_type_declarator ')'
-		{ $$ = $3; }
+	  '(' maybe_attribute after_type_declarator ')'
+		{ $$ = $2 ? tree_cons ($2, $3, NULL_TREE) : $3; }
 	| after_type_declarator '(' parmlist_or_identifiers  %prec '.'
 		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
 /*	| after_type_declarator '(' error ')'  %prec '.'
@@ -1678,7 +1653,7 @@ after_type_declarator:
 		  poplevel (0, 0, 0); }  */
 	| after_type_declarator array_declarator  %prec '.'
 		{ $$ = set_array_declarator_type ($2, $1, 0); }
-	| '*' maybe_type_quals_setattrs after_type_declarator  %prec UNARY
+	| '*' maybe_type_quals_attrs after_type_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| TYPENAME
 ifobjc
@@ -1717,12 +1692,12 @@ parm_declarator_nostarttypename:
 		  poplevel (0, 0, 0); }  */
 	| parm_declarator_nostarttypename array_declarator  %prec '.'
 		{ $$ = set_array_declarator_type ($2, $1, 0); }
-	| '*' maybe_type_quals_setattrs parm_declarator_starttypename  %prec UNARY
+	| '*' maybe_type_quals_attrs parm_declarator_starttypename  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
-	| '*' maybe_type_quals_setattrs parm_declarator_nostarttypename  %prec UNARY
+	| '*' maybe_type_quals_attrs parm_declarator_nostarttypename  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
-	| '(' maybe_setattrs parm_declarator_nostarttypename ')'
-		{ $$ = $3; }
+	| '(' maybe_attribute parm_declarator_nostarttypename ')'
+		{ $$ = $2 ? tree_cons ($2, $3, NULL_TREE) : $3; }
 	;
 
 /* A declarator allowed whether or not there has been
@@ -1734,9 +1709,9 @@ notype_declarator:
 /*	| notype_declarator '(' error ')'  %prec '.'
 		{ $$ = build_nt (CALL_EXPR, $1, NULL_TREE, NULL_TREE);
 		  poplevel (0, 0, 0); }  */
-	| '(' maybe_setattrs notype_declarator ')'
-		{ $$ = $3; }
-	| '*' maybe_type_quals_setattrs notype_declarator  %prec UNARY
+	| '(' maybe_attribute notype_declarator ')'
+		{ $$ = $2 ? tree_cons ($2, $3, NULL_TREE) : $3; }
+	| '*' maybe_type_quals_attrs notype_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| notype_declarator array_declarator  %prec '.'
 		{ $$ = set_array_declarator_type ($2, $1, 0); }
@@ -1991,20 +1966,20 @@ absdcl1:  /* a nonempty absolute declarator */
 
 absdcl1_noea:
 	  direct_absdcl1
-	| '*' maybe_type_quals_setattrs absdcl1_noea
+	| '*' maybe_type_quals_attrs absdcl1_noea
 		{ $$ = make_pointer_declarator ($2, $3); }
 	;
 
 absdcl1_ea:
-	  '*' maybe_type_quals_setattrs
+	  '*' maybe_type_quals_attrs
 		{ $$ = make_pointer_declarator ($2, NULL_TREE); }
-	| '*' maybe_type_quals_setattrs absdcl1_ea
+	| '*' maybe_type_quals_attrs absdcl1_ea
 		{ $$ = make_pointer_declarator ($2, $3); }
 	;
 
 direct_absdcl1:
-	  '(' maybe_setattrs absdcl1 ')'
-		{ $$ = $3; }
+	  '(' maybe_attribute absdcl1 ')'
+		{ $$ = $2 ? tree_cons ($2, $3, NULL_TREE) : $3; }
 	| direct_absdcl1 '(' parmlist
 		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
 	| direct_absdcl1 array_declarator
@@ -3904,15 +3879,21 @@ yyprint (file, yychar, yyl)
 
 /* Return something to represent absolute declarators containing a *.
    TARGET is the absolute declarator that the * contains.
-   TYPE_QUALS is a list of modifiers such as const or volatile
-   to apply to the pointer type, represented as identifiers.
+   TYPE_QUALS_ATTRS is a list of modifiers such as const or volatile
+   to apply to the pointer type, represented as identifiers, possible mixed
+   with attributes.
 
-   We return an INDIRECT_REF whose "contents" are TARGET
-   and whose type is the modifier list.  */
+   We return an INDIRECT_REF whose "contents" are TARGET (inside a TREE_LIST,
+   if attributes are present) and whose type is the modifier list.  */
 
 tree
-make_pointer_declarator (type_quals, target)
-     tree type_quals, target;
+make_pointer_declarator (type_quals_attrs, target)
+     tree type_quals_attrs, target;
 {
-  return build1 (INDIRECT_REF, type_quals, target);
+  tree quals, attrs;
+  tree itarget = target;
+  split_specs_attrs (type_quals_attrs, &quals, &attrs);
+  if (attrs != NULL_TREE)
+    itarget = tree_cons (attrs, target, NULL_TREE);
+  return build1 (INDIRECT_REF, quals, itarget);
 }

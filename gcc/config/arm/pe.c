@@ -1,5 +1,5 @@
 /* Routines for GCC for ARM/pe.
-   Copyright (C) 1995, 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Doug Evans (dje@cygnus.com).
 
 This file is part of GNU CC.
@@ -45,7 +45,7 @@ arm_dllexport_p (decl)
   if (TREE_CODE (decl) != VAR_DECL
       && TREE_CODE (decl) != FUNCTION_DECL)
     return 0;
-  exp = lookup_attribute ("dllexport", DECL_MACHINE_ATTRIBUTES (decl));
+  exp = lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl));
   if (exp)
     return 1;
 
@@ -67,7 +67,7 @@ arm_dllimport_p (decl)
   if (TREE_CODE (decl) != VAR_DECL
       && TREE_CODE (decl) != FUNCTION_DECL)
     return 0;
-  imp = lookup_attribute ("dllimport", DECL_MACHINE_ATTRIBUTES (decl));
+  imp = lookup_attribute ("dllimport", DECL_ATTRIBUTES (decl));
   if (imp)
     return 1;
 

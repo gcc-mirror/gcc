@@ -1110,7 +1110,7 @@ enum reg_class {
    FUNDECL is a C variable whose value is a tree node that describes
    the function in question.  Normally it is a node of type
    `FUNCTION_DECL' that describes the declaration of the function.
-   From this you can obtain the DECL_MACHINE_ATTRIBUTES of the
+   From this you can obtain the DECL_ATTRIBUTES of the
    function.
 
    FUNTYPE is a C variable whose value is a tree node that describes

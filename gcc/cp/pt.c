@@ -1929,7 +1929,7 @@ process_template_parm (list, next)
       my_friendly_assert (TREE_CODE (TREE_PURPOSE (parm)) == TREE_LIST, 260);
       /* is a const-param */
       parm = grokdeclarator (TREE_VALUE (parm), TREE_PURPOSE (parm),
-			     PARM, 0, NULL_TREE);
+			     PARM, 0, NULL);
 
       /* [temp.param]
 
@@ -9356,7 +9356,7 @@ void
 do_decl_instantiation (declspecs, declarator, storage)
      tree declspecs, declarator, storage;
 {
-  tree decl = grokdeclarator (declarator, declspecs, NORMAL, 0, NULL_TREE);
+  tree decl = grokdeclarator (declarator, declspecs, NORMAL, 0, NULL);
   tree result = NULL_TREE;
   int extern_p = 0;
 

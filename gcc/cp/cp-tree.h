@@ -3734,7 +3734,7 @@ extern tree grokbitfield			PARAMS ((tree, tree, tree));
 extern tree groktypefield			PARAMS ((tree, tree));
 extern tree grokoptypename			PARAMS ((tree, tree));
 extern int copy_assignment_arg_p		PARAMS ((tree, int));
-extern void cplus_decl_attributes		PARAMS ((tree *, tree, tree, int));
+extern void cplus_decl_attributes		PARAMS ((tree *, tree, int));
 extern tree constructor_name_full		PARAMS ((tree));
 extern tree constructor_name			PARAMS ((tree));
 extern void defer_fn            		PARAMS ((tree));
@@ -4208,7 +4208,7 @@ extern tree walk_tree_without_duplicates        PARAMS ((tree *,
 							 walk_tree_fn,
 							 void *));
 extern tree copy_tree_r                         PARAMS ((tree *, int *, void *));
-extern int cp_valid_lang_attribute		PARAMS ((tree, tree, tree, tree));
+extern const struct attribute_spec cp_attribute_table[];
 extern tree make_ptrmem_cst                     PARAMS ((tree, tree));
 extern tree cp_build_qualified_type_real        PARAMS ((tree, int, int));
 extern void remap_save_expr                     PARAMS ((tree *, splay_tree, tree, int *));

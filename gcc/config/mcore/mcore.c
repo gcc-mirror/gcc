@@ -130,8 +130,8 @@ static void       mcore_mark_dllexport         PARAMS ((tree));
 static void       mcore_mark_dllimport         PARAMS ((tree));
 static int        mcore_dllexport_p            PARAMS ((tree));
 static int        mcore_dllimport_p            PARAMS ((tree));
-static int        mcore_valid_decl_attribute   PARAMS ((tree, tree,
-							tree, tree));
+const struct attribute_spec mcore_attribute_table[];
+static tree       mcore_handle_naked_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static void	  mcore_asm_named_section      PARAMS ((const char *,
 							unsigned int));
 
@@ -141,8 +141,8 @@ static void	  mcore_asm_named_section      PARAMS ((const char *,
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
 #endif
 
-#undef TARGET_VALID_DECL_ATTRIBUTE
-#define TARGET_VALID_DECL_ATTRIBUTE mcore_valid_decl_attribute
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE mcore_attribute_table
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3387,7 +3387,7 @@ mcore_dllexport_p (decl)
       && TREE_CODE (decl) != FUNCTION_DECL)
     return 0;
 
-  return lookup_attribute ("dllexport", DECL_MACHINE_ATTRIBUTES (decl)) != 0;
+  return lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)) != 0;
 }
 
 static int
@@ -3398,7 +3398,7 @@ mcore_dllimport_p (decl)
       && TREE_CODE (decl) != FUNCTION_DECL)
     return 0;
 
-  return lookup_attribute ("dllimport", DECL_MACHINE_ATTRIBUTES (decl)) != 0;
+  return lookup_attribute ("dllimport", DECL_ATTRIBUTES (decl)) != 0;
 }
 
 /* Cover function to implement ENCODE_SECTION_INFO.  */
@@ -3449,24 +3449,27 @@ mcore_encode_section_info (decl)
    dllexport - for exporting a function/variable that will live in a dll
    dllimport - for importing a function/variable from a dll
    naked     - do not create a function prologue/epilogue.  */
-static int
-mcore_valid_decl_attribute (decl, attributes, attr, args)
-     tree decl;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree attr;
-     tree args;
+
+const struct attribute_spec mcore_attribute_table[] =
 {
-  if (args != NULL_TREE)
-    return 0;
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "dllexport", 0, 0, true,  false, false, NULL },
+  { "dllimport", 0, 0, true,  false, false, NULL },
+  { "naked",     0, 0, true,  false, false, mcore_handle_naked_attribute },
+  { NULL,        0, 0, false, false, false, NULL }
+};
 
-  if (is_attribute_p ("dllexport", attr))
-    return 1;
-
-  if (is_attribute_p ("dllimport", attr))
-    return 1;
-  
-  if (is_attribute_p ("naked", attr) &&
-      TREE_CODE (decl) == FUNCTION_DECL)
+/* Handle a "naked" attribute; arguments as in
+   struct attribute_spec.handler.  */
+static tree
+mcore_handle_naked_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) == FUNCTION_DECL)
     {
       /* PR14310 - don't complain about lack of return statement
 	 in naked functions.  The solution here is a gross hack
@@ -3483,11 +3486,15 @@ mcore_valid_decl_attribute (decl, attributes, attr, args)
 	}
       else if (saved_warn_return_type_count)
 	saved_warn_return_type_count = 2;
-      
-      return 1;
+    }
+  else
+    {
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
     }
 
-  return 0;
+  return NULL_TREE;
 }
 
 /* Cover function for UNIQUE_SECTION.  */
@@ -3530,7 +3537,7 @@ mcore_unique_section (decl, reloc)
 int
 mcore_naked_function_p ()
 {
-  return lookup_attribute ("naked", DECL_MACHINE_ATTRIBUTES (current_function_decl)) != NULL_TREE;
+  return lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl)) != NULL_TREE;
 }
 
 static void

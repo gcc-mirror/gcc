@@ -5293,7 +5293,7 @@ finish_struct (t, attributes)
      as necessary.  */
   unreverse_member_declarations (t);
 
-  cplus_decl_attributes (&t, attributes, NULL_TREE, 0);
+  cplus_decl_attributes (&t, attributes, (int) ATTR_FLAG_TYPE_IN_PLACE);
 
   /* Nadger the current location so that diagnostics point to the start of
      the struct, not the end.  */

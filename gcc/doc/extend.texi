@@ -2449,6 +2449,14 @@ language.  Some details may vary for C++ and Objective-C@.  Because of
 infelicities in the grammar for attributes, some forms described here
 may not be successfully parsed in all cases.
 
+There are some problems with the semantics of attributes in C++.  For
+example, there are no manglings for attributes, although they may affect
+code generation, so problems may arise when attributed types are used in
+conjunction with templates or overloading.  Similarly, @code{typeid}
+does not distinguish between types with different attributes.  Support
+for attributes in C++ may be restricted in future to attributes on
+declarations only, but not on nested declarators.
+
 @xref{Function Attributes}, for details of the semantics of attributes
 applying to functions.  @xref{Variable Attributes}, for details of the
 semantics of attributes applying to variables.  @xref{Type Attributes},
@@ -2520,9 +2528,8 @@ defined is not complete until after the attribute specifiers.
 Otherwise, an attribute specifier appears as part of a declaration,
 counting declarations of unnamed parameters and type names, and relates
 to that declaration (which may be nested in another declaration, for
-example in the case of a parameter declaration).  In future, attribute
-specifiers in some places may however apply to a particular declarator
-within a declaration instead; these cases are noted below.  Where an
+example in the case of a parameter declaration), or to a particular declarator
+within a declaration.  Where an
 attribute specifier is applied to a parameter declared as a function or
 an array, it should apply to the function or array rather than the
 pointer to which the parameter is implicitly converted, but this is not
@@ -2597,11 +2604,11 @@ ignored.
 
 An attribute specifier list may appear at the start of a nested
 declarator.  At present, there are some limitations in this usage: the
-attributes apply to the identifier declared, rather than to a specific
-declarator.  When attribute specifiers follow the @code{*} of a pointer
+attributes correctly apply to the declarator, but for most individual
+attributes the semantics this implies are not implemented.
+When attribute specifiers follow the @code{*} of a pointer
 declarator, they may be mixed with any type qualifiers present.
-The following describes intended future
-semantics which make this syntax more useful only.  It will make the
+The following describes the formal semantics of this syntax.  It will make the
 most sense if you are familiar with the formal specification of
 declarators in the ISO C standard.
 
@@ -2642,8 +2649,26 @@ char *__attribute__((aligned(8))) *f;
 
 @noindent
 specifies the type ``pointer to 8-byte-aligned pointer to @code{char}''.
-Note again that this describes intended future semantics, not current
-implementation.
+Note again that this does not work with most attributes; for example,
+the usage of @samp{aligned} and @samp{noreturn} attributes given above
+is not yet supported.
+
+For compatibility with existing code written for compiler versions that
+did not implement attributes on nested declarators, some laxity is
+allowed in the placing of attributes.  If an attribute that only applies
+to types is applied to a declaration, it will be treated as applying to
+the type of that declaration.  If an attribute that only applies to
+declarations is applied to the type of a declaration, it will be treated
+as applying to that declaration; and, for compatibility with code
+placing the attributes immediately before the identifier declared, such
+an attribute applied to a function return type will be treated as
+applying to the function type, and such an attribute applied to an array
+element type will be treated as applying to the array type.  If an
+attribute that only applies to function types is applied to a
+pointer-to-function type, it will be treated as applying to the pointer
+target type; if such an attribute is applied to a function return type
+that is not a pointer-to-function type, it will be treated as applying
+to the function type.
 
 @node Function Prototypes
 @section Prototypes and Old-Style Function Definitions

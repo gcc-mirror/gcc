@@ -2605,14 +2605,14 @@ build_expr_wfl (node, file, line, col)
   return wfl;
 }
 
-/* Return a declaration like DDECL except that its DECL_MACHINE_ATTRIBUTE
+/* Return a declaration like DDECL except that its DECL_ATTRIBUTES
    is ATTRIBUTE.  */
 
 tree
 build_decl_attribute_variant (ddecl, attribute)
      tree ddecl, attribute;
 {
-  DECL_MACHINE_ATTRIBUTES (ddecl) = attribute;
+  DECL_ATTRIBUTES (ddecl) = attribute;
   return ddecl;
 }
 
@@ -2670,19 +2670,6 @@ build_type_attribute_variant (ttype, attribute)
   return ttype;
 }
 
-/* Default value of targetm.valid_decl_attribute_p and
-   targetm.valid_type_attribute_p that always returns false.  */
-
-int
-default_valid_attribute_p (attr_name, attr_args, decl, type)
-     tree attr_name ATTRIBUTE_UNUSED;
-     tree attr_args ATTRIBUTE_UNUSED;
-     tree decl ATTRIBUTE_UNUSED;
-     tree type ATTRIBUTE_UNUSED;
-{
-  return 0;
-}
-
 /* Default value of targetm.comp_type_attributes that always returns 1.  */
 
 int
@@ -2710,116 +2697,20 @@ default_insert_attributes (decl, attr_ptr)
 {
 }
 
-/* Return 1 if ATTR_NAME and ATTR_ARGS is valid for either declaration
-   DECL or type TYPE and 0 otherwise.  Validity is determined the
-   target functions valid_decl_attribute and valid_machine_attribute.  */
-
-int
-valid_machine_attribute (attr_name, attr_args, decl, type)
-     tree attr_name;
-     tree attr_args;
-     tree decl;
-     tree type;
+/* Default value of targetm.attribute_table that is empty.  */
+const struct attribute_spec default_target_attribute_table[] =
 {
-  tree type_attrs;
+  { NULL, 0, 0, false, false, false, NULL }
+};
 
-  if (TREE_CODE (attr_name) != IDENTIFIER_NODE)
-    abort ();
-
-  if (decl)
-    {
-      tree decl_attrs = DECL_MACHINE_ATTRIBUTES (decl);
-
-      if ((*targetm.valid_decl_attribute) (decl, decl_attrs, attr_name,
-					   attr_args))
-	{
-	  tree attr = lookup_attribute (IDENTIFIER_POINTER (attr_name),
-					decl_attrs);
-
-	  if (attr != NULL_TREE)
-	    {
-	      /* Override existing arguments.  Declarations are unique
-		 so we can modify this in place.  */
-	      TREE_VALUE (attr) = attr_args;
-	    }
-	  else
-	    {
-	      decl_attrs = tree_cons (attr_name, attr_args, decl_attrs);
-	      decl = build_decl_attribute_variant (decl, decl_attrs);
-	    }
-
-	  /* Don't apply the attribute to both the decl and the type.  */
-	  return 1;
-	}
-    }
-
-  type_attrs = TYPE_ATTRIBUTES (type);
-  if ((*targetm.valid_type_attribute) (type, type_attrs, attr_name,
-				       attr_args))
-    {
-      tree attr = lookup_attribute (IDENTIFIER_POINTER (attr_name),
-				    type_attrs);
-
-      if (attr != NULL_TREE)
-	{
-	  /* Override existing arguments.  ??? This currently
-	     works since attribute arguments are not included in
-	     `attribute_hash_list'.  Something more complicated
-	     may be needed in the future.  */
-	  TREE_VALUE (attr) = attr_args;
-	}
-      else
-	{
-	  /* If this is part of a declaration, create a type variant,
-	     otherwise, this is part of a type definition, so add it
-	     to the base type.  */
-	  type_attrs = tree_cons (attr_name, attr_args, type_attrs);
-	  if (decl != 0)
-	    type = build_type_attribute_variant (type, type_attrs);
-	  else
-	    TYPE_ATTRIBUTES (type) = type_attrs;
-	}
-
-      if (decl)
-	TREE_TYPE (decl) = type;
-
-      return 1;
-    }
-  /* Handle putting a type attribute on pointer-to-function-type
-     by putting the attribute on the function type.  */
-  else if (POINTER_TYPE_P (type)
-	   && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
-	   && (*targetm.valid_type_attribute) (TREE_TYPE (type), type_attrs,
-					       attr_name, attr_args))
-    {
-      tree inner_type = TREE_TYPE (type);
-      tree inner_attrs = TYPE_ATTRIBUTES (inner_type);
-      tree attr = lookup_attribute (IDENTIFIER_POINTER (attr_name),
-				    type_attrs);
-
-      if (attr != NULL_TREE)
-	TREE_VALUE (attr) = attr_args;
-      else
-	{
-	  inner_attrs = tree_cons (attr_name, attr_args, inner_attrs);
-	  inner_type = build_type_attribute_variant (inner_type,
-						     inner_attrs);
-	}
-
-      if (decl)
-	TREE_TYPE (decl) = build_pointer_type (inner_type);
-      else
-	{
-	  /* Clear TYPE_POINTER_TO for the old inner type, since
-	     `type' won't be pointing to it anymore.  */
-	  TYPE_POINTER_TO (TREE_TYPE (type)) = NULL_TREE;
-	  TREE_TYPE (type) = inner_type;
-	}
-
-      return 1;
-    }
-
-  return 0;
+/* Default value of targetm.function_attribute_inlinable_p that always
+   returns false.  */
+bool
+default_function_attribute_inlinable_p (fndecl)
+     tree fndecl ATTRIBUTE_UNUSED;
+{
+  /* By default, functions with machine attributes cannot be inlined.  */
+  return false;
 }
 
 /* Return non-zero if IDENT is a valid name for attribute ATTR,
@@ -2873,7 +2764,9 @@ is_attribute_p (attr, ident)
 
 /* Given an attribute name and a list of attributes, return a pointer to the
    attribute's list element if the attribute is part of the list, or NULL_TREE
-   if not found.  */
+   if not found.  If the attribute appears more than once, this only
+   returns the first occurance; the TREE_CHAIN of the return value should
+   be passed back in if further occurances are wanted.  */
 
 tree
 lookup_attribute (attr_name, list)
@@ -2915,19 +2808,29 @@ merge_attributes (a1, a2)
       else
 	{
 	  /* Pick the longest list, and hang on the other list.  */
-	  /* ??? For the moment we punt on the issue of attrs with args.  */
 
 	  if (list_length (a1) < list_length (a2))
 	    attributes = a2, a2 = a1;
 
 	  for (; a2 != 0; a2 = TREE_CHAIN (a2))
-	    if (lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (a2)),
-				  attributes) == NULL_TREE)
-	      {
-		a1 = copy_node (a2);
-		TREE_CHAIN (a1) = attributes;
-		attributes = a1;
-	      }
+	    {
+	      tree a;
+	      for (a = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (a2)),
+					 attributes);
+		   a != NULL_TREE;
+		   a = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (a2)),
+					 TREE_CHAIN (a)))
+		{
+		  if (simple_cst_equal (TREE_VALUE (a), TREE_VALUE (a2)) == 1)
+		    break;
+		}
+	      if (a == NULL_TREE)
+		{
+		  a1 = copy_node (a2);
+		  TREE_CHAIN (a1) = attributes;
+		  attributes = a1;
+		}
+	    }
 	}
     }
   return attributes;
@@ -2951,8 +2854,8 @@ tree
 merge_decl_attributes (olddecl, newdecl)
      tree olddecl, newdecl;
 {
-  return merge_attributes (DECL_MACHINE_ATTRIBUTES (olddecl),
-			   DECL_MACHINE_ATTRIBUTES (newdecl));
+  return merge_attributes (DECL_ATTRIBUTES (olddecl),
+			   DECL_ATTRIBUTES (newdecl));
 }
 
 #ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
@@ -2974,8 +2877,8 @@ merge_dllimport_decl_attributes (old, new)
   tree a;
   int delete_dllimport_p;
 
-  old = DECL_MACHINE_ATTRIBUTES (old);
-  new = DECL_MACHINE_ATTRIBUTES (new);
+  old = DECL_ATTRIBUTES (old);
+  new = DECL_ATTRIBUTES (new);
 
   /* What we need to do here is remove from `old' dllimport if it doesn't
      appear in `new'.  dllimport behaves like extern: if a declaration is
@@ -3345,8 +3248,15 @@ attribute_list_contained (l1, l2)
 
   for (; t2 != 0; t2 = TREE_CHAIN (t2))
     {
-      tree attr
-	= lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)), l1);
+      tree attr;
+      for (attr = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)), l1);
+	   attr != NULL_TREE;
+	   attr = lookup_attribute (IDENTIFIER_POINTER (TREE_PURPOSE (t2)),
+				    TREE_CHAIN (attr)))
+	{
+	  if (simple_cst_equal (TREE_VALUE (t2), TREE_VALUE (attr)) == 1)
+	    break;
+	}
 
       if (attr == 0)
 	return 0;

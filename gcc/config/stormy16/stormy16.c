@@ -1909,30 +1909,34 @@ stormy16_interrupt_function_p ()
   return lookup_attribute ("interrupt", attributes) != NULL_TREE;
 }
 
-/* If defined, a C function which returns nonzero if IDENTIFIER
-   with arguments ARGS is a valid machine specific attribute for TYPE.
-   The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
-#undef TARGET_VALID_TYPE_ATTRIBUTE
-#define TARGET_VALID_TYPE_ATTRIBUTE stormy16_valid_type_attribute
-static int stormy16_valid_type_attribute PARAMS ((tree TYPE,
-						  tree ATTRIBUTES,
-						  tree IDENTIFIER,
-						  tree ARGS));
-
-static int
-stormy16_valid_type_attribute (type, attributes, identifier, args)
-     tree type;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier;
-     tree args ATTRIBUTE_UNUSED;
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE stormy16_attribute_table
+static tree stormy16_handle_interrupt_attribute PARAMS ((tree *, tree, tree, int, bool *));
+static const struct attribute_spec stormy16_attribute_table[] =
 {
-  if (TREE_CODE (type) != FUNCTION_TYPE)
-    return 0;
-  
-  if (is_attribute_p ("interrupt", identifier))
-    return 1;
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  { "interrupt", 0, 0, false, true,  true,  stormy16_handle_interrupt_attribute },
+  { NULL,        0, 0, false, false, false, NULL }
+};
 
-  return 0;
+/* Handle an "interrupt" attribute;
+   arguments as in struct attribute_spec.handler.  */
+static tree
+stormy16_handle_interrupt_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) != FUNCTION_TYPE)
+    {
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

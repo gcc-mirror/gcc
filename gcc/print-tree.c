@@ -1,5 +1,5 @@
 /* Prints out tree in human readable form - GNU C-compiler
-   Copyright (C) 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -433,8 +433,8 @@ print_node (file, prefix, node, indent)
 	}
 
       print_node_brief (file, "context", DECL_CONTEXT (node), indent + 4);
-      print_node_brief (file, "machine_attributes",
-			DECL_MACHINE_ATTRIBUTES (node), indent + 4);
+      print_node_brief (file, "attributes",
+			DECL_ATTRIBUTES (node), indent + 4);
       print_node_brief (file, "abstract_origin",
 			DECL_ABSTRACT_ORIGIN (node), indent + 4);
 

@@ -657,6 +657,9 @@ static int ix86_fp_comparison_cost PARAMS ((enum rtx_code code));
 static int ix86_save_reg PARAMS ((int, int));
 static void ix86_compute_frame_layout PARAMS ((struct ix86_frame *));
 static int ix86_comp_type_attributes PARAMS ((tree, tree));
+const struct attribute_spec ix86_attribute_table[];
+static tree ix86_handle_cdecl_attribute PARAMS ((tree *, tree, tree, int, bool *));
+static tree ix86_handle_regparm_attribute PARAMS ((tree *, tree, tree, int, bool *));
 
 #ifdef DO_GLOBAL_CTORS_BODY
 static void ix86_svr3_asm_out_constructor PARAMS ((rtx, int));
@@ -667,15 +670,11 @@ static void sco_asm_out_constructor PARAMS ((rtx, int));
 #endif
 
 /* Initialize the GCC target structure.  */
-#undef TARGET_VALID_TYPE_ATTRIBUTE
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE ix86_attribute_table
 #ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
-#  define TARGET_VALID_TYPE_ATTRIBUTE i386_pe_valid_type_attribute_p
-#  undef TARGET_VALID_DECL_ATTRIBUTE
-#  define TARGET_VALID_DECL_ATTRIBUTE i386_pe_valid_decl_attribute_p
 #  undef TARGET_MERGE_DECL_ATTRIBUTES
 #  define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
-#else
-#  define TARGET_VALID_TYPE_ATTRIBUTE ix86_valid_type_attribute_p
 #endif
 
 #undef TARGET_COMP_TYPE_ATTRIBUTES
@@ -977,56 +976,94 @@ optimization_options (level, size)
 #endif
 }
 
-/* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
-   attribute for TYPE.  The attributes in ATTRIBUTES have previously been
-   assigned to TYPE.  */
-
-int
-ix86_valid_type_attribute_p (type, attributes, identifier, args)
-     tree type;
-     tree attributes ATTRIBUTE_UNUSED;
-     tree identifier;
-     tree args;
+/* Table of valid machine attributes.  */
+const struct attribute_spec ix86_attribute_table[] =
 {
-  if (TREE_CODE (type) != FUNCTION_TYPE
-      && TREE_CODE (type) != METHOD_TYPE
-      && TREE_CODE (type) != FIELD_DECL
-      && TREE_CODE (type) != TYPE_DECL)
-    return 0;
-
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   /* Stdcall attribute says callee is responsible for popping arguments
      if they are not variable.  */
-  if (is_attribute_p ("stdcall", identifier)
-      && !TARGET_64BIT)
-    return (args == NULL_TREE);
-
-  /* Cdecl attribute says the callee is a normal C declaration.  */
-  if (is_attribute_p ("cdecl", identifier)
-      && !TARGET_64BIT)
-    return (args == NULL_TREE);
-
+  { "stdcall",   0, 0, false, true,  true,  ix86_handle_cdecl_attribute },
+  /* Cdecl attribute says the callee is a normal C declaration */
+  { "cdecl",     0, 0, false, true,  true,  ix86_handle_cdecl_attribute },
   /* Regparm attribute specifies how many integer arguments are to be
      passed in registers.  */
-  if (is_attribute_p ("regparm", identifier))
+  { "regparm",   1, 1, false, true,  true,  ix86_handle_regparm_attribute },
+#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
+  { "dllimport", 1, 1, false, false, false, ix86_handle_dll_attribute },
+  { "dllexport", 1, 1, false, false, false, ix86_handle_dll_attribute },
+  { "shared",    1, 1, true,  false, false, ix86_handle_shared_attribute },
+#endif
+  { NULL,        0, 0, false, false, false, NULL }
+};
+
+/* Handle a "cdecl" or "stdcall" attribute;
+   arguments as in struct attribute_spec.handler.  */
+static tree
+ix86_handle_cdecl_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) != FUNCTION_TYPE
+      && TREE_CODE (*node) != METHOD_TYPE
+      && TREE_CODE (*node) != FIELD_DECL
+      && TREE_CODE (*node) != TYPE_DECL)
+    {
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  if (TARGET_64BIT)
+    {
+      warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "regparm" attribute;
+   arguments as in struct attribute_spec.handler.  */
+static tree
+ix86_handle_regparm_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name;
+     tree args;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
+{
+  if (TREE_CODE (*node) != FUNCTION_TYPE
+      && TREE_CODE (*node) != METHOD_TYPE
+      && TREE_CODE (*node) != FIELD_DECL
+      && TREE_CODE (*node) != TYPE_DECL)
+    {
+      warning ("`%s' attribute only applies to functions",
+	       IDENTIFIER_POINTER (name));
+      *no_add_attrs = true;
+    }
+  else
     {
       tree cst;
 
-      if (! args || TREE_CODE (args) != TREE_LIST
-	  || TREE_CHAIN (args) != NULL_TREE
-	  || TREE_VALUE (args) == NULL_TREE)
-	return 0;
-
       cst = TREE_VALUE (args);
       if (TREE_CODE (cst) != INTEGER_CST)
-	return 0;
-
-      if (compare_tree_int (cst, REGPARM_MAX) > 0)
-	return 0;
-
-      return 1;
+	{
+	  warning ("`%s' attribute requires an integer constant argument",
+		   IDENTIFIER_POINTER (name));
+	  *no_add_attrs = true;
+	}
+      else if (compare_tree_int (cst, REGPARM_MAX) > 0)
+	{
+	  warning ("argument to `%s' attribute larger than %d",
+		   IDENTIFIER_POINTER (name), REGPARM_MAX);
+	  *no_add_attrs = true;
+	}
     }
 
-  return 0;
+  return NULL_TREE;
 }
 
 #if defined (OSF_OS) || defined (TARGET_OSF1ELF)

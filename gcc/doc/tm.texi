@@ -48,6 +48,7 @@ through the macros defined in the @file{.h} file.
 * Debugging Info::      Defining the format of debugging output.
 * Cross-compilation::   Handling floating point for cross-compilers.
 * Mode Switching::      Insertion of mode-switching instructions.
+* Target Attributes::   Defining target-specific uses of @code{__attribute__}.
 * Misc::                Everything else.
 @end menu
 
@@ -70,8 +71,8 @@ macros for which the default definition is inappropriate.  For example:
 
 /* @r{Initialize the GCC target structure.}  */
 
-#undef TARGET_VALID_TYPE_ATTRIBUTE
-#define TARGET_VALID_TYPE_ATTRIBUTE @var{machine}_valid_type_attribute_p
+#undef TARGET_COMP_TYPE_ATTRIBUTES
+#define TARGET_COMP_TYPE_ATTRIBUTES @var{machine}_comp_type_attributes
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 @end smallexample
@@ -2528,7 +2529,7 @@ This describes the stack layout and calling conventions.
 * Caller Saves::
 * Function Entry::
 * Profiling::
-* Inlining and Tail Calls::
+* Tail Calls::
 @end menu
 
 @node Frame Layout
@@ -3222,7 +3223,7 @@ after the function returns.
 @var{fundecl} is a C variable whose value is a tree node that describes
 the function in question.  Normally it is a node of type
 @code{FUNCTION_DECL} that describes the declaration of the function.
-From this you can obtain the @code{DECL_MACHINE_ATTRIBUTES} of the function.
+From this you can obtain the @code{DECL_ATTRIBUTES} of the function.
 
 @var{funtype} is a C variable whose value is a tree node that
 describes the function in question.  Normally it is a node of type
@@ -4204,18 +4205,11 @@ profiling when the frame pointer is omitted.
 
 @end table
 
-@node Inlining and Tail Calls
-@subsection Permitting inlining and tail calls
-@cindex inlining
+@node Tail Calls
+@subsection Permitting tail calls
+@cindex tail calls
 
 @table @code
-@findex FUNCTION_ATTRIBUTE_INLINABLE_P
-@item FUNCTION_ATTRIBUTE_INLINABLE_P (@var{decl})
-A C expression that evaluates to true if it is ok to inline @var{decl}
-into the current function, despite its having target-specific
-attributes.  By default, if a function has a target specific attribute
-attached to it, it will not be inlined.
-
 @findex FUNCTION_OK_FOR_SIBCALL
 @item FUNCTION_OK_FOR_SIBCALL (@var{decl})
 A C expression that evaluates to true if it is ok to perform a sibling
@@ -8031,6 +8025,85 @@ Generate one or more insns to set @var{entity} to @var{mode}.
 the insn(s) are to be inserted.
 @end table
 
+@node Target Attributes
+@section Defining target-specific uses of @code{__attribute__}
+@cindex target attributes
+@cindex machine attributes
+@cindex attributes, target-specific
+
+Target-specific attributes may be defined for functions, data and types.
+These are described using the following target hooks; they also need to
+be documented in @file{extend.texi}.
+
+@deftypevr {Target Hook} {const struct attribute_spec *} TARGET_ATTRIBUTE_TABLE
+If defined, this target hook points to an array of @samp{struct
+attribute_spec} (defined in @file{tree.h}) specifying the machine
+specific attributes for this target and some of the restrictions on the
+entities to which these attributes are applied and the arguments they
+take.
+@end deftypevr
+
+@deftypefn {Target Hook} int TARGET_COMP_TYPE_ATTRIBUTES (tree @var{type1}, tree @var{type2})
+If defined, this target hook is a function which returns zero if the attributes on
+@var{type1} and @var{type2} are incompatible, one if they are compatible,
+and two if they are nearly compatible (which causes a warning to be
+generated).  If this is not defined, machine-specific attributes are
+supposed always to be compatible.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_SET_DEFAULT_TYPE_ATTRIBUTES (tree @var{type})
+If defined, this target hook is a function which assigns default attributes to
+newly defined @var{type}.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_MERGE_TYPE_ATTRIBUTES (tree @var{type1}, tree @var{type2})
+Define this target hook if the merging of type attributes needs special
+handling.  If defined, the result is a list of the combined
+@code{TYPE_ATTRIBUTES} of @var{type1} and @var{type2}.  It is assumed
+that @code{comptypes} has already been called and returned 1.  This
+function may call @code{merge_attributes} to handle machine-independent
+merging.
+@end deftypefn
+
+@deftypefn {Target Hook} tree TARGET_MERGE_DECL_ATTRIBUTES (tree @var{olddecl}, tree @var{newdecl})
+Define this target hook if the merging of decl attributes needs special
+handling.  If defined, the result is a list of the combined
+@code{DECL_ATTRIBUTES} of @var{olddecl} and @var{newdecl}.
+@var{newdecl} is a duplicate declaration of @var{olddecl}.  Examples of
+when this is needed are when one attribute overrides another, or when an
+attribute is nullified by a subsequent definition.  This function may
+call @code{merge_attributes} to handle machine-independent merging.
+
+@findex TARGET_DLLIMPORT_DECL_ATTRIBUTES
+If the only target-specific handling you require is @samp{dllimport} for
+Windows targets, you should define the macro
+@code{TARGET_DLLIMPORT_DECL_ATTRIBUTES}.  This links in a function
+called @code{merge_dllimport_decl_attributes} which can then be defined
+as the expansion of @code{TARGET_MERGE_DECL_ATTRIBUTES}.  This is done
+in @file{i386/cygwin.h} and @file{i386/i386.c}, for example.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_INSERT_ATTRIBUTES (tree @var{node}, tree *@var{attr_ptr})
+Define this target hook if you want to be able to add attributes to a decl
+when it is being created.  This is normally useful for back ends which
+wish to implement a pragma by using the attributes which correspond to
+the pragma's effect.  The @var{node} argument is the decl which is being
+created.  The @var{attr_ptr} argument is a pointer to the attribute list
+for this decl.  The list itself should not be modified, since it may be
+shared with other decls, but attributes may be chained on the head of
+the list and @code{*@var{attr_ptr}} modified to point to the new
+attributes, or a copy of the list may be made if further changes are
+needed.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P (tree @var{fndecl})
+@cindex inlining
+This target hook returns @code{true} if it is ok to inline @var{fndecl}
+into the current function, despite its having target-specific
+attributes, @code{false} otherwise.  By default, if a function has a
+target specific attribute attached to it, it will not be inlined.
+@end deftypefn
+
 @node Misc
 @section Miscellaneous Parameters
 @cindex parameters, miscellaneous
@@ -8404,7 +8477,7 @@ other compilers for the same target.  In general, we discourage
 definition of target-specific pragmas for GCC@.
 
 If the pragma can be implemented by attributes then you should consider
-defining @samp{INSERT_ATTRIBUTES} as well.
+defining the target hook @samp{TARGET_INSERT_ATTRIBUTES} as well.
 
 Preprocessor macros that appear on pragma lines are not expanded.  All
 @samp{#pragma} directives that do not match any registered pragma are
@@ -8484,74 +8557,7 @@ pack value of zero resets the behaviour to the default.  Successive
 invocations of this pragma cause the previous values to be stacked, so
 that invocations of @samp{#pragma pack(pop)} will return to the previous
 value.
-@end table
 
-@deftypefn {Target Hook} int TARGET_VALID_DECL_ATTRIBUTE (tree @var{decl}, tree @var{attributes}, tree @var{identifier}, tree @var{args})
-If defined, this target hook is a function which returns nonzero if @var{identifier} with
-arguments @var{args} is a valid machine specific attribute for @var{decl}.
-The attributes in @var{attributes} have previously been assigned to @var{decl}.
-@end deftypefn
-
-@deftypefn {Target Hook} int TARGET_VALID_TYPE_ATTRIBUTE (tree @var{type}, tree @var{attributes}, tree @var{identifier}, tree @var{args})
-If defined, this target hook is a function which returns nonzero if @var{identifier} with
-arguments @var{args} is a valid machine specific attribute for @var{type}.
-The attributes in @var{attributes} have previously been assigned to @var{type}.
-@end deftypefn
-
-@deftypefn {Target Hook} int TARGET_COMP_TYPE_ATTRIBUTES (tree @var{type1}, tree @var{type2})
-If defined, this target hook is a function which returns zero if the attributes on
-@var{type1} and @var{type2} are incompatible, one if they are compatible,
-and two if they are nearly compatible (which causes a warning to be
-generated).  If this is not defined, machine-specific attributes are
-supposed always to be compatible.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_SET_DEFAULT_TYPE_ATTRIBUTES (tree @var{type})
-If defined, this target hook is a function which assigns default attributes to
-newly defined @var{type}.
-@end deftypefn
-
-@deftypefn {Target Hook} tree TARGET_MERGE_TYPE_ATTRIBUTES (tree @var{type1}, tree @var{type2})
-Define this target hook if the merging of type attributes needs special
-handling.  If defined, the result is a list of the combined
-@code{TYPE_ATTRIBUTES} of @var{type1} and @var{type2}.  It is assumed
-that @code{comptypes} has already been called and returned 1.  This
-function may call @code{merge_attributes} to handle machine-independent
-merging.
-@end deftypefn
-
-@deftypefn {Target Hook} tree TARGET_MERGE_DECL_ATTRIBUTES (tree @var{olddecl}, tree @var{newdecl})
-Define this target hook if the merging of decl attributes needs special
-handling.  If defined, the result is a list of the combined
-@code{DECL_MACHINE_ATTRIBUTES} of @var{olddecl} and @var{newdecl}.
-@var{newdecl} is a duplicate declaration of @var{olddecl}.  Examples of
-when this is needed are when one attribute overrides another, or when an
-attribute is nullified by a subsequent definition.  This function may
-call @code{merge_attributes} to handle machine-independent merging.
-
-@findex TARGET_DLLIMPORT_DECL_ATTRIBUTES
-If the only target-specific handling you require is @samp{dllimport} for
-Windows targets, you should define the macro
-@code{TARGET_DLLIMPORT_DECL_ATTRIBUTES}.  This links in a function
-called @code{merge_dllimport_decl_attributes} which can then be defined
-as the expansion of @code{TARGET_MERGE_DECL_ATTRIBUTES}.  This is done
-in @file{i386/cygwin.h} and @file{i386/i386.c}, for example.
-@end deftypefn
-
-@deftypefn {Target Hook} void TARGET_INSERT_ATTRIBUTES (tree @var{node}, tree *@var{attr_ptr})
-Define this target hook if you want to be able to add attributes to a decl
-when it is being created.  This is normally useful for back ends which
-wish to implement a pragma by using the attributes which correspond to
-the pragma's effect.  The @var{node} argument is the decl which is being
-created.  The @var{attr_ptr} argument is a pointer to the attribute list
-for this decl.  The list itself should not be modified, since it may be
-shared with other decls, but attributes may be chained on the head of
-the list and @code{*@var{attr_ptr}} modified to point to the new
-attributes, or a copy of the list may be made if further changes are
-needed.
-@end deftypefn
-
-@table @code
 @findex DOLLARS_IN_IDENTIFIERS
 @item DOLLARS_IN_IDENTIFIERS
 Define this macro to control use of the character @samp{$} in identifier

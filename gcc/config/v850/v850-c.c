@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 
 static int  pop_data_area          PARAMS ((v850_data_area));
 static int  push_data_area         PARAMS ((v850_data_area));
-static int  mark_current_function_as_interrupt PARAMS ((void));
+static void mark_current_function_as_interrupt PARAMS ((void));
 
 /* Push a data area onto the stack.  */
 
@@ -85,7 +85,7 @@ pop_data_area (data_area)
 
 /* Set the machine specific 'interrupt' attribute on the current function.  */
 
-static int
+static void
 mark_current_function_as_interrupt ()
 {
   tree name;
@@ -104,8 +104,8 @@ mark_current_function_as_interrupt ()
       return 0;
     }
   
-  return valid_machine_attribute
-    (name, NULL_TREE, current_function_decl, NULL_TREE);
+  decl_attributes (&current_function_decl,
+		   tree_cons (name, NULL_TREE, NULL_TREE), 0);
 }
 
 

@@ -82,14 +82,17 @@ static void record_function_format	PARAMS ((tree, tree, enum format_type,
 						 int, int));
 static void record_international_format	PARAMS ((tree, tree, int));
 
-/* Handle the format attribute (with arguments ARGS) attached to the decl
-   DECL.  It is already verified that DECL is a decl and ARGS contains
-   exactly three arguments.  */
-
-void
-decl_handle_format_attribute (decl, args)
-     tree decl, args;
+/* Handle a "format" attribute; arguments as in
+   struct attribute_spec.handler.  */
+tree
+handle_format_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name ATTRIBUTE_UNUSED;
+     tree args;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
 {
+  tree decl = *node;
   tree type = TREE_TYPE (decl);
   tree format_type_id = TREE_VALUE (args);
   tree format_num_expr = TREE_VALUE (TREE_CHAIN (args));
@@ -104,13 +107,15 @@ decl_handle_format_attribute (decl, args)
     {
       error_with_decl (decl,
 		       "argument format specified for non-function `%s'");
-      return;
+      *no_add_attrs = true;
+      return NULL_TREE;
     }
 
   if (TREE_CODE (format_type_id) != IDENTIFIER_NODE)
     {
       error ("unrecognized format specifier");
-      return;
+      *no_add_attrs = true;
+      return NULL_TREE;
     }
   else
     {
@@ -121,7 +126,8 @@ decl_handle_format_attribute (decl, args)
       if (format_type == format_type_error)
 	{
 	  warning ("`%s' is an unrecognized format function type", p);
-	  return;
+	  *no_add_attrs = true;
+	  return NULL_TREE;
 	}
     }
 
@@ -143,7 +149,8 @@ decl_handle_format_attribute (decl, args)
       || TREE_INT_CST_HIGH (first_arg_num_expr) != 0)
     {
       error ("format string has invalid operand number");
-      return;
+      *no_add_attrs = true;
+      return NULL_TREE;
     }
 
   format_num = TREE_INT_CST_LOW (format_num_expr);
@@ -151,7 +158,8 @@ decl_handle_format_attribute (decl, args)
   if (first_arg_num != 0 && first_arg_num <= format_num)
     {
       error ("format string arg follows the args to be formatted");
-      return;
+      *no_add_attrs = true;
+      return NULL_TREE;
     }
 
   /* If a parameter list is specified, verify that the format_num
@@ -170,7 +178,8 @@ decl_handle_format_attribute (decl, args)
 	      != char_type_node))
 	{
 	  error ("format string arg not a string type");
-	  return;
+	  *no_add_attrs = true;
+	  return NULL_TREE;
 	}
 
       else if (first_arg_num != 0)
@@ -183,7 +192,8 @@ decl_handle_format_attribute (decl, args)
 	  if (arg_num != first_arg_num)
 	    {
 	      error ("args to be formatted is not '...'");
-	      return;
+	      *no_add_attrs = true;
+	      return NULL_TREE;
 	    }
 	}
     }
@@ -191,22 +201,27 @@ decl_handle_format_attribute (decl, args)
   if (format_type == strftime_format_type && first_arg_num != 0)
     {
       error ("strftime formats cannot format arguments");
-      return;
+      *no_add_attrs = true;
+      return NULL_TREE;
     }
 
   record_function_format (DECL_NAME (decl), DECL_ASSEMBLER_NAME (decl),
 			  format_type, format_num, first_arg_num);
+  return NULL_TREE;
 }
 
 
-/* Handle the format_arg attribute (with arguments ARGS) attached to
-   the decl DECL.  It is already verified that DECL is a decl and
-   ARGS contains exactly one argument.  */
-
-void
-decl_handle_format_arg_attribute (decl, args)
-     tree decl, args;
+/* Handle a "format" attribute; arguments as in
+   struct attribute_spec.handler.  */
+tree
+handle_format_arg_attribute (node, name, args, flags, no_add_attrs)
+     tree *node;
+     tree name ATTRIBUTE_UNUSED;
+     tree args;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs;
 {
+  tree decl = *node;
   tree type = TREE_TYPE (decl);
   tree format_num_expr = TREE_VALUE (args);
   unsigned HOST_WIDE_INT format_num;
@@ -217,7 +232,8 @@ decl_handle_format_arg_attribute (decl, args)
     {
       error_with_decl (decl,
 		       "argument format specified for non-function `%s'");
-      return;
+      *no_add_attrs = true;
+      return NULL_TREE;
     }
 
   /* Strip any conversions from the first arg number and verify it
@@ -231,7 +247,8 @@ decl_handle_format_arg_attribute (decl, args)
       || TREE_INT_CST_HIGH (format_num_expr) != 0)
     {
       error ("format string has invalid operand number");
-      return;
+      *no_add_attrs = true;
+      return NULL_TREE;
     }
 
   format_num = TREE_INT_CST_LOW (format_num_expr);
@@ -252,7 +269,8 @@ decl_handle_format_arg_attribute (decl, args)
 	      != char_type_node))
 	{
 	  error ("format string arg not a string type");
-	  return;
+	  *no_add_attrs = true;
+	  return NULL_TREE;
 	}
     }
 
@@ -261,11 +279,13 @@ decl_handle_format_arg_attribute (decl, args)
 	  != char_type_node))
     {
       error ("function does not return string type");
-      return;
+      *no_add_attrs = true;
+      return NULL_TREE;
     }
 
   record_international_format (DECL_NAME (decl), DECL_ASSEMBLER_NAME (decl),
 			       format_num);
+  return NULL_TREE;
 }
 
 typedef struct function_format_info

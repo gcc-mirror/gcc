@@ -309,7 +309,6 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
      int funcdef_flag;
 {
   int is_friend_template = 0;
-  tree prefix_attributes, attributes;
 
   /* Every decl that gets here is a friend of something.  */
   DECL_FRIEND_P (decl) = 1;
@@ -435,19 +434,8 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
      handle them in start_decl_1, but since this is a friend decl start_decl_1
      never gets to see it.  */
 
-  if (attrlist)
-    {
-      attributes = TREE_PURPOSE (attrlist);
-      prefix_attributes = TREE_VALUE (attrlist);
-    }
-  else
-    {
-      attributes = NULL_TREE;
-      prefix_attributes = NULL_TREE;
-    } 
-
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
-  cplus_decl_attributes (&decl, attributes, prefix_attributes, 0);
+  cplus_decl_attributes (&decl, attrlist, 0);
 
   return decl;
 }
