@@ -2867,6 +2867,7 @@ for machine in $build $host $target; do
 		tmake_file=i386/t-next
 		xmake_file=i386/x-next
 		extra_objs=nextstep.o
+		use_collect2=yes
  		if test x$enable_threads = xyes; then
 			thread_file='mach'
 		fi
@@ -5443,7 +5444,7 @@ fi
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:5447: checking assembler alignment features" >&5
+echo "configure:5448: checking assembler alignment features" >&5
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
@@ -5708,7 +5709,7 @@ fi
 
 # Warn if using init_priority.
 echo $ac_n "checking whether to enable init_priority by default""... $ac_c" 1>&6
-echo "configure:5712: checking whether to enable init_priority by default" >&5
+echo "configure:5713: checking whether to enable init_priority by default" >&5
 if test x$enable_init_priority != xyes; then
   enable_init_priority=no
 fi

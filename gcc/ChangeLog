@@ -1,3 +1,9 @@
+Wed Sep  9 00:10:31 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* prefix.c (update_path): Correctly handle cases where PATH is
+	a substring of the builtin prefix, but specifies a different
+	directory location.
+
 Tue Sep  8 23:46:04 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* expr.c: Corrected comment about what MOVE_RATIO does.
@@ -9,6 +15,7 @@ Tue Sep  8 23:46:04 1998  Hans-Peter Nilsson  <hp@axis.se>
 Tue Sep  8 22:56:12 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (m68k-next-nextstep3*): Use collect2.
+	Similarly for x86 NeXT configurations.
 	* configure: Rebuilt.
 
 Tue Sep  8 01:38:57 1998  Nathan Sidwell  <nathan@acm.org>
