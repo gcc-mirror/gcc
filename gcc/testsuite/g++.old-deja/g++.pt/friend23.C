@@ -7,4 +7,4 @@ struct S
   friend class S;
 };
 
-template struct S<int>; // ERROR - instantiated from here
+template struct S<int>;

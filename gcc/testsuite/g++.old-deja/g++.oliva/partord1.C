@@ -23,6 +23,6 @@ template <typename T> void foo(T*) {
 int main() {
   int j = 0;
   foo(j); // calls foo<int>(int), ok
-  foo(&j); // calls foo<int>(int*) // ERROR - not a friend
+  foo(&j); // calls foo<int>(int*)
   foo<int*>(&j); // calls foo<int*>(int*), ok
 }

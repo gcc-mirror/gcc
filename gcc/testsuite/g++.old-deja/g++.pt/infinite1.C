@@ -16,5 +16,5 @@ template <> void f<11>();
 
 int main()
 {
-  f<0>();			// ERROR - starting here
+  f<0>();
 }

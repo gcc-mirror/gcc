@@ -24,5 +24,5 @@ int j (T t)
   return 0;
 }
 
-template int j (double); // ERROR - instantiated from here
+template int j (double);
 

@@ -12,4 +12,4 @@ template <class T> struct B {
   friend void xxx<T>(T); // ERROR - does not match any template
 };
  
-template struct B<double>; // ERROR - 
+template struct B<double>;

@@ -27,4 +27,4 @@ void A<T>::f()
   B<double>::i = 3; // ERROR - member `i' is private
 }
 
-template void A<int>::f(); // ERROR - instantiated from here
+template void A<int>::f();

@@ -1,3 +1,22 @@
+2002-02-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.law/visibility13.C: Remove "instantiated from
+	here" ERROR lines.
+	* g++.old-deja/g++.oliva/partord1.C: Likewise.
+	* g++.old-deja.g++.other/defarg1.C: Likewise.
+	* g++.old-deja/g++.pt/calls2.C: Likewise.
+	* g++.old-deja/g++.pt/crash20.C: Likewise.
+	* g++.old-deja/g++.pt/crash30.C: Likewise.
+	* g++.old-deja/g++.pt/crash36.C: Likewise.
+	* g++.old-deja/g++.pt/crash6.C: Likewise.
+	* g++.old-deja/g++.pt/defarg13.C: Likewise.
+	* g++.old-deja/g++.pt/derived3.C: Likewise.
+	* g++.old-deja/g++.pt/error1.C: Likewise.
+	* g++.old-deja/g++.pt/friend21.C: Likewise.
+	* g++.old-deja/g++.pt/friend23.C: Likewise.
+	* g++.old-deja/g++.pt/infinite1.C: Likewise.
+	* g++.old-deja/g++.robertl/eb128.C: Likewise.
+	
 2002-02-27  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gcc.c-torture/execute/20020225-2.c: New test.
