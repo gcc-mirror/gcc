@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-options "" }
 // prms-id: 10148
 
 int fail = 1;

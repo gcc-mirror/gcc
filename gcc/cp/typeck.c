@@ -507,8 +507,6 @@ composite_pointer_type (tree t1, tree t2, tree arg1, tree arg2,
       tree result_type;
 
       if (pedantic && TYPE_PTRFN_P (t2))
-	/* Although DR195 suggests allowing this when no precision is
-	   lost, that is only allowed in a reinterpret_cast.  */
 	pedwarn ("ISO C++ forbids %s between pointer of type %<void *%> "
                  "and pointer-to-function", location);
       result_type 
@@ -4827,7 +4825,7 @@ convert_member_func_to_ptr (tree type, tree expr)
 
 static tree
 build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
-			  bool for_reinterpret_ref_p, bool *valid_p)
+			  bool *valid_p)
 {
   tree intype;
 
@@ -4867,7 +4865,7 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
       expr = build_unary_op (ADDR_EXPR, expr, 0);
       if (expr != error_mark_node)
 	expr = build_reinterpret_cast_1
-	  (build_pointer_type (TREE_TYPE (type)), expr, c_cast_p, true,
+	  (build_pointer_type (TREE_TYPE (type)), expr, c_cast_p,
 	   valid_p);
       if (expr != error_mark_node)
 	expr = build_indirect_ref (expr, 0);
@@ -4945,24 +4943,12 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
   else if ((TYPE_PTRFN_P (type) && TYPE_PTROBV_P (intype))
 	   || (TYPE_PTRFN_P (intype) && TYPE_PTROBV_P (type)))
     {
-      if (pedantic || !c_cast_p)
-	{
-	  /* DR 195 suggests allowing such casts if they do not lose
-	     precision.  We allow conversion to pointer-to-void, if it
-	     does not lose precision, and we allow conversion from
-	     pointer-to-void regardless, so that one may convert
-	     back again without warning.  Such conversions are not
-	     permitted when we are recursively called to deal with
-	     reinterpreting reference casts.  */
-	  if (!for_reinterpret_ref_p && VOID_TYPE_P (TREE_TYPE (type)))
-	    {
-	      if (TYPE_PRECISION (type) < TYPE_PRECISION (intype))
-		warning ("conversion from %qT to %qT loses precision",
-			 intype, type);
-	    }
-	  else if (for_reinterpret_ref_p || !VOID_TYPE_P (TREE_TYPE (intype)))
-	    pedwarn ("ISO C++ forbids casting between pointer-to-function and pointer-to-object");
-	}
+      if (pedantic)
+	/* Only issue a warning, as we have always supported this
+ 	   where possible, and it is necessary in some cases.  DR 195
+ 	   addresses this issue, but as of 2004/10/26 is still in
+ 	   drafting.  */
+ 	warning ("ISO C++ forbids casting between pointer-to-function and pointer-to-object");
       
       expr = decl_constant_value (expr);
       return fold_if_not_in_template (build_nop (type, expr));
@@ -4998,7 +4984,6 @@ build_reinterpret_cast (tree type, tree expr)
     }
 
   return build_reinterpret_cast_1 (type, expr, /*c_cast_p=*/false,
-				   /*for_reinterpret_ref=*/false,
 				   /*valid_p=*/NULL);
 }
 
@@ -5201,7 +5186,6 @@ build_c_cast (tree type, tree expr)
   /* Or a reinterpret_cast.  */
   if (!valid_p)
     result = build_reinterpret_cast_1 (type, value, /*c_cast_p=*/true,
-				       /*for_reinterpret_ref_p=*/false,
 				       &valid_p);
   /* The static_cast or reinterpret_cast may be followed by a
      const_cast.  */
