@@ -289,6 +289,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   unsigned HOST_WIDE_INT bitpos = bitnum % unit;
   rtx op0 = str_rtx;
   int byte_offset;
+  rtx orig_value;
 
   enum machine_mode op_mode = mode_for_extraction (EP_insv, 3);
 
@@ -568,6 +569,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      corresponding size.  This can occur on a machine with 64 bit registers
      that uses SFmode for float.  This can also occur for unaligned float
      structure fields.  */
+  orig_value = value;
   if (GET_MODE_CLASS (GET_MODE (value)) != MODE_INT
       && GET_MODE_CLASS (GET_MODE (value)) != MODE_PARTIAL_INT)
     value = gen_lowpart ((GET_MODE (value) == VOIDmode
@@ -634,7 +636,7 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	  /* Fetch that unit, store the bitfield in it, then store
 	     the unit.  */
 	  tempreg = copy_to_reg (op0);
-	  store_bit_field (tempreg, bitsize, bitpos, fieldmode, value,
+	  store_bit_field (tempreg, bitsize, bitpos, fieldmode, orig_value,
 			   total_size);
 	  emit_move_insn (op0, tempreg);
 	  return value;
