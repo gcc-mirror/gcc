@@ -1187,9 +1187,6 @@ typedef struct rs6000_stack {
 /* Address to save the TOC register */
 #define RS6000_SAVE_TOC plus_constant (stack_pointer_rtx, 20)
 
-/* Whether a separate TOC save area is needed */
-extern int rs6000_save_toc_p;
-
 /* Offset & size for fpmem stack locations used for converting between
    float and integral types.  */
 extern int rs6000_fpmem_offset;
