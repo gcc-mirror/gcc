@@ -53,7 +53,7 @@ char *m (char *x) { abort (); }
 char *s (char *v, char **pp)
 {
   if (strcmp (v, "a") != 0 || check++ > 1)
-    abort;
+    abort ();
   *pp = v+1;
   return 0;
 }
