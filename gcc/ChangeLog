@@ -1,5 +1,15 @@
 2004-11-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* config/sparc/sparc.c (function_arg_record_value_1): Skip
+	fields with zero length.
+	(function_arg_record_value_2): Likewise.
+	(function_arg_record_value_3): Use smallest_mode_for_size
+	instead of mode_for_size.
+	(function_arg_union_value): Return naked register for unions
+	with zero length.
+
+2004-11-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* config/sparc/sparc.c (scan_record_type): Handle vector types.
 	(function_arg_slotno): Handle vector types specially.
 	(function_arg_record_value_1): Split fields with vector type and
