@@ -1,6 +1,7 @@
 /* PR optimization/11741  */
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
-/* { dg-options "-O2 -minline-all-stringops -march=pentium4" } */
+/* { dg-options "-O2 -minline-all-stringops" } */
+/* { dg-options "-O2 -minline-all-stringops -march=pentium4" { target i?86-*-* } } */
 
 void
 foo (char *p)
