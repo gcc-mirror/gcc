@@ -3618,6 +3618,12 @@ find_reloads_address (mode, memrefloc, ad, loc, operand, ind_levels)
       tem = ad;
       find_reloads_address (GET_MODE (ad), &tem, XEXP (ad, 0), &XEXP (ad, 0),
 			    operand, ind_levels == 0 ? 0 : ind_levels - 1);
+
+      /* If tem was changed, then we must create a new memory reference to
+	 hold it and store it back into memrefloc.  */
+      if (tem != ad && memrefloc)
+	*memrefloc = gen_rtx (MEM, GET_MODE (*memrefloc), tem);
+
       /* Check similar cases as for indirect addresses as above except
 	 that we can allow pseudos and a MEM since they should have been
 	 taken care of above.  */
