@@ -1,3 +1,8 @@
+2002-09-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (asm_file_start): Add a missing
+	semicolon.
+
 2002-09-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* frv.c (frv_encode_section_info): Fix error in last change.
