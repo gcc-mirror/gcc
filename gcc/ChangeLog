@@ -1,3 +1,7 @@
+2000-04-06  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (compute_flow_dominators): Free worklist.
+
 2000-04-06  Michael Matz  <matzmich@cs.tu-berlin.de>
 
 	* flow.c (compute_flow_dominators): Process blocks FIFO not LIFO.
