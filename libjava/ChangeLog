@@ -1,5 +1,14 @@
 2003-06-19  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/JComponent.java,
+	javax/swing/JInternalFrame.java,
+	javax/swing/MenuSelectionManager.java,
+	javax/swing/SwingUtilities.java,
+	javax/swing/ToggleButtonModel.java:
+	New versions from classpath.
+
+2003-06-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/text/CollationElementIterator.java
 	(NULLORDER): Initialize with -1 as JDK documentation says.
 

@@ -35,10 +35,42 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package javax.swing;
-/**
- * STUBBED
- */
+
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.EventListenerList;
+
 public class MenuSelectionManager
 {
+  protected ChangeEvent changeEvent;
+  
+  protected EventListenerList listenerList = new EventListenerList ();
+
+  protected void fireStateChanged ()
+  {
+    ChangeListener[] listeners = getChangeListeners ();
+
+    for (int i = 0; i < listeners.length; i++)
+      {
+        listeners [i].stateChanged (new ChangeEvent (this));
+      }
+  }
+
+  public void addChangeListener (ChangeListener listener)
+  {
+    listenerList.add (ChangeListener.class, listener);
+  }
+
+  public void removeChangeListener (ChangeListener listener)
+  {
+    listenerList.remove (ChangeListener.class, listener);
+  }
+
+  /** @since 1.4 */
+  public ChangeListener[] getChangeListeners ()
+  {
+    return (ChangeListener[]) listenerList.getListeners (ChangeListener.class);
+  }
 } // class MenuSelectionManager
