@@ -670,7 +670,9 @@ rtx_equal_p (x, y)
 
 	case 'S':
 	case 's':
-	  if (strcmp (XSTR (x, i), XSTR (y, i)))
+	  if ((XSTR (x, i) || XSTR (y, i))
+	      && (! XSTR (x, i) || ! XSTR (y, i)
+		  || strcmp (XSTR (x, i), XSTR (y, i))))
 	    return 0;
 	  break;
 
