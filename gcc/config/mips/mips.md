@@ -358,12 +358,7 @@
 	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "dJ")
 		 (match_operand:SI 2 "arith_operand" "dI")))]
   "GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != -32768"
-  "*
-{
-  return (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0)
-    ? \"subu\\t%0,%z1,%n2\"
-    : \"addu\\t%0,%z1,%2\";
-}"
+  "addu\\t%0,%z1,%2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
    (set_attr "length"	"1")])
@@ -600,12 +595,7 @@
 	(minus:SI (match_operand:SI 1 "reg_or_0_operand" "dJ")
 		  (match_operand:SI 2 "arith_operand" "dI")))]
   "GET_CODE (operands[2]) != CONST_INT || INTVAL (operands[2]) != -32768"
-  "*
-{
-  return (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0)
-    ? \"addu\\t%0,%z1,%n2\"
-    : \"subu\\t%0,%z1,%2\";
-}"
+  "subu\\t%0,%z1,%2"
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
    (set_attr "length"	"1")])
@@ -963,7 +953,7 @@
   xoperands[1] = gen_rtx (REG, SImode, HI_REGNUM);
 
   output_asm_insn (\"mult\\t%1,%2\", operands);
-  output_asm_insn (mips_move_1word (xoperands, insn), xoperands);
+  output_asm_insn (mips_move_1word (xoperands, insn, TRUE), xoperands);
   return \"\";
 }"
   [(set_attr "type"	"imul")
@@ -1041,7 +1031,7 @@
   xoperands[1] = gen_rtx (REG, SImode, HI_REGNUM);
 
   output_asm_insn (\"multu\\t%1,%2\", operands);
-  output_asm_insn (mips_move_1word (xoperands, insn), xoperands);
+  output_asm_insn (mips_move_1word (xoperands, insn, FALSE), xoperands);
   return \"\";
 }"
   [(set_attr "type"	"imul")
