@@ -723,18 +723,25 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan,
     rtx last_note = 0;
 
     for (insn = f; insn; insn = NEXT_INSN (insn))
-      if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) >= 0)
+      if (GET_CODE (insn) == NOTE)
 	{
-	  /* Delete this note if it is identical to previous note.  */
-	  if (last_note
-	      && NOTE_SOURCE_FILE (insn) == NOTE_SOURCE_FILE (last_note)
-	      && NOTE_LINE_NUMBER (insn) == NOTE_LINE_NUMBER (last_note))
+	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
+	    /* Any previous line note was for the prologue; gdb wants a new
+	       note after the prologue even if it is for the same line.  */
+	    last_note = NULL_RTX;
+	  else if (NOTE_LINE_NUMBER (insn) >= 0)
 	    {
-	      delete_insn (insn);
-	      continue;
-	    }
+	      /* Delete this note if it is identical to previous note.  */
+	      if (last_note
+		  && NOTE_SOURCE_FILE (insn) == NOTE_SOURCE_FILE (last_note)
+		  && NOTE_LINE_NUMBER (insn) == NOTE_LINE_NUMBER (last_note))
+		{
+		  delete_insn (insn);
+		  continue;
+		}
 
-	  last_note = insn;
+	      last_note = insn;
+	    }
 	}
   }
 

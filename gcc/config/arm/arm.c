@@ -7848,9 +7848,17 @@ arm_expand_prologue ()
 
   if (amount != const0_rtx)
     {
+      /* This add can produce multiple insns for a large constant, so we
+	 need to get tricky.  */
+      rtx last = get_last_insn ();
       insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
 				    amount));
-      RTX_FRAME_RELATED_P (insn) = 1;
+      do
+	{
+	  last = last ? NEXT_INSN (last) : get_insns ();
+	  RTX_FRAME_RELATED_P (last) = 1;
+	}
+      while (last != insn);
 
       /* If the frame pointer is needed, emit a special barrier that
 	 will prevent the scheduler from moving stores to the frame
