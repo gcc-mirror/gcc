@@ -129,9 +129,6 @@ jvspec.o-warn = -Wno-error
 java/parse-scan.o-warn = -Wno-error
 java/parse.o-warn = -Wno-error
 
-# Use of non-standardized scandir
-java/jcf-io.o-warn = -Wno-error
-
 jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(LIBDEPS)
 	rm -f $@
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
