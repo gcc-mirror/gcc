@@ -2101,7 +2101,7 @@ static unsigned lookup_filename		PROTO((char *));
    If necessary, these may be overridden from within the tm.h file, but
    typically, overriding these defaults is unnecessary.  */
 
-char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
+static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
 #ifndef TEXT_END_LABEL
 #define TEXT_END_LABEL		"Letext"
