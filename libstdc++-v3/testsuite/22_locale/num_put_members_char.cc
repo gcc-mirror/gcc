@@ -202,8 +202,8 @@ void test01()
   result1 = oss.str();
   // No grouping characters.
   VERIFY( !char_traits<char>::find(result1.c_str(), 
-				   numpunct_de.decimal_point(), 
-				   result1.size()) );
+				   result1.size(),
+				   numpunct_de.decimal_point()) );
   // Should contain an 'x'.
   VERIFY( result1.find('x') == 1 );
 
