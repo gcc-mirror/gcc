@@ -339,6 +339,7 @@ static void load_mems PROTO((rtx, rtx, rtx, rtx));
 static int insert_loop_mem PROTO((rtx *, void *));
 static int replace_loop_mem PROTO((rtx *, void *));
 static int replace_loop_reg PROTO((rtx *, void *));
+static void note_reg_stored PROTO((rtx, rtx, void *));
 static void try_copy_prop PROTO((rtx, rtx, rtx, rtx, int));
 static int replace_label PROTO((rtx *, void *));
 
@@ -9944,6 +9945,25 @@ load_mems (scan_start, end, loop_top, start)
     }
 }
 
+/* For communication between note_reg_stored and its caller.  */
+struct note_reg_stored_arg
+{
+  int set_seen;
+  rtx reg;
+};
+
+/* Called via note_stores, record in SET_SEEN whether X, which is written,
+   is equal to ARG.  */
+static void
+note_reg_stored (x, setter, arg)
+     rtx x, setter;
+     void *arg;
+{
+  struct note_reg_stored_arg *t = (struct note_reg_stored_arg *)arg;
+  if (t->reg == x)
+    t->set_seen = 1;
+}
+
 /* Try to replace every occurrence of pseudo REGNO with REPLACEMENT.
    There must be exactly one insn that sets this pseudo; it will be
    deleted if all replacements succeed and we can prove that the register
@@ -9954,21 +9974,29 @@ try_copy_prop (scan_start, loop_top, end, replacement, regno)
      rtx scan_start, loop_top, end, replacement;
      int regno;
 {
+  /* This is the reg that we are copying from.  */
+  rtx reg_rtx = regno_reg_rtx[regno];
   rtx init_insn = 0;
   rtx insn;
+  /* These help keep track of whether we replaced all uses of the reg.  */
+  int replaced_last = 0;
+  int store_is_first = 0;
+
   for (insn = next_insn_in_loop (scan_start, scan_start, end, loop_top);
        insn != NULL_RTX;
        insn = next_insn_in_loop (insn, scan_start, end, loop_top))
     {
       rtx set;
-      rtx array[3];
 
-      array[0] = regno_reg_rtx[regno];
-      array[1] = replacement;
-      array[2] = insn;
+      /* Only substitute within one extended basic block from the initializing
+         insn.  */
+      if (GET_CODE (insn) == CODE_LABEL && init_insn)
+	break;
 
       if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
 	continue;
+
+      /* Is this the initializing insn?  */
       set = single_set (insn);
       if (set
 	  && GET_CODE (SET_DEST (set)) == REG
@@ -9976,21 +10004,49 @@ try_copy_prop (scan_start, loop_top, end, replacement, regno)
 	{
 	  if (init_insn)
 	    abort ();
+
 	  init_insn = insn;
+	  if (REGNO_FIRST_UID (regno) == INSN_UID (insn))
+	    store_is_first = 1;
 	}
-      for_each_rtx (&insn, replace_loop_reg, array);
+
+      /* Only substitute after seeing the initializing insn.  */
+      if (init_insn && insn != init_insn)
+	{	
+	  struct note_reg_stored_arg arg;
+	  rtx array[3];
+	  array[0] = reg_rtx;
+	  array[1] = replacement;
+	  array[2] = insn;
+
+	  for_each_rtx (&insn, replace_loop_reg, array);
+	  if (REGNO_LAST_UID (regno) == INSN_UID (insn))
+	    replaced_last = 1;
+
+	  /* Stop replacing when REPLACEMENT is modified.  */
+	  arg.reg = replacement;
+	  arg.set_seen = 0;
+	  note_stores (PATTERN (insn), note_reg_stored, &arg);
+	  if (arg.set_seen)
+	    break;
+	}
     }
   if (! init_insn)
     abort ();
   if (apply_change_group ())
     {
-      if (uid_luid[REGNO_LAST_UID (regno)] < INSN_LUID (end))
+      if (loop_dump_stream)
+	fprintf (loop_dump_stream, "  Replaced reg %d", regno);
+      if (store_is_first && replaced_last)
 	{
 	  PUT_CODE (init_insn, NOTE);
 	  NOTE_LINE_NUMBER (init_insn) = NOTE_INSN_DELETED;
+	  if (loop_dump_stream)
+	    fprintf (loop_dump_stream, ", deleting init_insn (%d)",
+		     INSN_UID (init_insn));
 	}
       if (loop_dump_stream)
-	fprintf (loop_dump_stream, "  Replaced reg %d.\n", regno);
+	fprintf (loop_dump_stream, ".\n");
     }
 }
 

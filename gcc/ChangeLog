@@ -1,3 +1,11 @@
+1999-12-02  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* loop.c (note_reg_stored): New function.
+	(struct note_reg_stored_arg): New structure.
+	(try_copy_prop): Change to be more conservative; only replace within
+	one extended basic block and stop replacing if a store to the
+	replacement reg is seen.
+
 1999-12-02  Nick Clifton  <nickc@cygnus.com>
 
 	* config/fp-bit.c: Initialise all fields of the NAN
