@@ -2470,7 +2470,7 @@
 (define_insn "umulhisi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(mult:SI
-	 (zero_extend:SI (match_operand:HI 1 "register_operand" "0"))
+	 (zero_extend:SI (match_operand:HI 1 "register_operand" "%0"))
 	 (zero_extend:SI (match_operand:HI 2 "register_operand" "r"))))]
   "TARGET_HAS_MUL_INSNS"
   "%!mulu.w %2,%0"
@@ -2484,7 +2484,7 @@
 (define_insn "umulqihi3"
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(mult:HI
-	 (zero_extend:HI (match_operand:QI 1 "register_operand" "0"))
+	 (zero_extend:HI (match_operand:QI 1 "register_operand" "%0"))
 	 (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
   "TARGET_HAS_MUL_INSNS"
   "%!mulu.b %2,%0"
@@ -2503,7 +2503,7 @@
 
 (define_insn "mulsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(mult:SI (match_operand:SI 1 "register_operand" "0")
+	(mult:SI (match_operand:SI 1 "register_operand" "%0")
 		 (match_operand:SI 2 "register_operand" "r")))]
   "TARGET_HAS_MUL_INSNS"
   "%!muls.d %2,%0"
@@ -2521,7 +2521,7 @@
 (define_insn "mulqihi3"
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(mult:HI
-	 (sign_extend:HI (match_operand:QI 1 "register_operand" "0"))
+	 (sign_extend:HI (match_operand:QI 1 "register_operand" "%0"))
 	 (sign_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
   "TARGET_HAS_MUL_INSNS"
   "%!muls.b %2,%0"
@@ -2534,7 +2534,7 @@
 (define_insn "mulhisi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(mult:SI
-	 (sign_extend:SI (match_operand:HI 1 "register_operand" "0"))
+	 (sign_extend:SI (match_operand:HI 1 "register_operand" "%0"))
 	 (sign_extend:SI (match_operand:HI 2 "register_operand" "r"))))]
   "TARGET_HAS_MUL_INSNS"
   "%!muls.w %2,%0"
@@ -2554,7 +2554,7 @@
 (define_insn "mulsidi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI
-	 (sign_extend:DI (match_operand:SI 1 "register_operand" "0"))
+	 (sign_extend:DI (match_operand:SI 1 "register_operand" "%0"))
 	 (sign_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
   "TARGET_HAS_MUL_INSNS"
   "%!muls.d %2,%M0\;move $mof,%H0")
@@ -2562,7 +2562,7 @@
 (define_insn "umulsidi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(mult:DI
-	 (zero_extend:DI (match_operand:SI 1 "register_operand" "0"))
+	 (zero_extend:DI (match_operand:SI 1 "register_operand" "%0"))
 	 (zero_extend:DI (match_operand:SI 2 "register_operand" "r"))))]
   "TARGET_HAS_MUL_INSNS"
   "%!mulu.d %2,%M0\;move $mof,%H0")
