@@ -71,8 +71,22 @@ char *xcoff_current_function_file;
 char *xcoff_bss_section_name;
 char *xcoff_private_data_section_name;
 char *xcoff_read_only_section_name;
+
+/* Last source file name mentioned in a NOTE insn.  */
+
+char *xcoff_lastfile;
 
 /* Macro definitions used below.  */
+
+#define ABS_OR_RELATIVE_LINENO(LINENO)		\
+ (xcoff_current_include_file ? (LINENO) : (LINENO) - xcoff_begin_function_line)
+
+/* Output source line numbers via ".line" rather than ".stabd".  */
+#define ASM_OUTPUT_SOURCE_LINE(FILE,LINENUM) \
+  do {						\
+    if (xcoff_begin_function_line >= 0)		\
+      fprintf (FILE, "\t.line\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM)); \
+  } while (0)
 
 #define ASM_OUTPUT_LFB(FILE,LINENUM) \
 {						\
@@ -300,7 +314,7 @@ stab_to_sclass (stab)
       abort ();
   }
 }
-
+
 /* In XCOFF, we have to have this .bf before the function prologue.
    Rely on the value of `dbx_begin_function_line' not to duplicate .bf.  */
 
@@ -314,6 +328,53 @@ xcoffout_output_first_source_line (file, last_linenum)
   ASM_OUTPUT_SOURCE_LINE (file, last_linenum);
 }
 
+/* Output debugging info to FILE to switch to sourcefile FILENAME.
+   INLINE_P is true if this is from an inlined function.  */
+
+void
+xcoffout_source_file (file, filename, inline_p)
+     FILE *file;
+     char *filename;
+     int inline_p;
+{
+  if (filename
+      && (xcoff_lastfile == 0 || strcmp (filename, xcoff_lastfile)
+	  || (inline_p && ! xcoff_current_include_file)
+	  || (! inline_p && xcoff_current_include_file)))
+    {
+      if (xcoff_current_include_file)
+	{
+	  fprintf (file, "\t.ei\t");
+	  output_quoted_string (file, xcoff_current_include_file);
+	  fprintf (file, "\n");
+	  xcoff_current_include_file = NULL;
+	}
+      if (strcmp (main_input_filename, filename) || inline_p)
+	{
+	  fprintf (file, "\t.bi\t");
+	  output_quoted_string (file, filename);
+	  fprintf (file, "\n");
+	  xcoff_current_include_file = filename;
+	}
+
+      xcoff_lastfile = filename;
+    }
+}
+
+/* Output a line number symbol entry into output stream FILE,
+   for source file FILENAME and line number NOTE.  */
+
+void
+xcoffout_source_line (file, filename, note)
+     FILE *file;
+     char *filename;
+     rtx note;
+{
+  xcoffout_source_file (file, filename, RTX_INTEGRATED_P (note));
+
+  ASM_OUTPUT_SOURCE_LINE (file, NOTE_LINE_NUMBER (note));
+}
+
 /* Output the symbols defined in block number DO_BLOCK.
    Set NEXT_BLOCK_NUMBER to 0 before calling.
 
@@ -425,7 +486,7 @@ xcoffout_declare_function (file, decl, name)
   /* Any pending .bi or .ei must occur before the .function psuedo op.
      Otherwise debuggers will think that the function is in the previous
      file and/or at the wrong line number.  */
-  dbxout_source_file (file, DECL_SOURCE_FILE (decl));
+  xcoffout_source_file (file, DECL_SOURCE_FILE (decl), 0);
   dbxout_symbol (decl, 0);
   fprintf (file, "\t.function .%s,.%s,16,044,FE..%s-.%s\n", n, n, n, n);
 }
