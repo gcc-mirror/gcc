@@ -1,3 +1,7 @@
+2000-08-07  Kazu Hirata  <kazu@hxi.com>
+
+	* flow.c: Fix a comment typo.
+
 Sun Aug  6 23:47:35 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* c-parse.in: Changed the language string for Objective-C to "GNU
