@@ -887,12 +887,10 @@ alpha_emit_set_const_1 (target, mode, c, n)
 
   /* If this is a sign-extended 32-bit constant, we can do this in at most
      three insns, so do it if we have enough insns left.  We always have
-     a sign-extended 32-bit constant when compiling on a narrow machine. 
-     Note that we cannot handle the constant 0x80000000.  */
+     a sign-extended 32-bit constant when compiling on a narrow machine.   */
 
-  if ((HOST_BITS_PER_WIDE_INT != 64
-       || c >> 31 == -1 || c >> 31 == 0)
-      && c != 0x80000000U)
+  if (HOST_BITS_PER_WIDE_INT != 64
+      || c >> 31 == -1 || c >> 31 == 0)
     {
       HOST_WIDE_INT low = (c & 0xffff) - 2 * (c & 0x8000);
       HOST_WIDE_INT tmp1 = c - low;
@@ -911,7 +909,18 @@ alpha_emit_set_const_1 (target, mode, c, n)
 	}
 
       if (c == low || (low == 0 && extra == 0))
-	return copy_to_suggested_reg (GEN_INT (c), target, mode);
+	{
+	  /* We used to use copy_to_suggested_reg (GEN_INT (c), target, mode)
+	     but that meant that we can't handle INT_MIN on 32-bit machines
+	     (like NT/Alpha), because we recurse indefinitely through 
+	     emit_move_insn to gen_movdi.  So instead, since we know exactly
+	     what we want, create it explicitly.  */
+
+	  if (target == NULL)
+	    target = gen_reg_rtx (mode);
+	  emit_insn (gen_rtx (SET, VOIDmode, target, GEN_INT (c)));
+	  return target;
+	}
       else if (n >= 2 + (extra != 0))
 	{
 	  temp = copy_to_suggested_reg (GEN_INT (low), subtarget, mode);
@@ -989,9 +998,11 @@ alpha_emit_set_const_1 (target, mode, c, n)
       /* Now try high-order zero bits.  Here we try the shifted-in bits as
 	 all zero and all ones.  Be careful to avoid shifting outside the
 	 mode and to avoid shifting outside the host wide int size.  */
+      /* On narrow hosts, don't shift a 1 into the high bit, since we'll
+	 confuse the recursive call and set all of the high 32 bits.  */
 
       if ((bits = (MIN (HOST_BITS_PER_WIDE_INT, GET_MODE_SIZE (mode) * 8)
-		   - floor_log2 (c) - 1)) > 0)
+		   - floor_log2 (c) - 1 - (HOST_BITS_PER_WIDE_INT < 64))) > 0)
 	for (; bits > 0; bits--)
 	  if ((temp = alpha_emit_set_const (subtarget, mode,
 					    c << bits, i)) != 0
