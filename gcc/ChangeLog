@@ -1,3 +1,7 @@
+2003-05-18  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.h: Remove definition of g_switch_value.
+
 2003-05-18  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* flags.h (g_switch_value): Change to an unsigned
@@ -5,7 +9,7 @@
 	* toplev.c (g_switch_value): Likewise.
 
 	* config/alpha/alpha.c (small_symbolic_operand): Remove
-	g_switch_value cast. 
+	g_switch_value cast.
 	(alpha_in_small_data_p): Cast size to an unsigned
 	HOST_WIDE_INT.
 
@@ -50,7 +54,7 @@
 
 	* config.gcc: Clear xm_file, md_file at the beginning of each pass.
 
-	* config/stormy16/stormy16.h: Remove about 3000 lines of 
+	* config/stormy16/stormy16.h: Remove about 3000 lines of
 	target-independent comments.  Update copyright notice.
 
 	* doc/collect2.texi: GNU CC -> GCC.
@@ -59,7 +63,7 @@
 2003-05-18  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* hashtable.h (struct ht_identifier): Add data member "hash_value".
-	* hashtable.c (ht_lookup): Use it when searching, remember. 
+	* hashtable.c (ht_lookup): Use it when searching, remember.
 	(ht_expand): Do not recompute.
 	* tree.h (IDENTIFIER_HASH_VALUE): New macro.
 
@@ -91,7 +95,7 @@
 	* config/alpha.h, config/m68k/linux.h (TARGET_OBJFMT_CPP_BUILTINS):
 	Define __ELF__.
 	* doc/cpp.texi: Document __ELF__.
-	* doc/tm.texi: Document TARGET_OBJFMT_CPP_BUILTINS.	* 
+	* doc/tm.texi: Document TARGET_OBJFMT_CPP_BUILTINS.	*
 
 2003-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
