@@ -290,8 +290,8 @@ while [ $# != 0 ]; do
 	  /#define.BSD43__IO/		s/'\''\([cgx]\)'\''/\1/g
 	  /[^A-Z0-9_]CTRL[ 	]*(/		s/\([^'\'']\))/'\''\1'\'')/
 	  /[^A-Z0-9]_CTRL[ 	]*(/		s/\([^'\'']\))/'\''\1'\'')/
-	  /#define.CTRL/		s/'\''\([cgx]\)'\''/\1/g
-	  /#define._CTRL/		s/'\''\([cgx]\)'\''/\1/g
+	  /#define[ 	]*[	]CTRL/		s/'\''\([cgx]\)'\''/\1/g
+	  /#define[ 	]*[	]_CTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#define.BSD43_CTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#[el]*if/{
 		s/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g
@@ -330,7 +330,7 @@ done
 cd ${INPUT}
 
 # Install the proper definition of size_t in header files that it comes from.
-for file in sys/types.h sys/stdtypes.h;
+for file in sys/types.h stdlib.h sys/stdtypes.h;
 do
   if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
     cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
@@ -657,6 +657,7 @@ if [ -r ${LIB}/$file ]; then
 fi
 
 # Fix return type of exit and abort in <stdlib.h> on SunOS 4.1.
+# Also wrap protection around size_t for m88k-sysv3 systems.
 file=stdlib.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
   cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
@@ -671,7 +672,13 @@ if [ -r ${LIB}/$file ]; then
   -e 's/char \*	calloc/void \*	calloc/g' \
   -e 's/char \*	malloc/void \*	malloc/g' \
   -e 's/char \*	realloc/void \*	realloc/g' \
-  -e 's/int	exit/void	exit/g' ${LIB}/$file > ${LIB}/${file}.sed
+  -e 's/int	exit/void	exit/g' \
+  -e '/[ 	]size_t[ 	]*;/i\
+#ifndef _GCC_SIZE_T\
+#define _GCC_SIZE_T' \
+  -e '/[ 	]size_t[ 	]*;/a\
+#endif' \
+      ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm -f ${LIB}/$file
