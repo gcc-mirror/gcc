@@ -5584,6 +5584,51 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 		}
 	    }
 
+	  if (GET_CODE (p) == CALL_INSN && CALL_INSN_FUNCTION_USAGE (p))
+	    {
+	      rtx link;
+
+	      for (link = CALL_INSN_FUNCTION_USAGE (p); XEXP (link, 1) != 0;
+		   link = XEXP (link, 1))
+		{
+		  pat = XEXP (link, 0);
+		  if (GET_CODE (pat) == CLOBBER)
+		    {
+		      register rtx dest = SET_DEST (pat);
+		      while (GET_CODE (dest) == SUBREG
+			     || GET_CODE (dest) == ZERO_EXTRACT
+			     || GET_CODE (dest) == SIGN_EXTRACT
+			     || GET_CODE (dest) == STRICT_LOW_PART)
+			dest = XEXP (dest, 0);
+		      if (GET_CODE (dest) == REG)
+			{
+			  register int xregno = REGNO (dest);
+			  int xnregs;
+			  if (REGNO (dest) < FIRST_PSEUDO_REGISTER)
+			    xnregs = HARD_REGNO_NREGS (xregno, GET_MODE (dest));
+			  else
+			    xnregs = 1;
+			  if (xregno < regno + nregs
+			      && xregno + xnregs > regno)
+			    return 0;
+			  if (xregno < valueno + valuenregs
+			      && xregno + xnregs > valueno)
+			    return 0;
+			  if (goal_mem_addr_varies
+			      && reg_overlap_mentioned_for_reload_p (dest,
+								     goal))
+			    return 0;
+			}
+		      else if (goal_mem && GET_CODE (dest) == MEM
+			       && ! push_operand (dest, GET_MODE (dest)))
+			return 0;
+		      else if (need_stable_sp
+			       && push_operand (dest, GET_MODE (dest)))
+			return 0;
+		    }
+		}
+	    }
+
 #ifdef AUTO_INC_DEC
 	  /* If this insn auto-increments or auto-decrements
 	     either regno or valueno, return 0 now.
