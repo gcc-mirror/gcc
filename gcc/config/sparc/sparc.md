@@ -624,7 +624,7 @@
 ;; We need a special guard function because this bypass does
 ;; not apply to the address inputs of the store.
 (define_bypass 0 "us1_simple_ieuN,us1_simple_ieu1,us1_simple_ieu0,us1_faddsub_single,us1_faddsub_double,us1_fmov_single,us1_fmov_double,us1_fcmov_single,us1_fcmov_double,us1_fmult_single,us1_fmult_double" "us1_store"
-   "ultrasparc_store_bypass_p")
+   "store_data_bypass_p")
 
 ;; An integer branch may execute in the same cycle as the compare
 ;; creating the condition codes.
@@ -758,7 +758,7 @@
 ;; We need a special guard function because this bypass does
 ;; not apply to the address inputs of the store.
 (define_bypass 0 "us3_integer,us3_faddsub,us3_fmov,us3_fcmov,us3_fmult" "us3_store"
-   "ultrasparc_store_bypass_p")
+   "store_data_bypass_p")
 
 ;; An integer branch may execute in the same cycle as the compare
 ;; creating the condition codes.

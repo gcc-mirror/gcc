@@ -1,3 +1,12 @@
+2002-05-03  Richard Henderson  <rth@redhat.com>
+
+	* recog.c (store_data_bypass_p, if_test_bypass_p): New.
+	* recog.h: Declare them.
+
+	* config/sparc/sparc.c (ultrasparc_store_bypass_p): Remove.
+	* config/sparc/sparc.md: Use store_data_bypass_p instead.
+	* config/sparc/sparc-protos.h: Update.
+	
 2002-05-03  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/sparc/netbsd-elf.c (CPP_SUBTARGET_SPEC64): Remove

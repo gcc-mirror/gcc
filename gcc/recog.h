@@ -137,6 +137,9 @@ extern rtx peep2_find_free_register	PARAMS ((int, int, const char *,
 extern void peephole2_optimize		PARAMS ((FILE *));
 extern rtx peephole2_insns		PARAMS ((rtx, rtx, int *));
 
+extern int store_data_bypass_p		PARAMS ((rtx, rtx));
+extern int if_test_bypass_p		PARAMS ((rtx, rtx));
+
 /* Nonzero means volatile operands are recognized.  */
 extern int volatile_ok;
 
