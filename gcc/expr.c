@@ -1591,7 +1591,7 @@ emit_move_insn (x, y)
     return
       emit_insn (GEN_FCN (mov_optab->handlers[(int) mode].insn_code) (x, y));
 
-  /* Expand complex moves by moving real part and imag part, if posible.  */
+  /* Expand complex moves by moving real part and imag part, if possible.  */
   else if ((class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT)
 	   && submode != BLKmode
 	   && (mov_optab->handlers[(int) submode].insn_code
@@ -3803,7 +3803,7 @@ expand_expr (exp, target, tmode, modifier)
 		    || TREE_CODE (TREE_TYPE (exp2)) == UNION_TYPE)))
 	  MEM_IN_STRUCT_P (temp) = 1;
 	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp);
-#if 0 /* It is incorrectto set RTX_UNCHANGING_P here, because the fact that
+#if 0 /* It is incorrect to set RTX_UNCHANGING_P here, because the fact that
 	 a location is accessed through a pointer to const does not mean
 	 that the value there can never change.  */
 	RTX_UNCHANGING_P (temp) = TREE_READONLY (exp);
@@ -4066,7 +4066,7 @@ expand_expr (exp, target, tmode, modifier)
 	temp = gen_rtx (MEM, mode, memory_address (mode, op0));
 	MEM_IN_STRUCT_P (temp) = 1;
 	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp);
-#if 0 /* It is incorrectto set RTX_UNCHANGING_P here, because the fact that
+#if 0 /* It is incorrect to set RTX_UNCHANGING_P here, because the fact that
 	 a location is accessed through a pointer to const does not mean
 	 that the value there can never change.  */
 	RTX_UNCHANGING_P (temp) = TREE_READONLY (exp);
