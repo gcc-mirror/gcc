@@ -1,3 +1,14 @@
+2004-09-28  Steven Bosscher  <stevenb@suse.de>
+
+	* Makefile.in (tree-ssa-propagate.o): Depend on vec.h.
+	* tree-ssa-propagate.c: Include vec.h.
+	(interesting_ssa_edges, varying_ssa_edges): Make these VECs
+	instead of varrays.
+	(cfg_blocks_add): Assert the block is not already in the worklist.
+	Update uses of interesting_ssa_edges and varying_ssa_edges.
+	(process_ssa_edge_worklist, ssa_prop_init, ssa_prop_fini,
+	ssa_propagate): Likewise.
+
 2004-09-28  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/16409

@@ -40,7 +40,8 @@
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
-
+#include "varray.h"
+#include "vec.h"
 
 /* This file implements a generic value propagation engine based on
    the same propagation used by the SSA-CCP algorithm [1].
@@ -142,7 +143,7 @@ static sbitmap bb_in_list;
    definition has changed.  SSA edges are def-use edges in the SSA
    web.  For each D-U edge, we store the target statement or PHI node
    U.  */
-static GTY(()) varray_type interesting_ssa_edges;
+static GTY(()) VEC(tree) *interesting_ssa_edges;
 
 /* Identical to INTERESTING_SSA_EDGES.  For performance reasons, the
    list of SSA edges is split into two.  One contains all SSA edges
@@ -158,7 +159,7 @@ static GTY(()) varray_type interesting_ssa_edges;
    don't use a separate worklist for VARYING edges, we end up with
    situations where lattice values move from
    UNDEFINED->INTERESTING->VARYING instead of UNDEFINED->VARYING.  */
-static GTY(()) varray_type varying_ssa_edges;
+static GTY(()) VEC(tree) *varying_ssa_edges;
 
 
 /* Return true if the block worklist empty.  */
@@ -170,7 +171,8 @@ cfg_blocks_empty_p (void)
 }
 
 
-/* Add a basic block to the worklist.  */
+/* Add a basic block to the worklist.  The block must not be already
+   in the worklist.  */
 
 static void 
 cfg_blocks_add (basic_block bb)
@@ -178,8 +180,7 @@ cfg_blocks_add (basic_block bb)
   if (bb == ENTRY_BLOCK_PTR || bb == EXIT_BLOCK_PTR)
     return;
 
-  if (TEST_BIT (bb_in_list, bb->index))
-    return;
+  gcc_assert (!TEST_BIT (bb_in_list, bb->index));
 
   if (cfg_blocks_empty_p ())
     {
@@ -247,9 +248,9 @@ add_ssa_edge (tree var, bool is_varying)
 	{
 	  STMT_IN_SSA_EDGE_WORKLIST (use_stmt) = 1;
 	  if (is_varying)
-	    VARRAY_PUSH_TREE (varying_ssa_edges, use_stmt);
+	    VEC_safe_push (tree, varying_ssa_edges, use_stmt);
 	  else
-	    VARRAY_PUSH_TREE (interesting_ssa_edges, use_stmt);
+	    VEC_safe_push (tree, interesting_ssa_edges, use_stmt);
 	}
     }
 }
@@ -340,19 +341,20 @@ simulate_stmt (tree stmt)
 
 /* Process an SSA edge worklist.  WORKLIST is the SSA edge worklist to
    drain.  This pops statements off the given WORKLIST and processes
-   them until there are no more statements on WORKLIST.  */
+   them until there are no more statements on WORKLIST.
+   We take a pointer to WORKLIST because it may be reallocated when an
+   SSA edge is added to it in simulate_stmt.  */
 
 static void
-process_ssa_edge_worklist (varray_type *worklist)
+process_ssa_edge_worklist (VEC(tree) **worklist)
 {
   /* Drain the entire worklist.  */
-  while (VARRAY_ACTIVE_SIZE (*worklist) > 0)
+  while (VEC_length (tree, *worklist) > 0)
     {
       basic_block bb;
 
       /* Pull the statement to simulate off the worklist.  */
-      tree stmt = VARRAY_TOP_TREE (*worklist);
-      VARRAY_POP (*worklist);
+      tree stmt = VEC_pop (tree, *worklist);
 
       /* If this statement was already visited by simulate_block, then
 	 we don't need to visit it again here.  */
@@ -463,8 +465,8 @@ ssa_prop_init (void)
   basic_block bb;
 
   /* Worklists of SSA edges.  */
-  VARRAY_TREE_INIT (interesting_ssa_edges, 20, "interesting_ssa_edges");
-  VARRAY_TREE_INIT (varying_ssa_edges, 20, "varying_ssa_edges");
+  interesting_ssa_edges = VEC_alloc (tree, 20);
+  varying_ssa_edges = VEC_alloc (tree, 20);
 
   executable_blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (executable_blocks);
@@ -507,8 +509,8 @@ ssa_prop_init (void)
 static void
 ssa_prop_fini (void)
 {
-  interesting_ssa_edges = NULL;
-  varying_ssa_edges = NULL;
+  VEC_free (tree, interesting_ssa_edges);
+  VEC_free (tree, varying_ssa_edges);
   cfg_blocks = NULL;
   sbitmap_free (bb_in_list);
   sbitmap_free (executable_blocks);
@@ -653,8 +655,8 @@ ssa_propagate (ssa_prop_visit_stmt_fn visit_stmt,
 
   /* Iterate until the worklists are empty.  */
   while (!cfg_blocks_empty_p () 
-	 || VARRAY_ACTIVE_SIZE (interesting_ssa_edges) > 0
-	 || VARRAY_ACTIVE_SIZE (varying_ssa_edges) > 0)
+	 || VEC_length (tree, interesting_ssa_edges) > 0
+	 || VEC_length (tree, varying_ssa_edges) > 0)
     {
       if (!cfg_blocks_empty_p ())
 	{
