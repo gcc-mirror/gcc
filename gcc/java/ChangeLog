@@ -1,3 +1,19 @@
+2001-02-19  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* parse.y (parser_check_super_interface): Don't call 
+	check_pkg_class_access for an inner interface.
+	(parser_check_super): Don't call check_pkg_class_access for inner 
+	class.
+	(do_resolve_class): Simplify enclosing type loop. Don't call 
+	check_pkg_class_access if CL and DECL are not set.
+	(find_in_imports_on_demand): Set DECL if class_type needed to be
+	loaded. Don't call check_pkg_class_access for an inner class.
+	(check_inner_class_access): Rewritten to implement member access
+	rules as per spec 6.6.1.
+	(check_pkg_class_access): Handle the empty package correctly.
+	(in_same_package): New function. Determine if two classes are in the
+	same package.
+	
 2001-02-18  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* typeck.c (build_java_array_type): Don't try to poke a public `clone'
