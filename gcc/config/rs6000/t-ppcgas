@@ -3,17 +3,14 @@
 
 MULTILIB_OPTIONS	= msoft-float \
 			  mlittle/mbig \
-			  mcall-sysv/mcall-aix/mcall-solaris/mcall-linux
+			  mcall-sysv/mcall-aix/mcall-linux
 
 MULTILIB_DIRNAMES	= nof \
 			  le be \
-			  cs ca sol lin
+			  cs ca lin
 
 MULTILIB_EXTRA_OPTS	= mrelocatable-lib mno-eabi mstrict-align
-MULTILIB_EXCEPTIONS	= *mbig/*mcall-solaris* \
-			  *mlittle/*mcall-solaris* \
-			  *msoft-float/*mcall-solaris* \
-			  *mbig/*mcall-linux* \
+MULTILIB_EXCEPTIONS	= *mbig/*mcall-linux* \
 			  *mlittle/*mcall-linux* \
 			  *msoft-float/*mcall-linux*
 

@@ -28,6 +28,9 @@ Boston, MA 02111-1307, USA.  */
 #undef	CPP_ENDIAN_DEFAULT_SPEC
 #define	CPP_ENDIAN_DEFAULT_SPEC "%(cpp_endian_little)"
 
+#undef	CC1_ENDIAN_DEFAULT_SPEC
+#define	CC1_ENDIAN_DEFAULT_SPEC "%(cc1_endian_little)"
+
 #undef	LINK_TARGET_SPEC
 #define	LINK_TARGET_SPEC "\
 %{mbig: -oformat elf32-powerpc } %{mbig-endian: -oformat elf32-powerpc } \
