@@ -1,3 +1,7 @@
+2002-12-22  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/mt-aix43: Delete.
+
 2002-12-21  Geoffrey Keating  <geoffk@apple.com>
 
 	* configure.in (extra_ranlibflags_for_target): New variable.
