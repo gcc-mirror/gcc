@@ -1,3 +1,8 @@
+2002-06-04  Andreas Jaeger  <aj@suse.de>
+
+	* Make-lang.in (gnatbind): Readd rule that has been lost in last
+	patch.
+
 2002-06-03  Geoffrey Keating  <geoffk@redhat.com>
 
 	Merge from pch-branch:
@@ -16,7 +21,7 @@
 	(TREE_LOOP_ID): Correct typo.
 	* decl.c: Use new macros.
 	* utils.c: Include debug.h, use new macros.
-	* utils2.c: Use new macros.	
+	* utils2.c: Use new macros.
 
 	* ada-tree.h: Update all macros for new tree description.
 	(struct tree_loop_id): New.
@@ -43,7 +48,7 @@
 	keep lines under 80 chars.
 	* snames.adb: Likewise.
 	* treepr.ads: Likewise.
-	
+
 	* Makefile.in (decl.o): Include gt-ada-<filename>.h.
 	(misc.o): Likewise.
 	(utils.o): Include gt-ada-<filename>.h and gtype-ada.h.
@@ -72,7 +77,7 @@
 	* adaint.c (__gnat_max_path_len): Declare.
 	* g-dirope.adb (Max_Path): Adjust.
 	* g-os_lib.adb (Normalize_Pathname.Max_Path): Adjust.
-	* i-cstrea.ads (max_path_len): Adjust. 
+	* i-cstrea.ads (max_path_len): Adjust.
 	* osint.adb (Get_RTS_Search_Dir.Max_Path): Adjust.
 	* xr_tabls.adb (Dir_Name.Max_Path: Adjust.
 
@@ -139,7 +144,7 @@
 	(ada/adaint.o): New.
 	(ada/argv.o): Moved from Makefile.in.
 	Prefix with ada subdir.
-	Update dependencies.	
+	Update dependencies.
 	(ada/cstreams.o, ada/exit.o, ada/final.o, ada/link.o): Likewise.
 	(ada/cio.o, ada/init.o, ada/raise.o, ada/tracebak.o): Likewise.
 	(ada/cuintp.o, ada/decl.o, ada/misc.o): Moved from Makefile.in.
@@ -188,7 +193,7 @@
 	* ada/Makefile.in (X_ADA_CFLAGS, T_ADA_CFLAGS): New fragment overrides.
 	(ALL_ADA_CFLAGS): Define.  Replace ADA_CFLAGS with ALL_ADA_CFLAGS in
 	ALL_ADAFLAGS, MOST_ADAFLAGS, and all compilations using CC.
- 
+
 2002-04-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* misc.c (gnat_parse_file): Update.
