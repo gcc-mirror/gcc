@@ -4479,6 +4479,28 @@ fold (expr)
 	  return t1 ? t1 : t;
 	}
 
+      /* If this is a comparison of complex values and either or both
+	 sizes are a COMPLEX_EXPR, it is best to split up the comparisons
+	 and join them with a TRUTH_ANDIF_EXPR or TRUTH_ORIF_EXPR.  This
+	 may prevent needless evaluations.  */
+      if ((code == EQ_EXPR || code == NE_EXPR)
+	  && TREE_CODE (TREE_TYPE (arg0)) == COMPLEX_TYPE
+	  && (TREE_CODE (arg0) == COMPLEX_EXPR
+	      || TREE_CODE (arg1) == COMPLEX_EXPR))
+	{
+	  tree subtype = TREE_TYPE (TREE_TYPE (arg0));
+	  tree real0 = fold (build1 (REALPART_EXPR, subtype, arg0));
+	  tree imag0 = fold (build1 (IMAGPART_EXPR, subtype, arg0));
+	  tree real1 = fold (build1 (REALPART_EXPR, subtype, arg1));
+	  tree imag1 = fold (build1 (IMAGPART_EXPR, subtype, arg1));
+
+	  return fold (build ((code == EQ_EXPR ? TRUTH_ANDIF_EXPR
+			       : TRUTH_ORIF_EXPR),
+			      type,
+			      fold (build (code, type, real0, real1)),
+			      fold (build (code, type, imag0, imag1))));
+	}
+
       /* From here on, the only cases we handle are when the result is
 	 known to be a constant.
 
