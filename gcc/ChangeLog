@@ -1,3 +1,7 @@
+Fri May 15 21:40:06 1998  John Wehle  (john@feith.com)
+
+	* i386.md (movdi-1, movdi): Rewrite based on SI move patterns.
+
 Fri May 15 18:55:22 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.h (BINFO_SIZE, TYPE_BINFO_SIZE): New macros.
