@@ -1,3 +1,10 @@
+2005-03-13  Andy Hutchinson  <HutchinsonAndy@netscape.net>
+
+	PR target/18251
+	* config/avr/avr.md (movmemhi): Rewrite as RTL loop.
+	(*movmemqi_insn): Delete.
+	(*movmemhi): Delete.
+
 2005-03-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c (fold_builtin_classify): Take decomposed
