@@ -1203,6 +1203,8 @@ try_combine (i3, i2, i1)
   rtx new_i3_notes, new_i2_notes;
   /* Notes that we substituted I3 into I2 instead of the normal case.  */
   int i3_subst_into_i2 = 0;
+  /* Notes that I1, I2 or I3 is a MULT operation.  */
+  int have_mult = 0;
 
   int maxreg;
   rtx temp;
@@ -1391,6 +1393,15 @@ try_combine (i3, i2, i1)
       undo_all ();
       return 0;
     }
+
+  /* See if any of the insns is a MULT operation.  Unless one is, we will
+     reject a combination that is, since it must be slower.  Be conservative
+     here.  */
+  if (GET_CODE (i2src) == MULT
+      || (i1 != 0 && GET_CODE (i1src) == MULT)
+      || (GET_CODE (PATTERN (i3)) == SET
+	  && GET_CODE (SET_SRC (PATTERN (i3))) == MULT))
+    have_mult = 1;
 
   /* If I3 has an inc, then give up if I1 or I2 uses the reg that is inc'd.
      We used to do this EXCEPT in one case: I3 has a post-inc in an
@@ -1601,7 +1612,11 @@ try_combine (i3, i2, i1)
 	 really no reason to).  */
       || max_reg_num () != maxreg
       /* Fail if we couldn't do something and have a CLOBBER.  */
-      || GET_CODE (newpat) == CLOBBER)
+      || GET_CODE (newpat) == CLOBBER
+      /* Fail if this new pattern is a MULT and we didn't have one before
+	 at the outer level.  */
+      || (GET_CODE (newpat) == SET && GET_CODE (SET_SRC (newpat)) == MULT
+	  && ! have_mult))
     {
       undo_all ();
       return 0;
@@ -1804,13 +1819,14 @@ try_combine (i3, i2, i1)
 	  && ! reg_referenced_p (i2dest, newpat))
 	{
 	  rtx newdest = i2dest;
+	  enum rtx_code split_code = GET_CODE (*split);
+	  enum machine_mode split_mode = GET_MODE (*split);
 
 	  /* Get NEWDEST as a register in the proper mode.  We have already
 	     validated that we can do this.  */
-	  if (GET_MODE (i2dest) != GET_MODE (*split)
-	      && GET_MODE (*split) != VOIDmode)
+	  if (GET_MODE (i2dest) != split_mode && split_mode != VOIDmode)
 	    {
-	      newdest = gen_rtx (REG, GET_MODE (*split), REGNO (i2dest));
+	      newdest = gen_rtx (REG, split_mode, REGNO (i2dest));
 
 	      if (REGNO (i2dest) >= FIRST_PSEUDO_REGISTER)
 		SUBST (regno_reg_rtx[REGNO (i2dest)], newdest);
@@ -1819,25 +1835,27 @@ try_combine (i3, i2, i1)
 	  /* If *SPLIT is a (mult FOO (const_int pow2)), convert it to
 	     an ASHIFT.  This can occur if it was inside a PLUS and hence
 	     appeared to be a memory address.  This is a kludge.  */
-	  if (GET_CODE (*split) == MULT
+	  if (split_code == MULT
 	      && GET_CODE (XEXP (*split, 1)) == CONST_INT
 	      && (i = exact_log2 (INTVAL (XEXP (*split, 1)))) >= 0)
-	    SUBST (*split, gen_rtx_combine (ASHIFT, GET_MODE (*split),
+	    SUBST (*split, gen_rtx_combine (ASHIFT, split_mode,
 					    XEXP (*split, 0), GEN_INT (i)));
 
 #ifdef INSN_SCHEDULING
 	  /* If *SPLIT is a paradoxical SUBREG, when we split it, it should
 	     be written as a ZERO_EXTEND.  */
-	  if (GET_CODE (*split) == SUBREG
-	      && GET_CODE (SUBREG_REG (*split)) == MEM)
-	    SUBST (*split, gen_rtx_combine (ZERO_EXTEND, GET_MODE (*split),
+	  if (split_code == SUBREG && GET_CODE (SUBREG_REG (*split)) == MEM)
+	    SUBST (*split, gen_rtx_combine (ZERO_EXTEND, split_mode,
 					    XEXP (*split, 0)));
 #endif
 
 	  newi2pat = gen_rtx_combine (SET, VOIDmode, newdest, *split);
 	  SUBST (*split, newdest);
 	  i2_code_number = recog_for_combine (&newi2pat, i2, &new_i2_notes);
-	  if (i2_code_number >= 0)
+
+	  /* If the split point was a MULT and we didn't have one before,
+	     don't use one now.  */
+	  if (i2_code_number >= 0 && ! (split_code == MULT && ! have_mult))
 	    insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
 	}
     }
