@@ -1,3 +1,8 @@
+2004-08-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* configure.ac: New name of...
+	* configure.in: ... this file.
+
 2004-08-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Eliminate uses of changequote (mostly by quoting []).
