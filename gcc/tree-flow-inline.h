@@ -389,15 +389,6 @@ set_phi_nodes (basic_block bb, tree l)
     set_bb_for_stmt (phi, bb);
 }
 
-/* Return the phi index number for an edge.  */
-static inline int
-phi_arg_from_edge (tree phi, edge e)
-{
-  gcc_assert (phi);
-  gcc_assert (TREE_CODE (phi) == PHI_NODE);
-  return e->dest_idx;
-}
-
 /* Mark VAR as used, so that it'll be preserved during rtl expansion.  */
 
 static inline void
