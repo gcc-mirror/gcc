@@ -1,3 +1,8 @@
+2005-03-18  Ralf Corsepius  <ralf.corsepius@rtems.org>
+
+	* config/i386/t-rtems-i386 (MULTILIBS): Remove k6, athlon,
+	mno-fp-ret-in-387 multilib variants.
+
 2005-03-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/18380
