@@ -1,3 +1,16 @@
+2004-09-28  Richard Henderson  <rth@redhat.com>
+
+	PR 17531
+	* expr.c (expand_expr_addr_expr_1): Only assemble_external for decls.
+	Don't check VOIDmode here.  Force PLUS operands to common type.
+	(expand_expr_addr_expr): Do VOIDmode check earlier.  Force use of
+	Pmode if given a non pointer type.
+
+2004-09-28  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR 17531
+	* optabs.c (expand_binop): Force constants to the correct mode.
+
 2004-09-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_adjust_cost): Remove.
