@@ -18,11 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "gofast.h"
-
-/* US Software GOFAST library support.  */
-#define INIT_SUBTARGET_OPTABS INIT_GOFAST_OPTABS
-
 #include "mips/mips.h"
 
 #undef WCHAR_TYPE
