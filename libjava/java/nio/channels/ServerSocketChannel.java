@@ -73,7 +73,7 @@ public abstract class ServerSocketChannel
    * @exception SecurityException If a security manager has been installed and
    * it does not permit access to the remote endpoint of the new connection.
    */
-  public abstract SocketChannel accept ();
+  public abstract SocketChannel accept () throws IOException;
   
   /**
    * Retrieves the channels socket.
