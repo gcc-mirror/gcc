@@ -4778,12 +4778,10 @@ c_common_insert_default_attributes (decl)
 }
 
 /* Output a -Wshadow warning MSGCODE about NAME, and give the location
-   of the previous declaration DECL.  MANDATORY says whether this is a
-   mandatory warning (i.e. use pedwarn).  */
+   of the previous declaration DECL.  */
 void
-shadow_warning (msgcode, mandatory, name, decl)
+shadow_warning (msgcode, name, decl)
      enum sw_kind msgcode;
-     int mandatory;  /* really bool */
      const char *name;
      tree decl;
 {
@@ -4793,7 +4791,7 @@ shadow_warning (msgcode, mandatory, name, decl)
     /* SW_GLOBAL */ N_("declaration of \"%s\" shadows a global declaration")
   };
 
-  (mandatory ? pedwarn : warning) (msgs[msgcode], name);
+  warning (msgs[msgcode], name);
   warning_with_file_and_line (DECL_SOURCE_FILE (decl),
 			      DECL_SOURCE_LINE (decl),
 			      "shadowed declaration is here");

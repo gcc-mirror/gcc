@@ -239,6 +239,8 @@ scope_to_insns_initialize ()
 	      break;
 	    case NOTE_INSN_BLOCK_END:
 	      block = BLOCK_SUPERCONTEXT (block);
+	      if (block && TREE_CODE (block) == FUNCTION_DECL)
+		block = 0;
 	      delete_insn (insn);
 	      break;
 	    default:

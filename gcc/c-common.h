@@ -335,7 +335,7 @@ extern tree c_begin_while_stmt			PARAMS ((void));
 extern void c_finish_while_stmt_cond		PARAMS ((tree, tree));
 
 enum sw_kind { SW_PARAM = 0, SW_LOCAL, SW_GLOBAL };
-extern void shadow_warning			PARAMS ((enum sw_kind, int,
+extern void shadow_warning			PARAMS ((enum sw_kind,
 							 const char *, tree));
 
 /* Extra information associated with a DECL.  Other C dialects extend

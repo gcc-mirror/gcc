@@ -1,6 +1,6 @@
 /* Definitions for C parsing and type checking.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,11 +37,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 struct lang_identifier GTY(())
 {
   struct c_common_identifier common_id;
-  tree global_value;
-  tree local_value;
+  tree symbol_value;
+  tree tag_value;
   tree label_value;
-  tree implicit_decl;
-  tree limbo_value;
 };
 
 /* The resulting tree type.  */
@@ -70,26 +68,17 @@ struct lang_decl GTY(())
 /* Macros for access to language-specific slots in an identifier.  */
 /* Each of these slots contains a DECL node or null.  */
 
-/* This represents the value which the identifier has in the
-   file-scope namespace.  */
-#define IDENTIFIER_GLOBAL_VALUE(NODE)	\
-  (((struct lang_identifier *) (NODE))->global_value)
-/* This represents the value which the identifier has in the current
-   scope.  */
-#define IDENTIFIER_LOCAL_VALUE(NODE)	\
-  (((struct lang_identifier *) (NODE))->local_value)
-/* This represents the value which the identifier has as a label in
-   the current label scope.  */
+/* The value of the identifier in the namespace of "ordinary identifiers"
+   (data objects, enum constants, functions, typedefs).  */
+#define IDENTIFIER_SYMBOL_VALUE(NODE)	\
+  (((struct lang_identifier *) (NODE))->symbol_value)
+/* The value of the identifier in the namespace of struct, union,
+   and enum tags.  */
+#define IDENTIFIER_TAG_VALUE(NODE)	\
+  (((struct lang_identifier *) (NODE))->tag_value)
+/* The value of the identifier in the namespace of labels.  */
 #define IDENTIFIER_LABEL_VALUE(NODE)	\
   (((struct lang_identifier *) (NODE))->label_value)
-/* This records the extern decl of this identifier, if it has had one
-   at any point in this compilation.  */
-#define IDENTIFIER_LIMBO_VALUE(NODE)	\
-  (((struct lang_identifier *) (NODE))->limbo_value)
-/* This records the implicit function decl of this identifier, if it
-   has had one at any point in this compilation.  */
-#define IDENTIFIER_IMPLICIT_DECL(NODE)	\
-  (((struct lang_identifier *) (NODE))->implicit_decl)
 
 /* In identifiers, C uses the following fields in a special way:
    TREE_PUBLIC        to record that there was a previous local extern decl.
@@ -129,13 +118,6 @@ struct lang_type GTY(())
 #define C_TYPE_VARIABLE_SIZE(TYPE) TYPE_LANG_FLAG_1 (TYPE)
 #define C_DECL_VARIABLE_SIZE(TYPE) DECL_LANG_FLAG_0 (TYPE)
 
-#if 0 /* Not used.  */
-/* Record whether a decl for a function or function pointer has
-   already been mentioned (in a warning) because it was called
-   but didn't have a prototype.  */
-#define C_MISSING_PROTOTYPE_WARNED(DECL) DECL_LANG_FLAG_2 (DECL)
-#endif
-
 /* Store a value in that field.  */
 #define C_SET_EXP_ORIGINAL_CODE(EXP, CODE) \
   (TREE_COMPLEXITY (EXP) = (int) (CODE))
@@ -147,10 +129,22 @@ struct lang_type GTY(())
    return type.  */
 #define C_FUNCTION_IMPLICIT_INT(EXP) DECL_LANG_FLAG_1 (EXP)
 
-/* Nonzero for a declaration of a built in function if there has been no
-   occasion that would declare the function in ordinary C.
-   Using the function draws a pedantic warning in this case.  */
-#define C_DECL_ANTICIPATED(EXP) DECL_LANG_FLAG_3 (EXP)
+/* For a FUNCTION_DECL, nonzero if it was an implicit declaration.  */
+#define C_DECL_IMPLICIT(EXP) DECL_LANG_FLAG_2 (EXP)
+
+/* Nonzero for a declaration of an external object which is not
+   currently in scope.  This is either a built-in declaration of
+   a library function, before a real declaration has been seen,
+   or a declaration that appeared in an inner scope that has ended.  */
+#define C_DECL_INVISIBLE(EXP) DECL_LANG_FLAG_3 (EXP)
+
+/* Nonzero for a decl which either doesn't exist or isn't a prototype.
+   N.B. Could be simplified if all built-in decls had complete prototypes
+   (but this is presently difficult because some of them need FILE*).  */
+#define C_DECL_ISNT_PROTOTYPE(EXP)			\
+       (EXP == 0					\
+	|| (TYPE_ARG_TYPES (TREE_TYPE (EXP)) == 0	\
+	    && !DECL_BUILT_IN (EXP)))
 
 /* For FUNCTION_TYPE, a hidden list of types of arguments.  The same as
    TYPE_ARG_TYPES for functions with prototypes, but created for functions
@@ -207,11 +201,9 @@ extern tree grokfield                           PARAMS ((const char *, int, tree
 extern tree groktypename                        PARAMS ((tree));
 extern tree groktypename_in_parm_context        PARAMS ((tree));
 extern tree implicitly_declare                  PARAMS ((tree));
-extern void implicit_decl_warning               PARAMS ((tree));
 extern int  in_parm_level_p                     PARAMS ((void));
 extern void keep_next_level                     PARAMS ((void));
 extern tree lookup_name                         PARAMS ((tree));
-extern tree lookup_name_current_level		PARAMS ((tree));
 extern void parmlist_tags_warning               PARAMS ((void));
 extern void pending_xref_error                  PARAMS ((void));
 extern void c_push_function_context             PARAMS ((struct function *));
@@ -220,8 +212,8 @@ extern void pop_label_level                     PARAMS ((void));
 extern void push_label_level                    PARAMS ((void));
 extern void push_parm_decl                      PARAMS ((tree));
 extern tree pushdecl_top_level                  PARAMS ((tree));
+extern tree pushdecl_function_level		PARAMS ((tree, tree));
 extern void pushtag                             PARAMS ((tree, tree));
-extern void record_function_scope_shadow	PARAMS ((tree));
 extern tree set_array_declarator_type           PARAMS ((tree, tree, int));
 extern tree shadow_label                        PARAMS ((tree));
 extern void shadow_tag                          PARAMS ((tree));

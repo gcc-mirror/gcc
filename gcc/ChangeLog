@@ -1,3 +1,108 @@
+2003-04-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (struct binding_level): Add shadowed_tags and
+	function_body; remove this_block, tag_transparent, and
+	subblocks_tag_transparent; update comments.
+	(clear_binding_level, lookup_tag_reverse): Kill.
+	(make_binding_level): Use ggc_alloc_cleared or memset.
+	(lookup_tag): Remove struct binding_level* parameter.  All
+	callers changed. Just look at IDENTIFIER_TAG_VALUE, and
+	current_binding_level->tags if asked for thislevel_only or if
+	we might have to diagnose "struct foo; union foo;"
+	(pushlevel): Ignore argument.  Do not push another binding
+	level on the transition from the parameters to the top level
+	of the function body; just tweak the flags and proceed.
+	(poplevel): Overhaul.  Clear IDENTIFIER_TAG_VALUEs; on exiting
+	a function body, separate the parameter list from the
+	top-level local variables.
+	(set_block): Do nothing.
+	(pushtag): Set IDENTIFIER_TAG_VALUE and add an entry to
+	shadowed_tags if necessary.
+	(warn_if_shadowing): Nuke the special case for local shadowing
+	parameter.
+	(pushdecl): Do not create a shadow entry if we are replacing
+	an older decl in the same binding level.
+	(pushdecl_function_level): Tweak for new way of indicating
+	function scope.
+	(shadow_tag_warned): Use TYPE_NAME, not	lookup_tag_reverse.
+	(start_function): Don't set subblocks_tag_transparent.
+	(finish_function): Fix up the binding_level stack for totally
+	empty functions.  Otherwise, don't call poplevel.
+
+	* c-common.c (shadow_warning): MANDATORY argument is no longer
+	necessary.  Always use plain warning.
+	* c-common.h: Update to match.
+
+	* cfglayout.c (scope_to_insns_initialize): Clear block when we
+	hit the FUNCTION_DECL.
+	* function.c: Do not create cyclic tree structure.
+
+2003-04-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-tree.h (struct lang_identifier): Replace global_value,
+	local_value members with symbol_value, tag_value.  Kill
+	implicit_decl and limbo_value.
+	(IDENTIFIER_GLOBAL_VALUE, IDENTIFIER_LOCAL_VALUE,
+	IDENTIFIER_LIMBO_VALUE, IDENTIFIER_IMPLICIT_DECL,
+	C_MISSING_PROTOTYPE_WARNED): Kill.
+	(IDENTIFIER_SYMBOL_VALUE, IDENTIFIER_TAG_VALUE,
+	C_DECL_IMPLICIT, C_DECL_ISNT_PROTOTYPE): New.
+	(C_DECL_ANTICIPATED): Rename to C_DECL_INVISIBLE.
+	(implicit_decl_warning, lookup_name_current_level,
+	record_function_scope_shadow): Don't prototype.
+	(pushdecl_function_level): Prototype.
+
+	* c-decl.c (truly_local_externals): New variable.
+	(struct binding_level): Adjust commentary.
+	(get_function_binding_level, clear_limbo_values,
+	record_function_scope_shadow): Kill.
+	(lookup_name_current_level, implicit_decl_warning): Are	now static.
+	(any_external_decl, record_external_decl): New static functions.
+	(clone_underlying type): Split out of pushdecl.
+	(c_print_identifier): Update to match changes to struct
+	lang_identifier.
+	(poplevel): Delete #if 0 block.  Make externals invisible
+	instead of clearing their IDENTIFIER_SYMBOL_VALUEs.  Don't
+	call clear_limbo_values.  Refer to IDENTIFIER_SYMBOL_VALUE not
+	IDENTIFIER_GLOBAL_VALUE or IDENTIFIER_LOCAL_VALUE.
+	(duplicate-decls): For real parm decl after a forward decl,
+	set TREE_ASM_WRITTEN here.  Allow void foo(...) followed by
+	foo(...) { } with only a warning.  Say whether a previous
+	declaration was implicit.
+	(warn_if_shadowing): Now handles all shadowing, not just
+	local-over-local.  Clarify comments.
+	(pushdecl): Rewritten.  There is no longer a distinction
+	between global and local symbol values; they're all
+	IDENTIFIER_SYMBOL_VALUE.  Call record_external_decl on all
+	DECL_EXTERNAL decls, and use any_external_decl to check
+	against previous externals.  Kill #if 0 blocks.  Don't
+	tolerate error_mark_node being NULL.
+	(pushdecl_top_level): Handle only those cases which
+	Objective C (the only user) needs.
+	(pushdecl_function_level): New function.
+	(implicitly_declare): Create ordinary decls with
+	C_DECL_IMPLICIT set.  Recycle old decls, however they got
+	created.
+	(lookup_name): It's always IDENTIFIER_SYMBOL_VALUE. Return 0
+	for C_DECL_INVISIBLE symbols.
+	(lookup_name_current_level): Likewise.  Use chain_member.
+	(c_make_fname_decl): Don't muck with DECL_CONTEXT.
+	Use pushdecl_function_level.
+	(builtin_function): Use C_DECL_INVISIBLE.
+	(start_function): Don't muck with IDENTIFIER_IMPLICIT_DECL.
+	Use C_DECL_ISNT_PROTOTYPE and C_DECL_IMPLICIT.
+	(store_parm_decls): It's IDENTIFIER_SYMBOL_VALUE now.
+	(identifier_global_value): Same.  Must scan
+	global_binding_level in extremis.
+
+	* c-typeck.c (undeclared_variable): New static function, split
+	from build_external_ref.
+	(build_external_ref): Use DECL_CONTEXT, not
+	IDENTIFIER_LOCAL_VALUE, to decide whether a local hides
+	an instance variable.  Restructure for clarity.
+	* objc/objc-act.c: Use identifier_global_value, not
+	IDENTIFIER_GLOBAL_VALUE.
+
 2003-04-08  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* doc/extend.texi (Template Instantiation): Refer to ISO standard,

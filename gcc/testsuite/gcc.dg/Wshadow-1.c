@@ -10,10 +10,10 @@ void foo (double decl1)		/* { dg-warning "shadows a global decl" } */
 {				
 }
 
-void foo1 (int d)		/* { dg-warning "shadowed declaration" } */
+void foo1 (int d)		/* { dg-warning "previous declaration" } */
 {
   double d;	 /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "shadows a parameter" "" { target *-*-* } 15 } */
+  /* { dg-error "redeclared as different" "" { target *-*-* } 15 } */
 }
 
 void foo2 (int d)		/* { dg-warning "shadowed declaration" } */
