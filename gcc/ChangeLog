@@ -1,3 +1,7 @@
+Sat Dec 26 23:26:26 PST 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Dec 26 09:17:04 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gengenrtl.c (gencode): Always use bzero to clear memory instead
