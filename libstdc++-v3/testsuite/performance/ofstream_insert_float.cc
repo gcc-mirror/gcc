@@ -26,28 +26,43 @@
 // the GNU General Public License.
 
 #include <fstream>
+#include <sstream>
 #include <testsuite_performance.h>
 
-// based on libstdc++/8761 poor fstream performance (converted to float)
-int main() 
+// Based on libstdc++/8761 poor fstream performance (converted to float)
+void test_insertion(int p = 6)
 {
   using namespace std;
   using namespace __gnu_test;
 
-  time_counter time;
-  resource_counter resource;
+  const char* filename = "tmp_perf_float.txt";
   const int iterations = 10000000;
 
-  ofstream out("tmp_perf_float.txt");
-  start_counters(time, resource);
-  for (int i = 0; i < iterations; ++i)
-    {
-      float f = i * 3.14159265358979323846;
-      out << f << "\n";
-    }
-  stop_counters(time, resource);
-  report_performance(__FILE__, "", time, resource);
+  ostringstream oss;
+  oss << "precision " << p;
 
-  unlink("tmp_perf_float.txt");
-  return 0;
+  {
+    time_counter time;
+    resource_counter resource;
+
+    ofstream out(filename);
+    out.precision(p);
+    start_counters(time, resource);
+    for (int i = 0; i < iterations; ++i)
+      {
+	float f = i * 3.14159265358979323846;
+	out << f << '\n';
+      }
+    stop_counters(time, resource);
+    report_performance(__FILE__, oss.str(), time, resource);
+  }
+
+  unlink(filename);
 };
+
+int main()
+{
+  test_insertion(6);
+  test_insertion(12);
+  return 0;
+}
