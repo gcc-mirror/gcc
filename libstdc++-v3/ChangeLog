@@ -1,3 +1,8 @@
+2004-01-26  Andreas Schwab  <schwab@suse.de>
+
+	* config/locale/gnu/monetary_members.cc: Restore locale before
+	rethrowing exception.
+
 2004-01-25  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.h (_M_replace_aux, _M_replace_safe):
