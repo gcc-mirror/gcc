@@ -1,5 +1,8 @@
 Tue Feb 17 22:37:22 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* Makefile.in (gcc.o): Depend on system.h, in accordance with last
+	change to gcc.c.
+
 	* haifa-sched.c: Include "system.h" to get <stdlib.h> and <stdio.h>.
 	(BLOCKAGE_RANGE): Add parentheses around arithmetic in operand of |.
 	(sched_note_set): Remove unused parameter `b', all callers changed.
