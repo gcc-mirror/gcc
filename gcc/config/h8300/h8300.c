@@ -180,11 +180,6 @@ static int pop_order[FIRST_PSEUDO_REGISTER] =
    <saved registers>   	<- sp
 */
 
-int current_function_anonymous_args;
-
-/* Extra arguments to pop, in words (IE: 2 bytes for 300, 4 for 300h */
-static int extra_pop;
-
 void
 function_prologue (file, size)
      FILE *file;
@@ -193,49 +188,11 @@ function_prologue (file, size)
   register int mask = 0;
   int fsize = (size + STACK_BOUNDARY / 8 - 1) & -STACK_BOUNDARY / 8;
   int idx;
-  extra_pop = 0;
 
+  /* Note a function with the interrupt attribute and set interrupt_handler
+     accordingly.  */
   if (h8300_interrupt_function_p (current_function_decl))
     interrupt_handler = 1;
-
-  if (current_function_anonymous_args && TARGET_QUICKCALL)
-    {
-      /* Push regs as if done by caller, and move around return address.  */
-
-      switch (current_function_args_info.nbytes / UNITS_PER_WORD)
-	{
-	case 0:
-	  /* get ret addr */
-	  fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[3]);
-	  fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[2]);
-	  fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[1]);
-	  fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[0]);
-	  /* push it again */
-	  fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[3]);
-	  extra_pop = 3;
-	  break;
-	case 1:
-	  /* get ret addr */
-	  fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[3]);
-	  fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[2]);
-	  fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[1]);
-	  /* push it again */
-	  fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[3]);
-	  extra_pop = 2;
-	  break;
-	case 2:
-	  /* get ret addr */
-	  fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[3]);
-	  fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[2]);
-	  /* push it again */
-	  fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[3]);
-	  extra_pop = 1;
-	  break;
-	default:
-	  fprintf (file, "; varargs\n");
-	  break;
-	}
-    }
 
   if (frame_pointer_needed)
     {
@@ -321,28 +278,13 @@ function_epilogue (file, size)
       dosize (file, "add", fsize, 0);
     }
 
-  if (extra_pop)
-    {
-      fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[3]);
-      while (extra_pop)
-	{
-	  fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[2]);
-	  extra_pop--;
-	}
-      fprintf (file, "\tjmp	@%s\n", h8_reg_names[3]);
-    }
+  if (interrupt_handler)
+    fprintf (file, "\trte\n");
   else
-    {
-      if (interrupt_handler)
-	fprintf (file, "\trte\n");
-      else
-	fprintf (file, "\trts\n");
-    }
+    fprintf (file, "\trts\n");
 
   interrupt_handler = 0;
   pragma_saveall = 0;
-
-  current_function_anonymous_args = 0;
 }
 
 /* Output assembly code for the start of the file.  */
@@ -651,6 +593,10 @@ function_arg (cum, mode, type, named)
   rtx result = 0;
   char *fname;
   int regpass = 0;
+
+  /* Never pass unnamed arguments in registers.  */
+  if (!named)
+    return 0;
 
   /* Pass 3 regs worth of data in regs when user asked on the command line.  */
   if (TARGET_QUICKCALL)
