@@ -1,5 +1,15 @@
 2004-02-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* libsupc++/vterminate.cc
+	(__gnu_cxx::__verbose_terminate_handler): Guard against recursive
+	calls to terminate.
+	* src/demangle.cc (__cxa_demangle): Wrap in try-catch block.
+
+	* testsuite/testsuite_hooks.cc (__gnu_test::set_memory_limits): Do
+	not set RLIMIT_AS on HP-UX.
+
+2004-02-21  Mark Mitchell  <mark@codesourcery.com>
+
 	* testsuite/testsuite_hooks.cc (__gnu_test::set_memory_limits): Do
 	not set RLIMIT_AS on HP-UX.
 
