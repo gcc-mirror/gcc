@@ -1,3 +1,9 @@
+2004-01-21  Andrew Pinski  <apinski@apple.com>
+
+	PR target/13785
+	* config/rs6000/rs6000.md (call_value): Force operand
+	1 not operand 0 into a register.
+
 2004-01-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa-protos.h: Update copyright.
