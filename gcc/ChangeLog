@@ -1,3 +1,9 @@
+2001-03-15  Steve Ellcey  <sje@cup.hp.com>
+
+        * config.gcc (ia64*-*-hpux*): New case.
+        * config/ia64/hpux.h: New file for HP-UX support.
+        * config/ia64/t-hpux: New file for HP-UX support.
+
 2001-03-16  Bruce Korb  <bkorb@gnu.org>, Alexandre Oliva  <aoliva@redhat.com>
 
 	* fixinc/inclhack.def (irix_stdio_va_list): New.
