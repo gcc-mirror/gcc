@@ -441,6 +441,7 @@ in the following sections.
 -mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib @gol
 -mtoc  -mno-toc -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
 -mcall-aix -mcall-sysv -mcall-netbsd @gol
+-maix-struct-return -msvr4-struct-return
 -mabi=altivec @gol
 -mprototype  -mno-prototype @gol
 -msim  -mmvme  -mads  -myellowknife  -memb -msdata @gol
@@ -6958,6 +6959,15 @@ Linux-based GNU system.
 @opindex mcall-netbsd
 On System V.4 and embedded PowerPC systems compile code for the
 NetBSD operating system.
+
+@item -maix-struct-return
+@opindex maix-struct-return
+Return all structures in memory (as specified by the AIX ABI)@.
+
+@item -msvr4-struct-return
+@opindex msvr4-struct-return
+Return structures smaller than 8 bytes in registers (as specified by the
+SVR4 ABI)@.
 
 @item -mabi=altivec
 @opindex mabi=altivec
