@@ -1622,17 +1622,12 @@ note_stores (x, fun, data)
 	dest = XEXP (dest, 0);
 
       /* If we have a PARALLEL, SET_DEST is a list of EXPR_LIST expressions,
-	 each of whose first operand is a register.  We can't know what
-	 precisely is being set in these cases, so make up a CLOBBER to pass
-	 to the function.  */
+	 each of whose first operand is a register.  */
       if (GET_CODE (dest) == PARALLEL)
 	{
 	  for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
 	    if (XEXP (XVECEXP (dest, 0, i), 0) != 0)
-	      (*fun) (XEXP (XVECEXP (dest, 0, i), 0),
-		      gen_rtx_CLOBBER (VOIDmode,
-				       XEXP (XVECEXP (dest, 0, i), 0)),
-		      data);
+	      (*fun) (XEXP (XVECEXP (dest, 0, i), 0), x, data);
 	}
       else
 	(*fun) (dest, x, data);
