@@ -1,4 +1,4 @@
-# Copyright (C) 2002 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,25 +35,7 @@ global ld_library_path
 # Load procedures from common libraries. 
 load_lib standard.exp
 load_lib g++.exp
-
-#
-# compat-fix-library-path -- switch LD_LIBRARY_PATH
-#
-proc compat-fix-library-path { } {
-    global ld_library_path
-
-    # See comments in lib/g++.exp for why this is needed.
-    if {![is_remote target]} {
-	# See comments in lib/g++.exp for why this is needed.
-	setenv  LD_LIBRARY_PATH     $ld_library_path
-	setenv  SHLIB_PATH          $ld_library_path
-	setenv  LD_LIBRARYN32_PATH  $ld_library_path
-	setenv  LD_LIBRARY64_PATH   $ld_library_path
-	setenv  LD_LIBRARY_PATH_32  $ld_library_path
-	setenv  LD_LIBRARY_PATH_64  $ld_library_path
-	setenv  DYLD_LIBRARY_PATH   $ld_library_path
-    }
-}
+load_lib target-libpath.exp
 
 #
 # compat-use-alt-compiler -- make the alternate compiler the default
@@ -72,7 +54,7 @@ proc compat-use-alt-compiler { } {
 	set CXXFLAGS ""
 	set ALWAYS_CXXFLAGS ""
 	set ld_library_path $alt_ld_library_path
-	compat-fix-library-path
+	set_ld_library_path_env_vars
     }
 }
 
@@ -94,7 +76,7 @@ proc compat-use-tst-compiler { } {
 	set CXXFLAGS $save_cxxflags
 	set ALWAYS_CXXFLAGS $save_always_cxxflags
 	set ld_library_path $save_ld_library_path
-	compat-fix-library-path
+	set_ld_library_path_env_vars
     }
 }
 

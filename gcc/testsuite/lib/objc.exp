@@ -28,6 +28,7 @@
 load_lib libgloss.exp
 load_lib prune.exp
 load_lib gcc-defs.exp
+load_lib target-libpath.exp
 
 #
 # OBJC_UNDER_TEST is the compiler under test.
@@ -187,21 +188,7 @@ proc objc_target_compile { source dest type options } {
     }
     lappend options "compiler=$OBJC_UNDER_TEST"
 
-    # On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
-    # called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
-    # (for the 64-bit ABI).  The right way to do this would be to modify
-    # unix.exp -- but that's not an option since it's part of DejaGNU
-    # proper, so we do it here.
-    # The same applies to Darwin (DYLD_LIBRARY_PATH), Solaris 32 bit
-    # (LD_LIBRARY_PATH_32), Solaris 64 bit (LD_LIBRARY_PATH_64), and HP-UX
-    # (SHLIB_PATH).
-    setenv  LD_LIBRARY_PATH     $ld_library_path
-    setenv  SHLIB_PATH          $ld_library_path
-    setenv  LD_LIBRARYN32_PATH  $ld_library_path
-    setenv  LD_LIBRARY64_PATH   $ld_library_path
-    setenv  LD_LIBRARY_PATH_32  $ld_library_path
-    setenv  LD_LIBRARY_PATH_64  $ld_library_path
-    setenv  DYLD_LIBRARY_PATH   $ld_library_path
+    set_ld_library_path_env_vars
 
     return [target_compile $source $dest $type $options]
 }

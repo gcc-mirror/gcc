@@ -17,22 +17,27 @@
 # Define libmudflap callbacks for dg.exp.
 # This file is a copy of libstdc++-v3's dejagnu driver, with minor changes.
 
+# Useful hook:  if ${hostname}_init exists, it will be called, almost
+# the last thing before testing begins.  This can be defined in, e.g.,
+# ~/.dejagnurc or $DEJAGNU.
+
+proc load_gcc_lib { filename } {
+    global srcdir
+    load_file $srcdir/../../gcc/testsuite/lib/$filename
+}
+
 load_lib mfdg.exp
 load_lib libgloss.exp
-
+load_gcc_lib target-libpath.exp
 
 proc libmudflap-init { language } {
-    global srcdir
-    global outdir
-    global blddir
-    global cxx
+    global env
+    global srcdir outdir blddir objdir tool_root_dir
+    global cxx cxxflags
     global includes
     global libs
-    global cxxflags
-    global objdir
     global gluefile wrap_flags
     global ld_library_path
-    global tool_root_dir
 
     switch $language {
         "c" { set cxx [find_gcc] }
@@ -96,12 +101,10 @@ proc libmudflap-init { language } {
     global add_flags
     append add_flags " $mfconfig_libs"
 
-    verbose -log "ld_library_path=$ld_library_path"
-    setenv  LD_LIBRARY_PATH     $ld_library_path
-    setenv  SHLIB_PATH          $ld_library_path
-    setenv  LD_RUN_PATH         $ld_library_path
-    setenv  LD_LIBRARYN32_PATH  $ld_library_path
-    setenv  LD_LIBRARY64_PATH   $ld_library_path
+    set_ld_library_path_env_vars
+    if [info exists env(LD_LIBRARY_PATH)] {
+	verbose -log "LD_LIBRARY_PATH = $env(LD_LIBRARY_PATH)"
+    }
 
     if { [target_info needs_status_wrapper]!=""} {
       file delete ${objdir}/testglue.o;

@@ -1,6 +1,13 @@
 # Run the Jacks test suite.
 # See http://www-124.ibm.com/developerworks/oss/cvs/jikes/~checkout~/jacks/jacks.html
 
+proc load_gcc_lib { filename } {
+    global srcdir
+    load_file $srcdir/../../gcc/testsuite/lib/$filename
+}
+
+load_gcc_lib target-libpath.exp
+
 proc gcj_jacks_setup_xfail {ary} {
   upvar $ary array
   global srcdir
@@ -16,7 +23,7 @@ proc gcj_jacks_write {filename} {
   global GCJ_UNDER_TEST
   global libgcj_jar
   global libjava_libgcc_s_path
-  global original_ld_library_path
+  global ld_library_path
 
   set gcjl [split $GCJ_UNDER_TEST]
   set gcj_cmd [lindex $gcjl 0]
@@ -43,7 +50,8 @@ proc gcj_jacks_write {filename} {
   # puts $fd "set tcltest::testConstraints(jvm) 1"
   close $fd
 
-  setenv LD_LIBRARY_PATH $libjava_libgcc_s_path:$original_ld_library_path
+  set ld_library_path $libjava_libgcc_s_path
+  set_ld_library_path_env_vars
 }
 
 proc gcj_jacks_parse {file} {

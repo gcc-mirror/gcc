@@ -1,3 +1,106 @@
+2004-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* testsuite/lib/libstdc++.exp: Use new procs in target-libpath.exp.
+
+2004-11-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/doxygen/doxygroups.cc: Add std::tr1 namespace.
+	* docs/doxygen/run_doxygen: Renames for std::tr1.
+	* docs/doxygen/user.cfg.in: Add cxxabi.h.
+	* include/bits/*.tcc: Add file markup.
+	* include/bits/allocator.h: Add link to allocator.html.
+	* include/bits/atomicity.h: Add file markup.
+	* include/bits/concurrence.h: Same.
+	* include/bits/functexcept.h: Same.
+	* include/ext*: Adjust file markup, remove GCC3 bits.
+	* include/std/*: Adjust file markup, remove bits about renamed files.
+	* libsupc++/cxxabi.h: Add file markup.
+	* testsuite/20_util/memory/auto_ptr/assign_neg.cc: Adjust line numbers.
+
+2004-11-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h (isspace, isprint, isupper,
+	islower, isalpha, isdigit, ispunct, isxdigit, isalnum, isgraph,
+	toupper, tolower): Add doxygen markup.
+	(codecvt_byname, ctype_byname, numpunct_byname, collate_byname,
+	time_get_byname, time_put_byname, moneypunct_byname,
+	messages_byname): Same.
+	* include/std/std_fstream.h: Remove superfluous markup.
+	* include/std/std_sstream.h: Same.
+	* include/std/std_streambuf.h: Same.
+	* include/ext/enc_filebuf.h: Adjust markup.
+	* include/ext/stdio_filebuf.h: Same.
+	* include/ext/stdio_sync_filebuf.h: Same.
+	* include/bits/codecvt.h: Same.
+	* config/os/gnu-linux/ctype_base.h: Same.
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h: Same.
+	* include/tr1/array: Add markup.
+	* include/tr1/tuple: Same.
+	
+	* docs/doxygen/run_doxygen: Print arguments.
+
+	* docs/doxygen/user.cfg.in: Tweaks.
+	
+2004-11-19  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/bits/basic_string.h, include/bits/locale_classes.h,
+	include/bits/valarray_after.h, include/bits/valarray_before.h,
+	include/ext/stdio_sync_filebuf.h, include/std/std_algorithm.h,
+	include/std/std_functional.h, include/std/std_memory.h,
+	include/std/std_numeric.h: Doxygen fixes.
+
+2004-11-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/22_locale/time_get/get_date/char/1.cc: In the checks
+	use, more correctly (and consistently with other testcases) the
+	return value of the facet (the iterator arguments are by value).
+	* testsuite/22_locale/time_get/get_date/char/12791.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_date/wchar_t/12791.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_monthname/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_time/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_weekday/wchar_t/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/char/1.cc: Likewise.
+	* testsuite/22_locale/time_get/get_year/wchar_t/1.cc: Likewise.
+
+2004-11-19  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* Makefile.am (doxygen, doxygen-maint, doxygen-man): Remove extra '$'
+	from host_alias variable.
+	* Makefile.in: Regenerate.
+
+2004-11-19  Chris Jefferson  <chris@bubblescope.net>
+
+	* include/bits/stl_list.h (list::back, list::back const):
+	Don't decrement temporary.
+
+2004-11-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_deque.h (deque::front, deque::front const,
+	deque::back, deque::back const): Slightly tweak for stylistic
+	consistency.
+
+2004-11-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/26_numerics/numeric/sum_diff.cc: Use VERIFY.
+	* testsuite/ext/array_allocator/1.cc: Likewise.
+	* testsuite/ext/array_allocator/2.cc: Likewise.
+	* testsuite/ext/array_allocator/3.cc: Likewise.
+	* testsuite/ext/enc_filebuf/char/13598.cc: Likewise.
+
+2004-11-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get<>::do_get(void*&)):
+	If the failbit is set, don't set it again.
+	(money_get<>::_M_extract): Minor stylistic tweak: consistently
+	with the other functions, take care of eofbit at the end.
+
+2004-11-18  Paolo Carlini  <pcarlini@suse.de>
+
+	DR 434. bitset::to_string() hard to use [Ready]
 2004-11-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/doxygen/doxygroups.cc: Add std::tr1 namespace.
