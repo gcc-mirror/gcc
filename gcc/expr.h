@@ -1067,7 +1067,7 @@ extern rtx trampoline_address PROTO((tree));
 
 /* Return an rtx that refers to the value returned by a function
    in its original home.  This becomes invalid if any more code is emitted.  */
-extern rtx hard_function_value PROTO((tree, tree));
+extern rtx hard_function_value PROTO((tree, tree, int));
 
 extern rtx prepare_call_address	PROTO((rtx, tree, rtx *, int));
 

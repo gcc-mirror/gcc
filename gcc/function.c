@@ -3992,7 +3992,7 @@ aggregate_value_p (exp)
     return 1;
   /* Make sure we have suitable call-clobbered regs to return
      the value in; if not, we must return it in memory.  */
-  reg = hard_function_value (type, 0);
+  reg = hard_function_value (type, 0, 0);
 
   /* If we have something other than a REG (e.g. a PARALLEL), then assume
      it is OK.  */
@@ -6211,7 +6211,7 @@ diddle_return_value (code)
 	  /* Use hard_function_value to avoid creating a reference to a BLKmode 
 	     register in the USE/CLOBBER insn.  */
 	  return_reg = hard_function_value (TREE_TYPE (decl_result),
-					    current_function_decl);
+					    current_function_decl, 1);
 	  REG_FUNCTION_VALUE_P (return_reg) = 1;
 	  emit_insn (gen_rtx_fmt_e (code, VOIDmode, return_reg));
 	}
