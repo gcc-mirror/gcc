@@ -2539,6 +2539,8 @@ simplify_relational_operation (enum rtx_code code, enum machine_mode mode,
       && ! ((GET_CODE (op0) == REG || GET_CODE (trueop0) == CONST_INT)
 	    && (GET_CODE (op1) == REG || GET_CODE (trueop1) == CONST_INT))
       && 0 != (tem = simplify_binary_operation (MINUS, mode, op0, op1))
+      /* We cannot do this for == or != if tem is a nonzero address.  */
+      && ((code != EQ && code != NE) || ! nonzero_address_p (tem))
       && code != GTU && code != GEU && code != LTU && code != LEU)
     return simplify_relational_operation (signed_condition (code),
 					  mode, tem, const0_rtx);
