@@ -675,11 +675,12 @@ label_rtx (label)
   if (TREE_CODE (label) != LABEL_DECL)
     abort ();
 
-  if (DECL_RTL (label))
-    return DECL_RTL (label);
+  if (!DECL_RTL_SET_P (label))
+    SET_DECL_RTL (label, gen_label_rtx ());
 
-  return DECL_RTL (label) = gen_label_rtx ();
+  return DECL_RTL (label);
 }
+
 
 /* Add an unconditional jump to LABEL as the next sequential instruction.  */
 
@@ -2920,7 +2921,7 @@ expand_return (retval)
      run destructors on variables that might be used in the subsequent
      computation of the return value.  */
   rtx last_insn = 0;
-  rtx result_rtl = DECL_RTL (DECL_RESULT (current_function_decl));
+  rtx result_rtl;
   register rtx val = 0;
   tree retval_rhs;
   int cleanups;
@@ -2999,6 +3000,8 @@ expand_return (retval)
       end_cleanup_deferral ();
       return;
     }
+
+  result_rtl = DECL_RTL (DECL_RESULT (current_function_decl));
 
   /* If the result is an aggregate that is being returned in one (or more)
      registers, load the registers here.  The compiler currently can't handle
@@ -3838,18 +3841,18 @@ expand_decl (decl)
   /* Create the RTL representation for the variable.  */
 
   if (type == error_mark_node)
-    DECL_RTL (decl) = gen_rtx_MEM (BLKmode, const0_rtx);
+    SET_DECL_RTL (decl, gen_rtx_MEM (BLKmode, const0_rtx));
 
   else if (DECL_SIZE (decl) == 0)
     /* Variable with incomplete type.  */
     {
       if (DECL_INITIAL (decl) == 0)
 	/* Error message was already done; now avoid a crash.  */
-	DECL_RTL (decl) = gen_rtx_MEM (BLKmode, const0_rtx);
+	SET_DECL_RTL (decl, gen_rtx_MEM (BLKmode, const0_rtx));
       else
 	/* An initializer is going to decide the size of this array.
 	   Until we know the size, represent its address with a reg.  */
-	DECL_RTL (decl) = gen_rtx_MEM (BLKmode, gen_reg_rtx (Pmode));
+	SET_DECL_RTL (decl, gen_rtx_MEM (BLKmode, gen_reg_rtx (Pmode)));
 
       set_mem_attributes (DECL_RTL (decl), decl, 1);
     }
@@ -3868,7 +3871,7 @@ expand_decl (decl)
       enum machine_mode reg_mode
 	= promote_mode (type, DECL_MODE (decl), &unsignedp, 0);
 
-      DECL_RTL (decl) = gen_reg_rtx (reg_mode);
+      SET_DECL_RTL (decl, gen_reg_rtx (reg_mode));
       mark_user_reg (DECL_RTL (decl));
 
       if (POINTER_TYPE_P (type))
@@ -3895,7 +3898,7 @@ expand_decl (decl)
 	 whose size was determined by the initializer.
 	 The old address was a register; set that register now
 	 to the proper address.  */
-      if (DECL_RTL (decl) != 0)
+      if (DECL_RTL_SET_P (decl))
 	{
 	  if (GET_CODE (DECL_RTL (decl)) != MEM
 	      || GET_CODE (XEXP (DECL_RTL (decl), 0)) != REG)
@@ -3903,7 +3906,8 @@ expand_decl (decl)
 	  oldaddr = XEXP (DECL_RTL (decl), 0);
 	}
 
-      DECL_RTL (decl) = assign_temp (TREE_TYPE (decl), 1, 1, 1);
+      SET_DECL_RTL (decl,
+		    assign_temp (TREE_TYPE (decl), 1, 1, 1));
 
       /* Set alignment we actually gave this decl.  */
       DECL_ALIGN (decl) = (DECL_MODE (decl) == BLKmode ? BIGGEST_ALIGNMENT
@@ -3945,7 +3949,7 @@ expand_decl (decl)
 					      TYPE_ALIGN (TREE_TYPE (decl)));
 
       /* Reference the variable indirect through that rtx.  */
-      DECL_RTL (decl) = gen_rtx_MEM (DECL_MODE (decl), address);
+      SET_DECL_RTL (decl, gen_rtx_MEM (DECL_MODE (decl), address));
 
       set_mem_attributes (DECL_RTL (decl), decl, 1);
 
@@ -4061,7 +4065,7 @@ expand_decl_cleanup (decl, cleanup)
 	  emit_move_insn (flag, const1_rtx);
 
 	  cond = build_decl (VAR_DECL, NULL_TREE, type_for_mode (word_mode, 1));
-	  DECL_RTL (cond) = flag;
+	  SET_DECL_RTL (cond, flag);
 
 	  /* Conditionalize the cleanup.  */
 	  cleanup = build (COND_EXPR, void_type_node,
@@ -4262,19 +4266,20 @@ expand_anon_union_decl (decl, cleanup, decl_elts)
       if (GET_CODE (x) == MEM)
 	{
 	  if (mode == GET_MODE (x))
-	    DECL_RTL (decl_elt) = x;
+	    SET_DECL_RTL (decl_elt, x);
 	  else
 	    {
-	      DECL_RTL (decl_elt) = gen_rtx_MEM (mode, copy_rtx (XEXP (x, 0)));
+	      SET_DECL_RTL (decl_elt,
+			    gen_rtx_MEM (mode, copy_rtx (XEXP (x, 0))));
 	      MEM_COPY_ATTRIBUTES (DECL_RTL (decl_elt), x);
 	    }
 	}
       else if (GET_CODE (x) == REG)
 	{
 	  if (mode == GET_MODE (x))
-	    DECL_RTL (decl_elt) = x;
+	    SET_DECL_RTL (decl_elt, x);
 	  else
-	    DECL_RTL (decl_elt) = gen_rtx_SUBREG (mode, x, 0);
+	    SET_DECL_RTL (decl_elt, gen_rtx_SUBREG (mode, x, 0));
 	}
       else
 	abort ();

@@ -1,3 +1,7 @@
+2001-03-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (push_jvm_slot): Use COPY_DECL_RTL, DECL_RTL_SET_P, etc.
+
 2001-03-07  Tom Tromey  <tromey@redhat.com>
 
 	* config-lang.in (lang_requires): Define.

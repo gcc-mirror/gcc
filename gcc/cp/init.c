@@ -2779,7 +2779,7 @@ get_temp_regvar (type, init)
   if (building_stmt_tree ())
     add_decl_stmt (decl);
   if (!building_stmt_tree ())
-    DECL_RTL (decl) = assign_temp (type, 2, 0, 1);
+    SET_DECL_RTL (decl, assign_temp (type, 2, 0, 1));
   finish_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 
   return decl;

@@ -3159,7 +3159,7 @@ duplicate_decls (newdecl, olddecl)
 	     that all remnants of the builtin-ness of this function
 	     will be banished.  */
 	  DECL_LANGUAGE (olddecl) = DECL_LANGUAGE (newdecl);
-	  DECL_RTL (olddecl) = DECL_RTL (newdecl);
+	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
 	  DECL_ASSEMBLER_NAME (olddecl) = DECL_ASSEMBLER_NAME (newdecl);
 	  SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (newdecl),
 				       newdecl);
@@ -3532,7 +3532,7 @@ duplicate_decls (newdecl, olddecl)
 	DECL_SECTION_NAME (newdecl) = DECL_SECTION_NAME (olddecl);
 
       /* Keep the old rtl since we can safely use it.  */
-      DECL_RTL (newdecl) = DECL_RTL (olddecl);
+      COPY_DECL_RTL (olddecl, newdecl);
 
       if (TREE_CODE (newdecl) == FUNCTION_DECL)
 	{
@@ -3633,7 +3633,7 @@ duplicate_decls (newdecl, olddecl)
 	{
 	  DECL_LANGUAGE (olddecl) = DECL_LANGUAGE (newdecl);
 	  DECL_ASSEMBLER_NAME (olddecl) = DECL_ASSEMBLER_NAME (newdecl);
-	  DECL_RTL (olddecl) = DECL_RTL (newdecl);
+	  SET_DECL_RTL (olddecl, DECL_RTL (newdecl));
 	}
       if (! types_match || new_defines_function)
 	{
@@ -3657,7 +3657,7 @@ duplicate_decls (newdecl, olddecl)
 	      DECL_FUNCTION_CODE (newdecl) = DECL_FUNCTION_CODE (olddecl);
 	      /* If we're keeping the built-in definition, keep the rtl,
 		 regardless of declaration matches.  */
-	      DECL_RTL (newdecl) = DECL_RTL (olddecl);
+	      SET_DECL_RTL (newdecl, DECL_RTL (olddecl));
 	    }
 	  else
 	    DECL_FRAME_SIZE (newdecl) = DECL_FRAME_SIZE (olddecl);
@@ -6669,7 +6669,6 @@ builtin_function (name, type, code, class, libname)
      function in the namespace.  */
   if (libname)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (libname);
-  make_decl_rtl (decl, NULL);
 
   /* Warn if a function in the namespace for users
      is used without an occasion to consider it declared.  */
@@ -6706,9 +6705,7 @@ build_library_fn (name, type)
      tree name;
      tree type;
 {
-  tree fn = build_library_fn_1 (name, ERROR_MARK, type);
-  make_decl_rtl (fn, NULL);
-  return fn;
+  return build_library_fn_1 (name, ERROR_MARK, type);
 }
 
 /* Returns the _DECL for a library function with C++ linkage.  */
@@ -6723,7 +6720,6 @@ build_cp_library_fn (name, operator_code, type)
   TREE_NOTHROW (fn) = TYPE_NOTHROW_P (type);
   DECL_CONTEXT (fn) = FROB_CONTEXT (current_namespace);
   set_mangled_name_for_decl (fn);
-  make_decl_rtl (fn, NULL);
   return fn;
 }
 
@@ -7630,8 +7626,6 @@ check_initializer (decl, init)
     }
   else if (!DECL_EXTERNAL (decl) && TREE_CODE (type) == REFERENCE_TYPE)
     {
-      if (TREE_STATIC (decl))
-	make_decl_rtl (decl, NULL_PTR);
       grok_reference_init (decl, type, init);
       init = NULL_TREE;
     }
@@ -8037,7 +8031,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
     {
       /* This must override the asm specifier which was placed by
 	 grokclassfn.  Lay this out fresh.  */
-      DECL_RTL (TREE_TYPE (decl)) = NULL_RTX;
+      SET_DECL_RTL (TREE_TYPE (decl), NULL_RTX);
       DECL_ASSEMBLER_NAME (decl) = get_identifier (asmspec);
       make_decl_rtl (decl, asmspec);
     }

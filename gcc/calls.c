@@ -2526,8 +2526,9 @@ expand_call (exp, target, ignore)
 	      {
 		tree var = build_decl (VAR_DECL, NULL_TREE,
 				       TREE_TYPE (args[i].tree_value));
-		DECL_RTL (var) = expand_expr (args[i].tree_value, NULL_RTX,
-					      VOIDmode, EXPAND_NORMAL);
+		SET_DECL_RTL (var,
+			      expand_expr (args[i].tree_value, NULL_RTX,
+					   VOIDmode, EXPAND_NORMAL));
 		args[i].tree_value = var;
 	      }
 	      break;

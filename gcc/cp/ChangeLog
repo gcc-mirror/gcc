@@ -1,3 +1,27 @@
+2001-03-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (build_clone): Use COPY_DECL_RTL, DECL_RTL_SET_P, etc.
+	* cp-tree.h (DECL_IN_MEMORY_P): Likewise.
+	* decl.c (duplicate_decls): Likewise.
+	(builtin_function): Likewise.
+	(build_library_fn): Likewise.
+	(build_cp_library_fn): Likewise.
+	(check_initializer): Likewise.
+	(cp_finish_decl): Likewise.
+	* decl2.c (grokfield): Likewise.
+	(grok_function_init): Remove #if 0'd code.
+	(finish_anon_union): Use COPY_DECL_RTL, DECL_RTL_SET_P, etc.
+	* friend.c (do_friend): Likewise.
+	* init.c (get_temp_regvar): Likewise.
+	* method.c (make_thunk): Likewise.
+	* pt.c (tsubst_friend_function): Likewise.
+	(tsubst_decl): Likewise.
+	(regenerate_decl_from_template): Likewise.
+	* semantics.c (genrtl_named_return_value): Likewise.
+	(expand_body): Likewise.
+	(genrtl_finish_function): Likewise.
+	* tree.c (cp_tree_equal): Likewise.
+	
 2001-03-06  Zack Weinberg  <zackw@stanford.edu>
 
 	* spew.c: Remove references to CPP_OSTRING.

@@ -137,7 +137,6 @@ function_cannot_inline_p (fndecl)
 
   register int ninsns = 0;
   register tree parms;
-  rtx result;
 
   if (DECL_UNINLINABLE (fndecl))
     return N_("function cannot be inline");
@@ -236,9 +235,12 @@ function_cannot_inline_p (fndecl)
     }
 
   /* We can't inline functions that return a PARALLEL rtx.  */
-  result = DECL_RTL (DECL_RESULT (fndecl));
-  if (result && GET_CODE (result) == PARALLEL)
-    return N_("inline functions not supported for this return value type");
+  if (DECL_RTL_SET_P (DECL_RESULT (fndecl)))
+    {
+      rtx result = DECL_RTL (DECL_RESULT (fndecl));
+      if (GET_CODE (result) == PARALLEL)
+	return N_("inline functions not supported for this return value type");
+    }
 
   /* If the function has a target specific attribute attached to it,
      then we assume that we should not inline it.  This can be overriden
@@ -349,7 +351,7 @@ copy_decl_for_inlining (decl, from_fn, to_fn)
   DECL_ABSTRACT_ORIGIN (copy) = DECL_ORIGIN (decl);
 
   /* The new variable/label has no RTL, yet.  */
-  DECL_RTL (copy) = NULL_RTX;
+  SET_DECL_RTL (copy, NULL_RTX);
 
   /* These args would always appear unused, if not for this.  */
   TREE_USED (copy) = 1;
@@ -952,7 +954,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
      REG_FUNCTION_RETURN_VALUE_P.  */
 
   map->inline_target = 0;
-  loc = DECL_RTL (DECL_RESULT (fndecl));
+  loc = (DECL_RTL_SET_P (DECL_RESULT (fndecl)) 
+	 ? DECL_RTL (DECL_RESULT (fndecl)) : NULL_RTX);
 
   if (TYPE_MODE (type) == VOIDmode)
     /* There is no return value to worry about.  */
@@ -1634,7 +1637,7 @@ integrate_parm_decls (args, map, arg_vector)
 	 subst_constants.  */
       subst_constants (&new_decl_rtl, NULL_RTX, map, 1);
       apply_change_group ();
-      DECL_RTL (decl) = new_decl_rtl;
+      SET_DECL_RTL (decl, new_decl_rtl);
     }
 }
 
@@ -1664,15 +1667,19 @@ integrate_decl_tree (let, map)
 
       d = copy_decl_for_inlining (t, map->fndecl, current_function_decl);
 
-      if (DECL_RTL (t) != 0)
+      if (DECL_RTL_SET_P (t))
 	{
-	  DECL_RTL (d) = copy_rtx_and_substitute (DECL_RTL (t), map, 1);
+	  rtx r;
+
+	  SET_DECL_RTL (d, copy_rtx_and_substitute (DECL_RTL (t), map, 1));
 
 	  /* Fully instantiate the address with the equivalent form so that the
 	     debugging information contains the actual register, instead of the
 	     virtual register.   Do this by not passing an insn to
 	     subst_constants.  */
-	  subst_constants (&DECL_RTL (d), NULL_RTX, map, 1);
+	  r = DECL_RTL (d);
+	  subst_constants (&r, NULL_RTX, map, 1);
+	  SET_DECL_RTL (d, r);
 	  apply_change_group ();
 	}
 

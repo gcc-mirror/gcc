@@ -1,3 +1,10 @@
+Wed Mar 14 09:29:27 2001  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.c (ffecom_member_phase_2): Use COPY_DECL_RTL,
+	DECL_RTL_SET_P, etc.
+	(duplicate_decls): Likewise.
+	(start_decl): Likewise.
+	
 Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* com.c (set_block): Set NAMES and BLOCKS from BLOCK.

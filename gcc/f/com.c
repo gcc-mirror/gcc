@@ -7096,12 +7096,12 @@ ffecom_member_phase2_ (ffestorag mst, ffestorag st)
   TREE_ASM_WRITTEN (t) = 1;
   TREE_USED (t) = 1;
 
-  DECL_RTL (t)
-    = gen_rtx (MEM, TYPE_MODE (type),
-	       plus_constant (XEXP (DECL_RTL (mt), 0),
-			      ffestorag_modulo (mst)
-			      + ffestorag_offset (st)
-			      - ffestorag_offset (mst)));
+  SET_DECL_RTL (t,
+		gen_rtx (MEM, TYPE_MODE (type),
+			 plus_constant (XEXP (DECL_RTL (mt), 0),
+					ffestorag_modulo (mst)
+					+ ffestorag_offset (st)
+					- ffestorag_offset (mst))));
 
   t = start_decl (t, FALSE);
 
@@ -13686,7 +13686,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	}
 
       /* Keep the old rtl since we can safely use it.  */
-      DECL_RTL (newdecl) = DECL_RTL (olddecl);
+      COPY_DECL_RTL (newdecl, olddecl);
 
       /* Merge the type qualifiers.  */
       if (DECL_BUILT_IN_NONANSI (olddecl) && TREE_THIS_VOLATILE (olddecl)
@@ -14330,7 +14330,7 @@ start_decl (tree decl, bool is_top_level)
   if (!top_level
   /* But not if this is a duplicate decl and we preserved the rtl from the
      previous one (which may or may not happen).  */
-      && DECL_RTL (tem) == 0)
+      && !DECL_RTL_SET_P (tem))
     {
       if (TYPE_SIZE (TREE_TYPE (tem)) != 0)
 	expand_decl (tem);

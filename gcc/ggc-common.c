@@ -376,7 +376,8 @@ ggc_mark_trees ()
 	  ggc_mark_tree (DECL_ASSEMBLER_NAME (t));
 	  ggc_mark_tree (DECL_SECTION_NAME (t));
 	  ggc_mark_tree (DECL_MACHINE_ATTRIBUTES (t));
-	  ggc_mark_rtx (DECL_RTL (t));
+	  if (DECL_RTL_SET_P (t))
+	    ggc_mark_rtx (DECL_RTL (t));
 	  ggc_mark_rtx (DECL_LIVE_RANGE_RTL (t));
 	  ggc_mark_tree (DECL_VINDEX (t));
 	  lang_mark_tree (t);

@@ -4721,10 +4721,10 @@ store_constructor (exp, target, align, cleared, size)
 
 		  index = build_decl (VAR_DECL, NULL_TREE, domain);
 
-		  DECL_RTL (index) = index_r
+		  index_r
 		    = gen_reg_rtx (promote_mode (domain, DECL_MODE (index),
 						 &unsignedp, 0));
-
+		  SET_DECL_RTL (index, index_r);
 		  if (TREE_CODE (value) == SAVE_EXPR
 		      && SAVE_EXPR_RTL (value) == 0)
 		    {
@@ -5649,7 +5649,7 @@ safe_from_p (x, exp, top_p)
   switch (TREE_CODE_CLASS (TREE_CODE (exp)))
     {
     case 'd':
-      exp_rtl = DECL_RTL (exp);
+      exp_rtl = DECL_RTL_SET_P (exp) ? DECL_RTL (exp) : NULL_RTX;
       break;
 
     case 'c':
@@ -6530,7 +6530,7 @@ expand_expr (exp, target, tmode, modifier)
 	/* If VARS have not yet been expanded, expand them now.  */
 	while (vars)
 	  {
-	    if (DECL_RTL (vars) == 0)
+	    if (!DECL_RTL_SET_P (vars))
 	      {
 		vars_need_expansion = 1;
 		expand_decl (vars);
@@ -8269,7 +8269,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	if (target == 0)
 	  {
-	    if (DECL_RTL (slot) != 0)
+	    if (DECL_RTL_SET_P (slot))
 	      {
 		target = DECL_RTL (slot);
 		/* If we have already expanded the slot, so don't do
@@ -8282,7 +8282,7 @@ expand_expr (exp, target, tmode, modifier)
 		target = assign_temp (type, 2, 0, 1);
 		/* All temp slots at this level must not conflict.  */
 		preserve_temp_slots (target);
-		DECL_RTL (slot) = target;
+		SET_DECL_RTL (slot, target);
 		if (TREE_ADDRESSABLE (slot))
 		  put_var_into_stack (slot);
 
@@ -8308,7 +8308,7 @@ expand_expr (exp, target, tmode, modifier)
 	    /* If we have already assigned it space, use that space,
 	       not target that we were passed in, as our target
 	       parameter is only a hint.  */
-	    if (DECL_RTL (slot) != 0)
+	    if (DECL_RTL_SET_P (slot))
 	      {
 		target = DECL_RTL (slot);
 		/* If we have already expanded the slot, so don't do
@@ -8318,7 +8318,7 @@ expand_expr (exp, target, tmode, modifier)
 	      }
 	    else
 	      {
-		DECL_RTL (slot) = target;
+		SET_DECL_RTL (slot, target);
 		/* If we must have an addressable slot, then make sure that
 		   the RTL that we just stored in slot is OK.  */
 		if (TREE_ADDRESSABLE (slot))

@@ -991,7 +991,7 @@ genrtl_named_return_value ()
 	 SImode but the DECL_RTL for the DECL_RESULT has DImode.  So,
 	 here, we use the mode the back-end has already assigned for
 	 the return value.  */
-      DECL_RTL (decl) = gen_reg_rtx (GET_MODE (DECL_RTL (decl)));
+      SET_DECL_RTL (decl, gen_reg_rtx (GET_MODE (DECL_RTL (decl))));
       if (TREE_ADDRESSABLE (decl))
 	put_var_into_stack (decl);
     }
@@ -2373,9 +2373,6 @@ expand_body (fn)
       /* Or if this is a nested function.  */
       && !decl_function_context (fn))
     {
-      /* Give the function RTL now so that we can assign it to a
-	 function pointer, etc.  */
-      make_decl_rtl (fn, NULL);
       /* Set DECL_EXTERNAL so that assemble_external will be called as
 	 necessary.  We'll clear it again in finish_file.  */
       if (!DECL_EXTERNAL (fn))
@@ -2691,7 +2688,10 @@ genrtl_finish_function (fn)
 	 was an actual function definition.  */
       DECL_INITIAL (fn) = error_mark_node;
       for (t = DECL_ARGUMENTS (fn); t; t = TREE_CHAIN (t))
-	DECL_RTL (t) = DECL_INCOMING_RTL (t) = NULL_RTX;
+	{
+	  SET_DECL_RTL (t, NULL_RTX);
+	  DECL_INCOMING_RTL (t) = NULL_RTX;
+	}
     }
 
   /* Let the error reporting routines know that we're outside a

@@ -116,7 +116,7 @@ push_jvm_slot (index, decl)
      tmp = DECL_LOCAL_SLOT_CHAIN (tmp);
     }
   if (rtl != NULL)
-    DECL_RTL (decl) = rtl;
+    SET_DECL_RTL (decl, rtl);
   else
     {
       if (index >= DECL_MAX_LOCALS (current_function_decl))
