@@ -1,3 +1,11 @@
+2004-09-15  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	PR tree-optimization/17468
+	* tree-ssa.c (verify_use, verify_phi_args, verify_ssa):  Verify that
+	definition inside a block precede uses.
+	* tree-tailcall.c (adjust_return_value): Emit statements in the
+	correct order.
+
 2004-09-15  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (POINTERS_EXTEND_UNSIGNED): Delete.

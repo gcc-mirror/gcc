@@ -624,7 +624,7 @@ adjust_return_value (basic_block bb, tree m, tree a)
 
       var = make_ssa_name (tmp, stmt);
       TREE_OPERAND (stmt, 0) = var;
-      bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);
+      bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
     }
   else
     var = ret_var;
@@ -639,7 +639,7 @@ adjust_return_value (basic_block bb, tree m, tree a)
 
       var = make_ssa_name (tmp, stmt);
       TREE_OPERAND (stmt, 0) = var;
-      bsi_insert_before (&bsi, stmt, BSI_NEW_STMT);
+      bsi_insert_before (&bsi, stmt, BSI_SAME_STMT);
     }
 
   TREE_OPERAND (ret_stmt, 0) = var;
