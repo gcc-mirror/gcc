@@ -1,3 +1,33 @@
+2003-08-10  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (coprocessor_operand): Remove declaration.
+	(coprocessor2_operand): Likewise.
+	* config/mips/mips.c (STAB_CODE_TYPE): Remove.
+	(lookup_name): Remove declaration.
+	(abort_with_insn): Remove.  Replace all uses with fatal_insn.
+	(mips16, mips_abicalls): Remove.
+	(mips_char_to_class): Remove initialiser: all entries are NO_REGS.
+	(arith32_operand, large_int, true_reg_or_0_operand): Remove.
+	(coprocessor_operand, coprocessor2_operand): Remove.
+	(override_options): Don't set mips16 or mips_abicalls.
+	(print_operand): Don't expect SIGN_EXTEND operands.
+	(mips_secondary_reload_class): Likewise.
+	(mips_output_conditional_branch): Remove disabled long-branch code.
+	* config/mips/mips.h (call_used_regs): Remove declaration.
+	(may_call_alloca): Likewise.
+	(mips_cpu_attr, mips_abicalls_type, mips_abicalls_attr): Remove.
+	(mips_abicalls, mips16): Remove declarations.
+	(ASM_FINAL_SPEC, LIB_SPEC): Remove.
+	(CC1_SPEC): Remove outdated comment.
+	(MIPS_VERSION, MACHINE_TYPE): Remove.
+	(TARGET_VERSION_INTERNAL, TARGET_VERSION): Remove.
+	(PC_REGNUM, STACK_POINTER_OFFSET): Remove disabled definitions.
+	(STRUCT_VALUE_RETURN_REGNUM, STACK_DYNAMIC_OFFSET): Likewise.
+	(PUSH_ROUNDING): Likewise.
+	(ASSEMBLER_SCRATCH_REGNUM): Remove.
+	* config/mips/mips.md: Replace mips_cpu_attr with mips_tune
+	and mips16 with TARGET_MIPS16.
+
 2003-08-09  Per Bothner  <pbothner@apple.com>
 
         * cppinit.c (cpp_read_main_file):  Split out source-independent

@@ -128,8 +128,6 @@ extern int              mips_register_move_cost PARAMS ((enum machine_mode,
 							 enum reg_class));
 
 extern int		se_arith_operand PARAMS ((rtx, enum machine_mode));
-extern int		coprocessor_operand PARAMS ((rtx, enum machine_mode));
-extern int		coprocessor2_operand PARAMS ((rtx, enum machine_mode));
 extern int		mips_address_insns PARAMS ((rtx, enum machine_mode));
 extern int		mips_fetch_insns PARAMS ((rtx));
 extern int		mips_const_insns PARAMS ((rtx));
