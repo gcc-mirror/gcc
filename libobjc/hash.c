@@ -40,8 +40,8 @@ Boston, MA 02111-1307, USA.  */
   ((cache)->size * 2)
 
 cache_ptr
-hash_new (unsigned int size, hash_func_type hash_func,
-	  compare_func_type compare_func)
+objc_hash_new (unsigned int size, hash_func_type hash_func,
+	       compare_func_type compare_func)
 {
   cache_ptr cache;
 
@@ -77,7 +77,7 @@ hash_new (unsigned int size, hash_func_type hash_func,
 
 
 void
-hash_delete (cache_ptr cache)
+objc_hash_delete (cache_ptr cache)
 {
   node_ptr node;
   node_ptr next_node;
@@ -85,17 +85,17 @@ hash_delete (cache_ptr cache)
 
   /* Purge all key/value pairs from the table.  */
   /* Step through the nodes one by one and remove every node WITHOUT
-     using hash_next. this makes hash_delete much more efficient. */
+     using objc_hash_next. this makes objc_hash_delete much more efficient. */
   for (i = 0;i < cache->size;i++) {
     if ((node = cache->node_table[i])) {
       /* an entry in the hash table has been found, now step through the
 	 nodes next in the list and free them. */
       while ((next_node = node->next)) {
-	hash_remove (cache,node->key);
+	objc_hash_remove (cache,node->key);
 	node = next_node;
       }
 
-      hash_remove (cache,node->key);
+      objc_hash_remove (cache,node->key);
     }
   }
 
@@ -106,7 +106,7 @@ hash_delete (cache_ptr cache)
 
 
 void
-hash_add (cache_ptr *cachep, const void *key, void *value)
+objc_hash_add (cache_ptr *cachep, const void *key, void *value)
 {
   size_t indx = (*(*cachep)->hash_func)(*cachep, key);
   node_ptr node = (node_ptr) objc_calloc (1, sizeof (struct cache_node));
@@ -149,19 +149,19 @@ hash_add (cache_ptr *cachep, const void *key, void *value)
        primitive functions thereby increasing its
        correctness.  */
     node_ptr node1 = NULL;
-    cache_ptr new = hash_new (EXPANSION (*cachep),
-			      (*cachep)->hash_func,
-			      (*cachep)->compare_func);
+    cache_ptr new = objc_hash_new (EXPANSION (*cachep),
+				   (*cachep)->hash_func,
+				   (*cachep)->compare_func);
 
     DEBUG_PRINTF ("Expanding cache %#x from %d to %d\n",
 		  (int) *cachep, (*cachep)->size, new->size);
 
     /* Copy the nodes from the first hash table to the new one.  */
-    while ((node1 = hash_next (*cachep, node1)))
-      hash_add (&new, node1->key, node1->value);
+    while ((node1 = objc_hash_next (*cachep, node1)))
+      objc_hash_add (&new, node1->key, node1->value);
 
     /* Trash the old cache.  */
-    hash_delete (*cachep);
+    objc_hash_delete (*cachep);
 
     /* Return a pointer to the new hash table.  */
     *cachep = new;
@@ -170,7 +170,7 @@ hash_add (cache_ptr *cachep, const void *key, void *value)
 
 
 void
-hash_remove (cache_ptr cache, const void *key)
+objc_hash_remove (cache_ptr cache, const void *key)
 {
   size_t indx = (*cache->hash_func)(cache, key);
   node_ptr node = cache->node_table[indx];
@@ -206,7 +206,7 @@ hash_remove (cache_ptr cache, const void *key)
 
 
 node_ptr
-hash_next (cache_ptr cache, node_ptr node)
+objc_hash_next (cache_ptr cache, node_ptr node)
 {
   /* If the scan is being started then reset the last node
      visitied pointer and bucket index.  */
@@ -246,7 +246,7 @@ hash_next (cache_ptr cache, node_ptr node)
    Return NULL if the KEY is not recorded.  */
 
 void *
-hash_value_for_key (cache_ptr cache, const void *key)
+objc_hash_value_for_key (cache_ptr cache, const void *key)
 {
   node_ptr node = cache->node_table[(*cache->hash_func)(cache, key)];
   void *retval = NULL;
@@ -267,7 +267,7 @@ hash_value_for_key (cache_ptr cache, const void *key)
    Return NO if it does not */
 
 BOOL
-hash_is_key_in_hash (cache_ptr cache, const void *key)
+objc_hash_is_key_in_hash (cache_ptr cache, const void *key)
 {
   node_ptr node = cache->node_table[(*cache->hash_func)(cache, key)];
 

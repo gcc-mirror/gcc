@@ -62,7 +62,7 @@ typedef struct cache_node
  *
  * Unfortunately there is a mutual data structure reference problem with this
  * typedef.  Therefore, to remove compiler warnings the functions passed to
- * hash_new will have to be casted to this type. 
+ * objc_hash_new will have to be casted to this type. 
  */
 typedef unsigned int (*hash_func_type) (void *, const void *);
 
@@ -111,25 +111,25 @@ extern cache_ptr module_hash_table, class_hash_table;
 
 /* Allocate and initialize a hash table.  */ 
 
-cache_ptr hash_new (unsigned int size,
-		    hash_func_type hash_func,
-		    compare_func_type compare_func);
+cache_ptr objc_hash_new (unsigned int size,
+			 hash_func_type hash_func,
+			 compare_func_type compare_func);
                        
 /* Deallocate all of the hash nodes and the cache itself.  */
 
-void hash_delete (cache_ptr cache);
+void objc_hash_delete (cache_ptr cache);
 
 /* Add the key/value pair to the hash table.  If the
    hash table reaches a level of fullness then it will be resized. 
                                                    
    assert if the key is already in the hash.  */
 
-void hash_add (cache_ptr *cachep, const void *key, void *value);
+void objc_hash_add (cache_ptr *cachep, const void *key, void *value);
      
 /* Remove the key/value pair from the hash table.  
    assert if the key isn't in the table.  */
 
-void hash_remove (cache_ptr cache, const void *key);
+void objc_hash_remove (cache_ptr cache, const void *key);
 
 /* Used to index through the hash table.  Start with NULL
    to get the first entry.
@@ -140,15 +140,15 @@ void hash_remove (cache_ptr cache, const void *key);
    Cache nodes are returned such that key or value can
    be extracted.  */
 
-node_ptr hash_next (cache_ptr cache, node_ptr node);
+node_ptr objc_hash_next (cache_ptr cache, node_ptr node);
 
 /* Used to return a value from a hash table using a given key.  */
 
-void *hash_value_for_key (cache_ptr cache, const void *key);
+void *objc_hash_value_for_key (cache_ptr cache, const void *key);
 
 /* Used to determine if the given key exists in the hash table */
 
-BOOL hash_is_key_in_hash (cache_ptr cache, const void *key);
+BOOL objc_hash_is_key_in_hash (cache_ptr cache, const void *key);
 
 /************************************************
 
@@ -163,7 +163,7 @@ BOOL hash_is_key_in_hash (cache_ptr cache, const void *key);
    except for those likely to be 0 due to alignment.)  */
 
 static inline unsigned int
-hash_ptr (cache_ptr cache, const void *key)
+objc_hash_ptr (cache_ptr cache, const void *key)
 {
   return ((size_t)key / sizeof (void *)) & cache->mask;
 }
@@ -172,7 +172,7 @@ hash_ptr (cache_ptr cache, const void *key)
 /* Calculate a hash code by iterating over a NULL 
    terminate string.  */
 static inline unsigned int 
-hash_string (cache_ptr cache, const void *key)
+objc_hash_string (cache_ptr cache, const void *key)
 {
   unsigned int ret = 0;
   unsigned int ctr = 0;
@@ -189,7 +189,7 @@ hash_string (cache_ptr cache, const void *key)
 
 /* Compare two pointers for equality.  */
 static inline int 
-compare_ptrs (const void *k1, const void *k2)
+objc_compare_ptrs (const void *k1, const void *k2)
 {
   return (k1 == k2);
 }
@@ -197,7 +197,7 @@ compare_ptrs (const void *k1, const void *k2)
 
 /* Compare two strings.  */
 static inline int 
-compare_strings (const void *k1, const void *k2)
+objc_compare_strings (const void *k1, const void *k2)
 {
   if (k1 == k2)
     return 1;
@@ -206,6 +206,107 @@ compare_strings (const void *k1, const void *k2)
   else
     return ! strcmp ((const char *) k1, (const char *) k2);
 }
+
+#ifndef OBJC_IGNORE_DEPRECATED_API
+/* Deprecated as of 4.1 */
+
+static inline cache_ptr
+hash_new (unsigned int size,
+	  hash_func_type hash_func,
+	  compare_func_type compare_func) __attribute__ ((deprecated));
+static inline cache_ptr
+hash_new (unsigned int size,
+	  hash_func_type hash_func,
+	  compare_func_type compare_func)
+{
+  return objc_hash_new(size, hash_func, compare_func);
+}
+
+static inline void
+hash_delete(cache_ptr cache) __attribute__ ((deprecated));
+static inline void
+hash_delete(cache_ptr cache)
+{
+  objc_hash_delete(cache);
+}
+
+static inline void
+hash_add (cache_ptr *cachep,
+	  const void *key,
+	  void *value) __attribute__ ((deprecated));
+static inline void
+hash_add (cache_ptr *cachep, const void *key, void *value)
+{
+  objc_hash_add(cachep, key, value);
+}
+
+static inline void
+hash_remove (cache_ptr cache, const void *key) __attribute__ ((deprecated));
+static inline void
+hash_remove (cache_ptr cache, const void *key)
+{
+  objc_hash_remove (cache, key);
+}
+
+static inline node_ptr
+hash_next (cache_ptr cache, node_ptr node) __attribute__ ((deprecated));
+static inline node_ptr
+hash_next (cache_ptr cache, node_ptr node)
+{
+  return objc_hash_next (cache, node);
+}
+
+static inline void *
+hash_value_for_key (cache_ptr cache,
+		    const void *key) __attribute__ ((deprecated));
+static inline void *
+hash_value_for_key (cache_ptr cache, const void *key)
+{
+  return objc_hash_value_for_key (cache, key);
+}
+
+static inline BOOL
+hash_is_key_in_hash (cache_ptr cache,
+		     const void *key) __attribute__ ((deprecated));
+static inline BOOL
+hash_is_key_in_hash (cache_ptr cache, const void *key)
+{
+  return objc_hash_is_key_in_hash (cache, key);
+}
+
+static inline unsigned int
+hash_ptr (cache_ptr cache, const void *key) __attribute__ ((deprecated));
+static inline unsigned int
+hash_ptr (cache_ptr cache, const void *key)
+{
+  return objc_hash_ptr (cache, key);
+}
+
+static inline unsigned int 
+hash_string (cache_ptr cache, const void *key) __attribute__ ((deprecated));
+static inline unsigned int 
+hash_string (cache_ptr cache, const void *key)
+{
+  return objc_hash_string (cache, key);
+}
+
+static inline int 
+compare_ptrs (const void *k1, const void *k2) __attribute__ ((deprecated));
+static inline int 
+compare_ptrs (const void *k1, const void *k2)
+{
+  return objc_compare_ptrs (k1, k2);
+}
+
+static inline int 
+compare_strings (const void *k1, const void *k2) __attribute__ ((deprecated));
+static inline int 
+compare_strings (const void *k1, const void *k2)
+{
+  return objc_compare_strings (k1, k2);
+}
+#endif /* IGNORE_DEPRECATED_API */
+
 
 #ifdef __cplusplus
 }
