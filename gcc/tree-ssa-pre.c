@@ -2170,7 +2170,7 @@ init_pre (bool do_fre)
       AVAIL_OUT (bb) = bitmap_set_new ();
     }
 
-  need_eh_cleanup = BITMAP_XMALLOC ();
+  need_eh_cleanup = BITMAP_ALLOC (NULL);
 }
 
 
@@ -2208,7 +2208,7 @@ fini_pre (bool do_fre)
       cleanup_tree_cfg ();
     }
 
-  BITMAP_XFREE (need_eh_cleanup);
+  BITMAP_FREE (need_eh_cleanup);
 
   /* Wipe out pointers to VALUE_HANDLEs.  In the not terribly distant
      future we will want them to be persistent though.  */

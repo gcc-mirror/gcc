@@ -118,7 +118,7 @@ unmark_all_for_rewrite (void)
 bitmap
 marked_ssa_names (void)
 {
-  bitmap ret = BITMAP_XMALLOC ();
+  bitmap ret = BITMAP_ALLOC (NULL);
 
   bitmap_copy (ret, ssa_names_to_rewrite);
 
@@ -138,7 +138,7 @@ init_ssanames (void)
      large.  */
   VARRAY_PUSH_TREE (ssa_names, NULL_TREE);
   free_ssanames = NULL;
-  ssa_names_to_rewrite = BITMAP_XMALLOC ();
+  ssa_names_to_rewrite = BITMAP_ALLOC (NULL);
 }
 
 /* Finalize management of SSA_NAMEs.  */
@@ -146,7 +146,7 @@ init_ssanames (void)
 void
 fini_ssanames (void)
 {
-  BITMAP_XFREE (ssa_names_to_rewrite);
+  BITMAP_FREE (ssa_names_to_rewrite);
   ggc_free (ssa_names);
   ssa_names = NULL;
   free_ssanames = NULL;

@@ -534,11 +534,11 @@ init_alias_info (void)
   ai->ssa_names_visited = sbitmap_alloc (num_ssa_names);
   sbitmap_zero (ai->ssa_names_visited);
   VARRAY_TREE_INIT (ai->processed_ptrs, 50, "processed_ptrs");
-  ai->addresses_needed = BITMAP_XMALLOC ();
+  ai->addresses_needed = BITMAP_ALLOC (NULL);
   VARRAY_UINT_INIT (ai->num_references, num_referenced_vars, "num_references");
-  ai->written_vars = BITMAP_XMALLOC ();
-  ai->dereferenced_ptrs_store = BITMAP_XMALLOC ();
-  ai->dereferenced_ptrs_load = BITMAP_XMALLOC ();
+  ai->written_vars = BITMAP_ALLOC (NULL);
+  ai->dereferenced_ptrs_store = BITMAP_ALLOC (NULL);
+  ai->dereferenced_ptrs_load = BITMAP_ALLOC (NULL);
 
   /* If aliases have been computed before, clear existing information.  */
   if (aliases_computed_p)
@@ -626,7 +626,7 @@ delete_alias_info (struct alias_info *ai)
 
   sbitmap_free (ai->ssa_names_visited);
   ai->processed_ptrs = NULL;
-  BITMAP_XFREE (ai->addresses_needed);
+  BITMAP_FREE (ai->addresses_needed);
 
   for (i = 0; i < ai->num_addressable_vars; i++)
     {
@@ -643,9 +643,9 @@ delete_alias_info (struct alias_info *ai)
   free (ai->pointers);
 
   ai->num_references = NULL;
-  BITMAP_XFREE (ai->written_vars);
-  BITMAP_XFREE (ai->dereferenced_ptrs_store);
-  BITMAP_XFREE (ai->dereferenced_ptrs_load);
+  BITMAP_FREE (ai->written_vars);
+  BITMAP_FREE (ai->dereferenced_ptrs_store);
+  BITMAP_FREE (ai->dereferenced_ptrs_load);
 
   free (ai);
 }

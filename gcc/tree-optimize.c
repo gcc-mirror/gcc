@@ -664,7 +664,7 @@ tree_rest_of_compilation (tree fndecl)
   bitmap_obstack_initialize (NULL);
   bitmap_obstack_initialize (&reg_obstack); /* FIXME, only at RTL generation*/
   
-  vars_to_rename = BITMAP_XMALLOC ();
+  vars_to_rename = BITMAP_ALLOC (NULL);
   
   /* Perform all tree transforms and optimizations.  */
   execute_pass_list (all_passes);

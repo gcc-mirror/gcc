@@ -1017,7 +1017,7 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
   gcc_assert (loop->latch != EXIT_BLOCK_PTR);
 
   blocks = xcalloc (loop->num_nodes, sizeof (basic_block));
-  visited = BITMAP_XMALLOC ();
+  visited = BITMAP_ALLOC (NULL);
 
   blocks_in_bfs_order = get_loop_body_in_bfs_order (loop);
 
@@ -1029,7 +1029,7 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
       if (bb->flags & BB_IRREDUCIBLE_LOOP)
 	{
 	  free (blocks_in_bfs_order);
-	  BITMAP_XFREE (visited);
+	  BITMAP_FREE (visited);
 	  free (blocks);
 	  return NULL;
 	}
@@ -1052,7 +1052,7 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
 	}
     }
   free (blocks_in_bfs_order);
-  BITMAP_XFREE (visited);
+  BITMAP_FREE (visited);
   return blocks;
 }
 

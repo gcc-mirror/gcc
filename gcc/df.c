@@ -320,7 +320,7 @@ df_insn_table_realloc (struct df *df, unsigned int size)
 
   if (! df->insns_modified)
     {
-      df->insns_modified = BITMAP_XMALLOC ();
+      df->insns_modified = BITMAP_ALLOC (NULL);
       bitmap_zero (df->insns_modified);
     }
 }
@@ -392,10 +392,10 @@ df_bitmaps_alloc (struct df *df, bitmap blocks, int flags)
 	  if (!bb_info->rd_in)
 	    {
 	      /* Allocate bitmaps for reaching definitions.  */
-	      bb_info->rd_kill = BITMAP_XMALLOC ();
-	      bb_info->rd_gen = BITMAP_XMALLOC ();
-	      bb_info->rd_in = BITMAP_XMALLOC ();
-	      bb_info->rd_out = BITMAP_XMALLOC ();
+	      bb_info->rd_kill = BITMAP_ALLOC (NULL);
+	      bb_info->rd_gen = BITMAP_ALLOC (NULL);
+	      bb_info->rd_in = BITMAP_ALLOC (NULL);
+	      bb_info->rd_out = BITMAP_ALLOC (NULL);
 	    }
 	  else
 	    {
@@ -411,10 +411,10 @@ df_bitmaps_alloc (struct df *df, bitmap blocks, int flags)
 	  if (!bb_info->ru_in)
 	    {
 	      /* Allocate bitmaps for upward exposed uses.  */
-	      bb_info->ru_kill = BITMAP_XMALLOC ();
-	      bb_info->ru_gen = BITMAP_XMALLOC ();
-	      bb_info->ru_in = BITMAP_XMALLOC ();
-	      bb_info->ru_out = BITMAP_XMALLOC ();
+	      bb_info->ru_kill = BITMAP_ALLOC (NULL);
+	      bb_info->ru_gen = BITMAP_ALLOC (NULL);
+	      bb_info->ru_in = BITMAP_ALLOC (NULL);
+	      bb_info->ru_out = BITMAP_ALLOC (NULL);
 	    }
 	  else
 	    {
@@ -430,10 +430,10 @@ df_bitmaps_alloc (struct df *df, bitmap blocks, int flags)
 	  if (!bb_info->lr_in)
 	    {
 	      /* Allocate bitmaps for live variables.  */
-	      bb_info->lr_def = BITMAP_XMALLOC ();
-	      bb_info->lr_use = BITMAP_XMALLOC ();
-	      bb_info->lr_in = BITMAP_XMALLOC ();
-	      bb_info->lr_out = BITMAP_XMALLOC ();
+	      bb_info->lr_def = BITMAP_ALLOC (NULL);
+	      bb_info->lr_use = BITMAP_ALLOC (NULL);
+	      bb_info->lr_in = BITMAP_ALLOC (NULL);
+	      bb_info->lr_out = BITMAP_ALLOC (NULL);
 	    }
 	  else
 	    {
@@ -463,39 +463,39 @@ df_bitmaps_free (struct df *df, int flags)
       if ((flags & DF_RD) && bb_info->rd_in)
 	{
 	  /* Free bitmaps for reaching definitions.  */
-	  BITMAP_XFREE (bb_info->rd_kill);
+	  BITMAP_FREE (bb_info->rd_kill);
 	  bb_info->rd_kill = NULL;
-	  BITMAP_XFREE (bb_info->rd_gen);
+	  BITMAP_FREE (bb_info->rd_gen);
 	  bb_info->rd_gen = NULL;
-	  BITMAP_XFREE (bb_info->rd_in);
+	  BITMAP_FREE (bb_info->rd_in);
 	  bb_info->rd_in = NULL;
-	  BITMAP_XFREE (bb_info->rd_out);
+	  BITMAP_FREE (bb_info->rd_out);
 	  bb_info->rd_out = NULL;
 	}
 
       if ((flags & DF_RU) && bb_info->ru_in)
 	{
 	  /* Free bitmaps for upward exposed uses.  */
-	  BITMAP_XFREE (bb_info->ru_kill);
+	  BITMAP_FREE (bb_info->ru_kill);
 	  bb_info->ru_kill = NULL;
-	  BITMAP_XFREE (bb_info->ru_gen);
+	  BITMAP_FREE (bb_info->ru_gen);
 	  bb_info->ru_gen = NULL;
-	  BITMAP_XFREE (bb_info->ru_in);
+	  BITMAP_FREE (bb_info->ru_in);
 	  bb_info->ru_in = NULL;
-	  BITMAP_XFREE (bb_info->ru_out);
+	  BITMAP_FREE (bb_info->ru_out);
 	  bb_info->ru_out = NULL;
 	}
 
       if ((flags & DF_LR) && bb_info->lr_in)
 	{
 	  /* Free bitmaps for live variables.  */
-	  BITMAP_XFREE (bb_info->lr_def);
+	  BITMAP_FREE (bb_info->lr_def);
 	  bb_info->lr_def = NULL;
-	  BITMAP_XFREE (bb_info->lr_use);
+	  BITMAP_FREE (bb_info->lr_use);
 	  bb_info->lr_use = NULL;
-	  BITMAP_XFREE (bb_info->lr_in);
+	  BITMAP_FREE (bb_info->lr_in);
 	  bb_info->lr_in = NULL;
-	  BITMAP_XFREE (bb_info->lr_out);
+	  BITMAP_FREE (bb_info->lr_out);
 	  bb_info->lr_out = NULL;
 	}
     }
@@ -538,14 +538,14 @@ df_alloc (struct df *df, int n_regs)
 
   df_reg_table_realloc (df, df->n_regs);
 
-  df->bbs_modified = BITMAP_XMALLOC ();
+  df->bbs_modified = BITMAP_ALLOC (NULL);
   bitmap_zero (df->bbs_modified);
 
   df->flags = 0;
 
   df->bbs = xcalloc (last_basic_block, sizeof (struct bb_info));
 
-  df->all_blocks = BITMAP_XMALLOC ();
+  df->all_blocks = BITMAP_ALLOC (NULL);
   FOR_EACH_BB (bb)
     bitmap_set_bit (df->all_blocks, bb->index);
 }
@@ -583,13 +583,13 @@ df_free (struct df *df)
   df->regs = 0;
   df->reg_size = 0;
 
-  BITMAP_XFREE (df->bbs_modified);
+  BITMAP_FREE (df->bbs_modified);
   df->bbs_modified = 0;
 
-  BITMAP_XFREE (df->insns_modified);
+  BITMAP_FREE (df->insns_modified);
   df->insns_modified = 0;
 
-  BITMAP_XFREE (df->all_blocks);
+  BITMAP_FREE (df->all_blocks);
   df->all_blocks = 0;
 
   free_alloc_pool (df_ref_pool);
@@ -1484,14 +1484,14 @@ df_du_chain_create (struct df *df, bitmap blocks)
   bitmap ru;
   basic_block bb;
 
-  ru = BITMAP_XMALLOC ();
+  ru = BITMAP_ALLOC (NULL);
 
   FOR_EACH_BB_IN_BITMAP (blocks, 0, bb,
     {
       df_bb_du_chain_create (df, bb, ru);
     });
 
-  BITMAP_XFREE (ru);
+  BITMAP_FREE (ru);
 }
 
 
@@ -1615,7 +1615,7 @@ df_bb_rd_local_compute (struct df *df, basic_block bb, bitmap call_killed_defs)
 {
   struct bb_info *bb_info = DF_BB_INFO (df, bb);
   rtx insn;
-  bitmap seen = BITMAP_XMALLOC ();
+  bitmap seen = BITMAP_ALLOC (NULL);
   bool call_seen = false;
 
   FOR_BB_INSNS_REVERSE (bb, insn)
@@ -1661,7 +1661,7 @@ df_bb_rd_local_compute (struct df *df, basic_block bb, bitmap call_killed_defs)
 	}
     }
 
-  BITMAP_XFREE (seen);
+  BITMAP_FREE (seen);
 }
 
 
@@ -1676,7 +1676,7 @@ df_rd_local_compute (struct df *df, bitmap blocks)
 
   if (df->flags & DF_HARD_REGS)
     {
-      killed_by_call = BITMAP_XMALLOC ();
+      killed_by_call = BITMAP_ALLOC (NULL);
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	{
 	  if (!TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
@@ -1695,7 +1695,7 @@ df_rd_local_compute (struct df *df, bitmap blocks)
   });
 
   if (df->flags & DF_HARD_REGS)
-    BITMAP_XFREE (killed_by_call);
+    BITMAP_FREE (killed_by_call);
 }
 
 
@@ -1872,14 +1872,14 @@ df_reg_info_compute (struct df *df, bitmap blocks)
   basic_block bb;
   bitmap live;
 
-  live = BITMAP_XMALLOC ();
+  live = BITMAP_ALLOC (NULL);
 
   FOR_EACH_BB_IN_BITMAP (blocks, 0, bb,
   {
     df_bb_reg_info_compute (df, bb, live);
   });
 
-  BITMAP_XFREE (live);
+  BITMAP_FREE (live);
 }
 
 

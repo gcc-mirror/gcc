@@ -1023,7 +1023,7 @@ insert_phi_nodes_for (tree var, bitmap *dfs, VEC(basic_block) **work_stack)
   if (def_map == NULL)
     return;
 
-  phi_insertion_points = BITMAP_XMALLOC ();
+  phi_insertion_points = BITMAP_ALLOC (NULL);
 
   EXECUTE_IF_SET_IN_BITMAP (def_map->def_blocks, 0, bb_index, bi)
     {
@@ -1088,7 +1088,7 @@ insert_phi_nodes_for (tree var, bitmap *dfs, VEC(basic_block) **work_stack)
 	}
     }
 
-  BITMAP_XFREE (phi_insertion_points);
+  BITMAP_FREE (phi_insertion_points);
 }
 
 /* SSA Rewriting Step 2.  Rewrite every variable used in each statement in
@@ -1311,9 +1311,9 @@ static void
 def_blocks_free (void *p)
 {
   struct def_blocks_d *entry = p;
-  BITMAP_XFREE (entry->def_blocks);
-  BITMAP_XFREE (entry->phi_blocks);
-  BITMAP_XFREE (entry->livein_blocks);
+  BITMAP_FREE (entry->def_blocks);
+  BITMAP_FREE (entry->phi_blocks);
+  BITMAP_FREE (entry->livein_blocks);
   free (entry);
 }
 
@@ -1371,9 +1371,9 @@ get_def_blocks_for (tree var)
     {
       db_p = xmalloc (sizeof (*db_p));
       db_p->var = var;
-      db_p->def_blocks = BITMAP_XMALLOC ();
-      db_p->phi_blocks = BITMAP_XMALLOC ();
-      db_p->livein_blocks = BITMAP_XMALLOC ();
+      db_p->def_blocks = BITMAP_ALLOC (NULL);
+      db_p->phi_blocks = BITMAP_ALLOC (NULL);
+      db_p->livein_blocks = BITMAP_ALLOC (NULL);
       *slot = (void *) db_p;
     }
   else
@@ -1521,7 +1521,7 @@ mark_def_site_blocks (void)
   /* Notice that this bitmap is indexed using variable UIDs, so it must be
      large enough to accommodate all the variables referenced in the
      function, not just the ones we are renaming.  */
-  mark_def_sites_global_data.kills = BITMAP_XMALLOC ();
+  mark_def_sites_global_data.kills = BITMAP_ALLOC (NULL);
   walk_data.global_data = &mark_def_sites_global_data;
 
   /* We do not have any local data.  */
@@ -1537,7 +1537,7 @@ mark_def_site_blocks (void)
   fini_walk_dominator_tree (&walk_data);
 
   /* We no longer need this bitmap, clear and free it.  */
-  BITMAP_XFREE (mark_def_sites_global_data.kills);
+  BITMAP_FREE (mark_def_sites_global_data.kills);
 }
 
 
@@ -1601,7 +1601,7 @@ rewrite_into_ssa (bool all)
      can save significant time during PHI insertion for large graphs.  */
   dfs = (bitmap *) xmalloc (last_basic_block * sizeof (bitmap *));
   FOR_EACH_BB (bb)
-    dfs[bb->index] = BITMAP_XMALLOC ();
+    dfs[bb->index] = BITMAP_ALLOC (NULL);
 
   /* Compute dominance frontiers.  */
   compute_dominance_frontiers (dfs);
@@ -1620,7 +1620,7 @@ rewrite_into_ssa (bool all)
 
   /* Free allocated memory.  */
   FOR_EACH_BB (bb)
-    BITMAP_XFREE (dfs[bb->index]);
+    BITMAP_FREE (dfs[bb->index]);
   free (dfs);
 
   vars_to_rename = old_vars_to_rename;
@@ -1669,7 +1669,7 @@ rewrite_ssa_into_ssa (void)
      can save significant time during PHI insertion for large graphs.  */
   dfs = (bitmap *) xmalloc (last_basic_block * sizeof (bitmap *));
   FOR_EACH_BB (bb)
-    dfs[bb->index] = BITMAP_XMALLOC ();
+    dfs[bb->index] = BITMAP_ALLOC (NULL);
 
   /* Ensure that the dominance information is OK.  */
   calculate_dominance_info (CDI_DOMINATORS);
@@ -1698,7 +1698,7 @@ rewrite_ssa_into_ssa (void)
       set_current_def (ssa_name (i), NULL_TREE);
     }
 
-  mark_def_sites_global_data.kills = BITMAP_XMALLOC ();
+  mark_def_sites_global_data.kills = BITMAP_ALLOC (NULL);
   mark_def_sites_global_data.names_to_rename = snames_to_rename;
   walk_data.global_data = &mark_def_sites_global_data;
 
@@ -1717,7 +1717,7 @@ rewrite_ssa_into_ssa (void)
   fini_walk_dominator_tree (&walk_data);
 
   /* We no longer need this bitmap, clear and free it.  */
-  BITMAP_XFREE (mark_def_sites_global_data.kills);
+  BITMAP_FREE (mark_def_sites_global_data.kills);
 
   /* Insert PHI nodes at dominance frontiers of definition blocks.  */
   insert_phi_nodes (dfs, to_rename);
@@ -1773,7 +1773,7 @@ rewrite_ssa_into_ssa (void)
 
   /* Free allocated memory.  */
   FOR_EACH_BB (bb)
-    BITMAP_XFREE (dfs[bb->index]);
+    BITMAP_FREE (dfs[bb->index]);
   free (dfs);
 
   htab_delete (def_blocks);
@@ -1789,7 +1789,7 @@ rewrite_ssa_into_ssa (void)
     }
 #endif
 
-  BITMAP_XFREE (to_rename);
+  BITMAP_FREE (to_rename);
   
   VEC_free (tree_on_heap, block_defs_stack);
   block_defs_stack = NULL;

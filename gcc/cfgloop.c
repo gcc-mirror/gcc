@@ -1103,7 +1103,7 @@ get_loop_body_in_bfs_order (const struct loop *loop)
   gcc_assert (loop->latch != EXIT_BLOCK_PTR);
 
   blocks = xcalloc (loop->num_nodes, sizeof (basic_block));
-  visited = BITMAP_XMALLOC ();
+  visited = BITMAP_ALLOC (NULL);
 
   bb = loop->header;
   while (i < loop->num_nodes)
@@ -1135,7 +1135,7 @@ get_loop_body_in_bfs_order (const struct loop *loop)
       bb = blocks[vc++];
     }
   
-  BITMAP_XFREE (visited);
+  BITMAP_FREE (visited);
   return blocks;
 }
 

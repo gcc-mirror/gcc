@@ -5079,7 +5079,7 @@ tree_duplicate_sese_region (edge entry, edge exit,
     free (region_copy);
 
   unmark_all_for_rewrite ();
-  BITMAP_XFREE (definitions);
+  BITMAP_FREE (definitions);
 
   return true;
 }

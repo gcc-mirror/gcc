@@ -1,3 +1,62 @@
+2005-02-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* bitmap.h (BITMAP_XMALLOC, BITMAP_XFREE): Remove.
+	* bb-reorder.c (duplicate_computed_gotos): Use BITMAP_ALLOC and
+	BITMAP_FREE.
+	* bt-load.c (btr_def_live_range, combine_btr_defs,
+	migrate_btr_def, migrate_btr_defs): Likewise.
+	* cfgcleanup.c (thread_jump): Likewise.
+	* cfgloop.c (get_loop_body_in_bfs_order): Likewise.
+	* df.c (df_insn_table_realloc, df_bitmaps_alloc, df_bitmaps_free,
+	df_alloc, df_free, df_du_chain_create, df_bb_rd_local_compute,
+	df_rd_local_compute, df_reg_info_compute): Likewise.
+	* dominance.c (init_dom_info, free_dom_info): Likewise.
+	* flow.c (init_propagate_block_info,
+	free_propagate_block_info): Likewise.
+	* gcse.c (alloc_gcse_mem, free_gcse_mem): Likewise.
+	* global.c (allocate_bb_info, free_bb_info, calculate_reg_pav,
+	modify_reg_pav): Likewise.
+	* loop-invariant.c (find_defs, find_invariant_insn,
+	find_invariants, free_inv_motion_data): Likewise.
+	* predict.c (tree_predict_by_opcode,
+	estimate_bb_frequencies): Likewise.
+	* stmt.c (expand_case): Likewise.
+	* tree-cfg.c (tree_duplicate_sese_region): Likewise.
+	* tree-dfa.c (mark_new_vars_to_rename): Likewise.
+	* tree-if-conv.c (get_loop_body_in_if_conv_order): Likewise.
+	* tree-into-ssa.c (insert_phi_nodes_for, def_blocks_free,
+	get_def_blocks_for, mark_def_site_blocks, rewrite_into_ssa,
+	rewrite_ssa_into_ssa): Likewise.
+	* tree-optimize.c (tree_rest_of_compilation): Likewise.
+	* tree-outof-ssa.c (new_temp_expr_table, free_temp_expr_table,
+	analyze_edges_for_bb, perform_edge_inserts): Likewise.
+	* tree-scalar-evolution.c (scev_initialize, scev_finalize): Likewise.
+	* tree-sra.c (tree_sra): Likewise.
+	* tree-ssa-alias.c (init_alias_info, delete_alias_info): Likewise.
+	* tree-ssa-ccp.c (ccp_fold_builtin): Likewise.
+	* tree-ssa-dce.c (tree_dce_init, tree_dce_done): Likewise.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Likewise.
+	* tree-ssa-dse.c (tree_ssa_dse): Likewise.
+	* tree-ssa-forwprop.c (tree_ssa_forward_propagate_single_use_var):
+	Likewise.
+	* tree-ssa-live.c (new_tree_live_info, delete_tree_live_info,
+	calculate_live_on_entry, calculate_live_on_exit,
+	build_tree_conflict_graph): Likewise.
+	* tree-ssa-loop-ivopts.c (tree_ssa_iv_optimize_init, record_use,
+	record_important_candidates, set_use_iv_cost, find_depends,
+	determine_use_iv_costs, iv_ca_new, iv_ca_free, free_loop_data,
+	tree_ssa_iv_optimize_finalize): Likewise.
+	* tree-ssa-loop-manip.c (add_exit_phis_var, get_loops_exit,
+	find_uses_to_rename_use, rewrite_into_loop_closed_ssa,
+	tree_duplicate_loop_to_header_edge): Likewise.
+	* tree-ssa-pre.c (init_pre, fini_pre): Likewise.
+	* tree-ssa.c (verify_flow_insensitive_alias_info,
+	verify_name_tags, verify_ssa, init_tree_ssa,
+	delete_tree_ssa): Likewise.
+	* tree-ssanames.c (marked_ssa_names, init_ssanames,
+	fini_ssanames): Likewise.
+	* tree-vectorizer.c (slpeel_tree_peel_loop_to_edge): Likewise.
+
 2005-02-17  Ralf Corsepius  <ralf.corsepius@rtems.org>
 
 	* config/rs6000/t-rtems: Completely reworked. 

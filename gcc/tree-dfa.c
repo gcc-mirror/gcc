@@ -956,7 +956,7 @@ mark_new_vars_to_rename (tree stmt, bitmap vars_to_rename)
   int v_may_defs_before, v_may_defs_after;
   int v_must_defs_before, v_must_defs_after;
 
-  vars_in_vops_to_rename = BITMAP_XMALLOC ();
+  vars_in_vops_to_rename = BITMAP_ALLOC (NULL);
 
   /* Before re-scanning the statement for operands, mark the existing
      virtual operands to be renamed again.  We do this because when new
@@ -1005,7 +1005,7 @@ mark_new_vars_to_rename (tree stmt, bitmap vars_to_rename)
       || v_must_defs_before > v_must_defs_after)
     bitmap_ior_into (vars_to_rename, vars_in_vops_to_rename);
 
-  BITMAP_XFREE (vars_in_vops_to_rename);
+  BITMAP_FREE (vars_in_vops_to_rename);
 }
 
 /* Find all variables within the gimplified statement that were not previously

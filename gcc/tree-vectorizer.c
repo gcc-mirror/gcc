@@ -1023,7 +1023,7 @@ slpeel_tree_peel_loop_to_edge (struct loop *loop, struct loops *loops,
     slpeel_make_loop_iterate_ntimes (first_loop, first_niters);
 
   free_new_names (definitions);
-  BITMAP_XFREE (definitions);
+  BITMAP_FREE (definitions);
   unmark_all_for_rewrite ();
 
   return new_loop;

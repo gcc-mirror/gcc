@@ -2079,10 +2079,10 @@ tree_sra (void)
 {
   /* Initialize local variables.  */
   gcc_obstack_init (&sra_obstack);
-  sra_candidates = BITMAP_XMALLOC ();
-  needs_copy_in = BITMAP_XMALLOC ();
-  sra_type_decomp_cache = BITMAP_XMALLOC ();
-  sra_type_inst_cache = BITMAP_XMALLOC ();
+  sra_candidates = BITMAP_ALLOC (NULL);
+  needs_copy_in = BITMAP_ALLOC (NULL);
+  sra_type_decomp_cache = BITMAP_ALLOC (NULL);
+  sra_type_inst_cache = BITMAP_ALLOC (NULL);
   sra_map = htab_create (101, sra_elt_hash, sra_elt_eq, NULL);
 
   /* Scan.  If we find anything, instantiate and scalarize.  */
@@ -2096,10 +2096,10 @@ tree_sra (void)
   /* Free allocated memory.  */
   htab_delete (sra_map);
   sra_map = NULL;
-  BITMAP_XFREE (sra_candidates);
-  BITMAP_XFREE (needs_copy_in);
-  BITMAP_XFREE (sra_type_decomp_cache);
-  BITMAP_XFREE (sra_type_inst_cache);
+  BITMAP_FREE (sra_candidates);
+  BITMAP_FREE (needs_copy_in);
+  BITMAP_FREE (sra_type_decomp_cache);
+  BITMAP_FREE (sra_type_inst_cache);
   obstack_free (&sra_obstack, NULL);
 }
 

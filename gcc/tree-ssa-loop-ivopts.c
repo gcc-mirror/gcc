@@ -730,8 +730,8 @@ tree_ssa_iv_optimize_init (struct loops *loops, struct ivopts_data *data)
   data->version_info_size = 2 * num_ssa_names;
   data->version_info = xcalloc (data->version_info_size,
 				sizeof (struct version_info));
-  data->relevant = BITMAP_XMALLOC ();
-  data->important_candidates = BITMAP_XMALLOC ();
+  data->relevant = BITMAP_ALLOC (NULL);
+  data->important_candidates = BITMAP_ALLOC (NULL);
   data->max_inv_id = 0;
   data->niters = htab_create (10, nfe_hash, nfe_eq, free);
 
@@ -1152,7 +1152,7 @@ record_use (struct ivopts_data *data, tree *use_p, struct iv *iv,
   use->iv = iv;
   use->stmt = stmt;
   use->op_p = use_p;
-  use->related_cands = BITMAP_XMALLOC ();
+  use->related_cands = BITMAP_ALLOC (NULL);
 
   /* To avoid showing ssa name in the dumps, if it was not reset by the
      caller.  */
@@ -2184,7 +2184,7 @@ record_important_candidates (struct ivopts_data *data)
       for (i = 0; i < n_iv_uses (data); i++)
 	{
 	  use = iv_use (data, i);
-	  BITMAP_XFREE (use->related_cands);
+	  BITMAP_FREE (use->related_cands);
 	}
     }
   else
@@ -2260,7 +2260,7 @@ set_use_iv_cost (struct ivopts_data *data,
 
   if (cost == INFTY)
     {
-      BITMAP_XFREE (depends_on);
+      BITMAP_FREE (depends_on);
       return;
     }
 
@@ -2827,7 +2827,7 @@ find_depends (tree *expr_p, int *ws ATTRIBUTE_UNUSED, void *data)
     return NULL_TREE;
 
   if (!*depends_on)
-    *depends_on = BITMAP_XMALLOC ();
+    *depends_on = BITMAP_ALLOC (NULL);
   bitmap_set_bit (*depends_on, info->inv_id);
 
   return NULL_TREE;
@@ -3589,7 +3589,7 @@ determine_use_iv_costs (struct ivopts_data *data)
   unsigned i, j;
   struct iv_use *use;
   struct iv_cand *cand;
-  bitmap to_clear = BITMAP_XMALLOC ();
+  bitmap to_clear = BITMAP_ALLOC (NULL);
 
   alloc_use_cost_map (data);
 
@@ -3623,7 +3623,7 @@ determine_use_iv_costs (struct ivopts_data *data)
 	}
     }
 
-  BITMAP_XFREE (to_clear);
+  BITMAP_FREE (to_clear);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -4134,7 +4134,7 @@ iv_ca_new (struct ivopts_data *data)
   nw->bad_uses = 0;
   nw->cand_for_use = xcalloc (n_iv_uses (data), sizeof (struct cost_pair *));
   nw->n_cand_uses = xcalloc (n_iv_cands (data), sizeof (unsigned));
-  nw->cands = BITMAP_XMALLOC ();
+  nw->cands = BITMAP_ALLOC (NULL);
   nw->n_cands = 0;
   nw->n_regs = 0;
   nw->cand_use_cost = 0;
@@ -4152,7 +4152,7 @@ iv_ca_free (struct iv_ca **ivs)
 {
   free ((*ivs)->cand_for_use);
   free ((*ivs)->n_cand_uses);
-  BITMAP_XFREE ((*ivs)->cands);
+  BITMAP_FREE ((*ivs)->cands);
   free ((*ivs)->n_invariant_uses);
   free (*ivs);
   *ivs = NULL;
@@ -5192,10 +5192,10 @@ free_loop_data (struct ivopts_data *data)
       struct iv_use *use = iv_use (data, i);
 
       free (use->iv);
-      BITMAP_XFREE (use->related_cands);
+      BITMAP_FREE (use->related_cands);
       for (j = 0; j < use->n_map_members; j++)
 	if (use->cost_map[j].depends_on)
-	  BITMAP_XFREE (use->cost_map[j].depends_on);
+	  BITMAP_FREE (use->cost_map[j].depends_on);
       free (use->cost_map);
       free (use);
     }
@@ -5247,8 +5247,8 @@ tree_ssa_iv_optimize_finalize (struct loops *loops, struct ivopts_data *data)
 
   free_loop_data (data);
   free (data->version_info);
-  BITMAP_XFREE (data->relevant);
-  BITMAP_XFREE (data->important_candidates);
+  BITMAP_FREE (data->relevant);
+  BITMAP_FREE (data->important_candidates);
   htab_delete (data->niters);
 
   VARRAY_FREE (decl_rtl_to_reset);

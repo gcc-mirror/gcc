@@ -1260,8 +1260,8 @@ new_temp_expr_table (var_map map)
   t->partition_dep_list = xcalloc (num_var_partitions (map) + 1, 
 				   sizeof (value_expr_p));
 
-  t->replaceable = BITMAP_XMALLOC ();
-  t->partition_in_use = BITMAP_XMALLOC ();
+  t->replaceable = BITMAP_ALLOC (NULL);
+  t->partition_in_use = BITMAP_ALLOC (NULL);
 
   t->saw_replaceable = false;
   t->virtual_partition = num_var_partitions (map);
@@ -1293,8 +1293,8 @@ free_temp_expr_table (temp_expr_table_p t)
       free (p);
     }
 
-  BITMAP_XFREE (t->partition_in_use);
-  BITMAP_XFREE (t->replaceable);
+  BITMAP_FREE (t->partition_in_use);
+  BITMAP_FREE (t->replaceable);
 
   free (t->partition_dep_list);
   if (t->saw_replaceable)
@@ -2115,7 +2115,7 @@ analyze_edges_for_bb (basic_block bb, FILE *debug_file)
     {
       VARRAY_EDGE_INIT (edge_leader, 25, "edge_leader");
       VARRAY_TREE_INIT (stmt_list, 25, "stmt_list");
-      leader_has_match = BITMAP_XMALLOC ();
+      leader_has_match = BITMAP_ALLOC (NULL);
     }
   else
     {
@@ -2261,7 +2261,7 @@ perform_edge_inserts (FILE *dump_file)
 
   /* Clear out any tables which were created.  */
   edge_leader = NULL;
-  BITMAP_XFREE (leader_has_match);
+  BITMAP_FREE (leader_has_match);
 
   if (changed)
     {
