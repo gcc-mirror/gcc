@@ -21,7 +21,7 @@ bool is_C (const T&) {
 };
 
 int main() {
-   cout << "should be true: " << is_C(C<int>()) << endl;
-   cout << "should be false: " << is_C(D<int>()) << endl;
+   std::cout << "should be true: " << is_C(C<int>()) << std::endl;
+   std::cout << "should be false: " << is_C(D<int>()) << std::endl;
    return 0;
 }
