@@ -59,8 +59,6 @@ extern int shift_operator (rtx, enum machine_mode);
 
 #ifdef TREE_CODE
 extern enum arc_function_type arc_compute_function_type (tree);
-extern void arc_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
-					tree, int *, int);
 #endif /* TREE_CODE */
 
 
