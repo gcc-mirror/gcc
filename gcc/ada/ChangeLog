@@ -1,3 +1,79 @@
+2003-12-03  Thomas Quinot  <quinot@act-europe.fr>
+
+	PR ada/11724
+
+	* adaint.h, adaint.c, g-os_lib.ads: 
+	Do not assume that the offset argument to lseek(2) is a 32 bit integer,
+	on some platforms (including FreeBSD), it is a 64 bit value.
+	Introduce a __gnat_lseek wrapper in adaint.c to allow for portability.
+
+2003-12-03  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* gnatvsn.ads (Library_Version): Now contain only the relevant
+	version info.
+	(Verbose_Library_Version): New constant.
+
+	* g-spipat.adb, g-awk.adb, g-debpoo.adb,
+	g-memdum.adb, g-thread.adb, s-geveop.adb, s-interr.adb,
+	s-taskin.adb, s-tassta.adb: Make code compile with -gnatwa.
+
+	* gnatlbr.adb: Clean up: replace Library_Version by
+	Verbose_Library_Version.
+
+	* make.adb, lib-writ.adb, exp_attr.adb: 
+	Clean up: replace Library_Version by Verbose_Library_Version.
+
+	* 5lintman.adb: Removed.
+
+	* Makefile.in: 
+	Update and simplify computation of LIBRARY_VERSION.
+	Fix computation of GSMATCH_VERSION.
+	5lintman.adb is no longer used: replaced by 7sintman.adb.
+
+2003-12-03  Robert Dewar  <dewar@gnat.com>
+
+	* exp_ch5.adb: 
+	(Possible_Bit_Aligned_Component): Maybe_Bit_Aligned_Large_Component new
+	name. Modified to consider small non-bit-packed arrays as troublesome
+	and in need of component-by-component assigment expansion.
+
+2003-12-03  Vincent Celier  <celier@gnat.com>
+
+	* lang-specs.h: Process nostdlib as nostdinc
+
+	* back_end.adb: Update Copyright notice
+	(Scan_Compiler_Arguments): Process -nostdlib directly.
+
+2003-12-03  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* Makefile.in: 
+	When defining LIBGNAT_TARGET_PAIRS for bare board targets, remove the
+	redundant inclusion of EXTRA_HIE_NONE_TARGET_PAIRS, which is always
+	included in HIE_NONE_TARGET_PAIRS.
+
+2003-12-03  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_attr.adb: 
+	(Legal_Formal_Attribute): Attribute is legal in an inlined body, as it
+	is legal in an instance, because legality is cheched in the template.
+
+	* sem_prag.adb: 
+	(Analyze_Pragma, case Warnings): In an inlined body, the pragma may be
+	appplied to an unchecked conversion of a formal parameter.
+
+	* sem_warn.adb: 
+	(Output_Unreferenced_Messages): Suppress "not read" warnings on imported
+	variables.
+
+2003-12-03  Olivier Hainque  <hainque@act-europe.fr>
+
+	* tb-alvms.c (unwind_regular_code, unwind_kernel_handler): New
+	routines. The second one is new functionality to deal with backtracing
+	through signal handlers.
+	(unwind): Split into the two separate subroutines above.
+	Update the documentation, and deal properly with sizeof (REG) different
+	from sizeof (void*).
+
 2003-12-01  Nicolas Setton  <setton@act-europe.fr>
 
 	* a-except.adb (Raise_Current_Excep): Add a pragma Inspection_Point,

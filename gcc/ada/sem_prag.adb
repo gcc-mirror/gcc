@@ -9631,6 +9631,12 @@ package body Sem_Prag is
                   E_Id := Expression (Arg2);
                   Analyze (E_Id);
 
+                  if In_Instance_Body
+                    and then Nkind (E_Id) = N_Unchecked_Type_Conversion
+                  then
+                     E_Id := Expression (E_Id);
+                  end if;
+
                   if not Is_Entity_Name (E_Id) then
                      Error_Pragma_Arg
                        ("second argument of pragma% must be entity name",

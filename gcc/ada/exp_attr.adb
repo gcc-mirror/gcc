@@ -907,8 +907,9 @@ package body Exp_Attr is
          if Pent = Standard_Standard
            or else Pent = Standard_ASCII
          then
-            Name_Buffer (1 .. Library_Version'Length) := Library_Version;
-            Name_Len := Library_Version'Length;
+            Name_Buffer (1 .. Verbose_Library_Version'Length) :=
+              Verbose_Library_Version;
+            Name_Len := Verbose_Library_Version'Length;
             Rewrite (N,
               Make_String_Literal (Loc,
                 Strval => String_From_Name_Buffer));

@@ -116,7 +116,7 @@ package body GNAT.Debug_Pools is
       return Tracebacks_Array_Access;
    function Hash (T : Tracebacks_Array_Access) return Header;
    function Equal (K1, K2 : Tracebacks_Array_Access) return Boolean;
-   pragma Inline (Set_Next, Next, Get_Key, Equal, Hash);
+   pragma Inline (Set_Next, Next, Get_Key, Hash);
    --  Subprograms required for instantiation of the htable. See GNAT.HTable.
 
    package Backtrace_Htable is new GNAT.HTable.Static_HTable
@@ -374,7 +374,6 @@ package body GNAT.Debug_Pools is
 
    function Equal (K1, K2 : Tracebacks_Array_Access) return Boolean is
       use Ada.Exceptions.Traceback;
-
    begin
       return K1.all = K2.all;
    end Equal;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -269,6 +269,12 @@ package body Back_End is
             elsif Argv (Argv'First + 1 .. Argv'Last) = "nostdinc" then
                Opt.No_Stdinc := True;
                Scan_Back_End_Switches (Argv);
+
+            --  We must recognize -nostdlib to suppress visibility on the
+            --  standard GNAT RTL objects.
+
+            elsif Argv (Argv'First + 1 .. Argv'Last) = "nostdlib" then
+               Opt.No_Stdlib := True;
 
             elsif Is_Front_End_Switch (Argv) then
                Scan_Front_End_Switches (Argv);

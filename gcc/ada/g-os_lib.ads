@@ -359,7 +359,7 @@ pragma Elaborate_Body (OS_Lib);
      (FD     : File_Descriptor;
       offset : Long_Integer;
       origin : Integer);
-   pragma Import (C, Lseek, "lseek");
+   pragma Import (C, Lseek, "__gnat_lseek");
    --  Sets the current file pointer to the indicated offset value,
    --  relative to the current position (origin = SEEK_CUR), end of
    --  file (origin = SEEK_END), or start of file (origin = SEEK_SET).

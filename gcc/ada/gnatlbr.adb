@@ -254,7 +254,8 @@ begin
                              & F_ADC_File (1 .. F_ADC_File_Len));
 
                Make_Args (6) :=
-                 new String'("LIBRARY_VERSION=" & '"' & Library_Version & '"');
+                 new String'("LIBRARY_VERSION=" & '"' &
+                             Verbose_Library_Version & '"');
 
                Make_Args (7) :=
                  new String'("-f");

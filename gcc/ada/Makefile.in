@@ -375,6 +375,8 @@ PREFIX_REAL_OBJS = ../prefix.o \
   ../../libiberty/xstrdup.o    \
   ../../libiberty/xexit.o
 
+LIB_VERSION = $(strip $(shell grep ' Library_Version :' $(fsrcpfx)gnatvsn.ads | sed -e 's/.*"\(.*\)".*/\1/'))
+
 # $(filter-out PATTERN...,TEXT) removes all PATTERN words from TEXT.
 # $(strip STRING) removes leading and trailing spaces from STRING.
 # If what's left is null then it's a match.
@@ -450,7 +452,7 @@ ifeq ($(strip $(filter-out %86 sysv5uw%,$(arch) $(osys))),)
   PREFIX_OBJS=$(PREFIX_REAL_OBJS)
   SO_OPTS = -Wl,-h,
   GNATLIB_SHARED = gnatlib-shared-dual
-  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
+  LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
 ifeq ($(strip $(filter-out alpha% dec vx%,$(targ))),)
@@ -692,8 +694,7 @@ ifeq ($(strip $(filter-out powerpc% unknown elf,$(targ))),)
   system.ads<59system.ads
 
   LIBGNAT_TARGET_PAIRS = \
-  $(HIE_NONE_TARGET_PAIRS) \
-  $(EXTRA_HIE_NONE_TARGET_PAIRS)
+  $(HIE_NONE_TARGET_PAIRS)
 endif
 
 ifeq ($(strip $(filter-out sparc% unknown elf,$(targ))),)
@@ -701,8 +702,7 @@ ifeq ($(strip $(filter-out sparc% unknown elf,$(targ))),)
   system.ads<5rsystem.ads
 
   LIBGNAT_TARGET_PAIRS = \
-  $(HIE_NONE_TARGET_PAIRS) \
-  $(EXTRA_HIE_NONE_TARGET_PAIRS)
+  $(HIE_NONE_TARGET_PAIRS)
 endif
 
 ifeq ($(strip $(filter-out sparc% wrs vx%,$(targ))),)
@@ -819,7 +819,7 @@ ifeq ($(strip $(filter-out sparc sun solaris%,$(targ))),)
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
-  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
+  LIBRARY_VERSION := $(LIB_VERSION)
 
   ifeq ($(strip $(filter-out fsu FSU,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS = \
@@ -903,7 +903,7 @@ ifeq ($(strip $(filter-out %86 solaris2%,$(arch) $(osys))),)
   SO_OPTS = -Wl,-h,
   GNATLIB_SHARED = gnatlib-shared-dual
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
-  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
+  LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
 ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
@@ -912,7 +912,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   a-numaux.adb<86numaux.adb \
   a-numaux.ads<86numaux.ads \
   s-inmaop.adb<7sinmaop.adb \
-  s-intman.adb<5lintman.adb \
+  s-intman.adb<7sintman.adb \
   s-mastop.adb<5omastop.adb \
   s-osinte.adb<5iosinte.adb \
   s-osinte.ads<5iosinte.ads \
@@ -929,7 +929,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
-  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
+  LIBRARY_VERSION := $(LIB_VERSION)
 
   ifeq ($(strip $(filter-out fsu FSU,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS = \
@@ -937,7 +937,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
     a-numaux.adb<86numaux.adb \
     a-numaux.ads<86numaux.ads \
     s-inmaop.adb<7sinmaop.adb \
-    s-intman.adb<5lintman.adb \
+    s-intman.adb<7sintman.adb \
     s-mastop.adb<5omastop.adb \
     s-osinte.adb<7sosinte.adb \
     s-osinte.ads<5losinte.ads \
@@ -967,7 +967,7 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
   system.ads<56system.ads
 
   THREADSLIB=
-  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
+  LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
 ifeq ($(strip $(filter-out mips sgi irix%,$(targ))),)
@@ -1021,7 +1021,7 @@ ifeq ($(strip $(filter-out mips sgi irix%,$(targ))),)
   MISCLIB = -lexc
   SO_OPTS = -Wl,-all,-set_version,sgi1.0,-update_registry,../so_locations,-soname,
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
-  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
+  LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
 ifeq ($(strip $(filter-out hppa% hp hpux10%,$(targ))),)
@@ -1069,7 +1069,7 @@ ifeq ($(strip $(filter-out hppa% hp hpux11%,$(targ))),)
   SO_OPTS = -Wl,+h,
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   GNATLIB_SHARED = gnatlib-shared-dual
-  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
+  LIBRARY_VERSION := $(LIB_VERSION)
 
   ifeq ($(strip $(filter-out dce DCE,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS = \
@@ -1220,7 +1220,7 @@ ifeq ($(strip $(filter-out alpha% dec osf%,$(targ))),)
   THREADSLIB = -lpthread -lmach -lexc -lrt
   PREFIX_OBJS = $(PREFIX_REAL_OBJS)
   GNATLIB_SHARED = gnatlib-shared-default
-  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
+  LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
 ifeq ($(strip $(filter-out alpha% dec vms% openvms% alphavms%,$(host))),)
@@ -1290,8 +1290,7 @@ endif
      ../../gnatlbr$(exeext) \
      ,,/../gnatsym$(exeext)
   # This command transforms (YYYYMMDD) into YY,MMDD
-  GSMATCH_VERSION := $(shell grep "^ *Gnat_Version_String" $(fsrcpfx)gnatvsn.ads | sed -e 's/.*(\(.*\)).*/\1/' -e 's/\(..\)\(..\)\(....\)/\2,\3/')
-  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/' -e 's/\./_/g'))
+  GSMATCH_VERSION := $(shell grep "^ *Gnat_Static_Version_String" $(fsrcpfx)gnatvsn.ads | sed -e 's/.*(\(.*\)).*/\1/' -e 's/\(..\)\(..\)\(....\)/\2,\3/')
   TOOLS_LIBS_LO := --for-linker=sys\\$$\$$library:trace.exe
 endif
 
@@ -1328,14 +1327,14 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
   EXTRA_GNATRTL_NONTASKING_OBJS = g-regist.o
   soext = .dll
   GNATLIB_SHARED = gnatlib-shared-win32
-  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
+  LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
 ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<4lintnam.ads \
   s-inmaop.adb<7sinmaop.adb \
-  s-intman.adb<5lintman.adb \
+  s-intman.adb<7sintman.adb \
   s-osinte.ads<5iosinte.ads \
   s-osinte.adb<5iosinte.adb \
   s-osprim.adb<7sosprim.adb \
@@ -1349,14 +1348,14 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
   THREADSLIB=-lpthread
   GNATLIB_SHARED=gnatlib-shared-dual
   PREFIX_OBJS=$(PREFIX_REAL_OBJS)
-  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
+  LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
 ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<4lintnam.ads \
   s-inmaop.adb<7sinmaop.adb \
-  s-intman.adb<5lintman.adb \
+  s-intman.adb<7sintman.adb \
   s-osinte.ads<5iosinte.ads \
   s-osinte.adb<5iosinte.adb \
   s-osprim.adb<7sosprim.adb \
@@ -1370,7 +1369,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   THREADSLIB=-lpthread
   GNATLIB_SHARED=gnatlib-shared-dual
   PREFIX_OBJS=$(PREFIX_REAL_OBJS)
-  LIBRARY_VERSION := $(strip $(shell grep Library_Version $(fsrcpfx)gnatvsn.ads | sed -e 's/.*GNAT Lib v\(.*\)[ "].*/\1/'))
+  LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
 # The runtime library for gnat comprises two directories.  One contains the

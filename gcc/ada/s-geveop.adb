@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2002 Free Software Foundation, Inc.            --
+--          Copyright (C) 2002-2003 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,7 +61,7 @@ package body System.Generic_Vector_Operations is
       function VP is new Unchecked_Conversion (Address, Vector_Ptr);
       function EP is new Unchecked_Conversion (Address, Element_Ptr);
 
-      SA : Address := XA + ((Length + 0) / VU * VU
+      SA : constant Address := XA + ((Length + 0) / VU * VU
                            and (Boolean'Pos (Unaligned) - Address'(1)));
       --  First address of argument X to start serial processing
 
@@ -102,7 +102,7 @@ package body System.Generic_Vector_Operations is
       function VP is new Unchecked_Conversion (Address, Vector_Ptr);
       function EP is new Unchecked_Conversion (Address, Element_Ptr);
 
-      SA : Address := XA + ((Length + 0) / VU * VU
+      SA : constant Address := XA + ((Length + 0) / VU * VU
                            and (Boolean'Pos (Unaligned) - Address'(1)));
       --  First address of argument X to start serial processing
 

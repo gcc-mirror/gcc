@@ -1089,7 +1089,8 @@ package body System.Tasking.Stages is
         (Ada, Tailored_Exception_Information,
          "__gnat_tailored_exception_information");
 
-      Excep : Exception_Occurrence_Access := SSL.Get_Current_Excep.all;
+      Excep : constant Exception_Occurrence_Access :=
+                SSL.Get_Current_Excep.all;
 
    begin
       --  This procedure is called by the task outermost handler in
