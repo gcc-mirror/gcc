@@ -45,7 +45,7 @@ public class GC implements Cloneable
 	    gcClone.structure = null;
 	  }
 	gcClone.initStructure(this);
-	gcClone.updateClip();
+	gcClone.updateClip(clipRectangles);
 	return gcClone;
       } 
     catch (CloneNotSupportedException ex)
@@ -107,8 +107,8 @@ public class GC implements Cloneable
    */
   public void setClipRectangles(Rectangle[] rectangles)
   {
-    clip = new Clip(rectangles);
-    updateClip();
+    clipRectangles = rectangles;
+    updateClip(clipRectangles);
   }
 
   public native void drawString(String text, int x, int y);
@@ -148,10 +148,10 @@ public class GC implements Cloneable
     return target;
   }
 
-  private native void updateClip();
+  private native void updateClip(Rectangle[] rectangles);
 
   private Drawable target;
   private RawData structure;
-  private Clip clip;
+  private Rectangle[] clipRectangles;
 }
 

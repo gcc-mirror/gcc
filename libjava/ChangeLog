@@ -1,3 +1,12 @@
+2003-12-05  Scott Gilbertson  <scottg@mantatest.com>
+
+	* gnu/gcj/xlib/GC.java (updateClip): Added rectangles argument.
+	(clip): Removed field
+	(clipRectangles): New field.
+	(clone): Use new updateClip.
+	(setClipRectangles): Use new updateClip.
+	* gnu/gcj/xlib/natGC.cc (updateClip): Prepare passed rectangles.
+
 2003-12-04  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/FilePermission.java:
@@ -4145,7 +4154,7 @@
 	(_Jv_BytecodeVerifier): Initialize it.
 	(~_Jv_BytecodeVerifier): Destroy ref_intersection objects. 
 
-2003-07-24  H. Väisänen  <hvaisane@joyx.joensuu.fi>
+2003-07-24  H. VÃ¤isÃ¤nen  <hvaisane@joyx.joensuu.fi>
 
 	* java/text/SimpleDateFormat.java (format) [YEAR_FIELD]: Zero pad
 	unless field size is 2.
@@ -7232,7 +7241,7 @@
 	* java/io/ObjectOutputStream.java
 	(PutField.put): Doesnt throws anything.
 
-2003­03-28  Michael Koch  <konqueror@gmx.de>
+2003Â­03-28  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/FileOutputStream.java:
 	Merged class documentation and authors with classpath.
