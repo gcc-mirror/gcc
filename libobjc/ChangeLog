@@ -1,3 +1,7 @@
+Fri Feb 23 18:12:00 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* sendmsg.c (__objc_forward): Delete strlen() declaration.
+
 2001-02-08  Geoffrey Keating  <geoffk@redhat.com>
 
 	* configure.in: Don't run AC_PROG_CC_WORKS or AC_EXEEXT, because

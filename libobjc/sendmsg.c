@@ -597,7 +597,6 @@ __objc_forward (id object, SEL sel, arglist_t args)
   /* The object doesn't recognize the method.  Check for responding to
      error:.  If it does then sent it. */
   {
-    size_t strlen (const char*);
     char msg[256 + strlen ((const char*)sel_get_name (sel))
              + strlen ((const char*)object->class_pointer->name)];
 
