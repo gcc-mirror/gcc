@@ -1,3 +1,17 @@
+2003-09-19  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k.h (TARGET_CPU_CPP_PREDEFINES): Add predefines
+	for -m68030, -m68020-60 and -m68020-40.
+	* config/m68k/m68k.h (TARGET_68030): New target flag.
+	* config/m68k/m68k.h (MASK_RTD, TARGET_RTD, MASK_REGPARM,
+	TARGET_REGPARM): Remove.
+	* config/m68k/m68k.h: Regroup and renumber target flags.
+	* config/m68k/m68k.h (TARGET_SWITCHES): Fix some tabulations.
+	* config/m68k/m68k.h (RETURN_POPS_ARGS): Always evaluate to 0.
+	* config/m68k/m68k.h (FUNCTION_ARG): Likewise.
+	* config/m68k/m68k.h (FUNCTION_ARG_PARTIAL_NREGS): Likewise.
+	* config/m68k/m68k-none.h: Use MASK_xxx values in M68K_CPU_xxx macros.
+
 2003-09-19  Ralf Corsepius <corsepiu@faw.uni-ulm.de>
 
 	* config/m68k/t-rtems (m68k-*-rtems*): New.
