@@ -1,5 +1,11 @@
 1999-12-14  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (remap_save_expr): Add walk_subtrees parameter.
+	* optimize.c (copy_body_r): Pass it.
+	* tree.c (remap_save_expr): Clear walk_subtrees for an
+	already-handled SAVE_EXPR.
+	(cp_unsave_r): Pass walk_subtrees to remap_save_expr.
+
 	* dump.c (dequeue_and_dump): Dump DECL_NAMESPACE_ALIAS.
 	* ir.texi (DECL_NAMESPACE_ALIAS): Document it.
 

@@ -4064,7 +4064,7 @@ extern tree copy_tree_r                         PROTO((tree *, int *, void *));
 extern int cp_valid_lang_attribute		PROTO((tree, tree, tree, tree));
 extern tree make_ptrmem_cst                     PROTO((tree, tree));
 extern tree cp_build_qualified_type_real        PROTO((tree, int, int));
-extern void remap_save_expr                     PROTO((tree *, splay_tree, tree));
+extern void remap_save_expr                     PROTO((tree *, splay_tree, tree, int *));
 #define cp_build_qualified_type(TYPE, QUALS) \
   cp_build_qualified_type_real ((TYPE), (QUALS), /*complain=*/1)
 

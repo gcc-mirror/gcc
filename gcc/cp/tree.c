@@ -2659,10 +2659,11 @@ init_tree ()
    ST.  FN is the function into which the copy will be placed.  */
 
 void
-remap_save_expr (tp, st, fn)
+remap_save_expr (tp, st, fn, walk_subtrees)
      tree *tp;
      splay_tree st;
      tree fn;
+     int *walk_subtrees;
 {
   splay_tree_node n;
 
@@ -2684,6 +2685,10 @@ remap_save_expr (tp, st, fn)
 			     (splay_tree_key) *tp,
 			     (splay_tree_value) t);
     }
+  else
+    /* We've already walked into this SAVE_EXPR, so we needn't do it
+       again.  */
+    *walk_subtrees = 0;
 
   /* Replace this SAVE_EXPR with the copy.  */
   *tp = (tree) n->value;
@@ -2751,7 +2756,7 @@ cp_unsave_r (tp, walk_subtrees, data)
 	*tp = (tree) n->value;
     }
   else if (TREE_CODE (*tp) == SAVE_EXPR)
-    remap_save_expr (tp, st, current_function_decl);
+    remap_save_expr (tp, st, current_function_decl, walk_subtrees);
   else
     {
       copy_tree_r (tp, walk_subtrees, NULL);

@@ -296,7 +296,8 @@ copy_body_r (tp, walk_subtrees, data)
       *tp = new_decl;
     }
   else if (TREE_CODE (*tp) == SAVE_EXPR)
-    remap_save_expr (tp, id->decl_map, VARRAY_TREE (id->fns, 0));
+    remap_save_expr (tp, id->decl_map, VARRAY_TREE (id->fns, 0), 
+		     walk_subtrees);
   else if (TREE_CODE (*tp) == UNSAVE_EXPR)
     my_friendly_abort (19991113);
   /* For a SCOPE_STMT, we must copy the associated block so that we
