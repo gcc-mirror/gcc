@@ -1,3 +1,8 @@
+2005-01-21  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/18701
+	* combine.c (combine_simplify_rtx): Revert change of 2004-12-31.
+
 2005-01-20  Paul Brook  <paul@codesourcery.com>
 
 	* doc/rtl.texi: Document value extension requirements for CONST_INT.

@@ -3984,14 +3984,10 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest)
       }
 
       /* Don't change the mode of the MEM if that would change the meaning
-	 of the address.  Similarly, don't allow widening, as that may
-	 access memory outside the defined object or using an address
-	 that is invalid for a wider mode.  */
+	 of the address.  */
       if (MEM_P (SUBREG_REG (x))
 	  && (MEM_VOLATILE_P (SUBREG_REG (x))
-	      || mode_dependent_address_p (XEXP (SUBREG_REG (x), 0))
-	      || (GET_MODE_SIZE (mode)
-		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))))
+	      || mode_dependent_address_p (XEXP (SUBREG_REG (x), 0))))
 	return gen_rtx_CLOBBER (mode, const0_rtx);
 
       /* Note that we cannot do any narrowing for non-constants since
