@@ -4050,6 +4050,23 @@ output_constant (exp, size, align)
 	  thissize = MIN (TREE_STRING_LENGTH (exp), size);
 	  assemble_string (TREE_STRING_POINTER (exp), thissize);
 	}
+      else if (TREE_CODE (exp) == VECTOR_CST)
+	{
+	  int elt_size;
+	  tree link;
+	  unsigned int nalign;
+	  enum machine_mode inner;
+
+	  inner = GET_MODE_INNER (TYPE_MODE (TREE_TYPE (exp)));
+	  nalign = MIN (align, GET_MODE_ALIGNMENT (inner));
+
+	  elt_size = GET_MODE_UNIT_SIZE (TYPE_MODE (TREE_TYPE (exp)));
+
+	  link = TREE_VECTOR_CST_ELTS (exp);
+	  output_constant (TREE_VALUE (link), elt_size, align);
+	  while ((link = TREE_CHAIN (link)) != NULL)
+	    output_constant (TREE_VALUE (link), elt_size, nalign);
+	}
       else
 	abort ();
       break;

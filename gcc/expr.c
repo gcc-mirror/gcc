@@ -153,7 +153,7 @@ static rtx clear_storage_via_libcall PARAMS ((rtx, rtx));
 static tree clear_storage_libcall_fn PARAMS ((int));
 static rtx compress_float_constant PARAMS ((rtx, rtx));
 static rtx get_subtarget	PARAMS ((rtx));
-static int is_zeros_p		PARAMS ((tree));
+static int is_zeros_p         PARAMS ((tree));
 static int mostly_zeros_p	PARAMS ((tree));
 static void store_constructor_field PARAMS ((rtx, unsigned HOST_WIDE_INT,
 					     HOST_WIDE_INT, enum machine_mode,
@@ -177,6 +177,7 @@ static rtx do_store_flag	PARAMS ((tree, rtx, enum machine_mode, int));
 static void emit_single_push_insn PARAMS ((enum machine_mode, rtx, tree));
 #endif
 static void do_tablejump PARAMS ((rtx, enum machine_mode, rtx, rtx, rtx));
+static rtx const_vector_from_tree PARAMS ((tree));
 
 /* Record for each mode whether we can move a register directly to or
    from an object of that mode in memory.  If we can't, we won't try
@@ -6793,6 +6794,9 @@ expand_expr (exp, target, tmode, modifier)
 
       return temp;
 
+    case VECTOR_CST:
+      return const_vector_from_tree (exp);
+
     case CONST_DECL:
       return expand_expr (DECL_INITIAL (exp), target, VOIDmode, modifier);
 
@@ -11241,6 +11245,43 @@ vector_mode_valid_p (mode)
   /* If we have support for the inner mode, we can safely emulate it.
      We may not have V2DI, but me can emulate with a pair of DIs.  */
   return mov_optab->handlers[innermode].insn_code != CODE_FOR_nothing;
+}
+
+/* Return a CONST_VECTOR rtx for a VECTOR_CST tree.  */
+static rtx
+const_vector_from_tree (exp)
+     tree exp;
+{
+  rtvec v;
+  int units, i;
+  tree link, elt;
+  enum machine_mode inner, mode;
+
+  mode = TYPE_MODE (TREE_TYPE (exp));
+
+  if (is_zeros_p (exp))
+    return CONST0_RTX (mode);
+
+  units = GET_MODE_NUNITS (mode);
+  inner = GET_MODE_INNER (mode);
+
+  v = rtvec_alloc (units);
+
+  link = TREE_VECTOR_CST_ELTS (exp);
+  for (i = 0; link; link = TREE_CHAIN (link), ++i)
+    {
+      elt = TREE_VALUE (link);
+
+      if (TREE_CODE (elt) == REAL_CST)
+	RTVEC_ELT (v, i) = CONST_DOUBLE_FROM_REAL_VALUE (TREE_REAL_CST (elt),
+							 inner);
+      else
+	RTVEC_ELT (v, i) = immed_double_const (TREE_INT_CST_LOW (elt),
+					       TREE_INT_CST_HIGH (elt),
+					       inner);
+    }
+
+  return gen_rtx_raw_CONST_VECTOR (mode, v);
 }
 
 #include "gt-expr.h"
