@@ -29,6 +29,7 @@ extern void dwarf2out_end_source_file 	PARAMS ((void));
 
 extern void dwarf2out_begin_block	PARAMS ((unsigned));
 extern void dwarf2out_end_block		PARAMS ((unsigned));
+extern void dwarf2out_ignore_block	PARAMS ((tree));
 extern void dwarf2out_label		PARAMS ((rtx));			
 extern void dwarf2out_decl		PARAMS ((tree));	
 extern void dwarf2out_line		PARAMS ((const char *, unsigned));
