@@ -1,3 +1,10 @@
+2003-07-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+        PR optimization/11536
+	* unroll.c (loop_iterations): Do not replace a register holding
+	the final value by its equivalent before the loop if it is not
+	invariant.
+
 2003-07-21  Dave Fluri  <dave.fluri@onlink.net>
 
 	* doc/extend.texi: Fixes to spelling, grammar, and diction.
