@@ -1,8 +1,7 @@
 // execution test - re-initialization of statics XFAIL *-*-*
 // This tests two things:
 // 1. there is an annoying warning.
-// singleton.C:26: warning: `class singleton' only defines private constructors
-and has no friends
+// singleton.C:26: warning: `class singleton' only defines private constructors and has no friends
 // egcs fails to see that there is a public static accessor function.
 // 2. the program crashes, because apparently the static variable s in
 // singleton::instance() is considered constructed although the ctor
@@ -33,7 +32,7 @@ int main()
 {
        while (1) {
                try {
-                       return singleton::instance().ok()-2;
+                       return singleton::instance().check()-2;
                } catch (...) { }
        }
 }
