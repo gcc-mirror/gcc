@@ -33,6 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       DECL_PRETTY_FUNCTION_P (in VAR_DECL)
       NEW_FOR_SCOPE_P (in FOR_STMT)
       ASM_INPUT_P (in ASM_STMT)
+      STMT_EXPR_NO_SCOPE (in STMT_EXPR)
    1: C_DECLARED_LABEL_FLAG (in LABEL_DECL)
       STMT_IS_FULL_EXPR_P (in _STMT)
    2: STMT_LINENO_FOR_FN_P (in _STMT)
@@ -645,6 +646,10 @@ extern tree strip_array_types                   PARAMS ((tree));
 
 /* STMT_EXPR accessor.  */
 #define STMT_EXPR_STMT(NODE)    TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
+
+/* Nonzero if this statement-expression does not have an associated scope.  */
+#define STMT_EXPR_NO_SCOPE(NODE) \
+   TREE_LANG_FLAG_0 (STMT_EXPR_CHECK (NODE))
 
 /* LABEL_STMT accessor. This gives access to the label associated with
    the given label statement.  */

@@ -2404,12 +2404,16 @@ clear_last_expr ()
   last_expr_type = 0;
 }
 
-/* Begin a statement which will return a value.
-   Return the RTL_EXPR for this statement expr.
-   The caller must save that value and pass it to expand_end_stmt_expr.  */
+/* Begin a statement-expression, i.e., a series of statements which
+   may return a value.  Return the RTL_EXPR for this statement expr.
+   The caller must save that value and pass it to
+   expand_end_stmt_expr.  If HAS_SCOPE is nonzero, temporaries created
+   in the statement-expression are deallocated at the end of the
+   expression.  */
 
 tree
-expand_start_stmt_expr ()
+expand_start_stmt_expr (has_scope)
+     int has_scope;
 {
   tree t;
 
@@ -2417,7 +2421,10 @@ expand_start_stmt_expr ()
      so that rtl_expr_chain doesn't become garbage.  */
   t = make_node (RTL_EXPR);
   do_pending_stack_adjust ();
-  start_sequence_for_rtl_expr (t);
+  if (has_scope)
+    start_sequence_for_rtl_expr (t);
+  else
+    start_sequence ();
   NO_DEFER_POP;
   expr_stmts_for_value++;
   last_expr_value = NULL_RTX;

@@ -1,3 +1,8 @@
+2002-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* trans.c (tree_transform): Add has_scope argument to
+	expand_start_stmt_expr.
+
 2002-04-04  Laurent Guerby  <guerby@acm.org>
 
 	* make.adb: Implement -margs, remove restriction about file name placement.

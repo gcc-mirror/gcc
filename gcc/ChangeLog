@@ -1,3 +1,12 @@
+2002-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.h (STMT_EXPR_NO_SCOPE): New macro.
+	* c-common.c (c_expand_expr): Respect STMT_EXPR_NO_SCOPE.
+	* tree.h (expand_start_stmt_expr): Update prototype.
+	* stmt.c (expand_start_stmt_expr): Add has_scope parameter.
+	* tree-inline.c (expand_call_inline): Set STMT_EXPR_NO_SCOPE
+	on the STMT_EXPR created for the inline function.
+	
 2002-04-16  Richard Henderson  <rth@redhat.com>
 
 	* config/sparc/sol2-bi.h (AS_SPARC64_FLAG): New.
