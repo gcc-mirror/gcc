@@ -2954,13 +2954,22 @@ machine_dependent_reorg (first)
      So what we do now is to insert align_* instructions after the
      barriers.  By doing that before literal tables are generated, we
      don't have to care about these.  */
+  /* We also want alignment in front of ADDR_DIFF_VECs; this is done already
+     by ASM_OUTPUT_CASE_LABEL, but when optimizing, we have to make it
+     explicit in the RTL in order to correctly shorten branches.  */
     
-  if (! TARGET_SMALLCODE && optimize)
+  if (optimize)
     for (insn = first; insn; insn = NEXT_INSN (insn))
       {
-	if (GET_CODE (insn) == BARRIER && next_real_insn (insn))
-	  if (GET_CODE (PATTERN (next_real_insn (insn))) == ADDR_DIFF_VEC)
-	    ; /* Do nothing */
+	rtx addr_diff_vec;
+
+	if (GET_CODE (insn) == BARRIER
+	    && (addr_diff_vec = next_real_insn (insn)))
+	  if (GET_CODE (PATTERN (addr_diff_vec)) == ADDR_DIFF_VEC)
+	    emit_insn_before (gen_align_4 (),
+			      XEXP (XEXP (PATTERN (addr_diff_vec), 0), 0));
+	  else if (TARGET_SMALLCODE)
+	    continue;
 	  else if (TARGET_SH3)
 	    {
 	      /* We align for an entire cache line.  If there is a immediately
@@ -2999,6 +3008,8 @@ machine_dependent_reorg (first)
 	      insn = emit_insn_after (gen_align_4 (), insn);
 	      insn = emit_barrier_after (insn);
 	    }
+	else if (TARGET_SMALLCODE)
+	  continue;
 	else if (GET_CODE (insn) == NOTE
 		 && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
 	  {
