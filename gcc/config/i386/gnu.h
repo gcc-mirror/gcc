@@ -9,11 +9,10 @@
 #undef	LINK_SPEC
 #define LINK_SPEC "-m elf_i386 %{shared:-shared} \
   %{!shared: \
-    %{!ibcs: \
-      %{!static: \
-	%{rdynamic:-export-dynamic} \
-	%{!dynamic-linker:-dynamic-linker /lib/ld.so} \
-	%{!rpath:-rpath /lib/}} %{static:-static}}}"
+    %{!static: \
+      %{rdynamic:-export-dynamic} \
+      %{!dynamic-linker:-dynamic-linker /lib/ld.so}} \
+    %{static:-static}}"
 
 
 /* Get machine-independent configuration parameters for the GNU system.  */
