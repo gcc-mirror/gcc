@@ -1,3 +1,8 @@
+2002-06-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config.if (libstdcxx_incdir): Version C++ headers.
+	(cxx_incdir): Remove. 
+
 2002-06-24  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure:  Revert in-srcdir redirect upon request.
