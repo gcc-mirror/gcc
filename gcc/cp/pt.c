@@ -7264,18 +7264,23 @@ tsubst_expr (t, args, complain, in_decl)
 
 	lineno = STMT_LINENO (t);
 	decl = DECL_STMT_DECL (t);
-	init = DECL_INITIAL (decl);
-	decl = tsubst (decl, args, complain, in_decl);
-	init = tsubst_expr (init, args, complain, in_decl);
-	DECL_INITIAL (decl) = init;
-	/* By marking the declaration as instantiated, we avoid trying
+	if (TREE_CODE (decl) == LABEL_DECL)
+	  finish_label_decl (DECL_NAME (decl));
+	else
+	  {
+	    init = DECL_INITIAL (decl);
+	    decl = tsubst (decl, args, complain, in_decl);
+	    init = tsubst_expr (init, args, complain, in_decl);
+	    DECL_INITIAL (decl) = init;
+	    /* By marking the declaration as instantiated, we avoid trying
 	   to instantiate it.  Since instantiate_decl can't handle
 	   local variables, and since we've already done all that
 	   needs to be done, that's the right thing to do.  */
-	if (TREE_CODE (decl) == VAR_DECL)
-	  DECL_TEMPLATE_INSTANTIATED (decl) = 1;
-	maybe_push_decl (decl);
-	add_decl_stmt (decl);
+	    if (TREE_CODE (decl) == VAR_DECL)
+	      DECL_TEMPLATE_INSTANTIATED (decl) = 1;
+	    maybe_push_decl (decl);
+	    add_decl_stmt (decl);
+	  }
 	resume_momentary (i);
 	return decl;
       }
@@ -7392,10 +7397,9 @@ tsubst_expr (t, args, complain, in_decl)
 			 tsubst_expr (CASE_HIGH (t), args, complain, in_decl));
       break;
 
-    case LABEL_DECL:
-      lineno = DECL_SOURCE_LINE (t);
-      input_filename = DECL_SOURCE_FILE (t);
-      finish_label_stmt (DECL_NAME (t));
+    case LABEL_STMT:
+      lineno = STMT_LINENO (t);
+      finish_label_stmt (DECL_NAME (LABEL_STMT_LABEL (t)));
       break;
 
     case GOTO_STMT:

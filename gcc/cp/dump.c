@@ -731,6 +731,13 @@ dequeue_and_dump (di)
       dump_next_stmt (di, t);
       break;
 
+    case LABEL_STMT:
+      dump_stmt (di, t);
+      if (dump_children_p)
+	dump_child ("labl", LABEL_STMT_LABEL (t));
+      dump_next_stmt (di, t);
+      break;
+
     case RETURN_STMT:
       dump_stmt (di, t);
       if (dump_children_p)
