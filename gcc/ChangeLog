@@ -1,3 +1,8 @@
+2002-01-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* reload.c (reg_overlap_mentioned_for_reload_p): Handle PLUS and
+	auto_inc_dec values.
+
 2002-01-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/netbsd-aout.h (SWITCH_TAKES_ARG): Remove bogus white space

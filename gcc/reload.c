@@ -6166,7 +6166,8 @@ reg_overlap_mentioned_for_reload_p (x, in)
   int regno, endregno;
 
   /* Overly conservative.  */
-  if (GET_CODE (x) == STRICT_LOW_PART)
+  if (GET_CODE (x) == STRICT_LOW_PART
+      || GET_RTX_CLASS (GET_CODE (x)) == 'a')
     x = XEXP (x, 0);
 
   /* If either argument is a constant, then modifying X can not affect IN.  */
@@ -6202,6 +6203,9 @@ reg_overlap_mentioned_for_reload_p (x, in)
   else if (GET_CODE (x) == SCRATCH || GET_CODE (x) == PC
 	   || GET_CODE (x) == CC0)
     return reg_mentioned_p (x, in);
+  else if (GET_CODE (x) == PLUS)
+    return (reg_overlap_mentioned_for_reload_p (XEXP (x, 0), in)
+	    || reg_overlap_mentioned_for_reload_p (XEXP (x, 1), in));
   else
     abort ();
 
