@@ -80,7 +80,7 @@ proc test_mauve {} {
   puts -nonewline $fd $c
   close $fd
 
-  if {[catch {system "make KEYS=libjava classes.stamp"} msg]} then {
+  if {[catch {system "make KEYS=libgcj classes.stamp"} msg]} then {
     fail "Mauve build"
     verbose "build failed with $msg"
     return
@@ -217,7 +217,7 @@ proc test_mauve_sim {} {
   puts -nonewline $fd $c
   close $fd
 
-  if {[catch {system "make KEYS=libjava classes.stamp"} msg]} then {
+  if {[catch {system "make KEYS=libgcj classes.stamp"} msg]} then {
     fail "Mauve build"
     verbose "build failed with $msg"
     return
