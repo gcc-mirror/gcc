@@ -216,13 +216,14 @@ class UnresolvedPermissionCollection extends PermissionCollection
    */
   private static final long serialVersionUID = -7176153071733132400L;
 
+  // Package-private to avoid a trampoline.
   /**
    * Hashtable where we store permissions.
    *
    * @serial map of typename to a Vector of permissions (you'd think Sun
    *         would document this better!)
    */
-  private final Hashtable permissions = new Hashtable();
+  final Hashtable permissions = new Hashtable();
 
   /**
    * Add a permission.

@@ -72,12 +72,13 @@ public final class Permissions extends PermissionCollection
    */
   private PermissionCollection allPermission;
 
+  // Package-private to avoid a trampoline.
   /**
    * This is the <code>Hashtable</code> that contains our collections.
    *
    * @serial maps Class to PermissionCollection
    */
-  private final Hashtable perms = new Hashtable();
+  final Hashtable perms = new Hashtable();
 
   /**
    * This method initializes a new instance of <code>Permissions</code>.
