@@ -480,7 +480,25 @@ extern int arm_is_6_or_7;
 /* Nonzero if PIC code requires explicit qualifiers to generate
    PLT and GOT relocs rather than the assembler doing so implicitly.
    Subtargets can override this if required.  */
+#ifndef NEED_PLT_GOT
 #define NEED_PLT_GOT	0
+#endif
+
+/* Nonzero if we need to refer to the GOT with a PC-relative
+   offset.  In other words, generate
+
+   .word	_GLOBAL_OFFSET_TABLE_ - [. - (.Lxx + 8)]  
+
+   rather than
+
+   .word	_GLOBAL_OFFSET_TABLE_ - (.Lxx + 8)
+
+   The default is true, which matches NetBSD.  Subtargets can 
+   override this if required.  */
+#ifndef GOT_PCREL
+#define GOT_PCREL   1
+#endif
+
 
 /* Target machine storage Layout.  */
 

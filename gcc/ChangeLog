@@ -1,3 +1,11 @@
+Wed May 26 02:19:31 1999  Philip Blundell  <pb@nexus.co.uk>
+
+	* arm.h (NEED_PLT_GOT): Fix mistake in last change.
+	(GOT_PCREL): New macro.  Define to 1 if not already defined.
+	* arm/elf.h (GOT_PCREL): Define to 0.
+	* arm.c (arm_finalize_pic): Take into account the setting of
+	GOT_PCREL.
+
 Tue May 25 14:06:06 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* output.h (STRIP_NAME_ENCODING): Provide default definition.

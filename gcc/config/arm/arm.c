@@ -1563,8 +1563,11 @@ arm_finalize_pic ()
   /* On the ARM the PC register contains 'dot + 8' at the time of the
      addition.  */
   pic_tmp = plus_constant (gen_rtx_LABEL_REF (Pmode, l1), 8);
-  pic_tmp2 = gen_rtx_CONST (VOIDmode,
+  if (GOT_PCREL)
+    pic_tmp2 = gen_rtx_CONST (VOIDmode,
 			    gen_rtx_PLUS (Pmode, global_offset_table, pc_rtx));
+  else
+    pic_tmp2 = gen_rtx_CONST (VOIDmode, global_offset_table);
 
   pic_rtx = gen_rtx_CONST (Pmode, gen_rtx_MINUS (Pmode, pic_tmp2, pic_tmp));
   
