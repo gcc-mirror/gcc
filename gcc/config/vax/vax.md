@@ -1958,17 +1958,17 @@
 ;; and pass the first 4 along to the casesi1 pattern that really does the work.
 (define_expand "casesi"
   [(set (pc)
-	(if_then_else (leu (minus:SI (match_operand:SI 0 "general_operand" "g")
-				     (match_operand:SI 1 "general_operand" "g"))
-			   (match_operand:SI 2 "general_operand" "g"))
-		      (plus:SI (sign_extend:SI
-				(mem:HI
-				 (plus:SI (pc)
-					  (mult:SI (minus:SI (match_dup 0)
-							     (match_dup 1))
-						   (const_int 2)))))
-			       (label_ref:SI (match_operand 3 "" "")))
-		      (pc)))
+	(if_then_else
+	 (leu (minus:SI (match_operand:SI 0 "general_operand" "g")
+			(match_operand:SI 1 "general_operand" "g"))
+	      (match_operand:SI 2 "general_operand" "g"))
+	 (plus:SI (sign_extend:SI
+		   (mem:HI (plus:SI (mult:SI (minus:SI (match_dup 0)
+						       (match_dup 1))
+					     (const_int 2))
+				    (pc))))
+		  (label_ref:SI (match_operand 3 "" "")))
+	 (pc)))
    (match_operand 4 "" "")]
   ""
   "
@@ -1978,32 +1978,50 @@
 
 (define_insn "casesi1"
   [(set (pc)
-	(if_then_else (leu (minus:SI (match_operand:SI 0 "general_operand" "g")
-				     (match_operand:SI 1 "general_operand" "g"))
-			   (match_operand:SI 2 "general_operand" "g"))
-		      (plus:SI (sign_extend:SI
-				(mem:HI
-				 (plus:SI (pc)
-					  (mult:SI (minus:SI (match_dup 0)
-							     (match_dup 1))
-						   (const_int 2)))))
-			       (label_ref:SI (match_operand 3 "" "")))
-		      (pc)))]
+	(if_then_else
+	 (leu (minus:SI (match_operand:SI 0 "general_operand" "g")
+			(match_operand:SI 1 "general_operand" "g"))
+	      (match_operand:SI 2 "general_operand" "g"))
+	 (plus:SI (sign_extend:SI
+		   (mem:HI (plus:SI (mult:SI (minus:SI (match_dup 0)
+						       (match_dup 1))
+					     (const_int 2))
+				    (pc))))
+		  (label_ref:SI (match_operand 3 "" "")))
+	 (pc)))]
   ""
   "casel %0,%1,%2")
 
-;; This used to arise from the preceding by simplification
-;; if operand 1 is zero.  Perhaps it is no longer necessary.
+;; This can arise by simplification when operand 1 is a constant int.
+(define_insn ""
+  [(set (pc)
+	(if_then_else
+	 (leu (plus:SI (match_operand:SI 0 "general_operand" "g")
+		       (match_operand:SI 1 "const_int_operand" "n"))
+	      (match_operand:SI 2 "general_operand" "g"))
+	 (plus:SI (sign_extend:SI
+		   (mem:HI (plus:SI (mult:SI (plus:SI (match_dup 0)
+						      (match_dup 1))
+					     (const_int 2))
+				    (pc))))
+		  (label_ref:SI (match_operand 3 "" "")))
+	 (pc)))]
+  ""
+  "*
+{
+  operands[1] = GEN_INT (-INTVAL (operands[1]));
+  return \"casel %0,%1,%2\";
+}")
+
+;; This can arise by simplification when the base for the case insn is zero.
 (define_insn ""
   [(set (pc)
 	(if_then_else (leu (match_operand:SI 0 "general_operand" "g")
 			   (match_operand:SI 1 "general_operand" "g"))
 		      (plus:SI (sign_extend:SI
-				(mem:HI
-				 (plus:SI (pc)
-					  (mult:SI (minus:SI (match_dup 0)
-							     (const_int 0))
-						   (const_int 2)))))
+				(mem:HI (plus:SI (mult:SI (match_dup 0)
+							  (const_int 2))
+					(pc))))
 			       (label_ref:SI (match_operand 2 "" "")))
 		      (pc)))]
   ""
