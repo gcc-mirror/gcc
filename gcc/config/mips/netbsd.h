@@ -58,7 +58,7 @@ Boston, MA 02111-1307, USA.  */
    them here.  Note this is structured for easy comparison to the version
    in mips.h.
 
-   FIXME: This probably isn't the best solution.  But in the absense
+   FIXME: This probably isn't the best solution.  But in the absence
    of something better, it will have to do, for now.  */
 
 #undef TARGET_CPU_CPP_BUILTINS

@@ -2366,7 +2366,7 @@ print_operand (file, op, letter)
 }
 
 /* Returns true if the operand 'op' must be printed with parenthesis
-   arround it.  This must be done only if there is a symbol whose name
+   around it.  This must be done only if there is a symbol whose name
    is a processor register.  */
 static int
 must_parenthesize (op)
@@ -4881,7 +4881,7 @@ m68hc11_find_z_replacement (insn, info)
 /* The insn uses the Z register.  Find a replacement register for it
    (either X or Y) and replace it in the insn and the next ones until
    the flow changes or the replacement register is used.  Instructions
-   are emited before and after the Z-block to preserve the value of
+   are emitted before and after the Z-block to preserve the value of
    Z and of the replacement register.  */
 
 static void

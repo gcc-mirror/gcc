@@ -8819,7 +8819,7 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2%/"
 
 ;; call_insn_operand will only accepts constant addresses if a direct
 ;; jump is acceptable.  Since the 'S' constraint is defined in terms of
-;; call_insn_operand, the same is true of the contraints.
+;; call_insn_operand, the same is true of the constraints.
 
 ;; When we use an indirect jump, we need a register that will be
 ;; preserved by the epilogue.  Since TARGET_ABICALLS forces us to
