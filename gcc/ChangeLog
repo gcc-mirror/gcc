@@ -1,3 +1,8 @@
+Mon Apr  6 14:16:33 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (CASE_VECTOR_SHORTEN_MODE): Fix logic when to set
+	offset_unsigned.
+
 Mon Apr  6 02:03:29 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* objc/objc-act.c (encode_aggregate_within): Avoid GNU extensions
