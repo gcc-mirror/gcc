@@ -1,7 +1,7 @@
 2001-02-15  Jim Meyering  <meyering@lucent.com>
 
-        * Make-lang.in (java.install-common): Depend on `installdirs'.
-        (java.install-info): Likewise.
+	* Make-lang.in (java.install-common): Depend on `installdirs'.
+	(java.install-info): Likewise.
 
 2001-02-15  Bryce McKinlay  <bryce@albatross.co.nz>
 

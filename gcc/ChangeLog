@@ -1,8 +1,8 @@
-2001-01-20  Jim Meyering  <meyering@lucent.com>
+2001-02-15  Jim Meyering  <meyering@lucent.com>
 
-        * Makefile.in (install-common): Don't depend on installdirs here.
-        Instead, make each of the lang.install-common targets (e.g.,
-        c++.install-common in cp/Make-lang.in) depend on it.
+	* Makefile.in (install-common): Don't depend on installdirs here.
+	Instead, make each of the lang.install-common targets (e.g.,
+	c++.install-common in cp/Make-lang.in) depend on it.
 	(install-driver): Depend on installdirs.
 
 Thu Feb 15 21:30:26 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>

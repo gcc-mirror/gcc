@@ -1,8 +1,8 @@
 2001-02-15  Jim Meyering  <meyering@lucent.com>
 
-        * Make-lang.in (c++.install-common): Depend on installdirs.
-        (c++.install-info): Likewise
-        (c++.install-man): Likewise
+	* Make-lang.in (c++.install-common): Depend on installdirs.
+	(c++.install-info): Likewise.
+	(c++.install-man): Likewise.
 
 2001-02-15  Mark Mitchell  <mark@codesourcery.com>
 
