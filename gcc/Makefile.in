@@ -1585,7 +1585,7 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h gsy
 # but supposedly the ! operator is missing in sh on some systems.
 	if [ -f $(assertdir)/assert.h ]; \
 	then \
-	  if grep "__eprintf" $(assertdir)/assert.h; \
+	  if grep "__eprintf" $(assertdir)/assert.h >/dev/null; \
 	    then \
 	    rm -f $(assertdir)/assert.h; \
 	    $(INSTALL_DATA) $(srcdir)/assert.h $(assertdir)/assert.h; \
