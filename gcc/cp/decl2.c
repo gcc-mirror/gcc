@@ -2370,8 +2370,26 @@ comdat_linkage (decl)
 {
   if (flag_weak)
     make_decl_one_only (decl);
-  else
+  else if (TREE_CODE (decl) == FUNCTION_DECL)
     TREE_PUBLIC (decl) = 0;
+  else
+    {
+      if (DECL_INITIAL (decl) == 0
+	  || DECL_INITIAL (decl) == error_mark_node)
+	DECL_COMMON (decl) = 1;
+      else if (EMPTY_CONSTRUCTOR_P (DECL_INITIAL (decl)))
+	{
+	  DECL_COMMON (decl) = 1;
+	  DECL_INITIAL (decl) = error_mark_node;
+	}
+      else
+	{
+	  /* We can't do anything useful; leave vars for explicit
+	     instantiation.  */
+	  DECL_EXTERNAL (decl) = 1;
+	  DECL_NOT_REALLY_EXTERN (decl) = 0;
+	}
+    }
 
   if (DECL_LANG_SPECIFIC (decl))
     DECL_COMDAT (decl) = 1;
@@ -2391,14 +2409,14 @@ maybe_make_one_only (decl)
     return;
 
   /* We can't set DECL_COMDAT on functions, or finish_file will think
-     we can get away with not emitting them if they aren't used.
-     We can't use make_decl_one_only for variables, because their
-     DECL_INITIAL may not have been set properly yet.  */
+     we can get away with not emitting them if they aren't used.  We need
+     to for variables so that cp_finish_decl will update their linkage,
+     because their DECL_INITIAL may not have been set properly yet.  */
 
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    make_decl_one_only (decl);
-  else
-    comdat_linkage (decl);
+  make_decl_one_only (decl);
+
+  if (TREE_CODE (decl) == VAR_DECL && DECL_LANG_SPECIFIC (decl))
+    DECL_COMDAT (decl) = 1;
 }
 
 /* Set TREE_PUBLIC and/or DECL_EXTERN on the vtable DECL,
@@ -2730,10 +2748,8 @@ import_export_decl (decl)
 	    /* Templates are allowed to have internal linkage.  See 
 	       [basic.link].  */
 	    ;
-	  else if (TREE_CODE (decl) == FUNCTION_DECL)
-	    comdat_linkage (decl);
 	  else
-	    DECL_COMDAT (decl) = 1;
+	    comdat_linkage (decl);
 	}
       else
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
@@ -3344,11 +3360,17 @@ finish_file ()
   /* Done with C language context needs.  */
   pop_lang_context ();
 
+  /* Let expand_static_init know it's too late for more ctors.  */
+  at_eof = 2;
+
   /* Now write out any static class variables (which may have since
      learned how to be initialized).  */
-  while (pending_statics)
+  for (; pending_statics; pending_statics = TREE_CHAIN (pending_statics))
     {
       tree decl = TREE_VALUE (pending_statics);
+
+      if (TREE_ASM_WRITTEN (decl))
+	continue;
 
       /* Output DWARF debug information.  */
 #ifdef DWARF_DEBUGGING_INFO
@@ -3360,11 +3382,15 @@ finish_file ()
 	dwarf2out_decl (decl);
 #endif
 
-      DECL_DEFER_OUTPUT (decl) = 0;
+      /* We currently handle template statics here.  We ought to handle
+	 them the same way we do template functions, i.e. only emit them if
+	 the symbol is needed.  */
+      import_export_decl (decl);
+      if (DECL_NOT_REALLY_EXTERN (decl) && ! DECL_IN_AGGR_P (decl))
+	DECL_EXTERNAL (decl) = 0;
+
       rest_of_decl_compilation
 	(decl, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)), 1, 1);
-
-      pending_statics = TREE_CHAIN (pending_statics);
     }
 
   this_time = get_run_time ();
@@ -3426,7 +3452,8 @@ finish_file ()
 	      continue;
 
 	    if (TREE_ASM_WRITTEN (decl)
-		|| (DECL_SAVED_INSNS (decl) == 0 && ! DECL_ARTIFICIAL (decl)))
+		|| (DECL_SAVED_INSNS (decl) == 0
+		    && ! DECL_ARTIFICIAL (decl)))
 	      *p = TREE_CHAIN (*p);
 	    else if (DECL_INITIAL (decl) == 0)
 	      p = &TREE_CHAIN (*p);
@@ -3475,7 +3502,8 @@ finish_file ()
   }
 
   /* Now delete from the chain of variables all virtual function tables.
-     We output them all ourselves, because each will be treated specially.  */
+     We output them all ourselves, because each will be treated
+     specially.  */
 
   walk_vtables ((void (*) PROTO((tree, tree))) 0,
 		prune_vtable_vardecl);
