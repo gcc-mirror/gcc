@@ -32,6 +32,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef TARGET_DEFAULT
 #undef CALL_USED_REGISTERS
 #undef MAYBE_VMS_FUNCTION_PROLOGUE
+#undef FUNCTION_PROLOGUE
+#undef STARTING_FRAME_OFFSET
 
 /* Predefine this in CPP because VMS limits the size of command options
    and GNU CPP is not used on VMS except with GNU C.  */
@@ -58,6 +60,26 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (vax vms)");
 
 #define CALL_USED_REGISTERS {1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1}
+
+/* We redefine this because there is a hidden variable on the stack
+   that VAXC$ESTABLISH uses.  We just need to add four bytes to whatever
+   gcc thinks that we need.  Similarily, we need to move all local variables
+   down 4 bytes in the stack.  */
+
+#define STARTING_FRAME_OFFSET -4
+
+#define FUNCTION_PROLOGUE(FILE, SIZE)     \
+{ register int regno;						\
+  register int mask = 0;					\
+  register int newsize = SIZE + 4;				\
+  extern char call_used_regs[];					\
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)	\
+    if (regs_ever_live[regno] && !call_used_regs[regno])	\
+       mask |= 1 << regno;					\
+  fprintf (FILE, "\t.word 0x%x\n", mask);			\
+  MAYBE_VMS_FUNCTION_PROLOGUE(FILE)				\
+  if (newsize >= 64) fprintf (FILE, "\tmovab %d(sp),sp\n", -newsize);\
+  else fprintf (FILE, "\tsubl2 $%d,sp\n", newsize); }
 
 #define __MAIN_NAME " main ("
 /*
