@@ -1,3 +1,10 @@
+2003-02-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* reload1.c (first_label_num): New.
+	(reload): Index offsets_known_at and offsets_at using difference of
+	label number and first label number.  Don't use offset pointers.
+	(set_label_offsets, set_initial_label_offsets): Likewise.
+
 2003-02-10  Roger Sayle  <roger@eyesopen.com>
 
 	* mips-tfile.c (init_file): Add missing initializers in the
