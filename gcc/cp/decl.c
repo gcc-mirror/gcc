@@ -3702,7 +3702,7 @@ start_decl (const cp_declarator *declarator,
 
       /* cp_finish_decl sets DECL_EXTERNAL if DECL_IN_AGGR_P is set.  */
       DECL_IN_AGGR_P (decl) = 0;
-      if (DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl)
+      if ((DECL_LANG_SPECIFIC (decl) && DECL_USE_TEMPLATE (decl))
 	  || CLASSTYPE_TEMPLATE_INSTANTIATION (context))
 	{
 	  /* Do not mark DECL as an explicit specialization if it was

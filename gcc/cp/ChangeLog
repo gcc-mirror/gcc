@@ -1,3 +1,7 @@
+2005-01-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (start_decl): Add missing parentheses.
+
 2005-01-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19555
