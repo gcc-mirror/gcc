@@ -8066,7 +8066,6 @@ expand_start_java_method (fndecl)
   *ptr = NULL_TREE;
   pushdecl_force_head (DECL_ARGUMENTS (fndecl));
   lineno = DECL_SOURCE_LINE_FIRST (fndecl);
-  complete_start_java_method (fndecl); 
 }
 
 /* Terminate a function and expand its body.  */
@@ -8333,6 +8332,7 @@ java_complete_expand_method (mdecl)
       tree fbody = DECL_FUNCTION_BODY (mdecl);
       tree block_body = BLOCK_EXPR_BODY (fbody);
       expand_start_java_method (mdecl);
+      build_result_decl (mdecl);
 
       current_this 
 	= (!METHOD_STATIC (mdecl) ? 
@@ -8354,6 +8354,8 @@ java_complete_expand_method (mdecl)
       if ((block_body == NULL_TREE || CAN_COMPLETE_NORMALLY (block_body))
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (mdecl))) != VOID_TYPE)
 	missing_return_error (current_function_decl);
+
+      complete_start_java_method (mdecl); 
 
       /* Don't go any further if we've found error(s) during the
          expansion */
@@ -9052,8 +9054,9 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 		  return 1;
 		}
 	      
-	      if (!(field_decl = 
-		    lookup_field_wrapper (type, EXPR_WFL_NODE (qual_wfl))))
+	      field_decl = lookup_field_wrapper (type,
+						 EXPR_WFL_NODE (qual_wfl));
+	      if (field_decl == NULL_TREE)
 		{
 		  parse_error_context 
 		    (qual_wfl, "No variable `%s' defined in class `%s'",
@@ -9061,6 +9064,8 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 		     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
 		  return 1;
 		}
+	      if (field_decl == error_mark_node)
+		return 1;
 
 	      /* Layout the type of field_decl, since we may need
                  it. Don't do primitive types or loaded classes. The
@@ -10178,7 +10183,8 @@ java_complete_lhs (node)
 	  /* Now do the actual complete, without deep recursion for
              long blocks. */
 	  ptr = &BLOCK_EXPR_BODY (node);
-	  while (TREE_CODE (*ptr) == COMPOUND_EXPR)
+	  while (TREE_CODE (*ptr) == COMPOUND_EXPR
+		 && TREE_OPERAND (*ptr, 1) != empty_stmt_node)
 	    {
 	      tree cur = java_complete_tree (TREE_OPERAND (*ptr, 0));
 	      tree *next = &TREE_OPERAND (*ptr, 1);
@@ -10198,8 +10204,7 @@ java_complete_lhs (node)
 			break;
 		    }
 		  if (TREE_CODE (wfl_op2) != CASE_EXPR
-		      && TREE_CODE (wfl_op2) != DEFAULT_EXPR
-		      && wfl_op2 != empty_stmt_node)
+		      && TREE_CODE (wfl_op2) != DEFAULT_EXPR)
 		    unreachable_stmt_error (*ptr);
 		}
 	      ptr = next;
@@ -10389,26 +10394,30 @@ java_complete_lhs (node)
       wfl_op2 = TREE_OPERAND (node, 1);
       TREE_OPERAND (node, 0) = nn = 
 	java_complete_tree (TREE_OPERAND (node, 0));
-      if (! CAN_COMPLETE_NORMALLY (nn) && TREE_CODE (nn) != ERROR_MARK
-	  && wfl_op2 != empty_stmt_node)
+      if (wfl_op2 == empty_stmt_node)
+	CAN_COMPLETE_NORMALLY (node) = CAN_COMPLETE_NORMALLY (nn);
+      else
 	{
-	  /* An unreachable condition in a do-while statement
-	     is *not* (technically) an unreachable statement. */
-	  nn = wfl_op2;
-	  if (TREE_CODE (nn) == EXPR_WITH_FILE_LOCATION)
-	    nn = EXPR_WFL_NODE (nn);
-	  if (TREE_CODE (nn) != EXIT_EXPR)
+	  if (! CAN_COMPLETE_NORMALLY (nn) && TREE_CODE (nn) != ERROR_MARK)
 	    {
-	      SET_WFL_OPERATOR (wfl_operator, node, wfl_op2);
-	      parse_error_context (wfl_operator, "Unreachable statement");
+	      /* An unreachable condition in a do-while statement
+		 is *not* (technically) an unreachable statement. */
+	      nn = wfl_op2;
+	      if (TREE_CODE (nn) == EXPR_WITH_FILE_LOCATION)
+		nn = EXPR_WFL_NODE (nn);
+	      if (TREE_CODE (nn) != EXIT_EXPR)
+		{
+		  SET_WFL_OPERATOR (wfl_operator, node, wfl_op2);
+		  parse_error_context (wfl_operator, "Unreachable statement");
+		}
 	    }
+	  TREE_OPERAND (node, 1) = java_complete_tree (TREE_OPERAND (node, 1));
+	  if (TREE_OPERAND (node, 1) == error_mark_node)
+	    return error_mark_node;
+	  CAN_COMPLETE_NORMALLY (node)
+	    = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1));
 	}
-      TREE_OPERAND (node, 1) = java_complete_tree (TREE_OPERAND (node, 1));
-      if (TREE_OPERAND (node, 1) == error_mark_node)
-	return error_mark_node;
       TREE_TYPE (node) = TREE_TYPE (TREE_OPERAND (node, 1));
-      CAN_COMPLETE_NORMALLY (node)
-	= CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1));
       break;
 
     case RETURN_EXPR:
@@ -10420,6 +10429,8 @@ java_complete_lhs (node)
 	  || TREE_CODE (EXPR_WFL_NODE (node)) == IDENTIFIER_NODE)
 	{
 	  node = resolve_expression_name (node, NULL);
+	  if (node == error_mark_node)
+	    return node;
 	  CAN_COMPLETE_NORMALLY (node) = 1;
 	}
       else
@@ -10430,9 +10441,9 @@ java_complete_lhs (node)
 	  body = java_complete_tree (EXPR_WFL_NODE (node));
 	  lineno = save_lineno;
 	  EXPR_WFL_NODE (node) = body;
-	  TREE_SIDE_EFFECTS (node) = 1;
+	  TREE_SIDE_EFFECTS (node) = TREE_SIDE_EFFECTS (body);
 	  CAN_COMPLETE_NORMALLY (node) = CAN_COMPLETE_NORMALLY (body);
-	  if (EXPR_WFL_NODE (node) == error_mark_node)
+	  if (body == error_mark_node)
 	    {
 	      /* Its important for the evaluation of assignment that
 		 this mark on the TREE_TYPE is propagated. */
@@ -10494,7 +10505,7 @@ java_complete_lhs (node)
 	      tree_cons (wfl, decl, 
 			 DECL_CONSTRUCTOR_CALLS (current_function_decl));
 	  CAN_COMPLETE_NORMALLY (node) = 1;
-	  return node;
+	  return force_evaluation_order (node);
 	}
 
     case MODIFY_EXPR:
@@ -10603,7 +10614,7 @@ java_complete_lhs (node)
 	  if (TREE_OPERAND (node, 1) == error_mark_node)
 	    return error_mark_node;
 	}
-      return patch_binop (node, wfl_op1, wfl_op2);
+      return force_evaluation_order (patch_binop (node, wfl_op1, wfl_op2));
 
     case INSTANCEOF_EXPR:
       wfl_op1 = TREE_OPERAND (node, 0);
@@ -11573,6 +11584,8 @@ patch_binop (node, wfl_op1, wfl_op2)
 	{
 	  tree mod = build_java_binop (TRUNC_MOD_EXPR, prom_type, op1, op2);
 	  COMPOUND_ASSIGN_P (mod) = COMPOUND_ASSIGN_P (node);
+	  TREE_SIDE_EFFECTS (mod)
+	    = TREE_SIDE_EFFECTS (op1) | TREE_SIDE_EFFECTS (op2);
 	  return mod;
 	}
       break;
@@ -11659,6 +11672,8 @@ patch_binop (node, wfl_op1, wfl_op2)
 	  to_return = convert (prom_type, node);
 	  /* Copy the original value of the COMPOUND_ASSIGN_P flag */
 	  COMPOUND_ASSIGN_P (to_return) = COMPOUND_ASSIGN_P (node);
+	  TREE_SIDE_EFFECTS (to_return)
+	    = TREE_SIDE_EFFECTS (op1) | TREE_SIDE_EFFECTS (op2);
 	  return to_return;
 	}
       break;
@@ -11693,6 +11708,7 @@ patch_binop (node, wfl_op1, wfl_op2)
 	  else if (flag_emit_class_files)
 	    {
 	      TREE_OPERAND (node, 1) = op2_type;
+	      TREE_SIDE_EFFECTS (node) = TREE_SIDE_EFFECTS (op1);
 	      return node;
 	    }
 	  /* Otherwise we have to invoke instance of to figure it out */
@@ -11706,7 +11722,7 @@ patch_binop (node, wfl_op1, wfl_op2)
 			build_tree_list (NULL_TREE,
 					 build_class_ref (op2_type))),
 		       NULL_TREE);
-	      TREE_SIDE_EFFECTS (call) = 1;
+	      TREE_SIDE_EFFECTS (call) = TREE_SIDE_EFFECTS (op1);
 	      return call;
 	    }
 	}
@@ -11843,6 +11859,8 @@ patch_binop (node, wfl_op1, wfl_op2)
   TREE_OPERAND (node, 0) = op1;
   TREE_OPERAND (node, 1) = op2;
   TREE_TYPE (node) = prom_type;
+  TREE_SIDE_EFFECTS (node) = TREE_SIDE_EFFECTS (op1) | TREE_SIDE_EFFECTS (op2);
+  
   return fold (node);
 }
 
@@ -11962,6 +11980,8 @@ build_string_concatenation (op1, op2)
      tree op1, op2;
 {
   tree result;
+  int side_effects = TREE_SIDE_EFFECTS (op1) | TREE_SIDE_EFFECTS (op2);
+
   
   /* Try to do some static optimization */
   if ((result = string_constant_concatenation (op1, op2)))
@@ -12014,7 +12034,8 @@ build_string_concatenation (op1, op2)
 
   /* Mark the last node holding a crafted StringBuffer */
   IS_CRAFTED_STRING_BUFFER_P (op1) = 1;
-  
+
+  TREE_SIDE_EFFECTS (op1) = side_effects;
   return op1;
 }
 
@@ -12264,7 +12285,11 @@ patch_unaryop (node, wfl_op)
 	  error_found = 1;
 	}
       else
-	return fold (value);
+	{
+	  value = fold (value);
+	  TREE_SIDE_EFFECTS (value) = TREE_SIDE_EFFECTS (op);
+	  return value;
+	}
       break;
     }
   
@@ -12276,6 +12301,7 @@ patch_unaryop (node, wfl_op)
      CONVERT_EXPR, {POST,PRE}{INCR,DECR}EMENT_EXPR. */
   TREE_OPERAND (node, 0) = fold (op);
   TREE_TYPE (node) = prom_type;
+  TREE_SIDE_EFFECTS (node) = TREE_SIDE_EFFECTS (op);
   return fold (node);
 }
 
@@ -12464,7 +12490,16 @@ patch_array_ref (node)
       TREE_OPERAND (node, 1) = index;
     }
   else
-    node = build_java_arrayaccess (array, array_type, index);
+    {
+      /* The save_expr is for correct evaluation order.  It would be cleaner
+	 to use force_evaluation_order (see comment there), but that is
+	 difficult when we also have to deal with bounds checking. */
+      if (TREE_SIDE_EFFECTS (index))
+	array = save_expr (array);
+      node = build_java_arrayaccess (array, array_type, index);
+      if (TREE_SIDE_EFFECTS (index))
+	node = build (COMPOUND_EXPR, array_type, array, node);
+    }
   TREE_TYPE (node) = array_type;
   return node;
 }

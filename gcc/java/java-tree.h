@@ -552,6 +552,7 @@ extern int get_access_flags_from_decl PROTO ((tree));
 extern int interface_of_p PROTO ((tree, tree));
 extern int inherits_from_p PROTO ((tree, tree));
 extern void complete_start_java_method PROTO ((tree));
+extern tree build_result_decl PROTO ((tree));
 extern void emit_handlers PROTO (());
 extern void init_outgoing_cpool PROTO (());
 extern void make_class_data PROTO ((tree));
@@ -860,6 +861,24 @@ extern tree *type_map;
 
 #define BLOCK_EXPR_DECLS(NODE)  BLOCK_VARS(NODE)
 #define BLOCK_EXPR_BODY(NODE)   BLOCK_SUBBLOCKS(NODE)
+
+#define BUILD_MONITOR_ENTER(WHERE, ARG)				\
+  {								\
+    (WHERE) = build (CALL_EXPR, int_type_node,			\
+		     build_address_of (soft_monitorenter_node),	\
+		     build_tree_list (NULL_TREE, (ARG)), 	\
+		     NULL_TREE);				\
+    TREE_SIDE_EFFECTS (WHERE) = 1;				\
+  }
+
+#define BUILD_MONITOR_EXIT(WHERE, ARG)				\
+  {								\
+    (WHERE) = build (CALL_EXPR, int_type_node,			\
+		     build_address_of (soft_monitorexit_node),	\
+		     build_tree_list (NULL_TREE, (ARG)),	\
+		     NULL_TREE);				\
+    TREE_SIDE_EFFECTS (WHERE) = 1;				\
+  }
 
 /* Non zero if TYPE is an unchecked exception */
 #define IS_UNCHECKED_EXCEPTION_P(TYPE)				\
