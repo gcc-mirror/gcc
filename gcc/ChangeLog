@@ -6,6 +6,9 @@
 
 Tue Jun 19 07:53:52 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* flow.c (delete_unreachable_blocks): Fix patch error in
+	previous change (call to find_unreachable_blocks was lost).
+
 	* ssa.c (ssa_uses): Remove definition.
 	(apply_delayed_renames): Don't grow ssa_uses.
 	(rename_block): Remove comment related to ssa_uses.
