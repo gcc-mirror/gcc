@@ -1,3 +1,8 @@
+2002-01-22  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR other/5450
+	* config/i386/sysv4.h (CPP_SPEC): Define, and add CPU preprocessor flags.
+
 2002-01-22  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (x86_64-*-netbsd*): New target.
