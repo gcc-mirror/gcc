@@ -2646,6 +2646,12 @@ eliminate_regs (x, mem_mode, insn)
   char *fmt;
   int copied = 0;
 
+  /* We can reach here without reload being run if we have an variable
+     definition in a file with no functions (for exmaple).  Ensure we
+     have a valid elimination table in such cases.  */
+  if (reg_eliminate == NULL)
+    init_elim_table ();
+
   switch (code)
     {
     case CONST_INT:

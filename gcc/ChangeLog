@@ -1,5 +1,8 @@
 Sat Nov 21 22:12:09 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* reload1.c (eliminate_regs): Do not lose if eliminate_regs is called
+	without reload having been called earlier.
+
 	* v850.c (ep_memory_operand): Offsets < 0 are not valid for EP
 	addressing modes.
 	(v850_reorg): Similarly.
