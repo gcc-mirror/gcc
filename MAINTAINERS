@@ -118,6 +118,8 @@ mercury			Fergus Henderson	fjh@cs.mu.oz.au
 objective-c		Stan Shebs		shebs@apple.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
 objective-c		Ziemowit Laski		zlaski@apple.com
+libobjc			Nicola Pero		n.pero@mi.flashnet.it
+libobjc			Andrew Pinski		pinskia@physics.uc.edu
 alias analysis		John Carr		jfc@mit.edu
 loop unrolling		Jim Wilson		wilson@specifixinc.com
 loop discovery		Michael Hayes		m.hayes@elec.canterbury.ac.nz
@@ -248,10 +250,8 @@ Turly O'Connor					turly@apple.com
 Jeffrey D. Oldham				oldham@codesourcery.com
 Rainer Orth					ro@TechFak.Uni-Bielefeld.DE
 Devang Patel					dpatel@apple.com
-Nicola Pero					n.pero@mi.flashnet.it
 Graeme Peterson					gp@qnx.com
 Alexandre Petit-Bianco				apbianco@redhat.com
-Andrew Pinski					pinskia@physics.uc.edu
 Nicolas Pitre					nico@cam.org
 Sebastian Pop                                   s.pop@laposte.net
 Clinton Popetz					cpopetz@cpopetz.com

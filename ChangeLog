@@ -1,3 +1,8 @@
+2004-02-20  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* MAINTAINERS: Add Nicola Pero and myself as libobjc
+	maintainers.
+
 2004-02-14  Jerry Quinn  <jlquinn@optonline.net>
 
 	* MAINTAINERS: Added myself to write-after-approval.
