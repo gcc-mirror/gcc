@@ -264,16 +264,20 @@ extern int pexecute PARAMS ((const char *, char * const *, const char *,
 
 extern int pwait PARAMS ((int, int *, int));
 
+#if !HAVE_DECL_ASPRINTF
 /* Like sprintf but provides a pointer to malloc'd storage, which must
    be freed by the caller.  */
 
 extern int asprintf PARAMS ((char **, const char *, ...)) ATTRIBUTE_PRINTF_2;
+#endif
 
+#if !HAVE_DECL_VASPRINTF
 /* Like vsprintf but provides a pointer to malloc'd storage, which
    must be freed by the caller.  */
 
 extern int vasprintf PARAMS ((char **, const char *, va_list))
   ATTRIBUTE_PRINTF(2,0);
+#endif
 
 #define ARRAY_SIZE(a) (sizeof (a) / sizeof ((a)[0]))
 
