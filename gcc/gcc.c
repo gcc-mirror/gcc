@@ -104,7 +104,11 @@ extern void free ();
 extern char *getenv ();
 
 extern int errno, sys_nerr;
+#if defined(bsd4_4)
+extern const char *const sys_errlist[];
+#else
 extern char *sys_errlist[];
+#endif
 
 extern int execv (), execvp ();
 

@@ -41,6 +41,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 extern int errno;
 #endif
 
+#if defined(bsd4_4)
+extern const char *const sys_errlist[];
+#else
+extern char *sys_errlist[];
+#endif
+extern int sys_nerr;
+
 #define COLLECT
 
 #include "config.h"
@@ -283,8 +290,6 @@ char *
 my_strerror (e)
      int e;
 {
-  extern char *sys_errlist[];
-  extern int sys_nerr;
   static char buffer[30];
 
   if (!e)
