@@ -597,7 +597,7 @@ irix5* | irix6*)
 # This must be Linux ELF.
 linux-gnu*)
   case $host_cpu in
-  alpha* | i*86 | powerpc* | sparc* | ia64* )
+  alpha* | hppa* | i*86 | powerpc* | sparc* | ia64* )
     lt_cv_deplibs_check_method=pass_all ;;
   *)
     # glibc up to 2.1.1 does not perform some relocations on ARM
@@ -634,6 +634,10 @@ sco3.2v5*)
 solaris*)
   lt_cv_deplibs_check_method=pass_all
   lt_cv_file_magic_test_file=/lib/libc.so
+  ;;
+
+[sysv5uw[78]* | sysv4*uw2*)]
+  lt_cv_deplibs_check_method=pass_all
   ;;
 
 sysv4 | sysv4.2uw2* | sysv4.3* | sysv5*)

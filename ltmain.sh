@@ -56,7 +56,7 @@ modename="$progname"
 PROGRAM=ltmain.sh
 PACKAGE=libtool
 VERSION=1.4a
-TIMESTAMP=" (1.641.2.228 2001/04/20 08:53:18)"
+TIMESTAMP=" (1.641.2.254 2001/05/20 18:44:55)"
 
 default_mode=
 help="Try \`$progname --help' for more information."
@@ -245,6 +245,11 @@ if test -n "$prevopt"; then
   $echo "$help" 1>&2
   exit 1
 fi
+
+# If this variable is set in any of the actions, the command in it
+# will be execed at the end.  This prevents here-documents from being
+# left over by shells.
+exec_cmd=
 
 if test -z "$show_help"; then
 
@@ -1110,7 +1115,7 @@ EOF
 	  continue
 	  ;;
 	esac
-      fi
+      fi # test -n $prev
 
       prevarg="$arg"
 
@@ -1151,7 +1156,7 @@ EOF
 
       -export-symbols | -export-symbols-regex)
 	if test -n "$export_symbols" || test -n "$export_symbols_regex"; then
-	  $echo "$modename: not more than one -exported-symbols argument allowed"
+	  $echo "$modename: more than one -exported-symbols argument is not allowed"
 	  exit 1
 	fi
 	if test "X$arg" = "X-export-symbols"; then
@@ -1173,7 +1178,7 @@ EOF
 	esac
 	continue
 	;;
-       
+
       -L*)
 	dir=`$echo "X$arg" | $Xsed -e 's/^-L//'`
 	# We need an absolute path.
@@ -1207,28 +1212,15 @@ EOF
 	;;
 
       -l*)
-	if test "$arg" = "-lc"; then
-	  case $host in
-	  *-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-os2* | *-*-beos*)
-	    # These systems don't actually have c library (as such)
-	    continue
-	    ;;
-	  *-*-rhapsody* | *-*-darwin1.[012])
-	    # Rhapsody C library is in the System framework
-	    deplibs="$deplibs -framework System"
-	    continue
-	    ;;
-	  esac
-	elif test "$arg" = "-lm"; then
+	if test "X$arg" = "X-lc" || test "X$arg" = "X-lm"; then
 	  case $host in
 	  *-*-cygwin* | *-*-pw32* | *-*-beos*)
-	    # These systems don't actually have math library (as such)
+	    # These systems don't actually have a C or math library (as such)
 	    continue
 	    ;;
-	  *-*-rhapsody* | *-*-darwin1.[012])
-	    # Rhapsody math library is in the System framework
-	    deplibs="$deplibs -framework System"
-	    continue
+	  *-*-mingw* | *-*-os2*)
+	    # These systems don't actually have a C library (as such)
+	    test "X$arg" = "X-lc" && continue
 	    ;;
 	  esac
 	fi
@@ -1255,9 +1247,7 @@ EOF
 	  $echo "$modename: warning: assuming \`-no-fast-install' instead" 1>&2
 	  fast_install=no
 	  ;;
-	*)
-	  no_install=yes
-	  ;;
+	*) no_install=yes ;;
 	esac
 	continue
 	;;
@@ -1307,7 +1297,7 @@ EOF
 	;;
 
       -static)
-        # The effects of -static are defined in a previous loop.
+	# The effects of -static are defined in a previous loop.
 	# We used to do the same as -all-static on platforms that
 	# didn't have a PIC flag, but the assumption that the effects
 	# would be equivalent was wrong.  It would break on at least
@@ -1517,14 +1507,14 @@ EOF
 	  ;;
 	esac
 	;;
-      esac
+      esac # arg
 
       # Now actually substitute the argument into the commands.
       if test -n "$arg"; then
 	compile_command="$compile_command $arg"
 	finalize_command="$finalize_command $arg"
       fi
-    done
+    done # argument parsing loop
 
     if test -n "$prev"; then
       $echo "$modename: the \`$prevarg' option requires an argument" 1>&2
@@ -1582,7 +1572,6 @@ EOF
       finalize_command="$finalize_command $arg"
     fi
 
-    oldlibs=
     # calculate the name of the file, without its directory
     outputname=`$echo "X$output" | $Xsed -e 's%^.*/%%'`
     libobjs_save="$libobjs"
@@ -1656,8 +1645,8 @@ EOF
     newdependency_libs=
     newlib_search_path=
     need_relink=no # whether we're linking any uninstalled libtool libraries
-    uninst_deplibs= # uninstalled libtool libraries
-    uninst_path= # paths that contain uninstalled libtool libraries
+    notinst_deplibs= # not-installed libtool libraries
+    notinst_path= # paths that contain not-installed libtool libraries
     case $linkmode in
     lib)
 	passes="conv link"
@@ -1679,34 +1668,29 @@ EOF
 	newdlprefiles=
 	passes="conv scan dlopen dlpreopen link"
 	;;
-    *)	passes="conv"
+    *)  passes="conv"
 	;;
     esac
     for pass in $passes; do
-      if test "$linkmode,$pass" = "lib,link" ||
-	 test "$linkmode,$pass" = "prog,scan"; then
-	libs="$deplibs"
-	deplibs=
-      fi
       if test $linkmode = prog; then
+	# Determine which files to process
 	case $pass in
-	dlopen) libs="$dlfiles" ;;
+	dlopen)
+	  libs="$dlfiles"
+	  save_deplibs="$deplibs" # Collect dlpreopened libraries
+	  deplibs=
+	  ;;
 	dlpreopen) libs="$dlprefiles" ;;
 	link) libs="$deplibs %DEPLIBS% $dependency_libs" ;;
 	esac
-      fi
-      if test $pass = dlopen; then
-	# Collect dlpreopened libraries
-	save_deplibs="$deplibs"
-	deplibs=
       fi
       for deplib in $libs; do
 	lib=
 	found=no
 	case $deplib in
 	-l*)
-	  if test $linkmode != lib && test $linkmode != prog; then
-	    $echo "$modename: warning: \`-l' is ignored for archives/objects" 1>&2
+	  if test $linkmode = oldlib && test $linkmode = obj; then
+	    $echo "$modename: warning: \`-l' is ignored for archives/objects: $deplib" 1>&2
 	    continue
 	  fi
 	  if test $pass = conv; then
@@ -1723,6 +1707,7 @@ EOF
 	    fi
 	  done
 	  if test "$found" != yes; then
+	    # deplib doesn't seem to be a libtool library
 	    if test "$linkmode,$pass" = "prog,link"; then
 	      compile_deplibs="$deplib $compile_deplibs"
 	      finalize_deplibs="$deplib $finalize_deplibs"
@@ -1732,7 +1717,7 @@ EOF
 	    fi
 	    continue
 	  fi
-	  ;;
+	  ;; # -l
 	-L*)
 	  case $linkmode in
 	  lib)
@@ -1755,11 +1740,11 @@ EOF
 	    fi
 	    ;;
 	  *)
-	    $echo "$modename: warning: \`-L' is ignored for archives/objects" 1>&2
+	    $echo "$modename: warning: \`-L' is ignored for archives/objects: $deplib" 1>&2
 	    ;;
-	  esac
+	  esac # linkmode
 	  continue
-	  ;;
+	  ;; # -L
 	-R*)
 	  if test $pass = link; then
 	    dir=`$echo "X$deplib" | $Xsed -e 's/^-R//'`
@@ -1803,21 +1788,17 @@ EOF
 	    fi
 	    continue
 	    ;;
-	  esac
-	  ;;
+	  esac # linkmode
+	  ;; # *.$libext
 	*.lo | *.$objext)
-	  if test $pass = conv; then
-	    deplibs="$deplib $deplibs"
-	  elif test $linkmode = prog; then
-	    if test $pass = dlpreopen || test "$dlopen_support" != yes || test "$build_libtool_libs" = no; then
-	      # If there is no dlopen support or we're linking statically,
-	      # we need to preload.
-	      newdlprefiles="$newdlprefiles $deplib"
-	      compile_deplibs="$deplib $compile_deplibs"
-	      finalize_deplibs="$deplib $finalize_deplibs"
-	    else
-	      newdlfiles="$newdlfiles $deplib"
-	    fi
+	  if test $pass = dlpreopen || test "$dlopen_support" != yes || test "$build_libtool_libs" = no; then
+	    # If there is no dlopen support or we're linking statically,
+	    # we need to preload.
+	    newdlprefiles="$newdlprefiles $deplib"
+	    compile_deplibs="$deplib $compile_deplibs"
+	    finalize_deplibs="$deplib $finalize_deplibs"
+	  else
+	    newdlfiles="$newdlfiles $deplib"
 	  fi
 	  continue
 	  ;;
@@ -1825,7 +1806,7 @@ EOF
 	  alldeplibs=yes
 	  continue
 	  ;;
-	esac
+	esac # case $deplib
 	if test $found = yes || test -f "$lib"; then :
 	else
 	  $echo "$modename: cannot find the library \`$lib'" 1>&2
@@ -1860,13 +1841,14 @@ EOF
 
 	if test "$linkmode,$pass" = "lib,link" ||
 	   test "$linkmode,$pass" = "prog,scan" ||
-	   { test $linkmode != prog && test $linkmode != lib; }; then
+	   { test $linkmode = oldlib && test $linkmode = obj; }; then
+	   # Add dl[pre]opened files of deplib
 	  test -n "$dlopen" && dlfiles="$dlfiles $dlopen"
 	  test -n "$dlpreopen" && dlprefiles="$dlprefiles $dlpreopen"
 	fi
 
 	if test $pass = conv; then
-	  # only check for convenience libraries
+	  # Only check for convenience libraries
 	  deplibs="$lib $deplibs"
 	  if test -z "$libdir"; then
 	    if test -z "$old_library"; then
@@ -1889,7 +1871,7 @@ EOF
 	    exit 1
 	  fi
 	  continue
-	fi
+	fi # $pass = conv
 
 	# Get the name of the library we link against.
 	linklib=
@@ -1909,15 +1891,13 @@ EOF
 	  fi
 	  if test -z "$dlname" || test "$dlopen_support" != yes || test "$build_libtool_libs" = no; then
 	    # If there is no dlname, no dlopen support or we're linking
-	    # statically, we need to preload.  We also need to preload any
-	    # dependent libraries so libltdl's deplib preloader doesn't
-	    # bomb out in the load deplibs phase.
-	    dlprefiles="$dlprefiles $lib $dependency_libs"
+	    # statically, we need to preload.
+	    dlprefiles="$dlprefiles $lib"
 	  else
 	    newdlfiles="$newdlfiles $lib"
 	  fi
 	  continue
-	fi
+	fi # $pass = dlopen
 
 	# We need an absolute path.
 	case $ladir in
@@ -1948,8 +1928,8 @@ EOF
 	  dir="$ladir/$objdir"
 	  absdir="$abs_ladir/$objdir"
 	  # Remove this search path later
-	  uninst_path="$uninst_path $abs_ladir"
-	fi
+	  notinst_path="$notinst_path $abs_ladir"
+	fi # $installed = yes
 	name=`$echo "X$laname" | $Xsed -e 's/\.la$//' -e 's/^lib//'`
 
 	# This library was specified with -dlpreopen.
@@ -1968,17 +1948,17 @@ EOF
 	  else
 	    newdlprefiles="$newdlprefiles $dir/$linklib"
 	  fi
-	fi
+	fi # $pass = dlpreopen
 
 	if test -z "$libdir"; then
-	  # link the convenience library
+	  # Link the convenience library
 	  if test $linkmode = lib; then
 	    deplibs="$dir/$old_library $deplibs"
 	  elif test "$linkmode,$pass" = "prog,link"; then
 	    compile_deplibs="$dir/$old_library $compile_deplibs"
 	    finalize_deplibs="$dir/$old_library $finalize_deplibs"
 	  else
-	    deplibs="$lib $deplibs" # used for prog,scan pass
+	    deplibs="$lib $deplibs"
 	  fi
 	  continue
 	fi
@@ -2010,23 +1990,17 @@ EOF
 	    *" $deplib "*) specialdeplibs="$specialdeplibs $deplib" ;;
 	    esac
 	    tmp_libs="$tmp_libs $deplib"
-	  done
+	  done # for deplib
 	  continue
-	fi
+	fi # $linkmode = prog...
 
-	if test "$linkmode,$pass" = "prog,link"; then
-	  if test -n "$library_names" &&
-	     { test "$prefer_static_libs" = no || test -z "$old_library"; }; then
-	    # We need to hardcode the library path
-	    if test -n "$shlibpath_var"; then
-	      # Make sure the rpath contains only unique directories.
-	      case "$temp_rpath " in
-	      *" $dir "*) ;;
-	      *" $absdir "*) ;;
-	      *) temp_rpath="$temp_rpath $dir" ;;
-	      esac
-	    fi
+	link_static=no # Whether the deplib will be linked statically
+	if test -n "$library_names" &&
+	   { test "$prefer_static_libs" = no || test -z "$old_library"; }; then
+	  # Link against this shared library
 
+	  if test "$linkmode,$pass" = "prog,link" ||
+	   { test $linkmode = lib && test $hardcode_into_libs = yes; }; then
 	    # Hardcode the library path.
 	    # Skip directories that are in the system default run-time
 	    # search path.
@@ -2039,7 +2013,6 @@ EOF
 	      esac
 	      ;;
 	    esac
-
 	    case " $sys_lib_dlsearch_path " in
 	    *" $libdir "*) ;;
 	    *)
@@ -2049,7 +2022,18 @@ EOF
 	      esac
 	      ;;
 	    esac
-	  fi
+	    if test $linkmode = prog; then
+	      # We need to hardcode the library path
+	      if test -n "$shlibpath_var"; then
+		# Make sure the rpath contains only unique directories.
+		case "$temp_rpath " in
+		*" $dir "*) ;;
+		*" $absdir "*) ;;
+		*) temp_rpath="$temp_rpath $dir" ;;
+		esac
+	      fi
+	    fi
+	  fi # $linkmode,$pass = prog,link...
 
 	  if test "$alldeplibs" = yes &&
 	     { test "$deplibs_check_method" = pass_all ||
@@ -2058,39 +2042,10 @@ EOF
 	    # We only need to search for static libraries
 	    continue
 	  fi
-	fi
 
-	link_static=no # Whether the deplib will be linked statically
-	if test -n "$library_names" &&
-	   { test "$prefer_static_libs" = no || test -z "$old_library"; }; then
 	  if test "$installed" = no; then
-	    uninst_deplibs="$uninst_deplibs $lib"
+	    notinst_deplibs="$notinst_deplibs $lib"
 	    need_relink=yes
-	  fi
-	  # This is a shared library
-	  if test $linkmode = lib &&
-	     test $hardcode_into_libs = yes; then
-	    # Hardcode the library path.
-	    # Skip directories that are in the system default run-time
-	    # search path.
-	    case " $sys_lib_dlsearch_path " in
-	    *" $absdir "*) ;;
-	    *)
-	      case "$compile_rpath " in
-	      *" $absdir "*) ;;
-	      *) compile_rpath="$compile_rpath $absdir"
-	      esac
-	      ;;
-	    esac
-	    case " $sys_lib_dlsearch_path " in
-	    *" $libdir "*) ;;
-	    *)
-	      case "$finalize_rpath " in
-	      *" $libdir "*) ;;
-	      *) finalize_rpath="$finalize_rpath $libdir"
-	      esac
-	      ;;
-	    esac
 	  fi
 
 	  if test -n "$old_archive_from_expsyms_cmds"; then
@@ -2149,7 +2104,7 @@ EOF
 	    # make sure the library variables are pointing to the new library
 	    dir=$output_objdir
 	    linklib=$newlib
-	  fi
+	  fi # test -n $old_archive_from_expsyms_cmds
 
 	  if test $linkmode = prog || test "$mode" != relink; then
 	    add_shlibpath=
@@ -2248,6 +2203,15 @@ EOF
 	    fi
 	  fi
 	elif test $linkmode = prog; then
+	  if test "$alldeplibs" = yes &&
+	     { test "$deplibs_check_method" = pass_all ||
+	       { test "$build_libtool_libs" = yes &&
+		 test -n "$library_names"; }; }; then
+	    # We only need to search for static libraries
+	    continue
+	  fi
+
+	  # Try to link the static library
 	  # Here we assume that one of hardcode_direct or hardcode_minus_L
 	  # is not unsupported.  This is valid on all known static and
 	  # shared platforms.
@@ -2264,6 +2228,7 @@ EOF
 	  if test "$deplibs_check_method" != pass_all; then
 	    # We're trying link a shared library against a static one
 	    # but the system doesn't support it.
+
 	    # Just print a warning and add the library to dependency_libs so
 	    # that the program can be linked against the static library.
 	    echo
@@ -2271,13 +2236,30 @@ EOF
 	    echo "*** I have the capability to make that library automatically link in when"
 	    echo "*** you link to this library.  But I can only do this if you have a"
 	    echo "*** shared version of the library, which you do not appear to have."
+	    if test "$module" = yes; then
+	      echo "*** Therefore, libtool will create a static module, that should work "
+	      echo "*** as long as the dlopening application is linked with the -dlopen flag."
+	      if test -z "$global_symbol_pipe"; then
+	        echo
+	        echo "*** However, this would only work if libtool was able to extract symbol"
+	        echo "*** lists from a program, using \`nm' or equivalent, but libtool could"
+	        echo "*** not find such a program.  So, this module is probably useless."
+	        echo "*** \`nm' from GNU binutils and a full rebuild may help."
+	      fi
+	      if test "$build_old_libs" = no; then
+	        build_libtool_libs=module
+	        build_old_libs=yes
+	      else
+	        build_libtool_libs=no
+	      fi
+	    fi
 	  else
 	    convenience="$convenience $dir/$old_library"
 	    old_convenience="$old_convenience $dir/$old_library"
 	    deplibs="$dir/$old_library $deplibs"
 	    link_static=yes
 	  fi
-	fi
+	fi # link shared/static library?
 
 	if test $linkmode = lib; then
 	  if test -n "$dependency_libs" &&
@@ -2351,10 +2333,9 @@ EOF
 	      *) deplibs="$path $deplibs" ;;
 	      esac
 	    done
-	  fi
-	fi
-      done
-      dependency_libs="$newdependency_libs"
+	  fi # link_all_deplibs != no
+	fi # linkmode = lib
+      done # for deplib in $libs
       if test $pass = dlpreopen; then
 	# Link the dlpreopened libraries before other libraries
 	for deplib in $save_deplibs; do
@@ -2362,6 +2343,7 @@ EOF
 	done
       fi
       if test $pass != dlopen; then
+	test $pass != scan && dependency_libs="$newdependency_libs"
 	if test $pass != conv; then
 	  # Make sure lib_search_path contains only unique directories.
 	  lib_search_path=
@@ -2384,40 +2366,20 @@ EOF
 	  eval tmp_libs=\"\$$var\"
 	  new_libs=
 	  for deplib in $tmp_libs; do
-	    # FIXME: Pedantically, this is the right thing to do, so
-	    #        that some nasty dependency loop isn't accidentally
-	    #        broken:
-	    #new_libs="$deplib $new_libs"
-	    # Pragmatically, this seems to cause very few problems in
-	    # practice:
 	    case $deplib in
-            -L*) new_libs="$deplib $new_libs" ;;
-            *)
-	      # And here is the reason: when a library appears more
-	      # than once as an explicit dependence of a library, or
-	      # is implicitly linked in more than once by the
-	      # compiler, it is considered special, and multiple
-	      # occurrences thereof are not removed.  Compare this
-	      # with having the same library being listed as a
-	      # dependency of multiple other libraries: in this case,
-	      # we know (pedantically, we assume) the library does not
-	      # need to be listed more than once, so we keep only the
-	      # last copy.  This is not always right, but it is rare
-	      # enough that we require users that really mean to play
-	      # such unportable linking tricks to link the library
-	      # using -Wl,-lname, so that libtool does not consider it
-	      # for duplicate removal.
-              case " $specialdeplibs " in
-              *" $deplib "*) new_libs="$deplib $new_libs" ;;
-              *)
-                case " $new_libs " in
-                *" $deplib "*) ;;
-                *) new_libs="$deplib $new_libs" ;;
-                esac
-                ;;
-              esac
-              ;;
-            esac
+	    -L*) new_libs="$deplib $new_libs" ;;
+	    *)
+	      case " $specialdeplibs " in
+	      *" $deplib "*) new_libs="$deplib $new_libs" ;;
+	      *)
+		case " $new_libs " in
+		*" $deplib "*) ;;
+		*) new_libs="$deplib $new_libs" ;;
+		esac
+		;;
+	      esac
+	      ;;
+	    esac
 	  done
 	  tmp_libs=
 	  for deplib in $new_libs; do
@@ -2432,9 +2394,14 @@ EOF
 	    esac
 	  done
 	  eval $var=\"$tmp_libs\"
-	done
+	done # for var
       fi
-    done
+      if test "$pass" = "conv" &&
+       { test "$linkmode" = "lib" || test "$linkmode" = "prog"; }; then
+	libs="$deplibs" # reset libs
+	deplibs=
+      fi
+    done # for pass
     if test $linkmode = prog; then
       dlfiles="$newdlfiles"
       dlprefiles="$newdlprefiles"
@@ -2442,10 +2409,6 @@ EOF
 
     case $linkmode in
     oldlib)
-      if test -n "$deplibs"; then
-	$echo "$modename: warning: \`-l' and \`-L' are ignored for archives" 1>&2
-      fi
-
       if test -n "$dlfiles$dlprefiles" || test "$dlself" != no; then
 	$echo "$modename: warning: \`-dlopen' is ignored for archives" 1>&2
       fi
@@ -2737,7 +2700,7 @@ EOF
       fi
 
       # Eliminate all temporary directories.
-      for path in $uninst_path; do
+      for path in $notinst_path; do
 	lib_search_path=`echo "$lib_search_path " | sed -e 's% $path % %g'`
 	deplibs=`echo "$deplibs " | sed -e 's% -L$path % %g'`
 	dependency_libs=`echo "$dependency_libs " | sed -e 's% -L$path % %g'`
@@ -2788,11 +2751,14 @@ EOF
 	    # Rhapsody C library is in the System framework
 	    deplibs="$deplibs -framework System"
 	    ;;
+	  *-*-netbsd*)
+	    # Don't link with libc until the a.out ld.so is fixed.
+	    ;;
 	  *)
- 	    # Add libc to deplibs on all other systems if necessary.
- 	    if test $build_libtool_need_lc = "yes"; then
- 	      deplibs="$deplibs -lc"
- 	    fi
+	    # Add libc to deplibs on all other systems if necessary.
+	    if test $build_libtool_need_lc = "yes"; then
+	      deplibs="$deplibs -lc"
+	    fi
 	    ;;
 	  esac
 	fi
@@ -2836,7 +2802,7 @@ EOF
 	    for i in $deplibs; do
 	      name="`expr $i : '-l\(.*\)'`"
 	      # If $name is empty we are operating on a -L argument.
-	      if test "$name" != "" -a "$name" != "0"; then
+	      if test -n "$name" && test "$name" != "0"; then
 		libname=`eval \\$echo \"$libname_spec\"`
 		deplib_matches=`eval \\$echo \"$library_names_spec\"`
 		set dummy $deplib_matches
@@ -2861,7 +2827,7 @@ EOF
 	    for i in $deplibs; do
 	      name="`expr $i : '-l\(.*\)'`"
 	     # If $name is empty we are operating on a -L argument.
-	      if test "$name" != "" -a "$name" != "0"; then
+	      if test -n "$name" && test "$name" != "0"; then
 		$rm conftest
 		$LTCC -o conftest conftest.c $i
 		# Did it work?
@@ -2901,7 +2867,7 @@ EOF
 	  for a_deplib in $deplibs; do
 	    name="`expr $a_deplib : '-l\(.*\)'`"
 	    # If $name is empty we are operating on a -L argument.
-	    if test "$name" != "" -a "$name" != "0"; then
+	    if test -n "$name" && test "$name" != "0"; then
 	      libname=`eval \\$echo \"$libname_spec\"`
 	      for i in $lib_search_path $sys_lib_search_path $shlib_search_path; do
 		    potential_libs=`ls $i/$libname[.-]* 2>/dev/null`
@@ -2953,7 +2919,7 @@ EOF
 	  for a_deplib in $deplibs; do
 	    name="`expr $a_deplib : '-l\(.*\)'`"
 	    # If $name is empty we are operating on a -L argument.
-	    if test "$name" != "" -a "$name" != "0"; then
+	    if test -n "$name" && test "$name" != "0"; then
 	      libname=`eval \\$echo \"$libname_spec\"`
 	      for i in $lib_search_path $sys_lib_search_path $shlib_search_path; do
 		potential_libs=`ls $i/$libname[.-]* 2>/dev/null`
@@ -3002,6 +2968,13 @@ EOF
 	release=$release_save
 	libname=$libname_save
 	name=$name_save
+
+	case $host in
+	*-*-rhapsody* | *-*-darwin1.[012])
+	  # On Rhapsody replace the C library is the System framework
+	  newdeplibs=`$echo "X $newdeplibs" | $Xsed -e 's/ -lc / -framework System /'`
+	  ;;
+	esac
 
 	if test "$droppeddeps" = yes; then
 	  if test "$module" = yes; then
@@ -3122,9 +3095,7 @@ EOF
 	else
 	  soname="$realname"
 	fi
-	if test x$dlname = x; then
-	  dlname=$soname
-	fi
+	test -z "$dlname" && dlname=$soname
 
 	lib="$output_objdir/$realname"
 	for link
@@ -3535,7 +3506,7 @@ EOF
 
     prog)
       case $host in
-        *cygwin*) output=`echo $output | sed -e 's,.exe$,,;s,$,.exe,'` ;;
+	*cygwin*) output=`echo $output | sed -e 's,.exe$,,;s,$,.exe,'` ;;
       esac
       if test -n "$vinfo"; then
 	$echo "$modename: warning: \`-version-info' is ignored for programs" 1>&2
@@ -3551,6 +3522,14 @@ EOF
 	  $echo "$modename: warning: \`AC_LIBTOOL_DLOPEN' not used. Assuming no dlopen support."
 	fi
       fi
+
+      case $host in
+      *-*-rhapsody* | *-*-darwin1.[012])
+	# On Rhapsody replace the C library is the System framework
+	compile_deplibs=`$echo "X $compile_deplibs" | $Xsed -e 's/ -lc / -framework System /'`
+	finalize_deplibs=`$echo "X $finalize_deplibs" | $Xsed -e 's/ -lc / -framework System /'`
+	;;
+      esac
 
       compile_command="$compile_command $compile_deplibs"
       finalize_command="$finalize_command $finalize_deplibs"
@@ -4014,7 +3993,7 @@ relink_command=\"$relink_command\"
 # This environment variable determines our operation mode.
 if test \"\$libtool_install_magic\" = \"$magic\"; then
   # install mode needs the following variable:
-  uninst_deplibs='$uninst_deplibs'
+  notinst_deplibs='$notinst_deplibs'
 else
   # When we are sourced in execute mode, \$file and \$echo are already set.
   if test \"\$libtool_execute_magic\" != \"$magic\"; then
@@ -4082,8 +4061,9 @@ else
 
     # relink executable if necessary
     if test -n \"\$relink_command\"; then
-      if (eval \$relink_command); then :
+      if relink_command_output=\`eval \$relink_command 2>&1\`; then :
       else
+        $echo \"\$relink_command_output\" >&2
 	$rm \"\$progdir/\$file\"
 	exit 1
       fi
@@ -4735,7 +4715,7 @@ relink_command=\"$relink_command\""
 
 	# Do a test to see if this is really a libtool program.
 	if (sed -e '4q' $file | egrep "^# Generated by .*$PACKAGE") >/dev/null 2>&1; then
-	  uninst_deplibs=
+	  notinst_deplibs=
 	  relink_command=
 
 	  # If there is no directory component, then add one.
@@ -4745,13 +4725,13 @@ relink_command=\"$relink_command\""
 	  esac
 
 	  # Check the variables that should have been set.
-	  if test -z "$uninst_deplibs"; then
+	  if test -z "$notinst_deplibs"; then
 	    $echo "$modename: invalid libtool wrapper script \`$file'" 1>&2
 	    exit 1
 	  fi
 
 	  finalize=yes
-	  for lib in $uninst_deplibs; do
+	  for lib in $notinst_deplibs; do
 	    # Check to see that each library is installed.
 	    libdir=
 	    if test -f "$lib"; then
@@ -4866,11 +4846,10 @@ relink_command=\"$relink_command\""
     if test -n "$current_libdirs"; then
       # Maybe just do a dry run.
       test -n "$run" && current_libdirs=" -n$current_libdirs"
-      exec $SHELL $0 --finish$current_libdirs
-      exit 1
+      exec_cmd='$SHELL $0 --finish$current_libdirs'
+    else
+      exit 0
     fi
-
-    exit 0
     ;;
 
   # libtool finish mode
@@ -4908,7 +4887,7 @@ relink_command=\"$relink_command\""
     fi
 
     # Exit here if they wanted silent mode.
-    test "$show" = : && exit 0
+    test "$show" = ":" && exit 0
 
     echo "----------------------------------------------------------------------"
     echo "Libraries have been installed in:"
@@ -5073,11 +5052,8 @@ relink_command=\"$relink_command\""
 	LANG="$save_LANG"; export LANG
       fi
 
-      # Now actually exec the command.
-      eval "exec \$cmd$args"
-
-      $echo "$modename: cannot exec \$cmd$args"
-      exit 1
+      # Now prepare to actually exec the command.
+      exec_cmd='"$cmd"$args'
     else
       # Display what would be done.
       if test -n "$shlibpath_var"; then
@@ -5131,14 +5107,16 @@ relink_command=\"$relink_command\""
 
       # Remember objdir for removal later, being careful to avoid duplicates
       if test $mode = clean; then
-        case " $rmdirs " in
+	case " $rmdirs " in
 	  *" $objdir "*) ;;
 	  *) rmdirs="$rmdirs $objdir" ;;
 	esac
       fi
-      
+
       # Don't error if the file doesn't exist and rm -f was used.
-      if test -L "$file" >/dev/null 2>&1 || test -f "$file"; then
+      if (test -L "$file") >/dev/null 2>&1 \
+        || (test -h "$file") >/dev/null 2>&1 \
+	|| test -f "$file"; then
         :
       elif test -d "$file"; then
         exit_status=1
@@ -5239,8 +5217,8 @@ relink_command=\"$relink_command\""
     # Try to remove the ${objdir}s in the directories where we deleted files
     for dir in $rmdirs; do
       if test -d "$dir"; then
-        $show "rmdir $dir"
-        $run rmdir $dir >/dev/null 2>&1
+	$show "rmdir $dir"
+	$run rmdir $dir >/dev/null 2>&1
       fi
     done
 
@@ -5254,10 +5232,17 @@ relink_command=\"$relink_command\""
     ;;
   esac
 
-  $echo "$modename: invalid operation mode \`$mode'" 1>&2
-  $echo "$generic_help" 1>&2
-  exit 1
+  if test -z "$exec_cmd"; then
+    $echo "$modename: invalid operation mode \`$mode'" 1>&2
+    $echo "$generic_help" 1>&2
+    exit 1
+  fi
 fi # test -z "$show_help"
+
+if test -n "$exec_cmd"; then
+  eval exec $exec_cmd
+  exit 1
+fi
 
 # We need to display help for each of the modes.
 case $mode in
@@ -5316,6 +5301,8 @@ Compile a source file into a libtool library object.
 This mode accepts the following additional options:
 
   -o OUTPUT-FILE    set the output file name to OUTPUT-FILE
+  -prefer-pic       try to building PIC objects only
+  -prefer-non-pic   try to building non-PIC objects only
   -static           always build a \`.o' file suitable for static linking
 
 COMPILE-COMMAND is a command to be used in creating a \`standard' object file
