@@ -1,3 +1,7 @@
+2002-11-25  Dave Pitts  <dpitts@cozx.com>
+
+	* gcc/fixinc/mkfixinc.sh: add i370-*-openedition to bypass fixinc list
+
 2002-11-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (an anonymous pattern): New.

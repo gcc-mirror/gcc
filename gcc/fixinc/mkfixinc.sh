@@ -70,6 +70,7 @@ case $machine in
     hppa1.1-*-bsd* | \
     hppa1.0-*-bsd* | \
     hppa*-*-lites* | \
+    i370-*-openedition | \
     i?86-moss-msdos* | \
     i?86-*-moss* | \
     i?86-*-osf1* | \
