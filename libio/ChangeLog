@@ -1,3 +1,8 @@
+1999-08-08  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* streambuf.h (ios::streamsize): Declare as _IO_ssize_t, as in the 
+	global scope.
+
 1999-08-07  Andreas Schwab  <schwab@suse.de>
 
 	* iostream.cc: Add missing calls to isfx and setup a cleanup
