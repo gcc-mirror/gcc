@@ -120,9 +120,6 @@ static GTY((param_is (struct cgraph_varpool_node))) htab_t cgraph_varpool_hash;
 /* Queue of cgraph nodes scheduled to be lowered and output.  */
 struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
 
-/* Number of nodes in existence.  */
-int cgraph_varpool_n_nodes;
-
 /* The linked list of cgraph varpool nodes.  */
 static GTY(())  struct cgraph_varpool_node *cgraph_varpool_nodes;
 
@@ -584,7 +581,6 @@ cgraph_varpool_node (tree decl)
   node = ggc_alloc_cleared (sizeof (*node));
   node->decl = decl;
   node->next = cgraph_varpool_nodes;
-  cgraph_varpool_n_nodes++;
   cgraph_varpool_nodes = node;
   *slot = node;
   return node;

@@ -158,7 +158,6 @@ extern GTY(()) int cgraph_max_uid;
 extern bool cgraph_global_info_ready;
 extern GTY(()) struct cgraph_node *cgraph_nodes_queue;
 
-extern GTY(()) int cgraph_varpool_n_nodes;
 extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
 
 /* In cgraph.c  */
