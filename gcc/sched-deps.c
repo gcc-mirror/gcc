@@ -1113,18 +1113,6 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 	}
       flush_pending_lists (deps, insn, 0);
 
-      pending = deps->pending_write_insns;
-      pending_mem = deps->pending_write_mems;
-      while (pending)
-	{
-	  add_dependence (insn, XEXP (pending, 0), 0);
-	  pending = XEXP (pending, 1);
-	  pending_mem = XEXP (pending_mem, 1);
-	}
-
-      for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
-	add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-
       reg_pending_sets_all = 1;
     }
 
