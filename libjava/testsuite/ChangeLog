@@ -1,5 +1,8 @@
 1999-07-02  Tom Tromey  <tromey@cygnus.com>
 
+	* libjava.lang/Finalize_1.out: Removed.
+	* libjava.lang/Finalize_1.java: Removed.
+
 	* libjava.lang/Thread_1.out: Updated.
 	* libjava.lang/Thread_1.java: Don't run exit test.
 
