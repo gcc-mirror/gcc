@@ -1,5 +1,11 @@
 2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* update_web_docs: Use makeinfo --html instead of texi2html.
+	Remove support for pre-3.1 GCC versions.  Build online docs for
+	gccint manual.
+
+2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* update_web_docs_old: Copy from update_web_docs.  Add comment
 	that this is for GCC 3.0.x and earlier versions.
 
