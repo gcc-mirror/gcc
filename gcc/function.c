@@ -5059,6 +5059,14 @@ assign_parms (fndecl, second_time)
 #endif
 #endif
 
+#ifdef STACK_BOUNDARY
+#define STACK_BYTES (STACK_BOUNDARY / BITS_PER_UNIT)
+
+  current_function_args_size
+    = ((current_function_args_size + STACK_BYTES - 1)
+       / STACK_BYTES) * STACK_BYTES;
+#endif  
+
 #ifdef ARGS_GROW_DOWNWARD
   current_function_arg_offset_rtx
     = (stack_args_size.var == 0 ? GEN_INT (-stack_args_size.constant)
