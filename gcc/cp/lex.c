@@ -1780,6 +1780,7 @@ check_for_missing_semicolon (type)
        && yychar != SCSPEC
        && yychar != IDENTIFIER
        && yychar != TYPENAME
+       && yychar != CV_QUALIFIER
        && yychar != SELFNAME)
       || end_of_file)
     {
