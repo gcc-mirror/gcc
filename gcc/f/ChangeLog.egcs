@@ -34,5 +34,5 @@ Mon Aug 11 23:18:35 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* g77-0.5.21-19970811 Imported.
 	This file describes changes to the front end necessary to make
-	it work with gcc3.
+	it work with egcs.
 
