@@ -70,7 +70,7 @@ test02()
   double x;
 
   // ios_base::eof == 2
-  while(in >> x)
+  while (in >> x)
     {
       ++i;
       if (i > 3) 

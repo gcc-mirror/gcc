@@ -1,3 +1,15 @@
+2002-05-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/fstream.tcc
+	(basic_filebuf::_M_allocate_internal_buffer): Remove extraneous
+	try/catch blocks.
+	* src/localename.cc (locale::_Impl::_M_install_facet): Same.
+
+	* docs/html/install.html: Tweak, add bits about required locales
+	for the 22_locale tests when using the gnu model.
+
+	* testsuite/27_io/istream_sentry.cc: Tweak.
+	
 2002-05-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/os/irix/irix5.2/bits/ctype_inline.h (scan_is, scan_not):
