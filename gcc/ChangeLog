@@ -1,3 +1,8 @@
+Thu Jul  6 18:30:36 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reload.c (push_reload): When seeing if can reuse a register,
+	check extra registers against widest of INMODE and OUTMODE.
+
 2000-07-06  Neil Booth  <NeilB@earthling.net>
 
 	* cpplib.c: (_cpp_parse_assertion):  Perform hash lookups
