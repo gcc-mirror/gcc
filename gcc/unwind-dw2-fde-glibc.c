@@ -46,6 +46,7 @@
 #define NO_BASE_OF_ENCODED_VALUE
 #include "unwind-pe.h"
 #include "unwind-dw2-fde.h"
+#include "unwind-compat.h"
 #include "gthr.h"
 
 #if !defined(inhibit_libc) && defined(HAVE_LD_EH_FRAME_HDR) \
@@ -293,4 +294,8 @@ _Unwind_Find_FDE (void *pc, struct dwarf_eh_bases *bases)
 /* Prevent multiple include of header files.  */
 #define _Unwind_Find_FDE _Unwind_Find_FDE
 #include "unwind-dw2-fde.c"
+#endif
+
+#if defined (USE_GAS_SYMVER) && defined (SHARED) && defined (USE_LIBUNWIND_EXCEPTIONS)
+alias (_Unwind_Find_FDE);
 #endif

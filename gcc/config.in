@@ -534,9 +534,6 @@
 /* Define if your assembler mis-optimizes .eh_frame data. */
 #undef USE_AS_TRADITIONAL_FORMAT
 
-/* Define if gcc should use -lunwind. */
-#undef USE_LIBUNWIND_EXCEPTIONS
-
 /* Define to be the last portion of registry key on windows hosts. */
 #undef WIN32_REGISTRY_KEY
 
