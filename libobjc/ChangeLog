@@ -1,3 +1,9 @@
+2004-06-20  Alexander Malmberg  <alexander@malmberg.org>
+
+        * Makefile.in (exception.lo): Remove $(OBJC_GCFLAGS).
+        (exception_gc.lo): New.
+        (OBJS_GC): Add exception_gc.lo.
+	
 2004-06-17  Richard Henderson  <rth@redhat.com>
 
 	* exception.c: New file.
