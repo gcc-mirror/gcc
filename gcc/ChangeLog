@@ -1,5 +1,6 @@
 2003-08-03  Neil Booth  <neil@daikokuya.co.uk>
 
+	PR preprocessor/11534
 	* cppexp.c (parse_defined): Warn only if -pedantic.
 
 2003-08-03  Neil Booth  <neil@daikokuya.co.uk>
@@ -543,6 +544,8 @@ Wed Jul 30 19:12:10 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-07-29  Neil Booth  <neil@daikokuya.co.uk>
 
+	PR preprocessor/11569
+	PR preprocessor/11649
 	* Makefile.in (LIBCPP_DEPS): Add HASHTAB_H.
 	* cppfiles.c: Completely rewritten.
 	* c-incpath.c (free_path, remove_duplicates, heads, tails, add_path):
