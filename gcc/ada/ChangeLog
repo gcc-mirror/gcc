@@ -1,3 +1,7 @@
+2004-02-02  Arnaud Charlet  <charlet@gnat.com>
+
+	* Makefile.in: Remove setting of THREADSLIB on mips o32, unneeded.
+
 2004-02-02  Vincent Celier  <celier@gnat.com>
 
 	* gprcmd.adb (Check_Args): If condition is false, print the invoked
