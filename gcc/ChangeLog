@@ -1,3 +1,10 @@
+2004-11-30  Mark Dettinger  <dettinge@de.ibm.com>
+
+	* config/s390/s390.c (struct processor_costs): New data type.
+	(s390_cost, z900_cost, z990_cost): New global variables.
+	(override_options): Initialize s390_cost.
+	(s390_rtx_costs): Reimplement.
+
 2004-11-29  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/18673

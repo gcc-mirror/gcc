@@ -86,6 +86,61 @@ static enum machine_mode s390_cc_modes_compatible (enum machine_mode,
  						   enum machine_mode);
 
 
+/* Define the specific costs for a given cpu.  */
+
+struct processor_costs 
+{
+  const int m;        /* cost of an M instruction.  */
+  const int mghi;     /* cost of an MGHI instruction.  */
+  const int mh;       /* cost of an MH instruction.  */
+  const int mhi;      /* cost of an MHI instruction.  */
+  const int mr;       /* cost of an MR instruction.  */
+  const int ms;       /* cost of an MS instruction.  */
+  const int msg;      /* cost of an MSG instruction.  */
+  const int msgf;     /* cost of an MSGF instruction.  */
+  const int msgfr;    /* cost of an MSGFR instruction.  */
+  const int msgr;     /* cost of an MSGR instruction.  */
+  const int msr;      /* cost of an MSR instruction.  */
+  const int mult_df;  /* cost of multiplication in DFmode.  */
+};
+
+const struct processor_costs *s390_cost;
+
+static const
+struct processor_costs z900_cost = 
+{
+  COSTS_N_INSNS (5),     /* M     */
+  COSTS_N_INSNS (10),    /* MGHI  */
+  COSTS_N_INSNS (5),     /* MH    */
+  COSTS_N_INSNS (4),     /* MHI   */
+  COSTS_N_INSNS (5),     /* MR    */
+  COSTS_N_INSNS (4),     /* MS    */
+  COSTS_N_INSNS (15),    /* MSG   */
+  COSTS_N_INSNS (7),     /* MSGF  */
+  COSTS_N_INSNS (7),     /* MSGFR */
+  COSTS_N_INSNS (10),    /* MSGR  */
+  COSTS_N_INSNS (4),     /* MSR   */
+  COSTS_N_INSNS (7),     /* multiplication in DFmode */
+};
+
+static const
+struct processor_costs z990_cost = 
+{
+  COSTS_N_INSNS (4),     /* M     */
+  COSTS_N_INSNS (2),     /* MGHI  */
+  COSTS_N_INSNS (2),     /* MH    */
+  COSTS_N_INSNS (2),     /* MHI   */
+  COSTS_N_INSNS (4),     /* MR    */
+  COSTS_N_INSNS (5),     /* MS    */
+  COSTS_N_INSNS (6),     /* MSG   */
+  COSTS_N_INSNS (4),     /* MSGF  */
+  COSTS_N_INSNS (4),     /* MSGFR */
+  COSTS_N_INSNS (4),     /* MSGR  */
+  COSTS_N_INSNS (4),     /* MSR   */
+  COSTS_N_INSNS (1),     /* multiplication in DFmode */
+};
+
+
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.word\t"
 #undef  TARGET_ASM_ALIGNED_DI_OP
@@ -1318,6 +1373,14 @@ override_options (void)
   if (TARGET_64BIT && !TARGET_ZARCH)
     error ("64-bit ABI not supported in ESA/390 mode.");
 
+
+  /* Set processor cost function.  */
+  if (s390_tune == PROCESSOR_2084_Z990) 
+    s390_cost = &z990_cost;
+  else
+    s390_cost = &z900_cost;
+
+
   if (s390_warn_framesize_string)
     {
       if (sscanf (s390_warn_framesize_string, HOST_WIDE_INT_PRINT_DEC,
@@ -1782,7 +1845,9 @@ s390_const_ok_for_constraint_p (HOST_WIDE_INT value,
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
-   scanned.  In either case, *TOTAL contains the cost result.  */
+   scanned.  In either case, *TOTAL contains the cost result.  
+   CODE contains GET_CODE (x), OUTER_CODE contains the code 
+   of the superexpression of x.  */
 
 static bool
 s390_rtx_costs (rtx x, int code, int outer_code, int *total)
@@ -1790,28 +1855,7 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
   switch (code)
     {
     case CONST:
-      if (GET_CODE (XEXP (x, 0)) == MINUS
-	  && GET_CODE (XEXP (XEXP (x, 0), 1)) != CONST_INT)
-	*total = 1000;
-      else
-	*total = 0;
-      return true;
-
     case CONST_INT:
-      /* Force_const_mem does not work out of reload, because the
-	 saveable_obstack is set to reload_obstack, which does not
-	 live long enough.  Because of this we cannot use force_const_mem
-	 in addsi3.  This leads to problems with gen_add2_insn with a
-	 constant greater than a short. Because of that we give an
-	 addition of greater constants a cost of 3 (reload1.c 10096).  */
-      /* ??? saveable_obstack no longer exists.  */
-      if (outer_code == PLUS
-	  && (INTVAL (x) > 32767 || INTVAL (x) < -32768))
-	*total = COSTS_N_INSNS (3);
-      else
-	*total = 0;
-      return true;
-
     case LABEL_REF:
     case SYMBOL_REF:
     case CONST_DOUBLE:
@@ -1821,6 +1865,8 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
     case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
+    case ROTATE:
+    case ROTATERT:
     case PLUS:
     case AND:
     case IOR:
@@ -1829,21 +1875,70 @@ s390_rtx_costs (rtx x, int code, int outer_code, int *total)
     case NEG:
     case NOT:
       *total = COSTS_N_INSNS (1);
-      return true;
+      return false;
 
-    case MULT:
-      if (GET_MODE (XEXP (x, 0)) == DImode)
-        *total = COSTS_N_INSNS (40);
-      else
-        *total = COSTS_N_INSNS (7);
-      return true;
+    case MULT:      
+      switch (GET_MODE (x))
+	{
+	case SImode:
+	  {	  
+	    rtx left = XEXP (x, 0);
+	    rtx right = XEXP (x, 1);
+	    if (GET_CODE (right) == CONST_INT
+		&& CONST_OK_FOR_CONSTRAINT_P (INTVAL (right), 'K', "K"))
+	      *total = s390_cost->mhi;
+	    else if (GET_CODE (left) == SIGN_EXTEND)
+	      *total = s390_cost->mh;
+	    else
+	      *total = s390_cost->ms;  /* msr, ms, msy */
+	    break;
+	  }
+	case DImode:
+	  {
+	    rtx left = XEXP (x, 0);
+	    rtx right = XEXP (x, 1);
+	    if (TARGET_64BIT)
+	      {
+		if (GET_CODE (right) == CONST_INT
+		    && CONST_OK_FOR_CONSTRAINT_P (INTVAL (right), 'K', "K"))
+		  *total = s390_cost->mghi;
+		else if (GET_CODE (left) == SIGN_EXTEND)
+		  *total = s390_cost->msgf;
+		else
+		  *total = s390_cost->msg;  /* msgr, msg */
+	      }
+	    else /* TARGET_31BIT */
+	      {
+		if (GET_CODE (left) == SIGN_EXTEND
+		    && GET_CODE (right) == SIGN_EXTEND)
+		  /* mulsidi case: mr, m */
+		  *total = s390_cost->m;
+		else
+		  /* Complex calculation is required.  */
+		  *total = COSTS_N_INSNS (40);
+	      }
+	    break;
+	  }
+	case SFmode:
+	case DFmode:
+	  *total = s390_cost->mult_df;
+	  break;
+	default:
+	  return false;
+	}
+      return false;
 
     case DIV:
     case UDIV:
     case MOD:
     case UMOD:
       *total = COSTS_N_INSNS (33);
-      return true;
+      return false;
+
+    case SIGN_EXTEND:
+      if (outer_code == MULT)
+	*total = 0;
+      return false;
 
     default:
       return false;
