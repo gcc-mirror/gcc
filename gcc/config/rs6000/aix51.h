@@ -108,12 +108,26 @@ do {									\
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE} \
   %{ansi: -D_ANSI_C_SOURCE} \
-  %{!maix64: -D__WCHAR_TYPE="short unsigned int"} \
-  %{maix64: -D__64BIT__ -D_ARCH_PPC -D__WCHAR_TYPE="unsigned int" \
+  %{!maix64: -D__WCHAR_TYPE__="short unsigned int"} \
+  %{maix64: -D__64BIT__ -D_ARCH_PPC -D__WCHAR_TYPE__="unsigned int" \
     -D__LONG_MAX__=9223372036854775807L} \
   %{mpe: -I/usr/lpp/ppe.poe/include} \
   %{pthread: -D_THREAD_SAFE} \
   %(cpp_cpu)"
+
+/* The GNU C++ standard library requires that these macros be 
+   defined.  */
+#undef CPLUSPLUS_CPP_SPEC                       
+#define CPLUSPLUS_CPP_SPEC                      \
+  "-D_XOPEN_SOURCE=500                          \
+   -D_XOPEN_SOURCE_EXTENDED=1                   \
+   -D_LARGE_FILE_API                            \
+   -D_ALL_SOURCE                                \
+   %{maix64: -D__64BIT__ -D_ARCH_PPC -D__WCHAR_TYPE="unsigned int" \
+     -D__LONG_MAX__=9223372036854775807L} \
+   %{mpe: -I/usr/lpp/ppe.poe/include}\
+   %{pthread: -D_THREAD_SAFE}\
+   %(cpp_cpu)"
 
 /* Common CPP definitions used by CPP_SPEC among the various targets
    for handling -mcpu=xxx switches.  */
