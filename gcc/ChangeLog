@@ -1,3 +1,7 @@
+2000-01-21  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* fixinc/fixfixes.c (machine_name_fix): Don't free 'scratch'.
+
 2000-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.md (movsi_pic_label_ref): Avoid creating new
