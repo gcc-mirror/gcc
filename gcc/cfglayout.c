@@ -56,7 +56,6 @@ static void change_scope (rtx, tree, tree);
 void verify_insn_chain (void);
 static void fixup_fallthru_exit_predecessor (void);
 static rtx duplicate_insn_chain (rtx, rtx);
-static void break_superblocks (void);
 static tree insn_scope (rtx);
 
 rtx
@@ -1144,23 +1143,22 @@ cfg_layout_initialize (void)
 }
 
 /* Splits superblocks.  */
-static void
+void
 break_superblocks (void)
 {
   sbitmap superblocks;
-  int i, need;
+  bool need = false;
+  basic_block bb;
 
-  superblocks = sbitmap_alloc (n_basic_blocks);
+  superblocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (superblocks);
 
-  need = 0;
-
-  for (i = 0; i < n_basic_blocks; i++)
-    if (BASIC_BLOCK(i)->flags & BB_SUPERBLOCK)
+  FOR_EACH_BB (bb)
+    if (bb->flags & BB_SUPERBLOCK)
       {
-	BASIC_BLOCK(i)->flags &= ~BB_SUPERBLOCK;
-	SET_BIT (superblocks, i);
-	need = 1;
+	bb->flags &= ~BB_SUPERBLOCK;
+	SET_BIT (superblocks, bb->index);
+	need = true;
       }
 
   if (need)

@@ -1629,6 +1629,24 @@ assign_filter_values (void)
   htab_delete (ehspec);
 }
 
+/* Emit SEQ into basic block just before INSN (that is assumed to be
+   first instruction of some existing BB and return the newly
+   produced block.  */
+static basic_block
+emit_to_new_bb_before (rtx seq, rtx insn)
+{
+  rtx last;
+  basic_block bb;
+
+  last = emit_insn_before (seq, insn);
+  if (GET_CODE (last) == BARRIER)
+    last = PREV_INSN (last);
+  bb = create_basic_block (seq, last, BLOCK_FOR_INSN (insn)->prev_bb);
+  update_bb_for_insn (bb);
+  bb->flags |= BB_SUPERBLOCK;
+  return bb;
+}
+
 /* Generate the code to actually handle exceptions, which will follow the
    landing pads.  */
 
@@ -1702,7 +1720,8 @@ build_post_landing_pads (void)
 	  seq = get_insns ();
 	  end_sequence ();
 
-	  emit_insn_before (seq, region->u.try.catch->label);
+	  emit_to_new_bb_before (seq, region->u.try.catch->label);
+
 	  break;
 
 	case ERT_ALLOWED_EXCEPTIONS:
@@ -1726,7 +1745,7 @@ build_post_landing_pads (void)
 	  seq = get_insns ();
 	  end_sequence ();
 
-	  emit_insn_before (seq, region->label);
+	  emit_to_new_bb_before (seq, region->label);
 	  break;
 
 	case ERT_CLEANUP:
@@ -1758,6 +1777,7 @@ connect_post_landing_pads (void)
       struct eh_region *region = cfun->eh->region_array[i];
       struct eh_region *outer;
       rtx seq;
+      rtx barrier;
 
       /* Mind we don't process a region more than once.  */
       if (!region || region->region_number != i)
@@ -1776,14 +1796,30 @@ connect_post_landing_pads (void)
       start_sequence ();
 
       if (outer)
-	emit_jump (outer->post_landing_pad);
+	{
+	  edge e;
+	  basic_block src, dest;
+
+	  emit_jump (outer->post_landing_pad);
+	  src = BLOCK_FOR_INSN (region->resume);
+	  dest = BLOCK_FOR_INSN (outer->post_landing_pad);
+	  while (src->succ)
+	    remove_edge (src->succ);
+	  e = make_edge (src, dest, 0);
+	  e->probability = REG_BR_PROB_BASE;
+	  e->count = src->count;
+	}
       else
 	emit_library_call (unwind_resume_libfunc, LCT_THROW,
 			   VOIDmode, 1, cfun->eh->exc_ptr, ptr_mode);
 
       seq = get_insns ();
       end_sequence ();
-      emit_insn_before (seq, region->resume);
+      barrier = emit_insn_before (seq, region->resume);
+      /* Avoid duplicate barrier.  */
+      if (GET_CODE (barrier) != BARRIER)
+	abort ();
+      delete_insn (barrier);
       delete_insn (region->resume);
     }
 }
@@ -1799,7 +1835,9 @@ dw2_build_landing_pads (void)
     {
       struct eh_region *region = cfun->eh->region_array[i];
       rtx seq;
+      basic_block bb;
       bool clobbers_hard_regs = false;
+      edge e;
 
       /* Mind we don't process a region more than once.  */
       if (!region || region->region_number != i)
@@ -1859,7 +1897,10 @@ dw2_build_landing_pads (void)
       seq = get_insns ();
       end_sequence ();
 
-      emit_insn_before (seq, region->post_landing_pad);
+      bb = emit_to_new_bb_before (seq, region->post_landing_pad);
+      e = make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
+      e->count = bb->count;
+      e->probability = REG_BR_PROB_BASE;
     }
 }
 
@@ -2107,9 +2148,21 @@ sjlj_emit_function_enter (rtx dispatch_label)
 
   for (fn_begin = get_insns (); ; fn_begin = NEXT_INSN (fn_begin))
     if (GET_CODE (fn_begin) == NOTE
-	&& NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG)
+	&& (NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG
+	    || NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_BASIC_BLOCK))
       break;
-  emit_insn_after (seq, fn_begin);
+  if (NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG)
+    insert_insn_on_edge (seq, ENTRY_BLOCK_PTR->succ);
+  else
+    {
+      rtx last = BB_END (ENTRY_BLOCK_PTR->succ->dest);
+      for (; ; fn_begin = NEXT_INSN (fn_begin))
+	if ((GET_CODE (fn_begin) == NOTE
+	     && NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG)
+	    || fn_begin == last)
+	  break;
+      emit_insn_after (seq, fn_begin);
+    }
 }
 
 /* Call back from expand_function_end to know where we should put
@@ -2125,6 +2178,7 @@ static void
 sjlj_emit_function_exit (void)
 {
   rtx seq;
+  edge e;
 
   start_sequence ();
 
@@ -2138,7 +2192,31 @@ sjlj_emit_function_exit (void)
      post-dominates all can_throw_internal instructions.  This is
      the last possible moment.  */
 
-  emit_insn_after (seq, cfun->eh->sjlj_exit_after);
+  for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
+    if (e->flags & EDGE_FALLTHRU)
+      break;
+  if (e)
+    {
+      rtx insn;
+
+      /* Figure out whether the place we are supposed to insert libcall
+         is inside the last basic block or after it.  In the other case
+         we need to emit to edge.  */
+      if (e->src->next_bb != EXIT_BLOCK_PTR)
+	abort ();
+      for (insn = NEXT_INSN (BB_END (e->src)); insn; insn = NEXT_INSN (insn))
+	if (insn == cfun->eh->sjlj_exit_after)
+	  break;
+      if (insn)
+	insert_insn_on_edge (seq, e);
+      else
+	{
+	  insn = cfun->eh->sjlj_exit_after;
+	  if (GET_CODE (insn) == CODE_LABEL)
+	    insn = NEXT_INSN (insn);
+	  emit_insn_after (seq, insn);
+	}
+    }
 }
 
 static void
@@ -2146,6 +2224,9 @@ sjlj_emit_dispatch_table (rtx dispatch_label, struct sjlj_lp_info *lp_info)
 {
   int i, first_reachable;
   rtx mem, dispatch, seq, fc;
+  rtx before;
+  basic_block bb;
+  edge e;
 
   fc = cfun->eh->sjlj_fc;
 
@@ -2200,8 +2281,12 @@ sjlj_emit_dispatch_table (rtx dispatch_label, struct sjlj_lp_info *lp_info)
   seq = get_insns ();
   end_sequence ();
 
-  emit_insn_before (seq, (cfun->eh->region_array[first_reachable]
-			  ->post_landing_pad));
+  before = cfun->eh->region_array[first_reachable]->post_landing_pad;
+
+  bb = emit_to_new_bb_before (seq, before);
+  e = make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
+  e->count = bb->count;
+  e->probability = REG_BR_PROB_BASE;
 }
 
 static void
@@ -2235,6 +2320,8 @@ sjlj_build_landing_pads (void)
 void
 finish_eh_generation (void)
 {
+  basic_block bb;
+
   /* Nothing to do if no regions created.  */
   if (cfun->eh->region_tree == NULL)
     return;
@@ -2269,8 +2356,25 @@ finish_eh_generation (void)
 
   /* We've totally changed the CFG.  Start over.  */
   find_exception_handler_labels ();
-  rebuild_jump_labels (get_insns ());
-  find_basic_blocks (get_insns (), max_reg_num (), 0);
+  break_superblocks ();
+  if (USING_SJLJ_EXCEPTIONS)
+    commit_edge_insertions ();
+  FOR_EACH_BB (bb)
+    {
+      edge e, next;
+      bool eh = false;
+      for (e = bb->succ; e; e = next)
+	{
+	  next = e->succ_next;
+	  if (e->flags & EDGE_EH)
+	    {
+	      remove_edge (e);
+	      eh = true;
+	    }
+	}
+      if (eh)
+	make_eh_edge (NULL, bb, BB_END (bb));
+    }
   cleanup_cfg (CLEANUP_PRE_LOOP | CLEANUP_NO_INSN_DEL);
 }
 
