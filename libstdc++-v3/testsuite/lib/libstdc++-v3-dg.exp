@@ -45,8 +45,9 @@ proc libstdc++-v3-init { args } {
     }
 
     # set LD_LIBRARY_PATH so that libgcc_s, libstdc++ binaries can be found.
+    set gccpath [get_multilibs]
     set ld_library_path "."
-    append ld_library_path ":${blddir}/../../gcc"
+    append ld_library_path ":${gccpath}../gcc"
     append ld_library_path ":${blddir}/src/.libs"
 
     # Do a bunch of handstands and backflips for cross compiling and
