@@ -1,3 +1,14 @@
+2000-01-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (__eprintf): Remove declaration.
+	* tree.c (__eprintf): Remove definition.
+
+2000-01-23  Zack Weinberg  <zack@rabi.columbia.edu>
+	    Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (CLASSTYPE_MARKED_N, SET_CLASSTYPE_MARKED_N,
+	CLEAR_CLASSTYPE_MARKED_N): Avoid signed vs. unsigned warnings.
+
 2000-01-23  Brad Lucier  <lucier@math.purdue.edu>
 
 	* class.c (dump_class_hierarchy): Print HOST_WIDE_INT properly.
