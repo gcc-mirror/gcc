@@ -1,3 +1,13 @@
+2002-12-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300-protos.h: Add prototypes for
+	output_plussi, compute_plussi_length, and compute_plussi_cc.
+	* config/h8300/h8300.c (output_plussi): New.
+	(compute_plussi_length): Likewise.
+	(compute_plussi_cc): Likewise.
+	* config/h8300/h8300.md (addsi_h8300h): Call
+	output_plussi, compute_plussi_length, and compute_plussi_cc.
+
 2002-12-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (two peepholes): Use match_dup instead

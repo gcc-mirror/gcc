@@ -1894,6 +1894,176 @@ bit_operator (x, mode)
 }
 
 const char *
+output_plussi (operands)
+     rtx *operands;
+{
+  enum machine_mode mode = GET_MODE (operands[0]);
+
+  if (mode != SImode)
+    abort ();
+
+  if (TARGET_H8300)
+    {
+      /* Currently we do not support H8/300 here yet.  */
+      abort ();
+    }
+  else
+    {
+      if (GET_CODE (operands[2]) == REG)
+	return "add.l\t%S2,%S0";
+
+      if (GET_CODE (operands[2]) == CONST_INT)
+	{
+	  HOST_WIDE_INT intval = INTVAL (operands[2]);
+
+	  /* See if we can finish with 2 bytes.  */
+
+	  switch (intval & 0xffffffff)
+	    {
+	    case 0x00000001:
+	    case 0x00000002:
+	    case 0x00000004:
+	      return "adds\t%2,%S0";
+
+	    case 0xffffffff:
+	    case 0xfffffffe:
+	    case 0xfffffffc:
+	      return "subs\t%G2,%S0";
+
+	    case 0x00010000:
+	    case 0x00020000:
+	      operands[2] = GEN_INT (intval >> 16);
+	      return "inc.w\t%2,%e0";
+
+	    case 0xffff0000:
+	    case 0xfffe0000:
+	      operands[2] = GEN_INT (intval >> 16);
+	      return "dec.w\t%G2,%e0";
+	    }
+
+	  /* See if we can finish with 4 bytes.  */
+	  if ((intval & 0xffff) == 0)
+	    {
+	      operands[2] = GEN_INT (intval >> 16);
+	      return "add.w\t%2,%e0";
+	    }
+	}
+
+      return "add.l\t%S2,%S0";
+    }
+}
+
+unsigned int
+compute_plussi_length (operands)
+     rtx *operands;
+{
+  enum machine_mode mode = GET_MODE (operands[0]);
+
+  if (mode != SImode)
+    abort ();
+
+  if (TARGET_H8300)
+    {
+      /* Currently we do not support H8/300 here yet.  */
+      abort ();
+    }
+  else
+    {
+      if (GET_CODE (operands[2]) == REG)
+	return 2;
+
+      if (GET_CODE (operands[2]) == CONST_INT)
+	{
+	  HOST_WIDE_INT intval = INTVAL (operands[2]);
+
+	  /* See if we can finish with 2 bytes.  */
+
+	  switch (intval & 0xffffffff)
+	    {
+	    case 0x00000001:
+	    case 0x00000002:
+	    case 0x00000004:
+	      return 2;
+
+	    case 0xffffffff:
+	    case 0xfffffffe:
+	    case 0xfffffffc:
+	      return 2;
+
+	    case 0x00010000:
+	    case 0x00020000:
+	      return 2;
+
+	    case 0xffff0000:
+	    case 0xfffe0000:
+	      return 2;
+	    }
+
+	  /* See if we can finish with 4 bytes.  */
+	  if ((intval & 0xffff) == 0)
+	    return 4;
+	}
+
+      return 6;
+    }
+}
+
+enum attr_cc
+compute_plussi_cc (operands)
+     rtx *operands;
+{
+  enum machine_mode mode = GET_MODE (operands[0]);
+
+  if (mode != SImode)
+    abort ();
+
+  if (TARGET_H8300)
+    {
+      /* Currently we do not support H8/300 here yet.  */
+      abort ();
+    }
+  else
+    {
+      if (GET_CODE (operands[2]) == REG)
+	return CC_SET_ZN;
+
+      if (GET_CODE (operands[2]) == CONST_INT)
+	{
+	  HOST_WIDE_INT intval = INTVAL (operands[2]);
+
+	  /* See if we can finish with 2 bytes.  */
+
+	  switch (intval & 0xffffffff)
+	    {
+	    case 0x00000001:
+	    case 0x00000002:
+	    case 0x00000004:
+	      return CC_NONE_0HIT;
+
+	    case 0xffffffff:
+	    case 0xfffffffe:
+	    case 0xfffffffc:
+	      return CC_NONE_0HIT;
+
+	    case 0x00010000:
+	    case 0x00020000:
+	      return CC_CLOBBER;
+
+	    case 0xffff0000:
+	    case 0xfffe0000:
+	      return CC_CLOBBER;
+	    }
+
+	  /* See if we can finish with 4 bytes.  */
+	  if ((intval & 0xffff) == 0)
+	    return CC_CLOBBER;
+	}
+
+      return CC_SET_ZN;
+    }
+}
+
+const char *
 output_logical_op (mode, operands)
      enum machine_mode mode;
      rtx *operands;
