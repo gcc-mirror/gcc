@@ -7116,9 +7116,11 @@ compare_from_rtx (op0, op1, code, unsignedp, mode, size, align)
 {
   rtx tem;
 
-  /* If one operand is constant, make it the second one.  */
+  /* If one operand is constant, make it the second one.  Only do this
+     if the other operand is not constant as well.  */
 
-  if (GET_CODE (op0) == CONST_INT || GET_CODE (op0) == CONST_DOUBLE)
+  if ((CONSTANT_P (op0) && ! CONSTANT_P (op1))
+      || (GET_CODE (op0) == CONST_INT && GET_CODE (op1) != CONST_INT))
     {
       tem = op0;
       op0 = op1;
