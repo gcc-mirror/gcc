@@ -1,3 +1,7 @@
+1998-09-07  Dave Love  <d.love@dl.ac.uk>
+
+	* libI77/sfe.c, libI77/dfe.c: Revert last change.
+
 1998-09-06  Dave Love  <d.love@dl.ac.uk>
 
 	From Toon to fix spurious recursive i/o errors:
