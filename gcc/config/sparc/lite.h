@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler, for SPARClite.
+/* Definitions of target machine for GNU compiler, for SPARClite w/o FPU.
    Copyright (C) 1993 Free Software Foundation, Inc.
    Contributed by Jim Wilson (wilson@cygnus.com).
 
