@@ -2642,10 +2642,6 @@ try_combine (i3, i2, i1)
 	  {
 	    regno = REGNO (i2dest);
 	    REG_N_SETS (regno)--;
-	    if (REG_N_SETS (regno) == 0
-		&& ! REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start,
-				      regno))
-	      REG_N_REFS (regno) = 0;
 	  }
       }
 
@@ -2665,10 +2661,6 @@ try_combine (i3, i2, i1)
 	if (! added_sets_1 && ! i1dest_in_i1src)
 	  {
 	    REG_N_SETS (regno)--;
-	    if (REG_N_SETS (regno) == 0
-		&& ! REGNO_REG_SET_P (BASIC_BLOCK (0)->global_live_at_start,
-				      regno))
-	      REG_N_REFS (regno) = 0;
 	  }
       }
 
@@ -11976,18 +11968,6 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 
 	  if (XEXP (note, 0) == elim_i2 || XEXP (note, 0) == elim_i1)
 	    break;
-
-	  /* If the register is used in both I2 and I3 and it dies in I3, 
-	     we might have added another reference to it.  If reg_n_refs
-	     was 2, bump it to 3.  This has to be correct since the 
-	     register must have been set somewhere.  The reason this is
-	     done is because local-alloc.c treats 2 references as a 
-	     special case.  */
-
-	  if (place == i3 && i2 != 0 && GET_CODE (XEXP (note, 0)) == REG
-	      && REG_N_REFS (REGNO (XEXP (note, 0)))== 2
-	      && reg_referenced_p (XEXP (note, 0), PATTERN (i2)))
-	    REG_N_REFS (REGNO (XEXP (note, 0))) = 3;
 
 	  if (place == 0)
 	    {
