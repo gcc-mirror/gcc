@@ -5427,6 +5427,30 @@ epilogue_renumber (where, test)
     case CONST_DOUBLE:
       return 0;
 
+      /* Do not replace the frame pointer with the stack pointer because
+	 it can cause the delayed instruction to load below the stack.
+	 This occurs when instructions like:
+
+	 (set (reg/i:SI 24 %i0)
+	     (mem/f:SI (plus:SI (reg/f:SI 30 %fp)
+                       (const_int -20 [0xffffffec])) 0))
+
+	 are in the return delayed slot.  */
+    case PLUS:
+      if (GET_CODE (XEXP (*where, 0)) == REG
+	  && REGNO (XEXP (*where, 0)) == FRAME_POINTER_REGNUM
+	  && (GET_CODE (XEXP (*where, 1)) != CONST_INT
+	      || INTVAL (XEXP (*where, 1)) < SPARC_STACK_BIAS))
+	return 1;
+      break;
+
+    case MEM:
+      if (SPARC_STACK_BIAS
+	  && GET_CODE (XEXP (*where, 0)) == REG
+	  && REGNO (XEXP (*where, 0)) == FRAME_POINTER_REGNUM)
+	return 1;
+      break;
+
     default:
       break;
     }
