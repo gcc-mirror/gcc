@@ -1,5 +1,5 @@
 /* Allocate registers for pseudo-registers that span basic blocks.
-   Copyright (C) 1987, 1988, 1991, 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 94, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -646,7 +646,7 @@ global_conflicts ()
 	int ax = 0;
 
 	REG_SET_TO_HARD_REG_SET (hard_regs_live, old);
-	EXECUTE_IF_SET_IN_REG_SET (old, 0, i,
+	EXECUTE_IF_SET_IN_REG_SET (old, FIRST_PSEUDO_REGISTER, i,
 				   {
 				     register int a = reg_allocno[i];
 				     if (a >= 0)
@@ -655,7 +655,8 @@ global_conflicts ()
 					 block_start_allocnos[ax++] = a;
 				       }
 				     else if ((a = reg_renumber[i]) >= 0)
-				       mark_reg_live_nc (a, PSEUDO_REGNO_MODE (i));
+				       mark_reg_live_nc
+					 (a, PSEUDO_REGNO_MODE (i));
 				   });
 
 	/* Record that each allocno now live conflicts with each other
