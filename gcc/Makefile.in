@@ -1431,7 +1431,7 @@ install-man: install-dir $(srcdir)/gcc.1 $(srcdir)/cccp.1 \
 	-chmod a-x $(mandir)/g++$(manext)
 
 # Install the library.
-install-libgcc: libgcc.a
+install-libgcc: libgcc.a install-dir
 	-if [ -f libgcc.a ] ; then \
 	  rm -f $(libsubdir)/libgcc.a; \
 	  $(INSTALL_DATA) libgcc.a $(libsubdir)/libgcc.a; \
