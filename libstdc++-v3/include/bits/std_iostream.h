@@ -1,6 +1,6 @@
 // Standard iostream objects -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,8 +38,8 @@
 #include <bits/std_ostream.h>
 #include <bits/std_istream.h>
 
-namespace std {
-
+namespace std 
+{
   extern istream cin;
   extern ostream cout;
   extern ostream cerr;
@@ -55,4 +55,6 @@ namespace std {
   static ios_base::Init __ioinit;
 } // namespace std
 
-#endif	/* _CPP_IOSTREAM */
+#endif
+
+

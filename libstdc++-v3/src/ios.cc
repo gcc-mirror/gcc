@@ -32,7 +32,8 @@
 //
 
 #include <bits/std_ios.h>
-#include <bits/std_iostream.h>
+#include <bits/std_ostream.h>
+#include <bits/std_istream.h>
 #include <bits/std_fstream.h>
 
 namespace std 
@@ -104,9 +105,20 @@ namespace std
   const ios_base::seekdir ios_base::cur;
   const ios_base::seekdir ios_base::end;
 
-  int ios_base::Init::_S_ios_base_init = 0;
-
   const int ios_base::_S_local_words;
+  int ios_base::Init::_S_ios_base_init = 0;
+  bool ios_base::Init::_S_synced_with_stdio = true;
+
+  istream cin(NULL);
+  ostream cout(NULL);
+  ostream cerr(NULL);
+  ostream clog(NULL);
+#ifdef _GLIBCPP_USE_WCHAR_T
+  wistream wcin(NULL);
+  wostream wcout(NULL);
+  wostream wcerr(NULL);
+  wostream wclog(NULL);
+#endif
 
   ios_base::failure::failure(const string& __str)
   {
@@ -126,40 +138,30 @@ namespace std
     if (++_S_ios_base_init == 1)
       {
 	// NB: std_iostream.h creates the four standard files with
-	// default buffers. At this point, we swap out the default
-	// buffers for the properly-constructed ones, and dispose of
-	// the default buffers.
-	streambuf* __old;
+	// NULL buffers. At this point, we swap out these placeholder
+	// objects for the properly-constructed ones
        	_M_cout = new filebuf(1, "stdout", ios_base::out);
 	_M_cin = new filebuf(0, "stdin", ios_base::in);
 	_M_cerr = new filebuf(2, "stderr", ios_base::out);
-	__old = cout.rdbuf(_M_cout);
-	__old->~streambuf();
-	__old = cin.rdbuf(_M_cin);
-	__old->~streambuf();
+	new (&cout) ostream(_M_cout);
+	new (&cin) istream(_M_cin);
+	new (&cerr) ostream(_M_cerr);
+	new (&clog) ostream(_M_cerr);
 	cin.tie(&cout);
-	__old = cerr.rdbuf(_M_cerr);
-	__old->~streambuf();
 	cerr.flags(ios_base::unitbuf);
-	__old = clog.rdbuf(_M_cerr);
-	__old->~streambuf();
+
 #ifdef _GLIBCPP_USE_WCHAR_T
-	wstreambuf* __wold;
 	_M_wcout = new wfilebuf(1, "stdout", ios_base::out);
 	_M_wcin = new wfilebuf(0, "stdin", ios_base::in);
 	_M_wcerr = new wfilebuf(2, "stderr", ios_base::out);
-	__wold = wcout.rdbuf(_M_wcout);
-	__wold->~wstreambuf();
-	__wold = wcin.rdbuf(_M_wcin);
-	__wold->~wstreambuf();
-	wcin.tie(&wcout);
-	__wold = wcerr.rdbuf(_M_wcerr);
-	__wold->~wstreambuf();
+	new (&wcout) wostream(_M_wcout);
+	new (&wcin) wistream(_M_wcin);
+	new (&wcerr) wostream(_M_wcerr);
+	new (&wclog) wostream(_M_wcerr);
+	wcin.tie(&cout);
 	wcerr.flags(ios_base::unitbuf);
-	__wold = wclog.rdbuf(_M_wcerr);
-	__wold->~wstreambuf();
 #endif
-	_M_synced_with_stdio = true;
+	ios_base::Init::_S_synced_with_stdio = true;
       }
   }
 
@@ -314,13 +316,15 @@ namespace std
   { 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
     // 49.  Underspecification of ios_base::sync_with_stdio
-    bool __ret = __ioinit._M_synced_with_stdio;
+    bool __ret = ios_base::Init::_S_synced_with_stdio;
 #endif
 
     // Turn off sync with C FILE* for cin, cout, cerr, clog iff
     // currently synchronized.
     if (!__sync && __ret)
       {
+#if 0
+	// no longer need to do this
 	// Need to dispose of the buffers created at initialization.
 	__ioinit._M_cout->~filebuf();
 	__ioinit._M_cin->~filebuf();
@@ -336,23 +340,10 @@ namespace std
 	cerr.rdbuf(__ioinit._M_cerr);
 	cerr.flags(ios_base::unitbuf);
 	clog.rdbuf(__ioinit._M_cerr);
-#ifdef _GLIBCPP_USE_WCHAR_T
-	__ioinit._M_wcout->~wfilebuf();
-	__ioinit._M_wcin->~wfilebuf();
-	__ioinit._M_wcerr->~wfilebuf();
-	__ioinit._M_wcout = new wfilebuf();
-	__ioinit._M_wcin = new wfilebuf();
-	__ioinit._M_wcerr = new wfilebuf();
-	__ioinit._M_wcout->open("wstdout", ios_base::out);
-	__ioinit._M_wcin->open("wstdin", ios_base::in);
-	__ioinit._M_wcerr->open("wstderr", ios_base::out);
-	wcout.rdbuf(__ioinit._M_wcout);
-	wcin.rdbuf(__ioinit._M_wcin);
-	wcerr.rdbuf(__ioinit._M_wcerr);
-	wcerr.flags(ios_base::unitbuf);
-	wclog.rdbuf(__ioinit._M_wcerr);
 #endif
-	__ioinit._M_synced_with_stdio = false;
+#ifdef _GLIBCPP_USE_WCHAR_T
+#endif
+	ios_base::Init::_S_synced_with_stdio = false;
       }
     
     return __ret; 
