@@ -460,7 +460,7 @@ comptypes (type1, type2)
       }
 
     case RECORD_TYPE:
-      return maybe_objc_comptypes (t1, t2);
+      return maybe_objc_comptypes (t1, t2, 0);
     }
   return 0;
 }
@@ -472,8 +472,30 @@ static int
 comp_target_types (ttl, ttr)
      tree ttl, ttr;
 {
-  int val = comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (ttl)),
-		       TYPE_MAIN_VARIANT (TREE_TYPE (ttr)));
+  int val = 0;
+
+  if (doing_objc_thang)
+    {
+      /* Give maybe_objc_comptypes a crack at letting these types through.  */
+      val = maybe_objc_comptypes (ttl, ttr, 1);
+
+      if (val != 1 && !pedantic)
+	{
+	  /* Ignore pointer qualifiers recursively.  This way char **
+	     and const char ** are compatible.  */
+	  if (TREE_CODE (ttl) == POINTER_TYPE
+	      && TREE_CODE (ttr) == POINTER_TYPE)
+	    return comp_target_types (TYPE_MAIN_VARIANT (TREE_TYPE (ttl)),
+				      TYPE_MAIN_VARIANT (TREE_TYPE (ttr)));
+	  else
+	    return comptypes (ttl, ttr);
+	}
+    }
+
+  if (val != 1)
+    val = comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (ttl)),
+		     TYPE_MAIN_VARIANT (TREE_TYPE (ttr)));
+
   if (val == 2 && pedantic)
     pedwarn ("types are not quite compatible");
   return val;
@@ -4118,6 +4140,9 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype))
     {
       overflow_warning (rhs);
+      /* Check for Objective-C protocols.  This will issue a warning if
+	 there are protocol violations.  No need to use the return value.  */
+      maybe_objc_comptypes (type, rhstype, 0);
       return rhs;
     }
 
@@ -4232,8 +4257,16 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
   if (!errtype)
     {
       if (funname)
-	error ("incompatible type for argument %d of `%s'",
-	       parmnum, IDENTIFIER_POINTER (funname));
+ 	{
+ 	  tree selector = maybe_building_objc_message_expr ();
+ 
+ 	  if (selector && parmnum > 2)
+ 	    error ("incompatible type for argument %d of `%s'",
+		   parmnum - 2, IDENTIFIER_POINTER (selector));
+ 	  else
+	    error ("incompatible type for argument %d of `%s'",
+		   parmnum, IDENTIFIER_POINTER (funname));
+	}
       else
 	error ("incompatible type for argument %d of indirect function call",
 	       parmnum);
