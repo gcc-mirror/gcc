@@ -4270,7 +4270,11 @@ expand_cleanups (list, dont_do, in_fixup, reachable)
 		if (protect)
 		  expand_fixup_region_start ();
 
+		/* The cleanup might contain try-blocks, so we have to
+		   preserve our current queue.  */
+		push_ehqueue ();
 		expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
+		pop_ehqueue ();
 		if (protect)
 		  expand_fixup_region_end (TREE_VALUE (tail));
 		free_temp_slots ();
