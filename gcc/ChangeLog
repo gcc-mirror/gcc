@@ -1,6 +1,6 @@
 2001-10-30  Kazu Hirata  <kazu@hxi.com>
 
-	* config/arm/arm.c: Fix comment a typo.
+	* config/arm/arm.c: Fix a comment typo.
 	* config/arm/arm.h: Likewise.
 	* config/ia64/ia64.c: Likewise.
 
