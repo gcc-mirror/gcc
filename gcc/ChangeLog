@@ -1,3 +1,8 @@
+2004-06-29  Per Bothner  <per@bothner.com>
+
+	* config/i386/winnt.c (i386_pe_encode_section_info):  Smash rtlname's 
+	XSTR in place, so we don't lose SYMBOL_REF_DECL info.
+
 2004-06-29  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/ia64/hpux.h: Target does too support thread-local storage.
