@@ -198,7 +198,25 @@ int allow_pch = 1;
 /* Switches common to the C front ends.  */
 
 /* Nonzero if prepreprocessing only.  */
+
 int flag_preprocess_only;
+
+/* Nonzero means don't output line number information.  */
+
+char flag_no_line_commands;
+
+/* Nonzero causes -E output not to be done, but directives such as
+   #define that have side effects are still obeyed.  */
+
+char flag_no_output;
+
+/* Nonzero means dump macros in some fashion.  */
+
+char flag_dump_macros;
+
+/* Nonzero means pass #include lines through to the output.  */
+
+char flag_dump_includes;
 
 /* The file name to which we should write a precompiled header, or
    NULL if no header will be written in this compile.  */
