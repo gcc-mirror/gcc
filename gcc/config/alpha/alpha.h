@@ -1452,6 +1452,9 @@ do {						\
 	      && CONSTANT_ADDRESS_P (XEXP (X, 1)))			\
 	    goto ADDR;							\
 	}								\
+      else if (GET_CODE (tmp) == ADDRESSOF				\
+	       && CONSTANT_ADDRESS_P (XEXP (X, 1)))			\
+	goto ADDR;							\
     }									\
 }
 

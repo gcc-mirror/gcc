@@ -1,3 +1,8 @@
+Thu Oct 14 22:51:55 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (GO_IF_LEGITIMATE_SIMPLE_ADDRESS): Accept ADDRESSOF
+	as the base of a PLUS.
+
 Fri Oct 15 18:36:07 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md:  Define mode for remaining unspec operators.
