@@ -1,3 +1,8 @@
+2004-05-17  Frank Ch. Eigler  <fche@redhat.com>
+
+	* tree-mudflap.c (mx_register_decls): Tolerate decl trees resulting
+	from source code with errors.
+
 2004-05-17  Ranjit Mathew  <rmathew@hotmail.com>
 
 	Enable tree browser for all front ends.
