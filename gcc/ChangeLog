@@ -1,5 +1,16 @@
 2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/m68hc11/m68hc11.c (TARGET_STRUCT_VALUE_RTX): New.
+	(TARGET_RETURN_IN_MEMORY): Likewise.
+	(m68hc11_struct_value_rtx): Likewise.
+	(m68hc11_return_in_memory): Likewise.
+	* config/m68hc11/m68hc11.h: Remove a commented-out definition
+	of PROMOTE_PROTOTYPES.
+	(RETURN_IN_MEMORY): Remove.
+	(STRUCT_VALUE_REGNUM): Likewise.
+
+2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/mmix/mmix-protos.h: Remove the prototype for
 	mmix_setup_incoming_varargs.
 	* config/mmix/mmix.c (TARGET_PROMOTE_FUNCTION_ARGS): New.
