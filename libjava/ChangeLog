@@ -1,3 +1,8 @@
+2003-09-26  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/geom/RoundRectangle2D.java (getPathIterator): Wrote.
+	* java/awt/geom/PathIterator.java: Documentation fixes.
+
 2003-09-25  Jeff Sturm  <jsturm@one-point.com>
 
 	* gnu/java/nio/SelectorImpl.java (getFDsAsArray): Use getNativeFD().

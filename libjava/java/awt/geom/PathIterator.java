@@ -1,5 +1,5 @@
 /* PathIterator.java -- describes a shape by iterating over its vertices
-   Copyright (C) 2000, 2002 Free Software Foundation
+   Copyright (C) 2000, 2002, 2003 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -125,7 +125,7 @@ public interface PathIterator
   int getWindingRule();
 
   /**
-   * Tests if the iterator is exhausted. If this returns false, currentSegment
+   * Tests if the iterator is exhausted. If this returns true, currentSegment
    * and next may throw a NoSuchElementException (although this is not
    * required).
    *
@@ -135,7 +135,7 @@ public interface PathIterator
 
   /**
    * Advance to the next segment in the iteration. It is not specified what
-   * this does if called when isDone() returns false.
+   * this does if called when isDone() returns true.
    *
    * @throws java.util.NoSuchElementException optional when isDone() is true
    */
