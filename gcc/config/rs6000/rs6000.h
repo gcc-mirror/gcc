@@ -2012,7 +2012,7 @@ typedef struct rs6000_args
    && ! flag_pic && ! TARGET_TOC			\
    && GET_MODE_NUNITS (MODE) == 1			\
    && (GET_MODE_BITSIZE (MODE) <= 32 			\
-       || (TARGET_HARD_FLOAT && (MODE) != DFmode))	\
+       || (TARGET_HARD_FLOAT && (MODE) == DFmode))	\
    && GET_CODE (X) == LO_SUM				\
    && GET_CODE (XEXP (X, 0)) == REG			\
    && INT_REG_OK_FOR_BASE_P (XEXP (X, 0), (STRICT))	\
