@@ -1,3 +1,10 @@
+2005-02-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* version.c (version_string): Mark as prerelease.
+	* doc/include/gcc-common.texi (DEVELOPMENT): @clear it.
+	* configure.ac (is_release): Set to 1.
+	* configure: Regenerated.
+
 2005-02-25  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/19937

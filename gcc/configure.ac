@@ -31,7 +31,7 @@ AC_CONFIG_SRCDIR(tree.c)
 AC_CONFIG_HEADER(auto-host.h:config.in)
 
 #Set to 1 on a release branch
-is_release=
+is_release=1
 
 # Determine the host, build, and target systems
 AC_CANONICAL_BUILD

@@ -9,7 +9,7 @@
 @c DEVELOPMENT is set to indicate an in-development version,
 @c as compared to a release version.  When making a release
 @c branch, clear this.
-@set DEVELOPMENT
+@clear DEVELOPMENT
 
 @c Common macros to support generating man pages:
 
