@@ -882,8 +882,11 @@ real_value_truncate (mode, arg)
       r = etrunci (arg);
       return (r);
 
+    /* If an unsupported type was requested, presume that
+       the machine files know something useful to do with
+       the unmodified value.  */
     default:
-      abort ();
+      return (arg);
     }
   PUT_REAL (t, &r);
   return (r);
