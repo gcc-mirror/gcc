@@ -335,7 +335,7 @@ collect_expansion (pfile, arglist)
 	    CPP_SET_WRITTEN (pfile, here);
 	  break;
 
-	case CPP_STRINGIZE:
+	case CPP_HASH:
 	  /* # is not special in object-like macros.  It is special in
 	     function-like macros with no args.  (6.10.3.2 para 1.) */
 	  if (arglist == NULL)
@@ -348,7 +348,7 @@ collect_expansion (pfile, arglist)
 	  CPP_SET_WRITTEN (pfile, here);  /* delete from replacement text */
 	  break;
 
-	case CPP_TOKPASTE:
+	case CPP_PASTE:
 	  /* If the last token was an argument, discard this token and
 	     any hspace between it and the argument's position.  Then
 	     mark the arg raw_after.  */
@@ -577,10 +577,10 @@ collect_formal_parameters (pfile)
 
   old_written = CPP_WRITTEN (pfile);
   token = _cpp_get_directive_token (pfile);
-  if (token != CPP_LPAREN)
+  if (token != CPP_OPEN_PAREN)
     {
       cpp_ice (pfile, "first token = %d not %d in collect_formal_parameters",
-	       token, CPP_LPAREN);
+	       token, CPP_OPEN_PAREN);
       goto invalid;
     }
 
@@ -626,10 +626,10 @@ collect_formal_parameters (pfile)
 	  argv[argc].len = 0;
 	  break;
 
-	case CPP_RPAREN:
+	case CPP_CLOSE_PAREN:
 	  goto done;
 
-	case CPP_3DOTS:
+	case CPP_ELLIPSIS:
 	  goto rest_arg;
 
 	case CPP_VSPACE:
@@ -668,7 +668,7 @@ collect_formal_parameters (pfile)
   argv[argc].rest_arg = 1;
   
   token = _cpp_get_directive_token (pfile);
-  if (token != CPP_RPAREN)
+  if (token != CPP_CLOSE_PAREN)
     {
       cpp_error (pfile, "another parameter follows `...'");
       goto invalid;
@@ -776,10 +776,10 @@ macarg (pfile, rest_args)
 	  if (!CPP_IS_MACRO_BUFFER (CPP_BUFFER (pfile)))
 	    return token;
 	  break;
-	case CPP_LPAREN:
+	case CPP_OPEN_PAREN:
 	  paren++;
 	  break;
-	case CPP_RPAREN:
+	case CPP_CLOSE_PAREN:
 	  if (--paren < 0)
 	    goto found;
 	  break;
@@ -1042,7 +1042,7 @@ _cpp_macroexpand (pfile, hp)
       pfile->no_directives++;
 
       token = cpp_get_non_space_token (pfile);
-      if (token != CPP_LPAREN)
+      if (token != CPP_OPEN_PAREN)
 	cpp_ice (pfile, "macroexpand: unexpected token %d (wanted LPAREN)",
 		 token);
       CPP_ADJUST_WRITTEN (pfile, -1);
@@ -1072,7 +1072,7 @@ _cpp_macroexpand (pfile, hp)
       CPP_OPTION (pfile, discard_comments)--;
       pfile->no_macro_expand--;
       pfile->no_directives--;
-      if (token != CPP_RPAREN)
+      if (token != CPP_CLOSE_PAREN)
 	return;
 
       /* foo ( ) is equivalent to foo () unless foo takes exactly one

@@ -50,7 +50,13 @@ static void null_warning        PARAMS ((cpp_reader *, unsigned int));
 
 static void safe_fwrite		PARAMS ((cpp_reader *, const U_CHAR *,
 					 size_t, FILE *));
-static void output_line_command	PARAMS ((cpp_reader *, cpp_printer *));
+static void output_line_command	PARAMS ((cpp_reader *, cpp_printer *,
+					 unsigned int));
+static void bump_column		PARAMS ((cpp_printer *, unsigned int,
+					 unsigned int));
+static void expand_name_space	PARAMS ((cpp_toklist *));
+static void expand_token_space	PARAMS ((cpp_toklist *));
+static void init_token_list	PARAMS ((cpp_reader *, cpp_toklist *, int));
 
 /* Re-allocates PFILE->token_buffer so it will hold at least N more chars.  */
 
@@ -149,22 +155,17 @@ safe_fwrite (pfile, buf, len, fp)
    or the current file name has changed.  */
 
 static void
-output_line_command (pfile, print)
+output_line_command (pfile, print, line)
      cpp_reader *pfile;
      cpp_printer *print;
+     unsigned int line;
 {
-  unsigned int line;
-  cpp_buffer *ip;
+  cpp_buffer *ip = cpp_file_buffer (pfile);
   enum { same = 0, enter, leave, rname } change;
   static const char * const codes[] = { "", " 1", " 2", "" };
 
   if (CPP_OPTION (pfile, no_line_commands))
     return;
-
-  ip = cpp_file_buffer (pfile);
-  if (ip == NULL)
-    return;
-  line = CPP_BUF_LINE (ip);
 
   /* Determine whether the current filename has changed, and if so,
      how.  'nominal_fname' values are unique, so they can be compared
@@ -224,6 +225,8 @@ cpp_output_tokens (pfile, print)
      cpp_reader *pfile;
      cpp_printer *print;
 {
+  cpp_buffer *ip;
+
   if (CPP_WRITTEN (pfile) - print->written)
     {
       if (CPP_PWRITTEN (pfile)[-1] == '\n' && print->lineno)
@@ -231,8 +234,77 @@ cpp_output_tokens (pfile, print)
       safe_fwrite (pfile, pfile->token_buffer,
 		   CPP_WRITTEN (pfile) - print->written, print->outf);
     }
-  output_line_command (pfile, print);
+
+  ip = cpp_file_buffer (pfile);
+  if (ip)
+    output_line_command (pfile, print, CPP_BUF_LINE (ip));
+
   CPP_SET_WRITTEN (pfile, print->written);
+}
+
+/* Helper for cpp_output_list - increases the column number to match
+   what we expect it to be.  */
+
+static void
+bump_column (print, from, to)
+     cpp_printer *print;
+     unsigned int from, to;
+{
+  unsigned int tabs, spcs;
+  unsigned int delta = to - from;
+
+  /* Only if FROM is 0, advance by tabs.  */
+  if (from == 0)
+    tabs = delta / 8, spcs = delta % 8;
+  else
+    tabs = 0, spcs = delta;
+
+  while (tabs--) putc ('\t', print->outf);
+  while (spcs--) putc (' ', print->outf);
+}
+
+/* Write out the list L onto pfile->token_buffer.  This function is
+   incomplete:
+
+   1) pfile->token_buffer is not going to continue to exist.
+   2) At the moment, tokens don't carry the information described
+   in cpplib.h; they are all strings.
+   3) The list has to be a complete line, and has to be written starting
+   at the beginning of a line.  */
+
+void
+cpp_output_list (pfile, print, list)
+     cpp_reader *pfile;
+     cpp_printer *print;
+     const cpp_toklist *list;
+{
+  unsigned int i;
+  unsigned int curcol = 1;
+
+  /* XXX Probably does not do what is intended.  */
+  if (print->lineno != list->line)
+    output_line_command (pfile, print, list->line);
+  
+  for (i = 0; i < list->tokens_used; i++)
+    {
+      if (list->tokens[i].type == CPP_VSPACE)
+	{
+	  output_line_command (pfile, print, list->tokens[i].aux);
+	  continue;
+	}
+	  
+      if (curcol < list->tokens[i].col)
+	{
+	  /* Insert space to bring the column to what it should be.  */
+	  bump_column (print, curcol - 1, list->tokens[i].col);
+	  curcol = list->tokens[i].col;
+	}
+      /* XXX We may have to insert space to prevent an accidental
+	 token paste.  */
+      safe_fwrite (pfile, list->namebuf + list->tokens[i].val.name.offset,
+		   list->tokens[i].val.name.len, print->outf);
+      curcol += list->tokens[i].val.name.len;
+    }
 }
 
 /* Scan a string (which may have escape marks), perform macro expansion,
@@ -352,6 +424,107 @@ cpp_file_buffer (pfile)
       return ip;
   return NULL;
 }
+
+/* Token-buffer helper functions.  */
+
+/* Expand a token list's string space.  */
+static void
+expand_name_space (list)
+     cpp_toklist *list;
+{  
+  list->name_cap *= 2;
+  list->namebuf = (unsigned char *) xrealloc (list->namebuf,
+					      list->name_cap);
+}
+
+/* Expand the number of tokens in a list.  */
+static void
+expand_token_space (list)
+     cpp_toklist *list;
+{
+  list->tokens_cap *= 2;
+  list->tokens = (cpp_token *)
+    xrealloc (list->tokens, list->tokens_cap * sizeof (cpp_token));
+}
+
+/* Initialise a token list.  */
+static void
+init_token_list (pfile, list, recycle)
+     cpp_reader *pfile;
+     cpp_toklist *list;
+     int recycle;
+{
+  /* Recycling a used list saves 2 free-malloc pairs.  */
+  if (recycle)
+    {
+      list->tokens_used = 0;
+      list->name_used = 0;
+    }
+  else
+    {
+      /* Initialise token space.  */
+      list->tokens_cap = 256;	/* 4K on Intel.	 */
+      list->tokens_used = 0;
+      list->tokens = (cpp_token *)
+	xmalloc (list->tokens_cap * sizeof (cpp_token));
+
+      /* Initialise name space.	 */
+      list->name_cap = 1024;
+      list->name_used = 0;
+      list->namebuf = (unsigned char *) xmalloc (list->name_cap);
+    }
+
+  list->line = pfile->buffer->lineno;
+  list->dir_handler = 0;
+  list->dir_flags = 0;
+}
+
+/* Scan an entire line and create a token list for it.  Does not
+   macro-expand or execute directives.  */
+
+void
+_cpp_scan_line (pfile, list)
+     cpp_reader *pfile;
+     cpp_toklist *list;
+{
+  int i, col;
+  long written, len;
+  enum cpp_ttype type;
+
+  init_token_list (pfile, list, 1);
+
+  written = CPP_WRITTEN (pfile);
+  i = 0;
+  for (;;)
+    {
+      col = CPP_BUFFER (pfile)->cur - CPP_BUFFER (pfile)->line_base;
+      type = _cpp_lex_token (pfile);
+      len = CPP_WRITTEN (pfile) - written;
+      CPP_SET_WRITTEN (pfile, written);
+      if (type == CPP_HSPACE)
+	continue;
+
+      if (list->tokens_used >= list->tokens_cap)
+	expand_token_space (list);
+      if (list->name_used + len >= list->name_cap)
+	expand_name_space (list);
+
+      list->tokens_used++;
+      list->tokens[i].type = type;
+      list->tokens[i].col = col;
+
+      if (type == CPP_VSPACE)
+	break;
+
+      list->tokens[i].val.name.len = len;
+      list->tokens[i].val.name.offset = list->name_used;
+      memcpy (list->namebuf + list->name_used, CPP_PWRITTEN (pfile), len);
+      list->name_used += len;
+      i++;
+    }
+  list->tokens[i].aux =  CPP_BUFFER (pfile)->lineno + 1;
+}
+
 
 /* Skip a C-style block comment.  We know it's a comment, and point is
    at the second character of the starter.  */
@@ -904,9 +1077,9 @@ _cpp_lex_token (pfile)
 	      CPP_PUTC_Q (pfile, GETC ());
 	    }
 	  else
-	    return CPP_STRINGIZE;
+	    return CPP_HASH;
 
-	  return CPP_TOKPASTE;
+	  return CPP_PASTE;
 	}
 
       if (!pfile->only_seen_white)
@@ -959,7 +1132,7 @@ _cpp_lex_token (pfile)
 	  CPP_RESERVE (pfile, 2);
 	  CPP_PUTC_Q (pfile, c);
 	  CPP_PUTC_Q (pfile, c2);
-	  return CPP_RBRACE;
+	  return CPP_OPEN_BRACE;
 	}
       /* else fall through */
 
@@ -1042,7 +1215,7 @@ _cpp_lex_token (pfile)
 	  CPP_RESERVE (pfile, 2);
 	  CPP_PUTC_Q (pfile, c);
 	  CPP_PUTC_Q (pfile, c2);
-	  return CPP_LBRACE;
+	  return CPP_CLOSE_BRACE;
 	}
       else if (c2 == ':')
 	goto op2;
@@ -1082,7 +1255,7 @@ _cpp_lex_token (pfile)
 	  CPP_PUTC_Q (pfile, '.');
 	  CPP_PUTC_Q (pfile, '.');
 	  FORWARD (2);
-	  return CPP_3DOTS;
+	  return CPP_ELLIPSIS;
 	}
       goto randomchar;
 
@@ -1228,12 +1401,12 @@ _cpp_lex_token (pfile)
       CPP_PUTC (pfile, c);
       return CPP_VSPACE;
 
-    case '(': token = CPP_LPAREN;    goto char1;
-    case ')': token = CPP_RPAREN;    goto char1;
-    case '{': token = CPP_LBRACE;    goto char1;
-    case '}': token = CPP_RBRACE;    goto char1;
-    case ',': token = CPP_COMMA;     goto char1;
-    case ';': token = CPP_SEMICOLON; goto char1;
+    case '(': token = CPP_OPEN_PAREN;  goto char1;
+    case ')': token = CPP_CLOSE_PAREN; goto char1;
+    case '{': token = CPP_OPEN_BRACE;  goto char1;
+    case '}': token = CPP_CLOSE_BRACE; goto char1;
+    case ',': token = CPP_COMMA;       goto char1;
+    case ';': token = CPP_SEMICOLON;   goto char1;
 
     randomchar:
     default:

@@ -348,7 +348,7 @@ parse_defined (pfile)
 
   pfile->no_macro_expand++;
   token = _cpp_get_directive_token (pfile);
-  if (token == CPP_LPAREN)
+  if (token == CPP_OPEN_PAREN)
     {
       paren++;
       CPP_SET_WRITTEN (pfile, old_written);
@@ -364,7 +364,7 @@ parse_defined (pfile)
 
   if (paren)
     {
-      if (_cpp_get_directive_token (pfile) != CPP_RPAREN)
+      if (_cpp_get_directive_token (pfile) != CPP_CLOSE_PAREN)
 	goto oops;
     }
   CPP_SET_WRITTEN (pfile, old_written);
