@@ -3867,7 +3867,7 @@ expand_a_rotate (enum rtx_code code, rtx operands[])
 
       /* If the rotate amount is less than or equal to 0,
 	 we go out of the loop.  */
-      emit_cmp_and_jump_insns (rotate_amount, GEN_INT (0), LE, NULL_RTX,
+      emit_cmp_and_jump_insns (rotate_amount, const0_rtx, LE, NULL_RTX,
 			       QImode, 0, end_label);
 
       /* Initialize the loop counter.  */
@@ -3876,16 +3876,16 @@ expand_a_rotate (enum rtx_code code, rtx operands[])
       emit_label (start_label);
 
       /* Rotate by one bit.  */
-      tmp = gen_rtx_fmt_ee (code, mode, dst, GEN_INT (1));
+      tmp = gen_rtx_fmt_ee (code, mode, dst, const1_rtx);
       emit_insn (gen_rtx_SET (mode, dst, tmp));
 
       /* Decrement the counter by 1.  */
-      tmp = gen_rtx_PLUS (QImode, counter, GEN_INT (-1));
+      tmp = gen_rtx_PLUS (QImode, counter, constm1_rtx);
       emit_insn (gen_rtx_SET (VOIDmode, counter, tmp));
 
       /* If the loop counter is nonzero, we go back to the beginning
 	 of the loop.  */
-      emit_cmp_and_jump_insns (counter, GEN_INT (0), NE, NULL_RTX, QImode, 1,
+      emit_cmp_and_jump_insns (counter, const0_rtx, NE, NULL_RTX, QImode, 1,
 			       start_label);
 
       emit_label (end_label);

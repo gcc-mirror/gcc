@@ -1696,7 +1696,7 @@ xstormy16_expand_casesi (rtx index, rtx lower_bound, rtx range,
   emit_cmp_and_jump_insns (index, range, GTU, NULL_RTX, SImode, 1,
 			   default_label);
   int_index = gen_lowpart_common (HImode, index);
-  emit_insn (gen_ashlhi3 (int_index, int_index, GEN_INT (2)));
+  emit_insn (gen_ashlhi3 (int_index, int_index, const2_rtx));
   emit_jump_insn (gen_tablejump_pcrel (int_index, table));
 }
 

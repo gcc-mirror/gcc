@@ -1690,7 +1690,7 @@ expand_prologue (void)
 
       if (size & 1)
 	emit_insn (gen_addhi3 (stack_pointer_rtx,
-			       stack_pointer_rtx, GEN_INT (-1)));
+			       stack_pointer_rtx, constm1_rtx));
     }
 
   /* Create the frame pointer.  */
@@ -1776,7 +1776,7 @@ expand_epilogue (void)
 	emit_move_after_reload (scratch, stack_pop_word, scratch);
       if (size & 1)
 	emit_insn (gen_addhi3 (stack_pointer_rtx,
-			       stack_pointer_rtx, GEN_INT (1)));
+			       stack_pointer_rtx, const1_rtx));
     }
 
   /* For an interrupt handler, restore ZTMP, ZREG and XYREG.  */
@@ -1807,7 +1807,7 @@ expand_epilogue (void)
 	}
       emit_move_after_reload (gen_rtx_MEM (HImode,
 				       gen_rtx_PLUS (HImode, addr_reg,
-						GEN_INT (1))), d_reg, 0);
+						const1_rtx)), d_reg, 0);
       if (return_size > HARD_REG_SIZE)
 	emit_move_after_reload (gen_rtx_MEM (HImode,
 					 gen_rtx_PLUS (HImode, addr_reg,

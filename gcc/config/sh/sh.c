@@ -2427,7 +2427,7 @@ gen_shl_sext (rtx dest, rtx left_rtx, rtx size_rtx, rtx source)
 		  {
 		    operands[2] = GEN_INT (shift2 + 1);
 		    gen_shifty_op (ASHIFT, operands);
-		    operands[2] = GEN_INT (1);
+		    operands[2] = const1_rtx;
 		    gen_shifty_op (ASHIFTRT, operands);
 		    break;
 		  }
@@ -2481,7 +2481,7 @@ gen_shl_sext (rtx dest, rtx left_rtx, rtx size_rtx, rtx source)
       operands[2] = kind == 7 ? GEN_INT (left + 1) : left_rtx;
       gen_shifty_op (ASHIFT, operands);
       if (kind == 7)
-	emit_insn (gen_ashrsi3_k (dest, dest, GEN_INT (1)));
+	emit_insn (gen_ashrsi3_k (dest, dest, const1_rtx));
       break;
     default:
       return -1;
@@ -3375,7 +3375,7 @@ gen_block_redirect (rtx jump, int addr, int need_block)
 	return prev;
       /* Reorg even does nasty things with return insns that cause branches
 	 to go out of range - see find_end_label and callers.  */
-      return emit_insn_before (gen_block_branch_redirect (GEN_INT (0)) , jump);
+      return emit_insn_before (gen_block_branch_redirect (const0_rtx) , jump);
     }
   /* We can't use JUMP_LABEL here because it might be undefined
      when not optimizing.  */
@@ -8413,14 +8413,14 @@ sh_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
 				 movishori));
       emit_insn (gen_rotrdi3_mextr (quad0, quad0,
 				    GEN_INT (TARGET_LITTLE_ENDIAN ? 24 : 56)));
-      emit_insn (gen_ashldi3_media (quad0, quad0, GEN_INT (2)));
+      emit_insn (gen_ashldi3_media (quad0, quad0, const2_rtx));
       emit_move_insn (gen_rtx_MEM (DImode, tramp), quad0);
       emit_insn (gen_mshflo_w_x (gen_rtx_SUBREG (V4HImode, cxtload, 0),
 				 gen_rtx_SUBREG (V2HImode, cxt, 0),
 				 movishori));
       emit_insn (gen_rotrdi3_mextr (cxtload, cxtload,
 				    GEN_INT (TARGET_LITTLE_ENDIAN ? 24 : 56)));
-      emit_insn (gen_ashldi3_media (cxtload, cxtload, GEN_INT (2)));
+      emit_insn (gen_ashldi3_media (cxtload, cxtload, const2_rtx));
       if (TARGET_LITTLE_ENDIAN)
 	{
 	  emit_insn (gen_mshflo_l_di (quad1, ptabs, cxtload));
@@ -9171,7 +9171,7 @@ sh_expand_t_scc (enum rtx_code code, rtx target)
     {
       emit_insn (gen_rtx_CLOBBER (VOIDmode, result));
       emit_insn (gen_subc (result, result, result));
-      emit_insn (gen_addsi3 (result, result, GEN_INT (1)));
+      emit_insn (gen_addsi3 (result, result, const1_rtx));
     }
   else if (code == EQ || code == NE)
     emit_insn (gen_move_insn (result, GEN_INT (code == NE)));

@@ -702,7 +702,7 @@ output_move_quad (rtx *operands)
 	}
       else if (GET_CODE(operands[1]) == CONST_INT)
 	{
-	  latehalf[1] = GEN_INT (0);
+	  latehalf[1] = const0_rtx;
 	}
       else
 	abort();

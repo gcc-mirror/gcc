@@ -1077,7 +1077,7 @@ c4x_expand_epilogue(void)
 					 gen_rtx_PLUS 
 					 (QImode, gen_rtx_REG (QImode,
 							       AR3_REGNO),
-					  GEN_INT(-1)))));
+					  constm1_rtx))));
 	      RTX_FRAME_RELATED_P (insn) = 1;
 	      
 	      /* We already have the return value and the fp,
@@ -2359,8 +2359,8 @@ c4x_rptb_insert (rtx insn)
     {
       /* We can not use the rptb insn.  Replace it so reorg can use
          the delay slots of the jump insn.  */
-      emit_insn_before (gen_addqi3 (count_reg, count_reg, GEN_INT (-1)), insn);
-      emit_insn_before (gen_cmpqi (count_reg, GEN_INT (0)), insn);
+      emit_insn_before (gen_addqi3 (count_reg, count_reg, constm1_rtx), insn);
+      emit_insn_before (gen_cmpqi (count_reg, const0_rtx), insn);
       emit_insn_before (gen_bge (start_label), insn);
       LABEL_NUSES (start_label)++;
       delete_insn (insn);

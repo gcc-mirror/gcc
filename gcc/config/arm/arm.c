@@ -5455,7 +5455,7 @@ arm_gen_movstrqi (rtx *operands)
 	    {
 	      rtx tmp = gen_reg_rtx (SImode);
 
-	      emit_insn (gen_addsi3 (dst, dst, GEN_INT (2)));
+	      emit_insn (gen_addsi3 (dst, dst, const2_rtx));
 	      emit_insn (gen_lshrsi3 (tmp, part_bytes_reg, GEN_INT (16)));
 	      part_bytes_reg = tmp;
 	    }

@@ -662,7 +662,7 @@ mmix_function_outgoing_value (tree valtype, tree func ATTRIBUTE_UNUSED)
   vec[nregs - 1]
     = gen_rtx_EXPR_LIST (VOIDmode,
 			 gen_rtx_REG (cmode, first_val_regnum + nregs - 1),
-			 GEN_INT (0));
+			 const0_rtx);
 
   return gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (nregs, vec));
 }

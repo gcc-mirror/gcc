@@ -571,7 +571,7 @@
 
   /* Generate [-0.0, -0.0, -0.0, -0.0].  */
   neg0 = gen_reg_rtx (V4SFmode);
-  emit_insn (gen_altivec_vspltisw_v4sf (neg0, GEN_INT (-1)));
+  emit_insn (gen_altivec_vspltisw_v4sf (neg0, constm1_rtx));
   emit_insn (gen_altivec_vslw_v4sf (neg0, neg0, neg0));
 
   /* Use the multiply-add.  */

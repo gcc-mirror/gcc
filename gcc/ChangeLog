@@ -1,5 +1,20 @@
 2004-02-03  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/alpha/alpha.c, config/arm/arm.c, config/c4x/c4x.c,
+	config/fr30/fr30.md, config/frv/frv.c, config/frv/frv.md,
+	config/h8300/h8300.c, config/ia64/ia64.c, config/ip2k/ip2k.md,
+	config/m32r/m32r.md, config/m68hc11/m68hc11.c,
+	config/mips/mips.md, config/mmix/mmix.c,
+	config/mn10300/mn10300.c, config/mn10300/mn10300.md,
+	config/ns32k/ns32k.c, config/pa/pa.md, config/pdp11/pdp11.c,
+	config/rs6000/altivec.md, config/s390/s390.c,
+	config/s390/s390.h, config/s390/s390.md, config/sh/sh.c,
+	config/sh/sh.h, config/sh/sh.md, config/stormy16/stormy16.c:
+	Use const0_rtx instead of GEN_INT (0).  Do the same for other
+	constants that are readily available.
+
+2004-02-03  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* doloop.c, optabs.c, regmove.c, sched-deps.c,
 	config/i386/i386.c, config/i386/i386.md: Use const0_rtx
 	instead of GEN_INT (0).  Do the same for other constants that

@@ -9201,7 +9201,7 @@ frv_expand_mclracc_builtin (tree arglist)
 static rtx
 frv_expand_noargs_builtin (enum insn_code icode)
 {
-  rtx pat = GEN_FCN (icode) (GEN_INT (0));
+  rtx pat = GEN_FCN (icode) (const0_rtx);
   if (pat)
     emit_insn (pat);
 

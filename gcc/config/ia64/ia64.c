@@ -3180,9 +3180,9 @@ ia64_expand_epilogue (int sibcall_p)
 	 It is unclear how to compute that number here.  */
       if (current_frame_info.n_input_regs != 0)
 	emit_insn (gen_alloc (gen_rtx_REG (DImode, fp),
-			      GEN_INT (0), GEN_INT (0),
+			      const0_rtx, const0_rtx,
 			      GEN_INT (current_frame_info.n_input_regs),
-			      GEN_INT (0)));
+			      const0_rtx));
     }
 }
 
@@ -7151,7 +7151,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 		       onto MFI because we will add nops before the
 		       insn.  It simplifies subsequent code a lot.  */
 		    PATTERN (last)
-		      = gen_bundle_selector (GEN_INT (2)); /* -> MFI */
+		      = gen_bundle_selector (const2_rtx); /* -> MFI */
 		  break;
 		}
 	      else if (recog_memoized (last) != CODE_FOR_insn_group_barrier)
@@ -7177,7 +7177,7 @@ bundling (FILE *dump, int verbose, rtx prev_head_insn, rtx tail)
 	    for (i = add_cycles [INSN_UID (insn)]; i > 0; i--)
 	      {
 		/* Insert "MII;" template.  */
-		ia64_emit_insn_before (gen_bundle_selector (GEN_INT (0)),
+		ia64_emit_insn_before (gen_bundle_selector (const0_rtx),
 				       insn);
 		ia64_emit_insn_before (gen_nop (), insn);
 		ia64_emit_insn_before (gen_nop (), insn);

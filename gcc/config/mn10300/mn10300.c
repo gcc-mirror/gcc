@@ -366,7 +366,7 @@ print_operand (FILE *file, rtx x, int code)
       case 'A':
 	fputc ('(', file);
 	if (GET_CODE (XEXP (x, 0)) == REG)
-	  output_address (gen_rtx_PLUS (SImode, XEXP (x, 0), GEN_INT (0)));
+	  output_address (gen_rtx_PLUS (SImode, XEXP (x, 0), const0_rtx));
 	else
 	  output_address (XEXP (x, 0));
 	fputc (')', file);

@@ -6100,7 +6100,7 @@ function_value (tree valtype, tree func ATTRIBUTE_UNUSED,
 	  (VOIDmode,
 	   gen_rtvec (2,
 		      gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_REG (cmode, 32),
-				         GEN_INT (0)),
+				         const0_rtx),
 		      gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_REG (cmode, 33),
 				         GEN_INT (GET_MODE_SIZE (cmode)))));
       }
@@ -7845,7 +7845,7 @@ alpha_expand_epilogue (void)
 
 	  emit_insn (gen_blockage ());
 	  FRP (emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
-				      hard_frame_pointer_rtx, GEN_INT (-1))));
+				      hard_frame_pointer_rtx, constm1_rtx)));
         }
     }
 }
@@ -9685,7 +9685,7 @@ unicosmk_gen_dsib (unsigned long *imaskP)
          have a frame.  */
 
       FRP (emit_insn (gen_adddi3 (hard_frame_pointer_rtx,
-                                  hard_frame_pointer_rtx, GEN_INT (1))));
+                                  hard_frame_pointer_rtx, const1_rtx)));
     }
 }
 

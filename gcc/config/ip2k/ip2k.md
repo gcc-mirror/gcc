@@ -1087,7 +1087,7 @@
 	  instructions. */
        if (! nonimmediate_operand (operands[1], HImode))
          operands[1] = copy_to_mode_reg (HImode, operands[1]);
-       emit_insn (gen_ashlhi3 (operands[0], operands[1], GEN_INT (1)));
+       emit_insn (gen_ashlhi3 (operands[0], operands[1], const1_rtx));
        DONE;
      }
   ")
@@ -3154,13 +3154,13 @@
     if (INTVAL (operands[2]) == 16)
       {
         emit_insn (gen_movhi (operands[3], operands[5]));
-        emit_insn (gen_movhi (operands[4], GEN_INT (0)));
+        emit_insn (gen_movhi (operands[4], const0_rtx));
       }
     else
       {
         operands[6] = GEN_INT (INTVAL (operands[2]) - 16);
 	emit_insn (gen_ashlhi3 (operands[3], operands[5], operands[6]));
-        emit_insn (gen_movhi (operands[4], GEN_INT (0)));
+        emit_insn (gen_movhi (operands[4], const0_rtx));
       }
   }")
 
@@ -3388,18 +3388,18 @@
 	emit_insn (gen_movhi (operands[7], operands[11]));
 	emit_insn (gen_movhi (operands[8], operands[12]));
 	emit_insn (gen_movhi (operands[9], operands[13]));
-	emit_insn (gen_movhi (operands[10], GEN_INT (0)));
+	emit_insn (gen_movhi (operands[10], const0_rtx));
       }
     else if (INTVAL (operands[2]) == 32)
       {
         emit_insn (gen_movsi (operands[3], operands[5]));
-        emit_insn (gen_movsi (operands[4], GEN_INT (0)));
+        emit_insn (gen_movsi (operands[4], const0_rtx));
       }
     else
       {
         operands[6] = GEN_INT (INTVAL (operands[2]) - 32);
 	emit_insn (gen_ashlsi3 (operands[3], operands[5], operands[6]));
-        emit_insn (gen_movsi (operands[4], GEN_INT (0)));
+        emit_insn (gen_movsi (operands[4], const0_rtx));
       }
   }")
 
@@ -3896,7 +3896,7 @@
         operands[6] = GEN_INT (INTVAL (operands[2]) - 8);
 	emit_insn (gen_lshrqi3 (operands[4], operands[5], operands[6]));
       }
-    emit_insn (gen_movqi (operands[3], GEN_INT (0)));
+    emit_insn (gen_movqi (operands[3], const0_rtx));
   }")
 
 (define_insn "lshrhi3" ;			      0   1   2  3   4
@@ -4027,7 +4027,7 @@
         operands[6] = GEN_INT (INTVAL (operands[2]) - 16);
 	emit_insn (gen_lshrhi3 (operands[4], operands[5], operands[6]));
       }
-    emit_insn (gen_movhi (operands[3], GEN_INT (0)));
+    emit_insn (gen_movhi (operands[3], const0_rtx));
   }")
 
 ;; This occurs frequently in supporting FP among other things,
@@ -4258,18 +4258,18 @@
 	emit_insn (gen_movhi (operands[10], operands[11]));
 	emit_insn (gen_movhi (operands[9], operands[12]));
 	emit_insn (gen_movhi (operands[8], operands[13]));
-	emit_insn (gen_movhi (operands[7], GEN_INT(0)));
+	emit_insn (gen_movhi (operands[7], const0_rtx));
       }
     else if (INTVAL (operands[2]) == 32)
       {
         emit_insn (gen_movsi (operands[4], operands[5]));
-        emit_insn (gen_movsi (operands[3], GEN_INT (0)));
+        emit_insn (gen_movsi (operands[3], const0_rtx));
       }
     else
       {
         operands[6] = GEN_INT (INTVAL (operands[2]) - 32);
 	emit_insn (gen_lshrsi3 (operands[4], operands[5], operands[6]));
-        emit_insn (gen_movsi (operands[3], GEN_INT (0)));
+        emit_insn (gen_movsi (operands[3], const0_rtx));
       }
   }")
 

@@ -4417,7 +4417,7 @@ dsrl\t%3,%3,1\n\
   HOST_WIDE_INT val = INTVAL (operands[1]);
 
   if (val < 0)
-    operands[2] = GEN_INT (0);
+    operands[2] = const0_rtx;
   else if (val >= 32 * 8)
     {
       int off = val & 7;
@@ -4540,7 +4540,7 @@ dsrl\t%3,%3,1\n\
   HOST_WIDE_INT val = INTVAL (operands[1]);
 
   if (val < 0)
-    operands[2] = GEN_INT (0);
+    operands[2] = const0_rtx;
   else if (val >= 32 * 4)
     {
       int off = val & 3;
@@ -4839,7 +4839,7 @@ dsrl\t%3,%3,1\n\
   HOST_WIDE_INT val = INTVAL (operands[1]);
 
   if (val < 0)
-    operands[2] = GEN_INT (0);
+    operands[2] = const0_rtx;
   else if (val >= 32 * 2)
     {
       int off = val & 1;
@@ -4943,7 +4943,7 @@ dsrl\t%3,%3,1\n\
   HOST_WIDE_INT val = INTVAL (operands[1]);
 
   if (val < 0)
-    operands[2] = GEN_INT (0);
+    operands[2] = const0_rtx;
   else
     {
       operands[1] = GEN_INT (0x7f);

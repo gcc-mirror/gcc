@@ -4059,7 +4059,7 @@
 	  if ((HOST_WIDE_INT) val2 < 0 && CONST_OK_FOR_I16 (val2))
 	    {
 	      operands[1] = gen_mshflo_l_di (operands[0], operands[0],
-					     GEN_INT (0));
+					     const0_rtx);
 	      break;
 	    }
 	}
@@ -9242,7 +9242,7 @@ mov.l\\t1f,r0\\n\\
 	  emit_insn (gen_lshrsi3_k (shift_reg, shift_reg, GEN_INT (8)));
 	  qi_val = gen_rtx_SUBREG (QImode, shift_reg, 3);
 	}
-      emit_insn (gen_addsi3 (addr_target, addr_target, GEN_INT (-1)));
+      emit_insn (gen_addsi3 (addr_target, addr_target, constm1_rtx));
       emit_insn (gen_movqi (operands[0], qi_val));
     }
 
@@ -10669,7 +10669,7 @@ mov.l\\t1f,r0\\n\\
   rtx scratch = gen_reg_rtx (DImode);
   rtx last;
 
-  emit_insn (gen_adddi3 (scratch, operands[1], GEN_INT (-1)));
+  emit_insn (gen_adddi3 (scratch, operands[1], constm1_rtx));
   emit_insn (gen_xordi3 (scratch, operands[1], scratch));
   emit_insn (gen_lshrdi3_media (scratch, scratch, const1_rtx));
   emit_insn (gen_nsbdi (scratch, scratch));
@@ -10694,7 +10694,7 @@ mov.l\\t1f,r0\\n\\
 
   emit_insn (gen_adddi3 (discratch,
 			 simplify_gen_subreg (DImode, operands[1], SImode, 0),
-			 GEN_INT (-1)));
+			 constm1_rtx));
   emit_insn (gen_andcdi3 (discratch,
 			  simplify_gen_subreg (DImode, operands[1], SImode, 0),
 			  discratch));

@@ -594,7 +594,7 @@ extern int current_function_outgoing_args_size;
   s390_return_addr_rtx ((COUNT), DYNAMIC_CHAIN_ADDRESS ((FRAME)))
 
 /* In 31-bit mode, we need to mask off the high bit of return addresses.  */
-#define MASK_RETURN_ADDR (TARGET_64BIT ? GEN_INT (-1) : GEN_INT (0x7fffffff))
+#define MASK_RETURN_ADDR (TARGET_64BIT ? constm1_rtx : GEN_INT (0x7fffffff))
 
 
 /* Exception handling.  */
