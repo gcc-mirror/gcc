@@ -1,7 +1,7 @@
 #
 # Makefile for directory with subdirs to build.
 #   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000 Free Software Foundation
+#   1999, 2000, 2001 Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -537,6 +537,7 @@ ALL_MODULES = \
 	all-sed \
 	all-send-pr \
 	all-shellutils \
+	all-sid \
 	all-sim \
 	all-snavigator \
 	all-tar \
@@ -614,6 +615,7 @@ CROSS_CHECK_MODULES = \
 	check-send-pr \
 	check-shellutils \
 	check-snavigator \
+	check-sid \
 	check-sim \
 	check-tar \
 	check-tcl \
@@ -690,6 +692,7 @@ INSTALL_MODULES = \
 	install-sed \
 	install-send-pr \
 	install-shellutils \
+	install-sid \
 	install-sim \
 	install-snavigator \
 	install-tar \
@@ -881,6 +884,7 @@ CLEAN_MODULES = \
 	clean-sed \
 	clean-send-pr \
 	clean-shellutils \
+	clean-sid \
 	clean-sim \
 	clean-snavigator \
 	clean-tar \
@@ -1663,6 +1667,7 @@ all-recode: all-libiberty
 all-sed: all-libiberty
 all-send-pr: all-prms
 all-shellutils:
+all-sid: all-tcl all-tk
 all-sim: all-libiberty all-bfd all-opcodes all-readline all-cgen
 all-snavigator: all-tcl all-tk all-itcl all-db all-grep all-libgui
 all-tar: all-libiberty
@@ -1692,6 +1697,7 @@ all-target-libiberty: configure-target-libiberty
 all-target: $(ALL_TARGET_MODULES)
 install-target: $(INSTALL_TARGET_MODULES)
 install-gdb: install-tcl install-tk install-itcl install-tix install-libgui
+install-sid: install-tcl install-tk
 ### other supporting targets
 
 MAKEDIRS= \

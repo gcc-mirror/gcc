@@ -1,3 +1,8 @@
+2001-05-11  Ben Elliston  <bje@redhat.com>
+
+	* Makefile.in (all-sid): New target.
+	(check-sid, clean-sid, install-sid): Likewise.
+
 2001-05-09  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* ltcf-cxx.sh: Add -nostdlib to IRIX 6 archive_cmds.
