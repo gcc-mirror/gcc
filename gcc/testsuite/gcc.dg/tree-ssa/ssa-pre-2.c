@@ -17,4 +17,4 @@ int motion_test1(int data, int data_0, int data_3, int v)
 }
 /* We should eliminate one computation of data_0 + data_3 along the 
    main path, causing one reload. */
-/* { dg-final { scan-tree-dump-times "Reloads:1" 1 "pre"} } */
+/* { dg-final { scan-tree-dump-times "Eliminated:1" 1 "pre"} } */

@@ -482,6 +482,14 @@ mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el)
 {
   int edge_number;
 
+#ifdef ENABLE_CHECKING
+  if (bb == EXIT_BLOCK_PTR)
+    abort ();
+#endif
+
+  if (bb == ENTRY_BLOCK_PTR)
+    return;
+
   EXECUTE_IF_CONTROL_DEPENDENT (bb->index, edge_number,
     {
       tree t;

@@ -46,6 +46,47 @@ get_var_ann (tree var)
   return (ann) ? ann : create_var_ann (var);
 }
 
+
+static inline cst_ann_t
+cst_ann (tree t)
+{
+#if defined ENABLE_CHECKING
+  if (TREE_CODE_CLASS (TREE_CODE (t)) != 'c'
+      || (t->common.ann
+	  && t->common.ann->common.type != CST_ANN))
+    abort ();
+#endif
+
+  return (cst_ann_t) t->common.ann;
+}
+
+static inline cst_ann_t
+get_cst_ann (tree var)
+{
+  cst_ann_t ann = cst_ann (var);
+  return (ann) ? ann : create_cst_ann (var);
+}
+
+static inline expr_ann_t
+expr_ann (tree t)
+{
+#if defined ENABLE_CHECKING
+  if (!EXPR_P (t)
+      || (t->common.ann
+	  && t->common.ann->common.type != EXPR_ANN))
+    abort ();
+#endif
+
+  return (expr_ann_t) t->common.ann;
+}
+
+static inline expr_ann_t
+get_expr_ann (tree var)
+{
+  expr_ann_t ann = expr_ann (var);
+  return (ann) ? ann : create_expr_ann (var);
+}
+
 static inline stmt_ann_t
 stmt_ann (tree t)
 {
