@@ -1,4 +1,22 @@
 2003-02-13  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/natByteBufferImpl.cc,
+	gnu/java/nio/natCharBufferImpl.cc,
+	gnu/java/nio/natDoubleBufferImpl.cc,
+	gnu/java/nio/natFloatBufferImpl.cc,
+	gnu/java/nio/natIntBufferImpl.cc,
+	gnu/java/nio/natLongBufferImpl.cc,
+	gnu/java/nio/natShortBufferImpl.cc:
+	Added copyright and license.
+	* java/nio/DoubleBuffer.java,
+	java/nio/FloatBuffer.java,
+	java/nio/IntBuffer.java,
+	java/nio/LongBuffer.java,
+	java/nio/ShortBuffer.java
+	(array): Throw exceptions.
+	(arrayOffset): Throw exceptions.
+
+2003-02-13  Michael Koch  <konqueror@gmx.de>
  
 	* gnu/java/util/prefs/FileBasedFactory.java,
 	gnu/java/util/prefs/MemmoryBasedFactory.java,
