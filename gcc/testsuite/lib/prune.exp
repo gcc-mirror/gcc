@@ -22,6 +22,7 @@ proc prune_gcc_output { text } {
     regsub -all "(^|\n)\[^\n\]*: In (function|method) \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*: At top level:\[^\n\]*" $text "" text
     regsub -all "(^|\n)collect2: ld returned \[^\n\]*" $text "" text
+    regsub -all "(^|\n)Please submit.*instructions\[^\n\]*" $text "" text
 
     # It would be nice to avoid passing anything to gcc that would cause it to
     # issue these messages (since ignoring them seems like a hack on our part),
