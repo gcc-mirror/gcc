@@ -114,8 +114,8 @@ D(warning,	T_WARNING,	EXTENSION)		    /*    22 GNU */ \
 D(include_next,	T_INCLUDE_NEXT,	EXTENSION | SYNTAX_INCLUDE) /*    19 GNU */ \
 D(ident,	T_IDENT,	EXTENSION)		    /*    11 SVR4 */ \
 D(import,	T_IMPORT,	EXTENSION | SYNTAX_INCLUDE) /*     0 ObjC */ \
-D(assert,	T_ASSERT,	EXTENSION | SYNTAX_ASSERT)  /*     0 SVR4 */ \
-D(unassert,	T_UNASSERT,	EXTENSION | SYNTAX_ASSERT)  /*     0 SVR4 */ \
+D(assert,	T_ASSERT,	EXTENSION)  		    /*     0 SVR4 */ \
+D(unassert,	T_UNASSERT,	EXTENSION)  		    /*     0 SVR4 */ \
 SCCS_ENTRY
 
 /* Use the table to generate a series of prototypes, an enum for the

@@ -1,3 +1,10 @@
+2000-05-16  Neil Booth  <NeilB@earthling.net>
+
+	* cpplex.c (parse_string2): Update comment.
+	(cpp_lex_line): No special assertion treatment for '('.
+	* cpplib.c (DIRECTIVE_TABLE): Remove SYNTAX_ASSERT.
+	* cpplib.h (SYNTAX_ASSERT): Remove.
+
 Mon May 15 21:45:36 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (condjump_p):  Mark as depreached.
