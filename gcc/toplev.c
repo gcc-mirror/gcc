@@ -976,11 +976,6 @@ static const param_info lang_independent_params[] = {
   { NULL, 0, NULL }
 };
 
-/* A default for same.  */
-#ifndef USER_LABEL_PREFIX
-#define USER_LABEL_PREFIX ""
-#endif
-
 /* Table of language-independent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE

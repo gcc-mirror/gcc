@@ -240,6 +240,11 @@ do { fputs (integer_asm_op (POINTER_SIZE / UNITS_PER_WORD, TRUE), FILE); \
 #endif
 #endif
 
+/* By default, there is no prefix on user-defined symbols.  */
+#ifndef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX ""
+#endif
+
 /* If the target supports weak symbols, define TARGET_ATTRIBUTE_WEAK to
    provide a weak attribute.  Else define it to nothing. 
 

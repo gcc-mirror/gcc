@@ -1,3 +1,8 @@
+2002-09-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* toplev.c: Move default definition of USER_LABEL_PREFIX...
+	* defaults.h: ... here.
+
 2002-09-12  Richard Henderson  <rth@redhat.com>
 
 	* vax.c: Include tree.h earlier.
@@ -27,7 +32,7 @@
 	(udivmodhi4): Likewise.
 
 2002-09-12  Graham Stott  <graham.stott@btinternet.com>
-            Roger Sayle  <roger@eyesopen.com>
+	    Roger Sayle  <roger@eyesopen.com>
 
 	* i386.c (any_fp_register_operand, fp_register_operand,
 	register_and_not_any_fp_reg_operand, register_and_not_fp_reg_operand):
@@ -89,7 +94,7 @@
 	Move common code out of conditionals.  Localize vars.
 
 2002-09-09  Eric Botcazou  ebotcazou@libertysurf.fr
-  
+
 	* optabs.c (expand_binop): Minor cleanup.
 	(expand_twoval_binop): Convert CONST_INTs like in expand_binop.
 
@@ -218,7 +223,7 @@
 	Fix folding marks.
 
 2002-09-09  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
-            J"orn Rennecke <joern.rennecke@superh.com>
+	    J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh/sh.h (OVERRIDE_OPTIONS): align_functions is in bytes, not bits.
 
@@ -336,7 +341,7 @@
 
 2002-09-07  Igor Shevlyakov <igor@microunity.com>
 
-        * varasm.c (decode_rtx_const): Don't check undefined field for
+	* varasm.c (decode_rtx_const): Don't check undefined field for
 	CONST_VECTOR.
 
 2002-09-07  Glen Nakamura  <glen@imodulo.com>
