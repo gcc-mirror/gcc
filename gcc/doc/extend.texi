@@ -2368,12 +2368,23 @@ since it is known that the calling function loaded the correct value.
 Not all ELF targets support this attribute.
 
 @item regparm (@var{number})
+@cindex @code{regparm} attribute
 @cindex functions that are passed arguments in registers on the 386
 On the Intel 386, the @code{regparm} attribute causes the compiler to
 pass up to @var{number} integer arguments in registers EAX,
 EDX, and ECX instead of on the stack.  Functions that take a
 variable number of arguments will continue to be passed all of their
 arguments on the stack.
+
+Beware that on some ELF systems this attribute is unsuitable for
+global functions in shared libraries with lazy binding (which is the
+default).  Lazy binding will send the first call via resolving code in
+the loader, which might assume EAX, EDX and ECX can be clobbered, as
+per the standard calling conventions.  Solaris 8 is affected by this.
+GNU systems with GLIBC 2.1 or higher, and FreeBSD, are believed to be
+safe since the loaders there save all registers.  (Lazy binding can be
+disabled with the linker or the loader if desired, to avoid the
+problem.)
 
 @item stdcall
 @cindex functions that pop the argument stack on the 386
