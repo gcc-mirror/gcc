@@ -1,3 +1,8 @@
+2004-01-12  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/11397
+	* gcc.dg/special/wkali-2.c: Add dg-require-alias.
+
 2004-01-12  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/12826
