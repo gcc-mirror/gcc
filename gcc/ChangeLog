@@ -1,3 +1,7 @@
+2003-01-02  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	* doc/passes.texi: Fix documentation for -fssa-ccp
+
 2003-01-02  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gccbug.in: Update for new categories.
