@@ -4357,8 +4357,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	      /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
 	      STRIP_TYPE_NOPS (size);
 
-	      if (TREE_CODE (TREE_TYPE (size)) != INTEGER_TYPE
-		  && TREE_CODE (TREE_TYPE (size)) != ENUMERAL_TYPE)
+	      if (! INTEGRAL_TYPE_P (TREE_TYPE (size)))
 		{
 		  error ("size of array `%s' has non-integer type", name);
 		  size = integer_one_node;

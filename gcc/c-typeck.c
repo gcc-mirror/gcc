@@ -7077,8 +7077,7 @@ c_start_case (exp)
       code = TREE_CODE (TREE_TYPE (exp));
       type = TREE_TYPE (exp);
 
-      if (code != INTEGER_TYPE 
-	  && code != ENUMERAL_TYPE 
+      if (! INTEGRAL_TYPE_P (type)
 	  && code != ERROR_MARK)
 	{
 	  error ("switch quantity not an integer");
