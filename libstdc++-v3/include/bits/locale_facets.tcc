@@ -1207,7 +1207,7 @@ namespace std
 		  || ((static_cast<part>(__p.field[3]) != money_base::none)
 		      && __i == 2))
 		{
-		  // According to 22.2.6.1.2.2, symbol is required
+		  // According to 22.2.6.1.2, p2, symbol is required
 		  // if (__io.flags() & ios_base::showbase),
 		  // otherwise is optional and consumed only if
 		  // other characters are needed to complete the
@@ -1293,9 +1293,8 @@ namespace std
 	{
 	  const size_type __len = __sign.size();
 	  size_type __i = 1;
-	  for (; __beg != __end && __i < __len; ++__i)
-	    for (; __beg != __end
-		   && *__beg != __sign[__i]; ++__beg);
+	  for (; __beg != __end && __i < __len
+		 && *__beg == __sign[__i]; ++__beg, ++__i);
 
 	  if (__i != __len)
 	    __testvalid = false;
