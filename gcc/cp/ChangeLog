@@ -1,3 +1,21 @@
+2003-01-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9189
+	* parser.c (cp_parser): Remove default_arg_types.  Update
+	documentation for unparsed_functions_queues.
+	(cp_parser_late_parsing_default_args): Take a FUNCTION_DECL as the
+	parameter.
+	(cp_parser_new): Don't set parser->default_arg_types.
+	(cp_parser_function_definition): Adjust usage of
+	unparsed_funtions_queues.
+	(cp_parser_class_specifier): Don't mess with
+	parser->default_arg_types.  Handle default argument processing in
+	a separate phase from function body processing.
+	(cp_parser_template_declaration_after_export): Adjust usage of
+	unparsed_functions_queues.
+	(cp_parser_late_parsing_for_member): Do not handle default
+	arguments.
+
 2003-01-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9109

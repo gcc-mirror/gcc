@@ -1330,12 +1330,6 @@ typedef struct cp_parser GTY(())
      issued as an error message if a type is defined.  */
   const char *type_definition_forbidden_message;
 
-  /* List of FUNCTION_TYPEs which contain unprocessed DEFAULT_ARGs
-     during class parsing, and are not FUNCTION_DECLs.  G++ has an
-     awkward extension allowing default args on pointers to functions
-     etc.  */
-  tree default_arg_types;
-
   /* A TREE_LIST of queues of functions whose bodies have been lexed,
      but may not have been parsed.  These functions are friends of
      members defined within a class-specification; they are not
@@ -1343,9 +1337,9 @@ typedef struct cp_parser GTY(())
      front of the list.
 
      Within each queue, functions appear in the reverse order that
-     they appeared in the source.  The TREE_PURPOSE of each node is
-     the class in which the function was defined or declared; the
-     TREE_VALUE is the FUNCTION_DECL itself.  */
+     they appeared in the source.  Each TREE_VALUE is a
+     FUNCTION_DECL of TEMPLATE_DECL corresponding to a member
+     function.  */
   tree unparsed_functions_queues;
 
   /* The number of classes whose definitions are currently in
@@ -1731,7 +1725,7 @@ static tree cp_parser_functional_cast
 static void cp_parser_late_parsing_for_member
   PARAMS ((cp_parser *, tree));
 static void cp_parser_late_parsing_default_args
-  (cp_parser *, tree, tree);
+  (cp_parser *, tree);
 static tree cp_parser_sizeof_operand
   PARAMS ((cp_parser *, enum rid));
 static bool cp_parser_declares_only_class_p
@@ -2503,9 +2497,6 @@ cp_parser_new ()
 
   /* We are not processing a declarator.  */
   parser->in_declarator_p = false;
-
-  /* There are no default args to process.  */
-  parser->default_arg_types = NULL;
 
   /* The unparsed function queue is empty.  */
   parser->unparsed_functions_queues = build_tree_list (NULL_TREE, NULL_TREE);
@@ -11243,7 +11234,7 @@ cp_parser_function_definition (parser, friend_p)
 
       /* Add FN to the queue of functions to be parsed later.  */
       TREE_VALUE (parser->unparsed_functions_queues)
-	= tree_cons (current_class_type, fn, 
+	= tree_cons (NULL_TREE, fn, 
 		     TREE_VALUE (parser->unparsed_functions_queues));
 
       return fn;
@@ -11695,29 +11686,44 @@ cp_parser_class_specifier (parser)
   if (--parser->num_classes_being_defined == 0) 
     {
       tree last_scope = NULL_TREE;
+      tree queue_entry;
+      tree fn;
 
-      /* Process non FUNCTION_DECL related DEFAULT_ARGs.  */
-      for (parser->default_arg_types = nreverse (parser->default_arg_types);
-	   parser->default_arg_types;
-	   parser->default_arg_types = TREE_CHAIN (parser->default_arg_types))
-	cp_parser_late_parsing_default_args
-	  (parser, TREE_PURPOSE (parser->default_arg_types), NULL_TREE);
-      
       /* Reverse the queue, so that we process it in the order the
 	 functions were declared.  */
       TREE_VALUE (parser->unparsed_functions_queues)
 	= nreverse (TREE_VALUE (parser->unparsed_functions_queues));
-      /* Loop through all of the functions.  */
+      /* In a first pass, parse default arguments to the functions.
+	 Then, in a second pass, parse the bodies of the functions.
+	 This two-phased approach handles cases like:
+	 
+	    struct S { 
+              void f() { g(); } 
+              void g(int i = 3);
+            };
+
+         */
+      for (queue_entry = TREE_VALUE (parser->unparsed_functions_queues);
+	   queue_entry;
+	   queue_entry = TREE_CHAIN (queue_entry))
+	{
+	  fn = TREE_VALUE (queue_entry);
+	  if (DECL_FUNCTION_TEMPLATE_P (fn))
+	    fn = DECL_TEMPLATE_RESULT (fn);
+	  /* Make sure that any template parameters are in scope.  */
+	  maybe_begin_member_template_processing (fn);
+	  /* If there are default arguments that have not yet been processed,
+	     take care of them now.  */
+	  cp_parser_late_parsing_default_args (parser, fn);
+	  /* Remove any template parameters from the symbol table.  */
+	  maybe_end_member_template_processing ();
+	}
+      /* Now parse the body of the functions.  */
       while (TREE_VALUE (parser->unparsed_functions_queues))
 
 	{
-	  tree fn;
-	  tree fn_scope;
-	  tree queue_entry;
-
 	  /* Figure out which function we need to process.  */
 	  queue_entry = TREE_VALUE (parser->unparsed_functions_queues);
-	  fn_scope = TREE_PURPOSE (queue_entry);
 	  fn = TREE_VALUE (queue_entry);
 
 	  /* Parse the function.  */
@@ -12448,7 +12454,7 @@ cp_parser_member_declaration (parser)
 		 there might be default arguments that need handling.)  */
 	      if (TREE_CODE (decl) == FUNCTION_DECL)
 		TREE_VALUE (parser->unparsed_functions_queues)
-		  = tree_cons (current_class_type, decl, 
+		  = tree_cons (NULL_TREE, decl, 
 			       TREE_VALUE (parser->unparsed_functions_queues));
 	    }
 	}
@@ -14238,7 +14244,7 @@ cp_parser_template_declaration_after_export (parser, member_p)
       && (TREE_CODE (decl) == FUNCTION_DECL
 	  || DECL_FUNCTION_TEMPLATE_P (decl)))
     TREE_VALUE (parser->unparsed_functions_queues)
-      = tree_cons (current_class_type, decl, 
+      = tree_cons (NULL_TREE, decl, 
 		   TREE_VALUE (parser->unparsed_functions_queues));
 }
 
@@ -14384,13 +14390,6 @@ cp_parser_late_parsing_for_member (parser, member_function)
   /* Make sure that any template parameters are in scope.  */
   maybe_begin_member_template_processing (member_function);
 
-  /* If there are default arguments that have not yet been processed,
-     take care of them now.  */
-  cp_parser_late_parsing_default_args (parser, TREE_TYPE (member_function),
-				       DECL_FUNCTION_MEMBER_P (member_function)
-				       ? DECL_CONTEXT (member_function)
-				       : NULL_TREE);
-
   /* If the body of the function has not yet been parsed, parse it
      now.  */
   if (DECL_PENDING_INLINE_P (member_function))
@@ -14444,20 +14443,18 @@ cp_parser_late_parsing_for_member (parser, member_function)
     = TREE_CHAIN (parser->unparsed_functions_queues);
 }
 
-/* TYPE is a FUNCTION_TYPE or METHOD_TYPE which contains a parameter
-   with an unparsed DEFAULT_ARG.  If non-NULL, SCOPE is the class in
-   whose context name lookups in the default argument should occur.
-   Parse the default args now.  */
+/* FN is a FUNCTION_DECL which may contains a parameter with an
+   unparsed DEFAULT_ARG.  Parse the default args now.  */
 
 static void
-cp_parser_late_parsing_default_args (cp_parser *parser, tree type, tree scope)
+cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 {
   cp_lexer *saved_lexer;
   cp_token_cache *tokens;
   bool saved_local_variables_forbidden_p;
   tree parameters;
-  
-  for (parameters = TYPE_ARG_TYPES (type);
+
+  for (parameters = TYPE_ARG_TYPES (TREE_TYPE (fn));
        parameters;
        parameters = TREE_CHAIN (parameters))
     {
@@ -14481,10 +14478,10 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree type, tree scope)
       saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;
       parser->local_variables_forbidden_p = true;
        /* Parse the assignment-expression.  */
-      if (scope)
-	push_nested_class (scope, 1);
+      if (DECL_CONTEXT (fn))
+	push_nested_class (DECL_CONTEXT (fn), 1);
       TREE_PURPOSE (parameters) = cp_parser_assignment_expression (parser);
-      if (scope)
+      if (DECL_CONTEXT (fn))
 	pop_nested_class ();
 
        /* Restore saved state.  */
