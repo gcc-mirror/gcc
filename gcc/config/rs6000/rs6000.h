@@ -758,33 +758,89 @@ extern struct rs6000_cpu_select rs6000_select[];
    So make a class for registers valid as base registers.
 
    Also, cr0 is the only condition code register that can be used in
-   arithmetic insns, so make a separate class for it. */
+   arithmetic insns, so make a separate class for it.  Common mode
+   needs to clobber cr1, so add a class for that as well.  */
 
-enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
-  NON_SPECIAL_REGS, MQ_REGS, LINK_REGS, CTR_REGS, LINK_OR_CTR_REGS,
-  SPECIAL_REGS, SPEC_OR_GEN_REGS, CR0_REGS, CR_REGS, NON_FLOAT_REGS,
-  ALL_REGS, LIM_REG_CLASSES };
+enum reg_class
+{
+  NO_REGS,
+  R0_REGS,
+  R3_REGS,
+  R4_REGS,
+  R34_REGS,
+  BASE_REGS,
+  GENERAL_REGS,
+  FLOAT_REGS,
+  NON_SPECIAL_REGS,
+  MQ_REGS,
+  LINK_REGS,
+  CTR_REGS,
+  LINK_OR_CTR_REGS,
+  SPECIAL_REGS,
+  SPEC_OR_GEN_REGS,
+  CR0_REGS,
+  CR1_REGS,
+  CR_REGS,
+  NON_FLOAT_REGS,
+  ALL_REGS,
+  LIM_REG_CLASSES
+};
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 /* Give names of register classes as strings for dump file.   */
 
-#define REG_CLASS_NAMES					 	\
-  { "NO_REGS", "BASE_REGS", "GENERAL_REGS", "FLOAT_REGS",	\
-    "NON_SPECIAL_REGS", "MQ_REGS", "LINK_REGS", "CTR_REGS",	\
-    "LINK_OR_CTR_REGS", "SPECIAL_REGS", "SPEC_OR_GEN_REGS",	\
-    "CR0_REGS", "CR_REGS", "NON_FLOAT_REGS", "ALL_REGS" }
+#define REG_CLASS_NAMES							\
+{									\
+  "NO_REGS",								\
+  "R0_REGS",								\
+  "R3_REGS",								\
+  "R4_REGS",								\
+  "R34_REGS",								\
+  "BASE_REGS",								\
+  "GENERAL_REGS",							\
+  "FLOAT_REGS",								\
+  "NON_SPECIAL_REGS",							\
+  "MQ_REGS",								\
+  "LINK_REGS",								\
+  "CTR_REGS",								\
+  "LINK_OR_CTR_REGS",							\
+  "SPECIAL_REGS",							\
+  "SPEC_OR_GEN_REGS",							\
+  "CR0_REGS",								\
+  "CR1_REGS",								\
+  "CR_REGS",								\
+  "NON_FLOAT_REGS",							\
+  "ALL_REGS"								\
+}
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS				\
-  { {0, 0, 0}, {0xfffffffe, 0, 8}, {~0, 0, 8},		\
-    {0, ~0, 0}, {~0, ~0, 8}, {0, 0, 1}, {0, 0, 2},	\
-    {0, 0, 4}, {0, 0, 6}, {0, 0, 7}, {~0, 0, 15},	\
-    {0, 0, 16}, {0, 0, 0xff0}, {~0, 0, 0xffff},		\
-    {~0, ~0, 0xffff} }
+#define REG_CLASS_CONTENTS						\
+{									\
+  { 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS */		\
+  { 0x00000001, 0x00000000, 0x00000000 },	/* R0_REGS */		\
+  { 0x00000008, 0x00000000, 0x00000000 },	/* R3_REGS */		\
+  { 0x00000010, 0x00000000, 0x00000000 },	/* R4_REGS */		\
+  { 0x00000018, 0x00000000, 0x00000000 },	/* R34_REGS */		\
+  { 0xfffffffe, 0x00000000, 0x00000008 },	/* BASE_REGS */		\
+  { 0xffffffff, 0x00000000, 0x00000008 },	/* GENERAL_REGS */	\
+  { 0x00000000, 0xffffffff, 0x00000000 },	/* FLOAT_REGS */	\
+  { 0xffffffff, 0xffffffff, 0x00000008 },	/* NON_SPECIAL_REGS */	\
+  { 0x00000000, 0x00000000, 0x00000001 },	/* MQ_REGS */		\
+  { 0x00000000, 0x00000000, 0x00000002 },	/* LINK_REGS */		\
+  { 0x00000000, 0x00000000, 0x00000004 },	/* CTR_REGS */		\
+  { 0x00000000, 0x00000000, 0x00000006 },	/* LINK_OR_CTR_REGS */	\
+  { 0x00000000, 0x00000000, 0x00000007 },	/* SPECIAL_REGS */	\
+  { 0xffffffff, 0x00000000, 0x0000000f },	/* SPEC_OR_GEN_REGS */	\
+  { 0x00000000, 0x00000000, 0x00000010 },	/* CR0_REGS */		\
+  { 0x00000000, 0x00000000, 0x00000020 },	/* CR1_REGS */		\
+  { 0x00000000, 0x00000000, 0x00000ff0 },	/* CR_REGS */		\
+  { 0xffffffff, 0x00000000, 0x0000ffff },	/* NON_FLOAT_REGS */	\
+  { 0xffffffff, 0xffffffff, 0x0000ffff }	/* ALL_REGS */		\
+}
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -792,10 +848,13 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
    or could index an array.  */
 
 #define REGNO_REG_CLASS(REGNO)	\
- ((REGNO) == 0 ? GENERAL_REGS	\
+ ((REGNO) == 0 ? R0_REGS	\
+  : (REGNO) == 3 ? R3_REGS	\
+  : (REGNO) == 4 ? R4_REGS	\
   : (REGNO) < 32 ? BASE_REGS	\
   : FP_REGNO_P (REGNO) ? FLOAT_REGS \
   : (REGNO) == 68 ? CR0_REGS	\
+  : (REGNO) == 69 ? CR1_REGS	\
   : CR_REGNO_P (REGNO) ? CR_REGS \
   : (REGNO) == 64 ? MQ_REGS	\
   : (REGNO) == 65 ? LINK_REGS	\
@@ -816,8 +875,13 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
    : (C) == 'q' ? MQ_REGS	\
    : (C) == 'c' ? CTR_REGS	\
    : (C) == 'l' ? LINK_REGS	\
+   : (C) == 't' ? CR1_REGS	\
+   : (C) == 'u' ? R3_REGS	\
+   : (C) == 'v' ? R4_REGS	\
+   : (C) == 'w' ? R34_REGS	\
    : (C) == 'x' ? CR0_REGS	\
    : (C) == 'y' ? CR_REGS	\
+   : (C) == 'z' ? R0_REGS	\
    : NO_REGS)
 
 /* The letters I, J, K, L, M, N, and P in a register constraint string
@@ -2533,6 +2597,12 @@ do {									\
   {"u_short_cint_operand", {CONST_INT}},			\
   {"non_short_cint_operand", {CONST_INT}},			\
   {"gpc_reg_operand", {SUBREG, REG}},				\
+  {"gpc_reg0_operand", {SUBREG, REG}},				\
+  {"gpc_reg3_operand", {SUBREG, REG}},				\
+  {"gpc_reg4_operand", {SUBREG, REG}},				\
+  {"gpc_reg34_operand", {SUBREG, REG}},				\
+  {"cc_reg0_operand", {SUBREG, REG}},				\
+  {"cc_reg1_operand", {SUBREG, REG}},				\
   {"cc_reg_operand", {SUBREG, REG}},				\
   {"reg_or_short_operand", {SUBREG, REG, CONST_INT}},		\
   {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},	\
@@ -2583,7 +2653,13 @@ extern int any_operand ();
 extern int short_cint_operand ();
 extern int u_short_cint_operand ();
 extern int non_short_cint_operand ();
+extern int gpc_reg0_operand ();
+extern int gpc_reg3_operand ();
+extern int gpc_reg4_operand ();
+extern int gpc_reg34_operand ();
 extern int gpc_reg_operand ();
+extern int cc_reg0_operand ();
+extern int cc_reg1_operand ();
 extern int cc_reg_operand ();
 extern int reg_or_short_operand ();
 extern int reg_or_neg_short_operand ();

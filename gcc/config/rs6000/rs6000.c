@@ -323,6 +323,9 @@ rs6000_override_options (default_cpu)
 	}
     }
 
+  if (!WORDS_BIG_ENDIAN && !TARGET_POWER && !TARGET_POWERPC)
+    error ("-mcpu=common is not supported for little endian platforms");
+
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
@@ -444,6 +447,77 @@ gpc_reg_operand (op, mode)
 {
   return (register_operand (op, mode)
 	  && (GET_CODE (op) != REG || REGNO (op) >= 67 || REGNO (op) < 64));
+}
+
+/* Returns 1 if OP is register 0 or is a pseudo register.  */
+
+int
+gpc_reg0_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  && (GET_CODE (op) != REG || REGNO (op) == 0 || REGNO (op) >= FIRST_PSEUDO_REGISTER));
+}
+
+/* Returns 1 if OP is register 3 or is a pseudo register.  */
+
+int
+gpc_reg3_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  && (GET_CODE (op) != REG || REGNO (op) == 3 || REGNO (op) >= FIRST_PSEUDO_REGISTER));
+}
+
+/* Returns 1 if OP is register 4 or is a pseudo register.  */
+
+int
+gpc_reg4_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  && (GET_CODE (op) != REG || REGNO (op) == 4 || REGNO (op) >= FIRST_PSEUDO_REGISTER));
+}
+
+/* Returns 1 if OP is register 3 or 4 or is a pseudo register.  */
+
+int
+gpc_reg34_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  && (GET_CODE (op) != REG || REGNO (op) == 3 || REGNO (op) == 4
+	      || REGNO (op) >= FIRST_PSEUDO_REGISTER));
+}
+
+/* Returns 1 if OP is either a pseudo-register or CR1.  */
+
+int
+cc_reg1_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  && (GET_CODE (op) != REG
+	      || REGNO (op) >= FIRST_PSEUDO_REGISTER
+	      || REGNO (op) == 69));
+}
+
+/* Returns 1 if OP is either a pseudo-register or CR0.  */
+
+int
+cc_reg0_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand (op, mode)
+	  && (GET_CODE (op) != REG
+	      || REGNO (op) >= FIRST_PSEUDO_REGISTER
+	      || REGNO (op) == 68));
 }
 
 /* Returns 1 if OP is either a pseudo-register or a register denoting a
