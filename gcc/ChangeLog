@@ -1,3 +1,9 @@
+2004-05-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/ia64/t-ia64 (LIB2ADDEH): Remove gthr-gnat.c.
+	* config/s390/t-tpf (LIB2ADDEHDEP): Likewise.
+	* config/t-linux (LIB2ADDEHDEP): Likewise.
+
 2004-05-04  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/crti.asm: Push an even number of registers.
