@@ -1,3 +1,8 @@
+2003-07-01  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* gnat_ug.texi: Remove unlikely characters from @vars.
+	* gnat_ug_vms.texi: Regenerate.
+
 2003-06-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* misc.c (record_code_position): Adjust emit_note call.
