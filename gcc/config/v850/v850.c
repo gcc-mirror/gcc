@@ -802,6 +802,35 @@ output_move_double (operands)
 }
 
 
+/* Return maximum offset supported for a short EP memory reference of mode
+   MODE and signedness UNSIGNEDP.  */
+
+int
+ep_memory_offset (mode, unsignedp)
+     enum machine_mode mode;
+     int unsignedp;
+{
+  int max_offset = 0;
+
+  switch (mode)
+    {
+    case QImode:
+      max_offset = (1 << 7);
+      break;
+
+    case HImode:
+      max_offset = (1 << 8);
+      break;
+
+    case SImode:
+    case SFmode:
+      max_offset = (1 << 8);
+      break;
+    }
+
+  return max_offset;
+}
+
 /* Return true if OP is a valid short EP memory reference */
 
 int
@@ -817,27 +846,9 @@ ep_memory_operand (op, mode, unsigned_load)
   if (GET_CODE (op) != MEM)
     return FALSE;
 
-  switch (GET_MODE (op))
-    {
-    default:
-      return FALSE;
+  max_offset = ep_memory_offset (mode, unsigned_load);
 
-    case QImode:
-	  max_offset = (1 << 7);
-      mask = 0;
-      break;
-
-    case HImode:
-	  max_offset = (1 << 8);
-      mask = 1;
-      break;
-
-    case SImode:
-    case SFmode:
-      max_offset = (1 << 8);
-      mask = 3;
-      break;
-    }
+  mask = GET_MODE_SIZE (mode) - 1;
 
   addr = XEXP (op, 0);
   if (GET_CODE (addr) == CONST)
@@ -1034,6 +1045,8 @@ substitute_ep_register (first_insn, last_insn, uses, regno, p_r1, p_ep)
 	  if (pattern)
 	    {
 	      rtx *p_mem;
+	      /* Memory operands are signed by default.  */
+	      int unsignedp = FALSE;
 
 	      if (GET_CODE (SET_DEST (pattern)) == MEM
 		  && GET_CODE (SET_SRC (pattern)) == MEM)
@@ -1059,9 +1072,9 @@ substitute_ep_register (first_insn, last_insn, uses, regno, p_r1, p_ep)
 			   && GET_CODE (XEXP (addr, 0)) == REG
 			   && REGNO (XEXP (addr, 0)) == regno
 			   && GET_CODE (XEXP (addr, 1)) == CONST_INT
-			   && ((unsigned)INTVAL (XEXP (addr, 1))) < 256
-			   && (GET_MODE (*p_mem) != QImode
-			       || ((unsigned)INTVAL (XEXP (addr, 1))) < 128))
+			   && (((unsigned)INTVAL (XEXP (addr, 1)))
+			       < ep_memory_offset (GET_MODE (*p_mem),
+						   unsignedp)))
 		    *p_mem = change_address (*p_mem, VOIDmode,
 					     gen_rtx (PLUS, Pmode,
 						      *p_ep, XEXP (addr, 1)));
@@ -1167,6 +1180,8 @@ void v850_reorg (start_insn)
 	      rtx src = SET_SRC (pattern);
 	      rtx dest = SET_DEST (pattern);
 	      rtx mem;
+	      /* Memory operands are signed by default.  */
+	      int unsignedp = FALSE;
 
 	      if (GET_CODE (dest) == MEM && GET_CODE (src) == MEM)
 		mem = NULL_RTX;
@@ -1180,7 +1195,7 @@ void v850_reorg (start_insn)
 	      else
 		mem = NULL_RTX;
 
-	      if (mem && ep_memory_operand (mem, GET_MODE (mem), FALSE))
+	      if (mem && ep_memory_operand (mem, GET_MODE (mem), unsignedp))
 		use_ep = TRUE;
 
 	      else if (!use_ep && mem
@@ -1199,9 +1214,8 @@ void v850_reorg (start_insn)
 		  else if (GET_CODE (addr) == PLUS
 			   && GET_CODE (XEXP (addr, 0)) == REG
 			   && GET_CODE (XEXP (addr, 1)) == CONST_INT
-			   && ((unsigned)INTVAL (XEXP (addr, 1))) < 256
-			   && (GET_MODE (mem) != QImode
-			       || ((unsigned)INTVAL (XEXP (addr, 1))) < 128))
+			   && (((unsigned)INTVAL (XEXP (addr, 1)))
+			       < ep_memory_offset (GET_MODE (mem), unsignedp)))
 		    {
 		      short_p = TRUE;
 		      regno = REGNO (XEXP (addr, 0));
