@@ -40,7 +40,7 @@ package java.awt.peer;
 
 public interface WindowPeer extends ContainerPeer
 {
-  public void toBack();
-  public void toFront();
+  void toBack();
+  void toFront();
 } // interface WindowPeer 
 

@@ -42,13 +42,13 @@ import java.awt.Rectangle;
 
 public interface RobotPeer
 {
-  public void mouseMove (int x, int y);
-  public void mousePress (int x);
-  public void mouseRelease (int x);
-  public void mouseWheel (int x);
-  public void keyPress (int x);
-  public void keyRelease (int x);
-  public int getRGBPixel (int x, int y);
-  public int[] getRGBPixels (Rectangle r);
+  void mouseMove (int x, int y);
+  void mousePress (int x);
+  void mouseRelease (int x);
+  void mouseWheel (int x);
+  void keyPress (int x);
+  void keyRelease (int x);
+  int getRGBPixel (int x, int y);
+  int[] getRGBPixels (Rectangle r);
 } // interface RobotPeer
 

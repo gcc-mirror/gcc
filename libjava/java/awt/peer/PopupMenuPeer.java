@@ -43,11 +43,11 @@ import java.awt.Event;
 
 public interface PopupMenuPeer extends MenuPeer
 {
-  
   /**
    * Part of the older API, replaced by event version instead.
    */
-  public void show (Component origin, int x, int y);
-  public void show (Event e);
+  void show (Component origin, int x, int y);
+
+  void show (Event e);
 } // interface PopupMenuPeer
 

@@ -39,7 +39,10 @@ exception statement from your version. */
 package java.awt.peer;
 
 import java.awt.AWTEvent;
+import java.awt.AWTException;
+import java.awt.BufferCapabilities;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -57,79 +60,79 @@ import java.awt.image.VolatileImage;
 
 public interface ComponentPeer
 {
-  public int checkImage(Image img, int width, int height, 
-			ImageObserver ob);
-  public Image createImage(ImageProducer prod);
-  public Image createImage(int width, int height);
-  public void disable();
-  public void dispose();
-  public void enable();
-  public ColorModel getColorModel();
-  public FontMetrics getFontMetrics(Font f);
-  public Graphics getGraphics();
-  public Point getLocationOnScreen();
-  public Dimension getMinimumSize();
-  public Dimension getPreferredSize();
-  public Toolkit getToolkit();
-  public void handleEvent(AWTEvent e);
-  public void hide();
+  int checkImage(Image img, int width, int height, 
+		 ImageObserver ob);
+  Image createImage(ImageProducer prod);
+  Image createImage(int width, int height);
+  void disable();
+  void dispose();
+  void enable();
+  ColorModel getColorModel();
+  FontMetrics getFontMetrics(Font f);
+  Graphics getGraphics();
+  Point getLocationOnScreen();
+  Dimension getMinimumSize();
+  Dimension getPreferredSize();
+  Toolkit getToolkit();
+  void handleEvent(AWTEvent e);
+  void hide();
 
   /**
    * Part of the earlier 1.1 API, replaced by isFocusable().
    */
-  public boolean isFocusTraversable();
-  public boolean isFocusable();
-  public Dimension minimumSize();
-  public Dimension preferredSize();
-  public void paint(Graphics graphics);
-  public boolean prepareImage(Image img, int width, int height,
+  boolean isFocusTraversable();
+  boolean isFocusable();
+  Dimension minimumSize();
+  Dimension preferredSize();
+  void paint(Graphics graphics);
+  boolean prepareImage(Image img, int width, int height,
 			      ImageObserver ob);
-  public void print(Graphics graphics);
-  public void repaint(long tm, int x, int y, int width, int height);
+  void print(Graphics graphics);
+  void repaint(long tm, int x, int y, int width, int height);
 
   /**
    * Part of the earlier 1.1 API, apparently replaced by argument 
    * form of the same method.
    */
-  public void requestFocus();
-  public boolean requestFocus(java.awt.Component source, boolean bool1, boolean bool2, long x);
+  void requestFocus();
+  boolean requestFocus (Component source, boolean bool1, boolean bool2, long x);
 
-  public void reshape(int x, int y, int width, int height);
-  public void setBackground(Color color);
-  public void setBounds(int x, int y, int width, int height);
+  void reshape(int x, int y, int width, int height);
+  void setBackground(Color color);
+  void setBounds(int x, int y, int width, int height);
 
   /**
    * Part of the earlier 1.1 API, apparently no longer needed.
    */
-  public void setCursor(Cursor cursor);
+  void setCursor(Cursor cursor);
 
-  public void setEnabled(boolean enabled);
-  public void setFont(Font font);
-  public void setForeground(Color color);
-  public void setVisible(boolean visible);
-  public void show();
+  void setEnabled(boolean enabled);
+  void setFont(Font font);
+  void setForeground(Color color);
+  void setVisible(boolean visible);
+  void show();
 
   /** 
    * Get the graphics configuration of the component. The color model
    * of the component can be derived from the configuration.
    */
-  public GraphicsConfiguration getGraphicsConfiguration();
+  GraphicsConfiguration getGraphicsConfiguration();
 
   /**
    * Part of an older API, no longer needed.
    */
-  public void setEventMask (long mask);
+  void setEventMask (long mask);
 
   // Methods below are introduced since 1.1
-  public boolean isObscured();
-  public boolean canDetermineObscurity();
-  public void coalescePaintEvent(PaintEvent e);
-  public void updateCursorImmediately();
-  public VolatileImage createVolatileImage(int width, int height);
-  public boolean handlesWheelScrolling();
-  public void createBuffers(int x, java.awt.BufferCapabilities capabilities) throws java.awt.AWTException;
-  public java.awt.Image getBackBuffer();
-  public void flip(java.awt.BufferCapabilities.FlipContents contents);
-  public void destroyBuffers();
+  boolean isObscured();
+  boolean canDetermineObscurity();
+  void coalescePaintEvent(PaintEvent e);
+  void updateCursorImmediately();
+  VolatileImage createVolatileImage(int width, int height);
+  boolean handlesWheelScrolling();
+  void createBuffers(int x, BufferCapabilities capabilities) throws AWTException;
+  Image getBackBuffer();
+  void flip(BufferCapabilities.FlipContents contents);
+  void destroyBuffers();
   
 }

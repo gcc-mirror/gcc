@@ -42,8 +42,8 @@ import java.awt.MenuItem;
 
 public interface MenuPeer extends MenuItemPeer
 {
-  public void addItem (MenuItem item);
-  public void addSeparator ();
-  public void delItem (int index);
+  void addItem (MenuItem item);
+  void addSeparator ();
+  void delItem (int index);
 }
 

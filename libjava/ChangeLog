@@ -1,5 +1,32 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/peer/ButtonPeer.java,
+	java/awt/peer/CheckboxMenuItemPeer.java,
+	java/awt/peer/CheckboxPeer.java,
+	java/awt/peer/ChoicePeer.java,
+	java/awt/peer/ComponentPeer.java,
+	java/awt/peer/ContainerPeer.java,
+	java/awt/peer/DialogPeer.java,
+	java/awt/peer/FileDialogPeer.java,
+	java/awt/peer/FramePeer.java,
+	java/awt/peer/LabelPeer.java,
+	java/awt/peer/ListPeer.java,
+	java/awt/peer/MenuBarPeer.java,
+	java/awt/peer/MenuComponentPeer.java,
+	java/awt/peer/MenuItemPeer.java,
+	java/awt/peer/MenuPeer.java,
+	java/awt/peer/PopupMenuPeer.java,
+	java/awt/peer/RobotPeer.java,
+	java/awt/peer/ScrollPanePeer.java,
+	java/awt/peer/ScrollbarPeer.java,
+	java/awt/peer/TextAreaPeer.java,
+	java/awt/peer/TextComponentPeer.java,
+	java/awt/peer/TextFieldPeer.java,
+	java/awt/peer/WindowPeer.java:
+	Removed redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/NIOSocket.java (setChannel): Initialize impl.
 	* gnu/java/nio/ServerSocketChannelImpl.java
 	(serverSocket): Made it a NIOServerSocket.
