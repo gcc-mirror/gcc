@@ -832,7 +832,7 @@ put_var_into_stack (decl)
 
   /* If this is a variable-size object with a pseudo to address it,
      put that pseudo into the stack, if the var is nonlocal.  */
-  if (TREE_NONLOCAL (decl)
+  if (DECL_NONLOCAL (decl)
       && GET_CODE (reg) == MEM
       && GET_CODE (XEXP (reg, 0)) == REG
       && REGNO (XEXP (reg, 0)) > LAST_VIRTUAL_REGISTER)
@@ -1892,7 +1892,7 @@ instantiate_decls (fndecl, valid_only)
 {
   tree decl;
 
-  if (TREE_INLINE (fndecl))
+  if (DECL_INLINE (fndecl))
     /* When compiling an inline function, the obstack used for
        rtl allocation is the maybepermanent_obstack.  Calling
        `resume_temporary_allocation' switches us back to that
@@ -1917,7 +1917,7 @@ instantiate_decls (fndecl, valid_only)
   /* Now process all variables defined in the function or its subblocks. */
   instantiate_decls_1 (DECL_INITIAL (fndecl), valid_only);
 
-  if (TREE_INLINE (fndecl))
+  if (DECL_INLINE (fndecl))
     {
       /* Save all rtl allocated for this function by raising the
 	 high-water mark on the maybepermanent_obstack.  */
@@ -2809,8 +2809,8 @@ assign_parms (fndecl, second_time)
 		  !optimize
 #else /* It's not clear why the following was replaced.  */
 		  /* Obsoleted by preceding line. */
-		  (obey_regdecls && ! TREE_REGDECL (parm)
-		   && ! TREE_INLINE (fndecl))
+		  (obey_regdecls && ! DECL_REGISTER (parm)
+		   && ! DECL_INLINE (fndecl))
 #endif
 		  /* layout_decl may set this.  */
 		  || TREE_ADDRESSABLE (parm)
@@ -3264,7 +3264,7 @@ setjmp_protect (block)
 	    NON_SAVING_SETJMP
 	    ||
 #endif
-	    ! TREE_REGDECL (decl)))
+	    ! DECL_REGISTER (decl)))
       put_var_into_stack (decl);
   for (sub = BLOCK_SUBBLOCKS (block); sub; sub = TREE_CHAIN (sub))
     setjmp_protect (sub);
@@ -3289,7 +3289,7 @@ setjmp_protect_args ()
 	    NON_SAVING_SETJMP
 	    ||
 #endif
-	    ! TREE_REGDECL (decl)))
+	    ! DECL_REGISTER (decl)))
       put_var_into_stack (decl);
 }
 
@@ -3783,7 +3783,7 @@ expand_function_start (subr, parms_have_cleanups)
 	  REG_FUNCTION_VALUE_P (DECL_RTL (DECL_RESULT (subr))) = 1;
 	  /* Needed because we may need to move this to memory
 	     in case it's a named return value whose address is taken.  */
-	  TREE_REGDECL (DECL_RESULT (subr)) = 1;
+	  DECL_REGISTER (DECL_RESULT (subr)) = 1;
 	}
     }
 
