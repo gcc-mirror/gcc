@@ -45,7 +45,12 @@ enum c_tree_index
     CTI_VOID_FTYPE_PTR,
     CTI_INT_FTYPE_INT,
     CTI_PTR_FTYPE_SIZETYPE,
-    
+
+    CTI_G77_INTEGER_TYPE,
+    CTI_G77_UINTEGER_TYPE,
+    CTI_G77_LONGINT_TYPE,
+    CTI_G77_ULONGINT_TYPE,
+
     CTI_MAX
 };
 
@@ -73,6 +78,12 @@ extern tree c_global_trees[CTI_MAX];
 #define void_ftype_ptr			c_global_trees[CTI_VOID_FTYPE_PTR]
 #define int_ftype_int			c_global_trees[CTI_INT_FTYPE_INT]
 #define ptr_ftype_sizetype		c_global_trees[CTI_PTR_FTYPE_SIZETYPE]
+
+/* g77 integer types, which which must be kept in sync with f/com.h */
+#define g77_integer_type_node		c_global_trees[CTI_G77_INTEGER_TYPE]
+#define g77_uinteger_type_node		c_global_trees[CTI_G77_UINTEGER_TYPE]
+#define g77_longint_type_node		c_global_trees[CTI_G77_LONGINT_TYPE]
+#define g77_ulongint_type_node		c_global_trees[CTI_G77_ULONGINT_TYPE]
 
 /* Pointer to function to generate the VAR_DECL for __FUNCTION__ etc.
    ID is the identifier to use, NAME is the string.
