@@ -2886,11 +2886,20 @@ eliminate_regs (x, mem_mode, insn)
 
 	  /* If we didn't change anything, we must retain the pseudo.  */
 	  if (new == reg_equiv_memory_loc[REGNO (SUBREG_REG (x))])
-	    new = XEXP (x, 0);
+	    new = SUBREG_REG (x);
 	  else
-	    /* Otherwise, ensure NEW isn't shared in case we have to reload
-	       it.  */
-	    new = copy_rtx (new);
+	    {
+	      /* Otherwise, ensure NEW isn't shared in case we have to reload
+		 it.  */
+	      new = copy_rtx (new);
+
+	      /* In this case, we must show that the pseudo is used in this
+		 insn so that delete_output_reload will do the right thing.  */
+	      if (insn != 0 && GET_CODE (insn) != EXPR_LIST
+		  && GET_CODE (insn) != INSN_LIST)
+		emit_insn_before (gen_rtx (USE, VOIDmode, SUBREG_REG (x)),
+				  insn);
+	    }
 	}
       else
 	new = eliminate_regs (SUBREG_REG (x), mem_mode, insn);
