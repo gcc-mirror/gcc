@@ -1,3 +1,9 @@
+Mon Feb 19 15:51:30 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* reg-stack.c (next_flags_user): Use current_block->end
+	(swap_rtx_condition): Look for next user if flags don't die;
+	give up on CALL_INSNs; use current_block->end.
+
 Mon Feb 19 08:27:21 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* sibcall.c (call_ends_block_p): New function.
