@@ -203,6 +203,10 @@ java::lang::reflect::Method::getType ()
 			     declaringClass,
 			     &parameter_types,
 			     &return_type);
+
+  // FIXME: for now we have no way to get exception information.
+  exception_types = (JArray<jclass> *) JvNewObjectArray (0, &ClassClass,
+							 NULL);
 }
 
 void

@@ -65,7 +65,7 @@ public final class Method extends AccessibleObject implements Member
   public int hashCode ()
     {
       // FIXME.
-      return name.hashCode() + declaringClass.getName().hashCode();
+      return getName().hashCode() + declaringClass.getName().hashCode();
     }
 
   public native Object invoke (Object obj, Object[] args)
@@ -84,7 +84,7 @@ public final class Method extends AccessibleObject implements Member
       b.append(" ");
       b.append(declaringClass.getName());
       b.append(".");
-      b.append(name);
+      b.append(getName());
       b.append("(");
       for (int i = 0; i < parameter_types.length; ++i)
 	{
