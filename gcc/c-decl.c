@@ -2766,7 +2766,6 @@ start_decl (tree declarator, tree declspecs, int initialized, tree attributes)
 
   if (initialized)
     {
-      DECL_EXTERNAL (decl) = 0;
       if (current_scope == file_scope)
 	TREE_STATIC (decl) = 1;
 
@@ -2832,6 +2831,9 @@ start_decl (tree declarator, tree declspecs, int initialized, tree attributes)
   /* Add this decl to the current scope.
      TEM may equal DECL or it may be a previous decl of the same name.  */
   tem = pushdecl (decl);
+
+  if (initialized)
+    DECL_EXTERNAL (tem) = 0;
 
   return tem;
 }
@@ -4599,7 +4601,10 @@ grokdeclarator (tree declarator, tree declspecs,
 	if (inlinep)
 	  pedwarn ("%Jvariable '%D' declared `inline'", decl, decl);
 
-	DECL_EXTERNAL (decl) = extern_ref;
+	/* At file scope, an initialized extern declaration may follow
+	   a static declaration.  In that case, DECL_EXTERNAL will be
+	   reset later in start_decl.  */
+	DECL_EXTERNAL (decl) = !!(specbits & (1 << (int) RID_EXTERN));
 
 	/* At file scope, the presence of a `static' or `register' storage
 	   class specifier, or the absence of all storage class specifiers

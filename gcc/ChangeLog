@@ -1,3 +1,11 @@
+2004-07-25  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/15360
+	* c-decl.c (start_decl): Do not set DECL_EXTERNAL for initialized
+	declarations until after calling pushdecl.
+	(grokdeclarator): Set DECL_EXTERNAL for variables based on use of
+	"extern" and not on whether the declaration is initialized.
+
 2004-07-25  Daniel Jacobowitz  <dan@debian.org>
 
 	* config.gcc (i[34567]86-*-solaris2*, sparc64-*-solaris2*)
