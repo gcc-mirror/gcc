@@ -625,8 +625,7 @@ static rtx df_reg_use_gen (regno)
   rtx reg;
   rtx use;
 
-  reg = regno >= FIRST_PSEUDO_REGISTER
-    ? regno_reg_rtx[regno] : gen_rtx_REG (reg_raw_mode[regno], regno);
+  reg = regno_reg_rtx[regno];
 
   use = gen_rtx_USE (GET_MODE (reg), reg);
   return use;
@@ -640,8 +639,7 @@ static rtx df_reg_clobber_gen (regno)
   rtx reg;
   rtx use;
 
-  reg = regno >= FIRST_PSEUDO_REGISTER
-    ? regno_reg_rtx[regno] : gen_rtx_REG (reg_raw_mode[regno], regno);
+  reg = regno_reg_rtx[regno];
 
   use = gen_rtx_CLOBBER (GET_MODE (reg), reg);
   return use;
@@ -897,7 +895,7 @@ df_ref_record (df, reg, loc, insn, ref_type, ref_flags)
       endregno = regno + HARD_REGNO_NREGS (regno, GET_MODE (reg));
 
       for (i = regno; i < endregno; i++)
-	df_ref_record_1 (df, gen_rtx_REG (reg_raw_mode[i], i),
+	df_ref_record_1 (df, regno_reg_rtx[i],
 			 loc, insn, ref_type, ref_flags);
     }
   else

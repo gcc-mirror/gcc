@@ -2293,7 +2293,7 @@ use_regs (call_fusage, regno, nregs)
     abort ();
 
   for (i = 0; i < nregs; i++)
-    use_reg (call_fusage, gen_rtx_REG (reg_raw_mode[regno + i], regno + i));
+    use_reg (call_fusage, regno_reg_rtx[regno + i]);
 }
 
 /* Add USE expressions to *CALL_FUSAGE for each REG contained in the

@@ -11944,7 +11944,7 @@ move_deaths (x, maybe_kill_insn, from_cuid, to_insn, pnotes)
 		if (i < regno || i >= ourend)
 		  REG_NOTES (where_dead)
 		    = gen_rtx_EXPR_LIST (REG_DEAD,
-					 gen_rtx_REG (reg_raw_mode[i], i),
+					 regno_reg_rtx[i],
 					 REG_NOTES (where_dead));
 	    }
 
@@ -11971,7 +11971,7 @@ move_deaths (x, maybe_kill_insn, from_cuid, to_insn, pnotes)
 		offset = 1;
 
 	      for (i = regno + offset; i < ourend; i++)
-		move_deaths (gen_rtx_REG (reg_raw_mode[i], i),
+		move_deaths (regno_reg_rtx[i],
 			     maybe_kill_insn, from_cuid, to_insn, &oldnotes);
 	    }
 
@@ -12593,7 +12593,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		      for (i = regno; i < endregno;
 			   i += HARD_REGNO_NREGS (i, reg_raw_mode[i]))
 			{
-			  rtx piece = gen_rtx_REG (reg_raw_mode[i], i);
+			  rtx piece = regno_reg_rtx[i];
 			  basic_block bb = this_basic_block;
 
 			  if (! dead_or_set_p (place, piece)

@@ -4913,6 +4913,7 @@ void
 init_emit ()
 {
   struct function *f = cfun;
+  int i;
 
   f->emit = (struct emit_status *) ggc_alloc (sizeof (struct emit_status));
   first_insn = NULL;
@@ -4942,8 +4943,13 @@ init_emit ()
     = (tree *) ggc_alloc_cleared (f->emit->regno_pointer_align_length
 				  * sizeof (tree));
 
+  /* Put copies of all the hard registers into regno_reg_rtx.  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    regno_reg_rtx[i] = gen_raw_REG (reg_raw_mode[i], i);
+
   /* Put copies of all the virtual register rtx into regno_reg_rtx.  */
   init_virtual_regs (f->emit);
+
 
   /* Indicate that the virtual registers and stack locations are
      all pointers.  */
