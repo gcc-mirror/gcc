@@ -64,6 +64,8 @@ int in_sizeof;
 /* The level of nesting inside "typeof".  */
 int in_typeof;
 
+struct c_label_context *label_context_stack;
+
 /* Nonzero if we've already printed a "missing braces around initializer"
    message within this initializer.  */
 static int missing_braces_mentioned;
@@ -6478,6 +6480,23 @@ c_finish_goto_label (tree label)
   if (!decl)
     return NULL_TREE;
 
+  if (C_DECL_UNJUMPABLE_STMT_EXPR (decl))
+    {
+      error ("jump into statement expression");
+      return NULL_TREE;
+    }
+
+  if (!C_DECL_UNDEFINABLE_STMT_EXPR (decl))
+    {
+      /* No jump from outside this statement expression context, so
+	 record that there is a jump from within this context.  */
+      struct c_label_list *nlist;
+      nlist = XOBNEW (&parser_obstack, struct c_label_list);
+      nlist->next = label_context_stack->labels_used;
+      nlist->label = decl;
+      label_context_stack->labels_used = nlist;
+    }
+
   TREE_USED (decl) = 1;
   return add_stmt (build1 (GOTO_EXPR, void_type_node, decl));
 }
@@ -6604,6 +6623,11 @@ struct c_switch {
      of the GNU case range extension.  */
   splay_tree cases;
 
+  /* Number of nested statement expressions within this switch
+     statement; if nonzero, case and default labels may not
+     appear.  */
+  unsigned int blocked_stmt_expr;
+
   /* The next node on the stack.  */
   struct c_switch *next;
 };
@@ -6658,6 +6682,7 @@ c_start_case (tree exp)
   cs->switch_stmt = build_stmt (SWITCH_STMT, exp, NULL_TREE, orig_type);
   cs->orig_type = orig_type;
   cs->cases = splay_tree_new (case_compare, NULL, NULL);
+  cs->blocked_stmt_expr = 0;
   cs->next = c_switch_stack;
   c_switch_stack = cs;
 
@@ -6671,7 +6696,7 @@ do_case (tree low_value, tree high_value)
 {
   tree label = NULL_TREE;
 
-  if (c_switch_stack)
+  if (c_switch_stack && !c_switch_stack->blocked_stmt_expr)
     {
       label = c_add_case_label (c_switch_stack->cases,
 				SWITCH_STMT_COND (c_switch_stack->switch_stmt),
@@ -6679,6 +6704,15 @@ do_case (tree low_value, tree high_value)
 				low_value, high_value);
       if (label == error_mark_node)
 	label = NULL_TREE;
+    }
+  else if (c_switch_stack && c_switch_stack->blocked_stmt_expr)
+    {
+      if (low_value)
+	error ("case label in statement expression not containing "
+	       "enclosing switch statement");
+      else
+	error ("%<default%> label in statement expression not containing "
+	       "enclosing switch statement");
     }
   else if (low_value)
     error ("case label not within a switch statement");
@@ -6696,6 +6730,8 @@ c_finish_case (tree body)
   struct c_switch *cs = c_switch_stack;
 
   SWITCH_STMT_BODY (cs->switch_stmt) = body;
+
+  gcc_assert (!cs->blocked_stmt_expr);
 
   /* Emit warnings as needed.  */
   c_do_switch_warnings (cs->cases, cs->switch_stmt);
@@ -6963,12 +6999,30 @@ tree
 c_begin_stmt_expr (void)
 {
   tree ret;
+  struct c_label_context *nstack;
+  struct c_label_list *glist;
 
   /* We must force a BLOCK for this level so that, if it is not expanded
      later, there is a way to turn off the entire subtree of blocks that
      are contained in it.  */
   keep_next_level ();
   ret = c_begin_compound_stmt (true);
+  if (c_switch_stack)
+    {
+      c_switch_stack->blocked_stmt_expr++;
+      gcc_assert (c_switch_stack->blocked_stmt_expr != 0);
+    }
+  for (glist = label_context_stack->labels_used;
+       glist != NULL;
+       glist = glist->next)
+    {
+      C_DECL_UNDEFINABLE_STMT_EXPR (glist->label) = 1;
+    }
+  nstack = XOBNEW (&parser_obstack, struct c_label_context);
+  nstack->labels_def = NULL;
+  nstack->labels_used = NULL;
+  nstack->next = label_context_stack;
+  label_context_stack = nstack;
 
   /* Mark the current statement list as belonging to a statement list.  */
   STATEMENT_LIST_STMT_EXPR (ret) = 1;
@@ -6981,8 +7035,36 @@ c_finish_stmt_expr (tree body)
 {
   tree last, type, tmp, val;
   tree *last_p;
+  struct c_label_list *dlist, *glist, *glist_prev = NULL;
 
   body = c_end_compound_stmt (body, true);
+  if (c_switch_stack)
+    {
+      gcc_assert (c_switch_stack->blocked_stmt_expr != 0);
+      c_switch_stack->blocked_stmt_expr--;
+    }
+  /* It is no longer possible to jump to labels defined within this
+     statement expression.  */
+  for (dlist = label_context_stack->labels_def;
+       dlist != NULL;
+       dlist = dlist->next)
+    {
+      C_DECL_UNJUMPABLE_STMT_EXPR (dlist->label) = 1;
+    }
+  /* It is again possible to define labels with a goto just outside
+     this statement expression.  */
+  for (glist = label_context_stack->next->labels_used;
+       glist != NULL;
+       glist = glist->next)
+    {
+      C_DECL_UNDEFINABLE_STMT_EXPR (glist->label) = 0;
+      glist_prev = glist;
+    }
+  if (glist_prev != NULL)
+    glist_prev->next = label_context_stack->labels_used;
+  else
+    label_context_stack->next->labels_used = label_context_stack->labels_used;
+  label_context_stack = label_context_stack->next;
 
   /* Locate the last statement in BODY.  See c_end_compound_stmt
      about always returning a BIND_EXPR.  */

@@ -187,6 +187,29 @@ work with C++.  (Note that some versions of the GNU C Library contained
 header files using statement-expression that lead to precisely this
 bug.)
 
+Jumping into a statement expression with @code{goto} or using a
+@code{switch} statement outside the statement expression with a
+@code{case} or @code{default} label inside the statement expression is
+not permitted.  Jumping into a statement expression with a computed
+@code{goto} (@pxref{Labels as Values}) yields undefined behavior.
+Jumping out of a statement expression is permitted, but if the
+statement expression is part of a larger expression then it is
+unspecified which other subexpressions of that expression have been
+evaluated except where the language definition requires certain
+subexpressions to be evaluated before or after the statement
+expression.  In any case, as with a function call the evaluation of a
+statement expression is not interleaved with the evaluation of other
+parts of the containing expression.  For example,
+
+@smallexample
+  foo (), ((@{ bar1 (); goto a; 0; @}) + bar2 ()), baz();
+@end smallexample
+
+@noindent
+will call @code{foo} and @code{bar1} and will not call @code{baz} but
+may or may not call @code{bar2}.  If @code{bar2} is called, it will be
+called after @code{foo} and before @code{bar1}
+
 @node Local Labels
 @section Locally Declared Labels
 @cindex local labels

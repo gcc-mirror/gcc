@@ -1,3 +1,10 @@
+2005-03-30  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/772
+	PR c/17913
+	* objc-act.c (objc_start_function): Push context on
+	label_context_stack.
+
 2005-03-23  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* objc-act.c (next_sjlj_build_enter_and_setjmp,

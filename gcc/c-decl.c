@@ -2440,6 +2440,7 @@ define_label (location_t location, tree name)
      if there is a containing function with a declared label with
      the same name.  */
   tree label = I_LABEL_DECL (name);
+  struct c_label_list *nlist;
 
   if (label
       && ((DECL_CONTEXT (label) == current_function_decl
@@ -2456,6 +2457,8 @@ define_label (location_t location, tree name)
       /* The label has been used or declared already in this function,
 	 but not defined.  Update its location to point to this
 	 definition.  */
+      if (C_DECL_UNDEFINABLE_STMT_EXPR (label))
+	error ("%Jjump into statement expression", label);
       DECL_SOURCE_LOCATION (label) = location;
     }
   else
@@ -2471,6 +2474,11 @@ define_label (location_t location, tree name)
   if (warn_traditional && !in_system_header && lookup_name (name))
     warning ("%Htraditional C lacks a separate namespace for labels, "
              "identifier %qE conflicts", &location, name);
+
+  nlist = XOBNEW (&parser_obstack, struct c_label_list);
+  nlist->next = label_context_stack->labels_def;
+  nlist->label = label;
+  label_context_stack->labels_def = nlist;
 
   /* Mark label as having been defined.  */
   DECL_INITIAL (label) = error_mark_node;
@@ -5631,6 +5639,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
 {
   tree decl1, old_decl;
   tree restype, resdecl;
+  struct c_label_context *nstack;
 
   current_function_returns_value = 0;  /* Assume, until we see it does.  */
   current_function_returns_null = 0;
@@ -5638,6 +5647,12 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   warn_about_return_type = 0;
   current_extern_inline = 0;
   c_switch_stack = NULL;
+
+  nstack = XOBNEW (&parser_obstack, struct c_label_context);
+  nstack->labels_def = NULL;
+  nstack->labels_used = NULL;
+  nstack->next = label_context_stack;
+  label_context_stack = nstack;
 
   /* Indicate no valid break/continue context by setting these variables
      to some non-null, non-label value.  We'll notice and emit the proper
@@ -6219,6 +6234,8 @@ void
 finish_function (void)
 {
   tree fndecl = current_function_decl;
+
+  label_context_stack = label_context_stack->next;
 
   if (TREE_CODE (fndecl) == FUNCTION_DECL
       && targetm.calls.promote_prototypes (TREE_TYPE (fndecl)))
