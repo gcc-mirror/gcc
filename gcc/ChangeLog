@@ -1,3 +1,7 @@
+Tue Jan 27 03:21:23 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (abssf, absdf): Revert last change.
+
 Tue Jan 27 00:26:50 1998  John Carr  <jfc@mit.edu>
 
 	* dwarf2out.c (dwarf2out_frame_init): Test value of DWARF2_UNWIND_INFO.
