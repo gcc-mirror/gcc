@@ -208,6 +208,8 @@ static int splay_tree_compare_integer_csts PARAMS ((splay_tree_key k1,
 static void warn_about_ambiguous_bases PARAMS ((tree));
 static bool type_requires_array_cookie PARAMS ((tree));
 static bool contains_empty_class_p (tree);
+static tree dfs_base_derived_from (tree, void *);
+static bool base_derived_from (tree, tree);
 
 /* Macros for dfs walking during vtt construction. See
    dfs_ctor_vtable_bases_queue_p, dfs_build_secondary_vptr_vtt_inits
@@ -2204,6 +2206,29 @@ same_signature_p (fndecl, base_fndecl)
   return 0;
 }
 
+/* Called from base_derived_from via dfs_walk.  */
+
+static tree
+dfs_base_derived_from (tree binfo, void *data)
+{
+  tree base = (tree) data;
+
+  if (same_type_p (TREE_TYPE (base), TREE_TYPE (binfo))
+      && tree_int_cst_equal (BINFO_OFFSET (base), BINFO_OFFSET (binfo)))
+    return error_mark_node;
+
+  return NULL_TREE;
+}
+
+/* Returns TRUE if DERIVED is a binfo containing the binfo BASE as a
+   subobject.  */
+ 
+static bool
+base_derived_from (tree derived, tree base)
+{
+  return dfs_walk (derived, dfs_base_derived_from, NULL, base);
+}
+
 typedef struct find_final_overrider_data_s {
   /* The function for which we are trying to find a final overrider.  */
   tree fn;
@@ -2211,14 +2236,8 @@ typedef struct find_final_overrider_data_s {
   tree declaring_base;
   /* The most derived class in the hierarchy.  */
   tree most_derived_type;
-  /* The final overriding function.  */
-  tree overriding_fn;
-  /* The functions that we thought might be final overriders, but
-     aren't.  */
+  /* The candidate overriders.  */
   tree candidates;
-  /* The BINFO for the class in which the final overriding function
-     appears.  */
-  tree overriding_base;
 } find_final_overrider_data;
 
 /* Called from find_final_overrider via dfs_walk.  */
@@ -2243,118 +2262,41 @@ dfs_find_final_overrider (binfo, data)
       /* We've found a path to the declaring base.  Walk down the path
 	 looking for an overrider for FN.  */
       for (path = reverse_path (binfo);
-	   path; 
+	   path;
 	   path = TREE_CHAIN (path))
 	{
 	  method = look_for_overrides_here (BINFO_TYPE (TREE_VALUE (path)),
 					    ffod->fn);
 	  if (method)
-	    break;
+	    {
+	      path = TREE_VALUE (path);
+	      break;
+	    }
 	}
 
       /* If we found an overrider, record the overriding function, and
 	 the base from which it came.  */
       if (path)
 	{
-	  tree base;
+	  tree *candidate;
 
-	  /* Assume the path is non-virtual.  See if there are any
-	     virtual bases from (but not including) the overrider up
-	     to and including the base where the function is
-	     defined.  */
-	  for (base = TREE_CHAIN (path); base; base = TREE_CHAIN (base))
-	    if (TREE_VIA_VIRTUAL (TREE_VALUE (base)))
-	      {
-		base = ffod->declaring_base;
-		break;
-	      }
-
-	  /* If we didn't already have an overrider, or any
-	     candidates, then this function is the best candidate so
-	     far.  */
-	  if (!ffod->overriding_fn && !ffod->candidates)
+	  /* Remove any candidates overridden by this new function.  */
+	  candidate = &ffod->candidates;
+	  while (*candidate)
 	    {
-	      ffod->overriding_fn = method;
-	      ffod->overriding_base = TREE_VALUE (path);
-	    }
-	  else if (ffod->overriding_fn)
-	    {
-	      /* We had a best overrider; let's see how this compares.  */
-
-	      if (ffod->overriding_fn == method
-		  && (tree_int_cst_equal 
-		      (BINFO_OFFSET (TREE_VALUE (path)),
-		       BINFO_OFFSET (ffod->overriding_base))))
-		/* We found the same overrider we already have, and in the
-		   same place; it's still the best.  */;
-	      else if (strictly_overrides (ffod->overriding_fn, method))
-		/* The old function overrides this function; it's still the
-		   best.  */;
-	      else if (strictly_overrides (method, ffod->overriding_fn))
-		{
-		  /* The new function overrides the old; it's now the
-		     best.  */
-		  ffod->overriding_fn = method;
-		  ffod->overriding_base = TREE_VALUE (path);
-		}
+	      /* If *CANDIDATE overrides METHOD, then METHOD
+		 cannot override anything else on the list.  */
+	      if (base_derived_from (TREE_VALUE (*candidate), path))
+		  return NULL_TREE;
+	      /* If METHOD overrides *CANDIDATE, remove *CANDIDATE.  */
+	      if (base_derived_from (path, TREE_VALUE (*candidate)))
+		*candidate = TREE_CHAIN (*candidate);
 	      else
-		{
-		  /* Ambiguous.  */
-		  ffod->candidates 
-		    = build_tree_list (NULL_TREE,
-				       ffod->overriding_fn);
-		  if (method != ffod->overriding_fn)
-		    ffod->candidates 
-		      = tree_cons (NULL_TREE, method, ffod->candidates);
-		  ffod->overriding_fn = NULL_TREE;
-		  ffod->overriding_base = NULL_TREE;
-		}
+		candidate = &TREE_CHAIN (*candidate);
 	    }
-	  else
-	    {
-	      /* We had a list of ambiguous overrides; let's see how this
-		 new one compares.  */
 
-	      tree candidates;
-	      bool incomparable = false;
-
-	      /* If there were previous candidates, and this function
-		 overrides all of them, then it is the new best
-		 candidate.  */
-	      for (candidates = ffod->candidates;
-		   candidates;
-		   candidates = TREE_CHAIN (candidates))
-		{
-		  /* If the candidate overrides the METHOD, then we
-		     needn't worry about it any further.  */
-		  if (strictly_overrides (TREE_VALUE (candidates),
-					  method))
-		    {
-		      method = NULL_TREE;
-		      break;
-		    }
-
-		  /* If the METHOD doesn't override the candidate,
-		     then it is incomporable.  */
-		  if (!strictly_overrides (method,
-					   TREE_VALUE (candidates)))
-		    incomparable = true;
-		}
-
-	      /* If METHOD overrode all the candidates, then it is the
-		 new best candidate.  */
-	      if (!candidates && !incomparable)
-		{
-		  ffod->overriding_fn = method;
-		  ffod->overriding_base = TREE_VALUE (path);
-		  ffod->candidates = NULL_TREE;
-		}
-	      /* If METHOD didn't override all the candidates, then it
-		 is another candidate.  */
-	      else if (method && incomparable)
-		ffod->candidates 
-		  = tree_cons (NULL_TREE, method, ffod->candidates);
-	    }
+	  /* Add the new function.  */
+	  ffod->candidates = tree_cons (method, path, ffod->candidates);
 	}
     }
 
@@ -2395,8 +2337,6 @@ find_final_overrider (t, binfo, fn)
   ffod.fn = fn;
   ffod.declaring_base = binfo;
   ffod.most_derived_type = t;
-  ffod.overriding_fn = NULL_TREE;
-  ffod.overriding_base = NULL_TREE;
   ffod.candidates = NULL_TREE;
 
   dfs_walk (TYPE_BINFO (t),
@@ -2405,13 +2345,13 @@ find_final_overrider (t, binfo, fn)
 	    &ffod);
 
   /* If there was no winner, issue an error message.  */
-  if (!ffod.overriding_fn)
+  if (!ffod.candidates || TREE_CHAIN (ffod.candidates))
     {
       error ("no unique final overrider for `%D' in `%T'", fn, t);
       return error_mark_node;
     }
 
-  return build_tree_list (ffod.overriding_fn, ffod.overriding_base);
+  return ffod.candidates;
 }
 
 /* Returns the function from the BINFO_VIRTUALS entry in T which matches
