@@ -1,3 +1,11 @@
+2002-01-27  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (class _Jv_BytecodeVerifier): Removed `FIXME' comment
+	and to-do list.
+	(state::merge): Use current class' class loader.
+	(state::print): Print subroutine.
+	(state::merge): Don't look at subroutine of unmerged `ret'.
+
 2002-01-26 Andreas Tobler <a.tobler@schweiz.ch>
 
 	* nogc.cc: Remove warnings.
