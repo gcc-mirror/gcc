@@ -457,6 +457,7 @@ c_decode_option (argc, argv)
 
   if (!strcmp (p, "-ftraditional") || !strcmp (p, "-traditional"))
     {
+      warning ("-traditional is deprecated and may be removed");
       flag_traditional = 1;
       flag_writable_strings = 1;
     }

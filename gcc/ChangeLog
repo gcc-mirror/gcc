@@ -1,3 +1,10 @@
+2001-11-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-decl.c (c_decode_option): Give deprecation warning for
+	-traditional.
+	* doc/invoke.texi (-traditional): Note that this option is
+	deprecated.
+
 Sun Nov 18 07:40:07 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c (alpha_start_function, VMS): Cast shift

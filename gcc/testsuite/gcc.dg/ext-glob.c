@@ -5,6 +5,7 @@
 
 /* { dg-do compile } */
 /* { dg-options -traditional } */
+/* { dg-warning "-traditional is deprecated" "deprecation warning" { target *-*-* } 0 } */
 
 int
 main ()

@@ -1,5 +1,11 @@
 2001-11-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.dg/cpp/assert_trad1.c, gcc.dg/cpp/tr-paste.c,
+	gcc.dg/cpp/tr-str.c: Use -traditional-cpp instead of -traditional.
+	* gcc.dg/ext-glob.c: Expect -traditional deprecation warning.
+
+2001-11-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.dg/no-builtin-1.c: New test.
 
 2001-11-16  Jakub Jelinek  <jakub@redhat.com>

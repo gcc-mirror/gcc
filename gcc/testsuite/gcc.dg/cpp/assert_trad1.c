@@ -1,6 +1,6 @@
 /* Basic tests of the #assert preprocessor extension. */
 /* { dg-do compile } */
-/* { dg-options "-traditional" } */
+/* { dg-options "-traditional-cpp" } */
 
 /* #define def unused expansion */ /* tradcpp can't handle macros in answers.  */
 #define fail int failit

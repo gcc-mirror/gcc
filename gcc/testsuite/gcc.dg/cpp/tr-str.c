@@ -1,6 +1,6 @@
 /* Test whether traditional stringify works.  */
 /* { dg-do run } */
-/* { dg-options "-traditional" } */
+/* { dg-options "-traditional-cpp" } */
 #define foo(a, b) c="a"; d="b";
 
 extern void abort ();
