@@ -1,3 +1,10 @@
+2003-10-31  Per Bothner  <pbothner@apple.com>
+
+	* c-opts.c (finish_options):  Change to returns boolean - false iff
+	the call to cpp_find_main_file fails.
+	(c_common_init):  Skip preprocess_file if finish_options failed.
+	(c_common_parse_file):  Break if finish_options failed.
+
 2003-10-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* aclocal.m4: Blacklist ultrix* for mmap file.
