@@ -1,4 +1,4 @@
-2000-03-24
+2000-11-29
 
 Release Notes   
 -------------
@@ -7,47 +7,71 @@ project to implement the ISO 14882 Standard C++ library as described
 in chapters 17 through 27 and annex D, as a drop-in replacement
 for the current (ARM-conformant) library.
 
-This is the ninth snapshot of the libstdc++ rewrite.  It is still
+This is the tenth snapshot of the libstdc++ rewrite.  It is still
 incomplet and incorrekt. It's a lot less incomplete and incorrect than
 some of the earlier snapshots though, and quite usable.
 
-The Standard C++ Library v3, or libstdc++-2.90.x, follows an open
+The Standard C++ Library v3, or libstdc++-2.9x, follows an open
 development model, attempting to be fully buzzword, bazaar, and GNU
 compliant. Full details on participating, including contributor
 guidelines, mailing list subscription, mailing list archives,
 up-to-date documentation, and various and sundry other details can be
 found at the following URL:
 
-  http://sourceware.cygnus.com/libstdc++/
+  http://gcc.gnu.org/libstdc++/
 
 
 New: 
 --- 
-
-- MT safe string. Supported CPUs are alpha, powerpc, x86, sparc32 and sparc64.
-- Configure support for --enable-threads=posix, as well as initial IO
-  locking implementation.
-- Support for native building on Solaris 2.5.1, Solaris 2.6, Solaris
-  2.7, cygwin, [alpha, powerpc, x86]-linux, and preliminary support for
-  Irix and Aix4.2, Aix 4.3 hosts.
-- --enable-namespaces is on by default.
-- Configure and Makefile support for "drop-in" replacement to
-  libstdc++-v2 completed. It is now possible to bootstrap g++, and
-  have g++ find libstdc++-v3 headers and libraries by default.
-- Synched with CVS egcs libio. 
-- Cygwin native compiling supported.
-- Cross compiling and embedded targets (newlib) with multilibs support added.
-- SGI's strstream implementation has been added.
-- Copyright on all sources assigned to the FSF.
-- Configure, build and install documentation has been added.
-- Support to enable long long has been added.
-- More valarray improvements.
-- Extractors and inserters for std::complex have been added.
-- Extractors and inserters for void* have been fixed.
-- autoconf macros are now in _GLIBCPP_ namespace.
-- group checking for num_get implemented.
+- namespace std:: is now on by default.
+- choice of "C" include strategies, including the shadow header work,
+  or generic global to std mapping of required "C" types.
+- cpu/atomicity.h tweaks, additions of ia64 and arm support.
+- abstraction of atomicity.h header to support notion of os/atomicity.h files.
+- addition of backward header bits
+- use of system_header pragma
+- Conditional use of -Werror
+- preliminary support for new g++ diagnostics capabilities, including
+  -fdiagnostics-show-location=once
+- pedantic and shadow argument warning fixes 
+- Ugly, yet correct mechanism for dealing with "C" math adopted,
+  including the use of builtins.
+- updates and configure/build work to support new libtool
+- addition of strstream 
+- valarray work
+- complex work
+- update to SGI STL 3.3
+- libio sync between glibc/libstdc++-v3. Some divergence since initial
+  merge, but sources remain quite close.
+- IO fixes for alpha
+- wide character work for IO when using libio
+- addition of c_io_stdio and "C" IO abstraction layer.
+- auto_ptr fixes, testsuite additions
+- Attempts to use -ffunction-sections -fdata-sections and
+  --gc-sections, depending on use of GNU ld and specific features. As of
+  late, --gc-sections has been disabled due to problems with it throwing
+  away initialization sections. This work is ongoing.
+- long double support
+- sub directory removal, coherent organization of cpu and os-specific
+  files, consolidation of include directories, integration of the C++
+  support bits for operator new/delete,exceptions, etc. All includes
+  are now either in the include/* hierarchy or in libsupc++'s sub directory.
+- Support for more platforms, including irix and bsd variants.
+- filebuf tweaks to deal with variable-size buffers.
+- filebuf implementation for putbackc, etc. al.
+- ctype rewritten. Includes ctype<char>, ctype<wchar_t>, and others.
+- codecvt rewritten. Includes codecvt<char, char, mbstate_t>,
+  codecvt<wchar_t, char, mbstate_t>. In addition,
+  implementation-defined conversions using iconv are now supported with
+  the __enc_traits partial-specialization of the State template
+  parameter of the codecvt class. In this manner, conversions between
+  encodings such as UCS4, USC2, UNICODE, UNICODEBIG, UNICODELITTLE, etc
+  can be performed.
+- preliminary work on named locales
+- preliminary documentation for locale implementation has been established.
 - Many, many bug fixes.
-
+- Many, many testsuite additions and consistent VERIFY usage.
+- work on mkcheck to make it more flexible, use libtool, etc.
 
 What doesn't:
 -------------
@@ -57,7 +81,7 @@ What doesn't:
 Build and Install
 -----------------
 Up to date build and install directions can be found at:
-http://sourceware.cygnus.com/libstdc++/install.html
+http://gcc.gnu.org/libstdc++/install.html
 
 
 Contact:
@@ -66,34 +90,29 @@ Places have changed from previous snapshots.  The web page, which has
 information about joining the mailing list and searching its archives,
 CVS access, and contribution information is now at:
 
-  http://sourceware.cygnus.com/libstdc++/
+  http://gcc.gnu.org/libstdc++/
 
 Please note that the mailing list has recently moved, and is now
-hosted on sourceware.cygnus.com. (The web site above has the most
+hosted on gcc.gnu.org. (The web site above has the most
 up-to-date info.)
    
 Obtain the library snapshot via ftp (including these release notes) from
 
-  ftp://sourceware.cygnus.com/pub/libstdc++/
+  ftp://gcc.gnu.org/pub/libstdc++/
 
-The library is maintained by Benjamin Kosnik, Nathan Myers, Gabriel
-Dos Reis, and Ulrich Drepper.  
+The library is maintained by Benjamin Kosnik, Gabriel
+Dos Reis, Phil Edwards, and Ulrich Drepper.  
 
 
 Development tools:
 ------------------
-You will need a recent version of gcc to compile the snapshot of
-libstdc++. The recently released gcc-2.95.2 works well. In addition,
-you may need up-to-date tools for modifying Makefiles and regenerating
-configure scripts: automake (version 1.4 from Cygnus, not the one on
-the net) and autoconf (version 2.13 and higher). Please see the
-website for more info on where to obtain these additional tools.
 
-If you compile programs -fnew-abi -fno-honor-std, uses of RTTI and
-certain other language features will link only if you build your
-compiler's libgcc using the same flags.  (The defaults use the old
-abi.)  Using -fnew-abi offers real benefits, but note that it is not
-stable: later snapshots will *not* be binary-compatible with code
-compiled with older snapshots. See the configuration options page in
-the Documentation section.
+You will need a recent version of gcc to compile the snapshot of
+libstdc++. The use of CVS g++ is strongly recommended. In addition,
+you may need up-to-date tools for modifying Makefiles and regenerating
+configure scripts: automake (version 1.4), autoconf (version 2.13 and
+higher), and libtool. 
+
+
+
 

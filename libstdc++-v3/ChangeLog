@@ -1,3 +1,10 @@
+2000-11-28  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	Update for 2.91 release.
+	* include/bits/c++config (__GLIBCPP__): Update.
+	* docs/17_intro/RELEASE-NOTES: Update.
+	* docs/status.html: Update, remove bogus autotools disinformation.
+	
 2000-11-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* tests_flags.in (LTCXX): Change CXX_FLAG to CXXFLAGS.
