@@ -1,3 +1,15 @@
+2004-06-10  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (dump_table): New argument start.  Changed caller.
+	(fixup_mova): New function.
+	(find_barrier): Use it.
+	(sh_reorg): Likewise.  Check for CODE_FOR_casesi_worker_2.
+	If the label a mova refers to is above the mova itself, change
+	the mova into a load.
+	* sh.md (*casesi_worker): Rename to:
+	(casesi_worker_1).
+	(casesi_worker_2): New insn.
+
 2004-06-10  Jason Merrill  <jason@redhat.com>
 
 	* target.h (struct gcc_target): Change gimplify_va_arg_expr 
