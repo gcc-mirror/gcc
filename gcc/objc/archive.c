@@ -59,6 +59,9 @@ objc_write_class (struct objc_typed_stream* stream,
 static const char*
 __objc_skip_type (const char* type);
 
+static void __objc_finish_write_root_object(struct objc_typed_stream*);
+static void __objc_finish_read_root_object(struct objc_typed_stream*);
+
 static __inline__ int
 __objc_code_unsigned_char (unsigned char* buf, unsigned char val)
 {
@@ -314,10 +317,38 @@ __objc_write_object (struct objc_typed_stream* stream, id object)
 }
 
 int 
+objc_write_object_reference (struct objc_typed_stream* stream, id object)
+{
+  unsigned int key;
+  if ((key = (unsigned int)hash_value_for_key (stream->object_table, object)))
+    return objc_write_use_common (stream, key);
+
+  __objc_write_extension (stream, _BX_OBJREF);
+  return objc_write_unsigned_int (stream, (unsigned int)object);
+}
+
+int 
+objc_write_root_object (struct objc_typed_stream* stream, id object)
+{
+  int len;
+  if (stream->writing_root_p)
+    __objc_fatal ("objc_write_root_object called recursively")
+  else
+    {
+      stream->writing_root_p = 1;
+      __objc_write_extension (stream, _BX_OBJROOT);
+      if((len = objc_write_object (stream, object)))
+	__objc_finish_write_root_object(stream);
+      stream->writing_root_p = 0;
+    }
+  return len;
+}
+
+int 
 objc_write_object (struct objc_typed_stream* stream, id object)
 {
   unsigned int key;
-  if ((key = (unsigned int)hash_value_for_key (stream->stream_table, object)))
+  if ((key = (unsigned int)hash_value_for_key (stream->object_table, object)))
     return objc_write_use_common (stream, key);
 
   else if (object == nil)
@@ -326,7 +357,7 @@ objc_write_object (struct objc_typed_stream* stream, id object)
   else
     {
       int length;
-      hash_add (&stream->stream_table, (void*)key=(unsigned int)object, object);
+      hash_add (&stream->object_table, (void*)key=(unsigned int)object, object);
       if ((length = objc_write_register_common (stream, key)))
 	return __objc_write_object (stream, object);
       return length;
@@ -336,14 +367,10 @@ objc_write_object (struct objc_typed_stream* stream, id object)
 __inline__ int
 __objc_write_class (struct objc_typed_stream* stream, struct objc_class* class)
 {
-  unsigned char buf = '\0';
-  SEL write_sel = sel_get_uid ("write:");
   __objc_write_extension (stream, _BX_CLASS);
   objc_write_string_atomic(stream, (char*)class->name,
 			   strlen(class->name));
   objc_write_unsigned_int (stream, CLS_GETNUMBER(class));
-  (*objc_msg_lookup(class, write_sel))(class, write_sel, stream);
-  return (*stream->write)(stream->physical, &buf, 1);
 }
 
 
@@ -645,7 +672,7 @@ objc_read_object (struct objc_typed_stream* stream, id* object)
 
 	  /* register? */
 	  if (key)
-	    hash_add (&stream->stream_table, (void*)key, *object);
+	    hash_add (&stream->object_table, (void*)key, *object);
 
 	  /* send -read: */
 	  if (__objc_responds_to (*object, read_sel))
@@ -662,7 +689,23 @@ objc_read_object (struct objc_typed_stream* stream, id* object)
 	  if (key)
 	    __objc_fatal("cannot register use upcode...");
 	  len = __objc_read_nbyte_uint(stream, (buf[0] & _B_VALUE), &key);
-	  (*object) = hash_value_for_key (stream->stream_table, (void*)key);
+	  (*object) = hash_value_for_key (stream->object_table, (void*)key);
+	}
+
+      else if (buf[0] == (_B_EXT | _BX_OBJREF))	/* a forward reference */
+	{
+	  struct objc_list* other;
+	  len = objc_read_unsigned_int (stream, &key);
+	  other = (struct objc_list*)hash_value_for_key (stream->object_refs, (void*)key);
+	  hash_add (&stream->object_refs, (void*)key, (void*)list_cons(object, other));
+	}
+
+      else if (buf[0] == (_B_EXT | _BX_OBJROOT)) /* a root object */
+	{
+	  if (key)
+	    __objc_fatal("cannot register root object...");
+	  len = objc_read_object (stream, object);
+	  __objc_finish_read_root_object (stream);
 	}
 
       else
@@ -678,7 +721,6 @@ objc_read_class (struct objc_typed_stream* stream, Class** class)
   int len;
   if ((len = (*stream->read)(stream->physical, buf, 1)))
     {
-      SEL read_sel = sel_get_uid ("read:");
       unsigned int key = 0;
 
       if ((buf[0]&_B_CODE) == _B_RCOMM)	/* register following */
@@ -701,16 +743,8 @@ objc_read_class (struct objc_typed_stream* stream, Class** class)
 	  if (key)
 	    hash_add (&stream->stream_table, (void*)key, *class);
 
-	  /* call +read: */
-	  (*objc_msg_lookup(*class, read_sel))(*class, read_sel, stream);
-
 	  objc_read_unsigned_int(stream, &version);
 	  hash_add (&stream->class_table, (*class)->name, (void*)version);
-
-	  /* check null-byte */
-	  len = (*stream->read)(stream->physical, buf, 1);
-	  if (buf[0] != '\0')
-	    __objc_fatal("expected null-byte, got opcode %c", buf[0]);
 	}
 
       else if ((buf[0]&_B_CODE) == _B_UCOMM)
@@ -1280,6 +1314,58 @@ __objc_write_typed_stream_signature (TypedStream* stream)
   (*stream->write)(stream->physical, buffer, strlen(buffer)+1);
 }
 
+static void __objc_finish_write_root_object(struct objc_typed_stream* stream)
+{
+  hash_delete (stream->object_table);
+  stream->object_table = hash_new(64,
+				  (hash_func_type)hash_ptr,
+				  (compare_func_type)compare_ptrs);
+}
+
+static void __objc_finish_read_root_object(struct objc_typed_stream* stream)
+{
+  node_ptr node;
+  SEL awake_sel = sel_get_uid ("awake:");
+
+  /* resolve object forward references */
+  for (node = hash_next (stream->object_refs, NULL); node;
+       node = hash_next (stream->object_refs, node))
+    {
+      struct objc_list* reflist = node->value;
+      const void* key = node->key;
+      id object = hash_value_for_key (stream->object_table, key);
+      while(reflist)
+	{
+	  *((id*)reflist->head) = object;
+	  reflist = reflist->tail;
+	}
+      list_free (node->value);
+    }
+
+  /* empty object reference table */
+  hash_delete (stream->object_refs);
+  stream->object_refs = hash_new(8, (hash_func_type)hash_ptr,
+				 (compare_func_type)compare_ptrs);
+  
+  /* call -awake for all objects read  */
+  if (awake_sel)
+    {
+      for (node = hash_next (stream->object_table, NULL); node;
+	   node = hash_next (stream->object_table, node))
+	{
+	  id object = node->value;
+	  if (__objc_responds_to (object, awake_sel))
+	    (*objc_msg_lookup(object, awake_sel))(object, awake_sel, stream);
+	}
+    }
+
+  /* empty object table */
+  hash_delete (stream->object_table);
+  stream->object_table = hash_new(64,
+				  (hash_func_type)hash_ptr,
+				  (compare_func_type)compare_ptrs);
+}
+
 /*
 ** Open the stream PHYSICAL in MODE
 */
@@ -1296,12 +1382,18 @@ objc_open_typed_stream (FILE* physical, int mode)
   s->stream_table = hash_new(64,
 			     (hash_func_type)hash_ptr,
 			     (compare_func_type)compare_ptrs);
+  s->object_table = hash_new(64,
+			     (hash_func_type)hash_ptr,
+			     (compare_func_type)compare_ptrs);
   s->eof = (objc_typed_eof_func)__objc_feof;
   s->flush = (objc_typed_flush_func)fflush;
+  s->writing_root_p = 0;
   if (mode == OBJC_READONLY)
     {
       s->class_table = hash_new(8, (hash_func_type)hash_string,
 				(compare_func_type)compare_strings);
+      s->object_refs = hash_new(8, (hash_func_type)hash_ptr,
+				(compare_func_type)compare_ptrs);
       s->read = (objc_typed_read_func)__objc_fread;
       s->write = (objc_typed_write_func)__objc_no_write;
       __objc_read_typed_stream_signature (s);
@@ -1309,6 +1401,7 @@ objc_open_typed_stream (FILE* physical, int mode)
   else if (mode == OBJC_WRITEONLY)
     {
       s->class_table = 0;
+      s->object_refs = 0;
       s->read = (objc_typed_read_func)__objc_no_read;
       s->write = (objc_typed_write_func)__objc_fwrite;
       __objc_write_typed_stream_signature (s);
@@ -1356,11 +1449,19 @@ objc_open_typed_stream_for_file (const char* file_name, int mode)
 void
 objc_close_typed_stream (TypedStream* stream)
 {
+  if (stream->mode == OBJC_READONLY)
+    {
+      __objc_finish_read_root_object (stream); /* Just in case... */
+      hash_delete (stream->class_table);
+      hash_delete (stream->object_refs);
+    }
+
+  hash_delete (stream->stream_table);
+  hash_delete (stream->object_table);
+
   if (stream->type == (OBJC_MANAGED_STREAM | OBJC_FILE_STREAM))
     fclose ((FILE*)stream->physical);
-  hash_delete (stream->stream_table);
-  if (stream->mode == OBJC_READONLY)
-    hash_delete (stream->class_table);
+
   free (stream);
 }
 
