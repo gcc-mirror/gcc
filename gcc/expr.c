@@ -137,7 +137,6 @@ static void move_by_pieces	PROTO((rtx, rtx, int, int));
 static int move_by_pieces_ninsns PROTO((unsigned int, int));
 static void move_by_pieces_1	PROTO((rtx (*) (), enum machine_mode,
 				       struct move_by_pieces *));
-static void group_insns		PROTO((rtx));
 static void store_constructor	PROTO((tree, rtx));
 static rtx store_field		PROTO((rtx, int, int, enum machine_mode, tree,
 				       enum machine_mode, int, int, int));
@@ -1674,31 +1673,6 @@ use_regs (regno, nregs)
   for (i = 0; i < nregs; i++)
     emit_insn (gen_rtx (USE, VOIDmode, gen_rtx (REG, word_mode, regno + i)));
 }
-
-/* Mark the instructions since PREV as a libcall block.
-   Add REG_LIBCALL to PREV and add a REG_RETVAL to the most recent insn.  */
-
-static void
-group_insns (prev)
-     rtx prev;
-{
-  rtx insn_first;
-  rtx insn_last;
-
-  /* Find the instructions to mark */
-  if (prev)
-    insn_first = NEXT_INSN (prev);
-  else
-    insn_first = get_insns ();
-
-  insn_last = get_last_insn ();
-
-  REG_NOTES (insn_last) = gen_rtx (INSN_LIST, REG_RETVAL, insn_first,
-				   REG_NOTES (insn_last));
-
-  REG_NOTES (insn_first) = gen_rtx (INSN_LIST, REG_LIBCALL, insn_last,
-				    REG_NOTES (insn_first));
-}
 
 /* Write zeros through the storage of OBJECT.
    If OBJECT has BLKmode, SIZE is its length in bytes.  */
@@ -1803,11 +1777,9 @@ emit_move_insn_1 (x, y)
     {
       /* Don't split destination if it is a stack push.  */
       int stack = push_operand (x, GET_MODE (x));
-      rtx prev = get_last_insn ();
+      rtx insns;
 
-      /* Tell flow that the whole of the destination is being set.  */
-      if (GET_CODE (x) == REG)
-	emit_insn (gen_rtx (CLOBBER, VOIDmode, x));
+      start_sequence ();
 
       /* If this is a stack, push the highpart first, so it
 	 will be in the argument order.
@@ -1842,11 +1814,16 @@ emit_move_insn_1 (x, y)
 		     (gen_imagpart (submode, x), gen_imagpart (submode, y)));
 	}
 
+      insns = get_insns ();
+      end_sequence ();
+
+      /* If X is a CONCAT, we got insns like RD = RS, ID = IS,
+	 each with a separate pseudo as destination.
+	 It's not correct for flow to treat them as a unit.  */
       if (GET_CODE (x) != CONCAT)
-	/* If X is a CONCAT, we got insns like RD = RS, ID = IS,
-	   each with a separate pseudo as destination.
-	   It's not correct for flow to treat them as a unit.  */
-	group_insns (prev);
+	emit_no_conflict_block (insns, x, y, NULL_RTX, NULL_RTX);
+      else
+	emit_insns (insns);
 
       return get_last_insn ();
     }
@@ -1857,7 +1834,9 @@ emit_move_insn_1 (x, y)
   else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     {
       rtx last_insn = 0;
-      rtx prev_insn = get_last_insn ();
+      rtx insns;
+      
+      start_sequence ();
 
       for (i = 0;
 	   i < (GET_MODE_SIZE (mode)  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
@@ -1882,8 +1861,10 @@ emit_move_insn_1 (x, y)
 
 	  last_insn = emit_move_insn (xpart, ypart);
 	}
-      /* Mark these insns as a libcall block.  */
-      group_insns (prev_insn);
+
+      insns = get_insns ();
+      end_sequence ();
+      emit_no_conflict_block (insns, x, y, NULL_RTX, NULL_RTX);
 
       return last_insn;
     }
@@ -5845,8 +5826,7 @@ expand_expr (exp, target, tmode, modifier)
     case COMPLEX_EXPR:
       {
 	enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
-
-	rtx prev;
+	rtx insns;
 
 	/* Get the rtx code of the operands.  */
 	op0 = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
@@ -5855,22 +5835,23 @@ expand_expr (exp, target, tmode, modifier)
 	if (! target)
 	  target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
 
-	prev = get_last_insn ();
-
-	/* Tell flow that the whole of the destination is being set.  */
-	if (GET_CODE (target) == REG)
-	  emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
+	start_sequence ();
 
 	/* Move the real (op0) and imaginary (op1) parts to their location.  */
 	emit_move_insn (gen_realpart (mode, target), op0);
 	emit_move_insn (gen_imagpart (mode, target), op1);
 
+	insns = get_insns ();
+	end_sequence ();
+
 	/* Complex construction should appear as a single unit.  */
+	/* If TARGET is a CONCAT, we got insns like RD = RS, ID = IS,
+	   each with a separate pseudo as destination.
+	   It's not correct for flow to treat them as a unit.  */
 	if (GET_CODE (target) != CONCAT)
-	  /* If TARGET is a CONCAT, we got insns like RD = RS, ID = IS,
-	     each with a separate pseudo as destination.
-	     It's not correct for flow to treat them as a unit.  */
-	  group_insns (prev);
+	  emit_no_conflict_block (insns, target, op0, op1, NULL_RTX);
+	else
+	  emit_insns (insns);
 
 	return target;
       }
@@ -5887,18 +5868,14 @@ expand_expr (exp, target, tmode, modifier)
       {
 	enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
 	rtx imag_t;
-	rtx prev;
+	rtx insns;
 	
 	op0  = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
 
 	if (! target)
 	  target = gen_reg_rtx (TYPE_MODE (TREE_TYPE (exp)));
 								    
-	prev = get_last_insn ();
-
-	/* Tell flow that the whole of the destination is being set.  */
-	if (GET_CODE (target) == REG)
-	  emit_insn (gen_rtx (CLOBBER, VOIDmode, target));
+	start_sequence ();
 
 	/* Store the realpart and the negated imagpart to target.  */
 	emit_move_insn (gen_realpart (mode, target), gen_realpart (mode, op0));
@@ -5909,12 +5886,17 @@ expand_expr (exp, target, tmode, modifier)
 	if (temp != imag_t)
 	  emit_move_insn (imag_t, temp);
 
+	insns = get_insns ();
+	end_sequence ();
+
 	/* Conjugate should appear as a single unit */
+	/* If TARGET is a CONCAT, we got insns like RD = RS, ID = - IS,
+	   each with a separate pseudo as destination.
+	   It's not correct for flow to treat them as a unit.  */
 	if (GET_CODE (target) != CONCAT)
-	  /* If TARGET is a CONCAT, we got insns like RD = RS, ID = - IS,
-	     each with a separate pseudo as destination.
-	     It's not correct for flow to treat them as a unit.  */
-	  group_insns (prev);
+	  emit_no_conflict_block (insns, target, op0, NULL_RTX, NULL_RTX);
+	else
+	  emit_insns (insns);
 
 	return target;
       }
