@@ -1,5 +1,5 @@
 /* Prototypes of target machine for GNU compiler for Xtensa.
-   Copyright 2001,2002,2003 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -68,14 +68,14 @@ extern int xtensa_expand_scc (rtx *);
 extern int xtensa_expand_block_move (rtx *);
 extern void xtensa_split_operand_pair (rtx *, enum machine_mode);
 extern int xtensa_emit_move_sequence (rtx *, enum machine_mode);
-extern bool xtensa_copy_incoming_a7 (rtx *, enum machine_mode);
+extern rtx xtensa_copy_incoming_a7 (rtx);
 extern void xtensa_emit_block_move (rtx *, rtx *, int);
 extern void xtensa_expand_nonlocal_goto (rtx *);
 extern void xtensa_emit_loop_end (rtx, rtx *);
 extern char *xtensa_emit_call (int, rtx *);
 
 #ifdef TREE_CODE
-extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx);
+extern void init_cumulative_args (CUMULATIVE_ARGS *, int);
 extern void xtensa_va_start (tree, rtx);
 extern rtx xtensa_va_arg (tree, tree);
 #endif /* TREE_CODE */
@@ -89,7 +89,6 @@ extern enum reg_class xtensa_preferred_reload_class (rtx, enum reg_class, int);
 extern enum reg_class xtensa_secondary_reload_class (enum reg_class,
 						     enum machine_mode, rtx,
 						     int);
-extern int a7_overlap_mentioned_p (rtx);
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE

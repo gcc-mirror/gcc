@@ -803,15 +803,11 @@
   if (CONSTANT_P (operands[1]) && !TARGET_CONST16)
     operands[1] = force_const_mem (DImode, operands[1]);
 
-  if (!(reload_in_progress | reload_completed))
-    {
-      if (!register_operand (operands[0], DImode)
-	  && !register_operand (operands[1], DImode))
-	operands[1] = force_reg (DImode, operands[1]);
+  if (!register_operand (operands[0], DImode)
+      && !register_operand (operands[1], DImode))
+    operands[1] = force_reg (DImode, operands[1]);
 
-      if (xtensa_copy_incoming_a7 (operands, DImode))
-	DONE;
-    }
+  operands[1] = xtensa_copy_incoming_a7 (operands[1]);
 })
 
 (define_insn_and_split "movdi_internal"
@@ -934,18 +930,15 @@
   if (!TARGET_CONST16 && CONSTANT_P (operands[1]))
     operands[1] = force_const_mem (SFmode, operands[1]);
 
-  if (!(reload_in_progress | reload_completed))
-    {
-      if ((!register_operand (operands[0], SFmode)
-	   && !register_operand (operands[1], SFmode))
-	  || (FP_REG_P (xt_true_regnum (operands[0]))
-	      && (constantpool_mem_p (operands[1])
-	          || CONSTANT_P (operands[1]))))
-	operands[1] = force_reg (SFmode, operands[1]);
+  if ((!register_operand (operands[0], SFmode)
+       && !register_operand (operands[1], SFmode))
+      || (FP_REG_P (xt_true_regnum (operands[0]))
+	  && !(reload_in_progress | reload_completed)
+	  && (constantpool_mem_p (operands[1])
+	      || CONSTANT_P (operands[1]))))
+    operands[1] = force_reg (SFmode, operands[1]);
 
-      if (xtensa_copy_incoming_a7 (operands, SFmode))
-	DONE;
-    }
+  operands[1] = xtensa_copy_incoming_a7 (operands[1]);
 })
 
 (define_insn "movsf_internal"
@@ -1015,15 +1008,11 @@
   if (CONSTANT_P (operands[1]) && !TARGET_CONST16)
     operands[1] = force_const_mem (DFmode, operands[1]);
 
-  if (!(reload_in_progress | reload_completed))
-    {
-      if (!register_operand (operands[0], DFmode)
-	  && !register_operand (operands[1], DFmode))
-	operands[1] = force_reg (DFmode, operands[1]);
+  if (!register_operand (operands[0], DFmode)
+      && !register_operand (operands[1], DFmode))
+    operands[1] = force_reg (DFmode, operands[1]);
 
-      if (xtensa_copy_incoming_a7 (operands, DFmode))
-	DONE;
-    }
+  operands[1] = xtensa_copy_incoming_a7 (operands[1]);
 })
 
 (define_insn_and_split "movdf_internal"
@@ -1081,7 +1070,16 @@
 
 ;; Shift instructions.
 
-(define_insn "ashlsi3"
+(define_expand "ashlsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(ashift:SI (match_operand:SI 1 "register_operand" "")
+		   (match_operand:SI 2 "arith_operand" "")))]
+  ""
+{
+  operands[1] = xtensa_copy_incoming_a7 (operands[1]);
+})
+
+(define_insn "ashlsi3_internal"
   [(set (match_operand:SI 0 "register_operand" "=a,a")
 	(ashift:SI (match_operand:SI 1 "register_operand" "r,r")
 		   (match_operand:SI 2 "arith_operand" "J,r")))]

@@ -763,23 +763,21 @@ extern enum reg_class xtensa_char_to_class[256];
 #define FUNCTION_ARG_REGNO_P(N)						\
   ((N) >= GP_OUTGOING_ARG_FIRST && (N) <= GP_OUTGOING_ARG_LAST)
 
-/* Define a data type for recording info about an argument list
-   during the scan of that argument list.  This data type should
-   hold all necessary information about the function itself
-   and about the args processed so far, enough to enable macros
-   such as FUNCTION_ARG to determine where the next arg should go.  */
-typedef struct xtensa_args {
-    int arg_words;		/* # total words the arguments take */
+/* Record the number of argument words seen so far, along with a flag to
+   indicate whether these are incoming arguments.  (FUNCTION_INCOMING_ARG
+   is used for both incoming and outgoing args, so a separate flag is
+   needed.  */
+typedef struct xtensa_args
+{
+  int arg_words;
+  int incoming;
 } CUMULATIVE_ARGS;
 
-/* Initialize a variable CUM of type CUMULATIVE_ARGS
-   for a call to a function whose data type is FNTYPE.
-   For a library call, FNTYPE is 0.  */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT)		\
-  init_cumulative_args (&CUM, FNTYPE, LIBNAME)
+  init_cumulative_args (&CUM, 0)
 
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM, FNTYPE, LIBNAME)		\
-  init_cumulative_args (&CUM, FNTYPE, LIBNAME)
+  init_cumulative_args (&CUM, 1)
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
@@ -824,12 +822,6 @@ typedef struct xtensa_args {
 
 /* Pass complex arguments independently.  */
 #define SPLIT_COMPLEX_ARGS 1
-
-/* Because Xtensa's function_arg() wraps BLKmode arguments passed in
-   a7 inside a PARALLEL, BLOCK_REG_PADDING needs to be defined
-   to get emit_group_store to do the right thing.  */
-#define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  FUNCTION_ARG_PADDING (MODE, TYPE)
 
 /* Profiling Xtensa code is typically done with the built-in profiling
    feature of Tensilica's instruction set simulator, which does not
@@ -1177,11 +1169,6 @@ typedef struct xtensa_args {
 
 /* Prefer word-sized loads.  */
 #define SLOW_BYTE_ACCESS 1
-
-/* ??? Xtensa doesn't have any instructions that set integer values
-   based on the results of comparisons, but the simplification code in
-   the combiner also uses STORE_FLAG_VALUE.  The default value (1) is
-   fine for us, but (-1) might be better.  */
 
 /* Shift instructions ignore all but the low-order few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
