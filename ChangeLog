@@ -1,3 +1,7 @@
+Mon Dec 22 02:39:24 1997  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in: It's alpha*-...
+
 Sun Dec 21 16:53:12 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* configure.in (host_makefile_frag, target_makefile_frag):
