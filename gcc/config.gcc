@@ -3117,7 +3117,7 @@ sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 thumb*-*-*)
 	{ echo "config.gcc: error:
 *** The Thumb targets have been deprecated.  The equivalent
-*** ARM based toolchain can now generated Thumb instructions
+*** ARM based toolchain can now generate Thumb instructions
 *** when the -mthumb switch is given to the compiler." 1>&2; exit 1; }
 	;;
 v850-*-rtems*)
