@@ -1011,8 +1011,7 @@ translate_options (argcp, argvp)
 	      newv = (const char **) xrealloc (newv, newvsize);
 
 	      sp = target_option_translations[tott_idx].replacements;
-	      np = (char *) xmalloc (strlen (sp) + 1);
-	      strcpy (np, sp);
+	      np = xstrdup (sp);
 
 	      while (1)
 		{
@@ -3910,15 +3909,13 @@ process_command (argc, argv)
 	      /* On some systems, ld cannot handle some options without
 		 a space.  So split the option from its argument.  */
 	      char *part1 = (char *) xmalloc (2);
-	      char *tmp;
 	      part1[0] = c;
 	      part1[1] = '\0';
 
 	      switches[n_switches].part1 = part1;
 	      switches[n_switches].args
 		= (const char **) xmalloc (2 * sizeof (const char *));
-	      switches[n_switches].args[0] = tmp = xmalloc (strlen (p));
-	      strcpy (tmp, &p[1]);
+	      switches[n_switches].args[0] = xstrdup (p+1);
 	      switches[n_switches].args[1] = 0;
 	    }
 	  else
@@ -5812,17 +5809,8 @@ main (argc, argv)
 
   /* If we have a GCC_EXEC_PREFIX envvar, modify it for cpp's sake.  */
   if (gcc_exec_prefix)
-    {
-      char *temp = (char *) xmalloc (strlen (gcc_exec_prefix)
-				     + strlen (spec_version)
-				     + strlen (spec_machine) + 3);
-      strcpy (temp, gcc_exec_prefix);
-      strcat (temp, spec_machine);
-      strcat (temp, dir_separator_str);
-      strcat (temp, spec_version);
-      strcat (temp, dir_separator_str);
-      gcc_exec_prefix = temp;
-    }
+    gcc_exec_prefix = concat (gcc_exec_prefix, spec_machine, dir_separator_str,
+			      spec_version, dir_separator_str, NULL);
 
   /* Now we have the specs.
      Set the `valid' bits for switches that match anything in any spec.  */

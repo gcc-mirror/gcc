@@ -797,21 +797,47 @@ main (argc, argv)
      char *argv[];
 {
   static const char *const ld_suffix	= "ld";
-  const char *full_ld_suffix	= ld_suffix;
   static const char *const real_ld_suffix = "real-ld";
   static const char *const collect_ld_suffix = "collect-ld";
   static const char *const nm_suffix	= "nm";
-  const char *full_nm_suffix	= nm_suffix;
   static const char *const gnm_suffix	= "gnm";
-  const char *full_gnm_suffix	= gnm_suffix;
 #ifdef LDD_SUFFIX
   static const char *const ldd_suffix	= LDD_SUFFIX;
-  const char *full_ldd_suffix	= ldd_suffix;
 #endif
   static const char *const strip_suffix = "strip";
-  const char *full_strip_suffix = strip_suffix;
   static const char *const gstrip_suffix = "gstrip";
-  const char *full_gstrip_suffix = gstrip_suffix;
+
+#ifdef CROSS_COMPILE
+  /* If we look for a program in the compiler directories, we just use
+     the short name, since these directories are already system-specific.
+     But it we look for a program in the system directories, we need to
+     qualify the program name with the target machine.  */
+
+  const char *const full_ld_suffix =
+    concat(target_machine, "-", ld_suffix, NULL);
+  const char *const full_nm_suffix =
+    concat (target_machine, "-", nm_suffix, NULL);
+  const char *const full_gnm_suffix =
+    concat (target_machine, "-", gnm_suffix, NULL);
+#ifdef LDD_SUFFIX
+  const char *const full_ldd_suffix =
+    concat (target_machine, "-", ldd_suffix, NULL);
+#endif
+  const char *const full_strip_suffix =
+    concat (target_machine, "-", strip_suffix, NULL);
+  const char *const full_gstrip_suffix =
+    concat (target_machine, "-", gstrip_suffix, NULL);
+#else
+  const char *const full_ld_suffix	= ld_suffix;
+  const char *const full_nm_suffix	= nm_suffix;
+  const char *const full_gnm_suffix	= gnm_suffix;
+#ifdef LDD_SUFFIX
+  const char *const full_ldd_suffix	= ldd_suffix;
+#endif
+  const char *const full_strip_suffix	= strip_suffix;
+  const char *const full_gstrip_suffix	= gstrip_suffix;
+#endif /* CROSS_COMPILE */
+
   const char *arg;
   FILE *outf;
 #ifdef COLLECT_EXPORT_LIST
@@ -935,31 +961,6 @@ main (argc, argv)
   /* Extract COMPILER_PATH and PATH into our prefix list.  */
   prefix_from_env ("COMPILER_PATH", &cpath);
   prefix_from_env ("PATH", &path);
-
-#ifdef CROSS_COMPILE
-  /* If we look for a program in the compiler directories, we just use
-     the short name, since these directories are already system-specific.
-     But it we look for a program in the system directories, we need to
-     qualify the program name with the target machine.  */
-
-  full_ld_suffix = concat(target_machine, "-", ld_suffix, NULL);
-
-#if 0
-  full_gld_suffix = concat (target_machine, "-", gld_suffix, NULL);
-#endif
-
-  full_nm_suffix = concat (target_machine, "-", nm_suffix, NULL);
-
-  full_gnm_suffix = concat (target_machine, "-", gnm_suffix, NULL);
-  
-#ifdef LDD_SUFFIX
-  full_ldd_suffix = concat (target_machine, "-", ldd_suffix, NULL);
-#endif
-
-  full_strip_suffix = concat (target_machine, "-", strip_suffix, NULL);
-  
-  full_gstrip_suffix = concat (target_machine, "-", gstrip_suffix, NULL);
-#endif /* CROSS_COMPILE */
 
   /* Try to discover a valid linker/nm/strip to use.  */
 
