@@ -1404,6 +1404,50 @@ arm_not_operand (op, mode)
 		  || const_ok_for_arm (~INTVAL (op)))));
 }
 
+/* Return TRUE if the operand is a memory reference which contains an
+   offsettable address.  */
+int
+offsettable_memory_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (mode == VOIDmode)
+    mode = GET_MODE (op);
+
+  return (mode == GET_MODE (op)
+	  && GET_CODE (op) == MEM
+	  && offsettable_address_p (reload_completed | reload_in_progress,
+				    mode, XEXP (op, 0)));
+}
+
+/* Return TRUE if the operand is a memory reference which is, or can be
+   made word aligned by adjusting the offset.  */
+int
+alignable_memory_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  rtx reg;
+
+  if (mode == VOIDmode)
+    mode = GET_MODE (op);
+
+  if (mode != GET_MODE (op) || GET_CODE (op) != MEM)
+    return 0;
+
+  op = XEXP (op, 0);
+
+  return ((GET_CODE (reg = op) == REG
+	   || (GET_CODE (op) == SUBREG
+	       && GET_CODE (reg = SUBREG_REG (op)) == REG)
+	   || (GET_CODE (op) == PLUS
+	       && GET_CODE (XEXP (op, 1)) == CONST_INT
+	       && (GET_CODE (reg = XEXP (op, 0)) == REG
+		   || (GET_CODE (XEXP (op, 0)) == SUBREG
+		       && GET_CODE (reg = SUBREG_REG (XEXP (op, 0))) == REG))))
+	  && REGNO_POINTER_ALIGN (REGNO (reg)) >= 4);
+}
+
 /* Return TRUE for valid operands for the rhs of an FPU instruction.  */
 
 int
@@ -2108,6 +2152,35 @@ arm_gen_movstrqi (operands)
     }
 
   return 1;
+}
+
+/* Generate a memory reference for a half word, such that it will be loaded
+   into the top 16 bits of the word.  We can assume that the address is
+   known to be alignable and of the form reg, or plus (reg, const).  */
+rtx
+gen_rotated_half_load (memref)
+     rtx memref;
+{
+  HOST_WIDE_INT offset = 0;
+  rtx base = XEXP (memref, 0);
+
+  if (GET_CODE (base) == PLUS)
+    {
+      offset = INTVAL (XEXP (base, 1));
+      base = XEXP (base, 0);
+    }
+
+  /* If we aren't allowed to generate unalligned addresses, then fail.  */
+  if (TARGET_SHORT_BY_BYTES
+      && ((BYTES_BIG_ENDIAN ? 1 : 0) ^ ((offset & 2) == 0)))
+    return NULL;
+
+  base = gen_rtx (MEM, SImode, plus_constant (base, offset & ~2));
+
+  if ((BYTES_BIG_ENDIAN ? 1 : 0) ^ ((offset & 2) == 2))
+    return base;
+
+  return gen_rtx (ROTATE, SImode, base, GEN_INT (16));
 }
 
 /* X and Y are two things to compare using CODE.  Emit the compare insn and
@@ -4208,18 +4281,50 @@ int
 get_arm_condition_code (comparison)
      rtx comparison;
 {
-  switch (GET_CODE (comparison))
+  enum machine_mode mode = GET_MODE (XEXP (comparison, 0));
+
+  if (GET_MODE_CLASS (mode) != MODE_CC)
+    mode = SELECT_CC_MODE (GET_CODE (comparison), XEXP (comparison, 0),
+			   XEXP (comparison, 1));
+
+  switch (mode)
     {
-    case NE: return (1);
-    case EQ: return (0);
-    case GE: return (10);
-    case GT: return (12);
-    case LE: return (13);
-    case LT: return (11);
-    case GEU: return (2);
-    case GTU: return (8);
-    case LEU: return (9);
-    case LTU: return (3);
+    case CC_NOOVmode:
+      switch (GET_CODE (comparison))
+	{
+	case NE: return 1;
+	case EQ: return 0;
+	case GE: return 5;
+	case LT: return 4;
+	default: abort ();
+	}
+
+    case CC_Zmode:
+    case CCFPmode:
+      switch (GET_CODE (comparison))
+	{
+	case NE: return 1;
+	case EQ: return 0;
+	default: abort ();
+	}
+
+    case CCFPEmode:
+    case CCmode:
+      switch (GET_CODE (comparison))
+	{
+	case NE: return 1;
+	case EQ: return 0;
+	case GE: return 10;
+	case GT: return 12;
+	case LE: return 13;
+	case LT: return 11;
+	case GEU: return 2;
+	case GTU: return 8;
+	case LEU: return 9;
+	case LTU: return 3;
+	default: abort ();
+	}
+
     default: abort ();
     }
   /*NOTREACHED*/
