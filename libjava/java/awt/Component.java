@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libjava.
 
@@ -65,6 +65,16 @@ public abstract class Component implements MenuContainer
   public Point getLocation ()
   {
     return new Point(x, y);
+  }
+
+  public int getX ()
+  {
+    return x;
+  }
+
+  public int getY ()
+  {
+    return y;
   }
 
   public Dimension getSize ()

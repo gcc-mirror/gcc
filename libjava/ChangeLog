@@ -1,3 +1,41 @@
+2000-04-08  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added new files.
+	* java/awt/IllegalComponentStateException.java: New file.
+	* java/awt/ItemSelectable.java: New file.
+	* java/awt/event/WindowEvent.java: Finished.
+	* java/awt/event/TextEvent.java: Finished.
+	* java/awt/event/ContainerEvent.java: New file.
+	* java/awt/Component.java (getX, getY): New methods.
+	* java/awt/event/PaintEvent.java: New file.
+	* java/awt/event/MouseEvent.java: New file.
+	* java/awt/ActiveEvent.java: New file.
+	* java/awt/event/KeyEvent.java: Finished.
+	* java/awt/event/ItemEvent.java: New file.
+	* java/awt/Adjustable.java: New file.
+	* java/awt/event/InputMethodEvent.java: New file.
+	* java/awt/event/InputEvent.java: Finished.
+	* java/awt/event/FocusEvent.java: New file.
+	* java/awt/event/MouseMotionAdapter.java: New file.
+	* java/awt/event/MouseAdapter.java: New file.
+	* java/awt/event/KeyAdapter.java: New file.
+	* java/awt/event/FocusAdapter.java: New file.
+	* java/awt/event/ContainerAdapter.java: New file.
+	* java/awt/event/ComponentEvent.java: Finished.
+	* java/awt/event/AdjustmentEvent.java: New file.
+	* java/awt/event/ComponentAdapter.java: New file.
+	* java/awt/event/ActionEvent.java: Finished.
+	* java/awt/event/MouseMotionListener.java: New file.
+	* java/awt/event/MouseListener.java: New file.
+	* java/awt/event/ItemListener.java: New file.
+	* java/awt/event/InputMethodListener.java: New file.
+	* java/awt/event/ContainerListener.java: New file.
+	* java/awt/event/FocusListener.java: New file.
+	* java/awt/event/ComponentListener.java: New file.
+	* java/awt/event/AWTEventListener.java: New file.
+	* java/awt/event/AdjustmentListener.java: New file.
+
 2000-04-08  Anthony Green  <green@cygnus.com>
 
 	* java/lang/natObject.cc (_Jv_MonitorEnter): Only perform null

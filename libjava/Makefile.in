@@ -298,48 +298,76 @@ gnu/gcj/convert/UnicodeToBytes.java
 special_java_source_files = java/lang/Class.java java/lang/Object.java
 
 awt_java_source_files = \
+java/awt/AWTError.java \
 java/awt/AWTEvent.java \
 java/awt/AWTException.java \
+java/awt/ActiveEvent.java \
+java/awt/Adjustable.java \
 java/awt/BorderLayout.java \
-java/awt/Component.java \
 java/awt/Color.java \
-java/awt/Container.java \
-java/awt/Dimension.java \
+java/awt/Component.java	\
+java/awt/Container.java	\
+java/awt/Dimension.java	\
 java/awt/Event.java \
 java/awt/Font.java \
 java/awt/Frame.java \
 java/awt/Graphics.java \
+java/awt/IllegalComponentStateException.java \
 java/awt/Image.java \
+java/awt/ItemSelectable.java \
 java/awt/LayoutManager.java \
 java/awt/LayoutManager2.java \
 java/awt/Menu.java \
 java/awt/MenuBar.java \
-java/awt/MenuItem.java \
 java/awt/MenuComponent.java \
 java/awt/MenuContainer.java \
+java/awt/MenuItem.java \
 java/awt/Paint.java \
 java/awt/PaintContext.java \
 java/awt/Point.java \
-java/awt/Rectangle.java \
+java/awt/Rectangle.java	\
 java/awt/Shape.java \
 java/awt/TextArea.java \
 java/awt/TextComponent.java \
 java/awt/Toolkit.java \
 java/awt/Transparency.java \
 java/awt/Window.java \
-java/awt/event/ActionEvent.java \
+java/awt/event/AWTEventListener.java \
+java/awt/event/ActionEvent.java	\
 java/awt/event/ActionListener.java \
+java/awt/event/AdjustmentEvent.java \
+java/awt/event/AdjustmentListener.java \
+java/awt/event/ComponentAdapter.java \
 java/awt/event/ComponentEvent.java \
+java/awt/event/ComponentListener.java \
+java/awt/event/ContainerAdapter.java \
+java/awt/event/ContainerEvent.java \
+java/awt/event/ContainerListener.java \
+java/awt/event/FocusAdapter.java \
+java/awt/event/FocusEvent.java \
+java/awt/event/FocusListener.java \
 java/awt/event/InputEvent.java \
+java/awt/event/InputMethodEvent.java \
+java/awt/event/InputMethodListener.java	\
+java/awt/event/InvocationEvent.java \
+java/awt/event/ItemEvent.java \
+java/awt/event/ItemListener.java \
+java/awt/event/KeyAdapter.java \
 java/awt/event/KeyEvent.java \
-java/awt/event/KeyListener.java \
+java/awt/event/KeyListener.java	\
+java/awt/event/MouseAdapter.java \
+java/awt/event/MouseEvent.java \
+java/awt/event/MouseListener.java \
+java/awt/event/MouseMotionAdapter.java \
+java/awt/event/MouseMotionListener.java	\
+java/awt/event/PaintEvent.java \
 java/awt/event/TextEvent.java \
 java/awt/event/TextListener.java \
 java/awt/event/WindowAdapter.java \
-java/awt/event/WindowEvent.java \
+java/awt/event/WindowEvent.java	\
 java/awt/event/WindowListener.java \
-java/awt/geom/Point2D.java \
 java/awt/geom/Dimension2D.java \
+java/awt/geom/Point2D.java \
 java/awt/peer/ComponentPeer.java \
 java/awt/peer/ContainerPeer.java \
 java/awt/peer/FramePeer.java \
@@ -798,8 +826,9 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(data_DATA) $(toolexeclib_DATA)
 
 DIST_COMMON =  README COPYING ChangeLog Makefile.am Makefile.in NEWS \
-THANKS acinclude.m4 aclocal.m4 configure configure.in \
-libgcj-test.spec.in libgcj.spec.in
+THANKS acconfig.h acinclude.m4 aclocal.m4 configure configure.in \
+include/config.h.in include/stamp-h.in libgcj-test.spec.in \
+libgcj.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -840,24 +869,47 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/text/SentenceBreakIterator.P \
 .deps/gnu/gcj/text/WordBreakIterator.P \
 .deps/gnu/gcj/util/EnumerationChain.P .deps/interpret.P \
-.deps/java/awt/AWTEvent.P .deps/java/awt/AWTException.P \
-.deps/java/awt/BorderLayout.P .deps/java/awt/Color.P \
-.deps/java/awt/Component.P .deps/java/awt/Container.P \
-.deps/java/awt/Dimension.P .deps/java/awt/Event.P .deps/java/awt/Font.P \
-.deps/java/awt/Frame.P .deps/java/awt/Graphics.P .deps/java/awt/Image.P \
-.deps/java/awt/LayoutManager.P .deps/java/awt/LayoutManager2.P \
-.deps/java/awt/Menu.P .deps/java/awt/MenuBar.P \
-.deps/java/awt/MenuComponent.P .deps/java/awt/MenuContainer.P \
-.deps/java/awt/MenuItem.P .deps/java/awt/Paint.P \
-.deps/java/awt/PaintContext.P .deps/java/awt/Point.P \
-.deps/java/awt/Rectangle.P .deps/java/awt/Shape.P \
-.deps/java/awt/TextArea.P .deps/java/awt/TextComponent.P \
-.deps/java/awt/Toolkit.P .deps/java/awt/Transparency.P \
-.deps/java/awt/Window.P .deps/java/awt/event/ActionEvent.P \
+.deps/java/awt/AWTError.P .deps/java/awt/AWTEvent.P \
+.deps/java/awt/AWTException.P .deps/java/awt/ActiveEvent.P \
+.deps/java/awt/Adjustable.P .deps/java/awt/BorderLayout.P \
+.deps/java/awt/Color.P .deps/java/awt/Component.P \
+.deps/java/awt/Container.P .deps/java/awt/Dimension.P \
+.deps/java/awt/Event.P .deps/java/awt/Font.P .deps/java/awt/Frame.P \
+.deps/java/awt/Graphics.P \
+.deps/java/awt/IllegalComponentStateException.P .deps/java/awt/Image.P \
+.deps/java/awt/ItemSelectable.P .deps/java/awt/LayoutManager.P \
+.deps/java/awt/LayoutManager2.P .deps/java/awt/Menu.P \
+.deps/java/awt/MenuBar.P .deps/java/awt/MenuComponent.P \
+.deps/java/awt/MenuContainer.P .deps/java/awt/MenuItem.P \
+.deps/java/awt/Paint.P .deps/java/awt/PaintContext.P \
+.deps/java/awt/Point.P .deps/java/awt/Rectangle.P \
+.deps/java/awt/Shape.P .deps/java/awt/TextArea.P \
+.deps/java/awt/TextComponent.P .deps/java/awt/Toolkit.P \
+.deps/java/awt/Transparency.P .deps/java/awt/Window.P \
+.deps/java/awt/event/AWTEventListener.P \
+.deps/java/awt/event/ActionEvent.P \
 .deps/java/awt/event/ActionListener.P \
-.deps/java/awt/event/ComponentEvent.P .deps/java/awt/event/InputEvent.P \
+.deps/java/awt/event/AdjustmentEvent.P \
+.deps/java/awt/event/AdjustmentListener.P \
+.deps/java/awt/event/ComponentAdapter.P \
+.deps/java/awt/event/ComponentEvent.P \
+.deps/java/awt/event/ComponentListener.P \
+.deps/java/awt/event/ContainerAdapter.P \
+.deps/java/awt/event/ContainerEvent.P \
+.deps/java/awt/event/ContainerListener.P \
+.deps/java/awt/event/FocusAdapter.P .deps/java/awt/event/FocusEvent.P \
+.deps/java/awt/event/FocusListener.P .deps/java/awt/event/InputEvent.P \
+.deps/java/awt/event/InputMethodEvent.P \
+.deps/java/awt/event/InputMethodListener.P \
+.deps/java/awt/event/InvocationEvent.P .deps/java/awt/event/ItemEvent.P \
+.deps/java/awt/event/ItemListener.P .deps/java/awt/event/KeyAdapter.P \
 .deps/java/awt/event/KeyEvent.P .deps/java/awt/event/KeyListener.P \
-.deps/java/awt/event/TextEvent.P .deps/java/awt/event/TextListener.P \
+.deps/java/awt/event/MouseAdapter.P .deps/java/awt/event/MouseEvent.P \
+.deps/java/awt/event/MouseListener.P \
+.deps/java/awt/event/MouseMotionAdapter.P \
+.deps/java/awt/event/MouseMotionListener.P \
+.deps/java/awt/event/PaintEvent.P .deps/java/awt/event/TextEvent.P \
+.deps/java/awt/event/TextListener.P \
 .deps/java/awt/event/WindowAdapter.P .deps/java/awt/event/WindowEvent.P \
 .deps/java/awt/event/WindowListener.P .deps/java/awt/geom/Dimension2D.P \
 .deps/java/awt/geom/Point2D.P .deps/java/awt/peer/ComponentPeer.P \
@@ -1078,6 +1130,34 @@ config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: @MAINTAINER_MODE_TRUE@$(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
+
+include/config.h: include/stamp-h
+	@if test ! -f $@; then \
+		rm -f include/stamp-h; \
+		$(MAKE) include/stamp-h; \
+	else :; fi
+include/stamp-h: $(srcdir)/include/config.h.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES= CONFIG_HEADERS=include/config.h \
+	     $(SHELL) ./config.status
+	@echo timestamp > include/stamp-h 2> /dev/null
+$(srcdir)/include/config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/include/stamp-h.in
+	@if test ! -f $@; then \
+		rm -f $(srcdir)/include/stamp-h.in; \
+		$(MAKE) $(srcdir)/include/stamp-h.in; \
+	else :; fi
+$(srcdir)/include/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
+	cd $(top_srcdir) && $(AUTOHEADER)
+	@echo timestamp > $(srcdir)/include/stamp-h.in 2> /dev/null
+
+mostlyclean-hdr:
+
+clean-hdr:
+
+distclean-hdr:
+	-rm -f include/config.h
+
+maintainer-clean-hdr:
 libgcj.spec: $(top_builddir)/config.status libgcj.spec.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 libgcj-test.spec: $(top_builddir)/config.status libgcj-test.spec.in
@@ -1521,31 +1601,33 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-toolexeclibLIBRARIES mostlyclean-compile \
-		mostlyclean-libtool mostlyclean-toolexeclibLTLIBRARIES \
+mostlyclean-am:  mostlyclean-hdr mostlyclean-toolexeclibLIBRARIES \
+		mostlyclean-compile mostlyclean-libtool \
+		mostlyclean-toolexeclibLTLIBRARIES \
 		mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
 		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-toolexeclibLIBRARIES clean-compile clean-libtool \
-		clean-toolexeclibLTLIBRARIES clean-binPROGRAMS \
-		clean-noinstPROGRAMS clean-tags clean-depend \
-		clean-generic mostlyclean-am clean-local
+clean-am:  clean-hdr clean-toolexeclibLIBRARIES clean-compile \
+		clean-libtool clean-toolexeclibLTLIBRARIES \
+		clean-binPROGRAMS clean-noinstPROGRAMS clean-tags \
+		clean-depend clean-generic mostlyclean-am clean-local
 
 clean: clean-recursive
 
-distclean-am:  distclean-toolexeclibLIBRARIES distclean-compile \
-		distclean-libtool distclean-toolexeclibLTLIBRARIES \
-		distclean-binPROGRAMS distclean-noinstPROGRAMS \
-		distclean-tags distclean-depend distclean-generic \
-		clean-am
+distclean-am:  distclean-hdr distclean-toolexeclibLIBRARIES \
+		distclean-compile distclean-libtool \
+		distclean-toolexeclibLTLIBRARIES distclean-binPROGRAMS \
+		distclean-noinstPROGRAMS distclean-tags \
+		distclean-depend distclean-generic clean-am
 	-rm -f libtool
 
 distclean: distclean-recursive
 	-rm -f config.status
 
-maintainer-clean-am:  maintainer-clean-toolexeclibLIBRARIES \
+maintainer-clean-am:  maintainer-clean-hdr \
+		maintainer-clean-toolexeclibLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
 		maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-binPROGRAMS \
@@ -1558,7 +1640,8 @@ maintainer-clean-am:  maintainer-clean-toolexeclibLIBRARIES \
 maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
-.PHONY: mostlyclean-toolexeclibLIBRARIES distclean-toolexeclibLIBRARIES \
+.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
+mostlyclean-toolexeclibLIBRARIES distclean-toolexeclibLIBRARIES \
 clean-toolexeclibLIBRARIES maintainer-clean-toolexeclibLIBRARIES \
 uninstall-toolexeclibLIBRARIES install-toolexeclibLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \

@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libjava.
 
@@ -9,12 +9,21 @@ details.  */
 package java.awt.event;
 import java.awt.*;
 
-/* A very incomplete placeholder. */
+/* Status: Believed complete and correct to JDK 1.2.  */
 
 public class TextEvent extends AWTEvent
 {
+  public static final int TEXT_FIRST = 900;
+  public static final int TEXT_LAST = 900;
+  public static final int TEXT_VALUE_CHANGED = 900;
+
   public TextEvent (Object source, int id)
   {
-    super(source, id);
+    super (source, id);
+  }
+
+  public String paramString ()
+  {
+    return super.paramString ();
   }
 }

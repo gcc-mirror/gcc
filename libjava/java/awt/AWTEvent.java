@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libjava.
 
@@ -15,7 +15,20 @@ public abstract class AWTEvent extends java.util.EventObject
   protected boolean consumed;
   protected int id;
 
-  public int getID() { return id; }
+  public int getID()
+  {
+    return id;
+  }
+
+  public String paramString ()
+  {
+    return toString ();
+  }
+
+  public String toString ()
+  {
+    return getClass().getName() + "[" + id + "]";
+  }
 
   public AWTEvent (Object source, int id)
   {
