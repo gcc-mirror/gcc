@@ -432,20 +432,22 @@ mpostive2:
 ; denominator in A2/A3
 	.global	___modsi3
 ___modsi3:
+#ifdef __H8300__
 	PUSHP	S2P
 	PUSHP	S0P
 	PUSHP	S1P
-
 	bsr	modnorm
-#ifdef __H8300__
 	bsr	divmodsi4
 	mov	S0,A0
 	mov	S1,A1
+	bra	exitdiv
 #else
+	PUSHP	S2P
+	bsr	modnorm
 	bsr	___udivsi3
 	mov.l	er3,er0
-#endif
 	bra	exitdiv
+#endif
 
 	;; H8/300H and H8S version of ___udivsi3 is defined later in
 	;; the file.
@@ -477,13 +479,15 @@ ___umodsi3:
 
 	.global	___divsi3
 ___divsi3:
+#ifdef __H8300__
 	PUSHP	S2P
 	PUSHP	S0P
 	PUSHP	S1P
 	jsr	divnorm
-#ifdef __H8300__
 	jsr	divmodsi4
 #else
+	PUSHP	S2P
+	jsr	divnorm
 	bsr	___udivsi3
 #endif
 
@@ -508,8 +512,10 @@ exitdiv:
 #endif
 
 reti:
+#ifdef __H8300__
 	POPP	S1P
 	POPP	S0P
+#endif
 	POPP	S2P
 	rts
 

@@ -1,3 +1,10 @@
+2003-11-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/lib1funcs.asm (modsi3): Don't save unused
+	registers.
+	(divsi3): Likewise.
+	(reti): Don't restore unused registers.
+
 2003-11-14  Nick Clifton  <nickc@redhat.com>
 
 	* config/fr30/fr30.c: Include toplev.h
