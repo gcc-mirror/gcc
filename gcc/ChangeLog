@@ -1,3 +1,8 @@
+2004-10-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-cfg.c (cleanup_tree_cfg): Pull a call to
+	cleanup_control_flow() out of the while loop.
+
 2004-10-01  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-vectorizer.c (vectorizable_operation): Fail unless
