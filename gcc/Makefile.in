@@ -2995,7 +2995,7 @@ $(DESTDIR)$(infodir)/%.info: $(docobjdir)/%.info installdirs
 	-if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
 	  if [ -f $(DESTDIR)$(infodir)/dir ] ; then \
 	    if [ -f $@ ]; then \
-	      install-info --dir-file=$(DESTDIR)$(infodir)/dir $@ \
+	      install-info --dir-file=$(DESTDIR)$(infodir)/dir $@; \
 	    else true; fi; \
 	  else true; fi; \
 	else true; fi;
