@@ -172,10 +172,10 @@ hash_string (cache_ptr cache, const void *key)
 {
   unsigned int ret = 0;
   unsigned int ctr = 0;
+  const char *ckey = key;
         
-        
-  while (*(const char *) key) {
-    ret ^= *((const char *) key)++ << ctr;
+  while (*ckey) {
+    ret ^= *ckey++ << ctr;
     ctr = (ctr + 1) % sizeof (void *);
   }
 
