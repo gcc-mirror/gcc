@@ -1,3 +1,7 @@
+2002-01-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * tree.c (build_nonstandard_integer_type): Correct prototype.
+
 2002-01-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md (movstrsico, movstrdix_64, 

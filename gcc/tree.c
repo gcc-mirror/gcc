@@ -3763,7 +3763,7 @@ build_index_type (maxval)
    built-in target types.  */
 tree
 build_nonstandard_integer_type (precision, unsignedp)
-     unsigned HOST_WIDE_INT precision;
+     unsigned int precision;
      int unsignedp;
 {
   tree itype = make_node (INTEGER_TYPE);
