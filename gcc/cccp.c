@@ -2586,8 +2586,6 @@ do { ip = &instack[indepth];		\
     case '%':
       if (ident_length || ip->macro || traditional)
 	goto randomchar;
-      if (ip->fname == 0 && beg_of_line == ip->buf)
-	goto randomchar;
       while (*ibp == '\\' && ibp[1] == '\n') {
 	ibp += 2;
 	++ip->lineno;
@@ -2618,11 +2616,15 @@ do { ip = &instack[indepth];		\
 	 preprocessor directives.  */
       if (ip->macro != 0)
 	goto randomchar;
-      /* If this is expand_into_temp_buffer, recognize them
+      /* If this is expand_into_temp_buffer,
+	 don't recognize them either.  Warn about them
 	 only after an actual newline at this level,
 	 not at the beginning of the input level.  */
-      if (ip->fname == 0 && beg_of_line == ip->buf)
+      if (! ip->fname) {
+	if (ip->buf != beg_of_line)
+	  warning ("preprocessing directive not recognized within macro arg");
 	goto randomchar;
+      }
       if (ident_length)
 	goto specialchar;
 
