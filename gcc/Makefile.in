@@ -375,7 +375,7 @@ OBJS = toplev.o version.o tree.o print-tree.o stor-layout.o fold-const.o \
  integrate.o jump.o cse.o loop.o unroll.o flow.o stupid.o combine.o \
  regclass.o local-alloc.o global.o reload.o reload1.o caller-save.o \
  insn-peep.o reorg.o sched.o final.o recog.o reg-stack.o \
- insn-recog.o insn-extract.o insn-output.o insn-emit.o \
+ insn-opinit.o insn-recog.o insn-extract.o insn-output.o insn-emit.o \
  insn-attrtab.o aux-output.o getpwd.o convert.o $(EXTRA_OBJS)
 
 # GEN files are listed separately, so they can be built before doing parallel
@@ -1000,6 +1000,16 @@ stamp-recog : md genrecog $(srcdir)/move-if-change
 	$(srcdir)/move-if-change tmp-recog.c insn-recog.c
 	touch stamp-recog
 
+insn-opinit.o : insn-opinit.c $(CONFIG_H) $(RTL_H) insn-codes.h insn-flags.h \
+  insn-config.h flags.h rtl.h recog.h expr.h reload.h
+	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-opinit.c
+
+insn-opinit.c: stamp-opinit ; @true
+stamp-opinit : md genopinit $(srcdir)/move-if-change
+	./genopinit md > tmp-opinit.c
+	$(srcdir)/move-if-change tmp-opinit.c insn-opinit.c
+	touch stamp-opinit
+
 insn-extract.o : insn-extract.c $(CONFIG_H) $(RTL_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-extract.c
 
@@ -1088,6 +1098,13 @@ genemit : genemit.o $(HOST_RTL) $(HOST_LIBDEPS)
 
 genemit.o : genemit.c $(RTL_H) hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genemit.c
+
+genopinit : genopinit.o $(HOST_RTL) $(HOST_LIBDEPS)
+	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genopinit \
+	 genopinit.o $(HOST_RTL) $(HOST_LIBS)
+
+genopinit.o : genopinit.c $(RTL_H) hconfig.h
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genopinit.c
 
 genrecog : genrecog.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genrecog \
