@@ -1,3 +1,8 @@
+2003-12-18  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* gcc/config/rs6000/rs6000.c (USE_ALTIVEC_FOR_ARG_P): Don't check
+	for SVR4 ABI.
+
 2003-12-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/aix.h (OS_MISSING_POWERPC64): Define.
