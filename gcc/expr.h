@@ -51,9 +51,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    EXPAND_INITIALIZER is similar but also record any labels on forced_labels.
    EXPAND_CONST_ADDRESS means it is ok to return a MEM whose address
     is a constant that is not a legitimate address.
-   EXPAND_WRITE means we are only going to write to the resulting rtx.  */
+   EXPAND_WRITE means we are only going to write to the resulting rtx.
+   EXPAND_MEMORY means we are interested in a memory result, even if
+    the memory is constant and we could have propagated a constant value.  */
 enum expand_modifier {EXPAND_NORMAL = 0, EXPAND_STACK_PARM = 2, EXPAND_SUM,
-		      EXPAND_CONST_ADDRESS, EXPAND_INITIALIZER, EXPAND_WRITE};
+		      EXPAND_CONST_ADDRESS, EXPAND_INITIALIZER, EXPAND_WRITE,
+		      EXPAND_MEMORY};
 
 /* Prevent the compiler from deferring stack pops.  See
    inhibit_defer_pop for more information.  */

@@ -1,3 +1,11 @@
+2003-06-08  Richard Henderson  <rth@redhat.com>
+
+	* expr.h (EXPAND_MEMORY): New.
+	* expr.c (expand_expr): Check it.
+	* stmt.c (expand_asm_operands): Provide it when the constraint
+	requires a memory.  Warn for memory input constraints without
+	a memory operand.
+
 2003-06-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* varasm.c: Don't include c-tree.h.

@@ -7326,7 +7326,9 @@ expand_expr (exp, target, tmode, modifier)
 	   Don't fold if this is for wide characters since it's too
 	   difficult to do correctly and this is a very rare case.  */
 
-	if (modifier != EXPAND_CONST_ADDRESS && modifier != EXPAND_INITIALIZER
+	if (modifier != EXPAND_CONST_ADDRESS
+	    && modifier != EXPAND_INITIALIZER
+	    && modifier != EXPAND_MEMORY
 	    && TREE_CODE (array) == STRING_CST
 	    && TREE_CODE (index) == INTEGER_CST
 	    && compare_tree_int (index, TREE_STRING_LENGTH (array)) < 0
@@ -7340,8 +7342,11 @@ expand_expr (exp, target, tmode, modifier)
 	   we have an explicit constructor and when our operand is a variable
 	   that was declared const.  */
 
-	if (modifier != EXPAND_CONST_ADDRESS && modifier != EXPAND_INITIALIZER
-	    && TREE_CODE (array) == CONSTRUCTOR && ! TREE_SIDE_EFFECTS (array)
+	if (modifier != EXPAND_CONST_ADDRESS
+	    && modifier != EXPAND_INITIALIZER
+	    && modifier != EXPAND_MEMORY
+	    && TREE_CODE (array) == CONSTRUCTOR
+	    && ! TREE_SIDE_EFFECTS (array)
 	    && TREE_CODE (index) == INTEGER_CST
 	    && 0 > compare_tree_int (index,
 				     list_length (CONSTRUCTOR_ELTS
@@ -7362,6 +7367,7 @@ expand_expr (exp, target, tmode, modifier)
 	else if (optimize >= 1
 		 && modifier != EXPAND_CONST_ADDRESS
 		 && modifier != EXPAND_INITIALIZER
+		 && modifier != EXPAND_MEMORY
 		 && TREE_READONLY (array) && ! TREE_SIDE_EFFECTS (array)
 		 && TREE_CODE (array) == VAR_DECL && DECL_INITIAL (array)
 		 && TREE_CODE (DECL_INITIAL (array)) != ERROR_MARK)
