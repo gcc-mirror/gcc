@@ -1,3 +1,8 @@
+2003-06-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (all call_value patterns): Remove register constraints on
+	value operand.
+
 2003-06-22  Neil Booth  <neil@daikokuya.co.uk>
 
 	* common.opt: More -f switches.
