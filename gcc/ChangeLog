@@ -1,3 +1,9 @@
+2000-07-15  Michael Meissner  <meissner@redhat.com>
+
+	* fold-const.c (fold): When optimizing FOO++ == CONST into ++FOO
+	== CONST + INCREMENT, don't overwrite the tree node for FOO++,
+	create a new node instead.
+
 2000-07-15  Neil Booth  <NeilB@earthling.net>
 
 	* README.Portability: Correct example about calling a function
