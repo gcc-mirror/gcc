@@ -2312,7 +2312,7 @@ all_languages=
 all_boot_languages=
 all_compilers=
 all_stagestuff=
-all_outputs='Makefile intl/Makefile fixinc/Makefile gccbug mklibgcc'
+all_outputs='Makefile intl/Makefile fixinc/Makefile gccbug mklibgcc mkheaders'
 # List of language makefile fragments.
 all_lang_makefiles=
 
