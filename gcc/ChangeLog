@@ -1,3 +1,7 @@
+2004-06-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* opts.sh (var_args): Fix regexp.
+
 2004-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/15178

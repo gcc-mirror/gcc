@@ -75,7 +75,7 @@ ${AWK} '
 	if (flags !~ "Var\\(")
 	  return "";
 	sub(".*Var\\(", "", flags);
-	sub(").*", "", flags);
+	sub("\\).*", "", flags);
 
 	return flags;
     }
