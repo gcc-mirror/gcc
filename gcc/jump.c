@@ -1116,6 +1116,130 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 		}
 	    }
 #endif
+	  /* If branches are expensive, convert
+	        if (foo) bar++;    to    bar += (foo != 0);
+	     and similarly for "bar--;" 
+
+	     INSN is the conditional branch around the arithmetic.  We set:
+
+	     TEMP is the arithmetic insn.
+	     TEMP1 is the SET doing the arithmetic.
+	     TEMP2 is the operand being incremented or decremented.
+	     TEMP3 to the condition being tested.
+	     TEMP4 to the earliest insn used to find the condition.  */
+
+	  if ((BRANCH_COST >= 2
+#ifdef HAVE_incscc
+	       || HAVE_incscc
+#endif
+#ifdef HAVE_decscc
+	       || HAVE_decscc
+#endif
+	      )
+	      && ! reload_completed
+	      && this_is_condjump && ! this_is_simplejump
+	      && (temp = next_nonnote_insn (insn)) != 0
+	      && (temp1 = single_set (temp)) != 0
+	      && (temp2 = SET_DEST (temp1),
+		  GET_MODE_CLASS (GET_MODE (temp2)) == MODE_INT)
+	      && GET_CODE (SET_SRC (temp1)) == PLUS
+	      && (XEXP (SET_SRC (temp1), 1) == const1_rtx
+		  || XEXP (SET_SRC (temp1), 1) == constm1_rtx)
+	      && rtx_equal_p (temp2, XEXP (SET_SRC (temp1), 0))
+	      && ! side_effects_p (temp2)
+	      && ! may_trap_p (temp2)
+	      /* INSN must either branch to the insn after TEMP or the insn
+		 after TEMP must branch to the same place as INSN.  */
+	      && (reallabelprev == temp
+		  || ((temp3 = next_active_insn (temp)) != 0
+		      && simplejump_p (temp3)
+		      && JUMP_LABEL (temp3) == JUMP_LABEL (insn)))
+	      && (temp3 = get_condition (insn, &temp4)) != 0
+	      /* We must be comparing objects whose modes imply the size.
+		 We could handle BLKmode if (1) emit_store_flag could
+		 and (2) we could find the size reliably.  */
+	      && GET_MODE (XEXP (temp3, 0)) != BLKmode
+	      && can_reverse_comparison_p (temp3, insn))
+	    {
+	      rtx temp6, target = 0, seq, init_insn = 0, init = temp2;
+	      enum rtx_code code = reverse_condition (GET_CODE (temp3));
+
+	      start_sequence ();
+
+	      /* It must be the case that TEMP2 is not modified in the range
+		 [TEMP4, INSN).  The one exception we make is if the insn
+		 before INSN sets TEMP2 to something which is also unchanged
+		 in that range.  In that case, we can move the initialization
+		 into our sequence.  */
+
+	      if ((temp5 = prev_active_insn (insn)) != 0
+		  && no_labels_between_p (temp5, insn)
+		  && GET_CODE (temp5) == INSN
+		  && (temp6 = single_set (temp5)) != 0
+		  && rtx_equal_p (temp2, SET_DEST (temp6))
+		  && (CONSTANT_P (SET_SRC (temp6))
+		      || GET_CODE (SET_SRC (temp6)) == REG
+		      || GET_CODE (SET_SRC (temp6)) == SUBREG))
+		{
+		  emit_insn (PATTERN (temp5));
+		  init_insn = temp5;
+		  init = SET_SRC (temp6);
+		}
+
+	      if (CONSTANT_P (init)
+		  || ! reg_set_between_p (init, PREV_INSN (temp4), insn))
+		target = emit_store_flag (gen_reg_rtx (GET_MODE (temp2)), code,
+					  XEXP (temp3, 0), XEXP (temp3, 1),
+					  VOIDmode,
+					  (code == LTU || code == LEU
+					   || code == GTU || code == GEU), 1);
+
+	      /* If we can do the store-flag, do the addition or
+		 subtraction.  */
+
+	      if (target)
+		target = expand_binop (GET_MODE (temp2),
+				       (XEXP (SET_SRC (temp1), 1) == const1_rtx
+					? add_optab : sub_optab),
+				       temp2, target, temp2, 0, OPTAB_WIDEN);
+
+	      if (target != 0)
+		{
+		  /* Put the result back in temp2 in case it isn't already.
+		     Then replace the jump, possible a CC0-setting insn in
+		     front of the jump, and TEMP, with the sequence we have
+		     made.  */
+
+		  if (target != temp2)
+		    emit_move_insn (temp2, target);
+
+		  seq = get_insns ();
+		  end_sequence ();
+
+		  emit_insns_before (seq, temp4);
+		  delete_insn (temp);
+
+		  if (init_insn)
+		    delete_insn (init_insn);
+
+		  next = NEXT_INSN (insn);
+#ifdef HAVE_cc0
+		  delete_insn (prev_nonnote_insn (insn));
+#endif
+		  delete_insn (insn);
+
+		  if (after_regscan)
+		    {
+		      reg_scan_update (seq, NEXT_INSN (next), old_max_reg);
+		      old_max_reg = max_reg_num ();
+		    }
+
+		  changed = 1;
+		  continue;
+		}
+	      else
+		end_sequence ();
+	    }
 
 	  /* Try to use a conditional move (if the target has them), or a
 	     store-flag insn.  If the target has conditional arithmetic as
@@ -1505,130 +1629,6 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 		}
 	    }
 
-	  /* If branches are expensive, convert
-	        if (foo) bar++;    to    bar += (foo != 0);
-	     and similarly for "bar--;" 
-
-	     INSN is the conditional branch around the arithmetic.  We set:
-
-	     TEMP is the arithmetic insn.
-	     TEMP1 is the SET doing the arithmetic.
-	     TEMP2 is the operand being incremented or decremented.
-	     TEMP3 to the condition being tested.
-	     TEMP4 to the earliest insn used to find the condition.  */
-
-	  if ((BRANCH_COST >= 2
-#ifdef HAVE_incscc
-	       || HAVE_incscc
-#endif
-#ifdef HAVE_decscc
-	       || HAVE_decscc
-#endif
-	      )
-	      && ! reload_completed
-	      && this_is_condjump && ! this_is_simplejump
-	      && (temp = next_nonnote_insn (insn)) != 0
-	      && (temp1 = single_set (temp)) != 0
-	      && (temp2 = SET_DEST (temp1),
-		  GET_MODE_CLASS (GET_MODE (temp2)) == MODE_INT)
-	      && GET_CODE (SET_SRC (temp1)) == PLUS
-	      && (XEXP (SET_SRC (temp1), 1) == const1_rtx
-		  || XEXP (SET_SRC (temp1), 1) == constm1_rtx)
-	      && rtx_equal_p (temp2, XEXP (SET_SRC (temp1), 0))
-	      && ! side_effects_p (temp2)
-	      && ! may_trap_p (temp2)
-	      /* INSN must either branch to the insn after TEMP or the insn
-		 after TEMP must branch to the same place as INSN.  */
-	      && (reallabelprev == temp
-		  || ((temp3 = next_active_insn (temp)) != 0
-		      && simplejump_p (temp3)
-		      && JUMP_LABEL (temp3) == JUMP_LABEL (insn)))
-	      && (temp3 = get_condition (insn, &temp4)) != 0
-	      /* We must be comparing objects whose modes imply the size.
-		 We could handle BLKmode if (1) emit_store_flag could
-		 and (2) we could find the size reliably.  */
-	      && GET_MODE (XEXP (temp3, 0)) != BLKmode
-	      && can_reverse_comparison_p (temp3, insn))
-	    {
-	      rtx temp6, target = 0, seq, init_insn = 0, init = temp2;
-	      enum rtx_code code = reverse_condition (GET_CODE (temp3));
-
-	      start_sequence ();
-
-	      /* It must be the case that TEMP2 is not modified in the range
-		 [TEMP4, INSN).  The one exception we make is if the insn
-		 before INSN sets TEMP2 to something which is also unchanged
-		 in that range.  In that case, we can move the initialization
-		 into our sequence.  */
-
-	      if ((temp5 = prev_active_insn (insn)) != 0
-		  && no_labels_between_p (temp5, insn)
-		  && GET_CODE (temp5) == INSN
-		  && (temp6 = single_set (temp5)) != 0
-		  && rtx_equal_p (temp2, SET_DEST (temp6))
-		  && (CONSTANT_P (SET_SRC (temp6))
-		      || GET_CODE (SET_SRC (temp6)) == REG
-		      || GET_CODE (SET_SRC (temp6)) == SUBREG))
-		{
-		  emit_insn (PATTERN (temp5));
-		  init_insn = temp5;
-		  init = SET_SRC (temp6);
-		}
-
-	      if (CONSTANT_P (init)
-		  || ! reg_set_between_p (init, PREV_INSN (temp4), insn))
-		target = emit_store_flag (gen_reg_rtx (GET_MODE (temp2)), code,
-					  XEXP (temp3, 0), XEXP (temp3, 1),
-					  VOIDmode,
-					  (code == LTU || code == LEU
-					   || code == GTU || code == GEU), 1);
-
-	      /* If we can do the store-flag, do the addition or
-		 subtraction.  */
-
-	      if (target)
-		target = expand_binop (GET_MODE (temp2),
-				       (XEXP (SET_SRC (temp1), 1) == const1_rtx
-					? add_optab : sub_optab),
-				       temp2, target, temp2, 0, OPTAB_WIDEN);
-
-	      if (target != 0)
-		{
-		  /* Put the result back in temp2 in case it isn't already.
-		     Then replace the jump, possible a CC0-setting insn in
-		     front of the jump, and TEMP, with the sequence we have
-		     made.  */
-
-		  if (target != temp2)
-		    emit_move_insn (temp2, target);
-
-		  seq = get_insns ();
-		  end_sequence ();
-
-		  emit_insns_before (seq, temp4);
-		  delete_insn (temp);
-
-		  if (init_insn)
-		    delete_insn (init_insn);
-
-		  next = NEXT_INSN (insn);
-#ifdef HAVE_cc0
-		  delete_insn (prev_nonnote_insn (insn));
-#endif
-		  delete_insn (insn);
-
-		  if (after_regscan)
-		    {
-		      reg_scan_update (seq, NEXT_INSN (next), old_max_reg);
-		      old_max_reg = max_reg_num ();
-		    }
-
-		  changed = 1;
-		  continue;
-		}
-	      else
-		end_sequence ();
-	    }
 
 	  /* Simplify   if (...) x = 1; else {...}  if (x) ...
 	     We recognize this case scanning backwards as well.
