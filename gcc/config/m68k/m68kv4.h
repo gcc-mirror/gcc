@@ -141,7 +141,7 @@ while (0)
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t%s %u\n", SPACE_ASM_OP, (SIZE))
+  fprintf (FILE, "%s%u\n", SPACE_ASM_OP, (SIZE))
 
 /* 1 if N is a possible register number for a function value.
    For m68k/SVR4 allow d0, a0, or fp0 as return registers, for integral,
@@ -231,7 +231,7 @@ do {									\
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)				\
 do {								\
   register int sp = 0, lp = 0, ch;				\
-  fprintf ((FILE), "\t%s ", BYTE_ASM_OP);			\
+  fprintf ((FILE), "%s", BYTE_ASM_OP);				\
   do {								\
     ch = (PTR)[sp];						\
     if (ch > ' ' && ! (ch & 0x80) && ch != '\\')		\
@@ -246,7 +246,7 @@ do {								\
       {								\
 	if ((sp % 10) == 0)					\
 	  {							\
-	    fprintf ((FILE), "\n\t%s ", BYTE_ASM_OP);		\
+	    fprintf ((FILE), "\n%s", BYTE_ASM_OP);		\
 	  }							\
 	else							\
 	  {							\
@@ -264,7 +264,7 @@ do {								\
 #define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)				\
 do {									\
   if (switch_table_difference_label_flag)				\
-    asm_fprintf ((FILE), "\t%s %LLD%d,%LL%d\n", SET_ASM_OP, (NUM), (NUM));\
+    asm_fprintf ((FILE), "%s%LLD%d,%LL%d\n", SET_ASM_OP, (NUM), (NUM)); \
   switch_table_difference_label_flag = 0;				\
 } while (0)
 
@@ -286,7 +286,7 @@ int switch_table_difference_label_flag;
    standard way to do switch table. */
 #undef ASM_OUTPUT_BEFORE_CASE_LABEL
 #define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE)		\
-  fprintf ((FILE), "\t%s &%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1));
+  fprintf ((FILE), "%s&%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1));
 
 /* In m68k svr4, a symbol_ref rtx can be a valid PIC operand if it is an
    operand of a function call. */

@@ -437,7 +437,7 @@ do { long l;					\
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) >= 1)			\
-    fprintf (FILE, "\t%s\n", ALIGN_ASM_OP);
+    fprintf (FILE, "%s\n", ALIGN_ASM_OP);
 
 #ifndef USE_GAS
 #define SKIP_ASM_OP	"\tspace\t"
@@ -447,7 +447,7 @@ do { long l;					\
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t%s %u\n", SKIP_ASM_OP, (SIZE))
+  fprintf (FILE, "%s%u\n", SKIP_ASM_OP, (SIZE))
 
 /* Can't use ASM_OUTPUT_SKIP in text section.  */
 
@@ -476,7 +476,7 @@ do { long l;					\
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN) \
   do { register int sp = 0, lp = 0;				\
-    fprintf ((FILE), "\t%s\t", ASM_BYTE_OP);			\
+    fprintf ((FILE), "%s", ASM_BYTE_OP);			\
   loop:								\
     if ((PTR)[sp] > ' ' && ! ((PTR)[sp] & 0x80) && (PTR)[sp] != '\\')	\
       { lp += 3;						\
@@ -487,7 +487,7 @@ do { long l;					\
     if (++sp < (LEN))						\
       {	if (lp > 60)						\
 	  { lp = 0;						\
-	    fprintf ((FILE), "\n\t%s ", ASCII_DATA_ASM_OP); }	\
+	    fprintf ((FILE), "\n%s", ASCII_DATA_ASM_OP); }	\
 	else							\
 	  putc (',', (FILE));					\
 	goto loop; }						\

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    AT&T UNIX PC version (pc7300, 3b1)
-   Copyright (C) 1987, 1993, 1996, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1996, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Alex Crain (alex@umbc3.umd.edu).
 
 This file is part of GNU CC.
@@ -199,7 +199,7 @@ do { long l;					\
     if (++sp < (LEN)) \
       {	if (lp > 60) \
 	  { lp = 0; \
-	    fprintf ((FILE), "\n\t%s ", ASCII_DATA_ASM_OP); }	\
+	    fprintf ((FILE), "\n%s", ASCII_DATA_ASM_OP); }	\
 	else \
 	  putc (',', (FILE)); \
 	goto loop; } \

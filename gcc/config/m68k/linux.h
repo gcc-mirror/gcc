@@ -203,7 +203,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)				\
   if ((LOG) > 0)						\
-    fprintf ((FILE), "\t%s \t%u\n", ALIGN_ASM_OP, 1 << (LOG));
+    fprintf ((FILE), "%s%u\n", ALIGN_ASM_OP, 1 << (LOG));
 
 /* If defined, a C expression whose value is a string containing the
    assembler operation to identify the following data as uninitialized global

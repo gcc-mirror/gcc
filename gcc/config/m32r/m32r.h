@@ -1816,7 +1816,7 @@ do {							\
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 #define ASM_OUTPUT_BYTE(FILE, VALUE)				\
-  fprintf (FILE, "\t%s\t0x%x\n", ASM_BYTE_OP, (VALUE))
+  fprintf (FILE, "%s0x%x\n", ASM_BYTE_OP, (VALUE))
 
 /* The assembler's parentheses characters.  */
 #define ASM_OPEN_PAREN "("
@@ -2026,9 +2026,9 @@ extern char m32r_punct_chars[];
     {									\
       if (! TARGET_SDATA_NONE						\
 	  && (SIZE) > 0 && (SIZE) <= g_switch_value)			\
-	fprintf ((FILE), "\t%s\t", SCOMMON_ASM_OP);			\
+	fprintf ((FILE), "%s", SCOMMON_ASM_OP);				\
       else								\
-	fprintf ((FILE), "\t%s\t", COMMON_ASM_OP);			\
+	fprintf ((FILE), "%s", COMMON_ASM_OP);				\
       assemble_name ((FILE), (NAME));					\
       fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
     }									\

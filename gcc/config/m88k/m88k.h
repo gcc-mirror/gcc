@@ -1807,9 +1807,9 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
     if (TARGET_SVR4)							\
       {									\
 	if (TARGET_88110)						\
-	  fprintf (FILE, "\t%s\t \"%s\"\n", VERSION_ASM_OP, "04.00");   \
+	  fprintf (FILE, "%s\"%s\"\n", VERSION_ASM_OP, "04.00");	\
 	else								\
-	  fprintf (FILE, "\t%s\t \"%s\"\n", VERSION_ASM_OP, "03.00");   \
+	  fprintf (FILE, "%s\"%s\"\n", VERSION_ASM_OP, "03.00");	\
       }									\
   } while (0)
 
@@ -1825,7 +1825,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #undef	ASM_FILE_END
 
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE, NAME) \
-  fprintf (FILE, "\t%s\t \"%s\"\n", FILE_ASM_OP, NAME)
+  fprintf (FILE, "%s\"%s\"\n", FILE_ASM_OP, NAME)
 
 #ifdef SDB_DEBUGGING_INFO
 #undef ASM_OUTPUT_SOURCE_LINE
@@ -1905,7 +1905,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
   do {									\
     if (DECLARE_ASM_NAME)						\
       {									\
-	fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
+	fprintf (FILE, "%s", TYPE_ASM_OP);				\
 	assemble_name (FILE, NAME);					\
 	putc (',', FILE);						\
 	fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
@@ -1920,7 +1920,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
   do {									    \
     if (DECLARE_ASM_NAME)						    \
       {									    \
-	fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				    \
+	fprintf (FILE, "%s", TYPE_ASM_OP);				    \
 	assemble_name (FILE, NAME);					    \
 	putc (',', FILE);						    \
 	fprintf (FILE, TYPE_OPERAND_FMT, "object");			    \
@@ -1929,7 +1929,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 	if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		    \
 	  {								    \
             size_directive_output = 1;					    \
-	    fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			    \
+	    fprintf (FILE, "%s", SIZE_ASM_OP);				    \
 	    assemble_name (FILE, NAME);					    \
 	    fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
 	  }								    \
@@ -1954,7 +1954,7 @@ do {									 \
 	 && !size_directive_output)					 \
        {								 \
 	 size_directive_output = 1;					 \
-	 fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			 \
+	 fprintf (FILE, "%s", SIZE_ASM_OP);				 \
 	 assemble_name (FILE, name);					 \
 	 fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
        }								 \
@@ -1973,7 +1973,7 @@ do {									 \
 	    labelno++;							\
 	    ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);	\
 	    ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);		\
-	    fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			\
+	    fprintf (FILE, "%s", SIZE_ASM_OP);				\
 	    assemble_name (FILE, (FNAME));				\
 	    fprintf (FILE, ",%s-", &label[1]);				\
 	    assemble_name (FILE, (FNAME));				\
@@ -1991,7 +1991,7 @@ do {									 \
    defined for reference from other files.  */
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)			\
   do {							\
-    fprintf (FILE, "\t%s\t ", GLOBAL_ASM_OP);		\
+    fprintf (FILE, "%s", GLOBAL_ASM_OP);		\
     assemble_name (FILE, NAME);				\
     putc ('\n', FILE);					\
   } while (0)
@@ -2018,7 +2018,7 @@ do {									 \
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #ifdef AS_BUG_DOT_LABELS /* The assembler requires a declaration of local.  */
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)			\
-  fprintf (FILE, TARGET_SVR4 ? ".%s%d:\n\t%s\t .%s%d\n" : "@%s%d:\n", \
+  fprintf (FILE, TARGET_SVR4 ? ".%s%d:\n%s.%s%d\n" : "@%s%d:\n", \
 	   PREFIX, NUM, INTERNAL_ASM_OP, PREFIX, NUM)
 #else
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)			\
@@ -2078,7 +2078,7 @@ do {									 \
   do {									\
     union { REAL_VALUE_TYPE d; long l[2]; } x;				\
     x.d = (VALUE);							\
-    fprintf (FILE, "\t%s\t 0x%.8lx, 0x%.8lx\n", INT_ASM_OP,		\
+    fprintf (FILE, "%s0x%.8lx, 0x%.8lx\n", INT_ASM_OP,			\
 	     (long) x.l[0], (long) x.l[1]);				\
   } while (0)
 
@@ -2087,28 +2087,28 @@ do {									 \
   do {									\
     int i;								\
     FLOAT_TO_INT_INTERNAL (VALUE, i);					\
-    fprintf (FILE, "\t%s\t 0x%.8x\n", INT_ASM_OP, i);			\
+    fprintf (FILE, "%s0x%.8x\n", INT_ASM_OP, i);			\
   } while (0)
 
 /* Likewise for `int', `short', and `char' constants.  */
 #define ASM_OUTPUT_INT(FILE,VALUE)					\
-( fprintf (FILE, "\t%s\t ", INT_ASM_OP),				\
+( fprintf (FILE, "%s", INT_ASM_OP),					\
   output_addr_const (FILE, (VALUE)),					\
   fprintf (FILE, "\n"))
 
 #define ASM_OUTPUT_SHORT(FILE,VALUE)					\
-( fprintf (FILE, "\t%s\t ", SHORT_ASM_OP),				\
+( fprintf (FILE, "%s", SHORT_ASM_OP),					\
   output_addr_const (FILE, (VALUE)),					\
   fprintf (FILE, "\n"))
 
 #define ASM_OUTPUT_CHAR(FILE,VALUE)					\
-( fprintf (FILE, "\t%s\t ", CHAR_ASM_OP),				\
+( fprintf (FILE, "%s", CHAR_ASM_OP),					\
   output_addr_const (FILE, (VALUE)),					\
   fprintf (FILE, "\n"))
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t%s\t 0x%x\n", CHAR_ASM_OP, (VALUE))
+  fprintf (FILE, "%s0x%x\n", CHAR_ASM_OP, (VALUE))
 
 /* The single-byte pseudo-op is the default.  Override svr[34].h.  */
 #undef	ASM_BYTE_OP
@@ -2165,7 +2165,7 @@ do {									 \
    to a multiple of 2**LOG bytes.  */
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) != 0)			\
-    fprintf (FILE, "\t%s\t %d\n", ALIGN_ASM_OP, 1<<(LOG))
+    fprintf (FILE, "%s%d\n", ALIGN_ASM_OP, 1<<(LOG))
 
 /* On the m88100, align the text address to half a cache boundary when it
    can only be reached by jumping.  Pack code tightly when compiling
@@ -2176,7 +2176,7 @@ do {									 \
 /* Override svr[34].h.  */
 #undef	ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t%s\t %u\n", SKIP_ASM_OP, (SIZE))
+  fprintf (FILE, "%s%u\n", SKIP_ASM_OP, (SIZE))
 
 /* Override svr4.h.  */
 #undef	ASM_OUTPUT_EXTERNAL_LIBCALL
@@ -2187,7 +2187,7 @@ do {									 \
 #undef	ASM_OUTPUT_COMMON
 #undef	ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)	\
-( fprintf ((FILE), "\t%s\t ",				\
+( fprintf ((FILE), "%s",				\
 	   ((SIZE) ? (SIZE) : 1) <= m88k_gp_threshold ? SCOMM_ASM_OP : COMMON_ASM_OP), \
   assemble_name ((FILE), (NAME)),			\
   fprintf ((FILE), ",%u\n", (SIZE) ? (SIZE) : 1))
@@ -2197,7 +2197,7 @@ do {									 \
 #undef	ASM_OUTPUT_LOCAL
 #undef	ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
-( fprintf ((FILE), "\t%s\t ",				\
+( fprintf ((FILE), "%s",				\
 	   ((SIZE) ? (SIZE) : 1) <= m88k_gp_threshold ? SBSS_ASM_OP : BSS_ASM_OP), \
   assemble_name ((FILE), (NAME)),			\
   fprintf ((FILE), ",%u,%d\n", (SIZE) ? (SIZE) : 1, (SIZE) <= 4 ? 4 : 8))

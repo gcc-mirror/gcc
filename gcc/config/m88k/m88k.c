@@ -955,7 +955,7 @@ output_short_branch_defs (stream)
       ASM_GENERATE_INTERNAL_LABEL
 	(low, "L", CODE_LABEL_NUMBER (XEXP (sb_low, 0)));
       /* This will change as the assembler requirements become known.  */
-      fprintf (stream, "\t%s\t %s,%s-%s\n",
+      fprintf (stream, "%s%s,%s-%s\n",
 	       SET_ASM_OP, &name[1], &high[1], &low[1]);
     }
   if (sb_name || sb_high || sb_low)
@@ -1571,7 +1571,7 @@ output_file_start (file, f_options, f_len, W_options, W_len)
   ASM_FIRST_LINE (file);
   if (TARGET_88110
       && TARGET_SVR4)
-    fprintf (file, "\t%s\n", REQUIRES_88110_ASM_OP);
+    fprintf (file, "%s\n", REQUIRES_88110_ASM_OP);
   output_file_directive (file, main_input_filename);
   /* Switch to the data section so that the coffsem symbol and the
      gcc2_compiled. symbol aren't in the text section.  */
@@ -1583,7 +1583,7 @@ output_file_start (file, f_options, f_len, W_options, W_len)
       char indent[256];
 
       time_t now = time ((time_t *)0);
-      sprintf (indent, "]\"\n\t%s\t \"@(#)%s [", IDENT_ASM_OP, main_input_filename);
+      sprintf (indent, "]\"\n%s\"@(#)%s [", IDENT_ASM_OP, main_input_filename);
       fprintf (file, indent+3);
       pos = fprintf (file, "gcc %s, %.24s,", version_string, ctime (&now));
 #if 1
@@ -1615,14 +1615,14 @@ output_ascii (file, opcode, max, p, size)
 
   register int num = 0;
 
-  fprintf (file, "\t%s\t \"", opcode);
+  fprintf (file, "%s\"", opcode);
   for (i = 0; i < size; i++)
     {
       register int c = p[i];
 
       if (num > max)
 	{
-	  fprintf (file, "\"\n\t%s\t \"", opcode);
+	  fprintf (file, "\"\n%s\"", opcode);
 	  num = 0;
 	}
 	  
@@ -2343,7 +2343,7 @@ output_tdesc (file, offset)
 
   tdesc_section ();
 
-  fprintf (file, "\t%s\t %d,%d", INT_ASM_OP, /* 8:0,22:(20 or 16),2:2 */
+  fprintf (file, "%s%d,%d", INT_ASM_OP, /* 8:0,22:(20 or 16),2:2 */
 	   (((xmask != 0) ? 20 : 16) << 2) | 2,
 	   flag_pic ? 2 : 1);
 

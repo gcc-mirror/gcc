@@ -178,9 +178,9 @@ Boston, MA 02111-1307, USA.  */
     if (TARGET_SVR4)							\
       {									\
 	if (TARGET_88110)						\
-	  fprintf (FILE, "\t%s\t \"%s\"\n", VERSION_ASM_OP, "04.00");   \
+	  fprintf (FILE, "%s\"%s\"\n", VERSION_ASM_OP, "04.00");	\
 	else								\
-	  fprintf (FILE, "\t%s\t \"%s\"\n", VERSION_ASM_OP, "03.00");   \
+	  fprintf (FILE, "%s\"%s\"\n", VERSION_ASM_OP, "03.00");	\
       }									\
     if (write_symbols != NO_DEBUG && !TARGET_NOLEGEND)			\
       {									\
