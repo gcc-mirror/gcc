@@ -1,5 +1,15 @@
 2004-07-29  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* gcov-io.h: Allow zero tag as EOF indicator.
+	(gcov_is_eof): Remove.
+	(gcov_truncate): Remove.
+	* gcov-io.c (gcov_seek): Always SEEK_SET.
+	* libgcov.c (gcov_exit): Don't use gcov_truncate.  Write explicit
+	EOF tag.
+	* coverage.c (read_counts_file): Don't use gcov_is_eof.
+	* gcov-dump.c (dump_file): Likewise.
+	* gcov.c (read_graph_file, read_count_file): Likewise.
+
 	* c-decl.c (complete_array_type): Don't gratuitously copy
 	maxindex.  Check it always has a type.
 

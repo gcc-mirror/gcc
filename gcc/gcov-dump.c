@@ -254,8 +254,6 @@ dump_file (const char *filename)
 	  break;
 	}
     }
-  if (!gcov_is_eof ())
-    printf ("%s:early end of file\n", filename);
   gcov_close ();
 }
 

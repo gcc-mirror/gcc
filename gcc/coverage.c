@@ -292,14 +292,12 @@ read_counts_file (void)
 	}
       gcov_sync (offset, length);
       if ((is_error = gcov_is_error ()))
-	break;
-    }
-
-  if (!gcov_is_eof ())
-    {
-      error (is_error < 0 ? "`%s' has overflowed" : "`%s' is corrupted",
-	     da_file_name);
-      htab_delete (counts_hash);
+	{
+	  error (is_error < 0 ? "`%s' has overflowed" : "`%s' is corrupted",
+		 da_file_name);
+	  htab_delete (counts_hash);
+	  break;
+	}
     }
 
   gcov_close ();

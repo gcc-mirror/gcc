@@ -514,8 +514,7 @@ gcov_sync (gcov_position_t base, gcov_unsigned_t length)
 #endif
 
 #if IN_LIBGCOV
-/* Move to the a set position in a gcov file.  BASE is zero to move to
-   the end, and nonzero to move to that position.  */
+/* Move to the a set position in a gcov file.  */
 
 GCOV_LINKAGE void
 gcov_seek (gcov_position_t base)
@@ -523,7 +522,7 @@ gcov_seek (gcov_position_t base)
   GCOV_CHECK_WRITING ();
   if (gcov_var.offset)
     gcov_write_block (gcov_var.offset);
-  fseek (gcov_var.file, base << 2, base ? SEEK_SET : SEEK_END);
+  fseek (gcov_var.file, base << 2, SEEK_SET);
   gcov_var.start = ftell (gcov_var.file) >> 2;
 }
 #endif
