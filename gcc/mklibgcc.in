@@ -32,7 +32,7 @@
 # SHLIB_MAPFILES
 # SHLIB_NM_FLAGS
 # SHLIB_INSTALL
-# SHLIB_SLIBDIR_SUFFIXES
+# MULTILIB_OSDIRNAMES
 
 # Make needs VPATH to be literal.
 echo 'srcdir = @srcdir@'
@@ -317,22 +317,18 @@ for ml in $MULTILIBS; do
       fi
       shlib_so_name="$shlib_base_name"
       shlib_dir=
-      if [ -n "$SHLIB_SLIBDIR_SUFFIXES" ]; then
+      if [ -n "$MULTILIB_OSDIRNAMES" ]; then
 	if [ "$dir" != . ]; then
+	  gcc_multilib_dir=`./xgcc -B./ $flags --print-multi-directory`
+	  os_multilib_dir=`./xgcc -B./ $flags --print-multi-os-directory`
 	  shlib_dir="$dir"/
-	  for suffix_pair in $SHLIB_SLIBDIR_SUFFIXES ; do
-	    base_ml_dir=`echo ${suffix_pair} | sed -e 's/:.*$//' -e 's/=/$(EQ)/g'`
-	    if [ "$dir" = "$base_ml_dir" ]; then
-	      shlib_so_name=libgcc_s
-	      break
-	    else
-	      canon_dir=`echo $dir | sed -n -e "s:$base_ml_dir/::p"`
-	      if [ -n "$canon_dir" ]; then
-		shlib_so_name=libgcc_s_`echo $canon_dir | sed s,/,_,g`
-		break
-	      fi
-	    fi
-	  done
+	  gcc_multilib_sup=`echo $gcc_multilib_dir | sed 's~^[^/]*/~~'`
+	  os_multilib_base=`echo $os_multilib_dir | sed -n "s~/${gcc_multilib_sup}\$~~p"`
+	  if [ -z "$os_multilib_base" ]; then
+	    shlib_so_name=libgcc_s
+	  else
+	    shlib_so_name=libgcc_s_`echo $gcc_multilib_sup | sed s,/,_,g`
+	  fi
 	fi
       fi
       echo ""
@@ -438,6 +434,7 @@ echo ""
 echo "install: $all"
 for ml in $MULTILIBS; do
   dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+  flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
   if [ $dir != . ]; then
     ldir='$(libsubdir)'/$dir
     echo "	if [ -d $ldir ]; then true; else mkdir $ldir; chmod a+rx $ldir; fi;"
@@ -460,39 +457,22 @@ for ml in $MULTILIBS; do
       shlib_so_name="$shlib_base_name"
       shlib_dir=
       shlib_slibdir_qual=
-      if [ -n "$SHLIB_SLIBDIR_SUFFIXES" ]; then
-	shlib_slibdir_qual=none
+      if [ -n "$MULTILIB_OSDIRNAMES" ]; then
+	gcc_multilib_dir=`./xgcc -B./ $flags --print-multi-directory`
+	os_multilib_dir=`./xgcc -B./ $flags --print-multi-os-directory`
 	if [ "$dir" != . ]; then
 	  shlib_dir="$dir"/
-	  for suffix_pair in $SHLIB_SLIBDIR_SUFFIXES ; do
-	    base_ml_dir=`echo ${suffix_pair} | sed -e 's/:.*$//' -e 's/=/$(EQ)/g'`
-	    if [ "$dir" = "$base_ml_dir" ]; then
-	      shlib_so_name=libgcc_s
-	      shlib_slibdir_qual=`echo ${suffix_pair} | sed -e 's/^[^:]*://'`
-	      break
-	    else
-	      canon_dir=`echo $dir | sed -n -e "s:$base_ml_dir/::p"`
-	      if [ -n "$canon_dir" ]; then
-		shlib_so_name=libgcc_s_`echo $canon_dir | sed s,/,_,g`
-		shlib_slibdir_qual=`echo ${suffix_pair} | sed -e 's/^[^:]*://'`
-		break
-	      fi
-	    fi
-	  done
 	fi
-	if [ "$shlib_slibdir_qual" = none ]; then
-	  for suffix_pair in $SHLIB_SLIBDIR_SUFFIXES ; do
-	    base_ml_dir=`echo ${suffix_pair} | sed -e 's/:.*$//' -e 's/=/$(EQ)/g'`
-	    shlib_slibdir_qual=`echo ${suffix_pair} | sed -e 's/^[^:]*://'`
-	    for ml2 in $MULTILIBS; do
-	      dir2=`echo ${ml2} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
-	      if [ "$base_ml_dir" = "$dir2" ]; then
-		shlib_slibdir_qual=
-		break
-	      fi
-	    done
-	    if [ -n "$shlib_slibdir_qual" ]; then break; fi
-	  done
+	gcc_multilib_sup=`echo $gcc_multilib_dir | sed 's~^[^/]*/~~'`
+	os_multilib_base=`echo $os_multilib_dir | sed -n "s~/${gcc_multilib_sup}\$~~p"`
+	if [ -z "$os_multilib_base" ]; then
+	  shlib_so_name=libgcc_s
+	  if [ "$os_multilib_dir" != "." ]; then
+	    shlib_slibdir_qual="/$os_multilib_dir"
+	  fi
+	else
+	  shlib_so_name=libgcc_s_`echo $gcc_multilib_sup | sed s,/,_,g`
+	  shlib_slibdir_qual="/$os_multilib_base"
 	fi
       fi
       echo "	$SHLIB_INSTALL" \

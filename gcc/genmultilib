@@ -63,6 +63,14 @@
 # for the rule to exclude a set. Options can be preceded with a '!' to
 # match a logical NOT.
 
+# The optional sevenths argument is a list of OS subdirectory names.
+# The format is the same as of the second argument.
+# The difference is that second argument describes multilib directories
+# in GCC conventions, while this one the OS multilib convention.
+
+# The last option should be "yes" if multilibs are enabled.  If it is not
+# "yes", all GCC multilib dir names will be ".".
+
 # The output looks like
 #   #define MULTILIB_MATCHES "\
 #   SUBDIRECTORY OPTIONS;\
@@ -79,17 +87,18 @@
 # Here is an example (this is from the actual sparc64 case):
 #   genmultilib 'm64/m32 mno-app-regs|mcmodel=medany' '64 32 alt'
 #		'mcmodel?medany=mcmodel?medmid' 'm32/mno-app-regs* m32/mcmodel=*'
-#		'm32/!m64/mno-app-regs m32/!m64/mcmodel=medany'
+#		'' 'm32/!m64/mno-app-regs m32/!m64/mcmodel=medany'
+#		'../lib64 ../lib32 alt' yes
 # This produces:
 #   ". !m64 !m32 !mno-app-regs !mcmodel=medany;",
-#   "64 m64 !m32 !mno-app-regs !mcmodel=medany;",
-#   "32 !m64 m32 !mno-app-regs !mcmodel=medany;",
+#   "64:../lib64 m64 !m32 !mno-app-regs !mcmodel=medany;",
+#   "32:../lib32 !m64 m32 !mno-app-regs !mcmodel=medany;",
 #   "alt !m64 !m32 mno-app-regs mcmodel=medany;",
 #   "alt !m64 !m32 mno-app-regs !mcmodel=medany;",
 #   "alt !m64 !m32 !mno-app-regs mcmodel=medany;",
-#   "64/alt m64 !m32 mno-app-regs mcmodel=medany;",
-#   "64/alt m64 !m32 mno-app-regs !mcmodel=medany;",
-#   "64/alt m64 !m32 !mno-app-regs mcmodel=medany;",
+#   "64/alt:../lib64/alt m64 !m32 mno-app-regs mcmodel=medany;",
+#   "64/alt:../lib64/alt m64 !m32 mno-app-regs !mcmodel=medany;",
+#   "64/alt:../lib64/alt m64 !m32 !mno-app-regs mcmodel=medany;",
 #
 # The effect is that `gcc -mno-app-regs' (for example) will append "alt"
 # to the directory name when searching for libraries or startup files and
@@ -106,6 +115,8 @@ matches=$3
 exceptions=$4
 extra=$5
 exclusions=$6
+osdirnames=$7
+enable_multilib=$8
 
 echo "static const char *const multilib_raw[] = {"
 
@@ -202,6 +213,29 @@ if [ -n "${dirnames}" ]; then
   done
 fi
 
+# Construct a sed pattern which will convert option names to OS directory
+# names.
+toosdirnames=
+if [ -n "${osdirnames}" ]; then
+  set x ${osdirnames}
+  shift
+  for set in ${options}; do
+    for opts in `echo ${set} | sed -e 's|/| |'g`; do
+      patt="/"
+      for opt in `echo ${opts} | sed -e 's_|_ _'g`; do
+        if [ "$1" != "${opt}" ]; then
+          toosdirnames="${toosdirnames} -e s|/${opt}/|/${1}/|g"
+	  patt="${patt}${1}/"
+	  if [ "${patt}" != "/${1}/" ]; then
+	    toosdirnames="${toosdirnames} -e s|${patt}|/${1}/|g"
+          fi
+        fi
+      done
+      shift
+    done
+  done
+fi
+
 # We need another recursive shell script to correctly handle positive
 # matches.  If we are invoked as
 #   genmultilib "opt1 opt2" "" "opt1=nopt1 opt2=nopt2"
@@ -256,6 +290,25 @@ for combo in ${combinations}; do
   fi
   # Remove the leading and trailing slashes.
   dirout=`echo ${dirout} | sed -e 's|^/||' -e 's|/$||g'`
+
+  # Use the OS directory names rather than the option names.
+  if [ -n "${toosdirnames}" ]; then
+    osdirout=`echo ${combo} | sed ${toosdirnames}`
+    # Remove the leading and trailing slashes.
+    osdirout=`echo ${osdirout} | sed -e 's|^/||' -e 's|/$||g'`
+    if [ "x${enable_multilib}" != xyes ]; then
+      dirout=".:${osdirout}"
+    else
+      dirout="${dirout}:${osdirout}"
+    fi
+  else
+    if [ "x${enable_multilib}" != xyes ]; then
+      # genmultilib with --disable-multilib should be
+      # called with '' '' '' '' '' '' '' no
+      # if MULTILIB_OSDIRNAMES is empty.
+      exit 1
+    fi
+  fi
 
   # Look through the options.  We must output each option that is
   # present, and negate each option that is not present.
@@ -312,6 +365,11 @@ for rule in ${exclusions}; do
 done
 echo "NULL"
 echo "};"
+
+# Output the options now
+moptions=`echo ${options} | sed -e 's,[ 	][ 	]*, ,g'`
+echo ""
+echo "static const char *multilib_options = \"${moptions}\";"
 
 rm -f tmpmultilib2
 

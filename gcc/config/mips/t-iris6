@@ -4,6 +4,7 @@
 MULTILIB_OPTIONS=mabi=n32/mabi=64
 MULTILIB_DIRNAMES=
 MULTILIB_MATCHES=
+MULTILIB_OSDIRNAMES=../lib32 ../lib64
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
@@ -22,7 +23,6 @@ SHLIB_NAME = @shlib_dir@@shlib_so_name@.so.1
 SHLIB_MAP = @shlib_map_file@
 SHLIB_OBJS = @shlib_objs@
 SHLIB_SLIBDIR_QUAL = @shlib_slibdir_qual@
-SHLIB_SLIBDIR_SUFFIXES = mabi=64:/mabi=64 mabi=n32:
 
 SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
         -Wl,-soname,$(SHLIB_SONAME) \

@@ -1003,7 +1003,7 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) xgcc$(exeext
 	SHLIB_MKMAP_OPTS='$(SHLIB_MKMAP_OPTS)' \
 	SHLIB_MAPFILES='$(SHLIB_MAPFILES)' \
 	SHLIB_NM_FLAGS='$(SHLIB_NM_FLAGS)' \
-	SHLIB_SLIBDIR_SUFFIXES='$(SHLIB_SLIBDIR_SUFFIXES)' \
+	MULTILIB_OSDIRNAMES='$(MULTILIB_OSDIRNAMES)' \
 	mkinstalldirs='$(SHELL) $(srcdir)/mkinstalldirs' \
 	  $(SHELL) mklibgcc > tmp-libgcc.mk
 	mv tmp-libgcc.mk libgcc.mk
@@ -1037,7 +1037,8 @@ libgcc.a: $(LIBGCC_DEPS)
 # switches.
 multilib.h: s-mlib; @true
 s-mlib: $(srcdir)/genmultilib Makefile
-	if test @enable_multilib@ = yes; then \
+	if test @enable_multilib@ = yes \
+	   || test -n "$(MULTILIB_OSDIRNAMES)"; then \
 	  $(SHELL) $(srcdir)/genmultilib \
 	    "$(MULTILIB_OPTIONS)" \
 	    "$(MULTILIB_DIRNAMES)" \
@@ -1045,9 +1046,12 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	    "$(MULTILIB_EXCEPTIONS)" \
 	    "$(MULTILIB_EXTRA_OPTS)" \
 	    "$(MULTILIB_EXCLUSIONS)" \
+	    "$(MULTILIB_OSDIRNAMES)" \
+	    "@enable_multilib@" \
 	    > tmp-mlib.h; \
 	else \
-	  $(SHELL) $(srcdir)/genmultilib '' '' '' '' '' '' > tmp-mlib.h; \
+	  $(SHELL) $(srcdir)/genmultilib '' '' '' '' '' '' '' no \
+	    > tmp-mlib.h; \
 	fi
 	$(SHELL) $(srcdir)/move-if-change tmp-mlib.h multilib.h
 	$(STAMP) s-mlib

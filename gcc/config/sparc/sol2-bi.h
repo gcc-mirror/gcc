@@ -72,30 +72,6 @@
 %{!mcpu*:%(asm_cpu_default)} \
 "
 
-#define STARTFILE_SPEC32 "\
-%{ansi:values-Xc.o%s} \
-%{!ansi: \
- %{traditional:values-Xt.o%s} \
- %{!traditional:values-Xa.o%s}}"
-
-#define STARTFILE_SPEC64 "\
-%{ansi:/usr/lib/sparcv9/values-Xc.o%s} \
-%{!ansi: \
- %{traditional:/usr/lib/sparcv9/values-Xt.o%s} \
- %{!traditional:/usr/lib/sparcv9/values-Xa.o%s}}"
- 
-#if DEFAULT_ARCH32_P
-#define STARTFILE_ARCH_SPEC "\
-%{m32:" STARTFILE_SPEC32 "} \
-%{m64:" STARTFILE_SPEC64 "} \
-%{!m32:%{!m64:" STARTFILE_SPEC32 "}}"
-#else
-#define STARTFILE_ARCH_SPEC "\
-%{m32:" STARTFILE_SPEC32 "} \
-%{m64:" STARTFILE_SPEC64 "} \
-%{!m32:%{!m64:" STARTFILE_SPEC64 "}}"
-#endif
-
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared: \
 			 %{!symbolic: \
@@ -103,7 +79,10 @@
                           %{!p: \
 	                    %{pg:gcrt1.o%s gmon.o%s} \
                             %{!pg:crt1.o%s}}}} \
-			crti.o%s " STARTFILE_ARCH_SPEC " \
+			crti.o%s \
+			%{ansi:values-Xc.o%s} \
+			%{!ansi: %{traditional:values-Xt.o%s} \
+				 %{!traditional:values-Xa.o%s}} \
 			crtbegin.o%s"
 
 #undef CPP_CPU_DEFAULT_SPEC

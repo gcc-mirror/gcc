@@ -6,10 +6,9 @@ SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver \
 
 MULTILIB_OPTIONS = m64/m32
 MULTILIB_DIRNAMES = 64 32 
+MULTILIB_OSDIRNAMES = ../lib64 ../lib
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
 
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o
-
-SHLIB_SLIBDIR_SUFFIXES = 64:64 32:
