@@ -35,8 +35,6 @@ Sat Jul 17 14:25:46 1999  Nick Clifton  <nickc@cygnus.com>
 	(ASM_DECLARE_FUNCTION_NAME): Use ARM_DECLARE_FUNCTION_NAME.
 	(ASM_FILE_START): Emit ASM_APP_OFF.
 	
-	
-	
 Fri Jul 16 13:48:09 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (compute_frame_size): Round frame according to 
