@@ -195,8 +195,8 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
       return;
     }
 
-  gimp1 = is_gimple_tmp_var (root1);
-  gimp2 = is_gimple_tmp_var (root2);
+  gimp1 = (TREE_CODE (root1) == VAR_DECL && DECL_ARTIFICIAL (root1));
+  gimp2 = (TREE_CODE (root2) == VAR_DECL && DECL_ARTIFICIAL (root2));
 
   /* Never attempt to coalesce 2 user variables unless one is an inline 
      variable.  */
