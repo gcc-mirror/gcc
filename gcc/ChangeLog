@@ -1,3 +1,13 @@
+2001-04-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* flow.c (proagate_one_insn): Remove useless assignment.
+	* jump.c (delete_insn): Tidy.
+	* loop.c (try_copy_prop): When deleting an instruction with a
+	REG_RETVAL note, delete the entire libcall sequence.
+	(loop_delete_insns): New function.
+	* unroll.c (initial_reg_note_copy): Copy INSN_LIST notes, even if
+	we're not substituting into them yet.
+	
 2001-04-21  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (general_operand_src): Fix a comment typo.

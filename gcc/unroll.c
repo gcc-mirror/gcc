@@ -1672,7 +1672,7 @@ initial_reg_note_copy (notes, map)
     XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (notes, 0), map, 0);
   else if (GET_CODE (notes) == INSN_LIST)
     /* Don't substitute for these yet.  */
-    XEXP (copy, 0) = XEXP (notes, 0);
+    XEXP (copy, 0) = copy_rtx (XEXP (notes, 0));
   else
     abort ();
 
