@@ -1,3 +1,7 @@
+2002-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20021116-1.c: New test.
+
 2002-11-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/vcall1.C: New test.
