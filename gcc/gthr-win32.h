@@ -64,13 +64,21 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define __GTHREADS 1
 
-#include <windows.h>
 #include <errno.h>
 #ifdef __MINGW32__
 #include <_mingw.h>
 #endif
 
 #ifdef _LIBOBJC
+
+/* This is necessary to prevent windef.h (included from windows.h) from
+   defining it's own BOOL as a typedef.  */	
+#ifndef __OBJC__
+#define __OBJC__
+#endif
+#include <windows.h>
+/* Now undef the windows BOOL.  */ 
+#undef BOOL
 
 /* Key structure for maintaining thread specific storage */
 static DWORD	__gthread_objc_data_tls = (DWORD)-1;
@@ -320,9 +328,7 @@ __gthread_objc_condition_signal(objc_condition_t condition)
 
 #else /* _LIBOBJC */
 
-#ifdef __MINGW32__
-#include <_mingw.h>
-#endif
+#include <windows.h>
 
 typedef DWORD __gthread_key_t;
 
@@ -339,7 +345,14 @@ typedef HANDLE __gthread_mutex_t;
 #if __MINGW32_MAJOR_VERSION >= 1 || \
   (__MINGW32_MAJOR_VERSION == 0 && __MINGW32_MINOR_VERSION > 2)
 #define MINGW32_SUPPORTS_MT_EH 1
-extern int __mingwthr_key_dtor PARAMS ((DWORD, void (*) (void *)));
+#ifdef __cplusplus
+extern "C" {
+#endif
+extern int __mingwthr_key_dtor (DWORD, void (*) (void *));
+#ifdef __cplusplus
+}
+#endif
+
 /* Mingw runtime >= v0.3 provides a magic variable that is set to non-zero
    if -mthreads option was specified, or 0 otherwise. This is to get around 
    the lack of weak symbols in PE-COFF.  */
