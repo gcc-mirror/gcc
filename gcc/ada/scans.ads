@@ -191,7 +191,7 @@ package Scans is
       --  project files.
 
       Tok_Project,
-      Tok_Modifying,
+      Tok_Extends,
       Tok_External,
 
       No_Token);

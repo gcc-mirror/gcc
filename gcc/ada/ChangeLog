@@ -1,3 +1,24 @@
+2001-12-05  Vincent Celier <celier@gnat.com>
+
+	* prj-dect.adb (Parse): Rename parameter Modifying to Extends.
+	
+	* prj-dect.ads (Parse): Rename parameter Modifying to Extends.
+	
+	* prj-env.adb: Minor comment changes (modifying -> extends).
+	
+	* prj-nmsc.adb: Minor comment changes (modifying -> extends).
+	
+	* prj-part.adb (Parse_Single_Project): Change Tok_Modifying to 
+	Tok_Extends.
+	
+	* prj.adb (Initialize): Change Modifying to Extends.
+	
+	* scans.ads (Token_Type): Change Tok_Modifying to Tok_Extends.
+	
+	* prj.ads: Minor comment change (Modifying -> extending).
+	
+	* snames.ads: Change modifying to extends.
+
 2001-12-05  Robert Dewar <dewar@gnat.com>
 
 	* sem_warn.adb: Remove stuff for conditionals, we are not going to 
