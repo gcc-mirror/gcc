@@ -1,3 +1,71 @@
+2002-12-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+        * configure.in (GLIBCPP_ENABLE_DEBUG): Default to none.
+	Call GLIBCPP_ENABLE_DEBUG_FLAGS.
+        * acinclude.m4 (GLIBCPP_ENABLE_DEBUG): GLIBCPP_BUILD_DEBUG, new
+        conditional if --enable-debug is yes. Rework.
+	(GLIBCPP_ENABLE_DEBUG_FLAGS): New.
+        * aclocal.m4: Regenerate.
+	* libio/Makefile.am: Remove DEBUG_FLAGS.
+	* libio/Makefile.in: Regenerate.	
+	* libsupc++/Makefile.am: Remove DEBUG_FLAGS.
+	* libsupc++/Makefile.in: Regenerate.	
+	* docs/html/configopts.html: Add docs for --enable-debug,
+	--enable-debug-flags.
+
+2002-12-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Correct dependency tracking, build warts.
+	* configure.in: Correct repeated AC_OUTPUT thrashing by
+	config-ml.in
+	* configure: Regenerate.
+	* include/Makefile.am (stamp-target): Stamp in top_builddir.
+	* include/Makefile.in: Regenerate.
+	* src/Makefile.am (codecvt_members.cc): New rule.
+	(collate_members.cc): Same.
+	(ctype_members.cc): Same.	
+	(messages_members.cc): Same.
+	(monetary_members.cc): Same.
+	(numeric_members.cc): Same.
+	(time_members.cc): Same.
+	(c++locale.cc): Same.
+	(basic_file.cc): Same.
+	* src/Makefile.in: Regenerate.
+	* acinclude.m4 (CCTYPE_CHAR_CC): Remove.
+	(CCCODECVT_CC): Don't link, AC_SUBST.
+	(CCOLLATE_CC): Same.
+	(CCTYPE_CC): Same.
+	(CMESSAGES_CC): Same.
+	(CMONEY_CC): Same.
+	(CNUMERIC_CC): Same.
+	(CTIME_CC): Same.
+	(CLOCALE_CC): Same.
+	* aclocal.m4: Regenerate.
+	
+	* src/Makefile.am (libstdc___la_LIBADD): Use top_builddir
+	for convenience libraries.
+	(version_arg): Rename linker.map to libstdc++.ver.
+	(libstdc___la_DEPENDENCIES): Remove linker.map, add
+	libstdc++-symbol.ver as a dependency.
+	(libstdc++-symbol.ver): Add rule.
+	* acinclude.m4 (GLIBCPP_ENABLE_SYMVERS): Change LINKER_MAP to
+	SYMVER_MAP. Don't link, AC_SUBST.
+
+	* include/Makefile.am (target_headers_noinst): New.
+	(stamp-target): Add CLOCALE_INTERNAL_H.
+	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE): Don't link
+	CLOCALE_INTERNAL_H, AC_SUBST.
+	* config/locale/gnu/c_locale.cc: Modify c++locale_internal.h
+	include.
+	* config/locale/gnu/time_members.cc: Same.
+	* config/locale/gnu/numeric_members.cc: Same.
+	* config/locale/gnu/monetary_members.cc: Same.
+	* config/locale/gnu/messages_members.cc: Same.
+	* config/locale/gnu/ctype_members.cc: Same.
+	* config/locale/gnu/collate_members.cc: Same.
+	* config/locale/gnu/codecvt_members.cc: Same.
+	* config/locale/generic/codecvt_members.cc: Remove.
+
 2002-12-11  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/8887

@@ -66,14 +66,24 @@ AR = @AR@
 AS = @AS@
 ATOMICITY_INC_SRCDIR = @ATOMICITY_INC_SRCDIR@
 AWK = @AWK@
+BASIC_FILE_CC = @BASIC_FILE_CC@
 BASIC_FILE_H = @BASIC_FILE_H@
 CC = @CC@
 CCODECVT_C = @CCODECVT_C@
+CCODECVT_CC = @CCODECVT_CC@
 CCODECVT_H = @CCODECVT_H@
+CCOLLATE_CC = @CCOLLATE_CC@
+CCTYPE_CC = @CCTYPE_CC@
+CLOCALE_CC = @CLOCALE_CC@
 CLOCALE_H = @CLOCALE_H@
+CLOCALE_INTERNAL_H = @CLOCALE_INTERNAL_H@
+CMESSAGES_CC = @CMESSAGES_CC@
 CMESSAGES_H = @CMESSAGES_H@
+CMONEY_CC = @CMONEY_CC@
+CNUMERIC_CC = @CNUMERIC_CC@
 CPP = @CPP@
 CSTDIO_H = @CSTDIO_H@
+CTIME_CC = @CTIME_CC@
 CXXCPP = @CXXCPP@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
 DEBUG_FLAGS = @DEBUG_FLAGS@
@@ -99,6 +109,7 @@ RANLIB = @RANLIB@
 SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
 STRIP = @STRIP@
+SYMVER_MAP = @SYMVER_MAP@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
@@ -111,10 +122,8 @@ glibcpp_CXX = @glibcpp_CXX@
 glibcpp_MOFILES = @glibcpp_MOFILES@
 glibcpp_POFILES = @glibcpp_POFILES@
 glibcpp_basedir = @glibcpp_basedir@
-glibcpp_builddir = @glibcpp_builddir@
 glibcpp_localedir = @glibcpp_localedir@
 glibcpp_prefixdir = @glibcpp_prefixdir@
-glibcpp_srcdir = @glibcpp_srcdir@
 glibcpp_thread_h = @glibcpp_thread_h@
 glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
@@ -131,9 +140,13 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler support.
 CXX = @glibcpp_CXX@
+glibcpp_srcdir = @glibcpp_srcdir@
+glibcpp_builddir = @glibcpp_builddir@
 toolexecdir = @glibcpp_toolexecdir@
 toolexeclibdir = @glibcpp_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la
+@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@version_arg = @GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@-Wl,--version-script=libstdc++-symbol.ver
+@GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
 
 # Compile flags that should be constant throughout the build, both for
 # SUBDIRS and for libstdc++-v3 in general.
@@ -141,9 +154,8 @@ OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
-# NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
 CONFIG_CXXFLAGS = \
-	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @DEBUG_FLAGS@ 
+	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@
 
 
 # Warning flags to use.
@@ -165,7 +177,8 @@ INCLUDES = \
 	$(TOPLEVEL_INCLUDES)
 
 
-# Source files linked in via configuration magic for a particular target.
+# Source files linked in via configuration/make substitution for a
+# particular target.
 target_sources = \
 	codecvt_members.cc \
 	collate_members.cc \
@@ -176,8 +189,8 @@ target_sources = \
 	time_members.cc
 
 
-# Source files linked in via configuration magic for a particular
-# target, but with ad hoc naming rules.
+# Source files linked in via configuration/make substitution for a
+# particular target, but with ad hoc naming rules.
 target_sources_extra = \
 	basic_file.cc \
 	c++locale.cc 
@@ -222,18 +235,16 @@ VPATH = $(top_srcdir)/src:$(top_srcdir)
 libstdc___la_SOURCES = $(sources)
 
 libstdc___la_LIBADD = \
-	../libmath/libmath.la @libio_la@ \
-	../libsupc++/libsupc++convenience.la
+	$(top_builddir)/libmath/libmath.la @libio_la@ \
+	$(top_builddir)/libsupc++/libsupc++convenience.la
 
-@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@version_arg = @GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@-Wl,--version-script=linker.map
-@GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
+
+libstdc___la_DEPENDENCIES = libstdc++-symbol.ver $(libstdc___la_LIBADD)
 
 libstdc___la_LDFLAGS = \
 	-version-info @libtool_VERSION@ ${version_arg} \
 	-lm @LIBUNWIND_FLAG@ 
 
-
-libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD) linker.map
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.
@@ -249,7 +260,7 @@ AM_CXXFLAGS = \
 	$(LIBSUPCXX_CXXFLAGS) \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \
-	$(CONFIG_CXXFLAGS) 
+	$(CONFIG_CXXFLAGS)  
 
 
 # libstdc++ libtool notes
@@ -283,6 +294,8 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
 CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) \
 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
+
+debugdir = debug
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
@@ -460,7 +473,7 @@ install-info: install-info-am
 install-exec-am: install-toolexeclibLTLIBRARIES
 install-exec: install-exec-am
 
-install-data-am:
+install-data-am: install-data-local
 install-data: install-data-am
 
 install-am: all-am
@@ -468,7 +481,7 @@ install-am: all-am
 install: install-am
 uninstall-am: uninstall-toolexeclibLTLIBRARIES
 uninstall: uninstall-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) all-local
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
@@ -521,11 +534,42 @@ maintainer-clean-compile mostlyclean-libtool distclean-libtool \
 clean-libtool maintainer-clean-libtool tags mostlyclean-tags \
 distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
 dvi-am dvi check check-am installcheck-am installcheck install-info-am \
-install-info install-exec-am install-exec install-data-am install-data \
-install-am install uninstall-am uninstall all-redirect all-am all \
-installdirs mostlyclean-generic distclean-generic clean-generic \
-maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+install-info install-exec-am install-exec install-data-local \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-local all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
 
+@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@libstdc++-symbol.ver:  ${glibcpp_srcdir}/@SYMVER_MAP@
+@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@	@LN_S@  $< ./libstdc++-symbol.ver || true
+@GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@libstdc++-symbol.ver:
+
+codecvt_members.cc: ${glibcpp_srcdir}/@CCODECVT_CC@
+	@LN_S@ $< . || true
+
+collate_members.cc: ${glibcpp_srcdir}/@CCOLLATE_CC@
+	@LN_S@ $< . || true
+
+ctype_members.cc: ${glibcpp_srcdir}/@CCTYPE_CC@
+	@LN_S@ $< . || true
+
+messages_members.cc: ${glibcpp_srcdir}/@CMESSAGES_CC@
+	@LN_S@ $< . || true
+
+monetary_members.cc: ${glibcpp_srcdir}/@CMONEY_CC@
+	@LN_S@ $< . || true
+
+numeric_members.cc: ${glibcpp_srcdir}/@CNUMERIC_CC@
+	@LN_S@ $< . || true
+
+time_members.cc: ${glibcpp_srcdir}/@CTIME_CC@
+	@LN_S@ $< . || true
+
+c++locale.cc: ${glibcpp_srcdir}/@CLOCALE_CC@
+	@LN_S@ $< ./$@ || true
+
+basic_file.cc: ${glibcpp_srcdir}/@BASIC_FILE_CC@
+	@LN_S@ $< ./$@ || true
 strstream.lo: strstream.cc
 	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 strstream.o: strstream.cc
@@ -538,6 +582,35 @@ concept-inst.lo: concept-inst.cc
 	$(LTCXXCOMPILE) -D_GLIBCPP_CONCEPT_CHECKS -fimplicit-templates -c $<
 concept-inst.o: concept-inst.cc
 	$(CXXCOMPILE) -D_GLIBCPP_CONCEPT_CHECKS -fimplicit-templates -c $<
+
+# Added bits to build debug library.
+@GLIBCPP_BUILD_DEBUG_TRUE@all-local: build_debug
+@GLIBCPP_BUILD_DEBUG_TRUE@install-data-local: install_debug
+@GLIBCPP_BUILD_DEBUG_FALSE@all-local:
+@GLIBCPP_BUILD_DEBUG_FALSE@install-data-local: 
+
+# Build parallel set of debug objects here.
+stamp-debug: 
+	if test ! -d ${debugdir}; then \
+	  mkdir -p ${debugdir}; \
+	  (cd ${debugdir}; \
+	  cp ../Makefile .; \
+	  sed 's/top_builddir = ../top_builddir = ..\/../g' \
+	  < Makefile > temp.1; \
+	  sed 's/all-local: build_debug/all-local:/g' < temp.1 > temp.2; \
+	  sed 's/install-data-local: install_debug/install-data-local:/g' \
+	  < temp.2 > temp.3; \
+          mv temp.3 Makefile) ; \
+	fi; \
+	echo `date` > stamp-debug; 
+
+build_debug: stamp-debug
+	(cd ${debugdir} && $(MAKE) CXXFLAGS='@DEBUG_FLAGS@' all)
+
+# Install debug library here.
+install_debug: 
+	(cd ${debugdir} && $(MAKE) \
+	toolexeclibdir=@glibcpp_toolexeclibdir@/debug install)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

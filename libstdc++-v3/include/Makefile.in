@@ -67,14 +67,24 @@ AR = @AR@
 AS = @AS@
 ATOMICITY_INC_SRCDIR = @ATOMICITY_INC_SRCDIR@
 AWK = @AWK@
+BASIC_FILE_CC = @BASIC_FILE_CC@
 BASIC_FILE_H = @BASIC_FILE_H@
 CC = @CC@
 CCODECVT_C = @CCODECVT_C@
+CCODECVT_CC = @CCODECVT_CC@
 CCODECVT_H = @CCODECVT_H@
+CCOLLATE_CC = @CCOLLATE_CC@
+CCTYPE_CC = @CCTYPE_CC@
+CLOCALE_CC = @CLOCALE_CC@
 CLOCALE_H = @CLOCALE_H@
+CLOCALE_INTERNAL_H = @CLOCALE_INTERNAL_H@
+CMESSAGES_CC = @CMESSAGES_CC@
 CMESSAGES_H = @CMESSAGES_H@
+CMONEY_CC = @CMONEY_CC@
+CNUMERIC_CC = @CNUMERIC_CC@
 CPP = @CPP@
 CSTDIO_H = @CSTDIO_H@
+CTIME_CC = @CTIME_CC@
 CXXCPP = @CXXCPP@
 C_INCLUDE_DIR = @C_INCLUDE_DIR@
 DEBUG_FLAGS = @DEBUG_FLAGS@
@@ -105,6 +115,7 @@ RANLIB = @RANLIB@
 SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
 STRIP = @STRIP@
+SYMVER_MAP = @SYMVER_MAP@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
@@ -415,6 +426,12 @@ target_headers = \
 	${target_srcdir}/os_defines.h \
 	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h 
 
+
+# Non-installed target_header files.
+target_headers_noinst = \
+	${glibcpp_srcdir}/@CLOCALE_INTERNAL_H@
+
+
 # These target_headers_extra files are all built with ad hoc naming rules.
 target_headers_extra = \
 	${target_builddir}/basic_file.h \
@@ -436,8 +453,7 @@ thread_target_headers = \
 # CLEANFILES and all-local are kept up-to-date.
 allstamps = \
 	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
-	stamp-backward stamp-ext \
-	${target_builddir}/stamp-target
+	stamp-backward stamp-ext stamp-target
 
 
 # Target includes for threads
@@ -620,16 +636,18 @@ stamp-${target_alias}:
 	fi
 
 # Target includes static.
-${target_builddir}/stamp-target: ${target_headers} stamp-${target_alias}
-	@cd ${target_builddir} ;\
-	if [ ! -f stamp-target ]; then \
+# XXX Missing dependency info for {target_headers_extra}
+stamp-target: ${target_headers} ${target_headers_noinst} stamp-${target_alias}
+	@if [ ! -f stamp-target ]; then \
+	  (cd ${target_builddir} ;\
 	  @LN_S@ ${target_headers} . || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_H@ basic_file.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h || true ;\
+	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_INTERNAL_H@ . || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h || true ;\
-	  @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h || true ;\
-	  echo `date` > stamp-target; \
+	  @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h || true);\
+	  echo `date` > stamp-target ; \
 	fi
 
 # Target includes dynamic.

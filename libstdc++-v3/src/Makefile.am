@@ -29,9 +29,21 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 # Cross compiler support.
 CXX = @glibcpp_CXX@
+glibcpp_srcdir=@glibcpp_srcdir@
+glibcpp_builddir=@glibcpp_builddir@
 toolexecdir = @glibcpp_toolexecdir@
 toolexeclibdir = @glibcpp_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la
+
+# Symbol versioning for shared libraries.
+if GLIBCPP_BUILD_VERSIONED_SHLIB
+version_arg = -Wl,--version-script=libstdc++-symbol.ver
+libstdc++-symbol.ver:  ${glibcpp_srcdir}/@SYMVER_MAP@
+	@LN_S@  $< ./libstdc++-symbol.ver || true
+else
+version_arg =
+libstdc++-symbol.ver:
+endif
 
 # Compile flags that should be constant throughout the build, both for
 # SUBDIRS and for libstdc++-v3 in general.
@@ -39,9 +51,8 @@ OPTIMIZE_CXXFLAGS = @OPTIMIZE_CXXFLAGS@
 
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set. See GLIBCPP_EXPORT_FLAGS
-# NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
 CONFIG_CXXFLAGS = \
-	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@ @DEBUG_FLAGS@ 
+	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@
 
 # Warning flags to use.
 WARN_CXXFLAGS = \
@@ -60,7 +71,8 @@ INCLUDES = \
 	$(LIBSUPCXX_INCLUDES) $(LIBIO_INCLUDES) $(LIBMATH_INCLUDES) \
 	$(TOPLEVEL_INCLUDES)
 
-# Source files linked in via configuration magic for a particular target.
+# Source files linked in via configuration/make substitution for a
+# particular target.
 target_sources = \
 	codecvt_members.cc \
 	collate_members.cc \
@@ -70,11 +82,38 @@ target_sources = \
 	numeric_members.cc \
 	time_members.cc
 
-# Source files linked in via configuration magic for a particular
-# target, but with ad hoc naming rules.
+codecvt_members.cc: ${glibcpp_srcdir}/@CCODECVT_CC@
+	@LN_S@ $< . || true
+
+collate_members.cc: ${glibcpp_srcdir}/@CCOLLATE_CC@
+	@LN_S@ $< . || true
+
+ctype_members.cc: ${glibcpp_srcdir}/@CCTYPE_CC@
+	@LN_S@ $< . || true
+
+messages_members.cc: ${glibcpp_srcdir}/@CMESSAGES_CC@
+	@LN_S@ $< . || true
+
+monetary_members.cc: ${glibcpp_srcdir}/@CMONEY_CC@
+	@LN_S@ $< . || true
+
+numeric_members.cc: ${glibcpp_srcdir}/@CNUMERIC_CC@
+	@LN_S@ $< . || true
+
+time_members.cc: ${glibcpp_srcdir}/@CTIME_CC@
+	@LN_S@ $< . || true
+
+# Source files linked in via configuration/make substitution for a
+# particular target, but with ad hoc naming rules.
 target_sources_extra = \
 	basic_file.cc \
 	c++locale.cc 
+
+c++locale.cc: ${glibcpp_srcdir}/@CLOCALE_CC@
+	@LN_S@ $< ./$@ || true
+
+basic_file.cc: ${glibcpp_srcdir}/@BASIC_FILE_CC@
+	@LN_S@ $< ./$@ || true
 
 # Sources present in the src directory.
 sources = \
@@ -114,20 +153,15 @@ VPATH = $(top_srcdir)/src:$(top_srcdir)
 libstdc___la_SOURCES = $(sources)
 
 libstdc___la_LIBADD = \
-	../libmath/libmath.la @libio_la@ \
-	../libsupc++/libsupc++convenience.la
+	$(top_builddir)/libmath/libmath.la @libio_la@ \
+	$(top_builddir)/libsupc++/libsupc++convenience.la
 
-if GLIBCPP_BUILD_VERSIONED_SHLIB
-version_arg=-Wl,--version-script=linker.map
-else
-version_arg=
-endif
+libstdc___la_DEPENDENCIES = libstdc++-symbol.ver $(libstdc___la_LIBADD)
 
 libstdc___la_LDFLAGS = \
 	-version-info @libtool_VERSION@ ${version_arg} \
 	-lm @LIBUNWIND_FLAG@ 
 
-libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD) linker.map
 
 # Use special rules for the deprecated source files so that they find
 # deprecated include files.
@@ -150,13 +184,13 @@ concept-inst.o: concept-inst.cc
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
-# as the occasion call for it. (ie, --enable-debug)
+# as the occasion call for it. 
 AM_CXXFLAGS = \
 	-fno-implicit-templates \
 	$(LIBSUPCXX_CXXFLAGS) \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \
-	$(CONFIG_CXXFLAGS) 
+	$(CONFIG_CXXFLAGS)  
 
 
 # libstdc++ libtool notes
@@ -188,3 +222,38 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
 # compilation driver.
 CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) \
 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
+
+
+# Added bits to build debug library.
+if GLIBCPP_BUILD_DEBUG
+all-local: build_debug
+install-data-local: install_debug
+else
+all-local:
+install-data-local: 
+endif
+
+debugdir = debug
+
+# Build parallel set of debug objects here.
+stamp-debug: 
+	if test ! -d ${debugdir}; then \
+	  mkdir -p ${debugdir}; \
+	  (cd ${debugdir}; \
+	  cp ../Makefile .; \
+	  sed 's/top_builddir = ../top_builddir = ..\/../g' \
+	  < Makefile > temp.1; \
+	  sed 's/all-local: build_debug/all-local:/g' < temp.1 > temp.2; \
+	  sed 's/install-data-local: install_debug/install-data-local:/g' \
+	  < temp.2 > temp.3; \
+          mv temp.3 Makefile) ; \
+	fi; \
+	echo `date` > stamp-debug; 
+
+build_debug: stamp-debug
+	(cd ${debugdir} && $(MAKE) CXXFLAGS='@DEBUG_FLAGS@' all)
+
+# Install debug library here.
+install_debug: 
+	(cd ${debugdir} && $(MAKE) \
+	toolexeclibdir=@glibcpp_toolexeclibdir@/debug install)
