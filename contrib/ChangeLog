@@ -1,3 +1,7 @@
+2001-07-01  Zoltan Felleg <zfelleg@telnet.hu>
+
+	* warn_summary: Fix typo in a comment.
+
 2001-06-14  Albert Chin-A-Young  <china@thewrittenword.com>
 
         * contrib/gcc_update: Fix timestamp on gcc/f/intdoc.texi.
