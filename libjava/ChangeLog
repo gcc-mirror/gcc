@@ -1,3 +1,9 @@
+2002-04-24  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/natCore.cc (create): Use __builtin_alloca, and compute
+	correct length of UTF-8 encoded name.  Strip leading `/'.
+	(_Jv_RegisterResource): Use _Jv_Malloc.
+
 2002-04-23  Adam Megacz <adam@xwt.org>
 
 	* win32.cc, include/win32.cc (backtrace): Added this function
