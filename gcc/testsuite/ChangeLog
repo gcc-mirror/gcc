@@ -1,3 +1,7 @@
+2001-01-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/if-2.c: Add wide char test without sign extension.
+
 2001-01-10  Alan Lehotsky  <lehotsky@tiac.net>
 
 	* gcc.dg/20000926-1.c: Parameterize for machines with 16-bit ints.
