@@ -572,15 +572,18 @@ namespace std
       return this; 
     }
   
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // According to 27.8.1.4 p11 - 13 (for seekoff) and the resolution of
+  // DR 171 (for seekpos), both functions should ignore the last argument
+  // (of type openmode).
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::pos_type
     basic_filebuf<_CharT, _Traits>::
-    seekoff(off_type __off, ios_base::seekdir __way, ios_base::openmode __mode)
+    seekoff(off_type __off, ios_base::seekdir __way, ios_base::openmode)
     {
       pos_type __ret =  pos_type(off_type(-1)); 
-      const bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
-      const bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
-      
+
       int __width = 0;
       if (_M_codecvt)
 	__width = _M_codecvt->encoding();
@@ -588,7 +591,7 @@ namespace std
 	__width = 0;
 
       const bool __testfail = __off != 0 && __width <= 0;      
-      if (this->is_open() && !__testfail && (__testin || __testout)) 
+      if (this->is_open() && !__testfail) 
 	{
 	  // Ditch any pback buffers to avoid confusion.
 	  _M_destroy_pback();
@@ -618,7 +621,7 @@ namespace std
 	    }
 	  
 	  // Returns pos_type(off_type(-1)) in case of failure.
-	  __ret = _M_file.seekoff(__computed_off, __way, __mode);
+	  __ret = _M_file.seekoff(__computed_off, __way);
 	  
 	  _M_reading = false;
 	  _M_writing = false;

@@ -1,3 +1,18 @@
+2003-10-02  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/12232
+	* include/bits/fstream.tcc (seekoff): Ignore the openmode
+	argument; simplify.
+	* config/io/basic_file_stdio.h (__basic_file<char>::seekoff,
+	seekpos): Remove the openmode argument.
+	* config/io/basic_file_stdio.cc (__basic_file<char>::seekoff,
+	seekpos): Remove redundant placeholder for the openmode argument.
+	* testsuite/27_io/basic_filebuf/seekoff/char/12232.cc: New.
+	* testsuite/27_io/basic_filebuf/seekoff/char/3-in.cc: Tweak.
+	* testsuite/27_io/basic_filebuf/seekoff/char/3-out.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/3-in.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/3-out.cc: Likewise.
+
 2003-10-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/locale.cc (locale::_S_initialize): Use __gthread_active_p.
