@@ -99,7 +99,7 @@ Boston, MA 02111-1307, USA.  */
 /* These are used by -fbranch-probabilities */
 #define HOT_TEXT_SECTION_NAME "__TEXT,__text,regular,pure_instructions"
 #define NORMAL_TEXT_SECTION_NAME "__TEXT,__text,regular,pure_instructions"
-#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME \ 
+#define UNLIKELY_EXECUTED_TEXT_SECTION_NAME \
                               "__TEXT,__unlikely,regular,pure_instructions"
 #define SECTION_FORMAT_STRING ".section %s\n\t.align 2\n" 
 

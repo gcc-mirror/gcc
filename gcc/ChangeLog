@@ -1,3 +1,9 @@
+2004-07-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/16556
+	* config/i386/darwin.h (UNLIKELY_EXECUTED_TEXT_SECTION_NAME):
+	Remove white space after the backslash.
+
 2004-07-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/16294
