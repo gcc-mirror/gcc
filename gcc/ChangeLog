@@ -1,3 +1,8 @@
+Thu Mar 14 19:04:29 CET 2002  Jan HUbicka  <jh@suse.cz>
+
+	* emit-rtl.c (try_split): Use delete_insns.
+	* recog.c (split_all_insns): Fix terminating condition.
+
 2002-03-14  Richard Earnshaw  <rearnsha@arm.com>
 	    Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
 

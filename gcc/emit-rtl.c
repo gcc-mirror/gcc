@@ -3076,7 +3076,7 @@ try_split (pat, trial, last)
 
 	  tem = emit_insn_after (seq, trial);
 
-	  delete_related_insns (trial);
+	  delete_insn (trial);
 	  if (has_barrier)
 	    emit_barrier_after (tem);
 
