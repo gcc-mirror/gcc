@@ -238,7 +238,7 @@ link_section ()							\
 
 #undef ASM_OUTPUT_ADDR_VEC_ELT
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) \
-  fprintf (FILE, "\t.quad $%d\n", (VALUE) + 32)
+  fprintf (FILE, "\t.quad $L%d\n", (VALUE))
 
 #undef READONLY_DATA_SECTION
 #define READONLY_DATA_SECTION readonly_section

@@ -1,3 +1,8 @@
+Thu Nov 20 16:11:50 1997  Klaus Kaempf  <kkaempf@progis.de>
+
+	* alpha/vms.h (ASM_OUTPUT_ADDR_VEC_ELT): Add an L for the local label
+	to correspond with the change to ASM_GENERATE_INTERNAL_LABEL.
+
 Thu Nov 20 14:42:15 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Makefile.in (LIB2FUNCS): Remove C++ memory management support.
