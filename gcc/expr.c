@@ -3457,7 +3457,10 @@ store_expr (exp, target, want_value)
   /* If value was not generated in the target, store it there.
      Convert the value to TARGET's type first if nec.  */
 
-  if (! rtx_equal_p (temp, target) && TREE_CODE (exp) != ERROR_MARK)
+  if ((! rtx_equal_p (temp, target)
+       || side_effects_p (temp)
+       || side_effects_p (target))
+      && TREE_CODE (exp) != ERROR_MARK)
     {
       target = protect_from_queue (target, 1);
       if (GET_MODE (temp) != GET_MODE (target)
