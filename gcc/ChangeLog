@@ -1,3 +1,7 @@
+2000-05-17  Neil Booth  <neilb@earthling.net>
+
+	* cpplex.c (expand_name_space): Don't use ptrdiff_t.
+
 2000-05-17  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.c: New feature, #pragma system_header.
