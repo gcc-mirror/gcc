@@ -44,6 +44,17 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-iterator.h"
 #include "tree-gimple.h"
 
+/* Places where an lvalue, or modifiable lvalue, may be required.
+   Used to select diagnostic messages in lvalue_or_else and
+   readonly_error.  */
+enum lvalue_use {
+  lv_assign,
+  lv_increment,
+  lv_decrement,
+  lv_addressof,
+  lv_asm
+};
+
 /* The level of nesting inside "__alignof__".  */
 int in_alignof;
 
@@ -89,7 +100,8 @@ static void add_pending_init (tree, tree);
 static void set_nonincremental_init (void);
 static void set_nonincremental_init_from_string (tree);
 static tree find_init_member (tree);
-static int lvalue_or_else (tree, const char *);
+static int lvalue_or_else (tree, enum lvalue_use);
+static void readonly_error (tree, enum lvalue_use);
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)  */
@@ -2545,8 +2557,8 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	/* Complain about anything else that is not a true lvalue.  */
 	if (!lvalue_or_else (arg, ((code == PREINCREMENT_EXPR
 				    || code == POSTINCREMENT_EXPR)
-				   ? "invalid lvalue in increment"
-				   : "invalid lvalue in decrement")))
+				   ? lv_increment
+				   : lv_decrement)))
 	  return error_mark_node;
 
 	/* Report a read-only lvalue.  */
@@ -2554,7 +2566,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	  readonly_error (arg,
 			  ((code == PREINCREMENT_EXPR
 			    || code == POSTINCREMENT_EXPR)
-			   ? "increment" : "decrement"));
+			   ? lv_increment : lv_decrement));
 
 	if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE)
 	  val = boolean_increment (code, arg);
@@ -2591,7 +2603,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
       /* Anything not already handled and not a true memory reference
 	 or a non-lvalue array is an error.  */
       else if (typecode != FUNCTION_TYPE && !flag
-	       && !lvalue_or_else (arg, "invalid lvalue in unary %<&%>"))
+	       && !lvalue_or_else (arg, lv_addressof))
 	return error_mark_node;
 
       /* Ordinary case; arg is a COMPONENT_REF or a decl.  */
@@ -2682,40 +2694,73 @@ lvalue_p (tree ref)
 }
 
 /* Return nonzero if REF is an lvalue valid for this language;
-   otherwise, print an error message and return zero.  MSGID
-   is a format string which receives no arguments, but in which
-   formats such as %< and %> may occur.  */
+   otherwise, print an error message and return zero.  USE says
+   how the lvalue is being used and so selects the error message.  */
 
 static int
-lvalue_or_else (tree ref, const char *msgid)
+lvalue_or_else (tree ref, enum lvalue_use use)
 {
   int win = lvalue_p (ref);
 
-  if (! win)
-    error (msgid);
+  if (!win)
+    {
+      switch (use)
+	{
+	case lv_assign:
+	  error ("invalid lvalue in assignment");
+	  break;
+	case lv_increment:
+	  error ("invalid lvalue in increment");
+	  break;
+	case lv_decrement:
+	  error ("invalid lvalue in decrement");
+	  break;
+	case lv_addressof:
+	  error ("invalid lvalue in unary %<&%>");
+	  break;
+	case lv_asm:
+	  error ("invalid lvalue in asm statement");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
 
   return win;
 }
 
 
-/* Warn about storing in something that is `const'.  */
+/* Give an error for storing in something that is 'const'.  */
 
-void
-readonly_error (tree arg, const char *msgid)
+static void
+readonly_error (tree arg, enum lvalue_use use)
 {
+  gcc_assert (use == lv_assign || use == lv_increment || use == lv_decrement);
+  /* Using this macro rather than (for example) arrays of messages
+     ensures that all the format strings are checked at compile
+     time.  */
+#define READONLY_MSG(A, I, D) (use == lv_assign				\
+			       ? (A)					\
+			       : (use == lv_increment ? (I) : (D)))
   if (TREE_CODE (arg) == COMPONENT_REF)
     {
       if (TYPE_READONLY (TREE_TYPE (TREE_OPERAND (arg, 0))))
-	readonly_error (TREE_OPERAND (arg, 0), msgid);
+	readonly_error (TREE_OPERAND (arg, 0), use);
       else
-	error ("%s of read-only member %qs", _(msgid),
+	error (READONLY_MSG (N_("assignment of read-only member %qs"),
+			     N_("increment of read-only member %qs"),
+			     N_("decrement of read-only member %qs")),
 	       IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (arg, 1))));
     }
   else if (TREE_CODE (arg) == VAR_DECL)
-    error ("%s of read-only variable %qs", _(msgid),
+    error (READONLY_MSG (N_("assignment of read-only variable %qs"),
+			 N_("increment of read-only variable %qs"),
+			 N_("decrement of read-only variable %qs")),
 	   IDENTIFIER_POINTER (DECL_NAME (arg)));
   else
-    error ("%s of read-only location", _(msgid));
+    error (READONLY_MSG (N_("assignment of read-only location"),
+			 N_("increment of read-only location"),
+			 N_("decrement of read-only location")));
 }
 
 /* Mark EXP saying that we need to be able to take the
@@ -3283,16 +3328,16 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
       newrhs = build_binary_op (modifycode, lhs, rhs, 1);
     }
 
-  if (!lvalue_or_else (lhs, "invalid lvalue in assignment"))
+  if (!lvalue_or_else (lhs, lv_assign))
     return error_mark_node;
 
-  /* Warn about storing in something that is `const'.  */
+  /* Give an error for storing in something that is 'const'.  */
 
   if (TREE_READONLY (lhs) || TYPE_READONLY (lhstype)
       || ((TREE_CODE (lhstype) == RECORD_TYPE
 	   || TREE_CODE (lhstype) == UNION_TYPE)
 	  && C_TYPE_FIELDS_READONLY (lhstype)))
-    readonly_error (lhs, "assignment");
+    readonly_error (lhs, lv_assign);
 
   /* If storing into a structure or union member,
      it has probably been given type `int'.
@@ -6249,7 +6294,7 @@ build_asm_expr (tree string, tree outputs, tree inputs, tree clobbers,
       tree output = TREE_VALUE (tail);
       STRIP_NOPS (output);
       TREE_VALUE (tail) = output;
-      lvalue_or_else (output, "invalid lvalue in asm statement");
+      lvalue_or_else (output, lv_asm);
 
       constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (tail)));
 

@@ -1,5 +1,9 @@
 2004-09-30  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* gcc.dg/lvalue-2.c: New test.
+
+2004-09-30  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	PR c/17730
 	* gcc.dg/pr17730-1.c: New test
 
