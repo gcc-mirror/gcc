@@ -1,3 +1,9 @@
+2003-05-22  DJ Delorie  <dj@redhat.com>
+
+	* calls.c (expand_call): If the arg block is going to grow
+	downward, we need argblock to point to the top of the block,
+	not the bottom.
+
 2003-05-22  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-decl.c (duplicate_decls): Test DECL for ERROR_MARK.
