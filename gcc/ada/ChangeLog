@@ -1,5 +1,23 @@
 2004-10-04  Ed Schonberg  <schonberg@gnat.com>
 
+	* sem_ch12.adb (Check_Generic_Actuals): New predicate
+	Denotes_Previous_Actual, to handle properly the case of a private
+	actual that is also the component type of a subsequent array actual.
+	The visibility status of the first actual is not affected when the
+	second is installed.
+	(Process_Nested_Formal): Subsidiary of Instantiate_Formal_Package, to
+	make fully recursive the treatment of formals of packages declared
+	with a box.
+	(Restore_Nested_Formal): Subsidiary of Restore_Private_Views, to undo
+	the above on exit from an instantiation.
+	(Denotes_Formal_Package): When called from Restore_Private_Views, ignore
+	current instantiation which is now complete.
+	(Analyze_Package_Instantiation): No instantiated body is needed if the
+	main unit is generic. Efficient, and avoid anomalies when a instance
+	appears in a package accessed through rtsfind.
+
+2004-10-04  Ed Schonberg  <schonberg@gnat.com>
+
 	* exp_ch6.adb (Expand_N_Function_Call): If stack checking is enabled,
 	do not generate a declaration for a temporary if the call is part of a
 	library-level instantiation.
