@@ -157,14 +157,14 @@ GLUE(.L,name): \
 	.size GLUE(..,name),GLUE(.L,name)-GLUE(..,name)
 
 #else
-#define FUNC_NAME(name) name
+#define FUNC_NAME(name) GLUE(__USER_LABEL_PREFIX__,name)
 #define FUNC_START(name) \
-	.type name,@function; \
-	.globl name; \
-name:
+	.type FUNC_NAME(name),@function; \
+	.globl FUNC_NAME(name); \
+FUNC_NAME(name):
 
 #define FUNC_END(name) \
 GLUE(.L,name): \
-	.size name,GLUE(.L,name)-name
+	.size FUNC_NAME(name),GLUE(.L,name)-FUNC_NAME(name)
 #endif
 

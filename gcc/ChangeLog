@@ -1,3 +1,8 @@
+2000-02-05  Geoff Keating  <geoffk@cygnus.com>
+
+	* ginclude/ppc-asm.h (FUNC_START): Use USER_LABEL_PREFIX.
+	(FUNC_END): Likewise.
+
 2000-02-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* caller-save.c: Include tm_p.h.
