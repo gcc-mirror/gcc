@@ -1138,7 +1138,7 @@ reload (first, global, dumpfile)
 
 		    case RELOAD_FOR_INSN:
 		      this_needs = insn_needs_for_insn;
-		      this_groups = insn_groups_for_outputs;
+		      this_groups = insn_groups_for_insn;
 		      this_total_groups = &insn_total_groups_for_insn;
 		      break;
 
