@@ -1,5 +1,12 @@
 2004-04-20  Michael Koch  <konqueror@gmx.de>
 
+	* javax/naming/directory/SearchControls.java:
+	Don't explicitely extend java.lang.Object.
+	* javax/naming/spi/DirStateFactory.java:
+	Merged copyright year with GNU classpath.
+
+2004-04-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/channels/Channels.java:
 	Merged coding style with GNU classpath.
 
