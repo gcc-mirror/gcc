@@ -5230,48 +5230,52 @@ expand_function_start (subr, parms_have_cleanups)
 	use_variable (current_function_internal_arg_pointer);
     }
 
-  /* Fetch static chain values for containing functions.  */
-  tem = decl_function_context (current_function_decl);
-  /* If not doing stupid register allocation copy the static chain
-     pointer into a pseudo.  If we have small register classes, copy the
-     value from memory if static_chain_incoming_rtx is a REG.  If we do
-     stupid register allocation, we use the stack address generated above.  */
-  if (tem && ! obey_regdecls)
-    {
-#ifdef SMALL_REGISTER_CLASSES
-      /* If the static chain originally came in a register, put it back
-	 there, then move it out in the next insn.  The reason for
-	 this peculiar code is to satisfy function integration.  */
-      if (GET_CODE (static_chain_incoming_rtx) == REG)
-	emit_move_insn (static_chain_incoming_rtx, last_ptr);
-#endif
-
-      last_ptr = copy_to_reg (static_chain_incoming_rtx);
-    }
-
   context_display = 0;
-  while (tem)
+  if (current_function_needs_context)
     {
-      tree rtlexp = make_node (RTL_EXPR);
-
-      RTL_EXPR_RTL (rtlexp) = last_ptr;
-      context_display = tree_cons (tem, rtlexp, context_display);
-      tem = decl_function_context (tem);
-      if (tem == 0)
-	break;
-      /* Chain thru stack frames, assuming pointer to next lexical frame
-	 is found at the place we always store it.  */
-#ifdef FRAME_GROWS_DOWNWARD
-      last_ptr = plus_constant (last_ptr, - GET_MODE_SIZE (Pmode));
+      /* Fetch static chain values for containing functions.  */
+      tem = decl_function_context (current_function_decl);
+      /* If not doing stupid register allocation copy the static chain
+	 pointer into a pseudo.  If we have small register classes, copy
+	 the value from memory if static_chain_incoming_rtx is a REG.  If
+	 we do stupid register allocation, we use the stack address
+	 generated above.  */
+      if (tem && ! obey_regdecls)
+	{
+#ifdef SMALL_REGISTER_CLASSES
+	  /* If the static chain originally came in a register, put it back
+	     there, then move it out in the next insn.  The reason for
+	     this peculiar code is to satisfy function integration.  */
+	  if (GET_CODE (static_chain_incoming_rtx) == REG)
+	    emit_move_insn (static_chain_incoming_rtx, last_ptr);
 #endif
-      last_ptr = copy_to_reg (gen_rtx (MEM, Pmode,
-				       memory_address (Pmode, last_ptr)));
 
-      /* If we are not optimizing, ensure that we know that this
-	 piece of context is live over the entire function.  */
-      if (! optimize)
-	save_expr_regs = gen_rtx (EXPR_LIST, VOIDmode, last_ptr,
-				  save_expr_regs);
+	  last_ptr = copy_to_reg (static_chain_incoming_rtx);
+	}
+
+      while (tem)
+	{
+	  tree rtlexp = make_node (RTL_EXPR);
+
+	  RTL_EXPR_RTL (rtlexp) = last_ptr;
+	  context_display = tree_cons (tem, rtlexp, context_display);
+	  tem = decl_function_context (tem);
+	  if (tem == 0)
+	    break;
+	  /* Chain thru stack frames, assuming pointer to next lexical frame
+	     is found at the place we always store it.  */
+#ifdef FRAME_GROWS_DOWNWARD
+	  last_ptr = plus_constant (last_ptr, - GET_MODE_SIZE (Pmode));
+#endif
+	  last_ptr = copy_to_reg (gen_rtx (MEM, Pmode,
+					   memory_address (Pmode, last_ptr)));
+
+	  /* If we are not optimizing, ensure that we know that this
+	     piece of context is live over the entire function.  */
+	  if (! optimize)
+	    save_expr_regs = gen_rtx (EXPR_LIST, VOIDmode, last_ptr,
+				      save_expr_regs);
+	}
     }
 
   /* After the display initializations is where the tail-recursion label
