@@ -1,3 +1,10 @@
+2000-12-05  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* texi2pod.pl: Restructure for comprehensibility, add
+	comments.  Merge handling of @ignore and @ifxxx.  Handle a
+	whole bunch more Texinfo commands.  Use consistent formatting
+	style.
+
 2000-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gennews: New script.
