@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/">
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.2 2000/05/09 20:25:13 pme Exp $ -->
+<!-- $Id: configopts.html,v 1.3 2000/05/16 17:06:39 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -68,13 +68,11 @@ options</A></H1>
         Pilot, will be able to use libstdc++-v3 without libio.
      </P>
 
- <DT><TT>--enable-long_long  </TT>
+ <DT><TT>--enable-long-long  </TT>
  <DD><P>The &quot;long long&quot; type was introduced in C99.  It is
         provided as a GNU extension to C++98 in g++.  This flag builds
         support for &quot;long long&quot; into the library (specialized
         templates and the like).
-     </P>
-     <P>Careful, that's an underscore between the words, not a hyphen.
      </P>
 
  <DT><TT>--enable-namespaces  </TT>[default]
@@ -82,12 +80,12 @@ options</A></H1>
         backwards compatibility.  It can be turned on with the
         <TT> -fhonor-std </TT> flag to the compiler.  As of libstdc++-v3
         snapshot 2.90.8, that flag is passed to g++ when building the
-        library.  (This will eventually be the default for the compiler
-        itself.)  The --disable variant will put all std:: symbols into
-        the global namespace.
+        library.  (In g++ 2.96 and later, this flag is on by default if
+        libstdc++-v3 is used.) The --disable variant will put all std::
+        symbols into the global namespace.
      </P>
 
- <DT><TT>--enable-shadow-headers  </TT>
+ <DT><TT>--enable-cshadow-headers  </TT>
  <DD><P>This turns on the code to construct shadowed C headers.  Very
         experimental as of this writing.
      </P>
@@ -159,7 +157,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.2 2000/05/09 20:25:13 pme Exp $
+$Id: configopts.html,v 1.3 2000/05/16 17:06:39 pme Exp $
 </EM></P>
 
 

@@ -154,9 +154,12 @@ AC_SUBST(GLIBCPP_CXXFLAGS)
 
 
 dnl
-dnl Check to see if g++ can compile this library. 
+dnl Check to see if g++ can compile this library, and if so, if any version-
+dnl specific precautions need to be taken.
 dnl
 dnl Define OPTLEVEL='-O2' if new inlining code present.
+dnl Define WERROR='-Werror' if possible; g++'s that lack the new inlining
+dnl    code or the new system_header pragma will die.
 dnl
 dnl GLIBCPP_CHECK_COMPILER_VERSION
 AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
@@ -168,23 +171,45 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
   ], gpp_satisfactory=yes, AC_MSG_ERROR("please upgrade to gcc-2.95 or above"))
   AC_MSG_RESULT($gpp_satisfactory)
 
+  AC_MSG_CHECKING([for g++ that supports new system_header pragma])
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  # the CXXFLAGS thing is suspicious, but based on similar
+  # bits in GLIBCPP_CONFIGURE
+  ac_test_CXXFLAGS="${CXXFLAGS+set}"
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS='-Wunknown-pragmas -Werror'
+  AC_TRY_COMPILE([#pragma system_header], [int foo;
+  ], [WERROR='-Werror'], [WERROR=''])
+  if test "$ac_test_CXXFLAGS" = set; then
+    CXXFLAGS="$ac_save_CXXFLAGS"
+  else
+    # this is the suspicious part
+    CXXFLAGS=''
+  fi
+  AC_LANG_RESTORE
+  if test "$WERROR" = ""; then
+    AC_MSG_RESULT(no)
+  else
+    AC_MSG_RESULT(yes)
+  fi
+
   AC_MSG_CHECKING([for g++ that supports new inlining mechanism])
   AC_EGREP_CPP([ok], [
   #if  __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 95)
     ok
   #endif
-  ], [OPTLEVEL='-O2'
-      WERRORSUPPRESS=
-  ], [OPTLEVEL=
-      WERRORSUPPRESS=-Wno-error
-  ])
+  ], [OPTLEVEL='-O2'], [OPTLEVEL=''])
   if test "$OPTLEVEL" = ""; then
     AC_MSG_RESULT(no)
+    # something of a hack here
+    WERROR=''
   else
     AC_MSG_RESULT(yes)
   fi
+
   AC_SUBST(OPTLEVEL)
-  AC_SUBST(WERRORSUPPRESS)
+  AC_SUBST(WERROR)
 ])
 
 
@@ -236,8 +261,6 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
 ])
 
-
-dnl
 
 dnl Check to see what architecture we are compiling for. If it's
 dnl supported, use special hand-crafted routines to provide thread
@@ -616,7 +639,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_SUPPORT, [
 
 
 dnl
-dnl Check for certain special build configurations.
+dnl Check for special debugging mode; not for production use.
 dnl
 dnl GLIBCPP_ENABLE_DEBUG
 dnl --enable-debug sets '-ggdb -O0'.
@@ -742,7 +765,7 @@ AC_SUBST(GCC_OBJDIR)
 
 
 dnl
-dnl Check for certain special build configurations.
+dnl Check for which I/O library to use:  libio, or something specific.
 dnl
 dnl GLIBCPP_ENABLE_CSTDIO
 dnl --enable-cstdio=libio sets config/c_io_libio.h and friends
@@ -806,7 +829,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 
 
 dnl
-dnl Check for certain special build configurations.
+dnl Check for which threading library to use.
 dnl
 dnl GLIBCPP_ENABLE_THREADS
 dnl --enable-threads=posix sets config/threads-posix.h et. al.
@@ -898,7 +921,7 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
 
 
 dnl
-dnl Check for certain special build configurations.
+dnl Check for template specializations for the 'long long' type extension.
 dnl
 dnl GLIBCPP_ENABLE_LONG_LONG
 dnl --enable-long-long defines _GLIBCPP_USE_LONG_LONG
@@ -931,7 +954,7 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
 
 
 dnl
-dnl Check for certain special build configurations.
+dnl Check for whether or not to do shadowed C headers.
 dnl
 dnl GLIBCPP_ENABLE_SHADOW
 dnl --enable-cshadow-headers [does stuff].
@@ -962,7 +985,7 @@ dnl Option parsed, now set things appropriately
 case "$enable_cshadow_headers" in
     yes) 
 	SHADOW_INCLUDES="-I$srcdir/shadow -I$blddir/cshadow"
-$srcdir/inclosure "-I $blddir/../../gcc/include/ -I /usr/include/ -G machine/ansi.h" | $srcdir/mkcshadow
+        $srcdir/inclosure "-I $blddir/../../gcc/include/ -I /usr/include/ -G machine/ansi.h" | $srcdir/mkcshadow
 	;;
     no)   
 	SHADOW_INCLUDES=''

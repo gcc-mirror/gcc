@@ -37,7 +37,7 @@ toolexeclib_LTLIBRARIES = libstdc++.la
 EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 
 
-WERROR = -Werror
+WERROR = @WERROR@
 # OPTIMIZE_CXXFLAGS =  -O3 -fstrict-aliasing -fsquangle -fnew-exceptions \
 #                      -fdata-sections -ffunction-sections \
 #		       -fvtable-gc -Wl,--gc-sections
