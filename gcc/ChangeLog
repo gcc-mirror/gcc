@@ -1,3 +1,10 @@
+Sat Sep 18 11:52:43 1999  Richard Henderson  <rth@cygnus.com>
+
+	* c-pragma.c (mark_align_stack): New.
+	(init_pragma): New.
+	* c-pragma.h (init_pragma): Declare it.
+	* c-lex.c (init_parse): Call it.
+
 Sat Sep 18 15:20:38 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* configure.in: Pick up thread library on Solaris/x86 just

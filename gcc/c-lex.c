@@ -254,6 +254,7 @@ init_parse (filename)
 #endif
 
   init_lex ();
+  init_pragma ();
 
   return filename;
 }

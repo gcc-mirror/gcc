@@ -512,3 +512,27 @@ handle_pragma_token (string, token)
   return 1;
 }
 #endif /* HANDLE_GENERIC_PRAGMAS */
+
+#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
+static void
+mark_align_stack (p)
+    void *p;
+{
+  align_stack *a = (align_stack *) p;
+
+  while (a)
+    {
+      ggc_mark_tree (a->id);
+      a = a->prev;
+    }
+}
+#endif
+
+void
+init_pragma ()
+{
+#ifdef HANDLE_PRAGMA_PACK_PUSH_POP
+  ggc_add_root (&alignment_stack, 1, sizeof(alignment_stack),
+		mark_align_stack);
+#endif
+}
