@@ -1,3 +1,14 @@
+2002-08-06  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppinit.c (struct lang_flags): Rename trigraphs std.
+	(set_lang): Update.
+	* cpplib.h (struct cpp_options): New member std.
+	* cppmacro.c (_cpp_builtin_macro_text): Use std.
+	(collect_args): Flag whether to swallow a possible future
+	comma pasted with varargs.
+	(replace_args): Use this flag.
+	* doc/cpp.texi: Update varargs extension documentation.
+
 2002-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/mmintrin.h (__m64): Make the type 64-bit aligned.

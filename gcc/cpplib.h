@@ -367,6 +367,9 @@ struct cpp_options
   /* Nonzero for the 1999 C Standard, including corrigenda and amendments.  */
   unsigned char c99;
 
+  /* Nonzero if we are conforming to a specific C or C++ standard.  */
+  unsigned char std;
+
   /* Nonzero means give all the error messages the ANSI standard requires.  */
   unsigned char pedantic;
 
