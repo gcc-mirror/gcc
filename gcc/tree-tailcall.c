@@ -460,11 +460,6 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       if (TREE_CODE (stmt) != MODIFY_EXPR)
 	return;
 
-      /* Unless this is a tail recursive call, we cannot do anything with
-	 the statement anyway.  */
-      if (!tail_recursion)
-	return;
-
       if (!process_assignment (stmt, stmt, bsi, &m, &a, &ass_var))
 	return;
     }
@@ -489,6 +484,11 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
      is identical to the call's return.  */
   if (ret_var
       && (ret_var != ass_var))
+    return;
+
+  /* If this is not a tail recursive call, we cannot handle addends or
+     multiplicands.  */
+  if (!tail_recursion && (m || a))
     return;
 
   nw = xmalloc (sizeof (struct tailcall));
