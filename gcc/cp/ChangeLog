@@ -1,4 +1,9 @@
-2001-03-22  Jakub Jelinek  <jakub@redhat.com>
+2001-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* mangle.c (write_discriminator): Use `_0' for discriminator 1,
+	not `_'.
+
+2001-03-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (local_names): Define.
 	(push_local_name): New.

@@ -3446,15 +3446,11 @@ demangle_discriminator (dm, suppress_first)
 	    /* Write the discriminator.  The mangled number is two
 	       less than the discriminator ordinal, counting from
 	       zero.  */
-	    RETURN_IF_ERROR (int_to_dyn_string (discriminator + 2, 
+	    RETURN_IF_ERROR (int_to_dyn_string (discriminator + 1,
 						(dyn_string_t) dm->result));
 	}
       else
-	{
-	  if (flag_verbose)
-	    /* A missing digit correspond to one.  */
-	    RETURN_IF_ERROR (result_add_char (dm, '1'));
-	}
+	return STATUS_ERROR;
       if (flag_verbose)
 	RETURN_IF_ERROR (result_add_char (dm, ']'));
     }
