@@ -3889,9 +3889,20 @@ expand_expr (exp, target, tmode, modifier)
 	tree index_type = TREE_TYPE (index);
 	int i;
 
-	/* Optimize the special-case of a zero lower bound.  */
+	/* Optimize the special-case of a zero lower bound.
+
+	   We convert the low_bound to sizetype to avoid some problems
+	   with constant folding.  (E.g. suppose the lower bound is 1,
+	   and its mode is QI.  Without the conversion,  (ARRAY
+	   +(INDEX-(unsigned char)1)) becomes ((ARRAY+(-(unsigned char)1))
+	   +INDEX), which becomes (ARRAY+255+INDEX).  Oops!)
+
+	   But sizetype isn't quite right either (especially if
+	   the lowbound is negative).  FIXME */
+
 	if (! integer_zerop (low_bound))
-	  index = fold (build (MINUS_EXPR, index_type, index, low_bound));
+	  index = fold (build (MINUS_EXPR, index_type, index,
+			       convert (sizetype, low_bound)));
 
 	if (TREE_CODE (index) != INTEGER_CST
 	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
