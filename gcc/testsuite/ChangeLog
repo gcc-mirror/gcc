@@ -1,3 +1,11 @@
+2003-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/11693
+	* gcc.dg/20030811-1.c: New test.
+
+	PR target/11535
+	* gcc.c-torture/execute/20030811-1.c: New test.
+
 2003-08-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/string-opt-9.c: Add more strcat cases.
