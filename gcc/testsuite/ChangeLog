@@ -1,3 +1,7 @@
+2003-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20031202-1.c: New test.
+
 2003-12-03  Josef Zlomek  <zlomekj@suse.cz>
 
 	Backport from mainline
