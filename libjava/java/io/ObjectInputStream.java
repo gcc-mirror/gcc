@@ -1737,7 +1737,11 @@ public class ObjectInputStream extends InputStream
    * @param sm SecurityManager instance which should be called.
    * @return The current class loader in the calling stack.
    */
-  private static native ClassLoader currentClassLoader (SecurityManager sm);
+  private static ClassLoader currentClassLoader (SecurityManager sm)
+  {
+    // FIXME: This is too simple.
+    return ClassLoader.getSystemClassLoader ();
+  }
 
   private void callReadMethod (Method readObject, Class klass, Object obj) throws IOException
   {
