@@ -1,4 +1,4 @@
-# Copyright (C) 1994, 1995, 1999 Free Software Foundation
+# Copyright (C) 1994, 1995, 1999, 2000 Free Software Foundation
 
 # This file is part of the GNU ANSI C++ Library.  This library is free
 # software; you can redistribute it and/or modify it under the terms of
@@ -380,10 +380,10 @@ stuff:
 stuff1:
 	$(MAKE) clean
 	$(MAKE) -C ../libio c++clean
-	touch ../../gcc/libgcc2.ready
+	rm -f ../../gcc/cplib2.txt
 
 stuff2:
-	$(MAKE) -C ../../gcc/ libgcc.a
+	$(MAKE) -C ../../gcc/ LANGUAGES='c c++' libgcc.a
 	$(MAKE) CXXFLAGS="$(MYCXXFLAGS)" CFLAGS="$(MYCFLAGS)"
 	-$(MAKE) check
 	-$(MAKE) -C ../libio check
