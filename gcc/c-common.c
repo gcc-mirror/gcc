@@ -2047,8 +2047,25 @@ check_function_format (status, name, assembler_name, params)
 		    && info2->format_type == info->format_type)
 		  break;
 	      if (info2 == NULL)
-		warning ("function might be possible candidate for `%s' format attribute",
-			 format_types[info->format_type].name);
+		{
+		  /* Check if the current function has a parameter to which
+		     the format attribute could be attached; if not, it
+		     can't be a candidate for a format attribute, despite
+		     the vprintf-like or vscanf-like call.  */
+		  tree args;
+		  for (args = DECL_ARGUMENTS (current_function_decl);
+		       args != 0;
+		       args = TREE_CHAIN (args))
+		    {
+		      if (TREE_CODE (TREE_TYPE (args)) == POINTER_TYPE
+			  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (args)))
+			      == char_type_node))
+			break;
+		    }
+		  if (args != 0)
+		    warning ("function might be possible candidate for `%s' format attribute",
+			     format_types[info->format_type].name);
+		}
 	    }
 	  break;
 	}
