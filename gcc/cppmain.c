@@ -43,7 +43,7 @@ main (argc, argv)
   int argi = 1;  /* Next argument to handle.  */
 
   p = argv[0] + strlen (argv[0]);
-  while (p != argv[0] && p[-1] != '/') --p;
+  while (p != argv[0] && ! IS_DIR_SEPARATOR (p[-1])) --p;
   progname = p;
 
   xmalloc_set_program_name (progname);
