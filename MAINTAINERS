@@ -50,6 +50,7 @@ x86 ports		Stan Cox		scox@redhat.com
 c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 arc port		Richard Kenner		kenner@nyu.edu
 fr30 port		Nick Clifton		niclc@redhat.com
+vax port		Dave Anglin		dave.anglin@nrc.ca
 fortran			Richard Henderson	rth@redhat.com
 fortran			Toon Moene		toon@moene.indiv.nluug.nl
 c++			Jason Merrill		jason@redhat.com

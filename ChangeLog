@@ -1,3 +1,7 @@
+2001-01-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* MAINTAINERS: Add myself as vax port maintainer.
+
 2001-01-11  Fergus Henderson  <fjh@cs.mu.oz.au>
 
 	* MAINTAINERS: Add myself as Mercury front-end maintainer.
