@@ -246,6 +246,10 @@ struct lexer_state
   /* Nonzero when parsing arguments to a function-like macro.  */
   unsigned char parsing_args;
 
+  /* Nonzero if prevent_expansion is true only because output is
+     being discarded.  */
+  unsigned char discarding_output;
+
   /* Nonzero to skip evaluating part of an expression.  */
   unsigned int skip_eval;
 };

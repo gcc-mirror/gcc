@@ -41,13 +41,11 @@ calc_hash (const unsigned char *str, size_t len)
 {
   size_t n = len;
   unsigned int r = 0;
-#define HASHSTEP(r, c) ((r) * 67 + ((c) - 113));
 
   while (n--)
-    r = HASHSTEP (r, *str++);
+    r = HT_HASHSTEP (r, *str++);
 
-  return r + len;
-#undef HASHSTEP
+  return HT_HASHFINISH (r, len);
 }
 
 /* Initialize an identifier hashtable.  */
@@ -96,7 +94,15 @@ hashnode
 ht_lookup (hash_table *table, const unsigned char *str, size_t len,
 	   enum ht_lookup_option insert)
 {
-  unsigned int hash = calc_hash (str, len);
+  return ht_lookup_with_hash (table, str, len, calc_hash (str, len),
+			      insert);
+}
+
+hashnode
+ht_lookup_with_hash (hash_table *table, const unsigned char *str,
+		     size_t len, unsigned int hash,
+		     enum ht_lookup_option insert)
+{
   unsigned int hash2;
   unsigned int index;
   size_t sizemask;

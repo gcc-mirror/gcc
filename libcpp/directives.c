@@ -23,6 +23,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "cpplib.h"
 #include "internal.h"
+#include "mkdeps.h"
 #include "obstack.h"
 
 /* Chained list of answers to an assertion.  */
@@ -336,7 +337,11 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
   const directive *dir = 0;
   const cpp_token *dname;
   bool was_parsing_args = pfile->state.parsing_args;
+  bool was_discarding_output = pfile->state.discarding_output;
   int skip = 1;
+
+  if (was_discarding_output)
+    pfile->state.prevent_expansion = 0;
 
   if (was_parsing_args)
     {
@@ -432,6 +437,8 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
       pfile->state.parsing_args = 2;
       pfile->state.prevent_expansion = 1;
     }
+  if (was_discarding_output)
+    pfile->state.prevent_expansion = 1;
   return skip;
 }
 
@@ -549,30 +556,13 @@ do_undef (cpp_reader *pfile)
 /* Undefine a single macro/assertion/whatever.  */
 
 static int
-undefine_macros (cpp_reader *pfile, cpp_hashnode *h,
+undefine_macros (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *h,
 		 void *data_p ATTRIBUTE_UNUSED)
 {
-  switch (h->type)
-    {
-    case NT_VOID:
-      break;
-
-    case NT_MACRO:
-      if (pfile->cb.undef)
-        (*pfile->cb.undef) (pfile, pfile->directive_line, h);
-
-      if (CPP_OPTION (pfile, warn_unused_macros))
-        _cpp_warn_if_unused_macro (pfile, h, NULL);
-
-      /* And fall through....  */
-    case NT_ASSERTION:
-      _cpp_free_definition (h);
-      break;
-
-    default:
-      abort ();
-    }
-  h->flags &= ~NODE_POISONED;
+  /* Body of _cpp_free_definition inlined here for speed.
+     Macros and assertions no longer have anything to free.  */
+  h->type = NT_VOID;
+  h->flags &= ~(NODE_POISONED|NODE_BUILTIN|NODE_DISABLED);
   return 1;
 }
 
@@ -1911,6 +1901,15 @@ void
 cpp_set_callbacks (cpp_reader *pfile, cpp_callbacks *cb)
 {
   pfile->cb = *cb;
+}
+
+/* The dependencies structure.  (Creates one if it hasn't already been.)  */
+struct deps *
+cpp_get_deps (cpp_reader *pfile)
+{
+  if (!pfile->deps)
+    pfile->deps = deps_init ();
+  return pfile->deps;
 }
 
 /* Push a new buffer on the buffer stack.  Returns the new buffer; it
