@@ -158,8 +158,7 @@ namespace std
        *  @note pbacks of over one character are not currently supported.
        *  @endif
       */
-      static const size_t   	_S_pback_size = 1; 
-      char_type			_M_pback[_S_pback_size]; 
+      char_type			_M_pback[1]; 
       char_type*		_M_pback_cur_save;
       char_type*		_M_pback_end_save;
       bool			_M_pback_init; 
@@ -176,12 +175,9 @@ namespace std
       {
 	if (!_M_pback_init)
 	  {
-	    size_t __dist = this->_M_in_end - this->_M_in_cur;
-	    size_t __len = std::min(_S_pback_size, __dist);
-	    traits_type::copy(_M_pback, this->_M_in_cur, __len);
 	    _M_pback_cur_save = this->_M_in_cur;
 	    _M_pback_end_save = this->_M_in_end;
-	    this->setg(_M_pback, _M_pback, _M_pback + __len);
+	    this->setg(_M_pback, _M_pback, _M_pback + 1);
 	    _M_pback_init = true;
 	  }
       }
@@ -195,17 +191,9 @@ namespace std
 	if (_M_pback_init)
 	  {
 	    // Length _M_in_cur moved in the pback buffer.
-	    size_t __off_cur = this->_M_in_cur - _M_pback;
-	    
-	    // For in | out buffers, the end can be pushed back...
-	    size_t __off_end = 0;
-	    size_t __pback_len = this->_M_in_end - _M_pback;
-	    size_t __save_len = _M_pback_end_save - this->_M_buf;
-	    if (__pback_len > __save_len)
-	      __off_end = __pback_len - __save_len;
-
+	    const size_t __off_cur = this->_M_in_cur - _M_pback;
 	    this->setg(this->_M_buf, _M_pback_cur_save + __off_cur, 
-		       _M_pback_end_save + __off_end);
+		       _M_pback_end_save);
 	    _M_pback_init = false;
 	  }
       }

@@ -151,10 +151,6 @@ template
 template 
   unsigned char
   std::basic_string<unsigned char>::_Rep::_S_terminal;
-
-template
-  std::basic_filebuf<unsigned char>::int_type
-  std::basic_filebuf<unsigned char>::_S_pback_size;
 #endif
 
 int main()

@@ -40,10 +40,6 @@
 namespace std
 {
   template<typename _CharT, typename _Traits>
-    const size_t
-    basic_filebuf<_CharT, _Traits>::_S_pback_size;
-
-  template<typename _CharT, typename _Traits>
     void
     basic_filebuf<_CharT, _Traits>::
     _M_allocate_internal_buffer()
