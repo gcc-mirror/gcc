@@ -1,3 +1,12 @@
+2004-06-19  David Billinghurst (David.Billinghurst@riotinto.com)
+
+	PR other/16043
+	* lib/g++.exp (g++_version): Tweak regexp for version
+	* lib/g77.exp (g77_version): Likewise
+	* lib/gfortran.exp (gfortran_version): Likewise
+	* lib/objc.exp (objc_version): Likewise
+	* lib/treelang.exp (treelang_version): Likewise
+
 2004-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/compat/struct-align-2_x.c: Include <limits.h>.
