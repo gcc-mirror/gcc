@@ -2725,7 +2725,7 @@ init_fixtab ()
 #endif
 
 #ifdef HAVE_fix_truncdfqi2
-  if (HAVE_fix_truncdfsi2)
+  if (HAVE_fix_truncdfqi2)
     fixtrunctab[(int) DFmode][(int) QImode][0] = CODE_FOR_fix_truncdfqi2;
 #endif
 #ifdef HAVE_fix_truncdfhi2
