@@ -240,6 +240,7 @@ int jump_opt_dump = 0;
 int cse_dump = 0;
 int loop_dump = 0;
 int cse2_dump = 0;
+int branch_prob_dump = 0;
 int flow_dump = 0;
 int combine_dump = 0;
 int sched_dump = 0;
@@ -322,6 +323,18 @@ int profile_flag = 0;
 /* Nonzero if generating code to do profiling on a line-by-line basis.  */
 
 int profile_block_flag;
+
+/* Nonzero if generating code to profile program flow graph arcs.  */
+
+int profile_arc_flag = 0;
+
+/* Nonzero if generating info for gcov to calculate line test coverage.  */
+
+int flag_test_coverage = 0;
+
+/* Nonzero indicates that branch taken probabilities should be calculated.  */
+
+int flag_branch_probabilities = 0;
 
 /* Nonzero for -pedantic switch: warn about anything
    that standard spec forbids.  */
@@ -633,6 +646,9 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"pic", &flag_pic, 1},
   {"PIC", &flag_pic, 2},
   {"exceptions", &flag_exceptions, 1},
+  {"profile-arcs", &profile_arc_flag, 1},
+  {"test-coverage", &flag_test_coverage, 1},
+  {"branch-probabilities", &flag_branch_probabilities, 1},
   {"fast-math", &flag_fast_math, 1},
   {"common", &flag_no_common, 0},
   {"inhibit-size-directive", &flag_inhibit_size_directive, 1},
@@ -832,6 +848,7 @@ FILE *jump_opt_dump_file;
 FILE *cse_dump_file;
 FILE *loop_dump_file;
 FILE *cse2_dump_file;
+FILE *branch_prob_dump_file;
 FILE *flow_dump_file;
 FILE *combine_dump_file;
 FILE *sched_dump_file;
@@ -851,6 +868,7 @@ int jump_time;
 int cse_time;
 int loop_time;
 int cse2_time;
+int branch_prob_time;
 int flow_time;
 int combine_time;
 int sched_time;
@@ -2076,6 +2094,7 @@ compile_file (name)
   cse_time = 0;
   loop_time = 0;
   cse2_time = 0;
+  branch_prob_time = 0;
   flow_time = 0;
   combine_time = 0;
   sched_time = 0;
@@ -2114,7 +2133,8 @@ compile_file (name)
      but the options would have to be parsed first to know that. -bson */
   init_rtl ();
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
-		  || debug_info_level == DINFO_LEVEL_VERBOSE);
+		  || debug_info_level == DINFO_LEVEL_VERBOSE
+		  || flag_test_coverage);
   init_regs ();
   init_decl_processing ();
   init_optabs ();
@@ -2156,6 +2176,10 @@ compile_file (name)
   /* If cse2 dump desired, open the output file.  */
   if (cse2_dump)
     cse2_dump_file = open_dump_file (dump_base_name, ".cse2");
+
+  /* If branch_prob dump desired, open the output file.  */
+  if (branch_prob_dump)
+    branch_prob_dump_file = open_dump_file (dump_base_name, ".bp");
 
   /* If flow dump desired, open the output file.  */
   if (flow_dump)
@@ -2345,6 +2369,7 @@ compile_file (name)
 
   if (!output_bytecode)
     init_final (main_input_filename);
+  init_branch_prob (dump_base_name);
 
   start_time = get_run_time ();
 
@@ -2361,6 +2386,8 @@ compile_file (name)
       while (! global_bindings_p ())
 	poplevel (0, 0, 0);
     }
+
+  output_func_start_profiler ();
 
   /* Compilation is now finished except for writing
      what's left of the symbol table output.  */
@@ -2594,7 +2621,8 @@ compile_file (name)
 
   if (!output_bytecode)
     {
-      end_final (main_input_filename);
+      end_final (dump_base_name);
+      end_branch_prob (branch_prob_dump_file);
 
 #ifdef ASM_FILE_END
       ASM_FILE_END (asm_out_file);
@@ -2631,6 +2659,9 @@ compile_file (name)
 
   if (cse2_dump)
     fclose (cse2_dump_file);
+
+  if (branch_prob_dump)
+    fclose (branch_prob_dump_file);
 
   if (flow_dump)
     fclose (flow_dump_file);
@@ -2686,6 +2717,7 @@ compile_file (name)
 	  print_time ("cse", cse_time);
 	  print_time ("loop", loop_time);
 	  print_time ("cse2", cse2_time);
+	  print_time ("branch-probabilities", branch_prob_time);
 	  print_time ("flow", flow_time);
 	  print_time ("combine", combine_time);
 	  print_time ("sched", sched_time);
@@ -3136,6 +3168,25 @@ rest_of_compilation (decl)
 	       fflush (cse2_dump_file);
 	     });
 
+  if (branch_prob_dump)
+    TIMEVAR (dump_time,
+	     {
+	       fprintf (branch_prob_dump_file, "\n;; Function %s\n\n",
+			IDENTIFIER_POINTER (DECL_NAME (decl)));
+	     });
+
+  if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
+    TIMEVAR (branch_prob_time,
+	     {
+	       branch_prob (insns, branch_prob_dump_file);
+	     });
+
+  if (branch_prob_dump)
+    TIMEVAR (dump_time,
+	     {
+	       print_rtl (branch_prob_dump_file, insns);
+	       fflush (branch_prob_dump_file);
+	     });
   /* We are no longer anticipating cse in this function, at least.  */
 
   cse_not_expected = 1;
@@ -3651,6 +3702,7 @@ main (argc, argv, envp)
 		switch (*p++)
 		  {
  		  case 'a':
+		    branch_prob_dump = 1;
  		    combine_dump = 1;
  		    dbr_sched_dump = 1;
  		    flow_dump = 1;
@@ -3664,6 +3716,9 @@ main (argc, argv, envp)
  		    sched_dump = 1;
  		    sched2_dump = 1;
 		    stack_reg_dump = 1;
+		    break;
+		  case 'b':
+		    branch_prob_dump = 1;
 		    break;
 		  case 'k':
 		    stack_reg_dump = 1;
