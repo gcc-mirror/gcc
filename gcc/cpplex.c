@@ -1903,14 +1903,13 @@ cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
   else if (chars_seen > 1 && !traditional && warn_multi)
     cpp_warning (pfile, "multi-character character constant");
 
-  /* If char type is signed, sign-extend the constant.  The
-     __CHAR_UNSIGNED__ macro is set by the driver if appropriate.  */
+  /* If char type is signed, sign-extend the constant.  */
   if (token->type == CPP_CHAR && chars_seen)
     {
       unsigned int nbits = chars_seen * width;
 
       mask = (unsigned HOST_WIDE_INT) ~0 >> (HOST_BITS_PER_WIDE_INT - nbits);
-      if (pfile->spec_nodes.n__CHAR_UNSIGNED__->type == NT_MACRO
+      if (CPP_OPTION (pfile, signed_char) == 0
 	  || ((result >> (nbits - 1)) & 1) == 0)
 	result &= mask;
       else

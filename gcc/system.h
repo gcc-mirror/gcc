@@ -594,7 +594,7 @@ typedef char _Bool;
 	SET_DEFAULT_TYPE_ATTRIBUTES SET_DEFAULT_DECL_ATTRIBUTES		\
 	MERGE_MACHINE_TYPE_ATTRIBUTES MERGE_MACHINE_DECL_ATTRIBUTES	\
 	MD_INIT_BUILTINS MD_EXPAND_BUILTIN ASM_OUTPUT_CONSTRUCTOR	\
-	ASM_OUTPUT_DESTRUCTOR
+	ASM_OUTPUT_DESTRUCTOR SIGNED_CHAR_SPEC
 
 /* And other obsolete target macros, or macros that used to be in target
    headers and were not used, and may be obsolete or may never have

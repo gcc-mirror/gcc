@@ -1,3 +1,32 @@
+2002-02-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (struct spec_nodes): Remove n__CHAR_UNSIGNED__.
+	* cpphash.c (_cpp_init_hashtable): Similarly.
+	* cppinit.c (cpp_create_reader): Default the signed_char flag.
+	(init_builtins): Define __CHAR_UNSIGNED__ appropriately.
+	(COMMAND_LINE_OPTIONS): Recognise -f{un,}signed-char.
+	(cpp_handle_option): Handle the new options.
+	* cpplex.c (cpp_interpret_charconst): Use new flag.
+	* cpplib.h (struct cpp_options): New member signed_char.
+	* gcc.c (cpp_unique_options): Remove %c spec and documentation.
+	(cpp_options): Handle -fsigned-char and -funsigned-char.
+	(static_specs): Remove signed_char_spec.
+	(do_spec1): Don't handle %c.
+	* system.h: Poison SIGNED_CHAR_SPEC.
+	* tradcif.y (yylex): Use flag_signed_char.
+	* tradcpp.h (flag_signed_char): New.
+	* tradcpp.c (flag_signed_char): New.
+	(main): Handle new command-line options.
+	(initialize_builtins): Define __CHAR_UNSIGNED__ if appropriate.
+config:
+	* alpha/alpha.h (SIGNED_CHAR_SPEC): Remove.
+	* avr/avr.h: Remove old comments.
+	* i960/i960.h (CPP_SPEC): Pass -fsigned-char if -mic*.
+	(CC1_SPEC): Pass -fsigned-char if -mic*.
+	(SIGNED_CHAR_SPEC): Remove.
+doc:
+	* tm.texi (SIGNED_CHAR_SPEC): Remove documentation.
+
 2002-02-01  Eric Christopher  <echristo@redhat.com>
 
 	From Daniel Jacobowitz <dmj+@andrew.cmu.edu>

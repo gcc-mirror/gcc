@@ -86,6 +86,13 @@ int inhibit_warnings = 0;
 /* Non-0 means don't output the preprocessed program.  */
 int inhibit_output = 0;
 
+/* Nonzero means chars are signed.  */
+#if DEFAULT_SIGNED_CHAR
+int flag_signed_char = 1;
+#else
+int flag_signed_char = 0;
+#endif
+
 /* Nonzero means warn if slash-star appears in a comment.  */
 
 int warn_comments;
@@ -627,6 +634,10 @@ main (argc, argv)
 	  user_label_prefix = "_";
 	else if (!strcmp (argv[i], "-fno-leading-underscore"))
 	  user_label_prefix = "";
+	else if (!strcmp (argv[i], "-fsigned-char"))
+	  flag_signed_char = 1;
+	else if (!strcmp (argv[i], "-funsigned-char"))
+	  flag_signed_char = 0;
 	break;
 
       case 'M':
@@ -5105,6 +5116,9 @@ initialize_builtins ()
 #endif
   install_value ("__REGISTER_PREFIX__",   REGISTER_PREFIX);
   install_value ("__USER_LABEL_PREFIX__", user_label_prefix);
+
+  if (flag_signed_char == 0)
+    install_value ("__CHAR_UNSIGNED__", "1");
 }
 #undef DSC
 #undef install_spec
