@@ -1842,6 +1842,36 @@ base_derived_from (tree derived, tree base)
   return false;
 }
 
+typedef struct count_depth_data {
+  /* The depth of the current subobject, with "1" as the depth of the
+     most derived object in the hierarchy.  */
+  size_t depth;
+  /* The maximum depth found so far.  */
+  size_t max_depth;
+} count_depth_data;
+
+/* Called from find_final_overrider via dfs_walk.  */
+
+static tree
+dfs_depth_post (tree binfo ATTRIBUTE_UNUSED, void *data)
+{
+  count_depth_data *cd = (count_depth_data *) data;
+  if (cd->depth > cd->max_depth)
+    cd->max_depth = cd->depth;
+  cd->depth--;
+  return NULL_TREE;
+}
+
+/* Called from find_final_overrider via dfs_walk.  */
+
+static tree
+dfs_depth_q (tree derived, int i, void *data)
+{
+  count_depth_data *cd = (count_depth_data *) data;
+  cd->depth++;
+  return BINFO_BASE_BINFO (derived, i);
+}
+
 typedef struct find_final_overrider_data_s {
   /* The function for which we are trying to find a final overrider.  */
   tree fn;
@@ -1851,9 +1881,62 @@ typedef struct find_final_overrider_data_s {
   tree most_derived_type;
   /* The candidate overriders.  */
   tree candidates;
-  /* Binfos which inherited virtually on the current path.  */
-  tree vpath;
+  /* Each entry in this array is the next-most-derived class for a
+     virtual base class along the current path.  */
+  tree *vpath_list;
+  /* A pointer one past the top of the VPATH_LIST.  */
+  tree *vpath;
 } find_final_overrider_data;
+
+/* Add the overrider along the current path to FFOD->CANDIDATES.
+   Returns true if an overrider was found; false otherwise.  */
+
+static bool
+dfs_find_final_overrider_1 (tree binfo, 
+			    tree *vpath, 
+			    find_final_overrider_data *ffod)
+{
+  /* If BINFO is not the most derived type, try a more derived class.
+     A definition there will overrider a definition here.  */
+  if (!same_type_p (BINFO_TYPE (binfo), ffod->most_derived_type))
+    {
+      tree derived;
+
+      if (BINFO_VIRTUAL_P (binfo))
+	derived = *--vpath;
+      else
+	derived = BINFO_INHERITANCE_CHAIN (binfo);
+      if (dfs_find_final_overrider_1 (derived, vpath, ffod))
+	return true;
+    }
+
+  tree method = look_for_overrides_here (BINFO_TYPE (binfo), ffod->fn);
+	  
+  if (method)
+    {
+      tree *candidate = &ffod->candidates;
+      
+      /* Remove any candidates overridden by this new function.  */
+      while (*candidate)
+	{
+	  /* If *CANDIDATE overrides METHOD, then METHOD
+	     cannot override anything else on the list.  */
+	  if (base_derived_from (TREE_VALUE (*candidate), binfo))
+	    return true;
+	  /* If METHOD overrides *CANDIDATE, remove *CANDIDATE.  */
+	  if (base_derived_from (binfo, TREE_VALUE (*candidate)))
+	    *candidate = TREE_CHAIN (*candidate);
+	  else
+	    candidate = &TREE_CHAIN (*candidate);
+	}
+      
+      /* Add the new function.  */
+      ffod->candidates = tree_cons (method, binfo, ffod->candidates);
+      return true;
+    }
+
+  return false;
+}
 
 /* Called from find_final_overrider via dfs_walk.  */
 
@@ -1863,57 +1946,7 @@ dfs_find_final_overrider (tree binfo, void* data)
   find_final_overrider_data *ffod = (find_final_overrider_data *) data;
 
   if (binfo == ffod->declaring_base)
-    {
-      /* We've found a path to the declaring base.  Walk the path from
-	 derived to base, looking for an overrider for FN.  */
-      tree path, probe, vpath;
-
-      /* Build the path, using the inheritance chain and record of
-	 virtual inheritance.  */
-      for (path = NULL_TREE, probe = binfo, vpath = ffod->vpath;;)
-	{
-	  path = tree_cons (NULL_TREE, probe, path);
-	  if (same_type_p (BINFO_TYPE (probe), ffod->most_derived_type))
-	    break;
-	  if (BINFO_VIRTUAL_P (probe))
-	    {
-	      probe = TREE_VALUE (vpath);
-	      vpath = TREE_CHAIN (vpath);
-	    }
-	  else
-	    probe = BINFO_INHERITANCE_CHAIN (probe);
-	}
-      /* Now walk path, looking for overrides.  */
-      for (; path; path = TREE_CHAIN (path))
-	{
-	  tree method = look_for_overrides_here
-	    (BINFO_TYPE (TREE_VALUE (path)), ffod->fn);
-	  
-	  if (method)
-	    {
-	      tree *candidate = &ffod->candidates;
-	      path = TREE_VALUE (path);
-
-	      /* Remove any candidates overridden by this new function.  */
-	      while (*candidate)
-		{
-		  /* If *CANDIDATE overrides METHOD, then METHOD
-		     cannot override anything else on the list.  */
-		  if (base_derived_from (TREE_VALUE (*candidate), path))
-		    return NULL_TREE;
-		  /* If METHOD overrides *CANDIDATE, remove *CANDIDATE.  */
-		  if (base_derived_from (path, TREE_VALUE (*candidate)))
-		    *candidate = TREE_CHAIN (*candidate);
-		  else
-		    candidate = &TREE_CHAIN (*candidate);
-		}
-	      
-	      /* Add the new function.  */
-	      ffod->candidates = tree_cons (method, path, ffod->candidates);
-	      break;
-	    }
-	}
-    }
+    dfs_find_final_overrider_1 (binfo, ffod->vpath, ffod);
 
   return NULL_TREE;
 }
@@ -1925,7 +1958,7 @@ dfs_find_final_overrider_q (tree derived, int ix, void *data)
   find_final_overrider_data *ffod = (find_final_overrider_data *) data;
 
   if (BINFO_VIRTUAL_P (binfo))
-    ffod->vpath = tree_cons (NULL_TREE, derived, ffod->vpath);
+    *ffod->vpath++ = derived;
   
   return binfo;
 }
@@ -1935,8 +1968,8 @@ dfs_find_final_overrider_post (tree binfo, void *data)
 {
   find_final_overrider_data *ffod = (find_final_overrider_data *) data;
 
-  if (BINFO_VIRTUAL_P (binfo) && TREE_CHAIN (ffod->vpath))
-    ffod->vpath = TREE_CHAIN (ffod->vpath);
+  if (BINFO_VIRTUAL_P (binfo))
+    ffod->vpath--;
   
   return NULL_TREE;
 }
@@ -1950,6 +1983,7 @@ static tree
 find_final_overrider (tree derived, tree binfo, tree fn)
 {
   find_final_overrider_data ffod;
+  count_depth_data cd;
 
   /* Getting this right is a little tricky.  This is valid:
 
@@ -1971,18 +2005,26 @@ find_final_overrider (tree derived, tree binfo, tree fn)
      different overriders along any two, then there is a problem.  */
   if (DECL_THUNK_P (fn))
     fn = THUNK_TARGET (fn);
-  
+
+  /* Determine the depth of the hierarchy.  */
+  cd.depth = 0;
+  cd.max_depth = 0;
+  dfs_walk (derived, dfs_depth_post, dfs_depth_q, &cd);
+
   ffod.fn = fn;
   ffod.declaring_base = binfo;
   ffod.most_derived_type = BINFO_TYPE (derived);
   ffod.candidates = NULL_TREE;
-  ffod.vpath = NULL_TREE;
+  ffod.vpath_list = (tree *) xcalloc (cd.max_depth, sizeof (tree));
+  ffod.vpath = ffod.vpath_list;
 
   dfs_walk_real (derived,
 		 dfs_find_final_overrider,
 		 dfs_find_final_overrider_post,
 		 dfs_find_final_overrider_q,
 		 &ffod);
+
+  free (ffod.vpath_list);
 
   /* If there was no winner, issue an error message.  */
   if (!ffod.candidates || TREE_CHAIN (ffod.candidates))
