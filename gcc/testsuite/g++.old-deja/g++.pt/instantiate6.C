@@ -2,7 +2,7 @@
 // Special g++ Options: -frepo
 
 // Simplified from testcase by Erez Louidor Lior <s3824888@techst02.technion.ac.il>
-// causes linker error - XFAIL *-*-*
+// excess errors test - XFAIL *-*-*
 
 template <class T>
 class foo{
