@@ -1618,6 +1618,7 @@ fixhdr.ready: fix-header
 # if it has already been run on the files in `include'.
 stmp-fixproto: fixhdr.ready fixproto stmp-headers
 	@echo "Various warnings and error messages from fixproto are normal"
+	-if [ -d include ] ; then true; else mkdir include; fi
 	if [ -f include/fixed ] ; then true; \
 	else \
 	  CPP="$(GCC_FOR_TARGET) -E"; export CPP; \
