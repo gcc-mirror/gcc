@@ -4340,6 +4340,12 @@ independent_decode_option (argc, argv)
       exit (0);
     }
 
+  if (!strcmp (arg, "-version"))
+    {
+      print_version (stderr, "");
+      exit (0);
+    }
+
   if (*arg == 'Y')
     arg++;
 
@@ -4934,12 +4940,13 @@ print_version (file, indent)
 #endif
   fnotice (file,
 #ifdef __GNUC__
-	   "%s%s%s version %s (%s) compiled by GNU C version %s.\n"
+	   "%s%s%s version %s (%s)\n%s\tcompiled by GNU C version %s.\n"
 #else
 	   "%s%s%s version %s (%s) compiled by CC.\n"
 #endif
 	   , indent, *indent != 0 ? " " : "",
-	   language_string, version_string, TARGET_NAME, __VERSION__);
+	   language_string, version_string, TARGET_NAME,
+	   indent, __VERSION__);
 }
 
 /* Print an option value and return the adjusted position in the line.

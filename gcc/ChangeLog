@@ -1,3 +1,19 @@
+2001-01-05  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* cpplib.h (struct cpp_reader): Add help_only field.
+	* cppinit.c (COMMAND_LINE_OPTIONS): Add OPT_version.
+	(cpp_handle_option): Set pfile->help_only if we see -h,
+	--help, -target-help, or --version.  Print version string but
+	do not set help_only if we see -v or -version.  Make text
+	printed by -v match that printed by (-)-version.
+
+	* cppmain.c (main): Exit after option parsing if
+	pfile->help_only is true.
+
+	* toplev.c (independent_decode_option): Call print_version,
+	then exit, if we see --version (but not -version).
+	(print_version): Split lengthy message into two lines.
+
 2001-01-05  Nick Clifton  <nickc@redhat.com>
 
 	* config/v850/v850.c (v850_encode_data_area): Use alloca to create
