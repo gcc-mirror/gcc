@@ -1,3 +1,7 @@
+Sat Jan 30 08:07:56 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* stdiostream.cc (_POSIX_SOURCE): Define. 
+
 1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in (compiler_name): Add check to detect if this

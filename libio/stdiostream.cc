@@ -1,5 +1,5 @@
 /* This is part of libio/iostream, providing -*- C++ -*- input/output.
-Copyright (C) 1993 Free Software Foundation
+Copyright (C) 1993, 1999 Free Software Foundation
 
 This file is part of the GNU IO Library.  This library is free
 software; you can redistribute it and/or modify it under the
@@ -28,6 +28,9 @@ the executable file might be covered by the GNU General Public License. */
 #pragma implementation
 #endif
 
+#ifndef _POSIX_SOURCE
+# define _POSIX_SOURCE
+#endif
 #include <stdiostream.h>
 #include "libioP.h"
 
