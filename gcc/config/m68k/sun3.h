@@ -82,7 +82,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
-#define CPP_PREDEFINES "-Dmc68000 -Dsun -Dunix"
+#define CPP_PREDEFINES "-Dmc68000 -Dsun -Dunix -D_CROSS_TARGET_ARCH=SUN3"
 
 /* STARTFILE_SPEC to include sun floating point initialization
    This is necessary (tr: Sun does it) for both the m68881 and the fpa
