@@ -1,3 +1,8 @@
+2005-03-08  J"orn Rennecke <joern.rennecke@st.com>
+
+	* jump.c (invert_jump_1): Don't call redirect_jump_1 with
+	nlabel == JUMP_LABEL (jump).
+
 2005-03-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-common.c, c-opts.c, combine.c, cse.c, dojump.c,
