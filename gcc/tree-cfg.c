@@ -3934,7 +3934,7 @@ thread_jumps (void)
   basic_block bb;
   bool retval = false;
   basic_block *worklist = xmalloc (sizeof (basic_block) * last_basic_block);
-  unsigned int size = 0;
+  basic_block *current = worklist;
 
   FOR_EACH_BB (bb)
     {
@@ -3974,17 +3974,15 @@ thread_jumps (void)
 	      && !bb_ann (e->src)->forwardable)
 	    {
 	      e->src->flags |= BB_VISITED;
-	      worklist[size] = e->src;
-	      size++;
+	      *current++ = e->src;
 	    }
 	}
     }
 
   /* Now let's drain WORKLIST.  */
-  while (size > 0)
+  while (worklist != current)
     {
-      size--;
-      bb = worklist[size];
+      bb = *--current;
 
       /* BB is no longer in WORKLIST, so clear BB_VISITED.  */
       bb->flags &= ~BB_VISITED;
@@ -4013,8 +4011,7 @@ thread_jumps (void)
 		      && !bb_ann (f->src)->forwardable)
 		    {
 		      f->src->flags |= BB_VISITED;
-		      worklist[size] = f->src;
-		      size++;
+		      *current++ = f->src;
 		    }
 		}
 	    }

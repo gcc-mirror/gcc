@@ -1,5 +1,10 @@
 2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* tree-cfg.c (thread_jumps): Speed up by keeping a pointer to
+	the last used element in the worklist.
+
+2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-inline.c (remap_save_expr): Make it static.
 	* tree-inline.h: Remove the corresponding prototype.
 
