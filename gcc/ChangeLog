@@ -1,3 +1,8 @@
+Thu Mar 11 20:37:59 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload.1c (delete_address_reloads_1):  Check for reloads of
+	CURRENT_INSN even if it sets DST.
+
 Thu Mar 11 10:29:50 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarf2out.c (add_AT_lbl_offset): Rename from add_AT_section_offset.
