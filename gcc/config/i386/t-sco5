@@ -16,7 +16,7 @@ CRTSTUFF_T_CFLAGS_S = $(CRTSTUFF_T_CFLAGS) -melf -fPIC
 EXTRA_PARTS = libgcc-elf.a crtbegin.o crtend.o crtbeginS.o crtendS.o
 TAROUTOPTS = xpf
 
-libgcc1-elf.a: stamp-crtS stamp-crt libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
+libgcc1-elf.a: stamp-crtS libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 	-rm -f tmplibgcc1-elf.a
 	for name in $(LIB1FUNCS); \
 	do \
@@ -47,7 +47,7 @@ libgcc1-elf.a: stamp-crtS stamp-crt libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) con
 	-if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc1-elf.a; else true; fi
 	mv tmplibgcc1-elf.a libgcc1-elf.a
 
-libgcc2-elf.a: stamp-crtS stamp-crt libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
+libgcc2-elf.a: stamp-crtS libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
    machmode.h longlong.h gbl-ctors.h config.status
 	-rm -f tmplibgcc2-elf.a
 	for name in $(LIB2FUNCS); \
