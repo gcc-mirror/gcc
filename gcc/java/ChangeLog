@@ -1,3 +1,9 @@
+2003-11-19  Jeff Sturm  <jsturm@one-point.com>
+
+	Fix PR java/13024.
+	* except.c (prepare_eh_table_type): Allocate variable-sized
+	buffer `buf' with alloca.
+
 2003-11-17  Jeff Sturm  <jsturm@one-point.com>
 
 	Fix PR java/12857.
