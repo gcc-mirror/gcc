@@ -1,3 +1,9 @@
+2003-05-15  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.c-torture/execute/builtins/string-asm-1.c: Take
+	__USER_LABEL_PREFIX__ into account.
+	* gcc.c-torture/execute/builtins/string-asm-2.c: Likewise.
+
 2003-05-14  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-15.c: New test case.

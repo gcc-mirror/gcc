@@ -2,16 +2,20 @@
 
    Test memcpy and memset in presence of redirect.  */
 
+#define ASMNAME(cname)  ASMNAME2 (__USER_LABEL_PREFIX__, cname)
+#define ASMNAME2(prefix, cname) STRING (prefix) cname
+#define STRING(x)    #x
+
 typedef __SIZE_TYPE__ size_t;
 extern void abort (void);
 extern void *memcpy (void *, const void *, size_t)
-  __asm ("my_memcpy");
+  __asm (ASMNAME ("my_memcpy"));
 extern void bcopy (const void *, void *, size_t)
-  __asm ("my_bcopy");
+  __asm (ASMNAME ("my_bcopy"));
 extern void *memset (void *, int, size_t)
-  __asm ("my_memset");
+  __asm (ASMNAME ("my_memset"));
 extern void bzero (void *, size_t)
-  __asm ("my_bzero");
+  __asm (ASMNAME ("my_bzero"));
 extern int memcmp (const void *, const void *, size_t);
 
 struct A { char c[32]; } a = { "foobar" };
