@@ -2408,11 +2408,10 @@ extern void dwarf2out_end_epilogue	PROTO((void));
    special abort includes one or both.  toplev.h gets too few files,
    system.h gets too many.  */
 
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
-extern void fancy_abort PROTO((const char *, int)) ATTRIBUTE_NORETURN;
-#define abort() fancy_abort (__FILE__, __LINE__)
-#else
 extern void fancy_abort PROTO((const char *, int, const char *))
     ATTRIBUTE_NORETURN;
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+#define abort() fancy_abort (__FILE__, __LINE__, 0)
+#else
 #define abort() fancy_abort (__FILE__, __LINE__, __PRETTY_FUNCTION__)
 #endif
