@@ -65,7 +65,7 @@ package body Makegpr is
    --  The name of a linking script, built one the fly, when there are C++
    --  sources and the C++ compiler is not g++.
 
-   No_Argument : constant Argument_List := (1 .. 0 => null);
+   No_Argument : aliased Argument_List := (1 .. 0 => null);
    --  Null argument list representing case of no arguments
 
    FD : Process_Descriptor;
@@ -182,6 +182,15 @@ package body Makegpr is
       Table_Initial        => 20,
       Table_Increment      => 100,
       Table_Name           => "Makegpr.Linker_Options");
+   --  Table to store the linking options
+
+   package Library_Opts is new Table.Table
+     (Table_Component_Type => String_Access,
+      Table_Index_Type     => Integer,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 20,
+      Table_Increment      => 100,
+      Table_Name           => "Makegpr.Library_Opts");
    --  Table to store the linking options
 
    package Ada_Mains is new Table.Table
@@ -1339,6 +1348,7 @@ package body Makegpr is
       Time_Stamp  : Time_Stamp_Type;
       Driver_Name : Name_Id := No_Name;
 
+      Lib_Opts : Argument_List_Access := No_Argument'Unrestricted_Access;
    begin
       Check_Archive_Builder;
 
@@ -1571,11 +1581,47 @@ package body Makegpr is
                   end if;
                end if;
 
+               --  If Library_Options is specified, add these options
+
+               declare
+                  Library_Options : constant Variable_Value :=
+                                      Value_Of
+                                        (Name_Library_Options,
+                                         Data.Decl.Attributes);
+
+               begin
+                  if not Library_Options.Default then
+                     declare
+                        Current : String_List_Id := Library_Options.Values;
+                        Element : String_Element;
+
+                     begin
+                        while Current /= Nil_String loop
+                           Element := String_Elements.Table (Current);
+                           Get_Name_String (Element.Value);
+
+                           if Name_Len /= 0 then
+                              Library_Opts.Increment_Last;
+                              Library_Opts.Table (Library_Opts.Last) :=
+                                new String'(Name_Buffer (1 .. Name_Len));
+                           end if;
+
+                           Current := Element.Next;
+                        end loop;
+                     end;
+                  end if;
+
+                  Lib_Opts :=
+                    new Argument_List'(Argument_List
+                       (Library_Opts.Table (1 .. Library_Opts.Last)));
+               end;
+
                MLib.Tgt.Build_Dynamic_Library
                  (Ofiles       => Arguments (1 .. Last_Argument),
                   Foreign      => Arguments (1 .. Last_Argument),
                   Afiles       => No_Argument,
                   Options      => No_Argument,
+                  Options_2    => Lib_Opts.all,
                   Interfaces   => No_Argument,
                   Lib_Filename => Get_Name_String (Data.Library_Name),
                   Lib_Dir      => Get_Name_String (Data.Library_Dir),
@@ -2827,6 +2873,15 @@ package body Makegpr is
                Get_Name_String (Element.Value);
 
                if Name_Len > 0 then
+                  --  Remove a trailing directory separator: this may cause
+                  --  problems on Windows.
+
+                  if Name_Len > 1
+                    and then Name_Buffer (Name_Len) = Directory_Separator
+                  then
+                     Name_Len := Name_Len - 1;
+                  end if;
+
                   declare
                      Arg : constant String :=
                              "-I" & Name_Buffer (1 .. Name_Len);
@@ -3002,32 +3057,44 @@ package body Makegpr is
          end if;
 
       else
-         --  First check for C++, to link libraries with g++, rather than gcc
+         declare
+            Data : constant Prj.Project_Data := Projects.Table (Main_Project);
+         begin
+            if Data.Library and then Mains.Number_Of_Mains /= 0 then
+               Osint.Fail
+                 ("Cannot specify mains on the command line " &
+                  "for a Library Project");
+            end if;
 
-         Check_For_C_Plus_Plus;
+            --  First check for C++, to link libraries with g++,
+            --  rather than gcc.
 
-         --  Compile sources and build archives for library project,
-         --  if necessary.
+            Check_For_C_Plus_Plus;
 
-         Compile_Sources;
+            --  Compile sources and build archives for library project,
+            --  if necessary.
 
-         --  When Keep_Going is True, if we had some errors, fail now,
-         --  reporting the number of compilation errors.
-         --  Do not attempt to link.
+            Compile_Sources;
 
-         Report_Total_Errors ("compilation");
+            --  When Keep_Going is True, if we had some errors, fail now,
+            --  reporting the number of compilation errors.
+            --  Do not attempt to link.
 
-         --  If -c was not specified, link the executables, if there are any.
+            Report_Total_Errors ("compilation");
 
-         if not Compile_Only then
-            Build_Global_Archive;
-            Link_Executables;
-         end if;
+            --  If -c was not specified, link the executables,
+            --  if there are any.
 
-         --  When Keep_Going is True, if we had some errors, fail, reporting
-         --  the number of linking errors.
+            if not Compile_Only and then not Data.Library then
+               Build_Global_Archive;
+               Link_Executables;
+            end if;
 
-         Report_Total_Errors ("linking");
+            --  When Keep_Going is True, if we had some errors, fail, reporting
+            --  the number of linking errors.
+
+            Report_Total_Errors ("linking");
+         end;
       end if;
    end Gprmake;
 

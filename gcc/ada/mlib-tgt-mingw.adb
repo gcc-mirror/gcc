@@ -91,6 +91,7 @@ package body MLib.Tgt is
       Foreign      : Argument_List;
       Afiles       : Argument_List;
       Options      : Argument_List;
+      Options_2    : Argument_List;
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
@@ -122,7 +123,7 @@ package body MLib.Tgt is
         (Output_File => Lib_File,
          Objects     => Ofiles,
          Options     => Tools.No_Argument_List,
-         Options_2   => Options,
+         Options_2   => Options & Options_2,
          Driver_Name => Driver_Name);
    end Build_Dynamic_Library;
 

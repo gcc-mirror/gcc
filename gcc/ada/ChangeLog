@@ -1,3 +1,25 @@
+2004-10-04  Vincent Celier  <celier@gnat.com>
+
+	* mlib-tgt-tru64.adb, mlib-tgt-aix.adb, mlib-tgt-irix.adb, 
+	mlib-tgt-hpux.adb, mlib-tgt-linux.adb, mlib-tgt-solaris.adb, 
+	mlib-tgt-vms-alpha.adb, mlib-tgt-vms-ia64.adb, mlib-tgt-mingw.adb, 
+	mlib-tgt-vxworks.adb, mlib-tgt.adb (Build_Dynamic_Library): New
+	parameter Options_2.
+
+	* mlib-prj.ads, mlib-prj.adb (Build_Library): Call
+	Build_Dynamic_Library with an empty Options_2.
+
+	* mlib-utl.ads, mlib-utl.adb (Gcc): Parameter Options_2 has no
+	default anymore.
+
+	* makegpr.adb (Get_Imported_Directories.add): Remove trailing
+	directory separator, if any.
+	(Gprmake): Do not allow mains on the command line for library projects.
+	Do not attempt to link when the project is a library project.
+	(Library_Opts): New table to store Library_Options.
+	(Build_Library): If Library_Options is specified, pass these options
+	when building a shared library.
+
 2004-10-04  Jose Ruiz  <ruiz@act-europe.fr>
 
 	* s-tposen.adb (Service_Entry): The object must be always unlocked at

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2001-2003, Ada Core Technologies, Inc           --
+--            Copyright (C) 2001-2004, Ada Core Technologies, Inc           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,8 +40,8 @@ package MLib.Utl is
      (Output_File : String;
       Objects     : Argument_List;
       Options     : Argument_List;
-      Driver_Name : Name_Id       := No_Name;
-      Options_2   : Argument_List := No_Argument_List);
+      Options_2   : Argument_List;
+      Driver_Name : Name_Id := No_Name);
    --  Driver_Name indicates the "driver" to invoke; by default, the "driver"
    --  is gcc.
    --  This procedure invokes the driver to create a shared library.

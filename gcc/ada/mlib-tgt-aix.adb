@@ -69,7 +69,7 @@ package body MLib.Tgt is
    --  The switches to use when linking a library against libgnarl when using
    --  FSU threads.
 
-   Thread_Options : Argument_List_Access := null;
+   Thread_Options : Argument_List_Access := Empty_Argument_List;
    --  Designate the thread switches to used when linking a library against
    --  libgnarl. Depends on the thread library (Native or FSU). Resolved for
    --  the first library linked against libgnarl.
@@ -119,6 +119,7 @@ package body MLib.Tgt is
       Foreign      : Argument_List;
       Afiles       : Argument_List;
       Options      : Argument_List;
+      Options_2    : Argument_List;
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
@@ -142,8 +143,8 @@ package body MLib.Tgt is
       --  The switch for automatic initialization of Stand-Alone Libraries.
       --  Changed to a real switch when Auto_Init is True.
 
-      Options_2 : Argument_List_Access := Empty_Argument_List;
-      --  Changed to the thread options, if -lgnarl is specified
+      Thread_Opts : Argument_List_Access := Empty_Argument_List;
+      --  Set to Thread_Options if -lgnarl is found in the Options
 
    begin
       if Opt.Verbose_Mode then
@@ -203,7 +204,7 @@ package body MLib.Tgt is
                end;
             end if;
 
-            Options_2 := Thread_Options;
+            Thread_Opts := Thread_Options;
             exit;
          end if;
       end loop;
@@ -211,11 +212,11 @@ package body MLib.Tgt is
       --  Finally, call GCC (or the driver specified) to build the library
 
       MLib.Utl.Gcc
-           (Output_File => Lib_File,
-            Objects     => Ofiles,
-            Options     => Options & Bexpall_Option & Init_Fini.all,
-            Driver_Name => Driver_Name,
-            Options_2   => Options_2.all);
+        (Output_File => Lib_File,
+         Objects     => Ofiles,
+         Options     => Options & Bexpall_Option & Init_Fini.all,
+         Driver_Name => Driver_Name,
+         Options_2   => Options_2 & Thread_Opts.all);
    end Build_Dynamic_Library;
 
    -------------

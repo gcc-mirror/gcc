@@ -76,6 +76,7 @@ package body MLib.Tgt is
       Foreign      : Argument_List;
       Afiles       : Argument_List;
       Options      : Argument_List;
+      Options_2    : Argument_List;
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
@@ -88,6 +89,7 @@ package body MLib.Tgt is
       pragma Unreferenced (Foreign);
       pragma Unreferenced (Afiles);
       pragma Unreferenced (Options);
+      pragma Unreferenced (Options_2);
       pragma Unreferenced (Interfaces);
       pragma Unreferenced (Lib_Filename);
       pragma Unreferenced (Lib_Dir);

@@ -103,6 +103,7 @@ package body MLib.Tgt is
       Foreign      : Argument_List;
       Afiles       : Argument_List;
       Options      : Argument_List;
+      Options_2    : Argument_List;
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
@@ -144,7 +145,8 @@ package body MLib.Tgt is
            (Output_File => Lib_File,
             Objects     => Ofiles,
             Options     => Options & Init_Fini.all,
-            Driver_Name => Driver_Name);
+            Driver_Name => Driver_Name,
+            Options_2   => Options_2);
 
       else
          Version_Arg := new String'("-Wl,-soname," & Lib_Version);
@@ -154,7 +156,8 @@ package body MLib.Tgt is
               (Output_File => Lib_Version,
                Objects     => Ofiles,
                Options     => Options & Version_Arg & Init_Fini.all,
-               Driver_Name => Driver_Name);
+               Driver_Name => Driver_Name,
+               Options_2   => Options_2);
             Symbolic_Link_Needed := Lib_Version /= Lib_File;
 
          else
@@ -162,7 +165,8 @@ package body MLib.Tgt is
               (Output_File => Lib_Dir & Directory_Separator & Lib_Version,
                Objects     => Ofiles,
                Options     => Options & Version_Arg & Init_Fini.all,
-               Driver_Name => Driver_Name);
+               Driver_Name => Driver_Name,
+               Options_2   => Options_2);
             Symbolic_Link_Needed :=
               Lib_Dir & Directory_Separator & Lib_Version /= Lib_File;
          end if;

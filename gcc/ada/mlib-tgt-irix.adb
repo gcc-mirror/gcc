@@ -100,6 +100,7 @@ package body MLib.Tgt is
       Foreign      : Argument_List;
       Afiles       : Argument_List;
       Options      : Argument_List;
+      Options_2    : Argument_List;
       Interfaces   : Argument_List;
       Lib_Filename : String;
       Lib_Dir      : String;
@@ -127,10 +128,10 @@ package body MLib.Tgt is
       --  After moving -lxxx to Options_2, N_Options up to index Options_Last
       --  will contain the Options to pass to MLib.Utl.Gcc.
 
-      Options_2      : Argument_List (Options'Range);
-      Options_2_Last : Natural := Options_2'First - 1;
-      --  Options_2 up to index Options_2_Last will contain the Options_2 to
-      --  pass to MLib.Utl.Gcc.
+      Real_Options_2 : Argument_List (1 .. Options'Length + Options_2'Length);
+      Real_Options_2_Last : Natural := 0;
+      --  Real_Options_2 up to index Real_Options_2_Last will contain the
+      --  Options_2 to pass to MLib.Utl.Gcc.
 
    begin
       if Opt.Verbose_Mode then
@@ -159,8 +160,8 @@ package body MLib.Tgt is
             if Arg'Length > 2
               and then Arg (Arg'First .. Arg'First + 1) = "-l"
             then
-               Options_2_Last := Options_2_Last + 1;
-               Options_2 (Options_2_Last) := Arg;
+               Real_Options_2_Last := Real_Options_2_Last + 1;
+               Real_Options_2 (Real_Options_2_Last) := Arg;
                N_Options (Index .. Options_Last - 1) :=
                  N_Options (Index + 1 .. Options_Last);
                Options_Last := Options_Last - 1;
@@ -171,6 +172,13 @@ package body MLib.Tgt is
          end loop;
       end;
 
+      --  Add to Real_Options_2 the argument Options_2
+
+      Real_Options_2
+        (Real_Options_2_Last + 1 .. Real_Options_2_Last + Options_2'Length) :=
+        Options_2;
+      Real_Options_2_Last := Real_Options_2_Last + Options_2'Length;
+
       if Lib_Version = "" then
          MLib.Utl.Gcc
            (Output_File => Lib_File,
@@ -178,7 +186,7 @@ package body MLib.Tgt is
             Options     => N_Options (N_Options'First .. Options_Last) &
                            Init_Fini.all,
             Driver_Name => Driver_Name,
-            Options_2   => Options_2 (Options_2'First .. Options_2_Last));
+            Options_2   => Real_Options_2 (1 .. Real_Options_2_Last));
 
       else
          Version_Arg := new String'("-Wl,-soname," & Lib_Version);
@@ -190,7 +198,7 @@ package body MLib.Tgt is
                Options     => N_Options (N_Options'First .. Options_Last) &
                               Version_Arg & Init_Fini.all,
                Driver_Name => Driver_Name,
-               Options_2   => Options_2 (Options_2'First .. Options_2_Last));
+               Options_2   => Real_Options_2 (1 .. Real_Options_2_Last));
             Symbolic_Link_Needed := Lib_Version /= Lib_File;
 
          else
@@ -200,7 +208,7 @@ package body MLib.Tgt is
                Options     => N_Options (N_Options'First .. Options_Last) &
                               Version_Arg & Init_Fini.all,
                Driver_Name => Driver_Name,
-               Options_2   => Options_2 (Options_2'First .. Options_2_Last));
+               Options_2   => Real_Options_2 (1 .. Real_Options_2_Last));
             Symbolic_Link_Needed :=
               Lib_Dir & Directory_Separator & Lib_Version /= Lib_File;
          end if;
