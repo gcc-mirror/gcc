@@ -40,8 +40,8 @@ void test03()
   for (int i = 0; i < 256; ++i)
     maskdata[i] = std::ctype_base::alpha;
   std::ctype<char>* f = new std::ctype<char>(maskdata);
-  std::locale global;
-  std::locale loc(global, f);
+  std::locale loc_c = std::locale::classic();
+  std::locale loc(loc_c, f);
   for (int i = 0; i < 256; ++i) 
     {
       char_type ch = i;
