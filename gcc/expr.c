@@ -8067,8 +8067,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	tree lhs = TREE_OPERAND (exp, 0);
 	tree rhs = TREE_OPERAND (exp, 1);
 
-	temp = 0;
-
 	gcc_assert (ignore);
 
 	/* Check for |= or &= of a bitfield of size one into another bitfield
@@ -8102,9 +8100,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    return const0_rtx;
 	  }
 
-	temp = expand_assignment (lhs, rhs, 0);
+	expand_assignment (lhs, rhs, 0);
 
-	return temp;
+	return const0_rtx;
       }
 
     case RETURN_EXPR:

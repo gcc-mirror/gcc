@@ -1,3 +1,8 @@
+2004-10-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.c (expand_expr_real_1) <MODIFY_EXPR>: Remove
+	unnecessary assignments to temp.  Return const0_rtx.
+
 2004-10-19  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (sh5_schedule_saves): Fix typo.
