@@ -890,7 +890,7 @@ skip_comment (pfile, linep)
      cpp_reader *pfile;
      long *linep;
 {
-  int c;
+  int c = 0;
   while (PEEKC() == '\\' && PEEKN(1) == '\n')
     {
       if (linep)
@@ -1113,7 +1113,9 @@ handle_directive (pfile)
       break;
   }
 
-  if (! kt->command_reads_line)
+  if (kt->command_reads_line)
+    after_ident = 0;
+  else
     {
       /* Nonzero means do not delete comments within the directive.
          #define needs this when -traditional.  */
