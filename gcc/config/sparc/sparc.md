@@ -3212,8 +3212,8 @@
 ;; Be careful, fmovq and {st,ld}{x,q} do not exist when !arch64 so
 ;; we must split them all.  :-(
 (define_insn "*movtf_insn_sp32"
-  [(set (match_operand:TF 0 "general_operand" "=e,m,U,o,e,r,r,o")
-	(match_operand:TF 1 "input_operand"    "m,e,o,U,e,r,o,r"))]
+  [(set (match_operand:TF 0 "general_operand" "=e,o,U,o,e,r,r,o")
+	(match_operand:TF 1 "input_operand"    "o,e,o,U,e,r,o,r"))]
   "TARGET_FPU
    && ! TARGET_ARCH64
    && (register_operand (operands[0], TFmode)
