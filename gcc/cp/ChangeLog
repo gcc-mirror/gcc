@@ -1,3 +1,13 @@
+2000-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (call.o): Depend on $(EXPR_H).
+
+	* call.c: Include "expr.h".
+
+	* class.c (dump_class_hierarchy): Add prototype.
+
+	* search.c (dfs_get_pure_virtuals): Likewise.
+
 2000-02-1  Ulrich Drepper  <drepper@redhat.com>
 
 	* parse.y (simple_stmt): Allow :: token in asm parameter list.

@@ -262,7 +262,7 @@ typeck.o : typeck.c $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
 class.o : class.c $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../toplev.h $(RTL_H)
 call.o : call.c $(CXX_TREE_H) $(srcdir)/../flags.h \
-  $(srcdir)/../toplev.h $(RTL_H)
+  $(srcdir)/../toplev.h $(RTL_H) $(EXPR_H)
 friend.o : friend.c $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
   $(srcdir)/../toplev.h
 init.o : init.c $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \

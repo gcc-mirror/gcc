@@ -150,6 +150,7 @@ static tree dfs_find_final_overrider PARAMS ((tree, void *));
 static tree find_final_overrider PARAMS ((tree, tree, tree));
 static tree dfs_find_base PARAMS ((tree, void *));
 static int make_new_vtable PARAMS ((tree, tree));
+extern void dump_class_hierarchy PARAMS ((tree, int));
 
 /* Variables shared between class.c and call.c.  */
 

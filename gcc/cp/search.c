@@ -147,6 +147,7 @@ static void fixup_all_virtual_upcast_offsets PARAMS ((tree, tree));
 static tree dfs_mark_primary_bases PARAMS ((tree, void *));
 static tree get_shared_vbase_if_not_primary PARAMS ((tree, void *));
 static tree dfs_find_vbase_instance PARAMS ((tree, void *));
+static tree dfs_get_pure_virtuals PARAMS ((tree, void *));
 
 /* Allocate a level of searching.  */
 
