@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,6 +53,7 @@ with Ada.Strings.Unbounded;         use Ada.Strings.Unbounded;
 with Ada.Strings.Unbounded.Text_IO; use Ada.Strings.Unbounded.Text_IO;
 with Ada.Strings.Maps;              use Ada.Strings.Maps;
 with Ada.Strings.Maps.Constants;    use Ada.Strings.Maps.Constants;
+with Ada.Streams.Stream_IO;         use Ada.Streams.Stream_IO;
 with Ada.Text_IO;                   use Ada.Text_IO;
 
 with GNAT.Spitbol;                  use GNAT.Spitbol;
@@ -76,7 +77,6 @@ procedure XNmake is
    Synonym    : VString := Nul;
    X          : VString := Nul;
 
-   Lineno : Natural;
    NWidth : Natural;
 
    FileS : VString := V ("nmake.ads");
@@ -86,10 +86,12 @@ procedure XNmake is
    Given_File : VString := Nul;
    --  File name given by command line argument
 
-   InS,  InT  : File_Type;
-   OutS, OutB : File_Type;
+   subtype Sfile is Ada.Streams.Stream_IO.File_Type;
 
-   wsp   : Pattern := Span (' ' & ASCII.HT);
+   InS,  InT  : Ada.Text_IO.File_Type;
+   OutS, OutB : Sfile;
+
+   wsp : Pattern := Span (' ' & ASCII.HT);
 
    Body_Only : Pattern := BreakX (' ') * X & Span (' ') & "--  body only";
    Spec_Only : Pattern := BreakX (' ') * X & Span (' ') & "--  spec only";
@@ -129,6 +131,10 @@ procedure XNmake is
    V_List_Id   : constant VString := V ("List_Id");
    V_Elist_Id  : constant VString := V ("Elist_Id");
    V_Boolean   : constant VString := V ("Boolean");
+
+   procedure Put_Line (F : Sfile; S : String);
+   procedure Put_Line (F : Sfile; S : VString);
+   --  Local version of Put_Line ensures Unix style line endings
 
    procedure WriteS  (S : String);
    procedure WriteB  (S : String);
@@ -188,10 +194,20 @@ procedure XNmake is
       end if;
    end WriteS;
 
+   procedure Put_Line (F : Sfile; S : String) is
+   begin
+      String'Write (Stream (F), S);
+      Character'Write (Stream (F), ASCII.LF);
+   end Put_Line;
+
+   procedure Put_Line (F : Sfile; S : VString) is
+   begin
+      Put_Line (F, To_String (S));
+   end Put_Line;
+
 --  Start of processing for XNmake
 
 begin
-   Lineno := 0;
    NWidth := 28;
    Anchored_Mode := True;
 
