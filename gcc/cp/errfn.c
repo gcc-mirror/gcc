@@ -22,13 +22,18 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "tree.h"
+#ifdef __STDC__
+#include <stdarg.h>
+#else
+#include <varargs.h>
+#endif
 
 /* cp_printer is the type of a function which converts an argument into
    a string for digestion by printf.  The cp_printer function should deal
    with all memory management; the functions in this file will not free
    the char*s returned.  See error.c for an example use of this code.  */
 
-typedef char* cp_printer PROTO((HOST_WIDE_INT, int));
+typedef char* cp_printer PROTO((tree, int));
 extern cp_printer * cp_printers[256];
 
 /* Whether or not we should try to be quiet for errors and warnings; this is
@@ -43,184 +48,221 @@ extern int   cp_line_of PROTO((tree));
 
 #define STRDUP(f) (ap = (char *) alloca (strlen (f) +1), strcpy (ap, (f)), ap)
 
-#define NARGS 5
-#define arglist a1, a2, a3, a4, a5
-#define arglist_dcl HOST_WIDE_INT a1, a2, a3, a4, a5;
-#define ARGSINIT \
-  args[0] = a1; args[1] = a2; args[2] = a3; args[3] = a4; args[4] = a5;
-#define ARGSLIST args[0], args[1], args[2], args[3], args[4]
+/* This function supports only `%s', `%d', and the C++ print codes.  */
 
+#ifdef __STDC__
 static void
-cp_thing (errfn, atarg1, format, arglist)
+cp_thing (errorfn *errfn, int atarg1, const char *format, va_list ap)
+#else
+static void
+cp_thing (errfn, atarg1, format, ap)
      errorfn *errfn;
      int atarg1;
-     char *format;
-     arglist_dcl
+     const char *format;
+     va_list ap;
+#endif
 {
-  char *fmt;
-  char *f;
-  char *ap;
-  int arg;
-  HOST_WIDE_INT atarg = atarg1 ? a1 : 0;
-  HOST_WIDE_INT args[NARGS];
-  ARGSINIT
+  static char *buf;
+  static long buflen;
+  int nargs = 0;
+  long len;
+  long offset;
+  const char *f;
+  tree atarg = 0;
 
-  fmt = STRDUP(format);
-  
-  for (f = fmt, arg = 0; *f; ++f)
+  len = strlen (format) + 1;
+  if (len > buflen)
+    {
+      buflen = len;
+      buf = xmalloc (buflen);
+    }
+  offset = 0;
+
+  for (f = format; *f; ++f)
     {
       cp_printer * function;
       int alternate;
       int maybe_here;
       
       /* ignore text */
-      if (*f != '%') continue;
+      if (*f != '%')
+	{
+	  buf[offset++] = *f;
+	  continue;
+	}
 
       ++f;
 
       alternate = 0;
       maybe_here = 0;
 
-      /* ignore most flags */
-      while (*f == ' ' || *f == '-' || *f == '+' || *f == '#')
+      /* Check for '+' and '#' (in that order). */
+      if (*f == '+')
 	{
-	  if (*f == '+')
-	    maybe_here = 1;
-	  else if (*f == '#')
-	    alternate = 1;
+	  maybe_here = 1;
+	  ++f;
+	}
+      if (*f == '#')
+	{
+	  alternate = 1;
 	  ++f;
 	}
 
-      /* ignore field width */
-      if (*f == '*')
-	{
-	  ++f;
-	  ++arg;
-	}
-      else
-	while (isdigit (*f))
-	  ++f;
-
-      /* ignore precision */
-      if (*f == '.')
-	{
-	  ++f;
-	  if (*f == '*')
-	    {
-	      ++f;
-	      ++arg;
-	    }
-	  else
-	    while (isdigit (*f))
-	      ++f;
-	}
-
-      /* ignore "long" */
-      if (*f == 'l')
-	++f;
+      /* no field width or precision */
 
       function = cp_printers[(int)*f];
 
-      if (function)
+      if (function || *f == 's')
 	{
 	  char *p;
+	  int plen;
 
-	  if (arg >= NARGS) abort ();
-	  
-	  if (maybe_here && atarg1)
-	    atarg = args[arg];
+	  if (*f == 's')
+	    {
+	      p = va_arg (ap, char *);
+	      nargs++;
+	    }
+	  else
+	    {
+	      tree t = va_arg (ap, tree);
+	      nargs++;
 
-	  /* Must use a temporary to avoid calling *function twice */
-	  p = (*function) (args[arg], alternate);
-	  args[arg] = (HOST_WIDE_INT) STRDUP(p);
-	  *f = 's';
+	      /* This indicates that ATARG comes from a different
+		 location than normal.  */
+	      if (maybe_here && atarg1)
+		atarg = t;
+
+	      /* If atarg1 is set and this is the first argument, then
+		 set ATARG appropriately.  */
+	      if (atarg1 && nargs == 1)
+		atarg = t;
+
+	      p = (*function) (t, alternate);
+	    }
+
+	  plen = strlen (p);
+	  len += plen;
+	  if (len > buflen)
+	    {
+	      buflen = len;
+	      buf = xrealloc (buf, len);
+	    }
+	  strcpy (buf + offset, p);
+	  offset += plen;
 	}
-
-      ++arg;			/* Assume valid format string */
-
+      else
+	{
+	  if (*f != 'd')
+	    abort ();
+	  len += HOST_BITS_PER_INT / 2;
+	  if (len > buflen)
+	    {
+	      buflen = len;
+	      buf = xmalloc (len);
+	    }
+	  sprintf (buf + offset, "%d", va_arg (ap, int));
+	  nargs++;
+	  offset += strlen (buf + offset);
+	  /* With an ANSI C library one could write
+	     out += sprintf (...); */
+	}
     }
+  buf[offset] = '\0';
+
+  /* If ATARG1 is set, but we haven't extracted any arguments, then
+     extract one tree argument for ATARG.  */  
+  if (nargs == 0 && atarg1)
+    atarg = va_arg (ap, tree);
 
   if (atarg)
     {
-      char *file = cp_file_of ((tree) atarg);
-      int   line = cp_line_of ((tree) atarg);
-      (*errfn) (file, line, fmt, ARGSLIST);
+      char *file = cp_file_of (atarg);
+      int   line = cp_line_of (atarg);
+      (*errfn) (file, line, buf);
     }
   else
-    (*errfn) (fmt, ARGSLIST);
+    (*errfn) (buf);
 
 }
 
-void
-cp_error (format, arglist)
-     char *format;
-     arglist_dcl
+#ifdef __STDC__
+#define DECLARE(name) void name (const char *format, ...)
+#define INIT va_start (ap, format)
+#else
+#define DECLARE(name) void name (format, va_alist) char *format; va_dcl
+#define INIT va_start (ap)
+#endif
+
+DECLARE (cp_error)
 {
   extern errorfn error;
+  va_list ap;
+  INIT;
   if (! cp_silent)
-    cp_thing (error, 0, format, arglist);
+    cp_thing (error, 0, format, ap);
+  va_end (ap);
 }
 
-void
-cp_warning (format, arglist)
-     char *format;
-     arglist_dcl
+DECLARE (cp_warning)
 {
   extern errorfn warning;
+  va_list ap;
+  INIT;
   if (! cp_silent)
-    cp_thing (warning, 0, format, arglist);
+    cp_thing (warning, 0, format, ap);
+  va_end (ap);
 }
 
-void
-cp_pedwarn (format, arglist)
-     char *format;
-     arglist_dcl
+DECLARE (cp_pedwarn)
 {
+  va_list ap;
+  INIT;
   if (! cp_silent)
-    cp_thing ((errorfn *) pedwarn, 0, format, arglist);
+    cp_thing ((errorfn *) pedwarn, 0, format, ap);
+  va_end (ap);
 }
 
-void
-cp_compiler_error (format, arglist)
-     char *format;
-     arglist_dcl
+DECLARE (cp_compiler_error)
 {
   extern errorfn compiler_error;
+  va_list ap;
+  INIT;
   if (! cp_silent)
-    cp_thing (compiler_error, 0, format, arglist);
+    cp_thing (compiler_error, 0, format, ap);
+  va_end (ap);
 }
 
-void
-cp_sprintf (format, arglist)
-     char *format;
-     arglist_dcl
+DECLARE (cp_sprintf)
 {
-  cp_thing ((errorfn *) sprintf, 0, format, arglist);
+  va_list ap;
+  INIT;
+  cp_thing ((errorfn *) sprintf, 0, format, ap);
+  va_end (ap);
 }
 
-void
-cp_error_at (format, arglist)
-     char *format;
-     arglist_dcl
+DECLARE (cp_error_at)
 {
+  va_list ap;
+  INIT;
   if (! cp_silent)
-    cp_thing ((errorfn *) error_with_file_and_line, 1, format, arglist);
+    cp_thing ((errorfn *) error_with_file_and_line, 1, format, ap);
+  va_end (ap);
 }
 
-void
-cp_warning_at (format, arglist)
-     char *format;
-     arglist_dcl
+DECLARE (cp_warning_at)
 {
+  va_list ap;
+  INIT;
   if (! cp_silent)
-    cp_thing ((errorfn *) warning_with_file_and_line, 1, format, arglist);
+    cp_thing ((errorfn *) warning_with_file_and_line, 1, format, ap);
+  va_end (ap);
 }
 
-void
-cp_pedwarn_at (format, arglist)
-     char *format;
-     arglist_dcl
+DECLARE (cp_pedwarn_at)
 {
+  va_list ap;
+  INIT;
   if (! cp_silent)
-    cp_thing ((errorfn *) pedwarn_with_file_and_line, 1, format, arglist);
+    cp_thing ((errorfn *) pedwarn_with_file_and_line, 1, format, ap);
+  va_end (ap);
 }
