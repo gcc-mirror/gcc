@@ -1,3 +1,14 @@
+2001-08-31  Per Bothner  <per@bothner.com>
+
+	* java/lang/ClassLoader.java (system):  Remove static field.
+	(getSystemClassLoader):  Get gnu.gcj.runtime.VMClassLoader.instance
+	directly instead of using it to set the system field.
+	(loadClass):  Use VMClassLoader.instance instead of system field.
+	(findSystemClass):   Similar.
+	* prims.cc (_Jv_RunMain):  Clear VMClassLoader::instance rather
+	than ClassLoader::system which no longer exists.
+	* java/lang/natClassLoader.java (_Jv_FindClass):  Simplify.
+
 2001-08-31  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/BufferedReader.java, java/io/ObjectInput.java,

@@ -64,6 +64,7 @@ details.  */
 #include <java/lang/reflect/Modifier.h>
 #include <java/io/PrintStream.h>
 #include <java/lang/UnsatisfiedLinkError.h>
+#include <gnu/gcj/runtime/VMClassLoader.h>
 
 #ifdef USE_LTDL
 #include <ltdl.h>
@@ -921,7 +922,7 @@ _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv,
 	  // jar file only.  The easiest way to do this is to lose our
 	  // reference to the previous classloader.
 	  _Jv_Jar_Class_Path = strdup (name);
-	  java::lang::ClassLoader::system = NULL;
+	  gnu::gcj::runtime::VMClassLoader::instance = NULL;
 	}
     }
   catch (java::lang::Throwable *t)
