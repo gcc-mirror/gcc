@@ -1,3 +1,24 @@
+2004-02-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11326
+	* c-common.c (flag_abi_version): Remove.
+	* c-common.h (flag_abi_version): Likewise.
+	* c-opts.c (c_common_handle_option): Remove OPT_fabi_version case.
+	* c.opt (fabi-version): Remove.
+	* calls.c (expand_call): Always pass a function type to
+	struct_value_rtx.  Use convert_memory_address.
+	* common.opt (fabi-version): Add it.
+	* flags.h (flag_abi_version): Likewise.
+	(abi_version_at_least): New macro.
+	* opts.c (common_handle_option): Add OPT_fabi_version.
+	* toplev.c (flag_abi_version): Define it.
+	* config/ia64/ia64.h (STRUCT_VALUE_REGNUM): Remove.
+	* config/ia64/ia64.c (TARGET_STRUCT_VALUE_RTX): Define it.
+	(ia64_struct_retval_addr_is_first_parm_p):
+	New function.
+	(ia64_output_mi_thunk): Use it.
+	(ia64_struct_value_rtx): New function.
+
 2004-02-18  Alan Modra  <amodra@bigpond.net.au>
 
 	PR optimization/14119

@@ -214,12 +214,6 @@ struct diagnostic_context;
 
 #endif
 
-/* Returns TRUE if generated code should match ABI version N or
-   greater is in use.  */
-
-#define abi_version_at_least(N) \
-  (flag_abi_version == 0 || flag_abi_version >= (N))
-
 
 /* Language-dependent contents of an identifier.  */
 

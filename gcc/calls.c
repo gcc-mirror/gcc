@@ -2080,6 +2080,8 @@ expand_call (tree exp, rtx target, int ignore)
   /* Declaration of the function being called,
      or 0 if the function is computed (not known by name).  */
   tree fndecl = 0;
+  /* The type of the function being called.  */
+  tree fntype;
   rtx insn;
   int try_tail_call = 1;
   int try_tail_recursion = 1;
@@ -2188,6 +2190,7 @@ expand_call (tree exp, rtx target, int ignore)
   fndecl = get_callee_fndecl (exp);
   if (fndecl)
     {
+      fntype = TREE_TYPE (fndecl);
       if (!flag_no_inline
 	  && fndecl != current_function_decl
 	  && DECL_INLINE (fndecl)
@@ -2223,15 +2226,15 @@ expand_call (tree exp, rtx target, int ignore)
      attributes set in the type.  */
   else
     {
+      fntype = TREE_TYPE (TREE_TYPE (p));
       if (ignore
-	  && lookup_attribute ("warn_unused_result",
-			       TYPE_ATTRIBUTES (TREE_TYPE (TREE_TYPE (p)))))
+	  && lookup_attribute ("warn_unused_result", TYPE_ATTRIBUTES (fntype)))
 	warning ("ignoring return value of function "
 		 "declared with attribute warn_unused_result");
-      flags |= flags_from_decl_or_type (TREE_TYPE (TREE_TYPE (p)));
+      flags |= flags_from_decl_or_type (fntype);
     }
 
-  struct_value = targetm.calls.struct_value_rtx (fndecl ? TREE_TYPE (fndecl) : 0, 0);
+  struct_value = targetm.calls.struct_value_rtx (fntype, 0);
 
   /* Warn if this value is an aggregate type,
      regardless of which calling convention we are using for it.  */
@@ -2385,7 +2388,8 @@ expand_call (tree exp, rtx target, int ignore)
 		  || (ACCUMULATE_OUTGOING_ARGS
 		      && stack_arg_under_construction
 		      && structure_value_addr == virtual_outgoing_args_rtx)
-		  ? copy_addr_to_reg (structure_value_addr)
+		  ? copy_addr_to_reg (convert_memory_address 
+				      (Pmode, structure_value_addr))
 		  : structure_value_addr);
 
       actparms

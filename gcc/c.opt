@@ -411,9 +411,6 @@ d
 C ObjC C++ ObjC++ Joined
 ; Documented in common.opt.  FIXME - what about -dI, -dD, -dN and -dD?
 
-fabi-version=
-C++ ObjC++ Joined UInteger
-
 faccess-control
 C++ ObjC++
 Enforce class member access control semantics

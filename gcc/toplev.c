@@ -999,6 +999,23 @@ int flag_evaluation_order = 0;
 /* Add or remove a leading underscore from user symbols.  */
 int flag_leading_underscore = -1;
 
+/*  The version of the C++ ABI in use.  The following values are
+    allowed:
+
+    0: The version of the ABI believed most conformant with the
+       C++ ABI specification.  This ABI may change as bugs are
+       discovered and fixed.  Therefore, 0 will not necessarily
+       indicate the same ABI in different versions of G++.
+
+    1: The version of the ABI first used in G++ 3.2.
+
+    2: The version of the ABI first used in G++ 3.4.
+
+    Additional positive integers will be assigned as new versions of
+    the ABI become the default version of the ABI.  */
+
+int flag_abi_version = 2;
+
 /* The user symbol prefix after having resolved same.  */
 const char *user_label_prefix;
 

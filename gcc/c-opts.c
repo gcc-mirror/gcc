@@ -692,10 +692,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       warning ("switch \"%s\" is no longer supported", option->opt_text);
       break;
 
-    case OPT_fabi_version_:
-      flag_abi_version = value;
-      break;
-
     case OPT_faccess_control:
       flag_access_control = value;
       break;

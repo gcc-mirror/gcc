@@ -1445,11 +1445,6 @@ do {									\
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
-/* If the structure value address is passed in a register, then
-   `STRUCT_VALUE_REGNUM' should be the number of that register.  */
-
-#define STRUCT_VALUE_REGNUM GR_REG (8)
-
 
 /* Caller-Saves Register Allocation */
 

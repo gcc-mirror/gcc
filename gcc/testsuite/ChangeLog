@@ -1,3 +1,8 @@
+2004-02-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11326
+	* g++.dg/abi/structret1.C: New test.
+
 2004-02-17  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/20040217-1.c: New test.
