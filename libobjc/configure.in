@@ -90,17 +90,10 @@ AC_HEADER_STDC
 
 # Determine the name of the GCC thread file.
 
-dir=`pwd`
-if test x"${with_multisubdir}" = "x" ; then
-  gccobjdir=`echo $dir/../../gcc`
-else
-  gccobjdir=`echo $dir | sed -e s:${with_multisubdir}::`/../../gcc
-fi
-
 AC_CACHE_CHECK([for thread file],objc_cv_thread_file,
-[if test -f $gccobjdir/Makefile
+[if test -f "$r"/gcc/Makefile
 then
-  objc_cv_thread_file=`grep \^GCC_THREAD_FILE $gccobjdir/Makefile | awk -F= '{ print $2 }'`
+  objc_cv_thread_file=`grep \^GCC_THREAD_FILE "$r"/gcc/Makefile | awk -F= '{ print $2 }'`
 else
   AC_MSG_ERROR([not found])
 fi])
