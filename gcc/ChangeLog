@@ -1,4 +1,3 @@
-
 Wed May  6 22:32:37 CDT 1998 Robert Lipe  <robertl@dgii.com>
 
 	* Makefile.in (dwarfout.o) Add toplev.h dependency.
@@ -33,6 +32,9 @@ Wed May  6 15:51:39 1998  Jim Wilson  <wilson@cygnus.com>
 	* expr.c (target_temp_slot_level): Delete duplicate definition.
 
 Wed May  6 16:46:01 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* stmt.c (mark_seen_cases): Make it have external linkage again.
+	* expr.h (mark_seen_cases): Add declaration.
 
 	* haifa-sched.c (print_value, case SUBREG): Fix typo.
 

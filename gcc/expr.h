@@ -949,3 +949,6 @@ extern void init_all_optabs			PROTO ((void));
 extern void init_mov_optab			PROTO ((void));
 extern void do_jump_by_parts_greater_rtx	PROTO ((enum machine_mode, int,
 							rtx, rtx, rtx, rtx));
+
+extern void mark_seen_cases			PROTO ((tree, unsigned char *,
+							long, int));
