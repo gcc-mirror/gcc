@@ -2,4 +2,4 @@ RANLIB = true
 # You may need this if you don't have bison.
 # BISON = yacc -Sm10400
 
-X11_EXTRA_LIBS = -lsocket -lm -lintl -lmalloc
+X11_EXTRA_LIBS = -lsocket

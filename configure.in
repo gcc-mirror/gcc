@@ -473,7 +473,7 @@ case "${target}" in
   i[3456]86-*-sco3.2v5*)
     # The linker does not yet know about weak symbols in COFF,
     # and is not configured to handle mixed ELF and COFF.
-    noconfigdirs="$noconfigdirs ld target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs ld target-libgloss"
     ;;
   i[3456]86-*-sco*)
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
