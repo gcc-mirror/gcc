@@ -1,3 +1,8 @@
+2002-03-08  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.h (SUBTARGET_CPP_SIZE_SPEC): Remove duplicate
+	defaults for MEABI.
+
 2002-03-08  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (rs6000_va_arg): Fix alignment for

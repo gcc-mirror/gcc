@@ -1126,7 +1126,7 @@ extern int mips_abi;
 %{mabi=o64:\
  %{!mgp64|!-mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
  %{mgp64:%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
-%{mabi=32|!mabi=*:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+%{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 %{mabi=meabi|!mabi=*: \
   %{mips3|mips4|mips5|mips64|mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
   %{!mips3:%{!mips4:%{!mips5:%{!mips64:%{!mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}}}}}} \
@@ -1203,7 +1203,7 @@ extern int mips_abi;
 %{mabi=o64:\
  %{mgp32|!-mlong64:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
  %{!mgp32:%{mlong64:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}} \
-%{mabi=32|!mabi=*:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
+%{mabi=32:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
 %{mabi=meabi|!mabi=*:\
   %{mips1|mips2|mips32|mlong32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
   %{!mips1:%{!mips2:%{!mips32:%{!mlong32:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int}}}}} \
