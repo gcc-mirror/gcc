@@ -281,6 +281,8 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
 
       if (GET_CODE (p) == REG)
 	parmdecl_map[REGNO (p)] = parms;
+      /* This flag is cleared later
+	 if the function ever modifies the value of the parm.  */
       TREE_READONLY (parms) = 1;
     }
 
