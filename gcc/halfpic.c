@@ -343,7 +343,7 @@ half_pic_ptr (operand)
   if (!p->pointer_p)
     {				/* first time, create pointer */
       obstack_grow (&half_pic_obstack, half_pic_prefix, half_pic_prefix_len);
-      obstack_grow (&half_pic_obstack, name, len);
+      obstack_grow (&half_pic_obstack, name, len+1);
 
       p->next      = half_pic_names;
       p->ref_name  = (char *) obstack_finish (&half_pic_obstack);
