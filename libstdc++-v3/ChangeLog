@@ -1,5 +1,10 @@
 2002-01-11  Phil Edwards  <pme@gcc.gnu.org>
 
+	* include/Makefile.am, include/Makefile.in (stamp-std):  Fix typo from
+	previous commit.
+
+2002-01-11  Phil Edwards  <pme@gcc.gnu.org>
+
 	* include/Makefile.am (std_headers):  Update list with new names.
 	(stamp-std):  Link to standardized name.
 	* include/Makefile.in:  Regenerate.
