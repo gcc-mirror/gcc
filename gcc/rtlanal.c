@@ -1930,6 +1930,17 @@ may_trap_p (x)
 	 certainly may trap.  */
       return 1;
 
+    case COMPARE:
+      /* Any floating comparison may trap.  */
+      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+	return 1;
+      /* But often the compare has some CC mode, so check operand
+	 modes as well.  */
+      if (GET_MODE_CLASS (GET_MODE (XEXP (x, 0))) == MODE_FLOAT
+	  || GET_MODE_CLASS (GET_MODE (XEXP (x, 1))) == MODE_FLOAT)
+	return 1;
+      break;
+
     default:
       /* Any floating arithmetic may trap.  */
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
