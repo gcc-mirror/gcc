@@ -1,3 +1,8 @@
+Wed Sep 14 10:17:27 1994  Michael I Bushnell  <mib@churchy.gnu.ai.mit.edu>
+
+	* g++.c: Include <sys/errno.h> in case `errno' is a macro
+	as permitted by ANSI C.
+
 Thu Aug 18 12:48:09 1994  Mike Stump  (mrs@cygnus.com)
 
 	* class.c (finish_struct): Move setting of CLASSTYPE_INTERFACE and
