@@ -1,5 +1,7 @@
 2003-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* opts.sh (POSIXLY_CORRECT): Unset it.
+
 	* tree.h (init_function_start): Remove filename and line paramters.
 	* function.c (init_function_start): Remove filename and line
 	parameters. Use DECL_SOURCE_LOCATION.
