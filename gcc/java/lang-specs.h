@@ -36,6 +36,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
     %{femit-class-file:%{!fsyntax-only:%e-femit-class-file should used along with -fsyntax-only}}\
     %{femit-class-files:%{!fsyntax-only:%e-femit-class-file should used along with -fsyntax-only}}\
     %{!E:jc1 %i %(jc1) %(cc1_options) %{+e*} %{I*}\
-             %{MD} %{MMD} %{M} %{MM} %{MA} %{MT*} %{MF*}\
+             %{MD:-MD_} %{MMD:-MMD_} %{M} %{MM} %{MA} %{MT*} %{MF*}\
              %{!fsyntax-only:%(invoke_as)}}", 0},
 
