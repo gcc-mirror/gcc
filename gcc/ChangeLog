@@ -1,3 +1,14 @@
+2003-06-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcse.c (compute_ld_motion_mems): Use INSN_P instead of its
+	definition.
+	(store_killed_in_insn): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+	* config/frv/frv.c (frv_final_prescan_insn): Likewise.
+	* config/m68hc11/m68hc11.c (dead_register_here): Likewise.
+	(m68hc11_reassign_regs): Likewise.
+	(m68hc11_reorg): Likewise.
+
 2003-06-28  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* diagnostic.c (output_integer_with_precision): New macro.
