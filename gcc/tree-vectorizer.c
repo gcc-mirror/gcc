@@ -1167,6 +1167,7 @@ new_stmt_vec_info (tree stmt, loop_vec_info loop_vinfo)
   STMT_VINFO_VEC_STMT (res) = NULL;
   STMT_VINFO_DATA_REF (res) = NULL;
   STMT_VINFO_MEMTAG (res) = NULL;
+  STMT_VINFO_SUBVARS (res) = NULL;
   STMT_VINFO_VECT_DR_BASE_ADDRESS (res) = NULL;
   STMT_VINFO_VECT_INIT_OFFSET (res) = NULL_TREE;
   STMT_VINFO_VECT_STEP (res) = NULL_TREE;

@@ -1880,7 +1880,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 	  tree scalar_type, vectype;	  
 	  tree base, offset, misalign, step, tag;
 	  bool base_aligned;
-	  subvar_t subvars;
+	  subvar_t subvars = NULL;
 
 	  /* Assumption: there exists a data-ref in stmt, if and only if 
              it has vuses/vdefs.  */
