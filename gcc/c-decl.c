@@ -74,6 +74,10 @@ enum decl_context
 #ifndef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 #endif
+
+#ifndef WINT_TYPE
+#define WINT_TYPE "unsigned int"
+#endif
 
 /* Do GC.  */
 int ggc_p = 1;
@@ -3036,6 +3040,8 @@ init_decl_processing ()
   wchar_type_size = TYPE_PRECISION (wchar_type_node);
   signed_wchar_type_node = signed_type (wchar_type_node);
   unsigned_wchar_type_node = unsigned_type (wchar_type_node);
+
+  wint_type_node = TREE_TYPE (IDENTIFIER_GLOBAL_VALUE (get_identifier (WINT_TYPE)));
 
   boolean_type_node = integer_type_node;
   boolean_true_node = integer_one_node;

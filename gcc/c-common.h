@@ -91,6 +91,7 @@ enum c_tree_index
     CTI_WCHAR_TYPE,
     CTI_SIGNED_WCHAR_TYPE,
     CTI_UNSIGNED_WCHAR_TYPE,
+    CTI_WINT_TYPE,
     CTI_WIDEST_INT_LIT_TYPE,
     CTI_WIDEST_UINT_LIT_TYPE,
 
@@ -122,6 +123,7 @@ enum c_tree_index
 #define wchar_type_node			c_global_trees[CTI_WCHAR_TYPE]
 #define signed_wchar_type_node		c_global_trees[CTI_SIGNED_WCHAR_TYPE]
 #define unsigned_wchar_type_node	c_global_trees[CTI_UNSIGNED_WCHAR_TYPE]
+#define wint_type_node			c_global_trees[CTI_WINT_TYPE]
 #define widest_integer_literal_type_node c_global_trees[CTI_WIDEST_INT_LIT_TYPE]
 #define widest_unsigned_literal_type_node c_global_trees[CTI_WIDEST_UINT_LIT_TYPE]
 
