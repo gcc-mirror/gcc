@@ -1,5 +1,11 @@
 2003-12-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	PR c++/10126
+	* pt.c (convert_nontype_argument): Handle default conversions
+	while converting a pointer to member function.
+
+2003-12-02  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
 	PR c++/12573
 	* pt.c (value_dependent_expression_p): Handle COMPONENT_REFs by
 	looking into them recursively.

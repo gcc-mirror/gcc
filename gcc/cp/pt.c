@@ -3440,8 +3440,9 @@ convert_nontype_argument (tree type, tree expr)
 	if (expr == error_mark_node)
 	  return error_mark_node;
 
-	my_friendly_assert (same_type_p (type, TREE_TYPE (expr)),
-			    0);
+	if (!same_type_p (type, TREE_TYPE (expr)))
+	  return error_mark_node;
+
 	return expr;
       }
       break;
