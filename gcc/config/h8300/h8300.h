@@ -570,10 +570,12 @@ enum reg_class {
    followed by "to".  Eliminations of the same "from" register are listed
    in order of preference.
 
-   We have two registers that can be eliminated on the h8300.  First, the
-   frame pointer register can often be eliminated in favor of the stack
-   pointer register.  Secondly, the argument pointer register can always be
-   eliminated; it is replaced with either the stack or frame pointer.  */
+   We have three registers that can be eliminated on the h8300.
+   First, the frame pointer register can often be eliminated in favor
+   of the stack pointer register.  Secondly, the argument pointer
+   register and the return address pointer register are always
+   eliminated; they are replaced with either the stack or frame
+   pointer.  */
 
 #define ELIMINABLE_REGS					\
 {{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},		\

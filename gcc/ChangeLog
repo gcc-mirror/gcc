@@ -1,5 +1,9 @@
 2003-11-27  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.h (ELIMINABLE_REGS): Update a coment.
+
+2003-11-27  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md: Give names to anonymous insns.
 
 2003-11-27  Kazu Hirata  <kazu@cs.umass.edu>
