@@ -1,3 +1,7 @@
+2005-03-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.warn/compare1.C: Run with -Wno-deprecated.
+
 2005-03-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* g77_intrinsics_funcs.f: New test.
