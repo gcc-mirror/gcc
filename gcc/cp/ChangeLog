@@ -1,3 +1,25 @@
+2004-07-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (finish_struct_methods): Remove unncessary code.
+	(add_implicitly_declared_members): Create declarations for default
+	constructors and copy constructors lazily.
+	* cp-tree.h (lang_type_class): Remove lazy_default_ctor and
+	lazy_copy_ctor.
+	(CLASSTYPE_LAZY_DEFAULT_CTOR): New macro.
+	(CLASSTYPE_LAZY_COPY_CTOR): Likewise.
+	* decl2.c (check_classfn): Robustify.
+	(locate_dtor): Handle empty CLASSTYPE_METHOD_VEC.
+	(locate_ctor): Handle lazy default constructors.
+	(locate_copy): Handle lazy copy constructors.
+	(implicitly_declare_fn): Make sure we're looking at the
+	TYPE_MAIN_VARIANT for a class before creating functions.  Don't
+	set TYPE_HAS_CONSTRUCTOR.
+	(lazily_declare_fn): New function.
+	* name-lookup.c (constructor_name_full): Simplify.
+	* search.c (lookup_fnfields_1): Lazily create methods, as
+	necessary.
+	(lookup_for_overrides): Handle empty CLASSTYPE_METHOD_VEC.
+
 2004-07-16  Steven Bosscher  <stevenb@suse.de>
 
 	* cp-tree.h (struct lang_type): Don't have three GTY options on a

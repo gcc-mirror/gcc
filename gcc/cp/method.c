@@ -825,7 +825,9 @@ synthesize_exception_spec (tree type, tree (*extractor) (tree, void*),
 static tree
 locate_dtor (tree type, void *client ATTRIBUTE_UNUSED)
 {
-  return CLASSTYPE_DESTRUCTORS (type);
+  return (CLASSTYPE_METHOD_VEC (type) 
+	  ? CLASSTYPE_DESTRUCTORS (type) 
+	  : NULL_TREE);
 }
 
 /* Locate the default ctor of TYPE.  */
@@ -837,6 +839,11 @@ locate_ctor (tree type, void *client ATTRIBUTE_UNUSED)
   
   if (!TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
     return NULL_TREE;
+
+  /* Call lookup_fnfields_1 to create the constructor declarations, if
+     necessary.  */
+  if (CLASSTYPE_LAZY_DEFAULT_CTOR (type))
+    return lazily_declare_fn (sfk_constructor, type);
 
   for (fns = CLASSTYPE_CONSTRUCTORS (type); fns; fns = OVL_NEXT (fns))
     {
@@ -864,21 +871,27 @@ locate_copy (tree type, void *client_)
 {
   struct copy_data *client = (struct copy_data *)client_;
   tree fns;
-  int ix = -1;
   tree best = NULL_TREE;
   bool excess_p = false;
   
   if (client->name)
     {
-      if (TYPE_HAS_ASSIGN_REF (type))
-        ix = lookup_fnfields_1 (type, client->name);
+      int ix;
+      ix = lookup_fnfields_1 (type, client->name);
+      if (ix < 0)
+	return NULL_TREE;
+      fns = VEC_index (tree, CLASSTYPE_METHOD_VEC (type), ix);
     }
   else if (TYPE_HAS_INIT_REF (type))
-    ix = CLASSTYPE_CONSTRUCTOR_SLOT;
-  if (ix < 0)
+    {
+      /* If construction of the copy constructor was postponed, create
+	 it now.  */
+      if (CLASSTYPE_LAZY_COPY_CTOR (type))
+	lazily_declare_fn (sfk_copy_constructor, type);
+      fns = CLASSTYPE_CONSTRUCTORS (type);
+    }
+  else
     return NULL_TREE;
-  fns = VEC_index (tree, CLASSTYPE_METHOD_VEC (type), ix);
-  
   for (; fns; fns = OVL_NEXT (fns))
     {
       tree fn = OVL_CURRENT (fns);
@@ -927,6 +940,8 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   tree rhs_parm_type = NULL_TREE;
   tree name;
 
+  type = TYPE_MAIN_VARIANT (type);
+
   switch (kind)
     {
     case sfk_destructor:
@@ -939,12 +954,9 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
       /* Default constructor.  */
       name = constructor_name (type);
       raises = synthesize_exception_spec (type, &locate_ctor, 0);
-      TYPE_HAS_CONSTRUCTOR (type) = 1;
       break;
 
     case sfk_copy_constructor:
-      TYPE_HAS_CONSTRUCTOR (type) = 1;
-      /* Fall through. */
     case sfk_assignment_operator:
     {
       struct copy_data data;
@@ -1016,6 +1028,47 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   if (TREE_USED (fn))
     abort ();
   
+  return fn;
+}
+
+/* Add an implicit declaration to TYPE for the kind of function
+   indicated by SFK.  Return the FUNCTION_DECL for the new implicit
+   declaration.  */
+
+tree
+lazily_declare_fn (special_function_kind sfk, tree type)
+{
+  tree fn;
+  bool const_p;
+
+  /* Figure out whether or not the argument has a const reference
+     type.  */
+  if (sfk == sfk_copy_constructor)
+    const_p = TYPE_HAS_CONST_INIT_REF (type);
+  else if (sfk == sfk_assignment_operator)
+    const_p = TYPE_HAS_CONST_ASSIGN_REF (type);
+  else
+    /* In this case, CONST_P will be ignored.  */
+    const_p = false;
+  /* Declare the function.  */
+  fn = implicitly_declare_fn (sfk, type, const_p);
+  /* Add it to CLASSTYPE_METHOD_VEC.  */
+  add_method (type, fn);
+  /* Add it to TYPE_METHODS.  */
+  TREE_CHAIN (fn) = TYPE_METHODS (type);
+  TYPE_METHODS (type) = fn;
+  maybe_add_class_template_decl_list (type, fn, /*friend_p=*/0);
+  if (sfk == sfk_constructor || sfk == sfk_copy_constructor)
+    {
+      /* Remember that the function has been created.  */
+      if (sfk == sfk_constructor)
+	CLASSTYPE_LAZY_DEFAULT_CTOR (type) = 0;
+      else
+	CLASSTYPE_LAZY_COPY_CTOR (type) = 0;
+      /* Create appropriate clones.  */
+      clone_function_decl (fn, /*update_method_vec=*/true);
+    }
+
   return fn;
 }
 

@@ -1794,12 +1794,7 @@ set_identifier_type_value (tree id, tree decl)
 tree
 constructor_name_full (tree type)
 {
-  type = TYPE_MAIN_VARIANT (type);
-  if (CLASS_TYPE_P (type) && TYPE_WAS_ANONYMOUS (type) 
-      && TYPE_HAS_CONSTRUCTOR (type))
-    return DECL_NAME (OVL_CURRENT (CLASSTYPE_CONSTRUCTORS (type)));
-  else
-    return TYPE_IDENTIFIER (type);
+  return TYPE_IDENTIFIER (TYPE_MAIN_VARIANT (type));
 }
 
 /* Return the name for the constructor (or destructor) for the

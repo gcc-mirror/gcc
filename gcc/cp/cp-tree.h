@@ -991,6 +991,8 @@ struct lang_type_class GTY(())
   unsigned ptrmemfunc_flag : 1;
   unsigned was_anonymous : 1;
 
+  unsigned lazy_default_ctor : 1;
+  unsigned lazy_copy_ctor : 1;
   unsigned has_const_init_ref : 1;
   unsigned has_complex_init_ref : 1;
   unsigned has_complex_assign_ref : 1;
@@ -1004,7 +1006,7 @@ struct lang_type_class GTY(())
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 11;
+  unsigned dummy : 9;
 
   tree primary_base;
   tree vfields;
@@ -1088,6 +1090,16 @@ struct lang_type GTY(())
    itself to other types.  */
 #define TYPE_HAS_CONVERSION(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->h.has_type_conversion)
+
+/* Nonzero means that NODE (a class type) has a default constructor --
+   but that it has not yet been declared.  */
+#define CLASSTYPE_LAZY_DEFAULT_CTOR(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->lazy_default_ctor)
+
+/* Nonzero means that NODE (a class type) has a copy constructor --
+   but that it has not yet been declared.  */
+#define CLASSTYPE_LAZY_COPY_CTOR(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->lazy_copy_ctor)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator=(X&).  */
 #define TYPE_HAS_ASSIGN_REF(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->has_assign_ref)
@@ -3884,6 +3896,7 @@ extern void finish_thunk (tree);
 extern void use_thunk (tree, bool);
 extern void synthesize_method (tree);
 extern tree implicitly_declare_fn (special_function_kind, tree, bool);
+extern tree lazily_declare_fn (special_function_kind, tree);
 extern tree skip_artificial_parms_for (tree, tree);
 
 /* In optimize.c */

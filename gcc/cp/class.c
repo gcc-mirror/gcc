@@ -1714,18 +1714,10 @@ finish_struct_methods (tree t)
   VEC(tree) *method_vec;
   int slot, len;
 
-  if (!TYPE_METHODS (t))
-    {
-      /* Clear these for safety; perhaps some parsing error could set
-	 these incorrectly.  */
-      TYPE_HAS_CONSTRUCTOR (t) = 0;
-      TYPE_HAS_DESTRUCTOR (t) = 0;
-      CLASSTYPE_METHOD_VEC (t) = NULL;
-      return;
-    }
-
   method_vec = CLASSTYPE_METHOD_VEC (t);
-  my_friendly_assert (method_vec, 19991215);
+  if (!method_vec)
+    return;
+
   len = VEC_length (tree, method_vec);
 
   /* First fill in entry 0 with the constructors, entry 1 with destructors,
@@ -2554,21 +2546,17 @@ add_implicitly_declared_members (tree t,
   /* Default constructor.  */
   if (! TYPE_HAS_CONSTRUCTOR (t) && ! cant_have_default_ctor)
     {
-      default_fn = implicitly_declare_fn (sfk_constructor, t, /*const_p=*/0);
-      TREE_CHAIN (default_fn) = implicit_fns;
-      implicit_fns = default_fn;
+      TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 1;
+      CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
     }
 
   /* Copy constructor.  */
   if (! TYPE_HAS_INIT_REF (t) && ! TYPE_FOR_JAVA (t))
     {
-      /* ARM 12.18: You get either X(X&) or X(const X&), but
-	 not both.  --Chip  */
-      default_fn 
-	= implicitly_declare_fn (sfk_copy_constructor, t,
-				 /*const_p=*/!cant_have_const_cctor);
-      TREE_CHAIN (default_fn) = implicit_fns;
-      implicit_fns = default_fn;
+      TYPE_HAS_INIT_REF (t) = 1;
+      TYPE_HAS_CONST_INIT_REF (t) = !cant_have_const_cctor;
+      CLASSTYPE_LAZY_COPY_CTOR (t) = 1;
+      TYPE_HAS_CONSTRUCTOR (t) = 1;
     }
 
   /* If there is no assignment operator, one will be created if and
