@@ -39,8 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #define EXPANSION(cache) \
   ((cache)->size * 2)
 
-void *__objc_xcalloc (size_t, size_t);
-
 cache_ptr
 hash_new (unsigned int size, hash_func_type hash_func,
 	  compare_func_type compare_func)
@@ -53,13 +51,13 @@ hash_new (unsigned int size, hash_func_type hash_func,
 
   /* Allocate the cache structure.  calloc insures
      its initialization for default values.  */
-  cache = (cache_ptr) __objc_xcalloc (1, sizeof (struct cache));
+  cache = (cache_ptr) objc_calloc (1, sizeof (struct cache));
   assert (cache);
 
   /* Allocate the array of buckets for the cache.
      calloc initializes all of the pointers to NULL.  */
   cache->node_table
-    = (node_ptr *) __objc_xcalloc (size, sizeof (node_ptr));
+    = (node_ptr *) objc_calloc (size, sizeof (node_ptr));
   assert (cache->node_table);
 
   cache->size  = size;
@@ -89,8 +87,8 @@ hash_delete (cache_ptr cache)
     hash_remove (cache, node->key);
 
   /* Release the array of nodes and the cache itself.  */
-  free (cache->node_table);
-  free (cache);
+  objc_free(cache->node_table);
+  objc_free(cache);
 }
 
 
@@ -98,7 +96,7 @@ void
 hash_add (cache_ptr *cachep, const void *key, void *value)
 {
   size_t indx = (*(*cachep)->hash_func)(*cachep, key);
-  node_ptr node = (node_ptr) __objc_xcalloc (1, sizeof (struct cache_node));
+  node_ptr node = (node_ptr) objc_calloc (1, sizeof (struct cache_node));
 
 
   assert (node);
@@ -171,7 +169,7 @@ hash_remove (cache_ptr cache, const void *key)
   /* Special case.  First element is the key/value pair to be removed.  */
   if ((*cache->compare_func)(node->key, key)) {
     cache->node_table[indx] = node->next;
-    free (node);
+    objc_free(node);
   } else {
 
     /* Otherwise, find the hash entry.  */
@@ -182,7 +180,7 @@ hash_remove (cache_ptr cache, const void *key)
 
       if ((*cache->compare_func)(node->key, key)) {
         prev->next = node->next, removed = YES;
-        free (node);
+        objc_free(node);
       } else
         prev = node, node = node->next;
     } while (!removed && node);
