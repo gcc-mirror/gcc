@@ -1,3 +1,8 @@
+2004-01-22  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* doc/invoke.texi (Optimize Options): Note that --param arguments
+	are subject to change without notice.
+
 2004-01-22  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config.gcc (mips-sgi-irix6*o32): Removed.
