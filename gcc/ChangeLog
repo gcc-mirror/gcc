@@ -1,3 +1,11 @@
+Tue Feb  2 19:48:29 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* (recombine_givs): Don't use a giv that's likely to be dead to
+	derive others.
+
+	* loop.c (recombine_givs): Fix test for lifetime overlaps / loop
+	wrap around when deriving givs.
+
 Mon Feb  1 20:00:40 1999  Richard Henderson  <rth@cygnus.com>
 
 	* recog.c (check_asm_operands): Treat indeterminate operand ok
