@@ -1,3 +1,31 @@
+2003-02-24  Sanjiv Kumar Gupta  <sanjivg@noida.hcltech.com>
+
+	* target-def.h (TARGET_SCHED_INIT_GLOBAL,
+	TARGET_SCHED_FINISH_GLOBAL): New macros.
+
+	* target.h (md_init_global, md_finish_global): Function
+	declarations corresponding to new target macros.
+
+	* haifa-sched.c (sched_init, sched_finish): Allow target to
+	call the new schedular hooks.
+
+	* flow.c (recompute_reg_usage): Add PROP_DEATH_NOTES flag in
+	call to update_life_info.
+
+	* config/sh/sh.h (OVERRIDE_OPTIONS): Re-enable
+	flag_schedule_insns for SH4.
+
+	* config/sh/sh.c (sh_md_init_global, sh_md_finish_global,
+	find_set_regmode_weight, find_insn_regmode_weight,
+	find_regmode_weight), sh_md_init, sh_dfa_new_cycle,
+	sh_variable_issue, high_pressure, ready_reorder,
+	rank_for_reorder, swap_reorder, sh_reorder, sh_reorder2): New
+	functions used to throttle the insn movement in first
+	scheduling pass for SH.
+
+	* gcc/doc/tm.texi: Document TARGET_SCHED_INIT_GLOBAL and
+	TARGET_SCHED_FINISH_GLOBAL.
+
 2004-02-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	Implement FR-V FDPIC ABI support for frv-uclinux and frv-linux.

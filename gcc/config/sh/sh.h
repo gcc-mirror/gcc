@@ -516,7 +516,11 @@ do {									\
       /* Never run scheduling before reload, since that can		\
 	 break global alloc, and generates slower code anyway due	\
 	 to the pressure on R0.  */					\
-      flag_schedule_insns = 0;						\
+      /* Enable sched1 for SH4; ready queue will be reordered by	\
+	 the target hooks when pressure is high. We can not do this for \
+	 SH3 and lower as they give spill failures for R0.  */		\
+      if (!TARGET_HARD_SH4) 						\
+        flag_schedule_insns = 0;		 			\
     }									\
 									\
   if (align_loops == 0)							\
