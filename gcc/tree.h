@@ -1999,10 +1999,6 @@ enum ptrmemfunc_vbit_where_t
 
 #define NULL_TREE (tree) NULL
 
-/* Approximate positive square root of a host double.  This is for
-   statistical reports, not code generation.  */
-extern double approx_sqrt		PARAMS ((double));
-
 extern tree decl_assembler_name		PARAMS ((tree));
 
 /* Compute the number of bytes occupied by 'node'.  This routine only

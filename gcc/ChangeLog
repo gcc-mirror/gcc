@@ -1,5 +1,19 @@
 2003-06-19  Andreas Jaeger  <aj@suse.de>
 
+	* c-tree.h: Remove declaration of poplevel.
+
+	* tree.h: Remove declaration of approx_sqrt.
+
+	* c-lex.c: Remove redundant declaration of asm_out_file.
+
+	* flags.h: Remove declaration of warn_unknown_pragma and
+	main_input_filename.
+
+	* rtl.h: Remove functions from fold-const.c since they're already
+	declared in tree.h.
+
+	* regs.h: Remove redundant declaration of reg_names.
+
 	* bt-load.c (migrate_btr_defs): Correct printf arguments.
 
 	* protoize.c: Fix breakage from last patch.

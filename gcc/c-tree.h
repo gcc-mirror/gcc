@@ -175,7 +175,6 @@ extern int global_bindings_p			PARAMS ((void));
 extern int kept_level_p				PARAMS ((void));
 extern tree getdecls				PARAMS ((void));
 extern void pushlevel				PARAMS ((int));
-extern tree poplevel				PARAMS ((int,int, int));
 extern void insert_block			PARAMS ((tree));
 extern void set_block				PARAMS ((tree));
 extern tree pushdecl				PARAMS ((tree));

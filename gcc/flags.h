@@ -1,5 +1,6 @@
 /* Compilation switch flag definitions for GCC.
-   Copyright (C) 1987, 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2002
+   Copyright (C) 1987, 1988, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2002,
+   2003
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -21,9 +22,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifndef GCC_FLAGS_H
 #define GCC_FLAGS_H
-
-/* Name of the input .c file being compiled.  */
-extern const char *main_input_filename;
 
 enum debug_info_type
 {
@@ -113,14 +111,6 @@ extern int warn_inline;
 /* Nonzero to warn about variables used before they are initialized.  */
 
 extern int warn_uninitialized;
-
-/* Zero if unknown pragmas are ignored
-   One if the compiler should warn about an unknown pragma not in
-   a system include file.
-   Greater than one if the compiler should warn for all unknown
-   pragmas.  */
-
-extern int warn_unknown_pragmas;
 
 /* Nonzero means warn about all declarations which shadow others.  */
 

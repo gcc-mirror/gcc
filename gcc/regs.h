@@ -1,6 +1,6 @@
 /* Define per-register tables for data flow info and register allocation.
    Copyright (C) 1987, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -157,10 +157,6 @@ extern short *reg_renumber;
    saying whether that reg is ever used.  */
 
 extern char regs_ever_live[FIRST_PSEUDO_REGISTER];
-
-/* Vector indexed by hardware reg giving its name.  */
-
-extern const char * reg_names[FIRST_PSEUDO_REGISTER];
 
 /* For each hard register, the widest mode object that it can contain.
    This will be a MODE_INT mode if the register can hold integers.  Otherwise
