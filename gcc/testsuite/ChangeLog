@@ -1,3 +1,8 @@
+2004-07-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16518
+	* g++.dg/parse/mutable1.C: New test.
+	
 2004-07-13  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/16443

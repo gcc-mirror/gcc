@@ -1,5 +1,13 @@
 2004-07-13  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/16518
+	PR c++/16337
+	* decl.c (grokvardecl): Make declspecs parameter const.
+	(grokdeclarator): Likewise.  Adjust accordingly.
+	* decl.h (grokdeclarator): Adjust declaration.
+	* parser.c (cp_parser_init_declarator): Do not clear
+	decl_specifiers->attributes.
+
 	* cp-tree.h (lang_identifier): Remove class_value.
 	(IDENTIFIER_CLASS_VALUE): Remove.
 	(pop_class_decls): Likewise.
