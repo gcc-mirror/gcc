@@ -6703,7 +6703,7 @@ fold (expr)
 		}
 
 	    else if (TREE_INT_CST_HIGH (arg1) == -1
-		     && (- TREE_INT_CST_LOW (arg1)
+		     && (TREE_INT_CST_LOW (arg1)
 			 == ((unsigned HOST_WIDE_INT) 1 << (width - 1)))
 		     && ! TREE_UNSIGNED (TREE_TYPE (arg1)))
 	      switch (TREE_CODE (t))
@@ -6729,12 +6729,11 @@ fold (expr)
 		}
 
 	    else if (TREE_INT_CST_HIGH (arg1) == 0
-		      && (TREE_INT_CST_LOW (arg1)
-			  == ((unsigned HOST_WIDE_INT) 1 << (width - 1)) - 1)
-		      && TREE_UNSIGNED (TREE_TYPE (arg1))
-			 /* signed_type does not work on pointer types.  */
-		      && INTEGRAL_TYPE_P (TREE_TYPE (arg1)))
-
+		     && (TREE_INT_CST_LOW (arg1)
+			 == ((unsigned HOST_WIDE_INT) 1 << (width - 1)) - 1)
+		     && TREE_UNSIGNED (TREE_TYPE (arg1))
+		     /* signed_type does not work on pointer types.  */
+		     && INTEGRAL_TYPE_P (TREE_TYPE (arg1)))
 	      switch (TREE_CODE (t))
 		{
 		case LE_EXPR:
@@ -6754,9 +6753,10 @@ fold (expr)
 		  break;
 		}
 
-            else if (TREE_UNSIGNED (TREE_TYPE (arg1))
-                     && tree_int_cst_equal (TYPE_MAX_VALUE (TREE_TYPE (arg1)),
-                                            arg1))
+            else if (TREE_INT_CST_HIGH (arg1) == 0
+		     && (TREE_INT_CST_LOW (arg1)
+			 == ((unsigned HOST_WIDE_INT) 2 << (width - 1)) - 1)
+		     && TREE_UNSIGNED (TREE_TYPE (arg1)))
               switch (TREE_CODE (t))
                 {
                 case GT_EXPR:
