@@ -28,14 +28,14 @@ template class S<void*>; // OK - explicit instantiation of partial
                          // specialization
 
 template <>
-struct S<long double> {};  // ERROR - explicit specialization
+struct S<long double> {};
 
-template class S<long double>; // ERROR - explicit instantiation after
+template class S<long double>; // OK - explicit instantiation after
 
 template <>
-void f(long double) {}        // ERROR - explicit specialization
+void f(long double) {}
 
-template void f(long double); // ERROR - explicit instantiation after
+template void f(long double); // OK - explicit instantiation after
 
 template <class T>
 void g(T);

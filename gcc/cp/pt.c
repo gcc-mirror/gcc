@@ -9524,12 +9524,16 @@ do_decl_instantiation (declspecs, declarator, storage)
 
   if (DECL_TEMPLATE_SPECIALIZATION (result))
     {
-      /* [temp.spec]
+      /* DR 259 [temp.spec].
 
-	 No program shall both explicitly instantiate and explicitly
-	 specialize a template.  */
-      pedwarn ("explicit instantiation of `%#D' after", result);
-      cp_pedwarn_at ("explicit specialization here", result);
+	 Both an explicit instantiation and a declaration of an explicit
+	 specialization shall not appear in a program unless the explicit
+	 instantiation follows a declaration of the explicit specialization.
+
+	 For a given set of template parameters, if an explicit
+	 instantiation of a template appears after a declaration of an
+	 explicit specialization for that template, the explicit
+	 instantiation has no effect.  */
       return;
     }
   else if (DECL_EXPLICIT_INSTANTIATION (result))
@@ -9659,15 +9663,16 @@ do_type_instantiation (t, storage, complain)
 
   if (CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
     {
-      /* [temp.spec]
+      /* DR 259 [temp.spec].
 
-	 No program shall both explicitly instantiate and explicitly
-	 specialize a template.  */
-      if (complain & tf_error)
-	{
-	  error ("explicit instantiation of `%#T' after", t);
-	  cp_error_at ("explicit specialization here", t);
-	}
+	 Both an explicit instantiation and a declaration of an explicit
+	 specialization shall not appear in a program unless the explicit
+	 instantiation follows a declaration of the explicit specialization.
+
+	 For a given set of template parameters, if an explicit
+	 instantiation of a template appears after a declaration of an
+	 explicit specialization for that template, the explicit
+	 instantiation has no effect.  */
       return;
     }
   else if (CLASSTYPE_EXPLICIT_INSTANTIATION (t))
