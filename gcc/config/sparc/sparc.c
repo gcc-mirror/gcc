@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Sun SPARC.
-   Copyright (C) 1987, 88, 89, 92-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-95, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -1110,9 +1110,10 @@ eligible_for_epilogue_delay (trial, slot)
 
   if (slot >= 1)
     return 0;
-  if (GET_CODE (trial) != INSN
-      || GET_CODE (PATTERN (trial)) != SET)
+
+  if (GET_CODE (trial) != INSN || GET_CODE (PATTERN (trial)) != SET)
     return 0;
+
   if (get_attr_length (trial) != 1)
     return 0;
 
@@ -1128,9 +1129,11 @@ eligible_for_epilogue_delay (trial, slot)
   if (leaf_function)
     {
       if (leaf_return_peephole_ok ())
-	return (get_attr_in_uncond_branch_delay (trial) == IN_BRANCH_DELAY_TRUE);
+	return ((get_attr_in_uncond_branch_delay (trial)
+		 == IN_BRANCH_DELAY_TRUE));
       return 0;
     }
+
   /* If only trivial `restore' insns work, nothing can go in the
      delay slot.  */
   else if (TARGET_BROKEN_SAVERESTORE)
@@ -1145,35 +1148,47 @@ eligible_for_epilogue_delay (trial, slot)
       || REGNO (SET_DEST (pat)) < 24)
     return 0;
 
+  /* The set of insns matched here must agree precisely with the set of
+     patterns paired with a RETURN in sparc.md.  */
+
   src = SET_SRC (pat);
+
+  /* This matches "*return_[qhs]".  */
   if (arith_operand (src, GET_MODE (src)))
     return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (SImode);
-  if (arith_double_operand (src, GET_MODE (src)))
+    
+  /* This matches "*return_di".  */
+  else if (arith_double_operand (src, GET_MODE (src)))
     return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (DImode);
-  if (GET_CODE (src) == PLUS)
-    {
-      if (register_operand (XEXP (src, 0), SImode)
-	  && arith_operand (XEXP (src, 1), SImode))
-	return 1;
-      if (register_operand (XEXP (src, 1), SImode)
-	  && arith_operand (XEXP (src, 0), SImode))
-	return 1;
-      if (register_operand (XEXP (src, 0), DImode)
-	  && arith_double_operand (XEXP (src, 1), DImode))
-	return 1;
-      if (register_operand (XEXP (src, 1), DImode)
-	  && arith_double_operand (XEXP (src, 0), DImode))
-	return 1;
-    }
-  if (GET_CODE (src) == MINUS
+
+  /* This matches "*return_sf_no_fpu".  */
+  else if (! TARGET_FPU && restore_operand (SET_DEST (pat), SFmode)
+	   && register_operand (src, SFmode))
+    return 1;
+
+  /* This matches "*return_addsi".  */
+  else if (GET_CODE (src) == PLUS
+	   && arith_operand (XEXP (src, 0), SImode)
+	   && arith_operand (XEXP (src, 1), SImode)
+	   && (register_operand (XEXP (src, 0), SImode)
+	       || register_operand (XEXP (src, 1), SImode)))
+    return 1;
+
+  /* This matches "*return_adddi".  */
+  else if (GET_CODE (src) == PLUS
+	   && arith_double_operand (XEXP (src, 0), DImode)
+	   && arith_double_operand (XEXP (src, 1), DImode)
+	   && (register_operand (XEXP (src, 0), DImode)
+	       || register_operand (XEXP (src, 1), DImode)))
+    return 1;
+
+  /* This matches "*return_subsi".  */
+  else if (GET_CODE (src) == MINUS
       && register_operand (XEXP (src, 0), SImode)
-      && small_int (XEXP (src, 1), VOIDmode))
+      && small_int (XEXP (src, 1), VOIDmode)
+      && INTVAL (XEXP (src, 1)) != -4096)
     return 1;
-  if (GET_CODE (src) == MINUS
-      && register_operand (XEXP (src, 0), DImode)
-      && !register_operand (XEXP (src, 1), DImode)
-      && arith_double_operand (XEXP (src, 1), DImode))
-    return 1;
+
   return 0;
 }
 
