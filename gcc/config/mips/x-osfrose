@@ -23,7 +23,7 @@ MSTATS		= # -mstats
 OLDCC		= /usr/ccs/gcc/gcc
 OPT		= -O2
 PROFILE		=
-SHLIB		= -L${BUILD}/usr/ccs/lib	# no shared libraries
+SHLIB		= -pic-none
 SYSTEM_INCLUDES	= # -I${BUILD}/usr/include
 
 libdir		= /usr/ccs
