@@ -552,12 +552,14 @@ static struct { char *name, *spec; } extra_specs[] = { EXTRA_SPECS };
 
 /* This defines which switch letters take arguments.  */
 
-#ifndef SWITCH_TAKES_ARG
-#define SWITCH_TAKES_ARG(CHAR)      \
+#define DEFAULT_SWITCH_TAKES_ARG(CHAR)      \
   ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o' \
    || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u' \
    || (CHAR) == 'I' || (CHAR) == 'm' || (CHAR) == 'x' \
    || (CHAR) == 'L' || (CHAR) == 'A')
+
+#ifndef SWITCH_TAKES_ARG
+#define SWITCH_TAKES_ARG(CHAR) DEFAULT_SWITCH_TAKES_ARG(CHAR)
 #endif
 
 /* This defines which multi-letter switches take arguments.  */
