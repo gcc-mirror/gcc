@@ -1,5 +1,13 @@
 Fri Jul 16 13:48:09 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* configure.in (hppa*-*-linux*): New configuration.
+	* configure: Rebuilt.
+	* pa.h (MAX_OFILE_ALIGNMENT): Delete.
+	* pa/som.h (MAX_OFILE_ALIGNMENT): Define.
+	* pa/pa-linux.h: New file.
+	* pa/t-linux: New file.
+	* pa/xm-linux.h: New file.
+
 	* pa.c (hppa_legitimize_address): Change references from SImode to
 	either Pmode or word_mode as appropriate.
 	(emit_move_sequence, store_reg, load_reg): Likewise.

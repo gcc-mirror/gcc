@@ -1,0 +1,1 @@
+ADA_CFLAGS=-mdisable-indexing
