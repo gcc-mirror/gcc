@@ -1,3 +1,8 @@
+Tue Sep 14 14:41:47 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* haifa-sched.c (actual_hazard): Move declaration of variable
+	`this_cost' into the scope where it is used.
+
 Tue Sep 14 14:14:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-pragma.c (handle_pragma_token): Wrap variables `name' and
