@@ -1193,8 +1193,9 @@ nested_function:
 		      pop_c_function_context ();
 		      YYERROR1;
 		    }
-		  reinit_parse_for_function ();
-		  store_parm_decls (); }
+		  reinit_parse_for_function (); }
+	   xdecls
+		{ store_parm_decls (); }
 /* This used to use compstmt_or_error.
    That caused a bug with input `f(g) int g {}',
    where the use of YYERROR1 above caused an error
@@ -1215,8 +1216,9 @@ notype_nested_function:
 		      pop_c_function_context ();
 		      YYERROR1;
 		    }
-		  reinit_parse_for_function ();
-		  store_parm_decls (); }
+		  reinit_parse_for_function (); }
+	  xdecls
+		{ store_parm_decls (); }
 /* This used to use compstmt_or_error.
    That caused a bug with input `f(g) int g {}',
    where the use of YYERROR1 above caused an error
