@@ -28,9 +28,12 @@ Boston, MA 02111-1307, USA.  */
 #include "c-tree.h"
 #include "c-lex.h"
 #include "toplev.h"
+#include "diagnostic.h"
 #include "output.h"
 #include "flags.h"
 #include "ggc.h"
+
+static int c_tree_printer PARAMS ((output_buffer *));
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -91,6 +94,8 @@ lang_init ()
   save_lang_status = &push_c_function_context;
   restore_lang_status = &pop_c_function_context;
   mark_lang_status = &mark_c_function_context;
+
+  lang_printer = c_tree_printer;
 
   c_parse_init ();
 }
@@ -239,4 +244,39 @@ finish_file ()
       assemble_destructor (IDENTIFIER_POINTER (fnname));
     }
 #endif
+}
+
+/* Called during diagnostic message formatting process to print a
+   source-level entity onto BUFFER.  The meaning of the format specifiers
+   is as follows:
+   %D: a general decl,
+   %F: a function declaration,
+   %T: a type.
+
+   These format specifiers form a subset of the format specifiers set used
+   by the C++ front-end.
+   Please notice when called, the `%' part was already skipped by the
+   diagnostic machinery.  */
+static int
+c_tree_printer (buffer)
+     output_buffer *buffer;
+{
+  tree t = va_arg (output_buffer_format_args (buffer), tree);
+
+  switch (*output_buffer_text_cursor (buffer))
+    {
+    case 'D':
+    case 'F':
+    case 'T':
+      {
+        const char *n = DECL_NAME (t)
+          ? (*decl_printable_name) (t, 2)
+          : "({anonymous})";
+        output_add_string (buffer, n);
+      }
+      return 1;
+
+    default:
+      return 0;
+    }
 }

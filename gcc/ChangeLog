@@ -1,5 +1,13 @@
 2000-08-20  Gabriel Dos Reis  <gdr@codesourcery.com>
 
+	* c-lang.c: #include diagnostic.h
+	(c_tree_printer): New function.
+	(lang_init): Initialize lang_printer.
+
+	* Makefile.in (c-lang.o): Depends on diagnostic.h
+
+2000-08-20  Gabriel Dos Reis  <gdr@codesourcery.com>
+
 	* c-errors.c (pedwarn_c99): Adjust call to report_diagnostic.
 
 	* diagnostic.c (default_diagnostic_starter,
