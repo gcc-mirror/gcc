@@ -97,8 +97,9 @@ extern void ix86_expand_unary_operator PARAMS ((enum rtx_code, enum machine_mode
 extern int ix86_unary_operator_ok PARAMS ((enum rtx_code, enum machine_mode,
 					 rtx[]));
 extern int ix86_match_ccmode PARAMS ((rtx, enum machine_mode));
-extern void ix86_expand_branch PARAMS ((enum rtx_code, int, rtx));
-extern int ix86_expand_setcc PARAMS ((enum rtx_code, int, rtx));
+extern rtx ix86_expand_fp_compare PARAMS ((enum rtx_code, rtx, rtx, rtx));
+extern void ix86_expand_branch PARAMS ((enum rtx_code, rtx));
+extern int ix86_expand_setcc PARAMS ((enum rtx_code, rtx));
 extern int ix86_expand_int_movcc PARAMS ((rtx[]));
 extern int ix86_expand_fp_movcc PARAMS ((rtx[]));
 extern int ix86_split_long_move PARAMS ((rtx[]));

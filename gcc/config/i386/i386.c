@@ -384,8 +384,11 @@ static void put_condition_code PARAMS ((enum rtx_code, enum machine_mode,
 				       int, int, FILE *));
 static enum rtx_code unsigned_comparison PARAMS ((enum rtx_code code));
 static rtx ix86_expand_int_compare PARAMS ((enum rtx_code, rtx, rtx));
-static rtx ix86_expand_fp_compare PARAMS ((enum rtx_code, rtx, rtx, int));
-static rtx ix86_expand_compare PARAMS ((enum rtx_code, int));
+static enum machine_mode ix86_fp_compare_mode PARAMS ((enum rtx_code));
+static int ix86_use_fcomi_compare PARAMS ((enum rtx_code));
+static enum rtx_code ix86_prepare_fp_compare_args PARAMS ((enum rtx_code,
+							   rtx *, rtx *));
+static rtx ix86_expand_compare PARAMS ((enum rtx_code));
 static rtx gen_push PARAMS ((rtx));
 static int memory_address_length PARAMS ((rtx addr));
 static int ix86_flags_dependant PARAMS ((rtx, rtx, enum attr_type));
@@ -1235,10 +1238,19 @@ no_comparison_operator (op, mode)
     register rtx op;
     enum machine_mode mode;
 {
-  return ((mode == VOIDmode || GET_MODE (op) == mode)
-	  && GET_RTX_CLASS (GET_CODE (op)) == '<'
-	  && GET_CODE (op) != LE
-	  && GET_CODE (op) != GT);
+  if (mode != VOIDmode && GET_MODE (op) != mode)
+    return 0;
+
+  switch (GET_CODE (op))
+    {
+    case EQ: case NE:
+    case LT: case GE:
+    case LEU: case LTU: case GEU: case GTU:
+      return 1;
+
+    default:
+      return 0;
+    }
 }
 
 /* Return 1 if OP is a comparison operator that can be issued by fcmov.  */
@@ -1248,9 +1260,42 @@ fcmov_comparison_operator (op, mode)
     register rtx op;
     enum machine_mode mode;
 {
-  return ((mode == VOIDmode || GET_MODE (op) == mode)
-	  && GET_RTX_CLASS (GET_CODE (op)) == '<'
-	  && GET_CODE (op) == unsigned_condition (GET_CODE (op)));
+  if (mode != VOIDmode && GET_MODE (op) != mode)
+    return 0;
+
+  switch (GET_CODE (op))
+    {
+    case EQ: case NE:
+    case LEU: case LTU: case GEU: case GTU:
+    case UNORDERED: case ORDERED:
+      return 1;
+
+    default:
+      return 0;
+    }
+}
+
+/* Return 1 if OP is any normal comparison operator plus {UN}ORDERED.  */
+
+int 
+uno_comparison_operator (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+  if (mode != VOIDmode && GET_MODE (op) != mode)
+    return 0;
+
+  switch (GET_CODE (op))
+    {
+    case EQ: case NE:
+    case LE: case LT: case GE: case GT:
+    case LEU: case LTU: case GEU: case GTU:
+    case UNORDERED: case ORDERED:
+      return 1;
+
+    default:
+      return 0;
+    }
 }
 
 /* Return 1 if OP is a binary operator that can be promoted to wider mode.  */
@@ -2970,6 +3015,12 @@ put_condition_code (code, mode, reverse, fp, file)
     case LEU:
       suffix = "be";
       break;
+    case UNORDERED:
+      suffix = "p";
+      break;
+    case ORDERED:
+      suffix = "np";
+      break;
     default:
       abort ();
     }
@@ -4386,6 +4437,8 @@ unsigned_comparison (code)
     case LTU:
     case GEU:
     case GTU:
+    case UNORDERED:
+    case ORDERED:
       break;
     default:
       abort ();
@@ -4416,36 +4469,80 @@ ix86_expand_int_compare (code, op0, op1)
   return gen_rtx_fmt_ee (code, VOIDmode, flags, const0_rtx);
 }
 
-/* Generate insn patterns to do a floating point compare of OPERANDS.
-   If UNORDERED, allow for unordered compares.  */
+/* Figure out whether to use ordered or unordered fp comparisons.
+   Return the appropriate mode to use.  */
 
-static rtx
-ix86_expand_fp_compare (code, op0, op1, unordered)
+static enum machine_mode
+ix86_fp_compare_mode (code)
      enum rtx_code code;
-     rtx op0, op1;
-     int unordered;
 {
-  enum machine_mode fpcmp_mode;
-  enum machine_mode intcmp_mode;
-  rtx tmp;
+  int unordered;
 
-  /* When not doing IEEE compliant compares, disable unordered.  */
-  if (! TARGET_IEEE_FP)
-    unordered = 0;
-  fpcmp_mode = unordered ? CCFPUmode : CCFPmode;
+  switch (code)
+    {
+    case NE: case EQ:
+      /* When not doing IEEE compliant compares, fault on NaNs.  */
+      unordered = (TARGET_IEEE_FP != 0);
+      break;
+
+    case LT: case LE: case GT: case GE:
+      unordered = 0;
+      break;
+
+    case UNORDERED: case ORDERED:
+    case UNEQ: case UNGE: case UNGT: case UNLE: case UNLT: case LTGT:
+      unordered = 1;
+      break;
+
+    default:
+      abort ();
+    }
 
   /* ??? If we knew whether invalid-operand exceptions were masked,
      we could rely on fcom to raise an exception and take care of
-     NaNs.  But we don't.  We could know this from c9x math bits.  */
+     NaNs.  But we don't.  We could know this from c99 math pragmas.  */
   if (TARGET_IEEE_FP)
     unordered = 1;
 
+  return unordered ? CCFPUmode : CCFPmode;
+}
+
+/* Return true if we should use an FCOMI instruction for this fp comparison.  */
+
+static int
+ix86_use_fcomi_compare (code)
+     enum rtx_code code;
+{
+  return (TARGET_CMOVE
+	  && (code == ORDERED || code == UNORDERED
+	      /* All other unordered compares require checking
+		 multiple sets of bits.  */
+	      || ix86_fp_compare_mode (code) == CCFPmode));
+}
+
+/* Swap, force into registers, or otherwise massage the two operands 
+   to a fp comparison.  The operands are updated in place; the new
+   comparsion code is returned.  */
+
+static enum rtx_code
+ix86_prepare_fp_compare_args (code, pop0, pop1)
+     enum rtx_code code;
+     rtx *pop0, *pop1;
+{
+  enum machine_mode fpcmp_mode = ix86_fp_compare_mode (code);
+  rtx op0 = *pop0, op1 = *pop1;
+  enum machine_mode op_mode = GET_MODE (op0);
+
   /* All of the unordered compare instructions only work on registers.
-     The same is true of the XFmode compare instructions.  */
-  if (unordered || GET_MODE (op0) == XFmode)
+     The same is true of the XFmode compare instructions.  The same is
+     true of the fcomi compare instructions.  */
+
+  if (fpcmp_mode == CCFPUmode
+      || op_mode == XFmode
+      || ix86_use_fcomi_compare (code))
     {
-      op0 = force_reg (GET_MODE (op0), op0);
-      op1 = force_reg (GET_MODE (op1), op1);
+      op0 = force_reg (op_mode, op0);
+      op1 = force_reg (op_mode, op1);
     }
   else
     {
@@ -4464,33 +4561,46 @@ ix86_expand_fp_compare (code, op0, op1, unordered)
 	}
 
       if (GET_CODE (op0) != REG)
-	op0 = force_reg (GET_MODE (op0), op0);
+	op0 = force_reg (op_mode, op0);
 
       if (CONSTANT_P (op1))
 	{
 	  if (standard_80387_constant_p (op1))
-	    op1 = force_reg (GET_MODE (op1), op1);
+	    op1 = force_reg (op_mode, op1);
 	  else
-	    op1 = validize_mem (force_const_mem (GET_MODE (op1), op1));
+	    op1 = validize_mem (force_const_mem (op_mode, op1));
 	}
     }
 
+  *pop0 = op0;
+  *pop1 = op1;
+  return code;
+}
+
+/* Generate insn patterns to do a floating point compare of OPERANDS.  */
+
+rtx
+ix86_expand_fp_compare (code, op0, op1, scratch)
+     enum rtx_code code;
+     rtx op0, op1, scratch;
+{
+  enum machine_mode fpcmp_mode, intcmp_mode;
+  rtx tmp;
+
+  fpcmp_mode = ix86_fp_compare_mode (code);
+  code = ix86_prepare_fp_compare_args (code, &op0, &op1);
+
   /* %%% fcomi is probably always faster, even when dealing with memory,
      since compare-and-branch would be three insns instead of four.  */
-  if (TARGET_CMOVE && !unordered)
+  if (ix86_use_fcomi_compare (code))
     {
-      if (GET_CODE (op0) != REG)
-	op0 = force_reg (GET_MODE (op0), op0);
-      if (GET_CODE (op1) != REG)
-	op1 = force_reg (GET_MODE (op1), op1);
-
       tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
       tmp = gen_rtx_SET (VOIDmode, gen_rtx_REG (fpcmp_mode, FLAGS_REG), tmp);
       emit_insn (tmp);
 
       /* The FP codes work out to act like unsigned.  */
       code = unsigned_comparison (code);
-      intcmp_mode = fpcmp_mode;
+      intcmp_mode = CCmode;
     }
   else
     {
@@ -4499,10 +4609,11 @@ ix86_expand_fp_compare (code, op0, op1, unordered)
       rtx tmp2;
       tmp = gen_rtx_COMPARE (fpcmp_mode, op0, op1);
       tmp2 = gen_rtx_UNSPEC (HImode, gen_rtvec (1, tmp), 9);
-      tmp = gen_reg_rtx (HImode);
-      emit_insn (gen_rtx_SET (VOIDmode, tmp, tmp2));
+      emit_insn (gen_rtx_SET (VOIDmode, scratch, tmp2));
 
-      if (! unordered)
+      if (fpcmp_mode == CCFPmode
+	  || code == ORDERED
+	  || code == UNORDERED)
 	{
 	  /* We have two options here -- use sahf, or testing bits of ah
 	     directly.  On PPRO, they are equivalent, sahf being one byte
@@ -4512,10 +4623,10 @@ ix86_expand_fp_compare (code, op0, op1, unordered)
 	  if (TARGET_USE_SAHF || optimize_size)
 	    {
 	    do_sahf:
+	      emit_insn (gen_x86_sahf_1 (scratch));
 
 	      /* The FP codes work out to act like unsigned.  */
 	      code = unsigned_comparison (code);
-	      emit_insn (gen_x86_sahf_1 (tmp));
 	      intcmp_mode = CCmode;
 	    }
 	  else
@@ -4559,11 +4670,20 @@ ix86_expand_fp_compare (code, op0, op1, unordered)
 		  mask = 0x40;
 		  code = EQ;
 		  break;
+		case UNORDERED:
+		  mask = 0x04;
+		  code = NE;
+		  break;
+		case ORDERED:
+		  mask = 0x04;
+		  code = EQ;
+		  break;
+
 		default:
 		  abort ();
 		}
 
-	      emit_insn (gen_testqi_ext_ccno_0 (tmp, GEN_INT (mask)));
+	      emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (mask)));
 	      intcmp_mode = CCNOmode;
 	    }
 	}
@@ -4578,37 +4698,74 @@ ix86_expand_fp_compare (code, op0, op1, unordered)
 	  switch (code)
 	    {
 	    case GT:
-	      emit_insn (gen_testqi_ext_ccno_0 (tmp, GEN_INT (0x45)));
+	      emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (0x45)));
 	      code = EQ;
 	      break;
 	    case LT:
-	      emit_insn (gen_andqi_ext_0 (tmp, tmp, GEN_INT (0x45)));
-	      emit_insn (gen_cmpqi_ext_3 (tmp, GEN_INT (0x01)));
+	      emit_insn (gen_andqi_ext_0 (scratch, scratch, GEN_INT (0x45)));
+	      emit_insn (gen_cmpqi_ext_3 (scratch, GEN_INT (0x01)));
 	      intcmp_mode = CCmode;
 	      code = EQ;
 	      break;
 	    case GE:
-	      emit_insn (gen_testqi_ext_ccno_0 (tmp, GEN_INT (0x05)));
+	      emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (0x05)));
 	      code = EQ;
 	      break;
 	    case LE:
-	      emit_insn (gen_andqi_ext_0 (tmp, tmp, GEN_INT (0x45)));
-	      emit_insn (gen_addqi_ext_1 (tmp, tmp, constm1_rtx));
-	      emit_insn (gen_cmpqi_ext_3 (tmp, GEN_INT (0x40)));
+	      emit_insn (gen_andqi_ext_0 (scratch, scratch, GEN_INT (0x45)));
+	      emit_insn (gen_addqi_ext_1 (scratch, scratch, constm1_rtx));
+	      emit_insn (gen_cmpqi_ext_3 (scratch, GEN_INT (0x40)));
 	      intcmp_mode = CCmode;
 	      code = LTU;
 	      break;
 	    case EQ:
-	      emit_insn (gen_andqi_ext_0 (tmp, tmp, GEN_INT (0x45)));
-	      emit_insn (gen_cmpqi_ext_3 (tmp, GEN_INT (0x40)));
+	      emit_insn (gen_andqi_ext_0 (scratch, scratch, GEN_INT (0x45)));
+	      emit_insn (gen_cmpqi_ext_3 (scratch, GEN_INT (0x40)));
 	      intcmp_mode = CCmode;
 	      code = EQ;
 	      break;
 	    case NE:
-	      emit_insn (gen_andqi_ext_0 (tmp, tmp, GEN_INT (0x45)));
-	      emit_insn (gen_xorqi_cc_ext_1 (tmp, tmp, GEN_INT (0x40)));
+	      emit_insn (gen_andqi_ext_0 (scratch, scratch, GEN_INT (0x45)));
+	      emit_insn (gen_xorqi_cc_ext_1 (scratch, scratch, GEN_INT (0x40)));
 	      code = NE;
 	      break;
+
+	    case UNORDERED:
+	      emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (0x04)));
+	      code = NE;
+	      break;
+	    case ORDERED:
+	      emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (0x04)));
+	      code = EQ;
+	      break;
+	    case UNEQ:
+	      emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (0x40)));
+	      code = NE;
+	      break;
+	    case UNGE:
+	      emit_insn (gen_andqi_ext_0 (scratch, scratch, GEN_INT (0x45)));
+	      emit_insn (gen_xorqi_cc_ext_1 (scratch, scratch, GEN_INT (0x01)));
+	      code = NE;
+	      break;
+	    case UNGT:
+	      emit_insn (gen_andqi_ext_0 (scratch, scratch, GEN_INT (0x45)));
+	      emit_insn (gen_addqi_ext_1 (scratch, scratch, constm1_rtx));
+	      emit_insn (gen_cmpqi_ext_3 (scratch, GEN_INT (0x44)));
+	      code = GEU;
+	      break;
+	    case UNLE:
+	      emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (0x45)));
+	      code = NE;
+	      break;
+	    case UNLT:
+	      emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (0x01)));
+	      code = NE;
+	      break;
+	    case LTGT:
+	      emit_insn (gen_testqi_ext_ccno_0 (scratch, GEN_INT (0x40)));
+	      code = EQ;
+	      break;
+
 	    default:
 	      abort ();
 	    }
@@ -4623,16 +4780,15 @@ ix86_expand_fp_compare (code, op0, op1, unordered)
 }
 
 static rtx
-ix86_expand_compare (code, unordered)
+ix86_expand_compare (code)
      enum rtx_code code;
-     int unordered;
 {
   rtx op0, op1, ret;
   op0 = ix86_compare_op0;
   op1 = ix86_compare_op1;
 
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
-    ret = ix86_expand_fp_compare (code, op0, op1, unordered);
+    ret = ix86_expand_fp_compare (code, op0, op1, gen_reg_rtx (HImode));
   else
     ret = ix86_expand_int_compare (code, op0, op1);
 
@@ -4640,134 +4796,173 @@ ix86_expand_compare (code, unordered)
 }
 
 void
-ix86_expand_branch (code, unordered, label)
+ix86_expand_branch (code, label)
      enum rtx_code code;
-     int unordered;
      rtx label;
 {
-  rtx tmp, lo[2], hi[2], label2;
-  enum rtx_code code1, code2, code3;
+  rtx tmp;
 
-  if (GET_MODE (ix86_compare_op0) != DImode)
+  switch (GET_MODE (ix86_compare_op0))
     {
-      tmp = ix86_expand_compare (code, unordered);
+    case QImode:
+    case HImode:
+    case SImode:
+      tmp = ix86_expand_compare (code);
       tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
 				  gen_rtx_LABEL_REF (VOIDmode, label),
 				  pc_rtx);
       emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, tmp));
       return;
-    }
 
-  /* Expand DImode branch into multiple compare+branch.  */
+    case SFmode:
+    case DFmode:
+    case XFmode:   
+      /* Don't expand the comparison early, so that we get better code
+	 when jump or whoever decides to reverse the comparison.  */
+      {
+	rtvec vec;
+	int use_fcomi;
 
-  if (CONSTANT_P (ix86_compare_op0) && ! CONSTANT_P (ix86_compare_op1))
-    {
-      tmp = ix86_compare_op0;
-      ix86_compare_op0 = ix86_compare_op1;
-      ix86_compare_op1 = tmp;
-      code = swap_condition (code);
-    }
-  split_di (&ix86_compare_op0, 1, lo+0, hi+0);
-  split_di (&ix86_compare_op1, 1, lo+1, hi+1);
+	code = ix86_prepare_fp_compare_args (code, &ix86_compare_op0,
+					     &ix86_compare_op1);
 
-  /* When comparing for equality, we can use (hi0^hi1)|(lo0^lo1) to avoid
-     two branches.  This costs one extra insn, so disable when optimizing
-     for size.  */
+	tmp = gen_rtx_fmt_ee (code, ix86_fp_compare_mode (code),
+			      ix86_compare_op0, ix86_compare_op1);
+	tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
+				    gen_rtx_LABEL_REF (VOIDmode, label),
+				    pc_rtx);
+	tmp = gen_rtx_SET (VOIDmode, pc_rtx, tmp);
 
-  if ((code == EQ || code == NE)
-      && (!optimize_size
-	  || hi[1] == const0_rtx || lo[1] == const0_rtx))
-    {
-      rtx xor0, xor1;
+	use_fcomi = ix86_use_fcomi_compare (code);
+	vec = rtvec_alloc (3 + !use_fcomi);
+	RTVEC_ELT (vec, 0) = tmp;
+	RTVEC_ELT (vec, 1)
+	  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCFPmode, 18));
+	RTVEC_ELT (vec, 2)
+	  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCFPmode, 17));
+	if (! use_fcomi)
+	  RTVEC_ELT (vec, 3)
+	    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (HImode));
 
-      xor1 = hi[0];
-      if (hi[1] != const0_rtx)
-	{
-	  xor1 = expand_binop (SImode, xor_optab, xor1, hi[1],
-			       NULL_RTX, 0, OPTAB_WIDEN);
-	}
+        emit_jump_insn (gen_rtx_PARALLEL (VOIDmode, vec));
+	return;
+      }
 
-      xor0 = lo[0];
-      if (lo[1] != const0_rtx)
-	{
-	  xor0 = expand_binop (SImode, xor_optab, xor0, lo[1],
-			       NULL_RTX, 0, OPTAB_WIDEN);
-	}
+    case DImode:
+      /* Expand DImode branch into multiple compare+branch.  */
+      {
+	rtx lo[2], hi[2], label2;
+	enum rtx_code code1, code2, code3;
 
-      tmp = expand_binop (SImode, ior_optab, xor1, xor0,
-			  NULL_RTX, 0, OPTAB_WIDEN);
+	if (CONSTANT_P (ix86_compare_op0) && ! CONSTANT_P (ix86_compare_op1))
+	  {
+	    tmp = ix86_compare_op0;
+	    ix86_compare_op0 = ix86_compare_op1;
+	    ix86_compare_op1 = tmp;
+	    code = swap_condition (code);
+	  }
+	split_di (&ix86_compare_op0, 1, lo+0, hi+0);
+	split_di (&ix86_compare_op1, 1, lo+1, hi+1);
 
-      ix86_compare_op0 = tmp;
-      ix86_compare_op1 = const0_rtx;
-      ix86_expand_branch (code, unordered, label);
-      return;
-    }
+	/* When comparing for equality, we can use (hi0^hi1)|(lo0^lo1) to
+	   avoid two branches.  This costs one extra insn, so disable when
+	   optimizing for size.  */
 
-  /* Otherwise, if we are doing less-than, op1 is a constant and the
-     low word is zero, then we can just examine the high word.  */
+	if ((code == EQ || code == NE)
+	    && (!optimize_size
+	        || hi[1] == const0_rtx || lo[1] == const0_rtx))
+	  {
+	    rtx xor0, xor1;
 
-  if (GET_CODE (hi[1]) == CONST_INT && lo[1] == const0_rtx
-      && (code == LT || code == LTU))
-    {
-      ix86_compare_op0 = hi[0];
-      ix86_compare_op1 = hi[1];
-      ix86_expand_branch (code, unordered, label);
-      return;
-    }
+	    xor1 = hi[0];
+	    if (hi[1] != const0_rtx)
+	      xor1 = expand_binop (SImode, xor_optab, xor1, hi[1],
+				   NULL_RTX, 0, OPTAB_WIDEN);
 
-  /* Otherwise, we need two or three jumps.  */
+	    xor0 = lo[0];
+	    if (lo[1] != const0_rtx)
+	      xor0 = expand_binop (SImode, xor_optab, xor0, lo[1],
+				   NULL_RTX, 0, OPTAB_WIDEN);
 
-  label2 = gen_label_rtx ();
+	    tmp = expand_binop (SImode, ior_optab, xor1, xor0,
+				NULL_RTX, 0, OPTAB_WIDEN);
 
-  code1 = code;
-  code2 = swap_condition (code);
-  code3 = unsigned_condition (code);
+	    ix86_compare_op0 = tmp;
+	    ix86_compare_op1 = const0_rtx;
+	    ix86_expand_branch (code, label);
+	    return;
+	  }
 
-  switch (code)
-    {
-    case LT: case GT: case LTU: case GTU:
-      break;
+	/* Otherwise, if we are doing less-than, op1 is a constant and the
+	   low word is zero, then we can just examine the high word.  */
 
-    case LE:   code1 = LT;  code2 = GT;  break;
-    case GE:   code1 = GT;  code2 = LT;  break;
-    case LEU:  code1 = LTU; code2 = GTU; break;
-    case GEU:  code1 = GTU; code2 = LTU; break;
+	if (GET_CODE (hi[1]) == CONST_INT && lo[1] == const0_rtx
+	    && (code == LT || code == LTU))
+	  {
+	    ix86_compare_op0 = hi[0];
+	    ix86_compare_op1 = hi[1];
+	    ix86_expand_branch (code, label);
+	    return;
+	  }
 
-    case EQ:   code1 = NIL; code2 = NE;  break;
-    case NE:   code2 = NIL; break;
+	/* Otherwise, we need two or three jumps.  */
+
+	label2 = gen_label_rtx ();
+
+	code1 = code;
+	code2 = swap_condition (code);
+	code3 = unsigned_condition (code);
+
+	switch (code)
+	  {
+	  case LT: case GT: case LTU: case GTU:
+	    break;
+
+	  case LE:   code1 = LT;  code2 = GT;  break;
+	  case GE:   code1 = GT;  code2 = LT;  break;
+	  case LEU:  code1 = LTU; code2 = GTU; break;
+	  case GEU:  code1 = GTU; code2 = LTU; break;
+
+	  case EQ:   code1 = NIL; code2 = NE;  break;
+	  case NE:   code2 = NIL; break;
+
+	  default:
+	    abort ();
+	  }
+
+	/*
+	 * a < b =>
+	 *    if (hi(a) < hi(b)) goto true;
+	 *    if (hi(a) > hi(b)) goto false;
+	 *    if (lo(a) < lo(b)) goto true;
+	 *  false:
+	 */
+
+	ix86_compare_op0 = hi[0];
+	ix86_compare_op1 = hi[1];
+
+	if (code1 != NIL)
+	  ix86_expand_branch (code1, label);
+	if (code2 != NIL)
+	  ix86_expand_branch (code2, label2);
+
+	ix86_compare_op0 = lo[0];
+	ix86_compare_op1 = lo[1];
+	ix86_expand_branch (code3, label);
+
+	if (code2 != NIL)
+	  emit_label (label2);
+	return;
+      }
 
     default:
       abort ();
     }
-
-  /*
-   * a < b =>
-   *    if (hi(a) < hi(b)) goto true;
-   *    if (hi(a) > hi(b)) goto false;
-   *    if (lo(a) < lo(b)) goto true;
-   *  false:
-   */
-
-  ix86_compare_op0 = hi[0];
-  ix86_compare_op1 = hi[1];
-
-  if (code1 != NIL)
-    ix86_expand_branch (code1, unordered, label);
-  if (code2 != NIL)
-    ix86_expand_branch (code2, unordered, label2);
-
-  ix86_compare_op0 = lo[0];
-  ix86_compare_op1 = lo[1];
-  ix86_expand_branch (code3, unordered, label);
-
-  if (code2 != NIL)
-    emit_label (label2);
 }
 
 int
-ix86_expand_setcc (code, unordered, dest)
+ix86_expand_setcc (code, dest)
      enum rtx_code code;
-     int unordered;
      rtx dest;
 {
   rtx ret, tmp;
@@ -4796,7 +4991,7 @@ ix86_expand_setcc (code, unordered, dest)
   if (type == 0)
     emit_move_insn (dest, const0_rtx);
 
-  ret = ix86_expand_compare (code, unordered);
+  ret = ix86_expand_compare (code);
   PUT_MODE (ret, QImode);
 
   tmp = dest;
@@ -4853,8 +5048,9 @@ ix86_expand_int_movcc (operands)
 	code = GEU;
       ix86_compare_op1 = GEN_INT (INTVAL (ix86_compare_op1) + 1);
     }
+
   start_sequence ();
-  compare_op = ix86_expand_compare (code, code == EQ || code == NE);
+  compare_op = ix86_expand_compare (code);
   compare_seq = gen_sequence ();
   end_sequence ();
 
@@ -5165,7 +5361,7 @@ ix86_expand_fp_movcc (operands)
     case GE:
     case GT:
       tmp = gen_reg_rtx (QImode);
-      ix86_expand_setcc (code, 0, tmp);
+      ix86_expand_setcc (code, tmp);
       code = NE;
       ix86_compare_op0 = tmp;
       ix86_compare_op1 = const0_rtx;
