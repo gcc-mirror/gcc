@@ -1,3 +1,10 @@
+Wed Mar  5 19:34:18 2003  Olivier Hainque <hainque@act-europe.fr>
+
+	* config/alpha/alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Add '+'.
+	* config/alpha/alpha.c (print_operand, case '+'): New.
+	* config/alpha/alpha.md (call_osf_1_noreturn): Document and use.
+	(call_value_osf_1_noreturn): Likewise.
+
 Wed Mar  5 18:55:02 2003  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* stmt.c (fixup_gotos): Change meaning of DONT_JUMP_IN.
