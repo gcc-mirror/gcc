@@ -1812,6 +1812,12 @@ emit_block_move (x, y, size)
 					  TREE_UNSIGNED (integer_type_node)),
 			 TYPE_MODE (integer_type_node));
 #endif
+
+      /* If we are initializing a readonly value, show the above call
+	 clobbered it.  Otherwise, a load from it may erroneously be hoisted
+	 from a loop.  */
+      if (RTX_UNCHANGING_P (x))
+	emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
     }
 
   return retval;
@@ -2717,6 +2723,12 @@ clear_storage (object, size)
 			     VOIDmode, 2, object, Pmode, size,
 			     TYPE_MODE (integer_type_node));
 #endif
+
+	  /* If we are initializing a readonly value, show the above call
+	     clobbered it.  Otherwise, a load from it may erroneously be
+	     hoisted from a loop.  */
+	  if (RTX_UNCHANGING_P (object))
+	    emit_insn (gen_rtx_CLOBBER (VOIDmode, object));
 	}
     }
 
