@@ -1,3 +1,12 @@
+Sun May 24 09:38:17 1998  John Wehle  (john@feith.com)
+
+	* i386.md (movsi): Remove redundant integer push patterns.
+	Don't check for TARGET_PUSH_MEMORY when pushing constants or registers.
+
+Sun May 24 08:59:27 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* configure.lang: Fix substitution of target_alias.
+
 Sat May 23 22:31:17 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
 
 	* emit_rtl.c (double_mode): New variable.  
