@@ -1798,7 +1798,7 @@ tree
 build_function_call (function, params)
      tree function, params;
 {
-  register tree fntype;
+  register tree fntype, fundecl;
   register tree coerced_params;
   tree name = NULL_TREE;
 
@@ -1815,6 +1815,7 @@ build_function_call (function, params)
       fntype = build_type_variant (TREE_TYPE (function),
 				   TREE_READONLY (function),
 				   TREE_THIS_VOLATILE (function));
+      fundecl = function;
       function = build1 (ADDR_EXPR, build_pointer_type (fntype), function);
     }
   else
@@ -1839,7 +1840,7 @@ build_function_call (function, params)
      function prototype, or apply default promotions.  */
 
   coerced_params
-    = convert_arguments (TYPE_ARG_TYPES (fntype), params, name);
+    = convert_arguments (TYPE_ARG_TYPES (fntype), params, name, fundecl);
 
   /* Check for errors in format strings.  */
   if (warn_format && name != 0)
@@ -1906,8 +1907,8 @@ build_function_call (function, params)
    with the elements of the list in the TREE_VALUE slots of those nodes.  */
 
 static tree
-convert_arguments (typelist, values, name)
-     tree typelist, values, name;
+convert_arguments (typelist, values, name, fundecl)
+     tree typelist, values, name, fundecl;
 {
   register tree typetail, valtail;
   register tree result = NULL;
@@ -2048,7 +2049,7 @@ convert_arguments (typelist, values, name)
 
 	      parmval = convert_for_assignment (type, val, 
 					        (char *)0, /* arg passing  */
-						name, parmnum + 1);
+						fundecl, name, parmnum + 1);
 	      
 #ifdef PROMOTE_PROTOTYPES
 	      if (TREE_CODE (type) == INTEGER_TYPE
@@ -3969,7 +3970,7 @@ build_modify_expr (lhs, modifycode, rhs)
   /* Convert new value to destination type.  */
 
   newrhs = convert_for_assignment (lhstype, newrhs, "assignment",
-				   NULL_TREE, 0);
+				   NULL_TREE, NULL_TREE, 0);
   if (TREE_CODE (newrhs) == ERROR_MARK)
     return error_mark_node;
 
@@ -3983,7 +3984,8 @@ build_modify_expr (lhs, modifycode, rhs)
 
   if (olhstype == TREE_TYPE (result))
     return result;
-  return convert_for_assignment (olhstype, result, "assignment", NULL_TREE, 0);
+  return convert_for_assignment (olhstype, result, "assignment",
+				 NULL_TREE, NULL_TREE, 0);
 }
 
 /* Convert value RHS to type TYPE as preparation for an assignment
@@ -4002,10 +4004,10 @@ build_modify_expr (lhs, modifycode, rhs)
    PARMNUM is the number of the argument, for printing in error messages.  */
 
 static tree
-convert_for_assignment (type, rhs, errtype, funname, parmnum)
+convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
      tree type, rhs;
      char *errtype;
-     tree funname;
+     tree fundecl, funname;
      int parmnum;
 {
   register enum tree_code codel = TREE_CODE (type);
@@ -4044,6 +4046,22 @@ convert_for_assignment (type, rhs, errtype, funname, parmnum)
        &&
       (coder == INTEGER_TYPE || coder == REAL_TYPE || coder == ENUMERAL_TYPE))
     return convert_and_check (type, rhs);
+  /* Conversion to a union from its member types.  */
+  else if (codel = UNION_TYPE)
+    {
+      tree memb_types;
+      for (memb_types = TYPE_FIELDS (type); memb_types;
+	   memb_types = TREE_CHAIN (memb_types))
+	{
+	  if (comptypes (TREE_TYPE (memb_types), TREE_TYPE (rhs)))
+	    {
+	      if (pedantic
+		  && !(fundecl != 0 && DECL_IN_SYSTEM_HEADER (fundecl)))
+		pedwarn ("ANSI C prohibits argument conversion to union type");
+	      return build1 (NOP_EXPR, type, rhs);
+	    }
+	}
+    }
   /* Conversions among pointers */
   else if (codel == POINTER_TYPE && coder == POINTER_TYPE)
     {
@@ -4238,11 +4256,11 @@ initializer_constant_valid_p (value, endtype)
 	    return null_pointer_node;
 	  return 0;
 	}
-      /* Allow (int) &foo.  */
+      /* Allow (int) &foo provided int is as wide as a pointer.  */
       if (TREE_CODE (TREE_TYPE (value)) == INTEGER_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == POINTER_TYPE
-	  && tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (value)),
-				 TYPE_SIZE (TREE_TYPE (TREE_OPERAND (value, 0)))))
+	  && ! tree_int_cst_lt (TYPE_SIZE (TREE_TYPE (value)),
+				TYPE_SIZE (TREE_TYPE (TREE_OPERAND (value, 0)))))
 	return initializer_constant_valid_p (TREE_OPERAND (value, 0),
 					     endtype);
       /* Allow conversions to union types if the value inside is okay.  */
@@ -4846,7 +4864,8 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 				      default_conversion (raw_constructor
 							  ? inside_init
 							  : init),
-				      &initialization_message, NULL_TREE, 0);
+				      &initialization_message,
+				      NULL_TREE, NULL_TREE, 0);
 	});
 
       if (require_constant && ! TREE_CONSTANT (inside_init))
@@ -5050,7 +5069,7 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 		    error ("field name used as index in array initializer");
 		  else if ((TREE_CODE (start_index) != INTEGER_CST)
 			   || (TREE_CODE (end_index) != INTEGER_CST))
-		    error ("non-constant array index in initializer");
+		    error ("non-constant or non-integer array index in initializer");
 		  else if (tree_int_cst_lt (start_index, min_index)
 			   || (max_index && tree_int_cst_lt (max_index, start_index))
 			   || tree_int_cst_lt (end_index, min_index)
@@ -5479,7 +5498,7 @@ c_expand_return (retval)
   else
     {
       tree t = convert_for_assignment (valtype, retval, "return",
-				       NULL_TREE, 0);
+				       NULL_TREE, NULL_TREE, 0);
       tree res = DECL_RESULT (current_function_decl);
       t = build (MODIFY_EXPR, TREE_TYPE (res),
 		 res, convert (TREE_TYPE (res), t));
