@@ -1,3 +1,8 @@
+2000-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* cpplib.c (do_ifdef, do_ifndef): Don't segfault if parse_ifdef
+	returned NULL.
+
 Wed Jun  7 20:34:33 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.c (asm_output_section_name): output section
