@@ -1,0 +1,9 @@
+# On the NCR Tower 32 running SVR3, says ra@intsys.no :
+# Do *not* enable optimization in CFLAGS when using the native cc, because:
+# a) The optimizer seems to loop when invoked with -O2.
+# b) The -O1 level does stack/frame pointer optimizations that make the
+#    assembler alloca in libPW.a fail, and the C alloca eats *lots* of memory.
+# c) gcc will eventually be recompiled with itself, so all this doesn't matter.
+X_CFLAGS = -O0
+CCLIBFLAGS = -O2
+CLIB = -lmalloc -lPW
