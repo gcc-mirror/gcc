@@ -3,6 +3,11 @@ Sat Jun 27 23:59:35 1998  Carlo Wood  <carlo@runaway.xs4all.nl>
 	* lib/libio.exp (test_libio): Reset ld_library_path before appending
 	the same path(s) again.
 
+Tue Jun  9 11:23:42 1998  Gavin Koch  <gavin@cygnus.com>
+
+	* Makefile.in (EXPECT) : Look for "expect" in the correct
+	place.
+
 Sat Sep  6 00:49:31 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lib/libio.exp (test_libio): Lose -L.. before -lio, may as well
