@@ -1,3 +1,8 @@
+1998-08-25  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (duplicate_decls): Don't complain about different
+	exceptions from an internal decl even if pedantic.
+
 1998-08-17  Mark Mitchell  <mark@markmitchell.com>
 
 	* pt.c (check_explicit_specialization): Don't abort on bogus
