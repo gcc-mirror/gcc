@@ -3996,6 +3996,111 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 	  || coder == COMPLEX_TYPE))
     return convert_and_check (type, rhs);
 
+  /* Conversion to a transparent union from its member types.
+     This applies only to function arguments.  */
+  else if (codel == UNION_TYPE && TYPE_TRANSPARENT_UNION (type) && ! errtype)
+    {
+      tree memb_types;
+      tree marginal_memb_type = 0;
+
+      for (memb_types = TYPE_FIELDS (type); memb_types;
+	   memb_types = TREE_CHAIN (memb_types))
+	{
+	  tree memb_type = TREE_TYPE (memb_types);
+
+	  if (comptypes (TYPE_MAIN_VARIANT (memb_type),
+			 TYPE_MAIN_VARIANT (rhstype)))
+	    break;
+
+	  if (TREE_CODE (memb_type) != POINTER_TYPE)
+	    continue;
+
+	  if (coder == POINTER_TYPE)
+	    {
+	      register tree ttl = TREE_TYPE (memb_type);
+	      register tree ttr = TREE_TYPE (rhstype);
+
+	      /* Any non-function converts to a [const][volatile] void *
+		 and vice versa; otherwise, targets must be the same.
+		 Meanwhile, the lhs target must have all the qualifiers of
+		 the rhs.  */
+	      if (TYPE_MAIN_VARIANT (ttl) == void_type_node
+		  || TYPE_MAIN_VARIANT (ttr) == void_type_node
+		  || comp_target_types (memb_type, rhstype))
+		{
+		  /* If this type won't generate any warnings, use it.  */
+		  if ((TREE_CODE (ttr) == FUNCTION_TYPE
+		       && TREE_CODE (ttl) == FUNCTION_TYPE)
+		      ? ((! TYPE_READONLY (ttl) | TYPE_READONLY (ttr))
+			 & (! TYPE_VOLATILE (ttl) | TYPE_VOLATILE (ttr)))
+		      : ((TYPE_READONLY (ttl) | ! TYPE_READONLY (ttr))
+			 & (TYPE_VOLATILE (ttl) | ! TYPE_VOLATILE (ttr))))
+		    break;
+
+		  /* Keep looking for a better type, but remember this one.  */
+		  if (! marginal_memb_type)
+		    marginal_memb_type = memb_type;
+		}
+	    }
+
+	  /* Can convert integer zero to any pointer type.  */
+	  if (integer_zerop (rhs)
+	      || (TREE_CODE (rhs) == NOP_EXPR
+		  && integer_zerop (TREE_OPERAND (rhs, 0))))
+	    {
+	      rhs = null_pointer_node;
+	      break;
+	    }
+	}
+
+      if (memb_types || marginal_memb_type)
+	{
+	  if (! memb_types)
+	    {
+	      /* We have only a marginally acceptable member type;
+		 it needs a warning. */
+	      register tree ttl = TREE_TYPE (marginal_memb_type);
+	      register tree ttr = TREE_TYPE (rhstype);
+
+	      /* Const and volatile mean something different for function
+		 types, so the usual warnings are not appropriate.  */
+	      if (TREE_CODE (ttr) == FUNCTION_TYPE
+		  && TREE_CODE (ttl) == FUNCTION_TYPE)
+		{
+		  /* Because const and volatile on functions are
+		     restrictions that say the function will not do
+		     certain things, it is okay to use a const or volatile
+		     function where an ordinary one is wanted, but not
+		     vice-versa.  */
+		  if (TYPE_READONLY (ttl) && ! TYPE_READONLY (ttr))
+		    warn_for_assignment ("%s makes `const *' function pointer from non-const",
+					 get_spelling (errtype), funname,
+					 parmnum);
+		  if (TYPE_VOLATILE (ttl) && ! TYPE_VOLATILE (ttr))
+		    warn_for_assignment ("%s makes `volatile *' function pointer from non-volatile",
+					 get_spelling (errtype), funname,
+					 parmnum);
+		}
+	      else
+		{
+		  if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
+		    warn_for_assignment ("%s discards `const' from pointer target type",
+					 get_spelling (errtype), funname,
+					 parmnum);
+		  if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
+		    warn_for_assignment ("%s discards `volatile' from pointer target type",
+					 get_spelling (errtype), funname,
+					 parmnum);
+		}
+	    }
+	  
+	  if (pedantic && ! DECL_IN_SYSTEM_HEADER (fundecl))
+	    pedwarn ("ANSI C prohibits argument conversion to union type");
+
+	  return build1 (NOP_EXPR, type, rhs);
+	}
+    }
+
   /* Conversions among pointers */
   else if (codel == POINTER_TYPE && coder == POINTER_TYPE)
     {
