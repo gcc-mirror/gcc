@@ -1,3 +1,7 @@
+Tue Feb 17 11:54:16 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (simple_stmt): Use getdecls() to check for decl.
+
 Sat Feb 14 11:50:51 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Make-lang.in (DEMANGLER_INSTALL_NAME, DEMANGLER_CROSS_NAME): New 
