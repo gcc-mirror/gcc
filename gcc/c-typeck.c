@@ -34,6 +34,8 @@ Boston, MA 02111-1307, USA.  */
 #include "c-tree.h"
 #include "flags.h"
 #include "output.h"
+#include "rtl.h"
+#include "expr.h"
 
 /* Nonzero if we've already printed a "missing braces around initializer"
    message within this initializer.  */
