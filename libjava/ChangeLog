@@ -1,3 +1,7 @@
+1999-05-12  Per Bothner  <bothner@cygnus.com>
+
+	* java/io/File.java (mkdirs):  Handle a null parent directory.
+
 1999-05-12  Tom Tromey  <tromey@cygnus.com>
 
 	* include/javaprims.h: Updated namespace declarations.
