@@ -2353,7 +2353,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
   /* If we're placing part of X into a register and part of X onto
      the stack, indicate that the entire register is clobbered to
      keep flow from thinking the unused part of the register is live.  */
-  if (partial)
+  if (partial > 0 && reg != 0)
     emit_insn (gen_rtx (CLOBBER, VOIDmode, reg));
 
   /* Invert direction if stack is post-update.  */
