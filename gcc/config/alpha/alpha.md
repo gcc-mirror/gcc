@@ -171,7 +171,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 	  (match_operand:SI 1 "nonimmediate_operand" "r,m,*f,m")))]
   "! TARGET_FIX"
   "@
-   addl %1,$31,%0
+   addl $31,%1,%0
    ldl %0,%1
    cvtlq %1,%0
    lds %0,%1\;cvtlq %0,%0"
@@ -184,7 +184,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 	  (match_operand:SI 1 "nonimmediate_operand" "r,m,*f,*f,m")))]
   "TARGET_FIX"
   "@
-   addl %1,$31,%0
+   addl $31,%1,%0
    ldl %0,%1
    ftois %1,%0
    cvtlq %1,%0
@@ -3222,7 +3222,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 		 (match_operand:HI 2 "reg_or_8bit_operand" "rI")))]
   "TARGET_MAX"
   "maxuw4 %r1,%2,%0"
-  [(set_attr "type" "shift")])
+  [(set_attr "type" "mvi")])
 
 (define_expand "smaxdi3"
   [(set (match_dup 3)
@@ -6934,12 +6934,12 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
      and leave the LRU eviction counter pointing to that block.  */
   static const char * const alt[2][2] = {
     { 
-      "lds $f31,%a0",		/* read, evict next */
+      "ldq $31,%a0",		/* read, evict next */
       "ldl $31,%a0",		/* read, evict last */
     },
     {
       "ldt $f31,%a0",		/* write, evict next */
-      "ldq $31,%a0",		/* write, evict last */
+      "lds $f31,%a0",		/* write, evict last */
     }
   };
 
@@ -7596,9 +7596,9 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
 })
 
 (define_insn "*pkwb"
-  [(set (match_operand:V8QI 0 "register_operand" "")
+  [(set (match_operand:V8QI 0 "register_operand" "=r")
 	(vec_concat:V8QI
-	  (truncate:V4QI (match_operand:V4HI 1 "register_operand" ""))
+	  (truncate:V4QI (match_operand:V4HI 1 "register_operand" "r"))
 	  (match_operand:V4QI 2 "const0_operand" "")))]
   "TARGET_MAX"
   "pkwb %r1,%0"
