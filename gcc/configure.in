@@ -446,6 +446,9 @@ AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
 # See if GNAT has been installed
 AC_CHECK_PROG(gnat, gnatbind, yes, no)
 
+# See if we have the mktemp command.
+AC_CHECK_PROG(have_mktemp_command, mktemp, yes, no)
+
 # Do we have a single-tree copy of texinfo?
 if test -f $srcdir/../texinfo/Makefile.in; then
   MAKEINFO='$(objdir)/../texinfo/makeinfo/makeinfo'
