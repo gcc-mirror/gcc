@@ -1951,165 +1951,96 @@ substitute_in_expr (tree exp, tree f, tree r)
   tree new;
   tree inner;
 
-  switch (TREE_CODE_CLASS (code))
+  /* We handle TREE_LIST and COMPONENT_REF separately.  */
+  if (code == TREE_LIST)
     {
-    case 'c':
-    case 'd':
-      return exp;
-
-    case 'x':
-      if (code == PLACEHOLDER_EXPR)
+      op0 = (TREE_CHAIN (exp) == 0
+	     ? 0 : substitute_in_expr (TREE_CHAIN (exp), f, r));
+      op1 = substitute_in_expr (TREE_VALUE (exp), f, r);
+      if (op0 == TREE_CHAIN (exp) && op1 == TREE_VALUE (exp))
 	return exp;
-      else if (code == TREE_LIST)
-	{
-	  op0 = (TREE_CHAIN (exp) == 0
-		 ? 0 : substitute_in_expr (TREE_CHAIN (exp), f, r));
-	  op1 = substitute_in_expr (TREE_VALUE (exp), f, r);
-	  if (op0 == TREE_CHAIN (exp) && op1 == TREE_VALUE (exp))
-	    return exp;
 
-	  return tree_cons (TREE_PURPOSE (exp), op1, op0);
-	}
-
-      abort ();
-
-    case '1':
-    case '2':
-    case '<':
-    case 'e':
-      switch (TREE_CODE_LENGTH (code))
-	{
-	case 1:
-	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
-	  if (op0 == TREE_OPERAND (exp, 0))
-	    return exp;
-
-	  if (code == NON_LVALUE_EXPR)
-	    return op0;
-
-	  new = fold (build1 (code, TREE_TYPE (exp), op0));
-	  break;
-
-	case 2:
-	  /* An RTL_EXPR cannot contain a PLACEHOLDER_EXPR; a CONSTRUCTOR
-	     could, but we don't support it.  */
-	  if (code == RTL_EXPR)
-	    return exp;
-	  else if (code == CONSTRUCTOR)
-	    abort ();
-
-	  op0 = TREE_OPERAND (exp, 0);
-	  op1 = TREE_OPERAND (exp, 1);
-	  if (CONTAINS_PLACEHOLDER_P (op0))
-	    op0 = substitute_in_expr (op0, f, r);
-	  if (CONTAINS_PLACEHOLDER_P (op1))
-	    op1 = substitute_in_expr (op1, f, r);
-
-	  if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
-	    return exp;
-
-	  new = fold (build (code, TREE_TYPE (exp), op0, op1));
-	  break;
-
-	case 3:
-	  /* It cannot be that anything inside a SAVE_EXPR contains a
-	     PLACEHOLDER_EXPR.  */
-	  if (code == SAVE_EXPR)
-	    return exp;
-
-	  else if (code == CALL_EXPR)
-	    {
-	      op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
-	      if (op1 == TREE_OPERAND (exp, 1))
-		return exp;
-
-	      return build (code, TREE_TYPE (exp),
-			    TREE_OPERAND (exp, 0), op1, NULL_TREE);
-	    }
-
-	  else if (code != COND_EXPR)
-	    abort ();
-
-	  op0 = TREE_OPERAND (exp, 0);
-	  op1 = TREE_OPERAND (exp, 1);
-	  op2 = TREE_OPERAND (exp, 2);
-
-	  if (CONTAINS_PLACEHOLDER_P (op0))
-	    op0 = substitute_in_expr (op0, f, r);
-	  if (CONTAINS_PLACEHOLDER_P (op1))
-	    op1 = substitute_in_expr (op1, f, r);
-	  if (CONTAINS_PLACEHOLDER_P (op2))
-	    op2 = substitute_in_expr (op2, f, r);
-
-	  if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1)
-	      && op2 == TREE_OPERAND (exp, 2))
-	    return exp;
-
-	  new = fold (build (code, TREE_TYPE (exp), op0, op1, op2));
-	  break;
-
-	default:
-	  abort ();
-	}
-
-      break;
-
-    case 'r':
-      switch (code)
-	{
-	case COMPONENT_REF:
-	  /* If this expression is getting a value from a PLACEHOLDER_EXPR
-	     and it is the right field, replace it with R.  */
-	  for (inner = TREE_OPERAND (exp, 0);
-	       TREE_CODE_CLASS (TREE_CODE (inner)) == 'r';
-	       inner = TREE_OPERAND (inner, 0))
-	    ;
-	  if (TREE_CODE (inner) == PLACEHOLDER_EXPR
-	      && TREE_OPERAND (exp, 1) == f)
-	    return r;
-
-	  /* If this expression hasn't been completed let, leave it
-	     alone.  */
-	  if (TREE_CODE (inner) == PLACEHOLDER_EXPR
-	      && TREE_TYPE (inner) == 0)
-	    return exp;
-
-	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
-	  if (op0 == TREE_OPERAND (exp, 0))
-	    return exp;
-
-	  new = fold (build (code, TREE_TYPE (exp), op0,
-			     TREE_OPERAND (exp, 1)));
-	  break;
-
-	case BIT_FIELD_REF:
-	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
-	  op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
-	  op2 = substitute_in_expr (TREE_OPERAND (exp, 2), f, r);
-	  if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1)
-	      && op2 == TREE_OPERAND (exp, 2))
-	    return exp;
-
-	  new = fold (build (code, TREE_TYPE (exp), op0, op1, op2));
-	  break;
-
-	case INDIRECT_REF:
-	case BUFFER_REF:
-	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
-	  if (op0 == TREE_OPERAND (exp, 0))
-	    return exp;
-
-	  new = fold (build1 (code, TREE_TYPE (exp), op0));
-	  break;
-
-	default:
-	  abort ();
-	}
-      break;
-
-    default:
-      abort ();
+      return tree_cons (TREE_PURPOSE (exp), op1, op0);
     }
+  else if (code == COMPONENT_REF)
+   {
+     /* If this expression is getting a value from a PLACEHOLDER_EXPR
+	and it is the right field, replace it with R.  */
+     for (inner = TREE_OPERAND (exp, 0);
+	  TREE_CODE_CLASS (TREE_CODE (inner)) == 'r';
+	  inner = TREE_OPERAND (inner, 0))
+       ;
+     if (TREE_CODE (inner) == PLACEHOLDER_EXPR
+	 && TREE_OPERAND (exp, 1) == f)
+       return r;
+
+     /* If this expression hasn't been completed let, leave it
+	alone.  */
+     if (TREE_CODE (inner) == PLACEHOLDER_EXPR && TREE_TYPE (inner) == 0)
+       return exp;
+
+     op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
+     if (op0 == TREE_OPERAND (exp, 0))
+       return exp;
+
+     new = fold (build (code, TREE_TYPE (exp), op0, TREE_OPERAND (exp, 1)));
+   }
+  else
+    switch (TREE_CODE_CLASS (code))
+      {
+      case 'c':
+      case 'd':
+	return exp;
+
+      case 'x':
+      case '1':
+      case '2':
+      case '<':
+      case 'e':
+      case 'r':
+	switch (first_rtl_op (code))
+	  {
+	  case 0:
+	    return exp;
+
+	  case 1:
+	    op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
+	    if (op0 == TREE_OPERAND (exp, 0))
+	      return exp;
+
+	    new = fold (build1 (code, TREE_TYPE (exp), op0));
+	    break;
+
+	  case 2:
+	    op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
+	    op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
+
+	    if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1))
+	      return exp;
+
+	    new = fold (build2 (code, TREE_TYPE (exp), op0, op1));
+	    break;
+
+	  case 3:
+	    op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
+	    op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
+	    op2 = substitute_in_expr (TREE_OPERAND (exp, 2), f, r);
+
+	    if (op0 == TREE_OPERAND (exp, 0) && op1 == TREE_OPERAND (exp, 1)
+		&& op2 == TREE_OPERAND (exp, 2))
+	      return exp;
+
+	    new = fold (build3 (code, TREE_TYPE (exp), op0, op1, op2));
+	    break;
+
+	  default:
+	    abort ();
+	  }
+	break;
+
+      default:
+	abort ();
+      }
 
   TREE_READONLY (new) = TREE_READONLY (exp);
   return new;
