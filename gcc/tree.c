@@ -2691,7 +2691,7 @@ build_type_attribute_variant (ttype, attribute)
    targetm.valid_type_attribute_p that always returns false.  */
 
 int
-default_valid_attribute_p PARAMS ((attr_name, attr_args, decl, type))
+default_valid_attribute_p (attr_name, attr_args, decl, type)
      tree attr_name ATTRIBUTE_UNUSED;
      tree attr_args ATTRIBUTE_UNUSED;
      tree decl ATTRIBUTE_UNUSED;
