@@ -92,9 +92,6 @@ extern void   warning ();
 
 extern FILE  *asm_out_file;
 
-static void mips16_output_gp_offset ();
-static void build_mips16_function_stub ();
-
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
    of EQ, NE, etc. */
@@ -112,6 +109,30 @@ enum internal_test {
     ITEST_LEU,
     ITEST_MAX
   };
+
+
+struct constant;
+static enum internal_test map_test_to_internal_test	PROTO ((enum rtx_code));
+static int mips16_simple_memory_operand		PROTO ((rtx, rtx,
+							enum machine_mode));
+static int m16_check_op				PROTO ((rtx, int, int, int));
+static void block_move_loop			PROTO ((rtx, rtx, int, int,
+							rtx, rtx));
+static void block_move_call			PROTO ((rtx, rtx, rtx));
+static FILE *make_temp_file			PROTO ((void));
+static void save_restore_insns			PROTO ((int, rtx,
+							long, FILE *));
+static void mips16_output_gp_offset		PROTO ((FILE *, rtx));
+static void mips16_fp_args			PROTO ((FILE *, int, int));
+static void build_mips16_function_stub		PROTO ((FILE *));
+static void mips16_optimize_gp			PROTO ((rtx));
+static rtx add_constant				PROTO ((struct constant **,
+							rtx,
+							enum machine_mode));
+static void dump_constants			PROTO ((struct constant *,
+							rtx));
+static rtx mips_find_symbol			PROTO ((rtx));
+
 
 /* Global variables for machine-dependent things.  */
 
