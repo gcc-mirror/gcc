@@ -392,7 +392,8 @@ template <typename _Alloc>
         ++_M_finish;
       }
       else {
-        size_type __len = size() ? 2 * size() : _M_word_bit;
+        size_type __len = size() 
+	                  ? 2 * size() : static_cast<size_type>(_M_word_bit);
         _Bit_type * __q = _M_bit_alloc(__len);
         iterator __i = copy(begin(), __position, iterator(__q, 0));
         *__i++ = __x;
