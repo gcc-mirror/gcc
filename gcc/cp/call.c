@@ -5977,6 +5977,7 @@ joust (cand1, cand2)
 
       if (comp != 0)
 	{
+#if 0 /* move this warning to tourney.  */
 	  if (warn_sign_promo
 	      && ICS_RANK (t1) + ICS_RANK (t2) == STD_RANK + PROMO_RANK
 	      && TREE_CODE (t1) == STD_CONV
@@ -6000,6 +6001,7 @@ joust (cand1, cand2)
 			  type, type1, type2);
 	      cp_warning ("  in call to `%D'", DECL_NAME (cand1->fn));
 	    }
+#endif
 
 	  if (winner && comp != winner)
 	    {
@@ -6010,6 +6012,7 @@ joust (cand1, cand2)
 	}
     }
 
+#if 0 /* move this warning to tourney.  */
   /* warn about confusing overload resolution */
   if (winner && cand1->second_conv
       && ! DECL_CONSTRUCTOR_P (cand1->fn)
@@ -6030,6 +6033,7 @@ joust (cand1, cand2)
 	  cp_warning ("  because conversion sequence for `this' argument is better");
 	}
     }
+#endif
 
   if (winner)
     return winner;
