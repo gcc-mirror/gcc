@@ -124,6 +124,7 @@ static void sanitize_cpp_opts PARAMS ((void));
   OPT("MQ",                     CL_ALL | CL_ARG, OPT_MQ)		     \
   OPT("MT",                     CL_ALL | CL_ARG, OPT_MT)		     \
   OPT("P",                      CL_ALL,   OPT_P)			     \
+  OPT("Wabi",                   CL_CXX,   OPT_Wabi)                          \
   OPT("Wall",			CL_ALL,   OPT_Wall)			     \
   OPT("Wbad-function-cast",	CL_C,     OPT_Wbad_function_cast)	     \
   OPT("Wcast-qual",		CL_ALL,   OPT_Wcast_qual)		     \
@@ -682,6 +683,10 @@ c_common_decode_option (argc, argv)
 
     case OPT_P:
       cpp_opts->no_line_commands = 1;
+      break;
+
+    case OPT_Wabi:
+      warn_abi = on;
       break;
 
     case OPT_Wall:
