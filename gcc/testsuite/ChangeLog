@@ -2,6 +2,7 @@
 
 	* gcc.c-torture/compile/20000502-1.c: New test.
 	* g++.old-deja/g++.other/align.C: New test.
+	* gcc.dg/cpp-tradstringify.c: New test.
 
 Sun Apr 23 14:41:33 2000  Jeffrey A Law  (law@cygnus.com)
 

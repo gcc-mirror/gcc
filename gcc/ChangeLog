@@ -1,3 +1,8 @@
+2000-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* cpphash.c (trad_stringify): Adjust p after stringification as
+	well.
+
 2000-05-02  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.h (CPP_POP, parse_cleanup_t): Delete.

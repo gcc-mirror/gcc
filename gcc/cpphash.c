@@ -433,6 +433,7 @@ trad_stringify (pfile, base, len, argc, argv, pat, endpat, last)
 		     argv[i].rest_arg);
 	    last = CPP_WRITTEN (pfile);
 	    base = p + argv[i].len;
+	    p = base;
 	    goto proceed;
 	  }
       p++;
