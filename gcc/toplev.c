@@ -3871,6 +3871,8 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 		write_symbols = XCOFF_DEBUG;
 	      else if (!strncmp (str, "gxcoff", len))
 		write_symbols = XCOFF_DEBUG;
+	      else if (!strncmp (str, "gxcoff+", len))
+		write_symbols = XCOFF_DEBUG;
 
 	      /* Always enable extensions for -ggdb or -gxcoff+,
 		 always disable for -gxcoff.
