@@ -214,7 +214,7 @@ find_methodref_index (cpool, decl)
 #define PUT1(X)  (*ptr++ = (X))
 #define PUT2(X)  (PUT1((X) >> 8), PUT1(X))
 #define PUT4(X)  (PUT2((X) >> 16), PUT2(X))
-#define PUTN(P, N)  (bcopy(P, ptr, N), ptr += (N))
+#define PUTN(P, N)  (memcpy(ptr, (P), (N)), ptr += (N))
 
 /* Give the number of bytes needed in a .class file for the CPOOL
    constant pool.  Includes the 2-byte constant_pool_count. */

@@ -417,10 +417,8 @@ java_read_char (lex)
 			 is in the middle of a character sequence.  We just
 			 move the valid part of the buffer to the beginning
 			 to force a read.  */
-		      /* We use bcopy() because it should work for
-			 overlapping strings.  Use memmove() instead... */
-		      bcopy (&lex->buffer[lex->first], &lex->buffer[0],
-			     lex->last - lex->first);
+		      memmove (&lex->buffer[0], &lex->buffer[lex->first],
+			       lex->last - lex->first);
 		      lex->last -= lex->first;
 		      lex->first = 0;
 		    }

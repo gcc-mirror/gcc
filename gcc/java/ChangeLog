@@ -1,3 +1,11 @@
+2001-03-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* constants.c (PUTN): Use memcpy, not bcopy.
+
+	* lex.c (java_read_char): Use memmove, not bcopy.
+
+	* parse.y (java_parser_context_resume): Use memcpy, not bcopy.
+
 2001-03-23  Per Bothner  <per@bothner.com>
 
 	* verify.c (verify_jvm_instructions):  Replace 3 pop_type by POP_TYPE
