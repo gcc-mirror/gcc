@@ -309,7 +309,7 @@ closure_test_fn(ffi_cif* cif,void* resp,void** args, void* userdata)
 	       (int)(*(int *)args[10]), (int)(*(float *)args[11]),
 	       (int)*(int *)args[12], (int)(*(int *)args[13]), 
 	       (int)(*(int *)args[14]),*(int *)args[15],
-	       (int)(long)userdata, *(int*)resp);
+	       (int)(long)userdata, (int)*(ffi_arg *)resp);
 }
 
 typedef int (*closure_test_type)(unsigned long long, int, unsigned long long, 
@@ -339,7 +339,7 @@ static void closure_test_fn1(ffi_cif* cif,void* resp,void** args,
 	   (int)(*(int *)args[10]), (int)(*(float *)args[11]),
 	   (int)*(int *)args[12], (int)(*(int *)args[13]),
 	   (int)(*(int *)args[14]), *(int *)args[15],
-	   (int)(long)userdata, *(int*)resp);
+	   (int)(long)userdata, (int)*(ffi_arg *)resp);
 }
 
 typedef int (*closure_test_type1)(float, float, float, float, signed short, 
@@ -368,7 +368,7 @@ static void closure_test_fn2(ffi_cif* cif,void* resp,void** args,
 	   (int)(*(int *)args[10]), (int)(*(float *)args[11]),
 	   (int)*(int *)args[12], (int)(*(float *)args[13]), 
 	   (int)(*(int *)args[14]), *(int *)args[15], (int)(long)userdata, 
-	   *(int*)resp);
+	   (int)*(ffi_arg *)resp);
  }
 
 typedef int (*closure_test_type2)(double, double, double, double, signed short,
@@ -397,7 +397,7 @@ static void closure_test_fn3(ffi_cif* cif,void* resp,void** args,
 	   (int)(*(float *)args[10]), (int)(*(float *)args[11]),
 	   (int)*(int *)args[12], (int)(*(float *)args[13]), 
 	   (int)(*(float *)args[14]), *(int *)args[15], (int)(long)userdata,
-	   *(int*)resp);
+	   (int)*(ffi_arg *)resp);
  }
 
 typedef int (*closure_test_type3)(float, float, float, float, float, float,
@@ -430,6 +430,7 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
   /* The closure must not be an automatic variable on
      platforms (Solaris) that forbid stack execution by default. */
   static ffi_closure cl;
+  ffi_closure *pcl = &cl;
 #endif
 
   ffi_type * cl_arg_types[17];
@@ -841,8 +842,8 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
     ts2_arg.d1 = 5.55;
     ts2_arg.d2 = 6.66;
 
-    printf ("%g\n", ts2_result->d1);
-    printf ("%g\n", ts2_result->d2);
+    printf ("%g\n", ts2_arg.d1);
+    printf ("%g\n", ts2_arg.d2);
 
     ffi_call(&cif, FFI_FN(struct2), ts2_result, values);
 
@@ -1161,6 +1162,13 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
 #endif /* X86_WIN32 */
 
 # if FFI_CLOSURES
+#  if __GNUC__ >= 2
+   /* Hide before the compiler that pcl is &cl, since on
+      some architectures it is not possible to call a data
+      object using direct function call.  */
+   asm ("" : "=g" (pcl) : "0" (pcl));
+#  endif
+
   /* A simple closure test */
     {
       (void) puts("\nEnter FFI_CLOSURES\n");
@@ -1187,10 +1195,10 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
       CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 16,
 			 &ffi_type_sint, cl_arg_types) == FFI_OK);
 
-      CHECK(ffi_prep_closure(&cl, &cif, closure_test_fn,
+      CHECK(ffi_prep_closure(pcl, &cif, closure_test_fn,
 			     (void *) 3 /* userdata */) == FFI_OK);
       
-      CHECK((*((closure_test_type)(&cl)))
+      CHECK((*((closure_test_type)pcl))
 	    (1LL, 2, 3LL, 4, 127, 429LL, 7, 8, 9.5, 10, 11, 12, 13, 
 	     19, 21, 1) == 680);
     }
@@ -1219,10 +1227,10 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
       CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 16,
 			 &ffi_type_sint, cl_arg_types) == FFI_OK);
 
-      CHECK(ffi_prep_closure(&cl, &cif, closure_test_fn1,
+      CHECK(ffi_prep_closure(pcl, &cif, closure_test_fn1,
 			     (void *) 3 /* userdata */)  == FFI_OK);
       
-      CHECK((*((closure_test_type1)(&cl)))
+      CHECK((*((closure_test_type1)pcl))
 	    (1.1, 2.2, 3.3, 4.4, 127, 5.5, 6.6, 8, 9, 10, 11, 12.0, 13,
 	     19, 21, 1) == 255);
     }
@@ -1251,10 +1259,10 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
       CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 16,
 			 &ffi_type_sint, cl_arg_types) == FFI_OK);
 
-      CHECK(ffi_prep_closure(&cl, &cif, closure_test_fn2,
+      CHECK(ffi_prep_closure(pcl, &cif, closure_test_fn2,
 			     (void *) 3 /* userdata */) == FFI_OK);
 
-      CHECK((*((closure_test_type2)(&cl)))
+      CHECK((*((closure_test_type2)pcl))
 	    (1, 2, 3, 4, 127, 5, 6, 8, 9, 10, 11, 12.0, 13,
 	     19.0, 21, 1) == 255);
 
@@ -1284,10 +1292,10 @@ int main(/*@unused@*/ int argc, /*@unused@*/ char *argv[])
       CHECK(ffi_prep_cif(&cif, FFI_DEFAULT_ABI, 16,
 			 &ffi_type_sint, cl_arg_types) == FFI_OK);
 
-      CHECK(ffi_prep_closure(&cl, &cif, closure_test_fn3,
+      CHECK(ffi_prep_closure(pcl, &cif, closure_test_fn3,
 			     (void *) 3 /* userdata */)  == FFI_OK);
       
-      CHECK((*((closure_test_type3)(&cl)))
+      CHECK((*((closure_test_type3)pcl))
 	    (1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7, 8.8, 9, 10, 11.11, 12.0, 13,
 	     19.19, 21.21, 1) == 135);
     }

@@ -158,6 +158,12 @@ extern "C" {
 #define SIZEOF_ARG SIZEOF_VOID_P
 #endif
 
+#ifdef POWERPC
+#if defined (__powerpc64__)
+#define POWERPC64
+#endif
+#endif
+
 #ifdef SPARC
 #if defined(__arch64__) || defined(__sparcv9)
 #define SPARC64
@@ -250,7 +256,12 @@ typedef enum ffi_abi {
 #ifdef POWERPC
   FFI_SYSV,
   FFI_GCC_SYSV,
+  FFI_LINUX64,
+# ifdef POWERPC64
+  FFI_DEFAULT_ABI = FFI_LINUX64,
+# else
   FFI_DEFAULT_ABI = FFI_GCC_SYSV,
+# endif
 #endif
 
 #ifdef POWERPC_AIX
@@ -435,7 +446,11 @@ struct ffi_ia64_trampoline_struct {
 #elif defined(POWERPC)
 
 #define FFI_CLOSURES 1
+#ifdef POWERPC64
+#define FFI_TRAMPOLINE_SIZE 24
+#else
 #define FFI_TRAMPOLINE_SIZE 40
+#endif
 #define FFI_NATIVE_RAW_API 0
 
 #elif defined(POWERPC_DARWIN)
