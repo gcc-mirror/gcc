@@ -17,8 +17,6 @@
 #   . ${srcdir}/../config-ml.in
 # fi
 #
-# See librx/configure.in in the libg++ distribution for an example of how
-# to handle autoconf'd libraries.
 #
 # Things are complicated because 6 separate cases must be handled:
 # 2 (native, cross) x 3 (absolute-path, relative-not-dot, dot) = 6.
@@ -30,13 +28,10 @@
 # The build tree is layed out as
 #
 # ./
-#   libg++
 #   newlib
 #   m68020/
-#          libg++
 #          newlib
 #          m68881/
-#                 libg++
 #                 newlib
 #
 # The nice feature about this arrangement is that inter-library references
@@ -156,7 +151,7 @@ done
 if [ "${enable_multilib}" = yes ]; then
 
 # Compute whether this is the library's top level directory
-# (ie: not a multilib subdirectory, and not a subdirectory like libg++/src).
+# (ie: not a multilib subdirectory, and not a subdirectory like newlib/src).
 # ${with_multisubdir} tells us we're in the right branch, but we could be
 # in a subdir of that.
 # ??? The previous version could void this test by separating the process into
