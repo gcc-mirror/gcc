@@ -1,3 +1,11 @@
+Wed Feb 28 17:19:28 CET 2001  Jan Hubicka  <jh@suse.cz.
+
+	* ifcvt.c (noce_emit_store_flag, noce_try_store_flag_constants,
+	noce_try_store_flag_inc, noce_try_store_flag_mask,
+	noce_try_cmove_arith):
+	Use reversed_comparison_code instead of reverse_comparison and
+	can_reverse_comparison_p.
+
 Wed Feb 28 17:17:29 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c (reversed_comparison_code_parts): Allow reversal of
