@@ -7,6 +7,7 @@
 	* src/complexl.cc: Fixup.
 	* include/c_std/bits/std_cmath.h: Fixup.
 	* include/c/bits/std_cmath.h: Fixup.
+	* docs/configopts.html: Add docs.
 	
 	* docs/links.html: Add links to defects list, standards FAQ.
 
