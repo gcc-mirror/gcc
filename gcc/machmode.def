@@ -59,8 +59,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    It is same as the fifth argument except for complexes and vectors,
    since they are really made of many equal size subunits.
 
-   Seventh arg is next wider natural mode of the same class.
-   0 if there is none.  */
+   Seventh arg is next wider natural mode of the same class.  0 if
+   there is none.  Vector modes use this field to point to the next
+   vector size, so we can iterate through the different vectors modes.
+   The ordering is by increasing byte size, with QI coming before HI,
+   HI before SI, etc.  */
 
 /* VOIDmode is used when no mode needs to be specified,
    as for example on CONST_INT RTL expressions.  */
@@ -109,7 +112,7 @@ DEF_MACHMODE (COImode, "COI", MODE_COMPLEX_INT, BITS_PER_UNIT*64, 64, 32, VOIDmo
 /* There are no V1xx vector modes.  These are equivalent to normal
    scalar modes.  */
 /* The wider mode field for vectors follows in order of increasing bit
-   size with QI coming before HI, HI before SI, and SI before DF
+   size with QI coming before HI, HI before SI, and SI before DI
    within same bit sizes.  */
 DEF_MACHMODE (V2QImode, "V2QI", MODE_VECTOR_INT, BITS_PER_UNIT*2, 2, 1, V4QImode)
 DEF_MACHMODE (V2HImode, "V2HI", MODE_VECTOR_INT, BITS_PER_UNIT*4, 4, 2, V8QImode)
