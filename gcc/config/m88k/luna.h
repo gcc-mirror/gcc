@@ -37,7 +37,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Macros to be automatically defined.  */
 #undef	CPP_PREDEFINES
 #define CPP_PREDEFINES \
-    "-DMACH -Dmc88100 -Dm88k -Dunix -Dluna -Dluna88k -D__CLASSIFY_TYPE__=2"
+    "-DMACH -Dm88k -Dunix -Dluna -Dluna88k -D__CLASSIFY_TYPE__=2"
+
+/* If -m88000 is in effect, add -Dmc88000; similarly for -m88100 and -m88110.
+   However, reproduce the effect of -Dmc88100 previously in CPP_PREDEFINES.
+   Here, the CPU_DEFAULT is assumed to be -m88100.  */
+#undef	CPP_SPEC
+#define	CPP_SPEC "%{m88000:-D__mc88000__} \
+		  %{!m88000:%{m88100:%{m88110:-D__mc88000__}}} \
+		  %{!m88000:%{!m88100:%{m88110:-D__mc88110__}}} \
+		  %{!m88000:%{!m88110:%{!ansi:%{traditional:-Dmc88100}} \
+				      -D__mc88100__ -D__mc88100}}"
 
 /* Specify extra dir to search for include files.  */
 #undef	SYSTEM_INCLUDE_DIR
