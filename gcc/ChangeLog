@@ -1,3 +1,22 @@
+2005-02-25  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/19930
+	* doc/tm.texi (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Document.
+	(LIBGCC2_HAS_DF_MODE): New.
+	(LIBGCC2_HAS_XF_MODE): New.
+	(LIBGCC2_HAS_TF_MODE): New.
+	* libgcc2.h (LIBGCC2_HAS_XF_MODE): New name for HAVE_XFMODE.
+	(LIBGCC2_HAS_TF_MODE): New name for HAVE_TFMODE.
+	* libgcc2.c (LIBGCC2_HAS_XF_MODE): New name for HAVE_XFMODE.
+	(LIBGCC2_HAS_TF_MODE): New name for HAVE_TFMODE.
+	(LIBGCC2_HAS_DF_MODE): New name for HAVE_DFMODE.
+	* config/ia64/t-ia64 (LIB1ASMFUNCS): Remove __compat
+	and add _fixtfdi, _fixunstfdi, _floatditf
+	* lib1funcs.asm: Remove L__compat. Add L_fixtfdi,
+	L_fixunstfdi, L_floatditf.
+	* config/ia64/hpux.h (LIBGCC2_HAS_XF_MODE): Define.
+	(LIBGCC2_HAS_TF_MODE): Define.
+
 2005-02-25  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/20204

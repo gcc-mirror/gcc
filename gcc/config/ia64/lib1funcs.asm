@@ -706,9 +706,8 @@ __ia64_trampoline:
 	.endp __ia64_trampoline
 #endif
 
-#ifdef L__compat
 // Thunks for backward compatibility.
-
+#ifdef L_fixtfdi
 	.text
 	.align 16
 	.global __fixtfti
@@ -719,7 +718,8 @@ __fixtfti:
 	  ;;
 	}
 	.endp __fixtfti
-
+#endif
+#ifdef L_fixunstfdi
 	.align 16
 	.global __fixunstfti
 	.proc __fixunstfti
@@ -729,7 +729,8 @@ __fixunstfti:
 	  ;;
 	}
 	.endp __fixunstfti
-
+#endif
+#if L_floatditf
 	.align 16
 	.global __floattitf
 	.proc __floattitf
@@ -739,5 +740,4 @@ __floattitf:
 	  ;;
 	}
 	.endp __floattitf
-
 #endif
