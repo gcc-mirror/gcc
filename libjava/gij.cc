@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Red Hat, Inc.
+/* Copyright (C) 1999  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -38,7 +38,7 @@ static void
 version ()
 {
   printf ("gij (GNU libgcj) version %s\n\n", VERSION);
-  printf ("Copyright (C) 1999 Red Hat, Inc..\n");
+  printf ("Copyright (C) 1999 Free Software Foundation.\n");
   printf ("This is free software; see the source for copying conditions.  There is NO\n");
   printf ("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
   exit (0);

@@ -1,6 +1,6 @@
 // ContentHandlerFactory.java - Abstract Content Handler factory.
 
-/* Copyright (C) 1999  Red Hat, Inc.
+/* Copyright (C) 1999  Free Software Foundation
 
    This file is part of libgcj.
 

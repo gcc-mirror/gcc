@@ -1,6 +1,6 @@
 // FileNameMap.java - Abstract interface to map from a File Name to MIME type.
 
-/* Copyright (C) 1999  Red Hat, Inc.
+/* Copyright (C) 1999  Free Software Foundation
 
    This file is part of libgcj.
 

@@ -1,6 +1,6 @@
 // OutputStream.java - Send output bytes to output sink.
 
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999  Free Software Foundation
 
    This file is part of libgcj.
 

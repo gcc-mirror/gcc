@@ -1,6 +1,6 @@
 // Output_iconv.java -- Java side of iconv() writer.
 
-/* Copyright (C) 2000  Red Hat, Inc.
+/* Copyright (C) 2000  Free Software Foundation
 
    This file is part of libgcj.
 
