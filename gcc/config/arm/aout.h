@@ -248,4 +248,7 @@ do { char dstr[30];							\
 #define ASM_COMMENT_START "@"
 #endif
 
+/* This works for GAS and some other assemblers.  */
+#define SET_ASM_OP	".set"
+
 #include "arm/arm.h"
