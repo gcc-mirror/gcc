@@ -1,3 +1,8 @@
+2000-02-06  Richard Henderson  <rth@cygnus.com>
+
+	* simplify-rtx.c (simplify_relational_operation): Canonicalize
+	constant to op1 for testing.
+
 2000-02-06  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (*ldi_on_overflow): New pattern.
@@ -171,20 +176,20 @@
 2000-02-04  Jan Hubicka  <jh@suse.cz>
 	    Richard Henderson  <rth@cygnus.com>
 
-        * i386.c (SAVE_REGS_FIRST): Remove.
-        (ix86_initial_elimination_offset): Handle only SAVE_REGS_FIRST mode.
-        (ix86_compute_frame_size): Likewise.
+	* i386.c (SAVE_REGS_FIRST): Remove.
+	(ix86_initial_elimination_offset): Handle only SAVE_REGS_FIRST mode.
+	(ix86_compute_frame_size): Likewise.
 	(ix86_expand_prologue): Likewise.  Use pro_epilogue_adjust_stack.
-        (ix86_emit_restore_regs): Remove.
+	(ix86_emit_restore_regs): Remove.
 	(ix86_emit_epilogue_esp_adjustment): Use pro_epilogue_adjust_stack
 	when a frame pointer is in use.
-        (ix86_expand_epilogue): Handle only SAVE_REGS_FIRST mode.  Use mov
+	(ix86_expand_epilogue): Handle only SAVE_REGS_FIRST mode.  Use mov
 	instead of pop to restore a register when profitable; emit leave
 	when profitable.
-        (ix86_attr_length_default): Handle pro_epilogue_adjust_stack
-        as a TYPE_LEA insn.
+	(ix86_attr_length_default): Handle pro_epilogue_adjust_stack
+	as a TYPE_LEA insn.
 	(ix86_adjust_cost): Handle pro_epilogue_adjust_stack as TYPE_ALU.
-        * i386.md (prologue_allocate_stack): Remove.
+	* i386.md (prologue_allocate_stack): Remove.
 	(epilogue_deallocate_stack): Remove.
 	(pro_epilogue_adjust_stack): New.
 

@@ -1591,6 +1591,14 @@ simplify_relational_operation (code, mode, op0, op1)
       )
     return 0;
 
+  /* Make sure the constant is second.  */
+  if ((CONSTANT_P (op0) && ! CONSTANT_P (op1))
+      || (GET_CODE (op0) == CONST_INT && GET_CODE (op1) != CONST_INT))
+    {
+      tem = op0, op0 = op1, op1 = tem;
+      code = swap_condition (code);
+    }
+
   /* For integer comparisons of A and B maybe we can simplify A - B and can
      then simplify a comparison of that with zero.  If A and B are both either
      a register or a CONST_INT, this can't help; testing for these cases will
