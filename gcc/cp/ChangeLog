@@ -1,3 +1,10 @@
+2004-03-19  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* cxx-pretty-print.c (pp_cxx_unqualified_id): Use
+	TEMPLATE_TYPE_PARM_INDEX instead of TYPE_FIELDS.
+	* search.c (dfs_unuse_fields): Add two more TREE_CODES that mean
+	the field is named TEMPLATE_TYPE_PARM_INDEX.
+
 2004-03-19  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14545
