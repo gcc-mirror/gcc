@@ -1,3 +1,7 @@
+2001-04-21  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (general_operand_src): Fix a comment typo.
+
 2001-04-20  Zack Weinberg  <zackw@stanford.edu>
 
 	* configure.in: Probe for times, clock, struct tms, and clock_t.
