@@ -1,5 +1,12 @@
 2004-06-13  Daniel Berlin  <dberlin@dberlin.org>
 
+	Fix PR tree-optimization/15979
+	Fix PR tree-optimization/15981
+	* tree-ssa-pre.c (insert_aux): Fix faulty logic so that we don't
+	try to insert values undefined along some path.
+
+2004-06-13  Daniel Berlin  <dberlin@dberlin.org>
+
 	* tree-ssa-pre.c (add_to_value): is_gimple_min_invariant things
 	are available everywhere too.
 
