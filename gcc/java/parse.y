@@ -14032,8 +14032,7 @@ build_string_concatenation (tree op1, tree op2)
       /* OP1 is no longer the last node holding a crafted StringBuffer */
       IS_CRAFTED_STRING_BUFFER_P (op1) = 0;
       /* Create a node for `{new...,xxx}.append (op2)' */
-      if (op2)
-	op1 = make_qualified_primary (op1, BUILD_APPEND (op2), 0);
+      op1 = make_qualified_primary (op1, BUILD_APPEND (op2), 0);
     }
 
   /* Mark the last node holding a crafted StringBuffer */
@@ -16047,8 +16046,10 @@ patch_conditional_expr (tree node, tree wfl_cond, tree wfl_op1)
   tree t1, t2, patched;
   int error_found = 0;
 
-  /* Operands of ?: might be StringBuffers crafted as a result of a
-     string concatenation. Obtain a descent operand here.  */
+  /* The condition and operands of ?: might be StringBuffers crafted
+     as a result of a string concatenation.  Obtain decent ones here.  */
+  if ((patched = patch_string (cond)))
+    TREE_OPERAND (node, 0) = cond = patched;
   if ((patched = patch_string (op1)))
     TREE_OPERAND (node, 1) = op1 = patched;
   if ((patched = patch_string (op2)))
