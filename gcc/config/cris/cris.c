@@ -1,5 +1,6 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -1259,7 +1260,7 @@ cris_target_asm_function_epilogue (FILE *file, HOST_WIDE_INT size)
 
       /* Output the delay-slot-insn the mandated way.  */
       final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
-		       file, 1, -2, 1);
+		       file, 1, -2, 1, NULL);
     }
   else if (file)
     {

@@ -235,7 +235,6 @@ static int final_addr_vec_align (rtx);
 #ifdef HAVE_ATTR_length
 static int align_fuzz (rtx, rtx, int, unsigned);
 #endif
-static rtx final_scan_insn (rtx, FILE *, int, int, int, int *);
 
 /* Initialize data in final at the beginning of a compilation.  */
 
@@ -1638,7 +1637,7 @@ output_alternate_entry_point (FILE *file, rtx insn)
    at the beginning of the second basic block, whichever comes
    first.  */
 
-static rtx
+rtx
 final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 		 int prescan, int nopeepholes ATTRIBUTE_UNUSED,
 		 int *seen)

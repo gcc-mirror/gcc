@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for HPPA.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2003 Free Software Foundation, Inc.
+   2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GCC.
@@ -6125,7 +6125,7 @@ output_lbranch (rtx dest, rtx insn)
 	abort ();
 
       final_scan_insn (NEXT_INSN (insn), asm_out_file,
-		       optimize, 0, 0);
+		       optimize, 0, 0, NULL);
 
       /* Now delete the delay insn.  */
       PUT_CODE (NEXT_INSN (insn), NOTE);
@@ -7129,7 +7129,7 @@ output_call (rtx insn, rtx call_dest, int sibcall)
 	      && !sibcall)
 	    {
 	      final_scan_insn (NEXT_INSN (insn), asm_out_file,
-			       optimize, 0, 0);
+			       optimize, 0, 0, NULL);
 
 	      /* Now delete the delay insn.  */
 	      PUT_CODE (NEXT_INSN (insn), NOTE);
@@ -7177,7 +7177,8 @@ output_call (rtx insn, rtx call_dest, int sibcall)
 	      /* A non-jump insn in the delay slot.  By definition we can
 		 emit this insn before the call (and in fact before argument
 		 relocating.  */
-	      final_scan_insn (NEXT_INSN (insn), asm_out_file, optimize, 0, 0);
+	      final_scan_insn (NEXT_INSN (insn), asm_out_file, optimize, 0, 0,
+			       NULL);
 
 	      /* Now delete the delay insn.  */
 	      PUT_CODE (NEXT_INSN (insn), NOTE);
