@@ -39,13 +39,15 @@ Boston, MA 02111-1307, USA.  */
 #include "fileio.h"
 
 #ifndef PATH_MAX
-#ifdef _POSIX_PATH_MAX
-#define PATH_MAX _POSIX_PATH_MAX
-#else
-#ifdef MAXPATHLEN
-#define PATH_MAX MAXPATHLEN
-#endif
-#endif
+#   ifdef _POSIX_PATH_MAX
+#       define PATH_MAX _POSIX_PATH_MAX
+#   else
+#       ifdef MAXPATHLEN
+#           define PATH_MAX MAXPATHLEN
+#       else
+#           define PATH_MAX 1024
+#       endif
+#   endif
 #endif
 
 static
