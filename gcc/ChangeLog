@@ -1,3 +1,8 @@
+Mon Aug 23 23:35:52 1999  Matthias Klose  <doko@cs.tu-berlin.de>
+
+	* cpp.texi: Add a node documenting macro varargs (copied
+ 	from extend.texi).
+
 1999-08-23 22:23 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* cppspec.c: Put a null pointer at the end of the new argv.
