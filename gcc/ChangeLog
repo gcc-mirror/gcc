@@ -1,3 +1,9 @@
+2003-04-01  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* combine.c (merge_outer_ops): Fix typo.
+
+	* varasm.c (make_decl_one_only): Revert 2003-03-09 patch.
+
 2003-04-01  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/{40x.md,603.md,6xx.md,7450.md,7xx.md,mpc.md,
