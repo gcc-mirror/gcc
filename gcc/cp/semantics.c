@@ -2324,9 +2324,9 @@ finish_id_expression (tree id_expression,
 		      tree scope,
 		      cp_id_kind *idk,
 		      tree *qualifying_class,
-		      bool constant_expression_p,
-		      bool allow_non_constant_expression_p,
-		      bool *non_constant_expression_p,
+		      bool integral_constant_expression_p,
+		      bool allow_non_integral_constant_expression_p,
+		      bool *non_integral_constant_expression_p,
 		      const char **error_msg)
 {
   /* Initialize the output parameters.  */
@@ -2399,14 +2399,14 @@ finish_id_expression (tree id_expression,
       *idk = CP_ID_KIND_NONE;
       if (TREE_CODE (decl) == TEMPLATE_PARM_INDEX)
 	decl = TEMPLATE_PARM_DECL (decl);
-      if (constant_expression_p 
+      if (integral_constant_expression_p 
 	  && !INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))) 
 	{
-	  if (!allow_non_constant_expression_p)
+	  if (!allow_non_integral_constant_expression_p)
 	    error ("template parameter `%D' of type `%T' is not allowed in "
 		   "an integral constant expression because it is not of "
 		   "integral or enumeration type", decl, TREE_TYPE (decl));
-	  *non_constant_expression_p = true;
+	  *non_integral_constant_expression_p = true;
 	}
       return DECL_INITIAL (decl);
     }
@@ -2510,8 +2510,8 @@ finish_id_expression (tree id_expression,
 	      /* Since this name was dependent, the expression isn't
 		 constant -- yet.  No error is issued because it might
 		 be constant when things are instantiated.  */
-	      if (constant_expression_p)
-		*non_constant_expression_p = true;
+	      if (integral_constant_expression_p)
+		*non_integral_constant_expression_p = true;
 	      if (TYPE_P (scope) && dependent_type_p (scope))
 		return build_nt (SCOPE_REF, scope, id_expression);
 	      else if (TYPE_P (scope) && DECL_P (decl))
@@ -2527,8 +2527,8 @@ finish_id_expression (tree id_expression,
 	  /* Since this name was dependent, the expression isn't
 	     constant -- yet.  No error is issued because it might be
 	     constant when things are instantiated.  */
-	  if (constant_expression_p)
-	    *non_constant_expression_p = true;
+	  if (integral_constant_expression_p)
+	    *non_integral_constant_expression_p = true;
 	  *idk = CP_ID_KIND_UNQUALIFIED_DEPENDENT;
 	  return id_expression;
 	}
@@ -2536,7 +2536,7 @@ finish_id_expression (tree id_expression,
       /* Only certain kinds of names are allowed in constant
        expression.  Enumerators and template parameters 
        have already been handled above.  */
-      if (constant_expression_p)
+      if (integral_constant_expression_p)
 	{
 	    /* Const variables or static data members of integral or
 	      enumeration types initialized with constant expressions
@@ -2548,12 +2548,12 @@ finish_id_expression (tree id_expression,
 	    ;
 	  else
 	    {
-	      if (!allow_non_constant_expression_p)
+	      if (!allow_non_integral_constant_expression_p)
 		{
 		  error ("`%D' cannot appear in a constant-expression", decl);
 		  return error_mark_node;
 		}
-	      *non_constant_expression_p = true;
+	      *non_integral_constant_expression_p = true;
 	    }
 	}
       

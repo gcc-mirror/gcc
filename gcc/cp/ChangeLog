@@ -1,3 +1,12 @@
+2003-12-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/12253
+	* init.c (build_vec_init): Initialization of an element from
+	an initializer list is also a full-expression.
+
+	* parser.c, pt.c, semantics.c: Rename constant_expression_p
+	to integral_constant_expression_p.
+
 2003-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13262
