@@ -1,3 +1,8 @@
+2000-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Makefile.in (keyword.h): Refer to GNU FTP site for updated
+	gperf.
+
 2000-10-05  Tom Tromey  <tromey@cygnus.com>
 
 	* jvspec.c (jvgenmain_spec): Added `-fdollars-in-identifiers'.
