@@ -1,6 +1,6 @@
 Fri Mar 27 18:08:21 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
-	* sh.c (find_barrier): Fix calculations for alignemnt increase.
+	* sh.c (find_barrier): Fix calculations for alignment increase.
 
 Fri Mar 27 08:56:52 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
