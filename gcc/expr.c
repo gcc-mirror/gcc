@@ -2461,11 +2461,15 @@ get_push_address (size)
    to store the arg.  On machines with push insns, ARGS_ADDR is 0 when a
    argument block has not been preallocated.
 
-   ARGS_SO_FAR is the size of args previously pushed for this call.  */
+   ARGS_SO_FAR is the size of args previously pushed for this call.
+
+   REG_PARM_STACK_SPACE is nonzero if functions require stack space
+   for arguments passed in registers.  If nonzero, it will be the number
+   of bytes required.  */
 
 void
 emit_push_insn (x, mode, type, size, align, partial, reg, extra,
-		args_addr, args_so_far)
+		args_addr, args_so_far, reg_parm_stack_space)
      register rtx x;
      enum machine_mode mode;
      tree type;
@@ -2476,6 +2480,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
      int extra;
      rtx args_addr;
      rtx args_so_far;
+     int reg_parm_stack_space;
 {
   rtx xinner;
   enum direction stack_direction
@@ -2522,11 +2527,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	 skip the part of stack space corresponding to the registers.
 	 Otherwise, start copying to the beginning of the stack space,
 	 by setting SKIP to 0.  */
-#ifndef REG_PARM_STACK_SPACE
-      skip = 0;
-#else
-      skip = used;
-#endif
+      skip = (reg_parm_stack_space == 0) ? 0 : used;
 
 #ifdef PUSH_ROUNDING
       /* Do it with several push insns if that doesn't take lots of insns
@@ -2753,11 +2754,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	 skip the part of stack space corresponding to the registers.
 	 Otherwise, start copying to the beginning of the stack space,
 	 by setting SKIP to 0.  */
-#ifndef REG_PARM_STACK_SPACE
-      skip = 0;
-#else
-      skip = not_stack;
-#endif
+      skip = (reg_parm_stack_space == 0) ? 0 : not_stack;
 
       if (CONSTANT_P (x) && ! LEGITIMATE_CONSTANT_P (x))
 	x = validize_mem (force_const_mem (mode, x));
@@ -2781,7 +2778,8 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 			  word_mode, NULL_TREE, NULL_RTX, align, 0, NULL_RTX,
 			  0, args_addr,
 			  GEN_INT (args_offset + ((i - not_stack + skip)
-						  * UNITS_PER_WORD)));
+						  * UNITS_PER_WORD)),
+			  reg_parm_stack_space);
     }
   else
     {

@@ -726,7 +726,7 @@ extern rtx gen_push_operand PROTO((void));
 #ifdef TREE_CODE
 /* Generate code to push something onto the stack, given its mode and type.  */
 extern void emit_push_insn PROTO((rtx, enum machine_mode, tree, rtx, int,
-				  int, rtx, int, rtx, rtx));
+				  int, rtx, int, rtx, rtx, int));
 
 /* Emit library call.  */
 extern void emit_library_call PVPROTO((rtx orgfun, int no_queue,
