@@ -1,5 +1,17 @@
 2004-12-22  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (alpha_expand_mov): Split out ...
+	(alpha_expand_movmisalign): ... misaligned vector support.
+	(TARGET_VECTORIZE_MISALIGNED_MEM_OK): Remove.
+	* config/alpha/alpha-protos.h: Update.
+	* config/alpha/alpha.md (VEC): New macro.
+	(movv8qi, movv4hi, movv2si): Compress with VEC.
+	(movv8qi_fix, movv4hi_fix, movv2si_fix): Likewise.
+	(movv8qi_nofix, movv4hi_nofix, movv2si_nofix): Likewise.
+	(movmisalign<mode>): New.
+
+2004-12-22  Richard Henderson  <rth@redhat.com>
+
 	* optabs.h (OTI_movmisalign, movmisalign_optab): New.
 	* optabs.c (init_optabs): Create it.
 	* genopinit.c (optabs): Initialize it.
