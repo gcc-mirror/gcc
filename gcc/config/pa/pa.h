@@ -182,21 +182,6 @@ extern int target_flags;
 #define WCHAR_TYPE "unsigned int"
 #define WCHAR_TYPE_SIZE 32
 
-/* Sometimes certain combinations of command options do not make sense
-   on a particular target machine.  You can define a macro
-   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
-   defined, is executed once just after all the command options have
-   been parsed.
-
-   On the PA, it is used to explicitly warn the user that -fpic and -fPIC
-   do not work.  */
-
-#define OVERRIDE_OPTIONS \
-{								\
-  if (flag_pic != 0)						\
-    warning ("-fpic and -fPIC are not supported on the PA.");	\
-}
-
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
 
@@ -495,8 +480,12 @@ extern int target_flags;
    data references.  */
 
 #define PIC_OFFSET_TABLE_REGNUM 19
+#define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED 1
 
-#define FINALIZE_PIC finalize_pic ()
+/* Initialize hppa_save_pic_table_rtx before RTL generation for
+   each function.  We used to do this in FINALIZE_PIC, but FINALIZE_PIC
+   isn't always called for static inline functions.  */
+#define INIT_EXPANDERS hppa_save_pic_table_rtx = 0;
 
 /* SOM ABI says that objects larger than 64 bits are returned in memory.  */
 #define RETURN_IN_MEMORY(TYPE)	\
@@ -1185,8 +1174,9 @@ extern union tree_node *current_function_decl;
    floating-point, except for floating-point zero.  */
 
 #define LEGITIMATE_CONSTANT_P(X)  		\
-  (GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
-    || (X) == CONST0_RTX (GET_MODE (X)))
+  ((GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
+    || (X) == CONST0_RTX (GET_MODE (X)))	\
+   && !(flag_pic && function_label_operand (X, VOIDmode)))
 
 /* Subroutine for EXTRA_CONSTRAINT.
 
@@ -1307,9 +1297,7 @@ extern union tree_node *current_function_decl;
 	      && REG_OK_FOR_BASE_P (XEXP (X, 1)))	\
 	    goto ADDR;					\
 	  else if (flag_pic == 1			\
-		   && GET_CODE (XEXP (X, 1)) != REG	\
-		   && GET_CODE (XEXP (X, 1)) != LO_SUM	\
-		   && GET_CODE (XEXP (X, 1)) != MEM)	\
+		   && GET_CODE (XEXP (X, 1)) == SYMBOL_REF)\
 	    goto ADDR;					\
 	}						\
       else if (REG_P (XEXP (X, 0))			\
@@ -1426,6 +1414,17 @@ while (0)
   (VAR) = ((SYMBOL_NAME)  + ((SYMBOL_NAME)[0] == '*' ?	\
 			     1 + (SYMBOL_NAME)[1] == '@'\
 			     : (SYMBOL_NAME)[0] == '@'))
+
+/* Arghh.  This is used for stuff in the constant pool; this may include
+   function addresses on the PA, which during PIC code generation must
+   reside in the data space.  Unfortuantely, there's no way to determine
+   if a particular label in the constant pool refers to a function address.
+   So just force everything into the data space during PIC generation.  */
+#define SELECT_RTX_SECTION(RTX,MODE)	\
+  if (flag_pic)				\
+    data_section ();			\
+  else					\
+    readonly_data_section ();
 
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
@@ -1682,6 +1681,10 @@ do { fprintf (FILE, "\t.SPACE $PRIVATE$\n\
 
 #define EXTRA_SECTIONS in_bss, in_readonly_data
 
+/* FIXME: GAS doesn't grok expressions involving two symbols in different
+   segments (aka subspaces).  Two avoid creating such expressions, we place
+   readonly data into the $CODE$ subspace when generating PIC code.  If
+   GAS ever handles such expressions, this hack can disappear.  */
 #define EXTRA_SECTION_FUNCTIONS						\
 void									\
 bss_section ()								\
@@ -1697,7 +1700,10 @@ readonly_data ()							\
 {									\
   if (in_section != in_readonly_data)					\
     {									\
-      fprintf (asm_out_file, "%s\n", READONLY_DATA_ASM_OP);		\
+      if (flag_pic)							\
+	fprintf (asm_out_file, "%s\n", TEXT_SECTION_ASM_OP);		\
+      else								\
+	fprintf (asm_out_file, "%s\n", READONLY_DATA_ASM_OP);		\
       in_section = in_readonly_data;					\
     }									\
 }
@@ -1980,7 +1986,12 @@ readonly_data ()							\
       fprintf (FILE, "%d(0,%s)", offset, reg_names [REGNO (base)]);	\
       break;								\
     case LO_SUM:							\
-      fputs ("R'", FILE);						\
+      if (flag_pic == 0 || !symbolic_operand (XEXP (addr, 1)))		\
+	fputs ("R'", FILE);						\
+      else if (flag_pic == 1)						\
+	abort ();							\
+      else if (flag_pic == 2)						\
+	fputs ("RT'", FILE);						\
       output_global_address (FILE, XEXP (addr, 1));			\
       fputs ("(", FILE);						\
       output_operand (XEXP (addr, 0), 0);				\

@@ -219,11 +219,29 @@ reg_or_cint_move_operand (op, mode)
 }
 
 int
-pic_operand (op, mode)
+pic_label_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return flag_pic && GET_CODE (op) == LABEL_REF;
+  if (!flag_pic)
+    return 0;
+
+  switch (GET_CODE (op))
+    {
+    case LABEL_REF:
+      return 1;
+    case SYMBOL_REF:
+      return (read_only_operand (op) && !FUNCTION_NAME_P (XSTR (op, 0)));
+    case CONST:
+      op = XEXP (op, 0);
+      return (((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+		&& read_only_operand (XEXP (op, 0))
+		&& !FUNCTION_NAME_P (XSTR (XEXP (op, 0), 0)))
+	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
+	      && GET_CODE (XEXP (op, 1)) == CONST_INT);
+    default:
+      return 0;
+    }
 }
 
 int
@@ -235,32 +253,6 @@ fp_reg_operand (op, mode)
 }
 
 
-extern int current_function_uses_pic_offset_table;
-extern rtx force_reg (), validize_mem ();
-
-/* The rtx for the global offset table which is a special form
-   that *is* a position independent symbolic constant.  */
-rtx pic_pc_rtx;
-
-/* Ensure that we are not using patterns that are not OK with PIC.  */
-
-int
-check_pic (i)
-     int i;
-{
-  extern rtx recog_operand[];
-  switch (flag_pic)
-    {
-    case 1:
-      if (GET_CODE (recog_operand[i]) == SYMBOL_REF
-	  || (GET_CODE (recog_operand[i]) == CONST
-	      && ! rtx_equal_p (pic_pc_rtx, recog_operand[i])))
-	abort ();
-    case 2:
-    default:
-      return 1;
-    }
-}
 
 /* Return truth value of whether OP can be used as an operand in a
    three operand arithmetic insn that accepts registers of mode MODE
@@ -480,6 +472,13 @@ legitimize_pic_address (orig, mode, reg)
 {
   rtx pic_ref = orig;
 
+  /* Lables and read-only data need special handling.  */
+  if (pic_label_operand (orig))
+    {
+      emit_insn (gen_pic_load_label (reg, orig));
+      current_function_uses_pic_offset_table = 1;
+      return reg;
+    }
   if (GET_CODE (orig) == SYMBOL_REF)
     {
       if (reg == 0)
@@ -487,15 +486,12 @@ legitimize_pic_address (orig, mode, reg)
 
       if (flag_pic == 2)
 	{
-	  emit_insn (gen_rtx (SET, VOIDmode, reg,
-			      gen_rtx (HIGH, Pmode, orig)));
-	  emit_insn (gen_rtx (SET, VOIDmode, reg,
-			      gen_rtx (LO_SUM, Pmode, reg, orig)));
-	  orig = reg;
+	  emit_insn (gen_pic_highpart (reg, pic_offset_table_rtx, orig));
+	  pic_ref = (gen_rtx (MEM, Pmode, gen_rtx (LO_SUM, Pmode, reg, orig)));
 	}
-      pic_ref = gen_rtx (MEM, Pmode,
-			 gen_rtx (PLUS, Pmode,
-				  pic_offset_table_rtx, orig));
+      else
+	pic_ref = gen_rtx (MEM, Pmode,
+			   gen_rtx (PLUS, Pmode, pic_offset_table_rtx, orig));
       current_function_uses_pic_offset_table = 1;
       RTX_UNCHANGING_P (pic_ref) = 1;
       emit_move_insn (reg, pic_ref);
@@ -529,24 +525,6 @@ legitimize_pic_address (orig, mode, reg)
       /* Likewise, should we set special REG_NOTEs here?  */
     }
   return pic_ref;
-}
-
-/* Emit special PIC prologues and epilogues.  */
-
-void
-finalize_pic ()
-{
-  if (hppa_save_pic_table_rtx)
-    {
-      emit_insn_after (gen_rtx (SET, VOIDmode,
-				hppa_save_pic_table_rtx,
-				gen_rtx (REG, Pmode, PIC_OFFSET_TABLE_REGNUM)),
-		       get_insns ());
-      /* Need to emit this whether or not we obey regdecls,
-	 since setjmp/longjmp can cause life info to screw up.  */
-      hppa_save_pic_table_rtx = 0;
-    }
-  emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
 }
 
 /* Try machine-dependent ways of modifying an illegitimate address
@@ -606,6 +584,9 @@ hppa_legitimize_address (x, oldx, mode)
      enum machine_mode mode;
 {
   rtx orig = x;
+
+  if (flag_pic)
+    return legitimize_pic_address (x, mode, gen_reg_rtx (Pmode));
 
   /* Strip off CONST. */
   if (GET_CODE (x) == CONST)
@@ -726,9 +707,6 @@ hppa_legitimize_address (x, oldx, mode)
 	  return force_reg (Pmode, gen_rtx (PLUS, Pmode, regx1, regy1));
 	}
     }
-
-  if (flag_pic)
-    return legitimize_pic_address (x, mode, gen_reg_rtx (Pmode));
 
   return orig;
 }
@@ -895,16 +873,16 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      rtx temp;
 
 	      if (reload_in_progress || reload_completed)
-		temp = operand0;
+		temp = scratch_reg ? scratch_reg : operand0;
 	      else
 		temp = gen_reg_rtx (Pmode);
 
 	      operands[1] = legitimize_pic_address (operand1, mode, temp);
-              emit_insn (gen_rtx (SET, VOIDmode, operand0, operands[1]));
+	      emit_insn (gen_rtx (SET, VOIDmode, operand0, operands[1]));
 	    }
-	  /* On the HPPA, references to data space are supposed to */
-	  /* use dp, register 27, but showing it in the RTL inhibits various
-	     cse and loop optimizations.  */
+	  /* On the HPPA, references to data space are supposed to use dp,
+	     register 27, but showing it in the RTL inhibits various cse
+	     and loop optimizations.  */
 	  else
 	    {
 	      rtx temp, set, const_part = NULL;
@@ -982,8 +960,16 @@ read_only_operand (operand)
 {
   if (GET_CODE (operand) == CONST)
     operand = XEXP (XEXP (operand, 0), 0);
-  if (GET_CODE (operand) == SYMBOL_REF)
-    return SYMBOL_REF_FLAG (operand) || CONSTANT_POOL_ADDRESS_P (operand);
+  if (flag_pic)
+    {
+      if (GET_CODE (operand) == SYMBOL_REF)
+	return SYMBOL_REF_FLAG (operand) && !CONSTANT_POOL_ADDRESS_P (operand);
+    }
+  else
+    {
+      if (GET_CODE (operand) == SYMBOL_REF)
+	return SYMBOL_REF_FLAG (operand) || CONSTANT_POOL_ADDRESS_P (operand);
+    }
   return 1;
 }
 
@@ -2950,7 +2936,7 @@ output_global_address (file, x)
 
   if (GET_CODE (x) == SYMBOL_REF && read_only_operand (x))
     assemble_name (file, XSTR (x, 0));
-  else if (GET_CODE (x) == SYMBOL_REF)
+  else if (GET_CODE (x) == SYMBOL_REF && !flag_pic)
     {
       assemble_name (file, XSTR (x, 0));
       fprintf (file, "-$global$");
@@ -2994,7 +2980,7 @@ output_global_address (file, x)
 	sep = "-";
       else abort ();
 
-      if (!read_only_operand (base))
+      if (!read_only_operand (base) && !flag_pic)
 	fprintf (file, "-$global$");
       fprintf (file, "%s", sep);
       if (offset) fprintf (file,"%d", offset);
@@ -3261,6 +3247,14 @@ secondary_reload_class (class, mode, in)
 {
   int regno = true_regnum (in);
 
+  /* Trying to load a constant into a FP register during PIC code
+     generation will require %r1 as a scratch register.  */
+  if (flag_pic == 2
+      && GET_MODE_CLASS (mode) == MODE_INT
+      && FP_REG_CLASS_P (class)
+      && (GET_CODE (in) == CONST_INT || GET_CODE (in) == CONST_DOUBLE))
+    return R1_REGS;
+
   if (((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
        && GET_MODE_CLASS (mode) == MODE_INT
        && FP_REG_CLASS_P (class))
@@ -3269,6 +3263,11 @@ secondary_reload_class (class, mode, in)
 
   if (GET_CODE (in) == HIGH)
     in = XEXP (in, 0);
+
+  if (!flag_pic
+      && symbolic_operand (in, VOIDmode)
+      && read_only_operand (in))
+    return NO_REGS;
 
   if (class != R1_REGS && symbolic_operand (in, VOIDmode))
     return R1_REGS;
