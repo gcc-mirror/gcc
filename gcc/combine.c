@@ -10790,7 +10790,8 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		       i2 but does not die in i2, and place is between i2
 		       and i3, then we may need to move a link from place to
 		       i2.  */
-		    if (i2 && INSN_CUID (place) > INSN_CUID (i2)
+		    if (i2 && INSN_UID (place) <= max_uid_cuid
+			&& INSN_CUID (place) > INSN_CUID (i2)
 			&& from_insn && INSN_CUID (from_insn) > INSN_CUID (i2)
 			&& reg_referenced_p (XEXP (note, 0), PATTERN (i2)))
 		      {
