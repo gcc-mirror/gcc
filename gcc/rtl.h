@@ -976,7 +976,6 @@ extern rtx read_rtx			PROTO((FILE *));
 extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
 extern rtx rtx_alloc			PROTO((RTX_CODE));
-extern rtx obstack_alloc_rtx		PROTO((int));
 extern rtvec rtvec_alloc		PROTO((int));
 extern rtx copy_rtx			PROTO((rtx));
 extern rtx copy_rtx_if_shared		PROTO((rtx));
