@@ -1545,7 +1545,7 @@ copy_template_template_parm (t)
 /* Walk through the tree structure T, applying func.  If func ever returns
    non-null, return that value.  */
 
-static tree
+tree
 search_tree (t, func)
      tree t;
      tree (*func) PROTO((tree));
