@@ -13538,6 +13538,15 @@ patch_binop (node, wfl_op1, wfl_op2)
 
       TREE_TYPE (node) = boolean_type_node;
 
+      /* OP1_TYPE might be NULL when OP1 is a string constant.  */
+      if ((cn = patch_string (op1))) 
+	{
+	  op1 = cn;
+	  op1_type = TREE_TYPE (op1);
+	}
+      if (op1_type == NULL_TREE)
+	abort ();
+
       if (!(op2_type = resolve_type_during_patch (op2)))
 	return error_mark_node;
 

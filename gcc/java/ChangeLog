@@ -1,5 +1,10 @@
 2002-06-02  Tom Tromey  <tromey@redhat.com>
 
+	Fix for PR java/5913:
+	* parse.y (patch_binop): Call patch_string on op1.
+
+2002-06-02  Tom Tromey  <tromey@redhat.com>
+
 	Fix for PR java/1343, PR java/6336:
 	* parse.y (make_nested_class_name): Remove extraneous `else'; fix
 	formatting.  Changed return type.
