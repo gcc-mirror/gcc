@@ -1,25 +1,31 @@
-2003-10-06  Geoffrey Keating  <geoffk@apple.com>
+2003-10-07  Geoffrey Keating  <geoffk@apple.com>
 
-	* config/sparc/sparc.h (STACK_BOUNDARY): Add comment about how
-	it's wrong when TARGET_ARCH64 && TARGET_STACK_BIAS.
-
-2003-09-24  Geoffrey Keating  <geoffk@apple.com>
-
-	* config/rs6000/rs6000.c (function_arg): On non-SVR4 systems,
-	arrange for vector parameters to varargs functions to be passed
-	in both memory and GPRs when appropriate.
-	(rs6000_va_arg): Vector arguments passed in memory are 16-byte
-	aligned.
-
-	* config/rs6000/rs6000.c (rs6000_override_options): Make processor
-	list have list of flags to set and all flags, rather than flags
-	to set and flags to clear; add MASK_ALTIVEC where appropriate;
-	use enums rather than #defines.
-	
-	* function.c (pad_to_arg_alignment): Take STACK_POINTER_OFFSET into
-	account	when aligning arguments.
-	* calls.c (STACK_POINTER_OFFSET): Move default from here ...
-	* defaults.h (STACK_POINTER_OFFSET): ... to here.
+	* hooks.c (hook_bool_tree_true): New.
+	(hook_rtx_tree_int_null): New.
+	(hook_rtx_rtx_null): Use NULL, not 0.
+	* hooks.h: Add 'extern' to everything.
+	(hook_bool_tree_true): New.
+	(hook_rtx_tree_int_null): New.
+	* targhooks.c (hook_bool_CUMULATIVE_ARGS_true): New.
+	* targhooks.h (hook_bool_CUMULATIVE_ARGS_true): New.
+	* config/rs6000/rs6000-protos.h (setup_incoming_varargs): Remove
+	prototype.
+	* config/rs6000/rs6000.c (rs6000_return_in_memory): New.
+	(setup_incoming_varargs): Prototype.
+	(TARGET_PROMOTE_FUNCTION_ARGS): Define.
+	(TARGET_PROMOTE_FUNCTION_RETURN): Define.
+	(TARGET_STRUCT_VALUE_RTX): Define.
+	(TARGET_RETURN_IN_MEMORY): Define.
+	(TARGET_SETUP_INCOMING_VARARGS): Define.
+	(TARGET_STRICT_ARGUMENT_NAMING): Define.
+	(TARGET_PRETEND_OUTGOING_VARARGS_NAMED): Define.
+	(init_cumulative_args): Use rs6000_return_in_memory.
+	(setup_incoming_varargs): Make 'static'.
+	* config/rs6000/rs6000.h (PROMOTE_FUNCTION_ARGS): Delete.
+	(PROMOTE_FUNCTION_RETURN): Delete.
+	(STRUCT_VALUE): Delete.
+	(RETURN_IN_MEMORY): Delete.
+	(SETUP_INCOMING_VARARGS): Delete.
 
 2003-10-07  Gerald Pfeifer  <gerald@pfeifer.com>
 
