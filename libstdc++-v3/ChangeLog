@@ -1,3 +1,8 @@
+2001-12-31  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/backward/algo.h:  Include <ext/algorithm>,
+	tweak using declarations.
+	
 2001-12-29  Richard Henderson  <rth@redhat.com>
 
 	* config/os/hpux/bits/os_defines.h: Don't define __glibcpp_long_bits.
