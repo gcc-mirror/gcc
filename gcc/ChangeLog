@@ -1,3 +1,8 @@
+2003-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gengtype.c: Don't use UNION_INIT_ZERO.
+	* system.h (UNION_INIT_ZERO): Delete.
+
 2003-06-16  Richard Henderson  <rth@redhat.com>
 
 	* simplify-rtx.c (simplify_subreg): Use GET_MODE_SIZE instead of
