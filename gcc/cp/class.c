@@ -146,7 +146,13 @@ static tree dfs_set_offset_for_shared_vbases PROTO((tree, void *));
 static tree dfs_set_offset_for_unshared_vbases PROTO((tree, void *));
 static tree dfs_build_vbase_offset_vtbl_entries PROTO((tree, void *));
 static tree build_vbase_offset_vtbl_entries PROTO((tree, tree));
+static tree dfs_vcall_offset_queue_p PROTO((tree, void *));
+static tree dfs_build_vcall_offset_vtbl_entries PROTO((tree, void *));
+static tree build_vcall_offset_vtbl_entries PROTO((tree, tree));
+static tree dfs_count_virtuals PROTO((tree, void *));
 static void start_vtable PROTO((tree, int *));
+static void layout_vtable_decl PROTO((tree, int));
+static int num_vfun_entries PROTO((tree));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -324,7 +330,7 @@ build_vbase_offset_vtbl_entries (binfo, t)
 	    list);
   inits = nreverse (TREE_VALUE (list));
 
-  /* We've now got offsets in the right oder.  However, the offsets
+  /* We've now got offsets in the right order.  However, the offsets
      we've stored are offsets from the beginning of the complete
      object, and we need offsets from this BINFO.  */
   for (init = inits; init; init = TREE_CHAIN (init))
@@ -343,6 +349,140 @@ build_vbase_offset_vtbl_entries (binfo, t)
     }
 
   return inits;
+}
+
+typedef struct vcall_offset_data_s
+{
+  /* The binfo for the most-derived type.  */
+  tree derived;
+  /* The binfo for the virtual base for which we're building
+     initializers.  */
+  tree vbase;
+  /* The vcall offset initializers built up so far.  */
+  tree inits;
+  /* The number of vcall offsets accumulated.  */
+  int offsets;
+} vcall_offset_data;
+
+/* Called from build_vcall_offset_vtbl_entries via dfs_walk.  */
+
+static tree
+dfs_vcall_offset_queue_p (binfo, data)
+     tree binfo;
+     void *data;
+{
+  vcall_offset_data* vod = (vcall_offset_data *) data;
+
+  return (binfo == vod->vbase) ? binfo : dfs_skip_vbases (binfo, NULL);
+}
+
+/* Called from build_vcall_offset_vtbl_entries via dfs_walk.  */
+
+static tree
+dfs_build_vcall_offset_vtbl_entries (binfo, data)
+     tree binfo;
+     void *data;
+{
+  vcall_offset_data* vod;
+  tree virtuals;
+  tree binfo_inits;
+
+  /* Primary bases are not interesting; all of the virtual
+     function table entries have been overridden.  */
+  if (BINFO_PRIMARY_MARKED_P (binfo))
+     return NULL_TREE;
+
+  vod = (vcall_offset_data *) data;
+  binfo_inits = NULL_TREE;
+
+  /* We chain the offsets on in reverse order.  That's correct --
+     build_vtbl_initializer will straighten them out.  */
+  for (virtuals = skip_rtti_stuff (binfo,
+				   BINFO_TYPE (binfo),
+				   NULL);
+       virtuals;
+       virtuals = TREE_CHAIN (virtuals))
+    {
+      tree fn;
+      tree base;
+      tree base_binfo;
+      tree offset;
+
+      /* Figure out what function we're looking at.  */
+      fn = TREE_VALUE (virtuals);
+      base = DECL_CLASS_CONTEXT (fn);
+
+      /* The FN is comes from BASE.  So, we must caculate the
+	 adjustment from the virtual base that derived from BINFO to
+	 BASE.  */
+      base_binfo = get_binfo (base, vod->derived, /*protect=*/0);
+      offset = ssize_binop (MINUS_EXPR,
+			    BINFO_OFFSET (base_binfo),
+			    BINFO_OFFSET (vod->vbase));
+      offset = build1 (NOP_EXPR, vtable_entry_type, offset);
+      offset = fold (offset);
+      TREE_CONSTANT (offset) = 1;
+      binfo_inits = tree_cons (NULL_TREE, offset, binfo_inits);
+    }
+
+  /* Now add the initializers we've just created to the list that will
+     be returned to our caller.  */
+  vod->inits = chainon (vod->inits, binfo_inits);
+
+  return NULL_TREE;
+}
+
+/* Returns the initializers for the vcall offset entries in the vtable
+   for BINFO (which is part of the class hierarchy dominated by T), in
+   reverse order.  */
+
+static tree
+build_vcall_offset_vtbl_entries (binfo, t)
+     tree binfo;
+     tree t;
+{
+  vcall_offset_data vod;
+
+  /* Under the old ABI, the adjustments to the `this' pointer were made
+     elsewhere.  */
+  if (!vcall_offsets_in_vtable_p ())
+    return NULL_TREE;
+
+  /* We only need these entries if this base is a virtual base.  */
+  if (!TREE_VIA_VIRTUAL (binfo))
+    return NULL_TREE;
+
+  /* We need a vcall offset for each of the virtual functions in this
+     vtable.  For example:
+
+       class A { virtual void f (); };
+       class B : virtual public A { };
+       class C: virtual public A, public B {};
+      
+     Now imagine:
+
+       B* b = new C;
+       b->f();
+
+     The location of `A' is not at a fixed offset relative to `B'; the
+     offset depends on the complete object derived from `B'.  So, 
+     `B' vtable contains an entry for `f' that indicates by what
+     amount the `this' pointer for `B' needs to be adjusted to arrive
+     at `A'.  
+
+     We need entries for all the functions in our primary vtable and
+     in our non-virtual bases vtables.  For each base, the entries
+     appear in the same order as in the base; but the bases themselves
+     appear in reverse depth-first, left-to-right order.  */
+  vod.derived = t;
+  vod.vbase = binfo;
+  vod.inits = NULL_TREE;
+  dfs_walk (binfo,
+	    dfs_build_vcall_offset_vtbl_entries,
+	    dfs_vcall_offset_queue_p,
+	    &vod);
+
+  return vod.inits;
 }
 
 /* Returns a pointer to the virtual base class of EXP that has the
@@ -2321,6 +2461,68 @@ duplicate_tag_error (t)
   TYPE_NONCOPIED_PARTS (t) = NULL_TREE;
 }
 
+/* Make the BINFO's vtablehave N entries, including RTTI entries, but
+   not including vbase and vcall offsets.  Set its type and call the
+   backend to lay it out.  */
+
+static void
+layout_vtable_decl (binfo, n)
+     tree binfo;
+     int n;
+{
+  tree itype;
+  tree atype;
+
+  itype = size_int (n);
+  itype = size_binop (PLUS_EXPR, 
+		      itype,
+		      num_extra_vtbl_entries (binfo));
+  atype = build_cplus_array_type (vtable_entry_type, 
+				  build_index_type (itype));
+  layout_type (atype);
+
+  /* We may have to grow the vtable.  */
+  if (!same_type_p (TREE_TYPE (BINFO_VTABLE (binfo)), atype))
+    {
+      TREE_TYPE (BINFO_VTABLE (binfo)) = atype;
+      DECL_SIZE (BINFO_VTABLE (binfo)) = 0;
+      layout_decl (BINFO_VTABLE (binfo), 0);
+      /* At one time the vtable info was grabbed 2 words at a time.  This
+	 fails on sparc unless you have 8-byte alignment.  (tiemann) */
+      DECL_ALIGN (BINFO_VTABLE (binfo))
+	= MAX (TYPE_ALIGN (double_type_node),
+	       DECL_ALIGN (BINFO_VTABLE (binfo)));
+    }
+}
+
+/* Returns the number of virtual function table entries (excluding
+   RTTI information, vbase and vcall offests, etc.) in the vtable for
+   BINFO.  */
+
+static int
+num_vfun_entries (binfo)
+     tree binfo;
+{
+  return list_length (skip_rtti_stuff (binfo,
+				       BINFO_TYPE (binfo),
+				       NULL));
+}
+
+/* Called from num_extra_vtbl_entries via dfs_walk.  */
+
+static tree
+dfs_count_virtuals (binfo, data)
+     tree binfo;
+     void *data;
+{
+  /* Non-primary bases are not interesting; all of the virtual
+     function table entries have been overridden.  */
+  if (!BINFO_PRIMARY_MARKED_P (binfo))
+    ((vcall_offset_data *) data)->offsets += num_vfun_entries (binfo);
+  
+  return NULL_TREE;
+}
+
 /* Returns the number of extra entries (at negative indices) required
    for BINFO's vtable.  */
 
@@ -2331,17 +2533,29 @@ num_extra_vtbl_entries (binfo)
   tree type;
   int entries;
 
-  /* Under the old ABI, there are no entries at negative offsets.  */
-  if (!vbase_offsets_in_vtable_p ())
-    return size_zero_node;
-
   type = BINFO_TYPE (binfo);
   entries = 0;
 
   /* There is an entry for the offset to each virtual base.  */
-  entries += list_length (CLASSTYPE_VBASECLASSES (type));
+  if (vbase_offsets_in_vtable_p ())
+    entries += list_length (CLASSTYPE_VBASECLASSES (type));
 
-  return size_int (entries);
+  /* If this is a virtual base, there are entries for each virtual
+     function defined in this class or its bases.  */
+  if (vcall_offsets_in_vtable_p () && TREE_VIA_VIRTUAL (binfo))
+    {
+      vcall_offset_data vod;
+
+      vod.vbase = binfo;
+      vod.offsets = 0;
+      dfs_walk (binfo,
+		dfs_count_virtuals,
+		dfs_vcall_offset_queue_p,
+		&vod);
+      entries += vod.offsets;
+    }
+      
+  return entries ? size_int (entries) : size_zero_node;
 }
 
 /* Returns the offset (in bytes) from the beginning of BINFO's vtable
@@ -2372,8 +2586,13 @@ build_vtbl_initializer (binfo, t)
   tree inits = NULL_TREE;
   tree type = BINFO_TYPE (binfo);
 
+  /* Add entries to the vtable that indicate how to adjust the this
+     pointer when calling a virtual function in this class.  */
+  inits = build_vcall_offset_vtbl_entries (binfo, t);
+
   /* Add entries to the vtable for offsets to our virtual bases.  */
-  inits = build_vbase_offset_vtbl_entries (binfo, t);
+  inits = chainon (build_vbase_offset_vtbl_entries (binfo, t),
+		   inits);
 
   /* Process the RTTI stuff at the head of the list.  If we're not
      using vtable thunks, then the RTTI entry is just an ordinary
@@ -2451,6 +2670,7 @@ dfs_finish_vtbls (binfo, data)
       tree decl;
       tree context;
       
+      layout_vtable_decl (binfo, list_length (BINFO_VIRTUALS (binfo)));
       decl = BINFO_VTABLE (binfo);
       context = DECL_CONTEXT (decl);
       DECL_CONTEXT (decl) = 0;
@@ -2675,8 +2895,10 @@ modify_one_vtable (binfo, t, fndecl)
   tree virtuals;
   unsigned HOST_WIDE_INT n;
   
-  /* update rtti entry */
-  if (flag_rtti)
+  /* If we're support RTTI then we always need a new vtable to point
+     to the RTTI information.  Under the new ABI we may need a new
+     vtable to contain vcall and vbase offsets.  */
+  if (flag_rtti || flag_new_abi)
     {
       if (binfo == TYPE_BINFO (t))
 	build_vtable (TYPE_BINFO (DECL_CONTEXT (TYPE_VFIELD (t))), t);
@@ -5010,32 +5232,7 @@ finish_struct_1 (t)
 
   /* Now lay out the virtual function table.  */
   if (has_virtual)
-    {
-      /* Use size_int so values are memoized in common cases.  */
-      tree itype;
-      tree atype;
-
-      itype = size_int (has_virtual);
-      itype = size_binop (PLUS_EXPR, 
-			  itype,
-			  num_extra_vtbl_entries (TYPE_BINFO (t)));
-      atype = build_cplus_array_type (vtable_entry_type, 
-				      build_index_type (itype));
-      layout_type (atype);
-
-      /* We may have to grow the vtable.  */
-      if (TREE_TYPE (TYPE_BINFO_VTABLE (t)) != atype)
-	{
-	  TREE_TYPE (TYPE_BINFO_VTABLE (t)) = atype;
-	  DECL_SIZE (TYPE_BINFO_VTABLE (t)) = 0;
-	  layout_decl (TYPE_BINFO_VTABLE (t), 0);
-	  /* At one time the vtable info was grabbed 2 words at a time.  This
-	     fails on sparc unless you have 8-byte alignment.  (tiemann) */
-	  DECL_ALIGN (TYPE_BINFO_VTABLE (t))
-	    = MAX (TYPE_ALIGN (double_type_node),
-		   DECL_ALIGN (TYPE_BINFO_VTABLE (t)));
-	}
-    }
+    layout_vtable_decl (TYPE_BINFO (t), has_virtual);
 
   /* If we created a new vtbl pointer for this class, add it to the
      list.  */

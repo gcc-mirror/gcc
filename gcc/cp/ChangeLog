@@ -1,3 +1,19 @@
+2000-01-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (vcall_offset_in_vtable_p): New macro.
+	* class.c (build_vbase_offset_vtbl_entries): Fix typo in commment.
+	(struct vcall_offset_data_s): New type.
+	(dfs_vcall_offset_queue_p): New function.
+	(dfs_build_vcall_offset_vtbl_entries): Likewise.
+	(build_vcall_offset_vtbl_entries): Likewise.
+	(layout_vtable_decl): Likewise.
+	(num_vfun_entries): Likewise.
+	(num_extra_vtbl_entries): Add the entries for vcall offsets.
+	(build_vtbl_initializer): Likewise.
+	(dfs_finish_vtabls): Use layout_vtable_decl.
+	(modify_one_vtables): Always duplicate vtables under the new ABI.
+	(finish_struct_1): Use layout_vtable_decl.
+	
 2000-01-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (member_function_or_else): Change third arg from a format
