@@ -40,6 +40,12 @@ Boston, MA 02111-1307, USA.  */
 #undef DEFAULT_VTABLE_THUNKS
 #define DEFAULT_VTABLE_THUNKS 1
 
+/* Don't assume anything about the header files.  */
+#define NO_IMPLICIT_EXTERN_C
+
+/* Generate calls to memcpy, etc., not bcopy, etc.  */
+#define TARGET_MEM_FUNCTIONS
+
 /* Specify predefined symbols in preprocessor.  */
 #undef CPP_PREDEFINES
 #if TARGET_ENDIAN_DEFAULT == 0
