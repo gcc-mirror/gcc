@@ -1,3 +1,10 @@
+2004-02-27  Dale Johannesen  <dalej@apple.com>
+	* config/darwin.c (machopic_output_possible_stub_label):  Remove.
+	config/darwin-protos.h:  Ditto.
+	config/darwin.h:  Remove call to it.
+	* combine.c (distribute_notes): Do not place a REG_DEAD note
+	when value is both set and used.
+
 2004-02-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/fixunssfsi.c (__fixunssfsi): Enable on H8/300

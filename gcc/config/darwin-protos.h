@@ -65,8 +65,6 @@ extern const char *darwin_strip_name_encoding (const char *);
 
 extern void machopic_finish (FILE *);
 
-extern void machopic_output_possible_stub_label (FILE *, const char*);
-
 extern void darwin_exception_section (void);
 extern void darwin_eh_frame_section (void);
 extern void machopic_select_section (tree, int, unsigned HOST_WIDE_INT);
