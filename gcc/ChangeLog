@@ -1,5 +1,10 @@
 Sun Aug 15 12:41:21 1999  Jim Wilson  <wilson@cygnus.com>
 
+	* explow.c (hard_function_value): Use VOIDmode instead of
+	MAX_MACHINE_MODE.
+	* stmt.c (expand_return): Likewise.
+	* stor-layout.c (get_best_mode): Likewise.
+	
 	* genemit.c (gen_expand): If next is MATCH_PAR_DUP, then output
 	emit call instead of emit_insn call.
 

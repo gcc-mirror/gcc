@@ -1529,7 +1529,7 @@ hard_function_value (valtype, func)
       int bytes = int_size_in_bytes (valtype);
       enum machine_mode tmpmode;
       for (tmpmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-           tmpmode != MAX_MACHINE_MODE;
+           tmpmode != VOIDmode;
            tmpmode = GET_MODE_WIDER_MODE (tmpmode))
         {
           /* Have we found a large enough mode?  */
@@ -1538,7 +1538,7 @@ hard_function_value (valtype, func)
         }
 
       /* No suitable mode found.  */
-      if (tmpmode == MAX_MACHINE_MODE)
+      if (tmpmode == VOIDmode)
         abort ();
 
       PUT_MODE (val, tmpmode);

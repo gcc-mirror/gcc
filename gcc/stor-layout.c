@@ -1352,7 +1352,7 @@ get_best_mode (bitsize, bitpos, align, largest_mode, volatilep)
 	break;
     }
 
-  if (mode == MAX_MACHINE_MODE
+  if (mode == VOIDmode
       /* It is tempting to omit the following line
 	 if STRICT_ALIGNMENT is true.
 	 But that is incorrect, since if the bitfield uses part of 3 bytes
