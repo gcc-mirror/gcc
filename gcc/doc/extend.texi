@@ -2563,6 +2563,67 @@ use the normal calling convention based on @code{jsr} and @code{rts}.
 This attribute can be used to cancel the effect of the @option{-mlong-calls}
 option.
 
+@item dllimport
+@cindex @code{__declspec(dllimport)}
+On Windows targets, the @code{dllimport} attribute causes the compiler
+to reference a function or variable via a global pointer to a pointer
+that is set up by the Windows dll library. The pointer name is formed by
+combining @code{_imp__} and the function or variable name. The attribute
+implies @code{extern} storage.
+
+Currently, the attribute is ignored for inlined functions. If the
+attribute is applied to a symbol @emph{definition}, an error is reported.
+If a symbol previously declared @code{dllimport} is later defined, the
+attribute is ignored in subsequent references, and a warning is emitted.
+The attribute is also overriden by a subsequent declaration as
+@code{dllexport}. 
+
+When applied to C++ classes, the attribute marks non-inlined
+member functions and static data members as imports.  However, the
+attribute is ignored for virtual methods to allow creation of vtables
+using thunks.
+
+On cygwin, mingw and arm-pe targets, @code{__declspec(dllimport)} is
+recognized as a synonym for @code{__attribute__ ((dllimport))} for
+compatibility with other Windows compilers.
+
+The use of the @code{dllimport} attribute on functions is not necessary,
+but provides a small performance benefit by eliminating a thunk in the
+dll. The use of the @code{dllimport} attribute on imported variables was
+required on older versions of GNU ld, but can now be avoided by passing
+the @option{--enable-auto-import} switch to ld. As with functions, using
+the attribute for a variable eliminates a thunk in the dll. 
+
+One drawback to using this attribute is that a pointer to a function or
+variable marked as dllimport cannot be used as a constant address. The
+attribute can be disabled for functions by setting the
+@option{-mnop-fun-dllimport} flag.
+
+@item dllexport
+@cindex @code{__declspec(dllexport)}
+On Windows targets the @code{dllexport} attribute causes the compiler to
+provide a global pointer to a pointer in a dll, so that it can be
+referenced with the @code{dllimport} attribute. The pointer name is
+formed by combining @code{_imp__} and the function or variable name.
+
+Currently, the @code{dllexport}attribute is ignored for inlined
+functions, but export can be forced by using the
+@option{-fkeep-inline-functions} flag. The attribute is also ignored for
+undefined symbols.
+
+When applied to C++ classes. the attribute marks defined non-inlined
+member functions and static data members as exports. Static consts
+initialized in-class are not marked unless they are also defined
+out-of-class.
+
+On cygwin, mingw and arm-pe targets, @code{__declspec(dllexport)} is
+recognized as a synonym for @code{__attribute__ ((dllexport))} for
+compatibility with other Windows compilers.
+
+Alternative methods for including the symbol in the dll's export table
+are to use a .def file with an @code{EXPORTS} section or, with GNU ld,
+using the @option{--export-all} linker flag.
+
 @end table
 
 You can specify multiple attributes in a declaration by separating them
@@ -3163,7 +3224,7 @@ section, consider using the facilities of the linker instead.
 
 @item shared
 @cindex @code{shared} variable attribute
-On Windows NT, in addition to putting variable definitions in a named
+On Windows, in addition to putting variable definitions in a named
 section, the section can also be shared among all running copies of an
 executable or DLL@.  For example, this small program defines shared data
 by putting it in a named section @code{shared} and marking the section
@@ -3186,7 +3247,7 @@ You may only use the @code{shared} attribute along with @code{section}
 attribute with a fully initialized global definition because of the way
 linkers work.  See @code{section} attribute for more information.
 
-The @code{shared} attribute is only available on Windows NT@.
+The @code{shared} attribute is only available on Windows@.
 
 @item tls_model ("@var{tls_model}")
 @cindex @code{tls_model} attribute
@@ -3243,6 +3304,13 @@ the @code{int}.
 
 @item weak
 The @code{weak} attribute is described in @xref{Function Attributes}.
+
+@item dllimport
+The @code{dllimport} attribute is described in @xref{Function Attributes}.
+
+@item dlexport
+The @code{dllexport} attribute is described in @xref{Function Attributes}.
+
 @end table
 
 @subsection M32R/D Variable Attributes
