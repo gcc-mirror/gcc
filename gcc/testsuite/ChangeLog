@@ -1,3 +1,8 @@
+2002-11-09  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* lib/compat.exp (compat-execute): Fix logic error in last
+	change.
+
 2002-11-09  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/trad/assembler.S, gcc.dg/cpp/trad/directive.c: Update.
