@@ -1,3 +1,12 @@
+Sat Jan 17 22:35:39 1998  Mumit Khan <khan@xraylith.wisc.edu>
+			  J.J VanderHeijden <J.J.vanderHeijden@student.utwente.nl>
+	
+	* pexecute.c (pexecute): New function for mingw32. Supports pipes.
+	(pwait): New function for mingw32.
+
+	* gcc.c (execute): Mingw32 pexecute() supports pipes, but cygwin32
+	pipe support is broken for now.
+
 1998-01-17  Lee Iverson  <leei@Canada.AI.SRI.COM>
 
 	* reorg.c: #include "expr.h" for rtx prototypes.
