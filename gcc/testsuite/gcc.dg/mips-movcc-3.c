@@ -7,6 +7,9 @@
 /* { dg-final { scan-assembler "movn.d" } } */
 /* { dg-final { scan-assembler "movf.d" } } */
 
+#if __mips < 4 || __mips_soft_float
+asm ("# movz.s movn.s movt.s movz.d movn.d movf.d");
+#else
 void ext_float (float);
 void ext_double (double);
 
@@ -45,3 +48,4 @@ subc (double f, double g, double h)
 {
   ext_double (!h ? f : g);
 }
+#endif
