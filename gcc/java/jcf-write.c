@@ -2569,7 +2569,7 @@ generate_bytecode_insns (exp, target, state)
       /* fall through */
     notimpl:
     default:
-      error("internal error - tree code not implemented: %s",
+      error("internal error in generate_bytecode_insn - tree code not implemented: %s",
 	    tree_code_name [(int) TREE_CODE (exp)]);
     }
 }
@@ -2911,7 +2911,8 @@ generate_classfile (clas, state)
 
       /* Make room for the Synthetic attribute (of zero length.)  */
       if (DECL_FINIT_P (part) 
-	  || OUTER_FIELD_ACCESS_IDENTIFIER_P (DECL_NAME (part)))
+	  || OUTER_FIELD_ACCESS_IDENTIFIER_P (DECL_NAME (part))
+	  || TYPE_DOT_CLASS (clas) == part)
 	{
 	  i++;
 	  synthetic_p = 1;
