@@ -1,5 +1,6 @@
 2003-02-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
+	PR c++/13997
 	* g++.dg/template/partial3.C: New test.
 
 2004-02-04  Kazu Hirata  <kazu@cs.umass.edu>
