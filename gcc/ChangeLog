@@ -1,3 +1,9 @@
+2005-03-30  Stuart Hastings  <stuart@apple.com>
+	    Dale Johannesen  <dalej@apple.com>
+
+	* Makefile.in (print-tree.o):  Depend on tree-iterator.h.
+	* print-tree.c (print_node):  Add case STATEMENT_LIST.
+
 2005-03-31  Alan Modra  <amodra@bigpond.net.au>
 
 	* config.gcc (cpu_is_64bit): Set for 64-bit powerpc cpus.
