@@ -15,4 +15,4 @@
 }
 @end
 
-/* { dg-final { scan-assembler ".text\n\t.stabs.*100,0,0,Letext\[0-9\]*\nLetext" } } */
+/* { dg-final { scan-assembler ".text\n\t.stabs.*100,0,0,(\\.)?Letext\[0-9\]*\n(\\.)?Letext" } } */
