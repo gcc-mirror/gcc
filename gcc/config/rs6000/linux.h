@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler,
-   for IBM RS/6000 running AIX version 3.1.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   for powerpc machines running Linux.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, 
+   Inc.
    Contributed by Michael Meissner (meissner@cygnus.com).
 
 This file is part of GNU CC.
@@ -73,6 +74,8 @@ Boston, MA 02111-1307, USA.  */
 #ifdef IN_LIBGCC2
 #include <signal.h>
 #include <sys/ucontext.h>
+
+enum { SIGNAL_FRAMESIZE = 64 };
 #endif
 
 #define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
@@ -87,7 +90,7 @@ Boston, MA 02111-1307, USA.  */
     if (((*(unsigned int *) (pc_+0) == 0x38007777)			\
 	 || (*(unsigned int *) (pc_+0) == 0x38006666))			\
 	&& (*(unsigned int *) (pc_+4)  == 0x44000002))			\
-	sc_ = (CONTEXT)->cfa + __SIGNAL_FRAMESIZE;			\
+	sc_ = (CONTEXT)->cfa + SIGNAL_FRAMESIZE;			\
     else								\
       break;								\
     									\
