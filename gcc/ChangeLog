@@ -1,5 +1,6 @@
 2004-06-11  J"orn Rennecke <joern.rennecke@superh.com>
 
+	PR 15886:
 	* sh.h (ALLOCATE_INITIAL_VALUE): Use return_address_pointer_rtx.
 
 2004-06-11  Joseph S. Myers  <jsm@polyomino.org.uk>
