@@ -1,3 +1,25 @@
+2004-03-30  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (tls_gd_32, tls_gd_64,
+	tls_ld_32, tls_ld_64, tls_dtprel_32, tls_dtprel_64,
+	tls_dtprel_ha_32, tls_dtprel_ha_64,
+	tls_dtprel_lo_32, tls_dtprel_lo_64,
+	tls_got_dtprel_64, tls_tprel_32, tls_tprel_64,
+	tls_tprel_ha_32, tls_tprel_ha_64,
+	tls_tprel_lo_32, tls_tprel_lo_64,
+	tls_got_tprel_32, tls_got_tprel_64,
+	tls_tls_32, tls_tls_64): Replace register_operand with
+	gpc_reg_operand.
+
+2004-03-30  Mostafa Hagog  <mustafa@il.ibm.com>
+
+	* config/rs6000/rs6000.md (*ctrsi_internal1, *ctrsi_internal2,
+	*ctrdi_internal1, *ctrdi_internal2, *ctrsi_internal3,
+	*ctrsi_internal4, *ctrdi_internal3, *ctrdi_internal4,
+	*ctrsi_internal5, *ctrsi_internal6, *ctrdi_internal5,
+	*ctrdi_internal6): Replace register_operand with
+	nonimmediate_operand.
+
 2004-03-29  Fariborz Jahanian <fjahanian@apple.com>
 
         * fold-const.c (fold): Reassociate multiply expression
