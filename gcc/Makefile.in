@@ -2470,8 +2470,8 @@ distdir: distdir-start lang.distdir distdir-finish
 # The -P option assumes this is GNU diff.
 diff:
 	diff -rc2P -x c-parse.y -x c-parse.c -x c-parse.h -x c-gperf.h \
-	  -x cexp.c -x bi-parser.c -x objc-parse.y -x objc-parse.c \
-	  -x bi-parser.h -x TAGS \
+	  -x cexp.c -x bi-parser.c -x bi-parser.h -x TAGS -x INSTALL \
+	  -x configure -x config.in \
 	  -x "gcc.??" -x "gcc.??s" -x gcc.aux -x "gcc.info*" \
 	  -x "cpp.??" -x "cpp.??s" -x cpp.aux -x "cpp.info*" \
 	  $(LANG_DIFF_EXCLUDES) \
