@@ -2032,6 +2032,12 @@ dump_expr (tree t, int flags)
       dump_expr (get_first_fn (t), flags & ~TFF_EXPR_IN_PARENS);
       break;
 
+    case EMPTY_CLASS_EXPR:
+      dump_type (TREE_TYPE (t), flags);
+      print_left_paren (scratch_buffer);
+      print_right_paren (scratch_buffer);
+      break;
+
     case NON_DEPENDENT_EXPR:
       output_add_string (scratch_buffer, "<expression of type ");
       dump_type (TREE_TYPE (t), flags);
