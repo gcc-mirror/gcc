@@ -1,3 +1,7 @@
+2004-08-15  Ben Elliston  <bje@au.ibm.com>
+
+	* vec.h: Comment improvements.
+
 2004-08-14  Roger Sayle  <roger@eyesopen.com>
 
 	* c-common.c (shorten_compare, pointer_int_sum,

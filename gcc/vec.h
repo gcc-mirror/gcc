@@ -81,10 +81,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    the 'space' predicate will tell you whether there is spare capacity
    in the vector.  You will not normally need to use these two functions.
    
-   Vector types are defined using a DEF_VEC_x(TYPEDEF) macro, and
+   Vector types are defined using a DEF_VEC_{O,P}(TYPEDEF) macro, and
    variables of vector type are declared using a VEC(TYPEDEF)
-   macro. The 'x' letter indicates whether TYPEDEF is a pointer (P) or
-   object (O) type.
+   macro. The characters O and P indicate whether TYPEDEF is a pointer
+   (P) or object (O) type.
 
    An example of their use would be,
 
@@ -99,8 +99,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    if (VEC_length(tree,s->v)) { we have some contents }
    VEC_safe_push(tree,s->v,decl); // append some decl onto the end
-   for (ix = 0; VEC_iterate(tree,s->v,ix,t); ix++)
-     { do something with t }
+   for (ix = 0; VEC_iterate(tree,s->v,ix,elt); ix++)
+     { do something with elt }
 
 */
 
