@@ -151,6 +151,9 @@ extern char *make_temp_file PROTO ((char *));
 #define SYMBOL__MAIN __main
 #endif
 
+/* This must match tree.h.  */
+#define DEFAULT_INIT_PRIORITY 65535
+
 #if defined (LDD_SUFFIX) || SUNOS4_SHARED_LIBRARIES
 #define SCAN_LIBRARIES
 #endif
@@ -1763,14 +1766,15 @@ static int
 extract_init_priority (name)
      char *name;
 {
-  int pos = 0;
+  int pos = 0, pri;
 
   while (name[pos] == '_')
     ++pos;
   pos += 10; /* strlen ("GLOBAL__X_") */
 
   /* Extract init_p number from ctor/dtor name. */
-  return atoi (name + pos);
+  pri = atoi (name + pos);
+  return pri ? pri : DEFAULT_INIT_PRIORITY;
 }
 
 /* Insertion sort the ids from ctor/dtor list HEAD_PTR in descending order.
