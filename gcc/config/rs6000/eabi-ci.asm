@@ -80,7 +80,7 @@ __DTOR_LIST__:
 	.type	__SDATA_START__,@object
 __SDATA_START__:
 
-	.section ".sbss","aw"
+	.section ".sbss","aw",@nobits
 	.globl	__SBSS_START__
 	.type	__SBSS_START__,@object
 __SBSS_START__:
@@ -93,7 +93,7 @@ __SBSS_START__:
 __SDATA2_START__:
 _SDA2_BASE_ = .+32768
 
-	.section ".sbss2","aw"
+	.section ".sbss2","aw",@nobits
 	.globl	__SBSS2_START__
 	.type	__SBSS2_START__,@object
 __SBSS2_START__:

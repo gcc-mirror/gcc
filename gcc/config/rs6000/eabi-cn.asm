@@ -81,7 +81,7 @@ __DTOR_END__:
 	.type	__SDATA_END__,@object
 __SDATA_END__:
 
-	.section ".sbss","aw"
+	.section ".sbss","aw",@nobits
 	.globl	__SBSS_END__
 	.type	__SBSS_END__,@object
 __SBSS_END__:
@@ -91,7 +91,7 @@ __SBSS_END__:
 	.type	__SDATA2_END__,@object
 __SDATA2_END__:
 
-	.section ".sbss2","aw"
+	.section ".sbss2","aw",@nobits
 	.globl	__SBSS2_END__
 	.type	__SBSS2_END__,@object
 __SBSS2_END__:
