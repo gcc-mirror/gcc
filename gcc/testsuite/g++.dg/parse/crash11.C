@@ -20,7 +20,7 @@ struct B
   struct Template
   {
     typedef typename A<A<TP>::Template>
-      ::template Template<T>::Type Type; { dg-error "mismatch|class template|unqualified-id" }
+      ::template Template<T>::Type Type; // { dg-error "mismatch|class template|unqualified-id" }
   };
 };
 template <typename T>
@@ -30,5 +30,5 @@ struct C
 };
 int main()
 {
-  typedef B<C>::Template<void>::Type Type; { dg-error "init-declarator|;" }
+  typedef B<C>::Template<void>::Type Type; // { dg-error "init-declarator|;" }
 }
