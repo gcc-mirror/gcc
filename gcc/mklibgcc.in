@@ -279,7 +279,7 @@ for ml in $MULTILIBS; do
     echo ""
     echo "$libgcc_a_objs: libgcc/${dir}/%.oS: libgcc/${dir}/%${objext}"
     echo "	@\$(NM_FOR_TARGET) $SHLIB_NM_FLAGS \$^" \\
-    echo "	 | \$(AWK) 'NF == 3 { printf \".hidden %s\\n\", \$\$3 }'" \\
+    echo "	 | \$(AWK) 'NF == 3 { print \".hidden\", \$\$3 }'" \\
     echo '	 | $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -Wl,-r -nostdinc' \\ 
     echo '	   -nostdlib -o $@ $^ -xassembler -'
   fi

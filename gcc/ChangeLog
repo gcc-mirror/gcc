@@ -1,3 +1,8 @@
+2002-02-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* mklibgcc.in: Don't use \n in a line subject to
+	interpretation by echo.
+
 2002-02-27  Graham Stott  <grahams@redhat.com>
 
 	* config/rs6000/rs6000.h (ASM_OUTPUT_DEF_FROM_DELC):
