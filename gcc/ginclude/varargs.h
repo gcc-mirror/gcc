@@ -42,6 +42,9 @@
 #ifdef __sh__
 #include "va-sh.h"
 #else
+#ifdef __mn10300__
+#include "va-mn10300.h"
+#else
 
 #ifdef __NeXT__
 
@@ -100,7 +103,7 @@ typedef void *__gnuc_va_list;
   (((sizeof (TYPE) + sizeof (int) - 1) / sizeof (int)) * sizeof (int))
 #endif
 
-#if defined (__arm__) || defined (__i386__) || defined (__i860__) || defined (__ns32000__) || defined (__vax__) || defined (__mn10300__)
+#if defined (__arm__) || defined (__i386__) || defined (__i860__) || defined (__ns32000__) || defined (__vax__)
 /* This is for little-endian machines; small args are padded upward.  */
 #define va_arg(AP, TYPE)						\
  (AP = (__gnuc_va_list) ((char *) (AP) + __va_rounded_size (TYPE)),	\
@@ -117,6 +120,7 @@ typedef void *__gnuc_va_list;
 /* Copy __gnuc_va_list into another variable of this type.  */
 #define __va_copy(dest, src) (dest) = (src)
 
+#endif /* not mn10300 */
 #endif /* not sh */
 #endif /* not powerpc with V.4 calling sequence */
 #endif /* not h8300 */

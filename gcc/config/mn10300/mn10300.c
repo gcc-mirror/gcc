@@ -343,6 +343,20 @@ expand_prologue ()
 {
   unsigned int size = get_frame_size ();
 
+  /* If this is an old-style varargs function, then its arguments
+     need to be flushed back to the stack.  */
+  if (current_function_varargs)
+    {
+      emit_move_insn (gen_rtx (MEM, SImode,
+			       gen_rtx (PLUS, Pmode, stack_pointer_rtx,
+					GEN_INT (4))),
+		      gen_rtx (REG, SImode, 0));
+      emit_move_insn (gen_rtx (MEM, SImode,
+			       gen_rtx (PLUS, Pmode, stack_pointer_rtx,
+					GEN_INT (8))),
+		      gen_rtx (REG, SImode, 1));
+    }
+
   /* And now store all the registers onto the stack with a
      single two byte instruction.  */
   if (regs_ever_live[2] || regs_ever_live[3]
@@ -519,9 +533,9 @@ initial_offset (from, to)
       if (regs_ever_live[2] || regs_ever_live[3]
 	  || regs_ever_live[6] || regs_ever_live[7]
 	  || frame_pointer_needed)
-	return 20;
+	return 16;
       else
-	return 4;
+	return 0;
     }
 
   if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
@@ -529,13 +543,206 @@ initial_offset (from, to)
       if (regs_ever_live[2] || regs_ever_live[3]
 	  || regs_ever_live[6] || regs_ever_live[7]
 	  || frame_pointer_needed)
-	return get_frame_size () + 20;
+	return get_frame_size () + 16;
       else
-	return get_frame_size () + 4;
+	return get_frame_size ();
     }
 
   if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
     return get_frame_size ();
 
   abort ();
+}
+
+/* Flush the argument registers to the stack for a stdarg function;
+   return the new argument pointer.  */
+rtx
+mn10300_builtin_saveregs (arglist)
+     tree arglist;
+{
+  rtx offset;
+  tree fntype = TREE_TYPE (current_function_decl);
+  int argadj = ((!(TYPE_ARG_TYPES (fntype) != 0
+                   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+                       != void_type_node)))
+                ? UNITS_PER_WORD : 0);
+
+  if (argadj)
+    offset = plus_constant (current_function_arg_offset_rtx, argadj);
+  else
+    offset = current_function_arg_offset_rtx;
+
+  emit_move_insn (gen_rtx (MEM, SImode, current_function_internal_arg_pointer),
+		  gen_rtx (REG, SImode, 0));
+  emit_move_insn (gen_rtx (MEM, SImode,
+			   plus_constant
+			     (current_function_internal_arg_pointer, 4)),
+		  gen_rtx (REG, SImode, 1));
+  return copy_to_reg (expand_binop (Pmode, add_optab,
+				    current_function_internal_arg_pointer,
+				    offset, 0, 0, OPTAB_LIB_WIDEN));
+}
+
+/* Return an RTX to represent where a value with mode MODE will be returned
+   from a function.  If the result is 0, the argument is pushed.  */
+
+rtx
+function_arg (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+{
+  rtx result = 0;
+  int size, align;
+
+  /* We only support using 2 data registers as argument registers.  */
+  int nregs = 2;
+
+  /* Figure out the size of the object to be passed.  */
+  if (mode == BLKmode)
+    size = int_size_in_bytes (type);
+  else
+    size = GET_MODE_SIZE (mode);
+
+  /* Figure out the alignment of the object to be passed.  */
+  align = size;
+
+  cum->nbytes = (cum->nbytes + 3) & ~3;
+
+  /* Don't pass this arg via a register if all the argument registers
+     are used up.  */
+  if (cum->nbytes > nregs * UNITS_PER_WORD)
+    return 0;
+
+  /* Don't pass this arg via a register if it would be split between
+     registers and memory.  */
+  if (type == NULL_TREE
+      && cum->nbytes + size > nregs * UNITS_PER_WORD)
+    return 0;
+
+  switch (cum->nbytes / UNITS_PER_WORD)
+    {
+    case 0:
+      result = gen_rtx (REG, mode, 0);
+      break;
+    case 1:
+      result = gen_rtx (REG, mode, 1);
+      break;
+    default:
+      result = 0;
+    }
+
+  return result;
+}
+
+/* Return the number of registers to use for an argument passed partially
+   in registers and partially in memory.  */
+
+int
+function_arg_partial_nregs (cum, mode, type, named)
+     CUMULATIVE_ARGS *cum;
+     enum machine_mode mode;
+     tree type;
+     int named;
+{
+  int size, align;
+
+  /* We only support using 2 data registers as argument registers.  */
+  int nregs = 2;
+
+  /* Figure out the size of the object to be passed.  */
+  if (mode == BLKmode)
+    size = int_size_in_bytes (type);
+  else
+    size = GET_MODE_SIZE (mode);
+
+  /* Figure out the alignment of the object to be passed.  */
+  align = size;
+
+  cum->nbytes = (cum->nbytes + 3) & ~3;
+
+  /* Don't pass this arg via a register if all the argument registers
+     are used up.  */
+  if (cum->nbytes > nregs * UNITS_PER_WORD)
+    return 0;
+
+  if (cum->nbytes + size <= nregs * UNITS_PER_WORD)
+    return 0;
+
+  /* Don't pass this arg via a register if it would be split between
+     registers and memory.  */
+  if (type == NULL_TREE
+      && cum->nbytes + size > nregs * UNITS_PER_WORD)
+    return 0;
+
+  return (nregs * UNITS_PER_WORD - cum->nbytes) / UNITS_PER_WORD;
+}
+
+/* Output a tst insn.  */
+char *
+output_tst (operand, insn)
+     rtx operand, insn;
+{
+  
+  rtx temp;
+  int past_call = 0;
+
+  /* We can save a byte if we can find a register which has the value
+     zero in it.  */
+  temp = PREV_INSN (insn);
+  while (temp)
+    {
+      rtx set;
+
+      /* We allow the search to go through call insns.  We record
+	 the fact that we've past a CALL_INSN and reject matches which
+	 use call clobbered registers.  */
+      if (GET_CODE (temp) == CODE_LABEL
+	  || GET_CODE (temp) == JUMP_INSN
+	  || GET_CODE (temp) == BARRIER)
+	break;
+
+      if (GET_CODE (temp) == CALL_INSN)
+	past_call = 1;
+
+      if (GET_CODE (temp) == NOTE)
+	{
+	  temp = PREV_INSN (temp);
+	  continue;
+	}
+
+      /* It must be an insn, see if it is a simple set. */
+      set = single_set (temp);
+      if (!set)
+	{
+	  temp = PREV_INSN (temp);
+	  continue;
+	}
+
+      /* Are we setting a data register to zero (this does not win for
+	 address registers)? 
+
+	 If it's a call clobbered register, have we past a call?
+
+	 Make sure the register we find isn't the same as ourself;
+	 the mn10300 can't encode that.  */
+      if (REG_P (SET_DEST (set))
+	  && SET_SRC (set) == CONST0_RTX (GET_MODE (SET_DEST (set)))
+	  && !reg_set_between_p (SET_DEST (set), temp, insn)
+	  && REGNO_REG_CLASS (REGNO (SET_DEST (set))) == DATA_REGS
+	  && REGNO (SET_DEST (set)) != REGNO (operand)
+	  && (!past_call 
+	      || !call_used_regs[REGNO (SET_DEST (set))]))
+	{
+	  rtx xoperands[2];
+	  xoperands[0] = operand;
+	  xoperands[1] = SET_DEST (set);
+
+	  output_asm_insn ("cmp %1,%0", xoperands);
+	  return "";
+	}
+      temp = PREV_INSN (temp);
+    }
+  return "cmp 0,%0";
 }
