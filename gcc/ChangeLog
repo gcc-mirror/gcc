@@ -1,3 +1,8 @@
+Mon Aug 31 10:47:16 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* config/m68k/m68k.h (TARGET_SWITCHES): Don't remove MASK_68040
+	for m68020-60, to prevent the use of fintrz.
+
 Sun Aug 30 22:17:20 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* configure.in: If the native compiler is GCC use $(WARN_CFLAGS) 
