@@ -1,6 +1,6 @@
-// 990519 bkoz
+// 2000-08-02 bkoz
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -81,18 +81,6 @@ bool test01()
 {
   bool test = true;
 
-  char array1[20];
-  typedef std::ios::traits_type ctraits_type;
-  ctraits_type::int_type i = 15;
-  ctraits_type::copy(array1, "testing istream", i);
-  array1[i] = '\0';
-  std::cout << "testing cout" << std::endl;
-  std::cerr << "testing cerr" << std::endl;
-  test &= std::cerr.flags() & std::ios_base::unitbuf;
-  std::clog << "testing clog" << std::endl;
-  // std::cin >> array1; // requires somebody to type something in.
-  test &= std::cin.tie() == &std::cout;
-
 #ifdef _GLIBCPP_USE_WCHAR_T
   wchar_t array2[20];
   typedef std::wios::traits_type wtraits_type;
@@ -106,7 +94,7 @@ bool test01()
   test &= std::wcin.tie() == &std::wcout;
 #endif
 
-  return true;
+  return test;
 }
 
 
