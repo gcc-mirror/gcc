@@ -1,3 +1,21 @@
+2001-02-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (toplev.o): Depend on params.h.
+	(intergate.o): Likewise.
+	(params.o): New target.
+	* flags.h (inline_max_insns): Remove.
+	* integrate.c: Include params.h.
+	Use MAX_INLINE_INSNS instead of inline_max_insns.
+	* params.c: New file.
+	* params.h: Likewise.
+	* params.def: Likewise.
+	* toplev.c: Include params.h.
+	(lang_independent_params): New variable.
+	(decode_f_option): Use the param machinery instead of setting 
+	max_inline_insns.
+	(independent_decode_option): Handle "--param name=value".
+	(main): Register language-independent parameters.
+
 Wed Feb 14 11:13:45 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (pushsf, pushdf_nointeger): Fix constraint.

@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "intl.h"
 #include "loop.h"
+#include "params.h"
 
 #include "obstack.h"
 #define	obstack_chunk_alloc	xmalloc
@@ -89,15 +90,6 @@ static void copy_insn_list              PARAMS ((rtx, struct inline_remap *,
 static int compare_blocks               PARAMS ((const PTR, const PTR));
 static int find_block                   PARAMS ((const PTR, const PTR));
 
-/* The maximum number of instructions accepted for inlining a
-   function.  Increasing values mean more agressive inlining.
-   This affects currently only functions explicitly marked as
-   inline (or methods defined within the class definition for C++).
-   The default value of 10000 is arbitrary but high to match the
-   previously unlimited gcc capabilities.  */
-
-int inline_max_insns = 10000;
-
 /* Used by copy_rtx_and_substitute; this indicates whether the function is
    called for the purpose of inlining or some other purpose (i.e. loop
    unrolling).  This affects how constant pool references are handled.
@@ -135,11 +127,11 @@ function_cannot_inline_p (fndecl)
   tree last = tree_last (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
 
   /* For functions marked as inline increase the maximum size to
-     inline_max_insns (-finline-limit-<n>).  For regular functions
+     MAX_INLINE_INSNS (-finline-limit-<n>).  For regular functions
      use the limit given by INTEGRATE_THRESHOLD.  */
 
   int max_insns = (DECL_INLINE (fndecl))
-		   ? (inline_max_insns
+		   ? (MAX_INLINE_INSNS
 		      + 8 * list_length (DECL_ARGUMENTS (fndecl)))
 		   : INTEGRATE_THRESHOLD (fndecl);
 

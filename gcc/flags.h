@@ -579,10 +579,6 @@ extern int flag_prefix_function_name;
 extern int g_switch_value;
 extern int g_switch_set;
 
-/* Value of the -finline-limit flag.  */
-
-extern int inline_max_insns;
-
 /* Values of the -falign-* flags: how much to align labels in code. 
    0 means `use default', 1 means `don't align'.  
    For each variable, there is an _log variant which is the power
