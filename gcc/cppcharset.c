@@ -280,7 +280,7 @@ one_utf8_to_utf32 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
 		   uchar **outbufp, size_t *outbytesleftp)
 {
   uchar *outbuf;
-  cppchar_t s;
+  cppchar_t s = 0;
   int rval;
 
   /* Check for space first, since we know exactly how much we need.  */
