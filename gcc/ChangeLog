@@ -1,5 +1,16 @@
 Sat Nov  3 10:37:56 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* reload.c (combine_reloads): Don't combine an output reload if there
+	are other reloads around for part of the output.
+
+	* emit-rtl.c (set_mem_attributes): Set RTX_UNCHANGINGP_P if T is a
+	constant expression.
+	(set_mem_decl): New function.
+	* expr.h (set_mem_decl): New declaration.
+	* final.c (get_decl_from_op): Don't use ORIGINAL_REGNO if not pseudo.
+	(output_asm_operand_names): Add tab.
+	* reload1.c (alter_reg): Set decl of MEM from REG_DECL.
+
 	* builtins.c (get_memory_rtx): Properly set MEM alias set and
 	attributes.
 
