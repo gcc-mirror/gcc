@@ -1,3 +1,8 @@
+Thu Feb 12 16:29:49 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* getopt.c: Update to latest FSF version.
+	* getopt1.c: Likewise.
+
 Fri Feb  6 01:35:17 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (FLAGS_TO_PASS): Don't pass PICFLAG.
