@@ -383,10 +383,17 @@ handle_pragma_redefine_extname (dummy)
       SET_DECL_ASSEMBLER_NAME (decl, newname);
     }
   else
-    pending_redefine_extname
-      = tree_cons (oldname, newname, pending_redefine_extname);
+    add_to_renaming_pragma_list(oldname, newname);
 }
 #endif
+
+void
+add_to_renaming_pragma_list (oldname, newname)
+	tree oldname, newname;
+{
+  pending_redefine_extname
+    = tree_cons (oldname, newname, pending_redefine_extname);
+}
 
 static GTY(()) tree pragma_extern_prefix;
 
@@ -444,7 +451,6 @@ maybe_apply_renaming_pragma (decl, asmname)
       asmname = build_string (strlen (oldasmname), oldasmname);
     }
 
-#ifdef HANDLE_PRAGMA_REDEFINE_EXTNAME
   {
     tree *p, t;
 
@@ -460,7 +466,6 @@ maybe_apply_renaming_pragma (decl, asmname)
 	  return build_string (strlen (newname), newname);
 	}
   }
-#endif
 
 #ifdef HANDLE_PRAGMA_EXTERN_PREFIX
   if (pragma_extern_prefix && !asmname)

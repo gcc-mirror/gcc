@@ -1,3 +1,8 @@
+2002-07-08  Steve Ellcey  <sje@cup.hp.com>
+	* gcc/c-pragma.h (add_to_renaming_pragma_list): New function.
+	* gcc/c-pragma.c (add_to_renaming_pragma_list): New function.
+	(handle_pragma_redefine_extname): Change to use new function.
+
 2002-07-08  Roger Sayle  <roger@eyesopen.com>
 
 	* combine.c (combine_simplify_rtx): Add an explicit cast

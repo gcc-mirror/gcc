@@ -62,6 +62,7 @@ extern void cpp_register_pragma PARAMS ((cpp_reader *,
 
 extern void maybe_apply_pragma_weak PARAMS ((tree));
 extern tree maybe_apply_renaming_pragma PARAMS ((tree, tree));
+extern void add_to_renaming_pragma_list PARAMS ((tree, tree));
 
 extern int c_lex PARAMS ((tree *));
 
