@@ -34,22 +34,6 @@
 /* Define vfork as fork if vfork does not work.  */
 #undef vfork
 
-/* Define if your assembler supports specifying the maximum number
-   of bytes to skip when using the GAS .p2align command.  */
-#undef HAVE_GAS_MAX_SKIP_P2ALIGN
-
-/* Define if your assembler supports .balign and .p2align.  */
-#undef HAVE_GAS_BALIGN_AND_P2ALIGN
-
-/* Define if your assembler uses the old HImode fild and fist notation.  */
-#undef HAVE_GAS_FILDS_FISTS
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-#undef ssize_t
-
-/* Define if cpp should also search $prefix/include.  */
-#undef PREFIX_INCLUDE_DIR
-
 /* Define if you have the alphasort function.  */
 #undef HAVE_ALPHASORT
 
@@ -288,6 +272,9 @@
    first argument is NULL. */
 #undef HAVE_WORKING_MBSTOWCS
 
+/* Define as `int' if <sys/types.h> doesn't define. */
+#undef ssize_t
+
 /* Define if printf supports %p. */
 #undef HAVE_PRINTF_PTR
 
@@ -442,6 +429,13 @@
 /* Define to be the last portion of registry key on windows hosts. */
 #undef WIN32_REGISTRY_KEY
 
+/* Define if your assembler supports .balign and .p2align. */
+#undef HAVE_GAS_BALIGN_AND_P2ALIGN
+
+/* Define if your assembler supports specifying the maximum number
+   of bytes to skip when using the GAS .p2align command. */
+#undef HAVE_GAS_MAX_SKIP_P2ALIGN
+
 /* Define if your assembler supports .subsection and .subsection -1 starts
    emitting at the beginning of your section. */
 #undef HAVE_GAS_SUBSECTION_ORDERING
@@ -449,10 +443,10 @@
 /* Define if your assembler supports .weak. */
 #undef HAVE_GAS_WEAK
 
-/* Define if your assembler supports .hidden. */
+/* Define if your assembler and linker support .hidden. */
 #undef HAVE_GAS_HIDDEN
 
-/* Define if your assembler supports .uleb128. */
+/* Define if your assembler supports .sleb128 and .uleb128. */
 #undef HAVE_AS_LEB128
 
 /* Define if your assembler mis-optimizes .eh_frame data. */
@@ -482,6 +476,9 @@
 /* Define if your assembler supports offsetable %lo(). */
 #undef HAVE_AS_OFFSETABLE_LO10
 
+/* Define if your assembler uses the new HImode fild and fist notation. */
+#undef HAVE_GAS_FILDS_FISTS
+
 /* Define true if the assembler supports '.long foo@GOTOFF'. */
 #undef HAVE_AS_GOTOFF_IN_DATA
 
@@ -498,9 +495,6 @@
 /* Define if your assembler supports the --gdwarf2 option. */
 #undef HAVE_AS_GDWARF2_DEBUG_FLAG
 
-/* Define if your assembler supports the --gstabs option. */
-#undef HAVE_AS_GSTABS_DEBUG_FLAG
-
 /* Define if your linker links a mix of read-only
    and read-write sections into a read-write section. */
 #undef HAVE_LD_RO_RW_SECTION_MIXING
@@ -514,15 +508,6 @@
 /* Define if your MIPS libgloss linker scripts consistently include STARTUP directives. */
 #undef HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES
 
+/* Define to PREFIX/include if cpp should also search that directory. */
+#undef PREFIX_INCLUDE_DIR
 
-/* Bison unconditionally undefines `const' if neither `__STDC__' nor
-   __cplusplus are defined.  That's a problem since we use `const' in
-   the GCC headers, and the resulting bison code is therefore type
-   unsafe.  Thus, we must match the bison behavior here.  */
-
-#ifndef __STDC__
-#ifndef __cplusplus
-#undef const
-#define const
-#endif
-#endif

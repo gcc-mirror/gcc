@@ -805,7 +805,7 @@ int main()
   fi
 fi
 
-AC_CHECK_TYPE(ssize_t, int)
+gcc_AC_CHECK_TYPE(ssize_t, int)
 
 # Try to determine the array type of the second argument of getgroups
 # for the target system (int or gid_t).
@@ -1726,232 +1726,156 @@ case $in_tree_objdump in
 esac
 
 # Figure out what assembler alignment features are present.
-AC_MSG_CHECKING(assembler alignment features)
-gcc_cv_as_alignment_features=none
-if test $in_tree_gas = yes; then
-  # Gas version 2.6 and later support for .balign and .p2align.
-  gcc_GAS_VERSION_GTE_IFELSE(2,6,0,[
-    gcc_cv_as_alignment_features=".balign and .p2align"
-    AC_DEFINE(HAVE_GAS_BALIGN_AND_P2ALIGN)
-  ])
-  # Gas version 2.8 and later support specifying the maximum
-  # bytes to skip when using .p2align.
-  gcc_GAS_VERSION_GTE_IFELSE(2,8,0,[
-    gcc_cv_as_alignment_features=".p2align including maximum skip"
-    AC_DEFINE(HAVE_GAS_MAX_SKIP_P2ALIGN)
-  ])
-elif test x$gcc_cv_as != x; then
-	# Check if we have .balign and .p2align
-	echo ".balign  4" > conftest.s
-	echo ".p2align  2" >> conftest.s
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_alignment_features=".balign and .p2align"
-		AC_DEFINE(HAVE_GAS_BALIGN_AND_P2ALIGN)
-	fi
-	rm -f conftest.s conftest.o
-	# Check if specifying the maximum bytes to skip when
-	# using .p2align is supported.
-	echo ".p2align 4,,7" > conftest.s
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_alignment_features=".p2align including maximum skip"
-		AC_DEFINE(HAVE_GAS_MAX_SKIP_P2ALIGN)
-	fi
-	rm -f conftest.s conftest.o
-fi
-AC_MSG_RESULT($gcc_cv_as_alignment_features)
+gcc_GAS_CHECK_FEATURE([.balign and .p2align], gcc_cv_as_balign_and_p2align,
+ [2,6,0],,
+[.balign 4
+.p2align 2],,
+[AC_DEFINE(HAVE_GAS_BALIGN_AND_P2ALIGN, 1,
+  [Define if your assembler supports .balign and .p2align.])])
 
-AC_MSG_CHECKING(assembler subsection support)
-gcc_cv_as_subsections=no
-if test $in_tree_gas = yes ; then
-  gcc_GAS_VERSION_GTE_IFELSE(2,9,0,[
-    test $in_tree_gas_is_elf = yes \
-	&& gcc_cv_as_subsections="working .subsection -1"
-  ])
-elif test x$gcc_cv_as != x; then
-	# Check if we have .subsection
-	echo ".subsection 1" > conftest.s
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_subsections=".subsection"
-		if test x$gcc_cv_nm != x; then
-			cat > conftest.s <<EOF
-conftest_label1: .word 0
+gcc_GAS_CHECK_FEATURE([.p2align with maximum skip], gcc_cv_as_max_skip_p2align,
+ [2,8,0],,
+ [.p2align 4,,7],,
+[AC_DEFINE(HAVE_GAS_MAX_SKIP_P2ALIGN, 1,
+  [Define if your assembler supports specifying the maximum number
+   of bytes to skip when using the GAS .p2align command.])])
+
+gcc_GAS_CHECK_FEATURE([working .subsection -1], gcc_cv_as_subsection_m1,
+ [elf,2,9,0],,
+ [conftest_label1: .word 0
 .subsection -1
 conftest_label2: .word 0
-.previous
-EOF
-			if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-				$gcc_cv_nm conftest.o | grep conftest_label1 > conftest.nm1
-				$gcc_cv_nm conftest.o | grep conftest_label2 | sed -e 's/label2/label1/' > conftest.nm2
-				if cmp conftest.nm1 conftest.nm2 > /dev/null 2>&1; then
-					:
-				else
-					gcc_cv_as_subsections="working .subsection -1"
-				fi
-			fi
-		fi
-	fi
-	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
-fi
-if test x"$gcc_cv_as_subsections" = x"working .subsection -1"; then
-	AC_DEFINE(HAVE_GAS_SUBSECTION_ORDERING, 1,
-[Define if your assembler supports .subsection and .subsection -1 starts
-   emitting at the beginning of your section.])
-fi
-AC_MSG_RESULT($gcc_cv_as_subsections)
-
-AC_MSG_CHECKING(assembler weak support)
-gcc_cv_as_weak=no
-if test $in_tree_gas = yes ; then
-  gcc_GAS_VERSION_GTE_IFELSE(2,2,0,[
-    gcc_cv_as_weak="yes"
-  ])
-elif test x$gcc_cv_as != x; then
-	# Check if we have .weak
-	echo "	.weak foobar" > conftest.s
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_weak="yes"
-	fi
-	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
-fi
-if test x"$gcc_cv_as_weak" = xyes; then
-	AC_DEFINE(HAVE_GAS_WEAK, 1, [Define if your assembler supports .weak.])
-fi
-AC_MSG_RESULT($gcc_cv_as_weak)
-
-AC_MSG_CHECKING(assembler hidden support)
-gcc_cv_as_hidden=no
-if test $in_tree_gas = yes ; then
-  gcc_GAS_VERSION_GTE_IFELSE(2,12,1,[
-    test $in_tree_gas_is_elf = yes && gcc_cv_as_hidden="yes"
-  ])
-elif test x$gcc_cv_as != x; then
-	# Check if we have .hidden
-	echo "	.hidden foobar" > conftest.s
-	echo "foobar:" >> conftest.s
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_hidden="yes"
-	fi
-	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
-
- 	# GNU LD versions before 2.12.1 have buggy support for STV_HIDDEN.
-	# This is irritatingly difficult to feature test for.  Look for 
-	# the date string after the version number.
-	ld_ver=`$gcc_cv_ld --version 2>/dev/null | head -1`
-	if echo "$ld_ver" | grep GNU > /dev/null; then
-changequote(,)dnl
-               ld_vers=`echo $ld_ver | sed -n \
-	       -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
-	       -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
-	       -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
-	       -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p' \
-	       -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p' \
-	       -e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p'`
-               ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
-		if test 0"$ld_date" -lt 20020404; then
-			if test -n "$ld_date"; then
-				# If there was date string, but was earlier than 2002-04-04, fail
-				gcc_cv_as_hidden="no"
-			elif test -z "$ld_vers"; then
-				# If there was no date string nor ld version number, something is wrong
-				gcc_cv_as_hidden="no"
-			else
-				ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
-				ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
-				ld_vers_patch=`expr "$ld_vers" : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
-				test -z "$ld_vers_patch" && ld_vers_patch=0
-				if test "$ld_vers_major" -lt 2; then
-					gcc_cv_as_hidden="no"
-				elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 12; then
-					gcc_cv_as_hidden="no"
-				elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -eq 12 \
-					  -a "$ld_vers_patch" -eq 0; then
-					gcc_cv_as_hidden="no"
-				fi
-			fi
-		fi
-changequote([,])dnl
-	fi
-fi
-case "$target" in
-  mips-sgi-irix6*)
-    if test x"$gnu_ld_flag" = x"no"; then
-      # Even if using gas with .hidden support, the resulting object files
-      # cannot be linked with the IRIX 6 O32 linker.  With the N32 and
-      # N64 linkers, the problem is that the linker refuses to accept
-      # -call_shared (passed by default to the linker) and -r (used to
-      # link the object file generated without .hidden directives with
-      # one that hides symbols), so we also lose.
-      gcc_cv_as_hidden=no
+.previous],
+ [if test x$gcc_cv_nm != x; then
+    $gcc_cv_nm conftest.o | grep conftest_label1 > conftest.nm1
+    $gcc_cv_nm conftest.o | grep conftest_label2 | sed -e 's/label2/label1/' > conftest.nm2
+    if cmp conftest.nm1 conftest.nm2 > /dev/null 2>&1
+    then :
+    else gcc_cv_as_subsection_m1=yes
     fi
-    ;;
-esac
-if test x"$gcc_cv_as_hidden" = xyes; then
-	AC_DEFINE(HAVE_GAS_HIDDEN, 1,
-		[Define if your assembler supports .hidden.])
-fi
-AC_MSG_RESULT($gcc_cv_as_hidden)
-libgcc_visibility=$gcc_cv_as_hidden
-AC_SUBST(libgcc_visibility)
+    rm -f conftest.nm1 conftest.nm2
+  fi],
+ [AC_DEFINE(HAVE_GAS_SUBSECTION_ORDERING, 1,
+  [Define if your assembler supports .subsection and .subsection -1 starts
+   emitting at the beginning of your section.])])
 
-AC_MSG_CHECKING(assembler leb128 support)
-gcc_cv_as_leb128=no
-if test $in_tree_gas = yes ; then
-  gcc_GAS_VERSION_GTE_IFELSE(2,11,0,[
-    test $in_tree_gas_is_elf = yes && gcc_cv_as_leb128="yes"
-  ])
-elif test x$gcc_cv_as != x; then
-	# Check if we have .[us]leb128, and support symbol arithmetic with it.
-	cat > conftest.s <<EOF
-	.data
+gcc_GAS_CHECK_FEATURE([.weak], gcc_cv_as_weak,
+ [2,2,0],,
+ [	.weak foobar],,
+[AC_DEFINE(HAVE_GAS_WEAK, 1, [Define if your assembler supports .weak.])])
+
+# .hidden needs to be supported in both the assembler and the linker,
+# because GNU LD versions before 2.12.1 have buggy support for STV_HIDDEN.
+# This is irritatingly difficult to feature test for; we have to check the
+# date string after the version number.  If we've got an in-tree
+# ld, we don't know its patchlevel version, so we set the baseline at 2.13
+# to be safe.
+# The gcc_GAS_CHECK_FEATURE call just sets a cache variable.
+gcc_GAS_CHECK_FEATURE([.hidden], gcc_cv_as_hidden,
+ [elf,2,13,0],,
+[	.hidden foobar
+foobar:])
+
+AC_CACHE_CHECK(linker for .hidden support, gcc_cv_ld_hidden,
+[if test $in_tree_ld = yes ; then
+  gcc_cv_ld_hidden=no
+  if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 13 -o "$gcc_cv_gld_major_version" -gt 2 \
+     && test $in_tree_ld_is_elf = yes; then
+     gcc_cv_ld_hidden=yes
+  fi
+else
+  gcc_cv_ld_hidden=yes
+  ld_ver=`$gcc_cv_ld --version 2>/dev/null | head -1`
+  if echo "$ld_ver" | grep GNU > /dev/null; then
+changequote(,)dnl
+    ld_vers=`echo $ld_ver | sed -n \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p' \
+	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\)[	 ].*$,\1,p'`
+    ld_date=`echo $ld_ver | sed -n 's,^.*\([2-9][0-9][0-9][0-9]\)[-]*\([01][0-9]\)[-]*\([0-3][0-9]\).*$,\1\2\3,p'`
+    if test 0"$ld_date" -lt 20020404; then
+      if test -n "$ld_date"; then
+	# If there was date string, but was earlier than 2002-04-04, fail
+	gcc_cv_ld_hidden=no
+      elif test -z "$ld_vers"; then
+	# If there was no date string nor ld version number, something is wrong
+	gcc_cv_ld_hidden=no
+      else
+	ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
+	ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
+	ld_vers_patch=`expr "$ld_vers" : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
+	test -z "$ld_vers_patch" && ld_vers_patch=0
+	if test "$ld_vers_major" -lt 2; then
+	  gcc_cv_ld_hidden=no
+	elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 12; then
+	  gcc_cv_ld_hidden="no"
+	elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -eq 12 -a "$ld_vers_patch" -eq 0; then
+	  gcc_cv_ld_hidden=no
+	fi
+      fi
+changequote([,])dnl
+    fi
+  else
+    case "$target" in
+      mips-sgi-irix6*)
+        if test x"$gnu_ld_flag" = x"no"; then
+          # Even if using gas with .hidden support, the resulting object files
+          # cannot be linked with the IRIX 6 O32 linker.  With the N32 and
+          # N64 linkers, the problem is that the linker refuses to accept
+          # -call_shared (passed by default to the linker) and -r (used to
+          # link the object file generated without .hidden directives with
+          # one that hides symbols), so we also lose.
+          gcc_cv_ld_hidden=no
+        fi
+     ;;
+    esac
+  fi
+fi])
+libgcc_visibility=no
+AC_SUBST(libgcc_visibility)
+if test $gcc_cv_as_hidden = yes && test $gcc_cv_ld_hidden=yes; then
+  libgcc_visibility=yes
+  AC_DEFINE(HAVE_GAS_HIDDEN, 1,
+  [Define if your assembler and linker support .hidden.])
+fi
+
+# Check if we have .[us]leb128, and support symbol arithmetic with it.
+gcc_GAS_CHECK_FEATURE([.sleb128 and .uleb128], gcc_cv_as_leb128,
+  [elf,2,11,0],,
+[	.data
 	.uleb128 L2 - L1
 L1:
 	.uleb128 1280
 	.sleb128 -1010
-L2:
-EOF
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_leb128="yes"
-
-		# GAS versions before 2.11 do not support uleb128,
-		# despite appearing to.
-		# ??? There exists an elf-specific test that will crash
-		# the assembler.  Perhaps it's better to figure out whether
-		# arbitrary sections are supported and try the test.
-		as_ver=`$gcc_cv_as --version 2>/dev/null | head -1`
-		if echo "$as_ver" | grep GNU > /dev/null; then
+L2:],
+ [# GAS versions before 2.11 do not support uleb128,
+  # despite appearing to.
+  # ??? There exists an elf-specific test that will crash
+  # the assembler.  Perhaps it's better to figure out whether
+  # arbitrary sections are supported and try the test.
+  as_ver=`$gcc_cv_as --version 2>/dev/null | head -1`
+  if echo "$as_ver" | grep GNU > /dev/null; then
 changequote(,)dnl
-			as_ver=`echo $as_ver | sed -e 's/GNU assembler \([0-9.][0-9.]*\).*/\1/'`
-			as_major=`echo $as_ver | sed 's/\..*//'`
-			as_minor=`echo $as_ver | sed 's/[^.]*\.\([0-9]*\).*/\1/'`
+    as_ver=`echo $as_ver | sed -e 's/GNU assembler \([0-9.][0-9.]*\).*/\1/'`
+    as_major=`echo $as_ver | sed 's/\..*//'`
+    as_minor=`echo $as_ver | sed 's/[^.]*\.\([0-9]*\).*/\1/'`
 changequote([,])dnl
-			if test $as_major -eq 2 -a $as_minor -lt 11; then
-				gcc_cv_as_leb128="no"
-			fi
-		fi
-	fi
-	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
-fi
-if test x"$gcc_cv_as_leb128" = xyes; then
-	AC_DEFINE(HAVE_AS_LEB128, 1,
-		[Define if your assembler supports .uleb128.])
-fi
-AC_MSG_RESULT($gcc_cv_as_leb128)
+    if test $as_major -eq 2 && test $as_minor -lt 11
+    then :
+    else gcc_cv_as_leb128=yes
+    fi
+  fi],
+  [AC_DEFINE(HAVE_AS_LEB128, 1,
+    [Define if your assembler supports .sleb128 and .uleb128.])])
 
-AC_MSG_CHECKING(assembler eh_frame optimization)
-gcc_cv_as_eh_frame=no
-if test $in_tree_gas = yes ; then
-  gcc_GAS_VERSION_GTE_IFELSE(2,12,0,[
-    test $in_tree_gas_is_elf = yes && gcc_cv_as_eh_frame="yes"
-  ])
-elif test x$gcc_cv_as != x; then
-	# Check if this is GAS.
-	as_ver=`$gcc_cv_as --version < /dev/null 2> /dev/null | head -1`
-	rm -f a.out 2> /dev/null
-	if echo "$as_ver" | grep GNU > /dev/null; then
-		# Versions up to and including 2.11.0 may mis-optimize
-		# .eh_frame data.  Try something.
-		cat > conftest.s <<EOF
-	.text
+# GAS versions up to and including 2.11.0 may mis-optimize
+# .eh_frame data.
+gcc_GAS_CHECK_FEATURE(eh_frame optimization, gcc_cv_as_eh_frame,
+  [elf,2,12,0],,
+[	.text
 .LFB1:
 	.4byte	0
 .L1:
@@ -1982,61 +1906,45 @@ __FRAME_BEGIN__:
 	.4byte	.LFE1-.LFB1
 	.byte	0x4
 	.4byte	.L1-.LFB1
-.LEFDE1:
-EOF
-		cat > conftest.lit <<EOF
+.LEFDE1:],
+[  cat > conftest.lit <<EOF
  0000 10000000 00000000 017a0001 781a0004  .........z..x...
  0010 01000000 12000000 18000000 00000000  ................
  0020 08000000 04080000 0044               .........D      
 EOF
-		cat > conftest.big <<EOF
+  cat > conftest.big <<EOF
  0000 00000010 00000000 017a0001 781a0004  .........z..x...
  0010 00000001 00000012 00000018 00000000  ................
  0020 00000008 04000000 0844               .........D      
 EOF
-		# If the assembler didn't choke, and we can objdump,
-		# and we got the correct data, then succeed.
-		if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
-		   && $gcc_cv_objdump -s -j .eh_frame conftest.o 2>/dev/null \
-		      | tail -3 > conftest.got \
-		   && { cmp conftest.lit conftest.got > /dev/null 2>&1 \
-		        || cmp conftest.big conftest.got > /dev/null 2>&1; }
-		then
-			gcc_cv_as_eh_frame="yes"
-		else
-			gcc_cv_as_eh_frame="bad"
-			if $gcc_cv_as -o conftest.o --traditional-format /dev/null; then
-				AC_DEFINE(USE_AS_TRADITIONAL_FORMAT, 1,
-	[Define if your assembler mis-optimizes .eh_frame data.])
-			fi
-		fi
-	fi
-	rm -f conftest.*
-fi
-AC_MSG_RESULT($gcc_cv_as_eh_frame)
+  # If the assembler didn't choke, and we can objdump,
+  # and we got the correct data, then succeed.
+  if test x$gcc_cv_objdump != x \
+  && $gcc_cv_objdump -s -j .eh_frame conftest.o 2>/dev/null \
+     | tail -3 > conftest.got \
+  && { cmp conftest.lit conftest.got > /dev/null 2>&1 \
+    || cmp conftest.big conftest.got > /dev/null 2>&1; }
+  then
+    gcc_cv_as_eh_frame=yes
+  elif AC_TRY_COMMAND($gcc_cv_as -o conftest.o --traditional-format /dev/null); then
+    gcc_cv_as_eh_frame=buggy
+  else
+    # Uh oh, what do we do now?
+    gcc_cv_as_eh_frame=no
+  fi])
 
-AC_MSG_CHECKING(assembler section merging support)
-gcc_cv_as_shf_merge=no
-if test $in_tree_gas = yes ; then
-  gcc_GAS_VERSION_GTE_IFELSE(2,12,0,[
-    test $in_tree_gas_is_elf = yes && gcc_cv_as_shf_merge="yes"
-  ])
-elif test x$gcc_cv_as != x; then
-	# Check if we support SHF_MERGE sections
-	echo '.section .rodata.str, "aMS", @progbits, 1' > conftest.s
-	if $gcc_cv_as --fatal-warnings -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_shf_merge=yes
-	fi
-	rm -f conftest.s conftest.o
+if test $gcc_cv_as_eh_frame = buggy; then
+  AC_DEFINE(USE_AS_TRADITIONAL_FORMAT, 1,
+  [Define if your assembler mis-optimizes .eh_frame data.])
 fi
-if test x"$gcc_cv_as_shf_merge" = xyes; then
-	AC_DEFINE(HAVE_GAS_SHF_MERGE, 1,
-[Define if your assembler supports marking sections with SHF_MERGE flag.])
-fi
-AC_MSG_RESULT($gcc_cv_as_shf_merge)
 
-AC_MSG_CHECKING(assembler thread-local storage support)
-gcc_cv_as_tls=no
+gcc_GAS_CHECK_FEATURE(section merging support, gcc_cv_as_shf_merge,
+ [elf,2,12,0], [--fatal-warnings],
+ [.section .rodata.str, "aMS", @progbits, 1],,
+ [AC_DEFINE(HAVE_GAS_SHF_MERGE, 1,
+[Define if your assembler supports marking sections with SHF_MERGE flag.])])
+
+# Thread-local storage - the check is heavily parametrized.
 conftest_s=
 tls_first_major=
 tls_first_minor=
@@ -2215,38 +2123,23 @@ foo:	.long	25
 	;;
 esac
 if test -z "$tls_first_major"; then
-  :
-elif test $in_tree_gas = yes ; then
-  gcc_GAS_VERSION_GTE_IFELSE($tls_first_major,$tls_first_minor,0,[
-    gcc_cv_as_tls=yes
-  ])
-elif test x$gcc_cv_as != x; then
-  echo "$conftest_s" > conftest.s
-  if $gcc_cv_as $tls_as_opt --fatal-warnings -o conftest.o conftest.s > /dev/null 2>&1
-  then
-    gcc_cv_as_tls=yes
-  fi
-  rm -f conftest.s conftest.o
+  : # If we don't have a check, assume no support.
+else
+  gcc_GAS_CHECK_FEATURE(thread-local storage support, gcc_cv_as_tls,
+  [$tls_first_major,$tls_first_minor,0], [$tls_as_opt --fatal-warnings],
+  [$conftest_s],,
+  [AC_DEFINE(HAVE_AS_TLS, 1,
+	    [Define if your assembler supports thread-local storage.])])
 fi
-if test "$gcc_cv_as_tls" = yes; then
-  AC_DEFINE(HAVE_AS_TLS, 1,
-	    [Define if your assembler supports thread-local storage.])
-fi
-AC_MSG_RESULT($gcc_cv_as_tls)
+
+# Target-specific assembler checks.
 
 case "$target" in
   # All TARGET_ABI_OSF targets.
   alpha*-*-osf* | alpha*-*-linux* | alpha*-*-*bsd*)
-    AC_CACHE_CHECK([assembler supports explicit relocations],
-	gcc_cv_as_explicit_relocs, [
-	gcc_cv_as_explicit_relocs=unknown
-	if test $in_tree_gas = yes ; then
-           gcc_GAS_VERSION_GTE_IFELSE(2,12,0,[
-	      gcc_cv_as_explicit_relocs=yes
-	   ])
-	elif test x$gcc_cv_as != x; then
-	    cat > conftest.s << 'EOF'
-	.set nomacro
+    gcc_GAS_CHECK_FEATURE([explicit relocation support],
+	gcc_cv_as_alpha_explicit_relocs, [2,12,0],,
+[	.set nomacro
 	.text
 	extbl	$3, $2, $3	!lituse_bytoff!1
 	ldq	$2, a($29)	!literal!1
@@ -2258,257 +2151,144 @@ case "$target" in
 	lda	$0, c($29)	!gprel
 	ldah	$1, d($29)	!gprelhigh
 	lda	$1, d($1)	!gprellow
-	lda	$29, 0($29)	!gpdisp!3
-EOF
-	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_explicit_relocs=yes
-	    else
-		gcc_cv_as_explicit_relocs=no
-	    fi
-	    rm -f conftest.s conftest.o
-	fi
-    ])
-    if test "x$gcc_cv_as_explicit_relocs" = xyes; then
-	AC_DEFINE(HAVE_AS_EXPLICIT_RELOCS, 1,
-		[Define if your assembler supports explicit relocations.])
-    fi
+	lda	$29, 0($29)	!gpdisp!3],,
+    [AC_DEFINE(HAVE_AS_EXPLICIT_RELOCS, 1,
+  [Define if your assembler supports explicit relocations.])])
     ;;
+
   sparc*-*-*)
-    AC_CACHE_CHECK([assembler .register pseudo-op support],
-	gcc_cv_as_register_pseudo_op, [
-	gcc_cv_as_register_pseudo_op=unknown
-	if test x$gcc_cv_as != x; then
-	    # Check if we have .register
-	    echo ".register %g2, #scratch" > conftest.s
-	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_register_pseudo_op=yes
-	    else
-		gcc_cv_as_register_pseudo_op=no
-	    fi
-	    rm -f conftest.s conftest.o
-	fi
-    ])
-    if test "x$gcc_cv_as_register_pseudo_op" = xyes; then
-	AC_DEFINE(HAVE_AS_REGISTER_PSEUDO_OP, 1,
-		[Define if your assembler supports .register.])
-    fi
+    gcc_GAS_CHECK_FEATURE([.register], gcc_cv_as_sparc_register_op,,,
+      [.register %g2, #scratch],,
+      [AC_DEFINE(HAVE_AS_REGISTER_PSEUDO_OP, 1,
+		[Define if your assembler supports .register.])])
 
-    AC_CACHE_CHECK([assembler supports -relax],
-	gcc_cv_as_relax_opt, [
-	gcc_cv_as_relax_opt=unknown
-	if test x$gcc_cv_as != x; then
-	    # Check if gas supports -relax
-	    echo ".text" > conftest.s
-	    if $gcc_cv_as -relax -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_relax_opt=yes
-	    else
-		gcc_cv_as_relax_opt=no
-	    fi
-	    rm -f conftest.s conftest.o
-	fi
-    ])
-    if test "x$gcc_cv_as_relax_opt" = xyes; then
-	AC_DEFINE(HAVE_AS_RELAX_OPTION, 1,
-		[Define if your assembler supports -relax option.])
-    fi
+    gcc_GAS_CHECK_FEATURE([-relax option], gcc_cv_as_sparc_relax,,
+      [-relax], [.text],,
+      [AC_DEFINE(HAVE_AS_RELAX_OPTION, 1,
+		[Define if your assembler supports -relax option.])])
 
-    AC_CACHE_CHECK([assembler and linker support unaligned pc related relocs],
-	gcc_cv_as_sparc_ua_pcrel, [
-	gcc_cv_as_sparc_ua_pcrel=unknown
-	if test x$gcc_cv_as != x -a x$gcc_cv_ld != x; then
-	    gcc_cv_as_sparc_ua_pcrel=no
-	    echo ".text; foo: nop; .data; .align 4; .byte 0; .uaword %r_disp32(foo)" > conftest.s
-	    if $gcc_cv_as -K PIC -o conftest.o conftest.s > /dev/null 2>&1 \
-	       && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
-		gcc_cv_as_sparc_ua_pcrel=yes
-	    fi
-	    rm -f conftest.s conftest.o conftest
-	fi
-    ])
-    if test "x$gcc_cv_as_sparc_ua_pcrel" = xyes; then
-	AC_DEFINE(HAVE_AS_SPARC_UA_PCREL, 1,
+    gcc_GAS_CHECK_FEATURE([unaligned pcrel relocs],
+      gcc_cv_as_sparc_ua_pcrel,,
+      [-K PIC],
+[.text
+foo:
+	nop
+.data
+.align 4
+.byte 0
+.uaword %r_disp32(foo)],
+      [if test x$gcc_cv_ld != x \
+       && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
+	 gcc_cv_as_sparc_ua_pcrel=yes
+       fi
+       rm -f conftest],
+      [AC_DEFINE(HAVE_AS_SPARC_UA_PCREL, 1,
 		[Define if your assembler and linker support unaligned PC relative relocs.])
-    fi
 
-    AC_CACHE_CHECK([assembler and linker support unaligned pc related relocs against hidden symbols],
-	gcc_cv_as_sparc_ua_pcrel_hidden, [
-	if test "x$gcc_cv_as_sparc_ua_pcrel" = xyes; then
-	    gcc_cv_as_sparc_ua_pcrel_hidden=unknown
-	    if test x$gcc_cv_objdump != x; then
-	        gcc_cv_as_sparc_ua_pcrel_hidden=no
-		echo ".data; .align 4; .byte 0x31; .uaword %r_disp32(foo)" > conftest.s
-		echo ".byte 0x32, 0x33, 0x34; .global foo; .hidden foo" >> conftest.s
-		echo "foo: .skip 4" >> conftest.s
-		if $gcc_cv_as -K PIC -o conftest.o conftest.s > /dev/null 2>&1 \
-		   && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1 \
-		   && $gcc_cv_objdump -s -j .data conftest 2> /dev/null \
-		      | grep ' 31000000 07323334' > /dev/null 2>&1; then
-		    if $gcc_cv_objdump -R conftest 2> /dev/null \
-		       | grep 'DISP32' > /dev/null 2>&1; then
-			:
-		    else
-			gcc_cv_as_sparc_ua_pcrel_hidden=yes
-		    fi
-		fi
-	    fi
-	    rm -f conftest.s conftest.o conftest
-	else
-	    gcc_cv_as_sparc_ua_pcrel_hidden="$gcc_cv_as_sparc_ua_pcrel"
-	fi
-    ])
-    if test "x$gcc_cv_as_sparc_ua_pcrel_hidden" = xyes; then
-	AC_DEFINE(HAVE_AS_SPARC_UA_PCREL_HIDDEN, 1,
-		[Define if your assembler and linker support unaligned PC relative relocs against hidden symbols.])
-    fi
-
-    AC_CACHE_CHECK([for assembler offsetable %lo() support],
-	gcc_cv_as_offsetable_lo10, [
-	gcc_cv_as_offsetable_lo10=unknown
-	if test "x$gcc_cv_as" != x; then
-	    # Check if assembler has offsetable %lo()
-	    echo "or %g1, %lo(ab) + 12, %g1" > conftest.s
-	    echo "or %g1, %lo(ab + 12), %g1" > conftest1.s
-	    if $gcc_cv_as -xarch=v9 -o conftest.o conftest.s \
-		    > /dev/null 2>&1 &&
-	       $gcc_cv_as -xarch=v9 -o conftest1.o conftest1.s \
-		    > /dev/null 2>&1; then
-		if cmp conftest.o conftest1.o > /dev/null 2>&1; then
-		    gcc_cv_as_offsetable_lo10=no
-		else
-		    gcc_cv_as_offsetable_lo10=yes
-		fi
+      gcc_GAS_CHECK_FEATURE([unaligned pcrel relocs against hidden symbols],
+	gcc_cv_as_sparc_ua_pcrel_hidden,,
+	[-K PIC],
+[.data
+.align 4
+.byte 0x31
+.uaword %r_disp32(foo)
+.byte 0x32, 0x33, 0x34
+.global foo
+.hidden foo
+foo:
+.skip 4],
+	[if test x$gcc_cv_ld != x && test x$gcc_cv_objdump != x \
+	 && $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1 \
+	 && $gcc_cv_objdump -s -j .data conftest 2> /dev/null \
+	    | grep ' 31000000 07323334' > /dev/null 2>&1; then
+	    if $gcc_cv_objdump -R conftest 2> /dev/null \
+	       | grep 'DISP32' > /dev/null 2>&1; then
+		:
 	    else
-		gcc_cv_as_offsetable_lo10=no
+		gcc_cv_as_sparc_ua_pcrel_hidden=yes
 	    fi
-	    rm -f conftest.s conftest.o conftest1.s conftest1.o
-	fi
-    ])
-    if test "x$gcc_cv_as_offsetable_lo10" = xyes; then
-	AC_DEFINE(HAVE_AS_OFFSETABLE_LO10, 1,
-	    [Define if your assembler supports offsetable %lo().])
-    fi
+	 fi
+	 rm -f conftest],
+	 [AC_DEFINE(HAVE_AS_SPARC_UA_PCREL_HIDDEN, 1,
+		   [Define if your assembler and linker support unaligned PC relative relocs against hidden symbols.])])
+    ]) # unaligned pcrel relocs
 
+    gcc_GAS_CHECK_FEATURE([offsetable %lo()],
+      gcc_cv_as_sparc_offsetable_lo10,,
+      [-xarch=v9],
+[.text
+	or %g1, %lo(ab) + 12, %g1
+	or %g1, %lo(ab + 12), %g1],
+      [if test x$gcc_cv_objdump != x \
+       && %gcc_cv_objdump -s -j .text conftest.o 2> /dev/null \
+          | grep ' 82106000 82106000' > /dev/null 2>&1; then
+	 gcc_cv_as_offsetable_lo10=yes
+       fi],
+       [AC_DEFINE(HAVE_AS_OFFSETABLE_LO10, 1,
+	         [Define if your assembler supports offsetable %lo().])])
     ;;
 
 changequote(,)dnl
   i[34567]86-*-* | x86_64-*-*)
 changequote([,])dnl
-    AC_MSG_CHECKING(assembler instructions)
-    gcc_cv_as_instructions=
-    if test $in_tree_gas = yes ; then 
-      gcc_GAS_VERSION_GTE_IFELSE(2,9,0,[
-	gcc_cv_as_instructions="filds fists"
-      ])
-    elif test x$gcc_cv_as != x; then
-	set "filds fists" "filds mem; fists mem"
-	while test $# -gt 0
-  	do
-		echo "$2" > conftest.s
-		if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-			gcc_cv_as_instructions=${gcc_cv_as_instructions}$1" "
-		fi
-		shift 2
-	done
-	rm -f conftest.s conftest.o
-    fi
-    if test x"$gcc_cv_as_instructions" != x; then
-	AC_DEFINE_UNQUOTED(HAVE_GAS_`echo "$gcc_cv_as_instructions" | sed -e 's/ $//' | tr '[a-z ]' '[A-Z_]'`)
-    fi
-    AC_MSG_RESULT($gcc_cv_as_instructions)
+    gcc_GAS_CHECK_FEATURE([filds and fists mnemonics],
+       gcc_cv_as_ix86_filds_fists,
+      [2,9,0],, [filds mem; fists mem],,
+      [AC_DEFINE(HAVE_GAS_FILDS_FISTS, 1,
+        [Define if your assembler uses the new HImode fild and fist notation.])])
 
-    AC_MSG_CHECKING(assembler GOTOFF in data directives)
-    gcc_cv_as_gotoff_in_data=no
-    if test $in_tree_gas = yes ; then
-      gcc_GAS_VERSION_GTE_IFELSE(2,11,0,[
-	gcc_cv_as_gotoff_in_data=yes
-      ])
-    elif test x$gcc_cv_as != x; then
-	cat > conftest.s <<EOF
-	.text
+    gcc_GAS_CHECK_FEATURE([GOTOFF in data],
+        gcc_cv_as_ix86_gotoff_in_data, [2,11,0],,
+[	.text
 .L0:
 	nop
 	.data
-	.long .L0@GOTOFF
-EOF
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-	  gcc_cv_as_gotoff_in_data=yes
-	fi
-    fi
-    AC_DEFINE_UNQUOTED(HAVE_AS_GOTOFF_IN_DATA,
+	.long .L0@GOTOFF],,
+    [AC_DEFINE_UNQUOTED(HAVE_AS_GOTOFF_IN_DATA,
       [`if test $gcc_cv_as_gotoff_in_data = yes; then echo 1; else echo 0; fi`],
-      [Define true if the assembler supports '.long foo@GOTOFF'.])
-    AC_MSG_RESULT($gcc_cv_as_gotoff_in_data)
+      [Define true if the assembler supports '.long foo@GOTOFF'.])])
     ;;
 
   ia64*-*-*)
-    AC_CACHE_CHECK([assembler supports ltoffx and ldxmov],
-	gcc_cv_as_ltoffx_ldxmov_relocs, [
-	gcc_cv_as_ltoffx_ldxmov_relocs=unknown
-	if test $in_tree_gas = yes ; then
-          gcc_GAS_VERSION_GTE_IFELSE(2,14,0,[
-	    gcc_cv_as_ltoffx_ldxmov_relocs=yes
-          ])
-	elif test x$gcc_cv_as != x; then
-	    cat > conftest.s << 'EOF'
-changequote(,)dnl
-	.text
+    gcc_GAS_CHECK_FEATURE([ltoffx and ldxmov relocs],
+	gcc_cv_as_ia64_ltoffx_ldxmov_relocs, [2,14,0],,
+changequote(<<,>>)dnl
+<<	.text
 	addl r15 = @ltoffx(x#), gp
 	;;
-	ld8.mov r16 = [r15], x#
-EOF
+	ld8.mov r16 = [r15], x#>>,
 changequote([,])dnl
-	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_ltoffx_ldxmov_relocs=yes
-	    else
-		gcc_cv_as_ltoffx_ldxmov_relocs=no
-	    fi
-	    rm -f conftest.s conftest.o
-	fi
-    ])
-    if test "x$gcc_cv_as_ltoffx_ldxmov_relocs" = xyes; then
-	AC_DEFINE(HAVE_AS_LTOFFX_LDXMOV_RELOCS, 1,
-	  [Define if your assembler supports ltoffx and ldxmov relocations.])
-    fi
+    [AC_DEFINE(HAVE_AS_LTOFFX_LDXMOV_RELOCS, 1,
+	  [Define if your assembler supports ltoffx and ldxmov relocations.])])
+
     ;;
+
   powerpc*-*-*)
-    AC_CACHE_CHECK([assembler supports mfcr field],
-	gcc_cv_as_mfcrf, [
-	gcc_cv_as_mfcrf=unknown
-	if test $in_tree_gas = yes ; then
-          gcc_GAS_VERSION_GTE_IFELSE(2,14,0,[
-	    gcc_cv_as_mfcrf=yes
-          ])
-	elif test x$gcc_cv_as != x; then
-	    cat > conftest.s << 'EOF'
-	      case "$target" in
-changequote(,)dnl
-		*-*-aix*)
-	.csect .text[PR]
-		;;
-		*)
-	.text
-		;;
-	      esac
-	mfcr 3,128
-EOF
-changequote([,])dnl
-	    if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1; then
-		gcc_cv_as_mfcrf=yes
-	    else
-		gcc_cv_as_mfcrf=no
-	    fi
-	    rm -f conftest.s conftest.o
-	fi
-    ])
-    if test "x$gcc_cv_as_mfcrf" = xyes; then
-	AC_DEFINE(HAVE_AS_MFCRF, 1,
-	  [Define if your assembler supports mfcr field.])
-    fi
+    case $target in
+      *-*-aix) conftest_s='	.csect .text[PR]';;
+      *)       conftest_s='	.text';;
+    esac
+    conftest_s="$conftest_s
+	mfcr 3,128"
+
+    gcc_GAS_CHECK_FEATURE([mfcr field support],
+      gcc_cv_as_powerpc_mfcrf, [2,14,0],,
+      [$conftest_s],,
+      [AC_DEFINE(HAVE_AS_MFCRF, 1,
+	  [Define if your assembler supports mfcr field.])])
+    ;;
+
+  mips*-*-*)
+    gcc_GAS_CHECK_FEATURE([explicit relocation support],
+      gcc_cv_as_mips_explicit_relocs, [2,14,0],,
+[	lw $4,%gp_rel(foo)($4)],,
+      [if test x$target_cpu_default = x
+       then target_cpu_default=MASK_EXPLICIT_RELOCS
+       else target_cpu_default="($target_cpu_default)|MASK_EXPLICIT_RELOCS"
+       fi])
+
     ;;
 esac
-
-AC_MSG_CHECKING(assembler dwarf2 debug_line support)
-gcc_cv_as_dwarf2_debug_line=no
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
 # info to the output file.  So, as supported targets are added to gas 2.11,
@@ -2527,90 +2307,55 @@ case "$target" in
   mmix-*-*)
     insn="swym 0"
     ;;
-  esac
-if test $in_tree_gas = yes ; then
-  gcc_GAS_VERSION_GTE_IFELSE(2,11,0,[
-    test $in_tree_gas_is_elf = yes && test x"$insn" != x \
-	&& gcc_cv_as_dwarf2_debug_line="yes"
-  ])
-elif test x$gcc_cv_as != x -a x"$insn" != x ; then
-	echo '	.file 1 "conftest.s"' > conftest.s
-	echo '	.loc 1 3 0' >> conftest.s
-	echo "	$insn" >> conftest.s
-	# ??? This fails with non-gnu grep.
-	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
-	   && grep debug_line conftest.o > /dev/null 2>&1 ; then
-		# The .debug_line file table must be in the exact order that
-		# we specified the files, since these indices are also used
-		# by DW_AT_decl_file.  Approximate this test by testing if
-		# the assembler bitches if the same index is assigned twice.
-		echo '	.file 1 "foo.s"' > conftest.s
-		echo '	.file 1 "bar.s"' >> conftest.s
-		if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1
-		then
-		  gcc_cv_as_dwarf2_debug_line="no"
-		else
-		  gcc_cv_as_dwarf2_debug_line="yes"
-		fi
-	fi
-	rm -f conftest.s conftest.o conftest.nm1 conftest.nm2
-fi
-if test x"$gcc_cv_as_dwarf2_debug_line" = xyes; then
+esac
+if test x"$insn" != x; then
+ conftest_s="\
+	.file 1 \"conftest.s\"
+	.loc 1 3 0
+	$insn"
+ gcc_GAS_CHECK_FEATURE([dwarf2 debug_line support],
+  gcc_cv_as_dwarf2_debug_line,
+  [elf,2,11,0],, [$conftest_s],
+  [# ??? This fails with non-gnu grep.  Maybe use objdump?
+   if grep debug_line conftest.o > /dev/null 2>&1; then
+     gcc_cv_as_dwarf2_debug_line=yes
+   fi])
+
+# The .debug_line file table must be in the exact order that
+# we specified the files, since these indices are also used
+# by DW_AT_decl_file.  Approximate this test by testing if
+# the assembler bitches if the same index is assigned twice.
+ gcc_GAS_CHECK_FEATURE([buggy dwarf2 .file directive],
+  gcc_cv_as_dwarf2_file_buggy,,,
+[	.file 1 "foo.s"
+	.file 1 "bar.s"])
+
+ if test $gcc_cv_as_dwarf2_debug_line = yes \
+ && test $gcc_cv_as_dwarf2_file_buggy = no; then
 	AC_DEFINE(HAVE_AS_DWARF2_DEBUG_LINE, 1,
-[Define if your assembler supports dwarf2 .file/.loc directives,
+  [Define if your assembler supports dwarf2 .file/.loc directives,
    and preserves file table indices exactly as given.])
-fi
-AC_MSG_RESULT($gcc_cv_as_dwarf2_debug_line)
+ fi
 
-AC_MSG_CHECKING(assembler --gdwarf2 support)
-gcc_cv_as_gdwarf2_flag=no
-if test $in_tree_gas = yes ; then
-  gcc_GAS_VERSION_GTE_IFELSE(2,11,0,[
-    test $in_tree_gas_is_elf = yes && test x"$insn" != x \
-	&& gcc_cv_as_gdwarf2_flag="yes"
-  ])
-elif test x$gcc_cv_as != x -a x"$insn" != x ; then
-	echo '' > conftest.s
-	# ??? This fails with non-gnu grep.
-	if $gcc_cv_as --gdwarf2 -o conftest.o conftest.s > /dev/null 2>&1
-	  then
-	  gcc_cv_as_gdwarf2_flag="yes"
-	fi
-	rm -f conftest.s conftest.o
-fi
-if test x"$gcc_cv_as_gdwarf2_flag" = xyes; then
-	AC_DEFINE(HAVE_AS_GDWARF2_DEBUG_FLAG, 1,
-[Define if your assembler supports the --gdwarf2 option.])
-fi
-AC_MSG_RESULT($gcc_cv_as_gdwarf2_flag)
+ gcc_GAS_CHECK_FEATURE([--gdwarf2 option],
+  gcc_cv_as_gdwarf2_flag,
+  [elf,2,11,0], [--gdwarf2], [$insn],,
+  [AC_DEFINE(HAVE_AS_GDWARF2_DEBUG_FLAG, 1,
+[Define if your assembler supports the --gdwarf2 option.])])
 
-AC_MSG_CHECKING(assembler --gstabs support)
-gcc_cv_as_gstabs_flag=no
-if test $in_tree_gas = yes ; then
-  gcc_GAS_VERSION_GTE_IFELSE(2,11,0,[
-    test $in_tree_gas_is_elf = yes && test x"$insn" != x \
-	&& gcc_cv_as_gstabs_flag="yes"
-  ])
-elif test x$gcc_cv_as != x -a x"$insn" != x ; then
-	echo '' > conftest.s
-	# ??? This fails with non-gnu grep.
-	if $gcc_cv_as --gstabs -o conftest.o conftest.s > /dev/null 2>&1 ; then
-	  gcc_cv_as_gstabs_flag="yes"
-	  # The native Solaris 9/Intel assembler doesn't understand --gstabs
-	  # and warns about it, but still exits successfully.  So check for
-	  # this.
-	  if $gcc_cv_as --gstabs -o conftest.o conftest.s 2>&1 | \
-		grep -i warning > /dev/null ; then
-	    gcc_cv_as_gstabs_flag="no"
-	  fi
-	fi
-	rm -f conftest.s conftest.o
+ gcc_GAS_CHECK_FEATURE([--gstabs option],
+  gcc_cv_as_gstabs_flag,
+  [elf,2,11,0], [--gstabs], [$insn],
+  [# The native Solaris 9/Intel assembler doesn't understand --gstabs
+   # and warns about it, but still exits successfully.  So check for
+   # this.
+   if AC_TRY_COMMAND([$gcc_cv_as --gstabs -o conftest.o conftest.s 2>&1 | grep -i warning > /dev/null])
+   then :
+   else gcc_cv_as_gstabs_flag=yes
+   fi],
+  [AC_DEFINE(HAVE_AS_GSTABS_DEBUG_FLAG, 1,
+[Define if your assembler supports the --gstabs option.])])
 fi
-if test x"$gcc_cv_as_gstabs_flag" = xyes; then
-	AC_DEFINE(HAVE_AS_GSTABS_DEBUG_FLAG, 1,
-[Define if your assembler supports the --gstabs option.])
-fi
-AC_MSG_RESULT($gcc_cv_as_gstabs_flag)
 
 AC_MSG_CHECKING(linker read-only and read-write section mixing)
 gcc_cv_ld_ro_rw_mix=unknown
@@ -2716,33 +2461,13 @@ case "$target" in
         [Define if your MIPS libgloss linker scripts consistently include STARTUP directives.])
     fi
     AC_MSG_RESULT($gcc_cv_mips_libgloss_startup)
-
-    AC_MSG_CHECKING(whether the assembler has explicit relocation support)
-    if test x$gcc_cv_mips_explicit_relocs = x; then
-      gcc_cv_mips_explicit_relocs=no
-      if test $in_tree_gas = yes; then
-        gcc_GAS_VERSION_GTE_IFELSE(2,14,0,[
-	  gcc_cv_mips_explicit_relocs=yes
-	])
-      elif test x$gcc_cv_as != x; then
-	echo '  lw $4,%gp_rel(foo)($4)' > conftest.s
-	if $gcc_cv_as conftest.s -o conftest.o > /dev/null 2>&1; then
-	  gcc_cv_mips_explicit_relocs=yes
-	fi
-	rm -f conftest.s conftest.o
-      fi
-    fi
-    if test $gcc_cv_mips_explicit_relocs = yes; then
-      test x$target_cpu_default != x || target_cpu_default=0
-      target_cpu_default="(${target_cpu_default}|MASK_EXPLICIT_RELOCS)"
-    fi
-    AC_MSG_RESULT($gcc_cv_mips_explicit_relocs)
     ;;
 esac
 
 if test x$with_sysroot = x && test x$host = x$target \
    && test "$prefix" != "/usr" && test "x$prefix" != "x$local_prefix" ; then
-  AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include")
+  AC_DEFINE_UNQUOTED(PREFIX_INCLUDE_DIR, "$prefix/include",
+[Define to PREFIX/include if cpp should also search that directory.])
 fi
 
 # Figure out what language subdirectories are present.
