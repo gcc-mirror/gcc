@@ -362,12 +362,7 @@ extern const char *darwin_fix_and_continue_switch;
 
 /* gdb needs a null N_SO at the end of each file for scattered loading.  */
 
-#undef	DBX_OUTPUT_MAIN_SOURCE_FILE_END
-#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
-do { text_section ();							\
-     fprintf (FILE,							\
-	      "\t.stabs \"%s\",%d,0,0,Letext\nLetext:\n", "" , N_SO);	\
-   } while (0)
+#define DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END
 
 /* Making a symbols weak on Darwin requires more than just setting DECL_WEAK. */
 #define MAKE_DECL_ONE_ONLY(DECL) darwin_make_decl_one_only (DECL)

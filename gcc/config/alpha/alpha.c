@@ -6547,6 +6547,9 @@ alpha_expand_prologue (void)
     emit_insn (gen_blockage ());
 }
 
+/* Count the number of .file directives, so that .loc is up to date.  */
+static int num_source_filenames = 0;
+
 /* Output the textual info surrounding the prologue.  */
 
 void
@@ -6613,10 +6616,10 @@ alpha_start_function (FILE *file, const char *fnname,
       ASM_OUTPUT_SOURCE_FILENAME (file,
 				  DECL_SOURCE_FILE (current_function_decl));
 #endif
-#ifdef ASM_OUTPUT_SOURCE_LINE
+#ifdef SDB_OUTPUT_SOURCE_LINE
       if (debug_info_level != DINFO_LEVEL_TERSE)
-        ASM_OUTPUT_SOURCE_LINE (file,
-				DECL_SOURCE_LINE (current_function_decl), 0);
+        SDB_OUTPUT_SOURCE_LINE (file,
+				DECL_SOURCE_LINE (current_function_decl));
 #endif
     }
 
@@ -7149,14 +7152,6 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
 int sdb_label_count = 0;
 
-/* Next label # for each statement.  */
-
-static int sym_lineno = 0;
-
-/* Count the number of .file directives, so that .loc is up to date.  */
-
-static int num_source_filenames = 0;
-
 /* Name of the file containing the current function.  */
 
 static const char *current_function_file = "";
@@ -7172,7 +7167,6 @@ void
 alpha_output_filename (FILE *stream, const char *name)
 {
   static int first_time = TRUE;
-  char ltext_label_name[100];
 
   if (first_time)
     {
@@ -7187,12 +7181,8 @@ alpha_output_filename (FILE *stream, const char *name)
     }
 
   else if (write_symbols == DBX_DEBUG)
-    {
-      ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext", 0);
-      fprintf (stream, "%s", ASM_STABS_OP);
-      output_quoted_string (stream, name);
-      fprintf (stream, ",%d,0,0,%s\n", N_SOL, &ltext_label_name[1]);
-    }
+    /* dbxout.c will emit an appropriate .stabs directive.  */
+    return;
 
   else if (name != current_function_file
 	   && strcmp (name, current_function_file) != 0)
@@ -7209,22 +7199,6 @@ alpha_output_filename (FILE *stream, const char *name)
       output_quoted_string (stream, name);
       fprintf (stream, "\n");
     }
-}
-
-/* Emit a linenumber to a stream.  */
-
-void
-alpha_output_lineno (FILE *stream, int line)
-{
-  if (write_symbols == DBX_DEBUG)
-    {
-      /* mips-tfile doesn't understand .stabd directives.  */
-      ++sym_lineno;
-      fprintf (stream, "$LM%d:\n%s%d,0,%d,$LM%d\n",
-	       sym_lineno, ASM_STABN_OP, N_SLINE, line, sym_lineno);
-    }
-  else
-    fprintf (stream, "\n\t.loc\t%d %d\n", num_source_filenames, line);
 }
 
 /* Structure to show the current status of registers and memory.  */

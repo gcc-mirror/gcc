@@ -27,15 +27,11 @@ Boston, MA 02111-1307, USA.  */
 #define SDB_DEBUGGING_INFO 1
 #define SDB_DELIM	"\n"
 
-/* Override definition in dbxcoff.h.  */
 /* Generate a blank trailing N_SO to mark the end of the .o file, since
    we can't depend upon the linker to mark .o file boundaries with
    embedded stabs.  */
 
-#undef DBX_OUTPUT_MAIN_SOURCE_FILE_END
-#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
-  fprintf (FILE,							\
-	   "\t.text\n.stabs \"\",%d,0,0,.Letext\n.Letext:\n", N_SO)
+#define DBX_OUTPUT_NULL_N_SO_AT_MAIN_SOURCE_FILE_END
 
 /* This is how to output an assembler line
    that says to advance the location counter by SIZE bytes.  */

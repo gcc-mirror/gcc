@@ -5069,44 +5069,24 @@ mips_output_filename (FILE *stream, const char *name)
       mips_output_filename_first_time = 0;
       num_source_filenames += 1;
       current_function_file = name;
-      ASM_OUTPUT_FILENAME (stream, num_source_filenames, name);
+      fprintf (stream, "\t.file\t%d ", num_source_filenames);
+      output_quoted_string (stream, name);
+      putc ('\n', stream);
     }
 
+  /* If we are emitting stabs, let dbxout.c handle this (except for
+     the mips_output_filename_first_time case).  */
   else if (write_symbols == DBX_DEBUG)
-    {
-      ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext", 0);
-      fputs ("\t.stabs\t", stream);
-      output_quoted_string (stream, name);
-      fprintf (stream, ",%d,0,0,%s\n", N_SOL, &ltext_label_name[1]);
-    }
+    return;
 
   else if (name != current_function_file
 	   && strcmp (name, current_function_file) != 0)
     {
       num_source_filenames += 1;
       current_function_file = name;
-      ASM_OUTPUT_FILENAME (stream, num_source_filenames, name);
-    }
-}
-
-/* Emit a linenumber.  For encapsulated stabs, we need to put out a stab
-   as well as a .loc, since it is possible that MIPS ECOFF might not be
-   able to represent the location for inlines that come from a different
-   file.  */
-
-void
-mips_output_lineno (FILE *stream, int line)
-{
-  if (write_symbols == DBX_DEBUG)
-    {
-      ++sym_lineno;
-      fprintf (stream, "%sLM%d:\n\t.stabn\t%d,0,%d,%sLM%d\n",
-	       LOCAL_LABEL_PREFIX, sym_lineno, N_SLINE, line,
-	       LOCAL_LABEL_PREFIX, sym_lineno);
-    }
-  else
-    {
-      fprintf (stream, "\n\t.loc\t%d %d\n", num_source_filenames, line);
+      fprintf (stream, "\t.file\t%d ", num_source_filenames);
+      output_quoted_string (stream, name);
+      putc ('\n', stream);
     }
 }
 
@@ -5963,7 +5943,7 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 
 #ifdef SDB_DEBUGGING_INFO
   if (debug_info_level != DINFO_LEVEL_TERSE && write_symbols == SDB_DEBUG)
-    ASM_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl), 0);
+    SDB_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl));
 #endif
 
   /* In mips16 mode, we may need to generate a 32 bit to handle

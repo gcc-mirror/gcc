@@ -1452,8 +1452,6 @@ fini_section ()							\
     }								\
 }
 
-#define ASM_STABS_OP "\t.stabs\t"
-
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION c4x_asm_named_section
 

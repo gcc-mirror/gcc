@@ -42,9 +42,6 @@ Boston, MA 02111-1307, USA.  */
 /*  Let's be re-entrant.  */
 #undef PCC_STATIC_STRUCT_RETURN
 
-/* Make sure .stabs for a function are always the same section.  */
-#define	DBX_OUTPUT_FUNCTION_END(file,decl) function_section(decl)
-
 /* Before the prologue, the top of the frame is below the argument
    count pushed by the CALLS and before the start of the saved registers.  */
 #define INCOMING_FRAME_SP_OFFSET 0

@@ -470,7 +470,7 @@ ssib_section (void)		\
 #undef DWARF2_DEBUGGING_INFO
 #undef DWARF2_UNWIND_INFO
 #undef INCOMING_RETURN_ADDR_RTX
-#undef ASM_OUTPUT_SOURCE_LINE
+#undef PREFERRED_DEBUGGING_TYPE
 
 /* We don't need a start file.  */
 

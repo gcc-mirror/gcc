@@ -1525,8 +1525,7 @@ L2:     .word STATIC
    a word so don't ever force line number labels to begin at the beginning
    of a word.  */
 
-#undef	ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(file, line, counter)			\
+#define DBX_OUTPUT_SOURCE_LINE(file, line, counter)			\
   do									\
     {									\
       fprintf (file, ".stabn 68,0,%d,.LM%d-",				\
