@@ -210,15 +210,15 @@ in the following sections.
 -mg  -mgnu  -munix
 
 @emph{SPARC Options}
--mcpu=@var{cpu  type}
--mtune=@var{cpu  type}
+-mcpu=@var{cpu type}
+-mtune=@var{cpu type}
+-mcmodel=@var{code model}
 -malign-jumps=@var{num}  -malign-loops=@var{num}
 -malign-functions=@var{num}
+-m32  -m64
 -mapp-regs  -mbroken-saverestore  -mcypress  -mepilogue
--mflat  -mfpu  -mfullany  -mhard-float  -mhard-quad-float
--mimpure-text  -mint32  -mint64  -mlive-g0
--mlong32  -mlong64  -mmedlow  -mmedany
--mno-app-regs  -mno-epilogue
+-mflat  -mfpu  -mhard-float  -mhard-quad-float
+-mimpure-text  -mlive-g0  -mno-app-regs  -mno-epilogue
 -mno-flat  -mno-fpu  -mno-impure-text
 -mno-stack-bias  -mno-unaligned-doubles
 -msoft-float  -msoft-quad-float  -msparclite  -mstack-bias
@@ -3080,17 +3080,15 @@ They have been replaced with @samp{-mcpu=xxx}.
 @item -mcpu=@var{cpu_type}
 Set architecture type and instruction scheduling parameters for machine
 type @var{cpu_type}.  Supported values for @var{cpu_type} are
-@samp{common}, @samp{cypress}, @samp{v8}, @samp{supersparc},
-@samp{sparclite}, @samp{f930}, @samp{f934},
-@samp{sparclet}, @samp{90c701}, @samp{v8plus}, @samp{v9},
-and @samp{ultrasparc}.  Specifying @samp{v9} is only supported on true
-64 bit targets.
+@samp{v7}, @samp{cypress}, @samp{v8}, @samp{supersparc},
+@samp{sparclite}, @samp{f930}, @samp{f934}, @samp{sparclet}, @samp{tsc701},
+@samp{v8plus}, @samp{v9}, and @samp{ultrasparc}.
 
 @item -mtune=@var{cpu_type}
 Set the instruction scheduling parameters for machine type
 @var{cpu_type}, but do not set the architecture type as the option
 @samp{-mcpu=}@var{cpu_type} would.  The same values for
-@samp{-mcpu=}@var{cpu_type} are used for @samp{-tune=}@var{cpu_type}.
+@samp{-mcpu=}@var{cpu_type} are used for @samp{-mtune=}@var{cpu_type}.
 
 @item -malign-loops=@var{num}
 Align loops to a 2 raised to a @var{num} byte boundary.  If
@@ -3137,36 +3135,36 @@ on SPARC V9 processors in 64 bit environments.
 @item -mlittle-endian
 Generate code for a processor running in little-endian mode.
 
-@item -mmedlow
-Generate code for the Medium/Low code model: assume a 32 bit address space.
-Programs are statically linked, PIC is not supported.  Pointers are still
-64 bits.
+@item -m32
+@itemx -m64
+Generate code for a 32 bit or 64 bit environment.
+The 32 bit environment sets int, long and pointer to 32 bits.
+The 64 bit environment sets int to 32 bits and long and pointer
+to 64 bits.
 
-It is very likely that a future version of GCC will rename this option.
+@item -mcmodel=medlow
+Generate code for the Medium/Low code model: the program must be linked
+in the low 32 bits of the address space.  Pointers are 64 bits.
+Programs can be statically or dynamically linked.
 
-@item -mmedany
-Generate code for the Medium/Anywhere code model: assume a 32 bit text
-and a 32 bit data segment, both starting anywhere (determined at link time).
-Programs are statically linked, PIC is not supported.  Pointers are still
-64 bits.
+@item -mcmodel=medmid
+Generate code for the Medium/Middle code model: the program must be linked
+in the low 44 bits of the address space, the text segment must be less than
+2G bytes, and data segment must be within 2G of the text segment.
+Pointers are 64 bits.
 
-It is very likely that a future version of GCC will rename this option.
+@item -mcmodel=medany
+Generate code for the Medium/Anywhere code model: the program may be linked
+anywhere in the address space, the text segment must be less than
+2G bytes, and data segment must be within 2G of the text segment.
+Pointers are 64 bits.
 
-@item -mfullany
-Generate code for the Full/Anywhere code model: assume a full 64 bit
-address space.  PIC is not supported.
-
-It is very likely that a future version of GCC will rename this option.
-
-@item -mint64
-Types long and int are 64 bits.
-
-@item -mlong32
-Types long and int are 32 bits.
-
-@item -mlong64
-@itemx -mint32
-Type long is 64 bits, and type int is 32 bits.
+@item -mcmodel=embmedany
+Generate code for the Medium/Anywhere code model for embedded systems:
+assume a 32 bit text and a 32 bit data segment, both starting anywhere
+(determined at link time).  Register %g4 points to the base of the
+data segment.  Pointers still 64 bits.
+Programs are statically linked, PIC is not supported.
 
 @item -mstack-bias
 @itemx -mno-stack-bias
