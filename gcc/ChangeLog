@@ -1,3 +1,7 @@
+2001-04-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* invoke.texi: Document --param max-gcse-memory.
+
 2001-04-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (errno): Check for declaration.
