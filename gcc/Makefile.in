@@ -1690,7 +1690,7 @@ mostlyclean: bytecode.mostlyclean
 	-rm -f *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack
 # Delete some files made during installation.
 	-rm -f specs gfloat.h float.h-* enquire SYSCALLS.c.X SYSCALLS.c
-	-rm -f collect collect2 ld mips-tfile mips-tdump alloca.s
+	-rm -f collect collect2 mips-tfile mips-tdump alloca.s
 # Delete files generated for fixproto
 	-rm -rf fix-header xsys-protos.h deduced.h tmp-deduced.h \
 	  gen-protos fixproto.list fixtmp.* fixhdr.ready
