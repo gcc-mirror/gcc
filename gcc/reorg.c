@@ -3051,7 +3051,7 @@ fill_simple_delay_slots (first, non_jumps_p)
     return;
 
   slots_filled = 0;
-  CLEAR_RESOURCE (&needed);
+  needed = end_of_function_needs;
   CLEAR_RESOURCE (&set);
 
   for (trial = get_last_insn (); ! stop_search_p (trial, 1);
