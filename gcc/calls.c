@@ -3025,6 +3025,14 @@ expand_call (tree exp, rtx target, int ignore)
 		    && check_sibcall_argument_overlap (before_arg,
 						       &args[i], 1)))
 	      sibcall_failure = 1;
+
+	    if (flags & ECF_CONST
+		&& args[i].stack
+		&& args[i].value == args[i].stack)
+	      call_fusage = gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_USE (VOIDmode,
+							    args[i].value),
+					       call_fusage);
 	  }
 
       /* If we have a parm that is passed in registers but not in memory
