@@ -2083,6 +2083,7 @@ process_aux_info_file (base_source_filename, keep_it, is_syscalls)
   const char *aux_info_second_line;
   time_t aux_info_mtime;
   size_t aux_info_size;
+  int must_create;
 
   /* Construct the aux_info filename from the base source filename.  */
 
@@ -2094,38 +2095,59 @@ process_aux_info_file (base_source_filename, keep_it, is_syscalls)
 
 start_over: ;
 
-  {
-    int retries = 0;
+  /* If file doesn't exist, set must_create.
+     Likewise if it exists and we can read it but it is obsolete.
+     Otherwise, report an error.  */
+  must_create = 0;
+  if (my_access (aux_info_filename, R_OK) == -1)
+    {
+      if (errno == ENOENT)
+	{
+	  if (is_syscalls)
+	    {
+	      fprintf (stderr, "%s: warning: missing SYSCALLS file `%s'\n",
+		       pname, aux_info_filename);
+	      return;
+	    }
+	  must_create = 1;
+	}
+      else
+	{
+	  fprintf (stderr, "%s: error: can't read aux info file `%s': %s\n",
+		   pname, shortpath (NULL, aux_info_filename),
+		   sys_errlist[errno]);
+	  errors++;
+	  return;
+	}
+    }
+#if 0 /* There is code farther down to take care of this.  */
+  else
+    {
+      struct stat s1, s2;
+      stat (aux_info_file_name, &s1);
+      stat (base_source_file_name, &s2);
+      if (s2.st_mtime > s1.st_mtime)
+	must_create = 1;
+    }
+#endif /* 0 */
 
-retry:
-    if (my_access (aux_info_filename, R_OK) == -1)
-      {
-        if (errno == ENOENT && retries == 0)
-          {
-            if (is_syscalls)
-              {
-                fprintf (stderr, "%s: warning: missing SYSCALLS file `%s'\n",
-			 pname, aux_info_filename);
-                return;
-              }
-            if (!gen_aux_info_file (base_source_filename))
-	      {
-		errors++;
-		return;
-	      }
-            retries++;
-            goto retry;
-          }
-        else
-          {
-            fprintf (stderr, "%s: error: can't read aux info file `%s': %s\n",
-		     pname, shortpath (NULL, aux_info_filename),
-		     sys_errlist[errno]);
-            errors++;
-            return;
-          }
-      }
-  }
+  /* If we need a .X file, create it, and verify we can read it.  */
+  if (must_create)
+    {
+      if (!gen_aux_info_file (base_source_filename))
+	{
+	  errors++;
+	  return;
+	}
+      if (my_access (aux_info_filename, R_OK) == -1)
+	{
+	  fprintf (stderr, "%s: error: can't read aux info file `%s': %s\n",
+		   pname, shortpath (NULL, aux_info_filename),
+		   sys_errlist[errno]);
+	  errors++;
+	  return;
+	}
+    }
 
   {
     struct stat stat_buf;
