@@ -653,6 +653,8 @@ char *lang_options[] =
   "-fno-gc",
   "-fhandle-exceptions",
   "-fno-handle-exceptions",
+  "-fhandle-signatures",
+  "-fno-handle-signatures",
   "-fhuge-objects",
   "-fno-huge-objects",
   "-fimplement-inlines",
