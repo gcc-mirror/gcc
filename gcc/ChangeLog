@@ -1,3 +1,9 @@
+2002-06-22  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpptrad.c (struct fun_macro): Add line number.
+	(scan_out_logical_line): Set it, and use it to report unterminated
+	macro invocations.
+
 2002-06-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* genautomata.c (copy_node, VLA_PTR_CREATE, VLA_PTR_EXPAND,

@@ -1,3 +1,10 @@
+2002-06-22  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/trad/comment-2.c. gcc.dg/cpp/trad/funlike-2.c,
+	gcc.dg/cpp/trad/funlike.c, gcc.dg/cpp/trad/funlike-3.c,
+	gcc.dg/cpp/trad/literals-1.c, gcc.dg/cpp/trad/literals-2.c,
+	gcc.dg/cpp/trad/macroargs.c, gcc.dg/cpp/trad/quote.c: New tests.
+
 2002-06-21  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/trad: New directory with traditional tests copied

@@ -59,6 +59,9 @@ struct fun_macro
   /* The offset of the macro name in the output buffer.  */
   size_t offset;
 
+  /* The line the macro name appeared on.  */
+  unsigned int line;
+
   /* Zero-based index of argument being currently lexed.  */
   unsigned int argc;
 };
@@ -586,6 +589,7 @@ scan_out_logical_line (pfile, macro)
 		    {
 		      maybe_start_funlike (pfile, node, out_start, &fmacro);
 		      lex_state = ls_fun_open;
+		      fmacro.line = pfile->line;
 		      continue;
 		    }
 		  else
@@ -721,9 +725,9 @@ scan_out_logical_line (pfile, macro)
     _cpp_release_buff (pfile, fmacro.buff);
 
   if (lex_state == ls_fun_close)
-    cpp_error (pfile, DL_ERROR,
-	       "unterminated argument list invoking macro \"%s\"",
-	       NODE_NAME (fmacro.node));
+    cpp_error_with_line (pfile, DL_ERROR, fmacro.line, 0,
+			 "unterminated argument list invoking macro \"%s\"",
+			 NODE_NAME (fmacro.node));
 }
 
 /* Push a context holding the replacement text of the macro NODE on
