@@ -1,3 +1,13 @@
+Mon Aug 17 21:26:38 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.md (sltu, sgeu): Don't FAIL, call
+	gen_compare_reg.
+	(movsf_const_intreg, movsf_const_high, movsf_const_lo,
+	movdf_const_intreg and helper splits): New patterns to move float
+	constants into integer registers.
+	(negtf2, negdf2, abstf2, absdf2): Rework using new patterns and
+	splits.
+
 Mon Aug 17 11:46:19 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* From Graham
