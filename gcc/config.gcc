@@ -1161,8 +1161,8 @@ i[34567]86-*-sysv*)		# Intel 80386's running system V
 	tmake_file="$tmake_file i386/t-crtpic"
 	;;
 i386-*-vsta)			# Intel 80386's running VSTa kernel
-	xm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/xm-vsta.h"
-	tm_file="${tm_file} i386/vsta.h"
+	xm_file="i386/xm-vsta.h"
+	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/vsta.h"
 	;;
 i[34567]86-*-pe | i[34567]86-*-cygwin*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h i386/cygwin.h"
