@@ -743,7 +743,7 @@ static void find_post_sched_live PROTO ((int));
 static void update_reg_usage PROTO ((void));
 static int queue_to_ready PROTO ((rtx [], int));
 
-void debug_ready_list PROTO ((rtx[], int));
+static void debug_ready_list PROTO ((rtx[], int));
 static void init_target_units PROTO (());
 static void insn_print_units PROTO ((rtx));
 static int get_visual_tbl_length PROTO (());
@@ -5527,7 +5527,7 @@ queue_to_ready (ready, n_ready)
 
 /* Print the ready list for debugging purposes. Callable from debugger.  */
 
-extern void
+static void
 debug_ready_list (ready, n_ready)
      rtx ready[];
      int n_ready;

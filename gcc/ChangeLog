@@ -1,4 +1,12 @@
+Sun Jun 21 18:56:44 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* haifa-sched.c (debug_ready_list): Make static.
+
+	* toplev.h (fancy_abort): Declare.
+
 Sun Jun 21 18:30:13 1998  H.J. Lu  (hjl@gnu.org)
+
+	* rtl.h (expand_expr): Remove declaration.
 
 	* loop.c (oballoc): Remove declaration.
 	(replace_call_address): Add prototype.
