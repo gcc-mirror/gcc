@@ -1,3 +1,8 @@
+2004-07-03  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14971
+	* pt.c (check_explicit_specialization): Clarify error message.
+
 2004-07-02  Richard Henderson  <rth@redhat.com>
 
 	* tree.c (cp_unsave_r): Update remap_save_expr call.
