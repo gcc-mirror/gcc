@@ -1,5 +1,7 @@
 2002-11-02  Tom Tromey  <tromey@redhat.com>
 
+	* java-tree.h: Move JV_STATE_ERROR before JV_STATE_DONE.
+
 	* class.c (make_method_value): Put class name, not signature, into
 	`throws' field.  For PR java/8415.
 
