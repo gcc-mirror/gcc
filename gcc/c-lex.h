@@ -45,6 +45,13 @@ enum rid
   RID_ITERATOR,
   RID_COMPLEX,
 
+  RID_IN,
+  RID_OUT,
+  RID_INOUT,
+  RID_BYCOPY,
+  RID_ONEWAY,
+  RID_ID,
+
   RID_MAX
 };
 
