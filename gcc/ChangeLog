@@ -1,5 +1,10 @@
 2000-12-28  Jeffrey Oldham  <oldham@codesourcery.com>
 
+	* toplev.h (extern really_sorry): Remove extern declaration for
+        nonexistent function.
+
+2000-12-28  Jeffrey Oldham  <oldham@codesourcery.com>
+
 	* varasm.c (initializer_constant_valid_p): Indicate subtraction of
 	pointers to the same string constant is absolute.
 

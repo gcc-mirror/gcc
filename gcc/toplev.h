@@ -80,8 +80,6 @@ extern void error_with_file_and_line	PARAMS ((const char *, int,
   ATTRIBUTE_PRINTF_3;
 extern void sorry			PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1;
-extern void really_sorry		PARAMS ((const char *, ...))
-  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 extern void default_print_error_function PARAMS ((const char *));
 extern void report_error_function	PARAMS ((const char *));
 
