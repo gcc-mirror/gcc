@@ -2,7 +2,8 @@
 
 	* acinclude.m4 (GLIBCPP_CHECK_CPU): Change powerpc bits to
 	-mcpu=powerpc.
-
+	* src/Makefile.am: Disable ENABLE_CXX_FLAGS stuff for the moment.
+	
 	* config/generic/bits/ctype_specializations.h (ctype<char>::is):
 	Make more generic.
 

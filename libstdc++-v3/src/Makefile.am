@@ -41,8 +41,8 @@ WERROR = -Werror
 # OPTIMIZE_CXXFLAGS =  -O3 -fstrict-aliasing -fsquangle -fnew-exceptions \
 #                      -fdata-sections -ffunction-sections \
 #		       -fvtable-gc -Wl,--gc-sections
-# AC_CXXFLAGS = @OPTLEVEL@ @DEBUGFLAGS@ @NAMESPACES@
-AC_CXXFLAGS = @CPUFLAGS@ @DEBUGFLAGS@ @EXTRA_CXX_FLAGS@
+# AC_CXXFLAGS = @OPTLEVEL@ @CPUFLAGS@ @EXTRA_CXX_FLAGS@ @DEBUGFLAGS@ 
+AC_CXXFLAGS = @CPUFLAGS@ @DEBUGFLAGS@ 
 AM_CXXFLAGS = -fno-implicit-templates \
 	      -Wall -Wno-format -W -Wwrite-strings -Winline $(WERROR) \
 	      $(OPTIMIZE_CXXFLAGS) $(AC_CXXFLAGS) 
