@@ -6462,7 +6462,6 @@ check_tag_decl (declspecs)
      tree declspecs;
 {
   int found_type = 0;
-  int friendp = 0;
   tree ob_modifier = NULL_TREE;
   register tree link;
   register tree t = NULL_TREE;
@@ -6486,8 +6485,6 @@ check_tag_decl (declspecs)
 	  if (current_class_type == NULL_TREE
 	      || current_scope () != current_class_type)
 	    ob_modifier = value;
-	  else
-	    friendp = 1;
 	}
       else if (value == ridpointers[(int) RID_STATIC]
 	       || value == ridpointers[(int) RID_EXTERN]
@@ -6503,13 +6500,12 @@ check_tag_decl (declspecs)
 
   if (found_type > 1)
     error ("multiple types in one declaration");
-    
-  if (t == NULL_TREE)
-    {
-      if (! friendp)
-	pedwarn ("declaration does not declare anything");
-    }
-  else if (ANON_UNION_TYPE_P (t))
+
+  /* Inside a class, we might be in a friend or access declaration.
+     Until we have a good way of detecting the latter, don't warn.  */
+  if (t == NULL_TREE && ! current_class_type)
+    pedwarn ("declaration does not declare anything");
+  else if (t && ANON_UNION_TYPE_P (t))
     /* Anonymous unions are objects, so they can have specifiers.  */;
   else if (ob_modifier)
     {
