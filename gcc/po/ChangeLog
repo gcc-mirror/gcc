@@ -1,3 +1,8 @@
+2000-12-17  Philipp Thomas  <pthomas@suse.de>
+
+	* POTFILES.in: Remove files not existing anymore.
+	Add a note at the top that trailing spaces aren't allowed.
+
 Thu Nov 30 01:28:08 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* POTFILES.in: Move divmod routines from config/mn10200 to config/
