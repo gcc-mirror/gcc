@@ -48,7 +48,12 @@ do {									\
   if (TARGET_64BIT && (target_flags & NON_POWERPC_MASKS))		\
     {									\
       target_flags &= ~NON_POWERPC_MASKS;				\
-      error ("-maix64 and POWER architecture are incompatible.");	\
+      warning ("-maix64 and POWER architecture are incompatible.");	\
+    }									\
+  if (TARGET_64BIT && ! (target_flags & MASK_POWERPC64))		\
+    {									\
+      target_flags |= MASK_POWERPC64;					\
+      warning ("-maix64 requires PowerPC64 architecture remain enabled."); \
     }									\
 } while (0);
 
@@ -172,14 +177,15 @@ do {									\
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-L/lib/profiled -L/usr/lib/profiled}\
-   %{p:-L/lib/profiled -L/usr/lib/profiled} %{!shared:%{g*:-lg}}\
+   %{p:-L/lib/profiled -L/usr/lib/profiled}\
+   %{!maix64:%{!shared:%{g*:-lg}}}\
    %{mpe:-L/usr/lpp/ppe.poe/lib -lmpi -lvtd}\
-   %{mthreads: -L/usr/lib/threads -lpthreads -lc_r /usr/lib/libc.a}\
-   %{!mthreads: -lc}"
+   %{mthreads:-L/usr/lib/threads -lpthreads -lc_r /usr/lib/libc.a}\
+   %{!mthreads:-lc}"
 
 #undef LINK_SPEC
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
-   %{static:-bnso %(link_syscalls) } %{!shared: %{g*: %(link_libg) }}\
+   %{static:-bnso %(link_syscalls) } %{!maix64:%{!shared:%{g*: %(link_libg) }}}\
    %{shared:-bM:SRE %{!e:-bnoentry}} %{maix64:-b64}"
 
 #undef STARTFILE_SPEC
