@@ -90,6 +90,16 @@ extern int target_flags;
 #define TARGET_DEFAULT (1 + 2)
 #endif
 
+/* Make GCC agree with types.h.  */
+#ifdef	SIZE_TYPE
+#undef	SIZE_TYPE
+#endif
+#define	SIZE_TYPE	"unsigned int"
+
+/* Assembler does not permit $ in labels */
+
+#define	NO_DOLLAR_IN_LABEL
+
 /* Never allow $ in identifiers */
 
 #define DOLLARS_IN_IDENTIFIERS 0
