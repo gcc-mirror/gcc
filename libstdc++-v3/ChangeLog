@@ -1,3 +1,7 @@
+2003-02-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/26_numerics/valarray_name_lookup.cc: Fix.
+
 2002-02-04  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/27_io/howto.html: Link to Dietmar Kuehl's IOStream page,
