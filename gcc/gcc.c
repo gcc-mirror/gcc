@@ -1918,8 +1918,12 @@ unused_prefix_warnings (pprefix)
     {
       if (pl->used_flag_ptr != 0 && !*pl->used_flag_ptr)
 	{
-	  error ("file path prefix `%s' never used",
-		 pl->prefix);
+	  if (pl->require_machine_suffix && machine_suffix)
+	    error ("file path prefix `%s%s' never used", pl->prefix,
+		   machine_suffix);
+	  else
+	    error ("file path prefix `%s' never used", pl->prefix);
+
 	  /* Prevent duplicate warnings.  */
 	  *pl->used_flag_ptr = 1;
 	}
@@ -2334,6 +2338,15 @@ static int n_infiles;
 
 static char **outfiles;
 
+/* Used to track if none of the -B paths are used.  */
+static int warn_B;
+
+/* Used to track if standard path isn't used and -b or -V is specified.  */
+static int warn_std;
+
+/* Gives value to pass as "warn" to add_prefix for standard prefixes.  */
+static int *warn_std_ptr = NULL_PTR;
+
 /* Create the vector `switches' and its contents.
    Store its length in `n_switches'.  */
 
@@ -2616,6 +2629,8 @@ process_command (argc, argv)
 		spec_machine = argv[++i];
 	      else
 		spec_machine = p + 1;
+
+	      warn_std_ptr = &warn_std;
 	      break;
 
 	    case 'B':
@@ -2628,10 +2643,10 @@ process_command (argc, argv)
 		  value = argv[++i];
 		else
 		  value = p + 1;
-		add_prefix (&exec_prefixes, value, 1, 0, temp);
-		add_prefix (&startfile_prefixes, value, 1, 0, temp);
+		add_prefix (&exec_prefixes, value, 1, 0, &warn_B);
+		add_prefix (&startfile_prefixes, value, 1, 0, &warn_B);
 		add_prefix (&include_prefixes, concat (value, "include"),
-			    1, 0, 0);
+			    1, 0, NULL_PTR);
 
 		/* As a kludge, if the arg is "[foo/]stageN/", just add
 		   "[foo/]include" to the include prefix.  */
@@ -2647,13 +2662,15 @@ process_command (argc, argv)
 			  || value[len - 1] == DIR_SEPARATOR))
 		    {
 		      if (len == 7)
-			add_prefix (&include_prefixes, "include", 1, 0, 0);
+			add_prefix (&include_prefixes, "include",
+				    1, 0, NULL_PTR);
 		      else
 			{
 			  char *string = xmalloc (len + 1);
 			  strncpy (string, value, len-7);
 			  strcat (string, "include");
-			  add_prefix (&include_prefixes, string, 1, 0, 0);
+			  add_prefix (&include_prefixes, string,
+				      1, 0, NULL_PTR);
 			}
 		    }
 		}
@@ -2677,6 +2694,7 @@ process_command (argc, argv)
 	      else
 		spec_version = p + 1;
 	      compiler_version = spec_version;
+	      warn_std_ptr = &warn_std;
 	      break;
 
 	    case 's':
@@ -2720,12 +2738,12 @@ process_command (argc, argv)
   /* Use 2 as fourth arg meaning try just the machine as a suffix,
      as well as trying the machine and the version.  */
 #ifndef OS2
-  add_prefix (&exec_prefixes, standard_exec_prefix, 0, 2, NULL_PTR);
-  add_prefix (&exec_prefixes, standard_exec_prefix_1, 0, 2, NULL_PTR);
+  add_prefix (&exec_prefixes, standard_exec_prefix, 0, 2, warn_std_ptr);
+  add_prefix (&exec_prefixes, standard_exec_prefix_1, 0, 2, warn_std_ptr);
 #endif
 
-  add_prefix (&startfile_prefixes, standard_exec_prefix, 0, 1, NULL_PTR);
-  add_prefix (&startfile_prefixes, standard_exec_prefix_1, 0, 1, NULL_PTR);
+  add_prefix (&startfile_prefixes, standard_exec_prefix, 0, 1, warn_std_ptr);
+  add_prefix (&startfile_prefixes, standard_exec_prefix_1, 0, 1, warn_std_ptr);
 
   tooldir_prefix = concat3 (tooldir_base_prefix, spec_machine, 
                             dir_separator_str);
