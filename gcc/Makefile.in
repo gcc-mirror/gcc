@@ -157,7 +157,7 @@ ENQUIRE_LDFLAGS = $(LDFLAGS)
 
 # Sed command to transform gcc to installed name.  Overwritten by configure.
 program_transform_name = @program_transform_name@
-program_transform_cross_name = -e s,^,$(target_alias)-,
+program_transform_cross_name = s,^,$(target_alias)-,
 
 # Tools to use when building a cross-compiler.
 # These are used because `configure' appends `cross-make'
@@ -403,10 +403,10 @@ HOST_MALLOC=$(MALLOC)
 HOST_OBSTACK=$(OBSTACK)
 
 # Actual name to use when installing a native compiler.
-GCC_INSTALL_NAME = `t='$(program_transform_name)'; echo gcc | sed $$t`
+GCC_INSTALL_NAME = `t='$(program_transform_name)'; echo gcc | sed -e $$t`
 
 # Actual name to use when installing a cross-compiler.
-GCC_CROSS_NAME = `t='$(program_transform_cross_name)'; echo gcc | sed $$t`
+GCC_CROSS_NAME = `t='$(program_transform_cross_name)'; echo gcc | sed -e $$t`
 
 # Choose the real default target.
 ALL=all.internal
