@@ -6691,7 +6691,7 @@ cse_main (f, nregs, after_loop, file)
   max_insn_uid = get_max_uid ();
 
   reg_eqv_table = (struct reg_eqv_elem *)
-    xmalloc(nregs * sizeof(struct reg_eqv_elem));
+    xmalloc (nregs * sizeof (struct reg_eqv_elem));
 
 #ifdef LOAD_EXTEND_OP
 
@@ -6861,8 +6861,9 @@ cse_basic_block (from, to, next_branch, around_loop)
   /* This array is undefined before max_reg, so only allocate
      the space actually needed and adjust the start.  */
 
-  qty_table = (struct qty_table_elem *) xmalloc ((max_qty - max_reg)
-						 * sizeof(struct qty_table_elem));
+  qty_table
+    = (struct qty_table_elem *) xmalloc ((max_qty - max_reg)
+					  * sizeof (struct qty_table_elem));
   qty_table -= max_reg;
 
   new_basic_block ();
