@@ -168,14 +168,14 @@ public class ZipInputStream extends InflaterInputStream
 	  {
 	    int sig = read4();
 	    if (sig != 0x04034b50)
-	      throw new IOException("bad/missing magic number at end of .zip entry");
+	      throw new ZipException("bad/missing magic number at end of .zip entry");
 	    int crc = read4();
 	    int compressedSize = read4();
 	    int uncompressedSize = read4();
 	    if (current.compressedSize != compressedSize
 		|| current.size != uncompressedSize
 		|| current.crc != crc)
-	      throw new IOException("bad data descriptor at end of .zip entry");
+	      throw new ZipException("bad data descriptor at end of .zip entry");
 	  }
 	current = null;
 	avail = 0;

@@ -1,3 +1,47 @@
+1999-05-18  Tom Tromey  <tromey@cygnus.com>
+
+	* java/util/zip/ZipOutputStream.java (level): Initial value is
+	Deflater.DEFAULT_COMPRESSION.
+	(close): New method.
+	(closeEntry): Likewise.
+	(finish): Likewise.
+	(put_version): Likewise.
+	(write_entry): Likewise.
+	(put2, put4): Now return `int'.
+	(comment): Default to empty string.
+	(bytes_written): New instance variable.
+	(chain): Likewise.
+	* java/util/zip/ZipEntry.java (setComment): Limit length of
+	comment string.
+	(setCrc): Check CRC validity.
+	(setExtra): Check argument validity.
+	(setMethod): Likewise.
+	(setSize): Likewise.
+	(ZipEntry): Likewise.
+	* include/javaprims.h: Updated namespace declarations.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Mention new files.
+	(nat_source_files): Likewise.
+	* java/util/zip/ZipFile.java (readu2): Throw ZipException, not
+	EOFException.
+	(read4): Likewise.
+	(getInputStream): Handle compressed entries.
+	* java/util/zip/GZIPOutputStream.java: New file.
+	* java/util/zip/GZIPInputStream.java: New file.
+	* java/util/zip/DataFormatException.java: New file.
+	* java/util/zip/CheckedInputStream.java: New file.
+	* java/util/zip/CheckedOutputStream.java: New file.
+	* java/util/zip/InflaterInputStream.java: Implemented.
+	* java/util/zip/natInflater.cc: New file.
+	* java/util/zip/Deflater.java: Implemented.
+	* java/util/zip/natDeflater.cc: New file.
+	* java/util/zip/DeflaterOutputStream.java: Implemented.
+
+	* java/util/zip/ZipInputStream.java (closeZipEntry): Throw
+	ZipException, not IOException.
+	* java/util/zip/ZipFile.java (readDirectory): Throw ZipException,
+	not IOException.
+
 1999-05-17  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natSystem.cc (init_properties): URL now points to

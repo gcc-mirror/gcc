@@ -211,9 +211,15 @@ extern "Java"
       {
         class Adler32;
         class CRC32;
+        class CheckedInputStream;
+        class CheckedOutputStream;
         class Checksum;
+        class DataFormatException;
         class Deflater;
         class DeflaterOutputStream;
+        class GZIPInputStream;
+        class GZIPOutputStream;
+        class Inflater;
         class InflaterInputStream;
         class ZipConstants;
         class ZipEntry;

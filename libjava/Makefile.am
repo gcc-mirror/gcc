@@ -654,9 +654,15 @@ java/util/TooManyListenersException.java \
 java/util/Vector.java \
 java/util/zip/Adler32.java \
 java/util/zip/CRC32.java \
+java/util/zip/CheckedInputStream.java \
+java/util/zip/CheckedOutputStream.java \
 java/util/zip/Checksum.java \
+java/util/zip/DataFormatException.java \
 java/util/zip/Deflater.java \
 java/util/zip/DeflaterOutputStream.java	\
+java/util/zip/GZIPInputStream.java \
+java/util/zip/GZIPOutputStream.java \
+java/util/zip/Inflater.java \
 java/util/zip/InflaterInputStream.java	\
 java/util/zip/ZipConstants.java	\
 java/util/zip/ZipEntry.java \
@@ -715,7 +721,9 @@ java/net/natInetAddress.cc \
 java/net/natPlainSocketImpl.cc \
 java/text/natCollator.cc \
 java/util/natDate.cc \
-java/util/natGregorianCalendar.cc
+java/util/natGregorianCalendar.cc \
+java/util/zip/natDeflater.cc \
+java/util/zip/natInflater.cc
 
 ## ################################################################
 

@@ -39,6 +39,10 @@ public class ZipEntry
 
   public ZipEntry (String name)
   {
+    if (name == null)
+      throw new NullPointerException ();
+    if (name.length() > 65535)
+      throw new IllegalArgumentException ();
     this.name = name;
   }
 
@@ -69,17 +73,45 @@ public class ZipEntry
     return false;
   }
 
-  public void setComment (String comment) { this.comment = comment; }
+  public void setComment (String comment)
+  {
+    if (comment != null && comment.length() > 65535)
+      throw new IllegalArgumentException ();
+    this.comment = comment;
+  }
 
-  public void setCrc (long crc) { this.crc = crc; }
+  public void setCrc (long crc) 
+  {
+    if (crc < 0 || crc > 0xffffffff)
+      throw new IllegalArgumentException ();
+    this.crc = crc;
+  }
 
-  public void setExtra (byte[] extra) { this.extra = extra; }
+  public void setExtra (byte[] extra)
+  {
+    if (extra != null && extra.length > 65535)
+      throw new IllegalArgumentException ();
+    this.extra = extra;
+  }
 
-  public void setMethod(int method) { this.method = method; }
+  public void setMethod (int method)
+  {
+    if (method != DEFLATED && method != STORED)
+      throw new IllegalArgumentException ();
+    this.method = method;
+  }
 
-  public void setSize (long size) { this.size = size; }
+  public void setSize (long size)
+  {
+    if (size < 0 || size > 0xffffffff)
+      throw new IllegalArgumentException ();
+    this.size = size;
+  }
 
-  public void setTime (long time) { this.time = time; }
+  public void setTime (long time)
+  {
+    this.time = time;
+  }
 
   private final static short[] daysToMonthStart = {
     //Jan Feb Mar    Apr      May         Jun         Jul
