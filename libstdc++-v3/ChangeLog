@@ -1,3 +1,8 @@
+2001-05-30  Loren J. Rittle  <ljrittle@acm.org>
+
+	* docs/html/17_intro/howto.html: Update link.
+	* docs/html/23_containers/howto.html: Likewise.  Add new link.
+
 2001-05-26  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* include/c_std/bits/std_cmath.h (sqrt): #undef.

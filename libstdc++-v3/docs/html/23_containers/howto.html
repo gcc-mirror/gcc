@@ -8,7 +8,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 HOWTO:  Chapter 23</TITLE>
 <LINK REL=StyleSheet HREF="../lib3styles.css">
-<!-- $Id: howto.html,v 1.1 2000/12/10 04:04:55 pme Exp $ -->
+<!-- $Id: howto.html,v 1.2 2001/04/03 00:26:55 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -189,13 +189,16 @@
       aspects of multithreading (e.g., the library as a whole), see
       the Received Wisdom on Chapter 17.
    </P>
-   <P>An excellent page to read when working with templatized containers
-      and threads is
-      <A HREF="http://www.sgi.com/Technology/STL/thread_safety.html">SGI's
-      http://www.sgi.com/Technology/STL/thread_safety.html</A>.  The
+   <P>Two excellent pages to read when working with templatized containers
+      and threads are
+      <A HREF="http://www.sgi.com/tech/stl/thread_safety.html">SGI's
+      http://www.sgi.com/tech/stl/thread_safety.html</A> and
+      <A HREF="http://www.sgi.com/tech/stl/Allocators.html">SGI's
+      http://www.sgi.com/tech/stl/Allocators.html</A>.  The
       libstdc++-v3 uses the same definition of thread safety
       when discussing design.  A key point that beginners may miss is the
-      fourth major paragraph (&quot;For most clients,&quot;...), pointing
+      fourth major paragraph of the first page mentioned above
+      (&quot;For most clients,&quot;...), pointing
       out that locking must nearly always be done outside the container,
       by client code (that'd be you, not us *grin*).
    </P>
@@ -236,7 +239,7 @@
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
-<BR> $Id: howto.html,v 1.1 2000/12/10 04:04:55 pme Exp $
+<BR> $Id: howto.html,v 1.2 2001/04/03 00:26:55 pme Exp $
 </EM></P>
 
 
