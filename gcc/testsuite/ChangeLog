@@ -1,5 +1,8 @@
 1999-08-26  Craig Burley  <craig@jcb-sc.com>
 
+	* gcc.c-torture/execute/990826-0.c: New test.
+	* g77.c-torture/execute/19990826-0.f: New test.
+
 	* g77.f-torture/noncompile/970626-2.f: New test.
 
 1999-08-25  Paul Burchard  <burchard@pobox.com>
