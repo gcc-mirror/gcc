@@ -567,7 +567,6 @@ Platform-Specific Information for the Run-Time Libraries
 
 * Summary of Run-Time Configurations::
 * Specifying a Run-Time Library::
-* Choosing between Native and FSU Threads Libraries::
 * Choosing the Scheduling Policy::
 * Solaris-Specific Considerations::
 * IRIX-Specific Considerations::
@@ -679,7 +678,7 @@ by GNAT.
 
 @item
 @ref{Compiling Using gcc}, describes how to compile
-Ada programs with @code{gcc}, the Ada compiler.
+Ada programs with @command{gcc}, the Ada compiler.
 
 @item
 @ref{Binding Using gnatbind}, describes how to
@@ -688,13 +687,13 @@ utility.
 
 @item
 @ref{Linking Using gnatlink},
-describes @code{gnatlink}, a
+describes @command{gnatlink}, a
 program that provides for linking using the GNAT run-time library to
-construct a program. @code{gnatlink} can also incorporate foreign language
+construct a program. @command{gnatlink} can also incorporate foreign language
 object units into the executable.
 
 @item
-@ref{The GNAT Make Program gnatmake}, describes @code{gnatmake}, a
+@ref{The GNAT Make Program gnatmake}, describes @command{gnatmake}, a
 utility that automatically determines the set of sources
 needed by an Ada compilation unit, and executes the necessary compilations
 binding and link.
@@ -994,7 +993,7 @@ All appropriate object files must be linked to produce an executable.
 @end enumerate
 
 @noindent
-All three steps are most commonly handled by using the @code{gnatmake}
+All three steps are most commonly handled by using the @command{gnatmake}
 utility program that, given the name of the main program, automatically
 performs the necessary compilation, binding and linking steps.
 
@@ -1047,7 +1046,7 @@ $ gcc -c hello.adb
 @end smallexample
 
 @noindent
-@code{gcc} is the command used to run the compiler. This compiler is
+@command{gcc} is the command used to run the compiler. This compiler is
 capable of compiling programs in several languages, including Ada 95 and
 C. It assumes that you have given it an Ada program if the file extension is
 either @file{.ads} or @file{.adb}, and it will then call
@@ -1068,8 +1067,8 @@ which contains additional information used to check
 that an Ada program is consistent.
 To build an executable file,
 use @code{gnatbind} to bind the program
-and @code{gnatlink} to link it. The
-argument to both @code{gnatbind} and @code{gnatlink} is the name of the
+and @command{gnatlink} to link it. The
+argument to both @code{gnatbind} and @command{gnatlink} is the name of the
 @file{ALI} file, but the default extension of @file{.ali} can
 be omitted. This means that in the most common case, the argument
 is simply the name of the main program:
@@ -1204,7 +1203,7 @@ $ gcc -c greetings.ads -gnatc
 @noindent
 Although the compilation can be done in separate steps as in the
 above example, in practice it is almost always more convenient
-to use the @code{gnatmake} tool. All you need to know in this case
+to use the @command{gnatmake} tool. All you need to know in this case
 is the name of the main program's source file. The effect of the above four
 commands can be achieved with a single one:
 
@@ -1213,7 +1212,7 @@ $ gnatmake gmain.adb
 @end smallexample
 
 @noindent
-In the next section we discuss the advantages of using @code{gnatmake} in
+In the next section we discuss the advantages of using @command{gnatmake} in
 more detail.
 
 @c *****************************
@@ -1222,7 +1221,7 @@ more detail.
 
 @noindent
 If you work on a program by compiling single components at a time using
-@code{gcc}, you typically keep track of the units you modify. In order to
+@command{gcc}, you typically keep track of the units you modify. In order to
 build a consistent system, you compile not only these units, but also any
 units that depend on the units you have modified.
 For example, in the preceding case,
@@ -1241,7 +1240,7 @@ if the dependencies change as you change the program, you must make
 sure that the makefile is kept up-to-date manually, which is also an
 error-prone process.
 
-The @code{gnatmake} utility takes care of these details automatically.
+The @command{gnatmake} utility takes care of these details automatically.
 Invoke it using either one of the following forms:
 
 @smallexample
@@ -1251,22 +1250,22 @@ $ gnatmake ^gmain^GMAIN^
 
 @noindent
 The argument is the name of the file containing the main program;
-you may omit the extension. @code{gnatmake}
+you may omit the extension. @command{gnatmake}
 examines the environment, automatically recompiles any files that need
 recompiling, and binds and links the resulting set of object files,
 generating the executable file, @file{^gmain^GMAIN.EXE^}.
 In a large program, it
-can be extremely helpful to use @code{gnatmake}, because working out by hand
+can be extremely helpful to use @command{gnatmake}, because working out by hand
 what needs to be recompiled can be difficult.
 
-Note that @code{gnatmake}
+Note that @command{gnatmake}
 takes into account all the Ada 95 rules that
 establish dependencies among units. These include dependencies that result
 from inlining subprogram bodies, and from
 generic instantiation. Unlike some other
-Ada make tools, @code{gnatmake} does not rely on the dependencies that were
+Ada make tools, @command{gnatmake} does not rely on the dependencies that were
 found by the compiler on a previous compilation, which may possibly
-be wrong when sources change. @code{gnatmake} determines the exact set of
+be wrong when sources change. @command{gnatmake} determines the exact set of
 dependencies from scratch each time it is run.
 
 @ifset vms
@@ -1335,7 +1334,7 @@ contained in a @emph{project} (also known as a @emph{project file}):
 a collection of properties such
 as source directories, identities of main subprograms, tool switches, etc.,
 and their associated values.
-(See @ref{GNAT Project Manager}, for details.)
+See @ref{GNAT Project Manager} for details.
 In order to run GPS, you will need to either create a new project
 or else open an existing one.
 
@@ -1936,7 +1935,7 @@ Form feed, @code{16#0C#}
 
 @noindent
 Source files are in standard text file format. In addition, GNAT will
-recognize a wide variety of stream formats, in which the end of physical
+recognize a wide variety of stream formats, in which the end of
 physical lines is marked by any of the following sequences:
 @code{LF}, @code{CR}, @code{CR-LF}, or @code{LF-CR}. This is useful
 in accommodating files that are imported from other operating systems.
@@ -2281,7 +2280,7 @@ normally it will be placed in the @file{gnat.adc}
 file used to hold configuration
 pragmas that apply to a complete compilation environment.
 For more details on how the @file{gnat.adc} file is created and used
-@pxref{Handling of Configuration Pragmas}
+see @ref{Handling of Configuration Pragmas}.
 @cindex @file{gnat.adc}
 
 @ifclear vms
@@ -2298,7 +2297,7 @@ $ gcc -c -x ada peculiar_file_name.sim
 @end ifclear
 
 @noindent
-@code{gnatmake} handles non-standard file names in the usual manner (the
+@command{gnatmake} handles non-standard file names in the usual manner (the
 non-standard file name for the main program is simply used as the
 argument to gnatmake). Note that if the extension is also non-standard,
 then it must be included in the gnatmake command, it may not be omitted.
@@ -2585,7 +2584,7 @@ example, if the @code{make} utility is used to control compilation,
 the rule for an Ada object file must mention all the source files on
 which the object file depends, according to the above definition.
 The determination of the necessary
-recompilations is done automatically when one uses @code{gnatmake}.
+recompilations is done automatically when one uses @command{gnatmake}.
 @end itemize
 
 @node The Ada Library Information Files
@@ -2611,7 +2610,7 @@ Main program information (including priority and time slice settings,
 as well as the wide character encoding used during compilation).
 
 @item
-List of arguments used in the @code{gcc} command for the compilation
+List of arguments used in the @command{gcc} command for the compilation
 
 @item
 Attributes of the unit, including configuration pragmas used, an indication
@@ -3211,7 +3210,7 @@ located in this directory:
 @smallexample
 $ cat ./my_script
 #!/bin/sh
-CC $* `gcc -print-libgcc-file-name`
+CC $* `gcc -print-file-name=libgcc.a` `gcc -print-file-name=libgcc_eh.a`
 $ gnatlink ada_unit file1.o file2.o --LINK=./my_script
 @end smallexample
 
@@ -3484,10 +3483,10 @@ GNAT uses the current directory for temporary files.
 
 @c *************************
 @node Compiling Using gcc
-@chapter Compiling Using @code{gcc}
+@chapter Compiling Using @command{gcc}
 
 @noindent
-This chapter discusses how to compile Ada programs using the @code{gcc}
+This chapter discusses how to compile Ada programs using the @command{gcc}
 command. It also describes the set of switches
 that can be used to control the behavior of the compiler.
 @menu
@@ -3503,7 +3502,7 @@ that can be used to control the behavior of the compiler.
 
 @noindent
 The first step in creating an executable program is to compile the units
-of the program using the @code{gcc} command. You must compile the
+of the program using the @command{gcc} command. You must compile the
 following files:
 
 @itemize @bullet
@@ -3574,7 +3573,7 @@ having an extension
 @file{.ads} for a spec or @file{.adb} for a body).
 @ifclear vms
 You specify the
-@option{-c} switch to tell @code{gcc} to compile, but not link, the file.
+@option{-c} switch to tell @command{gcc} to compile, but not link, the file.
 @end ifclear
 The result of a successful compilation is an object file, which has the
 same name as the source file but an extension of @file{.o} and an Ada
@@ -3585,17 +3584,17 @@ file in any directory using an absolute or relative path specification
 containing the directory information.
 
 @findex gnat1
-@code{gcc} is actually a driver program that looks at the extensions of
+@command{gcc} is actually a driver program that looks at the extensions of
 the file arguments and loads the appropriate compiler. For example, the
 GNU C compiler is @file{cc1}, and the Ada compiler is @file{gnat1}.
 These programs are in directories known to the driver program (in some
 configurations via environment variables you set), but need not be in
-your path. The @code{gcc} driver also calls the assembler and any other
+your path. The @command{gcc} driver also calls the assembler and any other
 utilities needed to complete the generation of the required object
 files.
 
-It is possible to supply several file names on the same @code{gcc}
-command. This causes @code{gcc} to call the appropriate compiler for
+It is possible to supply several file names on the same @command{gcc}
+command. This causes @command{gcc} to call the appropriate compiler for
 each file. For example, the following command lists three separate
 files to be compiled:
 
@@ -3615,10 +3614,10 @@ except for
 @end ifclear
 
 @node Switches for gcc
-@section Switches for @code{gcc}
+@section Switches for @command{gcc}
 
 @noindent
-The @code{gcc} command accepts switches that control the
+The @command{gcc} command accepts switches that control the
 compilation process. These switches are fully described in this section.
 First we briefly list all the switches, in alphabetical order, then we
 describe the switches in more detail in functionally grouped sections.
@@ -3651,34 +3650,34 @@ describe the switches in more detail in functionally grouped sections.
 @table @option
 @c !sort!
 @ifclear vms
-@cindex @option{-b} (@code{gcc})
+@cindex @option{-b} (@command{gcc})
 @item -b @var{target}
 Compile your program to run on @var{target}, which is the name of a
 system configuration. You must have a GNAT cross-compiler built if
 @var{target} is not the same as your host system.
 
 @item -B@var{dir}
-@cindex @option{-B} (@code{gcc})
+@cindex @option{-B} (@command{gcc})
 Load compiler executables (for example, @code{gnat1}, the Ada compiler)
 from @var{dir} instead of the default location. Only use this switch
 when multiple versions of the GNAT compiler are available. See the
-@code{gcc} manual page for further details. You would normally use the
+@command{gcc} manual page for further details. You would normally use the
 @option{-b} or @option{-V} switch instead.
 
 @item -c
-@cindex @option{-c} (@code{gcc})
+@cindex @option{-c} (@command{gcc})
 Compile. Always use this switch when compiling Ada programs.
 
-Note: for some other languages when using @code{gcc}, notably in
+Note: for some other languages when using @command{gcc}, notably in
 the case of C and C++, it is possible to use
-use @code{gcc} without a @option{-c} switch to
+use @command{gcc} without a @option{-c} switch to
 compile and link in one step. In the case of GNAT, you
 cannot use this approach, because the binder must be run
-and @code{gcc} cannot be used to run the GNAT binder.
+and @command{gcc} cannot be used to run the GNAT binder.
 @end ifclear
 
 @item -fno-inline
-@cindex @option{-fno-inline} (@code{gcc})
+@cindex @option{-fno-inline} (@command{gcc})
 Suppresses all back-end inlining, even if other optimization or inlining
 switches are set.
 This includes suppression of inlining that results
@@ -3686,47 +3685,47 @@ from the use of the pragma @code{Inline_Always}.
 See also @option{-gnatn} and @option{-gnatN}.
 
 @item -fno-strict-aliasing
-@cindex @option{-fno-strict-aliasing} (@code{gcc})
+@cindex @option{-fno-strict-aliasing} (@command{gcc})
 Causes the compiler to avoid assumptions regarding non-aliasing
-of objects of different types. See section
-@pxref{Optimization and Strict Aliasing} for details.
+of objects of different types. See
+@ref{Optimization and Strict Aliasing} for details.
 
 @item -fstack-check
-@cindex @option{-fstack-check} (@code{gcc})
+@cindex @option{-fstack-check} (@command{gcc})
 Activates stack checking.
 See @ref{Stack Overflow Checking} for details of the use of this option.
 
 @item ^-g^/DEBUG^
-@cindex @option{^-g^/DEBUG^} (@code{gcc})
+@cindex @option{^-g^/DEBUG^} (@command{gcc})
 Generate debugging information. This information is stored in the object
 file and copied from there to the final executable file by the linker,
 where it can be read by the debugger. You must use the
 @option{^-g^/DEBUG^} switch if you plan on using the debugger.
 
 @item -gnat83
-@cindex @option{-gnat83} (@code{gcc})
+@cindex @option{-gnat83} (@command{gcc})
 Enforce Ada 83 restrictions.
 
 @item -gnata
-@cindex @option{-gnata} (@code{gcc})
+@cindex @option{-gnata} (@command{gcc})
 Assertions enabled. @code{Pragma Assert} and @code{pragma Debug} to be
 activated.
 
 @item -gnatA
-@cindex @option{-gnatA} (@code{gcc})
+@cindex @option{-gnatA} (@command{gcc})
 Avoid processing @file{gnat.adc}. If a gnat.adc file is present,
 it will be ignored.
 
 @item -gnatb
-@cindex @option{-gnatb} (@code{gcc})
+@cindex @option{-gnatb} (@command{gcc})
 Generate brief messages to @file{stderr} even if verbose mode set.
 
 @item -gnatc
-@cindex @option{-gnatc} (@code{gcc})
+@cindex @option{-gnatc} (@command{gcc})
 Check syntax and semantics only (no code generation attempted).
 
 @item -gnatd
-@cindex @option{-gnatd} (@code{gcc})
+@cindex @option{-gnatd} (@command{gcc})
 Specify debug options for the compiler. The string of characters after
 the @option{-gnatd} specify the specific debug options. The possible
 characters are 0-9, a-z, A-Z, optionally preceded by a dot. See
@@ -3736,59 +3735,59 @@ programmers, and these are documented at appropriate points in this
 users guide.
 
 @item -gnatD
-@cindex @option{-gnatD} (@code{gcc})
+@cindex @option{-gnatD} (@command{gcc})
 Create expanded source files for source level debugging. This switch
 also suppress generation of cross-reference information
 (see @option{-gnatx}).
 
 @item -gnatec=@var{path}
-@cindex @option{-gnatec} (@code{gcc})
+@cindex @option{-gnatec} (@command{gcc})
 Specify a configuration pragma file
 @ifclear vms
 (the equal sign is optional)
 @end ifclear
-(see @ref{The Configuration Pragmas Files}).
+(@pxref{The Configuration Pragmas Files}).
 
 @item ^-gnateD^/DATA_PREPROCESSING=^symbol[=value]
-@cindex @option{-gnateD} (@code{gcc})
+@cindex @option{-gnateD} (@command{gcc})
 Defines a symbol, associated with value, for preprocessing.
-(see @ref{Integrated Preprocessing})
+(@pxref{Integrated Preprocessing}).
 
 @item -gnatef
-@cindex @option{-gnatef} (@code{gcc})
+@cindex @option{-gnatef} (@command{gcc})
 Display full source path name in brief error messages.
 
 @item -gnatem=@var{path}
-@cindex @option{-gnatem} (@code{gcc})
+@cindex @option{-gnatem} (@command{gcc})
 Specify a mapping file
 @ifclear vms
 (the equal sign is optional)
 @end ifclear
-(see @ref{Units to Sources Mapping Files}).
+(@pxref{Units to Sources Mapping Files}).
 
 @item -gnatep=@var{file}
-@cindex @option{-gnatep} (@code{gcc})
+@cindex @option{-gnatep} (@command{gcc})
 Specify a preprocessing data file
 @ifclear vms
 (the equal sign is optional)
 @end ifclear
-(see @ref{Integrated Preprocessing}).
+(@pxref{Integrated Preprocessing}).
 
 @item -gnatE
-@cindex @option{-gnatE} (@code{gcc})
+@cindex @option{-gnatE} (@command{gcc})
 Full dynamic elaboration checks.
 
 @item -gnatf
-@cindex @option{-gnatf} (@code{gcc})
+@cindex @option{-gnatf} (@command{gcc})
 Full errors. Multiple errors per line, all undefined references, do not
 attempt to suppress cascaded errors.
 
 @item -gnatF
-@cindex @option{-gnatF} (@code{gcc})
+@cindex @option{-gnatF} (@command{gcc})
 Externals names are folded to all uppercase.
 
 @item -gnatg
-@cindex @option{-gnatg} (@code{gcc})
+@cindex @option{-gnatg} (@command{gcc})
 Internal GNAT implementation mode. This should not be used for
 applications programs, it is intended only for use by the compiler
 and its run-time library. For documentation, see the GNAT sources.
@@ -3797,51 +3796,51 @@ are generated on unreferenced entities, and all warnings are treated
 as errors.
 
 @item -gnatG
-@cindex @option{-gnatG} (@code{gcc})
+@cindex @option{-gnatG} (@command{gcc})
 List generated expanded code in source form.
 
 @item ^-gnath^/HELP^
-@cindex @option{^-gnath^/HELP^} (@code{gcc})
+@cindex @option{^-gnath^/HELP^} (@command{gcc})
 Output usage information. The output is written to @file{stdout}.
 
 @item ^-gnati^/IDENTIFIER_CHARACTER_SET=^@var{c}
-@cindex @option{^-gnati^/IDENTIFIER_CHARACTER_SET^} (@code{gcc})
+@cindex @option{^-gnati^/IDENTIFIER_CHARACTER_SET^} (@command{gcc})
 Identifier character set
 @ifclear vms
 (@var{c}=1/2/3/4/8/9/p/f/n/w).
 @end ifclear
 @ifset vms
 For details of the possible selections for @var{c},
-see @xref{Character Set Control}.
+see @ref{Character Set Control}.
 @end ifset
 
 @item -gnatk=@var{n}
-@cindex @option{-gnatk} (@code{gcc})
+@cindex @option{-gnatk} (@command{gcc})
 Limit file names to @var{n} (1-999) characters ^(@code{k} = krunch)^^.
 
 @item -gnatl
-@cindex @option{-gnatl} (@code{gcc})
+@cindex @option{-gnatl} (@command{gcc})
 Output full source listing with embedded error messages.
 
 @item -gnatL
-@cindex @option{-gnatL} (@code{gcc})
+@cindex @option{-gnatL} (@command{gcc})
 Use the longjmp/setjmp method for exception handling
 
 @item -gnatm=@var{n}
-@cindex @option{-gnatm} (@code{gcc})
+@cindex @option{-gnatm} (@command{gcc})
 Limit number of detected error or warning messages to @var{n}
 where @var{n} is in the range 1..999_999. The default setting if
 no switch is given is 9999. Compilation is terminated if this
 limit is exceeded.
 
 @item -gnatn
-@cindex @option{-gnatn} (@code{gcc})
+@cindex @option{-gnatn} (@command{gcc})
 Activate inlining for subprograms for which
 pragma @code{inline} is specified. This inlining is performed
 by the GCC back-end.
 
 @item -gnatN
-@cindex @option{-gnatN} (@code{gcc})
+@cindex @option{-gnatN} (@command{gcc})
 Activate front end inlining for subprograms for which
 pragma @code{Inline} is specified. This inlining is performed
 by the front end and will be visible in the
@@ -3856,76 +3855,76 @@ to specify both options. There are a few cases that the back-end inlining
 catches that cannot be dealt with in the front-end.
 
 @item -gnato
-@cindex @option{-gnato} (@code{gcc})
+@cindex @option{-gnato} (@command{gcc})
 Enable numeric overflow checking (which is not normally enabled by
 default). Not that division by zero is a separate check that is not
 controlled by this switch (division by zero checking is on by default).
 
 @item -gnatp
-@cindex @option{-gnatp} (@code{gcc})
+@cindex @option{-gnatp} (@command{gcc})
 Suppress all checks.
 
 @item -gnatP
-@cindex @option{-gnatP} (@code{gcc})
+@cindex @option{-gnatP} (@command{gcc})
 Enable polling. This is required on some systems (notably Windows NT) to
 obtain asynchronous abort and asynchronous transfer of control capability.
 See the description of pragma Polling in the GNAT Reference Manual for
 full details.
 
 @item -gnatq
-@cindex @option{-gnatq} (@code{gcc})
+@cindex @option{-gnatq} (@command{gcc})
 Don't quit; try semantics, even if parse errors.
 
 @item -gnatQ
-@cindex @option{-gnatQ} (@code{gcc})
+@cindex @option{-gnatQ} (@command{gcc})
 Don't quit; generate @file{ALI} and tree files even if illegalities.
 
 @item ^-gnatR[0/1/2/3[s]]^/REPRESENTATION_INFO^
-@cindex @option{-gnatR} (@code{gcc})
+@cindex @option{-gnatR} (@command{gcc})
 Output representation information for declared types and objects.
 
 @item -gnats
-@cindex @option{-gnats} (@code{gcc})
+@cindex @option{-gnats} (@command{gcc})
 Syntax check only.
 
 @item -gnatS
-@cindex @option{-gnatS} (@code{gcc})
+@cindex @option{-gnatS} (@command{gcc})
 Print package Standard.
 
 @item -gnatt
-@cindex @option{-gnatt} (@code{gcc})
+@cindex @option{-gnatt} (@command{gcc})
 Generate tree output file.
 
 @item ^-gnatT^/TABLE_MULTIPLIER=^@var{nnn}
-@cindex @option{^-gnatT^/TABLE_MULTIPLIER^} (@code{gcc})
+@cindex @option{^-gnatT^/TABLE_MULTIPLIER^} (@command{gcc})
 All compiler tables start at @var{nnn} times usual starting size.
 
 @item -gnatu
-@cindex @option{-gnatu} (@code{gcc})
+@cindex @option{-gnatu} (@command{gcc})
 List units for this compilation.
 
 @item -gnatU
-@cindex @option{-gnatU} (@code{gcc})
+@cindex @option{-gnatU} (@command{gcc})
 Tag all error messages with the unique string ``error:''
 
 @item -gnatv
-@cindex @option{-gnatv} (@code{gcc})
+@cindex @option{-gnatv} (@command{gcc})
 Verbose mode. Full error output with source lines to @file{stdout}.
 
 @item -gnatV
-@cindex @option{-gnatV} (@code{gcc})
+@cindex @option{-gnatV} (@command{gcc})
 Control level of validity checking. See separate section describing
 this feature.
 
 @item ^-gnatw@var{xxx}^/WARNINGS=(@var{option}[,...])^
-@cindex @option{^-gnatw^/WARNINGS^} (@code{gcc})
+@cindex @option{^-gnatw^/WARNINGS^} (@command{gcc})
 Warning mode where
 ^@var{xxx} is a string of option letters that^the list of options^ denotes
 the exact warnings that
-are enabled or disabled. (see @ref{Warning Message Control})
+are enabled or disabled (@pxref{Warning Message Control}).
 
 @item ^-gnatW^/WIDE_CHARACTER_ENCODING=^@var{e}
-@cindex @option{^-gnatW^/WIDE_CHARACTER_ENCODING^} (@code{gcc})
+@cindex @option{^-gnatW^/WIDE_CHARACTER_ENCODING^} (@command{gcc})
 Wide character encoding method
 @ifclear vms
 (@var{e}=n/h/u/s/e/8).
@@ -3935,15 +3934,15 @@ Wide character encoding method
 @end ifset
 
 @item -gnatx
-@cindex @option{-gnatx} (@code{gcc})
+@cindex @option{-gnatx} (@command{gcc})
 Suppress generation of cross-reference information.
 
 @item ^-gnaty^/STYLE_CHECKS=(option,option..)^
-@cindex @option{^-gnaty^/STYLE_CHECKS^} (@code{gcc})
-Enable built-in style checks. (see @ref{Style Checking})
+@cindex @option{^-gnaty^/STYLE_CHECKS^} (@command{gcc})
+Enable built-in style checks (@pxref{Style Checking}).
 
 @item ^-gnatz^/DISTRIBUTION_STUBS=^@var{m}
-@cindex @option{^-gnatz^/DISTRIBUTION_STUBS^} (@code{gcc})
+@cindex @option{^-gnatz^/DISTRIBUTION_STUBS^} (@command{gcc})
 Distribution stub generation and compilation
 @ifclear vms
 (@var{m}=r/c for receiver/caller stubs).
@@ -3957,14 +3956,14 @@ to be generated and compiled).
 Use the zero cost method for exception handling
 
 @item ^-I^/SEARCH=^@var{dir}
-@cindex @option{^-I^/SEARCH^} (@code{gcc})
+@cindex @option{^-I^/SEARCH^} (@command{gcc})
 @cindex RTL
 Direct GNAT to search the @var{dir} directory for source files needed by
 the current compilation
 (@pxref{Search Paths and the Run-Time Library (RTL)}).
 
 @item ^-I-^/NOCURRENT_DIRECTORY^
-@cindex @option{^-I-^/NOCURRENT_DIRECTORY^} (@code{gcc})
+@cindex @option{^-I-^/NOCURRENT_DIRECTORY^} (@command{gcc})
 @cindex RTL
 Except for the source file named in the command line, do not look for source
 files in the directory containing the source file named in the command line
@@ -3982,8 +3981,8 @@ This may result in less efficient code, but is sometimes necessary
 in order to compile large and/or nested @code{case} statements.
 
 @item -o @var{file}
-@cindex @option{-o} (@code{gcc})
-This switch is used in @code{gcc} to redirect the generated object file
+@cindex @option{-o} (@command{gcc})
+This switch is used in @command{gcc} to redirect the generated object file
 and its associated ALI file. Beware of this switch with GNAT, because it may
 cause the object file and ALI file to have different names which in turn
 may confuse the binder and the linker.
@@ -4001,7 +4000,7 @@ Library (RTL) ALI files.
 
 @ifclear vms
 @item -O[@var{n}]
-@cindex @option{-O} (@code{gcc})
+@cindex @option{-O} (@command{gcc})
 @var{n} controls the optimization level.
 
 @table @asis
@@ -4019,7 +4018,7 @@ Extensive optimization
 Extensive optimization with automatic inlining of subprograms not
 specified by pragma @code{Inline}. This applies only to
 inlining within a unit. For details on control of inlining
-see @xref{Subprogram Inlining Control}.
+see @ref{Subprogram Inlining Control}.
 @end table
 @end ifclear
 
@@ -4064,18 +4063,18 @@ usually, but not always, improves the performance of programs.
 
 @ifclear vms
 @item -pass-exit-codes
-@cindex @option{-pass-exit-codes} (@code{gcc})
+@cindex @option{-pass-exit-codes} (@command{gcc})
 Catch exit codes from the compiler and use the most meaningful as
 exit status.
 @end ifclear
 
 @item --RTS=@var{rts-path}
-@cindex @option{--RTS} (@code{gcc})
+@cindex @option{--RTS} (@command{gcc})
 Specifies the default location of the runtime library. Same meaning as the
-equivalent @code{gnatmake} flag (see @ref{Switches for gnatmake}).
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
 
 @item ^-S^/ASM^
-@cindex @option{^-S^/ASM^} (@code{gcc})
+@cindex @option{^-S^/ASM^} (@command{gcc})
 ^Used in place of @option{-c} to^Used to^
 cause the assembler source file to be
 generated, using @file{^.s^.S^} as the extension,
@@ -4083,21 +4082,21 @@ instead of the object file.
 This may be useful if you need to examine the generated assembly code.
 
 @item ^-fverbose-asm^/VERBOSE_ASM^
-@cindex @option{^-fverbose-asm^/VERBOSE_ASM^} (@code{gcc})
+@cindex @option{^-fverbose-asm^/VERBOSE_ASM^} (@command{gcc})
 ^Used in conjunction with @option{-S}^Used in place of @option{/ASM}^
 to cause the generated assembly code file to be annotated with variable
 names, making it significantly easier to follow.
 
 @item ^-v^/VERBOSE^
-@cindex @option{^-v^/VERBOSE^} (@code{gcc})
-Show commands generated by the @code{gcc} driver. Normally used only for
+@cindex @option{^-v^/VERBOSE^} (@command{gcc})
+Show commands generated by the @command{gcc} driver. Normally used only for
 debugging purposes or if you need to be sure what version of the
 compiler you are executing.
 
 @ifclear vms
 @item -V @var{ver}
-@cindex @option{-V} (@code{gcc})
-Execute @var{ver} version of the compiler. This is the @code{gcc}
+@cindex @option{-V} (@command{gcc})
+Execute @var{ver} version of the compiler. This is the @command{gcc}
 version, not the GNAT version.
 @end ifclear
 
@@ -4188,7 +4187,7 @@ format:
 @table @option
 @c !sort!
 @item -gnatv
-@cindex @option{-gnatv} (@code{gcc})
+@cindex @option{-gnatv} (@command{gcc})
 @findex stdout
 @ifclear vms
 The v stands for verbose.
@@ -4215,7 +4214,7 @@ prefix can be used to search for error messages. When this switch is
 used the only source lines output are those with errors.
 
 @item -gnatl
-@cindex @option{-gnatl} (@code{gcc})
+@cindex @option{-gnatl} (@command{gcc})
 @ifclear vms
 The @code{l} stands for list.
 @end ifclear
@@ -4249,14 +4248,14 @@ standard output is redirected, a brief summary is written to
 warning messages generated.
 
 @item -gnatU
-@cindex @option{-gnatU} (@code{gcc})
+@cindex @option{-gnatU} (@command{gcc})
 This switch forces all error messages to be preceded by the unique
 string ``error:''. This means that error messages take a few more
 characters in space, but allows easy searching for and identification
 of error messages.
 
 @item -gnatb
-@cindex @option{-gnatb} (@code{gcc})
+@cindex @option{-gnatb} (@command{gcc})
 @ifclear vms
 The @code{b} stands for brief.
 @end ifclear
@@ -4267,7 +4266,7 @@ format message or full listing (which as usual is written to
 @file{stdout} (the standard output file).
 
 @item -gnatm^^=^@var{n}
-@cindex @option{-gnatm} (@code{gcc})
+@cindex @option{-gnatm} (@command{gcc})
 @ifclear vms
 The @code{m} stands for maximum.
 @end ifclear
@@ -4283,7 +4282,7 @@ compilation abandoned
 @end smallexample
 
 @item -gnatf
-@cindex @option{-gnatf} (@code{gcc})
+@cindex @option{-gnatf} (@command{gcc})
 @cindex Error messages, suppressing
 @ifclear vms
 The @code{f} stands for full.
@@ -4327,7 +4326,7 @@ Additional details on incorrect parameters
 @end itemize
 
 @item -gnatq
-@cindex @option{-gnatq} (@code{gcc})
+@cindex @option{-gnatq} (@command{gcc})
 @ifclear vms
 The @code{q} stands for quit (really ``don't quit'').
 @end ifclear
@@ -4341,7 +4340,7 @@ the other hand, the semantic analyzer is more likely to encounter some
 internal fatal error when given a syntactically invalid tree.
 
 @item -gnatQ
-@cindex @option{-gnatQ} (@code{gcc})
+@cindex @option{-gnatQ} (@command{gcc})
 In normal operation mode, the @file{ALI} file is not generated if any
 illegalities are detected in the program. The use of @option{-gnatQ} forces
 generation of the @file{ALI} file. This file is marked as being in
@@ -4361,7 +4360,7 @@ causes the tree to be badly malformed, then ASIS may crash during the
 analysis.
 
 When @option{-gnatQ} is used and the generated @file{ALI} file is marked as
-being in error, @code{gnatmake} will attempt to recompile the source when it
+being in error, @command{gnatmake} will attempt to recompile the source when it
 finds such an @file{ALI} file, including with switch @option{-gnatc}.
 
 Note that @option{-gnatQ} has no effect if @option{-gnats} is specified,
@@ -4537,7 +4536,7 @@ warning messages:
 @c !sort!
 @item -gnatwa
 @emph{Activate all optional errors.}
-@cindex @option{-gnatwa} (@code{gcc})
+@cindex @option{-gnatwa} (@command{gcc})
 This switch activates most optional warning messages, see remaining list
 in this section for details on optional warning messages that can be
 individually controlled.  The warnings that are not turned on by this
@@ -4549,14 +4548,14 @@ All other optional warnings are turned on.
 
 @item -gnatwA
 @emph{Suppress all optional errors.}
-@cindex @option{-gnatwA} (@code{gcc})
+@cindex @option{-gnatwA} (@command{gcc})
 This switch suppresses all optional warning messages, see remaining list
 in this section for details on optional warning messages that can be
 individually controlled.
 
 @item -gnatwc
 @emph{Activate warnings on conditionals.}
-@cindex @option{-gnatwc} (@code{gcc})
+@cindex @option{-gnatwc} (@command{gcc})
 @cindex Conditionals, constant
 This switch activates warnings for conditional expressions used in
 tests that are known to be True or False at compile time. The default
@@ -4570,13 +4569,13 @@ This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwC
 @emph{Suppress warnings on conditionals.}
-@cindex @option{-gnatwC} (@code{gcc})
+@cindex @option{-gnatwC} (@command{gcc})
 This switch suppresses warnings for conditional expressions used in
 tests that are known to be True or False at compile time.
 
 @item -gnatwd
 @emph{Activate warnings on implicit dereferencing.}
-@cindex @option{-gnatwd} (@code{gcc})
+@cindex @option{-gnatwd} (@command{gcc})
 If this switch is set, then the use of a prefix of an access type
 in an indexed component, slice, or selected component without an
 explicit @code{.all} will generate a warning. With this warning
@@ -4589,7 +4588,7 @@ this warning option.
 
 @item -gnatwD
 @emph{Suppress warnings on implicit dereferencing.}
-@cindex @option{-gnatwD} (@code{gcc})
+@cindex @option{-gnatwD} (@command{gcc})
 @cindex Implicit dereferencing
 @cindex Dereferencing, implicit
 This switch suppresses warnings for implicit dereferences in
@@ -4597,7 +4596,7 @@ indexed components, slices, and selected components.
 
 @item -gnatwe
 @emph{Treat warnings as errors.}
-@cindex @option{-gnatwe} (@code{gcc})
+@cindex @option{-gnatwe} (@command{gcc})
 @cindex Warnings, treat as error
 This switch causes warning messages to be treated as errors.
 The warning string still appears, but the warning messages are counted
@@ -4605,7 +4604,7 @@ as errors, and prevent the generation of an object file.
 
 @item -gnatwf
 @emph{Activate warnings on unreferenced formals.}
-@cindex @option{-gnatwf} (@code{gcc})
+@cindex @option{-gnatwf} (@command{gcc})
 @cindex Formals, unreferenced
 This switch causes a warning to be generated if a formal parameter
 is not referenced in the body of the subprogram. This warning can
@@ -4613,7 +4612,7 @@ also be turned on using @option{-gnatwa} or @option{-gnatwu}.
 
 @item -gnatwF
 @emph{Suppress warnings on unreferenced formals.}
-@cindex @option{-gnatwF} (@code{gcc})
+@cindex @option{-gnatwF} (@command{gcc})
 This switch suppresses warnings for unreferenced formal
 parameters. Note that the
 combination @option{-gnatwu} followed by @option{-gnatwF} has the
@@ -4622,7 +4621,7 @@ formals.
 
 @item -gnatwg
 @emph{Activate warnings on unrecognized pragmas.}
-@cindex @option{-gnatwg} (@code{gcc})
+@cindex @option{-gnatwg} (@command{gcc})
 @cindex Pragmas, unrecognized
 This switch causes a warning to be generated if an unrecognized
 pragma is encountered. Apart from issuing this warning, the
@@ -4633,12 +4632,12 @@ Manual requirement that such warnings appear).
 
 @item -gnatwG
 @emph{Suppress warnings on unrecognized pragmas.}
-@cindex @option{-gnatwG} (@code{gcc})
+@cindex @option{-gnatwG} (@command{gcc})
 This switch suppresses warnings for unrecognized pragmas.
 
 @item -gnatwh
 @emph{Activate warnings on hiding.}
-@cindex @option{-gnatwh} (@code{gcc})
+@cindex @option{-gnatwh} (@command{gcc})
 @cindex Hiding of Declarations
 This switch activates warnings on hiding declarations.
 A declaration is considered hiding
@@ -4649,12 +4648,12 @@ Note that @option{-gnatwa} does not affect the setting of this warning option.
 
 @item -gnatwH
 @emph{Suppress warnings on hiding.}
-@cindex @option{-gnatwH} (@code{gcc})
+@cindex @option{-gnatwH} (@command{gcc})
 This switch suppresses warnings on hiding declarations.
 
 @item -gnatwi
 @emph{Activate warnings on implementation units.}
-@cindex @option{-gnatwi} (@code{gcc})
+@cindex @option{-gnatwi} (@command{gcc})
 This switch activates warnings for a @code{with} of an internal GNAT
 implementation unit, defined as any unit from the @code{Ada},
 @code{Interfaces}, @code{GNAT},
@@ -4668,13 +4667,13 @@ This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwI
 @emph{Disable warnings on implementation units.}
-@cindex @option{-gnatwI} (@code{gcc})
+@cindex @option{-gnatwI} (@command{gcc})
 This switch disables warnings for a @code{with} of an internal GNAT
 implementation unit.
 
 @item -gnatwj
 @emph{Activate warnings on obsolescent features (Annex J).}
-@cindex @option{-gnatwj} (@code{gcc})
+@cindex @option{-gnatwj} (@command{gcc})
 @cindex Features, obsolescent
 @cindex Obsolescent features
 If this warning option is activated, then warnings are generated for
@@ -4699,23 +4698,23 @@ Second, the restriction does flag uses of package @code{ASCII}.
 
 @item -gnatwJ
 @emph{Suppress warnings on obsolescent features (Annex J).}
-@cindex @option{-gnatwJ} (@code{gcc})
+@cindex @option{-gnatwJ} (@command{gcc})
 This switch disables warnings on use of obsolescent features.
 
 @item -gnatwk
 @emph{Activate warnings on variables that could be constants.}
-@cindex @option{-gnatwk} (@code{gcc})
+@cindex @option{-gnatwk} (@command{gcc})
 This switch activates warnings for variables that are initialized but
 never modified, and then could be declared constants.
 
 @item -gnatwK
 @emph{Suppress warnings on variables that could be constants.}
-@cindex @option{-gnatwK} (@code{gcc})
+@cindex @option{-gnatwK} (@command{gcc})
 This switch disables warnings on variables that could be declared constants.
 
 @item -gnatwl
 @emph{Activate warnings for missing elaboration pragmas.}
-@cindex @option{-gnatwl} (@code{gcc})
+@cindex @option{-gnatwl} (@command{gcc})
 @cindex Elaboration, warnings
 This switch activates warnings on missing
 @code{pragma Elaborate_All} statements.
@@ -4728,14 +4727,14 @@ This warning is not automatically turned on by the use of @option{-gnatwa}.
 
 @item -gnatwL
 @emph{Suppress warnings for missing elaboration pragmas.}
-@cindex @option{-gnatwL} (@code{gcc})
+@cindex @option{-gnatwL} (@command{gcc})
 This switch suppresses warnings on missing pragma Elaborate_All statements.
 See the section in this guide on elaboration checking for details on
 when such pragma should be used.
 
 @item -gnatwm
 @emph{Activate warnings on modified but unreferenced variables.}
-@cindex @option{-gnatwm} (@code{gcc})
+@cindex @option{-gnatwm} (@command{gcc})
 This switch activates warnings for variables that are assigned (using
 an initialization value or with one or more assignment statements) but
 whose value is never read. The warning is suppressed for volatile
@@ -4745,13 +4744,13 @@ This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwM
 @emph{Disable warnings on modified but unreferenced variables.}
-@cindex @option{-gnatwM} (@code{gcc})
+@cindex @option{-gnatwM} (@command{gcc})
 This switch disables warnings for variables that are assigned or
 initialized, but never read.
 
 @item -gnatwn
 @emph{Set normal warnings mode.}
-@cindex @option{-gnatwn} (@code{gcc})
+@cindex @option{-gnatwn} (@command{gcc})
 This switch sets normal warning mode, in which enabled warnings are
 issued and treated as warnings rather than errors. This is the default
 mode. the switch @option{-gnatwn} can be used to cancel the effect of
@@ -4762,7 +4761,7 @@ use of @option{-gnatg}.
 
 @item -gnatwo
 @emph{Activate warnings on address clause overlays.}
-@cindex @option{-gnatwo} (@code{gcc})
+@cindex @option{-gnatwo} (@command{gcc})
 @cindex Address Clauses, warnings
 This switch activates warnings for possibly unintended initialization
 effects of defining address clauses that cause one variable to overlap
@@ -4771,14 +4770,14 @@ This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwO
 @emph{Suppress warnings on address clause overlays.}
-@cindex @option{-gnatwO} (@code{gcc})
+@cindex @option{-gnatwO} (@command{gcc})
 This switch suppresses warnings on possibly unintended initialization
 effects of defining address clauses that cause one variable to overlap
 another.
 
 @item -gnatwp
 @emph{Activate warnings on ineffective pragma Inlines.}
-@cindex @option{-gnatwp} (@code{gcc})
+@cindex @option{-gnatwp} (@command{gcc})
 @cindex Inlining, warnings
 This switch activates warnings for failure of front end inlining
 (activated by @option{-gnatN}) to inline a particular call. There are
@@ -4788,14 +4787,14 @@ This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwP
 @emph{Suppress warnings on ineffective pragma Inlines.}
-@cindex @option{-gnatwP} (@code{gcc})
+@cindex @option{-gnatwP} (@command{gcc})
 This switch suppresses warnings on ineffective pragma Inlines. If the
 inlining mechanism cannot inline a call, it will simply ignore the
 request silently.
 
 @item -gnatwr
 @emph{Activate warnings on redundant constructs.}
-@cindex @option{-gnatwr} (@code{gcc})
+@cindex @option{-gnatwr} (@command{gcc})
 This switch activates warnings for redundant constructs. The following
 is the current list of constructs regarded as redundant:
 This warning can also be turned on using @option{-gnatwa}.
@@ -4823,21 +4822,21 @@ Comparison of boolean expressions to an explicit True value.
 
 @item -gnatwR
 @emph{Suppress warnings on redundant constructs.}
-@cindex @option{-gnatwR} (@code{gcc})
+@cindex @option{-gnatwR} (@command{gcc})
 This switch suppresses warnings for redundant constructs.
 
 @item -gnatws
 @emph{Suppress all warnings.}
-@cindex @option{-gnatws} (@code{gcc})
+@cindex @option{-gnatws} (@command{gcc})
 This switch completely suppresses the
 output of all warning messages from the GNAT front end.
-Note that it does not suppress warnings from the @code{gcc} back end.
+Note that it does not suppress warnings from the @command{gcc} back end.
 To suppress these back end warnings as well, use the switch @option{-w}
 in addition to @option{-gnatws}.
 
 @item -gnatwu
 @emph{Activate warnings on unused entities.}
-@cindex @option{-gnatwu} (@code{gcc})
+@cindex @option{-gnatwu} (@command{gcc})
 This switch activates warnings to be generated for entities that
 are declared but not referenced, and for units that are @code{with}'ed
 and not
@@ -4854,19 +4853,19 @@ a warning is also generated, noting that the
 @code{with} can be moved to the body. The default is that
 such warnings are not generated.
 This switch also activates warnings on unreferenced formals
-(it is includes the effect of @option{-gnatwf}).
+(it includes the effect of @option{-gnatwf}).
 This warning can also be turned on using @option{-gnatwa}.
 
 @item -gnatwU
 @emph{Suppress warnings on unused entities.}
-@cindex @option{-gnatwU} (@code{gcc})
+@cindex @option{-gnatwU} (@command{gcc})
 This switch suppresses warnings for unused entities and packages.
 It also turns off warnings on unreferenced formals (and thus includes
 the effect of @option{-gnatwF}).
 
 @item -gnatwv
 @emph{Activate warnings on unassigned variables.}
-@cindex @option{-gnatwv} (@code{gcc})
+@cindex @option{-gnatwv} (@command{gcc})
 @cindex Unassigned variable warnings
 This switch activates warnings for access to variables which
 may not be properly initialized. The default is that
@@ -4874,13 +4873,13 @@ such warnings are generated.
 
 @item -gnatwV
 @emph{Suppress warnings on unassigned variables.}
-@cindex @option{-gnatwV} (@code{gcc})
+@cindex @option{-gnatwV} (@command{gcc})
 This switch suppresses warnings for access to variables which
 may not be properly initialized.
 
 @item -gnatwx
 @emph{Activate warnings on Export/Import pragmas.}
-@cindex @option{-gnatwx} (@code{gcc})
+@cindex @option{-gnatwx} (@command{gcc})
 @cindex Export/Import pragma warnings
 This switch activates warnings on Export/Import pragmas when
 the compiler detects a possible conflict between the Ada and
@@ -4892,7 +4891,7 @@ generated.
 
 @item -gnatwX
 @emph{Suppress warnings on Export/Import pragmas.}
-@cindex @option{-gnatwX} (@code{gcc})
+@cindex @option{-gnatwX} (@command{gcc})
 This switch suppresses warnings on Export/Import pragmas.
 The sense of this is that you are telling the compiler that
 you know what you are doing in writing the pragma, and it
@@ -4900,7 +4899,7 @@ should not complain at you.
 
 @item -gnatwz
 @emph{Activate warnings on unchecked conversions.}
-@cindex @option{-gnatwz} (@code{gcc})
+@cindex @option{-gnatwz} (@command{gcc})
 @cindex Unchecked_Conversion warnings
 This switch activates warnings for unchecked conversions
 where the types are known at compile time to have different
@@ -4909,7 +4908,7 @@ is that such warnings are generated.
 
 @item -gnatwZ
 @emph{Suppress warnings on unchecked conversions.}
-@cindex @option{-gnatwZ} (@code{gcc})
+@cindex @option{-gnatwZ} (@command{gcc})
 This switch suppresses warnings for unchecked conversions
 where the types are known at compile time to have different
 sizes.
@@ -4974,7 +4973,7 @@ When no switch @option{^-gnatw^/WARNINGS^} is used, this is equivalent to:
 
 @table @option
 @item -gnata
-@cindex @option{-gnata} (@code{gcc})
+@cindex @option{-gnata} (@command{gcc})
 @findex Assert
 @findex Debug
 @cindex Assertions
@@ -5066,7 +5065,7 @@ to the default checks described above.
 @c !sort!
 @item -gnatVa
 @emph{All validity checks.}
-@cindex @option{-gnatVa} (@code{gcc})
+@cindex @option{-gnatVa} (@command{gcc})
 All validity checks are turned on.
 @ifclear vms
 That is, @option{-gnatVa} is
@@ -5075,13 +5074,13 @@ equivalent to @option{gnatVcdfimorst}.
 
 @item -gnatVc
 @emph{Validity checks for copies.}
-@cindex @option{-gnatVc} (@code{gcc})
+@cindex @option{-gnatVc} (@command{gcc})
 The right hand side of assignments, and the initializing values of
 object declarations are validity checked.
 
 @item -gnatVd
 @emph{Default (RM) validity checks.}
-@cindex @option{-gnatVd} (@code{gcc})
+@cindex @option{-gnatVd} (@command{gcc})
 Some validity checks are done by default following normal Ada semantics
 (RM 13.9.1 (9-11)).
 A check is done in case statements that the expression is within the range
@@ -5098,7 +5097,7 @@ overwriting may occur.
 
 @item -gnatVf
 @emph{Validity checks for floating-point values.}
-@cindex @option{-gnatVf} (@code{gcc})
+@cindex @option{-gnatVf} (@command{gcc})
 In the absence of this switch, validity checking occurs only for discrete
 values. If @option{-gnatVf} is specified, then validity checking also applies
 for floating-point values, and NaN's and infinities are considered invalid,
@@ -5113,13 +5112,13 @@ options. For example,
 
 @item -gnatVi
 @emph{Validity checks for @code{in} mode parameters}
-@cindex @option{-gnatVi} (@code{gcc})
+@cindex @option{-gnatVi} (@command{gcc})
 Arguments for parameters of mode @code{in} are validity checked in function
 and procedure calls at the point of call.
 
 @item -gnatVm
 @emph{Validity checks for @code{in out} mode parameters.}
-@cindex @option{-gnatVm} (@code{gcc})
+@cindex @option{-gnatVm} (@command{gcc})
 Arguments for parameters of mode @code{in out} are validity checked in
 procedure calls at the point of call. The @code{'m'} here stands for
 modify, since this concerns parameters that can be modified by the call.
@@ -5130,7 +5129,7 @@ will be subject to validity checking.
 
 @item -gnatVn
 @emph{No validity checks.}
-@cindex @option{-gnatVn} (@code{gcc})
+@cindex @option{-gnatVn} (@command{gcc})
 This switch turns off all validity checking, including the default checking
 for case statements and left hand side subscripts. Note that the use of
 the switch @option{-gnatp} suppresses all run-time checks, including
@@ -5139,7 +5138,7 @@ is used, it cancels any other @option{-gnatV} previously issued.
 
 @item -gnatVo
 @emph{Validity checks for operator and attribute operands.}
-@cindex @option{-gnatVo} (@code{gcc})
+@cindex @option{-gnatVo} (@command{gcc})
 Arguments for predefined operators and attributes are validity checked.
 This includes all operators in package @code{Standard},
 the shift operators defined as intrinsic in package @code{Interfaces}
@@ -5148,7 +5147,7 @@ on individual component values for composite comparisons.
 
 @item -gnatVp
 @emph{Validity checks for parameters.}
-@cindex @option{-gnatVp} (@code{gcc})
+@cindex @option{-gnatVp} (@command{gcc})
 This controls the treatment of parameters within a subprogram (as opposed
 to @option{-gnatVi} and @option{-gnatVm} which control validity testing
 of parameters on a call. If either of these call options is used, then
@@ -5160,20 +5159,20 @@ will be checked (or rechecked) within the subprogram.
 
 @item -gnatVr
 @emph{Validity checks for function returns.}
-@cindex @option{-gnatVr} (@code{gcc})
+@cindex @option{-gnatVr} (@command{gcc})
 The expression in @code{return} statements in functions is validity
 checked.
 
 @item -gnatVs
 @emph{Validity checks for subscripts.}
-@cindex @option{-gnatVs} (@code{gcc})
+@cindex @option{-gnatVs} (@command{gcc})
 All subscripts expressions are checked for validity, whether they appear
 on the right side or left side (in default mode only left side subscripts
 are validity checked).
 
 @item -gnatVt
 @emph{Validity checks for tests.}
-@cindex @option{-gnatVt} (@code{gcc})
+@cindex @option{-gnatVt} (@command{gcc})
 Expressions used as conditions in @code{if}, @code{while} or @code{exit}
 statements are checked, as well as guard expressions in entry calls.
 
@@ -5231,7 +5230,7 @@ temporary disabling of validity checks.
 
 @noindent
 The @option{-gnaty^x^(option,option,...)^} switch
-@cindex @option{-gnaty} (@code{gcc})
+@cindex @option{-gnaty} (@command{gcc})
 causes the compiler to
 enforce specified style rules. A limited set of style rules has been used
 in writing the GNAT sources themselves. This switch allows user programs
@@ -5316,7 +5315,7 @@ permitted. This allows the construction of box comments where lines of minus
 signs are used to form the top and bottom of the box.
 
 @item
-If a comment starts and ends with ``@code{--}'' is permitted as long as at
+A comment that starts and ends with ``@code{--}'' is permitted as long as at
 least one blank follows the initial ``@code{--}''. Together with the preceding
 rule, this allows the construction of box comments, as shown in the following
 example:
@@ -5337,7 +5336,7 @@ optional labels on @code{end} statements ending subprograms and on
 @item ^f^VTABS^
 @emph{No form feeds or vertical tabs.}
 If the ^letter f^word VTABS^ appears in the string after @option{-gnaty} then
-neither form feeds nor vertical tab characters are not permitted
+neither form feeds nor vertical tab characters are permitted
 in the source text.
 
 @item ^h^HTABS^
@@ -5611,12 +5610,12 @@ checking against constraints, but not arithmetic overflow checking for
 integer operations (including division by zero) or checks for access
 before elaboration on subprogram calls. All other run-time checks, as
 required by the Ada 95 Reference Manual, are generated by default.
-The following @code{gcc} switches refine this default behavior:
+The following @command{gcc} switches refine this default behavior:
 
 @table @option
 @c !sort!
 @item -gnatp
-@cindex @option{-gnatp} (@code{gcc})
+@cindex @option{-gnatp} (@command{gcc})
 @cindex Suppressing checks
 @cindex Checks, suppressing
 @findex Suppress
@@ -5628,7 +5627,7 @@ of the code at the expense of safety in the presence of invalid data or
 program bugs.
 
 @item -gnato
-@cindex @option{-gnato} (@code{gcc})
+@cindex @option{-gnato} (@command{gcc})
 @cindex Overflow checks
 @cindex Check, overflow
 Enables overflow checking for integer operations.
@@ -5708,11 +5707,11 @@ not performed in default mode. This means that out of the box, with the
 default settings, GNAT does not do all the checks expected from the
 language description in the Ada Reference Manual. If you want all constraint
 checks to be performed, as described in this Manual, then you must
-explicitly use the -gnato switch either on the @code{gnatmake} or
-@code{gcc} command.
+explicitly use the -gnato switch either on the @command{gnatmake} or
+@command{gcc} command.
 
 @item -gnatE
-@cindex @option{-gnatE} (@code{gcc})
+@cindex @option{-gnatE} (@command{gcc})
 @cindex Elaboration checks
 @cindex Check, elaboration
 Enables dynamic checks for access-before-elaboration
@@ -5734,7 +5733,7 @@ the program source.
 @cindex -fstack-check
 
 @noindent
-For most operating systems, @code{gcc} does not perform stack overflow
+For most operating systems, @command{gcc} does not perform stack overflow
 checking by default. This means that if the main environment task or
 some other task exceeds the available stack space, then unpredictable
 behavior will occur.
@@ -5785,10 +5784,10 @@ is an operating systems issue, and must be addressed with the
 appropriate operating systems commands.
 
 @node Using gcc for Syntax Checking
-@subsection Using @code{gcc} for Syntax Checking
+@subsection Using @command{gcc} for Syntax Checking
 @table @option
 @item -gnats
-@cindex @option{-gnats} (@code{gcc})
+@cindex @option{-gnats} (@command{gcc})
 @ifclear vms
 
 @noindent
@@ -5840,10 +5839,10 @@ together. This is primarily used by the @code{gnatchop} utility
 @end table
 
 @node Using gcc for Semantic Checking
-@subsection Using @code{gcc} for Semantic Checking
+@subsection Using @command{gcc} for Semantic Checking
 @table @option
 @item -gnatc
-@cindex @option{-gnatc} (@code{gcc})
+@cindex @option{-gnatc} (@command{gcc})
 
 @ifclear vms
 @noindent
@@ -5886,7 +5885,7 @@ and specifications where a separate body is present).
 @table @option
 @cindex Ada 83 compatibility
 @item -gnat83
-@cindex @option{-gnat83} (@code{gcc})
+@cindex @option{-gnat83} (@command{gcc})
 @cindex ACVC, Ada 83 tests
 
 @noindent
@@ -5919,7 +5918,7 @@ For further information, please refer to @ref{Compatibility and Porting Guide}.
 @subsection Character Set Control
 @table @option
 @item ^-gnati^/IDENTIFIER_CHARACTER_SET=^@var{c}
-@cindex @option{^-gnati^/IDENTIFIER_CHARACTER_SET^} (@code{gcc})
+@cindex @option{^-gnati^/IDENTIFIER_CHARACTER_SET^} (@command{gcc})
 
 @noindent
 Normally GNAT recognizes the Latin-1 character set in source program
@@ -5968,7 +5967,7 @@ allowed in identifiers
 implementation of these character sets.
 
 @item ^-gnatW^/WIDE_CHARACTER_ENCODING=^@var{e}
-@cindex @option{^-gnatW^/WIDE_CHARACTER_ENCODING^} (@code{gcc})
+@cindex @option{^-gnatW^/WIDE_CHARACTER_ENCODING^} (@command{gcc})
 Specify the method of encoding for wide characters.
 @var{e} is one of the following:
 
@@ -5993,7 +5992,7 @@ UTF-8 encoding (brackets encoding also recognized)
 Brackets encoding only (default value)
 @end table
 For full details on the these encoding
-methods see @xref{Wide Character Encodings}.
+methods see @ref{Wide Character Encodings}.
 Note that brackets coding is always accepted, even if one of the other
 options is specified, so for example @option{-gnatW8} specifies that both
 brackets and @code{UTF-8} encodings will be recognized. The units that are
@@ -6017,7 +6016,7 @@ parameter.
 
 @table @option
 @item ^-gnatk^/FILE_NAME_MAX_LENGTH=^@var{n}
-@cindex @option{-gnatk} (@code{gcc})
+@cindex @option{-gnatk} (@command{gcc})
 Activates file name ``krunching''. @var{n}, a decimal integer in the range
 1-999, indicates the maximum allowable length of a file name (not
 including the @file{.ads} or @file{.adb} extension). The default is not
@@ -6032,7 +6031,7 @@ For the source file naming rules, @xref{File Naming Rules}.
 @table @option
 @c !sort!
 @item -gnatn
-@cindex @option{-gnatn} (@code{gcc})
+@cindex @option{-gnatn} (@command{gcc})
 @ifclear vms
 The @code{n} here is intended to suggest the first syllable of the
 word ``inline''.
@@ -6050,10 +6049,10 @@ If you specify this switch the compiler will access these bodies,
 creating an extra source dependency for the resulting object file, and
 where possible, the call will be inlined.
 For further details on when inlining is possible
-see @xref{Inlining of Subprograms}.
+see @ref{Inlining of Subprograms}.
 
 @item -gnatN
-@cindex @option{-gnatN} (@code{gcc})
+@cindex @option{-gnatN} (@command{gcc})
 The front end inlining activated by this switch is generally more extensive,
 and quite often more effective than the standard @option{-gnatn} inlining mode.
 It will also generate additional dependencies.
@@ -6067,7 +6066,7 @@ to specify both options.
 
 @table @option
 @item -gnatt
-@cindex @option{-gnatt} (@code{gcc})
+@cindex @option{-gnatt} (@command{gcc})
 @cindex Writing internal trees
 @cindex Internal trees, writing to file
 Causes GNAT to write the internal tree for a unit to a file (with the
@@ -6078,19 +6077,19 @@ these tools do the necessary compilations automatically, so you should
 not have to specify this switch in normal operation.
 
 @item -gnatu
-@cindex @option{-gnatu} (@code{gcc})
+@cindex @option{-gnatu} (@command{gcc})
 Print a list of units required by this compilation on @file{stdout}.
 The listing includes all units on which the unit being compiled depends
 either directly or indirectly.
 
 @ifclear vms
 @item -pass-exit-codes
-@cindex @option{-pass-exit-codes} (@code{gcc})
-If this switch is not used, the exit code returned by @code{gcc} when
+@cindex @option{-pass-exit-codes} (@command{gcc})
+If this switch is not used, the exit code returned by @command{gcc} when
 compiling multiple files indicates whether all source files have
 been successfully used to generate object files or not.
 
-When @option{-pass-exit-codes} is used, @code{gcc} exits with an extended
+When @option{-pass-exit-codes} is used, @command{gcc} exits with an extended
 exit status and allows an integrated development environment to better
 react to a compilation failure. Those exit status are:
 
@@ -6115,7 +6114,7 @@ An object file has been generated for every source file.
 @cindex Debugging options
 @ifclear vms
 @item -gnatd@var{x}
-@cindex @option{-gnatd} (@code{gcc})
+@cindex @option{-gnatd} (@command{gcc})
 Activate internal debugging switches. @var{x} is a letter or digit, or
 string of letters or digits, which specifies the type of debugging
 outputs desired. Normally these are used only for internal development
@@ -6125,7 +6124,7 @@ file @file{debug.adb}.
 @end ifclear
 
 @item -gnatG
-@cindex @option{-gnatG} (@code{gcc})
+@cindex @option{-gnatG} (@command{gcc})
 This switch causes the compiler to generate auxiliary output containing
 a pseudo-source listing of the generated expanded code. Like most Ada
 compilers, GNAT works by first transforming the high level Ada code into
@@ -6209,7 +6208,7 @@ evaluation of the expression 1.0/27.0).
 @end table
 
 @item -gnatD
-@cindex @option{-gnatD} (@code{gcc})
+@cindex @option{-gnatD} (@command{gcc})
 When used in conjunction with @option{-gnatG}, this switch causes
 the expanded source, as described above for
 @option{-gnatG} to be written to files with names
@@ -6217,7 +6216,7 @@ the expanded source, as described above for
 instead of to the standard ooutput file. For
 example, if the source file name is @file{hello.adb}, then a file
 @file{^hello.adb.dg^HELLO.ADB_DG^} will be written.  The debugging
-information generated by the @code{gcc} @option{^-g^/DEBUG^} switch
+information generated by the @command{gcc} @option{^-g^/DEBUG^} switch
 will refer to the generated @file{^xxx.dg^XXX_DG^} file. This allows
 you to do source level debugging using the generated code which is
 sometimes useful for complex code, for example to find out exactly
@@ -6233,7 +6232,7 @@ In other words @option{-gnatD} is equivalent to @option{-gnatDG}).
 
 @ifclear vms
 @item -gnatR[0|1|2|3[s]]
-@cindex @option{-gnatR} (@code{gcc})
+@cindex @option{-gnatR} (@command{gcc})
 This switch controls output from the compiler of a listing showing
 representation information for declared types and objects. For
 @option{-gnatR0}, no information is output (equivalent to omitting
@@ -6252,7 +6251,7 @@ file is the name of the corresponding source file.
 @end ifclear
 @ifset vms
 @item /REPRESENTATION_INFO
-@cindex @option{/REPRESENTATION_INFO} (@code{gcc})
+@cindex @option{/REPRESENTATION_INFO} (@command{gcc})
 This qualifier controls output from the compiler of a listing showing
 representation information for declared types and objects. For
 @option{/REPRESENTATION_INFO=NONE}, no information is output
@@ -6275,7 +6274,7 @@ file is the name of the corresponding source file.
 @end ifset
 
 @item -gnatS
-@cindex @option{-gnatS} (@code{gcc})
+@cindex @option{-gnatS} (@command{gcc})
 The use of the switch @option{-gnatS} for an
 Ada compilation will cause the compiler to output a
 representation of package Standard in a form very
@@ -6288,7 +6287,7 @@ determine the characteristics of target dependent
 types in package Standard.
 
 @item -gnatx
-@cindex @option{-gnatx} (@code{gcc})
+@cindex @option{-gnatx} (@command{gcc})
 Normally the compiler generates full cross-referencing information in
 the @file{ALI} file. This information is used by a number of tools,
 including @code{gnatfind} and @code{gnatxref}. The @option{-gnatx} switch
@@ -6316,7 +6315,11 @@ raised, the tables are used to control a back trace of the
 subprogram invocation stack to locate the required exception
 handler. This method has considerably poorer performance for
 the propagation of exceptions, but there is no overhead for
-exception handlers if no exception is raised.
+exception handlers if no exception is raised. Note that in this
+mode and in the context of mixed Ada and C/C++ programming,
+to propagate an exception through a C/C++ code, the C/C++ code
+must be compiled with the @option{-funwind-tables} GCC's
+option.
 
 The following switches can be used to control which of the
 two exception handling methods is used.
@@ -6325,7 +6328,7 @@ two exception handling methods is used.
 @c !sort!
 
 @item -gnatL
-@cindex @option{-gnatL} (@code{gcc})
+@cindex @option{-gnatL} (@command{gcc})
 This switch causes the longjmp/setjmp approach to be used
 for exception handling. If this is the default mechanism for the
 target (see below), then this has no effect. If the default
@@ -6333,14 +6336,14 @@ mechanism for the target is zero cost exceptions, then
 this switch can be used to modify this default, but it must be
 used for all units in the partition, including all run-time
 library units. One way to achieve this is to use the
-@option{-a} and @option{-f} switches for @code{gnatmake}.
+@option{-a} and @option{-f} switches for @command{gnatmake}.
 This option is rarely used. One case in which it may be
 advantageous is if you have an application where exception
 raising is common and the overall performance of the
 application is improved by favoring exception propagation.
 
 @item -gnatZ
-@cindex @option{-gnatZ} (@code{gcc})
+@cindex @option{-gnatZ} (@command{gcc})
 @cindex Zero Cost Exceptions
 This switch causes the zero cost approach to be sed
 for exception handling. If this is the default mechanism for the
@@ -6349,7 +6352,7 @@ mechanism for the target is longjmp/setjmp exceptions, then
 this switch can be used to modify this default, but it must be
 used for all units in the partition, including all run-time
 library units. One way to achieve this is to use the
-@option{-a} and @option{-f} switches for @code{gnatmake}.
+@option{-a} and @option{-f} switches for @command{gnatmake}.
 This option can only be used if the zero cost approach
 is available for the target in use (see below).
 @end table
@@ -6373,7 +6376,7 @@ used by default.
 @table @option
 
 @item -gnatem^^=^@var{path}
-@cindex @option{-gnatem} (@code{gcc})
+@cindex @option{-gnatem} (@command{gcc})
 A mapping file is a way to communicate to the compiler two mappings:
 from unit names to file names (without any directory information) and from
 file names to path names (with full directory information). These mappings
@@ -6385,7 +6388,7 @@ sources are read over a slow network connection. In normal operation,
 you need not be concerned with the format or use of mapping files,
 and the @option{-gnatem} switch is not a switch that you would use
 explicitly. it is intended only for use by automatic tools such as
-@code{gnatmake} running under the project file facility. The
+@command{gnatmake} running under the project file facility. The
 description here of the format of mapping files is provided
 for completeness and for possible use by other tools.
 
@@ -6410,7 +6413,7 @@ will be created.
 Several @option{-gnatem} switches may be specified; however, only the last
 one on the command line will be taken into account.
 
-When using a project file, @code{gnatmake} create a temporary mapping file
+When using a project file, @command{gnatmake} create a temporary mapping file
 and communicates it to the compiler using this switch.
 
 @end table
@@ -6427,15 +6430,15 @@ indicates, through a text file, the preprocessing data to be used.
 @option{-gnateD} specifies or modifies the values of preprocessing symbol.
 
 @noindent
-It is recommended that @code{gnatmake} switch ^-s^/SWITCH_CHECK^ should be
+It is recommended that @command{gnatmake} switch ^-s^/SWITCH_CHECK^ should be
 used when Integrated Preprocessing is used. The reason is that preprocessing
 with another Preprocessing Data file without changing the sources will
 not trigger recompilation without this switch.
 
 @noindent
-Note that @code{gnatmake} switch ^-m^/MINIMAL_RECOMPILATION^ will almost
+Note that @command{gnatmake} switch ^-m^/MINIMAL_RECOMPILATION^ will almost
 always trigger recompilation for sources that are preprocessed,
-because @code{gnatmake} cannot compute the checksum of the source after
+because @command{gnatmake} cannot compute the checksum of the source after
 preprocessing.
 
 @noindent
@@ -6446,7 +6449,7 @@ preprocessing is triggered and parameterized.
 @table @code
 
 @item -gnatep=@var{file}
-@cindex @option{-gnatep} (@code{gcc})
+@cindex @option{-gnatep} (@command{gcc})
 This switch indicates to the compiler the file name (without directory
 information) of the preprocessor data file to use. The preprocessor data file
 should be found in the source directories.
@@ -6467,8 +6470,8 @@ lines starting with the character '*'.
 
 @noindent
 After the file name or the character '*', another optional literal string
-indicating the file name of the definition file to be used for preprocessing.
-(see @ref{Form of Definitions File}. The definition files are found by the
+indicating the file name of the definition file to be used for preprocessing
+(@pxref{Form of Definitions File}). The definition files are found by the
 compiler in one of the source directories. In some cases, when compiling
 a source in a directory other than the current directory, if the definition
 file is in the current directory, it may be necessary to add the current
@@ -6530,7 +6533,7 @@ Examples of valid lines in a preprocessor data file:
 @end smallexample
 
 @item ^-gnateD^/DATA_PREPROCESSING=^symbol[=value]
-@cindex @option{-gnateD} (@code{gcc})
+@cindex @option{-gnateD} (@command{gcc})
 Define or redefine a preprocessing symbol, associated with value. If no value
 is given on the command line, then the value of the symbol is @code{True}.
 A symbol is an identifier, following normal Ada (case-insensitive)
@@ -6588,10 +6591,11 @@ unless you actually see a performance improvement.
 On VMS, GNAT compiled programs return POSIX-style codes by default,
 e.g. @option{/RETURN_CODES=POSIX}.
 
-To enable VMS style return codes, GNAT LINK with the option
+To enable VMS style return codes, use GNAT BIND and LINK with the option
 @option{/RETURN_CODES=VMS}. For example:
 
 @smallexample
+GNAT BIND MYMAIN.ALI /RETURN_CODES=VMS
 GNAT LINK MYMAIN.ALI /RETURN_CODES=VMS
 @end smallexample
 
@@ -6623,7 +6627,7 @@ The directory containing the source file of the main unit being compiled
 
 @item
 Each directory named by an @option{^-I^/SOURCE_SEARCH^} switch given on the
-@code{gcc} command line, in the order given.
+@command{gcc} command line, in the order given.
 
 @item
 @findex ADA_INCLUDE_PATH
@@ -6690,7 +6694,7 @@ The compiler outputs its object files and ALI files in the current
 working directory.
 @ifclear vms
 Caution: The object file can be redirected with the @option{-o} switch;
-however, @code{gcc} and @code{gnat1} have not been coordinated on this
+however, @command{gcc} and @code{gnat1} have not been coordinated on this
 so the @file{ALI} file will not go to the right place. Therefore, you should
 avoid using the @option{-o} switch.
 @end ifclear
@@ -6813,7 +6817,7 @@ Generates a main program incorporating the given elaboration order.
 This program is a small Ada package (body and spec) that
 must be subsequently compiled
 using the GNAT compiler. The necessary compilation step is usually
-performed automatically by @code{gnatlink}. The two most important
+performed automatically by @command{gnatlink}. The two most important
 functions of this program
 are to call the elaboration routines of units in an appropriate order
 and to call the main program.
@@ -6821,7 +6825,7 @@ and to call the main program.
 @item
 Determines the set of object files required by the given main program.
 This information is output in the forms of comments in the generated program,
-to be read by the @code{gnatlink} utility used to link the Ada application.
+to be read by the @command{gnatlink} utility used to link the Ada application.
 @end enumerate
 
 @node Running gnatbind
@@ -6851,7 +6855,7 @@ that the given main program requires the package @code{Pack}, whose
 file is @file{pack.ali} and whose corresponding source spec file is
 @file{pack.ads}, it attempts to locate the source file @file{pack.ads}
 (using the same search path conventions as previously described for the
-@code{gcc} command). If it can locate this source file, it checks that
+@command{gcc} command). If it can locate this source file, it checks that
 the time stamps
 or source checksums of the source and its references to in @file{ALI} files
 match. In other words, any @file{ALI} files that mentions this spec must have
@@ -6912,7 +6916,7 @@ program in C rather than Ada. This may for example be helpful when you
 are generating a mixed language program with the main program in C. The
 GNAT compiler itself is an example.
 The use of the @option{^-C^/BIND_FILE=C^} switch
-for both @code{gnatbind} and @code{gnatlink} will cause the program to
+for both @code{gnatbind} and @command{gnatlink} will cause the program to
 be generated in C (and compiled using the gnu C compiler).
 
 @node Switches for gnatbind
@@ -6974,7 +6978,7 @@ See also the packages @code{GNAT.Traceback} and
 @code{GNAT.Traceback.Symbolic} for more information.
 @ifclear vms
 Note that on x86 ports, you must not use @option{-fomit-frame-pointer}
-@code{gcc} option.
+@command{gcc} option.
 @end ifclear
 
 @item ^-F^/FORCE_ELABS_FLAGS^
@@ -7007,13 +7011,13 @@ Output chosen elaboration order.
 
 @item ^-Lxxx^/BUILD_LIBRARY=xxx^
 @cindex @option{^-L^/BUILD_LIBRARY^} (@command{gnatbind})
-Binds the units for library building. In this case the adainit and
-adafinal procedures (See @pxref{Binding with Non-Ada Main Programs})
+Bind the units for library building. In this case the adainit and
+adafinal procedures (@pxref{Binding with Non-Ada Main Programs})
 are renamed to ^xxxinit^XXXINIT^ and
 ^xxxfinal^XXXFINAL^.
 Implies ^-n^/NOCOMPILE^.
 @ifclear vms
-(@pxref{GNAT and Libraries}, for more details.)
+(@xref{GNAT and Libraries}, for more details.)
 @end ifclear
 @ifset vms
 On OpenVMS, these init and final procedures are exported in uppercase
@@ -7051,7 +7055,7 @@ Do not look for library files in the system default directory.
 @item --RTS=@var{rts-path}
 @cindex @option{--RTS} (@code{gnatbind})
 Specifies the default location of the runtime library. Same meaning as the
-equivalent @code{gnatmake} flag (see @ref{Switches for gnatmake}).
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
 
 @item ^-o ^/OUTPUT=^@var{file}
 @cindex @option{^-o ^/OUTPUT^} (@command{gnatbind})
@@ -7196,9 +7200,9 @@ the resulting program is self-consistent.
 If a source file has been edited since it was last compiled, and you
 specify this switch, the binder will not detect that the object
 file is out of date with respect to the source file. Note that this is the
-mode that is automatically used by @code{gnatmake} because in this
+mode that is automatically used by @command{gnatmake} because in this
 case the checking against sources has already been performed by
-@code{gnatmake} in the course of compilation (i.e. before binding).
+@command{gnatmake} in the course of compilation (i.e. before binding).
 
 @ifset vms
 @item /READ_SOURCES=AVAILABLE
@@ -7298,7 +7302,7 @@ with extreme care.}
 
 @noindent
 The following switches provide additional control over the elaboration
-order. For full details see @xref{Elaboration Order Handling in GNAT}.
+order. For full details see @ref{Elaboration Order Handling in GNAT}.
 
 @table @option
 @item ^-p^/PESSIMISTIC_ELABORATION^
@@ -7461,7 +7465,7 @@ file, unless overridden by the use of the @option{^-o file^/OUTPUT=file^}.
 The output is an Ada unit in source form that can
 be compiled with GNAT unless the -C switch is used in which case the
 output is a C source file, which must be compiled using the C compiler.
-This compilation occurs automatically as part of the @code{gnatlink}
+This compilation occurs automatically as part of the @command{gnatlink}
 processing.
 
 Currently the GNAT run time requires a FPU using 80 bits mode
@@ -7527,7 +7531,7 @@ it.
 The binder takes the name of an ALI file as its argument and needs to
 locate source files as well as other ALI files to verify object consistency.
 
-For source files, it follows exactly the same search rules as @code{gcc}
+For source files, it follows exactly the same search rules as @command{gcc}
 (@pxref{Search Paths and the Run-Time Library (RTL)}). For ALI files the
 directories searched are:
 
@@ -7690,16 +7694,16 @@ after accessing the Ada units.
 
 @c ------------------------------------
 @node Linking Using gnatlink
-@chapter Linking Using @code{gnatlink}
+@chapter Linking Using @command{gnatlink}
 @c ------------------------------------
 @findex gnatlink
 
 @noindent
-This chapter discusses @code{gnatlink}, a tool that links
+This chapter discusses @command{gnatlink}, a tool that links
 an Ada program and builds an executable file. This utility
-invokes the system linker ^(via the @code{gcc} command)^^
+invokes the system linker ^(via the @command{gcc} command)^^
 with a correct list of object files and library references.
-@code{gnatlink} automatically determines the list of files and
+@command{gnatlink} automatically determines the list of files and
 references for the Ada part of a program. It uses the binder file
 generated by the @command{gnatbind} to determine this list.
 
@@ -7711,10 +7715,10 @@ generated by the @command{gnatbind} to determine this list.
 @end menu
 
 @node Running gnatlink
-@section Running @code{gnatlink}
+@section Running @command{gnatlink}
 
 @noindent
-The form of the @code{gnatlink} command is
+The form of the @command{gnatlink} command is
 
 @smallexample
 $ gnatlink [@var{switches}] @var{mainprog}[.ali]
@@ -7722,7 +7726,7 @@ $ gnatlink [@var{switches}] @var{mainprog}[.ali]
 @end smallexample
 
 @noindent
-The arguments of @code{gnatlink} (switches, main @file{ALI} file,
+The arguments of @command{gnatlink} (switches, main @file{ALI} file,
 non-Ada objects
 or linker options) may be in any order, provided that no non-Ada object may
 be mistaken for a main @file{ALI} file.
@@ -7733,13 +7737,13 @@ whose name is the concatenation of @file{F} and @file{.ali}.
 @noindent
 @file{@var{mainprog}.ali} references the ALI file of the main program.
 The @file{.ali} extension of this file can be omitted. From this
-reference, @code{gnatlink} locates the corresponding binder file
+reference, @command{gnatlink} locates the corresponding binder file
 @file{b~@var{mainprog}.adb} and, using the information in this file along
 with the list of non-Ada objects and linker options, constructs a
 linker command file to create the executable.
 
-The arguments other than the @code{gnatlink} switches and the main @file{ALI}
-file are passed to the linker uninterpreted.
+The arguments other than the @command{gnatlink} switches and the main
+@file{ALI} file are passed to the linker uninterpreted.
 They typically include the names of
 object files for units written in other languages than Ada and any library
 references required to resolve references in any of these foreign language
@@ -7768,46 +7772,46 @@ $ gnatlink my_prog -Wl,-Map,MAPFILE
 @end ifset
 
 Using @var{linker options} it is possible to set the program stack and
-heap size. See @ref{Setting Stack Size from gnatlink}, and
+heap size. See @ref{Setting Stack Size from gnatlink} and
 @ref{Setting Heap Size from gnatlink}.
 
-@code{gnatlink} determines the list of objects required by the Ada
+@command{gnatlink} determines the list of objects required by the Ada
 program and prepends them to the list of objects passed to the linker.
-@code{gnatlink} also gathers any arguments set by the use of
+@command{gnatlink} also gathers any arguments set by the use of
 @code{pragma Linker_Options} and adds them to the list of arguments
 presented to the linker.
 
 @ifset vms
-@code{gnatlink} accepts the following types of extra files on the command
+@command{gnatlink} accepts the following types of extra files on the command
 line: objects (.OBJ), libraries (.OLB), sharable images (.EXE), and
 options files (.OPT). These are recognized and handled according to their
 extension.
 @end ifset
 
 @node Switches for gnatlink
-@section Switches for @code{gnatlink}
+@section Switches for @command{gnatlink}
 
 @noindent
-The following switches are available with the @code{gnatlink} utility:
+The following switches are available with the @command{gnatlink} utility:
 
 @table @option
 @c !sort!
 
 @item ^-A^/BIND_FILE=ADA^
-@cindex @option{^-A^/BIND_FILE=ADA^} (@code{gnatlink})
+@cindex @option{^-A^/BIND_FILE=ADA^} (@command{gnatlink})
 The binder has generated code in Ada. This is the default.
 
 @item ^-C^/BIND_FILE=C^
-@cindex @option{^-C^/BIND_FILE=C^} (@code{gnatlink})
+@cindex @option{^-C^/BIND_FILE=C^} (@command{gnatlink})
 If instead of generating a file in Ada, the binder has generated one in
 C, then the linker needs to know about it. Use this switch to signal
-to @code{gnatlink} that the binder has generated C code rather than
+to @command{gnatlink} that the binder has generated C code rather than
 Ada code.
 
 @item ^-f^/FORCE_OBJECT_FILE_LIST^
 @cindex Command line length
-@cindex @option{^-f^/FORCE_OBJECT_FILE_LIST^} (@code{gnatlink})
-On some targets, the command line length is limited, and @code{gnatlink}
+@cindex @option{^-f^/FORCE_OBJECT_FILE_LIST^} (@command{gnatlink})
+On some targets, the command line length is limited, and @command{gnatlink}
 will generate a separate file for the linker if the list of object files
 is too long.
 The @option{^-f^/FORCE_OBJECT_FILE_LIST^} switch forces this file
@@ -7817,7 +7821,7 @@ special situations where the command line length is exceeded.
 
 @item ^-g^/DEBUG^
 @cindex Debugging information, including
-@cindex @option{^-g^/DEBUG^} (@code{gnatlink})
+@cindex @option{^-g^/DEBUG^} (@command{gnatlink})
 The option to include debugging information causes the Ada bind file (in
 other words, @file{b~@var{mainprog}.adb}) to be compiled with
 @option{^-g^/DEBUG^}.
@@ -7829,24 +7833,24 @@ default. The same procedure apply if a C bind file was generated using
 are @file{b_@var{mainprog}.c} and @file{b_@var{mainprog}.o}.
 
 @item ^-n^/NOCOMPILE^
-@cindex @option{^-n^/NOCOMPILE^} (@code{gnatlink})
+@cindex @option{^-n^/NOCOMPILE^} (@command{gnatlink})
 Do not compile the file generated by the binder. This may be used when
 a link is rerun with different options, but there is no need to recompile
 the binder file.
 
 @item ^-v^/VERBOSE^
-@cindex @option{^-v^/VERBOSE^} (@code{gnatlink})
+@cindex @option{^-v^/VERBOSE^} (@command{gnatlink})
 Causes additional information to be output, including a full list of the
 included object files. This switch option is most useful when you want
 to see what set of object files are being used in the link step.
 
 @item ^-v -v^/VERBOSE/VERBOSE^
-@cindex @option{^-v -v^/VERBOSE/VERBOSE^} (@code{gnatlink})
+@cindex @option{^-v -v^/VERBOSE/VERBOSE^} (@command{gnatlink})
 Very verbose mode. Requests that the compiler operate in verbose mode when
 it compiles the binder file, and that the system linker run in verbose mode.
 
 @item ^-o ^/EXECUTABLE=^@var{exec-name}
-@cindex @option{^-o^/EXECUTABLE^} (@code{gnatlink})
+@cindex @option{^-o^/EXECUTABLE^} (@command{gnatlink})
 @var{exec-name} specifies an alternate name for the generated
 executable program. If this switch is omitted, the executable has the same
 name as the main unit. For example, @code{gnatlink try.ali} creates
@@ -7854,28 +7858,28 @@ an executable called @file{^try^TRY.EXE^}.
 
 @ifclear vms
 @item -b @var{target}
-@cindex @option{-b} (@code{gnatlink})
+@cindex @option{-b} (@command{gnatlink})
 Compile your program to run on @var{target}, which is the name of a
 system configuration. You must have a GNAT cross-compiler built if
 @var{target} is not the same as your host system.
 
 @item -B@var{dir}
-@cindex @option{-B} (@code{gnatlink})
+@cindex @option{-B} (@command{gnatlink})
 Load compiler executables (for example, @code{gnat1}, the Ada compiler)
 from @var{dir} instead of the default location. Only use this switch
 when multiple versions of the GNAT compiler are available. See the
-@code{gcc} manual page for further details. You would normally use the
+@command{gcc} manual page for further details. You would normally use the
 @option{-b} or @option{-V} switch instead.
 
 @item --GCC=@var{compiler_name}
-@cindex @option{--GCC=compiler_name} (@code{gnatlink})
+@cindex @option{--GCC=compiler_name} (@command{gnatlink})
 Program used for compiling the binder file. The default is
-`@code{gcc}'. You need to use quotes around @var{compiler_name} if
+@command{gcc}. You need to use quotes around @var{compiler_name} if
 @code{compiler_name} contains spaces or other separator characters. As
-an example @option{--GCC="foo -x -y"} will instruct @code{gnatlink} to use
+an example @option{--GCC="foo -x -y"} will instruct @command{gnatlink} to use
 @code{foo -x -y} as your compiler. Note that switch @option{-c} is always
 inserted after your command name. Thus in the above example the compiler
-command that will be used by @code{gnatlink} will be @code{foo -c -x -y}.
+command that will be used by @command{gnatlink} will be @code{foo -c -x -y}.
 If several @option{--GCC=compiler_name} are used, only the last
 @var{compiler_name} is taken into account. However, all the additional
 switches are also taken into account. Thus,
@@ -7883,13 +7887,13 @@ switches are also taken into account. Thus,
 @option{--GCC="bar -x -y -z -t"}.
 
 @item --LINK=@var{name}
-@cindex @option{--LINK=} (@code{gnatlink})
+@cindex @option{--LINK=} (@command{gnatlink})
 @var{name} is the name of the linker to be invoked. This is especially
 useful in mixed language programs since languages such as C++ require
 their own linker to be used. When this switch is omitted, the default
-name for the linker is (@file{gcc}). When this switch is used, the
-specified linker is called instead of (@file{gcc}) with exactly the same
-parameters that would have been passed to (@file{gcc}) so if the desired
+name for the linker is @command{gcc}. When this switch is used, the
+specified linker is called instead of @command{gcc} with exactly the same
+parameters that would have been passed to @command{gcc} so if the desired
 linker requires different parameters it is necessary to use a wrapper
 script that massages the parameters before invoking the real linker. It
 may be useful to control the exact invocation by using the verbose
@@ -7899,7 +7903,7 @@ switch.
 
 @ifset vms
 @item /DEBUG=TRACEBACK
-@cindex @code{/DEBUG=TRACEBACK} (@code{gnatlink})
+@cindex @code{/DEBUG=TRACEBACK} (@command{gnatlink})
 This qualifier causes sufficient information to be included in the
 executable file to allow a traceback, but does not include the full
 symbol information needed by the debugger.
@@ -7925,11 +7929,11 @@ Prefer linking with object libraries over sharable images, even without
 @end table
 
 @node Setting Stack Size from gnatlink
-@section Setting Stack Size from @code{gnatlink}
+@section Setting Stack Size from @command{gnatlink}
 
 @noindent
 Under Windows systems, it is possible to specify the program stack size from
-@code{gnatlink} using either:
+@command{gnatlink} using either:
 
 @itemize @bullet
 
@@ -7955,11 +7959,11 @@ because the coma is a separator for this option.
 @end itemize
 
 @node Setting Heap Size from gnatlink
-@section Setting Heap Size from @code{gnatlink}
+@section Setting Heap Size from @command{gnatlink}
 
 @noindent
 Under Windows systems, it is possible to specify the program heap size from
-@code{gnatlink} using either:
+@command{gnatlink} using either:
 
 @itemize @bullet
 
@@ -7985,7 +7989,7 @@ because the coma is a separator for this option.
 @end itemize
 
 @node The GNAT Make Program gnatmake
-@chapter The GNAT Make Program @code{gnatmake}
+@chapter The GNAT Make Program @command{gnatmake}
 @findex gnatmake
 
 @menu
@@ -8025,7 +8029,7 @@ recompiled. The dependency rules in Ada can be quite complex, especially
 in the presence of overloading, @code{use} clauses, generics and inlined
 subprograms.
 
-@code{gnatmake} automatically takes care of the third and fourth steps
+@command{gnatmake} automatically takes care of the third and fourth steps
 of this process. It determines which sources need to be compiled,
 compiles them, and binds and links the resulting object files.
 
@@ -8034,13 +8038,13 @@ accurately recomputed from the new sources. The source based approach of
 the GNAT compilation model makes this possible. This means that if
 changes to the source program cause corresponding changes in
 dependencies, they will always be tracked exactly correctly by
-@code{gnatmake}.
+@command{gnatmake}.
 
 @node Running gnatmake
-@section Running @code{gnatmake}
+@section Running @command{gnatmake}
 
 @noindent
-The usual form of the @code{gnatmake} command is
+The usual form of the @command{gnatmake} command is
 
 @smallexample
 $ gnatmake [@var{switches}] @var{file_name}
@@ -8063,34 +8067,34 @@ extension be given. A relative or absolute directory path can be
 specified in a @var{file_name}, in which case, the input source file will
 be searched for in the specified directory only. Otherwise, the input
 source file will first be searched in the directory where
-@code{gnatmake} was invoked and if it is not found, it will be search on
+@command{gnatmake} was invoked and if it is not found, it will be search on
 the source path of the compiler as described in
 @ref{Search Paths and the Run-Time Library (RTL)}.
 
-All @code{gnatmake} output (except when you specify
+All @command{gnatmake} output (except when you specify
 @option{^-M^/DEPENDENCIES_LIST^}) is to
 @file{stderr}. The output produced by the
 @option{^-M^/DEPENDENCIES_LIST^} switch is send to
 @file{stdout}.
 
 @node Switches for gnatmake
-@section Switches for @code{gnatmake}
+@section Switches for @command{gnatmake}
 
 @noindent
-You may specify any of the following switches to @code{gnatmake}:
+You may specify any of the following switches to @command{gnatmake}:
 
 @table @option
 @c !sort!
 @ifclear vms
 @item --GCC=@var{compiler_name}
-@cindex @option{--GCC=compiler_name} (@code{gnatmake})
-Program used for compiling. The default is `@code{gcc}'. You need to use
+@cindex @option{--GCC=compiler_name} (@command{gnatmake})
+Program used for compiling. The default is `@command{gcc}'. You need to use
 quotes around @var{compiler_name} if @code{compiler_name} contains
 spaces or other separator characters. As an example @option{--GCC="foo -x
--y"} will instruct @code{gnatmake} to use @code{foo -x -y} as your
+-y"} will instruct @command{gnatmake} to use @code{foo -x -y} as your
 compiler. Note that switch @option{-c} is always inserted after your
 command name. Thus in the above example the compiler command that will
-be used by @code{gnatmake} will be @code{foo -c -x -y}.
+be used by @command{gnatmake} will be @code{foo -c -x -y}.
 If several @option{--GCC=compiler_name} are used, only the last
 @var{compiler_name} is taken into account. However, all the additional
 switches are also taken into account. Thus,
@@ -8098,32 +8102,32 @@ switches are also taken into account. Thus,
 @option{--GCC="bar -x -y -z -t"}.
 
 @item --GNATBIND=@var{binder_name}
-@cindex @option{--GNATBIND=binder_name} (@code{gnatmake})
+@cindex @option{--GNATBIND=binder_name} (@command{gnatmake})
 Program used for binding. The default is `@code{gnatbind}'. You need to
 use quotes around @var{binder_name} if @var{binder_name} contains spaces
 or other separator characters. As an example @option{--GNATBIND="bar -x
--y"} will instruct @code{gnatmake} to use @code{bar -x -y} as your
-binder. Binder switches that are normally appended by @code{gnatmake} to
+-y"} will instruct @command{gnatmake} to use @code{bar -x -y} as your
+binder. Binder switches that are normally appended by @command{gnatmake} to
 `@code{gnatbind}' are now appended to the end of @code{bar -x -y}.
 
 @item --GNATLINK=@var{linker_name}
-@cindex @option{--GNATLINK=linker_name} (@code{gnatmake})
-Program used for linking. The default is `@code{gnatlink}'. You need to
+@cindex @option{--GNATLINK=linker_name} (@command{gnatmake})
+Program used for linking. The default is `@command{gnatlink}'. You need to
 use quotes around @var{linker_name} if @var{linker_name} contains spaces
 or other separator characters. As an example @option{--GNATLINK="lan -x
--y"} will instruct @code{gnatmake} to use @code{lan -x -y} as your
-linker. Linker switches that are normally appended by @code{gnatmake} to
-`@code{gnatlink}' are now appended to the end of @code{lan -x -y}.
+-y"} will instruct @command{gnatmake} to use @code{lan -x -y} as your
+linker. Linker switches that are normally appended by @command{gnatmake} to
+`@command{gnatlink}' are now appended to the end of @code{lan -x -y}.
 
 @end ifclear
 
 @item ^-a^/ALL_FILES^
-@cindex @option{^-a^/ALL_FILES^} (@code{gnatmake})
+@cindex @option{^-a^/ALL_FILES^} (@command{gnatmake})
 Consider all files in the make process, even the GNAT internal system
 files (for example, the predefined Ada library files), as well as any
 locked files. Locked files are files whose ALI file is write-protected.
 By default,
-@code{gnatmake} does not check these files,
+@command{gnatmake} does not check these files,
 because the assumption is that the GNAT internal files are properly up
 to date, and also that any write protected ALI files have been properly
 installed. Note that if there is an installation problem, such that one
@@ -8147,7 +8151,7 @@ the @code{/CHECKS=SUPPRESS_ALL /STYLE_CHECKS=GNAT} switch.
 @end ifset
 
 @item ^-b^/ACTIONS=BIND^
-@cindex @option{^-b^/ACTIONS=BIND^} (@code{gnatmake})
+@cindex @option{^-b^/ACTIONS=BIND^} (@command{gnatmake})
 Bind only. Can be combined with @option{^-c^/ACTIONS=COMPILE^} to do
 compilation and binding, but no link.
 Can be combined with @option{^-l^/ACTIONS=LINK^}
@@ -8159,23 +8163,23 @@ may be given without extension, with the source extension or, if no GNAT
 Project File is specified, with the ALI file extension.
 
 @item ^-c^/ACTIONS=COMPILE^
-@cindex @option{^-c^/ACTIONS=COMPILE^} (@code{gnatmake})
+@cindex @option{^-c^/ACTIONS=COMPILE^} (@command{gnatmake})
 Compile only. Do not perform binding, except when @option{^-b^/ACTIONS=BIND^}
 is also specified. Do not perform linking, except if both
 @option{^-b^/ACTIONS=BIND^} and
  @option{^-l^/ACTIONS=LINK^} are also specified.
 If the root unit specified by @var{file_name} is not a main unit, this is the
-default. Otherwise @code{gnatmake} will attempt binding and linking
+default. Otherwise @command{gnatmake} will attempt binding and linking
 unless all objects are up to date and the executable is more recent than
 the objects.
 
 @item ^-C^/MAPPING^
-@cindex @option{^-C^/MAPPING^} (@code{gnatmake})
+@cindex @option{^-C^/MAPPING^} (@command{gnatmake})
 Use a temporary mapping file. A mapping file is a way to communicate to the
 compiler two mappings: from unit names to file names (without any directory
 information) and from file names to path names (with full directory
 information). These mappings are used by the compiler to short-circuit the path
-search. When @code{gnatmake} is invoked with this switch, it will create
+search. When @command{gnatmake} is invoked with this switch, it will create
 a temporary mapping file, initially populated by the project manager,
 if @option{^-P^/PROJECT_FILE^} is used, otherwise initially empty.
 Each invocation of the compiler will add the newly accessed sources to the
@@ -8183,7 +8187,7 @@ mapping file. This will improve the source search during the next invocation
 of the compiler.
 
 @item ^-C=^/USE_MAPPING_FILE=^@var{file}
-@cindex @option{^-C=^/USE_MAPPING^} (@code{gnatmake})
+@cindex @option{^-C=^/USE_MAPPING^} (@command{gnatmake})
 Use a specific mapping file. The file, specified as a path name (absolute or
 relative) by this switch, should already exist, otherwise the switch is
 ineffective. The specified mapping file will be communicated to the compiler.
@@ -8192,7 +8196,7 @@ This switch is not compatible with a project file
 (^-j^/PROCESSES=^nnn, when nnn is greater than 1).
 
 @item ^-D ^/DIRECTORY_OBJECTS=^@var{dir}
-@cindex @option{^-D^/DIRECTORY_OBJECTS^} (@code{gnatmake})
+@cindex @option{^-D^/DIRECTORY_OBJECTS^} (@command{gnatmake})
 Put all object files and ALI file in directory @var{dir}.
 If the @option{^-D^/DIRECTORY_OBJECTS^} switch is not used, all object files
 and ALI files go in the current working directory.
@@ -8201,79 +8205,79 @@ This switch cannot be used when using a project file.
 
 @ifclear vms
 @item -eL
-@cindex @option{-eL} (@code{gnatmake})
+@cindex @option{-eL} (@command{gnatmake})
 Follow all symbolic links when processing project files.
 @end ifclear
 
 @item ^-f^/FORCE_COMPILE^
-@cindex @option{^-f^/FORCE_COMPILE^} (@code{gnatmake})
+@cindex @option{^-f^/FORCE_COMPILE^} (@command{gnatmake})
 Force recompilations. Recompile all sources, even though some object
 files may be up to date, but don't recompile predefined or GNAT internal
 files or locked files (files with a write-protected ALI file),
 unless the @option{^-a^/ALL_FILES^} switch is also specified.
 
 @item ^-F^/FULL_PATH_IN_BRIEF_MESSAGES^
-@cindex @option{^-F^/FULL_PATH_IN_BRIEF_MESSAGES^} (@code{gnatmake})
+@cindex @option{^-F^/FULL_PATH_IN_BRIEF_MESSAGES^} (@command{gnatmake})
 When using project files, if some errors or warnings are detected during
 parsing and verbose mode is not in effect (no use of switch
 ^-v^/VERBOSE^), then error lines start with the full path name of the project
 file, rather than its simple file name.
 
 @item ^-i^/IN_PLACE^
-@cindex @option{^-i^/IN_PLACE^} (@code{gnatmake})
-In normal mode, @code{gnatmake} compiles all object files and ALI files
+@cindex @option{^-i^/IN_PLACE^} (@command{gnatmake})
+In normal mode, @command{gnatmake} compiles all object files and ALI files
 into the current directory. If the @option{^-i^/IN_PLACE^} switch is used,
 then instead object files and ALI files that already exist are overwritten
 in place. This means that once a large project is organized into separate
-directories in the desired manner, then @code{gnatmake} will automatically
+directories in the desired manner, then @command{gnatmake} will automatically
 maintain and update this organization. If no ALI files are found on the
 Ada object path (@ref{Search Paths and the Run-Time Library (RTL)}),
 the new object and ALI files are created in the
 directory containing the source being compiled. If another organization
 is desired, where objects and sources are kept in different directories,
 a useful technique is to create dummy ALI files in the desired directories.
-When detecting such a dummy file, @code{gnatmake} will be forced to recompile
-the corresponding source file, and it will be put the resulting object
-and ALI files in the directory where it found the dummy file.
+When detecting such a dummy file, @command{gnatmake} will be forced to
+recompile the corresponding source file, and it will be put the resulting
+object and ALI files in the directory where it found the dummy file.
 
 @item ^-j^/PROCESSES=^@var{n}
-@cindex @option{^-j^/PROCESSES^} (@code{gnatmake})
+@cindex @option{^-j^/PROCESSES^} (@command{gnatmake})
 @cindex Parallel make
 Use @var{n} processes to carry out the (re)compilations. On a
 multiprocessor machine compilations will occur in parallel. In the
 event of compilation errors, messages from various compilations might
-get interspersed (but @code{gnatmake} will give you the full ordered
+get interspersed (but @command{gnatmake} will give you the full ordered
 list of failing compiles at the end). If this is problematic, rerun
 the make process with n set to 1 to get a clean list of messages.
 
 @item ^-k^/CONTINUE_ON_ERROR^
-@cindex @option{^-k^/CONTINUE_ON_ERROR^} (@code{gnatmake})
+@cindex @option{^-k^/CONTINUE_ON_ERROR^} (@command{gnatmake})
 Keep going. Continue as much as possible after a compilation error. To
 ease the programmer's task in case of compilation errors, the list of
-sources for which the compile fails is given when @code{gnatmake}
+sources for which the compile fails is given when @command{gnatmake}
 terminates.
 
-If @code{gnatmake} is invoked with several @file{file_names} and with this
+If @command{gnatmake} is invoked with several @file{file_names} and with this
 switch, if there are compilation errors when building an executable,
-@code{gnatmake} will not attempt to build the following executables.
+@command{gnatmake} will not attempt to build the following executables.
 
 @item ^-l^/ACTIONS=LINK^
-@cindex @option{^-l^/ACTIONS=LINK^} (@code{gnatmake})
+@cindex @option{^-l^/ACTIONS=LINK^} (@command{gnatmake})
 Link only. Can be combined with @option{^-b^/ACTIONS=BIND^} to binding
 and linking. Linking will not be performed if combined with
 @option{^-c^/ACTIONS=COMPILE^}
 but not with @option{^-b^/ACTIONS=BIND^}.
 When not combined with @option{^-b^/ACTIONS=BIND^}
 all the units in the closure of the main program must have been previously
-compiled and must be up to date, and the main program need to have been bound.
+compiled and must be up to date, and the main program needs to have been bound.
 The root unit specified by @var{file_name}
 may be given without extension, with the source extension or, if no GNAT
 Project File is specified, with the ALI file extension.
 
 @item ^-m^/MINIMAL_RECOMPILATION^
-@cindex @option{^-m^/MINIMAL_RECOMPILATION^} (@code{gnatmake})
-Specifies that the minimum necessary amount of recompilations
-be performed. In this mode @code{gnatmake} ignores time
+@cindex @option{^-m^/MINIMAL_RECOMPILATION^} (@command{gnatmake})
+Specify that the minimum necessary amount of recompilations
+be performed. In this mode @command{gnatmake} ignores time
 stamp differences when the only
 modifications to a source file consist in adding/removing comments,
 empty lines, spaces or tabs. This means that if you have changed the
@@ -8287,7 +8291,7 @@ trade-off between compilation time and accurate debugging information.
 
 @item ^-M^/DEPENDENCIES_LIST^
 @cindex Dependencies, producing list
-@cindex @option{^-M^/DEPENDENCIES_LIST^} (@code{gnatmake})
+@cindex @option{^-M^/DEPENDENCIES_LIST^} (@command{gnatmake})
 Check if all objects are up to date. If they are, output the object
 dependences to @file{stdout} in a form that can be directly exploited in
 a @file{Makefile}. By default, each source file is prefixed with its
@@ -8308,7 +8312,7 @@ dependencies of the objects in external Ada libraries (see switch
 are never reported.
 
 @item ^-n^/DO_OBJECT_CHECK^
-@cindex @option{^-n^/DO_OBJECT_CHECK^} (@code{gnatmake})
+@cindex @option{^-n^/DO_OBJECT_CHECK^} (@command{gnatmake})
 Don't compile, bind, or link. Checks if all objects are up to date.
 If they are not, the full name of the first file that needs to be
 recompiled is printed.
@@ -8316,27 +8320,27 @@ Repeated use of this option, followed by compiling the indicated source
 file, will eventually result in recompiling all required units.
 
 @item ^-o ^/EXECUTABLE=^@var{exec_name}
-@cindex @option{^-o^/EXECUTABLE^} (@code{gnatmake})
+@cindex @option{^-o^/EXECUTABLE^} (@command{gnatmake})
 Output executable name. The name of the final executable program will be
 @var{exec_name}. If the @option{^-o^/EXECUTABLE^} switch is omitted the default
 name for the executable will be the name of the input file in appropriate form
 for an executable file on the host system.
 
-This switch cannot be used when invoking @code{gnatmake} with several
+This switch cannot be used when invoking @command{gnatmake} with several
 @file{file_names}.
 
 @item ^-P^/PROJECT_FILE=^@var{project}
-@cindex @option{^-P^/PROJECT_FILE^} (@code{gnatmake})
+@cindex @option{^-P^/PROJECT_FILE^} (@command{gnatmake})
 Use project file @var{project}. Only one such switch can be used.
-See @ref{gnatmake and Project Files}.
+@xref{gnatmake and Project Files}.
 
 @item ^-q^/QUIET^
-@cindex @option{^-q^/QUIET^} (@code{gnatmake})
+@cindex @option{^-q^/QUIET^} (@command{gnatmake})
 Quiet. When this flag is not set, the commands carried out by
-@code{gnatmake} are displayed.
+@command{gnatmake} are displayed.
 
 @item ^-s^/SWITCH_CHECK/^
-@cindex @option{^-s^/SWITCH_CHECK^} (@code{gnatmake})
+@cindex @option{^-s^/SWITCH_CHECK^} (@command{gnatmake})
 Recompile if compiler switches have changed since last compilation.
 All compiler switches but -I and -o are taken into account in the
 following way:
@@ -8348,31 +8352,31 @@ is equivalent to @option{-O -g}.
 This switch is recommended when Integrated Preprocessing is used.
 
 @item ^-u^/UNIQUE^
-@cindex @option{^-u^/UNIQUE^} (@code{gnatmake})
+@cindex @option{^-u^/UNIQUE^} (@command{gnatmake})
 Unique. Recompile at most the main files. It implies -c. Combined with
 -f, it is equivalent to calling the compiler directly. Note that using
 ^-u^/UNIQUE^ with a project file and no main has a special meaning
-(see @ref{Project Files and Main Subprograms}).
+(@pxref{Project Files and Main Subprograms}).
 
 @item ^-U^/ALL_PROJECTS^
-@cindex @option{^-U^/ALL_PROJECTS^} (@code{gnatmake})
+@cindex @option{^-U^/ALL_PROJECTS^} (@command{gnatmake})
 When used without a project file or with one or several mains on the command
 line, is equivalent to ^-u^/UNIQUE^. When used with a project file and no main
 on the command line, all sources of all project files are checked and compiled
 if not up to date, and libraries are rebuilt, if necessary.
 
 @item ^-v^/REASONS^
-@cindex @option{^-v^/REASONS^} (@code{gnatmake})
-Verbose. Displays the reason for all recompilations @code{gnatmake}
+@cindex @option{^-v^/REASONS^} (@command{gnatmake})
+Verbose. Display the reason for all recompilations @command{gnatmake}
 decides are necessary.
 
 @item ^-vP^/MESSAGES_PROJECT_FILE=^@emph{x}
-Indicates the verbosity of the parsing of GNAT project files.
-See @ref{Switches Related to Project Files}.
+Indicate the verbosity of the parsing of GNAT project files.
+@xref{Switches Related to Project Files}.
 
 @item ^-x^/NON_PROJECT_UNIT_COMPILATION^
-@cindex @option{^-x^/NON_PROJECT_UNIT_COMPILATION^} (@code{gnatmake})
-Indicates that sources that are not part of any Project File may be compiled.
+@cindex @option{^-x^/NON_PROJECT_UNIT_COMPILATION^} (@command{gnatmake})
+Indicate that sources that are not part of any Project File may be compiled.
 Normally, when using Project Files, only sources that are part of a Project
 File may be compile. When this switch is used, a source outside of all Project
 Files may be compiled. The ALI file and the object file will be put in the
@@ -8380,30 +8384,30 @@ object directory of the main Project. The compilation switches used will only
 be those specified on the command line.
 
 @item ^-X^/EXTERNAL_REFERENCE=^@var{name=value}
-Indicates that external variable @var{name} has the value @var{value}.
+Indicate that external variable @var{name} has the value @var{value}.
 The Project Manager will use this value for occurrences of
 @code{external(name)} when parsing the project file.
-See @ref{Switches Related to Project Files}.
+@xref{Switches Related to Project Files}.
 
 @item ^-z^/NOMAIN^
-@cindex @option{^-z^/NOMAIN^} (@code{gnatmake})
+@cindex @option{^-z^/NOMAIN^} (@command{gnatmake})
 No main subprogram. Bind and link the program even if the unit name
 given on the command line is a package name. The resulting executable
 will execute the elaboration routines of the package and its closure,
 then the finalization routines.
 
 @item ^-g^/DEBUG^
-@cindex @option{^-g^/DEBUG^} (@code{gnatmake})
+@cindex @option{^-g^/DEBUG^} (@command{gnatmake})
 Enable debugging. This switch is simply passed to the compiler and to the
 linker.
 
 @end table
 
 @table @asis
-@item @code{gcc} @asis{switches}
+@item @command{gcc} @asis{switches}
 @ifclear vms
-Any uppercase or multi-character switch that is not a @code{gnatmake} switch
-is passed to @code{gcc} (e.g. @option{-O}, @option{-gnato,} etc.)
+Any uppercase or multi-character switch that is not a @command{gnatmake} switch
+is passed to @command{gcc} (e.g. @option{-O}, @option{-gnato,} etc.)
 @end ifclear
 @ifset vms
 Any qualifier that cannot be recognized as a qualifier for @code{GNAT MAKE}
@@ -8419,15 +8423,15 @@ Source and library search path switches:
 @table @option
 @c !sort!
 @item ^-aI^/SOURCE_SEARCH=^@var{dir}
-@cindex @option{^-aI^/SOURCE_SEARCH^} (@code{gnatmake})
+@cindex @option{^-aI^/SOURCE_SEARCH^} (@command{gnatmake})
 When looking for source files also look in directory @var{dir}.
 The order in which source files search is undertaken is
 described in @ref{Search Paths and the Run-Time Library (RTL)}.
 
 @item ^-aL^/SKIP_MISSING=^@var{dir}
-@cindex @option{^-aL^/SKIP_MISSING^} (@code{gnatmake})
+@cindex @option{^-aL^/SKIP_MISSING^} (@command{gnatmake})
 Consider @var{dir} as being an externally provided Ada library.
-Instructs @code{gnatmake} to skip compilation units whose @file{.ALI}
+Instructs @command{gnatmake} to skip compilation units whose @file{.ALI}
 files have been located in directory @var{dir}. This allows you to have
 missing bodies for the units in @var{dir} and to ignore out of date bodies
 for the same units. You still need to specify
@@ -8435,37 +8439,37 @@ the location of the specs for these units by using the switches
 @option{^-aI^/SOURCE_SEARCH=^@var{dir}}
 or @option{^-I^/SEARCH=^@var{dir}}.
 Note: this switch is provided for compatibility with previous versions
-of @code{gnatmake}. The easier method of causing standard libraries
+of @command{gnatmake}. The easier method of causing standard libraries
 to be excluded from consideration is to write-protect the corresponding
 ALI files.
 
 @item ^-aO^/OBJECT_SEARCH=^@var{dir}
-@cindex @option{^-aO^/OBJECT_SEARCH^} (@code{gnatmake})
+@cindex @option{^-aO^/OBJECT_SEARCH^} (@command{gnatmake})
 When searching for library and object files, look in directory
 @var{dir}. The order in which library files are searched is described in
 @ref{Search Paths for gnatbind}.
 
 @item ^-A^/CONDITIONAL_SOURCE_SEARCH=^@var{dir}
-@cindex Search paths, for @code{gnatmake}
-@cindex @option{^-A^/CONDITIONAL_SOURCE_SEARCH^} (@code{gnatmake})
+@cindex Search paths, for @command{gnatmake}
+@cindex @option{^-A^/CONDITIONAL_SOURCE_SEARCH^} (@command{gnatmake})
 Equivalent to @option{^-aL^/SKIP_MISSING=^@var{dir}
 ^-aI^/SOURCE_SEARCH=^@var{dir}}.
 
 @item ^-I^/SEARCH=^@var{dir}
-@cindex @option{^-I^/SEARCH^} (@code{gnatmake})
+@cindex @option{^-I^/SEARCH^} (@command{gnatmake})
 Equivalent to @option{^-aO^/OBJECT_SEARCH=^@var{dir}
 ^-aI^/SOURCE_SEARCH=^@var{dir}}.
 
 @item ^-I-^/NOCURRENT_DIRECTORY^
-@cindex @option{^-I-^/NOCURRENT_DIRECTORY^} (@code{gnatmake})
+@cindex @option{^-I-^/NOCURRENT_DIRECTORY^} (@command{gnatmake})
 @cindex Source files, suppressing search
 Do not look for source files in the directory containing the source
 file named in the command line.
 Do not look for ALI or object files in the directory
-where @code{gnatmake} was invoked.
+where @command{gnatmake} was invoked.
 
 @item ^-L^/LIBRARY_SEARCH=^@var{dir}
-@cindex @option{^-L^/LIBRARY_SEARCH^} (@code{gnatmake})
+@cindex @option{^-L^/LIBRARY_SEARCH^} (@command{gnatmake})
 @cindex Linker libraries
 Add directory @var{dir} to the list of directories in which the linker
 will search for libraries. This is equivalent to
@@ -8476,15 +8480,15 @@ set in the registry are not searched for.
 @end ifclear
 
 @item -nostdinc
-@cindex @option{-nostdinc} (@code{gnatmake})
+@cindex @option{-nostdinc} (@command{gnatmake})
 Do not look for source files in the system default directory.
 
 @item -nostdlib
-@cindex @option{-nostdlib} (@code{gnatmake})
+@cindex @option{-nostdlib} (@command{gnatmake})
 Do not look for library files in the system default directory.
 
 @item --RTS=@var{rts-path}
-@cindex @option{--RTS} (@code{gnatmake})
+@cindex @option{--RTS} (@command{gnatmake})
 Specifies the default location of the runtime library. GNAT looks for the
 runtime
 in the following directories, and stops as soon as a valid runtime is found
@@ -8505,7 +8509,7 @@ The selected path is handled like a normal RTS path.
 @end table
 
 @node Mode Switches for gnatmake
-@section Mode Switches for @code{gnatmake}
+@section Mode Switches for @command{gnatmake}
 
 @noindent
 The mode switches (referred to as @code{mode_switches}) allow the
@@ -8518,26 +8522,26 @@ designated component of GNAT.
 @table @option
 @c !sort!
 @item -cargs @var{switches}
-@cindex @option{-cargs} (@code{gnatmake})
+@cindex @option{-cargs} (@command{gnatmake})
 Compiler switches. Here @var{switches} is a list of switches
-that are valid switches for @code{gcc}. They will be passed on to
-all compile steps performed by @code{gnatmake}.
+that are valid switches for @command{gcc}. They will be passed on to
+all compile steps performed by @command{gnatmake}.
 
 @item -bargs @var{switches}
-@cindex @option{-bargs} (@code{gnatmake})
+@cindex @option{-bargs} (@command{gnatmake})
 Binder switches. Here @var{switches} is a list of switches
 that are valid switches for @code{gnatbind}. They will be passed on to
-all bind steps performed by @code{gnatmake}.
+all bind steps performed by @command{gnatmake}.
 
 @item -largs @var{switches}
-@cindex @option{-largs} (@code{gnatmake})
+@cindex @option{-largs} (@command{gnatmake})
 Linker switches. Here @var{switches} is a list of switches
-that are valid switches for @code{gnatlink}. They will be passed on to
-all link steps performed by @code{gnatmake}.
+that are valid switches for @command{gnatlink}. They will be passed on to
+all link steps performed by @command{gnatmake}.
 
 @item -margs @var{switches}
-@cindex @option{-margs} (@code{gnatmake})
-Make switches. The switches are directly interpreted by @code{gnatmake},
+@cindex @option{-margs} (@command{gnatmake})
+Make switches. The switches are directly interpreted by @command{gnatmake},
 regardless of any previous occurrence of @option{-cargs}, @option{-bargs}
 or @option{-largs}.
 @end table
@@ -8547,25 +8551,25 @@ or @option{-largs}.
 
 @noindent
 This section contains some additional useful notes on the operation
-of the @code{gnatmake} command.
+of the @command{gnatmake} command.
 
 @itemize @bullet
 @item
-@cindex Recompilation, by @code{gnatmake}
-If @code{gnatmake} finds no ALI files, it recompiles the main program
+@cindex Recompilation, by @command{gnatmake}
+If @command{gnatmake} finds no ALI files, it recompiles the main program
 and all other units required by the main program.
-This means that @code{gnatmake}
+This means that @command{gnatmake}
 can be used for the initial compile, as well as during subsequent steps of
 the development cycle.
 
 @item
 If you enter @code{gnatmake @var{file}.adb}, where @file{@var{file}.adb}
-is a subunit or body of a generic unit, @code{gnatmake} recompiles
+is a subunit or body of a generic unit, @command{gnatmake} recompiles
 @file{@var{file}.adb} (because it finds no ALI) and stops, issuing a
 warning.
 
 @item
-In @code{gnatmake} the switch @option{^-I^/SEARCH^}
+In @command{gnatmake} the switch @option{^-I^/SEARCH^}
 is used to specify both source and
 library file paths. Use @option{^-aI^/SOURCE_SEARCH^}
 instead if you just want to specify
@@ -8574,14 +8578,14 @@ if you want to specify library paths
 only.
 
 @item
-@code{gnatmake} will ignore any files whose ALI file is write-protected.
+@command{gnatmake} will ignore any files whose ALI file is write-protected.
 This may conveniently be used to exclude standard libraries from
 consideration and in particular it means that the use of the
 @option{^-f^/FORCE_COMPILE^} switch will not recompile these files
 unless @option{^-a^/ALL_FILES^} is also specified.
 
 @item
-@code{gnatmake} has been designed to make the use of Ada libraries
+@command{gnatmake} has been designed to make the use of Ada libraries
 particularly convenient. Assume you have an Ada library organized
 as follows: @i{^obj-dir^[OBJ_DIR]^} contains the objects and ALI files for
 of your Ada compilation units,
@@ -8600,7 +8604,7 @@ $ gnatmake /SOURCE_SEARCH=@i{[INCLUDE_DIR]}
 @end smallexample
 
 @item
-Using @code{gnatmake} along with the
+Using @command{gnatmake} along with the
 @option{^-m (minimal recompilation)^/MINIMAL_RECOMPILATION^}
 switch provides a mechanism for avoiding unnecessary rcompilations. Using
 this switch,
@@ -8616,12 +8620,12 @@ that the debugging information may be out of date.
 @end itemize
 
 @node How gnatmake Works
-@section How @code{gnatmake} Works
+@section How @command{gnatmake} Works
 
 @noindent
-Generally @code{gnatmake} automatically performs all necessary
+Generally @command{gnatmake} automatically performs all necessary
 recompilations and you don't need to worry about how it works. However,
-it may be useful to have some basic understanding of the @code{gnatmake}
+it may be useful to have some basic understanding of the @command{gnatmake}
 approach and in particular to understand how it uses the results of
 previous compilations without incorrectly depending on them.
 
@@ -8632,14 +8636,15 @@ the ALI file. This means that neither the source file itself nor any
 files that it depends on have been modified, and hence there is no need
 to recompile this file.
 
-@code{gnatmake} works by first checking if the specified main unit is up
+@command{gnatmake} works by first checking if the specified main unit is up
 to date. If so, no compilations are required for the main unit. If not,
-@code{gnatmake} compiles the main program to build a new ALI file that
+@command{gnatmake} compiles the main program to build a new ALI file that
 reflects the latest sources. Then the ALI file of the main unit is
 examined to find all the source files on which the main program depends,
-and @code{gnatmake} recursively applies the above procedure on all these files.
+and @command{gnatmake} recursively applies the above procedure on all these
+files.
 
-This process ensures that @code{gnatmake} only trusts the dependencies
+This process ensures that @command{gnatmake} only trusts the dependencies
 in an existing ALI file if they are known to be correct. Otherwise it
 always recompiles to determine a new, guaranteed accurate set of
 dependencies. As a result the program is compiled ``upside down'' from what may
@@ -8647,20 +8652,21 @@ be more familiar as the required order of compilation in some other Ada
 systems. In particular, clients are compiled before the units on which
 they depend. The ability of GNAT to compile in any order is critical in
 allowing an order of compilation to be chosen that guarantees that
-@code{gnatmake} will recompute a correct set of new dependencies if
+@command{gnatmake} will recompute a correct set of new dependencies if
 necessary.
 
-When invoking @code{gnatmake} with several @var{file_names}, if a unit is
+When invoking @command{gnatmake} with several @var{file_names}, if a unit is
 imported by several of the executables, it will be recompiled at most once.
 
 Note: when using non-standard naming conventions
-(See @ref{Using Other File Names}), changing through a configuration pragmas
-file the version of a source and invoking @code{gnatmake} to recompile may
+(@pxref{Using Other File Names}), changing through a configuration pragmas
+file the version of a source and invoking @command{gnatmake} to recompile may
 have no effect, if the previous version of the source is still accessible
-by @code{gnatmake}. It may be necessary to use the switch ^-f^/FORCE_COMPILE^.
+by @command{gnatmake}. It may be necessary to use the switch
+^-f^/FORCE_COMPILE^.
 
 @node Examples of gnatmake Usage
-@section Examples of @code{gnatmake} Usage
+@section Examples of @command{gnatmake} Usage
 
 @table @code
 @item gnatmake hello.adb
@@ -8689,7 +8695,7 @@ and @file{^main3^MAIN3.EXE^}.
 Compile all files necessary to bind and link the main program unit
 @code{Main_Unit} (from file @file{main_unit.adb}). All compilations will
 be done with optimization level 2 and the order of elaboration will be
-listed by the binder. @code{gnatmake} will operate in quiet mode, not
+listed by the binder. @command{gnatmake} will operate in quiet mode, not
 displaying commands it is executing.
 @end table
 
@@ -8775,8 +8781,8 @@ By default, GNAT generates all run-time checks, except arithmetic overflow
 checking for integer operations and checks for access before elaboration on
 subprogram calls. The latter are not required in default mode, because all
 necessary checking is done at compile time.
-@cindex @option{-gnatp} (@code{gcc})
-@cindex @option{-gnato} (@code{gcc})
+@cindex @option{-gnatp} (@command{gcc})
+@cindex @option{-gnato} (@command{gcc})
 Two gnat switches, @option{-gnatp} and @option{-gnato} allow this default to
 be modified. @xref{Run-Time Checks}.
 
@@ -8848,7 +8854,7 @@ possibility of an immediate abort at any point.
 
 @node Optimization Levels
 @subsection Optimization Levels
-@cindex @option{^-O^/OPTIMIZE^} (@code{gcc})
+@cindex @option{^-O^/OPTIMIZE^} (@command{gcc})
 
 @noindent
 The default is optimization off. This results in the fastest compile
@@ -8861,7 +8867,7 @@ optimization is enabled. You can use the
 @ifset vms
 @code{OPTIMIZE} qualifier
 @end ifset
-to @code{gcc} to control the optimization level:
+to @command{gcc} to control the optimization level:
 
 @table @option
 @item ^-O0^/OPTIMIZE=NONE^
@@ -8914,7 +8920,7 @@ levels.
 Note regarding the use of @option{-O3}: The use of this optimization level
 is generally discouraged with GNAT, since it often results in larger
 executables which run more slowly. See further discussion of this point
-in @pxref{Inlining of Subprograms}.
+in @ref{Inlining of Subprograms}.
 
 @node Debugging Optimized Code
 @subsection Debugging Optimized Code
@@ -8940,7 +8946,7 @@ Explicit temporary variables that you code might be eliminated at
 ^level^setting^ @option{-O1} or higher.
 
 The use of the @option{^-g^/DEBUG^} switch,
-@cindex @option{^-g^/DEBUG^} (@code{gcc})
+@cindex @option{^-g^/DEBUG^} (@command{gcc})
 which is needed for source-level debugging,
 affects the size of the program executable on disk,
 and indeed the debugging information can be quite large.
@@ -9057,7 +9063,7 @@ The optimization level is at least @option{-O1}.
 
 @item
 The called subprogram is suitable for inlining: It must be small enough
-and not contain nested subprograms or anything else that @code{gcc}
+and not contain nested subprograms or anything else that @command{gcc}
 cannot support in inlined subprograms.
 
 @item
@@ -9082,7 +9088,7 @@ The optimization level is at least @option{-O1}.
 
 @item
 The called subprogram is suitable for inlining: It must be small enough
-and not contain nested subprograms or anything else @code{gcc} cannot
+and not contain nested subprograms or anything else @command{gcc} cannot
 support in inlined subprograms.
 
 @item
@@ -9092,9 +9098,9 @@ The call appears in a body (not in a package spec).
 There is a @code{pragma Inline} for the subprogram.
 
 @item
-@cindex @option{-gnatn} (@code{gcc})
+@cindex @option{-gnatn} (@command{gcc})
 The @option{^-gnatn^/INLINE^} switch
-is used in the @code{gcc} command line
+is used in the @command{gcc} command line
 @end itemize
 
 Note that specifying the @option{-gnatn} switch causes additional
@@ -9132,12 +9138,12 @@ is compiled, the call will be inlined if the body of @code{Q} is small
 enough, but now @code{Main} depends on the body of @code{R} in
 @file{r.adb} as well as on the spec. This means that if this body is edited,
 the main program must be recompiled. Note that this extra dependency
-occurs whether or not the call is in fact inlined by @code{gcc}.
+occurs whether or not the call is in fact inlined by @command{gcc}.
 
 The use of front end inlining with @option{-gnatN} generates similar
 additional dependencies.
 
-@cindex @option{^-fno-inline^/INLINE=SUPPRESS^} (@code{gcc})
+@cindex @option{^-fno-inline^/INLINE=SUPPRESS^} (@command{gcc})
 Note: The @option{^-fno-inline^/INLINE=SUPPRESS^} switch
 can be used to prevent
 all inlining. This switch overrides all other conditions and ensures
@@ -9468,7 +9474,7 @@ being processed.
 @cindex @option{^-a^/ALL^} (@command{gnatelim})
 Also look for subprograms from the GNAT run time that can be eliminated. Note
 that when @file{gnat.adc} is produced using this switch, the entire program
-must be recompiled with switch @option{^-a^/ALL_FILES^} to @code{gnatmake}.
+must be recompiled with switch @option{^-a^/ALL_FILES^} to @command{gnatmake}.
 
 @item ^-I^/INCLUDE_DIRS=^@var{dir}
 @cindex @option{^-I^/INCLUDE_DIRS^} (@command{gnatelim})
@@ -9489,12 +9495,12 @@ file must be specified with full path.
 
 @item ^--GCC^/COMPILER^=@var{compiler_name}
 @cindex @option{^-GCC^/COMPILER^} (@command{gnatelim})
-Instructs @code{gnatelim} to use specific @code{gcc} compiler instead of one
+Instructs @code{gnatelim} to use specific @command{gcc} compiler instead of one
 available on the path.
 
 @item ^--GNATMAKE^/GNATMAKE^=@var{gnatmake_name}
 @cindex @option{^--GNATMAKE^/GNATMAKE^} (@command{gnatelim})
-Instructs @code{gnatelim} to use specific @code{gnatmake} instead of one
+Instructs @code{gnatelim} to use specific @command{gnatmake} instead of one
 available on the path.
 @end table
 
@@ -9681,8 +9687,7 @@ should apply to all subsequent compilations in the same compilation
 environment. Using GNAT, the current directory, possibly containing a
 @file{gnat.adc} file is the representation
 of a compilation environment. For more information on the
-@file{gnat.adc} file, see the section on handling of configuration
-pragmas @pxref{Handling of Configuration Pragmas}.
+@file{gnat.adc} file, see @ref{Handling of Configuration Pragmas}.
 
 Second, in compilation mode, if @code{gnatchop}
 is given a file that starts with
@@ -9867,7 +9872,8 @@ generated files to refers back to the original file name and line number.
 The result is that all error messages refer back to the original
 unchopped file.
 In addition, the debugging information placed into the object file (when
-the @option{^-g^/DEBUG^} switch of @code{gcc} or @code{gnatmake} is specified)
+the @option{^-g^/DEBUG^} switch of @command{gcc} or @command{gnatmake} is
+specified)
 also refers back to this original file so that tools like profilers and
 debuggers will give information in terms of the original unchopped file.
 
@@ -10011,7 +10017,7 @@ all compilations performed in a given compilation environment.
 GNAT also provides the @code{gnatchop} utility to provide an automatic
 way to handle configuration pragmas following the semantics for
 compilations (that is, files with multiple units), described in the RM.
-See section @pxref{Operating gnatchop in Compilation Mode} for details.
+See @ref{Operating gnatchop in Compilation Mode} for details.
 However, for most purposes, it will be more convenient to edit the
 @file{gnat.adc} file that contains configuration pragmas directly,
 as described in the following section.
@@ -10062,7 +10068,7 @@ pragma Extend_System (Aux_DEC);
 @noindent
 In the presence of this pragma, GNAT adds to the definition of the
 predefined package SYSTEM all the additional types and subprograms that are
-defined in DEC Ada. See @pxref{Compatibility with DEC Ada} for details.
+defined in DEC Ada. See @ref{Compatibility with DEC Ada} for details.
 @end ifset
 
 @node Handling Arbitrary File Naming Conventions Using gnatname
@@ -10088,11 +10094,11 @@ does not need additional information.
 @noindent
 When the source file names do not follow the standard GNAT default file naming
 conventions, the GNAT compiler must be given additional information through
-a configuration pragmas file (see @ref{Configuration Pragmas})
+a configuration pragmas file (@pxref{Configuration Pragmas})
 or a project file.
 When the non standard file naming conventions are well-defined,
 a small number of pragmas @code{Source_File_Name} specifying a naming pattern
-(see @ref{Alternative File Naming Schemes}) may be sufficient. However,
+(@pxref{Alternative File Naming Schemes}) may be sufficient. However,
 if the file naming conventions are irregular or arbitrary, a number
 of pragma @code{Source_File_Name} for individual compilation units
 must be defined.
@@ -10703,7 +10709,7 @@ One of the specifiable properties of a project is a list of files that contain
 main subprograms.  This property is captured in the @code{Main} attribute,
 whose value is a list of strings.  If a project defines the @code{Main}
 attribute, it is not necessary to identify the main subprogram(s) when
-invoking @command{gnatmake} (see @ref{gnatmake and Project Files}).
+invoking @command{gnatmake} (@pxref{gnatmake and Project Files}).
 
 @node Executable File Names
 @unnumberedsubsubsec Executable File Names
@@ -11081,7 +11087,7 @@ end B;
 @end smallexample
 
 Attribute @code{Locally_Removed_Files} may also be used to check if a source
-is still needed: if it is possible to build using @code{gnatmake} when such
+is still needed: if it is possible to build using @command{gnatmake} when such
 a source is put in attribute @code{Locally_Removed_Files} of a project P, then
 it is possible to remove the source completely from a system that includes
 project P.
@@ -11260,9 +11266,9 @@ A @emph{string expression} is either a @emph{simple string expression} or a
 A @emph{simple string expression} is one of the following:
 @itemize @bullet
 @item A literal string; e.g.@code{"comm/my_proj.gpr"}
-@item A string-valued variable reference (see @ref{Variables})
-@item A string-valued attribute reference (see @ref{Attributes})
-@item An external reference (see @ref{External References in Project Files})
+@item A string-valued variable reference (@pxref{Variables})
+@item A string-valued attribute reference (@pxref{Attributes})
+@item An external reference (@pxref{External References in Project Files})
 @end itemize
 
 @noindent
@@ -11326,7 +11332,7 @@ Variables of a string type are called @emph{typed variables}; all other
 variables are called @emph{untyped variables}. Typed variables are
 particularly useful in @code{case} constructions, to support conditional
 attribute declarations.
-(see @ref{case Constructions}).
+(@pxref{case Constructions}).
 
 The string literals in the list are case sensitive and must all be different.
 They may include any graphic characters allowed in Ada, including spaces.
@@ -11427,7 +11433,7 @@ the project's properties.  Some attributes have values that are strings;
 others have values that are string lists.
 
 There are two categories of attributes: @emph{simple attributes}
-and @emph{associative arrays} (see @ref{Associative Array Attributes}).
+and @emph{associative arrays} (@pxref{Associative Array Attributes}).
 
 Legal project attribute names, and attribute names for each legal package are
 listed below. Attributes names are case-insensitive.
@@ -11475,7 +11481,7 @@ The following attributes are defined on projects (all are simple attributes):
 
 @noindent
 The following attributes are defined for package  @code{Naming}
-(see @ref{Naming Schemes}):
+(@pxref{Naming Schemes}):
 
 @multitable @columnfractions .4 .2 .2 .2
 @item Attribute Name @tab Category @tab Index @tab Value
@@ -11521,7 +11527,7 @@ The following attributes are defined for package  @code{Naming}
 The following attributes are defined for packages @code{Builder},
 @code{Compiler}, @code{Binder},
 @code{Linker}, @code{Cross_Reference}, and @code{Finder}
-(see @ref{^Switches^Switches^ and Project Files}).
+(@pxref{^Switches^Switches^ and Project Files}).
 
 @multitable @columnfractions .4 .2 .2 .2
 @item Attribute Name @tab Category @tab Index @tab Value
@@ -11706,7 +11712,7 @@ attribute declarations. String type declarations, variable declarations and
 package declarations are not allowed.
 
 The value of the case variable is often given by an external reference
-(see @ref{External References in Project Files}).
+(@pxref{External References in Project Files}).
 
 @c ****************************************
 @c * Objects and Sources in Project Files *
@@ -11726,7 +11732,7 @@ The value of the case variable is often given by an external reference
 Each project has exactly one object directory and one or more source
 directories. The source directories must contain at least one source file,
 unless  the project file explicitly specifies that no source files are present
-(see @ref{Source File Names}).
+(@pxref{Source File Names}).
 
 @node Object Directory
 @subsection Object Directory
@@ -11859,7 +11865,7 @@ contains a source file name.
 By default, if neither the attribute @code{Source_Files} nor the attribute
 @code{Source_List_File} is given an explicit value, then each file in the
 source directories that conforms to the project's naming scheme
-(see @ref{Naming Schemes}) is an immediate source of the project.
+(@pxref{Naming Schemes}) is an immediate source of the project.
 
 A warning is issued if both attributes @code{Source_Files} and
 @code{Source_List_File} are given explicit values. In this case, the attribute
@@ -11892,8 +11898,8 @@ list, or the @code{"Ada"} may be absent from @code{Languages}:
 Otherwise, a project must contain at least one immediate source.
 
 Projects with no source files are useful as template packages
-(see @ref{Packages in Project Files}) for other projects; in particular to
-define a package @code{Naming} (see @ref{Naming Schemes}).
+(@pxref{Packages in Project Files}) for other projects; in particular to
+define a package @code{Naming} (@pxref{Naming Schemes}).
 
 @c ****************************
 @c * Importing Projects *
@@ -12203,7 +12209,7 @@ an attribute declaration.
 A @emph{package} defines the settings for project-aware tools within a
 project.
 For each such tool one can declare a package; the names for these
-packages are preset (see @ref{Packages}).
+packages are preset (@pxref{Packages}).
 A package may contain variable declarations, attribute declarations, and case
 constructions.
 
@@ -12261,7 +12267,7 @@ a package from the template.
 
 In addition to the tool-oriented packages, you can also declare a package
 named @code{Naming} to establish specialized source file naming conventions
-(see @ref{Naming Schemes}).
+(@pxref{Naming Schemes}).
 
 @c ************************************
 @c * Variables from Imported Projects *
@@ -12342,11 +12348,11 @@ of reasons might not be possible), you can define the relevant file
 naming scheme in the @code{Naming} package in your project file.
 
 @noindent
-Note that the use of pragmas described in @ref{Alternative
-File Naming Schemes} by mean of a configuration pragmas file is not
-supported when using project files. You must use the features described
-in this paragraph. You can however use specify other configuration
-pragmas (see @ref{Specifying Configuration Pragmas}).
+Note that the use of pragmas described in
+@ref{Alternative File Naming Schemes} by mean of a configuration
+pragmas file is not supported when using project files. You must use
+the features described in this paragraph. You can however use specify
+other configuration pragmas (@pxref{Specifying Configuration Pragmas}).
 
 @ifclear vms
 For example, the following
@@ -13817,8 +13823,8 @@ definitions and/or references to a specified entity or entities, whereas
 cross-references.
 
 To use these tools, you must not compile your application using the
-@option{-gnatx} switch on the @file{gnatmake} command line
-(see @ref{The GNAT Make Program gnatmake}). Otherwise, cross-referencing
+@option{-gnatx} switch on the @command{gnatmake} command line
+(@pxref{The GNAT Make Program gnatmake}). Otherwise, cross-referencing
 information will not be generated.
 
 @menu
@@ -13874,13 +13880,13 @@ or permissions status in the file system for the current user.
 @item -aIDIR
 @cindex @option{-aIDIR} (@command{gnatxref})
 When looking for source files also look in directory DIR. The order in which
-source file search is undertaken is the same as for @file{gnatmake}.
+source file search is undertaken is the same as for @command{gnatmake}.
 
 @item -aODIR
 @cindex @option{-aODIR} (@command{gnatxref})
 When searching for library and object files, look in directory
 DIR. The order in which library files are searched is the same as for
-@file{gnatmake}.
+@command{gnatmake}.
 
 @item -nostdinc
 @cindex @option{-nostdinc} (@command{gnatxref})
@@ -13893,7 +13899,7 @@ Do not look for library files in the system default directory.
 @item --RTS=@var{rts-path}
 @cindex @option{--RTS} (@command{gnatxref})
 Specifies the default location of the runtime library. Same meaning as the
-equivalent @code{gnatmake} flag (see @ref{Switches for gnatmake}).
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
 
 @item ^-d^/DERIVED_TYPES^
 @cindex @option{^-d^/DERIVED_TYPES^} (@command{gnatxref})
@@ -13939,7 +13945,7 @@ display every unused entity and 'with'ed package.
 @item -v
 Instead of producing the default output, @code{gnatxref} will generate a
 @file{tags} file that can be used by vi. For examples how to use this
-feature, see @xref{Examples of gnatxref Usage}. The tags file is output
+feature, see @ref{Examples of gnatxref Usage}. The tags file is output
 to the standard output, thus you will have to redirect it to a file.
 @end ifclear
 
@@ -13968,7 +13974,7 @@ where
 @table @code
 @item pattern
 An entity will be output only if it matches the regular expression found
-in @samp{pattern}, see @xref{Regular Expressions in gnatfind and gnatxref}.
+in @samp{pattern}, see @ref{Regular Expressions in gnatfind and gnatxref}.
 
 Omitting the pattern is equivalent to specifying @samp{*}, which
 will match any entity. Note that if you do not provide a pattern, you
@@ -13981,7 +13987,7 @@ for matching purposes. At the current time there is no support for
 @item sourcefile
 @code{gnatfind} will look for references, bodies or declarations
 of symbols referenced in @file{sourcefile}, at line @samp{line}
-and column @samp{column}. See @pxref{Examples of gnatfind Usage}
+and column @samp{column}. See @ref{Examples of gnatfind Usage}
 for syntax examples.
 
 @item line
@@ -14031,13 +14037,13 @@ or permission status in the file system for the current user.
 @item -aIDIR
 @cindex @option{-aIDIR} (@command{gnatfind})
 When looking for source files also look in directory DIR. The order in which
-source file search is undertaken is the same as for @file{gnatmake}.
+source file search is undertaken is the same as for @command{gnatmake}.
 
 @item -aODIR
 @cindex @option{-aODIR} (@command{gnatfind})
 When searching for library and object files, look in directory
 DIR. The order in which library files are searched is the same as for
-@file{gnatmake}.
+@command{gnatmake}.
 
 @item -nostdinc
 @cindex @option{-nostdinc} (@command{gnatfind})
@@ -14050,7 +14056,7 @@ Do not look for library files in the system default directory.
 @item --RTS=@var{rts-path}
 @cindex @option{--RTS} (@command{gnatfind})
 Specifies the default location of the runtime library. Same meaning as the
-equivalent @code{gnatmake} flag (see @ref{Switches for gnatmake}).
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
 
 @item ^-d^/DERIVED_TYPE_INFORMATION^
 @cindex @option{^-d^/DERIVED_TYPE_INFORMATION^} (@code{gnatfind})
@@ -14633,6 +14639,9 @@ Align @code{:=} in assignment statements
 
 @item ^-A4^/ALIGN=ARROWS^
 Align @code{=>} in associations
+
+@item ^-A5^/ALIGN=COMPONENT_CLAUSES^
+Align @code{at} keywords in the component clauses in record representation clauses
 @end table
 
 @noindent
@@ -14739,7 +14748,7 @@ compatible.
 
 @noindent
 This group of @command{gnatpp} switches controls the layout of comments and
-complex syntactic constructs.  See @ref{Formatting Comments}, for details
+complex syntactic constructs.  See @ref{Formatting Comments} for details
 on their effect.
 
 @table @option
@@ -15162,6 +15171,31 @@ many words in a line as possible).
 @subsection Construct Layout
 
 @noindent
+In several cases the suggested layout in the Ada Reference Manual includes
+an extra level of indentation that many programmers prefer to avoid. The
+affected cases include:
+
+@itemize @bullet
+
+@item Record type declaration (RM 3.8)
+
+@item Record representation clause (RM 13.5.1)
+
+@item Loop statement in case if a loop has a statement identifier (RM 5.6)
+
+@item Block statement in case if a block has a statement identifier (RM 5.6)
+@end itemize
+
+@noindent
+In compact mode (when GNAT style layout or compact layout is set),
+the pretty printer uses one level of indentation instead
+of two. This is achived in the record definition and record representation
+clause cases by putting the @code{record} keyword on the same line as the
+start of the declaration or representation clause, and in the block and loop
+case by putting the block or loop header on the same line as the statement
+identifier.
+
+@noindent
 The difference between GNAT style @option{^-l1^/CONSTRUCT_LAYOUT=GNAT^}
 and compact @option{^-l2^/CONSTRUCT_LAYOUT=COMPACT^}
 layout on the one hand, and uncompact layout
@@ -15186,6 +15220,22 @@ type q is
    record
       a : integer;
       b : integer;
+   end record;
+@end smallexample
+
+@item
+@smallexample @c ada
+for q use record
+   a at 0 range  0 .. 31;
+   b at 4 range  0 .. 31;
+end record;
+@end smallexample
+@tab
+@smallexample @c ada
+for q use
+   record
+      a at 0 range  0 .. 31;
+      b at 4 range  0 .. 31;
    end record;
 @end smallexample
 
@@ -15233,6 +15283,12 @@ type q is record                        type q is
    a : integer;                            record
    b : integer;                               a : integer;
 end record;                                   b : integer;
+                                           end record;
+
+for q use record                        for q use
+   a at 0 range  0 .. 31;                  record
+   b at 4 range  0 .. 31;                     a at 0 range  0 .. 31;
+end record;                                   b at 4 range  0 .. 31;
                                            end record;
 
 Block : declare                         Block :
@@ -15454,7 +15510,7 @@ end Test;
 @cindex Metric tool
 
 @noindent
-^The @command{gnatmetric} tool^GNAT METRIC^ is an ASIS-based utility
+^The @command{gnatmetric} tool^@command{GNAT METRIC}^ is an ASIS-based utility
 for computing various program metrics.
 It takes an Ada source file as input and generates a file containing the
 metrics data as output. Various switches control which
@@ -15468,40 +15524,45 @@ an error message; no metric information for this file will be
 computed and reported.
 
 If the compilation unit contained in the input source depends semantically
-upon units located outside the current directory, you have to provide the
-source search path when invoking @command{gnatmetric}.
-If these units are contained in files
-with names that do not follow the GNAT file naming rules, you have to provide
-the configuration file describing the corresponding naming scheme; see the
-description of the @command{gnatmetric} switches below. Another possibility
-is to use a project file and to
-call @command{gnatmetric} through the @command{gnat} driver
+upon units in files located outside the current directory, you have to provide
+the source search path when invoking @command{gnatmetric}.
+If it depends semantically upon units that are contained
+in files with names that do not follow the GNAT file naming rules, you have to
+provide the configuration file describing the corresponding naming scheme; see
+the description of the @command{gnatmetric} switches below.
+Alternatively, you may use a project file and invoke @command{gnatmetric}
+through the @command{gnat} driver.
+
 
 The @command{gnatmetric} command has the form
 
 @smallexample
-$ gnatmetric [@var{switches}] @var{filename} [@var{-cargs gcc_switches}]
+$ gnatmetric [@i{switches}] @{@i{filename}@} [@i{-cargs gcc_switches}]
 @end smallexample
 
 @noindent
 where
 @itemize @bullet
 @item
-@var{switches} specify the metrics to compute and define the destination for
+@i{switches} specify the metrics to compute and define the destination for
 the output
 
 @item
-@var{filename} is the name (including the extension) of the source file to
-process; ``wildcards'' or several file names on the same @command{gnatmetric}
-command are allowed.  The file name may contain path information; in this case
-it does not have to follow the GNAT file naming rules
+Each @i{filename} is the name (including the extension) of a source
+file to process. ``Wildcards'' are allowed, and
+the file name may contain path information.
+If no @i{filename} is supplied, then the @i{switches} list must contain
+at least one
+@option{-files} switch (@pxref{Other gnatmetric Switches}).
+Including both a @option{-files} switch and one or more
+@i{filename} arguments is permitted.
 
 @item
-@option{-cargs gcc_switches} is a list of switches for
+@i{-cargs gcc_switches} is a list of switches for
 @command{gcc}. They will be passed on to all compiler invocations made by
 @command{gnatmetric} to generate the ASIS trees. Here you can provide
-@option{-I} switches to form the source search path,
-and use the @var{-gnatec} switch to set the configuration file.
+@option{^-I^/INCLUDE_DIRS=^} switches to form the source search path,
+and use the @option{-gnatec} switch to set the configuration file.
 @end itemize
 
 @menu
@@ -15580,7 +15641,11 @@ Put the XML output into @var{file_name} (also implies @option{^-x^/XML^})
 
 @cindex @option{^-sfn^/SHORT_SOURCE_FILE_NAME^} (@command{gnatmetric})
 @item ^-sfn^/SHORT_SOURCE_FILE_NAME^
-Use short source file names in the output
+Use ``short'' source file names in the output.  (The @command{gnatmetric}
+output includes the name(s) of the Ada source file(s) from which the metrics
+are computed.  By default each name includes the absolute path. The
+@option{^-sfn^/SHORT_SOURCE_FILE_NAME^} switch causes @command{gnatmetric}
+to exclude all directory information from the file names that are output.)
 
 @end table
 
@@ -15591,35 +15656,45 @@ Use short source file names in the output
 @noindent
 @command{gnatmetric} relies on the GNAT compilation model @minus{}
 one compilation
-unit per one source file. It computes some metrics for the whole source
-file (mostly ``number of lines'' metrics) and it always computes metrics for
-the top program unit of the corresponding compilation unit.
+unit per one source file. It computes line metrics for the whole source
+file, and it also computes syntax
+and complexity metrics for the file's outermost unit.
 
-@command{gnatmetric} considers the following constructs as program units to
-compute metrics for:
+By default, @command{gnatmetric} will also compute all metrics for certain
+kinds of locally declared program units:
 
 @itemize @bullet
 @item
-a library item or a subunit in a compilation unit;
+subprogram (and generic subprogram) bodies;
 
 @item
-all kinds of bodies;
+package (and generic package) specifications and bodies;
 
 @item
-declarations of tasks and protected types and objects, package and generic
-package declarations;
+task object and type specifications and bodies;
 
+@item
+protected object and type specifications and bodies.
 @end itemize
 
 @noindent
-That is, a subprogram declaration, a generic instantiation or a renaming is
-considered as a program unit only if it is a library item of a compilation
-unit.
+These kinds of entities will be referred to as
+@emph{eligible local program units}, or simply @emph{eligible local units},
+@cindex Eligible local unit (for @command{gnatmetric})
+in the discussion below.
+
+Note that a subprogram declaration, generic instantiation,
+or renaming declaration only receives metrics
+computation when it appear as the outermost entity
+in a source file.
+
+Suppression of metrics computation for eligible local units can be
+obtained via the following switch:
 
 @table @option
 @cindex @option{^-n@var{x}^/SUPPRESS^} (@command{gnatmetric})
 @item ^-nolocal^/SUPPRESS=LOCAL_DETAILS^
-Do not compute detailed metrics for local program units
+Do not compute detailed metrics for eligible local program units
 
 @end table
 
@@ -15628,12 +15703,13 @@ Do not compute detailed metrics for local program units
 @cindex Line metrics control in @command{gnatmetric}
 
 @noindent
-For any source file containing a legal compilation unit, and for any program
-unit, @command{gnatmetric} computes the following metrics:
+For any (legal) source file, and for each of its
+eligible local program units, @command{gnatmetric} computes the following
+metrics:
 
 @itemize @bullet
 @item
-the total number of lines in the file;
+the total number of lines;
 
 @item
 the total number of code lines (i.e., non-blank lines that are not comments)
@@ -15683,59 +15759,62 @@ The number of blank lines
 
 @end table
 
+
 @node Syntax Metrics Control
 @subsection Syntax Metrics Control
 @cindex Syntax metrics control in @command{gnatmetric}
 
 @noindent
-For any program unit, @command{gnatmetric} computes the total number of
-declarations and the total number of statements.  The sum of all the statements
-and all the declarations is considered as @emph{LSLOC} (``Logical Source
-Lines Of Code'')
-and is reported as a separate metric.
+@command{gnatmetric} computes various syntactic metrics for the
+outermost unit and for each eligible local unit:
 
-For any body and any task, protected, package and generic package declaration
-the maximal static nesting level of nested program units is computed.
+@table @emph
+@item LSLOC (``Logical Source Lines Of Code'')
+The total number of declarations and the total number of statements
+
+@item Maximal static nesting level of inner program units
 According to
 @cite{Ada 95 Language Reference Manual}, 10.1(1), ``A program unit is either a
 package, a task unit, a protected unit, a
 protected entry, a generic unit, or an explicitly declared subprogram other
 than an enumeration literal.''
 
-For any program unit @command{gnatmetric} computes the maximal nesting level of
-composite syntactic constructs.  This corresponds to the notion of the
+@item Maximal nesting level of composite syntactic constructs
+This corresponds to the notion of the
 maximum nesting level in the GNAT built-in style checks
-(see @ref{Style Checking})
+(@pxref{Style Checking})
+@end table
 
-For any library-level program unit @command{gnatmetric} additionally computes
+@noindent
+For the outermost unit in the file, @command{gnatmetric} additionally computes
 the following metrics:
 
 @table @emph
 @item Public subprograms
-This metric is computed for non-private compilation units only. It is a number
-of the subprograms and generic subprograms declared in the given compilation
-unit that can be called
-or instantiated outside the unit. Formal generic subprograms and generic
-instantiations are not counted. Protected subprograms are counted in the same
-way as non-protected ones.
+This metric is computed for package specifications. It is the
+number of subprograms and generic subprograms declared in the visible
+part (including in nested packages, protected objects, and
+protected types).
 
 @item All subprograms
-This metric is computed for all the library level bodies and subunits. The
-metric is equal to a total number of subprogram bodies in the compilation unit.
+This metric is computed for bodies and subunits. The
+metric is equal to a total number of subprogram bodies in the compilation
+unit.
 Neither generic instantiations nor renamings-as-a-body nor body stubs
 are counted. Any subprogram body is counted, independently of its nesting
 level and enclosing constructs. Generic bodies and bodies of protected
 subprograms are counted in the same way as ``usual'' subprogram bodies.
 
 @item Public types
-This metric is computed only for non-private package declarations and
+This metric is computed for package specifications and
 generic package declarations. It is the total number of types
 that can be referenced from outside this compilation unit, plus the
 number of types from all the visible parts of all the visible generic packages.
-Generic formal types are not counted.
+Generic formal types are not counted.  Only types, not subtypes,
+are included.
 
 @noindent
-Along with counting the total number of public types, the following
+Along with the total number of public types, the following
 types are counted and reported separately:
 
 @itemize @bullet
@@ -15865,7 +15944,7 @@ the following switches:
 @item ^-nocc^/SUPPRESS=CYCLOMATIC_COMPLEXITY^
 Do not compute the McCabe Cyclomatic Complexity
 
-@item ^noec-^/SUPPRESS=ESSENTIAL_COMPLEXITY^
+@item ^-noec^/SUPPRESS=ESSENTIAL_COMPLEXITY^
 Do not compute the Essential Complexity
 
 @item ^-nonl^/SUPPRESS=MAXIMAL_LOOP_NESTING^
@@ -16588,13 +16667,13 @@ Several such switches may be specified simultaneously.
 @cindex @option{^-aI^/SOURCE_SEARCH^} (@code{gnatls})
 @cindex @option{^-I^/SEARCH^} (@code{gnatls})
 @cindex @option{^-I-^/NOCURRENT_DIRECTORY^} (@code{gnatls})
-Source path manipulation. Same meaning as the equivalent @code{gnatmake} flags
-(see @ref{Switches for gnatmake}).
+Source path manipulation. Same meaning as the equivalent @command{gnatmake}
+flags (@pxref{Switches for gnatmake}).
 
 @item --RTS=@var{rts-path}
 @cindex @option{--RTS} (@code{gnatls})
 Specifies the default location of the runtime library. Same meaning as the
-equivalent @code{gnatmake} flag (see @ref{Switches for gnatmake}).
+equivalent @command{gnatmake} flag (@pxref{Switches for gnatmake}).
 
 @item ^-v^/OUTPUT=VERBOSE^
 @cindex @option{^-v^/OUTPUT=VERBOSE^} (@code{gnatls})
@@ -16840,14 +16919,14 @@ Verbose mode.
 @item ^-vP^/MESSAGES_PROJECT_FILE=^@emph{x}
 @cindex @option{^-vP^/MESSAGES_PROJECT_FILE^} (@code{gnatclean})
 Indicates the verbosity of the parsing of GNAT project files.
-See @ref{Switches Related to Project Files}.
+@xref{Switches Related to Project Files}.
 
 @item ^-X^/EXTERNAL_REFERENCE=^@var{name=value}
 @cindex @option{^-X^/EXTERNAL_REFERENCE^} (@code{gnatclean})
 Indicates that external variable @var{name} has the value @var{value}.
 The Project Manager will use this value for occurrences of
 @code{external(name)} when parsing the project file.
-See @ref{Switches Related to Project Files}.
+@xref{Switches Related to Project Files}.
 
 @item ^-aO^/OBJECT_SEARCH=^@var{dir}
 @cindex @option{^-aO^/OBJECT_SEARCH^} (@code{gnatclean})
@@ -16877,7 +16956,7 @@ where @code{gnatclean} was invoked.
 @noindent
 This chapter describes how to build and use libraries with GNAT, and also shows
 how to recompile the GNAT run-time library. You should be familiar with the
-Project Manager facility (see @ref{GNAT Project Manager}) before reading this
+Project Manager facility (@pxref{GNAT Project Manager}) before reading this
 chapter.
 
 @menu
@@ -16911,7 +16990,7 @@ In the GNAT environment, a library has three types of components:
 Source files.
 @item
 @file{ALI} files.
-See @ref{The Ada Library Information Files}.
+@xref{The Ada Library Information Files}.
 @item
 Object files, an archive or a shared library.
 @end itemize
@@ -16920,17 +16999,17 @@ Object files, an archive or a shared library.
 A GNAT library may expose all its source files, which is useful for
 documentation purposes. Alternatively, it may expose only the units needed by
 an external user to make use of the library. That is to say, the specs
-expliciting the library services along with all the units needed to compile
+reflecting the library services along with all the units needed to compile
 those specs, which can include generic bodies or any body implementing an
 inlined routine. In the case of @emph{stand-alone libraries} those exposed
-units are called @emph{interface units} (see @ref{Stand-alone Ada Libraries}).
+units are called @emph{interface units} (@pxref{Stand-alone Ada Libraries}).
 
 All compilation units comprising an application, including those in a library,
 need to be elaborated in an order partially defined by Ada's semantics. GNAT
 computes the elaboration order from the @file{ALI} files and this is why they
 constitute a mandatory part of GNAT libraries. Except in the case of
 @emph{stand-alone libraries}, where a specific library elaboration routine is
-produced independantly of the application(s) using the library.
+produced independently of the application(s) using the library.
 
 @node General Ada Libraries
 @section General Ada Libraries
@@ -16946,8 +17025,8 @@ produced independantly of the application(s) using the library.
 
 @noindent
 The easiest way to build a library is to use the Project Manager,
-which supports a special type of projects called Library Projects
-(see @ref{Library Projects}).
+which supports a special type of project called a @emph{Library Project}
+(@pxref{Library Projects}).
 
 A project is considered a library project, when two project-level attributes
 are defined in it: @code{Library_Name} and @code{Library_Dir}. In order to
@@ -16958,7 +17037,7 @@ project-level attributes can be specified:
 This attribute controls whether the library is to be static or dynamic
 
 @item Library_Version
-This attribute specifies what is the library version; this value is used
+This attribute specifies the library version; this value is used
 during dynamic linking of shared libraries to determine if the currently
 installed versions of the binaries are compatible.
 
@@ -16973,8 +17052,8 @@ library.
 The GNAT Project Manager takes full care of the library maintenance task,
 including recompilation of the source files for which objects do not exist
 or are not up to date, assembly of the library archive, and installation of
-the library, i.e. copying associated source, object and @file{ALI} files
-to the specified location.
+the library (i.e., copying associated source, object and @file{ALI} files
+to the specified location).
 
 Here is a simple library project file:
 @smallexample @c ada
@@ -16986,20 +17065,24 @@ project My_Lib is
    for Library_Kind use "dynamic";
 end My_lib;
 @end smallexample
+
+@noindent
 and the compilation command to build and install the library:
+
 @smallexample @c ada
   $ gnatmake -Pmy_lib
 @end smallexample
 
+@noindent
 It is not entirely trivial to perform manually all the steps required to
 produce a library. We recommend that you use the GNAT Project Manager
 for this task. In special cases where this is not desired, the necessary
 steps are discussed below.
 
 There are various possibilities for compiling the units that make up the
-library: for example with a Makefile (see @ref{Using the GNU make Utility}) or
+library: for example with a Makefile (@pxref{Using the GNU make Utility}) or
 with a conventional script. For simple libraries, it is also possible to create
-dummy main program which depends upon all the packages that comprise the
+a dummy main program which depends upon all the packages that comprise the
 interface of the library. This dummy main program can then be given to
 @command{gnatmake}, which will ensure that all necessary objects are built.
 
@@ -17054,22 +17137,22 @@ the directive @option{-lxxx} at link time.
 @subsection Installing a library
 
 @noindent
-When using project files, installing libraries is part of the library build
-process and thus, no further action is needed in order to make use of the
+If you use project files, library installation is part of the library build
+process. Thus no further action is needed in order to make use of the
 libraries that are built as part of the general application build. A usable
 version of the library is installed in the directory specified by the
 @code{Library_Dir} attribute of the library project file.
 
-One may want to install a library in a context different from where the library
-is built. This is, for instance, the case of third party suppliers, who whish
+You may want to install a library in a context different from where the library
+is built. This situation arises with third party suppliers, who may want
 to distribute a library in binary form where the user is not expected to be
-able to recompile the library. The simplest option, in this case, is to provide
-project file slightly different from the one used to build the library which
-makes use of the @code{externally_built} attribute. For instance the project
+able to recompile the library. The simplest option in this case is to provide
+a project file slightly different from the one used to build the library, by
+using the @code{externally_built} attribute. For instance, the project
 file used to build the library in the previous section can be changed into the
 following one when the library is installed:
 
-@smallexample @c ada
+@smallexample @c projectfile
 project My_Lib is
    for Source_Dirs use ("src1", "src2");
    for Library_Name use "mylib";
@@ -17079,26 +17162,28 @@ project My_Lib is
 end My_lib;
 @end smallexample
 
-This project file assumes that the directories "src1", "src2" & "lib" exist in
+@noindent
+This project file assumes that the directories @file{src1},
+@file{src2}, and @file{lib} exist in
 the directory containing the project file. The @code{externally_built}
 attribute makes it clear to the GNAT builder that it should not attempt to
 recompile any of the units from this library. It allows the library provider to
 restrict the source set to the minimum necessary for clients to make use of the
 library as described in the first section of this chapter. It is the
-responsability of the library provider to install the necessary sources, ALI
-files & libraries in the directories mentioned in the project file. For
-convenience to the user, it is recommended to install the user's library
-project file in a location that will be searched automatically by the GNAT
-builder. That is to say, any directory refernced in the @code{ADA_LIBRARY_PATH}
-environmenbt variable (see @ref{Importing Projects}), or in the default GNAT
-library location that can be queried with @code{gnatls -v} and is usually of
+responsibility of the library provider to install the necessary sources, ALI
+files and libraries in the directories mentioned in the project file. For
+convenience, the user's library project file should be installed in a location
+that will be searched automatically by the GNAT
+builder. These are the directories referenced in the @code{ADA_LIBRARY_PATH}
+environment variable (@pxref{Importing Projects}), and also the default GNAT
+library location that can be queried with @command{gnatls -v} and is usually of
 the form $gnat_install_root/lib/gnat.
 
 When project files are not an option, it is also possible, but not recommended,
-to install the library so that the sources needed to use the library be on the
+to install the library so that the sources needed to use the library are on the
 Ada source path and the ALI files & libraries be on the Ada Object path (see
-@ref{Search Paths and the Run-Time Library (RTL)}. Alternatively, he system
-administrator can place general purpose libraries in the default compiler
+@ref{Search Paths and the Run-Time Library (RTL)}. Alternatively, the system
+administrator can place general-purpose libraries in the default compiler
 paths, by specifying the libraries' location in the configuration files
 @file{ada_source_path} and @file{ada_object_path}. These configuration files
 must be located in the GNAT installation tree at the same place as the gcc spec
@@ -17144,9 +17229,10 @@ any part of it.
 @noindent Once again, the project facility greatly simplifies the use of
 libraries. In this context, using a library is just a matter of adding a
 @code{with} clause in the user project. For instance, to make use of the
-library "My_Lib" used as an examples in earlier sections, is just a matter of
-writing something like:
-@smallexample @c ada
+library @code{My_Lib} shown in examples in earlier sections, you can
+write:
+
+@smallexample @c projectfile
 with "my_lib";
 project My_Proj is
   ...
@@ -17154,8 +17240,8 @@ end My_Proj;
 @end smallexample
 
 Even if you have a third-party, non-Ada library, you can still use GNAT's
-Project Manager facility to provide a wrapper for it. The following project for
-example, when @code{with}ed in your main project, will link with the
+Project Manager facility to provide a wrapper for it. For example, the
+following project, when @code{with}ed by your main project, will link with the
 third-party library @file{liba.a}:
 
 @smallexample @c projectfile
@@ -17172,7 +17258,7 @@ end Liba;
 @noindent
 In order to use an Ada library manually, you need to make sure that this
 library is on both your source and object path
-(see @ref{Search Paths and the Run-Time Library (RTL)},
+(see @ref{Search Paths and the Run-Time Library (RTL)}
 and @ref{Search Paths for gnatbind}). Furthermore, when the objects are grouped
 in an archive or a shared library, you need to specify the desired
 library at link time.
@@ -17225,7 +17311,8 @@ pragma Linker_Options ("-lmy_lib");
 @subsection Introduction to Stand-alone Libraries
 
 @noindent
-A Stand-alone Library (SAL) is a library that contains the necessary code to
+A Stand-alone Library (abbreviated ``SAL'') is a library that contains the
+necessary code to
 elaborate the Ada units that are included in the library. In contrast with
 an ordinary library, which consists of all sources, objects and @file{ALI}
 files of the
@@ -17274,7 +17361,7 @@ that make a project a Library Project (@code{Library_Name} and
 @end smallexample
 
 @noindent
-Attribute @code{Library_Interface} has a non empty string list value,
+Attribute @code{Library_Interface} has a non-empty string list value,
 each string in the list designating a unit contained in an immediate source
 of the project file.
 
@@ -17307,7 +17394,7 @@ object directory or one of the source directories, but it can be the same as
 the library directory. The sources of the Interface
 Units of the library that are needed by an Ada client of the library will be
 copied to the designated directory, called the Interface Copy directory.
-These sources includes the specs of the Interface Units, but they may also
+These sources include the specs of the Interface Units, but they may also
 include bodies and subunits, when pragmas @code{Inline} or @code{Inline_Always}
 are used, or when there is a generic unit in the spec. Before the sources
 are copied to the Interface Copy directory, an attempt is made to delete all
@@ -17404,7 +17491,7 @@ example) are called before the library services are used. Any number of
 libraries can be used simultaneously, as long as the elaboration
 procedure of each library is called.
 
-Below is an example of C program that uses the @code{mylib} library.
+Below is an example of a C program that uses the @code{mylib} library.
 
 @smallexample
 #include "mylib_interface.h"
@@ -17430,7 +17517,7 @@ Note that invoking any library finalization procedure generated by
 @code{gnatbind} shuts down the Ada run-time environment.
 Consequently, the
 finalization of all Ada libraries must be performed at the end of the program.
-No call to these libraries nor to the Ada run-time library should be made
+No call to these libraries or to the Ada run-time library should be made
 after the finalization phase.
 
 @node Restrictions in Stand-alone Libraries
@@ -17496,7 +17583,7 @@ to use it.
 @noindent
 This chapter offers some examples of makefiles that solve specific
 problems. It does not explain how to write a makefile (see the GNU make
-documentation), nor does it try to replace the @code{gnatmake} utility
+documentation), nor does it try to replace the @command{gnatmake} utility
 (@pxref{The GNAT Make Program gnatmake}).
 
 All the examples in this section are specific to the GNU version of
@@ -17525,7 +17612,7 @@ time of very big applications while maintaining full coherence at
 each step of the build process.
 
 The list of dependencies are handled automatically by
-@code{gnatmake}. The Makefile is simply used to call gnatmake in each of
+@command{gnatmake}. The Makefile is simply used to call gnatmake in each of
 the appropriate directories.
 
 Note that you should also read the example on how to automatically
@@ -17726,7 +17813,7 @@ operating systems limit the length of the command line. It is thus hard to give
 gnatmake the list of source and object directories.
 
 This example shows how you can set up environment variables, which will
-make @code{gnatmake} behave exactly as if the directories had been
+make @command{gnatmake} behave exactly as if the directories had been
 specified on the command line, but have a much higher length limit (or
 even none on most systems).
 
@@ -18930,7 +19017,7 @@ the incorrect user program.
 
 @noindent
 @code{GDB} is a general purpose, platform-independent debugger that
-can be used to debug mixed-language programs compiled with @code{GCC},
+can be used to debug mixed-language programs compiled with @command{gcc},
 and in particular is capable of debugging Ada programs compiled with
 GNAT. The latest versions of @code{GDB} are Ada-aware and can handle
 complex Ada data structures.
@@ -19396,7 +19483,7 @@ familiarity with compiler internals.
 
 @enumerate
 @item
-Run @code{gcc} with the @option{-gnatf}. This first
+Run @command{gcc} with the @option{-gnatf}. This first
 switch causes all errors on a given line to be reported. In its absence,
 only the first error on a line is displayed.
 
@@ -19406,15 +19493,15 @@ terminates prematurely or goes into an infinite loop, the last error
 message displayed may help to pinpoint the culprit.
 
 @item
-Run @code{gcc} with the @option{^-v (verbose)^/VERBOSE^} switch. In this mode,
-@code{gcc} produces ongoing information about the progress of the
+Run @command{gcc} with the @option{^-v (verbose)^/VERBOSE^} switch. In this
+mode, @command{gcc} produces ongoing information about the progress of the
 compilation and provides the name of each procedure as code is
 generated. This switch allows you to find which Ada procedure was being
 compiled when it encountered a code generation problem.
 
 @item
 @cindex @option{-gnatdc} switch
-Run @code{gcc} with the @option{-gnatdc} switch. This is a GNAT specific
+Run @command{gcc} with the @option{-gnatdc} switch. This is a GNAT specific
 switch that does for the front-end what @option{^-v^VERBOSE^} does
 for the back end. The system prints the name of each unit,
 either a compilation unit or nested unit, as it is being analyzed.
@@ -19422,11 +19509,11 @@ either a compilation unit or nested unit, as it is being analyzed.
 Finally, you can start
 @code{gdb} directly on the @code{gnat1} executable. @code{gnat1} is the
 front-end of GNAT, and can be run independently (normally it is just
-called from @code{gcc}). You can use @code{gdb} on @code{gnat1} as you
+called from @command{gcc}). You can use @code{gdb} on @code{gnat1} as you
 would on a C program (but @pxref{The GNAT Debugger GDB} for caveats). The
 @code{where} command is the first line of attack; the variable
 @code{lineno} (seen by @code{print lineno}), used by the second phase of
-@code{gnat1} and by the @code{gcc} backend, indicates the source line at
+@code{gnat1} and by the @command{gcc} backend, indicates the source line at
 which the execution stopped, and @code{input_file name} indicates the name of
 the source file.
 @end enumerate
@@ -19504,7 +19591,7 @@ both language-defined children and GNAT run-time routines.
 @findex GNAT
 Files with prefix @file{^g-^G-^} are children of @code{GNAT}. These are useful
 general-purpose packages, fully documented in their specifications. All
-the other @file{.c} files are modifications of common @code{gcc} files.
+the other @file{.c} files are modifications of common @command{gcc} files.
 @end itemize
 
 @node Getting Internal Debugging Information
@@ -19672,7 +19759,7 @@ From this traceback we can see that the exception was raised in
 @file{stb.adb} at line 5, which was reached from a procedure call in
 @file{stb.adb} at line 10, and so on. The @file{b~std.adb} is the binder file,
 which contains the call to the main program.
-@pxref{Running gnatbind}. The remaining entries are assorted runtime routines,
+@xref{Running gnatbind}. The remaining entries are assorted runtime routines,
 and the output will vary from platform to platform.
 
 It is also possible to use @code{GDB} with these traceback addresses to debug
@@ -20351,7 +20438,7 @@ the type WIDE_CHARACTER.
 
 The floating-point types supported by GNAT are those
 supported by DEC Ada, but defaults are different, and are controlled by
-pragmas. See @pxref{Floating-Point Types and Representations} for details.
+pragmas. See @ref{Floating-Point Types and Representations} for details.
 
 @node The Package SYSTEM
 @section The Package SYSTEM
@@ -21528,16 +21615,12 @@ and GNAT systems.
 @cindex Run-time libraries (platform-specific information)
 
 @noindent
-The GNAT run-time implementation
-may vary with respect to both the underlying threads library and
-the exception handling scheme.
+The GNAT run-time implementation may vary with respect to both the
+underlying threads library and the exception handling scheme.
 For threads support, one or more of the following are supplied:
 @itemize @bullet
 @item @b{native threads library}, a binding to the thread package from
 the underlying operating system
-
-@item @b{FSU threads library}, a binding to the Florida State University
-threads implementation, which complies fully with the requirements of Annex D
 
 @item @b{pthreads library} (Sparc Solaris only), a binding to the Solaris
 POSIX thread package
@@ -21575,7 +21658,6 @@ information about several specific platforms.
 @menu
 * Summary of Run-Time Configurations::
 * Specifying a Run-Time Library::
-* Choosing between Native and FSU Threads Libraries::
 * Choosing the Scheduling Policy::
 * Solaris-Specific Considerations::
 * IRIX-Specific Considerations::
@@ -21606,10 +21688,6 @@ information about several specific platforms.
 @item @code{@ @ @ @ }Tasking    @tab native Solaris threads library
 @item @code{@ @ @ @ }Exceptions @tab ZCX
 @*
-@item @code{@ @ }@i{rts-fsu}    @tab
-@item @code{@ @ @ @ }Tasking    @tab FSU threads library
-@item @code{@ @ @ @ }Exceptions @tab SJLJ
-@*
 @item @code{@ @ }@i{rts-m64}
 @item @code{@ @ @ @ }Tasking     @tab native Solaris threads library
 @item @code{@ @ @ @ }Exceptions  @tab ZCX
@@ -21627,15 +21705,11 @@ information about several specific platforms.
 @*
 @item @b{x86-linux}
 @item @code{@ @ }@i{rts-native (default)}
-@item @code{@ @ @ @ }Tasking    @tab LinuxThread library
+@item @code{@ @ @ @ }Tasking    @tab pthread library
 @item @code{@ @ @ @ }Exceptions @tab ZCX
 @*
-@item @code{@ @ }@i{rts-fsu}
-@item @code{@ @ @ @ }Tasking    @tab FSU threads library
-@item @code{@ @ @ @ }Exceptions @tab SJLJ
-@*
 @item @code{@ @ }@i{rts-sjlj}
-@item @code{@ @ @ @ }Tasking    @tab LinuxThread library
+@item @code{@ @ @ @ }Tasking    @tab pthread library
 @item @code{@ @ @ @ }Exceptions @tab SJLJ
 @*
 @item @b{x86-windows}
@@ -21683,12 +21757,6 @@ For example on x86-linux:
      |    |                |
      |    +--- adalib <----+
      |
-     +--- rts-fsu
-     |    |
-     |    +--- adainclude
-     |    |
-     |    +--- adalib
-     |
      +--- rts-sjlj
           |
           +--- adainclude
@@ -21698,19 +21766,19 @@ For example on x86-linux:
 @end smallexample
 
 @noindent
-If the @i{rts-fsu} library is to be selected on a permanent basis,
+If the @i{rts-sjlj} library is to be selected on a permanent basis,
 these soft links can be modified with the following commands:
 
 @smallexample
 $ cd $target
 $ rm -f adainclude adalib
-$ ln -s rts-fsu/adainclude adainclude
-$ ln -s rts-fsu/adalib adalib
+$ ln -s rts-sjlj/adainclude adainclude
+$ ln -s rts-sjlj/adalib adalib
 @end smallexample
 
 @noindent
-Alternatively, you can specify @file{rts-fsu/adainclude} in the file
-@file{$target/ada_source_path} and @file{rts-fsu/adalib} in
+Alternatively, you can specify @file{rts-sjlj/adainclude} in the file
+@file{$target/ada_source_path} and @file{rts-sjlj/adalib} in
 @file{$target/ada_object_path}.
 
 Selecting another run-time library temporarily can be
@@ -21721,102 +21789,20 @@ achieved by the regular mechanism for GNAT object or source path selection:
 Set the environment variables:
 
 @smallexample
-$ ADA_INCLUDE_PATH=$target/rts-fsu/adainclude:$ADA_INCLUDE_PATH
-$ ADA_OBJECTS_PATH=$target/rts-fsu/adalib:$ADA_OBJECTS_PATH
+$ ADA_INCLUDE_PATH=$target/rts-sjlj/adainclude:$ADA_INCLUDE_PATH
+$ ADA_OBJECTS_PATH=$target/rts-sjlj/adalib:$ADA_OBJECTS_PATH
 $ export ADA_INCLUDE_PATH ADA_OBJECTS_PATH
 @end smallexample
 
 @item
-Use @option{-aI$target/rts-fsu/adainclude}
-and @option{-aO$target/rts-fsu/adalib}
+Use @option{-aI$target/rts-sjlj/adainclude}
+and @option{-aO$target/rts-sjlj/adalib}
 on the @command{gnatmake} command line
 
 @item
-Use the switch @option{--RTS}; e.g., @option{--RTS=fsu}
+Use the switch @option{--RTS}; e.g., @option{--RTS=sjlj}
 @cindex @option{--RTS} option
 @end itemize
-
-@noindent
-You can similarly switch to @emph{rts-sjlj}.
-
-@node Choosing between Native and FSU Threads Libraries
-@section Choosing between Native and FSU Threads Libraries
-@cindex Native threads library
-@cindex FSU threads library
-
-@noindent
-Some GNAT implementations offer a choice between
-native threads and FSU threads.
-
-@itemize @bullet
-@item
-The @emph{native threads} library correspond to the standard system threads
-implementation (e.g. LinuxThreads on GNU/Linux,
-@cindex LinuxThreads library
-POSIX threads on AIX, or
-Solaris threads on Solaris). When this option is chosen, GNAT provides
-a full and accurate implementation of the core language tasking model
-as described in Chapter 9 of the Ada Reference Manual,
-but might not (and probably does not) implement
-the exact semantics as specified in @w{Annex D} (the Real-Time Systems Annex).
-@cindex Annex D (Real-Time Systems Annex) compliance
-@cindex Real-Time Systems Annex compliance
-Indeed, the reason that a choice of libraries is offered
-on a given target is because some of the
-ACATS tests for @w{Annex D} fail using the native threads library.
-As far as possible, this library is implemented
-in accordance with Ada semantics (e.g., modifying priorities as required
-to simulate ceiling locking),
-but there are often slight inaccuracies, most often in the area of
-absolutely respecting the priority rules on a single
-processor.
-Moreover, it is not possible in general to define the exact behavior,
-because the native threads implementations
-are not well enough documented.
-
-On systems where the @code{SCHED_FIFO} POSIX scheduling policy is supported,
-@cindex POSIX scheduling policies
-@cindex @code{SCHED_FIFO} scheduling policy
-native threads will provide a behavior very close to the @w{Annex D}
-requirements (i.e., a run-till-blocked scheduler with fixed priorities), but
-on some systems (in particular GNU/Linux and Solaris), you need to have root
-privileges to use the @code{SCHED_FIFO} policy.
-
-@item
-The @emph{FSU threads} library provides a completely accurate implementation
-of @w{Annex D}.
-Thus, operating with this library, GNAT is 100% compliant with both the core
-and all @w{Annex D}
-requirements.
-The formal validations for implementations offering
-a choice of threads packages are always carried out using the FSU
-threads option.
-@end itemize
-
-@noindent
-From these considerations, it might seem that FSU threads are the
-better choice,
-but that is by no means always the case. The FSU threads package
-operates with all Ada tasks appearing to the system to be a single
-thread. This is often considerably more efficient than operating
-with separate threads, since for example, switching between tasks
-can be accomplished without the (in some cases considerable)
-overhead of a context switch between two system threads. However,
-it means that you may well lose concurrency at the system
-level. Notably, some system operations (such as I/O) may block all
-tasks in a program and not just the calling task. More
-significantly, the FSU threads approach likely means you cannot
-take advantage of multiple processors, since for this you need
-separate threads (or even separate processes) to operate on
-different processors.
-
-For most programs, the native threads library is
-usually the better choice. Use the FSU threads if absolute
-conformance to @w{Annex D} is important for your application, or if
-you find that the improved efficiency of FSU threads is significant to you.
-
-Note also that to take full advantage of Florist and Glade, it is highly
-recommended that you use native threads.
 
 @node Choosing the Scheduling Policy
 @section Choosing the Scheduling Policy
@@ -21874,8 +21860,8 @@ debugging 64-bit applications.
 @subsection Solaris Threads Issues
 
 @noindent
-Starting with version 3.14, GNAT under Solaris comes with a new tasking
-run-time library based on POSIX threads --- @emph{rts-pthread}.
+GNAT under Solaris comes with an alternate tasking run-time library
+based on POSIX threads --- @emph{rts-pthread}.
 @cindex rts-pthread threads library
 This run-time library has the advantage of being mostly shared across all
 POSIX-compliant thread implementations, and it also provides under
@@ -21893,11 +21879,8 @@ with respectively
 
 As explained above, the native run-time library is based on the Solaris thread
 library (@code{libthread}) and is the default library.
-The FSU run-time library is based on the FSU threads.
-@cindex FSU threads library
 
-Starting with Solaris 2.5.1, when the Solaris threads library is used
-(this is the default), programs
+When the Solaris threads library is used (this is the default), programs
 compiled with GNAT can automatically take advantage of
 and can thus execute on multiple processors.
 The user can alternatively specify a processor on which the program should run
@@ -23653,8 +23636,8 @@ and in particular must have the capability of implementing the
 standard dynamic model of elaboration with run-time checks.
 
 In GNAT, this standard mode can be achieved either by the use of
-the @option{-gnatE} switch on the compiler (@code{gcc} or @code{gnatmake})
-command, or by the use of the configuration pragma:
+the @option{-gnatE} switch on the compiler (@command{gcc} or
+@command{gnatmake}) command, or by the use of the configuration pragma:
 
 @smallexample @c ada
 pragma Elaboration_Checks (RM);
@@ -26817,7 +26800,7 @@ By virtue of the Open VMS Integrity parameter passing conventions,
 even imported
 and exported subprograms that have 32-bit address parameters are
 compatible with those that have 64-bit address parameters.
-(See @ref{Making code 64 bit clean}, for details.)
+(See @ref{Making code 64 bit clean} for details.)
 
 The areas that may need attention are those where record types have
 been defined that contain components of the type @code{System.Address}, and
@@ -26983,7 +26966,7 @@ the 32-bit address space.
 (optional) Explicitly use the 32-bit storage pool
 for access types used in a 32-bit context, or use
 generic access types where possible
-(see @ref{Restrictions on use of 64 bit objects}).
+(@pxref{Restrictions on use of 64 bit objects}).
 @end itemize
 
 @noindent
@@ -27015,7 +26998,7 @@ and then passing this address to a subprogram expecting
 @code{System.Short_Address},
 or assigning it to a variable of type @code{Short_Address}, will cause
 @code{Constraint_Error} to be raised. In case the code is not 64-bit clean
-(see @ref{Making code 64 bit clean}), or checks are suppressed,
+(@pxref{Making code 64 bit clean}), or checks are suppressed,
 no exception is raised and execution
 will become erroneous.
 
@@ -27133,7 +27116,7 @@ platforms (NT, 2000, and XP Professional).
 
 @noindent
 One of the strengths of the GNAT technology is that its tool set
-(@code{gcc}, @code{gnatbind}, @code{gnatlink}, @code{gnatmake}, the
+(@command{gcc}, @command{gnatbind}, @command{gnatlink}, @command{gnatmake}, the
 @code{gdb} debugger, etc.) is used in the same way regardless of the
 platform.
 
@@ -27274,7 +27257,7 @@ application that contains a mix of Ada and C/C++, the choice of your
 Windows C/C++ development environment conditions your overall
 interoperability strategy.
 
-If you use @code{gcc} to compile the non-Ada part of your application,
+If you use @command{gcc} to compile the non-Ada part of your application,
 there are no Windows-specific restrictions that affect the overall
 interoperability with your Ada code. If you plan to use
 Microsoft tools (e.g. Microsoft Visual C/C++), you should be aware of
@@ -27350,7 +27333,7 @@ are available for Windows:
 
 @noindent
 This is the default calling convention used when interfacing to C/C++
-routines compiled with either @code{gcc} or Microsoft Visual C++.
+routines compiled with either @command{gcc} or Microsoft Visual C++.
 
 In the @code{C} calling convention subprogram parameters are pushed on the
 stack by the caller from right to left. The caller itself is in charge of
@@ -27457,8 +27440,8 @@ added at the end of the @code{Link_Name} by the compiler.
 Note, that in some special cases a DLL's entry point name lacks a trailing
 @code{@@}@code{@i{nn}} while the exported name generated for a call has it.
 The @code{gnatdll} tool, which creates the import library for the DLL, is able
-to handle those cases (see the description of the switches in
-@pxref{Using gnatdll} section).
+to handle those cases (@pxref{Using gnatdll} for the description of
+the switches).
 
 @node DLL Calling Convention
 @subsection @code{DLL} Calling Convention
@@ -27609,7 +27592,7 @@ $ gnatmake my_ada_app -largs -lAPI
 @end smallexample
 
 @noindent
-The argument @option{-largs -lAPI} at the end of the @code{gnatmake} command
+The argument @option{-largs -lAPI} at the end of the @command{gnatmake} command
 tells the GNAT linker to look first for a library named @file{API.lib}
 (Microsoft-style name) and if not found for a library named @file{libAPI.a}
 (GNAT-style name). Note that if the Ada package spec for @file{API.dll}
@@ -27620,8 +27603,8 @@ pragma Linker_Options ("-lAPI");
 @end smallexample
 
 @noindent
-you do not have to add @option{-largs -lAPI} at the end of the @code{gnatmake}
-command.
+you do not have to add @option{-largs -lAPI} at the end of the
+@command{gnatmake} command.
 
 If any one of the items above is missing you will have to create it
 yourself. The following sections explain how to do so using as an
@@ -27865,11 +27848,11 @@ and use DLLs with GNAT.
 @item building object files
 
 The first step is to build all objects files that are to be included
-into the DLL. This is done by using the standard @code{gnatmake} tool.
+into the DLL. This is done by using the standard @command{gnatmake} tool.
 
 @item building the DLL
 
-To build the DLL you must use @code{gcc}'s @code{-shared}
+To build the DLL you must use @command{gcc}'s @code{-shared}
 option. It is quite simple to use this method:
 
 @smallexample
@@ -27878,7 +27861,7 @@ $ gcc -shared -o api.dll obj1.o obj2.o ...
 
 It is important to note that in this case all symbols found in the
 object files are automatically exported. It is possible to restrict
-the set of symbols to export by passing to @code{gcc} a definition
+the set of symbols to export by passing to @command{gcc} a definition
 file, @pxref{The Definition File}. For example:
 
 @smallexample
@@ -27955,14 +27938,14 @@ skip this step if you plan to use the Ada DLL only from Ada applications.
 
 @item
 Your Ada code must export an initialization routine which calls the routine
-@code{adainit} generated by @code{gnatbind} to perform the elaboration of
+@code{adainit} generated by @command{gnatbind} to perform the elaboration of
 the Ada code in the DLL (@pxref{Ada DLLs and Elaboration}). The initialization
 routine exported by the Ada DLL must be invoked by the clients of the DLL
 to initialize the DLL.
 
 @item
 When useful, the DLL should also export a finalization routine which calls
-routine @code{adafinal} generated by @code{gnatbind} to perform the
+routine @code{adafinal} generated by @command{gnatbind} to perform the
 finalization of the Ada code in the DLL (@pxref{Ada DLLs and Finalization}).
 The finalization routine exported by the Ada DLL must be invoked by the
 clients of the DLL when the DLL services are no further needed.
@@ -28431,9 +28414,9 @@ $ gnatlink api -o api.jnk -mdll -Wl,--base-file,api.base
 @end smallexample
 
 @noindent
-In addition to the base file, the @code{gnatlink} command generates an
+In addition to the base file, the @command{gnatlink} command generates an
 output file @file{api.jnk} which can be discarded. The @option{-mdll} switch
-asks @code{gnatlink} to generate the routines @code{DllMain} and
+asks @command{gnatlink} to generate the routines @code{DllMain} and
 @code{DllMainCRTStartup} that are called by the Windows loader when the DLL
 is loaded into memory.
 
@@ -28452,8 +28435,8 @@ $ dlltool --dllname api.dll --def api.def --base-file api.base \
 
 @item
 @code{gnatdll} builds the base file using the new export table. Note that
-@code{gnatbind} must be called once again since the binder generated file
-has been deleted during the previous call to @code{gnatlink}.
+@command{gnatbind} must be called once again since the binder generated file
+has been deleted during the previous call to @command{gnatlink}.
 
 @smallexample
 @group
@@ -28622,7 +28605,7 @@ $ windres -i myres.rc -o myres.o
 @end smallexample
 
 @noindent
-By default @code{windres} will run @code{gcc} to preprocess the @file{.rc}
+By default @code{windres} will run @command{gcc} to preprocess the @file{.rc}
 file. You can specify an alternate preprocessor (usually named
 @file{cpp.exe}) using the @code{windres} @option{--preprocessor}
 parameter. A list of all possible options may be obtained by entering
@@ -28645,7 +28628,7 @@ $ windres -i myres.res -o myres.o
 @noindent
 To include the resource file in your program just add the
 GNAT-compatible object file for the resource(s) to the linker
-arguments. With @code{gnatmake} this is done by using the @option{-largs}
+arguments. With @command{gnatmake} this is done by using the @option{-largs}
 option:
 
 @smallexample
@@ -28734,6 +28717,42 @@ At this stage a breakpoint is set inside the DLL. From there on
 you can use the standard approach to debug the whole program
 (@pxref{Running and Debugging Ada Programs}).
 
+To break on the @code{DllMain} routine it is not possible to follow
+the procedure above. At the time the program stop on @code{ada_main}
+the @code{DllMain} routine as already been called. Either you can use
+the procedure below @pxref{Debugging the DLL Directly} or this procedure:
+
+@enumerate 1
+@item Launch @code{GDB} on the main program.
+
+@smallexample
+$ gdb -nw ada_main
+@end smallexample
+
+@item Load DLL symbols
+
+@smallexample
+(gdb) add-sym api.dll
+@end smallexample
+
+@item Set a breakpoint inside the DLL
+
+@smallexample
+(gdb) break ada_dll.adb:45
+@end smallexample
+
+Note that at this point it is not possible to break using the routine symbol
+directly as the program is not yet running. The solution is to break
+on the proper line (break in @file{ada_dll.adb} line 45).
+
+@item Start the program
+
+@smallexample
+(gdb) run
+@end smallexample
+
+@end enumerate
+
 @node Program Built with Foreign Tools and DLL Built with GCC/GNAT
 @subsection Program Built with Foreign Tools and DLL Built with GCC/GNAT
 
@@ -28775,8 +28794,12 @@ $ gdb -nw test.dll
 @item Set a breakpoint on a DLL subroutine.
 
 @smallexample
-(gdb) break ada_dll
+(gdb) break ada_dll.adb:45
 @end smallexample
+
+Note that at this point it is not possible to break using the routine symbol
+directly as the program is not yet running. The solution is to break
+on the proper line (break in @file{ada_dll.adb} line 45).
 
 @item
 Specify the executable file to @code{GDB}.

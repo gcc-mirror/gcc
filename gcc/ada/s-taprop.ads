@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,9 +50,9 @@ package System.Task_Primitives.Operations is
    package OSI renames System.OS_Interface;
 
    procedure Initialize (Environment_Task : ST.Task_Id);
-   pragma Inline (Initialize);
-   --  This must be called once, before any other subprograms of this
-   --  package are called.
+   --  Perform initialization and set up of the environment task for proper
+   --  operation of the tasking run-time. This must be called once, before any
+   --  other subprograms of this package are called.
 
    procedure Create_Task
      (T          : ST.Task_Id;

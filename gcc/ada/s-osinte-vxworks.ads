@@ -7,7 +7,7 @@
 --                                   S p e c                                --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2004, Free Software Foundation, Inc.      --
+--             Copyright (C) 1995-2005, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -287,8 +287,10 @@ package System.OS_Interface is
    function kernelTimeSlice (ticks : int) return int;
    pragma Import (C, kernelTimeSlice, "kernelTimeSlice");
 
-   function taskPrioritySet
-     (tid : t_id; newPriority : int) return int;
+   function taskPriorityGet (tid : t_id; pPriority : access int) return int;
+   pragma Import (C, taskPriorityGet, "taskPriorityGet");
+
+   function taskPrioritySet (tid : t_id; newPriority : int) return int;
    pragma Import (C, taskPrioritySet, "taskPrioritySet");
 
    --  Semaphore creation flags.
