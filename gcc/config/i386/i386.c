@@ -5142,6 +5142,12 @@ ix86_attr_length_default (insn)
     case TYPE_MULTI:
       return 15;
 
+    case TYPE_FXCH:
+      if (STACK_TOP_P (recog_operand[0]))
+	return 2 + (REGNO (recog_operand[1]) != FIRST_STACK_REG + 1);
+      else
+	return 2 + (REGNO (recog_operand[0]) != FIRST_STACK_REG + 1);
+
     default:
       abort ();
     }
