@@ -10,7 +10,7 @@
  We test the behavior by subtracting two from the promoted value: this will
  result in a negitive value for signed types, a positive value for unsigned
  types.  This test (of course) assumes that the compiler is correctly 
- implementing signed and unsigned arithmatic.
+ implementing signed and unsigned arithmetic.
  */
 
 struct X {
@@ -21,6 +21,7 @@ struct X {
   unsigned long int  u32:32;
   unsigned long long ull3 :3;
   unsigned long long ull35:35;
+  unsigned u15:15;
 };
 
 struct X x;
@@ -36,8 +37,19 @@ main ()
   if ((x.s32 - 2) >= 0)		/* promoted value should be signed */
     abort ();
 
-  if ((x.u31 - 2) >= 0)		/* promoted value should be signed */
+  if ((x.u15 - 2) >= 0)		/* promoted value should be signed */
     abort ();
+
+  if (sizeof (struct { unsigned long u32:32;}) <= sizeof (int))
+    {
+      if ((x.u31 - 2) >= 0)	/* promoted value should be signed */
+	abort ();
+    }
+  else
+    {
+      if ((x.u31 - 2) < 0)	/* promoted value should be UNsigned */
+	abort ();
+    }
 
   if ((x.u32 - 2) < 0)		/* promoted value should be UNsigned */
     abort ();
