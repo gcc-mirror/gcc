@@ -233,7 +233,6 @@ typedef __SIZE_TYPE__ size_t;
 typedef _BSD_RUNE_T_ rune_t;
 #endif
 #endif
-#undef __need_wint_t
 #endif
 
 #ifndef __WCHAR_TYPE__
@@ -266,6 +265,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 #endif
 typedef __WINT_TYPE__ wint_t;
 #endif
+#undef __need_wint_t
 #endif
 
 /*  In 4.3bsd-net2, leave these undefined to indicate that size_t, etc.
