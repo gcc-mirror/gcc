@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,95,96,1997 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92,93,94,95,96,97,1998 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -103,9 +103,10 @@ in the following sections.
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @smallexample
 -fall-virtual  -fdollars-in-identifiers  -felide-constructors
--fenum-int-equiv  -fexternal-templates  -ffor-scope  -fno-for-scope
--fhandle-signatures  -fmemoize-lookups  -fname-mangling-version-@var{n}
--fno-default-inline  -fno-gnu-keywords -fnonnull-objects -fguiding-decls
+-fenum-int-equiv  -fexternal-templates  -ffor-scope  
+-fno-for-scope  -fhandle-signatures  -fmemoize-lookups  
+-fname-mangling-version-@var{n}  -fno-default-inline  
+-fno-gnu-keywords -fnonnull-objects -fguiding-decls
 -foperator-names  -fstrict-prototype  -fthis-is-variable
 -ftemplate-depth-@var{n}  -nostdinc++  -traditional  +e@var{n}
 @end smallexample
@@ -120,11 +121,11 @@ in the following sections.
 -Wid-clash-@var{len}  -Wimplicit -Wimplicit-int 
 -Wimplicit-function-declarations -Wimport  -Winline
 -Wlarger-than-@var{len}  -Wmain  -Wmissing-declarations
--Wmissing-prototypes  -Wnested-externs
--Wno-import  -Wold-style-cast  -Woverloaded-virtual  -Wparentheses
--Wpointer-arith  -Wredundant-decls  -Wreorder  -Wreturn-type  -Wshadow
--Wsign-compare  -Wstrict-prototypes  -Wswitch  -Wsynth
--Wtemplate-debugging  -Wtraditional  -Wtrigraphs
+-Wmissing-prototypes  -Wnested-externs  -Wno-import  
+-Wold-style-cast  -Woverloaded-virtual  -Wparentheses
+-Wpointer-arith  -Wredundant-decls  -Wreorder  -Wreturn-type
+-Wshadow  -Wsign-compare  -Wstrict-prototypes  -Wswitch
+-Wsynth  -Wtemplate-debugging  -Wtraditional  -Wtrigraphs
 -Wundef  -Wuninitialized  -Wunused  -Wwrite-strings
 @end smallexample
 
@@ -203,8 +204,9 @@ in the following sections.
 @smallexample
 @emph{M680x0 Options}
 -m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040
--m68060  -m5200  -m68881  -mbitfield  -mc68000  -mc68020  -mfpa
--mnobitfield  -mrtd  -mshort  -msoft-float  -malign-int
+-m68060  -m5200  -m68881  -mbitfield  -mc68000  -mc68020  
+-mfpa -mnobitfield  -mrtd  -mshort  -msoft-float  
+-malign-int
 
 @emph{VAX Options}
 -mg  -mgnu  -munix
@@ -315,14 +317,14 @@ in the following sections.
 -malign-functions=@var{num}
 
 @emph{HPPA Options}
--mbig-switch  -mdisable-fpregs  -mdisable-indexing  -mfast-indirect-calls
--mgas  -mjump-in-delay  -mlong-load-store  -mno-big-switch  -mno-disable-fpregs
+-mbig-switch  -mdisable-fpregs  -mdisable-indexing  
+-mfast-indirect-calls -mgas  -mjump-in-delay  
+-mlong-load-store  -mno-big-switch  -mno-disable-fpregs
 -mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas
--mno-jump-in-delay
--mno-long-load-store
--mno-portable-runtime  -mno-soft-float  -mno-space  -mno-space-regs
--msoft-float
--mpa-risc-1-0  -mpa-risc-1-1  -mportable-runtime
+-mno-jump-in-delay  -mno-long-load-store  
+-mno-portable-runtime  -mno-soft-float  -mno-space  
+-mno-space-regs  -msoft-float  -mpa-risc-1-0  
+-mpa-risc-1-1  -mportable-runtime
 -mschedule=@var{list}  -mspace  -mspace-regs
 
 @emph{Intel 960 Options}
@@ -746,8 +748,8 @@ rely on ANSI C features.  Some vendors are starting to ship systems with
 ANSI C header files and you cannot use @samp{-traditional} on such
 systems to compile files that include any system headers.
 
-The @samp{-traditional} option also enables the @samp{-traditional-cpp}
-option, which is described next.
+The @samp{-traditional} option also enables @samp{-traditional-cpp},
+which is described next.
 
 @item -traditional-cpp
 Attempt to support some aspects of traditional C preprocessors.
@@ -1232,7 +1234,8 @@ Warn when a declaration does not specify a type.
 Warn whenever a function is used before being declared.
 
 @item -Wimplicit
-Same as @samp{-Wimplicit-int} @samp{-Wimplicit-function-declaration}.
+Same as @samp{-Wimplicit-int} and @samp{-Wimplicit-function-}@*
+@samp{declaration}.
 
 @item -Wmain
 Warn if the type of @samp{main} is suspicious.  @samp{main} should be a
@@ -1464,7 +1467,7 @@ arguments.
 @item
 A comparison between signed and unsigned values could produce an
 incorrect result when the signed value is converted to unsigned.
-(But do not warn if @samp{-Wno-sign-compare} is also specified.)
+(But don't warn if @samp{-Wno-sign-compare} is also specified.)
 
 @item
 An aggregate has a partly bracketed initializer.
@@ -2296,7 +2299,7 @@ After running a program compiled with @samp{-fprofile-arcs}
 guessing the path a branch might take.
 
 @ifset INTERNALS
-With @samp{-fbranch-probabilities}, GNU CC puts a @samp{REG_EXEC_COUNT}
+With @samp{-fbranch-probabilities}, GCC puts a @samp{REG_EXEC_COUNT}
 note on the first instruction of each basic block, and a
 @samp{REG_BR_PROB} note on each @samp{JUMP_INSN} and @samp{CALL_INSN}.
 These can be used to improve optimization.  Currently, they are only
@@ -3136,7 +3139,7 @@ Set the instruction scheduling parameters for machine type
 option @samp{-mcpu=}@var{cpu_type} would.
 
 The same values for @samp{-mcpu=}@var{cpu_type} are used for
-@samp{-mtune=}@var{cpu_type}, though the only useful values are those that
+@samp{-mtune=}@*@var{cpu_type}, though the only useful values are those that
 select a particular cpu implementation: @samp{cypress}, @samp{supersparc},
 @samp{f930}, @samp{f934}, @samp{tsc701}, @samp{ultrasparc}.
 

@@ -111,23 +111,21 @@ notice identical to this one except for the removal of this paragraph
 @end ignore
 Permission is granted to copy and distribute modified versions of this
 manual under the conditions for verbatim copying, provided also that the
-sections entitled ``GNU General Public License,'' ``Funding for Free
-Software,'' and ``Protect Your Freedom---Fight `Look And Feel'@w{}'' are
-included exactly as in the original, and provided that the entire
-resulting derived work is distributed under the terms of a permission
-notice identical to this one.
+sections entitled ``GNU General Public License'' and ``Funding for Free
+Software'' are included exactly as in the original, and provided that 
+the entire resulting derived work is distributed under the terms of a 
+permission notice identical to this one.
 
 Permission is granted to copy and distribute translations of this manual
 into another language, under the above conditions for modified versions,
-except that the sections entitled ``GNU General Public License,''
-``Funding for Free Software,'' and ``Protect Your Freedom---Fight `Look
-And Feel'@w{}'', and this permission notice, may be included in
-translations approved by the Free Software Foundation instead of in the
-original English.
+except that the sections entitled ``GNU General Public License'' and
+``Funding for Free Software'', and this permission notice, may be 
+included in translations approved by the Free Software Foundation 
+instead of in the original English.
 @end ifinfo
 
 @setchapternewpage odd
-
+@c @finalout
 @titlepage
 @ifset INTERNALS
 @ifset USING
@@ -144,23 +142,23 @@ original English.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 28 February 1998
+@center Last updated 16 March 1998
 @sp 1
 @c The version number appears five times more in this file.
 
 @center for version 2.8.1
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1988, 89, 92, 93, 94, 95, 96 Free Software Foundation, Inc.
+Copyright @copyright{} 1988, 89, 92, 93, 94, 95, 96, 98  Free Software Foundation, Inc.
 @sp 2
 For GCC Version 2.8.1@*
 @sp 1
 Published by the Free Software Foundation @*
 59 Temple Place - Suite 330@*
 Boston, MA 02111-1307, USA@*
-Last printed November, 1995.@*
+Last printed April, 1998.@*
 Printed copies are available for $50 each.@*
-ISBN 1-882114-36-1
+ISBN 1-882114-37-X
 @sp 1
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -168,19 +166,17 @@ are preserved on all copies.
 
 Permission is granted to copy and distribute modified versions of this
 manual under the conditions for verbatim copying, provided also that the
-sections entitled ``GNU General Public License,'' ``Funding for Free
-Software,'' and ``Protect Your Freedom---Fight `Look And Feel'@w{}'' are
-included exactly as in the original, and provided that the entire
-resulting derived work is distributed under the terms of a permission
-notice identical to this one.
+sections entitled ``GNU General Public License'' and ``Funding for Free
+Software'' are included exactly as in the original, and provided that 
+the entire resulting derived work is distributed under the terms of a 
+permission notice identical to this one.
 
 Permission is granted to copy and distribute translations of this manual
 into another language, under the above conditions for modified versions,
-except that the sections entitled ``GNU General Public License,''
-``Funding for Free Software,'' and ``Protect Your Freedom---Fight `Look
-And Feel'@w{}'', and this permission notice, may be included in
-translations approved by the Free Software Foundation instead of in the
-original English.
+except that the sections entitled ``GNU General Public License'' and
+``Funding for Free Software'', and this permission notice, may be 
+included in translations approved by the Free Software Foundation 
+instead of in the original English.
 @end titlepage
 @page
 
@@ -236,7 +232,7 @@ bugs.  It corresponds to GNU CC version 2.8.1.
 @end ifset
 
 * Funding::         How to help assure funding for free software.
-* Look and Feel::   Protect your freedom---fight ``look and feel''.
+* GNU/Linux::       Linux and the GNU Project
 
 * Copying::         GNU General Public License says
                      how you can copy and share GNU CC.
@@ -2188,17 +2184,17 @@ for improvement of GNU CC or GNU C++ are welcome in any case.
 @node Bug Lists
 @section Where to Report Bugs
 @cindex bug report mailing lists
-@kindex bug-gcc@@prep.ai.mit.edu
-Send bug reports for GNU C to @samp{bug-gcc@@prep.ai.mit.edu}.
+@kindex bug-gcc@@gnu.org
+Send bug reports for GNU C to @samp{bug-gcc@@gnu.org}.
 
-@kindex bug-g++@@prep.ai.mit.edu
-@kindex bug-libg++@@prep.ai.mit.edu
-Send bug reports for GNU C++ to @samp{bug-g++@@prep.ai.mit.edu}.  If
+@kindex bug-g++@@gnu.org
+@kindex bug-libg++@@gnu.org
+Send bug reports for GNU C++ to @samp{bug-g++@@gnu.org}.  If
 your bug involves the C++ class library libg++, send mail instead to the
-address @samp{bug-lib-g++@@prep.ai.mit.edu}.  If you're not sure, you
+address @samp{bug-lib-g++@@gnu.org}.  If you're not sure, you
 can send the bug report to both lists.
 
-@strong{Do not send bug reports to @samp{help-gcc@@prep.ai.mit.edu} or
+@strong{Do not send bug reports to @samp{help-gcc@@gnu.org} or
 to the newsgroup @samp{gnu.gcc.help}.} Most users of GNU CC do not want
 to receive bug reports.  Those that do, have asked to be on
 @samp{bug-gcc} and/or @samp{bug-g++}.
@@ -2491,7 +2487,7 @@ we should be able to reproduce the crash ourselves.
 
 If you would like to write bug fixes or improvements for the GNU C
 compiler, that is very helpful.  Send suggested fixes to the bug report
-mailing list, @code{bug-gcc@@prep.ai.mit.edu}.
+mailing list, @code{bug-gcc@@gnu.org}.
 
 Please follow these guidelines so we can study your patches efficiently.
 If you don't follow these guidelines, your information might still be
@@ -2611,8 +2607,8 @@ ways to find it:
 @itemize @bullet
 @item
 Send a message to a suitable network mailing list.  First try
-@code{bug-gcc@@prep.ai.mit.edu}, and if that brings no response, try
-@code{help-gcc@@prep.ai.mit.edu}.
+@code{bug-gcc@@gnu.org}, and if that brings no response, try
+@code{help-gcc@@gnu.org}.
 
 @item
 Look in the service directory for someone who might help you for a fee.
@@ -2625,13 +2621,13 @@ GNU CC distribution.
 
 If you would like to help pretest GNU CC releases to assure they work
 well, or if you would like to work on improving GNU CC, please contact
-the maintainers at @code{bug-gcc@@gnu.ai.mit.edu}.  A pretester should
+the maintainers at @code{bug-gcc@@gnu.org}.  A pretester should
 be willing to try to investigate bugs as well as report them.
 
 If you'd like to work on improvements, please ask for suggested projects
 or suggest your own ideas.  If you have already written an improvement,
 please tell us about it.  If you have not yet started work, it is useful
-to contact @code{bug-gcc@@prep.ai.mit.edu} before you start; the
+to contact @code{bug-gcc@@gnu.org} before you start; the
 maintainers may be able to suggest ways to make your extension fit in
 better with the rest of GNU CC and with other development plans.
 
@@ -3875,9 +3871,9 @@ procedure will build all combinations of compatible options.
 
 For example, if you set @code{MULTILIB_OPTIONS} to @samp{m68000/m68020
 msoft-float}, @file{Makefile} will build special versions of
-@file{libgcc.a} using the sets of options @samp{-m68000}, @samp{-m68020},
-@samp{-msoft-float}, @samp{-m68000 -msoft-float}, and @samp{-m68020
--msoft-float}.
+@file{libgcc.a} using the following sets of options:  @samp{-m68000},
+@samp{-m68020}, @samp{-msoft-float}, @samp{-m68000 -msoft-float}, and 
+@samp{-m68020 -msoft-float}.
 
 @findex MULTILIB_DIRNAMES
 @item MULTILIB_DIRNAMES
@@ -3888,7 +3884,7 @@ Write one element in @code{MULTILIB_DIRNAMES} for each element in
 default value will be @code{MULTILIB_OPTIONS}, with all slashes treated
 as spaces.
 
-For example, if @code{MULTILIB_OPTIONS} is specified as @samp{m68000/m68020
+For example, if @code{MULTILIB_OPTIONS} is set to @samp{m68000/m68020
 msoft-float}, then the default value of @code{MULTILIB_DIRNAMES} is
 @samp{m68000 m68020 msoft-float}.  You may specify a different value if
 you desire a different set of directory names.
@@ -4003,191 +3999,104 @@ Verbatim copying and redistribution of this section is permitted
 without royalty; alteration is not permitted.
 @end display
 
-@node Look and Feel
-@unnumbered Protect Your Freedom---Fight ``Look And Feel''
-@c the above chapter heading overflows onto the next line. --mew 1/26/93
+@node GNU/Linux
+@unnumbered Linux and the GNU Project
 
-@quotation
-@i{This section is a political message from the League for Programming
-Freedom to the users of GNU CC.  We have included it here because the
-issue of interface copyright is important to the GNU project.}
-@end quotation
+Many computer users run a modified version of the GNU system every
+day, without realizing it.  Through a peculiar turn of events, the
+version of GNU which is widely used today is more often known as
+``Linux'', and many users are not aware of the extent of its
+connection with the GNU Project.
 
-Apple, Lotus, and now CDC have tried to create a new form of legal
-monopoly: a copyright on a user interface.
+There really is a Linux; it is a kernel, and these people are using
+it.  But you can't use a kernel by itself; a kernel is useful only as
+part of a whole system.  The system in which Linux is typically used
+is a modified variant of the GNU system---in other words, a Linux-based
+GNU system.
 
-An interface is a kind of language---a set of conventions for
-communication between two entities, human or machine.  Until a few years
-ago, the law seemed clear: interfaces were outside the domain of
-copyright, so programmers could program freely and implement whatever
-interface the users demanded.  Imitating de-facto standard interfaces,
-sometimes with improvements, was standard practice in the computer
-field.  These improvements, if accepted by the users, caught on and
-became the norm; in this way, much progress took place.
+Many users are not fully aware of the distinction between the kernel,
+which is Linux, and the whole system, which they also call ``Linux''.
+The ambiguous use of the name doesn't promote understanding.
 
-Computer users, and most software developers, were happy with this state
-of affairs.  However, large companies such as Apple and Lotus would
-prefer a different system---one in which they can own interfaces and
-thereby rid themselves of all serious competitors.  They hope that
-interface copyright will give them, in effect, monopolies on major
-classes of software.
+Programmers generally know that Linux is a kernel.  But since they
+have generally heard the whole system called ``Linux'' as well, they
+often envisage a history which fits that name.  For example, many
+believe that once Linus Torvalds finished writing the kernel, his
+friends looked around for other free software, and for no particular
+reason most everything necessary to make a Unix-like system was
+already available.
 
-Other large companies such as IBM and Digital also favor interface
-monopolies, for the same reason: if languages become property, they
-expect to own many de-facto standard languages.  But Apple and Lotus are
-the ones who have actually sued.  Apple's lawsuit was defeated, for
-reasons only partly related to the general issue of interface copyright.
+What they found was no accident---it was the GNU system.  The available
+free software added up to a complete system because the GNU Project
+had been working since 1984 to make one.  The GNU Manifesto
+had set forth the goal of developing a free Unix-like system, called 
+GNU.  By the time Linux was written, the system was almost finished.
 
-Lotus won lawsuits against two small companies, which were thus put out
-of business.  Then Lotus sued Borland; Lotus won in the trial court (no
-surprise, since it was the same court that had ruled for Lotus twice
-before), but the court of appeals ruled in favor of Borland, which was
-assisted by a friend-of-the-court brief from the League for Programming
-Freedom.
+Most free software projects have the goal of developing a particular
+program for a particular job.  For example, Linus Torvalds set out to
+write a Unix-like kernel (Linux); Donald Knuth set out to write a text
+formatter (TeX); Bob Scheifler set out to develop a window system (X
+Windows).  It's natural to measure the contribution of this kind of
+project by specific programs that came from the project.
 
-Lotus appealed the case to the Supreme Court, which heard the case but
-was unable to reach a decision.  This failure means that the appeals
-court decision stands, in one portion of the United States, and may
-influence the other appeals courts, but it does not set a nationwide
-precedent.  The battle is not over, and it is not limited to the United
-States.
+If we tried to measure the GNU Project's contribution in this way,
+what would we conclude?  One CD-ROM vendor found that in their ``Linux
+distribution'', GNU software was the largest single contingent, around
+28% of the total source code, and this included some of the essential
+major components without which there could be no system.  Linux itself
+was about 3%.  So if you were going to pick a name for the system
+based on who wrote the programs in the system, the most appropriate
+single choice would be ``GNU''.
 
-The battle is extending into other areas of software as well.  In 1995 a
-company that produced a simulator for a CDC computer was shut down by a
-copyright lawsuit, in which CDC charged that the simulator infringed the
-copyright on the manuals for the computer.
+But we don't think that is the right way to consider the question.
+The GNU Project was not, is not, a project to develop specific
+software packages.  It was not a project to develop a C compiler,
+although we did.  It was not a project to develop a text editor,
+although we developed one.  The GNU Project's aim was to develop
+@emph{a complete free Unix-like system}.
 
-If the monopolists get their way, they will hobble the software field:
+Many people have made major contributions to the free software in the
+system, and they all deserve credit.  But the reason it is @emph{a
+system}---and not just a collection of useful programs---is because the
+GNU Project set out to make it one.  We wrote the programs that were
+needed to make a @emph{complete} free system.  We wrote essential but
+unexciting major components, such as the assembler and linker, because
+you can't have a system without them.  A complete system needs more
+than just programming tools, so we wrote other components as well,
+such as the Bourne Again SHell, the PostScript interpreter
+Ghostscript, and the GNU C library.
 
-@itemize @bullet
-@item
-Gratuitous incompatibilities will burden users.  Imagine if each car
-manufacturer had to design a different way to start, stop, and steer a
-car.
+By the early 90s we had put together the whole system aside from the
+kernel (and we were also working on a kernel, the GNU Hurd, which runs
+on top of Mach).  Developing this kernel has been a lot harder than we
+expected, and we are still working on finishing it.
 
-@item
-Users will be ``locked in'' to whichever interface they learn; then they
-will be prisoners of one supplier, who will charge a monopolistic price.
+Fortunately, you don't have to wait for it, because Linux is working
+now.  When Linus Torvalds wrote Linux, he filled the last major gap.
+People could then put Linux together with the GNU system to make a
+complete free system: a Linux-based GNU system (or GNU/Linux system,
+for short).
 
-@item
-Large companies have an unfair advantage wherever lawsuits become
-commonplace.  Since they can afford to sue, they can intimidate smaller
-developers with threats even when they don't really have a case.
+Putting them together sounds simple, but it was not a trivial job.
+The GNU C library (called glibc for short) needed substantial changes.
+Integrating a complete system as a distribution that would work ``out
+of the box'' was a big job, too.  It required addressing the issue of
+how to install and boot the system---a problem we had not tackled,
+because we hadn't yet reached that point.  The people who developed
+the various system distributions made a substantial contribution.
 
-@item
-Interface improvements will come slower, since incremental evolution
-through creative partial imitation will no longer occur.
-@end itemize
+The GNU Project supports GNU/Linux systems as well as @emph{the}
+GNU system---even with funds.  We funded the rewriting of the
+Linux-related extensions to the GNU C library, so that now they are
+well integrated, and the newest GNU/Linux systems use the current
+library release with no changes.  We also funded an early stage of the
+development of Debian GNU/Linux.
 
-If interface monopolies are accepted, other large companies are waiting
-to grab theirs:
-
-@itemize @bullet
-@item
-Adobe is expected to claim a monopoly on the interfaces of various
-popular application programs, if Lotus ultimately wins the case against
-Borland.
-
-@item
-Open Computing magazine reported a Microsoft vice president as threatening
-to sue people who imitate the interface of Windows.
-@end itemize
-
-Users invest a great deal of time and money in learning to use computer
-interfaces.  Far more, in fact, than software developers invest in
-developing @emph{and even implementing} the interfaces.  Whoever can own
-an interface, has made its users into captives, and misappropriated
-their investment.
-
-To protect our freedom from monopolies like these, a group of
-programmers and users have formed a grass-roots political organization,
-the League for Programming Freedom.
-
-The purpose of the League is to oppose monopolistic practices such as
-interface copyright and software patents.  The League calls for a return
-to the legal policies of the recent past, in which programmers could
-program freely.  The League is not concerned with free software as an
-issue, and is not affiliated with the Free Software Foundation.
-
-The League's activities include publicizing the issues, as is being done
-here, and filing friend-of-the-court briefs on behalf of defendants sued
-by monopolists.
-
-The League's membership rolls include Donald Knuth, the foremost
-authority on algorithms, John McCarthy, inventor of Lisp, Marvin Minsky,
-founder of the MIT Artificial Intelligence lab, Guy L. Steele, Jr.,
-author of well-known books on Lisp and C, as well as Richard Stallman,
-the developer of GNU CC.  Please join and add your name to the list.
-Membership dues in the League are $42 per year for programmers, managers
-and professionals; $10.50 for students; $21 for others.
-
-Activist members are especially important, but members who have no time
-to give are also important.  Surveys at major ACM conferences have
-indicated a vast majority of attendees agree with the League on both
-issues (interface copyrights and software patents).  If just ten percent
-of the programmers who agree with the League join the League, we will
-probably triumph.
-
-To join, or for more information, send electronic mail to
-the address @code{lpf@@uunet.uu.net} or write to:
-
-@display
-League for Programming Freedom
-1 Kendall Square #143
-P.O. Box 9171
-Cambridge, MA 02139
-@end display
-
-In addition to joining the League, here are some suggestions from the
-League for other things you can do to protect your freedom to write
-programs:
-
-@itemize @bullet
-@item
-Tell your friends and colleagues about this issue and how it threatens
-to ruin the computer industry.
-
-@item
-Mention that you are a League member in your @file{.signature}, and
-mention the League's email address for inquiries.
-
-@item
-Ask the companies you consider working for or working with to make
-statements against software monopolies, and give preference to those
-that do.
-
-@item
-When employers ask you to sign contracts giving them copyright on your
-work, insist on a clause saying they will not claim the copyright covers
-imitating the interface.
-
-@item
-When employers ask you to sign contracts giving them patent rights,
-insist on clauses saying they can use these rights only defensively.
-Don't rely on ``company policy,'' since that can change at any time;
-don't rely on an individual executive's private word, since that person
-may be replaced.  Get a commitment just as binding as the commitment
-they get from you.
-
-@item
-Write to Congress to explain the importance of these issues.
-
-@display
-House Subcommittee on Intellectual Property
-2137 Rayburn Bldg
-Washington, DC 20515
-
-Senate Subcommittee on Patents, Trademarks and Copyrights
-United States Senate
-Washington, DC 20510
-@end display
-
-(These committees have received lots of mail already; let's give them
-even more.)
-@end itemize
-
-Democracy means nothing if you don't use it.  Stand up and be counted!
-
+We use Linux-based GNU systems today for most of our work, and we hope
+you use them too.  But please don't confuse the public by using the
+name ``Linux'' ambiguously.  Linux is the kernel, one of the essential
+major components of the system.  The system as a whole is more or less
+the GNU system.
 
 @node Copying
 @unnumbered GNU GENERAL PUBLIC LICENSE
