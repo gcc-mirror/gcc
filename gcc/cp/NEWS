@@ -1,5 +1,9 @@
 *** Changes since EGCS 1.0:
 
+* Namespaces are fully supported.  The library has not yet been converted 
+  to use namespace std, however, and the old std-faking code is still on by
+  default.  To turn it off, you can use -fhonor-std.
+
 * Massive template improvements:
   + member template classes are supported.
   + template friends are supported.
@@ -9,8 +13,9 @@
 
 * operator new now throws bad_alloc where appropriate.
 
-* Exception handling is now thread safe, and supports nested
-  exceptions and placement delete.
+* Exception handling is now thread safe, and supports nested exceptions and
+  placement delete.  Exception handling overhead on x86 is much lower with
+  GNU as 2.9.
 
 * protected virtual inheritance is now supported.
 
@@ -19,6 +24,13 @@
 
 * For class D derived from B which has a member 'int i', &D::i is now of
   type 'int B::*' instead of 'int D::*'.
+
+* An _experimental_ new ABI for g++ can be turned on with -fnew-abi.  The
+  current features of this are more efficient allocation of base classes
+  (including the empty base optimization), and more compact mangling of C++
+  symbol names (which can be turned on separately with -fsquangle).  This
+  ABI is subject to change without notice, so don't use it for anything
+  that you don't want to rebuild with every release of the compiler.
 
 *** Changes in EGCS 1.0:
 

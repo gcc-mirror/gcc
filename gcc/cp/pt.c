@@ -2659,11 +2659,11 @@ coerce_template_parms (parms, arglist, in_decl,
 	      if (! processing_template_decl)
 		{
 		  tree t = target_type (val);
-		  if (TREE_CODE (t) != TYPENAME_TYPE 
-		      && IS_AGGR_TYPE (t)
+		  if (((IS_AGGR_TYPE (t) && TREE_CODE (t) != TYPENAME_TYPE)
+		       || TREE_CODE (t) == ENUMERAL_TYPE)
 		      && decl_function_context (TYPE_MAIN_DECL (t)))
 		    {
-		      cp_error ("type `%T' composed from a local class is not a valid template-argument",
+		      cp_error ("type `%T' composed from a local type is not a valid template-argument",
 				val);
 		      return error_mark_node;
 		    }

@@ -1,5 +1,7 @@
 1998-07-24  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (coerce_template_parms): Also complain about local enums.
+
 	* cp-tree.h: Add prototype for set_identifier_local_value.
 	* decl.c (set_identifier_local_value_with_scope): Make static,
 	prototype.
