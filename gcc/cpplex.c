@@ -1656,7 +1656,7 @@ cpp_avoid_paste (pfile, token1, token2)
     case CPP_OR:	return c == '|';
     case CPP_COLON:	return c == ':' || c == '>';
     case CPP_DEREF:	return c == '*';
-    case CPP_DOT:	return c == '.' || c == '%';
+    case CPP_DOT:	return c == '.' || c == '%' || b == CPP_NUMBER;
     case CPP_HASH:	return c == '#' || c == '%'; /* Digraph form.  */
     case CPP_NAME:	return ((b == CPP_NUMBER
 				 && name_p (pfile, &token2->val.str))

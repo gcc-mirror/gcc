@@ -1,3 +1,18 @@
+2001-01-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cpphash.c (_cpp_cleanup_hashtable, _cpp_lookup_with_hash)
+        : Don't set fe_value.
+        * cpplib.h (AVOID_LPASTE): New flag. 
+        (struct cpp_hashnode): Remove fe_value.
+        * cpplex.c (cpp_avoid_paste): Don't paste '.' with a number.
+        * cppmacro.c (builtin_macro): Don't set flags here.
+        (replace_args): Set AVOID_LPASTE flag on first token of an
+        argument, and the token following it.
+        (cpp_get_token): Set AVOID_LPASTE flag on first token of a
+        macro expansion, and on the token following it.  Do it for
+        builtins too.
+        * cppmain.c (scan_buffer): Avoid pasting only flagged tokens.
+
 2001-01-27  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/t-ieee: Remove multilibbing.
