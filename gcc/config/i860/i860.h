@@ -1286,26 +1286,26 @@ extern unsigned long sfmode_constant_to_ulong ();
   else if ((CODE) == 'm')						\
     output_address (XEXP (X, 0));					\
   else if ((CODE) == 'L')						\
-    if (GET_CODE (X) == MEM)						\
-      PRINT_OPERAND_PART (FILE, XEXP (X, 0), OPERAND_LOW_PART);		\
-    else								\
-      PRINT_OPERAND_PART (FILE, X, OPERAND_LOW_PART);			\
+    {									\
+      if (GET_CODE (X) == MEM)						\
+	PRINT_OPERAND_PART (FILE, XEXP (X, 0), OPERAND_LOW_PART);	\
+      else								\
+	PRINT_OPERAND_PART (FILE, X, OPERAND_LOW_PART);			\
+    }									\
   else if ((CODE) == 'H')						\
-    if (GET_CODE (X) == MEM)						\
-      PRINT_OPERAND_PART (FILE, XEXP (X, 0), OPERAND_HIGH_PART);	\
-    else								\
-      PRINT_OPERAND_PART (FILE, X, OPERAND_HIGH_PART);			\
+    {									\
+      if (GET_CODE (X) == MEM)						\
+	PRINT_OPERAND_PART (FILE, XEXP (X, 0), OPERAND_HIGH_PART);	\
+      else								\
+	PRINT_OPERAND_PART (FILE, X, OPERAND_HIGH_PART);		\
+    }									\
   else if ((CODE) == 'h')						\
-    if (GET_CODE (X) == MEM)						\
-      PRINT_OPERAND_PART (FILE, XEXP (X, 0),				\
-		const_int_operand (XEXP (X, 0))				\
-			? OPERAND_HIGH_PART				\
-			: OPERAND_HIGH_ADJ_PART);			\
-    else								\
-      PRINT_OPERAND_PART (FILE, X, 					\
-		const_int_operand (X)					\
-			? OPERAND_HIGH_PART				\
-			: OPERAND_HIGH_ADJ_PART);			\
+    {									\
+      if (GET_CODE (X) == MEM)						\
+	PRINT_OPERAND_PART (FILE, XEXP (X, 0), OPERAND_HIGH_ADJ_PART);	\
+      else								\
+	PRINT_OPERAND_PART (FILE, X, OPERAND_HIGH_ADJ_PART);		\
+    }									\
   else if (GET_CODE (X) == MEM)						\
     output_address (XEXP (X, 0));					\
   else if ((CODE) == 'r' && (X) == const0_rtx)				\
