@@ -2556,6 +2556,14 @@ assign_parms (fndecl, second_time)
       passed_mode = TYPE_MODE (passed_type);
       nominal_mode = TYPE_MODE (TREE_TYPE (parm));
 
+      /* If the parm's mode is VOID, its value doesn't matter,
+	 and avoid the usual things like emit_move_insn that could crash.  */
+      if (nominal_mode == VOIDmode)
+	{
+	  DECL_INCOMING_RTL (parm) = DECL_RTL (parm) = const0_rtx;
+	  continue;
+	}
+
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
       /* See if this arg was passed by invisible reference.  */
       if (FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, passed_mode,
@@ -2860,7 +2868,7 @@ assign_parms (fndecl, second_time)
 
 	  /* If we were passed a pointer but the actual value
 	     can safely live in a register, put it in one.  */
-	  if (passed_pointer && nominal_mode != BLKmode
+	  if (passed_pointer && TYPE_MODE (TREE_TYPE (parm)) != BLKmode
 	      && ! ((obey_regdecls && ! DECL_REGISTER (parm)
 		     && ! DECL_INLINE (fndecl))
 		    /* layout_decl may set this.  */
