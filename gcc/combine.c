@@ -737,7 +737,7 @@ set_nonzero_bits_and_sign_copies (x, set)
       if (set == 0 || GET_CODE (set) == CLOBBER)
 	{
 	  reg_nonzero_bits[REGNO (x)] = GET_MODE_MASK (GET_MODE (x));
-	  reg_sign_bit_copies[REGNO (x)] = 0;
+	  reg_sign_bit_copies[REGNO (x)] = 1;
 	  return;
 	}
 
@@ -787,7 +787,7 @@ set_nonzero_bits_and_sign_copies (x, set)
       else
 	{
 	  reg_nonzero_bits[REGNO (x)] = GET_MODE_MASK (GET_MODE (x));
-	  reg_sign_bit_copies[REGNO (x)] = 0;
+	  reg_sign_bit_copies[REGNO (x)] = 1;
 	}
     }
 }
