@@ -35,7 +35,7 @@
 #define _CPP_IOSFWD 1
 
 #include <bits/c++config.h>
-#include <bits/std_cwchar.h> //For mbstate_t
+#include <bits/std_cwchar.h> // For mbstate_t
 
 namespace std {
 

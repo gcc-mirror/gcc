@@ -1,7 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-
-//// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,33 +33,24 @@
 #ifndef _CPP_CERRNO
 #define _CPP_CERRNO 1
 
-  namespace _C_legacy {
-    extern "C" {
+namespace _C_legacy {
+  extern "C" {
 #     define _IN_C_LEGACY_
 #     pragma GCC system_header
 #     include_next <errno.h>
-    }
+  }
 
-    int& _CPP_errno_capture() { return errno; }
+  //  inline int& 
+  //  _CPP_errno_capture() { return errno; }
 
-    namespace _C_shadow { }
-  } // close namespace ::_C_legacy::
+} // namespace _C_legacy::
 
 #  undef  errno
-#  define errno ::_C_legacy::_CPP_errno_capture()
-// # undef EDOM
-// # undef ERANGE
+//#  define errno _C_legacy::_CPP_errno_capture()
 
-  namespace _C_legacy {
-    namespace _C_shadow {
-    }
-  }
-  namespace std { 
-  } // close namespace std::
-  namespace _C_legacy {
-    namespace _C_shadow {
-    }
-  }
+namespace std {
+  using _C_legacy::errno;
+}
 
 # undef _IN_C_LEGACY_
 

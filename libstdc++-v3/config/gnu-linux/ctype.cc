@@ -33,6 +33,12 @@
   
 // Information as gleaned from /usr/include/ctype.h
 
+#if _GLIBCPP_USE_SHADOW_HEADERS
+  using _C_legacy::__ctype_toupper;
+  using _C_legacy::__ctype_tolower;
+  using _C_legacy::__ctype_b;
+#endif
+
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs)
     : _Ctype_nois<char>(__refs), _M_del(__table != 0 && __del), 
       _M_toupper(__ctype_toupper), _M_tolower(__ctype_tolower),
@@ -68,6 +74,15 @@
       }
     return __high;
   }
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,33 +32,26 @@
 //
 
 #ifndef _CPP_CLIMITS
-#define _CPP_CLIMTIS	1
+#define _CPP_CLIMTIS 1
 
-  namespace _C_legacy {
-    extern "C" {
+namespace _C_legacy {
+  extern "C" {
 #     define _IN_C_LEGACY_
 #     pragma GCC system_header
 #     include_next <limits.h>
-    }
-    namespace _C_shadow { }
-  } // close namespace ::_C_legacy::
-
-  // Note: there is not much for this wrapper to do besides hiding 
-  // vendor-extension names and (perhaps) replacing one or other
-  // macro with a larger value.
-
-// #undef MB_LEN_MAX
-// #define MB_LEN_MAX 16  /* or something */
-
-  namespace std {
-  } // close namespace std::
-  
-  namespace _C_legacy {
-    namespace _C_shadow {
-    }
   }
+} // namespace _C_legacy
 
 # undef _IN_C_LEGACY_
 
 #endif
+
+
+
+
+
+
+
+
+
 

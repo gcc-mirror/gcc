@@ -29,7 +29,6 @@
 #include <bits/std_clocale.h>
 #include <bits/std_locale.h>
 #include <bits/std_cstring.h>
-#include <bits/std_cassert.h>
 #include <bits/std_vector.h>
 #include <bits/std_stdexcept.h>
 
@@ -167,8 +166,6 @@ namespace std {
   locale::_Impl::
   _M_replace_categories(const _Impl* __other, category __cat)
   {
-    assert((__cat & locale::all) && !(__cat & ~locale::all));
-    
     unsigned int __mask = locale::all & -static_cast<unsigned int>(locale::all);
     for (unsigned int __ix = 0; (-__mask & __cat) != 0; ++__ix, (__mask <<= 1))
       {

@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,23 +29,32 @@
 
 
 #ifndef  _INCLUDED_CPP_STDDEF_H_
-
-// turn off glibc weirdness.  other libs have similar foolishness.
-#undef __need_wchar_t
-#undef __need_size_t
-#undef __need_ptrdiff_t
-#undef __need_NULL
-#undef __need_wint_t
-
-# undef _SHADOW_NAME
-# define _SHADOW_NAME <cstddef>
-# include <bits/generic_shadow.h>
-# undef _SHADOW_NAME
-
-# ifndef _IN_C_LEGACY_
-  using ::std::ptrdiff_t;
-  using ::std::size_t;
 # define _INCLUDED_CPP_STDDEF_H_ 1
+
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _STDDEF_NEED_C_LEGACY_
 # endif
 
+# include <cstddef>
+
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+  using std::ptrdiff_t;
+  using std::size_t;
+
+# ifdef _STDDEF_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _STDDEF_NEED_C_LEGACY_
+# endif /* _STDDEF_NEED_C_LEGACY_ */
 #endif /* _INCLUDED_CPP_STDDEF_H_ */
+
+
+
+

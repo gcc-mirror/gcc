@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,42 +34,30 @@
 #ifndef _CPP_CSETJMP
 #define _CPP_CSETJMP 1
 
-  namespace _C_legacy {
-    extern "C" {
+namespace _C_legacy {
+  extern "C" {
 #     define _IN_C_LEGACY_
 #     pragma GCC system_header
 #     include_next <setjmp.h>
-    }
-    typedef jmp_buf   _CPP_jmp_buf_capture;
-    inline int _CPP_setjmp_capture(jmp_buf __jb) { return setjmp(__jb); }
-
-    namespace _C_shadow { }
-  } // close namespace ::_C_legacy::
+  }
+  inline int 
+  _CPP_setjmp_capture(jmp_buf __jb) { return setjmp(__jb); }
+} // namespace _C_legacy
 
 #  undef jmp_buf
 #  undef setjmp
 #  define setjmp(__jb) ::_C_legacy::_CPP_setjmp_capture(__jb)
 #  undef longjmp
 
-  namespace _C_legacy {
-    namespace _C_shadow {
-      typedef ::_C_legacy::_CPP_jmp_buf_capture  jmp_buf;
-    }
-  }
-  namespace std {
-
-    // Adopt C names into std::
-    using ::_C_legacy::_C_shadow::jmp_buf;  
-    using ::_C_legacy::longjmp;
-
-  } // close namespace std::
+namespace std {
+  // Adopt C names into std::
+  using _C_legacy::jmp_buf;
+  using _C_legacy::longjmp;
+} // namespace std
   
-  namespace _C_legacy {
-    namespace _C_shadow {
-    }
-  }
-
 # undef _IN_C_LEGACY_
 
 #endif
+
+
 

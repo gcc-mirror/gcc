@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,30 +33,52 @@
 #ifndef _CPP_CCTYPE
 #define _CPP_CCTYPE 1
 
-  namespace _C_legacy {
-    extern "C" {
+namespace _C_legacy {
+  extern "C" {
 #     define _IN_C_LEGACY_
 #     pragma GCC system_header
 #     include_next <ctype.h>
-    }
+  }
 
-    inline int _CPP_isalnum_capture(int c) { return isalnum (c); }
-    inline int _CPP_isalpha_capture(int c) { return isalpha (c); }
-    inline int _CPP_iscntrl_capture(int c) { return iscntrl (c); }
-    inline int _CPP_isdigit_capture(int c) { return isdigit (c); }
-    inline int _CPP_isgraph_capture(int c) { return isgraph (c); }
-    inline int _CPP_islower_capture(int c) { return islower (c); }
-    inline int _CPP_isprint_capture(int c) { return isprint (c); }
-    inline int _CPP_ispunct_capture(int c) { return ispunct (c); }
-    inline int _CPP_isspace_capture(int c) { return isspace (c); }
-    inline int _CPP_isupper_capture(int c) { return isupper (c); }
-    inline int _CPP_isxdigit_capture(int c) { return isxdigit (c); }
+  inline int 
+  _CPP_isalnum_capture(int c) { return isalnum(c); }
 
-    inline int _CPP_tolower_capture(int c) { return tolower (c); }
-    inline int _CPP_toupper_capture(int c) { return toupper (c); }
+  inline int 
+  _CPP_isalpha_capture(int c) { return isalpha(c); }
 
-    namespace _C_shadow { }
-  } // close namespace ::_C_legacy::
+  inline int 
+  _CPP_iscntrl_capture(int c) { return iscntrl(c); }
+
+  inline int 
+  _CPP_isdigit_capture(int c) { return isdigit(c); }
+
+  inline int 
+  _CPP_isgraph_capture(int c) { return isgraph(c); }
+
+  inline int 
+  _CPP_islower_capture(int c) { return islower(c); }
+
+  inline int 
+  _CPP_isprint_capture(int c) { return isprint(c); }
+
+  inline int 
+  _CPP_ispunct_capture(int c) { return ispunct(c); }
+
+  inline int 
+  _CPP_isspace_capture(int c) { return isspace(c); }
+
+  inline int 
+  _CPP_isupper_capture(int c) { return isupper(c); }
+
+  inline int 
+  _CPP_isxdigit_capture(int c) { return isxdigit(c); }
+
+  inline int 
+  _CPP_tolower_capture(int c) { return tolower(c); }
+
+  inline int 
+  _CPP_toupper_capture(int c) { return toupper(c); }
+} // namespace _C_legacy
 
 # undef isalnum
 # undef isalpha
@@ -73,71 +95,51 @@
 # undef tolower
 # undef toupper
 
-#if 0  /* these might not be necessary any more. 98-09-29 */
-# undef _U
-# undef _L
-# undef _N
-# undef _S
-# undef _P
-# undef _C
-# undef _B
-# undef _X
-#endif
+namespace std {
+  inline int 
+  isalnum(int __c) { return _C_legacy::_CPP_isalnum_capture(__c); }
 
-  namespace _C_legacy {
-    namespace _C_shadow {
-    }
-  }
-  namespace std {
+  inline int 
+  isalpha(int __c) { return _C_legacy::_CPP_isalpha_capture(__c); }
 
-    inline int isalnum(int __c)
-      { return ::_C_legacy::_CPP_isalnum_capture (__c); }
-    inline int isalpha (int __c)
-      { return ::_C_legacy::_CPP_isalpha_capture (__c); }
-    inline int iscntrl (int __c)
-      { return ::_C_legacy::_CPP_iscntrl_capture (__c); }
-    inline int isdigit (int __c)
-      { return ::_C_legacy::_CPP_isdigit_capture (__c); }
-    inline int isgraph (int __c)
-      { return ::_C_legacy::_CPP_isgraph_capture (__c); }
-    inline int islower (int __c)
-      { return ::_C_legacy::_CPP_islower_capture (__c); }
-    inline int isprint (int __c)
-      { return ::_C_legacy::_CPP_isprint_capture (__c); }
-    inline int ispunct (int __c)
-      { return ::_C_legacy::_CPP_ispunct_capture (__c); }
-    inline int isspace (int __c)
-      { return ::_C_legacy::_CPP_isspace_capture (__c); }
-    inline int isupper (int __c)
-      { return ::_C_legacy::_CPP_isupper_capture (__c); }
-    inline int isxdigit (int __c)
-      { return ::_C_legacy::_CPP_isxdigit_capture (__c); }
+  inline int 
+  iscntrl(int __c) { return _C_legacy::_CPP_iscntrl_capture(__c); }
 
-    inline int tolower (int __c)
-      { return ::_C_legacy::_CPP_tolower_capture (__c); }
-    inline int toupper (int __c)
-      { return ::_C_legacy::_CPP_toupper_capture (__c); }
+  inline int 
+  isdigit(int __c) { return _C_legacy::_CPP_isdigit_capture(__c); }
 
-  } // close namespace std::
+  inline int 
+  isgraph(int __c) { return _C_legacy::_CPP_isgraph_capture(__c); }
+
+  inline int 
+  islower(int __c) { return _C_legacy::_CPP_islower_capture(__c); }
+
+  inline int 
+  isprint(int __c) { return _C_legacy::_CPP_isprint_capture(__c); }
+
+  inline int 
+  ispunct(int __c) { return _C_legacy::_CPP_ispunct_capture(__c); }
+
+  inline int 
+  isspace(int __c) { return _C_legacy::_CPP_isspace_capture(__c); }
+
+  inline int 
+  isupper(int __c) { return _C_legacy::_CPP_isupper_capture(__c); }
+
+  inline int 
+  isxdigit(int __c) { return _C_legacy::_CPP_isxdigit_capture(__c); }
+
+  inline int 
+  tolower(int __c) { return _C_legacy::_CPP_tolower_capture(__c); }
+
+  inline int 
+  toupper(int __c) { return _C_legacy::_CPP_toupper_capture(__c); }
+} // namespace std
   
-  namespace _C_legacy {
-    namespace _C_shadow {
-      using ::std::isalnum;
-      using ::std::isalpha;
-      using ::std::iscntrl;
-      using ::std::isdigit;
-      using ::std::isgraph;
-      using ::std::islower;
-      using ::std::isprint;
-      using ::std::ispunct;
-      using ::std::isspace;
-      using ::std::isupper;
-      using ::std::isxdigit;
-      using ::std::tolower;
-      using ::std::toupper;
-    }
-  }
-
 # undef _IN_C_LEGACY_
 
 #endif
+
+
+
+

@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,18 +28,30 @@
 // the GNU General Public License.
 
 
-
 #ifndef  _INCLUDED_CPP_LOCALE_H_
-# undef _SHADOW_NAME
-# define _SHADOW_NAME <clocale>
-# include <bits/generic_shadow.h>
-# undef _SHADOW_NAME
-
-# ifndef _IN_C_LEGACY_
-  using ::std::lconv;
-  using ::std::setlocale;
-  using ::std::localeconv;
 # define _INCLUDED_CPP_LOCALE_H_ 1
-# endif
 
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _LOCALE_NEED_C_LEGACY_
+#endif
+
+# include <clocale>
+
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+  using std::lconv;
+  using std::setlocale;
+  using std::localeconv;
+
+# ifdef _LOCALE_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _LOCALE_NEED_C_LEGACY_
+# endif /* _LOCALE_NEED_C_LEGACY_ */
 #endif /* _INCLUDED_CPP_LOCALE_H_ */

@@ -217,7 +217,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
 
   # Check for more sophisticated diagnostic control.
   AC_MSG_CHECKING([for g++ that supports -fdiagnostics-show-location=once])
-  CXXFLAGS='-fdiagnostics-show-location=once'
+  CXXFLAGS='-Werror -fdiagnostics-show-location=once'
   AC_TRY_COMPILE(, [int foo;
   ], [ac_gabydiags=yes], [ac_gabydiags=no])
   if test "$ac_test_CXXFLAGS" = set; then
@@ -233,7 +233,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
 
   # Check for -ffunction-sections -fdata-sections
   AC_MSG_CHECKING([for g++ that supports -ffunction-sections -fdata-sections])
-  CXXFLAGS='-ffunction-sections -fdata-sections'
+  CXXFLAGS='-Werror -ffunction-sections -fdata-sections'
   AC_TRY_COMPILE(, [int foo;
   ], [ac_fdsections=yes], [ac_fdsections=no])
   if test "$ac_test_CXXFLAGS" = set; then
@@ -1458,10 +1458,11 @@ changequote([, ])
   AC_MSG_RESULT($enable_cshadow_headers)
 
   dnl Option parsed, now set things appropriately
-  dnl CSHADOWFLAGS is currently unused, but may be useful in the future.
+  dnl NB: these things may be duplicated in c++config.h as well.
   case "$enable_cshadow_headers" in
     yes) 
-	CSHADOWFLAGS=""
+	CSHADOWFLAGS="-fno-builtin"
+        AC_DEFINE(_GLIBCPP_USE_SHADOW_HEADERS)
 	;;
     no)   
 	CSHADOWFLAGS=""

@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,44 +29,67 @@
 
 
 #ifndef  _INCLUDED_CPP_STDLIB_H_
-# undef _SHADOW_NAME
-# define _SHADOW_NAME <cstdlib>
-# include <bits/generic_shadow.h>
-# undef _SHADOW_NAME
-
-# ifndef _IN_C_LEGACY_
-  using ::std::size_t;
-  using ::std::div_t;
-  using ::std::ldiv_t;
-  using ::std::atof;
-  using ::std::atoi;
-  using ::std::atol;
-  using ::std::strtod;
-  using ::std::strtol;
-  using ::std::strtoul;
-  using ::std::rand;
-  using ::std::srand;
-  using ::std::calloc;
-  using ::std::free;
-  using ::std::malloc;
-  using ::std::realloc;
-  using ::std::abort;
-  using ::std::atexit;
-  using ::std::exit;
-  using ::std::getenv;
-  using ::std::system;
-  using ::std::bsearch;
-  using ::std::qsort;
-  using ::std::abs;
-  using ::std::div;
-  using ::std::labs;
-  using ::std::ldiv;
-  using ::std::mblen;
-  using ::std::mbtowc;
-  using ::std::wctomb;
-  using ::std::mbstowcs;
-  using ::std::wcstombs;
 # define _INCLUDED_CPP_STDLIB_H_ 1
+
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _STDLIB_NEED_C_LEGACY_
 # endif
 
+# include <cstdlib>
+
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+  using std::div_t;
+  using std::ldiv_t;
+#ifdef _GLIBCPP_USE_LONG_LONG
+  using std::lldiv_t;
+#endif
+
+  using std::abort;
+  using std::abs;
+  using std::atexit;
+  using std::atof;
+  using std::atoi;
+  using std::atol;
+  using std::bsearch;
+  using std::calloc;
+  using std::div;
+  using std::exit;
+  using std::free;
+  using std::getenv;
+  using std::labs;
+  using std::ldiv;
+  using std::malloc;
+  using std::mblen;
+  using std::mbstowcs;
+  using std::mbtowc;
+  using std::qsort;
+  using std::rand;
+  using std::realloc;
+  using std::srand;
+  using std::strtod;
+  using std::strtol;
+  using std::strtoul;
+  using std::system;
+  using std::wcstombs;
+  using std::wctomb;
+
+#ifdef _GLIBCPP_USE_LONG_LONG
+  using std::strtoll;
+  using std::strtoull;
+  using std::strtof;
+  using std::strtold;
+#endif
+
+# ifdef _STDLIB_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _STDLIB_NEED_C_LEGACY_
+# endif /* _STDLIB_NEED_C__LEGACY_ */
 #endif /* _INCLUDED_CPP_STDLIB_H_ */

@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,35 +29,103 @@
 
 
 #ifndef  _INCLUDED_CPP_MATH_H_
-# undef _SHADOW_NAME
-# define _SHADOW_NAME <cmath>
-# include <bits/generic_shadow.h>
-# undef _SHADOW_NAME
-
-# ifndef _IN_C_LEGACY_
-  using ::std::acos;
-  using ::std::asin;
-  using ::std::atan;
-  using ::std::atan2;
-  using ::std::cos;
-  using ::std::sin;
-  using ::std::tan;
-  using ::std::cosh;
-  using ::std::sinh;
-  using ::std::tanh;
-  using ::std::exp;
-  using ::std::frexp;
-  using ::std::ldexp;
-  using ::std::log;
-  using ::std::log10;
-  using ::std::modf;
-  using ::std::pow;
-  using ::std::sqrt;
-  using ::std::ceil;
-  using ::std::fabs;
-  using ::std::floor;
-  using ::std::fmod;
 # define _INCLUDED_CPP_MATH_H_ 1
+
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _MATH_NEED_C_LEGACY_
 # endif
 
+# include <cmath>
+
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+  using std::abs;
+  using std::acos;
+  using std::asin;
+  using std::atan;
+  using std::atan2;
+  using std::cos;
+  using std::sin;
+  using std::tan;
+  using std::cosh;
+  using std::sinh;
+  using std::tanh;
+  using std::exp;
+  using std::frexp;
+  using std::ldexp;
+  using std::log;
+  using std::log10;
+  using std::modf;
+  using std::pow;
+  using std::sqrt;
+  using std::ceil;
+  using std::fabs;
+  using std::floor;
+  using std::fmod;
+
+  // From ISO/IEC 9899:1999
+  using std::absf;
+  using std::acosf;
+  using std::asinf;
+  using std::atanf;
+  using std::atan2f;
+  using std::cosf;
+  using std::sinf;
+  using std::tanf;
+  using std::coshf;
+  using std::sinhf;
+  using std::tanhf;
+  using std::expf;
+  using std::frexpf;
+  using std::ldexpf;
+  using std::logf;
+  using std::log10f;
+  using std::modff;
+  using std::powf;
+  using std::sqrtf;
+  using std::ceilf;
+  using std::fabsf;
+  using std::floorf;
+  using std::fmodf;
+
+  // From ISO/IEC 9899:1999
+  using std::absl;
+  using std::acosl;
+  using std::asinl;
+  using std::atanl;
+  using std::atan2l;
+  using std::cosl;
+  using std::sinl;
+  using std::tanl;
+  using std::coshl;
+  using std::sinhl;
+  using std::tanhl;
+  using std::expl;
+  using std::frexpl;
+  using std::ldexpl;
+  using std::logl;
+  using std::log10l;
+  using std::modfl;
+  using std::powl;
+  using std::sqrtl;
+  using std::ceill;
+  using std::fabsl;
+  using std::floorl;
+  using std::fmodl;
+
+# ifdef _MATH_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _MATH_NEED_C_LEGACY_
+# endif /* _MATH_NEED_C_LEGACY_ */
 #endif /* _INCLUDED_CPP_MATH_H_ */
+
+
+
+

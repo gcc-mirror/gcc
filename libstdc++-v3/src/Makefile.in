@@ -124,7 +124,7 @@ EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set.
 # NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
-AC_CXXFLAGS =  	$(WERROR) @WFMT_FLAGS@ @CPU_FLAGS@ @EXTRA_CXX_FLAGS@ 	@SECTION_FLAGS@ @DEBUG_FLAGS@ 
+AC_CXXFLAGS =  	$(WERROR) @WFMT_FLAGS@ @CPU_FLAGS@ @EXTRA_CXX_FLAGS@ 	@SECTION_FLAGS@ @CSHADOWFLAGS@ @DEBUG_FLAGS@ 
 
 
 # Need to manually set this option because AC_CXXFLAGS has to be at
@@ -137,24 +137,24 @@ AM_CXXFLAGS =  	-fno-implicit-templates $(OPTIMIZE_CXXFLAGS) 	-Wall -Wno-format 
 TOPLEVEL_INCLUDES = -I$(includedir)
 @GLIBCPP_NEED_LIBIO_TRUE@LIBIO_INCLUDES = 	-I$(top_builddir)/libio -I$(top_srcdir)/libio 
 @GLIBCPP_NEED_LIBIO_FALSE@LIBIO_INCLUDES = -I$(top_srcdir)/libio
-#CSHADOW_INCLUDES = \
-#	@CSHADOWFLAGS@ -I$(top_srcdir)/shadow -I$(top_builddir)/cshadow
-@GLIBCPP_USE_CSHADOW_TRUE@CSHADOW_INCLUDES = 
+@GLIBCPP_USE_CSHADOW_TRUE@CSHADOW_INCLUDES = 	-I$(top_srcdir)/std -I$(top_srcdir)/shadow 
 @GLIBCPP_USE_CSHADOW_FALSE@CSHADOW_INCLUDES = 
 
 CONFIG_INCLUDES =  	-I$(top_srcdir)/@cpu_include_dir@ 	-I$(top_srcdir)/@ctype_include_dir@
 
 
-INCLUDES =  	-D_GNU_SOURCE -nostdinc++ $(CSHADOW_INCLUDES) -I$(top_srcdir) 	 $(LIBIO_INCLUDES) $(CONFIG_INCLUDES) $(TOPLEVEL_INCLUDES)	
+INCLUDES =  	-D_GNU_SOURCE -D_ISOC99_SOURCE -nostdinc++ $(CSHADOW_INCLUDES) 	-I$(top_builddir) -I$(top_srcdir) 	 $(CONFIG_INCLUDES) $(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
 
 
-# Need to explicitly set this so that AM_CXXFLAGS is last. (That way,
+# Need to explicitly set this so that AM_CXXFLAGS is last. In
+# addition, we don't use $(DEFS), which tries to set $(top_srcdir) as
+# an include diretory, which screws up shadow headers. (That way,
 # things like -O2 passed down from the toplevel can be overridden by
 # --enable-debug.)
-CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) 	     $(CXXFLAGS) $(AM_CXXFLAGS) 
+CXXCOMPILE = $(CXX) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) 	     $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 
-LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(INCLUDES) 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 
 # We have a problem when building the shared libstdc++ object if the
@@ -457,7 +457,7 @@ $(libstdc___la_OBJECTS): $(CSHADOW_H)
 $(top_builddir)/stamp-cshadow: $(top_srcdir)/mkinclosure \
                                $(top_srcdir)/mkcshadow
 	$(top_srcdir)/mkinclosure \
-	"-I $(top_builddir)/../../gcc/include -I /usr/include -G machine/ansi.h" | $(top_srcdir)/mkcshadow;
+	"-I $(top_builddir)/../../gcc/include -I /usr/include -G fcntl.h unistd.h" | $(top_srcdir)/mkcshadow;
 	rm -f  $(top_builddir)/stamp-cshadow 
 	echo "done" > $(top_builddir)/stamp-cshadow 
 

@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,36 +28,25 @@
 // the GNU General Public License.
 
 //
-// ISO C++ 14882: ???
+// ISO C++ 14882: 
 //
-
-// XXX this is not complete
 
 #ifndef _CPP_CWCTYPE
 #define _CPP_CWCTYPE 1
 
-# include <bits/std_cwchar.h>  /* pick up wint_t, WEOF */
+# include <bits/std_cwchar.h>  
 
-  namespace _C_legacy {
-    extern "C" {
+namespace _C_legacy {
+  extern "C" {
 #     define _IN_C_LEGACY_
 #     pragma GCC system_header
 #     include_next <wctype.h>
-    }
-    typedef wctype_t _CPP_wctype_t_capture;
-    typedef wctrans_t _CPP_wctrans_t_capture;
+  }
+} // namespace _C_legacy
 
-    // XXX probably should capture defs of the "is" functions.
 
-    namespace _C_shadow { }
-  } // close namespace ::_C_legacy::
-
-# undef size_t  /* handled in <cstddef> */
-# undef wchar_t
-# undef wint_t
 # undef wctype_t
 # undef wctrans_t
-// # undef WEOF
 # undef iswalpha
 # undef iswupper
 # undef iswlower
@@ -70,49 +59,71 @@
 # undef iswgraph
 # undef iswcntrl
 # undef iswctype
+# undef towctrans
 # undef towlower
 # undef towupper
+# undef wctrans
+# undef wctype
 
-// SunOS macros
-# undef iswascii
-# undef iscodeset0
-# undef iscodeset1
-# undef iscodeset2
-# undef iscodeset3
+namespace std {
+  using _C_legacy::wctype_t;
+  using _C_legacy::wctrans_t;
 
-  namespace _C_legacy {
-    namespace _C_shadow {
-      typedef ::_C_legacy::_CPP_wctype_t_capture wctype_t;
-      typedef ::_C_legacy::_CPP_wctrans_t_capture wctrans_t;
-    }
-  }
-  namespace std {
-    using ::_C_legacy::_C_shadow::wctype_t;
-    using ::_C_legacy::_C_shadow::wctrans_t;
+  inline int 
+  iswalpha(wint_t __wc) { return _C_legacy::iswalpha(__wc); }
 
-    // XXX probably should capture these to inlines.
-    using ::_C_legacy::iswalpha;
-    using ::_C_legacy::iswupper;
-    using ::_C_legacy::iswlower;
-    using ::_C_legacy::iswdigit;
-    using ::_C_legacy::iswxdigit;
-    using ::_C_legacy::iswalnum;
-    using ::_C_legacy::iswspace;
-    using ::_C_legacy::iswpunct;
-    using ::_C_legacy::iswprint;
-    using ::_C_legacy::iswgraph;
-    using ::_C_legacy::iswcntrl;
-    using ::_C_legacy::iswctype;
-    using ::_C_legacy::towlower;
-    using ::_C_legacy::towupper;
+  inline int 
+  iswupper(wint_t __wc) { return _C_legacy::iswupper(__wc); }
 
-  } // close namespace std::
+  inline int 
+  iswlower(wint_t __wc) { return _C_legacy::iswlower(__wc); }
+
+  inline int 
+  iswdigit(wint_t __wc) { return _C_legacy::iswdigit(__wc); }
+
+  inline int 
+  iswxdigit(wint_t __wc) { return _C_legacy::iswxdigit(__wc); }
+
+  inline int 
+  iswalnum(wint_t __wc) { return _C_legacy::iswalnum(__wc); }
+
+  inline int 
+  iswspace(wint_t __wc) { return _C_legacy::iswspace(__wc); }
+
+  inline int 
+  iswpunct(wint_t __wc) { return _C_legacy::iswpunct(__wc); }
+
+  inline int 
+  iswprint(wint_t __wc) { return _C_legacy::iswprint(__wc); }
+
+  inline int 
+  iswgraph(wint_t __wc) { return _C_legacy::iswgraph(__wc); }
+
+  inline int 
+  iswcntrl(wint_t __wc) { return _C_legacy::iswcntrl(__wc); }
+
+  inline int 
+  towlower(wint_t __wc) { return _C_legacy::towlower(__wc); }
+
+  inline int 
+  towupper(wint_t __wc) { return _C_legacy::towupper(__wc); }
+
+  inline int 
+  iswctype(wint_t __wc, wctype_t __desc) 
+  { return _C_legacy::iswctype(__wc, __desc); }
+
+  inline wint_t 
+  towctrans(wint_t __wc, wctrans_t __desc)
+  { return _C_legacy::towctrans (__wc, __desc); }
   
-  namespace _C_legacy {
-    namespace _C_shadow {
-    }
-  }
+  inline wctrans_t 
+  wctrans(const char *__property) { return _C_legacy::wctrans(__property); }
+
+  inline wctype_t 
+  wctype(char const* __property) { return _C_legacy::wctype(__property); }
+} // namespace std
 
 # undef _IN_C_LEGACY_
 
 #endif
+

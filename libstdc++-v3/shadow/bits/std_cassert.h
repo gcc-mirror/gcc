@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,13 +31,19 @@
 // ISO C++ 14882: 19.2  Assertions
 //
 
-// No include guards or wrappers on this header...
-//
-//   If <assert.h> sub-includes anything else that 
-//   defines a global used in other headers, we are sunk.
+#ifndef _CPP_CASSERT
+#define _CPP_CASSERT 1
 
-extern "C" {
-# pragma GCC system_header
-# include_next <assert.h>
-}
+namespace _C_legacy {
+  extern "C" {
+#   define _IN_C_LEGACY_
+#   pragma GCC system_header
+#   include_next <assert.h>
+  }
+} // namespace _C_legacy
+
+#undef _IN_C_LEGACY_
+
+#endif
+
 

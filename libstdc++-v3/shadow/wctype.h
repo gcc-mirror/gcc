@@ -1,7 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,32 +27,48 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#ifndef  _INCLUDED_CPP_CWCTYPE_H_
-# undef _SHADOW_NAME
-# define _SHADOW_NAME <cwctype>
-# include <bits/generic_shadow.h>
-# undef _SHADOW_NAME
 
-# ifndef _IN_C_LEGACY_
-  using ::std::size_t; 
-  using ::std::wint_t;
-  using ::std::wctype_t;
-  using ::std::wctrans_t;
-  using ::std::iswalpha;
-  using ::std::iswupper;
-  using ::std::iswlower;
-  using ::std::iswdigit;
-  using ::std::iswxdigit;
-  using ::std::iswalnum;
-  using ::std::iswspace;
-  using ::std::iswpunct;
-  using ::std::iswprint;
-  using ::std::iswgraph;
-  using ::std::iswcntrl;
-  using ::std::iswctype;
-  using ::std::towlower;
-  using ::std::towupper;
+#ifndef  _INCLUDED_CPP_CWCTYPE_H_
 # define _INCLUDED_CPP_CWCTYPE_H_ 1
+
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _CWCHAR_NEED_C_LEGACY_
 # endif
 
+# include <cwctype>
+
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+  using std::wint_t;
+  using std::wctype_t;
+  using std::wctrans_t;
+  using std::iswalpha;
+  using std::iswupper;
+  using std::iswlower;
+  using std::iswdigit;
+  using std::iswxdigit;
+  using std::iswalnum;
+  using std::iswspace;
+  using std::iswpunct;
+  using std::iswprint;
+  using std::iswgraph;
+  using std::iswcntrl;
+  using std::iswctype;
+  using std::towctrans;
+  using std::towlower;
+  using std::towupper;
+  using std::wctrans;
+  using std::wctype;
+
+# ifdef _CWCHAR_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _CWCHAR_NEED_C_LEGACY_
+# endif /* _CWCHAR_NEED_C_LEGACY_ */
 #endif /* _INCLUDED_CPP_CWCTYPE_H_ */

@@ -19,15 +19,6 @@
 #include <bits/std_cstddef.h>
 
 
-/* For use as part of glibc (native) or as part of libstdc++ (maybe
-   not glibc) */
-#if __GLIBC__ < 2 || (__GLIBC__ == 2  && __GLIBC_MINOR__ <= 1)
-# ifdef _GLIBCPP_USE_WCHAR_T
-#  include <bits/std_cwchar.h>
-typedef mbstate_t __mbstate_t;
-# endif
-#endif
-
 #ifndef _WINT_T
 /* Integral type unchanged by default argument promotions that can
    hold any value corresponding to members of the extended character
@@ -36,9 +27,22 @@ typedef mbstate_t __mbstate_t;
 # define _WINT_T
 typedef unsigned int wint_t;
 #endif
-#define __need_mbstate_t
-#include <bits/std_cwchar.h>
-#define _G_size_t	size_t
+
+/* For use as part of glibc (native) or as part of libstdc++ (maybe
+   not glibc) */
+#if __GLIBC__ < 2 || (__GLIBC__ == 2  && __GLIBC_MINOR__ <= 1)
+# ifdef _GLIBCPP_USE_WCHAR_T
+typedef struct
+{
+	int count;
+	wint_t value;
+}__mbstate_t;
+# endif
+#endif
+
+typedef size_t _G_size_t;
+
+
 #if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
 typedef struct
 {

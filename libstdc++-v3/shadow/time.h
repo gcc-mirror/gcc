@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,32 +29,39 @@
 
 
 #ifndef  _INCLUDED_CPP_TIME_H_
-
-// turn off glibc-2.0 weirdness. Other systems define similar foolishness
-#undef __need_time_t
-#undef __need_clock_t
-#undef __need_timespec
-
-# undef _SHADOW_NAME
-# define _SHADOW_NAME <ctime>
-# include <bits/generic_shadow.h>
-# undef _SHADOW_NAME
-
-# ifndef _IN_C_LEGACY_
-  using ::std::size_t;  /* handled in <cstddef> */
-  using ::std::clock_t;
-  using ::std::time_t;
-  using ::std::tm;
-  using ::std::clock;
-  using ::std::difftime;
-  using ::std::mktime;
-  using ::std::time;
-  using ::std::asctime;
-  using ::std::ctime;
-  using ::std::gmtime;
-  using ::std::localtime;
-  using ::std::strftime;
 # define _INCLUDED_CPP_TIME_H_ 1
+
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _TIME_NEED_C_LEGACY_
 # endif
 
+# include <ctime>
+ 
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+  using std::clock_t;
+  using std::time_t;
+  using std::tm;
+
+  using std::clock;
+  using std::difftime;
+  using std::mktime;
+  using std::time;
+  using std::asctime;
+  using std::ctime;
+  using std::gmtime;
+  using std::localtime;
+  using std::strftime;
+
+# ifdef _TIME_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _TIME_NEED_C_LEGACY_
+# endif /* _TIME_NEED_C_LEGACY_ */
 #endif /* _INCLUDED_CPP_TIME_H_ */

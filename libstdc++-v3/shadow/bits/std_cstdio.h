@@ -1,5 +1,6 @@
 // -*- C++ -*- header wrapper.
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,85 +31,51 @@
 // ISO C++ 14882: 27.8.2  C Library files
 //
 
-// XXX problems?  Uses size_t, va_list in interfaces.  
-//   Maybe <stdio.h> needs a size_t macro defined.  Maybe it 
-//   clobbers va_list.
-// 
-// Also,
-//  uses va_start, va_end in implementation of vfprintf and
-//  vfscanf.  Maybe those shouldn't be inline.
-
 #ifndef _CPP_CSTDIO
 #define _CPP_CSTDIO 1
 
-# include <bits/std_cstddef.h>  /* pick up size_t, NULL */
-# include <bits/std_cstdarg.h>  /* pick up va_list, va_start, va_end */
+# include <bits/std_cstddef.h>  
+# include <bits/std_cstdarg.h>  
 
-  namespace _C_legacy {
-    extern "C" {
+namespace _C_legacy {
+  extern "C" {
 #     define _IN_C_LEGACY_
+#     undef __need_FILE
 #     pragma GCC system_header
 #     include_next <stdio.h>
-    }
-    // size_t handled in <cstddef>
-    typedef FILE _CPP_FILE_capture;
-    typedef fpos_t _CPP_fpos_t_capture;
-    // NULL done in <stddef.h>
-    const int _CPP_IOFBF_capture = _IOFBF;
-    const int _CPP_IOLBF_capture = _IOLBF;
-    const int _CPP_IONBF_capture = _IONBF;
-    const int _CPP_BUFSIZ_capture = BUFSIZ;
-    const int _CPP_EOF_capture = EOF;
-    const int _CPP_FOPEN_MAX_capture = FOPEN_MAX;
-    const int _CPP_FILENAME_MAX_capture = FILENAME_MAX;
-    const int _CPP_L_tmpnam_capture = L_tmpnam;
-    const int _CPP_SEEK_CUR_capture = SEEK_CUR;
-    const int _CPP_SEEK_END_capture = SEEK_END;
-    const int _CPP_SEEK_SET_capture = SEEK_SET;
-    const int _CPP_TMP_MAX_capture = TMP_MAX;
+  }
 
-    inline FILE* _CPP_stderr_capture() { return stderr; }
-    inline FILE* _CPP_stdin_capture()  { return stdin; }
-    inline FILE* _CPP_stdout_capture() { return stdout; }
+  typedef FILE _CPP_FILE_capture;
+  typedef fpos_t _CPP_fpos_t_capture;
 
-    inline int _CPP_getc_capture(FILE* __f)        { return getc(__f); }
-    inline int _CPP_getchar_capture()              { return getchar(); }
-    inline int _CPP_putc_capture(int __c, FILE* __f) { return putc(__c, __f); }
-    inline int _CPP_putchar_capture(int __c)       { return putchar(__c); }
-    inline int _CPP_feof_capture(FILE* __f)        { return feof(__f); }
+  inline FILE* 
+  _CPP_stderr_capture() { return stderr; }
 
-    namespace _C_shadow {
-    }
+  inline FILE* 
+  _CPP_stdin_capture()  { return stdin; }
 
-  } // close namespace ::_C_legacy::
+  inline FILE* 
+  _CPP_stdout_capture() { return stdout; }
 
-// # undef size_t  /* handled in <cstddef> */
+  inline int 
+  _CPP_getc_capture(FILE* __f) { return getc(__f); }
+
+  inline int 
+  _CPP_getchar_capture() { return getchar(); }
+
+  inline int 
+  _CPP_putc_capture(int __c, FILE* __f) { return putc(__c, __f); }
+  
+  inline int 
+  _CPP_putchar_capture(int __c) { return putchar(__c); }
+ 
+  inline int 
+  _CPP_feof_capture(FILE* __f) { return feof(__f); }
+
+} // namespace _C_legacy
+
 # undef FILE 
 # undef fpos_t 
-# undef _IOFBF
-# define _IOFBF		::_C_legacy::_CPP__IOFBF_capture
-# undef _IOLBF
-# define _IOLBF		::_C_legacy::_CPP__IOLBF_capture
-# undef _IONBF	
-# define _IONBF		::_C_legacy::_CPP__IONBF_capture
-# undef BUFSIZ
-# define BUFSIZ		::_C_legacy::_CPP_BUFSIZ_capture
-# undef EOF
-# define EOF		::_C_legacy::_CPP_EOF_capture
-# undef FOPEN_MAX
-# define FOPEN_MAX	::_C_legacy::_CPP_FOPEN_MAX_capture
-# undef FILENAME_MAX
-# define FILENAME_MAX	::_C_legacy::_CPP_FILENAME_MAX_capture
-# undef L_tmpnam
-# define L_tmpnam	::_C_legacy::_CPP_L_tmpnam_capture
-# undef SEEK_CUR
-# define SEEK_CUR	::_C_legacy::_CPP_SEEK_CUR_capture
-# undef SEEK_END
-# define SEEK_END	::_C_legacy::_CPP_SEEK_END_capture
-# undef SEEK_SET
-# define SEEK_SET	::_C_legacy::_CPP_SEEK_SET_capture
-# undef TMP_MAX
-# define TMP_MAX	::_C_legacy::_CPP_TMP_MAX_capture
 
 # undef remove
 # undef rename
@@ -151,216 +118,164 @@
 # undef feof
 # undef ferror
 # undef perror
-
-  namespace _C_legacy {
-    namespace _C_shadow {
-    }
-  }
-  namespace std {
-
-    // Adopt C names into std::
-
-    struct FILE   : ::_C_legacy::_CPP_FILE_capture { };
-    struct fpos_t { ::_C_legacy::_CPP_fpos_t_capture _M_dummy; };
-
-    inline FILE* _CPP_stderr()
-      { return reinterpret_cast<FILE*>( ::_C_legacy::_CPP_stderr_capture() ); }
-    inline FILE* _CPP_stdin()
-      { return reinterpret_cast<FILE*>( ::_C_legacy::_CPP_stdin_capture() ); }
-    inline FILE* _CPP_stdout()
-      { return reinterpret_cast<FILE*>( ::_C_legacy::_CPP_stdout_capture() ); }
-
-    using ::_C_legacy::remove;
-    using ::_C_legacy::rename;
-
-    inline FILE*
-      tmpfile() { return reinterpret_cast<FILE*>(::_C_legacy::tmpfile()); }
-
-    using ::_C_legacy::tmpnam;
-
-    inline int
-      fclose(FILE* __f) { return ::_C_legacy::fclose(__f); }
-
-    inline int
-      fflush(FILE* __f) { return ::_C_legacy::fflush(__f); }
-
-    inline FILE*
-      fopen(char const* __name, char const* __mode) 
-        { return reinterpret_cast<FILE*>(::_C_legacy::fopen(__name,__mode)); }
-
-    inline FILE*
-      freopen(char const* __name, char const* __mode, FILE* __f) 
-        { return reinterpret_cast<FILE*>(
-	  ::_C_legacy::freopen(__name,__mode,__f)); }
-
-    inline void
-      setbuf(FILE* __f, char* __buf) 
-        { return ::_C_legacy::setbuf(__f, __buf); }
-
-    inline int
-      setvbuf(FILE* __f, char* __buf, int __mode, size_t __size) 
-        { return ::_C_legacy::setvbuf(__f, __buf, __mode, __size); }
-
-    inline int
-      fprintf(FILE* __f, char const* __fmt, ...)
-        { va_list __v; va_start(__v,__fmt); 
-          int __i = ::_C_legacy::vfprintf(__f, __fmt, __v); va_end(__v);
-	    return __i; }
-
-    inline int
-      fscanf(FILE* __f, char const* __fmt, ...)
-        { va_list __v; va_start(__v,__fmt); 
-          int __i = ::_C_legacy::vfscanf(__f, __fmt, __v); va_end(__v);
-	    return __i; }
-
-    using ::_C_legacy::printf;
-    using ::_C_legacy::scanf;
-    using ::_C_legacy::sprintf;
-    using ::_C_legacy::sscanf;
-
-    // using ::_C_legacy::vfprintf;
-    inline int
-      vfprintf(FILE* __f, char const* __fmt, va_list __v)
-        { return ::_C_legacy::vfprintf(__f, __fmt, __v); }
-
-    inline int
-      vprintf(char const* __fmt, va_list __v)
-        { return ::_C_legacy::vprintf(__fmt, __v); }
-
-    inline int
-      vsprintf(char* __buf, char const* __fmt, va_list __v)
-        { return ::_C_legacy::vsprintf(__buf, __fmt, __v); }
-
-    inline int
-      fgetc(FILE* __f) { return ::_C_legacy::fgetc(__f); }
-
-    // using ::_C_legacy::fgets;
-    inline char*
-      fgets(char* __buf, int __n, FILE* __f) 
-        { return ::_C_legacy::fgets(__buf, __n, __f); }
-
-    inline int
-      fputc(int __c, FILE* __f) { return ::_C_legacy::fputc(__c, __f); }
-
-    inline int
-      fputs(char const* __s, FILE* __f) 
-        { return ::_C_legacy::fputs(__s, __f); }
-
-    inline int
-      getc(FILE* __f) { return ::_C_legacy::_CPP_getc_capture(__f); }
-
-    inline int
-      getchar() { return ::_C_legacy::_CPP_getchar_capture(); }
-
-    using ::_C_legacy::gets;
-
-    inline int
-      putc(int __c, FILE* __f) 
-        { return ::_C_legacy::_CPP_putc_capture(__c, __f); }
-
-    inline int
-      putchar(int __c) { return ::_C_legacy::_CPP_putchar_capture(__c); }
-
-    using ::_C_legacy::puts;
-
-    // using ::_C_legacy::ungetc;
-    inline int
-      ungetc(int __c, FILE* __f) { return ::_C_legacy::ungetc(__c, __f); }
-
-    inline size_t
-      fread(void* __p, size_t __z, size_t __n, FILE* __f)
-        { return ::_C_legacy::fread(__p,__z,__n,__f); }
-
-    inline size_t
-      fwrite(void const* __p, size_t __z, size_t __n, FILE* __f)
-        { return ::_C_legacy::fwrite(__p,__z,__n,__f); }
-
-    inline int
-      fgetpos(FILE* __f, fpos_t* __pos)
-        { return ::_C_legacy::fgetpos(__f,&__pos->_M_dummy); }
-
-    inline int
-      fseek(FILE* __f, long __off, int __how)
-        { return ::_C_legacy::fseek(__f,__off,__how); }
-
-    inline int
-      fsetpos(FILE* __f, fpos_t const* __pos)
-        { return ::_C_legacy::fsetpos(__f,&__pos->_M_dummy); }
-
-    inline long
-      ftell(FILE* __f) { return ::_C_legacy::ftell(__f); }
-
-    inline void
-      rewind(FILE* __f) { return ::_C_legacy::rewind(__f); }
-
-    inline void
-      clearerr(FILE* __f) { return ::_C_legacy::clearerr(__f); }
-
-    inline int
-      feof(FILE* __f) { return ::_C_legacy::_CPP_feof_capture(__f); }
-
-    inline int
-      ferror(FILE* __f) { return ::_C_legacy::ferror(__f); }
-
-    using ::_C_legacy::perror;
-
-  } // close namespace std::
   
 # undef stderr
-# define stderr ::std::_CPP_stderr()
+# define stderr std::_CPP_stderr()
 # undef stdin
-# define stdin  ::std::_CPP_stdin()
+# define stdin  std::_CPP_stdin()
 # undef stdout
-# define stdout ::std::_CPP_stdout()
+# define stdout std::_CPP_stdout()
 
-  namespace _C_legacy {
-    namespace _C_shadow {
-      using ::std::FILE;
-      using ::std::fpos_t;
+namespace std {
+  struct FILE : _C_legacy::_CPP_FILE_capture { };
+  struct fpos_t { _C_legacy::_CPP_fpos_t_capture _M_dummy; };
 
-      // using ::std::remove;
-      // using ::std::rename;
-      using ::std::tmpfile;
-      // using ::std::tmpnam;
-      using ::std::fclose;
-      using ::std::fflush;
-      using ::std::fopen;
-      using ::std::freopen;
-      using ::std::setbuf;
-      using ::std::setvbuf;
-      using ::std::fprintf;
-      using ::std::fscanf;
-      // using ::std::printf;
-      // using ::std::scanf;
-      // using ::std::sprintf;
-      // using ::std::sscanf;
-      using ::std::vfprintf;
-      using ::std::vprintf;
-      using ::std::vsprintf;  
-      using ::std::fgetc;
-      using ::std::fgets;
-      using ::std::fputc;
-      using ::std::fputs;
-      using ::std::getc;
-      using ::std::getchar;
-      // using ::std::gets;
-      using ::std::putc;
-      using ::std::putchar;
-      // using ::std::puts;
-      using ::std::ungetc;
-      using ::std::fread;
-      using ::std::fwrite;
-      using ::std::fgetpos;
-      using ::std::fseek;
-      using ::std::fsetpos;
-      using ::std::ftell;
-      using ::std::rewind;
-      using ::std::clearerr;
-      using ::std::feof;
-      using ::std::ferror;
-      // using ::std::perror;
-    }
+  using _C_legacy::remove;
+  using _C_legacy::rename;
+  using _C_legacy::tmpnam;
+  using _C_legacy::printf;
+  using _C_legacy::scanf;
+  using _C_legacy::sprintf;
+  using _C_legacy::sscanf;
+  using _C_legacy::gets;
+  using _C_legacy::perror;
+
+  inline FILE* 
+  _CPP_stderr()
+  { return reinterpret_cast<FILE*>(_C_legacy::_CPP_stderr_capture() ); }
+
+  inline FILE* 
+  _CPP_stdin()
+  { return reinterpret_cast<FILE*>(_C_legacy::_CPP_stdin_capture() ); }
+
+  inline FILE* 
+  _CPP_stdout()
+  { return reinterpret_cast<FILE*>(_C_legacy::_CPP_stdout_capture() ); }
+
+  inline FILE*
+  tmpfile() { return reinterpret_cast<FILE*>(_C_legacy::tmpfile()); }
+
+  inline int
+  fclose(FILE* __f) { return _C_legacy::fclose(__f); }
+
+  inline int
+  fflush(FILE* __f) { return _C_legacy::fflush(__f); }
+
+  inline FILE*
+  fopen(char const* __name, char const* __mode) 
+  { return reinterpret_cast<FILE*>(_C_legacy::fopen(__name,__mode)); }
+
+  inline FILE*
+  freopen(char const* __name, char const* __mode, FILE* __f) 
+  { return reinterpret_cast<FILE*>(_C_legacy::freopen(__name,__mode,__f)); }
+
+  inline void
+  setbuf(FILE* __f, char* __buf) 
+  { return _C_legacy::setbuf(__f, __buf); }
+
+  inline int
+  setvbuf(FILE* __f, char* __buf, int __mode, size_t __size) 
+  { return _C_legacy::setvbuf(__f, __buf, __mode, __size); }
+
+  inline int
+  fprintf(FILE* __f, char const* __fmt, ...)
+  { 
+    va_list __v; 
+    va_start(__v,__fmt); 
+    int __i = _C_legacy::vfprintf(__f, __fmt, __v); 
+    va_end(__v);
+    return __i; 
   }
+
+  inline int
+  fscanf(FILE* __f, char const* __fmt, ...)
+  { 
+    va_list __v; 
+    va_start(__v,__fmt); 
+    int __i = _C_legacy::vfscanf(__f, __fmt, __v); 
+    va_end(__v);
+    return __i; 
+  }
+
+  inline int
+  vfprintf(FILE* __f, char const* __fmt, va_list __v)
+  { return _C_legacy::vfprintf(__f, __fmt, __v); }
+
+  inline int
+  vprintf(char const* __fmt, va_list __v)
+  { return _C_legacy::vprintf(__fmt, __v); }
+
+  inline int
+  vsprintf(char* __buf, char const* __fmt, va_list __v)
+  { return _C_legacy::vsprintf(__buf, __fmt, __v); }
+
+  inline int
+  fgetc(FILE* __f) { return _C_legacy::fgetc(__f); }
+
+  inline char*
+  fgets(char* __buf, int __n, FILE* __f) 
+  { return _C_legacy::fgets(__buf, __n, __f); }
+
+  inline int
+  fputc(int __c, FILE* __f) { return _C_legacy::fputc(__c, __f); }
+
+  inline int
+  fputs(char const* __s, FILE* __f) 
+  { return _C_legacy::fputs(__s, __f); }
+
+  inline int
+  getc(FILE* __f) { return _C_legacy::_CPP_getc_capture(__f); }
+
+  inline int
+  getchar() { return _C_legacy::_CPP_getchar_capture(); }
+
+  inline int
+  putc(int __c, FILE* __f) 
+  { return _C_legacy::_CPP_putc_capture(__c, __f); }
+
+  inline int
+  putchar(int __c) { return _C_legacy::_CPP_putchar_capture(__c); }
+
+  using _C_legacy::puts;
+
+  inline int
+  ungetc(int __c, FILE* __f) { return _C_legacy::ungetc(__c, __f); }
+
+  inline size_t
+  fread(void* __p, size_t __z, size_t __n, FILE* __f)
+  { return _C_legacy::fread(__p,__z,__n,__f); }
+
+  inline size_t
+  fwrite(void const* __p, size_t __z, size_t __n, FILE* __f)
+  { return _C_legacy::fwrite(__p,__z,__n,__f); }
+
+  inline int
+  fgetpos(FILE* __f, fpos_t* __pos)
+  { return _C_legacy::fgetpos(__f,&__pos->_M_dummy); }
+
+  inline int
+  fseek(FILE* __f, long __off, int __how)
+  { return _C_legacy::fseek(__f,__off,__how); }
+
+  inline int
+  fsetpos(FILE* __f, fpos_t const* __pos)
+  { return _C_legacy::fsetpos(__f,&__pos->_M_dummy); }
+
+  inline long
+  ftell(FILE* __f) { return _C_legacy::ftell(__f); }
+
+  inline void
+  rewind(FILE* __f) { return _C_legacy::rewind(__f); }
+
+  inline void
+  clearerr(FILE* __f) { return _C_legacy::clearerr(__f); }
+
+  inline int
+  feof(FILE* __f) { return _C_legacy::_CPP_feof_capture(__f); }
+
+  inline int
+  ferror(FILE* __f) { return _C_legacy::ferror(__f); }
+} // namespace std
 
 # undef _IN_C_LEGACY_
 
