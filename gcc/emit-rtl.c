@@ -1,6 +1,6 @@
 /* Emit RTL for the GNU C-Compiler expander.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -929,6 +929,32 @@ set_reg_attrs_from_mem (reg, mem)
   if (MEM_OFFSET (mem) && GET_CODE (MEM_OFFSET (mem)) == CONST_INT)
     REG_ATTRS (reg)
       = get_reg_attrs (MEM_EXPR (mem), INTVAL (MEM_OFFSET (mem)));
+}
+
+/* Set the register attributes for registers contained in PARM_RTX.
+   Use needed values from memory attributes of MEM.  */
+
+void
+set_reg_attrs_for_parm (parm_rtx, mem)
+     rtx parm_rtx;
+     rtx mem;
+{
+  if (GET_CODE (parm_rtx) == REG)
+    set_reg_attrs_from_mem (parm_rtx, mem);
+  else if (GET_CODE (parm_rtx) == PARALLEL)
+    {
+      /* Check for a NULL entry in the first slot, used to indicate that the
+	 parameter goes both on the stack and in registers.  */
+      int i = XEXP (XVECEXP (parm_rtx, 0, 0), 0) ? 0 : 1;
+      for (; i < XVECLEN (parm_rtx, 0); i++)
+	{
+	  rtx x = XVECEXP (parm_rtx, 0, i);
+	  if (GET_CODE (XEXP (x, 0)) == REG)
+	    REG_ATTRS (XEXP (x, 0))
+	      = get_reg_attrs (MEM_EXPR (mem),
+			       INTVAL (XEXP (x, 1)));
+	}
+    }
 }
 
 /* Assign the RTX X to declaration T.  */

@@ -1,3 +1,10 @@
+2003-02-28  Josef Zlomek  <zlomekj@suse.cz>
+
+	* emit-rtl.c (set_reg_attrs_for_parm): New function.
+	* rtl.h (set_reg_attrs_for_parm): New exported function.
+	* function.c (assign_parms): Use set_reg_attrs_for_parm instead of
+	set_reg_attrs_from_mem.
+
 2003-02-27  Roger Sayle  <roger@eyesopen.com>
 	    Zack Weinberg <zack@codesourcery.com>
 
