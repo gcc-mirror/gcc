@@ -30,6 +30,8 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "langhooks-def.h"
 
+enum c_language_kind c_language = clk_cxx;
+
 static HOST_WIDE_INT cxx_get_alias_set (tree);
 static bool ok_to_generate_alias_set_for_type (tree);
 static bool cxx_warn_unused_global_decl (tree);
@@ -48,7 +50,7 @@ static bool cp_var_mod_type_p (tree);
 #undef LANG_HOOKS_CLEAR_BINDING_STACK
 #define LANG_HOOKS_CLEAR_BINDING_STACK pop_everything
 #undef LANG_HOOKS_INIT_OPTIONS
-#define LANG_HOOKS_INIT_OPTIONS cxx_init_options
+#define LANG_HOOKS_INIT_OPTIONS c_common_init_options
 #undef LANG_HOOKS_HANDLE_OPTION
 #define LANG_HOOKS_HANDLE_OPTION c_common_handle_option
 #undef LANG_HOOKS_POST_OPTIONS

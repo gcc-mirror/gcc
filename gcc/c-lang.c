@@ -31,7 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "langhooks-def.h"
 
-static int c_init_options (void);
+enum c_language_kind c_language = clk_c;
 
 /* ### When changing hooks, consider if ObjC needs changing too!! ### */
 
@@ -42,7 +42,7 @@ static int c_init_options (void);
 #undef LANG_HOOKS_FINISH
 #define LANG_HOOKS_FINISH c_common_finish
 #undef LANG_HOOKS_INIT_OPTIONS
-#define LANG_HOOKS_INIT_OPTIONS c_init_options
+#define LANG_HOOKS_INIT_OPTIONS c_common_init_options
 #undef LANG_HOOKS_HANDLE_OPTION
 #define LANG_HOOKS_HANDLE_OPTION c_common_handle_option
 #undef LANG_HOOKS_POST_OPTIONS
@@ -158,12 +158,6 @@ const char *const tree_code_name[] = {
 #include "c-common.def"
 };
 #undef DEFTREECODE
-
-static int
-c_init_options (void)
-{
-  return c_common_init_options (clk_c);
-}
 
 /* Used by c-lex.c, but only for objc.  */
 

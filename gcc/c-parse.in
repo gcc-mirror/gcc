@@ -3551,7 +3551,7 @@ init_reswords ()
   int mask = (flag_isoc99 ? 0 : D_C89)
 	      | (flag_no_asm ? (flag_isoc99 ? D_EXT : D_EXT|D_EXT89) : 0);
 
-  if (!flag_objc)
+  if (!c_dialect_objc ())
      mask |= D_OBJC;
 
   ridpointers = (tree *) ggc_calloc ((int) RID_MAX, sizeof (tree));

@@ -2863,7 +2863,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
   if (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL)
     {
       /* This is a no-op in c-lang.c or something real in objc-act.c.  */
-      if (flag_objc)
+      if (c_dialect_objc ())
 	objc_check_decl (decl);
 
       if (!DECL_CONTEXT (decl))
@@ -2927,7 +2927,7 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
   if (TREE_CODE (decl) == TYPE_DECL)
     {
       /* This is a no-op in c-lang.c or something real in objc-act.c.  */
-      if (flag_objc)
+      if (c_dialect_objc ())
 	objc_check_decl (decl);
       rest_of_decl_compilation (decl, NULL, DECL_CONTEXT (decl) == 0, 0);
     }
@@ -4864,7 +4864,7 @@ grokfield (tree declarator, tree declspecs, tree width)
   finish_decl (value, NULL_TREE, NULL_TREE);
   DECL_INITIAL (value) = width;
 
-  if (flag_objc)
+  if (c_dialect_objc ())
     objc_check_decl (value);
   return value;
 }
@@ -5160,7 +5160,7 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 	    {
 	      layout_decl (decl, 0);
 	      /* This is a no-op in c-lang.c or something real in objc-act.c.  */
-	      if (flag_objc)
+	      if (c_dialect_objc ())
 		objc_check_decl (decl);
 	      rest_of_decl_compilation (decl, NULL, toplevel, 0);
 	      if (! toplevel)
@@ -5183,7 +5183,7 @@ finish_struct (tree t, tree fieldlist, tree attributes)
 		  if (TREE_CODE (decl) != TYPE_DECL)
 		    {
 		      layout_decl (decl, 0);
-		      if (flag_objc)
+		      if (c_dialect_objc ())
 			objc_check_decl (decl);
 		      rest_of_decl_compilation (decl, NULL, toplevel, 0);
 		      if (! toplevel)

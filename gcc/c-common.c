@@ -87,10 +87,6 @@ cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 			: "long long unsigned int"))
 #endif
 
-/* The variant of the C language being processed.  */
-
-enum c_language_kind c_language;
-
 /* The following symbols are subsumed in the c_global_trees array, and
    listed here individually for documentation purposes.
 
@@ -227,9 +223,6 @@ const char *pch_file;
 /* Nonzero if an ISO standard was selected.  It rejects macros in the
    user's namespace.  */
 int flag_iso;
-
-/* Nonzero whenever Objective-C functionality is being used.  */
-int flag_objc;
 
 /* Nonzero if -undef was given.  It suppresses target built-in macros
    and assertions.  */
@@ -1166,7 +1159,7 @@ fix_string_type (tree value)
   /* Compute the number of elements, for the array type.  */
   nchars = wide_flag ? length / wchar_bytes : length;
 
-  if (pedantic && nchars - 1 > nchars_max && c_language == clk_c)
+  if (pedantic && nchars - 1 > nchars_max && !c_dialect_cxx ())
     pedwarn ("string length `%d' is greater than the length `%d' ISO C%d compilers are required to support",
 	     nchars - 1, nchars_max, flag_isoc99 ? 99 : 89);
 
@@ -1868,7 +1861,7 @@ check_case_value (tree value)
        switch (...) { case i: ... }
 
      So, we try to reduce the VALUE to a constant that way.  */
-  if (c_language == clk_cplusplus)
+  if (c_dialect_cxx ())
     {
       value = decl_constant_value (value);
       STRIP_TYPE_NOPS (value);
@@ -3155,25 +3148,25 @@ c_common_nodes_and_builtins (void)
   /* `signed' is the same as `int'.  FIXME: the declarations of "signed",
      "unsigned long", "long long unsigned" and "unsigned short" were in C++
      but not C.  Are the conditionals here needed?  */
-  if (c_language == clk_cplusplus)
+  if (c_dialect_cxx ())
     record_builtin_type (RID_SIGNED, NULL, integer_type_node);
   record_builtin_type (RID_LONG, "long int", long_integer_type_node);
   record_builtin_type (RID_UNSIGNED, "unsigned int", unsigned_type_node);
   record_builtin_type (RID_MAX, "long unsigned int",
 		       long_unsigned_type_node);
-  if (c_language == clk_cplusplus)
+  if (c_dialect_cxx ())
     record_builtin_type (RID_MAX, "unsigned long", long_unsigned_type_node);
   record_builtin_type (RID_MAX, "long long int",
 		       long_long_integer_type_node);
   record_builtin_type (RID_MAX, "long long unsigned int",
 		       long_long_unsigned_type_node);
-  if (c_language == clk_cplusplus)
+  if (c_dialect_cxx ())
     record_builtin_type (RID_MAX, "long long unsigned",
 			 long_long_unsigned_type_node);
   record_builtin_type (RID_SHORT, "short int", short_integer_type_node);
   record_builtin_type (RID_MAX, "short unsigned int",
 		       short_unsigned_type_node);
-  if (c_language == clk_cplusplus)
+  if (c_dialect_cxx ())
     record_builtin_type (RID_MAX, "unsigned short",
 			 short_unsigned_type_node);
 
@@ -3334,7 +3327,7 @@ c_common_nodes_and_builtins (void)
   wchar_type_node = get_identifier (MODIFIED_WCHAR_TYPE);
   wchar_type_node = TREE_TYPE (identifier_global_value (wchar_type_node));
   wchar_type_size = TYPE_PRECISION (wchar_type_node);
-  if (c_language == clk_cplusplus)
+  if (c_dialect_cxx ())
     {
       if (TREE_UNSIGNED (wchar_type_node))
 	wchar_type_node = make_unsigned_type (wchar_type_size);
@@ -3954,12 +3947,7 @@ c_add_case_label (splay_tree cases, tree cond, tree low_value,
 
   /* Case ranges are a GNU extension.  */
   if (high_value && pedantic)
-    {
-      if (c_language == clk_cplusplus)
-	pedwarn ("ISO C++ forbids range expressions in switch statements");
-      else
-	pedwarn ("ISO C forbids range expressions in switch statements");
-    }
+    pedwarn ("range expressions in switch statements are non-standard");
 
   type = TREE_TYPE (cond);
   if (low_value)
@@ -4076,12 +4064,7 @@ finish_label_address_expr (tree label)
   tree result;
 
   if (pedantic)
-    {
-      if (c_language == clk_cplusplus)
-	pedwarn ("ISO C++ forbids taking the address of a label");
-      else
-	pedwarn ("ISO C forbids taking the address of a label");
-    }
+    pedwarn ("taking the address of a label is non-standard");
 
   if (label == error_mark_node)
     return error_mark_node;
@@ -4550,9 +4533,8 @@ tree
 boolean_increment (enum tree_code code, tree arg)
 {
   tree val;
-  tree true_res = (c_language == clk_cplusplus
-		   ? boolean_true_node
-		   : c_bool_true_node);
+  tree true_res = (c_dialect_cxx () ? boolean_true_node : c_bool_true_node);
+
   arg = stabilize_reference (arg);
   switch (code)
     {

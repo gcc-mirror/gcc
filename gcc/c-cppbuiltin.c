@@ -255,7 +255,7 @@ define__GNUC__ (void)
   while (ISDIGIT (*v))
     v++;
   builtin_define_with_value_n ("__GNUC__", q, v - q);
-  if (c_language == clk_cplusplus)
+  if (c_dialect_cxx ())
     builtin_define_with_value_n ("__GNUG__", q, v - q);
 
   if (*v != '.' || !ISDIGIT (v[1]))
@@ -294,7 +294,7 @@ c_cpp_builtins (cpp_reader *pfile)
   /* For stddef.h.  They require macros defined in c-common.c.  */
   c_stddef_cpp_builtins ();
 
-  if (c_language == clk_cplusplus)
+  if (c_dialect_cxx ())
     {
       if (SUPPORTS_ONE_ONLY)
 	cpp_define (pfile, "__GXX_WEAK__=1");
@@ -375,11 +375,11 @@ c_cpp_builtins (cpp_reader *pfile)
   if (!flag_signed_char)
     cpp_define (pfile, "__CHAR_UNSIGNED__");
 
-  if (c_language == clk_cplusplus && TREE_UNSIGNED (wchar_type_node))
+  if (c_dialect_cxx () && TREE_UNSIGNED (wchar_type_node))
     cpp_define (pfile, "__WCHAR_UNSIGNED__");
 
   /* Make the choice of ObjC runtime visible to source code.  */
-  if (flag_objc && flag_next_runtime)
+  if (c_dialect_objc () && flag_next_runtime)
     cpp_define (pfile, "__NEXT_RUNTIME__");
 
   /* A straightforward target hook doesn't work, because of problems

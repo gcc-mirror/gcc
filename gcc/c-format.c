@@ -261,7 +261,7 @@ enum format_std_version
    or inheriting from, for the purpose of format features supported.  */
 #define CPLUSPLUS_STD_VER	STD_C94
 /* The C standard version we are checking formats against when pedantic.  */
-#define C_STD_VER		((int)(c_language == clk_cplusplus	  \
+#define C_STD_VER		((int)(c_dialect_cxx ()			  \
 				 ? CPLUSPLUS_STD_VER			  \
 				 : (flag_isoc99				  \
 				    ? STD_C99				  \
@@ -269,7 +269,7 @@ enum format_std_version
 /* The name to give to the standard version we are warning about when
    pedantic.  FEATURE_VER is the version in which the feature warned out
    appeared, which is higher than C_STD_VER.  */
-#define C_STD_NAME(FEATURE_VER) (c_language == clk_cplusplus	\
+#define C_STD_NAME(FEATURE_VER) (c_dialect_cxx ()		\
 				 ? "ISO C++"			\
 				 : ((FEATURE_VER) == STD_EXT	\
 				    ? "ISO C"			\
