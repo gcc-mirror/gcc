@@ -65,7 +65,7 @@ Boston, MA 02111-1307, USA.  */
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifndef _WIN32
+#if ! defined (_WIN32) || defined (__CYGWIN32__)
 #if defined(POSIX) || defined(CONCURRENT)
 #include <dirent.h>
 #else
@@ -180,9 +180,6 @@ typedef char * const_pointer_type;
 #ifndef abort
 typedef void voidfn ();
 extern VOLATILE voidfn abort;
-#endif
-#ifndef _WIN32
-extern int kill ();
 #endif
 extern int creat ();
 #if 0 /* These conflict with stdio.h on some systems.  */
