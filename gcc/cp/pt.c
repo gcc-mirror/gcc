@@ -6515,8 +6515,10 @@ tsubst (t, args, complain, in_decl)
 	  r = build_reference_type (type);
 	r = cp_build_qualified_type_real (r, TYPE_QUALS (t), complain);
 
-	/* Will this ever be needed for TYPE_..._TO values?  */
-	layout_type (r);
+	if (r != error_mark_node)
+	  /* Will this ever be needed for TYPE_..._TO values?  */
+	  layout_type (r);
+	
 	return r;
       }
     case OFFSET_TYPE:
