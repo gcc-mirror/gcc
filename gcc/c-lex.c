@@ -1398,9 +1398,44 @@ yylex ()
 	    else
 	      {
 		set_float_handler (handler);
-		value = REAL_VALUE_ATOF (token_buffer);
-		set_float_handler (NULL_PTR);
+
+/* The second argument, machine_mode, of REAL_VALUE_ATOF tells the
+   desired precision of the binary result of decimal-to-binary conversion.  */
+
+	    /* Read the suffixes to choose a data type.  */
+	    switch (c)
+	      {
+	      case 'f': case 'F':
+		type = float_type_node;
+		value = REAL_VALUE_ATOF (token_buffer, TYPE_MODE (type));
+		if (REAL_VALUE_ISINF (value) && pedantic)
+		  pedwarn ("floating point number exceeds range of `float'");
+		garbage_chars = -1;
+		break;
+
+	      case 'l': case 'L':
+		type = long_double_type_node;
+		value = REAL_VALUE_ATOF (token_buffer, TYPE_MODE (type));
+		if (REAL_VALUE_ISINF (value) && pedantic)
+		  pedwarn (
+		      "floating point number exceeds range of `long double'");
+		garbage_chars = -1;
+		break;
+
+	      case 'i': case 'I':
+		if (imag)
+		  error ("more than one `i' or `j' in numeric constant");
+		imag = 1;
+		garbage_chars = -1;
+		break;
+
+              default:
+		value = REAL_VALUE_ATOF (token_buffer, TYPE_MODE (type));
+		if (REAL_VALUE_ISINF (value) && pedantic)
+		  pedwarn ("floating point number exceeds range of `double'");
 	      }
+	    set_float_handler (NULL_PTR);
+	    }
 #ifdef ERANGE
 	    if (errno == ERANGE && !flag_traditional && pedantic)
 	      {
@@ -1414,29 +1449,6 @@ yylex ()
 		  }
 	      }
 #endif
-
-	    /* Read the suffixes to choose a data type.  */
-	    switch (c)
-	      {
-	      case 'f': case 'F':
-		type = float_type_node;
-		value = REAL_VALUE_TRUNCATE (TYPE_MODE (type), value);
-		if (REAL_VALUE_ISINF (value) && ! exceeds_double && pedantic)
-		  pedwarn ("floating point number exceeds range of `float'");
-		garbage_chars = -1;
-		break;
-
-	      case 'l': case 'L':
-		type = long_double_type_node;
-		garbage_chars = -1;
-		break;
-
-	      case 'i': case 'I':
-		if (imag)
-		  error ("more than one `i' or `j' in numeric constant");
-		imag = 1;
-		garbage_chars = -1;
-	      }
 	    /* Note: garbage_chars is -1 if first char is *not* garbage.  */
 	    while (isalnum (c) || c == '.' || c == '_'
 		   || (!flag_traditional && (c == '+' || c == '-')
