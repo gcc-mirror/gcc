@@ -48,6 +48,7 @@ details.  */
 #include <java/lang/System.h>
 #include <java/lang/SecurityManager.h>
 #include <java/lang/StringBuffer.h>
+#include <java/lang/VMClassLoader.h>
 #include <gnu/gcj/runtime/StackTrace.h>
 #include <gcj/method.h>
 #include <gnu/gcj/runtime/MethodRef.h>
@@ -758,7 +759,7 @@ java::lang::Class::initializeClass (void)
 	{
 	  // this can throw exceptions, so exit the monitor as a precaution.
 	  _Jv_MonitorExit (this);
-	  java::lang::ClassLoader::resolveClass0 (this);
+	  java::lang::VMClassLoader::resolveClass (this);
 	  _Jv_MonitorEnter (this);
 	}
       else

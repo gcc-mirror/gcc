@@ -90,7 +90,7 @@ public final class VMClassLoader extends java.net.URLClassLoader
   private int lib_control;
 
   // The only VMClassLoader that can exist.
-  public static VMClassLoader instance = new VMClassLoader();
+  static VMClassLoader instance = new VMClassLoader();
 
   private static final int LIB_FULL = 0;
   private static final int LIB_CACHE = 1;

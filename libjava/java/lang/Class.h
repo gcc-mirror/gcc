@@ -290,6 +290,7 @@ private:
 
   // Friends classes and functions to implement the ClassLoader
   friend class java::lang::ClassLoader;
+  friend class java::lang::VMClassLoader;
 
   friend class java::io::ObjectOutputStream;
   friend class java::io::ObjectInputStream;

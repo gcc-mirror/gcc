@@ -1,6 +1,6 @@
 // natClassLoader.cc - Implementation of java.lang.ClassLoader native methods.
 
-/* Copyright (C) 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -44,11 +44,12 @@ details.  */
 /////////// java.lang.ClassLoader native methods ////////////
 
 java::lang::Class *
-java::lang::ClassLoader::defineClass0 (jstring name,
-				       jbyteArray data, 
-				       jint offset,
-				       jint length,
-				       java::security::ProtectionDomain *pd)
+java::lang::VMClassLoader::defineClass (java::lang::ClassLoader *loader,
+					jstring name,
+					jbyteArray data, 
+					jint offset,
+					jint length,
+					java::security::ProtectionDomain *pd)
 {
 #ifdef INTERPRETER
   jclass klass;
@@ -62,8 +63,8 @@ java::lang::ClassLoader::defineClass0 (jstring name,
 
   // Record the defining loader.  For the system class loader, we
   // record NULL.
-  if (this != java::lang::ClassLoader::getSystemClassLoader())
-    klass->loader = this;
+  if (loader != java::lang::ClassLoader::getSystemClassLoader())
+    klass->loader = loader;
 
   if (name != 0)
     {
@@ -105,6 +106,36 @@ java::lang::ClassLoader::defineClass0 (jstring name,
 #endif
 }
 
+// Finish linking a class.  Only called from ClassLoader::resolveClass.
+void
+java::lang::VMClassLoader::linkClass0 (java::lang::Class *klass)
+{
+  _Jv_WaitForState (klass, JV_STATE_LINKED);
+}
+
+void
+java::lang::VMClassLoader::markClassErrorState0 (java::lang::Class *klass)
+{
+  klass->state = JV_STATE_ERROR;
+  klass->notifyAll ();
+}
+
+java::lang::ClassLoader *
+java::lang::VMClassLoader::getSystemClassLoaderInternal()
+{
+  _Jv_InitClass (&gnu::gcj::runtime::VMClassLoader::class$);
+  return gnu::gcj::runtime::VMClassLoader::instance;
+}
+
+jclass
+java::lang::VMClassLoader::getPrimitiveClass (jchar type)
+{
+  char sig[2];
+  sig[0] = (char) type;
+  sig[1] = '\0';
+  return _Jv_FindClassFromSignature (sig, NULL);
+}
+
 void
 _Jv_WaitForState (jclass klass, int state)
 {
@@ -139,39 +170,6 @@ _Jv_WaitForState (jclass klass, int state)
 
   if (klass->state == JV_STATE_ERROR)
     throw new java::lang::LinkageError;
-}
-
-// Finish linking a class.  Only called from ClassLoader::resolveClass.
-void
-java::lang::ClassLoader::linkClass0 (java::lang::Class *klass)
-{
-  _Jv_WaitForState (klass, JV_STATE_LINKED);
-}
-
-void
-java::lang::ClassLoader::markClassErrorState0 (java::lang::Class *klass)
-{
-  klass->state = JV_STATE_ERROR;
-  klass->notifyAll ();
-}
-
-jclass
-java::lang::VMClassLoader::defineClass (java::lang::ClassLoader *cl, 
-					jstring name,
-					jbyteArray data, 
-					jint offset,
-					jint length)
-{
-  return cl->defineClass (name, data, offset, length);
-}
-
-jclass
-java::lang::VMClassLoader::getPrimitiveClass (jchar type)
-{
-  char sig[2];
-  sig[0] = (char) type;
-  sig[1] = '\0';
-  return _Jv_FindClassFromSignature (sig, NULL);
 }
 
 typedef unsigned int uaddr __attribute__ ((mode (pointer)));
@@ -281,7 +279,7 @@ _Jv_PrepareCompiledClass (jclass klass)
 //  The set of initiating class loaders are used to ensure
 //  safety of linking, and is maintained in the hash table
 //  "initiated_classes".  A defining classloader is by definition also
-//  initiating, so we only store classes in this table, if they have more
+//  initiating, so we only store classes in this table if they have more
 //  than one class loader associated.
 //
 

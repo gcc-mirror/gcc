@@ -1,3 +1,26 @@
+2003-09-25  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/reflect/Proxy.java (generate): Uncomment protection
+	domain code.
+	* java/lang/natClassLoader.cc (defineClass): Added `loader'
+	argument.
+	(linkClass0): Now in VMClassLoader.
+	(markClassErrorState0): Likewise.
+	(getSystemClassLoaderInternal): New method.
+	* java/lang/natClass.cc (initializeClass): Use
+	VMClassLoader::resolveClass.
+	* java/lang/ClassLoader.java: New version, from Classpath.
+	* java/lang/Class.java (getProtectionDomain):
+	protectionDomainPermission and unknownProtectionDomain now in
+	VMClassLoader.
+	* java/lang/Class.h: VMClassLoader now a friend class.
+	* gnu/gcj/runtime/VMClassLoader.java (instance): Now
+	package-private.
+	* gcj/javaprims.h: Regenerated class list.
+	* resolve.cc (_Jv_PrepareClass): Use VMClassLoader::resolveClass.
+	* java/lang/VMClassLoader.java: New version from Classpath;
+	modified for libgcj use.
+
 2003-09-25  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/ByteBufferHelper.java:
