@@ -195,11 +195,6 @@ struct dbx_file GTY(())
   struct dbx_file *prev;              /* Chain to traverse all pending bincls.  */
 };
 
-#ifdef DBX_USE_BINCL
-/* If zero then there is no pending BINCL.  */
-static int pending_bincls = 0;
-#endif
-
 /* This is the top of the stack.  */
 
 static GTY(()) struct dbx_file *current_file;
@@ -240,6 +235,11 @@ static GTY(()) int lastfile_is_base;
    no use for DBX-format debugging info.  */
 
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+
+#ifdef DBX_USE_BINCL
+/* If zero then there is no pending BINCL.  */
+static int pending_bincls = 0;
+#endif
 
 /* The original input file name.  */
 static const char *base_input_file;
