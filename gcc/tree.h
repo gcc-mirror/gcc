@@ -1496,12 +1496,6 @@ extern int contains_placeholder_p	PROTO((tree));
 
 extern tree substitute_in_expr		PROTO((tree, tree, tree));
 
-/* Given a type T, a FIELD_DECL F, and a replacement value R,
-   return a new type with all size expressions that contain F
-   updated by replacing the reference to F with R.  */
-
-extern tree substitute_in_type		PROTO((tree, tree, tree));
-
 /* variable_size (EXP) is like save_expr (EXP) except that it
    is for the special case of something that is part of a
    variable size for a data type.  It makes special arrangements
