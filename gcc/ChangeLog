@@ -1,3 +1,9 @@
+2004-12-21  Richard Henderson  <rth@redhat.com>
+
+	* gimplify.c (eval_save_expr): New.
+	(gimplify_one_sizepos): Use it.
+	* stor-layout.c (layout_type): Unshare TYPE_MIN/MAX_VALUE.
+
 2004-12-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* system.c (IN_RANGE): Use plain unsigned, not unsigned

@@ -4217,7 +4217,25 @@ gimplify_type_sizes (tree type, tree *list_p)
   gimplify_one_sizepos (&TYPE_SIZE_UNIT (type), list_p);
 }
 
-/* Subroutine of the above to gimplify one size or position, *EXPR_P.
+/* A subroutine of gimplify_one_sizepos, called via walk_tree.  Evaluate
+   the expression if it's a SAVE_EXPR and add it to the statement list 
+   in DATA.  */
+
+static tree
+eval_save_expr (tree *tp, int *walk_subtrees, void *data)
+{
+  if (TREE_CODE (*tp) == SAVE_EXPR)
+    {
+      *walk_subtrees = 0;
+      gimplify_and_add (*tp, (tree *) data);
+    }
+  else if (TYPE_P (*tp) || DECL_P (*tp))
+    *walk_subtrees = 0;
+  return NULL;
+}
+
+/* A subroutine of gimplify_type_sizes to make sure that *EXPR_P,
+   a size or position, has had all of its SAVE_EXPRs evaluated.
    We add any required statements to STMT_P.  */
 
 void
@@ -4233,7 +4251,7 @@ gimplify_one_sizepos (tree *expr_p, tree *stmt_p)
       || CONTAINS_PLACEHOLDER_P (*expr_p))
     return;
 
-  gimplify_expr (expr_p, stmt_p, NULL, is_gimple_val, fb_rvalue);
+  walk_tree (expr_p, eval_save_expr, stmt_p, NULL);
 }
 
 #ifdef ENABLE_CHECKING

@@ -1644,8 +1644,8 @@ layout_type (tree type)
 	if (index && TYPE_MAX_VALUE (index) && TYPE_MIN_VALUE (index)
 	    && TYPE_SIZE (element))
 	  {
-	    tree ub = TYPE_MAX_VALUE (index);
-	    tree lb = TYPE_MIN_VALUE (index);
+	    tree ub = unshare_expr (TYPE_MAX_VALUE (index));
+	    tree lb = unshare_expr (TYPE_MIN_VALUE (index));
 	    tree length;
 	    tree element_size;
 
