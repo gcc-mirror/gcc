@@ -1,3 +1,10 @@
+1999-08-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* pt.c (tsubst): Use build_index_type to build in-template array
+	index type.  Fixes g++.oliva/dwarf1.C.
+	* decl.c (grokdeclarator): Likewise, just for consistency, as it
+	doesn't seem to trigger the bug without it.
+
 1999-08-06  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck2.c (add_exception_specifier): Use complete_type.
