@@ -1,3 +1,11 @@
+2004-09-24  Tom Tromey  <tromey@redhat.com>
+
+	PR java/16789:
+	* parse.y (resolve_qualified_expression_name): Set
+	CAN_COMPLETE_NORMALLY on first call when chaining static calls.
+	* expr.c (force_evaluation_order): Check for empty argument list
+	after stripping COMPOUND_EXPR.
+
 2004-09-23  Andrew Haley  <aph@redhat.com>
 
 	PR java/16927:
