@@ -1,3 +1,8 @@
+2001-06-26  Vladimir Makarov  <vmakarov@toke.toronto.redhat.com>
+
+	* glimits.h (USHRT_MAX): Use unsigned suffix if int can not hold
+	it.
+
 2001-06-26  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.h (struct diagnostic_context): Add new field.
