@@ -501,10 +501,10 @@ else
 # machine or put another way, the most popular os provided with the machine.
 case $basic_machine in
 	*-dec | vax-*)
-		os=-ultrix42
+		os=-ultrix4.2
 		;;
 	i386-sun)
-		os=-sunos402
+		os=-sunos4.0.2
 		;;
 	m68000-sun)
 		os=-sunos3
@@ -516,7 +516,7 @@ case $basic_machine in
 		os=-sysv3
 		;;
 	sparc-* | *-sun)
-		os=-sunos411
+		os=-sunos4.1.1
 		;;
 	*-ibm)
 		os=-aix
