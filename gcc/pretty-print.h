@@ -145,9 +145,29 @@ struct pretty_print_info
   bool need_newline;
 };
 
+#define pp_set_line_maximum_length(PP, L) \
+   pp_base_set_line_maximum_length (pp_base (PP), L)
+#define pp_set_prefix(PP, P)    pp_base_set_prefix (pp_base (PP), P)
+#define pp_destroy_prefix(PP)   pp_base_destroy_prefix (pp_base (PP))
+#define pp_remaining_character_count_for_line(PP) \
+  pp_base_remaining_character_count_for_line (pp_base (PP))
+#define pp_clear_output_area(PP) \
+  pp_base_clear_output_area (pp_base (PP))
+#define pp_formatted_text(PP)   pp_base_formatted_text (pp_base (PP))
+#define pp_last_position_in_text(PP) \
+  pp_base_last_position_in_text (pp_base (PP))
+#define pp_emit_prefix(PP)      pp_base_emit_prefix (pp_base (PP))
+#define pp_append_text(PP, B, E) \
+  pp_base_append_text (pp_base (PP), B, E)
+#define pp_flush(PP)            pp_base_flush (pp_base (PP))
+#define pp_format_text(PP, TI)  pp_base_format_text (pp_base (PP), TI)
+#define pp_format_verbatim(PP, TI) \
+  pp_base_format_verbatim (pp_base (PP), TI)
+
 #define pp_character(PP, C)     pp_base_character (pp_base (PP), C)
 #define pp_string(PP, S)        pp_base_string (pp_base (PP), S)
 #define pp_newline(PP)          pp_base_newline (pp_base (PP))
+
 #define pp_space(PP)            pp_character (PP, ' ')
 #define pp_left_paren(PP)       pp_character (PP, '(')
 #define pp_right_paren(PP)      pp_character (PP, ')')
@@ -202,7 +222,7 @@ struct pretty_print_info
 
 #define pp_identifier(PP, ID)  pp_string (PP, ID)
 #define pp_tree_identifier(PP, T)                      \
-  pp_append_text(pp_base (PP), IDENTIFIER_POINTER (T), \
+  pp_append_text(PP, IDENTIFIER_POINTER (T), \
                  IDENTIFIER_POINTER (T) + IDENTIFIER_LENGTH (T))
 
 #define pp_unsupported_tree(PP, T)                         \
@@ -216,20 +236,20 @@ struct pretty_print_info
 #define pp_base(PP) (PP)
 
 extern void pp_construct (pretty_printer *, const char *, int);
-extern void pp_set_line_maximum_length (pretty_printer *, int);
-extern void pp_set_prefix (pretty_printer *, const char *);
-extern void pp_destroy_prefix (pretty_printer *);
-extern int pp_remaining_character_count_for_line (pretty_printer *);
-extern void pp_clear_output_area (pretty_printer *);
-extern const char *pp_formatted_text (pretty_printer *);
-extern const char *pp_last_position_in_text (const pretty_printer *);
-extern void pp_emit_prefix (pretty_printer *);
-extern void pp_append_text (pretty_printer *, const char *, const char *);
+extern void pp_base_set_line_maximum_length (pretty_printer *, int);
+extern void pp_base_set_prefix (pretty_printer *, const char *);
+extern void pp_base_destroy_prefix (pretty_printer *);
+extern int pp_base_remaining_character_count_for_line (pretty_printer *);
+extern void pp_base_clear_output_area (pretty_printer *);
+extern const char *pp_base_formatted_text (pretty_printer *);
+extern const char *pp_base_last_position_in_text (const pretty_printer *);
+extern void pp_base_emit_prefix (pretty_printer *);
+extern void pp_base_append_text (pretty_printer *, const char *, const char *);
 extern void pp_printf (pretty_printer *, const char *, ...) ATTRIBUTE_PRINTF_2;
 extern void pp_verbatim (pretty_printer *, const char *, ...);
-extern void pp_flush (pretty_printer *);
-extern void pp_format_text (pretty_printer *, text_info *);
-extern void pp_format_verbatim (pretty_printer *, text_info *);
+extern void pp_base_flush (pretty_printer *);
+extern void pp_base_format_text (pretty_printer *, text_info *);
+extern void pp_base_format_verbatim (pretty_printer *, text_info *);
 
 extern void pp_base_newline (pretty_printer *);
 extern void pp_base_character (pretty_printer *, int);

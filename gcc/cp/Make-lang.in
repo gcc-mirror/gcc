@@ -86,8 +86,8 @@ CXX_C_OBJS = attribs.o c-common.o c-format.o c-pragma.o c-semantics.o c-lex.o \
 CXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/class.o cp/decl2.o cp/error.o cp/lex.o cp/parser.o cp/ptree.o cp/rtti.o \
  cp/typeck.o cp/cvt.o cp/except.o cp/friend.o cp/init.o cp/method.o \
- cp/search.o cp/semantics.o cp/tree.o cp/repo.o cp/dump.o \
- cp/optimize.o cp/mangle.o cp/cp-lang.o cp/name-lookup.o
+ cp/search.o cp/semantics.o cp/tree.o cp/repo.o cp/dump.o cp/optimize.o \
+ cp/mangle.o cp/cp-lang.o cp/name-lookup.o cp/cxx-pretty-print.o
 
 # Use strict warnings for this front end.
 cp-warn = $(STRICT_WARN) $(WERROR)
@@ -231,10 +231,12 @@ CXX_TREE_H = $(TREE_H) cp/name-lookup.h cp/cp-tree.h c-common.h \
 	$(GGC_H) \
 	$(srcdir)/../include/hashtab.h $(srcdir)/../include/splay-tree.h
 
+CXX_PRETTY_PRINT_H = cp/cxx-pretty-print.h $(C_PRETTY_PRINT_H)
+
 cp/lex.o: cp/lex.c $(CXX_TREE_H) $(TM_H) flags.h cp/lex.h \
   c-pragma.h toplev.h output.h input.h cp/operators.def $(TM_P_H)
 cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) $(TM_H) toplev.h langhooks.h \
-  $(LANGHOOKS_DEF_H) c-common.h
+  $(LANGHOOKS_DEF_H) c-common.h $(CXX_PRETTY_PRINT_H) $(DIAGNOSTIC_H)
 cp/decl.o: cp/decl.c $(CXX_TREE_H) $(TM_H) flags.h cp/lex.h cp/decl.h stack.h \
   output.h $(EXPR_H) except.h toplev.h $(HASHTAB_H) $(RTL_H) \
   cp/operators.def $(TM_P_H) tree-inline.h diagnostic.h c-pragma.h \
@@ -266,7 +268,7 @@ cp/expr.o: cp/expr.c $(CXX_TREE_H) $(TM_H) $(RTL_H) flags.h $(EXPR_H) toplev.h \
 cp/pt.o: cp/pt.c $(CXX_TREE_H) $(TM_H) cp/decl.h cp/lex.h \
   toplev.h $(RTL_H) except.h tree-inline.h gt-cp-pt.h
 cp/error.o: cp/error.c $(CXX_TREE_H) $(TM_H) toplev.h $(DIAGNOSTIC_H) \
-  flags.h real.h $(LANGHOOKS_DEF_H)
+  flags.h real.h $(LANGHOOKS_DEF_H) $(CXX_PRETTY_PRINT_H)
 cp/repo.o: cp/repo.c $(CXX_TREE_H) $(TM_H) toplev.h diagnostic.h \
   gt-cp-repo.h
 cp/semantics.o: cp/semantics.c $(CXX_TREE_H) $(TM_H) cp/lex.h except.h toplev.h \
@@ -281,3 +283,6 @@ cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) diagnostic.h gt-cp-parser.h outpu
 
 cp/name-lookup.o: cp/name-lookup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(CXX_TREE_H) timevar.h gt-cp-name-lookup.h
+
+cp/cxx-pretty-print.o: cp/cxx-pretty-print.c $(CXX_PRETTY_PRINT_H) \
+  $(CONFIG_H) $(SYSTEM_H) $(TM_H) coretypes.h $(CXX_TREE_H)

@@ -181,7 +181,7 @@ pp_append_r (pretty_printer *pp, const char *start, int length)
    %*.s: a substring the length of which is specified by an integer.
    %H: location_t.  */
 void
-pp_format_text (pretty_printer *pp, text_info *text)
+pp_base_format_text (pretty_printer *pp, text_info *text)
 {
   for (; *text->format_spec; ++text->format_spec)
     {
@@ -320,7 +320,7 @@ pp_format_text (pretty_printer *pp, text_info *text)
 /* Helper subroutine of output_verbatim and verbatim. Do the appropriate
    settings needed by BUFFER for a verbatim formatting.  */
 void
-pp_format_verbatim (pretty_printer *pp, text_info *text)
+pp_base_format_verbatim (pretty_printer *pp, text_info *text)
 {
   diagnostic_prefixing_rule_t rule = pp_prefixing_rule (pp);
   int line_cutoff = pp_line_cutoff (pp);
@@ -337,7 +337,7 @@ pp_format_verbatim (pretty_printer *pp, text_info *text)
 
 /* Flush the content of BUFFER onto the attached stream.  */
 void
-pp_flush (pretty_printer *pp)
+pp_base_flush (pretty_printer *pp)
 {
   pp_write_text_to_stream (pp);
   pp_clear_state (pp);
@@ -349,7 +349,7 @@ pp_flush (pretty_printer *pp)
    output in line-wrapping mode.  A LENGTH value 0 suppresses
    line-wrapping.  */
 void
-pp_set_line_maximum_length (pretty_printer *pp, int length)
+pp_base_set_line_maximum_length (pretty_printer *pp, int length)
 {
   pp_line_cutoff (pp) = length;
   pp_set_real_maximum_length (pp);
@@ -357,7 +357,7 @@ pp_set_line_maximum_length (pretty_printer *pp, int length)
 
 /* Clear PRETTY-PRINTER output area text info.  */
 void
-pp_clear_output_area (pretty_printer *pp)
+pp_base_clear_output_area (pretty_printer *pp)
 {
   obstack_free (&pp->buffer->obstack, obstack_base (&pp->buffer->obstack));
   pp->buffer->line_length = 0;
@@ -365,7 +365,7 @@ pp_clear_output_area (pretty_printer *pp)
 
 /* Set PREFIX for PRETTY-PRINTER.  */
 void
-pp_set_prefix (pretty_printer *pp, const char *prefix)
+pp_base_set_prefix (pretty_printer *pp, const char *prefix)
 {
   pp->prefix = prefix;
   pp_set_real_maximum_length (pp);
@@ -375,7 +375,7 @@ pp_set_prefix (pretty_printer *pp, const char *prefix)
 
 /* Free PRETTY-PRINTER's prefix, a previously malloc()'d string.  */
 void
-pp_destroy_prefix (pretty_printer *pp)
+pp_base_destroy_prefix (pretty_printer *pp)
 {
   if (pp->prefix != NULL)
     {
@@ -386,7 +386,7 @@ pp_destroy_prefix (pretty_printer *pp)
 
 /* Write out PRETTY-PRINTER's prefix.  */
 void
-pp_emit_prefix (pretty_printer *pp)
+pp_base_emit_prefix (pretty_printer *pp)
 {
   if (pp->prefix != NULL)
     {
@@ -436,7 +436,7 @@ pp_construct (pretty_printer *pp, const char *prefix, int maximum_length)
    whitespace if appropriate.  The caller must ensure that it is
    safe to do so.  */
 void
-pp_append_text (pretty_printer *pp, const char *start, const char *end)
+pp_base_append_text (pretty_printer *pp, const char *start, const char *end)
 {
   /* Emit prefix and skip whitespace if we're starting a new line.  */
   if (pp->buffer->line_length == 0)
@@ -452,7 +452,7 @@ pp_append_text (pretty_printer *pp, const char *start, const char *end)
 /* Finishes constructing a NULL-terminated character string representing
    the PRETTY-PRINTED text.  */
 const char *
-pp_formatted_text (pretty_printer *pp)
+pp_base_formatted_text (pretty_printer *pp)
 {
   obstack_1grow (&pp->buffer->obstack, '\0');
   return pp_formatted_text_data (pp);
@@ -461,7 +461,7 @@ pp_formatted_text (pretty_printer *pp)
 /*  Return a pointer to the last character emitted in PRETTY-PRINTER's
     output area.  A NULL pointer means no character available.  */
 const char *
-pp_last_position_in_text (const pretty_printer *pp)
+pp_base_last_position_in_text (const pretty_printer *pp)
 {
   const char *p = NULL;
   struct obstack *text = &pp->buffer->obstack;
@@ -474,7 +474,7 @@ pp_last_position_in_text (const pretty_printer *pp)
 /* Return the amount of characters PRETTY-PRINTER can accept to
    make a full line.  Meaningfull only in line-wrapping mode.  */
 int
-pp_remaining_character_count_for_line (pretty_printer *pp)
+pp_base_remaining_character_count_for_line (pretty_printer *pp)
 {
   return pp->maximum_length - pp->buffer->line_length;
 }

@@ -658,6 +658,7 @@ PREDICT_H = predict.h predict.def
 CPPLIB_H = cpplib.h line-map.h
 PRETTY_PRINT_H = pretty-print.h input.h $(OBSTACK_H)
 DIAGNOSTIC_H = diagnostic.h diagnostic.def $(PRETTY_PRINT_H)
+C_PRETTY_PRINT_H = $(PRETTY_PRINT_H) $(C_COMMON_H) $(TREE_H)
 
 # sed inserts variable overrides after the following line.
 ####target overrides
@@ -1326,7 +1327,7 @@ c-common.o : c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 	$(GGC_H) $(EXPR_H) $(TM_P_H) builtin-types.def builtin-attrs.def \
 	$(DIAGNOSTIC_H) gt-c-common.h langhooks.h varray.h $(RTL_H) \
 	$(TARGET_H) $(C_TREE_H)
-c-pretty-print.o : c-pretty-print.c c-pretty-print.h pretty-print.h \
+c-pretty-print.o : c-pretty-print.c $(C_PRETTY_PRINT_H) \
 	$(C_COMMON_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) real.h
 
 c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \

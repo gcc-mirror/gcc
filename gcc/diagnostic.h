@@ -110,7 +110,7 @@ struct diagnostic_context
 #define diagnostic_auxiliary_data(DC) (DC)->x_data
 
 /* Same as pp_format_decoder.  Works on 'diagnostic_context *'.  */
-#define diagnostic_format_decoder(DC) pp_format_decoder ((DC)->printer)
+#define diagnostic_format_decoder(DC) ((DC)->printer->format_decoder)
 
 /* Same as output_prefixing_rule.  Works on 'diagnostic_context *'.  */
 #define diagnostic_prefixing_rule(DC) ((DC)->printer->prefixing_rule)
@@ -119,7 +119,7 @@ struct diagnostic_context
    Zero means don't wrap lines.  */
 #define diagnostic_line_cutoff(DC) ((DC)->printer->ideal_maximum_length)
 
-#define diagnostic_flush_buffer(DC) pp_flush ((DC)->printer)
+#define diagnostic_flush_buffer(DC) pp_base_flush ((DC)->printer)
 
 /* True if the last function in which a diagnostic was reported is
    different from the current one.  */
