@@ -251,6 +251,10 @@ extern int flag_rtti;
    to get the type_info object address.  */
 #define new_abi_rtti_p() (flag_new_abi)
 
+/* Nonzero if primary and secondary vtables are combined into a single
+   vtable.  */
+#define merge_primary_and_secondary_vtables_p() (flag_new_abi)
+
 
 /* Language-dependent contents of an identifier.  */
 
