@@ -5,6 +5,7 @@
 
    Written by Kaveh R. Ghazi, 11/27/2000.  */
 
+extern int inside_main;
 extern void abort (void);
 typedef __SIZE_TYPE__ size_t;
 extern char *strcat (char *, const char *);
@@ -15,7 +16,7 @@ extern int memcmp (const void *, const void *, size_t);
 #define RESET_DST_WITH(FILLER) \
   do { memset (dst, 'X', sizeof (dst)); strcpy (dst, (FILLER)); } while (0)
 
-int main ()
+void main_test (void)
 {
   const char *const s1 = "hello world";
   const char *const s2 = "";
@@ -38,6 +39,13 @@ int main ()
     abort();
 
 #ifndef __OPTIMIZE_SIZE__
+# if !defined __i386__ && !defined __x86_64__
+  /* The functions below might not be optimized into direct stores on all
+     arches.  It depends on how many instructions would be generated and
+     what limits the architecture chooses in STORE_BY_PIECES_P.  */
+  inside_main = 0;
+# endif
+
   RESET_DST_WITH (s1);
   if (strcat (dst, " 1111") != dst
       || memcmp (dst, "hello world 1111\0XXX", 20))
@@ -58,6 +66,9 @@ int main ()
 				  "is "), "a "), "test"), ".");
   if (memcmp (dst, "hello world: this is a test.\0X", 30))
     abort();
+
+  /* Set inside_main again.  */
+  inside_main = 1;
 #endif
 
   /* Test at least one instance of the __builtin_ style.  We do this
@@ -65,18 +76,4 @@ int main ()
   RESET_DST_WITH (s1);
   if (__builtin_strcat (dst, "") != dst || strcmp (dst, s1))
     abort();
-
-  return 0;
 }
-
-#ifdef __OPTIMIZE__
-/* When optimizing, all the above cases should be transformed into
-   something else.  So any remaining calls to the original function
-   should abort.  */
-__attribute__ ((noinline))
-static char *
-strcat (char *s1, const char *s2)
-{
-  abort();
-}
-#endif
