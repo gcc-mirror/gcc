@@ -1,3 +1,8 @@
+2002-03-25  Bob Wilson  <bob.wilson@acm.org>
+
+	* g++.old-deja/g++.jason/thunk3.C: Add xtensa-*-* to list of
+	targets using generic thunk support.
+
 2002-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/other/enum1.C: New test.
