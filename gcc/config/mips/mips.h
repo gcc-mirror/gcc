@@ -101,6 +101,7 @@ extern int inside_function;		/* != 0 if inside of a function */
 extern int ignore_line_number;		/* != 0 if we are to ignore next .loc */
 extern int file_in_function_warning;	/* warning given about .file in func */
 extern int sdb_label_count;		/* block start/end next label # */
+extern int sdb_begin_function_line;     /* Starting Line of current function */
 extern int mips_section_threshold;	/* # bytes of data/sdata cutoff */
 extern int g_switch_value;		/* value of the -G xx switch */
 extern int g_switch_set;		/* whether -G xx was passed.  */
@@ -912,7 +913,11 @@ do {							\
 
 #define PUT_SDB_FUNCTION_START(LINE)
 
-#define PUT_SDB_FUNCTION_END(LINE)
+#define PUT_SDB_FUNCTION_END(LINE)            \
+do {                                                  \
+  extern FILE *asm_out_text_file;             \
+  ASM_OUTPUT_SOURCE_LINE (asm_out_text_file, LINE + sdb_begin_function_line); \
+} while (0)
 
 #define PUT_SDB_EPILOGUE_END(NAME)
 
