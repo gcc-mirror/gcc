@@ -1695,7 +1695,7 @@ unshare_all_rtl (fndecl, insn)
 
   /* Make sure that virtual parameters are not shared.  */
   for (decl = DECL_ARGUMENTS (fndecl); decl; decl = TREE_CHAIN (decl))
-    copy_rtx_if_shared (DECL_RTL (decl));
+    DECL_RTL (decl) = copy_rtx_if_shared (DECL_RTL (decl));
 
   /* Unshare just about everything else.  */
   unshare_all_rtl_1 (insn);
@@ -1707,7 +1707,7 @@ unshare_all_rtl (fndecl, insn)
      This special care is necessary when the stack slot MEM does not
      actually appear in the insn chain.  If it does appear, its address
      is unshared from all else at that point.  */
-  copy_rtx_if_shared (stack_slot_list);
+  stack_slot_list = copy_rtx_if_shared (stack_slot_list);
 }
 
 /* Go through all the RTL insn bodies and copy any invalid shared 
