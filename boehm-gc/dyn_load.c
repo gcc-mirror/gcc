@@ -80,6 +80,11 @@
 #   define l_name	lm_name
 #endif
 
+#if defined(NETBSD)
+#   include <machine/elf_machdep.h>
+#   define ELFSIZE ARCH_ELFSIZE
+#endif
+
 #if defined(LINUX) && defined(__ELF__) || defined(SCO_ELF) || \
     (defined(FREEBSD) && defined(__ELF__)) || defined(DGUX) || \
     (defined(NETBSD) && defined(__ELF__)) || defined(HURD)
