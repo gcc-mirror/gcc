@@ -1,4 +1,20 @@
-2004-05-3  Mike Stump  <mrs@apple.com>
+2004-05-05  Mike Stump  <mrs@apple.com>
+
+	* config/darwin-c.c (add_framework): Copy the directory name as it
+	can be freed later.  Also, ensure we always allocate enough room
+	for the cached framework information.
+	(find_subframework_header): Keep track of the directory where the
+	subframework header was found.
+	(framework_construct_pathname): Speed up by not trying to re-add a
+	framework.
+	* cppfiles.c (search_path_exhausted): Arrange for the missing
+	header callback to be able to set the directory where the header
+	was found.
+	(cpp_get_dir): Add.
+	* cpplib.h (missing_header_cb): Add a parameter.
+	(cpp_get_dir): Add.
+
+2004-05-03  Mike Stump  <mrs@apple.com>
 
 	* doc/invoke.texi (Directory Options): Document -iquote.
 	* doc/cpp.texi: Likewise.

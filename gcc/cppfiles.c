@@ -362,7 +362,7 @@ search_path_exhausted (cpp_reader *pfile, const char *header, _cpp_file *file)
   if (func
       && file->dir == NULL)
     {
-      if ((file->path = func (pfile, header)) != NULL)
+      if ((file->path = func (pfile, header, &file->dir)) != NULL)
 	{
 	  if (open_file (file))
 	    return true;
@@ -1314,6 +1314,14 @@ const char *
 cpp_get_path (struct _cpp_file *f)
 {
   return f->path;
+}
+
+/* Get the directory associated with the _cpp_file F.  */
+
+cpp_dir *
+cpp_get_dir (struct _cpp_file *f)
+{
+  return f->dir;
 }
 
 /* Get the cpp_buffer currently associated with the cpp_reader

@@ -44,7 +44,8 @@ static void push_field_alignment (int);
 static void pop_field_alignment (void);
 static const char *find_subframework_file (const char *, const char *);
 static void add_system_framework_path (char *);
-static const char *find_subframework_header (cpp_reader *pfile, const char *header);
+static const char *find_subframework_header (cpp_reader *pfile, const char *header,
+					     cpp_dir **dirp);
 
 typedef struct align_stack
 {
@@ -166,11 +167,13 @@ static int max_frameworks = 0;
 /* Remember which frameworks have been seen, so that we can ensure
    that all uses of that framework come from the same framework.  DIR
    is the place where the named framework NAME, which is of length
-   LEN, was found.  */
+   LEN, was found.  We copy the directory name from NAME, as it will be
+   freed by others.  */
 
 static void
 add_framework (const char *name, size_t len, cpp_dir *dir)
 {
+  char *dir_name;
   int i;
   for (i = 0; i < num_frameworks; ++i)
     {
@@ -183,10 +186,14 @@ add_framework (const char *name, size_t len, cpp_dir *dir)
   if (i >= max_frameworks)
     {
       max_frameworks = i*2;
+      max_frameworks += i == 0;
       frameworks_in_use = xrealloc (frameworks_in_use,
 				    max_frameworks*sizeof(*frameworks_in_use));
     }
-  frameworks_in_use[num_frameworks].name = name;
+  dir_name = xmalloc (len + 1);
+  memcpy (dir_name, name, len);
+  dir_name[len] = '\0';
+  frameworks_in_use[num_frameworks].name = dir_name;
   frameworks_in_use[num_frameworks].len = len;
   frameworks_in_use[num_frameworks].dir = dir;
   ++num_frameworks;
@@ -272,7 +279,8 @@ framework_construct_pathname (const char *fname, cpp_dir *dir)
 
       if (stat (frname, &st) == 0)
 	{
-	  add_framework (fname, fname_len, dir);
+	  if (fast_dir == 0)
+	    add_framework (fname, fname_len, dir);
 	  return frname;
 	}
     }
@@ -445,7 +453,7 @@ darwin_register_frameworks (int stdinc)
    returns non-zero.  */
 
 static const char*
-find_subframework_header (cpp_reader *pfile, const char *header)
+find_subframework_header (cpp_reader *pfile, const char *header, cpp_dir **dirp)
 {
   const char *fname = header;
   struct cpp_buffer *b;
@@ -457,7 +465,14 @@ find_subframework_header (cpp_reader *pfile, const char *header)
     {
       n = find_subframework_file (fname, cpp_get_path (cpp_get_file (b)));
       if (n)
-	return n;
+	{
+	  /* Logically, the place where we found the subframework is
+	     the place where we found the Framework that contains the
+	     subframework.  This is useful for tracking wether or not
+	     we are in a system header.  */
+	  *dirp = cpp_get_dir (cpp_get_file (b));
+	  return n;
+	}
     }
 
   return 0;
