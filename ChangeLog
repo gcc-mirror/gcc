@@ -1,5 +1,7 @@
 2003-06-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* MAINTAINERS: "GNATS only" -> "Bug database only".
+
 	* Makefile.tpl: Rename [+target+] to [+make_target+].
 	* Makefile.def: Rename 'target' to 'make_target'.
 
