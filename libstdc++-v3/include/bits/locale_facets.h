@@ -795,9 +795,6 @@ namespace std
   template<typename _CharT>
     class numpunct_byname : public numpunct<_CharT>
     {
-      // Data Member.
-      __c_locale			_M_c_locale_numpunct;
-
     public:
       typedef _CharT               	char_type;
       typedef basic_string<_CharT> 	string_type;
@@ -806,14 +803,18 @@ namespace std
       numpunct_byname(const char* __s, size_t __refs = 0)
       : numpunct<_CharT>(__refs)
       {
-	this->_S_create_c_locale(_M_c_locale_numpunct, __s);
-	this->_M_initialize_numpunct(_M_c_locale_numpunct);	
+	if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+	  {
+	    __c_locale __tmp;
+	    this->_S_create_c_locale(__tmp, __s);
+	    this->_M_initialize_numpunct(__tmp);	
+	    this->_S_destroy_c_locale(__tmp); 
+	  }
       }
 
     protected:
       virtual 
-      ~numpunct_byname() 
-      { this->_S_destroy_c_locale(_M_c_locale_numpunct); }
+      ~numpunct_byname() { }	
     };
 
   template<typename _CharT, typename _InIter>
@@ -1151,8 +1152,11 @@ namespace std
       collate_byname(const char* __s, size_t __refs = 0)
       : collate<_CharT>(__refs) 
       { 
-	this->_S_destroy_c_locale(this->_M_c_locale_collate);
-	this->_S_create_c_locale(this->_M_c_locale_collate, __s); 
+	if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+	  {
+	    this->_S_destroy_c_locale(this->_M_c_locale_collate);
+	    this->_S_create_c_locale(this->_M_c_locale_collate, __s); 
+	  }
       }
 
     protected:
@@ -1589,7 +1593,7 @@ namespace std
       typedef _OutIter   		iter_type;
 
       explicit 
-      time_put_byname(const char* /*__s*/, size_t __refs = 0) 
+      time_put_byname(const char*, size_t __refs = 0) 
       : time_put<_CharT, _OutIter>(__refs) 
       { };
 
@@ -1805,8 +1809,6 @@ namespace std
   template<typename _CharT, bool _Intl>
     class moneypunct_byname : public moneypunct<_CharT, _Intl>
     {
-      __c_locale			_M_c_locale_moneypunct;
-
     public:
       typedef _CharT 			char_type;
       typedef basic_string<_CharT> 	string_type;
@@ -1817,14 +1819,18 @@ namespace std
       moneypunct_byname(const char* __s, size_t __refs = 0)
       : moneypunct<_CharT, _Intl>(__refs)
       {
-	this->_S_create_c_locale(_M_c_locale_moneypunct, __s);
-	this->_M_initialize_moneypunct(_M_c_locale_moneypunct);	
+	if (std::strcmp(__s, "C") != 0 && std::strcmp(__s, "POSIX") != 0)
+	  {
+	    __c_locale __tmp;
+	    this->_S_create_c_locale(__tmp, __s);
+	    this->_M_initialize_moneypunct(__tmp);	
+	    this->_S_destroy_c_locale(__tmp); 
+	  }
       }
 
     protected:
       virtual 
-      ~moneypunct_byname() 
-      { this->_S_destroy_c_locale(_M_c_locale_moneypunct); }
+      ~moneypunct_byname() { }
     };
 
   template<typename _CharT, bool _Intl>

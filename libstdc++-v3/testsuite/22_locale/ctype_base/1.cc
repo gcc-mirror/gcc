@@ -1,7 +1,7 @@
 // { dg-do compile }
-// 2001-08-15  Benjamin Kosnik  <bkoz@redhat.com>
+// 1999-08-24 bkoz
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 1999, 2000, 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,25 +19,38 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 22.2.4 The collate category
+// 22.2.1 The ctype category
+
+// 1: Test that the locale headers are picking up the correct declaration
+// of the internal type `ctype_base::mask'.
+int mask ();
 
 #include <locale>
 
-void test01()
+// 2: Sanity check ctype_base::mask bitmask requirements
+void
+test01()
 {
-  // Check for required base class.
-  typedef std::collate<char> test_type;
-  typedef std::locale::facet base_type;
-  const test_type& obj = std::use_facet<test_type>(std::locale()); 
-  const base_type* base __attribute__((unused)) = &obj;
+  using namespace std;
 
-  // Check for required typedefs
-  typedef test_type::char_type char_type;
-  typedef test_type::string_type string_type;
+  ctype_base::mask m01;
+  ctype_base::mask m02;
+  ctype_base::mask res;
+
+  m01 = ctype_base::space;
+  m02 = ctype_base::xdigit;
+
+  res = m01 & m02;
+  res = m01 | m02;
+  res = m01 ^ m02;
+  res = ~m01;
+  m01 &= m02;
+  m01 |= m02;
+  m01 ^= m02;
 }
 
-int main()
-{
+int main() 
+{ 
   test01();
   return 0;
 }
