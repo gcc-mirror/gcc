@@ -1421,7 +1421,16 @@ fundamental_type_code (type)
 	  }
 
 	if (TYPE_PRECISION (type) == DOUBLE_TYPE_SIZE)
-	  return FT_dbl_prec_float;
+	  {
+	    /* On the SH, when compiling with -m3e or -m4-single-only, both
+	       float and double are 32 bits.  But since the debugger doesn't
+	       know about the subtarget, it always thinks double is 64 bits.
+	       So we have to tell the debugger that the type is float to
+	       make the output of the 'print' command etc. readable.  */
+	    if (DOUBLE_TYPE_SIZE == FLOAT_TYPE_SIZE && FLOAT_TYPE_SIZE == 32)
+	      return return FT_float;
+	    return FT_dbl_prec_float;
+	  }
 	if (TYPE_PRECISION (type) == FLOAT_TYPE_SIZE)
 	  return FT_float;
 
