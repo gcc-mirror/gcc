@@ -33,7 +33,7 @@
  *    the executable file might be covered by the GNU General Public License.
  */ 
 
-/* Set up trampolines. */
+/* Set up trampolines.  */
 
 	.file	"tramp.asm"
 	.section ".text"

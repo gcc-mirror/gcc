@@ -51,7 +51,7 @@ Boston, MA 02111-1307, USA.  */
 }
 
 /* Similar, but for libcall.  We only have to worry about the function name,
-   not that of the descriptor. */
+   not that of the descriptor.  */
 
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)	\
 { fputs ("\t.extern .", FILE);			\

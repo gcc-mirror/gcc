@@ -160,7 +160,7 @@ FUNC_START(__eabi)
 	stwx	1,10,12				/* store a non-zero value in the done flag */
 	beq+	0,.Lsdata			/* skip if we don't need to relocate */
 
-/* We need to relocate the .got2 pointers. */
+/* We need to relocate the .got2 pointers.  */
 
 	lwz	3,.Lgot2s(11)			/* GOT2 pointers start */
 	lwz	4,.Lgot2e(11)			/* GOT2 pointers end */
@@ -298,9 +298,9 @@ FUNC_START(__eabi_uconvert)
 
 FUNC_END(__eabi_uconvert)
 
-/* Routines for saving floating point registers, called by the compiler. */
+/* Routines for saving floating point registers, called by the compiler.  */
 /* Called with r11 pointing to the stack header word of the caller of the */
-/* function, just beyond the end of the floating point save area. */
+/* function, just beyond the end of the floating point save area.  */
 
 FUNC_START(_savefpr_14)	stfd	14,-144(11)	/* save fp registers */
 FUNC_START(_savefpr_15)	stfd	15,-136(11)
@@ -340,9 +340,9 @@ FUNC_END(_savefpr_16)
 FUNC_END(_savefpr_15)
 FUNC_END(_savefpr_14)
 
-/* Routines for saving integer registers, called by the compiler. */
+/* Routines for saving integer registers, called by the compiler.  */
 /* Called with r11 pointing to the stack header word of the caller of the */
-/* function, just beyond the end of the integer save area. */
+/* function, just beyond the end of the integer save area.  */
 
 FUNC_START(_savegpr_14)	stw	14,-72(11)	/* save gp registers */
 FUNC_START(_savegpr_15)	stw	15,-68(11)
@@ -382,9 +382,9 @@ FUNC_END(_savegpr_16)
 FUNC_END(_savegpr_15)
 FUNC_END(_savegpr_14)
 
-/* Routines for restoring floating point registers, called by the compiler. */
+/* Routines for restoring floating point registers, called by the compiler.  */
 /* Called with r11 pointing to the stack header word of the caller of the */
-/* function, just beyond the end of the floating point save area. */
+/* function, just beyond the end of the floating point save area.  */
 
 FUNC_START(_restfpr_14)	lfd	14,-144(11)	/* restore fp registers */
 FUNC_START(_restfpr_15)	lfd	15,-136(11)
@@ -424,9 +424,9 @@ FUNC_END(_restfpr_16)
 FUNC_END(_restfpr_15)
 FUNC_END(_restfpr_14)
 
-/* Routines for restoring integer registers, called by the compiler. */
+/* Routines for restoring integer registers, called by the compiler.  */
 /* Called with r11 pointing to the stack header word of the caller of the */
-/* function, just beyond the end of the integer restore area. */
+/* function, just beyond the end of the integer restore area.  */
 
 FUNC_START(_restgpr_14)	lwz	14,-72(11)	/* restore gp registers */
 FUNC_START(_restgpr_15)	lwz	15,-68(11)
@@ -466,9 +466,9 @@ FUNC_END(_restgpr_16)
 FUNC_END(_restgpr_15)
 FUNC_END(_restgpr_14)
 
-/* Routines for restoring floating point registers, called by the compiler. */
+/* Routines for restoring floating point registers, called by the compiler.  */
 /* Called with r11 pointing to the stack header word of the caller of the */
-/* function, just beyond the end of the floating point save area. */
+/* function, just beyond the end of the floating point save area.  */
 /* In addition to restoring the fp registers, it will return to the caller's */
 /* caller */
 
@@ -513,9 +513,9 @@ FUNC_END(_restfpr_16_x)
 FUNC_END(_restfpr_15_x)
 FUNC_END(_restfpr_14_x)
 
-/* Routines for restoring integer registers, called by the compiler. */
+/* Routines for restoring integer registers, called by the compiler.  */
 /* Called with r11 pointing to the stack header word of the caller of the */
-/* function, just beyond the end of the integer restore area. */
+/* function, just beyond the end of the integer restore area.  */
 
 FUNC_START(_restgpr_14_x)	lwz	14,-72(11)	/* restore gp registers */
 FUNC_START(_restgpr_15_x)	lwz	15,-68(11)
@@ -563,7 +563,7 @@ FUNC_END(_restgpr_14_x)
 	.section ".text"
 	.align 2
 
-/* Routines for saving floating point registers, called by the compiler. */
+/* Routines for saving floating point registers, called by the compiler.  */
 
 .fsav:
 FUNC_START(_savef14)	stfd	14,-144(1)	/* save fp registers */
@@ -611,7 +611,7 @@ FUNC_END(_savef16)
 FUNC_END(_savef15)
 FUNC_END(_savef14)
 
-/* Routines for restoring floating point registers, called by the compiler. */
+/* Routines for restoring floating point registers, called by the compiler.  */
 
 .fres:
 FUNC_START(_restf14)	lfd	14,-144(1)	/* restore fp registers */

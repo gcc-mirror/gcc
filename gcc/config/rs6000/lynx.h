@@ -67,7 +67,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ENDFILE_SPEC
 
-/* This can become more refined as we have more powerpc options. */
+/* This can become more refined as we have more powerpc options.  */
 #undef ASM_SPEC
 #define ASM_SPEC "-u %(asm_cpu)"
 
@@ -94,6 +94,6 @@ do {								\
 #undef REAL_LD_FILE_NAME
 #undef REAL_STRIP_FILE_NAME
 
-/* LynxOS doesn't have mcount. */
+/* LynxOS doesn't have mcount.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(file, profile_label_no)

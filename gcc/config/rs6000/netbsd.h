@@ -38,7 +38,7 @@ Boston, MA 02111-1307, USA.  */
 %{!shared: %{!static:-dc -dp}} \
 "
 
-/* Override the defaults. */
+/* Override the defaults.  */
 #undef LIB_DEFAULT_SPEC
 #define LIB_DEFAULT_SPEC "%(lib_netbsd)"
 

@@ -23,8 +23,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* use ANSI/SYSV style byte manipulation routines instead of BSD ones */
 
-/* STANDARD_INCLUDE_DIR is the equivalent of "/usr/include" on UNIX. */
+/* STANDARD_INCLUDE_DIR is the equivalent of "/usr/include" on UNIX.  */
 #define STANDARD_INCLUDE_DIR	"/boot/develop/headers/posix"
 
-/* SYSTEM_INCLUDE_DIR is the location for system specific, non-POSIX headers. */
+/* SYSTEM_INCLUDE_DIR is the location for system specific, non-POSIX headers.  */
 #define SYSTEM_INCLUDE_DIR	"/boot/develop/headers/be"

@@ -492,8 +492,8 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 #define PROMOTE_FUNCTION_RETURN
 
 /* Define this if most significant bit is lowest numbered
-   in instructions that operate on numbered bit-fields. */
-/* That is true on RS/6000. */
+   in instructions that operate on numbered bit-fields.  */
+/* That is true on RS/6000.  */
 #define BITS_BIG_ENDIAN 1
 
 /* Define this if most significant byte of a word is the lowest numbered.  */
@@ -504,7 +504,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    numbered.
 
    For RS/6000 we can decide arbitrarily since there are no machine
-   instructions for them.  Might as well be consistent with bits and bytes. */
+   instructions for them.  Might as well be consistent with bits and bytes.  */
 #define WORDS_BIG_ENDIAN 1
 
 /* number of bits in an addressable storage unit */
@@ -827,7 +827,7 @@ extern int rs6000_debug_arg;		/* debug argument handling */
    For POWER and PowerPC, the GPRs can hold any mode, but the float
    registers only can hold floating modes and DImode, and CR register only
    can hold CC modes.  We cannot put TImode anywhere except general
-   register and it must be able to fit within the register set. */
+   register and it must be able to fit within the register set.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE)					\
   (FP_REGNO_P (REGNO) ?							\
@@ -955,10 +955,10 @@ extern int rs6000_debug_arg;		/* debug argument handling */
 /* Place to put static chain when calling a function that requires it.  */
 #define STATIC_CHAIN_REGNUM 11
 
-/* Link register number. */
+/* Link register number.  */
 #define LINK_REGISTER_REGNUM 65
 
-/* Count register number. */
+/* Count register number.  */
 #define COUNT_REGISTER_REGNUM 66
 
 /* Place that structure value return address is placed.
@@ -1021,7 +1021,7 @@ enum reg_class
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES							\
 {									\
@@ -1366,7 +1366,7 @@ typedef struct rs6000_stack {
 
 /* This is the difference between the logical top of stack and the actual sp.
 
-   For the RS/6000, sp points past the fixed area. */
+   For the RS/6000, sp points past the fixed area.  */
 #define STACK_POINTER_OFFSET RS6000_SAVE_AREA
 
 /* Define this if the maximum size of all the outgoing args is to be
@@ -1595,7 +1595,7 @@ typedef struct rs6000_args
    reference.  If nonzero for an argument, a copy of that argument is
    made in memory and a pointer to the argument is passed instead of
    the argument itself.  The pointer is passed in whatever way is
-   appropriate for passing a pointer to that type. */
+   appropriate for passing a pointer to that type.  */
 
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
   function_arg_pass_by_reference(&CUM, MODE, TYPE, NAMED)
@@ -1689,7 +1689,7 @@ typedef struct rs6000_args
 
 /* Definitions for __builtin_return_address and __builtin_frame_address.
    __builtin_return_address (0) should give link register (65), enable
-   this. */
+   this.  */
 /* This should be uncommented, so that the link register is used, but
    currently this would result in unmatched insns and spilling fixed
    registers so we'll leave it for another day.  When these problems are
@@ -2069,7 +2069,7 @@ do {									     \
 
 /* Define this macro if the register defined by
    `PIC_OFFSET_TABLE_REGNUM' is clobbered by calls.  Do not define
-   this macro if `PPIC_OFFSET_TABLE_REGNUM' is not defined. */
+   this macro if `PPIC_OFFSET_TABLE_REGNUM' is not defined.  */
 
 /* #define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED */
 
@@ -2120,7 +2120,7 @@ do {									     \
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 #define CASE_VECTOR_PC_RELATIVE 1
 
 /* Specify the tree operation to be used to convert reals to integers.  */
@@ -2429,7 +2429,7 @@ do {							\
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */
 
-extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0). */
+extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 
 #define REGISTER_NAMES							\
 {									\

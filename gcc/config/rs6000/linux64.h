@@ -76,7 +76,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define PROFILE_HOOK(LABEL)   output_profile_hook (LABEL)
 
-/* Don't assume anything about the header files. */
+/* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
 #undef MD_EXEC_PREFIX
