@@ -31,13 +31,12 @@ Boston, MA 02111-1307, USA.  */
 #include <objc/hash.h>
 #include <objc/thr.h>
 #include <objc/objc-decls.h>
+#include <stdio.h>
+#include <stdarg.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-#include <stdio.h>
-#include <stdarg.h>
 
 /* For functions which return Method_t */
 #define METHOD_NULL	(Method_t)0

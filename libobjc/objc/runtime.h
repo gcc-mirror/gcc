@@ -26,6 +26,14 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #ifndef __objc_runtime_INCLUDE_GNU
 #define __objc_runtime_INCLUDE_GNU
 
+#include <stdarg.h>		/* for varargs and va_list's */
+
+#include <stdio.h>
+#include <ctype.h>
+
+#include <stddef.h>		/* so noone else will get system versions */
+#include <assert.h>
+
 #include <objc/objc.h>		/* core data types */
 #include <objc/objc-api.h>	/* runtime api functions */
 
@@ -37,14 +45,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-#include <stdarg.h>		/* for varargs and va_list's */
-
-#include <stdio.h>
-#include <ctype.h>
-
-#include <stddef.h>		/* so noone else will get system versions */
-#include <assert.h>
 
 extern void __objc_add_class_to_hash(Class);   /* (objc-class.c) */
 extern void __objc_init_selector_tables(void); /* (objc-sel.c) */

@@ -30,10 +30,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include <objc/thr.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
-
 #define OBJC_SPARSE2		/* 2-level sparse array */
 /* #define OBJC_SPARSE3 */      /* 3-level sparse array */
 
@@ -47,10 +43,19 @@ extern const char* __objc_sparse3_id;
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 extern int nbuckets;		/* for stats */
 extern int nindices;
 extern int narrays;
 extern int idxsize;
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
+
 
 #include <assert.h>
 
@@ -145,6 +150,10 @@ struct sarray {
   struct sarray* is_copy_of;
   size_t capacity;
 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
 struct sarray* sarray_new(int, void* default_element);
 void sarray_free(struct sarray*);

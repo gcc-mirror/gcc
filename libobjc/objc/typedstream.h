@@ -30,11 +30,11 @@ Boston, MA 02111-1307, USA.  */
 #include <objc/objc.h>
 #include <objc/hash.h>
 
+#include <stdio.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-#include <stdio.h>
 
 typedef int (*objc_typed_read_func)(void*, char*, int);
 typedef int (*objc_typed_write_func)(void*, const char*, int);

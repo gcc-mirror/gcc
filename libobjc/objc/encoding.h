@@ -30,12 +30,11 @@ Boston, MA 02111-1307, USA.  */
 #define __encoding_INCLUDE_GNU
 
 #include <objc/objc-api.h>
+#include <ctype.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
-#include <ctype.h>
 
 #define _C_CONST	'r'
 #define _C_IN		'n'
