@@ -1012,6 +1012,8 @@ readescape (ignore_ptr)
     case '(':
     case '{':
     case '[':
+      /* `\%' is used to prevent SCCS from getting confused.  */
+    case '%':
       if (pedantic)
 	pedwarn ("non-ANSI escape sequence `\\%c'", c);
       return c;
