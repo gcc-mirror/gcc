@@ -2397,12 +2397,13 @@ extern const char * arm_pic_register_string;
 /* We can't directly access anything that contains a symbol,
    nor can we indirect via the constant pool.  */
 #define LEGITIMATE_PIC_OPERAND_P(X)					\
-	(   ! symbol_mentioned_p (X)					\
-	 && ! label_mentioned_p (X)					\
-	 && (! CONSTANT_POOL_ADDRESS_P (X)				\
-	     || (   ! symbol_mentioned_p (get_pool_constant (X))  	\
-	         && ! label_mentioned_p (get_pool_constant (X)))))
-     
+	(!(symbol_mentioned_p (X)					\
+	   || label_mentioned_p (X)					\
+	   || (GET_CODE (X) == SYMBOL_REF				\
+	       && CONSTANT_POOL_ADDRESS_P (X)				\
+	       && (symbol_mentioned_p (get_pool_constant (X))		\
+		   || label_mentioned_p (get_pool_constant (X))))))
+
 /* We need to know when we are making a constant pool; this determines
    whether data needs to be in the GOT or can be referenced via a GOT
    offset.  */

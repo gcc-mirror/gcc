@@ -1,3 +1,13 @@
+2002-07-16  Jeroen Dobbelaere <jeroen.dobbelaere@acunia.com>
+
+	* arm.c (emit_sfm): Don't set RTX_FRAME_RELATED_P on DWARF.
+
+2002-07-16  Jeroen Dobbelaere <jeroen.dobbelaere@acunia.com>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.h (LEGITIMATE_PIC_OPERAND_P): Only test 
+	CONSTANT_POOL_ADDRESS_P if a SYMBOL_REF.  Simplify logic.
+
 2002-07-16  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (stack_tie): New insn.  Use an idiom that the alias code

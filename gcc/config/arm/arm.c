@@ -7922,7 +7922,6 @@ emit_sfm (base_reg, count)
 
   par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
   dwarf = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (count));
-  RTX_FRAME_RELATED_P (dwarf) = 1;
 
   reg = gen_rtx_REG (XFmode, base_reg++);
 
