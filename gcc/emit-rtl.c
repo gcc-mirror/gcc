@@ -1380,7 +1380,14 @@ operand_subword_force (op, i, mode)
     return result;
 
   if (mode != BLKmode && mode != VOIDmode)
-    op = force_reg (mode, op);
+    {
+      /* If this is a register which can not be accessed by words, copy it
+	 to a pseudo register.  */
+      if (GET_CODE (op) == REG)
+	op = copy_to_reg (op);
+      else
+	op = force_reg (mode, op);
+    }
 
   result = operand_subword (op, i, 1, mode);
   if (result == 0)
