@@ -85,6 +85,9 @@
 /* Define if you have the getrusage function.  */
 #undef HAVE_GETRUSAGE
 
+/* Define if you have the gettimeofday function.  */
+#undef HAVE_GETTIMEOFDAY
+
 /* Define if you have the index function.  */
 #undef HAVE_INDEX
 
@@ -115,6 +118,9 @@
 /* Define if you have the psignal function.  */
 #undef HAVE_PSIGNAL
 
+/* Define if you have the putenv function.  */
+#undef HAVE_PUTENV
+
 /* Define if you have the random function.  */
 #undef HAVE_RANDOM
 
@@ -126,6 +132,9 @@
 
 /* Define if you have the sbrk function.  */
 #undef HAVE_SBRK
+
+/* Define if you have the setenv function.  */
+#undef HAVE_SETENV
 
 /* Define if you have the sigsetmask function.  */
 #undef HAVE_SIGSETMASK
@@ -201,6 +210,9 @@
 
 /* Define if you have the <sys/param.h> header file.  */
 #undef HAVE_SYS_PARAM_H
+
+/* Define if you have the <sys/resource.h> header file.  */
+#undef HAVE_SYS_RESOURCE_H
 
 /* Define if you have the <sys/time.h> header file.  */
 #undef HAVE_SYS_TIME_H
