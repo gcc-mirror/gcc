@@ -293,7 +293,6 @@ static void mark_function_chain PARAMS ((void *));
 static void prepare_function_start PARAMS ((void));
 static void do_clobber_return_reg PARAMS ((rtx, void *));
 static void do_use_return_reg PARAMS ((rtx, void *));
-static void preserve_rtl_expr_temp PARAMS ((struct temp_slot *));
 
 /* Pointer to chain of `struct function' for containing functions.  */
 struct function *outer_function_chain;
@@ -1130,36 +1129,6 @@ preserve_temp_slots (x)
       p->level--;
 }
 
-/* Preserve the temporary slot given by P (originally created during
-   the building of an RTL_EXPR) at least as long as things in our
-   current scope.  */
-
-static void
-preserve_rtl_expr_temp (p)
-     struct temp_slot *p;
-{
-  /* Set the slot level to that of the currently prevailing scope.  */
-  p->level = MIN (p->level, temp_slot_level);
-  /* This slot is no longer associated with the RTL_EXPR from which it
-     originated.  */
-  p->rtl_expr = NULL_TREE;
-}
-
-/* Preserve the temporary slots created during the building of the
-   RTL_EXPR given by T at least as long as things in our current
-   scope.  */
-
-void
-preserve_rtl_expr_temps (t)
-     tree t;
-{
-  struct temp_slot *p;
-
-  for (p = temp_slots; p; p = p->next)
-    if (p->in_use && p->rtl_expr == t)
-      preserve_rtl_expr_temp (p);
-}
-
 /* X is the result of an RTL_EXPR.  If it is a temporary slot associated
    with that RTL_EXPR, promote it into a temporary slot at the present
    level so it will not be freed when we free slots made in the
@@ -1179,8 +1148,11 @@ preserve_rtl_expr_result (x)
   /* If we can find a match, move it to our level unless it is already at
      an upper level.  */
   p = find_temp_slot_from_address (XEXP (x, 0));
-  if (p)
-    preserve_rtl_expr_temp (p);
+  if (p != 0)
+    {
+      p->level = MIN (p->level, temp_slot_level);
+      p->rtl_expr = 0;
+    }
 
   return;
 }
@@ -1215,7 +1187,16 @@ free_temps_for_rtl_expr (t)
 
   for (p = temp_slots; p; p = p->next)
     if (p->rtl_expr == t)
-      p->in_use = 0;
+      {
+	/* If this slot is below the current TEMP_SLOT_LEVEL, then it
+	   needs to be preserved.  This can happen if a temporary in
+	   the RTL_EXPR was addressed; preserve_temp_slots will move
+	   the temporary into a higher level.   */
+	if (temp_slot_level <= p->level)
+	  p->in_use = 0;
+	else
+	  p->rtl_expr = NULL_TREE;
+      }
 
   combine_temp_slots ();
 }
