@@ -20,7 +20,6 @@
 
 #include <fstream>
 #include <locale>
-#include <cassert>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -33,6 +32,9 @@ void test01()
   bool test __attribute__((unused)) = true;
   using namespace std;
 
+  locale loc_fr(__gnu_test::try_named_locale("fr_FR"));
+  locale loc_en(__gnu_test::try_named_locale("en_US"));
+
   const char* name = "tmp_fifo_13171-2";
   unlink(name);
   mkfifo(name, S_IRWXU);
@@ -43,21 +45,25 @@ void test01()
       filebuf fb;
       fb.open(name, ios_base::out);
       fb.sputc('S');
+      fb.pubsync();
+      sleep(2);
       fb.close();
-      return;
+      exit(0);
     }
 
   filebuf fb;
-  fb.pubimbue(__gnu_test::try_named_locale("fr_FR"));
+  fb.pubimbue(loc_fr);
   fb.open(name, ios_base::in);
-  assert(fb.is_open());
-  fb.pubimbue(__gnu_test::try_named_locale("en_US"));
+  sleep(1);
+  VERIFY( fb.is_open() );
+  fb.pubimbue(loc_en);
   filebuf::int_type c = fb.sgetc();
-  assert(c == 'S');
   fb.close();
+  VERIFY( c == 'S' );
 }
 
 int main()
 {
   test01();
+  return 0;
 }
