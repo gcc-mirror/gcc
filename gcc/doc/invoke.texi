@@ -4853,13 +4853,11 @@ parameter very large effectively disables garbage collection.  Setting
 this parameter and @option{ggc-min-expand} to zero causes a full
 collection to occur at every opportunity.
 
-@table @gcctabopt
 @item max-reload-search-insns
 The maximum number of instruction reload should look backward for equivalent
 register.  Increasing values mean more aggressive optimization, making the
 compile time increase with probably slightly better performance.  The default
 value is 100.
-
 
 @item reorder-blocks-duplicate
 @itemx reorder-blocks-duplicate-feedback

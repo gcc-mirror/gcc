@@ -1,5 +1,7 @@
 2004-01-11  Jan Hubicka  <jh@suse.cz>
 
+	* invoke.texi: Fix syntax error in previous patch.
+
 	Partial fix for PR opt/10776
 	* Makefile.in (reload.o): Include param.h
 	* params.def (PARAM_MAX_RELOAD_SEARCH_INSNS): New parameter.
