@@ -6814,10 +6814,9 @@ newly defined @var{type}.
 @findex DOLLARS_IN_IDENTIFIERS
 @item DOLLARS_IN_IDENTIFIERS
 Define this macro to control use of the character @samp{$} in identifier
-names.  The value should be 0, 1, or 2.  0 means @samp{$} is not allowed
-by default; 1 means it is allowed by default if @samp{-traditional} is
-used; 2 means it is allowed by default provided @samp{-ansi} is not used.
+names.  0 means @samp{$} is not allowed by default; 1 means it is allowed.
 1 is the default; there is no need to define this macro in that case.
+This macro controls the compiler proper; it does not affect the preprocessor.
 
 @findex NO_DOLLAR_IN_LABEL
 @item NO_DOLLAR_IN_LABEL
