@@ -1,3 +1,16 @@
+2004-09-21  Steven Bosscher  <stevenb@suse.de>
+
+	PR rtl-optimization/17482
+	* postreload-gcse.c (reg_avail_info, oprs_unchanged_p,
+	load_killed_in_block_p): Clarify comments.
+	(record_last_reg_set_info): Make static inline.
+	(mark_call, mark_set, mark_clobber, mark_oprs_set): Remove.
+	(record_opr_changes): New function to replace the above.
+	(compute_hash_table): Clarify comments.  Use record_opr_changes.
+	(reg_set_between_after_reload_p): Clean up.
+	(reg_used_between_after_reload_p): Likewise.
+	(eliminate_partially_redundant_load): Clarify comments.
+
 2004-09-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/17266
