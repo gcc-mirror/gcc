@@ -1,3 +1,7 @@
+2003-05-21  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_fstream.h (_M_set_buffer): Fix indentation.
+
 2003-05-21  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/faq/index.html: Fix typo.
