@@ -1465,9 +1465,9 @@ __gnat_install_handler ()
   long prvhnd;
   char *c;
 
-  c = (char *) malloc (1025);
+  c = (char *) malloc (2049);
 
-  __gnat_error_prehandler_stack = &c[1024];
+  __gnat_error_prehandler_stack = &c[2048];
 
   /* __gnat_error_prehandler is an assembly function.  */
   SYS$SETEXV (1, __gnat_error_prehandler, 3, &prvhnd);
