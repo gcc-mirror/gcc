@@ -374,6 +374,10 @@ tree signed_size_zero_node;
    unit.  */
 tree anonymous_namespace_name;
 
+/* The number of function bodies which we are currently processing.
+   (Zero if we are at namespace scope, one inside the body of a
+   function, two inside the body of a function in a local class, etc.)  */
+int function_depth;
 
 /* For each binding contour we allocate a binding_level structure
    which records the names defined in that contour.
@@ -13370,8 +13374,6 @@ build_enumerator (name, value, enumtype)
 }
 
 
-static int function_depth;
-
 /* We're defining DECL.  Make sure that it's type is OK.  */
 
 static void

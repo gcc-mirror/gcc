@@ -3290,6 +3290,11 @@ extern tree integer_two_node, integer_three_node;
 
 extern tree anonymous_namespace_name;
 
+/* The number of function bodies which we are currently processing.
+   (Zero if we are at namespace scope, one inside the body of a
+   function, two inside the body of a function in a local class, etc.)  */
+extern int function_depth;
+
 /* in pt.c  */
 
 /* These values are used for the `STRICT' parameter to type_unfication and
@@ -4539,6 +4544,8 @@ extern tree build_shared_int_cst                PARAMS ((int));
 extern special_function_kind special_function_p PARAMS ((tree));
 extern int count_trees                          PARAMS ((tree));
 extern int char_type_p                          PARAMS ((tree));
+extern void verify_stmt_tree                    PARAMS ((tree));
+extern tree find_tree                           PARAMS ((tree, tree));
   
 /* in typeck.c */
 extern int string_conv_p			PARAMS ((tree, tree, int));

@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "cp-tree.h"
 #include "flags.h"
+#include "hashtab.h"
 #include "rtl.h"
 #include "toplev.h"
 #include "ggc.h"
@@ -48,6 +49,8 @@ static tree cp_unsave_r PARAMS ((tree *, int *, void *));
 static void cp_unsave PARAMS ((tree *));
 static tree build_target_expr PARAMS ((tree, tree));
 static tree count_trees_r PARAMS ((tree *, int *, void *));
+static tree verify_stmt_tree_r PARAMS ((tree *, int *, void *));
+static tree find_tree_r PARAMS ((tree *, int *, void *));
 
 /* If REF is an lvalue, returns the kind of lvalue that REF is.
    Otherwise, returns clk_none.  If TREAT_CLASS_RVALUES_AS_LVALUES is
@@ -1439,6 +1442,70 @@ count_trees (t)
   walk_tree (&t, count_trees_r, &n_trees);
   return n_trees;
 }  
+
+/* Called from verify_stmt_tree via walk_tree.  */
+
+static tree
+verify_stmt_tree_r (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data;
+{
+  tree t = *tp;
+  htab_t *statements = (htab_t *) data;
+  void **slot;
+
+  if (!statement_code_p (TREE_CODE (t)))
+    return NULL_TREE;
+
+  /* If this statement is already present in the hash table, then
+     there is a circularity in the statement tree.  */
+  if (htab_find (*statements, t))
+    my_friendly_abort (20000727);
+  
+  slot = htab_find_slot (*statements, t, INSERT);
+  *slot = t;
+
+  return NULL_TREE;
+}
+
+/* Debugging function to check that the statement T has not been
+   corrupted.  For now, this function simply checks that T contains no
+   circularities.  */
+
+void
+verify_stmt_tree (t)
+     tree t;
+{
+  htab_t statements;
+  statements = htab_create (37, htab_hash_pointer, htab_eq_pointer, NULL);
+  walk_tree (&t, verify_stmt_tree_r, &statements);
+  htab_delete (statements);
+}
+
+/* Called from find_tree via walk_tree.  */
+
+static tree
+find_tree_r (tp, walk_subtrees, data)
+     tree *tp;
+     int *walk_subtrees ATTRIBUTE_UNUSED;
+     void *data;
+{
+  if (*tp == (tree) data)
+    return (tree) data;
+
+  return NULL_TREE;
+}
+
+/* Returns X if X appears in the tree structure rooted at T.  */
+
+tree
+find_tree (t, x)
+     tree t;
+     tree x;
+{
+  return walk_tree (&t, find_tree_r, x);
+}
 
 /* Passed to walk_tree.  Checks for the use of types with no linkage.  */
 
