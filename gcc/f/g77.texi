@@ -10422,26 +10422,8 @@ enable/disable/delete/hide intrinsics from the command line?
 Your bug reports play an essential role in making GNU Fortran reliable.
 
 When you encounter a problem, the first thing to do is to see if it is
-already known.
-@xref{Trouble}.
-If it isn't known, then you should report the problem.
-
-Reporting a bug might help you by bringing a solution to your problem, or
-it might not.
-(If it does not, look in the service directory; see
-@ref{Service}.)
-In any case, the principal function of a bug report is
-to help the entire community by making the next version of GNU Fortran work
-better.
-Bug reports are your contribution to the maintenance of GNU Fortran.
-
-Since the maintainers are very overloaded, we cannot respond to every
-bug report.
-However, if the bug has not been fixed, we are likely to
-send you a patch and ask you to tell us whether it works.
-
-In order for a bug report to serve its purpose, you must include the
-information that makes for fixing the bug.
+already known.  @xref{Trouble}.  If it isn't known, then you should
+report the problem.
 
 @menu
 * Criteria: Bug Criteria.    Have you really found a bug?

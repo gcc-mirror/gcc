@@ -1,3 +1,8 @@
+2003-05-16  Wolfgang Bangerth <bangerth@dealii.org>
+
+	* doc/bugreport.texi: Remove most of the of the preface of the
+	bugs section.
+
 2003-05-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/unwind-ia64.c (uw_update_reg_address): Handle
