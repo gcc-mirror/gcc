@@ -1,3 +1,19 @@
+2002-07-30  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* flags.h: Declare flag_finite_math_only.
+	Use it in definition of HONOR_NANS and
+	HONOR_INFINITIES.
+	* c-common.c (cb_register_builtins): Emit
+	__FINITE_MATH_ONLY__ when flag_finite_math_only
+	is set.
+	* combine.c (simplify_if_then_else): If
+	flag_finite_math_only is set, a == b has a
+	definite value.
+	* toplev.c: Initialize flag_finite_math_only.
+	(set_flags_fast_math): Set it on -ffast-math.
+	(flag_fast_math_set_p): Test it.
+	* doc/invoke.texi: Document -ffinite-math-only.
+
 2002-07-30  Richard Henderson  <rth@redhat.com>
 
 	* ifcvt.c (noce_get_alt_condition): Use reg_overlap_mentioned_p.

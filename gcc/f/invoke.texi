@@ -182,7 +182,7 @@ by type.  Explanations are in the following sections.
 -malign-double @gol
 -ffloat-store  -fforce-mem  -fforce-addr  -fno-inline @gol
 -ffast-math  -fstrength-reduce  -frerun-cse-after-loop @gol
--funsafe-math-optimizations -fno-trapping-math @gol
+-funsafe-math-optimizations -fno-finite-math-only -fno-trapping-math @gol
 -fexpensive-optimizations  -fdelayed-branch @gol
 -fschedule-insns  -fschedule-insn2  -fcaller-saves @gol
 -funroll-loops  -funroll-all-loops @gol
@@ -1550,6 +1550,16 @@ Sets @option{-funsafe-math-optimizations}, and
 @item -funsafe-math-optimizations
 Allow optimizations that may be give incorrect results
 for certain IEEE inputs.
+
+@cindex -fno-finite-math-only option
+@cindex options, -fno-finite-math-only
+@item -fno-finite-math-only
+Fortran specifies all arithmetic that can result in a NaN or an
+infinity as "giving undefined results", therefore the compiler
+by default operates in a way that assumes no NaNs or +-Inf can
+be generated.  If you want to use a NaN or an Inf produced by
+means other than Fortran, use this option to compile your
+Fortran program.
 
 @cindex -fno-trapping-math option
 @cindex options, -fno-trapping-math
