@@ -1,5 +1,10 @@
 2004-10-16  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/charset/UTF_16Encoder.java
+	(UTF_16Encoder): Fixed maxBytesPerChar handling.
+
+2004-10-16  Michael Koch  <konqueror@gmx.de>
+
 	* java/math/BigDecimal.java, java/math/BigInteger.java:
 	Reorganized import statements, removed redundant and
 	reorganized modifiers.
