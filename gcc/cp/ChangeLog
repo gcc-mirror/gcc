@@ -1,3 +1,10 @@
+2003-07-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11517
+	* call.c (build_conditional_expr): Use perform_implicit_conversion
+	and error_operand_p.  Robustify.
+	* typeck.c (build_unary_op): Use perform_implicit_conversion.
+
 2003-07-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/10953
