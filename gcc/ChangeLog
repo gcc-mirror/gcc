@@ -1,3 +1,8 @@
+2004-03-10  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* dbxout.c (dbxout_symbol_location): Do not output references
+	to optimized-out constant pool symbols.
+
 2004-03-10  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.md (divsi3, udivsi3): Remove unused variable
