@@ -3682,10 +3682,14 @@ loop_iterations (loop_start, loop_end, loop_info)
       return 0;
     }
 
-  /* The only new registers that care created before loop iterations are
-     givs made from biv increments, so this should never occur.  */
+  /* The only new registers that are created before loop iterations
+     are givs made from biv increments or registers created by
+     load_mems.  In the latter case, it is possible that try_copy_prop
+     will propagate a new pseudo into the old iteration register but
+     this will be marked by having the REG_USERVAR_P bit set.  */
 
-  if ((unsigned) REGNO (iteration_var) >= reg_iv_type->num_elements)
+  if ((unsigned) REGNO (iteration_var) >= reg_iv_type->num_elements
+      && ! REG_USERVAR_P (iteration_var))
     abort ();
 
   iteration_info (iteration_var, &initial_value, &increment,

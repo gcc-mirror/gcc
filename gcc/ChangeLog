@@ -1,3 +1,9 @@
+Mon Apr  3 02:31:32 2000  Jeffrey A Law  (law@cygnus.com)
+
+	2000-01-20  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+        * unroll.c (loop_iterations): Don't abort if REG_USERVAR_P set
+        on iteration_var.
+
 Wed Mar 22 13:11:54 2000  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (reg_or_u_cint_operand): New function.
