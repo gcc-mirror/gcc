@@ -1,5 +1,22 @@
 2003-11-26  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/Socket.java
+	(implCreated): Dont set default value explicitely, added
+	documentation.
+	(inputShutdown): Likewise.
+	(outputShutdown): Likewise.
+	(bound): New private member variable.
+	(bind): Set bound to true.
+	(close): Set bound to false.
+	(isBound): Return bound.
+	* java/net/ServerSocket.java
+	(bound): New private member variable.
+	(bind): Set bound to true.
+	(close): Set bound to false.
+	(isBound): Return bound.
+
+2003-11-26  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/URL.java
 	(URL): Fixed documentation to be HTML compliant.
 	(getContent): Completed documentation.
