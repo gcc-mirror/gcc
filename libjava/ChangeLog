@@ -1,3 +1,8 @@
+2003-12-31 Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/net/URL.java
+	(URL): Change context path to "/" if it is empty.
+
 2003-12-31  Michael Koch  <konqueror@gmx.de>
 
 	* testsuite/libjava.mauve/xfails: Removed tests that pass now:
