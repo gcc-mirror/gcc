@@ -6,7 +6,7 @@
 
 2003-08-03  Jan Hubicka  <jh@suse.cz>
 
-        PR 9929
+        PR 10510
         * config/pa/pa.h (MAYBE_FP_REG_CLASS_P): New.
         (SECONDARY_MEMORY_NEEDED): Use it.
 	
