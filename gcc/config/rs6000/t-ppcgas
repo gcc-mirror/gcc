@@ -1,0 +1,33 @@
+# Do not build libgcc1.
+LIBGCC1 =
+CROSS_LIBGCC1 =
+
+# These are really part of libgcc1, but this will cause them to be
+# built correctly, so... [taken from t-sparclite]
+LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c
+
+dp-bit.c: $(srcdir)/config/fp-bit.c
+	cat $(srcdir)/config/fp-bit.c > dp-bit.c
+
+fp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define FLOAT' > fp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+
+# Build libgcc.a with different options.
+
+MULTILIB_OPTIONS	= msoft-float \
+			  mlittle/mbig \
+			  mmultiple/mno-multiple
+
+MULTILIB_DIRNAMES	= soft-float \
+			  little-endian big-endian \
+			  multiple no-multiple
+
+MULTILIB_MATCHES	= mlittle=mlittle-endian \
+			  mbig=mbig-endian \
+			  msoft-float=mcpu?403 \
+			  msoft-float=mcpu?mpc403 \
+			  msoft-float=mcpu?ppc403
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib

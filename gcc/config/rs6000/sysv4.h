@@ -25,6 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define	MASK_STRICT_ALIGN	0x20000000	/* Set STRICT_ALIGNMENT to 1.  */
 #define MASK_RELOCATABLE	0x10000000	/* GOT pointers are PC relative */
 #define	MASK_NO_TRACEBACK	0x08000000	/* eliminate traceback words */
+#define MASK_LITTLE_ENDIAN	0x04000000	/* target is little endian */
 
 #define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
 #define	TARGET_BITFIELD_TYPE	(! TARGET_NO_BITFIELD_TYPE)
@@ -32,6 +33,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_RELOCATABLE	(target_flags & MASK_RELOCATABLE)
 #define TARGET_NO_TRACEBACK	(target_flags & MASK_NO_TRACEBACK)
 #define	TARGET_TRACEBACK	(! TARGET_NO_TRACEBACK)
+#define TARGET_LITTLE_ENDIAN	(target_flags & MASK_LITTLE_ENDIAN)
+#define TARGET_BIG_ENDIAN	(! TARGET_LITTLE_ENDIAN)
 
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES						\
@@ -42,9 +45,30 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   { "relocatable",	 MASK_RELOCATABLE | MASK_MINIMAL_TOC | MASK_NO_FP_IN_TOC }, \
   { "no-relocatable",	-MASK_RELOCATABLE },				\
   { "traceback",	-MASK_NO_TRACEBACK },				\
-  { "no-traceback",	 MASK_NO_TRACEBACK },
+  { "no-traceback",	 MASK_NO_TRACEBACK },				\
+  { "little-endian",	 MASK_LITTLE_ENDIAN },				\
+  { "little",		 MASK_LITTLE_ENDIAN },				\
+  { "big-endian",	-MASK_LITTLE_ENDIAN },				\
+  { "big",		-MASK_LITTLE_ENDIAN },
+
+/* If the user wants little endian support, don't allow -mmultiple */
+#define SUBTARGET_OVERRIDE_OPTIONS					\
+{									\
+  if (TARGET_LITTLE_ENDIAN && TARGET_MULTIPLE)				\
+    {									\
+      target_flags &= ~MASK_MULTIPLE;					\
+      if (TARGET_MULTIPLE_SET)						\
+	warning ("-mmultiple is not supported on little endian PowerPC systems"); \
+    }									\
+}
 
 #include "rs6000/powerpc.h"
+
+/* Override default big endianism */
+#undef  BYTES_BIG_ENDIAN
+#undef  WORDS_BIG_ENDIAN
+#define BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN)
+#define WORDS_BIG_ENDIAN (TARGET_BIG_ENDIAN)
 
 /* Don't generate XCOFF debugging information.  */
 
@@ -239,7 +263,13 @@ extern int rs6000_pic_labelno;
    implies.  */
 #undef ASM_SPEC
 #define ASM_SPEC \
-  "-u -mppc %{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} %{mrelocatable}"
+  "-u \
+%{mcpu=601: -m601} %{mcpu=ppc601: -m601} %{mcpu=mpc601: -m601} \
+%{!mcpu=601: %{!mcpu=ppc601: %{!mcpu=mpc601: -mppc }}} \
+%{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
+%{mrelocatable} \
+%{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
+
 /* This is the end of what might become sysv4.h.  */
 
 /* Allow stabs and dwarf, prefer dwarf.  */
@@ -271,6 +301,21 @@ extern int rs6000_pic_labelno;
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
   "-DPPC -Dunix -D__svr4__ -Asystem(unix) -Asystem(svr4) -Acpu(powerpc) -Amachine(powerpc)"
+
+#undef LINK_SPEC
+#define LINK_SPEC "\
+%{h*} %{V} %{v:%{!V:-V}} \
+%{b} %{Wl,*:%*} \
+%{static:-dn -Bstatic} \
+%{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
+%{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
+%{G:-G} \
+%{YP,*} \
+%{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+%{!p:-Y P,/usr/ccs/lib:/usr/lib}} \
+%{Qy:} %{!Qn:-Qy} \
+%{mlittle: -m elf32-powerpcle } %{mlittle-endian: -m elf32-powerpcle } \
+%{mbig: -m elf32-powerpc } %{mbig-endian: -m elf32-powerpc }"
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
