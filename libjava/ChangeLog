@@ -1,3 +1,28 @@
+2003-10-02  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/table/AbstractTableModel.java
+	(findColumnName): Prevent from NullPointerException if argument
+	columnName is null.
+
+2003-10-02  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/table/AbstractTableModel.java:
+	This patch is based on a patch done by Arnaud Vandyck
+	<arnaud.vandyck@ulg.ac.be>.
+	(getColumnName): Fixed method documentation.
+	(findColumn): Likewise.
+	(getColumnClass): Likewise.
+	(isCellEditable): Likewise.
+	(setValueAt): Likewise.
+	(addTableModelListener): Likewise.
+	(removeTableModelListener): Likewise.
+	(getTableModelListeners): New method.
+
+2003-10-02  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/table/AbstractTableModel.java:
+	Reformated.
+
 2003-10-01  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	Fix PR libgcj/12475

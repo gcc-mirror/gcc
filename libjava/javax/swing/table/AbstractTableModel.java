@@ -46,273 +46,291 @@ import javax.swing.event.TableModelListener;
 
 /**
  * AbstractTableModel
+ * 
  * @author Andrew Selkirk
  */
 public abstract class AbstractTableModel implements TableModel, Serializable
 {
   static final long serialVersionUID = -5798593159423650347L;
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  /**
+   * listenerList
+   */
+  protected EventListenerList listenerList = new EventListenerList();
 
-	/**
-	 * listenerList
-	 */
-	protected EventListenerList listenerList = new EventListenerList();
+  /**
+   * Constructor AbstractTableModel
+   */
+  public AbstractTableModel()
+  {
+    // TODO
+  }
 
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor AbstractTableModel
-	 */
-	public AbstractTableModel() {
-		// TODO
-	} // AbstractTableModel()
-
-
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * getColumnName
-	 * @param value0 TODO
-	 * @returns String
-	 */
-	public String getColumnName(int columnIndex) {
-
-		// Variables
-		int		index;
-		int		left;
-		int		base;
-		int		multiplier;
-		StringBuffer	buffer;
-		boolean		foundFirst;
-
-		// Ok, this is not the best solution in the world
-		// and it does produce wrong answers starting 1378
-		// but it's a start.  I sure hope there is a more
-		// simple algorithm.  I started with a base 10 to
-		// base 26 converter and later found that there
-		// were so many are exceptions that it has morphed
-		// into a pile of goop.
+  /**
+   * Get the name of the column for this index. If you do not override
+   * this methode, you'll get something like: 0, A; 1, B; ...; AA; AB;
+   * ...
+   *
+   * @param columnIndex The index of the column.
+   *
+   * @return The name of the column.
+   */
+  public String getColumnName (int columnIndex)
+  {
+    // Ok, this is not the best solution in the world
+    // and it does produce wrong answers starting 1378
+    // but it's a start.  I sure hope there is a more
+    // simple algorithm.  I started with a base 10 to
+    // base 26 converter and later found that there
+    // were so many are exceptions that it has morphed
+    // into a pile of goop.
 		
-		// NOTE2: I have a working algorithm which is much
-		// much simplier and works for all values...I'll
-		// be adding it soon...
+    // NOTE2: I have a working algorithm which is much
+    // much simplier and works for all values...I'll
+    // be adding it soon...
 
-		// Process Exponent levels
-		buffer = new StringBuffer();
-		left = columnIndex;
-		foundFirst = false;
-		for (index = 6; index >= 0; index--) {
-			base = (int) (Math.pow(26, index));
-			if (index > 1) {
-				base = base + (int) (Math.pow(26, index - 1));
-			}
-			if (base <= left) {
-				multiplier = left / base;
-				if (foundFirst == false && index > 0) {
-					buffer.append((char) (multiplier + 64)); 
-				} else {
-					buffer.append((char) (multiplier + 65));
-				}
-				left = left - (base * multiplier);
-				foundFirst = true;
-			} else if (foundFirst == true || index == 0) {
-				buffer.append('A');
-			}
-		} // for
+    StringBuffer buffer = new StringBuffer();
+    int left = columnIndex;
+    boolean foundFirst = false;
+    
+    // Process Exponent levels.
+    for (int index = 6; index >= 0; index--)
+      {
+        int base = (int) (Math.pow (26, index));
+        
+        if (index > 1)
+          {
+            base = base + (int) (Math.pow (26, index - 1));
+          }
+        
+        if (base <= left)
+          {
+            int multiplier = left / base;
+            
+            if (foundFirst == false
+                && index > 0)
+              {
+                buffer.append ((char) (multiplier + 64));
+              }
+            else
+              {
+                buffer.append ((char) (multiplier + 65));
+              }
+            
+            left = left - (base * multiplier);
+            foundFirst = true;
+          }
+        else if (foundFirst == true
+                 || index == 0)
+          {
+            buffer.append('A');
+          }
+    }
 
-		// Return Column Name
-		return buffer.toString();
+    // Return column name.
+    return buffer.toString();
+  }
 
-	} // getColumnName()
+  /**
+   * Return the index of the given name.
+   *
+   * @param columnName The name of the column.
+   *
+   * @return The index of the column, -1 if not found.
+   */
+  public int findColumn (String columnName)
+  {
+    int count = getColumnCount();
+    
+    for (int index = 0; index < count; index++)
+      {
+        String name = getColumnName (index);
+        
+        if (name.equals (columnName))
+          return index;
+    }
 
-	/**
-	 * findColumn
-	 * @param value0 TODO
-	 * @returns int
-	 */
-	public int findColumn(String columnName) {
+    // Unable to locate.
+    return -1;
+  }
 
-		// Variables
-		int		index;
-		String		name;
-		int		count;
+  /**
+   * Returns the class of a comlumn.
+   *
+   * @param columnIndex The index of the column.
+   *
+   * @return The class type of the column.
+   */
+  public Class getColumnClass (int columnIndex)
+  {
+    return Object.class;
+  }
 
-		// Process Columns
-		count = getColumnCount();
-		for (index = 0; index < count; index++) {
-			name = getColumnName(index);
-			if (columnName.equals(name) == true) {
-				return index;
-			} // if
-		} // for
+  /**
+   * Tells whether a cell is editable.
+   *
+   * @param rowIndex The row of the cell.
+   * @param columnIndex The index of the cell.
+   *
+   * @return True if cell is editable.
+   */
+  public boolean isCellEditable (int rowIndex, int columnIndex)
+  {
+    return false;
+  }
 
-		// Unable to Locate
-		return -1;
+  /**
+   * Sets a cell to a value.
+   *
+   * @param value New value of cell.
+   * @param rowIndex The row of the cell.
+   * @param columnIndex The column of the cell.
+   */
+  public void setValueAt (Object value, int rowIndex, int columnIndex)
+  {
+    // Do nothing...
+  }
 
-	} // findColumn()
+  /**
+   * Add a TableModelListener.
+   *
+   * @param listener The listener to add.
+   */
+  public void addTableModelListener (TableModelListener listener)
+  {
+    listenerList.add (TableModelListener.class, listener);
+  }
 
-	/**
-	 * getColumnClass
-	 * @param value0 TODO
-	 * @returns Class
-	 */
-	public Class getColumnClass(int columnIndex) {
-		return Object.class;
-	} // getColumnClass()
+  /**
+   * Removes a TableModelListener.
+   *
+   * @param listener The listener to remove.
+   */
+  public void removeTableModelListener (TableModelListener listener)
+  {
+    listenerList.remove (TableModelListener.class, listener);
+  }
 
-	/**
-	 * isCellEditable
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 * @returns boolean
-	 */
-	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		return false;
-	} // isCellEditable()
+  /**
+   * Return all registered TableModelListener objects.
+   *
+   * @return Array of TableModelListener objects.
+   *
+   * @since 1.4
+   */
+  public TableModelListener[] getTableModelListeners()
+  {
+    return (TableModelListener[])
+      listenerList.getListeners (TableModelListener.class);
+  }
 
-	/**
-	 * setValueAt
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 * @param value2 TODO
-	 */
-	public void setValueAt(Object value, int rowIndex, int columnIndex) {
-		// Do nothing...
-	} // setValueAt()
+  /**
+   * fireTableDataChanged
+   */
+  public void fireTableDataChanged()
+  {
+    fireTableChanged (new TableModelEvent (this));
+  }
 
-	/**
-	 * addTableModelListener
-	 * @param value0 TODO
-	 */
-	public void addTableModelListener(TableModelListener listener) {
-		listenerList.add(TableModelListener.class, listener);
-	} // addTableModelListener()
+  /**
+   * fireTableStructureChanged
+   */
+  public void fireTableStructureChanged()
+  {
+    fireTableChanged (new TableModelEvent (this, TableModelEvent.HEADER_ROW));
+  }
 
-	/**
-	 * removeTableModelListener
-	 * @param value0 TODO
-	 */
-	public void removeTableModelListener(TableModelListener listener) {
-		listenerList.remove(TableModelListener.class, listener);
-	} // removeTableModelListener()
+  /**
+   * fireTableRowsInserted
+   * @param value0 TODO
+   * @param value1 TODO
+   */
+  public void fireTableRowsInserted (int firstRow, int lastRow)
+  {
+    fireTableChanged (new TableModelEvent (this, firstRow, lastRow,
+                                           TableModelEvent.ALL_COLUMNS,
+                                           TableModelEvent.INSERT));
+  }
 
-	/**
-	 * fireTableDataChanged
-	 */
-	public void fireTableDataChanged() {
-		fireTableChanged(new TableModelEvent(this));
-	} // fireTableDataChanged()
+  /**
+   * fireTableRowsUpdated
+   * @param value0 TODO
+   * @param value1 TODO
+   */
+  public void fireTableRowsUpdated (int firstRow, int lastRow)
+  {
+    fireTableChanged (new TableModelEvent (this, firstRow, lastRow,
+                                           TableModelEvent.ALL_COLUMNS,
+                                           TableModelEvent.UPDATE));
+  }
 
-	/**
-	 * fireTableStructureChanged
-	 */
-	public void fireTableStructureChanged() {
-		fireTableChanged(new TableModelEvent(this,
-			TableModelEvent.HEADER_ROW));
-	} // fireTableStructureChanged()
+  /**
+   * fireTableRowsDeleted
+   * @param value0 TODO
+   * @param value1 TODO
+   */
+  public void fireTableRowsDeleted(int firstRow, int lastRow)
+  {
+    fireTableChanged (new TableModelEvent (this, firstRow, lastRow,
+                                           TableModelEvent.ALL_COLUMNS,
+                                           TableModelEvent.DELETE));
+  }
 
-	/**
-	 * fireTableRowsInserted
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 */
-	public void fireTableRowsInserted(int firstRow, int lastRow) {
-		fireTableChanged(new TableModelEvent(this, firstRow, lastRow,
-			TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
-	} // fireTableRowsInserted()
+  /**
+   * fireTableCellUpdated
+   * @param value0 TODO
+   * @param value1 TODO
+   */
+  public void fireTableCellUpdated (int row, int column)
+  {
+    fireTableChanged (new TableModelEvent (this, row, row, column));
+  }
 
-	/**
-	 * fireTableRowsUpdated
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 */
-	public void fireTableRowsUpdated(int firstRow, int lastRow) {
-		fireTableChanged(new TableModelEvent(this, firstRow, lastRow,
-			TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE));
-	} // fireTableRowsUpdated()
-
-	/**
-	 * fireTableRowsDeleted
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 */
-	public void fireTableRowsDeleted(int firstRow, int lastRow) {
-		fireTableChanged(new TableModelEvent(this, firstRow, lastRow,
-			TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE));
-	} // fireTableRowsDeleted()
-
-	/**
-	 * fireTableCellUpdated
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 */
-	public void fireTableCellUpdated(int row, int column) {
-		fireTableChanged(new TableModelEvent(this, row, row, column));
-	} // fireTableCellUpdated()
-
-	/**
-	 * fireTableChanged
-	 * @param value0 TODO
-	 */
-	public void fireTableChanged(TableModelEvent event) {
-
-		// Variables
-		Object[]		list;
-		int			index;
-		TableModelListener	listener;
+  /**
+   * fireTableChanged
+   * @param value0 TODO
+   */
+  public void fireTableChanged (TableModelEvent event)
+  {
+    int	index;
+    TableModelListener listener;
+    Object[] list = listenerList.getListenerList();
  
-		// Get Listener List
-		list = listenerList.getListenerList();
- 
-		for (index = 0; index < list.length; index += 2) {
- 
-			// Get Listener
-			listener = (TableModelListener) list[index + 1];
- 
-			// Notify Listener
-			listener.tableChanged(event);
- 
-		} // for: index                                                 
+    for (index = 0; index < list.length; index += 2)
+      {
+        listener = (TableModelListener) list [index + 1];
+        listener.tableChanged (event);
+      }
+  }
 
-	} // fireTableChanged()
+  /**
+   * getListeners
+   * @param value0 TODO
+   * @return EventListener[]
+   */
+  public EventListener[] getListeners (Class listenerType)
+  {
+    return listenerList.getListeners (listenerType);
+  }
 
-	/**
-	 * getListeners
-	 * @param value0 TODO
-	 * @returns EventListener[]
-	 */
-	public EventListener[] getListeners(Class listenerType) {
-		return listenerList.getListeners(listenerType);
-	} // getListeners()
+  /**
+   * getValueAt
+   * @param value0 TODO
+   * @param value1 TODO
+   * @return Object
+   */
+  public abstract Object getValueAt (int row, int column);
 
-	/**
-	 * getValueAt
-	 * @param value0 TODO
-	 * @param value1 TODO
-	 * @returns Object
-	 */
-	public abstract Object getValueAt(int row, int column);
+  /**
+   * getColumnCount
+   * @return int
+   */
+  public abstract int getColumnCount();
 
-	/**
-	 * getColumnCount
-	 * @returns int
-	 */
-	public abstract int getColumnCount();
-
-	/**
-	 * getRowCount
-	 * @returns int
-	 */
-	public abstract int getRowCount();
-
+  /**
+   * getRowCount
+   * @return int
+   */
+  public abstract int getRowCount();
 
 } // AbstractTableModel
-
