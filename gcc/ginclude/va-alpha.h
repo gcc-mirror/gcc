@@ -10,10 +10,19 @@
 #ifndef __GNUC_VA_LIST
 #define __GNUC_VA_LIST
 
+
+/* In VMS, __gnuc_va_list is simply char *; on OSF, it's a structure.  */
+
+#ifdef VMS
+typedef char *__gnuc_va_list;
+#else
+
 typedef struct {
   char *__base;			/* Pointer to first integer register. */
   int __offset;			/* Byte offset of args so far. */
 } __gnuc_va_list;
+#endif
+
 #endif /* not __GNUC_VA_LIST */
 
 /* If this is for internal libc use, don't define anything but
@@ -29,7 +38,11 @@ typedef struct {
 /* varargs support */
 #define va_alist __builtin_va_alist
 #define va_dcl	 int __builtin_va_alist;...
+#ifdef VMS
+#define va_start(pvar) ((pvar) = __builtin_saveregs ())
+#else
 #define va_start(pvar) ((pvar) = * (__gnuc_va_list *) __builtin_saveregs ())
+#endif
 
 #else /* STDARG.H */
 
@@ -37,9 +50,16 @@ typedef struct {
 
 /* Call __builtin_next_arg even though we aren't using its value, so that
    we can verify that firstarg is correct.  */
+
+#ifdef VMS
+#define va_start(pvar, firstarg)				\
+  (__builtin_next_arg (firstarg),				\
+   (pvar) = __builtin_saveregs ())
+#else
 #define va_start(pvar, firstarg)				\
   (__builtin_next_arg (firstarg),				\
    (pvar) = *(__gnuc_va_list *) __builtin_saveregs ())
+#endif
 
 #endif /* _STDARG_H */
 
@@ -89,12 +109,20 @@ enum {
   (((sizeof (__type) + __extension__ sizeof (long long) - 1)   \
     / __extension__ sizeof (long long)) * __extension__ sizeof (long long))
 
+#ifdef VMS
+#define va_arg(__va, __type)						\
+(*(((__va) += __va_tsize (__type)),					\
+   (__type *)(void *)((__va) - __va_tsize (__type))))
+
+#else
+
 #define va_arg(__va, __type)						\
 (*(((__va).__offset += __va_tsize (__type)),				\
    (__type *)(void *)((__va).__base + (__va).__offset			\
 	      - (((__builtin_classify_type (* (__type *) 0)		\
 		   == __real_type_class) && (__va).__offset <= (6 * 8))	\
 		 ? (6 * 8) + 8 : __va_tsize (__type)))))
+#endif
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
 
