@@ -2,7 +2,8 @@
 
 	* cp-tree.h (CLASS_TYPE_P): New macro.
 	* decl.c (grokdeclarator): Use it instead of IS_AGGR_TYPE.
-
+	* pt.c (process_template_parm): Undo previous change.
+	
 1998-08-24  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* cp-tree.h: Declare.

@@ -1610,7 +1610,6 @@ process_template_parm (list, next)
       else
 	{
 	  t = make_lang_type (TEMPLATE_TYPE_PARM);
-	  IS_AGGR_TYPE (t) = 0;
 	  /* parm is either IDENTIFIER_NODE or NULL_TREE */
 	  decl = build_decl (TYPE_DECL, parm, t);
 	}
