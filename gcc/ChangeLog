@@ -1,3 +1,9 @@
+Thu Dec 16 10:43:35 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* i386.md (movqi): Use "nonimmediate_operand" for output operand.
+	(movstrictqi, movdi, movsf, movdf, movxf): Likewise.
+	(adddi, addqi, addhi, subdi, subqi, subhi, ffs): Likewise.
+
 Thu Dec 16 02:41:26 1999  Richard Henderson (rth@cygnus.com)
 
 	* combine.c (simplify_comparison): Reduce (OP (MINUS A B) 0)
