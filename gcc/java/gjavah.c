@@ -120,7 +120,7 @@ static struct method_name *method_name_list;
 static void print_field_info PARAMS ((FILE*, JCF*, int, int, JCF_u2));
 static void print_mangled_classname PARAMS ((FILE*, JCF*, const char*, int));
 static int  print_cxx_classname PARAMS ((FILE*, const char*, JCF*, int));
-static void print_method_info PARAMS ((FILE*, JCF*, int, int, JCF_u2, int));
+static void print_method_info PARAMS ((FILE*, JCF*, int, int, JCF_u2));
 static void print_c_decl PARAMS ((FILE*, JCF*, int, int, int, const char *,
 				  int));
 static void print_stub_or_jni PARAMS ((FILE*, JCF*, int, int, int,
@@ -151,6 +151,7 @@ static void version PARAMS ((void)) ATTRIBUTE_NORETURN;
 static int overloaded_jni_method_exists_p PARAMS ((const unsigned char *, int,
 						   const char *, int));
 static void jni_print_char PARAMS ((FILE *, int));
+static void decompile_return_statement PARAMS ((FILE *, JCF *, int, int, int));
 
 JCF_u2 current_field_name;
 JCF_u2 current_field_value;
@@ -187,9 +188,12 @@ static int method_declared = 0;
 static int method_access = 0;
 static int method_printed = 0;
 static int method_synthetic = 0;
+static int method_signature = 0;
+
 #define HANDLE_METHOD(ACCESS_FLAGS, NAME, SIGNATURE, ATTRIBUTE_COUNT)	\
   {									\
     method_synthetic = 0;						\
+    method_signature = SIGNATURE;					\
     if (ATTRIBUTE_COUNT)						\
       method_synthetic = peek_attribute (jcf, ATTRIBUTE_COUNT,		\
 				  (const char *)"Synthetic", 9);	\
@@ -207,12 +211,12 @@ static int method_synthetic = 0;
 	decompiled = 0; method_printed = 0;				\
 	if (out)							\
 	  print_method_info (out, jcf, NAME, SIGNATURE,			\
-			     ACCESS_FLAGS, method_synthetic);		\
+			     ACCESS_FLAGS);				\
       }									\
     else if (!method_synthetic)						\
       {									\
 	print_method_info (NULL, jcf, NAME, SIGNATURE,			\
-			   ACCESS_FLAGS, method_synthetic);		\
+			   ACCESS_FLAGS);				\
 	if (! stubs && ! flag_jni)					\
 	  add_class_decl (out, jcf, SIGNATURE);				\
       }									\
@@ -784,9 +788,9 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 
 
 static void
-DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags, synth),
+DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
       FILE *stream AND JCF* jcf
-      AND int name_index AND int sig_index AND JCF_u2 flags AND int synth)
+      AND int name_index AND int sig_index AND JCF_u2 flags)
 {
   const unsigned char *str;
   int length, is_init = 0;
@@ -798,10 +802,6 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags, synth),
     fprintf (stream, "<not a UTF8 constant>");
   str = JPOOL_UTF_DATA (jcf, name_index);
   length = JPOOL_UTF_LENGTH (jcf, name_index);
-
-  /* Ignore synthetic methods. */
-  if (synth)
-    return;
 
   if (str[0] == '<')
     {
@@ -892,6 +892,133 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags, synth),
     free (override);
 }
 
+/* A helper for the decompiler which prints a `return' statement where
+   the type is a reference type.  If METHODTYPE and OBJECTTYPE are not
+   identical, we emit a cast.  We do this because the C++ compiler
+   doesn't know that a reference can be cast to the type of an
+   interface it implements.  METHODTYPE is the index of the method's
+   signature.  NAMEINDEX is the index of the field name; -1 for
+   `this'.  OBJECTTYPE is the index of the object's type.  */
+static void
+decompile_return_statement (out, jcf, methodtype, nameindex, objecttype)
+     FILE *out;
+     JCF *jcf;
+     int methodtype, nameindex, objecttype;
+{
+  int cast = 0;
+  int obj_name_len, method_name_len;
+  const unsigned char *obj_data, *method_data;
+
+  obj_name_len = JPOOL_UTF_LENGTH (jcf, objecttype);
+  obj_data = JPOOL_UTF_DATA (jcf, objecttype);
+
+  method_name_len = JPOOL_UTF_LENGTH (jcf, methodtype);
+  method_data = JPOOL_UTF_DATA (jcf, methodtype);
+
+  /* Skip forward to return type part of method.  */
+  while (*method_data != ')')
+    {
+      ++method_data;
+      --method_name_len;
+    }
+  /* Skip past `)'.  */
+  ++method_data;
+  --method_name_len;
+
+  /* If we see an `L', skip it and the trailing `;'.  */
+  if (method_data[0] == 'L' && method_data[method_name_len - 1] == ';')
+    {
+      ++method_data;
+      method_name_len -= 2;
+    }
+  if (obj_data[0] == 'L' && obj_data[obj_name_len - 1] == ';')
+    {
+      ++obj_data;
+      obj_name_len -= 2;
+    }
+
+  /* FIXME: if METHODTYPE is a superclass of OBJECTTYPE then we don't
+     need a cast.  Right now there is no way to determine if this is
+     the case.  */
+  if (method_name_len != obj_name_len)
+    cast = 1;
+  else
+    {
+      int i;
+      for (i = 0; i < method_name_len; ++i)
+	{
+	  if (method_data[i] != obj_data[i])
+	    {
+	      cast = 1;
+	      break;
+	    }
+	}
+    }
+
+  fputs (" { return ", out);
+
+  if (cast)
+    {
+      int array_depth = 0;
+      const unsigned char *limit;
+
+      fputs ("reinterpret_cast<", out);
+
+      while (*method_data == '[')
+	{
+	  ++method_data;
+	  ++array_depth;
+	  --method_name_len;
+	  fputs ("JArray<", out);
+	}
+
+      /* Leading space to avoid C++ digraphs.  */
+      fputs (" ::", out);
+
+      /* If we see an `L', skip it and the trailing `;'.  Only do this
+	 if we've seen an array specification.  If we don't have an
+	 array then the `L' was stripped earlier.  */
+      if (array_depth && method_data[0] == 'L'
+	  && method_data[method_name_len - 1] == ';')
+	{
+	  ++method_data;
+	  method_name_len -= 2;
+	}
+
+      limit = method_data + method_name_len;
+      while (method_data < limit)
+	{
+	  int ch = UTF8_GET (method_data, limit);
+	  if (ch == '/')
+	    fputs ("::", out);
+	  else
+	    jcf_print_char (out, ch);
+	}
+      fputs (" *", out);
+
+      /* Close each array.  */
+      while (array_depth > 0)
+	{
+	  fputs ("> *", out);
+	  --array_depth;
+	}
+
+      /* Close the cast.  */
+      fputs ("> (", out);
+    }
+
+  if (nameindex == -1)
+    fputs ("this", out);
+  else
+    print_field_name (out, jcf, nameindex, 0);
+
+  if (cast)
+    fputs (")", out);
+
+  fputs ("; }", out);
+}
+
+
 /* Try to decompile a method body.  Right now we just try to handle a
    simple case that we can do.  Expand as desired.  */
 static void
@@ -918,24 +1045,29 @@ decompile_method (out, jcf, code_len)
 	  || codes[4] == OPCODE_lreturn))
     {
       /* Found code like `return FIELD'.  */
-      fputs (" { return ", out);
       index = (codes[2] << 8) | codes[3];
       /* FIXME: ensure that tag is CONSTANT_Fieldref.  */
-      /* FIXME: ensure that the field's class is this class.  */
       name_and_type = JPOOL_USHORT2 (jcf, index);
       /* FIXME: ensure that tag is CONSTANT_NameAndType.  */
       name = JPOOL_USHORT1 (jcf, name_and_type);
-      /* FIXME: flags.  */
-      print_field_name (out, jcf, name, 0);
-      fputs ("; }", out);
+      if (codes[4] == OPCODE_areturn)
+	decompile_return_statement (out, jcf, method_signature,
+				    name, JPOOL_USHORT2 (jcf, name_and_type));
+      else
+	{
+	  fputs (" { return ", out);
+	  /* FIXME: flags.  */
+	  print_field_name (out, jcf, name, 0);
+	  fputs ("; }", out);
+	}
       decompiled = 1;
     }
   else if (code_len == 2
 	   && codes[0] == OPCODE_aload_0
 	   && codes[1] == OPCODE_areturn)
     {
-      /* Found `return this'.  */
-      fputs (" { return this; }", out);
+      decompile_return_statement (out, jcf, method_signature, -1,
+				  JPOOL_USHORT1 (jcf, jcf->this_class));
       decompiled = 1;
     }
   else if (code_len == 1 && codes[0] == OPCODE_return)

@@ -1,3 +1,11 @@
+2001-11-13  Tom Tromey  <tromey@redhat.com>
+
+	* gjavah.c (method_signature): New global.
+	(HANDLE_METHOD): Set it.
+	(decompile_return_statement): New function.
+	(decompile_method): Use it.
+	(print_method_info): Removed `synth' argument.
+
 2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* java-tree.h (java_set_yydebug): New.
