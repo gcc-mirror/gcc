@@ -4637,7 +4637,8 @@ transform_2 (regexp)
 
 /* The function makes transformations
    ...,A|B|...,C,... -> (...,A,C,...)|(...,B,C,...)|...
-   ...+(A|B|...)+C+... -> (...+A+C+...)|(...+B+C+...)|...  */
+   ...+(A|B|...)+C+... -> (...+A+C+...)|(...+B+C+...)|...
+   ...+(A,B,...)+C+... -> (...+A+C+...),B,...  */
 static regexp_t
 transform_3 (regexp)
      regexp_t regexp;
@@ -4693,8 +4694,8 @@ transform_3 (regexp)
     }
   else if (regexp->mode == rm_allof)
     {
-      regexp_t oneof;
-      int oneof_index;
+      regexp_t oneof, seq;
+      int oneof_index, seq_index;
       regexp_t result;
       regexp_t allof;
       int i, j;
@@ -4736,6 +4737,45 @@ transform_3 (regexp)
 		  allof->regexp.allof.regexps [j]
 		    = copy_insn_regexp (oneof->regexp.oneof.regexps [i]);
 	    }
+	  regexp_transformed_p = 1;
+	  regexp = result;
+	}
+      for (i = 0; i < regexp->regexp.allof.regexps_num; i++)
+	if (regexp->regexp.allof.regexps [i]->mode == rm_sequence)
+	  {
+	    seq_index = i;
+	    seq = regexp->regexp.allof.regexps [i];
+	    break;
+	  }
+      if (i < regexp->regexp.allof.regexps_num)
+	{
+	  if (seq->regexp.sequence.regexps_num <= 1
+	      || regexp->regexp.allof.regexps_num <= 1)
+	    abort ();
+	  result = create_node (sizeof (struct regexp)
+				+ sizeof (regexp_t)
+				* (seq->regexp.sequence.regexps_num - 1));
+	  result->mode = rm_sequence;
+	  result->pos = regexp->pos;
+	  result->regexp.sequence.regexps_num
+	    = seq->regexp.sequence.regexps_num;
+	  allof = create_node (sizeof (struct regexp)
+			       + sizeof (regexp_t)
+			       * (regexp->regexp.allof.regexps_num - 1));
+	  allof->mode = rm_allof;
+	  allof->pos = regexp->pos;
+	  allof->regexp.allof.regexps_num = regexp->regexp.allof.regexps_num;
+	  result->regexp.sequence.regexps [0] = allof;
+	  for (j = 0; j < allof->regexp.allof.regexps_num; j++)
+	    if (j != seq_index)
+	      allof->regexp.allof.regexps [j]
+		= copy_insn_regexp (regexp->regexp.allof.regexps [j]);
+	    else
+	      allof->regexp.allof.regexps [j]
+		= copy_insn_regexp (seq->regexp.sequence.regexps [0]);
+	  for (i = 1; i < result->regexp.sequence.regexps_num; i++)
+	    result->regexp.sequence.regexps [i]
+	      = copy_insn_regexp (seq->regexp.sequence.regexps [i]);
 	  regexp_transformed_p = 1;
 	  regexp = result;
 	}

@@ -1,3 +1,8 @@
+2002-05-14  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (transform_3): Add code for transformation
+	`(A,B,...)+C -> A+C,B,...'.
+
 Tue May 14 12:48:22 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* final.c (end_final): Do not output profile_arcs constructor, when
