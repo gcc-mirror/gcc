@@ -6487,11 +6487,6 @@ hppa_encode_label (sym)
   char *newstr, *p;
 
   p = newstr = alloca (len + 1);
-  if (str[0] == '*')
-    {
-      str++;
-      len--;
-    }
   *p++ = '@';
   strcpy (p, str);
 
@@ -6523,7 +6518,9 @@ static const char *
 pa_strip_name_encoding (str)
      const char *str;
 {
-  return str + (*str == '*' || *str == '@');
+  str += (*str == '@');
+  str += (*str == '*');
+  return str;
 }
 
 int

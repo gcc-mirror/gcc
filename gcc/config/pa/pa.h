@@ -1688,7 +1688,16 @@ do { 									\
    `assemble_name' uses this.  */
 
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf ((FILE), "%s", (NAME) + (FUNCTION_NAME_P (NAME) ? 1 : 0))
+  do {					\
+    const char *xname = (NAME);		\
+    if (FUNCTION_NAME_P (NAME))		\
+      xname += 1;			\
+    if (xname[0] == '*')		\
+      xname += 1;			\
+    else				\
+      fputs (user_label_prefix, FILE);	\
+    fputs (xname, FILE);		\
+  } while (0)
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
