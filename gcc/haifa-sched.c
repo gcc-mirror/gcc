@@ -761,7 +761,7 @@ static void get_block_head_tail PROTO ((int, rtx *, rtx *));
 static void find_pre_sched_live PROTO ((int));
 static void find_post_sched_live PROTO ((int));
 static void update_reg_usage PROTO ((void));
-static int queue_to_ready ((rtx [], int))
+static int queue_to_ready PROTO ((rtx [], int));
 
 void debug_ready_list PROTO ((rtx[], int));
 static void init_target_units PROTO (());
