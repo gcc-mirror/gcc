@@ -371,6 +371,7 @@ extern void record_base_value		PARAMS ((unsigned int, rtx, int));
 extern void record_alias_subset         PARAMS ((HOST_WIDE_INT,
 						 HOST_WIDE_INT));
 extern HOST_WIDE_INT new_alias_set		PARAMS ((void));
+extern int can_address_p		PARAMS ((tree));
 
 /* Functions from expr.c:  */
 

@@ -1,5 +1,21 @@
 Thu Oct 25 08:46:06 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* alias.c (can_address_p): No longer static.
+	* emit-rtl.c (get_mem_attrs): New parameter, MODE; all callers changed.
+	Return 0 if all parameters are default values.
+	(set_mem_attributes): Set MEM_KEEP_ALIAS_SET_P.
+	(adjust_address_1): Try harder to compute a size.
+	* expr.c (expand_assignment, store_constructor): If can't address,
+	set MEM_KEEP_ALIAS_SET_P.
+	(store_constructor_field): Don't change set if MEM_KEEP_ALIAS_SET_P.
+	(store_field): Likewise.
+	(store_constructor): Simplify call to store_constructor_field.
+	* expr.h (can_address_p): New declaration.
+	* gensupport.c (gen_rtx_CONST_INT): New function.
+	* rtl.h (MEM_KEEP_ALIAS_SET_P): New macro.
+	(MEM_SIZE): Get size from mode, if not set and not BLKmode.
+	(MEM_COPY_ATTRIBUTES): Copy MEM_KEEP_ALIAS_SET_P.
+
 	* stmt.c (expand_end_case): Remove orig_minval and use tree_low_cst.
 
 2001-10-24  Christopher Faylor  <cgf@redhat.com>

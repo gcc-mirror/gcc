@@ -95,7 +95,6 @@ static rtx find_base_term		PARAMS ((rtx));
 static int base_alias_check		PARAMS ((rtx, rtx, enum machine_mode,
 						 enum machine_mode));
 static int handled_component_p		PARAMS ((tree));
-static int can_address_p		PARAMS ((tree));
 static rtx find_base_value		PARAMS ((rtx));
 static int mems_in_disjoint_alias_sets_p PARAMS ((rtx, rtx));
 static int insert_subset_children       PARAMS ((splay_tree_node, void*));
@@ -426,7 +425,7 @@ handled_component_p (t)
 /* Return 1 if all the nested component references handled by
    get_inner_reference in T are such that we can address the object in T.  */
 
-static int
+int
 can_address_p (t)
      tree t;
 {

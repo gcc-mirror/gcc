@@ -92,6 +92,20 @@ message_with_line VPARAMS ((int lineno, const char *msg, ...))
 
   VA_CLOSE (ap);
 }
+
+/* Make a version of gen_rtx_CONST_INT so that GEN_INT can be used in
+   the gensupport programs.  */
+
+rtx
+gen_rtx_CONST_INT (mode, arg)
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     HOST_WIDE_INT arg;
+{
+  rtx rt = rtx_alloc (CONST_INT);
+
+  XWINT (rt, 0) = arg;
+  return rt;
+}
 
 /* Queue PATTERN on LIST_TAIL.  */
 

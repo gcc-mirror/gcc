@@ -3841,6 +3841,12 @@ expand_assignment (to, from, want_value, suggest_reg)
 	}
       else
 	{
+	  if (! can_address_p (to))
+	    {
+	      to_rtx = copy_rtx (to_rtx);
+	      MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
+	    }
+
 	  result = store_field (to_rtx, bitsize, bitpos, mode1, from,
 				(want_value
 				 /* Spurious cast for HPUX compiler.  */
@@ -4479,7 +4485,9 @@ store_constructor_field (target, bitsize, bitpos,
 	 set, if required.  */
       if (bitpos != 0)
 	align = MIN (align, (unsigned int) bitpos & - bitpos);
-      if (GET_CODE (target) == MEM)
+
+      if (GET_CODE (target) == MEM && ! MEM_KEEP_ALIAS_SET_P (target)
+	  && MEM_ALIAS_SET (target) != 0)
 	set_mem_alias_set (target, alias_set);
 
       store_constructor (exp, target, align, cleared, bitsize / BITS_PER_UNIT);
@@ -4681,12 +4689,17 @@ store_constructor (exp, target, align, cleared, size)
 	      mode = word_mode;
 	    }
 #endif
+
+	  if (GET_CODE (to_rtx) == MEM && !MEM_KEEP_ALIAS_SET_P (to_rtx)
+	      && DECL_NONADDRESSABLE_P (field))
+	    {
+	      to_rtx = copy_rtx (to_rtx);
+	      MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
+	    }
+
 	  store_constructor_field (to_rtx, bitsize, bitpos, mode,
 				   TREE_VALUE (elt), type, align, cleared,
-				   (DECL_NONADDRESSABLE_P (field)
-				    && GET_CODE (to_rtx) == MEM)
-				   ? MEM_ALIAS_SET (to_rtx)
-				   : get_alias_set (TREE_TYPE (field)));
+				   get_alias_set (TREE_TYPE (field)));
 	}
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
@@ -4824,11 +4837,18 @@ store_constructor (exp, target, align, cleared, size)
 		  for (; lo <= hi; lo++)
 		    {
 		      bitpos = lo * tree_low_cst (TYPE_SIZE (elttype), 0);
+
+		      if (GET_CODE (target) == MEM
+			  && !MEM_KEEP_ALIAS_SET_P (target)
+			  && TYPE_NONALIASED_COMPONENT (type))
+			{
+			  target = copy_rtx (target);
+			  MEM_KEEP_ALIAS_SET_P (target) = 1;
+			}
+
 		      store_constructor_field
 			(target, bitsize, bitpos, mode, value, type, align,
-			 cleared,
-			 TYPE_NONALIASED_COMPONENT (type)
-			 ? MEM_ALIAS_SET (target) : get_alias_set (elttype));
+			 cleared, get_alias_set (elttype));
 		    }
 		}
 	      else
@@ -4916,11 +4936,15 @@ store_constructor (exp, target, align, cleared, size)
 	      else
 		bitpos = (i * tree_low_cst (TYPE_SIZE (elttype), 1));
 
+	      if (GET_CODE (target) == MEM && !MEM_KEEP_ALIAS_SET_P (target)
+		  && TYPE_NONALIASED_COMPONENT (type))
+		{
+		  target = copy_rtx (target);
+		  MEM_KEEP_ALIAS_SET_P (target) = 1;
+		}
+
 	      store_constructor_field (target, bitsize, bitpos, mode, value,
 				       type, align, cleared,
-				       TYPE_NONALIASED_COMPONENT (type)
-				       && GET_CODE (target) == MEM
-				       ? MEM_ALIAS_SET (target) :
 				       get_alias_set (elttype));
 
 	    }
@@ -5329,7 +5353,8 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 					 bitpos / BITS_PER_UNIT));
 
       MEM_SET_IN_STRUCT_P (to_rtx, 1);
-      set_mem_alias_set (to_rtx, alias_set);
+      if (!MEM_KEEP_ALIAS_SET_P (to_rtx) && MEM_ALIAS_SET (to_rtx) != 0)
+	set_mem_alias_set (to_rtx, alias_set);
 
       return store_expr (exp, to_rtx, value_mode != VOIDmode);
     }

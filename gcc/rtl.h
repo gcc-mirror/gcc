@@ -129,6 +129,7 @@ struct rtx_def
 
   /* 1 in an INSN if it can alter flow of control
      within this function.
+     MEM_KEEP_ALIAS_SET_P in a MEM.
      LINK_COST_ZERO in an INSN_LIST.  */
   unsigned int jump : 1;
   /* 1 in an INSN if it can call another function.
@@ -855,6 +856,11 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
 #define ASM_OPERANDS_SOURCE_FILE(RTX) XCSTR ((RTX), 5, ASM_OPERANDS)
 #define ASM_OPERANDS_SOURCE_LINE(RTX) XCINT ((RTX), 6, ASM_OPERANDS)
 
+/* For a MEM RTX, 1 if we should keep the alias set for this mem
+   unchanged when we access a component.  Set to 1, or example, when we
+   are already in a non-addressable component of an aggregate.  */
+#define MEM_KEEP_ALIAS_SET_P(RTX) ((RTX)->jump)
+
 /* For a MEM rtx, 1 if it's a volatile reference.
    Also in an ASM_OPERANDS rtx.  */
 #define MEM_VOLATILE_P(RTX) ((RTX)->volatil)
@@ -910,7 +916,10 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
 
 /* For a MEM rtx, the size in bytes of the MEM, if known, as an RTX that
    is always a CONST_INT.  */
-#define MEM_SIZE(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->size)
+#define MEM_SIZE(RTX)							\
+(MEM_ATTRS (RTX) != 0 ? MEM_ATTRS (RTX)->size				\
+ : GET_MODE (RTX) != BLKmode ? GEN_INT (GET_MODE_SIZE (GET_MODE (RTX)))	\
+ : 0)
 
 /* For a MEM rtx, the alignment in bits.  */
 #define MEM_ALIGN(RTX)							\
@@ -920,11 +929,12 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
 
 
 /* Copy the attributes that apply to memory locations from RHS to LHS.  */
-#define MEM_COPY_ATTRIBUTES(LHS, RHS)			\
-  (MEM_VOLATILE_P (LHS) = MEM_VOLATILE_P (RHS),		\
-   MEM_IN_STRUCT_P (LHS) = MEM_IN_STRUCT_P (RHS),	\
-   MEM_SCALAR_P (LHS) = MEM_SCALAR_P (RHS),		\
-   RTX_UNCHANGING_P (LHS) = RTX_UNCHANGING_P (RHS),	\
+#define MEM_COPY_ATTRIBUTES(LHS, RHS)				\
+  (MEM_VOLATILE_P (LHS) = MEM_VOLATILE_P (RHS),			\
+   MEM_IN_STRUCT_P (LHS) = MEM_IN_STRUCT_P (RHS),		\
+   MEM_SCALAR_P (LHS) = MEM_SCALAR_P (RHS),			\
+   RTX_UNCHANGING_P (LHS) = RTX_UNCHANGING_P (RHS),		\
+   MEM_KEEP_ALIAS_SET_P (LHS) = MEM_KEEP_ALIAS_SET_P (RHS),	\
    MEM_ATTRS (LHS) = MEM_ATTRS (RHS))
 
 /* For a LABEL_REF, 1 means that this reference is to a label outside the
