@@ -22,9 +22,18 @@ fi
 
 # Set libstdcxx_incdir.
 # This is the same as gcc/configure.in and libstdc++-v3/acinclude.m4. 
-gcc_version_trigger=${if_topsrcdir}/gcc/version.c
-gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*"\([^"]*\)".*/\1/'`
-gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
+if test -z "$gcc_version"; then
+  if test -z "${gcc_version_trigger}" \
+     && test -f ${if_topsrcdir}/gcc/version.c; then
+    gcc_version_trigger=${if_topsrcdir}/gcc/version.c
+  fi    
+  if test -f "${gcc_version_trigger}"; then
+    gcc_version_full=`grep version_string "${gcc_version_trigger}" | sed -e 's/.*"\([^"]*\)".*/\1/'`
+  else
+    gcc_version_full=`$CC -v 2>&1 | sed -n 's/^gcc version //p'`
+  fi
+  gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
+fi
 libstdcxx_incdir=c++/${gcc_version}
 
 # The trickiest part is libc_interface.
