@@ -1,3 +1,8 @@
+Mon Aug  9 18:33:38 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in (sched_yield): Try librt first, then libposix4.
+	Add -lrt, -lposix4 to THREADSPEC.
+
 1999-08-08  Anthony Green  <green@cygnus.com>
 
 	* gnu/gcj/util/path/SearchPath.java: Comment out verbose output.
