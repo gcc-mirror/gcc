@@ -2705,9 +2705,12 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	    {
 	      tree count;
 	      enum machine_mode tmode;
+
 	      if (unsignedp)
 		return expand_and (temp, GEN_INT (width_mask), NULL_RTX);
 	      tmode = GET_MODE (temp);
+	      if (tmode == VOIDmode)
+		tmode = value_mode;
 	      count = build_int_2 (GET_MODE_BITSIZE (tmode) - bitsize, 0);
 	      temp = expand_shift (LSHIFT_EXPR, tmode, temp, count, 0, 0);
 	      return expand_shift (RSHIFT_EXPR, tmode, temp, count, 0, 0);
