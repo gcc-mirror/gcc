@@ -1253,7 +1253,7 @@ L2:     .word STATIC
 	emit_insn (gen_flush_icache (validize_mem (gen_rtx_MEM (SImode, TRAMP)),\
 				     GEN_INT (m32r_cache_flush_trap) ));	\
       else if (m32r_cache_flush_func && m32r_cache_flush_func[0])		\
-	emit_library_call (gen_rtx_SYMBOL_REF (Pmode, m32r_cache_flush_func), 	\
+	emit_library_call (m32r_function_symbol (m32r_cache_flush_func), 	\
 			   0, VOIDmode, 3, TRAMP, Pmode,			\
 			   GEN_INT (TRAMPOLINE_SIZE), SImode,			\
 			   GEN_INT (3), SImode);				\
