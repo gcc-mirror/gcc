@@ -111,6 +111,7 @@ objc_sizeof_type(const char* type)
     return sizeof(double);
     break;
 
+  case _C_PTR:
   case _C_ATOM:
   case _C_CHARPTR:
     return sizeof(char*);
@@ -217,6 +218,7 @@ objc_alignof_type(const char* type)
     return __alignof__(double);
     break;
 
+  case _C_PTR:
   case _C_ATOM:
   case _C_CHARPTR:
     return __alignof__(char*);
