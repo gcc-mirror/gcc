@@ -23,6 +23,9 @@
 # LIBGCC
 # MULTILIBS
 # EXTRA_MULTILIB_PARTS
+# SHLIB_LINK
+# SHLIB_LIBS
+# SHLIB_MULTILIB
 
 # Make needs VPATH to be literal.
 echo 'srcdir = @srcdir@'
@@ -49,6 +52,10 @@ EOF
   rm -f $tmp
 fi
 
+# Disable SHLIB_LINK if shared libgcc not enabled.
+if [ "@enable_shared@" = "no" ]; then
+  SHLIB_LINK=""
+fi
 
 # Build lines.
 
@@ -258,6 +265,7 @@ done
 
 for ml in $MULTILIBS; do
   dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+  flags=`echo ${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`;
 
   libgcc_objs=""
   for o in $libgcc1_objs; do
@@ -278,6 +286,24 @@ for ml in $MULTILIBS; do
   echo '	if $(RANLIB_TEST_FOR_TARGET) ; then' \\
   echo '	  $(RANLIB_FOR_TARGET)' ${dir}/libgcc.a ';' \\
   echo '	else true; fi;'
+
+  if [ "$SHLIB_LINK" ]; then
+    if [ -z "$SHLIB_MULTILIB" ]; then
+      if [ "$dir" = "." ]; then
+	shlib_base_name="libgcc_s";
+      else
+	shlib_base_name=libgcc_s_`echo $dir | sed s,/,_,g`
+      fi
+      echo ""
+      echo "${dir}/${shlib_base_name}.so: $libgcc_objs"
+      echo "	$SHLIB_LINK $flags -o ${shlib_base_name}.so $libgcc_objs $SHLIB_LIBS" | sed "s/@shlib_base_name@/$shlib_base_name/g"
+    elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
+      shlib_base_name="libgcc_s";
+      echo ""
+      echo "${shlib_base_name}.so: $libgcc_objs"
+      echo "	$SHLIB_LINK $flags -o ${shlib_base_name}.so $libgcc_objs $SHLIB_LIBS" | sed "s/@shlib_base_name@/$shlib_base_name/g"
+    fi
+  fi
 done
 
 dirs=libgcc
@@ -306,6 +332,23 @@ for ml in $MULTILIBS; do
     dirs="$dirs ${dir} libgcc/${dir}"
   fi
   all="$all ${dir}/libgcc.a"
+  if [ "$SHLIB_LINK" ]; then
+    if [ -z "$SHLIB_MULTILIB" ]; then
+      if [ "$dir" = "." ]; then
+	suff="";
+      else
+	suff=_`echo $dir | sed s,/,_,g`
+      fi
+      all="$all ${dir}/libgcc_s${suff}.so"
+    elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
+      all="$all libgcc_s.so"
+    fi
+      if [ "$dir" = "." ]; then
+	suff="";
+      else
+	suff=_`echo $dir | sed s,/,_,g`
+      fi
+  fi
 done
 
 echo 'stmp-dirs: force'

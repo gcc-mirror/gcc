@@ -28,3 +28,8 @@ $(T)gcrt1.o: $(srcdir)/config/sparc/sol2-c1.asm $(GCC_PASSES)
 
 CRTSTUFF_T_CFLAGS = -fPIC
 TARGET_LIBGCC2_CFLAGS = -fPIC
+
+# Build a shared libgcc library.
+SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
+	-Wl,-h,@shlib_base_name@.so.0 -Wl,-z,text -Wl,-z,defs
+SHLIB_LIBS = -lc

@@ -8,6 +8,13 @@ INSTALL_ASSERT_H =
 CRTSTUFF_T_CFLAGS_S = -fPIC
 # Compile libgcc2.a with pic.
 TARGET_LIBGCC2_CFLAGS = -fPIC
+# Build a shared libgcc library.
+SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
+	-Wl,--soname=@shlib_base_name@.so.0
+# ??? Do versioning later -- need to figure out how to post-process
+# the script and allow for target-specific additions.
+# -Wl,--version-script=$(srcdir)/config/ver-glibc.map
+SHLIB_LIBS = -lc
 
 # Do not build libgcc1. Let gcc generate those functions. The GNU/Linux
 # C library can handle them.

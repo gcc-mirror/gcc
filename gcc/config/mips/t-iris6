@@ -18,3 +18,8 @@ INSTALL_LIBGCC = install-multilib
 
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o
 CRTSTUFF_T_CFLAGS=-g1
+
+# Build a shared libgcc library.
+SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
+        -Wl,-soname,@shlib_base_name@.so.0
+SHLIB_LIBS = -lc

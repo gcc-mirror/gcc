@@ -1,3 +1,20 @@
+2000-10-04  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in (enable-shared): New.
+	* Makefile.in (LIBGCC_DEPS): Depend on EXTRA_PARTS as well.
+	(libgcc.mk): Pass SHLIB_LINK, SHLIB_LIBS, SHLIB_MULTILIB to mklibgcc.
+	* mklibgcc.in: Use them to link shared a libgcc.
+	* config/t-linux (SHLIB_LINK, SHLIB_LIBS): New.
+	* config/alpha/t-ieee (SHLIB_MULTILIB): New.
+	* config/mips/t-iris6 (SHLIB_LINK, SHLIB_LIBS): New.
+	* config/sparc/t-sol2 (SHLIB_LINK, SHLIB_LIBS): New.
+
+	* configure.in (alpha-osf*): Use t-osf and x-osf.
+	* config/alpha/t-osf: New file.
+	* config/alpha/t-osf4: New file.
+	* config/alpha/x-osf: New file.
+	* config/alpha/x-alpha: Remove file.
+
 2000-10-04  Will Cohen  <wcohen@redhat.com>
 
 	* c-typeck.c (process_init_element): Added warning for zero-length
