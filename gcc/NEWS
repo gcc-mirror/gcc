@@ -1,71 +1,244 @@
-Noteworthy changes in GCC version 2.8.0:
+Noteworthy changes in GCC version 2.8.0
+---------------------------------------
 
-The -specs=file switch allows you to override default specs used in invoking
-programs like cc1, as, etc.
+A major change in this release is the addition of a framework for
+exception handling, currently used by C++.  Many internal changes and
+optimization improvements have been made.  These increase the
+maintainability and portability of GCC.  GCC now uses autoconf to
+compute many host parameters.
 
-The following new targets are supported:
+A new project, egcs (pronounced ``eggs''), is maintaining an
+experimental version of the GNU C compiler.  The egcs compiler
+contains features that are candidates for inclusion in future versions
+of GCC.  The standard gcc distribution is intended to contain a mature
+compiler that is stable and reliable; egcs aims at a faster
+development process and is allowed to be more experimental.  Please
+see <http://www.cygnus.com/egcs/> for more information about egcs.
 
-    Solaris 2.5 running on UltraSPARC's.
-    The sparclet cpu (a.out file format).
-    Solaris 2.51 running on PowerPC's.
-    Linux running on PowerPC's.
+Due to a bug fix related to exception handling, if you have previously
+built a sharable library with some recent unofficial versions of GCC
+on some systems and then rebuild the library with GCC 2.8.0, programs
+previously linked with that library may fail during initialization
+with a message about an undefined symbols __register_frame.  If that
+happens, you must either relink the application or rebuild the
+sharable library with "-Wl,-u,__register_frame" on the command line.
 
-New features for the Hitachi H8/300(H).
+The following lists changes that add new features or targets.
 
-    -malign-300
-    -ms
+See cp/NEWS for new features of C++ in this release.
 
-The -ms switch generates code for the Hitachi H8/S processor.
+New tools and features:
+
+    The Dwarf 2 debugging information format is supported on ELF systems, and
+    is the default for -ggdb where available.  It can also be used for C++.
+    The Dwarf version 1 debugging format is also permitted for C++, but
+    does not work well.
+
+    gcov.c is provided for test coverage analysis and branch profiling
+    analysis is also supported; see -fprofile-arcs, -ftest-coverage,
+    and -fbranch-probabilities.
+
+    Support for the Checker memory checking tool.
+
+    New switch, -fstack-check, to check for stack overflow on systems that
+    don't have such built into their ABI.
+
+    New switches, -Wundef and -Wno-undef to warn if an undefined identifier
+    is evaluated in an #if directive.
+
+    Options -Wall and -Wimplicit now cause GCC to warn about implicit int
+    in declarations (e.g. `register i;'), since the C Standard committee
+    has decided to disallow this in the next revision of the standard;
+    -Wimplicit-function-declarations and -Wimplicit-int are subsets of
+    this.
+
+    Option -Wsign-compare causes GCC to warn about comparison of signed and
+    unsigned values.
+
+    Add -dI option of cccp for cxref.
+
+New features in configuration, installation and specs file handling:
+
+    New option --enable-c-cpplib to configure script.
+
+    You can use --with-cpu on the configure command to specify the default
+    CPU that GCC should generate code for.
+
+    The -specs=file switch allows you to override default specs used in
+    invoking programs like cc1, as, etc.
+
+    Allow including one specs file from another and renaming a specs
+    variable.
+
+    You can now relocate all GCC files with a single environment variable
+    or a registry entry under Windows 95 and Windows NT.
+
+Changes in Objective-C:
+
+    The Objective-C Runtime Library has been made thread-safe.
+
+    The Objective-C Runtime Library contains an interface for creating
+    mutexes, condition mutexes, and threads; it requires a back-end
+    implementation for the specific platform and/or thread package.
+    Currently supported are DEC/OSF1, IRIX, Mach, OS/2, POSIX, PCThreads,
+    Solaris, and Windows32.  The --enable-threads parameter can be used
+    when configuring GCC to enable and select a thread back-end.
+
+    Objective-C is now configured as separate front-end language to GCC,
+    making it more convenient to conditionally build it.
+
+    The internal structures of the Objective-C Runtime Library have
+    changed sufficiently to warrant a new version number; now version 8.
+    Programs compiled with an older version must be recompiled.
+
+    The Objective-C Runtime Library can be built as a DLL on Windows 95
+    and Windows NT systems.
+    
+    The Objective-C Runtime Library implements +load.
+
+The following new targets are supported (see also list under each
+individual CPU below):
+
+    Embedded target m32r-elf.
+    Embedded Hitachi Super-H using ELF.
+    RTEMS real-time system on various CPU targets.
+    ARC processor.
+    NEC V850 processor.
+    Matsushita MN10200 processor.
+    Matsushita MN10300 processor.
+    Sparc and PowerPC running on VxWorks.
+    Support both glibc versions 1 and 2 on Linux-based GNU systems.
+
+New features for DEC Alpha systems:
+
+    Allow detailed specification of IEEE fp support:
+      -mieee, -mieee-with-inexact, and -mieee-conformant
+      -mfp-trap-mode=xxx, -mfp-round-mode=xxx, -mtrap-precision=xxx
+    -mcpu=xxx for CPU selection
+    Support scheduling parameters for EV5.
+    Add support for BWX, CIX, and MAX instruction set extensions.
+    Support Linux-based GNU systems.
+    Support VMS.
+
+Additional supported processors and systems for MIPS targets:
+
+    MIPS4 instruction set.
+    R4100, R4300 and R5000 processors.
+    N32 and N64 ABI.
+    IRIX 6.2.
+    SNI SINIX.
+    
+New features for Intel x86 family:
+
+    Add scheduling parameters for Pentium and Pentium Pro.
+    Support stabs on Solaris-x86.
+    Intel x86 processors running the SCO OpenServer 5 family.
+    Intel x86 processors running DG/UX.
+    Intel x86 using Cygwin32 or Mingw32 on Windows 95 and Windows NT.
+
+New features for Motorola 68k family:
+
+    Support for 68060 processor.
+    More consistent switches to specify processor.
+    Motorola 68k family running AUX.
+    68040 running pSOS, ELF object files, DBX debugging.
+    Coldfire variant of Motorola m68k family.
+
+New features for the HP PA RISC:
+
+    -mspace and m-no-space
+    -mlong-load-store and -mno-long-load-store
+    -mbig-switch -mno-big-switch
+
+    GCC on the PA requires either gas-2.7 or the HP assembler; for best
+    results using GAS is highly recommended.  GAS is required for -g and
+    exception handling support.
 
 New features for SPARC-based systems:
 
+    The ultrasparc cpu.
+    The sparclet cpu, supporting only a.out file format.
+    Sparc running SunOS 4 with the GNU assembler.
+    Sparc running the Linux-based GNU system.
+    Embedded Sparc processors running the ELF object file format.
     -mcpu=xxx
     -mtune=xxx
+    -malign-loops=xxx
+    -malign-jumps=xxx
+    -malign-functions=xxx
     -mimpure-text and -mno-impure-text
 
-New features for PowerPC-based systems running either System V, Linux, Solaris,
-or embedded systems:
+    Options -mno-v8 and -mno-sparclite are no longer supported on SPARC
+    targets.  Options -mcypress, -mv8, -msupersparc, -msparclite, -mf930,
+    and -mf934 are deprecated and will be deleted in GCC 2.9.  Use
+    -mcpu=xxx instead.
+
+New features for rs6000 and PowerPC systems:
+
+    Solaris 2.51 running on PowerPC's.
+    The Linux-based GNU system running on PowerPC's.
+    -mcpu=604e,602,603e,620,801,823,mpc505,821,860,power2
+    -mtune=xxx
+    -mrelocatable-lib, m-no-relocatable-lib
+    -msim, -mmve, -memb
+    -mupdate, -mno-update
+    -mfused-madd, -mno-fused-madd
 
     -mregnames
     -meabi
-    -mcall-linux
-    -mcall-solaris
-    -mcall-sysv-eabi
-    -mcall-sysv-noeabi
-    -msdata
-    -memb
-    -mtune=xxx
-    -msim
-    -mmvme
+    -mcall-linux, -mcall-solaris, -mcall-sysv-eabi, -mcall-sysv-noeabi
+    -msdata, -msdata=none, -msdata=default, -msdata=sysv, -msdata=eabi
+    -memb, -msim, -mmvme
+    -myellowknife, -mads
+    wchar_t is now of type long as per the ABI, not unsigned short.
+    -p/-pg support
+    -mcpu=403 now implies -mstrict-align.
+    Implement System V profiling.
 
-Options -mno-v8 and -mno-sparclite are no longer supported on SPARC
-targets.  Options -mcypress, -mv8, -msupersparc, -msparclite, -mf930,
-and -mf934 are deprecated and will be deleted in GCC 2.9.
-Use -mcpu=xxx instead.
+    Aix 4.1 GCC targets now default to -mcpu=common so that programs
+    compiled can be moved between rs6000 and powerpc based systems.  A
+    consequence of this is that -static won't work, and that some programs
+    may be slightly slower.
 
-GCC on the PA requires either gas-2.7 or the HP assembler; for best
-results using GAS is highly recommended.  GAS is required for -g
-and exception handling support.
+    You can select the default value to use for -mcpu=xxx on rs6000 and
+    powerpc targets by using the --with-cpu=xxx option when configuring the
+    compiler.  In addition, a new options, -mtune=xxx was added that
+    selects the machine to schedule for but does not select the
+    architecture level.
 
-Aix 4.1 GCC targets now default to -mcpu=common so that programs compiled can
-be moved between rs6000 and powerpc based systems.  A consequence of this is
-that -static won't work, and that some programs may be slightly slower.
+    Directory names used for storing the multilib libraries on System V
+    and embedded PowerPC systems have been shortened to work with commands
+    like tar that have fixed limits on pathname size.
 
-You can select the default value to use for -mcpu=xxx on rs6000 and powerpc
-targets by using the --with-cpu=xxx option when confiuring the compiler.  In
-addition, a new options, -mtune=xxx was added that selects the machine to
-schedule for but does not select the architecture level.
+New features for the Hitachi H8/300(H):
 
-Directory names used for storing the multilib libraries on System V and
-embedded PowerPC systems have been shortened to work with commands like tar
-that have fixed limits on pathname size.
+    -malign-300
+    -ms (for the Hitachi H8/S processor)
+    -mint32
 
-Noteworthy changes in GCC version 2.7.2:
+New features for the ARM:
+
+    -march=xxx, -mtune=xxx, -mcpu=xxx
+    Support interworking with Thumb code.
+    ARM processor with a.out object format, COFF, or AOF assembler.
+    ARM on "semi-hosted" platform.
+    ARM running NetBSD.
+    ARM running the Linux-based GNU system.
+
+New feature for Solaris systems:
+
+    GCC installation no longer makes a copy of system include files,
+    thus insulating GCC better from updates to the operating system.
+
+
+Noteworthy changes in GCC version 2.7.2
+---------------------------------------
 
 A few bugs have been fixed (most notably the generation of an
 invalid assembler opcode on some RS/6000 systems).
 
-Noteworthy changes in GCC version 2.7.1:
+Noteworthy changes in GCC version 2.7.1
+---------------------------------------
 
 This release fixes numerous bugs (mostly minor) in GCC 2.7.0, but
 also contains a few new features, mostly related to specific targets.
@@ -89,8 +262,9 @@ sequence used in GCC version 2.7.0.  That calling sequence was based on the AIX
 calling sequence without function descriptors.  To compile code for that older
 calling sequence, either configure the compiler for powerpc-*-eabiaix or use
 the -mcall-aix switch when compiling and linking.
-
-Noteworthy changes in GCC version 2.7.0:
+
+Noteworthy changes in GCC version 2.7.0
+---------------------------------------
 
 GCC now works better on systems that use ".obj" and ".exe" instead of
 ".o" and no extension.  This involved changes to the driver program,
@@ -342,7 +516,7 @@ The following new configurations are supported:
 	GNU on x86 (instead of treating it like MACH)
 	NetBSD on Sparc and Motorola 68k
 	AIX 4.1 on RS/6000 and PowerPC systems
-	Sequent DYNUX/ptx 1.x and 2.x.
+	Sequent DYNIX/ptx 1.x and 2.x.
 	Both COFF and ELF configurations on AViiON without using /bin/gcc
 	Windows/NT on x86 architecture; preliminary
 	AT&T DSP1610 digital signal processor chips
