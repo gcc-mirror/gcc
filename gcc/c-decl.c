@@ -4664,26 +4664,29 @@ grokdeclarator (tree declarator, tree declspecs,
       }
     else if (TREE_CODE (type) == FUNCTION_TYPE)
       {
-	if (specbits & (1 << (int) RID_AUTO)
-	    && (pedantic || current_scope == file_scope))
-	  pedwarn ("invalid storage class for function `%s'", name);
-	if (specbits & (1 << (int) RID_REGISTER))
+	if (specbits & (1 << (int) RID_REGISTER)
+	    || specbits & (1 << (int) RID_THREAD))
 	  error ("invalid storage class for function `%s'", name);
-	if (specbits & (1 << (int) RID_THREAD))
-	  error ("invalid storage class for function `%s'", name);
-	/* Function declaration not at file scope.
-	   Storage classes other than `extern' are not allowed
-	   and `extern' makes no difference.  */
-	if (current_scope != file_scope
-	    && (specbits & ((1 << (int) RID_STATIC) | (1 << (int) RID_INLINE)))
-	    && pedantic)
-	  pedwarn ("invalid storage class for function `%s'", name);
+	else if (current_scope != file_scope)
+	  {
+	    /* Function declaration not at file scope.  Storage
+	       classes other than `extern' are not allowed, C99
+	       6.7.1p5, and `extern' makes no difference.  However,
+	       GCC allows 'auto', perhaps with 'inline', to support
+	       nested functions.  */
+	    if (specbits & (1 << (int) RID_AUTO))
+	      {
+		if (pedantic)
+		  pedwarn ("invalid storage class for function `%s'", name);
+	      }
+	    if (specbits & (1 << (int) RID_STATIC))
+	      error ("invalid storage class for function `%s'", name);
+	  }
 
 	decl = build_decl (FUNCTION_DECL, declarator, type);
 	decl = build_decl_attribute_variant (decl, decl_attr);
 
-	DECL_LANG_SPECIFIC (decl)
-	  = GGC_CNEW (struct lang_decl);
+	DECL_LANG_SPECIFIC (decl) = GGC_CNEW (struct lang_decl);
 
 	if (pedantic && type_quals && ! DECL_IN_SYSTEM_HEADER (decl))
 	  pedwarn ("ISO C forbids qualified function types");

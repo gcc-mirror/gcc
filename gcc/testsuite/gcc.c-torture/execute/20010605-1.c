@@ -2,7 +2,7 @@ int main ()
 {
   int v = 42;
 
-  static inline int fff (int x)
+  inline int fff (int x)
     {
       return x*10;
     }
