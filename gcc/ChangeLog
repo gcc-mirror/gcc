@@ -1,3 +1,7 @@
+2002-11-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.c: Fix formatting.
+
 2002-11-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (two anonymous patterns): Fix typos.
