@@ -46,12 +46,24 @@ Mon Dec  1 19:12:36 1997  Craig Burley  <burley@gnu.org>
 
 	* intrin.c (ffeintrin_check_): Fix up indentation a bit more.
 
+Mon Dec  1 16:21:08 1997  Craig Burley  <burley@gnu.org>
+
+	* com.c (ffecom_arglist_expr_): Crash if non-supplied
+	optional arg isn't passed as an address.
+	Pass null pointer explicitly, instead of via ffecom routine.
+	If incoming argstring is NULL, substitute pointer to "0".
+	Recognize '0' as ending the usual arg stuff, just like '\0'.
+
 Sun Nov 30 22:22:22 1997  Craig Burley  <burley@gnu.org>
 
 	* intdoc.c: Minor fix-ups.
 
 	* intrin.c (ffeintrin_check_): Fix up indentation a bit.
 
+1997-11-17  Dave Love  <d.love@dl.ac.uk>
+
+	* com.c (ffecom_arglist_expr_): Pass null pointers for optional
+	args which aren't supplied.
 
 Fri Oct 10 13:00:48 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
