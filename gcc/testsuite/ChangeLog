@@ -1,3 +1,8 @@
+2004-09-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	PR c/1522
+	* gcc.c-torture/compile/20040901-1.c: New test, from PR.
+
 2004-09-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/opt/loop1.C: Do not XFAIL.
