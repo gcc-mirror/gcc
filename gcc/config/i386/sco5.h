@@ -76,6 +76,17 @@ Boston, MA 02111-1307, USA.  */
 #undef GLOBAL_ASM_OP
 #define GLOBAL_ASM_OP			"\t.globl"
 
+#undef EH_FRAME_SECTION_ASM_OP
+#define EH_FRAME_SECTION_ASM_OP_COFF	"\t.section\t.ehfram, \"x\""
+#define EH_FRAME_SECTION_ASM_OP_ELF	"\t.section\t.eh_frame, \"aw\""
+#define EH_FRAME_SECTION_ASM_OP	\
+  ((TARGET_ELF) ? EH_FRAME_SECTION_ASM_OP_ELF : EH_FRAME_SECTION_ASM_OP_COFF)
+
+/* Avoid problems (long sectino names, forward assembler refs) with DWARF
+   exception unwinding when we're generating COFF */
+#define DWARF2_UNWIND_INFO	\
+  ((TARGET_ELF) ? 1 : 0 )  
+
 #undef CONST_SECTION_ASM_OP
 #define CONST_SECTION_ASM_OP_COFF	"\t.section\t.rodata, \"x\""
 #define CONST_SECTION_ASM_OP_ELF	"\t.section\t.rodata"
@@ -901,6 +912,7 @@ compiler at the end of the day. Onward we go ...
 # undef FINI_SECTION_ASM_OP
 # undef CTORS_SECTION_ASM_OP
 # undef DTORS_SECTION_ASM_OP
+# undef EH_FRAME_SECTION_ASM_OP
 # undef CTOR_LIST_BEGIN
 # undef CTOR_LIST_END
 # undef DO_GLOBAL_CTORS_BODY
@@ -912,11 +924,13 @@ compiler at the end of the day. Onward we go ...
 #  define FINI_SECTION_ASM_OP FINI_SECTION_ASM_OP_ELF
 #  define DTORS_SECTION_ASM_OP DTORS_SECTION_ASM_OP_ELF
 #  define CTORS_SECTION_ASM_OP CTORS_SECTION_ASM_OP_ELF
+#  define EH_FRAME_SECTION_ASM_OP EH_FRAME_SECTION_ASM_OP_ELF
 # else /* ! _SCO_ELF */
 #  define INIT_SECTION_ASM_OP INIT_SECTION_ASM_OP_COFF
 #  define FINI_SECTION_ASM_OP FINI_SECTION_ASM_OP_COFF
 #  define DTORS_SECTION_ASM_OP DTORS_SECTION_ASM_OP_COFF
 #  define CTORS_SECTION_ASM_OP CTORS_SECTION_ASM_OP_COFF
+#  define EH_FRAME_SECTION_ASM_OP ""
 #  define CTOR_LIST_BEGIN asm (INIT_SECTION_ASM_OP); asm ("pushl $0")
 #  define CTOR_LIST_END CTOR_LIST_BEGIN
 #  define DO_GLOBAL_CTORS_BODY						\
@@ -927,4 +941,3 @@ do {									\
 } while (0)
 # endif /* ! _SCO_ELF */
 #endif /* CRT_BEGIN !! CRT_END */
-
