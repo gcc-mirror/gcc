@@ -1,3 +1,8 @@
+Sun Aug 13 09:41:49 2000  Anthony Green  <green@redhat.com>
+
+	* check-init.c (check_init): Add case for BIT_FIELD_REF (required
+	for -pg builds).
+
 2000-08-10  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (maybe_layout_super_class): Fixed indentation.
