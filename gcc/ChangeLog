@@ -1,3 +1,11 @@
+2002-04-22  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.md ("*movv4si_internal"): Change 'm'
+        constraint to 'o' for m=r and r=m alternatives.
+        ("*movv8hi_internal1"): Same.
+        ("*movv16qi_internal1"): Same.
+        ("*movv4sf_internal1"): Same.
+
 2002-04-22  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-lex.c (lex_charconst): Call convert to get constant in
