@@ -7305,8 +7305,7 @@ cp_parser_type_parameter (cp_parser* parser)
 
 	/* Create the combined representation of the parameter and the
 	   default argument.  */
-	parameter = build_tree_list (default_argument, 
-				     parameter);
+	parameter = build_tree_list (default_argument, parameter);
       }
       break;
 
@@ -7365,8 +7364,7 @@ cp_parser_type_parameter (cp_parser* parser)
 
 	/* Create the combined representation of the parameter and the
 	   default argument.  */
-	parameter =  build_tree_list (default_argument, 
-				      parameter);
+	parameter =  build_tree_list (default_argument, parameter);
       }
       break;
 
@@ -10498,9 +10496,13 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	}
       if (!parser->default_arg_ok_p)
 	{
-	  pedwarn ("default arguments are only permitted on functions");
-	  if (flag_pedantic_errors)
-	    default_argument = NULL_TREE;
+	  if (!flag_pedantic_errors)
+	    warning ("deprecated use of default argument for parameter of non-function");
+	  else
+	    {
+	      error ("default arguments are only permitted for function parameters");
+	      default_argument = NULL_TREE;
+	    }
 	}
     }
   else
