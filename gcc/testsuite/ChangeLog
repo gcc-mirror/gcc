@@ -1,3 +1,9 @@
+2004-11-29  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/Wnested-externs-1.c, gcc.dg/decl-7.c, gcc.dg/decl-8.c,
+	gcc.dg/if-empty-1.c, gcc.dg/init-bad-1.c, gcc.dg/init-bad-2.c,
+	gcc.dg/init-bad-3.c, gcc.dg/parm-mismatch-1.c: New tests.
+
 2004-11-28  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/pr18164.c: New test.
