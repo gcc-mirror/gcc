@@ -30,10 +30,10 @@ Boston, MA 02111-1307, USA.  */
 /* Although NeXT ran on many different architectures, as of Jan 2001
    the only supported Darwin targets are PowerPC and x86.  */
 
-/* Make the compiler look here for standard stuff.  */
-
-#undef STANDARD_EXEC_PREFIX
-#define STANDARD_EXEC_PREFIX "/usr/libexec/"
+/* Technically, STANDARD_EXEC_PREFIX should be /usr/libexec/, but in
+   practice this makes it hard to install new compilers elsewhere, so
+   leave it undefined and expect system builders to set configure args
+   correctly.  */
 
 /* Name of the command that invokes the compiler - used in g++.c.  */
 
@@ -69,6 +69,11 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE "int"
 #undef	WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
+
+/* Default to using the NeXT-style runtime, since that's what is
+   pre-installed on Darwin systems.  */
+
+#define NEXT_OBJC_RUNTIME
 
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
