@@ -3342,12 +3342,11 @@ rest_of_compilation (decl)
     }
 #endif
 
-  if (optimize > 0)
-    /* Shorten branches.  */
-    TIMEVAR (shorten_branch_time,
-	     {
-	       shorten_branches (get_insns ());
-	     });
+  /* Shorten branches.  */
+  TIMEVAR (shorten_branch_time,
+	   {
+	     shorten_branches (get_insns ());
+	   });
 
 #ifdef STACK_REGS
   TIMEVAR (stack_reg_time, reg_to_stack (insns, stack_reg_dump_file));
