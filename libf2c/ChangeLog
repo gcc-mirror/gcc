@@ -1,3 +1,8 @@
+2001-02-19  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* libF77/Version.c, libI77/Version.c, libU77/Version.c: Update G77
+	version number to 0.5.27.
+
 2001-02-08  Geoffrey Keating  <geoffk@redhat.com>
 
 	* configure.in: Don't run AC_PROG_CC_WORKS, because

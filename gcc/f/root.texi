@@ -3,8 +3,8 @@
 @c (e.g. a release branch in the CVS repository for gcc),
 @c clear this and set the version information correctly.
 @set DEVELOPMENT
-@set version-g77 0.5.26
-@set version-gcc 2.97
+@set version-g77 0.5.27
+@set version-gcc 3.1
 
 @set email-general gcc@@gcc.gnu.org
 @set email-bugs gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
