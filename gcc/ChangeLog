@@ -1,3 +1,8 @@
+2002-11-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppmain.c (cpp_preprocess_file): Loop to pop any -included
+	buffers.
+
 2002-11-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (two anonymous test insns): New.
