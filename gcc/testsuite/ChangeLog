@@ -1,3 +1,7 @@
+2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* g++.dg/warn/format1.C: New test.
+
 2001-10-01  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* mi6.c, mi6a.h, mi6b.h, mi6c.h, mi6d.h, mi6e.h: Correct tests.
