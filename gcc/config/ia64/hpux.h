@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Target OS builtins.  */
 /* -D__fpreg=long double is needed to compensate for
-   the lack of __fpreg which is a primative type in
+   the lack of __fpreg which is a primitive type in
    HP C but does not exist in GNU C.  */
 #define TARGET_OS_CPP_BUILTINS()			\
 do {							\
