@@ -1,3 +1,7 @@
+2004-02-18  Paul Brook  <paul@codesourcery.com>
+
+	* rtlanal.c (rtx_varies_p): Return 0 for NULL_RTX
+
 2004-02-18  Mark Mitchell <mark@codesourcery.com>
 
 	PR c++/11326

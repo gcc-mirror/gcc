@@ -133,10 +133,14 @@ rtx_unstable_p (rtx x)
 int
 rtx_varies_p (rtx x, int for_alias)
 {
-  RTX_CODE code = GET_CODE (x);
+  RTX_CODE code;
   int i;
   const char *fmt;
 
+  if (!x)
+    return 0;
+
+  code = GET_CODE (x);
   switch (code)
     {
     case MEM:
