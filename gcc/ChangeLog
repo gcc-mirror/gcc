@@ -1,3 +1,10 @@
+2003-11-10  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
+
+	PR target/12865
+	* config/sparc/sparc.c (sparc_initialize_trampoline): Call
+	__enable_execute_stack only after writing onto the stack.
+	(sparc64_initialize_trampoline): Likewise.
+
 2003-11-09  Roger Sayle  <roger@eyesopen.com>
 
 	* loop.c (check_dbra_loop): Try swapping the comparison operands

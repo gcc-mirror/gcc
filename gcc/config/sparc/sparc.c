@@ -7087,7 +7087,7 @@ sparc_type_code (register tree type)
 void
 sparc_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
 {
-  /* SPARC 32 bit trampoline:
+  /* SPARC 32-bit trampoline:
 
  	sethi	%hi(fn), %g1
  	sethi	%hi(static), %g2
@@ -7097,10 +7097,6 @@ sparc_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
     SETHI i,r  = 00rr rrr1 00ii iiii iiii iiii iiii iiii
     JMPL r+i,d = 10dd ddd1 1100 0rrr rr1i iiii iiii iiii
    */
-#ifdef TRANSFER_FROM_TRAMPOLINE
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
-                     LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
-#endif
 
   emit_move_insn
     (gen_rtx_MEM (SImode, plus_constant (tramp, 0)),
@@ -7139,21 +7135,25 @@ sparc_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
       && sparc_cpu != PROCESSOR_ULTRASPARC3)
     emit_insn (gen_flush (validize_mem (gen_rtx_MEM (SImode,
 						     plus_constant (tramp, 8)))));
+
+  /* Call __enable_execute_stack after writing onto the stack to make sure
+     the stack address is accessible.  */
+#ifdef TRANSFER_FROM_TRAMPOLINE
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
+                     LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
+#endif
+
 }
 
-/* The 64 bit version is simpler because it makes more sense to load the
+/* The 64-bit version is simpler because it makes more sense to load the
    values as "immediate" data out of the trampoline.  It's also easier since
    we can read the PC without clobbering a register.  */
 
 void
 sparc64_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
 {
-#ifdef TRANSFER_FROM_TRAMPOLINE
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
-                     LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
-#endif
+  /* SPARC 64-bit trampoline:
 
-  /*
 	rd	%pc, %g1
 	ldx	[%g1+24], %g5
 	jmp	%g5
@@ -7176,6 +7176,13 @@ sparc64_initialize_trampoline (rtx tramp, rtx fnaddr, rtx cxt)
   if (sparc_cpu != PROCESSOR_ULTRASPARC
       && sparc_cpu != PROCESSOR_ULTRASPARC3)
     emit_insn (gen_flushdi (validize_mem (gen_rtx_MEM (DImode, plus_constant (tramp, 8)))));
+
+  /* Call __enable_execute_stack after writing onto the stack to make sure
+     the stack address is accessible.  */
+#ifdef TRANSFER_FROM_TRAMPOLINE
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
+                     LCT_NORMAL, VOIDmode, 1, tramp, Pmode);
+#endif
 }
 
 /* Subroutines to support a flat (single) register window calling
