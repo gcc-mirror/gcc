@@ -1,3 +1,7 @@
+2003-10-04  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* gengtype-lex.l: Recognize typedef of functions without PARAMS macro.
+
 2003-10-04  Nathanael Nerode  <neroden@gcc.gnu.org>
         
 	* config/v850/v850-c.c, config/v850/v850-protos.h, config/v850/v850.c:
