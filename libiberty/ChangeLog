@@ -1,5 +1,7 @@
 2000-04-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* sort.c (sort_pointers): Fix endianness bugs.
+
 	* sort.c: New file.
 	* Makefile.in (CFILES): Add sort.c
 	(REQUIRED_OFILES): Add sort.o.
