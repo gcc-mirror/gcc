@@ -1,3 +1,7 @@
+2003-06-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/compile/simd-5.c: Don't XFAIL on H8.
+
 2003-06-19  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.c-torture/execute/simd-4.c (main): Make expected value
