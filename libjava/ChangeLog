@@ -1,3 +1,18 @@
+2003-04-07  Aaron M. Renn (arenn@urbanophile.com)
+
+	* java/io/ObjectStreamException
+	* java/io/FileFilter
+	* java/io/FilenameFilter
+	* java/io/ObjectInput
+	* java/io/ObjectOutput
+	* java/io/ObjectStreamConstants
+	Minor doc fixes, format fixes, spelling corrections, etc.
+	* java/io/DataInput
+	Corrected code samples in Javadocs to match reality
+	* java/io/DataOutput
+	* java/io/ObjectInputValidation
+	Major documentation fixes - all Javadocs re-written or updated
+
 2003-04-06  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URLConnection.java:

@@ -45,10 +45,11 @@ package java.io;
   * <code>OutputStream</code> like.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
+  *
+  * @see DataOutput
   */
 public interface ObjectOutput extends DataOutput
 {
-
   /**
     * This method writes the specified byte to the output stream.
     *

@@ -1,5 +1,5 @@
 /* FilenameFilter.java -- Filter a list of filenames
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,17 +46,20 @@ package java.io;
 /**
  * This interface has one method which is used for filtering filenames
  * returned in a directory listing.  It is currently used by the 
- * <code>File.list()</code> method and by the filename dialog in AWT.
+ * <code>File.list(FilenameFilter)</code> method and by the filename 
+ * dialog in AWT.
  * <p>
  * The method in this interface determines if a particular file should
  * or should not be included in the file listing.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @author Tom Tromey <tromey@cygnus.com>
+ *
+ * @see File#listFiles(java.io.FilenameFilter)
+ * @see java.awt.FileDialog#setFilenameFilter(java.io.FilenameFilter)
  */
 public interface FilenameFilter
 {
-
   /**
    * This method determines whether or not a given file should be included
    * in a directory listing.
