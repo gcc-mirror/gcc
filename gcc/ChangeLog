@@ -1,3 +1,10 @@
+Tue May  2 00:20:30 2000  Jason Eckhardt  <jle@cygnus.com>
+
+        * flow.c (verify_flow_info): Added two more sanity checks. The
+        first checks that the blocks are numbered consecutively. The second
+        checks that n_basic_blocks is actually equal to the number of
+        basic blocks in the insn chain.
+
 2000-05-03  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.h: Add accessor macros for token lists.

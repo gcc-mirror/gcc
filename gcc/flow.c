@@ -6177,7 +6177,7 @@ verify_flow_info ()
   const rtx rtx_first = get_insns ();
   basic_block *bb_info;
   rtx x;
-  int i, err = 0;
+  int i, last_bb_num_seen, num_bb_notes, err = 0;
 
   bb_info = (basic_block *) xcalloc (max_uid, sizeof (basic_block));
 
@@ -6340,9 +6340,21 @@ verify_flow_info ()
 	}
     }
 
+  last_bb_num_seen = -1;
+  num_bb_notes = 0;
   x = rtx_first;
   while (x)
     {
+      if (GET_CODE (x) == NOTE
+	  && NOTE_LINE_NUMBER (x) == NOTE_INSN_BASIC_BLOCK)
+	{
+	  basic_block bb = NOTE_BASIC_BLOCK (x);
+	  num_bb_notes++;
+	  if (bb->index != last_bb_num_seen + 1)
+	    fatal ("Basic blocks not numbered consecutively");
+	  last_bb_num_seen = bb->index;
+	}
+
       if (!bb_info[INSN_UID (x)])
 	{
 	  switch (GET_CODE (x))
@@ -6377,6 +6389,10 @@ verify_flow_info ()
 
       x = NEXT_INSN (x);
     }
+
+  if (num_bb_notes != n_basic_blocks)
+    fatal ("number of bb notes in insn chain (%d) != n_basic_blocks (%d)",
+	   num_bb_notes, n_basic_blocks);
 
   if (err)
     abort ();
