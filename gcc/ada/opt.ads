@@ -560,6 +560,11 @@ package Opt is
    --  When True signals gnatmake to ignore compilation errors and keep
    --  processing sources until there is no more work.
 
+   Keep_Temporary_Files : Boolean := False;
+   --  GNATCMD
+   --  When True the temporary files created by the GNAT driver are not
+   --  deleted. Set by switch -dn or qualifier /KEEP_TEMPORARY_FILES.
+
    Link_Only : Boolean := False;
    --  GNATMAKE
    --  Set to True to skip compile and bind steps

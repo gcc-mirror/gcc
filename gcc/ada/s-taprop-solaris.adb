@@ -81,7 +81,7 @@ with System.Soft_Links;
 --  Note that we do not use System.Tasking.Initialization directly since
 --  this is a higher level package that we shouldn't depend on. For example
 --  when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Initialization
+--  System.Tasking.Restricted.Stages.
 
 with System.OS_Primitives;
 --  used for Delay_Modes
@@ -311,9 +311,9 @@ package body System.Task_Primitives.Operations is
       end if;
    end Abort_Handler;
 
-   -------------------
-   --  Stack_Guard  --
-   -------------------
+   -----------------
+   -- Stack_Guard --
+   -----------------
 
    --  The underlying thread system sets a guard page at the
    --  bottom of a thread stack, so nothing is needed.
@@ -325,9 +325,9 @@ package body System.Task_Primitives.Operations is
       null;
    end Stack_Guard;
 
-   --------------------
-   -- Get_Thread_Id  --
-   --------------------
+   -------------------
+   -- Get_Thread_Id --
+   -------------------
 
    function Get_Thread_Id (T : ST.Task_Id) return OSI.Thread_Id is
    begin
@@ -506,7 +506,7 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock
-     (L : access RTS_Lock;
+     (L     : access RTS_Lock;
       Level : Lock_Level)
    is
       Result : Interfaces.C.int;

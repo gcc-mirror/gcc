@@ -1176,9 +1176,9 @@ package body Osint is
       return Src_Search_Directories.Table (Primary_Directory);
    end Get_Primary_Src_Search_Directory;
 
-   -------------------------
-   --  Get_RTS_Search_Dir --
-   -------------------------
+   ------------------------
+   -- Get_RTS_Search_Dir --
+   ------------------------
 
    function Get_RTS_Search_Dir
      (Search_Dir : String;

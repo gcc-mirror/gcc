@@ -122,9 +122,9 @@ package body Exception_Propagation is
    --  maximally aligned (see unwind.h). See additional comments on the
    --  alignment below.
 
-   ---------------------------------------------------------------
-   --  GNAT specific entities to deal with the GCC eh circuitry --
-   ---------------------------------------------------------------
+   --------------------------------------------------------------
+   -- GNAT Specific Entities To Deal With The GCC EH Circuitry --
+   --------------------------------------------------------------
 
    --  A GNAT exception object to be dealt with by the personality routine
    --  called by the GCC unwinding runtime.

@@ -4974,9 +4974,9 @@ package body Sem_Res is
       Eval_Integer_Literal (N);
    end Resolve_Integer_Literal;
 
-   ---------------------------------
-   --  Resolve_Intrinsic_Operator --
-   ---------------------------------
+   --------------------------------
+   -- Resolve_Intrinsic_Operator --
+   --------------------------------
 
    procedure Resolve_Intrinsic_Operator  (N : Node_Id; Typ : Entity_Id) is
       Btyp : constant Entity_Id := Base_Type (Underlying_Type (Typ));

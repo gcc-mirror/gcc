@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,10 +34,6 @@
 --  See the body for exact details of the file that is generated
 
 package Bindgen is
-
-   ------------------
-   --  Subprograms --
-   ------------------
 
    procedure Gen_Output_File (Filename : String);
    --  Filename is the full path name of the binder output file

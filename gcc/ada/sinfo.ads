@@ -3065,9 +3065,9 @@ package Sinfo is
       --  node (which appears as a singleton list). Box_Present gives support
       --  to Ada 2005 (AI-287).
 
-      ------------------------------------
-      --  4.3.1  Commponent Choice List --
-      ------------------------------------
+      -----------------------------------
+      -- 4.3.1  Commponent Choice List --
+      -----------------------------------
 
       --  COMPONENT_CHOICE_LIST ::=
       --    component_SELECTOR_NAME {| component_SELECTOR_NAME}

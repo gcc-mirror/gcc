@@ -799,9 +799,9 @@ package body Sem_Ch7 is
          end if;
       end Is_Public_Child;
 
-      --------------------------------------------
-      --  Inspect_Deferred_Constant_Completion  --
-      --------------------------------------------
+      ------------------------------------------
+      -- Inspect_Deferred_Constant_Completion --
+      ------------------------------------------
 
       procedure Inspect_Deferred_Constant_Completion is
          Decl   : Node_Id;
@@ -1935,7 +1935,7 @@ package body Sem_Ch7 is
          end;
       end if;
 
-      --  Otherwise search entity chain for entity requiring completion.
+      --  Otherwise search entity chain for entity requiring completion
 
       E := First_Entity (P);
       while Present (E) loop
@@ -1945,6 +1945,14 @@ package body Sem_Ch7 is
          --  parent, and so do not affect whether the parent needs a body.
 
          if Is_Child_Unit (E) then
+            null;
+
+         --  Ignore formal packages and their renamings
+
+         elsif Ekind (E) = E_Package
+           and then Nkind (Original_Node (Unit_Declaration_Node (E))) =
+                                                N_Formal_Package_Declaration
+         then
             null;
 
          --  Otherwise test to see if entity requires a completion

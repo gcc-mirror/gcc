@@ -66,9 +66,9 @@ with Validsw;  use Validsw;
 
 package body Exp_Ch4 is
 
-   ------------------------
-   --  Local Subprograms --
-   ------------------------
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
 
    procedure Binary_Op_Validity_Checks (N : Node_Id);
    pragma Inline (Binary_Op_Validity_Checks);

@@ -34,9 +34,9 @@ with Types; use Types;
 
 package Sinput.L is
 
-   -------------------------------------------
-   --  Subprograms for Loading Source Files --
-   -------------------------------------------
+   ------------------------------------------
+   -- Subprograms for Loading Source Files --
+   ------------------------------------------
 
    function Load_Source_File (N : File_Name_Type) return Source_File_Index;
    --  Given a source file name, returns the index of the corresponding entry

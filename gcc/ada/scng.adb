@@ -443,9 +443,9 @@ package body Scng is
             Error_Msg_S ("digit expected");
          end Error_Digit_Expected;
 
-         -------------------
-         --  Scan_Integer --
-         -------------------
+         ------------------
+         -- Scan_Integer --
+         ------------------
 
          procedure Scan_Integer is
             C : Character;

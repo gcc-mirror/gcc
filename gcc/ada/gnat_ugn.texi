@@ -13234,8 +13234,21 @@ XREF to invoke @command{^gnatxref^gnatxref^}
 @end itemize
 
 @noindent
-Note that the compiler is invoked using the command
-@command{^gnatmake -f -u -c^gnatmake -f -u -c^}.
+(note that the compiler is invoked using the command
+@command{^gnatmake -f -u -c^gnatmake -f -u -c^}).
+
+@noindent
+On non VMS platforms, between @command{gnat} and the command, two
+special switches may be used:
+
+@itemize @bullet
+@item
+@command{-v} to display the invocation of the tool.
+@item
+@command{-dn} to prevent the @command{gnat} driver from removing
+the temporary files it has created. These temporary files are
+configuration files and temporary file list files.
+@end itemize
 
 @noindent
 The command may be followed by switches and arguments for the invoked

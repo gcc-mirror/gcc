@@ -66,21 +66,19 @@ package body Sem_Disp is
 
    function Check_Controlling_Type
      (T    : Entity_Id;
-      Subp : Entity_Id)
-      return Entity_Id;
+      Subp : Entity_Id) return Entity_Id;
       --  T is the type of a formal parameter of subp. Returns the tagged
       --  if the parameter can be a controlling argument, empty otherwise
 
-   --------------------------------
-   --  Add_Dispatching_Operation --
-   --------------------------------
+   -------------------------------
+   -- Add_Dispatching_Operation --
+   -------------------------------
 
    procedure Add_Dispatching_Operation
      (Tagged_Type : Entity_Id;
       New_Op      : Entity_Id)
    is
       List : constant Elist_Id := Primitive_Operations (Tagged_Type);
-
    begin
       Append_Elmt (New_Op, List);
    end Add_Dispatching_Operation;
@@ -200,8 +198,7 @@ package body Sem_Disp is
 
    function Check_Controlling_Type
      (T    : Entity_Id;
-      Subp : Entity_Id)
-      return Entity_Id
+      Subp : Entity_Id) return Entity_Id
    is
       Tagged_Type : Entity_Id := Empty;
 

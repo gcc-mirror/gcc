@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1998-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,9 +47,9 @@ package body System.OS_Primitives is
    use System.OS_Interface;
    use type Interfaces.C.int;
 
-   --------------------------
-   --  Internal functions  --
-   --------------------------
+   ------------------------
+   -- Internal functions --
+   ------------------------
 
    function To_Clock_Ticks (D : Duration) return int;
    --  Convert a duration value (in seconds) into clock ticks.

@@ -91,9 +91,9 @@ package body System.Finalization_Implementation is
    --  Given the address (obj) of a tagged object, return a
    --  pointer to the record controller of this object.
 
-   -------------
-   --  Adjust --
-   -------------
+   ------------
+   -- Adjust --
+   ------------
 
    procedure Adjust (Object : in out Record_Controller) is
 

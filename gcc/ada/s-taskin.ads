@@ -55,21 +55,21 @@ with Unchecked_Conversion;
 
 package System.Tasking is
 
-   --  -------------------
-   --  -- Locking Rules --
-   --  -------------------
-   --
+   -------------------
+   -- Locking Rules --
+   -------------------
+
    --  The following rules must be followed at all times, to prevent
    --  deadlock and generally ensure correct operation of locking.
-   --
+
    --  . Never lock a lock unless abort is deferred.
-   --
+
    --  . Never undefer abort while holding a lock.
-   --
+
    --  . Overlapping critical sections must be properly nested,
    --    and locks must be released in LIFO order.
    --    e.g., the following is not allowed:
-   --
+
    --         Lock (X);
    --         ...
    --         Lock (Y);
@@ -77,31 +77,31 @@ package System.Tasking is
    --         Unlock (X);
    --         ...
    --         Unlock (Y);
-   --
+
    --  Locks with lower (smaller) level number cannot be locked
    --  while holding a lock with a higher level number. (The level
    --  number is the number at the left.)
-   --
+
    --  1. System.Tasking.PO_Simple.Protection.L (any PO lock)
    --  2. System.Tasking.Initialization.Global_Task_Lock (in body)
    --  3. System.Task_Primitives.Operations.Single_RTS_Lock
    --  4. System.Tasking.Ada_Task_Control_Block.LL.L (any TCB lock)
-   --
+
    --  Clearly, there can be no circular chain of hold-and-wait
    --  relationships involving locks in different ordering levels.
-   --
+
    --  We used to have Global_Task_Lock before Protection.L but this was
    --  clearly wrong since there can be calls to "new" inside protected
    --  operations. The new ordering prevents these failures.
-   --
+
    --  Sometimes we need to hold two ATCB locks at the same time. To allow
    --  us to order the locking, each ATCB is given a unique serial
    --  number. If one needs to hold locks on several ATCBs at once,
    --  the locks with lower serial numbers must be locked first.
-   --
+
    --  We don't always need to check the serial numbers, since
    --  the serial numbers are assigned sequentially, and so:
-   --
+
    --  . The parent of a task always has a lower serial number.
    --  . The activator of a task always has a lower serial number.
    --  . The environment task has a lower serial number than any other task.
@@ -360,25 +360,24 @@ package System.Tasking is
    --  Some protection is described in terms of tasks related to the
    --  ATCB being protected. These are:
 
-   --    Self: The task which is controlled by this ATCB.
-   --    Acceptor: A task accepting a call from Self.
-   --    Caller: A task calling an entry of Self.
-   --    Parent: The task executing the master on which Self depends.
-   --    Dependent: A task dependent on Self.
-   --    Activator: The task that created Self and initiated its activation.
-   --    Created: A task created and activated by Self.
+   --    Self:      The task which is controlled by this ATCB
+   --    Acceptor:  A task accepting a call from Self
+   --    Caller:    A task calling an entry of Self
+   --    Parent:    The task executing the master on which Self depends
+   --    Dependent: A task dependent on Self
+   --    Activator: The task that created Self and initiated its activation
+   --    Created:   A task created and activated by Self
 
    --  Note: The order of the fields is important to implement efficiently
    --  tasking support under gdb.
    --  Currently gdb relies on the order of the State, Parent, Base_Priority,
    --  Task_Image, Task_Image_Len, Call and LL fields.
 
-   ----------------------------------------------------------------------
-   --  Common ATCB section                                             --
-   --                                                                  --
-   --  This section is used by all GNARL implementations (regular and  --
-   --  restricted)                                                     --
-   ----------------------------------------------------------------------
+   -------------------------
+   -- Common ATCB section --
+   -------------------------
+
+   --  Section used by all GNARL implementations (regular and restricted)
 
    type Common_ATCB is record
       State : Task_States;

@@ -4480,6 +4480,12 @@ package body Sem_Ch6 is
          if not Comes_From_Source (S) then
             null;
 
+         --  If the subprogram is at library level, it is not a
+         --  primitive operation.
+
+         elsif Current_Scope = Standard_Standard then
+            null;
+
          elsif (Ekind (Current_Scope) = E_Package
                  and then not In_Package_Body (Current_Scope))
            or else Overriding

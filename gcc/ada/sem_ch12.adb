@@ -2549,6 +2549,12 @@ package body Sem_Ch12 is
                   if Unit_Requires_Body (Scop) then
                      Enclosing_Body_Present := True;
                      exit;
+
+                  elsif In_Open_Scopes (Scop)
+                    and then In_Package_Body (Scop)
+                  then
+                     Enclosing_Body_Present := True;
+                     exit;
                   end if;
 
                   exit when Is_Compilation_Unit (Scop);
@@ -2847,9 +2853,9 @@ package body Sem_Ch12 is
          end if;
    end Analyze_Package_Instantiation;
 
-   ---------------------------
-   --  Inline_Instance_Body --
-   ---------------------------
+   --------------------------
+   -- Inline_Instance_Body --
+   --------------------------
 
    procedure Inline_Instance_Body
      (N        : Node_Id;
@@ -4583,9 +4589,9 @@ package body Sem_Ch12 is
       --  (for ASIS use) even though as the name of an enclosing generic
       --   it would otherwise not be preserved in the generic tree.
 
-      -----------------------
-      --  Copy_Descendants --
-      -----------------------
+      ----------------------
+      -- Copy_Descendants --
+      ----------------------
 
       procedure Copy_Descendants is
 

@@ -4398,9 +4398,9 @@ package body Freeze is
       end if;
    end Freeze_Subprogram;
 
-   -----------------------
-   --  Is_Fully_Defined --
-   -----------------------
+   ----------------------
+   -- Is_Fully_Defined --
+   ----------------------
 
    function Is_Fully_Defined (T : Entity_Id) return Boolean is
    begin

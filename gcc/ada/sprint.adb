@@ -2817,13 +2817,13 @@ package body Sprint is
       Write_Str ("""]");
    end Write_Condition_And_Reason;
 
-   ------------------------
-   --  Write_Discr_Specs --
-   ------------------------
+   -----------------------
+   -- Write_Discr_Specs --
+   -----------------------
 
    procedure Write_Discr_Specs (N : Node_Id) is
-      Specs  : List_Id;
-      Spec   : Node_Id;
+      Specs : List_Id;
+      Spec  : Node_Id;
 
    begin
       Specs := Discriminant_Specifications (N);

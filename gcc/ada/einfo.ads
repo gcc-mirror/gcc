@@ -2922,7 +2922,7 @@ package Einfo is
 --       is needed, since returns an invalid value in this case!
 
 --    Sec_Stack_Needed_For_Return (Flag167)
---       Present in scope entities (blocks,functions, procedures, tasks,
+--       Present in scope entities (blocks, functions, procedures, tasks,
 --       entries). Set to True when secondary stack is used to hold
 --       the returned value of a function and thus should not be
 --       released on scope exit.
@@ -4967,9 +4967,9 @@ package Einfo is
    subtype L is Elist_Id;
    subtype S is List_Id;
 
-   ---------------------------------
-   --  Attribute Access Functions --
-   ---------------------------------
+   --------------------------------
+   -- Attribute Access Functions --
+   --------------------------------
 
    --  All attributes are manipulated through a procedural interface. This
    --  section contains the functions used to obtain attribute values which

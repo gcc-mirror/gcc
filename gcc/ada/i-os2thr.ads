@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1993-1997 Free Software Foundation, Inc.          --
+--          Copyright (C) 1993-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -63,8 +63,7 @@ pragma Preelaborate (Threads);
       pfn     : PFNTHREAD;
       param   : PVOID;
       flag    : ULONG;
-      cbStack : ULONG)
-      return    APIRET;
+      cbStack : ULONG) return APIRET;
    pragma Import (C, DosCreateThread, "DosCreateThread");
 
    Block_Child     : constant := 1;
@@ -152,8 +151,7 @@ pragma Preelaborate (Threads);
 
    function DosGetInfoBlocks
      (Pptib : access PTIB;
-      Pppib : access PPIB)
-      return  APIRET;
+      Pppib : access PPIB) return APIRET;
    pragma Import (C, DosGetInfoBlocks, "DosGetInfoBlocks");
 
    --  Thread local memory
@@ -164,23 +162,21 @@ pragma Preelaborate (Threads);
    function DosAllocThreadLocalMemory
      (cb : ULONG;               -- Number of 4-byte DWORDs to allocate
       p  : access PVOID)        -- Address of the memory block
-   return
-      APIRET;                   -- Return Code (rc)
+      return APIRET;                   -- Return Code (rc)
    pragma Import
      (Convention => C,
       Entity     => DosAllocThreadLocalMemory,
       Link_Name  => "_DosAllocThreadLocalMemory");
 
-   -----------------
-   --  Priorities --
-   -----------------
+   ----------------
+   -- Priorities --
+   ----------------
 
    function DosSetPriority
      (Scope   : ULONG;
       Class   : ULONG;
       Delta_P : IC.long;
-      PorTid  : TID)
-      return    APIRET;
+      PorTid  : TID) return APIRET;
    pragma Import (C, DosSetPriority, "DosSetPriority");
 
    PRTYS_PROCESS     : constant := 0;

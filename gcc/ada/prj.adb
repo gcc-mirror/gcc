@@ -376,9 +376,9 @@ package body Prj is
       end if;
    end Register_Default_Naming_Scheme;
 
-   ------------
-   --  Reset --
-   ------------
+   -----------
+   -- Reset --
+   -----------
 
    procedure Reset is
    begin

@@ -310,16 +310,16 @@ package System.OS_Interface is
    function mprotect (addr : Address; len : size_t; prot : int) return int;
    pragma Import (C, mprotect);
 
-   -----------------------------------------
-   --  Nonstandard Thread Initialization  --
-   -----------------------------------------
+   ---------------------------------------
+   -- Nonstandard Thread Initialization --
+   ---------------------------------------
 
    procedure pthread_init;
    --  This is a dummy procedure to share some GNULLI files
 
-   ---------------------------
-   --  POSIX.1c  Section 3  --
-   ---------------------------
+   -------------------------
+   -- POSIX.1c  Section 3 --
+   -------------------------
 
    function sigwait
      (set : access sigset_t;
@@ -447,9 +447,9 @@ package System.OS_Interface is
    function sched_yield return int;
    pragma Import (C, sched_yield, "sched_yield");
 
-   ---------------------------
-   -- P1003.1c - Section 16 --
-   ---------------------------
+   --------------------------
+   -- P1003.1c  Section 16 --
+   --------------------------
 
    function pthread_attr_init (attributes : access pthread_attr_t) return int;
    pragma Import (C, pthread_attr_init, "pthread_attr_init");

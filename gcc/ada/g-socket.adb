@@ -2130,8 +2130,18 @@ package body GNAT.Sockets is
       MS : Timeval_Unit;
 
    begin
-      S  := Timeval_Unit (Val - 0.5);
-      MS := Timeval_Unit (1_000_000 * (Val - Selector_Duration (S)));
+      --  If zero, set result as zero (otherwise it gets rounded down to -1)
+
+      if Val = 0.0 then
+         S  := 0;
+         MS := 0;
+
+      --  Normal case where we do round down
+      else
+         S  := Timeval_Unit (Val - 0.5);
+         MS := Timeval_Unit (1_000_000 * (Val - Selector_Duration (S)));
+      end if;
+
       return (S, MS);
    end To_Timeval;
 

@@ -120,9 +120,9 @@ package body System.Tasking.Restricted.Stages is
 
    procedure Timed_Delay_T (Time : Duration; Mode : Integer);
 
-   ------------------------
-   --  Local Subprograms --
-   ------------------------
+   -----------------------
+   -- Local Subprograms --
+   -----------------------
 
    procedure Task_Wrapper (Self_ID : Task_Id);
    --  This is the procedure that is called by the GNULL from the

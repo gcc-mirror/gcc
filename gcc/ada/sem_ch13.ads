@@ -47,7 +47,7 @@ package Sem_Ch13 is
    function Minimum_Size
      (T      : Entity_Id;
       Biased : Boolean := False) return Nat;
-   --  Given a primitive type, determines the minimum number of bits required
+   --  Given an elementary type, determines the minimum number of bits required
    --  to represent all values of the type. This function may not be called
    --  with any other types. If the flag Biased is set True, then the minimum
    --  size calculation that biased representation is used in the case of a

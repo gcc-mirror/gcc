@@ -1088,9 +1088,9 @@ package body Sem_Cat is
 
    end Validate_Object_Declaration;
 
-   --------------------------------
-   --  Validate_RCI_Declarations --
-   --------------------------------
+   -------------------------------
+   -- Validate_RCI_Declarations --
+   -------------------------------
 
    procedure Validate_RCI_Declarations (P : Entity_Id) is
       E : Entity_Id;

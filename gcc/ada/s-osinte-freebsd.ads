@@ -328,18 +328,20 @@ package System.OS_Interface is
      (addr : Address; len : size_t; prot : int) return int;
    pragma Import (C, mprotect);
 
-   -----------------------------------------
-   --  Nonstandard Thread Initialization  --
-   -----------------------------------------
-   --  FSU_THREADS requires pthread_init, which is nonstandard
-   --  and this should be invoked during the elaboration of s-taprop.adb
-   --
-   --  FreeBSD does not require this so we provide an empty Ada body.
+   ---------------------------------------
+   -- Nonstandard Thread Initialization --
+   ---------------------------------------
+
+   --  FSU_THREADS requires pthread_init, which is nonstandard and
+   --  this should be invoked during the elaboration of s-taprop.adb
+
+   --  FreeBSD does not require this so we provide an empty Ada body
+
    procedure pthread_init;
 
-   ---------------------------
-   --  POSIX.1c  Section 3  --
-   ---------------------------
+   -------------------------
+   -- POSIX.1c  Section 3 --
+   -------------------------
 
    function sigwait
      (set : access sigset_t;
@@ -348,7 +350,7 @@ package System.OS_Interface is
 
    function pthread_kill
      (thread : pthread_t;
-      sig    : Signal) return   int;
+      sig    : Signal) return int;
    pragma Import (C, pthread_kill, "pthread_kill");
 
    type sigset_t_ptr is access all sigset_t;
@@ -359,9 +361,9 @@ package System.OS_Interface is
       oset : sigset_t_ptr) return int;
    pragma Import (C, pthread_sigmask, "pthread_sigmask");
 
-   ----------------------------
-   --  POSIX.1c  Section 11  --
-   ----------------------------
+   --------------------------
+   -- POSIX.1c  Section 11 --
+   --------------------------
 
    function pthread_mutexattr_init
      (attr : access pthread_mutexattr_t) return int;
@@ -418,9 +420,9 @@ package System.OS_Interface is
    Relative_Timed_Wait : constant Boolean := False;
    --  pthread_cond_timedwait requires an absolute delay time
 
-   ----------------------------
-   --  POSIX.1c  Section 13  --
-   ----------------------------
+   --------------------------
+   -- POSIX.1c  Section 13 --
+   --------------------------
 
    PTHREAD_PRIO_NONE    : constant := 0;
    PTHREAD_PRIO_PROTECT : constant := 2;
@@ -516,9 +518,9 @@ package System.OS_Interface is
    function sched_yield return int;
    pragma Import (C, sched_yield, "pthread_yield");
 
-   -----------------------------
-   --  P1003.1c - Section 16  --
-   -----------------------------
+   --------------------------
+   -- P1003.1c  Section 16 --
+   --------------------------
 
    function pthread_attr_init (attributes : access pthread_attr_t) return int;
    pragma Import (C, pthread_attr_init, "pthread_attr_init");
@@ -567,9 +569,9 @@ package System.OS_Interface is
    function pthread_self return pthread_t;
    pragma Import (C, pthread_self, "pthread_self");
 
-   ----------------------------
-   --  POSIX.1c  Section 17  --
-   ----------------------------
+   --------------------------
+   -- POSIX.1c  Section 17 --
+   --------------------------
 
    function pthread_setspecific
      (key   : pthread_key_t;
@@ -587,9 +589,9 @@ package System.OS_Interface is
       destructor : destructor_pointer) return int;
    pragma Import (C, pthread_key_create, "pthread_key_create");
 
-   --------------------------------------
-   --  Non-portable pthread functions  --
-   --------------------------------------
+   ------------------------------------
+   -- Non-portable Pthread Functions --
+   ------------------------------------
 
    function pthread_set_name_np
      (thread : pthread_t;
@@ -605,11 +607,12 @@ private
    --  #define sa_handler __sigaction_u._handler
    --  #define sa_sigaction __sigaction_u._sigaction
 
-   --  Should we add a signal_context type here ?
-   --  How could it be done independent of the CPU architecture ?
+   --  Should we add a signal_context type here ???
+   --  How could it be done independent of the CPU architecture ???
    --  sigcontext type is opaque, so it is architecturally neutral.
    --  It is always passed as an access type, so define it as an empty record
    --  since the contents are not used anywhere.
+
    type struct_sigcontext is null record;
    pragma Convention (C, struct_sigcontext);
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2002-2003 Ada Core Technologies, Inc.            --
+--           Copyright (C) 2002-2004 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,9 +34,9 @@
 with Ada.Unchecked_Deallocation;
 package body GNAT.Dynamic_HTables is
 
-   --------------------
-   --  Static_HTable --
-   --------------------
+   -------------------
+   -- Static_HTable --
+   -------------------
 
    package body Static_HTable is
 
@@ -207,9 +207,9 @@ package body GNAT.Dynamic_HTables is
       end Set;
    end Static_HTable;
 
-   --------------------
-   --  Simple_HTable --
-   --------------------
+   -------------------
+   -- Simple_HTable --
+   -------------------
 
    package body Simple_HTable is
 

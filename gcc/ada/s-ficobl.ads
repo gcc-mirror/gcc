@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 1992-2000 Free Software Foundation, Inc.        --
+--            Copyright (C) 1992-2004 Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,9 +42,9 @@ with Interfaces.C_Streams;
 
 package System.File_Control_Block is
 
-   -----------------------------
-   --  Ada File Control Block --
-   -----------------------------
+   ----------------------------
+   -- Ada File Control Block --
+   ----------------------------
 
    --  The Ada file control block is an abstract extension of the root
    --  stream type. This allows a file to be treated directly as a stream

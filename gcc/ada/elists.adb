@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,9 +79,9 @@ package body Elists is
    --  is the last item in the list. The Node field points to the node which
    --  is referenced by the corresponding list entry.
 
-   --------------------------
-   --  Element List Tables --
-   --------------------------
+   -------------------------
+   -- Element List Tables --
+   -------------------------
 
    type Elist_Header is record
       First : Elmt_Id;

@@ -701,9 +701,9 @@ package body Inline is
       end if;
    end Analyze_Inlined_Bodies;
 
-   --------------------------------
-   --  Check_Body_For_Inlining --
-   --------------------------------
+   -----------------------------
+   -- Check_Body_For_Inlining --
+   -----------------------------
 
    procedure Check_Body_For_Inlining (N : Node_Id; P : Entity_Id) is
       Bname : Unit_Name_Type;

@@ -1311,9 +1311,9 @@ package body Sem_Ch10 is
       --  Remove current scope from scope stack, and preserve the list
       --  of use clauses in it, to be reinstalled after context is analyzed.
 
-      ------------------------------
-      --  Analyze_Subunit_Context --
-      ------------------------------
+      -----------------------------
+      -- Analyze_Subunit_Context --
+      -----------------------------
 
       procedure Analyze_Subunit_Context is
          Item      :  Node_Id;
@@ -2868,9 +2868,9 @@ package body Sem_Ch10 is
       --  context_clause as a nonlimited with_clause that mentions
       --  the same library.
 
-      --------------------
-      --  Check_Parent  --
-      --------------------
+      ------------------
+      -- Check_Parent --
+      ------------------
 
       procedure Check_Parent (P : Node_Id; W : Node_Id) is
          Item   : Node_Id;

@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2003, Ada Core Technologies               --
+--             Copyright (C) 1995-2004, Ada Core Technologies               --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -104,14 +104,13 @@ package body System.OS_Interface is
            tv_usec => time_t (Long_Long_Integer (F * 10#1#E6)));
    end To_Timeval;
 
-   ---------------------------
-   --  POSIX.1c  Section 3  --
-   ---------------------------
+   -------------------------
+   -- POSIX.1c  Section 3 --
+   -------------------------
 
    function sigwait
      (set : access sigset_t;
-      sig : access Signal)
-     return int
+      sig : access Signal) return int
    is
       Result : int;
 
@@ -135,21 +134,18 @@ package body System.OS_Interface is
       return 0;
    end pthread_kill;
 
-   ----------------------------
-   --  POSIX.1c  Section 11  --
-   ----------------------------
+   --------------------------
+   -- POSIX.1c  Section 11 --
+   --------------------------
 
-   --  For all the following functions, DCE Threads has a non standard
-   --  behavior: it sets errno but the standard Posix requires it to be
-   --  returned.
+   --  For all following functions, DCE Threads has a non standard behavior.
+   --  It sets errno but the standard Posix requires it to be returned.
 
    function pthread_mutexattr_init
-     (attr : access pthread_mutexattr_t)
-     return int
+     (attr : access pthread_mutexattr_t) return int
    is
       function pthread_mutexattr_create
-        (attr : access pthread_mutexattr_t)
-        return int;
+        (attr : access pthread_mutexattr_t) return int;
       pragma Import (C, pthread_mutexattr_create, "pthread_mutexattr_create");
 
    begin
@@ -161,12 +157,10 @@ package body System.OS_Interface is
    end pthread_mutexattr_init;
 
    function pthread_mutexattr_destroy
-     (attr : access pthread_mutexattr_t)
-     return int
+     (attr : access pthread_mutexattr_t) return int
    is
       function pthread_mutexattr_delete
-        (attr : access pthread_mutexattr_t)
-        return int;
+        (attr : access pthread_mutexattr_t) return int;
       pragma Import (C, pthread_mutexattr_delete, "pthread_mutexattr_delete");
 
    begin
@@ -179,13 +173,11 @@ package body System.OS_Interface is
 
    function pthread_mutex_init
      (mutex : access pthread_mutex_t;
-      attr  : access pthread_mutexattr_t)
-     return int
+      attr  : access pthread_mutexattr_t) return int
    is
       function pthread_mutex_init_base
         (mutex : access pthread_mutex_t;
-         attr  : pthread_mutexattr_t)
-        return int;
+         attr  : pthread_mutexattr_t) return int;
       pragma Import (C, pthread_mutex_init_base, "pthread_mutex_init");
 
    begin
@@ -197,12 +189,10 @@ package body System.OS_Interface is
    end pthread_mutex_init;
 
    function pthread_mutex_destroy
-     (mutex : access pthread_mutex_t)
-     return int
+     (mutex : access pthread_mutex_t) return int
    is
       function pthread_mutex_destroy_base
-        (mutex : access pthread_mutex_t)
-        return int;
+        (mutex : access pthread_mutex_t) return int;
       pragma Import (C, pthread_mutex_destroy_base, "pthread_mutex_destroy");
 
    begin
@@ -214,12 +204,10 @@ package body System.OS_Interface is
    end pthread_mutex_destroy;
 
    function pthread_mutex_lock
-     (mutex : access pthread_mutex_t)
-     return int
+     (mutex : access pthread_mutex_t) return int
    is
       function pthread_mutex_lock_base
-        (mutex : access pthread_mutex_t)
-        return int;
+        (mutex : access pthread_mutex_t) return int;
       pragma Import (C, pthread_mutex_lock_base, "pthread_mutex_lock");
 
    begin
@@ -231,12 +219,10 @@ package body System.OS_Interface is
    end pthread_mutex_lock;
 
    function pthread_mutex_unlock
-     (mutex : access pthread_mutex_t)
-     return int
+     (mutex : access pthread_mutex_t) return int
    is
       function pthread_mutex_unlock_base
-        (mutex : access pthread_mutex_t)
-        return int;
+        (mutex : access pthread_mutex_t) return int;
       pragma Import (C, pthread_mutex_unlock_base, "pthread_mutex_unlock");
 
    begin
@@ -248,12 +234,10 @@ package body System.OS_Interface is
    end pthread_mutex_unlock;
 
    function pthread_condattr_init
-     (attr : access pthread_condattr_t)
-     return int
+     (attr : access pthread_condattr_t) return int
    is
       function pthread_condattr_create
-        (attr : access pthread_condattr_t)
-        return int;
+        (attr : access pthread_condattr_t) return int;
       pragma Import (C, pthread_condattr_create, "pthread_condattr_create");
 
    begin
@@ -265,12 +249,10 @@ package body System.OS_Interface is
    end pthread_condattr_init;
 
    function pthread_condattr_destroy
-     (attr : access pthread_condattr_t)
-     return int
+     (attr : access pthread_condattr_t) return int
    is
       function pthread_condattr_delete
-        (attr : access pthread_condattr_t)
-        return int;
+        (attr : access pthread_condattr_t) return int;
       pragma Import (C, pthread_condattr_delete, "pthread_condattr_delete");
 
    begin
@@ -283,13 +265,11 @@ package body System.OS_Interface is
 
    function pthread_cond_init
      (cond : access pthread_cond_t;
-      attr : access pthread_condattr_t)
-     return int
+      attr : access pthread_condattr_t) return int
    is
       function pthread_cond_init_base
         (cond : access pthread_cond_t;
-         attr : pthread_condattr_t)
-        return int;
+         attr : pthread_condattr_t) return int;
       pragma Import (C, pthread_cond_init_base, "pthread_cond_init");
 
    begin
@@ -301,12 +281,10 @@ package body System.OS_Interface is
    end pthread_cond_init;
 
    function pthread_cond_destroy
-     (cond : access pthread_cond_t)
-     return int
+     (cond : access pthread_cond_t) return int
    is
       function pthread_cond_destroy_base
-        (cond : access pthread_cond_t)
-        return int;
+        (cond : access pthread_cond_t) return int;
       pragma Import (C, pthread_cond_destroy_base, "pthread_cond_destroy");
 
    begin
@@ -318,12 +296,10 @@ package body System.OS_Interface is
    end pthread_cond_destroy;
 
    function pthread_cond_signal
-     (cond : access pthread_cond_t)
-     return int
+     (cond : access pthread_cond_t) return int
    is
       function pthread_cond_signal_base
-        (cond : access pthread_cond_t)
-        return int;
+        (cond : access pthread_cond_t) return int;
       pragma Import (C, pthread_cond_signal_base, "pthread_cond_signal");
 
    begin
@@ -336,13 +312,11 @@ package body System.OS_Interface is
 
    function pthread_cond_wait
      (cond  : access pthread_cond_t;
-      mutex : access pthread_mutex_t)
-     return int
+      mutex : access pthread_mutex_t) return int
    is
       function pthread_cond_wait_base
         (cond  : access pthread_cond_t;
-         mutex : access pthread_mutex_t)
-        return int;
+         mutex : access pthread_mutex_t) return int;
       pragma Import (C, pthread_cond_wait_base, "pthread_cond_wait");
 
    begin
@@ -356,14 +330,12 @@ package body System.OS_Interface is
    function pthread_cond_timedwait
      (cond    : access pthread_cond_t;
       mutex   : access pthread_mutex_t;
-      abstime : access timespec)
-     return int
+      abstime : access timespec) return int
    is
       function pthread_cond_timedwait_base
         (cond    : access pthread_cond_t;
          mutex   : access pthread_mutex_t;
-         abstime : access timespec)
-        return int;
+         abstime : access timespec) return int;
       pragma Import (C, pthread_cond_timedwait_base, "pthread_cond_timedwait");
 
    begin
@@ -390,8 +362,7 @@ package body System.OS_Interface is
       function pthread_setscheduler
         (thread   : pthread_t;
          policy   : int;
-         priority : int)
-         return int;
+         priority : int) return int;
       pragma Import (C, pthread_setscheduler, "pthread_setscheduler");
 
    begin
@@ -414,11 +385,11 @@ package body System.OS_Interface is
    --  P1003.1c - Section 16  --
    -----------------------------
 
-   function pthread_attr_init (attributes : access pthread_attr_t) return int
+   function pthread_attr_init
+     (attributes : access pthread_attr_t) return int
    is
       function pthread_attr_create
-        (attributes : access pthread_attr_t)
-        return int;
+        (attributes : access pthread_attr_t) return int;
       pragma Import (C, pthread_attr_create, "pthread_attr_create");
 
    begin
@@ -433,8 +404,7 @@ package body System.OS_Interface is
      (attributes : access pthread_attr_t) return int
    is
       function pthread_attr_delete
-        (attributes : access pthread_attr_t)
-        return int;
+        (attributes : access pthread_attr_t) return int;
       pragma Import (C, pthread_attr_delete, "pthread_attr_delete");
 
    begin
@@ -451,8 +421,7 @@ package body System.OS_Interface is
    is
       function pthread_attr_setstacksize_base
         (attr      : access pthread_attr_t;
-         stacksize : size_t)
-        return int;
+         stacksize : size_t) return int;
       pragma Import (C, pthread_attr_setstacksize_base,
                      "pthread_attr_setstacksize");
 
@@ -474,8 +443,7 @@ package body System.OS_Interface is
         (thread        : access pthread_t;
          attributes    : pthread_attr_t;
          start_routine : Thread_Body;
-         arg           : System.Address)
-        return int;
+         arg           : System.Address) return int;
       pragma Import (C, pthread_create_base, "pthread_create");
 
    begin
@@ -488,9 +456,9 @@ package body System.OS_Interface is
       end if;
    end pthread_create;
 
-   ----------------------------
-   --  POSIX.1c  Section 17  --
-   ----------------------------
+   --------------------------
+   -- POSIX.1c  Section 17 --
+   --------------------------
 
    function pthread_setspecific
      (key   : pthread_key_t;
@@ -543,7 +511,6 @@ package body System.OS_Interface is
 
    function Get_Stack_Base (thread : pthread_t) return Address is
       pragma Warnings (Off, thread);
-
    begin
       return Null_Address;
    end Get_Stack_Base;
@@ -556,7 +523,6 @@ package body System.OS_Interface is
    function intr_attach (sig : int; handler : isr_address) return long is
       function c_signal (sig : int; handler : isr_address) return long;
       pragma Import (C, c_signal, "signal");
-
    begin
       return c_signal (sig, handler);
    end intr_attach;

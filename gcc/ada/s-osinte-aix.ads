@@ -391,9 +391,9 @@ package System.OS_Interface is
    Relative_Timed_Wait : constant Boolean := False;
    --  pthread_cond_timedwait requires an absolute delay time
 
-   ----------------------------
-   --  POSIX.1c  Section 13  --
-   ----------------------------
+   --------------------------
+   -- POSIX.1c  Section 13 --
+   --------------------------
 
    PTHREAD_PRIO_NONE    : constant := 0;
    PTHREAD_PRIO_PROTECT : constant := 0;
@@ -445,9 +445,9 @@ package System.OS_Interface is
    function sched_yield return int;
    --  AiX have a nonstandard sched_yield.
 
-   ---------------------------
-   -- P1003.1c - Section 16 --
-   ---------------------------
+   --------------------------
+   -- P1003.1c  Section 16 --
+   --------------------------
 
    function pthread_attr_init (attributes : access pthread_attr_t) return int;
    pragma Import (C, pthread_attr_init, "pthread_attr_init");

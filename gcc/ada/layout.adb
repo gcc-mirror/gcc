@@ -2347,7 +2347,7 @@ package body Layout is
             end;
          end if;
 
-         Set_Prim_Alignment (E);
+         Set_Elem_Alignment (E);
 
       --  Scalar types: set size and alignment
 
@@ -2412,9 +2412,9 @@ package body Layout is
             end if;
          end if;
 
-         Set_Prim_Alignment (E);
+         Set_Elem_Alignment (E);
 
-      --  Non-primitive types
+      --  Non-elementary (composite) types
 
       else
          --  If RM_Size is known, set Esize if not known
@@ -2864,10 +2864,10 @@ package body Layout is
    end Set_Discrete_RM_Size;
 
    ------------------------
-   -- Set_Prim_Alignment --
+   -- Set_Elem_Alignment --
    ------------------------
 
-   procedure Set_Prim_Alignment (E : Entity_Id) is
+   procedure Set_Elem_Alignment (E : Entity_Id) is
    begin
       --  Do not set alignment for packed array types, unless we are doing
       --  front end layout, because otherwise this is always handled in the
@@ -2930,7 +2930,7 @@ package body Layout is
             Init_Alignment (E, A);
          end if;
       end;
-   end Set_Prim_Alignment;
+   end Set_Elem_Alignment;
 
    ----------------------
    -- SO_Ref_From_Expr --

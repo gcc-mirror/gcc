@@ -4035,6 +4035,7 @@ package body Exp_Attr is
            Attribute_Digits                       |
            Attribute_Emax                         |
            Attribute_Epsilon                      |
+           Attribute_Has_Access_Values            |
            Attribute_Has_Discriminants            |
            Attribute_Large                        |
            Attribute_Machine_Emax                 |

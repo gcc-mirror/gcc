@@ -55,275 +55,8 @@ package body System.Task_Primitives.Operations is
    pragma Warnings (Off);
    --  Turn off warnings since so many unreferenced parameters
 
-   -----------------
-   -- Stack_Guard --
-   -----------------
-
-   procedure Stack_Guard (T : ST.Task_Id; On : Boolean) is
-   begin
-      null;
-   end Stack_Guard;
-
-   --------------------
-   -- Get_Thread_Id  --
-   --------------------
-
-   function Get_Thread_Id (T : ST.Task_Id) return OSI.Thread_Id is
-   begin
-      return OSI.Thread_Id (T.Common.LL.Thread);
-   end Get_Thread_Id;
-
-   ----------
-   -- Self --
-   ----------
-
-   function Self return Task_Id is
-   begin
-      return Null_Task;
-   end Self;
-
-   ---------------------
-   -- Initialize_Lock --
-   ---------------------
-
-   procedure Initialize_Lock
-     (Prio : System.Any_Priority;
-      L    : access Lock)
-   is
-   begin
-      null;
-   end Initialize_Lock;
-
-   procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level) is
-   begin
-      null;
-   end Initialize_Lock;
-
-   -------------------
-   -- Finalize_Lock --
-   -------------------
-
-   procedure Finalize_Lock (L : access Lock) is
-   begin
-      null;
-   end Finalize_Lock;
-
-   procedure Finalize_Lock (L : access RTS_Lock) is
-   begin
-      null;
-   end Finalize_Lock;
-
-   ----------------
-   -- Write_Lock --
-   ----------------
-
-   procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
-   begin
-      Ceiling_Violation := False;
-   end Write_Lock;
-
-   procedure Write_Lock
-     (L           : access RTS_Lock;
-      Global_Lock : Boolean := False)
-   is
-   begin
-      null;
-   end Write_Lock;
-
-   procedure Write_Lock (T : Task_Id) is
-   begin
-      null;
-   end Write_Lock;
-
-   ---------------
-   -- Read_Lock --
-   ---------------
-
-   procedure Read_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
-   begin
-      Ceiling_Violation := False;
-   end Read_Lock;
-
-   ------------
-   -- Unlock --
-   ------------
-
-   procedure Unlock (L : access Lock) is
-   begin
-      null;
-   end Unlock;
-
-   procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
-   begin
-      null;
-   end Unlock;
-
-   procedure Unlock (T : Task_Id) is
-   begin
-      null;
-   end Unlock;
-
-   -----------
-   -- Sleep --
-   -----------
-
-   procedure Sleep (Self_ID : Task_Id; Reason  : System.Tasking.Task_States) is
-   begin
-      null;
-   end Sleep;
-
-   -----------------
-   -- Timed_Sleep --
-   -----------------
-
-   procedure Timed_Sleep
-     (Self_ID  : Task_Id;
-      Time     : Duration;
-      Mode     : ST.Delay_Modes;
-      Reason   : System.Tasking.Task_States;
-      Timedout : out Boolean;
-      Yielded  : out Boolean) is
-   begin
-      Timedout := False;
-      Yielded := False;
-   end Timed_Sleep;
-
-   -----------------
-   -- Timed_Delay --
-   -----------------
-
-   procedure Timed_Delay
-     (Self_ID : Task_Id;
-      Time    : Duration;
-      Mode    : ST.Delay_Modes) is
-   begin
-      null;
-   end Timed_Delay;
-
-   ---------------------
-   -- Monotonic_Clock --
-   ---------------------
-
-   function Monotonic_Clock return Duration is
-   begin
-      return 0.0;
-   end Monotonic_Clock;
-
-   -------------------
-   -- RT_Resolution --
-   -------------------
-
-   function RT_Resolution return Duration is
-   begin
-      return 10#1.0#E-6;
-   end RT_Resolution;
-
-   ------------
-   -- Wakeup --
-   ------------
-
-   procedure Wakeup (T : Task_Id; Reason : System.Tasking.Task_States) is
-   begin
-      null;
-   end Wakeup;
-
-   ------------------
-   -- Set_Priority --
-   ------------------
-
-   procedure Set_Priority
-     (T                   : Task_Id;
-      Prio                : System.Any_Priority;
-      Loss_Of_Inheritance : Boolean := False) is
-   begin
-      null;
-   end Set_Priority;
-
-   ------------------
-   -- Get_Priority --
-   ------------------
-
-   function Get_Priority (T : Task_Id) return System.Any_Priority is
-   begin
-      return 0;
-   end Get_Priority;
-
-   ----------------
-   -- Enter_Task --
-   ----------------
-
-   procedure Enter_Task (Self_ID : Task_Id) is
-   begin
-      null;
-   end Enter_Task;
-
-   --------------
-   -- New_ATCB --
-   --------------
-
-   function New_ATCB (Entry_Num : Task_Entry_Index) return Task_Id is
-   begin
-      return new Ada_Task_Control_Block (Entry_Num);
-   end New_ATCB;
-
-   -------------------
-   -- Is_Valid_Task --
-   -------------------
-
-   function Is_Valid_Task return Boolean is
-   begin
-      return False;
-   end Is_Valid_Task;
-
-   -----------------------------
-   -- Register_Foreign_Thread --
-   -----------------------------
-
-   function Register_Foreign_Thread return Task_Id is
-   begin
-      return null;
-   end Register_Foreign_Thread;
-
-   ----------------------
-   --  Initialize_TCB  --
-   ----------------------
-
-   procedure Initialize_TCB (Self_ID : Task_Id; Succeeded : out Boolean) is
-   begin
-      Succeeded := False;
-   end Initialize_TCB;
-
-   -----------------
-   -- Create_Task --
-   -----------------
-
-   procedure Create_Task
-     (T          : Task_Id;
-      Wrapper    : System.Address;
-      Stack_Size : System.Parameters.Size_Type;
-      Priority   : System.Any_Priority;
-      Succeeded  : out Boolean) is
-   begin
-      Succeeded := False;
-   end Create_Task;
-
-   ------------------
-   -- Finalize_TCB --
-   ------------------
-
-   procedure Finalize_TCB (T : Task_Id) is
-   begin
-      null;
-   end Finalize_TCB;
-
-   ---------------
-   -- Exit_Task --
-   ---------------
-
-   procedure Exit_Task is
-   begin
-      null;
-   end Exit_Task;
+   No_Tasking : Boolean;
+   --  Comment required here ???
 
    ----------------
    -- Abort_Task --
@@ -334,21 +67,11 @@ package body System.Task_Primitives.Operations is
       null;
    end Abort_Task;
 
-   -----------
-   -- Yield --
-   -----------
-
-   procedure Yield (Do_Yield : Boolean := True) is
-   begin
-      null;
-   end Yield;
-
    ----------------
    -- Check_Exit --
    ----------------
 
-   --  Dummy versions.  The only currently working versions is for solaris
-   --  (native).
+   --  Dummy version
 
    function Check_Exit (Self_ID : ST.Task_Id) return Boolean is
    begin
@@ -373,6 +96,124 @@ package body System.Task_Primitives.Operations is
       return null;
    end Environment_Task;
 
+   -----------------
+   -- Create_Task --
+   -----------------
+
+   procedure Create_Task
+     (T          : Task_Id;
+      Wrapper    : System.Address;
+      Stack_Size : System.Parameters.Size_Type;
+      Priority   : System.Any_Priority;
+      Succeeded  : out Boolean)
+   is
+   begin
+      Succeeded := False;
+   end Create_Task;
+
+   ----------------
+   -- Enter_Task --
+   ----------------
+
+   procedure Enter_Task (Self_ID : Task_Id) is
+   begin
+      null;
+   end Enter_Task;
+
+   ---------------
+   -- Exit_Task --
+   ---------------
+
+   procedure Exit_Task is
+   begin
+      null;
+   end Exit_Task;
+
+   -------------------
+   -- Finalize_Lock --
+   -------------------
+
+   procedure Finalize_Lock (L : access Lock) is
+   begin
+      null;
+   end Finalize_Lock;
+
+   procedure Finalize_Lock (L : access RTS_Lock) is
+   begin
+      null;
+   end Finalize_Lock;
+
+   ------------------
+   -- Finalize_TCB --
+   ------------------
+
+   procedure Finalize_TCB (T : Task_Id) is
+   begin
+      null;
+   end Finalize_TCB;
+
+   ------------------
+   -- Get_Priority --
+   ------------------
+
+   function Get_Priority (T : Task_Id) return System.Any_Priority is
+   begin
+      return 0;
+   end Get_Priority;
+
+   --------------------
+   -- Get_Thread_Id  --
+   --------------------
+
+   function Get_Thread_Id (T : ST.Task_Id) return OSI.Thread_Id is
+   begin
+      return OSI.Thread_Id (T.Common.LL.Thread);
+   end Get_Thread_Id;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize (Environment_Task : Task_Id) is
+   begin
+      null;
+   end Initialize;
+
+   ---------------------
+   -- Initialize_Lock --
+   ---------------------
+
+   procedure Initialize_Lock
+     (Prio : System.Any_Priority;
+      L    : access Lock)
+   is
+   begin
+      null;
+   end Initialize_Lock;
+
+   procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level) is
+   begin
+      null;
+   end Initialize_Lock;
+
+   --------------------
+   -- Initialize_TCB --
+   --------------------
+
+   procedure Initialize_TCB (Self_ID : Task_Id; Succeeded : out Boolean) is
+   begin
+      Succeeded := False;
+   end Initialize_TCB;
+
+   -------------------
+   -- Is_Valid_Task --
+   -------------------
+
+   function Is_Valid_Task return Boolean is
+   begin
+      return False;
+   end Is_Valid_Task;
+
    --------------
    -- Lock_RTS --
    --------------
@@ -382,14 +223,102 @@ package body System.Task_Primitives.Operations is
       null;
    end Lock_RTS;
 
-   ----------------
-   -- Unlock_RTS --
-   ----------------
+   ---------------------
+   -- Monotonic_Clock --
+   ---------------------
 
-   procedure Unlock_RTS is
+   function Monotonic_Clock return Duration is
+   begin
+      return 0.0;
+   end Monotonic_Clock;
+
+   --------------
+   -- New_ATCB --
+   --------------
+
+   function New_ATCB (Entry_Num : Task_Entry_Index) return Task_Id is
+   begin
+      return new Ada_Task_Control_Block (Entry_Num);
+   end New_ATCB;
+
+   ---------------
+   -- Read_Lock --
+   ---------------
+
+   procedure Read_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
+   begin
+      Ceiling_Violation := False;
+   end Read_Lock;
+
+   -----------------------------
+   -- Register_Foreign_Thread --
+   -----------------------------
+
+   function Register_Foreign_Thread return Task_Id is
+   begin
+      return null;
+   end Register_Foreign_Thread;
+
+   -----------------
+   -- Resume_Task --
+   -----------------
+
+   function Resume_Task
+     (T           : ST.Task_Id;
+      Thread_Self : OSI.Thread_Id) return Boolean
+   is
+   begin
+      return False;
+   end Resume_Task;
+
+   -------------------
+   -- RT_Resolution --
+   -------------------
+
+   function RT_Resolution return Duration is
+   begin
+      return 10#1.0#E-6;
+   end RT_Resolution;
+
+   ----------
+   -- Self --
+   ----------
+
+   function Self return Task_Id is
+   begin
+      return Null_Task;
+   end Self;
+
+   ------------------
+   -- Set_Priority --
+   ------------------
+
+   procedure Set_Priority
+     (T                   : Task_Id;
+      Prio                : System.Any_Priority;
+      Loss_Of_Inheritance : Boolean := False)
+   is
    begin
       null;
-   end Unlock_RTS;
+   end Set_Priority;
+
+   -----------
+   -- Sleep --
+   -----------
+
+   procedure Sleep (Self_ID : Task_Id; Reason  : System.Tasking.Task_States) is
+   begin
+      null;
+   end Sleep;
+
+   -----------------
+   -- Stack_Guard --
+   -----------------
+
+   procedure Stack_Guard (T : ST.Task_Id; On : Boolean) is
+   begin
+      null;
+   end Stack_Guard;
 
    ------------------
    -- Suspend_Task --
@@ -404,27 +333,101 @@ package body System.Task_Primitives.Operations is
    end Suspend_Task;
 
    -----------------
-   -- Resume_Task --
+   -- Timed_Delay --
    -----------------
 
-   function Resume_Task
-     (T           : ST.Task_Id;
-      Thread_Self : OSI.Thread_Id) return Boolean
+   procedure Timed_Delay
+     (Self_ID : Task_Id;
+      Time    : Duration;
+      Mode    : ST.Delay_Modes)
    is
    begin
-      return False;
-   end Resume_Task;
+      null;
+   end Timed_Delay;
 
-   ----------------
-   -- Initialize --
-   ----------------
+   -----------------
+   -- Timed_Sleep --
+   -----------------
 
-   procedure Initialize (Environment_Task : Task_Id) is
+   procedure Timed_Sleep
+     (Self_ID  : Task_Id;
+      Time     : Duration;
+      Mode     : ST.Delay_Modes;
+      Reason   : System.Tasking.Task_States;
+      Timedout : out Boolean;
+      Yielded  : out Boolean)
+   is
+   begin
+      Timedout := False;
+      Yielded := False;
+   end Timed_Sleep;
+
+   ------------
+   -- Unlock --
+   ------------
+
+   procedure Unlock (L : access Lock) is
    begin
       null;
-   end Initialize;
+   end Unlock;
 
-   No_Tasking : Boolean;
+   procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False) is
+   begin
+      null;
+   end Unlock;
+
+   procedure Unlock (T : Task_Id) is
+   begin
+      null;
+   end Unlock;
+
+   ----------------
+   -- Unlock_RTS --
+   ----------------
+
+   procedure Unlock_RTS is
+   begin
+      null;
+   end Unlock_RTS;
+   ------------
+   -- Wakeup --
+   ------------
+
+   procedure Wakeup (T : Task_Id; Reason : System.Tasking.Task_States) is
+   begin
+      null;
+   end Wakeup;
+
+   ----------------
+   -- Write_Lock --
+   ----------------
+
+   procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean) is
+   begin
+      Ceiling_Violation := False;
+   end Write_Lock;
+
+   procedure Write_Lock
+     (L           : access RTS_Lock;
+      Global_Lock : Boolean := False)
+   is
+   begin
+      null;
+   end Write_Lock;
+
+   procedure Write_Lock (T : Task_Id) is
+   begin
+      null;
+   end Write_Lock;
+
+   -----------
+   -- Yield --
+   -----------
+
+   procedure Yield (Do_Yield : Boolean := True) is
+   begin
+      null;
+   end Yield;
 
 begin
    --  Can't raise an exception because target independent packages try to

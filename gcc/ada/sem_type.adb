@@ -59,14 +59,14 @@ package body Sem_Type is
    --  of clash lists are stored in array Headers.
 
    --              Headers        Interp_Map          All_Interp
-   --
-   --                 _            -------             ----------
+
+   --                 _            +-----+             +--------+
    --                |_|           |_____|         --->|interp1 |
    --                |_|---------->|node |         |   |interp2 |
    --                |_|           |index|---------|   |nointerp|
    --                |_|           |next |             |        |
    --                              |-----|             |        |
-   --                              -------             ----------
+   --                              +-----+             +--------+
 
    --  This scheme does not currently reclaim interpretations. In principle,
    --  after a unit is compiled, all overloadings have been resolved, and the
@@ -1559,9 +1559,9 @@ package body Sem_Type is
       raise Program_Error;
    end Get_First_Interp;
 
-   ----------------------
-   --  Get_Next_Interp --
-   ----------------------
+   ---------------------
+   -- Get_Next_Interp --
+   ---------------------
 
    procedure Get_Next_Interp (I : in out Interp_Index; It : out Interp) is
    begin
@@ -2365,9 +2365,9 @@ package body Sem_Type is
       end if;
    end Write_Overloads;
 
-   -----------------------
-   --  Write_Interp_Ref --
-   -----------------------
+   ----------------------
+   -- Write_Interp_Ref --
+   ----------------------
 
    procedure Write_Interp_Ref (Map_Ptr : Int) is
    begin
