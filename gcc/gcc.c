@@ -261,7 +261,7 @@ extern void lang_specific_driver PROTO ((void (*) PVPROTO((char *, ...)), int *,
 extern int lang_specific_pre_link ();
 
 /* Number of extra output files that lang_specific_pre_link may generate. */
-extern int lang_specific_extra_ofiles;
+extern int lang_specific_extra_outfiles;
 #endif
 
 /* Specs are strings containing lines, each of which (if not blank)
