@@ -2756,9 +2756,13 @@ push_class_level_binding (tree name, tree x)
 	   && DECL_CONTEXT (x) != current_class_type))
       && DECL_NAME (x) == constructor_name (current_class_type))
     {
-      error ("`%D' has the same name as the class in which it is declared",
-	     x);
-      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, false);
+      tree scope = context_for_name_lookup (x);
+      if (TYPE_P (scope) && same_type_p (scope, current_class_type))
+	{
+	  error ("`%D' has the same name as the class in which it is declared",
+		 x);
+	  POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, false);
+	}
     }
 
   /* If this declaration shadows a declaration from an enclosing

@@ -1,3 +1,11 @@
+2004-02-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14186
+	* name-lookup.c (push_class_level_binding): Do not complain about
+	adding a binding for a member whose name is the same as the
+	enclosing class if the member is located in a base class of the
+	current class.
+
 2004-02-19  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14181

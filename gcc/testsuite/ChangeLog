@@ -1,3 +1,8 @@
+2004-02-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14186
+	* g++.dg/lookup/member1.C: New test.
+
 2004-02-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/parse/attr-ctor1.C: XFAIL on hppa.
