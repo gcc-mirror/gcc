@@ -184,16 +184,8 @@ gendef (f, format)
 
   /* See rtx_alloc in rtl.c for comments.  */
   fprintf (f, "{\n");
-  fprintf (f, "  register int length = sizeof (struct rtx_def)");
-  fprintf (f, " + %d * sizeof (rtunion);\n", strlen (format) - 1);
-  fprintf (f, "  rtx rt = (rtx)obstack_alloc (rtl_obstack, length);\n");
-
-  fprintf (f, "  if (sizeof(struct rtx_def) - sizeof(rtunion) == sizeof(int))\n");
-  fprintf (f, "    *(int *)rt = 0;\n");
-  fprintf (f, "  else if (sizeof(struct rtx_def) - sizeof(rtunion) == sizeof(HOST_WIDE_INT))\n");
-  fprintf (f, "    *(HOST_WIDE_INT *)rt = 0;\n");
-  fprintf (f, "  else\n");
-  fprintf (f, "    bzero(rt, sizeof(struct rtx_def) - sizeof(rtunion));\n\n");
+  fprintf (f, "  rtx rt = obstack_alloc_rtx (sizeof (struct rtx_def) + %d * sizeof (rtunion));\n",
+	   (int) strlen (format) - 1);
 
   fprintf (f, "  PUT_CODE (rt, code);\n");
   fprintf (f, "  PUT_MODE (rt, mode);\n");
@@ -242,10 +234,21 @@ gencode (f)
 {
   const char **fmt;
 
-  fprintf(f, "#include \"config.h\"\n");
-  fprintf(f, "#include \"obstack.h\"\n");
-  fprintf(f, "#include \"rtl.h\"\n\n");
-  fprintf(f, "extern struct obstack *rtl_obstack;\n\n");
+  fputs ("#include \"config.h\"\n", f);
+  fputs ("#include \"obstack.h\"\n", f);
+  fputs ("#include \"rtl.h\"\n\n", f);
+  fputs ("extern struct obstack *rtl_obstack;\n\n", f);
+  fputs ("static rtx obstack_alloc_rtx PROTO((int length));\n", f);
+  fputs ("static rtx obstack_alloc_rtx (length)\n", f);
+  fputs ("     register int length;\n{\n", f);
+  fputs ("  rtx rt = (rtx) obstack_alloc (rtl_obstack, length);\n\n", f);
+  fputs ("  if (sizeof(struct rtx_def) - sizeof(rtunion) == sizeof(int))\n", f);
+  fputs ("    *(int *)rt = 0;\n", f);
+  fputs ("  else if (sizeof(struct rtx_def) - sizeof(rtunion) == sizeof(HOST_WIDE_INT))\n", f);
+  fputs ("    *(HOST_WIDE_INT *)rt = 0;\n", f);
+  fputs ("  else\n", f);
+  fputs ("    bzero(rt, sizeof(struct rtx_def) - sizeof(rtunion));\n\n", f);
+  fputs ("  return rt;\n}\n\n", f);
 
   for (fmt = formats; *fmt; ++fmt)
     gendef (f, *fmt);
