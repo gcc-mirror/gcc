@@ -2782,8 +2782,8 @@ expand_call (exp, target, ignore)
 		    = (char *) alloca (highest_outgoing_arg_in_use);
 
 		  if (initial_highest_arg_in_use)
-		    bcopy (initial_stack_usage_map, stack_usage_map,
-			   initial_highest_arg_in_use);
+		    memcpy (stack_usage_map, initial_stack_usage_map,
+			    initial_highest_arg_in_use);
 
 		  if (initial_highest_arg_in_use != highest_outgoing_arg_in_use)
 		    memset (&stack_usage_map[initial_highest_arg_in_use], 0,
@@ -3766,8 +3766,8 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
       stack_usage_map = (char *) alloca (highest_outgoing_arg_in_use);
 
       if (initial_highest_arg_in_use)
-	bcopy (initial_stack_usage_map, stack_usage_map,
-	       initial_highest_arg_in_use);
+	memcpy (stack_usage_map, initial_stack_usage_map,
+		initial_highest_arg_in_use);
 
       if (initial_highest_arg_in_use != highest_outgoing_arg_in_use)
 	memset (&stack_usage_map[initial_highest_arg_in_use], 0,

@@ -120,17 +120,11 @@
 /* Define if you have the atoq function.  */
 #undef HAVE_ATOQ
 
-/* Define if you have the bcmp function.  */
-#undef HAVE_BCMP
-
 /* Define if you have the bcopy function.  */
 #undef HAVE_BCOPY
 
 /* Define if you have the bsearch function.  */
 #undef HAVE_BSEARCH
-
-/* Define if you have the bzero function.  */
-#undef HAVE_BZERO
 
 /* Define if you have the dcgettext function.  */
 #undef HAVE_DCGETTEXT
@@ -159,9 +153,6 @@
 /* Define if you have the iconv function.  */
 #undef HAVE_ICONV
 
-/* Define if you have the index function.  */
-#undef HAVE_INDEX
-
 /* Define if you have the isascii function.  */
 #undef HAVE_ISASCII
 
@@ -182,9 +173,6 @@
 
 /* Define if you have the putenv function.  */
 #undef HAVE_PUTENV
-
-/* Define if you have the rindex function.  */
-#undef HAVE_RINDEX
 
 /* Define if you have the setenv function.  */
 #undef HAVE_SETENV
@@ -353,18 +341,6 @@
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_BCOPY
-
-/* Define to 1 if we found this declaration otherwise define to 0. */
-#undef HAVE_DECL_BZERO
-
-/* Define to 1 if we found this declaration otherwise define to 0. */
-#undef HAVE_DECL_BCMP
-
-/* Define to 1 if we found this declaration otherwise define to 0. */
-#undef HAVE_DECL_INDEX
-
-/* Define to 1 if we found this declaration otherwise define to 0. */
-#undef HAVE_DECL_RINDEX
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_GETENV

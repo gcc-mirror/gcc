@@ -38,14 +38,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef bcopy
 #define bcopy(s,d,n)	memmove((d),(s),(n))
-#undef bzero
-#define bzero(d,n)	memset((d),0,(n))
-#undef bcmp
-#define bcmp(l,r,n)	memcmp((l),(r),(n))
-#undef index
-#define index		strchr
-#undef rindex
-#define rindex		strrchr
 
 /* BeOS is closer to USG than BSD */
 

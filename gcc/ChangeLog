@@ -1,3 +1,24 @@
+2000-11-09  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* calls.c (expand_call, emit_library_call_value_1), collect2.c
+	(scan_prog_file), config/a29k/a29k.c (print_operand),
+	config/sparc/sparc.c (order_regs_for_local_alloc): Use memcpy ()
+	instead of bcopy ().
+	* real.h: Use memcmp () instead of bcmp ().
+	* config/m88k/m88k.c (m88k_layout_frame), config/sh/sh.c
+	(split_branches), config/sparc/sparc.c (ultra_flush_pipeline,
+	ultrasparc_sched_init, ultrasparc_sched_reorder),
+	config/sparc/sparc.h (CONDITIONAL_REGISTER_USAGE): Use memset ()
+	instead of bzero ().
+	* config/vax/xm-xms.h (FILE_NAME_NONDIRECTORY): Use strrchr ()
+	instead of rindex ().
+	* configure.in: Don't check for bzero, bcmp, index or rindex.
+	* configure, config.in: Regenerate.
+	* system.h: Don't include declarations for bzero, bcmp, index or
+	rindex.
+	* config/i386/xm-beos.h, config/rs6000/xm-beos.h: Don't define
+	bzero, bcmp, index or rindex.
+
 Wed Nov  8 21:58:20 2000  Christopher Faylor <cgf@cygnus.com>
 
 	* config/i386/cygwin.h: Add -no-win32 switch.  Separate -mno-cygwin

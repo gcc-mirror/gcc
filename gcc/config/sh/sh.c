@@ -3381,7 +3381,7 @@ split_branches (first)
   shorten_branches (first);
 
   uid_branch = (struct far_branch **) alloca (max_uid * sizeof *uid_branch);
-  bzero ((char *) uid_branch, max_uid * sizeof *uid_branch);
+  memset ((char *) uid_branch, 0, max_uid * sizeof *uid_branch);
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (! INSN_P (insn))

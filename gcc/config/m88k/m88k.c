@@ -1786,7 +1786,7 @@ m88k_layout_frame ()
 
   frame_laid_out++;
 
-  bzero ((char *) &save_regs[0], sizeof (save_regs));
+  memset ((char *) &save_regs[0], 0, sizeof (save_regs));
   sp_size = nregs = nxregs = 0;
   frame_size = get_frame_size ();
 

@@ -3057,7 +3057,7 @@ scan_prog_file (prog_name, which_pass)
       if (rw)
 	{
 	  load_union_t *ptr = (load_union_t *) xmalloc (load_hdr->hdr.ldci_cmd_size);
-	  bcopy ((char *)load_hdr, (char *)ptr, load_hdr->hdr.ldci_cmd_size);
+	  memcpy ((char *)ptr, (char *)load_hdr, load_hdr->hdr.ldci_cmd_size);
 	  load_hdr = ptr;
 
 	  /* null out old command map, because we will rewrite at the end.  */
