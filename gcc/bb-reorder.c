@@ -171,6 +171,9 @@ typedef struct reorder_block_def
 
 #define RBI(BB)	((reorder_block_def) (BB)->aux)
 
+/* Holds the interesting trailing notes for the function.  */
+static rtx function_tail_eff_head;
+
 
 /* Local function prototypes.  */
 static rtx skip_insns_after_block	PARAMS ((basic_block));
@@ -307,6 +310,7 @@ record_effective_endpoints ()
       RBI (bb)->eff_end = end;
       next_insn = NEXT_INSN (end);
     }
+  function_tail_eff_head = next_insn;
 }
 
 
@@ -580,8 +584,18 @@ fixup_reorder_chain ()
       last_bb = bb;
       bb = RBI (bb)->next;
     }
-  NEXT_INSN (RBI (last_bb)->eff_end) = NULL_RTX;
-  set_last_insn (RBI (last_bb)->eff_end);
+
+  {
+    rtx insn = RBI (last_bb)->eff_end;
+
+    NEXT_INSN (insn) = function_tail_eff_head;
+    if (function_tail_eff_head)
+      PREV_INSN (function_tail_eff_head) = insn;
+
+    while (NEXT_INSN (insn))
+      insn = NEXT_INSN (insn);
+    set_last_insn (insn);
+  }
 
   /* Now add jumps and labels as needed to match the blocks new
      outgoing edges.  */
