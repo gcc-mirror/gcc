@@ -2157,8 +2157,8 @@ The above discussion also applies to the @samp{mov@var{mode}cc} and
 @item @samp{call}
 Subroutine call instruction returning no value.  Operand 0 is the
 function to call; operand 1 is the number of bytes of arguments pushed
-(in mode @code{SImode}, except it is normally a @code{const_int});
-operand 2 is the number of registers used as operands.
+as a @code{const_int}; operand 2 is the number of registers used as
+operands.
 
 On most machines, operand 2 is not actually stored into the RTL
 pattern.  It is supplied for the sake of some RISC machines which need
