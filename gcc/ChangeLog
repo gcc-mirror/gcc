@@ -1,3 +1,8 @@
+2003-04-21  Olivier Hainque  <hainque@act-europe.fr>
+
+	* calls.c (expand_call): Prevent sibcall optimization for calls to
+	nested subprograms.
+
 2003-04-21  Joel Brobecker  <brobecker@gnat.com>
 
 	* dwarf2out.c (is_ada, is_ada_subrange_type): New functions.
