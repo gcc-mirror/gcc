@@ -1,3 +1,7 @@
+2003-03-09  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* varasm.c (make_decl_one_only): Use declare_weak().
+
 2003-03-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR middle-end/9986
