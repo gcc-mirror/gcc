@@ -1,3 +1,15 @@
+2000-05-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* rtti.c (ptmd_initializer): Set non-public, if class is
+	incomplete.
+	
+	* inc/cxxabi.h (__dynamic_cast): Explicitly say extern "C++".
+	(__cxa_vec_new, __cxa_vec_ctor, __cxa_vec_dtor,
+	__cxa_vec_delete): Likewise.
+	* tinfo.cc (__dynamic_cast): Likewise.
+	* vec.cc (__cxa_vec_new, __cxa_vec_ctor, __cxa_vec_dtor,
+	__cxa_vec_delete): Likewise.
+
 2000-05-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DELTA_FROM_VTABLE_ENTRY): Remove.
