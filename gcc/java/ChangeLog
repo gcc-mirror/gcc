@@ -1,3 +1,10 @@
+2001-03-15  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* mangle.c (mangle_record_type): Rename 'from_pointer' argument
+	to 'for_pointer'. If this type is for a pointer (argument) mangling,
+	don't surround the element with 'N..E' if the type name is 
+	unqualified.
+
 2001-03-15  Zack Weinberg  <zackw@stanford.edu>
 
 	* class.c, decl.c, java-tree.h: Replace all uses of 'boolean' with
