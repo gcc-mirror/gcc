@@ -1,3 +1,7 @@
+Thu Feb 12 16:45:17 1998  Robert Lipe  <robertl@dgii.com>
+	* expr.c (expand_assignment):  Correct typo exposed by -Wall. 
+	offset should have been a truth value, not an assignment.
+
 Thu Feb 12 15:26:50 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c (delete_dead_from_cse): If a libcall produces a constant
