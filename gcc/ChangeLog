@@ -1,3 +1,7 @@
+Mon Dec  2 20:28:48 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* unroll.c (copy_loop_body): Copy CONST_OR_PURE_CALL_P.
+
 Mon Dec  2 19:42:52 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_int_movcc):  Avoid overflow.
