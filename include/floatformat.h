@@ -80,6 +80,9 @@ struct floatformat
 
   /* Internal name for debugging. */
   const char *name;
+
+  /* Validator method.  */
+  int (*is_valid) PARAMS ((const struct floatformat *fmt, const char *from));
 };
 
 /* floatformats for IEEE single and double, big and little endian.  */
