@@ -208,7 +208,8 @@ gnu_ld="$gnu_ld_flag"
 enable_threads=$enable_threads_flag
 
 # Set default cpu_type, tm_file, tm_p_file and xm_file so it can be
-# updated in each machine entry.
+# updated in each machine entry.  Also set default extra_headers for some
+# machines.
 tm_p_file=
 cpu_type=`echo $machine | sed 's/-.*$//'`
 case $machine in
@@ -238,6 +239,10 @@ hppa*-*-* | parisc*-*-*)
 	;;
 m680[02]0-*-*)
 	cpu_type=m68k
+	extra_headers=math-68881.h
+	;;
+m68k-*-*)
+	extra_headers=math-68881.h
 	;;
 mips*-*-*)
 	cpu_type=mips
@@ -247,6 +252,7 @@ pj*-*-*)
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
+	extra_headers=ppc-asm.h
 	;;
 sparc*-*-*)
 	cpu_type=sparc
@@ -1606,12 +1612,10 @@ m68000-convergent-sysv*)
 	tm_file=m68k/ctix.h
 	xm_defines=POSIX
 	use_collect2=yes
-	extra_headers=math-68881.h
 	;;
 m68000-hp-bsd*)			# HP 9000/200 running BSD
 	tm_file=m68k/hp2bsd.h
 	use_collect2=yes
-	extra_headers=math-68881.h
 	;;
 m68000-hp-hpux*)		# HP 9000 series 300
 	xm_defines=POSIX
@@ -1624,17 +1628,14 @@ m68000-hp-hpux*)		# HP 9000 series 300
 	tmake_file=m68k/t-hp320
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
-	extra_headers=math-68881.h
 	;;
 m68000-sun-sunos3*)
 	tm_file=m68k/sun2.h
 	use_collect2=yes
-	extra_headers=math-68881.h
 	;;
 m68000-sun-sunos4*)
 	tm_file=m68k/sun2o4.h
 	use_collect2=yes
-	extra_headers=math-68881.h
 	;;
 m68000-att-sysv*)
 	xm_defines=POSIX
@@ -1645,13 +1646,11 @@ m68000-att-sysv*)
 		tm_file=m68k/3b1.h
 	fi
 	use_collect2=yes
-	extra_headers=math-68881.h
 	;;
 m68k-apple-aux*)		# Apple Macintosh running A/UX
 	xm_defines=POSIX
 	tmake_file=m68k/t-aux
 	install_headers_dir=install-headers-cpio
-	extra_headers=math-68881.h
 	extra_parts="crt1.o mcrt1.o maccrt1.o crt2.o crtn.o"
 	tm_file=
 	if test "$gnu_ld" = yes
@@ -1672,7 +1671,6 @@ m68k-apple-aux*)		# Apple Macintosh running A/UX
 m68k-apollo-*)
 	tm_file=m68k/apollo68.h
 	use_collect2=yes
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-altos-sysv*)		   # Altos 3068
@@ -1684,7 +1682,6 @@ m68k-altos-sysv*)		   # Altos 3068
 		echo "The Altos is supported only with the GNU assembler" 1>&2
 		exit 1
 	fi
-	extra_headers=math-68881.h
         ;;
 m68k-bull-sysv*)		# Bull DPX/2
 	if test x$gas = xyes
@@ -1700,14 +1697,12 @@ m68k-bull-sysv*)		# Bull DPX/2
 	fi
 	xm_defines=POSIX
 	use_collect2=yes
-	extra_headers=math-68881.h
 	;;
 m68k-atari-sysv4*)              # Atari variant of V.4.
 	tm_file=m68k/atari.h
 	xm_defines=POSIX
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-motorola-sysv*)
@@ -1733,56 +1728,47 @@ m68k-motorola-sysv*)
 	fi
 	gdb_needs_out_file_path=yes
 	extra_parts="crt0.o mcrt0.o"
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-ncr-sysv*)			# NCR Tower 32 SVR3
 	tm_file=m68k/tower-as.h
 	xm_defines=POSIX
 	extra_parts="crtbegin.o crtend.o"
-	extra_headers=math-68881.h
 	;;
 m68k-plexus-sysv*)
 	tm_file=m68k/plexus.h
 	xm_defines=POSIX
 	use_collect2=yes
-	extra_headers=math-68881.h
 	;;
 m68k-tti-*)
 	tm_file=m68k/pbb.h
 	xm_defines=POSIX
-	extra_headers=math-68881.h
 	;;
 m68k-crds-unos*)
 	xm_defines=POSIX
 	tm_file=m68k/crds.h
 	use_collect2=yes
-	extra_headers=math-68881.h
 	;;
 m68k-cbm-sysv4*)		# Commodore variant of V.4.
 	tm_file=m68k/amix.h
 	xm_defines=POSIX
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-ccur-rtu)
 	tm_file=m68k/ccur-GAS.h
-	extra_headers=math-68881.h
 	use_collect2=yes
 	float_format=m68k
 	;;
 m68k-hp-bsd4.4*)		# HP 9000/3xx running 4.4bsd
 	tm_file=m68k/hp3bsd44.h
 	use_collect2=yes
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-hp-bsd*)			# HP 9000/3xx running Berkeley Unix
 	tm_file=m68k/hp3bsd.h
 	use_collect2=yes
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-isi-bsd*)
@@ -1794,7 +1780,6 @@ m68k-isi-bsd*)
 		float_format=m68k
 	fi
 	use_collect2=yes
-	extra_headers=math-68881.h
 	;;
 m68k-hp-hpux7*)	# HP 9000 series 300 running HPUX version 7.
 	xm_defines=POSIX
@@ -1808,7 +1793,6 @@ m68k-hp-hpux7*)	# HP 9000 series 300 running HPUX version 7.
 	fi
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-hp-hpux*)	# HP 9000 series 300
@@ -1823,13 +1807,11 @@ m68k-hp-hpux*)	# HP 9000 series 300
 	fi
 	install_headers_dir=install-headers-cpio
 	use_collect2=yes
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-sun-mach*)
 	tm_file=m68k/sun3mach.h
 	use_collect2=yes
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-sony-newsos3*)
@@ -1840,7 +1822,6 @@ m68k-sony-newsos3*)
 		tm_file=m68k/news3.h
 	fi
 	use_collect2=yes
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-sony-bsd* | m68k-sony-newsos*)
@@ -1851,7 +1832,6 @@ m68k-sony-bsd* | m68k-sony-newsos*)
 		tm_file=m68k/news.h
 	fi
 	use_collect2=yes
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-next-nextstep2*)
@@ -1860,7 +1840,6 @@ m68k-next-nextstep2*)
 	tmake_file=m68k/t-next
 	xmake_file=m68k/x-next
 	extra_objs=nextstep.o
-	extra_headers=math-68881.h
 	use_collect2=yes
 	float_format=m68k
         ;;
@@ -1871,7 +1850,6 @@ m68k-next-nextstep[34]*)
 	xmake_file=m68k/x-next
 	extra_objs=nextstep.o
 	extra_parts="crtbegin.o crtend.o"
-	extra_headers=math-68881.h
 	float_format=m68k
 	if test x$enable_threads = xyes; then
 		thread_file='mach'
@@ -1886,7 +1864,6 @@ m68k-sun-sunos3*)
 		float_format=m68k
 	fi
 	use_collect2=yes
-	extra_headers=math-68881.h
 	;;
 m68k-sun-sunos*)			# For SunOS 4 (the default).
 	if test x$with_fp = xno
@@ -1897,32 +1874,27 @@ m68k-sun-sunos*)			# For SunOS 4 (the default).
 		float_format=m68k
 	fi
 	use_collect2=yes
-	extra_headers=math-68881.h
 	;;
 m68k-wrs-vxworks*)
 	tm_file=m68k/vxm68k.h
 	tmake_file=m68k/t-vxworks68
-	extra_headers=math-68881.h
 	thread_file='vxworks'
 	float_format=m68k
 	;;
 m68k-*-aout*)
 	tmake_file=m68k/t-m68kbare
 	tm_file="m68k/m68k-aout.h libgloss.h"
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-*-coff*)
 	tmake_file=m68k/t-m68kbare
 	tm_file="m68k/m68k-coff.h dbx.h"
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68020-*-elf* | m68k-*-elf*)
 	tm_file="m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/m68kemb.h m68k/m68020-elf.h"
 	xm_defines=POSIX
 	tmake_file=m68k/t-m68kelf
-	header_files=math-68881.h
 	extra_parts="crtbegin.o crtend.o"
 	;;
 m68k-*-lynxos*)
@@ -1933,7 +1905,6 @@ m68k-*-lynxos*)
 		tm_file=m68k/lynx-ng.h
 	fi
 	tmake_file=m68k/t-lynx
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k*-*-netbsd*)
@@ -1952,7 +1923,6 @@ m68k*-*-openbsd*)
 m68k-*-sysv3*)			# Motorola m68k's running system V.3
 	xm_defines=POSIX
 	extra_parts="crtbegin.o crtend.o"
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-*-sysv4*)			# Motorola m68k's running system V.4
@@ -1960,14 +1930,12 @@ m68k-*-sysv4*)			# Motorola m68k's running system V.4
 	xm_defines=POSIX
 	tmake_file=t-svr4
 	extra_parts="crtbegin.o crtend.o"
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-*-linux*aout*)		# Motorola m68k's running GNU/Linux
 				# with a.out format
 	tm_file=m68k/linux-aout.h
 	tmake_file="t-linux-aout m68k/t-linux-aout"
-	extra_headers=math-68881.h
 	float_format=m68k
 	gnu_ld=yes
 	;;
@@ -1977,7 +1945,6 @@ m68k-*-linux*libc1)		# Motorola m68k's running GNU/Linux
 	tm_file=m68k/linux.h
 	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1 m68k/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-	extra_headers=math-68881.h
 	float_format=m68k
 	gnu_ld=yes
 	;;
@@ -1987,7 +1954,6 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 	tm_file=m68k/linux.h
 	tmake_file="t-slibgcc-elf-ver t-linux m68k/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-	extra_headers=math-68881.h
 	float_format=m68k
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
@@ -1997,13 +1963,11 @@ m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 m68k-*-psos*)
 	tmake_file=m68k/t-m68kbare
 	tm_file=m68k/m68k-psos.h
-	extra_headers=math-68881.h
 	float_format=m68k
 	;;
 m68k-*-rtemscoff*)
 	tmake_file="m68k/t-m68kbare t-rtems"
 	tm_file=m68k/rtems.h
-	extra_headers=math-68881.h
 	float_format=m68k
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
@@ -2012,7 +1976,6 @@ m68k-*-rtemscoff*)
 m68k-*-rtemself*|m68k-*-rtems*)
 	tmake_file="m68k/t-m68kbare t-rtems m68k/t-crtstuff"
 	tm_file=m68k/rtemself.h
-	extra_headers=math-68881.h
 	float_format=m68k
 	extra_parts="crtbegin.o crtend.o"
 	if test x$enable_threads = xyes; then
@@ -2647,18 +2610,19 @@ romp-*-openbsd*)
 	;;
 powerpc-*-openbsd*)
 	tmake_file="${tmake_file} rs6000/t-rs6000 rs6000/t-openbsd"
+	extra_headers=
 	;;
 powerpc64-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux64.h"
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-linux rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	;;
 powerpc-*-beos*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/beos.h rs6000/xcoff.h"
 	xm_defines=POSIX
 	xm_file=rs6000/xm-beos.h
 	tmake_file=rs6000/t-beos
+	extra_headers=
 	;;
 powerpc-*-darwin*)
 	tm_file="${tm_file} darwin.h rs6000/darwin.h"
@@ -2674,31 +2638,28 @@ powerpc-*-darwin*)
 	cxx_target_objs="darwin-c.o"
 	# Darwin linker does collect2 functionality
 	use_collect2=no
+	extra_headers=
 	;;
 powerpc*-*-freebsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} rs6000/sysv4.h rs6000/freebsd.h"
 	xm_file=rs6000/xm-sysv4.h
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	;;
 powerpc-*-sysv*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
 	xm_defines=POSIX
-	extra_headers=ppc-asm.h
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
 	;;
 powerpc-*-netbsd*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/netbsd.h"
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	;;
 powerpc-*-chorusos*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h chorus.h"
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	case x${enable_threads} in
 	  xyes | xpthreads | xposix)
 		thread_file='posix'
@@ -2709,43 +2670,36 @@ powerpc-*-eabiaix*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabiaix.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	;;
 powerpc-*-eabisimaltivec*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabisim.h rs6000/eabialtivec.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	;;
 powerpc-*-eabisim*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabisim.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	;;
 powerpc-*-elf*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	;;
 powerpc-*-eabialtivec*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rs6000/eabialtivec.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	;;
 powerpc-*-eabi*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	;;
 powerpc-*-rtems*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/eabi.h rtems.h rs6000/rtems.h"
 	tmake_file="rs6000/t-ppcgas t-rtems rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
@@ -2754,7 +2708,6 @@ powerpc-*-linux*libc1)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux.h"
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
@@ -2763,7 +2716,6 @@ powerpc-*-linux-gnualtivec*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux.h rs6000/linuxaltivec.h"
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-linux rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
@@ -2772,7 +2724,6 @@ powerpc-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/linux.h"
 	out_file=rs6000/rs6000.c
 	tmake_file="rs6000/t-ppcos t-slibgcc-elf-ver t-linux rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
 	fi
@@ -2781,39 +2732,33 @@ powerpc-wrs-vxworks*)
 	xm_defines=POSIX
         tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/vxppc.h"
         tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	thread_file='vxworks'
         ;;
 powerpcle-wrs-vxworks*)
 	xm_defines=POSIX
         tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/vxppc.h"
         tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	thread_file='vxworks'
         ;;
 powerpcle-*-sysv*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h"
 	xm_defines=POSIX
 	tmake_file="rs6000/t-ppcos rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	;;
 powerpcle-*-elf*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	;;
 powerpcle-*-eabisim*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/eabi.h rs6000/eabisim.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	;;
 powerpcle-*-eabi*)
 	xm_defines=POSIX
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/eabi.h"
 	tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-	extra_headers=ppc-asm.h
 	;;
 rs6000-ibm-aix3.[01]*)
 	xm_defines=POSIX
@@ -2827,6 +2772,7 @@ rs6000-ibm-aix3.2.[456789]* | powerpc-ibm-aix3.2.[456789]*)
 	tmake_file=rs6000/t-newas
 	float_format=none
 	use_collect2=yes
+	extra_headers=
 	;;
 rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
 	xm_defines=POSIX
@@ -2834,6 +2780,7 @@ rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
 	tmake_file=rs6000/t-newas
 	float_format=none
 	use_collect2=yes
+	extra_headers=
 	;;
 rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	xm_defines=POSIX
@@ -2842,6 +2789,7 @@ rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
 	float_format=none
 	use_collect2=yes
 	thread_file='aix'
+	extra_headers=
 	;;
 rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	xm_defines=POSIX
@@ -2850,6 +2798,7 @@ rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
 	float_format=none
 	use_collect2=yes
 	thread_file='aix'
+	extra_headers=
 	;;
 rs6000-ibm-aix*)
 	xm_defines=POSIX
