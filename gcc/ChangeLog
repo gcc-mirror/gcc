@@ -1,3 +1,9 @@
+2002-03-27  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/freebsd.h, config/sparc/linux.h, config/sparc/linux64.h,
+	config/sparc/netbsd-elf.h, config/sparc/pbd.h, config/sparc/sol2.h,
+	config/sparc/vxsim.h (LOCAL_LABEL_PREFIX): Define.
+
 2002-03-27  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygwin.h (TARGET_DLL, TARGET_WIN32,
