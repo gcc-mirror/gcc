@@ -1,3 +1,7 @@
+Thu Apr 26 20:28:21 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* (ix86_expand_fp_movcc): Re-enable SSE conditional move generation.
+
 Thu Apr 26 19:20:28 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (abs/neg splitter): Fix calculation of sign bit for TFmodes
