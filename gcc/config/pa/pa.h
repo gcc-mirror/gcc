@@ -2338,7 +2338,7 @@ do {						\
   ((COUNT == 0)									\
    ? gen_rtx (MEM, Pmode,							\
 	      memory_address (Pmode, plus_constant (FRAME,			\
-						    5 * UNITS_PER_WORD)))	\
+						    -5 * UNITS_PER_WORD)))	\
    : (rtx) 0)
 
 /* Used to mask out junk bits from the return address, such as
