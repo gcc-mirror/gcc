@@ -46,6 +46,10 @@ rtx hppa_save_pic_table_rtx;
 /* Set by the FUNCTION_PROFILER macro. */
 int hp_profile_labelno;
 
+/* Counts for the number of callee-saved general and floating point
+   registers which were saved by the current function's prologue.  */
+static int gr_saved, fr_saved;
+
 static rtx find_addr_reg ();
 
 /* Return non-zero only if OP is a register of mode MODE,
@@ -2018,6 +2022,10 @@ output_function_prologue (file, size)
   if (frame_pointer_needed)
     fprintf (file, ",SAVE_SP");
 
+  /* Pass on information about the number of callee register saves
+     performed in the prologue.  */
+  fprintf (file, ",ENTRY_GR=%d,ENTRY_FR=%d", gr_saved, fr_saved);
+
   fprintf (file, "\n\t.ENTRY\n");
 
   /* Horrid hack.  emit_function_prologue will modify this RTL in
@@ -2036,6 +2044,8 @@ hppa_expand_prologue()
   rtx tmpreg, size_rtx;
 
 
+  gr_saved = 0;
+  fr_saved = 0;
   save_fregs = 0;
   local_fsize =  size + (size || frame_pointer_needed ? 8 : 0);
   actual_fsize = compute_frame_size (size, &save_fregs);
@@ -2167,6 +2177,7 @@ hppa_expand_prologue()
 	  {
 	    store_reg (i, offset, FRAME_POINTER_REGNUM);  
 	    offset += 4;
+	    gr_saved++;
 	  }
     }
   /* No frame pointer needed.  */
@@ -2188,6 +2199,7 @@ hppa_expand_prologue()
 	    else
 	      store_reg (i, offset, STACK_POINTER_REGNUM);
 	    offset += 4;
+	    gr_saved++;
 	  }
 
       /* If we wanted to merge the SP adjustment with a GR save, but we never
@@ -2216,12 +2228,13 @@ hppa_expand_prologue()
       if (! TARGET_SNAKE)
 	{
 	  for (i = 43; i >= 40; i--)
-	    {
-	      if (regs_ever_live[i])
+	    if (regs_ever_live[i])
+	      {
 		emit_move_insn (gen_rtx (MEM, DFmode, 
 					 gen_rtx (POST_INC, DFmode, tmpreg)),
 				gen_rtx (REG, DFmode, i));
-	    }
+		fr_saved++;
+	      }
 	}
       else
 	{
@@ -2231,6 +2244,7 @@ hppa_expand_prologue()
 		emit_move_insn (gen_rtx (MEM, DFmode, 
 					 gen_rtx (POST_INC, DFmode, tmpreg)),
 				gen_rtx (REG, DFmode, i));
+		fr_saved++;
 	      }
 	}
     }
