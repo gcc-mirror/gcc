@@ -339,8 +339,8 @@ extern int rs6000_pic_labelno;
 %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
 %{!p:-Y P,/usr/ccs/lib:/usr/lib}} \
 %{Qy:} %{!Qn:-Qy} \
-%{mlittle: -m elf32-powerpcle } %{mlittle-endian: -m elf32-powerpcle } \
-%{mbig: -m elf32-powerpc } %{mbig-endian: -m elf32-powerpc }"
+%{mlittle: -oformat elf32-powerpcle } %{mlittle-endian: -oformat elf32-powerpcle } \
+%{mbig: -oformat elf32-powerpc } %{mbig-endian: -oformat elf32-powerpc }"
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
