@@ -243,14 +243,8 @@ tree static_aggregates;
 
 tree integer_two_node, integer_three_node;
 
-/* Parsing a function declarator leaves here a chain of structure
-   and enum types declared in the parmlist.  */
-
-static tree last_function_parm_tags;
-
 /* Similar, for last_function_parm_tags.  */
 tree last_function_parms;
-static tree current_function_parm_tags;
 
 /* A list of all LABEL_DECLs in the function that have names.  Here so
    we can clear out their names' definitions at the end of the
@@ -6565,8 +6559,6 @@ init_decl_processing ()
   ggc_add_tree_root (&static_dtors, 1);
   ggc_add_tree_root (&lastiddecl, 1);
 
-  ggc_add_tree_root (&last_function_parm_tags, 1);
-  ggc_add_tree_root (&current_function_parm_tags, 1);
   ggc_add_tree_root (&last_function_parms, 1);
   ggc_add_tree_root (&error_mark_list, 1);
 
@@ -11101,6 +11093,26 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       type = build_cplus_array_type (TREE_TYPE (type), TYPE_DOMAIN (type));
     }
 
+  /* Detect where we're using a typedef of function type to declare a
+     function. last_function_parms will not be set, so we must create
+     it now.  */
+  
+  if (type == typedef_type && TREE_CODE (type) == FUNCTION_TYPE)
+    {
+      tree decls = NULL_TREE;
+      tree args;
+
+      for (args = TYPE_ARG_TYPES (type); args; args = TREE_CHAIN (args))
+	{
+	  tree decl = build_decl (PARM_DECL, NULL_TREE, TREE_VALUE (args));
+
+	  TREE_CHAIN (decl) = decls;
+	  decls = decl;
+	}
+      
+      last_function_parms = nreverse (decls);
+    }
+
   /* If this is a type name (such as, in a cast or sizeof),
      compute the type and return it now.  */
 
@@ -13296,7 +13308,6 @@ start_function (declspecs, declarator, attrs, flags)
 	}
 
       last_function_parms = DECL_ARGUMENTS (decl1);
-      last_function_parm_tags = NULL_TREE;
     }
   else
     {
@@ -13403,7 +13414,6 @@ start_function (declspecs, declarator, attrs, flags)
   /* Save the parm names or decls from this function's declarator
      where store_parm_decls will find them.  */
   current_function_parms = last_function_parms;
-  current_function_parm_tags = last_function_parm_tags;
 
   /* Make sure the parameter and return types are reasonable.  When
      you declare a function, these types can be incomplete, but they
@@ -13630,9 +13640,6 @@ store_parm_decls (current_function_parms)
   int parms_have_cleanups = 0;
   tree cleanups = NULL_TREE;
 
-  /* This is a list of types declared among parms in a prototype.  */
-  tree parmtags = current_function_parm_tags;
-
   /* This is a chain of any other decls that came in among the parm
      declarations.  If a parm is declared with  enum {foo, bar} x;
      then CONST_DECLs for foo and bar are put here.  */
@@ -13690,7 +13697,7 @@ store_parm_decls (current_function_parms)
 	 function.  This is all and only the PARM_DECLs that were
 	 pushed into scope by the loop above.  */
       DECL_ARGUMENTS (fndecl) = getdecls ();
-      storetags (chainon (parmtags, gettags ()));
+      storetags (gettags ());
     }
   else
     DECL_ARGUMENTS (fndecl) = NULL_TREE;

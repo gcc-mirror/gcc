@@ -1,3 +1,15 @@
+2001-07-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (last_function_parm_tags): Remove.
+	(current_function_parm_tags): Remove.
+	(init_decl_processing): Adjust.
+	(start_function): Adjust.
+	(store_parm_decls): Adjust.
+
+	PR c++/3152
+	* decl.c (grokdeclarator): Detect when a function typedef is
+	declaring a function, and create last_function_parms correctly.
+
 2001-07-25  Jason Merrill  <jason_merrill@redhat.com>
 	
 	* call.c (joust): Only prefer a non-builtin candidate to a builtin
