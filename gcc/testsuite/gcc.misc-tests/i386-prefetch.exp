@@ -24,14 +24,14 @@
 # Do not generate prefetch instructions for the following options.
 
 set PREFETCH_NONE [list \
-	{ -mcpu=i386 } \
-	{ -mcpu=i486 } \
-	{ -mcpu=i586 } \
-	{ -mcpu=i686 } \
-	{ -mcpu=pentium2 } \
-	{ -mcpu=k6 } \
-	{ -mcpu=k6-2 } \
-	{ -mcpu=k6-3 } \
+	{ -mtune=i386 } \
+	{ -mtune=i486 } \
+	{ -mtune=i586 } \
+	{ -mtune=i686 } \
+	{ -mtune=pentium2 } \
+	{ -mtune=k6 } \
+	{ -mtune=k6-2 } \
+	{ -mtune=k6-3 } \
 	{ -march=i386 } \
 	{ -march=i486 } \
 	{ -march=i586 } \
@@ -40,14 +40,14 @@ set PREFETCH_NONE [list \
 	{ -march=k6 } ]
 
 # For options in PREFETCH_SSE, generate SSE prefetch instructions for
-# __builtin_prefetch.  This includes -mcpu for targets that treat prefetch
+# __builtin_prefetch.  This includes -mtune for targets that treat prefetch
 # instructions as nops.
 
 set PREFETCH_SSE [list \
-	{ -mcpu=pentium3 } \
-	{ -mcpu=pentium4 } \
-	{ -mcpu=athlon } \
-	{ -mcpu=athlon-4 } \
+	{ -mtune=pentium3 } \
+	{ -mtune=pentium4 } \
+	{ -mtune=athlon } \
+	{ -mtune=athlon-4 } \
 	{ -march=pentium3 } \
 	{ -march=pentium4 } ]
 

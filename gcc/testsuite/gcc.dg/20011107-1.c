@@ -1,5 +1,5 @@
 /* { dg-do compile { target i?86-*-* } } */
-/* { dg-options "-O2 -mcpu=k6" } */
+/* { dg-options "-O2 -mtune=k6" } */
 
 void
 foo (unsigned char *x, const unsigned char *y)

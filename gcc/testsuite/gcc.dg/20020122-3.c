@@ -4,7 +4,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-Os -fprefetch-loop-arrays -w" } */
-/* { dg-options "-Os -fprefetch-loop-arrays -mcpu=pentium3 -w" { target i?86-*-* } } */
+/* { dg-options "-Os -fprefetch-loop-arrays -mtune=pentium3 -w" { target i?86-*-* } } */
 
 int foo (int *p, int n)
 {

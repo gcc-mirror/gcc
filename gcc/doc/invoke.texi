@@ -498,7 +498,7 @@ in the following sections.
 
 @emph{i386 and x86-64 Options}
 @gccoptlist{
--mcpu=@var{cpu-type}  -march=@var{cpu-type} -mfpmath=@var{unit} @gol
+-mtune=@var{cpu-type}  -march=@var{cpu-type} -mfpmath=@var{unit} @gol
 -masm=@var{dialect}  -mno-fancy-math-387 @gol
 -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
@@ -7931,8 +7931,8 @@ These @samp{-m} options are defined for the i386 and x86-64 family of
 computers:
 
 @table @gcctabopt
-@item -mcpu=@var{cpu-type}
-@opindex mcpu
+@item -mtune=@var{cpu-type}
+@opindex mtune
 Tune to @var{cpu-type} everything applicable about the generated code, except
 for the ABI and the set of available instructions.  The choices for
 @var{cpu-type} are @samp{i386}, @samp{i486}, @samp{i586}, @samp{i686},
@@ -7952,8 +7952,12 @@ AMD chips as opposed to the Intel ones.
 @item -march=@var{cpu-type}
 @opindex march
 Generate instructions for the machine type @var{cpu-type}.  The choices
-for @var{cpu-type} are the same as for @option{-mcpu}.  Moreover,
-specifying @option{-march=@var{cpu-type}} implies @option{-mcpu=@var{cpu-type}}.
+for @var{cpu-type} are the same as for @option{-mtune}.  Moreover,
+specifying @option{-march=@var{cpu-type}} implies @option{-mtune=@var{cpu-type}}.
+
+@item -mcpu=@var{cpu-type}
+@opindex mcpu
+A deprecated synonym for @option{-mtune}.
 
 @item -m386
 @itemx -m486
@@ -7963,8 +7967,8 @@ specifying @option{-march=@var{cpu-type}} implies @option{-mcpu=@var{cpu-type}}.
 @opindex m486
 @opindex mpentium
 @opindex mpentiumpro
-These options are synonyms for @option{-mcpu=i386}, @option{-mcpu=i486},
-@option{-mcpu=pentium}, and @option{-mcpu=pentiumpro} respectively.
+These options are synonyms for @option{-mtune=i386}, @option{-mtune=i486},
+@option{-mtune=pentium}, and @option{-mtune=pentiumpro} respectively.
 These synonyms are deprecated.
 
 @item -mfpmath=@var{unit}

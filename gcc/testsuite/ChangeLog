@@ -1,3 +1,20 @@
+2003-02-22  Kelley Cook <kelleycook@comcast.net>
+
+        * g++.old-deja/g++.other/store-expr1.C: Replace "mcpu" 
+        with "mtune".
+        * g++.old-deja/g++.other/store-expr2.C: Likewise.
+        * gcc.c-torture/execute/20010129-1.x: Likewise.
+        * gcc.dg/20011107-1.c: Likewise.
+        * gcc.dg/20020108-1.c: Likewise.
+        * gcc.dg/20020122-3.c: Likewise.
+        * gcc.dg/20020206-1.c: Likewise.
+        * gcc.dg/20020310-1.c: Likewise.
+        * gcc.dg/20020426-2.c: Likewise.
+        * gcc.dg/20020517-1.c: Likewise.
+        * gcc.dg/991230-1.c: Likewise.
+        * gcc.dg/i386-unroll-1.c: Likewise.
+        * gcc.misc-tests/i386-prefetch.exp: Likewise.
+
 Sat Feb 22 20:14:12 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/i386-mul.c: New test.
