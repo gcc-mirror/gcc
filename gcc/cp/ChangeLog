@@ -1,3 +1,10 @@
+2005-02-15  Alexandre Oliva  <aoliva@redhat.com>
+
+	* decl2.c (mark_used): Set the source location of the used decl to
+	the current input location here...
+	* method.c (synthesize_method): ... not here.  Set input_location
+	from the decl instead.
+
 2005-02-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/19608

@@ -3161,9 +3161,20 @@ mark_used (tree decl)
       && DECL_ARTIFICIAL (decl) 
       && !DECL_THUNK_P (decl)
       && ! DECL_INITIAL (decl)
-      /* Kludge: don't synthesize for default args.  */
+      /* Kludge: don't synthesize for default args.  Unfortunately this
+	 rules out initializers of namespace-scoped objects too, but
+	 it's sort-of ok if the implicit ctor or dtor decl keeps
+	 pointing to the class location.  */
       && current_function_decl)
     {
+      /* Put the function definition at the position where it is needed,
+	 rather than within the body of the class.  That way, an error
+	 during the generation of the implicit body points at the place
+	 where the attempt to generate the function occurs, giving the
+	 user a hint as to why we are attempting to generate the
+	 function.  */
+      DECL_SOURCE_LOCATION (decl) = input_location;
+
       synthesize_method (decl);
       /* If we've already synthesized the method we don't need to
 	 instantiate it, so we can return right away.  */
