@@ -1,3 +1,10 @@
+2005-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/20206
+	* decl.c (cxx_comdat_group): Put thunks for
+	TARGET_USE_LOCAL_THUNK_ALIAS_P (function) functions into the same
+	comdat group as the thunk target.
+
 2005-02-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* call.c, class.c, cp-tree.h, decl2.c, error.c, init.c, mangle.c,
