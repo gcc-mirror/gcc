@@ -460,6 +460,19 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       cpp_opts->warn_multichar = value;
       break;
 
+    case OPT_Wnormalized_:
+      if (!value || (arg && strcasecmp (arg, "none") == 0))
+	cpp_opts->warn_normalize = normalized_none;
+      else if (!arg || strcasecmp (arg, "nfkc") == 0)
+	cpp_opts->warn_normalize = normalized_KC;
+      else if (strcasecmp (arg, "id") == 0)
+	cpp_opts->warn_normalize = normalized_identifier_C;
+      else if (strcasecmp (arg, "nfc") == 0)
+	cpp_opts->warn_normalize = normalized_C;
+      else
+	error ("argument %qs to %<-Wnormalized%> not recognized", arg);
+      break;
+
     case OPT_Wreturn_type:
       warn_return_type = value;
       break;

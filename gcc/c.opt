@@ -285,6 +285,10 @@ Wnonnull
 C ObjC Var(warn_nonnull)
 Warn about NULL being passed to argument slots marked as requiring non-NULL
 
+Wnormalized=
+C ObjC C++ ObjC++ Joined
+-Wnormalized=<id|nfc|nfkc>	Warn about non-normalised Unicode strings
+
 Wold-style-cast
 C++ ObjC++ Var(warn_old_style_cast)
 Warn if a C-style cast is used in a program

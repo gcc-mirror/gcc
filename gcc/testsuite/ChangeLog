@@ -1,3 +1,14 @@
+2005-03-14  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.dg/cpp/normalize-1.c: New.
+	* gcc.dg/cpp/normalize-2.c: New.
+	* gcc.dg/cpp/normalize-3.c: New.
+	* gcc.dg/cpp/normalize-4.c: New.
+	* gcc.dg/cpp/ucnid-4.c: New.
+	* gcc.dg/cpp/ucnid-5.c: New.
+	* g++.dg/cpp/normalize-1.C: New.
+	* g++.dg/cpp/ucnid-1.C: New.
+
 2005-03-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/pr18628.c: New.

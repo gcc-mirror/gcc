@@ -3039,6 +3039,51 @@ Do not warn if a multicharacter constant (@samp{'FOOF'}) is used.
 Usually they indicate a typo in the user's code, as they have
 implementation-defined values, and should not be used in portable code.
 
+@item -Wnormalized=<none|id|nfc|nfkc>
+@opindex Wnormalized
+@cindex NFC
+@cindex NFKC
+@cindex character set, input normalization
+In ISO C and ISO C++, two identifiers are different if they are
+different sequences of characters.  However, sometimes when characters
+outside the basic ASCII character set are used, you can have two
+different character sequences that look the same.  To avoid confusion,
+the ISO 10646 standard sets out some @dfn{normalization rules} which
+when applied ensure that two sequences that look the same are turned into
+the same sequence.  GCC can warn you if you are using identifiers which
+have not been normalized; this option controls that warning.
+
+There are four levels of warning that GCC supports.  The default is
+@option{-Wnormalized=nfc}, which warns about any identifier which is
+not in the ISO 10646 ``C'' normalized form, @dfn{NFC}.  NFC is the
+recommended form for most uses.
+
+Unfortunately, there are some characters which ISO C and ISO C++ allow
+in identifiers that when turned into NFC aren't allowable as
+identifiers.  That is, there's no way to use these symbols in portable
+ISO C or C++ and have all your identifiers in NFC.
+@option{-Wnormalized=id} suppresses the warning for these characters.
+It is hoped that future versions of the standards involved will correct
+this, which is why this option is not the default.
+
+You can switch the warning off for all characters by writing
+@option{-Wnormalized=none}.  You would only want to do this if you
+were using some other normalization scheme (like ``D''), because
+otherwise you can easily create bugs that are literally impossible to see.
+
+Some characters in ISO 10646 have distinct meanings but look identical
+in some fonts or display methodologies, especially once formatting has
+been applied.  For instance @code{\u207F}, ``SUPERSCRIPT LATIN SMALL
+LETTER N'', will display just like a regular @code{n} which has been
+placed in a superscript.  ISO 10646 defines the @dfn{NFKC}
+normalisation scheme to convert all these into a standard form as
+well, and GCC will warn if your code is not in NFKC if you use
+@option{-Wnormalized=nfkc}.  This warning is comparable to warning
+about every identifier that contains the letter O because it might be
+confused with the digit 0, and so is not the default, but may be
+useful as a local coding convention if the programming environment is
+unable to be fixed to display these characters distinctly.
+
 @item -Wno-deprecated-declarations
 @opindex Wno-deprecated-declarations
 Do not warn about uses of functions, variables, and types marked as
