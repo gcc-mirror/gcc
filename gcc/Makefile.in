@@ -724,12 +724,12 @@ LIB2FUNCS_EH = _eh
 FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
     _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
     _lt_sf _le_sf _si_to_sf _sf_to_si _negate_sf _make_sf \
-    _sf_to_df _thenan_sf
+    _sf_to_df _thenan_sf _sf_to_usi _df_to_usi
 
 DPBIT_FUNCS = _pack_df _unpack_df _addsub_df _mul_df _div_df \
     _fpcmp_parts_df _compare_df _eq_df _ne_df _gt_df _ge_df \
     _lt_df _le_df _si_to_df _df_to_si _negate_df _make_df \
-    _df_to_sf _thenan_df
+    _df_to_sf _thenan_df _sf_to_usi _df_to_usi
 
 # The files that "belong" in CONFIG_H are deliberately omitted
 # because having them there would not be useful in actual practice.
@@ -1088,10 +1088,10 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
 	  do \
 	    echo $${name}; \
 	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} \
-	        -DFINE_GRAINED_LIBRARIES $(DPBIT) -o $${name}$(objext); \
+	        -DFINE_GRAINED_LIBRARIES $(DPBIT) -o _dp$${name}$(objext); \
 	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a $${name}$(objext); \
-	    rm -f $${name}$(objext); \
+	    $(AR_FOR_TARGET) $(AR_FLAGS_FOR_TARGET) tmplibgcc2.a _dp$${name}$(objext); \
+	    rm -f _dp$${name}$(objext); \
 	  done; \
 	else true; fi;
 # Some shells crash when a loop has no items.
