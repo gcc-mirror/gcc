@@ -1,3 +1,8 @@
+1999-08-11  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/BitSet.java (set, clear, hashCode): specify "1" constant
+	as long.
+
 Mon Aug  9 18:33:38 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
         * Makefile: Rebuilt.
