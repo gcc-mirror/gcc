@@ -1,3 +1,8 @@
+2001-06-24  David Edelsohn <dje@watson.ibm.com>
+
+	* libmath/stubs.c (sqrtf): Define.
+	(tanf): Correct typo.
+
 2001-06-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/stl_iterator.h (reverse_iterator): Inherit from
