@@ -455,13 +455,8 @@ named_section (tree decl, const char *name, int reloc)
 
   if (strcmp (name, UNLIKELY_EXECUTED_TEXT_SECTION_NAME) == 0
       && !unlikely_text_section_name)
-    {
-      unlikely_text_section_name = xmalloc 
-	     (strlen (UNLIKELY_EXECUTED_TEXT_SECTION_NAME) + 1 
-	      * sizeof (char));
-      strcpy (unlikely_text_section_name, 
-	      UNLIKELY_EXECUTED_TEXT_SECTION_NAME);
-    }
+      unlikely_text_section_name =
+	xstrdup (UNLIKELY_EXECUTED_TEXT_SECTION_NAME);
 
   flags = targetm.section_type_flags (decl, name, reloc);
 
