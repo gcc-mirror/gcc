@@ -110,7 +110,6 @@ GCC_3.0 {
   __empty
   __eprintf
   __gcc_bcmp
-  __shtab
 
   # EH symbols
   __default_terminate
