@@ -1,3 +1,9 @@
+2004-11-10  Adam Nemet  <anemet@lnxw.com>
+
+	PR middle-end/18160  
+	* typeck.c (cxx_mark_addressable): Issue an error if address of an
+	explicit register variable is requested.
+
 2004-11-10  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18143
