@@ -1,3 +1,7 @@
+Sat Sep  5 22:25:51 1998  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in: Update dependancies for top-level gcc files that moved.
+
 Sat Sep  5 02:21:08 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in: Tweak to avoid building runtime.  It's built
