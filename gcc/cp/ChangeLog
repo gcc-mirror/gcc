@@ -1,3 +1,8 @@
+2004-12-15  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/16806
+	* error.c (dump_expr) [BASELINK]: Use dump_expr.
+
 2004-12-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/17868
