@@ -6846,11 +6846,32 @@ force_to_mode (x, mode, mask, reg, just_select)
 
       /* ... fall through ...  */
 
-    case MINUS:
     case MULT:
       /* For PLUS, MINUS and MULT, we need any bits less significant than the
 	 most significant bit in MASK since carries from those bits will
 	 affect the bits we are interested in.  */
+      mask = fuller_mask;
+      goto binop;
+
+    case MINUS:
+      /* If X is (minus C Y) where C's least set bit is larger than any bit
+	 in the mask, then we may replace with (neg Y).  */
+      if (GET_CODE (XEXP (x, 0)) == CONST_INT
+	  && (INTVAL (XEXP (x, 0)) & -INTVAL (XEXP (x, 0))) > mask)
+	{
+	  x = gen_unary (NEG, GET_MODE (x), GET_MODE (x), XEXP (x, 1));
+	  return force_to_mode (x, mode, mask, reg, next_select);
+	}
+
+      /* Similarly, if C contains every bit in the mask, then we may
+	 replace with (not Y).  */
+      if (GET_CODE (XEXP (x, 0)) == CONST_INT
+          && (INTVAL (XEXP (x, 0)) | mask) == INTVAL (XEXP (x, 0)))
+	{
+	  x = gen_unary (NOT, GET_MODE (x), GET_MODE (x), XEXP (x, 1));
+	  return force_to_mode (x, mode, mask, reg, next_select);
+	}
+
       mask = fuller_mask;
       goto binop;
 
