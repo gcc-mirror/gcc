@@ -1,3 +1,10 @@
+1998-08-30  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (convert_template_argument): New function, split out
+	from...
+	(coerce_template_parms): Here.
+	(tsubst): Attempt better error-recovery.
+
 1998-08-28  Benjamin Kosnik  <bkoz@loony.cygnus.com>
 
 	* pt.c (decl_template_parm_p): Add checks for
