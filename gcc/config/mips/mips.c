@@ -4582,6 +4582,7 @@ mips_va_arg (valist, type)
 	  tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff;
 	  tree ovfl, top, off;
 	  rtx lab_over = NULL_RTX, lab_false;
+	  HOST_WIDE_INT osize;
 
 	  f_ovfl = TYPE_FIELDS (va_list_type_node);
 	  f_gtop = TREE_CHAIN (f_ovfl);
@@ -4596,7 +4597,11 @@ mips_va_arg (valist, type)
 		 TOP be the top of the register save area;
 		 OFF be the offset from TOP of the next register;
 		 ADDR_RTX be the address of the argument; and
-		 RSIZE be the number of bytes used to store the argument.
+		 RSIZE be the number of bytes used to store the argument
+		   when it's in the register save area
+		 OSIZE be the number of bytes used to store it when it's
+		   in the stack overflow area
+		 PADDING be (BYTES_BIG_ENDIAN ? OSIZE - RSIZE : 0)
 
 	     The code we want is:
 
@@ -4608,10 +4613,10 @@ mips_va_arg (valist, type)
 		  6:   }
 		  7: else
 		  8:   {
-		  9:	 ovfl += ((intptr_t) ovfl + rsize - 1) & -rsize;
-		 10:	 addr_rtx = ovfl;
-		 11:	 ovfl += rsize;
-		 12:   }
+		  9:	 ovfl += ((intptr_t) ovfl + osize - 1) & -osize;
+		 10:	 addr_rtx = ovfl + PADDING;
+		 11:	 ovfl += osize;
+		 14:   }
 
 	     [1] and [9] can sometimes be optimized away.  */
 
@@ -4643,6 +4648,13 @@ mips_va_arg (valist, type)
 		  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 		}
 	    }
+	  /* Every overflow argument must take up at least UNITS_PER_WORD
+	     bytes (= PARM_BOUNDARY bits).  RSIZE can sometimes be smaller
+	     than that, such as in the combination -mgp64 -msingle-float
+	     -fshort-double.  Doubles passed in registers will then take
+	     up UNITS_PER_FPVALUE bytes, but those passed on the stack
+	     take up UNITS_PER_WORD bytes.  */
+	  osize = MAX (rsize, UNITS_PER_WORD);
 
 	  /* [2] Emit code to branch if off == 0.  */
 	  r = expand_expr (off, NULL_RTX, TYPE_MODE (TREE_TYPE (off)),
@@ -4668,21 +4680,25 @@ mips_va_arg (valist, type)
 	  emit_barrier ();
 	  emit_label (lab_false);
 
-	  if (rsize > UNITS_PER_WORD)
+	  if (osize > UNITS_PER_WORD)
 	    {
-	      /* [9] Emit: ovfl += ((intptr_t) ovfl + rsize - 1) & -rsize.  */
+	      /* [9] Emit: ovfl += ((intptr_t) ovfl + osize - 1) & -osize.  */
 	      t = build (PLUS_EXPR, TREE_TYPE (ovfl), ovfl,
-			 build_int_2 (rsize - 1, 0));
+			 build_int_2 (osize - 1, 0));
 	      t = build (BIT_AND_EXPR, TREE_TYPE (ovfl), t,
-			 build_int_2 (-rsize, -1));
+			 build_int_2 (-osize, -1));
 	      t = build (MODIFY_EXPR, TREE_TYPE (ovfl), ovfl, t);
 	      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
 	    }
 
 	  /* [10, 11].	Emit code to store ovfl in addr_rtx, then
-	     post-increment ovfl by rsize.  */
+	     post-increment ovfl by osize.  On big-endian machines,
+	     the argument has OSIZE - RSIZE bytes of leading padding.  */
 	  t = build (POSTINCREMENT_EXPR, TREE_TYPE (ovfl), ovfl,
-		     size_int (rsize));
+		     size_int (osize));
+	  if (BYTES_BIG_ENDIAN && osize > rsize)
+	    t = build (PLUS_EXPR, TREE_TYPE (t), t,
+		       build_int_2 (osize - rsize, 0));
 	  r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
 	  if (r != addr_rtx)
 	    emit_move_insn (addr_rtx, r);
