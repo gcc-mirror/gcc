@@ -1,3 +1,14 @@
+2001-02-08  Anthony Green  <green@redhat.com>
+
+	* include/private/gcconfig.h: Add XSCALE NOSYS support for bare
+	  board embedded targets.
+	* os_dep.c: Avoid signal handling code for NOSYS/ECOS targets.
+	  Use GC_get_stack_base for NOSYS/ECOS targets.  Clean up some
+	  redundant uses of ECOS.
+	* misc.c: Use NOSYS where ECOS is being used.
+	  Don't define GC_write twice for ECOS systems.
+	  (GC_write): New function for NOSYS targets.
+
 2002-02-06  Adam Megacz <adam@xwt.org>
 
         * boehm-gc/include/gc.h: (GC_CreateThread) This function is
