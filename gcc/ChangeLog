@@ -1,3 +1,9 @@
+2002-04-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/alpha/linux.h (CPP_PREDEFINES): Fix typo.
+	* config/i386/gnu.h (CPP_PREDEFINES): Define __gnu_hurd__,
+	not gnu_hurd.
+
 2002-04-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/linux.h (CRIS_CPP_SUBTARGET_SPEC): Fix typo.
