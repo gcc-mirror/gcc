@@ -3749,7 +3749,9 @@ cprop_insn (insn, alter_jumps)
 
 	     Note this does not currently handle machines which use cc0.  */
 	  else if (alter_jumps
-		   && GET_CODE (insn) == JUMP_INSN && condjump_p (insn))
+		   && GET_CODE (insn) == JUMP_INSN
+		   && condjump_p (insn)
+		   && ! simplejump_p (insn))
 	    {
 	      /* We want a copy of the JUMP_INSN so we can modify it
 		 in-place as needed without effecting the original.  */
