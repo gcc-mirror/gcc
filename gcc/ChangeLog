@@ -1,3 +1,8 @@
+2002-12-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (single_one_operand): Fix a warning.
+	(single_zero_operand): Likewise.
+
 2002-12-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (dosize): Replace argument op with
