@@ -1,3 +1,22 @@
+2003-02-10  Josef Zlomek  <zlomekj@suse.cz>
+
+	* Makefile.in (bb-reorder.o): Add dependency on $(FIBHEAP_H).
+	* bb-reorder.c (make_reorder_chain): Deleted.  
+	(make_reorder_chain_1): Deleted.
+	(find_traces): New function.
+	(rotate_loop): New function.
+	(mark_bb_visited): New function.
+	(find_traces_1_round): New function.
+	(copy_bb): New function.
+	(bb_to_key): New function.
+	(better_edge_p): New function.
+	(connect_traces): New function.
+	(copy_bb_p): New function.
+	(get_uncond_jump_length): New function.
+	(reorder_basic_blocks): Use new functions (Software Trace Cache).
+	* cfgcleanup.c (outgoing_edges_match): Enable crossjumping across loop
+	boundaries.
+
 2003-02-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.c (bdesc_2arg): Change spe_evxor to xorv2si3.

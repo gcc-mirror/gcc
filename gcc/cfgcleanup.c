@@ -1143,17 +1143,6 @@ outgoing_edges_match (mode, bb1, bb2)
 	  || !onlyjump_p (bb2->end))
 	return false;
 
-      /* Do not crossjump across loop boundaries.  This is a temporary
-	 workaround for the common scenario in which crossjumping results
-	 in killing the duplicated loop condition, making bb-reorder rotate
-	 the loop incorrectly, leaving an extra unconditional jump inside
-	 the loop.
-
-	 This check should go away once bb-reorder knows how to duplicate
-	 code in this case or rotate the loops to avoid this scenario.  */
-      if (bb1->loop_depth != bb2->loop_depth)
-	return false;
-
       b1 = BRANCH_EDGE (bb1);
       b2 = BRANCH_EDGE (bb2);
       f1 = FALLTHRU_EDGE (bb1);
