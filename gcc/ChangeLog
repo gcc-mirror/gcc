@@ -1,3 +1,8 @@
+2004-11-03  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-phinodes.c (resize_phi_node): Copy only a portion of
+	the PHI node currently in use.
+
 2004-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/18231

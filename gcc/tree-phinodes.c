@@ -254,9 +254,11 @@ resize_phi_node (tree *phi, int len)
 
   gcc_assert (len >= PHI_ARG_CAPACITY (*phi));
 
-  /* Note that OLD_SIZE is guaranteed to be smaller than SIZE.  */
+  /* The garbage collector will not look at the PHI node beyond the
+     first PHI_NUM_ARGS elements.  Therefore, all we have to copy is a
+     portion of the PHI node currently in use.  */
   old_size = (sizeof (struct tree_phi_node)
-	     + (PHI_ARG_CAPACITY (*phi) - 1) * sizeof (struct phi_arg_d));
+	     + (PHI_NUM_ARGS (*phi) - 1) * sizeof (struct phi_arg_d));
 
   new_phi = allocate_phi_node (len);
 
