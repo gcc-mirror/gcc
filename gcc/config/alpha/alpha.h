@@ -1104,7 +1104,7 @@ extern char *current_function_name;
       HOST_WIDE_INT highpart = val - lowpart;			\
       rtx high = GEN_INT (highpart);				\
       rtx temp = expand_binop (Pmode, add_optab, XEXP (x, 0),	\
-			       high, 0, OPTAB_LIB_WIDEN);	\
+			       high, NULL_RTX, 1, OPTAB_LIB_WIDEN); \
 								\
       (X) = plus_constant (temp, lowpart);			\
       goto WIN;							\
@@ -1139,7 +1139,7 @@ extern char *current_function_name;
 								\
       high = expand_binop (Pmode, add_optab, XEXP (X, 0),	\
 			   force_reg (Pmode, high),		\
-			   high, OPTAB_LIB_WIDEN);		\
+			   high, 1, OPTAB_LIB_WIDEN);		\
       (X) = plus_constant (high, lowpart);			\
       goto WIN;							\
     }								\
