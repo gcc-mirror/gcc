@@ -4,6 +4,8 @@
 	expander that is used when not optimizing.  Output a tab after
 	each assembly insns.
 
+	* reorg.c: Fix formatting.
+
 2000-10-17  Joern Rennecke <amylaar@redhat.co.uk>
 
 	* reload1.c (move2add_note_store): Check for simple
