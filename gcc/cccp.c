@@ -3925,7 +3925,8 @@ special_symbol (hp, op)
       goto oops;
     if (hp = lookup (ip->bufp, -1, -1)) {
       if (pcp_outfile && pcp_inside_if
-	  && hp->value.defn->predefined)
+	  && (hp->type == T_CONST
+	      || (hp->type == T_MACRO && hp->value.defn->predefined)))
 	/* Output a precondition for this macro use. */
 	fprintf (pcp_outfile, "#define %s\n", hp->name);
       buf = " 1 ";
@@ -6790,7 +6791,9 @@ do_xifdef (buf, limit, op, keyword)
 
     if (pcp_outfile) {
       /* Output a precondition for this macro.  */
-      if (hp && hp->value.defn->predefined)
+      if (hp &&
+	  (hp->type == T_CONST
+	   || (hp->type == T_MACRO && hp->value.defn->predefined)))
 	fprintf (pcp_outfile, "#define %s\n", hp->name);
       else {
 	U_CHAR *cp = buf;
