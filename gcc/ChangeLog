@@ -1,3 +1,10 @@
+2001-03-03  Laurynas Biveinis  <lauras@softhome.net>
+
+	* gcc.c (convert_filename): Append executable suffix
+	if NO_AUTO_EXE_SUFFIX is not defined.
+	* gcc.texi: Document NO_AUTO_EXE_SUFFIX.
+	* config/i386/djgpp.h: Define NO_AUTO_EXE_SUFFIX.
+
 2001-03-03  David O'Brien  <obrien@FreeBSD.org>
 	
 	from 2000-09-06  Zack Weinberg  <zack@wolery.cumb.org>
