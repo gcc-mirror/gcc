@@ -7294,7 +7294,29 @@ tsubst_copy (t, args, complain, in_decl)
 		       args, complain, in_decl);
       else if (is_member_template (t))
 	return tsubst (t, args, complain, in_decl);
+      else if (DECL_CLASS_SCOPE_P (t)
+	       && uses_template_parms (DECL_CONTEXT (t)))
+	{
+	  /* Template template argument like the following example need
+	     special treatment:
+
+	       template <template <class> class TT> struct C {};
+	       template <class T> struct D {
+		 template <class U> struct E {};
+	 	 C<E> c;				// #1
+	       };
+	       D<int> d;				// #2
+
+	     We are processing the template argument `E' in #1 for
+	     the template instantiation #2.  Originally, `E' is a
+	     TEMPLATE_DECL with `D<T>' as its DECL_CONTEXT.  Now we
+	     have to substitute this with one having context `D<int>'.  */
+
+	  tree context = tsubst (DECL_CONTEXT (t), args, complain, in_decl);
+	  return lookup_field (context, DECL_NAME(t), 0, false);
+	}
       else
+	/* Ordinary template template argument.  */
 	return t;
 
     case LOOKUP_EXPR:
