@@ -1,3 +1,14 @@
+2000-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* m68k-protos.h: New file.
+
+	* m68k.c: Include tm_p.h.  Add static prototypes.  Fix compile
+	time warnings.
+	
+	* m68k.h: Move prototypes to m68k-protos.h.  Fix compile time warnings.
+	
+	* mot3300.h: Likewise.
+
 2000-01-12  Richard Earnshaw <rearnsha@arm.com>
 
 	* haifa-sched.c (split_edges): Pass edgeset_size as second arg to
