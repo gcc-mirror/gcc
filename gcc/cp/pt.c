@@ -4421,10 +4421,12 @@ tsubst_copy (t, args, in_decl)
     case FIELD_DECL:
       if (DECL_CONTEXT (t))
 	{
-	  tree ctx = tsubst (DECL_CONTEXT (t), args, in_decl);
-	  if (ctx == current_function_decl)
+	  tree ctx;
+	  if (TREE_CODE (DECL_CONTEXT (t)) == FUNCTION_DECL)
 	    return lookup_name (DECL_NAME (t), 0);
-	  else if (ctx != DECL_CONTEXT (t))
+
+	  ctx = tsubst (DECL_CONTEXT (t), args, in_decl);
+	  if (ctx != DECL_CONTEXT (t))
 	    return lookup_field (ctx, DECL_NAME (t), 0, 0);
 	}
       return t;
