@@ -1502,7 +1502,7 @@ default_pch_valid_p (const void *data_p, size_t len)
 	      goto make_message;
 	    }
 	}
-      abort ();
+      gcc_unreachable ();
     }
   data += sizeof (target_flags);
   len -= sizeof (target_flags);

@@ -270,21 +270,19 @@ tree_fold_bezout (tree a1,
       zs2 = fold (build (MULT_EXPR, integer_type_node, z, s2));
       
       /* row1 -= z * row2.  */
+      gcc_assert (sign != 0);
       if (sign < 0)
 	{
 	  *u11 = fold (build (PLUS_EXPR, integer_type_node, *u11, zu21));
 	  *u12 = fold (build (PLUS_EXPR, integer_type_node, *u12, zu22));
 	  s1 = fold (build (PLUS_EXPR, integer_type_node, s1, zs2));
 	}
-      else if (sign > 0)
+      else
 	{
 	  *u11 = fold (build (MINUS_EXPR, integer_type_node, *u11, zu21));
 	  *u12 = fold (build (MINUS_EXPR, integer_type_node, *u12, zu22));
 	  s1 = fold (build (MINUS_EXPR, integer_type_node, s1, zs2));
 	}
-      else
-	/* Should not happen.  */
-	abort ();
       
       /* Interchange row1 and row2.  */
       {
@@ -1466,8 +1464,8 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
 	  /* If the loop number is still greater than the number of
 	     loops we've been asked to analyze, or negative,
 	     something is borked.  */
-	  if (loop_nb < 0 || loop_nb >= nb_loops)
-	    abort ();
+	  gcc_assert (loop_nb >= 0);
+	  gcc_assert (loop_nb < nb_loops);
 	  dist = int_cst_value (SUB_DISTANCE (subscript));
 
 	  /* This is the subscript coupling test.  
@@ -1508,8 +1506,8 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
     
     lca_nb = lca->num;
     lca_nb -= first_loop;
-    if (lca_nb < 0 || lca_nb >= nb_loops)
-      abort ();
+    gcc_assert (lca_nb >= 0);
+    gcc_assert (lca_nb < nb_loops);
     /* For each outer loop where init_v is not set, the accesses are
        in dependence of distance 1 in the loop.  */
     if (lca != loop_a
@@ -1524,8 +1522,8 @@ build_classic_dist_vector (struct data_dependence_relation *ddr,
 	lca_nb = lca->num - first_loop;
 	while (lca->depth != 0)
 	  {
-	    if (lca_nb < 0 || lca_nb >= nb_loops)
-	      abort ();
+	    gcc_assert (lca_nb >= 0);
+	    gcc_assert (lca_nb < nb_loops);
 	    if (init_v[lca_nb] == 0)
 	      dist_v[lca_nb] = 1;
 	    lca = lca->outer;
@@ -1575,13 +1573,9 @@ build_classic_dir_vector (struct data_dependence_relation *ddr,
 	  /* If the loop number is still greater than the number of
 	     loops we've been asked to analyze, or negative,
 	     something is borked.  */
-	  if (loop_nb < 0 || loop_nb >= nb_loops)
-	    abort ();	  
-	  if (chrec_contains_undetermined (SUB_DISTANCE (subscript)))
-	    {
-	      
-	    }
-	  else
+	  gcc_assert (loop_nb >= 0);
+	  gcc_assert (loop_nb < nb_loops);
+	  if (!chrec_contains_undetermined (SUB_DISTANCE (subscript)))
 	    {
 	      int dist = int_cst_value (SUB_DISTANCE (subscript));
 	      
@@ -1632,8 +1626,8 @@ build_classic_dir_vector (struct data_dependence_relation *ddr,
     lca = find_common_loop (loop_a, loop_b); 
     lca_nb = lca->num - first_loop;
 
-    if (lca_nb < 0 || lca_nb >= nb_loops)
-      abort ();
+    gcc_assert (lca_nb >= 0);
+    gcc_assert (lca_nb < nb_loops);
     /* For each outer loop where init_v is not set, the accesses are
        in dependence of distance 1 in the loop.  */
     if (lca != loop_a
@@ -1647,8 +1641,8 @@ build_classic_dir_vector (struct data_dependence_relation *ddr,
 	lca_nb = lca->num - first_loop;
 	while (lca->depth != 0)
 	  {
-	    if (lca_nb < 0 || lca_nb >= nb_loops)
-	      abort ();
+	    gcc_assert (lca_nb >= 0);
+	    gcc_assert (lca_nb < nb_loops);
 	    if (init_v[lca_nb] == 0)
 	      dir_v[lca_nb] = dir_positive;
 	    lca = lca->outer;

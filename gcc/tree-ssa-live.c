@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hashtab.h"
 #include "tree-dump.h"
 #include "tree-ssa-live.h"
+#include "errors.h"
 
 static void live_worklist (tree_live_info_p, varray_type, int);
 static tree_live_info_p new_tree_live_info (var_map);
@@ -144,8 +145,8 @@ var_union (var_map map, tree var1, tree var2)
 	other_var = var2;
     }
 
-  if (p1 == NO_PARTITION || p2 == NO_PARTITION)
-    abort ();
+  gcc_assert (p1 != NO_PARTITION);
+  gcc_assert (p2 != NO_PARTITION);
 
   if (p1 == p2)
     p3 = p1;
@@ -274,8 +275,7 @@ change_partition_var (var_map map, tree var, int part)
 {
   var_ann_t ann;
 
-  if (TREE_CODE (var) == SSA_NAME)
-    abort();
+  gcc_assert (TREE_CODE (var) != SSA_NAME);
 
   ann = var_ann (var);
   ann->out_of_ssa_tag = 1;
@@ -415,7 +415,7 @@ create_ssa_var_map (int flags)
 	EXECUTE_IF_SET_IN_SBITMAP (both, 0, i,
 	  fprintf (stderr, "Variable %s used in real and virtual operands\n",
 		   get_name (referenced_var (i))));
-	abort ();
+	internal_error ("SSA corruption");
       }
 
     sbitmap_free (used_in_real_ops);
@@ -715,8 +715,7 @@ calculate_live_on_entry (var_map map)
 	      }
 	}
     }
-  if (num > 0)
-    abort ();
+  gcc_assert (num <= 0);
 #endif
 
   BITMAP_XFREE (saw_def);
@@ -943,10 +942,7 @@ root_var_init (var_map map)
 
       p = var_to_partition (map, t);
 
-#ifdef ENABLE_CHECKING
-      if (p == NO_PARTITION)
-        abort ();
-#endif
+      gcc_assert (p != NO_PARTITION);
 
       /* Make sure we only put coalesced partitions into the list once.  */
       if (TEST_BIT (seen, p))
@@ -1019,10 +1015,7 @@ type_var_init (var_map map)
 
       p = var_to_partition (map, t);
 
-#ifdef ENABLE_CHECKING
-      if (p == NO_PARTITION)
-        abort ();
-#endif
+      gcc_assert (p != NO_PARTITION);
 
       /* If partitions have been coalesced, only add the representative 
 	 for the partition to the list once.  */
@@ -1143,10 +1136,7 @@ add_coalesce (coalesce_list_p cl, int p1, int p2, int value)
 {
   partition_pair_p node;
 
-#ifdef ENABLE_CHECKING
-  if (!cl->add_mode)
-    abort();
-#endif
+  gcc_assert (cl->add_mode);
 
   if (p1 == p2)
     return;
@@ -1177,8 +1167,7 @@ sort_coalesce_list (coalesce_list_p cl)
   partition_pair_p chain, p;
   partition_pair_p  *list;
 
-  if (!cl->add_mode)
-    abort();
+  gcc_assert (cl->add_mode);
 
   cl->add_mode = false;
 
@@ -1204,10 +1193,7 @@ sort_coalesce_list (coalesce_list_p cl)
       for (p = chain; p != NULL; p = p->next)
 	list[count++] = p;
 
-#ifdef ENABLE_CHECKING
-  if (count != num)
-    abort ();
-#endif
+      gcc_assert (count == num);
 	
       qsort (list, count, sizeof (partition_pair_p), compare_pairs);
 
@@ -1248,8 +1234,7 @@ pop_best_coalesce (coalesce_list_p cl, int *p1, int *p2)
   partition_pair_p node;
   int ret;
 
-  if (cl->add_mode)
-    abort();
+  gcc_assert (!cl->add_mode);
 
   node = cl->list[0];
   if (!node)
@@ -1793,3 +1778,18 @@ dump_live_info (FILE *f, tree_live_info_p live, int flag)
 	}
     }
 }
+
+#ifdef ENABLE_CHECKING
+void
+register_ssa_partition_check (tree ssa_var)
+{
+  gcc_assert (TREE_CODE (ssa_var) == SSA_NAME);
+  if (!is_gimple_reg (SSA_NAME_VAR (ssa_var)))
+    {
+      fprintf (stderr, "Illegally registering a virtual SSA name :");
+      print_generic_expr (stderr, ssa_var, TDF_SLIM);
+      fprintf (stderr, " in the SSA->Normal phase.\n");
+      internal_error ("SSA corruption");
+    }
+}
+#endif

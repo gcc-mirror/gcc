@@ -103,8 +103,7 @@ record_stmt_eh_region (struct eh_region *region, tree t)
   n->region_nr = get_eh_region_number (region);
 
   slot = htab_find_slot (throw_stmt_table, n, INSERT);
-  if (*slot)
-    abort ();
+  gcc_assert (!*slot);
   *slot = n;
 }
 
@@ -114,16 +113,14 @@ add_stmt_to_eh_region (tree t, int num)
   struct throw_stmt_node *n;
   void **slot;
 
-  if (num < 0)
-    abort ();
+  gcc_assert (num >= 0);
 
   n = ggc_alloc (sizeof (*n));
   n->stmt = t;
   n->region_nr = num;
 
   slot = htab_find_slot (throw_stmt_table, n, INSERT);
-  if (*slot)
-    abort ();
+  gcc_assert (!*slot);
   *slot = n;
 }
 
@@ -186,8 +183,7 @@ record_in_finally_tree (tree child, tree parent)
   n->parent = parent;
 
   slot = htab_find_slot (finally_tree, n, INSERT);
-  if (*slot)
-    abort ();
+  gcc_assert (!*slot);
   *slot = n;
 }
 
@@ -422,7 +418,7 @@ replace_goto_queue_1 (tree t, struct leh_tf_state *tf, tree_stmt_iterator *tsi)
       break;
 
     case STATEMENT_LIST:
-      abort ();
+      gcc_unreachable ();
 
     default:
       /* These won't have gotos in them.  */
@@ -505,7 +501,7 @@ maybe_record_in_goto_queue (struct leh_state *state, tree stmt)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   active = tf->goto_queue_active;
@@ -547,8 +543,7 @@ verify_norecord_switch_expr (struct leh_state *state, tree switch_expr)
   for (i = 0; i < n; ++i)
     {
       tree lab = CASE_LABEL (TREE_VEC_ELT (vec, i));
-      if (outside_finally_tree (lab, tf->try_finally_expr))
-	abort ();
+      gcc_assert (!outside_finally_tree (lab, tf->try_finally_expr));
     }
 }
 #else
@@ -591,47 +586,51 @@ do_return_redirection (struct goto_queue_node *q, tree finlab, tree mod,
 	  depends, I guess, but it does make generation of the switch in
 	  lower_try_finally_switch easier.  */
 
-      if (TREE_CODE (ret_expr) == RESULT_DECL)
+      switch (TREE_CODE (ret_expr))
 	{
+	case RESULT_DECL:
 	  if (!*return_value_p)
 	    *return_value_p = ret_expr;
-	  else if (*return_value_p != ret_expr)
-	    abort ();
-          q->cont_stmt = q->stmt;
-	}
-      else if (TREE_CODE (ret_expr) == MODIFY_EXPR)
-	{
-	  tree result = TREE_OPERAND (ret_expr, 0);
-	  tree new, old = TREE_OPERAND (ret_expr, 1);
-
-	  if (!*return_value_p)
-	    {
-	      if (aggregate_value_p (TREE_TYPE (result),
-				     TREE_TYPE (current_function_decl)))
-		/* If this function returns in memory, copy the argument
-		   into the return slot now.  Otherwise, we might need to
-		   worry about magic return semantics, so we need to use a
-		   temporary to hold the value until we're actually ready
-		   to return.  */
-		new = result;
-	      else
-		new = create_tmp_var (TREE_TYPE (old), "rettmp");
-	      *return_value_p = new;
-	    }
 	  else
-	    new = *return_value_p;
+	    gcc_assert (*return_value_p == ret_expr);
+	  q->cont_stmt = q->stmt;
+	  break;
 
-	  x = build (MODIFY_EXPR, TREE_TYPE (new), new, old);
-	  append_to_statement_list (x, &q->repl_stmt);
+	case MODIFY_EXPR:
+	  {
+	    tree result = TREE_OPERAND (ret_expr, 0);
+	    tree new, old = TREE_OPERAND (ret_expr, 1);
 
-	  if (new == result)
-	    x = result;
-	  else
-	    x = build (MODIFY_EXPR, TREE_TYPE (result), result, new);
-	  q->cont_stmt = build1 (RETURN_EXPR, void_type_node, x);
+	    if (!*return_value_p)
+	      {
+		if (aggregate_value_p (TREE_TYPE (result),
+				      TREE_TYPE (current_function_decl)))
+		  /* If this function returns in memory, copy the argument
+		    into the return slot now.  Otherwise, we might need to
+		    worry about magic return semantics, so we need to use a
+		    temporary to hold the value until we're actually ready
+		    to return.  */
+		  new = result;
+		else
+		  new = create_tmp_var (TREE_TYPE (old), "rettmp");
+		*return_value_p = new;
+	      }
+	    else
+	      new = *return_value_p;
+
+	    x = build (MODIFY_EXPR, TREE_TYPE (new), new, old);
+	    append_to_statement_list (x, &q->repl_stmt);
+
+	    if (new == result)
+	      x = result;
+	    else
+	      x = build (MODIFY_EXPR, TREE_TYPE (result), result, new);
+	    q->cont_stmt = build1 (RETURN_EXPR, void_type_node, x);
+	  }
+
+	default:
+	  gcc_unreachable ();
 	}
-      else
-	abort ();
     }
   else
     {

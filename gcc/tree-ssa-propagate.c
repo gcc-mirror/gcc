@@ -215,10 +215,8 @@ cfg_blocks_get (void)
 
   bb = VARRAY_BB (cfg_blocks, cfg_blocks_head);
 
-#ifdef ENABLE_CHECKING
-  if (cfg_blocks_empty_p () || !bb)
-    abort ();
-#endif
+  gcc_assert (!cfg_blocks_empty_p ());
+  gcc_assert (bb);
 
   cfg_blocks_head = (cfg_blocks_head + 1) % VARRAY_SIZE (cfg_blocks);
   --cfg_blocks_num;

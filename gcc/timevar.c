@@ -263,8 +263,7 @@ timevar_push (timevar_id_t timevar)
   tv->used = 1;
 
   /* Can't push a standalone timer.  */
-  if (tv->standalone)
-    abort ();
+  gcc_assert (!tv->standalone);
 
   /* What time is it?  */
   get_time (&now);
@@ -309,13 +308,8 @@ timevar_pop (timevar_id_t timevar)
   if (!timevar_enable)
     return;
 
-  if (&timevars[timevar] != stack->timevar)
-    {
-      sorry ("cannot timevar_pop '%s' when top of timevars stack is '%s'",
-             timevars[timevar].name, stack->timevar->name);
-      abort ();
-    }
-
+  gcc_assert (&timevars[timevar] == stack->timevar);
+  
   /* What time is it?  */
   get_time (&now);
 
@@ -352,8 +346,7 @@ timevar_start (timevar_id_t timevar)
 
   /* Don't allow the same timing variable to be started more than
      once.  */
-  if (tv->standalone)
-    abort ();
+  gcc_assert (!tv->standalone);
   tv->standalone = 1;
 
   get_time (&tv->start_time);
@@ -372,8 +365,7 @@ timevar_stop (timevar_id_t timevar)
     return;
 
   /* TIMEVAR must have been started via timevar_start.  */
-  if (!tv->standalone)
-    abort ();
+  gcc_assert (tv->standalone);
 
   get_time (&now);
   timevar_accumulate (&tv->elapsed, &tv->start_time, &now);

@@ -65,6 +65,9 @@ extern int var_union (var_map, tree, tree);
 extern void change_partition_var (var_map, tree, int);
 extern void compact_var_map (var_map, int);
 extern tree make_ssa_temp (tree);
+#ifdef ENABLE_CHECKING
+extern void register_ssa_partition_check (tree ssa_var);
+#endif
 
 static inline int num_var_partitions (var_map);
 static inline tree var_to_partition_to_var (var_map, tree);
@@ -76,7 +79,6 @@ static inline void register_ssa_partition (var_map, tree, bool);
 
 #define SSA_VAR_MAP_REF_COUNT	 0x01
 extern var_map create_ssa_var_map (int);
-
 
 /* Number of partitions in MAP.  */
 
@@ -93,10 +95,7 @@ static inline int
 version_ref_count (var_map map, tree ssa_var)
 {
   int version = SSA_NAME_VERSION (ssa_var);
-#ifdef ENABLE_CHECKING
-  if (!map->ref_count)
-    abort ();
-#endif
+  gcc_assert (map->ref_count);
   return map->ref_count[version];
 }
  
@@ -182,16 +181,7 @@ register_ssa_partition (var_map map, tree ssa_var, bool is_use)
   int version;
 
 #if defined ENABLE_CHECKING
-  if (TREE_CODE (ssa_var) != SSA_NAME)
-    abort ();
-
-  if (!is_gimple_reg (SSA_NAME_VAR (ssa_var)))
-    {
-      fprintf (stderr, "Illegally registering a virtual SSA name :");
-      print_generic_expr (stderr, ssa_var, TDF_SLIM);
-      fprintf (stderr, " in the SSA->Normal phase.\n");
-      abort();
-    }
+  register_ssa_partition_check (ssa_var);
 #endif
 
   version = SSA_NAME_VERSION (ssa_var);
@@ -274,9 +264,7 @@ static inline void make_live_on_entry (tree_live_info_p, basic_block, int);
 static inline int
 partition_is_global (tree_live_info_p live, int p)
 {
-  if (!live->global)
-    abort ();
-
+  gcc_assert (live->global);
   return bitmap_bit_p (live->global, p);
 }
 
@@ -287,9 +275,7 @@ partition_is_global (tree_live_info_p live, int p)
 static inline bitmap
 live_entry_blocks (tree_live_info_p live, int p)
 {
-  if (!live->livein)
-    abort ();
-
+  gcc_assert (live->livein);
   return live->livein[p];
 }
 
@@ -300,12 +286,10 @@ live_entry_blocks (tree_live_info_p live, int p)
 static inline bitmap
 live_on_exit (tree_live_info_p live, basic_block bb)
 {
-  if (!live->liveout)
-    abort();
+  gcc_assert (live->liveout);
+  gcc_assert (bb != ENTRY_BLOCK_PTR);
+  gcc_assert (bb != EXIT_BLOCK_PTR);
 
-  if (bb == ENTRY_BLOCK_PTR || bb == EXIT_BLOCK_PTR)
-    abort ();
-  
   return live->liveout[bb->index];
 }
 
@@ -428,10 +412,7 @@ tpa_find_tree (tpa_p tpa, int i)
      a compressed element, so return TPA_NONE.  */
   if (index != TPA_NONE && index >= tpa_num_trees (tpa))
     {
-#ifdef ENABLE_CHECKING
-      if (tpa->uncompressed_num == -1)
-        abort ();
-#endif
+      gcc_assert (tpa->uncompressed_num != -1);
       index = TPA_NONE;
     }
 
@@ -444,10 +425,7 @@ tpa_find_tree (tpa_p tpa, int i)
 static inline void 
 tpa_decompact(tpa_p tpa)
 {
-#ifdef ENABLE_CHECKING
-  if (tpa->uncompressed_num == -1)
-    abort ();
-#endif
+  gcc_assert (tpa->uncompressed_num != -1);
   tpa->num_trees = tpa->uncompressed_num;
 }
 

@@ -274,7 +274,7 @@ dequeue_and_dump (dump_info_p di)
 	  else if (access == access_private_node)
 	    string = "priv";
 	  else
-	    abort ();
+	    gcc_unreachable ();
 
 	  dump_string (di, string);
 	  queue_and_dump_index (di, "binf", base, DUMP_BINFO);
@@ -309,7 +309,7 @@ dequeue_and_dump (dump_info_p di)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   else if (DECL_P (t))

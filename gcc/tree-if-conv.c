@@ -257,8 +257,7 @@ tree_if_convert_stmt (struct loop *  loop, tree t, tree cond,
       break;
 
     default:
-      abort ();
-      break;
+      gcc_unreachable ();
     }
   return cond;
 }
@@ -275,10 +274,7 @@ tree_if_convert_cond_expr (struct loop *loop, tree stmt, tree cond,
   tree then_clause, else_clause, c, new_cond;
   new_cond = NULL_TREE;
 
-#ifdef ENABLE_CHECKING
-  if (TREE_CODE (stmt) != COND_EXPR)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE (stmt) == COND_EXPR);
 
   c = TREE_OPERAND (stmt, 0);
   then_clause = TREE_OPERAND (stmt, 1);
@@ -634,10 +630,7 @@ add_to_dst_predicate_list (struct loop * loop, tree dst,
   basic_block bb;
   tree new_cond = NULL_TREE;
 
-#ifdef ENABLE_CHECKING
-  if (TREE_CODE (dst) != GOTO_EXPR)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE (dst) == GOTO_EXPR);
   bb = label_to_block (TREE_OPERAND (dst, 0));
   if (!flow_bb_inside_loop_p (loop, bb))
     return NULL_TREE;
@@ -688,11 +681,11 @@ find_phi_replacement_condition (basic_block bb, tree *cond,
     {
       if (p1 == NULL)
 	  p1 = e->src;
-      else if (p2 == NULL)
-	p2 = e->src;
-      else
-	/* More than two predecessors. This is not expected.  */
-	abort ();
+      else 
+	{
+	  gcc_assert (!p2);
+	  p2 = e->src;
+	}
     }
 
   /* Use condition that is not TRUTH_NOT_EXPR in conditional modify expr.  */
@@ -722,10 +715,7 @@ find_phi_replacement_condition (basic_block bb, tree *cond,
       *cond = TREE_OPERAND (new_stmt, 0);
     }
 
-#ifdef ENABLE_CHECKING
-  if (*cond == NULL_TREE)
-    abort ();
-#endif
+  gcc_assert (*cond);
 
   return true_bb;
 }
@@ -749,15 +739,11 @@ replace_phi_with_cond_modify_expr (tree phi, tree cond, basic_block true_bb,
   basic_block bb;
   tree rhs;
   tree arg_0, arg_1;
-  
-#ifdef ENABLE_CHECKING
-  if (TREE_CODE (phi) != PHI_NODE)
-    abort ();
 
+  gcc_assert (TREE_CODE (phi) == PHI_NODE);
+  
   /* If this is not filtered earlier, then now it is too late.  */
-  if (PHI_NUM_ARGS (phi) != 2)
-     abort ();
-#endif
+  gcc_assert (PHI_NUM_ARGS (phi) == 2);
 
   /* Find basic block and initialize iterator.  */
   bb = bb_for_stmt (phi);
@@ -991,11 +977,8 @@ get_loop_body_in_if_conv_order (const struct loop *loop)
   unsigned int index = 0;
   unsigned int visited_count = 0;
 
-  if (!loop->num_nodes)
-    abort ();
-
-  if (loop->latch == EXIT_BLOCK_PTR)
-    abort ();
+  gcc_assert (loop->num_nodes);
+  gcc_assert (loop->latch != EXIT_BLOCK_PTR);
 
   blocks = xcalloc (loop->num_nodes, sizeof (basic_block));
   visited = BITMAP_XMALLOC ();

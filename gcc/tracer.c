@@ -247,8 +247,7 @@ tail_duplicate (void)
 
       if (ignore_bb_p (bb))
 	continue;
-      if (seen (bb))
-	abort ();
+      gcc_assert (!seen (bb));
 
       n = find_trace (bb, trace);
 

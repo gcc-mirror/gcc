@@ -444,10 +444,7 @@ value_exists_in_set_bitmap (value_set_t set, tree v)
 static void
 value_remove_from_set_bitmap (value_set_t set, tree v)
 {
-#ifdef ENABLE_CHECKING
-  if (!set->indexed)
-    abort ();
-#endif
+  gcc_assert (set->indexed);
 
   if (!set->values)
     return;
@@ -462,10 +459,7 @@ value_remove_from_set_bitmap (value_set_t set, tree v)
 static inline void
 value_insert_into_set_bitmap (value_set_t set, tree v)
 {
-#ifdef ENABLE_CHECKING
-  if (!set->indexed)
-    abort ();
-#endif
+  gcc_assert (set->indexed);
 
   if (set->values == NULL)
     {
@@ -511,12 +505,10 @@ bitmap_insert_into_set (bitmap_set_t set, tree expr)
 {
   tree val;
   /* XXX: For now, we only let SSA_NAMES into the bitmap sets.  */
-  if (TREE_CODE (expr) != SSA_NAME)
-    abort ();
+  gcc_assert (TREE_CODE (expr) == SSA_NAME);
   val = get_value_handle (expr);
   
-  if (val == NULL)
-    abort ();
+  gcc_assert (val);
   if (!is_gimple_min_invariant (val))
     bitmap_set_bit (set->values, VALUE_HANDLE_ID (val));
   bitmap_set_bit (set->expressions, SSA_NAME_VERSION (expr));
@@ -529,9 +521,7 @@ insert_into_set (value_set_t set, tree expr)
 {
   value_set_node_t newnode = pool_alloc (value_set_node_pool);
   tree val = get_value_handle (expr);
-  
-  if (val == NULL)
-    abort ();
+  gcc_assert (val);
 
   /* For indexed sets, insert the value into the set value bitmap.
      For all sets, add it to the linked list and increment the list
@@ -923,13 +913,12 @@ phi_translate (tree expr, value_set_t set, basic_block pred,
       }
       break;
     case 'd':
-      abort ();
+      gcc_unreachable ();
     case 'x':
       {
 	tree phi = NULL;
 	int i;
-	if (TREE_CODE (expr) != SSA_NAME)
-	  abort ();
+	gcc_assert (TREE_CODE (expr) == SSA_NAME);
 	if (TREE_CODE (SSA_NAME_DEF_STMT (expr)) == PHI_NODE)
 	  phi = SSA_NAME_DEF_STMT (expr);
 	else
@@ -1078,12 +1067,11 @@ valid_in_set (value_set_t set, tree expr)
       }
     case 'x':
       {
-	if (TREE_CODE (expr) == SSA_NAME)
-	  return true;
-	abort ();
+	gcc_assert (TREE_CODE (expr) == SSA_NAME);
+	return true;
       }
     case 'c':
-      abort ();
+      gcc_unreachable ();
     }
   return false;
 }
@@ -1258,8 +1246,7 @@ compute_antic (void)
   FOR_ALL_BB (bb)
     {
       ANTIC_IN (bb) = set_new (true);
-      if (bb->flags & BB_VISITED)
-	abort ();
+      gcc_assert (!(bb->flags & BB_VISITED));
     }
 
   while (changed)
@@ -1304,10 +1291,9 @@ find_or_generate_expression (basic_block block, tree expr, tree stmts)
   if (genop == NULL)
     {
       genop = VALUE_HANDLE_EXPR_SET (expr)->head->expr;
-      if (TREE_CODE_CLASS (TREE_CODE (genop)) != '1'
-	  && TREE_CODE_CLASS (TREE_CODE (genop)) != '2'
-	  && TREE_CODE_CLASS (TREE_CODE (genop)) != 'r')
-	abort ();
+      gcc_assert (TREE_CODE_CLASS (TREE_CODE (genop)) == '1'
+		  || TREE_CODE_CLASS (TREE_CODE (genop)) == '2'
+		  || TREE_CODE_CLASS (TREE_CODE (genop)) == 'r');
       genop = create_expression_by_pieces (block, genop, stmts);
     }
   return genop;
@@ -1381,7 +1367,7 @@ create_expression_by_pieces (basic_block block, tree expr, tree stmts)
 	break;
       }
     default:
-      abort ();
+      gcc_unreachable ();
       
     }
   v = get_value_handle (expr);
@@ -1497,8 +1483,7 @@ insert_aux (basic_block block)
 			    }
 
 			  vprime = get_value_handle (eprime);
-			  if (!vprime)
-			    abort ();			  
+			  gcc_assert (vprime);
 			  edoubleprime = bitmap_find_leader (AVAIL_OUT (bprime),
 							     vprime);
 			  if (edoubleprime == NULL)
@@ -1514,9 +1499,9 @@ insert_aux (basic_block block)
 				first_s = edoubleprime;
 			      else if (first_s != edoubleprime)
 				all_same = false;
-			      if (first_s != edoubleprime 
-				  && operand_equal_p (first_s, edoubleprime, 0))
-				abort ();
+			      gcc_assert (first_s == edoubleprime 
+					  || !operand_equal_p
+					      (first_s, edoubleprime, 0));
 			    }
 			}
 		      /* If we can insert it, it's not the same value
@@ -1683,12 +1668,9 @@ create_value_expr_from (tree expr, basic_block block, vuse_optype vuses)
   enum tree_code code = TREE_CODE (expr);
   tree vexpr;
 
-#if defined ENABLE_CHECKING
-  if (TREE_CODE_CLASS (code) != '1'
-      && TREE_CODE_CLASS (code) != '2'
-      && TREE_CODE_CLASS (code) != 'r')
-    abort ();
-#endif
+  gcc_assert (TREE_CODE_CLASS (code) == '1'
+	      || TREE_CODE_CLASS (code) == '2'
+	      || TREE_CODE_CLASS (code) == 'r');
 
   if (TREE_CODE_CLASS (code) == '1')
     vexpr = pool_alloc (unary_node_pool);
@@ -1887,8 +1869,7 @@ eliminate (void)
 		  && (TREE_CODE (*rhs_p) != SSA_NAME
 		      || may_propagate_copy (*rhs_p, sprime)))
 		{
-		  if (sprime == *rhs_p)
-		    abort ();
+		  gcc_assert (sprime != *rhs_p);
 
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {

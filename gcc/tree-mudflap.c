@@ -102,8 +102,7 @@ mf_varname_tree (tree decl)
   const char *buf_contents;
   tree result;
 
-  if (decl == NULL_TREE)
-    abort ();
+  gcc_assert (decl);
 
   if (!initialized)
     {

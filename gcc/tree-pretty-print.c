@@ -1744,8 +1744,7 @@ op_prio (tree op)
 static const char *
 op_symbol (tree op)
 {
-  if (op == NULL)
-    abort ();
+  gcc_assert (op);
 
   switch (TREE_CODE (op))
     {
@@ -1882,8 +1881,7 @@ print_call_name (pretty_printer *buffer, tree node)
 {
   tree op0;
 
-  if (TREE_CODE (node) != CALL_EXPR)
-    abort ();
+  gcc_assert (TREE_CODE (node) == CALL_EXPR);
 
   op0 = TREE_OPERAND (node, 0);
 

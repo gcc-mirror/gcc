@@ -139,8 +139,7 @@ static alias_var
 get_alias_var_decl (tree decl)
 {
   alias_var newvar;
-  if (TREE_CODE (decl) == FIELD_DECL)
-    abort ();
+  gcc_assert (TREE_CODE (decl) != FIELD_DECL);
   if (DECL_P (decl))
     {
       if (DECL_PTA_ALIASVAR (decl))
@@ -361,7 +360,7 @@ get_values_from_constructor (tree constructor, varray_type *vals,
 	}
       break;
     default:
-      abort();
+      gcc_unreachable ();
     }
 }
 
@@ -944,14 +943,10 @@ create_alias_var (tree decl)
 {
   alias_var avar;
 
-  if (!DECL_P (decl))
-    abort ();
+  gcc_assert (DECL_P (decl));
   
-  if (DECL_P (decl))
-    {
-      if (DECL_PTA_ALIASVAR (decl))
-	return DECL_PTA_ALIASVAR (decl);
-    }
+  if (DECL_PTA_ALIASVAR (decl))
+    return DECL_PTA_ALIASVAR (decl);
 
   if (POINTER_TYPE_P (TREE_TYPE (decl))
       && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == FUNCTION_TYPE)
@@ -1067,10 +1062,8 @@ delete_alias_vars (void)
   for (i = 0; i < VARRAY_ACTIVE_SIZE (local_alias_vars); i++)
     {
       tree key = VARRAY_TREE (local_alias_vars, i);
-      if (DECL_P (key))
-	DECL_PTA_ALIASVAR (key) = NULL;
-      else
-	abort ();
+      gcc_assert (DECL_P (key));
+      DECL_PTA_ALIASVAR (key) = NULL;
     }
 
   for (i = 0; i < VARRAY_ACTIVE_SIZE (local_alias_varnums); i ++)
@@ -1130,14 +1123,10 @@ empty_points_to_set (tree ptr)
     ptr = TREE_OPERAND (ptr, 1);
 #endif
 
-  if (DECL_P (ptr))
-    {
-      ptrtv = DECL_PTA_ALIASVAR (ptr);
-      if (!ptrtv)
-	return true;
-    }
-  else
-    abort ();
+  gcc_assert (DECL_P (ptr));
+  ptrtv = DECL_PTA_ALIASVAR (ptr);
+  if (!ptrtv)
+    return true;
 
   return current_alias_ops->empty_points_to_set (current_alias_ops, ptrtv);
 }
@@ -1160,23 +1149,15 @@ same_points_to_set (tree ptr, tree var)
   if (ptr == var)
     return true;
 
-  if (DECL_P (ptr))
-    {
-      ptrtv = DECL_PTA_ALIASVAR (ptr);
-      if (!ptrtv)
-	return false;
-    }
-  else
-    abort ();
+  gcc_assert (DECL_P (ptr));
+  ptrtv = DECL_PTA_ALIASVAR (ptr);
+  if (!ptrtv)
+    return false;
 
-  if (DECL_P (var))
-    {
-      vartv = DECL_PTA_ALIASVAR (var);
-      if (!vartv)
-	return false;
-    }
-  else
-    abort ();
+  gcc_assert (DECL_P (var));
+  vartv = DECL_PTA_ALIASVAR (var);
+  if (!vartv)
+    return false;
 
   return current_alias_ops->same_points_to_set (current_alias_ops, vartv, ptrtv);
 }
@@ -1200,23 +1181,15 @@ ptr_may_alias_var (tree ptr, tree var)
   if (ptr == var)
     return true;
 
-  if (DECL_P (ptr))
-    {
-      ptrtv = DECL_PTA_ALIASVAR (ptr);
-      if (!ptrtv)
-	return false;
-    }
-  else
-    abort ();
+  gcc_assert (DECL_P (ptr));
+  ptrtv = DECL_PTA_ALIASVAR (ptr);
+  if (!ptrtv)
+    return false;
 
-  if (DECL_P (var))
-    {
-      vartv = DECL_PTA_ALIASVAR (var);
-      if (!vartv)
-	return false;
-    }
-  else
-    abort ();
+  gcc_assert (DECL_P (var));
+  vartv = DECL_PTA_ALIASVAR (var);
+  if (!vartv)
+    return false;
 
   return current_alias_ops->may_alias (current_alias_ops, ptrtv, vartv);
 }

@@ -244,10 +244,7 @@ compute_immediate_uses_for_phi (tree phi, bool (*calc_for)(tree))
 {
   int i;
 
-#ifdef ENABLE_CHECKING
-  if (TREE_CODE (phi) != PHI_NODE)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE (phi) == PHI_NODE);
 
   for (i = 0; i < PHI_NUM_ARGS (phi); i++)
     {
@@ -274,11 +271,8 @@ compute_immediate_uses_for_stmt (tree stmt, int flags, bool (*calc_for)(tree))
   tree use;
   ssa_op_iter iter;
 
-#ifdef ENABLE_CHECKING
   /* PHI nodes are handled elsewhere.  */
-  if (TREE_CODE (stmt) == PHI_NODE)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE (stmt) != PHI_NODE);
 
   /* Look at USE_OPS or VUSE_OPS according to FLAGS.  */
   if (flags & TDFA_USE_OPS)
@@ -382,13 +376,9 @@ create_var_ann (tree t)
 {
   var_ann_t ann;
 
-#if defined ENABLE_CHECKING
-  if (t == NULL_TREE
-      || !DECL_P (t)
-      || (t->common.ann
-	  && t->common.ann->common.type != VAR_ANN))
-    abort ();
-#endif
+  gcc_assert (t);
+  gcc_assert (DECL_P (t));
+  gcc_assert (!t->common.ann || t->common.ann->common.type == VAR_ANN);
 
   ann = ggc_alloc (sizeof (*ann));
   memset ((void *) ann, 0, sizeof (*ann));
@@ -408,12 +398,8 @@ create_stmt_ann (tree t)
 {
   stmt_ann_t ann;
 
-#if defined ENABLE_CHECKING
-  if ((!is_gimple_stmt (t))
-      || (t->common.ann
-	  && t->common.ann->common.type != STMT_ANN))
-    abort ();
-#endif
+  gcc_assert (is_gimple_stmt (t));
+  gcc_assert (!t->common.ann || t->common.ann->common.type == STMT_ANN);
 
   ann = ggc_alloc (sizeof (*ann));
   memset ((void *) ann, 0, sizeof (*ann));
@@ -436,12 +422,8 @@ create_tree_ann (tree t)
 {
   tree_ann_t ann;
 
-#if defined ENABLE_CHECKING
-  if (t == NULL_TREE
-      || (t->common.ann
-	  && t->common.ann->common.type != TREE_ANN_COMMON))
-    abort ();
-#endif
+  gcc_assert (t);
+  gcc_assert (!t->common.ann || t->common.ann->common.type == TREE_ANN_COMMON);
 
   ann = ggc_alloc (sizeof (*ann));
   memset ((void *) ann, 0, sizeof (*ann));
@@ -750,8 +732,7 @@ collect_dfa_stats (struct dfa_stats_d *dfa_stats_p)
   basic_block bb;
   block_stmt_iterator i;
 
-  if (dfa_stats_p == NULL)
-    abort ();
+  gcc_assert (dfa_stats_p);
 
   memset ((void *)dfa_stats_p, 0, sizeof (struct dfa_stats_d));
 
@@ -906,14 +887,11 @@ get_virtual_var (tree var)
 	 || handled_component_p (var))
     var = TREE_OPERAND (var, 0);
 
-#ifdef ENABLE_CHECKING
   /* Treating GIMPLE registers as virtual variables makes no sense.
      Also complain if we couldn't extract a _DECL out of the original
      expression.  */
-  if (!SSA_VAR_P (var)
-      || is_gimple_reg (var))
-    abort ();
-#endif
+  gcc_assert (SSA_VAR_P (var));
+  gcc_assert (!is_gimple_reg (var));
 
   return var;
 }

@@ -56,13 +56,10 @@ chrec_fold_poly_cst (enum tree_code code,
 		     tree poly, 
 		     tree cst)
 {
-#if defined ENABLE_CHECKING
-  if (poly == NULL_TREE
-      || cst == NULL_TREE
-      || TREE_CODE (poly) != POLYNOMIAL_CHREC
-      || is_not_constant_evolution (cst))
-    abort ();
-#endif
+  gcc_assert (poly);
+  gcc_assert (cst);
+  gcc_assert (TREE_CODE (poly) == POLYNOMIAL_CHREC);
+  gcc_assert (!is_not_constant_evolution (cst));
   
   switch (code)
     {
@@ -98,14 +95,11 @@ chrec_fold_plus_poly_poly (enum tree_code code,
 			   tree poly1)
 {
   tree left, right;
-  
-#if defined ENABLE_CHECKING
-  if (poly0 == NULL_TREE
-      || poly1 == NULL_TREE
-      || TREE_CODE (poly0) != POLYNOMIAL_CHREC
-      || TREE_CODE (poly1) != POLYNOMIAL_CHREC)
-    abort ();
-#endif
+
+  gcc_assert (poly0);
+  gcc_assert (poly1);
+  gcc_assert (TREE_CODE (poly0) == POLYNOMIAL_CHREC);
+  gcc_assert (TREE_CODE (poly1) == POLYNOMIAL_CHREC);
   
   /*
     {a, +, b}_1 + {c, +, d}_2  ->  {{a, +, b}_1 + c, +, d}_2,
@@ -171,13 +165,10 @@ chrec_fold_multiply_poly_poly (tree type,
 			       tree poly0, 
 			       tree poly1)
 {
-#if defined ENABLE_CHECKING
-  if (poly0 == NULL_TREE
-      || poly1 == NULL_TREE
-      || TREE_CODE (poly0) != POLYNOMIAL_CHREC
-      || TREE_CODE (poly1) != POLYNOMIAL_CHREC)
-    abort ();
-#endif
+  gcc_assert (poly0);
+  gcc_assert (poly1);
+  gcc_assert (TREE_CODE (poly0) == POLYNOMIAL_CHREC);
+  gcc_assert (TREE_CODE (poly1) == POLYNOMIAL_CHREC);
   
   /* {a, +, b}_1 * {c, +, d}_2  ->  {c*{a, +, b}_1, +, d}_2,
      {a, +, b}_2 * {c, +, d}_1  ->  {a*{c, +, d}_1, +, b}_2,

@@ -486,10 +486,7 @@ delete_alias_info (struct alias_info *ai)
 static void
 collect_points_to_info_for (struct alias_info *ai, tree ptr)
 {
-#if defined ENABLE_CHECKING
-  if (!POINTER_TYPE_P (TREE_TYPE (ptr)))
-    abort ();
-#endif
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
 
   if (!bitmap_bit_p (ai->ssa_names_visited, SSA_NAME_VERSION (ptr)))
     {
@@ -1207,10 +1204,8 @@ group_aliases (struct alias_info *ai)
 	    {
 	      tree new_alias;
 
-#if defined ENABLE_CHECKING
-	      if (VARRAY_ACTIVE_SIZE (ann->may_aliases) != 1)
-		abort ();
-#endif
+	      gcc_assert (VARRAY_ACTIVE_SIZE (ann->may_aliases) == 1);
+
 	      new_alias = VARRAY_TREE (ann->may_aliases, 0);
 	      replace_may_alias (name_tag, j, new_alias);
 	    }
@@ -1546,10 +1541,7 @@ may_alias_p (tree ptr, HOST_WIDE_INT mem_alias_set,
   v_ann = var_ann (var);
   m_ann = var_ann (mem);
 
-#if defined ENABLE_CHECKING
-  if (m_ann->mem_tag_kind != TYPE_TAG)
-    abort ();
-#endif
+  gcc_assert (m_ann->mem_tag_kind == TYPE_TAG);
 
   alias_stats.tbaa_queries++;
 
@@ -1652,10 +1644,7 @@ add_may_alias (tree var, tree alias)
   var_ann_t v_ann = get_var_ann (var);
   var_ann_t a_ann = get_var_ann (alias);
 
-#if defined ENABLE_CHECKING
-  if (var == alias)
-    abort ();
-#endif
+  gcc_assert (var != alias);
 
   if (v_ann->may_aliases == NULL)
     VARRAY_TREE_INIT (v_ann->may_aliases, 2, "aliases");
@@ -1790,12 +1779,9 @@ add_pointed_to_expr (tree ptr, tree value)
   if (TREE_CODE (value) == WITH_SIZE_EXPR)
     value = TREE_OPERAND (value, 0);
 
-#if defined ENABLE_CHECKING
   /* Pointer variables should have been handled by merge_pointed_to_info.  */
-  if (TREE_CODE (value) == SSA_NAME
-      && POINTER_TYPE_P (TREE_TYPE (value)))
-    abort ();
-#endif
+  gcc_assert (TREE_CODE (value) != SSA_NAME
+	      || !POINTER_TYPE_P (TREE_TYPE (value)));
 
   get_ptr_info (ptr);
 
@@ -1835,10 +1821,7 @@ add_pointed_to_var (struct alias_info *ai, tree ptr, tree value)
   tree pt_var;
   size_t uid;
 
-#if defined ENABLE_CHECKING
-  if (TREE_CODE (value) != ADDR_EXPR)
-    abort ();
-#endif
+  gcc_assert (TREE_CODE (value) == ADDR_EXPR);
 
   pt_var = TREE_OPERAND (value, 0);
   if (TREE_CODE_CLASS (TREE_CODE (pt_var)) == 'r')
@@ -1883,95 +1866,109 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
       fprintf (dump_file, "\n");
     }
 
-  if (TREE_CODE (stmt) == MODIFY_EXPR)
+  switch (TREE_CODE (stmt))
     {
-      tree rhs = TREE_OPERAND (stmt, 1);
-      STRIP_NOPS (rhs);
+    case MODIFY_EXPR:
+      {
+	tree rhs = TREE_OPERAND (stmt, 1);
+	STRIP_NOPS (rhs);
 
-      /* Found P_i = ADDR_EXPR  */
-      if (TREE_CODE (rhs) == ADDR_EXPR)
-	add_pointed_to_var (ai, var, rhs);
+	/* Found P_i = ADDR_EXPR  */
+	if (TREE_CODE (rhs) == ADDR_EXPR)
+	  add_pointed_to_var (ai, var, rhs);
 
-      /* Found P_i = Q_j.  */
-      else if (TREE_CODE (rhs) == SSA_NAME
-	       && POINTER_TYPE_P (TREE_TYPE (rhs)))
-	merge_pointed_to_info (ai, var, rhs);
+	/* Found P_i = Q_j.  */
+	else if (TREE_CODE (rhs) == SSA_NAME
+		 && POINTER_TYPE_P (TREE_TYPE (rhs)))
+	  merge_pointed_to_info (ai, var, rhs);
 
-      /* Found P_i = PLUS_EXPR or P_i = MINUS_EXPR  */
-      else if (TREE_CODE (rhs) == PLUS_EXPR
-	       || TREE_CODE (rhs) == MINUS_EXPR)
-	{
-	  tree op0 = TREE_OPERAND (rhs, 0);
-	  tree op1 = TREE_OPERAND (rhs, 1);
+	/* Found P_i = PLUS_EXPR or P_i = MINUS_EXPR  */
+	else if (TREE_CODE (rhs) == PLUS_EXPR
+		 || TREE_CODE (rhs) == MINUS_EXPR)
+	  {
+	    tree op0 = TREE_OPERAND (rhs, 0);
+	    tree op1 = TREE_OPERAND (rhs, 1);
+	    
+	    /* Both operands may be of pointer type.  FIXME: Shouldn't
+	       we just expect PTR + OFFSET always?  */
+	    if (POINTER_TYPE_P (TREE_TYPE (op0)))
+	      {
+		if (TREE_CODE (op0) == SSA_NAME)
+		  merge_pointed_to_info (ai, var, op0);
+		else if (TREE_CODE (op0) == ADDR_EXPR)
+		  add_pointed_to_var (ai, var, op0);
+		else
+		  add_pointed_to_expr (var, op0);
+	      }
 
-	  /* Both operands may be of pointer type.  FIXME: Shouldn't
-	     we just expect PTR + OFFSET always?  */
-	  if (POINTER_TYPE_P (TREE_TYPE (op0)))
-	    {
-	      if (TREE_CODE (op0) == SSA_NAME)
-		merge_pointed_to_info (ai, var, op0);
-	      else if (TREE_CODE (op0) == ADDR_EXPR)
-		add_pointed_to_var (ai, var, op0);
-	      else
-		add_pointed_to_expr (var, op0);
-	    }
+	    if (POINTER_TYPE_P (TREE_TYPE (op1)))
+	      {
+		if (TREE_CODE (op1) == SSA_NAME)
+		  merge_pointed_to_info (ai, var, op1);
+		else if (TREE_CODE (op1) == ADDR_EXPR)
+		  add_pointed_to_var (ai, var, op1);
+		else
+		  add_pointed_to_expr (var, op1);
+	      }
 
-	  if (POINTER_TYPE_P (TREE_TYPE (op1)))
-	    {
-	      if (TREE_CODE (op1) == SSA_NAME)
-		merge_pointed_to_info (ai, var, op1);
-	      else if (TREE_CODE (op1) == ADDR_EXPR)
-		add_pointed_to_var (ai, var, op1);
-	      else
-		add_pointed_to_expr (var, op1);
-	    }
+	    /* Neither operand is a pointer?  VAR can be pointing
+	       anywhere.  FIXME: Is this right?  If we get here, we
+	       found PTR = INT_CST + INT_CST.  */
+	    if (!POINTER_TYPE_P (TREE_TYPE (op0))
+		&& !POINTER_TYPE_P (TREE_TYPE (op1)))
+	      add_pointed_to_expr (var, rhs);
+	  }
 
-	  /* Neither operand is a pointer?  VAR can be pointing
-	     anywhere.   FIXME: Is this right?  If we get here, we
-	     found PTR = INT_CST + INT_CST.  */
-	  if (!POINTER_TYPE_P (TREE_TYPE (op0))
-	      && !POINTER_TYPE_P (TREE_TYPE (op1)))
-	    add_pointed_to_expr (var, rhs);
-	}
-
-      /* Something else.  */
-      else
-	add_pointed_to_expr (var, rhs);
-    }
-  else if (TREE_CODE (stmt) == ASM_EXPR)
-    {
+	/* Something else.  */
+	else
+	  add_pointed_to_expr (var, rhs);
+	break;
+      }
+    case ASM_EXPR:
       /* Pointers defined by __asm__ statements can point anywhere.  */
       set_pt_anything (var);
-    }
-  else if (IS_EMPTY_STMT (stmt))
-    {
-      tree decl = SSA_NAME_VAR (var);
+      break;
 
-      if (TREE_CODE (decl) == PARM_DECL)
-	add_pointed_to_expr (var, decl);
-      else if (DECL_INITIAL (decl))
-	add_pointed_to_var (ai, var, DECL_INITIAL (decl));
-      else
-	add_pointed_to_expr (var, decl);
-    }
-  else if (TREE_CODE (stmt) == PHI_NODE)
-    {
-      /* It STMT is a PHI node, then VAR is one of its arguments.  The
-	 variable that we are analyzing is the LHS of the PHI node.  */
-      tree lhs = PHI_RESULT (stmt);
+    case NOP_EXPR:
+      if (IS_EMPTY_STMT (stmt))
+	{
+	  tree decl = SSA_NAME_VAR (var);
+	  
+	  if (TREE_CODE (decl) == PARM_DECL)
+	    add_pointed_to_expr (var, decl);
+	  else if (DECL_INITIAL (decl))
+	    add_pointed_to_var (ai, var, DECL_INITIAL (decl));
+	  else
+	    add_pointed_to_expr (var, decl);
+	}
+      break;
+    case PHI_NODE:
+      {
+        /* It STMT is a PHI node, then VAR is one of its arguments.  The
+	   variable that we are analyzing is the LHS of the PHI node.  */
+	tree lhs = PHI_RESULT (stmt);
 
-      if (TREE_CODE (var) == ADDR_EXPR)
-	add_pointed_to_var (ai, lhs, var);
-      else if (TREE_CODE (var) == SSA_NAME)
-	merge_pointed_to_info (ai, lhs, var);
-      else if (is_gimple_min_invariant (var))
-	add_pointed_to_expr (lhs, var);
-      else
-	abort ();
+	switch (TREE_CODE (var))
+	  {
+	  case ADDR_EXPR:
+	    add_pointed_to_var (ai, lhs, var);
+	    break;
+	    
+	  case SSA_NAME:
+	    merge_pointed_to_info (ai, lhs, var);
+	    break;
+	    
+	  default:
+	    gcc_assert (is_gimple_min_invariant (var));
+	    add_pointed_to_expr (lhs, var);
+	    break;
+	  }
+	break;
+      }
+    default:
+      gcc_unreachable ();
     }
-  else
-    abort ();
-
+  
   return false;
 }
 
@@ -2154,13 +2151,9 @@ get_tmt_for (tree ptr, struct alias_info *ai)
       ai->pointers[ai->num_pointers++] = alias_map;
     }
 
-#if defined ENABLE_CHECKING
   /* Make sure that the type tag has the same alias set as the
      pointed-to type.  */
-  if (tag_set != get_alias_set (tag))
-    abort ();
-#endif
-
+  gcc_assert (tag_set == get_alias_set (tag));
 
   return tag;
 }
@@ -2297,10 +2290,7 @@ get_ptr_info (tree t)
 {
   struct ptr_info_def *pi;
 
-#if defined ENABLE_CHECKING
-  if (!POINTER_TYPE_P (TREE_TYPE (t)))
-    abort ();
-#endif
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (t)));
 
   pi = SSA_NAME_PTR_INFO (t);
   if (pi == NULL)

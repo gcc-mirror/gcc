@@ -87,14 +87,11 @@ vn_compute (tree expr, hashval_t val, vuse_optype vuses)
 {
   size_t i;
 
-#if defined ENABLE_CHECKING
   /* EXPR must not be a statement.  We are only interested in value
      numbering expressions on the RHS of assignments.  */
-  if (expr == NULL_TREE
-      || (expr->common.ann
-	  && expr->common.ann->common.type == STMT_ANN))
-    abort ();
-#endif
+  gcc_assert (expr);
+  gcc_assert (!expr->common.ann
+	      || expr->common.ann->common.type != STMT_ANN);
 
   val = iterative_hash_expr (expr, val);
 
@@ -177,11 +174,9 @@ set_value_handle (tree e, tree v)
     SSA_NAME_VALUE (e) = v;
   else if (EXPR_P (e) || DECL_P (e))
     get_tree_ann (e)->common.value_handle = v;
-  else if (is_gimple_min_invariant (e))
-    /* Do nothing.  Constants are their own value handles.  */
-    ;
   else
-    abort ();
+    /* Do nothing.  Constants are their own value handles.  */
+    gcc_assert (is_gimple_min_invariant (e));
 }
 
 
@@ -284,10 +279,11 @@ get_value_handle (tree expr)
       tree_ann_t ann = tree_ann (expr);
       return ((ann) ? ann->common.value_handle : NULL_TREE);
     }
-  else if (is_gimple_min_invariant (expr))
-    return expr;
-
-  abort ();
+  else
+    {
+      gcc_assert (is_gimple_min_invariant (expr));
+      return expr;
+    }
 }
 
 
