@@ -2841,7 +2841,7 @@ s390_emit_prologue ()
   struct s390_frame frame;
   rtx insn, addr;
   rtx temp_reg;
-  int i, limit;
+  int i;
 
   /* Compute frame_info.  */
 
@@ -2871,24 +2871,52 @@ s390_emit_prologue ()
 			      GEN_INT (frame.last_save_gpr 
 				       - frame.first_save_gpr + 1)));
 
-	  /* Set RTX_FRAME_RELATED_P for all sets within store multiple.  */
+	  /* We need to set the FRAME_RELATED flag on all SETs
+	     inside the store-multiple pattern.
 
-	  limit = XVECLEN (PATTERN (insn), 0);
-	  
-	  for (i = 0; i < limit; i++)
+	     However, we must not emit DWARF records for registers 2..5
+	     if they are stored for use by variable arguments ...  
+
+	     ??? Unfortunately, it is not enough to simply not the the
+	     FRAME_RELATED flags for those SETs, because the first SET
+	     of the PARALLEL is always treated as if it had the flag
+	     set, even if it does not.  Therefore we emit a new pattern
+	     without those registers as REG_FRAME_RELATED_EXPR note.  */
+
+	  if (frame.first_save_gpr >= 6)
 	    {
-	      rtx x = XVECEXP (PATTERN (insn), 0, i);
-	      
-	      if (GET_CODE (x) == SET)
-		RTX_FRAME_RELATED_P (x) = 1;
+	      rtx pat = PATTERN (insn);
+
+	      for (i = 0; i < XVECLEN (pat, 0); i++)
+		if (GET_CODE (XVECEXP (pat, 0, i)) == SET)
+		  RTX_FRAME_RELATED_P (XVECEXP (pat, 0, i)) = 1;
+
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	    }
+	  else if (frame.last_save_gpr >= 6)
+	    {
+	      rtx note, naddr;
+	      naddr = plus_constant (stack_pointer_rtx, 6 * UNITS_PER_WORD);
+	      note = gen_store_multiple (gen_rtx_MEM (Pmode, naddr), 
+					 gen_rtx_REG (Pmode, 6),
+					 GEN_INT (frame.last_save_gpr - 6 + 1));
+	      REG_NOTES (insn) =
+		gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR, 
+				   note, REG_NOTES (insn));
+
+	      for (i = 0; i < XVECLEN (note, 0); i++)
+		if (GET_CODE (XVECEXP (note, 0, i)) == SET)
+		  RTX_FRAME_RELATED_P (XVECEXP (note, 0, i)) = 1;
+
+	      RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	}
       else
 	{
 	  insn = emit_move_insn (addr, 
 				 gen_rtx_REG (Pmode, frame.first_save_gpr));
+          RTX_FRAME_RELATED_P (insn) = 1;
 	}
-      RTX_FRAME_RELATED_P (insn) = 1;
     }
 
   /* Dump constant pool and set constant pool register (13).  */
