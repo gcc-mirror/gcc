@@ -79,12 +79,6 @@ GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS)
 # These are used because `configure' appends `cross-make'
 # to the makefile when making a cross-compiler.
 
-# CYGNUS LOCAL: we don't use cross-make.  Instead we use the tools
-# from the build tree, if they are available.
-# program_transform_name and objdir are set by configure.in.
-program_transform_name =
-objdir = .
-
 target= ... `configure' substitutes actual target name here.
 xmake_file= ... `configure' substitutes actual x- file name here.
 tmake_file= ... `configure' substitutes actual t- file name here.
@@ -177,23 +171,10 @@ compiler: ../cc1plus
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o ../cc1plus \
 	      $(CXX_OBJS) $(OBJS) $(BC_OBJS) $(LIBS)
 
-
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
 
 native: config.status ../cc1plus
-
-# Really, really stupid make features, such as SUN's KEEP_STATE, may force
-# a target to build even if it is up-to-date.  So we must verify that
-# config.status does not exist before failing.
-config.status:
-	@if [ ! -f config.status ] ; then \
-	  echo You must configure gcc.  Look at the ../INSTALL file for details.; \
-	  false; \
-	else \
-	  true; \
-	fi
-
 
 # Compiling object files from source files.
 
@@ -202,10 +183,13 @@ config.status:
 
 # C++ language specific files.
 
-TREE_H = ../tree.h ../real.h ../tree.def ../machmode.h ../machmode.def
+RTL_H = $(srcdir)/../rtl.h $(srcdir)/../rtl.def \
+	$(srcdir)/../machmode.h $(srcdir)/../machmode.def
+TREE_H = $(srcdir)/../tree.h $(srcdir)/../real.h $(srcdir)/../tree.def \
+	$(srcdir)/../machmode.h $(srcdir)/../machmode.def
 CXX_TREE_H = $(TREE_H) cp-tree.h tree.def
 
-parse.o : $(srcdir)/parse.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h lex.h
+parse.o : $(srcdir)/parse.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
   `echo $(srcdir)/parse.c | sed 's,^\./,,'`
 
@@ -223,39 +207,33 @@ $(srcdir)/hash.h:
 		$(srcdir)/gxx.gperf >$(srcdir)/hash.h
 
 spew.o : spew.c $(CONFIG_H) $(CXX_TREE_H) \
-  parse.h ../flags.h lex.h
+  parse.h $(srcdir)/../flags.h lex.h
 lex.o : lex.c $(CONFIG_H) $(CXX_TREE_H) \
-  parse.h input.c ../flags.h hash.h lex.h
-decl.o : decl.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h \
-  lex.h decl.h ../stack.h
-decl2.o : decl2.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h \
+  parse.h input.c $(srcdir)/../flags.h hash.h lex.h
+decl.o : decl.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
+  lex.h decl.h $(srcdir)/../stack.h
+decl2.o : decl2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h
-typeck2.o : typeck2.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h
-typeck.o : typeck.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h $(RTL_H)
-class.o : class.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h
-call.o : call.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h class.h
-init.o : init.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h $(RTL_H)
+typeck2.o : typeck2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
+typeck.o : typeck.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H)
+class.o : class.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
+call.o : call.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h class.h
+init.o : init.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H)
 method.o : method.c $(CONFIG_H) $(CXX_TREE_H) class.h
 cvt.o : cvt.c $(CONFIG_H) $(CXX_TREE_H) class.h
-search.o : search.c $(CONFIG_H) $(CXX_TREE_H) ../stack.h ../flags.h
-tree.o : tree.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h
+search.o : search.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../stack.h $(srcdir)/../flags.h
+tree.o : tree.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
 ptree.o : ptree.c $(CONFIG_H) $(CXX_TREE_H)
-gc.o : gc.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h
-except.o : except.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h $(RTL_H)
-expr.o : expr.c $(CONFIG_H) $(CXX_TREE_H) $(RTL_H) ../flags.h \
-  ../expr.h ../insn-codes.h
-edsel.o : edsel.c $(CONFIG_H) $(CXX_TREE_H) ../stack.h ../flags.h
-xref.o : xref.c $(CONFIG_H) $(CXX_TREE_H) ../input.h
+gc.o : gc.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
+except.o : except.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H)
+expr.o : expr.c $(CONFIG_H) $(CXX_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
+  $(srcdir)/../expr.h ../insn-codes.h
+edsel.o : edsel.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../stack.h $(srcdir)/../flags.h
+xref.o : xref.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../input.h
 pt.o : pt.c $(CONFIG_H) $(CXX_TREE_H) decl.h parse.h
 error.o : error.c $(CONFIG_H) $(CXX_TREE_H)
 errfn.o : errfn.c $(CONFIG_H) $(CXX_TREE_H)
-sig.o : sig.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h
-
-doc: info
-info:
-
-dvi:
-
+sig.o : sig.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
 
 # These exist for maintenance purposes.
 
