@@ -758,7 +758,7 @@ Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 	(get_priority_info): Clear initializations_p and destructions_p.
 	(do_static_initialization): Tweak comment.
 	(do_static_destruction): Likewise.  Fix condition on sentries for
-	destruction. 
+	destruction.
 	(generate_ctor_or_dtor_function): Call all of the static storage
 	duration functions.
 	(generate_ctor_or_dtor_function_for_priority): Check
@@ -766,7 +766,7 @@ Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 	initialization functions.
 	(finish_file): Rework to generate multiple static storage duration
 	functions, rather than just one.
-	
+
 	* typeck.c (build_const_cast): Tweak last change to handle
 	templates correctly.
 
@@ -805,7 +805,7 @@ Tue May 18 00:21:34 1999  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 	comment.
 	(build_x_function_call): Use cp_error.
 	(build_unary_op): Adjust call of build_component_addr.
-	
+
 1999-04-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (tsubst_friend_class): Check for NULL.
@@ -903,7 +903,7 @@ Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 	(saved_inlines): Make it a varray.
 	(saved_inlines_used): New variable.
 	(finish_static_data_member): Change method of updating
-	pending_statics. 
+	pending_statics.
 	(mark_inline_for_output): Remove #if 0'd code.  Change method of
 	updating saved_inlines.
 	(walk_vtables): Remove.
@@ -955,7 +955,7 @@ Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 	(maybe_begin_member_template_processing): Update them.
 	(maybe_end_member_template_processing): Use them, rather than
 	guessing how many levels to pop.
-	
+
 	* decl.c (make_typename_type): Tighten error-checking.
 
 1999-04-20  Mark Mitchell  <mark@codesourcery.com>
@@ -990,7 +990,7 @@ Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 	(get_delta_difference): Likewise.
 	(build_ptrmemfunc): Likewise.
 	(expand_ptrmemfunc_cst): Likewise.
-	
+
 1999-04-20  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokfndecl): Always call cplus_decl_attributes.
@@ -1001,12 +1001,12 @@ Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 	* cp-tree.h (finish_static_data_member_decl): New function.
 	* decl2.c (finish_static_data_member_decl): Split out from ...
 	(grokfield): Here.
-	* pt.c (instantiate_class_template): Use it here instead of 
+	* pt.c (instantiate_class_template): Use it here instead of
 	trying to fake it.
 	(tsubst_decl): Don't set DECL_ASSEMBLER_NAME;
 	finish_static_data_member_decl will do that.  Explicit set
 	DECL_EXTERNAL to match non-template processing.
-	
+
 1999-04-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (finish_class_definition): Add parameter.
@@ -1022,7 +1022,7 @@ Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 	templates in template classes.
 	(tsubst_friend_class): Handle friend declarations for nested
 	member template classes.
-	
+
 1999-04-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (finish_struct): Remove unused variable.
@@ -1045,7 +1045,7 @@ Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 	(pushtag): Tidy.  Don't use TREE_NONLOCAL_FLAG.
 	* method.c (hack_identifier): Likewise.
 	* search.c (lookup_member): Likewise.
-	
+
 	* decl.c (warn_about_implicit_typename_lookup): New function.
 	(lookup_name_real): Use it.  Rework handling of implicit typename
 	extension.
@@ -1059,7 +1059,7 @@ Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 	(start_decl): Use push_nested_class, not just pushclass.
 	(cp_finish_decl): Use pop_nested_class, not just popclass.
 	* search.c (lookup_nested_field): Remove.
-	
+
 	* cp-tree.h (lang_type): Add documentation.
 	* decl2.c (handle_class_head): Create template declarations here,
 	as appropriate.
@@ -1075,12 +1075,12 @@ Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 	anonymous union is itself an anonymous union.
 	* semantics.c (begin_class_definition): Don't create template
 	declarations here.
-	
+
 1999-04-15  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* parse.y (after_type_declarator_intern): New nonterminal.
 	(after_type_declarator): Use it.
-	(direct_after_type_declarator): Likewise.  Move above 
+	(direct_after_type_declarator): Likewise.  Move above
 	nonnested_type to fix reduce/reduce conflict resolution.
 	(declmods): Reducing from just 'attributes' has EMPTY precedence.
 	* Makefile.in (CONFLICTS): Update.
@@ -1112,7 +1112,7 @@ Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 	* pt.c (instantiate_class_template): Move call to pushclass, and
 	document.  Pass no arguments to popclass.
 	(regenerate_decl_from_template): Likewise.
-	
+
 1999-04-14  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (build_unary_op): Handle taking the address of a unique
