@@ -57,6 +57,10 @@ extern struct obstack *saveable_obstack;
 extern struct obstack temporary_obstack;
 extern struct obstack permanent_obstack;
 
+/* Set to non-zero value in order to emit class initilization code
+   before static field references.  */
+extern int always_initialize_class_p;
+
 /* The class we are currently processing. */
 tree current_class = NULL_TREE;
 
@@ -645,6 +649,10 @@ parse_class_file ()
   lineno = 0;
   debug_start_source_file (input_filename);
   init_outgoing_cpool ();
+
+  /* Currently we always have to emit calls to _Jv_InitClass when
+     compiling from class files.  */
+  always_initialize_class_p = 1;
 
   for ( method = TYPE_METHODS (CLASS_TO_HANDLE_TYPE (current_class));
 	method != NULL_TREE; method = TREE_CHAIN (method))

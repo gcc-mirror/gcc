@@ -83,6 +83,10 @@ static tree case_identity PARAMS ((tree, tree));
 static tree operand_type[59];
 extern struct obstack permanent_obstack;
 
+/* Set to non-zero value in order to emit class initilization code
+   before static field references.  */
+int always_initialize_class_p;
+
 void
 init_expr_processing()
 {
@@ -1490,14 +1494,48 @@ tree
 build_class_init (clas, expr)
      tree clas, expr;
 {
-  tree init;
+  tree init, call;
+  struct init_test_hash_entry *ite;
   if (inherits_from_p (current_class, clas))
     return expr;
-  init = build (CALL_EXPR, void_type_node,
-		build_address_of (soft_initclass_node),
-		build_tree_list (NULL_TREE, build_class_ref (clas)),
-		NULL_TREE);
-  TREE_SIDE_EFFECTS (init) = 1;
+
+  if (always_initialize_class_p)
+    {
+      init = build (CALL_EXPR, void_type_node,
+		    build_address_of (soft_initclass_node),
+		    build_tree_list (NULL_TREE, build_class_ref (clas)),
+		    NULL_TREE);
+      TREE_SIDE_EFFECTS (init) = 1;
+    }
+  else
+    {
+      ite = (struct init_test_hash_entry *)
+	hash_lookup (&DECL_FUNCTION_INIT_TEST_TABLE (current_function_decl),
+		     (const hash_table_key) clas,
+		     TRUE, NULL);
+      
+      if (ite->init_test_decl == 0)
+	ite->init_test_decl = build_decl (VAR_DECL, NULL_TREE, 
+					  boolean_type_node);
+      /* Tell the check-init code to ignore this decl.  */
+      DECL_BIT_INDEX(ite->init_test_decl) = -1;
+
+      init = build (CALL_EXPR, void_type_node,
+		    build_address_of (soft_initclass_node),
+		    build_tree_list (NULL_TREE, build_class_ref (clas)),
+		    NULL_TREE);
+      TREE_SIDE_EFFECTS (init) = 1;
+      call = build (COMPOUND_EXPR, TREE_TYPE (expr), init, 
+		    build (MODIFY_EXPR, boolean_type_node,
+			   ite->init_test_decl, boolean_true_node));
+      TREE_SIDE_EFFECTS (call) = 1;
+      init = build (COND_EXPR, void_type_node,
+		    build (EQ_EXPR, boolean_type_node, 
+			   ite->init_test_decl, boolean_false_node),
+		    call, integer_zero_node);
+      TREE_SIDE_EFFECTS (init) = 1;
+    }
+
   if (expr != NULL_TREE)
     {
       expr = build (COMPOUND_EXPR, TREE_TYPE (expr), init, expr);

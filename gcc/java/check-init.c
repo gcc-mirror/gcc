@@ -39,11 +39,6 @@ typedef unsigned int word;
 /* Pointer to a bitstring. */
 typedef word *words;
 
-/* For a local VAR_DECL, holds the index into a words bitstring that
-   specifies if this decl is definitively assigned.
-   A DECL_BIT_INDEX of -1 means we no longer care. */
-#define DECL_BIT_INDEX(DECL) DECL_FIELD_SIZE(DECL)
-
 /* Number of locals variables currently active. */
 int num_current_locals = 0;
 
