@@ -860,6 +860,14 @@ struct cum_arg
   (GET_CODE (X) == CONST_INT && TARGET_H8300H		\
    && 0xffff00 <= INTVAL (X) && INTVAL (X) <= 0xffffff)
 
+/* Nonzero if X is a constant address suitable as an 16-bit absolute
+   on the H8/300H.  */
+
+#define TINY_CONSTANT_ADDRESS_P(X)				\
+  (GET_CODE (X) == CONST_INT && TARGET_H8300H			\
+   && ((0xff8000 <= INTVAL (X) && INTVAL (X) <= 0xffffff)	\
+       || (0x000000 <= INTVAL (X) && INTVAL (X) <= 0x007fff)))
+
 /* 'U' if valid for a bset destination;
    i.e. a register, register indirect, or the eightbit memory region
    (a SYMBOL_REF with an SYMBOL_REF_FLAG set).

@@ -1,3 +1,9 @@
+2002-03-01  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (print_operand): Support 16-bit
+	constant addresses.
+	* config/h8300/h8300.h (TINY_CONSTANT_ADDRESS_P): New.
+
 2002-02-28  Richard Henderson  <rth@redhat.com>
 
 	* expmed.c (store_bit_field): Prevent generation of CONCATs;
