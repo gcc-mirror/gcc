@@ -1,3 +1,9 @@
+2004-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/15945
+	* simplify-rtx.c (simplify_binary_operation): Don't optimize out
+	Inf + -Inf, Inf - Inf, Inf / Inf and 0 * Inf if flag_trapping_math.
+
 2004-06-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* opts.sh (var_args): Fix regexp.
