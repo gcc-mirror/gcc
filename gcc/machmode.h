@@ -1,5 +1,5 @@
 /* Machine mode definitions for GNU C-Compiler; included by rtl.h and tree.h.
-   Copyright (C) 1991, 1993  Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994  Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -160,10 +160,11 @@ extern enum machine_mode get_best_mode PROTO((int, int, int, enum machine_mode, 
 extern enum machine_mode class_narrowest_mode[];
 #define GET_CLASS_NARROWEST_MODE(CLASS) class_narrowest_mode[(int)(CLASS)]
 
-/* Define the integer modes whose sizes are BITS_PER_UNIT
-   and BITS_PER_WORD.  */
+/* Define the integer modes whose sizes are BITS_PER_UNIT and BITS_PER_WORD
+   and the mode whose class is Pmode and whose size is POINTER_SIZE.  */
 
 extern enum machine_mode byte_mode;
 extern enum machine_mode word_mode;
+extern enum machine_mode ptr_mode;
 
 #endif /* not HAVE_MACHINE_MODES */
