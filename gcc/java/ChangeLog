@@ -1,3 +1,7 @@
+1999-08-25  Tom Tromey  <tromey@cygnus.com>
+
+	* jvspec.c (lang_specific_driver): Correctly handle --help again.
+
 1999-08-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gjavah.c (print_name, print_base_classname, utf8_cmp,
