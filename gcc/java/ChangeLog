@@ -1591,10 +1591,10 @@ Fri Nov 27 13:20:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	OS headers or gansidecl.h.  Don't prototype xmalloc/xstrdup.
 	Provide an xstrdup definition.
 
-Wed Nov 26 22:03:58 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
+Thu Nov 26 22:03:58 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* jcf-path.c (add_entry): recognize ".jar" too
-	* lang-specs.h: ditto
+	* jcf-path.c (add_entry): Recognize ".jar" too.
+	* lang-specs.h: Likewise.
 
 Thu Nov 26 12:44:07 1998  Per Bothner  <bothner@cygnus.com>
 

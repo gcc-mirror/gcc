@@ -18,9 +18,9 @@ Sun Apr 11 23:48:30 1999  Jeffrey A Law  (law@cygnus.com)
 
 1998-11-27  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* bitset: explicitly convert basic_string<...>::npos to size_t in
-	default argument to constructor, to avoid parse error at `>'
-	(__STL_EXPLICIT_FUNCTION_TMPL_ARGS): replace #if with #ifdef
+	* bitset: Explicitly convert basic_string<...>::npos to size_t in
+	default argument to constructor, to avoid parse error at `>'.
+	(__STL_EXPLICIT_FUNCTION_TMPL_ARGS): Replace #if with #ifdef.
 
 1998-11-01  Mark Mitchell  <mark@markmitchell.com>
 

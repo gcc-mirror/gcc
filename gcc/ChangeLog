@@ -7652,11 +7652,11 @@ Sun Dec  6 03:40:13 1998  Jeff Law  (law@cygnus.com)
 Sun Dec  6 07:49:29 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* gcc.texi (Bug Reporting): 40Kb is a soft limit, larger
-	compressed reports are ok and preferred over URLs
+	compressed reports are ok and preferred over URLs.
 
 Sun Dec  6 07:45:33 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* invoke.texi (Warning Options): Soften the tone of -pedantic
+	* invoke.texi (Warning Options): Soften the tone of -pedantic.
 
 Sun Dec  6 00:20:44 1998  H.J. Lu  (hjl@gnu.org)
 
@@ -9501,7 +9501,7 @@ Fri Oct 30 13:23:20 1998  Richard Henderson  <rth@cygnus.com>
 Fri Oct 30 11:39:47 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* configure.in (gxx_include_dir): Bitten by autoconf quoting
-	characters :-(
+	characters.  :-(
 	* configure: Rebuilt.
 
 Fri Oct 30 10:43:29 1998  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>

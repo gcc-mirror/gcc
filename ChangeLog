@@ -154,10 +154,10 @@ Mon Oct 12 12:09:44 1998  Jeffrey A Law  (law@cygnus.com)
 
 Mon Oct 12 12:09:30 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 	
-	* Makefile.in (build_tooldir): new variable, same as tooldir
-	(CC_FOR_TARGET, GCC_FOR_TARGET, CXX_FOR_TARGET): add
-	-B$(build_tooldir)/bin/
-	(BASE_FLAGS_TO_PASS): pass build_tooldir down
+	* Makefile.in (build_tooldir): New variable, same as tooldir.
+	(CC_FOR_TARGET, GCC_FOR_TARGET, CXX_FOR_TARGET): Add
+	-B$(build_tooldir)/bin/.
+	(BASE_FLAGS_TO_PASS): Pass build_tooldir down.
 
 Tue Sep  1 16:23:11 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
@@ -420,11 +420,11 @@ Tue Jun 23 22:42:32 1998  Mark Alexander  <marka@cygnus.com>
 
 Fri Jun 19 02:36:59 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
 
-	* Makefile.in (local-clean): remove *.log
-	(warning.log): built with warn_summary from build.log
-	(mail-report.log): run test_summary
-	(mail-report-with-warnings.log): run test_summary including
-	warning.log in the report
+	* Makefile.in (local-clean): Remove *.log.
+	(warning.log): Built with warn_summary from build.log.
+	(mail-report.log): Run test_summary.
+	(mail-report-with-warnings.log): Run test_summary including
+	warning.log in the report.
 
 Thu Jun 18 11:26:03 1998  Robert Lipe  <robertl@dgii.com>
 
@@ -466,7 +466,7 @@ Thu May 28 19:31:13 1998  Ian Lance Taylor  <ian@cygnus.com>
 Sat May 23 23:44:13 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
 
 	* Makefile.in (boostrap2-lean, bootstrap3-lean,
-	bootstrap4-lean): new targets
+	bootstrap4-lean): New targets.
 
 Mon May 11 23:55:56 1998  Jeffrey A Law  (law@cygnus.com)
 
@@ -808,8 +808,8 @@ Sat Jan 17 21:04:59 1998 H.J. Lu  (hjl@gnu.org)
 
 Fri Jan 16 00:41:37 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
 
-	* configure.in: check whether host and target makefile
-	fragments exist before adding them to *_makefile_frag
+	* configure.in: Check whether host and target makefile
+	fragments exist before adding them to *_makefile_frag.
 
 Wed Jan 14 23:39:10 1998  Bob Manson  <manson@charmed.cygnus.com>
 

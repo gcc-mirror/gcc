@@ -24,13 +24,13 @@
  
 Thu Oct 15 20:40:34 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
-	* Makefile.in: rebuilt with --include-deps, --build-dir and
-	--srcdir-name
-	* doc/Makefile.in: ditto
-	* info/Makefile.in: ditto
-	* lib/Makefile.in: ditto
-	* makeinfo/Makefile.in: ditto
-	* util/Makefile.in: ditto
+	* Makefile.in: Rebuilt with --include-deps, --build-dir and
+	--srcdir-name.
+	* doc/Makefile.in: Ditto.
+	* info/Makefile.in: Ditto.
+	* lib/Makefile.in: Ditto.
+	* makeinfo/Makefile.in: Ditto.
+	* util/Makefile.in: Ditto.
 
 Mon Jul  6 22:52:28 1998  Tobias Naehring <naehring@eeetw3.et.tu-dresden.de>
 
@@ -38,7 +38,7 @@ Mon Jul  6 22:52:28 1998  Tobias Naehring <naehring@eeetw3.et.tu-dresden.de>
 
 Sun Apr 12 20:59:53 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
 
-	* configure.in: only set HAVE_LIBZ if zlib.h exists
+	* configure.in: Only set HAVE_LIBZ if zlib.h exists.
 
 Fri Apr 10 01:36:24 1998  Jim Wilson <wilson@cygnus.com>
 
