@@ -573,26 +573,11 @@ gnat_expand_expr (exp, target, tmode, modifier)
       else if ((TYPE_MODE (type) == BLKmode
 		|| TYPE_MODE (inner_type) == BLKmode)
 	       && align_ok)
-	{
-	  new = build_unary_op (INDIRECT_REF, NULL_TREE,
-				convert
-				(build_pointer_type (type),
-				 build_unary_op (ADDR_EXPR, NULL_TREE,
-						 TREE_OPERAND (exp, 0))));
-	  result = expand_expr (new, target, tmode, modifier);
-
-	  if (GET_CODE (result) != MEM)
-	    gigi_abort (204);
-
-	  /* Since this is really the underlying object, set the flags from
-	     the underlying type.
-
-	     ??? Note that this is very dubious because it may change the
-	     attributes for a temporary location, which is not allowed.  */
-	  set_mem_alias_set (result, 0);
-	  set_mem_attributes (result, TREE_OPERAND (exp, 0), 0);
-	  return result;
-	}
+	new = build_unary_op (INDIRECT_REF, NULL_TREE,
+			      convert
+			      (build_pointer_type (type),
+			       build_unary_op (ADDR_EXPR, NULL_TREE,
+					       TREE_OPERAND (exp, 0))));
 
       /* Otherwise make a union of the two types, convert to the union, and
 	 extract the other value.  */
