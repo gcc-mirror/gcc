@@ -1,3 +1,7 @@
+2002-04-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_release: Merge from mainline.
+
 2002-04-19  Kelley R. Cook (kelly.r.cook@gm.com)
 
 	* gcc_release: Set TZ to UTC0.
