@@ -1,7 +1,7 @@
 // PRMS Id: 5286
 // Bug: g++ forgets side-effects of object in call to nonexistent destructor.
 
-void * operator new (__SIZE_TYPE__ s, void * p) { return p; }
+#include <new>
 
 int r;
 
