@@ -265,8 +265,10 @@ c_strlen (src)
 
   /* We have a known offset into the string.  Start searching there for
      a null character if we can represent it as a single HOST_WIDE_INT.  */
-  if (offset_node == 0 || ! host_integerp (offset_node, 0))
+  if (offset_node == 0)
     offset = 0;
+  else if (! host_integerp (offset_node, 0))
+    offset = -1;
   else
     offset = tree_low_cst (offset_node, 0);
 
