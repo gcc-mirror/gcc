@@ -5670,42 +5670,37 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
       return;
     }
 
-  /* If both are equivalent, merge the two classes.  Save this class for
-     `cse_set_around_loop'.  */
-  if (op0_elt && op1_elt)
-    {
-      merge_equiv_classes (op0_elt, op1_elt);
-      last_jump_equiv_class = op0_elt;
-    }
+  /* If either side is still missing an equivalence, make it now,
+     then merge the equivalences.  */
 
-  /* For whichever side doesn't have an equivalence, make one.  */
   if (op0_elt == 0)
     {
-      if (insert_regs (op0, op1_elt, 0))
+      if (insert_regs (op0, NULL_PTR, 0))
 	{
 	  rehash_using_reg (op0);
 	  op0_hash_code = HASH (op0, mode);
 	}
 
-      op0_elt = insert (op0, op1_elt, op0_hash_code, mode);
+      op0_elt = insert (op0, NULL_PTR, op0_hash_code, mode);
       op0_elt->in_memory = op0_in_memory;
       op0_elt->in_struct = op0_in_struct;
-      last_jump_equiv_class = op0_elt;
     }
 
   if (op1_elt == 0)
     {
-      if (insert_regs (op1, op0_elt, 0))
+      if (insert_regs (op1, NULL_PTR, 0))
 	{
 	  rehash_using_reg (op1);
 	  op1_hash_code = HASH (op1, mode);
 	}
 
-      op1_elt = insert (op1, op0_elt, op1_hash_code, mode);
+      op1_elt = insert (op1, NULL_PTR, op1_hash_code, mode);
       op1_elt->in_memory = op1_in_memory;
       op1_elt->in_struct = op1_in_struct;
-      last_jump_equiv_class = op1_elt;
     }
+
+  merge_equiv_classes (op0_elt, op1_elt);
+  last_jump_equiv_class = op0_elt;
 }
 
 /* CSE processing for one instruction.
