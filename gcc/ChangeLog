@@ -1,3 +1,20 @@
+Tue Jan  4 02:22:27 2000  Jeffrey A Law  (law@cygnus.com)
+
+	Mon Oct 18 18:50:51 1999  Andreas Schwab  <schwab@suse.de>
+	* config/m68k/m68k.h (INITIAL_FRAME_POINTER_OFFSET): Add one word
+	if the pic register is used.
+
+	Sat Sep 25 13:11:07 1999  Jeffrey A Law  (law@cygnus.com)
+	* cse.c: Update comments.
+	(cse_insn): When converting a conditional/computed jump into
+	an unconditional jump, always make sure a BARRIER immediately
+	follows the converted jump.  Do not delete unreachable code.
+	(cse_basic_block): Do not delete unreachable code.
+	* toplev.c (rest_of_compilation): Move call to
+	delete_trivially_dead_insns after the conditional call to
+	jump_optimize.
+
+
 Wed Dec 29 22:47:43 1999  Jeffrey A Law  (law@cygnus.com)
 
 	1999-12-12  Stephen L Moshier <moshier@mediaone.net>

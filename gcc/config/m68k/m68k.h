@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 1987, 88, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 93-98, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1198,6 +1198,8 @@ while(0)
   for (regno = 0; regno < 16; regno++)				\
     if (regs_ever_live[regno] && ! call_used_regs[regno])	\
       offset += 4;						\
+  if (flag_pic && current_function_uses_pic_offset_table)	\
+    offset += 4;						\
   (DEPTH) = (offset + ((get_frame_size () + 3) & -4)		\
 	     + (get_frame_size () == 0 ? 0 : 4));		\
 }

@@ -1,5 +1,5 @@
 /* Top level of GNU C compiler
-   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3870,12 +3870,14 @@ rest_of_compilation (decl)
 
       TIMEVAR (cse_time, tem = cse_main (insns, max_reg_num (),
 					 0, rtl_dump_file));
-      TIMEVAR (cse_time, delete_trivially_dead_insns (insns, max_reg_num ()));
-
       if (tem || optimize > 1)
 	TIMEVAR (jump_time, jump_optimize (insns, !JUMP_CROSS_JUMP,
 					   !JUMP_NOOP_MOVES,
 					   !JUMP_AFTER_REGSCAN));
+
+      /* Run this after jump optmizations remove all the unreachable code
+	 so that unreachable code will not keep values live.  */
+      TIMEVAR (cse_time, delete_trivially_dead_insns (insns, max_reg_num ()));
 
       /* Dump rtl code after cse, if we are doing that.  */
 

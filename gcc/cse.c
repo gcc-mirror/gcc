@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92-7, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -42,12 +42,14 @@ Boston, MA 02111-1307, USA.  */
    expressions encountered with the cheapest equivalent expression.
 
    It is too complicated to keep track of the different possibilities
-   when control paths merge; so, at each label, we forget all that is
-   known and start fresh.  This can be described as processing each
-   basic block separately.  Note, however, that these are not quite
-   the same as the basic blocks found by a later pass and used for
-   data flow analysis and register packing.  We do not need to start fresh
-   after a conditional jump instruction if there is no label there.
+   when control paths merge in this code; so, at each label, we forget all
+   that is known and start fresh.  This can be described as processing each
+   extended basic block separately.  We have a separate pass to perform
+   global CSE.
+
+   Note CSE can turn a conditional or computed jump into a nop or
+   an unconditional jump.  When this occurs we arrange to run the jump
+   optimizer after CSE to delete the unreachable code.
 
    We use two data structures to record the equivalent expressions:
    a hash table for most expressions, and several vectors together
@@ -7468,7 +7470,6 @@ cse_insn (insn, libcall_insn)
 	      rtx new = emit_jump_insn_before (gen_jump (XEXP (src, 0)), insn);
 	      JUMP_LABEL (new) = XEXP (src, 0);
 	      LABEL_NUSES (XEXP (src, 0))++;
-	      delete_insn (insn);
 	      insn = new;
 	    }
 	  else
@@ -7479,42 +7480,11 @@ cse_insn (insn, libcall_insn)
 	       Until the right place is found, might as well do this here.  */
 	    INSN_CODE (insn) = -1;
 
-	  /* Now that we've converted this jump to an unconditional jump,
-	     there is dead code after it.  Delete the dead code until we
-	     reach a BARRIER, the end of the function, or a label.  Do
-	     not delete NOTEs except for NOTE_INSN_DELETED since later
-	     phases assume these notes are retained.  */
-
-	  p = insn;
-
-	  while (NEXT_INSN (p) != 0
-		 && GET_CODE (NEXT_INSN (p)) != BARRIER
-		 && GET_CODE (NEXT_INSN (p)) != CODE_LABEL)
-	    {
-	      /* Note, we must update P with the return value from
-		 delete_insn, otherwise we could get an infinite loop
-		 if NEXT_INSN (p) had INSN_DELETED_P set.  */
-	      if (GET_CODE (NEXT_INSN (p)) != NOTE
-		  || NOTE_LINE_NUMBER (NEXT_INSN (p)) == NOTE_INSN_DELETED)
-		p = PREV_INSN (delete_insn (NEXT_INSN (p)));
-	      else
-		p = NEXT_INSN (p);
-	    }
-
-	  /* If we don't have a BARRIER immediately after INSN, put one there.
-	     Much code assumes that there are no NOTEs between a JUMP_INSN and
-	     BARRIER.  */
-
-	  if (NEXT_INSN (insn) == 0
-	      || GET_CODE (NEXT_INSN (insn)) != BARRIER)
-	    emit_barrier_before (NEXT_INSN (insn));
-
-	  /* We might have two BARRIERs separated by notes.  Delete the second
-	     one if so.  */
-
-	  if (p != insn && NEXT_INSN (p) != 0
-	      && GET_CODE (NEXT_INSN (p)) == BARRIER)
-	    delete_insn (NEXT_INSN (p));
+	  /* Now emit a BARRIER after the unconditional jump.  Do not bother
+	     deleting any unreachable code, let jump/flow do that.  */
+	  if (NEXT_INSN (insn) != 0
+	      && GET_CODE (NEXT_INSN (insn)) != BARRIER)
+	    emit_barrier_after (insn);
 
 	  cse_jumps_altered = 1;
 	  sets[i].rtl = 0;
@@ -9006,9 +8976,6 @@ cse_basic_block (from, to, next_branch, around_loop)
 	  rtx prev;
 
 	  insn = NEXT_INSN (to);
-
-	  if (LABEL_NUSES (to) == 0)
-	    insn = delete_insn (to);
 
 	  /* If TO was the last insn in the function, we are done.  */
 	  if (insn == 0)
