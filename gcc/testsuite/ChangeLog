@@ -1,3 +1,10 @@
+1999-08-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* noncompile/noncompile.exp: Load_lib c-torture.exp.
+	(postbase_with_opts): New proc to loop over TORTURE_OPTIONS and
+	call `postbase' for each one.  All callers of `postbase' changed
+	to call this instead.
+
 1999-08-11  Richard Earnshaw (rearnsha@arm.com)
 
 	* gcc.c-torture/execute/990811-1.c: New test.
