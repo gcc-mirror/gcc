@@ -1111,12 +1111,12 @@ compute_record_mode (type)
       if (simple_cst_equal (TYPE_SIZE (type), DECL_SIZE (field)))
 	mode = DECL_MODE (field);
 
-#ifdef STRUCT_FORCE_BLK
+#ifdef MEMBER_TYPE_FORCES_BLK
       /* With some targets, eg. c4x, it is sub-optimal
 	 to access an aligned BLKmode structure as a scalar.  */
-      if (mode == VOIDmode && STRUCT_FORCE_BLK (field))
+      if (mode == VOIDmode && MEMBER_TYPE_FORCES_BLK (field))
 	return;
-#endif /* STRUCT_FORCE_BLK  */
+#endif /* MEMBER_TYPE_FORCES_BLK  */
     }
 
   /* If we only have one real field; use its mode.  This only applies to
@@ -1450,6 +1450,9 @@ layout_type (type)
 
 	TYPE_MODE (type) = BLKmode;
 	if (TYPE_SIZE (type) != 0
+#ifdef MEMBER_TYPE_FORCES_BLK
+	    && ! MEMBER_TYPE_FORCES_BLK (type)
+#endif
 	    /* BLKmode elements force BLKmode aggregate;
 	       else extract/store fields may lose.  */
 	    && (TYPE_MODE (TREE_TYPE (type)) != BLKmode

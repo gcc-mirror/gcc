@@ -370,7 +370,8 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 
 /* If a structure has a floating point field then force structure
    to have BLKMODE.  */
-#define STRUCT_FORCE_BLK(FIELD) (TREE_CODE (TREE_TYPE (FIELD)) == REAL_TYPE)
+#define MEMBER_TYPE_FORCES_BLK(FIELD) \
+  (TREE_CODE (TREE_TYPE (FIELD)) == REAL_TYPE)
 
 /* Number of bits in the high and low parts of a two stage
    load of an immediate constant.  */

@@ -1118,9 +1118,9 @@ get from @code{PCC_BITFIELD_TYPE_MATTERS}.
 Like PCC_BITFIELD_TYPE_MATTERS except that its effect is limited to
 aligning a bitfield within the structure.
 
-@findex STRUCT_FORCE_BLK
-@item STRUCT_FORCE_BLK (@var{field})
-Return 1 if a structure containing @var{field} should be accessed using
+@findex MEMBER_TYPE_FORCES_BLK
+@item MEMBER_TYPE_FORCES_BLK (@var{field})
+Return 1 if a structure or array containing @var{field} should be accessed using
 @code{BLKMODE}.
 
 Normally, this is not needed.  See the file @file{c4x.h} for an example
