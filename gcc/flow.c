@@ -271,7 +271,7 @@ static int set_noop_p			PROTO((rtx));
 static int noop_move_p			PROTO((rtx));
 static void record_volatile_insns	PROTO((rtx));
 static void mark_regs_live_at_end	PROTO((regset));
-static int insn_dead_p			PROTO((rtx, regset, int));
+static int insn_dead_p			PROTO((rtx, regset, int, rtx));
 static int libcall_dead_p		PROTO((rtx, regset, rtx, rtx));
 static void mark_set_regs		PROTO((regset, regset, rtx,
 					       rtx, regset));
@@ -1749,7 +1749,7 @@ propagate_block (old, first, last, final, significant, bnum)
 	  register int i;
 	  rtx note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
 	  int insn_is_dead
-	    = (insn_dead_p (PATTERN (insn), old, 0)
+	    = (insn_dead_p (PATTERN (insn), old, 0, REG_NOTES (insn))
 	       /* Don't delete something that refers to volatile storage!  */
 	       && ! INSN_VOLATILE (insn));
 	  int libcall_is_dead 
@@ -1935,15 +1935,39 @@ propagate_block (old, first, last, final, significant, bnum)
    (SET expressions whose destinations are registers dead after the insn).
    NEEDED is the regset that says which regs are alive after the insn.
 
-   Unless CALL_OK is non-zero, an insn is needed if it contains a CALL.  */
+   Unless CALL_OK is non-zero, an insn is needed if it contains a CALL.
+
+   If X is the entire body of an insn, NOTES contains the reg notes
+   pertaining to the insn.  */
 
 static int
-insn_dead_p (x, needed, call_ok)
+insn_dead_p (x, needed, call_ok, notes)
      rtx x;
      regset needed;
      int call_ok;
+     rtx notes ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (x);
+
+#ifdef AUTO_INC_DEC
+  /* If flow is invoked after reload, we must take existing AUTO_INC
+     expresions into account.  */
+  if (reload_completed)
+    {
+      for ( ; notes; notes = XEXP (notes, 1))
+	{
+	  if (REG_NOTE_KIND (notes) == REG_INC)
+	    {
+	      int regno = REGNO (XEXP (notes, 0));
+
+	      /* Don't delete insns to set global regs.  */
+	      if ((regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
+		  || REGNO_REG_SET_P (needed, regno))
+		return 0;
+	    }
+	}
+    }
+#endif
 
   /* If setting something that's a reg or part of one,
      see if that register's altered value will be live.  */
@@ -2015,7 +2039,7 @@ insn_dead_p (x, needed, call_ok)
       for (i--; i >= 0; i--)
 	if (GET_CODE (XVECEXP (x, 0, i)) != CLOBBER
 	    && GET_CODE (XVECEXP (x, 0, i)) != USE
-	    && ! insn_dead_p (XVECEXP (x, 0, i), needed, call_ok))
+	    && ! insn_dead_p (XVECEXP (x, 0, i), needed, call_ok, NULL_RTX))
 	  return 0;
 
       return 1;
@@ -2062,6 +2086,7 @@ libcall_dead_p (x, needed, note, insn)
       if (GET_CODE (r) == REG)
 	{
 	  rtx call = XEXP (note, 0);
+	  rtx call_pat;
 	  register int i;
 
 	  /* Find the call insn.  */
@@ -2075,12 +2100,12 @@ libcall_dead_p (x, needed, note, insn)
 
 	  /* See if the hard reg holding the value is dead.
 	     If this is a PARALLEL, find the call within it.  */
-	  call = PATTERN (call);
-	  if (GET_CODE (call) == PARALLEL)
+	  call_pat = PATTERN (call);
+	  if (GET_CODE (call_pat) == PARALLEL)
 	    {
-	      for (i = XVECLEN (call, 0) - 1; i >= 0; i--)
-		if (GET_CODE (XVECEXP (call, 0, i)) == SET
-		    && GET_CODE (SET_SRC (XVECEXP (call, 0, i))) == CALL)
+	      for (i = XVECLEN (call_pat, 0) - 1; i >= 0; i--)
+		if (GET_CODE (XVECEXP (call_pat, 0, i)) == SET
+		    && GET_CODE (SET_SRC (XVECEXP (call_pat, 0, i))) == CALL)
 		  break;
 
 	      /* This may be a library call that is returning a value
@@ -2089,10 +2114,10 @@ libcall_dead_p (x, needed, note, insn)
 	      if (i < 0)
 		return 0;
 
-	      call = XVECEXP (call, 0, i);
+	      call_pat = XVECEXP (call_pat, 0, i);
 	    }
 
-	  return insn_dead_p (call, needed, 1);
+	  return insn_dead_p (call_pat, needed, 1, REG_NOTES (call));
 	}
     }
   return 1;
