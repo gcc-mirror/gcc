@@ -1126,6 +1126,7 @@ const_binop (code, arg1, arg2, notrunc)
 	  TREE_TYPE (t) = TREE_TYPE (arg1);
 	  if (!notrunc)
 	    force_fit_type (t, 0);
+	  TREE_OVERFLOW (t) = TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2);
 	  TREE_CONSTANT_OVERFLOW (t)
 	    = TREE_CONSTANT_OVERFLOW (arg1) | TREE_CONSTANT_OVERFLOW (arg2);
 	  return t;
@@ -1319,10 +1320,13 @@ const_binop (code, arg1, arg2, notrunc)
 	}
     got_it:
       TREE_TYPE (t) = TREE_TYPE (arg1);
-      TREE_CONSTANT_OVERFLOW (t)
+      TREE_OVERFLOW (t)
 	= ((notrunc ? !uns && overflow : force_fit_type (t, overflow))
-	   | TREE_CONSTANT_OVERFLOW (arg1)
-	   | TREE_CONSTANT_OVERFLOW (arg2));
+	   | TREE_OVERFLOW (arg1)
+	   | TREE_OVERFLOW (arg2));
+      TREE_CONSTANT_OVERFLOW (t) = (TREE_OVERFLOW (t)
+				    | TREE_CONSTANT_OVERFLOW (arg1)
+				    | TREE_CONSTANT_OVERFLOW (arg2));
       return t;
     }
 #if ! defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
@@ -1538,14 +1542,17 @@ fold_convert (t, arg1)
 			   TREE_INT_CST_HIGH (arg1));
 	  TREE_TYPE (t) = type;
 	  /* Indicate an overflow if (1) ARG1 already overflowed,
-	     or (2) ARG1 is a too-large unsigned value and T is signed,
-	     or (3) force_fit_type indicates an overflow.
-	     force_fit_type can't detect (2), since it sees only T's type.  */
-	  TREE_CONSTANT_OVERFLOW (t) =
-	    (TREE_CONSTANT_OVERFLOW (arg1)
-	     | (TREE_INT_CST_HIGH (arg1) < 0
-		& TREE_UNSIGNED (type) < TREE_UNSIGNED (TREE_TYPE (arg1)))
-	     | force_fit_type (t, 0));
+	     or (2) force_fit_type indicates an overflow.
+	     Tell force_fit_type that an overflow has already occurred
+	     if ARG1 is a too-large unsigned value and T is signed.  */
+	  TREE_OVERFLOW (t)
+	    = (TREE_OVERFLOW (arg1)
+	       | force_fit_type (t,
+				 (TREE_INT_CST_HIGH (arg1) < 0
+				  & (TREE_UNSIGNED (type)
+				     < TREE_UNSIGNED (TREE_TYPE (arg1))))));
+	  TREE_CONSTANT_OVERFLOW (t)
+	    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1);
 	}
 #if !defined (REAL_IS_NOT_DOUBLE) || defined (REAL_ARITHMETIC)
       else if (TREE_CODE (arg1) == REAL_CST)
@@ -3409,9 +3416,11 @@ fold (expr)
 					 &low, &high);
 	      t = build_int_2 (low, high);
 	      TREE_TYPE (t) = type;
-	      TREE_CONSTANT_OVERFLOW (t)
-		= (TREE_CONSTANT_OVERFLOW (arg0)
+	      TREE_OVERFLOW (t)
+		= (TREE_OVERFLOW (arg0)
 		   | force_fit_type (t, overflow));
+	      TREE_CONSTANT_OVERFLOW (t)
+		= TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg0);
 	    }
 	  else if (TREE_CODE (arg0) == REAL_CST)
 	    t = build_real (type, REAL_VALUE_NEGATE (TREE_REAL_CST (arg0)));
@@ -3441,9 +3450,11 @@ fold (expr)
 					     &low, &high);
 		  t = build_int_2 (low, high);
 		  TREE_TYPE (t) = type;
-		  TREE_CONSTANT_OVERFLOW (t)
-		    = (TREE_CONSTANT_OVERFLOW (arg0)
+		  TREE_OVERFLOW (t)
+		    = (TREE_OVERFLOW (arg0)
 		       | force_fit_type (t, overflow));
+		  TREE_CONSTANT_OVERFLOW (t)
+		    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg0);
 		}
 	    }
 	  else if (TREE_CODE (arg0) == REAL_CST)
@@ -3466,6 +3477,7 @@ fold (expr)
 			     ~ TREE_INT_CST_HIGH (arg0));
 	  TREE_TYPE (t) = type;
 	  force_fit_type (t, 0);
+	  TREE_OVERFLOW (t) = TREE_OVERFLOW (arg0);
 	  TREE_CONSTANT_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (arg0);
 	}
       else if (TREE_CODE (arg0) == BIT_NOT_EXPR)
