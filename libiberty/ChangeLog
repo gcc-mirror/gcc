@@ -1,3 +1,8 @@
+Thu Mar  5 09:23:28 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* config.table: Make locating frag files failsafe even for the
+	special case if configuring and building in srcdir.
+
 Mon Feb 23 14:33:15 1998  Ian Lance Taylor  <ian@cygnus.com>
 
 	* choose-temp.c: Fix handling of sys/file.h to work in libiberty.
