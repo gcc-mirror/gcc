@@ -1,3 +1,27 @@
+2004-07-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (saved_scope): Make old_bindings a vector.
+	(unuse_fields): Remove.
+	* name-lookup.h (cxx_saved_binding): Define it.
+	* class.c (pushclass): Don't use unuse_fields.
+	* name-lookup.c (cxx_saved_binding_make): Remove.
+	(store_binding): Add new bindings to a vector, using an
+	accumulator style, rather than adding them to a list.
+	(store_bindings): Adjust accordingly.
+	(store_class_bindings): Likewise.
+	(push_to_top_level): Likewise.
+	(pop_from_top_level): Likewise.
+	* optimize.c (maybe_clone_body): Must push_to_top_level and
+	pop_from_top_level calls outside of loop.
+	* parser.c (cp_parser_class_specifier): Move push_scope/pop_scope
+	calls here from cp_parser_late_parsing_default_args.
+	(cp_parser_save_default_args): Record the class type in which the
+	function is declared.
+	(cp_parser_late_parsing_default_args): Do not call
+	push_nested_class/pop_nested_class.
+	* search.c (dfs_unuse_fields): Remove.
+	(unuse_fields): Remove.
+
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* cp-lang.c (LANG_HOOKS_MAYBE_BUILD_CLEANUP, LANG_HOOKS_PUSHLEVEL,

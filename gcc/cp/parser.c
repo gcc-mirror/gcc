@@ -12386,6 +12386,8 @@ cp_parser_class_specifier (cp_parser* parser)
     {
       tree queue_entry;
       tree fn;
+      tree class_type;
+      bool pop_p;
 
       /* In a first pass, parse default arguments to the functions.
 	 Then, in a second pass, parse the bodies of the functions.
@@ -12397,6 +12399,8 @@ cp_parser_class_specifier (cp_parser* parser)
             };
 
          */
+      class_type = NULL_TREE;
+      pop_p = false;
       for (TREE_PURPOSE (parser->unparsed_functions_queues)
 	     = nreverse (TREE_PURPOSE (parser->unparsed_functions_queues));
 	   (queue_entry = TREE_PURPOSE (parser->unparsed_functions_queues));
@@ -12404,14 +12408,24 @@ cp_parser_class_specifier (cp_parser* parser)
 	     = TREE_CHAIN (TREE_PURPOSE (parser->unparsed_functions_queues)))
 	{
 	  fn = TREE_VALUE (queue_entry);
-	  /* Make sure that any template parameters are in scope.  */
-	  maybe_begin_member_template_processing (fn);
 	  /* If there are default arguments that have not yet been processed,
 	     take care of them now.  */
+	  if (class_type != TREE_PURPOSE (queue_entry))
+	    {
+	      if (pop_p)
+		pop_scope (class_type);
+	      class_type = TREE_PURPOSE (queue_entry);
+	      pop_p = push_scope (class_type);
+	    }
+	  /* Make sure that any template parameters are in scope.  */
+	  maybe_begin_member_template_processing (fn);
+	  /* Parse the default argument expressions.  */
 	  cp_parser_late_parsing_default_args (parser, fn);
 	  /* Remove any template parameters from the symbol table.  */
 	  maybe_end_member_template_processing ();
 	}
+      if (pop_p)
+	pop_scope (class_type);
       /* Now parse the body of the functions.  */
       for (TREE_VALUE (parser->unparsed_functions_queues)
 	     = nreverse (TREE_VALUE (parser->unparsed_functions_queues));
@@ -12429,7 +12443,6 @@ cp_parser_class_specifier (cp_parser* parser)
 	  cp_parser_late_parsing_for_member (parser, fn);
 	  function_depth--;
 	}
-
     }
 
   /* Put back any saved access checks.  */
@@ -15240,7 +15253,7 @@ cp_parser_save_default_args (cp_parser* parser, tree decl)
     if (TREE_PURPOSE (probe))
       {
 	TREE_PURPOSE (parser->unparsed_functions_queues)
-	  = tree_cons (NULL_TREE, decl,
+	  = tree_cons (current_class_type, decl,
 		       TREE_PURPOSE (parser->unparsed_functions_queues));
 	break;
       }
@@ -15248,7 +15261,9 @@ cp_parser_save_default_args (cp_parser* parser, tree decl)
 }
 
 /* FN is a FUNCTION_DECL which may contains a parameter with an
-   unparsed DEFAULT_ARG.  Parse the default args now.  */
+   unparsed DEFAULT_ARG.  Parse the default args now.  This function
+   assumes that the current scope is the scope in which the default
+   argument should be processed.  */
 
 static void
 cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
@@ -15288,11 +15303,7 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
       saved_local_variables_forbidden_p = parser->local_variables_forbidden_p;
       parser->local_variables_forbidden_p = true;
        /* Parse the assignment-expression.  */
-      if (DECL_CLASS_SCOPE_P (fn))
-	push_nested_class (DECL_CONTEXT (fn));
       TREE_PURPOSE (parameters) = cp_parser_assignment_expression (parser);
-      if (DECL_CLASS_SCOPE_P (fn))
-	pop_nested_class ();
 
       /* If the token stream has not been completely used up, then
 	 there was extra junk after the end of the default

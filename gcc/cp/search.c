@@ -88,7 +88,6 @@ static tree dfs_debug_unmarkedp (tree, int, void *);
 static tree dfs_debug_mark (tree, void *);
 static tree dfs_push_type_decls (tree, void *);
 static tree dfs_push_decls (tree, void *);
-static tree dfs_unuse_fields (tree, void *);
 static tree add_conversions (tree, void *);
 static int look_for_overrides_r (tree, tree);
 static struct search_level *push_search_level (struct stack_level *,
@@ -2245,45 +2244,6 @@ push_class_decls (tree type)
 
   /* Enter non-type declarations and unmark.  */
   dfs_walk (TYPE_BINFO (type), dfs_push_decls, marked_pushdecls_p, 0);
-}
-
-/* Here's a subroutine we need because C lacks lambdas.  */
-
-static tree
-dfs_unuse_fields (tree binfo, void *data ATTRIBUTE_UNUSED)
-{
-  tree type = TREE_TYPE (binfo);
-  tree fields;
-
-  if (TREE_CODE (type) == TYPENAME_TYPE)
-    fields = TYPENAME_TYPE_FULLNAME (type);
-  else if (TREE_CODE (type) == TYPEOF_TYPE)
-    fields = TYPEOF_TYPE_EXPR (type);
-  else if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
-	   || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
-	   || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
-    fields = TEMPLATE_TYPE_PARM_INDEX (type);
-  else
-    fields = TYPE_FIELDS (type);
-
-  for (; fields; fields = TREE_CHAIN (fields))
-    {
-      if (TREE_CODE (fields) != FIELD_DECL || DECL_ARTIFICIAL (fields))
-	continue;
-
-      TREE_USED (fields) = 0;
-      if (DECL_NAME (fields) == NULL_TREE
-	  && ANON_AGGR_TYPE_P (TREE_TYPE (fields)))
-	unuse_fields (TREE_TYPE (fields));
-    }
-
-  return NULL_TREE;
-}
-
-void
-unuse_fields (tree type)
-{
-  dfs_walk (TYPE_BINFO (type), dfs_unuse_fields, unmarkedp, 0);
 }
 
 void
