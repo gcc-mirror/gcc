@@ -1890,77 +1890,34 @@ void
 assemble_real (REAL_VALUE_TYPE d, enum machine_mode mode, unsigned int align)
 {
   long data[4];
-  long l;
-  unsigned int nalign = min_align (align, 32);
+  int i;
+  int bitsize, nelts, nunits, units_per;
 
-  switch (BITS_PER_UNIT)
+  /* This is hairy.  We have a quantity of known bitsize.  real_to_target
+     will put it into an array of *host* longs, 32 bits per element
+     (even if long is more than 32 bits).  We need to determine the
+     number of array elements that are occupied (nelts) and the number
+     of *target* min-addressable units that will be occupied in the
+     object file (nunits).  We can assume that BITS_PER_UNIT divides
+     the mode's bitsize evenly, but we can not assume that 32 does.  */
+  bitsize = GET_MODE_BITSIZE (mode);
+  nunits = bitsize / BITS_PER_UNIT;
+  nelts = CEIL (bitsize, 32);
+  units_per = 32 / BITS_PER_UNIT;
+
+  real_to_target (data, &d, mode);
+
+  /* Put out the first word with the specified alignment.  */
+  assemble_integer (GEN_INT (data[0]), MIN (nunits, units_per), align, 1);
+  nunits -= units_per;
+
+  /* Subsequent words need only 32-bit alignment.  */
+  align = min_align (align, 32);
+
+  for (i = 1; i < nelts; i++)
     {
-    case 8:
-      switch (mode)
-	{
-	case SFmode:
-	  REAL_VALUE_TO_TARGET_SINGLE (d, l);
-	  assemble_integer (GEN_INT (l), 4, align, 1);
-	  break;
-	case DFmode:
-	  REAL_VALUE_TO_TARGET_DOUBLE (d, data);
-	  assemble_integer (GEN_INT (data[0]), 4, align, 1);
-	  assemble_integer (GEN_INT (data[1]), 4, nalign, 1);
-	  break;
-	case XFmode:
-	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (d, data);
-	  assemble_integer (GEN_INT (data[0]), 4, align, 1);
-	  assemble_integer (GEN_INT (data[1]), 4, nalign, 1);
-	  assemble_integer (GEN_INT (data[2]), 4, nalign, 1);
-	  break;
-	case TFmode:
-	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (d, data);
-	  assemble_integer (GEN_INT (data[0]), 4, align, 1);
-	  assemble_integer (GEN_INT (data[1]), 4, nalign, 1);
-	  assemble_integer (GEN_INT (data[2]), 4, nalign, 1);
-	  assemble_integer (GEN_INT (data[3]), 4, nalign, 1);
-	  break;
-	default:
-	  abort ();
-	}
-      break;
-
-    case 16:
-      switch (mode)
-	{
-	case HFmode:
-	  REAL_VALUE_TO_TARGET_SINGLE (d, l);
-	  assemble_integer (GEN_INT (l), 2, align, 1);
-	  break;
-	case TQFmode:
-	  REAL_VALUE_TO_TARGET_DOUBLE (d, data);
-	  assemble_integer (GEN_INT (data[0]), 2, align, 1);
-	  assemble_integer (GEN_INT (data[1]), 1, nalign, 1);
-	  break;
-	default:
-	  abort ();
-	}
-      break;
-
-    case 32:
-      switch (mode)
-	{
-	case QFmode:
-	  REAL_VALUE_TO_TARGET_SINGLE (d, l);
-	  assemble_integer (GEN_INT (l), 1, align, 1);
-	  break;
-	case HFmode:
-	  REAL_VALUE_TO_TARGET_DOUBLE (d, data);
-	  assemble_integer (GEN_INT (data[0]), 1, align, 1);
-	  assemble_integer (GEN_INT (data[1]), 1, nalign, 1);
-	  break;
-	default:
-	  abort ();
-	}
-      break;
-
-    default:
-      abort ();
+      assemble_integer (GEN_INT (data[i]), MIN (nunits, units_per), align, 1);
+      nunits -= units_per;
     }
 }
 
