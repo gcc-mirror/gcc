@@ -2698,6 +2698,7 @@ cp_tree_printer (buffer)
     case 'P':
       print_function_parameter
         (buffer, va_arg (output_buffer_format_args (buffer), int));
+      break;
       
     case 'T':
       tree_being_formatted (&tfi) =
