@@ -6,6 +6,9 @@
 	* tree-ssa-phiopt.c (tree_ssa_phiopt): Remove local variable
 	removed_phis.
 
+	* tree-ssa-pre.c (compute_avail): Remove local variable val.
+	(mark_operand_necessary): Remove local variable ver.
+
 2005-03-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-lex.c (c_lex_with_flags): Add parameter to call to 
