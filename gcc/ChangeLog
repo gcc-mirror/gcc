@@ -1,5 +1,8 @@
 Fri Jan 23 22:48:24 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* cse.c (simplify_ternary_operation): Handle more IF_THEN_ELSE
+	simplifications.
+
 	* crtstuff.c (init_dummy): Keep the epilogue in the init
 	section for non-ELF systems.
 

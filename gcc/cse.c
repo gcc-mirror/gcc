@@ -4713,6 +4713,17 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 	  && rtx_equal_p (XEXP (op0, 1), op1)
 	  && rtx_equal_p (XEXP (op0, 0), op2))
 	return op2;
+      else if (! side_effects_p (op0))
+	{
+	  rtx temp;
+	  temp = simplify_relational_operation (GET_CODE (op0), op0_mode,
+						XEXP (op0, 0), XEXP (op0, 1));
+	  /* See if any simplifications were possible.  */
+	  if (temp == const0_rtx)
+	    return op2;
+	  else if (temp == const1_rtx)
+	    return op1;
+	}
       break;
 
     default:
