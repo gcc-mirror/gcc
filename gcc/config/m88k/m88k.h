@@ -197,13 +197,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.55 $"
+#define VERSION_INFO2   "$Revision: 1.56 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.55 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.56 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What$"
 #endif  /* __STDC__ */
@@ -1296,6 +1296,18 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 	&& GET_CODE (XEXP (X, 1)) == CONST_INT		\
 	&& INTVAL (XEXP (X, 1)) == GET_MODE_SIZE (MODE)))
 
+#define RTX_OK_FOR_BASE_P(X)						\
+  ((GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))			\
+  || (GET_CODE (X) == SUBREG						\
+      && GET_CODE (SUBREG_REG (X)) == REG				\
+      && REG_OK_FOR_BASE_P (SUBREG_REG (X))))
+
+#define RTX_OK_FOR_INDEX_P(X)						\
+  ((GET_CODE (X) == REG && REG_OK_FOR_INDEX_P (X))			\
+  || (GET_CODE (X) == SUBREG						\
+      && GET_CODE (SUBREG_REG (X)) == REG				\
+      && REG_OK_FOR_INDEX_P (SUBREG_REG (X))))
+
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)		\
 {							\
   register rtx _x;					\
@@ -1311,7 +1323,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
       if ((flag_pic					\
 	   && _x0 == pic_offset_table_rtx		\
 	   && (flag_pic == 2				\
-	       ? REG_P (_x1)				\
+	       ? RTX_OK_FOR_BASE_P (_x1)		\
 	       : (GET_CODE (_x1) == SYMBOL_REF		\
 		  || GET_CODE (_x1) == LABEL_REF)))	\
 	  || (REG_P (_x0)				\
@@ -1402,6 +1414,12 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == MULT)	\
     (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
 		   force_operand (XEXP (X, 1), 0));		\
+  if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == PLUS)	\
+    (X) = gen_rtx (PLUS, Pmode, force_operand (XEXP (X, 0), NULL_RTX),\
+		   XEXP (X, 1));				\
+  if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == PLUS)	\
+    (X) = gen_rtx (PLUS, Pmode, XEXP (X, 0),			\
+		   force_operand (XEXP (X, 1), NULL_RTX));	\
   if (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST	\
 	   || GET_CODE (X) == LABEL_REF)			\
     (X) = legitimize_address (flag_pic, X, 0, 0);		\
