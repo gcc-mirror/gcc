@@ -682,6 +682,7 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux10.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
+		tmake_file=pa/t-pa
 		if [[ x$gas = xyes ]]
 		then
 			tm_file="${tm_file} pa/pa-gas.h"

@@ -2584,6 +2584,7 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux10.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
+		tmake_file=pa/t-pa
 		if [ x$gas = xyes ]
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
@@ -5250,7 +5251,7 @@ fi
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:5254: checking assembler alignment features" >&5
+echo "configure:5255: checking assembler alignment features" >&5
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,gcc$,gas,'`
