@@ -685,7 +685,8 @@ extern int rs6000_default_long_calls;
 
    RS/6000 has 32 fixed-point registers, 32 floating-point registers,
    an MQ register, a count register, a link register, and 8 condition
-   register fields, which we view here as separate registers.
+   register fields, which we view here as separate registers.  AltiVec
+   adds 32 vector registers and a VRsave register.
 
    In addition, the difference between the frame and argument pointers is
    a function of the number of registers saved, so we need to have a
@@ -1075,7 +1076,7 @@ extern int rs6000_default_long_calls;
 
 /* The RS/6000 has three types of registers, fixed-point, floating-point,
    and condition registers, plus three special registers, MQ, CTR, and the
-   link register.
+   link register.  AltiVec adds a vector register class.
 
    However, r0 is special in that it cannot be used as a base register.
    So make a class for registers valid as base registers.
@@ -1640,7 +1641,7 @@ typedef struct machine_function GTY(())
    have prototype types for.
 
    For ABI_V4, we treat these slightly differently -- `sysv_gregno' is
-   the next availible GP register, `fregno' is the next available FP
+   the next available GP register, `fregno' is the next available FP
    register, and `words' is the number of words used on the stack.
 
    The varargs/stdarg support requires that this structure's size
