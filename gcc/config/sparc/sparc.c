@@ -4057,6 +4057,9 @@ static void function_arg_record_value_1
 static rtx function_arg_record_value
 	PARAMS ((tree, enum machine_mode, int, int, int));
 
+/* A subroutine of function_arg_record_value.  Traverse the structure
+   recusively and determine how many registers will be required.  */
+
 static void
 function_arg_record_value_1 (type, startbitpos, parms)
      tree type;
@@ -4131,7 +4134,8 @@ function_arg_record_value_1 (type, startbitpos, parms)
     }
 }
 
-/* Handle recursive structure field register assignment.  */
+/* A subroutine of function_arg_record_value.  Assign the bits of the
+   structure between parms->intoffset and bitpos to integer registers.  */
 
 static void 
 function_arg_record_value_3 (bitpos, parms)
@@ -4140,6 +4144,7 @@ function_arg_record_value_3 (bitpos, parms)
 {
   enum machine_mode mode;
   unsigned int regno;
+  unsigned int startbit, endbit;
   int this_slotno, intslots, intoffset;
   rtx reg;
 
@@ -4149,7 +4154,9 @@ function_arg_record_value_3 (bitpos, parms)
   intoffset = parms->intoffset;
   parms->intoffset = -1;
 
-  intslots = (bitpos - intoffset + BITS_PER_WORD - 1) / BITS_PER_WORD;
+  startbit = intoffset & -BITS_PER_WORD;
+  endbit = (bitpos + BITS_PER_WORD - 1) & -BITS_PER_WORD;
+  intslots = (endbit - startbit) / BITS_PER_WORD;
   this_slotno = parms->slotno + intoffset / BITS_PER_WORD;
 
   intslots = MIN (intslots, SPARC_INT_ARG_MAX - this_slotno);
@@ -4182,6 +4189,11 @@ function_arg_record_value_3 (bitpos, parms)
     }
   while (intslots > 0);
 }
+
+/* A subroutine of function_arg_record_value.  Traverse the structure
+   recursively and assign bits to floating point registers.  Track which
+   bits in between need integer registers; invoke function_arg_record_value_3
+   to make that happen.  */
 
 static void
 function_arg_record_value_2 (type, startbitpos, parms)
@@ -4243,6 +4255,9 @@ function_arg_record_value_2 (type, startbitpos, parms)
     }
 }
 
+/* Used by function_arg and function_value to implement the complex
+   Sparc64 structure calling conventions.  */
+
 static rtx
 function_arg_record_value (type, mode, slotno, named, regbase)
      tree type;
@@ -4265,10 +4280,12 @@ function_arg_record_value (type, mode, slotno, named, regbase)
 
   if (parms.intoffset != -1)
     {
+      unsigned int startbit, endbit;
       int intslots, this_slotno;
 
-      intslots = (typesize*BITS_PER_UNIT - parms.intoffset + BITS_PER_WORD - 1)
-	/ BITS_PER_WORD;
+      startbit = parms.intoffset & -BITS_PER_WORD;
+      endbit = (typesize*BITS_PER_UNIT + BITS_PER_WORD - 1) & -BITS_PER_WORD;
+      intslots = (endbit - startbit) / BITS_PER_WORD;
       this_slotno = slotno + parms.intoffset / BITS_PER_WORD;
 
       intslots = MIN (intslots, SPARC_INT_ARG_MAX - this_slotno);
