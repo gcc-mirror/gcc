@@ -1,5 +1,9 @@
 2004-08-10  Paul Brook  <paul@codesourcery.com>
 
+	* gfortran.dg/der_io_1.f90: New test.
+
+2004-08-10  Paul Brook  <paul@codesourcery.com>
+
 	PR fortran/16919
 	* gfortran.dg/der_array_1.f90: New test.
 
