@@ -499,7 +499,7 @@ void
 emit_queue ()
 {
   register rtx p;
-  while (p = pending_chain)
+  while ((p = pending_chain))
     {
       QUEUED_INSN (p) = emit_insn (QUEUED_BODY (p));
       pending_chain = QUEUED_NEXT (p);
@@ -1657,7 +1657,10 @@ move_block_to_reg (regno, x, nregs, mode)
      enum machine_mode mode;
 {
   int i;
-  rtx pat, last;
+#ifdef HAVE_load_multiple
+  rtx pat; 
+  rtx last;
+#endif
 
   if (nregs == 0)
     return;
@@ -1700,7 +1703,10 @@ move_block_from_reg (regno, x, nregs, size)
      int size;
 {
   int i;
-  rtx pat, last;
+#ifdef HAVE_store_multiple
+  rtx pat; 
+  rtx last;
+#endif
   enum machine_mode mode;
 
   /* If SIZE is that of a mode no bigger than a word, just use that
@@ -2221,7 +2227,6 @@ emit_move_insn_1 (x, y)
     {
       /* Don't split destination if it is a stack push.  */
       int stack = push_operand (x, GET_MODE (x));
-      rtx insns;
 
       /* If this is a stack, push the highpart first, so it
 	 will be in the argument order.
@@ -2265,7 +2270,6 @@ emit_move_insn_1 (x, y)
   else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     {
       rtx last_insn = 0;
-      rtx insns;
       
 #ifdef PUSH_ROUNDING
 
@@ -3883,8 +3887,6 @@ store_constructor (exp, target, cleared)
   else if (TREE_CODE (type) == SET_TYPE)
     {
       tree elt = CONSTRUCTOR_ELTS (exp);
-      rtx xtarget = XEXP (target, 0);
-      int set_word_size = TYPE_ALIGN (type);
       int nbytes = int_size_in_bytes (type), nbits;
       tree domain = TYPE_DOMAIN (type);
       tree domain_min, domain_max, bitlength;
@@ -3991,7 +3993,9 @@ store_constructor (exp, target, cleared)
 	  tree startbit = TREE_PURPOSE (elt);
 	  /* end of range of element, or element value */
 	  tree endbit   = TREE_VALUE (elt);
+#ifdef TARGET_MEM_FUNCTIONS
 	  HOST_WIDE_INT startb, endb;
+#endif
 	  rtx  bitlength_rtx, startbit_rtx, endbit_rtx, targetx;
 
 	  bitlength_rtx = expand_expr (bitlength,
@@ -6954,7 +6958,6 @@ expand_expr (exp, target, tmode, modifier)
 	tree slot = TREE_OPERAND (exp, 0);
 	tree cleanups = NULL_TREE;
 	tree exp1;
-	rtx temp;
 
 	if (TREE_CODE (slot) != VAR_DECL)
 	  abort ();
@@ -7621,9 +7624,6 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
   rtx lab1 = gen_label_rtx ();
   enum machine_mode sa_mode = Pmode, value_mode;
   rtx stack_save;
-  int old_inhibit_defer_pop = inhibit_defer_pop;
-  rtx next_arg_reg;
-  rtx op0;
   int i;
 
   value_mode = TYPE_MODE (integer_type_node);
@@ -8098,9 +8098,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_ARGS_INFO:
       {
 	int nwords = sizeof (CUMULATIVE_ARGS) / sizeof (int);
-	int i;
 	int *word_ptr = (int *) &current_function_args_info;
+#if 0	
+	/* These are used by the code below that is if 0'ed away */
+	int i;
 	tree type, elts, result;
+#endif
 
 	if (sizeof (CUMULATIVE_ARGS) % sizeof (int) != 0)
 	  fatal ("CUMULATIVE_ARGS type defined badly; see %s, line %d",
@@ -8614,7 +8617,6 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       {
 	tree arg1 = TREE_VALUE (arglist);
 	tree arg2 = TREE_VALUE (TREE_CHAIN (arglist));
-	tree offset;
 	tree len, len2;
 
 	len = c_strlen (arg1);
@@ -10464,7 +10466,7 @@ do_store_flag (exp, target, mode, only_cheap)
   rtx op0, op1;
   enum insn_code icode;
   rtx subtarget = target;
-  rtx result, label, pattern, jump_pat;
+  rtx result, label;
 
   /* If this is a TRUTH_NOT_EXPR, set a flag indicating we must invert the
      result at the end.  We can't simply invert the test since it would
