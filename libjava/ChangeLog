@@ -1,5 +1,10 @@
 2001-10-17  Tom Tromey  <tromey@redhat.com>
 
+	* gnu/java/security/provider/SHA1PRNG.java (engineNextBytes):
+	Rewrote.
+	* java/security/SecureRandom.java (setSeed(long)): Don't set seed
+	if secureRandomSpi is not initialized.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (secdir): New macro.
 	(install-data-local): Install new data files.

@@ -1,5 +1,5 @@
 /* SHA1PRNG.java --- Secure Random SPI SHA1PRNG
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -73,29 +73,26 @@ public class SHA1PRNG extends SecureRandomSpi implements Serializable
 
   public void engineNextBytes(byte[] bytes)
   {
+    int loc = 0;
+    while (loc < bytes.length)
+      {
+	int copy = Math.min (bytes.length - loc, 20 - datapos);
 
-    if( bytes.length < (20 - datapos) ) {
-      System.arraycopy( data, datapos, bytes, 0, bytes.length);
-      datapos += bytes.length;
-      return;
-    }
-
-    int i, blen = bytes.length, bpos = 0;
-    byte digestdata[];
-    while( bpos < blen ) {
-      i = 20 - datapos;
-      System.arraycopy( data, datapos, bytes, bpos, i);
-      bpos += i;
-      datapos += i;
-      if( datapos >= 20) {
-	//System.out.println( (0 + 20) + "\n" + (20 + 20) );
-	System.arraycopy( seed, 0, data, 20, 20);
-	digestdata = digest.digest( data );
-	System.arraycopy( digestdata, 0, data, 0, 20);
-	datapos = 0;
+	if (copy > 0)
+	  {
+	    System.arraycopy (data, datapos, bytes, loc, copy);
+	    datapos += copy;
+	    loc += copy;
+	  }
+	else
+	  {
+	    // No data ready for copying, so refill our buffer.
+	    System.arraycopy( seed, 0, data, 20, 20);
+	    byte[] digestdata = digest.digest( data );
+	    System.arraycopy( digestdata, 0, data, 0, 20);
+	    datapos = 0;
+	  }
       }
-    }
-
   }
 
   public byte[] engineGenerateSeed(int numBytes)
