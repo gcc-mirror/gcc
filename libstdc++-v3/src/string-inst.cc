@@ -209,7 +209,7 @@ namespace std
       const char* __ret = strchr(__beg, __c); 
       return (__ret ? __ret : __end);
     }
-#else
+#elif defined(_GLIBCPP_USE_WCHAR_T)
   template<>
     const wchar_t* 
     wstring::_S_find(const wchar_t* __beg, const wchar_t* __end, wchar_t __c)

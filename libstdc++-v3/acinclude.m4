@@ -131,9 +131,11 @@ LIB_AC_PROG_CXX
   # fails, because we are probably configuring with a cross compiler
   # which cant create executables.  So we include AC_EXEEXT to keep
   # automake happy, but we dont execute it, since we dont care about
-  # the result.
+  # the result.  We must, however, execute something else to prevent sh
+  # from complaining about an empty body.
   if false; then
     AC_EXEEXT
+    :
   fi
 
   # configure.host sets the following important variables
@@ -893,93 +895,102 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE, [
 dnl
 dnl Check to see if this target can enable the wchar_t parts of libstdc++.
 dnl
-dnl Define _GLIBCPP_USE_WCHAR_T if all the bits are found 
-dnl Define _GLIBCPP_NEED_MBSTATE_T if mbstate_t is not in wchar.h
+dnl Define _GLIBCPP_USE_WCHAR_T if all the bits are found.
+dnl Define _GLIBCPP_NEED_MBSTATE_T if mbstate_t is not in wchar.h.
+dnl
+dnl All of the above depends on --enable-wchar (the default).
 dnl
 dnl GLIBCPP_CHECK_WCHAR_T_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
 
-  dnl Sanity check for existence of ISO C9X headers for extended encoding.
-  AC_CHECK_HEADER(wchar.h, ac_has_wchar_h=yes, ac_has_wchar_h=no)
-  AC_CHECK_HEADER(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
-	
-  dnl Only continue checking if the ISO C9X headers exist.
-  if test x"$ac_has_wchar_h" = xyes && test x"$ac_has_wctype_h" = xyes; then
+  AC_MSG_CHECKING([if wide character support is requested])
+  GLIBCPP_ENABLE_WCHAR([yes])
+  AC_MSG_RESULT($enable_wchar)
+  if test x"$enable_wchar" = xyes; then
 
-    dnl Test wchar.h for mbstate_t, which is needed for char_traits and others.
-    AC_MSG_CHECKING([for mbstate_t])
-    AC_TRY_COMPILE([#include <wchar.h>],
-    [mbstate_t teststate;], 
-    use_native_mbstatet=yes, use_native_mbstatet=no)
-    AC_MSG_RESULT($use_native_mbstatet)
-    if test x"$use_native_mbstatet" = xno; then
-      AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
-    fi
-  
-    dnl Test wchar.h for WCHAR_MIN, WCHAR_MAX, which is needed before
-    dnl numeric_limits can instantiate type_traits<wchar_t>
-    AC_MSG_CHECKING([for WCHAR_MIN and WCHAR_MAX])
-    AC_TRY_COMPILE([#include <wchar.h>],
-    [int i = WCHAR_MIN; int j = WCHAR_MAX;], 
-    has_wchar_minmax=yes, has_wchar_minmax=no)
-    AC_MSG_RESULT($has_wchar_minmax)
-  
-    dnl Test wchar.h for WEOF, which is what we use to determine whether
-    dnl to specialize for char_traits<wchar_t> or not.
-    AC_MSG_CHECKING([for WEOF])
-    AC_TRY_COMPILE([
-      #include <wchar.h>
-      #include <stddef.h>],
-    [wint_t i = WEOF;],
-    has_weof=yes, has_weof=no)
-    AC_MSG_RESULT($has_weof)
+   dnl Sanity check for existence of ISO C9X headers for extended encoding.
+   AC_CHECK_HEADER(wchar.h, ac_has_wchar_h=yes, ac_has_wchar_h=no)
+   AC_CHECK_HEADER(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
+ 	
+   dnl Only continue checking if the ISO C9X headers exist.
+   if test x"$ac_has_wchar_h" = xyes && test x"$ac_has_wctype_h" = xyes; then
+ 
+     dnl Test wchar.h for mbstate_t, which is needed for char_traits and others.
+     AC_MSG_CHECKING([for mbstate_t])
+     AC_TRY_COMPILE([#include <wchar.h>],
+     [mbstate_t teststate;], 
+     use_native_mbstatet=yes, use_native_mbstatet=no)
+     AC_MSG_RESULT($use_native_mbstatet)
+     if test x"$use_native_mbstatet" = xno; then
+       AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
+     fi
+   
+     dnl Test wchar.h for WCHAR_MIN, WCHAR_MAX, which is needed before
+     dnl numeric_limits can instantiate type_traits<wchar_t>
+     AC_MSG_CHECKING([for WCHAR_MIN and WCHAR_MAX])
+     AC_TRY_COMPILE([#include <wchar.h>],
+     [int i = WCHAR_MIN; int j = WCHAR_MAX;], 
+     has_wchar_minmax=yes, has_wchar_minmax=no)
+     AC_MSG_RESULT($has_wchar_minmax)
+   
+     dnl Test wchar.h for WEOF, which is what we use to determine whether
+     dnl to specialize for char_traits<wchar_t> or not.
+     AC_MSG_CHECKING([for WEOF])
+     AC_TRY_COMPILE([
+       #include <wchar.h>
+       #include <stddef.h>],
+     [wint_t i = WEOF;],
+     has_weof=yes, has_weof=no)
+     AC_MSG_RESULT($has_weof)
+ 
+     dnl Tests for wide character functions used in char_traits<wchar_t>.
+     AC_CHECK_FUNCS(wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset \
+     wcsrtombs mbsrtowcs, ac_wfuncs=yes, ac_wfuncs=no)
+ 
+     AC_MSG_CHECKING([for ISO C9X wchar_t support])
+     if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes \
+        && test x"$ac_wfuncs" = xyes; then
+       ac_isoC9X_wchar_t=yes
+     else
+       ac_isoC9X_wchar_t=no
+     fi
+     AC_MSG_RESULT($ac_isoC9X_wchar_t)
+ 
+     dnl Use iconv for wchar_t to char conversions. As such, check for 
+     dnl X/Open Portability Guide, version 2 features (XPG2).
+     AC_CHECK_HEADER(iconv.h, ac_has_iconv_h=yes, ac_has_iconv_h=no)
+     AC_CHECK_HEADER(langinfo.h, ac_has_langinfo_h=yes, ac_has_langinfo_h=no)
+     AC_CHECK_FUNCS(iconv_open iconv_close iconv nl_langinfo, \
+     ac_XPG2funcs=yes, ac_XPG2funcs=no)
+ 
+     AC_MSG_CHECKING([for XPG2 wchar_t support])
+     if test x"$ac_has_iconv_h" = xyes && test x"$ac_has_langinfo_h" = xyes \
+        && test x"$ac_XPG2funcs" = xyes; then
+       ac_XPG2_wchar_t=yes
+     else
+       ac_XPG2_wchar_t=no
+     fi
+     AC_MSG_RESULT($ac_XPG2_wchar_t)
+ 
+     dnl At the moment, only enable wchar_t specializations if all the
+     dnl above support is present.
+     AC_MSG_CHECKING([for enabled wchar_t specializations])
+     if test x"$ac_isoC9X_wchar_t" = xyes \
+        && test x"$ac_XPG2_wchar_t" = xyes; then
+       libinst_wstring_la="libinst-wstring.la"
+       AC_DEFINE(_GLIBCPP_USE_WCHAR_T)
+       AC_MSG_RESULT("yes")
+     else
+       libinst_wstring_la=""
+       AC_MSG_RESULT("no")
+     fi
+     AC_SUBST(libinst_wstring_la)
+ 
+   else
+     AC_MSG_WARN([<wchar.h> not found])
+     AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
+   fi
 
-    dnl Tests for wide character functions used in char_traits<wchar_t>.
-    AC_CHECK_FUNCS(wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset \
-    wcsrtombs mbsrtowcs, ac_wfuncs=yes, ac_wfuncs=no)
-
-    AC_MSG_CHECKING([for ISO C9X wchar_t support])
-    if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes \
-       && test x"$ac_wfuncs" = xyes; then
-      ac_isoC9X_wchar_t=yes
-    else
-      ac_isoC9X_wchar_t=no
-    fi
-    AC_MSG_RESULT($ac_isoC9X_wchar_t)
-
-    dnl Use iconv for wchar_t to char conversions. As such, check for 
-    dnl X/Open Portability Guide, version 2 features (XPG2).
-    AC_CHECK_HEADER(iconv.h, ac_has_iconv_h=yes, ac_has_iconv_h=no)
-    AC_CHECK_HEADER(langinfo.h, ac_has_langinfo_h=yes, ac_has_langinfo_h=no)
-    AC_CHECK_FUNCS(iconv_open iconv_close iconv nl_langinfo, \
-    ac_XPG2funcs=yes, ac_XPG2funcs=no)
-
-    AC_MSG_CHECKING([for XPG2 wchar_t support])
-    if test x"$ac_has_iconv_h" = xyes && test x"$ac_has_langinfo_h" = xyes \
-       && test x"$ac_XPG2funcs" = xyes; then
-      ac_XPG2_wchar_t=yes
-    else
-      ac_XPG2_wchar_t=no
-    fi
-    AC_MSG_RESULT($ac_XPG2_wchar_t)
-
-    dnl At the moment, only enable wchar_t specializations if all the
-    dnl above support is present.
-    AC_MSG_CHECKING([for enabled wchar_t specializations])
-    if test x"$ac_isoC9X_wchar_t" = xyes \
-       && test x"$ac_XPG2_wchar_t" = xyes; then
-      libinst_wstring_la="libinst-wstring.la"
-      AC_DEFINE(_GLIBCPP_USE_WCHAR_T)
-      AC_MSG_RESULT("yes")
-    else
-      libinst_wstring_la=""
-      AC_MSG_RESULT("no")
-    fi
-    AC_SUBST(libinst_wstring_la)
-
-  else
-    AC_MSG_WARN([<wchar.h> not found])
-    AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
   fi
 ])
 
@@ -1192,6 +1203,8 @@ dnl Check for which I/O library to use:  libio, or something specific.
 dnl
 dnl GLIBCPP_ENABLE_CSTDIO
 dnl --enable-cstdio=libio sets config/c_io_libio.h and friends
+dnl --enable-cstdio=wince sets config/c_io_wince.h and friends, but those
+dnl                                    need to be written by somebody.
 dnl 
 dnl default is libio
 dnl
@@ -1203,11 +1216,12 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   if test x$enable_cstdio = xno; then
     enable_cstdio=libio
   fi,
-     enable_cstdio=libio)
+     enable_cstdio=libio
+  )
 
   enable_cstdio_flag=$enable_cstdio
 
-  dnl Check if a valid thread package
+  dnl Check if a valid I/O package
   case x${enable_cstdio_flag} in
     xlibio | x | xno | xnone | xyes)
       # default
@@ -1224,31 +1238,31 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
       if test x$has_libio = x"yes"; then
         case "$target" in
           *-*-linux*)
-  	    AC_MSG_CHECKING([for glibc version >= 2.2])
-  	    AC_EGREP_CPP([ok], [
-	    #include <features.h>
-  	    #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2) 
-    		ok
-  	    #endif
-  	    ], glibc_satisfactory=yes, glibc_satisfactory=no)
-  	    AC_MSG_RESULT($glibc_satisfactory)
-	    ;;
+              AC_MSG_CHECKING([for glibc version >= 2.2])
+              AC_EGREP_CPP([ok], [
+            #include <features.h>
+              #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2) 
+                    ok
+              #endif
+              ], glibc_satisfactory=yes, glibc_satisfactory=no)
+              AC_MSG_RESULT($glibc_satisfactory)
+            ;;
         esac
 
-  	if test x$glibc_satisfactory = x"yes"; then
-	  need_libio=no
-	  need_xtra_libio=no
-      	  need_wlibio=no	
-      	else
-	  need_libio=yes
-	  need_xtra_libio=yes
+        if test x$glibc_satisfactory = x"yes"; then
+          need_libio=no
+          need_xtra_libio=no
+          need_wlibio=no        
+        else
+          need_libio=yes
+          need_xtra_libio=yes
           # bkoz XXX need to add checks to enable this
           need_wlibio=yes
-	fi
+        fi
 
       # Using libio, but <libio.h> doesn't exist on the target system. . .
       else
-	need_libio=yes
+        need_libio=yes
         need_xtra_libio=no
         # bkoz XXX need to add checks to enable this
         need_wlibio=no
@@ -1274,7 +1288,26 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
   CCODECVT_C=config/c_io_libio_codecvt.c
   AC_LINK_FILES($CCODECVT_C, libio/c_codecvt.c)
   # 2000-08-04 bkoz hack
-	
+
+  # 2000-08-22 pme kludge -- if building libio, then probably need these
+  #   typedefs which are used in _G_config.h
+  if test $need_libio = yes; then
+    AC_CHECK_TYPE(__off_t,off_t)
+    # off64_t should already be there, but just in case...
+    AC_CHECK_TYPE(off64_t,off_t)
+    AC_CHECK_TYPE(__off64_t,off64_t)
+    AC_CHECK_TYPE(__ssize_t,ssize_t)
+    AC_TRY_COMPILE([#include <sys/types.h>
+                    #include <sys/stat.h>],
+                   [struct stat64 s;],
+                   , dnl Nothing need be done if it's present
+                   [dnl Not entirely comfortable with this
+                    AC_DEFINE(stat64,stat)
+                   ]
+    )
+  fi
+  # 2000-08-22 pme kludge
+
   AM_CONDITIONAL(GLIBCPP_NEED_LIBIO, test "$need_libio" = yes)
   AM_CONDITIONAL(GLIBCPP_NEED_XTRA_LIBIO, test "$need_xtra_libio" = yes)
   AM_CONDITIONAL(GLIBCPP_NEED_WLIBIO, test "$need_wlibio" = yes)
@@ -1371,6 +1404,9 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   AC_SUBST(THREADOBJS)
   AC_SUBST(THREADSPEC)
   AC_LINK_FILES(config/$THREADH, bits/c++threads.h)
+  if test "$THREADS" != none; then
+     AC_DEFINE(_GLIBCPP_USING_THREADS)
+  fi
 ])
 
 
@@ -1582,6 +1618,7 @@ dnl string, '#' otherwise
   AC_SUBST(ifGNUmake)
 ])
 
+
 sinclude(../libtool.m4)
 dnl The lines below arrange for aclocal not to bring an installed
 dnl libtool.m4 into aclocal.m4, while still arranging for automake to
@@ -1591,3 +1628,31 @@ AC_DEFUN([AM_PROG_LIBTOOL])
 AC_DEFUN([AC_LIBTOOL_DLOPEN])
 AC_DEFUN([AC_PROG_LD])
 ])
+
+
+dnl
+dnl Check whether the user wants wide character support.
+dnl
+dnl GLIBCPP_ENABLE_WCHAR
+dnl --enable-wchar [does stuff].
+dnl --disable-wchar [does not do stuff].
+dnl  +  Usage:  GLIBCPP_ENABLE_WCHAR[(DEFAULT)]
+dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
+dnl       defaults to `no'.
+AC_DEFUN(GLIBCPP_ENABLE_WCHAR, [dnl
+define([GLIBCPP_ENABLE_WCHAR_DEFAULT], ifelse($1, yes, yes, no))dnl
+AC_ARG_ENABLE(wchar,
+changequote(<<, >>)dnl
+<<  --enable-wchar          turns on wide character support [default=>>GLIBCPP_ENABLE_WCHAR_DEFAULT],
+changequote([, ])dnl
+[case "$enableval" in
+ yes) enable_wchar=yes ;;
+ no)  enable_wchar=no ;;
+ *)   AC_MSG_ERROR([Unknown argument to enable/disable wchar]) ;;
+ esac],
+enable_wchar=GLIBCPP_ENABLE_WCHAR_DEFAULT)dnl
+dnl We don't set things in the external files; other configure tests will
+dnl use $enable_wchar ("yes"/"no") for their own work.
+])
+
+

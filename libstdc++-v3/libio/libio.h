@@ -164,7 +164,7 @@ struct _IO_jump_t;  struct _IO_FILE;
 /*# include <comthread.h>*/
 # endif
 #else
-typedef void _IO_lock_t;
+typedef void* _IO_lock_t;
 #endif
 
 

@@ -69,6 +69,24 @@
 // Define if modf is present in <math.h>
 #undef HAVE_MODF
 
+// Define if multiple threads are to be taken into account.
+#undef _GLIBCPP_USING_THREADS
+
+// Define to some workaround if not directly available.
+#undef off64_t
+
+// Define to some workaround if not directly available.
+#undef __off_t
+
+// Define to some workaround if not directly available.
+#undef __off64_t
+
+// Define to some workaround if not directly available.
+#undef __ssize_t
+
+// Define to regular stat if not directly supported.
+#undef stat64
+
 // @BOTTOM@
 //
 // Systems that have certain non-standard functions prefixed with an

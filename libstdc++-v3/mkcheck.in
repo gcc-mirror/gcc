@@ -57,7 +57,7 @@ fi
 if [ $WHICH != "1" ]; then
   INC_PATH="@CSHADOWFLAGS@ -I$BUILD_DIR -I$BUILD_DIR/libio -I$SRC_DIR/@ctype_include_dir@ -I$SRC_DIR/@cpu_include_dir@  -I$SRC_DIR/std -I$SRC_DIR -I$SRC_DIR/libio -I$SRC_DIR/testsuite"
 elif [ $WHICH -eq 1 ]; then
-  INC_PATH=""
+  INC_PATH="-I$SRC_DIR/testsuite"
 fi
 
 if [ $WHICH -eq 2 ]; then
