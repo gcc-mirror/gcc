@@ -38,6 +38,7 @@
 #include "recog.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "integrate.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
