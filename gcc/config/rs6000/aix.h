@@ -58,19 +58,20 @@
 #define LINK_LIBGCC_SPECIAL_1
 
 /* Names to predefine in the preprocessor for this target machine.  */
-#define TARGET_OS_CPP_BUILTINS()         \
-  do                                     \
-    {                                    \
-      builtin_define ("_IBMR2");         \
-      builtin_define ("_POWER");         \
-      builtin_define ("_AIX");           \
-      builtin_define ("_AIX32");         \
-      builtin_define ("_LONG_LONG");     \
-      builtin_assert ("system=unix");    \
-      builtin_assert ("system=aix");     \
-      builtin_assert ("cpu=rs6000");     \
-      builtin_assert ("machine=rs6000"); \
-    }                                    \
+#define TARGET_OS_AIX_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("_IBMR2");		\
+      builtin_define ("_POWER");		\
+      builtin_define ("_AIX");			\
+      builtin_define ("_AIX32");		\
+      builtin_define ("_AIX41");		\
+      builtin_define ("_LONG_LONG");		\
+      if (TARGET_LONG_DOUBLE_128)		\
+        builtin_define ("__LONGDOUBLE128");	\
+      builtin_assert ("system=unix");		\
+      builtin_assert ("system=aix");		\
+    }						\
   while (0)
 
 /* Define appropriate architecture macros for preprocessor depending on

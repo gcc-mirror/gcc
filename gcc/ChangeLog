@@ -1,3 +1,16 @@
+2004-03-10  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/aix.h (TARGET_OS_CPP_BUILTINS): Rename to ...
+	(TARGET_OS_AIX_CPP_BUILTINS): this.  Conditionally define
+	__LONGDOUBLE128.
+	* config/rs6000/aix41.h (TARGET_OS_CPP_BUILTINS): Use
+	TARGET_OS_AIX_CPP_BUILTINS.
+	* config/rs6000/aix43.h (TARGET_OS_CPP_BUILTINS): Same.
+	* config/rs6000/aix51.h (TARGET_OS_CPP_BUILTINS): Same.
+	* config/rs6000/aix52.h (TARGET_OS_CPP_BUILTINS): Same.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Revert
+	previous change.
+
 2004-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fold-const.c (tree_expr_nonnegative_p): Add more builtin cases.
