@@ -1,3 +1,59 @@
+2000-08-14  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in (ia64-*): Set float_format for i386 long double.
+
+	* real.c (GET_REAL): Treat 128-bit INTEL_EXTENDED_IEEE_FORMAT
+	as we would for i386 XFmode.
+	(PUT_REAL): Likewise.
+	(endian, ereal_atof, real_value_truncate): Likewise.
+	(ereal_isneg, toe64, etens, make_nan): Likewise.
+	* real.h (REAL_VALUE_TO_TARGET_LONG_DOUBLE): Likewise.
+
+	* config/ia64/ia64-protos.h: Update.
+	* config/ia64/ia64.c (general_tfmode_operand): New.
+	(destination_tfmode_operand): New.
+	(tfreg_or_fp01_operand): New.
+	(ia64_split_timode): New.
+	(spill_tfmode_operand): New.
+	(ia64_expand_prologue): Use TFmode not XFmode.
+	(ia64_expand_epilogue): Likewise.
+	(ia64_function_arg): Likewise.
+	(ia64_function_arg_advance): Likewise.
+	(ia64_return_in_memory): Likewise.
+	(ia64_function_value): Likewise.
+	(ia64_print_operand): Likewise.
+	(ia64_register_move_cost): Set GR<->FR to 5.
+	(ia64_secondary_reload_class): Get GR for TImode memory op.
+	* config/ia64/ia64.h (ROUND_TYPE_SIZE): Remove.
+	(ROUND_TYPE_ALIGN): Remove.
+	(LONG_DOUBLE_TYPE_SIZE): Set to 128.
+	(INTEL_EXTENDED_IEEE_FORMAT): Define.
+	(HARD_REGNO_NREGS): Use TFmode, not XFmode.
+	(HARD_REGNO_MODE_OK): Likewise.  Disallow TImode in FRs.
+	(MODES_TIEABLE_P): Use TFmode, not XFmode.
+	(CLASS_MAX_NREGS): Likewise.
+	(ASM_OUTPUT_LONG_DOUBLE): Output by 4 byte hunks.
+	(PREDICATE_CODES): Update.
+	* config/ia64/ia64.md (movti): New.
+	(movti_internal): Use a clobber for memory alternatives.
+	(reload_inti, reload_outti): New.
+	(movsfcc_astep): Predicate properly.
+	(movdfcc_astep): Likewise.
+	(movxf): Remove.
+	(movtf): New.
+	(extendsftf2, extenddftf2): New.
+	(trunctfsf2, trunctfdf2): New.
+	(floatditf2, fix_trunctfdi2): New.
+	(floatunsditf2, fixuns_trunctfdi2): New.
+	(addtf3, subtf3, multf3, abstf2): New.
+	(negtf2, nabstf2, mintf3, maxtf3): New.
+	(maddtf3, msubtf3, nmultf3, nmaddtf3): New.
+	(cmptf): New.
+	(fr_spill): Use TFmode, not XFmode.
+	(fr_restore): Likewise.
+	* config/ia64/lib1funcs.asm (__divtf3): New.
+	* config/ia64/t-ia64 (LIB1ASMFUNCS): Add it.
+
 2000-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cse.c (fold_rtx): Avoid empty body in an if-statement.

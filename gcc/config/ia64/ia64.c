@@ -570,6 +570,46 @@ ar_ccv_reg_operand (op, mode)
 	  && GET_CODE (op) == REG
 	  && REGNO (op) == AR_CCV_REGNUM);
 }
+
+/* Like general_operand, but don't allow (mem (addressof)).  */
+
+int
+general_tfmode_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (! general_operand (op, mode))
+    return 0;
+  if (GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) == ADDRESSOF)
+    return 0;
+  return 1;
+}
+
+/* Similarly.  */
+
+int
+destination_tfmode_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (! destination_operand (op, mode))
+    return 0;
+  if (GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) == ADDRESSOF)
+    return 0;
+  return 1;
+}
+
+/* Similarly.  */
+
+int
+tfreg_or_fp01_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == SUBREG)
+    return 0;
+  return reg_or_fp01_operand (op, mode);
+}
 
 /* Return 1 if the operands of a move are ok.  */
 
@@ -680,6 +720,106 @@ ia64_gp_save_reg (setjmp_p)
     }
 
   return save;
+}
+
+/* Split a post-reload TImode reference into two DImode components.  */
+
+rtx
+ia64_split_timode (out, in, scratch)
+     rtx out[2];
+     rtx in, scratch;
+{
+  switch (GET_CODE (in))
+    {
+    case REG:
+      out[0] = gen_rtx_REG (DImode, REGNO (in));
+      out[1] = gen_rtx_REG (DImode, REGNO (in) + 1);
+      return NULL_RTX;
+
+    case MEM:
+      {
+	HOST_WIDE_INT offset;
+	rtx base = XEXP (in, 0);
+	rtx offset_rtx;
+
+	switch (GET_CODE (base))
+	  {
+	  case REG:
+	    out[0] = change_address (in, DImode, NULL_RTX);
+	    break;
+	  case POST_MODIFY:
+	    base = XEXP (base, 0);
+	    out[0] = change_address (in, DImode, NULL_RTX);
+	    break;
+
+	  /* Since we're changing the mode, we need to change to POST_MODIFY
+	     as well to preserve the size of the increment.  Either that or
+	     do the update in two steps, but we've already got this scratch
+	     register handy so let's use it.  */
+	  case POST_INC:
+	    base = XEXP (base, 0);
+	    out[0] = change_address (in, DImode,
+	      gen_rtx_POST_MODIFY (Pmode, base,plus_constant (base, 16)));
+	    break;
+	  case POST_DEC:
+	    base = XEXP (base, 0);
+	    out[0] = change_address (in, DImode,
+	      gen_rtx_POST_MODIFY (Pmode, base,plus_constant (base, -16)));
+	    break;
+	  default:
+	    abort ();
+	  }
+
+	if (scratch == NULL_RTX)
+	  abort ();
+	out[1] = change_address (in, DImode, scratch);
+	return gen_adddi3 (scratch, base, GEN_INT (8));
+      }
+
+    case CONST_INT:
+    case CONST_DOUBLE:
+      split_double (in, &out[0], &out[1]);
+      return NULL_RTX;
+
+    default:
+      abort ();
+    }
+}
+
+/* ??? Fixing GR->FR TFmode moves during reload is hard.  You need to go
+   through memory plus an extra GR scratch register.  Except that you can
+   either get the first from SECONDARY_MEMORY_NEEDED or the second from
+   SECONDARY_RELOAD_CLASS, but not both.
+
+   We got into problems in the first place by allowing a construct like
+   (subreg:TF (reg:TI)), which we got from a union containing a long double.  
+   This solution attempts to prevent this situation from ocurring.  When
+   we see something like the above, we spill the inner register to memory.  */
+
+rtx
+spill_tfmode_operand (in, force)
+     rtx in;
+     int force;
+{
+  if (GET_CODE (in) == SUBREG
+      && GET_MODE (SUBREG_REG (in)) == TImode
+      && GET_CODE (SUBREG_REG (in)) == REG)
+    {
+      rtx mem = gen_mem_addressof (SUBREG_REG (in), NULL_TREE);
+      return gen_rtx_MEM (TFmode, copy_to_reg (XEXP (mem, 0)));
+    }
+  else if (force && GET_CODE (in) == REG)
+    {
+      rtx mem = gen_mem_addressof (in, NULL_TREE);
+      return gen_rtx_MEM (TFmode, copy_to_reg (XEXP (mem, 0)));
+    }
+  else if (GET_CODE (in) == MEM
+	   && GET_CODE (XEXP (in, 0)) == ADDRESSOF)
+    {
+      return change_address (in, TFmode, copy_to_reg (XEXP (in, 0)));
+    }
+  else
+    return in;
 }
 
 /* Begin the assembly file.  */
@@ -1702,7 +1842,7 @@ ia64_expand_prologue ()
       {
         if (cfa_off & 15)
 	  abort ();
-	reg = gen_rtx_REG (XFmode, regno);
+	reg = gen_rtx_REG (TFmode, regno);
 	do_spill (gen_fr_spill_x, reg, cfa_off, reg);
 	cfa_off -= 16;
       }
@@ -1867,7 +2007,7 @@ ia64_expand_epilogue ()
       {
         if (cfa_off & 15)
 	  abort ();
-	reg = gen_rtx_REG (XFmode, regno);
+	reg = gen_rtx_REG (TFmode, regno);
 	do_restore (gen_fr_restore_x, reg, cfa_off);
 	cfa_off -= 16;
       }
@@ -2304,7 +2444,6 @@ ia64_function_arg (cum, mode, type, named, incoming)
 				      gen_rtx_REG (hfa_mode, (FR_ARG_FIRST
 							      + fp_regs)),
 				      GEN_INT (offset));
-	  /* ??? Padding for XFmode type?  */
 	  offset += hfa_size;
 	  args_byte_size += hfa_size;
 	  fp_regs++;
@@ -2484,7 +2623,6 @@ ia64_function_arg_advance (cum, mode, type, named)
       for (; (offset < byte_size && fp_regs < MAX_ARGUMENT_SLOTS
 	      && args_byte_size < (MAX_ARGUMENT_SLOTS * UNITS_PER_WORD));)
 	{
-	  /* ??? Padding for XFmode type?  */
 	  offset += hfa_size;
 	  args_byte_size += hfa_size;
 	  fp_regs++;
@@ -2586,7 +2724,6 @@ ia64_return_in_memory (valtype)
     {
       int hfa_size = GET_MODE_SIZE (hfa_mode);
 
-      /* ??? Padding for XFmode type?  */
       if (byte_size / hfa_size > MAX_ARGUMENT_SLOTS)
 	return 1;
       else
@@ -2629,7 +2766,6 @@ ia64_function_value (valtype, func)
 	  loc[i] = gen_rtx_EXPR_LIST (VOIDmode,
 				      gen_rtx_REG (hfa_mode, FR_ARG_FIRST + i),
 				      GEN_INT (offset));
-	  /* ??? Padding for XFmode type?  */
 	  offset += hfa_size;
 	}
 
@@ -2782,19 +2918,10 @@ ia64_print_operand (file, x, code)
 
 	  case POST_INC:
 	    value = GET_MODE_SIZE (GET_MODE (x));
-
-	    /* ??? This is for ldf.fill and stf.spill which use XFmode,
-	       but which actually need 16 bytes increments.  Perhaps we
-	       can change them to use TFmode instead.  Or don't use
-	       POST_DEC/POST_INC for them.  */
-	    if (value == 12)
-	      value = 16;
 	    break;
 
 	  case POST_DEC:
 	    value = - (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (x));
-	    if (value == -12)
-	      value = -16;
 	    break;
 	  }
 
@@ -2930,16 +3057,27 @@ ia64_register_move_cost (from, to)
 {
   int from_hard, to_hard;
   int from_gr, to_gr;
+  int from_fr, to_fr;
 
   from_hard = (from == BR_REGS || from == AR_M_REGS || from == AR_I_REGS);
   to_hard = (to == BR_REGS || to == AR_M_REGS || to == AR_I_REGS);
   from_gr = (from == GENERAL_REGS);
   to_gr = (to == GENERAL_REGS);
+  from_fr = (from == FR_REGS);
+  to_fr = (to == FR_REGS);
 
   if (from_hard && to_hard)
     return 8;
   else if ((from_hard && !to_gr) || (!from_gr && to_hard))
     return 6;
+
+  /* ??? Moving from FR<->GR must be more expensive than 2, so that we get
+     secondary memory reloads for TFmode moves.  Unfortunately, we don't
+     have the mode here, so we can't check that.  */
+  /* Moreover, we have to make this at least as high as MEMORY_MOVE_COST
+     to avoid spectacularly poor register class preferencing for TFmode.  */
+  else if (from_fr != to_fr)
+    return 5;
 
   return 2;
 }
@@ -3015,6 +3153,13 @@ ia64_secondary_reload_class (class, mode, x)
 	 common for C++ programs that use exceptions.  To reproduce,
 	 return NO_REGS and compile libstdc++.  */
       if (GET_CODE (x) == MEM)
+	return GR_REGS;
+      break;
+
+    case GR_REGS:
+      /* Since we have no offsettable memory addresses, we need a temporary
+	 to hold the address of the second word.  */
+      if (mode == TImode)
 	return GR_REGS;
       break;
 

@@ -2020,6 +2020,7 @@ changequote([,])dnl
 		then
 			target_cpu_default="${target_cpu_default}|MASK_GNU_LD"
 		fi
+		float_format=i386
 		;;
 	ia64*-*-linux*)
 		tm_file=ia64/linux.h
@@ -2028,6 +2029,7 @@ changequote([,])dnl
  		if test x$enable_threads = xyes; then
  			thread_file='posix'
  		fi
+		float_format=i386
 		;;
 	m32r-*-elf*)
 		extra_parts="crtinit.o crtfini.o"
