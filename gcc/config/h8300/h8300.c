@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Hitachi H8/300.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002 Free Software Foundation, Inc.
+   2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "toplev.h"
 #include "c-pragma.h"
+#include "cpplib.h"
 #include "tm_p.h"
 #include "ggc.h"
 #include "target.h"

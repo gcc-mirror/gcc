@@ -1,3 +1,7 @@
+2003-01-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c: Include cpplib.h.
+
 2003-01-01  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	* objc/Make-lang.in, objc/config-lang.in, objc/lang-options.h,
