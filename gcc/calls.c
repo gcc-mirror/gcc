@@ -1071,7 +1071,7 @@ expand_call (exp, target, ignore)
 	      else
 		{
 		  int size = int_size_in_bytes (type);
-		  copy = assign_stack_temp (TYPE_MODE (type), size, 1);
+		  copy = assign_stack_temp (TYPE_MODE (type), size, 0);
 		}
 
 	      MEM_IN_STRUCT_P (copy) = AGGREGATE_TYPE_P (type);
@@ -1699,7 +1699,7 @@ expand_call (exp, target, ignore)
 					    ));
       if (save_mode == BLKmode)
 	{
-	  save_area = assign_stack_temp (BLKmode, num_to_save, 1);
+	  save_area = assign_stack_temp (BLKmode, num_to_save, 0);
 	  MEM_IN_STRUCT_P (save_area) = 0;
 	  emit_block_move (validize_mem (save_area), stack_area,
 			   GEN_INT (num_to_save),
@@ -2971,7 +2971,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 	  if (save_mode == BLKmode)
 	    {
 	      arg->save_area = assign_stack_temp (BLKmode,
-						  arg->size.constant, 1);
+						  arg->size.constant, 0);
 	      MEM_IN_STRUCT_P (arg->save_area)
 		= AGGREGATE_TYPE_P (TREE_TYPE (arg->tree_value));
 	      preserve_temp_slots (arg->save_area);
