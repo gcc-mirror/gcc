@@ -1,5 +1,9 @@
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/c-tree.texi: Use more logical markup.
+
+2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* doc/install.texi: Update details of what components are included
 	in the GCC distribution.  Update default directory for g++
 	includes.  Update documentation relating to old libio.  Adjust
