@@ -182,8 +182,11 @@ dtor_nothrow (tree type)
   if (type == NULL_TREE)
     return 0;
 
-  if (! TYPE_HAS_DESTRUCTOR (type))
+  if (!CLASS_TYPE_P (type))
     return 1;
+
+  if (CLASSTYPE_LAZY_DESTRUCTOR (type))
+    lazily_declare_fn (sfk_destructor, type);
 
   return TREE_NOTHROW (CLASSTYPE_DESTRUCTORS (type));
 }
@@ -709,7 +712,7 @@ build_throw (tree exp)
 
       throw_type = build_eh_type_type (prepare_eh_type (TREE_TYPE (object)));
 
-      if (TYPE_HAS_DESTRUCTOR (TREE_TYPE (object)))
+      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (object)))
 	{
 	  cleanup = lookup_fnfields (TYPE_BINFO (TREE_TYPE (object)),
 				     complete_dtor_identifier, 0);

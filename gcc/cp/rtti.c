@@ -1342,7 +1342,7 @@ emit_support_tinfos (void)
   if (!COMPLETE_TYPE_P (bltn_type))
     return;
   dtor = CLASSTYPE_DESTRUCTORS (bltn_type);
-  if (DECL_EXTERNAL (dtor))
+  if (!dtor || DECL_EXTERNAL (dtor))
     return;
   doing_runtime = 1;
   for (ix = 0; fundamentals[ix]; ix++)

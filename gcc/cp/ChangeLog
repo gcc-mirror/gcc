@@ -1,3 +1,51 @@
+2005-02-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19733
+	* class.c (add_method): Don't set TYPE_HAS_DESTRUCTOR.
+	(check_bases): Give warnings about a base class with a
+	non-virtual destructor, even if it is implicit.
+	(finish_struct_bits): Don't copy TYPE_HAS_DESTRUCTOR.
+	(maybe_warn_about_overly_private_class): Don't use
+	TYPE_HAS_DESTRUCTOR.
+	(finish_struct_methods): Don't set TYPE_HAS_DESTRUCTOR.
+	(check_for_override): Give it external linkage.
+	(add_implicitly_declared_members): Generate destructors lazily.
+	(check_field_decls): Use TYPE_HAS_NONTRIVIAL_DESTRUCTOR, not
+	TYPE_HAS_DESTRUCTOR.
+	(check_bases_and_members): Call check_methods before
+	check_field_decls.
+	(check_bases_and_members): Use TYPE_HAS_NONTRIVIAL_DESTRUCTOR, not
+	TYPE_HAS_DESTRUCTOR.
+	(finish_struct_1): Do not use TYPE_HAS_DESTRUCTOR.
+	* cp-tree.def (PSEUDO_DTOR_EXPR): Document.
+	* cp-tree.h (TYPE_HAS_DESTRUCTOR): Remove.
+	(lang_type_class): Add lazy_destructor.
+	(CLASSTYPE_LAZY_DESTRUCTOR): New macro.
+	(CLASSTYPE_DESTRUCTORS): Robustify.
+	(TYPE_HAS_DESTRUCTOR): Remove.
+	(check_for_override): Declare.
+	(build_vbase_delete): Remove.
+	* cvt.c (convert_to_void): Issue errors about pseudo-destructor
+	expressions.
+	* decl.c (cxx_maybe_build_cleanup): Remove dead code.
+	* except.c (dtor_nothrow): Lazily create destructors if necessary.
+	(build_throw): Use TYPE_HAS_NONTRIVIAL_DESTRUCTOR.
+	* init.c (build_delete): Lazily create destructors, if necessary.
+	(build_vbase_delete): Remove.
+	* method.c (locate_dtor): Simplify.
+	(implicitly_declare_fn): Add support for destructors.
+	* parser.c (cp_parser_lookup_name): Lazily create destructors, if
+	necessary.
+	* pt.c (check_explicit_specialization): Don't use
+	TYPE_HAS_DESTRUCTOR.
+	(instantiate_class_template): Likewise.
+	* ptree.c (cxx_print_type): Don't print TYPE_HAS_DESTRUCTOR.
+	* rtti.c (emit_support_tinfos): Robustify.
+	* search.c (lookup_fnfields_1): Lazily create destructors.
+	* typeck.c (build_class_member_access_expr): Remove
+	PSEUDO_DTOR_EXPR handling.
+	(lookup_destructor): Likewise.
+
 2005-02-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cxx-pretty-print.c, cxx-pretty-print.h, decl.h: Update

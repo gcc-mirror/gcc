@@ -222,6 +222,18 @@ DEFTREECODE (TEMPLATE_ID_EXPR, "template_id_expr", tcc_expression, 2)
    the original name, and the parameter is the FUNCTION_DECL.  */
 DEFTREECODE (OVERLOAD, "overload", tcc_exceptional, 0)
 
+/* A pseudo-destructor, of the form "OBJECT.~DESTRUCTOR" or
+   "OBJECT.SCOPE::~DESTRUCTOR.  The first operand is the OBJECT.  The
+   second operand (if non-NULL) is the SCOPE.  The third operand is
+   the TYPE node corresponding to the DESTRUCTOR.  The type of the
+   first operand will always be a scalar type. 
+
+   The type of a PSEUDO_DTOR_EXPR is always "void", even though it can
+   be used as if it were a zero-argument function.  We handle the
+   function-call case specially, and giving it "void" type prevents it
+   being used in expressions in ways that are not permitted.  */  
+DEFTREECODE (PSEUDO_DTOR_EXPR, "pseudo_dtor_expr", tcc_expression, 3)
+
 /* A whole bunch of tree codes for the initial, superficial parsing of
    templates.  */
 DEFTREECODE (MODOP_EXPR, "modop_expr", tcc_expression, 3)
@@ -232,7 +244,6 @@ DEFTREECODE (STATIC_CAST_EXPR, "static_cast_expr", tcc_unary, 1)
 DEFTREECODE (DYNAMIC_CAST_EXPR, "dynamic_cast_expr", tcc_unary, 1)
 DEFTREECODE (DOTSTAR_EXPR, "dotstar_expr", tcc_expression, 2)
 DEFTREECODE (TYPEID_EXPR, "typeid_expr", tcc_expression, 1)
-DEFTREECODE (PSEUDO_DTOR_EXPR, "pseudo_dtor_expr", tcc_expression, 3)
 
 /* A placeholder for an expression that is not type-dependent, but
    does occur in a template.  When an expression that is not

@@ -1367,6 +1367,12 @@ lookup_fnfields_1 (tree type, tree name)
       else if (name == ansi_assopname(NOP_EXPR)
 	       && CLASSTYPE_LAZY_ASSIGNMENT_OP (type))
 	lazily_declare_fn (sfk_assignment_operator, type);
+      else if ((name == dtor_identifier
+		|| name == base_dtor_identifier
+		|| name == complete_dtor_identifier
+		|| name == deleting_dtor_identifier)
+	       && CLASSTYPE_LAZY_DESTRUCTOR (type))
+	lazily_declare_fn (sfk_destructor, type);
     }
 
   method_vec = CLASSTYPE_METHOD_VEC (type);

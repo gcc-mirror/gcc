@@ -793,6 +793,11 @@ convert_to_void (tree expr, const char *implicit)
     return expr;
   if (invalid_nonstatic_memfn_p (expr))
     return error_mark_node;
+  if (TREE_CODE (expr) == PSEUDO_DTOR_EXPR)
+    {
+      error ("pseudo-destructor is not called");
+      return error_mark_node;
+    }
   if (VOID_TYPE_P (TREE_TYPE (expr)))
     return expr;
   switch (TREE_CODE (expr))

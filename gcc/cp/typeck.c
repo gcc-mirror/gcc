@@ -1577,9 +1577,6 @@ build_class_member_access_expr (tree object, tree member,
   if (object == error_mark_node || member == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (member) == PSEUDO_DTOR_EXPR)
-    return member;
-
   gcc_assert (DECL_P (member) || BASELINK_P (member));
 
   /* [expr.ref]
@@ -1822,9 +1819,6 @@ lookup_destructor (tree object, tree scope, tree dtor_name)
 	     TYPE_MAIN_VARIANT (object_type), dtor_type);
       return error_mark_node;
     }
-  if (!TYPE_HAS_DESTRUCTOR (dtor_type))
-    return build3 (PSEUDO_DTOR_EXPR, void_type_node, object, scope,
-		   dtor_type);
   expr = lookup_member (dtor_type, complete_dtor_identifier,
 			/*protect=*/1, /*want_type=*/false);
   expr = (adjust_result_of_qualified_name_lookup
