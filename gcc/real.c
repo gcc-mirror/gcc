@@ -209,7 +209,10 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 #endif
 
 /* Calculate the size of the generic "e" type.  This always has
-   identical in-memory size to REAL_VALUE_TYPE.
+   identical in-memory size to REAL_VALUE_TYPE.  The sizes are supposed
+   to be the same as well, but when REAL_VALUE_TYPE_SIZE is not evenly
+   divisible by HOST_BITS_PER_WIDE_INT we have some padding in
+   REAL_VALUE_TYPE.
    There are only two supported sizes: ten and six 16-bit words (160
    or 96 bits).  */
 
