@@ -1,5 +1,8 @@
 2002-03-11  Douglas B Rupp  <rupp@gnat.com>
 
+	* config/alpha/alpha.c (alpha_sa_size, VMS): Don't reserve space
+	for FP, already done later.
+
 	* toplev.c (debug_args): Add entry for VMS_DEBUG.
 	* vmsdbgout.c (vmsdbgout_init): Fix typo in call to xmalloc.
 
