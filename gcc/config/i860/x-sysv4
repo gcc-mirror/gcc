@@ -43,3 +43,9 @@ ALLOCA=alloca.o
 
 CCLIBFLAGS=-Bstatic -dn -gg
 GCC_CFLAGS=-static -g -O2 -B./
+
+# For svr4 we link stuff *without* dynamic libraries for now... at least
+# until there is a version of GDB which understands *both* Dwarf *and*
+# svr4 shared libraries.
+
+X_CFLAGS=-static
