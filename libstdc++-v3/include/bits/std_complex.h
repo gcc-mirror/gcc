@@ -504,7 +504,7 @@ namespace std
     inline complex<_Tp>
     pow(const complex<_Tp>& __x, const complex<_Tp>& __y)
     {
-      return exp(__x * log(__x));
+      return exp(__y * log(__x));
     }
 
   template<typename _Tp>

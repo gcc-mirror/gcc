@@ -1,3 +1,6 @@
+2001-01-09  Peter Schmid<schmid@snake.iap.physik.tu-darmstadt.de>
+         * include/bits/std_complex.h: Fix a typo.
+
 2001-01-10  Loren J. Rittle  <ljrittle@acm.org>
 
 	* config/os/bsd/freebsd/bits/ctype_inline.h (is): (Make right
