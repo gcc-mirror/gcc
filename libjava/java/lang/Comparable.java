@@ -52,18 +52,19 @@ package java.lang;
  *
  * <p>Lists, arrays, and sets of objects that implement this interface can
  * be sorted automatically, without the need for an explicit
- * {@link Comparator}. Note that <code>e1.compareTo(null)</code> should
- * throw an Exception; as should comparison between incompatible classes.
+ * {@link java.util.Comparator}. Note that <code>e1.compareTo(null)</code> 
+ * should throw an Exception; as should comparison between incompatible 
+ * classes.
  *
  * @author Geoff Berry
  * @author Warren Levy <warrenl@cygnus.com>
- * @see Comparator
- * @see Collections#sort(List)
- * @see Arrays#sort(Object[])
- * @see SortedSet
- * @see SortedMap
- * @see TreeSet
- * @see TreeMap
+ * @see java.util.Comparator
+ * @see java.util.Collections#sort(java.util.List)
+ * @see java.util.Arrays#sort(Object[])
+ * @see java.util.SortedSet
+ * @see java.util.SortedMap
+ * @see java.util.TreeSet
+ * @see java.util.TreeMap
  * @since 1.2
  * @status updated to 1.4
  */

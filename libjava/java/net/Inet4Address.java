@@ -55,6 +55,9 @@ import java.util.Arrays;
  */
 public final class Inet4Address extends InetAddress
 {
+  /**
+   * For compatability with Sun's JDK 1.4.2 rev. 5
+   */
   static final long serialVersionUID = 3286316764910316507L;
 
   /**
