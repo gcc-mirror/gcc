@@ -151,7 +151,7 @@ Boston, MA 02111-1307, USA.
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
 /* Assembler pseudos to introduce constants of various size.  These
-   definitions hsould work for most svr3 systems.  */
+   definitions should work for most svr3 systems.  */
 
 #undef ASM_BYTE_OP
 #define ASM_BYTE_OP "\t.byte"
