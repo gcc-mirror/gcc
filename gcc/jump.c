@@ -4796,6 +4796,7 @@ find_insert_position (insn, new)
 
   return reg_mentioned_p (SET_DEST (single_set (new)), prev) ? 0 : prev;
 }
+#endif /* !HAVE_cc0 */
 
 /* Return 1 if the value of X is unsafe to arbitrarily evaluate, i.e.
    might fault on some arguments.  This is used in connection with
@@ -4865,4 +4866,3 @@ rtx_unsafe_p (x)
 
   return 0;
 }
-#endif /* !HAVE_cc0 */
