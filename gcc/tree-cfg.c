@@ -954,7 +954,7 @@ group_case_labels (void)
 	  tree default_case = TREE_VEC_ELT (labels, old_size - 1);
  	  tree default_label;
 
-	  /* The default lable is always the last case in a switch
+	  /* The default label is always the last case in a switch
 	     statement after gimplification.  */
 	  default_label = CASE_LABEL (default_case);
 
