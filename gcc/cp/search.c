@@ -2784,7 +2784,7 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
 
       if (fixup_insns)
 	{
-	  tree in_charge_node = lookup_name (in_charge_identifier, 0);
+	  tree in_charge_node = current_in_charge_parm;
 	  if (! in_charge_node)
 	    {
 	      warning ("recoverable internal compiler error, nobody's in charge!");

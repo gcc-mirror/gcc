@@ -1,5 +1,15 @@
 1999-09-17  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (language_function): Add x_eh_spec_try_block.  Add
+	x_scope_stmt_stack.  Add x_in_charge_parm.
+	(current_eh_spec_try_block): New macro.
+	(current_scope_stmt_stack): Likewise.
+	(current_in_charge_parm): Likewise.
+	* decl.c (start_function): Initialize current_in_charge_parm.
+	(finish_function): Use current_in_charge_parm rather than looking
+	up __in_chrg.
+	* search.c (expand_indirect_vtbls_init): Likewise.
+
 	* cp-tree.def (CLEANUP_STMT): Fix spelling in dumps.
 	(TRY_BLOCK): Likewise.
 	(HANDLER): Likewise.

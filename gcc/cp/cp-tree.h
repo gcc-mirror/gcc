@@ -623,6 +623,9 @@ struct language_function
   tree x_current_class_ref;
   tree x_last_tree;
   tree x_last_expr_type;
+  tree x_eh_spec_try_block;
+  tree x_scope_stmt_stack;
+  tree x_in_charge_parm;
 
   struct rtx_def *x_last_dtor_insn;
   struct rtx_def *x_last_parm_cleanup_insn;
@@ -694,6 +697,20 @@ struct language_function
    the last expression statement.  */
 
 #define last_expr_type cp_function_chain->x_last_expr_type
+
+/* The TRY_BLOCK for the exception-specifiers for the current
+   function, if any.  */
+
+#define current_eh_spec_try_block cp_function_chain->x_eh_spec_try_block
+
+/* The stack of SCOPE_STMTs for the current function.  */
+
+#define current_scope_stmt_stack cp_function_chain->x_scope_stmt_stack
+
+/* The `__in_chrg' parameter for the current function.  Only used for
+   destructors.  */
+
+#define current_in_charge_parm cp_function_chain->x_in_charge_parm
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
