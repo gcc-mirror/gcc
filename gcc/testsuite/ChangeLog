@@ -1,3 +1,7 @@
+2005-01-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* gcc.dg/20040813-1.c: Add hppa*64*-*-* to no stabs list.
+
 2005-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/19060
