@@ -1737,9 +1737,7 @@ simplify_using_initial_values (struct loop *loop, enum rtx_code op, rtx *expr)
       insn = BB_END (e->src);
       if (any_condjump_p (insn))
 	{
-	  /* FIXME -- slightly wrong -- what if compared register
-	     gets altered between start of the condition and insn?  */
-	  rtx cond = get_condition (BB_END (e->src), NULL, false);
+	  rtx cond = get_condition (BB_END (e->src), NULL, false, true);
       
 	  if (cond && (e->flags & EDGE_FALLTHRU))
 	    cond = reversed_condition (cond);
@@ -2472,7 +2470,7 @@ check_simple_exit (struct loop *loop, edge e, struct niter_desc *desc)
   desc->in_edge = ei;
 
   /* Test whether the condition is suitable.  */
-  if (!(condition = get_condition (BB_END (ei->src), &at, false)))
+  if (!(condition = get_condition (BB_END (ei->src), &at, false, false)))
     return;
 
   if (ei->flags & EDGE_FALLTHRU)

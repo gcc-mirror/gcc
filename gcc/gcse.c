@@ -3687,52 +3687,7 @@ cprop (int alter_jumps)
 rtx
 fis_get_condition (rtx jump)
 {
-  rtx cond, set, tmp, insn, earliest;
-  bool reverse;
-
-  if (! any_condjump_p (jump))
-    return NULL_RTX;
-
-  set = pc_set (jump);
-  cond = XEXP (SET_SRC (set), 0);
-
-  /* If this branches to JUMP_LABEL when the condition is false,
-     reverse the condition.  */
-  reverse = (GET_CODE (XEXP (SET_SRC (set), 2)) == LABEL_REF
-	     && XEXP (XEXP (SET_SRC (set), 2), 0) == JUMP_LABEL (jump));
-
-  /* Use canonicalize_condition to do the dirty work of manipulating
-     MODE_CC values and COMPARE rtx codes.  */
-  tmp = canonicalize_condition (jump, cond, reverse, &earliest, NULL_RTX,
-				false);
-  if (!tmp)
-    return NULL_RTX;
-
-  /* Verify that the given condition is valid at JUMP by virtue of not
-     having been modified since EARLIEST.  */
-  for (insn = earliest; insn != jump; insn = NEXT_INSN (insn))
-    if (INSN_P (insn) && modified_in_p (tmp, insn))
-      break;
-  if (insn == jump)
-    return tmp;
-
-  /* The condition was modified.  See if we can get a partial result
-     that doesn't follow all the reversals.  Perhaps combine can fold
-     them together later.  */
-  tmp = XEXP (tmp, 0);
-  if (!REG_P (tmp) || GET_MODE_CLASS (GET_MODE (tmp)) != MODE_INT)
-    return NULL_RTX;
-  tmp = canonicalize_condition (jump, cond, reverse, &earliest, tmp,
-				false);
-  if (!tmp)
-    return NULL_RTX;
-
-  /* For sanity's sake, re-validate the new result.  */
-  for (insn = earliest; insn != jump; insn = NEXT_INSN (insn))
-    if (INSN_P (insn) && modified_in_p (tmp, insn))
-      return NULL_RTX;
-
-  return tmp;
+  return get_condition (jump, NULL, false, true);
 }
 
 /* Check the comparison COND to see if we can safely form an implicit set from

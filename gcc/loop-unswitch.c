@@ -196,7 +196,7 @@ may_unswitch_on (basic_block bb, struct loop *loop, rtx *cinsn)
     return NULL_RTX;
 
   /* Condition must be invariant.  */
-  test = get_condition (BB_END (bb), &at, true);
+  test = get_condition (BB_END (bb), &at, true, false);
   if (!test)
     return NULL_RTX;
 
