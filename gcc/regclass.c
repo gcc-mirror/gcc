@@ -1482,6 +1482,11 @@ int *regno_first_uid;
 
 int *regno_last_uid;
 
+/* Indexed by pseudo register number, gives uid of last insn using the reg
+   or mentioning it in a note (as of the time reg_scan is called).  */
+
+int *regno_last_note_uid;
+
 /* Record the number of registers we used when we allocated the above two
    tables.  If we are called again with more than this, we must re-allocate
    the tables.  */
@@ -1512,12 +1517,15 @@ reg_scan (f, nregs, repeat)
 	= (int *) oballoc (highest_regno_in_uid_map * sizeof (int));
       regno_last_uid
 	= (int *) oballoc (highest_regno_in_uid_map * sizeof (int));
+      regno_last_note_uid
+	= (int *) oballoc (highest_regno_in_uid_map * sizeof (int));
       reg_n_sets
 	= (short *) oballoc (highest_regno_in_uid_map * sizeof (short));
     }
 
   bzero (regno_first_uid, highest_regno_in_uid_map * sizeof (int));
   bzero (regno_last_uid, highest_regno_in_uid_map * sizeof (int));
+  bzero (regno_last_note_uid, highest_regno_in_uid_map * sizeof (int));
   bzero (reg_n_sets, highest_regno_in_uid_map * sizeof (short));
 
   max_parallel = 3;
@@ -1530,14 +1538,19 @@ reg_scan (f, nregs, repeat)
 	if (GET_CODE (PATTERN (insn)) == PARALLEL
 	    && XVECLEN (PATTERN (insn), 0) > max_parallel)
 	  max_parallel = XVECLEN (PATTERN (insn), 0);
-	reg_scan_mark_refs (PATTERN (insn), insn);
+	reg_scan_mark_refs (PATTERN (insn), insn, 0);
+	reg_scan_mark_refs (REG_NOTES (insn), insn, 1);
       }
 }
 
+/* X is the expression to scan.  INSN is the insn it appears in.
+   NOTE_FLAG is nonzero if X is from INSN's notes rather than its body.  */
+
 void
-reg_scan_mark_refs (x, insn)
+reg_scan_mark_refs (x, insn, note_flag)
      rtx x;
      rtx insn;
+     int note_flag;
 {
   register enum rtx_code code = GET_CODE (x);
   register rtx dest;
@@ -1560,7 +1573,9 @@ reg_scan_mark_refs (x, insn)
       {
 	register int regno = REGNO (x);
 
-	regno_last_uid[regno] = INSN_UID (insn);
+	regno_last_note_uid[regno] = INSN_UID (insn);
+	if (!note_flag)
+	  regno_last_uid[regno] = INSN_UID (insn);
 	if (regno_first_uid[regno] == 0)
 	  regno_first_uid[regno] = INSN_UID (insn);
       }
@@ -1627,12 +1642,12 @@ reg_scan_mark_refs (x, insn)
 	for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
 	  {
 	    if (fmt[i] == 'e')
-	      reg_scan_mark_refs (XEXP (x, i), insn);
+	      reg_scan_mark_refs (XEXP (x, i), insn, note_flag);
 	    else if (fmt[i] == 'E' && XVEC (x, i) != 0)
 	      {
 		register int j;
 		for (j = XVECLEN (x, i) - 1; j >= 0; j--)
-		  reg_scan_mark_refs (XVECEXP (x, i, j), insn);
+		  reg_scan_mark_refs (XVECEXP (x, i, j), insn, note_flag);
 	      }
 	  }
       }
