@@ -699,7 +699,7 @@ static short shift_amounts[32][5] = {
   {16}, {16, 1}, {16, 2}, {16, 1, 2},
   {16, 2, 2}, {16, 2, 1, 2}, {16, -2, 8}, {16, -1, 8},
   {16, 8}, {16, 1, 8}, {16, 8, 2}, {16, 8, 1, 2},
-  {16, 8, 2, 2}, {16, -1, -2, 8}, {16, -2, 16}, {16, -1, 16}};
+  {16, 8, 2, 2}, {16, -1, -2, 16}, {16, -2, 16}, {16, -1, 16}};
 
 /* This is used in length attributes in sh.md to help compute the length
    of arbitrary constant shift instructions.  */
