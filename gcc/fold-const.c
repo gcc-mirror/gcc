@@ -7934,7 +7934,7 @@ fold (tree expr)
 	    return pedantic_non_lvalue (tem);
 	  return t;
 	}
-      if (operand_equal_p (arg1, TREE_OPERAND (expr, 2), 0))
+      if (operand_equal_p (arg1, TREE_OPERAND (t, 2), 0))
 	return pedantic_omit_one_operand (type, arg1, arg0);
 
       /* If we have A op B ? A : C, we may be able to convert this to a
@@ -8312,12 +8312,12 @@ fold (tree expr)
 
     case CALL_EXPR:
       /* Check for a built-in function.  */
-      if (TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR
-	  && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (expr, 0), 0))
+      if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
+	  && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 0))
 	      == FUNCTION_DECL)
-	  && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (expr, 0), 0)))
+	  && DECL_BUILT_IN (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
 	{
-	  tree tmp = fold_builtin (expr);
+	  tree tmp = fold_builtin (t);
 	  if (tmp)
 	    return tmp;
 	}
