@@ -1,3 +1,13 @@
+Mon Sep  8 15:15:11 1997  Nick Clifton  <nickc@cygnus.com>
+
+	* v850.h (ASM_SPEC): Pass on target processor.
+	(CPP_PREDEFINES): Only define if not already specified.
+	(TARGET_VERSION): Only define if not already specified.
+	(MASK_CPU, MASK_V850, MASK_DEFAULT): Bits to specify target
+	processor.
+	(EXTRA_SWITCHES): Extra entries in the switches array.
+	(TARGET_DEFAULT): Set default target processor.
+
 Mon Sep  8 18:26:35 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* m68k.h (MACHINE_STATE_SAVE, MACHINE_STATE_RESTORE): In MOTOROLA
