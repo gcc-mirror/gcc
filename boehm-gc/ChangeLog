@@ -1,5 +1,8 @@
 1999-11-04  Tom Tromey  <tromey@cygnus.com>
 
+	* misc.c (GC_init_inner): Don't call GC_init_linuxppc().
+	(GC_thr_init): Don't declare.
+
 	* configure: Rebuilt.
 	* configure.in: Removed qt threads case.
 	* dyn_load.c: Don't mention QUICK_THREADS.
