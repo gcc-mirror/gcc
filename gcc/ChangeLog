@@ -1,3 +1,8 @@
+2004-12-27  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (thread_across_edge): Remove broken code to
+	avoid threading into a loop.
+
 2004-12-27  Richard Henderson  <rth@redhat.com>
 
 	PR target/17406
