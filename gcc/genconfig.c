@@ -81,6 +81,7 @@ walk_insn_part (part, recog_p)
       return;
 
     case MATCH_OP_DUP:
+    case MATCH_PAR_DUP:
       ++dup_operands_seen_this_insn;
     case MATCH_SCRATCH:
     case MATCH_PARALLEL:
