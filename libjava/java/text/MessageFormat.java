@@ -1,5 +1,5 @@
 /* MessageFormat.java - Localized message formatting.
-   Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -157,7 +157,7 @@ public class MessageFormat extends Format
      * This is the attribute set for all characters produced
      * by MessageFormat during a formatting.
      */
-    public static final MessageFormat.Field ARGUMENT = new Field("argument");
+    public static final MessageFormat.Field ARGUMENT = new MessageFormat.Field("argument");
 
     // For deserialization
     private Field()
@@ -414,10 +414,13 @@ public class MessageFormat extends Format
 
     for (int i = 0; i < elements.length; ++i)
       {
-	if (elements[i].argNumber >= arguments.length)
-	  throw new IllegalArgumentException("Not enough arguments given");
+	Object thisArg = null;
+	boolean unavailable = false;
+	if (arguments == null || elements[i].argNumber >= arguments.length)
+	  unavailable = true;
+	else
+	  thisArg = arguments[elements[i].argNumber];
 
-	Object thisArg = arguments[elements[i].argNumber];
 	AttributedCharacterIterator iterator = null;
 
 	Format formatter = null;
@@ -425,22 +428,27 @@ public class MessageFormat extends Format
 	if (fp != null && i == fp.getField() && fp.getFieldAttribute() == Field.ARGUMENT)
 	  fp.setBeginIndex(appendBuf.length());
 
-	if (elements[i].setFormat != null)
-	  formatter = elements[i].setFormat;
-	else if (elements[i].format != null)
-	  {
-	    if (elements[i].formatClass != null
-		&& ! elements[i].formatClass.isInstance(thisArg))
-	      throw new IllegalArgumentException("Wrong format class");
-	    
-	    formatter = elements[i].format;
-	  }
-	else if (thisArg instanceof Number)
-	  formatter = NumberFormat.getInstance(locale);
-	else if (thisArg instanceof Date)
-	  formatter = DateFormat.getTimeInstance(DateFormat.DEFAULT, locale);
+	if (unavailable)
+	  appendBuf.append("{" + elements[i].argNumber + "}");
 	else
-	  appendBuf.append(thisArg);
+	  {
+	    if (elements[i].setFormat != null)
+	      formatter = elements[i].setFormat;
+	    else if (elements[i].format != null)
+	      {
+	        if (elements[i].formatClass != null
+		    && ! elements[i].formatClass.isInstance(thisArg))
+	          throw new IllegalArgumentException("Wrong format class");
+	    
+	        formatter = elements[i].format;
+	      }
+	    else if (thisArg instanceof Number)
+	      formatter = NumberFormat.getInstance(locale);
+	    else if (thisArg instanceof Date)
+	      formatter = DateFormat.getTimeInstance(DateFormat.DEFAULT, locale);
+	    else
+	      appendBuf.append(thisArg);
+	  }
 
 	if (fp != null && fp.getField() == i && fp.getFieldAttribute() == Field.ARGUMENT)
 	  fp.setEndIndex(appendBuf.length());
@@ -496,29 +504,18 @@ public class MessageFormat extends Format
   }
 
   /**
-   * Returns the pattern with the formatted objects.
+   * Returns the pattern with the formatted objects.  The first argument
+   * must be a array of Objects.
+   * This is equivalent to format((Object[]) objectArray, appendBuf, fpos)
    *
-   * @param source The object to be formatted.
-   * @param result The StringBuffer where the text is appened.
+   * @param objectArray The object array to be formatted.
+   * @param appendBuf The StringBuffer where the text is appened.
    * @param fpos A FieldPosition object (it is ignored).
    */
-  public final StringBuffer format (Object singleArg, StringBuffer appendBuf,
+  public final StringBuffer format (Object objectArray, StringBuffer appendBuf,
 				    FieldPosition fpos)
   {
-    Object[] args;
-
-    if (singleArg instanceof Object[])
-      {
-	// This isn't specified in any manual, but it follows the
-	// JDK implementation.
-	args = (Object[]) singleArg;
-      }
-    else
-      {
-	args = new Object[1];
-	args[0] = singleArg;
-      }
-    return format (args, appendBuf, fpos);
+    return format ((Object[])objectArray, appendBuf, fpos);
   }
 
   /**
