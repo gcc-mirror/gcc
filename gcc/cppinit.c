@@ -531,6 +531,9 @@ static const struct builtin builtin_array[] =
 #ifndef NO_BUILTIN_WCHAR_TYPE
   C("__WCHAR_TYPE__",		WCHAR_TYPE),
 #endif
+#ifndef NO_BUILTIN_WINT_TYPE
+  C("__WINT_TYPE__",		WINT_TYPE),
+#endif
 
   /* Named operators known to the preprocessor.  These cannot be #defined
      and always have their stated meaning.  They are treated like normal
