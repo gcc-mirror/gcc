@@ -622,7 +622,8 @@ xgcc: gcc.o version.o $(LIBDEPS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 specs: xgcc
-	$(GCC_FOR_TARGET) -dumpspecs > specs
+	$(GCC_FOR_TARGET) -dumpspecs > tmp-specs
+	mv tmp-specs specs
 
 # We do want to create an executable named `xgcc', so we can use it to
 # compile libgcc2.a.
@@ -647,7 +648,8 @@ float.h-nat: enquire
 
 # Create a dummy float.h source for a cross-compiler.
 float.h-cross:
-	echo "#error float.h values not known for cross-compiler" > float.h-cross
+	echo "#error float.h values not known for cross-compiler" > t-float.h-cross
+	mv t-float.h-cross float.h-cross
 
 # Used to compile enquire with standard cc, but have forgotten why.
 # Let's try with GCC.
@@ -662,10 +664,11 @@ enquire.o: $(srcdir)/enquire.c $(GCC_PASSES) stmp-int-hdrs
 # Build the version of limits.h that we will install.
 xlimits.h: glimits.h limitx.h limity.h
 	if [ -f $(SYSTEM_HEADER_DIR)/limits.h ] ; then \
-	  cat $(srcdir)/limitx.h $(srcdir)/glimits.h $(srcdir)/limity.h > xlimits.h; \
+	  cat $(srcdir)/limitx.h $(srcdir)/glimits.h $(srcdir)/limity.h > tmp-xlimits.h; \
 	else \
-	  cat $(srcdir)/glimits.h > xlimits.h; \
+	  cat $(srcdir)/glimits.h > tmp-xlimits.h; \
 	fi
+	mv tmp-xlimits.h xlimits.h
 
 # Build libgcc.a.
 # This is done in two parts because some functions, in libgcc1.c,
@@ -1289,7 +1292,8 @@ stamp-output : md genoutput $(srcdir)/move-if-change
 # Pass the md file through cpp if the target requests it.
 $(MD_FILE): $(MD_DEPS)
 	rm -f $@
-	$(MD_CPP) $(MD_CPPFLAGS) md.pre-cpp | sed 's/^# /; /g' > $@
+	$(MD_CPP) $(MD_CPPFLAGS) md.pre-cpp | sed 's/^# /; /g' > tmp-$@
+	mv tmp-$@ $@
 
 genconfig : genconfig.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genconfig \
@@ -1673,10 +1677,12 @@ scan.o: scan.c scan.h hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/scan.c
 
 xsys-protos.h: $(GCC_PASSES) $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
-	cat deduced.h $(srcdir)/sys-protos.h > fixtmp.c
+	cat deduced.h $(srcdir)/sys-protos.h > tmp-fixtmp.c
+	mv tmp-fixtmp.c fixtmp.c
 	$(GCC_FOR_TARGET) fixtmp.c -w -U__SIZE_TYPE__ -U__PTRDIFF_TYPE_ -U__WCHAR_TYPE__ -E \
 	  | sed -e 's/	/ /g' -e 's/ *(/ (/g' -e 's/ [ ]*/ /g' -e 's/( )/()/' \
-	  | ./gen-protos >xsys-protos.h
+	  | ./gen-protos >xsys-protos.hT
+	mv xsys-protos.hT xsys-protos.h
 	rm -rf fixtmp.c
 
 fix-header: fix-header.o scan-decls.o scan.o xsys-protos.h $(HOST_LIBDEPS)
@@ -1775,6 +1781,8 @@ mostlyclean: bytecode.mostlyclean lang.mostlyclean
 	-rm -f tmp-float.h tmp-gcc.xtar.gz
 	-rm -f tmp-foo1 tmp-foo2 tmp-proto.* tmp-unproto.1 tmp-SYSCALLS.s
 	-rm -f tmp-c-parse.y tmp-objc-parse.y tmp-gperf.h
+	-rm -f tmp-specs t-float.h-cross tmp-xlimits.h
+	-rm -f tmp-fixtmp.c xsys-protos.hT
 # Delete the stamp files.
 	-rm -f stamp-* tmp-*
 	-rm -f */stamp-* */tmp-*
