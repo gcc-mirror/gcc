@@ -1,3 +1,13 @@
+2002-04-22  David S. Miller  <davem@redhat.com>
+
+	* include/private/gcconfig.h: Hard-code STACKBOTTOM on
+	64-bit SPARC Linux, the __libc_stack_end technique does
+	not work in this case.
+
+2002-04-22  Jeff Sturm  <jsturm@one-point.com>
+
+	* gcconfig.h: Enable DYNAMIC_LOADING for all sparc-solaris ABIs.
+
 2002-04-17  Hans Boehm  <Hans_Boehm@hp.com>
 
 	* include/private/gcconfig.h: Use LINUX_STACKBOTTOM for
