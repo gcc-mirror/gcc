@@ -1,3 +1,20 @@
+2001-07-30  Andreas Jaeger  <aj@suse.de>
+
+        * jump.c: Add prototype for mark_modified_reg.
+
+        * cse.c (set_live_p): Add unused attribute.
+
+        * gcov.c (calculate_branch_probs): Use gcov_type to avoid
+        overflow.
+        (scan_for_source_files): Use long for count to avoid overflow.
+        (output_data): Likewise.
+        (output_data): Don't use string concatatenation to silence gcc
+        -traditional.
+
+        * predict.c: Fix typos and grammar.
+
+	* gcse.c (insert_insn_end_bb): Remove unused variables.
+
 Mon Jul 30 21:54:53 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (mark_set_1): Use REG_FREQ_FROM_BB.
@@ -293,7 +310,7 @@ Thu Jul 26 14:04:03 EDT 2001  John Wehle  (john@feith.com)
 
 2001-07-26  Andrew MacLeod  <amacleod@redhat.com>
 
-	* params.def (PARAM_MAX_PENDING_LIST_LENGTH): Add parameter to 
+	* params.def (PARAM_MAX_PENDING_LIST_LENGTH): Add parameter to
 	limit length of dependancy flush list.
 	* params.h (MAX_PENDING_LIST_LENGTH): Define.
 	* sched-int.h  (struct deps): Add pending_flush_length field.
@@ -353,7 +370,7 @@ Wed Jul 25 18:00:05 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/alpha/alpha.c (print_operand, case '/'): Don't write '/'.
 
 	* dbxout.c: Consistently use putc instead of fputc.
- 	(print_wide_int): New function; call instead of direct fprintf.
+	(print_wide_int): New function; call instead of direct fprintf.
 	(dbxout_type_index): Adjust calls of CHARS to be more accurate.
 	(dbxout_type_fields, dbxout_type_method_1): Likewise.
 	(dbxout_type_methods, dbxout_range_type, dbxout_type): Likewise.
@@ -390,7 +407,7 @@ Wed Jul 25 22:48:59 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 Wed Jul 25 08:25:01 2001  Jeffrey A Law  (law@cygnus.com)
 
-	* ssa.c (rename_insn_1): Do not wrap an assignment to a 
+	* ssa.c (rename_insn_1): Do not wrap an assignment to a
 	paradoxical SUBREG inside a SEQUENCE.  Fix minor formatting
 	glitch.
 
@@ -432,8 +449,8 @@ Wed Jul 25 08:25:01 2001  Jeffrey A Law  (law@cygnus.com)
         * config/sparc/rtems.h (CPP_PREDEFINES): Remove redundant
 	-Acpu and -Amachine.h.
         * config/sparc/rtemself.h (CPP_PREDEFINES): Likewise.
-        Corrected header to say ELF not a.out. 
-        * config/sparc/sparc.h (CPP_CPU_SPEC): Define _SOFT_FLOAT 
+        Corrected header to say ELF not a.out.
+        * config/sparc/sparc.h (CPP_CPU_SPEC): Define _SOFT_FLOAT
 	when given -msoft-float.
 
 2001-07-24  Joel Sherrill <joel@OARcorp.com>
@@ -553,7 +570,7 @@ Tue Jul 24 10:49:40 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* config/h8300/h8300-protos.h: Add a prototype for
 	general_operand_dst_push.
- 	* config/h8300/h8300.c (general_operand_dst_push): New.
+	* config/h8300/h8300.c (general_operand_dst_push): New.
 	* config/h8300/h8300.h (OK_FOR_T): New.
 	(EXTRA_CONSTRAINT): Use it.
 	* config/h8300/h8300.md (movqi_push): Remove and integrate into
@@ -653,7 +670,7 @@ Mon Jul 23 16:03:19 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(flow_find_cross_jump): Likewise.
 	(outgoing_edges_match): Allow match if neither branch has
 	probability data.  Loosen probability match to 5%.
-	(try_crossjump_to_edge): Hoist repeated indirection into 
+	(try_crossjump_to_edge): Hoist repeated indirection into
 	local variables.
 	(try_crossjump_bb): Don't check complex edges.  Eliminate
 	redundant crossjump tests.
@@ -798,7 +815,7 @@ Sun Jul 22 21:31:04 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	("*addhi3"): Fix constraint to avoid reloading in a soft register.
 	("*subhi3_sp): Likewise.
 	("*subhi3"): Likewise.
-	("extendhisi2"): Accept D, X and Y as source operand to avoid 
+	("extendhisi2"): Accept D, X and Y as source operand to avoid
 	reload problems.
 
 2001-07-21  Nathan Sidwell  <nathan@codesourcery.com>
@@ -851,7 +868,7 @@ Fri Jul 20 21:59:42 CEST 2001  Jan Hubicka  <jh@suse.cz>
 2001-07-20  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("movdi", "movdi_internal"): Use an
-	expand to emit the pattern; put a REG_INC note for push/pop 
+	expand to emit the pattern; put a REG_INC note for push/pop
 	instructions.
 	("movdf", "movdf_internal"): Likewise.
 	("movsi", "movsi_internal"): Likewise.
@@ -938,7 +955,7 @@ Fri Jul 20 13:24:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	pointer extension instruction.
 	* combine.c (nonzero_bits,num_sign_bit_copies) Likewise.
 	* simplify-rtx.c (simplify_unary_operation) Likewise.
-	* explow.c (convert_memory_address) Check value of 
+	* explow.c (convert_memory_address) Check value of
 	POINTERS_EXTEND_UNSIGNED to avoid some conversions when
 	less than zero.
 	* config/ia64/t-hpux (LIBGCC, INSTALL_LIBGCC, MULTILIB_OPTIONS,
@@ -999,7 +1016,7 @@ Fri Jul 20 13:24:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-07-19  Catherine Moore  <clm@cygnus.com>
 
-	* config/v850/v850.h (ASM_OUTPUT_LABELREF): Restore. 
+	* config/v850/v850.h (ASM_OUTPUT_LABELREF): Restore.
 
 2001-07-19  Geoffrey Keating  <geoffk@redhat.com>
 
@@ -1137,7 +1154,7 @@ Wed Jul 18 12:05:29 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 	pthread_mutex_trylock because it returns a positive number on
 	error, while we must return -1 on error.
 	(__gthread_objc_mutex_lock, __gthread_objc_mutex_unlock): Similar
-	fixes.  
+	fixes.
 	Reported by Stephen Brandon <stephen@brandonitconsulting.co.uk>.
 
 2001-07-18  Andreas Jaeger  <aj@suse.de>
