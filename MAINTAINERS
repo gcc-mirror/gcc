@@ -35,6 +35,7 @@ a29k port		Jim Wilson		wilson@cygnus.com
 alpha port		Richard Henderson	rth@cygnus.com
 sparc port		Richard Henderson	rth@cygnus.com
 sparc port		David S. Miller		davem@redhat.com
+sparc port		Jakub Jelinek		jakub@redhat.com
 x86 ports		Stan Cox		scox@cygnus.com
 c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 arc port		Richard Kenner		kenner@nyu.edu
