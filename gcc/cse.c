@@ -746,6 +746,9 @@ rtx_cost (x, outer_code)
       RTX_COSTS (x, code, outer_code);
 #endif 
       CONST_COSTS (x, code, outer_code);
+
+    default:
+      break;
     }
 
   /* Sum the costs of the sub-rtx's, plus cost of this operation,

@@ -1,3 +1,13 @@
+Mon Dec 22 11:24:01 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+ 
+	* cse.c (rtx_cost): Add default case in enumeration switch.
+	* fix-header.c (recognized_macro): Likewise.
+	(recognized_extern): Likewise.
+	(write_rbrac): Likewise.
+	* objc/objc-act.c (encode_aggregate): Likewise.
+	(gen_declarator): Likewise.
+	(gen_declspecs): Likewise.
+
 Mon Dec 22 09:58:51 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (create_reg_dead_note): Detect and handle another
