@@ -4014,10 +4014,18 @@ main (argc, argv, envp)
 			  level = 0;
 			}
 
-		      /* ??? A few targets use STR in the
-			 definition of PREFERRED_DEBUGGING_TYPE!  */
 		      if (type == NO_DEBUG)
-			type = PREFERRED_DEBUGGING_TYPE;
+			{
+			  type = PREFERRED_DEBUGGING_TYPE;
+			  if (len > 1 && strncmp (str, "ggdb", len) == 0)
+			    {
+#ifdef DWARF2_DEBUGGING_INFO
+			      type = DWARF2_DEBUG;
+#elif defined DBX_DEBUGGING_INFO
+			      type = DBX_DEBUG;
+#endif
+			    }
+			}
 
 		      if (type == NO_DEBUG)
 			warning ("`-%s' not supported by this configuration of GCC",
