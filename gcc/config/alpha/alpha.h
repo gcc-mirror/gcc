@@ -197,6 +197,7 @@ extern enum alpha_fp_trap_mode alpha_fptm;
     {"float-vax", MASK_FLOAT_VAX},		\
     {"float-ieee", -MASK_FLOAT_VAX},		\
     {"byte", MASK_BYTE_OPS},			\
+    {"no-byte", -MASK_BYTE_OPS},		\
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT} }
 
 #define TARGET_DEFAULT MASK_FP|MASK_FPREGS
@@ -2157,7 +2158,6 @@ extern void alpha_output_lineno ();
 #define ASM_OUTPUT_SOURCE_FILENAME(STREAM, NAME)			\
   alpha_output_filename (STREAM, NAME)
 extern void alpha_output_filename ();
-
 
 /* mips-tfile.c limits us to strings of one page.  */
 #define DBX_CONTIN_LENGTH 4000
