@@ -1,3 +1,14 @@
+Fri Oct 15 11:02:46 1999  Richard Henderson  <rth@cygnus.com>
+
+	Based on patch from Michael Gschwind <mikeg@watson.ibm.com>:
+	* unroll.c (unroll_loop): Cast return value of alloca.
+	* i370/i370.c: Include function.h and toplev.h.
+	(i370_label_scan): Remove c++ commented abort.
+	* i370/i370.h (HANDLE_PRAGMA): Takes three arguments.
+	(ASM_OUTPUT_LABELREF): Fix TOUPPER/else broken 16 Sept.
+	* i370/xm-i370.h (HOST_BITS_PER_LONGLONG): Define.
+	* i370/xm-mvs.h, i370/xm-oe.h: Likewise.
+
 Fri Oct 15 03:01:01 1999  Loren Rittle  <ljrittle@acm.org>
 
 	* config/t-freebsd: Do not override USER_H.

@@ -33,9 +33,10 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-flags.h"
 #include "output.h"
 #include "insn-attr.h"
-/* #include "function.h" */
+#include "function.h"
 #include "flags.h"
 #include "recog.h"
+#include "toplev.h"
 
 extern FILE *asm_out_file;
 
@@ -473,7 +474,6 @@ i370_label_scan (void)
    last week, and so we punt for now.  */
 
                     debug_rtx (insn);
-// abort();
                     for (j=0; j < XVECLEN (body, 0); j++)
                       {
                          int labelno;
