@@ -363,8 +363,12 @@ DEFUN (print_access_flags, (stream, flags, context),
   if (flags & ACC_PUBLIC) fprintf (stream, " public");
   if (flags & ACC_PRIVATE) fprintf (stream, " private");
   if (flags & ACC_PROTECTED) fprintf (stream, " protected");
+  if (flags & ACC_ABSTRACT) fprintf (stream, " abstract");
   if (flags & ACC_STATIC) fprintf (stream, " static");
   if (flags & ACC_FINAL) fprintf (stream, " final");
+  if (flags & ACC_TRANSIENT) fprintf (stream, " transient");
+  if (flags & ACC_VOLATILE) fprintf (stream, " volatile");
+  if (flags & ACC_NATIVE) fprintf (stream, " native");
   if (flags & ACC_SYNCHRONIZED)
     {
       if (context == 'c')
@@ -372,11 +376,8 @@ DEFUN (print_access_flags, (stream, flags, context),
       else
 	fprintf (stream, " synchronized");
     }
-  if (flags & ACC_VOLATILE) fprintf (stream, " volatile");
-  if (flags & ACC_TRANSIENT) fprintf (stream, " transient");
-  if (flags & ACC_NATIVE) fprintf (stream, " native");
   if (flags & ACC_INTERFACE) fprintf (stream, " interface");
-  if (flags & ACC_ABSTRACT) fprintf (stream, " abstract");
+  if (flags & ACC_STRICT) fprintf (stream, " strictfp");
 }
 
 
