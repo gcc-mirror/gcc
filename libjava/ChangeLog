@@ -1,3 +1,25 @@
+2004-01-27  Kim Ho  <kho@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java
+	(removeMenuBarPeer): Remove MenuBarPeer argument.
+	* gnu/java/awt/peer/gtk/GtkMenuComponentPeer.java
+	(dispose): Call native method.
+	* java/awt/Frame.java (setMenuBar): Create and remove
+	MenuBar peers only if the Frame has a peer.
+	(addNotify): Create the MenuBar peer if one exists.
+	(removeNotify): Remove MenuBar peer if one exists.
+	* java/awt/Menu.java: Fix imports.
+	(addNotify): Don't use full class name.
+	(removeNotify): Call removeNotify on all children.
+	* java/awt/MenuBar.java (removeNotify): Call
+	removeNotify on all children.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(removeMenuBarPeer): Remove MenuBarPeer argument.
+	Iterate through children to find the Frame's MenuBar.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuComponentPeer.c
+	New file.
+	(dispose): Remove references to the MenuComponent.
+
 2004-01-27  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/AbstractCellEditor.java: Reformated.

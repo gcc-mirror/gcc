@@ -292,6 +292,7 @@ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuComponentPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.c \
@@ -2794,6 +2795,7 @@ lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES =
 @GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.lo \
 @GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.lo \
 @GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.lo \
+@GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuComponentPeer.lo \
 @GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.lo \
 @GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.lo \
 @GTK_CAIRO_FALSE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.lo \
@@ -2874,6 +2876,7 @@ lib_gnu_java_awt_peer_gtk_la_DEPENDENCIES =
 @GTK_CAIRO_TRUE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.lo \
 @GTK_CAIRO_TRUE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.lo \
 @GTK_CAIRO_TRUE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.lo \
+@GTK_CAIRO_TRUE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuComponentPeer.lo \
 @GTK_CAIRO_TRUE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.lo \
 @GTK_CAIRO_TRUE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.lo \
 @GTK_CAIRO_TRUE@jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.lo \
@@ -4581,6 +4584,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.P \
+.deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuComponentPeer.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.P \
 .deps/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.P \

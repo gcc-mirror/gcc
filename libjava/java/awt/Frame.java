@@ -341,11 +341,15 @@ getMenuBar()
 public synchronized void
 setMenuBar(MenuBar menuBar)
 {
-  this.menuBar = menuBar;
-  if (menuBar != null)
-    menuBar.addNotify(); 
   if (peer != null)
+  {
+    if (this.menuBar != null)
+      this.menuBar.removeNotify();  
+    if (menuBar != null)
+      menuBar.addNotify();
     ((FramePeer) peer).setMenuBar(menuBar);
+  }
+  this.menuBar = menuBar;
 }
 
 /*************************************************************************/
@@ -432,9 +436,18 @@ remove(MenuComponent menu)
 public void
 addNotify()
 {
+  if (menuBar != null)
+    menuBar.addNotify();
   if (peer == null)
     peer = getToolkit ().createFrame (this);
   super.addNotify();
+}
+
+public void removeNotify()
+{
+  if (menuBar != null)
+    menuBar.removeNotify();
+  super.removeNotify();
 }
 
 /*************************************************************************/

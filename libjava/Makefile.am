@@ -200,6 +200,7 @@ jni/gtk-peer/gnu_java_awt_peer_gtk_GtkLabelPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkListPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuBarPeer.c \
+jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuComponentPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuItemPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMenuPeer.c \
 jni/gtk-peer/gnu_java_awt_peer_gtk_GtkPanelPeer.c \

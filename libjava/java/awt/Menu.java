@@ -41,6 +41,7 @@ package java.awt;
 import java.awt.peer.MenuPeer;
 import java.io.Serializable;
 import java.util.Vector;
+import java.util.Enumeration;
 
 /**
   * This class represents a pull down or tear off menu in Java's AWT.
@@ -379,7 +380,7 @@ addNotify()
 {
   if (peer == null)
     peer = getToolkit().createMenu(this);
-  java.util.Enumeration e = items.elements();
+  Enumeration e = items.elements();
   while (e.hasMoreElements())
   {
     MenuItem mi = (MenuItem)e.nextElement();
@@ -396,6 +397,12 @@ addNotify()
 public void
 removeNotify()
 {
+  Enumeration e = items.elements();
+  while (e.hasMoreElements())
+  {
+    MenuItem mi = (MenuItem) e.nextElement();
+    mi.removeNotify();
+  }
   super.removeNotify();
 }
 
