@@ -512,19 +512,17 @@ template_parm:
 		{ $$ = build_tree_list ($3, $1.t); }
 	| template_template_parm
 		{ $$ = build_tree_list (NULL_TREE, $1); }
-	| template_template_parm '=' PTYPENAME
-	  	{
-		  tree defarg;
-	  	  arg_looking_for_template = 1;
-	  	  defarg = lookup_name ($3, 0);
-	  	  arg_looking_for_template = 0;
-			
-		  if (!defarg || defarg == error_mark_node
-		      || (TREE_CODE (defarg) != TEMPLATE_DECL
-			  && TREE_CODE (defarg) != TEMPLATE_TEMPLATE_PARM))
-		    defarg = do_identifier ($3, 1);
-		  $$ = build_tree_list (defarg, $1);
-	  	}
+	| template_template_parm '=' template_arg
+		{
+		  if (TREE_CODE ($3) != TEMPLATE_DECL
+		      && TREE_CODE ($3) != TEMPLATE_TEMPLATE_PARM
+		      && TREE_CODE ($3) != TYPE_DECL)
+		    {
+		      error ("invalid default template argument");
+		      $3 = error_mark_node;
+		    }
+		  $$ = build_tree_list ($3, $1);
+		}
 	;
 
 template_def:
@@ -3071,10 +3069,7 @@ nonnested_type:
 		{
 		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
 		    {
-		      arg_looking_for_template = processing_template_arg;
 		      $$ = lookup_name ($1, 1);
-		      arg_looking_for_template = 0;
-
 		      if (current_class_type
 			  && TYPE_BEING_DEFINED (current_class_type)
 			  && ! IDENTIFIER_CLASS_VALUE ($1))
