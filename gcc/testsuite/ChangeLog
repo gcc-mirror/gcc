@@ -1,3 +1,8 @@
+2005-01-03  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR rtl-optimization/12092
+	* gcc.dg/pr12092-1.c: Fix typo in dg directive.
+
 2005-01-02  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.dg/pr12092-1.c: Do not run on x86_64.
