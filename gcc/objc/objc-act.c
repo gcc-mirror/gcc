@@ -7389,6 +7389,7 @@ encode_type (tree type, int curtype, int format)
 	{
 	case 32:  c = 'f'; break;
 	case 64:
+	case 96:
 	case 128: c = 'd'; break;
 	default: abort ();
 	}

@@ -1,3 +1,9 @@
+2004-11-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR objc/18406
+	* objc/obj-act.c (encode_type): 96bits doubles are encoded the
+	same way as 64bit and 128bit doubles are.
+
 2004-11-14  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/18347
