@@ -10102,7 +10102,7 @@
 
 (define_insn "align_8"
   [(unspec_volatile [(const_int 0)] VUNSPEC_ALIGN8)]
-  "TARGET_REALLY_IWMMXT"
+  "TARGET_EITHER"
   "*
   assemble_align (64);
   return \"\";

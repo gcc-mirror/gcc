@@ -368,6 +368,7 @@ in the following sections.
 
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
+-mabi=@var{name} @gol
 -mapcs-26  -mapcs-32 @gol
 -mapcs-stack-check  -mno-apcs-stack-check @gol
 -mapcs-float  -mno-apcs-float @gol
@@ -6413,6 +6414,11 @@ These @samp{-m} options are defined for Advanced RISC Machines (ARM)
 architectures:
 
 @table @gcctabopt
+@item -mabi=@var{name}
+@opindex mabi
+Generate code for the specified ABI.  Permissible values are: @samp{apcs-gnu},
+@samp{atpcs}, @samp{aapcs} and @samp{iwmmxt}.
+
 @item -mapcs-frame
 @opindex mapcs-frame
 Generate a stack frame that is compliant with the ARM Procedure Call
@@ -6635,14 +6641,16 @@ floating point values.
 @item -mstructure-size-boundary=@var{n}
 @opindex mstructure-size-boundary
 The size of all structures and unions will be rounded up to a multiple
-of the number of bits set by this option.  Permissible values are 8 and
-32.  The default value varies for different toolchains.  For the COFF
-targeted toolchain the default value is 8.  Specifying the larger number
-can produce faster, more efficient code, but can also increase the size
-of the program.  The two values are potentially incompatible.  Code
-compiled with one value cannot necessarily expect to work with code or
-libraries compiled with the other value, if they exchange information
-using structures or unions.
+of the number of bits set by this option.  Permissible values are 8, 32
+and 64.  The default value varies for different toolchains.  For the COFF
+targeted toolchain the default value is 8.  A value of 64 is only allowed
+if the underlying ABI supports it.
+
+Specifying the larger number can produce faster, more efficient code, but
+can also increase the size of the program.  Different values are potentially
+incompatible.  Code compiled with one value cannot necessarily expect to
+work with code or libraries compiled with annother value, if they exchange
+information using structures or unions.
 
 @item -mabort-on-noreturn
 @opindex mabort-on-noreturn

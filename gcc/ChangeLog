@@ -1,3 +1,58 @@
+2004-03-24  Paul Brook  <paul@nowt.org>
+
+	* config.gcc <arm>: Add --with-abi=
+	* config/arm/arm-protos.h (arm_get_frame_size, thumb_get_frame_size,
+	thumb_far_jump_used): Remove prototypes.
+	(arm_needs_doubleword_align): Add prototype.
+	(thumb_compute_initial_elimination_offset): Ditto.
+	* config/arm/arm.c (arm_get_frame_offsets): New function.
+	(use_return_insn, output_return_instruction, arm_output_epilogue,
+	arm_output_function_epilogue, arm_compute_initial_elimination_offset,
+	arm_expand_prologue, thumb_expand_epilogue): Use it.
+	(arm_abi, target_abi_name, all_arm_abis): New variables.
+	(arm_override_options): Set them.  Set structure padding for AAPCS.
+	(arm_return_in_memory): Update ABI check.
+	(arm_init_cumulative_args): Initialize can_split.
+	(arm_needs_doubleword_align): New function.
+	(arm_function_arg): Don't split args after pushing to stack. Handle
+	doubleword/even reg alignment.
+	(arm_va_arg): Handle all doubleword aligned args.
+	(add_minpoolforward ref, dump_minpool, push_minpool_fix): Align based
+	on ABI, not CPU.
+	(arm_compute_save_reg0_reg12_mask): Fix comment.
+	(thumb_get_frame_size, thumb_get_frame_size): Remove.
+	(thumb_jump_far_used_p): Remove superfluous argument.  Return save
+	value for alignment.
+	(thumb_unexpanded_epilogue, thumb_output_function_prologue): Change
+	to match.
+	(thumb_compute_initial_elimination_offset): New function.
+	(thumb_expand_prologue): Use arm_get_frame_offsets.  Remove
+	unneccessary rounding.
+	* config/arm/arm.h (target_abi_name): Declare.
+	(ARM_DOUBLEWORD_ALIGN, DOUBLEWORD_ALIGNMENT, TARGET_IWMMXT_ABI,
+	arm_abi_type, ARM_DEFAULT_ABI): Define.
+	(ARM_FLAG_ATPCS): Remove.
+	(TARGET_OPTIONS, OPTION_DEFAULT_SPECS): Add -mabi=.
+	(BIGGEST_ALIGNMENT, PREFERRED_STACK_BOUNDARY, STACK_BOUNDARY): Use it.
+	(ADJUST_FIELD_ALIGN, DATA_ALIGNMENT, LOCAL_ALIGNMENT,
+	TYPE_NEEDS_IWMMXT_ALIGNMENT): Remove.
+	(LIBCALL_VALUE, FUNCTION_VALUE_REGNO_P, FUNCTION_ARG_REGNO_P):
+	Contitionalize on ABI, not CPU.
+	(struct arm_stack_offsets): Define.
+	(struct machine_function): Add stack_offsets.  Remove frame_size.
+	(FUNCTION_ARG_PARTIAL_NREGS): Don't split if previous args have been
+	pushed.
+	(FUNCTION_ARG_ADVANCE, FUNCTION_ARG_BOUNDARY): Handle general
+	doubleword alignment.
+	(THUMB_INITIAL_ELIMINATION_OFFSET,
+	ARM_INITIAL_ELIMINATION_OFFSET): Remove.
+	(INITIAL_ELIMINATION_OFFSET): Call functions directly.
+	* config/arm/arm.md (align_8): Enable for all targets.
+	* config/arm/netbsd-elf.h (TARGET_DEFAULT): Remove TARGET_ATPCS.
+	(ARM_DEFAULT_ABI): Define.
+	* doc/invoke.texi <ARM>: Document -mabi=. Update documentation for
+	-mstructure-size-boundary.
+
 2004-03-24  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.ac: Check for -Wno-variadic-macros; don't use
