@@ -1,6 +1,6 @@
 // Concept checking instantiations -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001, 2002 Free Software Foundation
 //
 // This file is part of GNU CC.
 //
@@ -40,7 +40,6 @@
 #ifdef _GLIBCPP_CONCEPT_CHECKS
 
 #include <memory>
-#include <vector>
 #include <ostream>
 
 #define _Instantiate(...) template void __function_requires< __VA_ARGS__ > ()
@@ -49,35 +48,11 @@ namespace __gnu_cxx
 {
   template void __aux_require_boolean_expr<bool>(bool const&);
 
-  _Instantiate(_BidirectionalIteratorConcept<
-    __normal_iterator< std::locale::facet**,
-    std::vector<std::locale::facet*,std::allocator<std::locale::facet*> > > > );
-
-  _Instantiate(_BidirectionalIteratorConcept<
-    __normal_iterator< unsigned*,
-    std::vector<unsigned, std::allocator<unsigned> > > > );
-
-  _Instantiate(_ConvertibleConcept<std::locale::facet*, std::locale::facet*> );
-
   _Instantiate(_ConvertibleConcept<unsigned, unsigned> );
 
   _Instantiate(_InputIteratorConcept<char*> );
 
   _Instantiate(_InputIteratorConcept<char const*> );
-
-  _Instantiate(_InputIteratorConcept<std::locale::facet**> );
-
-  _Instantiate(_InputIteratorConcept<
-    __normal_iterator< std::locale::facet* const*,
-    std::vector<std::locale::facet*,std::allocator<std::locale::facet*> > > > );
-
-  _Instantiate(_InputIteratorConcept<
-    __normal_iterator< std::locale::facet**,
-    std::vector<std::locale::facet*,std::allocator<std::locale::facet*> > > > );
-
-  _Instantiate(_InputIteratorConcept<
-    __normal_iterator< unsigned*,
-    std::vector<unsigned, std::allocator<unsigned> > > > );
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   _Instantiate(_InputIteratorConcept<wchar_t*> );
@@ -96,29 +71,6 @@ namespace __gnu_cxx
   _Instantiate(_LessThanComparableConcept<long long> );
 
   _Instantiate(_LessThanComparableConcept<unsigned> );
-
-  _Instantiate(_Mutable_BidirectionalIteratorConcept<
-    __normal_iterator< std::locale::facet**,
-    std::vector<std::locale::facet*,std::allocator<std::locale::facet*> > > > );
-
-  _Instantiate(_Mutable_BidirectionalIteratorConcept<
-    __normal_iterator< unsigned*,
-    std::vector<unsigned, std::allocator<unsigned> > > > );
-
-  _Instantiate(_Mutable_ForwardIteratorConcept<
-    __normal_iterator< std::locale::facet**,
-    std::vector<std::locale::facet*,std::allocator<std::locale::facet*> > > > );
-
-  _Instantiate(_OutputIteratorConcept<
-    std::locale::facet**, std::locale::facet*> );
-
-  _Instantiate(_OutputIteratorConcept<
-    __normal_iterator< std::locale::facet**,
-      std::vector<std::locale::facet*, std::allocator<std::locale::facet* > > >,
-    std::locale::facet* > );
-
-  _Instantiate(_OutputIteratorConcept<__normal_iterator<
-    unsigned*, std::vector<unsigned, std::allocator<unsigned> > >, unsigned> );
 
   _Instantiate(_OutputIteratorConcept<std::ostreambuf_iterator<
     char, std::char_traits<char> >, char> );
@@ -153,7 +105,6 @@ namespace __gnu_cxx
 
   _Instantiate(_RandomAccessIteratorConcept<wchar_t const*> );
 #endif
-
 } // namespace __gnu_cxx
 
 #undef _Instantiate
