@@ -40,7 +40,7 @@ namespace __cxxabiv1
 {
 
 /* allocate and construct array */
-extern "C++" void *
+extern "C" void *
 __cxa_vec_new (size_t element_count,
                size_t element_size,
                size_t padding_size,
@@ -70,7 +70,7 @@ __cxa_vec_new (size_t element_count,
 }
 
 /* construct array */
-extern "C++" void
+extern "C" void
 __cxa_vec_ctor (void *array_address,
                 size_t element_count,
                 size_t element_size,
@@ -96,7 +96,7 @@ __cxa_vec_ctor (void *array_address,
 
 /* construct an array by copying */
 
-extern "C++" void
+extern "C" void
 __cxa_vec_cctor (void *dest_array,
 		 void *src_array,
 		 size_t element_count,
@@ -124,7 +124,7 @@ __cxa_vec_cctor (void *dest_array,
 }
 
 /* destruct array */
-extern "C++" void
+extern "C" void
 __cxa_vec_dtor (void *array_address,
                 size_t element_count,
                 size_t element_size,
@@ -160,7 +160,7 @@ __cxa_vec_dtor (void *array_address,
 }
 
 /* destruct and release array */
-extern "C++" void
+extern "C" void
 __cxa_vec_delete (void *array_address,
                   size_t element_size,
                   size_t padding_size,
