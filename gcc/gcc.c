@@ -792,7 +792,7 @@ static struct compiler default_compilers[] =
   {"@ada",
    "%{!M:%{!MM:%{!E:gnat1 %{k8:-gnatk8} %{w:-gnatws} %{!Q:-quiet}\
 			  -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}\
-			  %{g*} %{O*} %{p} %{pg:-p} %{f*}\
+			  %{g*} %{O*} %{W*} %{w} %{p} %{pg:-p} %{f*}\
 			  %{d*}\
 			  %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 			  %i %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
