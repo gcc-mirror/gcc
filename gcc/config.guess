@@ -564,7 +564,7 @@ main ()
 #endif
   int version;
   version=`(hostinfo | sed -n 's/.*NeXT Mach \([0-9]*\).*/\1/p') 2>/dev/null`;
-  printf ("%s-next-nextstep%s\n", __ARCHITECTURE__,  version==2 ? "2" : "3");
+  printf ("%s-next-%s%d\n", __ARCHITECTURE__, version);
   exit (0);
 #endif
 
