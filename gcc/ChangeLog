@@ -1,3 +1,8 @@
+Mon Jan 22 13:59:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* explow.c (probe_stack_range): Ensure value passed to
+	stack_check_libfunc is ptr_mode, not Pmode.
+
 Mon Jan 22 16:53:06 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* recog.c (validate_replace_rtx_1): In ZERO_EXTEND / SIGN_EXTEND
