@@ -1,5 +1,5 @@
 /* Loop optimization definitions for GNU C-Compiler
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -146,6 +146,7 @@ extern int max_uid_for_loop;
 extern int *uid_loop_num;
 extern int *loop_outer_loop;
 extern rtx *loop_number_exit_labels;
+extern int *loop_number_exit_count;
 extern unsigned HOST_WIDE_INT loop_n_iterations;
 extern int max_reg_before_loop;
 
