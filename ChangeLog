@@ -1,3 +1,7 @@
+Mon Sep  1 16:45:44 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* configure.in (target_subdir): Set to libraries if enable_multilib.
+
 Wed Aug 27 16:15:11 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* config.guess: Update from gcc directory.
