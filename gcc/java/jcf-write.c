@@ -3370,14 +3370,14 @@ write_classfile (clas)
     {
       FILE *stream = fopen (class_file_name, "wb");
       if (stream == NULL)
-	fatal_io_error ("can't to open %s", class_file_name);
+	fatal_io_error ("can't open %s for writing", class_file_name);
 
       jcf_dependency_add_target (class_file_name);
       init_jcf_state (state, work);
       chunks = generate_classfile (clas, state);
       write_chunks (stream, chunks);
       if (fclose (stream))
-	fatal_io_error ("can't close %s", class_file_name);
+	fatal_io_error ("error closing %s", class_file_name);
       free (class_file_name);
     }
   release_jcf_state (state);
