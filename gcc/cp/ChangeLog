@@ -1,3 +1,12 @@
+1998-10-04  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grokdeclarator): Remove redundant calls to
+	build_type_variant and some duplicated code.
+	* sig.c (build_signature_reference_type): Only take the type parm.
+	(build_signature_pointer_type): Likewise.
+	* tree.c (build_cplus_method_type): Adjust.
+	* cp-tree.h: Update.
+
 1998-10-04  Mark Mitchell  <mark@markmitchell.com>
 
 	* call.c (build_over_call): Make pedwarns about dropped qualifiers

@@ -377,9 +377,7 @@ build_cplus_method_type (basetype, rettype, argtypes)
   TYPE_METHOD_BASETYPE (t) = TYPE_MAIN_VARIANT (basetype);
   TREE_TYPE (t) = rettype;
   if (IS_SIGNATURE (basetype))
-    ptype = build_signature_pointer_type (TYPE_MAIN_VARIANT (basetype),
-					  TYPE_READONLY (basetype),
-					  TYPE_VOLATILE (basetype));
+    ptype = build_signature_pointer_type (basetype);
   else
     ptype = build_pointer_type (basetype);
 
