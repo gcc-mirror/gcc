@@ -1,5 +1,8 @@
 1998-08-25  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (duplicate_decls): Don't complain about different
+	exceptions from an internal decl even if pedantic.
+
 	* typeck.c (convert_for_assignment): Converting from pm of vbase
 	to derived is an error, not a sorry.
 
