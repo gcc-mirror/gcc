@@ -1232,23 +1232,54 @@ extern union tree_node *current_function_decl;
    GO_IF_LEGITIMATE_ADDRESS.
 
    It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output.  */
+   opportunities to optimize the output. 
 
-/* On the HP-PA, change REG+N into REG+REG, and REG+(X*Y) into REG+REG.  */
+   For the PA, transform:
+
+	memory(X + <large int>)
+
+   into:
+
+	Y = <large int> & ~mask;
+	Z = X + Y
+	memory (Z + (<large int> & mask));
+
+   This is for CSE to find several similar references, and only use one Z. 
+
+   MODE_FLOAT references allow displacements which fit in 5 bits, so use
+   0xf as the mask.  
+
+   MODE_INT references allow displacements which fit in 11 bits, so use
+   0x1fff as the mask. 
+
+   This relies on the fact that most mode MODE_FLOAT references will use FP
+   registers and most mode MODE_INT references will use integer registers.
+   (In the rare case of an FP register used in an integer MODE, we depend
+   on secondary reloads and the final output pass to clean things up.)  */
+
+   Also change REG+(X*Y) into REG.  (With X*Y in an extra pseudo).  */
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)	\
-{ if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 1)))	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
-		   copy_to_mode_reg (SImode, XEXP (X, 1)));	\
-  if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 0)))	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 1),			\
-		   copy_to_mode_reg (SImode, XEXP (X, 0)));	\
+{ if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG	\
+      && GET_CODE (XEXP (X, 1)) == CONST_INT)			\
+    {								\
+      rtx int_reg, ptr_reg;					\
+      int offset = INTVAL (XEXP (X, 1));			\
+      int mask = GET_MODE_CLASS (mode) == MODE_FLOAT ? 0xf 	\
+						     : 0x1fff;	\
+      int_reg = force_reg (SImode, GEN_INT (offset & ~ mask));	\
+      ptr_reg = force_reg (SImode,				\
+			    gen_rtx (PLUS, SImode,		\
+				     XEXP (X, 0), int_reg));	\
+      X = plus_constant (ptr_reg, offset & mask);		\
+      goto WIN;							\
+    }								\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT)	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 1),			\
-		   force_operand (XEXP (X, 0), 0));		\
+    (X) = force_operand (gen_rtx (PLUS, SImode, XEXP (X, 1),	\
+		                  force_operand (XEXP (X, 0), 0)), 0);\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == MULT)	\
-    (X) = gen_rtx (PLUS, SImode, XEXP (X, 0),			\
-		   force_operand (XEXP (X, 1), 0));		\
+    (X) = force_operand (gen_rtx (PLUS, SImode, XEXP (X, 0),	\
+				  force_operand (XEXP (X, 1), 0)), 0);\
   if (memory_address_p (MODE, X))				\
     goto WIN;							\
   if (flag_pic) (X) = legitimize_pic_address (X, MODE, gen_reg_rtx (Pmode));\
