@@ -1,3 +1,10 @@
+2003-07-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/10953
+	* parser.c (cp_parser_nested_name_specifier): Reset scope on
+	failure.
+	(cp_parser_elaborated_type_specifier): Likewise.
+
 2003-07-22  Mark Mitchell  <mark@codesourcery.com>
 
 	Eliminate use of POINTER_TYPE for pointers-to-members.

@@ -3052,6 +3052,7 @@ cp_parser_nested_name_specifier (cp_parser *parser,
   if (!scope)
     {
       cp_parser_error (parser, "expected nested-name-specifier");
+      parser->scope = NULL_TREE;
       return error_mark_node;
     }
 
@@ -8439,7 +8440,10 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       identifier = cp_parser_identifier (parser);
 
       if (identifier == error_mark_node)
-	return error_mark_node;
+	{
+	  parser->scope = NULL_TREE;
+	  return error_mark_node;
+	}
 
       /* For a `typename', we needn't call xref_tag.  */
       if (tag_type == typename_type)
