@@ -1,3 +1,20 @@
+2004-01-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkScrollPanePeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollPanePeer.c
+	(create(int, int)): New method.
+	(create): Call new create method.
+	(gtkScrolledWindowNew, gtkScrolledWindowSetSize): Remove
+	methods.
+	(childResized): Remove native implementation.  Implement in
+	Java.
+	(getHScrollbarHeight, getVScrollbarWidth): Call
+	gtk_widget_size_request to get scrollbar dimensions.
+	* java/awt/ScrollPane.java (getViewportSize): Reimplement.  Only
+	call getVScrollbarWidth and getHScrollbarHeight when vertical
+	and horizontal scrollbars respectively are needed.
+	(doLayout): Enlarge child if it is smaller than the viewport.
+
 2004-01-05  Fernando Nasser  <fnasser@redhat.com>
 
 	* java/awt/Dialog.java (constructor): Accept null title as per spec.

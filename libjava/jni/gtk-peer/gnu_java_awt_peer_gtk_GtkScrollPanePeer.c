@@ -41,20 +41,22 @@ exception statement from your version. */
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_create 
-  (JNIEnv *env, jobject obj)
+  (JNIEnv *env, jobject obj, int width, int height)
 {
-  gpointer window;
+  GtkWidget *sw;
 
   /* Create global reference and save it for future use */
   NSA_SET_GLOBAL_REF (env, obj);
 
   gdk_threads_enter ();
   
-  window = gtk_scrolled_window_new (NULL, NULL);
+  sw = gtk_scrolled_window_new (NULL, NULL);
+
+  gtk_widget_set_size_request (sw, width, height);
 
   gdk_threads_leave ();
 
-  NSA_SET_PTR (env, obj, window);
+  NSA_SET_PTR (env, obj, sw);
 }
 
 JNIEXPORT void JNICALL 
@@ -116,34 +118,25 @@ Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_gtkScrolledWindowSetVScrollIncremen
   gdk_threads_leave ();
 }
 
-JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_childResized
-  (JNIEnv *env, jobject obj, jint width, jint height)
-{
-  void *ptr;
-
-  ptr = NSA_GET_PTR (env, obj);
-
-  return;
-
-  gdk_threads_enter ();
-  gtk_widget_set_usize (GTK_BIN (ptr)->child, width, height);
-  gdk_threads_leave ();
-}
-
 JNIEXPORT jint JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_getHScrollbarHeight
   (JNIEnv *env, jobject obj)
 {
   void *ptr;
   GtkScrolledWindow *sw;
-  jint height;
+  GtkRequisition requisition;
+  jint height = 0;
+  jint spacing = 0;
 
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
   sw = GTK_SCROLLED_WINDOW (ptr);
-  height = (sw->hscrollbar_visible) ? sw->hscrollbar->allocation.height : 0;
+
+  gtk_widget_size_request (sw->hscrollbar, &requisition);
+  gtk_widget_style_get (GTK_WIDGET (sw), "scrollbar_spacing", &spacing, NULL);
+  height = requisition.height + spacing;
+
   gdk_threads_leave ();
 
   return height;
@@ -155,13 +148,19 @@ Java_gnu_java_awt_peer_gtk_GtkScrollPanePeer_getVScrollbarWidth
 {
   void *ptr;
   GtkScrolledWindow *sw;
-  jint width;
+  GtkRequisition requisition;
+  jint width = 0;
+  jint spacing = 0;
 
   ptr = NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
   sw = GTK_SCROLLED_WINDOW (ptr);
-  width = (sw->vscrollbar_visible) ? sw->vscrollbar->allocation.width : 0;
+
+  gtk_widget_size_request (sw->vscrollbar, &requisition);
+  gtk_widget_style_get (GTK_WIDGET (sw), "scrollbar_spacing", &spacing, NULL);
+  width = requisition.width + spacing;
+
   gdk_threads_leave ();
 
   return width;
