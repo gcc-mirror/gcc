@@ -1,6 +1,6 @@
 // natSharedLibLoader.cc - Implementation of FirstThread native methods.
 
-/* Copyright (C) 2001  Free Software Foundation
+/* Copyright (C) 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -62,7 +62,7 @@ gnu::gcj::runtime::SharedLibLoader::init(jbyteArray libname, jint flags)
     }
   handler = (gnu::gcj::RawData*) h;
 #else
-  const char *msg = "ShareedLibLoader is not supported on this platform";
+  const char *msg = "SharedLibLoader is not supported on this platform";
   throw new java::lang::UnsupportedOperationException(JvNewStringLatin1(msg));
 #endif
 }

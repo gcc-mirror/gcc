@@ -1,4 +1,4 @@
-/* Copyright (C) 2001  Free Software Foundation
+/* Copyright (C) 2001, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -27,7 +27,7 @@ public class SharedLibLoader extends ClassLoader
   /** Load a shared library, and associate a ClassLoader with it.
    * @param libname named of shared library (passed to dlopen)
    * @param parent the parent ClassLoader
-   * @parem flags passed to dlopen
+   * @param flags passed to dlopen
    */
   public SharedLibLoader(String libname, ClassLoader parent, int flags)
   {

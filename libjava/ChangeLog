@@ -1,3 +1,10 @@
+2003-07-11  Matt Kraai  <kraii@alumni.cmu.edu>
+
+	* gnu/gcj/runtime/SharedLibLoader.java: Fix misspelling.
+	* gnu/gcj/runtime/natSharedLibLoader.cc: Likewise.
+	* java/awt/im/InputContext.java: Remove a redundant
+	partial line.
+
 2003-07-09  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
