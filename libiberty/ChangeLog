@@ -1,3 +1,7 @@
+2003-10-31  Andreas Jaeger  <aj@suse.de>
+
+	* floatformat.c (floatformat_always_valid): Add unused attribute.
+
 2003-10-30  Josef Zlomek  <zlomekj@suse.cz>
 
 	Jan Hubicka <jh@suse.cz>
