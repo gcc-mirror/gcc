@@ -1,3 +1,8 @@
+Wed Feb 26 20:17:56 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* expr.c (emit_group_store):  Fix crash when converting single
+	register into complex register.
+
 2003-02-26  Michael Matz  <matz@suse.de>
 
 	* ra-colorize.c (merge_moves): Fix list handling.

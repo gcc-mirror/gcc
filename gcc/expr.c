@@ -2468,6 +2468,15 @@ emit_group_store (orig_dst, src, ssize)
 	      bytepos -= GET_MODE_SIZE (GET_MODE (XEXP (dst, 0)));
 	      dest = XEXP (dst, 1);
 	    }
+	  else if (bytepos == 0 && XVECLEN (src, 0))
+	    {
+	      dest = assign_stack_temp (GET_MODE (dest),
+				        GET_MODE_SIZE (GET_MODE (dest)), 0);
+	      emit_move_insn (adjust_address (dest, GET_MODE (tmps[i]), bytepos),
+			      tmps[i]);
+	      dst = dest;
+	      break;
+	    }
 	  else
 	    abort ();
 	}
@@ -2486,7 +2495,7 @@ emit_group_store (orig_dst, src, ssize)
   emit_queue ();
 
   /* Copy from the pseudo into the (probable) hard reg.  */
-  if (GET_CODE (dst) == REG)
+  if (orig_dst != dst)
     emit_move_insn (orig_dst, dst);
 }
 
