@@ -1,3 +1,7 @@
+2001-04-30  Stan Shebs  <shebs@apple.com>
+
+	* invoke.texi: Add a section documenting Objective-C options.
+
 2001-04-27  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* emit-rtl.c (try_split):  Copy EH notes to sequence.
