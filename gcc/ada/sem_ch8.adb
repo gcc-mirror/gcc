@@ -50,6 +50,7 @@ with Sem_Ch4;  use Sem_Ch4;
 with Sem_Ch6;  use Sem_Ch6;
 with Sem_Ch12; use Sem_Ch12;
 with Sem_Disp; use Sem_Disp;
+with Sem_Dist; use Sem_Dist;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sem_Type; use Sem_Type;
@@ -3235,6 +3236,7 @@ package body Sem_Ch8 is
          if Comes_From_Source (N)
            and then Is_Remote_Access_To_Subprogram_Type (E)
            and then Expander_Active
+           and then Get_PCS_Name /= Name_No_DSA
          then
             Rewrite (N,
               New_Occurrence_Of (Equivalent_Type (E), Sloc (N)));
@@ -3540,7 +3542,7 @@ package body Sem_Ch8 is
                              and then Chars (P) = Chars (Selector)
                            then
                               Id := S;
-                              goto found;
+                              goto Found;
                            end if;
                         end if;
 
@@ -3610,10 +3612,16 @@ package body Sem_Ch8 is
          end if;
       end if;
 
-      <<found>>
+      <<Found>>
       if Comes_From_Source (N)
         and then Is_Remote_Access_To_Subprogram_Type (Id)
+        and then Present (Equivalent_Type (Id))
       then
+         --  If we are not actually generating distribution code (i.e.
+         --  the current PCS is the dummy non-distributed version), then
+         --  the Equivalent_Type will be missing, and Id should be treated
+         --  as a regular access-to-subprogram type.
+
          Id := Equivalent_Type (Id);
          Set_Chars (Selector, Chars (Id));
       end if;
