@@ -1,3 +1,28 @@
+2000-04-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_decl_flags): Rename saved_inline to deferred.
+	(DECL_SAVED_INLINE): Rename to ...
+	(DECL_DEFERRED_FN): ... this.
+	(in_function_p): Remove declaration.
+	(mark_inline_for_output): Rename to ... 
+	(defer_fn): ... this.
+	* decl.c (finish_function): Adjust call to mark_inline_for_output.
+	(in_function_p): Remove definition.
+	* decl2.c (saved_inlines): Rename to ...
+	(deferred_fns): ... this.
+	(saved_inlines_used): Rename to ...
+	(deferred_fns_used): ... this.
+	(mark_inline_for_output): Rename to ...
+	(defer_fn): ... this.
+	(finish_file): Adjust accordingly.
+	(init_decl2): Likewise.
+	* lex.c (cons_up_default_function): Likewise.
+	* pt.c (mark_decl_instantiated): Likewise.
+	(instantiate_decl): Don't set DECL_DEFER_OUTPUT under any
+	circumstances.
+	* rtti.c (get_tinfo_decl): Adjust call to mark_inline_for_output.
+	* semantics.c (expand_body): Defer more functions.
+
 2000-04-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* rtti.c (dfs_class_hint_mark): New static function.

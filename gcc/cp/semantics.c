@@ -2727,17 +2727,12 @@ expand_body (fn)
   /* If possible, avoid generating RTL for this function.  Instead,
      just record it as an inline function, and wait until end-of-file
      to decide whether to write it out or not.  */
-  if (/* We have to generate RTL if we can't inline trees.  */
-      flag_inline_trees
-      /* Or if it's not an inline function.  */
-      && DECL_INLINE (fn)
+  if (/* We have to generate RTL if it's not an inline function.  */
+      (DECL_INLINE (fn) || DECL_COMDAT (fn))
       /* Or if we have to keep all inline functions anyhow.  */
       && !flag_keep_inline_functions
       /* Or if we actually have a reference to the function.  */
       && !DECL_NEEDED_P (fn)
-      /* Or if we're at the end-of-file, and this function is not
-	 DECL_COMDAT.  */
-      && (!at_eof || DECL_COMDAT (fn))
       /* Or if this is a nested function.  */
       && !decl_function_context (fn))
     {
@@ -2753,7 +2748,7 @@ expand_body (fn)
 	}
       /* Remember this function.  In finish_file we'll decide if
 	 we actually need to write this function out.  */
-      mark_inline_for_output (fn);
+      defer_fn (fn);
       /* Let the back-end know that this funtion exists.  */
       note_deferral_of_defined_inline_function (fn);
       return;

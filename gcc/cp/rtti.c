@@ -413,7 +413,7 @@ get_tinfo_decl (type)
       DECL_NOT_REALLY_EXTERN (d) = 1;
       SET_DECL_TINFO_FN_P (d);
       TREE_TYPE (name) = type;
-      mark_inline_for_output (d);
+      defer_fn (d);
     }
   else
     {

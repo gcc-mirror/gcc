@@ -3,7 +3,7 @@
 class B {
 public:
   int Bi;
-  virtual int g() { };
+  virtual int g() { return  0; };
 };
 
 class D : private B {

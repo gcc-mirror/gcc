@@ -108,9 +108,9 @@ static varray_type pending_statics;
 
 /* A list of functions which were declared inline, but which we
    may need to emit outline anyway.  */
-static varray_type saved_inlines;
-#define saved_inlines_used \
-  (saved_inlines ? saved_inlines->elements_used : 0)
+static varray_type deferred_fns;
+#define deferred_fns_used \
+  (deferred_fns ? deferred_fns->elements_used : 0)
 
 /* Same, but not reset.  Local temp variables and global temp variables
    can have the same name.  */
@@ -1976,20 +1976,20 @@ constructor_name (thing)
   return t;
 }
 
-/* Record the existence of an addressable inline function.  */
+/* Defer the compilation of the FN until the end of compilation.  */
 
 void
-mark_inline_for_output (decl)
-     tree decl;
+defer_fn (fn)
+     tree fn;
 {
-  decl = DECL_MAIN_VARIANT (decl);
-  if (DECL_SAVED_INLINE (decl))
+  fn = DECL_MAIN_VARIANT (fn);
+  if (DECL_DEFERRED_FN (fn))
     return;
-  DECL_SAVED_INLINE (decl) = 1;
-  if (!saved_inlines)
-    VARRAY_TREE_INIT (saved_inlines, 32, "saved_inlines");
+  DECL_DEFERRED_FN (fn) = 1;
+  if (!deferred_fns)
+    VARRAY_TREE_INIT (deferred_fns, 32, "deferred_fns");
 
-  VARRAY_PUSH_TREE (saved_inlines, decl);
+  VARRAY_PUSH_TREE (deferred_fns, fn);
 }
 
 /* Hand off a unique name which can be used for variable we don't really
@@ -3537,9 +3537,9 @@ finish_file ()
       
       /* Go through the various inline functions, and see if any need
 	 synthesizing.  */
-      for (i = 0; i < saved_inlines_used; ++i)
+      for (i = 0; i < deferred_fns_used; ++i)
 	{
-	  tree decl = VARRAY_TREE (saved_inlines, i);
+	  tree decl = VARRAY_TREE (deferred_fns, i);
 	  import_export_decl (decl);
 	  if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl)
 	      && TREE_USED (decl)
@@ -3569,9 +3569,9 @@ finish_file ()
 	 from being put out unncessarily.  But, we must stop lying
 	 when the functions are referenced, or if they are not comdat
 	 since they need to be put out now.  */
-      for (i = 0; i < saved_inlines_used; ++i)
+      for (i = 0; i < deferred_fns_used; ++i)
 	{
-	  tree decl = VARRAY_TREE (saved_inlines, i);
+	  tree decl = VARRAY_TREE (deferred_fns, i);
       
 	  if (DECL_NOT_REALLY_EXTERN (decl)
 	      && DECL_INITIAL (decl)
@@ -3609,9 +3609,9 @@ finish_file ()
 	    }
 	}
 
-      if (saved_inlines_used
-	  && wrapup_global_declarations (&VARRAY_TREE (saved_inlines, 0),
-					 saved_inlines_used))
+      if (deferred_fns_used
+	  && wrapup_global_declarations (&VARRAY_TREE (deferred_fns, 0),
+					 deferred_fns_used))
 	reconsider = 1;
       if (walk_namespaces (wrapup_globals_for_namespace, /*data=*/0))
 	reconsider = 1;
@@ -5302,7 +5302,7 @@ void
 init_decl2 ()
 {
   ggc_add_tree_root (&decl_namespace_list, 1);
-  ggc_add_tree_varray_root (&saved_inlines, 1);
+  ggc_add_tree_varray_root (&deferred_fns, 1);
   ggc_add_tree_varray_root (&pending_statics, 1);
   ggc_add_tree_varray_root (&ssdf_decls, 1);
   ggc_add_tree_root (&ssdf_decl, 1);

@@ -2085,7 +2085,7 @@ cons_up_default_function (type, full_name, kind)
 #endif
     DECL_NOT_REALLY_EXTERN (fn) = 1;
 
-  mark_inline_for_output (fn);
+  defer_fn (fn);
 
 #ifdef DEBUG_DEFAULT_FUNCTIONS
   { char *fn_type = NULL;

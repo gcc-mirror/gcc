@@ -3,7 +3,7 @@
 int status = 1;
 
 struct foo {
-  foo& operator= (const foo&) { status = 0; }
+  foo& operator= (const foo&) { status = 0; return *this; }
 };
 
 struct xx {
