@@ -5619,6 +5619,9 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
       qty_comparison_code[reg_qty[REGNO (op0)]] = code;
       if (GET_CODE (op1) == REG)
 	{
+	  /* Look it up again--in case op0 and op1 are the same.  */
+	  op1_elt = lookup (op1, op1_hash_code, mode);
+
 	  /* Put OP1 in the hash table so it gets a new quantity number.  */
 	  if (op1_elt == 0)
 	    {
