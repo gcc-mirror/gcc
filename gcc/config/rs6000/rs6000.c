@@ -10508,16 +10508,15 @@ rs6000_stack_info (void)
   else
     info_ptr->spe_gp_size = 0;
 
-  if (TARGET_ALTIVEC_ABI && TARGET_ALTIVEC_VRSAVE)
-    {
-      info_ptr->vrsave_mask = compute_vrsave_mask ();
-      info_ptr->vrsave_size  = info_ptr->vrsave_mask ? 4 : 0;
-    }
+  if (TARGET_ALTIVEC_ABI)
+    info_ptr->vrsave_mask = compute_vrsave_mask ();
   else
-    {
-      info_ptr->vrsave_mask = 0;
-      info_ptr->vrsave_size = 0;
-    }
+    info_ptr->vrsave_mask = 0;
+
+  if (TARGET_ALTIVEC_VRSAVE && info_ptr->vrsave_mask)
+    info_ptr->vrsave_size  = 4;
+  else
+    info_ptr->vrsave_size  = 0;
 
   /* Calculate the offsets.  */
   switch (DEFAULT_ABI)
@@ -11679,7 +11678,8 @@ rs6000_emit_prologue (void)
      used in this function, and do the corresponding magic in the
      epilogue.  */
 
-  if (TARGET_ALTIVEC && info->vrsave_mask != 0)
+  if (TARGET_ALTIVEC && TARGET_ALTIVEC_VRSAVE
+      && info->vrsave_mask != 0)
     {
       rtx reg, mem, vrsave;
       int offset;
@@ -12141,7 +12141,8 @@ rs6000_emit_epilogue (int sibcall)
     }
 
   /* Restore VRSAVE if needed.  */
-  if (TARGET_ALTIVEC_ABI && info->vrsave_mask != 0)
+  if (TARGET_ALTIVEC_ABI && TARGET_ALTIVEC_VRSAVE 
+      && info->vrsave_mask != 0)
     {
       rtx addr, mem, reg;
 
