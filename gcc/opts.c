@@ -297,106 +297,96 @@ handle_option (const char **argv, unsigned int lang_mask)
 
   opt = argv[0];
 
-  /* Interpret "-" or a non-switch as a file name.  */
-  if (opt[0] != '-' || opt[1] == '\0')
+  /* Drop the "no-" from negative switches.  */
+  if ((opt[1] == 'W' || opt[1] == 'f')
+      && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-')
     {
-      opt_index = cl_options_count;
-      arg = opt;
-      main_input_filename = opt;
-      result = (*lang_hooks.handle_option) (opt_index, arg, value);
+      size_t len = strlen (opt) - 3;
+
+      dup = xmalloc (len + 1);
+      dup[0] = '-';
+      dup[1] = opt[1];
+      memcpy (dup + 2, opt + 5, len - 2 + 1);
+      opt = dup;
+      value = 0;
     }
-  else
+
+  opt_index = find_opt (opt + 1, lang_mask | CL_COMMON);
+  if (opt_index == cl_options_count)
+    goto done;
+
+  option = &cl_options[opt_index];
+
+  /* Reject negative form of switches that don't take negatives as
+     unrecognized.  */
+  if (!value && (option->flags & CL_REJECT_NEGATIVE))
+    goto done;
+
+  /* We've recognized this switch.  */
+  result = 1;
+
+  /* Sort out any argument the switch takes.  */
+  if (option->flags & CL_JOINED)
     {
-      /* Drop the "no-" from negative switches.  */
-      if ((opt[1] == 'W' || opt[1] == 'f')
-	  && opt[2] == 'n' && opt[3] == 'o' && opt[4] == '-')
+      /* Have arg point to the original switch.  This is because
+	 some code, such as disable_builtin_function, expects its
+	 argument to be persistent until the program exits.  */
+      arg = argv[0] + cl_options[opt_index].opt_len + 1;
+      if (!value)
+	arg += strlen ("no-");
+
+      if (*arg == '\0' && !(option->flags & CL_MISSING_OK))
 	{
-	  size_t len = strlen (opt) - 3;
-
-	  dup = xmalloc (len + 1);
-	  dup[0] = '-';
-	  dup[1] = opt[1];
-	  memcpy (dup + 2, opt + 5, len - 2 + 1);
-	  opt = dup;
-	  value = 0;
-	}
-
-      opt_index = find_opt (opt + 1, lang_mask | CL_COMMON);
-      if (opt_index == cl_options_count)
-	goto done;
-
-      option = &cl_options[opt_index];
-
-      /* Reject negative form of switches that don't take negatives as
-	 unrecognized.  */
-      if (!value && (option->flags & CL_REJECT_NEGATIVE))
-	goto done;
-
-      /* We've recognized this switch.  */
-      result = 1;
-
-      /* Sort out any argument the switch takes.  */
-      if (option->flags & CL_JOINED)
-	{
-	  /* Have arg point to the original switch.  This is because
-	     some code, such as disable_builtin_function, expects its
-	     argument to be persistent until the program exits.  */
-	  arg = argv[0] + cl_options[opt_index].opt_len + 1;
-	  if (!value)
-	    arg += strlen ("no-");
-
-	  if (*arg == '\0' && !(option->flags & CL_MISSING_OK))
+	  if (option->flags & CL_SEPARATE)
 	    {
-	      if (option->flags & CL_SEPARATE)
-		{
-		  arg = argv[1];
-		  result = 2;
-		}
-	      else
-		/* Missing argument.  */
-		arg = NULL;
+	      arg = argv[1];
+	      result = 2;
 	    }
+	  else
+	    /* Missing argument.  */
+	    arg = NULL;
 	}
-      else if (option->flags & CL_SEPARATE)
-	{
-	  arg = argv[1];
-	  result = 2;
-	}
+    }
+  else if (option->flags & CL_SEPARATE)
+    {
+      arg = argv[1];
+      result = 2;
+    }
 
-      /* Now we've swallowed any potential argument, complain if this
-	 is a switch for a different front end.  */
-      if (!(option->flags & (lang_mask | CL_COMMON)))
+  /* Now we've swallowed any potential argument, complain if this
+     is a switch for a different front end.  */
+  if (!(option->flags & (lang_mask | CL_COMMON)))
+    {
+      complain_wrong_lang (argv[0], option, lang_mask);
+      goto done;
+    }
+
+  if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
+    {
+      if (!(*lang_hooks.missing_argument) (opt, opt_index))
+	error ("missing argument to \"%s\"", opt);
+      goto done;
+    }
+
+  /* If the switch takes an integer, convert it.  */
+  if (arg && (option->flags & CL_UINTEGER))
+    {
+      value = integral_argument (arg);
+      if (value == -1)
 	{
-	  complain_wrong_lang (argv[0], option, lang_mask);
+	  error ("argument to \"-%s\" should be a non-negative integer",
+		 option->opt_text);
 	  goto done;
 	}
-
-      if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
-	{
-	  error ("missing argument to \"-%s\"", argv[0]);
-	  goto done;
-	}
-
-      /* If the switch takes an integer, convert it.  */
-      if (arg && (option->flags & CL_UINTEGER))
-	{
-	  value = integral_argument (arg);
-	  if (value == -1)
-	    {
-	      error ("argument to \"-%s\" should be a non-negative integer",
-		     option->opt_text);
-	      goto done;
-	    }
-	}
-
-      if (option->flags & lang_mask)
-	if ((*lang_hooks.handle_option) (opt_index, arg, value) == 0)
-	  result = 0;
-
-      if (result && (option->flags & CL_COMMON))
-	if (common_handle_option (opt_index, arg, value) == 0)
-	  result = 0;
     }
+
+  if (option->flags & lang_mask)
+    if ((*lang_hooks.handle_option) (opt_index, arg, value) == 0)
+      result = 0;
+
+  if (result && (option->flags & CL_COMMON))
+    if (common_handle_option (opt_index, arg, value) == 0)
+      result = 0;
 
  done:
   if (dup)
@@ -414,12 +404,23 @@ handle_options (unsigned int argc, const char **argv, unsigned int lang_mask)
 
   for (i = 1; i < argc; i += n)
     {
+      const char *opt = argv[i];
+
+      /* Interpret "-" or a non-switch as a file name.  */
+      if (opt[0] != '-' || opt[1] == '\0')
+	{
+	  main_input_filename = opt;
+	  (*lang_hooks.handle_filename) (opt);
+	  n = 1;
+	  continue;
+	}
+
       n = handle_option (argv + i, lang_mask);
 
       if (!n)
 	{
 	  n = 1;
-	  error ("unrecognized command line option \"%s\"", argv[i]);
+	  error ("unrecognized command line option \"%s\"", opt);
 	}
     }
 }
@@ -603,14 +604,7 @@ static int
 common_handle_option (size_t scode, const char *arg,
 		      int value ATTRIBUTE_UNUSED)
 {
-  const struct cl_option *option = &cl_options[scode];
   enum opt_code code = (enum opt_code) scode;
-
-  if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
-    {
-      error ("missing argument to \"-%s\"", option->opt_text);
-      return 1;
-    }
 
   switch (code)
     {

@@ -68,6 +68,11 @@ hook_void_FILEptr_constcharptr (FILE *a ATTRIBUTE_UNUSED, const char *b ATTRIBUT
 {
 }
 
+void
+hook_void_constcharptr (const char *a ATTRIBUTE_UNUSED)
+{
+}
+
 /* Used for the TARGET_ASM_CAN_OUTPUT_MI_THUNK hook.  */
 bool
 hook_bool_tree_hwi_hwi_tree_false (tree a ATTRIBUTE_UNUSED,
@@ -85,6 +90,13 @@ hook_bool_tree_hwi_hwi_tree_true (tree a ATTRIBUTE_UNUSED,
 				  tree d ATTRIBUTE_UNUSED)
 {
   return true;
+}
+
+bool
+hook_bool_constcharptr_size_t_false (const char *a ATTRIBUTE_UNUSED,
+				     size_t b ATTRIBUTE_UNUSED)
+{
+  return false;
 }
 
 bool

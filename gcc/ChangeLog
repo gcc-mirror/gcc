@@ -1,5 +1,30 @@
 2003-07-06  Neil Booth  <neil@daikokuya.co.uk>
 
+	* c-common.h (c_comon_handle_filename,
+	c_common_missing_arguement): New.
+	* c-lang.c (LANG_HOOKS_HANDLE_FILENAME,
+	LANG_HOOKS_MISSING_ARGUMENT): New.
+	* c-opts.c (missing_arg): Rename c_common_missing_argument,
+	update to be an appropriate langhook.
+	(c_common_handle_option): Don't handle filenames.
+	(c_common_handle_filename): New.
+	* hooks.c (hook_void_constcharptr,
+	hook_bool_constcharptr_size_t_false): New.
+	* hooks.h (hook_void_constcharptr,
+	hook_bool_constcharptr_size_t_false): New.
+	* langhooks-def.h (LANG_HOOKS_HANDLE_FILENAME,
+	LANG_HOOKS_MISSING_ARGUMENT): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.h (struct lang_hooks): Add handle_filename and
+	missing_argument.
+	* opts.c (handle_option): Don't handle filenames here, but ...
+	(handle_options): ... here.
+	(common_handle_option): Don't handle missing arguments here.
+	* objc/objc-lang.c (LANG_HOOKS_HANDLE_FILENAME,
+	LANG_HOOKS_MISSING_ARGUMENT): New.
+
+2003-07-06  Neil Booth  <neil@daikokuya.co.uk>
+
 	* Makfile.in: Remove traces of mbchar.
 	* c-parse.in (MULTIBYTE_CHARS): Remove.
 	* config.in (MULTIBYTE_CHARS): Remove.
