@@ -55,10 +55,10 @@ with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
+with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Types;    use Types;
 with Uintp;    use Uintp;
-with Opt;
 
 package body Exp_Ch9 is
 
@@ -7141,13 +7141,16 @@ package body Exp_Ch9 is
       Tasknm    : constant Name_Id    := Chars (Tasktyp);
       Taskdef   : constant Node_Id    := Task_Definition (N);
 
-      Proc_Spec : Node_Id;
-      Rec_Decl  : Node_Id;
-      Rec_Ent   : Entity_Id;
-      Cdecls    : List_Id;
-      Elab_Decl : Node_Id;
-      Size_Decl : Node_Id;
-      Body_Decl : Node_Id;
+      Proc_Spec  : Node_Id;
+      Rec_Decl   : Node_Id;
+      Rec_Ent    : Entity_Id;
+      Cdecls     : List_Id;
+      Elab_Decl  : Node_Id;
+      Size_Decl  : Node_Id;
+      Body_Decl  : Node_Id;
+      Task_Size  : Node_Id;
+      Ent_Stack  : Entity_Id;
+      Decl_Stack : Node_Id;
 
    begin
       --  If already expanded, nothing to do
@@ -7246,6 +7249,51 @@ package body Exp_Ch9 is
                      Make_Index_Or_Discriminant_Constraint (Loc,
                        Constraints =>
                          New_List (Make_Integer_Literal (Loc, 0)))))));
+
+      end if;
+
+      --  Declare static stack (that is, created by the expander) if we
+      --  are using the Restricted run time on a bare board configuration.
+
+      if Restricted_Profile
+        and then Preallocated_Stacks_On_Target
+      then
+         --  First we need to extract the appropriate stack size
+
+         Ent_Stack := Make_Defining_Identifier (Loc, Name_uStack);
+
+         if Present (Taskdef) and then Has_Storage_Size_Pragma (Taskdef) then
+            Task_Size := Relocate_Node (
+              Expression (First (
+                Pragma_Argument_Associations (
+                  Find_Task_Or_Protected_Pragma
+                    (Taskdef, Name_Storage_Size)))));
+         else
+            Task_Size :=
+              New_Reference_To (RTE (RE_Default_Stack_Size), Loc);
+         end if;
+
+         Decl_Stack := Make_Component_Declaration (Loc,
+           Defining_Identifier  => Ent_Stack,
+
+           Component_Definition =>
+             Make_Component_Definition (Loc,
+               Aliased_Present     => True,
+               Subtype_Indication  => Make_Subtype_Indication (Loc,
+                 Subtype_Mark =>
+                   New_Occurrence_Of (RTE (RE_Storage_Array), Loc),
+
+                 Constraint   =>
+                   Make_Index_Or_Discriminant_Constraint (Loc,
+                     Constraints  => New_List (Make_Range (Loc,
+                       Low_Bound  => Make_Integer_Literal (Loc, 1),
+                       High_Bound => Convert_To (RTE (RE_Storage_Offset),
+                         Task_Size)))))));
+
+         Append_To (Cdecls, Decl_Stack);
+
+         --  The appropriate alignment for the stack is ensured by the
+         --  run-time code in charge of task creation.
 
       end if;
 
@@ -8381,17 +8429,36 @@ package body Exp_Ch9 is
       --  Priority parameter. Set to Unspecified_Priority unless there is a
       --  priority pragma, in which case we take the value from the pragma.
 
-      if Present (Tdef)
-        and then Has_Priority_Pragma (Tdef)
-      then
+      if Present (Tdef) and then Has_Priority_Pragma (Tdef) then
          Append_To (Args,
            Make_Selected_Component (Loc,
              Prefix => Make_Identifier (Loc, Name_uInit),
              Selector_Name => Make_Identifier (Loc, Name_uPriority)));
-
       else
          Append_To (Args,
            New_Reference_To (RTE (RE_Unspecified_Priority), Loc));
+      end if;
+
+      --  Optional Stack parameter
+
+      if Restricted_Profile then
+
+         --  If the stack has been preallocated by the expander then
+         --  pass its address. Otherwise, pass a null address.
+
+         if Preallocated_Stacks_On_Target then
+            Append_To (Args,
+              Make_Attribute_Reference (Loc,
+                Prefix         => Make_Selected_Component (Loc,
+                  Prefix        => Make_Identifier (Loc, Name_uInit),
+                  Selector_Name =>
+                    Make_Identifier (Loc, Name_uStack)),
+                Attribute_Name => Name_Address));
+
+         else
+            Append_To (Args,
+              New_Reference_To (RTE (RE_Null_Address), Loc));
+         end if;
       end if;
 
       --  Size parameter. If no Storage_Size pragma is present, then

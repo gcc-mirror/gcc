@@ -376,6 +376,7 @@ package body System.Tasking.Restricted.Stages is
 
    procedure Create_Restricted_Task
      (Priority      : Integer;
+      Stack_Address : System.Address;
       Size          : System.Parameters.Size_Type;
       Task_Info     : System.Task_Info.Task_Info_Type;
       State         : Task_Procedure_Access;
@@ -390,6 +391,11 @@ package body System.Tasking.Restricted.Stages is
       Success       : Boolean;
 
    begin
+      --  Stack is not preallocated on this target, so that
+      --  Stack_Address must be null.
+
+      pragma Assert (Stack_Address = Null_Address);
+
       if Priority = Unspecified_Priority then
          Base_Priority := Self_ID.Common.Base_Priority;
       else

@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                         (GNU-Linux/ia64 Version)                         --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -128,6 +128,7 @@ private
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
    OpenVMS                   : constant Boolean := False;
+   Preallocated_Stacks       : constant Boolean := False;
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := False;
    Stack_Check_Probes        : constant Boolean := False;
