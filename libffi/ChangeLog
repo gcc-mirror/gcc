@@ -1,3 +1,8 @@
+2003-10-19  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* src/powerpc/ffi_darwin.c (ffi_prep_args): Declare bytes again.
+	Used when FFI_DEBUG = 1.
+
 2003-10-14  Alan Modra  <amodra@bigpond.net.au>
 
 	* src/types.c (double, longdouble): Default POWERPC64 to 8 byte size
