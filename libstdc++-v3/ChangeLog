@@ -1,3 +1,16 @@
+2000-05-03  Phil Edwards  <pme@sourceware.cygnus.com>
+            Felix Natter <fnatter@gmx.net>
+
+	* docs/footer.html:  Update to see if it takes effect.
+	* docs/thanks.html:  More people.
+	* docs/17_intro/headers_cc.txt:  Copy from testsuite, since that can't
+	  be seen from the web pages.  Rename for browser-friendliness...
+	* docs/17_intro/howto.html:  ...and update here.
+	* docs/17_intro/porting-howto.html:  Changes from Felix.
+	* docs/gccrebuild.html:  Mention v3->egcs move.
+	* docs/faq/index.html:  Ditto.  Also misc tweaks and URL updates.
+	* docs/faq/index.txt:  Regenerate.
+
 2000-05-01  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/cpu/powerpc/bits/atomicity.h (__exchange_and_add): More
