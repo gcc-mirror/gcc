@@ -1610,7 +1610,7 @@ ia64*-*-elf*)
 	float_format=i386
 	;;
 ia64*-*-freebsd*)
-	tm_file="${tm_file} ${fbsd_tm_file} dbxelf.h elfos.h ia64/sysv4.h ia64/freebsd.h"
+	tm_file="${tm_file} dbxelf.h elfos.h ${fbsd_tm_file} ia64/sysv4.h ia64/freebsd.h"
 	target_cpu_default="MASK_GNU_AS|MASK_GNU_LD"
 	tmake_file="${tmake_file} ia64/t-ia64"
 	float_format=i386
