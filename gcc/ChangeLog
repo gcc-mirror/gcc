@@ -1,3 +1,7 @@
+2000-11-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.texi: Adjust wording.
+
 2000-11-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* fixinc/inclhack.def (avoid_wchar_t_type): New fix.
