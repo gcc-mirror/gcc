@@ -6091,7 +6091,7 @@ fold_trunc_transparent_mathfn (tree exp)
   if (optimize)
     {
       tree arg0 = strip_float_extensions (arg);
-      tree ftype = TREE_TYPE (exp);
+      tree ftype = TREE_TYPE (TREE_TYPE (fndecl));
       tree newtype = TREE_TYPE (arg0);
       tree decl;
 
@@ -6126,7 +6126,7 @@ fold_fixed_mathfn (tree exp)
   /* If argument is already integer valued, and we don't need to worry
      about setting errno, there's no need to perform rounding.  */
   if (! flag_errno_math && integer_valued_real_p (arg))
-    return fold (build1 (FIX_TRUNC_EXPR, TREE_TYPE (exp), arg));
+    return fold (build1 (FIX_TRUNC_EXPR, TREE_TYPE (TREE_TYPE (fndecl)), arg));
 
   if (optimize)
     {
@@ -6504,6 +6504,7 @@ fold_builtin_atan (tree arglist, tree type)
 static tree
 fold_builtin_trunc (tree exp)
 {
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   tree arg;
 
@@ -6515,7 +6516,7 @@ fold_builtin_trunc (tree exp)
   if (TREE_CODE (arg) == REAL_CST && ! TREE_CONSTANT_OVERFLOW (arg))
     {
       REAL_VALUE_TYPE r, x;
-      tree type = TREE_TYPE (exp);
+      tree type = TREE_TYPE (TREE_TYPE (fndecl));
 
       x = TREE_REAL_CST (arg);
       real_trunc (&r, TYPE_MODE (type), &x);
@@ -6531,6 +6532,7 @@ fold_builtin_trunc (tree exp)
 static tree
 fold_builtin_floor (tree exp)
 {
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   tree arg;
 
@@ -6546,7 +6548,7 @@ fold_builtin_floor (tree exp)
       x = TREE_REAL_CST (arg);
       if (! REAL_VALUE_ISNAN (x) || ! flag_errno_math)
 	{
-	  tree type = TREE_TYPE (exp);
+	  tree type = TREE_TYPE (TREE_TYPE (fndecl));
 	  REAL_VALUE_TYPE r;
 
 	  real_floor (&r, TYPE_MODE (type), &x);
@@ -6563,6 +6565,7 @@ fold_builtin_floor (tree exp)
 static tree
 fold_builtin_ceil (tree exp)
 {
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   tree arg;
 
@@ -6578,7 +6581,7 @@ fold_builtin_ceil (tree exp)
       x = TREE_REAL_CST (arg);
       if (! REAL_VALUE_ISNAN (x) || ! flag_errno_math)
 	{
-	  tree type = TREE_TYPE (exp);
+	  tree type = TREE_TYPE (TREE_TYPE (fndecl));
 	  REAL_VALUE_TYPE r;
 
 	  real_ceil (&r, TYPE_MODE (type), &x);
@@ -6595,6 +6598,7 @@ fold_builtin_ceil (tree exp)
 static tree
 fold_builtin_round (tree exp)
 {
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   tree arg;
 
@@ -6610,7 +6614,7 @@ fold_builtin_round (tree exp)
       x = TREE_REAL_CST (arg);
       if (! REAL_VALUE_ISNAN (x) || ! flag_errno_math)
 	{
-	  tree type = TREE_TYPE (exp);
+	  tree type = TREE_TYPE (TREE_TYPE (fndecl));
 	  REAL_VALUE_TYPE r;
 
 	  real_round (&r, TYPE_MODE (type), &x);
@@ -6628,6 +6632,7 @@ fold_builtin_round (tree exp)
 static tree
 fold_builtin_lround (tree exp)
 {
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   tree arg;
 
@@ -6642,7 +6647,8 @@ fold_builtin_lround (tree exp)
 
       if (! REAL_VALUE_ISNAN (x) && ! REAL_VALUE_ISINF (x))
 	{
-	  tree itype = TREE_TYPE (exp), ftype = TREE_TYPE (arg), result;
+	  tree itype = TREE_TYPE (TREE_TYPE (fndecl));
+	  tree ftype = TREE_TYPE (arg), result;
 	  HOST_WIDE_INT hi, lo;
 	  REAL_VALUE_TYPE r;
 
@@ -6757,7 +6763,7 @@ fold_builtin_bitop (tree exp)
 	  gcc_unreachable ();
 	}
 
-      return build_int_cst (TREE_TYPE (exp), result);
+      return build_int_cst (TREE_TYPE (TREE_TYPE (fndecl)), result);
     }
 
   return NULL_TREE;
@@ -7160,6 +7166,7 @@ fold_builtin_exponent (tree fndecl, tree arglist,
 static tree
 fold_builtin_memcpy (tree exp)
 {
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   tree dest, src, len;
 
@@ -7173,11 +7180,11 @@ fold_builtin_memcpy (tree exp)
 
   /* If the LEN parameter is zero, return DEST.  */
   if (integer_zerop (len))
-    return omit_one_operand (TREE_TYPE (exp), dest, src);
+    return omit_one_operand (TREE_TYPE (TREE_TYPE (fndecl)), dest, src);
 
   /* If SRC and DEST are the same (and not volatile), return DEST.  */
   if (operand_equal_p (src, dest, 0))
-    return omit_one_operand (TREE_TYPE (exp), dest, len);
+    return omit_one_operand (TREE_TYPE (TREE_TYPE (fndecl)), dest, len);
 
   return 0;
 }
@@ -7251,6 +7258,7 @@ fold_builtin_memmove (tree arglist, tree type)
 tree
 fold_builtin_strcpy (tree exp, tree len)
 {
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   tree dest, src, fn;
 
@@ -7263,7 +7271,7 @@ fold_builtin_strcpy (tree exp, tree len)
 
   /* If SRC and DEST are the same (and not volatile), return DEST.  */
   if (operand_equal_p (src, dest, 0))
-    return fold_convert (TREE_TYPE (exp), dest);
+    return fold_convert (TREE_TYPE (TREE_TYPE (fndecl)), dest);
 
   if (optimize_size)
     return 0;
@@ -7283,7 +7291,7 @@ fold_builtin_strcpy (tree exp, tree len)
   arglist = build_tree_list (NULL_TREE, len);
   arglist = tree_cons (NULL_TREE, src, arglist);
   arglist = tree_cons (NULL_TREE, dest, arglist);
-  return fold_convert (TREE_TYPE (exp),
+  return fold_convert (TREE_TYPE (TREE_TYPE (fndecl)),
 		       build_function_call_expr (fn, arglist));
 }
 
@@ -7294,6 +7302,7 @@ fold_builtin_strcpy (tree exp, tree len)
 tree
 fold_builtin_strncpy (tree exp, tree slen)
 {
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   tree dest, src, len, fn;
 
@@ -7307,7 +7316,7 @@ fold_builtin_strncpy (tree exp, tree slen)
 
   /* If the LEN parameter is zero, return DEST.  */
   if (integer_zerop (len))
-    return omit_one_operand (TREE_TYPE (exp), dest, src);
+    return omit_one_operand (TREE_TYPE (TREE_TYPE (fndecl)), dest, src);
 
   /* We can't compare slen with len as constants below if len is not a
      constant.  */
@@ -7333,7 +7342,7 @@ fold_builtin_strncpy (tree exp, tree slen)
   fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
   if (!fn)
     return 0;
-  return fold_convert (TREE_TYPE (exp),
+  return fold_convert (TREE_TYPE (TREE_TYPE (fndecl)),
 		       build_function_call_expr (fn, arglist));
 }
 
@@ -7556,7 +7565,9 @@ fold_builtin_strncmp (tree arglist)
 static tree
 fold_builtin_signbit (tree exp)
 {
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
+  tree type = TREE_TYPE (TREE_TYPE (fndecl));
   tree arg, temp;
 
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
@@ -7572,16 +7583,16 @@ fold_builtin_signbit (tree exp)
 
       c = TREE_REAL_CST (arg);
       temp = REAL_VALUE_NEGATIVE (c) ? integer_one_node : integer_zero_node;
-      return fold_convert (TREE_TYPE (exp), temp);
+      return fold_convert (type, temp);
     }
 
   /* If ARG is non-negative, the result is always zero.  */
   if (tree_expr_nonnegative_p (arg))
-    return omit_one_operand (TREE_TYPE (exp), integer_zero_node, arg);
+    return omit_one_operand (type, integer_zero_node, arg);
 
   /* If ARG's format doesn't have signed zeros, return "arg < 0.0".  */
   if (!HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg))))
-    return fold (build2 (LT_EXPR, TREE_TYPE (exp), arg,
+    return fold (build2 (LT_EXPR, type, arg,
 			 build_real (TREE_TYPE (arg), dconst0)));
 
   return NULL_TREE;
