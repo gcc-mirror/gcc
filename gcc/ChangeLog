@@ -1,3 +1,7 @@
+2001-06-05  scott snyder  <snyder@fnal.gov>
+
+	* gccbug.in:  Fix typo.
+
 2001-06-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000/aix51.h (CPP_SPEC, CPLUSPLUS_CPP_SPEC): Fix typo in
