@@ -1,5 +1,5 @@
 /* ByteBufferImpl.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.nio;
 
 import java.nio.ByteBuffer;
@@ -66,7 +67,7 @@ public final class ByteBufferImpl extends ByteBuffer
     this.backing_buffer = array;
     readOnly = false;
   }
-
+  
   public ByteBufferImpl (ByteBufferImpl copy)
   {
     super (copy.capacity (), copy.limit (), copy.position (), 0);
@@ -79,311 +80,369 @@ public final class ByteBufferImpl extends ByteBuffer
     position (position () + toAdd);
   }
 
-  private static native char nio_get_Char (ByteBufferImpl b, int index, int limit);
-
-  private static native void nio_put_Char (ByteBufferImpl b, int index, int limit, char value);
-
   public CharBuffer asCharBuffer ()
   {
-    throw new Error ("Not implemented");
+    return new CharViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly ());
   }
 
-  private static native short nio_get_Short (ByteBufferImpl b, int index, int limit);
-  
-  private static native void nio_put_Short (ByteBufferImpl b, int index, int limit, short value);
-  
   public ShortBuffer asShortBuffer ()
   {
-    throw new Error ("Not implemented");
+    return new ShortViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly ());
   }
 
-  private static native int nio_get_Int (ByteBufferImpl b, int index, int limit);
-  
-  private static native void nio_put_Int (ByteBufferImpl b, int index, int limit, int value);
-  
   public IntBuffer asIntBuffer ()
   {
-    throw new Error ("Not implemented");
+    return new IntViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly ());
   }
 
-  private static native long nio_get_Long (ByteBufferImpl b, int index, int limit);
-  
-  private static native void nio_put_Long (ByteBufferImpl b, int index, int limit, long value);
-  
   public LongBuffer asLongBuffer ()
   {
-    throw new Error ("Not implemented");
+    return new LongViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly ());
   }
 
-  private static native float nio_get_Float (ByteBufferImpl b, int index, int limit);
-  
-  private static native void nio_put_Float (ByteBufferImpl b, int index, int limit, float value);
-  
   public FloatBuffer asFloatBuffer ()
   {
-    throw new Error ("Not implemented");
+    return new FloatViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly ());
   }
 
-  private static native double nio_get_Double (ByteBufferImpl b, int index, int limit);
-  
-  private static native void nio_put_Double (ByteBufferImpl b, int index, int limit, double value);
-  
   public DoubleBuffer asDoubleBuffer ()
   {
-    throw new Error ("Not implemented");
+    return new DoubleViewBufferImpl (this, position (), remaining(), remaining (), 0, -1, isReadOnly ());
   }
 
-  public boolean isReadOnly()
+  public boolean isReadOnly ()
   {
     return readOnly;
   }
   
-  public ByteBuffer slice()
+  public ByteBuffer slice ()
   {
-    return new ByteBufferImpl(this);
+    return new ByteBufferImpl (this);
   }
-
-  public ByteBuffer duplicate()
+  
+  public ByteBuffer duplicate ()
   {
-    return new ByteBufferImpl(this);
+    return new ByteBufferImpl (this);
   }
-
-  public ByteBuffer asReadOnlyBuffer()
+  
+  public ByteBuffer asReadOnlyBuffer ()
   {
-    ByteBufferImpl a = new ByteBufferImpl(this);
+    ByteBufferImpl a = new ByteBufferImpl (this);
     a.readOnly = true;
     return a;
   }
-
-  public ByteBuffer compact()
+  
+  public ByteBuffer compact ()
   {
+    int copied = 0;
+    
+    while (remaining () > 0)
+      {
+	put (copied, get ());
+	copied++;
+      }
+
+    position (copied);
     return this;
   }
-
-  public boolean isDirect()
+  
+  public boolean isDirect ()
   {
     return false;
   }
-  
-  final public byte get()
+
+  /**
+   * Relative get method. Reads the next <code>byte</code> from the buffer.
+   */
+  final public byte get ()
   {
-    byte e = backing_buffer[position()];
-    position(position()+1);
-    return e;
+    byte result = backing_buffer [position ()];
+    position (position () + 1);
+    return result;
   }
   
-  final public ByteBuffer put(byte b)
+  /**
+   * Relative put method. Writes <code>value</code> to the next position
+   * in the buffer.
+   * 
+   * @exception ReadOnlyBufferException If this buffer is read-only.
+   */
+  final public ByteBuffer put (byte value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
-    
-    backing_buffer[position()] = b;
-    position(position()+1);
+	  	    
+    backing_buffer [position ()] = value;
+    position (position () + 1);
     return this;
   }
   
-  final public byte get(int index)
+  /**
+   * Absolute get method. Reads the <code>byte</code> at position
+   * <code>index</code>.
+   *
+   * @exception IndexOutOfBoundsException If index is negative or not smaller
+   * than the buffer's limit.
+   */
+  final public byte get (int index)
   {
-    return backing_buffer[index];
+    return backing_buffer [index];
   }
   
-  final public ByteBuffer put(int index, byte b)
+  /**
+   * Absolute put method. Writes <code>value</value> to position
+   * <code>index</code> in the buffer.
+   *
+   * @exception IndexOutOfBoundsException If index is negative or not smaller
+   * than the buffer's limit.
+   * @exception ReadOnlyBufferException If this buffer is read-only.
+   */
+  final public ByteBuffer put (int index, byte value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
-    
-    backing_buffer[index] = b;
+    	    
+    backing_buffer [index] = value;
     return this;
   }
   
   final public char getChar ()
   {
-    char a = nio_get_Char (this, position (), limit ());
-    inc_pos (2);
-    return a;
+    // FIXME: this handles big endian only
+    return (char) (((get () & 0xff) << 8) + (get () & 0xff));
   }
   
   final public ByteBuffer putChar (char value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    
-    nio_put_Char (this, position (), limit (), value);
-    inc_pos (2);
+    // FIXME: this handles big endian only
+    put ((byte) ((((int) value) & 0xff00) >> 8));
+    put ((byte) (((int) value) & 0x00ff));
     return this;
   }
   
   final public char getChar (int index)
   {
-    char a = nio_get_Char (this, index, limit ());
-    return a;
+    // FIXME: this handles big endian only
+    return (char) (((get (index) & 0xff) << 8) + (get (index + 1) & 0xff));
   }
   
   final public ByteBuffer putChar (int index, char value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    
-    nio_put_Char (this, index, limit (), value);
+    // FIXME: this handles big endian only
+    put (index, (byte) ((((int) value) & 0xff00) >> 8));
+    put (index + 1, (byte) (((int) value) & 0x00ff));
     return this;
   }
 
   final public short getShort ()
   {
-    short a = nio_get_Short (this, position (), limit ());
-    inc_pos (2);
-    return a;
+    // FIXME: this handles big endian only
+    return (short) (((get () & 0xff) << 8) + (get () & 0xff));
   }
   
   final public ByteBuffer putShort (short value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    
-    nio_put_Short (this, position (), limit (), value);
-    inc_pos (2);
+    // FIXME: this handles big endian only
+    put ((byte) ((((int) value) & 0xff00) >> 8));
+    put ((byte) (((int) value) & 0x00ff));
     return this;
   }
   
   final public short getShort (int index)
   {
-    short a = nio_get_Short (this, index, limit ());
-    return a;
+    // FIXME: this handles big endian only
+    return (short) (((get (index) & 0xff) << 8) + (get (index + 1) & 0xff));
   }
   
   final public ByteBuffer putShort (int index, short value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    
-    nio_put_Short (this, index, limit (), value);
+    // FIXME: this handles big endian only
+    put (index, (byte) ((((int) value) & 0xff00) >> 8));
+    put (index + 1, (byte) (((int) value) & 0x00ff));
     return this;
   }
 
   final public int getInt ()
   {
-    int a = nio_get_Int (this, position (), limit ());
-    inc_pos (4);
-    return a;
+    // FIXME: this handles big endian only
+    return (int) (((get () & 0xff) << 24)
+                  + (get () & 0xff) << 16
+                  + (get () & 0xff) << 8
+                  + (get () & 0xff));
   }
   
   final public ByteBuffer putInt (int value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    
-    nio_put_Int (this, position (), limit (), value);
-    inc_pos (4);
+    // FIXME: this handles big endian only
+    put ((byte) ((((int) value) & 0xff000000) >> 24));
+    put ((byte) ((((int) value) & 0x00ff0000) >> 16));
+    put ((byte) ((((int) value) & 0x0000ff00) >> 8));
+    put ((byte) (((int) value) & 0x000000ff));
     return this;
   }
   
   final public int getInt (int index)
   {
-    int a = nio_get_Int (this, index, limit ());
-    return a;
+    // FIXME: this handles big endian only
+    return (int) (((get (index) & 0xff) << 24)
+                  + (get (index + 1) & 0xff) << 16
+                  + (get (index + 2) & 0xff) << 8
+                  + (get (index + 3) & 0xff));
   }
   
   final public ByteBuffer putInt (int index, int value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    
-    nio_put_Int(this, index, limit (), value);
+    // FIXME: this handles big endian only
+    put (index, (byte) ((((int) value) & 0xff000000) >> 24));
+    put (index + 1, (byte) ((((int) value) & 0x00ff0000) >> 16));
+    put (index + 2, (byte) ((((int) value) & 0x0000ff00) >> 8));
+    put (index + 3, (byte) (((int) value) & 0x000000ff));
     return this;
   }
 
   final public long getLong ()
   {
-    long a = nio_get_Long (this, position (), limit ());
-    inc_pos (8);
-    return a;
+    // FIXME: this handles big endian only
+    return (long) (((get () & 0xff) << 56)
+                   + (get () & 0xff) << 48
+                   + (get () & 0xff) << 40
+                   + (get () & 0xff) << 32
+                   + (get () & 0xff) << 24
+                   + (get () & 0xff) << 16
+                   + (get () & 0xff) << 8
+                   + (get () & 0xff));
   }
   
   final public ByteBuffer putLong (long value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    
-    nio_put_Long (this, position (), limit (), value);
-    inc_pos (8);
+    // FIXME: this handles big endian only
+    put ((byte) ((((int) value) & 0xff00000000000000) >> 56));
+    put ((byte) ((((int) value) & 0x00ff000000000000) >> 48));
+    put ((byte) ((((int) value) & 0x0000ff0000000000) >> 40));
+    put ((byte) ((((int) value) & 0x000000ff00000000) >> 32));
+    put ((byte) ((((int) value) & 0x00000000ff000000) >> 24));
+    put ((byte) ((((int) value) & 0x0000000000ff0000) >> 16));
+    put ((byte) ((((int) value) & 0x000000000000ff00) >> 8));
+    put ((byte) (((int) value) & 0x00000000000000ff));
     return this;
   }
   
   final public long getLong (int index)
   {
-    long a = nio_get_Long (this, index, limit ());
-    return a;
+    // FIXME: this handles big endian only
+    return (long) (((get (index) & 0xff) << 56)
+                   + (get (index + 1) & 0xff) << 48
+                   + (get (index + 2) & 0xff) << 40
+                   + (get (index + 3) & 0xff) << 32
+                   + (get (index + 4) & 0xff) << 24
+                   + (get (index + 5) & 0xff) << 16
+                   + (get (index + 6) & 0xff) << 8
+                   + (get (index + 7) & 0xff));
   }
   
   final public ByteBuffer putLong (int index, long value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    
-    nio_put_Long (this, index, limit (), value);
+    // FIXME: this handles big endian only
+    put (index, (byte) ((((int) value) & 0xff00000000000000) >> 56));
+    put (index + 1, (byte) ((((int) value) & 0x00ff000000000000) >> 48));
+    put (index + 2, (byte) ((((int) value) & 0x0000ff0000000000) >> 40));
+    put (index + 3, (byte) ((((int) value) & 0x000000ff00000000) >> 32));
+    put (index + 4, (byte) ((((int) value) & 0x00000000ff000000) >> 24));
+    put (index + 5, (byte) ((((int) value) & 0x0000000000ff0000) >> 16));
+    put (index + 6, (byte) ((((int) value) & 0x000000000000ff00) >> 8));
+    put (index + 7, (byte) (((int) value) & 0x00000000000000ff));
     return this;
   }
 
   final public float getFloat ()
   {
-    float a = nio_get_Float (this, position (), limit ());
-    inc_pos (4);
-    return a;
+    // FIXME: this handles big endian only
+    return (float) (((get () & 0xff) << 24)
+                    + (get () & 0xff) << 16
+                    + (get () & 0xff) << 8
+                    + (get () & 0xff));
   }
   
   final public ByteBuffer putFloat (float value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    
-    nio_put_Float (this, position (), limit (), value);
-    inc_pos (4);
+    // FIXME: this handles big endian only
+    put ((byte) ((((int) value) & 0xff000000) >> 24));
+    put ((byte) ((((int) value) & 0x00ff0000) >> 16));
+    put ((byte) ((((int) value) & 0x0000ff00) >> 8));
+    put ((byte) (((int) value) & 0x000000ff));
     return this;
   }
   
   final public float getFloat (int index)
   {
-    float a = nio_get_Float (this, index, limit ());
-    return a;
+    // FIXME: this handles big endian only
+    return (float) (((get (index) & 0xff) << 24)
+                    + (get (index + 1) & 0xff) << 16
+                    + (get (index + 2) & 0xff) << 8
+                    + (get (index + 3) & 0xff));
   }
 
   final public ByteBuffer putFloat (int index, float value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    
-    nio_put_Float (this, index, limit(), value);
+    // FIXME: this handles big endian only
+    put (index, (byte) ((((int) value) & 0xff000000) >> 24));
+    put (index + 1, (byte) ((((int) value) & 0x00ff0000) >> 16));
+    put (index + 2, (byte) ((((int) value) & 0x0000ff00) >> 8));
+    put (index + 3, (byte) (((int) value) & 0x000000ff));
     return this;
   }
 
   final public double getDouble ()
   {
-    double a = nio_get_Double (this, position (), limit ());
-    inc_pos (8);
-    return a;
+    // FIXME: this handles big endian only
+    return (double) (((get () & 0xff) << 56)
+                     + (get () & 0xff) << 48
+                     + (get () & 0xff) << 40
+                     + (get () & 0xff) << 32
+                     + (get () & 0xff) << 24
+                     + (get () & 0xff) << 16
+                     + (get () & 0xff) << 8
+                     + (get () & 0xff));
   }
 
   final public ByteBuffer putDouble (double value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    
-    nio_put_Double (this, position(), limit (), value);
-    inc_pos (8);
+    // FIXME: this handles big endian only
+    put ((byte) ((((int) value) & 0xff00000000000000) >> 56));
+    put ((byte) ((((int) value) & 0x00ff000000000000) >> 48));
+    put ((byte) ((((int) value) & 0x0000ff0000000000) >> 40));
+    put ((byte) ((((int) value) & 0x000000ff00000000) >> 32));
+    put ((byte) ((((int) value) & 0x00000000ff000000) >> 24));
+    put ((byte) ((((int) value) & 0x0000000000ff0000) >> 16));
+    put ((byte) ((((int) value) & 0x000000000000ff00) >> 8));
+    put ((byte) (((int) value) & 0x00000000000000ff));
     return this;
   }
   
   final public double getDouble (int index)
   {
-    return nio_get_Double (this, index, limit ());
+    // FIXME: this handles big endian only
+    return (double) (((get (index) & 0xff) << 56)
+                     + (get (index + 1) & 0xff) << 48
+                     + (get (index + 2) & 0xff) << 40
+                     + (get (index + 3) & 0xff) << 32
+                     + (get (index + 4) & 0xff) << 24
+                     + (get (index + 5) & 0xff) << 16
+                     + (get (index + 6) & 0xff) << 8
+                     + (get (index + 7) & 0xff));
   }
   
   final public ByteBuffer putDouble (int index, double value)
   {
-    if (readOnly)
-      throw new ReadOnlyBufferException ();
-    
-    nio_put_Double (this, index, limit (), value);
+    // FIXME: this handles big endian only
+    put (index, (byte) ((((int) value) & 0xff00000000000000) >> 56));
+    put (index + 1, (byte) ((((int) value) & 0x00ff000000000000) >> 48));
+    put (index + 2, (byte) ((((int) value) & 0x0000ff0000000000) >> 40));
+    put (index + 3, (byte) ((((int) value) & 0x000000ff00000000) >> 32));
+    put (index + 4, (byte) ((((int) value) & 0x00000000ff000000) >> 24));
+    put (index + 5, (byte) ((((int) value) & 0x0000000000ff0000) >> 16));
+    put (index + 6, (byte) ((((int) value) & 0x000000000000ff00) >> 8));
+    put (index + 7, (byte) (((int) value) & 0x00000000000000ff));
     return this;
   }
 }

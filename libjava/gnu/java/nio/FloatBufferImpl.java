@@ -1,5 +1,5 @@
 /* FloatBufferImpl.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.nio;
 
 import java.nio.ByteBuffer;
@@ -48,26 +49,16 @@ import java.nio.ReadOnlyBufferException;
 public final class FloatBufferImpl extends FloatBuffer
 {
   private boolean readOnly;
-  
-  public FloatBufferImpl(int cap, int off, int lim)
+
+  FloatBufferImpl (int capacity)
   {
-    super (cap, lim, off, 0);
-    this.backing_buffer = new float [cap];
-    readOnly = false;
+    this (new float [capacity], 0, capacity, capacity, 0, -1, false);
   }
   
-  public FloatBufferImpl(float[] array, int offset, int length)
+  FloatBufferImpl (float[] buffer, int offset, int capacity, int limit, int position, int mark, boolean readOnly)
   {
-    super (array.length, length, offset, 0);
-    this.backing_buffer = array;
-    readOnly = false;
-  }
-  
-  public FloatBufferImpl(FloatBufferImpl copy)
-  {
-    super (copy.capacity (), copy.limit (), copy.position (), 0);
-    backing_buffer = copy.backing_buffer;
-    readOnly = copy.isReadOnly ();
+    super (buffer, offset, capacity, limit, position, mark);
+    this.readOnly = readOnly;
   }
   
   public boolean isReadOnly ()
@@ -75,66 +66,97 @@ public final class FloatBufferImpl extends FloatBuffer
     return readOnly;
   }
   
-  public FloatBuffer slice()
+  public FloatBuffer slice ()
   {
-    return new FloatBufferImpl (this);
+    return new FloatBufferImpl (backing_buffer, array_offset + position (), remaining (), remaining (), 0, -1, isReadOnly ());
   }
   
-  public FloatBuffer duplicate()
+  public FloatBuffer duplicate ()
   {
-    return new FloatBufferImpl(this);
+    return new FloatBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, isReadOnly ());
   }
   
-  public FloatBuffer asReadOnlyBuffer()
+  public FloatBuffer asReadOnlyBuffer ()
   {
-    FloatBufferImpl result = new FloatBufferImpl (this);
-    result.readOnly = true;
-    return result;
+    return new FloatBufferImpl (backing_buffer, array_offset, capacity (), limit (), position (), mark, true);
   }
   
-  public FloatBuffer compact()
+  public FloatBuffer compact ()
   {
+    int copied = 0;
+    
+    while (remaining () > 0)
+      {
+	put (copied, get ());
+	copied++;
+      }
+
+    position (copied);
     return this;
   }
   
-  public boolean isDirect()
+  public boolean isDirect ()
   {
     return false;
   }
-  
-  final public float get()
+
+  /**
+   * Relative get method. Reads the next <code>float</code> from the buffer.
+   */
+  final public float get ()
   {
-    float e = backing_buffer[position()];
-    position(position()+1);
-    return e;
+    float result = backing_buffer [position ()];
+    position (position () + 1);
+    return result;
   }
   
-  final public FloatBuffer put(float b)
+  /**
+   * Relative put method. Writes <code>value</code> to the next position
+   * in the buffer.
+   * 
+   * @exception ReadOnlyBufferException If this buffer is read-only.
+   */
+  final public FloatBuffer put (float value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
-    
-    backing_buffer[position()] = b;
-    position(position()+1);
+	  	    
+    backing_buffer [position ()] = value;
+    position (position () + 1);
     return this;
   }
   
-  final public float get(int index)
+  /**
+   * Absolute get method. Reads the <code>float</code> at position
+   * <code>index</code>.
+   *
+   * @exception IndexOutOfBoundsException If index is negative or not smaller
+   * than the buffer's limit.
+   */
+  final public float get (int index)
   {
-    return backing_buffer[index];
+    return backing_buffer [index];
   }
   
-  final public FloatBuffer put(int index, float b)
+  /**
+   * Absolute put method. Writes <code>value</value> to position
+   * <code>index</code> in the buffer.
+   *
+   * @exception IndexOutOfBoundsException If index is negative or not smaller
+   * than the buffer's limit.
+   * @exception ReadOnlyBufferException If this buffer is read-only.
+   */
+  final public FloatBuffer put (int index, float value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
-    
-    backing_buffer[index] = b;
+    	    
+    backing_buffer [index] = value;
     return this;
   }
   
   final public ByteOrder order ()
   {
-    return ByteOrder.BIG_ENDIAN;
+    return ByteOrder.nativeOrder ();
   }
 }
