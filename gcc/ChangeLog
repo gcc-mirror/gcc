@@ -1,5 +1,26 @@
 2000-12-03  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* Makefile.in (OBJS): Add sched-vis.o.
+	(sched-vis.o): New rule.
+	* haifa-sched.c (get_unit_last_insn): New function.
+	(sched_dump, insn_unit, actual_hazard_this_instance): No longer
+	static.
+	(schedule_block): Call visualize_alloc and visualize_free.  Delete
+	spurious return statement.
+	(init_target_units, insn_print_units, get_visual_tbl_length,
+	init_block_visualization, print_block_visualization, safe_concat,
+	visualize_scheduled_inns, visualize_no_unit, visualize_stall_cycles,
+	print_exp, print_value, print_pattern, print_insn, target_units,
+	MAX_VISUAL_LINES, INSN_LEN, n_visual_lines, visual_tbl,
+	n_vis_no_unit, vis_no_unit): Move scheduling visualization
+	functions/variables...
+	* sched-vis.c: ...here.  New file.
+	(visualize_alloc, visualize_free): New functions.
+	(visualize_scheduled_insns, visualize_stall_cycles,
+	print_block_visualization): Lose basic block argument.  All callers
+	changed.
+	(visualize_scheduled_insns): Use new function get_unit_last_insn.
+
 	* sched-int.h: New file.
 	* Makefile.in (haifa-sched.o): Depend on it.
 	* haifa-sched.c: Include it.
