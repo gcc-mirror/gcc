@@ -1,3 +1,9 @@
+2005-01-26  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (CPP_SPEC): Adjust the various mtune=
+	handlers to match indentation; nested under the mtune=* handler.
+	Similar for mcpu= and march=.
+
 2005-01-25  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	* config/mips/linux.h (LIB_SPEC): Remove -rpath-link.

@@ -116,24 +116,24 @@ extern const char *cris_elinux_stacksize_str;
    Note that -melf overrides -maout.  */
 
 #define CPP_SPEC \
- "%{mtune=*:-D__tune_%* %{mtune=v*:-D__CRIS_arch_tune=%*}}\
+ "%{mtune=*:-D__tune_%* %{mtune=v*:-D__CRIS_arch_tune=%*}\
    %{mtune=etrax4:-D__tune_v3 -D__CRIS_arch_tune=3}\
    %{mtune=etrax100:-D__tune_v8 -D__CRIS_arch_tune=8}\
    %{mtune=svinto:-D__tune_v8 -D__CRIS_arch_tune=8}\
    %{mtune=etrax100lx:-D__tune_v10 -D__CRIS_arch_tune=10}\
-   %{mtune=ng:-D__tune_v10 -D__CRIS_arch_tune=10}\
-  %{mcpu=*:-D__arch_%* %{mcpu=v*:-D__CRIS_arch_version=%*}}\
+   %{mtune=ng:-D__tune_v10 -D__CRIS_arch_tune=10}}\
+  %{mcpu=*:-D__arch_%* %{mcpu=v*:-D__CRIS_arch_version=%*}\
    %{mcpu=etrax4:-D__arch_v3 -D__CRIS_arch_version=3}\
    %{mcpu=etrax100:-D__arch_v8 -D__CRIS_arch_version=8}\
    %{mcpu=svinto:-D__arch_v8 -D__CRIS_arch_version=8}\
    %{mcpu=etrax100lx:-D__arch_v10 -D__CRIS_arch_version=10}\
-   %{mcpu=ng:-D__arch_v10 -D__CRIS_arch_version=10}\
-  %{march=*:-D__arch_%* %{march=v*:-D__CRIS_arch_version=%*}}\
+   %{mcpu=ng:-D__arch_v10 -D__CRIS_arch_version=10}}\
+  %{march=*:-D__arch_%* %{march=v*:-D__CRIS_arch_version=%*}\
    %{march=etrax4:-D__arch_v3 -D__CRIS_arch_version=3}\
    %{march=etrax100:-D__arch_v8 -D__CRIS_arch_version=8}\
    %{march=svinto:-D__arch_v8 -D__CRIS_arch_version=8}\
    %{march=etrax100lx:-D__arch_v10 -D__CRIS_arch_version=10}\
-   %{march=ng:-D__arch_v10 -D__CRIS_arch_version=10}\
+   %{march=ng:-D__arch_v10 -D__CRIS_arch_version=10}}\
   %{metrax100:-D__arch__v8 -D__CRIS_arch_version=8}\
   %{metrax4:-D__arch__v3 -D__CRIS_arch_version=3}\
   %(cpp_subtarget)"
