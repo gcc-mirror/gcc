@@ -403,6 +403,13 @@ extern int sdb_begin_function_line;
 #ifdef BUFSIZ
 extern FILE *asm_out_file;
 #endif
+
+/* The first global object in the file.  */
+extern const char *first_global_object_name;
+
+/* The first weak object in the file.  */
+extern const char *weak_global_object_name;
+
 /* Nonzero if function being compiled doesn't contain any calls
    (ignoring the prologue and epilogue).  This is set prior to
    local register allocation and is valid for the remaining

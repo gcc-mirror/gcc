@@ -107,7 +107,7 @@ exceptions=$4
 extra=$5
 exclusions=$6
 
-echo "static char *multilib_raw[] = {"
+echo "static const char *const multilib_raw[] = {"
 
 # What we want to do is select all combinations of the sets in
 # options.  Each combination which includes a set of mutually
@@ -285,7 +285,7 @@ echo "};"
 # Note, the format of the matches is reversed compared
 # to what we want, so switch them around.
 echo ""
-echo "static char *multilib_matches_raw[] = {"
+echo "static const char *const multilib_matches_raw[] = {"
 for match in ${matches}; do
   l=`echo ${match} | sed -e 's/=.*$//' -e 's/?/=/g'`
   r=`echo ${match} | sed -e 's/^.*=//' -e 's/?/=/g'`
@@ -301,11 +301,11 @@ echo "};"
 
 # Output the default options now
 echo ""
-echo "static char *multilib_extra = \"${extra}\";"
+echo "static const char *multilib_extra = \"${extra}\";"
 
 # Output the exclusion rules now
 echo ""
-echo "static char *multilib_exclusions_raw[] = {"
+echo "static const char *const multilib_exclusions_raw[] = {"
 for rule in ${exclusions}; do
   s=`echo ${rule} | sed -e 's,/, ,g'`
   echo "\"${s};\","

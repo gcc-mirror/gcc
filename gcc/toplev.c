@@ -163,7 +163,7 @@ static void pipe_closed PARAMS ((int)) ATTRIBUTE_NORETURN;
 /* This might or might not be used in ASM_IDENTIFY_LANGUAGE. */
 static void output_lang_identify PARAMS ((FILE *)) ATTRIBUTE_UNUSED;
 #endif
-static void compile_file PARAMS ((char *));
+static void compile_file PARAMS ((const char *));
 static void display_help PARAMS ((void));
 static void mark_file_stack PARAMS ((void *));
 
@@ -195,13 +195,13 @@ char **save_argv;
 /* Name of current original source file (what was input to cpp).
    This comes from each #-command in the actual input.  */
 
-char *input_filename;
+const char *input_filename;
 
 /* Name of top-level original source file (what was input to cpp).
    This comes from the #-command at the beginning of the actual input.
    If there isn't any there, then this is the cc1 input file name.  */
 
-char *main_input_filename;
+const char *main_input_filename;
 
 /* Current line number in real source file.  */
 
@@ -1992,7 +1992,7 @@ check_global_declarations (vec, len)
 
 void
 push_srcloc (file, line)
-     char *file;
+     const char *file;
      int line;
 {
   struct file_stack *fs;
@@ -2037,7 +2037,7 @@ pop_srcloc ()
 
 static void
 compile_file (name)
-     char *name;
+     const char *name;
 {
   tree globals;
 
@@ -4826,7 +4826,7 @@ print_switch_values (file, pos, max, indent, sep, term)
 
 void
 debug_start_source_file (filename)
-     register char *filename ATTRIBUTE_UNUSED;
+     register const char *filename ATTRIBUTE_UNUSED;
 {
 #ifdef DBX_DEBUGGING_INFO
   if (write_symbols == DBX_DEBUG)

@@ -1479,7 +1479,7 @@ generate_bytecode_insns (exp, target, state)
       break;
     case EXPR_WITH_FILE_LOCATION:
       {
-	char *saved_input_filename = input_filename;
+	const char *saved_input_filename = input_filename;
 	tree body = EXPR_WFL_NODE (exp);
 	int saved_lineno = lineno;
 	if (body == empty_stmt_node)
@@ -2796,7 +2796,7 @@ generate_classfile (clas, state)
      struct jcf_partial *state;
 {
   struct chunk *cpool_chunk;
-  char *source_file;
+  const char *source_file, *s;
   char *ptr;
   int i;
   char *fields_count_ptr;
@@ -3064,13 +3064,13 @@ generate_classfile (clas, state)
   ptr = methods_count_ptr;  UNSAFE_PUT2 (methods_count);
 
   source_file = DECL_SOURCE_FILE (TYPE_NAME (clas));
-  for (ptr = source_file;  ;  ptr++)
+  for (s = source_file; ; s++)
     {
       char ch = *ptr;
       if (ch == '\0')
 	break;
       if (ch == '/' || ch == '\\')
-	source_file = ptr+1;
+	source_file = s+1;
     }
   ptr = append_chunk (NULL, 10, state);
 

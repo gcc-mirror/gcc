@@ -1,3 +1,18 @@
+2000-05-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* ch-tree.h: Update prototypes.  Remove prototypes for
+	functions declared elsewhere.
+	* decl.c (define_label): Constify filename parameter.
+	* grant.c (globalize_decl, set_default_grant_file): Constify
+	local char * variables.  Don't declare
+	first_global_object_name or asm_out_file.
+	* lang.c (chill_real_input_filename): Constify.
+	* lex.c (init_parse): Constify parameter and return value.
+	* parse.c: Don't declare input_filename.
+	(ch_expand_asm_operands): Constify filename parameter.
+	(parse_multi_dimension_case_action): Constify local char *.
+	* satisfy.c (safe_satisfy_decl): Constify local char *.
+
 2000-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ch-tree.h (init_function_start): Constify.

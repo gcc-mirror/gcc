@@ -89,7 +89,7 @@ extern struct _ffewhere_line_ ffewhere_unknown_line_;
 /* Declare functions with prototypes. */
 
 void ffewhere_file_kill (ffewhereFile wf);
-ffewhereFile ffewhere_file_new (char *name, size_t length);
+ffewhereFile ffewhere_file_new (const char *name, size_t length);
 void ffewhere_file_set (ffewhereFile wf, bool have_num, ffewhereLineNumber ln);
 void ffewhere_init_1 (void);
 char *ffewhere_line_content (ffewhereLine l);

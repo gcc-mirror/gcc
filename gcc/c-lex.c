@@ -222,9 +222,9 @@ remember_protocol_qualifiers ()
       wordlist[i].name = "oneway";
 }
 
-char *
+const char *
 init_parse (filename)
-     char *filename;
+     const char *filename;
 {
 #if !USE_CPPLIB
   /* Open input file.  */

@@ -197,9 +197,9 @@ ch_lex_init ()
 }
 
 
-char *
+const char *
 init_parse (filename)
-     char *filename;
+     const char *filename;
 {
   int lowercase_standard_names = ignore_case || ! special_UC;
 

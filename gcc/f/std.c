@@ -1500,7 +1500,7 @@ ffestd_exec_end ()
 {
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
   int old_lineno = lineno;
-  char *old_input_filename = input_filename;
+  const char *old_input_filename = input_filename;
 #endif
 
   ffecom_end_transition ();

@@ -47,7 +47,7 @@ int ignore_case = 1;
 int special_UC = 0;
 
 /* The actual name of the input file, regardless of any #line directives */
-char* chill_real_input_filename;
+const char* chill_real_input_filename;
 extern FILE* finput;
 
 static int deep_const_expr			PARAMS ((tree));

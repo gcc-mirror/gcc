@@ -40,7 +40,7 @@ static int list_hash PARAMS ((tree, tree, tree));
 static tree list_hash_lookup PARAMS ((int, tree, tree, tree));
 static cp_lvalue_kind lvalue_p_1 PARAMS ((tree, int));
 static tree no_linkage_helper PARAMS ((tree *, int *, void *));
-static tree build_srcloc PARAMS ((char *, int));
+static tree build_srcloc PARAMS ((const char *, int));
 static void mark_list_hash PARAMS ((void *));
 static int statement_code_p PARAMS ((enum tree_code));
 static tree mark_local_for_remap_r PARAMS ((tree *, int *, void *));
@@ -1989,7 +1989,7 @@ build_int_wrapper (i)
 
 static tree
 build_srcloc (file, line)
-     char *file;
+     const char *file;
      int line;
 {
   tree t;

@@ -1,7 +1,6 @@
 
 /*  A Bison parser, made from c-parse.y
- by  GNU Bison version 1.27
-  */
+    by GNU Bison version 1.28  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
@@ -101,7 +100,7 @@ const char * const language_string = "GNU C";
 
 #line 65 "c-parse.y"
 typedef union {long itype; tree ttype; enum tree_code code;
-	char *filename; int lineno; int ends_in_label; } YYSTYPE;
+	const char *filename; int lineno; int ends_in_label; } YYSTYPE;
 #line 186 "c-parse.y"
 
 /* Number of statements (loosely speaking) and compound statements 
@@ -111,7 +110,7 @@ static int compstmt_count;
   
 /* Input file and line number of the end of the body of last simple_if;
    used by the stmt-rule immediately after simple_if returns.  */
-static char *if_stmt_file;
+static const char *if_stmt_file;
 static int if_stmt_line;
 
 /* List of types and structure classes of the current declaration.  */
@@ -1275,8 +1274,8 @@ static const short yycheck[] = {    38,
     48,    49,    50,    51,    52,    53,    54,    55,    56,    57
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/lib/bison.simple"
-/* This file comes from bison-1.27.  */
+#line 3 "/usr/share/misc/bison.simple"
+/* This file comes from bison-1.28.  */
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -1489,7 +1488,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 216 "/usr/lib/bison.simple"
+#line 217 "/usr/share/misc/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -3836,7 +3835,7 @@ case 407:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 542 "/usr/lib/bison.simple"
+#line 543 "/usr/share/misc/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;

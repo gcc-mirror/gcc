@@ -2678,7 +2678,7 @@ static void
 java_parser_context_suspend ()
 {
   /* This makes debugging through java_debug_context easier */
-  static char *name = "<inner buffer context>";
+  static const char *name = "<inner buffer context>";
 
   /* Duplicate the previous context, use it to save the globals we're
      interested in */
@@ -2965,7 +2965,7 @@ issue_warning_error_from_context (cl, msg, ap)
      const char *msg;
      va_list ap;
 {
-  char *saved, *saved_input_filename;
+  const char *saved, *saved_input_filename;
   char buffer [4096];
   vsprintf (buffer, msg, ap);
   force_error = 1;
@@ -5159,7 +5159,7 @@ safe_layout_class (class)
      tree class;
 {
   tree save_current_class = current_class;
-  char *save_input_filename = input_filename;
+  const char *save_input_filename = input_filename;
   int save_lineno = lineno;
 
   push_obstacks (&permanent_obstack, &permanent_obstack);

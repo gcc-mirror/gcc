@@ -1,5 +1,5 @@
 typedef union {long itype; tree ttype; enum tree_code code;
-	char *filename; int lineno; int ends_in_label; } YYSTYPE;
+	const char *filename; int lineno; int ends_in_label; } YYSTYPE;
 #define	IDENTIFIER	257
 #define	TYPENAME	258
 #define	SCSPEC	259

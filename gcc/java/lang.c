@@ -303,9 +303,9 @@ lang_decode_option (argc, argv)
 }
 
 FILE *finput;
-char *
+const char *
 init_parse (filename)
-     char *filename;
+     const char *filename;
 {
   /* Open input file.  */
 

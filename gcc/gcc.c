@@ -146,11 +146,11 @@ static int save_temps_flag;
 
 /* The compiler version.  */
 
-static char *compiler_version;
+static const char *compiler_version;
 
 /* The target version specified with -V */
 
-static char *spec_version = DEFAULT_TARGET_VERSION;
+static const char *spec_version = DEFAULT_TARGET_VERSION;
 
 /* The target machine specified with -b.  */
 
@@ -160,9 +160,9 @@ static const char *spec_machine = DEFAULT_TARGET_MACHINE;
    When -b is used, the value comes from the `specs' file.  */
 
 #ifdef CROSS_COMPILE
-static char *cross_compile = "1";
+static const char *cross_compile = "1";
 #else
-static char *cross_compile = "0";
+static const char *cross_compile = "0";
 #endif
 
 /* The number of errors that have occurred; the link phase will not be
@@ -493,29 +493,29 @@ proper position among the other output files.  */
 #define LINKER_NAME "collect2"
 #endif
 
-static char *cpp_spec = CPP_SPEC;
-static char *cpp_predefines = CPP_PREDEFINES;
-static char *cc1_spec = CC1_SPEC;
-static char *cc1plus_spec = CC1PLUS_SPEC;
-static char *signed_char_spec = SIGNED_CHAR_SPEC;
-static char *asm_spec = ASM_SPEC;
-static char *asm_final_spec = ASM_FINAL_SPEC;
-static char *link_spec = LINK_SPEC;
-static char *lib_spec = LIB_SPEC;
-static char *libgcc_spec = LIBGCC_SPEC;
-static char *endfile_spec = ENDFILE_SPEC;
-static char *startfile_spec = STARTFILE_SPEC;
-static char *switches_need_spaces = SWITCHES_NEED_SPACES;
-static char *linker_name_spec = LINKER_NAME;
+static const char *cpp_spec = CPP_SPEC;
+static const char *cpp_predefines = CPP_PREDEFINES;
+static const char *cc1_spec = CC1_SPEC;
+static const char *cc1plus_spec = CC1PLUS_SPEC;
+static const char *signed_char_spec = SIGNED_CHAR_SPEC;
+static const char *asm_spec = ASM_SPEC;
+static const char *asm_final_spec = ASM_FINAL_SPEC;
+static const char *link_spec = LINK_SPEC;
+static const char *lib_spec = LIB_SPEC;
+static const char *libgcc_spec = LIBGCC_SPEC;
+static const char *endfile_spec = ENDFILE_SPEC;
+static const char *startfile_spec = STARTFILE_SPEC;
+static const char *switches_need_spaces = SWITCHES_NEED_SPACES;
+static const char *linker_name_spec = LINKER_NAME;
 
 /* Some compilers have limits on line lengths, and the multilib_select
    and/or multilib_matches strings can be very long, so we build them at
    run time.  */
 static struct obstack multilib_obstack;
-static char *multilib_select;
-static char *multilib_matches;
-static char *multilib_defaults;
-static char *multilib_exclusions;
+static const char *multilib_select;
+static const char *multilib_matches;
+static const char *multilib_defaults;
+static const char *multilib_exclusions;
 #include "multilib.h"
 
 /* Check whether a particular argument is a default argument.  */
@@ -1119,12 +1119,12 @@ struct spec_list
 {
 				/* The following 2 fields must be first */
 				/* to allow EXTRA_SPECS to be initialized */
-  char *name;			/* name of the spec.  */
-  char *ptr;			/* available ptr if no static pointer */
+  const char *name;		/* name of the spec.  */
+  const char *ptr;		/* available ptr if no static pointer */
 
 				/* The following fields are not initialized */
 				/* by EXTRA_SPECS */
-  char **ptr_spec;		/* pointer to the spec itself.  */
+  const char **ptr_spec;	/* pointer to the spec itself.  */
   struct spec_list *next;	/* Next spec in linked list.  */
   int name_len;			/* length of the name */
   int alloc_p;			/* whether string was allocated */
@@ -1164,8 +1164,8 @@ static struct spec_list static_specs[] =
    That is all that the EXTRA_SPECS macro gives us.  */
 struct spec_list_1
 {
-  char *name;
-  char *ptr;
+  const char *name;
+  const char *ptr;
 };
 
 static struct spec_list_1 extra_specs_1[] = { EXTRA_SPECS };
@@ -1230,7 +1230,7 @@ set_spec (name, spec)
      const char *spec;
 {
   struct spec_list *sl;
-  char *old_spec;
+  const char *old_spec;
   int name_len = strlen (name);
   int i;
 
@@ -1278,7 +1278,7 @@ set_spec (name, spec)
 
   /* Free the old spec.  */
   if (old_spec && sl->alloc_p)
-    free (old_spec);
+    free ((PTR) old_spec);
 
   sl->alloc_p = 1;
 }
@@ -1413,7 +1413,7 @@ static const char *tooldir_prefix;
 #ifndef STANDARD_BINDIR_PREFIX
 #define STANDARD_BINDIR_PREFIX "/usr/local/bin"
 #endif
-static char *standard_bindir_prefix = STANDARD_BINDIR_PREFIX;
+static const char *standard_bindir_prefix = STANDARD_BINDIR_PREFIX;
 
 /* Subdirectory to use for locating libraries.  Set by
    set_multilib_dir based on the compilation options.  */
@@ -1657,7 +1657,7 @@ read_specs (filename, main_p)
 
 	      set_spec (p2, *(sl->ptr_spec));
 	      if (sl->alloc_p)
-		free (*(sl->ptr_spec));
+		free ((PTR) *(sl->ptr_spec));
 
 	      *(sl->ptr_spec) = "";
 	      sl->alloc_p = 0;
@@ -4291,7 +4291,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    {
 	      char *x = (char *) alloca (strlen (cpp_predefines) + 1);
 	      char *buf = x;
-	      char *y;
+	      const char *y;
 
 	      /* Copy all of the -D options in CPP_PREDEFINES into BUF.  */
 	      y = cpp_predefines;
@@ -4321,7 +4321,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    {
 	      char *x = (char *) alloca (strlen (cpp_predefines) * 4 + 1);
 	      char *buf = x;
-	      char *y;
+	      const char *y;
 
 	      /* Copy all of CPP_PREDEFINES into BUF,
 		 but force them all into the reserved name space if they
@@ -4567,8 +4567,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case 'v':
 	    {
 	      int c1 = *p++;  /* Select first or second version number.  */
-	      char *v = compiler_version;
-	      char *q;
+	      const char *v = compiler_version;
+	      const char *q;
 	      static const char zeroc = '0';
 
 	      /* The format of the version string is
@@ -5172,7 +5172,7 @@ main (argc, argv)
   /* Build multilib_select, et. al from the separate lines that make up each
      multilib selection.  */
   {
-    char **q = multilib_raw;
+    const char *const *q = multilib_raw;
     int need_space;
 
     obstack_init (&multilib_obstack);
@@ -5948,8 +5948,8 @@ used_arg (p, len)
 {
   struct mswitchstr
   {
-    char *str;
-    char *replace;
+    const char *str;
+    const char *replace;
     int len;
     int rep_len;
   };
@@ -5961,7 +5961,7 @@ used_arg (p, len)
   if (!mswitches)
     {
       struct mswitchstr *matches;
-      char *q;
+      const char *q;
       int cnt = 0;
 
       /* Break multilib_matches into the component strings of string and replacement
@@ -5982,7 +5982,6 @@ used_arg (p, len)
 		abort ();
 	      q++;
 	    }
-	  *q = '\0';
 	  matches[i].len = q - matches[i].str;
 
 	  matches[i].replace = ++q;
@@ -5994,9 +5993,7 @@ used_arg (p, len)
 	    }
 	  matches[i].rep_len = q - matches[i].replace;
 	  i++;
-	  if (*q == ';')
-	    *q++ = '\0';
-	  else
+	  if (*q != ';')
 	    break;
 	}
 
@@ -6011,7 +6008,8 @@ used_arg (p, len)
 	{
 	  int xlen = strlen (switches[i].part1);
 	  for (j = 0; j < cnt; j++)
-	    if (xlen == matches[j].len && ! strcmp (switches[i].part1, matches[j].str))
+	    if (xlen == matches[j].len
+		&& ! strncmp (switches[i].part1, matches[j].str, xlen))
 	      {
 		mswitches[n_mswitches].str = matches[j].replace;
 		mswitches[n_mswitches].len = matches[j].rep_len;
@@ -6035,7 +6033,7 @@ default_arg (p, len)
      const char *p;
      int len;
 {
-  char *start, *end;
+  const char *start, *end;
 
   for (start = multilib_defaults; *start != '\0'; start = end+1)
     {
@@ -6072,9 +6070,9 @@ default_arg (p, len)
 static void
 set_multilib_dir ()
 {
-  char *p;
+  const char *p;
   unsigned int this_path_len;
-  char *this_path, *this_arg;
+  const char *this_path, *this_arg;
   int not_arg;
   int ok;
 
@@ -6229,8 +6227,8 @@ set_multilib_dir ()
 static void
 print_multilib_info ()
 {
-  char *p = multilib_select;
-  char *last_path = 0, *this_path;
+  const char *p = multilib_select;
+  const char *last_path = 0, *this_path;
   int skip;
   unsigned int last_path_len = 0;
 
@@ -6257,8 +6255,8 @@ print_multilib_info ()
          with the '!' in either list. If any of the exclusion rules match
          all of its options with the select rule, we skip it.  */
         {
-          char *e = multilib_exclusions;
-	  char *this_arg;
+          const char *e = multilib_exclusions;
+	  const char *this_arg;
 
 	  while (*e != '\0')
 	    {
@@ -6273,7 +6271,7 @@ print_multilib_info ()
 	      /* Check the arguments.  */
 	      while (*e != ';')
 	        {
-		  char *q;
+		  const char *q;
 		  int mp = 0;
 
 	          if (*e == '\0')
@@ -6297,7 +6295,7 @@ print_multilib_info ()
   		  q = p + 1;
 		  while (*q != ';')
 		    {
-		      char *arg;
+		      const char *arg;
 		      int len = e - this_arg;
 
 		      if (*q == '\0')
@@ -6356,12 +6354,12 @@ print_multilib_info ()
 	 this one which does not require that default argument.  */
       if (! skip)
 	{
-	  char *q;
+	  const char *q;
 
 	  q = p + 1;
 	  while (*q != ';')
 	    {
-	      char *arg;
+	      const char *arg;
 
 	      if (*q == '\0')
 		abort ();
@@ -6392,7 +6390,7 @@ print_multilib_info ()
 
       if (! skip)
 	{
-	  char *p1;
+	  const char *p1;
 
 	  for (p1 = last_path; p1 < p; p1++)
 	    putchar (*p1);
@@ -6437,7 +6435,7 @@ print_multilib_info ()
 	  if (multilib_extra && *multilib_extra)
 	    {
 	      int print_at = TRUE;
-	      char *q;
+	      const char *q;
 
 	      for (q = multilib_extra; *q != '\0'; q++)
 		{

@@ -1311,7 +1311,7 @@ void
 expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
      tree string, outputs, inputs, clobbers;
      int vol;
-     char *filename;
+     const char *filename;
      int line;
 {
   rtvec argvec, constraints;

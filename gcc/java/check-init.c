@@ -711,7 +711,7 @@ check_init (exp, before)
 
     case EXPR_WITH_FILE_LOCATION:
       {
-	char *saved_input_filename = input_filename;
+	const char *saved_input_filename = input_filename;
 	tree saved_wfl = wfl;
 	tree body = EXPR_WFL_NODE (exp);
 	int saved_lineno = lineno;

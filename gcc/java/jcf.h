@@ -95,8 +95,8 @@ typedef struct JCF {
   long zip_offset;    
   jcf_filbuf_t filbuf;
   void *read_state;
-  char *filename;
-  char *classname;
+  const char *filename;
+  const char *classname;
   void *zipd;			/* Directory entry where it was found */
   JCF_u2 access_flags, this_class, super_class;
   CPool cpool;
@@ -144,8 +144,8 @@ typedef struct JCF {
 #define JCF_FINISH(JCF) { \
   CPOOL_FINISH(&(JCF)->cpool); \
   if ((JCF)->buffer) FREE ((JCF)->buffer); \
-  if ((JCF)->filename) FREE ((JCF)->filename); \
-  if ((JCF)->classname) FREE ((JCF)->classname); }
+  if ((JCF)->filename) FREE ((char *) (JCF)->filename); \
+  if ((JCF)->classname) FREE ((char *) (JCF)->classname); }
   
 #define CPOOL_INIT(CPOOL) \
   ((CPOOL)->capacity = 0, (CPOOL)->count = 0, (CPOOL)->tags = 0, (CPOOL)->data = 0)

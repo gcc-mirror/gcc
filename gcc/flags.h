@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Name of the input .c file being compiled.  */
-extern char *main_input_filename;
+extern const char *main_input_filename;
 
 enum debug_info_type
 {

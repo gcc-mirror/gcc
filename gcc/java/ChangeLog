@@ -1,3 +1,26 @@
+2000-05-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* check_init.c (check_init): Constify local char *.
+	* class.c (push_class): Constify local char *.
+	* java_tree.h: Update prototypes.
+	* jcf-io.c (open_class): Constify filename parameter and
+	return value.
+	(find_class): Remove redundant string copy.  Cast return from
+	open_class.
+	* jcf-parse.c (read_class, parse_class_file, yyparse):
+	Constify local char *.
+	* jcf-write.c (generate_bytecode_insns, generate_classfile):
+	Constify local char *.
+	* jcf.h (JCF): Constify filename and classname.
+	(JCF_FINISH): Cast args to FREE to char * when appropriate.
+	* lang.c (init_parse): Constify parameter and return value.
+	* lex.c (java_get_line_col): Constify filename parameter.
+	* parse.h: Constify parser_ctxt.filename.  Update prototypes.
+	* parse.y (java_parser_context_suspend,
+	issue_warning_error_from_context, safe_layout_class): Constify
+	local char *.
+	* parse.c: Regenerate.
+
 2000-05-08  Tom Tromey  <tromey@cygnus.com>
 
 	* expr.c (build_jni_stub): Cache the result of

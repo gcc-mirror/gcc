@@ -36,11 +36,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 #ifdef DWARF_DEBUGGING_INFO
-void dwarfout_resume_previous_source_file (register unsigned);
-void dwarfout_start_new_source_file (register char *);
-void dwarfout_define (register unsigned, register char *);
-void dwarfout_undef (register unsigned, register char *);
-#endif DWARF_DEBUGGING_INFO
+#include "dwarfout.h"
+#endif
 
 static void ffelex_append_to_token_ (char c);
 static int ffelex_backslash_ (int c, ffewhereColumnNumber col);
@@ -856,7 +853,7 @@ ffelex_cfelex_ (ffelexToken *xtoken, FILE *finput, int c)
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
-ffelex_file_pop_ (char *input_filename)
+ffelex_file_pop_ (const char *input_filename)
 {
   if (input_file_stack->next)
     {
@@ -882,7 +879,7 @@ ffelex_file_pop_ (char *input_filename)
 #endif
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
-ffelex_file_push_ (int old_lineno, char *input_filename)
+ffelex_file_push_ (int old_lineno, const char *input_filename)
 {
   struct file_stack *p
     = (struct file_stack *) xmalloc (sizeof (struct file_stack));
@@ -1282,7 +1279,7 @@ ffelex_hash_ (FILE *finput)
       && (ffelex_token_type (token) == FFELEX_typeNUMBER))
     {
       int old_lineno = lineno;
-      char *old_input_filename = input_filename;
+      const char *old_input_filename = input_filename;
       ffewhereFile wf;
 
       /* subtract one, because it is the following line that
@@ -1554,7 +1551,7 @@ ffelex_include_ ()
     = ffewhere_line_filelinenum (current_wl);
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
   int old_lineno = lineno;
-  char *old_input_filename = input_filename;
+  const char *old_input_filename = input_filename;
 #endif
 
   if (card_length != 0)

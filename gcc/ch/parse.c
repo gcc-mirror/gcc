@@ -94,7 +94,6 @@ static int expect				PARAMS ((enum terminal, const char *));
 static void define__PROCNAME__			PARAMS ((void));
 
 extern int  lineno;
-extern char *input_filename;
 extern tree generic_signal_type_node;
 extern tree signal_code;
 extern int all_static_flag;
@@ -451,7 +450,8 @@ static void parse_multi_dimension_case_action PARAMS ((tree));
 static void parse_case_action PARAMS ((tree));
 static tree parse_asm_operands PARAMS ((void));
 static tree parse_asm_clobbers PARAMS ((void));
-static void ch_expand_asm_operands PARAMS ((tree, tree, tree, tree, int, char *, int));
+static void ch_expand_asm_operands PARAMS ((tree, tree, tree, tree,
+					    int, const char *, int));
 static void parse_asm_action PARAMS ((void));
 static void parse_begin_end_block PARAMS ((tree));
 static void parse_if_action PARAMS ((tree));
@@ -1785,7 +1785,7 @@ parse_multi_dimension_case_action (selector)
   tree action_labels = NULL_TREE;
   tree tests = NULL_TREE;
   int  save_lineno = lineno;
-  char *save_filename = input_filename;
+  const char *save_filename = input_filename;
 
   /* We can't compute the range of an (ELSE) label until all of the CASE
      label specifications have been seen, however, the code for the actions
@@ -2008,7 +2008,7 @@ static void
 ch_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
      tree string, outputs, inputs, clobbers;
      int vol;
-     char *filename;
+     const char *filename;
      int line;
 {
   int noutputs = list_length (outputs);

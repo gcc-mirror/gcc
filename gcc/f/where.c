@@ -161,7 +161,7 @@ ffewhere_file_kill (ffewhereFile wf)
 /* Create file object.  */
 
 ffewhereFile
-ffewhere_file_new (char *name, size_t length)
+ffewhere_file_new (const char *name, size_t length)
 {
   ffewhereFile wf;
   int filepos;

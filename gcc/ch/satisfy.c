@@ -67,7 +67,7 @@ safe_satisfy_decl (decl, prev_chain)
   struct decl_chain new_link;
   struct decl_chain *link;
   struct decl_chain *chain = prev_chain;
-  char *save_filename = input_filename;
+  const char *save_filename = input_filename;
   int save_lineno = lineno;
   tree result = decl;
   
