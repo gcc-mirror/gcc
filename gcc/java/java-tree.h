@@ -1922,4 +1922,6 @@ extern tree build_expr_wfl              PARAMS ((tree, const char *, int, int));
 extern void java_genericize		PARAMS ((tree));
 extern int java_gimplify_expr		PARAMS ((tree *, tree *, tree *));
 
+extern tree extract_field_decl (tree);
+
 #endif /* ! GCC_JAVA_TREE_H */
