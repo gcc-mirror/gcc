@@ -4066,6 +4066,7 @@ print_operand_address (FILE *file, rtx addr)
     'J': print tls_load/tls_gdcall/tls_ldcall suffix
     'O': print only the displacement of a memory reference.
     'R': print only the base register of a memory reference.
+    'S': print S-type memory reference (base+displacement).
     'N': print the second word of a DImode operand.
     'M': print the second word of a TImode operand.
     'Y': print shift count operand.
@@ -4140,6 +4141,26 @@ print_operand (FILE *file, rtx x, int code)
           fprintf (file, "%s", reg_names[REGNO (ad.base)]);
         else
           fprintf (file, "0");
+      }
+      return;
+
+    case 'S':
+      {
+	struct s390_address ad;
+
+	if (GET_CODE (x) != MEM
+	    || !s390_decompose_address (XEXP (x, 0), &ad)
+	    || (ad.base && !REG_OK_FOR_BASE_STRICT_P (ad.base))
+	    || ad.indx)
+	  abort ();
+
+	if (ad.disp)
+	  output_addr_const (file, ad.disp);
+	else
+	  fprintf (file, "0");
+
+	if (ad.base)
+	  fprintf (file, "(%s)", reg_names[REGNO (ad.base)]);
       }
       return;
 
