@@ -1,3 +1,10 @@
+2002-02-08  Tom Tromey  <tromey@redhat.com>
+
+	* interpret.cc (convert): New function.
+	(continue1) [insn_d2i, insn_d2l, insn_f2i, insn_f2l]: Use
+	convert.
+	Include Long.h.
+
 2002-02-08  Anthony Green  <green@redhat.com>
 
 	* configure.host: Add support for xscale-elf embedded target.
