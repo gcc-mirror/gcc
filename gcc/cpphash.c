@@ -100,6 +100,13 @@ struct funct_defn
   int col;
 };
 
+/* This is the second argument to eq_HASHNODE.  */
+struct hashdummy
+{
+  const U_CHAR *name;
+  unsigned short length;
+};
+
 static unsigned int hash_HASHNODE PARAMS ((const void *));
 static int eq_HASHNODE		  PARAMS ((const void *, const void *));
 static void del_HASHNODE	  PARAMS ((void *));
@@ -146,7 +153,6 @@ struct arglist
   const struct arg *argv;
   int argc;
 };
-
 
 static struct object_defn *
 collect_objlike_expansion PARAMS ((cpp_reader *, cpp_toklist *));
@@ -215,14 +221,19 @@ hash_HASHNODE (x)
   return h->hash;
 }
 
-/* Compare two HASHNODE structures.  */
+/* Compare a HASHNODE structure (already in the table) with a
+   hashdummy structure (not yet in the table).  This relies on the
+   rule that the existing entry is the first argument, the potential
+   entry the second.  It also relies on the comparison function never
+   being called except as a direct consequence of a call to
+   htab_find(_slot)_with_hash.  */
 static int
 eq_HASHNODE (x, y)
      const void *x;
      const void *y;
 {
   const HASHNODE *a = (const HASHNODE *)x;
-  const HASHNODE *b = (const HASHNODE *)y;
+  const struct hashdummy *b = (const struct hashdummy *)y;
 
   return (a->length == b->length
 	  && !ustrncmp (a->name, b->name, a->length));
@@ -249,12 +260,11 @@ make_HASHNODE (name, len, type, hash)
      enum node_type type;
      unsigned int hash;
 {
-  HASHNODE *hp = (HASHNODE *) xmalloc (sizeof (HASHNODE) + len + 1);
-  U_CHAR *p = (U_CHAR *)hp + sizeof (HASHNODE);
+  HASHNODE *hp = (HASHNODE *) xmalloc (sizeof (HASHNODE) + len);
+  U_CHAR *p = (U_CHAR *)hp + offsetof (HASHNODE, name);
 
   hp->type = type;
   hp->length = len;
-  hp->name = p;
   hp->hash = hash;
   hp->disabled = 0;
 
@@ -272,20 +282,20 @@ _cpp_lookup (pfile, name, len)
      const U_CHAR *name;
      int len;
 {
-  HASHNODE dummy;
+  struct hashdummy dummy;
   HASHNODE *new, **slot;
+  unsigned int hash;
 
   dummy.name = name;
   dummy.length = len;
-  dummy.hash = _cpp_calc_hash (name, len);
+  hash = _cpp_calc_hash (name, len);
 
   slot = (HASHNODE **)
-    htab_find_slot_with_hash (pfile->hashtab, (void *)&dummy,
-			      dummy.hash, INSERT);
+    htab_find_slot_with_hash (pfile->hashtab, (void *)&dummy, hash, INSERT);
   if (*slot)
     return *slot;
 
-  new = make_HASHNODE (name, len, T_VOID, dummy.hash);
+  new = make_HASHNODE (name, len, T_VOID, hash);
   new->value.cpval = NULL;
   *slot = new;
   return new;

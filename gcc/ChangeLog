@@ -1,3 +1,13 @@
+2000-05-10  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpphash.h (struct hashnode): Use struct hack for name
+	member.
+	* cpphash.c (struct hashdummy): New.
+	(eq_HASHNODE): Second argument is a hashdummy, not a HASHNODE.
+	(make_HASHNODE): No need to set ->name pointer.  Correct
+	setting of p.
+	(cpp_lookup): Make 'dummy' a struct hashdummy.  Tidy up a bit.
+
 2000-05-10  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (find_basic_blocks_1): Remove any spare bb_note
