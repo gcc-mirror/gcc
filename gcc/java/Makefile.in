@@ -59,11 +59,9 @@ X_CPPFLAGS =
 T_CPPFLAGS =
 
 CC = @CC@
-BISON = `if [ -f ../../bison/bison ] ; then echo ../../bison/bison -L $(srcdir)/../../bison/ ;  else echo bison ; fi`
+SET_BISON = here=`pwd`; sdir=`cd $(srcdir) && pwd`; if test -f ../../bison; then bison="$$here/../../bison/bison -L $$sdir"; else bison=bison; fi
 BISONFLAGS =
 JAVABISONFLAGS = --name-prefix=java_
-LEX = `if [ -f ../../flex/flex ] ; then echo ../../flex/flex ;  else echo flex ; fi`
-LEXFLAGS =
 AR = ar
 AR_FLAGS = rc
 SHELL = /bin/sh
@@ -229,16 +227,24 @@ RTL_H = $(srcdir)/../rtl.h $(srcdir)/../rtl.def \
         $(srcdir)/../machmode.h $(srcdir)/../machmode.def
 EXPR_H = $(srcdir)/../expr.h ../insn-codes.h
 
-PARSE_C = $(srcdir)/parse.c
-PARSE_SCAN_C = $(srcdir)/parse-scan.c
+# Separating PARSE_DIR from PARSE_RELDIR lets us easily change the
+# code to support building parse.c in the build directory, at some
+# expense in readability.
+PARSE_DIR = $(srcdir)
+PARSE_RELDIR = .
+PARSE_C = $(PARSE_DIR)/parse.c
+PARSE_SCAN_C = $(PARSE_DIR)/parse-scan.c
 PARSE_H = $(srcdir)/parse.h
 
 $(PARSE_C):  $(srcdir)/parse.y $(srcdir)/lex.c $(PARSE_H) $(srcdir)/lex.h
-	$(BISON) -t -v $(BISONFLAGS) $(JAVABISONFLAGS) -o $(PARSE_C) \
-	  $(srcdir)/parse.y
+	$(SET_BISON); \
+	cd $(PARSE_DIR) && $$bison -t -v $(BISONFLAGS) $(JAVABISONFLAGS) \
+	    -o parse.c $(PARSE_RELDIR)/parse.y
 $(PARSE_SCAN_C):  $(srcdir)/parse-scan.y $(srcdir)/lex.c $(PARSE_H) \
 	  $(srcdir)/lex.h
-	$(BISON) -t -v $(BISONFLAGS) -o $(PARSE_SCAN_C) $(srcdir)/parse-scan.y
+	$(SET_BISON); \
+	cd $(PARSE_DIR) && $$bison -t -v $(BISONFLAGS) -o parse-scan.c \
+	    $(PARSE_RELDIR)/parse-scan.y
 
 lex.c: keyword.h lex.h
 

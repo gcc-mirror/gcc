@@ -57,7 +57,7 @@ JAVA_CROSS_NAME = `t='$(program_transform_cross_name)'; echo gcj | sed $$t`
 GCJ = gcj
 
 # Define the names for selecting java in LANGUAGES.
-java: jc1$(exeext) $(GCJ)$(exeext) jvgenmain$(exeext) gcjh$(exeext)
+java: jc1$(exeext) $(GCJ)$(exeext) jvgenmain$(exeext) gcjh$(exeext) jv-scan$(exeext) jcf-dump$(exeext)
 
 # Define the name of target independant tools to be installed in $(bindir)
 # Names are subject to changes
@@ -125,6 +125,19 @@ GCJH_SOURCES = $(srcdir)/java/gjavah.c $(srcdir)/java/jcf-io.c \
 gcjh$(exeext): $(GCJH_SOURCES)
 	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../gcjh$(exeext)
 
+# This must be kept in sync with dependencies in Makefile.in.
+JV_SCAN_SOURCES = $(srcdir)/java/parse-scan.y $(srcdir)/java/lex.c \
+       $(srcdir)/java/parse.h $(srcdir)/java/lex.h $(srcdir)/java/jv-scan.c
+
+jv-scan$(exeext): $(JV_SCAN_SOURCES)
+	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jv-scan$(exeext)
+
+# This must be kept in sync with dependencies in Makefile.in.
+JCF_DUMP_SOURCES = $(srcdir)/java/jcf-dump.c $(srcdir)/java/jcf-io.c \
+       $(srcdir)/java/zextract.c $(srcdir)/../libiberty/memmove.c
+
+jcf-dump$(exeext): $(JCF_DUMP_SOURCES)
+	cd java && $(MAKE) $(FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../jcf-dump$(exeext)
 
 
 # Build hooks:

@@ -35,6 +35,6 @@ language="java"
 
 compilers="jc1\$(exeext) jvgenmain\$(exeext)"
 
-stagestuff="jc1\$(exeext) gcj\$(exeext) jvgenmain\$(exeext) gcjh\$(exeext)"
+stagestuff="jc1\$(exeext) gcj\$(exeext) jvgenmain\$(exeext) gcjh\$(exeext) jv-scan\$(exeext) jcf-dump\$(exeext)"
 
 outputs=java/Makefile

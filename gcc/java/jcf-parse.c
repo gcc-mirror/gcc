@@ -61,11 +61,6 @@ tree current_class = NULL_TREE;
 /* The class we started with. */
 tree main_class = NULL_TREE;
 
-/* This is true if the user specified a `.java' file on the command
-   line.  Otherwise it is 0.  FIXME: this is temporary, until our
-   .java parser is fully working.  */
-int saw_java_source = 0;
-
 /* The FIELD_DECL for the current field. */
 static tree current_field = NULL_TREE;
 
@@ -721,8 +716,11 @@ yyparse ()
       if (list[0]) 
 	{
 	  char *value, len;
+	  extern int saw_java_source; /* FIXME: temporary.  */
 
 	  len = strlen (list);
+	  /* FIXME: this test is only needed until our .java parser is
+	     fully capable.  */
 	  if (len > 5 && ! strcmp (&list[len - 5], ".java"))
 	    saw_java_source = 1;
 
