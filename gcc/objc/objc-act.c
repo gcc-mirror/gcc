@@ -6832,7 +6832,8 @@ encode_complete_bitfield (int position, tree type, int size)
 	    charType = 'q';
 	}
     }
-
+  else if (code == ENUMERAL_TYPE)
+    charType = 'i';
   else
     abort ();
 
