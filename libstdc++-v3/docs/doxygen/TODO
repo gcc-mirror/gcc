@@ -31,7 +31,11 @@ c24             stl_iterator.h (__normal_iterator, other small TODO bits)
                 stream iterators
 c25             stl_algo.h (lots of stuff)
 c26             <complex>, <valarray>, stl_numeric.h[26.4], Note A
-c27             Untouched
+c27             ios_base callbacks and local storage
+                basic_ios::copyfmt()
+                std_streambuf.h's __copy_streambufs()
+                    " "           _M_* protected memfns (data has been done)
+                fstream and sstream protected members
 
 backward/*      Not scanned by doxygen.  Should it be?  Doubtful.
 

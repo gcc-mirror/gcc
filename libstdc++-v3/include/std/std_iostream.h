@@ -47,17 +47,31 @@
 
 namespace std 
 {
-  extern istream cin;
-  extern ostream cout;
-  extern ostream cerr;
-  extern ostream clog;
+  /**
+   *  @name Standard Stream Objects
+   *
+   *  The &lt;iostream&gt; header declares the eight <em>standard stream
+   *  objects</em>.  For other declarations, see
+   *  http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#10 and the
+   *  @link s27_2_iosfwd I/O forward declarations @endlink
+   *
+   *  They are required by default to cooperate with the global C library's
+   *  @c FILE streams, and to be available during program startup and
+   *  termination.  For more information, see the HOWTO linked to above.
+  */
+  //@{
+  extern istream cin;		///< Linked to standard input
+  extern ostream cout;		///< Linked to standard output
+  extern ostream cerr;		///< Linked to standard error (unbuffered)
+  extern ostream clog;		///< Linked to standard error (buffered)
 
 #ifdef _GLIBCPP_USE_WCHAR_T
-  extern wistream wcin;
-  extern wostream wcout;
-  extern wostream wcerr;
-  extern wostream wclog;
+  extern wistream wcin;		///< Linked to standard input
+  extern wostream wcout;	///< Linked to standard output
+  extern wostream wcerr;	///< Linked to standard error (unbuffered)
+  extern wostream wclog;	///< Linked to standard error (buffered)
 #endif
+  //@}
 
   // For construction of filebuffers for cout, cin, cerr, clog et. al.
   static ios_base::Init __ioinit;

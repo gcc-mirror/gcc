@@ -1280,7 +1280,8 @@ namespace std
       }
   
     // called by the second initialize_dispatch above
-    /** @{
+    //@{
+    /**
      *  @if maint
      *  @brief Fills the deque with whatever is in [first,last).
      *  @param  first  An input iterator.
@@ -1302,7 +1303,7 @@ namespace std
       void
       _M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
                           forward_iterator_tag);
-    /** @} */
+    //@}
   
     /**
      *  @if maint
@@ -1383,7 +1384,8 @@ namespace std
     }
   
   
-    /** @{
+    //@{
+    /**
      *  @if maint
      *  @brief Helper functions for push_* and pop_*.
      *  @endif
@@ -1396,7 +1398,7 @@ namespace std
   #endif
     void _M_pop_back_aux();
     void _M_pop_front_aux();
-    /** @} */
+    //@}
   
   
     // Internal insert functions follow.  The *_aux functions do the actual
@@ -1462,7 +1464,8 @@ namespace std
     iterator _M_insert_aux(iterator __pos);
   #endif
   
-    /** @{
+    //@{
+    /**
      *  @if maint
      *  @brief Memory-handling helpers for the previous internal insert
      *         functions.
@@ -1491,10 +1494,11 @@ namespace std
   
     void
     _M_new_elements_at_back(size_type __new_elements);
-    /** @} */
+    //@}
   
   
-    /** @{
+    //@{
+    /**
      *  @if maint
      *  @brief Memory-handling helpers for the major %map.
      *
@@ -1519,7 +1523,7 @@ namespace std
   
     void
     _M_reallocate_map(size_type __nodes_to_add, bool __add_at_front);
-    /** @} */
+    //@}
   };
   
   

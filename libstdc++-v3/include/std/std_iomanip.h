@@ -47,8 +47,18 @@
 
 namespace std
 {
+  // [27.6.3] standard manipulators
+  // Also see DR 183.
+
   struct _Resetiosflags { ios_base::fmtflags _M_mask; };
 
+  /**
+   *  @brief  Manipulator for @c setf.
+   *  @param  mask  A format flags mask.
+   *
+   *  Sent to a stream object, this manipulator resets the specified flags,
+   *  via @e stream.setf(0,mask).
+  */
   inline _Resetiosflags 
   resetiosflags(ios_base::fmtflags __mask)
   { 
@@ -76,6 +86,13 @@ namespace std
 
   struct _Setiosflags { ios_base::fmtflags _M_mask; };
 
+  /**
+   *  @brief  Manipulator for @c setf.
+   *  @param  mask  A format flags mask.
+   *
+   *  Sent to a stream object, this manipulator sets the format flags
+   *  to @a mask.
+  */
   inline _Setiosflags 
   setiosflags(ios_base::fmtflags __mask)
   { 
@@ -103,6 +120,14 @@ namespace std
 
   struct _Setbase { int _M_base; };
 
+  /**
+   *  @brief  Manipulator for @c setf.
+   *  @param  base  A numeric base.
+   *
+   *  Sent to a stream object, this manipulator changes the
+   *  @c ios_base::basefield flags to @c oct, @c dec, or @c hex when @a base
+   *  is 8, 10, or 16, accordingly, and to 0 if @a base is any other value.
+  */
   inline _Setbase 
   setbase(int __base)
   { 
@@ -137,6 +162,13 @@ namespace std
   template<typename _CharT> 
     struct _Setfill { _CharT _M_c; };
 
+  /**
+   *  @brief  Manipulator for @c fill.
+   *  @param  c  The new fill character.
+   *
+   *  Sent to a stream object, this manipulator calls @c fill(c) for that
+   *  object.
+  */
   template<typename _CharT> 
     inline _Setfill<_CharT> 
     setfill(_CharT __c)
@@ -165,6 +197,13 @@ namespace std
 
   struct _Setprecision { int _M_n; };
 
+  /**
+   *  @brief  Manipulator for @c precision.
+   *  @param  n  The new precision.
+   *
+   *  Sent to a stream object, this manipulator calls @c precision(n) for
+   *  that object.
+  */
   inline _Setprecision 
   setprecision(int __n)
   { 
@@ -192,6 +231,13 @@ namespace std
 
   struct _Setw { int _M_n; };
 
+  /**
+   *  @brief  Manipulator for @c width.
+   *  @param  n  The new width.
+   *
+   *  Sent to a stream object, this manipulator calls @c width(n) for
+   *  that object.
+  */
   inline _Setw 
   setw(int __n)
   { 

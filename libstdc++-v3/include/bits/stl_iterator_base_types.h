@@ -68,7 +68,8 @@
 
 namespace std
 {
-  /** @{
+  //@{
+  /**
    *  @defgroup iterator_tags Iterator Tags
    *  These are empty types, used to distinguish different iterators.  The
    *  distinction is not made by what they contain, but simply by what they
