@@ -192,6 +192,7 @@ static const char *tag_name PROTO((enum tag_types code));
 static void find_class_binding_level PROTO((void));
 static struct binding_level *innermost_nonclass_level PROTO((void));
 static tree poplevel_class PROTO((void));
+static void warn_about_implicit_typename_lookup PROTO((tree, tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -5526,6 +5527,32 @@ qualify_lookup (val, flags)
   return val;
 }
 
+/* Any other BINDING overrides an implicit TYPENAME.  Warn about
+   that.  */
+
+static void
+warn_about_implicit_typename_lookup (typename, binding)
+     tree typename;
+     tree binding;
+{
+  tree subtype = TREE_TYPE (TREE_TYPE (typename));
+  tree name = DECL_NAME (typename);
+
+  if (! (TREE_CODE (binding) == TEMPLATE_DECL
+	 && CLASSTYPE_TEMPLATE_INFO (subtype)
+	 && CLASSTYPE_TI_TEMPLATE (subtype) == binding)
+      && ! (TREE_CODE (binding) == TYPE_DECL
+	    && same_type_p (TREE_TYPE (binding), subtype)))
+    {
+      cp_warning ("lookup of `%D' finds `%#D'", 
+		  name, binding);
+      cp_warning ("  instead of `%D' from dependent base class",
+		  typename);
+      cp_warning ("  (use `typename %T::%D' if that's what you meant)",
+		  constructor_name (current_class_type), name);
+    }
+}
+
 /* Look up NAME in the current binding level and its superiors in the
    namespace of variables, functions and typedefs.  Return a ..._DECL
    node of some kind representing its definition if there is only one
@@ -5545,10 +5572,12 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
      tree name;
      int prefer_type, nonclass, namespaces_only;
 {
-  register tree val;
+  tree t;
+  tree val = NULL_TREE;
   int yylex = 0;
   tree from_obj = NULL_TREE;
   int flags;
+  int val_is_implicit_typename = 0;
 
   /* Hack: copy flag set by parser, if set. */
   if (only_namespace_names)
@@ -5623,67 +5652,49 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
     }
 
   /* First, look in non-namespace scopes.  */
-  for (val = IDENTIFIER_BINDING (name); val; val = TREE_CHAIN (val))
+  for (t = IDENTIFIER_BINDING (name); t; t = TREE_CHAIN (t))
     {
-      if (!LOCAL_BINDING_P (val) && nonclass)
+      tree binding;
+
+      if (!LOCAL_BINDING_P (t) && nonclass)
 	/* We're not looking for class-scoped bindings, so keep going.  */
 	continue;
       
       /* If this is the kind of thing we're looking for, we're done.  */
-      if (qualify_lookup (BINDING_VALUE (val), flags))
-	{
-	  val = BINDING_VALUE (val);
-	  break;
-	}
+      if (qualify_lookup (BINDING_VALUE (t), flags))
+	binding = BINDING_VALUE (t);
       else if ((flags & LOOKUP_PREFER_TYPES) 
-	       && qualify_lookup (BINDING_TYPE (val), flags))
+	       && qualify_lookup (BINDING_TYPE (t), flags))
+	binding = BINDING_TYPE (t);
+      else
+	binding = NULL_TREE;
+
+      if (binding
+	  && (!val || !(TREE_CODE (binding) == TYPE_DECL
+			&& IMPLICIT_TYPENAME_P (TREE_TYPE (binding)))))
 	{
-	  val = BINDING_TYPE (val);
-	  break;
+	  if (val_is_implicit_typename && !yylex)
+	    warn_about_implicit_typename_lookup (val, binding);
+	  val = binding;
+	  val_is_implicit_typename 
+	    = (TREE_CODE (val) == TYPE_DECL
+	       && IMPLICIT_TYPENAME_P (TREE_TYPE (val)));
+	  if (!val_is_implicit_typename)
+	    break;
 	}
     }
 
-  /* If we found a type from a dependent base class (using the
-     implicit typename extension) make sure that there's not some
-     global name which should be chosen instead.  */
-  if (val && TREE_CODE (val) == TYPE_DECL
-      && IMPLICIT_TYPENAME_P (TREE_TYPE (val)))
+  /* Now lookup in namespace scopes.  */
+  if (!val || val_is_implicit_typename)
     {
-      tree global_val;
-
-      /* Any other name takes precedence over an implicit typename.  Warn the
-	 user about this potentially confusing lookup.  */
-      global_val = unqualified_namespace_lookup (name, flags);
-
-      if (global_val)
+      t = unqualified_namespace_lookup (name, flags);
+      if (t)
 	{
-	  tree subtype;
-
-	  /* Only warn when not lexing; we don't want to warn if they
-	     use this name as a declarator.  */
-	  subtype = TREE_TYPE (TREE_TYPE (val));
-	  if (! yylex
-	      && ! (TREE_CODE (global_val) == TEMPLATE_DECL
-		    && CLASSTYPE_TEMPLATE_INFO (subtype)
-		    && CLASSTYPE_TI_TEMPLATE (subtype) == global_val)
-	      && ! (TREE_CODE (global_val) == TYPE_DECL
-		    && same_type_p (TREE_TYPE (global_val), subtype)))
-	    {
-	      cp_warning ("lookup of `%D' finds `%#D'", name, global_val);
-	      cp_warning ("  instead of `%D' from dependent base class",
-			  val);
-	      cp_warning ("  (use `typename %T::%D' if that's what you meant)",
-			  constructor_name (current_class_type), name);
-	    }
-
-	  /* Use the global value instead of the implicit typename.  */
-	  val = global_val;
+	  if (val_is_implicit_typename && !yylex)
+	    warn_about_implicit_typename_lookup (val, t);
+	  val = t;
 	}
     }
-  else if (!val)
-    /* No local, or class-scoped binding.  Look for a namespace-scope
-       declaration.  */
-    val = unqualified_namespace_lookup (name, flags);
 
  done:
   if (val)
