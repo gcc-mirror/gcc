@@ -1,0 +1,3 @@
+# Handle cpp installation.
+INSTALL_CPP=install-cpp
+UNINSTALL_CPP=uninstall-cpp
