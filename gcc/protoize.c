@@ -22,6 +22,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 #include "system.h"
 #include "intl.h"
+#include "cppdefault.h"
 
 #include <setjmp.h>
 #include <signal.h>
@@ -194,60 +195,6 @@ static const unexpansion unexpansions[] = {
 
 static const int hash_mask = (HASH_TABLE_SIZE - 1);
 
-/* Make a table of default system include directories
-   just as it is done in cpp.  */
-
-static const struct default_include { const char *const fname; 
-			 const char *const component;
-			 const int x1, x2; } include_defaults[]
-#ifdef INCLUDE_DEFAULTS
-  = INCLUDE_DEFAULTS;
-#else
-  = {
-    /* Pick up GNU C++ specific include files.  */
-    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },
-#ifdef CROSS_COMPILE
-#ifdef GCC_INCLUDE_DIR
-    /* This is the dir for fixincludes.  Put it just before
-       the files that we fix.  */
-    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
-#endif
-#ifdef CROSS_INCLUDE_DIR
-    /* For cross-compilation, this dir name is generated
-       automatically in Makefile.in.  */
-    { CROSS_INCLUDE_DIR, 0, 0, 0 },
-#endif
-#ifdef TOOL_INCLUDE_DIR
-    /* This is another place that the target system's headers might be.  */
-    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 0 },
-#endif
-#else /* not CROSS_COMPILE */
-#ifdef LOCAL_INCLUDE_DIR
-    /* This should be /use/local/include and should come before
-       the fixincludes-fixed header files.  */
-    { LOCAL_INCLUDE_DIR, 0, 0, 1 },
-#endif
-#ifdef TOOL_INCLUDE_DIR
-    /* This is here ahead of GCC_INCLUDE_DIR because assert.h goes here.
-       Likewise, behind LOCAL_INCLUDE_DIR, where glibc puts its assert.h.  */
-    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 0 },
-#endif
-#ifdef GCC_INCLUDE_DIR
-    /* This is the dir for fixincludes.  Put it just before
-       the files that we fix.  */
-    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
-#endif
-    /* Some systems have an extra dir of include files.  */
-#ifdef SYSTEM_INCLUDE_DIR
-    { SYSTEM_INCLUDE_DIR, 0, 0, 0 },
-#endif
-#ifdef STANDARD_INCLUDE_DIR
-    { STANDARD_INCLUDE_DIR, 0, 0, 0},
-#endif
-#endif /* not CROSS_COMPILE */
-    { 0, 0, 0, 0}
-    };
-#endif /* no INCLUDE_DEFAULTS */
 
 /* Datatype for lists of directories or filenames.  */
 struct string_list
@@ -754,7 +701,7 @@ in_system_include_dir (path)
   if (! is_abspath (path))
     abort ();		/* Must be an absolutized filename.  */
 
-  for (p = include_defaults; p->fname; p++)
+  for (p = cpp_include_defaults; p->fname; p++)
     if (!strncmp (path, p->fname, strlen (p->fname))
 	&& IS_DIR_SEPARATOR (path[strlen (p->fname)]))
       return 1;
