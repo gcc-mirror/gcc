@@ -42,7 +42,7 @@ extern "C++" {
 
 class parsebuf : public streambuf {
   protected:
-    _IO_fpos_t pos_at_line_start;
+    _IO_off_t pos_at_line_start;
     long _line_length;
     unsigned long __line_number;
     char *buf_start;

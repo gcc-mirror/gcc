@@ -1,3 +1,18 @@
+1999-12-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* libio.h (_IO_cookie_io_functions_t): Use _IO_off_t instead of
+	_IO_fpos_t.
+	(_IO_seekoff, _IO_seekpos): Likewise. Use _IO_off64_t instead of
+	_IO_fpos64_t.
+	* libioP.h (_IO_seekoff_t, _IO_seekpos_t, _IO_seek_t): Likewise.
+	(_IO_seekoff, _IO_seekpos): Likewise.
+	(_IO_default_seekoff, _IO_default_seekpos): Likewise.
+	(_IO_default_seek): Likewise.
+	(_IO_file_seekoff, _IO_file_seek, _IO_str_seekoff): Likewise.
+	* streambuf.h (streampos): Typedef to _IO_off_t resp. _IO_off64_t.
+	* parsestream.h (class parsebuf::pos_at_line_start): Change type
+	to _IO_off_t.
+
 1999-12-21  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* filebuf.cc (open): Support ios::ate if _G_HAVE_IO_FILE_OPEN.
