@@ -1,3 +1,21 @@
+2000-10-30  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_DEBUG):  Raise debugging level from
+	  the default of 2 to 3.
+	* configure.in:  Fix minor typos.  SUBST the values of enable_shared
+	  and enable_static so that mkcheck will be aware of them.  Put the
+	  test for gconv.h in with all the other header tests.
+	* aclocal.m4:  Regenerate.
+	* configure:  Ditto.
+	* Makefile.in:  Ditto.
+	* libio/Makefile.in:  Ditto.
+	* libmath/Makefile.in:  Ditto.
+	* libsupc++/Makefile.in:  Ditto.
+	* src/Makefile.in:  Ditto.
+
+	* config/os/solaris/solaris2.7/bits/os_defines.h:  Define
+	  _G_USING_THUNKS to 0.
+
 2000-10-30  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/complex_io.cc : Remove ancient defines.

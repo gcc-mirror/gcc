@@ -1172,7 +1172,7 @@ dnl
 dnl Check for special debugging mode; not for production use.
 dnl
 dnl GLIBCPP_ENABLE_DEBUG
-dnl --enable-debug sets '-ggdb -O0'.
+dnl --enable-debug sets '-ggdb3 -O0'.
 dnl --disable-debug sets '-g' and whatever optimization options the
 dnl     compiler can handle.
 dnl  +  --enable-maintainer-mode automatically defaults this to on.
@@ -1196,7 +1196,7 @@ enable_debug=GLIBCPP_ENABLE_DEBUG_DEFAULT)dnl
 dnl Option parsed, now set things appropriately
 case "${enable_debug}" in
     yes) 
-        DEBUG_FLAGS='-O0 -ggdb'                        
+        DEBUG_FLAGS='-O0 -ggdb3'                        
         ;;
     no)   
         DEBUG_FLAGS='-g'

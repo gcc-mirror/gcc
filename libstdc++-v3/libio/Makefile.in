@@ -98,6 +98,8 @@ VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
 WFMT_FLAGS = @WFMT_FLAGS@
+enable_shared = @enable_shared@
+enable_static = @enable_static@
 gcc_version = @gcc_version@
 glibcpp_basedir = @glibcpp_basedir@
 gxx_include_dir = @gxx_include_dir@
@@ -118,14 +120,21 @@ LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBIO_INCLUDES = @LIBIO_INCLUDES@
 CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 
-INCLUDES =  	-nostdinc++ 	-I$(top_builddir)/include -I$(GLIBCPP_INCLUDE_DIR) 	$(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
+INCLUDES = \
+	-nostdinc++ \
+	-I$(top_builddir)/include -I$(GLIBCPP_INCLUDE_DIR) \
+	$(LIBIO_INCLUDES) $(TOPLEVEL_INCLUDES)	
 
 
-libio_headers =          libio.h libioP.h iolibio.h
+libio_headers = \
+        libio.h libioP.h iolibio.h
 
-@GLIBCPP_NEED_LIBIO_TRUE@LIBIO_SRCS = 	filedoalloc.c genops.c fileops.c stdfiles.c c_codecvt.c iofclose.c     iofopen.c stdio.c
+@GLIBCPP_NEED_LIBIO_TRUE@LIBIO_SRCS = @GLIBCPP_NEED_LIBIO_TRUE@\
+@GLIBCPP_NEED_LIBIO_TRUE@	filedoalloc.c genops.c fileops.c stdfiles.c c_codecvt.c iofclose.c \
+@GLIBCPP_NEED_LIBIO_TRUE@    iofopen.c stdio.c
 @GLIBCPP_NEED_LIBIO_FALSE@LIBIO_SRCS = 
-@GLIBCPP_NEED_WLIBIO_TRUE@LIBIO_WSRCS = 	wfiledoalloc.c wfileops.c wgenops.c iofwide.c
+@GLIBCPP_NEED_WLIBIO_TRUE@LIBIO_WSRCS = @GLIBCPP_NEED_WLIBIO_TRUE@\
+@GLIBCPP_NEED_WLIBIO_TRUE@	wfiledoalloc.c wfileops.c wgenops.c iofwide.c
 @GLIBCPP_NEED_WLIBIO_FALSE@LIBIO_WSRCS = 
 
 EXTRA_DIST = iostreamP.h

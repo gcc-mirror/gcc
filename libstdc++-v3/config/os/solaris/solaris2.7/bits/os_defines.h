@@ -41,6 +41,8 @@
 #define __off64_t   off64_t
 #define __ssize_t   ssize_t
 
+// Without this all the libio vtbls are offset wrongly.
+#define _G_USING_THUNKS 0
 
 
 #endif
