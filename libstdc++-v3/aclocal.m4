@@ -968,11 +968,11 @@ dnl GLIBCPP_CHECK_WCHAR_T_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
   if test x$enable_c_mbchar != xno; then
 
-    dnl Sanity check for existence of ISO C9X headers for extended encoding.
+    dnl Sanity check for existence of ISO C99 headers for extended encoding.
     AC_CHECK_HEADER(wchar.h, ac_has_wchar_h=yes, ac_has_wchar_h=no)
     AC_CHECK_HEADER(wctype.h, ac_has_wctype_h=yes, ac_has_wctype_h=no)
           
-    dnl Only continue checking if the ISO C9X headers exist.
+    dnl Only continue checking if the ISO C99 headers exist.
     if test x"$ac_has_wchar_h" = xyes && test x"$ac_has_wctype_h" = xyes; then
   
       dnl Test wchar.h for mbstate_t, which is needed for char_traits
@@ -1008,14 +1008,14 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
       AC_CHECK_FUNCS(wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset \
       wcsrtombs mbsrtowcs, ac_wfuncs=yes, ac_wfuncs=no)
   
-      AC_MSG_CHECKING([for ISO C9X wchar_t support])
+      AC_MSG_CHECKING([for ISO C99 wchar_t support])
       if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes \
          && test x"$ac_wfuncs" = xyes; then
-        ac_isoC9X_wchar_t=yes
+        ac_isoC99_wchar_t=yes
       else
-        ac_isoC9X_wchar_t=no
+        ac_isoC99_wchar_t=no
       fi
-      AC_MSG_RESULT($ac_isoC9X_wchar_t)
+      AC_MSG_RESULT($ac_isoC99_wchar_t)
   
       dnl Use iconv for wchar_t to char conversions. As such, check for 
       dnl X/Open Portability Guide, version 2 features (XPG2).
@@ -1044,7 +1044,7 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
       dnl At the moment, only enable wchar_t specializations if all the
       dnl above support is present.
       AC_MSG_CHECKING([for enabled wchar_t specializations])
-      if test x"$ac_isoC9X_wchar_t" = xyes \
+      if test x"$ac_isoC99_wchar_t" = xyes \
          && test x"$ac_XPG2_wchar_t" = xyes; then
         libinst_wstring_la="libinst-wstring.la"
         AC_DEFINE(_GLIBCPP_USE_WCHAR_T)

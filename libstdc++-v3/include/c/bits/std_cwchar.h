@@ -111,7 +111,7 @@ namespace std
   extern "C" size_t wcsftime(wchar_t*, size_t, const wchar_t*, const struct tm*); 
 
 #if 0
-  // Full C9X listing
+  // Full C99 listing
   extern "C" long double wcstold(const wchar_t*, wchar_t**); 
   extern "C" long long int wcstoll(const wchar_t*, wchar_t**, int); 
   extern "C" unsigned long long int wcstoull(const wchar_t*, wchar_t**, int); 

@@ -17516,15 +17516,15 @@ fi
 done
 
   
-      echo $ac_n "checking for ISO C9X wchar_t support""... $ac_c" 1>&6
-echo "configure:17521: checking for ISO C9X wchar_t support" >&5
+      echo $ac_n "checking for ISO C99 wchar_t support""... $ac_c" 1>&6
+echo "configure:17521: checking for ISO C99 wchar_t support" >&5
       if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes \
          && test x"$ac_wfuncs" = xyes; then
-        ac_isoC9X_wchar_t=yes
+        ac_isoC99_wchar_t=yes
       else
-        ac_isoC9X_wchar_t=no
+        ac_isoC99_wchar_t=no
       fi
-      echo "$ac_t""$ac_isoC9X_wchar_t" 1>&6
+      echo "$ac_t""$ac_isoC99_wchar_t" 1>&6
   
                   ac_safe=`echo "iconv.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for iconv.h""... $ac_c" 1>&6
@@ -17710,7 +17710,7 @@ echo "configure:17703: checking for XPG2 wchar_t support" >&5
   
                   echo $ac_n "checking for enabled wchar_t specializations""... $ac_c" 1>&6
 echo "configure:17713: checking for enabled wchar_t specializations" >&5
-      if test x"$ac_isoC9X_wchar_t" = xyes \
+      if test x"$ac_isoC99_wchar_t" = xyes \
          && test x"$ac_XPG2_wchar_t" = xyes; then
         libinst_wstring_la="libinst-wstring.la"
         cat >> confdefs.h <<\EOF

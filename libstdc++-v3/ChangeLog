@@ -1,3 +1,12 @@
+2000-11-25  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* acinclude.m4: Change C9X references to refer to C99.
+	* aclocal.m4, configure: Regenerate.
+	* config/os/gnu-linux/bits/os_defines.h, src/complex.cc,
+	testsuite/22_locale/codecvt_wchar_t_char.cc,
+	include/bits/stl_config.h, include/c/bits/std_cwchar.h,
+	libmath/mathconf.h: Change C9X references to refer to C99.
+
 2000-11-25  Benjamin Kosnik  <bkoz@redhat.com>
             Richard Earnshaw  <rearnsha@arm.com> 
 

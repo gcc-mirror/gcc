@@ -29,7 +29,7 @@
 
 #include <bits/std_complex.h>
 
-// This is a ISO C 9X header.
+// This is a ISO C99 header.
 #include <mathconf.h>
 #undef complex
 
