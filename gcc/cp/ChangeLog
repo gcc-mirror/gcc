@@ -1,5 +1,10 @@
 2003-01-02  Mark Mitchell  <mark@codesourcery.com>
 
+	* call.c (build_new_method_call): Fix typo in message format
+	string.
+
+2003-01-02  Mark Mitchell  <mark@codesourcery.com>
+
 	* parser.c (cp_lexer_next_token_is): Declare it inline.
 	(cp_lexer_set_source_position_from_token): Likewise.
 	(cp_lexer_debugging_p): Likewise.

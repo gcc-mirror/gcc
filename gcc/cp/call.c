@@ -4861,7 +4861,7 @@ build_new_method_call (tree instance, tree fns, tree args,
       bool free_p;
 
       pretty_name = name_as_c_string (name, basetype, &free_p);
-      error ("call of overloaded `%D(%A)' is ambiguous", pretty_name,
+      error ("call of overloaded `%s(%A)' is ambiguous", pretty_name,
 	     user_args);
       print_z_candidates (candidates);
       if (free_p)
