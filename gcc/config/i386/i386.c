@@ -14326,6 +14326,21 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
 	*total = COSTS_N_INSNS (ix86_cost->add);
       return false;
 
+    case COMPARE:
+      if (GET_CODE (XEXP (x, 0)) == ZERO_EXTRACT
+	  && XEXP (XEXP (x, 0), 1) == const1_rtx
+	  && GET_CODE (XEXP (XEXP (x, 0), 2)) == CONST_INT
+	  && XEXP (x, 1) == const0_rtx)
+	{
+	  /* This kind of construct is implemented using test[bwl].
+	     Treat it as if we had an AND.  */
+	  *total = (COSTS_N_INSNS (ix86_cost->add)
+		    + rtx_cost (XEXP (XEXP (x, 0), 0), outer_code)
+		    + rtx_cost (const1_rtx, outer_code));
+	  return true;
+	}
+      return false;
+
     case FLOAT_EXTEND:
       if (!TARGET_SSE_MATH || !VALID_SSE_REG_MODE (mode))
 	*total = 0;

@@ -1,3 +1,9 @@
+2004-10-12  Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR rtl-optimization/17931
+	* config/i386/i386.c (ix86_rtx_costs): Handle COMPARE with
+	ZERO_EXTRACT in it.
+
 2004-10-12  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_print_operand): Use output_operand_lossage where possible
