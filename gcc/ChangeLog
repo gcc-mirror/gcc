@@ -1,5 +1,16 @@
 2004-08-25  Zack Weinberg  <zack@codesourcery.com>
 
+	* flags.h (enum debug_info_type): Remove DWARF_DEBUG.
+	* defaults.h (PREFERRED_DEBUGGING_TYPE): Remove check for
+	DWARF_DEBUGGING_INFO from choice-of-definition chain;
+	restructure using C89 features (#elif, #error).
+	* c-lex.c, final.c, opts.c, config/cris/cris.c, config/frv/frv.c
+	* config/sh/sh.h: Remove references to DWARF_DEBUG.
+	* doc/invoke.texi: Remove references to DWARF version 1;
+	clarify why -gdwarf-2<n> doesn't work.
+
+2004-08-25  Zack Weinberg  <zack@codesourcery.com>
+
 	* basic-block.h (BB_SET_PARTITION): Clear old value first.
 	* cfg.c (clear_bb_flags): Don't clear partition setting.
 	* ifcvt.c (find_if_case_1): Remove ??? comment.

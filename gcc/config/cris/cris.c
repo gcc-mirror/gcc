@@ -2712,8 +2712,7 @@ cris_override_options (void)
       flag_no_function_cse = 1;
     }
 
-  if ((write_symbols == DWARF_DEBUG
-       || write_symbols == DWARF2_DEBUG) && ! TARGET_ELF)
+  if (write_symbols == DWARF2_DEBUG && ! TARGET_ELF)
     {
       warning ("that particular -g option is invalid with -maout and -melinux");
       write_symbols = DBX_DEBUG;

@@ -647,9 +647,7 @@ decode_options (unsigned int argc, const char **argv)
      work correctly with DWARF debugging turned on.  Until this is fixed
      we will disable the optimization when DWARF debugging is set.  */
   
-  if (flag_reorder_blocks_and_partition
-      && (write_symbols == DWARF_DEBUG
-	  || write_symbols == DWARF2_DEBUG))
+  if (flag_reorder_blocks_and_partition && write_symbols == DWARF2_DEBUG)
     {
       warning
 	("-freorder-blocks-and-partition does not work with -g (currently)");

@@ -1,3 +1,7 @@
+2004-08-25  Zack Weinberg  <zack@codesourcery.com>
+
+	* class.c, search.c: Remove references to DWARF_DEBUG.
+
 2004-08-25  Adam Nemet  <anemet@lnxw.com>
 
 	* repo.c (extract_string): Reset backquote after one character.

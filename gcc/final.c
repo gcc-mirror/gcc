@@ -1793,7 +1793,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	case NOTE_INSN_BLOCK_BEG:
 	  if (debug_info_level == DINFO_LEVEL_NORMAL
 	      || debug_info_level == DINFO_LEVEL_VERBOSE
-	      || write_symbols == DWARF_DEBUG
 	      || write_symbols == DWARF2_DEBUG
 	      || write_symbols == VMS_AND_DWARF2_DEBUG
 	      || write_symbols == VMS_DEBUG)
@@ -1815,7 +1814,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	case NOTE_INSN_BLOCK_END:
 	  if (debug_info_level == DINFO_LEVEL_NORMAL
 	      || debug_info_level == DINFO_LEVEL_VERBOSE
-	      || write_symbols == DWARF_DEBUG
 	      || write_symbols == DWARF2_DEBUG
 	      || write_symbols == VMS_AND_DWARF2_DEBUG
 	      || write_symbols == VMS_DEBUG)

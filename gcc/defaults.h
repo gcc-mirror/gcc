@@ -535,38 +535,34 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #endif
 
 /* If more than one debugging type is supported, you must define
-   PREFERRED_DEBUGGING_TYPE to choose a format in a system-dependent way.
+   PREFERRED_DEBUGGING_TYPE to choose the default.  */
 
-   This is one long line cause VAXC can't handle a \-newline.  */
-#if 1 < (defined (DBX_DEBUGGING_INFO) + defined (SDB_DEBUGGING_INFO) + defined (DWARF2_DEBUGGING_INFO) + defined (XCOFF_DEBUGGING_INFO) + defined (VMS_DEBUGGING_INFO))
+#if 1 < (defined (DBX_DEBUGGING_INFO) + defined (SDB_DEBUGGING_INFO) \
+         + defined (DWARF2_DEBUGGING_INFO) + defined (XCOFF_DEBUGGING_INFO) \
+         + defined (VMS_DEBUGGING_INFO))
 #ifndef PREFERRED_DEBUGGING_TYPE
-You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
+#error You must define PREFERRED_DEBUGGING_TYPE
 #endif /* no PREFERRED_DEBUGGING_TYPE */
-#else /* Only one debugging format supported.  Define PREFERRED_DEBUGGING_TYPE
-	 so other code needn't care.  */
-#ifdef DBX_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-#endif
-#ifdef SDB_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
-#endif
-#ifdef DWARF2_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-#endif
-#ifdef VMS_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE VMS_AND_DWARF2_DEBUG
-#endif
-#ifdef XCOFF_DEBUGGING_INFO
-#define PREFERRED_DEBUGGING_TYPE XCOFF_DEBUG
-#endif
-#endif /* More than one debugger format enabled.  */
 
-/* If still not defined, must have been because no debugging formats
-   are supported.  */
-#ifndef PREFERRED_DEBUGGING_TYPE
+/* If only one debugging format is supported, define PREFERRED_DEBUGGING_TYPE
+   here so other code needn't care.  */
+#elif defined DBX_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+#elif defined SDB_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
+
+#elif defined DWARF2_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
+#elif defined VMS_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE VMS_AND_DWARF2_DEBUG
+
+#elif defined XCOFF_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE XCOFF_DEBUG
+
+#else
+/* No debugging format is supported by this target.  */
 #define PREFERRED_DEBUGGING_TYPE NO_DEBUG
 #endif
 

@@ -636,7 +636,7 @@ build_vtable (tree class_type, tree name, tree vtable_type)
   DECL_EXTERNAL (decl) = 1;
   DECL_NOT_REALLY_EXTERN (decl) = 1;
 
-  if (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG)
+  if (write_symbols == DWARF2_DEBUG)
     /* Mark the VAR_DECL node representing the vtable itself as a
        "gratuitous" one, thereby forcing dwarfout.c to ignore it.  It
        is rather important that such things be ignored because any

@@ -1965,15 +1965,7 @@ dfs_unmark (tree binfo, void *data ATTRIBUTE_UNUSED)
 void
 maybe_suppress_debug_info (tree t)
 {
-  /* We can't do the usual TYPE_DECL_SUPPRESS_DEBUG thing with DWARF, which
-     does not support name references between translation units.  It supports
-     symbolic references between translation units, but only within a single
-     executable or shared library.
-
-     For DWARF 2, we handle TYPE_DECL_SUPPRESS_DEBUG by pretending
-     that the type was never defined, so we only get the members we
-     actually define.  */
-  if (write_symbols == DWARF_DEBUG || write_symbols == NO_DEBUG)
+  if (write_symbols == NO_DEBUG)
     return;
 
   /* We might have set this earlier in cp_finish_decl.  */
