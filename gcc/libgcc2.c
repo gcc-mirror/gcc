@@ -1919,6 +1919,39 @@ __clear_cache (beg, end)
 
 /* Jump to a trampoline, loading the static chain address.  */
 
+#ifdef WINNT
+
+long getpagesize()
+{
+#ifdef _ALPHA_
+  return 8192;
+#else
+  return 4096;
+#endif
+}
+
+int mprotect(addr, len, prot)
+  char *addr;
+  int len, prot;
+{
+  int np, op;
+
+  if (prot == 7) np = 0x40;
+  else if (prot == 5) np = 0x20;
+  else if (prot == 4) np = 0x10;
+  else if (prot == 3) np = 0x04;
+  else if (prot == 1) np = 0x02;
+  else if (prot == 0) np = 0x01;
+
+  if (VirtualProtect (addr, len, np, &op))
+    return 0;
+  else
+    return -1;
+    
+}
+
+#endif
+
 #ifdef TRANSFER_FROM_TRAMPOLINE 
 TRANSFER_FROM_TRAMPOLINE 
 #endif
