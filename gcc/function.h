@@ -377,7 +377,7 @@ struct function GTY(())
   /* For md files.  */
 
   /* tm.h can use this to store whatever it likes.  */
-  struct machine_function * GTY ((maybe_undef (""))) machine;
+  struct machine_function * GTY ((maybe_undef)) machine;
   /* The largest alignment of slot allocated on the stack.  */
   int stack_alignment_needed;
   /* Preferred alignment of the end of stack frame.  */

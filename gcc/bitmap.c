@@ -44,7 +44,7 @@ static int bitmap_obstack_init = FALSE;
 /* Global data */
 bitmap_element bitmap_zero_bits;	/* An element of all zero bits.  */
 static bitmap_element *bitmap_free;	/* Freelist of bitmap elements.  */
-static GTY((deletable (""))) bitmap_element *bitmap_ggc_free;
+static GTY((deletable)) bitmap_element *bitmap_ggc_free;
 
 static void bitmap_elem_to_freelist (bitmap, bitmap_element *);
 static void bitmap_element_free (bitmap, bitmap_element *);

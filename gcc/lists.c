@@ -32,10 +32,10 @@ static void free_list (rtx *, rtx *);
 /* Functions for maintaining cache-able lists of EXPR_LIST and INSN_LISTs.  */
 
 /* An INSN_LIST containing all INSN_LISTs allocated but currently unused.  */
-static GTY ((deletable (""))) rtx unused_insn_list;
+static GTY ((deletable)) rtx unused_insn_list;
 
 /* An EXPR_LIST containing all EXPR_LISTs allocated but currently unused.  */
-static GTY ((deletable (""))) rtx unused_expr_list;
+static GTY ((deletable)) rtx unused_expr_list;
 
 
 /* This function will free an entire list of either EXPR_LIST or INSN_LIST

@@ -3567,8 +3567,8 @@ alpha_split_conditional_move (enum rtx_code code, rtx dest, rtx cond,
 struct xfloating_op GTY(())
 {
   const enum rtx_code code;
-  const char *const GTY((skip(""))) osf_func;
-  const char *const GTY((skip(""))) vms_func;
+  const char *const GTY((skip)) osf_func;
+  const char *const GTY((skip)) vms_func;
   rtx libcall;
 };
 

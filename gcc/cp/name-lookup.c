@@ -61,7 +61,7 @@ GTY(()) tree anonymous_namespace_name;
 
 /* A free list of "binding_entry"s awaiting for re-use.  */
 
-static GTY((deletable(""))) binding_entry free_binding_entry = NULL;
+static GTY((deletable)) binding_entry free_binding_entry = NULL;
 
 /* Create a binding_entry object for (NAME, TYPE).  */
 
@@ -317,7 +317,7 @@ binding_table_foreach (binding_table table, bt_foreach_proc proc, void *data)
 
 /* A free list of "cxx_binding"s, connected by their PREVIOUS.  */
 
-static GTY((deletable (""))) cxx_binding *free_bindings;
+static GTY((deletable)) cxx_binding *free_bindings;
 
 /* Zero out a cxx_binding pointed to by B.  */
 #define cxx_binding_clear(B) memset ((B), 0, sizeof (cxx_binding))
@@ -1232,7 +1232,7 @@ namespace_scope_ht_size (tree ns)
 
 /* A chain of binding_level structures awaiting reuse.  */
 
-static GTY((deletable (""))) struct cp_binding_level *free_binding_level;
+static GTY((deletable)) struct cp_binding_level *free_binding_level;
 
 /* Create a new KIND scope and make it the top of the active scopes stack.
    ENTITY is the scope of the associated C++ entity (namespace, class,

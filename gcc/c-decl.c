@@ -317,11 +317,11 @@ static GTY(()) struct c_scope *external_scope;
 
 /* A chain of c_scope structures awaiting reuse.  */
 
-static GTY((deletable (""))) struct c_scope *scope_freelist;
+static GTY((deletable)) struct c_scope *scope_freelist;
 
 /* A chain of c_binding structures awaiting reuse.  */
 
-static GTY((deletable (""))) struct c_binding *binding_freelist;
+static GTY((deletable)) struct c_binding *binding_freelist;
 
 /* Append VAR to LIST in scope SCOPE.  */
 #define SCOPE_LIST_APPEND(scope, list, decl) do {	\

@@ -167,19 +167,19 @@ typedef struct cp_lexer GTY (())
   /* The memory allocated for the buffer.  Never NULL.  */
   cp_token * GTY ((length ("(%h.buffer_end - %h.buffer)"))) buffer;
   /* A pointer just past the end of the memory allocated for the buffer.  */
-  cp_token * GTY ((skip (""))) buffer_end;
+  cp_token * GTY ((skip)) buffer_end;
   /* The first valid token in the buffer, or NULL if none.  */
-  cp_token * GTY ((skip (""))) first_token;
+  cp_token * GTY ((skip)) first_token;
   /* The next available token.  If NEXT_TOKEN is NULL, then there are
      no more available tokens.  */
-  cp_token * GTY ((skip (""))) next_token;
+  cp_token * GTY ((skip)) next_token;
   /* A pointer just past the last available token.  If FIRST_TOKEN is
      NULL, however, there are no available tokens, and then this
      location is simply the place in which the next token read will be
      placed.  If LAST_TOKEN == FIRST_TOKEN, then the buffer is full.
      When the LAST_TOKEN == BUFFER, then the last token is at the
      highest memory address in the BUFFER.  */
-  cp_token * GTY ((skip (""))) last_token;
+  cp_token * GTY ((skip)) last_token;
 
   /* A stack indicating positions at which cp_lexer_save_tokens was
      called.  The top entry is the most recent position at which we
@@ -1126,7 +1126,7 @@ static cp_parser_context *cp_parser_context_new
 
 /* Class variables.  */
 
-static GTY((deletable (""))) cp_parser_context* cp_parser_context_free_list;
+static GTY((deletable)) cp_parser_context* cp_parser_context_free_list;
 
 /* Constructors and destructors.  */
 

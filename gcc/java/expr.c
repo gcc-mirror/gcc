@@ -126,7 +126,7 @@ int always_initialize_class_p;
 static GTY(()) tree quick_stack;
 
 /* A free-list of unused permanent TREE_LIST nodes.  */
-static GTY((deletable (""))) tree tree_list_free_list;
+static GTY((deletable)) tree tree_list_free_list;
 
 /* The stack pointer of the Java virtual machine.
    This does include the size of the quick_stack. */

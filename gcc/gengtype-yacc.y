@@ -57,7 +57,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 %type <p> struct_fields yacc_ids yacc_typematch
 %type <t> type lasttype
 %type <o> optionsopt options option optionseq optionseqopt
-%type <s> type_option
+%type <s> type_option stringseq
 
 %%
 
@@ -268,21 +268,12 @@ type_option : ALIAS
 	        { $$ = $1; }
 	      ;
 
-option:	type_option '(' type ')'
-	   {
-	     options_p o = xmalloc (sizeof (*o));
-	     o->name = $1;
-	     o->info = adjust_field_type ($3, NULL);
-	     $$ = o;
-	   }
-	| ID '(' STRING ')'
-	   {
-	     options_p o = xmalloc (sizeof (*o));
-	     o->name = $1;
-	     o->info = (void *)$3;
-	     $$ = o;
-	   }
-	;
+option:   ID
+	    { $$ = create_option ($1, (void *)""); }
+        | ID '(' stringseq ')'
+            { $$ = create_option ($1, (void *)$3); }
+	| type_option '(' type ')'
+	    { $$ = create_option ($1, adjust_field_type ($3, NULL)); }
 
 optionseq: option
 	      {
@@ -299,4 +290,16 @@ optionseq: option
 optionseqopt: { $$ = NULL; }
 	      | optionseq { $$ = $1; }
 	      ;
+
+stringseq: STRING
+	     { $$ = $1; }
+	   | stringseq STRING
+	     {
+	       size_t l1 = strlen ($1);
+	       size_t l2 = strlen ($2);
+	       char *s = xrealloc ((char *)$1, l1 + l2 + 1);
+	       memcpy (s + l1, $2, l2 + 1);
+	       free ((void *)$2);
+	       $$ = s;
+	     }
 %%

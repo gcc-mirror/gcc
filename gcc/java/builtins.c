@@ -65,7 +65,7 @@ struct builtin_record GTY(())
 {
   union string_or_tree GTY ((desc ("1"))) class_name;
   union string_or_tree GTY ((desc ("1"))) method_name;
-  builtin_creator_function * GTY((skip (""))) creator;
+  builtin_creator_function * GTY((skip)) creator;
   enum built_in_function builtin_code;
 };
 

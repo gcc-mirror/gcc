@@ -558,7 +558,7 @@ static GTY(()) struct f_binding_level *current_binding_level;
 
 /* A chain of binding_level structures awaiting reuse.  */
 
-static GTY((deletable (""))) struct f_binding_level *free_binding_level;
+static GTY((deletable)) struct f_binding_level *free_binding_level;
 
 /* The outermost binding level, for names of file scope.
    This is created when the compiler is started and exists

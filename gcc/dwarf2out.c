@@ -2419,7 +2419,7 @@ typedef struct dw_val_struct GTY(())
       unsigned HOST_WIDE_INT GTY ((tag ("dw_val_class_offset"))) val_offset;
       dw_loc_list_ref GTY ((tag ("dw_val_class_loc_list"))) val_loc_list;
       dw_loc_descr_ref GTY ((tag ("dw_val_class_loc"))) val_loc;
-      HOST_WIDE_INT GTY ((default (""))) val_int;
+      HOST_WIDE_INT GTY ((default)) val_int;
       unsigned HOST_WIDE_INT GTY ((tag ("dw_val_class_unsigned_const"))) val_unsigned;
       dw_long_long_const GTY ((tag ("dw_val_class_long_long"))) val_long_long;
       dw_vec_const GTY ((tag ("dw_val_class_vec"))) val_vec;
