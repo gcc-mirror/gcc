@@ -1,3 +1,62 @@
+2004-08-17  DJ Delorie  <dj@redhat.com>
+
+	* doc/extend.texi: Document new xstormy16 attribute.
+
+	* config/stormy16/stormy16.c (xstormy16_splittable_below100_operand): New.
+	(xstormy16_splittable_below100_or_register): New.
+	(combine_bnp): New.
+	(xstormy16_reorg): New.
+	(TARGET_MACHINE_DEPENDENT_REORG): Define.
+
+
+	* config/stormy16/stormy16.md (movqi_internal): Make name public.
+	(movhi_internal): Likewise.
+	(cbhranchhi): Likewise.
+	(cbhranchhi_neg): Likewise.
+	(andhi3): Only allow splittable below100 operands.
+	(iorhi3): Likewise.
+	(peephole2): New and/zero_extend->and peephole.
+	(peephole2): New load/ior/save->set1 peephole.
+	(peephole2): New load/and/save->clr1 peephole.
+	(bclrx, bclrx2, bclr7, bclr15): New.
+	(bsetx, bsetx2, bset7, bset15): New.
+
+	* config/stormy16/stormy16.c (xstormy16_print_operand): Be more
+	liberal about acceptable 'B' masks.
+
+	* config/stormy16/stormy16-protos.h
+	(xstormy16_asm_output_aligned_common, xstormy16_below100_symbol,
+	xstormy16_below100_operand, xstormy16_below100_or_register,
+	xstormy16_onebit_set_operand, xstormy16_onebit_clr_operand): New.
+	(PREDICATE_CODES): Add new predicates.
+	
+	* config/stormy16/stormy16.c
+	(xstormy16_asm_output_aligned_common, xstormy16_below100_symbol,
+	xstormy16_below100_operand, xstormy16_below100_or_register,
+	xstormy16_onebit_set_operand, xstormy16_onebit_clr_operand): New.
+	(xstormy16_expand_iorqi3, xstormy16_expand_andqi3): New.
+	(xstormy16_legitimate_address_p): Allow below100 symbols.
+	(xstormy16_extra_constraint_p): Add 'W' for below100 operands.
+	(xstormy16_expand_move): Leave below100 operands as-is.
+	(xstormy16_encode_section_info): Encode below100 symbols.
+	(xstormy16_strip_name_encoding): New.
+	(xstormy16_print_operand): Print 'b' as shift mask.
+	(xstormy16_attribute_table): Add below100 attributes.
+	(xstormy16_handle_below100_attribute): New.
+
+	* config/stormy16/stormy16.h (EXTRA_SECTIONS): add in_bss100.
+	(XSTORMY16_SECTION_FUNCTION): New.
+	(EXTRA_SECTION_FUNCTIONS): Define using the above.
+	(ASM_OUTPUT_ALIGNED_DECL_COMMON, ASM_OUTPUT_ALIGNED_DECL_LOCAL): New.
+	(ASM_OUTPUT_SYMBOL_REF): Handle encoded symbols.
+	(ASM_OUTPUT_LABELREF): Define.
+
+	* config/stormy16/stormy16.md (movqi_internal): Add below100 support.
+	(movhi_internal): Add below100 support.
+	(andhi3): Add below100 support.
+	(iorhi3): Add below100 support.
+	(iorqi3, iorqi3_internal, andqi3, andqi3_internal): New.
+
 2004-08-17  James E Wilson  <wilson@specifixinc.com>
 
 	* config/mips/mips.c (gen_conditional_move): Use GET_MODE (op0) instead

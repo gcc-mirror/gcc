@@ -29,6 +29,13 @@ extern int direct_return (void);
 extern int xstormy16_interrupt_function_p (void);
 extern int xstormy16_epilogue_uses (int);
 extern void xstormy16_function_profiler (void);
+extern const char *xstormy16_strip_name_encoding (const char *name);
+extern void bss100_section (void);
+
+#if defined (TREE_CODE)
+extern void xstormy16_asm_output_aligned_common (FILE *, tree, const char *,
+						 int, int, int);
+#endif
 
 #if defined (TREE_CODE) && defined (HAVE_MACHINE_MODES)
 extern CUMULATIVE_ARGS xstormy16_function_arg_advance 
@@ -56,6 +63,8 @@ extern void xstormy16_print_operand_address (FILE *, rtx);
 extern void xstormy16_expand_casesi (rtx, rtx, rtx, rtx, rtx);
 extern void xstormy16_output_addr_vec (FILE *, rtx, rtx);
 extern void xstormy16_expand_call (rtx, rtx, rtx);
+extern void xstormy16_expand_iorqi3 (rtx *);
+extern void xstormy16_expand_andqi3 (rtx *);
 #endif
 
 #if defined (HAVE_MACHINE_MODES) && defined (RTX_CODE)
@@ -79,5 +88,12 @@ extern void xstormy16_expand_arith (enum machine_mode, enum rtx_code,
 extern int  shift_operator (rtx, enum machine_mode);
 extern const char * xstormy16_output_shift (enum machine_mode, enum rtx_code, 
 					    rtx, rtx, rtx);
+extern int  xstormy16_below100_symbol (rtx, enum machine_mode);
+extern int  xstormy16_below100_operand (rtx, enum machine_mode);
+extern int  xstormy16_splittable_below100_operand (rtx, enum machine_mode);
+extern int  xstormy16_below100_or_register (rtx, enum machine_mode);
+extern int  xstormy16_splittable_below100_or_register (rtx, enum machine_mode);
+extern int xstormy16_onebit_set_operand (rtx, enum machine_mode);
+extern int xstormy16_onebit_clr_operand (rtx, enum machine_mode);
 #endif
 

@@ -2977,6 +2977,23 @@ Currently @option{-m[no-]ms-bitfields} is provided for the Microsoft Windows X86
 compilers to match the native Microsoft compiler.
 @end table
 
+@subsection Xstormy16 Variable Attributes
+
+One attribute is currently defined for xstormy16 configurations:
+@code{below100}
+
+@table @code
+@item below100
+@cindex @code{below100} attribute
+
+If a variable has the @code{below100} attribute (@code{BELOW100} is
+allowed also), GCC will place the variable in the first 0x100 bytes of
+memory and use special opcodes to access it.  Such variables will be
+placed in either the @code{.bss_below100} section or the
+@code{.data_below100} section.
+
+@end table
+
 @node Type Attributes
 @section Specifying Attributes of Types
 @cindex attribute of types
