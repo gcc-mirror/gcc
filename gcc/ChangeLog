@@ -15,6 +15,11 @@
 	* sched-rgn.c (rgn_sched_info): Likewise.
 	* Makefile.in (sched-deps.o): Update dependencies.
 
+	* cselib.h (cselib_subst_to_values): Declare.
+	* cselib.c (cselib_subst_to_values): No longer static.  Allow MEMs
+	that have no value and autoincs to be handled by generating a new
+	dummy value.
+	
 2001-08-08  Graham Stott  <grahams@redhat.com>
 
 	* final.c (shorten_branches): Update the INSN_ADDRESSES of insns

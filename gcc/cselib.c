@@ -60,7 +60,6 @@ static cselib_val *new_cselib_val	PARAMS ((unsigned int,
 static void add_mem_for_addr		PARAMS ((cselib_val *, cselib_val *,
 						 rtx));
 static cselib_val *cselib_lookup_mem	PARAMS ((rtx, int));
-static rtx cselib_subst_to_values	PARAMS ((rtx));
 static void cselib_invalidate_regno	PARAMS ((unsigned int,
 						 enum machine_mode));
 static int cselib_mem_conflict_p	PARAMS ((rtx, rtx));
@@ -765,7 +764,7 @@ cselib_lookup_mem (x, create)
    X isn't actually modified; if modifications are needed, new rtl is
    allocated.  However, the return value can share rtl with X.  */
 
-static rtx
+rtx
 cselib_subst_to_values (x)
      rtx x;
 {
@@ -788,7 +787,11 @@ cselib_subst_to_values (x)
     case MEM:
       e = cselib_lookup_mem (x, 0);
       if (! e)
-	abort ();
+	{
+	  /* This happens for autoincrements.  Assign a value that doesn't
+	     match any other.  */
+	  e = new_cselib_val (++next_unknown_value, GET_MODE (x));
+	}
       return e->u.val_rtx;
 
       /* CONST_DOUBLEs must be special-cased here so that we won't try to
@@ -797,6 +800,15 @@ cselib_subst_to_values (x)
     case CONST_INT:
       return x;
 
+    case POST_INC:
+    case PRE_INC:
+    case POST_DEC:
+    case PRE_DEC:
+    case POST_MODIFY:
+    case PRE_MODIFY:
+      e = new_cselib_val (++next_unknown_value, GET_MODE (x));
+      return e->u.val_rtx;
+      
     default:
       break;
     }
