@@ -1,5 +1,8 @@
 2003-07-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8164
+	* g++.dg/template/nontype2.C: New test.
+
 	PR c++/10558
 	* g++.dg/parse/template8.C: New test.
 
