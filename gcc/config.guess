@@ -436,16 +436,12 @@ EOF
 	# The BFD linker knows what the default object file format is, so
 	# first see if it will tell us.
 	ld_help_string=`ld --help 2>&1`
-	if echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: elf_i.86"; then
-	  echo "${UNAME_MACHINE}-pc-linux-gnu" ; exit 0
-	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i.86linux"; then
+	if echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i.86linux"; then
 	  echo "${UNAME_MACHINE}-pc-linux-gnuaout" ; exit 0
 	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i.86coff"; then
 	  echo "${UNAME_MACHINE}-pc-linux-gnucoff" ; exit 0
 	elif echo $ld_help_string | grep >/dev/null 2>&1 "supported emulations:sparclinux"; then
 	  echo "${UNAME_MACHINE}-unknown-linux-gnuaout" ; exit 0
-	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: m68kelf"; then
-	  echo "${UNAME_MACHINE}-unknown-linux-gnu" ; exit 0
 	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: m68klinux"; then
 	  echo "${UNAME_MACHINE}-unknown-linux-gnuaout" ; exit 0
 	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: elf32ppc"; then
