@@ -1,3 +1,10 @@
+2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.am: Define ACLOCAL_AMFLAGS.
+	* acinclude.m4: Remove.
+	* aclocal.m4, configure, Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Likewise.
+
 2004-11-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* testsuite/lib/libmudflap.exp: Use new procs in target-libpath.exp.
