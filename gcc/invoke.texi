@@ -304,11 +304,10 @@ in the following sections.
 -mfused-madd  -mno-fused-madd  -mbit-align  -mno-bit-align
 -mstrict-align  -mno-strict-align  -mrelocatable
 -mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib
--mtoc  -mno-toc  -mtraceback  -mno-traceback
--mlittle  -mlittle-endian  -mbig  -mbig-endian
+-mtoc  -mno-toc -mlittle  -mlittle-endian  -mbig  -mbig-endian
 -mcall-aix  -mcall-sysv  -mprototype  -mno-prototype
--msim  -mmvme  -mads  -myellowknife  -memb
--msdata  -msdata=@var{opt}  -G @var{num}
+-msim  -mmvme  -mads  -myellowknife  -memb -msdata
+-msdata=@var{opt}  -G @var{num}
 
 @emph{RT Options}
 -mcall-lib-mul  -mfp-arg-in-fpregs  -mfp-arg-in-gregs
