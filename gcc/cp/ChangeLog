@@ -1,5 +1,23 @@
 2002-12-30  Mark Mitchell  <mark@codesourcery.com>
 
+	* parser.c (cp_parser_context_free_list): New variable.
+	(cp_parser_context_new): Use it.
+	(cp_parser_error): Check return code from
+	cp_parser_simulate_error.
+	(cp_parser_simulate_error): Return a value.
+	(cp_parser_id_expression): Optimize common case.
+	(cp_parser_class_name): Likewise.
+	(cp_parser_class_specifier): Adjust call to
+	cp_parser_late_parsing_default_args.
+	(cp_parser_lookup_name): Optimize common case.
+	(cp_parser_late_parsing_for_member): Adjust call to
+	cp_parser_late_parsing_default_args.
+	(cp_parser_late_parsing_default_args): Add scope parameter.
+	(cp_parser_require): Avoid creating the error message unless it's
+	needed.
+	(cp_parser_parse_definitely): Place free'd contexts on the free
+	list.
+
 	* parser.c (cp_parser_declaration_seq_opt): Handle pending_lang_change.
 
 2002-12-30  David Edelsohn  <edelsohn@gnu.org>
