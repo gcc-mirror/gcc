@@ -15,9 +15,6 @@
 /* Specify extra dir to search for include files.  */
 #define SYSTEM_INCLUDE_DIR "/usr/mach/include"
 
-/* Make stddef.h agree with types.h.  */
-#define SIZE_TYPE "long int"
-
 /* Don't default to pcc-struct-return, because gcc is the only compiler, and
    we want to retain compatibility with older gcc versions.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
