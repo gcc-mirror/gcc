@@ -64,12 +64,12 @@ OBJ = fixincl.o fixtests.o fixfixes.o server.o procopen.o \
 
 HDR = server.h gnu-regex.h fixlib.h machname.h
 
-TARGETS = fixincl@exeext@
+TARGETS = fixincl@build_exeext@
 
 all : $(TARGETS)
 gen : $(srcdir)/fixincl.x
 
-fixincl@exeext@: $(OBJ) $(LIBERTY)
+fixincl@build_exeext@: $(OBJ) $(LIBERTY)
 	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $@ $(OBJ) $(LIBERTY)
 
 $(OBJ)      : $(HDR)
@@ -100,7 +100,7 @@ maintainer-clean : clean
 #  We still copy the script because we still have alternative scripts.
 #
 install-bin : $(TARGETS)
-	./fixincl@exeext@ -v
+	./fixincl -v
 	@if [ -f ../fixinc.sh ] ; then rm -f ../fixinc.sh || \
 	    mv -f ../fixinc.sh ../fixinc.sh.$$ || exit 1 ; fi
 	@if [ -f ./fixincl.sh ] ; \

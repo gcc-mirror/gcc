@@ -1,3 +1,8 @@
+2000-12-07  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/Makefile.*(exeext): the variables are exeext, the
+	substitution expression is build_exeext.
+
 2000-12-07  Neil Booth  <neilb@earthling.net>
 
         * c-common.c (parse_in): Make a cpp_reader *.
