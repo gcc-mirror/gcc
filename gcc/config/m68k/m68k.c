@@ -33,6 +33,8 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "recog.h"
 #include "toplev.h"
+#include "expr.h"
+#include "reload.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -3828,23 +3830,17 @@ print_operand_address (file, addr)
 #ifdef MOTOROLA
 #ifdef SGS
 	    /* Many SGS assemblers croak on size specifiers for constants. */
-	    fprintf (file, "%d", INTVAL (addr));
+	    fprintf (file, "%d", (int) INTVAL (addr));
 #else
-	    fprintf (file, "%d.w", INTVAL (addr));
+	    fprintf (file, "%d.w", (int) INTVAL (addr));
 #endif
 #else
-	    fprintf (file, "%d:w", INTVAL (addr));
+	    fprintf (file, "%d:w", (int) INTVAL (addr));
 #endif
 	  }
 	else if (GET_CODE (addr) == CONST_INT)
 	  {
-	    fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		     "%d",
-#else
-		     "%ld",
-#endif
-		     INTVAL (addr));
+	    fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (addr));
 	  }
 	else if (TARGET_PCREL)
 	  {

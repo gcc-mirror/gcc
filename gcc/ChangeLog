@@ -1,3 +1,9 @@
+2001-07-16  Richard Henderson  <rth@redhat.com>
+
+	* config/m68k/m68k.c: Include expr.h and reload.h.
+	(print_operand_address) [16 bit int]: Cast INTVAL to int for %d.
+	[general int]: Use HOST_WIDE_INT_PRINT_DEC.
+
 2001-07-16  Daniel Berlin  <dan@cgsoftware.com>
 	    Richard Henderson  <rth@redhat.com>
 
