@@ -1,5 +1,5 @@
 /* Prototypes for m32r.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -60,7 +60,7 @@ extern int    m32r_address_code			PARAMS ((rtx));
 extern void   m32r_initialize_trampoline	PARAMS ((rtx, rtx, rtx));
 extern int    zero_and_one			PARAMS ((rtx, rtx));
 extern char * emit_cond_move			PARAMS ((rtx *, rtx));
-extern char * m32r_output_block_move 		PARAMS ((rtx, rtx *));
+extern void   m32r_output_block_move 		PARAMS ((rtx, rtx *));
 extern void   m32r_expand_block_move 		PARAMS ((rtx *));
 extern void   m32r_print_operand		PARAMS ((FILE *, rtx, int));
 extern void   m32r_print_operand_address	PARAMS ((FILE *, rtx));
