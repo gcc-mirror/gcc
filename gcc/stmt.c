@@ -2337,14 +2337,21 @@ expand_return (retval)
 	  || TREE_CODE (TREE_OPERAND (retval_rhs, 2)) == CALL_EXPR))
     {
       rtx label = gen_label_rtx ();
+      tree expr;
+
       do_jump (TREE_OPERAND (retval_rhs, 0), label, NULL_RTX);
-      expand_return (build (MODIFY_EXPR, TREE_TYPE (current_function_decl),
-			    DECL_RESULT (current_function_decl),
-			    TREE_OPERAND (retval_rhs, 1)));
+      expr = build (MODIFY_EXPR, TREE_TYPE (current_function_decl),
+		    DECL_RESULT (current_function_decl),
+		    TREE_OPERAND (retval_rhs, 1));
+      TREE_SIDE_EFFECTS (expr) = 1;
+      expand_return (expr);
       emit_label (label);
-      expand_return (build (MODIFY_EXPR, TREE_TYPE (current_function_decl),
-			    DECL_RESULT (current_function_decl),
-			    TREE_OPERAND (retval_rhs, 2)));
+
+      expr = build (MODIFY_EXPR, TREE_TYPE (current_function_decl),
+		    DECL_RESULT (current_function_decl),
+		    TREE_OPERAND (retval_rhs, 2));
+      TREE_SIDE_EFFECTS (expr) = 1;
+      expand_return (expr);
       return;
     }
 
