@@ -1,3 +1,16 @@
+2001-04-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* configure.in: Add check for lstat.
+	* configure, config.in: Regenerate.
+	* cppinit.c (append_include_chain): Make empty path ".".
+        * cpplib.c (do_line): Don't simplify #line paths.
+        * cppfiles.c (remove_component_p): New function.
+	(find_or_create_entry): Acknowledge stat () errors during
+	path simplification.
+	(handle_missing_header): Don't simplify paths.
+        (_cpp_simplify_pathname): Don't simplify VMS paths.  Return
+        the empty path untouched.  Don't leave a trailing '/'.
+
 2001-04-06  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* cppdefault.c (GPLUSPLUS_BACKWARD_INCLUDE_DIR): Add.

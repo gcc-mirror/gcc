@@ -729,12 +729,7 @@ do_line (pfile)
   cpp_get_token (pfile, &token);
   if (token.type == CPP_STRING)
     {
-      char *fname;
-      unsigned int len = token.val.str.len + 1;
-
-      fname = (char *) _cpp_pool_alloc (&pfile->ident_pool, len);
-      memcpy (fname, token.val.str.text, len);
-      _cpp_simplify_pathname (fname);
+      const char *fname = (const char *) token.val.str.text;
 
       /* Only accept flags for the # 55 form.  */
       if (! pfile->state.line_extension)
