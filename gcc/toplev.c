@@ -2704,6 +2704,24 @@ note_deferral_of_defined_inline_function (decl)
 #endif
 }
 
+/* FNDECL is an inline function which is about to be emitted out of line.
+   Do any preparation, such as emitting abstract debug info for the inline
+   before it gets mangled by optimization.  */
+
+void
+note_outlining_of_inline_function (fndecl)
+     tree fndecl;
+{
+#ifdef DWARF2_DEBUGGING_INFO
+  /* The DWARF 2 backend tries to reduce debugging bloat by not emitting
+     the abstract description of inline functions until something tries to
+     reference them.  Force it out now, before optimizations mangle the
+     block tree.  */
+  if (write_symbols == DWARF2_DEBUG)
+    dwarf2out_abstract_function (fndecl);
+#endif
+}
+
 /* This is called from finish_function (within yyparse)
    after each top-level definition is parsed.
    It is supposed to compile that function or variable

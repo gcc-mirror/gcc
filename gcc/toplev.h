@@ -130,6 +130,8 @@ extern int wrapup_global_declarations   PARAMS ((union tree_node **, int));
 extern void check_global_declarations   PARAMS ((union tree_node **, int));
 extern void note_deferral_of_defined_inline_function
 					PARAMS ((union tree_node *));
+extern void note_outlining_of_inline_function
+					PARAMS ((union tree_node *));
 extern int errorcount;
 extern int warningcount;
 extern int sorrycount;

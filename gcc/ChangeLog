@@ -1,5 +1,20 @@
 2001-02-16  Jason Merrill  <jason@redhat.com>
 
+	* dwarf2out.c (add_bound_info): Don't crash if SAVE_EXPR_RTL is
+	NULL.
+	(gen_subprogram_die): Don't abort on seeing a second definition if 
+	the previous one was abstract.  Don't replace an abstract instance
+	in the lookup table.
+
+	* dwarf2out.c (dwarf2out_abstract_function): Rename from
+	gen_abstract_function.
+	* dwarf2out.h: Declare it.
+	* toplev.c (note_outlining_of_inline_function): New fn.
+	* toplev.h: Declare it.
+	* integrate.c (output_inline_function): Call it.
+	* c-decl.c (duplicate_decls): Call it when redefining an extern
+	inline.  Don't inline the new defn.
+
 	* tree.h (BLOCK_CHAIN): Use BLOCK_CHECK.
 
 2001-02-16  Jakub Jelinek  <jakub@redhat.com>
