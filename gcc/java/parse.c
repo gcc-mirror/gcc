@@ -2235,7 +2235,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/local/gnu/share/bison.simple"
+#line 3 "/usr/share/misc/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2252,7 +2252,7 @@ static const short yycheck[] = {     3,
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
@@ -2386,7 +2386,9 @@ int yydebug;			/*  nonzero means print parse trace	*/
 
 /* Prevent warning if -Wstrict-prototypes.  */
 #ifdef __GNUC__
+#ifndef YYPARSE_PARAM
 int yyparse (void);
+#endif
 #endif
 
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
@@ -2428,7 +2430,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/local/gnu/share/bison.simple"
+#line 196 "/usr/share/misc/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4717,7 +4719,7 @@ case 495:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/local/gnu/share/bison.simple"
+#line 498 "/usr/share/misc/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -7684,14 +7686,15 @@ lookup_java_method2 (clas, method_decl, do_interface)
   return NULL_TREE;
 }
 
-/* Return the line that matches DECL line number. Used during error
-   report */
+/* Return the line that matches DECL line number, and try its best to
+   position the column number. Used during error reports.  */
 
 static tree
 lookup_cl (decl)
      tree decl;
 {
   static tree cl = NULL_TREE;
+  char *line, *found;
   
   if (!decl)
     return NULL_TREE;
@@ -7701,6 +7704,14 @@ lookup_cl (decl)
 
   EXPR_WFL_FILENAME_NODE (cl) = get_identifier (DECL_SOURCE_FILE (decl));
   EXPR_WFL_SET_LINECOL (cl, DECL_SOURCE_LINE_FIRST (decl), -1);
+
+  line = java_get_line_col (IDENTIFIER_POINTER (EXPR_WFL_FILENAME_NODE (cl)),
+			    EXPR_WFL_LINENO (cl), EXPR_WFL_COLNO (cl));
+
+  found = strstr ((const char *)line, 
+		  (const char *)IDENTIFIER_POINTER (DECL_NAME (decl)));
+  if (found)
+    EXPR_WFL_SET_LINECOL (cl, EXPR_WFL_LINENO (cl), found - line);
 
   return cl;
 }
@@ -10446,8 +10457,15 @@ qualify_ambiguous_name (id)
 	again = 1;
       }
     else 
-      name = EXPR_WFL_NODE (qual_wfl);
-    
+      {
+	name = EXPR_WFL_NODE (qual_wfl);
+	if (!name)
+	  {
+	    qual = EXPR_WFL_QUALIFICATION (qual_wfl);
+	    again = 1;
+	  }
+      }
+
     /* If we have a THIS (from a primary), we set the context accordingly */
     if (name == this_identifier_node)
       {
