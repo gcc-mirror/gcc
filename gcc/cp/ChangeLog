@@ -1,5 +1,8 @@
 1999-04-05  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (lookup_name_current_level): Tweak, and improve
+	documentation.
+
 	* class.c (maybe_fixup_vptrs): Remove declaration.
 	(build_class_init_list): Likewise.
 	* decl.c (pushdecl_class_level): Call check_template_shadow here
