@@ -25,9 +25,6 @@
 # Suppress smart makes who think they know how to automake Yacc files
 .y.c:
 
-.NOEXPORT: # This tells GNU Make version 3
-	   # not to put all the variables in the environment.
-
 # Variables that exist for you to override.
 # See below for how to change them for certain systems.
 
@@ -262,6 +259,9 @@ INSTALL_TARGET=install-native
 # or `all.cross' (for cross compilers).
 all: all.indirect
 
+# This tells GNU Make version 3 not to put all variables in the environment.
+.NOEXPORT:
+
 # sed inserts variable overrides after the following line.
 ####
 
@@ -493,7 +493,7 @@ float.h: enquire
 enquire: enquire.o $(GCC_PARTS)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ENQUIRE_LDFLAGS) enquire.o -o $@
 enquire.o: $(srcdir)/enquire.c $(GCC_PASSES)
-	-if [ "$(srcdir)" != "." ]; then rm -f enquire.c; else true; fi
+	-if [ "$(srcdir)" != "." ]; then rm -f ./enquire.c; else true; fi
 	-cp $(srcdir)/enquire.c . > /dev/null 2>&1
 # Breaking this line caused a problem with one version of GNU make.
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) -I. -c enquire.c
@@ -1231,7 +1231,7 @@ mostlyclean:
 	-rm -f *.greg *.lreg *.combine *.flow *.cse *.jump *.rtl *.tree *.loop
 	-rm -f *.dbr *.jump2 *.sched *.cse2 *.sched2 *.stack
 # Delete some files made during installation.
-	-rm -f specs float.h enquire SYSCALLS.c SYSCALLS.c.X
+	-rm -f specs float.h enquire SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 ld mips-tfile mips-tdump alloca.s
 # Delete unwanted output files from TeX.
 	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
@@ -1248,7 +1248,7 @@ clean: mostlyclean
 # Using unprotoize.c is not quite right in the first place, 
 # but what better way is there?
 	-rm -f libgcc.a libgcc1.a libgcc2.a libgcc2.ready libgcc1.null
-	-rm -f *.dvi unprotoize.c
+	-rm -f *.dvi
 
 # Delete all files that users would normally create
 # while building and installing GCC.
@@ -1261,7 +1261,8 @@ distclean: clean
 # that shouldn't be in the distribution.
 extraclean: distclean
 	-rm -rf =* #* *~* config/=* config/#* config/*~*
-	-rm -f *.dvi *.oaux patch* config/patch* *.orig *.rej *.d *.Z *.tar
+	-rm -f patch* *.orig *.rej config/patch* config/*.orig config/*.rej
+	-rm -f *.dvi *.oaux *.d *.Z *.tar *.xtar
 	-rm -f *.s *.s[0-9] *.i install1.texi
 
 # Get rid of every file that's generated from some other file.
@@ -1569,19 +1570,25 @@ gcc.xtar.Z: gcc.xtar
 gcc.xtar: doc
 	if grep -s "for version ${version}" gcc.texi; \
 	then true; \
-	else echo "You must update the version number in `gcc.texi'"; \
+	else echo "You must update the version number in \`gcc.texi'"; exit 1;\
 	fi
+# Update the version number in README
+	awk '$$1 " " $$2 " " $$3 == "This directory contains" \
+		{ $$6 = version; print $$0 } \
+	     $$1 " " $$2 " " $$3 != "This directory contains"' \
+	  version=$(version) README > tmp.README
+	mv tmp.README README
 	-rm -rf gcc-$(version) tmp	
 # Put all the files in a temporary subdirectory
 # which has the name that we want to have in the tar file.
 	mkdir tmp
 	mkdir tmp/config
 	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file tmp || cp $$file tmp; \
+	  ln $$file tmp > /dev/null 2>&1 || cp $$file tmp; \
 	done
 	cd config; \
 	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file ../tmp/config || cp $$file ../tmp/config; \
+	  ln $$file ../tmp/config >/dev/null 2>&1 || cp $$file ../tmp/config; \
 	done
 	ln .gdbinit tmp
 	mv tmp gcc-$(version)
@@ -1591,12 +1598,6 @@ gcc.xtar: doc
 	tar chf gcc.xtar gcc-$(version)
 # Get rid of the temporary directory.
 	rm -rf gcc-$(version)
-# Update the version number in README
-	awk '$$1 " " $$2 " " $$3 == "This directory contains" \
-		{ $$6 = version; print $$0 } \
-	     $$1 " " $$2 " " $$3 != "This directory contains"' \
-	  version=$(version) README > tmp.README
-	mv tmp.README README
 
 # do make -f ../gcc/Makefile maketest DIR=../gcc
 # in the intended test directory to make it a suitable test directory.
