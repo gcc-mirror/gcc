@@ -641,20 +641,6 @@ extern int arm_is_6_or_7;
 /* This is required to ensure that push insns always push a word.  */
 #define PROMOTE_FUNCTION_ARGS
 
-/* For the ARM:
-   I think I have added all the code to make this work.  Unfortunately,
-   early releases of the floating point emulation code on RISCiX used a
-   different format for extended precision numbers.  On my RISCiX box there
-   is a bug somewhere which causes the machine to lock up when running enquire
-   with long doubles.  There is the additional aspect that Norcroft C
-   treats long doubles as doubles and we ought to remain compatible.
-   Perhaps someone with an FPA coprocessor and not running RISCiX would like
-   to try this someday. */
-/* #define LONG_DOUBLE_TYPE_SIZE 96 */
-
-/* Disable XFmode patterns in md file */
-#define ENABLE_XF_PATTERNS 0
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN  0
