@@ -1,3 +1,8 @@
+2000-07-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* acinclude.m4: Include ../libtool.m4.
+        * aclocal.m4, configure: Rebuilt.
+	
 2000-07-26  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES):  Test for GNU ld
