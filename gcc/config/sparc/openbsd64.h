@@ -42,7 +42,6 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define ("__sparcv9__");		\
 	builtin_define ("__sparc_v9__");	\
 	builtin_define ("__arch64__");		\
-	builtin_define ("__ELF__");		\
     }						\
   while (0)
 

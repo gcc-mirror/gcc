@@ -58,11 +58,6 @@ Boston, MA 02111-1307, USA.  */
     fprintf ((FILE), "\t.little\n");				\
 } while (0)
 
-
-
-/* Let code know that this is ELF.  */
-#define TARGET_OBJFMT_CPP_BUILTINS() builtin_define ("__ELF__")
-
 #undef SIZE_TYPE
 #define SIZE_TYPE (TARGET_SH5 ? "long unsigned int" : "unsigned int")
 

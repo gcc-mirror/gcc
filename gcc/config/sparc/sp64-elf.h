@@ -44,7 +44,6 @@ Boston, MA 02111-1307, USA.  */
   do						\
     {						\
 	builtin_define_std ("sparc");		\
-	builtin_define ("__ELF__");		\
     }						\
   while (0)
 

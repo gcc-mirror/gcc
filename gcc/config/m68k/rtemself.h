@@ -30,7 +30,6 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define_std ("mc68000");		\
 	builtin_define ("__USE_INIT_FINI__");	\
 	builtin_define ("__rtems__");		\
-	builtin_define ("__ELF__");		\
 	builtin_assert ("system=rtems");	\
     }						\
   while (0)

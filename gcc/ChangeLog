@@ -1,3 +1,29 @@
+2003-05-18  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-cppbuiltin.c (TARGET_OS_CPP_BUILTINS, TARGET_OBJFMT_CPP_BUILTINS):
+	Default here.
+	(c_cpp_builtins): Invoke TARGET_OBJFMT_CPP_BUILTINS().
+	* defaults.h: Don't default TARGET_OS_CPP_BUILTINS here.
+	* config/elfos.h (TARGET_OBJFMT_CPP_BUILTINS): Define __ELF__.
+	* config/freebsd-spec.h, config/netbsd-elf.h, config/alpha/gnu.h,
+	config/arm/linux-elf.h, config/arm/rtems-elf.h,
+	config/arm/unknown-elf.h, config/cris/cris.h, config/cris/linux.h,
+	config/h8300/elf.h, config/i370/linux.h, config/i386/beos-elf.h,
+	config/i386/gnu.h, config/i386/linux.h, config/i386/linux64.h,
+	config/i386/moss.h, config/i386/rtemself.h, config/ia64/ia64.h,
+	config/m68k/rtemself.h, config/mcore/mcore-elf.h, config/mips/linux.h,
+	config/pa/pa-linux.h, config/rs6000/linux.h, config/rs6000/linux64.h,
+	config/rs6000/sysv4.h, config/rs6000/vxworks.h, config/s390/linux.h,
+	config/sh/coff.h, config/sh/elf.h, config/sh/rtemself.h,
+	config/sh/sh.h, config/sparc/linux.h, config/sparc/linux64.h,
+	config/sparc/openbsd64.h, config/sparc/sp64-elf.h,
+	config/sparc/sp86x-elf.h, config/xtensa/elf.h, config/xtensa/linux.h:
+	Don't define __ELF__.
+	* config/alpha.h, config/m68k/linux.h (TARGET_OBJFMT_CPP_BUILTINS):
+	Define __ELF__.
+	* doc/cpp.texi: Document __ELF__.
+	* doc/tm.texi: Document TARGET_OBJFMT_CPP_BUILTINS.	* 
+
 2003-05-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (validate_arglist): Eliminate libiberty VA_ macros,

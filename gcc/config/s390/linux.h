@@ -57,7 +57,6 @@ Boston, MA 02111-1307, USA.  */
       builtin_define_std ("unix");		\
       builtin_assert ("system=linux");		\
       builtin_assert ("system=unix");		\
-      builtin_define ("__ELF__");		\
       builtin_define ("__gnu_linux__");		\
       if (flag_pic)				\
         {					\

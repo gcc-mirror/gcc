@@ -39,7 +39,7 @@
 #define SUBTARGET_EXTRA_SPECS /* none needed */
 
 #define CPP_SPEC \
-"-DCPU_FAMILY=PPC -D__ppc -D__EABI__ -D__ELF__ \
+"-DCPU_FAMILY=PPC -D__ppc -D__EABI__  \
  %{t403: -DCPU=PPC403 -D_SOFT_FLOAT ; \
    t405: -DCPU=PPC405 -D_SOFT_FLOAT ; \
    t440: -DCPU=PPC440 -D_SOFT_FLOAT ; \

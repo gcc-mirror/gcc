@@ -43,7 +43,7 @@
 /* The __USES_INITFINI__ define is tested in newlib/libc/sys/arm/crt0.S
    to see if it needs to invoked _init() and _fini().  */
 #undef  SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC  "-D__ELF__ -D__USES_INITFINI__"
+#define SUBTARGET_CPP_SPEC  "-D__USES_INITFINI__"
 
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG

@@ -35,8 +35,13 @@ Boston, MA 02111-1307, USA.    */
 
 #undef ASM_FINAL_SPEC
 
-#undef  CPP_SUBTARGET_SPEC
-#define CPP_SUBTARGET_SPEC "-D__ELF__"
+/* alpha/ doesn't use elfos.h for some reason.  */
+#define TARGET_OBJFMT_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define ("__ELF__");		\
+    }						\
+  while (0)
 
 #undef  CC1_SPEC
 #define CC1_SPEC  "%{G*}"

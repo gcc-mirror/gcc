@@ -7,7 +7,6 @@
 #define TARGET_OS_CPP_BUILTINS()		\
     do {					\
 	builtin_define ("__GNU__");		\
-	builtin_define ("__ELF__");		\
 	builtin_define ("__gnu_hurd__");	\
 	builtin_define ("_LONGLONG");		\
 	builtin_define_std ("unix");		\

@@ -32,6 +32,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "tm_p.h"		/* Target prototypes.  */
 
+#ifndef TARGET_OS_CPP_BUILTINS
+# define TARGET_OS_CPP_BUILTINS()
+#endif
+
+#ifndef TARGET_OBJFMT_CPP_BUILTINS
+# define TARGET_OBJFMT_CPP_BUILTINS()
+#endif
+
 #ifndef REGISTER_PREFIX
 #define REGISTER_PREFIX ""
 #endif
@@ -387,6 +395,7 @@ c_cpp_builtins (pfile)
 # define builtin_assert(TXT) cpp_assert (pfile, TXT)
   TARGET_CPU_CPP_BUILTINS ();
   TARGET_OS_CPP_BUILTINS ();
+  TARGET_OBJFMT_CPP_BUILTINS ();
 }
 
 /* Pass an object-like macro.  If it doesn't lie in the user's

@@ -106,10 +106,16 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define_std ("linux");		\
 	builtin_define_std ("unix");		\
 	builtin_define ("__gnu_linux__");	\
-	builtin_define ("__ELF__");		\
 	builtin_assert ("system=unix");		\
 	builtin_assert ("system=posix");	\
    }						\
+  while (0)
+
+#define TARGET_OBJFMT_CPP_BUILTINS()		\
+  do						\
+    {						\
+	builtin_define ("__ELF__");		\
+    }						\
   while (0)
 
 #undef CPP_SPEC

@@ -79,7 +79,6 @@ do { \
       builtin_define ("__pic__"); \
       builtin_define ("__PIC__"); \
     } \
-  TARGET_OBJFMT_CPP_BUILTINS (); \
 } while (0)
 
 /* We can not debug without a frame pointer.  */

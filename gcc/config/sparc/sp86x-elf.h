@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
   do						\
     {						\
 	builtin_define ("__sparclite86x__");	\
-	builtin_define ("__ELF__");		\
     }						\
   while (0)
 

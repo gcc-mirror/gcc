@@ -39,7 +39,6 @@ do {						\
 	builtin_define("__ia64");		\
 	builtin_define("__ia64__");		\
 	builtin_define("__itanium__");		\
-	builtin_define("__ELF__");		\
 	if (TARGET_BIG_ENDIAN)			\
 	  builtin_define("__BIG_ENDIAN__");	\
 } while (0)

@@ -62,7 +62,6 @@ Boston, MA 02111-1307, USA.  */
 	else								\
 	  builtin_define ("__FreeBSD__");			       	\
 	builtin_define_std ("unix");					\
-	builtin_define ("__ELF__");					\
 	builtin_define ("__KPRINTF_ATTRIBUTE__");		       	\
 	builtin_assert ("system=unix");					\
 	builtin_assert ("system=bsd");					\

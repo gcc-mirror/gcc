@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
   do						\
     {						\
       NETBSD_OS_CPP_BUILTINS_COMMON();		\
-      builtin_define ("__ELF__");		\
     }						\
   while (0)
 

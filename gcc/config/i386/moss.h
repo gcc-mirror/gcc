@@ -24,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
   do						\
     {						\
 	builtin_define_std ("moss");		\
-	builtin_define ("__ELF__");		\
 	builtin_assert ("system=posix");	\
 	if (flag_pic)				\
 	  {					\
