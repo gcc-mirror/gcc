@@ -1,3 +1,10 @@
+Sat Jul 17 23:58:24 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (insv, extzv): Remove SImode dependence in named
+	patterns.  Explicitly generate DImode RTL if PowerPC64 and
+	operand is DImode.
+	(insvdi): Reverse start and size in instruction template.
+
 1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
         
 	* gcc.texi: Update e-mail addresses and URLs to gcc.gnu.org.
