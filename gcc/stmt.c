@@ -4535,6 +4535,10 @@ pushcase (value, converter, label, duplicate)
   if (index_type == error_mark_node)
     return 0;
 
+  /* Convert VALUE to the type in which the comparisons are nominally done.  */
+  if (value != 0)
+    value = (*converter) (nominal_type, value);
+
   check_seenlabel ();
 
   /* Fail if this value is out of range for the actual type of the index
@@ -4543,10 +4547,6 @@ pushcase (value, converter, label, duplicate)
       && (TREE_CONSTANT_OVERFLOW (value)
 	  || ! int_fits_type_p (value, index_type)))
     return 3;
-
-  /* Convert VALUE to the type in which the comparisons are nominally done.  */
-  if (value != 0)
-    value = (*converter) (nominal_type, value);
 
   /* Fail if this is a duplicate or overlaps another entry.  */
   if (value == 0)
@@ -4619,6 +4619,9 @@ pushcase_range (value1, value2, converter, label, duplicate)
   if (value2 == 0)
     value2 = TYPE_MAX_VALUE (nominal_type);
 
+  value1 = (*converter) (nominal_type, value1);
+  value2 = (*converter) (nominal_type, value2);
+
   /* Fail if these values are out of range.  */
   if (TREE_CONSTANT_OVERFLOW (value1)
       || ! int_fits_type_p (value1, index_type))
@@ -4627,9 +4630,6 @@ pushcase_range (value1, value2, converter, label, duplicate)
   if (TREE_CONSTANT_OVERFLOW (value2)
       || ! int_fits_type_p (value2, index_type))
     return 3;
-
-  value1 = (*converter) (nominal_type, value1);
-  value2 = (*converter) (nominal_type, value2);
 
   return add_case_node (value1, value2, label, duplicate);
 }

@@ -1,3 +1,7 @@
+Fri Nov 12 16:26:25 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* stmt.c (pushcase, pushcase_range): Partially revert Oct 28 change.
+
 Fri Nov 12 12:43:49 1999  Richard Henderson  <rth@cygnus.com>
 
 	* unroll.c (unroll_loop): Make temp an unsigned HOST_WIDE_INT.
