@@ -1296,6 +1296,21 @@ special things you must know:
      and use the `--with-gnu-as' configure option when configuring gcc.
      GNU as is distributed as part of the binutils package.
 
+     Under Irix 6, if you are using Irix `cc' as your bootstrap
+     compiler, you must ensure that the N32 ABI is in use.  To test
+     this, compile a simple C file with `cc' and then run `file'
+     on the resulting object file.  The output should look like:
+
+ 		test.o:		ELF N32 MSB ...
+
+     If you see:
+
+	        test.o:		ELF 32-bit MSB
+
+     then your version of `cc' uses the O32 ABI default.  You should
+     set the environment variable `CC' to `cc -n32' before configuring
+     GCC.
+
 `mips-sony-sysv'
      Sony MIPS NEWS.  This works in NEWSOS 5.0.1, but not in 5.0.2
      (which uses ELF instead of COFF).  Support for 5.0.2 will probably
