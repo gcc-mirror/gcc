@@ -1,3 +1,8 @@
+2003-06-06  Roger Sayle  <roger@eyesopen.com>
+	    Jim Wilson  <wilson@tuliptree.org>
+
+	* gcc.dg/uninit-C.c: Only test TImode on 64-bit platforms.
+
 2003-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/builtins/string-4.c (main_test): Allow some
