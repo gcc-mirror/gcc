@@ -1,3 +1,7 @@
+2001-11-08  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (NM_FOR_TARGET): Single build tree uses nm-new.
+
 2001-11-07  Neil Booth  <neil@daikokuya.demon.co.uk>
 	    Per Bothner  <per@bothner.com>
 	    H.J. Lu <hjl@gnu.org>
