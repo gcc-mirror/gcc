@@ -1146,7 +1146,8 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 	     we will get them elsewhere.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	    if (GET_CODE (note) != INSN_LIST)
-	      XEXP (note, 0) = walk_fixup_memory_subreg (XEXP (note, 0), insn);
+	      XEXP (note, 0)
+		= walk_fixup_memory_subreg (XEXP (note, 0), insn, 1);
 	}
       insn = next;
     }
@@ -1649,7 +1650,7 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
    If any insns must be emitted to compute NEWADDR, put them before INSN.
 
    UNCRITICAL nonzero means accept paradoxical subregs.
-   This is used for subregs found inside of ZERO_EXTRACTs.  */
+   This is used for subregs found inside of ZERO_EXTRACTs and in REG_NOTES. */
 
 static rtx
 fixup_memory_subreg (x, insn, uncritical)
@@ -1687,12 +1688,15 @@ fixup_memory_subreg (x, insn, uncritical)
    If X itself is a (SUBREG (MEM ...) ...), return the replacement expression.
    Otherwise return X, with its contents possibly altered.
 
-   If any insns must be emitted to compute NEWADDR, put them before INSN.  */
+   If any insns must be emitted to compute NEWADDR, put them before INSN. 
+
+   UNCRITICAL is as in fixup_memory_subreg.  */
 
 static rtx
-walk_fixup_memory_subreg (x, insn)
+walk_fixup_memory_subreg (x, insn, uncritical)
      register rtx x;
      rtx insn;
+     int uncritical;
 {
   register enum rtx_code code;
   register char *fmt;
@@ -1704,7 +1708,7 @@ walk_fixup_memory_subreg (x, insn)
   code = GET_CODE (x);
 
   if (code == SUBREG && GET_CODE (SUBREG_REG (x)) == MEM)
-    return fixup_memory_subreg (x, insn, 0);
+    return fixup_memory_subreg (x, insn, uncritical);
 
   /* Nothing special about this RTX; fix its operands.  */
 
@@ -1712,13 +1716,13 @@ walk_fixup_memory_subreg (x, insn)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	XEXP (x, i) = walk_fixup_memory_subreg (XEXP (x, i), insn);
+	XEXP (x, i) = walk_fixup_memory_subreg (XEXP (x, i), insn, uncritical);
       if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    XVECEXP (x, i, j)
-	      = walk_fixup_memory_subreg (XVECEXP (x, i, j), insn);
+	      = walk_fixup_memory_subreg (XVECEXP (x, i, j), insn, uncritical);
 	}
     }
   return x;
