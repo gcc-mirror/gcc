@@ -356,7 +356,7 @@ STAGESTUFF = *.o insn-flags.h insn-config.h insn-codes.h \
  genemit genoutput genrecog genextract genflags gencodes genconfig genpeep \
  genattrtab genattr \
  $(GCC_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross cccp \
- cc1plus cc1obj enquire protoize unprotoize specs collect2
+ cc1plus cc1obj enquire protoize unprotoize specs collect2 $(USE_COLLECT2)
 
 # Members of libgcc1.a.
 LIB1FUNCS = _mulsi3 _udivsi3 _divsi3 _umodsi3 _modsi3 \
@@ -466,6 +466,7 @@ float.h: enquire
 enquire: enquire.o $(GCC_PARTS)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ENQUIRE_LDFLAGS) enquire.o -o $@
 enquire.o: $(srcdir)/enquire.c $(GCC_PASSES)
+	if [ "$(srcdir)" != "." ]; then rm -f enquire.c; else false; fi
 	-cp $(srcdir)/enquire.c . > /dev/null 2>&1
 # Breaking this line caused a problem with one version of GNU make.
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) -I. -c enquire.c
@@ -650,7 +651,7 @@ cp-parse.o : $(srcdir)/cp-parse.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
   `echo $(srcdir)/cp-parse.c | sed 's,^\./,,'`
 
 $(srcdir)/cp-parse.c $(srcdir)/cp-parse.h : $(srcdir)/cp-parse.y
-	@echo expect 30 shift/reduce conflicts and 14 reduce/reduce conflicts
+	@echo expect 30 shift/reduce conflicts and 15 reduce/reduce conflicts
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o cp-parse.c cp-parse.y
 
 cp-spew.o : cp-spew.c $(CONFIG_H) $(CPLUS_TREE_H) \
@@ -1083,6 +1084,7 @@ unprotoize: unprotoize.o getopt.o getopt1.o getpwd.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) \
 	  unprotoize.o getopt.o getopt1.o getpwd.o version.o $(LIBS) -o $@
 unprotoize.o:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
+	-rm -f unprotoize.c
 	cp $(srcdir)/protoize.c unprotoize.c
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
@@ -1091,7 +1093,6 @@ unprotoize.o:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
 	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  -DUNPROTOIZE unprotoize.c
-	rm -f unprotoize.c
 
 getopt.o: $(srcdir)/getopt.c getopt.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/getopt.c
@@ -1117,6 +1118,28 @@ SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -aux-info $@ -S -o /dev/null SYSCALLS.c
 	-rm -f SYSCALLS.c
+
+test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
+	-rm -f tmp-protoize.*
+	cp $(srcdir)/protoize.c tmp-protoize.c
+	chmod u+w tmp-protoize.c
+	./protoize -N -B ./ -c "-B./ -Wall -Wwrite-strings $(CFLAGS) \
+	  $(INCLUDES) \
+	  -DGCC_INCLUDE_DIR=0 \
+	  -DGPLUSPLUS_INCLUDE_DIR=0 \
+	  -DCROSS_INCLUDE_DIR=0 \
+	  -DSTD_PROTO_DIR=0" tmp-protoize.c
+	@echo Expect 324 lines of differences.
+	diff $(srcdir)/protoize.c tmp-protoize.c | wc -l
+	./unprotoize -N -c "-B./ -Wall -Wwrite-strings $(CFLAGS) \
+	  $(INCLUDES) \
+	  -DGCC_INCLUDE_DIR=0 \
+	  -DGPLUSPLUS_INCLUDE_DIR=0 \
+	  -DCROSS_INCLUDE_DIR=0 \
+	  -DSTD_PROTO_DIR=0" tmp-protoize.c
+	@echo Expect zero differences.
+	diff $(srcdir)/protoize.c tmp-protoize.c | cat
+	-rm -f tmp-protoize.*
 
 # Remake the info files.
 
@@ -1407,6 +1430,8 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
 # Copy byteorder.h into the object file directory 
 # so that fixinc.svr4 can get at it if necessary.
 # If the dirs are the same, this won't do anything.
+# Delete file first in case it is read-only
+	if [ "$(srcdir)" != "." ]; then rm -f byteorder.h; else false; fi
 	-cp $(srcdir)/byteorder.h .
 
 # $(libsubdir)/include:
