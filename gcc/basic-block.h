@@ -26,6 +26,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "sbitmap.h"
 #include "varray.h"
 #include "partition.h"
+#include "hard-reg-set.h"
 
 /* Head of register set linked list.  */
 typedef bitmap_head regset_head;
