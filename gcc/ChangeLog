@@ -44,6 +44,8 @@
 
 Mon Mar 10 15:30:36 CET 2003  Jan Hubicka  <jh@suse.cz>
 
+	* cfgcleanup.c (try_optimize_cfg): Fix thinko in previous patch.
+
 	* cfgcleanup.c (merge_blocks): Return where to iterate next.
 	(try_optimize_cfg): Use return value of merge_blocks
 

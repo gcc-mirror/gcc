@@ -861,6 +861,8 @@ merge_blocks (e, b, c, mode)
       b_has_incoming_fallthru = (tmp_edge != NULL);
       b_fallthru_edge = tmp_edge;
       next = b->prev_bb;
+      if (next == c)
+	next = next->prev_bb;
 
       /* Otherwise, we're going to try to move C after B.  If C does
 	 not have an outgoing fallthru, then it can be moved
