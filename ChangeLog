@@ -1,3 +1,7 @@
+Sat May  6 21:12:55 CDT 2000  Jason Eckhardt  <jle@cygnus.com>
+
+	* MAINTAINERS: Add self as bb-reorder maintainer.
+
 2000-05-01  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* config.if: Tweak.
