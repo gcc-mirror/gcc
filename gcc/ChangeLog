@@ -1,3 +1,10 @@
+Sun Jan 25 22:10:21 1998  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in (build_xm_file): Add auto-config.h if host=build.
+	(host_xm_file_list): Don't add $(srcdir) to auto-config.h.
+	(build_xm_file_list): Likewise.
+	* configure: Rebuild.
+	
 Sun Jan 25 22:00:25 1998  Alasdair Baird <alasdair@wildcat.demon.co.uk>
 
 	* recog.c (validate_replace_rtx_1): Only perform substitutions
