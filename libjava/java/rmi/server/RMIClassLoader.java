@@ -91,6 +91,63 @@ public class RMIClassLoader
     }
 
     private final String annotation;
+  }
+  
+  /** 
+   * This class is used to identify a cached classloader by its codebase and 
+   * the context classloader that is its parent.
+   */  
+  private static class CacheKey
+  {
+     private String mCodeBase;
+     private ClassLoader mContextClassLoader;
+  	
+     public CacheKey (String theCodebase, ClassLoader theContextClassLoader)
+     {
+       mCodeBase = theCodebase;
+       mContextClassLoader = theContextClassLoader;
+     }
+  	
+    /**
+     * @return true if the codebase and the context classloader are equal
+     */
+    public boolean equals (Object theOther)
+    {
+      if (theOther != null
+          && theOther instanceof CacheKey)
+      {
+      	CacheKey key = (CacheKey) theOther;
+	
+      	return (equals (this.mCodeBase,key.mCodeBase)
+                && equals (this.mContextClassLoader, key.mContextClassLoader));
+        }
+      return false;
+    }
+    
+    /**
+     * Test if the two objects are equal or both null.
+     * @param theOne
+     * @param theOther
+     * @return
+     */
+    private boolean equals (Object theOne, Object theOther)
+    {
+      return theOne != null ? theOne.equals (theOther) : theOther == null;
+    }
+
+    /**
+     * @return hashCode  
+     */
+    public int hashCode()
+    {
+      return ((mCodeBase != null           ? mCodeBase.hashCode()           :  0) 
+              ^(mContextClassLoader != null ? mContextClassLoader.hashCode() : -1));
+    }
+
+    public String toString()
+    {
+      return "[" + mCodeBase + "," + mContextClassLoader + "]"; 
+    }
 
   }
 
@@ -129,7 +186,9 @@ public class RMIClassLoader
       {
         defaultLoader = new MyClassLoader (new URL[] { defaultCodebase }, null,
                                            defaultAnnotation);
-        cacheLoaders.put(defaultAnnotation, defaultLoader);
+        cacheLoaders.put (new CacheKey (defaultAnnotation,
+                                        Thread.currentThread().getContextClassLoader()),
+                                        defaultLoader);
       }
     }
 
@@ -189,8 +248,11 @@ public class RMIClassLoader
   private static ClassLoader getClassLoader (String codebases) 
     throws MalformedURLException
   {
-    ClassLoader loader = (ClassLoader) cacheLoaders.get (codebases);
-	
+    ClassLoader loader;
+    CacheKey loaderKey = new CacheKey
+      (codebases, Thread.currentThread().getContextClassLoader());
+    loader = (ClassLoader) cacheLoaders.get (loaderKey);
+      
     if (loader == null)
       {
         //create an entry in cacheLoaders mapping a loader to codebases.
@@ -202,8 +264,9 @@ public class RMIClassLoader
           urls.add (new URL (tok.nextToken()));
       
         loader = new MyClassLoader ((URL[]) urls.toArray (new URL [urls.size()]),
-    				    null, codebases);
-        cacheLoaders.put (codebases, loader);
+                                    Thread.currentThread().getContextClassLoader(),
+                                    codebases);
+        cacheLoaders.put (loaderKey, loader);
       }
            
     return loader;
