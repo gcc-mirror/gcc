@@ -1,3 +1,8 @@
+2003-11-01  Roger Sayle  <roger@eyesopen.com>
+
+	* unwind-sjlj.c (_Unwind_GetCFA): Return (_Unwind_Word)0 instead
+	of NULL.
+
 2003-11-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR preprocessor/12847
