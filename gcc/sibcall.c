@@ -330,8 +330,10 @@ static int
 call_ends_block_p (rtx insn, rtx end)
 {
   rtx new_insn;
+
   /* END might be a note, so get the last nonnote insn of the block.  */
-  end = next_nonnote_insn (PREV_INSN (end));
+  if (NOTE_P (end))
+    end = prev_nonnote_insn (end);
 
   /* If the call was the end of the block, then we're OK.  */
   if (insn == end)

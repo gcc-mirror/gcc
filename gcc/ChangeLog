@@ -3,6 +3,9 @@
 	PR rtl-opt/17186
 	* function.c (expand_function_end): Revert last change.
 
+	* sibcall.c (call_ends_block_p): Fix thinko finding the
+	last real insn in a block.
+
 2004-09-14  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/15498
