@@ -863,7 +863,7 @@ AC_HEADER_STDC
 AC_HEADER_TIME
 ACX_HEADER_STRING
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h \
+AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h iconv.h \
 		 fcntl.h unistd.h sys/file.h sys/time.h sys/mman.h \
 		 sys/resource.h sys/param.h sys/times.h sys/stat.h \
 		 direct.h malloc.h langinfo.h ldfcn.h locale.h wchar.h)
