@@ -31,10 +31,10 @@
 #ifndef _GLIBCPP_OS_DEFINES
 #  define _GLIBCPP_OS_DEFINES
 
-// By enabling this, all GNU extensions are enabled.
+// By defining this, all GNU extensions are enabled.
 #define _GNU_SOURCE 1
 
-// By enabling this, all ISO C99 functionality is enabled.
+// By defining this, all ISO C99 functionality is enabled.
 #define _ISOC99_SOURCE 1
 
 // This keeps isanum, et al from being propagated as macros.

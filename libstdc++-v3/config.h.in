@@ -12,6 +12,9 @@
 // Include support for shadow headers, ie --enable-cshadow-headers.
 #undef _GLIBCPP_USE_SHADOW_HEADERS
 
+// Define if lldiv_t exists in stdlib.h.
+#undef _GLIBCPP_HAVE_LLDIV_T
+
 // Define if the host has a type mbstate_t defined in
 // wchar.h, as required by 21.1.3.1. Some systems, namely
 // hppa-hp-hpux10.20 do not meet this requirement, and must be worked
@@ -282,24 +285,6 @@
 /* Define if you have the atanl function.  */
 #undef HAVE_ATANL
 
-/* Define if you have the c_log function.  */
-#undef HAVE_C_LOG
-
-/* Define if you have the c_logf function.  */
-#undef HAVE_C_LOGF
-
-/* Define if you have the c_logl function.  */
-#undef HAVE_C_LOGL
-
-/* Define if you have the carg function.  */
-#undef HAVE_CARG
-
-/* Define if you have the cargf function.  */
-#undef HAVE_CARGF
-
-/* Define if you have the cargl function.  */
-#undef HAVE_CARGL
-
 /* Define if you have the ccos function.  */
 #undef HAVE_CCOS
 
@@ -333,12 +318,6 @@
 /* Define if you have the cexpl function.  */
 #undef HAVE_CEXPL
 
-/* Define if you have the clog10 function.  */
-#undef HAVE_CLOG10
-
-/* Define if you have the clog10f function.  */
-#undef HAVE_CLOG10F
-
 /* Define if you have the clog10l function.  */
 #undef HAVE_CLOG10L
 
@@ -362,12 +341,6 @@
 
 /* Define if you have the cosl function.  */
 #undef HAVE_COSL
-
-/* Define if you have the cpow function.  */
-#undef HAVE_CPOW
-
-/* Define if you have the cpowf function.  */
-#undef HAVE_CPOWF
 
 /* Define if you have the cpowl function.  */
 #undef HAVE_CPOWL

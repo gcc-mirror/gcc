@@ -1,3 +1,16 @@
+2000-12-05  Benjamin Kosnik  <bkoz@haight.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_LONG_LONG): Check for
+	lldiv_t. Allow the use of os-specific defines while checking for
+	long-long functions by the inclusion of os_defines.h.
+	* aclocal.m4: Regenerate.
+	* configure.in: Add comments.
+	* configure: Regenerate.
+	* acconfig.h: Add _GLIBCPP_HAVE_LLDIV_T.
+	* config.h.in: Regenerate.
+	* config/os/gnu-linux/bits/os_defines.h: Fix typos and
+	duplications in comments.
+
 2000-12-05  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/os/freebsd/bits/ctype_base.h: Update comments about other

@@ -12,6 +12,9 @@
 // Include support for shadow headers, ie --enable-cshadow-headers.
 #undef _GLIBCPP_USE_SHADOW_HEADERS
 
+// Define if lldiv_t exists in stdlib.h.
+#undef _GLIBCPP_HAVE_LLDIV_T
+
 // Define if the host has a type mbstate_t defined in
 // wchar.h, as required by 21.1.3.1. Some systems, namely
 // hppa-hp-hpux10.20 do not meet this requirement, and must be worked

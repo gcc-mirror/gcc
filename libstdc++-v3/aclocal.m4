@@ -288,7 +288,7 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
   AC_REQUIRE([AC_PROG_LD])
 
   # Set --gc-sections.
-  if test "$ac_cv_prog_gnu_ld" = "broken"; then
+  if test "$ac_cv_prog_gnu_ld" = "notbroken"; then
     # GNU ld it is!  Joy and bunny rabbits!
 
     # All these tests are for C++; save the language and the compiler flags.
@@ -829,7 +829,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
     ctype_bsd=yes, ctype_bsd=no)
     AC_MSG_RESULT($ctype_bsd)
     if test $ctype_bsd = "yes"; then
-      ctype_include_dir="config/os/freebsd"
+      ctype_include_dir="config/os/bsd"
       ctype_default=no
     fi
     fi
@@ -845,23 +845,7 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
     ctype_freebsd34=yes, ctype_freebsd34=no)
     AC_MSG_RESULT($ctype_freebsd34)
     if test $ctype_freebsd34 = "yes"; then
-      ctype_include_dir="config/os/freebsd"
-      ctype_default=no
-    fi
-    fi
-
-    dnl Test for <ctype> functionality -- NetBSD
-    if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for NetBSD])
-    AC_TRY_COMPILE([#include <ctype.h>],
-    [int
-    foo (int a)
-    { return _S + _C + _U + _L \
-      + _N + _P + _X + _tolower_tab_[a] + _toupper_tab_[a];}], \
-    ctype_netbsd=yes, ctype_netbsd=no)
-    AC_MSG_RESULT($ctype_netbsd)
-    if test $ctype_netbsd = "yes"; then
-      ctype_include_dir="config/os/netbsd"
+      ctype_include_dir="config/os/bsd"
       ctype_default=no
     fi
     fi
@@ -1468,10 +1452,30 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
    *)   AC_MSG_ERROR([Unknown argument to enable/disable long long]) ;;
    esac],
   enable_long_long=GLIBCPP_ENABLE_LONG_LONG_DEFAULT)dnl
+ 
+  # Allow use of os-dependent settings, so that macros that turn on
+  # C99 capabilities can be defined and used in a consistent way.
+  OS_INC_PATH=${srcdir}/$os_include_dir
+  ac_test_CFLAGS="${CFLAGS+set}"
+  ac_save_CFLAGS="$CFLAGS"
+  CFLAGS="-I$OS_INC_PATH"
 
-  # Check for the existance of functions used if long long is enabled.
+  # Check for the existence of functions used if long long is enabled.
   AC_CHECK_FUNC(strtoll,,ac_strtoll=no)
   AC_CHECK_FUNC(strtoull,,ac_strtoull=no)
+
+  # Check for lldiv_t, et. al.
+  AC_MSG_CHECKING([for lldiv_t declaration])
+  AC_CACHE_VAL(glibcpp_lldiv_t_use, [
+  AC_TRY_COMPILE([#include <bits/os_defines.h>
+		  #include <stdlib.h>], 
+                   [ lldiv_t mydivt;], 
+                   [glibcpp_lldiv_t_use=yes], [glibcpp_lldiv_t_use=no])
+  ])
+  AC_MSG_RESULT($glibcpp_lldiv_t_use)
+  if test x$glibcpp_lldiv_t_use = x"yes"; then
+    AC_DEFINE(_GLIBCPP_HAVE_LLDIV_T)
+  fi
 
   AC_MSG_CHECKING([for enabled long long])
   if test x"$ac_strtoll" = xno || test x"$ac_strtoull" = xno; then 
@@ -1479,10 +1483,13 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
   fi; 
   AC_MSG_RESULT($enable_long_long)
 
-  dnl Option parsed, now set things appropriately
+  # Option parsed, now set things appropriately
   if test x"$enable_long_long" = xyes; then
     AC_DEFINE(_GLIBCPP_USE_LONG_LONG)
   fi
+	
+  # Reset CFLAGS
+  CFLAGS="$ac_save_CFLAGS"
 ])
 
 
