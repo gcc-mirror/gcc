@@ -153,10 +153,9 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
 /* Subroutine of emit_base_init.  */
 
 static void
-perform_member_init (member, name, init, explicit, protect_list)
+perform_member_init (member, name, init, explicit)
      tree member, name, init;
      int explicit;
-     tree *protect_list;
 {
   tree decl;
   tree type = TREE_TYPE (member);
@@ -244,10 +243,7 @@ perform_member_init (member, name, init, explicit, protect_list)
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
 
       if (expr != error_mark_node)
-	{
-	  expand_eh_region_start ();
-	  *protect_list = tree_cons (NULL_TREE, expr, *protect_list);
-	}
+	add_partial_entry (expr);
     }
 }
 
@@ -532,8 +528,6 @@ emit_base_init (t, immediately)
   int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
   tree expr = NULL_TREE;
 
-  my_friendly_assert (protect_list == NULL_TREE, 999);
-
   if (! immediately)
     {
       int momentary;
@@ -618,15 +612,14 @@ emit_base_init (t, immediately)
 
       if (TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (base_binfo)))
 	{
-	  expand_eh_region_start ();
+	  tree expr;
 
 	  /* All cleanups must be on the function_obstack.  */
 	  push_obstacks_nochange ();
 	  resume_temporary_allocation ();
-	  protect_list = tree_cons (NULL_TREE,
-				    build_partial_cleanup_for (base_binfo),
-				    protect_list);
+	  expr = build_partial_cleanup_for (base_binfo);
 	  pop_obstacks ();
+	  add_partial_entry (expr);
 	}
 
       rbase_init_list = TREE_CHAIN (rbase_init_list);
@@ -677,7 +670,7 @@ emit_base_init (t, immediately)
 	  from_init_list = 0;
 	}
 
-      perform_member_init (member, name, init, from_init_list, &protect_list);
+      perform_member_init (member, name, init, from_init_list);
       mem_init_list = TREE_CHAIN (mem_init_list);
     }
 
@@ -715,7 +708,7 @@ emit_base_init (t, immediately)
 	  my_friendly_assert (DECL_FIELD_CONTEXT (field) != t, 351);
 #endif
 
-	  perform_member_init (field, name, init, 1, &protect_list);
+	  perform_member_init (field, name, init, 1);
 	}
       mem_init_list = TREE_CHAIN (mem_init_list);
     }

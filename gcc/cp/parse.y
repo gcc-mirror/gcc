@@ -3700,8 +3700,7 @@ function_try_block:
 		  expand_start_early_try_stmts ();
 		}
 	  ctor_initializer_opt compstmt_or_error
-		{ expand_end_try_stmts ();
-		  expand_start_all_catch (); }
+		{ expand_start_all_catch (); }
 	  handler_seq
 		{
 		  int nested = (hack_decl_function_context
@@ -3715,8 +3714,7 @@ try_block:
 	  TRY
 		{ expand_start_try_stmts (); }
 	  compstmt
-		{ expand_end_try_stmts ();
-		  expand_start_all_catch (); }
+		{ expand_start_all_catch (); }
 	  handler_seq
 		{ expand_end_all_catch (); }
 	;
