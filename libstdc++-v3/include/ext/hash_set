@@ -75,12 +75,12 @@ namespace __gnu_cxx
   // Forward declaration of equality operator; needed for friend
   // declaration.
   template <class _Value, class _HashFcn  = hash<_Value>,
-	    class _EqualKey = equal_to<_Value>, 
+	    class _EqualKey = equal_to<_Value>,
 	    class _Alloc =  allocator<_Value> >
   class hash_set;
 
   template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
-    inline bool 
+    inline bool
     operator==(const hash_set<_Value,_HashFcn,_EqualKey,_Alloc>& __hs1,
 	       const hash_set<_Value,_HashFcn,_EqualKey,_Alloc>& __hs2);
 
@@ -98,7 +98,7 @@ class hash_set
   __glibcxx_class_requires3(_EqualKey, _Value, _Value, _BinaryPredicateConcept)
 
 private:
-  typedef hashtable<_Value, _Value, _HashFcn, _Identity<_Value>, 
+  typedef hashtable<_Value, _Value, _HashFcn, _Identity<_Value>,
                     _EqualKey, _Alloc> _Ht;
   _Ht _M_ht;
 
@@ -161,7 +161,7 @@ public:
   bool empty() const { return _M_ht.empty(); }
   void swap(hash_set& __hs) { _M_ht.swap(__hs._M_ht); }
 
-  template <class _Val, class _HF, class _EqK, class _Al>  
+  template <class _Val, class _HF, class _EqK, class _Al>
   friend bool operator== (const hash_set<_Val, _HF, _EqK, _Al>&,
                           const hash_set<_Val, _HF, _EqK, _Al>&);
 
@@ -175,11 +175,11 @@ public:
       return pair<iterator,bool>(__p.first, __p.second);
     }
   template <class _InputIterator>
-  void insert(_InputIterator __f, _InputIterator __l) 
+  void insert(_InputIterator __f, _InputIterator __l)
     { _M_ht.insert_unique(__f,__l); }
   pair<iterator, bool> insert_noresize(const value_type& __obj)
   {
-    pair<typename _Ht::iterator, bool> __p = 
+    pair<typename _Ht::iterator, bool> __p =
       _M_ht.insert_unique_noresize(__obj);
     return pair<iterator, bool>(__p.first, __p.second);
   }
@@ -187,7 +187,7 @@ public:
   iterator find(const key_type& __key) const { return _M_ht.find(__key); }
 
   size_type count(const key_type& __key) const { return _M_ht.count(__key); }
-  
+
   pair<iterator, iterator> equal_range(const key_type& __key) const
     { return _M_ht.equal_range(__key); }
 
@@ -205,7 +205,7 @@ public:
 };
 
 template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
-inline bool 
+inline bool
 operator==(const hash_set<_Value,_HashFcn,_EqualKey,_Alloc>& __hs1,
            const hash_set<_Value,_HashFcn,_EqualKey,_Alloc>& __hs2)
 {
@@ -213,14 +213,14 @@ operator==(const hash_set<_Value,_HashFcn,_EqualKey,_Alloc>& __hs1,
 }
 
 template <class _Value, class _HashFcn, class _EqualKey, class _Alloc>
-inline bool 
+inline bool
 operator!=(const hash_set<_Value,_HashFcn,_EqualKey,_Alloc>& __hs1,
            const hash_set<_Value,_HashFcn,_EqualKey,_Alloc>& __hs2) {
   return !(__hs1 == __hs2);
 }
 
 template <class _Val, class _HashFcn, class _EqualKey, class _Alloc>
-inline void 
+inline void
 swap(hash_set<_Val,_HashFcn,_EqualKey,_Alloc>& __hs1,
      hash_set<_Val,_HashFcn,_EqualKey,_Alloc>& __hs2)
 {
@@ -235,7 +235,7 @@ template <class _Value,
 class hash_multiset;
 
 template <class _Val, class _HashFcn, class _EqualKey, class _Alloc>
-inline bool 
+inline bool
 operator==(const hash_multiset<_Val,_HashFcn,_EqualKey,_Alloc>& __hs1,
            const hash_multiset<_Val,_HashFcn,_EqualKey,_Alloc>& __hs2);
 
@@ -254,7 +254,7 @@ class hash_multiset
   __glibcxx_class_requires3(_EqualKey, _Value, _Value, _BinaryPredicateConcept)
 
 private:
-  typedef hashtable<_Value, _Value, _HashFcn, _Identity<_Value>, 
+  typedef hashtable<_Value, _Value, _HashFcn, _Identity<_Value>,
                     _EqualKey, _Alloc> _Ht;
   _Ht _M_ht;
 
@@ -317,7 +317,7 @@ public:
   bool empty() const { return _M_ht.empty(); }
   void swap(hash_multiset& hs) { _M_ht.swap(hs._M_ht); }
 
-  template <class _Val, class _HF, class _EqK, class _Al>  
+  template <class _Val, class _HF, class _EqK, class _Al>
   friend bool operator== (const hash_multiset<_Val, _HF, _EqK, _Al>&,
                           const hash_multiset<_Val, _HF, _EqK, _Al>&);
 
@@ -328,15 +328,15 @@ public:
   iterator insert(const value_type& __obj)
     { return _M_ht.insert_equal(__obj); }
   template <class _InputIterator>
-  void insert(_InputIterator __f, _InputIterator __l) 
+  void insert(_InputIterator __f, _InputIterator __l)
     { _M_ht.insert_equal(__f,__l); }
   iterator insert_noresize(const value_type& __obj)
-    { return _M_ht.insert_equal_noresize(__obj); }    
+    { return _M_ht.insert_equal_noresize(__obj); }
 
   iterator find(const key_type& __key) const { return _M_ht.find(__key); }
 
   size_type count(const key_type& __key) const { return _M_ht.count(__key); }
-  
+
   pair<iterator, iterator> equal_range(const key_type& __key) const
     { return _M_ht.equal_range(__key); }
 
@@ -354,7 +354,7 @@ public:
 };
 
 template <class _Val, class _HashFcn, class _EqualKey, class _Alloc>
-inline bool 
+inline bool
 operator==(const hash_multiset<_Val,_HashFcn,_EqualKey,_Alloc>& __hs1,
            const hash_multiset<_Val,_HashFcn,_EqualKey,_Alloc>& __hs2)
 {
@@ -362,14 +362,14 @@ operator==(const hash_multiset<_Val,_HashFcn,_EqualKey,_Alloc>& __hs1,
 }
 
 template <class _Val, class _HashFcn, class _EqualKey, class _Alloc>
-inline bool 
+inline bool
 operator!=(const hash_multiset<_Val,_HashFcn,_EqualKey,_Alloc>& __hs1,
            const hash_multiset<_Val,_HashFcn,_EqualKey,_Alloc>& __hs2) {
   return !(__hs1 == __hs2);
 }
 
 template <class _Val, class _HashFcn, class _EqualKey, class _Alloc>
-inline void 
+inline void
 swap(hash_multiset<_Val,_HashFcn,_EqualKey,_Alloc>& __hs1,
      hash_multiset<_Val,_HashFcn,_EqualKey,_Alloc>& __hs2) {
   __hs1.swap(__hs2);
@@ -399,7 +399,7 @@ public:
   insert_iterator(_Container& __x, typename _Container::iterator)
     : container(&__x) {}
   insert_iterator<_Container>&
-  operator=(const typename _Container::value_type& __value) { 
+  operator=(const typename _Container::value_type& __value) {
     container->insert(__value);
     return *this;
   }
@@ -426,7 +426,7 @@ public:
   insert_iterator(_Container& __x, typename _Container::iterator)
     : container(&__x) {}
   insert_iterator<_Container>&
-  operator=(const typename _Container::value_type& __value) { 
+  operator=(const typename _Container::value_type& __value) {
     container->insert(__value);
     return *this;
   }
@@ -436,4 +436,4 @@ public:
 };
 } // namespace std
 
-#endif 
+#endif
