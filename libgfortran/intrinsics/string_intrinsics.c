@@ -276,12 +276,11 @@ adjustr (char *dest, GFC_INTEGER_4 len, const char *src)
 
   i = len;
   while (i > 0 && src[i - 1] == ' ')
-    i++;
+    i--;
 
   if (i < len)
-    memcpy (&dest[len - i], &src, i);
-  if (i < len)
     memset (dest, ' ', len - i);
+  memcpy (dest + (len - i), src, i );
 }
 
 
