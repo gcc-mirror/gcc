@@ -560,7 +560,7 @@ check_newline ()
 	      token = yylex ();
 	      if (token != IDENTIFIER)
 		goto skipline;
-	      if (HANDLE_PRAGMA (yylval.ttype))
+	      if (HANDLE_PRAGMA (finput, yylval.ttype))
 		{
 		  c = GETC ();
 		  return c;
