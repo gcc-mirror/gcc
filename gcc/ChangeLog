@@ -1,3 +1,8 @@
+2004-06-24  Alan Modra  <amodra@bigpond.net.au>
+
+	* calls.c (expand_call): Call INIT_CUMULATIVE_ARGS earlier, and
+	pass raw n_named_args to it.
+
 2004-06-22  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/16026

@@ -2405,6 +2405,26 @@ expand_call (tree exp, rtx target, int ignore)
     num_actuals++;
 
   /* Compute number of named args.
+     First, do a raw count of the args for INIT_CUMULATIVE_ARGS.  */
+
+  if (type_arg_types != 0)
+    n_named_args
+      = (list_length (type_arg_types)
+	 /* Count the struct value address, if it is passed as a parm.  */
+	 + structure_value_addr_parm);
+  else
+    /* If we know nothing, treat all args as named.  */
+    n_named_args = num_actuals;
+
+  /* Start updating where the next arg would go.
+
+     On some machines (such as the PA) indirect calls have a different
+     calling convention than normal calls.  The fourth argument in
+     INIT_CUMULATIVE_ARGS tells the backend if this is an indirect call
+     or not.  */
+  INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_RTX, fndecl, n_named_args);
+
+  /* Now possibly adjust the number of named args.
      Normally, don't include the last named arg if anonymous args follow.
      We do include the last named arg if
      targetm.calls.strict_argument_naming() returns nonzero.
@@ -2422,26 +2442,16 @@ expand_call (tree exp, rtx target, int ignore)
      we do not have any reliable way to pass unnamed args in
      registers, so we must force them into memory.  */
 
-  if ((targetm.calls.strict_argument_naming (&args_so_far)
-       || ! targetm.calls.pretend_outgoing_varargs_named (&args_so_far))
-      && type_arg_types != 0)
-    n_named_args
-      = (list_length (type_arg_types)
-	 /* Don't include the last named arg.  */
-	 - (targetm.calls.strict_argument_naming (&args_so_far) ? 0 : 1)
-	 /* Count the struct value address, if it is passed as a parm.  */
-	 + structure_value_addr_parm);
+  if (type_arg_types != 0
+      && targetm.calls.strict_argument_naming (&args_so_far))
+    ;
+  else if (type_arg_types != 0
+	   && ! targetm.calls.pretend_outgoing_varargs_named (&args_so_far))
+    /* Don't include the last named arg.  */
+    --n_named_args;
   else
-    /* If we know nothing, treat all args as named.  */
+    /* Treat all args as named.  */
     n_named_args = num_actuals;
-
-  /* Start updating where the next arg would go.
-
-     On some machines (such as the PA) indirect calls have a different
-     calling convention than normal calls.  The last argument in
-     INIT_CUMULATIVE_ARGS tells the backend if this is an indirect call
-     or not.  */
-  INIT_CUMULATIVE_ARGS (args_so_far, funtype, NULL_RTX, fndecl, n_named_args);
 
   /* Make a vector to hold all the information about each arg.  */
   args = alloca (num_actuals * sizeof (struct arg_data));
