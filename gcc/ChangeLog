@@ -1,3 +1,8 @@
+2004-11-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh_output_mi_thunk): Initialize bitmap obstacks
+	before calling life_analysis and release them after.
+
 2004-11-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-forwprop.c (substitute_single_use_vars): Remove

@@ -9821,6 +9821,9 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   if (optimize > 0 && flag_schedule_insns_after_reload)
     {
+      /* Initialize the bitmap obstacks.  */
+      bitmap_obstack_initialize (NULL);
+      bitmap_obstack_initialize (&reg_obstack);
       if (! basic_block_info)
 	init_flow ();
       rtl_register_cfg_hooks ();
@@ -9845,6 +9848,10 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     {
       /* Release all memory allocated by flow.  */
       free_basic_block_vars ();
+
+      /* Release the bitmap obstacks.  */
+      bitmap_obstack_release (&reg_obstack);
+      bitmap_obstack_release (NULL);
     }
 
   reload_completed = 0;
