@@ -1552,7 +1552,11 @@ output_ascii_pseudo_op (stream, p, len)
 
 /* Try to determine whether a pattern really clobbers the link register.
    This information is useful when peepholing, so that lr need not be pushed
-   if we combine a call followed by a return */
+   if we combine a call followed by a return.
+   NOTE: This code does not check for side-effect expressions in a SET_SRC:
+   such a check should not be needed because these only update an existing
+   value within a register; the register must still be set elsewhere within
+   the function. */
 
 static int
 pattern_really_clobbers_lr (x)
@@ -1570,6 +1574,8 @@ rtx x;
         case SUBREG:
 	  if (GET_CODE (XEXP (SET_DEST (x), 0)) == REG)
 	    return REGNO (XEXP (SET_DEST (x), 0)) == 14;
+	  if (GET_CODE (XEXP (SET_DEST (x), 0)) == MEM)
+	    return 0;
 	  abort ();
         default:
 	  return 0;
