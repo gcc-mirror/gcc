@@ -253,7 +253,7 @@ static rtx last_mem_set;
 static HARD_REG_SET elim_reg_set;
 
 /* Forward declarations */
-static void find_basic_blocks_1		PROTO((rtx, rtx, int));
+static void find_basic_blocks_1		PROTO((rtx, rtx));
 static void make_edges			PROTO((int));
 static void mark_label_ref		PROTO((rtx, rtx, int));
 static int delete_unreachable_blocks	PROTO((void));
