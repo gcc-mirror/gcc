@@ -1812,7 +1812,10 @@ cpp_push_buffer (pfile, buffer, len, type, filename)
       pfile->lexer_pos.output_line = 1;
     }
 
-  new->nominal_fname = filename;
+  if (*filename == '\0')
+    new->nominal_fname = _("<stdin>");
+  else
+    new->nominal_fname = filename;
   new->type = type;
   new->prev = pfile->buffer;
   new->pfile = pfile;

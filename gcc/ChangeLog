@@ -1,5 +1,9 @@
 2001-04-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* cpplib.c (cpp_push_buffer): Give stdin buffers the name <stdin>.
+
+2001-04-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* configure.in: Add check for lstat.
 	* configure, config.in: Regenerate.
 	* cppinit.c (append_include_chain): Make empty path ".".
