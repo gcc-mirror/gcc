@@ -1,3 +1,7 @@
+Fri Feb 13 14:30:35 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (determine_specialization): Give better errors.
+
 Fri Feb 13 14:06:22 1998  Mike Stump  <mrs@wrs.com>
 
 	* init.c (build_new): Propagate error_mark_node up.
