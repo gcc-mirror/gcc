@@ -1,3 +1,10 @@
+2001-03-14  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* thr.c (objc_thread_add): New function.
+	(objc_thread_remove): Ditto.
+	* objc/thr.h: Declare them.
+	* libobjc.def: Mention them.
+
 2001-02-28  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* objc-features.texi: Document the @compatibility_alias compiler
