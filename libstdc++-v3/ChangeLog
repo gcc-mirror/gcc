@@ -1,3 +1,12 @@
+2001-05-30  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/bits/c++config (__USE_MALLOC): Do not define it.
+	Document why not and give pointers to more information.
+
+	* docs/html/23_containers/howto.html: Update documentation
+	to reflect recent understanding of problem.
+	* docs/html/17_intro/howto.html: Likewise.
+
 2001-05-30  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/doxygen/user.cfg.in:  Minor addition.

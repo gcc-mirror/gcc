@@ -101,9 +101,14 @@
 # define __STL_UNWIND(action) 
 #endif
 
-// This is the "underlying allocator" for STL.  The alternatives are
-// homegrown schemes involving a kind of mutex and free list; see stl_alloc.h.
-#define __USE_MALLOC
+// Default to the typically high-speed, pool-based allocator (as
+// libstdc++-v2) instead of the malloc-based allocator (libstdc++-v3
+// snapshots).  See libstdc++-v3/docs/html/17_intro/howto.html for
+// details on why you don't want to override this setting.  Ensure
+// that threads are properly configured on your platform before
+// assigning blame to the STL container-memory allocator.  After doing
+// so, please report any possible issues to libstdc++@gcc.gnu.org .
+// Do not blindly #define __USE_MALLOC here or on the command line.
 
 // The remainder of the prewritten config is mostly automatic; all the
 // user hooks are listed above.
