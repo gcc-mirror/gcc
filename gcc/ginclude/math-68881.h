@@ -19,15 +19,22 @@
 *								   *
 \******************************************************************/
 
+/* This file is NOT a part of GCC, just distributed with it.  */
+
 /* If you find this in GCC,
    please send bug reports to bug-gcc@prep.ai.mit.edu.  */
 
-/* Changed by Richard Stallman: % inserted before a #.
+/* Changed by Richard Stallman:
+   May 1993, add conditional to prevent multiple inclusion.
+   % inserted before a #.
    New function `hypot' added.
    Nans written in hex to avoid 0rnan.
    May 1992, use %! for fpcr register.  Break lines before function names.
    December 1989, add parens around `&' in pow.
    November 1990, added alternate definition of HUGE_VAL for Sun.  */
+
+#ifndef __math_68881
+#define __math_68881
 
 #include <errno.h>
 
@@ -514,3 +521,4 @@ modf (double x, double *ip)
   return x - temp;
 }
 
+#endif /* not __math_68881 */
