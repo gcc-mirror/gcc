@@ -449,7 +449,11 @@ const char *
 get_src_pwd (void)
 {
   if (! src_pwd)
-    src_pwd = getpwd ();
+    {
+      src_pwd = getpwd ();
+      if (!src_pwd)
+	src_pwd = ".";
+    }
 
    return src_pwd;
 }

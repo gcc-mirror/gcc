@@ -1,3 +1,7 @@
+2005-01-04  Geoffrey Keating  <geoffk@apple.com>
+
+	* toplev.c (get_src_pwd): Handle failure of getpwd().
+
 2005-01-04  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_single_bit_test): Delete unreachable handling
