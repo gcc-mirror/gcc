@@ -1,3 +1,14 @@
+Thu Nov 26 12:44:07 1998  Per Bothner  <bothner@cygnus.com>
+
+	* jcf-write.c (generate_bytecode_insns):  In Call_EXPR, handle
+	soft_monitorenter_node, soft_monitorexit_node, throw_node.
+
+	* jcf-write.c (generate_bytecode_insns):
+  	Handle pre/post-increment/decrement of long.
+
+	* jcf-write.c (generate_bytecode_insns):
+	Handle missing exception handler (finally for synchronized).
+
 Wed Nov 25 09:47:15 1998  Per Bothner  <bothner@cygnus.com>
 
 	* java-tree.h (end_params_node):  Declare global.
