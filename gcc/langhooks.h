@@ -202,6 +202,10 @@ struct lang_hooks
      the language mask to filter the switch array with.  */
   unsigned int (*init_options) (unsigned int argc, const char **argv);
 
+  /* Callback used to perform language-specific initialization for the
+     global diagnostic context structure.  */
+  void (*initialize_diagnostics) (struct diagnostic_context *);
+
   /* Handle the switch CODE, which has real type enum opt_code from
      options.h.  If the switch takes an argument, it is passed in ARG
      which points to permanent storage.  The handler is responsible for

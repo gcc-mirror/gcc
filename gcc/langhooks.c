@@ -479,4 +479,10 @@ write_global_declarations (void)
   free (vec);
 }
 
+/* Called to perform language-specific initialization of CTX.  */
+void
+lhd_initialize_diagnostics (struct diagnostic_context *ctx ATTRIBUTE_UNUSED)
+{
+}
+
 #include "gt-langhooks.h"
