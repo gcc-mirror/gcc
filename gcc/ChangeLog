@@ -1,3 +1,36 @@
+2003-08-27  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (struct machine_function): Remove member
+	literal_pool_label.
+	(s390_optimize_prolog): Replace TEMP_REG argument with 
+	TEMP_USED and BASE_USED.  Do not check get_pool_size ().
+	(general_s_operand): Accept all immediates before reload if 
+	ALLOW_IMMEDIATE.  If not ALLOW_IMMEDIATE, reject literal pool 
+	references.
+	(s390_output_symbolic_const): Remove UNSPEC_LTREL_OFFSET handling.
+	(find_constant_pool_ref): Ignore UNSPECV_POOL_ENTRY insns.
+	(s390_alloc_pool): New function.
+	(s390_new_pool): Call it.
+	(s390_dump_pool): Add REMOTE_LABEL argument.
+	(s390_chunkify_start): Add BASE_REG argument.  Do not check 
+	get_pool_size ().
+	(s390_chunkify_finish): Add BASE_REG argument.  Adapt 
+	s390_dump_pool call.
+	(s390_pool_count, s390_nr_constants): Remove.
+	(s390_output_constant_pool): Remove.
+	(s390_mainpool_start): New function.
+	(s390_mainpool_finish): New function.
+	(s390_mainpool_cancel): New function.
+	(s390_reorg): Implement main literal pool handling.
+	(s390_emit_prologue): Emit main_pool placeholder instead of 
+	literal_pool_31 / literal_pool_64 insns.
+	* config/s390/s390.h (s390_pool_count, s390_nr_constants): Remove.
+	(ASM_OUTPUT_POOL_PROLOGUE, ASM_OUTPUT_SPECIAL_POOL_ENTRY): Remove.
+	* config/s390/s390.md (UNSPEC_MAIN_BASE): New symbolic constant.
+	("main_base_31_small", "main_base_31_large"): New insns.
+	("main_base_64",  "main_pool"): New insns.
+	("literal_pool_31", "literal_pool_64"): Remove.
+
 2003-08-27  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/inclhack.def (ptx_netswap): New disabled fix, ported from
