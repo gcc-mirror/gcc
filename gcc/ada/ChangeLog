@@ -1,3 +1,10 @@
+2001-12-04  Robert Dewar <dewar@gnat.com>
+
+	* sem_attr.adb:
+	(Compile_Time_Known_Attribute): New procedure.
+	(Eval_Attribute, case Size): Use Compile_Time_Known_Attribute to ensure
+	 proper range check.
+
 2001-12-04  Ed Schonberg <schonber@gnat.com>
 
 	* sem_ch7.adb (New_Private_Type): Set Is_Tagged_Type flag before 
