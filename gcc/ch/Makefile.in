@@ -264,8 +264,7 @@ $(srcdir)/hash.h:
 	cat $(srcdir)/gperf gperf.tmp2 > gperf.tmp
 	gperf -L C -F ', 0, 0, 0' -D -E -S1 -p -j1 -i 1 -g -o -t -k'*' \
 	  gperf.tmp > $(srcdir)/hash.h || ( \
-	echo "Please update your 'gperf' from the GCC infrastructure" >&2 ; \
-	echo "	ftp://sourceware.cygnus.com/pub/egcs/infrastructure/gperf*" >&2 ; \
+	echo "Please update your 'gperf' from ftp://ftp.gnu.org/pub/gnu/gperf/" >&2 ; \
 	exit 1 )
 	$(RM) gperf.tmp gperf.tmp2
 

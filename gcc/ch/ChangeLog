@@ -1,3 +1,8 @@
+2000-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Makefile.in ($(srcdir)/hash.h): Refer to GNU FTP site for
+	updated gperf.
+
 2000-10-05  Richard Henderson  <rth@cygnus.com>
 
 	* decl.c (finish_chill_function): Don't init can_reach_end.

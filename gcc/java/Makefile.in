@@ -244,8 +244,7 @@ lang.o: $(srcdir)/java-tree.def
 keyword.h: keyword.gperf
 	gperf -L C -F ', 0' -p -t -j1 -i 1 -g -o -N java_keyword -k1,3,$$ \
 	keyword.gperf > keyword.h || ( \
-	echo "Please update your 'gperf' from the GCC infrastructure" >&2 ; \
-	echo "	ftp://sourceware.cygnus.com/pub/egcs/infrastructure/gperf*" >&2 ; \
+	echo "Please update your 'gperf' from ftp://ftp.gnu.org/pub/gnu/gperf/" >&2 ; \
 	exit 1 )
 
 jcf-path.o : jcf-path.c $(CONFIG_H) $(srcdir)/../system.h jcf.h
