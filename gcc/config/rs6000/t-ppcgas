@@ -105,7 +105,7 @@ stmp-crt-sub2:
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -c -o $(dir)/scrt0.o scrt0.c
 
 # Install multiple versions of ?crt[in].o
-install-crt: stmp-crt install-dir install-multilib
+install-crt: stmp-crt installdirs install-multilib
 	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
 	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
