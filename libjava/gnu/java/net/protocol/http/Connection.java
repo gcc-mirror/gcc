@@ -59,6 +59,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import gnu.java.net.HeaderFieldHelper;
+import gnu.java.security.action.GetPropertyAction;
 
 /**
  * This subclass of java.net.URLConnection models a URLConnection via
@@ -88,36 +89,31 @@ public final class Connection extends HttpURLConnection
 
   static 
   {
-    // Make sure access control for system properties depends only on
-    // our class ProtectionDomain, not on any (indirect) callers.
-    AccessController.doPrivileged(new PrivilegedAction() {
-	public Object run()
-	{
-	  // Recognize some networking properties listed at
-	  // http://java.sun.com/j2se/1.4/docs/guide/net/properties.html.
-	  String port = null;
-	  proxyHost = System.getProperty("http.proxyHost");
-	  if (proxyHost != null)
-	    {
-	      proxyInUse = true;
-	      if ((port = System.getProperty("http.proxyPort")) != null)
-		{
-		  try
-		    {
-		      proxyPort = Integer.parseInt(port);
-		    }
-		  catch (Throwable t)
-		    {
-		      // Nothing.  
-		    }
-		}
-	    }
-	  
-	  userAgent = System.getProperty("http.agent");
+    // Recognize some networking properties listed at
+    // http://java.sun.com/j2se/1.4/docs/guide/net/properties.html.
+    String port = null;
+    GetPropertyAction getProperty = new GetPropertyAction("http.proxyHost");
+    proxyHost = (String) AccessController.doPrivileged(getProperty);
+    if (proxyHost != null)
+      {
+	proxyInUse = true;
+	getProperty.setName("http.proxyPort");
+	port = (String) AccessController.doPrivileged(getProperty);
+	if (port != null)
+	  {
+	    try
+	      {
+		proxyPort = Integer.parseInt(port);
+	      }
+	    catch (NumberFormatException ex)
+	      {
+		// Nothing.  
+	      }
+	  }
+      }
 
-	  return null;
-	}
-      });
+    getProperty.setName("http.agent");
+    userAgent = (String) AccessController.doPrivileged(getProperty);
   }
 
   /**

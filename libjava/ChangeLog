@@ -1,7 +1,24 @@
 2004-07-23  Bryce McKinlay  <mckinlay@redhat.com>
 
-	* java/io/ObjectStreamField (ObjectStreamField): Don't unset 'toset' for final
-	fields.
+	* gnu/java/net/protocol/http/Connection.java: Use GetPropertyAction
+	for privileged getProperty calls.
+	* java/io/ObjectOutputStream.java (getField): No longer static. Use
+	SetAccessibleAction instead of anonymous class for doPrivileged call.
+	(getMethod): Likewise.
+	(setAccessible): New field. PrivilegedAction object to use when
+	calling setAccessible.
+	* java/io/ObjectStreamClass.java (calculateOffsets): Use
+	SetAccessibleAction instead of anonymous class for diPrivileged call.
+	(setFields): Likewise.
+	(getClassUID): Likewise.
+	(findMethod): Likewise.
+	* gnu/java/security/action/GetPropertyAction.java: New class.
+	* gnu/java/security/action/SetAccessibleAction.java: New class.	
+
+2004-07-23  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/io/ObjectStreamField (ObjectStreamField): Don't unset 'toset'
+	for final fields.
 	* testsuite/libjava.lang/Serialization.java: New test.
 	* testsuite/libjava.lang/Serialization.out: New.
 
