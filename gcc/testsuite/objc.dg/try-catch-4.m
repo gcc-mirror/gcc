@@ -3,7 +3,7 @@
 /* Author: Ziemowit Laski <zlaski@apple.com> */
 
 /* { dg-do compile } */
-/* { dg-options "-Wall -fnext-runtime -fobjc-exceptions" } */
+/* { dg-options "-Wall -fobjc-exceptions" } */
 
 @interface Exception
 @end

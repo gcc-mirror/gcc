@@ -1,3 +1,12 @@
+2004-06-17  Richard Henderson  <rth@redhat.com>
+
+	* objc.dg/sync-1.m: New.
+	* objc.dg/try-catch-1.m: Don't force next runtime.
+	* objc.dg/try-catch-3.m, objc.dg/try-catch-4.m: Likewise.
+	* objc.dg/try-catch-2.m: Likewise.  Enable everywhere.  Remove
+	shadowed catch clause.
+	* objc.dg/try-catch-5.m: New.
+
 2004-06-17  Zack Weinberg  <zack@codesourcery.com>
 
 	Bug 14610

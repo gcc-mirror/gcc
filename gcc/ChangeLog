@@ -1,3 +1,56 @@
+2004-06-17  Richard Henderson  <rth@redhat.com>
+
+	* c-common.c (flag_objc_sjlj_exceptions): New.
+	* c-common.h (flag_objc_sjlj_exceptions): Declare.
+	* c-opts.c (c_common_handle_option): Set it.
+	(c_common_post_options): Handle interation of different
+	objective-c exception and runtime switches.
+	* c-decl.c (c_eh_initialized_p): New.
+	(finish_decl): Use it instead of local eh_initialized_p.
+	* c-parse.in (nested_function, notype_nested_function): Record
+	the result of compstmt.
+	(compstmt_or_error): Likewise.
+	(compstmt): Don't add_stmt the result.
+	(stmt): Don't return anything.  Rewrite objc try and sync rules.
+	(objc_try_stmt, objc_catch_list): Remove.
+	(objc_catch_block, objc_finally_block): Remove.
+	(objc_catch_prefix, objc_catch_clause, objc_opt_catch_list): New.
+	(objc_try_catch_clause, objc_finally_clause): New.
+	(objc_try_catch_stmt): Rewrite.
+	* c-tree.h (c_eh_initialized_p): Declare.
+	* c-opt (fobjc-sjlj-exceptions): New.
+	* except.c (output_function_exception_table): Don't call cgraph
+	on non-decls.
+	* objc/objc-act.c (UTAG_EXCDATA_VAR, UTAG_CAUGHTEXC_VAR,
+	UTAG_RETHROWEXC_VAR, UTAG_EVALONCE_VAR, struct val_stack,
+	catch_count_stack, exc_binding_stack, if_nesting_count,
+	blk_nesting_count, objc_enter_block, objc_exit_block,
+	objc_declare_variable, val_stack_push, val_stack_pop, 
+	objc_build_try_enter_fragment, objc_build_extract_expr,
+	objc_build_try_exit_fragment, objc_build_extract_fragment,
+	objc_build_try_prologue, objc_build_try_epilogue, 
+	objc_build_catch_stmt, objc_build_catch_epilogue,
+	objc_build_finally_prologue, objc_build_finally_epilogue,
+	objc_build_try_catch_finally_stmt, objc_build_synchronized_prologue,
+	objc_build_synchronized_epilogue): Remove.
+	(objc_create_temporary_var, struct objc_try_context, cur_try_context,
+	objc_eh_runtime_type, objc_init_exceptions, objc_build_exc_ptr,
+	next_sjlj_build_try_exit, next_sjlj_build_enter_and_setjmp,
+	next_sjlj_build_exc_extract, next_sjlj_build_catch_list,
+	next_sjlj_build_try_catch_finally, objc_begin_try_stmt,
+	objc_begin_catch_clause, objc_finish_catch_clause,
+	objc_build_finally_clause, objc_finish_try_stmt,
+	objc_build_synchronized): New.
+	(objc_is_object_id, objc_is_class_id): New.
+	(objc_comptypes): Use them.
+	(build_next_objc_exception_stuff): Break NeXT sjlj out from
+	build_objc_exception_stuff.
+	(synth_module_prologue): Update to match.
+	(objc_build_throw_stmt): Use cur_try_context to decide if
+	we're in a @catch.
+	* objc/objc-act.h: Update prototypes.
+	(OCTI_EXCEPTION_BLK_STACK, objc_exception_block_stack): Remove.
+
 2004-06-17  Andrew Pinski <apinski@apple.com>
 
 	* c-typeck.c (tagged_types_tu_compatible_p <case UNION_TYPE>):

@@ -584,6 +584,10 @@ fobjc-exceptions
 ObjC ObjC++
 Enable Objective-C exception and synchronization syntax
 
+fobjc-sjlj-exceptions
+ObjC ObjC++
+Enable Objective-C setjmp exception handling runtime
+
 foperator-names
 C++ ObjC++
 Recognize C++ kewords like \"compl\" and \"xor\"

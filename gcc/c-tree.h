@@ -298,6 +298,9 @@ extern int system_header_p;
 
 extern bool c_override_global_bindings_to_false;
 
+/* True means we've initialized exception handling.  */
+extern bool c_eh_initialized_p;
+
 /* In c-decl.c */
 extern void c_finish_incomplete_decl (tree);
 extern void *get_current_scope (void);
