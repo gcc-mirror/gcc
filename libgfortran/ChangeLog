@@ -1,5 +1,10 @@
 2004-12-07  Steve Ellcey  <sje@cup.hp.com>
 
+	* libgfortran/Makefile.am (AM_MAKEFLAGS): New.
+	* libgfortran/Makefile.in: Regenerate
+
+2004-12-07  Steve Ellcey  <sje@cup.hp.com>
+
 	* io/io.h (open_external): Change prototype.
 	* io/unix.c (regular_file): Change prototype and set flags->action if
 	needed.
