@@ -357,6 +357,7 @@ static char* TAG_EXECCLASS;
 /* Some commonly used instances of "identifier_node".  */
 
 static tree self_id, ucmd_id;
+static tree unused_list;
 
 static tree self_decl, umsg_decl, umsg_super_decl;
 static tree objc_get_class_decl, objc_get_meta_class_decl;
@@ -2820,14 +2821,18 @@ build_tmp_function_decl ()
   /* struct objc_object *objc_xxx (id, SEL, ...); */
   pushlevel (0);
   decl_specs = build_tree_list (NULLT, objc_object_reference);
-  push_parm_decl (build_tree_list (decl_specs,
-				   build1 (INDIRECT_REF, NULLT, NULLT)));
+  push_parm_decl (build_tree_list
+		  (build_tree_list (decl_specs,
+				    build1 (INDIRECT_REF, NULLT, NULLT)),
+		   build_tree_list (NULL_TREE, NULL_TREE)));
+						    
 
   decl_specs = build_tree_list (NULLT, xref_tag (RECORD_TYPE,
 					  get_identifier (TAG_SELECTOR)));
   expr_decl = build1 (INDIRECT_REF, NULLT, NULLT);
 
-  push_parm_decl (build_tree_list (decl_specs, expr_decl));
+  push_parm_decl (build_tree_list (build_tree_list (decl_specs, expr_decl),
+				   build_tree_list (NULL_TREE, NULL_TREE)));
   parms = get_parm_info (0);
   poplevel (0, 0, 0);
 
@@ -5859,10 +5864,12 @@ start_class (code, class_name, super_name, protocol_list)
 
       /* pre-build the following entities - for speed/convenience. */
       if (!self_id)
-        self_id = get_identifier ("self");
+	  self_id = get_identifier ("self");
       if (!ucmd_id)
         ucmd_id = get_identifier ("_cmd");
-
+      if (!unused_list)
+	unused_list
+	  = build_tree_list (get_identifier ("__unused__"), NULL_TREE);
       if (!objc_super_template)
 	objc_super_template = build_super_template ();
 
@@ -5937,7 +5944,9 @@ start_class (code, class_name, super_name, protocol_list)
         self_id = get_identifier ("self");
       if (!ucmd_id)
         ucmd_id = get_identifier ("_cmd");
-
+      if (!unused_list)
+	unused_list
+	  = build_tree_list (get_identifier ("__unused__"), NULL_TREE);
       if (!objc_super_template)
 	objc_super_template = build_super_template ();
 
@@ -6575,19 +6584,24 @@ start_method_def (method)
        assign to self...which changes its type midstream.  */
     decl_specs = build_tree_list (NULLT, objc_object_reference);
 
-  push_parm_decl (build_tree_list (decl_specs,
-				   build1 (INDIRECT_REF, NULLT, self_id)));
+  push_parm_decl (build_tree_list
+		  (build_tree_list (decl_specs,
+				    build1 (INDIRECT_REF, NULLT, self_id)),
+		   build_tree_list (NULL_TREE, NULL_TREE)));
 
 #ifdef OBJC_INT_SELECTORS
   decl_specs = build_tree_list (NULLT, ridpointers[(int) RID_UNSIGNED]);
   decl_specs = tree_cons (NULLT, ridpointers[(int) RID_INT], decl_specs);
-  push_parm_decl (build_tree_list (decl_specs, ucmd_id));
+  push_parm_decl (build_tree_list (build_tree_list (decl_specs, ucmd_id),
+				   build_tree_list (unused_list, NULL_TREE)));
 #else /* not OBJC_INT_SELECTORS */
   decl_specs = build_tree_list (NULLT,
 				xref_tag (RECORD_TYPE,
 					  get_identifier (TAG_SELECTOR)));
-  push_parm_decl (build_tree_list (decl_specs,
-				   build1 (INDIRECT_REF, NULLT, ucmd_id)));
+  push_parm_decl (build_tree_list
+		  (build_tree_list (decl_specs,
+				    build1 (INDIRECT_REF, NULLT, ucmd_id)),
+		   build_tree_list (unused_list, NULL_TREE)));
 #endif /* not OBJC_INT_SELECTORS */
 
   /* generate argument declarations if a keyword_decl */
@@ -6605,13 +6619,17 @@ start_method_def (method)
 
 	      /* unite the abstract decl with its name */
 	      TREE_OPERAND (last_expr, 0) = KEYWORD_ARG_NAME (arglist);
-	      push_parm_decl (build_tree_list (arg_spec, arg_decl));
+	      push_parm_decl (build_tree_list
+			      (build_tree_list (arg_spec, arg_decl),
+			       build_tree_list (NULL_TREE, NULL_TREE)));
 	      /* unhook...restore the abstract declarator */
 	      TREE_OPERAND (last_expr, 0) = NULLT;
 	    }
 	  else
-	    push_parm_decl (build_tree_list (arg_spec,
-					     KEYWORD_ARG_NAME (arglist)));
+	    push_parm_decl (build_tree_list
+			    (build_tree_list (arg_spec,
+					      KEYWORD_ARG_NAME (arglist)),
+			     build_tree_list (NULL_TREE, NULL_TREE)));
 
 	  arglist = TREE_CHAIN (arglist);
 	}
