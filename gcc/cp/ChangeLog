@@ -1,7 +1,22 @@
+2003-03-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (perform_overload_resolution): New function.
+	(build_new_function_call): Use it.
+	(build_operator_new_call): Likewise.
+	(add_candidates): Add explicit_targs and template_only parameters.
+	(build_new_op): Adjust accordingly.
+	* cp-tree.h (build_operator_new_call): New function.
+	(build_function_call_real): Remove.
+	(build_function_call_maybe): Likewise.
+	* init.c (build_new_1): Use build_operator_new_call.
+	* typeck.c (build_function_call_real): Rename to ...
+	(build_function_call): ... this.
+
 2003-03-10  Devang Patel  <dpatel@apple.com>
 	
 	PR c++/9394
 	* g++spec.c (lang_specific_driver): Use DEFAULT_WORD_SWTCH_TAKES_ARG.
+
 2003-03-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/9798
