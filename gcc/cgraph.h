@@ -27,10 +27,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct cgraph_local_info GTY(())
 {
-  /* Set when function function is visiable in current compilation unit only
+  /* Set when function function is visible in current compilation unit only
      and it's address is never taken.  */
   bool local;
-  /* Set when function is small enought to be inlinable many times.  */
+  /* Set when function is small enough to be inlinable many times.  */
   bool inline_many;
   /* Set when function can be inlined once (false only for functions calling
      alloca, using varargs and so on).  */
@@ -58,7 +58,7 @@ struct cgraph_rtl_info GTY(())
 
 
 /* The cgraph data strutcture.
-   Each function decl has assigned cgraph_node listing calees and callers.  */
+   Each function decl has assigned cgraph_node listing callees and callers.  */
 
 struct cgraph_node GTY(())
 {
@@ -79,7 +79,7 @@ struct cgraph_node GTY(())
      or it's address is taken.  */
   bool needed;
   /* Set when function is reachable by call from other function
-     that is eighter reachable or needed.  */
+     that is either reachable or needed.  */
   bool reachable;
   /* Set when the frontend has been asked to lower representation of this
      function into trees.  Callees lists are not available when lowered

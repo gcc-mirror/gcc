@@ -4103,7 +4103,7 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
 
       /* (float_truncate:SF (float_truncate:DF foo:XF))
          = (float_truncate:SF foo:XF).
-	 This may elliminate double rounding, so it is unsafe.
+	 This may eliminate double rounding, so it is unsafe.
 
          (float_truncate:SF (float_extend:XF foo:DF))
          = (float_truncate:SF foo:DF).

@@ -466,7 +466,7 @@ extern struct dlist *web_lists[(int) LAST_NODE_TYPE];
 
 /* The largest DF_REF_ID of defs resp. uses, as it was in the
    last pass.  In the first pass this is zero.  Used to distinguish new
-   from old refrences.  */
+   from old references.  */
 extern unsigned int last_def_id;
 extern unsigned int last_use_id;
 
@@ -563,7 +563,7 @@ extern int flag_ra_break_aliases;
 extern int flag_ra_merge_spill_costs;
 
 /* Nonzero if we want to spill at every use, instead of at deaths,
-   or intereference region borders.  */
+   or interference region borders.  */
 extern int flag_ra_spill_every_use;
 
 /* Nonzero to output all notes in the debug dumps.  */

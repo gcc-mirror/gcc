@@ -46,7 +46,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Format an integer given by va_arg (ARG, type-specifier T) where
    type-specifier is a precision modifier as indicated by PREC.  F is
-   a string used to construct the appropciate format-specifier.  */
+   a string used to construct the appropriate format-specifier.  */
 #define output_integer_with_precision(BUFFER, ARG, PREC, T, F)  \
   do                                                            \
     switch (PREC)                                               \
@@ -332,7 +332,7 @@ output_append_r (output_buffer *buffer, const char *start, int length)
   output_text_length (buffer) += length;
 }
 
-/* Append a string deliminated by START and END to BUFFER.  No wrapping is
+/* Append a string delimited by START and END to BUFFER.  No wrapping is
    done.  However, if beginning a new line then emit BUFFER->state.prefix
    and skip any leading whitespace if appropriate.  The caller must ensure
    that it is safe to do so.  */

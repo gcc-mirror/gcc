@@ -1748,7 +1748,7 @@ try_recolor_web (web)
 	}
       /* Mark colors for which some wide webs are involved.  For
 	 those the independent sets are not simply one-node graphs, so
-	 they can't be recolored independ from their neighborhood.  This
+	 they can't be recolored independent from their neighborhood.  This
 	 means, that our cost calculation can be incorrect (assuming it
 	 can avoid spilling a web because it thinks some colors are available,
 	 although it's neighbors which itself need recoloring might take

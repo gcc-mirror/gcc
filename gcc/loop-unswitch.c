@@ -32,7 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "expr.h"
 
 /* This pass moves constant conditions out of loops, duplicating the loop
-   in progres, i.e. this code:
+   in progress, i.e. this code:
 
    while (loop_cond)
      {

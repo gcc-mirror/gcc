@@ -4842,7 +4842,7 @@ reg_killed_on_edge (reg, e)
    JUMP.  Otherwise, SETCC is NULL, and JUMP is the first insn of BB.
    Returns nonzero if a change was made.
 
-   During the jump bypassing pass, we may place copies of SETCC instuctions
+   During the jump bypassing pass, we may place copies of SETCC instructions
    on CFG edges.  The following routine must be careful to pay attention to
    these inserted insns when performing its transformations.  */
 
@@ -4885,8 +4885,8 @@ bypass_block (bb, setcc, jump)
 	continue;
 
       /* The irreducible loops created by redirecting of edges entering the
-	 loop from outside would decrease effectivity of some of the following
-	 optimalizations, so prevent this.  */
+	 loop from outside would decrease effectiveness of some of the following
+	 optimizations, so prevent this.  */
       if (may_be_loop_header
 	  && !(e->flags & EDGE_DFS_BACK))
 	continue;
@@ -5839,7 +5839,7 @@ add_label_notes (x, insn)
   if (code == LABEL_REF && !LABEL_REF_NONLOCAL_P (x))
     {
       /* This code used to ignore labels that referred to dispatch tables to
-	 avoid flow generating (slighly) worse code.
+	 avoid flow generating (slightly) worse code.
 
 	 We no longer ignore such label references (see LABEL_REF handling in
 	 mark_jump_label for additional information).  */
@@ -6448,7 +6448,7 @@ hoist_code ()
 		 to avoid any possible code expansion due to register
 		 allocation issues; however experiments have shown that
 		 the vast majority of hoistable expressions are only movable
-		 from two successors, so raising this threshhold is likely
+		 from two successors, so raising this threshold is likely
 		 to nullify any benefit we get from code hoisting.  */
 	      if (hoistable > 1)
 		{
@@ -7163,7 +7163,7 @@ extract_mentioned_regs_helper (x, accum)
 
    The things are complicated a bit by fact that there already may be stores
    to the same MEM from other blocks; also caller must take care of the
-   neccessary cleanup of the temporary markers after end of the basic block.
+   necessary cleanup of the temporary markers after end of the basic block.
    */
 
 static void
@@ -7222,7 +7222,7 @@ find_moveable_store (insn, regs_set_before, regs_set_after)
 						ANTIC_STORE_LIST (ptr));
     }
 
-  /* It is not neccessary to check whether store is available if we did
+  /* It is not necessary to check whether store is available if we did
      it successfully before; if we failed before, do not bother to check
      until we reach the insn that caused us to fail.  */
   check_available = 0;
@@ -7608,7 +7608,7 @@ build_store_vectors ()
 	  if (store_killed_after (ptr->pattern, ptr->pattern_regs, bb->head,
 				  bb, regs_set_in_block, NULL))
 	    {
-	      /* It should not be neccessary to consider the expression
+	      /* It should not be necessary to consider the expression
 		 killed if it is both anticipatable and available.  */
 	      if (!TEST_BIT (st_antloc[bb->index], ptr->index)
 		  || !TEST_BIT (ae_gen[bb->index], ptr->index))

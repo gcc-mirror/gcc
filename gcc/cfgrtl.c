@@ -905,7 +905,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
   if (e->src != ENTRY_BLOCK_PTR && e->dest != EXIT_BLOCK_PTR
       && any_condjump_p (e->src->end)
       /* When called from cfglayout, fallthru edges do not
-         neccessarily go to the next block.  */
+         necessarily go to the next block.  */
       && e->src->next_bb == e->dest
       && JUMP_LABEL (e->src->end) == e->dest->head)
     {
@@ -1331,9 +1331,9 @@ mark_killed_regs (rtx reg, rtx set ATTRIBUTE_UNUSED, void *data)
 
 /* Similar to insert_insn_on_edge, tries to put INSN to edge E.  Additionally
    it checks whether this will not clobber the registers that are live on the
-   edge (i.e. it requieres liveness information to be up-to-date) and if there
+   edge (i.e. it requires liveness information to be up-to-date) and if there
    are some, then it tries to save and restore them.  Returns true if
-   succesful.  */
+   successful.  */
 bool
 safe_insert_insn_on_edge (rtx insn, edge e)
 {

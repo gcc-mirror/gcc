@@ -92,7 +92,7 @@ struct insn_info
 {
   struct df_link *defs;		/* Head of insn-def chain.  */
   struct df_link *uses;		/* Head of insn-use chain.  */
-  /* ???? The following luid field should be considerd private so that
+  /* ???? The following luid field should be considered private so that
      we can change it on the fly to accommodate new insns?  */
   int luid;			/* Logical UID.  */
 };

@@ -71,7 +71,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define gen_prefetch(a,b,c) (abort(), NULL_RTX)
 #endif
 
-/* Give up the prefetch optimizations once we exceed a given threshhold.
+/* Give up the prefetch optimizations once we exceed a given threshold.
    It is unlikely that we would be able to optimize something in a loop
    with so many detected prefetches.  */
 #define MAX_PREFETCHES 100
@@ -1774,7 +1774,7 @@ add_label_notes (x, insns)
   if (code == LABEL_REF && !LABEL_REF_NONLOCAL_P (x))
     {
       /* This code used to ignore labels that referred to dispatch tables to
-         avoid flow generating (slighly) worse code.
+         avoid flow generating (slightly) worse code.
 
          We no longer ignore such label references (see LABEL_REF handling in
          mark_jump_label for additional information).  */
@@ -10650,7 +10650,7 @@ loop_insn_sink (loop, pattern)
   return loop_insn_emit_before (loop, 0, loop->sink, pattern);
 }
 
-/* bl->final_value can be eighter general_operand or PLUS of general_operand
+/* bl->final_value can be either general_operand or PLUS of general_operand
    and constant.  Emit sequence of instructions to load it into REG.  */
 static rtx
 gen_load_of_final_value (reg, final_value)

@@ -853,8 +853,8 @@ adjust_depth (void)
     {
       top = G.by_depth[G.by_depth_in_use-1];
 
-      /* Peel back indicies in depth that index into by_depth, so that
-	 as new elements are added to by_depth, we note the indicies
+      /* Peel back indices in depth that index into by_depth, so that
+	 as new elements are added to by_depth, we note the indices
 	 of those elements, if they are for new context depths.  */
       while (G.depth_in_use > (size_t)top->context_depth+1)
 	--G.depth_in_use;

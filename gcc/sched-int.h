@@ -188,7 +188,7 @@ struct haifa_insn_data
   int priority;
 
   /* The number of incoming edges in the forward dependency graph.
-     As scheduling proceds, counts are decreased.  An insn moves to
+     As scheduling proceeds, counts are decreased.  An insn moves to
      the ready queue when its counter reaches zero.  */
   int dep_count;
 

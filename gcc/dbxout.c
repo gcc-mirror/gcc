@@ -2014,7 +2014,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
       || DECL_IGNORED_P (decl))
     DBXOUT_DECR_NESTING_AND_RETURN (0);
 
-  /* If we are to generate only the symbols actualy used then such
+  /* If we are to generate only the symbols actually used then such
      symbol nodees are flagged with TREE_USED.  Ignore any that
      aren't flaged as TREE_USED.  */
 

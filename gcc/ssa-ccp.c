@@ -338,7 +338,7 @@ visit_expression (insn, block)
 	     blocks as executable if they have not already been
 	     marked.
 
-	     One day we may try do better with swtich tables and
+	     One day we may try do better with switch tables and
 	     other computed jumps.  */
 	  for (curredge = block->succ; curredge;
 	       curredge = curredge->succ_next)

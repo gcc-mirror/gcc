@@ -206,7 +206,7 @@ static struct sched_info ebb_sched_info =
   0, 1
 };
 
-/* It is possible that ebb scheduling elliminated some blocks.
+/* It is possible that ebb scheduling eliminated some blocks.
    Place blocks from FIRST to LAST before BEFORE.  */
 
 static void
@@ -268,7 +268,7 @@ fix_basic_block_boundaries (bb, last, head, tail)
 	    last_inside = insn;
 	}
       /* Control flow instruction terminate basic block.  It is possible
-	 that we've elliminated some basic blocks (made them empty).
+	 that we've eliminated some basic blocks (made them empty).
 	 Find the proper basic block using BLOCK_FOR_INSN and arrange things in
 	 a sensible way by inserting empty basic blocks as needed.  */
       if (control_flow_insn_p (insn) || (insn == tail && last_inside))
@@ -303,7 +303,7 @@ fix_basic_block_boundaries (bb, last, head, tail)
 		  h = curr_bb->head;
 		  curr_bb->head = head;
 		  curr_bb->end = insn;
-		  /* Edge splitting created missplaced BASIC_BLOCK note, kill
+		  /* Edge splitting created misplaced BASIC_BLOCK note, kill
 		     it.  */
 		  delete_insn (h);
 		}
@@ -453,7 +453,7 @@ add_deps_for_risky_insns (head, tail)
 	  case TRAP_RISKY:
 	  case IRISKY:
 	  case PRISKY_CANDIDATE:
-	    /* ??? We could implement better checking PRISKY_CANDIATEs
+	    /* ??? We could implement better checking PRISKY_CANDIDATEs
 	       analogous to sched-rgn.c.  */
 	    /* We can not change the mode of the backward
 	       dependency because REG_DEP_ANTI has the lowest

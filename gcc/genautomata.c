@@ -1616,7 +1616,7 @@ n_sep_els (char *s, int sep, int par_flag)
    elements in the string and number of elements through els_num.
    Take parentheses into account if PAREN_P has nonzero value.  The
    function also inserts the end marker NULL at the end of vector.
-   Return 0 for the null string, -1 if parantheses are not balanced.  */
+   Return 0 for the null string, -1 if parentheses are not balanced.  */
 static char **
 get_str_vect (char *str, int *els_num, int sep, int paren_p)
 {

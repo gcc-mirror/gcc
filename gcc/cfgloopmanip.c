@@ -471,7 +471,7 @@ add_loop (struct loops *loops, struct loop *loop)
   free (bbs);
 }
 
-/* Multiply all frequencies of basic blocks in array BBS of lenght NBBS
+/* Multiply all frequencies of basic blocks in array BBS of length NBBS
    by NUM/DEN.  */
 static void
 scale_bbs_frequencies (basic_block *bbs, int nbbs, int num, int den)
@@ -604,7 +604,7 @@ unloop (struct loops *loops, struct loop *loop)
   edge *edges;
   unsigned n_edges;
 
-  /* This is relatively straigtforward.  The dominators are unchanged, as
+  /* This is relatively straightforward.  The dominators are unchanged, as
      loop header dominates loop latch, so the only thing we have to care of
      is the placement of loops and basic blocks inside the loop tree.  We
      move them all to the loop->outer, and then let fix_bb_placements do
@@ -831,7 +831,7 @@ loop_delete_branch_edge (edge e, int really_delete)
    Additionally, we perform following manipulation with edges:
    We have two special edges given. LATCH_EDGE is the latch edge of the
    duplicated loop and leads into its header (one of blocks in BBS);
-   it does not have neccessarily lead from one of the blocks, because
+   it does not have necessarily lead from one of the blocks, because
    we may be copying the loop body several times in unrolling.
    Edge ENTRY leads also leads to header, and it is either latch or entry
    edge.  Copy of LATCH_EDGE is redirected to header and is stored in
