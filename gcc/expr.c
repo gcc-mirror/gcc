@@ -6803,6 +6803,11 @@ expand_expr (exp, target, tmode, modifier)
 			 && REGNO (original_target) >= FIRST_PSEUDO_REGISTER
 			 && original_target == var_rtx (singleton)))
 		 && GET_MODE (original_target) == mode
+#ifdef HAVE_conditional_move
+		 && (! can_conditionally_move_p (mode)
+		     || GET_CODE (original_target) == REG
+		     || TREE_ADDRESSABLE (type))
+#endif
 		 && ! (GET_CODE (original_target) == MEM
 		       && MEM_VOLATILE_P (original_target)))
 	  temp = original_target;
