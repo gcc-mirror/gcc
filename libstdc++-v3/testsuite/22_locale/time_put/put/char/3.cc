@@ -56,8 +56,8 @@ void test03()
 
   oss.str(empty); // "%I:%M:%S %Z"
   iterator_type os_it26 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X');
-  string result26 = oss.str(); // "12:00:00 CET"
-  VERIFY( result26 == "12:00:00 CET" );
+  string result26 = oss.str(); // "12:00:00 CET" or whatever timezone
+  VERIFY( result26.find("12:00:00") != string::npos );
 
   oss.str(empty);
   iterator_type os_it35 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'x', 'E');
@@ -67,7 +67,7 @@ void test03()
   oss.str(empty);
   iterator_type os_it36 = tim_put.put(oss.rdbuf(), oss, '*', &time1, 'X', 'E');
   string result36 = oss.str(); // "12:00:00 CET"
-  VERIFY( result36 == "12:00:00 CET" );
+  VERIFY( result36.find("12:00:00") != string::npos );
 }
 
 int main()
