@@ -1,5 +1,13 @@
 2002-09-13  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/fixunssfsi.c: Replace H8/S with H8S.
+	* config/h8300/h8300.c: Likewise.
+	* config/h8300/h8300.h: Likewise.
+	* config/h8300/h8300.md: Likewise.
+	* doc/invoke.texi: Likewise.
+
+2002-09-13  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (h8300_init_once): Fix formatting.
 
 2002-09-13  Matt Austern  <austern@apple.com>

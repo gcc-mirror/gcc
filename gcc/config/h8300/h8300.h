@@ -115,10 +115,10 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { {"s",		1,     N_("Generate H8/S code")},		\
-    {"no-s",		-1,    N_("Do not generate H8/S code")},	\
-    {"s2600",		2,     N_("Generate H8/S2600 code")},           \
-    {"no-s2600",	-2,    N_("Do not generate H8/S2600 code")},    \
+  { {"s",		1,     N_("Generate H8S code")},		\
+    {"no-s",		-1,    N_("Do not generate H8S code")},	\
+    {"s2600",		2,     N_("Generate H8S/2600 code")},           \
+    {"no-s2600",	-2,    N_("Do not generate H8S/2600 code")},    \
     {"int32",		8,     N_("Make integers 32 bits wide")},	\
     {"addresses",	64,    NULL},					\
     {"quickcall",	128,						\
@@ -228,7 +228,7 @@ extern int target_flags;
 #define PCC_BITFIELD_TYPE_MATTERS  0
 
 /* No data type wants to be aligned rounder than this.
-   32 bit values are aligned as such on the H8/300H and H8/S for speed.  */
+   32 bit values are aligned as such on the H8/300H and H8S for speed.  */
 #define BIGGEST_ALIGNMENT \
 (((TARGET_H8300H || TARGET_H8300S) && ! TARGET_ALIGN_300) ? 32 : 16)
 
@@ -835,7 +835,7 @@ struct cum_arg
 	   && (INTVAL (X) & 0x0000FFFF) <= 0xffff)))
 
 /* Nonzero if X is a constant address suitable as an 16-bit absolute
-   on H8/300H and H8/S.  */
+   on H8/300H and H8S.  */
 
 #define TINY_CONSTANT_ADDRESS_P(X)					\
   ((GET_CODE (X) == CONST_INT)						\
@@ -851,7 +851,7 @@ struct cum_arg
    i.e. a register, register indirect, or the eightbit memory region
    (a SYMBOL_REF with an SYMBOL_REF_FLAG set).
 
-   On the H8/S 'U' can also be a 16bit or 32bit absolute.  */
+   On the H8S 'U' can also be a 16bit or 32bit absolute.  */
 #define OK_FOR_U(OP)							\
   ((GET_CODE (OP) == REG && REG_OK_FOR_BASE_P (OP))			\
    || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG		\
