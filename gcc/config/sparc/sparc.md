@@ -6131,9 +6131,9 @@ if (! TARGET_ARCH64)
 ;	(ffs:DI (match_operand:DI 1 "register_operand" "r")))
 ;   (clobber (match_scratch:DI 2 "=&r"))]
 ;  "TARGET_ARCH64"
-;  "neg %1,%2\;xnor %1,%2,%2\;popc %2,%0"
+;  "neg %1,%2\;xnor %1,%2,%2\;popc %2,%0\;movzr %1,0,%0"
 ;  [(set_attr "type" "multi")
-;   (set_attr "length" "3")])
+;   (set_attr "length" "4")])
 
 ;; Split up troublesome insns for better scheduling.  */
 
