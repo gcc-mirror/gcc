@@ -33,18 +33,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 -DOSF -DOSF1 -Dbsd4_2 -DMIPSEL -Dhost_mips -Dmips -Dunix -DR3000 -DSYSTYPE_BSD \
 -Asystem(unix) -Asystem(xpg4) -Acpu(mips) -Amachine(mips)"
 
-#define ASM_SPEC	"\
+#define ASM_SPEC "\
 %{mmips-as: \
-	%{pipe:%e:-pipe not supported} \
-	%{EL} %{!EL:-EL} \
-	%{EB: %e-EB not supported} \
-	%{!mrnames: %{!.s:-nocpp} %{.s: %{cpp} %{nocpp}}} \
-	%{mips1} %{mips2} %{mips3} \
-	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
-	%{g} %{g0} %{g1} %{g2} %{g3} \
-	%{K} %{Q}} \
-	%{v*: -v} \
-	%{G*}"
+	%{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
+	%{pipe: %e-pipe is not supported.} \
+	%{K}} \
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{v} \
+%{noasmopt:-O0} \
+%{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
+%{g} %{g0} %{g1} %{g2} %{g3} \
+%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
+%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
+%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
+%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3}"
 
 #ifndef CROSS_COMPILE
 #define ASM_FINAL_SPEC "\
@@ -78,13 +79,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{.m:	-D__LANGUAGE_OBJECTIVE_C__ -D__LANGUAGE_OBJECTIVE_C} \
 %{!.S:%{!.s:	-D__LANGUAGE_C__  -D__LANGUAGE_C %{!ansi:-DLANGUAGE_C}}}"
 
+/* ??? This assumes that GNU as is always used with GNU ld, and MIPS as is
+   always used with MIPS ld.  */
 #define LINK_SPEC "\
-%{G*} \
-%{mmips-as: \
-	%{EL} %{!EL: -EL} \
-	%{EB: %e-EB not supported} \
-	%{mips1} %{mips2} %{mips3} \
-	%{bestGnum}} \
+%{G*} %{EL} %{EB} %{mips1} %{mips2} %{mips3} \
+%{bestGnum} \
 %{!mmips-as: \
  	%{v*: -v} \
 	%{!noshrlib: %{pic-none: -noshrlib} %{!pic-none: -warn_nopic}} \
@@ -122,11 +121,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{pic-names*: -mhalf-pic} \
 %{!pic-*:     -mhalf-pic}"
 
-/* Specify size_t, ptrdiff_t, and wchar_t types.  */
-#define SIZE_TYPE	"long unsigned int"
-#define PTRDIFF_TYPE	"int"
+/* Specify wchar_t types.  */
 #define WCHAR_TYPE	"unsigned int"
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
+#define MAX_WCHAR_TYPE_SIZE MAX_LONG_TYPE_SIZE
 
 /* OSF/1 uses gas, not the mips assembler.  */
 #define TARGET_DEFAULT MASK_GAS
