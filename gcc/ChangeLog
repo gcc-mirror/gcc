@@ -1,4 +1,9 @@
-2004-04-12  Andrew Pinski  <pinskia@physics.uc.edu>
+2004-04-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/rs6000/rs6000.c (symbol_ref_operand): Remove hack
+	for TARGET_MACHO.
+	(print_operand): For TARGET_MACHO check to see if we need a stub
+	and output one if we need it.
 
 	PR debug/15033
 	* dwarf2out.c (rtl_for_decl_location): Check for NULL
