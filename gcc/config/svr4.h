@@ -249,7 +249,10 @@ do {				 				\
 /* #define MULTIBYTE_CHARS */
 
 #undef ASM_BYTE_OP
-#define ASM_BYTE_OP	"\t.byte"
+#define ASM_BYTE_OP	".byte"
+
+#undef SET_ASM_OP
+#define SET_ASM_OP	".set"
 
 /* This is how to begin an assembly language file.  Most svr4 assemblers want
    at least a .file directive to come first, and some want to see a .version
