@@ -406,7 +406,7 @@ int flag_enforce_eh_specs = 1;
     if `-fSTRING' is seen as an option.
    (If `-fno-STRING' is seen as an option, the opposite value is stored.)  */
 
-static struct { const char *const string; int *variable; int on_value;}
+static const struct { const char *const string; int *const variable; const int on_value;}
 lang_f_options[] =
 {
   /* C/C++ options.  */

@@ -100,12 +100,12 @@ struct rtx_definition
 
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS) { STRINGX(ENUM), NAME, FORMAT },
 
-const struct rtx_definition defs[] = 
+static const struct rtx_definition defs[] = 
 {  
 #include "rtl.def"		/* rtl expressions are documented here */
 };
 
-const char *formats[NUM_RTX_CODE];
+static const char *formats[NUM_RTX_CODE];
 
 static const char *type_from_format	PARAMS ((int));
 static const char *accessor_from_format	PARAMS ((int));

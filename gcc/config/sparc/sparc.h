@@ -1091,7 +1091,7 @@ while (0)
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    See sparc.c for how we initialize this.  */
-extern int *hard_regno_mode_classes;
+extern const int *hard_regno_mode_classes;
 extern int sparc_mode_class[];
 
 /* ??? Because of the funny way we pass parameters we should allow certain

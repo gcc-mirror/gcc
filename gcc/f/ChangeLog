@@ -1,3 +1,8 @@
+Sun Dec 23 10:45:09 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (ffecom_gfrt_volatile_, ffecom_gfrt_complex_,
+	ffecom_gfrt_const_, ffecom_gfrt_type_): Const-ify.
+
 Sat Dec 22 16:01:51 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* bld.c (ffebld_arity_op_): Declare array size explicitly.

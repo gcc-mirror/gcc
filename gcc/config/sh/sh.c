@@ -122,7 +122,7 @@ char fp_reg_names[][5] =
 /* Provide reg_class from a letter such as appears in the machine
    description.  */
 
-enum reg_class reg_class_from_letter[] =
+const enum reg_class reg_class_from_letter[] =
 {
   /* a */ ALL_REGS, /* b */ NO_REGS, /* c */ FPSCR_REGS, /* d */ DF_REGS,
   /* e */ NO_REGS, /* f */ FP_REGS, /* g */ NO_REGS, /* h */ NO_REGS,
@@ -957,11 +957,11 @@ output_file_start (file)
 }
 
 /* Actual number of instructions used to make a shift by N.  */
-static char ashiftrt_insns[] =
+static const char ashiftrt_insns[] =
   { 0,1,2,3,4,5,8,8,8,8,8,8,8,8,8,8,2,3,4,5,8,8,8,8,8,8,8,8,8,8,8,2};
 
 /* Left shift and logical right shift are the same.  */
-static char shift_insns[]    =
+static const char shift_insns[]    =
   { 0,1,1,2,2,3,3,4,1,2,2,3,3,4,3,3,1,2,2,3,3,4,3,3,2,3,3,4,4,4,3,3};
 
 /* Individual shift amounts needed to get the above length sequences.
@@ -982,10 +982,10 @@ static short shift_amounts[32][5] = {
    might be clobbered.  This is typically used when combined with some
    kind of sign or zero extension.  */
    
-static char ext_shift_insns[]    =
+static const char ext_shift_insns[]    =
   { 0,1,1,2,2,3,2,2,1,2,2,3,3,3,2,2,1,2,2,3,3,4,3,3,2,3,3,4,4,4,3,3};
 
-static short ext_shift_amounts[32][4] = {
+static const short ext_shift_amounts[32][4] = {
   {0}, {1}, {2}, {2, 1},
   {2, 2}, {2, 1, 2}, {8, -2}, {8, -1},
   {8}, {8, 1}, {8, 2}, {8, 1, 2},

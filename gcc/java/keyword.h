@@ -1,5 +1,5 @@
-/* C code produced by gperf version 2.7 */
-/* Command-line: gperf -L C -F , 0 -p -t -j1 -i 1 -g -o -N java_keyword -k1,4,$ keyword.gperf  */
+/* C code produced by gperf version 2.7.2 */
+/* Command-line: gperf -L C -C -F ', 0' -p -t -j1 -i 1 -g -o -N java_keyword -k'1,4,$' keyword.gperf  */
 /* Keyword definition for the GNU compiler for the Java(TM) language.
    Copyright (C) 1997, 1998 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
@@ -25,7 +25,7 @@ Java and all Java-based marks are trademarks or registered trademarks
 of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
-struct java_keyword { const char *const name; int token; };
+struct java_keyword { const char *const name; const int token; };
 #ifdef __GNUC__
 __inline
 #endif
@@ -33,7 +33,7 @@ static unsigned int hash		PARAMS ((const char *, unsigned int));
 #ifdef __GNUC__
 __inline
 #endif
-struct java_keyword *java_keyword	PARAMS ((const char *, unsigned int));
+const struct java_keyword *java_keyword	PARAMS ((const char *, unsigned int));
 
 #define TOTAL_KEYWORDS 51
 #define MIN_WORD_LENGTH 2
@@ -44,13 +44,17 @@ struct java_keyword *java_keyword	PARAMS ((const char *, unsigned int));
 
 #ifdef __GNUC__
 __inline
+#else
+#ifdef __cplusplus
+inline
+#endif
 #endif
 static unsigned int
 hash (str, len)
      register const char *str;
      register unsigned int len;
 {
-  static unsigned char asso_values[] =
+  static const unsigned char asso_values[] =
     {
       96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
       96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
@@ -98,14 +102,15 @@ hash (str, len)
 #ifdef __GNUC__
 __inline
 #endif
-struct java_keyword *
+const struct java_keyword *
 java_keyword (str, len)
      register const char *str;
      register unsigned int len;
 {
-  static struct java_keyword wordlist[] =
+  static const struct java_keyword wordlist[] =
     {
-      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"", 0},
       {"else", ELSE_TK},
       {"true", TRUE_TK},
       {"case", CASE_TK},
@@ -163,12 +168,14 @@ java_keyword (str, len)
       {"instanceof", INSTANCEOF_TK},
       {"", 0},
       {"throw", THROW_TK},
-      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"", 0},
       {"native", NATIVE_TK},
       {"", 0}, {"", 0}, {"", 0}, {"", 0},
       {"import", IMPORT_TK},
-      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+      {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
       {"goto", GOTO_TK}
     };
 

@@ -251,7 +251,7 @@ enum arc_mode_class {
 
 /* Value is 1 if register/mode pair is acceptable on arc.  */
 
-unsigned int arc_hard_regno_mode_ok[] = {
+const unsigned int arc_hard_regno_mode_ok[] = {
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES,
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES,
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, D_MODES,

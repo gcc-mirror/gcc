@@ -53,7 +53,7 @@ int lang_specific_extra_outfiles = 0;
 /* True if we should add -shared-libgcc to the command-line.  */
 int shared_libgcc = 1;
 
-const char jvgenmain_spec[] =
+static const char jvgenmain_spec[] =
   "jvgenmain %{D*} %b %{!pipe:%u.i} |\n\
    cc1 %{!pipe:%U.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
