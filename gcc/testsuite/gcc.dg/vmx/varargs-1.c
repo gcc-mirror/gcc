@@ -81,16 +81,16 @@ int main()
   return 0;
 }
 
-/* { dg-output "1, 1, 1, 1\n" }
-   { dg-output "2, 2, 2, 2\n" }
-   { dg-output "3, 3, 3, 3\n" }
-   { dg-output "4, 4, 4, 4\n" }
-   { dg-output "5, 5, 5, 5\n" }
-   { dg-output "6, 6, 6, 6\n" }
-   { dg-output "7, 7, 7, 7\n" }
-   { dg-output "8, 8, 8, 8\n" }
-   { dg-output "9, 9, 9, 9\n" }
-   { dg-output "10, 10, 10, 10\n" }
-   { dg-output "11, 11, 11, 11\n" }
-   { dg-output "12, 12, 12, 12\n" }
+/* { dg-output "1, 1, 1, 1(\n|\r\n|\r)" }
+   { dg-output "2, 2, 2, 2(\n|\r\n|\r)" }
+   { dg-output "3, 3, 3, 3(\n|\r\n|\r)" }
+   { dg-output "4, 4, 4, 4(\n|\r\n|\r)" }
+   { dg-output "5, 5, 5, 5(\n|\r\n|\r)" }
+   { dg-output "6, 6, 6, 6(\n|\r\n|\r)" }
+   { dg-output "7, 7, 7, 7(\n|\r\n|\r)" }
+   { dg-output "8, 8, 8, 8(\n|\r\n|\r)" }
+   { dg-output "9, 9, 9, 9(\n|\r\n|\r)" }
+   { dg-output "10, 10, 10, 10(\n|\r\n|\r)" }
+   { dg-output "11, 11, 11, 11(\n|\r\n|\r)" }
+   { dg-output "12, 12, 12, 12(\n|\r\n|\r)" }
  */
