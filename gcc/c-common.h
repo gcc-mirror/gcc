@@ -530,12 +530,13 @@ extern tree c_expand_expr_stmt			PARAMS ((tree));
 extern void c_expand_start_cond			PARAMS ((tree, int, tree));
 extern void c_finish_then                       PARAMS ((void));
 extern void c_expand_start_else			PARAMS ((void));
-extern void c_finish_else                   PARAMS ((void));
+extern void c_finish_else			PARAMS ((void));
 extern void c_expand_end_cond			PARAMS ((void));
 /* Validate the expression after `case' and apply default promotions.  */
 extern tree check_case_value			PARAMS ((tree));
-/* Concatenate a list of STRING_CST nodes into one STRING_CST.  */
-extern tree combine_strings			PARAMS ((tree));
+extern tree fix_string_type			PARAMS ((tree));
+struct varray_head_tag;
+extern tree combine_strings		PARAMS ((struct varray_head_tag *));
 extern void constant_expression_warning		PARAMS ((tree));
 extern tree convert_and_check			PARAMS ((tree, tree));
 extern void overflow_warning			PARAMS ((tree));

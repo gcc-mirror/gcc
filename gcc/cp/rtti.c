@@ -259,7 +259,7 @@ tinfo_name (type)
   tree name_string;
 
   name = mangle_type_string (type);
-  name_string = combine_strings (build_string (strlen (name) + 1, name));
+  name_string = fix_string_type (build_string (strlen (name) + 1, name));
   return name_string;
 }
 
