@@ -1,3 +1,14 @@
+Thu Nov 12 03:32:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	Handle equivalences that have been obscured by gcse:
+
+	* reload1.c (reload): Handle equivalences set up in multiple places.
+	* local-alloc.c (reg_equiv_init_insns): New variable.
+	(no_equiv): New function.
+	(update_equiv_regs): Handle equivalences set up in multiple places.
+	Don't ignore an insn just because its destination is likely to be
+	spilled.
+
 Wed Nov 11 13:46:13 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* except.c (expand_eh_return): Readd force_operand call lost in
