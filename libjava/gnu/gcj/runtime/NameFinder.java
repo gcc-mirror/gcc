@@ -371,7 +371,7 @@ public class NameFinder
     int line = -1;
     if (fileName != null)
       {
-	int colon = file.indexOf(':');
+	int colon = file.lastIndexOf(':');
 	if (colon > 0)
 	  {
 	    fileName = file.substring(0, colon);
