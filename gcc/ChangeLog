@@ -1,3 +1,10 @@
+2004-07-09  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (std_gimplify_va_arg_expr): Deny ARGS_GROW_DOWNWARD.
+	Always align upward to arg boundary.  Use size_in_bytes/round_up.
+	Maintain type-correctness of constants.
+	* stor-layout.c (round_up, round_down): Special-case powers of 2.
+
 2004-07-09  David S. Miller  <davem@nuts.davemloft.net>
 
 	* config/sparc/sparc.c (*_costs): Scale instruction costs
