@@ -873,10 +873,11 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(and:DI (ashift:DI
-		 (match_operand:DI 2 "mode_mask_operand" "n")
-		 (ashift:DI (match_operand:DI 3 "reg_or_8bit_operand" "rI")
-			    (const_int 3)))
+	(and:DI (not:DI (ashift:DI
+			 (match_operand:DI 2 "mode_mask_operand" "n")
+			 (ashift:DI
+			  (match_operand:DI 3 "reg_or_8bit_operand" "rI")
+			  (const_int 3))))
 		(match_operand:DI 1 "reg_or_0_operand" "rJ")))]
   ""
   "msk%U2l %r1,%3,%0")
@@ -2760,8 +2761,8 @@
    (set (match_operand:DI 2 "register_operand" "")
 	(match_dup 0))
    (set (match_dup 3)
-	(and:DI (ashift:DI (const_int 255)
-			   (ashift:DI (match_dup 2) (const_int 3)))
+	(and:DI (not:DI (ashift:DI (const_int 255)
+				   (ashift:DI (match_dup 2) (const_int 3))))
 		(match_dup 3)))
    (set (match_operand:DI 4 "register_operand" "")
 	(ashift:DI (zero_extend:DI (match_operand:QI 1 "register_operand" ""))
@@ -2794,8 +2795,8 @@
    (set (match_operand:DI 4 "register_operand" "")
 	(mem:DI (match_dup 3)))
    (set (match_operand:DI 5 "register_operand" "")
-	(and:DI (ashift:DI (const_int 65535)
-			   (ashift:DI (match_dup 2) (const_int 3)))
+	(and:DI (not:DI (ashift:DI (const_int 65535)
+				   (ashift:DI (match_dup 2) (const_int 3))))
 		(match_dup 4)))
    (set (match_operand:DI 6 "register_operand" "")
 	(ashift:DI (zero_extend:DI (match_operand:HI 1 "register_operand" ""))
