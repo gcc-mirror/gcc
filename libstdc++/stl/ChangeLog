@@ -1,3 +1,9 @@
+Tue Sep  9 19:47:28 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* algo.h, algobase.h, alloc.h, bvector.h, deque.h, hashtable.h,
+	iterator.h, list.h, rope.h, ropeimpl.h, slist.h, stl_config.h,
+	tree.h, vector.h: Update To September 8 SGI release.
+
 Tue Sep  9 17:38:47 1997  Mark Mitchell  <mmitchell@usa.net>
 
 	* stl_config.h (__STL_MEMBER_TEMPLATES): Enable.

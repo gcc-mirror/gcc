@@ -87,42 +87,44 @@ inline size_t __deque_buf_size(size_t n, size_t sz)
 }
 
 #ifndef __STL_NON_TYPE_TMPL_PARAM_BUG
-template <class T, class Ref, size_t BufSiz>
+template <class T, class Ref, class Ptr, size_t BufSiz>
 struct __deque_iterator {
-  typedef __deque_iterator<T, T&, BufSiz> iterator;
-  typedef __deque_iterator<T, const T&, BufSiz> const_iterator;
+  typedef __deque_iterator<T, T&, T*, BufSiz>             iterator;
+  typedef __deque_iterator<T, const T&, const T*, BufSiz> const_iterator;
   static size_t buffer_size() {return __deque_buf_size(BufSiz, sizeof(T)); }
 #else /* __STL_NON_TYPE_TMPL_PARAM_BUG */
-template <class T, class Ref>
+template <class T, class Ref, class Ptr>
 struct __deque_iterator {
-  typedef __deque_iterator<T, T&> iterator;
-  typedef __deque_iterator<T, const T&> const_iterator;
+  typedef __deque_iterator<T, T&, T*>             iterator;
+  typedef __deque_iterator<T, const T&, const T*> const_iterator;
   static size_t buffer_size() {return __deque_buf_size(0, sizeof(T)); }
 #endif
 
   typedef random_access_iterator_tag iterator_category;
   typedef T value_type;
-  typedef value_type* pointer;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
+  typedef Ptr pointer;
+  typedef Ref reference;
   typedef size_t size_type;
   typedef ptrdiff_t difference_type;
-  typedef pointer* map_pointer;
+  typedef T** map_pointer;
 
   typedef __deque_iterator self;
 
-  pointer cur;
-  pointer first;
-  pointer last;
+  T* cur;
+  T* first;
+  T* last;
   map_pointer node;
 
-  __deque_iterator(pointer x, map_pointer y) 
+  __deque_iterator(T* x, map_pointer y) 
     : cur(x), first(*y), last(*y + buffer_size()), node(y) {}
   __deque_iterator() : cur(0), first(0), last(0), node(0) {}
   __deque_iterator(const iterator& x)
     : cur(x.cur), first(x.first), last(x.last), node(x.node) {}
 
-  Ref operator*() const { return *cur; }
+  reference operator*() const { return *cur; }
+#ifndef __SGI_STL_NO_ARROW_OPERATOR
+  pointer operator->() const { return &(operator*()); }
+#endif /* __SGI_STL_NO_ARROW_OPERATOR */
 
   difference_type operator-(const self& x) const {
     return buffer_size() * (node - x.node - 1) +
@@ -183,7 +185,7 @@ struct __deque_iterator {
     return tmp -= n;
   }
 
-  Ref operator[](difference_type n) const { return *(*this + n); }
+  reference operator[](difference_type n) const { return *(*this + n); }
 
   bool operator==(const self& x) const { return cur == x.cur; }
   bool operator!=(const self& x) const { return !(*this == x); }
@@ -198,40 +200,45 @@ struct __deque_iterator {
   }
 };
 
+#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
+
 #ifndef __STL_NON_TYPE_TMPL_PARAM_BUG
 
-template <class T, class Ref, size_t BufSiz>
+template <class T, class Ref, class Ptr, size_t BufSiz>
 inline random_access_iterator_tag
-iterator_category(const __deque_iterator<T, Ref, BufSiz>&) {
+iterator_category(const __deque_iterator<T, Ref, Ptr, BufSiz>&) {
   return random_access_iterator_tag();
 }
 
-template <class T, class Ref, size_t BufSiz>
-inline T* value_type(const __deque_iterator<T, Ref, BufSiz>&) { return 0; }
+template <class T, class Ref, class Ptr, size_t BufSiz>
+inline T* value_type(const __deque_iterator<T, Ref, Ptr, BufSiz>&) {
+  return 0;
+}
 
-template <class T, class Ref, size_t BufSiz>
-inline ptrdiff_t* distance_type(const __deque_iterator<T, Ref, BufSiz>&) {
+template <class T, class Ref, class Ptr, size_t BufSiz>
+inline ptrdiff_t* distance_type(const __deque_iterator<T, Ref, Ptr, BufSiz>&) {
   return 0;
 }
 
 #else /* __STL_NON_TYPE_TMPL_PARAM_BUG */
 
-template <class T, class Ref>
+template <class T, class Ref, class Ptr>
 inline random_access_iterator_tag
-iterator_category(const __deque_iterator<T, Ref>&) {
+iterator_category(const __deque_iterator<T, Ref, Ptr>&) {
   return random_access_iterator_tag();
 }
 
-template <class T, class Ref>
-inline T* value_type(const __deque_iterator<T, Ref>&) { return 0; }
+template <class T, class Ref, class Ptr>
+inline T* value_type(const __deque_iterator<T, Ref, Ptr>&) { return 0; }
 
-template <class T, class Ref>
-inline ptrdiff_t* distance_type(const __deque_iterator<T, Ref>&) {
+template <class T, class Ref, class Ptr>
+inline ptrdiff_t* distance_type(const __deque_iterator<T, Ref, Ptr>&) {
   return 0;
 }
 
 #endif /* __STL_NON_TYPE_TMPL_PARAM_BUG */
 
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 // See __deque_buf_size().  The only reason that the default value is 0
 //  is as a workaround for bugs in the way that some compilers handle
@@ -248,17 +255,23 @@ public:                         // Basic types
 
 public:                         // Iterators
 #ifndef __STL_NON_TYPE_TMPL_PARAM_BUG
-  typedef __deque_iterator<value_type, reference, BufSiz> iterator;
-  typedef __deque_iterator<value_type, const_reference, BufSiz> const_iterator;
+  typedef __deque_iterator<T, T&, T*, BufSiz>              iterator;
+  typedef __deque_iterator<T, const T&, const T&, BufSiz>  const_iterator;
 #else /* __STL_NON_TYPE_TMPL_PARAM_BUG */
-  typedef __deque_iterator<value_type, reference> iterator;
-  typedef __deque_iterator<value_type, const_reference> const_iterator;
+  typedef __deque_iterator<T, T&, T*>                      iterator;
+  typedef __deque_iterator<T, const T&, const T*>          const_iterator;
 #endif /* __STL_NON_TYPE_TMPL_PARAM_BUG */
+
+#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
+  typedef reverse_iterator<const_iterator> const_reverse_iterator;
+  typedef reverse_iterator<iterator> reverse_iterator;
+#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
   typedef reverse_iterator<const_iterator, value_type, const_reference, 
                            difference_type>  
           const_reverse_iterator;
   typedef reverse_iterator<iterator, value_type, reference, difference_type>
           reverse_iterator; 
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 protected:                      // Internal typedefs
   typedef pointer* map_pointer;
@@ -553,19 +566,6 @@ protected:                        // Internal construction/destruction
   void range_initialize(ForwardIterator first, ForwardIterator last,
                         forward_iterator_tag);
 
-  template <class BidirectionalIterator>
-  void range_initialize(BidirectionalIterator first,
-                        BidirectionalIterator last,
-                        bidirectional_iterator_tag) {
-    range_initialize(first, last, forward_iterator_tag());
-  }
-
-  template <class RandomAccessIterator>
-  void range_initialize(RandomAccessIterator first, RandomAccessIterator last,
-                        random_access_iterator_tag) {
-    range_initialize(first, last, forward_iterator_tag());
-  }
-
 #endif /* __STL_MEMBER_TEMPLATES */
 
 protected:                        // Internal push_* and pop_*
@@ -587,19 +587,6 @@ protected:                        // Internal insert functions
   void insert(iterator pos, ForwardIterator first, ForwardIterator last,
               forward_iterator_tag);
 
-  template <class BidirectionalIterator>
-  void insert(iterator pos,
-              BidirectionalIterator first, BidirectionalIterator last,
-              bidirectional_iterator_tag) {
-    insert(pos, first, last, forward_iterator_tag());
-  }
-
-  template <class RandomAccessIterator>
-  void insert(iterator pos,
-              RandomAccessIterator first, RandomAccessIterator last,
-              random_access_iterator_tag) {
-    insert(pos, first, last, forward_iterator_tag());
-  }
 #endif /* __STL_MEMBER_TEMPLATES */
 
   iterator insert_aux(iterator pos, const value_type& x);
@@ -881,7 +868,7 @@ void deque<T, Alloc, BufSize>::fill_initialize(size_type n,
   }
   catch(...) {
     for (map_pointer n = start.node; n < cur; ++n)
-      destroy(*cur, *cur + buffer_size());
+      destroy(*n, *n + buffer_size());
     destroy_map_and_nodes();
     throw;
   }

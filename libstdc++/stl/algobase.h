@@ -86,19 +86,6 @@ inline void __distance(InputIterator first, InputIterator last, Distance& n,
     while (first != last) { ++first; ++n; }
 }
 
-template <class ForwardIterator, class Distance>
-inline void __distance(ForwardIterator first, ForwardIterator last,
-                       Distance& n, 
-                       forward_iterator_tag) {
-    while (first != last) { ++first; ++n; }
-}
-
-template <class BidirectionalIterator, class Distance>
-inline void __distance(BidirectionalIterator first, BidirectionalIterator last,
-                       Distance& n, bidirectional_iterator_tag) {
-    while (first != last) { ++first; ++n; }
-}
-
 template <class RandomAccessIterator, class Distance>
 inline void __distance(RandomAccessIterator first, RandomAccessIterator last, 
 		       Distance& n, random_access_iterator_tag) {
@@ -122,19 +109,6 @@ __distance(InputIterator first, InputIterator last, input_iterator_tag) {
   return n;
 }
 
-template <class ForwardIterator>
-inline iterator_traits<ForwardIterator>::difference_type
-__distance(ForwardIterator first, ForwardIterator last, forward_iterator_tag) {
-  return __distance(first, last, input_iterator_tag());
-}
-
-template <class BidirectionalIterator>
-inline iterator_traits<BidirectionalIterator>::difference_type
-__distance(BidirectionalIterator first, BidirectionalIterator last,
-           bidirectional_iterator_tag) {
-  return __distance(first, last, input_iterator_tag());
-}
-
 template <class RandomAccessIterator>
 inline iterator_traits<RandomAccessIterator>::difference_type
 __distance(RandomAccessIterator first, RandomAccessIterator last,
@@ -153,11 +127,6 @@ distance(InputIterator first, InputIterator last) {
 
 template <class InputIterator, class Distance>
 inline void __advance(InputIterator& i, Distance n, input_iterator_tag) {
-    while (n--) ++i;
-}
-
-template <class ForwardIterator, class Distance>
-inline void __advance(ForwardIterator& i, Distance n, forward_iterator_tag) {
     while (n--) ++i;
 }
 
@@ -196,20 +165,6 @@ inline OutputIterator __copy(InputIterator first, InputIterator last,
   for ( ; first != last; ++result, ++first)
     *result = *first;
   return result;
-}
-
-template <class InputIterator, class OutputIterator>
-inline OutputIterator __copy(InputIterator first, InputIterator last,
-                             OutputIterator result, forward_iterator_tag)
-{
-  return __copy(first, last, result, input_iterator_tag());
-}
-
-template <class InputIterator, class OutputIterator>
-inline OutputIterator __copy(InputIterator first, InputIterator last,
-                             OutputIterator result, bidirectional_iterator_tag)
-{
-  return __copy(first, last, result, input_iterator_tag());
 }
 
 template <class RandomAccessIterator, class OutputIterator, class Distance>
@@ -363,20 +318,6 @@ OutputIterator __copy_n(InputIterator first, Size count,
   for ( ; count > 0; --count, ++first, ++result)
     *result = *first;
   return result;
-}
-
-template <class ForwardIterator, class Size, class OutputIterator>
-inline OutputIterator __copy_n(ForwardIterator first, Size count,
-                               OutputIterator result,
-                               forward_iterator_tag) {
-  return __copy_n(first, count, result, input_iterator_tag());
-}
-
-template <class BidirectionalIterator, class Size, class OutputIterator>
-inline OutputIterator __copy_n(BidirectionalIterator first, Size count,
-                               OutputIterator result,
-                               bidirectional_iterator_tag) {
-  return __copy_n(first, count, result, input_iterator_tag());
 }
 
 template <class RandomAccessIterator, class Size, class OutputIterator>
@@ -655,22 +596,6 @@ ForwardIterator __uninitialized_copy_n(InputIterator first, Size count,
     throw;
   }
 #     endif /* __STL_USE_EXCEPTIONS */
-}
-
-template <class ForwardIterator1, class Size, class ForwardIterator>
-inline ForwardIterator
-__uninitialized_copy_n(ForwardIterator1 first, Size count,
-                       ForwardIterator result,
-                       forward_iterator_tag) {
-  return __uninitialized_copy_n(first, count, result, input_iterator_tag());
-}
-
-template <class BidirectionalIterator, class Size, class ForwardIterator>
-inline ForwardIterator
-__uninitialized_copy_n(BidirectionalIterator first, Size count,
-                       ForwardIterator result,
-                       bidirectional_iterator_tag) {
-  return __uninitialized_copy_n(first, count, result, input_iterator_tag());
 }
 
 template <class RandomAccessIterator, class Size, class ForwardIterator>

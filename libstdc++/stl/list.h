@@ -40,17 +40,16 @@ struct __list_node {
   T data;
 };
 
-template<class T, class Ref>
+template<class T, class Ref, class Ptr>
 struct __list_iterator {
-  typedef __list_iterator<T, T&> iterator;
-  typedef __list_iterator<T, const T&> const_iterator;
-  typedef __list_iterator<T, Ref> self;
+  typedef __list_iterator<T, T&, T*>             iterator;
+  typedef __list_iterator<T, const T&, const T*> const_iterator;
+  typedef __list_iterator<T, Ref, Ptr>           self;
 
   typedef bidirectional_iterator_tag iterator_category;
   typedef T value_type;
-  typedef value_type* pointer;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
+  typedef Ptr pointer;
+  typedef Ref reference;
   typedef __list_node<T>* link_type;
   typedef size_t size_type;
   typedef ptrdiff_t difference_type;
@@ -63,7 +62,11 @@ struct __list_iterator {
 
   bool operator==(const self& x) const { return node == x.node; }
   bool operator!=(const self& x) const { return node != x.node; }
-  Ref operator*() const { return (*node).data; }
+  reference operator*() const { return (*node).data; }
+
+#ifndef __SGI_STL_NO_ARROW_OPERATOR
+  pointer operator->() const { return &(operator*()); }
+#endif /* __SGI_STL_NO_ARROW_OPERATOR */
 
   self& operator++() { 
     node = (link_type)((*node).next);
@@ -85,25 +88,27 @@ struct __list_iterator {
   }
 };
 
+#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
 
-template <class T, class Ref>
+template <class T, class Ref, class Ptr>
 inline bidirectional_iterator_tag
-iterator_category(const __list_iterator<T, Ref>&) {
+iterator_category(const __list_iterator<T, Ref, Ptr>&) {
   return bidirectional_iterator_tag();
 }
 
-template <class T, class Ref>
+template <class T, class Ref, class Ptr>
 inline T*
-value_type(const __list_iterator<T, Ref>&) {
+value_type(const __list_iterator<T, Ref, Ptr>&) {
   return 0;
 }
 
-template <class T, class Ref>
+template <class T, class Ref, class Ptr>
 inline ptrdiff_t*
-distance_type(const __list_iterator<T, Ref>&) {
+distance_type(const __list_iterator<T, Ref, Ptr>&) {
   return 0;
 }
 
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 template <class T, class Alloc = alloc>
 class list {
@@ -121,15 +126,20 @@ public:
     typedef ptrdiff_t difference_type;
 
 public:
-    typedef __list_iterator<T, T&> iterator;
-    typedef __list_iterator<T, const T&> const_iterator;
+    typedef __list_iterator<T, T&, T*>             iterator;
+    typedef __list_iterator<T, const T&, const T*> const_iterator;
 
+#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
+    typedef reverse_iterator<const_iterator> const_reverse_iterator;
+    typedef reverse_iterator<iterator> reverse_iterator;
+#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
     typedef reverse_bidirectional_iterator<const_iterator, value_type,
                                            const_reference, difference_type>
             const_reverse_iterator;
     typedef reverse_bidirectional_iterator<iterator, value_type, reference,
                                            difference_type>
             reverse_iterator; 
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 protected:
     link_type get_node() { return list_node_allocator::allocate(); }

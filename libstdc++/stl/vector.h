@@ -42,10 +42,16 @@ public:
     typedef const value_type& const_reference;
     typedef size_t size_type;
     typedef ptrdiff_t difference_type;
+
+#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
+    typedef reverse_iterator<const_iterator> const_reverse_iterator;
+    typedef reverse_iterator<iterator> reverse_iterator;
+#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
     typedef reverse_iterator<const_iterator, value_type, const_reference, 
                              difference_type>  const_reverse_iterator;
     typedef reverse_iterator<iterator, value_type, reference, difference_type>
         reverse_iterator;
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 protected:
     typedef simple_alloc<value_type, Alloc> data_allocator;
     iterator start;
@@ -256,20 +262,6 @@ protected:
       end_of_storage = finish;
     }
 
-    template <class BidirectionalIterator>
-    void range_initialize(BidirectionalIterator first,
-                          BidirectionalIterator last,
-                          bidirectional_iterator_tag) {
-      range_initialize(first, last, forward_iterator_tag());
-    }
-
-    template <class RandomAccessIterator>
-    void range_initialize(RandomAccessIterator first,
-                          RandomAccessIterator last,
-                          random_access_iterator_tag) {
-      range_initialize(first, last, forward_iterator_tag());
-    }
-
     template <class InputIterator>
     void range_insert(iterator pos,
                       InputIterator first, InputIterator last,
@@ -280,19 +272,6 @@ protected:
                       ForwardIterator first, ForwardIterator last,
                       forward_iterator_tag);
 
-    template <class BidirectionalIterator>
-    void range_insert(iterator pos,
-                      BidirectionalIterator first, BidirectionalIterator last,
-                      bidirectional_iterator_tag) {
-      range_insert(pos, first, last, forward_iterator_tag());
-    }
-
-    template <class RandomAccessIterator>
-    void range_insert(iterator pos,
-                      RandomAccessIterator first, RandomAccessIterator last,
-                      random_access_iterator_tag) {
-      range_insert(pos, first, last, forward_iterator_tag());
-    }
 #endif /* __STL_MEMBER_TEMPLATES */
 };
 

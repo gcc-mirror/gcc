@@ -137,23 +137,25 @@ struct __rb_tree_base_iterator
   }
 };
 
-template <class Value, class Ref>
+template <class Value, class Ref, class Ptr>
 struct __rb_tree_iterator : public __rb_tree_base_iterator
 {
   typedef Value value_type;
   typedef Value& reference;
-  typedef const Value& const_reference;
   typedef Value* pointer;
-  typedef __rb_tree_iterator<Value, reference> iterator;
-  typedef __rb_tree_iterator<Value, const_reference> const_iterator;
-  typedef __rb_tree_iterator<Value, Ref> self;
+  typedef __rb_tree_iterator<Value, Value&, Value*>             iterator;
+  typedef __rb_tree_iterator<Value, const Value&, const Value*> const_iterator;
+  typedef __rb_tree_iterator<Value, Ref, Ptr>                   self;
   typedef __rb_tree_node<Value>* link_type;
 
   __rb_tree_iterator() {}
   __rb_tree_iterator(link_type x) { node = x; }
   __rb_tree_iterator(const iterator& it) { node = it.node; }
 
-  Ref operator*() const { return link_type(node)->value_field; }
+  reference operator*() const { return link_type(node)->value_field; }
+#ifndef __SGI_STL_NO_ARROW_OPERATOR
+  pointer operator->() const { return &(operator*()); }
+#endif /* __SGI_STL_NO_ARROW_OPERATOR */
 
   self& operator++() { increment(); return *this; }
   self operator++(int) {
@@ -180,6 +182,8 @@ inline bool operator!=(const __rb_tree_base_iterator& x,
   return x.node != y.node;
 }
 
+#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
+
 inline bidirectional_iterator_tag
 iterator_category(const __rb_tree_base_iterator&) {
   return bidirectional_iterator_tag();
@@ -190,10 +194,12 @@ distance_type(const __rb_tree_base_iterator&) {
   return (__rb_tree_base_iterator::difference_type*) 0;
 }
 
-template <class Value, class Ref>
-inline Value* value_type(const __rb_tree_iterator<Value, Ref>&) {
+template <class Value, class Ref, class Ptr>
+inline Value* value_type(const __rb_tree_iterator<Value, Ref, Ptr>&) {
   return (Value*) 0;
 }
+
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 inline void 
 __rb_tree_rotate_left(__rb_tree_node_base* x, __rb_tree_node_base*& root)
@@ -487,15 +493,21 @@ protected:
     }
 
 public:
-    typedef __rb_tree_iterator<value_type, reference> iterator;
-    typedef __rb_tree_iterator<value_type, const_reference> const_iterator;
+    typedef __rb_tree_iterator<value_type, reference, pointer> iterator;
+    typedef __rb_tree_iterator<value_type, const_reference, const_pointer> 
+            const_iterator;
 
+#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
+    typedef reverse_iterator<const_iterator> const_reverse_iterator;
+    typedef reverse_iterator<iterator> reverse_iterator;
+#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
     typedef reverse_bidirectional_iterator<iterator, value_type, reference,
                                            difference_type>
         reverse_iterator; 
     typedef reverse_bidirectional_iterator<const_iterator, value_type,
                                            const_reference, difference_type>
         const_reverse_iterator;
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */ 
 private:
     iterator __insert(base_ptr x, base_ptr y, const value_type& v);
     link_type __copy(link_type x, link_type p);

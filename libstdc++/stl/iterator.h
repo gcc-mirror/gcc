@@ -33,9 +33,9 @@
 
 struct input_iterator_tag {};
 struct output_iterator_tag {};
-struct forward_iterator_tag {};
-struct bidirectional_iterator_tag {};
-struct random_access_iterator_tag {};
+struct forward_iterator_tag : public input_iterator_tag {};
+struct bidirectional_iterator_tag : public forward_iterator_tag {};
+struct random_access_iterator_tag : public bidirectional_iterator_tag {};
 
 template <class T, class Distance> struct input_iterator {
   typedef input_iterator_tag iterator_category;
@@ -47,6 +47,10 @@ template <class T, class Distance> struct input_iterator {
 
 struct output_iterator {
   typedef output_iterator_tag iterator_category;
+  typedef void                value_type;
+  typedef void                difference_type;
+  typedef void                pointer;
+  typedef void                reference;
 };
 
 template <class T, class Distance> struct forward_iterator {
@@ -106,7 +110,34 @@ struct iterator_traits<T*> {
   typedef T&                         reference;
 };
 
-#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
+template <class T>
+struct iterator_traits<const T*> {
+  typedef random_access_iterator_tag iterator_category;
+  typedef T                          value_type;
+  typedef ptrdiff_t                  difference_type;
+  typedef const T*                   pointer;
+  typedef const T&                   reference;
+};
+
+template <class Iterator>
+inline iterator_traits<Iterator>::iterator_category
+iterator_category(const Iterator&) {
+  return iterator_traits<Iterator>::iterator_category();
+}
+
+template <class Iterator>
+inline iterator_traits<Iterator>::difference_type*
+distance_type(const Iterator&) {
+  return static_cast<iterator_traits<Iterator>::difference_type*>(0);
+}
+
+template <class Iterator>
+inline iterator_traits<Iterator>::value_type*
+value_type(const Iterator&) {
+  return static_cast<iterator_traits<Iterator>::value_type*>(0);
+}
+
+#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 template <class T, class Distance> 
 inline input_iterator_tag 
@@ -189,12 +220,18 @@ distance_type(const random_access_iterator<T, Distance>&) {
 template <class T>
 inline ptrdiff_t* distance_type(const T*) { return (ptrdiff_t*)(0); }
 
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
+
 template <class Container>
 class back_insert_iterator {
 protected:
     Container* container;
 public:
     typedef output_iterator_tag iterator_category;
+    typedef void                value_type;
+    typedef void                difference_type;
+    typedef void                pointer;
+    typedef void                reference;
 
     explicit back_insert_iterator(Container& x) : container(&x) {}
     back_insert_iterator<Container>&
@@ -207,12 +244,16 @@ public:
     back_insert_iterator<Container>& operator++(int) { return *this; }
 };
 
+#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
+
 template <class Container>
 inline output_iterator_tag
 iterator_category(const back_insert_iterator<Container>&)
 {
   return output_iterator_tag();
 }
+
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 template <class Container>
 inline back_insert_iterator<Container> back_inserter(Container& x) {
@@ -225,6 +266,10 @@ protected:
     Container* container;
 public:
     typedef output_iterator_tag iterator_category;
+    typedef void                value_type;
+    typedef void                difference_type;
+    typedef void                pointer;
+    typedef void                reference;
 
     explicit front_insert_iterator(Container& x) : container(&x) {}
     front_insert_iterator<Container>&
@@ -237,12 +282,16 @@ public:
     front_insert_iterator<Container>& operator++(int) { return *this; }
 };
 
+#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
+
 template <class Container>
 inline output_iterator_tag
 iterator_category(const front_insert_iterator<Container>&)
 {
   return output_iterator_tag();
 }
+
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 template <class Container>
 inline front_insert_iterator<Container> front_inserter(Container& x) {
@@ -256,6 +305,10 @@ protected:
     typename Container::iterator iter;
 public:
     typedef output_iterator_tag iterator_category;
+    typedef void                value_type;
+    typedef void                difference_type;
+    typedef void                pointer;
+    typedef void                reference;
 
     insert_iterator(Container& x, typename Container::iterator i) 
         : container(&x), iter(i) {}
@@ -270,12 +323,16 @@ public:
     insert_iterator<Container>& operator++(int) { return *this; }
 };
 
+#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
+
 template <class Container>
 inline output_iterator_tag
 iterator_category(const insert_iterator<Container>&)
 {
   return output_iterator_tag();
 }
+
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 template <class Container, class Iterator>
 inline insert_iterator<Container> inserter(Container& x, Iterator i) {
@@ -311,6 +368,9 @@ public:
         BidirectionalIterator tmp = current;
         return *--tmp;
     }
+#ifndef __SGI_STL_NO_ARROW_OPERATOR
+    pointer operator->() const { return &(operator*()); }
+#endif /* __SGI_STL_NO_ARROW_OPERATOR */
     self& operator++() {
         --current;
         return *this;
@@ -331,6 +391,7 @@ public:
     }
 };
 
+#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
 
 template <class BidirectionalIterator, class T, class Reference, 
           class Distance>
@@ -357,6 +418,8 @@ distance_type(const reverse_bidirectional_iterator<BidirectionalIterator, T,
   return (Distance*) 0;
 }
 
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
+
 template <class BidirectionalIterator, class T, class Reference,
           class Distance>
 inline bool operator==(
@@ -366,6 +429,109 @@ inline bool operator==(
                                          Distance>& y) {
     return x.current == y.current;
 }
+
+#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
+
+// This is the new version of reverse_iterator, as defined in the
+//  draft C++ standard.  It relies on the iterator_traits template,
+//  which in turn relies on partial specialization.  The class
+//  reverse_bidirectional_iterator is no longer part of the draft
+//  standard, but it is retained for backward compatibility.
+
+template <class Iterator>
+class reverse_iterator : public iterator_traits<Iterator>
+{
+protected:
+  Iterator current;
+public:
+  typedef Iterator iterator_type;
+  typedef reverse_iterator<Iterator> self;
+
+public:
+  reverse_iterator() {}
+  explicit reverse_iterator(iterator_type x) : current(x) {}
+
+  reverse_iterator(const self& x) : current(x.current) {}
+#ifdef __STL_MEMBER_TEMPLATES
+  template <class Iter>
+  reverse_iterator(const reverse_iterator<Iter>& x) : current(x.current) {}
+#endif /* __STL_MEMBER_TEMPLATES */
+    
+  iterator_type base() const { return current; }
+  reference operator*() const {
+    Iterator tmp = current;
+    return *--tmp;
+  }
+#ifndef __SGI_STL_NO_ARROW_OPERATOR
+  pointer operator->() const { return &(operator*()); }
+#endif /* __SGI_STL_NO_ARROW_OPERATOR */
+
+  self& operator++() {
+    --current;
+    return *this;
+  }
+  self operator++(int) {
+    self tmp = *this;
+    --current;
+    return tmp;
+  }
+  self& operator--() {
+    ++current;
+    return *this;
+  }
+  self operator--(int) {
+    self tmp = *this;
+    ++current;
+    return tmp;
+  }
+
+  self operator+(difference_type n) const {
+    return self(current - n);
+  }
+  self& operator+=(difference_type n) {
+    current -= n;
+    return *this;
+  }
+  self operator-(difference_type n) const {
+    return self(current + n);
+  }
+  self& operator-=(difference_type n) {
+    current += n;
+    return *this;
+  }
+  reference operator[](difference_type n) { return *(*this + n); }  
+}; 
+ 
+template <class Iterator>
+inline bool operator==(const reverse_iterator<Iterator>& x, 
+                       const reverse_iterator<Iterator>& y) {
+  return x.base() == y.base();
+}
+
+template <class Iterator>
+inline bool operator<(const reverse_iterator<Iterator>& x, 
+                      const reverse_iterator<Iterator>& y) {
+  return y.base() < x.base();
+}
+
+template <class Iterator>
+inline reverse_iterator<Iterator>::difference_type
+operator-(const reverse_iterator<Iterator>& x, 
+          const reverse_iterator<Iterator>& y) {
+  return y.base() - x.base();
+}
+
+template <class Iterator>
+inline reverse_iterator<Iterator> 
+operator+(reverse_iterator<Iterator>::difference_type n,
+          const reverse_iterator<Iterator>& x) {
+  return reverse_iterator<Iterator>(x.base() - n);
+}
+
+#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
+
+// This is the old version of reverse_iterator, as found in the original
+//  HP STL.  It does not use partial specialization.
 
 #ifndef __STL_LIMITED_DEFAULT_TEMPLATES
 template <class RandomAccessIterator, class T, class Reference = T&,
@@ -394,6 +560,9 @@ public:
     explicit reverse_iterator(RandomAccessIterator x) : current(x) {}
     RandomAccessIterator base() { return current; }
     Reference operator*() const { return *(current - 1); }
+#ifndef __SGI_STL_NO_ARROW_OPERATOR
+    pointer operator->() const { return &(operator*()); }
+#endif /* __SGI_STL_NO_ARROW_OPERATOR */
     self& operator++() {
         --current;
         return *this;
@@ -482,6 +651,7 @@ operator+(Distance n,
         (x.current - n);
 }
 
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 template <class ForwardIterator, class T>
 class raw_storage_iterator {
@@ -489,6 +659,10 @@ protected:
     ForwardIterator iter;
 public:
     typedef output_iterator_tag iterator_category;
+    typedef void                value_type;
+    typedef void                difference_type;
+    typedef void                pointer;
+    typedef void                reference;
 
     explicit raw_storage_iterator(ForwardIterator x) : iter(x) {}
     raw_storage_iterator<ForwardIterator, T>& operator*() { return *this; }
@@ -507,12 +681,16 @@ public:
     }
 };
 
+#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
+
 template <class ForwardIterator, class T>
 inline output_iterator_tag
 iterator_category(const raw_storage_iterator<ForwardIterator, T>&)
 {
   return output_iterator_tag();
 }
+
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 template <class T, class Distance = ptrdiff_t> 
 class istream_iterator {
@@ -531,12 +709,15 @@ public:
     typedef input_iterator_tag iterator_category;
     typedef T                  value_type;
     typedef Distance           difference_type;
-    typedef T*                 pointer;
-    typedef T&                 reference;
+    typedef const T*           pointer;
+    typedef const T&           reference;
 
     istream_iterator() : stream(&cin), end_marker(false) {}
     istream_iterator(istream& s) : stream(&s) { read(); }
-    const T& operator*() const { return value; }
+    reference operator*() const { return value; }
+#ifndef __SGI_STL_NO_ARROW_OPERATOR
+    pointer operator->() const { return &(operator*()); }
+#endif /* __SGI_STL_NO_ARROW_OPERATOR */
     istream_iterator<T, Distance>& operator++() { 
         read(); 
         return *this;
@@ -547,6 +728,8 @@ public:
         return tmp;
     }
 };
+
+#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
 
 template <class T, class Distance>
 inline input_iterator_tag 
@@ -562,6 +745,8 @@ inline Distance* distance_type(const istream_iterator<T, Distance>&) {
   return (Distance*) 0;
 }
 
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
+
 template <class T, class Distance>
 bool operator==(const istream_iterator<T, Distance>& x,
                 const istream_iterator<T, Distance>& y) {
@@ -576,6 +761,10 @@ protected:
     const char* string;
 public:
     typedef output_iterator_tag iterator_category;
+    typedef void                value_type;
+    typedef void                difference_type;
+    typedef void                pointer;
+    typedef void                reference;
 
     ostream_iterator(ostream& s) : stream(&s), string(0) {}
     ostream_iterator(ostream& s, const char* c) : stream(&s), string(c)  {}
@@ -589,10 +778,14 @@ public:
     ostream_iterator<T>& operator++(int) { return *this; } 
 };
 
+#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
+
 template <class T>
 inline output_iterator_tag 
 iterator_category(const ostream_iterator<T>&) {
   return output_iterator_tag();
 }
+
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 #endif /* __SGI_STL_ITERATOR_H */

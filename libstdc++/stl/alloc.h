@@ -49,7 +49,6 @@
 #endif
 #ifdef __STL_WIN32THREADS
 #   include <windows.h>
-//  This must precede stl_config.h
 #endif
 
 #include <stddef.h>
@@ -91,7 +90,11 @@
     // This should work without threads, with sproc threads, or with
     // pthreads.  It is suboptimal in all cases.
     // It is unlikely to even compile on nonSGI machines.
-#   include <malloc.h>
+
+    extern int __us_rsthread_malloc;
+	// The above is copied from malloc.h.  Including <malloc.h>
+	// would be cleaner but fails with certain levels of standard
+	// conformance.
 #   define __NODE_ALLOCATOR_LOCK if (threads && __us_rsthread_malloc) \
                 { __lock(&__node_allocator_lock); }
 #   define __NODE_ALLOCATOR_UNLOCK if (threads && __us_rsthread_malloc) \
@@ -383,15 +386,17 @@ public:
     obj * __VOLATILE * my_free_list;
     obj * __RESTRICT result;
 
-    if (n > __MAX_BYTES) {
+    if (n > (size_t) __MAX_BYTES) {
         return(malloc_alloc::allocate(n));
     }
     my_free_list = free_list + FREELIST_INDEX(n);
     // Acquire the lock here with a constructor call.
     // This ensures that it is released in exit or during stack
     // unwinding.
+#       ifndef _NOTHREADS
         /*REFERENCED*/
         lock lock_instance;
+#       endif
     result = *my_free_list;
     if (result == 0) {
         void *r = refill(ROUND_UP(n));
@@ -407,14 +412,16 @@ public:
     obj *q = (obj *)p;
     obj * __VOLATILE * my_free_list;
 
-    if (n > __MAX_BYTES) {
+    if (n > (size_t) __MAX_BYTES) {
         malloc_alloc::deallocate(p, n);
         return;
     }
     my_free_list = free_list + FREELIST_INDEX(n);
     // acquire lock
+#       ifndef _NOTHREADS
         /*REFERENCED*/
         lock lock_instance;
+#       endif /* _NOTHREADS */
     q -> free_list_link = *my_free_list;
     *my_free_list = q;
     // lock is released here
@@ -480,6 +487,7 @@ __default_alloc_template<threads, inst>::chunk_alloc(size_t size, int& nobjs)
                     // right free list.
                 }
             }
+	    end_free = 0;	// In case of exception.
             start_free = (char *)malloc_alloc::allocate(bytes_to_get);
             // This should either throw an
             // exception or remedy the situation.  Thus we assume it
@@ -533,7 +541,7 @@ __default_alloc_template<threads, inst>::reallocate(void *p,
     void * result;
     size_t copy_sz;
 
-    if (old_sz > __MAX_BYTES && new_sz > __MAX_BYTES) {
+    if (old_sz > (size_t) __MAX_BYTES && new_sz > (size_t) __MAX_BYTES) {
         return(realloc(p, new_sz));
     }
     if (ROUND_UP(old_sz) == ROUND_UP(new_sz)) return(p);
@@ -671,4 +679,6 @@ __default_alloc_template<threads, inst> ::free_list[
 #pragma reset woff 1174
 #endif
 
-#endif /* __NODE_ALLOC_H */
+#undef __PRIVATE
+
+#endif /* __ALLOC_H */
