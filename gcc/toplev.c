@@ -2999,7 +2999,7 @@ rest_of_compilation (decl)
 #endif
   life_analysis (insns, rtl_dump_file, PROP_FINAL);
   if (optimize)
-    cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0)
+    cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_UPDATE_LIFE
 		 | (flag_thread_jumps ? CLEANUP_THREADING : 0));
   timevar_pop (TV_FLOW);
 

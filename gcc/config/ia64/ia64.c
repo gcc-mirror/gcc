@@ -6733,9 +6733,10 @@ ia64_reorg (insns)
   if (optimize == 0)
     split_all_insns_noflow ();
 
-  /* Make sure the CFG and global_live_at_start are correct
-     for emit_predicate_relation_info.  */
-  find_basic_blocks (insns, max_reg_num (), NULL);
+  /* We are freeing block_for_insn in the toplev to keep compatibility
+     with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
+  compute_bb_for_insn (get_max_uid ());
+  /* update_life_info_in_dirty_blocks should be enought here.  */
   life_analysis (insns, NULL, PROP_DEATH_NOTES);
 
   if (ia64_flag_schedule_insns2)
