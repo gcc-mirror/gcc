@@ -46,7 +46,11 @@ void gnu::gcj::xlib::Clip::init(AWTRectArray* rectangles)
   xrects = reinterpret_cast<gnu::gcj::RawData*>(xrectvector);
 }
 
-void gnu::gcj::xlib::Clip::finalize()
+void gnu::gcj::xlib::Clip::dispose()
 {
-  delete xrects; xrects = 0;
+  if (xrects)
+  {
+    delete xrects; 
+    xrects = 0;
+  }
 }

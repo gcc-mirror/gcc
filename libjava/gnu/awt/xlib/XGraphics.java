@@ -58,16 +58,17 @@ public class XGraphics implements Cloneable, DirectRasterGraphics
     context = null;
     config = null;
     clipBounds = null;
+    metrics = null;
     
     if (lContext != null)
-      {
-	lContext.dispose();
-      }	    
+    {
+      lContext.dispose();
+    }	    
   }
 
   public XGraphics(Drawable drawable, XGraphicsConfiguration config)
   {
-    context = new GC(drawable);
+    context = GC.create(drawable);
     this.config = config;
   }  
   

@@ -1,5 +1,5 @@
 /* Container.java -- parent container class in AWT
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation
+   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -1205,10 +1205,17 @@ public class Container extends Component
     if (clip.isEmpty()) return;
 
     Graphics gfx2 = gfx.create();
-    gfx2.setClip(clip.x, clip.y, clip.width, clip.height);
-    gfx2.translate(bounds.x, bounds.y);
+    try
+      {
+	gfx2.setClip(clip.x, clip.y, clip.width, clip.height);
+	gfx2.translate(bounds.x, bounds.y);
 
-    visitor.visit(comp, gfx2);
+	visitor.visit(comp, gfx2);
+      }
+    finally
+      {
+	gfx2.dispose ();
+      }
   }
 
   void dispatchEventImpl(AWTEvent e)

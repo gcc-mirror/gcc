@@ -188,7 +188,10 @@ public class XToolkit extends Toolkit
 
   public void sync()
   {
-    throw new UnsupportedOperationException("not implemented yet");
+    flushIfIdle ();
+    // FIXME: should instead wait for eventLoop to go idle
+    // (perhaps send a dummy event there and block till it makes
+    // it through the queue)
   }
     
   public Image getImage(String filename)
