@@ -432,17 +432,24 @@ public abstract class ClassLoader
   {
     synchronized (clazz)
       {
-	try {
-	  linkClass0 (clazz);
-	} catch (Throwable x) {
-	  markClassErrorState0 (clazz);
+	try
+	  {
+	    linkClass0 (clazz);
+	  }
+	catch (Throwable x)
+	  {
+	    markClassErrorState0 (clazz);
 
-	  if (x instanceof Error)
-	    throw (Error)x;
-	  else    
-	    throw new java.lang.InternalError
-	      ("unexpected exception during linking: " + x);
-	}
+	    if (x instanceof Error)
+	      throw (Error)x;
+	    else
+	      {
+		InternalError e
+		  = new InternalError ("unexpected exception during linking");
+		e.initCause (x);
+		throw e;
+	      }
+	  }
       }
   }
 
