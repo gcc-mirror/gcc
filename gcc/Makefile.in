@@ -1475,7 +1475,7 @@ ggc-common.o: ggc-common.c $(CONFIG_H) $(RTL_H) $(TREE_H) \
 ggc-simple.o: ggc-simple.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
 	$(GGC_H) varray.h
 
-ggc-page.o: ggc-page.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
+ggc-page.o: ggc-page.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h toplev.h \
 	$(GGC_H) varray.h
 
 ggc-none.o: ggc-none.c $(CONFIG_H) $(RTL_H) $(GGC_H)

@@ -1401,38 +1401,40 @@ read_integral_parameter (p, pname, defval)
 }
 
 
-/* Time accumulators, to count the total time spent in various passes.  */
+/* Time accumulators, to count the total time spent in various passes.
+   The first three are used in other files; the latter two only here.  */
 
+long gc_time;
 long parse_time;
 long varconst_time;
-long integration_time;
-long jump_time;
-long cse_time;
-long gcse_time;
-long loop_time;
-long cse2_time;
-long branch_prob_time;
-long flow_time;
-long combine_time;
-long regmove_time;
-long sched_time;
-long local_alloc_time;
-long global_alloc_time;
-long flow2_time;
-long peephole2_time;
-long sched2_time;
-long dbr_sched_time;
-long reorder_blocks_time;
-long rename_registers_time;
-long shorten_branch_time;
-long stack_reg_time;
-long to_ssa_time;
-long from_ssa_time;
-long final_time;
-long symout_time;
-long dump_time;
-long gc_time;
-long all_time;
+
+static long integration_time;
+static long jump_time;
+static long cse_time;
+static long gcse_time;
+static long loop_time;
+static long cse2_time;
+static long branch_prob_time;
+static long flow_time;
+static long combine_time;
+static long regmove_time;
+static long sched_time;
+static long local_alloc_time;
+static long global_alloc_time;
+static long flow2_time;
+static long peephole2_time;
+static long sched2_time;
+static long dbr_sched_time;
+static long reorder_blocks_time;
+static long rename_registers_time;
+static long shorten_branch_time;
+static long stack_reg_time;
+static long to_ssa_time;
+static long from_ssa_time;
+static long final_time;
+static long symout_time;
+static long dump_time;
+static long all_time;
 
 /* Return time used so far, in microseconds.  */
 

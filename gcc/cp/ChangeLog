@@ -1,3 +1,9 @@
+Sat Apr 15 16:00:01 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl2.c (parse_time, varconst_time): Delete declarations.
+	(finish_file): Delete LINENO declaration.
+	START_TIME and THIS_TIME now long.
+
 2000-04-13  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (build_base_field): Reformat comment.

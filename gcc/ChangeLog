@@ -1,5 +1,13 @@
 Sat Apr 15 10:59:19 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* Makefile.in (ggc-page.o): Now includes toplev.h.
+	* ggc-page.c (toplev.h): Now included.
+	(gc_time): Remove declaration.
+	(ggc_collect): TIME now long.
+	* toplev.c (parse_time, varasm_time, gc_time): Still global; all
+	others static.
+	* toplev.h (gc_time, parse_time, gc_time): New declarations.
+
 	* toplev.c: Make *_time variable long to reduce chance of overflow.
 	(TIMEVAR): Likewise for `otime'.
 	(print_time): Arg is now long; compute percentage in FP and round.
