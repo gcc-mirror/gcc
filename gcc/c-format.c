@@ -2619,7 +2619,7 @@ init_dynamic_diag_info (void)
 	}
       if (t)
         {
-	  /* All specifiers taking a tree share the same struct. */
+	  /* All specifiers taking a tree share the same struct.  */
 	  i = find_char_info_specifier_index (cdiag_fci, 'D');
 	  cdiag_fci[i].types[0].type = &t;
 	  cdiag_fci[i].pointer_count = 1;
@@ -2639,7 +2639,7 @@ init_dynamic_diag_info (void)
 	}
       if (t)
         {
-	  /* All specifiers taking a tree share the same struct. */
+	  /* All specifiers taking a tree share the same struct.  */
 	  i = find_char_info_specifier_index (cxxdiag_fci, 'D');
 	  cxxdiag_fci[i].types[0].type = &t;
 	  cxxdiag_fci[i].pointer_count = 1;

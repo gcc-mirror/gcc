@@ -178,7 +178,7 @@ read_counts_file (void)
       return;
     }
 
-  /* Read and discard the stamp. */
+  /* Read and discard the stamp.  */
   gcov_read_unsigned ();
   
   counts_hash = htab_create (10,

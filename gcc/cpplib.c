@@ -559,7 +559,7 @@ undefine_macros (cpp_reader *pfile, cpp_hashnode *h,
       if (CPP_OPTION (pfile, warn_unused_macros))
         _cpp_warn_if_unused_macro (pfile, h, NULL);
 
-      /* and fall through... */
+      /* and fall through...  */
     case NT_ASSERTION:
       _cpp_free_definition (h);
       break;
