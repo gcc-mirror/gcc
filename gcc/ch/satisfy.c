@@ -1,5 +1,5 @@
 /* Name-satisfaction for GNU Chill compiler.
-   Copyright (C) 1993, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 98, 99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
