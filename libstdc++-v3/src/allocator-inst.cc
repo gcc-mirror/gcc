@@ -1,6 +1,6 @@
-// Backward-compat support -*- C++ -*-
+// Explicit instantiation file.
 
-// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,33 +27,15 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/*
- * Copyright (c) 1996-1997
- * Silicon Graphics Computer Systems, Inc.
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Silicon Graphics makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- */
+//
+// ISO C++ 14882:
+//
 
-#ifndef _CPP_BACKWARD_ALLOC_H
-#define _CPP_BACKWARD_ALLOC_H 1
-
-#include "backward_warning.h"
 #include <bits/c++config.h>
-#include <bits/allocator.h>
-#include <ext/debug_allocator.h>
-#include <ext/malloc_allocator.h>
+#include <memory>
 
-using __gnu_cxx::__malloc_alloc; 
-using __gnu_cxx::__debug_alloc; 
-using __gnu_cxx::__pool_alloc; 
-using std::__alloc; 
-using std::__simple_alloc; 
-using std::allocator;
-
-#endif 
+namespace std
+{
+  template class allocator<char>;
+  template class allocator<wchar_t>;
+} // namespace std

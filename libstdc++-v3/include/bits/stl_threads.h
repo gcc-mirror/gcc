@@ -48,6 +48,8 @@
 #ifndef __SGI_STL_INTERNAL_THREADS_H
 #define __SGI_STL_INTERNAL_THREADS_H
 
+#include <cstddef>
+
 // The only supported threading model is GCC's own gthr.h abstraction layer.
 #include "bits/gthr.h"
 
@@ -209,7 +211,6 @@ namespace std
     void operator=(const _STL_auto_lock&);
     _STL_auto_lock(const _STL_auto_lock&);
   } __attribute__ ((__unused__));
-  
 } // namespace std
 
 #endif 

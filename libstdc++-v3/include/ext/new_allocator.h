@@ -1,6 +1,6 @@
-// Wrapper of pthread allocation header -*- C++ -*-
+// Allocators -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,34 +27,32 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/*
- * Copyright (c) 1996-1997
- * Silicon Graphics Computer Systems, Inc.
- *
- * Permission to use, copy, modify, distribute and sell this software
- * and its documentation for any purpose is hereby granted without fee,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  Silicon Graphics makes no
- * representations about the suitability of this software for any
- * purpose.  It is provided "as is" without express or implied warranty.
- */
+#ifndef _NEW_ALLOCATOR_H
+#define _NEW_ALLOCATOR_H 1
 
-/** @file stl_pthread_alloc.h
- *  This is an internal header file, included by other library headers.
- *  You should not attempt to use it directly.
- */
+#include <new>
 
-#ifndef _CPP_BITS_STL_PTHREAD_ALLOC_H
-#define _CPP_BITS_STL_PTHREAD_ALLOC_H 1
+namespace __gnu_cxx
+{
+  /**
+   *  @if maint
+   *  A new-based allocator, as required by the standard.  Allocation and
+   *  deallocation forward to global new and delete.  "SGI" style, minus
+   *  reallocate().
+   *  @endif
+   *  (See @link Allocators allocators info @endlink for more.)
+   */
+  class __new_alloc
+  {
+  public:
+    static void*
+    allocate(size_t __n)
+    { return ::operator new(__n); }
 
-#include <bits/pthread_allocimpl.h>
+    static void
+    deallocate(void* __p, size_t)
+    { ::operator delete(__p); }
+  };
+} // namespace __gnu_cxx
 
-using std::_Pthread_alloc_template;
-using std::pthread_alloc;
-
-#endif /* _CPP_BITS_STL_PTHREAD_ALLOC_H */
-
-// Local Variables:
-// mode:C++
-// End:
+#endif
