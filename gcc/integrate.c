@@ -2320,6 +2320,13 @@ copy_rtx_and_substitute (orig, map, for_lhs)
       if (inlining && !for_lhs)
 	RTX_UNCHANGING_P (copy) = 0;
 
+      /* If inlining, squish aliasing data that references the subroutine's
+	 parameter list, since that's no longer applicable.  */
+      if (inlining && MEM_EXPR (copy)
+	  && TREE_CODE (MEM_EXPR (copy)) == INDIRECT_REF
+	  && TREE_CODE (TREE_OPERAND (MEM_EXPR (copy), 0)) == PARM_DECL)
+	set_mem_expr (copy, NULL_TREE);
+
       return copy;
 
     default:

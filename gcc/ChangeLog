@@ -1,3 +1,12 @@
+2003-02-03  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	Backport following patch:
+
+	2002-08-01  Richard Henderson  <rth@redhat.com>
+
+	* integrate.c (copy_rtx_and_substitute): Squash MEM_EXPR when it
+	refers to a subroutine parameter.
+
 2003-02-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* cfgcleanup.c (try_forward_edges): Check for null insn.
