@@ -6816,7 +6816,7 @@ declspecs_add_type (struct c_declspecs *specs, tree type)
 	      break;
 	    case RID_COMPLEX:
 	      dupe = specs->complex_p;
-	      if (pedantic && !flag_isoc99)
+	      if (pedantic && !flag_isoc99 && !in_system_header)
 		pedwarn ("ISO C90 does not support complex types");
 	      if (specs->typespec_word == cts_void)
 		error ("both %<complex%> and %<void%> in "
