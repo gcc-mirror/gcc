@@ -2675,7 +2675,7 @@ compute_frame_size (size, fregs_live)
   fsize = (fsize + 7) & ~7;
 
   /* Account for space used by the callee floating point register saves.  */
-  for (i = 66; i >= 48; i -= 2)
+  for (i = FP_SAVED_REG_LAST; i >= FP_SAVED_REG_FIRST; i -= FP_REG_STEP)
     if (regs_ever_live[i] || regs_ever_live[i + 1])
       {
 	if (fregs_live)
@@ -2980,7 +2980,7 @@ hppa_expand_prologue()
 	set_reg_plus_d (1, STACK_POINTER_REGNUM, offset);
 
       /* Now actually save the FP registers.  */
-      for (i = 66; i >= 48; i -= 2)
+      for (i = FP_SAVED_REG_LAST; i >= FP_SAVED_REG_FIRST; i -= FP_REG_STEP)
 	{
 	  if (regs_ever_live[i] || regs_ever_live[i + 1])
 	    {
@@ -3118,7 +3118,7 @@ hppa_expand_epilogue ()
 	set_reg_plus_d (1, STACK_POINTER_REGNUM, offset);
 
       /* Actually do the restores now.  */
-      for (i = 66; i >= 48; i -= 2)
+      for (i = FP_SAVED_REG_LAST; i >= FP_SAVED_REG_FIRST; i -= FP_REG_STEP)
 	{
 	  if (regs_ever_live[i] || regs_ever_live[i + 1])
 	    {
@@ -5698,12 +5698,12 @@ fmpyaddoperands (operands)
 
   /* SFmode limits the registers to the upper 32 of the 32bit FP regs.  */
   if (mode == SFmode
-      && (REGNO (operands[0]) < 57
-	  || REGNO (operands[1]) < 57
-	  || REGNO (operands[2]) < 57
-	  || REGNO (operands[3]) < 57
-	  || REGNO (operands[4]) < 57
-	  || REGNO (operands[5]) < 57))
+      && (REGNO_REG_CLASS (REGNO (operands[0])) != FPUPPER_REGS
+	  || REGNO_REG_CLASS (REGNO (operands[1])) != FPUPPER_REGS
+	  || REGNO_REG_CLASS (REGNO (operands[2])) != FPUPPER_REGS
+	  || REGNO_REG_CLASS (REGNO (operands[3])) != FPUPPER_REGS
+	  || REGNO_REG_CLASS (REGNO (operands[4])) != FPUPPER_REGS
+	  || REGNO_REG_CLASS (REGNO (operands[5])) != FPUPPER_REGS))
     return 0;
 
   /* Passed.  Operands are suitable for fmpyadd.  */
@@ -5755,12 +5755,12 @@ fmpysuboperands (operands)
 
   /* SFmode limits the registers to the upper 32 of the 32bit FP regs.  */
   if (mode == SFmode
-      && (REGNO (operands[0]) < 57
-	  || REGNO (operands[1]) < 57
-	  || REGNO (operands[2]) < 57
-	  || REGNO (operands[3]) < 57
-	  || REGNO (operands[4]) < 57
-	  || REGNO (operands[5]) < 57))
+      && (REGNO_REG_CLASS (REGNO (operands[0])) != FPUPPER_REGS
+	  || REGNO_REG_CLASS (REGNO (operands[1])) != FPUPPER_REGS
+	  || REGNO_REG_CLASS (REGNO (operands[2])) != FPUPPER_REGS
+	  || REGNO_REG_CLASS (REGNO (operands[3])) != FPUPPER_REGS
+	  || REGNO_REG_CLASS (REGNO (operands[4])) != FPUPPER_REGS
+	  || REGNO_REG_CLASS (REGNO (operands[5])) != FPUPPER_REGS))
     return 0;
 
   /* Passed.  Operands are suitable for fmpysub.  */

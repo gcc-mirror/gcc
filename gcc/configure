@@ -3638,36 +3638,36 @@ for machine in $build $host $target; do
 		;;
 	hppa1.1-*-pro*)
 		target_cpu_default="(MASK_JUMP_IN_DELAY | MASK_PORTABLE_RUNTIME | MASK_GAS | MASK_NO_SPACE_REGS | MASK_SOFT_FLOAT)"
-		tm_file="${tm_file} elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h"
+		tm_file="${tm_file} pa/pa32-regs.h elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h"
 		xm_file=pa/xm-papro.h
 		tmake_file=pa/t-pro
 		;;
 	hppa1.1-*-osf*)
 		target_cpu_default="MASK_PA_11"
-		tm_file="${tm_file} pa/som.h pa/pa-osf.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-osf.h"
 		use_collect2=yes
 		;;
 	hppa1.1-*-rtems*)
 		target_cpu_default="(MASK_JUMP_IN_DELAY | MASK_PORTABLE_RUNTIME | MASK_GAS | MASK_NO_SPACE_REGS | MASK_SOFT_FLOAT)"
-		tm_file="${tm_file} elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h pa/rtems.h"
+		tm_file="${tm_file} pa/pa32-regs.h elfos.h pa/elf.h pa/pa-pro-end.h libgloss.h pa/rtems.h"
 		xm_file=pa/xm-papro.h
 		tmake_file=pa/t-pro
 		;;
 	hppa1.0-*-osf*)
-		tm_file="${tm_file} pa/som.h pa/pa-osf.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-osf.h"
 		use_collect2=yes
 		;;
 	hppa1.1-*-bsd*)
-		tm_file="${tm_file} pa/som.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/som.h"
 		target_cpu_default="MASK_PA_11"
 		use_collect2=yes
 		;;
 	hppa1.0-*-bsd*)
-		tm_file="${tm_file} pa/som.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/som.h"
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux7*)
-		tm_file="pa/pa-oldas.h ${tm_file} pa/som.h pa/pa-hpux7.h"
+		tm_file="pa/pa-oldas.h ${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux7.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		if test x$gas = xyes
@@ -3678,7 +3678,7 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux8.0[0-2]*)
-		tm_file="${tm_file} pa/som.h pa/pa-hpux.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		if test x$gas = xyes
@@ -3692,7 +3692,7 @@ for machine in $build $host $target; do
 		;;
 	hppa1.1-*-hpux8.0[0-2]*)
 		target_cpu_default="MASK_PA_11"
-		tm_file="${tm_file} pa/som.h pa/pa-hpux.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		if test x$gas = xyes
@@ -3706,7 +3706,7 @@ for machine in $build $host $target; do
 		;;
 	hppa1.1-*-hpux8*)
 		target_cpu_default="MASK_PA_11"
-		tm_file="${tm_file} pa/som.h pa/pa-hpux.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		if test x$gas = xyes
@@ -3717,7 +3717,7 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux8*)
-		tm_file="${tm_file} pa/som.h pa/pa-hpux.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		if test x$gas = xyes
@@ -3729,7 +3729,7 @@ for machine in $build $host $target; do
 		;;
 	hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
 		target_cpu_default="MASK_PA_11"
-		tm_file="${tm_file} pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
 		float_format=i128
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -3749,7 +3749,7 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux10*)
-		tm_file="${tm_file} pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
 		float_format=i128
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -3770,7 +3770,7 @@ for machine in $build $host $target; do
 		;;
 	hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 		target_cpu_default="MASK_PA_11"
-		tm_file="${tm_file} pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
 		float_format=i128
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -3790,7 +3790,7 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux11*)
-		tm_file="${tm_file} pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
 		float_format=i128
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
@@ -3810,7 +3810,7 @@ for machine in $build $host $target; do
 		;;
 	hppa1.1-*-hpux* | hppa2*-*-hpux*)
 		target_cpu_default="MASK_PA_11"
-		tm_file="${tm_file} pa/som.h pa/pa-hpux.h pa/pa-hpux9.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hpux9.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		if test x$gas = xyes
@@ -3821,7 +3821,7 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hpux*)
-		tm_file="${tm_file} pa/som.h pa/pa-hpux.h pa/pa-hpux9.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hpux9.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		if test x$gas = xyes
@@ -3833,7 +3833,7 @@ for machine in $build $host $target; do
 		;;
 	hppa1.1-*-hiux* | hppa2*-*-hiux*)
 		target_cpu_default="MASK_PA_11"
-		tm_file="${tm_file} pa/som.h pa/pa-hpux.h pa/pa-hiux.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hiux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		if test x$gas = xyes
@@ -3844,7 +3844,7 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa1.0-*-hiux*)
-		tm_file="${tm_file} pa/som.h pa/pa-hpux.h pa/pa-hiux.h"
+		tm_file="${tm_file} pa/pa32-regs.h pa/som.h pa/pa-hpux.h pa/pa-hiux.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		if test x$gas = xyes
@@ -3855,7 +3855,7 @@ for machine in $build $host $target; do
 		use_collect2=yes
 		;;
 	hppa*-*-lites*)
-		tm_file="${tm_file} elfos.h pa/elf.h"
+		tm_file="${tm_file} pa/pa32-regs.h elfos.h pa/elf.h"
 		target_cpu_default="MASK_PA_11"
 		use_collect2=yes
 		;;
