@@ -57,12 +57,11 @@ OBJECTIVE-C objective-c: cc1obj objc-runtime
 .PHONY: objective-c objc ObjC
 
 # C common object files required by Objective C.
-OBJC_CCOMMON = $(srcdir)/c-lex.o $(srcdir)/c-pragma.o \
- $(srcdir)/c-decl.o $(srcdir)/c-typeck.o $(srcdir)/c-convert.o \
- $(srcdir)/c-aux-info.o $(srcdir)/c-common.o $(srcdir)/c-iterate.o
+OBJC_CCOMMON = c-lex.o c-pragma.o c-decl.o c-typeck.o c-convert.o \
+  c-aux-info.o c-common.o c-iterate.o
 
 # Language-specific object files for Objective C.
-OBJC_OBJS = $(srcdir)/objc/objc-parse.o $(srcdir)/objc/objc-act.o
+OBJC_OBJS = objc-parse.o objc-act.o
 
 cc1obj: $(P) $(OBJC_OBJS) $(OBJC_CCOMMON) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(OBJC_OBJS) $(OBJS) \
@@ -70,12 +69,12 @@ cc1obj: $(P) $(OBJC_OBJS) $(OBJC_CCOMMON) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 
 # Objective C language specific files.
 
-$(srcdir)/objc/objc-parse.o : $(srcdir)/objc/objc-parse.c \
+objc-parse.o : $(srcdir)/objc/objc-parse.c \
    $(CONFIG_H) $(TREE_H) \
    $(srcdir)/c-lex.h $(srcdir)/c-tree.h $(srcdir)/input.h \
    $(srcdir)/flags.h $(srcdir)/objc/objc-act.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
-	-c $(srcdir)/objc/objc-parse.c -o $(srcdir)/objc/objc-parse.o
+	-c $(srcdir)/objc/objc-parse.c
 
 $(srcdir)/objc/objc-parse.c : $(srcdir)/objc/objc-parse.y
 	cd $(srcdir); $(BISON) $(BISONFLAGS) \
@@ -88,13 +87,13 @@ $(srcdir)/objc/objc-parse.y: $(srcdir)/c-parse.in
 	  $(srcdir)/c-parse.in >>tmp-objc-prs.y
 	$(srcdir)/move-if-change tmp-objc-prs.y $(srcdir)/objc/objc-parse.y
 
-$(srcdir)/objc/objc-act.o : $(srcdir)/objc/objc-act.c \
+objc-act.o : $(srcdir)/objc/objc-act.c \
    $(CONFIG_H) $(TREE_H) $(RTL_H) \
    $(srcdir)/c-tree.h $(srcdir)/c-lex.h \
    $(srcdir)/flags.h $(srcdir)/objc/objc-act.h $(srcdir)/input.h \
    $(srcdir)/function.h $(srcdir)/c-parse.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -I$(srcdir)/objc \
-	-c $(srcdir)/objc/objc-act.c -o $(srcdir)/objc/objc-act.o
+	-c $(srcdir)/objc/objc-act.c
 
 objc-runtime: objc-headers libobjc.a
 
@@ -116,65 +115,65 @@ objc-headers: stmp-fixinc
 
 # Objective C runtime library specific files.
 
-OBJC_O = $(srcdir)/objc/hash.o $(srcdir)/objc/sarray.o \
-	$(srcdir)/objc/class.o $(srcdir)/objc/sendmsg.o \
-	$(srcdir)/objc/init.o $(srcdir)/objc/archive.o \
-	$(srcdir)/objc/encoding.o $(srcdir)/objc/selector.o \
-	$(srcdir)/objc/objects.o $(srcdir)/objc/misc.o \
-	$(srcdir)/objc/NXConstStr.o $(srcdir)/objc/Object.o \
-	$(srcdir)/objc/Protocol.o $(srcdir)/objc/nil_method.o \
-	$(srcdir)/objc/thr.o $(srcdir)/objc/linking.o \
-	$(srcdir)/objc/$(OBJC_THREAD_FILE).o
+OBJC_O = objc/hash.o objc/sarray.o \
+	objc/class.o objc/sendmsg.o \
+	objc/init.o objc/archive.o \
+	objc/encoding.o objc/selector.o \
+	objc/objects.o objc/misc.o \
+	objc/NXConstStr.o objc/Object.o \
+	objc/Protocol.o objc/nil_method.o \
+	objc/thr.o objc/linking.o \
+	objc/$(OBJC_THREAD_FILE).o
 
-$(srcdir)/objc/hash.o: $(srcdir)/objc/hash.c
+objc/hash.o: $(srcdir)/objc/hash.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/hash.c -o $@
-$(srcdir)/objc/sarray.o: $(srcdir)/objc/sarray.c
+objc/sarray.o: $(srcdir)/objc/sarray.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/sarray.c -o $@
-$(srcdir)/objc/class.o: $(srcdir)/objc/class.c
+objc/class.o: $(srcdir)/objc/class.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/class.c -o $@
-$(srcdir)/objc/sendmsg.o: $(srcdir)/objc/sendmsg.c
+objc/sendmsg.o: $(srcdir)/objc/sendmsg.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/sendmsg.c -o $@
-$(srcdir)/objc/init.o: $(srcdir)/objc/init.c
+objc/init.o: $(srcdir)/objc/init.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/init.c -o $@
-$(srcdir)/objc/archive.o: $(srcdir)/objc/archive.c
+objc/archive.o: $(srcdir)/objc/archive.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/archive.c -o $@
-$(srcdir)/objc/encoding.o: $(srcdir)/objc/encoding.c
+objc/encoding.o: $(srcdir)/objc/encoding.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/encoding.c -o $@
-$(srcdir)/objc/selector.o: $(srcdir)/objc/selector.c
+objc/selector.o: $(srcdir)/objc/selector.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/selector.c -o $@
-$(srcdir)/objc/objects.o: $(srcdir)/objc/objects.c
+objc/objects.o: $(srcdir)/objc/objects.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/objects.c -o $@
-$(srcdir)/objc/misc.o: $(srcdir)/objc/misc.c
+objc/misc.o: $(srcdir)/objc/misc.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/misc.c -o $@
-$(srcdir)/objc/NXConstStr.o: $(srcdir)/objc/NXConstStr.m
+objc/NXConstStr.o: $(srcdir)/objc/NXConstStr.m
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/NXConstStr.m -o $@
-$(srcdir)/objc/Object.o: $(srcdir)/objc/Object.m
+objc/Object.o: $(srcdir)/objc/Object.m
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/Object.m -o $@
-$(srcdir)/objc/Protocol.o: $(srcdir)/objc/Protocol.m
+objc/Protocol.o: $(srcdir)/objc/Protocol.m
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/Protocol.m -o $@
-$(srcdir)/objc/thr.o: $(srcdir)/objc/thr.h $(srcdir)/objc/thr.c
+objc/thr.o: $(srcdir)/objc/thr.h $(srcdir)/objc/thr.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/thr.c -o $@
-$(srcdir)/objc/$(OBJC_THREAD_FILE).o: $(srcdir)/objc/$(OBJC_THREAD_FILE).c
+objc/$(OBJC_THREAD_FILE).o: $(srcdir)/objc/$(OBJC_THREAD_FILE).c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/$(OBJC_THREAD_FILE).c -o $@
-$(srcdir)/objc/nil_method.o: $(srcdir)/objc/nil_method.c
+objc/nil_method.o: $(srcdir)/objc/nil_method.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/nil_method.c -o $@
-$(srcdir)/objc/linking.o: $(srcdir)/objc/linking.m
+objc/linking.o: $(srcdir)/objc/linking.m
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
 	-c $(srcdir)/objc/linking.m -o $@
 
