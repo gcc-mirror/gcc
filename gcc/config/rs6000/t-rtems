@@ -1,0 +1,86 @@
+# Multilibs for powerpc RTEMS targets.
+
+MULTILIB_OPTIONS	= \
+mcpu=403/mcpu=505/mcpu=601/mcpu=602/mcpu=603/mcpu=603e/mcpu=604/mcpu=750/mcpu=821/mcpu=860 \
+Dmpc509/Dmpc8260 \
+D_OLD_EXCEPTIONS \
+msoft-float
+
+MULTILIB_DIRNAMES	= \
+m403 m505 m601 m602 m603 m603e m604 m750 m821 m860 \
+mpc509 \
+mpc8260 \
+roe \
+nof
+
+MULTILIB_EXTRA_OPTS	= mrelocatable-lib mno-eabi mstrict-align
+
+# MULTILIB_MATCHES	= ${MULTILIB_MATCHES_FLOAT}
+MULTILIB_MATCHES  	= ${MULTILIB_MATCHES_ENDIAN} \
+			  ${MULTILIB_MATCHES_SYSV} \
+			  mcpu?505/Dmpc505=mcpu?505/Dmpc509
+
+#
+# RTEMS old/new-exceptions handling
+#
+# old-exception processing is depredicated, therefore
+#
+# * Cpu-variants supporting new exception processing are build 
+# with new exception processing only
+# * Cpu-variants not having been ported to new exception processing are
+# build with old and new exception processing
+#
+
+# Cpu-variants supporting new exception processing only
+MULTILIB_NEW_EXCEPTIONS_ONLY = \
+*mcpu=604*/*D_OLD_EXCEPTIONS* \
+*mcpu=750*/*D_OLD_EXCEPTIONS* \
+*mcpu=821*/*D_OLD_EXCEPTIONS* \
+*Dmpc8260*/*D_OLD_EXCEPTIONS* \
+*mcpu=860*/*D_OLD_EXCEPTIONS*
+
+# Soft-float only, default implies msoft-float
+# NOTE: Must match with MULTILIB_MATCHES_FLOAT and MULTILIB_MATCHES
+MULTILIB_SOFTFLOAT_ONLY = \
+mcpu=403/*msoft-float* \
+mcpu=821/*msoft-float* \
+mcpu=860/*msoft-float*
+
+# Hard-float only, take out msoft-float
+MULTILIB_HARDFLOAT_ONLY = \
+mcpu=505/*msoft-float*
+
+MULTILIB_EXCEPTIONS =
+
+# Disallow -D_OLD_EXCEPTIONS without other options
+MULTILIB_EXCEPTIONS	+= D_OLD_EXCEPTIONS*
+
+# Disallow -Dppc and -Dmpc without other options
+MULTILIB_EXCEPTIONS 	+= Dppc* Dmpc*
+
+MULTILIB_EXCEPTIONS	+= \
+${MULTILIB_NEW_EXCEPTIONS_ONLY} \
+${MULTILIB_SOFTFLOAT_ONLY} \
+${MULTILIB_HARDFLOAT_ONLY}
+
+# Special rules
+# Take out all variants we don't want
+MULTILIB_EXCEPTIONS += mcpu=403/Dmpc509*
+MULTILIB_EXCEPTIONS += mcpu=403/Dmpc8260*
+MULTILIB_EXCEPTIONS += mcpu=505/Dmpc509*
+MULTILIB_EXCEPTIONS += mcpu=505/Dmpc8260*
+MULTILIB_EXCEPTIONS += mcpu=601/Dmpc509*
+MULTILIB_EXCEPTIONS += mcpu=601/Dmpc8260*
+MULTILIB_EXCEPTIONS += mcpu=602/Dmpc509*
+MULTILIB_EXCEPTIONS += mcpu=602/Dmpc8260*
+MULTILIB_EXCEPTIONS += mcpu=603/Dmpc509*
+MULTILIB_EXCEPTIONS += mcpu=603/Dmpc8260*
+MULTILIB_EXCEPTIONS += mcpu=603e/Dmpc509*
+MULTILIB_EXCEPTIONS += mcpu=604/Dmpc509*
+MULTILIB_EXCEPTIONS += mcpu=604/Dmpc8260*
+MULTILIB_EXCEPTIONS += mcpu=750/Dmpc509*
+MULTILIB_EXCEPTIONS += mcpu=750/Dmpc8260*
+MULTILIB_EXCEPTIONS += mcpu=821/Dmpc509*
+MULTILIB_EXCEPTIONS += mcpu=821/Dmpc8260*
+MULTILIB_EXCEPTIONS += mcpu=860/Dmpc509*
+MULTILIB_EXCEPTIONS += mcpu=860/Dmpc8260*
