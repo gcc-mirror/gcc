@@ -46,7 +46,7 @@ void ODEsolver::init()
 
 void ODEsolver::timeloop(vector<double>& y, double ts, double te, double dt)
 {
-  (ODEsolver::useMethod)(y,ts,dt);
+  (ODEsolver::useMethod)(y,ts,dt); // ERROR - should use this->*
 }
 
 int main (int nargs, char** args)
