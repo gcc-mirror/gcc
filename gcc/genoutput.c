@@ -701,6 +701,15 @@ process_template (d, template)
 	  printf ("\",\n");
 	  i++;
 	}
+      if (i == 1)
+	message_with_line (d->lineno,
+			   "'@' is redundant for output template with single alternative");
+      if (i != d->n_alternatives)
+	{
+	  message_with_line (d->lineno,
+			     "Wrong number of alternatives in the output template");
+	  have_error = 1;
+	}
 
       printf ("};\n");
     }
