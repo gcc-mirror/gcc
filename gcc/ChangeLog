@@ -1,3 +1,8 @@
+2004-06-17  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (constant_boolean_node): Handle boolean_type_node
+	directly, return either boolean_true_node or boolean_false_node.
+
 2004-06-18  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* opts.sh: Delete.  Break out generated code to next four files.
