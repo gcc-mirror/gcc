@@ -1,3 +1,21 @@
+2002-07-26  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_over_call): Likewise.
+	(cp_convert_parm_for_inlining): New fn.
+        (convert_for_arg_passing): New fn.
+        (convert_default_arg, build_over_call): Use it.
+	(type_passed_as): New fn.
+	* pt.c (tsubst_decl): Use it.
+	* decl2.c (cp_build_parm_decl): New fn.
+	(build_artificial_parm): Use it.
+	(start_static_storage_duration_function): Likewise.
+	* decl.c (start_cleanup_fn, grokdeclarater): Likewise.
+	(grokparms): Don't mess with DECL_ARG_TYPE.
+	* typeck.c (convert_arguments): Use convert_for_arg_passing.
+	* cp-lang.c (LANG_HOOKS_TREE_INLINING_CONVERT_PARM_FOR_INLINING):
+	Define.
+	* cp-tree.h: Declare new fns.
+	
 2002-07-26  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cp-tree.h (flag_operator_names): Remove.

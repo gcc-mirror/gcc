@@ -8518,9 +8518,8 @@ start_cleanup_fn ()
     {
       tree parmdecl;
 
-      parmdecl = build_decl (PARM_DECL, NULL_TREE, ptr_type_node);
+      parmdecl = cp_build_parm_decl (NULL_TREE, ptr_type_node);
       DECL_CONTEXT (parmdecl) = fndecl;
-      DECL_ARG_TYPE (parmdecl) = ptr_type_node;
       TREE_USED (parmdecl) = 1;
       DECL_ARGUMENTS (fndecl) = parmdecl;
     }
@@ -11366,7 +11365,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
       for (args = TYPE_ARG_TYPES (type); args; args = TREE_CHAIN (args))
 	{
-	  tree decl = build_decl (PARM_DECL, NULL_TREE, TREE_VALUE (args));
+	  tree decl = cp_build_parm_decl (NULL_TREE, TREE_VALUE (args));
 
 	  TREE_CHAIN (decl) = decls;
 	  decls = decl;
@@ -11510,17 +11509,10 @@ friend declaration requires class-key, i.e. `friend %#T'",
 
     if (decl_context == PARM)
       {
-	decl = build_decl (PARM_DECL, declarator, type);
+	decl = cp_build_parm_decl (declarator, type);
 
 	bad_specifiers (decl, "parameter", virtualp, quals != NULL_TREE,
 			inlinep, friendp, raises != NULL_TREE);
-
-	/* Compute the type actually passed in the parmlist,
-	   for the case where there is no prototype.
-	   (For example, shorts and chars are passed as ints.)
-	   When there is a prototype, this is overridden later.  */
-
-	DECL_ARG_TYPE (decl) = type_promotes_to (type);
       }
     else if (decl_context == FIELD)
       {
@@ -12206,11 +12198,6 @@ grokparms (first_parm)
 			  decl, ptr ? "pointer" : "reference", t);
 	    }
 
-	  DECL_ARG_TYPE (decl) = TREE_TYPE (decl);
-	  if (PROMOTE_PROTOTYPES
-	      && INTEGRAL_TYPE_P (type)
-	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-	    DECL_ARG_TYPE (decl) = integer_type_node;
 	  if (!any_error && init)
 	    init = check_default_argument (decl, init);
 	  else

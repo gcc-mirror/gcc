@@ -2494,7 +2494,9 @@ build_new_1 (exp)
 	     constructor, that would fix the nesting problem and we could
 	     do away with this complexity.  But that would complicate other
 	     things; in particular, it would make it difficult to bail out
-	     if the allocation function returns null.  */
+	     if the allocation function returns null.  Er, no, it wouldn't;
+	     we just don't run the constructor.  The standard says it's
+	     unspecified whether or not the args are evaluated.  */
 
 	  if (cleanup)
 	    {

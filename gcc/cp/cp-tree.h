@@ -3679,6 +3679,9 @@ extern tree convert_default_arg                 PARAMS ((tree, tree, tree, int))
 extern tree convert_arg_to_ellipsis             PARAMS ((tree));
 extern tree build_x_va_arg                      PARAMS ((tree, tree));
 extern tree cxx_type_promotes_to		PARAMS ((tree));
+extern tree type_passed_as                      PARAMS ((tree));
+extern tree convert_for_arg_passing             PARAMS ((tree, tree));
+extern tree cp_convert_parm_for_inlining        PARAMS ((tree, tree, tree));
 extern int is_properly_derived_from             PARAMS ((tree, tree));
 extern tree initialize_reference                PARAMS ((tree, tree));
 extern tree strip_top_quals                     PARAMS ((tree));
@@ -3958,6 +3961,7 @@ extern void mark_used				PARAMS ((tree));
 extern tree handle_class_head			(enum tag_types, tree, tree, tree, int, int *);
 extern tree lookup_arg_dependent                PARAMS ((tree, tree, tree));
 extern void finish_static_data_member_decl      PARAMS ((tree, tree, tree, int));
+extern tree cp_build_parm_decl                  PARAMS ((tree, tree));
 extern tree build_artificial_parm               PARAMS ((tree, tree));
 extern tree get_guard                           PARAMS ((tree));
 extern tree get_guard_cond                      PARAMS ((tree));

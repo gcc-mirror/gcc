@@ -4128,13 +4128,58 @@ convert_default_arg (type, arg, fn, parmnum)
 
       arg = convert_for_initialization (0, type, arg, LOOKUP_NORMAL,
 					"default argument", fn, parmnum);
-      if (PROMOTE_PROTOTYPES
-	  && INTEGRAL_TYPE_P (type)
-	  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
-	arg = default_conversion (arg);
+      arg = convert_for_arg_passing (type, arg);
     }
 
   return arg;
+}
+
+/* Returns the type which will really be used for passing an argument of
+   type TYPE.  */
+
+tree
+type_passed_as (type)
+     tree type;
+{
+  /* Pass classes with copy ctors by invisible reference.  */
+  if (TREE_ADDRESSABLE (type))
+    type = build_reference_type (type);
+  else if (PROMOTE_PROTOTYPES
+	   && INTEGRAL_TYPE_P (type)
+	   && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+    type = integer_type_node;
+
+  return type;
+}
+
+/* Actually perform the appropriate conversion.  */
+
+tree
+convert_for_arg_passing (type, val)
+     tree type, val;
+{
+  /* Pass classes with copy ctors by invisible reference.  */
+  if (TREE_ADDRESSABLE (type))
+    val = build1 (ADDR_EXPR, build_reference_type (type), val);
+  else if (PROMOTE_PROTOTYPES
+	   && INTEGRAL_TYPE_P (type)
+	   && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+    val = default_conversion (val);
+  return val;
+}
+
+/* Convert VALUE for assignment into inlined parameter PARM.  */
+
+tree
+cp_convert_parm_for_inlining (parm, value, fn)
+     tree parm, value;
+     tree fn ATTRIBUTE_UNUSED;
+{
+  /* When inlining, we don't need to mess with invisible references, so
+     undo the ADDR_EXPR.  */
+  if (TREE_ADDRESSABLE (TREE_TYPE (parm)))
+    value = build_indirect_ref (value, NULL);
+  return value;
 }
 
 /* Subroutine of the various build_*_call functions.  Overload resolution
@@ -4222,10 +4267,7 @@ build_over_call (cand, args, flags)
       val = convert_like_with_context
 	(conv, TREE_VALUE (arg), fn, i - is_method);
 
-      if (PROMOTE_PROTOTYPES
-	  && INTEGRAL_TYPE_P (type)
-	  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
-	val = default_conversion (val);
+      val = convert_for_arg_passing (type, val);
       converted_args = tree_cons (NULL_TREE, val, converted_args);
     }
 
