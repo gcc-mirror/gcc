@@ -920,7 +920,10 @@ namespace std
       */
       basic_string&
       insert(size_type __pos1, const basic_string& __str,
-	     size_type __pos2, size_type __n);
+	     size_type __pos2, size_type __n)
+      { return this->insert(__pos1, __str._M_data()
+			    + __str._M_check(__pos2, "basic_string::insert"),
+			    __str._M_limit(__pos2, __n)); }
 
       /**
        *  @brief  Insert a C substring.
