@@ -1173,7 +1173,8 @@ expand_call_inline (tp, walk_subtrees, data)
   if (!inlinable_function_p (fn, id))
     {
       if (warn_inline && DECL_INLINE (fn) && !DID_INLINE_FUNC (fn)
-	  && !DECL_IN_SYSTEM_HEADER (fn))
+	  && !DECL_IN_SYSTEM_HEADER (fn)
+	  && !lookup_attribute ("noinline", DECL_ATTRIBUTES (fn)))
 	{
 	  warning_with_decl (fn, "inlining failed in call to `%s'");
 	  warning ("called from here");

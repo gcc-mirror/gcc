@@ -1,3 +1,8 @@
+2005-01-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/17115
+	* g++.dg/warn/Winline-4.C: New test.
+
 2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/short-compare-1.c: New test.

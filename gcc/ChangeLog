@@ -1,3 +1,9 @@
+2005-01-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/17115
+	* tree-inline.c (expand_call_inline): Do not warn for functions
+	marked with attribute noinline.
+
 2005-01-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR rtl-optimization/19296
