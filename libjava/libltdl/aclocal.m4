@@ -4622,7 +4622,7 @@ AC_MSG_CHECKING([for $compiler option to produce PIC])
       mvs*)
 	case $cc_basename in
 	  cxx)
-	    _LT_AC_TAGVAR(lt_prog_compiler_pic, $1)='-W c,exportall'
+	    _LT_AC_TAGVAR(lt_prog_compiler_pic, $1)='-Wextra c,exportall'
 	    ;;
 	  *)
 	    ;;
