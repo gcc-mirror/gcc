@@ -6,6 +6,8 @@ Sun Jun 21 18:56:44 1998  Jeffrey A Law  (law@cygnus.com)
 
 Sun Jun 21 18:30:13 1998  H.J. Lu  (hjl@gnu.org)
 
+	* integrate.c (pushdecl, poplevel): Remove declaration.
+
 	* rtl.h (expand_expr): Remove declaration.
 
 	* loop.c (oballoc): Remove declaration.
