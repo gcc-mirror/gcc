@@ -1,3 +1,7 @@
+2003-07-09  Jerry Quinn  <jlquinn@optonline.net>
+
+	* src/ios.cc (_M_grow_words):  Fix spelling.
+
 2003-07-09  Gawain Bolton  <gp.bolton@computer.org>
 
 	* include/bits/stl_tree.h: Move larger member functions in
