@@ -1405,8 +1405,17 @@ fold_convert (t, arg1)
 	    l = real_value_from_int_cst (TYPE_MIN_VALUE (type)),
 	    x = TREE_REAL_CST (arg1),
 	    u = real_value_from_int_cst (TYPE_MAX_VALUE (type));
-	  if (! ((REAL_VALUES_LESS (l, x) || REAL_VALUES_EQUAL (l, x))
-		 && (REAL_VALUES_LESS (x, u) || REAL_VALUES_EQUAL (x, u))))
+	  /* See if X will be in range after truncation towards 0.
+	     To compensate for truncation, move the bounds away from 0,
+	     but reject if X exactly equals the adjusted bounds.  */
+#ifdef REAL_ARITHMETIC
+	  REAL_ARITHMETIC (l, MINUS_EXPR, l, dconst1);
+	  REAL_ARITHMETIC (u, PLUS_EXPR, u, dconst1);
+#else
+	  l--;
+	  u++;
+#endif
+	  if (! (REAL_VALUES_LESS (l, x) && REAL_VALUES_LESS (x, u)))
 	    {
 	      warning ("real constant out of range for integer conversion");
 	      return t;
