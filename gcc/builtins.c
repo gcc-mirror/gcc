@@ -4460,10 +4460,7 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
       if (! if_false_label)
 	if_false_label = drop_through_label;
 
-      /* Now that the __builtin_expect has been validated, go through and add
-	 the expect's to each of the conditional jumps.  If we run into an
-	 error, just give up and generate the 'safe' code of doing a SCC
-	 operation and then doing a branch on that.  */
+      /* Go through and add the expect's to each of the conditional jumps.  */
       insn = ret;
       while (insn != NULL_RTX)
 	{
@@ -4472,54 +4469,65 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
 	  if (GET_CODE (insn) == JUMP_INSN && any_condjump_p (insn))
 	    {
 	      rtx ifelse = SET_SRC (pc_set (insn));
-	      rtx label;
-	      int taken;
+	      rtx then_dest = XEXP (ifelse, 1);
+	      rtx else_dest = XEXP (ifelse, 2);
+	      int taken = -1;
 
-	      if (GET_CODE (XEXP (ifelse, 1)) == LABEL_REF)
+	      /* First check if we recognize any of the labels.  */
+	      if (GET_CODE (then_dest) == LABEL_REF
+		  && XEXP (then_dest, 1) == if_true_label)
+		taken = 1;
+	      else if (GET_CODE (then_dest) == LABEL_REF
+		       && XEXP (then_dest, 1) == if_false_label)
+		taken = 0;
+	      else if (GET_CODE (else_dest) == LABEL_REF
+		       && XEXP (else_dest, 1) == if_false_label)
+		taken = 1;
+	      else if (GET_CODE (else_dest) == LABEL_REF
+		       && XEXP (else_dest, 1) == if_true_label)
+		taken = 0;
+	      /* Otherwise check where we drop through.  */
+	      else if (else_dest == pc_rtx)
 		{
-		  taken = 1;
-		  label = XEXP (XEXP (ifelse, 1), 0);
-		}
-	      /* An inverted jump reverses the probabilities.  */
-	      else if (GET_CODE (XEXP (ifelse, 2)) == LABEL_REF)
-		{
-		  taken = 0;
-		  label = XEXP (XEXP (ifelse, 2), 0);
-		}
-	      /* We shouldn't have to worry about conditional returns during
-		 the expansion stage, but handle it gracefully anyway.  */
-	      else if (GET_CODE (XEXP (ifelse, 1)) == RETURN)
-		{
-		  taken = 1;
-		  label = NULL_RTX;
-		}
-	      /* An inverted return reverses the probabilities.  */
-	      else if (GET_CODE (XEXP (ifelse, 2)) == RETURN)
-		{
-		  taken = 0;
-		  label = NULL_RTX;
-		}
-	      else
-		goto do_next_insn;
+		  if (next && GET_CODE (next) == NOTE)
+		    next = next_nonnote_insn (next);
 
-	      /* If the test is expected to fail, reverse the
-		 probabilities.  */
-	      if (integer_zerop (arg1))
-		taken = 1 - taken;
+		  if (next && GET_CODE (next) == JUMP_INSN
+		      && any_uncondjump_p (next))
+		    next = XEXP (SET_SRC (pc_set (next)), 1);
 
-	      /* If we are jumping to the false label, reverse the
-		 probabilities.  */
-	      if (label == NULL_RTX)
-		;		/* conditional return */
-	      else if (label == if_false_label)
-		taken = 1 - taken;
-	      else if (label != if_true_label)
-		goto do_next_insn;
+		  /* NEXT is either a CODE_LABEL, NULL_RTX or something
+		     else that can't possibly match either target label.  */
+		  if (next == if_false_label)
+		    taken = 1;
+		  else if (next == if_true_label)
+		    taken = 0;
+		}
+	      else if (then_dest == pc_rtx)
+		{
+		  if (next && GET_CODE (next) == NOTE)
+		    next = next_nonnote_insn (next);
 
-	      predict_insn_def (insn, PRED_BUILTIN_EXPECT, taken);
+		  if (next && GET_CODE (next) == JUMP_INSN
+		      && any_uncondjump_p (next))
+		    next = XEXP (SET_SRC (pc_set (next)), 1);
+
+		  if (next == if_false_label)
+		    taken = 0;
+		  else if (next == if_true_label)
+		    taken = 1;
+		}
+
+	      if (taken != -1)
+		{
+		  /* If the test is expected to fail, reverse the
+		     probabilities.  */
+		  if (integer_zerop (arg1))
+		    taken = 1 - taken;
+	          predict_insn_def (insn, PRED_BUILTIN_EXPECT, taken);
+		}
 	    }
 
-	do_next_insn:
 	  insn = next;
 	}
     }
