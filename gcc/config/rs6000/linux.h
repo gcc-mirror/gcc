@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for PowerPC machines running Linux.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
    Contributed by Michael Meissner (meissner@cygnus.com).
 
@@ -104,89 +104,6 @@
 
 #define TARGET_HAS_F_SETLKW
 
-/* Do code reading to identify a signal frame, and set the frame
-   state data appropriately.  See unwind-dw2.c for the structs.  */
-
 #ifdef IN_LIBGCC2
-#include <signal.h>
-
-/* During the 2.5 kernel series the kernel ucontext was changed, but
-   the new layout is compatible with the old one, so we just define
-   and use the old one here for simplicity and compatibility.  */
-
-struct kernel_old_ucontext {
-  unsigned long     uc_flags;
-  struct ucontext  *uc_link;
-  stack_t           uc_stack;
-  struct sigcontext_struct uc_mcontext;
-  sigset_t          uc_sigmask;
-};
-
-enum { SIGNAL_FRAMESIZE = 64 };
+#include "config/rs6000/linux-unwind.h"
 #endif
-
-#define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
-  do {									\
-    unsigned char *pc_ = (CONTEXT)->ra;					\
-    struct sigcontext *sc_;						\
-    long new_cfa_;							\
-    int i_;								\
-									\
-    /* li r0, 0x7777; sc  (sigreturn old)  */				\
-    /* li r0, 0x0077; sc  (sigreturn new)  */				\
-    /* li r0, 0x6666; sc  (rt_sigreturn old)  */			\
-    /* li r0, 0x00AC; sc  (rt_sigreturn new)  */			\
-    if (*(unsigned int *) (pc_+4) != 0x44000002)			\
-      break;								\
-    if (*(unsigned int *) (pc_+0) == 0x38007777				\
-	|| *(unsigned int *) (pc_+0) == 0x38000077)			\
-      {									\
-	struct sigframe {						\
-	  char gap[SIGNAL_FRAMESIZE];					\
-	  struct sigcontext sigctx;					\
-	} *rt_ = (CONTEXT)->cfa;					\
-	sc_ = &rt_->sigctx;						\
-      }									\
-    else if (*(unsigned int *) (pc_+0) == 0x38006666			\
-	     || *(unsigned int *) (pc_+0) == 0x380000AC)		\
-      {									\
-	struct rt_sigframe {						\
-	  char gap[SIGNAL_FRAMESIZE];					\
-	  unsigned long _unused[2];					\
-	  struct siginfo *pinfo;					\
-	  void *puc;							\
-	  struct siginfo info;						\
-	  struct kernel_old_ucontext uc;				\
-	} *rt_ = (CONTEXT)->cfa;					\
-	sc_ = &rt_->uc.uc_mcontext;					\
-      }									\
-    else								\
-      break;								\
-    									\
-    new_cfa_ = sc_->regs->gpr[STACK_POINTER_REGNUM];			\
-    (FS)->cfa_how = CFA_REG_OFFSET;					\
-    (FS)->cfa_reg = STACK_POINTER_REGNUM;				\
-    (FS)->cfa_offset = new_cfa_ - (long) (CONTEXT)->cfa;		\
-    									\
-    for (i_ = 0; i_ < 32; i_++)						\
-      if (i_ != STACK_POINTER_REGNUM)					\
-	{	    							\
-	  (FS)->regs.reg[i_].how = REG_SAVED_OFFSET;			\
-	  (FS)->regs.reg[i_].loc.offset 				\
-	    = (long)&(sc_->regs->gpr[i_]) - new_cfa_;			\
-	}								\
-									\
-    (FS)->regs.reg[CR2_REGNO].how = REG_SAVED_OFFSET;			\
-    (FS)->regs.reg[CR2_REGNO].loc.offset				\
-      = (long)&(sc_->regs->ccr) - new_cfa_;				\
-									\
-    (FS)->regs.reg[LINK_REGISTER_REGNUM].how = REG_SAVED_OFFSET;	\
-    (FS)->regs.reg[LINK_REGISTER_REGNUM].loc.offset 			\
-      = (long)&(sc_->regs->link) - new_cfa_;				\
-									\
-    (FS)->regs.reg[CR0_REGNO].how = REG_SAVED_OFFSET;			\
-    (FS)->regs.reg[CR0_REGNO].loc.offset 				\
-      = (long)&(sc_->regs->nip) - new_cfa_;				\
-    (FS)->retaddr_column = CR0_REGNO;					\
-    goto SUCCESS;							\
-  } while (0)

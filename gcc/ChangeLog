@@ -1,3 +1,10 @@
+2005-03-17  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux-unwind.h: New file backported from gcc-4.0.
+	* config/rs6000/linux.h: #include linux-unwind.h in place of all
+	unwind support in this file.
+	* config/rs6000/linux64.h: Likewise.
+
 2005-03-16  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/17825
