@@ -1,3 +1,7 @@
+1998-09-08  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* parse.y (nomods_initdcl0): Set up the parser stack correctly.
+
 1998-09-08  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (anonymous_namespace_name): Declare.
