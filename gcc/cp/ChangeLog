@@ -1,3 +1,20 @@
+2001-04-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (DECL_LANGUAGE): Don't assume DECL_LANG_SPECIFIC is
+	set.
+	(SET_DECL_LANGUAGE): New macro.
+	* decl.c (duplicate_decls): Use SET_DECL_LANGUAGE.
+	(pushdecl): Likewise.
+	(build_library_fn_1): Likewise.
+	(build_cp_library_fn): Likewise.
+	(grokfndecl): Likewise.
+	(grokvardecl): Mark `extern "C"' variables as having C linkage.
+	* decl2.c (grokclassfn): Use SET_DECL_LANGUAGE.
+	* lex.c (retrofit_lang_decl): Likewise.
+	* mangle.c (mangle_decl_string): Don't mangle the names of
+	variables declared with C language linkage.
+	* semantics.c (finish_member_declaration): Use SET_DECL_LANGUAGE.
+	
 2001-04-18  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* semantics.c (simplify_aggr_init_exprs_r): Don't restore
