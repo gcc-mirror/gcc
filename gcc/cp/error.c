@@ -1776,6 +1776,14 @@ dump_expr (t, nop)
       dump_expr (TREE_OPERAND (t, 0), nop);
       break;
 
+    case PSEUDO_DTOR_EXPR:
+      dump_expr (TREE_OPERAND (t, 2), nop);
+      OB_PUTS (".");
+      dump_type (TREE_OPERAND (t, 0), nop);
+      OB_PUTS ("::~");
+      dump_type (TREE_OPERAND (t, 1), nop);
+      break;
+
     case TEMPLATE_ID_EXPR:
       dump_decl (t, 0);
       break;

@@ -3992,6 +3992,12 @@ build_expr_from_tree (t)
 	 build_expr_from_tree (TREE_OPERAND (t, 1)),
 	 build_expr_from_tree (TREE_OPERAND (t, 2)));
 
+    case PSEUDO_DTOR_EXPR:
+      return (finish_pseudo_destructor_call_expr 
+	      (build_expr_from_tree (TREE_OPERAND (t, 0)),
+	       build_expr_from_tree (TREE_OPERAND (t, 1)),
+	       build_expr_from_tree (TREE_OPERAND (t, 2))));
+
     case TREE_LIST:
       {
 	tree purpose, value, chain;

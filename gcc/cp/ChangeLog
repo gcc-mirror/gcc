@@ -1,3 +1,13 @@
+1999-08-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (PSEUDO_DTOR_EXPR): New tree code.
+	* decl2.c (build_expr_from_tree): Handle it.
+	* error.c (dump_expr): Likewise.
+	* pt.c (for_each_template_parm): Likewise.
+	(tsubst_copy): Likewise.
+	* tree.c (search_tree): Likewise.
+	* semantics.c (finish_pseudo_destructor_call): Create it.
+	
 1999-08-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* search.c (setup_class_bindings): Robustify.

@@ -1229,6 +1229,9 @@ finish_pseudo_destructor_call_expr (object, scope, destructor)
      tree scope;
      tree destructor;
 {
+  if (processing_template_decl)
+    return build_min_nt (PSEUDO_DTOR_EXPR, object, scope, destructor);
+
   if (scope && scope != destructor)
     cp_error ("destructor specifier `%T::~%T()' must have matching names", 
 	      scope, destructor);
