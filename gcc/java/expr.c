@@ -1073,6 +1073,7 @@ build_instanceof (value, type)
   if (CLASS_P (type) && ! CLASS_LOADED_P (type))
     {
       load_class (type, 1);
+      safe_layout_class (type);
       if (! TYPE_SIZE (type) || TREE_CODE (TYPE_SIZE (type)) == ERROR_MARK)
 	return error_mark_node;
     }
