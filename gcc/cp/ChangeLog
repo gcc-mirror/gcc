@@ -1,3 +1,13 @@
+Mon Nov 24 12:15:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* exception.cc (struct cp_eh_info): Add handlers field.
+	(__cp_push_exception): Initialize it.
+	(__cp_pop_exception): Decrement it.  Don't pop unless it's 0.
+	(__throw_bad_exception): Remove.
+	* except.c (call_eh_info): Add handlers field.
+	(get_eh_handlers): New fn.
+	(push_eh_cleanup): Increment handlers.
+
 Fri Nov 21 12:22:07 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c (expand_start_eh_spec): Use the try/catch code.

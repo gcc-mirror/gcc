@@ -75,7 +75,11 @@ unexpected ()
 }
 
 /* C++-specific state about the current exception.
-   This must match init_exception_processing().  */
+   This must match init_exception_processing().
+
+   Note that handlers and caught are not redundant; when rethrown, an
+   exception can have multiple active handlers and still be considered
+   uncaught.  */
 
 struct cp_eh_info
 {
@@ -84,6 +88,7 @@ struct cp_eh_info
   void (*cleanup)(void *, int);
   bool caught;
   cp_eh_info *next;
+  long handlers;
 };
 
 /* Language-specific EH info pointer, defined in libgcc2.  */
@@ -113,6 +118,7 @@ __cp_push_exception (void *value, void *type, void (*cleanup)(void *, int))
   p->value = value;
   p->type = type;
   p->cleanup = cleanup;
+  p->handlers = 0;
   p->caught = false;
   p->next = __eh_info;
   __eh_info = p;
@@ -128,7 +134,9 @@ __cp_pop_exception (cp_eh_info *p, bool handler)
 {
   cp_eh_info **q = &__eh_info;
 
-  if (handler && p == *q)
+  --p->handlers;
+
+  if (p->handlers > 0 || (handler && p == *q))
     return;
 
   for (; *q; q = &((*q)->next))
@@ -218,12 +226,6 @@ extern "C" void
 __throw_bad_typeid (void)
 {
   throw bad_typeid ();
-}
-
-extern "C" void
-__throw_bad_exception (void)
-{
-  throw bad_exception ();
 }
 
 /* Has the current exception been caught?  */
