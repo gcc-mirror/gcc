@@ -3248,7 +3248,9 @@ encode_ibm_extended (const struct real_format *fmt, long *buf,
   if (u.class == rvc_normal)
     {
       do_add (&v, &normr, &u, 1);
-      round_for_format (base_fmt, &v);
+      /* The low double won't need rounding, since we round to a 106 bit
+	 mantissa before calling this function, and we've just
+	 subtracted off the top 54 bits.  (53+1 because u is rounded.)  */
       encode_ieee_double (base_fmt, &buf[2], &v);
     }
   else
