@@ -1,3 +1,7 @@
+2001-10-08  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/spacing1.c: Update test.
+
 2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/unsorted/unsorted.exp, lib/file-format.exp: Fix

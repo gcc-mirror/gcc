@@ -75,8 +75,8 @@ static const cpp_token *stringify_arg PARAMS ((cpp_reader *, macro_arg *));
 static void paste_all_tokens PARAMS ((cpp_reader *, const cpp_token *));
 static bool paste_tokens PARAMS ((cpp_reader *, const cpp_token **,
 				  const cpp_token *));
-static int funlike_invocation_p PARAMS ((cpp_reader *, cpp_hashnode *));
 static void replace_args PARAMS ((cpp_reader *, cpp_hashnode *, macro_arg *));
+static _cpp_buff *funlike_invocation_p PARAMS ((cpp_reader *, cpp_hashnode *));
 
 /* #define directive parsing and handling.  */
 
@@ -616,46 +616,41 @@ collect_args (pfile, node)
   return NULL;
 }
 
-static int
+/* Search for an opening parenthesis to the macro of NODE, in such a
+   way that, if none is found, we don't lose the information in any
+   intervening padding tokens.  If we find the parenthesis, collect
+   the arguments and return the buffer containing them.  */
+static _cpp_buff *
 funlike_invocation_p (pfile, node)
      cpp_reader *pfile;
      cpp_hashnode *node;
 {
-  const cpp_token *maybe_paren;
-  _cpp_buff *buff = NULL;
+  const cpp_token *token, *padding = NULL;
 
-  pfile->state.prevent_expansion++;
-  pfile->keep_tokens++;
-
-  pfile->state.parsing_args = 1;
-  do
-    maybe_paren = cpp_get_token (pfile);
-  while (maybe_paren->type == CPP_PADDING);
-  pfile->state.parsing_args = 2;
-
-  if (maybe_paren->type == CPP_OPEN_PAREN)
-    buff = collect_args (pfile, node);
-  else
+  for (;;)
     {
-      _cpp_backup_tokens (pfile, 1);
-      if (CPP_WTRADITIONAL (pfile) && ! node->value.macro->syshdr)
-	cpp_warning (pfile,
- "function-like macro \"%s\" must be used with arguments in traditional C",
-		     NODE_NAME (node));
+      token = cpp_get_token (pfile);
+      if (token->type != CPP_PADDING)
+	break;
+      if (padding == NULL
+	  || (!(padding->flags & PREV_WHITE) && token->val.source == NULL))
+	padding = token;
     }
 
-  pfile->state.parsing_args = 0;
-  pfile->keep_tokens--;
-  pfile->state.prevent_expansion--;
-
-  if (buff)
+  if (token->type == CPP_OPEN_PAREN)
     {
-      if (node->value.macro->paramc > 0)
-	replace_args (pfile, node, (macro_arg *) buff->base);
-      _cpp_release_buff (pfile, buff);
+      pfile->state.parsing_args = 2;
+      return collect_args (pfile, node);
     }
 
-  return buff != 0;
+  /* Back up.  We may have skipped padding, in which case backing up
+     more than one token when expanding macros is in general too
+     difficult.  We re-insert it in its own context.  */
+  _cpp_backup_tokens (pfile, 1);
+  if (padding)
+    push_token_context (pfile, NULL, padding, 1);
+
+  return NULL;
 }
 
 /* Push the context of a macro onto the context stack.  TOKEN is the
@@ -675,8 +670,32 @@ enter_macro_context (pfile, node)
     {
       cpp_macro *macro = node->value.macro;
 
-      if (macro->fun_like && !funlike_invocation_p (pfile, node))
-	return 0;
+      if (macro->fun_like)
+	{
+	  _cpp_buff *buff;
+
+	  pfile->state.prevent_expansion++;
+	  pfile->keep_tokens++;
+	  pfile->state.parsing_args = 1;
+	  buff = funlike_invocation_p (pfile, node);
+	  pfile->state.parsing_args = 0;
+	  pfile->keep_tokens--;
+	  pfile->state.prevent_expansion--;
+
+	  if (buff == NULL)
+	    {
+	      if (CPP_WTRADITIONAL (pfile) && ! node->value.macro->syshdr)
+		cpp_warning (pfile,
+ "function-like macro \"%s\" must be used with arguments in traditional C",
+			     NODE_NAME (node));
+
+	      return 0;
+	    }
+
+	  if (node->value.macro->paramc > 0)
+	    replace_args (pfile, node, (macro_arg *) buff->base);
+	  _cpp_release_buff (pfile, buff);
+	}
 
       /* Disable the macro within its expansion.  */
       node->flags |= NODE_DISABLED;
