@@ -1,3 +1,9 @@
+2003-09-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/5655
+	* g++.dg/parse/access7.C: New test.
+	* g++.old-deja/g++.brendan/crash56.C: Fix redeclaration error.
+
 2003-09-24  Ziemowit Laski  <zlaski@apple.com>
 
 	MERGE OF objc-improvements-branch into MAINLINE:

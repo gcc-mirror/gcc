@@ -1,3 +1,10 @@
+2003-09-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/5655
+	* parser.c (cp_parser_check_access_in_redeclaration): New function.
+	(cp_parser_member_declaration): Use it.
+	(cp_parser_template_declaration_after_export): Likewise.
+
 2003-09-22  Gabriel Dos Reis  <gcc@integrable-solutions.net>
 
 	* cp-tree.h (scope_kind): Add new enumerator.
@@ -706,7 +713,7 @@
 	(do_friend): Adjust add_friend call.
 	* decl.c (grokdeclarator): Adjust make_friend_class call.
 	* parser.c (cp_parser_member_declaration): Likewise.
-	(cp_parser_template_declaration_after_exp): Likewise.
+	(cp_parser_template_declaration_after_export): Likewise.
 	* pt.c (instantiate_class_template): Adjust make_friend_class
 	and add_friend call.
 	* cp-tree.h (make_friend_class): Adjust declaration.
