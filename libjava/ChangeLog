@@ -1,3 +1,9 @@
+2003-03-02  Michael Koch  <konqueror@gmx.de>
+
+	* configure.in: Added check for memory mapping of files.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+
 2003-03-01  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* posix-threads.cc: Include <unistd.h> if HAVE_UNISTD_H is defined.
