@@ -1462,6 +1462,7 @@ javax/print/attribute/AttributeSet.java \
 javax/print/attribute/DateTimeSyntax.java \
 javax/print/attribute/DocAttribute.java \
 javax/print/attribute/DocAttributeSet.java \
+javax/print/attribute/EnumSyntax.java \
 javax/print/attribute/IntegerSyntax.java \
 javax/print/attribute/PrintJobAttribute.java \
 javax/print/attribute/PrintJobAttributeSet.java \
@@ -1470,6 +1471,7 @@ javax/print/attribute/PrintRequestAttributeSet.java \
 javax/print/attribute/PrintServiceAttribute.java \
 javax/print/attribute/PrintServiceAttributeSet.java \
 javax/print/attribute/ResolutionSyntax.java \
+javax/print/attribute/SetOfIntegerSyntax.java \
 javax/print/attribute/Size2DSyntax.java \
 javax/print/attribute/SupportedValuesAttribute.java \
 javax/print/attribute/TextSyntax.java \
@@ -4069,6 +4071,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/print/attribute/DateTimeSyntax.P \
 .deps/javax/print/attribute/DocAttribute.P \
 .deps/javax/print/attribute/DocAttributeSet.P \
+.deps/javax/print/attribute/EnumSyntax.P \
 .deps/javax/print/attribute/IntegerSyntax.P \
 .deps/javax/print/attribute/PrintJobAttribute.P \
 .deps/javax/print/attribute/PrintJobAttributeSet.P \
@@ -4077,6 +4080,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/javax/print/attribute/PrintServiceAttribute.P \
 .deps/javax/print/attribute/PrintServiceAttributeSet.P \
 .deps/javax/print/attribute/ResolutionSyntax.P \
+.deps/javax/print/attribute/SetOfIntegerSyntax.P \
 .deps/javax/print/attribute/Size2DSyntax.P \
 .deps/javax/print/attribute/SupportedValuesAttribute.P \
 .deps/javax/print/attribute/TextSyntax.P \
