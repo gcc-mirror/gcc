@@ -1,3 +1,8 @@
+2003-11-29  Richard Sandiford  <rsandifo@redhat.com>
+
+	* stmt.c (expand_asm_operands): Check whether force_const_mem
+	succeeded.
+
 2003-11-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/gnu.h (HURD_TARGET_OS_CPP_BUILTINS): New.
