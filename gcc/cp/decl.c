@@ -1068,6 +1068,12 @@ decls_match (tree newdecl, tree olddecl)
     }
   else
     {
+      /* Need to check scope for variable declaration (VAR_DECL).
+	 For typedef (TYPE_DECL), scope is ignored.  */
+      if (TREE_CODE (newdecl) == VAR_DECL
+	  && CP_DECL_CONTEXT (newdecl) != CP_DECL_CONTEXT (olddecl))
+	return 0;
+
       if (TREE_TYPE (newdecl) == error_mark_node)
 	types_match = TREE_TYPE (olddecl) == error_mark_node;
       else if (TREE_TYPE (olddecl) == NULL_TREE)

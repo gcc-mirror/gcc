@@ -1,5 +1,10 @@
 2005-03-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/20240
+	* g++.dg/lookup/using13.C: New test.
+
+2005-03-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/20333
 	* g++.dg/template/crash36.C: New test.
 
