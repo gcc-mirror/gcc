@@ -1,3 +1,8 @@
+Fri Oct  5 08:17:46 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/i386/i386.c (ix86_split_to_parts): Use trunc_int_for_mode
+	to ensure valid SImode constants.
+
 2001-10-05  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (c-decl.o): Depend on tree-inline.h.
