@@ -1532,6 +1532,16 @@ another common case:
 @noindent
 This has no bug because @code{save_y} is used only if it is set.
 
+@cindex @code{longjmp} warnings
+This option also warns when a nonvolatile automatic variable might be
+changed by a call to @code{longjmp}.
+
+The compiler sees only the calls to @code{setjmp}.  It cannot know
+where @code{longjmp} will be called; in fact, a signal handler could
+call it at any point in the code.  As a result, you may get a warning
+even when there is in fact no problem because @code{longjmp} cannot
+in fact be called at the place which would cause a problem.
+
 Some spurious warnings can be avoided if you declare all the functions
 you use that never return as @code{noreturn}.  @xref{Function
 Attributes}.
@@ -1564,18 +1574,6 @@ the warning.
 Print extra warning messages for these events:
 
 @itemize @bullet
-@cindex @code{longjmp} warnings
-@item
-A nonvolatile automatic variable might be changed by a call to
-@code{longjmp}.  These warnings as well are possible only in
-optimizing compilation.
-
-The compiler sees only the calls to @code{setjmp}.  It cannot know
-where @code{longjmp} will be called; in fact, a signal handler could
-call it at any point in the code.  As a result, you may get a warning
-even when there is in fact no problem because @code{longjmp} cannot
-in fact be called at the place which would cause a problem.
-
 @item
 A function can return either with or without a value.  (Falling
 off the end of the function body is considered returning without
