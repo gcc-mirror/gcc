@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987, 89, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2749,6 +2749,36 @@ process_command (argc, argv)
 		spec_version = p + 1;
 	      compiler_version = spec_version;
 	      warn_std_ptr = &warn_std;
+
+	      /* Validate the version number.  Use the same checks
+		 done when inserting it into a spec.
+
+		 The format of the version string is
+		 ([^0-9]*-)?[0-9]+[.][0-9]+([.][0-9]+)?([- ].*)?  */
+	      {
+		char *v = compiler_version;
+
+		/* Ignore leading non-digits.  i.e. "foo-" in "foo-2.7.2".  */
+		while (! isdigit (*v))
+		  v++;
+
+		if (v > compiler_version && v[-1] != '-')
+		  fatal ("invalid version number format");
+
+		/* Set V after the first period.  */
+		while (isdigit (*v))
+		  v++;
+
+		if (*v != '.')
+		  fatal ("invalid version number format");
+
+		v++;
+		while (isdigit (*v))
+		  v++;
+
+		if (*v != 0 && *v != ' ' && *v != '.' && *v != '-')
+		  fatal ("invalid version number format");
+	      }
 	      break;
 
 	    case 'c':
