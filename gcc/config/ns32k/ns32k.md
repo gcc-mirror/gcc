@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, ns32000 Version
-;;  Copyright (C) 1988, 1994, 1996, 1998, 1999 Free Software Foundation, Inc.
+;;  Copyright (C) 1988, 1994, 1996, 1998-99, 2000 Free Software Foundation, Inc.
 ;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 ;; This file is part of GNU CC.
@@ -2032,7 +2032,7 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=g<")
-	(match_operand:QI 1 "address_operand" "p"))]
+	(match_operand:SI 1 "address_operand" "p"))]
   ""
   "*
 {
