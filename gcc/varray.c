@@ -64,7 +64,7 @@ varray_grow (va, n)
       va = (varray_type) xrealloc ((char *)va, VARRAY_HDR_SIZE + data_size);
       va->num_elements = n;
       if (n > old_elements)
-	bzero (&va->data.c[old_data_size], data_size - old_data_size);
+	memset (&va->data.c[old_data_size], 0, data_size - old_data_size);
     }
 
   return va;

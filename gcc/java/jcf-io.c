@@ -319,7 +319,7 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
      null pointer when we're copying it below.  */
   int buflen = jcf_path_max_len () + classname_length + 10;
   char *buffer = (char *) ALLOC (buflen);
-  bzero (buffer, buflen);
+  memset (buffer, 0, buflen);
 
   java_buffer = (char *) alloca (buflen);
 

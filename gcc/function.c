@@ -4787,7 +4787,7 @@ assign_parms (fndecl)
 	      max_parm_reg = regno + 1;
 	      new = (rtx *) xrealloc (parm_reg_stack_loc,
 				      max_parm_reg * sizeof (rtx));
-	      bzero ((char *) (new + old_max_parm_reg),
+	      memset ((char *) (new + old_max_parm_reg), 0,
 		     (max_parm_reg - old_max_parm_reg) * sizeof (rtx));
 	      parm_reg_stack_loc = new;
 	    }

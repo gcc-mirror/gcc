@@ -3459,7 +3459,7 @@ optimize_attrs ()
   insn_code_values
     = (struct attr_value_list **) alloca ((insn_code_number + 2)
 					  * sizeof (struct attr_value_list *));
-  bzero ((char *) insn_code_values,
+  memset ((char *) insn_code_values, 0,
 	 (insn_code_number + 2) * sizeof (struct attr_value_list *));
 
   /* Offset the table address so we can index by -2 or -1.  */

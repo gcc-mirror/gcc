@@ -269,7 +269,7 @@ init_reg_sets ()
 
   bcopy (initial_fixed_regs, fixed_regs, sizeof fixed_regs);
   bcopy (initial_call_used_regs, call_used_regs, sizeof call_used_regs);
-  bzero (global_regs, sizeof global_regs);
+  memset (global_regs, 0, sizeof global_regs);
 
   /* Do any additional initialization regsets may need */
   INIT_ONCE_REG_SET ();
@@ -297,7 +297,7 @@ init_reg_sets_1 ()
 
   /* Compute number of hard regs in each class.  */
 
-  bzero ((char *) reg_class_size, sizeof reg_class_size);
+  memset ((char *) reg_class_size, 0, sizeof reg_class_size);
   for (i = 0; i < N_REG_CLASSES; i++)
     for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
       if (TEST_HARD_REG_BIT (reg_class_contents[i], j))
@@ -1122,10 +1122,10 @@ regclass (f, nregs, dump)
         fprintf (dump, "\n\nPass %i\n\n",pass);
       /* Zero out our accumulation of the cost of each class for each reg.  */
 
-      bzero ((char *) costs, nregs * sizeof (struct costs));
+      memset ((char *) costs, 0, nregs * sizeof (struct costs));
 
 #ifdef FORBIDDEN_INC_DEC_CLASSES
-      bzero (in_inc_dec, nregs);
+      memset (in_inc_dec, 0, nregs);
 #endif
 
       /* Scan the instructions and record each time it would
@@ -1337,7 +1337,7 @@ record_reg_classes (n_alts, n_ops, ops, modes,
 	  if (*p == 0)
 	    {
 	      if (GET_CODE (op) == REG && REGNO (op) >= FIRST_PSEUDO_REGISTER)
-		bzero ((char *) &this_op_costs[i], sizeof this_op_costs[i]);
+		memset ((char *) &this_op_costs[i], 0, sizeof this_op_costs[i]);
 
 	      continue;
 	    }
@@ -2122,7 +2122,7 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 	  if (!reg_data->used_p)	/* page just allocated with calloc */
 	    reg_data->used_p = 1;	/* no need to zero */
 	  else
-	    bzero ((char *) &reg_data->data[local_min],
+	    memset ((char *) &reg_data->data[local_min], 0,
 		   sizeof (reg_info) * (max - min_index - local_min + 1));
 
 	  for (i = min_index+local_min; i <= max; i++)

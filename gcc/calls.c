@@ -2376,7 +2376,7 @@ expand_call (exp, target, ignore)
 
   /* Make a vector to hold all the information about each arg.  */
   args = (struct arg_data *) alloca (num_actuals * sizeof (struct arg_data));
-  bzero ((char *) args, num_actuals * sizeof (struct arg_data));
+  memset ((char *) args, 0, num_actuals * sizeof (struct arg_data));
 
   /* Build up entries inthe ARGS array, compute the size of the arguments
      into ARGS_SIZE, etc.  */
@@ -2786,7 +2786,7 @@ expand_call (exp, target, ignore)
 			   initial_highest_arg_in_use);
 
 		  if (initial_highest_arg_in_use != highest_outgoing_arg_in_use)
-		    bzero (&stack_usage_map[initial_highest_arg_in_use],
+		    memset (&stack_usage_map[initial_highest_arg_in_use], 0,
 			   (highest_outgoing_arg_in_use
 			    - initial_highest_arg_in_use));
 		  needed = 0;
@@ -2875,7 +2875,7 @@ expand_call (exp, target, ignore)
 			  /* Make a new map for the new argument list.  */
 			  stack_usage_map = (char *)
 			    alloca (highest_outgoing_arg_in_use);
-			  bzero (stack_usage_map, highest_outgoing_arg_in_use);
+			  memset (stack_usage_map, 0, highest_outgoing_arg_in_use);
 			  highest_outgoing_arg_in_use = 0;
 			}
 		      allocate_dynamic_stack_space (push_size, NULL_RTX,
@@ -3577,7 +3577,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
      library functions shouldn't have many args.  */
 
   argvec = (struct arg *) alloca ((nargs + 1) * sizeof (struct arg));
-  bzero ((char *) argvec, (nargs + 1) * sizeof (struct arg));
+  memset ((char *) argvec, 0, (nargs + 1) * sizeof (struct arg));
 
   INIT_CUMULATIVE_ARGS (args_so_far, NULL_TREE, fun, 0);
 
@@ -3770,7 +3770,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	       initial_highest_arg_in_use);
 
       if (initial_highest_arg_in_use != highest_outgoing_arg_in_use)
-	bzero (&stack_usage_map[initial_highest_arg_in_use],
+	memset (&stack_usage_map[initial_highest_arg_in_use], 0,
 	       highest_outgoing_arg_in_use - initial_highest_arg_in_use);
       needed = 0;
 

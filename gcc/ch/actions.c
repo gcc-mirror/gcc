@@ -1464,7 +1464,7 @@ check_missing_cases (type)
     warning ("too many cases to do CASE completeness testing");
   else
     {
-      bzero (cases_seen, bytes_needed);
+      memset (cases_seen, 0, bytes_needed);
       mark_seen_cases (type, cases_seen, size, is_sparse);
       print_missing_cases (type, cases_seen, size);
       free (cases_seen);

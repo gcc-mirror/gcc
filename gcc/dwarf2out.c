@@ -4849,7 +4849,7 @@ equate_decl_number_to_die (decl, decl_die)
 	= (dw_die_ref *) xrealloc (decl_die_table,
 				   sizeof (dw_die_ref) * num_allocated);
 
-      bzero ((char *) &decl_die_table[decl_die_table_allocated],
+      memset ((char *) &decl_die_table[decl_die_table_allocated], 0,
 	     (num_allocated - decl_die_table_allocated) * sizeof (dw_die_ref));
       decl_die_table_allocated = num_allocated;
     }
@@ -5481,7 +5481,7 @@ build_abbrev_table (die)
 	    = (dw_die_ref *) xrealloc (abbrev_die_table,
 				       sizeof (dw_die_ref) * n_alloc);
 
-	  bzero ((char *) &abbrev_die_table[abbrev_die_table_allocated],
+	  memset ((char *) &abbrev_die_table[abbrev_die_table_allocated], 0,
 		 (n_alloc - abbrev_die_table_allocated) * sizeof (dw_die_ref));
 	  abbrev_die_table_allocated = n_alloc;
 	}

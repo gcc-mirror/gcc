@@ -106,7 +106,7 @@ void
 sbitmap_zero (bmap)
      sbitmap bmap;
 {
-  bzero ((PTR) bmap->elms, bmap->bytes);
+  memset ((PTR) bmap->elms, 0, bmap->bytes);
 }
 
 /* Set all elements in a bitmap to ones.  */

@@ -325,7 +325,7 @@ mul_double (l1, h1, l2, h2, lv, hv)
   encode (arg1, l1, h1);
   encode (arg2, l2, h2);
 
-  bzero ((char *) prod, sizeof prod);
+  memset ((char *) prod, 0, sizeof prod);
 
   for (i = 0; i < 4; i++)
     {
@@ -577,10 +577,10 @@ div_and_round_double (code, uns,
       goto finish_up;
     }
 
-  bzero ((char *) quo, sizeof quo);
+  memset ((char *) quo, 0, sizeof quo);
 
-  bzero ((char *) num, sizeof num);	/* to zero 9th element */
-  bzero ((char *) den, sizeof den);
+  memset ((char *) num, 0, sizeof num);	/* to zero 9th element */
+  memset ((char *) den, 0, sizeof den);
 
   encode (num, lnum, hnum);
   encode (den, lden, hden);

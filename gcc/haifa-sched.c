@@ -2054,7 +2054,7 @@ compute_trg_info (trg)
 	     up with a lot of duplicates.  We need to weed them out to avoid
 	     overrunning the end of the bblst_table.  */
 	  update_blocks = (char *) alloca (n_basic_blocks);
-	  bzero (update_blocks, n_basic_blocks);
+	  memset (update_blocks, 0, n_basic_blocks);
 
 	  update_idx = 0;
 	  for (j = 0; j < el.nr_members; j++)
@@ -2917,9 +2917,9 @@ static int unit_n_insns[FUNCTION_UNITS_SIZE];
 static void
 clear_units ()
 {
-  bzero ((char *) unit_last_insn, sizeof (unit_last_insn));
-  bzero ((char *) unit_tick, sizeof (unit_tick));
-  bzero ((char *) unit_n_insns, sizeof (unit_n_insns));
+  memset ((char *) unit_last_insn, 0, sizeof (unit_last_insn));
+  memset ((char *) unit_tick, 0, sizeof (unit_tick));
+  memset ((char *) unit_n_insns, 0, sizeof (unit_n_insns));
 }
 
 /* Return the issue-delay of an insn.  */
@@ -6019,7 +6019,7 @@ schedule_block (bb, rgn_n_insns)
   q_ptr = 0;
   q_size = 0;
   last_clock_var = 0;
-  bzero ((char *) insn_queue, sizeof (insn_queue));
+  memset ((char *) insn_queue, 0, sizeof (insn_queue));
 
   /* Start just before the beginning of time.  */
   clock_var = -1;

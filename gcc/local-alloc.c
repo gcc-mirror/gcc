@@ -411,7 +411,7 @@ local_alloc ()
       else
 	{
 #define CLEAR(vector)  \
-	  bzero ((char *) (vector), (sizeof (*(vector))) * next_qty);
+	  memset ((char *) (vector), 0, (sizeof (*(vector))) * next_qty);
 
 	  CLEAR (qty_phys_copy_sugg);
 	  CLEAR (qty_phys_num_copy_sugg);

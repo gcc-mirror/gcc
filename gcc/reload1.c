@@ -631,8 +631,8 @@ reload (first, global)
 #endif
 
   /* We don't have a stack slot for any spill reg yet.  */
-  bzero ((char *) spill_stack_slot, sizeof spill_stack_slot);
-  bzero ((char *) spill_stack_slot_width, sizeof spill_stack_slot_width);
+  memset ((char *) spill_stack_slot, 0, sizeof spill_stack_slot);
+  memset ((char *) spill_stack_slot_width, 0, sizeof spill_stack_slot_width);
 
   /* Initialize the save area information for caller-save, in case some
      are needed.  */
@@ -3281,7 +3281,7 @@ static void
 set_initial_label_offsets ()
 {
   rtx x;
-  bzero ((char *) &offsets_known_at[get_first_label_num ()], num_labels);
+  memset ((char *) &offsets_known_at[get_first_label_num ()], 0, num_labels);
 
   for (x = forced_labels; x; x = XEXP (x, 1))
     if (XEXP (x, 0))
@@ -3555,7 +3555,7 @@ finish_spills (global)
   /* Retry global register allocation if possible.  */
   if (global)
     {
-      bzero ((char *) pseudo_forbidden_regs, max_regno * sizeof (HARD_REG_SET));
+      memset ((char *) pseudo_forbidden_regs, 0, max_regno * sizeof (HARD_REG_SET));
       /* For every insn that needs reloads, set the registers used as spill
 	 regs in pseudo_forbidden_regs for every pseudo live across the
 	 insn.  */
@@ -3726,8 +3726,8 @@ reload_as_needed (live_known)
 #endif
   rtx x;
 
-  bzero ((char *) spill_reg_rtx, sizeof spill_reg_rtx);
-  bzero ((char *) spill_reg_store, sizeof spill_reg_store);
+  memset ((char *) spill_reg_rtx, 0, sizeof spill_reg_rtx);
+  memset ((char *) spill_reg_store, 0, sizeof spill_reg_store);
   reg_last_reload_reg = (rtx *) xcalloc (max_regno, sizeof (rtx));
   reg_has_output_reload = (char *) xmalloc (max_regno);
   CLEAR_HARD_REG_SET (reg_reloaded_valid);
@@ -3788,7 +3788,7 @@ reload_as_needed (live_known)
 	     rtx's for those pseudo regs.  */
 	  else
 	    {
-	      bzero (reg_has_output_reload, max_regno);
+	      memset (reg_has_output_reload, 0, max_regno);
 	      CLEAR_HARD_REG_SET (reg_is_output_reload);
 
 	      find_reloads (insn, 1, spill_indirect_levels, live_known,
@@ -5098,9 +5098,9 @@ choose_reload_regs_init (chain, save_reload_reg_rtx)
   for (i = 0; i < n_reloads; i++)
     rld[i].reg_rtx = save_reload_reg_rtx[i];
 
-  bzero (reload_inherited, MAX_RELOADS);
-  bzero ((char *) reload_inheritance_insn, MAX_RELOADS * sizeof (rtx));
-  bzero ((char *) reload_override_in, MAX_RELOADS * sizeof (rtx));
+  memset (reload_inherited, 0, MAX_RELOADS);
+  memset ((char *) reload_inheritance_insn, 0, MAX_RELOADS * sizeof (rtx));
+  memset ((char *) reload_override_in, 0, MAX_RELOADS * sizeof (rtx));
 
   CLEAR_HARD_REG_SET (reload_reg_used);
   CLEAR_HARD_REG_SET (reload_reg_used_at_all);
@@ -8126,8 +8126,8 @@ reload_cse_simplify_operands (insn)
   alternative_reject = (int *) alloca (recog_data.n_alternatives * sizeof (int));
   alternative_nregs = (int *) alloca (recog_data.n_alternatives * sizeof (int));
   alternative_order = (int *) alloca (recog_data.n_alternatives * sizeof (int));
-  bzero ((char *)alternative_reject, recog_data.n_alternatives * sizeof (int));
-  bzero ((char *)alternative_nregs, recog_data.n_alternatives * sizeof (int));
+  memset ((char *)alternative_reject, 0, recog_data.n_alternatives * sizeof (int));
+  memset ((char *)alternative_nregs, 0, recog_data.n_alternatives * sizeof (int));
 
   /* For each operand, find out which regs are equivalent.  */
   for (i = 0; i < recog_data.n_operands; i++)

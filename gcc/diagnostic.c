@@ -331,7 +331,7 @@ init_output_buffer (buffer, prefix, maximum_length)
      const char *prefix;
      int maximum_length;
 {
-  bzero (buffer, sizeof (output_buffer));
+  memset (buffer, 0, sizeof (output_buffer));
   obstack_init (&buffer->obstack);
   ideal_line_wrap_cutoff (buffer) = maximum_length;
   prefixing_policy (buffer) = current_prefixing_rule;
@@ -1692,7 +1692,7 @@ set_diagnostic_context (dc, message, args_ptr, file, line, warn)
      int line;
      int warn;
 {
-  bzero (dc, sizeof (diagnostic_context));
+  memset (dc, 0, sizeof (diagnostic_context));
   diagnostic_message (dc) = message;
   diagnostic_argument_list (dc) = args_ptr;
   diagnostic_file_location (dc) = file;

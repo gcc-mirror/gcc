@@ -3627,7 +3627,7 @@ error_with_ivar (message, decl, rawdecl)
 
   fprintf (stderr, "%s:%d: ",
 	   DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
-  bzero (errbuf, BUFSIZE);
+  memset (errbuf, 0, BUFSIZE);
   fprintf (stderr, "%s `%s'\n", message, gen_declaration (rawdecl, errbuf));
 }
 
@@ -4740,7 +4740,7 @@ build_keyword_selector (selector)
     }
 
   buf = (char *)alloca (len + 1);
-  bzero (buf, len + 1);
+  memset (buf, 0, len + 1);
 
   for (key_chain = selector; key_chain; key_chain = TREE_CHAIN (key_chain))
     {
@@ -4979,7 +4979,7 @@ build_message_expr (mess)
 	       /* Allow any type that matches objc_class_type.  */
 	       && ! comptypes (rtype, objc_class_type))
 	{
-	  bzero (errbuf, BUFSIZE);
+	  memset (errbuf, 0, BUFSIZE);
 	  warning ("invalid receiver type `%s'",
 		   gen_declaration (rtype, errbuf));
 	}
@@ -7079,7 +7079,7 @@ warn_with_method (message, mtype, method)
 
   fprintf (stderr, "%s:%d: warning: ",
 	   DECL_SOURCE_FILE (method), DECL_SOURCE_LINE (method));
-  bzero (errbuf, BUFSIZE);
+  memset (errbuf, 0, BUFSIZE);
   fprintf (stderr, "%s `%c%s'\n",
 	   message, mtype, gen_method_decl (method, errbuf));
 }
@@ -8088,7 +8088,7 @@ dump_interface (fp, chain)
       fprintf (fp, "{\n");
       do
 	{
-	  bzero (buf, 256);
+	  memset (buf, 0, 256);
 	  fprintf (fp, "\t%s;\n", gen_declaration (ivar_decls, buf));
 	  ivar_decls = TREE_CHAIN (ivar_decls);
 	}
@@ -8098,14 +8098,14 @@ dump_interface (fp, chain)
 
   while (nst_methods)
     {
-      bzero (buf, 256);
+      memset (buf, 0, 256);
       fprintf (fp, "- %s;\n", gen_method_decl (nst_methods, buf));
       nst_methods = TREE_CHAIN (nst_methods);
     }
 
   while (cls_methods)
     {
-      bzero (buf, 256);
+      memset (buf, 0, 256);
       fprintf (fp, "+ %s;\n", gen_method_decl (cls_methods, buf));
       cls_methods = TREE_CHAIN (cls_methods);
     }
@@ -8501,7 +8501,7 @@ objc_debug (fp)
 	if (TREE_CODE (loop) == FUNCTION_DECL && DECL_INITIAL (loop))
 	  {
 	    /* We have a function definition: generate prototype.  */
-            bzero (errbuf, BUFSIZE);
+            memset (errbuf, 0, BUFSIZE);
 	    gen_declaration (loop, errbuf);
 	    fprintf (fp, "%s;\n", errbuf);
 	  }
@@ -8521,7 +8521,7 @@ objc_debug (fp)
 	    fprintf (fp, "\n\nnst_method_hash_list[%d]:\n", i);
 	    do
 	      {
-		bzero (buf, 256);
+		memset (buf, 0, 256);
 		fprintf (fp, "-%s;\n", gen_method_decl (hashlist->key, buf));
 		hashlist = hashlist->next;
 	      }
@@ -8536,7 +8536,7 @@ objc_debug (fp)
 	    fprintf (fp, "\n\ncls_method_hash_list[%d]:\n", i);
 	    do
 	      {
-		bzero (buf, 256);
+		memset (buf, 0, 256);
 		fprintf (fp, "-%s;\n", gen_method_decl (hashlist->key, buf));
 		hashlist = hashlist->next;
 	      }

@@ -647,7 +647,7 @@ get_secondary_mem (x, mode, opnum, type)
 void
 clear_secondary_mem ()
 {
-  bzero ((char *) secondary_memlocs, sizeof secondary_memlocs);
+  memset ((char *) secondary_memlocs, 0, sizeof secondary_memlocs);
 }
 #endif /* SECONDARY_MEMORY_NEEDED */
 
@@ -1558,7 +1558,7 @@ remove_address_replacements (in_rtx)
   char reload_flags[MAX_RELOADS];
   int something_changed = 0;
 
-  bzero (reload_flags, sizeof reload_flags);
+  memset (reload_flags, 0, sizeof reload_flags);
   for (i = 0, j = 0; i < n_replacements; i++)
     {
       if (loc_mentioned_in_p (replacements[i].where, in_rtx))
@@ -2451,7 +2451,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   /* The eliminated forms of any secondary memory locations are per-insn, so
      clear them out here.  */
 
-  bzero ((char *) secondary_memlocs_elim, sizeof secondary_memlocs_elim);
+  memset ((char *) secondary_memlocs_elim, 0, sizeof secondary_memlocs_elim);
 #endif
 
   /* Dispose quickly of (set (reg..) (reg..)) if both have hard regs and it

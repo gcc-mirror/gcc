@@ -2351,7 +2351,7 @@ duplicate_tag_error (t)
       tree template_info = CLASSTYPE_TEMPLATE_INFO (t);
       int use_template = CLASSTYPE_USE_TEMPLATE (t);
 
-      bzero ((char *) TYPE_LANG_SPECIFIC (t), sizeof (struct lang_type));
+      memset ((char *) TYPE_LANG_SPECIFIC (t), 0, sizeof (struct lang_type));
       BINFO_BASETYPES(binfo) = NULL_TREE;
 
       TYPE_BINFO (t) = binfo;
@@ -7231,7 +7231,7 @@ build_vtbl_initializer (binfo, orig_binfo, t, rtti_binfo, non_fn_entries_p)
   vtbl_init_data vid;
 
   /* Initialize VID.  */
-  bzero (&vid, sizeof (vid));
+  memset (&vid, 0, sizeof (vid));
   vid.binfo = binfo;
   vid.derived = t;
   vid.last_init = &vid.inits;
