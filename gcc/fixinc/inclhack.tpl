@@ -334,7 +334,7 @@ while [ $# != 0 ]; do
   cd ${INPUT}[=
 _IF PROGRAM _env ! =]
   files=`if $LINKS; then
-    find ${FIND_BASE}/. \( -type f -o -type l \) -print
+    find ${FIND_BASE}/. \( -type f -o \( -type l -exec test ! -d {} \; \) \) -print
   else
     find ${FIND_BASE}/. -type f -print
   fi | \
