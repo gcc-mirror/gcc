@@ -5298,17 +5298,19 @@
 ;; Block-move insns
 
 (define_insn "movmem12b"
-  [(set (mem:SI (match_operand:SI 0 "register_operand" "+&l"))
-	(mem:SI (match_operand:SI 1 "register_operand" "+&l")))
-   (set (mem:SI (plus:SI (match_dup 0) (const_int 4)))
-	(mem:SI (plus:SI (match_dup 1) (const_int 4))))
-   (set (mem:SI (plus:SI (match_dup 0) (const_int 8)))
-	(mem:SI (plus:SI (match_dup 1) (const_int 8))))
-   (set (match_dup 0) (plus:SI (match_dup 0) (const_int 12)))
-   (set (match_dup 1) (plus:SI (match_dup 1) (const_int 12)))
-   (clobber (match_scratch:SI 2 "=&l"))
-   (clobber (match_scratch:SI 3 "=&l"))
-   (clobber (match_scratch:SI 4 "=&l"))]
+  [(set (mem:SI (match_operand:SI 2 "register_operand" "0"))
+	(mem:SI (match_operand:SI 3 "register_operand" "1")))
+   (set (mem:SI (plus:SI (match_dup 2) (const_int 4)))
+	(mem:SI (plus:SI (match_dup 3) (const_int 4))))
+   (set (mem:SI (plus:SI (match_dup 2) (const_int 8)))
+	(mem:SI (plus:SI (match_dup 3) (const_int 8))))
+   (set (match_operand:SI 0 "register_operand" "=l")
+	(plus:SI (match_dup 2) (const_int 12)))
+   (set (match_operand:SI 1 "register_operand" "=l")
+	(plus:SI (match_dup 3) (const_int 12)))
+   (clobber (match_scratch:SI 4 "=&l"))
+   (clobber (match_scratch:SI 5 "=&l"))
+   (clobber (match_scratch:SI 6 "=&l"))]
   "TARGET_THUMB"
   "* return thumb_output_move_mem_multiple (3, operands);"
   [(set_attr "length" "4")
@@ -5318,14 +5320,16 @@
 )
 
 (define_insn "movmem8b"
-  [(set (mem:SI (match_operand:SI 0 "register_operand" "+&l"))
-	(mem:SI (match_operand:SI 1 "register_operand" "+&l")))
-   (set (mem:SI (plus:SI (match_dup 0) (const_int 4)))
-	(mem:SI (plus:SI (match_dup 1) (const_int 4))))
-   (set (match_dup 0) (plus:SI (match_dup 0) (const_int 8)))
-   (set (match_dup 1) (plus:SI (match_dup 1) (const_int 8)))
-   (clobber (match_scratch:SI 2 "=&l"))
-   (clobber (match_scratch:SI 3 "=&l"))]
+  [(set (mem:SI (match_operand:SI 2 "register_operand" "0"))
+	(mem:SI (match_operand:SI 3 "register_operand" "1")))
+   (set (mem:SI (plus:SI (match_dup 2) (const_int 4)))
+	(mem:SI (plus:SI (match_dup 3) (const_int 4))))
+   (set (match_operand:SI 0 "register_operand" "=l")
+	(plus:SI (match_dup 2) (const_int 8)))
+   (set (match_operand:SI 1 "register_operand" "=l")
+	(plus:SI (match_dup 3) (const_int 8)))
+   (clobber (match_scratch:SI 4 "=&l"))
+   (clobber (match_scratch:SI 5 "=&l"))]
   "TARGET_THUMB"
   "* return thumb_output_move_mem_multiple (2, operands);"
   [(set_attr "length" "4")
