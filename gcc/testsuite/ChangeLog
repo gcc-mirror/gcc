@@ -1,5 +1,9 @@
 2004-11-26  Richard Sandiford  <rsandifo@redhat.com>
 
+	* gcc.dg/sibcall-[34].c: Remove MIPS xfails.
+
+2004-11-26  Richard Sandiford  <rsandifo@redhat.com>
+
 	* g++.old-deja/g++.jason/thunk3.C: Remove mips*-*-* xfail.
 
 2004-11-26  Ben Elliston  <bje@au.ibm.com>
