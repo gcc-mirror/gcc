@@ -1,3 +1,8 @@
+Wed Sep  2 19:30:06 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* dwarfout.c (fundamental_type_code): Encode 32 bit floats/doubles
+	as FT_float.
+
 Wed Sep  2 10:06:07 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/nextstep.h:    Update HANDLE_PRAGMA macro.
