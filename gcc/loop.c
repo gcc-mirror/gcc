@@ -9715,165 +9715,164 @@ load_mems (scan_start, end, loop_top, start)
   rtx p;
   rtx label = NULL_RTX;
   rtx end_label = NULL_RTX;
+  /* Nonzero if the next instruction may never be executed.  */
+  int next_maybe_never = 0;
 
-  if (loop_mems_idx > 0) 
+  if (loop_mems_idx == 0)
+    return;
+
+  /* Check to see if it's possible that some instructions in the
+     loop are never executed.  */
+  for (p = next_insn_in_loop (scan_start, scan_start, end, loop_top); 
+       p != NULL_RTX && !maybe_never; 
+       p = next_insn_in_loop (p, scan_start, end, loop_top))
     {
-      /* Nonzero if the next instruction may never be executed.  */
-      int next_maybe_never = 0;
-
-      /* Check to see if it's possible that some instructions in the
-	 loop are never executed.  */
-      for (p = next_insn_in_loop (scan_start, scan_start, end, loop_top); 
-	   p != NULL_RTX && !maybe_never; 
-	   p = next_insn_in_loop (p, scan_start, end, loop_top))
+      if (GET_CODE (p) == CODE_LABEL)
+	maybe_never = 1;
+      else if (GET_CODE (p) == JUMP_INSN
+	       /* If we enter the loop in the middle, and scan
+		  around to the beginning, don't set maybe_never
+		  for that.  This must be an unconditional jump,
+		  otherwise the code at the top of the loop might
+		  never be executed.  Unconditional jumps are
+		  followed a by barrier then loop end.  */
+	       && ! (GET_CODE (p) == JUMP_INSN 
+		     && JUMP_LABEL (p) == loop_top
+		     && NEXT_INSN (NEXT_INSN (p)) == end
+		     && simplejump_p (p)))
 	{
-	  if (GET_CODE (p) == CODE_LABEL)
+	  if (!condjump_p (p))
+	    /* Something complicated.  */
 	    maybe_never = 1;
-	  else if (GET_CODE (p) == JUMP_INSN
-		   /* If we enter the loop in the middle, and scan
-		      around to the beginning, don't set maybe_never
-		      for that.  This must be an unconditional jump,
-		      otherwise the code at the top of the loop might
-		      never be executed.  Unconditional jumps are
-		      followed a by barrier then loop end.  */
-		   && ! (GET_CODE (p) == JUMP_INSN 
-			 && JUMP_LABEL (p) == loop_top
-			 && NEXT_INSN (NEXT_INSN (p)) == end
-			 && simplejump_p (p)))
+	  else
+	    /* If there are any more instructions in the loop, they
+	       might not be reached.  */
+	    next_maybe_never = 1; 
+	} 
+      else if (next_maybe_never)
+	maybe_never = 1;
+    }
+
+  /* Actually move the MEMs.  */
+  for (i = 0; i < loop_mems_idx; ++i) 
+    {
+      int written = 0;
+      rtx reg;
+      rtx mem = loop_mems[i].mem;
+      rtx mem_list_entry;
+
+      if (MEM_VOLATILE_P (mem) 
+	  || invariant_p (XEXP (mem, 0)) != 1)
+	/* There's no telling whether or not MEM is modified.  */
+	loop_mems[i].optimize = 0;
+
+      /* Go through the MEMs written to in the loop to see if this
+	 one is aliased by one of them.  */
+      mem_list_entry = loop_store_mems;
+      while (mem_list_entry)
+	{
+	  if (rtx_equal_p (mem, XEXP (mem_list_entry, 0)))
+	    written = 1;
+	  else if (true_dependence (XEXP (mem_list_entry, 0), VOIDmode,
+				    mem, rtx_varies_p))
 	    {
-	      if (!condjump_p (p))
-		/* Something complicated.  */
-		maybe_never = 1;
-	      else
-		/* If there are any more instructions in the loop, they
-		   might not be reached.  */
-		next_maybe_never = 1; 
-	    } 
-	  else if (next_maybe_never)
-	    maybe_never = 1;
+	      /* MEM is indeed aliased by this store.  */
+	      loop_mems[i].optimize = 0;
+	      break;
+	    }
+	  mem_list_entry = XEXP (mem_list_entry, 1);
 	}
-
-      /* Actually move the MEMs.  */
-      for (i = 0; i < loop_mems_idx; ++i) 
+	  
+      /* If this MEM is written to, we must be sure that there
+	 are no reads from another MEM that aliases this one.  */ 
+      if (loop_mems[i].optimize && written)
 	{
-	  int written = 0;
-	  rtx reg;
-	  rtx mem = loop_mems[i].mem;
-	  rtx mem_list_entry;
+	  int j;
 
-	  if (MEM_VOLATILE_P (mem) 
-	      || invariant_p (XEXP (mem, 0)) != 1)
-	    /* There's no telling whether or not MEM is modified.  */
-	    loop_mems[i].optimize = 0;
-
-	  /* Go through the MEMs written to in the loop to see if this
-	     one is aliased by one of them.  */
-	  mem_list_entry = loop_store_mems;
-	  while (mem_list_entry)
+	  for (j = 0; j < loop_mems_idx; ++j)
 	    {
-	      if (rtx_equal_p (mem, XEXP (mem_list_entry, 0)))
-		written = 1;
-	      else if (true_dependence (XEXP (mem_list_entry, 0), VOIDmode,
-					mem, rtx_varies_p))
+	      if (j == i)
+		continue;
+	      else if (true_dependence (mem,
+					VOIDmode,
+					loop_mems[j].mem,
+					rtx_varies_p))
 		{
-		  /* MEM is indeed aliased by this store.  */
+		  /* It's not safe to hoist loop_mems[i] out of
+		     the loop because writes to it might not be
+		     seen by reads from loop_mems[j].  */
 		  loop_mems[i].optimize = 0;
 		  break;
 		}
-	      mem_list_entry = XEXP (mem_list_entry, 1);
 	    }
+	}
+
+      if (maybe_never && may_trap_p (mem))
+	/* We can't access the MEM outside the loop; it might
+	   cause a trap that wouldn't have happened otherwise.  */
+	loop_mems[i].optimize = 0;
 	  
-	  /* If this MEM is written to, we must be sure that there
-	     are no reads from another MEM that aliases this one.  */ 
-	  if (loop_mems[i].optimize && written)
-	    {
-	      int j;
+      if (!loop_mems[i].optimize)
+	/* We thought we were going to lift this MEM out of the
+	   loop, but later discovered that we could not.  */
+	continue;
 
-	      for (j = 0; j < loop_mems_idx; ++j)
+      /* Allocate a pseudo for this MEM.  We set REG_USERVAR_P in
+	 order to keep scan_loop from moving stores to this MEM
+	 out of the loop just because this REG is neither a
+	 user-variable nor used in the loop test.  */
+      reg = gen_reg_rtx (GET_MODE (mem));
+      REG_USERVAR_P (reg) = 1;
+      loop_mems[i].reg = reg;
+
+      /* Now, replace all references to the MEM with the
+	 corresponding pesudos.  */
+      for (p = next_insn_in_loop (scan_start, scan_start, end, loop_top);
+	   p != NULL_RTX;
+	   p = next_insn_in_loop (p, scan_start, end, loop_top))
+	{
+	  rtx_and_int ri;
+	  ri.r = p;
+	  ri.i = i;
+	  for_each_rtx (&p, replace_loop_mem, &ri);
+	}
+
+      if (! apply_change_group ())
+	/* We couldn't replace all occurrences of the MEM.  */
+	loop_mems[i].optimize = 0;
+      else
+	{
+	  rtx set;
+
+	  /* Load the memory immediately before START, which is
+	     the NOTE_LOOP_BEG.  */
+	  set = gen_move_insn (reg, mem);
+	  emit_insn_before (set, start);
+
+	  if (written)
+	    {
+	      if (label == NULL_RTX)
 		{
-		  if (j == i)
-		    continue;
-		  else if (true_dependence (mem,
-					    VOIDmode,
-					    loop_mems[j].mem,
-					    rtx_varies_p))
-		    {
-		      /* It's not safe to hoist loop_mems[i] out of
-			 the loop because writes to it might not be
-			 seen by reads from loop_mems[j].  */
-		      loop_mems[i].optimize = 0;
-		      break;
-		    }
+		  /* We must compute the former
+		     right-after-the-end label before we insert
+		     the new one.  */
+		  end_label = next_label (end);
+		  label = gen_label_rtx ();
+		  emit_label_after (label, end);
 		}
+
+	      /* Store the memory immediately after END, which is
+		 the NOTE_LOOP_END.  */
+	      set = gen_move_insn (copy_rtx (mem), reg); 
+	      emit_insn_after (set, label);
 	    }
 
-	  if (maybe_never && may_trap_p (mem))
-	    /* We can't access the MEM outside the loop; it might
-	       cause a trap that wouldn't have happened otherwise.  */
-	    loop_mems[i].optimize = 0;
-	  
-	  if (!loop_mems[i].optimize)
-	    /* We thought we were going to lift this MEM out of the
-	       loop, but later discovered that we could not.  */
-	    continue;
-
-	  /* Allocate a pseudo for this MEM.  We set REG_USERVAR_P in
-	     order to keep scan_loop from moving stores to this MEM
-	     out of the loop just because this REG is neither a
-	     user-variable nor used in the loop test.  */
-	  reg = gen_reg_rtx (GET_MODE (mem));
-	  REG_USERVAR_P (reg) = 1;
-	  loop_mems[i].reg = reg;
-
-	  /* Now, replace all references to the MEM with the
-	     corresponding pesudos.  */
-	  for (p = next_insn_in_loop (scan_start, scan_start, end, loop_top);
-	       p != NULL_RTX;
-	       p = next_insn_in_loop (p, scan_start, end, loop_top))
+	  if (loop_dump_stream)
 	    {
-	      rtx_and_int ri;
-	      ri.r = p;
-	      ri.i = i;
-	      for_each_rtx (&p, replace_loop_mem, &ri);
-	    }
-
-	  if (!apply_change_group ())
-	    /* We couldn't replace all occurrences of the MEM.  */
-	    loop_mems[i].optimize = 0;
-	  else
-	    {
-	      rtx set;
-
-	      /* Load the memory immediately before START, which is
-		 the NOTE_LOOP_BEG.  */
-	      set = gen_move_insn (reg, mem);
-	      emit_insn_before (set, start);
-
-	      if (written)
-		{
-		  if (label == NULL_RTX)
-		    {
-		      /* We must compute the former
-			 right-after-the-end label before we insert
-			 the new one.  */
-		      end_label = next_label (end);
-		      label = gen_label_rtx ();
-		      emit_label_after (label, end);
-		    }
-
-		  /* Store the memory immediately after END, which is
-		   the NOTE_LOOP_END.  */
-		  set = gen_move_insn (copy_rtx (mem), reg); 
-		  emit_insn_after (set, label);
-		}
-
-	      if (loop_dump_stream)
-		{
-		  fprintf (loop_dump_stream, "Hoisted regno %d %s from ",
-			   REGNO (reg), (written ? "r/w" : "r/o"));
-		  print_rtl (loop_dump_stream, mem);
-		  fputc ('\n', loop_dump_stream);
-		}
+	      fprintf (loop_dump_stream, "Hoisted regno %d %s from ",
+		       REGNO (reg), (written ? "r/w" : "r/o"));
+	      print_rtl (loop_dump_stream, mem);
+	      fputc ('\n', loop_dump_stream);
 	    }
 	}
     }
