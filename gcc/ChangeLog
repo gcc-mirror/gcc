@@ -1,3 +1,9 @@
+Tue Jul 11 15:28:21 CDT 2000  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* gensupport.c (process_rtx): Make rtl checking stop
+	complaining about the define_insn while it is being
+	converted from a define_insn_and_split.
+
 Tue Jul 11 16:26:17 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* config/mips/mips.c (simple_memory_operand): Access the
