@@ -61,6 +61,9 @@ static void handle_pragma_vtable PARAMS ((cpp_reader *));
 static void handle_pragma_unit PARAMS ((cpp_reader *));
 static void handle_pragma_interface PARAMS ((cpp_reader *));
 static void handle_pragma_implementation PARAMS ((cpp_reader *));
+static void cxx_init PARAMS ((void));
+static void cxx_finish PARAMS ((void));
+static void cxx_post_options PARAMS ((void));
 
 #ifdef GATHER_STATISTICS
 #ifdef REDUCE_LENGTH
@@ -240,7 +243,17 @@ static const char *cplus_tree_code_name[] = {
 };
 #undef DEFTREECODE
 
-/* toplev.c needs to call these.  */
+/* Each front end provides its own hooks, for toplev.c.  */
+struct lang_hooks lang_hooks = {cxx_init,
+				cxx_finish,
+				cxx_post_options};
+
+/* Post-switch processing.  */
+static void
+cxx_post_options ()
+{
+  cpp_post_options (parse_in);
+}
 
 void
 lang_init_options ()
@@ -259,8 +272,8 @@ lang_init_options ()
   set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_ONCE);
 }
 
-void
-lang_init ()
+static void
+cxx_init ()
 {
   c_common_lang_init ();
 
@@ -268,8 +281,8 @@ lang_init ()
   init_repo (input_filename);
 }
 
-void
-lang_finish ()
+static void
+cxx_finish ()
 {
   if (flag_gnu_xref) GNU_xref_end (errorcount+sorrycount);
 }

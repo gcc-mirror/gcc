@@ -2571,11 +2571,6 @@ extern void init_lex				PARAMS ((void));
 /* Function of no arguments for initializing the symbol table.  */
 extern void init_decl_processing		PARAMS ((void));
 
-/* Functions called with no arguments at the beginning and end or processing
-   the input source file.  */
-extern void lang_init				PARAMS ((void));
-extern void lang_finish				PARAMS ((void));
-
 /* Function to identify which front-end produced the output file. */
 extern const char *lang_identify			PARAMS ((void));
 

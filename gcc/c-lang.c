@@ -38,10 +38,13 @@ Boston, MA 02111-1307, USA.  */
 
 static int c_tree_printer PARAMS ((output_buffer *));
 static int c_missing_noreturn_ok_p PARAMS ((tree));
+static void c_init PARAMS ((void));
 static void c_post_options PARAMS ((void));
 
 /* Each front end provides its own.  */
-struct lang_hooks lang_hooks = {c_post_options};
+struct lang_hooks lang_hooks = {c_init,
+				NULL, /* c_finish */
+				c_post_options};
 
 /* Post-switch processing.  */
 static void
@@ -69,8 +72,8 @@ lang_init_options ()
   flag_bounds_check = -1;
 }
 
-void
-lang_init ()
+static void
+c_init ()
 {
   c_common_lang_init ();
 
@@ -93,11 +96,6 @@ lang_init ()
   lang_missing_noreturn_ok_p = &c_missing_noreturn_ok_p;
 
   c_parse_init ();
-}
-
-void
-lang_finish ()
-{
 }
 
 const char *

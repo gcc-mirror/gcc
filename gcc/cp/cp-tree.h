@@ -4062,8 +4062,6 @@ extern tree make_pointer_declarator		PARAMS ((tree, tree));
 extern tree make_reference_declarator		PARAMS ((tree, tree));
 extern tree make_call_declarator		PARAMS ((tree, tree, tree, tree));
 extern void set_quals_and_spec			PARAMS ((tree, tree, tree));
-extern void lang_init				PARAMS ((void));
-extern void lang_finish				PARAMS ((void));
 extern void print_parse_statistics		PARAMS ((void));
 extern void do_pending_inlines			PARAMS ((void));
 extern void process_next_inline			PARAMS ((struct unparsed_text *));

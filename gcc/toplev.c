@@ -2248,7 +2248,8 @@ compile_file (name)
 
   /* Perform language-specific initialization.
      This may set main_input_filename.  */
-  lang_init ();
+  if (lang_hooks.init)
+    (*lang_hooks.init) ();
 
   /* If the input doesn't start with a #line, use the input name
      as the official input file name.  */
@@ -2480,7 +2481,8 @@ compile_file (name)
 
   /* Language-specific end of compilation actions.  */
  finish_syntax:
-  lang_finish ();
+  if (lang_hooks.finish)
+    (*lang_hooks.finish) ();
 
   /* Close the dump files.  */
 

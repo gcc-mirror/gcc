@@ -149,6 +149,7 @@ char *util_firstobj;
 static void init_objc				PARAMS ((void));
 static void finish_objc				PARAMS ((void));
 static void objc_post_options			PARAMS ((void));
+static void objc_init				PARAMS ((void));
 
 /* Code generation.  */
 
@@ -628,7 +629,9 @@ static int generating_instance_variables = 0;
 static int print_struct_values = 0;
 
 /* Each front end provides its own.  */
-struct lang_hooks lang_hooks = {objc_post_options};
+struct lang_hooks lang_hooks = {objc_init,
+				NULL, /* objc_finish */
+				objc_post_options};
 
 /* Post-switch processing.  */
 static void
@@ -707,8 +710,8 @@ lang_init_options ()
   c_language = clk_objective_c;
 }
 
-void
-lang_init ()
+static void
+objc_init ()
 {
   /* Force the line number back to 0; check_newline will have
      raised it to 1, which will make the builtin functions appear
@@ -763,11 +766,6 @@ finish_file ()
 
   if (gen_declaration_file)
     fclose (gen_declaration_file);
-}
-
-void
-lang_finish ()
-{
 }
 
 const char *

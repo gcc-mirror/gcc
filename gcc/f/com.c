@@ -14677,7 +14677,12 @@ insert_block (block)
 }
 
 /* Each front end provides its own.  */
-struct lang_hooks lang_hooks = {NULL /* post_options */};
+static void f_init PARAMS ((void));
+static void f_finish PARAMS ((void));
+
+struct lang_hooks lang_hooks = {f_init,
+				f_finish,
+				NULL /* post_options */};
 
 int
 lang_decode_option (argc, argv)
@@ -14697,8 +14702,8 @@ lang_print_xnode (file, node, indent)
 {
 }
 
-void
-lang_finish ()
+static void
+f_finish ()
 {
   ffe_terminate_0 ();
 
@@ -14738,8 +14743,8 @@ lang_init_options ()
   flag_complex_divide_method = 1;
 }
 
-void
-lang_init ()
+static void
+f_init ()
 {
   /* If the file is output from cpp, it should contain a first line
      `# 1 "real-filename"', and the current design of gcc (toplev.c

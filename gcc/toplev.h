@@ -133,10 +133,16 @@ extern int sorrycount;
 
 extern const char *progname;
 
-/* Language-specific hooks.  */
+/* Language-specific hooks.  Can be NULL unless otherwise specified.  */
 struct lang_hooks
 {
-  /* If non-NULL, called when all command line options have been processed.  */
+  /* Called first, to initialize the front end.  */
+  void (*init) PARAMS ((void));
+
+  /* Called last, as a finalizer.  */
+  void (*finish) PARAMS ((void));
+
+  /* Called when all command line options have been processed.  */
   void (*post_options) PARAMS ((void));
 };
 
