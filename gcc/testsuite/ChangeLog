@@ -1,3 +1,8 @@
+2003-04-30  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9432, c++/9528
+	* g++.dg/lookup/using4.C: New test.
+
 2003-04-29  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/noreturn-5.c: New file.
