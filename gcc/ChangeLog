@@ -1,5 +1,7 @@
 2004-09-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree.c (save_expr): No longer TREE_READONLY.
+
 	* fold-const.c (operand_equal_p): Remove code to allow null ARG0/1.
 	Define locals macros OP_SAME and OP_SAME_WITH_NULL and use throughout.
 
